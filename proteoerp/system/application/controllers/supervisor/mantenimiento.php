@@ -1,0 +1,188 @@
+<?php
+class Mantenimiento extends Controller{
+	
+	function Mantenimiento(){
+		parent::Controller();
+		$this->load->library("rapyd");
+	}
+
+	function index(){		
+		$list = array();
+		$list[]=anchor('supervisor/mantenimiento/bprefac','Borrar PreFacturas menores o iguales al d&iacute;a de ayer');
+		$list[]=anchor('supervisor/mantenimiento/bmodbus','Vaciar la tabla ModBus');
+		$list[]=anchor('supervisor/mantenimiento/centinelas','Centinelas');
+		$list[]=anchor('supervisor/mantenimiento/reparatabla','Reparar Tablas');
+		$list[]=anchor('supervisor/mantenimiento/clinconsis','Incosistencias Clientes');
+		$list[]=anchor('supervisor/repodupli/','Reportes Duplicado');
+		
+		$attributes = array(
+			'class' => 'boldlist',
+			'id'    => 'mylist'
+			);
+
+		$out=ul($list, $attributes);
+		$data['content'] = $out;
+		$data["head"]    = script("jquery.pack.js").script("jquery.treeview.pack.js").$this->rapyd->get_head().style('jquery.treeview.css');
+		$data['title']   = '<h1>Mantenimiento</h1>';
+		$this->load->view('view_ventanas', $data);
+	}
+	
+	function reparatabla(){
+		$this->load->dbutil();
+		$tables = $this->db->list_tables();
+		foreach ($tables as $table){
+			$this->dbutil->repair_table($table);
+		} 
+		redirect('supervisor/mantenimiento');
+	}
+	
+	
+	function bprefac(){
+		$mSQL="DELETE FROM sitems WHERE MID(numa,1,1)='_' AND fecha<CURDATE()";
+		$this->db->simple_query($mSQL);
+		$mSQL="DELETE FROM sfac WHERE MID(numero,1,1)='_' AND fecha<CURDATE()";
+		$this->db->simple_query($mSQL);
+		redirect('supervisor/mantenimiento');
+	}
+	
+	function bmodbus(){
+		$mSQL="TRUNCATE modbus";
+		$this->db->simple_query($mSQL);
+		redirect('supervisor/mantenimiento');
+	}
+	
+	function centinelas(){
+		$this->load->helper('directory');
+		$this->load->library('table');
+		$tmpl = array('row_start' => '<tr valign="top">');
+		$this->table->set_template($tmpl); 
+
+		$map = directory_map('./system/logs/');
+		$lista=array();
+		foreach($map AS $file) {
+			if($file!='index.html')
+				$lista[]=anchor("supervisor/mantenimiento/borracentinela/$file",'X')." <a href='javascript:void(0)' onclick=\"carga('$file')\" >$file</a>";
+		}
+		$copy="<br><a href='javascript:void(0)' class='mininegro'  onclick=\"copiar()\" >Copiar texto</a>";
+		$tadata = array(
+		          'name'    => 'sql',
+		          'id'      => 'log',
+		          'rows'    => '20',
+		          'cols'    => '60'
+		        );
+		
+		$form= form_open('ejecutasql/filteredgrid/process').form_textarea($tadata).'<br>'.form_submit('mysubmit', 'Ejecutar como SQL').form_close();
+		$this->table->add_row(ul($lista), '<b id="fnom">Seleccione un archivo de centinela</b><br>'.$form);
+		$link=site_url('supervisor/mantenimiento/vercentinela');
+		$data['script']  ="<script>
+		  function carga(arch){
+		    link='$link'+'/'+arch;
+		    //alert(link);
+		    $('#fnom').text(arch);
+		    $('#log').load(link);
+		  };
+		  function copiar(){
+		    $('#log').copy();
+		  };
+		</script>";
+		
+		$data['content'] = $this->table->generate();
+		$data['title']   = "<h1>Centinelas</h1>";
+		//script('plugins/jquery.clipboard.pack.js')
+		$data["head"]    =  script("jquery.pack.js").script('plugins/jquery.copy.min.js').$this->rapyd->get_head().style('marcos.css').style('estilos.css');
+		$this->load->view('view_ventanas', $data);
+	}
+	
+	function vercentinela($file=NULL){
+		if(empty($file)) return FALSE;
+		$this->load->helper('file');
+		$string = read_file("./system/logs/$file");
+		$string = $string;
+		echo $string;
+	}
+	
+	function borracentinela($file=NULL){
+		if(!empty($file)){
+			$this->load->helper('file');
+			unlink("./system/logs/$file");
+		}
+		redirect('supervisor/mantenimiento/centinelas');
+	}
+
+	function clinconsis(){
+		$this->rapyd->load("datagrid");
+		//SELECT cod_cli, nombre,sum(monto*(tipo_doc IN ('FC','ND','GI'))) AS debitos, sum(monto*(tipo_doc NOT IN ('FC','ND','GI'))) AS creditos, sum(monto*IF(tipo_doc IN ('FC','ND','GI'),1,-1)) AS saldo,sum((monto-abonos)*(tipo_doc IN ('FC','ND','GI'))-(monto-abonos)*(tipo_doc='AN')) AS abonado, sum(monto*IF(tipo_doc IN ('FC','ND','GI'),1,-1)-((monto-abonos)*(tipo_doc IN ('FC','ND','GI'))-(monto-abonos)*(tipo_doc='AN'))) AS diferen FROM smov group by cod_cli having abs(diferen)>0.01
+		$select=array('cod_cli', 'nombre',
+		"sum(monto*(tipo_doc IN ('FC','ND','GI'))) AS debitos",
+		"sum(monto*(tipo_doc NOT IN ('FC','ND','GI'))) AS creditos",
+		"sum(monto*IF(tipo_doc IN ('FC','ND','GI'),1,-1)) AS saldo",
+		"sum((monto-abonos)*(tipo_doc IN ('FC','ND','GI'))-(monto-abonos)*(tipo_doc='AN')) AS abonado",
+		"sum(monto*IF(tipo_doc IN ('FC','ND','GI'),1,-1)-((monto-abonos)*(tipo_doc IN ('FC','ND','GI'))-(monto-abonos)*(tipo_doc='AN'))) AS diferen");
+		
+		$uri1 = anchor('supervisor/mantenimiento/itclinconsis/<str_replace>/|:slach:|<#cod_cli#></str_replace>','<#cod_cli#>');
+		
+		$grid = new DataGrid("Clientes inconsistentes");
+		$grid->per_page = 15;
+		$grid->use_function('str_replace');
+		$grid->db->select($select);
+		$grid->db->from('smov');
+		$grid->db->groupby("cod_cli");
+		$grid->db->having("abs(diferen)>0.01");
+		//$grid->db->having('abs(100*diferen/saldo)>=0.05');
+		
+		$grid->column_orderby('Cliente'   ,$uri1 ,'cod_cli');
+		$grid->column('Nombre'    ,'nombre'  );
+		$grid->column('D&eacute;bitos'   ,'debitos' );
+		$grid->column('Cr&eacute;ditos'  ,'creditos');
+		$grid->column('Saldo'     ,'saldo'   );
+		$grid->column('Abonados'  ,'abonado' );
+		$grid->column_orderby('Diferencia','diferen','diferen');
+
+		$grid->build();
+		//echo $grid->db->last_query();
+		//memowrite($grid->db->last_query());
+		$data['content'] = $grid->output;
+		$data['title']   = "<h1>Clientes con problemas de incosistencias</h1>";
+		$data["head"]    = $this->rapyd->get_head();
+		$this->load->view('view_ventanas', $data);
+	}
+	
+	function itclinconsis($proveed){
+		$this->rapyd->load("datagrid");
+		$select=array('cod_cli', 'nombre','numero',
+		"monto*(tipo_doc IN ('FC','ND','GI')) AS debitos",
+		"monto*(tipo_doc NOT IN ('FC','ND','GI')) AS creditos",
+		"monto*IF(tipo_doc IN ('FC','ND','GI'),1,-1) AS saldo",
+		"(monto-abonos)*(tipo_doc IN ('FC','ND','GI'))-(monto-abonos)*(tipo_doc='AN') AS abonado",
+		"monto*IF(tipo_doc IN ('FC','ND','GI'),1,-1)-((monto-abonos)*(tipo_doc IN ('FC','ND','GI'))-(monto-abonos)*(tipo_doc='AN')) AS diferen");
+		//(FC,ND,GI,AN)
+		$uri1 = anchor('supervisor/repomenu/reporte/modify/<#alternativo#>/','Modificar');
+		
+		$grid = new DataGrid("Clientes inconsistentes");
+		$grid->per_page = 15;
+		$grid->db->select($select);
+		$grid->db->from('smov');
+		$grid->db->where('cod_cli',$proveed);
+		$grid->db->where("tipo_doc IN ('FC','ND','GI','AN')");
+		//$grid->db->having("abs(diferen)>0.01");
+		//$grid->db->having('abs(100*diferen/saldo)>=0.05');
+		
+		$grid->column('Numero'   ,'numero' );
+		$grid->column('Cliente'   ,'cod_cli' );
+		$grid->column('Nombre'    ,'nombre'  );
+		$grid->column('D&eacute;bitos'   ,'debitos' );
+		$grid->column('Cr&eacute;ditos'  ,'creditos');
+		$grid->column('Saldo'     ,'saldo'   );
+		$grid->column('Abonados'  ,'abonado' );
+		//$grid->column('Diferencia','diferen' );
+
+		$grid->build();
+		//echo $grid->db->last_query();
+		//memowrite($grid->db->last_query());
+		$data['content'] = $grid->output;
+		$data['title']   = "<h1>Clientes con problemas de incosistencias</h1>";
+		$data["head"]    = $this->rapyd->get_head();
+		$this->load->view('view_ventanas', $data);
+	}
+}
+?>
