@@ -1,43 +1,42 @@
 <?php
 //notaentrega
-	class Snte extends Controller {
-	
-	function snte()
-	{
+class Snte extends Controller {
+
+	function snte(){
 		parent::Controller(); 
 		$this->load->library("rapyd");
-    $this->datasis->modulo_id(107,1);    
+		$this->datasis->modulo_id(107,1);
 	}
-		function index() {		
+
+	function index() {
 		$this->rapyd->load("datagrid","datafilter");
 		
 		$atts = array(
-              'width'      => '800',
-              'height'     => '600',
-              'scrollbars' => 'yes',
-              'status'     => 'yes',
-              'resizable'  => 'yes',
-              'screenx'    => '0',
-              'screeny'    => '0'
-            );		
-		
-    $scli=array(
-	  'tabla'   =>'scli',
-	  'columnas'=>array(
+		'width'      => '800',
+		'height'     => '600',
+		'scrollbars' => 'yes',
+		'status'     => 'yes',
+		'resizable'  => 'yes',
+		'screenx'    => '0',
+		'screeny'    => '0'
+		);
+		$scli=array(
+		'tabla'   =>'scli',
+		'columnas'=>array(
 		'cliente' =>'C&oacute;digo Cliente',
 		'nombre'=>'Nombre',
 		'contacto'=>'Contacto'),
-	  'filtro'  =>array('cliente'=>'C&oacute;digo Cliente','nombre'=>'Nombre'),
-	  'retornar'=>array('cliente'=>'cod_cli'),
-	  'titulo'  =>'Buscar Cliente');
-	
+		'filtro'  =>array('cliente'=>'C&oacute;digo Cliente','nombre'=>'Nombre'),
+		'retornar'=>array('cliente'=>'cod_cli'),
+		'titulo'  =>'Buscar Cliente');
+
 		$boton=$this->datasis->modbus($scli);
 		
 		$filter = new DataFilter("Filtro de Nota Entrega");
 		$filter->db->select('fecha,numero,cod_cli,nombre,stotal,gtotal,impuesto');
 		$filter->db->from('snte');
 		
-    $filter->fechad = new dateonlyField("Desde", "fechad",'d/m/Y');
+		$filter->fechad = new dateonlyField("Desde", "fechad",'d/m/Y');
 		$filter->fechah = new dateonlyField("Hasta", "fechah",'d/m/Y');
 		$filter->fechad->clause  =$filter->fechah->clause="where";
 		$filter->fechad->db_name =$filter->fechah->db_name="fecha";
@@ -46,7 +45,7 @@
 		$filter->fechah->size=$filter->fechad->size=10;
 		$filter->fechad->operator=">="; 
 		$filter->fechah->operator="<=";
-    
+
 		$filter->numero = new inputField("N&uacute;mero", "numero");
 		$filter->numero->size = 30;
 
@@ -54,49 +53,47 @@
 		$filter->factura->size = 30;
 
 
-    $filter->cliente = new inputField("Cliente","cod_cli");
-    $filter->cliente->size = 30;
+		$filter->cliente = new inputField("Cliente","cod_cli");
+		$filter->cliente->size = 30;
 		$filter->cliente->append($boton);
 
 		$filter->buttons("reset","search");
 		$filter->build();
-    
+
 		$uri = anchor('ventas/snte/dataedit/show/<#numero#>','<#numero#>');
-    $uri2 = anchor_popup('formatos/verhtml/SNTE/<#numero#>',"Ver HTML",$atts);
-    
-    
+		$uri2 = anchor_popup('formatos/verhtml/SNTE/<#numero#>',"Ver HTML",$atts);
+
 		$grid = new DataGrid();
 		$grid->order_by("numero","desc");
 		$grid->per_page = 15;  
 
 		$grid->column("N&uacute;mero"		,$uri);
-    $grid->column("Fecha"			,"<dbdate_to_human><#fecha#></dbdate_to_human>","align='center'");
-    $grid->column("Nombre"		,"nombre");
-    $grid->column("Sub.Total"	,"<number_format><#stotal#>|2</number_format>","align=right");
-    $grid->column("IVA"				,"<number_format><#impuesto#>|2</number_format>","align=right");
-    $grid->column("Total"			,"<number_format><#gtotal#>|2</number_format>","align=right");
-    $grid->column("Vista",$uri2,"align='center'");
+		$grid->column("Fecha"			,"<dbdate_to_human><#fecha#></dbdate_to_human>","align='center'");
+		$grid->column("Nombre"		,"nombre");
+		$grid->column("Sub.Total"	,"<number_format><#stotal#>|2</number_format>","align=right");
+		$grid->column("IVA"				,"<number_format><#impuesto#>|2</number_format>","align=right");
+		$grid->column("Total"			,"<number_format><#gtotal#>|2</number_format>","align=right");
+		$grid->column("Vista",$uri2,"align='center'");
 		
 		$grid->add("ventas/agregarne");
 		$grid->build();
-		
-		echo $grid->db->last_query();
+		//echo $grid->db->last_query();
 		
 		$data['content'] =$filter->output.$grid->output;
 		$data["head"]    = $this->rapyd->get_head();
 		$data['title']   ='<h1>Nota de Entrega</h1>';
 		$this->load->view('view_ventanas', $data);
 	}
-	
+
 	function dataedit(){
- 		$this->rapyd->load("dataedit","datadetalle","fields","datagrid");
- 		
- 		$formato=$this->datasis->dameval('SELECT formato FROM cemp LIMIT 0,1');
- 		$qformato='%';
- 		for($i=1;$i<substr_count($formato, '.')+1;$i++) $qformato.='.%';
- 		$this->qformato=$qformato;
- 		
- 		 	$modbus=array(
+		$this->rapyd->load("dataedit","datadetalle","fields","datagrid");
+		
+		$formato=$this->datasis->dameval('SELECT formato FROM cemp LIMIT 0,1');
+		$qformato='%';
+		for($i=1;$i<substr_count($formato, '.')+1;$i++) $qformato.='.%';
+		$this->qformato=$qformato;
+		
+			$modbus=array(
 			'tabla'   =>'sinv',
 			'columnas'=>array(
 			'codigo' =>'C&oacute;digo',
@@ -106,7 +103,7 @@
 			'retornar'=>array('codigo'=>'codigo<#i#>','descrip'=>'desca<#i#>'),
 			'p_uri'=>array(4=>'<#i#>'),
 			'titulo'  =>'Buscar Articulo');
-		
+
 			$mSCLId=array(
 			'tabla'   =>'scli',
 			'columnas'=>array(
@@ -119,8 +116,8 @@
 			'titulo'  =>'Buscar Cliente');
 		
 		$boton =$this->datasis->modbus($mSCLId);
- 		//Script necesario para totalizar los detalles
- 		
+		//Script necesario para totalizar los detalles
+		
 		$fdepar = new dropdownField("ccosto", "ccosto");    
 		$fdepar->options("SELECT depto,descrip FROM dpto WHERE tipo='G' ORDER BY descrip");
 		$fdepar->status='create';
@@ -132,22 +129,22 @@
  		
  		$uri=site_url("/contabilidad/casi/dpto/");
 
- 		$script='
- 		function totalizar(){
- 			monto=debe=haber=0;
- 			amonto=$$(\'input[id^="monto"]\');
+		$script='
+		function totalizar(){
+			monto=debe=haber=0;
+			amonto=$$(\'input[id^="monto"]\');
 			for(var i=0; i<amonto.length; i++) {
-    		valor=parseFloat(amonto[i].value);
-    		if (isNaN(valor))
+		valor=parseFloat(amonto[i].value);
+		if (isNaN(valor))
 					valor=0.0;
 				if (valor>0)
-    			haber=haber+valor;
-    		else{
-    			valor=valor*(-1);
-    			debe=debe+valor;
-    		}
+			haber=haber+valor;
+		else{
+			valor=valor*(-1);
+			debe=debe+valor;
+		}
 				$("haber").value=haber;
-    		$("debe").value=debe;
+		$("debe").value=debe;
 				$("total").value=haber-debe;
 			}
 		}
@@ -189,7 +186,7 @@
 		$edit->numero->mode="autohide";
 		$edit->numero->maxlength=8;
 		
-    $edit->nombre = new inputField("Nombre", "nombre");
+		$edit->nombre = new inputField("Nombre", "nombre");
 		$edit->nombre->size = 55;
 		$edit->nombre->maxlength=40;   
 		
@@ -295,12 +292,12 @@
 		$data['title']   = '<h1>Nota de Entrega</h1>';
 		$this->load->view('view_ventanas', $data);
 	}
-	
-	function dpto() {		
+
+	function dpto() {
 		$this->rapyd->load("dataform");
 		$campo='ccosto'.$this->uri->segment(4);
- 		$script='
- 		function pasar(){
+		$script='
+		function pasar(){
 			if($F("departa")!="-!-"){
 				window.opener.document.getElementById("'.$campo.'").value = $F("departa");
 				window.close();
@@ -323,7 +320,7 @@
 		$this->load->view('view_detalle', $data);
 	}
 
-		function _guarda_detalle($do) {
+	function _guarda_detalle($do) {
 		$cant=$this->input->post('cant_0');
 		$i=$o=0;
 		while($o<$cant){
@@ -351,25 +348,28 @@
 			$i++;
 		}
 	}
-		function _actualiza_detalle($do){
+
+	function _actualiza_detalle($do){
 		$this->_borra_detalle($do);
 		$this->_guarda_detalle($do);
 	}
-		function _borra_detalle($do){
+
+	function _borra_detalle($do){
 		$numero=$do->get('numero');
 		$sql = "DELETE FROM itsnte WHERE numero='$numero'";
 		$this->db->query($sql);
 	}
-		function _pre_insert($do){
+
+	function _pre_insert($do){
 		$sql    = 'INSERT INTO ntransa (usuario,fecha) VALUES ("'.$this->session->userdata('usuario').'",NOW())';
-    $query  =$this->db->query($sql);
-    $transac=$this->db->insert_id();
-    
+		$query  =$this->db->query($sql);
+		$transac=$this->db->insert_id();
+
 		$sql    = 'INSERT INTO nsnte (usuario,fecha) VALUES ("'.$this->session->userdata('usuario').'",NOW())';
-    $query  =$this->db->query($sql);
-    $numero =str_pad($this->db->insert_id(),8, "0", STR_PAD_LEFT);
-    
-    $do->set('numero', $numero);
+		$query  =$this->db->query($sql);
+		$numero =str_pad($this->db->insert_id(),8, "0", STR_PAD_LEFT);
+
+		$do->set('numero', $numero);
 		$do->set('transac', $transac);
 		$do->set('estampa', 'CURDATE()', FALSE);
 		$do->set('hora'   , 'CURRENT_TIME()', FALSE);
