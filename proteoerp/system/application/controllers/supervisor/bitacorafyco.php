@@ -7,6 +7,7 @@ class bitacorafyco extends Controller {
 		$this->load->library("menues");
 		define ("THISFILE",   APPPATH."controllers/ventas/". $this->uri->segment(2).EXT);
 		$this->datasis->modulo_id(907,1);
+		$this->load->database();
 	}
 
 	function index(){ 
@@ -39,21 +40,23 @@ class bitacorafyco extends Controller {
 		$link=anchor_popup('supervisor/bitacorafyco/resumen', 'Ver Promedio de &eacute;xitos', $atts);
 
 		$filter = new DataFilter2("Filtro de Bit&aacute;cora ($link)");
-		$select=array("a.asignacion","a.actividad","a.fecha","a.hora","a.nombre","a.comentario","a.id","if(revisado='P','Pendiente',if(revisado='B','Bueno',if(revisado='C','Consulta',if(revisado='F','Fallo','sin revision')))) revisado");
+		$select=array("a.asignacion","a.horac","a.actualizado","a.actividad","a.fecha","a.hora","a.nombre","a.comentario","a.id","if(revisado='P','Pendiente',if(revisado='B','Bueno',if(revisado='C','Consulta',if(revisado='F','Fallo','sin revision')))) revisado");
 		
 		$filter->db->select($select);
 		$filter->db->from('bitacora as a');
-		$filter->db->orderby('fecha,hora desc');
+		//$filter->db->orderby('a.actualizado,horac desc');
 		
-    $filter->fechad = new dateonlyField("Desde", "fechad",'d/m/Y');
-		$filter->fechah = new dateonlyField("Hasta", "fechah",'d/m/Y');
+    $filter->fechad = new dateonlyField("Fecha Desde", "fechad",'d/m/Y');
+		$filter->fechah = new dateonlyField("Fecha Hasta", "fechah",'d/m/Y');
 		$filter->fechad->clause  =$filter->fechah->clause="where";
 		$filter->fechad->db_name =$filter->fechah->db_name="a.fecha";
-		$filter->fechad->insertValue = date("Y-m-d"); 
-		$filter->fechah->insertValue = date("Y-m-d"); 
+		//$filter->fechad->insertValue = date("Y-m-d"); 
+		//$filter->fechah->insertValue = date("Y-m-d"); 
 		$filter->fechah->size=$filter->fechad->size=10;
 		$filter->fechad->operator=">="; 
 		$filter->fechah->operator="<=";
+		$filter->fechah->group="Fecha";
+		$filter->fechad->group="Fecha";
 		
 		$filter->revisado = new dropdownField("Revisado", "revisado");
 		$filter->revisado->option("","Todos");
@@ -62,41 +65,65 @@ class bitacorafyco extends Controller {
 		$filter->revisado->option("B","Buenos"); 
 		$filter->revisado->option("C","Consulta"); 
 				
-		$filter->usuario = new inputField("Asignado", "a.asignacion");
+		$filter->usuario = new inputField("Asignado", "asignacion");
 		$filter->usuario->size=11;
 		$filter->usuario->append($this->datasis->modbus($modbus));
+		$filter->usuario->db_name="asignacion";
 
 		$filter->actividad = new inputField("Actividad", "a.actividad");
 		$filter->actividad->clause ="likesensitive";
 		$filter->actividad->append("Sencible a las Mayusc&uacute;las");
 		
+		$filter->actualizadod = new dateonlyField("Actualizado Desde", "fechad",'d/m/Y');
+		$filter->actualizadoh = new dateonlyField("Actualizado Hasta", "fechah",'d/m/Y');
+		$filter->actualizadod->clause  =$filter->actualizadoh->clause="where";
+		$filter->actualizadod->db_name =$filter->actualizadoh->db_name="a.actualizado";
+		//$filter->actualizadod->insertValue = date("Y-m-d"); 
+		//$filter->actualizadoh->insertValue = date("Y-m-d"); 
+		$filter->actualizadoh->size=$filter->actualizadod->size=10;
+		$filter->actualizadod->operator=">="; 
+		$filter->actualizadoh->operator="<=";
+		$filter->actualizadoh->group="Actualizacion";
+		$filter->actualizadod->group="Actualizacion";
+		
 		$filter->buttons("reset","search");
 		$filter->build();
-		$uri = "supervisor/bitacorafyco/dataedit/show/<#id#>";
+		
+		$uri = anchor("supervisor/bitacorafyco/dataedit/show/<#id#>","<#id#>");
 		$link1=anchor_popup('supervisor/bitacorafyco/resultados/<#id#>/create', 'Ver', $atts);
 		$link2=anchor_popup('supervisor/bitacorafyco/reciente/', 'Actividad Reciente', $atts);
+		
+		function colum($id='',$id2=''){
+  			if ($id==$id2)
+						return ('<b style="color:green;">'.$id.'</b>');
+					else
+						return ($id);
+			}
 
 		$grid = new DataGrid("Lista de Actividades");
-		$grid->order_by("fecha","desc");
+		$grid->order_by("a.actualizado","desc");
 		$grid->per_page = 10;
 		$grid->use_function('colum');
-		$link=anchor($uri, "<dbdate_to_human><#fecha#></dbdate_to_human>");
-		
-		function colum($id){
-			if ($id=='2')
-				return ('<b style="color:green;">'.$id.'</b>');
-			else
-				return ('<b style="color:red;">'.$id.'</b>');
-		}
-		
-		$grid->column("Fecha",$link);
-		$grid->column("Hora","hora");
+
+		$grid->column("Nº",$uri);					  
+		$grid->column("Fecha","<dbdate_to_human><#fecha#></dbdate_to_human>");
+		$grid->column("Hora","horac");
+		$grid->column("Actualizado","<dbdate_to_human><#actualizado#></dbdate_to_human>");
 		$grid->column("Nombre","nombre");
 		$grid->column("Actividad realizada","actividad");
 		//$grid->column("Resultado","evaluacion");
 		$grid->column("Revisado","revisado");
 		$grid->column("Asignado","asignacion");
-		$grid->column("Nº","<colum><#id#></colum>","align='center'");
+		
+		//$Sql="SELECT a.id,b.actividad FROM bitacora as a JOIN itbitacora as b on a.id=b.actividad GROUP BY actividad ORDER BY a.id DESC LIMIT 5";
+		//echo $Sql;
+		//$mSQL_1=  $this->db->query($Sql);
+		//$data['result']=$mSQL_1->result();	
+		//			
+		//foreach ($data['result'] AS $items){
+		//				$id2=$items->id;						
+		//	}
+		//$grid->column("Nº","<colum><#id#>|$id2</colum>","align='center'");
 		$grid->column("Resultados",$link1,"align='center'");
 				
 		$grid->add("supervisor/bitacorafyco/dataedit/create");
@@ -105,14 +132,13 @@ class bitacorafyco extends Controller {
 		$data["crud"] = $filter->output.$grid->output;
 		$data["titulo"] = 'Bit&aacute;cora de bitacorafyco';
 		
-		echo $filter->db->last_query();
+		//echo $filter->db->last_query();
 		
 		$data['content'] =$filter->output.'<pre>'.$link2.'</pre>'.$grid->output;
 		$data["head"]    = $this->rapyd->get_head();
 		$data['title']   ='<h1>Control de Bit&aacute;cora</h1>';
 		$this->load->view('view_ventanas', $data);
 	}
-
 	function dataedit(){ 
 		$this->rapyd->load("dataedit");
 		$usr=$this->session->userdata['usuario'];
@@ -195,6 +221,7 @@ class bitacorafyco extends Controller {
 		
 		$edit = new DataEdit("Agregar", "itbitacora");
 		$edit->back_url = site_url("supervisor/bitacorafyco/filteredgrid");
+		$edit->pre_process('insert','_pre_insert');
 		
 		$edit->_dataobject->db->set('usuario', $this->session->userdata('usuario'));
 		$edit->_dataobject->db->set('hora'   , 'CURRENT_TIME()', FALSE);
@@ -251,6 +278,7 @@ class bitacorafyco extends Controller {
 
 		$filter->buttons("search");
 		$filter->build();
+		
 		$uri = "supervisor/bitacorafyco/dataedit/show/<#id#>";
 		$salida=$filter->output;
 		if (!empty($filter->actividad->newValue)){
@@ -394,5 +422,25 @@ class bitacorafyco extends Controller {
 		) ENGINE=MyISAM AUTO_INCREMENT=524 DEFAULT CHARSET=latin1";
 		$this->db->simple_query($mSQL);
 	}
-}
+	function _pre_insert($do){
+			$actividad=$do->get('actividad');
+			$mSQL="UPDATE bitacora SET actualizado=CURDATE(),horac=CURTIME() WHERE id=$actividad";
+			$this->db->simple_query($mSQL);
+	}
+} 
 ?>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  

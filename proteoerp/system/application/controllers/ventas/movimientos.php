@@ -11,7 +11,7 @@ class movimientos extends Controller {
 		redirect ('ventas/movimientos/diarios');
 	}
 	function diarios(){
-		$this->rapyd->load("datafilter","datagrid");
+		$this->rapyd->load("datafilter","datagrid2");
 		$this->rapyd->load("datatable");
 		$this->load->library('msql');
 		
@@ -41,7 +41,7 @@ class movimientos extends Controller {
   		$fechad=$filter->fechad->newValue;
   		$fechah=$filter->fechah->newValue;
   				  								
-			$grid = new DataGrid("Resultados de Clientes");
+			$grid = new DataGrid2("Resultados de Clientes");
 			$select=array("fecha","tipo_doc","numero","cod_cli as codigo","nombre","monto","impuesto","abonos","banco","tipo_ref as tipo","num_ref as numche");  
 			$grid->db->select($select);
 			$grid->db->from("smov");
@@ -59,12 +59,14 @@ class movimientos extends Controller {
 			$grid->column("Banco","banco");
 			$grid->column("Doc.","tipo");
 			$grid->column("Num.Doc.","numche");
+			
+			$grid->totalizar('monto','impuesto','abonos');
 
 			$grid->build();		
 			$cliente=$grid->output;
 			//echo $grid->db->last_query(); 
 			
-			$grid2 = new DataGrid("Resultados de Proveedores");
+			$grid2 = new DataGrid2("Resultados de Proveedores");
 			$select=array("fecha","tipo_doc","numero","cod_prv as codigo","nombre","monto","impuesto","abonos","banco","tipo_op as tipo","numche");  
 			$grid2->db->select($select);
 			$grid2->db->from("sprm");
@@ -82,6 +84,8 @@ class movimientos extends Controller {
 			$grid2->column("Banco","banco");
 			$grid2->column("Doc.","tipo");
 			$grid2->column("Num. Doc.","numche");
+			
+			$grid2->totalizar('monto','impuesto','abonos');
 
 			$grid2->build();		
 			$proveedor=$grid2->output;							
