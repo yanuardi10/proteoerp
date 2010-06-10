@@ -231,6 +231,15 @@ class Importar extends Controller {
 		}
 	}
 
+	function traemaesalma($fecha=null,$sucu,$alma){
+		if(isset($_SERVER['argv']) && !isset($_SERVER['SERVER_NAME'])){ //asegura que se ejecute desde shell
+			if(empty($fecha)) $fecha = date('Ymd');
+			$rt=$this->_maesalma($sucu,$fecha,$alma);
+			echo $rt;
+		}
+	}
+
+
 //**************************
 //Metodos para traer data
 //**************************
@@ -276,13 +285,16 @@ class Importar extends Controller {
 		$rt=$this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/maes/'.$fecha,'maes');
 		return $rt;
 	}
-	
-	
 
+	function _maesalma($sucu,$fecha=null,$alma=null){
+		set_time_limit(600);
+		$rt=$this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/maesalma/'.$fecha.'/'.$alma,'maesalma');
+		return $rt;
+	}
 
 //***********************
 //  Metodos de Chequeo
-//***********************	
+//***********************
 	function __chekfecha($fecha){
 		if(is_numeric($fecha) AND $fecha>10000000){
 			$anio=substr($fecha,0,4);
@@ -296,7 +308,7 @@ class Importar extends Controller {
 
 //***********************
 //  Metodos Generales
-//***********************	
+//***********************
 	function __traerzip($sucu,$dir_url,$iden=null){
 		$ssucu = $this->db->escape($sucu);
 		$cc    = $this->datasis->dameval("SELECT COUNT(*) FROM sucu WHERE codigo=$ssucu");
@@ -304,6 +316,7 @@ class Importar extends Controller {
 		set_time_limit(600);
 		$this->load->library('Sqlinex');
 		$sucu  = $this->db->escape($sucu);
+		
 		$query = $this->db->query("SELECT * FROM sucu WHERE codigo=$sucu");
 		$fecha = date('Ymd');
 		$error='';
@@ -314,7 +327,7 @@ class Importar extends Controller {
 			$url=$row->url;
 			$url=$row->url.'/'.$row->proteo.'/'.$dir_url;
 			$url=reduce_double_slashes($url);
-
+//echo 'http://'.$url;
 			$ch = curl_init('http://'.$url);
 			$tmpfname = tempnam($dir, "cargagen");
 
@@ -329,14 +342,14 @@ class Importar extends Controller {
 
 			if(!empty($error)){
 				$atts = array(
-              'width'      => '800',
-              'height'     => '600',
-              'scrollbars' => 'yes',
-              'status'     => 'yes',
-              'resizable'  => 'yes',
-              'screenx'    => '0',
-              'screeny'    => '0'
-            );
+				    'width'      => '800',
+				    'height'     => '600',
+				    'scrollbars' => 'yes',
+				    'status'     => 'yes',
+				    'resizable'  => 'yes',
+				    'screenx'    => '0',
+				    'screeny'    => '0'
+				);
 				
 				$link=anchor_popup('sincro/importar/uitrae/'.$iden,'traer manual',$atts);
 				$data['padre']      ='S';

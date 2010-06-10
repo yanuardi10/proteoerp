@@ -112,7 +112,14 @@ class Exportar extends Controller {
 			return false;
 		}
 		
-		$this->$obj($fecha);
+		$opcionales=array();
+		for($i=7;$i<12;$i++){
+			$opt=$this->uri->segment($i);
+			if($opt!==false){
+				$opcionales[]=$opt;
+			}else break;
+		}
+		$this->$obj($fecha,$opcionales);
 	}
 
 //***********************
@@ -132,7 +139,7 @@ class Exportar extends Controller {
 //***********************
 // Metodos para exportar
 //***********************
-	function _sinv($fecha){
+	function _sinv($fecha,$opt=null){
 		set_time_limit(600);
 		$this->load->library("sqlinex");
 		$data[]=array('table' => 'dpto');
@@ -148,7 +155,7 @@ class Exportar extends Controller {
 		$this->sqlinex->exportunbufferzip($data,$nombre,$this->sucu);
 	}
 
-	function _transacciones($fecha){
+	function _transacciones($fecha,$opt=null){
 		set_time_limit(600);
 		$this->load->library("sqlinex");
 
@@ -188,7 +195,7 @@ class Exportar extends Controller {
 		$this->sqlinex->exportunbufferzip($data,$nombre,$this->sucu);
 	}
 
-	function _scli($fecha){
+	function _scli($fecha,$opt=null){
 		set_time_limit(600);
 		$this->load->library("sqlinex");
 		$this->sqlinex->ignore   =TRUE;
@@ -201,7 +208,7 @@ class Exportar extends Controller {
 		$this->sqlinex->exportunbufferzip($data,$nombre,$this->sucu);
 	}
 
-	function _smov($fecha){
+	function _smov($fecha,$opt=null){
 		set_time_limit(600);
 		$this->load->library("sqlinex");
 		$this->sqlinex->ignore   =TRUE;
@@ -213,7 +220,7 @@ class Exportar extends Controller {
 		$this->sqlinex->exportunbufferzip($data,'smov_'.$this->sucu,$this->sucu);
 	}
 
-	function _fiscalz($fecha){
+	function _fiscalz($fecha,$opt=null){
 		set_time_limit(600);
 		$this->load->library("sqlinex");
 		$this->sqlinex->ignore   =TRUE;
@@ -228,7 +235,7 @@ class Exportar extends Controller {
 	
 	//Para supermercado
 	
-	function _supertransa($fecha){
+	function _supertransa($fecha,$opt=null){
 		set_time_limit(600);
 		$this->load->library("sqlinex");
 		
@@ -257,7 +264,7 @@ class Exportar extends Controller {
 
 	}
 
-	function _maes($fecha){
+	function _maes($fecha,$opt=null){
 		$this->load->library("sqlinex");
 		$data[]=array('table'  =>'dpto');
 		$data[]=array('table'  =>'fami');
@@ -271,7 +278,7 @@ class Exportar extends Controller {
 		$this->sqlinex->exportunbufferzip($data,$nombre,$this->sucu);
 	}
 
-	function _rcaj($fecha){
+	function _rcaj($fecha,$opt=null){
 		set_time_limit(600);
 		$prefijo=str_pad($this->prefijo,8,'0');
 		//$cant=strlen($this->prefijo);
@@ -283,6 +290,28 @@ class Exportar extends Controller {
 		                'where' => "fecha >= $fecha");
 
 		$nombre='rcaj_'.$fecha.'_'.$this->sucu;
+		if(!array_key_exists('HTTP_USER_AGENT', $_SERVER)) $_SERVER['HTTP_USER_AGENT']='curl';
+		$this->sqlinex->exportunbufferzip($data,$nombre,$this->sucu);
+	}
+
+	function _maesalma($fecha,$opt=null){
+		if(empty($opt)) return false;
+		$this->load->library("sqlinex");
+		$dbalma=$this->db->escape($opt[0]);
+		$data[]=array('table'  =>'dpto');
+		$data[]=array('table'  =>'fami');
+		$data[]=array('table'  =>'grup');
+		$data[]=array(
+			'distinc'   =>true,
+			'select'    =>'maes.*',
+			'table'     =>'maes',
+			'join'      =>array(0 => array('table'=>'ittran','on'=>'ittran.codigo=maes.codigo')),
+			//'wherejoin' =>"ittran.fecha>=$fecha AND ittran.recibe=$dbalma"
+			'wherejoin' =>"ittran.recibe=$dbalma"
+		);
+		$fecha=date('d-m-Y');
+
+		$nombre='maesalma_'.$opt[0].'_'.$fecha.'_'.$this->sucu;
 		if(!array_key_exists('HTTP_USER_AGENT', $_SERVER)) $_SERVER['HTTP_USER_AGENT']='curl';
 		$this->sqlinex->exportunbufferzip($data,$nombre,$this->sucu);
 	}
