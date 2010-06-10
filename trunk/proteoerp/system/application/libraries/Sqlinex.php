@@ -9,6 +9,8 @@ class Sqlinex{
 	function Sqlinex(){
 		$this->ci =& get_instance();
 		$this->ci->load->helper('xml');
+		$this->ci->db->_escape_char='';
+		$this->ci->db->_protect_identifiers=false; 
 		$this->separador='-#-';
 		$this->ignore   =false;
 		$this->limpiar  =true;
@@ -121,7 +123,7 @@ class Sqlinex{
 			//echo $mSQL;
 			$this->ci->db->_reset_select();
 			//$query = $this->ci->db->get();
-		
+			//memowrite($mSQL);
 			$query=mysql_unbuffered_query($mSQL,$this->ci->db->conn_id);
 
 			if ($query!==false){
