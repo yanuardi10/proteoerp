@@ -44,7 +44,7 @@ class Sqlinex{
 		foreach($datas AS $data){
 			if(isset($data['select']) AND count($data['select'])>0 )$this->ci->db->select($data['select']);
 			if(isset($data['where'])) $this->ci->db->where($data['where'],NULL,FALSE); else $data['where']='';
-			if(isset($data['distinc']) AND $data['distinc']) $this->db->distinct();
+			if(isset($data['distinc']) AND $data['distinc']) $this->ci->db->distinct();
 
 			$this->ci->db->from($data['table']);
 			$query = $this->ci->db->get();
@@ -116,14 +116,22 @@ class Sqlinex{
 		foreach($datas AS $data){
 			if(isset($data['select']) AND count($data['select'])>0 )$this->ci->db->select($data['select']);
 			if(isset($data['where'])) $this->ci->db->where($data['where'],NULL,FALSE); else $data['where']='';
-			if(isset($data['distinc']) AND $data['distinc']) $this->db->distinct();
+			if(isset($data['distinc']) AND $data['distinc']) $this->ci->db->distinct();
+			
+			if(isset($data['join']) AND is_array($data['join'])){
+				foreach($data['join'] AS $ddata){
+					if(isset($ddata['side'])) $side=$ddata['side']; else $side=null;
+					$this->ci->db->join($ddata['table'],$ddata['on'],$side);
+				}
+			}
+			if(isset($data['wherejoin'])) $this->ci->db->where($data['wherejoin'],NULL,FALSE);
 
 			$this->ci->db->from($data['table']);
 			$mSQL=$this->ci->db->_compile_select();
 			//echo $mSQL;
 			$this->ci->db->_reset_select();
 			//$query = $this->ci->db->get();
-			//memowrite($mSQL);
+			memowrite($mSQL);
 			$query=mysql_unbuffered_query($mSQL,$this->ci->db->conn_id);
 
 			if ($query!==false){
