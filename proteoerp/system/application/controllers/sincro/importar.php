@@ -239,6 +239,15 @@ class Importar extends Controller {
 		}
 	}
 
+	function traetranalma($fecha=null,$sucu,$alma){
+		if(isset($_SERVER['argv']) && !isset($_SERVER['SERVER_NAME'])){ //asegura que se ejecute desde shell
+			if(empty($fecha)) $fecha = date('Ymd');
+			$rt=$this->_tranalma($sucu,$fecha,$alma);
+			echo $rt;
+		}
+	}
+
+
 
 //**************************
 //Metodos para traer data
@@ -283,6 +292,12 @@ class Importar extends Controller {
 	function _maes($sucu,$fecha=null){
 		set_time_limit(600);
 		$rt=$this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/maes/'.$fecha,'maes');
+		return $rt;
+	}
+
+	function _tranalma($sucu,$fecha=null,$alma=null){
+		set_time_limit(600);
+		$rt=$this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/tranalma/'.$fecha.'/'.$alma,'maesalma');
 		return $rt;
 	}
 
