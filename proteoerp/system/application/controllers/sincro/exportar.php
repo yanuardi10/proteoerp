@@ -323,6 +323,9 @@ class Exportar extends Controller {
 	function _tranalma($fecha,$opt=null){
 		if(empty($opt)) return false;
 		$this->load->library("sqlinex");
+		$this->sqlinex->ignore   =TRUE;
+		$this->sqlinex->limpiar  =FALSE;
+
 		$dbalma=$this->db->escape($opt[0]);
 		$data[]=array('table'  =>'ittran',
 			'where'=>"recibe=$dbalma AND fecha>=$fecha"
