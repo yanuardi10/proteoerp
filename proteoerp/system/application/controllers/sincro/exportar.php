@@ -294,6 +294,10 @@ class Exportar extends Controller {
 		$this->sqlinex->exportunbufferzip($data,$nombre,$this->sucu);
 	}
 
+//***********************
+// Metodos dependientes 
+//     del almacen
+//***********************
 	function _maesalma($fecha,$opt=null){
 		if(empty($opt)) return false;
 		$this->load->library("sqlinex");
@@ -312,6 +316,22 @@ class Exportar extends Controller {
 		$fecha=date('d-m-Y');
 
 		$nombre='maesalma_'.$opt[0].'_'.$fecha.'_'.$this->sucu;
+		if(!array_key_exists('HTTP_USER_AGENT', $_SERVER)) $_SERVER['HTTP_USER_AGENT']='curl';
+		$this->sqlinex->exportunbufferzip($data,$nombre,$this->sucu);
+	}
+
+	function _tranalma($fecha,$opt=null){
+		if(empty($opt)) return false;
+		$this->load->library("sqlinex");
+		$dbalma=$this->db->escape($opt[0]);
+		$data[]=array('table'  =>'ittran',
+			'where'=>"recibe=$dbalma AND fecha>=$fecha"
+		);
+		$data[]=array('table'  =>'tran',
+			'where'=>"recibe=$dbalma AND fecha>=$fecha"
+		);
+
+		$nombre='tranalma_'.$opt[0].'_'.$fecha.'_'.$this->sucu;
 		if(!array_key_exists('HTTP_USER_AGENT', $_SERVER)) $_SERVER['HTTP_USER_AGENT']='curl';
 		$this->sqlinex->exportunbufferzip($data,$nombre,$this->sucu);
 	}
