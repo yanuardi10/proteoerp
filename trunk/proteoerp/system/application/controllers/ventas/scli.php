@@ -25,7 +25,7 @@ class Scli extends validaciones {
 		$filter->nombre= new inputField("Nombre"  , "nombre");
 		
 		$filter->grupo = new dropdownField("Grupo", "grupo");
-		$filter->grupo->option("","");
+		$filter->grupo->option("","Todos");
 		$filter->grupo->options("SELECT grupo, gr_desc FROM grcl ORDER BY gr_desc");
 		
 		$filter->buttons("reset","search");
@@ -111,10 +111,7 @@ class Scli extends validaciones {
 					$("#riffis").val(vrif);
 					window.open("'.$consulrif.'"+"?p_rif="+vrif,"CONSULRIF","height=350,width=410");
 				}
-		}
-
-		
-		';
+		}';
 		
 
 		$edit = new DataEdit("Clientes", "scli");
@@ -169,7 +166,7 @@ class Scli extends validaciones {
 		
 		$edit->ciudad1 = new dropdownField("Ciudad","ciudad1");
 		$edit->ciudad1->rule = "trim";
-		$edit->ciudad1->option("","");
+		$edit->ciudad1->option("","Seleccionar");
 		$edit->ciudad1->options("SELECT ciudad codigo, ciudad FROM ciud ORDER BY ciudad");
 		$edit->ciudad1->maxlength = 40;
 		$edit->ciudad1->size = 60;
@@ -192,7 +189,7 @@ class Scli extends validaciones {
 		$edit->ciudad2->size = 60;
 		
 		$edit->repre  = new inputField("Representante Legal", "repre");
-		$edit->repre->rule = "trim";                                     
+		$edit->repre->rule = "trim";
 		$edit->repre->maxlength =30;
 		$edit->repre->size = 40;
 		
@@ -216,13 +213,13 @@ class Scli extends validaciones {
 		
 		$edit->nomfis = new inputField("Nombre Fiscal", "nomfis");
 		$edit->nomfis->rule = "trim";
-		$edit->nomfis->size=70;     
-		$edit->nomfis->maxlength =80; 
+		$edit->nomfis->size=70;
+		$edit->nomfis->maxlength =80;
 		$edit->nomfis->group = "Informaci&oacute;n fiscal";
 		
 		$lriffis='<a href="javascript:consulrif(\'riffis\');" title="Consultar RIF en el SENIAT" onclick="">Consultar RIF en el SENIAT</a>';
 		$edit->riffis = new inputField("RIF Fiscal", "riffis");
-		$edit->riffis->size = 13;                  
+		$edit->riffis->size = 13;
 		$edit->riffis->maxlength =10; 
 		$edit->riffis->rule = "trim|callback_chrif";
 		$edit->riffis->append($lriffis);
@@ -238,10 +235,10 @@ class Scli extends validaciones {
 		$edit->pais->size =40;
 		$edit->pais->maxlength =30;
 
-		$edit->email  = new inputField("E-mail", "email");
+		$edit->email = new inputField("E-mail", "email");
 		$edit->email->rule = "trim|valid_email";
 		$edit->email->size =28;
-		$edit->email->maxlength =18;
+		$edit->email->maxlength =100;
 		
 		$edit->cuenta = new inputField("Cuenta contable", "cuenta");
 		$edit->cuenta->rule='trim|callback_chcuentac';
@@ -266,7 +263,7 @@ class Scli extends validaciones {
 		
 		$edit->formap = new inputField("D&iacute;as de Cr&eacute;dito", "formap");
 		$edit->formap->css_class='inputnum';
-		$edit->formap->rule="integer|trim";
+		$edit->formap->rule="trim|integer";
 		$edit->formap->maxlength =10;
 		$edit->formap->size =6;
 		$edit->formap->group = "Informaci&oacute;n financiera";
@@ -277,10 +274,10 @@ class Scli extends validaciones {
 		$edit->limite->maxlength =15;
 		$edit->limite->size = 20;
 		$edit->limite->group = "Informaci&oacute;n financiera";
-			
+		
 		$edit->vendedor = new dropdownField("Vendedor", "vendedor");
 		$edit->vendedor->option("","Ninguno");
-		$edit->vendedor->options("SELECT vendedor, nombre FROM vend WHERE tipo IN ('V','A') ORDER BY nombre");
+		$edit->vendedor->options("SELECT vendedor, CONCAT(vendedor,'-',nombre) AS nom FROM vend WHERE tipo IN ('V','A') ORDER BY vendedor");
 		$edit->vendedor->group = "Informaci&oacute;n financiera";
 
 		$edit->porvend = new inputField("% Comisi&oacute;n venta", "porvend");
@@ -395,7 +392,10 @@ class Scli extends validaciones {
 		$this->db->simple_query($mSQL);
 		$mSQL='ALTER TABLE scli ADD id INT AUTO_INCREMENT PRIMARY KEY';
 		$this->db->simple_query($mSQL);
-                
+		$mSQL='ALTER TABLE `scli`  CHANGE COLUMN `formap` `formap` INT(6) NULL DEFAULT 0';
+		$this->db->simple_query($mSQL);
+		$mSQL='ALTER TABLE `scli`  CHANGE COLUMN `email` `email` VARCHAR(100) NULL DEFAULT NULL';
+		$this->db->simple_query($mSQL);
 	}
 }
 ?>
