@@ -5,7 +5,7 @@ class pfacdespfyco extends Controller {
 	{
 		parent::Controller(); 
 		$this->load->library("rapyd");
-		$this->datasis->modulo_id(111,1);    
+		//$this->datasis->modulo_id(111,1);    
 		define ("THISFILE",   APPPATH."controllers/ventas/". $this->uri->segment(2).EXT);
 	}
 	function index(){
@@ -17,6 +17,19 @@ class pfacdespfyco extends Controller {
 		$this->load->library('encrypt');
 		$this->load->helper('form');
 
+		function ractivo($despacha,$numero){
+		 $retorna= array(
+    			'name'        => $despacha,
+    			'id'          => $numero,
+    			'value'       => 'accept'
+    			);
+		 if($despacha=='S'){
+				$retorna['checked']= TRUE;
+			}else{
+				$retorna['checked']= FALSE;
+			}
+			return form_checkbox($retorna);
+		}
 
 		$atts = array(
 		      'width'      => '800',
@@ -29,19 +42,15 @@ class pfacdespfyco extends Controller {
 		    );
 		    
 		$filter = new DataFilter("Filtro");
-		$select=array("a.tipo_doc as tipoa","IF(a.tipo_doc='F','Activa',IF(a.tipo_doc='D','Devolucion',IF(a.tipo_doc='X','Anulada','Otro'))) AS tipo_doc", 
-		"a.cod_cli as cliente","a.fecha","if(a.referen='C','Cred','Cont') referen","a.numero","a.nombre","a.totalg as total","a.vd","d.nombre as vendedor");
-		$select[]="GROUP_CONCAT(e.despacha) LIKE '%S%' AS parcial";
+		
+		$select=array("a.despacha","a.fecha","a.numero","b.numa","a.cod_cli","a.rifci","a.nombre","a.status");
+		$filter = new DataFilter("Filtro","pfac");	
 		$filter->db->select($select);
-		$filter->db->from('sfac AS a');
-		$filter->db->join('snot AS c' ,'a.numero=c.factura','LEFT');
-		$filter->db->join('vend AS d' ,'a.vd=d.vendedor');
-		$filter->db->join('sitems AS e','e.numa=a.numero AND e.tipoa=a.tipo_doc'); 
-		$filter->db->groupby('a.numero,a.tipo_doc');
-		$filter->db->where('a.fdespacha IS NULL');
-		$filter->db->where('a.tipo_doc','F');
-		$filter->db->where('c.factura IS NULL');
-		$filter->db->orderby("a.fecha DESC, a.numero");
+		$filter->db->from('pfac AS a');
+		$filter->db->join('itpfac AS b','a.numero=b.numa'); 
+		$filter->db->groupby('a.numero');
+		$filter->db->where('a.despacha','N');
+		$filter->db->orderby("a.fecha DESC");
 		$filter->db->_escape_char='';           
 		$filter->db->_protect_identifiers=false;
 		
@@ -63,53 +72,45 @@ class pfacdespfyco extends Controller {
 		$uri = "ventas/cajeros/dataedit/show/<#cajero#>";
 
 		if(!$this->rapyd->uri->is_set("search")) $filter->db->where('a.fecha','CURDATE()');
-
-		function descheck($numero){
+		
+		function descheck($despacha='',$numero=''){
 			$data = array(
 			  'name'    => 'despacha[]',
 			  'id'      => $numero,
 			  'value'   => $numero,
 			  'checked' => FALSE);
-			return form_checkbox($data);
+			//return form_checkbox($data);
+			
+			if($despacha=='S'){
+				$retorna['checked']= TRUE;
+			}else{
+				$retorna['checked']= FALSE;
+			}
+			return form_checkbox($retorna);
 		}
 		
-		$seltodos='Seleccionar <a id="todos" href=# >Todos</a> <a id="nada" href=# >Ninguno</a> <a id="alter" href=# >Invertir</a>';
 
+		$seltodos='Seleccionar <a id="todos" href=# >Todos</a> <a id="nada" href=# >Ninguno</a> <a id="alter" href=# >Invertir</a>';
 		$grid = new DataGrid("$seltodos");
+		//$grid->use_function('ractivo');
 		$grid->use_function('descheck');
-		$grid->use_function('colum');
-		$grid->use_function('parcial');
+			
+    $comprobante=anchor("formatos/ver/PFACEXP/<#numero#>",'Imprimir');
+		$link=anchor_popup('ventas/pfacdespfyco/detalle/<#numero#>/','<#numero#>',$atts);
 		
-		function colum($tipo_doc) {
-			if ($tipo_doc=='Anulada')
-				return ('<b style="color:red;">'.$tipo_doc.'</b>');
-			else
-				return ($tipo_doc);
-		}
-		
-		function parcial($parcial) {
-			if ($parcial)
-				return '*';
-			else
-				return '';
-		}
-		
-    $comprobante=anchor("formatos/ver/SNOTEXP/<#tipoa#>/<#numero#>",'Imprimir');
-		$link=anchor_popup('ventas/pfacdespfyco/detalle/<#numero#>/<#tipoa#>','<#numero#>',$atts);
+		$grid->column("N&uacute;mero",$link);
 		$grid->column("Fecha","<dbdate_to_human><#fecha#></dbdate_to_human>");
-		$grid->column("Tipo","referen");
-		$grid->column("N&uacute;mero",'<parcial><#parcial#></parcial>'.$link);
-		$grid->column("Cliente","cliente");
+		$grid->column("Rif","rifci");
+		$grid->column("Cliente","cod_cli");
 		$grid->column("Nombre","nombre");
-		$grid->column("Total","<number_format><#total#>|2</number_format>","align=right");
-		$grid->column("Vendedor","vd","align=center");
-		$grid->column("Status","<colum><#tipo_doc#></colum>");
-		$grid->column("Despachado","<descheck><#numero#></descheck>","align=center"); 
-		$grid->column("Nota de Entrega",$comprobante); 
+		$grid->column("Status","status");
+		//$grid->column("Despachado", "<ractivo><#despacha#>|<#numero#>|</ractivo>",'align="center"'); 
+		$grid->column("Despachado","<descheck><#despacha#>|<#numero#></descheck>","align=center");
+		$grid->column("Comprobante",$comprobante);	
 		
 		$grid->build();
 		//echo $grid->db->last_query();
-
+		
 		$script ='<script type="text/javascript">
 		$(document).ready(function() {
 			$("#todos").click(function() { $("#adespacha").checkCheckboxes();   });
@@ -117,19 +118,12 @@ class pfacdespfyco extends Controller {
 			$("#alter").click(function() { $("#adespacha").toggleCheckboxes();  });
 		});
 		</script>';
-		$consulta =$grid->db->last_query();
-		$mSQL = $this->encrypt->encode($consulta);
-    
-		$campo="<form action='/../../proteoerp/xlsauto/repoauto2/'; method='post'>
- 		<input size='100' type='hidden' name='mSQL' value='$mSQL'>
- 		<input type='submit' value='Descargar a Excel' name='boton'/>
- 		</form>";
 
 		$attributes = array('id' => 'adespacha');
-		$data['content'] =  $filter->output.$campo;
+		$data['content'] =  $filter->output;
 		if($grid->recordCount>0)
 		$data['content'] .=form_open('ventas/pfacdespfyco/procesar',$attributes).$grid->output.form_submit('mysubmit', 'Aceptar').form_close().$script;
-		$data['title']   =  "<h1>Despacho Express</h1>";
+		$data['title']   =  "<h1>Despacho de Pedidos</h1>";
 		$data["head"]    =  script("jquery-1.2.6.pack.js");
 		$data["head"]    .= script("plugins/jquery.checkboxes.pack.js").$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
@@ -140,9 +134,9 @@ class pfacdespfyco extends Controller {
 		//print_r($_POST);
 		foreach($_POST['despacha'] as $fila){
 			$usuario = $this->session->userdata('usuario');
-			$mSQL="UPDATE sitems SET despacha='S', fdespacha=CURDATE(), udespacha='$usuario' WHERE numa='$fila' AND tipoa='F' ";
+			$mSQL="UPDATE itpfac SET cdespacha=cana,ultidespachado=cana,despacha='S', fdespacha=CURDATE(), udespacha='$usuario' WHERE numa='$fila'";
 			$this->db->simple_query($mSQL);
-			$mSQL="UPDATE sfac SET fdespacha=CURDATE(), udespacha='$usuario' WHERE numero='$fila' AND tipo_doc='F' ";
+			$mSQL="UPDATE pfac SET fdespacha=CURDATE(), udespacha='$usuario',despacha='S' WHERE numero='$fila'";
 			$this->db->simple_query($mSQL);
 		}
 		redirect("ventas/pfacdespfyco/filteredgrid/search/osp");
@@ -261,17 +255,16 @@ class pfacdespfyco extends Controller {
 		$data["head"]    .= script("plugins/jquery.checkboxes.pack.js").$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
-	function detalle($numero='',$tipoa=''){
+	function detalle($numero=''){
 			$anchor=anchor('ventas/pfacdespfyco/filteredgrid','Regresar');
-			$mSQL_1 = $this->db->query("SELECT a.numa,a.tipoa,a.codigoa,a.desca,a.cana,a.preca,a.tota,a.cdespacha,a.despacha,b.unidad,b.clave FROM sitems AS a JOIN sinv AS b ON a.codigoa=b.codigo WHERE a.numa='$numero' AND a.tipoa='$tipoa'");
+			$mSQL_1 = $this->db->query("SELECT a.numa,a.tipoa,a.codigoa,a.desca,a.cana,a.preca,a.tota,a.cdespacha,a.despacha,b.unidad,b.clave FROM itpfac AS a JOIN sinv AS b ON a.codigoa=b.codigo WHERE a.numa='$numero'");
 			$data2['detalle']= $mSQL_1->result();
 			//$data2['anchor']= $anchor; 
-			$this->load->view('view_sfacdesp', $data2);
+			$this->load->view('view_pfacdesp', $data2);
 	}
 	function guardar(){
 				
 		$numa       = $this->input->post('numa');		
-		$tipoa      = $this->input->post('tipoa');
 		$cdespacha  = $this->input->post('cdespacha');
 		$despacha   = $this->input->post('despacha');
 		$codigoa    = $this->input->post('codigoa');
@@ -280,29 +273,37 @@ class pfacdespfyco extends Controller {
 			
 		//print_r ($cdespacha);
 		//print_r ($cadespacha);
-		$cant = $this->datasis->dameval("SELECT COUNT(*)as cant FROM sitems WHERE numa='$numa' AND tipoa='$tipoa'");
+		$cant = $this->datasis->dameval("SELECT COUNT(*)as cant FROM itpfac WHERE numa='$numa'");
     
 		 $i=$o=0;
 		 
 		while($o<$cant){
-				
-			$despachado = $this->datasis->dameval("SELECT cdespacha+'$ultidespachado[$i]' as despachado FROM sitems WHERE  codigoa='$codigoa[$i]' AND numa='$numa' AND tipoa='$tipoa'");
-			$array=array('0'=>$codigoa[$i],'1'=>$cdespacha[$i],'2'=>$despacha[$i]);
-		  $mSQL_1 =$this->db->query("UPDATE sitems set ultidespachado='$ultidespachado[$i]',udespacha=$usuario,cdespacha='$despachado',despacha='$despacha[$i]',fdespacha=CURDATE() WHERE codigoa='$codigoa[$i]' AND numa='$numa' AND tipoa='F'");
+			$array=array('0'=>$codigoa[$i],'1'=>$cdespacha[$i],'2'=>$despacha[$i],'3'=>$ultidespachado[$i]);
+			$despachado = $this->datasis->dameval("SELECT cdespacha+'$ultidespachado[$i]' as despachado FROM itpfac WHERE  codigoa='$codigoa[$i]' AND numa='$numa'");
+		  $mSQL ="UPDATE itpfac set ultidespachado='$ultidespachado[$i]',udespacha=$usuario,cdespacha='$despachado',despacha='$despacha[$i]',fdespacha=CURDATE() WHERE codigoa='$codigoa[$i]' AND numa='$numa'";
+			$mSQL_1=$this->db->query($mSQL);
 			$i++;
 			$o++;
+			//echo 'Consulta :'.$mSQL;
 		}
-		redirect("ventas/pfacdespfyco/cerrar/$tipoa/$numa");
+		redirect("ventas/pfacdespfyco/cerrar/$numa");
 	}
-	function cerrar($tipoa='',$numa=''){
+	function cerrar($numa=''){
 		
 		$data['content'] ='<pre><b style="color:green;">Articulos Despachados</b></pre>';
-		$data['content'] .=$comprobante=anchor("formatos/ver/SNOTEXP/$tipoa/$numa",'<pre>Imprimir Nota de Entrega</pre>');
+		$data['content'] .=$comprobante=anchor("formatos/ver/PFACEXP/$numa",'<pre>Imprimir Nota de Entrega de Pedido</pre>');
 		$data['title']   = "<h1>Despacho Parcial</h1>";
 		$data["head"]    = script("jquery-1.2.6.pack.js");
-		$data["head"]    = script("plugins/jquery.checkboxes.pack.js").$this->rapyd->get_head();
+		$data["head"]    .= script("plugins/jquery.checkboxes.pack.js").$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 		
+	}
+	function dolar(){
+		$dolar=$this->datasis->dameval("SELECT valor FROM valores WHERE nombre='dolar'");
+		$data['content'] = '<h2>'.$dolar.'</h2>';
+		$data['title']   = "<h1>Precio del Dolar</h1>";
+		$data["head"]    = $this->rapyd->get_head();
+		$this->load->view('view_ventanas',$data);
 	}
 	function instalar(){
 		$mSQL="ALTER TABLE `sitems` ADD `cdespacha` DECIMAL NULL";
