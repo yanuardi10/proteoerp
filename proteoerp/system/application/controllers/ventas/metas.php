@@ -198,11 +198,10 @@ class metas extends Controller{
 			AND c.vd=d.vendedor JOIN vend AS e ON d.vendedor=e.vendedor 
 			WHERE a.fecha >= '20100401' AND a.fecha <= '20100431' 
 			GROUP BY b.clave,c.vd) as h";
-    	
-    
+	
 			$grid = new DataGrid("Resultados");
 			$grid->use_function('colum');
-		  $select=array("h.clave as codigo","sum(h.metasv)as metas","sum(h.ventas)as ventas","sum(h.ventas)-sum(h.metasv)as diferen","h.vendedor","h.nombrev");
+			$select=array("h.clave as codigo","sum(h.metasv)as metas","sum(h.ventas)as ventas","sum(h.ventas)-sum(h.metasv)as diferen","h.vendedor","h.nombrev");
 			$grid->db->select($select);
 			$grid->db->from("$mSQL");   
 
@@ -219,7 +218,7 @@ class metas extends Controller{
 				$grid->db->groupby("h.clave,h.vendedor");
 			}
 
-  		if($agrupar=='0'){
+		if($agrupar=='0'){
 					$grid->column("Codigo","codigo" );
 					$grid->column("Venta"  ,"<nformat><#ventas#></nformat>"      ,"align='right'");		
 					$grid->column("Metas"  ,"<#metas#>","align='right'");	
@@ -243,8 +242,9 @@ class metas extends Controller{
 		$data['content'] = $filter->output.$tabla;
 		$data['title']   = "<h1>Estado de Metas</h1>";
 		$data["head"]    = $this->rapyd->get_head();
-		$this->load->view('view_ventanas', $data);		
-}
+		$this->load->view('view_ventanas', $data);
+	}
+
 	function instalar(){
 		$mSQL="CREATE TABLE IF NOT EXISTS `metas` (
 		  `codigo` varchar(15),
@@ -253,9 +253,9 @@ class metas extends Controller{
 		  `vendedor` varchar(5),
 		  `tipo` CHAR(2),
 		  PRIMARY KEY  (`fecha`,`codigo`,`vendedor`)
-		);
-		";
-		$this->db->simple_query($mSQL);
+		)";
+		$rt=$this->db->simple_query($mSQL);
+		var_dump($rt);
 	}
 }
 ?>

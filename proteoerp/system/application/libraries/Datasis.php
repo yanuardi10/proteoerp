@@ -202,7 +202,7 @@ class Datasis {
 			$CI->db->insert('modbus');
 			$idt=$CI->db->insert_id();
 		}
-		return("<a href='javascript:void(0);' onclick=\"vent=window.open('".site_url("buscar/index/$idt/$puri")."','ventbuscar$id','width=$width,height=$height,scrollbars=Yes,status=Yes,resizable=Yes,screenx=5,screeny=5'); vent.focus(); document.body.setAttribute('onUnload','vent=window.open(\'about:blank\',\'ventbuscar$id\');vent.close();');\">".image('system-search.png',$modbus['titulo'],array('border'=>'0')).'</a>');
+		return("<a href='javascript:void(0);' onclick=\"vent=window.open('".site_url("buscar/index/$idt/$puri")."','ventbuscar$id','width=$width,height=$height,scrollbars=Yes,status=Yes,resizable=Yes,screenx=5,screeny=5'); vent.focus(); document.body.setAttribute('onUnload','if(typeof(vent)==\'object\') vent.close();');\">".image('system-search.png',$modbus['titulo'],array('border'=>'0')).'</a>');
 	}
 
 	function p_modbus($modbus,$puri='',$width=800,$height=600){
@@ -226,7 +226,7 @@ class Datasis {
 			$CI->db->insert('modbus');
 			$idt=$CI->db->insert_id();
 		}
-		return("<a href='javascript:void(0);' onclick=\"vent=window.open('".site_url("buscar/index/$idt/$puri")."','ventbuscar$id','width=$width,height=$height,scrollbars=Yes,status=Yes,resizable=Yes,screenx=5,screeny=5'); vent.focus(); document.body.setAttribute('onUnload','vent=window.open(\'about:blank\',\'ventbuscar$id\');vent.close();');\">".image('system-search.png',$modbus['titulo'],array('border'=>'0')).'</a>');
+		return("<a href='javascript:void(0);' onclick=\"vent=window.open('".site_url("buscar/index/$idt/$puri")."','ventbuscar$id','width=$width,height=$height,scrollbars=Yes,status=Yes,resizable=Yes,screenx=5,screeny=5'); vent.focus(); document.body.setAttribute('onUnload','if(typeof(vent)==\'object\') vent.close();');vent.close();');\">".image('system-search.png',$modbus['titulo'],array('border'=>'0')).'</a>');
 		//return("<a href='javascript:void(0);' onclick=\"vent=window.open('".site_url("buscar/index/$idt/$puri")."','ventbuscar$id','width=$width,height=$height,scrollbars=Yes,status=Yes,resizable=Yes,screenx=5,screeny=5'); vent.focus();\">".image('system-search.png',$modbus['titulo'],array('border'=>'0')).'</a>');
 	}
 	

@@ -10,6 +10,7 @@ $lang['alpha']			  = "El campo %s solamente puede contener car&aacute;cteres alf
 $lang['alpha_dash']		= "El campo %s solamente puede contener car&aacute;cteres alfanuméricos, underscoar, y saltos.";
 $lang['numeric']		  = "El campo %s debe contener n&uacute;meros.";
 $lang['matches']	   	= "El campo %s no es igual al campo %s.";
+$lang['integer']	   	= "El campo %s debe contener solo n&uacute;meros.";
 
 //addons
 
