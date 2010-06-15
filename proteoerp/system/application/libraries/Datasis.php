@@ -97,7 +97,7 @@ class Datasis {
 		$CI->load->database('default',TRUE);
 		if ($CI->session->userdata('logged_in')){
 			$usuario = $CI->session->userdata['usuario'];
-			$existe = $CI->datasis->dameval("SELECT COUNT(*) FROM intrasida WHERE usuario='$usuario' AND modulo='$id'");
+			$existe = $CI->datasis->dameval("SELECT COUNT(*) FROM intrasida WHERE usuario='$usuario' AND id='$id'");
 			if ($existe  > 0 )
 				return  true;
 		}
@@ -120,7 +120,7 @@ class Datasis {
 		$CI->session->set_userdata('last_activity', time());
 		if($CI->session->userdata('logged_in')){
 			$usr=$CI->session->userdata('usuario');
-			$mSQL   = "SELECT COUNT(*) FROM intrasida WHERE modulo = '$modulo' AND  usuario='$usr' AND acceso='S'";
+			$mSQL   = "SELECT COUNT(*) FROM intrasida WHERE id = '$modulo' AND  usuario='$usr' AND acceso='S'";
 			$cursor = $CI->db->query($mSQL);
 			$rr    = $cursor->row_array();
 			$sal   = each($rr);
@@ -169,6 +169,7 @@ class Datasis {
 		//$aa = each($rr);
 		return $rr;
 	}
+	
 	function get_uri(){
 		$CI =& get_instance();
 		$arr=array('formatos','reportes');
@@ -202,7 +203,20 @@ class Datasis {
 			$CI->db->insert('modbus');
 			$idt=$CI->db->insert_id();
 		}
-		return("<a href='javascript:void(0);' onclick=\"vent=window.open('".site_url("buscar/index/$idt/$puri")."','ventbuscar$id','width=$width,height=$height,scrollbars=Yes,status=Yes,resizable=Yes,screenx=5,screeny=5'); vent.focus(); document.body.setAttribute('onUnload','if(typeof(vent)==\'object\') vent.close();');\">".image('system-search.png',$modbus['titulo'],array('border'=>'0')).'</a>');
+
+		return(
+"<a href='javascript:void(0);'
+onclick=\"vent=window.open(
+	'".site_url("buscar/index/$idt/$puri")."',
+	'ventbuscar$id',
+	'width=$width,	height=$height,	scrollbars=Yes,	status=Yes,	resizable=Yes,	screenx=5,	screeny=5'
+	);
+	vent.focus();
+document.body.setAttribute(
+	'onUnload',
+	'vent.close();'
+);\">".image('system-search.png',$modbus['titulo'],array('border'=>'0')).'</a>');
+
 	}
 
 	function p_modbus($modbus,$puri='',$width=800,$height=600){
@@ -213,7 +227,7 @@ class Datasis {
 		$parametros=serialize($modbus);
 		
 		$data=array();
-		$id=$modbus['tabla'];
+	$id=$modbus['tabla'];
 		
 		$idt=$this->dameval("SELECT id FROM modbus WHERE idm='$id' AND uri='$uri'");
 		if (!empty($idt)){
@@ -226,7 +240,23 @@ class Datasis {
 			$CI->db->insert('modbus');
 			$idt=$CI->db->insert_id();
 		}
-		return("<a href='javascript:void(0);' onclick=\"vent=window.open('".site_url("buscar/index/$idt/$puri")."','ventbuscar$id','width=$width,height=$height,scrollbars=Yes,status=Yes,resizable=Yes,screenx=5,screeny=5'); vent.focus(); document.body.setAttribute('onUnload','if(typeof(vent)==\'object\') vent.close();');vent.close();');\">".image('system-search.png',$modbus['titulo'],array('border'=>'0')).'</a>');
+		return(
+"<a
+	href='javascript:void(0);'
+	onclick=\"
+		vent=window.open(
+			'".site_url("buscar/index/$idt/$puri")."',
+			'ventbuscar$id',
+			'width=$width,height=$height,scrollbars=Yes,status=Yes,resizable=Yes,screenx=5,screeny=5'
+		);
+		vent.focus();
+		document.body.setAttribute(
+			'onUnload',
+			'if(typeof(vent)==\'object\') vent.close();'
+		);
+		
+	\"
+>".image('system-search.png',$modbus['titulo'],array('border'=>'0')).'</a>');
 		//return("<a href='javascript:void(0);' onclick=\"vent=window.open('".site_url("buscar/index/$idt/$puri")."','ventbuscar$id','width=$width,height=$height,scrollbars=Yes,status=Yes,resizable=Yes,screenx=5,screeny=5'); vent.focus();\">".image('system-search.png',$modbus['titulo'],array('border'=>'0')).'</a>');
 	}
 	
@@ -274,6 +304,16 @@ class Datasis {
 		$CI =& get_instance();
 		if (empty($usr))
 			$usr=$CI->session->userdata('usuario');
+		$query=$CI->db->query("show tables like '$mcontador'");
+		if(!($query->num_rows()>0))
+			$CI->db->query("CREATE TABLE $mcontador (
+			`numero` INT(11) NOT NULL AUTO_INCREMENT,
+			`usuario` CHAR(10) NULL DEFAULT NULL,
+			`fecha` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+			PRIMARY KEY (`numero`)
+			)
+			");
+			
 		$CI->db->query("INSERT INTO $mcontador VALUES(null, '$usr', now() )");
 		$aa = $CI->db->insert_id();
 		return $aa;
