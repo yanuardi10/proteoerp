@@ -11,7 +11,7 @@ class Vendedores extends Controller {
 		redirect('/ventas/vendedores/anuales');
 	}
 		function anuales(){
-		$this->rapyd->load("datagrid2");	  
+		$this->rapyd->load("datagrid2");
 		$this->rapyd->load("dataform");
 		$this->load->helper('openflash');
 		

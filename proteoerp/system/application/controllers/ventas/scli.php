@@ -1,5 +1,4 @@
 <?php require_once(BASEPATH.'application/controllers/validaciones.php');
-//Cliente
 class Scli extends validaciones {
 
 	function scli(){
@@ -15,33 +14,33 @@ class Scli extends validaciones {
 	}
 
 	function filteredgrid(){
-		$this->rapyd->load("datafilter","datagrid");
+		$this->rapyd->load('datafilter','datagrid');
 
-		$filter = new DataFilter("Filtro de Clientes", 'scli');
+		$filter = new DataFilter('Filtro de Clientes', 'scli');
 		
-		$filter->cliente = new inputField("C&oacute;digo", "cliente");
+		$filter->cliente = new inputField('C&oacute;digo', 'cliente');
 		$filter->cliente->size=10;
 		
-		$filter->nombre= new inputField("Nombre"  , "nombre");
+		$filter->nombre= new inputField('Nombre','nombre');
 		
-		$filter->grupo = new dropdownField("Grupo", "grupo");
-		$filter->grupo->option("","Todos");
-		$filter->grupo->options("SELECT grupo, gr_desc FROM grcl ORDER BY gr_desc");
+		$filter->grupo = new dropdownField('Grupo', 'grupo');
+		$filter->grupo->option('','Todos');
+		$filter->grupo->options('SELECT grupo, gr_desc FROM grcl ORDER BY gr_desc');
 		
-		$filter->buttons("reset","search");
+		$filter->buttons('reset','search');
 		$filter->build();
 
 		$uri = anchor('ventas/scli/dataedit/show/<#id#>','<#cliente#>');
 
-		$grid = new DataGrid("Lista de Clientes");
-		$grid->order_by("nombre","asc");
+		$grid = new DataGrid('Lista de Clientes');
+		$grid->order_by('nombre','asc');
 		$grid->per_page=15;
 		
-		$grid->column("Cliente",$uri);
-		$grid->column("Nombre","nombre","nombre");
-		$grid->column("RIF/CI","rifci");
-		$grid->column("Contribuyente","tiva","align='center'");
-		$grid->add("ventas/scli/dataedit/create");
+		$grid->column_orderby('Cliente',$uri,'cliente');
+		$grid->column_orderby('Nombre','nombre','nombre');
+		$grid->column_orderby('RIF/CI','rifci');
+		$grid->column_orderby('Contribuyente','tiva','tiva','align=\'center\'');
+		$grid->add('ventas/scli/dataedit/create','Agregar un cliente');
 		$grid->build();
 
 		$data['content'] = $filter->output.$grid->output;
@@ -112,141 +111,124 @@ class Scli extends validaciones {
 					window.open("'.$consulrif.'"+"?p_rif="+vrif,"CONSULRIF","height=350,width=410");
 				}
 		}';
-		
 
-		$edit = new DataEdit("Clientes", "scli");
+		$edit = new DataEdit('Clientes', "scli");
 		$edit->back_url = site_url("ventas/scli/filteredgrid");
-		$edit->script($script, "create");
-		$edit->script($script, "modify");
+		$edit->script($script, 'create');
+		$edit->script($script, 'modify');
 		
 		$edit->pre_process('delete','_pre_del');
 		$edit->post_process('insert','_post_insert');
 		$edit->post_process('update','_post_update');
 		$edit->post_process('delete','_post_delete');
 		
-		$edit->cliente = new inputField("C&oacute;digo", "cliente");
-		$edit->cliente->rule = "trim|strtoupper|required|callback_chexiste";
-		$edit->cliente->mode = "autohide";
+		$edit->cliente = new inputField('C&oacute;digo', 'cliente');
+		$edit->cliente->rule = 'trim|strtoupper|required|callback_chexiste';
+		$edit->cliente->mode = 'autohide';
 		$edit->cliente->size = 9;
 		$edit->cliente->maxlength = 5;
 		
-		$edit->nombre = new inputField("Nombre", "nombre");
-		$edit->nombre->rule = "trim|strtoupper|required";
+		$edit->nombre = new inputField('Nombre', 'nombre');
+		$edit->nombre->rule = 'trim|strtoupper|required';
 		$edit->nombre->size = 60;
 		$edit->nombre->maxlength = 45;
 		
-		$edit->contacto = new inputField("Contacto", "contacto");
-		$edit->contacto->rule = "trim";
+		$edit->contacto = new inputField('Contacto', 'contacto');
+		$edit->contacto->rule = 'trim';
 		$edit->contacto->size = 60;
 		$edit->contacto->maxlength = 40;
 		
-		$edit->grupo = new dropdownField("Grupo", "grupo");
-		$edit->grupo->option("","Seleccione un grupo");
-		$edit->grupo->options("SELECT grupo, gr_desc FROM grcl ORDER BY gr_desc");
-		$edit->grupo->rule = "required";
+		$edit->grupo = new dropdownField('Grupo', 'grupo');
+		$edit->grupo->option('','Seleccione un grupo');
+		$edit->grupo->options('SELECT grupo, gr_desc FROM grcl ORDER BY gr_desc');
+		$edit->grupo->rule = 'required';
 		$edit->grupo->size = 6;
 		$edit->grupo->maxlength = 4;
 		
 		$lriffis='<a href="javascript:consulrif(\'rifci\');" title="Consultar RIF en el SENIAT" onclick="">Consultar RIF en el SENIAT</a>';
-		$edit->rifci = new inputField("RIF o Cedula Identidad", "rifci");
-		$edit->rifci->rule = "trim|strtoupper|required|callback_chci";
+		$edit->rifci = new inputField('RIF o Cedula Identidad', 'rifci');
+		$edit->rifci->rule = 'trim|strtoupper|required|callback_chci';
 		$edit->rifci->maxlength =13;
 		$edit->rifci->append($lriffis);
 		$edit->rifci->size =18;
 		
-		$edit->dire11 = new inputField("Direcci&oacute;n","dire11");
-		$edit->dire11->rule = "trim";
-		$edit->dire11->size = 60;
-		$edit->dire11->maxlength = 40;
-
-		$edit->dire12 = new inputField('&nbsp;',"dire12");
-		$edit->dire12->rule = "trim";
-		$edit->dire12->maxlength = 40;
-		$edit->dire12->size = 60;
+		for($i=1;$i<=2;$i++){
+			for($o=1;$o<=2;$o++){
+				$obj  ="dire$i$o";
+				$label= ($o%2!=0) ? "Direcci&oacute;n ($i)": '&nbsp;&nbsp;Continuaci&oacute;n';
+				$edit->$obj = new inputField($label,$obj);
+				$edit->$obj->rule = 'trim';
+				$edit->$obj->size      = 60;
+				$edit->$obj->maxlength = 40;
+			}
+			$obj="ciudad$i";
+			$edit->$obj = new dropdownField("Ciudad ($i)",$obj);
+			$edit->$obj->rule = 'trim';
+			$edit->$obj->option('','Seleccionar');
+			$edit->$obj->options('SELECT ciudad codigo, ciudad FROM ciud ORDER BY ciudad');
+			$edit->$obj->maxlength = 40;
+			$edit->$obj->size      = 60;
+		}
 		
-		$edit->ciudad1 = new dropdownField("Ciudad","ciudad1");
-		$edit->ciudad1->rule = "trim";
-		$edit->ciudad1->option("","Seleccionar");
-		$edit->ciudad1->options("SELECT ciudad codigo, ciudad FROM ciud ORDER BY ciudad");
-		$edit->ciudad1->maxlength = 40;
-		$edit->ciudad1->size = 60;
-		
-		$edit->dire21 = new inputField("Direcci&oacute;n","dire21");
-		$edit->dire21->rule = "trim";
-		$edit->dire21->maxlength = 40;
-		$edit->dire21->size = 60;
-
-		$edit->dire22 = new inputField('&nbsp;',"dire22");
-		$edit->dire22->rule = "trim";
-		$edit->dire22->maxlength = 40;
-		$edit->dire22->size = 60;
-		
-		$edit->ciudad2 = new dropdownField("Ciudad", "ciudad2");
-		$edit->ciudad2->option("","Seleccionar");
-		$edit->ciudad2->options("SELECT ciudad codigo, ciudad FROM ciud ORDER BY ciudad");
-		$edit->ciudad2->style =$edit->ciudad1->style = "width:180px";
-		$edit->ciudad2->maxlength = 40;
-		$edit->ciudad2->size = 60;
-		
-		$edit->repre  = new inputField("Representante Legal", "repre");
-		$edit->repre->rule = "trim";
+		$edit->repre  = new inputField('Representante Legal', 'repre');
+		$edit->repre->rule = 'trim';
 		$edit->repre->maxlength =30;
 		$edit->repre->size = 40;
 		
-		$edit->cirepre = new inputField("C&eacute;dula de Rep.", "cirepre");
-		$edit->cirepre->rule = "trim|strtoupper|callback_chci";
+		$edit->cirepre = new inputField('C&eacute;dula de Rep.', 'cirepre');
+		$edit->cirepre->rule = 'trim|strtoupper|callback_chci';
 		$edit->cirepre->maxlength =13;
 		$edit->cirepre->size = 16;
 		
-		$edit->socio = new inputField("Socio", "socio");
-		$edit->socio->rule = "trim";
+		$edit->socio = new inputField('Socio del cliente', 'socio');
+		$edit->socio->rule = 'trim';
 		$edit->socio->size = 8;
 		$edit->socio->maxlength =5;
 		$edit->socio->append($boton);
 		
-		$edit->tiva = new dropdownField("Tipo Fiscal", "tiva");
-		$edit->tiva->option("","Seleccionar");
-		$edit->tiva->options(array("C"=>"Contribuyente","N"=>"No Contribuyente","E"=>"Especial","R"=>"Regimen Exento","O"=>"Otro"));
-		$edit->tiva->style = "width:140px";
+		$edit->tiva = new dropdownField('Condici&oacute;n F&iacute;scal', 'tiva');
+		$edit->tiva->option('','Seleccionar');
+		$edit->tiva->options(array('C'=>'Contribuyente','N'=>'No Contribuyente','E'=>'Especial','R'=>'Regimen Exento','O'=>'Otro'));
+		$edit->tiva->style = 'width:140px';
 		$edit->tiva->rule='required|callback_chdfiscal';
-		$edit->tiva->group = "Informaci&oacute;n fiscal";
+		$edit->tiva->group = 'Informaci&oacute;n f&iacute;scal';
 		
-		$edit->nomfis = new inputField("Nombre Fiscal", "nomfis");
-		$edit->nomfis->rule = "trim";
+		$edit->nomfis = new inputField('Nombre F&iacute;scal', 'nomfis');
+		$edit->nomfis->rule = 'trim';
 		$edit->nomfis->size=70;
 		$edit->nomfis->maxlength =80;
-		$edit->nomfis->group = "Informaci&oacute;n fiscal";
+		$edit->nomfis->group = 'Informaci&oacute;n f&iacute;scal';
 		
 		$lriffis='<a href="javascript:consulrif(\'riffis\');" title="Consultar RIF en el SENIAT" onclick="">Consultar RIF en el SENIAT</a>';
-		$edit->riffis = new inputField("RIF Fiscal", "riffis");
+		$edit->riffis = new inputField('RIF F&iacute;scal', 'riffis');
 		$edit->riffis->size = 13;
 		$edit->riffis->maxlength =10; 
-		$edit->riffis->rule = "trim|callback_chrif";
+		$edit->riffis->rule = 'trim|callback_chrif';
 		$edit->riffis->append($lriffis);
-		$edit->riffis->group = "Informaci&oacute;n fiscal";
+		$edit->riffis->group = 'Informaci&oacute;n f&iacute;scal';
 		
-		$edit->zona = new dropdownField("Zona", "zona");
-		$edit->zona->rule = "trim|required";
-		$edit->zona->option("","Seleccionar");
-		$edit->zona->options("SELECT codigo, nombre FROM zona ORDER BY nombre");
+		$edit->zona = new dropdownField('Zona', 'zona');
+		$edit->zona->rule = 'trim|required';
+		$edit->zona->option('','Seleccionar');
+		$edit->zona->options('SELECT codigo, nombre FROM zona ORDER BY nombre');
 		
-		$edit->pais = new inputField("Pa&iacute;s", "pais");
-		$edit->pais->rule = "trim";
+		$edit->pais = new inputField('Pa&iacute;s','pais');
+		$edit->pais->rule = 'trim';
 		$edit->pais->size =40;
 		$edit->pais->maxlength =30;
 
-		$edit->email = new inputField("E-mail", "email");
-		$edit->email->rule = "trim|valid_email";
+		$edit->email = new inputField('E-mail', 'email');
+		$edit->email->rule = 'trim|valid_email';
 		$edit->email->size =28;
 		$edit->email->maxlength =100;
 		
-		$edit->cuenta = new inputField("Cuenta contable", "cuenta");
+		$edit->cuenta = new inputField('Cuenta contable', 'cuenta');
 		$edit->cuenta->rule='trim|callback_chcuentac';
 		$edit->cuenta->append($bcpla);
 		$edit->cuenta->size=20;
-		$edit->cuenta->maxlength =15; 
+		$edit->cuenta->maxlength =15;
 		
-		$edit->telefono = new inputField("Telefonos", "telefono");
+		$edit->telefono = new inputField("Tel&eacute;fonos", "telefono");
 		$edit->telefono->rule = "trim";
 		$edit->telefono->size=30;
 		$edit->telefono->maxlength =30;
@@ -280,10 +262,10 @@ class Scli extends validaciones {
 		$edit->vendedor->options("SELECT vendedor, CONCAT(vendedor,'-',nombre) AS nom FROM vend WHERE tipo IN ('V','A') ORDER BY vendedor");
 		$edit->vendedor->group = "Informaci&oacute;n financiera";
 
-		$edit->porvend = new inputField("% Comisi&oacute;n venta", "porvend");
+		$edit->porvend = new inputField("&nbsp;&nbsp;% Comisi&oacute;n venta", "porvend");
 		$edit->porvend->css_class='inputnum';
 		$edit->porvend->rule='trim|numeric';
-		$edit->porvend->size=8;      
+		$edit->porvend->size=8;
 		$edit->porvend->maxlength =5;
 		$edit->porvend->group = "Informaci&oacute;n financiera";
 
@@ -292,7 +274,7 @@ class Scli extends validaciones {
 		$edit->cobrador->options("SELECT vendedor, nombre FROM vend WHERE tipo IN ('C','A') ORDER BY nombre");
 		$edit->cobrador->group = "Informaci&oacute;n financiera";
 
-		$edit->porcobr = new inputField("% Comisi&oacute;n cobro", "porcobr");
+		$edit->porcobr = new inputField("&nbsp;&nbsp;% Comisi&oacute;n cobro", "porcobr");
 		$edit->porcobr->css_class='inputnum';
 		$edit->porcobr->rule='trim|numeric';
 		$edit->porcobr->size=8;
@@ -337,15 +319,15 @@ class Scli extends validaciones {
 	}
 	
 	function _pre_del($do) {
-		$codigo=$do->get('cliente');
-		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM sfac WHERE cod_cli='$codigo'");
-		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM smov WHERE cod_cli='$codigo'");
-		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM snot WHERE cod_cli='$codigo'");
-		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM snte WHERE cod_cli='$codigo'");    
-		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM otin WHERE cod_cli='$codigo'");
-		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM pfac WHERE cod_cli='$codigo'");
-		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM pers WHERE enlace='$codigo'");
-		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM bmov WHERE clipro='C' AND codcp='$codigo'");
+		$codigo=$this->db->escape($do->get('cliente'));
+		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM sfac WHERE cod_cli=$codigo");
+		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM smov WHERE cod_cli=$codigo");
+		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM snot WHERE cod_cli=$codigo");
+		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM snte WHERE cod_cli=$codigo");
+		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM otin WHERE cod_cli=$codigo");
+		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM pfac WHERE cod_cli=$codigo");
+		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM pers WHERE enlace=$codigo");
+		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM bmov WHERE clipro='C' AND codcp=$codigo");
 		
 		if ($chek > 0){
 			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='Cliente con Movimiento no puede ser Borrado';

@@ -9,7 +9,7 @@ class Proveedores extends Controller {
 	}
 
 	function index() {
-	redirect ('compras/proveedores/anuales');
+		redirect ('compras/proveedores/anuales');
 	}
 	
 	function anuales(){
@@ -35,15 +35,15 @@ class Proveedores extends Controller {
 		$filter->build_form();
 		
 		$grid = new DataGrid2();
-		$select=array("proveed", "fecha","nombre",                                            
-		"SUM(montonet*IF(tipo_doc='D', -1, 1)) AS grantotal","MONTH(fecha) as mes",                              
-		"SUM(inicial*IF(tipo_doc='D', -1, 1)) as contado",        
-		"SUM(credito*IF(tipo_doc='D', -1, 1)) as credito", 
-		"SUM(montotot*IF(tipo_doc='D',-1,1))AS subtotal", 
+		$select=array("proveed", "fecha","nombre",
+		"SUM(montonet*IF(tipo_doc='D', -1, 1)) AS grantotal","MONTH(fecha) as mes",
+		"SUM(inicial*IF(tipo_doc='D', -1, 1)) as contado",
+		"SUM(credito*IF(tipo_doc='D', -1, 1)) as credito",
+		"SUM(montotot*IF(tipo_doc='D',-1,1))AS subtotal",
 		"SUM(montoiva*IF(tipo_doc='D',-1,1))AS impuesto", 
 		"COUNT(*) AS numfac"); 
-		         		
-		$grid->db->select($select);  
+		
+		$grid->db->select($select);
 		$grid->db->from("scst");
 		$grid->db->where("tipo_doc <> ",'X');
 		$grid->db->where('fecha >= ', $fechai);  

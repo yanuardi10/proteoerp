@@ -59,9 +59,10 @@ class inputField extends objField{
         $attributes = array(
           'name'        => $this->name,
           'id'          => $this->name,
-          'type'        => $this->type,          
+          'type'        => $this->type,
           'value'       => $value,
           'maxlength'   => $this->maxlength,
+          'title'       => $this->title,
           'size'        => $this->size,
           'onclick'     => $this->onclick,
           'onchange'    => $this->onchange,
@@ -76,17 +77,15 @@ class inputField extends objField{
         $attributes = array(
           'name'        => $this->name,
           'id'          => $this->name,
-          'type'        => "hidden",          
+          'type'        => "hidden",
           'value'       => $this->value);
-        $output = form_input($attributes) . $this->extra_output;     
+        $output = form_input($attributes) . $this->extra_output;
 
         break;
-
         
       default:
     }
     $this->output = "\n".$output."\n";
   }
-    
 }
 ?>
