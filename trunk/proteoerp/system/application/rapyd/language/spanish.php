@@ -30,7 +30,7 @@ define('RAPYD_FIELD_TEXT_PASSWORD_CHANGE',  ' Modificar');
 
 define('RAPYD_BUTTON_ADD2',            'Agregar');
 define('RAPYD_BUTTON_ADD',             'Adicionar');
-define('RAPYD_BUTTON_CLEAR',           'Resetear');
+define('RAPYD_BUTTON_CLEAR',           'Borrar filtro');
 define('RAPYD_BUTTON_SEARCH',          'Buscar');
 define('RAPYD_BUTTON_MODIFY',          'Modificar');
 define('RAPYD_BUTTON_DELETE',          'Eliminar');

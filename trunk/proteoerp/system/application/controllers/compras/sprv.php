@@ -1,5 +1,4 @@
 <?php require_once(BASEPATH.'application/controllers/validaciones.php');
-//proveed
 class Sprv extends validaciones {
 
 	function sprv(){
@@ -12,57 +11,59 @@ class Sprv extends validaciones {
 	function index(){
 		redirect("compras/sprv/filteredgrid");
 	}
+	
 	function filteredgrid(){
 
-		$this->rapyd->load("datafilter","datagrid");
+		$this->rapyd->load('datafilter','datagrid');
 		$this->rapyd->uri->keep_persistence();
 
-		$filter = new DataFilter("Filtro de Proveedores", "sprv");
+		$filter = new DataFilter('Filtro de Proveedores', 'sprv');
 
-		$filter->proveed = new inputField("C&oacute;digo", "proveed");
+		$filter->proveed = new inputField('C&oacute;digo','proveed');
 		$filter->proveed->size=13;
 		$filter->proveed->maxlength=5;
 
-		$filter->nombre = new inputField("Nombre", "nombre");
-		$filter->nombre->size=13;
+		$filter->nombre = new inputField('Nombre', 'nombre');
 		$filter->nombre->maxlength=40;
 
-		$filter->rif = new inputField("Rif", "rif");
+		$filter->rif = new inputField('Rif', 'rif');
 		$filter->rif->size=13;
 		$filter->rif->maxlength=12;
 
-		$filter->buttons("reset","search");
+		$filter->buttons('reset','search');
 		$filter->build();
 
 		$uri = anchor('compras/sprv/dataedit/show/<#id#>','<#proveed#>');
 
-		$grid = new DataGrid("Lista de Proveedores");
-		$grid->order_by("proveed","asc");
+		$grid = new DataGrid('Lista de Proveedores');
+		$grid->order_by('proveed','asc');
 		$grid->per_page = 10;
 
-		$grid->column("Còdigo",$uri);
-		$grid->column("Nombre","nombre","nombre");
-		$grid->column("R.I.F.","rif");
+		$grid->column_orderby('C&oacute;digo',$uri,'codigo');
+		$grid->column_orderby('Nombre','nombre','nombre');
+		$grid->column_orderby('R.I.F.','rif','rif');
+		$grid->column_orderby('% Ret.','reteiva','reteiva','align=\'right\'');
 
-		$grid->add("compras/sprv/dataedit/create");
+		$grid->add('compras/sprv/dataedit/create','Agregar un proveedor');
 		$grid->build();
 
 		$data['content'] = $filter->output.$grid->output;
-		$data['title']   = "<h1>Proveedores</h1>";
-		$data["head"]    = $this->rapyd->get_head();
+		$data['title']   = '<h1>Proveedores</h1>';
+		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
+
 	function dataedit(){
 		$this->rapyd->load("dataedit");
 
 		$mSCLId=array(
 		'tabla'   =>'scli',
 		'columnas'=>array(
-		'cliente' =>'Còdigo Cliente',
+		'cliente' =>'C&oacute;digo Cliente',
 		'nombre'=>'Nombre',
 		'contacto'=>'Contacto',
 		'nomfis'=>'Nom. Fiscal'),
-		'filtro'  =>array('cliente'=>'Còdigo Cliente','nombre'=>'Nombre'),
+		'filtro'  =>array('cliente'=>'C&oacute;digo Cliente','nombre'=>'Nombre'),
 		'retornar'=>array('cliente'=>'cliente','nomfis'=>'nomfis'),
 		'titulo'  =>'Buscar Cliente');
 
@@ -80,7 +81,7 @@ class Sprv extends validaciones {
 			);
 
 		$bsclid =$this->datasis->modbus($mSCLId);
-		$bcpla =$this->datasis->modbus($mCPLA);
+		$bcpla  =$this->datasis->modbus($mCPLA);
 
 
 		$smenu['link']=barra_menu('131');
@@ -140,31 +141,29 @@ class Sprv extends validaciones {
 				  alert( "El ultimo codigo ingresado fue: " + msg );
 				}
 			});
-		}
+		}';
 
-		';
-
-		$edit = new DataEdit("Proveedores", "sprv");
-		$edit->script($script, "create");
-		$edit->script($script, "modify");
-		$edit->back_url = site_url("compras/sprv/filteredgrid");
+		$edit = new DataEdit('Proveedores', 'sprv');
+		$edit->script($script, 'create');
+		$edit->script($script, 'modify');
+		$edit->back_url = site_url('compras/sprv/filteredgrid');
 
 		$edit->pre_process('delete','_pre_del');
 		$edit->post_process('insert','_post_insert');
 		$edit->post_process('update','_post_update');
 		$edit->post_process('delete','_post_delete');
 
-		$lproveed='<a href="javascript:ultimo();" title="Consultar ultimo codigo ingresado" onclick="">Consultar ultimo codigo</a>';
-		$edit->proveed  = new inputField("C&oacute;digo", "proveed");
-		$edit->proveed->rule = "trim|required|callback_chexiste";
-		$edit->proveed->mode = "autohide";
+		$lproveed='<a href="javascript:ultimo();" title="Consultar ultimo codigo ingresado" onclick="">Consultar &uacute;ltimo c&oacute;digo ingresado</a>';
+		$edit->proveed  = new inputField('C&oacute;digo', 'proveed');
+		$edit->proveed->rule = 'trim|required|callback_chexiste';
+		$edit->proveed->mode = 'autohide';
 		$edit->proveed->size = 13;
 		$edit->proveed->maxlength =5;
 		$edit->proveed->append($lproveed);
-		$edit->proveed->group = "Datos del Proveedor";
+		$edit->proveed->group = 'Datos del Proveedor';
 
-		$edit->nombre = new inputField("Nombre", "nombre");
-		$edit->nombre->rule = "trim|strtoupper|required";
+		$edit->nombre = new inputField('Nombre', 'nombre');
+		$edit->nombre->rule = 'trim|strtoupper|required';
 		$edit->nombre->size = 41;
 		$edit->nombre->maxlength =40;
 		$edit->nombre->group = "Datos del Proveedor";
@@ -183,20 +182,21 @@ class Sprv extends validaciones {
 		//$edit->nit->maxlength =12;
 		//$edit->nit->group = "Datos del Proveedor";
 
-		$edit->contacto = new inputField("Contacto", "contacto");
+		$edit->contacto = new inputField("Persona de contacto", "contacto");
 		$edit->contacto->size =41;
 		$edit->contacto->rule ="trim";
 		$edit->contacto->maxlength =40;
 		$edit->contacto->group = "Datos del Proveedor";
 
 		$edit->tipo = new dropdownField("Tipo", "tipo");
-		$edit->tipo->option("","");
-		$edit->tipo->options(array("1"=> "Juridico Domiciliado","2"=>"Residente", "3"=>"Juridico No Domiciliado","4"=>"No Residente","5"=>"Excluido del Libro de Compras","0"=>"Inactivo"));
+		$edit->tipo->option("","Seleccionar");
+		$edit->tipo->options(array("1"=> "Jur&iacute;dico Domiciliado","2"=>"Residente", "3"=>"Jur&iacute;dico No Domiciliado","4"=>"No Residente","5"=>"Excluido del Libro de Compras","0"=>"Inactivo"));
 		$edit->tipo->style = "width:290px";
+		$edit->tipo->rule = "required";
 		$edit->tipo->group = "Datos del Proveedor";
 
 		$edit->grupo = new dropdownField("Grupo", "grupo");
-		$edit->grupo->option("","");
+		$edit->grupo->option("","Seleccionar");
 		$edit->grupo->options("SELECT grupo,gr_desc,grupo FROM grpr ORDER BY gr_desc");
 		$edit->grupo->style = "width:290px";
 		$edit->grupo->rule = "required";
@@ -249,20 +249,20 @@ class Sprv extends validaciones {
 
 		for($i=1;$i<=2;$i++){
 			$obj="banco$i";
-			$edit->$obj = new dropdownField("Banco $i", $obj);
+			$edit->$obj = new dropdownField("Cuenta en bco. ($i)", $obj);
 			$edit->$obj->clause="where";
 			$edit->$obj->option("","Ninguno");
 			$edit->$obj->options("SELECT cod_banc,nomb_banc FROM tban ORDER BY nomb_banc");
 			$edit->$obj->operator="=";
-			$edit->$obj->group = "Informaci&oacute;n financiera";
+			$edit->$obj->group = "Cuentas Bancarias";
 			$edit->$obj->style='width:290px;';
 
 			$obj="cuenta$i";
-			$edit->$obj = new inputField("Cuenta $i",$obj);
+			$edit->$obj = new inputField("&nbsp;&nbsp;N&uacute;mero ($i)",$obj);
 			$edit->$obj->size = 41;
 			$edit->$obj->rule = "trim";
 			$edit->$obj->maxlength = 15;
-			$edit->$obj->group = "Informaci&oacute;n financiera";
+			$edit->$obj->group = "Cuentas Bancarias";
 			//$edit->$obj->in="banco$i";
 		}
 
@@ -292,7 +292,7 @@ class Sprv extends validaciones {
 		$edit->cuenta->append($bcpla);
 		$edit->cuenta->append($lcuent);
 
-		$edit->reteiva  = new inputField("% de Retencion","reteiva");
+		$edit->reteiva  = new inputField("% de Retenci&oacute;n","reteiva");
 		$edit->reteiva->size = 6;
 		$edit->reteiva->css_class='inputnum';
 
@@ -302,10 +302,11 @@ class Sprv extends validaciones {
 		//$smenu['link']=barra_menu('230');
 		$data['content'] = $edit->output;
 		//$data['smenu']   = $this->load->view('view_sub_menu', $smenu,true);
-    $data['title']   = "<h1>Proveedores</h1>";
-    $data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
-    $this->load->view('view_ventanas', $data);
+		$data['title']   = "<h1>Proveedores</h1>";
+		$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
+		$this->load->view('view_ventanas', $data);
 	}
+
 	function _pre_del($do) {
 		$codigo=$do->get('proveed');
 		$chek =  $this->datasis->dameval("SELECT count(*) FROM sprm WHERE cod_prv='$codigo'");
@@ -365,10 +366,10 @@ class Sprv extends validaciones {
 		}
 	}
 	function update(){
-		$mSQL=$this->db->query("UPDATE sprv SET reteiva=75 WHERE reteiva<>100");
+		$mSQL=$this->db->query('UPDATE sprv SET reteiva=75 WHERE reteiva<>100');
 	}
 	function uproveed(){
-		$consulproveed=$this->datasis->dameval("SELECT proveed FROM sprv ORDER BY proveed DESC");
+		$consulproveed=$this->datasis->dameval('SELECT MAX(proveed) FROM sprv');
 		echo $consulproveed;
 	}
 

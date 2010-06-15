@@ -40,10 +40,10 @@ class DataSet {
   var $uri_segment  = null;
   var $num_links    = 5;
     
-  var $first_link   		= '&lsaquo; First';
+  var $first_link   		= '&lsaquo; Primero';
   var $next_link			= '&gt;';
   var $prev_link			= '&lt;';
-  var $last_link    		= 'Last &rsaquo;';
+  var $last_link    		= '&Uacute;ltimo &rsaquo;';
   var $extra_anchor   = "";
 
 

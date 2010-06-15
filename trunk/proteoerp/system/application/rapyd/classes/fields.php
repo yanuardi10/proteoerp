@@ -68,6 +68,7 @@ class objField {
   var $style;
   var $extra_output;
   var $css_class;
+  var $title=null;
   
   //unused
   var $externalTable;
