@@ -293,7 +293,7 @@ class pers extends validaciones {
 		$edit->sso->size =13;
 		$edit->sso->maxlength=11;
 		$edit->sso->group = "Relaci&oacute;n Laboral"; 
-//		$edit->sso->rule="trim|numeric"; 
+    //$edit->sso->rule="trim|numeric"; 
 		$edit->sso->css_class='inputnum';
 		
 		$edit->observa = new textareaField("Observaci&oacute;n", "observa");

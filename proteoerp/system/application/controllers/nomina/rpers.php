@@ -1,50 +1,47 @@
 <?php
 class  rpers extends Controller {
-	
-	
-	
 	function rpers(){
 		parent::Controller(); 
 		$this->load->library("rapyd");
 	}
-	function index() {
+	function index(){
 
 		$this->rapyd->load("dataform","datatable",'datagrid');
 		$this->load->library('table');
+		
+		$base_process_uri= $this->rapyd->uri->implode_uri("base_uri","gfid","orderby");
+		
+		$filter = new DataForm($this->rapyd->uri->add_clause($base_process_uri, "search"));
+		$filter->title('Elija una tabla');
+		$filter->attributes=array('onsubmit'=>'is_loaded()');
 				
-		//$mSQL=$this->db->query("SHOW tables");
-		//$row = $mSQL->result_array();
-		//$tables =$row;
-		
-		//$base_process_uri= $this->rapyd->uri->implode_uri("base_uri","gfid","orderby");
-		
-		//$filter = new DataForm($this->rapyd->uri->add_clause($base_process_uri, "search"));
-		
-		$filter = new DataForm('nomina/rpers/process');
-		$filter->title('Filtro del Reporte');
-		//$filter->attributes=array('onsubmit'=>'is_loaded()');
-		
 		$filter->tabla=new dropdownField("Tabla","tabla");
-		$filter->tabla->option("pers","Personal");
+		$filter->tabla->option("sinv","Inventario");
+		$filter->tabla->option("scli","Clientes");
+		$filter->tabla->option("sprv","Proveedores");
 		$filter->tabla->clause="";
 		
-		$filter->obra = new dropdownField("Obra", "depto"); 
-		$filter->obra->db_name='depto';
-		$filter->obra->clause="where"; 
-		$filter->obra->option(" ","Todos");  
-		$filter->obra->options("SELECT depto, descrip FROM dpto ORDER BY depto ");  
-		$filter->obra->operator="=";
+		//$filter->obra = new dropdownField("Obra", "depto"); 
+		//$filter->obra->db_name='depto';
+		//$filter->obra->clause="where"; 
+		//$filter->obra->option(" ","Todos");  
+		//$filter->obra->options("SELECT depto, descrip FROM dpto ORDER BY depto ");  
+		//$filter->obra->operator="=";
 		
-		$filter->status = new dropdownField("Status","status");
-		$filter->status->option("","Todos");
-		$filter->status->option("A","Activos");
-		$filter->status->option("I","Inactivos");
-		$filter->status->style='width:100px';
-				
-				    
-		//if($this->rapyd->uri->is_set("search")){
+		//$filter->status = new dropdownField("Status","status");
+		//$filter->status->option("","Todos");
+		//$filter->status->option("A","Activos");
+		//$filter->status->option("I","Inactivos");
+		//$filter->status->style='width:100px';
 			
-					$mSQL='DESCRIBE pers';			
+		$filter->submit("btnsubmit","Descargar");
+		$filter->build_form();
+
+		if($this->rapyd->uri->is_set("search")){
+				    
+			   $table=$filter->tabla->newValue; 
+			
+					$mSQL="DESCRIBE $table";			
 					$query = $this->db->query($mSQL);		            
 					if ($query->num_rows() > 0){                    
 						foreach ($query->result_array() as $row){     
@@ -71,24 +68,19 @@ class  rpers extends Controller {
 					$grid->column("Campos"    , 'Field'); 
 					$grid->column("Mostrar", "<ractivo><#Field#></ractivo>",'align="center"');      
 
-					$grid->build();
-					$tabla=$grid->output;
-			
-	 	//$filter->button("btnsubmit", "Consultar",'', $position="BL");
-	  //$filter->button("btnsubmit", "Traer Tikets", form2uri(site_url("/supervisor/tiket/traertiket"),array('cliente')), $position="BL");//
-	  //$filter->button("btnsubmit", "Traer Tikets", form2uri(site_url("/supervisor/tiket/traertiket"), $position="BL");//    
-		$filter->build_form();
-		
-		
-		$obra='hola';			
-		$data['content'] = $filter->output.form_open("nomina/rpers/crear/$obra").$tabla.form_submit('mysubmit', 'Generar').form_close();
-		$data['title']   = "<h1>Reporte</h1>";
-		$data["head"]    = script("jquery.js").$this->rapyd->get_head();
-		$this->load->view('view_ventanas', $data);
-				
+		$grid->build();
+		$tabla=$grid->output;		
+		$filter->build_form();	
+		$conten=$filter->output.form_open("nomina/rpers/crear/$table").$tabla.form_submit('mysubmit', 'Generar').form_close();			
+	}else{
+		$conten=$filter->output;			
 	}
-	
-	function crear(){
+	$data['content'] = $conten;
+	$data['title']   = "<h1>Reporte</h1>";
+	$data["head"]    = script("jquery.js").$this->rapyd->get_head();
+	$this->load->view('view_ventanas', $data);	
+}	
+	function crear($table=''){
 		//echo $obra;
 		$this->load->library('encrypt');
 		
@@ -99,7 +91,7 @@ class  rpers extends Controller {
 			$line.=$val.",";
 		} 
 		$line=substr($line,0,-1);
-		$line.=' FROM pers';		
+		$line.=" FROM $table";		
 		//echo $obra;          
 		//echo $line;
 		                 
