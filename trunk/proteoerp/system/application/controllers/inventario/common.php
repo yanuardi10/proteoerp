@@ -1,13 +1,13 @@
 <?php
 class Common extends controller {
 	function get_depto(){//usado por sinv
-    	$mSQL=$this->db->query("SELECT depto, descrip as valor FROM dpto WHERE tipo='I' ORDER BY valor");
-    	echo "<option value=''></option>";
-    	if($mSQL){
-    		foreach($mSQL->result() AS $fila ){
-    			echo "<option value='".$fila->depto."'>".$fila->valor."</option>";
-    		}
-    	}
+	$mSQL=$this->db->query("SELECT depto, descrip as valor FROM dpto WHERE tipo='I' ORDER BY valor");
+	echo "<option value=''></option>";
+	if($mSQL){
+		foreach($mSQL->result() AS $fila ){
+			echo "<option value='".$fila->depto."'>".$fila->valor."</option>";
+		}
+	}
 	}
 	
 	function add_depto(){//usado por sinv
@@ -44,65 +44,66 @@ class Common extends controller {
 	
 	function get_linea(){//usado por sinv
 		echo "<option value=''>Seleccione un Departamento</option>";
-	    $depto=$this->input->post('depto');
-	    if(!empty($depto)){
-	    	$mSQL=$this->db->query("SELECT linea,descrip FROM line WHERE depto ='$depto'");
-	    	if($mSQL){
-	    		foreach($mSQL->result() AS $fila ){
-	    			echo "<option value='".$fila->linea."'>".$fila->descrip."</option>";
-	    		}
-	    	}
-	    }
-	}	
+		$depto=$this->input->post('depto');
+		if(!empty($depto)){
+			$mSQL=$this->db->query("SELECT linea,descrip FROM line WHERE depto ='$depto'");
+			if($mSQL){
+				foreach($mSQL->result() AS $fila ){
+					echo "<option value='".$fila->linea."'>".$fila->descrip."</option>";
+				}
+			}
+		}
+	}
+
 	function get_zona(){//usado por sclifyco
 		echo "<option value=''>Seleccione un Pais</option>";
-	    $pais=$this->input->post('pais');
-	    if(!empty($pais)){
-	    	$mSQL=$this->db->query("SELECT codigo, nombre FROM zona WHERE pais='$pais'ORDER BY codigo");
-	    	if($mSQL){
-	    		foreach($mSQL->result() AS $fila ){
-	    			echo "<option value='".$fila->codigo."'>"$fila->nombre."</option>";
-	    		}
-	    	}
-	    }
+		$pais=$this->input->post('pais');
+		if(!empty($pais)){
+			$mSQL=$this->db->query("SELECT codigo, nombre FROM zona WHERE pais='$pais'ORDER BY codigo");
+			if($mSQL){
+				foreach($mSQL->result() AS $fila ){
+					echo "<option value='".$fila->codigo."'>".$fila->nombre."</option>";
+				}
+			}
+		}
 	}
 	function get_estados(){//usado por sclifyco
 		echo "<option value=''>Seleccione una Zona</option>";
-	    $zona=$this->input->post('zona');
-	    if(!empty($zona)){
-	    	$mSQL=$this->db->query("SELECT codigo, nombre FROM estado WHERE zona='$zona' ORDER BY codigo");
-	    	if($mSQL){
-	    		foreach($mSQL->result() AS $fila ){
-	    			echo "<option value='".$fila->codigo."'>"$fila->nombre."</option>";
-	    		}
-	    	}
-	    }
+		$zona=$this->input->post('zona');
+		if(!empty($zona)){
+			$mSQL=$this->db->query("SELECT codigo, nombre FROM estado WHERE zona='$zona' ORDER BY codigo");
+			if($mSQL){
+				foreach($mSQL->result() AS $fila ){
+					echo "<option value='".$fila->codigo."'>".$fila->nombre."</option>";
+				}
+			}
+		}
 	}
 	function get_municipios(){//usado por sclifyco
 		echo "<option value=''>Seleccione un Estado</option>";
-	    $estados=$this->input->post('estados');
-	    if(!empty($estados)){
-	    	$mSQL=$this->db->query("SELECT codigo, nombre FROM municipio WHERE estado='$estados' ORDER BY codigo");
-	    	if($mSQL){
-	    		foreach($mSQL->result() AS $fila ){
-	    			echo "<option value='".$fila->codigo."'>"$fila->nombre."</option>";
-	    		}
-	    	}
-	    }
+		$estados=$this->input->post('estados');
+		if(!empty($estados)){
+			$mSQL=$this->db->query("SELECT codigo, nombre FROM municipio WHERE estado='$estados' ORDER BY codigo");
+			if($mSQL){
+				foreach($mSQL->result() AS $fila ){
+					echo "<option value='".$fila->codigo."'>".$fila->nombre."</option>";
+				}
+			}
+		}
 	}
 	function get_grupo(){//usado por sinv
-    $linea=$this->input->post('linea');
-   	if(!empty($linea)){
-   		$mSQL=$this->db->query("SELECT grupo,nom_grup FROM grup WHERE linea ='$linea'");
-   		if($mSQL){
-   			echo "<option value=''>Seleccione una L&iacute;nea</option>";
-   			foreach($mSQL->result() AS $fila ){
-   				echo "<option value='".$fila->grupo."'>".$fila->nom_grup."</option>";
-   			}
-   		}
-   	}else{
-   		echo "<option value=''>Seleccione una L&iacute;nea primero</option>";
-   	}
+		$linea=$this->input->post('linea');
+		if(!empty($linea)){
+			$mSQL=$this->db->query("SELECT grupo,nom_grup FROM grup WHERE linea ='$linea'");
+			if($mSQL){
+				echo "<option value=''>Seleccione una L&iacute;nea</option>";
+				foreach($mSQL->result() AS $fila ){
+					echo "<option value='".$fila->grupo."'>".$fila->nom_grup."</option>";
+				}
+			}
+		}else{
+			echo "<option value=''>Seleccione una L&iacute;nea primero</option>";
+		}
 	}
 	
 	function add_grupo()//usado por sinv
@@ -110,11 +111,11 @@ class Common extends controller {
 		if(isset($_POST['valor']) && isset($_POST['valor2']) && isset($_POST['valor3'])){
 			$valor=$_POST['valor'];
 			$valor2=$_POST['valor2'];
-			$valor3=$_POST['valor3'];			
+			$valor3=$_POST['valor3'];
 			$existe=$this->datasis->dameval("SELECT COUNT(nom_grup) FROM grup WHERE nom_grup='$valor' AND linea='$valor2' AND depto='$valor3'");
 			if($existe>0){
 				echo "Y.a-Existe";
-			}else{				
+			}else{
 				$grupo=$this->sug('grup');
 				$agrego=$this->db->query("INSERT INTO grup (grupo,linea,nom_grup,tipo,depto) VALUES ('$grupo','$valor2','$valor','I','$valor3')");
 				if($agrego)echo $grupo;
@@ -122,18 +123,17 @@ class Common extends controller {
 			}
 		}
 	}
-	
+
 	function get_marca(){//usado por sinv
-    	$mSQL=$this->db->query("SELECT marca as codigo, marca FROM marc ORDER BY marca");
-    	if($mSQL){
-    		foreach($mSQL->result() AS $fila ){
-    			echo "<option value='".$fila->codigo."'>".$fila->marca."</option>";
-    		}
-    	}
+		$mSQL=$this->db->query("SELECT marca as codigo, marca FROM marc ORDER BY marca");
+		if($mSQL){
+			foreach($mSQL->result() AS $fila ){
+				echo "<option value='".$fila->codigo."'>".$fila->marca."</option>";
+			}
+		}
 	}
-	
-	function add_marc()//usado por sinv
-	{
+
+	function add_marc(){//usado por sinv
 		if(isset($_POST['valor'])){
 			$valor=$_POST['valor'];
 			$agrego=$this->db->query("INSERT INTO marc (marca) VALUES ('$valor')ON DUPLICATE KEY UPDATE marca='$valor'");
@@ -142,17 +142,16 @@ class Common extends controller {
 	}
 	
 	function get_unidad(){//usado por sinv
-    	$mSQL=$this->db->query("SELECT unidades, unidades as valor FROM unidad ORDER BY unidades");
-    	echo "<option value=''></option>";
-    	if($mSQL){
-    		foreach($mSQL->result() AS $fila ){
-    			echo "<option value='".$fila->unidades."'>".$fila->valor."</option>";
-    		}
-    	}
+		$mSQL=$this->db->query("SELECT unidades, unidades as valor FROM unidad ORDER BY unidades");
+		echo "<option value=''></option>";
+		if($mSQL){
+			foreach($mSQL->result() AS $fila ){
+				echo "<option value='".$fila->unidades."'>".$fila->valor."</option>";
+			}
+		}
 	}
 	
-	function add_unidad()//usado por sinv
-	{
+	function add_unidad(){//usado por sinv
 		if(isset($_POST['valor'])){
 			$valor=$_POST['valor'];
 			$agrego=$this->db->query("INSERT INTO unidad (unidades) VALUES ('$valor')ON DUPLICATE KEY UPDATE unidades='$valor'");
@@ -162,7 +161,7 @@ class Common extends controller {
 	
 	function sugerir_dpto(){
 		$ultimo=$this->datasis->dameval("SELECT LPAD(hexa,2,0) FROM serie LEFT JOIN dpto ON LPAD(depto,2,0)=LPAD(hexa,2,0) WHERE valor<255 AND depto IS NULL LIMIT 1");
-		echo $ultimo;		
+		echo $ultimo;
 	}
 	
 	function sugerir_grup(){
@@ -175,7 +174,7 @@ class Common extends controller {
 		echo $ultimo;
 	}
 	
-	function sug($tabla=''){		
+	function sug($tabla=''){
 		if($tabla=='dpto'){
 			$valor=$this->datasis->dameval("SELECT LPAD(hexa,2,0) FROM serie LEFT JOIN dpto ON LPAD(depto,2,0)=LPAD(hexa,2,0) WHERE valor<255 AND depto IS NULL LIMIT 1");
 		}elseif($tabla=='line'){

@@ -1,13 +1,10 @@
 <?php
 include('common.php');
 class sinv extends Controller {
-	
 	function sinv(){
 		parent::Controller(); 
 		$this->load->library("rapyd");
 	}
-	
-	#### index #####
 	function index(){
 		//$this->datasis->modulo_id(309,1);
 		redirect("inventario/sinv/filteredgrid");
