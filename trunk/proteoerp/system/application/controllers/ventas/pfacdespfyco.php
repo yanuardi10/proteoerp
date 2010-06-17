@@ -279,9 +279,12 @@ class pfacdespfyco extends Controller {
 		 
 		while($o<$cant){
 			$array=array('0'=>$codigoa[$i],'1'=>$cdespacha[$i],'2'=>$despacha[$i],'3'=>$ultidespachado[$i]);
-			$despachado = $this->datasis->dameval("SELECT cdespacha+'$ultidespachado[$i]' as despachado FROM itpfac WHERE  codigoa='$codigoa[$i]' AND numa='$numa'");
+			$SQL="SELECT cdespacha+'$ultidespachado[$i]' as despachado FROM itpfac WHERE  codigoa='$codigoa[$i]' AND numa='$numa'";
+			$despachado = $this->datasis->dameval($SQL);
+		  //echo $SQL;
 		  $mSQL ="UPDATE itpfac set ultidespachado='$ultidespachado[$i]',udespacha=$usuario,cdespacha='$despachado',despacha='$despacha[$i]',fdespacha=CURDATE() WHERE codigoa='$codigoa[$i]' AND numa='$numa'";
 			$mSQL_1=$this->db->query($mSQL);
+			//echo $mSQL;
 			$i++;
 			$o++;
 			//echo 'Consulta :'.$mSQL;
