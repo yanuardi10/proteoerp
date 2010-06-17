@@ -194,7 +194,7 @@ class PDFReporte extends Fpdf {
 		$data= func_get_args();
 		foreach($data as $sale){
 			$correcto=true;
-      $sal=$this->_parsePattern($sale);
+			$sal=$this->_parsePattern($sale);
 			//print_r($sal);
 			if (count($sal)>0){
 				foreach($sal as $pasa){
@@ -531,19 +531,21 @@ class PDFReporte extends Fpdf {
 					if (in_array($key, $this->totalizar)){
 						$gtotal[$key] +=$row[$key];
 						if($this->cgrupo){
-							for($u=0;$u<count($this->grupo);$u++){
+							$cangrup=count($this->grupo);
+							for($u=0;$u<$cangrup;$u++){
 								$stotal[$u][$key]+=$row[$key];
 								$rstotal[$u][$key] =number_format($stotal[$u][$key], 2, ',', '.');
 							}
 						}
 						$rgtotal[$key] =number_format($gtotal[$key], 2, ',', '.');
-						if (in_array($key, $this->Acumulador)) $row[$key]=$gtotal[$key];
+						if (in_array($key, $this->Acumulador)) $row[$key]=$stotal[$u-1][$key];//$gtotal[$key];
 					}else{
-					 	$total[$key]=$gtotal[$key]=$rtotal[$key]=$rgtotal[$key]=' ';
-					 	for($u=0;$u<count($this->grupo);$u++){
-					 		$stotal[$u][$key]=$rstotal[$u][$key]=' ';
-					 	}
-					 	//if (in_array($key, $this->Acumulador)) $row[$key]=' ';
+						$total[$key]=$gtotal[$key]=$rtotal[$key]=$rgtotal[$key]=' ';
+						$cangrup=count($this->grupo);
+						for($u=0;$u<$cangrup;$u++){
+							$stotal[$u][$key]=$rstotal[$u][$key]=' ';
+						}
+						//if (in_array($key, $this->Acumulador)) $row[$key]=' ';
 					}
 				}
 
@@ -571,18 +573,17 @@ class PDFReporte extends Fpdf {
 	}
 
 	function _parsePattern($pattern){
-    $template = $pattern;
-    $parsedcount = 0;
-    $salida=array();
-    while (strpos($template,"#>")>0) {
-      $parsedcount++;
-      $parsedfield = substr($template,strpos($template,"<#")+2,strpos($template,"#>")-strpos($template,"<#")-2);
-
-      $salida[]=$parsedfield;
-      $template = str_replace("<#".$parsedfield ."#>","",$template);
-    }
-    return $salida;
-  }
+		$template = $pattern;
+		$parsedcount = 0;
+		$salida=array();
+		while (strpos($template,"#>")>0) {
+			$parsedcount++;
+			$parsedfield = substr($template,strpos($template,"<#")+2,strpos($template,"#>")-strpos($template,"<#")-2);
+			$salida[]=$parsedfield;
+			$template = str_replace("<#".$parsedfield ."#>","",$template);
+		}
+		return $salida;
+	}
 
 	function add_fila($param){
 		$data= func_get_args();
