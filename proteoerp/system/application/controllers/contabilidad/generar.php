@@ -7,7 +7,6 @@ class Generar extends Metodos {
 		parent::Controller();
 		$this->load->library("rapyd");
 		$this->modulo=602;
-		
 	}
 
 	function index() {
@@ -23,8 +22,8 @@ class Generar extends Metodos {
 		$grid->db->groupby('modulo');
 		$grid->db->orderby('modulo,regla');
 
-		$grid->column("Modulo"     , "modulo"     );
-		$grid->column("Descripcion", "descripcion");
+		$grid->column("M&oacute;dulo"     , "modulo"     );
+		$grid->column("Descripci&oacute;n", "descripcion");
 		$grid->column('Generar'    , $checkbox,'align="center"');
 		$grid->build();
 
@@ -186,8 +185,8 @@ class Generar extends Metodos {
 			//TOTALIZA EN ITCASI
 			$query=mysql_unbuffered_query($mSQL,$DBbig->conn_id);
 			while ($row = mysql_fetch_assoc($query)) {
-			//foreach ($query->result_array() as $row){
 				$usr  =$this->session->userdata('usuario');
+				$comprob=$this->db->escape($row['comprob']);
 				$sql="UPDATE casi
 					SET debe=(SELECT sum(debe) FROM itcasi WHERE itcasi.comprob=casi.comprob),
 					haber=(SELECT sum(haber) FROM itcasi WHERE itcasi.comprob=casi.comprob),
@@ -195,12 +194,16 @@ class Generar extends Metodos {
 					estampa=NOW(),
 					usuario='$usr',
 					hora=DATE_FORMAT(NOW(),'%H:%i:%s')
-					WHERE comprob=? ";
-				$ejec=$this->db->simple_query($sql,array($row['comprob']));
+					WHERE comprob=$comprob ";
+				//$ejec=$this->db->simple_query($sql,array($row['comprob']));
+				$ejec=$this->db->simple_query($sql);
 				if($ejec==FALSE){ memowrite($sql,'generar'); $error=true; }
 			}
 
-			$salida=utf8_encode('Listo!');
+			if($error)
+				$salida=utf8_encode('Hubo algunos errores en el proceso, se genero un centinela');
+			else
+				$salida=utf8_encode('Listo!');
 		}else{
 			$salida=utf8_encode('Seleccione al menos un Modulo');
 		}
