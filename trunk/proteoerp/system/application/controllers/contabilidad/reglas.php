@@ -11,7 +11,7 @@ class Reglas extends Metodos {
 		//$this->load->database('supermer',TRUE);
 	}
 	
-	function index() {		
+	function index() {
 		$this->rapyd->load("datagrid","dataform");
 		$fecha=$this->uri->segment(4);
 		$form = new DataForm();  
@@ -35,7 +35,6 @@ class Reglas extends Metodos {
 		$grid->column(''           , $link ,'align="center"');
 		$grid->column(''           , $link2,'align="center"');
 		//$grid->column(''           , "Explicar",'align="center"');
-		
 
 		$grid->build();
 		$data['script']="<script type='text/javascript'>
@@ -97,9 +96,9 @@ class Reglas extends Metodos {
 	}
 	
 	function dataedit(){
- 		$this->rapyd->load("dataedit");
- 		$modulo=($this->uri->segment(4) ? $this->uri->segment(4) : $this->input->post('modulo'));
- 		$uri=$this->rapyd->uri->get("show");
+		$this->rapyd->load("dataedit");
+		$modulo=($this->uri->segment(4) ? $this->uri->segment(4) : $this->input->post('modulo'));
+		$uri=$this->rapyd->uri->get("show");
 
 		$edit = new DataEdit("Reglas Contabilidad","reglascont");
 		$edit->back_url = 'contabilidad/reglas/detalle/'.$modulo;
@@ -184,24 +183,24 @@ class Reglas extends Metodos {
 
 		$this->load->view('view_ventanas', $data);
 	}
+
 	function ejecutar() {
 		$this->rapyd->load("datagrid2","fields");
 
-	function dif($a,$b){
+		function dif($a,$b){
 			return number_format($a-$b,2,',','.');
-	}
-		
+		}
+
 		$modulo = $_POST['modulo'];
-    $mFECHA = date("Ymd",timestampFromInputDate($_POST['fecha'], 'd/m/Y'));
-    $mTABLA  =$this->datasis->dameval("SELECT origen  FROM reglascont WHERE modulo='$modulo' AND regla=1 ");
-    $mCONTROL=$this->datasis->dameval("SELECT control FROM reglascont WHERE modulo='$modulo' AND regla=1 ");
-    $action = "javascript:window.location='" . site_url("contabilidad/reglas/index/$mFECHA") . "'";
-    $data['content']='';
-   
-    $query=$this->db->query("SELECT a.$mCONTROL FROM $mTABLA WHERE a.fecha=$mFECHA GROUP BY $mCONTROL ");
-    
-    foreach ($query->result_array() as $fila){
-    	$aregla = $this->_hace_regla($modulo, $mCONTROL, $fila[$mCONTROL]);
+		$mFECHA = date("Ymd",timestampFromInputDate($_POST['fecha'], 'd/m/Y'));
+		$mTABLA  =$this->datasis->dameval("SELECT origen  FROM reglascont WHERE modulo='$modulo' AND regla=1 ");
+		$mCONTROL=$this->datasis->dameval("SELECT control FROM reglascont WHERE modulo='$modulo' AND regla=1 ");
+		$action = "javascript:window.location='" . site_url("contabilidad/reglas/index/$mFECHA") . "'";
+		$data['content']='';
+		$query=$this->db->query("SELECT a.$mCONTROL FROM $mTABLA WHERE a.fecha=$mFECHA GROUP BY $mCONTROL ");
+		
+		foreach ($query->result_array() as $fila){
+			$aregla = $this->_hace_regla($modulo, $mCONTROL, $fila[$mCONTROL]);
 			//echo '<pre>';print_r($aregla);'</pre>';
 			$encab=$encab_titu=$pivote=array();
 			//Construye los encabezados
@@ -247,7 +246,7 @@ class Reglas extends Metodos {
 						$titulo='HUERFANO';
 				$grid = new DataGrid2($titulo,$tabla);
 				$grid->per_page=count($tabla);
-				$grid->use_function('dif');				
+				$grid->use_function('dif');
 
 				$grid->column('Or&iacute;gen', 'origen');
 				$grid->column('Cuenta'    , 'cuenta'  );
@@ -262,8 +261,7 @@ class Reglas extends Metodos {
 				$grid->totalizar('debe','haber');
 				$grid->build();
 				//echo $grid->db->last_query();
-				$difiren='54564546.00';
-				$data['content'] .=$grid->output.$diferen;
+				$data['content'] .=$grid->output;
 
 			}
 	
