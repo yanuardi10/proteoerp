@@ -43,7 +43,7 @@ class pfacdespfyco extends Controller {
 		    
 		$filter = new DataFilter("Filtro");
 		
-		$select=array("a.despacha","a.fecha","a.numero","b.numa","a.cod_cli","a.rifci","a.nombre","a.status");
+		$select=array("a.despacha","a.fecha","a.nombre","a.numero","b.numa","a.cod_cli","a.rifci","a.nombre","a.status");
 		$filter = new DataFilter("Filtro","pfac");	
 		$filter->db->select($select);
 		$filter->db->from('pfac AS a');
@@ -58,13 +58,16 @@ class pfacdespfyco extends Controller {
 		$filter->fechah = new dateonlyField("Hasta", "fechah");
 		$filter->fechad->clause  =$filter->fechah->clause="where";
 		$filter->fechad->db_name =$filter->fechah->db_name="a.fecha";
-		$filter->fechad->insertValue = date("Y-m-d");
-		$filter->fechah->insertValue = date("Y-m-d");
+		//$filter->fechad->insertValue = date("Y-m-d");
+		//$filter->fechah->insertValue = date("Y-m-d");
 		$filter->fechad->operator=">="; 
 		$filter->fechah->operator="<=";
 
 		$filter->numero = new inputField("N&uacute;mero", "a.numero");
 		$filter->numero->size = 20;
+
+		$filter->nombre = new inputField("Nombre", "a.nombre");
+		$filter->nombre->size = 40;
 		
 		$filter->buttons("reset","search");
 		$filter->build();
