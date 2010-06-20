@@ -120,7 +120,8 @@ class Datasis {
 		$CI->session->set_userdata('last_activity', time());
 		if($CI->session->userdata('logged_in')){
 			$usr=$CI->session->userdata('usuario');
-			$mSQL   = "SELECT COUNT(*) FROM intrasida WHERE id = '$modulo' AND  usuario='$usr' AND acceso='S'";
+			//$mSQL   = "SELECT COUNT(*) FROM intrasida WHERE id = '$modulo' AND  usuario='$usr' AND acceso='S'"; //Tortuga
+			$mSQL   = "SELECT COUNT(*) FROM intrasida WHERE modulo = '$modulo' AND  usuario='$usr' AND acceso='S'";   //Proteo
 			$cursor = $CI->db->query($mSQL);
 			$rr    = $cursor->row_array();
 			$sal   = each($rr);
