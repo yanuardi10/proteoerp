@@ -114,20 +114,18 @@ class Cpla extends Controller {
 	}
 
 	function autocomplete($campo,$cod=FALSE){
-		//$this->config->set_item('enable_query_strings', TRUE);
-		//$cod=$this->input->get_post('q');
-		$qformato=$this->datasis->formato_cpla();
 		if($cod!==false){
-			$mSQL="SELECT $campo FROM cpla WHERE $campo LIKE '$cod%' AND codigo LIKE '$qformato' ORDER BY $campo LIMIT 10";
-			$query=$this->db->query($mSQL);
-			if($query->num_rows() > 0){
-				foreach($query->result() AS $row){
-					echo $row->codigo."\n";
+			$qformato=$this->datasis->formato_cpla();
+			$data['codigo']="SELECT codigo AS c1 ,descrip AS c2 FROM cpla WHERE $campo LIKE '$cod%' AND codigo LIKE '$qformato' ORDER BY $campo LIMIT 10";
+			if(isset($data[$campo])){
+				$query=$this->db->query($data[$campo]);
+				if($query->num_rows() > 0){
+					foreach($query->result() AS $row){
+						echo $row->c1.'|'.$row->c2."\n";
+					}
 				}
 			}
 		}
-		
-		
 	}
 
 	function _post_insert($do){

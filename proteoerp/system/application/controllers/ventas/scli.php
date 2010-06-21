@@ -64,7 +64,7 @@ class Scli extends validaciones {
 			'retornar'=>array('cliente'=>'socio'),
 			'titulo'  =>'Buscar Socio');
 		
-		$qformato==$this->datasis->formato_cpla();
+		$qformato=$this->datasis->formato_cpla();
 		
 		$mCPLA=array(
 			'tabla'   =>'cpla',
@@ -82,21 +82,40 @@ class Scli extends validaciones {
 		
 		$smenu['link']=barra_menu('131');
 		$consulrif=trim($this->datasis->traevalor('CONSULRIF'));
-		$link=site_url('contabilidad/cpla/autocomplete/codigo');
+		$lcuenta=site_url('contabilidad/cpla/autocomplete/codigo');
+		$lsocio =site_url('ventas/scli/autocomplete/cliente');
 		$script ='
+		function formato(row) {
+			return row[0] + "-" + row[1];
+		}
+
 		$(function() {
 			$(".inputnum").numeric(".");
 			$("#tiva").change(function () { anomfis(); }).change();
-			$("#cuenta").autocomplete(
-			"'.$link.'",{
-			                        delay:10,
-			                        minChars:2,
-			                        matchSubset:1,
-			                        matchContains:1,
-			                        cacheLength:10,
-			                }
-			        );
-			});
+			$("#cuenta").autocomplete("'.$lcuenta.'",{
+				delay:10,
+				//minChars:2,
+				matchSubset:1,
+				matchContains:1,
+				cacheLength:10,
+				formatItem:formato,
+				width:350,
+				autoFill:true
+				}
+			);
+		
+			$("#socio").autocomplete("'.$lsocio.'",{
+				delay:10,
+				matchSubset:1,
+				matchContains:1,
+				cacheLength:10,
+				formatItem:formato,
+				width:350,
+				autoFill:true
+				}
+			);
+		});
+
 		
 		function anomfis(){
 				vtiva=$("#tiva").val();
@@ -156,7 +175,7 @@ class Scli extends validaciones {
 		$edit->grupo->maxlength = 4;
 		
 		$lriffis='<a href="javascript:consulrif(\'rifci\');" title="Consultar RIF en el SENIAT" onclick="">Consultar RIF en el SENIAT</a>';
-		$edit->rifci = new inputField('RIF o Cedula Identidad', 'rifci');
+		$edit->rifci = new inputField('RIF o Cedula de Identidad', 'rifci');
 		$edit->rifci->rule = 'trim|strtoupper|required|callback_chci';
 		$edit->rifci->maxlength =13;
 		$edit->rifci->append($lriffis);
@@ -374,6 +393,23 @@ class Scli extends validaciones {
   		return TRUE;
 		}
 	}
+
+	function autocomplete($campo,$cod=FALSE){
+		if($cod!==false){
+			$qformato=$this->datasis->formato_cpla();
+			$data['cliente']="SELECT cliente AS c1 ,nombre AS c2 FROM scli WHERE cliente LIKE '$cod%' ORDER BY cliente LIMIT 10";
+			if(isset($data[$campo])){
+				$query=$this->db->query($data[$campo]);
+				if($query->num_rows() > 0){
+					foreach($query->result() AS $row){
+						echo $row->c1.'|'.$row->c2."\n";
+					}
+				}
+			}
+		}
+	}
+
+
 	function instalar(){
 		$seniat='http://www.seniat.gov.ve/BuscaRif/BuscaRif.jsp';
 		$mSQL="INSERT INTO valores (nombre,valor,descrip) VALUES ('CONSULRIF','$seniat','Pagina de consulta de rif del seniat') ON DUPLICATE KEY UPDATE valor='$seniat'";
