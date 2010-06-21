@@ -97,7 +97,8 @@ class Datasis {
 		$CI->load->database('default',TRUE);
 		if ($CI->session->userdata('logged_in')){
 			$usuario = $CI->session->userdata['usuario'];
-			$existe = $CI->datasis->dameval("SELECT COUNT(*) FROM intrasida WHERE usuario='$usuario' AND id='$id'");
+			//$existe = $CI->datasis->dameval("SELECT COUNT(*) FROM intrasida WHERE usuario='$usuario' AND id='$id'");   //Tortuga
+			$existe = $CI->datasis->dameval("SELECT COUNT(*) FROM intrasida WHERE usuario='$usuario' AND modulo='$id'"); //Proteo
 			if ($existe  > 0 )
 				return  true;
 		}
