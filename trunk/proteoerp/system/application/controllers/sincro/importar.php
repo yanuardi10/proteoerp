@@ -207,7 +207,7 @@ class Importar extends Controller {
 					$rt.=$this->_smov($row->codigo,$fecha);
 					$rt.=$this->_transa($row->codigo,$fecha);
 					$rt.=$this->_fiscalz($row->codigo,$fecha);
-					//$rt.=$this->_rcaj($row->codigo,$fecha);
+					$rt.=$this->_rcaj($row->codigo,$fecha);
 				}
 				echo $rt;
 			}
