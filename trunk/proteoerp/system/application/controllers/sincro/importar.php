@@ -11,11 +11,10 @@ class Importar extends Controller {
 
 		$this->dir=reduce_double_slashes($this->config->item('uploads_dir').'/traspasos');
 		//$this->dir='./uploads/traspasos/';
-		//if(!file_exists('./uploads/traspasos'))	mkdir('./uploads/traspasos');
-		
-		if(empty($this->sucu)){
-			redirect('supervisor/valores/dataedit/show/NROSUCU');
-		}
+		$path=reduce_double_slashes(FCPATH.'/uploads/traspasos');
+		if(!file_exists($path)) if(!mkdir($path)) exit("Error: no se pudo crear el directorio $path");
+		if(!is_writable($path)) exit("Error: no tiene permisos de escritura en $path");
+		if(empty($this->sucu)) redirect('supervisor/valores/dataedit/show/NROSUCU');
 	}
 
 	function index(){
@@ -49,7 +48,8 @@ class Importar extends Controller {
 		$form->qtrae->option("maes"  ,"Inventario Supermercado");
 		$form->qtrae->option("smov"  ,"Movimientos de clientes");
 		$form->qtrae->option("transa","Facturas y transferencias");
-		$form->qtrae->option("supermaes"  ,"Inventario Supermercado");
+		$form->qtrae->option("supermaes","Inventario Supermercado");
+		$form->qtrae->option("rcaj"  ,"Cierres de caja");
 		
 		$form->fecha = new dateonlyField("Fecha","fecha");
 		$form->fecha->insertValue = date("Y-m-d");
@@ -170,7 +170,6 @@ class Importar extends Controller {
 				$msg='Hubo un error en la trasnferencia, se genero un ticket '.anchor('supervisor/tiket','ir a tickets');
 			else
 				$msg='Tranferencia &eacute;xitosa';
-				
 		}else{
 			$msg='Error, la sucursal '.$sucu.' no existe, revise la configuracion aqui: '.anchor('supervisor/sucu','sucursales');
 		}
@@ -208,6 +207,7 @@ class Importar extends Controller {
 					$rt.=$this->_smov($row->codigo,$fecha);
 					$rt.=$this->_transa($row->codigo,$fecha);
 					$rt.=$this->_fiscalz($row->codigo,$fecha);
+					//$rt.=$this->_rcaj($row->codigo,$fecha);
 				}
 				echo $rt;
 			}
@@ -247,8 +247,6 @@ class Importar extends Controller {
 		}
 	}
 
-
-
 //**************************
 //Metodos para traer data
 //**************************
@@ -264,25 +262,25 @@ class Importar extends Controller {
 		$rt=$this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/sinv','sinv');
 		return $rt;
 	}
-	
+
 	function _smov($sucu,$fecha=null){
 		set_time_limit(600);
 		$rt=$this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/smov/'.$fecha,'smov');
 		return $rt;
 	}
-	
+
 	function _fiscalz($sucu,$fecha=null){
 		set_time_limit(600);
 		$rt=$this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/fiscalz/'.$fecha,'fiscalz');
 		return $rt;
 	}
-	
+
 	function _transa($sucu,$fecha=null){
 		set_time_limit(600);
 		$rt=$this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/transacciones/'.$fecha,'transacciones');
 		return $rt;
 	}
-	
+
 	function _supertransa($sucu,$fecha=null){
 		set_time_limit(600);
 		$rt=$this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/supertransa/'.$fecha,'supertransa');
@@ -292,6 +290,12 @@ class Importar extends Controller {
 	function _maes($sucu,$fecha=null){
 		set_time_limit(600);
 		$rt=$this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/maes/'.$fecha,'maes');
+		return $rt;
+	}
+
+	function _rcaj($sucu,$fecha=null){
+		set_time_limit(600);
+		$rt=$this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/rcaj/'.$fecha,'rcaj');
 		return $rt;
 	}
 
@@ -308,7 +312,7 @@ class Importar extends Controller {
 	}
 
 //***********************
-//  Metodos de Chequeo
+//  Metodos de Validacion
 //***********************
 	function __chekfecha($fecha){
 		if(is_numeric($fecha) AND $fecha>10000000){
@@ -342,7 +346,6 @@ class Importar extends Controller {
 			$url=$row->url;
 			$url=$row->url.'/'.$row->proteo.'/'.$dir_url;
 			$url=reduce_double_slashes($url);
-//echo 'http://'.$url;
 			$ch = curl_init('http://'.$url);
 			$tmpfname = tempnam($dir, "cargagen");
 

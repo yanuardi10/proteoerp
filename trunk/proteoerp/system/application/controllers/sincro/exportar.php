@@ -47,7 +47,7 @@ class Exportar extends Controller {
 		$sucu=$this->db->escape($this->sucu);
 
 		$form = new DataForm("sincro/exportar/uig/process");
-				
+		
 		$form->qtrae = new dropdownField("Que exportar?", "qtrae");
 		$form->qtrae->rule ='required';
 		$form->qtrae->option("","Selecionar");
