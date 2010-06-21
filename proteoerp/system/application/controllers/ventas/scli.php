@@ -184,19 +184,21 @@ class Scli extends validaciones {
 		for($i=1;$i<=2;$i++){
 			for($o=1;$o<=2;$o++){
 				$obj  ="dire$i$o";
-				$label= ($o%2!=0) ? "Direcci&oacute;n ($i)": '&nbsp;&nbsp;Continuaci&oacute;n';
+				$label= ($o%2!=0) ? "Direcci&oacute;n": '&nbsp;&nbsp;Continuaci&oacute;n';
 				$edit->$obj = new inputField($label,$obj);
 				$edit->$obj->rule = 'trim';
 				$edit->$obj->size      = 60;
 				$edit->$obj->maxlength = 40;
+				$edit->$obj->group = "Direcci&oacute;n ($i)";
 			}
 			$obj="ciudad$i";
-			$edit->$obj = new dropdownField("Ciudad ($i)",$obj);
+			$edit->$obj = new dropdownField("Ciudad",$obj);
 			$edit->$obj->rule = 'trim';
 			$edit->$obj->option('','Seleccionar');
 			$edit->$obj->options('SELECT ciudad codigo, ciudad FROM ciud ORDER BY ciudad');
 			$edit->$obj->maxlength = 40;
 			$edit->$obj->size      = 60;
+			$edit->$obj->group = "Direcci&oacute;n ($i)";
 		}
 		
 		$edit->repre  = new inputField('Representante Legal', 'repre');
