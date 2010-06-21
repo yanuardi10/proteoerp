@@ -64,7 +64,7 @@ class Scli extends validaciones {
 			'retornar'=>array('cliente'=>'socio'),
 			'titulo'  =>'Buscar Socio');
 		
-		$qformato=$this->qformato=$this->datasis->formato_cpla();
+		$qformato==$this->datasis->formato_cpla();
 		
 		$mCPLA=array(
 			'tabla'   =>'cpla',
@@ -82,11 +82,21 @@ class Scli extends validaciones {
 		
 		$smenu['link']=barra_menu('131');
 		$consulrif=trim($this->datasis->traevalor('CONSULRIF'));
+		$link=site_url('contabilidad/cpla/autocomplete/codigo');
 		$script ='
 		$(function() {
 			$(".inputnum").numeric(".");
 			$("#tiva").change(function () { anomfis(); }).change();
-		});
+			$("#cuenta").autocomplete(
+			"'.$link.'",{
+			                        delay:10,
+			                        minChars:2,
+			                        matchSubset:1,
+			                        matchContains:1,
+			                        cacheLength:10,
+			                }
+			        );
+			});
 		
 		function anomfis(){
 				vtiva=$("#tiva").val();
@@ -303,7 +313,7 @@ class Scli extends validaciones {
 		$data['content'] = $edit->output;
 		$data['smenu']   = $this->load->view('view_sub_menu', $smenu,true);
 		$data['title']   = "<h1>Clientes</h1>";
-		$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
+		$data["head"]    = script('jquery.pack.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js').script('plugins/jquery.autocomplete.js').style('jquery.autocomplete.css').$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 	
