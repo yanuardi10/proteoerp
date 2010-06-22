@@ -3,6 +3,7 @@ class Importar extends Controller {
 
 	function Importar(){
 		parent::Controller();
+		$this->geneticket=true;
 		$this->load->helper('string');
 		$this->load->library("rapyd");
 		$this->load->library('encrypt');
@@ -216,7 +217,7 @@ class Importar extends Controller {
 
 	function traesclisucu($fecha=null){
 		if(isset($_SERVER['argv']) && !isset($_SERVER['SERVER_NAME'])){ //asegura que se ejecute desde shell
-			
+			$this->geneticket=false;
 			$sucu=$this->sucu;
 			$query = $this->db->query("SELECT * FROM sucu WHERE codigo<>$sucu");
 			if(empty($fecha)) $fecha = date('Ymd');
@@ -358,7 +359,7 @@ class Importar extends Controller {
 			$nombre=basename($tmpfname);
 			$error=$this->__cargazip($nombre);
 
-			if(!empty($error)){
+			if(!empty($error) AND $this->geneticket){
 				$atts = array(
 				    'width'      => '800',
 				    'height'     => '600',
