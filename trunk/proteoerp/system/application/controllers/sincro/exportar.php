@@ -55,7 +55,7 @@ class Exportar extends Controller {
 		$form->qtrae->option("sinv"  ,"Inventario");
 		$form->qtrae->option("maes"  ,"Inventario Supermercado");
 		$form->qtrae->option("smov"  ,"Movimientos de clientes");
-		$form->qtrae->option("transa","Facturas y transferencias");
+		$form->qtrae->option("transacciones","Facturas y transferencias");
 		$form->qtrae->option("supertransa"  ,"Ventas Supermercado");
 		$form->qtrae->option("rcaj"  ,"Cierres de cajas");
 
