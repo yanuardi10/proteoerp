@@ -286,7 +286,7 @@ class Exportar extends Controller {
 		$this->sqlinex->ignore   =TRUE;
 		$this->sqlinex->limpiar  =FALSE;
 		$data[]=array('table' => 'rcaj',
-		                'select'=>"cajero,tipo,usuario,caja,recibido,ingreso,parcial,observa, numero+$prefijo AS `numero` ,transac,estampa,hora",
+		                'select'=>"fecha,cajero,tipo,usuario,caja,recibido,ingreso,parcial,observa, numero+$prefijo AS `numero` ,transac,estampa,hora",
 		                'where' => "fecha >= $fecha");
 
 		$nombre='rcaj_'.$fecha.'_'.$this->sucu;
