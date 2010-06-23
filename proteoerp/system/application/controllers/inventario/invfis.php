@@ -18,8 +18,17 @@ class Invfis extends validaciones {
 	function define($var1='',$var2='',$var3='',$var4=''){
 
 		$this->rapyd->load("dataform");
+		
+		$link=site_url($this->url.'creatrasla2/');
+		
+		$script='
+			function acttodo(){
+				window.location="'.$link.'/"+$("#inv2").val()
+			}
+		';
 				
 		$form = new DataForm('inventario/invfis/define/process');
+		$form->_title = "Comenzar Inventario";
 
 		$form->alma = new dropdownField("Almacen", "alma");
 		$form->alma->options("SELECT ubica,ubides FROM caub WHERE gasto='N' AND invfis='N' ORDER BY ubides");
@@ -30,7 +39,7 @@ class Invfis extends validaciones {
 		$form->fecha->insertValue = date("Y-m-d");
 		$form->fecha->size=12;
 
-		$form->submit("btnsubmit","Generar");
+		$form->submit("btnsubmit","Comenzar Toma de Inventario F&iacute;sico");
 		$form->build_form();
 
 		if ($form->on_success()){
@@ -57,9 +66,10 @@ class Invfis extends validaciones {
 					`agregar` DECIMAL(10,1) NOT NULL DEFAULT '0.0',
 					`quitar` DECIMAL(10,1) NOT NULL DEFAULT '0.0',
 					`sustituir` DECIMAL(10,1) NOT NULL DEFAULT '0.0',
-					`fecha` INT(12) NOT NULL DEFAULT '0',
-					`modificado` VARCHAR(8) NULL,
-					`actualizado` VARCHAR(8) NULL,
+					`fecha` VARCHAR(12) NOT NULL DEFAULT '0',
+					`modificado` VARCHAR(12) NULL,
+					`actualizado` VARCHAR(12) NULL,
+					`pond` DECIMAL(10,1) NOT NULL DEFAULT '0.0',
 					PRIMARY KEY (`codigo`)
 				)
 				COLLATE=utf8_unicode_ci
@@ -70,7 +80,8 @@ class Invfis extends validaciones {
 				
 				$mSQL = "
 				INSERT IGNORE INTO `INV$alma$fecha`
-				SELECT a.codigo,a.grupo,b.alma,b.existen,000000000.0 contado,000000000.0 agregar,000000000.0 quitar,000000000.0 sustituir, now() fecha,'NULLNULL' modificado,'NULLNULL' actualizado 
+				(`codigo`,`grupo`,`alma`,`existen`,`contado`,`agregar`,`quitar`,`sustituir`,`fecha`,`modificado`,`actualizado`,`pond`)
+				SELECT a.codigo,a.grupo,b.alma,b.existen,000000000.0 contado,000000000.0 agregar,000000000.0 quitar,000000000.0 sustituir, now() fecha,'NULLNULL' modificado,'NULLNULL' actualizado,a.pond 
 				FROM sinv a 
 				LEFT JOIN itsinv b ON a.codigo= b.codigo
 				WHERE alma=$alma2
@@ -81,7 +92,8 @@ class Invfis extends validaciones {
 		}
 		
 		$form1 = new DataForm('inventario/invfis/define/process/aa');
-         
+		$form1->_title = "Introducir Resultados del Conteo de Inventario F&iacute;sico";
+
 		$form1->inv = new dropdownField("Inventario Fisico", "inv");
 		$form1->inv->rule = 'required';
 		$mSQL=$this->db->query("SHOW TABLES LIKE 'INV%'");
@@ -90,33 +102,36 @@ class Invfis extends validaciones {
 				$form1->inv->option($value,'Almacen:'.$this->datasis->dameval("SELECT ubides FROM caub WHERE ubica ='".substr($value,3,strlen($value)-11)."'").' de Fecha '.date_format(date_create_from_format('Ymd', substr($value,-8)), 'd/m/Y'));
   	}
 
-		$form1->submit("btnsubmit","Inventariar");
+		$form1->submit("btnsubmit","Introducir Conteo F&iacute;sico");
 		$form1->build_form();
 		
 		if ($form1->on_success() && $var2=='aa'){
 			$inv=$form1->inv->newValue;
 			redirect($this->url.'inven/'.$inv);
 		}
-
+		
 		$form2 = new DataForm('inventario/invfis/define/process/bb');
+		$form2->_title = "Actualizaci&oacute;n de Inventario";
+		$form2->script($script);
          
-		$form2->inv = new dropdownField("Inventario Fisico", "inv");
-		$form2->inv->rule = 'required';
+		$form2->inv2 = new dropdownField("Inventario Fisico", "inv2");
+		$form2->inv2->rule = 'required';
 		//$mSQL=$this->db->query("SHOW TABLES LIKE 'INV%'");
 		foreach($mSQL->result_array() AS $row){
 			foreach($row AS $key=>$value)
-				$form2->inv->option($value,'Almacen:'.$this->datasis->dameval("SELECT ubides FROM caub WHERE ubica ='".substr($value,3,strlen($value)-11)."'").' de Fecha '.date_format(date_create_from_format('Ymd', substr($value,-8)), 'd/m/Y'));
+				$form2->inv2->option($value,'Almacen:'.$this->datasis->dameval("SELECT ubides FROM caub WHERE ubica ='".substr($value,3,strlen($value)-11)."'").' de Fecha '.date_format(date_create_from_format('Ymd', substr($value,-8)), 'd/m/Y'));
   	}
 
-		$form2->submit("btnsubmit","Crea Traslado");
+		$form2->submit("btnsubmit" ,"Actualizaci&oacute;n Parcial (Actualiza Solo los Modificados)");
+		$form2->button("btnsubmit2","Cierre de Inventario. (Asume existencia cero para los no modificados)","javascript:acttodo()");
 		$form2->build_form();
 		
 		if ($form2->on_success() && $var2=='bb'){
-			$inv=$form2->inv->newValue;
+			$inv=$form2->inv2->newValue;
 			redirect($this->url.'creatrasla/'.$inv);
 		}
 		
-		$data['content'] = $form->output.$form1->output.$form2->output.
+		$data['content'] = $form->output.'</br>'.$form1->output.'</br>'.$form2->output;//.$form3->output;
 		$data['title']   = ' Inventario Fisico';
 		$data["head"]    = $this->rapyd->get_head().script('jquery.js').script("plugins/jquery.numeric.pack.js").script("plugins/jquery.json.min.js");
 		$this->load->view('view_ventanas', $data);
@@ -457,6 +472,59 @@ class Invfis extends validaciones {
 			if(!($ban>0))$error.="No se pudo crear el registro en itstra";
 			
 			$mSQL="UPDATE $tabla SET actualizado=now() WHERE modificado <> 'NULLNULL' AND actualizado = 'NULLNULL'";
+			$ban = $this->db->query($mSQL);
+			if(!($ban>0))$error.="No se pudo actualizar la tabla:$tabla";
+		}else{
+			$error.="No hay articulos modificados";
+		}
+		
+		if(empty($error)){
+			logusu('INVFIS',"Se creo transferencia de Inventario Fisico $nstra");
+			$data['content'] = "Se creo transferencia de Inventario Fisico $nstra </br>".anchor($this->url,'Regresar');
+			$data['title']   = "Inventario Fisico";
+			$data["head"]    = $this->rapyd->get_head();
+			$this->load->view('view_ventanas', $data);
+		}else{
+			logusu('INVFIS',"Intento crear transferencia de Inventario Fisico");
+			$data['content'] = "<div class='alert'>Error al crear transferencia</br>$error</div></br>".anchor($this->url,'Regresar');
+			$data['title']   = "Inventario Fisico";
+			$data["head"]    = $this->rapyd->get_head();
+			$this->load->view('view_ventanas', $data);
+		}
+	}
+	
+	function creatrasla2($tabla){
+
+		$fecha  = date_format(date_create_from_format('Ymd', substr($tabla,-8)), 'Y-m-d');
+		$alma   = substr($tabla,3,strlen($tabla)-11);
+		$alma   = $this->db->escape($alma);		
+		$nstra  = $this->datasis->fprox_numero('nstra');
+		$error = '';
+		
+		$mSQL="
+			SELECT LPAD($nstra,8,'0'),a.codigo,CONCAT_WS(b.descrip,b.descrip2)descrip,a.contado,a.existen FROM $tabla a
+			JOIN sinv b ON a.codigo = b.codigo
+			WHERE actualizado ='NULLNULL'
+		";
+		$query = $this->db->query($mSQL);
+		
+		if($query->num_rows()>0){
+		
+			$mSQL="INSERT INTO stra (`numero`,`fecha`,`envia`,`recibe`,`observ1`) 
+				VALUES (LPAD($nstra,8,'0'),'$fecha',(SELECT ubica FROM caub WHERE gasto='S' AND invfis = 'S' ORDER BY ubica ='INFI' LIMIT 1),$alma,'INVENTARIO FISICO')";
+			$ban = $this->db->query($mSQL);
+			if(!($ban>0))$error.="No se pudo crear el registro en stra";
+			
+			$mSQL="
+				INSERT INTO itstra (`numero`,`codigo`,`descrip`,`cantidad`,`anteri`)
+				SELECT LPAD($nstra,8,'0'),a.codigo,CONCAT_WS(b.descrip,b.descrip2)descrip,a.contado,a.existen FROM $tabla a
+				JOIN sinv b ON a.codigo = b.codigo
+				WHERE actualizado ='NULLNULL'
+				";
+			$ban = $this->db->query($mSQL);
+			if(!($ban>0))$error.="No se pudo crear el registro en itstra";
+			
+			$mSQL="UPDATE $tabla SET actualizado=now(),modificado = IF(modificado='NULLNULL',now(),modificado) WHERE actualizado = 'NULLNULL'";
 			$ban = $this->db->query($mSQL);
 			if(!($ban>0))$error.="No se pudo actualizar la tabla:$tabla";
 		}else{
