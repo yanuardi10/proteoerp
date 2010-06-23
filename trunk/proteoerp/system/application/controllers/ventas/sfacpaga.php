@@ -241,9 +241,7 @@ class sfacpaga extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 	
-	function principal(){
-	
-	
+	function principal(){	
 		$atts = array(
               'width'      => '800',
               'height'     => '600',
