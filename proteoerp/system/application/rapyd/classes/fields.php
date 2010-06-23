@@ -32,7 +32,8 @@ class objField {
   var $type = "field";
   
   var $label; 
-  var $name; 
+  var $name;
+  var $id; 
   var $data; //rapid dataobject
   var $db; //ci AR driver
   
@@ -75,8 +76,6 @@ class objField {
   var $externalJoinField;
   var $externalReplaceField;
   
-
-  
   // layout
   var $layout = array("fieldSeparator"  => "<br />", 
                       "optionSeparator" => "");
@@ -101,6 +100,7 @@ class objField {
   */
   function objField($label, $name){
   
+  	if(empty($this->id))$this->id = $name;
     $this->ci =& get_instance();
     $this->rapyd =& $this->ci->rapyd;
 

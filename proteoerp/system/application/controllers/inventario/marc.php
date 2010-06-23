@@ -80,7 +80,6 @@ class Marc extends Controller{
 		$_POST['marca']='Algunamarca';
 		$this->genesal=false;
 		$this->dataedit();
-		
 	}
 
 	function _post_insert($do){

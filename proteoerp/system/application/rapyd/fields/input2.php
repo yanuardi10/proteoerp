@@ -58,7 +58,7 @@ class inputField2 extends objField{
 
         $attributes = array(
           'name'        => $this->name,
-          'id'          => $this->name,
+          'id'          => $this->id,
           'type'        => $this->type,          
           'value'       => $value,
           'maxlength'   => $this->maxlength,
@@ -75,7 +75,7 @@ class inputField2 extends objField{
       case "hidden":
         $attributes = array(
           'name'        => $this->name,
-          'id'          => $this->name,
+          'id'          => $this->id,
           'type'        => "hidden",          
           'value'       => $this->value);
         $output = form_input($attributes) . $this->extra_output;     
