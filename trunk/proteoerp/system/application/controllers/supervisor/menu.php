@@ -235,11 +235,11 @@ class Menu extends Controller{
 	
 	function instalar(){
 		$mSQL="ALTER TABLE `intramenu` ADD COLUMN `orden` TINYINT(4) NULL DEFAULT NULL AFTER `pertenece`";
-		$this->db->simple_query($mSQL);
+		echo $this->db->simple_query($mSQL);
 		$mSQL="ALTER TABLE `intramenu` ADD COLUMN `ancho` INT(10) UNSIGNED NULL DEFAULT '800' AFTER `orden`";
-		$this->db->simple_query($mSQL);
+		echo $this->db->simple_query($mSQL);
 		$mSQL="ALTER TABLE `intramenu` ADD COLUMN `alto`  INT(10) UNSIGNED NULL DEFAULT '600' AFTER `ancho`";
-		$this->db->simple_query($mSQL);
+		echo $this->db->simple_query($mSQL);
 	}
 }
 ?>

@@ -36,26 +36,58 @@ class Invfis extends validaciones {
 		if ($form->on_success()){
 			$this->load->dbforge();
 			
-			$contrato2 = $form->alma->newValue;
-			$contrato  = $this->db->escape($form->alma->newValue);
+			$alma      = $form->alma->newValue;
+			$alma2     = $this->db->escape($form->alma->newValue);
 			$fecha     = $form->fecha->newValue;
-						 
 			
-			$mSQL = "CREATE TABLE IF NOT EXISTS `INV$contrato2$fecha`
-SELECT a.codigo,a.grupo,b.alma,b.existen,000000000.0 contado,000000000.0 agregar,000000000.0 quitar,000000000.0 sustituir, $fecha fecha,'NULLNULL' modificado,'NULLNULL' actualizado FROM sinv a JOIN itsinv b ON a.codigo= b.codigo";
+			$ban=true;
+			$mSQL=$this->db->query("SHOW TABLES LIKE 'INV%'");
+			foreach($mSQL->result_array() AS $row)
+				foreach($row AS $key=>$value)
+					if($value=='INV'.$alma.$fecha)$ban=false;
 			
-			$this->db->query($mSQL);
-			//$this->db->query();
-			
+			if($ban){
+				$mSQL="
+				CREATE TABLE IF NOT EXISTS `INV$alma$fecha` (
+					`codigo` VARCHAR(15) NULL,
+					`grupo` VARCHAR(4) NULL,
+					`alma` VARCHAR(4) NULL,
+					`existen` DECIMAL(13,2) NULL DEFAULT '0',
+					`contado` DECIMAL(10,1) NOT NULL DEFAULT '0.0',
+					`agregar` DECIMAL(10,1) NOT NULL DEFAULT '0.0',
+					`quitar` DECIMAL(10,1) NOT NULL DEFAULT '0.0',
+					`sustituir` DECIMAL(10,1) NOT NULL DEFAULT '0.0',
+					`fecha` INT(12) NOT NULL DEFAULT '0',
+					`modificado` VARCHAR(8) NULL,
+					`actualizado` VARCHAR(8) NULL,
+					PRIMARY KEY (`codigo`)
+				)
+				COLLATE=utf8_unicode_ci
+				ENGINE=MyISAM
+				ROW_FORMAT=DEFAULT
+				";
+				$this->db->query($mSQL);
+				
+				$mSQL = "
+				INSERT IGNORE INTO `INV$alma$fecha`
+				SELECT a.codigo,a.grupo,b.alma,b.existen,000000000.0 contado,000000000.0 agregar,000000000.0 quitar,000000000.0 sustituir, now() fecha,'NULLNULL' modificado,'NULLNULL' actualizado 
+				FROM sinv a 
+				LEFT JOIN itsinv b ON a.codigo= b.codigo
+				WHERE alma=$alma2
+				";
+				
+				$this->db->query($mSQL);
+			}
 		}
 		
 		$form1 = new DataForm('inventario/invfis/define/process/aa');
          
 		$form1->inv = new dropdownField("Inventario Fisico", "inv");
+		$form1->inv->rule = 'required';
 		$mSQL=$this->db->query("SHOW TABLES LIKE 'INV%'");
 		foreach($mSQL->result_array() AS $row){
 			foreach($row AS $key=>$value)
-				$form1->inv->option($value,substr($value,6,10));
+				$form1->inv->option($value,'Almacen:'.$this->datasis->dameval("SELECT ubides FROM caub WHERE ubica ='".substr($value,3,strlen($value)-11)."'").' de Fecha '.date_format(date_create_from_format('Ymd', substr($value,-8)), 'd/m/Y'));
   	}
 
 		$form1->submit("btnsubmit","Inventariar");
@@ -64,10 +96,28 @@ SELECT a.codigo,a.grupo,b.alma,b.existen,000000000.0 contado,000000000.0 agregar
 		if ($form1->on_success() && $var2=='aa'){
 			$inv=$form1->inv->newValue;
 			redirect($this->url.'inven/'.$inv);
-		}	
-		 
-		$data['content'] = $form->output.$form1->output;//$form1->output.
-		$data['title']   = ' ';//.$this->titulo.' ';
+		}
+
+		$form2 = new DataForm('inventario/invfis/define/process/bb');
+         
+		$form2->inv = new dropdownField("Inventario Fisico", "inv");
+		$form2->inv->rule = 'required';
+		//$mSQL=$this->db->query("SHOW TABLES LIKE 'INV%'");
+		foreach($mSQL->result_array() AS $row){
+			foreach($row AS $key=>$value)
+				$form2->inv->option($value,'Almacen:'.$this->datasis->dameval("SELECT ubides FROM caub WHERE ubica ='".substr($value,3,strlen($value)-11)."'").' de Fecha '.date_format(date_create_from_format('Ymd', substr($value,-8)), 'd/m/Y'));
+  	}
+
+		$form2->submit("btnsubmit","Crea Traslado");
+		$form2->build_form();
+		
+		if ($form2->on_success() && $var2=='bb'){
+			$inv=$form2->inv->newValue;
+			redirect($this->url.'creatrasla/'.$inv);
+		}
+		
+		$data['content'] = $form->output.$form1->output.$form2->output.
+		$data['title']   = ' Inventario Fisico';
 		$data["head"]    = $this->rapyd->get_head().script('jquery.js').script("plugins/jquery.numeric.pack.js").script("plugins/jquery.json.min.js");
 		$this->load->view('view_ventanas', $data);
 	}
@@ -270,21 +320,19 @@ SELECT a.codigo,a.grupo,b.alma,b.existen,000000000.0 contado,000000000.0 agregar
 		$grid->build();
 		
 		$data['script']  ='<script language="javascript" type="text/javascript">
-			var data2;
+		$(function() {
+			$(".inputnum").numeric(".");
+			
 			function traer(cod){
 				$.post("'.site_url($this->url.'traer').'",{ codigo:cod,tabla:"'.$tabla.'" },function(data){
 					$("#Ic_"+cod).val(data);
-					data2=data;
 				})
-				return data2;
 			}
-		$(function() {
-			$(".inputnum").numeric(".");
 			
 			$("input[id^=\'I\']").focus(function(){
 				cod =$(this).attr("name");
 				traer(cod);
-				return false;
+			
 			});
 			
 			$("input[id^=\'Ia_\']").change(function(){
@@ -292,12 +340,12 @@ SELECT a.codigo,a.grupo,b.alma,b.existen,000000000.0 contado,000000000.0 agregar
 				val = $("#Ia_"+cod).val();
 				con = $("#Ic_"+cod).val();
 				$.post("'.site_url($this->url.'agregar').'",{ codigo:cod,valor:val,tabla:"'.$tabla.'",contado:con },function(data){
-					traer(cod);
 					$("#Ia_"+cod).val(0);
 					if(data){
 						alert(data);
 					}
 				})
+				traer(cod);
 			});
 		
 			$("input[id^=\'Iq_\']").change(function(){
@@ -305,12 +353,12 @@ SELECT a.codigo,a.grupo,b.alma,b.existen,000000000.0 contado,000000000.0 agregar
 					val = $("#Iq_"+cod).val();
 					con = $("#Ic_"+cod).val();
 					$.post("'.site_url($this->url.'quitar').'",{ codigo:cod,valor:val,tabla:"'.$tabla.'",contado:con },function(data){
-						traer(cod);
 						$("#Iq_"+cod).val(0);
 						if(data){
 							alert(data);
 						}
 					})
+					traer(cod);
 			});
 			
 			$("input[id^=\'Is_\']").change(function(){
@@ -318,12 +366,13 @@ SELECT a.codigo,a.grupo,b.alma,b.existen,000000000.0 contado,000000000.0 agregar
 					val = $("#Is_"+cod).val();
 					con = $("#Ic_"+cod).val();
 					$.post("'.site_url($this->url.'sustituir').'",{ codigo:cod,valor:val,tabla:"'.$tabla.'",contado:con },function(data){
-						traer(cod);
 						$("#Is_"+cod).val(0);
 						if(data){
 							alert(data);
 						}
 					})
+					traer(cod);
+					
 			});
 		});
 		</script>';
@@ -375,5 +424,57 @@ SELECT a.codigo,a.grupo,b.alma,b.existen,000000000.0 contado,000000000.0 agregar
 		$codigo = $this->db->escape($this->input->post('codigo'));
 		$tabla  = $this->input->post('tabla');
 		echo $this->datasis->dameval("SELECT contado FROM $tabla WHERE codigo=$codigo");
+	}
+	
+	function creatrasla($tabla){		
+		$fecha  = date_format(date_create_from_format('Ymd', substr($tabla,-8)), 'Y-m-d');
+		$alma   = substr($tabla,3,strlen($tabla)-11);
+		$alma   = $this->db->escape($alma);		
+		$nstra  = $this->datasis->fprox_numero('nstra');
+		$error = '';
+		
+		$mSQL="
+			SELECT LPAD($nstra,8,'0'),a.codigo,CONCAT_WS(b.descrip,b.descrip2)descrip,a.contado,a.existen FROM $tabla a
+			JOIN sinv b ON a.codigo = b.codigo
+			WHERE modificado <> 'NULLNULL' AND actualizado ='NULLNULL'
+		";
+		$query = $this->db->query($mSQL);
+		
+		if($query->num_rows()>0){
+		
+			$mSQL="INSERT INTO stra (`numero`,`fecha`,`envia`,`recibe`,`observ1`) 
+				VALUES (LPAD($nstra,8,'0'),'$fecha',(SELECT ubica FROM caub WHERE gasto='S' AND invfis = 'S' ORDER BY ubica ='INFI' LIMIT 1),$alma,'INVENTARIO FISICO')";
+			$ban = $this->db->query($mSQL);
+			if(!($ban>0))$error.="No se pudo crear el registro en stra";
+			
+			$mSQL="
+				INSERT INTO itstra (`numero`,`codigo`,`descrip`,`cantidad`,`anteri`)
+				SELECT LPAD($nstra,8,'0'),a.codigo,CONCAT_WS(b.descrip,b.descrip2)descrip,a.contado,a.existen FROM $tabla a
+				JOIN sinv b ON a.codigo = b.codigo
+				WHERE modificado <> 'NULLNULL' AND actualizado ='NULLNULL'
+				";
+			$ban = $this->db->query($mSQL);
+			if(!($ban>0))$error.="No se pudo crear el registro en itstra";
+			
+			$mSQL="UPDATE $tabla SET actualizado=now() WHERE modificado <> 'NULLNULL' AND actualizado = 'NULLNULL'";
+			$ban = $this->db->query($mSQL);
+			if(!($ban>0))$error.="No se pudo actualizar la tabla:$tabla";
+		}else{
+			$error.="No hay articulos modificados";
+		}
+		
+		if(empty($error)){
+			logusu('INVFIS',"Se creo transferencia de Inventario Fisico $nstra");
+			$data['content'] = "Se creo transferencia de Inventario Fisico $nstra".anchor($this->url,'Regresar');
+			$data['title']   = "Inventario Fisico";
+			$data["head"]    = $this->rapyd->get_head();
+			$this->load->view('view_ventanas', $data);
+		}else{
+			logusu('INVFIS',"Intento crear transferencia de Inventario Fisico");
+			$data['content'] = "<div class='alert'>Error al crear transferencia</br>$error</div></br>".anchor($this->url,'Regresar');
+			$data['title']   = "Inventario Fisico";
+			$data["head"]    = $this->rapyd->get_head();
+			$this->load->view('view_ventanas', $data);
+		}
 	}
 }
