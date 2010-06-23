@@ -208,17 +208,79 @@ class Exportar extends Controller {
 		$this->sqlinex->exportunbufferzip($data,$nombre,$this->sucu);
 	}
 
-	function _smov($fecha,$opt=null){
+	/*function _smov($fecha,$opt=null){
 		set_time_limit(600);
 		$this->load->library("sqlinex");
 		$this->sqlinex->ignore   =TRUE;
 		$this->sqlinex->limpiar  =FALSE;
+		
+		$cant = strlen($this->prefijo);
+		
 		$data[]=array('table' => 'smov',
-				'where' => "estampa >= $fecha");
+				'where' => "estampa >= $fecha AND tipo_doc='FC'");
+
 		$nombre='smov_'.$fecha.'_'.$this->sucu;
 		if(!array_key_exists('HTTP_USER_AGENT', $_SERVER)) $_SERVER['HTTP_USER_AGENT']='curl';
 		$this->sqlinex->exportunbufferzip($data,'smov_'.$this->sucu,$this->sucu);
+	}*/
+
+
+	function _smov($fecha,$opt=null){
+		set_time_limit(600);
+		$this->load->library("sqlinex");
+		$cant = strlen($this->prefijo);
+
+		$data[]=array(
+			'distinc'   =>true,
+			'select'    =>'itccli.*',
+			'table'     =>'itccli',
+			'join'      =>array(
+					0 => array(
+						'table'=>'smov',
+						'on'=>'smov.transac=itccli.transac'),
+					1 => array(
+						'table'=>'sfpa',
+						'on'=>'sfpa.transac=itccli.transac')
+					),
+			'where'   =>"itccli.fecha=$fecha AND MID(itccli.transac,1,$cant)='".$this->prefijo."'"
+		);
+
+		$data[]=array(
+			'distinc'   =>true,
+			'select'    =>'sfpa.*',
+			'table'     =>'sfpa',
+			'join'      =>array(
+					0 => array(
+						'table'=>'itccli',
+						'on'=>'itccli.transac=sfpa.transac'),
+					1 => array(
+						'table'=>'smov',
+						'on'=>'smov.transac=sfpa.transac')
+					),
+			'where'   =>"sfpa.fecha=$fecha AND MID(sfpa.transac,1,$cant)='".$this->prefijo."'"
+		);
+
+		$data[]=array(
+			'distinc'   =>true,
+			'select'    =>'smov.*',
+			'table'     =>'smov',
+			'join'      =>array(
+					0 => array(
+						'table'=>'itccli',
+						'on'=>'itccli.transac=smov.transac'),
+					1 => array(
+						'table'=>'sfpa',
+						'on'=>'sfpa.transac=smov.transac')
+					),
+			'where'   =>"smov.fecha=$fecha AND MID(smov.transac,1,$cant)='".$this->prefijo."'"
+			//'wherejoin' =>"ittran.recibe=$dbalma"
+		);
+
+		$nombre='smov_'.$fecha.'_'.$this->sucu;
+		if(!array_key_exists('HTTP_USER_AGENT', $_SERVER)) $_SERVER['HTTP_USER_AGENT']='curl';
+		$this->sqlinex->exportunbufferzip($data,$nombre,$this->sucu);
 	}
+
 
 	function _fiscalz($fecha,$opt=null){
 		set_time_limit(600);
