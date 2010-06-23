@@ -5,7 +5,7 @@ function nformat(num,n){
 	centimos='<?php echo $centimos; ?>';
 	num = num.toString().replace(/$|\,/g,'');
 	if(isNaN(num)) num = "0";
-	for(i=0;i<n;i++){ fact=10*fact; }
+	for(i=0;i < n;i++){ fact=10*fact; }
 	sign  = (num == (num = Math.abs(num)));
 	num   = Math.floor(num*fact+0.50000000001);
 	//alert(num);
