@@ -80,7 +80,7 @@ class Bienvenido extends Controller {
 		$arreglo=arr2panel($arreglo);
 		
 		if (count($arreglo)>0){
-			$out ='<div id=\'accordion\'>';
+			//$out ='<div id=\'accordion\'>';
 			foreach($arreglo as $panel => $opciones ){
 				$out .="<div class='myAccordion-declencheur'><h1>".htmlentities($panel)."</h1></div>\n";
 				$out .= "<div class='myAccordion-content'><table width='100%' cellspacing='0' border='0'>\n";
@@ -91,7 +91,7 @@ class Bienvenido extends Controller {
 					$out .= "</td></tr>\n";
 					if ( $color == "#FFFFFF" ) $color = "#F4F4F4"; else  $color = "#FFFFFF";
 				}$out .="</table></div>\n";
-			}$out .='</div>';
+			}//$out .='</div>';
 		}
 		echo $out;
 	}
