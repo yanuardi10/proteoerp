@@ -177,7 +177,7 @@ class Exportar extends Controller {
 		$data[]=array('select' =>'tipo_doc,numero,tipo,monto,num_ref,clave,fecha,banco,f_factura,cod_cli,vendedor,cobrador,status,cobro,cambio,almacen,transac,usuario,estampa,hora',
 				'distinc'=>false,
 				'table'  =>'sfpa',
-				'where'  =>"fecha = $fecha AND MID(numero,1,$cant)=$pre_caja");
+				'where'  =>"fecha = $fecha AND MID(numero,1,$cant)=$pre_caja AND tipo_doc IN ('FC','DE')");
 		$data[]=array('distinc'=>false,
 				'table'  =>'fiscalz',
 				'where'  =>"fecha = $fecha");
