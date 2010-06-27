@@ -232,7 +232,7 @@ class Exportar extends Controller {
 
 		$data[]=array(
 			'distinc'   =>true,
-			'select'    =>'itccli.*',
+			'select'    =>'itccli.numccli, itccli.tipoccli, itccli.cod_cli, itccli.tipo_doc, itccli.numero, itccli.fecha, itccli.monto, itccli.abono, itccli.ppago, itccli.reten, itccli.cambio, itccli.mora, itccli.transac, itccli.estampa, itccli.hora, itccli.usuario, itccli.reteiva, itccli.nroriva, itccli.emiriva, itccli.recriva',
 			'table'     =>'itccli',
 			'join'      =>array(
 					0 => array(
