@@ -114,6 +114,8 @@ class Scli extends validaciones {
 				autoFill:true
 				}
 			);
+			//$(":input").enter2tab();
+
 		});
 
 		

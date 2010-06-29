@@ -6,7 +6,7 @@ class Mantenimiento extends Controller{
 		$this->load->library("rapyd");
 	}
 
-	function index(){		
+	function index(){
 		$list = array();
 		$list[]=anchor('supervisor/mantenimiento/bprefac','Borrar PreFacturas menores o iguales al d&iacute;a de ayer');
 		$list[]=anchor('supervisor/mantenimiento/bmodbus','Vaciar la tabla ModBus');
@@ -130,13 +130,13 @@ class Mantenimiento extends Controller{
 		$grid->db->having("abs(diferen)>0.01");
 		//$grid->db->having('abs(100*diferen/saldo)>=0.05');
 		
-		$grid->column_orderby('Cliente'   ,$uri1 ,'cod_cli');
-		$grid->column('Nombre'    ,'nombre'  );
-		$grid->column('D&eacute;bitos'   ,'debitos' );
-		$grid->column('Cr&eacute;ditos'  ,'creditos');
-		$grid->column('Saldo'     ,'saldo'   );
-		$grid->column('Abonados'  ,'abonado' );
-		$grid->column_orderby('Diferencia','diferen','diferen');
+		$grid->column_orderby('Cliente'        ,$uri1 ,'cod_cli');
+		$grid->column_orderby('Nombre'         ,'nombre','nombre'  );
+		$grid->column_orderby('D&eacute;bitos' ,'debitos' );
+		$grid->column_orderby('Cr&eacute;ditos','creditos');
+		$grid->column_orderby('Saldo'          ,'saldo','saldo'   );
+		$grid->column_orderby('Abonados'       ,'abonado','saldo' );
+		$grid->column_orderby('Diferencia'     ,'diferen','diferen');
 
 		$grid->build();
 		//echo $grid->db->last_query();
@@ -146,7 +146,7 @@ class Mantenimiento extends Controller{
 		$data["head"]    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
-	
+
 	function itclinconsis($proveed){
 		$this->rapyd->load("datagrid");
 		$select=array('cod_cli', 'nombre','numero',
