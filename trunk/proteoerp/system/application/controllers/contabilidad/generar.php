@@ -202,8 +202,10 @@ class Generar extends Metodos {
 
 			if($error)
 				$salida=utf8_encode('Hubo algunos errores en el proceso, se genero un centinela');
-			else
-				$salida=utf8_encode('Listo!');
+			else{
+				$descuadre=$this->datasis->dameval("SELECT COUNT(*) FROM casi WHERE fecha BETWEEN $qfechai AND $qfechaf AND total<>0");
+				$salida=utf8_encode('Listo! Asientos descuadrados: '.$descuadre);
+			}
 		}else{
 			$salida=utf8_encode('Seleccione al menos un Modulo');
 		}

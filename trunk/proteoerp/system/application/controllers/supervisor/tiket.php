@@ -2,8 +2,8 @@
 class Tiket extends Controller {
 
 	var $estado;
- 	var $prioridad;
- 	var $modulo;
+	var $prioridad;
+	var $modulo;
 
 	function Tiket(){
 		parent::Controller();
@@ -316,7 +316,7 @@ class Tiket extends Controller {
 		//$filter->fechad->size=12;
 
 		$filter->cliente = new inputField("Cliente", "cliente");
-    $filter->cliente->size = 15;
+		$filter->cliente->size = 15;
 		$filter->cliente->append($boton);
 
 		//$filter->button("btnsubmit", "Consultar", '', $position="BL");

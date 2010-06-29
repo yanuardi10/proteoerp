@@ -177,7 +177,7 @@ class Exportar extends Controller {
 		$data[]=array('select' =>'tipo_doc,numero,tipo,monto,num_ref,clave,fecha,banco,f_factura,cod_cli,vendedor,cobrador,status,cobro,cambio,almacen,transac,usuario,estampa,hora',
 				'distinc'=>false,
 				'table'  =>'sfpa',
-				'where'  =>"fecha = $fecha AND MID(numero,1,$cant)=$pre_caja AND tipo_doc IN ('FC','DE')");
+				'where'  =>"fecha = $fecha AND MID(numero,1,$cant)=$pre_caja AND tipo_doc IN ('FE','DE')");
 		$data[]=array('distinc'=>false,
 				'table'  =>'fiscalz',
 				'where'  =>"fecha = $fecha");
@@ -257,7 +257,7 @@ class Exportar extends Controller {
 						'table'=>'smov',
 						'on'=>'smov.transac=sfpa.transac')
 					),
-			'where'   =>"sfpa.fecha=$fecha AND MID(sfpa.transac,1,$cant)='".$this->prefijo."'"
+			'where'   =>"sfpa.fecha=$fecha AND MID(sfpa.transac,1,$cant)='".$this->prefijo."' AND sfpa.tipo_doc NOT IN ('FE','DE')"
 		);
 
 		$data[]=array(
