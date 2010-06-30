@@ -3,6 +3,8 @@ class fnomina{
 
 	var $ci;
 	var $CODIGO;
+	var $fdesde;
+	var $fhasta;
 
 	function fnomina(){
 		$this->ci =& get_instance();
@@ -101,7 +103,20 @@ class fnomina{
 	}
 
 	function SEMANAS(){
-		return 1;
+		$dsemana=1; //1 para lunes, 2 para martes .... 7 domingo
+		$dated = new DateTime($this->fdesde);
+		$dateh = new DateTime($this->fhasta);
+		$dias  = 0;
+		$intervalo='P1D';
+
+		while($dated<=$dateh){
+			if(date('N',$dated->getTimestamp())==$dsemana) {
+				$dias++;
+				$intervalo='P7D';
+			}
+			$dated->add(new DateInterval($intervalo));
+		}
+		return $dias;
 	}
 }
 
