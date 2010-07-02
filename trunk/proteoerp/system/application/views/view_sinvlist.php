@@ -62,7 +62,19 @@ function del_itsinvlist(id){
 				</td>
 			</tr>
 			<tr>
-				<td class="littletablerowth"><?=$form->concepto->label   ?>*&nbsp;</td>
+				<td class="littletablerowth"><?=$form->nombre->label   ?>&nbsp;</td>
+				<td class="littletablerow"><?=$form->nombre->output  ?>&nbsp;</td>
+				<td class="littletablerowth">&nbsp;</td>
+				<td class="littletablerow">&nbsp;</td>
+			</tr>
+			<tr>
+				<td class="littletablerowth"><?=$form->fecha->label   ?>&nbsp;</td>
+				<td class="littletablerow"><?=$form->fecha->output  ?>&nbsp;</td>
+				<td class="littletablerowth">&nbsp;</td>
+				<td class="littletablerow">&nbsp;</td>
+			</tr>
+			<tr>
+				<td class="littletablerowth"><?=$form->concepto->label   ?>&nbsp;</td>
 				<td class="littletablerow"><?=$form->concepto->output  ?>&nbsp;</td>
 				<td class="littletablerowth">&nbsp;</td>
 				<td class="littletablerow">&nbsp;</td>
@@ -84,9 +96,11 @@ function del_itsinvlist(id){
 			</tr>
 			<?php for($i=0;$i<$form->max_rel_count['itsinvlist'];$i++) {
 				$obj0="itcodigo_$i";
+				$obj1="itdescrip_$i"
 				?>
 			<tr id='tr_itsinvlist_<?=$i ?>'>
 				<td class="littletablerow"><?=$form->$obj0->output ?></td>
+				<td class="littletablerow"><?=$form->$obj1->output ?></td>
 				<?php if($form->_status!='show') {?>
 				<td class="littletablerow"><a href=#
 					onclick='del_itsinvlist(<?=$i ?>);return false;'>Eliminar</a></td>
