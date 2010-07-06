@@ -260,7 +260,7 @@ class pfacdespfyco extends Controller {
 	}
 	function detalle($numero=''){
 			$anchor=anchor('ventas/pfacdespfyco/filteredgrid','Regresar');
-			$mSQL_1 = $this->db->query("SELECT a.numa,a.tipoa,a.codigoa,a.desca,a.cana,a.preca,a.tota,a.cdespacha,a.despacha,b.unidad,b.clave FROM itpfac AS a JOIN sinv AS b ON a.codigoa=b.codigo WHERE a.numa='$numero'");
+			$mSQL_1 = $this->db->query("SELECT a.numa,a.tipoa,a.codigoa,a.desca,a.cana,a.preca,a.tota,a.cdespacha,a.despacha,b.unidad,b.clave,a.mdolar,a.ultimdolar,a.mbolivar FROM itpfac AS a JOIN sinv AS b ON a.codigoa=b.codigo WHERE a.numa='$numero'");
 			$data2['detalle']= $mSQL_1->result();
 			//$data2['anchor']= $anchor; 
 			$this->load->view('view_pfacdesp', $data2);
@@ -273,6 +273,8 @@ class pfacdespfyco extends Controller {
 		$codigoa    = $this->input->post('codigoa');
 		$usuario    = $this->db->escape($this->session->userdata('usuario'));
 		$ultidespachado = $this->input->post('ultidespachado');
+		$ultimdolar = $this->input->post('ultimdolar');
+		$ultibolivar = $this->input->post('ultibolivar');
 			
 		//print_r ($cdespacha);
 		//print_r ($cadespacha);
@@ -281,11 +283,15 @@ class pfacdespfyco extends Controller {
 		 $i=$o=0;
 		 
 		while($o<$cant){
-			$array=array('0'=>$codigoa[$i],'1'=>$cdespacha[$i],'2'=>$despacha[$i],'3'=>$ultidespachado[$i]);
+			$array=array('0'=>$codigoa[$i],'1'=>$cdespacha[$i],'2'=>$despacha[$i],'3'=>$ultidespachado[$i],'4'=>$ultimdolar[$i],'5'=>$dolar[$i],'6'=>$mbolivar[$i]);
 			$SQL="SELECT cdespacha+'$ultidespachado[$i]' as despachado FROM itpfac WHERE  codigoa='$codigoa[$i]' AND numa='$numa'";
 			$despachado = $this->datasis->dameval($SQL);
-		  //echo $SQL;
-		  $mSQL ="UPDATE itpfac set ultidespachado='$ultidespachado[$i]',udespacha=$usuario,cdespacha='$despachado',despacha='$despacha[$i]',fdespacha=CURDATE() WHERE codigoa='$codigoa[$i]' AND numa='$numa'";
+			$SQL1 = "SELECT mdolar+'$ultimdolar[$i]' as mdolar FROM itpfac WHERE  codigoa='$codigoa[$i]' AND numa='$numa'";
+		  $mdolar=$this->datasis->dameval($SQL1);
+		  $SQL2 = "SELECT mbolivar+'$ultibolivar[$i]' as ultimbolivar FROM itpfac WHERE  codigoa='$codigoa[$i]' AND numa='$numa'";
+		  $ultimbolivar=$this->datasis->dameval($SQL2);
+		  //echo $SQL2;
+		  $mSQL ="UPDATE itpfac set ultimdolar='$ultimdolar[$i]',ultidespachado='$ultidespachado[$i]',udespacha=$usuario,cdespacha='$despachado',mdolar='$mdolar',despacha='$despacha[$i]',fdespacha=CURDATE(),mbolivar='$ultimbolivar',ultibolivar='$ultibolivar[$i]' WHERE codigoa='$codigoa[$i]' AND numa='$numa'";
 			$mSQL_1=$this->db->query($mSQL);
 			//echo $mSQL;
 			$i++;

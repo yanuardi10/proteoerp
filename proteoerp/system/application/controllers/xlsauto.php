@@ -18,6 +18,7 @@
 			$this->load->library("XLSReporte");
 			
 			$mSQL=$this->input->post("mSQL");
+			//$consulta="SELECT codigo,grupo,descrip,margen1,margen2,margen3,base1,base2,base3,base4 FROM sinv";
 			$consulta = $this->encrypt->decode($mSQL); 
 			$xls= new xlsreporte($consulta);					
 			$xls->tcols();			
