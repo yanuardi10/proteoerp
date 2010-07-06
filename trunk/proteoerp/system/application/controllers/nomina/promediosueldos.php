@@ -10,7 +10,7 @@ class promediosueldos extends Controller {
 	 
 	  redirect("nomina/promediosueldos/filteredgrid");
 	}
-		                            
+	function filteredgrid(){	                            
 		if($this->uri->segment(4))$anio=$this->uri->segment(4); elseif(isset($_POST['anio'])) $anio=$_POST['anio'];
 		if (empty($anio))$anio=date("Y");
 		$fechai=$anio.'0101';

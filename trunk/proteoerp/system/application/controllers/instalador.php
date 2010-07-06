@@ -920,7 +920,7 @@ $this->db->simple_query($mSQL);
 		  `maquina` char(12) default NULL,
 		  `factura` char(8) default NULL,
 		  `numero` char(8) default NULL,
-		  `caja` char(5) NOT NULL default '',
+		  `caja` char(5) NOT NULL default ,
 		  `fecha` timestamp NULL default CURRENT_TIMESTAMP,
 		  `id` int(11) unsigned NOT NULL auto_increment,
 		  PRIMARY KEY  (`id`),

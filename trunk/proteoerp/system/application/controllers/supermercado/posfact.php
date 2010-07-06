@@ -4,7 +4,7 @@ class Posfact extends Controller {
 	function Posfact(){
 		parent::Controller();
 		$this->load->library("rapyd");
-	        $this->datasis->modulo_id('115',1);u'
+	        $this->datasis->modulo_id('115',1);
 	}
 	function index() {
 		$this->rapyd->load('datagrid2');
