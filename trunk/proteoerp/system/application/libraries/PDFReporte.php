@@ -38,6 +38,7 @@ class PDFReporte extends Fpdf {
 	var $Columna=array("color1"=>array(255,255,255),"color2"=>array(239,239,239),"padding"=>2);
 	var $tituHeader='';
 	var $tituSubHeader='';
+	var $sistema='Sistema Proteoerp';
 	var $view=array('TituSize'     =>14,
 									'TituFont'     =>'Arial',
 									'TituType'     =>'U',
@@ -83,6 +84,7 @@ class PDFReporte extends Fpdf {
 			$this->Fpdf($orientation,$unit,$format);
 			$this->Open();
 			$this->AliasNbPages();
+			$this->sistema = $CI->datasis->traevalor('SISTEMA');
 		}
 	}
 
@@ -217,8 +219,8 @@ class PDFReporte extends Fpdf {
 			$this->image($this->Logo,12,7,30);
 
 		$this->SetFont('Times','I',6);
-		$this->Cell(0,0,'P�gina '.$this->PageNo().'/{nb}',0,1,'R');
-		//$this->Cell(0,0,utf8_decode('P?gina ').$this->PageNo().'/{nb}',0,1,'R');
+		//$this->Cell(0,0,'Página '.$this->PageNo().'/{nb}',0,1,'R');
+		$this->Cell(0,0,utf8_decode('Página ').$this->PageNo().'/{nb}',0,1,'R');
 
 		//Head
 		$this->SetFont($this->view['HeadFont'],'',$this->view['HeadSize']);
@@ -260,7 +262,7 @@ class PDFReporte extends Fpdf {
 	function Footer(){
 		$this->Ln();
 		$this->SetFont('Arial','B',6);
-		$this->Cell(0,6,$this->Titulo.' :: Sistema ProteoERP','T',1,'C');
+		$this->Cell(0,6,$this->Titulo.'::'.$this->sistema,'T',1,'C');
 		$this->Ln();
 		//Ensure table header is output
 		//parent::Footer();
