@@ -9,10 +9,10 @@ class Accesos extends Controller{
 	}
 
 	function index(){
-SELECT a.modulo,a.titulo, IFNULL(b.acceso,'N')
+/*SELECT a.modulo,a.titulo, IFNULL(b.acceso,'N')
 FROM intramenu AS a
 LEFT JOIN intrasida AS b ON a.modulo=b.modulo AND b.usuario='321'
-WHERE MID(a.modulo,1,1)!=0 ORDER BY a.modulo, a.panel
+WHERE MID(a.modulo,1,1)!=0 ORDER BY a.modulo, a.panel*/
 
 		$data['script']  ='<script type="text/javascript">
 		$(function() {

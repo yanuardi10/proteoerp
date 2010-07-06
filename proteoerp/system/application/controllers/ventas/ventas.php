@@ -328,7 +328,7 @@ class Ventas extends Controller {
         $grid->db->where('fecha >= ', $fechai);  
 		$grid->db->where('fecha <= ',$fechaf);  
 		$grid->db->where('e.depto',$departamento); 
-		$grid->db->where('d.linea='$linea); 
+		$grid->db->where('d.linea=',$linea); 
 		$grid->db->where('b.grupo',$grupo);  
 		$grid->db->groupby("a.codigo");
 		$grid->db->orderby("ventas DESC");

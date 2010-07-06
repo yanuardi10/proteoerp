@@ -145,8 +145,7 @@ class Grup extends validaciones {
 		$bcu_devo  = $this->datasis->p_modbus($modbus,'cu_devo' );
 
 		$do = new DataObject("grup"); $do->set('tipo', 'I'); if($status=="create" && 
-		!empty($grupo) && !empty($familia) && !empty($depto)){ $do-
-		>load(array("familia"=> "$familia","grupo"=> "$grupo","depto"=> "$depto")); 
+		!empty($grupo) && !empty($familia) && !empty($depto)){ $do->load(array("familia"=> "$familia","grupo"=> "$grupo","depto"=> "$depto")); 
 		$do->set('grupo', ''); }
 
 		$edit = new DataEdit("Grupos de Inventario",$do);
