@@ -4329,7 +4329,7 @@ class  Cpdf {
 
     $tmp =  get_magic_quotes_runtime();
 
-    set_magic_quotes_runtime(0);
+//    set_magic_quotes_runtime(0);
 
     if  ( ($data =  file_get_contents($file)) ===  false) {
 
@@ -4669,12 +4669,12 @@ class  Cpdf {
 
     $tmp =  get_magic_quotes_runtime();
 
-    set_magic_quotes_runtime(0);
+//    set_magic_quotes_runtime(0);
 
     $data =  file_get_contents($img);
 
     //fread($fp,filesize($img));
-    set_magic_quotes_runtime($tmp);
+//    set_magic_quotes_runtime($tmp);
 
 
     //fclose($fp);
