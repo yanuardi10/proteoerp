@@ -7,6 +7,9 @@ class validaciones extends Controller {
 
 	//Validar la cedula
 	function chci($rifci){
+		if($this->datasis->traevalor("VELCED")=='N'){
+			return TRUE;
+		}
 		if (preg_match("/((^[VEJG][0-9]+[[:blank:]]*$)|(^[P][A-Z0-9]+[[:blank:]]*$))|(^[[:blank:]]*$)/", $rifci)>0){
 			return TRUE;
 		}else {
@@ -21,13 +24,16 @@ class validaciones extends Controller {
 		$retorna=$this->datasis->dameval("SELECT COUNT(*) FROM cpla WHERE codigo='$cuenta'");
 		if($retorna==0){
 			$this->validation->set_message('chcuentac', 'La cuenta contable no es v&aacute;lida');
-			return FALSE; 
+			return FALSE;
 		}else {
 			return TRUE;
 		}
 	}
 
 	function chrif($rif){
+		if($this->datasis->traevalor("VELCED")=='N'){
+			return TRUE;
+		}
 		if (preg_match("/(^[VEJG][0-9]{9}[[:blank:]]*$)|(^[[:blank:]]*$)/", $rif)>0){
 			return TRUE;
 		}else {
@@ -44,7 +50,7 @@ class validaciones extends Controller {
 			return FALSE;
 		}
 	}
-	
+
 	function ipcaja($ubica){
 		if (preg_match("/^([1-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\.([0-9]{1,2}|1[0-9]{2}|2[0-4][0-9]|25[0-5])){3}$/", $ubica)>0){
 			$cant=$this->datasis->dameval("SELECT COUNT(*) FROM caja WHERE ubica='$ubica'");
@@ -55,28 +61,28 @@ class validaciones extends Controller {
 		}
 		return TRUE;
 	}
-	
+
 	function chporcent($porcen){
 		if ($porcen<=100 AND $porcen>=0)
-			return TRUE;
+		return TRUE;
 		$this->validation->set_message('chporcent', "El valor del campo <b>%s</b> debe estar entre 0 y 100");
 		return FALSE;
 	}
-	                       
+
 	function chfecha($validar,$formato=RAPYD_DATE_FORMAT){
 		return TRUE;
 	}
-	
+
 	//**********************
 	//METODOS FUNCIONALES
 	//**********************
-	
+
 	//Cambia el formato de fin de linea de linux a windows
 	function eollw($cont){
 		$_POST[$this->validation->_current_field]=preg_replace("/[\r]*\n/","\r\n",$cont);
 		return true;
 	}
-	
+
 	//Cambia el formato de fin de linea de windows a linux
 	function eolwl($cont){
 		$_POST[$this->validation->_current_field]=str_replace("\r\n","\n",$cont);
