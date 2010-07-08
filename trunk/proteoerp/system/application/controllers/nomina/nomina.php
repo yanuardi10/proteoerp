@@ -1,10 +1,10 @@
 <?php
 class Nomina extends Controller {
-	
+
 	function Nomina(){
 		parent::Controller(); 
 		$this->load->library("rapyd");
-   }
+	}
 
 	function index(){
 		$this->datasis->modulo_id(712,1);
@@ -40,11 +40,10 @@ class Nomina extends Controller {
 		$data['content'] = $filter->output.$grid->output;
 		$data['title']   = "<h1>Nomina</h1>";
 		$data["head"]    = $this->rapyd->get_head();
-		$this->load->view('view_ventanas', $data);	
+		$this->load->view('view_ventanas', $data);
 	}
 	
-	function dataedit()
- 	{
+	function dataedit(){
 		$this->rapyd->load("dataedit");
 		$edit = new DataEdit("clientes", "nomina");
 		$edit->back_url = site_url("nomina/nomina/filteredgrid");
@@ -90,9 +89,9 @@ class Nomina extends Controller {
 		$edit->codigo->mode="autohide";
 		
 		$edit->nombre =  new inputField("Nombre", "nombre");
-    $edit->nombre->mode="autohide";
-    $edit->nombre->maxlength=30;
-    $edit->nombre->size=40;                    
+		$edit->nombre->mode="autohide";
+		$edit->nombre->maxlength=30;
+		$edit->nombre->size=40;
 		
 		$edit->concepto = new dropdownField("Concepto", "concepto");
 		$edit->concepto->option("","");
@@ -132,7 +131,7 @@ class Nomina extends Controller {
 		$edit->cuota->size =13;
 		$edit->cuota->css_class='inputnum';
 		$edit->cuota->rule='integer';
-				
+		
 		$edit->cuotat =  new inputField("Cuota Total", "cuotat");
 		$edit->cuotat->maxlength=11;
 		$edit->cuotat->size =13;
@@ -148,10 +147,10 @@ class Nomina extends Controller {
 		$edit->buttons("modify", "save", "undo", "delete", "back");
 		$edit->build();
 		
-		$data['content'] = $edit->output;           
-    $data['title']   = "<h1>Nomina</h1>";        
-    $data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
-    $this->load->view('view_ventanas', $data);  
+		$data['content'] = $edit->output;
+		$data['title']   = "<h1>Nomina</h1>";
+		$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
+		$this->load->view('view_ventanas', $data);
 	}
 	function _post_insert($do){
 		$codigo=$do->get('numero');

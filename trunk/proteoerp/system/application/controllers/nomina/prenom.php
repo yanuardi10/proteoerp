@@ -244,8 +244,23 @@ class Prenom extends Controller {
 		}
 
 		//echo a()[0];
-		//print_r(a());
+		$fdesde='2010-06-01';
+		$fhasta='2010-07-20';
+		
+		$dsemana=1; //1 para lunes, 2 para martes .... 7 domingo
+		$dated = new DateTime($fdesde);
+		$dateh = new DateTime($fhasta);
+		$dias  = 0;
+		$intervalo='P1D';
 
+		while($dated<=$dateh){
+			if(date('N',$dated->getTimestamp())==$dsemana) {
+				$dias++;
+				$intervalo='P7D';
+			}
+			$dated->add(new DateInterval($intervalo));
+		}
+		echo 'Hay '.$dias." Lunes \n";
 	}
 
 }

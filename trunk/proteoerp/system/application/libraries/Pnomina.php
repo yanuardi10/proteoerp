@@ -103,18 +103,19 @@ class fnomina{
 	}
 
 	function SEMANAS(){
-		$dsemana=1; //1 para lunes, 2 para martes .... 7 domingo
-		$dated = new DateTime($this->fdesde);
-		$dateh = new DateTime($this->fhasta);
+		$dsemana  = 1; //1 para lunes, 2 para martes .... 7 domingo
+		$dated    = new DateTime($this->fdesde);
+		$dateh    = new DateTime($this->fhasta);
+		$interva1 = new DateInterval('P1D');
+		$interva2 = new DateInterval('P7D');
 		$dias  = 0;
-		$intervalo='P1D';
 
 		while($dated<=$dateh){
-			if(date('N',$dated->getTimestamp())==$dsemana) {
-				$dias++;
-				$intervalo='P7D';
-			}
-			$dated->add(new DateInterval($intervalo));
+			if(date('N',$dated->getTimestamp())==$dsemana) $dias++;
+			if($dias>0)
+				$dated->add($interva1);
+			else
+				$dated->add($interva2);
 		}
 		return $dias;
 	}

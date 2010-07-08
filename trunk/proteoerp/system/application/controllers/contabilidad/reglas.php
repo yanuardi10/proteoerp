@@ -252,8 +252,8 @@ class Reglas extends Metodos {
 				$grid->column('Cuenta'    , 'cuenta'  );
 				$grid->column('Referencia', 'referen' );
 				$grid->column('Concepto'  , 'concepto');
-				$grid->column("Debe","<number_format><#debe#>|2</number_format>","align=right");
-				$grid->column("Haber","<number_format><#haber#>|2</number_format>","align=right");
+				$grid->column("Debe","<nformat><#debe#></nformat>","align=right");
+				$grid->column("Haber","<nformat><#haber#></nformat>","align=right");
 				//$grid->column("Diferencia" , "<dif><#debe#>|<#haber#></dif>",'align=right');
 				$grid->column('Sucursal'  , 'sucursal','align=right');
 				$grid->column('C. Costo'  , 'ccosto'  ,'align=right');
