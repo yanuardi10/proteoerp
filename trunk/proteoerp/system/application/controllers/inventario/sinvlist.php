@@ -258,7 +258,7 @@ class sinvlist extends Controller {
 		$bSPRV=$this->datasis->modbus($mSPRV);
 
 		$mSPRV1=array(
-				'tabla'   =>'itsnot',
+				'tabla'   =>'snot',
 				'columnas'=>array(
 				'numero'=>'N&uacute;mero'),
 				'filtro'  =>array('numero'=>'N&uacute;mero'),
@@ -269,7 +269,7 @@ class sinvlist extends Controller {
 		$bSPRV1=$this->datasis->modbus($mSPRV1);
 
 		$mSPRV2=array(
-				'tabla'   =>'itspre',
+				'tabla'   =>'spre',
 				'columnas'=>array(
 				'numero'=>'N&uacute;mero'),
 				'filtro'  =>array('numero'=>'N&uacute;mero'),
@@ -280,7 +280,7 @@ class sinvlist extends Controller {
 		$bSPRV2=$this->datasis->modbus($mSPRV2);
 
 		$mSPRV3=array(
-				'tabla'   =>'itscst',
+				'tabla'   =>'scst',
 				'columnas'=>array(
 				'numero'=>'N&uacute;mero'),
 				'filtro'  =>array('numero'=>'N&uacute;mero'),
@@ -291,7 +291,7 @@ class sinvlist extends Controller {
 		$bSPRV3=$this->datasis->modbus($mSPRV3);
 
 		$mSPRV4=array(
-				'tabla'   =>'itsnte',
+				'tabla'   =>'snte',
 				'columnas'=>array(
 				'numero'=>'N&uacute;mero'),
 				'filtro'  =>array('numero'=>'N&uacute;mero'),
@@ -302,11 +302,11 @@ class sinvlist extends Controller {
 		$bSPRV4=$this->datasis->modbus($mSPRV4);
 
 		$mSPRV5=array(
-				'tabla'   =>'sitems',
+				'tabla'   =>'sfac',
 				'columnas'=>array(
-				'numa'=>'N&uacute;mero'),
-				'filtro'  =>array('numa'=>'N&uacute;mero'),
-				'retornar'=>array('numa'=>'objnumero'),
+				'numero'=>'N&uacute;mero','tipo_doc'=>'Tipo De Documento'),
+				'filtro'  =>array('numero'=>'N&uacute;mero'),
+				'retornar'=>array('numero'=>'objnumero'),
 				'script'=>array('limpia()'),
 				'titulo'  =>'Buscar N&uacute;mero');
 			
@@ -446,6 +446,8 @@ class sinvlist extends Controller {
 
 
 		$filter = new DataFilter2("Filtro por Producto");
+		$filter->db->_escape_char='';
+		$filter->db->_protect_identifiers=false;
 
 		$filter->script($script);
 
@@ -481,11 +483,9 @@ class sinvlist extends Controller {
 		$filter->clave = new inputField("Clave", "clave");
 		$filter->clave -> size=25;
 
-
 		$filter->proveed = new inputField("Proveedor", "proveed");
 		$filter->proveed->append($bSPRV);
-		$filter->proveed->clause ="in";
-		$filter->proveed->db_name='( a.prov1, a.prov2, a.prov3 )';
+		$filter->proveed->db_name='a.prov1';
 		$filter->proveed -> size=25;
 
 		$filter->depto = new dropdownField("Departamento","depto");
@@ -564,7 +564,11 @@ class sinvlist extends Controller {
 			if(!$this->input->post("objnumero")!==false){
 				//echo "aqui tambien";
 				$grid = new DataGrid("Lista de Art&iacute;culos");
-				$grid->db->select("a.tipo AS tipo,id,codigo,a.descrip,precio1,precio2,precio3,precio4,b.nom_grup AS nom_grup,b.grupo AS grupoid,c.descrip AS nom_linea,c.linea AS linea,d.descrip AS nom_depto,d.depto AS depto");
+				$grid->db->select("a.tipo AS tipo,id,codigo,a.descrip,precio1,
+									precio2,precio3,precio4,a.prov1,
+									b.nom_grup AS nom_grup,b.grupo AS grupoid,
+									c.descrip AS nom_linea,c.linea AS linea,
+									d.descrip AS nom_depto,d.depto AS depto,a.prov1,a.prov2,a.prov3");
 				$grid->db->from("sinv AS a");
 				$grid->db->join("grup AS b","a.grupo=b.grupo");
 				$grid->db->join("line AS c","b.linea=c.linea");
@@ -584,7 +588,7 @@ class sinvlist extends Controller {
 				$grid->column("Descripci&oacute;n","descrip");
 				$grid->column("Accio&oacute;n"   ,"<asigna><#codigo#></asigna>"                ,"align='right'" );
 				$grid->build();
-
+				//echo $grid->db->last_query();
 				$tabla.=$grid->output.form_submit('mysubmit', 'Guardar');
 				$tabla.=form_close();
 			}else{
