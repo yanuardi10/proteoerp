@@ -9,7 +9,7 @@
 <?php if($tabla=="") {?>
 #caja {
 	width: 100%;
-	display: none;
+	display: block;
 	padding: 5px;
 	border: 2px solid #D0D0D0;
 	background-color: #FDF4E1;
