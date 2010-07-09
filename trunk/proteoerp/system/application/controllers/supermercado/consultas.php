@@ -6,7 +6,7 @@ class Consultas extends Controller {
 	}
 
 	function index(){
-		redirect("supermercado/consultas/precios");
+		redirect("inventario/consultas/precios");
 	}
 
 	function precios(){
@@ -21,13 +21,13 @@ class Consultas extends Controller {
 		);
 
 
-	$sinv=array('tabla'   =>'maes',
-	   'columnas'=>array('codigo' =>'C&oacute;digo',
-		 'descrip'=>'descrip'),
-		 'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'descrip'),
-		 'retornar'=>array('codigo'=>'barras'),
-		 'titulo'  =>'Buscar Articulo');
-		
+                $sinv=array('tabla'   =>'maes',
+	                    'columnas'=>array('codigo' =>'C&oacute;digo',
+			                      'descrip'=>'descrip'),
+			                      'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'descrip'),
+			                      'retornar'=>array('codigo'=>'barras'),
+			                      'titulo'  =>'Buscar Articulo');
+				    
 		$out  = form_open('supermercado/consultas/precios');
 		$out .= "Introduzca un Codigo ";
 		$out .= form_input($barras);
@@ -80,7 +80,7 @@ script;
 				return 0;
 			}
 		}
-		$mSQL_p='SELECT unidad,iva,codigo, referen, barras, descrip, corta, codigo, marca, precio1, precio2, precio3, precio4, dvolum1, dvolum2, existen, mempaq, dempaq FROM maes';
+		$mSQL_p='SELECT codigo, referen, barras, descrip, corta, codigo, marca, precio1, precio2, precio3, precio4, dvolum1, dvolum2, existen, mempaq, dempaq FROM maes';
 		$mSQL  =$mSQL_p." WHERE barras='$cod_bar'";
 		$query = $this->db->query($mSQL);
 		if ($query->num_rows() == 0){
@@ -91,7 +91,7 @@ script;
 			    $query = $this->db->query($mSQL);
 			    if ($query->num_rows()== 0){
 				// Busca por suplementarios
-				$mSQL_p='SELECT b.unidad,b.iva,b.codigo, b.referen, a.suplemen barras, b.descrip, b.corta, b.codigo, b.marca, b.precio1, b.precio2, b.precio3, b.precio4, b.dvolum1, b.dvolum2, b.existen, b.mempaq, b.dempaq FROM suple a JOIN maes b ON a.codigo=b.codigo ';
+				$mSQL_p='SELECT b.codigo, b.referen, a.suplemen barras, b.descrip, b.corta, b.codigo, b.marca, b.precio1, b.precio2, b.precio3, b.precio4, b.dvolum1, b.dvolum2, b.existen, b.mempaq, b.dempaq FROM suple a JOIN maes b ON a.codigo=b.codigo ';
 				$mSQL  =$mSQL_p." WHERE a.suplemen='$cod_bar'";
 	    			$query = $this->db->query($mSQL);
 				if ($query->num_rows()== 0){
@@ -115,9 +115,8 @@ script;
 
 		$data['corta'] = $row->corta;
 
-		$data['alterno'] = $row->referen;
-		$data['unidad']  = $row->unidad;	
-		$data['iva']  = $row->iva;
+		$data['referen'] = $row->referen;
+		
 		$data['codigo']  = $row->codigo;
 		$data['marca']   = $row->marca;
 		$data['existen'] = $this->datasis->dameval("SELECT sum(a.cantidad*b.fracxuni+a.fraccion) FROM ubic a JOIN maes b ON a.codigo=b.codigo WHERE a.codigo='".$row->codigo."' AND a.ubica IN ('DE00','DE01')");
