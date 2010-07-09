@@ -424,5 +424,22 @@ class Exportar extends Controller {
 		$this->sqlinex->exportunbufferzip($data,$nombre,$this->sucu);
 	}
 
+	function _ubicalma($fecha,$opt=null){
+		if(empty($opt)) return false;
+		$this->load->library("sqlinex");
+		//$this->sqlinex->ignore   =TRUE;
+		//$this->sqlinex->limpiar  =FALSE;
+
+		$dbalma=$this->db->escape($opt[0]);
+		$data[]=array('table'  =>'ubic',
+			'where'=>"ubica=$dbalma"
+		);
+
+		$nombre='ubicalma_'.$opt[0].'_'.$fecha.'_'.$this->sucu;
+		if(!array_key_exists('HTTP_USER_AGENT', $_SERVER)) $_SERVER['HTTP_USER_AGENT']='curl';
+		$this->sqlinex->exportunbufferzip($data,$nombre,$this->sucu);
+	}
+
+
 }
 ?>
