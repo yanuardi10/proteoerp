@@ -248,6 +248,14 @@ class Importar extends Controller {
 		}
 	}
 
+	function traeubicalma($fecha=null,$sucu,$alma){
+		if(isset($_SERVER['argv']) && !isset($_SERVER['SERVER_NAME'])){ //asegura que se ejecute desde shell
+			if(empty($fecha)) $fecha = date('Ymd');
+			$rt=$this->_ubicalma($sucu,$fecha,$alma);
+			echo $rt;
+		}
+	}
+
 //**************************
 //Metodos para traer data
 //**************************
