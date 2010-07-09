@@ -312,6 +312,13 @@ class Importar extends Controller {
 		return $rt;
 	}
 
+	function _ubicalma($sucu,$fecha=null,$alma=null){
+		set_time_limit(600);
+		$rt=$this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/ubicalma/'.$fecha.'/'.$alma,'maesalma');
+		return $rt;
+	}
+
+
 //***********************
 //  Metodos de Validacion
 //***********************
