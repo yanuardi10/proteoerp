@@ -45,10 +45,10 @@ class Stra extends Controller {
 		$filter->envia = new inputField("Envia", "envia");
 		$filter->envia->size=12;
 		
-		$filter->recibe = new inputField("Recibe", "recibe");		
+		$filter->recibe = new inputField("Recibe", "recibe");
 		$filter->recibe->size=12;
 		
-		$filter->buttons("reset","search");    
+		$filter->buttons("reset","search");
 		$filter->build();
 		
 		$uri = anchor('inventario/stra/dataedit/show/<#numero#>','<#numero#>');
@@ -58,10 +58,10 @@ class Stra extends Controller {
 		$grid->per_page = 5;
 		$grid->use_function("substr");
 		
-		$grid->column("N&uacute;mero",$uri);
-		$grid->column("Fecha","<dbdate_to_human><#fecha#></dbdate_to_human>","align='center'");
-		$grid->column("Envia","envia","envia");
-		$grid->column("Recibe","recibe");
+		$grid->column_orderby("N&uacute;mero",$uri,'numero');
+		$grid->column_orderby("Fecha","<dbdate_to_human><#fecha#></dbdate_to_human>",'fecha',"align='center'");
+		$grid->column_orderby("Envia","envia","envia");
+		$grid->column_orderby("Recibe","recibe",'recibe');
 		$grid->column("Observaci&oacute;n","observ1");
 		//echo $grid->db->last_query();
 		$grid->add("inventario/stra/dataedit/create");
