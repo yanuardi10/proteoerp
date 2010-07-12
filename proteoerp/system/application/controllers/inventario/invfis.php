@@ -42,7 +42,7 @@ var $url = 'inventario/invfis/';
 		$mSQL=$this->db->query("SHOW TABLES LIKE 'INV%'");
 		foreach($mSQL->result_array() AS $row){
 			foreach($row AS $key=>$value){
-				$vval='Almacen:'.$this->datasis->dameval("SELECT ubides FROM caub WHERE ubica ='".substr($value,3,strlen($value)-11)."'").' de Fecha '.date_format(date_create_from_format('Ymd', substr($value,-8)), 'd/m/Y');
+				$vval='Almacen:'.$this->datasis->dameval("SELECT ubides FROM caub WHERE ubica ='".substr($value,3,strlen($value)-11)."'").' de Fecha '.dbdate_to_human(substr($value,-8));
 				$form2->inv->option($value,$vval);
 				$form1->inv->option($value,$vval);
 			}
@@ -458,9 +458,9 @@ var $url = 'inventario/invfis/';
 		$contado= $this->input->post('contado');
 		$id=$this->_idsem($tabla);
 		if(is_numeric($valor)){
+			$seg=sem_get($id,1,0666,-1);
+			sem_acquire($seg);
 			if($this->db->table_exists($tabla)){
-				$seg=sem_get($id,1,0666,-1);
-				sem_acquire($seg);
 				$condb  = $this->datasis->damerow("SELECT contado,actualizado FROM ${tabla} WHERE codigo=${codigo}");
 				if($condb['actualizado']!=null)
 					echo "Advertencia: El productos ya fue actualizado, no lo puede modificar";
@@ -483,6 +483,8 @@ var $url = 'inventario/invfis/';
 				}
 				sem_release($seg);
 			}else{
+				sem_release($seg);
+				sem_remove($seg);
 				echo "Advertencia: Este inventario ya fue cerrado, no puede modificar mas nada";
 			}
 		}
