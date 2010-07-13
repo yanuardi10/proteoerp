@@ -6,17 +6,17 @@ class Cpla extends Controller {
 		$this->load->library("rapyd");
 		$this->datasis->modulo_id(604,1);
 	}
-	
+
 	function index() {
 		$this->rapyd->load("datagrid","datafilter");
-		
+
 		$filter = new DataFilter("Filtro de Plan de cuentas",'cpla');
-		
+
 		$filter->codigo   = new inputField("C&oacute;digo","codigo");
 		$filter->codigo->size=15;
-		
+
 		$filter->descrip = new inputField("Descripci&oacute;n", "descrip");
-		
+
 		$filter->buttons("reset","search");
 		$filter->build();
 
@@ -25,15 +25,15 @@ class Cpla extends Controller {
 		$grid = new DataGrid();
 		$grid->order_by("codigo","asc");
 		$grid->per_page = 15;
-		
+
 		$grid->column("C&oacute;digo",$uri);
 		$grid->column("Descripci&oacute;n","descrip");
 		$grid->column("Usa Departamento","departa","align='center'");
 		$grid->column("Cuenta Monetaria","moneta" ,"align='center'");
-		
+
 		$grid->add("contabilidad/cpla/dataedit/create");
 		$grid->build();
-		
+
 		$data['content'] =$filter->output.$grid->output;
 		$data["head"]    = $this->rapyd->get_head();
 		$data['title']   ='<h1>Plan de Cuentas</h1>';
@@ -41,35 +41,35 @@ class Cpla extends Controller {
 	}
 	function dataedit(){
  		$this->rapyd->load("dataedit");
- 		
+
 		$edit = new DataEdit("Plan de cuenta","cpla");
 		$edit->back_url = "contabilidad/cpla";
 		$edit->pre_process('delete','_pre_del');
 		$edit->post_process('insert','_post_insert');
 		$edit->post_process('update','_post_update');
 		$edit->post_process('delete','_post_delete');
-		
+
 		$edit->codigo = new inputField("C&oacute;digo", "codigo");
 		$edit->codigo->rule= "trim|required|callback_chcodigo";
 		$edit->codigo->mode="autohide";
 		$edit->codigo->size=20;
 		$edit->codigo->maxlength =15 ;
-		
+
 		$edit->descrip = new inputField("Descripci&oacute;n", "descrip");
 		$edit->descrip->rule= "strtoupper|required";
 		$edit->descrip->size=45;
 		$edit->descrip->maxlength =35;
-		
-		$edit->departa = new dropdownField("Usa departamento", "departa");  
+
+		$edit->departa = new dropdownField("Usa departamento", "departa");
 		$edit->departa->option("N","No");
 		$edit->departa->option("S","Si");
 		$edit->departa->style='width:80px';
-		
-		$edit->moneta = new dropdownField("Cuenta Monetaria", "moneta");  
+
+		$edit->moneta = new dropdownField("Cuenta Monetaria", "moneta");
 		$edit->moneta->option("N","No");
 		$edit->moneta->option("S","Si");
 		$edit->moneta->style='width:80px';
-		
+
 		$edit->buttons("modify", "save", "undo", "delete", "back");
 		$edit->build();
 
@@ -115,6 +115,7 @@ class Cpla extends Controller {
 
 	function autocomplete($campo,$cod=FALSE){
 		if($cod!==false){
+			$cod=$this->db->escape_like_str($cod);
 			$qformato=$this->datasis->formato_cpla();
 			$data['codigo']="SELECT codigo AS c1 ,descrip AS c2 FROM cpla WHERE $campo LIKE '$cod%' AND codigo LIKE '$qformato' ORDER BY $campo LIMIT 10";
 			if(isset($data[$campo])){
@@ -133,19 +134,19 @@ class Cpla extends Controller {
 		$nombre=$do->get('descrip');
 		logusu('cpla',"PLAN DE CUENTA $codigo NOMBRE  $nombre CREADO");
 	}
-	
+
 	function _post_update($do){
 		$codigo=$do->get('codigo');
 		$nombre=$do->get('descrip');
 		logusu('cpla',"PLAN DE CUENTA $codigo NOMBRE  $nombre  MODIFICADO");
 	}
-	
+
 	function _post_delete($do){
 		$codigo=$do->get('codigo');
 		$nombre=$do->get('descrip');
 		logusu('cpla',"PLAN DE CUENTA $codigo NOMBRE  $nombre  ELIMINADO ");
-	}	
-	
+	}
+
 	function _pre_del($do) {
 		$codigo=$do->get('codigo');
 		$chek =   $this->datasis->dameval("SELECT COUNT(*) FROM cpla WHERE codigo LIKE '$codigo.%'");

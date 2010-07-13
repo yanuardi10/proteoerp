@@ -2,7 +2,7 @@
 class Scli extends validaciones {
 
 	function scli(){
-		parent::Controller(); 
+		parent::Controller();
 		$this->load->library("rapyd");
 		//$this->load->library("menues");
 		$this->datasis->modulo_id(131,1);
@@ -17,16 +17,16 @@ class Scli extends validaciones {
 		$this->rapyd->load('datafilter','datagrid');
 
 		$filter = new DataFilter('Filtro de Clientes', 'scli');
-		
+
 		$filter->cliente = new inputField('C&oacute;digo', 'cliente');
 		$filter->cliente->size=10;
-		
+
 		$filter->nombre= new inputField('Nombre','nombre');
-		
+
 		$filter->grupo = new dropdownField('Grupo', 'grupo');
 		$filter->grupo->option('','Todos');
 		$filter->grupo->options('SELECT grupo, gr_desc FROM grcl ORDER BY gr_desc');
-		
+
 		$filter->buttons('reset','search');
 		$filter->build();
 
@@ -35,7 +35,7 @@ class Scli extends validaciones {
 		$grid = new DataGrid('Lista de Clientes');
 		$grid->order_by('nombre','asc');
 		$grid->per_page=15;
-		
+
 		$grid->column_orderby('Cliente',$uri,'cliente');
 		$grid->column_orderby('Nombre','nombre','nombre');
 		$grid->column_orderby('RIF/CI','rifci');
@@ -46,26 +46,26 @@ class Scli extends validaciones {
 		$data['content'] = $filter->output.$grid->output;
 		$data['title']   = "<h1>Clientes</h1>";
 		$data["head"]    = $this->rapyd->get_head();
-		
+
 		$this->load->view('view_ventanas', $data);
 	}
 
-	function dataedit(){ 
+	function dataedit(){
 		$this->rapyd->load("dataedit");
-		
+
 		$mSCLId=array(
 			'tabla'   =>'scli',
 			'columnas'=>array(
 				'cliente' =>'C&oacute;digo Socio',
-				'nombre'=>'Nombre', 
+				'nombre'=>'Nombre',
 				'cirepre'=>'Rif/Cedula',
 				'dire11'=>'Direcci&oacute;n'),
 			'filtro'  =>array('cliente'=>'C&oacute;digo Socio','nombre'=>'Nombre'),
 			'retornar'=>array('cliente'=>'socio'),
 			'titulo'  =>'Buscar Socio');
-		
+
 		$qformato=$this->datasis->formato_cpla();
-		
+
 		$mCPLA=array(
 			'tabla'   =>'cpla',
 			'columnas'=>array(
@@ -76,10 +76,10 @@ class Scli extends validaciones {
 			'titulo'  =>'Buscar Cuenta',
 			'where'=>"codigo LIKE \"$qformato\"",
 			);
-		
+
 		$boton =$this->datasis->modbus($mSCLId);
 		$bcpla =$this->datasis->modbus($mCPLA);
-		
+
 		$smenu['link']=barra_menu('131');
 		$consulrif=trim($this->datasis->traevalor('CONSULRIF'));
 		$lcuenta=site_url('contabilidad/cpla/autocomplete/codigo');
@@ -103,7 +103,7 @@ class Scli extends validaciones {
 				autoFill:true
 				}
 			);
-		
+
 			$("#socio").autocomplete("'.$lsocio.'",{
 				delay:10,
 				matchSubset:1,
@@ -118,7 +118,7 @@ class Scli extends validaciones {
 
 		});
 
-		
+
 		function anomfis(){
 				vtiva=$("#tiva").val();
 				if(vtiva=="C" || vtiva=="E" || vtiva=="R"){
@@ -131,7 +131,7 @@ class Scli extends validaciones {
 					$("#tr_riffis").hide();
 				}
 		}
-		
+
 		function consulrif(campo){
 				vrif=$("#"+campo).val();
 				if(vrif.length==0){
@@ -147,42 +147,42 @@ class Scli extends validaciones {
 		$edit->back_url = site_url("ventas/scli/filteredgrid");
 		$edit->script($script, 'create');
 		$edit->script($script, 'modify');
-		
+
 		$edit->pre_process('delete','_pre_del');
 		$edit->post_process('insert','_post_insert');
 		$edit->post_process('update','_post_update');
 		$edit->post_process('delete','_post_delete');
-		
+
 		$edit->cliente = new inputField('C&oacute;digo', 'cliente');
 		$edit->cliente->rule = 'trim|strtoupper|required|callback_chexiste';
 		$edit->cliente->mode = 'autohide';
 		$edit->cliente->size = 9;
 		$edit->cliente->maxlength = 5;
-		
+
 		$edit->nombre = new inputField('Nombre', 'nombre');
 		$edit->nombre->rule = 'trim|strtoupper|required';
 		$edit->nombre->size = 60;
 		$edit->nombre->maxlength = 45;
-		
+
 		$edit->contacto = new inputField('Contacto', 'contacto');
 		$edit->contacto->rule = 'trim';
 		$edit->contacto->size = 60;
 		$edit->contacto->maxlength = 40;
-		
+
 		$edit->grupo = new dropdownField('Grupo', 'grupo');
 		$edit->grupo->option('','Seleccione un grupo');
 		$edit->grupo->options('SELECT grupo, gr_desc FROM grcl ORDER BY gr_desc');
 		$edit->grupo->rule = 'required';
 		$edit->grupo->size = 6;
 		$edit->grupo->maxlength = 4;
-		
+
 		$lriffis='<a href="javascript:consulrif(\'rifci\');" title="Consultar RIF en el SENIAT" onclick="">Consultar RIF en el SENIAT</a>';
 		$edit->rifci = new inputField('RIF o Cedula de Identidad', 'rifci');
 		$edit->rifci->rule = 'trim|strtoupper|required|callback_chci';
 		$edit->rifci->maxlength =13;
 		$edit->rifci->append($lriffis);
 		$edit->rifci->size =18;
-		
+
 		for($i=1;$i<=2;$i++){
 			for($o=1;$o<=2;$o++){
 				$obj  ="dire$i$o";
@@ -202,49 +202,49 @@ class Scli extends validaciones {
 			$edit->$obj->size      = 60;
 			$edit->$obj->group = "Direcci&oacute;n ($i)";
 		}
-		
+
 		$edit->repre  = new inputField('Representante Legal', 'repre');
 		$edit->repre->rule = 'trim';
 		$edit->repre->maxlength =30;
 		$edit->repre->size = 40;
-		
+
 		$edit->cirepre = new inputField('C&eacute;dula de Rep.', 'cirepre');
 		$edit->cirepre->rule = 'trim|strtoupper|callback_chci';
 		$edit->cirepre->maxlength =13;
 		$edit->cirepre->size = 16;
-		
+
 		$edit->socio = new inputField('Socio del cliente', 'socio');
 		$edit->socio->rule = 'trim';
 		$edit->socio->size = 8;
 		$edit->socio->maxlength =5;
 		$edit->socio->append($boton);
-		
+
 		$edit->tiva = new dropdownField('Condici&oacute;n F&iacute;scal', 'tiva');
 		$edit->tiva->option('','Seleccionar');
 		$edit->tiva->options(array('C'=>'Contribuyente','N'=>'No Contribuyente','E'=>'Especial','R'=>'Regimen Exento','O'=>'Otro'));
 		$edit->tiva->style = 'width:140px';
 		$edit->tiva->rule='required|callback_chdfiscal';
 		$edit->tiva->group = 'Informaci&oacute;n f&iacute;scal';
-		
+
 		$edit->nomfis = new inputField('Nombre F&iacute;scal', 'nomfis');
 		$edit->nomfis->rule = 'trim';
 		$edit->nomfis->size=70;
 		$edit->nomfis->maxlength =80;
 		$edit->nomfis->group = 'Informaci&oacute;n f&iacute;scal';
-		
+
 		$lriffis='<a href="javascript:consulrif(\'riffis\');" title="Consultar RIF en el SENIAT" onclick="">Consultar RIF en el SENIAT</a>';
 		$edit->riffis = new inputField('RIF F&iacute;scal', 'riffis');
 		$edit->riffis->size = 13;
-		$edit->riffis->maxlength =10; 
+		$edit->riffis->maxlength =10;
 		$edit->riffis->rule = 'trim|callback_chrif';
 		$edit->riffis->append($lriffis);
 		$edit->riffis->group = 'Informaci&oacute;n f&iacute;scal';
-		
+
 		$edit->zona = new dropdownField('Zona', 'zona');
 		$edit->zona->rule = 'trim|required';
 		$edit->zona->option('','Seleccionar');
 		$edit->zona->options('SELECT codigo, nombre FROM zona ORDER BY nombre');
-		
+
 		$edit->pais = new inputField('Pa&iacute;s','pais');
 		$edit->pais->rule = 'trim';
 		$edit->pais->size =40;
@@ -254,42 +254,42 @@ class Scli extends validaciones {
 		$edit->email->rule = 'trim|valid_email';
 		$edit->email->size =28;
 		$edit->email->maxlength =100;
-		
+
 		$edit->cuenta = new inputField('Cuenta contable', 'cuenta');
 		$edit->cuenta->rule='trim|callback_chcuentac';
 		$edit->cuenta->append($bcpla);
 		$edit->cuenta->size=20;
 		$edit->cuenta->maxlength =15;
-		
+
 		$edit->telefono = new inputField("Tel&eacute;fonos", "telefono");
 		$edit->telefono->rule = "trim";
 		$edit->telefono->size=30;
 		$edit->telefono->maxlength =30;
-	
+
 		$edit->telefon2 = new inputField("Fax", "telefon2");
 		$edit->telefon2->rule = "trim";
 		$edit->telefon2->size=25;
 		$edit->telefon2->maxlength =25;
-		
+
 		$edit->tipo = new dropdownField("Precio Asignado", "tipo");
 		$edit->tipo->options(array("1"=> "Precio 1","2"=>"Precio 2", "3"=>"Precio 3","4"=>"Precio 4","0"=>"Inactivo"));
 		$edit->tipo->style = "width:90px";
 		$edit->tipo->group = "Informaci&oacute;n financiera";
-		
+
 		$edit->formap = new inputField("D&iacute;as de Cr&eacute;dito", "formap");
 		$edit->formap->css_class='inputnum';
 		$edit->formap->rule="trim|integer";
 		$edit->formap->maxlength =10;
 		$edit->formap->size =6;
 		$edit->formap->group = "Informaci&oacute;n financiera";
-		
+
 		$edit->limite = new inputField("L&iacute;mite de Cr&eacute;dito", "limite");
 		$edit->limite->css_class='inputnum';
 		$edit->limite->rule='trim|numeric';
 		$edit->limite->maxlength =15;
 		$edit->limite->size = 20;
 		$edit->limite->group = "Informaci&oacute;n financiera";
-		
+
 		$edit->vendedor = new dropdownField("Vendedor", "vendedor");
 		$edit->vendedor->option("","Ninguno");
 		$edit->vendedor->options("SELECT vendedor, CONCAT(vendedor,'-',nombre) AS nom FROM vend WHERE tipo IN ('V','A') ORDER BY vendedor");
@@ -313,33 +313,33 @@ class Scli extends validaciones {
 		$edit->porcobr->size=8;
 		$edit->porcobr->maxlength =5;
 		$edit->porcobr->group = "Informaci&oacute;n financiera";
-		
+
 		$edit->observa = new textareaField("Observaci&oacute;n", "observa");
 		$edit->observa->rule = "trim";
 		$edit->observa->cols = 70;
 		$edit->observa->rows =3;
-		
+
  		$edit->mensaje = new inputField("Mensaje", "mensaje");
  		$edit->mensaje->rule = "trim";
 		$edit->mensaje->size = 50;
 		$edit->mensaje->maxlength =40;
-		   
+
 		$edit->buttons("modify", "save", "undo", "delete", "back");
 		$edit->build();
-		
+
 		//$data['script']  ='<script type="text/javascript">
 		//function pelusa(){
 		//	alert(screen.availWidth);
 		//}
 		//</script>';
-		
+
 		$data['content'] = $edit->output;
 		$data['smenu']   = $this->load->view('view_sub_menu', $smenu,true);
 		$data['title']   = "<h1>Clientes</h1>";
 		$data["head"]    = script('jquery.pack.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js').script('plugins/jquery.autocomplete.js').style('jquery.autocomplete.css').$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
-	
+
 	function chdfiscal($tiva){
 		$nomfis=$this->input->post('nomfis');
 		$riffis=$this->input->post('riffis');
@@ -350,7 +350,7 @@ class Scli extends validaciones {
 			}
 		return TRUE;
 	}
-	
+
 	function _pre_del($do) {
 		$codigo=$this->db->escape($do->get('cliente'));
 		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM sfac WHERE cod_cli=$codigo");
@@ -361,7 +361,7 @@ class Scli extends validaciones {
 		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM pfac WHERE cod_cli=$codigo");
 		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM pers WHERE enlace=$codigo");
 		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM bmov WHERE clipro='C' AND codcp=$codigo");
-		
+
 		if ($chek > 0){
 			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='Cliente con Movimiento no puede ser Borrado';
 			return False;
@@ -400,6 +400,7 @@ class Scli extends validaciones {
 
 	function autocomplete($campo,$cod=FALSE){
 		if($cod!==false){
+			$cod=$this->db->escape_like_str($cod);
 			$qformato=$this->datasis->formato_cpla();
 			$data['cliente']="SELECT cliente AS c1 ,nombre AS c2 FROM scli WHERE cliente LIKE '$cod%' ORDER BY cliente LIMIT 10";
 			if(isset($data[$campo])){
