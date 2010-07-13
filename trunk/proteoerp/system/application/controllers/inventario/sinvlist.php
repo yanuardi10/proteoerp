@@ -54,7 +54,7 @@ class sinvlist extends Controller {
 		$grid->build();
 
 		$data['filtro']  = $filter->output;
-		$data['content'] = $uri2.$grid->output;
+		$data['content'] = $grid->output;
 		$data['tabla']='';
 		$data['script'] = script("jquery.js")."\n";
 		$data['title']   = "SinvList";
@@ -124,8 +124,8 @@ class sinvlist extends Controller {
 
 		$edit->itdescrip = new inputField("(<#o#>)Descricion: ", "itdescrip_<#i#>");
 		$edit->itdescrip->db_name  ='itdescrip';
-		$edit->itdescrip->maxlength=15;
-		$edit->itdescrip->size     =20;
+		$edit->itdescrip->maxlength=45;
+		$edit->itdescrip->size     =45;
 		$edit->itdescrip->rel_id   ='itsinvlist';
 		$edit->itdescrip->pointer  = true;
 		//$edit->itdescrip->mode='autohide';
@@ -206,8 +206,8 @@ class sinvlist extends Controller {
 
 				$edit->itdescrip = new inputField("(<#o#>)Descricion: ", "itdescrip_<#i#>");
 				$edit->itdescrip->db_name  ='itdescrip';
-				$edit->itdescrip->maxlength=15;
-				$edit->itdescrip->size     =20;
+				$edit->itdescrip->maxlength=45;
+				$edit->itdescrip->size     =45;
 				$edit->itdescrip->rel_id   ='itsinvlist';
 				$edit->itdescrip->pointer  = true;
 				//$edit->itdescrip->mode='autohide';
