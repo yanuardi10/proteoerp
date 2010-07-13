@@ -6,7 +6,7 @@ var $url = 'inventario/invfis/';
 	function Invfis(){
 		parent::Controller();
 		$this->load->library("rapyd");
-		//$this->datasis->modulo_id(3,1);
+		$this->datasis->modulo_id(319,1);
 	}
 
 	function index(){
