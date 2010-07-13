@@ -17,7 +17,7 @@ var $url = 'inventario/invfis/';
 		$this->rapyd->load("dataform");
 
 		$form0 = new DataForm('inventario/invfis/define/process/crear');
-		$form0->_title = "Crear Inventario";
+		$form0->title("Crear Inventario");
 		$form0->alma = new dropdownField("Almacen", "alma");
 		$form0->alma->options("SELECT TRIM(ubica),TRIM(ubides) FROM caub WHERE gasto='N' AND invfis='N' ORDER BY ubides");
 		$form0->alma->rule='required';
@@ -28,14 +28,14 @@ var $url = 'inventario/invfis/';
 		$form0->submit("btnsubmit","Crear Inventario F&iacute;sico");
 
 		$form1 = new DataForm('inventario/invfis/define/process/contar');
-		$form1->_title = "Introducir Resultados del Conteo de Inventario F&iacute;sico";
+		$form1->title("Introducir Resultados del Conteo de Inventario F&iacute;sico");
 		$form1->inv = new dropdownField("Inventario Fisico", "inv");
 		$form1->inv->rule = 'required';
 		$form1->inv->style = 'width:400px';
 		$form1->submit("btnsubmit","Introducir Conteo F&iacute;sico");
 
 		$form2 = new DataForm('inventario/invfis/define/process/cerrar');
-		$form2->_title = "Cierre de Inventario";
+		$form2->title("Cierre de Inventario");
 		$form2->inv = new dropdownField("Inventario Fisico", "inv2");
 		$form2->inv->rule = 'required';
 		$form2->inv->style = 'width:400px';
