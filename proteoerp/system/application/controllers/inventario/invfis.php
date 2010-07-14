@@ -266,8 +266,8 @@ var $url = 'inventario/invfis/';
 			else
 				return "<span style='color:FF0000;'>$cont</span>";
 		}
-
-		$grid = new DataGrid("Inventario Fisico");
+		$titulo = anchor("reportes/ver/invfis/$tabla",'Imprimir');
+		$grid = new DataGrid("Inventario Fisico -->".$titulo);
 		$grid->per_page = 10;
 		$grid->db->limit = 10;
 		$grid->use_function('caja','pinta');
