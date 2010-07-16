@@ -57,7 +57,8 @@ class Casi extends Controller {
 		$grid->column("Debe"  ,"debe"  ,"align='right'");
 		$grid->column("Haber" ,"haber" ,"align='right'");
 		$grid->column("Total" ,"total" ,"align='right'");
-		$grid->add("contabilidad/casi/dataedit/create");
+		
+		//$grid->add("contabilidad/casi/dataedit/create");
 		$grid->build();
 		//echo $grid->db->last_query();
 		
@@ -220,7 +221,7 @@ class Casi extends Controller {
 		
 		$edit->detalle=new freeField("detalle", 'detalle',$detalle->output);
 
-		$edit->buttons("modify", "save", "undo", "delete", "back");
+		$edit->buttons("save", "undo","back");
 		$edit->build();
 		
 		$conten["form"]  =&  $edit;

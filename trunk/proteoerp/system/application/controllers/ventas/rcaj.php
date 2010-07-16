@@ -171,7 +171,7 @@ class Rcaj extends validaciones {
 		
 		$msistema=$this->datasis->dameval("SELECT sum(a.monto) 
 		FROM sfpa as a 
-		JOIN sfac b ON a.numero=b.numero and b.tipo_doc='F'
+		JOIN sfac b ON a.transac=b.transac and b.tipo_doc='F'
 		WHERE b.cajero=$cajero AND b.fecha=$qfecha AND a.tipo IN ('EF','DE') AND SUBSTRING(a.numero,1,1)<>'X' ");
 
 		$attsr['value']=number_format($msistema,'2',',','.');
@@ -188,7 +188,7 @@ class Rcaj extends validaciones {
 		$mSQL="SELECT a.concepto, a.descrip, sum(b.monto) sistema 
 		FROM tardet a 
 		JOIN sfpa b ON b.banco=a.concepto 
-		JOIN sfac c ON b.numero=c.numero and c.tipo_doc='F'
+		JOIN sfac c ON b.transac=c.transac and c.tipo_doc='F'
 		WHERE a.tarjeta='CT' AND b.tipo='CT'  AND c.cajero='$cajero' 
 		AND b.fecha=$qfecha AND SUBSTRING(b.numero,1,1)<>'X' 
 		GROUP BY a.concepto
@@ -199,7 +199,7 @@ class Rcaj extends validaciones {
 		(SELECT a.concepto
 		FROM tardet a 
 		JOIN sfpa b ON b.banco=a.concepto 
-		JOIN sfac c ON b.numero=c.numero and c.tipo_doc='F'
+		JOIN sfac c ON b.transac=c.transac and c.tipo_doc='F'
 		WHERE a.tarjeta='CT' AND b.tipo='CT'  AND c.cajero='$cajero' 
 		AND b.fecha=$qfecha AND SUBSTRING(b.numero,1,1)<>'X' 
 		GROUP BY a.concepto)
@@ -239,7 +239,7 @@ class Rcaj extends validaciones {
 		$mSQL="SELECT a.tipo,a.nombre, sum(b.monto) sistema 
 		FROM tarjeta a 
 		JOIN sfpa b ON a.tipo=b.tipo 
-		JOIN sfac c ON b.numero=c.numero and c.tipo_doc='F'
+		JOIN sfac c ON b.transac=c.transac and c.tipo_doc='F'
 		WHERE a.tipo NOT IN ('EF','CT','NC','ND', 'DE','IR','DP') 
 		AND c.cajero='$cajero' AND b.fecha=$qfecha AND 
 		SUBSTRING(b.numero,1,1)<>'X' GROUP BY a.tipo
@@ -248,7 +248,7 @@ class Rcaj extends validaciones {
 		WHERE tipo NOT IN (SELECT a.tipo
 		FROM tarjeta a 
 		JOIN sfpa b ON a.tipo=b.tipo 
-		JOIN sfac c ON b.numero=c.numero and c.tipo_doc='F'
+		JOIN sfac c ON b.transac=c.transac and c.tipo_doc='F'
 		WHERE a.tipo NOT IN ('EF','CT','NC','ND', 'DE','IR','DP') 
 		AND c.cajero='$cajero' AND b.fecha=$qfecha AND 
 		SUBSTRING(b.numero,1,1)<>'X' GROUP BY a.tipo)
