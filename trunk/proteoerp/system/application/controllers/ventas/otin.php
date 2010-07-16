@@ -72,7 +72,7 @@
     $grid->column("Vista",$uri2,"align='center'");
     
 
-		$grid->add("ventas/agregaroi");
+		//$grid->add("ventas/agregaroi");
 		$grid->build();
 		
 		//echo $grid->db->last_query();

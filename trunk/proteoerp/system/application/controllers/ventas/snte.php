@@ -75,7 +75,7 @@ class Snte extends Controller {
 		$grid->column("Total"			,"<number_format><#gtotal#>|2</number_format>","align=right");
 		$grid->column("Vista",$uri2,"align='center'");
 		
-		$grid->add("ventas/agregarne");
+		//$grid->add("ventas/agregarne");
 		$grid->build();
 		//echo $grid->db->last_query();
 		

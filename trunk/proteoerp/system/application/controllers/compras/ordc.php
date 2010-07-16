@@ -71,7 +71,7 @@ class Ordc extends Controller {
 		$grid->column("Monto" ,"montonet" ,"align='right'");
 	  $grid->column("Vista",$uri2,"align='center'");
 		
-		$grid->add("compras/agregaroc");
+		//$grid->add("compras/agregaroc");
 		$grid->build();
 		//echo $grid->db->last_query();
 		

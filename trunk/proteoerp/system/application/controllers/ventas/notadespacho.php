@@ -73,7 +73,7 @@ class notadespacho extends Controller {
 		$grid->column("Precio","<number_format><#precio#>|2</number_format>","align=right");
 		$grid->column("Vista",$uri2,"align='center'");
 
-		$grid->add("ventas/agregarnd");
+		//$grid->add("ventas/agregarnd");
 		$grid->build();
 		
 		//echo $grid->db->last_query();
