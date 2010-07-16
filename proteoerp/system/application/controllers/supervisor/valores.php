@@ -65,5 +65,10 @@ class valores extends Controller {
 		$data["head"]    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
+	function moneda(){
+		$mSQL="INSERT INTO `valores` (`nombre`, `valor`, `descrip`) VALUES ('MONEDA', '$', 'Tipo de Moneda con la cual trabaja la empresa') ;";
+		$this->db->simple_query($mSQL);
+		
+	}
 }
 ?>

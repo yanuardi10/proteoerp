@@ -73,7 +73,7 @@ class Gser extends Controller {
 		$grid->column("Monto"   , "<number_format><#totneto#>|2|,|.</number_format>",'align=right');
 		$grid->column("Vista",$uri2,"align='center'");
 	
-		$grid->add("finanzas/agregareg/");
+		//$grid->add("finanzas/agregareg/");
 		$grid->build();
 		
 		$data['content'] =$filter->output.$grid->output;
@@ -298,7 +298,7 @@ class Gser extends Controller {
 		
 		$edit->detalle=new freeField("detalle", 'detalle',$detalle->output);
 
-		$edit->buttons("save", "undo", "delete", "back","modify");
+		$edit->buttons("save", "undo","back");
 		$edit->build();
 		
 		$smenu['link']=barra_menu('518');
