@@ -281,7 +281,7 @@
 		
 		$edit->detalle=new freeField("detalle", 'detalle',$detalle->output);
 		
-		$edit->buttons("save", "undo", "delete", "back","modify");
+		$edit->buttons("save", "undo","back");
 		$edit->build();
 		
 		$smenu['link']=barra_menu('120');                                
