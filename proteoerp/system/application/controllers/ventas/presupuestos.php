@@ -61,7 +61,7 @@
     $uri2 = anchor_popup('formatos/verhtml/PRESUP/<#numero#>',"Ver HTML",$atts);
 		
 		$grid = new DataGrid();
-		$grid->order_by("fecha","desc");
+		$grid->order_by("numero","desc");
 		$grid->per_page = 15;  
 		
 		$grid->column("N&uacute;mero",$uri);
@@ -301,7 +301,7 @@
 		
 		$edit->detalle=new freeField("detalle", 'detalle',$detalle->output);
 
-		$edit->buttons("save", "undo",  "back","modify");
+		$edit->buttons("save", "undo","back");
 		$edit->build();
 		
 		$smenu['link']=barra_menu('104');
