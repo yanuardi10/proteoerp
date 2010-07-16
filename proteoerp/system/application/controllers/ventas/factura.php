@@ -74,7 +74,7 @@
     $grid->column("Total","<number_format><#totalg#>|2</number_format>","align=right");
 		$grid->column("Vista",$uri2,"align='center'");
 		
-		$grid->add("ventas/agregarfac");
+		//$grid->add("ventas/agregarfac");
 		$grid->build();
 		
 		//echo $grid->db->last_query();	

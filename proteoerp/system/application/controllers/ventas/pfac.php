@@ -71,7 +71,7 @@
     $grid->column("Vista",$uri2,"align='center'");
     
 		
-		$grid->add("ventas/agregarped");
+		//$grid->add("ventas/agregarped");
 		$grid->build();
 		
 		//echo $grid->db->last_query();
