@@ -65,7 +65,7 @@ class Tiket extends Controller {
 
 		$filter->buttons("reset","search");
 
-		$select=array("usuario","contenido","prioridad","IF(estado='N','Nuevo',IF(estado='R','Resuelto',IF(estado='P','Pendiente','En Proceso')))as estado","estampa","id","actualizado");		
+		$select=array("usuario","contenido","prioridad","IF(estado='N','Nuevo',IF(estado='R','Resuelto',IF(estado='P','Pendiente','Cerrado')))as estado","estampa","id","actualizado");		
 		$filter->db->select($select);
 		$filter->db->from('tiket');
 		$filter->db->orderby('estampa','desc');

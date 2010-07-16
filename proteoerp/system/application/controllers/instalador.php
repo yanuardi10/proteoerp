@@ -23,10 +23,8 @@ class Instalador extends Controller {
 		// chat.php
 		// consulcajas.php
 		// dashboard.php
-		// demo.php
 		// desarrollo.php
 		// ejecutasql.php
-		// ejemplo.php
 		// formatos.php
 
 		$mSQL="ALTER TABLE `formatos` ADD `proteo` TEXT NULL AFTER `forma`";
@@ -73,7 +71,6 @@ class Instalador extends Controller {
 		$this->db->simple_query($mSQL);
 	
 		// analisis.php
-		// a.php
 		// gcompras.php
 		// grpr.php
 		// ordc.php
@@ -523,6 +520,7 @@ class Instalador extends Controller {
 		// resumendiario.php
 		// rete.php
 		// retetxt.php
+		// rica.php
 		// siva.php
 		// sprm.php
 		// tardet.php
@@ -676,6 +674,7 @@ class Instalador extends Controller {
 		// gproductos.php
 		// grup.php
 		// hacer.php
+		// invfis.php
 		// kardex.php
 		// lfallasdeinventario.php
 		// lhojadetrabajo.php
@@ -736,6 +735,40 @@ class Instalador extends Controller {
 	';
 $this->db->simple_query($mSQL);	
 	
+		// sinvlist.php
+
+		$mSQL="CREATE TABLE IF NOT EXISTS `itsinvlist` (
+		`id` INT(8) NOT NULL AUTO_INCREMENT,
+		`numero` INT(8) NULL DEFAULT NULL,
+		`codigo` CHAR(15) NULL DEFAULT NULL COLLATE 'utf8_unicode_ci',PRIMARY KEY (`id`))
+		COLLATE='utf8_unicode_ci'
+		ENGINE=MyISAM
+		ROW_FORMAT=DEFAULT";
+//		$mSQL2="CREATE TABLE IF NOT EXISTS`sinvlist` (
+//		`numero` INT(8) NOT NULL AUTO_INCREMENT,
+//		`concepto` TEXT NULL COLLATE 'utf8_unicode_ci',
+//		`usuario` CHAR(50) NULL DEFAULT NULL COLLATE 'utf8_unicode_ci',
+//		PRIMARY KEY (`numero`)
+//		)
+//		COLLATE='utf8_unicode_ci'
+//		ENGINE=MyISAM
+//		ROW_FORMAT=DEFAULT
+//		 ";
+		$mSQL2="CREATE TABLE IF NOT EXISTS`sinvlist` (
+		`numero` INT(8) NOT NULL AUTO_INCREMENT,
+		`nombre` VARCHAR(50) NOT NULL COLLATE 'utf8_unicode_ci',
+		`fecha` DATE NOT NULL,
+		`concepto` TEXT NULL COLLATE 'utf8_unicode_ci',
+		`usuario` CHAR(50) NULL DEFAULT NULL COLLATE 'utf8_unicode_ci',
+		PRIMARY KEY (`numero`)
+		)
+		COLLATE='utf8_unicode_ci'
+		ENGINE=MyISAM
+		ROW_FORMAT=DEFAULT
+		";
+		$this->db->simple_query($mSQL);
+		$this->db->simple_query($mSQL2);
+	
 		// sinv.php
 
 		
@@ -773,7 +806,6 @@ $this->db->simple_query($mSQL);
 		// sinvshow.php
 		// straa.php
 		// stra.php
-		// test.php
 		// transferencia.php
 		// ubica.php
 
@@ -821,10 +853,11 @@ $this->db->simple_query($mSQL);
 			PRIMARY KEY (`id`)
 		)
 		ENGINE=MyISAM
-		ROW_FORMAT=DEFAULT;
-		ALTER TABLE `pers`  ADD COLUMN `horario` CHAR(4) NULL DEFAULT NULL
+		ROW_FORMAT=DEFAULT		
 		";
 		
+		echo $this->db->query($query);
+		$query="ALTER TABLE `pers`  ADD COLUMN `horario` CHAR(4) NULL DEFAULT NULL";
 		echo $this->db->query($query);
 	
 	
@@ -837,33 +870,23 @@ $this->db->simple_query($mSQL);
 		
 		$mSQL="CREATE TABLE `tipoe` (`codigo` VARCHAR (10), `tipo` VARCHAR (50), PRIMARY KEY(`codigo`))";
 		$this->db->query($mSQL);
-		$mSQL1="ALTER TABLE `pers` ADD `email` VARCHAR(50)";
+		$mSQL1="ALTER TABLE `pers` ADD `email` VARCHAR(50) NULL";
 		$this->db->query($mSQL1);
 		$mSQL2="CREATE TABLE `posicion` (`codigo` VARCHAR (10), `posicion` VARCHAR (30),PRIMARY KEY(`codigo`))";
 		$this->db->query($mSQL2);
-		$mSQL3="ALTER TABLE `pers` ADD `tipoe` VARCHAR(10)";
+		$mSQL3="ALTER TABLE `pers` CHANGE `tipoe` VARCHAR(10)";
 		$this->db->query($mSQL3);
-		$mSQL4="ALTER TABLE `pers` ADD `escritura` VARCHAR(25)";
+		$mSQL4="ALTER TABLE `pers` CHANGE `retiro` `escritura` VARCHAR(25)";
 		$this->db->query($mSQL4);
+		$mSQL5="ALTER TABLE `pers` ADD `observa` TEXT ";
+		$this->db->query($mSQL5);
 	
 		// prenom.php
 		// pres.php
 		// prestamos.php
 		// prof.php
 		// promediosueldos.php
-		// prueba.php
 		// rpers.php
-		// ajaxsamples.php
-		// auth.php
-		// basecontroller.php
-		// crudsamples.php
-		// crudworkflow.php
-		// datam.php
-		// lang.php
-		// samples.php
-		// supercrud.php
-		// uri_test.php
-		// utils.php
 		// dispmoviles.php
 		// exportar.php
 		// importar.php
@@ -891,6 +914,7 @@ $this->db->simple_query($mSQL);
 		// consulsucu.php
 		// consultas2.php
 		// consultasan.php
+		// consultasm.php
 		// consultas.php
 		// cupones.php
 		// dias.php
@@ -952,6 +976,23 @@ $this->db->simple_query($mSQL);
 		////ALTER TABLE `intramenu` ADD PRIMARY KEY (`modulo`)
 	
 		// acdatasis.php
+		// bitacorafyco.php
+
+		$mSQL="CREATE TABLE `bitacora` (
+		  `id` bigint(20) unsigned NOT NULL auto_increment,
+		  `usuario` varchar(50) default NULL,
+		  `nombre` varchar(100) default NULL,
+		  `fecha` date default NULL,
+		  `hora` time default NULL,
+		  `actividad` text,
+		  `comentario` text,
+		  `revisado` char(1) default 'P',
+		  `evaluacion` text,
+		  `asignacion` varchar(10),
+		  PRIMARY KEY  (`id`)
+		) ENGINE=MyISAM AUTO_INCREMENT=524 DEFAULT CHARSET=latin1";
+		$this->db->simple_query($mSQL);
+	
 		// bitacora.php
 
 		$mSQL="CREATE TABLE `bitacora` (
@@ -1009,11 +1050,11 @@ $this->db->simple_query($mSQL);
 		// menu.php
 
 		$mSQL="ALTER TABLE `intramenu` ADD COLUMN `orden` TINYINT(4) NULL DEFAULT NULL AFTER `pertenece`";
-		$this->db->simple_query($mSQL);
+		echo $this->db->simple_query($mSQL);
 		$mSQL="ALTER TABLE `intramenu` ADD COLUMN `ancho` INT(10) UNSIGNED NULL DEFAULT '800' AFTER `orden`";
-		$this->db->simple_query($mSQL);
+		echo $this->db->simple_query($mSQL);
 		$mSQL="ALTER TABLE `intramenu` ADD COLUMN `alto`  INT(10) UNSIGNED NULL DEFAULT '600' AFTER `ancho`";
-		$this->db->simple_query($mSQL);
+		echo $this->db->simple_query($mSQL);
 	
 		// muro.php
 
@@ -1170,6 +1211,7 @@ $this->db->simple_query($mSQL);
 		// autoservicio.php
 		// caja.php
 		// calcomi.php
+		// carpetas.php
 		// clientes.php
 		// cobrocli.php
 
@@ -1178,6 +1220,7 @@ $this->db->simple_query($mSQL);
 		$this->db->simple_query($mSQL);
 	
 		// dine.php
+		// estados.php
 		// exportar.php
 		// factura.php
 		// fiscalz.php
@@ -1225,19 +1268,39 @@ $this->db->simple_query($mSQL);
 		  `vendedor` varchar(5),
 		  `tipo` CHAR(2),
 		  PRIMARY KEY  (`fecha`,`codigo`,`vendedor`)
-		);
-		";
-		$this->db->simple_query($mSQL);
+		)";
+		$rt=$this->db->simple_query($mSQL);
+		var_dump($rt);
 	
+		// movimientos.php
+		// municipios.php
 		// notadespacho.php
 		// otin.php
-		// pagepersistence.php
+		// pais.php
+		// pfacdespfyco.php
+
+		$mSQL="ALTER TABLE `sitems` ADD `cdespacha` DECIMAL NULL";
+		$mSQL1="ALTER TABLE `sitems` ADD `ultidespachado` DECIMAL NULL";
+		$this->db->simple_query($mSQL);
+		$this->db->simple_query($mSQL1);
+		echo 'Instalado';
+	
+		// pfacdespfycosan.php
+
+		$mSQL="ALTER TABLE `sitems` ADD `cdespacha` DECIMAL NULL";
+		$mSQL1="ALTER TABLE `sitems` ADD `ultidespachado` DECIMAL NULL";
+		$this->db->simple_query($mSQL);
+		$this->db->simple_query($mSQL1);
+		echo 'Instalado';
+	
+		// pfacfyco.php
 		// pfac.php
 		// presup.php
 		// presupuestos.php
 		// productos.php
 		// prueba.php
 		// rcaj.php
+		// requisitos.php
 		// scaj.php
 
 		$mSQL="CREATE TABLE IF NOT EXISTS `vieite` (
@@ -1300,7 +1363,7 @@ $this->db->simple_query($mSQL);
 			) ENGINE=MyISAM DEFAULT CHARSET=latin1";
 		$this->db->simple_query($mSQL);
 	
-		// scli.php
+		// sclifyco.php
 
 		$seniat='http://www.seniat.gov.ve/BuscaRif/BuscaRif.jsp';
 		$mSQL="INSERT INTO valores (nombre,valor,descrip) VALUES ('CONSULRIF','$seniat','Pagina de consulta de rif del seniat') ON DUPLICATE KEY UPDATE valor='$seniat'";
@@ -1312,6 +1375,22 @@ $this->db->simple_query($mSQL);
 		$mSQL='ALTER TABLE scli ADD id INT AUTO_INCREMENT PRIMARY KEY';
 		$this->db->simple_query($mSQL);
                 
+	
+		// scli.php
+
+		$seniat='http://www.seniat.gov.ve/BuscaRif/BuscaRif.jsp';
+		$mSQL="INSERT INTO valores (nombre,valor,descrip) VALUES ('CONSULRIF','$seniat','Pagina de consulta de rif del seniat') ON DUPLICATE KEY UPDATE valor='$seniat'";
+		$this->db->simple_query($mSQL);
+		$mSQL='ALTER TABLE `scli` ADD `modifi` TIMESTAMP DEFAULT CURRENT_TIMESTAMP NULL AFTER `mensaje`';
+		$this->db->simple_query($mSQL);
+		$mSQL='ALTER TABLE `scli` DROP PRIMARY KEY, ADD UNIQUE `cliente` (`cliente`)';
+		$this->db->simple_query($mSQL);
+		$mSQL='ALTER TABLE scli ADD id INT AUTO_INCREMENT PRIMARY KEY';
+		$this->db->simple_query($mSQL);
+		$mSQL='ALTER TABLE `scli`  CHANGE COLUMN `formap` `formap` INT(6) NULL DEFAULT 0';
+		$this->db->simple_query($mSQL);
+		$mSQL='ALTER TABLE `scli`  CHANGE COLUMN `email` `email` VARCHAR(100) NULL DEFAULT NULL';
+		$this->db->simple_query($mSQL);
 	
 		// sfacdespfyco.php
 
@@ -1342,6 +1421,7 @@ $this->db->simple_query($mSQL);
 		// ventas.php
 		// vpresupuesto.php
 		// xlspresupuesto.php
+		// zonaf.php
 		// zona.php
 	}
 

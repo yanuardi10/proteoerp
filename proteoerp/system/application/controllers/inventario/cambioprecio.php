@@ -96,24 +96,24 @@ class cambioprecio extends Controller{
 			$iva=$items->iva;
 			
 			$precio1=$cdolar*$dolar;
-			$base1=$precio1-($precio1*$iva/100);
+			$base1=$precio1/(($iva*1/100)+1);
 			$margen1=(($base1-$costo)*100)/$costo;
 			
 			$cdolar2=$cdolar-($cdolar*$desc2/100);
 			$precio2=$cdolar2*$dolar;
-			$base2=$precio2-($precio2*$iva/100);
+			$base2=$precio2/(($iva*1/100)+1);
 			$margen2=(($base2-$costo)*100)/$costo;
 			
 			$cdolar3=$cdolar2-($cdolar2*$desc2/100);
 			$precio3=$cdolar3*$dolar;
-			$base3=$precio3-($precio3*$iva/100);
+			$base3=$precio3/(($iva*1/100)+1);
 			$margen3=(($base3-$costo)*100)/$costo;
 
 			$cdolar4=$cdolar3-($cdolar3*$desc3/100);
 			$precio4=$cdolar4*$dolar;
-			$base4=$precio4-($precio4*$iva/100);
+			$base4=$precio4/(($iva*1/100)+1);
 			$margen4=(($base4-$costo)*100)/$costo;
-			
+		
 					  
   	  $sql="UPDATE sinv set dolar3='$cdolar3',dolar4='$cdolar4',dolar2='$cdolar2',precio1='$precio1',base1='$base1',margen1='$margen1',precio2='$precio2',base2='$base2',margen2='$margen2',precio3='$precio3',base3='$base3',margen3='$margen3',precio4='$precio4',base4='$base4',margen4='$margen4'WHERE codigo='$codigo'";
 		  $update = $this->db->query($sql);

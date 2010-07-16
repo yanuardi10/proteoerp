@@ -283,7 +283,7 @@ class Ordc extends Controller {
 		
 		$edit->detalle=new freeField("detalle", 'detalle',$detalle->output);
 
-		$edit->buttons("modify", "save", "undo", "delete", "back");
+		$edit->buttons("save", "undo","back");
 		$edit->build();
 		
 		$smenu['link']=barra_menu('203');
