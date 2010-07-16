@@ -33,13 +33,11 @@ class Datasis {
 		$rr = $qq->row_array();
 		$aa = each($rr);
 		return $aa[1];
-	}
-	
+	}	
 	function prox_sql($mcontador){
 		$aa=$this->prox_numero($mcontador,'caja');
 		return $aa;
-	}
-	
+	}	
 	function existetabla($tabla){
 		$CI =& get_instance();
 		return $CI->db->table_exists($tabla);
@@ -53,7 +51,6 @@ class Datasis {
 		}
 	 	return $dias;
 	 }
-	
 	 function ames(){
 	 	$mes = array();
 		for($i=1;$i<=31;$i++){
