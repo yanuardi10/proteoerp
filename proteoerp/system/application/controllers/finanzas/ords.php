@@ -58,7 +58,7 @@ class Ords extends Controller {
 		$filter->build();
     
 		$uri = anchor('finanzas/ords/dataedit/show/<#numero#>','<#numero#>');
-    $uri2 = anchor_popup('formatos/verhtml/ORDCBC/<#numero#>',"Ver HTML",$atts);
+    $uri2 = anchor_popup('formatos/verhtml/ORDS/<#numero#>',"Ver HTML",$atts);
     
 		$grid = new DataGrid();
 		$grid->order_by("numero","desc");

@@ -87,8 +87,8 @@ class directorio extends validaciones {
 	function dataedit(){ 
 		$this->rapyd->load("dataedit");
 		
-		$edit = new DataEdit("Agregar", "directorio"); $edit->back_url = 
-		site_url("supervisor/directorio/filteredgrid");
+		$edit = new DataEdit("Agregar", "directorio");
+		$edit->back_url = site_url("supervisor/directorio/filteredgrid");
 		
 		$cmodbus=array(
 			'tabla'   =>'scli',

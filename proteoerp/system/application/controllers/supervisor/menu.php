@@ -102,7 +102,7 @@ class Menu extends Controller{
 		$this->rapyd->load("dataedit");
 
 		$edit = new DataEdit(" ", "intramenu");
-		$edit->back_url = site_url("supervisor/menu");
+		$edit->back_url = site_url("supervisor/menu/index");
 		$edit->pre_process('insert' ,'_pre_insert');
 		$edit->post_process('delete',"_pos_del");
 		$edit->post_process('insert',"_pos_insert");                                                                 

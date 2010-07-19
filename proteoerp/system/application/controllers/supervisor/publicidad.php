@@ -52,7 +52,7 @@ class Publicidad extends Controller {
 		$this->rapyd->load("dataedit");
 
 		$edit = new DataEdit("Carga de Publicidad","publicidad");
-		$edit->back_url = site_url("supervisor/publicidad");
+		$edit->back_url = site_url("supervisor/publicidad/filteredgrid");
 
 		$edit->archivo  = new uploadField("Archivo", "archivo");
 		$edit->archivo->upload_path = $this->upload_path;

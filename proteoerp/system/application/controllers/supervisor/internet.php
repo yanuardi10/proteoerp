@@ -22,7 +22,7 @@ class Internet extends Controller {
 		$this->rapyd->load("dataedit");
 
 		$edit = new DataEdit("Configuracion internet","internet");
-		$edit->back_url = site_url("supervisor/internet");
+		$edit->back_url = site_url("supervisor/internet/index");
 		
 		if($codigo=='IPACEPTADOS'){
 			$edit->pre_process('update','_pre_update');
