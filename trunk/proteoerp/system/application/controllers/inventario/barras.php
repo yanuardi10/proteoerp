@@ -67,7 +67,7 @@ class barras extends Controller {
 		$this->rapyd->load('dataedit');
 
 		$edit = new DataEdit("barras de Inventario", "sinv");
-		$edit->back_url = site_url("inventario/barras/filteredgrid/search/osp");
+		$edit->back_url = site_url("inventario/barras/filteredgrid/");
 
 		$edit->barras = new inputField("Barras", "barras");
 		$edit->barras->size      =  15;

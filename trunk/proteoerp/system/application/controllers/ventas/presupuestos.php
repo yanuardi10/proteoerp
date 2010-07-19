@@ -166,7 +166,7 @@
 		//$edit->post_process("delete","_borra_detalle");
 		//$edit->pre_process('insert','_pre_insert');
 								
-		$edit->back_url = site_url("ventas/presupuestos");
+		$edit->back_url = site_url("ventas/presupuestos/index");
 		
 		$edit->fecha = new DateonlyField("Fecha", "fecha","d/m/Y");
 		$edit->fecha->insertValue = date("Y-m-d");

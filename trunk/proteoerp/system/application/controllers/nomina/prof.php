@@ -44,7 +44,7 @@
 			$this->rapyd->load("dataedit");
 			
 			$edit = new DataEdit("Profesiones","prof");
-			$edit->back_url = site_url("nomina/prof/");
+			$edit->back_url = site_url("nomina/prof/filteredgrid");
 			
 			$edit->post_process('insert','_post_insert');
 			$edit->post_process('update','_post_update');

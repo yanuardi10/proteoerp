@@ -70,7 +70,7 @@ class Scst extends Controller {
 		$filter->build();
 
 		$uri = anchor('compras/scst/dataedit/show/<#control#>','<#numero#>');
-    $uri2 = anchor_popup('formatos/verhtml/COMPRA/<#control#>',"Ver HTML",$atts);
+    $uri2 = anchor_popup('formatos/verhtml/COMPRA/<#numero#>',"Ver HTML",$atts);
 
 		$grid = new DataGrid();
 		$grid->order_by("fecha","desc");

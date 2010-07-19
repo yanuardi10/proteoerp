@@ -49,7 +49,7 @@
 		$this->rapyd->load("dataedit");
 		
 		$edit = new DataEdit("Muro","muro");
-		$edit->back_url = site_url("supervisor/muro/");
+		$edit->back_url = site_url("supervisor/muro/filteredgrid");
 		$edit->pre_process('insert','_pre_insert');
 		$edit->post_process('insert','_post_insert');
 		$edit->post_process('update','_post_update');

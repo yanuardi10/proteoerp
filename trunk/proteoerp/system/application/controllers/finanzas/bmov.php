@@ -4,7 +4,7 @@ class Bmov extends Controller {
 		parent::Controller(); 
 		$this->load->library("rapyd");
 	} 
-		function index(){
+	function index(){
 		$this->rapyd->load("datafilter","datagrid");
 		$this->rapyd->uri->keep_persistence();
             
@@ -51,11 +51,11 @@ class Bmov extends Controller {
 		$data["head"]    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
-		function dataedit()
-	{
+	function dataedit(){
+		
 		$this->rapyd->load("dataedit");
 		$edit = new DataEdit("Cheque", "bmov");
-		$edit->back_url = site_url("finanzas/bmov/");
+		$edit->back_url = site_url("finanzas/bmov/index");
 		
 		$edit->fecha = new DateonlyField("Fecha", "fecha","d/m/Y");
 		$edit->fecha->insertValue = date("Y-m-d");
@@ -66,16 +66,16 @@ class Bmov extends Controller {
 		$edit->numcuent = new textareaField("N&uacute;mero Cuenta", "numcuent");
 		$edit->monto    = new textareaField("Monto", "monto");
 		$edit->concepto = new textareaField("Concepto", "concepto");
-	  $edit->Benefi   = new textareaField("Beneficiario", "benefi");
+	  	$edit->Benefi   = new textareaField("Beneficiario", "benefi");
 		$edit->anulado  = new textareaField("Anulado", "anulado");
 		
 		$edit->buttons("back");
 		$edit->build();
 		
-	  $data['content'] = $edit->output;
-	  $data['title']   = "<h1>Consulta de Cheques</h1>";
-	  $data["head"]    = $this->rapyd->get_head();
-	  $this->load->view('view_ventanas', $data);  
+	  	$data['content'] = $edit->output;
+	  	$data['title']   = "<h1>Consulta de Cheques</h1>";
+	  	$data["head"]    = $this->rapyd->get_head();
+	  	$this->load->view('view_ventanas', $data);  
 	}  
   }
 ?>
