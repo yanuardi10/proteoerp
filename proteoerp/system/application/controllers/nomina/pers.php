@@ -315,11 +315,11 @@ class pers extends validaciones {
 		$edit->retiro->in = "ingreso";
 		$edit->retiro->rule="trim|chfecha";
 		
-		$edit->trabaja = new dropdownField("Tipo de Trabajador","tipot");
+		/*$edit->trabaja = new dropdownField("Tipo de Trabajador","tipot");
 		$edit->trabaja->option("","");
 		$edit->trabaja->options("SELECT codigo,tipo  FROM tipot ORDER BY codigo");
 		$edit->trabaja->group = "Relaci&oacute;n Laboral";
-		$edit->trabaja->style = "width:200px;";
+		$edit->trabaja->style = "width:200px;";*/
 		
 		$edit->tipo = new dropdownField("Tipo de N&oacute;mina","tipo");
 		$edit->tipo->option("","");
