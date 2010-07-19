@@ -277,8 +277,9 @@ var $url = 'inventario/invfis/';
               'screeny'    => '0');
               
 		$titulo = anchor_popup("reportes/ver/INVFIS/$tabla",'Imprimir',$atts);
+		$delete = anchor("inventario/invfis/tdelete/$tabla",'Descartar Inventario');
 		
-		$grid = new DataGrid("Inventario Fisico -->".$titulo);
+		$grid = new DataGrid("Inventario Fisico -->".$titulo." -->".$delete);
 		$grid->per_page = 10;
 		$grid->db->limit = 10;
 		$grid->use_function('caja','pinta');
@@ -507,5 +508,10 @@ var $url = 'inventario/invfis/';
 		for($i=0;$i<$len;$i++){
 			$int+=ord($var[$i]);
 		}
+	}
+	function tdelete($table){	
+		$mSQL="DROP table $table";
+		$this->db->simple_query($mSQL);
+		redirect('inventario/invfis/define');
 	}
 }
