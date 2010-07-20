@@ -18,9 +18,11 @@ var $url = 'inventario/invfis/';
 
 		$form0 = new DataForm('inventario/invfis/define/process/crear');
 		$form0->title("Crear Inventario");
+		
 		$form0->alma = new dropdownField("Almacen", "alma");
 		$form0->alma->options("SELECT TRIM(ubica),TRIM(ubides) FROM caub WHERE gasto='N' AND invfis='N' ORDER BY ubides");
 		$form0->alma->rule='required';
+		
 		$form0->fecha = new dateonlyField("Fecha", "fecha");
 		$form0->fecha->rule='required|chfecha';
 		$form0->fecha->insertValue = date("Y-m-d");
@@ -28,17 +30,21 @@ var $url = 'inventario/invfis/';
 		$form0->submit("btnsubmit","Crear Inventario F&iacute;sico");
 
 		$form1 = new DataForm('inventario/invfis/define/process/contar');
-		$form1->title("Introducir Resultados del Conteo de Inventario F&iacute;sico");
+		$form1->title("Introducir Resultados del Conteo de Inventario F&iacute;sico"); 
+		
 		$form1->inv = new dropdownField("Inventario Fisico", "inv");
 		$form1->inv->rule = 'required';
 		$form1->inv->style = 'width:400px';
+		
 		$form1->submit("btnsubmit","Introducir Conteo F&iacute;sico");
 
 		$form2 = new DataForm('inventario/invfis/define/process/cerrar');
 		$form2->title("Cierre de Inventario");
+		
 		$form2->inv = new dropdownField("Inventario Fisico", "inv2");
 		$form2->inv->rule = 'required';
 		$form2->inv->style = 'width:400px';
+		
 		$mSQL=$this->db->query("SHOW TABLES LIKE 'INV%'");
 		foreach($mSQL->result_array() AS $row){
 			foreach($row AS $key=>$value){
@@ -48,8 +54,9 @@ var $url = 'inventario/invfis/';
 			}
 		}
 		$form2->submit("btnSiCero" ,"Cierre de Inventario (Asume existencia cero para los no contados)");
-		$form2->submit("btnNoCero" ,"Cierre de Inventario (Pasa solo los contados)");
-
+		$form2->submit("btnNoCero" ,"Cierre de Inventario (Pasa solo los contados)");			
+		$form2->submit("btnDELETE" ,"Descartar Inventario");
+		
 		$form0->build_form();
 		$form1->build_form();
 		$form2->build_form();
@@ -70,18 +77,29 @@ var $url = 'inventario/invfis/';
 			redirect($this->url.'inven/'.$inv);
 		}
 
+
 		//cierra el inventario
 		if ($form2->on_success()){
 			$tabla=$form2->inv->newValue;
 			if($this->input->post('btnSiCero')!==false){
 				$error.=$this->_cerrar($tabla,false); //asume existencias en cero
 			}else{
-				$error.=$this->_cerrar($tabla,true);
+				if($this->input->post('btnNoCero')!==false){
+					$error.=$this->_cerrar($tabla,true);
+				}else{
+					if($this->input->post('btnDELETE')!==false){
+						$mSQL="DROP table $tabla";
+						$this->db->simple_query($mSQL);
+						
+					}
+				}
 			}
 			if(strlen($error)==0)
 				redirect($this->url.'define');
 		}
 
+				
+		
 		$data['content'] = "<div class='alert'>$error</div>";
 		$data['content'] .= $form0->output.'</br>'.$form1->output.'</br>'.$form2->output;
 		$data['title']   = '<h1>Inventario F&iacute;sico</h1>';
@@ -277,9 +295,8 @@ var $url = 'inventario/invfis/';
               'screeny'    => '0');
               
 		$titulo = anchor_popup("reportes/ver/INVFIS/$tabla",'Imprimir',$atts);
-		$delete = anchor("inventario/invfis/tdelete/$tabla",'Descartar Inventario');
 		
-		$grid = new DataGrid("Inventario Fisico -->".$titulo." -->".$delete);
+		$grid = new DataGrid("Inventario Fisico -->".$titulo);
 		$grid->per_page = 10;
 		$grid->db->limit = 10;
 		$grid->use_function('caja','pinta');
@@ -508,10 +525,5 @@ var $url = 'inventario/invfis/';
 		for($i=0;$i<$len;$i++){
 			$int+=ord($var[$i]);
 		}
-	}
-	function tdelete($table){	
-		$mSQL="DROP table $table";
-		$this->db->simple_query($mSQL);
-		redirect('inventario/invfis/define');
 	}
 }
