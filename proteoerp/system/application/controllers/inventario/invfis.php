@@ -1,7 +1,7 @@
 <?php
 class Invfis extends Controller {
 
-var $url = 'inventario/invfis/';
+	var $url = 'inventario/invfis/';
 
 	function Invfis(){
 		parent::Controller();
@@ -18,48 +18,58 @@ var $url = 'inventario/invfis/';
 
 		$form0 = new DataForm('inventario/invfis/define/process/crear');
 		$form0->title("Crear Inventario");
-		
-		$form0->alma = new dropdownField("Almacen", "alma");
+		$form0->explica1 = new containerField("","<p style='color:blue;background-color:C6DAF6;align:center'>Esta seccion crea una tabla de inventario vacia de el Almac&eacute;n seleccionado donde se ingresa los valores resultantes del conteo de Inventario.<BR><BR></p> ");
+		$form0->alma = new dropdownField("Almac&eacute;n", "alma");
 		$form0->alma->options("SELECT TRIM(ubica),TRIM(ubides) FROM caub WHERE gasto='N' AND invfis='N' ORDER BY ubides");
 		$form0->alma->rule='required';
-		
+		$form0->explica2 = new containerField("","<p style='color:blue;background-color:C6DAF6;align:center'>La fecha es muy importante, si el conteo fisico se realizo en la ma&ntilde;ana antes de abrir debe colocar la fecha de ayer, de lo contrario si el conteo se hizo en la tarde al final de la jornada debe colocar la fecha de Hoy.</p>");
+
 		$form0->fecha = new dateonlyField("Fecha", "fecha");
 		$form0->fecha->rule='required|chfecha';
 		$form0->fecha->insertValue = date("Y-m-d");
 		$form0->fecha->size=12;
+		$form0->explica3 = new containerField("","<p style='color:blue;background-color:C6DAF6;align:center'>Finalmente si observo las indicaciones anteriores presione el siguiente bot&oacute;n:</p> ");
 		$form0->submit("btnsubmit","Crear Inventario F&iacute;sico");
 
 		$form1 = new DataForm('inventario/invfis/define/process/contar');
-		$form1->title("Introducir Resultados del Conteo de Inventario F&iacute;sico"); 
-		
-		$form1->inv = new dropdownField("Inventario Fisico", "inv");
+		$form1->explica1 = new containerField("","<p style='color:blue;background-color:C6DAF6;align:center'>En esta secci&oacute;n podra transcribir el resultado del conteo f&iacute;sico al sistema.</p>");
+		$form1->title("Introducir Resultados del Conteo de Inventario F&iacute;sico");
+		$form1->inv = new dropdownField("Inventario F&iacute;sico", "inv");
 		$form1->inv->rule = 'required';
 		$form1->inv->style = 'width:400px';
-		
 		$form1->submit("btnsubmit","Introducir Conteo F&iacute;sico");
 
 		$form2 = new DataForm('inventario/invfis/define/process/cerrar');
 		$form2->title("Cierre de Inventario");
-		
-		$form2->inv = new dropdownField("Inventario Fisico", "inv2");
+		$form2->explica1 = new containerField("","<p style='color:blue;background-color:F6DAC6;align:center'>Finalmente si todo el inventario esta pasado puede cerrar con el siguiente bot&oacute;n y asi los montos introducidos se cargar&aacute;n en el almac&eacute;n respectivo.</p>");
+		$form2->inv = new dropdownField("Inventario F&iacute;sico", "inv2");
 		$form2->inv->rule = 'required';
 		$form2->inv->style = 'width:400px';
-		
+
+		$form3 = new DataForm('inventario/invfis/define/process/descartar');
+		$form3->title("Descarte de Inventario");
+		$form3->explica1 = new containerField("","<p style='color:red;background-color:F6DAC6;align:center'>Esta opci&oacute;n eliminara el inventario f&iacute;sico seleccionado, se perder&aacute;n los conteos realizados sobre ese inventario y no se cargar&aacute;n en los almacenes.</p>");
+		$form3->inv = new dropdownField("Inventario F&iacute;sico", "inv3");
+		$form3->inv->rule = 'required';
+		$form3->inv->style = 'width:400px';
+		$form3->submit("btnDELETE" ,"Descartar Inventario");
+
 		$mSQL=$this->db->query("SHOW TABLES LIKE 'INV%'");
 		foreach($mSQL->result_array() AS $row){
 			foreach($row AS $key=>$value){
 				$vval='Almacen:'.$this->datasis->dameval("SELECT ubides FROM caub WHERE ubica ='".substr($value,3,strlen($value)-11)."'").' de Fecha '.dbdate_to_human(substr($value,-8));
+				$form3->inv->option($value,$vval);
 				$form2->inv->option($value,$vval);
 				$form1->inv->option($value,$vval);
 			}
 		}
 		$form2->submit("btnSiCero" ,"Cierre de Inventario (Asume existencia cero para los no contados)");
-		$form2->submit("btnNoCero" ,"Cierre de Inventario (Pasa solo los contados)");			
-		$form2->submit("btnDELETE" ,"Descartar Inventario");
-		
+		$form2->submit("btnNoCero" ,"Cierre de Inventario (Pasa solo los contados)");
+
 		$form0->build_form();
 		$form1->build_form();
 		$form2->build_form();
+		$form3->build_form();
 
 		$error='';
 		//crea un nuevo inventario
@@ -83,25 +93,23 @@ var $url = 'inventario/invfis/';
 			$tabla=$form2->inv->newValue;
 			if($this->input->post('btnSiCero')!==false){
 				$error.=$this->_cerrar($tabla,false); //asume existencias en cero
-			}else{
-				if($this->input->post('btnNoCero')!==false){
-					$error.=$this->_cerrar($tabla,true);
-				}else{
-					if($this->input->post('btnDELETE')!==false){
-						$mSQL="DROP table $tabla";
-						$this->db->simple_query($mSQL);
-						
-					}
-				}
+			}elseif($this->input->post('btnNoCero')!==false){
+				$error.=$this->_cerrar($tabla,true);
 			}
 			if(strlen($error)==0)
 				redirect($this->url.'define');
 		}
 
-				
-		
+		//Descarte inventario
+		if ($form3->on_success()){
+			$tabla=$form3->inv->newValue;
+			$error=$this->_descarte($tabla);
+			if(strlen($error)==0)
+				redirect($this->url.'define');
+		}
+
 		$data['content'] = "<div class='alert'>$error</div>";
-		$data['content'] .= $form0->output.'</br>'.$form1->output.'</br>'.$form2->output;
+		$data['content'] .= $form0->output.'</br>'.$form1->output.'</br>'.$form2->output.'</br>'.$form3->output;
 		$data['title']   = '<h1>Inventario F&iacute;sico</h1>';
 		$data["head"]    = $this->rapyd->get_head().script('jquery.js').script("plugins/jquery.numeric.pack.js").script("plugins/jquery.json.min.js");
 		$this->load->view('view_ventanas', $data);
@@ -293,7 +301,7 @@ var $url = 'inventario/invfis/';
               'resizable'  => 'yes',
               'screenx'    => '0',
               'screeny'    => '0');
-              
+
 		$titulo = anchor_popup("reportes/ver/INVFIS/$tabla",'Imprimir',$atts);
 		
 		$grid = new DataGrid("Inventario Fisico -->".$titulo);
@@ -477,6 +485,24 @@ var $url = 'inventario/invfis/';
 		}else{
 			$error='No hay productos contados para cerrar el inventario';
 		}
+		return $error;
+	}
+
+	function _descarte($tabla){
+		$error='';
+		$id=$this->_idsem($tabla);
+		$seg=sem_get($id,1,0666,-1);
+		sem_acquire($seg);
+		if($this->db->table_exists($tabla)){
+			$mSQL="DROP table $tabla";
+			$rt=$this->db->simple_query($mSQL);
+			if(!$rt){
+				memowrite('invfis',$mSQL);
+				$error='No se pudo descartar el inventario';
+			}
+		}
+		sem_release($seg);
+		sem_remove($seg);
 		return $error;
 	}
 
