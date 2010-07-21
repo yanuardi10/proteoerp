@@ -701,6 +701,10 @@ class sinv extends Controller {
 			//$edit->$objeto->in="pfecha$i";
 		}
 		
+		$codigo=$edit->_dataobject->get("codigo");
+		$edit->almacenes = new containerField('almacenes',$this->_detalle($codigo));
+		$edit->almacenes->when = array("show","modify");
+		
 		$edit->buttons("modify", "save", "undo", "delete", "back");
 		$edit->build();
 		
@@ -778,5 +782,27 @@ class sinv extends Controller {
 		PRIMARY KEY  (`combo`,`codigo`)
 		) ENGINE=MyISAM DEFAULT CHARSET=latin1";
 		$this->db->simple_query($mSQL);
-	}	
+	}
+	function _detalle($codigo){
+  	$salida='hola';
+  	if(!empty($codigo)){
+  		$this->rapyd->load('dataedit','datagrid'); 
+			
+			$grid = new DataGrid('Cantidad por almac&eacute;n');
+			
+			$grid->db->select=array("a.codigo,a.alma,a.existen,b.ubides");
+			$grid->db->from('itsinv as a');
+			$grid->db->join('caub as b','a.alma=b.ubica');
+			
+			$grid->db->where('codigo',$codigo);
+			
+			$grid->column("Almacen"   ,"alma" );
+			$grid->column("Nombre"    ,"ubides" );
+			$grid->column("Cantidad"  ,"existen",'align="RIGHT"');
+			
+			$grid->build();
+			$salida=$grid->output;
+		}
+		return $salida;
+  }
 }	

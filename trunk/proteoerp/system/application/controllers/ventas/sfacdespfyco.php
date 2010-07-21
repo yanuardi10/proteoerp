@@ -135,7 +135,6 @@ class sfacdespfyco extends Controller {
 		$this->load->view('view_ventanas', $data);
 
 	}
-
 	function procesar(){
 		//print_r($_POST);
 		foreach($_POST['despacha'] as $fila){

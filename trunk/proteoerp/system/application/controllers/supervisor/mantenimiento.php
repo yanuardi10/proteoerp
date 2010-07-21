@@ -110,43 +110,116 @@ class Mantenimiento extends Controller{
 	}
 
 	function clinconsis(){
-		$this->rapyd->load("datagrid");
-		//SELECT cod_cli, nombre,sum(monto*(tipo_doc IN ('FC','ND','GI'))) AS debitos, sum(monto*(tipo_doc NOT IN ('FC','ND','GI'))) AS creditos, sum(monto*IF(tipo_doc IN ('FC','ND','GI'),1,-1)) AS saldo,sum((monto-abonos)*(tipo_doc IN ('FC','ND','GI'))-(monto-abonos)*(tipo_doc='AN')) AS abonado, sum(monto*IF(tipo_doc IN ('FC','ND','GI'),1,-1)-((monto-abonos)*(tipo_doc IN ('FC','ND','GI'))-(monto-abonos)*(tipo_doc='AN'))) AS diferen FROM smov group by cod_cli having abs(diferen)>0.01
-		$select=array('cod_cli', 'nombre',
-		"sum(monto*(tipo_doc IN ('FC','ND','GI'))) AS debitos",
-		"sum(monto*(tipo_doc NOT IN ('FC','ND','GI'))) AS creditos",
-		"sum(monto*IF(tipo_doc IN ('FC','ND','GI'),1,-1)) AS saldo",
-		"sum((monto-abonos)*(tipo_doc IN ('FC','ND','GI'))-(monto-abonos)*(tipo_doc='AN')) AS abonado",
-		"sum(monto*IF(tipo_doc IN ('FC','ND','GI'),1,-1)-((monto-abonos)*(tipo_doc IN ('FC','ND','GI'))-(monto-abonos)*(tipo_doc='AN'))) AS diferen");
 		
+		$this->rapyd->load("datafilter","datagrid");
+		
+		$scli=array(
+	  'tabla'   =>'scli',
+	  'columnas'=>array(
+		'cliente' =>'C&oacute;digo Cliente',
+		'nombre'  =>'Nombre',
+		'contacto'=>'Contacto'),
+	  'filtro'  =>array('cliente'=>'C&oacute;digo Cliente','nombre'=>'Nombre'),
+	  'retornar'=>array('cliente'=>'cod_cli'),
+	  'titulo'  =>'Buscar Cliente');
+		
+		$boton=$this->datasis->modbus($scli);
+		
+		 
+		$filter = new DataFilter("Filtro");
+		$select=array("a.fecha","a.abonos","a.tipo_doc","a.cod_cli","a.numero","a.nombre","a.monto as saldo",
+		"sum(b.abono) as abono","sum(b.abono)-a.monto as diferencia");
+		
+		$filter->db->select($select);
+		$filter->db->from('smov as a');
+		$filter->db->join('itccli as b','a.cod_cli=b.cod_cli and a.numero=b.numero and a.tipo_doc=b.tipo_doc');
+		$filter->db->groupby("a.cod_cli, a.tipo_doc,a.numero");
+		$filter->db->having("a.monto","a.abonos");
+		$filter->db->having("abono < ","a.monto");
+		//$filter->db->having("diferencia >= ",'0.05');
+		$filter->db->orderby("cod_cli");
+		
+		$filter->fechad = new dateonlyField("Desde", "fechad");
+		$filter->fechah = new dateonlyField("Hasta", "fechah");
+		$filter->fechad->clause  =$filter->fechah->clause="where";
+		$filter->fechad->db_name =$filter->fechah->db_name="a.fecha";
+		$filter->fechad->insertValue = date("Y-m-d");
+		$filter->fechah->insertValue = date("Y-m-d");
+		$filter->fechad->operator=">="; 
+		$filter->fechah->operator="<=";
+		
+		$filter->cliente = new inputField("Cliente", "a.cod_cli");
+    $filter->cliente->size = 30;
+		$filter->cliente->append($boton);
+		
+		$filter->buttons("reset","search");
+		$filter->build();
+		
+		function descheck($numero,$cod_cli,$tipo_doc){
+			$data = array(
+			  'name'    => $numero,
+			  'id'      => $cod_cli,
+			  'value'   => $tipo_doc,
+			  'checked' => FALSE);
+			return form_checkbox($data);
+		}
+								
 		$uri1 = anchor('supervisor/mantenimiento/itclinconsis/<str_replace>/|:slach:|<#cod_cli#></str_replace>','<#cod_cli#>');
+		$uri2 = anchor('supervisor/mantenimiento/ajustar/<#cod_cli#>','Ajustar Saldo');
 		
-		$grid = new DataGrid("Clientes inconsistentes");
+		$grid = new DataGrid("Lista de Clientes");
+		$grid->use_function('descheck');
 		$grid->per_page = 15;
 		$grid->use_function('str_replace');
-		$grid->db->select($select);
-		$grid->db->from('smov');
-		$grid->db->groupby("cod_cli");
-		$grid->db->having("abs(diferen)>0.01");
-		//$grid->db->having('abs(100*diferen/saldo)>=0.05');
+			
+		$grid->column('Cliente'        ,$uri1,'cod_cli');
+		$grid->column('Nombre'         ,'nombre','nombre');
+		$grid->column('Fecha'          ,'<dbdate_to_human><#fecha#></dbdate_to_human>' ,'fecha');
+		$grid->column('Numero'         ,'numero'     ,'numero');
+		$grid->column('Saldo'          ,'saldo'      ,'saldo',"align='right'");
+		$grid->column('Abonados'       ,'abono'      ,'abono',"align='right'");
+		$grid->column('Diferencia'     ,'diferencia' ,'diferencia',"align='right'");
+		$grid->column("Ajustar Saldo","<descheck><#numero#>|<#cod_cli#>|<#tipo_doc#></descheck>","align=center"); 
 		
-		$grid->column_orderby('Cliente'        ,$uri1 ,'cod_cli');
-		$grid->column_orderby('Nombre'         ,'nombre','nombre'  );
-		$grid->column_orderby('D&eacute;bitos' ,'debitos' );
-		$grid->column_orderby('Cr&eacute;ditos','creditos');
-		$grid->column_orderby('Saldo'          ,'saldo','saldo'   );
-		$grid->column_orderby('Abonados'       ,'abonado','saldo' );
-		$grid->column_orderby('Diferencia'     ,'diferen','diferen');
-
 		$grid->build();
 		//echo $grid->db->last_query();
 		//memowrite($grid->db->last_query());
-		$data['content'] = $grid->output;
-		$data['title']   = "<h1>Clientes con problemas de incosistencias</h1>";
-		$data["head"]    = $this->rapyd->get_head();
+				
+		$script='';
+		$url=site_url('supervisor/mantenimiento/procesar');
+		//$url1=site_url('ventas/sfacdespfyco/activar1');
+		$data['script']='<script type="text/javascript">
+			$(document).ready(function() {
+				$("form :checkbox").click(function () {
+			       $.ajax({
+						  type: "POST",
+						  url: "'.$url.'",
+						  data: "numero="+this.name+"&codigo="+this.id+"&tipo="+this.value,
+						  success: function(msg){
+						  alert("Saldo Ajustado");						  	
+						  }
+						});
+			    }).change(); 
+			});
+			</script>';
+		             
+		$data['content'] =  $filter->output;			                                                              
+		$data['content'] .=form_open('').$grid->output.form_close().$script;
+		$data['title']   =  "<h1>Clientes con problemas de incosistencias</h1>";
+		$data["head"]    =  script("jquery-1.2.6.pack.js");
+		$data["head"]    .= script("plugins/jquery.checkboxes.pack.js").$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
-
+	function procesar(){
+	
+		$numero  = $this->db->escape($this->input->post('numero'));
+		$codigo  = $this->db->escape($this->input->post('codigo'));
+		$tipo    = $this->db->escape($this->input->post('tipo'));
+		
+		$monto=$this->datasis->dameval("SELECT sum(abono) FROM itccli WHERE numero=$numero AND cod_cli=$codigo AND tipo_doc=$tipo");
+		$mSQL="UPDATE smov set abonos='$monto' WHERE numero=$numero AND cod_cli=$codigo AND tipo_doc=$tipo";
+		$SQL=$this->db->simple_query($mSQL);
+	}
 	function itclinconsis($proveed){
 		$this->rapyd->load("datagrid");
 		$select=array('cod_cli', 'nombre','numero',

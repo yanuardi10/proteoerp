@@ -42,7 +42,7 @@
 		$grid->per_page = 20;
 
 		$grid->column("C&oacute;digo Linea"       ,$uri       ,"align='center'");
-		$grid->column("Descripción"               ,"descrip"  ,"align='left'");
+		$grid->column("Descripci&oacute;n"               ,"descrip"  ,"align='left'");
 		$grid->column("Departamento"              ,"depto"    ,"align='left'");
 		$grid->column("Cuenta Costo"              ,"cu_cost"  ,"align='center'");
 		$grid->column("Cuenta Inventario"         ,"cu_inve"  ,"align='center'");
@@ -153,7 +153,7 @@
 		$edit->linea->append($sugerir);
 		$edit->linea->append($ultimo);
 				
-		$edit->descrip =  new inputField("Descripción", "descrip");
+		$edit->descrip =  new inputField("Descripci&oacute;n", "descrip");
 		$edit->descrip->size = 35;
 		$edit->descrip->rule= "trim|strtoupper|required";
 		$edit->descrip->maxlength=30;
