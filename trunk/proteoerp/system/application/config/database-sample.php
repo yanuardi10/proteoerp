@@ -72,6 +72,23 @@ $db['sucuX']['char_set'] = "latin1";
 $db['sucuX']['dbcollat'] = "latin1_swedish_ci";
 */
 
+/* Conecciones a otros sistema de la familia Proteo
+
+$db['farmax']['hostname'] = "localhost";
+$db['farmax']['username'] = "usuario";
+$db['farmax']['password'] = "";
+$db['farmax']['database'] = "drogueria";
+$db['farmax']['dbdriver'] = "mysql";
+$db['farmax']['dbprefix'] = "";
+$db['farmax']['pconnect'] = false;
+$db['farmax']['db_debug'] = TRUE;
+$db['farmax']['cache_on'] = FALSE;
+$db['farmax']['cachedir'] = "";
+$db['farmax']['char_set'] = "latin1";
+$db['farmax']['dbcollat'] = "latin1_swedish_ci";
+
+
+*/
 $db['olap']['hostname'] = "localhost";
 $db['olap']['username'] = "usuario";
 $db['olap']['password'] = "";
