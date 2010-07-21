@@ -177,7 +177,7 @@ class Mantenimiento extends Controller{
 		$grid->column('Fecha'          ,'<dbdate_to_human><#fecha#></dbdate_to_human>' ,'fecha');
 		$grid->column('Numero'         ,'numero'     ,'numero');
 		$grid->column('Saldo'          ,'saldo'      ,'saldo',"align='right'");
-		$grid->column('Abonados'       ,'abono'      ,'abono',"align='right'");
+		$grid->column('Abonado'       ,'abono'      ,'abono',"align='right'");
 		$grid->column('Diferencia'     ,'diferencia' ,'diferencia',"align='right'");
 		$grid->column("Ajustar Saldo","<descheck><#numero#>|<#cod_cli#>|<#tipo_doc#></descheck>","align=center"); 
 		
