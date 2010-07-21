@@ -14,7 +14,7 @@ class Fotos extends Controller {
 	function index(){
 		$this->datasis->modulo_id(310,1);
 		redirect("inventario/fotos/filteredgrid/index");
-  }
+	}
 
 	function filteredgrid(){
 		$this->rapyd->load("datafilter2","datagrid");
@@ -90,16 +90,16 @@ class Fotos extends Controller {
 		$filter->grupo->db_name="a.grupo";
 		$filter->grupo->option("","Seleccione una Linea");
 		//$filter->grupo->style = "width:220px";
-		
+
 		$filter->marca = new dropdownField("Marca", "marca");
 		$filter->marca->option("","");  
 		$filter->marca->options("SELECT TRIM(marca) AS clave, TRIM(marca) AS valor FROM marc ORDER BY marca");
 		$filter->marca->style = "width:140px"; 
-			  
+
 		$filter->fotos = new checkboxField("Mostrar solo productos con fotos", "fotos", "y","n"); 
-		$filter->fotos->clause='';  
-		$filter->fotos->insertValue = "n";                                 
-		
+		$filter->fotos->clause='';
+		$filter->fotos->insertValue = "n";
+
 		$filter->buttons("reset","search");
 		$filter->build();
 
@@ -117,7 +117,7 @@ class Fotos extends Controller {
 		$grid->column("Precio 4","<number_format><#precio4#>|2|,|.</number_format>",'align=Right');	
 
 		$grid->build();
-    //echo $grid->db->last_query();
+		//echo $grid->db->last_query();
 		$data['content'] = $filter->output.$grid->output;
 		$data["head"]    = script("tabber.js").script("prototype.js").$this->rapyd->get_head().script("scriptaculous.js").script("effects.js");
 		$data['title']   = '<h1>Lista de Art&iacute;culos</h1>';
@@ -250,7 +250,7 @@ class Fotos extends Controller {
 		
 		$table->db->select(array('nombre','id'));
 		$table->db->from("sinvfot");
-		$table->db->where("sinv_id='$sinv_id'");
+		$table->db->where('sinv_id',$sinv_id);
 
 		$table->per_row = 4;
 		$table->per_page = 16;
@@ -312,7 +312,7 @@ class Fotos extends Controller {
 		
 		$table->db->select(array('nombre','comentario'));
 		$table->db->from("sinvfot");
-		$table->db->where("sinv_id='$id'");
+		$table->db->where('sinv_id',$id);
 
 		$table->per_row = 1;
 		$table->per_page = 1;
@@ -326,39 +326,39 @@ class Fotos extends Controller {
 	}
 
 	function obtener($id){
-	    $nombre=$this->datasis->dameval("SELECT nombre FROM sinvfot WHERE sinv_id='$id' limit 1");
-		$this->mostrar($nombre);                
+		$nombre=$this->datasis->dameval("SELECT nombre FROM sinvfot WHERE sinv_id='$id' limit 1");
+		$this->mostrar($nombre);
 	
-	    /*
-	    $config['image_library'] = 'gd2';
-	    $config['source_image'] = $path->getPath();
-	    $config['create_thumb'] = TRUE;
-	    $config['maintain_ratio'] = TRUE;
-	    $config['width'] = 75;
-	    $config['height'] = 50;
+		/*
+		$config['image_library'] = 'gd2';
+		$config['source_image'] = $path->getPath();
+		$config['create_thumb'] = TRUE;
+		$config['maintain_ratio'] = TRUE;
+		$config['width'] = 75;
+		$config['height'] = 50;
 	
-	    $this->load->library('image_lib', $config);
-	    $this->image_lib->resize();*/
+		$this->load->library('image_lib', $config);
+		$this->image_lib->resize();*/
 	}
 	
 	function mostrar($nombre){
 		$path=new Path();
-	    $path->setPath($_SERVER['DOCUMENT_ROOT']);
-	    $path->append($this->upload_path);
-	    $path->append($nombre);
+		$path->setPath($_SERVER['DOCUMENT_ROOT']);
+		$path->append($this->upload_path);
+		$path->append($nombre);
 	
-	    if (!empty($nombre) AND file_exists($path->getPath())){
-	            header('Content-type: image/jpg');
-	            $data = file_get_contents($path->getPath());
-	    }else{
-	            header('Content-type: image/gif');
-	            $path=new Path();
-	            $path->setPath($_SERVER['DOCUMENT_ROOT']);           
-	            $path->append($this->config->item('base_url'));
-	            $path->append('images/ndisp.gif');
-	            $data = file_get_contents($path->getPath());
-	    }
-	    echo $data;
+		if (!empty($nombre) AND file_exists($path->getPath())){
+			header('Content-type: image/jpg');
+			$data = file_get_contents($path->getPath());
+		}else{
+			header('Content-type: image/gif');
+			$path=new Path();
+			$path->setPath($_SERVER['DOCUMENT_ROOT']);
+			$path->append($this->config->item('base_url'));
+			$path->append('images/ndisp.gif');
+			$data = file_get_contents($path->getPath());
+		}
+		echo $data;
 	}
 	
 	function principal($codigo){
@@ -372,7 +372,7 @@ class Fotos extends Controller {
 			$mSQL_2=$this->db->query("UPDATE sinvfot SET principal='N' WHERE id='$ids'");
 			//return FALSE;
 		}else {
-  		return TRUE;
+			return TRUE;
 		}
 	}
 	
@@ -381,9 +381,9 @@ class Fotos extends Controller {
 		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM sinvfot WHERE nombre='$nombre'");
 		if($chek<=0){
 			$path=new Path();
-            $path->setPath($_SERVER['DOCUMENT_ROOT']);
-            $path->append($this->upload_path);
-            $path->append($nombre);
+			$path->setPath($_SERVER['DOCUMENT_ROOT']);
+			$path->append($this->upload_path);
+			$path->append($nombre);
 			unlink($path->getPath());
 		}
 	}
@@ -427,7 +427,7 @@ class Fotos extends Controller {
 				}
 			}
 		}else{
-		 $msg= 'Error Sucursal no existe '.$sucu;
+			$msg= 'Error Sucursal no existe '.$sucu;
 		}
 		$data['content'] = $msg;
 		$data['title']   = '<h1>Descarga de fotos de inventario</h1>';
@@ -435,8 +435,7 @@ class Fotos extends Controller {
 		$data["head"]    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
-	
-	
+
 	function instalar(){
 		$mSQL='CREATE TABLE IF NOT EXISTS `sinvfot` (
 		  `id` int(10) unsigned NOT NULL auto_increment,
