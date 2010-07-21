@@ -15,8 +15,7 @@ class Rcaj extends validaciones {
 
 	function filteredgrid(){
 		$this->rapyd->load("datafilter","datagrid");
-		
-		$this->rapyd->load("datagrid");
+
 		$this->rapyd->load("datafilter");
 		$atts = array(
               'width'      => '800',
