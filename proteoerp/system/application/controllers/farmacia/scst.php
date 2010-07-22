@@ -5,8 +5,6 @@ class Scst extends Controller {
 		parent::Controller();
 		$this->load->library("rapyd");
 		//$this->datasis->modulo_id(201,1);
-		//$this->rapyd->set_connection('farmax');
-		//$this->rapyd->load_db();
 	}
 
 	function index() {
@@ -53,15 +51,15 @@ class Scst extends Controller {
 		$filter->fechah->size=$filter->fechad->size=10;
 		$filter->fechad->operator=">="; 
 		$filter->fechah->operator="<=";
-		$filter->fechah->group="Fecha Recepci&oacute;n";
-		$filter->fechad->group="Fecha Recepci&oacute;n";
 
 		//$filter->fecha_recep = new dateonlyField("Fecha Recepci&oacute;n", "fecha",'d/m/Y');
 		//$filter->fecha_recep->clause  =$filter->fecha->clause="where";
 		//$filter->fecha_recep->db_name =$filter->fecha->db_name="recep";
 		//$filter->fecha_recep->insertValue = date("Y-m-d"); 
 		//$filter->fecha_recep->size=10;
-		//$filter->fecha_recep->operator="="; 
+		//$filter->fecha_recep->operator="=";
+		//$filter->fechah->group="Fecha Recepci&oacute;n";
+		//$filter->fechad->group="Fecha Recepci&oacute;n";
 
 		$filter->numero = new inputField("Factura", "numero");
 		$filter->numero->size=20;
@@ -82,12 +80,12 @@ class Scst extends Controller {
 		$grid->per_page = 15;
 
 		$grid->column_orderby("Factura",$uri,'control');
-		$grid->column_orderby("Fecha","<dbdate_to_human><#fecha#></dbdate_to_human>",'fecha',"align='center'");
-		$grid->column_orderby("Vence","<dbdate_to_human><#vence#></dbdate_to_human>",'vence',"align='center'");
-		$grid->column_orderby("Nombre","nombre",'nombre');
-		$grid->column_orderby("IVA"  ,"montoiva" ,'montoiva' ,"align='right'");
-		$grid->column_orderby("Monto" ,"montonet" ,'montonet',"align='right'");
-		//$grid->column("Vista",$uri2,"align='center'");
+		$grid->column_orderby("Fecha"  ,"<dbdate_to_human><#fecha#></dbdate_to_human>",'fecha',"align='center'");
+		$grid->column_orderby("Vence"  ,"<dbdate_to_human><#vence#></dbdate_to_human>",'vence',"align='center'");
+		$grid->column_orderby("Nombre" ,"nombre",'nombre');
+		$grid->column_orderby("IVA"    ,"montoiva" ,'montoiva' ,"align='right'");
+		$grid->column_orderby("Monto"  ,"montonet" ,'montonet',"align='right'");
+		$grid->column_orderby("Control",'pcontrol' ,'pcontrol',"align='right'");
 
 		$grid->add("compras/agregar");
 		$grid->build();
@@ -105,28 +103,6 @@ class Scst extends Controller {
 
 		$this->rapyd->load("dataedit","datadetalle","fields","datagrid");
 		$this->rapyd->uri->keep_persistence();
-
-		$modbus=array(
-			'tabla'   =>'sinv',
-			'columnas'=>array(
-				'codigo' =>'C&oacute;digo',
-				'descrip'=>'descrip'),
-			'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'descrip'),
-			//'retornar'=>array('codigo'=>'codigo<#i#>','precio1'=>'precio1<#i#>','precio2'=>'precio2<#i#>','precio3'=>'precio3<#i#>','precio4'=>'precio4<#i#>','iva'=>'iva<#i#>','pond'=>'costo<#i#>'),
-			'retornar'=>array('codigo'=>'codigo<#i#>'),
-			'p_uri'=>array(4=>'<#i#>'),
-			'titulo'  =>'Buscar Articulo');
-		
-		//Script necesario para totalizar los detalles
- 		
-		$fdepar = new dropdownField("ccosto", "ccosto");
-		$fdepar->options("SELECT depto,descrip FROM dpto WHERE tipo='G' ORDER BY descrip");
-		$fdepar->status='create';
-		$fdepar->build();
-		$dpto=$fdepar->output;
-
-		$dpto=trim($dpto);
-		$dpto=preg_replace('/\n/i', '', $dpto);
 
 		$uri=site_url("/contabilidad/casi/dpto/");
 
@@ -198,42 +174,45 @@ class Scst extends Controller {
 		$edit->subt  = new inputField("Subt", "montotot");
 		$edit->subt->size = 20;
 		$edit->subt->css_class='inputnum';
-		
+
 		$edit->iva  = new inputField("IVA", "montoiva");
 		$edit->iva->size = 20;
 		$edit->iva->css_class='inputnum';
-		
+
 		$edit->total  = new inputField("Total", "montonet");
 		$edit->total->size = 20;
 		$edit->total->css_class='inputnum';
-		
+
 		$edit->anticipo  = new inputField("Anticipo", "anticipo");
 		$edit->anticipo->size = 20;
 		$edit->anticipo->css_class='inputnum';
-		
+
 		$edit->contado  = new inputField("Contado", "inicial");
 		$edit->contado->size = 20;
 		$edit->contado->css_class='inputnum';
-		
+
 		$edit->rislr  = new inputField("R.ISLR", "reten");
 		$edit->rislr->size = 20;
 		$edit->rislr->css_class='inputnum';
-		
+
 		$edit->riva  = new inputField("R.IVA", "reteiva");
 		$edit->riva->size = 20;
 		$edit->riva->css_class='inputnum';
-		
+
+		$edit->pcontrol  = new inputField('Control', 'pcontrol');
+		$edit->pcontrol->size = 12;
+
 		$edit->monto  = new inputField("Monto US $", "mdolar");
 		$edit->monto->size = 20;
 		$edit->monto->css_class='inputnum';
-		
+
 		$numero=$edit->_dataobject->get('control');
-		
+
 		//Campos para el detalle
 		$tabla=$this->db->database;
 		$detalle = new DataGrid('');
 		//$detalle->db->select('a.codigo,a.descrip,a.cantidad,a.costo AS ultimo,a.importe,b.codigo AS sinv');
-		$detalle->db->select('a.*,a.codigo AS barras,b.codigo AS sinv');
+		$detalle->db->select('a.*,a.codigo AS barras,a.costo AS pond,b.codigo AS sinv');
 		$detalle->db->from('itscst AS a');
 		$detalle->db->where("a.control",$numero);
 		$detalle->db->join($tabla.'.sinv AS b','a.codigo=b.codigo','LEFT');
@@ -241,14 +220,15 @@ class Scst extends Controller {
 		$detalle->column("Barras"            ,"<#codigo#>" );
 		$detalle->column("Descripci&oacute;n","<#descrip#>");
 		$detalle->column("Cantidad"          ,"<#cantidad#>","align='right'");
-		$detalle->column("Precio"            ,"<#ultimo#>"   ,"align='right'");
+		$detalle->column("Precio"            ,"<#ultimo#>"  ,"align='right'");
 		$detalle->column("Importe"           ,"<#importe#>" ,"align='right'");
 		$detalle->column("Acciones "         ,"<exissinv><#sinv#>|<#dg_row_id#></exissinv>","bgcolor='#D7F7D7' align='center'");
 		$detalle->build();
-		
+		//echo $detalle->db->last_query();
+
 		$script='
 		function pcrear(id){
-			var pasar=["barras","descrip","ultimo","iva"];
+			var pasar=["barras","descrip","ultimo","iva","codigo","pond"];
 			var url  = "'.site_url('inventario/sinv/dataedit/create').'";
 			form_virtual(pasar,id,url);
 		}
@@ -286,7 +266,8 @@ class Scst extends Controller {
 
 		$edit->detalle=new freeField("detalle", 'detalle',$detalle->output);
 		$accion="javascript:window.location='".site_url('farmacia/scst/cargar'.$edit->pk_URI())."'";
-		$edit->button_status('btn_cargar','Cargar',$accion,'TR','show');
+		$pcontrol=$edit->_dataobject->get('pcontrol');
+		if(is_null($pcontrol)) $edit->button_status('btn_cargar','Cargar',$accion,'TR','show');
 		$edit->buttons('save','undo','back');
 
 		$edit->script($script,'show');
@@ -295,7 +276,7 @@ class Scst extends Controller {
 		$smenu['link']=barra_menu('201');
 		$data['smenu'] = $this->load->view('view_sub_menu', $smenu,true);
 		$conten["form"]  =&  $edit;
-		$data['content'] = $this->load->view('view_compras', $conten,true); 
+		$data['content'] = $this->load->view('view_farmax_compras', $conten,true); 
 		$data["head"]    = script("tabber.js").script("prototype.js").$this->rapyd->get_head().script("scriptaculous.js").script("effects.js");
 		$data['title']   = '<h1>Compras Descargadas</h1>';
 		$this->load->view('view_ventanas', $data);
@@ -378,6 +359,18 @@ class Scst extends Controller {
 		$this->rapyd->uri->keep_persistence();
 		$this->rapyd->load("dataedit");
 
+		$modbus=array(
+			'tabla'   =>'sinv',
+			'columnas'=>array(
+				'codigo' =>'C&oacute;digo',
+				'barras' =>'C&oacute;digo barras',
+				'descrip'=>'descrip'),
+			'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'descrip'),
+			'retornar'=>array('codigo' =>'abarras'),
+			//'where'   =>'LENGTH(barras)>0',
+			'titulo'  =>'Buscar Art&iacute;culo');
+		$boton=$this->datasis->modbus($modbus);
+
 		$edit = new DataEdit('Reasignaciones de c&oacute;digo','farmaxasig');
 		$edit->back_url = "farmacia/scst/asignarfiltro";
 
@@ -387,16 +380,17 @@ class Scst extends Controller {
 		$edit->proveedor->maxlength=50;
 
 		$edit->barras = new inputField('Barras en el proveedor','barras');
-		$edit->barras->rule = 'required';
+		$edit->barras->rule = 'required|callback_noexiste';
 		$edit->barras->size = 50;
 		$edit->barras->maxlength=250;
 
 		$edit->abarras = new inputField('Barras en sistema','abarras');
-		$edit->abarras->rule = 'required';
+		$edit->abarras->rule = 'required|callback_noexiste';
 		$edit->abarras->size = 50;
 		$edit->abarras->maxlength=250;
+		$edit->abarras->append($boton);
 
-		$edit->buttons("save", "undo", "back");
+		$edit->buttons('save','undo','back');
 		$edit->build();
 
 		$data['content'] =$edit->output;
@@ -405,8 +399,61 @@ class Scst extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
+	function noexite($barras){
+		$error="El c&oacute;digo de barras '$barras' existe en el iventario";
+		return true;
+	}
+
+	function siexite($barras){
+		$error="El c&oacute;digo de barras '$barras' no existe en el iventario";
+		return true;
+	}
+
 	function cargar($control){
-		echo "<p aling='center'>cargar $control</p>";
+		$control =$this->db->escape($control);
+		$lcontrol=$this->datasis->fprox_numero('nscst');
+		$transac =$this->datasis->fprox_numero('ntransac');
+		$farmaxDB=$this->load->database('farmax',TRUE);
+		$farmaxdb=$farmaxDB->database;
+		$localdb =$this->db->database;
+
+		$sql ="SELECT COUNT(*) AS cana FROM ${farmaxdb}.itscst AS a LEFT JOIN ${localdb}.sinv AS b ON a.codigo=b.codigo WHERE a.control=$control AND b.codigo IS NULL";
+		$query=$this->db->query($sql);
+		if($query->num_rows()>0){
+			$row=$query->row_array();
+			if($row['cana']==0){
+				$query=$farmaxDB->query("SELECT * FROM scst WHERE control=$control AND pcontrol IS NULL");
+
+				if ($query->num_rows()==1){
+					$row=$query->row_array();
+					$row['control']=$lcontrol;
+					$row['transac']=$transac;
+					unset($row['pcontrol']);
+					$mSQL[]=$this->db->insert_string('scst', $row);
+
+					$itquery = $farmaxDB->query("SELECT * FROM itscst WHERE control=$control");
+					foreach ($itquery->result_array() as $itrow){
+						$itrow['control']=$lcontrol;
+						unset($itrow['id']);
+						$mSQL[]=$this->db->insert_string('itscst', $itrow);
+					}
+					foreach($mSQL AS $sql){
+						$rt=$this->db->simple_query($sql);
+						if(!$rt){ memowrite('scstfarma',$sql); echo "$sql \n";}
+					}
+					$sql="UPDATE scst SET pcontrol='${lcontrol}' WHERE control=$control";
+					$rt=$farmaxDB->simple_query($sql);
+					if(!$rt) memowrite('farmaejec',$sql);
+					echo 'Compra guardada con el control '.anchor("compras/scst/dataedit/show/$lcontrol",$lcontrol);
+				}else{
+					echo "Al parecer la factura fue ya pasada";
+				}
+			}else{
+				echo "No se puede pasar porque hay productos que no existen en inventario";
+			}
+		}else{
+			echo "Error en la consulta";
+		}
 	}
 
 	function dummy(){
@@ -429,4 +476,3 @@ class Scst extends Controller {
 		$this->db->simple_query($mSQL);
 	}
 }
-?>

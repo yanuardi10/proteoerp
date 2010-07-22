@@ -1,22 +1,20 @@
 <?php
 
-class Aumento extends Controller
-{
+class Aumento extends Controller{
 	function Aumento(){
 		parent::Controller();
 	}
 
 	function index(){
 		$this->load->helper('form');
-		// Set the template valiables
 		$data['titulo1'] = "<h1>Aumento de precio</h1>\n";
 		$data['cuerpo']  = form_open('farmacia/aumento/procesa');
 		$data['cuerpo'] .= form_input('aumenta').'%';
 		$data['cuerpo'] .= form_submit('pasa','Aceptar');
 		$data['cuerpo'] .= form_close();
-		// Build the thing
 		$this->load->view('view_rapido', $data);
 	}
+
 	function procesa(){
 		$paso=false;
 		$auporcent=($_POST['aumenta']+100)/100;
@@ -43,5 +41,4 @@ class Aumento extends Controller
 		$this->load->view('view_rapido', $data);
 	}
 }
-
 ?>

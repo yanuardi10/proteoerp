@@ -7,8 +7,8 @@ class Grup extends validaciones {
 		$this->load->library("rapyd");
 	  $this->datasis->modulo_id(304,1);
 	}
-	
-	function index(){		
+
+	function index(){
 		redirect("inventario/grup/filteredgrid");
 	}
 
@@ -77,8 +77,7 @@ class Grup extends validaciones {
 		$this->load->view('view_ventanas', $data);	
 	}
 
-	function dataedit($status='',$id='')
- 	{
+	function dataedit($status='',$id=''){
 		$this->rapyd->load("dataobject","dataedit");
 		
 		$qformato=$this->qformato=$this->datasis->formato_cpla();
@@ -98,7 +97,7 @@ class Grup extends validaciones {
 					}
 				});
 			}
-		
+
 			function sugerir(){
 				$.ajax({
 						url: "'.$link2.'",
@@ -159,7 +158,7 @@ class Grup extends validaciones {
 		$edit->post_process('insert','_post_insert');
 		$edit->post_process('update','_post_update');
 		$edit->post_process('delete','_post_delete');
-		
+
 		$edit->depto = new dropdownField("Departamento", "dpto");
 		$edit->depto->db_name='depto';
 		$edit->depto->rule ="required";
@@ -185,14 +184,14 @@ class Grup extends validaciones {
 		$edit->grupo->rule ="trim|strtoupper|required|callback_chexiste";
 		$edit->grupo->append($sugerir);
 		$edit->grupo->append($ultimo);
-		
+
 		$edit->nom_grup =  new inputField("Nombre del Grupo", "nom_grup");
 		$edit->nom_grup->size = 35;
 		$edit->nom_grup->maxlength=30;
 		$edit->nom_grup->rule = "trim|strtoupper|required";
-		
-	  //$edit->tipo = new dropdownField("Tipo","tipo");
-	  //$edit->tipo->style='width:100px;';
+
+		//$edit->tipo = new dropdownField("Tipo","tipo");
+		//$edit->tipo->style='width:100px;';
 		//$edit->tipo->option("I","Inventario" );
 		//$edit->tipo->option("G","Gasto"  );
 		
@@ -200,39 +199,40 @@ class Grup extends validaciones {
 		$edit->comision->size = 18;
 		$edit->comision->maxlength=10;
 		$edit->comision->css_class='inputnum';
+
 		$edit->comision->rule='trim|numeric|callback_positivo';
-				
+
 		$edit->cu_inve =new inputField("Cuenta Inventario", "cu_inve");
 		$edit->cu_inve->size = 18;
 		$edit->cu_inve->maxlength=15;
 		$edit->cu_inve->rule ="trim|callback_chcuentac";
 		$edit->cu_inve->append($bcu_inve);
 		$edit->cu_inve->group='Cuentas contables';
-		
+
 		$edit->cu_cost =new inputField("Cuenta Costo", "cu_cost");
 		$edit->cu_cost->size = 18;
 		$edit->cu_cost->maxlength=15;
 		$edit->cu_cost->rule ="trim|callback_chcuentac";
 		$edit->cu_cost->append($bcu_cost);
 		$edit->cu_cost->group='Cuentas contables';
-		
+
 		$edit->cu_venta  =new inputField("Cuenta Venta", "cu_venta");
 		$edit->cu_venta->size =18;
 		$edit->cu_venta->maxlength=15;
 		$edit->cu_venta->rule ="trim|callback_chcuentac";
 		$edit->cu_venta->append($bcu_venta);
 		$edit->cu_venta->group='Cuentas contables';
-		
+
 		$edit->cu_devo = new inputField("Cuenta Devoluci&oacute;n","cu_devo");
 		$edit->cu_devo->size = 18;
 		$edit->cu_devo->maxlength=15;
 		$edit->cu_devo->rule ="trim|callback_chcuentac";
 		$edit->cu_devo->append($bcu_devo);
 		$edit->cu_devo->group='Cuentas contables';
-		
+
 		$edit->buttons("modify", "save", "undo", "delete", "back");
 		$edit->build();
-		
+
 		$link=site_url('inventario/grup/get_linea');
 
 		$data['content'] = $edit->output;
