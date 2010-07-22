@@ -7,11 +7,11 @@
 		$this->load->library("rapyd");
 	  $this->datasis->modulo_id(306,1);
 	}
-    function index(){
-    	
-    	redirect("inventario/line/filteredgrid");
-    }
- 
+
+	function index(){
+		redirect("inventario/line/filteredgrid");
+	}
+
 	function filteredgrid(){
 		$this->rapyd->load("datafilter","datagrid");
 		$this->rapyd->uri->keep_persistence();
@@ -42,7 +42,7 @@
 		$grid->per_page = 20;
 
 		$grid->column("C&oacute;digo Linea"       ,$uri       ,"align='center'");
-		$grid->column("Descripci&oacute;n"               ,"descrip"  ,"align='left'");
+		$grid->column("Descripci&oacute;n"        ,"descrip"  ,"align='left'");
 		$grid->column("Departamento"              ,"depto"    ,"align='left'");
 		$grid->column("Cuenta Costo"              ,"cu_cost"  ,"align='center'");
 		$grid->column("Cuenta Inventario"         ,"cu_inve"  ,"align='center'");
@@ -57,7 +57,7 @@
 		$data['content'] = $filter->output.$grid->output;
 		$data['title']   = "<h1>Lineas de Inventario</h1>";
 		$data["head"]    = $this->rapyd->get_head();
-		$this->load->view('view_ventanas', $data);	
+		$this->load->view('view_ventanas', $data);
 	}
 	
 	function dataedit($status='',$id='')

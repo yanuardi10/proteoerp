@@ -39,7 +39,7 @@ function cost(pertenece){
 		var fcalc =$("#formcal").val();
 		var costo=parseFloat($("#pond").val());
 	}
-	
+
 	var ultimo=parseFloat($("#ultimo").val());
 		
 	if(fcalc=="P"){
@@ -55,7 +55,7 @@ function cost(pertenece){
 	}
 	return ccosto;
 }
-		 
+
 function calculos(pertenece){
  	if (pertenece=='M')
 	v=6;
@@ -67,7 +67,7 @@ function calculos(pertenece){
 		margen=parseFloat($("#margen"+i).val());
 		nmargen = roundNumber(margen,2);
 		nbase   = roundNumber(costo*100/(100-margen),2);
-		nprecio = roundNumber(nbase*((iva+100)/100),2);		
+		nprecio = roundNumber(nbase*((iva+100)/100),2);
 		$("#base" + i).val(nbase);
 		$("#precio" + i).val(nprecio);
 	}
@@ -81,15 +81,14 @@ function cambioprecio(pertenece){
 	v=6;
 	else 
 	v=5;
-	for(i=1;i<v;i++){		
+	for(i=1;i<v;i++){
 		precio=parseFloat($("#precio"+i).val());
 		base=precio*100/(100+iva);
-		nbase=roundNumber(base,2);			
+		nbase=roundNumber(base,2);
 		margen=100-(costo*100)/nbase;
 		nmargen=roundNumber(margen,2);
-		$("#base"+i).val(nbase);	
+		$("#base"+i).val(nbase);
 		$("#margen" + i).val(nmargen);
-				
 	}
 }
 
@@ -133,14 +132,14 @@ function redon(pertenece){
 			     	base=nprecio*100/(100+iva);   
 			     	nbase=roundNumber(base,2);    
 			     	margen=100-(costo*100/nbase); 
-			     	nmargen=roundNumber(margen,2);					
+			     	nmargen=roundNumber(margen,2);
 					$("#base" + i).val(nbase);
 					$("#precio" + i).val(nprecio);
 					$("#margen" + i).val(nmargen);
 				}
 			}
 		}else if(redondeo=="F"){
-			for(i=1;i<5;i++){                                                
+			for(i=1;i<5;i++){
 				precio=parseFloat($("#precio"+i).val());
 				base=parseFloat($("#base"+i).val());
 				margen=parseFloat($("#margen"+i).val());
@@ -155,27 +154,27 @@ function redon(pertenece){
 					$("#precio" + i).val(nprecio);
 					$("#margen" + i).val(nmargen);
 				}
-      		}
-  		}else {
-   			for(i=1;i<5;i++){
-				precio=parseFloat($("#precio"+i).val());                  
-				base=parseFloat($("#base"+i).val());                      
-				margen=parseFloat($("#margen"+i).val());
-				if (precio >100){                  
-				nprecio= roundSup(precio,3);                                                              
-				//nprecio=roundNumber(nprecio,2);                                
-	     		base=nprecio*100/(100+iva);                                    
-	     		nbase=roundNumber(base,2);                                     
-	     		margen=100-(costo*100/nbase);                                  
-	     		nmargen=roundNumber(margen,2);
-				$("#base" + i).val(nbase);
-				$("#precio" + i).val(nprecio);
-				$("#margen" + i).val(nmargen);
 			}
-		}
-		}   
-   }
- }
+		}else {
+			for(i=1;i<5;i++){
+				precio=parseFloat($("#precio"+i).val());
+				base=parseFloat($("#base"+i).val());
+				margen=parseFloat($("#margen"+i).val());
+				if (precio >100){
+					nprecio= roundSup(precio,3);
+					//nprecio=roundNumber(nprecio,2);
+					base=nprecio*100/(100+iva);
+					nbase=roundNumber(base,2);
+					margen=100-(costo*100/nbase);
+					nmargen=roundNumber(margen,2);
+					$("#base" + i).val(nbase);
+					$("#precio" + i).val(nprecio);
+					$("#margen" + i).val(nmargen);
+				}
+			}
+		} 
+	}
+}
 
 function redonde(pertenece){ 
 	var redondeo =$("#redondeo").val();
@@ -183,7 +182,7 @@ function redonde(pertenece){
 	var dec=parseInt(redondeo[1]);
 	var costo=cost(pertenece);
 	var iva=parseFloat($("#iva").val());
-  if(redondeo!="NO"){
+	if(redondeo!="NO"){
 		 if(redondeo[0]=="P"){
 		 	for(i=1;i<6;i++){
 		 		precio=parseFloat($("#precio"+i).val());
@@ -201,7 +200,7 @@ function redonde(pertenece){
 			}
 		}else if(redondeo[0]=="B"){
 			for(i=1;i<6;i++){
-				base=parseFloat($("#base"+i).val());                                                                                         
+				base=parseFloat($("#base"+i).val());
 				if (precio!=0){
 					nbase=roundSup(base, dec);
 					nbase=roundNumber(nbase,2);
@@ -215,49 +214,42 @@ function redonde(pertenece){
 				}
 			}
 		}
-	}	   
+	}
 }
 
 function requeridos(load){
-	if(parseFloat($("#iva").val())>0){
-		switch($("#formcal").val()){
-			case 'U':{
-				if ($("#ultimo").val() > 0){
-					bloquea_precios(false);
-				}else{
-					bloquea_precios(true);
-					if(!load)
-					alert("Si en Forma de cálculo selecciona ULTIMO, debe de completar el valor del campo ULTIMO con un valor válido");					
-				}					
-				break;
+	switch($("#formcal").val()){
+		case 'U':{
+			if ($("#ultimo").val() > 0){
+				bloquea_precios(false);
+			}else{
+				bloquea_precios(true);
+				if(!load)
+				alert("Si en Forma de cálculo selecciona ULTIMO, debe de completar el valor del campo ULTIMO con un valor válido");
 			}
-			case 'P':{
-				if ($("#pond").val() > 0){
-					bloquea_precios(false);
-				}else{
-					bloquea_precios(true);
-					if(!load)
-					alert("Si en Forma de cálculo selecciona PROMEDIO, debe de completar el valor del campo PROMEDIO con un valor válido");
-				}					
-				break;
-			}
-			case 'M':{
-				if (($("#ultimo").val() > 0) || ($("#pond").val() > 0)){
-					bloquea_precios(false);
-				}else{
-					bloquea_precios(true);
-					if(!load)
-					alert("Si en Forma de cálculo selecciona MAYOR, debe de completar el valor del campo PROMEDIO ó ULTIMO con un valor válido");
-				}					
-				break;
-			}
-			default:bloquea_precios(true);;			
+			break;
 		}
-	}
-	else{
-		bloquea_precios(true);
-		if(!load)
-		alert("El campo IVA es Obligatorio. Complete primero este campo");		
+		case 'P':{
+			if ($("#pond").val() > 0){
+				bloquea_precios(false);
+			}else{
+				bloquea_precios(true);
+				if(!load)
+				alert("Si en Forma de cálculo selecciona PROMEDIO, debe de completar el valor del campo PROMEDIO con un valor válido");
+			}
+			break;
+		}
+		case 'M':{
+			if (($("#ultimo").val() > 0) || ($("#pond").val() > 0)){
+				bloquea_precios(false);
+			}else{
+				bloquea_precios(true);
+				if(!load)
+				alert("Si en Forma de cálculo selecciona MAYOR, debe de completar el valor del campo PROMEDIO ó ULTIMO con un valor válido");
+			}
+			break;
+		}
+		default:bloquea_precios(true);
 	}
 }
 
@@ -271,10 +263,9 @@ $(function() {
 			return false;
 		}
 	});
-	
 });
 
-function bloquea_precios(ban){	
+function bloquea_precios(ban){
 	t=4;
 	if(ban){
 		for (i = 1; i <= t; i++) {
@@ -293,4 +284,3 @@ function bloquea_precios(ban){
 		calculos('I');
 	}
 }
-
