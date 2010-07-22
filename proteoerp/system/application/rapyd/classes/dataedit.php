@@ -603,6 +603,10 @@ class DataEdit extends DataForm{
   		return $this->_dataobject->count_rel('itstra');
     }
   }
+  
+  function pk_URI(){
+    return $this->pk_to_URI($this->_dataobject->pk);
+  }
 }
 
 
