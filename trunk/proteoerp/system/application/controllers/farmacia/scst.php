@@ -1,5 +1,4 @@
 <?php
-//compras
 class Scst extends Controller {
 
 	function scst(){
@@ -77,7 +76,7 @@ class Scst extends Controller {
 
 		$uri = anchor('farmacia/scst/dataedit/show/<#control#>','<#numero#>');
 		$uri2 = anchor_popup('formatos/verhtml/COMPRA/<#control#>',"Ver HTML",$atts);
- 
+
 		$grid = new DataGrid();
 		$grid->order_by("fecha","desc");
 		$grid->per_page = 15;
@@ -106,7 +105,7 @@ class Scst extends Controller {
 
 		$this->rapyd->load("dataedit","datadetalle","fields","datagrid");
 		$this->rapyd->uri->keep_persistence();
-		
+
 		$modbus=array(
 			'tabla'   =>'sinv',
 			'columnas'=>array(
@@ -144,7 +143,7 @@ class Scst extends Controller {
 
 		$edit = new DataEdit("Compras","scst");
 
-		$edit->back_url = "compras/scst/datafilter";
+		$edit->back_url = "farmacia/scst/datafilter/";
 
 		$edit->fecha = new DateonlyField("Fecha", "fecha","d/m/Y");
 		$edit->fecha->insertValue = date("Y-m-d");
@@ -231,13 +230,13 @@ class Scst extends Controller {
 		$numero=$edit->_dataobject->get('control');
 		
 		//Campos para el detalle
-		
+		$tabla=$this->db->database;
 		$detalle = new DataGrid('');
 		//$detalle->db->select('a.codigo,a.descrip,a.cantidad,a.costo AS ultimo,a.importe,b.codigo AS sinv');
 		$detalle->db->select('a.*,a.codigo AS barras,b.codigo AS sinv');
 		$detalle->db->from('itscst AS a');
 		$detalle->db->where("a.control",$numero);
-		$detalle->db->join('elcarmen.sinv AS b','a.codigo=b.codigo','LEFT');
+		$detalle->db->join($tabla.'.sinv AS b','a.codigo=b.codigo','LEFT');
 		$detalle->use_function('exissinv');
 		$detalle->column("Barras"            ,"<#codigo#>" );
 		$detalle->column("Descripci&oacute;n","<#descrip#>");
@@ -286,8 +285,10 @@ class Scst extends Controller {
 		}';
 
 		$edit->detalle=new freeField("detalle", 'detalle',$detalle->output);
+		$accion="javascript:window.location='".site_url('farmacia/scst/cargar'.$edit->pk_URI())."'";
+		$edit->button_status('btn_cargar','Cargar',$accion,'TR','show');
+		$edit->buttons('save','undo','back');
 
-		$edit->buttons("save", "undo", "back");
 		$edit->script($script,'show');
 		$edit->build();
 
@@ -303,8 +304,8 @@ class Scst extends Controller {
 	function dpto() {
 		$this->rapyd->load("dataform");
 		$campo='ccosto'.$this->uri->segment(4);
- 		$script='
- 		function pasar(){
+		$script='
+		function pasar(){
 			if($F("departa")!="-!-"){
 				window.opener.document.getElementById("'.$campo.'").value = $F("departa");
 				window.close();
@@ -343,7 +344,7 @@ class Scst extends Controller {
 
 		$boton=$this->datasis->modbus($modbus);
 
-		$filter = new DataFilter("Filtro de asignaci&oacute;n de productos",'');
+		$filter = new DataFilter('Filtro de asignaci&oacute;n de productos','farmaxasig');
 
 		$filter->proveedor = new inputField("Proveedor", "proveed");
 		$filter->proveedor->append($boton);
@@ -363,13 +364,13 @@ class Scst extends Controller {
 		$grid->column_orderby('Barras'   ,'barras' ,'barras' );
 		$grid->column_orderby('Mapeado a','abarras','abarras');
 
-		$grid->add("farmacia/scst/asignardataedit");
+		$grid->add("farmacia/scst/asignardataedit/create");
 		$grid->build();
 		//echo $grid->db->last_query();
 
 		$data['content'] =$filter->output.$grid->output;
 		$data["head"]    = $this->rapyd->get_head();
-		$data['title']   ='<h1>Compras</h1>';
+		$data['title']   ='<h1>Reasignar c&oacute;digo</h1>';
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -377,8 +378,8 @@ class Scst extends Controller {
 		$this->rapyd->uri->keep_persistence();
 		$this->rapyd->load("dataedit");
 
-		$edit = new DataEdit("Reasignaciones de c&oacute;digo","farmaxasig");
-		$edit->back_url = "farmacia/asignarfiltro";
+		$edit = new DataEdit('Reasignaciones de c&oacute;digo','farmaxasig');
+		$edit->back_url = "farmacia/scst/asignarfiltro";
 
 		$edit->proveedor = new inputField('Proveedor','proveed');
 		$edit->proveedor->rule = 'required';
@@ -402,6 +403,10 @@ class Scst extends Controller {
 		$data["head"]    = $this->rapyd->get_head();
 		$data['title']   ='<h1>Reasignar c&oacute;digo</h1>';
 		$this->load->view('view_ventanas', $data);
+	}
+
+	function cargar($control){
+		echo "<p aling='center'>cargar $control</p>";
 	}
 
 	function dummy(){
