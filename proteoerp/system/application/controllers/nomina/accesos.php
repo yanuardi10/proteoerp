@@ -248,7 +248,7 @@ class Accesos extends validaciones{
 	
 	function instalar(){
 		$query="ALTER TABLE `cacc`  ADD COLUMN `manual` CHAR(1) NOT NULL DEFAULT 'N' AFTER `hora`";
-		$this->db->simple_query($mSQL);	
+		$this->db->simple_query($query);
 	}
 }
 ?>
