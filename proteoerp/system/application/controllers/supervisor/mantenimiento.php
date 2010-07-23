@@ -164,7 +164,7 @@ class Mantenimiento extends Controller{
 			return form_checkbox($data);
 		}
 								
-		$uri1 = anchor('supervisor/mantenimiento/itclinconsis/<str_replace>/|:slach:|<#cod_cli#></str_replace>','<#cod_cli#>');
+		$uri1 = anchor('supervisor/mantenimiento/itclinconsis/<str_replace>/|:slach:|<#cod_cli#></str_replace>/<#numero#>/<#tipo_doc#>','<#cod_cli#>');
 		$uri2 = anchor('supervisor/mantenimiento/ajustar/<#cod_cli#>','Ajustar Saldo');
 		
 		$grid = new DataGrid("Lista de Clientes");
@@ -220,40 +220,32 @@ class Mantenimiento extends Controller{
 		$mSQL="UPDATE smov set abonos='$monto' WHERE numero=$numero AND cod_cli=$codigo AND tipo_doc=$tipo";
 		$SQL=$this->db->simple_query($mSQL);
 	}
-	function itclinconsis($proveed){
-		$this->rapyd->load("datagrid");
-		$select=array('cod_cli', 'nombre','numero',
-		"monto*(tipo_doc IN ('FC','ND','GI')) AS debitos",
-		"monto*(tipo_doc NOT IN ('FC','ND','GI')) AS creditos",
-		"monto*IF(tipo_doc IN ('FC','ND','GI'),1,-1) AS saldo",
-		"(monto-abonos)*(tipo_doc IN ('FC','ND','GI'))-(monto-abonos)*(tipo_doc='AN') AS abonado",
-		"monto*IF(tipo_doc IN ('FC','ND','GI'),1,-1)-((monto-abonos)*(tipo_doc IN ('FC','ND','GI'))-(monto-abonos)*(tipo_doc='AN')) AS diferen");
-		//(FC,ND,GI,AN)
-		$uri1 = anchor('supervisor/repomenu/reporte/modify/<#alternativo#>/','Modificar');
+	function itclinconsis($cliente='',$numero='',$tipo_doc){
+		$this->rapyd->load("datagrid2");
 		
-		$grid = new DataGrid("Clientes inconsistentes");
+		$uri = anchor('supervisor/mantenimiento/clinconsis','Regresar');
+		
+		$select=array('numccli','tipoccli','fecha','abono','tipo_doc','cod_cli');	
+		$grid = new DataGrid2($uri);
 		$grid->per_page = 15;
 		$grid->db->select($select);
-		$grid->db->from('smov');
-		$grid->db->where('cod_cli',$proveed);
-		$grid->db->where("tipo_doc IN ('FC','ND','GI','AN')");
-		//$grid->db->having("abs(diferen)>0.01");
-		//$grid->db->having('abs(100*diferen/saldo)>=0.05');
-		
-		$grid->column('Numero'   ,'numero' );
-		$grid->column('Cliente'   ,'cod_cli' );
-		$grid->column('Nombre'    ,'nombre'  );
-		$grid->column('D&eacute;bitos'   ,'debitos' );
-		$grid->column('Cr&eacute;ditos'  ,'creditos');
-		$grid->column('Saldo'     ,'saldo'   );
-		$grid->column('Abonados'  ,'abonado' );
-		//$grid->column('Diferencia','diferen' );
+		$grid->db->from('itccli');
+		$grid->db->where('cod_cli',$cliente);
+		$grid->db->where('tipo_doc',$tipo_doc);
+		$grid->db->where('numero',$numero);
+			
+		$grid->column('Numero'	,'numccli' );
+		$grid->column('Tipo'		,'tipoccli' );
+		$grid->column('Fecha' 	,'<dbdate_to_human><#fecha#></dbdate_to_human>');
+		$grid->column('Abono'   ,'abono');
 
+		$grid->totalizar('abono');
 		$grid->build();
+		
 		//echo $grid->db->last_query();
 		//memowrite($grid->db->last_query());
 		$data['content'] = $grid->output;
-		$data['title']   = "<h1>Clientes con problemas de incosistencias</h1>";
+		$data['title']   = "<h1>Detalle de los Abonos del cliente:$cliente</h1>";
 		$data["head"]    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
