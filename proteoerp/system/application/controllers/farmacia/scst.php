@@ -92,7 +92,7 @@ class Scst extends Controller {
 		//echo $grid->db->last_query();
 
 		$data['content'] =$filter->output.$grid->output;
-		$data["head"]    = $this->rapyd->get_head();
+		$data['head']    = $this->rapyd->get_head();
 		$data['title']   ='<h1>Compras</h1>';
 		$this->load->view('view_ventanas', $data);
 	}
@@ -206,16 +206,18 @@ class Scst extends Controller {
 		$edit->monto->size = 20;
 		$edit->monto->css_class='inputnum';
 
-		$numero=$edit->_dataobject->get('control');
+		$numero =$edit->_dataobject->get('control');
+		$proveed=$this->db->escape($edit->_dataobject->get('proveed'));
 
 		//Campos para el detalle
 		$tabla=$this->db->database;
 		$detalle = new DataGrid('');
-		//$detalle->db->select('a.codigo,a.descrip,a.cantidad,a.costo AS ultimo,a.importe,b.codigo AS sinv');
-		$detalle->db->select('a.*,a.codigo AS barras,a.costo AS pond,b.codigo AS sinv');
+		$select=array('a.*','a.codigo AS barras','a.costo AS pond','COALESCE( b.codigo , c.abarras) AS sinv');
+		$detalle->db->select($select);
 		$detalle->db->from('itscst AS a');
-		$detalle->db->where("a.control",$numero);
+		$detalle->db->where('a.control',$numero);
 		$detalle->db->join($tabla.'.sinv AS b','a.codigo=b.codigo','LEFT');
+		$detalle->db->join($tabla.'.farmaxasig AS c',"a.codigo=c.barras AND c.proveed=$proveed",'LEFT');
 		$detalle->use_function('exissinv');
 		$detalle->column("Barras"            ,"<#codigo#>" );
 		$detalle->column("Descripci&oacute;n","<#descrip#>");
@@ -275,9 +277,9 @@ class Scst extends Controller {
 
 		$smenu['link']=barra_menu('201');
 		$data['smenu'] = $this->load->view('view_sub_menu', $smenu,true);
-		$conten["form"]  =&  $edit;
+		$conten['form']  =&  $edit;
 		$data['content'] = $this->load->view('view_farmax_compras', $conten,true); 
-		$data["head"]    = script("tabber.js").script("prototype.js").$this->rapyd->get_head().script("scriptaculous.js").script("effects.js");
+		$data['head']    = script("tabber.js").script("prototype.js").$this->rapyd->get_head().script("scriptaculous.js").script("effects.js");
 		$data['title']   = '<h1>Compras Descargadas</h1>';
 		$this->load->view('view_ventanas', $data);
 	}
@@ -304,7 +306,7 @@ class Scst extends Controller {
 		$form->build_form();
 
 		$data['content'] =$form->output;
-		$data["head"]    =script('prototype.js').$this->rapyd->get_head();
+		$data['head']    =script('prototype.js').$this->rapyd->get_head();
 		$data['title']   ='<h1>Seleccione un departamento</h1>';
 		$this->load->view('view_detalle', $data);
 	}
@@ -339,7 +341,7 @@ class Scst extends Controller {
 		$grid->order_by("id","desc");
 		$grid->per_page = 15;
 
-		$uri=anchor('farmacia/scst/asignardataedit/<#id#>','<#id#>');
+		$uri=anchor('farmacia/scst/asignardataedit/show/<#id#>','<#id#>');
 		$grid->column_orderby('Id'       ,$uri     ,'id'     );
 		$grid->column_orderby('Proveedor','proveed','proveed');
 		$grid->column_orderby('Barras'   ,'barras' ,'barras' );
@@ -349,9 +351,9 @@ class Scst extends Controller {
 		$grid->build();
 		//echo $grid->db->last_query();
 
-		$data['content'] =$filter->output.$grid->output;
-		$data["head"]    = $this->rapyd->get_head();
-		$data['title']   ='<h1>Reasignar c&oacute;digo</h1>';
+		$data['content'] = $filter->output.$grid->output;
+		$data['head']    = $this->rapyd->get_head();
+		$data['title']   ='<h1>Reasignar C&oacute;digo</h1>';
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -375,49 +377,100 @@ class Scst extends Controller {
 		$edit->back_url = "farmacia/scst/asignarfiltro";
 
 		$edit->proveedor = new inputField('Proveedor','proveed');
-		$edit->proveedor->rule = 'required';
+		$edit->proveedor->rule = 'trim|callback_sprvexits|required';
+		$edit->proveedor->mode = 'autohide';
 		$edit->proveedor->size = 10;
 		$edit->proveedor->maxlength=50;
 
 		$edit->barras = new inputField('Barras en el proveedor','barras');
-		$edit->barras->rule = 'required|callback_noexiste';
+		$edit->barras->rule = 'required|trim|callback_fueasignado|callback_noexiste';
+		$edit->barras->mode = 'autohide';
 		$edit->barras->size = 50;
 		$edit->barras->maxlength=250;
 
 		$edit->abarras = new inputField('Barras en sistema','abarras');
-		$edit->abarras->rule = 'required|callback_noexiste';
+		$edit->abarras->rule = 'required|trim|callback_siexiste';
 		$edit->abarras->size = 50;
 		$edit->abarras->maxlength=250;
 		$edit->abarras->append($boton);
 
-		$edit->buttons('save','undo','back');
+		$edit->buttons('modify','save','delete','undo','back');
 		$edit->build();
 
 		$data['content'] =$edit->output;
-		$data["head"]    = $this->rapyd->get_head();
+		$data['head']    = $this->rapyd->get_head();
 		$data['title']   ='<h1>Reasignar c&oacute;digo</h1>';
 		$this->load->view('view_ventanas', $data);
 	}
 
-	function noexite($barras){
-		$error="El c&oacute;digo de barras '$barras' existe en el iventario";
+	function sprvexits($proveed){
+		$mSQL='SELECT COUNT(*) FROM sprv WHERE proveed='.$this->db->escape($proveed);
+		$cana=$this->datasis->dameval($mSQL);
+		if($cana==0){
+			$error="El proveedor dado no exite";
+			$this->validation->set_message('sprvexits',$error);
+			return false;
+		}
 		return true;
 	}
 
-	function siexite($barras){
-		$error="El c&oacute;digo de barras '$barras' no existe en el iventario";
+	function noexiste($barras){
+		$mSQL='SELECT COUNT(*) FROM sinv WHERE codigo='.$this->db->escape($barras);
+		$cana=$this->datasis->dameval($mSQL);
+		if($cana!=0){
+			$error="El c&oacute;digo de barras '$barras' existe en el iventario, la equivalencia se debe aplicar en un producto que no exista";
+			$this->validation->set_message('noexiste',$error);
+			return false;
+		}
 		return true;
 	}
+
+	function siexiste($barras){
+		$mSQL='SELECT COUNT(*) FROM sinv WHERE codigo='.$this->db->escape($barras);
+		$cana=$this->datasis->dameval($mSQL);
+		if($cana==0){
+			$error="El c&oacute;digo de barras '$barras' no existe en el iventario";
+			$this->validation->set_message('siexiste',$error);
+			return false;
+		}
+		return true;
+	}
+
+	function fueasignado($barras){
+		$proveed=$this->db->escape($this->input->post('proveed'));
+		$mSQL='SELECT COUNT(*) FROM farmaxasig WHERE barras='.$this->db->escape($barras).' AND proveed='.$proveed;
+		$cana=$this->datasis->dameval($mSQL);
+		if($cana>0){
+			$error="El c&oacute;digo de barras '$barras' ya fue asignado a otro producto";
+			$this->validation->set_message('fueasignado',$error);
+			return false;
+		}
+		return true;
+	}
+
 
 	function cargar($control){
+		$this->rapyd->uri->keep_persistence();
+		$data['content'] = $this->_cargar($control).br().anchor('farmacia/scst/dataedit/show/'.$control,'Regresar');
+		$data['head']    = $this->rapyd->get_head();
+		$data['title']   = '<h1>Cargar compra '.$control.'</h1>';
+		$this->load->view('view_ventanas', $data);
+	}
+
+	function _cargar($control){
 		$control =$this->db->escape($control);
 		$lcontrol=$this->datasis->fprox_numero('nscst');
 		$transac =$this->datasis->fprox_numero('ntransac');
 		$farmaxDB=$this->load->database('farmax',TRUE);
 		$farmaxdb=$farmaxDB->database;
 		$localdb =$this->db->database;
+		$retorna='';
 
-		$sql ="SELECT COUNT(*) AS cana FROM ${farmaxdb}.itscst AS a LEFT JOIN ${localdb}.sinv AS b ON a.codigo=b.codigo WHERE a.control=$control AND b.codigo IS NULL";
+		$sql ="SELECT COUNT(*) AS cana 
+		  FROM ${farmaxdb}.itscst AS a 
+		  LEFT JOIN ${localdb}.sinv AS b ON a.codigo=b.codigo 
+		  LEFT JOIN ${localdb}.farmaxasig AS c ON a.codigo=c.barras AND c.proveed=a.proveed 
+		WHERE a.control=$control AND b.codigo IS NULL AND c.abarras IS NULL";
 		$query=$this->db->query($sql);
 		if($query->num_rows()>0){
 			$row=$query->row_array();
@@ -439,21 +492,31 @@ class Scst extends Controller {
 					}
 					foreach($mSQL AS $sql){
 						$rt=$this->db->simple_query($sql);
-						if(!$rt){ memowrite('scstfarma',$sql); echo "$sql \n";}
+						if(!$rt){ memowrite('scstfarma',$sql);}
 					}
 					$sql="UPDATE scst SET pcontrol='${lcontrol}' WHERE control=$control";
 					$rt=$farmaxDB->simple_query($sql);
 					if(!$rt) memowrite('farmaejec',$sql);
-					echo 'Compra guardada con el control '.anchor("compras/scst/dataedit/show/$lcontrol",$lcontrol);
+
+					$mSQL="UPDATE 
+					  ${localdb}.itscst AS a
+					  JOIN ${localdb}.farmaxasig AS b ON a.codigo=b.barras AND a.proveed=b.proveed
+					  SET a.codigo=b.abarras
+					WHERE a.control='$lcontrol'";
+					$rt=$this->db->simple_query($mSQL);
+					if(!$rt){ memowrite('farmaejec1',$sql);}
+
+					$retorna='Compra guardada con el control '.anchor("compras/scst/dataedit/show/$lcontrol",$lcontrol);
 				}else{
-					echo "Al parecer la factura fue ya pasada";
+					$retorna="Al parecer la factura fue ya pasada";
 				}
 			}else{
-				echo "No se puede pasar porque hay productos que no existen en inventario";
+				$retorna="No se puede pasar porque hay productos que no existen en inventario";
 			}
 		}else{
-			echo "Error en la consulta";
+			$retorna="Error en la consulta";
 		}
+		return $retorna;
 	}
 
 	function dummy(){
