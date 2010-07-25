@@ -5,6 +5,7 @@ class Caja extends Controller {
 		parent::Controller(); 
 		$this->load->library("rapyd");
 	}
+
 	function index(){
 		$this->rapyd->load("datatable",'dataform');
 
