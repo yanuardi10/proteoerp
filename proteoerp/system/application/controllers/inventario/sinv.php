@@ -79,7 +79,7 @@ class sinv extends Controller {
 		//filter
 		$filter = new DataFilter2("Filtro por Producto");
 		
-		$filter->db->select("a.existen AS existen,a.tipo AS tipo,id,codigo,a.descrip,precio1,precio2,precio3,precio4,b.nom_grup AS nom_grup,b.grupo AS grupoid,c.descrip AS nom_linea,c.linea AS linea,d.descrip AS nom_depto,d.depto AS depto");
+		$filter->db->select("a.existen AS existen,a.marca marca,a.tipo AS tipo,id,codigo,a.descrip,precio1,precio2,precio3,precio4,b.nom_grup AS nom_grup,b.grupo AS grupoid,c.descrip AS nom_linea,c.linea AS linea,d.descrip AS nom_depto,d.depto AS depto");
 		$filter->db->from("sinv AS a");
 		$filter->db->join("grup AS b","a.grupo=b.grupo");
 		$filter->db->join("line AS c","b.linea=c.linea");
@@ -175,18 +175,18 @@ class sinv extends Controller {
 		$link=anchor('/inventario/sinv/dataedit/show/<#id#>','<#codigo#>');
 		$uri_2 = anchor('inventario/sinv/dataedit/create/<#id#>','Duplicar');
 
-		$grid->column("c&oacute;digo",$link);
+		$grid->column_orderby("C&oacute;digo",$link,"codigo");
 		//$grid->column("Departamento","<#nom_depto#>"   ,'align=left');
 		//$grid->column("L&iacute;nea","<#nom_linea#>"   ,'align=left');
 		//$grid->column("Grupo","<#nom_grup#>",'align=left');
-		$grid->column_orderby("Descripci&oacute;n","descrip","marca");
+		$grid->column_orderby("Descripci&oacute;n","descrip","descrip");
 		$grid->column_orderby("Marca","marca","marca");
-		$grid->column_orderby("Precio 1","precio1","<nformat><#precio1#></nformat>",'align=right');
-		$grid->column_orderby("Precio 2","precio2","<nformat><#precio2#></nformat>",'align=right');
-		$grid->column_orderby("Precio 3","precio3","<nformat><#precio3#></nformat>",'align=right');
-		$grid->column_orderby("Existencia","existen","<nformat><#existen#></nformat>",'align=right');
+		$grid->column_orderby("Precio 1","<nformat><#precio1#></nformat>","precio1",'align=right');
+		$grid->column_orderby("Precio 2","<nformat><#precio2#></nformat>","precio2",'align=right');
+		$grid->column_orderby("Precio 3","<nformat><#precio3#></nformat>","precio3",'align=right');
+		$grid->column_orderby("Existencia","<nformat><#existen#></nformat>","existen",'align=right');
 		//$grid->column("Precio 4","<nformat><#precio4#></nformat>",'align=right');
-		$grid->column("Duplicar",$uri_2     ,"align='center'");
+		$grid->column("Acci&oacute;n",$uri_2     ,"align='center'");
 
 		$grid->add("inventario/sinv/dataedit/create");
 		$grid->build();
