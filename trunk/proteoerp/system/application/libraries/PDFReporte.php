@@ -157,10 +157,10 @@ class PDFReporte extends Fpdf {
 		foreach($data as $sale){
 			if (in_array($sale, $this->DBfieldsName) OR array_key_exists($sale,$this->fCols)){
 				$this->Acumulador[]=$sale;
-				if (!in_array($sale, $this->totalizar)){
-					$this->totalizar[]=$sale;
-					$this->ctotalizar=true;
-				}
+			}
+			if (!in_array($sale, $this->totalizar)){
+				$this->totalizar[]=$sale;
+				$this->ctotalizar=true;
 			}
 		}
 	}
@@ -540,7 +540,12 @@ class PDFReporte extends Fpdf {
 							}
 						}
 						$rgtotal[$key] =number_format($gtotal[$key], 2, ',', '.');
-						if (in_array($key, $this->Acumulador)) $row[$key]=$stotal[$u-1][$key];//$gtotal[$key];
+						if (in_array($key, $this->Acumulador)){
+							if($this->cgrupo)
+								$row[$key]=$stotal[$u-1][$key];//$gtotal[$key];
+							else
+								$row[$key]=$gtotal[$key];//$gtotal[$key];
+						}
 					}else{
 						$total[$key]=$gtotal[$key]=$rtotal[$key]=$rgtotal[$key]=' ';
 						$cangrup=count($this->grupo);
