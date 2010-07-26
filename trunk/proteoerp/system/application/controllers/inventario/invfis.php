@@ -384,22 +384,7 @@ class Invfis extends Controller {
 	}
 
 	function agregar(){
-		$codigo = $this->db->escape($this->input->post('codigo'));
-		$valor  = $this->input->post('valor');
-		$tabla  = $this->input->post('tabla');
-		$contado= $this->input->post('contado');
-
-		$id=$this->_idsem($tabla);
-		$seg=sem_get($id,1,0666,-1);
-		sem_acquire($seg);
-
-		$condb  = $this->datasis->dameval("SELECT contado FROM $tabla WHERE codigo=$codigo");
-		if(round($contado,2) != round($condb,2))
-			echo "Advertencia: El valor Contado ($contado) se modifico a ($condb) mientras usted modificaba el valor";
-		else
-			$this->db->simple_query("UPDATE $tabla SET contado=contado+$valor,modificado=now() WHERE codigo=$codigo");
-
-		sem_release($seg);
+		$this->_actualiza('+');
 	}
 
 	function quitar(){
@@ -415,40 +400,41 @@ class Invfis extends Controller {
 		$tabla  = $this->input->post('tabla');
 		echo $this->datasis->dameval("SELECT contado FROM $tabla WHERE codigo=$codigo");
 	}
-	
-	function creatrasla($tabla){
-		$fecha  = date_format(date_create_from_format('Ymd', substr($tabla,-8)), 'Y-m-d');
-		$alma   = substr($tabla,3,strlen($tabla)-11);
-		$alma   = $this->db->escape($alma);		
-		$nstra  = $this->datasis->fprox_numero('nstra');
-		$error = '';
-		
-		$mSQL="
-			SELECT LPAD($nstra,8,'0'),a.codigo,CONCAT_WS(b.descrip,b.descrip2)descrip,a.contado,a.existen FROM $tabla a
-			JOIN sinv b ON a.codigo = b.codigo
-			WHERE modificado <> 'NULLNULL' AND actualizado ='NULLNULL'
-		";
-		$query = $this->db->query($mSQL);
-		
-		if($query->num_rows()>0){
-		
-			$mSQL="INSERT INTO stra (`numero`,`fecha`,`envia`,`recibe`,`observ1`) 
-				VALUES (LPAD($nstra,8,'0'),'$fecha',(SELECT ubica FROM caub WHERE gasto='S' AND invfis = 'S' ORDER BY ubica ='INFI' LIMIT 1),$alma,'INVENTARIO FISICO')";
-			$ban = $this->db->query($mSQL);
-			if(!($ban>0))$error.="No se pudo crear el registro en stra";
-			
-			$mSQL="
-				INSERT INTO itstra (`numero`,`codigo`,`descrip`,`cantidad`,`anteri`)
-				SELECT LPAD($nstra,8,'0'),a.codigo,CONCAT_WS(b.descrip,b.descrip2)descrip,a.contado,a.existen FROM $tabla a
-				JOIN sinv b ON a.codigo = b.codigo
-				WHERE modificado <> 'NULLNULL' AND actualizado ='NULLNULL'
-				";
-			$ban = $this->db->query($mSQL);
-			if(!($ban>0))$error.="No se pudo crear el registro en itstra";
-			
-			$mSQL="UPDATE $tabla SET actualizado=now() WHERE modificado <> 'NULLNULL' AND actualizado = 'NULLNULL'";
-			$ban = $this->db->query($mSQL);
-			if(!($ban>0))$error.="No se pudo actualizar la tabla:$tabla";
+
+	function _crear($alma,$fecha){
+		$tabla='INV'.$alma.$fecha;
+		$error='';
+
+		if(!$this->db->table_exists($tabla)){
+			$dbalma=$this->db->escape($alma);
+			$mSQL="CREATE TABLE IF NOT EXISTS `$tabla`(
+				`codigo` VARCHAR(15) NULL,
+				`grupo` VARCHAR(4) NULL,
+				`alma` VARCHAR(4) NULL DEFAULT $dbalma,
+				`existen` DECIMAL(13,2) NULL DEFAULT '0',
+				`contado` DECIMAL(10,1) NOT NULL DEFAULT '0.0',
+				`agregar` DECIMAL(10,1) NOT NULL DEFAULT '0.0',
+				`quitar` DECIMAL(10,1) NOT NULL DEFAULT '0.0',
+				`sustituir` DECIMAL(10,1) NOT NULL DEFAULT '0.0',
+				`fecha` DATETIME NOT NULL DEFAULT '0000-00-00 00:00',
+				`modificado` DATETIME DEFAULT '0000-00-00 00:00',
+				`actualizado` DATETIME DEFAULT '0000-00-00 00:00',
+				`pond` DECIMAL(10,1) NOT NULL DEFAULT '0.0',
+				PRIMARY KEY (`codigo`)
+			)
+			COLLATE=".$this->db->dbcollat."
+			ENGINE=MyISAM
+			ROW_FORMAT=DEFAULT";
+			$ban=$this->db->simple_query($mSQL);
+			if(!$ban){ $error.='Error creando la tabla parcial '; memowrite($mSQL,'INVFIS');  }
+
+			$mSQL = "INSERT IGNORE INTO `$tabla`
+			(`codigo`,`grupo`,`existen`,`contado`,`agregar`,`quitar`,`sustituir`,`fecha`,`modificado`,`actualizado`,`pond`)
+			SELECT TRIM(a.codigo),TRIM(a.grupo),b.existen,0 contado,0 agregar,0 quitar,0 sustituir, NOW() fecha,CAST(NULL AS DATE ) modificado, CAST(NULL AS DATE) actualizado,a.pond
+			FROM sinv a
+			LEFT JOIN itsinv b ON a.codigo=b.codigo AND b.alma=$dbalma";
+			$ban=$this->db->simple_query($mSQL);
+			if(!$ban){ $error.='Error llenando la tabla parcial '; memowrite($mSQL,'INVFIS'); }
 		}else{
 			$error.="Ya existe un inventario creado para el almac&eacute;n $alma y la fecha seleccionada";
 		}
