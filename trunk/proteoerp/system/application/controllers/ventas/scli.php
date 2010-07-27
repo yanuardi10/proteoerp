@@ -47,10 +47,9 @@ class Scli extends validaciones {
 		$data['title']   = "<h1>Clientes</h1>";
 		$data["head"]    = $this->rapyd->get_head();
 */
-		$data['content'] = $grid->output;
-		$data['filtro']  = $filter->output;
-		$data['title']   = '';   //"<h1>Clientes</h1>";
-		$data['style']   = '';
+
+		$data['content'] = $filter->output.$grid->output;
+		$data['title']   = "<h1>Clientes</h1>";
 		$data["script"]  = script("jquery.js")."\n";
 		$data["head"]    = $this->rapyd->get_head();
 		$data["extras"]  = ''; //'<div style="margin:20"><table id="flex1" style="display:none"></table></div>';
