@@ -201,7 +201,13 @@ class XLSReporte extends writeexcel_workbookbig  {
 							}
 						}
 						$rgtotal[$campo]=$gtotal[$campo];
-						if (in_array($campo, $this->Acumulador)) $row[$campo]=$stotal[$u-1][$campo];
+						//if (in_array($campo, $this->Acumulador)) $row[$campo]=$stotal[$u-1][$campo];
+						if (in_array($campo, $this->Acumulador)){
+							if($this->cgrupo)
+								$row[$campo]=$stotal[$u-1][$campo];
+							else
+								$row[$campo]=$gtotal[$campo];
+						}
 					}else{
 						$total[$campo]=$gtotal[$campo]=$rtotal[$campo]=$rgtotal[$campo]=' ';
 						for($u=0;$u<count($this->grupo);$u++){

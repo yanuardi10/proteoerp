@@ -262,7 +262,7 @@ require_once(RAPYD_PATH.'common'.EXT);
 			$buffer = "";
 			
 			//loading the theme components style from css file instead of the css.php version...
-			$this->css[]=$this->get_elements_path("rapyd_components.css","css");			
+			$this->css[]=$this->get_elements_path("rapyd_components.css","css");
 			//css links
 			foreach ($this->css as $css){
 				$buffer .= HTML::cssLinkTag($css);
@@ -314,8 +314,4 @@ require_once(RAPYD_PATH.'common'.EXT);
 		}
 		
 	}
-
-
-
-
 ?>
