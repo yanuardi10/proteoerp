@@ -77,19 +77,18 @@ class sinv extends Controller {
 		}';
 
 		//filter
-		$filter = new DataFilter2("Filtro por Producto");
-		
+		$filter = new DataFilter2('Filtro por Producto');
+
 		$filter->db->select("a.existen AS existen,a.marca marca,a.tipo AS tipo,id,codigo,a.descrip,precio1,precio2,precio3,precio4,b.nom_grup AS nom_grup,b.grupo AS grupoid,c.descrip AS nom_linea,c.linea AS linea,d.descrip AS nom_depto,d.depto AS depto");
-		$filter->db->from("sinv AS a");
-		$filter->db->join("grup AS b","a.grupo=b.grupo");
-		$filter->db->join("line AS c","b.linea=c.linea");
-		$filter->db->join("dpto AS d","c.depto=d.depto");
-		
+		$filter->db->from('sinv AS a');
+		$filter->db->join('grup AS b','a.grupo=b.grupo');
+		$filter->db->join('line AS c','b.linea=c.linea');
+		$filter->db->join('dpto AS d','c.depto=d.depto');
 		$filter->script($script);
-  		
+
 		$filter->codigo = new inputField("C&oacute;digo", "codigo");
 		$filter->codigo -> size=25;
-		
+
 		$filter->descrip = new inputField("Descripci&oacute;n", "descrip");
 		$filter->descrip->db_name='CONCAT_WS(" ",a.descrip,a.descrip2)';
 		$filter->descrip -> size=25;
@@ -160,7 +159,7 @@ class sinv extends Controller {
 		}
 
 		$filter->marca = new dropdownField("Marca", "marca");
-		$filter->marca->option("","");
+		$filter->marca->option('','Todas');
 		$filter->marca->options("SELECT TRIM(marca) AS clave, TRIM(marca) AS valor FROM marc ORDER BY marca"); 
 		$filter->marca -> style='width:220px;';
 
@@ -188,11 +187,11 @@ class sinv extends Controller {
 		//$grid->column("Precio 4","<nformat><#precio4#></nformat>",'align=right');
 		$grid->column("Acci&oacute;n",$uri_2     ,"align='center'");
 
-		$grid->add("inventario/sinv/dataedit/create");
+		$grid->add('inventario/sinv/dataedit/create');
 		$grid->build();
 
 		$data['content'] = $filter->output.$grid->output;
-		$data['title']   = "<h1>Maestro de Inventario</h1>";
+		$data['title']   = '<h1>Maestro de Inventario</h1>';
 		$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").script("sinvmaes2.js").$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
@@ -659,7 +658,7 @@ class sinv extends Controller {
 
 		for($i=1;$i<=3;$i++){
 			$objeto="pfecha$i";
-			$edit->$objeto = new inputField("Fecha $i",$objeto);
+			$edit->$objeto = new dateField("Fecha $i",$objeto,'d/m/Y');
 			$edit->$objeto->when =array("show");
 			$edit->$objeto->size=10;
 
