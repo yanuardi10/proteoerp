@@ -164,6 +164,7 @@ script;
 	function traesucursal(){
 		$fecha  = $this->input->post('fecha');
 		$sucursal = $this->input->post('sucursal');
+		logusu('s/traesucu',"Trajo Ventas de Sucursal $sucursal de fecha $fecha");
 
 		if($fecha===false or $sucursal===false){ 
 			echo '2';
