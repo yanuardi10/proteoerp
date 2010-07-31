@@ -35,12 +35,12 @@ class Importar extends Controller {
 		$this->datasis->modulo_id('91E',1);
 
 		$form = new DataForm("sincro/importar/uitraeg/process");
-		
+
 		$form->sucu = new dropdownField("Sucursal", "sucu");
 		$form->sucu->rule ='required';
 		$form->sucu->option("","Selecionar");
 		$form->sucu->options("SELECT codigo, sucursal  FROM sucu WHERE codigo <> $sucu AND CHAR_LENGTH(url)>0");
-		
+
 		$form->qtrae = new dropdownField("Que traer?", "qtrae");
 		$form->qtrae->rule ='required';
 		$form->qtrae->option("","Selecionar");
@@ -50,8 +50,9 @@ class Importar extends Controller {
 		$form->qtrae->option("smov"  ,"Movimientos de clientes");
 		$form->qtrae->option("transa","Facturas y transferencias");
 		$form->qtrae->option("supermaes","Inventario Supermercado");
-		$form->qtrae->option("rcaj"  ,"Cierres de caja");
-		
+		$form->qtrae->option("rcaj"   ,"Cierres de caja");
+		$form->qtrae->option("fiscalz","Cierres Z");
+
 		$form->fecha = new dateonlyField("Fecha","fecha");
 		$form->fecha->insertValue = date("Y-m-d");
 		$form->fecha->rule ="required|chfecha";

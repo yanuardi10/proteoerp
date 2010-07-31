@@ -47,7 +47,7 @@ class Exportar extends Controller {
 		$sucu=$this->db->escape($this->sucu);
 
 		$form = new DataForm("sincro/exportar/uig/process");
-		
+
 		$form->qtrae = new dropdownField("Que exportar?", "qtrae");
 		$form->qtrae->rule ='required';
 		$form->qtrae->option("","Selecionar");
@@ -58,6 +58,7 @@ class Exportar extends Controller {
 		$form->qtrae->option("transacciones","Facturas y transferencias");
 		$form->qtrae->option("supertransa"  ,"Ventas Supermercado");
 		$form->qtrae->option("rcaj"  ,"Cierres de cajas");
+		$form->qtrae->option("fiscalz"  ,"Cierres Z");
 
 		$form->fecha = new dateonlyField("Fecha","fecha");
 		$form->fecha->insertValue = date("Y-m-d");
@@ -311,22 +312,21 @@ class Exportar extends Controller {
 		$this->sqlinex->limpiar  =FALSE;
 		$data[]=array('table' => 'fiscalz',
 				'where' => "fecha >= $fecha");
-		
+
 		$nombre='fiscalz_'.$fecha.'_'.$this->sucu;
 		if(!array_key_exists('HTTP_USER_AGENT', $_SERVER)) $_SERVER['HTTP_USER_AGENT']='curl';
 		$this->sqlinex->exportunbufferzip($data,$nombre,$this->sucu);
 	}
-	
+
 	//Para supermercado
-	
 	function _supertransa($fecha,$opt=null){
 		set_time_limit(600);
 		$this->load->library("sqlinex");
-		
+
 		$sucu=$this->datasis->traevalor('NROSUCU');
 		$pre_caja=$this->db->escape($sucu);
 		$cant=strlen($sucu);
-		
+
 		$this->load->library("sqlinex");
 
 		$data[]=array('distinc'=>false,
@@ -345,7 +345,6 @@ class Exportar extends Controller {
 		$nombre='supertransa_'.$fecha.'_'.$this->sucu;
 		if(!array_key_exists('HTTP_USER_AGENT', $_SERVER)) $_SERVER['HTTP_USER_AGENT']='curl';
 		$this->sqlinex->exportunbufferzip($data,$nombre,$this->sucu);
-
 	}
 
 	function _maes($fecha,$opt=null){
@@ -439,7 +438,4 @@ class Exportar extends Controller {
 		if(!array_key_exists('HTTP_USER_AGENT', $_SERVER)) $_SERVER['HTTP_USER_AGENT']='curl';
 		$this->sqlinex->exportunbufferzip($data,$nombre,$this->sucu);
 	}
-
-
 }
-?>
