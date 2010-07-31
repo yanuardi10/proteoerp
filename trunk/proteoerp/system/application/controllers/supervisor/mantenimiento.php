@@ -131,7 +131,7 @@ class Mantenimiento extends Controller{
 			$fechad=$filter->fechad->newValue;
 			
 			$alma=$this->datasis->dameval("SELECT a.ubica FROM (`costos` as a) LEFT JOIN `caub` AS b ON `a`.`ubica`=`b`.`ubica` WHERE `b`.`ubica` = 'NULL' AND `origen` = '3I' AND a.fecha >= '$fechad' AND a.fecha <= '$fechah'");
-			echo $alma;
+			//echo $alma;
     	
 			$uri = anchor('supervisor/mantenimiento/cambioalma/modify/<#tipo_doc#>/<#numero#>','Cambio');
 			
@@ -139,7 +139,7 @@ class Mantenimiento extends Controller{
 			$select=array('a.fecha','a.numero','a.cod_cli','a.tipo_doc','a.totalg','a.almacen');
 			$grid->db->select($select);
 			$grid->db->from('sfac as a');
-			$grid->db->where("a.almacen",'A001');
+			$grid->db->where("a.almacen",$alma);
 			$grid->db->where("a.fecha >= ",$fechad);
 			$grid->db->where("a.fecha <=",$fechah);			
 			$grid->per_page = 15;
