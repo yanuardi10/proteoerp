@@ -152,7 +152,7 @@ class pers extends validaciones {
 		$edit->cedula->size = 14;
 		$edit->cedula->maxlength= 8;
 		$edit->cedula->in = "nacional";
-		$edit->cedula->rule="trim|numeric|required";
+		$edit->cedula->rule="trim|required";
 		$edit->cedula->css_class='inputnum';
 			
 		$lriffis='<a href="javascript:consulrif();" title="Consultar RIF en el SENIAT" onclick=""> Consultar RIF en el SENIAT</a>';
@@ -491,18 +491,22 @@ script;
 	} 
 	function instalar(){
 		
-		$mSQL="CREATE TABLE `tipoe` (`codigo` VARCHAR (10), `tipo` VARCHAR (50), PRIMARY KEY(`codigo`))";
-		$this->db->query($mSQL);
+
 		$mSQL1="ALTER TABLE `pers` ADD `email` VARCHAR(50) NULL";
 		$this->db->query($mSQL1);
-		$mSQL2="CREATE TABLE `posicion` (`codigo` VARCHAR (10), `posicion` VARCHAR (30),PRIMARY KEY(`codigo`))";
-		$this->db->query($mSQL2);
-		$mSQL3="ALTER TABLE `pers` CHANGE `tipoe` VARCHAR(10)";
+		$mSQL3="ALTER TABLE `pers` ADD`tipoe` VARCHAR(10)";
 		$this->db->query($mSQL3);
-		$mSQL4="ALTER TABLE `pers` CHANGE `retiro` `escritura` VARCHAR(25)";
+		$mSQL4="ALTER TABLE `pers` ADD `escritura` VARCHAR(25),ADD `rif` VARCHAR(15)";
 		$this->db->query($mSQL4);
 		$mSQL5="ALTER TABLE `pers` ADD `observa` TEXT ";
 		$this->db->query($mSQL5);
+		$mSQL6="CREATE TABLE tipot(codigo int(10) unsigned NOT NULL AUTO_INCREMENT,	`tipo` varchar(50) DEFAULT NULL,PRIMARY KEY (`codigo`) )";
+ 		$this->db->query($mSQL6);	 
+ 		$mSQL7="CREATE TABLE `posicion`(`codigo` varchar(10) NOT NULL,`posicion` varchar(30) DEFAULT NULL,PRIMARY KEY (`codigo`))";
+    $this->db->query($mSQL7);
+		$mSQL8="CREATE TABLE `tipoe` (`codigo` varchar(10) NOT NULL DEFAULT '', `tipo` varchar(50) DEFAULT NULL, PRIMARY KEY (`codigo`))"; 
+		$this->db->query($mSQL8);
+
 	}
 }
 ?>

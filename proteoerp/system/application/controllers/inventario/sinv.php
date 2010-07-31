@@ -746,17 +746,18 @@ class sinv extends Controller {
 
 	function _detalle($codigo){
 	$salida='';
+	
 		if(!empty($codigo)){
 			$this->rapyd->load('dataedit','datagrid');
 
 			$grid = new DataGrid('Cantidad por almac&eacute;n');
-			$grid->db->select(array('a.codigo','a.alma','a.existen',"IF(b.ubides IS NULL,'ALMACEN INCONSISTENTE',b.ubides) AS nombre"));
+			$grid->db->select(array('b.ubides','a.codigo','a.alma','a.existen',"IF(b.ubides IS NULL,'ALMACEN INCONSISTENTE',b.ubides) AS nombre"));
 			$grid->db->from('itsinv AS a');
 			$grid->db->join('caub as b','a.alma=b.ubica','LEFT');
 			$grid->db->where('codigo',$codigo);
-
-			$grid->column('Almac&eacute;n','alma'   );
-			$grid->column('Nombre'        ,'nombre' );
+			
+			$grid->column('Almac&eacute;n','alma');
+			$grid->column('Nombre'       ,'<#nombre#>');	
 			$grid->column('Cantidad'      ,'existen','align="RIGHT"');
 
 			$grid->build();

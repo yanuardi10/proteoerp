@@ -9,6 +9,7 @@ class Publicidad extends Controller {
 		$path->setPath($this->config->item('uploads_dir'));
 		$path->append('publicidad');
 		$this->upload_path =$path->getPath().'/';
+		echo 'asadf'.$this->upload_path;
 		//$this->datasis->modulo_id(907,1);
 	}
 

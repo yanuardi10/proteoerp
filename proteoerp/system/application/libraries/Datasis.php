@@ -208,7 +208,7 @@ class Datasis {
 onclick=\"vent=window.open(
 	'".site_url("buscar/index/$idt/$puri")."',
 	'ventbuscar$id',
-	'width=$width,	height=$height,	scrollbars=Yes,	status=Yes,	resizable=Yes,	screenx=5,	screeny=5'
+	'width=$width, height=$height,	scrollbars=Yes,	status=Yes,	resizable=Yes,	screenx=5,	screeny=5'
 	);
 	vent.focus();
 document.body.setAttribute(
