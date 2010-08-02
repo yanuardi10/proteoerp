@@ -149,6 +149,26 @@ echo $form_begin?>
         <tr>
           <td class="littletablerowth"><?=$form->cuentab->label  ?></td>
           <td class="littletablerow"><?=$form->cuentab->output ?></td>
+        </tr>
+        <tr>
+          <td class="littletablerowth"><?=$form->turno->label  ?></td>
+          <td class="littletablerow"><?=$form->turno->output ?></td>
+        </tr>
+        <tr>
+          <td class="littletablerowth"><?=$form->horame->label  ?></td>
+          <td class="littletablerow"><?=$form->horame->output ?></td>
+        </tr>
+        <tr>
+          <td class="littletablerowth"><?=$form->horams->label  ?></td>
+          <td class="littletablerow"><?=$form->horams->output ?></td>
+        </tr>
+        <tr>
+          <td class="littletablerowth"><?=$form->horate->label  ?></td>
+          <td class="littletablerow"><?=$form->horate->output ?></td>
+        </tr>
+        <tr>
+          <td class="littletablerowth"><?=$form->horats->label  ?></td>
+          <td class="littletablerow"><?=$form->horats->output ?></td>
         </tr>	     	
 		</table>
 </fieldset>		
