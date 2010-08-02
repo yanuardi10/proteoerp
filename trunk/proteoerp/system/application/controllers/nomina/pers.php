@@ -356,6 +356,42 @@ class pers extends validaciones {
 		$edit->carnet->maxlength=10;
 		$edit->carnet->group = "Relaci&oacute;n Laboral";
 		$edit->carnet->rule="trim"; 
+		                        
+		$edit->turno = new dropdownField("Turno", "turno");
+		$edit->turno->option("","");
+		$edit->turno->options(array("D"=> "Diurno","N"=>"Nocturno"));
+		$edit->turno->group = "Relaci&oacute;n Laboral";
+		$edit->turno->style = "width:100px;";
+		
+		$edit->horame  = new inputField("Turno Mañana","horame");
+		$edit->horame->maxlength=8;
+		$edit->horame->size=10;
+		$edit->horame->rule='trim|callback_chhora';
+		$edit->horame->append('hh:mm:ss');
+		$edit->horame->group="Relaci&oacute;n Laboral";
+
+		$edit->horams  = new inputField("Turno Mañana","horams");
+		$edit->horams->maxlength=8;
+		$edit->horams->size=10;
+		$edit->horams->rule='trim|callback_chhora';
+		$edit->horams->append('hh:mm:ss');
+		$edit->horams->in="horame";
+		$edit->horams->group="Relaci&oacute;n Laboral";
+		
+		$edit->horate  = new inputField("Turno Tarde","horate");
+		$edit->horate->maxlength=8;
+		$edit->horate->size=10;
+		$edit->horate->rule='trim|callback_chhora';
+		$edit->horate->append('hh:mm:ss');
+		$edit->horate->group="Relaci&oacute;n Laboral";
+              
+		$edit->horats  = new inputField("Turno Tarde","horats");
+		$edit->horats->maxlength=8;
+		$edit->horats->size=10;
+		$edit->horats->rule='trim|callback_chhora';
+		$edit->horats->append('hh:mm:ss');
+		$edit->horats->in="horate";
+		$edit->horats->group="Relaci&oacute;n Laboral";
 			
 		$edit->tipocuent = new dropdownField("Tipo Cuenta", "tipoe");
 		$edit->tipocuent->option("","");
@@ -506,7 +542,8 @@ script;
     $this->db->query($mSQL7);
 		$mSQL8="CREATE TABLE `tipoe` (`codigo` varchar(10) NOT NULL DEFAULT '', `tipo` varchar(50) DEFAULT NULL, PRIMARY KEY (`codigo`))"; 
 		$this->db->query($mSQL8);
-
+		$mSQL9="ALTER TABLE pers`datasis` ADD COLUMN `turno` CHAR(2) NULL,ADD COLUMN `horame` VARCHAR(10),ADD COLUMN `horams` VARCHAR(10),ADD COLUMN `horate` VARCHAR(10),ADD COLUMN `horats` VARCHAR(10)";
+    $this->db->query($mSQL9);
 	}
 }
 ?>
