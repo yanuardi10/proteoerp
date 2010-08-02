@@ -155,19 +155,15 @@ echo $form_begin?>
           <td class="littletablerow"><?=$form->turno->output ?></td>
         </tr>
         <tr>
-          <td class="littletablerowth"><?=$form->horame->label  ?></td>
+          <td class="littletablerowth"><?=$form->horame->label.' Desde'  ?></td>
           <td class="littletablerow"><?=$form->horame->output ?></td>
-        </tr>
-        <tr>
-          <td class="littletablerowth"><?=$form->horams->label  ?></td>
+          <td class="littletablerowth"><?='Hasta'  ?></td>
           <td class="littletablerow"><?=$form->horams->output ?></td>
         </tr>
         <tr>
-          <td class="littletablerowth"><?=$form->horate->label  ?></td>
+          <td class="littletablerowth"><?=$form->horate->label.' Desde'  ?></td>
           <td class="littletablerow"><?=$form->horate->output ?></td>
-        </tr>
-        <tr>
-          <td class="littletablerowth"><?=$form->horats->label  ?></td>
+          <td class="littletablerowth"><?='Hasta' ?></td>
           <td class="littletablerow"><?=$form->horats->output ?></td>
         </tr>	     	
 		</table>
