@@ -133,6 +133,22 @@ class Instalador extends Controller {
 		// modulos.php
 		// tablas.php
 		// aumento.php
+		// scst.php
+
+		$mSQL="CREATE TABLE IF NOT EXISTS `farmaxasig` (
+		`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+		`proveed` VARCHAR(50) NOT NULL,
+		`barras` VARCHAR(250) NOT NULL,
+		`abarras` VARCHAR(250) NOT NULL,
+		PRIMARY KEY (`id`),
+		UNIQUE INDEX `proveed` (`proveed`, `barras`)
+		)
+		COMMENT='Tabla de equivalencias de productos'
+		ENGINE=MyISAM
+		ROW_FORMAT=DEFAULT";
+
+		$this->db->simple_query($mSQL);
+	
 		// agregareg.php
 
 		$mSQL='ALTER TABLE itscst ADD id INT AUTO_INCREMENT PRIMARY KEY';
@@ -771,14 +787,13 @@ $this->db->simple_query($mSQL);
 	
 		// sinv.php
 
-		
 		$mSQL='ALTER TABLE `sinv` DROP PRIMARY KEY';
 		$this->db->simple_query($mSQL);
 		$mSQL='ALTER TABLE `sinv` ADD UNIQUE `codigo` (`codigo`)';
 		$this->db->simple_query($mSQL);
 		$mSQL='ALTER TABLE sinv ADD id INT AUTO_INCREMENT PRIMARY KEY';
 		$this->db->simple_query($mSQL);
-		
+
 		$mSQL="CREATE TABLE IF NOT EXISTS `sinvcombo` (
 		`combo` char(15) NOT NULL,
 		`codigo` char(15) NOT NULL default '',
@@ -813,6 +828,10 @@ $this->db->simple_query($mSQL);
 	
 		// unidad.php
 		// accesos.php
+
+		$query="ALTER TABLE `cacc`  ADD COLUMN `manual` CHAR(1) NOT NULL DEFAULT 'N' AFTER `hora`";
+		$this->db->simple_query($query);
+	
 		// asig.php
 
 		$mSQL="ALTER TABLE asig ADD PRIMARY KEY (codigo);";
@@ -868,18 +887,23 @@ $this->db->simple_query($mSQL);
 		// pers.php
 
 		
-		$mSQL="CREATE TABLE `tipoe` (`codigo` VARCHAR (10), `tipo` VARCHAR (50), PRIMARY KEY(`codigo`))";
-		$this->db->query($mSQL);
+
 		$mSQL1="ALTER TABLE `pers` ADD `email` VARCHAR(50) NULL";
 		$this->db->query($mSQL1);
-		$mSQL2="CREATE TABLE `posicion` (`codigo` VARCHAR (10), `posicion` VARCHAR (30),PRIMARY KEY(`codigo`))";
-		$this->db->query($mSQL2);
-		$mSQL3="ALTER TABLE `pers` CHANGE `tipoe` VARCHAR(10)";
+		$mSQL3="ALTER TABLE `pers` ADD`tipoe` VARCHAR(10)";
 		$this->db->query($mSQL3);
-		$mSQL4="ALTER TABLE `pers` CHANGE `retiro` `escritura` VARCHAR(25)";
+		$mSQL4="ALTER TABLE `pers` ADD `escritura` VARCHAR(25),ADD `rif` VARCHAR(15)";
 		$this->db->query($mSQL4);
 		$mSQL5="ALTER TABLE `pers` ADD `observa` TEXT ";
 		$this->db->query($mSQL5);
+		$mSQL6="CREATE TABLE tipot(codigo int(10) unsigned NOT NULL AUTO_INCREMENT,	`tipo` varchar(50) DEFAULT NULL,PRIMARY KEY (`codigo`) )";
+ 		$this->db->query($mSQL6);	 
+ 		$mSQL7="CREATE TABLE `posicion`(`codigo` varchar(10) NOT NULL,`posicion` varchar(30) DEFAULT NULL,PRIMARY KEY (`codigo`))";
+    $this->db->query($mSQL7);
+		$mSQL8="CREATE TABLE `tipoe` (`codigo` varchar(10) NOT NULL DEFAULT '', `tipo` varchar(50) DEFAULT NULL, PRIMARY KEY (`codigo`))"; 
+		$this->db->query($mSQL8);
+		$mSQL9="ALTER TABLE pers`datasis` ADD COLUMN `turno` CHAR(2) NULL,ADD COLUMN `horame` VARCHAR(10),ADD COLUMN `horams` VARCHAR(10),ADD COLUMN `horate` VARCHAR(10),ADD COLUMN `horats` VARCHAR(10)";
+    $this->db->query($mSQL9);
 	
 		// prenom.php
 		// pres.php
@@ -919,6 +943,7 @@ $this->db->simple_query($mSQL);
 		// cupones.php
 		// dias.php
 		// efisico.php
+		// enviacaja.php
 		// envivo.php
 		// exportar.php
 		// fami.php
@@ -931,6 +956,30 @@ $this->db->simple_query($mSQL);
 		// linventario.php
 		// lresumen.php
 		// maes.php
+
+		$mSQL='ALTER TABLE `maes` DROP PRIMARY KEY';
+		$this->db->simple_query($mSQL);
+		$mSQL='ALTER TABLE `maes` ADD UNIQUE `codigo` (`codigo`)';
+		$this->db->simple_query($mSQL);
+		$mSQL='ALTER TABLE maes ADD id INT AUTO_INCREMENT PRIMARY KEY';
+		$this->db->simple_query($mSQL);
+
+		$mSQL="CREATE TABLE IF NOT EXISTS `sinvcombo` (
+		`combo` char(15) NOT NULL,
+		`codigo` char(15) NOT NULL default '',
+		`descrip` char(30) default NULL,
+		`cantidad` decimal(10,3) default NULL,
+		`precio` decimal(15,2) default NULL,
+		`transac` char(8) default NULL,
+		`estampa` date default NULL,
+		`hora` char(8) default NULL,
+		`usuario` char(12) default NULL,
+		`costo` decimal(17,2) default '0.00',
+		PRIMARY KEY  (`combo`,`codigo`)
+		) ENGINE=MyISAM DEFAULT CHARSET=latin1";
+		$this->db->simple_query($mSQL);
+	
+		// maess.php
 		// poscuadre.php
 		// posfact.php
 		// precioclient.php
@@ -1300,6 +1349,10 @@ $this->db->simple_query($mSQL);
 		// productos.php
 		// prueba.php
 		// rcaj.php
+
+		$mSQL="CREATE TABLE `itrcaj` (`numero` VARCHAR (8), `tipo` VARCHAR (15), `recibido` DECIMAL (17,2), `sistema` DECIMAL (17,2), `diferencia` DECIMAL (17,2),PRIMARY KEY (`numero`, `tipo`))";		
+		$this->db->simple_query($mSQL);
+	
 		// requisitos.php
 		// scaj.php
 
