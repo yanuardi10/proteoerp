@@ -571,6 +571,7 @@ class Cierre extends Controller {
        'screeny'   => '0');
 		$salida ="<center><h2>CIERRE GUARDADO $numero</h2><br>Para Imprimir haga click ".anchor_popup("/supermercado/cierre/doccierre/$numero",'AQUI',$atRI).'<br>';
 		$salida.=anchor('supermercado/cierre/index/search/osp','Regresar').'</center>';
+		logusu('cierrep',"Cierre guardado por proteo de la caja $caja numero $numero");
 		return $salida;
 	}
 	
