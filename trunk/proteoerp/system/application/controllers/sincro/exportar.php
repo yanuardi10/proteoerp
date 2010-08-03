@@ -324,7 +324,7 @@ class Exportar extends Controller {
 		$this->load->library("sqlinex");
 
 		$sucu=$this->datasis->traevalor('NROSUCU');
-		$pre_caja=$this->db->escape($sucu);
+		$pre_caja=$this->prefijo;
 		$cant=strlen($sucu);
 
 		$this->load->library("sqlinex");
