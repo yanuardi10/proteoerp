@@ -125,10 +125,10 @@ class Importar extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 #########################################
-# Interfaces para exportar con almacenes
+# Interfaces para exportar con parametros
 #########################################
 
-	function uitraegalma(){
+	function uitraepara(){
 		$this->rapyd->load('dataform');
 		$sucu=$this->db->escape($this->sucu);
 		$this->datasis->modulo_id('91E',1);
@@ -143,9 +143,9 @@ class Importar extends Controller {
 		$form->qtrae = new dropdownField("Que traer?", "qtrae");
 		$form->qtrae->rule ='required';
 		$form->qtrae->option("","Selecionar");
-		$form->qtrae->option("maesalma"  ,"Inventario Supermercado");
-		$form->qtrae->option("tranalma","Facturas y transferencias");
-		$form->qtrae->option("ubicalma"   ,"Movimientos de invent. Supermercado");
+		$form->qtrae->option("maesalma" ,"Inventario Supermercado");
+		$form->qtrae->option("tranalma" ,"Facturas y transferencias");
+		$form->qtrae->option("ubicalma" ,"Movimientos de invent. Supermercado");
 
 		$form->fecha = new dateonlyField("Fecha","fecha");
 		$form->fecha->insertValue = date("Y-m-d");
