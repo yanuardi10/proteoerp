@@ -49,9 +49,9 @@ class Importar extends Controller {
 		$form->qtrae->option("maes"  ,"Inventario Supermercado");
 		$form->qtrae->option("smov"  ,"Movimientos de clientes");
 		$form->qtrae->option("transa","Facturas y transferencias");
-		$form->qtrae->option("supermaes","Inventario Supermercado");
 		$form->qtrae->option("rcaj"   ,"Cierres de caja");
 		$form->qtrae->option("fiscalz","Cierres Z");
+		$form->qtrae->option("supertransa","Transacciones de Supermercado");
 
 		$form->fecha = new dateonlyField("Fecha","fecha");
 		$form->fecha->insertValue = date("Y-m-d");
@@ -124,6 +124,67 @@ class Importar extends Controller {
 		$data["head"]    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
+#########################################
+# Interfaces para exportar con almacenes
+#########################################
+
+	function uitraegalma(){
+		$this->rapyd->load('dataform');
+		$sucu=$this->db->escape($this->sucu);
+		$this->datasis->modulo_id('91E',1);
+
+		$form = new DataForm("sincro/importar/uitraegalma/process");
+
+		$form->sucu = new dropdownField("Sucursal", "sucu");
+		$form->sucu->rule ='required';
+		$form->sucu->option("","Selecionar");
+		$form->sucu->options("SELECT codigo, sucursal  FROM sucu WHERE codigo <> $sucu AND CHAR_LENGTH(url)>0");
+
+		$form->qtrae = new dropdownField("Que traer?", "qtrae");
+		$form->qtrae->rule ='required';
+		$form->qtrae->option("","Selecionar");
+		$form->qtrae->option("maesalma"  ,"Inventario Supermercado");
+		$form->qtrae->option("tranalma","Facturas y transferencias");
+		$form->qtrae->option("ubicalma"   ,"Movimientos de invent. Supermercado");
+
+		$form->fecha = new dateonlyField("Fecha","fecha");
+		$form->fecha->insertValue = date("Y-m-d");
+		$form->fecha->rule ="required|chfecha";
+		$form->fecha->size =12;
+		$form->submit("btnsubmit","Descargar");
+
+		$form->alma= new dropdownField("Almac&eacute;n", "alma");
+		$form->alma->rule ='required';
+		$form->alma->option("","Selecionar");
+		$form->alma->options("SELECT ubica, CONCAT(ubica,'-',ubides) AS descrip FROM caub ORDER BY ubica");
+		$form->build_form();
+
+		$exito='';
+		if ($form->on_success()){
+			$fecha=$form->fecha->newValue;
+			$sucu =$form->sucu->newValue;
+			$alma =$form->alma->newValue;
+			$obj='_'.str_replace('_','',$form->qtrae->newValue);
+			if(method_exists($this,$obj))
+				$rt=$this->$obj($sucu,$fecha,$alma);
+			else
+				$rt='Metodo no definido ('.$form->qtrae->newValue.')';
+			if(strlen($rt)>0){
+				$form->error_string=$rt;
+				$form->build_form();
+			}else{
+				$exito='Transferencia &Eacute;xitosa';
+			}
+		}
+
+		$data['content'] = $form->output.$exito;
+		$data['title']   = '<h1>Importar data de Sucursal</h1>';
+		$data['script']  = '';
+		$data["head"]    = $this->rapyd->get_head();
+		$this->load->view('view_ventanas', $data);
+	}
+
+
 
 	function uicarga(){
 		set_time_limit(600);
@@ -185,6 +246,28 @@ class Importar extends Controller {
 //**************************
 // Correr desde Shell
 //**************************
+	function traeshell($psucu='*',$metodo,$fecha=null){
+		if(isset($_SERVER['argv']) && !isset($_SERVER['SERVER_NAME'])){ //asegura que se ejecute desde shell
+
+			$obj='_'.str_replace('_','',$metodo);
+			if(!method_exists($this,$obj)) { echo "Error metodo $metodo no existe \n"; return false;}
+			if(!$this->__chekfecha($fecha)){ echo "Error fecha no valida \n"; return false;}
+			if($psucu!='*') $where='AND codigo ='.$this->db->escape($psucu); else $where='';
+			
+			$sucu=$this->sucu;
+			$query = $this->db->query("SELECT * FROM sucu WHERE codigo<>$sucu $where");
+			if(empty($fecha)) $fecha = date('Ymd');
+
+			if ($query->num_rows() > 0){
+				$rt='';
+				foreach ($query->result() as $row){
+					$rt.=$this->$obj($row->codigo,$fecha);
+				}
+				echo $rt;
+			}
+		}
+	}
+
 	function traetodosucu($principal,$fecha=null){
 		if(isset($_SERVER['argv']) && !isset($_SERVER['SERVER_NAME'])){ //asegura que se ejecute desde shell
 
