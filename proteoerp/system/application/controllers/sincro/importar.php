@@ -289,7 +289,7 @@ class Importar extends Controller {
 			if ($query->num_rows() > 0){
 				$rt='';
 				foreach ($query->result() as $row){
-					$rt.=$this->_smov($row->codigo,$fecha);
+					//$rt.=$this->_smov($row->codigo,$fecha);
 					$rt.=$this->_transa($row->codigo,$fecha);
 					$rt.=$this->_fiscalz($row->codigo,$fecha);
 					$rt.=$this->_rcaj($row->codigo,$fecha);
