@@ -19,11 +19,11 @@ class Cupones extends Controller {
 		$form->fecha->rule = "trim";
 		
 		
-		$form->monto= new inputField("Monto por cupon", "monto");
+		/*$form->monto= new inputField("Monto por cupon", "monto");
 		$form->monto->size = 15;
 		$form->monto->rule = "required"; 
-  	$form->monto->insertValue = 100;
-  	
+  		$form->monto->insertValue = $this->datasis->traevalor('FMAYCUPON');
+		*/  	
   	
 		$form->caja = new dropdownField("Caja", "ipcaj");                                                                                                                             
 		$form->caja->rule = "required";                                                                                                                                               
@@ -31,17 +31,23 @@ class Cupones extends Controller {
 
 		$form->submit("reset","Resetear");  
 		$form->submit("btnsubmit","Buscar");
-   	$form->build_form();
+   		$form->build_form();
 		$ggri='';
 		
 		if ($form->on_success()){
-			$mSQL="SELECT caja,cliente, gtotal FROM viefac WHERE fecha={$form->fecha->newValue} AND caja='{$form->caja->newValue}'";
+			$mSQL="SELECT caja,cliente, gtotal,numero FROM viefac WHERE fecha={$form->fecha->newValue} AND caja='{$form->caja->newValue}'";
 			//echo $mSQL;
 			$query = $this->db->query($mSQL);
 			$cupones=0;
+			$facturas=array();
 			if ($query->num_rows() > 0){
 				foreach ($query->result() as $row){
-					$pivocli='';
+					if(array_key_exists($row->numero,$facturas))
+					    $facturas[$row->numero]+=$row->gtotal;
+					else
+					    $facturas[$row->numero]=$row->gtotal;
+					    
+					/*$pivocli='';
 					$monto=0;
 					foreach ($query->result() as $row){
 						if ($pivocli!=$row->cliente){
@@ -51,9 +57,12 @@ class Cupones extends Controller {
 						}
 						$monto+=$row->gtotal;
 						
-					}
+					}*/
 				}
 			}
+			$monto=$this->datasis->traevalor('FMAYCUPON');
+			foreach($facturas AS $key=>$value)$cupones+=round($facturas[$key]/$monto,0);
+			
 			$ggri="Fueron entregados <b>$cupones</b> cupones";
 		}
 		$data['content'] =  $form->output.$ggri;
