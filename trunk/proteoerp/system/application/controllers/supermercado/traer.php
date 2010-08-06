@@ -62,7 +62,7 @@ script;
 	function sucursales(){
 		$this->rapyd->load("datatable",'dataform');
 
-		$form = new DataForm("supermercado/traer/traersucursales/");
+		$form = new DataForm("supermercado/traer/traersucursal/");
 
 		$form->fecha = new dateField("Fecha", "fecha",'d/m/Y');
 		$form->fecha->insertValue = date("Y-m-d");
