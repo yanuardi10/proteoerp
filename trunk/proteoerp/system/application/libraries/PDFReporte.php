@@ -166,7 +166,10 @@ class PDFReporte extends Fpdf {
 	}
 
 	function setGrupo($param){
-		$data= func_get_args();
+		if(is_array($param))
+			$data=$param;
+		else
+			$data= func_get_args();
 		foreach($data as $sale){
 			if (in_array($sale, $this->DBfieldsName)){
 				$this->grupo[]=$sale;
@@ -193,7 +196,11 @@ class PDFReporte extends Fpdf {
 	}
 
 	function setGrupoLabel($label){
-		$data= func_get_args();
+		if(is_array($label))
+			$data=$label;
+		else
+			$data= func_get_args();
+
 		foreach($data as $sale){
 			$correcto=true;
 			$sal=$this->_parsePattern($sale);

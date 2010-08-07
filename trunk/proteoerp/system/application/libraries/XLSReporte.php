@@ -10,34 +10,34 @@ class XLSReporte extends writeexcel_workbookbig  {
 	var $DBfieldsType;
 	var $DBfieldsMax_lengt;
 	var $workbook;
-  var $worksheet;
-  var $fname;
-  var $cols;
-  var $ccols;
-  var $crows;
-  var $Titulo;
- 	var $Acumulador=array();
-  var $SubTitulo;
-  var $SobreTabla;
-  var $tituHeader;
-  var $tituSubHeader;
-  var $centrar=array();
-  var $wstring=array("string");
-	var	$wnumber=array("real","int");
+	var $worksheet;
+	var $fname;
+	var $cols;
+	var $ccols;
+	var $crows;
+	var $Titulo;
+	var $Acumulador=array();
+	var $SubTitulo;
+	var $SobreTabla;
+	var $tituHeader;
+	var $tituSubHeader;
+	var $centrar=array();
+	var $wstring=array("string");
+	var $wnumber=array("real","int");
 	var $fc=5;
-  var $cc=0;
-  var $ii=0;
-  var $fi=0;
-  var $totalizar=array();
-  var $ctotalizar;
-  var $grupo=array();
-  var $cgrupo;
-  //var $cgrupos=array();
-  var $dRep=TRUE;
-  var $grupoLabel;
-  var $colum=0;
-  var $rows=array();
-  var $fCols=array();
+	var $cc=0;
+	var $ii=0;
+	var $fi=0;
+	var $totalizar=array();
+	var $ctotalizar;
+	var $grupo=array();
+	var $cgrupo;
+	//var $cgrupos=array();
+	var $dRep=TRUE;
+	var $grupoLabel;
+	var $colum=0;
+	var $rows=array();
+	var $fCols=array();
 
 	function XLSReporte($mSQL=''){
 		$this->ccols=0;
@@ -314,7 +314,10 @@ class XLSReporte extends writeexcel_workbookbig  {
 		}
 	}
 	function setGrupo($param){
-		$data= func_get_args();
+		if(is_array($param))
+			$data=$param;
+		else
+			$data= func_get_args();
 		foreach($data as $sale){
 			if (in_array($sale, $this->DBfieldsName)){
 				$this->grupo[]=$sale;
@@ -328,11 +331,14 @@ class XLSReporte extends writeexcel_workbookbig  {
 	function setHeadGrupo($label='',$campo='',$font='',$size='',$type=''){
 	}
 	function setGrupoLabel($label){
-		$data= func_get_args();
+		if(is_array($label))
+			$data=$label;
+		else
+			$data= func_get_args();
 		foreach($data as $sale){
 			$correcto=true;
-      $sal=$this->_parsePattern($sale);
-      if (count($sal)>0){
+			$sal=$this->_parsePattern($sale);
+			if (count($sal)>0){
 				foreach($sal as $pasa){
 					if (!in_array($pasa, $this->DBfieldsName)){
 						$correcto=false;
@@ -372,9 +378,6 @@ class XLSReporte extends writeexcel_workbookbig  {
 			$this->worksheet->write_row($linea, $arreglo , $this->h4);
 			$this->ii++;
 		}
-
-
-
 	}
 	function Row($data,$linea=0,$pinta=1) {
 	}
@@ -399,20 +402,19 @@ class XLSReporte extends writeexcel_workbookbig  {
 		unlink($this->fname);
 	}
 	function _parsePattern($pattern){
-    $template = $pattern;
-    $parsedcount = 0;
-    $salida=array();
-    while (strpos($template,"#>")>0) {
-      $parsedcount++;
-      $parsedfield = substr($template,strpos($template,"<#")+2,strpos($template,"#>")-strpos($template,"<#")-2);
-
-      $salida[]=$parsedfield;
-      $template = str_replace("<#".$parsedfield ."#>","",$template);
-    }
-    return $salida;
-  }
-	function selectWrite($tipo,$f,$c,$campo)	{
-		if(in_array($tipo,$this->wnumber,true))		{
+		$template = $pattern;
+		$parsedcount = 0;
+		$salida=array();
+		while (strpos($template,"#>")>0) {
+			$parsedcount++;
+			$parsedfield = substr($template,strpos($template,"<#")+2,strpos($template,"#>")-strpos($template,"<#")-2);
+			$salida[]=$parsedfield;
+			$template = str_replace("<#".$parsedfield ."#>","",$template);
+		}
+		return $salida;
+	}
+	function selectWrite($tipo,$f,$c,$campo){
+		if(in_array($tipo,$this->wnumber,true)){
 			$this->worksheet->write_number($f, $c, $campo);
 		}elseif(in_array($tipo,$this->wstring,true))
 			{
@@ -431,33 +433,32 @@ class XLSReporte extends writeexcel_workbookbig  {
 		}
 		return false;
 	}
-		function AddCof($field=-1,$width=-1,$caption='',$align='L', $tipo=''){//$fontsize=11
+	function AddCof($field=-1,$width=-1,$caption='',$align='L', $tipo=''){//$fontsize=11
+		if(is_array($caption))
+			$caption=implode(' ',$caption);
+		//Add a column to the table
+		if($field!=-1){
+			$correcto=false;
+			$sal=$this->_parsePattern($field);
 
-			if(is_array($caption))
-				$caption=implode(' ',$caption);
-			//Add a column to the table
-			if($field!=-1){
-				$correcto=false;
-				$sal=$this->_parsePattern($field);
-
-				if (count($sal)>0){
-					$correcto=true;
-					foreach($sal as $pasa){
-						if (!in_array($pasa, $this->DBfieldsName)){
-							$correcto=false;
-						}
+			if (count($sal)>0){
+				$correcto=true;
+				foreach($sal as $pasa){
+					if (!in_array($pasa, $this->DBfieldsName)){
+						$correcto=false;
 					}
 				}
-				if ($correcto){
-					$nname='__cC'.$this->fcount;
-					$this->cols[]=array( 'campo'=>$nname, 'titulo'=>$caption,'tipo'=>$tipo);//,'w'=>$width, 'a'=>$align,'s'=>$fontsize
-					$this->rows[]=$nname;
-					$this->fCols[$nname]=$field;
-					$this->fcount++;
-					//$this->setType($nname,'real');
-				}
+			}
+			if ($correcto){
+				$nname='__cC'.$this->fcount;
+				$this->cols[]=array( 'campo'=>$nname, 'titulo'=>$caption,'tipo'=>$tipo);//,'w'=>$width, 'a'=>$align,'s'=>$fontsize
+				$this->rows[]=$nname;
+				$this->fCols[$nname]=$field;
+				$this->fcount++;
+				//$this->setType($nname,'real');
 			}
 		}
+	}
 }
 class PDFReporte extends XLSReporte{
 	function PDFReporte($mSQL=''){
