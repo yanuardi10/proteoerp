@@ -59,18 +59,18 @@ class Scst extends Controller {
 		//$filter->fecha_recep->operator="=";
 
 		$filter->numero = new inputField("Factura", "numero");
-    $filter->numero->size=20;
+		$filter->numero->size=20;
 
 		$filter->proveedor = new inputField("Proveedor", "proveed");
 		$filter->proveedor->append($boton);
 		$filter->proveedor->db_name = "proveed";
-    $filter->proveedor->size=20;
+		$filter->proveedor->size=20;
 
 		$filter->buttons("reset","search");
 		$filter->build();
 
 		$uri = anchor('compras/scst/dataedit/show/<#control#>','<#numero#>');
-    $uri2 = anchor_popup('formatos/verhtml/COMPRA/<#numero#>',"Ver HTML",$atts);
+		$uri2 = anchor_popup('formatos/verhtml/COMPRA/<#numero#>',"Ver HTML",$atts);
 
 		$grid = new DataGrid();
 		$grid->order_by("fecha","desc");
@@ -80,9 +80,9 @@ class Scst extends Controller {
 		$grid->column("Fecha","<dbdate_to_human><#fecha#></dbdate_to_human>","align='center'");
 		$grid->column("Vence","<dbdate_to_human><#vence#></dbdate_to_human>","align='center'");
 		$grid->column("Nombre","nombre");
-		$grid->column("IVA"  ,"montoiva"  ,"align='right'");
-		$grid->column("Monto" ,"montonet" ,"align='right'");
-	  $grid->column("Vista",$uri2,"align='center'");
+		$grid->column("IVA"   ,"<nformat><#montoiva#></nformat>"  ,"align='right'");
+		$grid->column("Monto" ,"<nformat><#montonet#></nformat>" ,"align='right'");
+		$grid->column("Vista",$uri2,"align='center'");
 
 		//$grid->add("compras/agregar");
 		$grid->build();
@@ -97,10 +97,10 @@ class Scst extends Controller {
 	function dataedit(){
  		$this->rapyd->load("dataedit","datadetalle","fields","datagrid");
 
- 		$formato=$this->datasis->dameval('SELECT formato FROM cemp LIMIT 0,1');
- 		$qformato='%';
- 		for($i=1;$i<substr_count($formato, '.')+1;$i++) $qformato.='.%';
- 		$this->qformato=$qformato;
+		$formato=$this->datasis->dameval('SELECT formato FROM cemp LIMIT 0,1');
+		$qformato='%';
+		for($i=1;$i<substr_count($formato, '.')+1;$i++) $qformato.='.%';
+		$this->qformato=$qformato;
 
  		 	$modbus=array(
 			'tabla'   =>'sinv',
