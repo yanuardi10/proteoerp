@@ -38,8 +38,8 @@ class Grcl extends validaciones {
 		$filter->grupo->size=10;
 		
 		$filter->gr_desc = new inputField("Nombre","gr_desc");
-		$filter->gr_desc->size=45;		
-		
+		$filter->gr_desc->size=45;
+
 		$filter->buttons("reset","search");
 		$filter->build();
 
@@ -48,11 +48,11 @@ class Grcl extends validaciones {
 		$grid = new DataGrid("Lista de Grupos de Clientes");
 		$grid->order_by("gr_desc","asc");
 		$grid->per_page = 7;
-		$grid->column("Grupo",$uri);
-		$grid->column("Nombre","gr_desc","gr_desc");
-		$grid->column("Clase","clase");
-		$grid->column("Cuenta","cuenta");
-		$grid->add("ventas/grcl/dataedit/create");
+		$grid->column_orderby("Grupo",$uri,'grupo');
+		$grid->column_orderby("Nombre","gr_desc","gr_desc");
+		$grid->column_orderby("Clase","clase",'clase');
+		$grid->column_orderby("Cuenta","cuenta",'cuenta');
+		$grid->add("ventas/grcl/dataedit/create",'Agregar nuevo grupo');
 		$grid->build();
 
 		$data['content'] = $filter->output.$grid->output;

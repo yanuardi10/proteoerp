@@ -4,6 +4,7 @@ class Scli extends validaciones {
 	function scli(){
 		parent::Controller();
 		$this->load->library("rapyd");
+		$this->load->library("pi18n");
 		//$this->load->library("menues");
 		$this->datasis->modulo_id(131,1);
 		$this->load->database();
@@ -14,6 +15,7 @@ class Scli extends validaciones {
 	}
 
 	function filteredgrid(){
+		$this->pi18n->cargar('scli','filteredgrid');
 		$this->rapyd->load('datafilter','datagrid');
 
 		$filter = new DataFilter('Filtro de Clientes', 'scli');
@@ -38,17 +40,18 @@ class Scli extends validaciones {
 
 		$grid->column_orderby('Cliente',$uri,'cliente');
 		$grid->column_orderby('Nombre','nombre','nombre');
-		$grid->column_orderby('RIF/CI','rifci');
-		$grid->column_orderby('Contribuyente','tiva','tiva','align=\'center\'');
+		$grid->column_orderby($this->pi18n->msj('rifci','Rif/CI'),'rifci');
+		$grid->column_orderby($this->pi18n->msj('tiva','Contribuyente') ,'tiva','tiva','align=\'center\'');
 		$grid->add('ventas/scli/dataedit/create','Agregar un cliente');
 		$grid->build();
-/*
-		$data['content'] = $filter->output.$grid->output;
+
+
+		/*$data['content'] = $filter->output.$grid->output;
 		$data['title']   = "<h1>Clientes</h1>";
-		$data["head"]    = $this->rapyd->get_head();
-*/
+		$data["head"]    = $this->rapyd->get_head();*/
 
 		$data['content'] = $filter->output.$grid->output;
+		$data['content'].= $this->pi18n->fallas();
 		$data['title']   = "<h1>Clientes</h1>";
 		$data["script"]  = script("jquery.js")."\n";
 		$data["head"]    = $this->rapyd->get_head();
@@ -58,6 +61,7 @@ class Scli extends validaciones {
 	}
 
 	function dataedit(){
+		$this->pi18n->cargar('scli','dataedit');
 		$this->rapyd->load("dataedit");
 
 		$mSCLId=array(
@@ -184,7 +188,7 @@ class Scli extends validaciones {
 		$edit->grupo->maxlength = 4;
 
 		$lriffis='<a href="javascript:consulrif(\'rifci\');" title="Consultar RIF en el SENIAT" onclick="">Consultar RIF en el SENIAT</a>';
-		$edit->rifci = new inputField('RIF o Cedula de Identidad', 'rifci');
+		$edit->rifci = new inputField($this->pi18n->msj('rifci','RIF o Cedula de Identidad'), 'rifci');
 		$edit->rifci->rule = 'trim|strtoupper|required|callback_chci';
 		$edit->rifci->maxlength =13;
 		$edit->rifci->append($lriffis);
@@ -226,9 +230,11 @@ class Scli extends validaciones {
 		$edit->socio->maxlength =5;
 		$edit->socio->append($boton);
 
+
+		$arr_tiva=$this->pi18n->arr_msj('tivaarr','C=Contribuyente,N=No Contribuyente,E=Especial,R=Regimen Exento,O=Otro');
 		$edit->tiva = new dropdownField('Condici&oacute;n F&iacute;scal', 'tiva');
 		$edit->tiva->option('','Seleccionar');
-		$edit->tiva->options(array('C'=>'Contribuyente','N'=>'No Contribuyente','E'=>'Especial','R'=>'Regimen Exento','O'=>'Otro'));
+		$edit->tiva->options($arr_tiva);
 		$edit->tiva->style = 'width:140px';
 		$edit->tiva->rule='required|callback_chdfiscal';
 		$edit->tiva->group = 'Informaci&oacute;n f&iacute;scal';
@@ -326,8 +332,8 @@ class Scli extends validaciones {
 		$edit->observa->cols = 70;
 		$edit->observa->rows =3;
 
- 		$edit->mensaje = new inputField("Mensaje", "mensaje");
- 		$edit->mensaje->rule = "trim";
+		$edit->mensaje = new inputField("Mensaje", "mensaje");
+		$edit->mensaje->rule = "trim";
 		$edit->mensaje->size = 50;
 		$edit->mensaje->maxlength =40;
 
@@ -341,6 +347,7 @@ class Scli extends validaciones {
 		//</script>';
 
 		$data['content'] = $edit->output;
+		$data['content'].= $this->pi18n->fallas();
 		$data['smenu']   = $this->load->view('view_sub_menu', $smenu,true);
 		$data['title']   = "<h1>Clientes</h1>";
 		$data["head"]    = script('jquery.pack.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js').script('plugins/jquery.autocomplete.js').style('jquery.autocomplete.css').$this->rapyd->get_head();
