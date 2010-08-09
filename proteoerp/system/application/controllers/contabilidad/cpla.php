@@ -13,6 +13,7 @@ class Cpla extends Controller {
 		$filter = new DataFilter("Filtro de Plan de cuentas",'cpla');
 
 		$filter->codigo   = new inputField("C&oacute;digo","codigo");
+		$filter->codigo->like_side='after';
 		$filter->codigo->size=15;
 
 		$filter->descrip = new inputField("Descripci&oacute;n", "descrip");

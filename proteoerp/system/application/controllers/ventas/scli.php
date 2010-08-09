@@ -274,29 +274,29 @@ class Scli extends validaciones {
 		$edit->cuenta->size=20;
 		$edit->cuenta->maxlength =15;
 
-		$edit->telefono = new inputField("Tel&eacute;fonos", "telefono");
-		$edit->telefono->rule = "trim";
+		$edit->telefono = new inputField('Tel&eacute;fonos', 'telefono');
+		$edit->telefono->rule = 'trim';
 		$edit->telefono->size=30;
 		$edit->telefono->maxlength =30;
 
-		$edit->telefon2 = new inputField("Fax", "telefon2");
-		$edit->telefon2->rule = "trim";
+		$edit->telefon2 = new inputField('Fax', 'telefon2');
+		$edit->telefon2->rule = 'trim';
 		$edit->telefon2->size=25;
 		$edit->telefon2->maxlength =25;
 
-		$edit->tipo = new dropdownField("Precio Asignado", "tipo");
+		$edit->tipo = new dropdownField('Precio Asignado', 'tipo');
 		$edit->tipo->options(array("1"=> "Precio 1","2"=>"Precio 2", "3"=>"Precio 3","4"=>"Precio 4","0"=>"Inactivo"));
-		$edit->tipo->style = "width:90px";
-		$edit->tipo->group = "Informaci&oacute;n financiera";
+		$edit->tipo->style = 'width:90px';
+		$edit->tipo->group = 'Informaci&oacute;n financiera';
 
-		$edit->formap = new inputField("D&iacute;as de Cr&eacute;dito", "formap");
+		$edit->formap = new inputField('D&iacute;as de Cr&eacute;dito', 'formap');
 		$edit->formap->css_class='inputnum';
-		$edit->formap->rule="trim|integer";
+		$edit->formap->rule='trim|integer';
 		$edit->formap->maxlength =10;
 		$edit->formap->size =6;
-		$edit->formap->group = "Informaci&oacute;n financiera";
+		$edit->formap->group = 'Informaci&oacute;n financiera';
 
-		$edit->limite = new inputField("L&iacute;mite de Cr&eacute;dito", "limite");
+		$edit->limite = new inputField('L&iacute;mite de Cr&eacute;dito', 'limite');
 		$edit->limite->css_class='inputnum';
 		$edit->limite->rule='trim|numeric';
 		$edit->limite->maxlength =15;
