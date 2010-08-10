@@ -1,7 +1,6 @@
 <?php require_once(BASEPATH.'application/controllers/validaciones.php');
-
 class Provoca extends validaciones {
-	
+
 	function Provoca(){
 		parent::Controller(); 
 		$this->load->library("rapyd");
@@ -39,7 +38,7 @@ class Provoca extends validaciones {
 		$grid->column_orderby('Nombre','nombre','nombre');
 		$grid->column_orderby('Fecha' ,'<dbdate_to_human><#fecha#></dbdate_to_human>','fecha',"align='center'");
 		
-		$grid->add('finanzas/provoca/dataedit/create','Agregar un proveedor ocacional');
+		$grid->add('finanzas/provoca/dataedit/create','Agregar un proveedor ocasional');
 		$grid->build();
 	
 		$data['content'] = $filter->output.$grid->output;
@@ -61,7 +60,7 @@ class Provoca extends validaciones {
 			'filtro'  =>array('cliente'=>'C&oacute;digo Socio','nombre'=>'Nombre'),
 			'retornar'=>array('cliente'=>'socio'),
 			'titulo'  =>'Buscar Socio');
-		
+
 		$qformato=$this->qformato=$this->datasis->formato_cpla();
 		$mCPLA=array(
 			'tabla'   =>'cpla',
@@ -73,7 +72,7 @@ class Provoca extends validaciones {
 			'titulo'  =>'Buscar Cuenta',
 			'where'=>"codigo LIKE \"$qformato\"",
 			);
-		
+
 		$boton =$this->datasis->modbus($mSCLId);
 		$bcpla =$this->datasis->modbus($mCPLA);
 		
