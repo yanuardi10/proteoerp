@@ -44,7 +44,7 @@ class formatos extends validaciones {
 		$grid->per_page = 15;
 		
 		$grid->column("Nombre",    $uri);
-  	$grid->column("Proteo"   ,$uri1);
+  		$grid->column("Proteo"   ,$uri1);
 		$grid->column("DataSIS"  ,$uri2);
 		$grid->column("Harbour"  ,$uri3);
 		//$grid->column("Observa"  ,$uri4);
@@ -232,6 +232,7 @@ class formatos extends validaciones {
 		  PRIMARY KEY  (`nombre`,`modulo`)
 		) ENGINE=MyISAM DEFAULT CHARSET=latin1";
 		$this->db->simple_query($mSQL);
+		
 	}
 }
 ?>
