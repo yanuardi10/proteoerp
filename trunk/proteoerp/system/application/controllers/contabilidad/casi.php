@@ -42,12 +42,19 @@ class Casi extends Controller {
 		$filter->status->option("A","Actualizado");
 		$filter->status->option("D","Diferido");
 		
+		$filter->vdes = new checkboxField("Ver solo asientos descuadrados","vdes",'S','N');
+		$filter->vdes->insertValue='N';
+		$filter->vdes->clause='';
+		
 		$filter->buttons("reset","search");
 		$filter->build();
 		
 		$uri = anchor('contabilidad/casi/dataedit/show/<#comprob#>','<#comprob#>');
     
 		$grid = new DataGrid();
+		$vdes = $this->input->post('vdes');
+		if($vdes)
+		$grid->db->where('debe <> ',' haber ');
 		$grid->order_by("comprob","asc");
 		$grid->per_page = 15;
 		$grid->column("N&uacute;mero",$uri);
