@@ -226,6 +226,9 @@ class Exportar extends Controller {
 		$data[]=array('select' => 'cliente,nombre,grupo,gr_desc,nit,cuenta,formap,tipo,limite,socio,contacto,dire11,dire12,ciudad1,dire21,dire22,ciudad2,telefono,telefon2,zona,pais,email,vendedor,porvend,cobrador,porcobr,repre,cirepre,ciudad,separa,copias,regimen,comisio,porcomi,rifci,observa,fecha1,fecha2,tiva,clave,nomfis,riffis,mensaje,modifi',
 				'table'  =>'scli',
 				'where'  =>"modifi>=$fecha");
+
+		$data[]=array('table' => 'grcl');
+
 		$nombre='scli_'.$fecha.'_'.$this->sucu;
 		if(!array_key_exists('HTTP_USER_AGENT', $_SERVER)) $_SERVER['HTTP_USER_AGENT']='curl';
 		$this->sqlinex->exportunbufferzip($data,$nombre,$this->sucu);
