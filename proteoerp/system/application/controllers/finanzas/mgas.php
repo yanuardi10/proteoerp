@@ -49,9 +49,9 @@ class Mgas extends validaciones {
 		$grid->order_by("codigo","asc");
 		$grid->per_page = 15;
 
-		$grid->column("C&oacute;digo",$uri ,'codigo');
+		$grid->column_orderby("C&oacute;digo",$uri ,'codigo');
 		$grid->column("Tipo","tipo");
-		$grid->column("Descripci&oacute;n","descrip",'descrip');
+		$grid->column_orderby("Descripci&oacute;n","descrip",'descrip');
 		$grid->column("Grupo","grupo");
 		$grid->column("Nombre del Grupo","nom_grup");
         		
