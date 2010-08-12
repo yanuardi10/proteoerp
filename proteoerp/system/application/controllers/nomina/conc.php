@@ -154,22 +154,17 @@ class Conc extends validaciones{
 		$edit->ctade = new dropdownField("Cuenta Deudor", "ctade");
 		$edit->ctade->style ="width:400px;";
 		$edit->ctade->group="Enlase Administrativo";
-		if($edit->_status=='modify'){
-		
-		    $tipoa  =$edit->getval("tipod");
-		    if($tipod=='P'){
-					$edit->ctade->options("SELECT proveed,CONCAT_WS(' ',proveed,nombre)a FROM sprv ORDER BY proveed");
-			}else{
-				if($tipod=='G'){
-					$edit->ctade->options("SELECT codigo,CONCAT_WS(' ',codigo,descrip)a FROM mgas ORDER BY codigo");
-				}else{
-					$edit->ctade->options("SELECT cliente,CONCAT_WS(' ',proveed,nombre)a FROM sprv ORDER BY cliente");
-				}
-			}
-		}else{
-			$edit->ctade->option("","Seleccione una Deudor");
-		} 
 
+		$tipod  =$edit->getval("tipod");
+		if($tipod=='P'){
+				$edit->ctade->options("SELECT proveed,CONCAT_WS(' ',proveed,nombre)a FROM sprv ORDER BY proveed");
+		}else{
+			if($tipod=='G'){
+				$edit->ctade->options("SELECT codigo,CONCAT_WS(' ',codigo,descrip)a FROM mgas ORDER BY codigo");
+			}else{
+				$edit->ctade->options("SELECT cliente,CONCAT_WS(' ',proveed,nombre)a FROM sprv ORDER BY cliente");
+			}
+		}
 		
 		$edit->tipoa = new dropdownField ("Acreedor", "tipoa");  
 		$edit->tipoa->style ="width:100px;";
@@ -183,21 +178,17 @@ class Conc extends validaciones{
 		$edit->ctaac =   new dropdownField("Cuenta Acreedor", "ctaac"); 
 		$edit->ctaac->style ="width:400px;";     
 		$edit->ctaac->group="Enlase Administrativo";
-		if($edit->_status=='modify'){
-			$tipod  =$edit->getval("tipoa");
-			if($tipod=='P'){
-					$edit->ctaac->options("SELECT proveed,CONCAT_WS(' ',proveed,nombre)a FROM sprv ORDER BY proveed");
-			}else{
-				if($tipod=='G'){
-					$edit->ctaac->options("SELECT codigo,CONCAT_WS(' ',codigo,descrip)a FROM mgas ORDER BY codigo");
-				}else{
-					$edit->ctaac->options("SELECT cliente,CONCAT_WS(' ',proveed,nombre)a FROM sprv ORDER BY cliente");
-				}
-			}
+		$tipod  =$edit->getval("tipoa");
+		if($tipod=='P'){
+				$edit->ctaac->options("SELECT proveed,CONCAT_WS(' ',proveed,nombre)a FROM sprv ORDER BY proveed");
 		}else{
-			$edit->ctaac->option("","Seleccione un Acreedor");
+			if($tipod=='G'){
+				$edit->ctaac->options("SELECT codigo,CONCAT_WS(' ',codigo,descrip)a FROM mgas ORDER BY codigo");
+			}else{
+				$edit->ctaac->options("SELECT cliente,CONCAT_WS(' ',proveed,nombre)a FROM sprv ORDER BY cliente");
+			}
 		}
-		
+			
 		$edit->aplica =   new dropdownField("Aplica para liquidacion", "liquida"); 
 		$edit->aplica->style ="width:50px;";     
 		$edit->aplica->option("S","S");
