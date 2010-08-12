@@ -33,6 +33,9 @@ class Mgas extends validaciones {
 		$filter->codigo = new inputField("C&oacute;digo", "codigo");
 		$filter->codigo->size=20;
 		
+		$filter->descrip = new inputField("Descripci&oacute;n", "descrip");
+		$filter->descrip->size=20;
+		
 		$filter->grupo = new inputField("Grupo", "grupo");
 		$filter->grupo->size=20;
 		$filter->grupo->append($boton);
