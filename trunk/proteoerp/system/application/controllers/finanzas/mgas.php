@@ -123,7 +123,7 @@ class Mgas extends validaciones {
 		
 		$edit->descrip= new inputField("Descripci&oacute;n", "descrip");
 		$edit->descrip->size = 35;
-		$edit->descrip->readonly=true;
+		//$edit->descrip->readonly=true;
 		
 		$edit->tipo= new dropdownField("Tipo", "tipo");		
 		$edit->tipo->style ="width:100px;";
