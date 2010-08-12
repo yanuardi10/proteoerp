@@ -498,7 +498,7 @@ class PDFReporte extends Fpdf {
 			if($one){ $one=false;
 				foreach($this->grupo as $fila) $bache[$fila]=$row[$fila];
 				$this->GroupTableHeader($row,1);
-			};
+			}
 			if($this->cgrupo) $cambio=$this->grupoCambio($bache,$row);
 
 			if($cambio){
@@ -548,10 +548,11 @@ class PDFReporte extends Fpdf {
 						}
 						$rgtotal[$key] =number_format($gtotal[$key], 2, ',', '.');
 						if (in_array($key, $this->Acumulador)){
-							if($this->cgrupo)
-								$row[$key]=$stotal[$u-1][$key];//$gtotal[$key];
-							else
-								$row[$key]=$gtotal[$key];//$gtotal[$key];
+							if($this->cgrupo){
+								$row[$key]=$stotal[0][$key];
+							}else{
+								$row[$key]=$gtotal[$key];
+							}
 						}
 					}else{
 						$total[$key]=$gtotal[$key]=$rtotal[$key]=$rgtotal[$key]=' ';
@@ -559,7 +560,6 @@ class PDFReporte extends Fpdf {
 						for($u=0;$u<$cangrup;$u++){
 							$stotal[$u][$key]=$rstotal[$u][$key]=' ';
 						}
-						//if (in_array($key, $this->Acumulador)) $row[$key]=' ';
 					}
 				}
 
