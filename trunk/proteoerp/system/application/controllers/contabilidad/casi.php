@@ -54,7 +54,7 @@ class Casi extends Controller {
 		$grid = new DataGrid();
 		$vdes = $this->input->post('vdes');
 		if($vdes)
-		$grid->db->where('debe <> ',' haber ');
+		$grid->db->where('(debe-haber) <>',0);
 		$grid->order_by("comprob","asc");
 		$grid->per_page = 15;
 		$grid->column("N&uacute;mero",$uri);
