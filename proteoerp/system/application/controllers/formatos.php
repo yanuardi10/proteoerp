@@ -59,6 +59,8 @@ class Formatos extends Controller{
 		$this->db->simple_query($mSQL);
 		$mSQL="ALTER TABLE `formatos` ADD `harbour` TEXT NULL AFTER `proteo`";
 		$this->db->simple_query($mSQL);
+		$mSQL="ALTER TABLE `formatos`  ADD COLUMN `tcpdf` TEXT NULL AFTER `forma`";
+		$this->db->simple_query($mSQL);
 	}
 }
 ?>
