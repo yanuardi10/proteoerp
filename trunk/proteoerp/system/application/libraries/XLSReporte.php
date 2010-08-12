@@ -204,7 +204,7 @@ class XLSReporte extends writeexcel_workbookbig  {
 						//if (in_array($campo, $this->Acumulador)) $row[$campo]=$stotal[$u-1][$campo];
 						if (in_array($campo, $this->Acumulador)){
 							if($this->cgrupo)
-								$row[$campo]=$stotal[$u-1][$campo];
+								$row[$campo]=$stotal[0][$campo];
 							else
 								$row[$campo]=$gtotal[$campo];
 						}
