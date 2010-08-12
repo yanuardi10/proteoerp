@@ -49,11 +49,11 @@ class Mgas extends validaciones {
 		$grid->order_by("codigo","asc");
 		$grid->per_page = 15;
 
-		$grid->column("C&oacute;digo",$uri );
+		$grid->column("C&oacute;digo",$uri ,'codigo');
 		$grid->column("Tipo","tipo");
-		$grid->column("Descripci&oacute;n","descrip");
-    $grid->column("Grupo","grupo");
-    $grid->column("Nombre del Grupo","nom_grup");
+		$grid->column("Descripci&oacute;n","descrip",'descrip');
+		$grid->column("Grupo","grupo");
+		$grid->column("Nombre del Grupo","nom_grup");
         		
 		$grid->add("finanzas/mgas/dataedit/create");
 		$grid->build();
