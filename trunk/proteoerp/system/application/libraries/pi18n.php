@@ -19,7 +19,7 @@ class pi18n{
 			  PRIMARY KEY (`id`),
 			  UNIQUE KEY `Index 2` (`modulo`,`metodo`,`pais`,`campo`)
 			) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
-			$this->db->simple_query($mSQL);
+			$this->ci->db->simple_query($mSQL);
 		}
 	}
 
