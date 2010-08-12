@@ -33,7 +33,7 @@ class Conc extends validaciones{
 		$grid->order_by("concepto","asc");
 		$grid->per_page = 20;
 
-		$grid->column("Concepto",$uri);
+		$grid->column_orderby("Concepto",$uri,'concepto');
 		$grid->column("Tipo","tipo");
 		$grid->column("Descripci&oacute;n","descrip");
 		$grid->column("Tipoa","tipoa");
@@ -141,35 +141,8 @@ class Conc extends validaciones{
 		$edit->contra->group="Enlase Contable";
 		$edit->contra->rule='callback_chcuentac';
 		$edit->contra->append($bcontra);
-			
-		$edit->tipoa = new dropdownField ("Deudor ", "tipoa");  
-		$edit->tipoa->style ="width:100px;";
-		$edit->tipoa->option(" "," "); 
-		$edit->tipoa->option("G","Gasto");    
-		$edit->tipoa->option("C","Cliente");  
-		$edit->tipoa->option("P","Proveedor");
-		$edit->tipoa->group="Enlase Administrativo";
-		$edit->tipoa->onchange = "get_ctade();";
-
-		$edit->ctade = new dropdownField("ctade", "ctade");
-		$edit->ctade->style ="width:400px;";
-		$edit->ctade->group="Enlase Administrativo";
-		if($edit->_status=='modify'){
-			$tipoa  =$edit->getval("tipoa");
-			if($tipoa=='P'){
-					$edit->ctade->options("SELECT proveed,nombre FROM sprv ORDER BY proveed");
-			}else{
-				if($tipoa=='G'){
-					$edit->ctade->options("SELECT codigo,descrip FROM mgas ORDER BY codigo");
-				}else{
-					$edit->ctade->options("SELECT cliente,nombre FROM sprv ORDER BY cliente");
-				}
-			}
-		}else{
-			$edit->ctade->option("","Seleccione una Deudor");
-		}
-			  
-		$edit->tipod = new dropdownField ("Acreedor", "tipod");
+		
+		$edit->tipod = new dropdownField ("Deudor", "tipod");
 		$edit->tipod->style ="width:100px;";
 		$edit->tipod->option(" "," "); 
 		$edit->tipod->option("G","Gasto");
@@ -177,19 +150,48 @@ class Conc extends validaciones{
 		$edit->tipod->option("P","Proveedor");
 		$edit->tipod->onchange = "get_ctaac();";
 		$edit->tipod->group="Enlase Administrativo";
+
+		$edit->ctade = new dropdownField("Cuenta Deudor", "ctade");
+		$edit->ctade->style ="width:400px;";
+		$edit->ctade->group="Enlase Administrativo";
+		if($edit->_status=='modify'){
 		
-		$edit->ctaac =   new dropdownField("ctaac", "ctaac"); 
+		    $tipoa  =$edit->getval("tipod");
+		    if($tipod=='P'){
+					$edit->ctade->options("SELECT proveed,CONCAT_WS(' ',proveed,nombre)a FROM sprv ORDER BY proveed");
+			}else{
+				if($tipod=='G'){
+					$edit->ctade->options("SELECT codigo,CONCAT_WS(' ',codigo,descrip)a FROM mgas ORDER BY codigo");
+				}else{
+					$edit->ctade->options("SELECT cliente,CONCAT_WS(' ',proveed,nombre)a FROM sprv ORDER BY cliente");
+				}
+			}
+		}else{
+			$edit->ctade->option("","Seleccione una Deudor");
+		} 
+
+		
+		$edit->tipoa = new dropdownField ("Acreedor", "tipoa");  
+		$edit->tipoa->style ="width:100px;";
+		$edit->tipoa->option(" "," "); 
+		$edit->tipoa->option("G","Gasto");    
+		$edit->tipoa->option("C","Cliente");  
+		$edit->tipoa->option("P","Proveedor");
+		$edit->tipoa->group="Enlase Administrativo";
+		$edit->tipoa->onchange = "get_ctade();";
+		
+		$edit->ctaac =   new dropdownField("Cuenta Acreedor", "ctaac"); 
 		$edit->ctaac->style ="width:400px;";     
 		$edit->ctaac->group="Enlase Administrativo";
 		if($edit->_status=='modify'){
-			$tipod  =$edit->getval("tipod");
+			$tipod  =$edit->getval("tipoa");
 			if($tipod=='P'){
-					$edit->ctaac->options("SELECT proveed,nombre FROM sprv ORDER BY proveed");
+					$edit->ctaac->options("SELECT proveed,CONCAT_WS(' ',proveed,nombre)a FROM sprv ORDER BY proveed");
 			}else{
 				if($tipod=='G'){
-					$edit->ctaac->options("SELECT codigo,descrip FROM mgas ORDER BY codigo");
+					$edit->ctaac->options("SELECT codigo,CONCAT_WS(' ',codigo,descrip)a FROM mgas ORDER BY codigo");
 				}else{
-					$edit->ctaac->options("SELECT cliente,nombre FROM sprv ORDER BY cliente");
+					$edit->ctaac->options("SELECT cliente,CONCAT_WS(' ',proveed,nombre)a FROM sprv ORDER BY cliente");
 				}
 			}
 		}else{
