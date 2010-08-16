@@ -1,13 +1,13 @@
 <?php
 
-class sinvfot extends Controller {
+class gfotos extends Controller {
 
-	function sinvfot(){
+	function gfotos(){
 		parent::Controller();
 		$this->load->library("rapyd");
 	}
 	function index(){
-		redirect("inventario/sinvfot/filteredgrid");
+		redirect("inventario/gfotos/filteredgrid");
 	}
 
 
@@ -289,8 +289,8 @@ class sinvfot extends Controller {
 		$tabla="";
 
 		if($this->rapyd->uri->is_set("search")  AND $filter->is_valid()){
-			echo "=>".$this->db->last_query()."epale";
-		
+			//echo "=>".$filter->db->last_query()."epale";
+			
 			function asigna($numero){
 
 				$data = array(
@@ -335,11 +335,11 @@ class sinvfot extends Controller {
 				$grid->column("Descripci&oacute;n","descrip");
 				$grid->column("Accio&oacute;n"   ,"<asigna><#codigo#></asigna>"                ,"align='right'" );
 				$grid->build();
-				//echo $grid->db->last_query();
+				echo $this->db->last_query();
 				$data = array(
 			  'name'    => "consul",
 			  'id'      => "consul",
-			  'value'   => $grid->db->last_query(),
+			  'value'   => $this->db->last_query(),
 			  'checked' => TRUE,
 				);
 				form_checkbox($data);
