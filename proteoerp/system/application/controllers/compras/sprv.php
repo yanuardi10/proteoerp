@@ -8,10 +8,11 @@ class Sprv extends validaciones {
 		//I use THISFILE, instead __FILE__ to prevent some documented php-bugs with higlight_syntax()&__FILE__
 		define ("THISFILE",   APPPATH."controllers/compras/". $this->uri->segment(2).EXT);
 	}
+
 	function index(){
 		redirect("compras/sprv/filteredgrid");
 	}
-	
+
 	function filteredgrid(){
 
 		$this->rapyd->load('datafilter','datagrid');
@@ -30,6 +31,10 @@ class Sprv extends validaciones {
 		$filter->rif->size=13;
 		$filter->rif->maxlength=12;
 
+		$filter->cuenta = new inputField('Cuenta contable', 'cuenta');
+		$filter->cuenta->size=13;
+		$filter->cuenta->like_side='after';
+
 		$filter->buttons('reset','search');
 		$filter->build();
 
@@ -43,6 +48,7 @@ class Sprv extends validaciones {
 		$grid->column_orderby('Nombre','nombre','nombre');
 		$grid->column_orderby('R.I.F.','rif','rif');
 		$grid->column_orderby('% Ret.','reteiva','reteiva','align=\'right\'');
+		$grid->column_orderby('Cuenta','cuenta','cuenta','align=\'right\'');
 
 		$grid->add('compras/sprv/dataedit/create','Agregar un proveedor');
 		$grid->build();
@@ -350,10 +356,11 @@ class Sprv extends validaciones {
 				$this->validation->set_message('chexiste',"El rif $rif ya existe para el proveedor $nombre");
 				return FALSE;
 			}else {
-  			return TRUE;
-  		}
+				return TRUE;
+			}
 		}
 	}
+
 	function _pre_insert($do){
 		$rif=$do->get('rif');
 		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM sprv WHERE rif='$rif'");
@@ -362,12 +369,14 @@ class Sprv extends validaciones {
 			$do->error_message_ar['pre_insert'] = $do->error_message_ar['insert']='bobo';
 			return FALSE;
 		}else {
-  		return TRUE;
+		return TRUE;
 		}
 	}
+
 	function update(){
 		$mSQL=$this->db->query('UPDATE sprv SET reteiva=75 WHERE reteiva<>100');
 	}
+
 	function uproveed(){
 		$consulproveed=$this->datasis->dameval('SELECT MAX(proveed) FROM sprv');
 		echo $consulproveed;

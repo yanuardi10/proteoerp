@@ -25,6 +25,9 @@ class Scli extends validaciones {
 
 		$filter->nombre= new inputField('Nombre','nombre');
 
+		$filter->cuenta= new inputField('Cuenta Contable','cuenta');
+		$filter->cuenta->like_side='after';
+
 		$filter->grupo = new dropdownField('Grupo', 'grupo');
 		$filter->grupo->option('','Todos');
 		$filter->grupo->options('SELECT grupo, gr_desc FROM grcl ORDER BY gr_desc');
