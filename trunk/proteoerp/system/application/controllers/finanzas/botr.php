@@ -20,6 +20,10 @@ class botr extends validaciones {
 		$filter->codigo = new inputField('C&oacute;digo', 'codigo');
 		$filter->codigo->size=15;
 
+		$filter->cuenta  = new inputField('Cuenta','cuenta');
+		$filter->cuenta->like_side='after';
+		$filter->cuenta->size=15;
+
 		$filter->buttons('reset','search');
 		$filter->build();
 
@@ -39,7 +43,7 @@ class botr extends validaciones {
 		$grid->build();
 
 		$data['content'] = $filter->output.$grid->output;
-		$data['title']   = '<h2>Otros Conceptos Contables</h2>';
+		$data['title']   = '<h1>Otros Conceptos Contables</h1>';
 		$data["head"]    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
@@ -114,7 +118,7 @@ class botr extends validaciones {
 		$edit->build();
  
 		$data['content'] = $edit->output;
-		$data['title']   = '<h2>Otros Conceptos Contables</h2>';
+		$data['title']   = '<h1>Otros Conceptos Contables</h1>';
 		$data["head"]    = script('jquery.pack.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js').script('plugins/jquery.autocomplete.js').style('jquery.autocomplete.css').$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);  
 	}
