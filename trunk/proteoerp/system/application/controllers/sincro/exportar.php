@@ -306,8 +306,6 @@ class Exportar extends Controller {
 		if(!array_key_exists('HTTP_USER_AGENT', $_SERVER)) $_SERVER['HTTP_USER_AGENT']='curl';
 		$this->sqlinex->exportunbufferzip($data,$nombre,$this->sucu);
 	}
-
-
 	function _fiscalz($fecha,$opt=null){
 		set_time_limit(600);
 		$this->load->library("sqlinex");

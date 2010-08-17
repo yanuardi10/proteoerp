@@ -43,7 +43,7 @@ class Rpcserver extends Controller {
 		$parameters = $request->output_parameters();
 		$fechad=$parameters['0'];
 		
-		$query = $this->db->query("SELECT id,padre,pertenece,prioridad,usuario,contenido,estampa,actualizado,estado FROM tiket WHERE estampa>='$fechad' AND estampa<=NOW() AND usuario<>'TRANF'");
+		$query = $this->db->query("SELECT id,padre,pertenece,prioridad,usuario,contenido,estampa,actualizado,estado FROM tiket WHERE estampa>'$fechad' AND estampa<=NOW() AND usuario<>'TRANF'");
 		//$query = $this->db->query("SELECT id,padre,pertenece,prioridad,usuario,contenido,estampa,actualizado,estado FROM tiket LIMIT 3");
 		
 		$tiket=array();
