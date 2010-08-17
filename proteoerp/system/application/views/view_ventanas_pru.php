@@ -12,15 +12,15 @@
 	display: block;
 	padding: 5px;
 	border: 2px solid #D0D0D0;
-	background-color: #FDF4E1;
+	background-color: #FDFdFD;
 }
 <?php } else{?>
 	#caja {
 	width: 100%;
 	display: block;
 	padding: 5px;
-	border: 2px solid #D0D0D0;
-	background-color: #FDF4E1;
+	border: 2px solid #D0D0D1;
+	background-color: #FFFFFF;
 }	
 <?php }?>
 #mostrar {
