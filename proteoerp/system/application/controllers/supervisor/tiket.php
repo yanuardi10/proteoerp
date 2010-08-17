@@ -253,40 +253,33 @@ class Tiket extends Controller {
 	}
 
 	function traertiket($codigoc=null){
-		$this->datasis->modulo_id($this->modulo,1);
-		$this->load->helper('url');
+		//$this->datasis->modulo_id($this->modulo,1);
+		//$this->load->helper('url');
 		if(empty($codigoc)){
-			$host=$this->db->query("SELECT cliente,CONCAT_WS('/',url,sistema) AS valor,id FROM tiketconec");
+			$where='';
 		}else{
-			$host=$this->db->query("SELECT cliente,CONCAT_WS('/',url,sistema) AS valor,id FROM tiketconec WHERE cliente='$codigoc'");
+			$where="WHERE cliente=".$this->db->escape($codigoc);
 		}
-		$row = $host->row();
+		$mSQL="SELECT cliente,url,sistema,phtml,id FROM tiketconec ".$where;
+		$host=$this->db->query($mSQL);
 		foreach($host->result() as  $row){
-
-			$valor=$row->valor;
+			
+			if(!empty($row->sistema)) $ruta=trim_slashes($row->sistema.'/rpcserver'); else $ruta='rpcserver';
+			if(!empty($row->phtml))   $url=trim_slashes($row->url).':'.$row->phtml ; else $url=trim_slashes($row->url);
 			$sucursal=$row->id;
 			$cliente=$row->cliente;
-
-			$server_url = "$valor/rpcserver";
-			//$server_url =reduce_double_slashes($server_url);
+			
+			$server_url =$url.'/'.reduce_double_slashes($ruta);
 
 			//$server_url = site_url('rpcserver');
-			echo '<pre>';
-			echo $server_url.' ';
+			echo '<pre>'."\n";
+			echo '('.$row->cliente.')-'.$server_url."\n";
 
-			$fechad=$this->datasis->dameval("SELECT MAX(a.estampa) FROM tiketc AS a JOIN tiketconec   AS b  ON a.sucursal=b.id  WHERE b.cliente='$cliente'");
-			if(empty($fechad))$fechad=date("Ymd");
+			$fechad=$this->datasis->dameval('SELECT MAX(a.estampa) FROM tiketc AS a JOIN tiketconec AS b  ON a.sucursal=b.id  WHERE b.cliente='.$this->db->escape($cliente));
+			if(empty($fechad)) $fechad=date('Ymd');
 			echo $this->_traeticketrpc($server_url,array($fechad),$row->id);
-			echo '</pre>';
+			echo '</pre>'."\n";
 		}
-	}
-
-	function prueb(){
-		//$this->datasis->modulo_id($this->modulo,1);
-		$this->load->helper('url');
-		$server_url = site_url('rpcserver');
-		$server_url = "http://192.168.0.143".$server_url;
-		echo $this->_traeticketrpc($server_url,array('20100312'),'PRUEBA');
 	}
 
 
