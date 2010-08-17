@@ -526,24 +526,22 @@ script;
 		}	
 	} 
 	function instalar(){
-		
-
 		$mSQL1="ALTER TABLE `pers` ADD `email` VARCHAR(50) NULL";
-		$this->db->query($mSQL1);
+		$this->db->simple_query($mSQL1);
 		$mSQL3="ALTER TABLE `pers` ADD`tipoe` VARCHAR(10)";
-		$this->db->query($mSQL3);
+		$this->db->simple_query($mSQL3);
 		$mSQL4="ALTER TABLE `pers` ADD `escritura` VARCHAR(25),ADD `rif` VARCHAR(15)";
-		$this->db->query($mSQL4);
+		$this->db->simple_query($mSQL4);
 		$mSQL5="ALTER TABLE `pers` ADD `observa` TEXT ";
-		$this->db->query($mSQL5);
+		$this->db->simple_query($mSQL5);
 		$mSQL6="CREATE TABLE tipot(codigo int(10) unsigned NOT NULL AUTO_INCREMENT,	`tipo` varchar(50) DEFAULT NULL,PRIMARY KEY (`codigo`) )";
- 		$this->db->query($mSQL6);	 
- 		$mSQL7="CREATE TABLE `posicion`(`codigo` varchar(10) NOT NULL,`posicion` varchar(30) DEFAULT NULL,PRIMARY KEY (`codigo`))";
-    $this->db->query($mSQL7);
+ 		$this->db->simple_query($mSQL6);	 
+		$mSQL7="CREATE TABLE `posicion`(`codigo` varchar(10) NOT NULL,`posicion` varchar(30) DEFAULT NULL,PRIMARY KEY (`codigo`))";
+		$this->db->simple_query($mSQL7);
 		$mSQL8="CREATE TABLE `tipoe` (`codigo` varchar(10) NOT NULL DEFAULT '', `tipo` varchar(50) DEFAULT NULL, PRIMARY KEY (`codigo`))"; 
-		$this->db->query($mSQL8);
+		$this->db->simple_query($mSQL8);
 		$mSQL9="ALTER TABLE pers`datasis` ADD COLUMN `turno` CHAR(2) NULL,ADD COLUMN `horame` VARCHAR(10),ADD COLUMN `horams` VARCHAR(10),ADD COLUMN `horate` VARCHAR(10),ADD COLUMN `horats` VARCHAR(10)";
-    $this->db->query($mSQL9);
+		$this->db->simple_query($mSQL9);
 	}
 }
 ?>

@@ -230,9 +230,9 @@ class Horarios extends Controller {
 		ROW_FORMAT=DEFAULT		
 		";
 		
-		echo $this->db->query($query);
+		echo $this->db->simple_query($query);
 		$query="ALTER TABLE `pers`  ADD COLUMN `horario` CHAR(4) NULL DEFAULT NULL";
-		echo $this->db->query($query);
+		echo $this->db->simple_query($query);
 	
 	}
 }
