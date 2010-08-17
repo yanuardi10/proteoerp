@@ -60,7 +60,7 @@ class Forma extends Controller{
 		$this->config($t);
 		$this->cuerpo($t,$o);
 	}
-
+	
 	function config($obj){
 		eval($this->codigo['config']);
 	}
