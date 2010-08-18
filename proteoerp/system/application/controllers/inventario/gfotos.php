@@ -19,7 +19,7 @@ class gfotos extends Controller {
 		$link2=site_url('inventario/common/get_linea');
 		$link3=site_url('inventario/common/get_grupo');
 		$link4=site_url('inventario/gfotos/tabla');
-		$link5=site_url('inventario/gfotos/');
+		$link5=site_url();
 
 
 		$script='
@@ -83,15 +83,15 @@ class gfotos extends Controller {
 
 		$filter->script($script);
 
-		$filter->tipo = new dropdownField("Tipo", "tipo");
-		$filter->tipo->db_name=("a.tipo");
-		$filter->tipo->option("","Todos");
-		$filter->tipo->option("Articulo","Art&iacute;culo");
-		$filter->tipo->option("Servicio","Servicio");
-		$filter->tipo->option("Descartar","Descartar");
-		$filter->tipo->option("Consumo","Consumo");
-		$filter->tipo->option("Fraccion","Fracci&oacute;n");
-		$filter->tipo ->style='width:220px;';
+//		$filter->tipo = new dropdownField("Tipo", "tipo");
+//		$filter->tipo->db_name=("a.tipo");
+//		$filter->tipo->option("","Todos");
+//		$filter->tipo->option("Articulo","Art&iacute;culo");
+//		$filter->tipo->option("Servicio","Servicio");
+//		$filter->tipo->option("Descartar","Descartar");
+//		$filter->tipo->option("Consumo","Consumo");
+//		$filter->tipo->option("Fraccion","Fracci&oacute;n");
+//		$filter->tipo ->style='width:220px;';
 
 
 		$filter->depto = new dropdownField("Departamento","depto");
@@ -133,7 +133,7 @@ class gfotos extends Controller {
 		$tabla="";
 
 		if($this->rapyd->uri->is_set("search")  AND $filter->is_valid()){
-			$tabla=form_open("forma/ver/catalogo");
+			$tabla=form_open("forma/ver/catalogo2");
 			
 			$grid = new DataGrid("Lista de Art&iacute;culos Para el Catalogo");
 //				$grid->db->select("a.tipo AS tipo,a.id as id,a.codigo as codigo,a.descrip,precio1,
@@ -195,7 +195,7 @@ class gfotos extends Controller {
 		$data['filtro']=$filter->output;
 		$data['tabla']=$tabla;
 		$data['smenu'] = $back;//.$grid->output;
-		$data['title']   = "<big>Genera Catalogo</big>";
+		$data['title']   = "Genera Catalogo";
 		$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").script("sinvmaes2.js").$this->rapyd->get_head();
 		$this->load->view('view_ventanas_pru', $data);
 	}
