@@ -53,10 +53,10 @@ class Forma extends Controller{
 			}
 		}
 			
-		$this->load->library("infor_pdf");
+		$this->load->library("pdf");
 
-		$o = new infor_pdf;
-		$t = new infor_pdf;
+		$o = new pdf;
+		$t = new pdf;
 		$this->config($t);
 		$this->cuerpo($t,$o);
 	}
