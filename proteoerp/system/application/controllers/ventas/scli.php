@@ -43,8 +43,9 @@ class Scli extends validaciones {
 
 		$grid->column_orderby('Cliente',$uri,'cliente');
 		$grid->column_orderby('Nombre','nombre','nombre');
-		$grid->column_orderby($this->pi18n->msj('rifci','Rif/CI'),'rifci');
+		$grid->column_orderby($this->pi18n->msj('rifci','Rif/CI'),'rifci','rifci');
 		$grid->column_orderby($this->pi18n->msj('tiva','Contribuyente') ,'tiva','tiva','align=\'center\'');
+		$grid->column_orderby('Cuenta','cuenta','cuenta');
 		$grid->add('ventas/scli/dataedit/create','Agregar un cliente');
 		$grid->build();
 
