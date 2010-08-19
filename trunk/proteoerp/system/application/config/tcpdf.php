@@ -24,7 +24,7 @@
 	 * ADD TRAILING SLASH!
 	 ***********************************************************/
 	
-	$tcpdf['base_directory'] = APPPATH.'3rdparty/tcpdf/';
+	$tcpdf['base_directory'] = APPPATH.'libraries/tcpdf/';
 	
 	
 	/************************************************************

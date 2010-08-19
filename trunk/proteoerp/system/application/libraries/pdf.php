@@ -6,8 +6,8 @@ if(!defined('K_TCPDF_EXTERNAL_CONFIG')) {
 }
 	
 # include TCPDF
-require(APPPATH.'config/tcpdf'.EXT);
-require_once($tcpdf['base_directory'].'/tcpdf.php');
+//require(APPPATH.'config/tcpdf'.EXT);
+require_once('tcpdf/tcpdf.php');
 
 
 
@@ -19,8 +19,7 @@ require_once($tcpdf['base_directory'].'/tcpdf.php');
  * @version 1.0
  * @package tcpdf_ci
  ***********************************************************/
-class pdf extends TCPDF {
-	
+class pdf extends TCPDF {	
 	
 	/**
 	 * TCPDF system constants that map to settings in our config file

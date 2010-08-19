@@ -83,17 +83,6 @@ class gfotos extends Controller {
 
 		$filter->script($script);
 
-//		$filter->tipo = new dropdownField("Tipo", "tipo");
-//		$filter->tipo->db_name=("a.tipo");
-//		$filter->tipo->option("","Todos");
-//		$filter->tipo->option("Articulo","Art&iacute;culo");
-//		$filter->tipo->option("Servicio","Servicio");
-//		$filter->tipo->option("Descartar","Descartar");
-//		$filter->tipo->option("Consumo","Consumo");
-//		$filter->tipo->option("Fraccion","Fracci&oacute;n");
-//		$filter->tipo ->style='width:220px;';
-
-
 		$filter->depto = new dropdownField("Departamento","depto");
 		$filter->depto->db_name="d.depto";
 		$filter->depto->option("","Seleccione un Departamento");
