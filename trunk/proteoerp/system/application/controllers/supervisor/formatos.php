@@ -38,6 +38,8 @@ class formatos extends validaciones {
 		$uri2 = anchor('supervisor/formatos/rdatasis/modify/<#nombre#>/','Editar');
 		$uri3 = anchor('supervisor/formatos/rharbour/modify/<#nombre#>/','Editar');
 		$uri4 = anchor('supervisor/formatos/observa/modify/<#nombre#>/','Editar');
+		$uri5 = anchor('supervisor/formatos/rtcpdf/modify/<#nombre#>/','Editar');
+
 		
 		$grid = new DataGrid("Lista de Menu de Formatos");
 		$grid->order_by("nombre","asc");
@@ -47,6 +49,8 @@ class formatos extends validaciones {
   		$grid->column("Proteo"   ,$uri1);
 		$grid->column("DataSIS"  ,$uri2);
 		$grid->column("Harbour"  ,$uri3);
+		$grid->column("TCPDF"    ,$uri5);
+
 		//$grid->column("Observa"  ,$uri4);
 		//$grid->column("Ejecutar" ,$uri4);
 								
@@ -126,6 +130,27 @@ class formatos extends validaciones {
 		$this->load->view('view_ventanas_sola', $data);  
 	}
 	
+	function rtcpdf($status,$nombre){
+                $this->rapyd->load("dataedit");
+
+                $edit = new DataEdit('Editar TCPDF', "formatos");
+                $edit->back_url = site_url("supervisor/formatos/filteredgrid");
+
+                //highlight_string()
+                $edit->tcpdf= new textareaField("", "tcpdf");
+                $edit->tcpdf->rows =30;
+                $edit->tcpdf->cols=120;
+
+                $edit->buttons("modify", "save", "undo", "delete", "back");
+                $edit->build();
+
+                $data['content'] = $edit->output;
+                $data['title']   = "<h1>Reporte TCPDF</h1>";
+                $data["head"]    = $this->rapyd->get_head();
+                $this->load->view('view_ventanas_sola', $data);
+        }	
+
+
 	function rdatasis(){
 		$nombre=$this->uri->segment(5);
 		$this->rapyd->load("dataedit");
