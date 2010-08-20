@@ -74,6 +74,7 @@ class repomenu extends validaciones  {
 		$uri1 = anchor('supervisor/repomenu/reporte/modify/<#alternativo#>/' ,'Editar');
 		$uri2 = anchor('supervisor/repomenu/rdatasis/modify/<#alternativo#>/','Editar');
 		$uri3 = anchor('supervisor/repomenu/rharbour/modify/<#alternativo#>/','Editar');
+		$uri5 = anchor('supervisor/repomenu/rtcpdf/modify/<#alternativo#>/','Editar');
 		
 		$atts = array(
 		  'width'      => '800',
@@ -100,6 +101,7 @@ class repomenu extends validaciones  {
 		$grid->column("Proteo"   ,$uri1);
 		$grid->column("DataSIS"  ,$uri2);
 		$grid->column("Harbour"  ,$uri3);
+		$grid->column("TCPDF"    ,$uri5);
 		$grid->column("Ejecutar" ,$uri4);
 								
 		$grid->add("supervisor/repomenu/dataedit/create");
@@ -194,6 +196,26 @@ class repomenu extends validaciones  {
 
 		$data['content'] = $edit->output;           
 		$data['title']   = "<h1>Reporte Proteo</h1>";        
+		$data["head"]    = $this->rapyd->get_head();
+		$this->load->view('view_ventanas_sola', $data);  
+	}
+
+	function rtcpdf($status,$nombre){
+		$this->rapyd->load("dataedit");
+		
+		$edit = new DataEdit('Editar TCPDF', "reportes");
+		$edit->back_url = site_url("supervisor/repomenu/filteredgrid");
+		
+		//highlight_string()
+		$edit->tcpdf= new textareaField("", "tcpdf");
+		$edit->tcpdf->rows =30;
+		$edit->tcpdf->cols=120;
+
+		$edit->buttons("modify", "save", "undo", "delete", "back");
+		$edit->build();
+
+		$data['content'] = $edit->output;           
+		$data['title']   = "<h1>Reporte TCPDF</h1>";        
 		$data["head"]    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas_sola', $data);  
 	}
