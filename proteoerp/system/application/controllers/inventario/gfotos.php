@@ -164,17 +164,14 @@ class gfotos extends Controller {
 			$grid->build();
 	
 			$consul=$this->db->last_query();
-			$options = array(
-                  'D'  => 'DESCARGAR',
-                  'I'    => 'VER',
-                );
+//			$options = array(
+//                  'D'  => 'DESCARGAR',
+//                  'I'    => 'VER',
+//                );
 
-			$shirts_on_sale = array('small', 'large');
-
-			
-			
 			$tabla.=form_hidden('consul', $consul);
-			$tabla.=$grid->output.form_dropdown('opcion', $options, 'D').form_submit('mysubmit', 'Generar');
+			//$tabla.=$grid->output.form_dropdown('opcion', $options, 'D').form_submit('mysubmit', 'Generar');
+			$tabla.=$grid->output.form_submit('mysubmit', 'Generar');
 			$tabla.=form_close();
 			
 		}
