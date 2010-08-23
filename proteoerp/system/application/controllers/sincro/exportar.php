@@ -179,7 +179,7 @@ class Exportar extends Controller {
 				'distinc'=>false,
 				'table'  =>'sfpa',
 				//'where'  =>"fecha = $fecha AND MID(numero,1,$cant)=$pre_caja AND tipo_doc IN ('FE','DE','AN')");
-				'where'  =>"fecha >= $fecha AND MID(numero,1,$cant)=$pre_caja");
+				'where'  =>"fecha >= $fecha AND MID(transac,1,$cant)=$pre_caja");
 		/*$data[]=array('distinc'=>false,
 				'table'  =>'fiscalz',
 				'where'  =>"fecha >= $fecha");*/
