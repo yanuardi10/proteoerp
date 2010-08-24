@@ -26,7 +26,7 @@ class Mantenimiento extends Controller{
 		$data['title']   = '<h1>Mantenimiento</h1>';
 		$this->load->view('view_ventanas', $data);
 	}
-	
+
 	function reparatabla(){
 		$this->load->dbutil();
 		$tables = $this->db->list_tables();
@@ -35,8 +35,7 @@ class Mantenimiento extends Controller{
 		} 
 		redirect('supervisor/mantenimiento');
 	}
-	
-	
+
 	function bprefac(){
 		$mSQL="DELETE FROM sitems WHERE MID(numa,1,1)='_' AND fecha<CURDATE()";
 		$this->db->simple_query($mSQL);
@@ -44,13 +43,13 @@ class Mantenimiento extends Controller{
 		$this->db->simple_query($mSQL);
 		redirect('supervisor/mantenimiento');
 	}
-	
+
 	function bmodbus(){
 		$mSQL="TRUNCATE modbus";
 		$this->db->simple_query($mSQL);
 		redirect('supervisor/mantenimiento');
 	}
-	
+
 	function centinelas(){
 		$this->load->helper('directory');
 		$this->load->library('table');
@@ -175,22 +174,22 @@ class Mantenimiento extends Controller{
 		$edit->fecha->insertValue = date("Y-m-d");
 		$edit->fecha->size = 10;
 		$edit->fecha->mode="autohide";
-				
+
 		$edit->numero = new inputField("N&uacute;mero", "numero");
 		$edit->numero->size = 10;
 		$edit->numero->mode="autohide";
-		
+
 		$edit->tipo = new dropdownField("Tipo", "tipo_doc");  
 		$edit->tipo->option("D","D");
-	  $edit->tipo->option("F","F");
-	  $edit->tipo->option("X","X");
-	  $edit->tipo->mode="autohide";
- 		
-    $edit->nombre = new inputField("Nombre", "nombre");
+		$edit->tipo->option("F","F");
+		$edit->tipo->option("X","X");
+		$edit->tipo->mode="autohide";
+
+		$edit->nombre = new inputField("Nombre", "nombre");
 		$edit->nombre->size = 55;
 		$edit->nombre->maxlength=40;
 		$edit->nombre->mode="autohide";
-	
+
 		$edit->almacen = new  dropdownField ("Almacen", "almacen");
 		$edit->almacen->option("","Todos");  
 		$edit->almacen->options("SELECT ubica, ubides FROM caub WHERE gasto='N' and invfis='N' ORDER BY ubides"); 					
@@ -199,16 +198,16 @@ class Mantenimiento extends Controller{
 		$edit->build();
 		
 		//$smenu['link']=barra_menu('113');
-		//$data['smenu']   = $this->load->view('view_sub_menu', $smenu,true);			
+		//$data['smenu']   = $this->load->view('view_sub_menu', $smenu,true);
 		$data['content'] =$edit->output;        
 		$data['title']   = "Almacen Inconsistente";
 		$data["head"]    = $this->rapyd->get_head();
-		$this->load->view('view_ventanas', $data);			
-		
-		
+		$this->load->view('view_ventanas', $data);
 	}
+
 	function clinconsis(){
 		$this->rapyd->load("datafilter","datagrid");
+		$this->rapyd->uri->keep_persistence();
 
 		$scli=array(
 		'tabla'   =>'scli',
@@ -223,24 +222,33 @@ class Mantenimiento extends Controller{
 		$boton=$this->datasis->modbus($scli);
 
 		$filter = new DataFilter('Clientes inconsistentes');
-		$select=array('a.fecha','a.abonos','a.tipo_doc','a.cod_cli','a.numero','a.nombre','a.monto as saldo',
-		'sum(b.abono) AS abono','sum(b.abono)-a.monto as diferencia');
+		$select=array(
+			'a.fecha',
+			'a.tipo_doc',
+			'a.cod_cli',
+			'a.numero',
+			'a.nombre',
+			'a.monto',
+			'sum(b.abono)+(SELECT COALESCE(SUM(d.monto),0) FROM `itcruc` AS d WHERE CONCAT(`a`.`tipo_doc`,`a`.`numero`)=`d`.`onumero`) AS abonoreal',
+			'a.abonos      AS inconsist',
+			//'sum(b.abono)-a.abonos AS diferencia'
+			);
 
 		$filter->db->select($select);
-		$filter->db->from('smov as a');
-		$filter->db->join('itccli as b','a.cod_cli=b.cod_cli AND a.numero=b.numero AND a.tipo_doc=b.tipo_doc');
+		$filter->db->from('smov AS a');
+		$filter->db->join('itccli AS b','a.cod_cli=b.cod_cli AND a.numero=b.numero AND a.tipo_doc=b.tipo_doc');
+		//$filter->db->join('itcruc AS c','c.onumero=')
 		$filter->db->groupby('a.cod_cli, a.tipo_doc,a.numero');
-		$filter->db->having('a.monto','a.abonos');
-		$filter->db->having('abono < ','a.abonos');
-		//$filter->db->having("diferencia >= ",'0.05');
-		$filter->db->orderby('cod_cli');
+		$filter->db->having('abonoreal  <>','inconsist');
+		//$filter->db->having('diferencia >=','0.05');
+		$filter->db->orderby('a.cod_cli','b.numero');
 
 		$filter->fechad = new dateonlyField('Desde','fechad');
 		$filter->fechah = new dateonlyField('Hasta','fechah');
 		$filter->fechad->clause  =$filter->fechah->clause="where";
 		$filter->fechad->db_name =$filter->fechah->db_name="a.fecha";
-		$filter->fechad->insertValue = date("Y-m-d");
-		$filter->fechah->insertValue = date("Y-m-d");
+		//$filter->fechad->insertValue = date("Y-m-d");
+		//$filter->fechah->insertValue = date("Y-m-d");
 		$filter->fechad->operator=">="; 
 		$filter->fechah->operator="<=";
 
@@ -252,50 +260,59 @@ class Mantenimiento extends Controller{
 		$filter->buttons("reset","search");
 		$filter->build();
 
-		function descheck($numero,$cod_cli,$tipo_doc){
+		function descheck($numero,$cod_cli,$tipo_doc,$fecha,$abonoreal){
+			$pk=array($numero,$cod_cli,$tipo_doc,$fecha,$abonoreal);
+			$str=serialize($pk);
 			$data = array(
-			  'name'    => $numero,
-			  'id'      => $cod_cli,
-			  'value'   => $tipo_doc,
+			  'name'    => 'pk',
+			  'value'   => $str,
 			  'checked' => FALSE);
 			return form_checkbox($data);
+		}
+
+		function diff($a,$b){
+			return nformat($a-$b);
 		}
 
 		$uri1 = anchor('supervisor/mantenimiento/itclinconsis/<str_replace>/|:slach:|<#cod_cli#></str_replace>/<#numero#>/<#tipo_doc#>','<#cod_cli#>');
 		$uri2 = anchor('supervisor/mantenimiento/ajustar/<#cod_cli#>','Ajustar Saldo');
 
 		$grid = new DataGrid("Lista de Clientes");
-		$grid->use_function('descheck');
+		$grid->use_function('descheck','diff');
 		$grid->per_page = 15;
 		$grid->use_function('str_replace');
 
-		$grid->column('Cliente'      ,$uri1,'cod_cli');
-		$grid->column('Nombre'       ,'nombre','nombre');
-		$grid->column('Fecha'        ,'<dbdate_to_human><#fecha#></dbdate_to_human>' ,'fecha');
-		$grid->column('Numero'       ,'numero'     ,'numero');
-		$grid->column('Saldo'        ,'saldo'      ,'saldo',"align='right'");
-		$grid->column('Abonado'      ,'abono'      ,'abono',"align='right'");
-		$grid->column('Diferencia'   ,'diferencia' ,'diferencia',"align='right'");
-		$grid->column('Ajustar Saldo','<descheck><#numero#>|<#cod_cli#>|<#tipo_doc#></descheck>',"align=center"); 
+		$grid->column_orderby('Cliente'        ,$uri1    ,'cod_cli');
+		$grid->column_orderby('Nombre'         ,'nombre' ,'nombre');
+		$grid->column_orderby('Fecha'          ,'<dbdate_to_human><#fecha#></dbdate_to_human>' ,'fecha');
+		$grid->column_orderby('N&uacute;mero'  ,'<#tipo_doc#><#numero#>'    ,'numero');
+		$grid->column_orderby('Monto'          ,'<nformat><#monto#></nformat>'        ,'monto'     ,"align='right'");
+		$grid->column_orderby('Abono Real'     ,'<nformat><#abonoreal#></nformat>'    ,'abonoreal' ,"align='right'");
+		$grid->column_orderby('Abono Inconsis.','<nformat><#inconsist#></nformat>'    ,'inconsist' ,"align='right'");
+		$grid->column('Faltante'               ,'<diff><#abonoreal#>|<#inconsist#></diff>',"align='right'");
+		$grid->column('Ajustar Saldo'          ,'<descheck><#numero#>|<#cod_cli#>|<#tipo_doc#>|<#fecha#>|<#abonoreal#></descheck>',"align=center"); 
 
 		$grid->build();
-		echo $grid->db->last_query();
+		//echo $grid->db->last_query();
 		//memowrite($grid->db->last_query());
 
 		$script='';
-		$url=site_url('supervisor/mantenimiento/procesar');
+		$url=site_url('supervisor/mantenimiento/ajustesaldo');
 		$data['script']='<script type="text/javascript">
 			$(document).ready(function() {
 				$("form :checkbox").click(function () {
 				$.ajax({
 					  type: "POST",
 					  url: "'.$url.'",
-					  data: "numero="+this.name+"&codigo="+this.id+"&tipo="+this.value,
+					  data: $(this).serialize(),
 					  success: function(msg){
-					  alert("Saldo Ajustado");
+					    if(msg==1)
+					      alert("Saldo Ajustado");
+					    else
+					      alert("No se puedo ajustar el saldo, se genero un centinela");
 					  }
 					});
-			    }).change(); 
+				}).change(); 
 			});
 			</script>';
 
@@ -307,22 +324,33 @@ class Mantenimiento extends Controller{
 		$this->load->view('view_ventanas', $data);
 	}
 
-	function procesar(){
-		$numero  = $this->db->escape($this->input->post('numero'));
-		$codigo  = $this->db->escape($this->input->post('codigo'));
-		$tipo    = $this->db->escape($this->input->post('tipo'));
+	function ajustesaldo(){
+		$pk  = unserialize($this->input->post('pk'));
 
-		$monto=$this->datasis->dameval("SELECT sum(abono) FROM itccli WHERE numero=$numero AND cod_cli=$codigo AND tipo_doc=$tipo");
-		$mSQL="UPDATE smov set abonos='$monto' WHERE numero=$numero AND cod_cli=$codigo AND tipo_doc=$tipo";
-		$SQL=$this->db->simple_query($mSQL);
+		$data = array('abonos' => $pk[4]);
+
+		$where  =' numero='.$this->db->escape($pk[0]);
+		$where .=' AND cod_cli ='.$this->db->escape($pk[1]);
+		$where .=' AND tipo_doc='.$this->db->escape($pk[2]);
+		$where .=' AND fecha   ='.$this->db->escape($pk[3]);
+
+		$mSQL = $this->db->update_string('smov', $data, $where);
+
+		if($this->db->simple_query($mSQL))
+			echo 1;
+		else{
+			memowrite($mSQL,'ajusal');
+			echo 0;
+		}
 	}
 
 	function itclinconsis($cliente='',$numero='',$tipo_doc){
 		$this->rapyd->load("datagrid2");
-		
+		$this->rapyd->uri->keep_persistence();
+
 		$uri = anchor('supervisor/mantenimiento/clinconsis','Regresar');
-		
-		$select=array('numccli','tipoccli','fecha','abono','tipo_doc','cod_cli');	
+
+		$select=array('numccli','tipoccli','fecha','abono','tipo_doc','cod_cli');
 		$grid = new DataGrid2($uri);
 		$grid->per_page = 15;
 		$grid->db->select($select);
@@ -330,15 +358,15 @@ class Mantenimiento extends Controller{
 		$grid->db->where('cod_cli',$cliente);
 		$grid->db->where('tipo_doc',$tipo_doc);
 		$grid->db->where('numero',$numero);
-			
-		$grid->column('Numero'	,'numccli' );
-		$grid->column('Tipo'		,'tipoccli' );
-		$grid->column('Fecha' 	,'<dbdate_to_human><#fecha#></dbdate_to_human>');
-		$grid->column('Abono'   ,'abono');
+
+		$grid->column('Numero' ,'numccli' );
+		$grid->column('Tipo'   ,'tipoccli' );
+		$grid->column('Fecha'  ,'<dbdate_to_human><#fecha#></dbdate_to_human>');
+		$grid->column('Monto'  ,'<nformat><#abono#></nformat>',"align='right'");
 
 		$grid->totalizar('abono');
 		$grid->build();
-		
+
 		//echo $grid->db->last_query();
 		//memowrite($grid->db->last_query());
 		$data['content'] = $grid->output;
@@ -347,4 +375,3 @@ class Mantenimiento extends Controller{
 		$this->load->view('view_ventanas', $data);
 	}
 }
-?>
