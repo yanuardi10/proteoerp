@@ -230,9 +230,7 @@ class Mantenimiento extends Controller{
 			'a.nombre',
 			'a.monto',
 			'sum(b.abono)+(SELECT COALESCE(SUM(d.monto),0) FROM `itcruc` AS d WHERE CONCAT(`a`.`tipo_doc`,`a`.`numero`)=`d`.`onumero`) AS abonoreal',
-			'a.abonos      AS inconsist',
-			//'sum(b.abono)-a.abonos AS diferencia'
-			);
+			'a.abonos AS inconsist',);
 
 		$filter->db->select($select);
 		$filter->db->from('smov AS a');
@@ -262,7 +260,7 @@ class Mantenimiento extends Controller{
 
 		function descheck($numero,$cod_cli,$tipo_doc,$fecha,$abonoreal){
 			$pk=array($numero,$cod_cli,$tipo_doc,$fecha,$abonoreal);
-			$str=serialize($pk);
+			$str=htmlspecialchars(serialize($pk));
 			$data = array(
 			  'name'    => 'pk',
 			  'value'   => $str,
@@ -306,10 +304,8 @@ class Mantenimiento extends Controller{
 					  url: "'.$url.'",
 					  data: $(this).serialize(),
 					  success: function(msg){
-					    if(msg==1)
-					      alert("Saldo Ajustado");
-					    else
-					      alert("No se puedo ajustar el saldo, se genero un centinela");
+					    if(msg==0)
+					      alert("No se puedo ajustar el saldo");
 					  }
 					});
 				}).change(); 
@@ -325,7 +321,12 @@ class Mantenimiento extends Controller{
 	}
 
 	function ajustesaldo(){
-		$pk  = unserialize($this->input->post('pk'));
+		$pk  = unserialize(htmlspecialchars_decode($this->input->post('pk')));
+		//print_r($pk);
+		if(count($pk)!=5){
+			echo 0;
+			return false;
+		}
 
 		$data = array('abonos' => $pk[4]);
 
@@ -336,11 +337,13 @@ class Mantenimiento extends Controller{
 
 		$mSQL = $this->db->update_string('smov', $data, $where);
 
-		if($this->db->simple_query($mSQL))
+		if($this->db->simple_query($mSQL)){
 			echo 1;
-		else{
+			return true;
+		}else{
 			memowrite($mSQL,'ajusal');
 			echo 0;
+			return false;
 		}
 	}
 
