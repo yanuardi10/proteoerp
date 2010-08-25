@@ -320,15 +320,43 @@ class Mantenimiento extends Controller{
 		$this->load->view('view_ventanas', $data);
 	}
 
+	function clinconsismasivo(){
+		$mSQL="SELECT 
+			`a`.`fecha`, 
+			`a`.`tipo_doc`, 
+			`a`.`cod_cli`, 
+			`a`.`numero`, 
+			sum(b.abono)+(SELECT COALESCE(SUM(d.monto),0) FROM `itcruc` AS d WHERE CONCAT(`a`.`tipo_doc`,`a`.`numero`)=`d`.`onumero`) AS abonoreal, 
+			`a`.`abonos` AS inconsist 
+			FROM (`smov` AS a) 
+			JOIN `itccli` AS b ON `a`.`cod_cli`=`b`.`cod_cli` AND a.numero=b.numero AND a.tipo_doc=b.tipo_doc 
+			WHERE b.tipo_doc='FC'
+			GROUP BY `a`.`cod_cli`, `a`.`tipo_doc`, `a`.`numero` HAVING `abonoreal` <> inconsist LIMIT 300";
+
+		$query = $this->db->query($mSQL);
+
+		if ($query->num_rows() > 0){
+			foreach ($query->result() as $row){
+				if(!$this->_sclisaldo($row->numero,$row->cod_cli,$row->tipo_doc,$row->fecha,$row->abonoreal)){
+					echo "No se pudo cambiar ".$row->numero.' '.$row->cod_cli;
+				}
+			}
+		}
+	}
+
 	function ajustesaldo(){
 		$pk  = unserialize(htmlspecialchars_decode($this->input->post('pk')));
 		//print_r($pk);
 		if(count($pk)!=5){
 			echo 0;
-			return false;
+		}else{
+			if($this->_sclisaldo($pk[0],$pk[1],$pk[2],$pk[3],$pk[4]))
+				echo 1;
+			else
+				echo 0;
 		}
 
-		$data = array('abonos' => $pk[4]);
+		/*$data = array('abonos' => $pk[4]);
 
 		$where  =' numero='.$this->db->escape($pk[0]);
 		$where .=' AND cod_cli ='.$this->db->escape($pk[1]);
@@ -344,8 +372,22 @@ class Mantenimiento extends Controller{
 			memowrite($mSQL,'ajusal');
 			echo 0;
 			return false;
-		}
+		}*/
 	}
+
+	function _sclisaldo($numero,$cod_cli,$tipo_doc,$fecha,$abono){
+		$data = array('abonos' => $abono);
+
+		$where  =' numero='.$this->db->escape($numero);
+		$where .=' AND cod_cli ='.$this->db->escape($cod_cli);
+		$where .=' AND tipo_doc='.$this->db->escape($tipo_doc);
+		$where .=' AND fecha   ='.$this->db->escape($fecha);
+
+		$mSQL = $this->db->update_string('smov', $data, $where);
+
+		return $this->db->simple_query($mSQL);
+	}
+
 
 	function itclinconsis($cliente='',$numero='',$tipo_doc){
 		$this->rapyd->load("datagrid2");
