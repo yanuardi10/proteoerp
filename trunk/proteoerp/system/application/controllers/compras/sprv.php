@@ -205,7 +205,7 @@ class Sprv extends validaciones {
 		$edit->grupo->option("","Seleccionar");
 		$edit->grupo->options("SELECT grupo,gr_desc,grupo FROM grpr ORDER BY gr_desc");
 		$edit->grupo->style = "width:290px";
-		$edit->grupo->rule = "required";
+		//$edit->grupo->rule = "required";
 		$edit->grupo->group = "Datos del Proveedor";
 
 		$edit->gr_desc = new inputField("gr_desc", "gr_desc");
