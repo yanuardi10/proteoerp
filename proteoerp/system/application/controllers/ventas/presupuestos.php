@@ -293,7 +293,7 @@
 		$detalle->column("C&oacute;digo"    ,  "<#codigo#>");
 		$detalle->column("Descripci&oacute;n", "<#descripcion#>");
 		$detalle->column("Cantidad"  ,  "<#cantidad#>");
-		$detalle->column("Precio"     , "<number_format><#precio#></number_format>");
+		$detalle->column("Precio"     , "<nformat><#precio#></nformat>");
 		$detalle->column("Importe"    , "<#importe#>");
 	
 		$detalle->build();	

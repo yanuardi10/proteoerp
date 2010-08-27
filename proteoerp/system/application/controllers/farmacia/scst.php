@@ -459,8 +459,6 @@ class Scst extends Controller {
 
 	function _cargar($control){
 		$control =$this->db->escape($control);
-		$lcontrol=$this->datasis->fprox_numero('nscst');
-		$transac =$this->datasis->fprox_numero('ntransac');
 		$farmaxDB=$this->load->database('farmax',TRUE);
 		$farmaxdb=$farmaxDB->database;
 		$localdb =$this->db->database;
@@ -478,6 +476,9 @@ class Scst extends Controller {
 				$query=$farmaxDB->query("SELECT * FROM scst WHERE control=$control AND pcontrol IS NULL");
 
 				if ($query->num_rows()==1){
+					$lcontrol=$this->datasis->fprox_numero('nscst');
+					$transac =$this->datasis->fprox_numero('ntransac');
+
 					$row=$query->row_array();
 					$row['control']=$lcontrol;
 					$row['transac']=$transac;
