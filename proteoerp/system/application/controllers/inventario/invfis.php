@@ -442,7 +442,8 @@ class Invfis extends Controller {
 	}
 
 	function _cerrar($tabla,$tipo){
-		$fecha  = date_format(date_create_from_format('Ymd', substr($tabla,-8)), 'Y-m-d');
+
+		$fecha  =  substr($tabla,-8);
 		$nstra  = $this->db->escape($this->datasis->fprox_numero('nstra'));
 		$alma   = substr($tabla,3,strlen($tabla)-11);
 		$alma   = $this->db->escape($alma);
