@@ -69,7 +69,7 @@ script;
 		$data['logo']   = "<img src='".base_url()."images/logopm.jpg' width=150>";
 		$data['title']   = "<h1>$out</h1>";
 		$data["head"]    = script("jquery-1.2.6.pack.js").$this->rapyd->get_head();
-		$this->load->view('view_ventanas_sola', $data);
+		$this->load->view('view_consulta', $data);
 	}
 
 	function rprecios($cod_bar=NULL){
