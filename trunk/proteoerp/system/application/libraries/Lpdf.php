@@ -26,10 +26,13 @@ function Header()
 	$this->SetFont('Arial','B',15);
 	//Movernos a la derecha
 	$sucu = "PRINCIPAL_";
-	if ( substr($this->caja,0,1) == '0') $sucu = "PRINCIPAL";
-	if ( substr($this->caja,0,1) == '1') $sucu = "SUCURSAL 1";
-	if ( substr($this->caja,0,1) == '2') $sucu = "SUCURSAL 2";
-	if ( substr($this->caja,0,1) == '3') $sucu = "SUCURSAL 3";
+	if ( substr($this->caja,0,1) == '0') 
+		$sucu = "PRINCIPAL";
+	else
+		$sucu = "SUCURSAL ".substr($this->caja,0,1);
+	//if ( substr($this->caja,0,1) == '1') $sucu = "SUCURSAL 1";
+	//if ( substr($this->caja,0,1) == '2') $sucu = "SUCURSAL 2";
+	//if ( substr($this->caja,0,1) == '3') $sucu = "SUCURSAL 3";
 
 	$fecha = substr($this->fecha,6,2). "/". substr($this->fecha,4,2). "/". substr($this->fecha,0,4);
 
