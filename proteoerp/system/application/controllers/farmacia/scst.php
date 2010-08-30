@@ -230,7 +230,7 @@ class Scst extends Controller {
 
 		$script='
 		function pcrear(id){
-			var pasar=["barras","descrip","ultimo","iva","codigo","pond"];
+			var pasar=["barras","descrip","ultimo","iva","codigo","pond","precio1","precio2","precio3","precio4"];
 			var url  = "'.site_url('inventario/sinv/dataedit/create').'";
 			form_virtual(pasar,id,url);
 		}
