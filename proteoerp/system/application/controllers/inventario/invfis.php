@@ -462,7 +462,7 @@ class Invfis extends Controller {
 			sem_acquire($seg);
 
 			$mSQL="INSERT INTO itstra (`numero`,`codigo`,`descrip`,`cantidad`,`anteri`)
-				SELECT $nstra,a.codigo,CONCAT_WS(b.descrip,b.descrip2)descrip,IF(a.modificado IS NULL,0,a.contado),a.existen $fromwhere";
+				SELECT $nstra,a.codigo,CONCAT_WS(b.descrip,b.descrip2)descrip,IF(a.modificado IS NULL,-1*a.existen,a.contado-a.existen),a.existen $fromwhere";
 
 			$ban = $this->db->simple_query($mSQL);
 			if(!$ban){$error.="No se pudo crear el registro en stra"; memowrite($mSQL,'INVFIS');}
