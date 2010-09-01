@@ -315,7 +315,7 @@ class Invfis extends Controller {
 		$grid->column_orderby("Contado","<caja>c|<#contado#>|<#codigo#>|true</caja>");
 		$grid->column("Agregar","<caja>a|<#agregar#>|<#codigo#></caja>");
 		$grid->column("Quitar","<caja>q|<#quitar#>|<#codigo#></caja>");
-		$grid->column("Sustituir","<caja>s|<#sustituir#>|<#codigo#></caja>");
+		$grid->column("Sustituir","<caja>s||<#codigo#></caja>");
 
 		$grid->build();
 		//echo $grid->db->last_query();
@@ -366,7 +366,7 @@ class Invfis extends Controller {
 					val = $("#Is_"+cod).val();
 					con = $("#Ic_"+cod).val();
 					$.post("'.site_url($this->url.'sustituir').'",{ codigo:cod,valor:val,tabla:"'.$tabla.'",contado:con },function(data){
-						$("#Is_"+cod).val(0);
+						$("#Is_"+cod).val("");
 						if(data){
 							alert(data);
 						}
