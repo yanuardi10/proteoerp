@@ -14,6 +14,7 @@ class Mantenimiento extends Controller{
 		$list[]=anchor('supervisor/mantenimiento/reparatabla','Reparar Tablas');
 		$list[]=anchor('supervisor/mantenimiento/clinconsis','Incosistencias Clientes');
 		$list[]=anchor('supervisor/repodupli/','Reportes Duplicado');
+		$list[]=anchor('supervisor/mantenimiento/contadores','Cambios en contadores').'Advertencia: uselo solo si sabe lo que esta haciendo';
 		
 		$attributes = array(
 			'class' => 'boldlist',
@@ -421,6 +422,8 @@ class Mantenimiento extends Controller{
 	}
 
 	function contadores(){
+		if(!$this->datasis->essuper()) show_404();
+
 		$this->rapyd->load("dataform");
 		$edit = new DataForm('supervisor/mantenimiento/contadores/process');
 
@@ -428,6 +431,7 @@ class Mantenimiento extends Controller{
 		$edit->numero->rule='required|numeric|max_length[8]';
 		$edit->numero->size = 10;
 		$edit->numero->maxlength=8;
+		$edit->numero->append('El n&uacute;mero que coloque va a ser el pr&oacute;ximo n&uacute;mero que proporcione el contador');
 
 		$edit->container = new containerField("alert","<div class='alert'>Haga uso de este modulo solo si sabe lo que esta haciendo, una cambio mal puede dejar inoperativo el sistema</div>");
 
@@ -447,8 +451,8 @@ class Mantenimiento extends Controller{
 			$sal=$this->_contadores($num);
 		}
 
-		$data['content'] =$edit->output.'<pre>'.$sal.'</pre>';
-		$data['title']   = 'Cambio en los contadores';
+		$data['content'] = $edit->output.'<pre>'.$sal.'</pre>';
+		$data['title']   = '<h1>Cambio en los contadores</h1>';
 		$data["head"]    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
