@@ -162,11 +162,11 @@ class Mantenimiento extends Controller{
 		$data['content']  = $filter->output.$tabla;
 		$data['title']    = "<h1>Almacenes con problemas de incosistencias</h1>";
 		$data["head"]     = $this->rapyd->get_head();
-		$this->load->view('view_ventanas', $data);		
+		$this->load->view('view_ventanas', $data);
 	}
+
 	function cambioalma(){
-		
-		$this->rapyd->load("dataedit");		
+		$this->rapyd->load("dataedit");
 		$edit = new DataEdit("Realizar cambio de almacen","sfac");
 		$edit->back_url = site_url("supervisor/mantenimiento/almainconsis");
 		
@@ -418,5 +418,71 @@ class Mantenimiento extends Controller{
 		$data['title']   = "<h1>Detalle de los Abonos del cliente:$cliente</h1>";
 		$data["head"]    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
+	}
+
+	function contadores(){
+		$this->rapyd->load("dataform");
+		$edit = new DataForm('supervisor/mantenimiento/contadores/process');
+
+		$edit->numero = new inputField("N&uacute;mero", "numero");
+		$edit->numero->rule='required|numeric|max_length[8]';
+		$edit->numero->size = 10;
+		$edit->numero->maxlength=8;
+
+		$edit->container = new containerField("alert","<div class='alert'>Haga uso de este modulo solo si sabe lo que esta haciendo, una cambio mal puede dejar inoperativo el sistema</div>");
+
+		$_POST['confirma']='';
+		$edit->confirma = new inputField('Escriba ACEPTO para confirmaci&oacute;n', 'confirma');
+		$edit->confirma->rule='callback_confirma';
+		$edit->confirma->size = 6;
+		$edit->confirma->append('Sencible a las may&uacute;sculas');
+
+		$edit->submit('btnm_submit','Aceptar');
+
+		$edit->build_form();
+
+		$sal='';
+		if ($edit->on_success()){
+			$num = $edit->numero->newValue;
+			$sal=$this->_contadores($num);
+		}
+
+		$data['content'] =$edit->output.'<pre>'.$sal.'</pre>';
+		$data['title']   = 'Cambio en los contadores';
+		$data["head"]    = $this->rapyd->get_head();
+		$this->load->view('view_ventanas', $data);
+	}
+
+	function _contadores($num=null){
+		$rt='';
+		if(!empty($num) AND is_numeric($num)){
+			$tables = $this->db->list_tables();
+
+			foreach ($tables as $table){
+				$fields = $this->db->list_fields($table);
+				if(count($fields)==3){
+					if($fields[0]=='numero' AND $fields[1]=='usuario' AND $fields[2]=='fecha'){
+						$mSQL="DELETE FROM `$table` WHERE numero>=$num";
+						if($this->db->simple_query($mSQL)){
+							$mSQL="ALTER TABLE `$table` AUTO_INCREMENT=$num";
+							if (!$this->db->simple_query($mSQL)){
+								$rt.= "Error cambiando el contador en $table \n";
+							}else{
+								$rt.= "$table cambiado \n";
+							}
+						}
+					}
+				}
+			}
+		}
+		return $rt;
+	}
+
+	function confirma($par){
+		if($par=='ACEPTO'){
+			return true;
+		}
+		$this->validation->set_message('confirma', 'Debe escribir ACEPTO en la confirmaci&oacute;n');
+		return false;
 	}
 }
