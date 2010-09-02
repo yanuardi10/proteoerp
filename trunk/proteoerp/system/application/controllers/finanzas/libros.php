@@ -6309,7 +6309,25 @@ class Libros extends Controller {
 			c.rif,
 			if(b.fecha<'$mFECHAF','04', '01') AS registro,
 			'S' AS nacional,
-			IF(a.iva=0,montotot,b.exento*((b.montotot-b.descu+a.licor)/b.montotot)) exento,
+			b.cexento exento,
+			b.cgenera general,
+			b.civagen geneimpu,
+			b.cadicio adicional,
+			b.civaadi reduimpu,
+			b.creduci reducida,
+			b.civared adicimpu,
+			b.cstotal stotal,
+			b.cimpuesto AS impuesto,
+			b.ctotal gtotal,
+			b.reteiva AS reiva,
+			".$mes."01 AS fechal,
+			0 fafecta 
+		FROM itscst AS a JOIN scst as b ON a.control=b.control
+		LEFT JOIN sprv AS c ON b.proveed=c.proveed 
+		WHERE b.recep BETWEEN $fdesde AND $fhasta AND b.actuali >= b.fecha AND c.tiva<>'I'
+		GROUP BY b.control";
+
+			/*IF(a.iva=0,montotot,b.exento*((b.montotot-b.descu+a.licor)/b.montotot)) exento,
 			ROUND(SUM((a.iva=".$mivag.")*(b.montoiva>0)*a.importe)*(1-b.descu/b.montotot),2)  AS general,
 			ROUND(SUM((a.iva=".$mivag.")*(b.montoiva>0)*a.montoiva)*(1-b.descu/b.montotot),2) AS geneimpu,
 			ROUND(SUM((a.iva=".$mivaa.")*(b.montoiva>0)*a.importe) *(1-b.descu/b.montotot),2) AS adicional,
@@ -6318,23 +6336,16 @@ class Libros extends Controller {
 			ROUND(SUM((a.iva=".$mivaa.")*(b.montoiva>0)*a.montoiva)*(1-b.descu/b.montotot),2) AS adicimpu,
 			b.montotot-b.descu+b.licor AS stotal,
 			b.montoiva AS impuesto,
-			b.montonet-b.descu AS gtotal,
-			b.reteiva AS reiva,
-			".$mes."01 AS fechal,
-			0 fafecta 
-		FROM itscst AS a JOIN scst as b ON a.control=b.control
-		LEFT JOIN sprv AS c ON b.proveed=c.proveed 
-		WHERE b.recep BETWEEN $fdesde AND $fhasta AND b.actuali >= b.fecha AND c.tiva<>'I'
-		GROUP BY b.control";
-		
+			b.montonet-b.descu AS gtotal,*/
+
 		// Procesando Compras scst
 		$flag=$this->db->simple_query($mSQL);
 		if(!$flag) memowrite($mSQL,'genecompras');
-		
+
 		$iivag=$mivag/100; 
 		$iivar=$mivar/100; 
 		$iivaa=$mivaa/100;
-		
+
 		//para los productos importados
 		$mSQL = "INSERT INTO siva 
 			(id, libro, tipo, fuente, sucursal, fecha, numero, numhasta,  caja, nfiscal,  nhfiscal, 
