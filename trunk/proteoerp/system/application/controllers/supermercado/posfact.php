@@ -15,7 +15,7 @@ class Posfact extends Controller {
 		$mesi =$this->uri->segment(5);
 		$anoi =$this->uri->segment(6);
 		$diaf =$this->uri->segment(7);
-    $mesf =$this->uri->segment(8);
+		$mesf =$this->uri->segment(8);
 		$anof =$this->uri->segment(9);
 
 		if($diai===FALSE or $mesi===FALSE or $anoi===FALSE or $diaf===FALSE or $mesf===FALSE or $anof===FALSE){
@@ -28,19 +28,21 @@ class Posfact extends Controller {
 			$fechai  ="$anoi/$mesi/$diai";
 			$fechaf  ="$anof/$mesf/$diaf"; 
 		}
-
-		$select="date_format(fecha,'%d/%m/%Y') AS fecha,
-		         sum((gtotal-impuesto)*(SUBSTRING(numero,1,1)<>'X')) AS subtotal,
-		         sum(impuesto*(SUBSTRING(numero,1,1)<>'X')) AS iva,
-		         sum(gtotal*(SUBSTRING(numero,1,1)<>'X')) AS total,
-		         sum(gtotal*(SUBSTRING(numero,1,1)<>'X' AND gtotal<0) ) AS devolu,
-		         sum(gtotal*(SUBSTRING(numero,1,1)='X')) AS nulas,
-		         count(*) AS trans";
+			 
+		$select=array(
+		"date_format(fecha,'%d/%m/%Y') AS fecha",
+		"sum((gtotal-impuesto)*(SUBSTRING(numero,1,1)<>'X')) AS subtotal",
+		"sum(impuesto*(SUBSTRING(numero,1,1)<>'X')) AS iva",
+		"sum(gtotal*(SUBSTRING(numero,1,1)<>'X')) AS total",
+		"sum(gtotal*(SUBSTRING(numero,1,1)<>'X' AND gtotal<0) ) AS devolu",
+		"sum(gtotal*(SUBSTRING(numero,1,1)='X')) AS nulas",
+		"count(*) AS trans"
+		);
 		
 		$grid = new DataGrid2();
 		$grid->db->select($select);  
 		$grid->db->from("posfact");
-		$grid->db->where("fecha=CURDATE()");
+		$grid->db->where("fecha","CURDATE()");
 		$grid->db->groupby("fecha");
 		$grid->column("Fecha"         , "fecha");
 		$grid->column("Sub-Total"     , "subtotal" ,'align=right');
@@ -50,6 +52,8 @@ class Posfact extends Controller {
 		$grid->column("Anuladas"      , "nula"     ,'align=right');
 		$grid->column("Transferencias", "trans"    ,'align=right');
 		$grid->build();
+		
+		//echo $grid->db->last_query();
 		 
 		$filter = new DataForm('/venta/posfact/index');
 		$filter->title('Filtro de ventas cerradas');
@@ -65,7 +69,9 @@ class Posfact extends Controller {
 		$grid2->totalizar("subtotal","iva" ,"devolu","total");
 		$grid2->db->select($select);
 		$grid2->db->from("viefac");
-		$grid2->db->where("fecha>=$qfechai and fecha<=$qfechaf");
+
+		$grid2->db->where("fecha >=","$qfechai");
+		$grid2->db->where("fecha <=","$qfechaf");
 		$grid2->db->groupby("fecha");
 		$grid2->column("Fecha"         , "fecha"   );
 		$grid2->column("Sub-Total"     , "<number_format><#subtotal#>|2|,|.</number_format>",'align=right');
