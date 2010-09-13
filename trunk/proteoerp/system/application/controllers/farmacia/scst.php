@@ -222,6 +222,7 @@ class Scst extends Controller {
 		$detalle->column("Barras"            ,"<#codigo#>" );
 		$detalle->column("Descripci&oacute;n","<#descrip#>");
 		$detalle->column("Cantidad"          ,"<#cantidad#>","align='right'");
+		$detalle->column("PVP"               ,"<#precio1#>"  ,"align='right'");
 		$detalle->column("Precio"            ,"<#ultimo#>"  ,"align='right'");
 		$detalle->column("Importe"           ,"<#importe#>" ,"align='right'");
 		$detalle->column("Acciones "         ,"<exissinv><#sinv#>|<#dg_row_id#></exissinv>","bgcolor='#D7F7D7' align='center'");
@@ -231,7 +232,7 @@ class Scst extends Controller {
 		$script='
 		function pcrear(id){
 			var pasar=["barras","descrip","ultimo","iva","codigo","pond","precio1","precio2","precio3","precio4"];
-			var url  = "'.site_url('inventario/sinv/dataedit/create').'";
+			var url  = "'.site_url('farmacia/sinv/dataedit/create').'";
 			form_virtual(pasar,id,url);
 		}
 
