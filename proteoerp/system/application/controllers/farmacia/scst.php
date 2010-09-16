@@ -171,7 +171,7 @@ class Scst extends Controller {
 		$edit->credito->size = 20;
 		$edit->credito->css_class='inputnum';
 
-		$edit->subt  = new inputField("Subt", "montotot");
+		$edit->subt  = new inputField("Subt", "montonet");
 		$edit->subt->size = 20;
 		$edit->subt->css_class='inputnum';
 
@@ -179,7 +179,7 @@ class Scst extends Controller {
 		$edit->iva->size = 20;
 		$edit->iva->css_class='inputnum';
 
-		$edit->total  = new inputField("Total", "montonet");
+		$edit->total  = new inputField("Total", "montotot");
 		$edit->total->size = 20;
 		$edit->total->css_class='inputnum';
 
