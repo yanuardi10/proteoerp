@@ -234,8 +234,8 @@ class sinv extends Controller {
 				$(".inputnum").numeric(".");
 				$(".inputonlynum").numeric("0");
 			});
-
-			requeridos(true);
+			cambioprecio("I");
+			//requeridos(true);
 		});
 
 		function ultimo(){
@@ -294,7 +294,7 @@ class sinv extends Controller {
 					data: "valor="+unidad,
 					success: function(msg){
 						if(msg=="s.i"){
-							unidad=unidad.substr(0,8);					
+							unidad=unidad.substr(0,8);
 							$.post("'.$link6.'",{ x:"" },function(data){$("#unidad").html(data);$("#unidad").val(unidad);})
 						}
 						else{
@@ -397,15 +397,15 @@ class sinv extends Controller {
 			$do->set('codigo', '');
 		}
 
-		print_r($_POST);
+		//print_r($_POST);
 
 		$edit = new DataEdit2("Maestro de Inventario", $do);
 		$edit->script($script,"create");
 		$edit->script($script,"modify");
 		$edit->back_url = site_url("inventario/sinv/filteredgrid");
 
-		$ultimo='<a href="javascript:ultimo();" title="Consultar ultimo c&oacute;digo ingresado"> Consultar ultimo c&oacute;digo</a>';
-		$sugerir='<a href="javascript:sugerir();" title="Sugerir un C&oacute;digo aleatorio">Sugerir C&oacute;digo </a>';
+		//$ultimo='<a href="javascript:ultimo();" title="Consultar ultimo c&oacute;digo ingresado"> Consultar ultimo c&oacute;digo</a>';
+		//$sugerir='<a href="javascript:sugerir();" title="Sugerir un C&oacute;digo aleatorio">Sugerir C&oacute;digo </a>';
 		$edit->codigo = new inputField("C&oacute;digo", "codigo");
 		$edit->codigo->size=20;
 		$edit->codigo->maxlength=15;
@@ -540,7 +540,8 @@ class sinv extends Controller {
 		$AddMarca='<a href="javascript:add_marca();" title="Haz clic para Agregar una marca nueva">Agregar Marca</a>';
 		$edit->marca = new dropdownField("Marca", "marca");
 		$edit->marca->style='width:180px;';
-		$edit->marca->option("","");  
+		$edit->marca->option("","");
+		$edit->marca->rule="required";
 		$edit->marca->options("SELECT marca as codigo, marca FROM marc ORDER BY marca");
 		$edit->marca->append($AddMarca);
 
@@ -698,7 +699,7 @@ class sinv extends Controller {
 		$edit->build();
 
 		$data['content'] = $edit->output;
-		$data['title']   = "<h1>Maestro de Inventario</h1>";
+		$data['title']   = "<h1>Inventario de Farmacia</h1>";
 		$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").script("sinvmaes.js").$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
