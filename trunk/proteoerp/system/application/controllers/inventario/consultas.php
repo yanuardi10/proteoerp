@@ -143,7 +143,8 @@ class Consultas extends Controller {
 	}
 	function sprecios($formato='CPRECIOS'){
 		$data['conf']=$this->layout->settings;
-
+		
+		
 		$query = $this->db->query("SELECT proteo FROM formatos WHERE nombre='$formato'");
 		if ($query->num_rows() > 0){
 			$row = $query->row();
