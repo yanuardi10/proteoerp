@@ -39,6 +39,7 @@ class Usuarios extends Controller {
 		$grid->column("C&oacute;digo", $uri);
 		$grid->column("Nombre","us_nombre"     );
 		$grid->column("Supervisor"    ,"supervisor",'align="center"');
+		$grid->column("Almacen","almacen","align='left'");
 		$grid->column("Cambio clave"  ,$uri2       ,'align="center"');
 		$grid->column("Asignar Accesos",$uri3       ,'align="center"');
 		
@@ -46,9 +47,9 @@ class Usuarios extends Controller {
 		$grid->build();
 		
 		$data['content'] =$filter->output.$grid->output;        
-		 $data['title']   = "<h1>Usuarios</h1>";        
-		 $data["head"]    = $this->rapyd->get_head();
-		 $this->load->view('view_ventanas', $data); 
+		$data['title']   = "<h1>Usuarios</h1>";        
+		$data["head"]    = $this->rapyd->get_head();
+		$this->load->view('view_ventanas', $data); 
 	}
 	
 	function dataedit(){ 
@@ -91,6 +92,10 @@ class Usuarios extends Controller {
 		$edit->supervisor->option("N","No");
 		$edit->supervisor->option("S","Si");
 		$edit->supervisor->style="width:80px";
+		
+		$edit->almacen = new dropdownField("Almacen", "almacen");
+		$edit->almacen->option("","");
+		$edit->almacen->options("SELECT ubica, ubides FROM caub ORDER BY ubides");
 		
 		$edit->buttons("modify", "save", "undo", "back","delete");
 		$edit->build();
@@ -240,6 +245,11 @@ class Usuarios extends Controller {
 		
 		
 		
+	}
+	function almacen(){
+		$mSQL="ALTER TABLE `usuario`  ADD COLUMN `almacen` CHAR(4) NULL";
+		$this->db->simple_query($mSQL);
+		echo "Agregado campo almacen";
 	}
 }
 ?>
