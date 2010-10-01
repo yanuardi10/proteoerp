@@ -64,7 +64,7 @@ class tiketc extends Controller {
 		 		
 		$filter = new DataFilter("Filtro de Control de Tiket");
 		$select=array("a.id as idm","a.sucursal","a.asignacion","a.idt as idt","a.padre","a.pertenece","a.prioridad","a.usuario as usuarios","a.contenido","a.estampa","a.actualizado","a.estado as testado","IF(a.estado='N','Nuevo',IF(a.estado='R','Resuelto',IF(a.estado='P','Pendiente','En Proceso')))as estado",
-		"b.id","b.cliente as clientes","b.ubicacion","b.url","b.basededato","b.puerto","b.puerto","b.usuario","b.clave","b.observacion","c.nombre","a.minutos"); 
+		"b.id","b.cliente as clientes","b.url","b.basededato","b.puerto","b.puerto","b.usuario","b.clave","b.observacion","c.nombre","a.minutos"); 
 		$filter->db->select($select);
 		$filter->db->from("tiketc AS a");   
 		$filter->db->join("tiketconec AS b","a.sucursal=b.id");

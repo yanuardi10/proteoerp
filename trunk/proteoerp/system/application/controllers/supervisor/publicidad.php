@@ -9,7 +9,6 @@ class Publicidad extends Controller {
 		$path->setPath($this->config->item('uploads_dir'));
 		$path->append('publicidad');
 		$this->upload_path =$path->getPath().'/';
-		echo 'asadf'.$this->upload_path;
 		//$this->datasis->modulo_id(907,1);
 	}
 
@@ -95,6 +94,8 @@ class Publicidad extends Controller {
 		$mSQL="SELECT archivo AS nombre,prob/$tot AS rang FROM publicidad $where ORDER BY id";
 		
 		$query = $this->db->query($mSQL);
+		//print("<pre>");
+		//print_r($query->result());
 		$aleatorio=rand(0,100)/100;
 		if ($query->num_rows() > 0){
 			$init=0;
@@ -153,4 +154,3 @@ class Publicidad extends Controller {
 		$this->db->simple_query($mSQL);
 	}
 } 
-?>  

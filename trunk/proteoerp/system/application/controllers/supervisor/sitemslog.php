@@ -35,14 +35,18 @@ class sitemslog extends Controller {
 		$filter->fechah->operator="<=";
 		
 		$filter->cajero = new  dropdownField("Cajero","cajero");
-		$filter->cajero->option('','Todos');
+		$filter->cajero->option("",'Todos');
 		$filter->cajero->options("Select cajero, nombre as value from scaj ");    
 		$filter->cajero->style='width:150px;';
 		
 		$filter->vendedor = new  dropdownField("Vendedor","vendedor");
-		$filter->vendedor->option('','Todos');
+		$filter->vendedor->option("",'Todos');
 		$filter->vendedor->options("Select vendedor, nombre from vend ");    
 		$filter->vendedor->style='width:150px;';
+		
+		$filter->numero = new inputField("N&uacute;mero", "numero");
+		$filter->numero->size = 15;
+		$filter->numero->maxlength=15;
 		
 		$filter->buttons("reset","search");
 		$filter->build();
@@ -51,25 +55,42 @@ class sitemslog extends Controller {
 			$grid = new DataGrid("Resultados");                       
 			$grid->per_page = 15;
 			
-			$uri = anchor_popup('supervisor/sitemslog/detalle/<#id#>','<#id#>',$atts);
-    	
-			$grid->column("Numero",$uri);
-			$grid->column("Fecha","<b><dbdate_to_human><#fecha#></dbdate_to_human></b>",'fecha',"align='center'");
-			$grid->column("Cajero","cajero");
-			$grid->column("Vendedor","vendedor");
-			$grid->column("Tipo","tipo");			
-			$grid->column("Cliente","cod_cli");
-			$grid->column("Hora","<#hora#>",'hora',"align='center'");
-    	    		
+			//$uri = anchor_popup('supervisor/sitemslog/detalle/<#id#>','<#numa#>',$atts);
+    	//
+			//$grid->column("Tipo","tipo");
+			//$grid->column("Numero",$uri);
+			//$grid->column("Fecha","<b><dbdate_to_human><#fecha#></dbdate_to_human></b>",'fecha',"align='center'");
+			//$grid->column("Cajero","cajero");
+			//$grid->column("Vendedor","vendedor");			
+			//$grid->column("Cliente","cod_cli");
+			//$grid->column("Hora","<#hora#>",'hora',"align='center'");
+			
+			$grid->column("Tipoa","tipo","align=left");
+			$grid->column("Numero","<b><#numa#></b>","align=left");
+			$grid->column("Fecha","<dbdate_to_human><#fecha#></dbdate_to_human>",'fecha',"align='center'");
+			$grid->column("Codigo","codigoa","align=left");
+			$grid->column("Descripcion","desca","align=left");
+			$grid->column("Cantidad","<number_format><#cana#></number_format>","align=right");
+			$grid->column("Precio","<number_format><#preca#>|2</number_format>","align=right");
+			$grid->column("Iva","<number_format><#iva#>|2</number_format>","align=right");
+			$grid->column("Total","<number_format><#tota#>|2</number_format>","align=right");
+			$grid->column("Detalle","detalle","align=right");
+			$grid->column("combo","combo","align=right");
+			$grid->column("Bonifica","<number_format><#bonifica#>|2</number_format>","align=right");
+			$grid->column("Costo","<number_format><#costo#>|2</number_format>","align=right");
+			$grid->column("Usuario","usuario");
+			$grid->column("Hora","hora");
+			$grid->column("Usuario","usuario");
+			    	    		
 			$grid->build();
- 			//echo $grid->db->last_query();
 			$tabla=$grid->output;
+			//echo $grid->db->last_query();
 		}else{
 			$tabla='';
-		}
-		
+		} 
+		  
 		$data['content'] = $filter->output.$tabla;
-		$data['title']   = "<h1>Log de Ventas</h1>";
+		$data['title']   = "<h1>Bitacora de Facturación</h1>";
 		$data["head"]    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
@@ -82,6 +103,7 @@ class sitemslog extends Controller {
 		$grid->db->where('id',$numero);	
 		$grid->per_page=20;
 
+		$grid->column("Codigo","codigoa","align=left");
 		$grid->column("Codigo","codigoa","align=left");
 		$grid->column("Descripcion","desca","align=left");
 		$grid->column("Cantidad","cana","align=center");
