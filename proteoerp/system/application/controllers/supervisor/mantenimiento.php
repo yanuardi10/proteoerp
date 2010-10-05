@@ -1,6 +1,6 @@
 <?php
 class Mantenimiento extends Controller{
-	
+
 	function Mantenimiento(){
 		parent::Controller();
 		$this->load->library("rapyd");
@@ -15,17 +15,18 @@ class Mantenimiento extends Controller{
 		$list[]=anchor('supervisor/mantenimiento/clinconsis','Incosistencias Clientes');
 		$list[]=anchor('supervisor/repodupli/','Reportes Duplicado');
 		$list[]=anchor('supervisor/mantenimiento/contadores','Cambios en contadores').'Advertencia: uselo solo si sabe lo que esta haciendo';
-		
+		$list[]=anchor('supervisor/mantenimiento/tablas','Mantenimiento de Tablas');
+
 		$attributes = array(
 			'class' => 'boldlist',
 			'id'    => 'mylist'
 			);
 
-		$out=ul($list, $attributes);
-		$data['content'] = $out;
-		$data["head"]    = script("jquery.pack.js").script("jquery.treeview.pack.js").$this->rapyd->get_head().style('jquery.treeview.css');
-		$data['title']   = '<h1>Mantenimiento</h1>';
-		$this->load->view('view_ventanas', $data);
+			$out=ul($list, $attributes);
+			$data['content'] = $out;
+			$data["head"]    = script("jquery.pack.js").script("jquery.treeview.pack.js").$this->rapyd->get_head().style('jquery.treeview.css');
+			$data['title']   = '<h1>Mantenimiento</h1>';
+			$this->load->view('view_ventanas', $data);
 	}
 
 	function reparatabla(){
@@ -33,7 +34,7 @@ class Mantenimiento extends Controller{
 		$tables = $this->db->list_tables();
 		foreach ($tables as $table){
 			$this->dbutil->repair_table($table);
-		} 
+		}
 		redirect('supervisor/mantenimiento');
 	}
 
@@ -55,13 +56,13 @@ class Mantenimiento extends Controller{
 		$this->load->helper('directory');
 		$this->load->library('table');
 		$tmpl = array('row_start' => '<tr valign="top">');
-		$this->table->set_template($tmpl); 
+		$this->table->set_template($tmpl);
 
 		$map = directory_map('./system/logs/');
 		$lista=array();
 		foreach($map AS $file) {
 			if($file!='index.html')
-				$lista[]=anchor("supervisor/mantenimiento/borracentinela/$file",'X')." <a href='javascript:void(0)' onclick=\"carga('$file')\" >$file</a>";
+			$lista[]=anchor("supervisor/mantenimiento/borracentinela/$file",'X')." <a href='javascript:void(0)' onclick=\"carga('$file')\" >$file</a>";
 		}
 		$copy="<br><a href='javascript:void(0)' class='mininegro'  onclick=\"copiar()\" >Copiar texto</a>";
 		$tadata = array(
@@ -69,12 +70,12 @@ class Mantenimiento extends Controller{
 		          'id'      => 'log',
 		          'rows'    => '20',
 		          'cols'    => '60'
-		        );
-		
-		$form= form_open('ejecutasql/filteredgrid/process').form_textarea($tadata).'<br>'.form_submit('mysubmit', 'Ejecutar como SQL').form_close();
-		$this->table->add_row(ul($lista), '<b id="fnom">Seleccione un archivo de centinela</b><br>'.$form);
-		$link=site_url('supervisor/mantenimiento/vercentinela');
-		$data['script']  ="<script>
+		          );
+
+		          $form= form_open('ejecutasql/filteredgrid/process').form_textarea($tadata).'<br>'.form_submit('mysubmit', 'Ejecutar como SQL').form_close();
+		          $this->table->add_row(ul($lista), '<b id="fnom">Seleccione un archivo de centinela</b><br>'.$form);
+		          $link=site_url('supervisor/mantenimiento/vercentinela');
+		          $data['script']  ="<script>
 		  function carga(arch){
 		    link='$link'+'/'+arch;
 		    //alert(link);
@@ -85,14 +86,14 @@ class Mantenimiento extends Controller{
 		    $('#log').copy();
 		  };
 		</script>";
-		
-		$data['content'] = $this->table->generate();
-		$data['title']   = "<h1>Centinelas</h1>";
-		//script('plugins/jquery.clipboard.pack.js')
-		$data["head"]    =  script("jquery.pack.js").script('plugins/jquery.copy.min.js').$this->rapyd->get_head().style('marcos.css').style('estilos.css');
-		$this->load->view('view_ventanas', $data);
+
+		          $data['content'] = $this->table->generate();
+		          $data['title']   = "<h1>Centinelas</h1>";
+		          //script('plugins/jquery.clipboard.pack.js')
+		          $data["head"]    =  script("jquery.pack.js").script('plugins/jquery.copy.min.js').$this->rapyd->get_head().style('marcos.css').style('estilos.css');
+		          $this->load->view('view_ventanas', $data);
 	}
-	
+
 	function vercentinela($file=NULL){
 		if(empty($file)) return FALSE;
 		$this->load->helper('file');
@@ -100,7 +101,7 @@ class Mantenimiento extends Controller{
 		$string = $string;
 		echo $string;
 	}
-	
+
 	function borracentinela($file=NULL){
 		if(!empty($file)){
 			$this->load->helper('file');
@@ -109,41 +110,41 @@ class Mantenimiento extends Controller{
 		redirect('supervisor/mantenimiento/centinelas');
 	}
 	function almainconsis(){
-		
+
 		$this->rapyd->load("datafilter","datagrid");
-		
+
 		$filter = new DataFilter("Clientes inconsistentes");
-		
+
 		$filter->fechad = new dateonlyField('Desde','fechad');
 		$filter->fechah = new dateonlyField('Hasta','fechah');
 		$filter->fechad->clause  =$filter->fechah->clause="where";
 		$filter->fechad->db_name =$filter->fechah->db_name="fecha";
 		$filter->fechad->insertValue = date("Y-m-d");
 		$filter->fechah->insertValue = date("Y-m-d");
-		$filter->fechad->operator=">="; 
+		$filter->fechad->operator=">=";
 		$filter->fechah->operator="<=";
-    
+
 		$filter->buttons("reset","search");
 		$filter->build();
-		
+
 		if($this->rapyd->uri->is_set("search") AND $filter->is_valid()){
 			$fechah=$filter->fechah->newValue;
 			$fechad=$filter->fechad->newValue;
-			
+				
 			$alma=$this->datasis->dameval("SELECT a.ubica FROM (`costos` as a) LEFT JOIN `caub` AS b ON `a`.`ubica`=`b`.`ubica` WHERE `b`.`ubica` = 'NULL' AND `origen` = '3I' AND a.fecha >= '$fechad' AND a.fecha <= '$fechah'");
 			//echo $alma;
-    	
+			 
 			$uri = anchor('supervisor/mantenimiento/cambioalma/modify/<#tipo_doc#>/<#numero#>','Cambio');
-			
-			$grid = new DataGrid('Almacenes inconsistentes');	
+				
+			$grid = new DataGrid('Almacenes inconsistentes');
 			$select=array('a.fecha','a.numero','a.cod_cli','a.tipo_doc','a.totalg','a.almacen');
 			$grid->db->select($select);
 			$grid->db->from('sfac as a');
 			$grid->db->where("a.almacen",$alma);
 			$grid->db->where("a.fecha >= ",$fechad);
-			$grid->db->where("a.fecha <=",$fechah);			
+			$grid->db->where("a.fecha <=",$fechah);
 			$grid->per_page = 15;
-    	
+			 
 			$grid->column('Fecha'      ,'<dbdate_to_human><#fecha#></dbdate_to_human>' ,'fecha');
 			$grid->column('Numero'     ,'numero'  );
 			$grid->column('Cliente'    ,'cod_cli' );
@@ -151,14 +152,14 @@ class Mantenimiento extends Controller{
 			$grid->column('Monto'      ,'totalg'  );
 			$grid->column('Almacen'    ,'almacen' );
 			$grid->column('Realizar'    ,$uri );
-			
+				
 			$grid->build();
 			//echo $grid->db->last_query();
-		//memowrite($grid->db->last_query());
-		
+			//memowrite($grid->db->last_query());
+
 			$tabla=$grid->output;
 		}else{
-		$tabla='';
+			$tabla='';
 		}
 		$data['content']  = $filter->output.$tabla;
 		$data['title']    = "<h1>Almacenes con problemas de incosistencias</h1>";
@@ -170,7 +171,7 @@ class Mantenimiento extends Controller{
 		$this->rapyd->load("dataedit");
 		$edit = new DataEdit("Realizar cambio de almacen","sfac");
 		$edit->back_url = site_url("supervisor/mantenimiento/almainconsis");
-		
+
 		$edit->fecha = new DateonlyField("Fecha", "fecha","d/m/Y");
 		$edit->fecha->insertValue = date("Y-m-d");
 		$edit->fecha->size = 10;
@@ -180,7 +181,7 @@ class Mantenimiento extends Controller{
 		$edit->numero->size = 10;
 		$edit->numero->mode="autohide";
 
-		$edit->tipo = new dropdownField("Tipo", "tipo_doc");  
+		$edit->tipo = new dropdownField("Tipo", "tipo_doc");
 		$edit->tipo->option("D","D");
 		$edit->tipo->option("F","F");
 		$edit->tipo->option("X","X");
@@ -192,15 +193,15 @@ class Mantenimiento extends Controller{
 		$edit->nombre->mode="autohide";
 
 		$edit->almacen = new  dropdownField ("Almacen", "almacen");
-		$edit->almacen->option("","Todos");  
-		$edit->almacen->options("SELECT ubica, ubides FROM caub WHERE gasto='N' and invfis='N' ORDER BY ubides"); 					
-				
+		$edit->almacen->option("","Todos");
+		$edit->almacen->options("SELECT ubica, ubides FROM caub WHERE gasto='N' and invfis='N' ORDER BY ubides");
+
 		$edit->buttons("modify", "save", "undo", "back");
 		$edit->build();
-		
+
 		//$smenu['link']=barra_menu('113');
 		//$data['smenu']   = $this->load->view('view_sub_menu', $smenu,true);
-		$data['content'] =$edit->output;        
+		$data['content'] =$edit->output;
 		$data['title']   = "Almacen Inconsistente";
 		$data["head"]    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
@@ -248,7 +249,7 @@ class Mantenimiento extends Controller{
 		$filter->fechad->db_name =$filter->fechah->db_name="a.fecha";
 		//$filter->fechad->insertValue = date("Y-m-d");
 		//$filter->fechah->insertValue = date("Y-m-d");
-		$filter->fechad->operator=">="; 
+		$filter->fechad->operator=">=";
 		$filter->fechah->operator="<=";
 
 		$filter->cliente = new inputField("Cliente", "cod_cli");
@@ -289,7 +290,7 @@ class Mantenimiento extends Controller{
 		$grid->column_orderby('Abono Real'     ,'<nformat><#abonoreal#></nformat>'    ,'abonoreal' ,"align='right'");
 		$grid->column_orderby('Abono Inconsis.','<nformat><#inconsist#></nformat>'    ,'inconsist' ,"align='right'");
 		$grid->column('Faltante'               ,'<diff><#abonoreal#>|<#inconsist#></diff>',"align='right'");
-		$grid->column('Ajustar Saldo'          ,'<descheck><#numero#>|<#cod_cli#>|<#tipo_doc#>|<#fecha#>|<#abonoreal#></descheck>',"align=center"); 
+		$grid->column('Ajustar Saldo'          ,'<descheck><#numero#>|<#cod_cli#>|<#tipo_doc#>|<#fecha#>|<#abonoreal#></descheck>',"align=center");
 
 		$grid->build();
 		//echo $grid->db->last_query();
@@ -322,7 +323,7 @@ class Mantenimiento extends Controller{
 	}
 
 	function clinconsismasivo(){
-		$mSQL="SELECT 
+		$mSQL="SELECT
 			`a`.`fecha`, 
 			`a`.`tipo_doc`, 
 			`a`.`cod_cli`, 
@@ -352,9 +353,9 @@ class Mantenimiento extends Controller{
 			echo 0;
 		}else{
 			if($this->_sclisaldo($pk[0],$pk[1],$pk[2],$pk[3],$pk[4]))
-				echo 1;
+			echo 1;
 			else
-				echo 0;
+			echo 0;
 		}
 
 		/*$data = array('abonos' => $pk[4]);
@@ -367,12 +368,12 @@ class Mantenimiento extends Controller{
 		$mSQL = $this->db->update_string('smov', $data, $where);
 
 		if($this->db->simple_query($mSQL)){
-			echo 1;
-			return true;
+		echo 1;
+		return true;
 		}else{
-			memowrite($mSQL,'ajusal');
-			echo 0;
-			return false;
+		memowrite($mSQL,'ajusal');
+		echo 0;
+		return false;
 		}*/
 	}
 
@@ -489,4 +490,68 @@ class Mantenimiento extends Controller{
 		$this->validation->set_message('confirma', 'Debe escribir ACEPTO en la confirmaci&oacute;n');
 		return false;
 	}
+
+	function tablas(){
+		$this->rapyd->load("dataform","datatable");
+		$tables = $this->db->list_tables();
+		//print("<pre>");
+		//print_R($tables);
+				
+		$form = new DataForm("supervisor/mantenimiento/tablas/process"); 
+		$form->free = new freeField("Lista de Tablas","free","Chequear|Reparar|Optimizar");  
+		foreach($tables as $tabla){
+			$che="chequea_".$tabla;
+			$re="repara_".$tabla;
+			$op="optimi_".$tabla;
+			$ob1="con_".$tabla;
+            $ob2="con2_".$tabla;
+			
+			
+			$form->$che = new checkboxField("$tabla", "$che","CHECK TABLE $tabla","no");
+			$form->$ob1 = new containerField("","&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+            $form->$ob1->in="$che";
+			$form->$re = new checkboxField("", "$re","REPAIR TABLE $tabla","no");
+			$form->$re->in="$che";
+			$form->$ob2 = new containerField("","&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+            $form->$ob2->in="$che";
+			$form->$op = new checkboxField("", "$op","OPTIMIZE TABLE $tabla","no");
+			$form->$op->in="$che";
+		} 
+		
+		$form->submit("btnsubmit","Aceptar");
+		$form->build_form();
+		 
+		if  ($form->on_show() || $form->on_error()) {
+			$data["content"] =$form->output;
+		}
+		 
+		if ($form->on_success()){
+			$data["content"] = "<h1>Procesos y Consultas generadas</h1><br>";
+			$atras=anchor('supervisor/mantenimiento/tablas','Atras');
+			//print_R($_POST);
+			foreach($_POST as $nom=>$val){
+				
+					
+				if($this->db->simple_query($val)){
+					$data["content"].= "Se Proceso:".$nom." Con la consulta:(".$val.")<br>";
+				}else{
+					if($val=="Aceptar") break;
+					$data["content"].= "Error en consulta:".$val."<br>";
+				}
+			}
+			$data["content"].=$atras;
+		}
+		$data['title']   = "Mantenimiento de tablas";
+		$data["rapyd_head"] = $this->rapyd->get_head();
+		 
+		$this->load->view("view_ventanas", $data);
+		
+		
+		
+	}
+
+
+
+
 }
+
