@@ -16,6 +16,7 @@ class Usuarios extends Controller {
 	
 	function filteredgrid(){
 		$this->rapyd->load("datafilter","datagrid");
+		$this->rapyd->uri->keep_persistence();
 		
 		$filter = new DataFilter("Filtro de Usuarios",'usuario');
 		
@@ -46,14 +47,15 @@ class Usuarios extends Controller {
 		$grid->add("supervisor/usuarios/dataedit/create");
 		$grid->build();
 		
-		$data['content'] =$filter->output.$grid->output;        
-		$data['title']   = "<h1>Usuarios</h1>";        
+		$data['content'] =$filter->output.$grid->output;
+		$data['title']   = "<h1>Usuarios</h1>";
 		$data["head"]    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data); 
 	}
-	
+
 	function dataedit(){ 
 		$this->rapyd->load("dataedit");
+		$this->rapyd->uri->keep_persistence();
 		
 		$edit = new DataEdit("Usuarios", "usuario");
 		$edit->back_url = site_url("supervisor/usuarios/filteredgrid");
@@ -62,45 +64,31 @@ class Usuarios extends Controller {
 		$edit->post_process('delete','_pos_delete');
 		$edit->post_process('insert','_pos_insert');
 		$edit->post_process('update','_pos_update');
-				
+
 		$edit->us_codigo = new inputField("C&oacute;digo de Usuario", "us_codigo");
 		$edit->us_codigo->rule = "strtoupper|required";
 		$edit->us_codigo->mode = "autohide";
 		$edit->us_codigo->size = 20;
 		$edit->us_codigo->maxlength = 15;
-		
+
 		$edit->us_nombre = new inputField("Nombre", "us_nombre");
 		$edit->us_nombre->rule = "strtoupper|required";
 		$edit->us_nombre->size = 45;
-		
-		$edit->us_clave = new inputField("Clave","us_clave");
-		$edit->us_clave->rule = "required|matches[us_clave1]";
-		$edit->us_clave->type= "password";
-		$edit->us_clave->when = array("create","idle");  
-		$edit->us_clave->size = 12;
-		$edit->us_clave->maxlength = 15;
-		
-		$edit->us_clave1 = new inputField("Confirmar Clave","us_clave1");
-		$edit->us_clave1->rule = "required";
-		$edit->us_clave1->type= "password";
-		$edit->us_clave1->when = array("create","idle");
-		$edit->us_clave1->size = 12;
-		$edit->us_clave1->maxlength  = 15;
-		
+
 		$edit->supervisor = new dropdownField("Es Supervisor", "supervisor");
-		$edit->supervisor->rule = "required";
+		$edit->supervisor->rule = 'required';
 		$edit->supervisor->option("N","No");
 		$edit->supervisor->option("S","Si");
 		$edit->supervisor->style="width:80px";
-		
+
 		$edit->almacen = new dropdownField("Almacen", "almacen");
 		$edit->almacen->option("","");
-		$edit->almacen->options("SELECT ubica, ubides FROM caub ORDER BY ubides");
+		$edit->almacen->options("SELECT ubica, CONCAT_WS('-',ubica,ubides) AS descrip FROM caub ORDER BY ubica");
 		
 		$edit->buttons("modify", "save", "undo", "back","delete");
 		$edit->build();
-				
-		$data['content'] =$edit->output;        
+
+		$data['content'] =$edit->output;
 		$data['title']   = "<h1>Usuarios</h1>";
 		$data["head"]    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data); 
@@ -158,12 +146,13 @@ class Usuarios extends Controller {
 		$data['title']   = "<h1>Asignar Accesos</h1>";
 		$data["head"]    = style("estilos.css").$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
-		
+
 	}
 
 	function cclave(){ 
 		$this->rapyd->load("dataedit");
-		
+		$this->rapyd->uri->keep_persistence();
+
 		$edit = new DataEdit("Cambio de clave de usuario", "usuario");
 		$edit->back_url = site_url("supervisor/usuarios/filteredgrid");
 		$edit->post_process('update','_pos_updatec');
@@ -186,7 +175,7 @@ class Usuarios extends Controller {
 		$edit->us_clave1->size = 12;
 		$edit->us_clave1->maxlength  = 15;
 		
-		$edit->buttons("modify", "save", "undo", "back","delete");
+		$edit->buttons("modify", "save", "undo", "back");
 		$edit->build();
 				
 		$data['content'] =$edit->output;        
@@ -216,6 +205,7 @@ class Usuarios extends Controller {
 		$codigo=$do->get('us_codigo');
 		$superv=$do->get('supervisor');
 		logusu('USUARIOS',"CREADO EL USUARIO $codigo, SUPERVISOR $superv");
+		redirect("supervisor/usuarios/cclave/modify/$codigo");
 		return TRUE;
 	}
 	
@@ -239,12 +229,8 @@ class Usuarios extends Controller {
 		$this->db->simple_query($mSQL);
 	}
 	function soporte(){
-		
 		$mSQL="INSERT INTO `usuario` (`us_codigo`, `us_nombre`, `us_clave`,`supervisor`) VALUES ('SOPORTE', 'PERS. DREMANVA', 'DREMANVA','S');";
 		$this->db->simple_query($mSQL);
-		
-		
-		
 	}
 	function almacen(){
 		$mSQL="ALTER TABLE `usuario`  ADD COLUMN `almacen` CHAR(4) NULL";
