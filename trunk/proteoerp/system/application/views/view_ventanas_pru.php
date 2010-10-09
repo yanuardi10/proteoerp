@@ -81,7 +81,7 @@ $(function()
 		<div class="footer">
 
 
-		<p style='font-size: 10'>Tiempo de la consulta seg | Tortuga |<a
+		<p style='font-size: 10'>Tiempo de la consulta seg | Proteo ERP  |<a
 			href="#" onClick="window.close()">Cerrar</a></p>
 
 
