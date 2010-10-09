@@ -9,11 +9,16 @@ function phpscript($file){
 
 function nformat($numero,$num=null,$centimos=null,$miles=null){
 	if(empty($numero)) return null;
+	$sig='';
+	if($numero < 0){
+		$sig='-';
+		$numero=abs($numero);
+	}
 	if(is_null($centimos)) $centimos = (is_null(constant("RAPYD_DECIMALS"))) ? ',' : RAPYD_DECIMALS;
 	if(is_null($miles))    $miles    = (is_null(constant("RAPYD_THOUSANDS")))? '.' : RAPYD_THOUSANDS;
 	if(is_null($num))      $num      = (is_null(constant("RAPYD_NUM")))      ?  2  : RAPYD_NUM;
 	if(!($numero > 0) OR (!is_numeric($numero)))$numero=0;
-	return number_format($numero,$num,$centimos,$miles);
+	return $sig.number_format($numero,$num,$centimos,$miles);
 }
 
 function des_nformat($numero,$num=null,$centimos=null,$miles=null){
