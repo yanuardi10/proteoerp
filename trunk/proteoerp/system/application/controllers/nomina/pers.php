@@ -232,7 +232,7 @@ class pers extends validaciones {
 		$edit->posicion->rule="trim|strtoupper";
 		$edit->posicion->style ="width:170px;";
 		
-		$edit->nacimi = new DateField("Fecha de Nacimiento", "nacimi","d/m/Y");
+		$edit->nacimi = new DateOnlyField("Fecha de Nacimiento", "nacimi","d/m/Y");
 		$edit->nacimi->size = 12;
 		$edit->nacimi->group = "Datos del Trabajador"; 
 		$edit->nacimi->rule="trim|chfecha";
