@@ -1,13 +1,13 @@
 <?php
 class Cierre extends Controller {
-	
+
 	function Cierre(){
 		parent::Controller();
 		$this->load->library("rapyd");
 		$this->datasis->modulo_id(606,1);
 	}
 
-	function index() {		
+	function index() {
 		$this->rapyd->load("datagrid","dataform");
 
 		$fecha=$this->uri->segment(4);
@@ -102,5 +102,18 @@ class Cierre extends Controller {
 		else
 			echo "Cierre realizado $comprob";
   }
+
+        function instalar(){
+                $mSQL="CREATE TABLE IF NOT EXISTS `cplacierre` (
+                  `id` int(20) unsigned NOT NULL AUTO_INCREMENT,
+                  `anno` int(10) DEFAULT NULL,
+                  `cuenta` varchar(250) DEFAULT NULL,
+                  `descrip` varchar(250) DEFAULT NULL,
+                  `monto` decimal(15,2) DEFAULT NULL,
+                  PRIMARY KEY (`id`),
+                  UNIQUE KEY `ac` (`anno`,`cuenta`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Cierres contables'"
+                $this->db->simple_query($mSQL);
+        }
 }
 ?>
