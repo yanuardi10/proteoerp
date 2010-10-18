@@ -161,6 +161,28 @@ class Cplacierre extends validaciones {
 		return True;
 	}
 
+	function generar($anno){
+		if(is_numeric($anno)){
+			$fdesde=$anno.'0101';
+			$fhasta=$anno.'1231';
+
+			$mSQL = "DELETE FROM cplacierre WHERE anno = $anno";
+			$rt=$this->db->simple_query($mSQL);
+			var_dump($rt);
+
+			$mSQL = 'INSERT INTO cplacierre SELECT '.$anno.', a.cuenta, b.descrip, sum(a.debe) , sum(a.haber) from itcasi AS a JOIN cpla AS b ON a.cuenta=b.codigo ';
+			$mSQL.= "WHERE fecha BETWEEN $fdesde AND $fhasta ";
+			$mSQL.= 'GROUP BY a.cuenta';
+			$rt=$this->db->simple_query($mSQL);
+			var_dump($rt);
+
+			$mSQL='INSERT IGNORE INTO cplacierre SELECT '.$anno.' AS anno, cuenta, descrip, 0,0 FROM cpla';
+			$rt=$this->db->simple_query($mSQL);
+			var_dump($rt);
+
+		}
+	}
+
 	function instalar(){
 		$mSQL="CREATE TABLE IF NOT EXISTS `cplacierre` (
 		  `id` int(20) unsigned NOT NULL AUTO_INCREMENT,
