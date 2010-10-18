@@ -300,5 +300,19 @@ class Generar extends Metodos {
 		$guery=$this->db->simple_query("DELETE FROM itcasi USING itcasi LEFT JOIN casi ON itcasi.comprob=casi.comprob AND itcasi.origen like CONCAT(casi.origen,'%') WHERE casi.comprob IS NULL");
 		$guery=$this->db->simple_query("DELETE FROM casi   USING casi LEFT JOIN itcasi ON itcasi.comprob=casi.comprob AND itcasi.origen like CONCAT(casi.origen,'%') WHERE itcasi.comprob IS NULL");
 	}
+
+	function instalar(){
+		$mSQL="CREATE TABLE IF NOT EXISTS `cplacierre` (
+		  `id` int(20) unsigned NOT NULL AUTO_INCREMENT,
+		  `anno` int(10) DEFAULT NULL,
+		  `cuenta` varchar(250) DEFAULT NULL,
+		  `descrip` varchar(250) DEFAULT NULL,
+		  `monto` decimal(15,2) DEFAULT NULL,
+		  PRIMARY KEY (`id`),
+		  UNIQUE KEY `ac` (`anno`,`cuenta`)
+		) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Cierres contables'"
+		$this->db->simple_query($mSQL);
+	}
+
 }
 ?>
