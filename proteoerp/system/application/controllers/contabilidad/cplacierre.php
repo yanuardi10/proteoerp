@@ -25,15 +25,15 @@ class Cplacierre extends validaciones {
 		$filter->buttons("reset","search");
 		$filter->build();
 
-		$uri = anchor('contabilidad/cplacierre/dataedit/show/<#id#>','<#id#>');
+		$uri = anchor('contabilidad/cplacierre/dataedit/show/<#id#>','<#cuenta#>');
 
 		$grid = new DataGrid();
 		$grid->order_by("id","asc");
 		$grid->per_page = 15;
 
-		$grid->column_orderby('ID',$uri,'id');
+//		$grid->column_orderby('ID',$uri,'id');
+		$grid->column_orderby("Cuenta"    ,$uri,"cuenta");
 		$grid->column_orderby('A&ntilde;o','anno','anno');
-		$grid->column_orderby("Cuenta"    ,"cuenta","cuenta");
 		$grid->column_orderby('Descripci&oacute;n','descrip','descrip');
 		$grid->column_orderby('Monto'     ,'monto','monto',"align='center'");
 
