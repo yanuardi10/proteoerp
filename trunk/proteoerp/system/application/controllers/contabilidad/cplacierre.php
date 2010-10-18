@@ -161,25 +161,58 @@ class Cplacierre extends validaciones {
 		return True;
 	}
 
-	function generar($anno){
+	function generar(){
+
+		$this->rapyd->load('dataform');
+
+		$form = new DataForm("contabilidad/cplacierre/generar/process");
+		$form->fecha = new dateonlyField("Fecha","fecha",'Y');
+		$form->fecha->insertValue = date("Y-m-d");
+		$form->fecha->dbformat='Y';
+		$form->fecha->rule ="required";
+		$form->fecha->size =12;
+		$form->submit("btnsubmit","Generar");
+		$form->build_form();
+
+		$msj='';
+		if ($form->on_success()){
+			$anno=$form->fecha->newValue;
+			if ($this->_generar($anno)) 
+				$msj='Cierre Creado';
+			else
+				$msj='Error creando los cierres,';
+		}
+
+		$data['content'] = $form->output.$msj;
+		$data['title']   = '<h1>Generar Balance de cierre</h1>';
+		$data['script']  = '';
+		$data["head"]    = $this->rapyd->get_head();
+		$this->load->view('view_ventanas', $data);
+	}
+
+	function _generar($anno){
 		if(is_numeric($anno)){
 			$fdesde=$anno.'0101';
 			$fhasta=$anno.'1231';
 
 			$mSQL = "DELETE FROM cplacierre WHERE anno = $anno";
 			$rt=$this->db->simple_query($mSQL);
-			var_dump($rt);
+			if(!$rt) return $rt;
+			//var_dump($rt);
 
 			$mSQL = 'INSERT INTO cplacierre SELECT '.$anno.', a.cuenta, b.descrip, sum(a.debe) , sum(a.haber) from itcasi AS a JOIN cpla AS b ON a.cuenta=b.codigo ';
 			$mSQL.= "WHERE fecha BETWEEN $fdesde AND $fhasta ";
 			$mSQL.= 'GROUP BY a.cuenta';
 			$rt=$this->db->simple_query($mSQL);
-			var_dump($rt);
+			if(!$rt) return $rt;
+			//var_dump($rt);
 
-			$mSQL='INSERT IGNORE INTO cplacierre SELECT '.$anno.' AS anno, cuenta, descrip, 0,0 FROM cpla';
+			$mSQL='INSERT IGNORE INTO cplacierre SELECT '.$anno.' AS anno, codigo, descrip, 0,0 FROM cpla';
 			$rt=$this->db->simple_query($mSQL);
-			var_dump($rt);
-
+			if(!$rt) return $rt;
+			//var_dump($rt);
+			
+			return TRUE;
 		}
 	}
 
