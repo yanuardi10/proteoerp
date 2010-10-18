@@ -12,10 +12,6 @@ class Cplacierre extends validaciones {
 
 		$filter = new DataFilter("Filtro de Cierre de cuentas",'cplacierre');
 
-		$filter->id   = new inputField("ID","id");
-		$filter->id->like_side='after';
-		$filter->id->size=15;
-		
 		$filter->cuenta   = new inputField("Cuenta","cuenta");
 		$filter->cuenta->like_side='after';
 		$filter->cuenta->size=15;
@@ -67,7 +63,7 @@ class Cplacierre extends validaciones {
 		$edit->descrip->size=45;
 		$edit->descrip->maxlength =35;
 		
-		$edit->anno = new inputField("A&ntilde;o", "anno");
+		$edit->anno = new dateonlyField("A&ntilde;o", "anno","Y");
 		$edit->anno->rule= "strtoupper|required";
 		$edit->anno->size=15;
 		$edit->anno->maxlength =15;
