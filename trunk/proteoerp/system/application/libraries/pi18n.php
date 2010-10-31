@@ -92,8 +92,8 @@ class pi18n{
 
 	function _guardar($campo,$msj){
 		$data = array('metodo' => $this->metodo, 'modulo' => $this->modulo, 'pais' =>$this->pais, 'campo'=>$campo,'mensaje'=>$msj);
-		$mSQL = $this->db->insert_string('i18n', $data);
-		$this->db->simple_query($mSQL);
+		$mSQL = $this->ci->db->insert_string('i18n', $data);
+		$this->ci->db->simple_query($mSQL);
 	}
 
 }
