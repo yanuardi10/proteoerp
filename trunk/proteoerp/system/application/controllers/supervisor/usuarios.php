@@ -13,40 +13,41 @@ class Usuarios extends Controller {
 	function index(){
 		redirect("supervisor/usuarios/filteredgrid");
 	}
-	
+
 	function filteredgrid(){
 		$this->rapyd->load("datafilter","datagrid");
 		$this->rapyd->uri->keep_persistence();
-		
+
 		$filter = new DataFilter("Filtro de Usuarios",'usuario');
-		
+
 		$filter->us_codigo = new inputField("C&oacute;digo Usuario", "us_codigo");
 		$filter->us_codigo->size=15;
-		
+
 		$filter->us_nombre = new inputField("Nombre", "us_nombre");
 		$filter->us_nombre->size=15;
-		
+
 		$filter->buttons("reset","search");
 		$filter->build();
-		
+
 		$uri  = anchor('supervisor/usuarios/dataedit/show/<#us_codigo#>','<#us_codigo#>');
 		$uri2 = anchor('supervisor/usuarios/cclave/modify/<#us_codigo#>','Cambiar clave');
 		$uri3 = anchor('supervisor/usuarios/accesos/<#us_codigo#>','Asignar Accesos');
-		
+
 		$grid = new DataGrid("Lista de Usuarios");
 		$grid->order_by("us_codigo","asc");
 		$grid->per_page = 10;
-		
-		$grid->column("C&oacute;digo", $uri);
-		$grid->column("Nombre","us_nombre"     );
-		$grid->column("Supervisor"    ,"supervisor",'align="center"');
-		$grid->column("Almacen","almacen","align='left'");
-		$grid->column("Cambio clave"  ,$uri2       ,'align="center"');
-		$grid->column("Asignar Accesos",$uri3       ,'align="center"');
-		
+
+		$grid->column('C&oacute;digo', $uri);
+		$grid->column('Nombre','us_nombre'     );
+		$grid->column('Supervisor'     ,'supervisor' ,'align="center"');
+		$grid->column('Almac&eacute;n' ,'almacen'   ,"align='left'");
+		$grid->column('Vendedor'       ,'vendedor'  ,"align='center'");
+		$grid->column('Cambio clave'   ,$uri2       ,'align="center"');
+		$grid->column('Asignar Accesos',$uri3       ,'align="center"');
+
 		$grid->add("supervisor/usuarios/dataedit/create");
 		$grid->build();
-		
+
 		$data['content'] =$filter->output.$grid->output;
 		$data['title']   = "<h1>Usuarios</h1>";
 		$data["head"]    = $this->rapyd->get_head();
@@ -84,7 +85,11 @@ class Usuarios extends Controller {
 		$edit->almacen = new dropdownField("Almacen", "almacen");
 		$edit->almacen->option("","");
 		$edit->almacen->options("SELECT ubica, CONCAT_WS('-',ubica,ubides) AS descrip FROM caub ORDER BY ubica");
-		
+
+		$edit->vendedor = new dropdownField("Vendedor", "vendedor");
+		$edit->vendedor->option("","Ninguno");
+		$edit->vendedor->options("SELECT vendedor, CONCAT(vendedor,'-',nombre) AS nom FROM vend WHERE tipo IN ('V','A') ORDER BY vendedor");
+
 		$edit->buttons("modify", "save", "undo", "back","delete");
 		$edit->build();
 
@@ -238,4 +243,3 @@ class Usuarios extends Controller {
 		echo "Agregado campo almacen";
 	}
 }
-?>
