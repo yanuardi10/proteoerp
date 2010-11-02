@@ -238,7 +238,7 @@ $rpd['persistence_limit'] = 10;  //max number of concurrent sessions per uri.
 $rpd['replace_functions'] = array(
   "htmlspecialchars","htmlentities","strtolower","strtoupper",
   "substr","nl2br","dbdate_to_human", "number_format", "raencode","nformat","moneyformat",
-  "enum_to_human");
+  "enum_to_human",'sinulo');
 
 
 

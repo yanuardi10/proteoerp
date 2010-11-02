@@ -30,6 +30,12 @@ function des_nformat($numero,$num=null,$centimos=null,$miles=null){
 	return floatval($numero);
 }
 
+function sinulo($val,$porcia=null){
+	if(empty($val) OR is_null($val))
+		return $porcia;
+	return $val;
+}
+
 function moneyformat($numero){
 	return nformat($numero,2);
 }
