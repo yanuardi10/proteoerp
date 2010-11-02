@@ -1,15 +1,15 @@
 <?php
 class Common extends controller {
 	function get_depto(){//usado por sinv
-	$mSQL=$this->db->query("SELECT depto, descrip as valor FROM dpto WHERE tipo='I' ORDER BY valor");
-	echo "<option value=''></option>";
-	if($mSQL){
-		foreach($mSQL->result() AS $fila ){
-			echo "<option value='".$fila->depto."'>".$fila->valor."</option>";
+		$mSQL=$this->db->query("SELECT depto, descrip as valor FROM dpto WHERE tipo='I' ORDER BY valor");
+		echo "<option value=''></option>";
+		if($mSQL){
+			foreach($mSQL->result() AS $fila ){
+				echo "<option value='".$fila->depto."'>".$fila->valor."</option>";
+			}
 		}
 	}
-	}
-	
+
 	function add_depto(){//usado por sinv
 		if(isset($_POST['valor'])){
 			$valor=$_POST['valor'];
@@ -20,11 +20,11 @@ class Common extends controller {
 				$depto=$this->sug('dpto');
 				$agrego=$this->db->query("INSERT INTO dpto (depto,tipo,descrip) VALUES ('$depto','I','$valor')");
 				if($agrego)echo $depto;
-					else echo "N.o-SeAgrego";
+				else echo "N.o-SeAgrego";
 			}
 		}
 	}
-	
+
 	function add_linea()//usado por sinv
 	{
 		if(isset($_POST['valor']) && isset($_POST['valor2'])){
@@ -37,11 +37,11 @@ class Common extends controller {
 				$linea=$this->sug('line');
 				$agrego=$this->db->query("INSERT INTO line (linea,depto,descrip) VALUES ('$linea','$valor2','$valor')");
 				if($agrego)echo $linea;
-					else echo "N.o-SeAgrego";
+				else echo "N.o-SeAgrego";
 			}
 		}
 	}
-	
+
 	function get_linea(){//usado por sinv
 		echo "<option value=''>Seleccione un Departamento</option>";
 		$depto=$this->input->post('depto');
@@ -50,6 +50,37 @@ class Common extends controller {
 			if($mSQL){
 				foreach($mSQL->result() AS $fila ){
 					echo "<option value='".$fila->linea."'>".$fila->descrip."</option>";
+				}
+			}
+		}
+	}
+
+
+	function add_fami()//usado por maes
+	{
+		if(isset($_POST['valor']) && isset($_POST['valor2'])){
+			$valor=$_POST['valor'];
+			$valor2=$_POST['valor2'];
+			$existe=$this->datasis->dameval("SELECT COUNT(descrip) FROM fami WHERE descrip='$valor' AND depto='$valor2'");
+			if($existe>0){
+				echo "Y.a-Existe";
+			}else{
+				$fami=$this->sug('fami');
+				$agrego=$this->db->query("INSERT INTO fami (familia,depto,descrip) VALUES ('$fami','$valor2','$valor')");
+				if($agrego)echo $fami;
+				else echo "N.o-SeAgrego";
+			}
+		}
+	}
+
+	function get_fami(){//usado por sinv
+		echo "<option value=''>Seleccione un Departamento</option>";
+		$depto=$this->input->post('depto');
+		if(!empty($depto)){
+			$mSQL=$this->db->query("SELECT familia,descrip FROM fami WHERE depto ='$depto'");
+			if($mSQL){
+				foreach($mSQL->result() AS $fila ){
+					echo "<option value='".$fila->familia."'>".$fila->descrip."</option>";
 				}
 			}
 		}
@@ -105,7 +136,22 @@ class Common extends controller {
 			echo "<option value=''>Seleccione una L&iacute;nea primero</option>";
 		}
 	}
-	
+
+	function get_grupo_m(){//usado por maes
+		$fami=$this->input->post('fami');
+		if(!empty($fami)){
+			$mSQL=$this->db->query("SELECT grupo,nom_grup FROM grup WHERE familia ='$fami'");
+			if($mSQL){
+				echo "<option value=''>Seleccione una familia</option>";
+				foreach($mSQL->result() AS $fila ){
+					echo "<option value='".$fila->grupo."'>".$fila->nom_grup."</option>";
+				}
+			}
+		}else{
+			echo "<option value=''>Seleccione una familia primero</option>";
+		}
+	}
+
 	function add_grupo()//usado por sinv
 	{
 		if(isset($_POST['valor']) && isset($_POST['valor2']) && isset($_POST['valor3'])){
@@ -119,7 +165,7 @@ class Common extends controller {
 				$grupo=$this->sug('grup');
 				$agrego=$this->db->query("INSERT INTO grup (grupo,linea,nom_grup,tipo,depto) VALUES ('$grupo','$valor2','$valor','I','$valor3')");
 				if($agrego)echo $grupo;
-					else echo "N.o-SeAgrego";
+				else echo "N.o-SeAgrego";
 			}
 		}
 	}
@@ -140,7 +186,7 @@ class Common extends controller {
 			if($agrego)echo "s.i";
 		}
 	}
-	
+
 	function get_unidad(){//usado por sinv
 		$mSQL=$this->db->query("SELECT unidades, unidades as valor FROM unidad ORDER BY unidades");
 		echo "<option value=''></option>";
@@ -150,7 +196,7 @@ class Common extends controller {
 			}
 		}
 	}
-	
+
 	function add_unidad(){//usado por sinv
 		if(isset($_POST['valor'])){
 			$valor=$_POST['valor'];
@@ -158,29 +204,31 @@ class Common extends controller {
 			if($agrego)echo "s.i";
 		}
 	}
-	
+
 	function sugerir_dpto(){
 		$ultimo=$this->datasis->dameval("SELECT LPAD(hexa,2,0) FROM serie LEFT JOIN dpto ON LPAD(depto,2,0)=LPAD(hexa,2,0) WHERE valor<255 AND depto IS NULL LIMIT 1");
 		echo $ultimo;
 	}
-	
+
 	function sugerir_grup(){
 		$ultimo=$this->datasis->dameval("SELECT LPAD(hexa,4,0) FROM serie LEFT JOIN grup ON LPAD(grupo,4,0)=LPAD(hexa,4,0) WHERE valor<65535 AND grupo IS NULL LIMIT 1");
 		echo $ultimo;
 	}
-	
+
 	function sugerir_line(){
 		$ultimo=$this->datasis->dameval("SELECT LPAD(hexa,2,0) FROM serie LEFT JOIN line ON LPAD(linea,2,0)=LPAD(hexa,2,0) WHERE valor<255 AND linea IS NULL LIMIT 1");
 		echo $ultimo;
 	}
-	
+
 	function sug($tabla=''){
 		if($tabla=='dpto'){
 			$valor=$this->datasis->dameval("SELECT LPAD(hexa,2,0) FROM serie LEFT JOIN dpto ON LPAD(depto,2,0)=LPAD(hexa,2,0) WHERE valor<255 AND depto IS NULL LIMIT 1");
 		}elseif($tabla=='line'){
-				$valor=$this->datasis->dameval("SELECT LPAD(hexa,2,0) FROM serie LEFT JOIN line ON LPAD(linea,2,0)=LPAD(hexa,2,0) WHERE valor<255 AND linea IS NULL LIMIT 1");
+			$valor=$this->datasis->dameval("SELECT LPAD(hexa,2,0) FROM serie LEFT JOIN line ON LPAD(linea,2,0)=LPAD(hexa,2,0) WHERE valor<255 AND linea IS NULL LIMIT 1");
 		}elseif($tabla=='grup'){
-				$valor=$this->datasis->dameval("SELECT LPAD(hexa,4,0) FROM serie LEFT JOIN grup ON LPAD(grupo,4,0)=LPAD(hexa,4,0) WHERE valor<65535 AND grupo IS NULL LIMIT 1");
+			$valor=$this->datasis->dameval("SELECT LPAD(hexa,4,0) FROM serie LEFT JOIN grup ON LPAD(grupo,4,0)=LPAD(hexa,4,0) WHERE valor<65535 AND grupo IS NULL LIMIT 1");
+		}elseif($tabla=='fami'){
+			$valor=$this->datasis->dameval("SELECT LPAD(hexa,2,0) FROM serie LEFT JOIN fami ON LPAD(familia,2,0)=LPAD(hexa,4,0) WHERE valor<255 AND familia IS NULL LIMIT 1");
 		}
 		return $valor;
 	}
