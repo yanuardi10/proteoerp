@@ -16,8 +16,8 @@ class etiqueta_maes extends Controller {
 		$this->rapyd->load("datafilter2","datagrid","dataobject","fields");
 
 		$user  = $this->session->userdata('usuario');
-		$link2=site_url('inventario/common/get_linea');
-		$link3=site_url('inventario/common/get_grupo');
+		$link2=site_url('inventario/common/get_fami');
+		$link3=site_url('inventario/common/get_grupo_m');
 		
 		$link5=site_url();
 
@@ -32,19 +32,19 @@ class etiqueta_maes extends Controller {
 			$("#depto").change(function(){
 				$("#objnumero").val("");
 				depto();
-				$.post("'.$link2.'",{ depto:$(this).val() },function(data){$("#linea").html(data);})
-				$.post("'.$link3.'",{ linea:"" },function(data){$("#grupo").html(data);})
+				$.post("'.$link2.'",{ depto:$(this).val() },function(data){$("#fami").html(data);})
+				$.post("'.$link3.'",{ fami:"" },function(data){$("#grupo").html(data);})
 			});
-			$("#linea").change(function(){
-				linea();
-				$.post("'.$link3.'",{ linea:$(this).val() },function(data){$("#grupo").html(data);})
+			$("#fami").change(function(){
+				fami();
+				$.post("'.$link3.'",{ lfami:$(this).val() },function(data){$("#grupo").html(data);})
 			});
 			
 			$("#grupo").change(function(){
 				grupo();
 			});
 			depto();
-			linea();
+			fami();
 			grupo();
 		});
 		
@@ -57,12 +57,12 @@ class etiqueta_maes extends Controller {
 			}
 		}
 		
-		function linea(){
-			if($("#linea").val()!=""){
-				$("#nom_linea").attr("disabled","disabled");
+		function fami(){
+			if($("#fami").val()!=""){
+				$("#nom_fami").attr("disabled","disabled");
 			}
 			else{
-				$("#nom_linea").attr("disabled","");
+				$("#nom_fami").attr("disabled","");
 			}
 		}
 		
@@ -105,7 +105,7 @@ class etiqueta_maes extends Controller {
 
 		$filter->grupo = new dropdownField("Grupo", "grupo");
 		$filter->grupo->db_name="b.grupo";
-		$filter->grupo->option("","Seleccione una L&iacute;nea primero");
+		$filter->grupo->option("","Seleccione una familia primero");
 
 		$fami=$filter->getval('fami');
 		if($fami!==FALSE){
