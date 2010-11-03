@@ -568,10 +568,16 @@ class Stylesheet {
 //       pre_var_dump($selector);
 //       pre_var_dump($query);
 //        echo ($style);
+      try{
+      $nodes = @$xp->query($query);
+}catch (Exception $e){
+        continue;
+}
+
       
       // Retrieve the nodes      
-      $nodes = $xp->query($query);
-
+      //$nodes = $xp->query($query);
+if(gettype($nodes)=='object' AND $nodes->length>0){
       foreach ($nodes as $node) {
         //echo $node->nodeName . "\n";
         // Retrieve the node id
@@ -585,7 +591,7 @@ class Stylesheet {
         $styles[$id][$spec][] = $style;
       }
     }
-
+}
     // Now create the styles and assign them to the appropriate frames.  (We
     // iterate over the tree using an implicit Frame_Tree iterator.)
     $root_flg = false;
