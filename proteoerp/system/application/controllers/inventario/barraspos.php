@@ -39,7 +39,7 @@ class barraspos extends Controller {
 		$filter->buttons("reset","search");
 		$filter->build();
 
-		$link=anchor('/inventario/barraspos/dataedit/modify/<#codigo#>','<#codigo#>');
+		$link=anchor('/inventario/barraspos/dataedit/modify/<#codigo#>/<#suplemen#>','<#codigo#>');
 		$grid = new DataGrid("Lista de Art&iacute;culos");
 		$grid->order_by("codigo","asc");
 		$grid->per_page = 15;
@@ -78,16 +78,14 @@ class barraspos extends Controller {
 		$edit->codigo = new inputField("C&oacute;digo", "codigo");
 		$edit->codigo->size       =  15;
 		$edit->codigo->maxlength  =  15;
-		$edit->codigo->rule 			= "trim|required";
+		$edit->codigo->rule 			= "required";
 		$edit->codigo->append($bSPRV);
 		
 
-		$edit->barras = new inputField("Barras", "barras");
+		$edit->barras = new inputField("Barras", "suplemen");
 		$edit->barras->size      =  15;
 		$edit->barras->maxlength =  15;
-		$edit->barras->rule      =  "trim|required";
-
-		
+		$edit->barras->rule      =  "required";
 		
 		$edit->buttons("modify", "save", "undo", "back");
 		$edit->build();
