@@ -78,10 +78,12 @@ class Rcaj extends validaciones {
 
 			$grid = new DataGrid('Recepcion de cajas para la fecha: '.$filter->fecha->value);
 			$select=array('b.cajero','b.fecha','b.cajero','a.recibido','SUM(b.totalg) AS ingreso','a.numero');
+			//$select=array('b.cajero','b.fecha','b.cajero','b.recibido','b.numero');
 
 			$grid->db->select($select);
+			//$grid->db->from('rcaj as b');
 			$grid->db->from('sfac as b');
-			$grid->db->join('rcaj as a','a.cajero=b.cajero','LEFT');
+			$grid->db->join('rcaj as a','a.cajero=b.cajero AND a.fecha=b.fecha','LEFT');
 			$grid->db->groupby('b.cajero');
 			$grid->use_function('iconcaja');
 
@@ -209,8 +211,9 @@ class Rcaj extends validaciones {
 		ORDER BY concepto";
 
 		//echo $mSQL;
-		$i=0;
+		
 		$ctsistema=0;
+		/*$i=0;
 		$js_cesArray=array();
 		$cestatiket=array();
 		$query = $this->db->query($mSQL);
@@ -238,6 +241,7 @@ class Rcaj extends validaciones {
 			$ctsistema+=$row->sistema;
 		}$ces_filas=$i;
 		$query->free_result();
+		*/
 
 		$mSQL="SELECT a.tipo,a.nombre, sum(b.monto) sistema 
 		FROM tarjeta a 
@@ -323,18 +327,12 @@ class Rcaj extends validaciones {
 				'diferen' =>form_input($attDifEfe),
 				),
 			1 => array(
-				'descrip' =>'Cesta Tickets',
-				'recibido'=>form_input($attRecCtk),
-				'sistema' =>form_input($attSisCtk),//.form_hidden('QCESSISTEMA',$ctsistema),
-				'diferen' =>form_input($attDifCtk),
-				),
-			3 => array(
 				'descrip' =>'Otros',
 				'recibido'=>form_input($attRecOtr),
 				'sistema' =>form_input($attSisOtr),//.form_hidden('QOTRSISTEMA',$fpsistema),
 				'diferen' =>form_input($attDifOtr),
 				),
-			4 => array(
+			2 => array(
 				'descrip' =>'Recibido',
 				'recibido'=>form_input($attRecRec),
 				'sistema' =>form_input($attSisRec),//.form_hidden('QTOTSISTEMA',$fpsistema+$ctsistema+$msistema),
@@ -382,17 +380,7 @@ class Rcaj extends validaciones {
 			valor=des_number_format(elemento.value,'.',',');
 			elemento.value=number_format(valor,'.',',');
 		}
-		function tcestatiket() {
-			var pre=new Array('".join("','",$js_cesArray)."');
-			var i=0,acumulador=0;
-			for(i=0;i<$ces_filas;i++){
-				valor=des_number_format(document.getElementById('TCESTA'+pre[i]).value,'.',',');
-				acumulador=acumulador+valor;
-			}
-			recibido=document.getElementById('CTKRECI');
-			recibido.value=number_format(acumulador,'.',',');
-			caldiferencia();
-		}
+
 		function totrasfpa() {
 			var pre=new Array('".join("','",$js_ofpArray)."');
 			var i=0,acumulador=0;
@@ -436,18 +424,18 @@ class Rcaj extends validaciones {
 		$targrid->build();
 		$data['listad'] = $targrid->output;
 
-		$cestagrid = new DataGrid('Cesta Tiket',$cestatiket);
+		/*$cestagrid = new DataGrid('Cesta Tiket',$cestatiket);
 		$cestagrid->per_page = count($cestatiket);
 		$cestagrid->column("Descripcion","<#descrip#>");
 		$cestagrid->column("Cantidad"   ,"<#cant#>",'align="RIGHT"');
 		$cestagrid->column("Monto"      ,"<#monto#>"   ,'align="RIGHT"');
 		$cestagrid->column("Sistema"    ,"<#sistema#>" ,'align="RIGHT"');
 		$cestagrid->build();
-		$data['listad'] .= $cestagrid->output;
+		$data['listad'] .= $cestagrid->output;*/
 
 		$resugrid = new DataGrid('Resumen',$resumen);
 		$resugrid->per_page = count($resumen);
-		$resugrid->column("Descripcion","<#descrip#>");                 
+		$resugrid->column("Descripcion","<#descrip#>");
 		$resugrid->column("Recibido"   ,"<#recibido#>",'align="RIGHT"');
 		$resugrid->column("Sistema"    ,"<#sistema#>" ,'align="RIGHT"');
 		$resugrid->column("Diferencia" ,"<#diferen#>" ,'align="RIGHT"');
@@ -458,7 +446,7 @@ class Rcaj extends validaciones {
 
 		$atts=array('onsubmit'=>"return confirm('Seguro que desea Guardar')");
 		
-		$hidden = array('otr_filas' => $otr_filas, 'ces_filas' => $ces_filas);
+		$hidden = array('otr_filas' => $otr_filas, 'ces_filas' => 0);
 		//$data['form']=form_open("supermercado/cierre/guardar/$caja/$cajero/$qfecha",$atts,$hidden);
 
 		//$data['titulo'] = $script.$this->rapyd->get_head()."<center><h2>Cierre de Caja $caja Cajero $cajero</h2></center>\n";
@@ -474,25 +462,20 @@ class Rcaj extends validaciones {
 	}
 
 	function guardar(){
-
 		$caja    = $this->uri->segment(4);
 		$cajero  = $this->uri->segment(5);
 		$qfecha  = $this->uri->segment(6);
+		//print_r($_POST);
 
-		$ntransac   = str_pad($this->datasis->prox_sql("ntransa"),   8, "0", STR_PAD_LEFT) ;
+		/*$ntransac   = str_pad($this->datasis->prox_sql("ntransa"),   8, "0", STR_PAD_LEFT) ;
 		$numero  = str_pad($this->datasis->prox_sql("nrcaja"), 8, "0", STR_PAD_LEFT) ;
-		$trayecto  =$this->input->post('trayecto');
+		$trayecto  =$this->input->post('trayecto');*/
 
 		//** Totales **
 		//Efectivo
 		$efrecibido   = str_replace(",",'.',str_replace(".","",$_POST['EFERECI']));
 		$efsistema    = str_replace(",",'.',str_replace(".","",$_POST['EFESIST']));
 		$efdiferencia = str_replace(",",'.',str_replace(".","",$_POST['EFEDIFE']));
-
-		//Cesta Tickets'
-		$ctrecibido   = str_replace(",",'.',str_replace(".","",$_POST['CTKRECI']));
-		$ctsistema    = str_replace(",",'.',str_replace(".","",$_POST['CTKSIST']));
-		$ctdiferencia = str_replace(",",'.',str_replace(".","",$_POST['CTKDIFE']));
 
 		//Otras formas de pago
 		$ofrecibido   = str_replace(",",'.',str_replace(".","",$_POST['OTRRECI']));
@@ -504,56 +487,16 @@ class Rcaj extends validaciones {
 		$tosistema    = str_replace(",",'.',str_replace(".","",$_POST['RECSIST']));
 		$todiferencia = str_replace(",",'.',str_replace(".","",$_POST['RECDIFE']));
 
-		//echo 'efect.1 '.$efrecibido;
-		//echo 'efect.2 '.$efsistema; 
-		//echo 'efect.3 '.$efdiferencia;
-		//echo 'cesta.1'.$ctrecibido;
-		//echo 'cesta.2'.$ctsistema; 
-		//echo 'cesta.3'.$ctdiferencia;
-		//echo 'otras 1'.$ofrecibido;
-		//echo 'otras 2'.$ofsistema; 
-		//echo 'otras 3'.$ofdiferencia;
-		//echo 'resum 1'.$torecibido;
-		//echo 'resum 2'.$tosistema; 
-		//echo 'resum 3'.$todiferencia;
-
 		// Ahora Carga el efectivo
-
 		$query_1="INSERT INTO itrcaj( numero,tipo,recibido,sistema,diferencia)
-				        VALUES   ($numero,'EF',$efrecibido,$efsistema,$efdiferencia)";
-		//echo '<pre>'.$query_1.'</pre>';
+				    VALUES   ($numero,'EF',$efrecibido,$efsistema,$efdiferencia)";
 		$this->db->query($query_1);
-		// Carga Cesta Tickets
-		$cesta = 0;
-		$query = $this->db->query("SELECT concepto, descrip FROM tardet WHERE tarjeta='CT'");
-		foreach ($query->result() as $row){
-
-			$tipo=$row->concepto;
-			$mmonto    = $this->__post("TCESTA".$row->concepto);
-			$msistema  = $_POST["SCESTA".$row->concepto];	
-			$can       = intval($_POST["CCESTA".$row->concepto]);
-			$mmonto    = str_replace(",",".",str_replace(".","",$mmonto));
-			$msistema  = str_replace(",",".",str_replace(".","",$msistema));
-			$diferencia=$msistema-$mmonto;
-
-			//echo  '<pre>'.'Cesta :'.$tipo.'</pre>';
-			//echo  '<pre>'.'Cesta Cajero :'.$mmonto.'</pre>' ;
-			//echo  '<pre>'.'Cesta Sist: '.$msistema.'</pre>';
-			//echo  '<pre>'.'Cant :'.$can.'</pre>' ;
-
-			if ($mmonto<>0 or $msistema<>0){
-				$query="INSERT INTO itrcaj( numero,tipo,recibido,sistema,diferencia)
-				        VALUES   ($numero,'$tipo',$mmonto,$msistema,$diferencia)";
-				//echo '<pre>'.$query.'</pre>';
-				$this->db->query($query);
-			}
-		};
 
 		// Otras formas de Pago
 		$mSQL = 'SELECT tipo,nombre FROM tarjeta WHERE tipo NOT IN ("EF","CT","NC","ND", "DE", "IR","DP") ORDER BY tipo';
 		$query = $this->db->query($mSQL);
 		$efectos = 0;
-		foreach ( $query->result() as $row ){   
+		foreach ( $query->result() as $row ){
 
 			$tipo=$row->tipo;
 			$mmonto    = (empty($_POST["TOFP".$row->tipo])) ? 0 : $_POST["TOFP".$row->tipo];
@@ -564,15 +507,9 @@ class Rcaj extends validaciones {
 			$msistema  = str_replace(",",".",str_replace(".","",$msistema));
 			$diferencia=$msistema-$mmonto;
 
-			//echo  '<pre>'.'Tarj :'.$tipo.'</pre>';
-			//echo  '<pre>'.'Tarj Cajero :'.$mmonto.'</pre>' ;
-			//echo  '<pre>'.'Tarj Sist: '.$msistema.'</pre>';
-			//echo  '<pre>'.'Cant :'.$can.'</pre>' ;
-
 			if ($mmonto<>0 or $msistema<>0){
 				$query="INSERT INTO itrcaj( numero,tipo,recibido,sistema,diferencia)
 				        VALUES   ($numero,'$tipo',$mmonto,$msistema,$diferencia)";
-				//echo '<pre>'.$query.'</pre>';
 				$this->db->query($query);
 			}
 		}
@@ -580,7 +517,6 @@ class Rcaj extends validaciones {
 		$observa='EF '.$efrecibido.'  CESTA '.$ctrecibido.' OTRAS '.$ofrecibido;
 		$mSQL="INSERT INTO rcaj (fecha,cajero,tipo,usuario,caja,recibido,ingreso,parcial,observa,numero,transac,estampa,hora )
 		VALUE ($qfecha,$cajero,'F','".$this->session->userdata['usuario']."',$caja,$torecibido,$tosistema,$todiferencia,'$observa',$numero,$ntransac, now(),'".date("h:m:s")."')";
-		//echo '<pre>'.$mSQL.'</pre>';
 		$this->db->query($mSQL);
 
 		$atRI = array(
@@ -597,6 +533,7 @@ class Rcaj extends validaciones {
 		$data["head"]    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
+
 	function instalar(){
 		$mSQL="CREATE TABLE `itrcaj` (`numero` VARCHAR (8), `tipo` VARCHAR (15), `recibido` DECIMAL (17,2), `sistema` DECIMAL (17,2), `diferencia` DECIMAL (17,2),PRIMARY KEY (`numero`, `tipo`))";
 		$this->db->simple_query($mSQL);
