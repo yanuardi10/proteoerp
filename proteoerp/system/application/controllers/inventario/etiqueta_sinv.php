@@ -192,13 +192,82 @@ class etiqueta_sinv extends Controller {
 		$data['filtro']=$filter->output;
 		$data['tabla']=$tabla;
 		//$data['smenu'] = $back;//.$grid->output;
-		$data['title']   = "Genera Catalogo";
+		$data['title']   = "Genera Etiqueta";
 		$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").script("sinvmaes2.js").$this->rapyd->get_head();
 		$this->load->view('view_ventanas_pru', $data);
 	}
 	
 	
-	function instalar(){
+	function num_compra(){
+		$this->rapyd->load("datafilter2","datagrid","dataobject","fields");
+		
+		$mSCST=array(
+			'tabla'   =>'scst',
+			'columnas'=>array(
+			'control'=>'Control',
+			'nombre'=>'Nombre'),
+			'filtro'  =>array('control'=>'Control','nombre'=>'Nombre'),
+			'retornar'=>array('control'=>'control'),
+			'titulo'  =>'Buscar Codigo');
+		$bSCST=$this->datasis->modbus($mSCST);
+		
+		$filter = new DataFilter2("N&uacute;mero de compra");
+		$filter->db->_escape_char='';
+		$filter->db->_protect_identifiers=false;
+		$filter->db->select(array("a.barras as barras","a.codigo as codigo","a.descrip as descrip","a.precio1 as precio","b.control as control"));
+		$filter->db->from("sinv as a");
+		$filter->db->join("itscst as b","a.codigo=b.codigo");
+		
+		$filter->codigo=new inputField("C&oacute;digo","control");
+		$filter->codigo-> size=15;
+		$filter->codigo->append($bSCST);
+		
+		$filter->buttons("reset","search");
+		$filter->build();
+		
+		
+		$tabla="";
+
+		if($this->rapyd->uri->is_set("search")  AND $filter->is_valid()){
+			$tabla=form_open("forma/ver/etiqueta1");
+		
+			$grid = new DataGrid("Oreden de Compra");
+			$grid->order_by("control","asc");
+//			$grid->per_page = 15;
+	
+			$grid->use_function('str_replace');
+			$grid->column_orderby("C&oacute;digo","codigo","codigo");
+			$grid->column_orderby("Descripci&oacute;n",'descrip',"descrip");
+			$grid->column_orderby("Precio","precio","precio");
+	
+			
+			$grid->build();
+			
+			$consul=$this->db->last_query();
+			
+			$tabla.=form_hidden('consul', $consul);
+				
+			$data = array(
+	              'name'        => 'cant',
+	              'id'          => 'cant',
+	              'value'       => '1',
+	              'maxlength'   => '5',
+	              'size'        => '5',
+	              
+	            );
+	            
+	        $tabla.=$grid->output.form_label("Numero de etiquetas por producto:")."&nbsp&nbsp&nbsp".form_input($data).form_submit('mysubmit', 'Generar');
+			$tabla.=form_close();
+		}
+
+
+		$back="<table width='100%'border='0'><tr><td width='80%'></td><td width='20%'><a href='javascript:atras()'><spam id='regresar'align='right'>REGRESAR</spam></a></td></tr></table>";
+		$data['filtro']=$filter->output;
+		$data['tabla']=$tabla;
+		//$data['smenu'] = $back;//.$grid->output;
+		$data['title']   = "Genera Etiqueta";
+		$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").script("sinvmaes2.js").$this->rapyd->get_head();
+		$this->load->view('view_ventanas_pru', $data);
 		
 	}
 }
