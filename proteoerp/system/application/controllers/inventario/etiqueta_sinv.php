@@ -7,7 +7,7 @@ class etiqueta_sinv extends Controller {
 		$this->load->library("rapyd");
 	}
 	function index(){
-		redirect("inventario/etiqueta_sinv/filteredgrid");
+		redirect("inventario/etiqueta_sinv/num_compra");
 	}
 
 
