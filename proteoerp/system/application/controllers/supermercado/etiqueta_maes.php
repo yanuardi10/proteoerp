@@ -7,7 +7,7 @@ class etiqueta_maes extends Controller {
 		$this->load->library("rapyd");
 	}
 	function index(){
-		redirect("supermercado/etiqueta_maes/filteredgrid");
+		redirect("supermercado/etiqueta_maes/num_compra");
 	}
 
 
