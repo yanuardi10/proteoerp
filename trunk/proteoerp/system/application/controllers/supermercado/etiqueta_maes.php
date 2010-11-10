@@ -7,9 +7,22 @@ class etiqueta_maes extends Controller {
 		$this->load->library("rapyd");
 	}
 	function index(){
-		redirect("supermercado/etiqueta_maes/num_compra");
+		redirect("supermercado/etiqueta_maes/menu");
 	}
-
+	
+	function menu(){
+		$html="";
+		$link2=site_url('supermercado/etiqueta_maes/num_compra');
+		$link3=site_url('supermercado/etiqueta_maes/lee_barras');
+		$link1=site_url('supermercado/etiqueta_maes/filteredgrid');
+		$html.="<h1>Seleccione metodo para generar etiquetas</h1><br><br><a href='".$link1."' >Por filtro de productos</a><br>";
+		$html.="<a href='".$link2."' >Por N&uacute;mero de compra</a><br>";
+		$html.="<a href='".$link3."' >Por C&oacute;digo de barras</a>";
+		
+		$data['title']   = "Men&uacute; Etiquetas";
+		$data['content']=$html;
+		$this->load->view('view_ventanas', $data);
+	}
 
 	function filteredgrid($para=''){
 
@@ -17,18 +30,12 @@ class etiqueta_maes extends Controller {
 
 		$user  = $this->session->userdata('usuario');
 		$link2=site_url('inventario/common/get_fami');
-		$link3=site_url('inventario/common/get_grupo_m');
-		
-		$link5=site_url();
-
+		$link3=site_url('inventario/common/get_grupo_m');		
+		$link1=site_url('supermercado/etiqueta_maes/menu');
 
 		$script='
-		function atras(){
-			window.location="'.$link5.'/";
-		}
-		
-		$(document).ready(function(){
 				
+		$(document).ready(function(){		
 			$("#depto").change(function(){
 				$("#objnumero").val("");
 				depto();
@@ -129,17 +136,6 @@ class etiqueta_maes extends Controller {
 			$tabla=form_open("forma/ver/etiqueta_m");
 			
 			$grid = new DataGrid("Lista de Art&iacute;culos Para Etiquetas");
-//				$grid->db->select("a.tipo AS tipo,a.id as id,a.codigo as codigo,a.descrip,precio1,
-//									precio2,precio3,precio4,a.prov1,
-//									b.nom_grup AS nom_grup,b.grupo AS grupoid,
-//									c.descrip AS nom_linea,c.linea AS linea,
-//									d.descrip AS nom_depto,d.depto AS depto,a.prov1,a.prov2,a.prov3,
-//									e.sinv_id as sinv_id");
-//				$grid->db->from("sinv AS a");
-//				$grid->db->join("grup AS b","a.grupo=b.grupo");
-//				$grid->db->join("line AS c","b.linea=c.linea");
-//				$grid->db->join("dpto AS d","c.depto=d.depto");
-//				$grid->db->join("sinvfot AS e","e.sinv_id=a.id");
 			$grid->db->select("COUNT(*) AS num,a.tipo AS tipo,a.codigo as codigo,a.descrip,a.precio1 as precio,a.barras,
 			b.nom_grup AS nom_grup, b.grupo AS grupoid,
 			c.descrip AS nom_familia, c.familia AS familia,
@@ -149,7 +145,6 @@ class etiqueta_maes extends Controller {
 			$grid->db->join("grup AS b","a.grupo=b.grupo");
 			$grid->db->join("fami AS c","b.familia=c.familia");
 			$grid->db->join("dpto AS d","c.depto=d.depto");
-//			$grid->db->join("sinvfot AS e","e.sinv_id=a.id");
 			$grid->db->group_by("a.codigo");
 			$grid->db->_escape_char='';
 			$grid->db->_protect_identifiers=false;
@@ -161,14 +156,10 @@ class etiqueta_maes extends Controller {
 			$grid->column_orderby("Familia"      ,"<#nom_familia#>","nom_familia",'align=left');
 			$grid->column_orderby("Grupo"             ,"<#nom_grup#>" ,"nom_grup" ,'align=left');
 			$grid->column_orderby("Descripci&oacute;n","descrip","descrip");
-//			$grid->column("Nombre","nombre");
+
 			$grid->build();
 	
 			$consul=$this->db->last_query();
-//			$options = array(
-//                  'D'  => 'DESCARGAR',
-//                  'I'    => 'VER',
-//                );
 
 			$tabla.=form_hidden('consul', $consul);
 			
@@ -181,18 +172,18 @@ class etiqueta_maes extends Controller {
               
             );
 			
-			//$tabla.=$grid->output.form_dropdown('opcion', $options, 'D').form_submit('mysubmit', 'Generar');
+
 			$tabla.=$grid->output.form_label("Numero de etiquetas por producto:")."&nbsp&nbsp&nbsp".form_input($data).form_submit('mysubmit', 'Generar');
 			$tabla.=form_close();
 			
 		}
 
-
+		$data['smenu']="<a href='".$link1."' >Atras</a>";
 		$back="<table width='100%'border='0'><tr><td width='80%'></td><td width='20%'><a href='javascript:atras()'><spam id='regresar'align='right'>REGRESAR</spam></a></td></tr></table>";
 		$data['filtro']=$filter->output;
 		$data['tabla']=$tabla;
-		//$data['smenu'] = $back;//.$grid->output;
-		$data['title']   = "Genera Catalogo";
+		
+		$data['title']   = "Genera Etiquetas";
 		$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").script("sinvmaes2.js").$this->rapyd->get_head();
 		$this->load->view('view_ventanas_pru', $data);
 	}
@@ -200,7 +191,7 @@ class etiqueta_maes extends Controller {
 	
 	function num_compra(){
 		$this->rapyd->load("datafilter2","datagrid","dataobject","fields");
-		
+		$link1=site_url('supermercado/etiqueta_maes/menu');
 		$mSCST=array(
 			'tabla'   =>'scst',
 			'columnas'=>array(
@@ -233,7 +224,7 @@ class etiqueta_maes extends Controller {
 		
 			$grid = new DataGrid("Oreden de Compra");
 			$grid->order_by("control","asc");
-//			$grid->per_page = 15;
+
 	
 			$grid->use_function('str_replace');
 			$grid->column_orderby("C&oacute;digo","codigo","codigo");
@@ -260,16 +251,114 @@ class etiqueta_maes extends Controller {
 			$tabla.=form_close();
 		}
 
-
-		$back="<table width='100%'border='0'><tr><td width='80%'></td><td width='20%'><a href='javascript:atras()'><spam id='regresar'align='right'>REGRESAR</spam></a></td></tr></table>";
 		$data['filtro']=$filter->output;
 		$data['tabla']=$tabla;
-		//$data['smenu'] = $back;//.$grid->output;
+		$data['smenu']="<a href='".$link1."' >Atras</a>";
 		$data['title']   = "Genera Etiqueta";
 		$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").script("sinvmaes2.js").$this->rapyd->get_head();
 		$this->load->view('view_ventanas_pru', $data);
 		
 	}
+	
+	function lee_barras($para=''){
+
+		$this->rapyd->load("datafilter2","datagrid","dataobject","fields");
+		$link1=site_url('supermercado/etiqueta_maes/menu');
+		$script=script("jquery.js").script("jquery-ui.js").style("le-frog/jquery-ui-1.7.2.custom.css").
+		'<script type="text/javascript">
+		var propa=false;
+		
+		$(document).ready(function() {
+			c="";c1="";
+			$("#barras").hide();
+			$(document).keydown(function(e){
+				if (32 <= e.which && e.which <= 176) {
+				  c = c+String.fromCharCode(e.which);
+				} else if (e.which == 13) {
+					$("#ent").show();
+					c1=c+","+c1;
+					$("#barras").val(c1);
+					$("#ent").html("Se a agregado el codigo de barras:"+c);
+					if (propa!==false)
+						clearTimeout(propa);
+					propa=setTimeout(function() { $("#ent").fadeOut("slow"); },5000);
+					c="";
+				}
+				return false;
+			});
+		
+		});
+		</script>
+		';
+			
+		$data = array(
+              'name'        => 'barras',
+              'id'          => 'barras',
+            	
+              'maxlength'   => '5',
+              'size'        => '5',
+		);
+
+		$tabla=form_open("supermercado/etiqueta_maes/cant");
+			
+		$tabla.=form_input($data).form_submit('mysubmit', 'Generar');
+		$tabla.=form_close();
+		
+		$data['smenu']="<a href='".$link1."' >Atras</a>";
+		$data['content']=$tabla.'<div style="position: absolute;display: none; width: 40%; height: 30%; left: 15%; top: 30%; padding: 10px;" class="ui-widget ui-widget-content ui-corner-all" id="ent">';
+		$data['title']   = "Genera Etiquetas";
+		$data["head"]    =$script;
+		$this->load->view('view_ventanas', $data);
+	}
+	
+	function cant(){
+		$tabla=form_open("forma/ver/etiqueta_m");
+		if($this->input->post("barras") !="" && $this->input->post("barras") !=null){
+			$barras= explode(",",$this->input->post("barras"),-1);
+			$campos="(";
+			$v=count($barras);
+			$i=1;
+			foreach($barras as $bar){
+				if($i==$v){
+					$campos=$campos."'$bar')";
+				}else{
+					$campos=$campos."'$bar',";	
+				}
+				$i++;
+			}
+			
+			$consul="SELECT codigo,barras,descrip,precio1 as precio from maes WHERE barras IN ".$campos;
+			$msql=$this->db->query($consul);
+			$row=$msql->result();
+			if (count($row)==0){
+				$tabla.="<h1>Los c&oacute;digos de barras insertados no exiten</h1><br><a href='".site_url('supermercado/etiqueta_maes/lee_barras')."' >atras</a>";
+			}else{
+				$tabla.=form_hidden('consul', $consul);
+				$data = array(
+		              'name'        => 'cant',
+		              'id'          => 'cant',
+		              'value'       => '1',
+		              'maxlength'   => '5',
+		              'size'        => '5',
+		
+				);
+		
+				$tabla.=form_hidden('consul', $consul);
+				$tabla.=form_label("Numero de etiquetas por producto:")."&nbsp&nbsp&nbsp";
+				$tabla.=form_input($data).'<br>';
+		
+				$tabla.=form_submit('mysubmit', 'Generar');
+				$tabla.=form_close();
+
+			}
+		}else{
+			$tabla.="<h1>Debe ingresar algun c&oacute;digo de barras</h1><br><a href='".site_url('supermercado/etiqueta_maes/lee_barras')."' >atras</a>";
+		}		
+		$data['title']   = "Genera Etiquetas";
+		$data['content']=$tabla;
+		$this->load->view('view_ventanas', $data);
+	}
+	
 }
 
 ?>
