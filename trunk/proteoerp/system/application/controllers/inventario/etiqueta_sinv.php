@@ -1,4 +1,12 @@
 <?php
+/*****
+ * Realizado por Judelvis A. Rivas
+ * Modulo para generar etiquetas de productos de la tabla sinv
+ * Uso:
+ * 1)La función filteredgrid(): genera etiquetas por medio de un filtro de productos por departamento,linea,grupo,marca
+ * 2)La función num_control():genera etiquetas a traves de un filtro de numero de control de compra...
+ * 3)La función lee_barras():genera etiquetas por medio de insercion de codigo de barras por el teclado
+ */
 
 class etiqueta_sinv extends Controller {
 
@@ -7,10 +15,24 @@ class etiqueta_sinv extends Controller {
 		$this->load->library("rapyd");
 	}
 	function index(){
-		redirect("inventario/etiqueta_sinv/num_compra");
+		redirect("inventario/etiqueta_sinv/menu");
 	}
 
-
+	function menu(){
+		$html="";
+		$link2=site_url('inventario/etiqueta_sinv/num_compra');
+		$link3=site_url('inventario/etiqueta_sinv/lee_barras');
+		$link1=site_url('inventario/etiqueta_sinv/filteredgrid');
+		$html.="<h1>Seleccione metodo para generar etiquetas</h1><br><br><a href='".$link1."' >Por filtro de productos</a><br>";
+		$html.="<a href='".$link2."' >Por N&uacute;mero de compra</a><br>";
+		$html.="<a href='".$link3."' >Por C&oacute;digo de barras</a>";
+		
+		$data['title']   = "Men&uacute; Etiquetas";
+		$data['content']=$html;
+		$this->load->view('view_ventanas', $data);
+	}
+	
+	
 	function filteredgrid($para=''){
 
 		$this->rapyd->load("datafilter2","datagrid","dataobject","fields");
@@ -18,15 +40,12 @@ class etiqueta_sinv extends Controller {
 		$user  = $this->session->userdata('usuario');
 		$link2=site_url('inventario/common/get_linea');
 		$link3=site_url('inventario/common/get_grupo');
-		$link4=site_url('inventario/etiqueta_sinv/tabla');
-		$link5=site_url();
+//		$link4=site_url('inventario/etiqueta_sinv/tabla');
+		$link1=site_url('inventario/etiqueta_sinv/menu');
 
 
 		$script='
-		function atras(){
-			window.location="'.$link5.'/";
-		}
-		
+				
 		$(document).ready(function(){
 				
 			$("#depto").change(function(){
@@ -129,17 +148,6 @@ class etiqueta_sinv extends Controller {
 			$tabla=form_open("forma/ver/etiqueta1");
 			
 			$grid = new DataGrid("Lista de Art&iacute;culos Para Etiquetas");
-//				$grid->db->select("a.tipo AS tipo,a.id as id,a.codigo as codigo,a.descrip,precio1,
-//									precio2,precio3,precio4,a.prov1,
-//									b.nom_grup AS nom_grup,b.grupo AS grupoid,
-//									c.descrip AS nom_linea,c.linea AS linea,
-//									d.descrip AS nom_depto,d.depto AS depto,a.prov1,a.prov2,a.prov3,
-//									e.sinv_id as sinv_id");
-//				$grid->db->from("sinv AS a");
-//				$grid->db->join("grup AS b","a.grupo=b.grupo");
-//				$grid->db->join("line AS c","b.linea=c.linea");
-//				$grid->db->join("dpto AS d","c.depto=d.depto");
-//				$grid->db->join("sinvfot AS e","e.sinv_id=a.id");
 			$grid->db->select("COUNT(*) AS num,a.tipo AS tipo,a.id as id,a.codigo as codigo,a.descrip,a.precio1 as precio,a.barras,
 			b.nom_grup AS nom_grup, b.grupo AS grupoid,
 			c.descrip AS nom_linea, c.linea AS linea,
@@ -149,7 +157,7 @@ class etiqueta_sinv extends Controller {
 			$grid->db->join("grup AS b","a.grupo=b.grupo");
 			$grid->db->join("line AS c","b.linea=c.linea");
 			$grid->db->join("dpto AS d","c.depto=d.depto");
-//			$grid->db->join("sinvfot AS e","e.sinv_id=a.id");
+
 			$grid->db->group_by("a.codigo");
 			$grid->db->_escape_char='';
 			$grid->db->_protect_identifiers=false;
@@ -161,14 +169,11 @@ class etiqueta_sinv extends Controller {
 			$grid->column_orderby("L&iacute;nea"      ,"<#nom_linea#>","nom_linea",'align=left');
 			$grid->column_orderby("Grupo"             ,"<#nom_grup#>" ,"nom_grup" ,'align=left');
 			$grid->column_orderby("Descripci&oacute;n","descrip","descrip");
-//			$grid->column("Nombre","nombre");
+			
 			$grid->build();
 	
 			$consul=$this->db->last_query();
-//			$options = array(
-//                  'D'  => 'DESCARGAR',
-//                  'I'    => 'VER',
-//                );
+
 
 			$tabla.=form_hidden('consul', $consul);
 			
@@ -181,7 +186,7 @@ class etiqueta_sinv extends Controller {
               
             );
 			
-			//$tabla.=$grid->output.form_dropdown('opcion', $options, 'D').form_submit('mysubmit', 'Generar');
+			
 			$tabla.=$grid->output.form_label("Numero de etiquetas por producto:")."&nbsp&nbsp&nbsp".form_input($data).form_submit('mysubmit', 'Generar');
 			$tabla.=form_close();
 			
@@ -191,7 +196,7 @@ class etiqueta_sinv extends Controller {
 		$back="<table width='100%'border='0'><tr><td width='80%'></td><td width='20%'><a href='javascript:atras()'><spam id='regresar'align='right'>REGRESAR</spam></a></td></tr></table>";
 		$data['filtro']=$filter->output;
 		$data['tabla']=$tabla;
-		//$data['smenu'] = $back;//.$grid->output;
+		$data['smenu']="<a href='".$link1."' >Atras</a>";
 		$data['title']   = "Genera Etiqueta";
 		$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").script("sinvmaes2.js").$this->rapyd->get_head();
 		$this->load->view('view_ventanas_pru', $data);
@@ -200,7 +205,7 @@ class etiqueta_sinv extends Controller {
 	
 	function num_compra(){
 		$this->rapyd->load("datafilter2","datagrid","dataobject","fields");
-		
+		$link1=site_url('inventario/etiqueta_sinv/menu');
 		$mSCST=array(
 			'tabla'   =>'scst',
 			'columnas'=>array(
@@ -261,14 +266,113 @@ class etiqueta_sinv extends Controller {
 		}
 
 
-		$back="<table width='100%'border='0'><tr><td width='80%'></td><td width='20%'><a href='javascript:atras()'><spam id='regresar'align='right'>REGRESAR</spam></a></td></tr></table>";
+		
 		$data['filtro']=$filter->output;
 		$data['tabla']=$tabla;
-		//$data['smenu'] = $back;//.$grid->output;
+		$data['smenu']="<a href='".$link1."' >Atras</a>";
 		$data['title']   = "Genera Etiqueta";
 		$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").script("sinvmaes2.js").$this->rapyd->get_head();
 		$this->load->view('view_ventanas_pru', $data);
 		
+	}
+	
+	function lee_barras($para=''){
+
+		$this->rapyd->load("datafilter2","datagrid","dataobject","fields");
+		$link1=site_url('inventario/etiqueta_sinv/menu');
+		$script=script("jquery.js").script("jquery-ui.js").style("le-frog/jquery-ui-1.7.2.custom.css").
+		'<script type="text/javascript">
+		var propa=false;
+		
+		$(document).ready(function() {
+			c="";c1="";
+			$("#barras").hide();
+			$(document).keydown(function(e){
+				if (32 <= e.which && e.which <= 176) {
+				  c = c+String.fromCharCode(e.which);
+				} else if (e.which == 13) {
+					$("#ent").show();
+					c1=c+","+c1;
+					$("#barras").val(c1);
+					$("#ent").html("Se a agregado el codigo de barras:"+c);
+					if (propa!==false)
+						clearTimeout(propa);
+					propa=setTimeout(function() { $("#ent").fadeOut("slow"); },5000);
+					c="";
+				}
+				return false;
+			});
+		
+		});
+		</script>
+		';
+			
+		$data = array(
+              'name'        => 'barras',
+              'id'          => 'barras',
+            	
+              'maxlength'   => '5',
+              'size'        => '5',
+		);
+
+		$tabla=form_open("inventario/etiqueta_sinv/cant");
+			
+		$tabla.=form_input($data).form_submit('mysubmit', 'Generar');
+		$tabla.=form_close();
+		
+		$data['smenu']="<a href='".$link1."' >Atras</a>";
+		$data['content']=$tabla.'<div style="position: absolute;display: none; width: 40%; height: 30%; left: 15%; top: 30%; padding: 10px;" class="ui-widget ui-widget-content ui-corner-all" id="ent">';
+		$data['title']   = "Genera Etiquetas";
+		$data["head"]    =$script;
+		$this->load->view('view_ventanas', $data);
+	}
+	
+	function cant(){
+		$tabla=form_open("forma/ver/etiqueta1");
+		if($this->input->post("barras") !="" && $this->input->post("barras") !=null){
+			$barras= explode(",",$this->input->post("barras"),-1);
+			$campos="(";
+			$v=count($barras);
+			$i=1;
+			foreach($barras as $bar){
+				if($i==$v){
+					$campos=$campos."'$bar')";
+				}else{
+					$campos=$campos."'$bar',";	
+				}
+				$i++;
+			}
+			
+			$consul="SELECT codigo,barras,descrip,precio1 as precio from sinv WHERE barras IN ".$campos;
+			$msql=$this->db->query($consul);
+			$row=$msql->result();
+			if (count($row)==0){
+				$tabla.="<h1>Los c&oacute;digos de barras insertados no exiten</h1><br><a href='".site_url('inventario/etiqueta_sinv/lee_barras')."' >atras</a>";
+			}else{
+				$tabla.=form_hidden('consul', $consul);
+				$data = array(
+		              'name'        => 'cant',
+		              'id'          => 'cant',
+		              'value'       => '1',
+		              'maxlength'   => '5',
+		              'size'        => '5',
+		
+				);
+		
+				$tabla.=form_hidden('consul', $consul);
+				$tabla.=form_label("Numero de etiquetas por producto:")."&nbsp&nbsp&nbsp";
+				$tabla.=form_input($data).'<br>';
+		
+				$tabla.=form_submit('mysubmit', 'Generar');
+				$tabla.=form_close();
+
+			}
+		}else{
+			$tabla.="<h1>Debe ingresar algun c&oacute;digo de barras</h1><br><a href='".site_url('inventario/etiqueta_sinv/lee_barras')."' >atras</a>";
+		}		
+		$data['title']   = "Genera Etiquetas";
+		$data['content']=$tabla;
+		$this->load->view('view_ventanas', $data);
 	}
 }
 
