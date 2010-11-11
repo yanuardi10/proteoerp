@@ -43,4 +43,20 @@ function moneyformat($numero){
 function des_moneyformat($numero){
 	return des_nformat($numero);
 }
+
+function cadAnum($num){
+	$cana=strlen($num);
+	$omag=0;
+	for($i=$cana-1;$i>0;$i--){
+		if($num[$i]=='.' OR $num[$i]==',')
+			break;
+		$omag++;
+	}
+	$numero=intval(str_replace(array(',','.'),'',$num));
+	$omag=pow(10,$omag);
+	$numero=$numero/$omag;
+
+	return $numero;
+}
+
 ?>
