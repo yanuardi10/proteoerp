@@ -109,7 +109,7 @@ class Straa extends Controller {
 		$edit->recibe->rule ="required" ;
 		$edit->recibe->style="width:150px;";
 		
-		$edit->observ1 = new inputField("Observaci&oacute;n 1", "observ1");
+		$edit->observ1 = new inputField("Observaci&oacute;n ", "observ1");
 		$edit->observ1->rule     ="trim";
 		$edit->observ1->maxlength=35;
 		$edit->observ1->size     =35;
