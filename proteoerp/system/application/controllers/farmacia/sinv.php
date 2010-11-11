@@ -172,8 +172,8 @@ class sinv extends Controller {
 		$grid = new DataGrid("Lista de Art&iacute;culos");
 		$grid->order_by("codigo","asc");
 		$grid->per_page = 15;
-		$link=anchor('/inventario/sinv/dataedit/show/<#id#>','<#codigo#>');
-		$uri_2 = anchor('inventario/sinv/dataedit/create/<#id#>','Duplicar');
+		$link  = anchor('farmacia/sinv/dataedit/show/<#id#>','<#codigo#>');
+		$uri_2 = anchor('farmacia/sinv/dataedit/create/<#id#>','Duplicar');
 
 		$grid->column_orderby("C&oacute;digo",$link,"codigo");
 		//$grid->column("Departamento","<#nom_depto#>"   ,'align=left');
@@ -431,6 +431,7 @@ class sinv extends Controller {
 		
 		$edit->tipo = new dropdownField("Tipo", "tipo");
 		$edit->tipo->style='width:180px;';
+		$edit->tipo->option("Standar","Standar" );
 		$edit->tipo->option("Articulo","Art&iacute;culo" );
 		$edit->tipo->option("Servicio","Servicio");
 		$edit->tipo->option("Descartar","Descartar");
@@ -590,6 +591,7 @@ class sinv extends Controller {
 		$edit->formcal->style='width:100px;';
 		//$edit->formcal->rule="required";
 		//$edit->formcal->option("","Seleccione" );
+		$edit->formcal->option("S","Standar" );
 		$edit->formcal->option("U","Ultimo" );
 		$edit->formcal->option("P","Promedio" );
 		$edit->formcal->option("M","Mayor" );
@@ -638,6 +640,12 @@ class sinv extends Controller {
 			$edit->$objeto->onchange = "cambioprecio('I');";
 			$edit->$objeto->rule="required";
 		}
+
+		$edit->descufijo = new inputField('Descuento fijo', 'descufijo');
+		$edit->descufijo->size=10;
+		$edit->descufijo->maxlength=12;
+		$edit->descufijo->css_class='inputnum';
+		$edit->descufijo->rule='numeric|callback_positivo|callback_chrequerido|trim';
 
 		$edit->exmin = new inputField("Existencia Minima", "exmin");
 		$edit->exmin->size=10;
@@ -725,6 +733,12 @@ class sinv extends Controller {
 		echo $ultimo;
 	}
 
+	function chrequerido($monto){
+			//$this->validation->set_message('chrequerido',"El codigo alterno $alterno ya existe para el producto $descrip");
+			//return FALSE;
+			return TRUE;
+	}
+
 	function chexiste($codigo){
 		//$codigo=$this->input->post('codigo');
 		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM sinv WHERE codigo='$codigo'");
@@ -776,6 +790,8 @@ class sinv extends Controller {
 		$mSQL='ALTER TABLE `sinv` ADD UNIQUE `codigo` (`codigo`)';
 		$this->db->simple_query($mSQL);
 		$mSQL='ALTER TABLE sinv ADD id INT AUTO_INCREMENT PRIMARY KEY';
+		$this->db->simple_query($mSQL);
+		$mSQL='ALTER TABLE `sinv`  ADD COLUMN `descufijo` DECIMAL(6,3) NULL DEFAULT '0.000' AFTER `id`';
 		$this->db->simple_query($mSQL);
 
 		$mSQL="CREATE TABLE IF NOT EXISTS `sinvcombo` (
