@@ -101,11 +101,13 @@ class Straa extends Controller {
 		$edit->envia->option("","Seleccionar");  
 		$edit->envia->options("SELECT ubica,ubides FROM caub ORDER BY ubica");
 		$edit->envia->rule ="required";
+		$edit->envia->style="width:200px;";
 		
 		$edit->recibe = new dropdownField("Recibe", "recibe");  
 		$edit->recibe->option("","Seleccionar");  
 		$edit->recibe->options("SELECT ubica,ubides FROM caub ORDER BY ubica");
 		$edit->recibe->rule ="required" ;
+		$edit->recibe->style="width:150px;";
 		
 		$edit->observ1 = new inputField("Observaci&oacute;n 1", "observ1");
 		$edit->observ1->rule     ="trim";
@@ -118,7 +120,7 @@ class Straa extends Controller {
 		
 		$edit->totalg = new inputField("Total gr.", "totalg");
 		$edit->totalg->css_class ='inputnum';
-		$edit->totalg->when=array('show');
+//		$edit->totalg->when=array('show');
 		$edit->totalg->size      = 17;
 
 		//comienza el detalle
@@ -127,22 +129,28 @@ class Straa extends Controller {
 		$edit->codigo->append($btn);
 		$edit->codigo->rule = "trim|required";
 		$edit->codigo->rel_id='itstra';
+		$edit->codigo->maxlength=15;
+		$edit->codigo->size     =15;
 
 		$edit->descrip = new inputField("Descripci&oacute;n", "descrip_<#i#>");
 		$edit->descrip->db_name='descrip';
 		$edit->descrip->rel_id='itstra';
-
+		$edit->descrip->maxlength=35;
+        $edit->descrip->size     =35;
+        
 		$edit->cantidad = new inputField("Cantidad", "cantidad_<#i#>");
 		$edit->cantidad->db_name  ='cantidad';
 		$edit->cantidad->css_class='inputnum';
 		$edit->cantidad->rel_id   ='itstra';
 		$edit->cantidad->rule ="numeric";
-		//Termina el detalle
+		$edit->cantidad->maxlength=10;
+		$edit->cantidad->size     =10;//Termina el detalle
 
 		$edit->buttons("modify", "save", "undo", "delete", "back","add_rel"); 
 		$edit->build();
-		
-		$data['content'] = $edit->output;
+		$conten["form"]  =&  $edit;
+		//$data['content'] = $edit->output;
+		$data['content'] = $this->load->view('view_straa', $conten,true);
 		$data['title']   = "<h1>Transferencias de inventario</h1>";
 		$data["head"]    = $this->rapyd->get_head().script('jquery.js').script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js");
 		$this->load->view('view_ventanas', $data); 
