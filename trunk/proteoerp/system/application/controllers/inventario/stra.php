@@ -75,10 +75,12 @@ class Stra extends Controller {
 		
 		$do = new DataObject("stra");
 		$do->rel_one_to_many('itstra', 'itstra', 'numero');
+		$do->rel_pointer('itstra','sinv','itstra.codigo=sinv.codigo','sinv.descrip as sinvdescrip');
 		
 		$edit = new DataDetails("Transferencia", $do);
 		$edit->back_url = site_url("inventario/stra/filteredgrid");
 		$edit->set_rel_title('itstra','Producto <#o#>');
+
 		$edit->script($script,'create');
 		$edit->script($script,'modify');
 		
@@ -132,12 +134,13 @@ class Stra extends Controller {
 		$edit->codigo->maxlength=15;
 		$edit->codigo->size     =15;
 
-		$edit->descrip = new inputField("Descripci&oacute;n", "descrip_<#i#>");
-		$edit->descrip->db_name='descrip';
+		$edit->descrip = new inputField("Descripci&oacute;n", "sinvdescrip_<#i#>");
+		$edit->descrip->db_name='sinvdescrip';
+		$edit->descrip->pointer=true;
 		$edit->descrip->rel_id='itstra';
 		$edit->descrip->maxlength=35;
-        $edit->descrip->size     =35;
-        
+		$edit->descrip->size     =35;
+
 		$edit->cantidad = new inputField("Cantidad", "cantidad_<#i#>");
 		$edit->cantidad->db_name  ='cantidad';
 		$edit->cantidad->css_class='inputnum';
