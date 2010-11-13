@@ -454,15 +454,18 @@ class Invfis extends Controller {
 		else
 			$where='actualizado IS NULL'; //asume ceros
 		$fromwhere="FROM $tabla a JOIN sinv b ON a.codigo=b.codigo WHERE $where";
+		
 
 		$cana=$this->datasis->dameval("SELECT COUNT(*) $fromwhere");
+		
+		
 		if($cana>0){
 			$id=$this->_idsem($tabla);
 			$seg=sem_get($id,1,0666,-1);
 			sem_acquire($seg);
-
+			
 			$mSQL="INSERT INTO itstra (`numero`,`codigo`,`descrip`,`cantidad`,`anteri`)
-				SELECT $nstra,a.codigo,CONCAT_WS(b.descrip,b.descrip2)descrip,IF(a.modificado IS NULL,-1*a.existen,a.contado-a.existen),a.existen $fromwhere";
+				SELECT $nstra,a.codigo,CONCAT_WS(' ',b.descrip,b.descrip2)descrip,IF(a.modificado IS NULL,-1*a.existen,a.contado-a.existen),a.existen $fromwhere";
 
 			$ban = $this->db->simple_query($mSQL);
 			if(!$ban){$error.="No se pudo crear el registro en stra"; memowrite($mSQL,'INVFIS');}
