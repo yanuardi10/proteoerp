@@ -23,8 +23,9 @@ class Contra extends Controller {
 			//echo 'Hola mundo';
 			$par=$form->cont->newValue;
 			$this->iacont->reconoce($par);
-			echo $this->iacont->soy;
+			echo $this->iacont->soy."\n<pre>";
 			print_r($this->iacont->data);
+			echo '</pre>';
 			//$this->_partida($form->cont->newValue);
 		}
 
