@@ -60,9 +60,10 @@ class Stra extends Controller {
 			'tabla'   =>'sinv',
 			'columnas'=>array(
 				'codigo' =>'C&oacute;digo',
-				'descrip'=>'Descripci&oacute;n'),
+				'descrip'=>'Descripci&oacute;n',
+				'peso'=>'Peso'),
 			'filtro'  =>array('codigo' =>'C&oacutedigo','descrip'=>'descrip'),
-			'retornar'=>array('codigo'=>'codigo_<#i#>','descrip'=>'descrip_<#i#>'),
+			'retornar'=>array('codigo'=>'codigo_<#i#>','descrip'=>'sinvdescrip_<#i#>'),
 			'p_uri'=>array(4=>'<#i#>'),
 			'titulo'  =>'Buscar Producto en inventario');
 		$btn=$this->datasis->p_modbus($modbus,'<#i#>');
@@ -120,9 +121,10 @@ class Stra extends Controller {
 		$edit->observ2->rule = "trim";
 		$edit->observ2->size = 35;
 		
-		$edit->totalg = new inputField("Total gr.", "totalg");
+		$edit->totalg = new inputField("Peso", "totalg");
+		$edit->totalg->mode="autohide";
 		$edit->totalg->css_class ='inputnum';
-//		$edit->totalg->when=array('show');
+		$edit->totalg->when=array('show','modify');
 		$edit->totalg->size      = 17;
 
 		//comienza el detalle
@@ -138,17 +140,17 @@ class Stra extends Controller {
 		$edit->descrip->db_name='sinvdescrip';
 		$edit->descrip->pointer=true;
 		$edit->descrip->rel_id='itstra';
-		$edit->descrip->maxlength=35;
-		$edit->descrip->size     =35;
-
+		$edit->descrip->maxlength=45;
+		$edit->descrip->size     =53;
+		
 		$edit->cantidad = new inputField("Cantidad", "cantidad_<#i#>");
 		$edit->cantidad->db_name  ='cantidad';
 		$edit->cantidad->css_class='inputnum';
 		$edit->cantidad->rel_id   ='itstra';
-		$edit->cantidad->rule     ='numeric';
+//		$edit->cantidad->rule     ='numeric';
 		$edit->cantidad->maxlength=10;
-		$edit->cantidad->size     =10;//Termina el detalle
-
+		$edit->cantidad->size     =10;
+		
 		$edit->buttons("modify", "save", "undo", "delete", "back","add_rel"); 
 		$edit->build();
 		$conten["form"]  =&  $edit;
@@ -169,12 +171,34 @@ class Stra extends Controller {
 	function _post_insert($do){
 		$codigo=$do->get('numero');
 		logusu('stra',"TRANSFERENCIA $codigo CREADO");
+		$query='select sum(b.cantidad * c.peso) as valor 
+				from stra as a
+				join itstra as b on a.numero=b.numero
+				join sinv as c on c.codigo=b.codigo
+				where a.numero="'.$codigo.'"';
+		$mSQL_1 = $this->db->query($query);
+		$resul = $mSQL_1->row();
+		$valor=$resul->valor;
+		$query='update stra set totalg="'.$valor.'" where numero="'.$codigo.'" ';
+		$this->db->query($query);
+		
 	}
 	
 	function _post_update($do){
 		$codigo=$do->get('numero');
 
 		logusu('stra',"TRANSFERENCIA $codigo MODIFICADO");
+		
+		$query='select sum(b.cantidad * c.peso) as valor 
+				from stra as a
+				join itstra as b on a.numero=b.numero
+				join sinv as c on c.codigo=b.codigo
+				where a.numero="'.$codigo.'"';
+		$mSQL_1 = $this->db->query($query);
+		$resul = $mSQL_1->row();
+		$valor=$resul->valor;
+		$query='update stra set totalg="'.$valor.'" where numero="'.$codigo.'" ';
+		$this->db->query($query);
 	}
 	
 	function _post_delete($do){
