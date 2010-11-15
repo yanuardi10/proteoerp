@@ -73,7 +73,7 @@ class Sprm extends validaciones {
 		'titulo'  =>'Buscar Proveedor');
 		$bsprv =$this->datasis->modbus($mSPRV);
 		
-				$script ='
+		$script ='
 		$(function() {
 			$(".inputnum").numeric(".");			
 		}	
