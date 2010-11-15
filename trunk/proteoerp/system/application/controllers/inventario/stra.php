@@ -145,7 +145,7 @@ class Stra extends Controller {
 		$edit->cantidad->db_name  ='cantidad';
 		$edit->cantidad->css_class='inputnum';
 		$edit->cantidad->rel_id   ='itstra';
-		$edit->cantidad->rule ="numeric";
+		$edit->cantidad->rule     ='numeric';
 		$edit->cantidad->maxlength=10;
 		$edit->cantidad->size     =10;//Termina el detalle
 
@@ -155,7 +155,7 @@ class Stra extends Controller {
 		//$data['content'] = $edit->output;
 		$data['content'] = $this->load->view('view_straa', $conten,true);
 		$data['title']   = "<h1>Transferencias de inventario</h1>";
-		$data["head"]    = $this->rapyd->get_head().script('jquery.js').script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js");
+		$data["head"]    = script('jquery.js').script('jquery-ui.js').script("plugins/jquery.numeric.pack.js").script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css').$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data); 
   }
   
