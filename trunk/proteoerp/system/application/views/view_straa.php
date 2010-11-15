@@ -10,7 +10,8 @@ else:
 //$link=site_url('presupuesto/requisicion/getadmin');
 
 foreach($form->detail_fields['itstra'] AS $ind=>$data)
-$campos[]=$data['field'];
+	$campos[]=$data['field'];
+
 $campos='<tr id="tr_itstra_<#i#>"><td class="littletablerow">'.join('</td><td>',$campos).'</td>';
 $campos=str_replace("\n",'',$campos);
 $campos.=' <td class="littletablerow"><a href=# onclick="del_itstra(<#i#>);return false;">Eliminar</a></td></tr>';
@@ -68,10 +69,17 @@ function del_itstra(id){
 			<tr>
 				<td class="littletableheader"><?=$form->observ1->label  ?>&nbsp;</td>
 				<td class="littletablerow"><?=$form->observ1->output ?>&nbsp;</td>
+				<?php if($form->_status=='show'){?>
 				<td class="littletableheader"><?=$form->totalg->label  ?>&nbsp;</td>
 				<td class="littletablerow" align="right"><?=$form->totalg->output ?>&nbsp;</td>
 				<td class="littletablerow">&nbsp;</td>
 				<td class="littletablerow">&nbsp;</td>
+				<?php }else{?>
+				<td class="littletablerow">&nbsp;</td>
+				<td class="littletablerow">&nbsp;</td>
+				<td class="littletablerow">&nbsp;</td>
+				<td class="littletablerow">&nbsp;</td>
+				<?php }?>
 			</tr>
 
 		</table>
@@ -84,7 +92,8 @@ function del_itstra(id){
 			<tr>
 				<td class="littletableheader">C&oacute;digo</td>
 				<td class="littletableheader">Descripci&oacute;n</td>
-				<td class="littletableheader" align="right">Cantidad</td>
+				<td class="littletableheader">Cantidad</td>
+
 				
 				<?php if($form->_status!='show') {?>
 				<td class="littletableheader">&nbsp;</td>
@@ -94,11 +103,14 @@ function del_itstra(id){
 				$obj1="codigo_$i";
 				$obj2="descrip_$i";
 				$obj3="cantidad_$i";
+
+		
 			?>
 			<tr id='tr_itstra_<?=$i ?>'>
 				<td class="littletablerow"><?=$form->$obj1->output ?></td>
 				<td class="littletablerow"><?=$form->$obj2->output ?></td>
-				<td class="littletablerow" align="right"><?=$form->$obj3->output ?></td>
+				<td class="littletablerow"align="right"><?=$form->$obj3->output ?></td>
+
 				<?php if($form->_status!='show') {?>
 				<td class="littletablerow"><a href=#
 					onclick='del_itstra(<?=$i ?>);return false;'>Eliminar</a></td>
@@ -110,6 +122,7 @@ function del_itstra(id){
 				<td class="littletablefooterb" align="right">&nbsp;</td>
 				<td class="littletablefooterb" align="right">&nbsp;</td>
 				<td class="littletablefooterb" align="right">&nbsp;</td>
+
 				
 				<?php if($form->_status!='show') {?>
 				<td class="littletablefooterb" align="right">&nbsp;</td>
