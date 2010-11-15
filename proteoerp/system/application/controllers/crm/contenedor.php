@@ -13,43 +13,47 @@ class Contenedor extends validaciones {
 		$this->rapyd->load("datafilter","datagrid");
 		$this->rapyd->uri->keep_persistence();
 
-		$filter = new DataFilter('titulo', $this->prefijo.'contenedor');
+		$filter = new DataFilter('Contenedor', $this->prefijo.'contenedor');
 
 		$filter->descripcion = new inputField('Descripcion', 'descripcion');
-		$filter->descripcion->size=5;
+		//$filter->descripcion->size=5;
+
+		$filter->titulo = new inputField('Titulo', 'titulo');
 
 		$filter->buttons("reset","search");
 		$filter->build();
 
-		$uri = anchor('crm/contenedor/dataedit/show/<#id#>','<#id#>');
+		$uri  = anchor('crm/contenedor/dataedit/show/<#id#>','<#id#>');
+		$curl = anchor('crm/contenedor/comentario/<#id#>/create','Comentario');
 
-		$grid = new DataGrid('Lista de Cajas');
+		$grid = new DataGrid('Lista de Contenedores');
 		//$grid->order_by('caja','asc');
 		$grid->per_page = 7;
 
 		$grid->column('id',$uri);
-		$grid->column('Derivado','derivado');
-		$grid->column('Tipo', 'tipo');
-		$grid->column('Status', 'status');
-		$grid->column('Fecha','fecha');
-		$grid->column('Cierre','cierre');
-		$grid->column('Titulo','titulo');
-		$grid->column('Cliente','cliente');
-		$grid->column('Proveed','proveed');
-		$grid->column('Descripcion','descripcion');
-		$grid->column('Condiciones','condiciones');
+		$grid->column_orderby('Derivado'   ,'derivado'   ,'derivado');
+		$grid->column_orderby('Tipo'       ,'tipo'       ,'tipo');
+		$grid->column_orderby('Status'     ,'status'     ,'status');
+		$grid->column_orderby('Fecha'      ,'<dbdate_to_human><#fecha#></dbdate_to_human>'      ,'fecha');
+		$grid->column_orderby('Cierre'     ,'cierre'     ,'cierre');
+		$grid->column_orderby('Titulo'     ,'titulo'     ,'titulo');
+		$grid->column_orderby('Cliente'    ,'cliente'    ,'cliente');
+		$grid->column_orderby('Proveed'    ,'proveed'    ,'proveed');
+		$grid->column_orderby('Resumen'    ,'resumen'    ,'resumen');
+		$grid->column_orderby('Condiciones','condiciones','condiciones');
+		$grid->column('Accion',$curl);
 
 		$grid->add('crm/contenedor/dataedit/create');
 		$grid->build();
 
 		$data['content'] = $filter->output.$grid->output;
-		$data['title']   = '<h1>Cajas</h1>';
+		$data['title']   = '<h1>Contenedor</h1>';
 		$data["head"]    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 
 	function dataedit(){
-		$this->rapyd->load('dataedit');
+		$this->rapyd->load('dataedit','datagrid');
 		$edit = new DataEdit('Contenedor', $this->prefijo.'contenedor');
 
 		$sprv=array(
@@ -85,40 +89,40 @@ class Contenedor extends validaciones {
 
 		$edit->back_url = site_url('crm/contenedor/index');
 
-		$edit->usuario  = new autoUpdateField("usuario", $this->session->userdata('usuario'), $this->session->userdata('usuario'));
+		$edit->usuario  = new autoUpdateField('usuario', $this->session->userdata('usuario'), $this->session->userdata('usuario'));
 
 		$edit->titulo =  new inputField('Titulo', 'titulo');
-		$edit->titulo->size = 15;
-		$edit->titulo->maxlength=30;
-		$edit->titulo->rule = 'trim|strtoupper|required';
+		$edit->titulo->size = 50;
+		$edit->titulo->maxlength=200;
+		$edit->titulo->rule = 'trim|strtoupper|required||max_length[200]';
 
 		$edit->derivado =  new inputField('Derivado', 'derivado');
 		$edit->derivado->size = 15;
 		$edit->derivado->maxlength=30;
-		$edit->derivado->rule = 'trim|strtoupper|required';
+		$edit->derivado->rule = 'trim|strtoupper';
 		$edit->derivado->append($boton3. 'Si es sub-contrato');
 
 		$edit->proveedor =  new inputField('Proveedor', 'proveedor');
 		$edit->proveedor->size = 15;
 		$edit->proveedor->maxlength=30;
-		$edit->proveedor->rule = 'trim|strtoupper|required';
+		$edit->proveedor->rule = 'trim|strtoupper';
 		$edit->proveedor->append($boton2);
 
 		$edit->cliente =  new inputField('Cliente', 'cliente');
 		$edit->cliente->size = 15;
 		$edit->cliente->maxlength=30;
-		$edit->cliente->rule = 'trim|strtoupper|required';
+		$edit->cliente->rule = 'trim|strtoupper';
 		$edit->cliente->append($boton);
 
 		$edit->tipo = new dropdownField('Tipo', 'tipo');
 		$edit->tipo->rule = 'required';
 		$edit->tipo->option('','Seleccionar');
-		$edit->tipo->options('SELECT id,contenedor FROM '.$this->prefijo.'tipos ');
+		$edit->tipo->options('SELECT id,nombre FROM '.$this->prefijo.'definiciones');
 
 		$edit->status = new dropdownField('Status', 'status');
 		$edit->status->rule = 'required';
 		$edit->status->option('','Seleccionar');
-		$edit->status->options('SELECT id,contenedor FROM '.$this->prefijo.'status ');
+		$edit->status->options('SELECT id,descrip FROM '.$this->prefijo.'status ');
 
 		$edit->fecha = new dateField('Fecha', 'fecha','d/m/Y');
 		$edit->fecha->rule = 'required';
@@ -132,26 +136,80 @@ class Contenedor extends validaciones {
 		$edit->cierre->maxlength=8;
 		$edit->cierre->insertValue = date('Y-m-d');
 
-		$edit->descripcion =  new textareaField('Descripci&oacute;n', 'descripcion');
-		$edit->descripcion->cols = 70;
+		$edit->resumen =  new textareaField('Resumen', 'resumen');
+		$edit->resumen->cols = 87;
+		$edit->resumen->rows = 2;
+		$edit->resumen->rule = 'trim|required|max_length[200]';
+
+		$edit->descripcion =  new editorField('Descripci&oacute;n', 'descripcion');
+		$edit->descripcion->cols = 90;
 		$edit->descripcion->rows = 4;
-		$edit->descripcion->rule = "trim|required";
+		$edit->descripcion->rule = 'trim|required';
 
 		$edit->condiciones =  new textareaField('Condiciones', 'condiciones');
-		$edit->condiciones->cols = 70;
+		$edit->condiciones->cols = 87;
 		$edit->condiciones->rows = 4;
-		$edit->condiciones->rule = "trim|required";
+		$edit->condiciones->rule = 'trim|required';
+
+		if($edit->_status=='show'){
+			$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
+			$edit->build();
+
+			$grid = new DataGrid('Comentario',$this->prefijo.'comentarios');
+			$grid->order_by('fecha','asc');
+			$grid->per_page = 7;
+
+			$grid->column_orderby('Fecha'      ,'<dbdate_to_human><#fecha#></dbdate_to_human>'      ,'fecha');
+			$grid->column_orderby('Motivo'     ,'motivo'     ,'motivo');
+			$grid->column_orderby('Cuerpo'     ,'cuerpo'     ,'cuerpo');
+
+			$grid->add('crm/contenedor/comentario/create');
+			$grid->build();
+			$coment=$grid->output;
+		}else{
+			$coment='';
+		}
 
 
-		$edit->buttons("modify", "save", "undo", "delete", "back");
-		$edit->build();
-
-		$data['content'] = $edit->output;
-		$data['title']   = '<h1>Marca</h1>';
+		$data['content'] = $edit->output.$coment;
+		$data['title']   = '<h1>Contenedor</h1>';
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 
 	}
+
+	function comentario($contenedor){
+		$this->rapyd->load('dataedit');
+		$edit = new DataEdit('Comentario', $this->prefijo.'comentarios');
+
+		$edit->back_url = site_url('crm/contenedor/index');
+
+		$edit->usuario    = new autoUpdateField('usuario'   , $this->session->userdata('usuario'), $this->session->userdata('usuario'));
+		$edit->contenedor = new autoUpdateField('contenedor', $contenedor,$contenedor);
+
+		$edit->fecha = new dateField('Fecha', 'fecha','d/m/Y');
+		$edit->fecha->rule = 'required';
+		$edit->fecha->size = 10;
+		$edit->fecha->maxlength=8;
+		$edit->fecha->insertValue = date('Y-m-d');
+
+		$edit->motivo =  new inputField('Motivo', 'motivo');
+		$edit->motivo->rule = 'trim|required|max_length[200]';
+
+		$edit->cuerpo =  new editorField('Cuerpo', 'cuerpo');
+		$edit->cuerpo->cols = 90;
+		$edit->cuerpo->rows = 4;
+		$edit->cuerpo->rule = 'trim|required';
+
+		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
+		$edit->build();
+
+		$data['content'] = $edit->output;
+		$data['title']   = '<h1>Comentarios</h1>';
+		$data['head']    = $this->rapyd->get_head();
+		$this->load->view('view_ventanas', $data);
+	}
+
 
 	function instala(){
 		$prefijo=$this->prefijo;
@@ -175,7 +233,6 @@ class Contenedor extends validaciones {
 		) ENGINE=MyISAM DEFAULT CHARSET=".$this->db->char_set;
 		var_dump($this->db->simple_query($mSQL));
 
-
 		$mSQL="CREATE TABLE `${prefijo}contenedor` (
 		  `id` int(11) NOT NULL AUTO_INCREMENT,
 		  `usuario` varchar(50) DEFAULT NULL,
@@ -184,6 +241,7 @@ class Contenedor extends validaciones {
 		  `status` int(7) DEFAULT '0',
 		  `fecha` date DEFAULT NULL,
 		  `cierre` date DEFAULT NULL,
+		  `resumen` varchar(200) DEFAULT NULL,
 		  `titulo` varchar(200) DEFAULT NULL,
 		  `cliente` varchar(5) DEFAULT NULL,
 		  `proveed` varchar(5) DEFAULT NULL,
@@ -192,7 +250,7 @@ class Contenedor extends validaciones {
 		  PRIMARY KEY (`id`)
 		) ENGINE=MyISAM DEFAULT CHARSET=".$this->db->char_set." COMMENT='contenedor'";
 		var_dump($this->db->simple_query($mSQL));
-		
+
 		$mSQL="CREATE TABLE `${prefijo}eventos` (
 		  `id` int(11) NOT NULL AUTO_INCREMENT,
 		  `usuario` varchar(50) DEFAULT NULL,
@@ -203,7 +261,7 @@ class Contenedor extends validaciones {
 		  PRIMARY KEY (`id`)
 		) ENGINE=MyISAM DEFAULT CHARSET=".$this->db->char_set;
 		var_dump($this->db->simple_query($mSQL));
-		
+
 		$mSQL="CREATE TABLE `${prefijo}imagenes` (
 		  `id` int(11) NOT NULL AUTO_INCREMENT,
 		  `usuario` varchar(50) DEFAULT NULL,
@@ -220,7 +278,7 @@ class Contenedor extends validaciones {
 		$mSQL="CREATE TABLE `${prefijo}status` (
 		  `id` int(7) NOT NULL AUTO_INCREMENT,
 		  `usuario` varchar(50) DEFAULT NULL,
-		  `contenedor` int(11) DEFAULT '0',
+		  `definicion` int(11) DEFAULT '0',
 		  `descrip` varchar(50) DEFAULT '0',
 		  PRIMARY KEY (`id`)
 		) ENGINE=MyISAM DEFAULT CHARSET=utf8";
@@ -235,7 +293,45 @@ class Contenedor extends validaciones {
 		) ENGINE=MyISAM DEFAULT CHARSET=".$this->db->char_set;
 		var_dump($this->db->simple_query($mSQL));
 
-	}
+		$mSQL="CREATE TABLE `${prefijo}adjuntos` (
+		  `id` int(11) NOT NULL AUTO_INCREMENT,
+		  `usuario` varchar(50) DEFAULT NULL,
+		  `contenedor` int(11) NOT NULL DEFAULT '0',
+		  `fecha` date DEFAULT NULL,
+		  `nombre` varchar(200) DEFAULT NULL,
+		  `descripcion` text,
+		  `url` varchar(200) DEFAULT NULL,
+		  PRIMARY KEY (`id`)
+		) ENGINE=MyISAM DEFAULT CHARSET=".$this->db->char_set;
+		var_dump($this->db->simple_query($mSQL));
 
+		$mSQL="CREATE TABLE `${prefijo}montos` (
+		  `id` int(11) NOT NULL AUTO_INCREMENT,
+		  `usuario` varchar(50) DEFAULT NULL,
+		  `contenedor` int(11) NOT NULL DEFAULT '0',
+		  `fecha` date DEFAULT NULL,
+		  `partida` varchar(15) DEFAULT NULL,
+		  `descripcion` varchar(200) DEFAULT NULL,
+		  `debe` decimal(19,0) DEFAULT '0',
+		  `haber` decimal(19,0) DEFAULT '0',
+		  PRIMARY KEY (`id`)
+		) ENGINE=MyISAM DEFAULT CHARSET=".$this->db->char_set;
+		var_dump($this->db->simple_query($mSQL));
+
+		$mSQL="CREATE TABLE `${prefijo}partidas` (
+		  `codigo` varchar(15) NOT NULL DEFAULT '',
+		  `contenedor` int(7) NOT NULL,
+		  `descripcion` varchar(100) DEFAULT NULL,
+		  `enlace` varchar(6) DEFAULT NULL,
+		  `iva` decimal(5,2) DEFAULT NULL,
+		  `medida` varchar(5) DEFAULT NULL,
+		  `dacumu` varchar(5) DEFAULT NULL,
+		  PRIMARY KEY (`codigo`)
+		) ENGINE=MyISAM DEFAULT CHARSET=".$this->db->char_set;
+		var_dump($this->db->simple_query($mSQL));
+
+		$mSQL="ALTER TABLE `${prefijo}status`  CHANGE COLUMN `contenedor` `definicion` INT(11) NULL DEFAULT '0' AFTER `usuario`";
+		var_dump($this->db->simple_query($mSQL));
+	}
 
 }
