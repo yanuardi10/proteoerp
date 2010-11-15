@@ -25,7 +25,7 @@
 				<td align="center" class="littletableheaderb style1 style4">¿Despachar?</td>     
 	    </tr>
 		 <?php foreach ($detalle AS $items){?>
-		 <form id="form1" name="form1" method="post" action="<?php echo site_url("ventas/sfacdesp/guardar/"); ?>">
+		 <form id="form1" name="form1" method="post" action="<?php echo site_url("ventas/sfacdespfyco/guardar/"); ?>">
 		 <input type="hidden" name="numa"  value="<?=$items->numa ?>"/>
 		 <input type="hidden" name="tipoa"  value="<?=$items->tipoa ?>"/>
 	     <tr bgcolor="#717394">   
