@@ -32,9 +32,13 @@ function add_itstra(){
 	htm = htm.replace(/<#i#>/g,can);
 	htm = htm.replace(/<#o#>/g,con);
 	$("#__UTPL__").before(htm);
+	$("#cantidad_"+can).numeric(".");
 	itstra_cont=itstra_cont+1;
-	
 }
+
+$(function(){
+	$(".inputnum").numeric(".");
+});
 					
 function del_itstra(id){
 	id = id.toString();
@@ -65,7 +69,7 @@ function del_itstra(id){
 				<td class="littletableheader"><?=$form->observ1->label  ?>&nbsp;</td>
 				<td class="littletablerow"><?=$form->observ1->output ?>&nbsp;</td>
 				<td class="littletableheader"><?=$form->totalg->label  ?>&nbsp;</td>
-				<td class="littletablerow"><?=$form->totalg->output ?>&nbsp;</td>
+				<td class="littletablerow" align="right"><?=$form->totalg->output ?>&nbsp;</td>
 				<td class="littletablerow">&nbsp;</td>
 				<td class="littletablerow">&nbsp;</td>
 			</tr>
@@ -80,7 +84,7 @@ function del_itstra(id){
 			<tr>
 				<td class="littletableheader">C&oacute;digo</td>
 				<td class="littletableheader">Descripci&oacute;n</td>
-				<td class="littletableheader">Cantidad</td>
+				<td class="littletableheader" align="right">Cantidad</td>
 				
 				<?php if($form->_status!='show') {?>
 				<td class="littletableheader">&nbsp;</td>
@@ -94,7 +98,7 @@ function del_itstra(id){
 			<tr id='tr_itstra_<?=$i ?>'>
 				<td class="littletablerow"><?=$form->$obj1->output ?></td>
 				<td class="littletablerow"><?=$form->$obj2->output ?></td>
-				<td class="littletablerow"><?=$form->$obj3->output ?></td>
+				<td class="littletablerow" align="right"><?=$form->$obj3->output ?></td>
 				<?php if($form->_status!='show') {?>
 				<td class="littletablerow"><a href=#
 					onclick='del_itstra(<?=$i ?>);return false;'>Eliminar</a></td>
