@@ -6575,12 +6575,12 @@ class Libros extends Controller {
 					LEFT JOIN club c ON b.cliente=c.cod_tar 
 					LEFT JOIN dine d ON a.fecha=d.fecha AND a.caja=d.caja AND a.cajero=d.cajero
 					WHERE a.fecha BETWEEN '$row->fecha1' AND '$row->fecha' AND c.cedula REGEXP '^[VEJG][0-9]{9}$' 
-						AND a.caja='$row->caja' AND b.hora>='$hdesde' AND b.hora<'$hhasta'
-					GROUP BY a.fecha, a.caja, numa";
+					AND a.caja='$row->caja' AND b.hora>='$hdesde' AND b.hora<'$hhasta'
+					GROUP BY a.fecha, a.caja";
 				}
 
 				$flag=$this->db->simple_query($mSQL_1); 
-				if(!$flag){memowrite($mSQL_1,'geneventasfiscal'); return 0;};
+				memowrite($mSQL_1,'geneventasfiscal');
 				
 				$mSQL_2="SELECT tipo,
 					SUM(exento)    AS exento, 
