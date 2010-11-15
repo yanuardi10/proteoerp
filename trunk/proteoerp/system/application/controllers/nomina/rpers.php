@@ -16,9 +16,9 @@ class  rpers extends Controller {
 		$filter->attributes=array('onsubmit'=>'is_loaded()');
 				
 		$filter->tabla=new dropdownField("Tabla","tabla");
-		$filter->tabla->option("sinv","Inventario");
-		$filter->tabla->option("scli","Clientes");
-		$filter->tabla->option("sprv","Proveedores");
+		$filter->tabla->option("pers","Personal");
+		$filter->tabla->option("sprm","Nomina");
+		//$filter->tabla->option("sprv","Proveedores");
 		$filter->tabla->clause="";
 		
 		//$filter->obra = new dropdownField("Obra", "depto"); 
