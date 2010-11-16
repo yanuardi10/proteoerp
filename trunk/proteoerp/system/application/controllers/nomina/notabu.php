@@ -34,7 +34,7 @@ class notabu extends validaciones {
 		$grid->per_page = 20;
 
 		$grid->column("Contrato",$uri);
-		$grid->column("Año","ano");
+		$grid->column("Aï¿½o","ano");
 		$grid->column("Mes","mes");
 		$grid->column("Dia","dia");
 		$grid->column("Preaviso","preaviso","align=right");
@@ -44,10 +44,11 @@ class notabu extends validaciones {
 		$grid->column("Utilidades","utilidades","align=right");
 	
 		//$grid->add("nomina/notabu/dataedit/create");
+		$salida=anchor("nomina/notabu/calcautilidades","Cambiar utilidades en base a monto anual");
 		$grid->build();
 		
-		$data['content'] = $filter->output.$grid->output;
-		$data['title']   = "<h1>Definición de Utilidades</h1>";
+		$data['content'] = $filter->output.$salida.$grid->output;
+		$data['title']   = "<h1>Definici&oacute;n de Utilidades</h1>";
 		$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);	
 	}
@@ -78,7 +79,7 @@ class notabu extends validaciones {
 		$edit->contrato->options("SELECT codigo,CONCAT('',codigo,nombre)as nombre FROM noco ORDER BY codigo");
 		$edit->contrato->group = "Relaci&oacute;n Laboral";
 					
-		$edit->ano = new inputField("Año","ano");
+		$edit->ano = new inputField("Aï¿½o","ano");
 		$edit->ano->size =3;
 		$edit->ano->maxlength=2;
 		$edit->ano->rule="trim|numeric";
@@ -131,9 +132,53 @@ class notabu extends validaciones {
 		
 		$data['content'] = $edit->output; 
 		$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
-		$data['title']   = '<h1>Definición de Utilidades</h1>';
+		$data['title']   = '<h1>Definiciï¿½n de Utilidades</h1>';
 		$this->load->view('view_ventanas', $data);
 	}
+
+	function calcautilidades(){
+		$this->rapyd->load("dataform");
+		
+		$script='
+			$(".inputnum").numeric(".");
+		';
+		
+		$form = new DataForm('nomina/notabu/calcautilidades/process');
+		$form->back_url = site_url("nomina/notabu/filteredgrid");
+		$form->script($script);
+		
+		 
+		$form->contrato = new dropdownField("Contrato","contrato");
+		$form->contrato->style ="width:400px;";
+		$form->contrato->options("SELECT codigo,CONCAT('',codigo,nombre)as nombre FROM noco ORDER BY codigo");
+		$form->contrato->rule="required";
+		 
+		$form->monto = new inputField("Monto de dias anual para calcular utilidades","monto");
+		$form->monto->style    ="width:400px;";
+		$form->monto->options("SELECT codigo,CONCAT('',codigo,nombre)as nombre FROM noco ORDER BY codigo");
+		$form->monto->rule     ="required";
+		$form->monto->size     = 10;
+		$form->monto->css_class='inputnum';
+		
+		$form->submit("btnsubmit","Cambiar");
+		$form->build_form();
+		
+		if ($form->on_success()){
+			$contrato=$this->db->escape($form->contrato->newValue);
+			$monto   =$form->monto->newValue;
+			
+			$query = "UPDATE notabu SET utilidades=IF(ano>=1,$monto,($monto/12)*mes+($monto/24)*IF(dia>=15,1,0)) WHERE contrato =$contrato";
+			$this->db->query($query);
+		}
+		
+		$salida=anchor("nomina/notabu/filteredgrid","Regresar al filtro");
+		
+		$data['content'] = $form->output.$salida;
+		$data['title']   = 'Cambiar Utilidades basado a monto anual';
+		$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
+		$this->load->view('view_ventanas', $data);
+	}
+	
 	function _post_insert($do){
 		$contrato=$do->get('contrato');
 		$anio=$do->get('anio');
