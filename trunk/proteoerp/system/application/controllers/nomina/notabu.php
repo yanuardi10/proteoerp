@@ -34,7 +34,7 @@ class notabu extends validaciones {
 		$grid->per_page = 20;
 
 		$grid->column("Contrato",$uri);
-		$grid->column("A�o","ano");
+		$grid->column("A&nacute;o","ano");
 		$grid->column("Mes","mes");
 		$grid->column("Dia","dia");
 		$grid->column("Preaviso","preaviso","align=right");
