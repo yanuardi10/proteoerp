@@ -34,7 +34,7 @@ class status extends validaciones {
 		$grid->per_page = 7;
 
 		$grid->column('id',$uri);
-		$grid->column_orderby('Definici&acute;n' ,'nombre'     ,'nombre');
+		$grid->column_orderby('Definici&oacute;n' ,'nombre'     ,'nombre');
 		$grid->column('Descripci&oacute;n'        ,'descrip');
 		
 		$grid->add('crm/status/dataedit/create');
@@ -58,12 +58,12 @@ class status extends validaciones {
 
 		$edit->usuario  = new autoUpdateField('usuario', $this->session->userdata('usuario'), $this->session->userdata('usuario'));
 
-		$edit->definicion = new dropdownField("Definición","definicion");
-		$edit->definicion->option("","Seleccione");
-		$edit->definicion->options("SELECT id,nombre  FROM crm_definiciones ORDER BY nombre");
+		$edit->definicion = new dropdownField('Definici&oacute;n','definicion');
+		$edit->definicion->option('','Seleccione');
+		$edit->definicion->options('SELECT id,nombre  FROM crm_definiciones ORDER BY nombre');
 		$edit->definicion->rule = 'required';
 
-		$edit->descrip =  new inputField('Descripción','descrip');
+		$edit->descrip =  new inputField('Descripci&oacute;n','descrip');
 		$edit->descrip->size = 50;
 		$edit->descrip->maxlength=200;
 		$edit->descrip->rule = 'trim|strtoupper|required';
