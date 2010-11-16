@@ -163,14 +163,17 @@ class Contenedor extends validaciones {
 			$grid->per_page = 100;
 
 			$url=anchor('crm/contenedor/comentario/'.$id.'/show/<#id#>','<#id#>');
-			$grid->column_orderby('ID'  ,$url      ,'id');
-			$grid->column_orderby('Fecha'  ,'<dbdate_to_human><#fecha#></dbdate_to_human>'      ,'fecha');
-			$grid->column_orderby('Motivo' ,'motivo'     ,'motivo');
-			$grid->column_orderby('Cuerpo' ,'<html_entity_decode><#cuerpo#></html_entity_decode>' ,'cuerpo');
+			$grid->column('ID'  ,$url      );
+			$grid->column('Fecha'  ,'<dbdate_to_human><#fecha#></dbdate_to_human>'      );
+			$grid->column('Motivo' ,'motivo'    );
+			$grid->column('Cuerpo' ,'<html_entity_decode><#cuerpo#></html_entity_decode>');
 
-			$grid->add('crm/contenedor/comentario/'.$id.'/create');
+			$grid->add('crm/contenedor/comentario/'.$id.'/create','A&ntilde;adir comentario');
 			$grid->build();
-			$coment=$grid->output;
+			
+			//$coment=$grid->output;
+			$coment =($grid->recordCount > 0) ? $grid->output : $grid->_button_container['TR'][0];
+
 
 			$even= new DataGrid('Eventos asociados',$this->prefijo.'eventos');
 			$even->db->where('contenedor',$id);
@@ -178,12 +181,12 @@ class Contenedor extends validaciones {
 			$even->per_page = 100;
 
 			$url=anchor('crm/contenedor/eventos/'.$id.'/show/<#id#>','<#id#>');
-			$even->column_orderby('ID'  ,$url      ,'id');
-			$even->column_orderby('Fecha'  ,'<dbdate_to_human><#fecha#></dbdate_to_human>'      ,'fecha');
-			$even->column_orderby('Vence'  ,'<dbdate_to_human><#vence#></dbdate_to_human>'      ,'vence');
-			$even->column_orderby('Evento' ,'evento'     ,'evento');
+			$even->column('ID'  ,$url);
+			$even->column('Fecha'  ,'<dbdate_to_human><#fecha#></dbdate_to_human>');
+			$even->column('Vence'  ,'<dbdate_to_human><#vence#></dbdate_to_human>');
+			$even->column('Evento' ,'evento'    );
 
-			$even->add('crm/contenedor/eventos/'.$id.'/create');
+			$even->add('crm/contenedor/eventos/'.$id.'/create','A&ntilde;adir evento');
 			$even->build();
 			$evento=$even->output;
 			
@@ -192,13 +195,13 @@ class Contenedor extends validaciones {
 			$parti->per_page = 100;
 
 			$url=anchor('crm/contenedor/partidas/'.$id.'/show/<#codigo#>','<#codigo#>');
-			$parti->column_orderby('C&oacute;digo' ,$url     ,'codigo');
-			$parti->column_orderby('Descripci&oacute;n'  ,'descripcion'      ,'descripcion');
-			$parti->column_orderby('Enlace' ,'enlace'     ,'enlace');
-			$parti->column_orderby('Medida' ,'medida'     ,'medida');
-			$parti->column_orderby('Iva'  ,'<nformat><#iva#></nformat>'      ,'iva','align="right"');
+			$parti->column('C&oacute;digo' ,$url    );
+			$parti->column('Descripci&oacute;n'  ,'descripcion');
+			$parti->column('Enlace' ,'enlace'     );
+			$parti->column('Medida' ,'medida'     );
+			$parti->column('Iva'  ,'<nformat><#iva#></nformat>','align="right"');
 
-			$parti->add('crm/contenedor/partidas/'.$id.'/create');
+			$parti->add('crm/contenedor/partidas/'.$id.'/create','A&ntilde;adir partida');
 			$parti->build();
 			$partid=$parti->output;
 			
@@ -207,13 +210,13 @@ class Contenedor extends validaciones {
 			$monto->per_page = 100;
 
 			$url=anchor('crm/contenedor/montos/'.$id.'/show/<#id#>','<#id#>');
-			$monto->column_orderby('ID'  ,$url      ,'id');
-			$monto->column_orderby('Partida' ,'partida'     ,'partida');
-			$monto->column_orderby('Fecha'  ,'<dbdate_to_human><#fecha#></dbdate_to_human>'      ,'fecha');
-			$monto->column_orderby('Debe'  ,'<nformat><#debe#></nformat>'      ,'debe','align="right"');
-			$monto->column_orderby('Haber'  ,'<nformat><#haber#></nformat>'     ,'haber','align="right"');
+			$monto->column('ID'  ,$url );
+			$monto->column('Partida' ,'partida');
+			$monto->column('Fecha'  ,'<dbdate_to_human><#fecha#></dbdate_to_human>');
+			$monto->column('Debe'  ,'<nformat><#debe#></nformat>'  ,'align="right"');
+			$monto->column('Haber'  ,'<nformat><#haber#></nformat>','align="right"');
 
-			$monto->add('crm/contenedor/montos/'.$id.'/create');
+			$monto->add('crm/contenedor/montos/'.$id.'/create','A&ntilde;adir monto');
 			$monto->build();
 			$montos=$monto->output;
 
@@ -222,12 +225,12 @@ class Contenedor extends validaciones {
 			$adjun->per_page = 100;
 
 			$url=anchor('crm/contenedor/adjuntos/'.$id.'/show/<#id#>','<#id#>');
-			$adjun->column_orderby('ID'  ,$url      ,'id');
-			$adjun->column_orderby('Fecha'  ,'<dbdate_to_human><#fecha#></dbdate_to_human>'      ,'fecha');
-			$adjun->column_orderby('Nombre' ,'nombre'     ,'nombre');
-			$adjun->column_orderby('Descripci&oacute;n'  ,'descripcion'      ,'descripcion');
+			$adjun->column('ID'  ,$url  );
+			$adjun->column('Fecha'  ,'<dbdate_to_human><#fecha#></dbdate_to_human>');
+			$adjun->column('Nombre' ,'nombre'    );
+			$adjun->column('Descripci&oacute;n'  ,'descripcion');
 
-			$adjun->add('crm/contenedor/adjuntos/'.$id.'/create');
+			$adjun->add('crm/contenedor/adjuntos/'.$id.'/create','A&ntilde;adir adjunto');
 			$adjun->build();
 			$adjunt=$adjun->output;
 
@@ -540,6 +543,10 @@ class Contenedor extends validaciones {
 
 		$mSQL="ALTER TABLE `${prefijo}status`  CHANGE COLUMN `contenedor` `definicion` INT(11) NULL DEFAULT '0' AFTER `usuario`";
 		var_dump($this->db->simple_query($mSQL));
+
+		$mSQL="ALTER TABLE `${prefijo}tipos`  CHANGE COLUMN `contenedor` `definicion` INT(11) NULL DEFAULT '0' AFTER `usuario`";
+		var_dump($this->db->simple_query($mSQL));
+
 	}
 
 }
