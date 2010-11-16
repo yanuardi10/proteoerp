@@ -45,6 +45,7 @@ class Definiciones extends validaciones {
 		$this->rapyd->load('dataedit');
 
 		$edit = new DataEdit('Definiciones', $this->prefijo.'definiciones');
+		$edit->back_url = site_url('crm/definiciones/index');
 
 		/*$edit->post_process('insert','_post_insert');
 		$edit->post_process('update','_post_update');
