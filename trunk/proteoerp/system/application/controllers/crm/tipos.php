@@ -50,10 +50,7 @@ class tipos extends validaciones {
 	function dataedit(){
 		$this->rapyd->load('dataedit','datagrid');
 		
-		$script ='
-		$(function() {
-			$(".inputnum").numeric(".");			
-		});';
+		$script ='$(function() {$(".inputnum").numeric(".");});';
 		
 		$edit = new DataEdit(" ",'crm_tipos');
 		$edit->back_url = site_url('crm/tipos/index');
@@ -66,17 +63,17 @@ class tipos extends validaciones {
 		
 		$edit->usuario  = new autoUpdateField('usuario', $this->session->userdata('usuario'), $this->session->userdata('usuario'));
 				
-		$edit->definicion = new dropdownField("Definición","definicion");
+		$edit->definicion = new dropdownField("Definici&oacute;n","definicion");
 		$edit->definicion->option("","Seleccione");
 		$edit->definicion->options("SELECT id,nombre  FROM crm_definiciones ORDER BY nombre");
 		$edit->definicion->rule = 'required';
 		
-		$edit->descrip =  new inputField('Descripción','descrip');
+		$edit->descrip =  new inputField('Descripci&oacute;n','descrip');
 		$edit->descrip->size = 50;
 		$edit->descrip->maxlength=200;
 		$edit->descrip->rule = 'trim|strtoupper|required';
 				
-		$edit->buttons("modify", "save", "undo", "delete", "back"); 
+		$edit->buttons('modify', 'save', 'undo', 'delete', 'back'); 
 		$edit->build();
 		
 		$data['content'] = $edit->output;

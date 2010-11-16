@@ -22,14 +22,15 @@ class Contenedor extends validaciones {
 		$filter->buttons("reset","search");
 		$filter->build();
 
-		$uri  = anchor('crm/contenedor/dataedit/show/<#id#>','<#id#>');
+		$uri  = anchor('crm/contenedor/dataedit/show/<#id#>','<str_pad><#id#>|8|0|0</str_pad>');
 		$curl = anchor('crm/contenedor/comentario/<#id#>/create','Comentario');
 
 		$grid = new DataGrid('Lista de Contenedores');
+		$grid->use_function('str_pad');
 		//$grid->order_by('caja','asc');
 		$grid->per_page = 7;
 
-		$grid->column('id',$uri);
+		$grid->column('N&uacute;mero',$uri);
 		$grid->column_orderby('Derivado'   ,'derivado'   ,'derivado');
 		$grid->column_orderby('Tipo'       ,'tipo'       ,'tipo');
 		$grid->column_orderby('Estatus'    ,'status'     ,'status');
@@ -191,7 +192,7 @@ class Contenedor extends validaciones {
 			$grid->per_page = 100;
 
 			$url=anchor('crm/contenedor/comentario/'.$id.'/show/<#id#>','<#id#>');
-			$grid->column('ID'  ,$url      );
+			$grid->column('N&uacute;mero'  ,$url );
 			$grid->column('Fecha'  ,'<dbdate_to_human><#fecha#></dbdate_to_human>'      );
 			$grid->column('Motivo' ,'motivo'    );
 			$grid->column('Cuerpo' ,'<html_entity_decode><#cuerpo#></html_entity_decode>');
@@ -208,7 +209,7 @@ class Contenedor extends validaciones {
 			$even->per_page = 100;
 
 			$url=anchor('crm/contenedor/eventos/'.$id.'/show/<#id#>','<#id#>');
-			$even->column('ID'  ,$url);
+			$even->column('N&uacute;mero'  ,$url);
 			$even->column('Fecha'  ,'<dbdate_to_human><#fecha#></dbdate_to_human>');
 			$even->column('Vence'  ,'<dbdate_to_human><#vence#></dbdate_to_human>');
 			$even->column('Evento' ,'evento'    );
@@ -239,7 +240,7 @@ class Contenedor extends validaciones {
 			$monto->per_page = 100;
 
 			$url=anchor('crm/contenedor/montos/'.$id.'/show/<#id#>','<#id#>');
-			$monto->column('ID'  ,$url );
+			$monto->column('N&uacute;mero'  ,$url );
 			$monto->column('Partida' ,'partida');
 			$monto->column('Fecha'  ,'<dbdate_to_human><#fecha#></dbdate_to_human>');
 			$monto->column('Debe'  ,'<nformat><#debe#></nformat>'  ,'align="right"');
@@ -392,13 +393,10 @@ class Contenedor extends validaciones {
 
 	function montos($contenedor){
 		$this->rapyd->load('dataedit');
-		$mSQL='SELECT COUNT(*) FROM '.$this->prefijo.'partidas WHERE contenedor='.$this->db->escape($contenedor);
+		$mSQL='SELECT COUNT(*) FROM '.$this->prefijo.'partidas ';
 		$parti=$this->datasis->dameval($mSQL);
 
 		if($parti>0){
-
-
-
 
 			$script='$(function() { $(".inputnum").numeric("."); });';
 
@@ -408,7 +406,7 @@ class Contenedor extends validaciones {
 			$edit->script($script, 'modify');
 
 			$edit->usuario    = new autoUpdateField('usuario'   , $this->session->userdata('usuario'), $this->session->userdata('usuario'));
-			$edit->contenedor = new autoUpdateField('contenedor', $contenedor,$contenedor);
+			//$edit->contenedor = new autoUpdateField('contenedor', $contenedor,$contenedor);
 
 			$edit->fecha = new dateField('Fecha', 'fecha','d/m/Y');
 			$edit->fecha->rule = 'required';
@@ -419,7 +417,7 @@ class Contenedor extends validaciones {
 			$edit->partida = new dropdownField('Partida', 'partida');
 			$edit->partida->rule = 'required';
 			$edit->partida->option('','Seleccionar');
-			$edit->partida->options('SELECT codigo,descripcion FROM '.$this->prefijo.'partidas WHERE contenedor='.$this->db->escape($contenedor));
+			$edit->partida->options('SELECT codigo,descripcion FROM '.$this->prefijo.'partidas ');
 
 			$edit->descripcion =  new inputField('Descripci&oacute;n', 'descripcion');
 			$edit->descripcion->rule = 'trim|required|max_length[200]';
