@@ -151,38 +151,101 @@ class Contenedor extends validaciones {
 		$edit->condiciones->rows = 4;
 		$edit->condiciones->rule = 'trim|required';
 
+		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
+		$edit->build();
+
 		if($edit->_status=='show'){
-			$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
-			$edit->build();
+			$id=$edit->_dataobject->get('id');
 
 			$grid = new DataGrid('Comentario',$this->prefijo.'comentarios');
+			$grid->db->where('contenedor',$id);
 			$grid->order_by('fecha','asc');
-			$grid->per_page = 7;
+			$grid->per_page = 100;
 
-			$grid->column_orderby('Fecha'      ,'<dbdate_to_human><#fecha#></dbdate_to_human>'      ,'fecha');
-			$grid->column_orderby('Motivo'     ,'motivo'     ,'motivo');
-			$grid->column_orderby('Cuerpo'     ,'cuerpo'     ,'cuerpo');
+			$url=anchor('crm/contenedor/comentario/'.$id.'/show/<#id#>','<#id#>');
+			$grid->column_orderby('ID'  ,$url      ,'id');
+			$grid->column_orderby('Fecha'  ,'<dbdate_to_human><#fecha#></dbdate_to_human>'      ,'fecha');
+			$grid->column_orderby('Motivo' ,'motivo'     ,'motivo');
+			$grid->column_orderby('Cuerpo' ,'<html_entity_decode><#cuerpo#></html_entity_decode>' ,'cuerpo');
 
-			$grid->add('crm/contenedor/comentario/create');
+			$grid->add('crm/contenedor/comentario/'.$id.'/create');
 			$grid->build();
 			$coment=$grid->output;
+
+			$even= new DataGrid('Eventos asociados',$this->prefijo.'eventos');
+			$even->db->where('contenedor',$id);
+			$even->order_by('fecha','asc');
+			$even->per_page = 100;
+
+			$url=anchor('crm/contenedor/eventos/'.$id.'/show/<#id#>','<#id#>');
+			$even->column_orderby('ID'  ,$url      ,'id');
+			$even->column_orderby('Fecha'  ,'<dbdate_to_human><#fecha#></dbdate_to_human>'      ,'fecha');
+			$even->column_orderby('Vence'  ,'<dbdate_to_human><#vence#></dbdate_to_human>'      ,'vence');
+			$even->column_orderby('Evento' ,'evento'     ,'evento');
+
+			$even->add('crm/contenedor/eventos/'.$id.'/create');
+			$even->build();
+			$evento=$even->output;
+			
+			$parti= new DataGrid('Partidas asociadas',$this->prefijo.'partidas');
+			$parti->db->where('contenedor',$id);
+			$parti->per_page = 100;
+
+			$url=anchor('crm/contenedor/partidas/'.$id.'/show/<#codigo#>','<#codigo#>');
+			$parti->column_orderby('C&oacute;digo' ,$url     ,'codigo');
+			$parti->column_orderby('Descripci&oacute;n'  ,'descripcion'      ,'descripcion');
+			$parti->column_orderby('Enlace' ,'enlace'     ,'enlace');
+			$parti->column_orderby('Medida' ,'medida'     ,'medida');
+			$parti->column_orderby('Iva'  ,'<nformat><#iva#></nformat>'      ,'iva','align="right"');
+
+			$parti->add('crm/contenedor/partidas/'.$id.'/create');
+			$parti->build();
+			$partid=$parti->output;
+			
+			$monto= new DataGrid('Montos asociados',$this->prefijo.'montos');
+			$monto->db->where('contenedor',$id);
+			$monto->per_page = 100;
+
+			$url=anchor('crm/contenedor/montos/'.$id.'/show/<#id#>','<#id#>');
+			$monto->column_orderby('ID'  ,$url      ,'id');
+			$monto->column_orderby('Partida' ,'partida'     ,'partida');
+			$monto->column_orderby('Fecha'  ,'<dbdate_to_human><#fecha#></dbdate_to_human>'      ,'fecha');
+			$monto->column_orderby('Debe'  ,'<nformat><#debe#></nformat>'      ,'debe','align="right"');
+			$monto->column_orderby('Haber'  ,'<nformat><#haber#></nformat>'     ,'haber','align="right"');
+
+			$monto->add('crm/contenedor/montos/'.$id.'/create');
+			$monto->build();
+			$montos=$monto->output;
+
+			$adjun= new DataGrid('Archivos Ajuntos',$this->prefijo.'adjuntos');
+			$adjun->db->where('contenedor',$id);
+			$adjun->per_page = 100;
+
+			$url=anchor('crm/contenedor/adjuntos/'.$id.'/show/<#id#>','<#id#>');
+			$adjun->column_orderby('ID'  ,$url      ,'id');
+			$adjun->column_orderby('Fecha'  ,'<dbdate_to_human><#fecha#></dbdate_to_human>'      ,'fecha');
+			$adjun->column_orderby('Nombre' ,'nombre'     ,'nombre');
+			$adjun->column_orderby('Descripci&oacute;n'  ,'descripcion'      ,'descripcion');
+
+			$adjun->add('crm/contenedor/adjuntos/'.$id.'/create');
+			$adjun->build();
+			$adjunt=$adjun->output;
+
 		}else{
-			$coment='';
+			$coment=$evento=$partid=$montos=$adjunt='';
 		}
 
-
-		$data['content'] = $edit->output.$coment;
+		$data['content'] = $edit->output.$coment.$evento.$partid.$montos.$adjunt;
 		$data['title']   = '<h1>Contenedor</h1>';
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
-
 	}
 
 	function comentario($contenedor){
 		$this->rapyd->load('dataedit');
 		$edit = new DataEdit('Comentario', $this->prefijo.'comentarios');
 
-		$edit->back_url = site_url('crm/contenedor/index');
+		$edit->back_url = site_url('crm/contenedor/dataedit/show/'.$contenedor);
 
 		$edit->usuario    = new autoUpdateField('usuario'   , $this->session->userdata('usuario'), $this->session->userdata('usuario'));
 		$edit->contenedor = new autoUpdateField('contenedor', $contenedor,$contenedor);
@@ -210,6 +273,151 @@ class Contenedor extends validaciones {
 		$this->load->view('view_ventanas', $data);
 	}
 
+
+	function eventos($contenedor){
+		$this->rapyd->load('dataedit');
+		$edit = new DataEdit('Eventos', $this->prefijo.'eventos');
+
+		$edit->back_url = site_url('crm/contenedor/dataedit/show/'.$contenedor);
+
+		$edit->usuario    = new autoUpdateField('usuario'   , $this->session->userdata('usuario'), $this->session->userdata('usuario'));
+		$edit->contenedor = new autoUpdateField('contenedor', $contenedor,$contenedor);
+
+		$edit->fecha = new dateField('Fecha', 'fecha','d/m/Y');
+		$edit->fecha->rule = 'required';
+		$edit->fecha->size = 10;
+		$edit->fecha->maxlength=8;
+		$edit->fecha->insertValue = date('Y-m-d');
+
+		$edit->vence = new dateField('Vence', 'vence','d/m/Y');
+		$edit->vence->rule = 'required';
+		$edit->vence->size = 10;
+		$edit->vence->maxlength=8;
+		$edit->vence->insertValue = date('Y-m-d');
+
+		$edit->evento =  new inputField('Evento', 'evento');
+		$edit->evento->rule = 'trim|required|max_length[200]';
+
+		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
+		$edit->build();
+
+		$data['content'] = $edit->output;
+		$data['title']   = '<h1>Eventos de contratos</h1>';
+		$data['head']    = $this->rapyd->get_head();
+		$this->load->view('view_ventanas', $data);
+	}
+
+
+	function partidas($contenedor){
+		$this->rapyd->load('dataedit');
+		$edit = new DataEdit('Partidas', $this->prefijo.'partidas');
+
+		$edit->back_url = site_url('crm/contenedor/dataedit/show/'.$contenedor);
+
+		$edit->codigo =  new inputField('C&oacute;digo', 'codigo');
+		$edit->codigo->rule = 'trim|required|max_length[15]';
+
+		$edit->descripcion =  new inputField('Descripci&oacute;n', 'descripcion');
+		$edit->descripcion->rule = 'trim|required|max_length[100]';
+
+		$edit->enlace =  new inputField('Enlace Administrativo', 'enlace');
+		$edit->enlace->rule = 'trim|required|max_length[6]';
+		$edit->enlace->size = 7;
+
+		$edit->medida =  new inputField('Medida', 'medida');
+		$edit->medida->rule = 'trim|required|max_length[5]';
+		$edit->medida->size = 6;
+		$edit->medida->max_size = 5;
+
+		$edit->iva =  new inputField('Iva', 'iva');
+		$edit->iva->rule = 'trim|required|numeric';
+
+		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
+		$edit->build();
+
+		$data['content'] = $edit->output;
+		$data['title']   = '<h1>Partidas de contratos</h1>';
+		$data['head']    = $this->rapyd->get_head();
+		$this->load->view('view_ventanas', $data);
+	}
+
+
+	function montos($contenedor){
+		$this->rapyd->load('dataedit');
+		$edit = new DataEdit('Montos', $this->prefijo.'montos');
+		$edit->back_url = site_url('crm/contenedor/dataedit/show/'.$contenedor);
+
+		$edit->usuario    = new autoUpdateField('usuario'   , $this->session->userdata('usuario'), $this->session->userdata('usuario'));
+		$edit->contenedor = new autoUpdateField('contenedor', $contenedor,$contenedor);
+
+		$edit->fecha = new dateField('Fecha', 'fecha','d/m/Y');
+		$edit->fecha->rule = 'required';
+		$edit->fecha->size = 10;
+		$edit->fecha->maxlength=8;
+		$edit->fecha->insertValue = date('Y-m-d');
+
+		$edit->partida = new dropdownField('Partida', 'partida');
+		$edit->partida->rule = 'required';
+		$edit->partida->option('','Seleccionar');
+		$edit->partida->options('SELECT codigo,descripcion FROM '.$this->prefijo.'partidas WHERE contenedor='.$this->db->escape($contenedor));
+
+		$edit->descripcion =  new inputField('Descripci&oacute;n', 'descripcion');
+		$edit->descripcion->rule = 'trim|required|max_length[200]';
+
+		$edit->debe =  new inputField('Debe', 'debe');
+		$edit->debe->rule = 'required|numeric';
+
+		$edit->haber =  new inputField('Haber', 'haber');
+		$edit->haber->rule = 'required|numeric';
+
+		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
+		$edit->build();
+
+		$data['content'] = $edit->output;
+		$data['title']   = '<h1>Montos de contratos</h1>';
+		$data['head']    = $this->rapyd->get_head();
+		$this->load->view('view_ventanas', $data);
+	}
+
+
+	function adjuntos($contenedor){
+
+		$this->load->library("path");
+		$path=new Path();
+		$path->setPath($this->config->item('uploads_dir'));
+		$path->append('/crm');
+		$upload_path =$path->getPath().'/';
+
+		$this->rapyd->load('dataedit');
+		$edit = new DataEdit('Adjuntos', $this->prefijo.'adjuntos');
+		$edit->back_url = site_url('crm/contenedor/dataedit/show/'.$contenedor);
+
+		$edit->usuario    = new autoUpdateField('usuario'   , $this->session->userdata('usuario'), $this->session->userdata('usuario'));
+		$edit->contenedor = new autoUpdateField('contenedor', $contenedor,$contenedor);
+
+		$edit->fecha = new dateField('Fecha', 'fecha','d/m/Y');
+		$edit->fecha->rule = 'required';
+		$edit->fecha->size = 10;
+		$edit->fecha->maxlength=8;
+		$edit->fecha->insertValue = date('Y-m-d');
+
+		$edit->descripcion =  new inputField('Descripci&oacute;n', 'descripcion');
+		$edit->descripcion->rule = 'trim|required|max_length[200]';
+
+		$edit->nombre  = new uploadField("Archivo", "nombre");
+		$edit->nombre->upload_path = $upload_path;
+		$edit->nombre->rule = 'required';
+		$edit->nombre->allowed_types = "pdf|doc|xls|txt";
+		//$edit->img->thumb = array (63,91);
+
+		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
+		$edit->build();
+
+		$data['content'] = $edit->output;
+		$data['title']   = '<h1>Montos de contratos</h1>';
+		$data['head']    = $this->rapyd->get_head();
+		$this->load->view('view_ventanas', $data);
+	}
 
 	function instala(){
 		$prefijo=$this->prefijo;
