@@ -19,8 +19,8 @@ class tipos extends validaciones {
 		$filter->db->select($select);
 		$filter->db->from('crm_tipos AS a');
 		$filter->db->join('crm_definiciones AS b','a.definicion=b.id');
-		
-		$filter->definicion = new dropdownField("Definición","definicion");
+
+		$filter->definicion = new dropdownField("Definici&acute;n","definicion");
 		$filter->definicion->option("","Seleccione");
 		$filter->definicion->options("SELECT id,nombre  FROM crm_definiciones ORDER BY nombre");
 		$filter->definicion->rule = 'required';
@@ -35,7 +35,7 @@ class tipos extends validaciones {
 		$grid->per_page = 7;
 
 		$grid->column('id',$uri);
-		$grid->column_orderby('Definición' ,'nombre'     ,'nombre');
+		$grid->column_orderby('Definici&oacute;n' ,'nombre'     ,'nombre');
 		$grid->column('Descripción'        ,'descrip');
 		
 		$grid->add('crm/tipos/dataedit/create');
@@ -53,10 +53,7 @@ class tipos extends validaciones {
 		$script ='
 		$(function() {
 			$(".inputnum").numeric(".");			
-		}	
-		);	
-		';
-		
+		});';
 		
 		$edit = new DataEdit(" ",'crm_tipos');
 		$edit->back_url = site_url('crm/tipos/index');
