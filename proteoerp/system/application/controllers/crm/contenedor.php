@@ -15,8 +15,7 @@ class Contenedor extends validaciones {
 
 		$filter = new DataFilter('Contenedor', $this->prefijo.'contenedor');
 
-		$filter->descripcion = new inputField('Descripcion', 'descripcion');
-		//$filter->descripcion->size=5;
+		$filter->descripcion = new inputField('Descripci&oacute;n', 'descripcion');
 
 		$filter->titulo = new inputField('Titulo', 'titulo');
 
@@ -33,15 +32,15 @@ class Contenedor extends validaciones {
 		$grid->column('id',$uri);
 		$grid->column_orderby('Derivado'   ,'derivado'   ,'derivado');
 		$grid->column_orderby('Tipo'       ,'tipo'       ,'tipo');
-		$grid->column_orderby('Status'     ,'status'     ,'status');
+		$grid->column_orderby('Estatus'    ,'status'     ,'status');
 		$grid->column_orderby('Fecha'      ,'<dbdate_to_human><#fecha#></dbdate_to_human>'      ,'fecha');
-		$grid->column_orderby('Cierre'     ,'cierre'     ,'cierre');
+		$grid->column_orderby('Cierre'     ,'<dbdate_to_human><#cierre#></dbdate_to_human>'     ,'cierre');
 		$grid->column_orderby('Titulo'     ,'titulo'     ,'titulo');
 		$grid->column_orderby('Cliente'    ,'cliente'    ,'cliente');
 		$grid->column_orderby('Proveed'    ,'proveed'    ,'proveed');
 		$grid->column_orderby('Resumen'    ,'resumen'    ,'resumen');
 		$grid->column_orderby('Condiciones','condiciones','condiciones');
-		$grid->column('Accion',$curl);
+		//$grid->column('Accion',$curl);
 
 		$grid->add('crm/contenedor/dataedit/create');
 		$grid->build();
@@ -53,8 +52,18 @@ class Contenedor extends validaciones {
 	}
 
 	function dataedit(){
-		$this->rapyd->load('dataedit','datagrid');
-		$edit = new DataEdit('Contenedor', $this->prefijo.'contenedor');
+		$this->rapyd->load('dataedit2','datagrid');
+
+		$link1=site_url('crm/contenedor/get/1');
+		$link2=site_url('crm/contenedor/get/2');
+
+		$script='
+		$(function(){
+			$("#definicion").change(function(){
+				$.post("'.$link1.'",{ defi:$("#definicion").val() },function(data){$("#status").html(data);});
+				$.post("'.$link2.'",{ defi:$("#definicion").val() },function(data){$("#tipo").html(data);  });
+			});
+		});';
 
 		$sprv=array(
 			'tabla'   => $this->prefijo.'contenedor',
@@ -82,6 +91,14 @@ class Contenedor extends validaciones {
 			'retornar'=>array('cliente'=>'cliente'),
 			'titulo'  =>'Buscar Cliente');
 		$boton=$this->datasis->modbus($scli);
+
+		//$do = new DataObject($this->prefijo.'contenedor');
+		//$do->pointer($this->prefijo.'definiciones' ,'.cliente=spre.cod_cli','scli.nombre as sclinombre','LEFT');
+
+
+		$edit = new DataEdit2('Contenedor', $this->prefijo.'contenedor');
+		$edit->script($script,"create");
+		$edit->script($script,"modify");
 
 		/*$edit->post_process('insert','_post_insert');
 		$edit->post_process('update','_post_update');
@@ -114,15 +131,26 @@ class Contenedor extends validaciones {
 		$edit->cliente->rule = 'trim|strtoupper';
 		$edit->cliente->append($boton);
 
+		$edit->definicion = new dropdownField('Definici&oacute;n', 'definicion');
+		$edit->definicion->rule = 'required';
+		$edit->definicion->option('','Seleccionar');
+		$edit->definicion->options('SELECT id,CONCAT_WS("-",nombre,estructura) AS val FROM '.$this->prefijo.'definiciones ORDER BY nombre');
+
 		$edit->tipo = new dropdownField('Tipo', 'tipo');
 		$edit->tipo->rule = 'required';
-		$edit->tipo->option('','Seleccionar');
-		$edit->tipo->options('SELECT id,nombre FROM '.$this->prefijo.'definiciones');
+		$defi=$edit->getval('definicion');
+		if($defi!==FALSE)
+			$edit->tipo->options("SELECT definicion AS id, descrip as valor FROM ".$this->prefijo."tipos WHERE definicion=".$this->db->escape($defi)." ORDER BY definicion");
+		else
+			$edit->tipo->option('','Seleccione una defici&oacute;n primero');
 
-		$edit->status = new dropdownField('Status', 'status');
+		$edit->status = new dropdownField('Estatus', 'status');
 		$edit->status->rule = 'required';
-		$edit->status->option('','Seleccionar');
-		$edit->status->options('SELECT id,descrip FROM '.$this->prefijo.'status ');
+		$edit->status->option('','Seleccione una deficion primero');
+		if($defi!==FALSE)
+			$edit->status->options("SELECT definicion AS id, descrip as valor FROM ".$this->prefijo."status WHERE definicion=".$this->db->escape($defi)." ORDER BY definicion");
+		else
+			$edit->status->option('','Seleccione una defici&oacute;n primero');
 
 		$edit->fecha = new dateField('Fecha', 'fecha','d/m/Y');
 		$edit->fecha->rule = 'required';
@@ -168,12 +196,11 @@ class Contenedor extends validaciones {
 			$grid->column('Motivo' ,'motivo'    );
 			$grid->column('Cuerpo' ,'<html_entity_decode><#cuerpo#></html_entity_decode>');
 
-			$grid->add('crm/contenedor/comentario/'.$id.'/create','A&ntilde;adir comentario');
+			$grid->add('crm/contenedor/comentario/'.$id.'/create','A&ntilde;adir comentarios');
 			$grid->build();
 			
 			//$coment=$grid->output;
 			$coment =($grid->recordCount > 0) ? $grid->output : $grid->_button_container['TR'][0];
-
 
 			$even= new DataGrid('Eventos asociados',$this->prefijo.'eventos');
 			$even->db->where('contenedor',$id);
@@ -186,10 +213,11 @@ class Contenedor extends validaciones {
 			$even->column('Vence'  ,'<dbdate_to_human><#vence#></dbdate_to_human>');
 			$even->column('Evento' ,'evento'    );
 
-			$even->add('crm/contenedor/eventos/'.$id.'/create','A&ntilde;adir evento');
+			$even->add('crm/contenedor/eventos/'.$id.'/create','A&ntilde;adir eventos');
 			$even->build();
-			$evento=$even->output;
-			
+			$evento =($even->recordCount > 0) ? $even->output : $even->_button_container['TR'][0];
+			//$evento=$even->output;
+
 			$parti= new DataGrid('Partidas asociadas',$this->prefijo.'partidas');
 			$parti->db->where('contenedor',$id);
 			$parti->per_page = 100;
@@ -201,10 +229,11 @@ class Contenedor extends validaciones {
 			$parti->column('Medida' ,'medida'     );
 			$parti->column('Iva'  ,'<nformat><#iva#></nformat>','align="right"');
 
-			$parti->add('crm/contenedor/partidas/'.$id.'/create','A&ntilde;adir partida');
+			$parti->add('crm/contenedor/partidas/'.$id.'/create','A&ntilde;adir partidas');
 			$parti->build();
-			$partid=$parti->output;
-			
+			$partid =($parti->recordCount > 0) ? $parti->output : $parti->_button_container['TR'][0];
+			//$partid=$parti->output;
+
 			$monto= new DataGrid('Montos asociados',$this->prefijo.'montos');
 			$monto->db->where('contenedor',$id);
 			$monto->per_page = 100;
@@ -216,9 +245,10 @@ class Contenedor extends validaciones {
 			$monto->column('Debe'  ,'<nformat><#debe#></nformat>'  ,'align="right"');
 			$monto->column('Haber'  ,'<nformat><#haber#></nformat>','align="right"');
 
-			$monto->add('crm/contenedor/montos/'.$id.'/create','A&ntilde;adir monto');
+			$monto->add('crm/contenedor/montos/'.$id.'/create','A&ntilde;adir montos');
 			$monto->build();
-			$montos=$monto->output;
+			$montos =($monto->recordCount > 0) ? $monto->output : $monto->_button_container['TR'][0];
+			//$montos=$monto->output;
 
 			$adjun= new DataGrid('Archivos Ajuntos',$this->prefijo.'adjuntos');
 			$adjun->db->where('contenedor',$id);
@@ -230,9 +260,10 @@ class Contenedor extends validaciones {
 			$adjun->column('Nombre' ,'nombre'    );
 			$adjun->column('Descripci&oacute;n'  ,'descripcion');
 
-			$adjun->add('crm/contenedor/adjuntos/'.$id.'/create','A&ntilde;adir adjunto');
+			$adjun->add('crm/contenedor/adjuntos/'.$id.'/create','A&ntilde;adir adjuntos');
 			$adjun->build();
-			$adjunt=$adjun->output;
+			$adjunt =($adjun->recordCount > 0) ? $adjun->output : $adjun->_button_container['TR'][0];
+			//$adjunt=$adjun->output;
 
 		}else{
 			$coment=$evento=$partid=$montos=$adjunt='';
@@ -240,7 +271,7 @@ class Contenedor extends validaciones {
 
 		$data['content'] = $edit->output.$coment.$evento.$partid.$montos.$adjunt;
 		$data['title']   = '<h1>Contenedor</h1>';
-		$data['head']    = $this->rapyd->get_head();
+		$data['head']    = $this->rapyd->get_head().script('jquery.js');
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -313,12 +344,23 @@ class Contenedor extends validaciones {
 
 	function partidas($contenedor){
 		$this->rapyd->load('dataedit');
+		$script='$(function() { $(".inputnum").numeric("."); });';
+
+		$mgas=array(
+			'tabla'   => 'mgas',
+			'columnas'=> array('codigo' =>'C&oacute;digo','descrip'=>'Descripci&oacute;n','tipo'=>'Tipo'),
+			'filtro'  => array('descrip'=>'Descripci&oacute;n'),
+			'retornar'=> array('codigo'=>'enlace'),
+			'titulo'  => 'Buscar enlace administrativo');
+		$boton=$this->datasis->modbus($mgas);
+
 		$edit = new DataEdit('Partidas', $this->prefijo.'partidas');
 
 		$edit->back_url = site_url('crm/contenedor/dataedit/show/'.$contenedor);
 
 		$edit->codigo =  new inputField('C&oacute;digo', 'codigo');
 		$edit->codigo->rule = 'trim|required|max_length[15]';
+		$edit->codigo->size =16;
 
 		$edit->descripcion =  new inputField('Descripci&oacute;n', 'descripcion');
 		$edit->descripcion->rule = 'trim|required|max_length[100]';
@@ -326,59 +368,83 @@ class Contenedor extends validaciones {
 		$edit->enlace =  new inputField('Enlace Administrativo', 'enlace');
 		$edit->enlace->rule = 'trim|required|max_length[6]';
 		$edit->enlace->size = 7;
+		$edit->enlace->append($boton);
 
-		$edit->medida =  new inputField('Medida', 'medida');
+		$edit->medida =  new inputField('Unidad de medida', 'medida');
 		$edit->medida->rule = 'trim|required|max_length[5]';
 		$edit->medida->size = 6;
 		$edit->medida->max_size = 5;
 
-		$edit->iva =  new inputField('Iva', 'iva');
-		$edit->iva->rule = 'trim|required|numeric';
+		/*$edit->iva =  new inputField('Iva', 'iva');
+		$edit->iva->css_class='inputnum';
+		$edit->iva->rule = 'required|numeric';
+		$edit->iva->size = 6;*/
 
 		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
 		$edit->build();
 
 		$data['content'] = $edit->output;
 		$data['title']   = '<h1>Partidas de contratos</h1>';
-		$data['head']    = $this->rapyd->get_head();
+		$data['head']    = $this->rapyd->get_head().script('jquery.js').script('plugins/jquery.numeric.pack.js');
 		$this->load->view('view_ventanas', $data);
 	}
 
 
 	function montos($contenedor){
 		$this->rapyd->load('dataedit');
-		$edit = new DataEdit('Montos', $this->prefijo.'montos');
-		$edit->back_url = site_url('crm/contenedor/dataedit/show/'.$contenedor);
+		$mSQL='SELECT COUNT(*) FROM '.$this->prefijo.'partidas WHERE contenedor='.$this->db->escape($contenedor);
+		$parti=$this->datasis->dameval($mSQL);
 
-		$edit->usuario    = new autoUpdateField('usuario'   , $this->session->userdata('usuario'), $this->session->userdata('usuario'));
-		$edit->contenedor = new autoUpdateField('contenedor', $contenedor,$contenedor);
+		if($parti>0){
 
-		$edit->fecha = new dateField('Fecha', 'fecha','d/m/Y');
-		$edit->fecha->rule = 'required';
-		$edit->fecha->size = 10;
-		$edit->fecha->maxlength=8;
-		$edit->fecha->insertValue = date('Y-m-d');
 
-		$edit->partida = new dropdownField('Partida', 'partida');
-		$edit->partida->rule = 'required';
-		$edit->partida->option('','Seleccionar');
-		$edit->partida->options('SELECT codigo,descripcion FROM '.$this->prefijo.'partidas WHERE contenedor='.$this->db->escape($contenedor));
 
-		$edit->descripcion =  new inputField('Descripci&oacute;n', 'descripcion');
-		$edit->descripcion->rule = 'trim|required|max_length[200]';
 
-		$edit->debe =  new inputField('Debe', 'debe');
-		$edit->debe->rule = 'required|numeric';
+			$script='$(function() { $(".inputnum").numeric("."); });';
 
-		$edit->haber =  new inputField('Haber', 'haber');
-		$edit->haber->rule = 'required|numeric';
+			$edit = new DataEdit('Montos', $this->prefijo.'montos');
+			$edit->back_url = site_url('crm/contenedor/dataedit/show/'.$contenedor);
+			$edit->script($script, 'create');
+			$edit->script($script, 'modify');
 
-		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
-		$edit->build();
+			$edit->usuario    = new autoUpdateField('usuario'   , $this->session->userdata('usuario'), $this->session->userdata('usuario'));
+			$edit->contenedor = new autoUpdateField('contenedor', $contenedor,$contenedor);
 
-		$data['content'] = $edit->output;
+			$edit->fecha = new dateField('Fecha', 'fecha','d/m/Y');
+			$edit->fecha->rule = 'required';
+			$edit->fecha->size = 10;
+			$edit->fecha->maxlength=8;
+			$edit->fecha->insertValue = date('Y-m-d');
+
+			$edit->partida = new dropdownField('Partida', 'partida');
+			$edit->partida->rule = 'required';
+			$edit->partida->option('','Seleccionar');
+			$edit->partida->options('SELECT codigo,descripcion FROM '.$this->prefijo.'partidas WHERE contenedor='.$this->db->escape($contenedor));
+
+			$edit->descripcion =  new inputField('Descripci&oacute;n', 'descripcion');
+			$edit->descripcion->rule = 'trim|required|max_length[200]';
+
+			$edit->debe =  new inputField('Debe', 'debe');
+			$edit->debe->css_class='inputnum';
+			$edit->debe->rule = 'required|numeric';
+			$edit->debe->size=10;
+
+			$edit->haber =  new inputField('Haber', 'haber');
+			$edit->haber->css_class='inputnum';
+			$edit->haber->rule = 'required|numeric';
+			$edit->haber->size=10;
+
+			$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
+			$edit->build();
+
+			$sal=$edit->output;
+		}else{
+			$sal='Debe ingresar primero algunas partidas antes de asignar los montos '.anchor('crm/contenedor/dataedit/show/'.$contenedor,'Regresar');
+		}
+
+		$data['content'] = $sal;
 		$data['title']   = '<h1>Montos de contratos</h1>';
-		$data['head']    = $this->rapyd->get_head();
+		$data['head']    = $this->rapyd->get_head().script('jquery.js').script('plugins/jquery.numeric.pack.js');
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -411,15 +477,70 @@ class Contenedor extends validaciones {
 		$edit->nombre->upload_path = $upload_path;
 		$edit->nombre->rule = 'required';
 		$edit->nombre->allowed_types = "pdf|doc|xls|txt";
+		$edit->nombre->append('Formatos permitidos: pdf,doc,xls y txt');
 		//$edit->img->thumb = array (63,91);
 
 		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
 		$edit->build();
 
 		$data['content'] = $edit->output;
-		$data['title']   = '<h1>Montos de contratos</h1>';
+		$data['title']   = '<h1>Archivos adjuntos</h1>';
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
+	}
+
+
+	function imagenes($contenedor){
+
+		$this->load->library("path");
+		$path=new Path();
+		$path->setPath($this->config->item('uploads_dir'));
+		$path->append('/crm');
+		$upload_path =$path->getPath().'/';
+
+		$this->rapyd->load('dataedit');
+		$edit = new DataEdit('Imagenes', $this->prefijo.'adjuntos');
+		$edit->back_url = site_url('crm/contenedor/dataedit/show/'.$contenedor);
+
+		$edit->usuario    = new autoUpdateField('usuario'   , $this->session->userdata('usuario'), $this->session->userdata('usuario'));
+		$edit->contenedor = new autoUpdateField('contenedor', $contenedor,$contenedor);
+
+		$edit->fecha = new dateField('Fecha', 'fecha','d/m/Y');
+		$edit->fecha->rule = 'required';
+		$edit->fecha->size = 10;
+		$edit->fecha->maxlength=8;
+		$edit->fecha->insertValue = date('Y-m-d');
+
+		$edit->descripcion =  new inputField('Descripci&oacute;n', 'descripcion');
+		$edit->descripcion->rule = 'trim|required|max_length[200]';
+
+		$edit->nombre  = new uploadField("Archivo", "nombre");
+		$edit->nombre->upload_path = $upload_path;
+		$edit->nombre->rule = 'required';
+		$edit->nombre->allowed_types = 'jpg';
+		//$edit->img->thumb = array (63,91);
+
+		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
+		$edit->build();
+
+		$data['content'] = $edit->output;
+		$data['title']   = '<h1>Imagenes</h1>';
+		$data['head']    = $this->rapyd->get_head();
+		$this->load->view('view_ventanas', $data);
+	}
+
+
+	function get($que=null){
+		if(!empty($que)){
+			$tabla=($que=='1') ? $this->prefijo.'status': $this->prefijo.'tipos';
+			$defi=$this->db->escape($this->input->post('defi'));
+			$mSQL=$this->db->query("SELECT definicion AS id, descrip as valor FROM ${tabla} WHERE definicion=${defi} ORDER BY definicion");
+			echo "<option value=''>Seleccionar</option>";
+			if($mSQL){
+				foreach($mSQL->result() AS $fila )
+					echo "<option value='".$fila->id."'>".$fila->valor."</option>";
+			}
+		}
 	}
 
 	function instala(){
@@ -448,6 +569,7 @@ class Contenedor extends validaciones {
 		  `id` int(11) NOT NULL AUTO_INCREMENT,
 		  `usuario` varchar(50) DEFAULT NULL,
 		  `derivado` int(11) DEFAULT '0',
+		  `definicion` int(7) DEFAULT '0',
 		  `tipo` int(7) DEFAULT '0',
 		  `status` int(7) DEFAULT '0',
 		  `fecha` date DEFAULT NULL,
@@ -541,10 +663,13 @@ class Contenedor extends validaciones {
 		) ENGINE=MyISAM DEFAULT CHARSET=".$this->db->char_set;
 		var_dump($this->db->simple_query($mSQL));
 
-		$mSQL="ALTER TABLE `${prefijo}status`  CHANGE COLUMN `contenedor` `definicion` INT(11) NULL DEFAULT '0' AFTER `usuario`";
+		$mSQL="ALTER TABLE `${prefijo}status`  CHANGE COLUMN `contenedor` `definicion` INT(7) NULL DEFAULT '0' AFTER `usuario`";
 		var_dump($this->db->simple_query($mSQL));
 
-		$mSQL="ALTER TABLE `${prefijo}tipos`  CHANGE COLUMN `contenedor` `definicion` INT(11) NULL DEFAULT '0' AFTER `usuario`";
+		$mSQL="ALTER TABLE `${prefijo}tipos`  CHANGE COLUMN `contenedor` `definicion` INT(7) NULL DEFAULT '0' AFTER `usuario`";
+		var_dump($this->db->simple_query($mSQL));
+
+		$mSQL="ALTER TABLE `${prefijo}contenedor`  ADD COLUMN `definicion` INT(7) NULL DEFAULT '0' AFTER `derivado`;";
 		var_dump($this->db->simple_query($mSQL));
 
 	}
