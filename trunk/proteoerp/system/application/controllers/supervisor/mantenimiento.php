@@ -16,6 +16,8 @@ class Mantenimiento extends Controller{
 		$list[]=anchor('supervisor/repodupli/','Reportes Duplicado');
 		$list[]=anchor('supervisor/mantenimiento/contadores','Cambios en contadores').'Advertencia: uselo solo si sabe lo que esta haciendo';
 		$list[]=anchor('supervisor/mantenimiento/tablas','Mantenimiento de Tablas');
+		$list[]=anchor('supervisor/mantenimiento/sntealma','Modifica el almac&eacute;n en las notas de entrega');
+		
 
 		$attributes = array(
 			'class' => 'boldlist',
@@ -545,13 +547,83 @@ class Mantenimiento extends Controller{
 		$data["rapyd_head"] = $this->rapyd->get_head();
 		 
 		$this->load->view("view_ventanas", $data);
-		
-		
-		
 	}
 
 
+	function sntealma(){
+		$this->rapyd->load("datafilter","datagrid");
 
+		$filter = new DataFilter("Cambio de almac&eacute;n en notas de entrega",'snte');
+
+		$filter->numero = new inputField('N&uacute;mero','numero');
+		$filter->numero->size=10;
+
+		$filter->fechad = new dateonlyField('Desde','fechad');
+		$filter->fechah = new dateonlyField('Hasta','fechah');
+		$filter->fechad->clause  =$filter->fechah->clause="where";
+		$filter->fechad->db_name =$filter->fechah->db_name="fecha";
+		$filter->fechad->insertValue = date("Y-m-d");
+		$filter->fechah->insertValue = date("Y-m-d");
+		$filter->fechad->operator=">=";
+		$filter->fechah->operator="<=";
+
+		$filter->buttons("reset","search");
+		$filter->build();
+
+		if($this->rapyd->uri->is_set("search") AND $filter->is_valid()){
+
+			$uri = anchor('supervisor/mantenimiento/sntecambioalma/modify/<#numero#>','<#almacen#>');
+
+			$grid = new DataGrid('Notas de entrega');
+			$grid->per_page = 15;
+
+			$grid->column('Fecha'      ,'<dbdate_to_human><#fecha#></dbdate_to_human>');
+			$grid->column('Almac&eacute;n'    ,$uri );
+			$grid->column('Numero'     ,'numero'  );
+			$grid->column('Cliente'    ,'cod_cli' );
+			$grid->column('Nombre'    ,'nombre' );
+			$grid->column('Monto'      ,'<nformat><#gtotal#></nformat>'  ,'align="right"');
+
+			$grid->build();
+
+			$tabla=$grid->output;
+		}else{
+			$tabla='';
+		}
+		$data['content']  = $filter->output.$tabla;
+		$data['title']    = "<h1>Cambio de almac&eacute;n en notas de entrega</h1>";
+		$data["head"]     = $this->rapyd->get_head();
+		$this->load->view('view_ventanas', $data);
+	}
+
+	function sntecambioalma(){
+		$this->rapyd->load("dataedit");
+		$edit = new DataEdit("Realizar cambio de almacen","snte");
+		$edit->back_url = site_url("supervisor/mantenimiento/sntealma");
+
+		$edit->numero = new inputField("N&uacute;mero", "numero");
+		$edit->numero->size = 10;
+		$edit->numero->mode="autohide";
+
+		$edit->nombre = new inputField("Nombre", "nombre");
+		$edit->nombre->size = 55;
+		$edit->nombre->maxlength=40;
+		$edit->nombre->mode="autohide";
+
+		$edit->almacen = new  dropdownField ("Almac&eacute;n", "almacen");
+		$edit->almacen->option("","Todos");
+		$edit->almacen->options("SELECT ubica,CONCAT_WS('-',ubica,ubides) AS val FROM caub WHERE gasto='N' and invfis='N' ORDER BY ubides");
+
+		$edit->buttons("modify", "save", "undo", "back");
+		$edit->build();
+
+		//$smenu['link']=barra_menu('113');
+		//$data['smenu']   = $this->load->view('view_sub_menu', $smenu,true);
+		$data['content'] =$edit->output;
+		$data['title']   = "<h1>Cambio de almac&eacute;n en nota de entrega</h1>";
+		$data["head"]    = $this->rapyd->get_head();
+		$this->load->view('view_ventanas', $data);
+	}
 
 }
 
