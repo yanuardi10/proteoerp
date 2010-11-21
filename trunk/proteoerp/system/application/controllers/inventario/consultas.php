@@ -8,11 +8,11 @@ class Consultas extends Controller {
 	}
 
 	function index(){
-		redirect("inventario/consultas/precios2");
+		redirect("inventario/consultas/preciosgeneral");
 	}
 
-	function precios2(){
-		$this->rapyd->load("dataform","datatable");
+	function preciosgeneral(){
+		$this->rapyd->load('dataform','datatable');
 		$cod=$this->uri->segment(4);
 
 		$script='
@@ -22,129 +22,118 @@ class Consultas extends Controller {
 				$("#codigo").attr("value", "");
 				$("#codigo").focus();
 			});
-
 		$("#df1").submit(function() {
-					valor=$("#codigo").attr("value");
-					location.href="'.site_url('inventario/consultas/precios2').'/"+valor;
-					return false;
-				});
-		';
+				valor=$("#codigo").attr("value");
+				location.href="'.site_url('inventario/consultas/preciosgeneral').'/"+valor;
+				return false;
+			});';
 
 		$form = new DataForm();
 		$form->script($script);
 
-		$form->codigo = new inputField("C&oacute;digo", "codigo");
+		$form->codigo = new inputField('C&oacute;digo','codigo');
 		$form->codigo->size=20;
 		$form->codigo->insertValue='';
-		$form->codigo->append('Presente el articulo frente al lector de codigo de barras o escriba directamente algun codigo de identificacion y luego presione ENTER');
+		$form->codigo->append('Presente el art&iacute;culo frente al lector de c&oacute;digo de barras o escribalo directamente y luego presione ENTER');
 
 		$form->build_form();
+
 		$contenido = $form->output;
 		if(!empty($cod)){
 			$data2=$this->rprecios($cod);
-			if($data2){
+			if($data2!==false){
 				$contenido .=$this->load->view('view_rprecios', $data2,true);
 			}else{
 				$t=array();
 				$t[1][1]="<b>PRODUCTO NO REGISTRADO</b>";
 				$t[2][1]="";
-				$t[3][1]="<b>Por Favor introduzca un Codigo de identificaci&oacute;n del Producto</b>";
-				$t[4][1]="Presente el producto en el lector de codigo de barras";
-				$t[5][1]="o escriba directamente algun codigo de identificacion y luego presione ENTER";
+				$t[3][1]="<b>Por Favor introduzca un C&oacute;digo de identificaci&oacute;n del Producto</b>";
 
 				$table = new DataTable(null,$t);
 				$table->cell_attributes = 'style="vertical-align:middle; text-align: center;"';
-
 				$table->per_row  = 1;
-
-				$table->cell_attributes = '';//$t[2][1]="";style="vertical-align:top;"
+				$table->cell_attributes = '';
 				$table->cell_template = "<div style='color:red;' align='center'><#1#></div></br>";
 				$table->build();
 				$contenido .=$table->output;
-
-				}
-		}else{
-			//$data['content'] = $form->output;
+			}
 		}
 
-		$data['content'] =$contenido;
-		$data["head"]    =  script("jquery.js").script("plugins/jquery.fancybox.pack.js").script("plugins/jquery.easing.js").style('fancybox/jquery.fancybox.css').style("ventanas.css").style("estilos.css").$this->rapyd->get_head();
+		$data['content'] = $contenido;
+		$data['head']    = script("jquery.js").script("plugins/jquery.fancybox.pack.js").script("plugins/jquery.easing.js").style('fancybox/jquery.fancybox.css').style("ventanas.css").style("estilos.css").$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 
 	function rprecios($cod_bar=NULL){
-
 		if(!$cod_bar)$cod_bar=$this->input->post('barras');
 
-		$mSQL_p='SELECT precio1,base1, barras,existen, CONCAT_WS(" ",descrip ,descrip2) AS descrip, codigo,marca,alterno,id,modelo,iva,unidad FROM sinv';
+		$sinv= ($this->db->table_exists('sinv')) ? $this->datasis->dameval('SELECT COUNT(*) FROM sinv'): 0;
+		$maes= ($this->db->table_exists('maes')) ? $this->datasis->dameval('SELECT COUNT(*) FROM maes'): 0;
 
-		$mSQL  =$mSQL_p." WHERE barras='$cod_bar'";
-		$query = $this->db->query($mSQL);
-		if ($query->num_rows() == 0){
-			$mSQL  =$mSQL_p." WHERE codigo='$cod_bar'";
-			$query = $this->db->query($mSQL);
-			if ($query->num_rows() == 0){
-				$mSQL  =$mSQL_p." WHERE alterno='$cod_bar'";
-				$query = $this->db->query($mSQL);
-				if ($query->num_rows() == 0){
-					return false;
-				}
-			}
+		if($maes>$sinv){
+			$mSQL_p='SELECT precio1,base1,precio2,precio3, barras,existen, CONCAT_WS(" ",descrip ,descrip2) AS descrip, codigo,marca,alterno,id,modelo,iva,unidad FROM maes';
+			$aplica='maes';
+		}else{
+			$mSQL_p='SELECT precio1,base1,precio2,precio3, barras,existen, CONCAT_WS(" ",descrip ,descrip2) AS descrip, codigo,marca,alterno,id,modelo,iva,unidad,descufijo,grupo FROM sinv';
+			$aplica='sinv';
 		}
 
-		$row = $query->row();
-		$data['precio1'] = number_format($row->precio1,2,',','.');
-		//$data['precio2'] = number_format($row->precio2,2,',','.');
-		$data['descrip'] = $row->descrip;
-		$data['base1']   = $row->base1;
-		$data['codigo']  = $row->codigo;
-		$data['alterno'] = $row->alterno;
-		$data['unidad']  = $row->unidad;
-		$data['marca']   = $row->marca;
-		$data['existen'] = $row->existen;
-		$data['barras']  = $row->barras;
-		$data['modelo']  = $row->modelo;
-		$data['iva']     = $row->iva;
-		$data['iva2']    = number_format($row->base1*($row->iva/100),2,',','.');
-		//$data['img']     = site_url('inventario/fotos/obtener/'.$row->id);
-		$data['moneda']  = 'Bs.F.';
+		$query=$this->_gconsul($mSQL_p,$cod_bar,array('codigo','barras','alterno'));
+		if($query!==false){
+			$row = $query->row();
+			//Vemos si aplica descuento solo farmacias sinv
+			if($aplica=='sinv'){
+				if($row->descufijo==0){
+					if($this->db->table_exists('sinvpromo')){
+						$descufijo=$this->datasis->dameval('SELECT margen FROM sinvpromo WHERE codigo='.$this->db->escape($row->codigo));
+						$descurazon='Descuento promocional';
+						if(empty($descufijo)){
+							if($this->db->field_exists('margen','grup')){
+								$descufijo=$this->datasis->dameval('SELECT margen FROM grup WHERE grupo='.$this->db->escape($row->grupo));
+								$descurazon='Descuento por grupo';
+							}else{
+								$descufijo=0;
+							}
+						}else{
+							$descufijo=0;
+						}
+					}
+				}else{
+					$descufijo=$row->descufijo;
+					$descurazon='Descuento por producto';
+				}
+			}
 
-		$this->rapyd->load("datatable");
-		$this->load->helper('string');
-
-		$table = new DataTable(null);
-		$table->cell_attributes = 'style="vertical-align:middle; text-align: center;"';
-
-		$table->db->select(array('nombre','id','comentario'));
-		$table->db->from("sinvfot");
-		$table->db->where("sinv_id ",$row->id);
-
-		$prin=$this->datasis->dameval("select nombre from sinvfot where sinv_id='$row->id' and principal='S'");
-
-		$comment=$this->datasis->dameval("select comentario from sinvfot where nombre='$prin'");
-
-		$link=site_url('uploads/inventario/Image/ver/<#nombre#>/');
-		$link2=site_url('uploads/inventario/Image/ver/<#nombre#>/');
-
-		$scr=reduce_double_slashes(base_url()."uploads/inventario/Image/<#nombre#>");
-
-		$table->per_row = 6;
-		$table->per_page = 60;//onclick='javascript:fancy();'
-		$table->cell_attributes = 'style="vertical-align:top; width:126;"';
-		$table->cell_template = "</br><div align='center' class='dos'><a title='<#comentario#>' href='$scr' ><img style='margin: 0px 4px' title='<#comentario#>' src='$scr' width='100' height='75' border=0 /></a></div></br>";//<div width='120'></div>
-		$table->build();
-		$data['comment']=$comment;
-		$data['prin']=$prin;
-		$data['content'] = $table->output;
-
-		//$data["head"]    = script("jquery.js").script("plugins/jquery.fancybox.pack.js").script("plugins/jquery.easing.js").style('fancybox/jquery.fancybox.css').$this->rapyd->get_head();
-
-		return $data;
+			$data['precio1']   = nformat($row->precio1);
+			$data['pdescu']    = ($descufijo !=0) ? nformat($row->precio1*100/(100+$descufijo)): 0;
+			$data['precio2']   = nformat($row->precio2);
+			$data['precio3']   = nformat($row->precio3);
+			$data['descrip']   = $row->descrip;
+			$data['base1']     = nformat($row->base1);
+			$data['codigo']    = $row->codigo;
+			$data['alterno']   = $row->alterno;
+			$data['unidad']    = $row->unidad;
+			$data['descufijo'] = nformat($descufijo);
+			$data['corta']     = (isset($row->corta)) ?$row->corta : '';
+			$data['dvolum1']   = '';
+			$data['descurazon']=(isset($descurazon)) ? $descurazon: '';
+			$data['marca']     = $row->marca;
+			$data['existen']   = nformat($row->existen);
+			$data['barras']    = $row->barras;
+			$data['modelo']    = $row->modelo;
+			$data['iva']       = nformat($row->iva);
+			$data['referen']   = (isset($row->referen)) ? $row->referen : 'No disponible';
+			$data['iva2']      = nformat($row->base1*($row->iva/100));
+			$data['moneda']    = 'Bs.F.';
+			//$data['img']       = site_url('inventario/fotos/obtener/'.$row->id);
+			return $data;
+		}
+		return false;
 	}
+
 	function sprecios($formato='CPRECIOS'){
 		$data['conf']=$this->layout->settings;
-		
-		
+
 		$query = $this->db->query("SELECT proteo FROM formatos WHERE nombre='$formato'");
 		if ($query->num_rows() > 0){
 			$row = $query->row();
@@ -160,8 +149,6 @@ class Consultas extends Controller {
 	}
 
 	function ssprecios($formato='CIPRECIOS',$cod_bar=NULL){
-
-
 		$query = $this->db->query("SELECT proteo FROM formatos WHERE nombre='$formato'");
 		if ($query->num_rows() > 0){
 			$row = $query->row();
@@ -172,12 +159,10 @@ class Consultas extends Controller {
 			echo $_html;
 		}else{
 			echo 'Formato $formato no definido';
-
 		}
 	}
 
 	function precios(){
-
 		$barras = array(
 			'name'      => 'barras',
 			'id'        => 'barras',
@@ -189,14 +174,13 @@ class Consultas extends Controller {
 
 		$out  = form_open('inventario/consultas/precios');
 		$out .= form_label("Introduzca un Codigo ");
-		$out .= form_input($barras);//form_submit('mysubmit', 'Consultar!');
+		$out .= form_input($barras);
 		$out .= form_close();
 
 		$link=site_url('inventario/consultas/rprecios');
 
-		$data['script']= <<<script
-
-<script type="text/javascript">
+		$data['script']='
+		<script type="text/javascript">
 		$(document).ready(function(){
 			$("a").fancybox();
 			$("#resp").hide();
@@ -208,10 +192,9 @@ class Consultas extends Controller {
 			});
 		});
 
-
 		function mostrar(){
 			$("#resp").hide();
-			var url = "$link";
+			var url = "'.$link.'";
 			$.ajax({
 				type: "POST",
 				url: url,
@@ -223,22 +206,16 @@ class Consultas extends Controller {
 				}
 			});
 		}
-
-
-</script>
-script;
-
+		</script>';
 
 		$data['content'] = '<div id="resp" style=" width: 100%;" ></div>';
 		$data['title']   = "<h1><center><a title='ender' href='http://192.168.0.99/proteoerp/assets/shared/images/3_b.jpg'><img src='http://192.168.0.99/proteoerp/assets/shared/images/3_s.jpg' /></a>$out</center></h1>";
-		//$data['style']="a {outline: none;}";
 		$data["head"]    = script("jquery.js").script("plugins/jquery.fancybox.pack.js").script("plugins/jquery.easing.js").style('fancybox/jquery.fancybox.css').$this->rapyd->get_head();
-		//$data2['content']=$this->load->view('view_ventanas_consulta', $data,true);
 		$this->load->view('view_ventanas', $data);
 	}
 
 	function _gconsul($mSQL_p,$cod_bar,$busca,$suple=null){
-		if(!empty($suple)){
+		if(!empty($suple) AND $this->db->table_exists('suple')){
 			$mSQL  ="SELECT codigo FROM suple WHERE suplemen='${cod_bar}' LIMIT 1";
 			$query = $this->db->query($mSQL);
 			if ($query->num_rows() != 0){
@@ -251,9 +228,28 @@ script;
 		foreach($busca AS $b){
 			$mSQL  =$mSQL_p." WHERE ${b}='${cod_bar}' LIMIT 1";
 			$query = $this->db->query($mSQL);
-			if ($query->num_rows() != 0) break;
+			if ($query->num_rows() != 0){
+				return $query;
+			}
 		}
-		if ($query->num_rows() == 0) return false;
+
+		if ($this->db->table_exists('barraspos')) {
+			$mSQL  ="SELECT codigo FROM barraspos WHERE suplemen=".$this->db->escape($cod_bar)." LIMIT 1";
+			$query = $this->db->query($mSQL);
+			if ($query->num_rows() != 0){
+				$row = $query->row();
+				$cod_bar=$row->codigo;
+
+				$mSQL  =$mSQL_p." WHERE codigo='${cod_bar}' LIMIT 1";
+				$query = $this->db->query($mSQL);
+				if($query->num_rows() == 0)
+					 return false;
+			}else{
+				return false;
+			}
+		}else{
+			return false;
+		}
 		return $query;
 	}
 }
