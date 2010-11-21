@@ -42,6 +42,7 @@ class Usuarios extends Controller {
 		$grid->column('Supervisor'     ,'supervisor' ,'align="center"');
 		$grid->column('Almac&eacute;n' ,'almacen'   ,"align='left'");
 		$grid->column('Vendedor'       ,'vendedor'  ,"align='center'");
+		$grid->column('Cajero'         ,'cajerp'  ,"align='center'");
 		$grid->column('Cambio clave'   ,$uri2       ,'align="center"');
 		$grid->column('Asignar Accesos',$uri3       ,'align="center"');
 
@@ -76,13 +77,7 @@ class Usuarios extends Controller {
 		$edit->us_nombre->rule = "strtoupper|required";
 		$edit->us_nombre->size = 45;
 
-		$edit->supervisor = new dropdownField("Es Supervisor", "supervisor");
-		$edit->supervisor->rule = 'required';
-		$edit->supervisor->option("N","No");
-		$edit->supervisor->option("S","Si");
-		$edit->supervisor->style="width:80px";
-
-		$edit->almacen = new dropdownField("Almacen", "almacen");
+		$edit->almacen = new dropdownField("Almac&eacute;n", "almacen");
 		$edit->almacen->option("","");
 		$edit->almacen->options("SELECT ubica, CONCAT_WS('-',ubica,ubides) AS descrip FROM caub ORDER BY ubica");
 
@@ -90,7 +85,17 @@ class Usuarios extends Controller {
 		$edit->vendedor->option("","Ninguno");
 		$edit->vendedor->options("SELECT vendedor, CONCAT(vendedor,'-',nombre) AS nom FROM vend WHERE tipo IN ('V','A') ORDER BY vendedor");
 
-		$edit->buttons("modify", "save", "undo", "back","delete");
+		$edit->cajero = new dropdownField('Cajero', 'cajero');
+		$edit->cajero->option('','Todos');
+		$edit->cajero->options("SELECT cajero,CONCAT_WS('-',cajero, nombre) AS descri FROM scaj ORDER BY nombre");
+
+		$edit->supervisor = new dropdownField("Es Supervisor", "supervisor");
+		$edit->supervisor->rule = 'required';
+		$edit->supervisor->option("N","No");
+		$edit->supervisor->option("S","Si");
+		$edit->supervisor->style="width:80px";
+
+		$edit->buttons('modify', 'save', 'undo', 'back','delete');
 		$edit->build();
 
 		$data['content'] =$edit->output;
@@ -106,7 +111,7 @@ class Usuarios extends Controller {
 			LEFT JOIN intrasida AS b ON a.modulo=b.modulo AND b.usuario='$usr' 
 			WHERE MID(a.modulo,1,1)!=0 ORDER BY MID(a.modulo,1,1), a.panel,a.modulo";
 		$select=array('a.modulo','a.titulo', "IFNULL(b.acceso,'N') AS acceso",'a.panel',"MID(a.modulo,1,1) AS pertenece");
-		
+
 		//$grid = new DataGrid2("Accesos del Usuario $usr");
 		//$grid->agrupar('Panel: ', 'panel');
 		//$grid->use_function('convierte','number_format','str_replace');
@@ -130,13 +135,13 @@ class Usuarios extends Controller {
 				$tabla .= '<tr><th colspan=2>'.$row->titulo.'</th></tr>';
 				$panel = '';
 			}
-				
+
 			elseif( strlen($row->modulo)==3 ) {
 				if ($panel <> $row->panel ) {
 				    $tabla .= '<tr><td colspan=2 bgcolor="#CCDDCC">'.$row->panel.'</td></tr>';
 				    $panel = $row->panel ;
 				};
-				
+
 				$tabla .= '<tr><td>'.$row->titulo.'</td><td>'.form_checkbox('accesos['.$i.']',$row->modulo,$row->acceso).'</td></tr>';
 				$i++;
 			}else{
@@ -151,7 +156,6 @@ class Usuarios extends Controller {
 		$data['title']   = "<h1>Asignar Accesos</h1>";
 		$data["head"]    = style("estilos.css").$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
-
 	}
 
 	function cclave(){ 
@@ -161,28 +165,28 @@ class Usuarios extends Controller {
 		$edit = new DataEdit("Cambio de clave de usuario", "usuario");
 		$edit->back_url = site_url("supervisor/usuarios/filteredgrid");
 		$edit->post_process('update','_pos_updatec');
-		
+
 		$edit->us_codigo = new inputField("C&oacute;digo de Usuario", "us_codigo");
 		$edit->us_codigo->mode = "autohide";
 		$edit->us_codigo->when = array("show");
-		
+
 		$edit->us_clave = new inputField("Clave","us_clave");
 		$edit->us_clave->rule = "required|matches[us_clave1]";
 		$edit->us_clave->type= "password";
 		$edit->us_clave->when = array("modify","idle");  
 		$edit->us_clave->size = 12;
 		$edit->us_clave->maxlength = 15;
-		
+
 		$edit->us_clave1 = new inputField("Confirmar Clave","us_clave1");
 		$edit->us_clave1->rule = "required";
 		$edit->us_clave1->type= "password";
 		$edit->us_clave1->when = array("modify","idle");
 		$edit->us_clave1->size = 12;
 		$edit->us_clave1->maxlength  = 15;
-		
+
 		$edit->buttons("modify", "save", "undo", "back");
 		$edit->build();
-				
+
 		$data['content'] =$edit->output;        
 		$data['title']   = "<h1>Cambio de clave</h1>";
 		$data["head"]    = $this->rapyd->get_head();
@@ -197,7 +201,7 @@ class Usuarios extends Controller {
 		}
 		return TRUE;
 	}
-	
+
 	function _pos_delete($do){
 		$codigo=$do->get('us_codigo');
 		$mSQL="DELETE FROM intrasida WHERE usuario='$codigo'";
@@ -205,7 +209,7 @@ class Usuarios extends Controller {
 		logusu('USUARIOS',"BORRADO EL USUARIO $codigo");
 		return TRUE;
 	}
-	
+
 	function _pos_insert($do){
 		$codigo=$do->get('us_codigo');
 		$superv=$do->get('supervisor');
@@ -213,7 +217,7 @@ class Usuarios extends Controller {
 		redirect("supervisor/usuarios/cclave/modify/$codigo");
 		return TRUE;
 	}
-	
+
 	function _pos_update($do){
 		$codigo=$do->get('us_codigo');
 		$superv=$do->get('supervisor');
@@ -227,17 +231,13 @@ class Usuarios extends Controller {
 		logusu('USUARIOS',"CAMBIO DE CLAVE DEL USUARIO $codigo");
 		return TRUE;
 	}
-	function instalar(){
-		$mSQL="ALTER TABLE `usuario` ADD `us_clave1` CHAR(12) NULL AFTER `us_clave`";
-		$this->db->simple_query($mSQL);
-		$mSQL="UPDATE usuario SET us_clave1=us_clave";
-		$this->db->simple_query($mSQL);
-	}
+
 	function soporte(){
 		$mSQL="INSERT INTO `usuario` (`us_codigo`, `us_nombre`, `us_clave`,`supervisor`) VALUES ('SOPORTE', 'PERS. DREMANVA', 'DREMANVA','S');";
 		$this->db->simple_query($mSQL);
 	}
-	function almacen(){
+
+	function instalar(){
 		$mSQL="ALTER TABLE `usuario`  ADD COLUMN `almacen` CHAR(4) NULL";
 		$this->db->simple_query($mSQL);
 		echo "Agregado campo almacen";
