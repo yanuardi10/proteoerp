@@ -536,6 +536,7 @@ class sinv extends Controller {
 
 		$AddMarca='<a href="javascript:add_marca();" title="Haz clic para Agregar una marca nueva">Agregar Marca</a>';
 		$edit->marca = new dropdownField("Marca", "marca");
+		$edit->marca->rule = 'required';
 		$edit->marca->style='width:180px;';
 		$edit->marca->option("","");  
 		$edit->marca->options("SELECT marca as codigo, marca FROM marc ORDER BY marca");
