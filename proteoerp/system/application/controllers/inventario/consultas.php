@@ -105,7 +105,7 @@ class Consultas extends Controller {
 			}
 
 			$data['precio1']   = nformat($row->precio1);
-			$data['pdescu']    = ($descufijo !=0) ? nformat($row->precio1*100/(100+$descufijo)): 0;
+			$data['pdescu']    = ($descufijo !=0) ? nformat($row->precio1-($row->precio1*$descufijo/100)): 0;
 			$data['precio2']   = nformat($row->precio2);
 			$data['precio3']   = nformat($row->precio3);
 			$data['descrip']   = $row->descrip;
