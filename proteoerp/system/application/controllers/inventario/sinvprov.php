@@ -131,7 +131,7 @@ class sinvprov extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 	
-	function instalar(){
+	function instala(){
 		$mSQL="CREATE TABLE IF NOT EXISTS `sinvprov` (
 			  `proveed` char(5) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
 			  `codigop` char(15) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
@@ -139,7 +139,7 @@ class sinvprov extends Controller {
 			  PRIMARY KEY (`proveed`,`codigop`,`codigo`)
 			) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci
 		";
-		$this->db->simple_query($mSQL);
+		$this->db->query($mSQL);
 		
 	}
 }
