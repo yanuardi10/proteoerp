@@ -110,15 +110,15 @@ require_once(RAPYD_PATH.'common'.EXT);
 		var $config = array();
 		var $load;
 		
-    var $js = array();
-    var $css = array();
-    var $script = array();
-    var $style = array();
-    var $db;
-    var $data_conn = '';//Should be set by config 
+		var $js = array();
+		var $css = array();
+		var $script = array();
+		var $jquery = array();
+		var $style = array();
+		var $db;
+		var $data_conn = '';//Should be set by config 
 		
-		function Rapyd()
-		{
+		function Rapyd(){
 			$this->ci =& get_instance();
       
       $rpd = array();
@@ -279,7 +279,28 @@ require_once(RAPYD_PATH.'common'.EXT);
 
 			//style in page
 			$style = join("\n\n",$this->style)."\n";
-			$buffer .= HTML::cssTag($style); 
+			$buffer .= HTML::cssTag($style);
+
+			if(count($this->jquery)>0){
+
+				$buffer .=style('redmond/jquery-ui-1.8.1.custom.css');
+				$buffer .=style('ui.jqgrid.css');
+				$buffer .=style('ui.multiselect.css');
+				$buffer .=script('jquery.js');
+				$buffer .=script('interface.js');
+				$buffer .=script('jquery-ui.js');
+				$buffer .=script('jquery.layout.js');
+				$buffer .=script('i18n/grid.locale-sp.js');
+				$buffer .=script('ui.multiselect.js');
+				$buffer .=script('jquery.jqGrid.min.js');
+				$buffer .=script('jquery.tablednd.js');
+				$buffer .=script('jquery.contextmenu.js');
+
+				$script = join("\n\n",$this->jquery)."\n";
+				$script ='$(function(){'.$script.'});';
+				
+				$buffer.=HTML::javascriptTag($script);
+			}
 
 			return $buffer;
 		}

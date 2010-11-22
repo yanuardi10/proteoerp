@@ -60,6 +60,7 @@ class iacont {
 			$p['partida']  = $matches['partida'][0];
 			$p['monto']   = cadAnum($matches['monto'][0]);
 
+
 			$mSQL='SELECT descrip FROM obpa WHERE codigo='.$this->CI->db->escape($p['partida']);
 			$query = $this->CI->db->query($mSQL);
 			if ($query->num_rows() > 0){

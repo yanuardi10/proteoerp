@@ -47,13 +47,20 @@ function des_moneyformat($numero){
 function cadAnum($num){
 	$cana=strlen($num);
 	$omag=0;
+	$ban=false;
 	for($i=$cana-1;$i>0;$i--){
-		if($num[$i]=='.' OR $num[$i]==',')
+		if($num[$i]=='.' OR $num[$i]==','){
+			$ban=true;
 			break;
+		}
 		$omag++;
 	}
+	
 	$numero=intval(str_replace(array(',','.'),'',$num));
-	$omag=pow(10,$omag);
+	if($ban)
+		$omag=pow(10,$omag);
+	else
+		$omag=1;
 	$numero=$numero/$omag;
 
 	return $numero;
