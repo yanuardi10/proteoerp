@@ -115,7 +115,7 @@ class Rcaj extends validaciones {
 			return ;
 		}
 
-		$form = new DataForm("ventas/rcaj/forcierre/$caja/$cajero/$fecha/process");
+		$form = new DataForm("ventas/rcaj/precierre/$caja/$cajero/$fecha/process");
 
 		$attr=array(
 			'class'  => 'ui-state-default ui-corner-all',
@@ -140,10 +140,12 @@ class Rcaj extends validaciones {
 				$form->$obj->size=5+5*$o;
 				$form->$obj->style='text-align:right';
 				$form->$obj->rule='numeric';
-				if($o==1)
+				if($o==1){
 					$form->$obj->in=$sobj;
-				else
+					$form->$obj->readonly=true;
+				}else{
 					$form->$obj->css_class='cefectivo';
+				}
 				$sobj=$obj;
 			}
 		}
@@ -159,7 +161,7 @@ class Rcaj extends validaciones {
 
 		//Inicio otras formas de pago
 		$c_otrp=0;
-		$mSQL='SELECT a.tipo,a.nombre FROM tarjeta a WHERE a.tipo NOT IN (\'EF\',\'CT\',\'NC\',\'ND\', \'DE\',\'IR\',\'DP\')';
+		$mSQL='SELECT a.tipo,a.nombre FROM tarjeta a WHERE a.tipo NOT IN (\'EF\',\'NC\',\'ND\', \'DE\',\'IR\',\'DP\')';
 		$query = $this->db->query($mSQL);
 		foreach ($query->result() as $i=>$row){
 			$c_otrp++;
@@ -188,6 +190,7 @@ class Rcaj extends validaciones {
 			$form->$obj->style='text-align:right';
 			$form->$obj->css_class='efectivo';
 			$form->$obj->rule='numeric';
+			$form->$obj->readonly=true;
 			$form->$obj->size=10;
 		}
 		//fin Resumen
@@ -282,7 +285,7 @@ class Rcaj extends validaciones {
 				$mSQL = $this->db->insert_string('rcaj', $arr);
 				$this->db->simple_query($mSQL);
 			}
-			echo 'Probablemente haya hecho el ingreso';
+			redirect('ventas/recaj/filteredgrid');
 		}
 
 		$attr=array(
@@ -302,7 +305,160 @@ class Rcaj extends validaciones {
 	}
 
 
-	function forcierre() {
+	function forcierre($numero){
+		$this->rapyd->load('dataform');
+		$dbnumero = $this->db->escape($numero);
+		/*$cana=$this->datasis->dameval('SELECT COUNT(*) FROM rcaj WHERE cajero='.$this->db->escape($cajero).' AND fecha='.$this->db->escape($fecha));
+		if($cana>0){
+			$data['content'] = 'El cajero '.$cajero.' ya fue cerrado para la fecha '.dbdate_to_human($fecha);
+			$data['title']   = '<h1>Recepci&oacute;n de cajas</h1>';
+			$data['head']    = $this->rapyd->get_head().script('jquery.pack.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js');
+			$this->load->view('view_ventanas', $data);
+			return ;
+		}*/
+
+		$form = new DataForm("ventas/rcaj/forcierre/$numero/process");
+
+		$attr=array(
+			'class'  => 'ui-state-default ui-corner-all',
+			'onclick'=> "javascript:window.location='".site_url('ventas/rcaj/filteredgrid')."'",
+			'value'  => 'Regresar'
+		);
+
+		$mSQL="SELECT c.tipo,c.nombre ,b.recibido,b.sistema,b.diferencia
+		FROM rcaj    AS a 
+		JOIN itrcaj  AS b ON a.numero=b.numero
+		JOIN tarjeta AS c ON c.tipo=b.tipo 
+		WHERE a.numero=${dbnumero}";
+
+		$query = $this->db->query($mSQL);
+		if($query->num_rows()>0){
+			$totales=array(0,0,0);
+			$arr=array('recibido','sistema','diferencia');
+			foreach ($query->result() as $i=>$row){
+				foreach($arr AS $o=>$nobj){
+					$obj = $nobj.$row->tipo;
+					$totales[$o]+=$row->$nobj;
+					$form->$obj = new inputField('('.$row->tipo.') '.$row->nombre, $obj);
+					$form->$obj->style='text-align:right';
+					$form->$obj->insertValue=$row->$nobj;
+					$form->$obj->size=10;
+					$form->$obj->rule='numeric';
+					if($o==0) $sobj=$obj; else $form->$obj->in=$sobj;
+					if($o!=0) $form->$obj->readonly=true;
+				}
+			}
+
+			foreach($arr AS $o=>$nobj){
+				$obj = 't'.$nobj;
+				$form->$obj = new inputField('Totales:', $obj);
+				$form->$obj->style='text-align:right';
+				$form->$obj->size=10;
+				$form->$obj->insertValue=$totales[$o];
+				$form->$obj->rule='numeric';
+				if($o==0) $sobj=$obj; else $form->$obj->in=$sobj;
+				$form->$obj->readonly=true;
+			}
+		}
+
+		$form->submit('btnsubmit','Cerrar cajero');
+		$form->build_form();
+
+		$this->rapyd->jquery[]='$(":input").numeric(".");';
+		$this->rapyd->jquery[]='$(\'input[name^="recibido"]\').bind("keyup",function() { gtotal(); });';
+		$this->rapyd->jquery[]='function gtotal(){
+			TRECI=TSIS=TDIFE=0;
+			$(\'input[name^="recibido"]\').each(function(i,e){
+				nombre=this.name;
+				tipo=nombre.substring(nombre.length-2,nombre.length);
+
+				if($(this).val().length>0){
+					recibido   =parseFloat($(this).val());
+					sistema    =parseFloat($("#sistema"+tipo).val());
+					diferencia=sistema-recibido;
+					$("#diferencia"+tipo).val(diferencia);
+				}
+				if($(this).val().length>0) TRECI = TRECI+parseFloat($(this).val());
+			});
+
+			$(\'input[name^="diferencia"]\').each(function(i,e){
+				if($(this).val().length>0)
+					TDIFE = TDIFE+parseFloat($(this).val());
+			});
+
+			$("#trecibido").val(TRECI);
+			$("#tdiferencia").val(TDIFE);
+		}';
+
+
+		if ($form->on_success()){
+			$mSQL="SELECT c.tipo,c.nombre ,b.recibido,b.sistema,b.diferencia
+			FROM rcaj    AS a 
+			JOIN itrcaj  AS b ON a.numero=b.numero
+			JOIN tarjeta AS c ON c.tipo=b.tipo 
+			WHERE a.numero=${dbnumero}";
+
+			$query = $this->db->query($mSQL);
+			if($query->num_rows()>0){
+				$str='';
+				$arr=array();
+				$rrecibido=0;
+				foreach ($query->result() as $i=>$row){
+					$nobj='recibido'.$row->tipo;
+					$recibido = (isset($form->$nobj))? (empty($form->$nobj->newValue))? 0.00 :floatval($form->$nobj->newValue) : 0.00;
+					if($row->sistema>0 || $recibido>0){
+						$str.= $row->tipo.' '.$recibido.'  ';
+						$arr['recibido']   = $recibido;
+						$arr['diferencia'] = $row->sistema-$recibido;
+						$rrecibido   += $recibido;
+						$where = 'numero='.$dbnumero.' AND tipo'.$this->db->escape($row->tipo);
+
+						$mmSQL = $this->db->update_string('itrcaj', $arr, $where);
+						//$this->db->simple_query($mSQL);
+						//echo $mmSQL."\n";
+					}
+				}
+
+				$arr = array(
+					'tipo'     => 'F',
+					'recibido' => $rrecibido,
+					'observa'  => $str
+				);
+				$where = 'numero='.$this->db->escape($numero);
+				$mmSQL = $this->db->update_string('rcaj', $arr, $where); 
+				//$this->db->simple_query($mSQL);
+				//echo $mmSQL;
+
+				$cajero=$this->datasis->dameval('SELECT cajero FROM rcaj WHERE numero='.$dbnumero);
+
+				$arr= array('status'=>'C',
+					'fechac'=>date('dmY'),
+					'horac' =>date('h:i:s'),
+					'cierre'=>$rrecibido,
+					'caja'  =>'99'
+					);
+
+				$where = 'cajero='.$this->db->escape($cajero);
+				$mmSQL = $this->db->update_string('scaj', $arr, $where);
+				//$this->db->simple_query($mSQL);
+				echo $mmSQL;
+			}
+		}
+
+		$attr=array(
+			'class'  => 'ui-state-default ui-corner-all',
+			'onclick'=> "javascript:window.location='".site_url('ventas/rcaj/filteredgrid')."'",
+			'value'  => 'Regresar'
+		);
+
+		$data['content'] = $form->output;
+		$data['title']   = '<h1>Recepci&oacute;n de cajas</h1>';
+		$data['head']    = $this->rapyd->get_head().script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js');
+		$this->load->view('view_ventanas', $data);
+	}
+
+
+	function forcierre2() {
 		$this->rapyd->load("datagrid2");
 		$this->rapyd->load("datagrid");
 		$this->rapyd->load("fields");

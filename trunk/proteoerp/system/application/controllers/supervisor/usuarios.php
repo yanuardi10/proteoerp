@@ -39,10 +39,10 @@ class Usuarios extends Controller {
 
 		$grid->column('C&oacute;digo', $uri);
 		$grid->column('Nombre','us_nombre'     );
-		$grid->column('Supervisor'     ,'supervisor' ,'align="center"');
+		$grid->column('Supervisor'     ,'supervisor','align="center"');
 		$grid->column('Almac&eacute;n' ,'almacen'   ,"align='left'");
 		$grid->column('Vendedor'       ,'vendedor'  ,"align='center'");
-		$grid->column('Cajero'         ,'cajerp'  ,"align='center'");
+		$grid->column('Cajero'         ,'cajero'    ,"align='center'");
 		$grid->column('Cambio clave'   ,$uri2       ,'align="center"');
 		$grid->column('Asignar Accesos',$uri3       ,'align="center"');
 
