@@ -1,5 +1,6 @@
 <?php
-class sinvpromo extends Controller {
+require_once(BASEPATH.'application/controllers/validaciones.php');
+class sinvpromo extends validaciones {
 	function sinvpromo(){
 		parent::Controller(); 
 		$this->load->library("rapyd");
@@ -48,6 +49,17 @@ class sinvpromo extends Controller {
 	function dataedit() {
 		$this->rapyd->load('dataedit');
 		
+		$mSINV=array(
+			'tabla'   =>'sinv',
+			'columnas'=>array(
+			'codigo' =>'C&oacute;odigo',
+			'descrip'=>'Descripci&oacute;n',
+			'descrip2'=>'Descripci&oacute;n 2'),
+			'filtro'  =>array('codigo'=>'C&oacute;digo','descrip'=>'Descripci&oacute;n'),
+			'retornar'=>array('codigo'=>'codigo'),
+			'titulo'  =>'Buscar Codigo');
+		$bSINV=$this->datasis->modbus($mSINV);
+		
 		$script='
 		<script language="javascript" type="text/javascript">
 		$(function(){
@@ -61,15 +73,16 @@ class sinvpromo extends Controller {
 		
 		$edit->codigo = new inputField("C&oacute;digo", "codigo");
 		$edit->codigo->size       =  15;
-		$edit->codigo->css_class ='inputnum';
+//		$edit->codigo->css_class ='inputnum';
 		$edit->codigo->maxlength  =  15;
 		$edit->codigo->rule 			= "required";
+		$edit->codigo->append($bSINV);
 		
 		$edit->margen = new inputField("Margen", "margen");
 		$edit->margen->size      =  15;
 		$edit->margen->maxlength =  15;
 		$edit->margen->css_class ='inputnum';
-		$edit->margen->rule      =  "required";
+		$edit->margen->rule      =  "required|callback_chporcent";
 		
 		$edit->cantidad = new inputField("Cantidad", "cantidad");
 		$edit->cantidad->size      =  15;
@@ -89,13 +102,16 @@ class sinvpromo extends Controller {
 	
 	function instala(){
 		$mSQL="CREATE TABLE IF NOT EXISTS `sinvpromo` (
-				  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-				  `codigo` bigint(20) DEFAULT NULL,
-				  `margen` decimal(18,2) DEFAULT NULL,
-				  `cantidad` decimal(18,3) DEFAULT NULL,
-				  PRIMARY KEY (`id`),
-				  KEY `codigo` (`codigo`)
-				) ENGINE=MyISAM AUTO_INCREMENT=1177 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci
+				`id` BIGINT(20) NOT NULL AUTO_INCREMENT,
+				`codigo` VARCHAR(15) NULL DEFAULT NULL,
+				`margen` DECIMAL(18,2) NULL DEFAULT NULL,
+				`cantidad` DECIMAL(18,3) NULL DEFAULT NULL,
+				PRIMARY KEY (`id`),
+				INDEX `codigo` (`codigo`)
+			)
+			COLLATE='utf8_unicode_ci'
+			ENGINE=MyISAM
+			ROW_FORMAT=DEFAULT
 		";
 		$this->db->query($mSQL);
 		
