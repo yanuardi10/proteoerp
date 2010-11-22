@@ -96,14 +96,14 @@ class barraspos extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 	
-	function instalar(){
+	function instala(){
 		$mSQL="CREATE TABLE IF NOT EXISTS `barraspos` (
   			`codigo` char(15) NOT NULL DEFAULT '',
   			`suplemen` char(15) NOT NULL DEFAULT '',
   		PRIMARY KEY (`codigo`,`suplemen`)
 		) ENGINE=MyISAM DEFAULT CHARSET=latin1
 		";
-		$this->db->simple_query($mSQL);
+		$this->db->query($mSQL);
 		
 	}
 }
