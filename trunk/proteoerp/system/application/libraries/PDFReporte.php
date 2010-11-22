@@ -543,10 +543,10 @@ class PDFReporte extends Fpdf {
 							$cangrup=count($this->grupo);
 							for($u=0;$u<$cangrup;$u++){
 								$stotal[$u][$key]+=$row[$key];
-								$rstotal[$u][$key] =number_format($stotal[$u][$key], 2, ',', '.');
+								$rstotal[$u][$key] =nformat($stotal[$u][$key]);
 							}
 						}
-						$rgtotal[$key] =number_format($gtotal[$key], 2, ',', '.');
+						$rgtotal[$key] =nformat($gtotal[$key]);
 						if (in_array($key, $this->Acumulador)){
 							if($this->cgrupo){
 								$row[$key]=$stotal[0][$key];
@@ -563,7 +563,7 @@ class PDFReporte extends Fpdf {
 					}
 				}
 
-				if($this->DBfieldsType[$key]=='real') $row[$key]=number_format($row[$key], 2, ',', '.');
+				if($this->DBfieldsType[$key]=='real') $row[$key]=nformat($row[$key]);
 				elseif($this->DBfieldsType[$key]=='date') $row[$key]=dbdate_to_human($row[$key]);
 			}
 			$this->Row($row);
