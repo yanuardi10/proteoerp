@@ -94,8 +94,6 @@ class Consultas extends Controller {
 							}else{
 								$descufijo=0;
 							}
-						}else{
-							$descufijo=0;
 						}
 					}
 				}else{
