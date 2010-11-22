@@ -16,13 +16,13 @@ class DataEdit2 extends DataEdit{
 	}
 	
 	function getval($obj){
-	 	$name=$this->$obj->name;
-	 	$requestValue = $this->ci->input->post($name);
-	  if($requestValue === FALSE AND $this->_dataobject->loaded){
-	  	$requestValue =$this->_dataobject->get($this->$obj->db_name);
-	  	if(empty($requestValue)) $requestValue=FALSE;
-	  }
-	  return $requestValue;
+		$name=$this->$obj->name;
+		$requestValue = $this->ci->input->post($name);
+		if($requestValue === FALSE AND $this->_dataobject->loaded){
+			$requestValue =$this->_dataobject->get($this->$obj->db_name);
+			if(empty($requestValue)) $requestValue=FALSE;
+		}
+		return (empty($requestValue)) ? FALSE: $requestValue;
 	}
 	
 }
