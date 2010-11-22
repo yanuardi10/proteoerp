@@ -184,7 +184,7 @@ class Rcaj extends validaciones {
 		//Fin otras formas de pago
 
 		//Inicio tabla Resumen
-		$arr=array('TOTR'=>'Total de otras formas de pago','TEFE'=>'Total Efectivo','TGLOB'=>'Total Global');
+		$arr=array('TOTR'=>'Total de otras formas de pago','TEFE'=>'Total Efectivo','TGLOB'=>'Total Global','UFAC'=>'Ultima Factura');
 		foreach($arr AS $obj=>$titulo){
 			$form->$obj = new inputField($titulo, $obj);
 			$form->$obj->style='text-align:right';
@@ -193,6 +193,10 @@ class Rcaj extends validaciones {
 			$form->$obj->readonly=true;
 			$form->$obj->size=10;
 		}
+		
+		$form->$obj->readonly=false;
+		//$form->$obj->rule='required';
+		$form->$obj->insertValue='';
 		//fin Resumen
 
 		$form->submit('btnsubmit','Cerrar cajero');
@@ -284,8 +288,12 @@ class Rcaj extends validaciones {
 				);
 				$mSQL = $this->db->insert_string('rcaj', $arr);
 				$this->db->simple_query($mSQL);
+
+				$dbnumero=$this->db->escape($numero);
+				$mSQL="UPDATE sfac JOIN sfpa ON sfac.transac=sfpa.transac SET sfpa.cierre=$dbnumero
+				WHERE sfac.fecha=$dbfecha AND sfac.cajero=$dbcajero";
 			}
-			redirect('ventas/recaj/filteredgrid');
+			redirect('ventas/rcaj/filteredgrid');
 		}
 
 		$attr=array(
