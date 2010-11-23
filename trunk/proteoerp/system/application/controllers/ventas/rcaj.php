@@ -113,6 +113,7 @@ class Rcaj extends validaciones {
 
 		//Para cuando venga de datasis y sin parametros
 		if(is_null($caja) || is_null($cajero) || is_null($fecha)){
+			$redir=false;
 			$usuario = $this->session->userdata('usuario');
 			$caja    = '99';
 			$mSQL    = 'SELECT cajero FROM usuario WHERE us_codigo= ?';
@@ -121,7 +122,6 @@ class Rcaj extends validaciones {
 			$cajero  = $rrow->cajero;
 			$fecha   = date('Ymd');
 			if(empty($cajero)) return;
-			$redir=false;
 		}else{
 			$redir=true;
 		}
@@ -230,6 +230,7 @@ class Rcaj extends validaciones {
 		$this->rapyd->jquery[]='$(\'input[name^="cOTR"]\').bind("keyup",function() { gtotal(); });';
 		$this->rapyd->jquery[]='$(\'input[name^="FEFE"]\').bind("keyup",function() { gtotal(); });';
 		$this->rapyd->jquery[]='$(\'input[name^="OEFE"]\').bind("keyup",function() { gtotal(); });';
+		//$this->rapyd->jquery[]='';
 		$this->rapyd->jquery[]='$(".cefectivo").bind("keyup",
 			function() {
 				obj=this.name;
@@ -316,10 +317,11 @@ class Rcaj extends validaciones {
 				$mSQL="UPDATE sfac JOIN sfpa ON sfac.transac=sfpa.transac SET sfpa.cierre=$dbnumero
 				WHERE sfac.fecha=$dbfecha AND sfac.cajero=$dbcajero";
 			}
-			if($redir)
+			if($redir){
 				redirect('ventas/rcaj/filteredgrid/search');
-			else
+			}else{
 				redirect('ventas/rcaj/precierre');
+			}
 		}
 
 		$attr=array(
