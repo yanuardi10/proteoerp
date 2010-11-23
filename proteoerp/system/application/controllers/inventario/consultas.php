@@ -3,8 +3,7 @@ class Consultas extends Controller {
 	function Consultas(){
 		parent::Controller();
 		$this->load->library("rapyd");
-		//$this->datasis->modulo_id('30A',1);
-		define ("THISFILE",   APPPATH."controllers/compras/". $this->uri->segment(2).EXT);
+		define ("THISFILE",   APPPATH.'controllers/compras/'. $this->uri->segment(2).EXT);
 	}
 
 	function index(){
@@ -17,11 +16,11 @@ class Consultas extends Controller {
 
 		$script='
 		$("#codigo").focus();
-			$(document).ready(function() {
-				$("a").fancybox();
-				$("#codigo").attr("value", "");
-				$("#codigo").focus();
-			});
+		$(document).ready(function() {
+			$("a").fancybox();
+			$("#codigo").attr("value", "");
+			$("#codigo").focus();
+		});
 		$("#df1").submit(function() {
 				valor=$("#codigo").attr("value");
 				location.href="'.site_url('inventario/consultas/preciosgeneral').'/"+valor;

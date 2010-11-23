@@ -8,7 +8,7 @@ function phpscript($file){
 }
 
 function nformat($numero,$num=null,$centimos=null,$miles=null){
-	if(empty($numero)) return null;
+	if(is_null($numero)) return null;
 	$sig='';
 	if($numero < 0){
 		$sig='-';
