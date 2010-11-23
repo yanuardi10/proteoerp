@@ -119,16 +119,20 @@ class Rcaj extends validaciones {
 			$query   = $this->db->query($mSQL,array($usuario));
 			$rrow    = $query->first_row();
 			$cajero  = $rrow->cajero;
-			$fecha  = date('Ymd');
+			$fecha   = date('Ymd');
 			if(empty($cajero)) return;
+			$redir=false;
+		}else{
+			$redir=true;
 		}
 
 		$this->rapyd->load('dataform');
 		$cana=$this->datasis->dameval('SELECT COUNT(*) FROM rcaj WHERE cajero='.$this->db->escape($cajero).' AND fecha='.$this->db->escape($fecha));
 		if($cana>0){
-			$data['content'] = 'El cajero '.$cajero.' ya fue cerrado para la fecha '.dbdate_to_human($fecha).' '.anchor('ventas/rcaj/filteredgrid/search','Regresar');
+			$data['content'] = 'Cajero '.$cajero.' ya fue cerrado para la fecha '.dbdate_to_human($fecha).' ';
+			if($redir) $data['content'] .= anchor('ventas/rcaj/filteredgrid/search','Regresar');
 			$data['title']   = '<h1>Recepci&oacute;n de cajas</h1>';
-			$data['head']    = $this->rapyd->get_head().script('jquery.pack.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js');
+			$data['head']    = $this->rapyd->get_head().script('jquery.pack.js');
 			$this->load->view('view_ventanas', $data);
 			return ;
 		}
@@ -312,7 +316,10 @@ class Rcaj extends validaciones {
 				$mSQL="UPDATE sfac JOIN sfpa ON sfac.transac=sfpa.transac SET sfpa.cierre=$dbnumero
 				WHERE sfac.fecha=$dbfecha AND sfac.cajero=$dbcajero";
 			}
-			redirect('ventas/rcaj/filteredgrid/search');
+			if($redir)
+				redirect('ventas/rcaj/filteredgrid/search');
+			else
+				redirect('ventas/rcaj/precierre');
 		}
 
 		$attr=array(
