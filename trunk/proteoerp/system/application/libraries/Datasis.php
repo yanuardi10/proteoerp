@@ -303,16 +303,13 @@ document.body.setAttribute(
 		$CI =& get_instance();
 		if (empty($usr))
 			$usr=$CI->session->userdata('usuario');
-		$query=$CI->db->query("show tables like '$mcontador'");
-		if(!($query->num_rows()>0))
-			$CI->db->query("CREATE TABLE $mcontador (
+		if(!$CI->db->table_exists($mcontador))
+			$CI->db->simple_query("CREATE TABLE $mcontador (
 			`numero` INT(11) NOT NULL AUTO_INCREMENT,
 			`usuario` CHAR(10) NULL DEFAULT NULL,
 			`fecha` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-			PRIMARY KEY (`numero`)
-			)
-			");
-			
+			PRIMARY KEY (`numero`))");
+
 		$CI->db->query("INSERT INTO $mcontador VALUES(null, '$usr', now() )");
 		$aa = $CI->db->insert_id();
 		return $aa;
