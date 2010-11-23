@@ -45,7 +45,7 @@ class Rcaj extends validaciones {
 
 		$data['content'] = $filter->output;
 
-		function iconcaja($cajero,$fecha,$numero=''){
+		function iconcaja($cajero,$fecha,$numero='',$tipo=''){
 			$cajero=trim($cajero);
 			$fecha =trim($fecha);
 			$numero=trim($numero);
@@ -59,10 +59,13 @@ class Rcaj extends validaciones {
 				'scrollbars'=> 'yes','status' => 'yes',
 				'resizable' => 'yes','screenx'=> '0',
 				'screeny'   => '0');
-			if (!empty($cerrado))
+			if (!empty($cerrado)){
+				if($tipo=='T')
+					return image('caja_precerrada.gif',"Cajero Pre-Cerrado: $cajero",$atts).'<h3>'.anchor("ventas/rcaj/forcierre/$numero/", 'Cerrar cajero').'</h3><center>'.anchor('formatos/ver/RECAJA/'.$numero, ' Ver cuadre de caja');
 				return image('caja_cerrada.gif',"Cajero Cerrado: $cajero",$atts).'<h3>Cerrado</h3><center>'.anchor('formatos/ver/RECAJA/'.$numero, ' Ver cuadre de caja');
-			else
+			}else{
 				return image('caja_abierta.gif',"Cajero Abierto: $cajero",$atts).'<h3>Abierto</h3><center>'.anchor("ventas/rcaj/precierre/99/$cajero/$fecha", 'Pre-cerrar cajero').'</center>';
+			}
 		}
 
 		$data['forma'] ='';
@@ -77,7 +80,7 @@ class Rcaj extends validaciones {
 			$grid->per_page=15;
 
 			$grid = new DataGrid('Recepcion de cajas para la fecha: '.$filter->fecha->value);
-			$select=array('b.cajero','b.fecha','b.cajero','a.recibido','SUM(b.totalg) AS ingreso','a.numero');
+			$select=array('b.cajero','b.fecha','a.tipo','b.cajero','a.recibido','SUM(b.totalg) AS ingreso','a.numero');
 			//$select=array('b.cajero','b.fecha','b.cajero','b.recibido','b.numero');
 
 			$grid->db->select($select);
@@ -88,11 +91,12 @@ class Rcaj extends validaciones {
 			$grid->use_function('iconcaja');
 
 			$grid->column('Numero'     ,'<sinulo><#numero#>|Caja abierta</sinulo>','align=\'center\'');
+			//$grid->column('Tipo'       ,'<#tipo#>','align=\'center\'');
 			$grid->column('Fecha'      ,'<dbdate_to_human><#fecha#></dbdate_to_human>');
 			$grid->column('Cajero'     ,'cajero','align=\'center\'');
 			$grid->column('Recibido'   ,'<sinulo><nformat><#recibido#></nformat>|0.00</sinulo>','align=\'right\'');
 			$grid->column('Ingreso'    ,'<nformat><#ingreso#></nformat>' ,'align=\'right\'');
-			$grid->column('Status/Caja','<iconcaja><#cajero#>|<#fecha#>|<#numero#></iconcaja>','align="center"');
+			$grid->column('Status/Caja','<iconcaja><#cajero#>|<#fecha#>|<#numero#>|<#tipo#></iconcaja>','align="center"');
 			$grid->column('Ver html'   ,$urih,'align=\'center\'');
 			$grid->build();
 			//echo $grid->db->last_query();
@@ -108,7 +112,7 @@ class Rcaj extends validaciones {
 		$this->rapyd->load('dataform');
 		$cana=$this->datasis->dameval('SELECT COUNT(*) FROM rcaj WHERE cajero='.$this->db->escape($cajero).' AND fecha='.$this->db->escape($fecha));
 		if($cana>0){
-			$data['content'] = 'El cajero '.$cajero.' ya fue cerrado para la fecha '.dbdate_to_human($fecha);
+			$data['content'] = 'El cajero '.$cajero.' ya fue cerrado para la fecha '.dbdate_to_human($fecha).' '.anchor('ventas/rcaj/filteredgrid/search','Regresar');
 			$data['title']   = '<h1>Recepci&oacute;n de cajas</h1>';
 			$data['head']    = $this->rapyd->get_head().script('jquery.pack.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js');
 			$this->load->view('view_ventanas', $data);
@@ -266,7 +270,7 @@ class Rcaj extends validaciones {
 						$arr['tipo']       = $row->tipo;
 						$arr['recibido']   = $recibido;
 						$arr['sistema']    = $row->monto;
-						$arr['diferencia'] = $row->monto-$recibido;
+						$arr['diferencia'] = $recibido-$row->monto;
 						$ingreso   += $row->monto;
 						$rrecibido += $recibido;
 						$mSQL = $this->db->insert_string('itrcaj', $arr);
@@ -293,12 +297,12 @@ class Rcaj extends validaciones {
 				$mSQL="UPDATE sfac JOIN sfpa ON sfac.transac=sfpa.transac SET sfpa.cierre=$dbnumero
 				WHERE sfac.fecha=$dbfecha AND sfac.cajero=$dbcajero";
 			}
-			redirect('ventas/rcaj/filteredgrid');
+			redirect('ventas/rcaj/filteredgrid/search');
 		}
 
 		$attr=array(
 			'class'  => 'ui-state-default ui-corner-all',
-			'onclick'=> "javascript:window.location='".site_url('ventas/rcaj/filteredgrid')."'",
+			'onclick'=> "javascript:window.location='".site_url('ventas/rcaj/filteredgrid/search')."'",
 			'value'  => 'Regresar'
 		);
 
@@ -315,15 +319,17 @@ class Rcaj extends validaciones {
 
 	function forcierre($numero){
 		$this->rapyd->load('dataform');
+		$caja = '99';
 		$dbnumero = $this->db->escape($numero);
-		/*$cana=$this->datasis->dameval('SELECT COUNT(*) FROM rcaj WHERE cajero='.$this->db->escape($cajero).' AND fecha='.$this->db->escape($fecha));
-		if($cana>0){
-			$data['content'] = 'El cajero '.$cajero.' ya fue cerrado para la fecha '.dbdate_to_human($fecha);
+		$cana=$this->datasis->dameval('SELECT COUNT(*) FROM rcaj WHERE tipo="T" AND numero='.$dbnumero);
+
+		if($cana<1){
+			$data['content'] = 'El efecto a cerrar es inv&aacute;lido o ya fue cerrado '.anchor('ventas/rcaj/filteredgrid/search','Regresar');
 			$data['title']   = '<h1>Recepci&oacute;n de cajas</h1>';
 			$data['head']    = $this->rapyd->get_head().script('jquery.pack.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js');
 			$this->load->view('view_ventanas', $data);
 			return ;
-		}*/
+		}
 
 		$form = new DataForm("ventas/rcaj/forcierre/$numero/process");
 
@@ -383,7 +389,7 @@ class Rcaj extends validaciones {
 				if($(this).val().length>0){
 					recibido   =parseFloat($(this).val());
 					sistema    =parseFloat($("#sistema"+tipo).val());
-					diferencia=sistema-recibido;
+					diferencia=recibido-sistema;
 					$("#diferencia"+tipo).val(diferencia);
 				}
 				if($(this).val().length>0) TRECI = TRECI+parseFloat($(this).val());
@@ -398,7 +404,7 @@ class Rcaj extends validaciones {
 			$("#tdiferencia").val(TDIFE);
 		}';
 
-
+		//Cierre de caja
 		if ($form->on_success()){
 			$mSQL="SELECT c.tipo,c.nombre ,b.recibido,b.sistema,b.diferencia
 			FROM rcaj    AS a 
@@ -410,19 +416,23 @@ class Rcaj extends validaciones {
 			if($query->num_rows()>0){
 				$str='';
 				$arr=array();
-				$rrecibido=0;
+				$rrecibido=$sistema=0;
 				foreach ($query->result() as $i=>$row){
 					$nobj='recibido'.$row->tipo;
 					$recibido = (isset($form->$nobj))? (empty($form->$nobj->newValue))? 0.00 :floatval($form->$nobj->newValue) : 0.00;
 					if($row->sistema>0 || $recibido>0){
 						$str.= $row->tipo.' '.$recibido.'  ';
 						$arr['recibido']   = $recibido;
-						$arr['diferencia'] = $row->sistema-$recibido;
-						$rrecibido   += $recibido;
-						$where = 'numero='.$dbnumero.' AND tipo'.$this->db->escape($row->tipo);
+						$arr['sistema']    = $row->sistema;
+						$arr['diferencia'] = $recibido-$row->sistema;
+						$arr['numero']     = $numero;
+						$arr['cierre']     = 'S';
+						$arr['tipo']       = $row->tipo;
 
-						$mmSQL = $this->db->update_string('itrcaj', $arr, $where);
-						//$this->db->simple_query($mSQL);
+						$rrecibido   += $recibido;
+						$sistema     += $row->sistema;
+						$mmSQL = $this->db->insert_string('itrcaj', $arr);
+						$this->db->simple_query($mmSQL);
 						//echo $mmSQL."\n";
 					}
 				}
@@ -434,13 +444,13 @@ class Rcaj extends validaciones {
 				);
 				$where = 'numero='.$this->db->escape($numero);
 				$mmSQL = $this->db->update_string('rcaj', $arr, $where); 
-				//$this->db->simple_query($mSQL);
+				$this->db->simple_query($mmSQL);
 				//echo $mmSQL;
 
+				//cierra el cajero
 				$cajero=$this->datasis->dameval('SELECT cajero FROM rcaj WHERE numero='.$dbnumero);
-
 				$arr= array('status'=>'C',
-					'fechac'=>date('dmY'),
+					'fechac'=>date('Ymd'),
 					'horac' =>date('h:i:s'),
 					'cierre'=>$rrecibido,
 					'caja'  =>'99'
@@ -448,14 +458,134 @@ class Rcaj extends validaciones {
 
 				$where = 'cajero='.$this->db->escape($cajero);
 				$mmSQL = $this->db->update_string('scaj', $arr, $where);
-				//$this->db->simple_query($mSQL);
-				echo $mmSQL;
+				$ban=$this->db->simple_query($mmSQL);
+				if($ban==false) memowrite($mmSQL,'rcaj');
+				//echo $mmSQL;
+
+				//Crea el movimiento en smov
+				$transac=$this->datasis->fprox_numero('transac');
+				$mSQL  = 'SELECT fecha, cajero FROM rcaj WHERE numero='.$dbnumero;
+				$query = $this->db->query($mSQL);
+				$row   = $query->first_row();
+				$fecha =$row->fecha;
+				$sfecha=str_replace('','-',$fecha);
+				$cajero=$row->cajero;
+
+				$nbmov=$this->_banprox($caja);
+				$mSQL = 'SELECT moneda, numcuent,banco,saldo FROM banc WHERE codbanc= ? ';
+				$query= $this->db->query($mSQL,array($caja));
+				$row  = $query->first_row();
+
+				$data = array();
+				$data['codbanc']    =$caja;
+				$data['moneda']     =$row->moneda;
+				$data['numcuent']   =$row->numcuent;
+				$data['banco']      =$row->banco;
+				$data['saldo']      =$row->saldo;
+				$data['tipo_op']    ='NC';
+				$data['numero']     =$nbmov;
+				$data['fecha']      =$fecha;
+				$data['clipro']     ='O';
+				$data['codcp']      ='VENT';
+				$data['nombre']     ='INGRESOS DIARIOS';
+				$data['monto']      =$rrecibido;
+				$data['concepto']   ="ENTREGA FINAL CAJERO $cajero DIA ".dbdate_to_human($fecha);
+				$data['transac']    =$transac;
+
+				$mSQL = $this->db->insert_string('bmov', $data);
+				$ban=$this->db->simple_query($mSQL);
+				if($ban==false) memowrite($mSQL,'rcaj');
+				//Fin del movimiento en smov
+
+				//Actualiza el saldo en la caja
+				$mSQL="CALL sp_actusal('$caja','$sfecha',$rrecibido)";
+				$ban=$this->db->simple_query($mSQL);
+				if($ban==false) memowrite($mSQL,'rcaj');
+
+				//Crea la diferencia en caja si la hay
+				$dif=$rrecibido-$sistema;
+				if($dif!=0.00){
+					$mSQL = 'SELECT COUNT(*) AS n  FROM banc WHERE codbanc="DF"';
+					$query= $this->db->query($mSQL);
+					$row  = $query->first_row();
+					if($row->n==0){
+						$data['codbanc'] ='DF';
+						$data['tbanco']  ='CAJ';
+						$data['moneda']  ='Bs';
+						$data['banco']   ='CAJA';
+						//$data['nombre']  ='DIFERENCIA EN CAJA';
+						$data['numcuent']='DIFERENCIA EN CAJA';
+						$data['activo']  ='S';
+						$data['tipocta'] ='C';
+						$data['monto']   = 0;
+						$data['saldo']   = 0;
+
+						$mSQL = $this->db->insert_string('banc', $data);
+						$ban=$this->db->simple_query($mSQL);
+						if($ban==false) memowrite($mSQL,'rcaj');
+					}
+
+					$nbmov=$this->_banprox('DF');
+					$mSQL = 'SELECT moneda, numcuent,banco,saldo FROM banc WHERE codbanc="DF"';
+					$query= $this->db->query($mSQL);
+					$row  = $query->first_row();
+
+					if($dif<0){ // crea la NC a causa del faltante de caja
+						$data = array();
+						$data['codbanc']    ='DF';
+						$data['moneda']     =$row->moneda;
+						$data['numcuent']   =$row->numcuent;
+						$data['banco']      =$row->banco;
+						$data['saldo']      =$row->saldo;
+						$data['tipo_op']    ='NC';
+						$data['numero']     =$nbmov;
+						$data['fecha']      =$fecha;
+						$data['clipro']     ='O';
+						$data['codcp']      ='VENT';
+						$data['nombre']     ='INGRESOS DIARIOS';
+						$data['monto']      =abs($dif);
+						$data['concepto']   ="FALTANTE EN CAJA $caja CAJERO $cajero DIA ".dbdate_to_human($fecha);
+						$data['transac']    =$transac;
+
+						$mSQL = $this->db->insert_string('bmov', $data);
+						$ban=$this->db->simple_query($mSQL);
+						if($ban==false) memowrite($mSQL,'rcaj');
+
+					}else{ //Crea la ND a causa del sobrante de caja
+						$data = array();
+						$data['codbanc']    ='DF';
+						$data['moneda']     =$row->moneda;
+						$data['numcuent']   =$row->numcuent;
+						$data['banco']      =$row->banco;
+						$data['saldo']      =$row->saldo;
+						$data['tipo_op']    ='ND';
+						$data['numero']     =$nbmov;
+						$data['fecha']      =$fecha;
+						$data['clipro']     ='O';
+						$data['codcp']      ='VENT';
+						$data['nombre']     ='INGRESOS DIARIOS';
+						$data['monto']      =abs($dif);
+						$data['concepto']   ="SOBRANTE EN CAJA $caja CAJERO $cajero DIA ".dbdate_to_human($fecha);
+						$data['transac']    =$transac;
+
+						$mSQL = $this->db->insert_string('bmov', $data);
+						$ban=$this->db->simple_query($mSQL);
+						if($ban==false) memowrite($mSQL,'rcaj');
+					}
+
+					$mSQL="CALL sp_actusal('DF','$sfecha',$dif)";
+					echo $mSQL;
+					$ban=$this->db->simple_query($mSQL);
+					if($ban==false) memowrite($mSQL,'rcaj');
+				}
+
+				redirect('ventas/rcaj/filteredgrid/search');
 			}
 		}
 
 		$attr=array(
 			'class'  => 'ui-state-default ui-corner-all',
-			'onclick'=> "javascript:window.location='".site_url('ventas/rcaj/filteredgrid')."'",
+			'onclick'=> "javascript:window.location='".site_url('ventas/rcaj/filteredgrid/search')."'",
 			'value'  => 'Regresar'
 		);
 
@@ -853,8 +983,28 @@ class Rcaj extends validaciones {
 		$this->load->view('view_ventanas', $data);
 	}
 
+	function _banprox($codban){
+		$nom='nBAN'.$codban;
+		while(1){
+			$numero=$this->datasis->fprox_numero($nom,12);
+			$dbnumero=$this->db->escape($numero);
+			$mSQL = "SELECT COUNT(*) AS n FROM bmov WHERE numero=$dbnumero";
+			$query= $this->db->query($mSQL);
+			$row  = $query->first_row('array');
+			if($row['n']==0) break;
+		}
+		return $numero;
+	}
+
 	function instalar(){
 		$mSQL="CREATE TABLE `itrcaj` (`numero` VARCHAR (8), `tipo` VARCHAR (15), `recibido` DECIMAL (17,2), `sistema` DECIMAL (17,2), `diferencia` DECIMAL (17,2),PRIMARY KEY (`numero`, `tipo`))";
 		$this->db->simple_query($mSQL);
+		$mSQL="ALTER TABLE `itrcaj`  ADD COLUMN `cierre` CHAR(1) NOT NULL DEFAULT 'N' AFTER `tipo`";
+		$this->db->simple_query($mSQL);
+		$mSQL="ALTER TABLE `itrcaj`  DROP PRIMARY KEY,  ADD PRIMARY KEY (`numero`, `tipo`, `cierre`)";
+		$this->db->simple_query($mSQL);
+		$mSQL="ALTER TABLE `sfpa`  ADD COLUMN `cierre` CHAR(8) DEFAULT '' AFTER `hora`";
+		$this->db->simple_query($mSQL);
+
 	}
 }
