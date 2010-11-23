@@ -108,7 +108,21 @@ class Rcaj extends validaciones {
 		$this->load->view('view_ventanas', $data);
 	}
 
-	function precierre($caja,$cajero,$fecha){
+
+	function precierre($caja=NULL,$cajero=NULL,$fecha=NULL){
+
+		//Para cuando venga de datasis y sin parametros
+		if(is_null($caja) || is_null($cajero) || is_null($fecha)){
+			$usuario = $this->session->userdata('usuario');
+			$caja    = '99';
+			$mSQL    = 'SELECT cajero FROM usuario WHERE us_codigo= ?';
+			$query   = $this->db->query($mSQL,array($usuario));
+			$rrow    = $query->first_row();
+			$cajero  = $rrow->cajero;
+			$fecha  = date('Ymd');
+			if(empty($cajero)) return;
+		}
+
 		$this->rapyd->load('dataform');
 		$cana=$this->datasis->dameval('SELECT COUNT(*) FROM rcaj WHERE cajero='.$this->db->escape($cajero).' AND fecha='.$this->db->escape($fecha));
 		if($cana>0){
@@ -237,6 +251,7 @@ class Rcaj extends validaciones {
 			$("#TGLOB").val(TOTR+TEFE);
 		}';
 
+		//hace el precierre
 		if ($form->on_success()){
 			$dbfecha  = $this->db->escape($fecha);
 			$dbcajero = $this->db->escape($cajero);
@@ -311,7 +326,7 @@ class Rcaj extends validaciones {
 		$cont['c_otrp']  = $c_otrp*2;
 		$cont['regresa'] = form_button($attr,'Regresar');
 		$data['content'] = $this->load->view('view_rcaj',$cont, true);
-		$data['title']   = '<h1>Recepci&oacute;n de cajas</h1>';
+		$data['title']   = '<h1>Recepci&oacute;n de cajero '.$cajero.' Fecha '.dbdate_to_human($fecha).'</h1>';
 		$data['head']    = $this->rapyd->get_head().script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js');
 		$this->load->view('view_ventanas', $data);
 	}
