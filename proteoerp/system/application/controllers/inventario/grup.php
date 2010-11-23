@@ -199,8 +199,26 @@ class Grup extends validaciones {
 		$edit->comision->size = 18;
 		$edit->comision->maxlength=10;
 		$edit->comision->css_class='inputnum';
-
 		$edit->comision->rule='trim|numeric|callback_positivo';
+
+
+		$edit->margen = new inputField("Margen de Venta", "margen");
+		$edit->margen->size = 18;
+		$edit->margen->maxlength=10;
+		$edit->margen->css_class='inputnum';
+		$edit->margen->group='Margenes';
+		$edit->margen->rule='trim|numeric|callback_positivo';
+
+
+		$edit->margenc = new inputField("Margen de Compra", "margenc");
+		$edit->margenc->size = 18;
+		$edit->margenc->maxlength=10;
+		$edit->margenc->css_class='inputnum';
+		$edit->margenc->group='Margenes';
+		$edit->margenc->rule='trim|numeric|callback_positivo';
+
+
+
 
 		$edit->cu_inve =new inputField("Cuenta Inventario", "cu_inve");
 		$edit->cu_inve->size = 18;

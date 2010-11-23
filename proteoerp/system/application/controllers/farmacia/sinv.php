@@ -791,7 +791,7 @@ class sinv extends Controller {
 		$this->db->simple_query($mSQL);
 		$mSQL='ALTER TABLE sinv ADD id INT AUTO_INCREMENT PRIMARY KEY';
 		$this->db->simple_query($mSQL);
-		$mSQL='ALTER TABLE `sinv`  ADD COLUMN `descufijo` DECIMAL(6,3) NULL DEFAULT '0.000' AFTER `id`';
+		$mSQL="ALTER TABLE `sinv`  ADD COLUMN `descufijo` DECIMAL(6,3) NULL DEFAULT '0.000' AFTER `id`";
 		$this->db->simple_query($mSQL);
 
 		$mSQL="CREATE TABLE IF NOT EXISTS `sinvcombo` (
