@@ -264,10 +264,10 @@ class Rcaj extends validaciones {
 			$dbcajero = $this->db->escape($cajero);
 
 			$mSQL="SELECT c.tipo, IFNULL(aa.monto,0) AS monto FROM
-				(SELECT b.tipo ,SUM(IF(a.tipo_doc='D',-1,1)*b.monto) AS monto 
+				(SELECT b.tipo ,SUM(b.monto) AS monto 
 				FROM sfac AS a 
 				JOIN sfpa AS b ON a.transac=b.transac 
-				WHERE a.fecha=$dbfecha AND a.cajero=$dbcajero
+				WHERE a.fecha=$dbfecha AND a.cajero=$dbcajero AND a.tipo_doc<>'X'
 				GROUP BY b.tipo) AS aa
 				RIGHT JOIN tarjeta AS c ON aa.tipo=c.tipo";
 
