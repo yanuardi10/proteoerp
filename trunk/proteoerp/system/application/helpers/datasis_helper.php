@@ -36,6 +36,12 @@ function sinulo($val,$porcia=null){
 	return $val;
 }
 
+function siinulo($val,$si,$no){
+	if(empty($val) OR is_null($val))
+		return $si;
+	return $no;
+}
+
 function moneyformat($numero){
 	return nformat($numero,2);
 }

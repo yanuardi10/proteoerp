@@ -49,9 +49,9 @@ class Rcaj extends validaciones {
 			$cajero=trim($cajero);
 			$fecha =trim($fecha);
 			$numero=trim($numero);
+			//echo $cajero;
+			//var_dump(empty($numero));
 
-			$CI =& get_instance();
-			$cerrado = $CI->datasis->dameval("SELECT numero FROM rcaj WHERE cajero='$cajero' AND fecha='$fecha' ");
 			$atts=array('align'=>'LEFT','border'=>'0');
 			$fecha=str_replace('-','',$fecha);
 			$atRI = array(
@@ -59,12 +59,29 @@ class Rcaj extends validaciones {
 				'scrollbars'=> 'yes','status' => 'yes',
 				'resizable' => 'yes','screenx'=> '0',
 				'screeny'   => '0');
-			if (!empty($cerrado)){
-				if($tipo=='T')
-					return image('caja_precerrada.gif',"Cajero Pre-Cerrado: $cajero",$atts).'<h3>'.anchor("ventas/rcaj/forcierre/$numero/", 'Cerrar cajero').'</h3><center>'.anchor('formatos/ver/RECAJA/'.$numero, ' Ver cuadre de caja');
-				return image('caja_cerrada.gif',"Cajero Cerrado: $cajero",$atts).'<h3>Cerrado</h3><center>'.anchor('formatos/ver/RECAJA/'.$numero, ' Ver cuadre de caja');
+
+			$CI =& get_instance();
+			if(empty($numero)){
+				//$mSQL="SELECT cierre FROM sfpa WHERE cobrador='$cajero' AND fecha=DATE_ADD($fecha, INTERVAL 1 DAY) AND MID(hora,1,2)< 7 LIMIT 1";
+				//$cerrado = $CI->datasis->dameval($mSQL);
+
+				$mSQL="SELECT COUNT(*) FROM sfpa WHERE cobrador='$cajero' AND fecha=DATE_ADD($fecha, INTERVAL 1 DAY) AND MID(hora,1,2)< 7";
+				$cerrado = $CI->datasis->dameval($mSQL);
+
+				if($cerrado>0){ //caja fuera de turno
+					return image('caja_inhabilitada.gif',"Cajero Inhabilitado: $cajero",$atts).'<h3>Cajero de turno</h3>Debe gestionarse al d&iacute;a siguiente';
+				}else{
+					return image('caja_abierta.gif',"Cajero Abierto: $cajero",$atts).'<h3>Abierto</h3><center>'.anchor("ventas/rcaj/precierre/99/$cajero/$fecha", 'Pre-cerrar cajero').'</center>';
+				}
+			
 			}else{
-				return image('caja_abierta.gif',"Cajero Abierto: $cajero",$atts).'<h3>Abierto</h3><center>'.anchor("ventas/rcaj/precierre/99/$cajero/$fecha", 'Pre-cerrar cajero').'</center>';
+			//$cerrado = $CI->datasis->dameval("SELECT numero FROM rcaj WHERE cajero='$cajero' AND fecha='$fecha' ");
+
+				if($tipo=='T'){
+					return image('caja_precerrada.gif',"Cajero Pre-Cerrado: $cajero",$atts).'<h3>'.anchor("ventas/rcaj/forcierre/$numero/", 'Cerrar cajero').'</h3><center>'.anchor('formatos/ver/RECAJA/'.$numero, ' Ver cuadre de caja');
+				}else{
+					return image('caja_cerrada.gif',"Cajero Cerrado: $cajero",$atts).'<h3>Cerrado</h3><center>'.anchor('formatos/ver/RECAJA/'.$numero, ' Ver cuadre de caja');
+				}
 			}
 		}
 
@@ -88,18 +105,18 @@ class Rcaj extends validaciones {
 			$grid->db->from('sfac AS b');
 			$grid->db->join('rcaj AS a','a.cajero=b.cajero AND a.fecha=b.fecha','LEFT');
 			$grid->db->join('sfpa AS c','b.transac=c.transac');
-			$grid->db->where('c.cierre IS NULL');
+			//$grid->db->where('c.cierre IS NULL');
 			$grid->db->groupby('b.cajero');
 			$grid->use_function('iconcaja');
 
-			$grid->column('Numero'     ,'<sinulo><#numero#>|Caja abierta</sinulo>','align=\'center\'');
+			$grid->column('Numero'     ,'<sinulo><#numero#>|---</sinulo>','align=\'center\'');
 			//$grid->column('Tipo'       ,'<#tipo#>','align=\'center\'');
 			$grid->column('Fecha'      ,'<dbdate_to_human><#fecha#></dbdate_to_human>');
 			$grid->column('Cajero'     ,'cajero','align=\'center\'');
 			$grid->column('Recibido'   ,'<sinulo><nformat><#recibido#></nformat>|0.00</sinulo>','align=\'right\'');
-			$grid->column('Ingreso'    ,'<nformat><#ingreso#></nformat>' ,'align=\'right\'');
+			//$grid->column('Ingreso'    ,'<nformat><#ingreso#></nformat>' ,'align=\'right\'');
 			$grid->column('Status/Caja','<iconcaja><#cajero#>|<#fecha#>|<#numero#>|<#tipo#></iconcaja>','align="center"');
-			$grid->column('Ver html'   ,$urih,'align=\'center\'');
+			$grid->column('Ver html'   ,"<siinulo><#numero#>|---|$urih</siinulo>",'align=\'center\'');
 			$grid->build();
 			//echo $grid->db->last_query();
 			$data['content'] .= $grid->output;
