@@ -29,7 +29,11 @@ function des_nformat(num){
 function moneyformat(num){
 	return nformat(num,2);
 }
-                                                                    
+
 function des_moneyformat(num){
 	return des_nformat(num);
+}
+
+function roundNumber(rnum,rlength){
+	return Math.round(rnum*Math.pow(10,rlength))/Math.pow(10,rlength);
 }
