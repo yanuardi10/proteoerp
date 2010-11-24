@@ -452,13 +452,33 @@ class Scst extends Controller {
 
 	function cargar($control){
 		$this->rapyd->uri->keep_persistence();
-		$data['content'] = $this->_cargar($control).br().anchor('farmacia/scst/dataedit/show/'.$control,'Regresar');
+		$this->rapyd->load('dataform');
+
+		$form = new DataForm('farmacia/scst/cargar/process');
+
+		$form->nfiscal = new inputField('N&uacute;mero F&iacute;scal', 'nfiscal');
+		$form->nfiscal->rule = 'required';
+		$form->nfiscal->rows = 10;
+
+		$form->submit('btnsubmit','Guardar');
+		$form->build_form();
+
+		if ($form->on_success()){
+			$nfiscal=$form->nfiscal->newValue;
+			$data['content'] = $this->_cargar($control,$nfiscal).br().anchor('farmacia/scst/dataedit/show/'.$control,'Regresar');
+			$data['head']    = $this->rapyd->get_head();
+			$data['title']   = '<h1>Cargar compra '.$control.'</h1>';
+			$this->load->view('view_ventanas', $data);
+			return ;
+		}
+
+		$data['content'] = $form->output;
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = '<h1>Cargar compra '.$control.'</h1>';
 		$this->load->view('view_ventanas', $data);
 	}
 
-	function _cargar($control){
+	function _cargar($control,$nfiscal){
 		$control =$this->db->escape($control);
 		$farmaxDB=$this->load->database('farmax',TRUE);
 		$farmaxdb=$farmaxDB->database;
@@ -483,7 +503,9 @@ class Scst extends Controller {
 					$row=$query->row_array();
 					$row['control']=$lcontrol;
 					$row['transac']=$transac;
+					$row['nfiscal']=$nfiscal;
 					unset($row['pcontrol']);
+					
 					$mSQL[]=$this->db->insert_string('scst', $row);
 
 					$itquery = $farmaxDB->query("SELECT * FROM itscst WHERE control=$control");

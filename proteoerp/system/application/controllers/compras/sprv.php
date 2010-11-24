@@ -22,7 +22,6 @@ class Sprv extends validaciones {
 
 		$filter->proveed = new inputField('C&oacute;digo','proveed');
 		$filter->proveed->size=13;
-		$filter->proveed->maxlength=5;
 
 		$filter->nombre = new inputField('Nombre', 'nombre');
 		$filter->nombre->maxlength=40;
