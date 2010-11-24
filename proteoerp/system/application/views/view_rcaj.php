@@ -38,12 +38,23 @@
 					<th colspan=3 class="ui-widget-header">Otras formas de pago</th>
 				</tr>
 				<?php 
-				$obj=current($form->_fields);
+				/*$obj=current($form->_fields);
 				for($i=0;$i< $c_otrp;$i++){
 					echo ($i % 2==0) ? '<tr>' : '';
 					echo ($i % 2==0) ? '<td>'.$obj->label.'</td>' : '';
 					echo '<td>'.$obj->output.'</td>';
 					echo ($i % 2!=0) ? '</tr>' : '';
+					$obj=next($form->_fields);
+				}*/
+				?>
+
+				<?php 
+				$obj=current($form->_fields);
+				for($i=0;$i< $c_otrp;$i++){
+					echo '<tr>';
+					echo '<td>'.$obj->label. '</td>';
+					echo '<td>'.$obj->output.'</td>';
+					echo '</tr>';
 					$obj=next($form->_fields);
 				}
 				?>

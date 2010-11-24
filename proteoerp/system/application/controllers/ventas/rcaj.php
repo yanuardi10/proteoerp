@@ -189,20 +189,20 @@ class Rcaj extends validaciones {
 		$query = $this->db->query($mSQL);
 		foreach ($query->result() as $i=>$row){
 			$c_otrp++;
-			$arr=array('OTR','cOTR');
+			$arr=array('cOTR');
 			foreach($arr AS $o=>$nobj){
 				$obj = $nobj.$row->tipo;
 				$form->$obj = new inputField($row->nombre, $obj);
 				$form->$obj->style='text-align:right';
-				$form->$obj->size=5+5*$o;
+				$form->$obj->size=10;
 				$form->$obj->rule='numeric';
-				if($o==1){
+				/*if($o==1){
 					$form->$obj->in=$sobj;
 				}else{
 					$form->$obj->css_class='cotrasf';
 					$form->$obj->indice   = $row->tipo;
 				}
-				$sobj=$obj;
+				$sobj=$obj;*/
 			}
 		}
 		//Fin otras formas de pago
@@ -334,7 +334,7 @@ class Rcaj extends validaciones {
 
 		$cont['form']    = &$form;
 		$cont['c_efe']   = $c_efe*2;
-		$cont['c_otrp']  = $c_otrp*2;
+		$cont['c_otrp']  = $c_otrp;
 		$cont['regresa'] = form_button($attr,'Regresar');
 		$data['content'] = $this->load->view('view_rcaj',$cont, true);
 		$data['title']   = '<h1>Recepci&oacute;n de cajero '.$cajero.' Fecha '.dbdate_to_human($fecha).'</h1>';
