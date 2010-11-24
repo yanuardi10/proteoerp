@@ -148,7 +148,7 @@ class Scst extends Controller {
 		$edit->cfis->size = 15;
 		$edit->cfis->maxlength=8;
 
-		$edit->almacen = new inputField("Almacen", "depo");
+		$edit->almacen = new inputField("Almac&eacute;n", "depo");
 		$edit->almacen->size = 15;
 		$edit->almacen->maxlength=8;
 
@@ -171,15 +171,15 @@ class Scst extends Controller {
 		$edit->credito->size = 20;
 		$edit->credito->css_class='inputnum';
 
-		$edit->subt  = new inputField("Subt", "montonet");
+		$edit->subt  = new inputField("Sub-total", "montonet");
 		$edit->subt->size = 20;
 		$edit->subt->css_class='inputnum';
 
-		$edit->iva  = new inputField("IVA", "montoiva");
+		$edit->iva  = new inputField("Impuesto", "montoiva");
 		$edit->iva->size = 20;
 		$edit->iva->css_class='inputnum';
 
-		$edit->total  = new inputField("Total", "montotot");
+		$edit->total  = new inputField("Total global", "montotot");
 		$edit->total->size = 20;
 		$edit->total->css_class='inputnum';
 
@@ -223,7 +223,7 @@ class Scst extends Controller {
 		$detalle->column("Descripci&oacute;n","<#descrip#>");
 		$detalle->column("Cantidad"          ,"<#cantidad#>","align='right'");
 		$detalle->column("PVP"               ,"<#precio1#>"  ,"align='right'");
-		$detalle->column("Precio"            ,"<#ultimo#>"  ,"align='right'");
+		$detalle->column("Costo"             ,"<#ultimo#>"  ,"align='right'");
 		$detalle->column("Importe"           ,"<#importe#>" ,"align='right'");
 		$detalle->column("Acciones "         ,"<exissinv><#sinv#>|<#dg_row_id#></exissinv>","bgcolor='#D7F7D7' align='center'");
 		$detalle->build();
@@ -454,18 +454,30 @@ class Scst extends Controller {
 		$this->rapyd->uri->keep_persistence();
 		$this->rapyd->load('dataform');
 
-		$form = new DataForm('farmacia/scst/cargar/process');
+		$form = new DataForm("farmacia/scst/cargar/$control/process");
 
 		$form->nfiscal = new inputField('N&uacute;mero F&iacute;scal', 'nfiscal');
-		$form->nfiscal->rule = 'required';
+		$form->nfiscal->rule = 'required|strtoupper';
 		$form->nfiscal->rows = 10;
+
+		$form->almacen = new  dropdownField ("Almac&eacute;n", "almacen");
+		$form->almacen->option('','Seleccionar');
+		$form->almacen->options("SELECT ubica,CONCAT_WS('-',ubica,ubides) AS val FROM caub WHERE gasto='N' and invfis='N' ORDER BY ubides");
+		$form->almacen->rule = 'required';
+
+		$form->fecha = new DateonlyField('Vencimiento', 'vence','d/m/Y');
+		$form->fecha->insertValue = date('Y-m-d');
+		$form->fecha->rule = 'required';
+		$form->fecha->size = 10;
 
 		$form->submit('btnsubmit','Guardar');
 		$form->build_form();
 
 		if ($form->on_success()){
-			$nfiscal=$form->nfiscal->newValue;
-			$data['content'] = $this->_cargar($control,$nfiscal).br().anchor('farmacia/scst/dataedit/show/'.$control,'Regresar');
+			$nfiscal= $form->nfiscal->newValue;
+			$almacen= $form->almacen->newValue;
+			$vence  = $form->vence->newValue;
+			$data['content'] = $this->_cargar($control,$nfiscal,$almacen,$vence).br().anchor('farmacia/scst/dataedit/show/'.$control,'Regresar');
 			$data['head']    = $this->rapyd->get_head();
 			$data['title']   = '<h1>Cargar compra '.$control.'</h1>';
 			$this->load->view('view_ventanas', $data);
@@ -478,7 +490,7 @@ class Scst extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
-	function _cargar($control,$nfiscal){
+	function _cargar($control,$nfiscal,$almacen,$vence){
 		$control =$this->db->escape($control);
 		$farmaxDB=$this->load->database('farmax',TRUE);
 		$farmaxdb=$farmaxDB->database;
@@ -504,6 +516,8 @@ class Scst extends Controller {
 					$row['control']=$lcontrol;
 					$row['transac']=$transac;
 					$row['nfiscal']=$nfiscal;
+					$row['depo']   =$almacen;
+					$row['vence']  =$vence;
 					unset($row['pcontrol']);
 					
 					$mSQL[]=$this->db->insert_string('scst', $row);
