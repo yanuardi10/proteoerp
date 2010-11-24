@@ -85,9 +85,10 @@ class Rcaj extends validaciones {
 
 			$grid->db->select($select);
 			//$grid->db->from('rcaj as b');
-			$grid->db->from('sfac as b');
-			$grid->db->join('rcaj as a','a.cajero=b.cajero AND a.fecha=b.fecha','LEFT');
-			//$grid->db->where('');
+			$grid->db->from('sfac AS b');
+			$grid->db->join('rcaj AS a','a.cajero=b.cajero AND a.fecha=b.fecha','LEFT');
+			$grid->db->join('sfpa AS c','b.transac=c.transac');
+			$grid->db->where('c.cierre IS NULL');
 			$grid->db->groupby('b.cajero');
 			$grid->use_function('iconcaja');
 
@@ -444,7 +445,7 @@ class Rcaj extends validaciones {
 					recibido   =parseFloat($(this).val());
 					sistema    =parseFloat($("#sistema"+tipo).val());
 					diferencia=recibido-sistema;
-					$("#diferencia"+tipo).val(diferencia);
+					$("#diferencia"+tipo).val(numberFormat(diferencia,2));
 				}
 				if($(this).val().length>0) TRECI = TRECI+parseFloat($(this).val());
 			});
@@ -454,8 +455,8 @@ class Rcaj extends validaciones {
 					TDIFE = TDIFE+parseFloat($(this).val());
 			});
 
-			$("#trecibido").val(TRECI);
-			$("#tdiferencia").val(TDIFE);
+			$("#trecibido").val(numberFormat(TRECI,2));
+			$("#tdiferencia").val(numberFormat(TDIFE,2));
 		}';
 
 		//Cierre de caja
@@ -645,7 +646,7 @@ class Rcaj extends validaciones {
 
 		$data['content'] = $form->output;
 		$data['title']   = '<h1>Recepci&oacute;n de cajas</h1>';
-		$data['head']    = $this->rapyd->get_head().script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js');
+		$data['head']    = $this->rapyd->get_head().script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js').phpscript('nformat.js');
 		$this->load->view('view_ventanas', $data);
 	}
 
