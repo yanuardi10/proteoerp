@@ -266,9 +266,10 @@ class Scst extends Controller {
 			$edit->$obj->rule ='numeric';
 			$edit->$obj->size = 10;
 		}
+
 		$edit->buttons('modify','save');
 		$edit->build();
-		//$this->rapyd->jquery[]='';
+		$this->rapyd->jquery[]='$(window).unload(function() { window.opener.location.reload(); });';
 		$data['content'] =$edit->output;
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   ='';
@@ -362,6 +363,7 @@ class Scst extends Controller {
 		$edit->buttons('modify','save','delete','undo','back');
 		$edit->build();
 
+		$this->rapyd->jquery[]='$(window).unload(function() { window.opener.location.reload(); });';
 		$data['content'] =$edit->output;
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   ='<h1>Reasignar c&oacute;digo</h1>';
