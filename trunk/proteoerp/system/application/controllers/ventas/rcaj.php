@@ -591,6 +591,7 @@ class Rcaj extends validaciones {
 						$data['tipocta'] ='C';
 						$data['monto']   = 0;
 						$data['saldo']   = 0;
+						$data['concepto'] ="SOBRANTE EN CAJERO $cajero DIA ".dbdate_to_human($fecha);
 
 						$mSQL = $this->db->insert_string('banc', $data);
 						$ban=$this->db->simple_query($mSQL);
