@@ -50,7 +50,7 @@ echo $form_begin?>
               <td width="44" class="littletablerow"><span class="littletablerowth">
                 <?=$form->peso->label ?>
               </span></td>
-              <td width="99" class="littletablerow"><?=$form->peso->output ?></td>
+              <td width="99" class="littletablerow" align='right'><?=$form->peso->output ?></td>
                 </tr>
           </table>
           <?php echo $form->detalle->output ?>
@@ -59,29 +59,29 @@ echo $form_begin?>
 	  <tr>                                                           
 	  	<td colspan=10 class="littletableheader">Totales</td>      
 	 </tr>                                                          
-	 <tr>                                                 
+	 <tr>
 	  <td width="131" class="littletablerowth"><?=$form->rislr->label ?> </td>
-		<td width="122" class="littletablerow" ><?=$form->rislr->output ?> </td>
+		<td width="122" class="littletablerow" align='right'><?=$form->rislr->output ?> </td>
     <td width="125" class="littletablerowth"><?=$form->anticipo->label ?> </td>
-		<td width="125" class="littletablerow"><?=$form->anticipo->output ?> </td>
+		<td width="125" class="littletablerow" align='right'><?=$form->anticipo->output ?> </td>
 		<td width="111" class="littletablerowth" ><?=$form->subt->label ?> </td>
-		<td width="139" class="littletablerow" ><?=$form->subt->output ?> </td>
+		<td width="139" class="littletablerow" align='right'><?=$form->subt->output ?> </td>
       </tr>
       <tr>
     <td class="littletablerowth"><?=$form->riva->label ?></td>
-		<td class="littletablerow" ><?=$form->riva->output ?></td>
+		<td class="littletablerow" align='right'><?=$form->riva->output ?></td>
     <td class="littletablerowth"><?=$form->contado->label ?></td>
-		<td class="littletablerow" ><?=$form->contado->output ?></td>
+		<td class="littletablerow" align='right'><?=$form->contado->output ?></td>
 		<td class="littletablerowth"><?=$form->iva->label ?></td>
-		<td class="littletablerow" ><?=$form->iva->output ?></td>
+		<td class="littletablerow" align='right'><?=$form->iva->output ?></td>
       </tr>
       <tr>
-    <td class="littletablerowth"><?=$form->monto->label ?></td>
-		<td class="littletablerow" ><?=$form->monto->output ?></td>
+    <td class="littletablerowth" ><?=$form->monto->label ?></td>
+		<td class="littletablerow" align='right'><?=$form->monto->output ?></td>
     <td class="littletablerowth"><?=$form->credito->label ?></td>
-		<td class="littletablerow" ><?=$form->credito->output ?></td>
+		<td class="littletablerow" align='right'><?=$form->credito->output ?></td>
 		<td class="littletablerowth"><?=$form->total->label ?></td>
-		<td class="littletablerow" ><?=$form->total->output ?></td>
+		<td class="littletablerow" align='right'><?=$form->total->output ?></td>
       </tr>
 </table>
 
