@@ -104,8 +104,6 @@ class Scst extends Controller {
 		$this->rapyd->load("dataedit","datadetalle","fields","datagrid");
 		$this->rapyd->uri->keep_persistence();
 
-		$uri=site_url("/contabilidad/casi/dpto/");
-
 		function exissinv($cen,$id=0){
 			if(empty($cen)){
 				$id--;
@@ -152,10 +150,8 @@ class Scst extends Controller {
 		$edit->almacen->size = 15;
 		$edit->almacen->maxlength=8;
 
-		$edit->tipo = new dropdownField("Tipo", "tipo_doc");  
+		$edit->tipo = new dropdownField("Tipo", "tipo_doc");
 		$edit->tipo->option("FC","FC");
-		$edit->tipo->option("NC","NC");
-		$edit->tipo->option("NE","NE");
 		$edit->tipo->rule = "required";
 		$edit->tipo->size = 20;
 		$edit->tipo->style='width:150px;';
@@ -183,28 +179,8 @@ class Scst extends Controller {
 		$edit->total->size = 20;
 		$edit->total->css_class='inputnum';
 
-		$edit->anticipo  = new inputField("Anticipo", "anticipo");
-		$edit->anticipo->size = 20;
-		$edit->anticipo->css_class='inputnum';
-
-		$edit->contado  = new inputField("Contado", "inicial");
-		$edit->contado->size = 20;
-		$edit->contado->css_class='inputnum';
-
-		$edit->rislr  = new inputField("R.ISLR", "reten");
-		$edit->rislr->size = 20;
-		$edit->rislr->css_class='inputnum';
-
-		$edit->riva  = new inputField("R.IVA", "reteiva");
-		$edit->riva->size = 20;
-		$edit->riva->css_class='inputnum';
-
 		$edit->pcontrol  = new inputField('Control', 'pcontrol');
 		$edit->pcontrol->size = 12;
-
-		$edit->monto  = new inputField("Monto US $", "mdolar");
-		$edit->monto->size = 20;
-		$edit->monto->css_class='inputnum';
 
 		$numero =$edit->_dataobject->get('control');
 		$proveed=$this->db->escape($edit->_dataobject->get('proveed'));
@@ -222,7 +198,7 @@ class Scst extends Controller {
 		$detalle->column("Barras"            ,"<#codigo#>" );
 		$detalle->column("Descripci&oacute;n","<#descrip#>");
 		$detalle->column("Cantidad"          ,"<#cantidad#>","align='right'");
-		$detalle->column("PVP"               ,"<#precio1#>"  ,"align='right'");
+		$detalle->column("PVP"               ,"<b style='color:blue;'><#precio1#><b>"  ,"align='right'");
 		$detalle->column("Costo"             ,"<#ultimo#>"  ,"align='right'");
 		$detalle->column("Importe"           ,"<#importe#>" ,"align='right'");
 		$detalle->column("Acciones "         ,"<exissinv><#sinv#>|<#dg_row_id#></exissinv>","bgcolor='#D7F7D7' align='center'");
@@ -276,11 +252,21 @@ class Scst extends Controller {
 		$edit->script($script,'show');
 		$edit->build();
 
-		$smenu['link']=barra_menu('201');
-		$data['smenu'] = $this->load->view('view_sub_menu', $smenu,true);
+		$this->rapyd->jquery[]='$("#dialog").dialog({
+			autoOpen: false,
+			show: "blind",
+			hide: "explode"
+		});
+
+		$( "#opener" ).click(function() {
+			$( "#dialog" ).dialog( "open" );
+			return false;
+		});';
+		
+
 		$conten['form']  =&  $edit;
 		$data['content'] = $this->load->view('view_farmax_compras', $conten,true); 
-		$data['head']    = script("tabber.js").script("prototype.js").$this->rapyd->get_head().script("scriptaculous.js").script("effects.js");
+		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = '<h1>Compras Descargadas</h1>';
 		$this->load->view('view_ventanas', $data);
 	}
