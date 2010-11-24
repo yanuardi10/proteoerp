@@ -14,7 +14,7 @@ class Rcaj extends validaciones {
 	}
 
 	function filteredgrid(){
-		$this->rapyd->load("datafilter","datagrid");
+		$this->rapyd->load('datafilter','datagrid');
 
 		$atts = array(
 			'width'      => '800',
@@ -87,6 +87,7 @@ class Rcaj extends validaciones {
 			//$grid->db->from('rcaj as b');
 			$grid->db->from('sfac as b');
 			$grid->db->join('rcaj as a','a.cajero=b.cajero AND a.fecha=b.fecha','LEFT');
+			//$grid->db->where('');
 			$grid->db->groupby('b.cajero');
 			$grid->use_function('iconcaja');
 
@@ -238,7 +239,7 @@ class Rcaj extends validaciones {
 				obj=this.name;
 				mul=eval("denomi."+obj);
 				valor=$(this).val();
-				$("#c"+obj).val(mul*valor);
+				$("#c"+obj).val(roundNumber(mul*valor,2));
 				gtotal();
 			});';
 		$this->rapyd->jquery[]='function gtotal(){
@@ -253,9 +254,9 @@ class Rcaj extends validaciones {
 			if($("#OEFE").val().length>0) TEFE=TEFE+parseFloat($("#OEFE").val());
 			if($("#FEFE").val().length>0) TEFE=TEFE-parseFloat($("#FEFE").val())
 
-			$("#TEFE").val(TEFE);
-			$("#TOTR").val(TOTR);
-			$("#TGLOB").val(TOTR+TEFE);
+			$("#TEFE").val(roundNumber(TEFE,2));
+			$("#TOTR").val(roundNumber(TOTR,2));
+			$("#TGLOB").val(roundNumber(TOTR+TEFE,2));
 		}';
 
 		//hace el precierre
@@ -263,13 +264,29 @@ class Rcaj extends validaciones {
 			$dbfecha  = $this->db->escape($fecha);
 			$dbcajero = $this->db->escape($cajero);
 
-			$mSQL="SELECT c.tipo, IFNULL(aa.monto,0) AS monto FROM
+			/*$mSQL="SELECT c.tipo, IFNULL(aa.monto,0) AS monto FROM
 				(SELECT b.tipo ,SUM(b.monto) AS monto 
 				FROM sfac AS a 
 				JOIN sfpa AS b ON a.transac=b.transac 
 				WHERE a.fecha=$dbfecha AND a.cajero=$dbcajero AND a.tipo_doc<>'X'
 				GROUP BY b.tipo) AS aa
-				RIGHT JOIN tarjeta AS c ON aa.tipo=c.tipo";
+				RIGHT JOIN tarjeta AS c ON aa.tipo=c.tipo";*/
+
+			$objfecha = DateTime::createFromFormat('Ymd', $fecha);
+			$objfecha->sub(new DateInterval('P1D'));
+			$dbfecha_s=$this->db->escape($objfecha->format('Y-m-d'));
+			$mSQL="SELECT bb.tipo, SUM(IFNULL(aa.monto,0)) AS monto FROM 
+				(SELECT a.tipo,a.monto 
+				FROM sfpa AS a 
+				JOIN sfac AS b ON b.numero=a.numero AND a.tipo_doc=CONCAT(b.tipo_doc, IF(b.referen='M','E',b.referen)) 
+				WHERE a.f_factura=$dbfecha AND SUBSTRING(a.tipo_doc,2,1)!='X' AND a.cobrador=$dbcajero 
+			UNION ALL 
+				SELECT a.tipo, monto 
+				FROM sfpa AS a 
+				JOIN sfac AS b ON b.numero=a.numero AND a.tipo_doc=CONCAT(b.tipo_doc, IF(b.referen='M','E',b.referen)) 
+				WHERE a.f_factura>=$dbfecha_s AND SUBSTRING(a.tipo_doc,2,1)!='X' AND a.cobrador=$dbcajero AND MID(a.hora,1,2)>18 ) AS aa
+			RIGHT JOIN tarjeta AS bb ON aa.tipo=bb.tipo
+			GROUP BY tipo";
 
 			$query = $this->db->query($mSQL);
 			if ($query->num_rows() > 0){
@@ -316,8 +333,18 @@ class Rcaj extends validaciones {
 				$this->db->simple_query($mSQL);
 
 				$dbnumero=$this->db->escape($numero);
-				$mSQL="UPDATE sfac JOIN sfpa ON sfac.transac=sfpa.transac SET sfpa.cierre=$dbnumero
-				WHERE sfac.fecha=$dbfecha AND sfac.cajero=$dbcajero";
+				/*$mSQL="UPDATE sfac JOIN sfpa ON sfac.transac=sfpa.transac SET sfpa.cierre=$dbnumero
+				WHERE sfac.fecha=$dbfecha AND sfac.cajero=$dbcajero";*/
+
+				$mSQL="UPDATE sfpa JOIN sfac ON sfac.numero=sfpa.numero AND sfpa.tipo_doc=CONCAT(sfac.tipo_doc, IF(sfac.referen='M','E',sfac.referen))
+				SET sfpa.cierre=$dbnumero
+				WHERE sfpa.f_factura=$dbfecha    AND SUBSTRING(sfpa.tipo_doc,2,1)!='X' AND sfpa.cobrador=$dbcajero ";
+				$this->db->simple_query($mSQL);
+
+				$mSQL="UPDATE sfpa JOIN sfac ON sfac.numero=sfpa.numero AND sfpa.tipo_doc=CONCAT(sfac.tipo_doc, IF(sfac.referen='M','E',sfac.referen))
+				SET sfpa.cierre=$dbnumero
+				WHERE sfpa.f_factura>=$dbfecha_s AND SUBSTRING(sfpa.tipo_doc,2,1)!='X' AND sfpa.cobrador=$dbcajero AND MID(sfpa.hora,1,2)>18";
+				$this->db->simple_query($mSQL);
 			}
 			if($redir){
 				redirect('ventas/rcaj/filteredgrid/search');
@@ -338,7 +365,7 @@ class Rcaj extends validaciones {
 		$cont['regresa'] = form_button($attr,'Regresar');
 		$data['content'] = $this->load->view('view_rcaj',$cont, true);
 		$data['title']   = '<h1>Recepci&oacute;n de cajero '.$cajero.' Fecha '.dbdate_to_human($fecha).'</h1>';
-		$data['head']    = $this->rapyd->get_head().script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js');
+		$data['head']    = $this->rapyd->get_head().phpscript('nformat.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js');
 		$this->load->view('view_ventanas', $data);
 	}
 
