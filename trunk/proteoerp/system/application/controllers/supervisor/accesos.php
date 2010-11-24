@@ -32,9 +32,9 @@ WHERE MID(a.modulo,1,1)!=0 ORDER BY a.modulo, a.panel*/
 	}
 
 	function instalar(){
-		//for($i=1;$i<=65535;$i++)
-		//	$this->db->simple_query("INSERT INTO serie SET hexa=HEX($i)");
-		
+		for($i=1;$i<=65535;$i++)
+			$this->db->simple_query("INSERT INTO serie SET hexa=HEX($i)");
+		echo "hola mundo";
 		//$mSQL='ALTER TABLE `intramenu` DROP PRIMARY KEY';
 		//$this->db->simple_query($mSQL);
 		//$mSQL='ALTER TABLE intramenu ADD id INT AUTO_INCREMENT PRIMARY KEY';

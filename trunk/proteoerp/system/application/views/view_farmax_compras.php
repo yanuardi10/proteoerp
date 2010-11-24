@@ -9,7 +9,7 @@ else:
 
 if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</div>';
 echo $form_scripts;
-echo $form_begin?>
+echo $form_begin; ?>
 <table align='center'>
 	<tr>
 		<td align=right>
@@ -33,32 +33,23 @@ echo $form_begin?>
 					<td class="littletablerowth"><?php echo $form->tipo->label    ?></td>
 					<td class="littletablerow">  <?php echo $form->tipo->output   ?></td>
 					<td class="littletablerowth"><?php echo $form->nombre->label  ?></td>
-					<td  class="littletablerow"> <?php echo $form->nombre->output ?></td>
+					<td class="littletablerow">  <?php echo $form->nombre->output ?></td>
 				</tr>
 			</table>
 			<?php echo $form->detalle->output ?>
-			<table  width="100%" style="margin:0;width:100%;" > 
+			<table  width="100%" style="margin:0;width:100%;">
 				<tr>
-					<td colspan=6 class="littletableheader">Totales</td>
+					<td colspan=3 class="littletableheader">Totales</td>
 				</tr><tr>
-					<td width="131" class="littletablerowth">&nbsp;</td>
-					<td width="122" class="littletablerow" align='right'>&nbsp;</td>
-					<td width="125" class="littletablerowth">&nbsp;</td>
-					<td width="125" class="littletablerow" align='right'>&nbsp;</td>
-					<td width="111" class="littletablerowth" ><?php echo $form->subt->label ?> </td>
+					<td width="500" class="littletablerow">&nbsp;</td>
+					<td width="111" class="littletablerowth"><?php echo $form->subt->label ?> </td>
 					<td width="139" class="littletablerow" align='right'><?php echo $form->subt->output ?> </td>
 				</tr><tr>
 					<td class="littletablerowth">&nbsp;</td>
-					<td class="littletablerow" align='right'>&nbsp;</td>
-					<td class="littletablerowth">&nbsp;</td>
-					<td class="littletablerow" align='right'>&nbsp;</td>
 					<td class="littletablerowth"><?=$form->iva->label ?></td>
 					<td class="littletablerow" align='right'><?=$form->iva->output ?></td>
 				</tr><tr>
 					<td class="littletablerowth">&nbsp;</td>
-					<td class="littletablerow" align='right'>&nbsp;</td>
-					<td class="littletablerowth">&nbsp;</td>
-					<td class="littletablerow" align='right'>&nbsp;</td>
 					<td class="littletablerowth"><?=$form->total->label ?></td>
 					<td class="littletablerow" align='right'><?=$form->total->output ?></td>
 				</tr>

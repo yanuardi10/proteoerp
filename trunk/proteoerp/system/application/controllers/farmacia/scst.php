@@ -3,7 +3,7 @@ class Scst extends Controller {
 
 	function scst(){
 		parent::Controller();
-		$this->load->library("rapyd");
+		$this->load->library('rapyd');
 		//$this->datasis->modulo_id(201,1);
 	}
 
@@ -15,19 +15,19 @@ class Scst extends Controller {
 		$this->rapyd->set_connection('farmax');
 		$this->rapyd->load_db();
 
-		$this->rapyd->load("datagrid","datafilter");
+		$this->rapyd->load('datagrid','datafilter');
 		$this->rapyd->uri->keep_persistence();
 
 		$atts = array(
-		       'width'      => '800',
-		       'height'     => '600',
-		       'scrollbars' => 'yes',
-		       'status'     => 'yes',
-		       'resizable'  => 'yes',
-		       'screenx'    => '0',
-		       'screeny'    => '0'
-		    );
-		
+				'width'      => '800',
+				'height'     => '600',
+				'scrollbars' => 'yes',
+				'status'     => 'yes',
+				'resizable'  => 'yes',
+				'screenx'    => '0',
+				'screeny'    => '0'
+			);
+
 		$modbus=array(
 			'tabla'   =>'sprv',
 			'columnas'=>array(
@@ -40,7 +40,7 @@ class Scst extends Controller {
 
 		$boton=$this->datasis->modbus($modbus);
 
-		$filter = new DataFilter("Filtro de Compras");
+		$filter = new DataFilter('Filtro de Compras');
 		$filter->db->select=array('numero','fecha','vence','nombre','montoiva','montonet','proveed','control');
 		$filter->db->from('scst');
 
@@ -51,15 +51,6 @@ class Scst extends Controller {
 		$filter->fechah->size=$filter->fechad->size=10;
 		$filter->fechad->operator=">="; 
 		$filter->fechah->operator="<=";
-
-		//$filter->fecha_recep = new dateonlyField("Fecha Recepci&oacute;n", "fecha",'d/m/Y');
-		//$filter->fecha_recep->clause  =$filter->fecha->clause="where";
-		//$filter->fecha_recep->db_name =$filter->fecha->db_name="recep";
-		//$filter->fecha_recep->insertValue = date("Y-m-d"); 
-		//$filter->fecha_recep->size=10;
-		//$filter->fecha_recep->operator="=";
-		//$filter->fechah->group="Fecha Recepci&oacute;n";
-		//$filter->fechad->group="Fecha Recepci&oacute;n";
 
 		$filter->numero = new inputField("Factura", "numero");
 		$filter->numero->size=20;
@@ -79,15 +70,15 @@ class Scst extends Controller {
 		$grid->order_by("fecha","desc");
 		$grid->per_page = 15;
 
-		$grid->column_orderby("Factura",$uri,'control');
-		$grid->column_orderby("Fecha"  ,"<dbdate_to_human><#fecha#></dbdate_to_human>",'fecha',"align='center'");
-		$grid->column_orderby("Vence"  ,"<dbdate_to_human><#vence#></dbdate_to_human>",'vence',"align='center'");
-		$grid->column_orderby("Nombre" ,"nombre",'nombre');
-		$grid->column_orderby("IVA"    ,"montoiva" ,'montoiva' ,"align='right'");
-		$grid->column_orderby("Monto"  ,"montonet" ,'montonet',"align='right'");
-		$grid->column_orderby("Control",'pcontrol' ,'pcontrol',"align='right'");
+		$grid->column_orderby('Factura',$uri,'control');
+		$grid->column_orderby('Fecha'  ,"<dbdate_to_human><#fecha#></dbdate_to_human>",'fecha',"align='center'");
+		$grid->column_orderby('Vence'  ,"<dbdate_to_human><#vence#></dbdate_to_human>",'vence',"align='center'");
+		$grid->column_orderby('Nombre' ,'nombre','nombre');
+		$grid->column_orderby('IVA'    ,'montoiva' ,'montoiva',"align='right'");
+		$grid->column_orderby('Monto'  ,'montonet' ,'montonet',"align='right'");
+		$grid->column_orderby('Control','pcontrol' ,'pcontrol',"align='right'");
 
-		$grid->add("compras/agregar");
+		//$grid->add('compras/agregar');
 		$grid->build();
 		//echo $grid->db->last_query();
 
@@ -101,7 +92,7 @@ class Scst extends Controller {
 		$this->rapyd->set_connection('farmax');
 		$this->rapyd->load_db();
 
-		$this->rapyd->load("dataedit","datadetalle","fields","datagrid");
+		$this->rapyd->load('dataedit','datadetalle','fields','datagrid');
 		$this->rapyd->uri->keep_persistence();
 
 		function exissinv($cen,$id=0){
@@ -115,18 +106,13 @@ class Scst extends Controller {
 			return $rt;
 		}
 
-		$edit = new DataEdit("Compras","scst");
+		$edit = new DataEdit('Compras','scst');
+		$edit->back_url = 'farmacia/scst/datafilter/';
 
-		$edit->back_url = "farmacia/scst/datafilter/";
-
-		$edit->fecha = new DateonlyField("Fecha", "fecha","d/m/Y");
-		$edit->fecha->insertValue = date("Y-m-d");
+		$edit->fecha = new DateonlyField('Fecha', 'fecha','d/m/Y');
+		$edit->fecha->insertValue = date('Y-m-d');
 		$edit->fecha->mode="autohide";
 		$edit->fecha->size = 10;
-
-		$edit->vence = new DateonlyField("Vence", "vence","d/m/Y");
-		$edit->vence->insertValue = date("Y-m-d");
-		$edit->vence->size = 10;
 
 		$edit->numero = new inputField("N&uacute;mero", "numero");
 		$edit->numero->size = 15;
@@ -142,10 +128,6 @@ class Scst extends Controller {
 		$edit->nombre->size = 50;
 		$edit->nombre->maxlength=40;
 
-		$edit->cfis = new inputField("C.fis", "nfiscal");
-		$edit->cfis->size = 15;
-		$edit->cfis->maxlength=8;
-
 		$edit->almacen = new inputField("Almac&eacute;n", "depo");
 		$edit->almacen->size = 15;
 		$edit->almacen->maxlength=8;
@@ -155,17 +137,6 @@ class Scst extends Controller {
 		$edit->tipo->rule = "required";
 		$edit->tipo->size = 20;
 		$edit->tipo->style='width:150px;';
-
-		$edit->peso  = new inputField2("Peso", "peso");
-		$edit->peso->size = 20;
-		$edit->peso->css_class='inputnum';
-
-		$edit->orden  = new inputField("Orden", "orden");
-		$edit->orden->size = 15;
-
-		$edit->credito  = new inputField("Cr&eacute;dito", "credito");
-		$edit->credito->size = 20;
-		$edit->credito->css_class='inputnum';
 
 		$edit->subt  = new inputField("Sub-total", "montonet");
 		$edit->subt->size = 20;
@@ -185,6 +156,17 @@ class Scst extends Controller {
 		$numero =$edit->_dataobject->get('control');
 		$proveed=$this->db->escape($edit->_dataobject->get('proveed'));
 
+		$atts = array(
+			'width'     => '250',
+			'height'    => '250',
+			'scrollbars'=> 'no',
+			'status'    => 'no',
+			'resizable' => 'no',
+			'screenx'   => "'+((screen.availWidth/2)-175)+'",
+			'screeny'   => "'+((screen.availHeight/2)-175)+'"
+		);
+		$llink=anchor_popup('farmacia/scst/reasignaprecio/modify/<#id#>', '<b><#precio1#></b>', $atts);
+
 		//Campos para el detalle
 		$tabla=$this->db->database;
 		$detalle = new DataGrid('');
@@ -198,7 +180,7 @@ class Scst extends Controller {
 		$detalle->column("Barras"            ,"<#codigo#>" );
 		$detalle->column("Descripci&oacute;n","<#descrip#>");
 		$detalle->column("Cantidad"          ,"<#cantidad#>","align='right'");
-		$detalle->column("PVP"               ,"<b style='color:blue;'><#precio1#><b>"  ,"align='right'");
+		$detalle->column("PVP"               ,$llink  ,"align='right'");
 		$detalle->column("Costo"             ,"<#ultimo#>"  ,"align='right'");
 		$detalle->column("Importe"           ,"<#importe#>" ,"align='right'");
 		$detalle->column("Acciones "         ,"<exissinv><#sinv#>|<#dg_row_id#></exissinv>","bgcolor='#D7F7D7' align='center'");
@@ -262,7 +244,6 @@ class Scst extends Controller {
 			$( "#dialog" ).dialog( "open" );
 			return false;
 		});';
-		
 
 		$conten['form']  =&  $edit;
 		$data['content'] = $this->load->view('view_farmax_compras', $conten,true); 
@@ -271,32 +252,29 @@ class Scst extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
-	function dpto() {
-		$this->rapyd->load("dataform");
-		$campo='ccosto'.$this->uri->segment(4);
-		$script='
-		function pasar(){
-			if($F("departa")!="-!-"){
-				window.opener.document.getElementById("'.$campo.'").value = $F("departa");
-				window.close();
-			}else{
-				alert("Debe elegir un departamento");
-			}
-		}';
+	function reasignaprecio(){
+		$this->rapyd->set_connection('farmax');
+		$this->rapyd->load('dataedit');
+		$edit = new DataEdit('Cambios de precios','itscst');
+		$edit->descrip  = new inputField('Descripci&oacute;n', 'descrip');
+		$edit->descrip->mode = 'autohide';
 
-		$form = new DataForm('');
-		$form->script($script);
-		$form->fdepar = new dropdownField("Departamento", "departa");
-		$form->fdepar->option('-!-','Seleccion un departamento');
-		$form->fdepar->options("SELECT depto,descrip FROM dpto WHERE tipo='G' ORDER BY descrip");
-		$form->fdepar->onchange='pasar()';
-		$form->build_form();
-
-		$data['content'] =$form->output;
-		$data['head']    =script('prototype.js').$this->rapyd->get_head();
-		$data['title']   ='<h1>Seleccione un departamento</h1>';
-		$this->load->view('view_detalle', $data);
+		for($i=1;$i<5;$i++){
+			$obj='precio'.$i;
+			$edit->$obj = new inputField('Precio '.$i, $obj);
+			$edit->$obj->css_class='inputnum';
+			$edit->$obj->rule ='numeric';
+			$edit->$obj->size = 10;
+		}
+		$edit->buttons('modify','save');
+		$edit->build();
+		//$this->rapyd->jquery[]='';
+		$data['content'] =$edit->output;
+		$data['head']    = $this->rapyd->get_head();
+		$data['title']   ='';
+		$this->load->view('view_ventanas_sola', $data);
 	}
+
 
 	function asignarfiltro(){
 		$this->rapyd->load("datagrid","datafilter");
@@ -464,13 +442,10 @@ class Scst extends Controller {
 			$almacen= $form->almacen->newValue;
 			$vence  = $form->vence->newValue;
 			$data['content'] = $this->_cargar($control,$nfiscal,$almacen,$vence).br().anchor('farmacia/scst/dataedit/show/'.$control,'Regresar');
-			$data['head']    = $this->rapyd->get_head();
-			$data['title']   = '<h1>Cargar compra '.$control.'</h1>';
-			$this->load->view('view_ventanas', $data);
-			return ;
+		}else{
+			$data['content'] = $form->output;
 		}
 
-		$data['content'] = $form->output;
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = '<h1>Cargar compra '.$control.'</h1>';
 		$this->load->view('view_ventanas', $data);
@@ -481,7 +456,7 @@ class Scst extends Controller {
 		$farmaxDB=$this->load->database('farmax',TRUE);
 		$farmaxdb=$farmaxDB->database;
 		$localdb =$this->db->database;
-		$retorna='';
+		$retorna ='';
 
 		$sql ="SELECT COUNT(*) AS cana 
 		  FROM ${farmaxdb}.itscst AS a 
