@@ -62,15 +62,14 @@ echo $form_begin?>
 	 <tr>
 	  <td width="131" class="littletablerowth"><?=$form->rislr->label ?> </td>
 		<td width="122" class="littletablerow" align='right'><?=$form->rislr->output ?> </td>
-    <td width="125" class="littletablerowth"><?=$form->anticipo->label ?> </td>
+		<td width="125" class="littletablerowth"><?=$form->anticipo->label ?> </td>
 		<td width="125" class="littletablerow" align='right'><?=$form->anticipo->output ?> </td>
 		<td width="111" class="littletablerowth" ><?=$form->subt->label ?> </td>
 		<td width="139" class="littletablerow" align='right'><?=$form->subt->output ?> </td>
-      </tr>
-      <tr>
-    <td class="littletablerowth"><?=$form->riva->label ?></td>
+	</tr><tr>
+		<td class="littletablerowth"><?=$form->riva->label ?></td>
 		<td class="littletablerow" align='right'><?=$form->riva->output ?></td>
-    <td class="littletablerowth"><?=$form->contado->label ?></td>
+		<td class="littletablerowth"><?=$form->contado->label ?></td>
 		<td class="littletablerow" align='right'><?=$form->contado->output ?></td>
 		<td class="littletablerowth"><?=$form->iva->label ?></td>
 		<td class="littletablerow" align='right'><?=$form->iva->output ?></td>

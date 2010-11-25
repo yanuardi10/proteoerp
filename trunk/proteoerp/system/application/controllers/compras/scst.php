@@ -202,8 +202,8 @@ class Scst extends Controller {
 		$edit->tipo->option("NC","NC");
 		$edit->tipo->option("NE","NE");
 		$edit->tipo->rule = "required";
-	  $edit->tipo->size = 20;
-	  $edit->tipo->style='width:150px;';
+		$edit->tipo->size = 20;
+		$edit->tipo->style='width:150px;';
 
 		$edit->peso  = new inputField2("Peso", "peso");
 		$edit->peso->size = 20;
@@ -212,7 +212,7 @@ class Scst extends Controller {
 		$edit->orden  = new inputField("Orden", "orden");
 		$edit->orden->size = 15;
 
-	  $edit->credito  = new inputField("Cr&eacute;dito", "credito");
+		$edit->credito  = new inputField("Cr&eacute;dito", "credito");
 		$edit->credito->size = 20;
 		$edit->credito->css_class='inputnum';
 
@@ -224,11 +224,11 @@ class Scst extends Controller {
 		$edit->iva->size = 20;
 		$edit->iva->css_class='inputnum';
 
-    $edit->total  = new inputField("Total", "montonet");
+		$edit->total  = new inputField("Total", "montonet");
 		$edit->total->size = 20;
 		$edit->total->css_class='inputnum';
 
-	  $edit->anticipo  = new inputField("Anticipo", "anticipo");
+		$edit->anticipo  = new inputField("Anticipo", "anticipo");
 		$edit->anticipo->size = 20;
 		$edit->anticipo->css_class='inputnum';
 
