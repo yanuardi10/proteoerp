@@ -138,7 +138,7 @@ class Scst extends Controller {
 		$edit->tipo->size = 20;
 		$edit->tipo->style='width:150px;';
 
-		$edit->subt  = new inputField("Sub-total", "montonet");
+		$edit->subt  = new inputField("Sub-total", "montotot");
 		$edit->subt->size = 20;
 		$edit->subt->css_class='inputnum';
 
@@ -146,7 +146,7 @@ class Scst extends Controller {
 		$edit->iva->size = 20;
 		$edit->iva->css_class='inputnum';
 
-		$edit->total  = new inputField("Total global", "montotot");
+		$edit->total  = new inputField("Total global", "montonet");
 		$edit->total->size = 20;
 		$edit->total->css_class='inputnum';
 
