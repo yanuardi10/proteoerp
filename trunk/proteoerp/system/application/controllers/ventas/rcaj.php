@@ -302,7 +302,7 @@ class Rcaj extends validaciones {
 				SELECT a.tipo, monto 
 				FROM sfpa AS a 
 				JOIN sfac AS b ON b.numero=a.numero AND a.tipo_doc=CONCAT(b.tipo_doc, IF(b.referen='M','E',b.referen)) 
-				WHERE a.f_factura>=$dbfecha_s AND SUBSTRING(a.tipo_doc,2,1)!='X' AND a.cobrador=$dbcajero AND MID(a.hora,1,2)>18 ) AS aa
+				WHERE a.f_factura=$dbfecha_s AND SUBSTRING(a.tipo_doc,2,1)!='X' AND a.cobrador=$dbcajero AND MID(a.hora,1,2)>18 ) AS aa
 			RIGHT JOIN tarjeta AS bb ON aa.tipo=bb.tipo
 			GROUP BY tipo";
 
