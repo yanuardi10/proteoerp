@@ -195,7 +195,7 @@ class Scst extends Controller {
 		}
 
 		function pasig(id){
-			var pasar=["barras","proveed"];
+			var pasar=["barras","proveed","descrip"];
 			var url  = "'.site_url('farmacia/scst/asignardataedit/create').'";
 			form_virtual(pasar,id,url);
 		}
@@ -325,7 +325,7 @@ class Scst extends Controller {
 
 	function asignardataedit(){
 		$this->rapyd->uri->keep_persistence();
-		$this->rapyd->load("dataedit");
+		$this->rapyd->load('dataedit','datagrid');
 
 		$modbus=array(
 			'tabla'   =>'sinv',
@@ -339,8 +339,9 @@ class Scst extends Controller {
 			'titulo'  =>'Buscar Art&iacute;culo');
 		$boton=$this->datasis->modbus($modbus);
 
+		$js='function pasacod(val) { $("#abarras").val(val) }';
 		$edit = new DataEdit('Reasignaciones de c&oacute;digo','farmaxasig');
-		$edit->back_url = "farmacia/scst/asignarfiltro";
+		$edit->back_url = 'farmacia/scst/asignarfiltro';
 
 		$edit->proveedor = new inputField('Proveedor','proveed');
 		$edit->proveedor->rule = 'trim|callback_sprvexits|required';
@@ -361,10 +362,41 @@ class Scst extends Controller {
 		$edit->abarras->append($boton);
 
 		$edit->buttons('modify','save','delete','undo','back');
+
+		$describus=$this->input->post('descrip');
+		if($describus!==false){
+			//print_r($patrones);
+			$grid = new DataGrid('Productos similares a <b>'.$describus.'</b>');
+			$grid->per_page = 10;
+			$grid->db->select(array('codigo','descrip','precio1'));
+			$grid->db->from('sinv');
+			$grid->paged=false;
+
+			$patrones = preg_split("/[\s,\-]+/", $describus);
+			foreach($patrones AS $pat){
+				if(strlen($pat)>2){
+					$grid->db->like('descrip',$pat);
+				}
+			}
+			$grid->db->limit(10);
+			$url='<a onclick=\'pasacod("<#codigo#>")\'  href=\'#\'><#codigo#></a>';
+
+			$grid->column('C&oacute;digo'     ,$url);
+			$grid->column('Descripci&oacute;n','descrip');
+			$grid->column('Precio 1'          ,'precio1' ,"align='right'");
+
+			$grid->build();
+			$tabla=($grid->recordCount>0)? $grid->output : 'No existe descripci&oacute;n semejante a <b>'.$describus.'</b>';
+
+			$edit->script($js,'create');
+			$edit->script($js,'modify');
+		}else{
+			$tabla='';
+		}
 		$edit->build();
 
 		$this->rapyd->jquery[]='$(window).unload(function() { window.opener.location.reload(); });';
-		$data['content'] =$edit->output;
+		$data['content'] =$edit->output.$tabla;
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   ='<h1>Reasignar c&oacute;digo</h1>';
 		$this->load->view('view_ventanas', $data);
