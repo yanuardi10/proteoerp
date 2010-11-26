@@ -86,9 +86,11 @@ class Comparativo extends Controller {
 		$filter->db->select('s.exmin');
 		$filter->db->select('s.id');
 		$filter->db->from('eventas as a');
-		$filter->db->join("grup as b" ,"a.grupo=b.grupo ",'LEFT');
-		$filter->db->join("sinv as s" ,"a.codigo=s.codigo ",'LEFT');
-		$filter->db->groupby('a.codigo');
+		$filter->db->join('grup AS b' ,'a.grupo=b.grupo');
+		//$filter->db->join('line AS c' ,'c.linea=b.linea');
+		//$filter->db->join('dpto AS d' ,'c.depto=d.depto');
+		$filter->db->join('sinv AS s' ,'a.codigo=s.codigo');
+		$filter->db->groupby('a.descrip');
 
 		$filter->fechad = new dateonlyField("Desde", "fechad",'m/Y');
 		$filter->fechah = new dateonlyField("Hasta", "fechah",'m/Y');
@@ -100,10 +102,10 @@ class Comparativo extends Controller {
 		$filter->fechad->insertValue = date("Y-m-d",mktime(0,0,0,date('m')-12,date('j'),date('Y')));
 		$filter->fechah->insertValue = date("Y-m-d");
 
-		$filter->codigo = new inputField("C&oacute;digo", "codigo");
+		/*$filter->codigo = new inputField("C&oacute;digo", "codigo");
 		$filter->codigo -> size=25;
 
-		/*$filter->descrip = new inputField("Descripci&oacute;n", "descrip");
+		$filter->descrip = new inputField("Descripci&oacute;n", "descrip");
 		$filter->descrip->db_name='CONCAT_WS(" ",a.descrip,a.descrip2)';
 		$filter->descrip -> size=25;
 
@@ -130,26 +132,26 @@ class Comparativo extends Controller {
 		$filter->proveed->append($bSPRV);
 		$filter->proveed->clause ="in";
 		$filter->proveed->db_name='( a.prov1, a.prov2, a.prov3 )';
-		$filter->proveed -> size=25;
+		$filter->proveed -> size=25;*/
 
-		$filter->depto2 = new inputField("Departamento", "nom_depto");
+		/*$filter->depto2 = new inputField("Departamento", "nom_depto");
 		$filter->depto2->db_name="d.descrip";
-		$filter->depto2 -> size=10;
+		$filter->depto2 -> size=10;*/
 
 		$filter->depto = new dropdownField("Departamento","depto");
-		$filter->depto->db_name="d.depto";
+		$filter->depto->db_name="a.depto";
 		$filter->depto->option("","Seleccione un Departamento");
 		$filter->depto->options("SELECT depto, descrip FROM dpto WHERE tipo='I' ORDER BY depto");
-		$filter->depto->in="depto2";
+		//$filter->depto->in="depto2";
 
-		$filter->linea = new inputField("Linea", "nom_linea");
+		/*$filter->linea = new inputField("Linea", "nom_linea");
 		$filter->linea->db_name="c.descrip";
-		$filter->linea -> size=10;
+		$filter->linea -> size=10;*/
 
 		$filter->linea2 = new dropdownField("L&iacute;nea","linea");
-		$filter->linea2->db_name="c.linea";
+		$filter->linea2->db_name="a.linea";
 		$filter->linea2->option("","Seleccione un Departamento primero");
-		$filter->linea2->in="linea";
+		//$filter->linea2->in="linea";
 		$depto=$filter->getval('depto');
 		if($depto!==FALSE){
 			$filter->linea2->options("SELECT linea, descrip FROM line WHERE depto='$depto' ORDER BY descrip");
@@ -157,14 +159,14 @@ class Comparativo extends Controller {
 			$filter->linea2->option("","Seleccione un Departamento primero");
 		}
 
-		$filter->grupo2 = new inputField("Grupo", "nom_grupo");
+		/*$filter->grupo2 = new inputField("Grupo", "nom_grupo");
 		$filter->grupo2->db_name="b.nom_grup";
-		$filter->grupo2 -> size=10;
+		$filter->grupo2 -> size=10;*/
 
 		$filter->grupo = new dropdownField("Grupo", "grupo");
-		$filter->grupo->db_name="b.grupo";
+		$filter->grupo->db_name='a.grupo';
 		$filter->grupo->option("","Seleccione una L&iacute;nea primero");
-		$filter->grupo->in="grupo2";
+		//$filter->grupo->in="grupo2";
 		$linea=$filter->getval('linea2');
 		if($linea!==FALSE){
 			$filter->grupo->options("SELECT grupo, nom_grup FROM grup WHERE linea='$linea' ORDER BY nom_grup");
@@ -172,7 +174,7 @@ class Comparativo extends Controller {
 			$filter->grupo->option("","Seleccione un Departamento primero");
 		}
 
-		$filter->marca = new dropdownField("Marca", "marca");
+		/*$filter->marca = new dropdownField("Marca", "marca");
 		$filter->marca->option("","");
 		$filter->marca->options("SELECT TRIM(marca) AS clave, TRIM(marca) AS valor FROM marc ORDER BY marca");
 		$filter->marca -> style='width:220px;';
@@ -181,7 +183,7 @@ class Comparativo extends Controller {
 		$filter->buttons("reset","search");
 		$filter->build();
 
-		$uri = "inventario/sinv/dataedit/show/<#codigo#>";
+		$uri = 'inventario/sinv/dataedit/show/<#codigo#>';
 
 		function minimos($param){
 			$data= func_get_args();
@@ -224,7 +226,7 @@ class Comparativo extends Controller {
 				$grid->column($etiq,"<nformat><#$etiq#></nformat>",'align=right');
 				$columncal[]="<#$etiq#>";
 			}
-			$grid->column('Promedio','<nformat><minimos>'.implode('|',$columncal).'</minimos></nformat>','align=right');
+			$grid->column('Promedio','<b style="color:red"><nformat><minimos>'.implode('|',$columncal).'</minimos></nformat></b>','align=right');
 			$grid->column('Minimo','<nformat><#exmin#></nformat>','align=right');
 			$grid->column('&nbsp;','<a href="javascript:actumin(\'<#id#>\',\'<minimos>'.implode('|',$columncal).'</minimos>\')" >Actualizar</a>','align=right');
 
@@ -235,14 +237,14 @@ class Comparativo extends Controller {
 		$url=site_url('inventario/comparativo/actumin/').'/';
 		$data['script']  ='<script language="javascript" type="text/javascript">
 		function actumin(id,val){
-			$.get("'.$url.'"+id+"/"+val, function(data) {
-				alert(data);
-			});
+			vval = prompt("Actualizar minimo a:",val);
+			if(vval)
+				$.get("'.$url.'"+id+"/"+vval, function(data) { alert(data); });
 		}
 		</script>';
 		$data['content'] = $filter->output.$tabla;
-		$data['title']   = "<h1>Comparativo de M&iacute;nimos de Inventario</h1>";
-		$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").script("sinvmaes2.js").$this->rapyd->get_head();
+		$data['title']   = '<h1>Comparativo de M&iacute;nimos de Inventario</h1>';
+		$data["head"]    = script('jquery.pack.js').script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").script("sinvmaes2.js").$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 
