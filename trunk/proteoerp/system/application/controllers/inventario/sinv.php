@@ -17,7 +17,7 @@ class sinv extends Controller {
 		$mSPRV=array(
 				'tabla'   =>'sprv',
 				'columnas'=>array(
-				'proveed' =>'C&oacute;odigo',
+				'proveed' =>'C&oacute;digo',
 				'nombre'=>'Nombre',
 				'contacto'=>'Contacto'),
 				'filtro'  =>array('proveed'=>'C&oacute;digo','nombre'=>'Nombre'),
