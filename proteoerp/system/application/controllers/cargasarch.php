@@ -14,10 +14,6 @@ class Cargasarch extends Controller {
 		//}
 	}
 
-	function index(){
-
-	}
-
 	function cargaxml(){
 		$this->rapyd->load('dataform');
 		$this->load->library('xmlinex');
@@ -227,7 +223,7 @@ class Cargasarch extends Controller {
 		}else{
 			$msg='Error, la sucursal '.$sucu.' no existe, revise la configuracion aqui: '.anchor('supervisor/sucu','sucursales');
 		}
-		$data['content'] = $msg.'<p>'.anchor('inventario/fotos/traerfotos/'.$sucu,'Traer fotos de invetario').'</p>';
+		$data['content'] = $msg.'<p>'.anchor('inventario/fotos/traerfotos/'.$sucu,'Traer fotos de inventario').'</p>';
 		$data['title']   = '<h1>Descarga de informaci&oacute;n para vendedores ambulantes</h1>';
 		$data['script']  = '';
 		$data["head"]    = $this->rapyd->get_head();

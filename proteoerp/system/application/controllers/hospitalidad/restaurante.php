@@ -432,7 +432,7 @@ scriptab;
 		}  
 
 		$back=site_url('hospitalidad/restaurante');
-		$prop3=array('type'=>'button','value'=>RAPYD_BUTTON_BACK,'name'=>'regresar' ,'style'=>'font-size:28','onclick'=>"javascript:window.location='$back'");
+		$prop3=array('type'=>'button','value'=>'Regresar','name'=>'regresar' ,'style'=>'font-size:28','onclick'=>"javascript:window.location='$back'");
 		$prop4=array('type'=>'submit','value'=>RAPYD_BUTTON_SAVE,'name'=>'guardar', 'style'=>'font-size:28');
 
 		$form= '<center><div class="alert">'.$rform->error_string.'</div><div id="envform" style=" font-family:Verdana, Arial, Helvetica, sans-serif;font-size:28;">';

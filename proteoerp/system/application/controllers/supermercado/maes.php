@@ -113,7 +113,7 @@ class maes extends Controller {
 			<div class='line'></div>\n<br><br><br>\n";
 		$this->load->view('rapyd/tmpsolo', $content);
 	}
-	<?php
+
 	function dataedit1($status='',$id='' ) {
 		$this->rapyd->uri->keep_persistence();
 		$this->rapyd->load('dataedit2','dataobject');

@@ -27,6 +27,7 @@ class sclifyco extends validaciones {
 		
 		
 		$this->rapyd->load("datafilter2","datagrid");
+		$this->rapyd->uri->keep_persistence();
 		
 		$link2=site_url('inventario/common/get_zona');
 		$link3=site_url('inventario/common/get_estados');
@@ -41,7 +42,7 @@ class sclifyco extends validaciones {
 		
 		$filter->contacto = new inputField("Contacto", "contacto");
 		$filter->contacto->size=30;
-		
+				
 		$filter->pais = new dropdownField("Pa&iacute;s","pais");
 		$filter->pais->style = "width:150px";
 		$filter->pais->option("","Seleccionar");
@@ -68,6 +69,12 @@ class sclifyco extends validaciones {
 		$filter->municipios->option("","Seleccione una Modelo");
 		$filter->municipios->options("SELECT codigo, nombre FROM municipio ORDER BY codigo");
 		$filter->municipios->group = "Ubicaci&oacute;n";
+		
+		$filter->grupo = new dropdownField("Grupo","grupo");
+		$filter->grupo->style = "width:150px";
+		$filter->grupo->option("","Seleccionar");
+		$filter->grupo->options("SELECT grupo, gr_desc FROM grcl ORDER BY grupo");
+		$filter->grupo->group = "Grupo";
 					
 		$filter->buttons("reset","search");
 		$filter->build();
@@ -272,11 +279,11 @@ script;
 		$edit->grupo->maxlength = 4;
 		
 		$lriffis='<a href="javascript:consulrif(\'rifci\');" title="Consultar RIF en el SENIAT" onclick="">Consultar RIF en el SENIAT</a>';
-		$edit->rifci = new inputField("RIF o Cedula Identidad", "rifci");
-		$edit->rifci->rule = "trim|strtoupper|required|callback_chci";
-		$edit->rifci->maxlength =13;
+		$edit->rifci = new inputField("Ruc", "rifci");
+		$edit->rifci->rule = "trim|strtoupper|required";
+		$edit->rifci->maxlength =50;
 		//$edit->rifci->append($lriffis);
-		$edit->rifci->size =18;
+		$edit->rifci->size =30;
 		
 		$edit->dire11 = new inputField("Direcci&oacute;n","dire11");
 		$edit->dire11->rule = "trim";
@@ -353,6 +360,7 @@ script;
 			$edit->estado->option("","Seleccione una Zona");
 		}	
 		$edit->estado->group = "Ubicaci&oacute;n";
+		$edit->estado->options("SELECT codigo, nombre FROM estado ORDER BY codigo");
 		$edit->estado->onchange = "get_municipios();";
 		
 		
@@ -363,7 +371,8 @@ script;
 			$edit->municipios->options("SELECT codigo, nombre FROM municipio WHERE estado='$estado' ORDER BY codigo");
 		}else{
 			$edit->municipios->option("","Seleccione una Modelo");
-		}	
+		}
+		$edit->municipios->options("SELECT codigo, nombre FROM municipio ORDER BY codigo");
 		$edit->municipios->group = "Ubicaci&oacute;n";
 						
 		$edit->repre  = new inputField("Representante Legal", "repre");

@@ -161,10 +161,11 @@ class Kardex extends Controller {
 			$grid->column("Env&iacute;a"      ,"envia" );
 			$grid->column("Recibe"            ,"recibe");
 			$grid->column("Cantidad"          ,"<number_format><#cantidad#>|2|,|.</number_format>",'align=right');
+			$grid->column("Fracción"          ,"<number_format><#totcant#>|2|,|.</number_format>",'align=right');
 			$grid->column("Fecha"             ,"<dbdate_to_human><#fecha#></dbdate_to_human>",'align=center');
 			$grid->column("Observaci&oacute;n","observ1");
 			$grid->column("Costo"             ,"<number_format><#costo#>|2|,|.</number_format>",'align=right');
-			$grid->db->select(array('a.numero','b.envia' , 'b.recibe', 'a.cantidad', 'b.fecha', 'b.observ1', 'a.costo'));  
+			$grid->db->select(array('a.numero','b.envia' , 'b.recibe', 'a.cantidad', 'b.fecha', 'b.observ1', 'a.costo','a.totcant'));  
 			$grid->db->from('ittran a');
 			$grid->db->join('tran b','a.numero=b.numero','LEFT');
 			//$grid->db->where("b.fecha=$fecha AND a.codigo='$codigo' ");
