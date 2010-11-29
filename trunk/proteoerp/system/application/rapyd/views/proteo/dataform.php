@@ -77,7 +77,7 @@
         </tr>
 <?php if(isset($message)):?>
         <tr>
-          <td colspan="2" class="tablerow"><?php echo $message?></td>
+          <td colspan="2" class="tablerow"><?php echo $message?> <div style="float:left"></div></td>
         </tr>
 <?php endif;?>
       </table>
@@ -85,7 +85,7 @@
       </div>
       <div class="mainfooter">
         <div>
-          <div style="float:left"><?php echo $container_bl ?></div>
+          <div style="float:left"><?php echo  $container_bl ?></div>
           <div style="float:right"><?php echo $container_br?></div>
         </div><div style="clear:both;"></div>
       </div>

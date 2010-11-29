@@ -23,13 +23,17 @@ class Instalador extends Controller {
 		// chat.php
 		// consulcajas.php
 		// dashboard.php
+		// datalog.php
 		// desarrollo.php
 		// ejecutasql.php
+		// forma.php
 		// formatos.php
 
 		$mSQL="ALTER TABLE `formatos` ADD `proteo` TEXT NULL AFTER `forma`";
 		$this->db->simple_query($mSQL);
 		$mSQL="ALTER TABLE `formatos` ADD `harbour` TEXT NULL AFTER `proteo`";
+		$this->db->simple_query($mSQL);
+		$mSQL="ALTER TABLE `formatos`  ADD COLUMN `tcpdf` TEXT NULL AFTER `forma`";
 		$this->db->simple_query($mSQL);
 	
 		// frames.php
@@ -48,6 +52,7 @@ class Instalador extends Controller {
 		$mSQL="ALTER TABLE `reportes` ADD `harbour` TEXT NULL";
 		$this->db->simple_query($mSQL);
 	
+		// rpcserver.php
 		// supermercadosant.php
 		// validaciones.php
 		// welcome.php
@@ -118,18 +123,81 @@ class Instalador extends Controller {
 	
 		// gpartida.php
 		// partida.php
+
+		$mSQL="CREATE TABLE `obpa` (
+			 `codigo` char(4) NOT NULL DEFAULT '',
+			`descrip` varchar(40) DEFAULT NULL,
+			`grupo` char(4) DEFAULT NULL,
+			`comision` decimal(5,2) DEFAULT NULL,
+			`nomgrup` varchar(30) DEFAULT NULL,
+			PRIMARY KEY (`codigo`)
+			) ENGINE=MyISAM DEFAULT CHARSET=latin1";
+		$this->db->simple_query($mSQL);
+
+		$mSQL="CREATE TABLE `obgp` (
+			`grupo` char(4) NOT NULL DEFAULT '',
+			`nombre` varchar(30) DEFAULT '0',
+			PRIMARY KEY (`grupo`)
+			) ENGINE=MyISAM DEFAULT CHARSET=latin1";
+		$this->db->simple_query($mSQL);
+	
 		// casi.php
 
 		$mSQL='ALTER TABLE itcasi ADD id INT AUTO_INCREMENT PRIMARY KEY';
                 $this->db->simple_query($mSQL);
 	
 		// cierre.php
+
+                $mSQL="CREATE TABLE IF NOT EXISTS `cplacierre` (
+                  `id` int(20) unsigned NOT NULL AUTO_INCREMENT,
+                  `anno` int(10) DEFAULT NULL,
+                  `cuenta` varchar(250) DEFAULT NULL,
+                  `descrip` varchar(250) DEFAULT NULL,
+                  `monto` decimal(15,2) DEFAULT NULL,
+                  PRIMARY KEY (`id`),
+                  UNIQUE KEY `ac` (`anno`,`cuenta`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Cierres contables'"
+                $this->db->simple_query($mSQL);
+        
 		// configurar.php
+		// cplacierre.php
+
+		$mSQL="CREATE TABLE IF NOT EXISTS `cplacierre` (
+		  `id` int(20) unsigned NOT NULL AUTO_INCREMENT,
+		  `anno` int(10) DEFAULT NULL,
+		  `cuenta` varchar(250) DEFAULT NULL,
+		  `descrip` varchar(250) DEFAULT NULL,
+		  `monto` decimal(15,2) DEFAULT NULL,
+		  PRIMARY KEY (`id`),
+		  UNIQUE KEY `ac` (`anno`,`cuenta`)
+		) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Cierres contables'";
+		$this->db->simple_query($mSQL);
+	
 		// cpla.php
 		// estadosf.php
 		// generar.php
+
+		$mSQL="CREATE TABLE IF NOT EXISTS `cplacierre` (
+		  `id` int(20) unsigned NOT NULL AUTO_INCREMENT,
+		  `anno` int(10) DEFAULT NULL,
+		  `cuenta` varchar(250) DEFAULT NULL,
+		  `descrip` varchar(250) DEFAULT NULL,
+		  `monto` decimal(15,2) DEFAULT NULL,
+		  PRIMARY KEY (`id`),
+		  UNIQUE KEY `ac` (`anno`,`cuenta`)
+		) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Cierres contables'";
+		$this->db->simple_query($mSQL);
+	
 		// metodos.php
 		// reglas.php
+		// adjuntos.php
+		// comentarios.php
+		// contenedor.php
+		// definiciones.php
+		// eventos.php
+		// partidas.php
+		// status.php
+		// tipos.php
 		// modulos.php
 		// tablas.php
 		// aumento.php
@@ -147,6 +215,32 @@ class Instalador extends Controller {
 		ENGINE=MyISAM
 		ROW_FORMAT=DEFAULT";
 
+		$this->db->simple_query($mSQL);
+	
+		// sinv.php
+
+		$mSQL='ALTER TABLE `sinv` DROP PRIMARY KEY';
+		$this->db->simple_query($mSQL);
+		$mSQL='ALTER TABLE `sinv` ADD UNIQUE `codigo` (`codigo`)';
+		$this->db->simple_query($mSQL);
+		$mSQL='ALTER TABLE sinv ADD id INT AUTO_INCREMENT PRIMARY KEY';
+		$this->db->simple_query($mSQL);
+		$mSQL="ALTER TABLE `sinv`  ADD COLUMN `descufijo` DECIMAL(6,3) NULL DEFAULT '0.000' AFTER `id`";
+		$this->db->simple_query($mSQL);
+
+		$mSQL="CREATE TABLE IF NOT EXISTS `sinvcombo` (
+		`combo` char(15) NOT NULL,
+		`codigo` char(15) NOT NULL default '',
+		`descrip` char(30) default NULL,
+		`cantidad` decimal(10,3) default NULL,
+		`precio` decimal(15,2) default NULL,
+		`transac` char(8) default NULL,
+		`estampa` date default NULL,
+		`hora` char(8) default NULL,
+		`usuario` char(12) default NULL,
+		`costo` decimal(17,2) default '0.00',
+		PRIMARY KEY  (`combo`,`codigo`)
+		) ENGINE=MyISAM DEFAULT CHARSET=latin1";
 		$this->db->simple_query($mSQL);
 	
 		// agregareg.php
@@ -168,9 +262,13 @@ class Instalador extends Controller {
 	
 		// bmov.php
 		// bmovshow.php
+		// botr.php
+		// ccont.php
 		// civa.php
 		// compras.php
+		// conci.php
 		// conforch.php
+		// contra.php
 		// cruc.php
 		// cuenco.php
 
@@ -323,6 +421,59 @@ class Instalador extends Controller {
 		$data[]=array('metodo'=>'wlvexcelpdvfiscalq1','activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas PDV Quincenta 1 Fiscal');
 		$data[]=array('metodo'=>'wlvexcelpdvfiscalq2','activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas PDV Quincenta 2 Fiscal');
 		$data[]=array('metodo'=>'wlvexcel'           ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas'          );
+		$data[]=array('metodo'=>'wlvexcelsucu'       ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas por Sucursal');
+		$data[]=array('metodo'=>'wlcexcel'           ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Compras'         );
+		$data[]=array('metodo'=>'wlcsexcel'          ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Compras Supermercado');
+		$data[]=array('metodo'=>'wlvexcele'          ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas  ESPECIAL');
+		$data[]=array('metodo'=>'wlcexcele'          ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Compras ESPECIAL');
+		$data[]=array('metodo'=>'prorrata'           ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Prorrata'                 );
+		$data[]=array('metodo'=>'invresu'            ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Inventario'      );
+		
+		$data[]=array('metodo'=>'genecompras'     ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de compras COMPRAS' );
+		$data[]=array('metodo'=>'genegastos'      ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de compras GASTOS'  );
+		$data[]=array('metodo'=>'genecxp'         ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de compras CXP'     );
+		$data[]=array('metodo'=>'genesfac'        ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas Facturas' );
+		$data[]=array('metodo'=>'geneventasfiscal','activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas Fiscal PDV'   );
+		$data[]=array('metodo'=>'genesfmay'       ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas Facturas al mayor' );
+		$data[]=array('metodo'=>'genesmov'        ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas CXC'      );
+		$data[]=array('metodo'=>'geneotin'        ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas O.Ingresos');
+		$data[]=array('metodo'=>'generest'        ,'activo'=>'N','tipo'=>'G' ,'nombre'  =>'Generar Libro de ventas Restaurante');
+		$data[]=array('metodo'=>'genehotel'       ,'activo'=>'N','tipo'=>'G' ,'nombre'  =>'Generar Libro de ventas Hotel');
+		
+		foreach($data AS $algo){
+			$mSQL = $this->db->insert_string('libros', $algo);
+			$this->db->simple_query($mSQL);
+		}
+		$this->db->simple_query($mSQL);
+		echo $uri = anchor('finanzas/libros/configurar','Configurar');
+	
+		// libroscalore.php
+
+		$mSQL="CREATE TABLE IF NOT EXISTS `libros` (
+		  `metodo` varchar(50) NOT NULL default '',
+		  `nombre` varchar(150) default NULL,
+		  `activo` char(1) default NULL,
+		  `tipo` char(1) default NULL,
+		  `estampa` timestamp NOT NULL default CURRENT_TIMESTAMP,
+		  `fgenera` char(6) default NULL,
+		  PRIMARY KEY  (`metodo`)
+		) ENGINE=MyISAM DEFAULT CHARSET=latin1";   
+		$this->db->simple_query($mSQL);
+		
+		$mSQL="ALTER TABLE `siva` ADD `hora` TIME DEFAULT '0' NULL";
+		$this->db->simple_query($mSQL);
+		
+		$mSQL="ALTER TABLE `siva` CHANGE `clipro` `clipro` VARCHAR(12) NULL";
+		$this->db->simple_query($mSQL);
+		
+		$data[]=array('metodo'=>'wlvexcelpdv'        ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas PDV'      );
+		$data[]=array('metodo'=>'wlvexcelpdvq1'      ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas PDV Quincenta 1');
+		$data[]=array('metodo'=>'wlvexcelpdvq2'      ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas PDV Quincenta 2');
+		$data[]=array('metodo'=>'wlvexcelpdvfiscal'  ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas PDV Fiscal');
+		$data[]=array('metodo'=>'wlvexcelpdvfiscalq1','activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas PDV Quincenta 1 Fiscal');
+		$data[]=array('metodo'=>'wlvexcelpdvfiscalq2','activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas PDV Quincenta 2 Fiscal');
+		$data[]=array('metodo'=>'wlvexcel'           ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas'          );
+		$data[]=array('metodo'=>'wlvexcel2'          ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas no Agrupadas'          );
 		$data[]=array('metodo'=>'wlvexcelsucu'       ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas por Sucursal');
 		$data[]=array('metodo'=>'wlcexcel'           ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Compras'         );
 		$data[]=array('metodo'=>'wlcsexcel'          ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Compras Supermercado');
@@ -528,9 +679,7 @@ class Instalador extends Controller {
 		// mgas.php
 		// movproveedores.php
 		// obco.php
-		// oconceptos.php
 		// ords.php
-		// otrosconceptoscontable.php
 		// prmo.php
 		// provoca.php
 		// resumendiario.php
@@ -623,6 +772,7 @@ class Instalador extends Controller {
 		// ajusinv.php
 		// anticipos.php
 		// barras.php
+		// barraspos.php
 		// cambioprecio.php
 		// cambiosinv.php
 		// catalogo.php
@@ -657,6 +807,7 @@ class Instalador extends Controller {
 		// conversiones.php
 		// crudsamples.php
 		// dpto.php
+		// etiqueta_sinv.php
 		// fallas.php
 		// fisicos.php
 		// fotos.php
@@ -686,6 +837,32 @@ class Instalador extends Controller {
 		$this->db->simple_query($mSQL);
 		$mSQL='ALTER TABLE `sinvfot` ADD `principal` VARCHAR(3) NULL';
 		$this->db->simple_query($mSQL);
+	
+		// gfotos.php
+
+		$mSQL="CREATE TABLE IF NOT EXISTS `itsinvlist` (
+		`id` INT(8) NOT NULL AUTO_INCREMENT,
+		`numero` INT(8) NULL DEFAULT NULL,
+		`codigo` CHAR(15) NULL DEFAULT NULL COLLATE 'utf8_unicode_ci',PRIMARY KEY (`id`))
+		COLLATE='utf8_unicode_ci'
+		ENGINE=MyISAM
+		ROW_FORMAT=DEFAULT";
+
+
+		$mSQL2="CREATE TABLE IF NOT EXISTS`sinvlist` (
+		`numero` INT(8) NOT NULL AUTO_INCREMENT,
+		`nombre` VARCHAR(50) NOT NULL COLLATE 'utf8_unicode_ci',
+		`fecha` DATE NOT NULL,
+		`concepto` TEXT NULL COLLATE 'utf8_unicode_ci',
+		`usuario` CHAR(50) NULL DEFAULT NULL COLLATE 'utf8_unicode_ci',
+		PRIMARY KEY (`numero`)
+		)
+		COLLATE='utf8_unicode_ci'
+		ENGINE=MyISAM
+		ROW_FORMAT=DEFAULT
+		";
+		$this->db->simple_query($mSQL);
+		$this->db->simple_query($mSQL2);
 	
 		// gproductos.php
 		// grup.php
@@ -809,6 +986,8 @@ $this->db->simple_query($mSQL);
 		) ENGINE=MyISAM DEFAULT CHARSET=latin1";
 		$this->db->simple_query($mSQL);
 	
+		// sinvpromo.php
+		// sinvprov.php
 		// sinvsant.php
 
 		$mSQL='ALTER TABLE `sinv` DROP PRIMARY KEY';
@@ -884,6 +1063,7 @@ $this->db->simple_query($mSQL);
 		// minfra.php
 		// noco.php
 		// nomina.php
+		// notabu.php
 		// pers.php
 
 		$mSQL1="ALTER TABLE `pers` ADD `email` VARCHAR(50) NULL";
@@ -909,6 +1089,54 @@ $this->db->simple_query($mSQL);
 		// prof.php
 		// promediosueldos.php
 		// rpers.php
+		// cargasinv.php
+
+//		$mSQL="DROP TABLE sinvactu";
+//		$this->db->query($mSQL);
+		$mSQL='
+			CREATE TABLE `sinvactu` (
+  `codigo` varchar(15) NOT NULL default "",
+  `descrip` varchar(45) default NULL,
+  `clave` varchar(8) default NULL,
+  `descrip2` varchar(45) default NULL,
+  `antdescrip2` varchar(45) default NULL,
+  `grupo` varchar(4) default NULL,
+  `costo` decimal(13,2) unsigned default NULL,
+  `precio1` decimal(13,2) unsigned default NULL,
+  `antcosto` decimal(13,2) unsigned default NULL,
+  `antprecio1` decimal(13,2) unsigned default NULL,
+  `iva` decimal(6,2) unsigned default NULL,
+  `antiva` decimal(6,2) unsigned default NULL,
+  `precio2` decimal(13,2) default NULL,
+  `precio3` decimal(13,2) default NULL,
+  `precio4` decimal(13,2) unsigned default NULL,
+  `base1` decimal(13,2) unsigned default NULL,
+  `base2` decimal(13,2) default NULL,
+  `base3` decimal(13,2) unsigned default NULL,
+  `base4` decimal(13,2) unsigned default NULL,
+  `margen1` decimal(13,2) unsigned default NULL,
+  `margen2` decimal(13,2) unsigned default NULL,
+  `margen3` decimal(13,2) unsigned default NULL,
+  `margen4` decimal(13,2) unsigned default NULL,
+  `antdescrip` varchar(45) default NULL,
+  `antclave` varchar(8) default NULL,
+  `antgrupo` varchar(4) default NULL,
+  `antprecio2` decimal(13,2) unsigned default NULL,
+  `antprecio3` decimal(13,2) unsigned default NULL,
+  `antprecio4` decimal(13,2) unsigned default NULL,
+  `antbase1` decimal(13,2) unsigned default NULL,
+  `antbase2` decimal(13,2) unsigned default NULL,
+  `antbase3` decimal(13,2) unsigned default NULL,
+  `antbase4` decimal(13,2) unsigned default NULL,
+  `antmargen1` decimal(13,2) unsigned default NULL,
+  `antmargen2` decimal(13,2) unsigned default NULL,
+  `antmargen3` decimal(13,2) unsigned default NULL,
+  `antmargen4` decimal(13,2) unsigned default NULL,
+  PRIMARY KEY  (`codigo`)
+)
+	';
+		$this->db->query($mSQL);
+	
 		// dispmoviles.php
 		// exportar.php
 		// importar.php
@@ -943,6 +1171,7 @@ $this->db->simple_query($mSQL);
 		// efisico.php
 		// enviacaja.php
 		// envivo.php
+		// etiqueta_maes.php
 		// exportar.php
 		// fami.php
 		// fisicos.php
@@ -980,6 +1209,7 @@ $this->db->simple_query($mSQL);
 		// maess.php
 		// poscuadre.php
 		// posfact.php
+		// posfactsan.php
 		// precioclient.php
 		// productos.php
 		// restaurante.php
@@ -1009,9 +1239,9 @@ $this->db->simple_query($mSQL);
 		// ventas.php
 		// accesos.php
 
-		//for($i=1;$i<=65535;$i++)
-		//	$this->db->simple_query("INSERT INTO serie SET hexa=HEX($i)");
-		
+		for($i=1;$i<=65535;$i++)
+			$this->db->simple_query("INSERT INTO serie SET hexa=HEX($i)");
+		echo "hola mundo";
 		//$mSQL='ALTER TABLE `intramenu` DROP PRIMARY KEY';
 		//$this->db->simple_query($mSQL);
 		//$mSQL='ALTER TABLE intramenu ADD id INT AUTO_INCREMENT PRIMARY KEY';
@@ -1057,6 +1287,22 @@ $this->db->simple_query($mSQL);
 		$this->db->simple_query($mSQL);
 	
 		// conec.php
+
+		$mSQL="CREATE TABLE `tiketconec` (
+		  `id` int(11) NOT NULL auto_increment,
+		  `cliente` char(5) default NULL,
+		  `phtml` int(20) default NULL,
+		  `url` varchar(100) default NULL,
+		  `sistema` varchar(50) default NULL,
+		  `basededato` varchar(20) default NULL,
+		  `puerto` int(3) default NULL,
+		  `usuario` varchar(20) default NULL,
+		  `clave` varchar(20) default NULL,
+		  `observacion` text,
+		  PRIMARY KEY  (`id`)
+		) ENGINE=MyISAM AUTO_INCREMENT=0 DEFAULT CHARSET=latin1";
+		$this->db->simple_query($mSQL);
+	
 		// directorio.php
 
 		$mSQL="CREATE TABLE `datasis`.`directorio` (`id` INT AUTO_INCREMENT, `cedula` VARCHAR (13), `cliente` VARCHAR (30), `proveed` VARCHAR (30),`empleado` VARCHAR (30), `nombres` VARCHAR (50), `apellidos` VARCHAR (50), `edad` VARCHAR (2), `sexo` VARCHAR (1), `telefono1` VARCHAR (20), `telefono2` VARCHAR (20), `telefono3` VARCHAR (20),`direc1` VARCHAR (70), `direc2` VARCHAR (70), `profesion` VARCHAR (30), `cargo` VARCHAR (30), `fnacimiento` VARCHAR (20),`email` VARCHAR (50),`email2` VARCHAR (50),`email3` VARCHAR (50), PRIMARY KEY(`id`)) TYPE = MyISAM"; 
@@ -1074,6 +1320,7 @@ $this->db->simple_query($mSQL);
 		  PRIMARY KEY  (`nombre`,`modulo`)
 		) ENGINE=MyISAM DEFAULT CHARSET=latin1";
 		$this->db->simple_query($mSQL);
+		
 	
 		// internet.php
 
@@ -1214,10 +1461,9 @@ $this->db->simple_query($mSQL);
 		// trabajo.php
 		// usuarios.php
 
-		$mSQL="ALTER TABLE `usuario` ADD `us_clave1` CHAR(12) NULL AFTER `us_clave`";
+		$mSQL="ALTER TABLE `usuario`  ADD COLUMN `almacen` CHAR(4) NULL";
 		$this->db->simple_query($mSQL);
-		$mSQL="UPDATE usuario SET us_clave1=us_clave";
-		$this->db->simple_query($mSQL);
+		echo "Agregado campo almacen";
 	
 		// valores.php
 		// xml.php
@@ -1267,6 +1513,7 @@ $this->db->simple_query($mSQL);
 		$this->db->simple_query($mSQL);
 	
 		// dine.php
+		// distrito.php
 		// estados.php
 		// exportar.php
 		// factura.php
@@ -1348,8 +1595,15 @@ $this->db->simple_query($mSQL);
 		// prueba.php
 		// rcaj.php
 
-		$mSQL="CREATE TABLE `itrcaj` (`numero` VARCHAR (8), `tipo` VARCHAR (15), `recibido` DECIMAL (17,2), `sistema` DECIMAL (17,2), `diferencia` DECIMAL (17,2),PRIMARY KEY (`numero`, `tipo`))";		
+		$mSQL="CREATE TABLE `itrcaj` (`numero` VARCHAR (8), `tipo` VARCHAR (15), `recibido` DECIMAL (17,2), `sistema` DECIMAL (17,2), `diferencia` DECIMAL (17,2),PRIMARY KEY (`numero`, `tipo`))";
 		$this->db->simple_query($mSQL);
+		$mSQL="ALTER TABLE `itrcaj`  ADD COLUMN `cierre` CHAR(1) NOT NULL DEFAULT 'N' AFTER `tipo`";
+		$this->db->simple_query($mSQL);
+		$mSQL="ALTER TABLE `itrcaj`  DROP PRIMARY KEY,  ADD PRIMARY KEY (`numero`, `tipo`, `cierre`)";
+		$this->db->simple_query($mSQL);
+		$mSQL="ALTER TABLE `sfpa`  ADD COLUMN `cierre` CHAR(8) DEFAULT '' AFTER `hora`";
+		$this->db->simple_query($mSQL);
+
 	
 		// requisitos.php
 		// scaj.php
@@ -1415,6 +1669,19 @@ $this->db->simple_query($mSQL);
 		$this->db->simple_query($mSQL);
 	
 		// sclifyco.php
+
+		$seniat='http://www.seniat.gov.ve/BuscaRif/BuscaRif.jsp';
+		$mSQL="INSERT INTO valores (nombre,valor,descrip) VALUES ('CONSULRIF','$seniat','Pagina de consulta de rif del seniat') ON DUPLICATE KEY UPDATE valor='$seniat'";
+		$this->db->simple_query($mSQL);
+		$mSQL='ALTER TABLE `scli` ADD `modifi` TIMESTAMP DEFAULT CURRENT_TIMESTAMP NULL AFTER `mensaje`';
+		$this->db->simple_query($mSQL);
+		$mSQL='ALTER TABLE `scli` DROP PRIMARY KEY, ADD UNIQUE `cliente` (`cliente`)';
+		$this->db->simple_query($mSQL);
+		$mSQL='ALTER TABLE scli ADD id INT AUTO_INCREMENT PRIMARY KEY';
+		$this->db->simple_query($mSQL);
+                
+	
+		// scliperu.php
 
 		$seniat='http://www.seniat.gov.ve/BuscaRif/BuscaRif.jsp';
 		$mSQL="INSERT INTO valores (nombre,valor,descrip) VALUES ('CONSULRIF','$seniat','Pagina de consulta de rif del seniat') ON DUPLICATE KEY UPDATE valor='$seniat'";

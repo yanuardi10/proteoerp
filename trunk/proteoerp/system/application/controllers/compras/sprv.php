@@ -27,8 +27,8 @@ class Sprv extends validaciones {
 		$filter->nombre->maxlength=40;
 
 		$filter->rif = new inputField('Rif', 'rif');
-		$filter->rif->size=13;
-		$filter->rif->maxlength=12;
+		$filter->rif->size=18;
+		$filter->rif->maxlength=30;
 
 		$filter->cuenta = new inputField('Cuenta contable', 'cuenta');
 		$filter->cuenta->size=13;
@@ -168,18 +168,18 @@ class Sprv extends validaciones {
 		$edit->proveed->group = 'Datos del Proveedor';
 
 		$edit->nombre = new inputField('Nombre', 'nombre');
-		$edit->nombre->rule = 'trim|strtoupper|required';
+		$edit->nombre->rule = 'trim|strtoupper|required|callback_chci';
 		$edit->nombre->size = 41;
 		$edit->nombre->maxlength =40;
 		$edit->nombre->group = "Datos del Proveedor";
 
 		$lriffis='<a href="javascript:consulrif();" title="Consultar RIF en el SENIAT" onclick="">Consultar RIF en el SENIAT</a>';
-		$edit->rif =  new inputField("RIF o C&eacute;dula", "rif");
+		$edit->rif =  new inputField("Rif", "rif");
 		//$edit->rif->mode="autohide";
-		$edit->rif->rule = "trim|strtoupper|required|callback_chrif";
+		$edit->rif->rule = "trim|strtoupper|required|callback_chci";
 		$edit->rif->append($lriffis);
-		$edit->rif->maxlength=12;
-		$edit->rif->size = 13;
+		$edit->rif->maxlength=20;
+		$edit->rif->size =18;
 		$edit->rif->group = "Datos del Proveedor";
 
 		//$edit->nit = new inputField("NIT", "nit");

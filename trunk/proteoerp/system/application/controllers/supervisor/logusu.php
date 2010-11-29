@@ -41,7 +41,10 @@ class logusu extends Controller {
 		$filter->buttons("reset","search");
 		$filter->build();
     
+		$tabla='';
+		
 		if($this->rapyd->uri->is_set("search") AND $filter->is_valid()){
+			
 			$grid = new DataGrid("Resultados");                       
 			$grid->per_page = 15;
     	
@@ -53,9 +56,16 @@ class logusu extends Controller {
     	    		
 			$grid->build();
  			//echo $grid->db->last_query();
-			$tabla=$grid->output;
-		}else{
-			$tabla='';
+			
+			$SQL=$grid->db->last_query();
+			$mSQL_1=$this->db->query($SQL);
+			$row = $mSQL_1->row();
+			
+			IF($mSQL_1->num_rows()>0){
+				$tabla=$grid->output;	
+			}else{
+				$tabla='No existen registros';
+			}
 		}
 		
 		$data['content'] = $filter->output.$tabla;

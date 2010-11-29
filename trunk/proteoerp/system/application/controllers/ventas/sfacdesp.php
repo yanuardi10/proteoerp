@@ -30,6 +30,7 @@ class sfacdesp extends Controller {
 		$filter->db->join('sfac AS a','e.numa=a.numero AND e.tipoa=a.tipo_doc');
 		//$filter->db->join('snot AS c' ,'a.numero=c.factura','LEFT');
 		$filter->db->join('vend AS d' ,'a.vd=d.vendedor');
+		//$filter->db->join('sfac AS f','a.numero=e.factura','LEFT');
 		$filter->db->groupby('e.numa');
 		$filter->db->where('a.fdespacha IS NULL');
 		$filter->db->where('a.tipo_doc','F');
@@ -202,6 +203,7 @@ class sfacdesp extends Controller {
 		$grid->column("Despachado", "<ractivo><#despacha#>|<#numa#>|<#codigoa#></ractivo>",'align="center"');
 		$grid->build();
 		$tabla=$grid->output;
+		//echo $grid->db->last_query();
 
 		$script='';
 		$url=site_url('ventas/sfacdesp/activar');
