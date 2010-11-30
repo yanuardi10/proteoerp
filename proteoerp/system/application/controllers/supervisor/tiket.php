@@ -341,6 +341,7 @@ class Tiket extends Controller {
 
 	function _traeticketrpc($server_url,$parametros,$sucursal='N/A'){
 		$this->load->library('xmlrpc');
+		$this->xmlrpc->xmlrpc_defencoding=$this->config->item('charset');
 
 		$this->xmlrpc->server($server_url, 80);
 		$this->xmlrpc->method('ttiket');
@@ -355,6 +356,8 @@ class Tiket extends Controller {
 			$respuesta=$this->xmlrpc->display_response();
 			foreach($respuesta AS $res){
 				$arr=unserialize($res);
+				foreach($arr AS $i=>$val)
+				    $arr[$i]=base64_decode($val);
 				$arr['idt']       =$arr['id'];
 				$arr['sucursal']  =$sucursal;
 				//$arr['asignacion']='KATHI';
