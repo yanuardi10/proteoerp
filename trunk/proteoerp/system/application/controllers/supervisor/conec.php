@@ -34,7 +34,8 @@ class conec extends Controller {
 		$filter->db->from('tiketconec AS a');   
 		$filter->db->join('scli AS b','a.cliente=b.cliente');
 
-		$filter->cliente = new inputField('Cliente','a.cliente');
+		$filter->cliente = new inputField('Cliente','cliente');
+		$filter->cliente->db_name="a.cliente";
 		$filter->cliente->size=20;
 		$filter->cliente->append($boton);
 
