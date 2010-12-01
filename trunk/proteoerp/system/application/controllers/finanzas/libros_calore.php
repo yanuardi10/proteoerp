@@ -1,7 +1,7 @@
 <?php if (!defined('BASEPATH')) exit('No direct script access allowed');
-class Libros extends Controller {
+class Libros_calore extends Controller {
 
-	function Libros() {
+	function Libros_calore() {
 		parent::Controller();
 		$this->load->library("rapyd");
 		$this->datasis->modulo_id(504,1);
