@@ -227,14 +227,14 @@ class Tiket extends Controller {
 	function _post_insert($do) {
 		$pertenece=$do->get('pertenece');
 		$mSQL="UPDATE tiket SET estado='P', actualizado=NOW() WHERE id=$pertenece";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 	}
 
 	function _post_update($do) {
 		$pertenece=$do->get('pertenece');
 		if(empty($pertenece)) $pertenece=$do->get('id');
 		$mSQL="UPDATE tiket SET actualizado=NOW() WHERE id=$pertenece";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 	}
 
 	function _pre_del($do) {
@@ -364,7 +364,7 @@ class Tiket extends Controller {
 				unset($arr['id']);
 
 				$mSQL = $this->db->insert_string('tiketc', $arr);
-				$rt=$this->db->simple_query($mSQL);
+				$rt=var_dum($this->db->simple_query($mSQL));
 				if($rt===FALSE){ $error++; memowrite($mSQL,'tiketc');}
 			}
 			if($error==0) $rt='Transferencia Correcta'; else $rt='Hubo algunos problemas en la insercion se genero un centinela';
@@ -386,7 +386,7 @@ class Tiket extends Controller {
 		  PRIMARY KEY  (`id`),
 		  KEY `id` (`id`)
 		) ENGINE=MyISAM AUTO_INCREMENT=10 DEFAULT CHARSET=latin1";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 	}
 }
 ?>

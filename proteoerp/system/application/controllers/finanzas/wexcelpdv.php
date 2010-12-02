@@ -10,19 +10,19 @@
 		
 		// ARREGLA SIVA PORSIA
 		$mSQL = "UPDATE siva SET impuesto=0, geneimpu=0, exento=gtotal, stotal=gtotal, general=0 where geneimpu<0 and general>=0 ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		$mSQL = "UPDATE siva SET geneimpu=0, exento=exento+general, stotal=exento+general, general=0 WHERE geneimpu=0 and general<0  ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		$mSQL = "UPDATE club SET cedula=CONCAT('V',cedula) WHERE MID(cedula,1,1) IN ('0','1','2','3','4','5','6','7','8','9')  ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		
 		// TRATA DE PONER FACTURA AFECTADA DESDE FMAY
 		$mSQL = "UPDATE siva a JOIN fmay b ON a.numero=b.numero AND a.fuente='FA' AND b.tipo='D' AND a.fecha=b.fecha SET a.referen=presup WHERE  EXTRACT(YEAR_MONTH FROM a.fechal)=$mes  ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		
 		// PONE NRO FISCAL EN SIVA
 		//$mSQL = "UPDATE siva a JOIN fmay b ON a.numero=b.numero AND a.fuente='FA' AND b.tipo='D' AND a.fecha=b.fecha SET a.referen=presup WHERE  EXTRACT(YEAR_MONTH FROM a.fechal)=$mes  ";
-		//$this->db->simple_query($mSQL);	
+		//var_dum($this->db->simple_query($mSQL));	
 		
 		// PARA HACERLO MENSUAL
 		$mSQL ="SELECT 

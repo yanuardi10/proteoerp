@@ -188,7 +188,7 @@ function asig(){
 	
 	function instalar(){
 		$mSQL="ALTER TABLE asig ADD PRIMARY KEY (codigo);";
-		$this->db->simple_query($mSQL);	
+		var_dum($this->db->simple_query($mSQL));	
 	}
 }
 ?>

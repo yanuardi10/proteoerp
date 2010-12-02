@@ -132,9 +132,9 @@ class sfacdesp extends Controller {
 		foreach($_POST['despacha'] as $fila){
 			$usuario = $this->session->userdata('usuario');
 			$mSQL="UPDATE sitems SET despacha='S', fdespacha=CURDATE(), udespacha='$usuario' WHERE numa='$fila' AND tipoa='F' ";
-			$this->db->simple_query($mSQL);
+			var_dum($this->db->simple_query($mSQL));
 			$mSQL="UPDATE sfac SET fdespacha=CURDATE(), udespacha='$usuario' WHERE numero='$fila' AND tipo_doc='F' ";
-			$this->db->simple_query($mSQL);
+			var_dum($this->db->simple_query($mSQL));
 		}
 		redirect("ventas/sfacdesp/filteredgrid/search/osp");
 	}
@@ -146,15 +146,15 @@ class sfacdesp extends Controller {
 		$usuario = $this->db->escape($this->session->userdata('usuario'));
 
 		$mSQL="UPDATE sitems SET despacha=if(despacha='S','I','S'), fdespacha=if(despacha='S',CURDATE(),null), udespacha=$usuario WHERE codigoa=$codigo AND numa=$numero AND tipoa='F' ";
-		$a   = $this->db->simple_query($mSQL);
+		$a   = var_dum($this->db->simple_query($mSQL));
 		$mSQL="SELECT COUNT(*) FROM sitems AS a LEFT JOIN `itsnot` AS b ON `b`.`factura`=`a`.`numa` AND b.codigo=a.codigoa WHERE numa=$numero AND tipoa='F'  AND b.codigo IS NULL AND despacha<>'S'";
 		$can = $this->datasis->dameval($mSQL);
 		if($can==0){
 			$mSQL="UPDATE sfac SET fdespacha=CURDATE(), udespacha=$usuario WHERE numero=$numero AND tipo_doc='F'";
-			$this->db->simple_query($mSQL);
+			var_dum($this->db->simple_query($mSQL));
 		}
 		//$mSQL="UPDATE sfac SET fdespacha=CURDATE(), udespacha='$usuario' WHERE numero='$numero' AND tipo_doc='F' ";
-		//$b=$this->db->simple_query($mSQL);
+		//$b=var_dum($this->db->simple_query($mSQL));
 
 	}
 	function parcial($numero){

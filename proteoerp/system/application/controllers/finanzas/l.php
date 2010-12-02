@@ -157,10 +157,10 @@ class Libros extends Controller {
 
 		// ARREGLA SIVA PORSIA
 		$mSQL = "UPDATE siva SET impuesto=0, geneimpu=0, exento=gtotal, stotal=gtotal, general=0 where geneimpu<0 and general>=0 ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 
 		$mSQL = "UPDATE siva SET geneimpu=0, exento=exento+general, stotal=exento+general, general=0 WHERE geneimpu=0 and general<0  ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		$tasa = $this->datasis->traevalor('TASA');
 
 		$mSQL = "SELECT DISTINCT 
@@ -491,13 +491,13 @@ class Libros extends Controller {
 
 		// ARREGLA SIVA PORSIA
 		$mSQL = "UPDATE siva SET impuesto=0, geneimpu=0, exento=gtotal, stotal=gtotal, general=0 where geneimpu<0 and general>=0 ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 
 		$mSQL = "UPDATE siva SET geneimpu=0, exento=exento+general, stotal=exento+general, general=0 WHERE geneimpu=0 and general<0  ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 
 		$mSQL = "UPDATE club SET cedula=CONCAT('V',cedula) WHERE MID(cedula,1,1) IN ('0','1','2','3','4','5','6','7','8','9')  ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 
 
 		$mSQL ="SELECT 
@@ -1164,7 +1164,7 @@ class Libros extends Controller {
 		FROM costos AS a LEFT JOIN sinv AS b ON a.codigo=b.codigo  
 		WHERE EXTRACT(YEAR_MONTH FROM a.fecha)=$mes  AND MID(b.tipo,1,1)!='S' 
 		GROUP BY EXTRACT(YEAR_MONTH FROM a.fecha),a.codigo ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		
 		//Insertamos los del mes pasado que no tienen movimiento este mes
 		$this->db->simple_query("INSERT IGNORE INTO invresu (mes, codigo,descrip, inicial, compras,ventas, trans, fisico,notas,final, minicial, mcompras, mventas, mtrans, mfisico, mnotas, mfinal ) SELECT $mes, codigo, descrip, 0, 0,0,0,0,0,0,0,0,0,0,0,0,0 FROM invresu WHERE mes=$mesa");
@@ -1201,9 +1201,9 @@ class Libros extends Controller {
 
 		// ARREGLA SIVA PORSIA
 		$mSQL = "UPDATE siva SET impuesto=0, geneimpu=0, exento=gtotal, stotal=gtotal, general=0 where geneimpu<0 and general>=0 ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		$mSQL = "UPDATE siva SET geneimpu=0, exento=exento+general, stotal=exento+general, general=0 WHERE geneimpu=0 and general<0  ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 
 		$mSQL  = "
 		SELECT 

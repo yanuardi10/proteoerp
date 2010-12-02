@@ -553,7 +553,7 @@ class Contenedor extends validaciones {
 		  `cuerpo` text,
 		  PRIMARY KEY (`id`)
 		) ENGINE=MyISAM DEFAULT CHARSET=".$this->db->char_set;
-		var_dump($this->db->simple_query($mSQL));
+		var_dum($this->db->simple_query($mSQL));
 
 		$mSQL="CREATE TABLE `${prefijo}definiciones` (
 		  `id` int(7) NOT NULL AUTO_INCREMENT,
@@ -561,7 +561,7 @@ class Contenedor extends validaciones {
 		  `estructura` text,
 		  PRIMARY KEY (`id`)
 		) ENGINE=MyISAM DEFAULT CHARSET=".$this->db->char_set;
-		var_dump($this->db->simple_query($mSQL));
+		var_dum($this->db->simple_query($mSQL));
 
 		$mSQL="CREATE TABLE `${prefijo}contenedor` (
 		  `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -580,7 +580,7 @@ class Contenedor extends validaciones {
 		  `condiciones` text,
 		  PRIMARY KEY (`id`)
 		) ENGINE=MyISAM DEFAULT CHARSET=".$this->db->char_set." COMMENT='contenedor'";
-		var_dump($this->db->simple_query($mSQL));
+		var_dum($this->db->simple_query($mSQL));
 
 		$mSQL="CREATE TABLE `${prefijo}eventos` (
 		  `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -591,7 +591,7 @@ class Contenedor extends validaciones {
 		  `vence` date DEFAULT NULL,
 		  PRIMARY KEY (`id`)
 		) ENGINE=MyISAM DEFAULT CHARSET=".$this->db->char_set;
-		var_dump($this->db->simple_query($mSQL));
+		var_dum($this->db->simple_query($mSQL));
 
 		$mSQL="CREATE TABLE `${prefijo}imagenes` (
 		  `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -604,7 +604,7 @@ class Contenedor extends validaciones {
 		  `imagen` blob,
 		  PRIMARY KEY (`id`)
 		) ENGINE=MyISAM DEFAULT CHARSET=".$this->db->char_set;
-		var_dump($this->db->simple_query($mSQL));
+		var_dum($this->db->simple_query($mSQL));
 
 		$mSQL="CREATE TABLE `${prefijo}status` (
 		  `id` int(7) NOT NULL AUTO_INCREMENT,
@@ -613,7 +613,7 @@ class Contenedor extends validaciones {
 		  `descrip` varchar(50) DEFAULT '0',
 		  PRIMARY KEY (`id`)
 		) ENGINE=MyISAM DEFAULT CHARSET=utf8";
-		var_dump($this->db->simple_query($mSQL));
+		var_dum($this->db->simple_query($mSQL));
 
 		$mSQL="CREATE TABLE `${prefijo}tipos` (
 		  `id` int(7) NOT NULL AUTO_INCREMENT,
@@ -622,7 +622,7 @@ class Contenedor extends validaciones {
 		  `descrip` varchar(50) DEFAULT '0',
 		  PRIMARY KEY (`id`)
 		) ENGINE=MyISAM DEFAULT CHARSET=".$this->db->char_set;
-		var_dump($this->db->simple_query($mSQL));
+		var_dum($this->db->simple_query($mSQL));
 
 		$mSQL="CREATE TABLE `${prefijo}adjuntos` (
 		  `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -634,7 +634,7 @@ class Contenedor extends validaciones {
 		  `url` varchar(200) DEFAULT NULL,
 		  PRIMARY KEY (`id`)
 		) ENGINE=MyISAM DEFAULT CHARSET=".$this->db->char_set;
-		var_dump($this->db->simple_query($mSQL));
+		var_dum($this->db->simple_query($mSQL));
 
 		$mSQL="CREATE TABLE `${prefijo}montos` (
 		  `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -647,7 +647,7 @@ class Contenedor extends validaciones {
 		  `haber` decimal(19,0) DEFAULT '0',
 		  PRIMARY KEY (`id`)
 		) ENGINE=MyISAM DEFAULT CHARSET=".$this->db->char_set;
-		var_dump($this->db->simple_query($mSQL));
+		var_dum($this->db->simple_query($mSQL));
 
 		$mSQL="CREATE TABLE `${prefijo}partidas` (
 		  `codigo` varchar(15) NOT NULL DEFAULT '',
@@ -659,16 +659,16 @@ class Contenedor extends validaciones {
 		  `dacumu` varchar(5) DEFAULT NULL,
 		  PRIMARY KEY (`codigo`)
 		) ENGINE=MyISAM DEFAULT CHARSET=".$this->db->char_set;
-		var_dump($this->db->simple_query($mSQL));
+		var_dum($this->db->simple_query($mSQL));
 
 		$mSQL="ALTER TABLE `${prefijo}status`  CHANGE COLUMN `contenedor` `definicion` INT(7) NULL DEFAULT '0' AFTER `usuario`";
-		var_dump($this->db->simple_query($mSQL));
+		var_dum($this->db->simple_query($mSQL));
 
 		$mSQL="ALTER TABLE `${prefijo}tipos`  CHANGE COLUMN `contenedor` `definicion` INT(7) NULL DEFAULT '0' AFTER `usuario`";
-		var_dump($this->db->simple_query($mSQL));
+		var_dum($this->db->simple_query($mSQL));
 
 		$mSQL="ALTER TABLE `${prefijo}contenedor`  ADD COLUMN `definicion` INT(7) NULL DEFAULT '0' AFTER `derivado`;";
-		var_dump($this->db->simple_query($mSQL));
+		var_dum($this->db->simple_query($mSQL));
 
 	}
 

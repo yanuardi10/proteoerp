@@ -1045,7 +1045,7 @@ class sinvlist extends Controller {
 		ENGINE=MyISAM
 		ROW_FORMAT=DEFAULT
 		";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		$this->db->simple_query($mSQL2);
 	}
 }

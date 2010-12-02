@@ -251,7 +251,7 @@ class sinvpromo extends validaciones {
 			//$codigo=trim($codigo);
 			$mSQL='UPDATE sinvpromo SET margen='.$this->db->escape($margen).' WHERE codigo='.$this->db->escape($codigo);
 			//echo $mSQL;
-			$rt=$this->db->simple_query($mSQL);
+			$rt=var_dum($this->db->simple_query($mSQL));
 			echo ($rt)? 1 : 0;
 		}
 		echo 0;

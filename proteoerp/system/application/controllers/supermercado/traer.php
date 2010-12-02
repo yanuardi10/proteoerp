@@ -209,13 +209,13 @@ script;
 			$data=array('viefac'=>'fecha','viepag'=>'f_factura','vieite'=>'fecha');
 			foreach($data AS $tabla=>$fcampo){
 				$mSQL="DELETE FROM $tabla WHERE MID(caja,1,$cant)=$prefijo and $fcampo='$fecha'";
-				$this->db->simple_query($mSQL);
+				var_dum($this->db->simple_query($mSQL));
 			}
 			$lines = file('./uploads/ventas.sql');
 			foreach ($lines as $line_num => $line) {
 				if(substr($line,0,6)=='INSERT'){
 					$mSQL=str_replace('TEMPvie','vie',$line);
-					$this->db->simple_query($mSQL);
+					var_dum($this->db->simple_query($mSQL));
 				}
 			}
 			unlink('./uploads/ventas.zip');
@@ -286,7 +286,7 @@ script;
 		$data=array('viefac'=>'fecha','viepag'=>'f_factura','vieite'=>'fecha');
 		foreach($data AS $tabla=>$fcampo){
 			$mSQL="CREATE TEMPORARY TABLE `TEMP$tabla`  SELECT * FROM $tabla WHERE $fcampo='$fecha'";
-			$this->db->simple_query($mSQL);
+			var_dum($this->db->simple_query($mSQL));
 			$tables[]="TEMP$tabla";
 		}
 		$prefs = array(
@@ -312,9 +312,9 @@ script;
 		$this->load->dbutil();
 
 		$mSQL="CREATE TEMPORARY TABLE `TEMPdine`  SELECT * FROM dine WHERE fecha='$fecha'";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		$mSQL="CREATE TEMPORARY TABLE `TEMPitdine` SELECT b.* FROM dine AS a JOIN itdine AS b ON a.numero=b.numero WHERE fecha='$fecha'";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		
 		$tables=array('TEMPdine','TEMPitdine');
 
@@ -346,13 +346,13 @@ script;
 		  PRIMARY KEY  (`id`),
 		  UNIQUE KEY `Index 2` (`maquina`,`factura`)
 		) ENGINE=MyISAM AUTO_INCREMENT=172 DEFAULT CHARSET=latin1';
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		$mSQL='ALTER TABLE `sucu` ADD `url` VARCHAR(200) NULL';
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		$mSQL='ALTER TABLE `sucu` ADD `proteo` VARCHAR(50) NULL';
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		$mSQL='ALTER TABLE `sucu` ADD `prefijo` CHAR(1) NULL';
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 	}
 }
 ?>

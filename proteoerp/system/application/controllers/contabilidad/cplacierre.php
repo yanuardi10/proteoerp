@@ -196,19 +196,19 @@ class Cplacierre extends validaciones {
 			$fhasta=$anno.'1231';
 
 			$mSQL = "DELETE FROM cplacierre WHERE anno = $anno";
-			$rt=$this->db->simple_query($mSQL);
+			$rt=var_dum($this->db->simple_query($mSQL));
 			if(!$rt){ memowrite($mSQL,'cplacierre'); return $rt;}
 			//var_dump($rt);
 
 			$mSQL = 'INSERT INTO  cplacierre (anno,cuenta,descrip,monto) SELECT '.$anno.', a.cuenta, b.descrip, sum(a.debe)-sum(a.haber) from itcasi AS a JOIN cpla AS b ON a.cuenta=b.codigo ';
 			$mSQL.= "WHERE fecha BETWEEN $fdesde AND $fhasta ";
 			$mSQL.= 'GROUP BY a.cuenta';
-			$rt=$this->db->simple_query($mSQL);
+			$rt=var_dum($this->db->simple_query($mSQL));
 			if(!$rt){ memowrite($mSQL,'cplacierre'); return $rt;}
 			//var_dump($rt);
 
 			$mSQL='INSERT IGNORE INTO cplacierre (anno,cuenta,descrip,monto) SELECT '.$anno.' AS anno, codigo, descrip,0 FROM cpla';
-			$rt=$this->db->simple_query($mSQL);
+			$rt=var_dum($this->db->simple_query($mSQL));
 			if(!$rt){ memowrite($mSQL,'cplacierre'); return $rt;}
 			//var_dump($rt);
 			
@@ -226,7 +226,7 @@ class Cplacierre extends validaciones {
 		  PRIMARY KEY (`id`),
 		  UNIQUE KEY `ac` (`anno`,`cuenta`)
 		) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Cierres contables'";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 	}
 }
 ?>

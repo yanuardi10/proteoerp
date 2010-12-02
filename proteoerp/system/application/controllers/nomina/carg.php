@@ -128,7 +128,7 @@ class Carg extends Controller {
 	}
 	function instalar(){
 		$mSQL="ALTER TABLE carg ADD PRIMARY KEY (cargo);";
-		$this->db->simple_query($mSQL);	
+		var_dum($this->db->simple_query($mSQL));	
 	}
 	
 	function positivo($valor){

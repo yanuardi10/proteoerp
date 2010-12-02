@@ -36,13 +36,13 @@ WHERE MID(a.modulo,1,1)!=0 ORDER BY a.modulo, a.panel*/
 			$this->db->simple_query("INSERT INTO serie SET hexa=HEX($i)");
 		echo "hola mundo";
 		//$mSQL='ALTER TABLE `intramenu` DROP PRIMARY KEY';
-		//$this->db->simple_query($mSQL);
+		//var_dum($this->db->simple_query($mSQL));
 		//$mSQL='ALTER TABLE intramenu ADD id INT AUTO_INCREMENT PRIMARY KEY';
-		//$this->db->simple_query($mSQL);
+		//var_dum($this->db->simple_query($mSQL));
 		//$mSQL='ALTER TABLE `intramenu` ADD `pertenece` VARCHAR(10) DEFAULT NULL NULL AFTER `visible`';
-		//$this->db->simple_query($mSQL);
+		//var_dum($this->db->simple_query($mSQL));
 		//$mSQL='UPDATE intramenu SET pertenece=MID(modulo,1,1) WHERE MID(modulo,1,1)!= "0" AND modulo REGEXP  "[[:digit:]]" AND CHAR_LENGTH(modulo)>1';
-		//$this->db->simple_query($mSQL);
+		//var_dum($this->db->simple_query($mSQL));
 		////ALTER TABLE `intramenu` ADD PRIMARY KEY (`modulo`)
 	}
 }

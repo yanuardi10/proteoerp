@@ -125,11 +125,11 @@ class Repodupli extends Controller{
 	}
 	function instalar(){
 		$mSQL="ALTER TABLE `repodupli` ADD `status` CHAR(2) NULL";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 	}
 	function copia(){
 		$mSQL="ALTER TABLE `repodupli` ADD `status` CHAR(2) NULL";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 	}
 }
 ?>

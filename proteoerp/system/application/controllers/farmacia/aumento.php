@@ -30,7 +30,7 @@ class Aumento extends Controller{
 		precio3=ROUND(base3*1.09,2),
 		precio4=ROUND(base4*1.09,2),
 		WHERE clave!='REGULADO'";
-		//$paso=$this->db->simple_query($msql);
+		//$paso=var_dum($this->db->simple_query($mSQL));
 		
 		if($paso)
 			$data['titulo1'] = "<h1>Aumento realizado Completada</h1>\n";

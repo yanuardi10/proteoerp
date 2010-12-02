@@ -254,7 +254,7 @@ class metas extends Controller{
 		  `tipo` CHAR(2),
 		  PRIMARY KEY  (`fecha`,`codigo`,`vendedor`)
 		)";
-		$rt=$this->db->simple_query($mSQL);
+		$rt=var_dum($this->db->simple_query($mSQL));
 		var_dump($rt);
 	}
 }

@@ -151,6 +151,6 @@ class Publicidad extends Controller {
 		  UNIQUE KEY `id` (`id`,`archivo`),
 		  KEY `id_2` (`id`)
 		) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=latin1";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 	}
 } 

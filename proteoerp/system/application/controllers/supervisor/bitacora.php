@@ -263,7 +263,7 @@ class Bitacora extends Controller {
 		  `evaluacion` text,
 		  PRIMARY KEY  (`id`)
 		) ENGINE=MyISAM AUTO_INCREMENT=524 DEFAULT CHARSET=latin1";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 	}
 }
 ?>
