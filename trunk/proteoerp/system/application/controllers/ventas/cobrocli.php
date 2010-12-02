@@ -415,7 +415,7 @@ class Cobrocli extends validaciones {
 	function instalar(){
 		$seniat='http://www.seniat.gov.ve/BuscaRif/BuscaRif.jsp';
 		$mSQL="INSERT INTO valores (nombre,valor,descrip) VALUES ('CONSULRIF','$seniat','Pagina de consulta de rif del seniat') ON DUPLICATE KEY UPDATE valor='$seniat'";
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 	}
 }
 ?>

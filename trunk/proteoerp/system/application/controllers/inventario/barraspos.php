@@ -228,7 +228,7 @@ class barraspos extends Controller {
   		PRIMARY KEY (`codigo`,`suplemen`)
 		) ENGINE=MyISAM DEFAULT CHARSET=latin1
 		";
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->query($mSQL);
 
 	}
 }

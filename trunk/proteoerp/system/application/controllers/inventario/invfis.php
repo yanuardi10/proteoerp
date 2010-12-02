@@ -425,7 +425,7 @@ class Invfis extends Controller {
 			COLLATE=".$this->db->dbcollat."
 			ENGINE=MyISAM
 			ROW_FORMAT=DEFAULT";
-			$ban=var_dum($this->db->simple_query($mSQL));
+			$ban=$this->db->simple_query($mSQL);
 			if(!$ban){ $error.='Error creando la tabla parcial '; memowrite($mSQL,'INVFIS');  }
 
 			$mSQL = "INSERT IGNORE INTO `$tabla`
@@ -433,7 +433,7 @@ class Invfis extends Controller {
 			SELECT TRIM(a.codigo),TRIM(a.grupo),b.existen,0 contado,0 agregar,0 quitar,0 sustituir, NOW() fecha,CAST(NULL AS DATE ) modificado, CAST(NULL AS DATE) actualizado,a.pond
 			FROM sinv a
 			LEFT JOIN itsinv b ON a.codigo=b.codigo AND b.alma=$dbalma";
-			$ban=var_dum($this->db->simple_query($mSQL));
+			$ban=$this->db->simple_query($mSQL);
 			if(!$ban){ $error.='Error llenando la tabla parcial '; memowrite($mSQL,'INVFIS'); }
 		}else{
 			$error.="Ya existe un inventario creado para el almac&eacute;n $alma y la fecha seleccionada";
@@ -467,18 +467,18 @@ class Invfis extends Controller {
 			$mSQL="INSERT INTO itstra (`numero`,`codigo`,`descrip`,`cantidad`,`anteri`)
 				SELECT $nstra,a.codigo,CONCAT_WS(' ',b.descrip,b.descrip2)descrip,IF(a.modificado IS NULL,-1*a.existen,a.contado-a.existen),a.existen $fromwhere";
 
-			$ban = var_dum($this->db->simple_query($mSQL));
+			$ban = $this->db->simple_query($mSQL);
 			if(!$ban){$error.="No se pudo crear el registro en stra"; memowrite($mSQL,'INVFIS');}
 
 			$mSQL="INSERT INTO stra (`numero`,`fecha`,`envia`,`recibe`,`observ1`)
 				VALUES ($nstra,'$fecha','INFI',$alma,'INVENTARIO FISICO')";
 
-			$ban = var_dum($this->db->simple_query($mSQL));
+			$ban = $this->db->simple_query($mSQL);
 			if(!$ban) {$error.="No se pudo crear el registro en stra "; memowrite($mSQL,'INVFIS'); }
 
 			if(strlen($error)==0){
 				$mSQL="DROP TABLE $tabla";
-				$ban = var_dum($this->db->simple_query($mSQL));
+				$ban = $this->db->simple_query($mSQL);
 				if(!$ban) {$error.="No se pudo limpiar la base de datos"; memowrite($mSQL,'INVFIS');}
 				sem_release($seg);
 				sem_remove($seg);
@@ -499,7 +499,7 @@ class Invfis extends Controller {
 		sem_acquire($seg);
 		if($this->db->table_exists($tabla)){
 			$mSQL="DROP table $tabla";
-			$rt=var_dum($this->db->simple_query($mSQL));
+			$rt=$this->db->simple_query($mSQL);
 			if(!$rt){
 				memowrite('invfis',$mSQL);
 				$error='No se pudo descartar el inventario';
@@ -537,7 +537,7 @@ class Invfis extends Controller {
 							$mSQL="UPDATE ${tabla} SET contado=contado-${valor},modificado=now() WHERE codigo=${codigo}";
 						break;
 					}
-					$ban=var_dum($this->db->simple_query($mSQL));
+					$ban=$this->db->simple_query($mSQL);
 					if(!$ban){ echo "Error actualizando"; }
 				}
 				sem_release($seg);

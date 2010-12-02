@@ -150,7 +150,22 @@ class DataFilter extends DataForm{
             switch ($field->clause){
             
                 case "like":
-                    $this->db->like($name, $value,$field->like_side);
+                    //$this->db->like($name, $value,$field->like_side);
+                    $comodin=$this->ci->datasis->traevalor('COMODIN');
+                    if(!empty($comodin)){
+                       $v = str_replace($comodin,'%',$value);
+                    }
+                    
+                    if ($field->like_side == 'before'){
+                        $v=$this->db->escape('%'.$v);
+                    }elseif ($field->like_side == 'after'){
+                        $v=$this->db->escape($v.'%');
+                    }else{
+                        $v=$this->db->escape('%'.$v.'%');
+                    }
+                    
+                    $strlike="$name LIKE $v";
+                    $this->db->where($strlike);
                 break;
                 
                 case "orlike":

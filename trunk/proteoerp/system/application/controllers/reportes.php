@@ -162,9 +162,9 @@ class Reportes extends Controller
 	
 	function instalar(){
 		$mSQL="ALTER TABLE `reportes` ADD `proteo` TEXT NULL";
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 		$mSQL="ALTER TABLE `reportes` ADD `harbour` TEXT NULL";
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 	}
 }
 ?>

@@ -83,13 +83,13 @@ class sucu extends Controller{
 	}
 	function instalar(){
 		$mSQL="ALTER TABLE `sucu` ADD `url` VARCHAR(200) NULL";
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 		$mSQL="ALTER TABLE `sucu` ADD `prefijo` VARCHAR(3) NULL";
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 		$mSQL="ALTER TABLE `sucu` ADD `proteo` VARCHAR(50) NULL";
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 		$mSQL="ALTER TABLE `sucu` ADD PRIMARY KEY (`codigo`)";
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 	}
 }
 ?>

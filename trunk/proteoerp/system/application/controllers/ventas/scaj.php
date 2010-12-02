@@ -252,7 +252,7 @@ class Scaj extends validaciones {
 			KEY `fecha` (`fecha`),
 			KEY `codigo` (`codigo`)
 			) ENGINE=MyISAM DEFAULT CHARSET=latin1 COMMENT='ventas por articulo'";
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 		$mSQL="CREATE TABLE IF NOT EXISTS `fmay` (
 			`fecha` date default NULL,
 			`numero` varchar(8) NOT NULL default '',
@@ -294,7 +294,7 @@ class Scaj extends validaciones {
 			`dirent3` varchar(40) default NULL,
 			PRIMARY KEY  (`numero`)
 			) ENGINE=MyISAM DEFAULT CHARSET=latin1";
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 	}
 }
 ?>

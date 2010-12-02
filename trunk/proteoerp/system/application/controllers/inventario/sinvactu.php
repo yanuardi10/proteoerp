@@ -591,7 +591,7 @@ class Sinvactu extends Controller{
   PRIMARY KEY  (`codigo`)
 )
 	';
-var_dum($this->db->simple_query($mSQL));	
+$this->db->simple_query($mSQL);	
 	}	
 }
 ?>

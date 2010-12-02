@@ -331,7 +331,7 @@ class Rcaj extends validaciones {
 						$ingreso   += $row->monto;
 						$rrecibido += $recibido;
 						$mSQL = $this->db->insert_string('itrcaj', $arr);
-						var_dum($this->db->simple_query($mSQL));
+						$this->db->simple_query($mSQL);
 					}
 				}
 				$arr = array(
@@ -348,7 +348,7 @@ class Rcaj extends validaciones {
 					'parcial' => $parcial
 				);
 				$mSQL = $this->db->insert_string('rcaj', $arr);
-				var_dum($this->db->simple_query($mSQL));
+				$this->db->simple_query($mSQL);
 
 				$dbnumero=$this->db->escape($numero);
 				/*$mSQL="UPDATE sfac JOIN sfpa ON sfac.transac=sfpa.transac SET sfpa.cierre=$dbnumero
@@ -357,12 +357,12 @@ class Rcaj extends validaciones {
 				$mSQL="UPDATE sfpa JOIN sfac ON sfac.numero=sfpa.numero AND sfpa.tipo_doc=CONCAT(sfac.tipo_doc, IF(sfac.referen='M','E',sfac.referen))
 				SET sfpa.cierre=$dbnumero
 				WHERE sfpa.f_factura=$dbfecha    AND SUBSTRING(sfpa.tipo_doc,2,1)!='X' AND sfpa.cobrador=$dbcajero ";
-				var_dum($this->db->simple_query($mSQL));
+				$this->db->simple_query($mSQL);
 
 				$mSQL="UPDATE sfpa JOIN sfac ON sfac.numero=sfpa.numero AND sfpa.tipo_doc=CONCAT(sfac.tipo_doc, IF(sfac.referen='M','E',sfac.referen))
 				SET sfpa.cierre=$dbnumero
 				WHERE sfpa.f_factura>=$dbfecha_s AND SUBSTRING(sfpa.tipo_doc,2,1)!='X' AND sfpa.cobrador=$dbcajero AND MID(sfpa.hora,1,2)>18";
-				var_dum($this->db->simple_query($mSQL));
+				$this->db->simple_query($mSQL);
 			}
 			if($redir){
 				redirect('ventas/rcaj/filteredgrid/search');
@@ -565,13 +565,13 @@ class Rcaj extends validaciones {
 				$data['transac']    =$transac;
 
 				$mSQL = $this->db->insert_string('bmov', $data);
-				$ban=var_dum($this->db->simple_query($mSQL));
+				$ban=$this->db->simple_query($mSQL);
 				if($ban==false) memowrite($mSQL,'rcaj');
 				//Fin del movimiento en smov
 
 				//Actualiza el saldo en la caja
 				$mSQL="CALL sp_actusal('$caja','$sfecha',$rrecibido)";
-				$ban=var_dum($this->db->simple_query($mSQL));
+				$ban=$this->db->simple_query($mSQL);
 				if($ban==false) memowrite($mSQL,'rcaj');
 
 				//Crea la diferencia en caja si la hay
@@ -594,7 +594,7 @@ class Rcaj extends validaciones {
 						$data['concepto'] ="SOBRANTE EN CAJERO $cajero DIA ".dbdate_to_human($fecha);
 
 						$mSQL = $this->db->insert_string('banc', $data);
-						$ban=var_dum($this->db->simple_query($mSQL));
+						$ban=$this->db->simple_query($mSQL);
 						if($ban==false) memowrite($mSQL,'rcaj');
 					}
 
@@ -621,7 +621,7 @@ class Rcaj extends validaciones {
 						$data['transac']    =$transac;
 
 						$mSQL = $this->db->insert_string('bmov', $data);
-						$ban=var_dum($this->db->simple_query($mSQL));
+						$ban=$this->db->simple_query($mSQL);
 						if($ban==false) memowrite($mSQL,'rcaj');
 
 					}else{ //Crea la ND a causa del sobrante de caja
@@ -642,13 +642,13 @@ class Rcaj extends validaciones {
 						$data['transac']    =$transac;
 
 						$mSQL = $this->db->insert_string('bmov', $data);
-						$ban=var_dum($this->db->simple_query($mSQL));
+						$ban=$this->db->simple_query($mSQL);
 						if($ban==false) memowrite($mSQL,'rcaj');
 					}
 
 					$mSQL="CALL sp_actusal('DF','$sfecha',$dif)";
 					echo $mSQL;
-					$ban=var_dum($this->db->simple_query($mSQL));
+					$ban=$this->db->simple_query($mSQL);
 					if($ban==false) memowrite($mSQL,'rcaj');
 				}
 
@@ -683,13 +683,13 @@ class Rcaj extends validaciones {
 
 	function instalar(){
 		$mSQL="CREATE TABLE `itrcaj` (`numero` VARCHAR (8), `tipo` VARCHAR (15), `recibido` DECIMAL (17,2), `sistema` DECIMAL (17,2), `diferencia` DECIMAL (17,2),PRIMARY KEY (`numero`, `tipo`))";
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 		$mSQL="ALTER TABLE `itrcaj`  ADD COLUMN `cierre` CHAR(1) NOT NULL DEFAULT 'N' AFTER `tipo`";
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 		$mSQL="ALTER TABLE `itrcaj`  DROP PRIMARY KEY,  ADD PRIMARY KEY (`numero`, `tipo`, `cierre`)";
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 		$mSQL="ALTER TABLE `sfpa`  ADD COLUMN `cierre` CHAR(8) DEFAULT '' AFTER `hora`";
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 
 	}
 }

@@ -275,7 +275,7 @@ class agregaroi extends Controller {
 
 	function instalar(){
 		$mSQL='ALTER TABLE itscst ADD id INT AUTO_INCREMENT PRIMARY KEY';
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 	}
 	function repetido($numero){
 		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM otin WHERE numero='$numero'");

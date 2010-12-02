@@ -46,7 +46,7 @@ class Prenom extends Controller {
 			$mSQL .= "FROM conc a JOIN itnoco c ON a.concepto=c.concepto ";
 			$mSQL .= "JOIN pers b ON b.contrato=c.codigo WHERE c.codigo=$contrato AND b.status='A' ";
 
-			var_dum($this->db->simple_query($mSQL));
+			$this->db->simple_query($mSQL);
 
 			$fields = $this->db->list_fields($tablap);
 			$ii=count($fields);
@@ -72,7 +72,7 @@ class Prenom extends Controller {
 				$data['nombre'] = $row->nombre;
 				$data['total']  = 0;
 				$mSQL = $this->db->insert_string($tablap, $data);
-				var_dum($this->db->simple_query($mSQL));
+				$this->db->simple_query($mSQL);
 				redirect('nomina/prenom/montos');
 			}
 
@@ -130,7 +130,7 @@ class Prenom extends Controller {
 					$data  = array('monto' => $cant,'valor'=>$valor);
 					$where = "codigo = $cod  AND concepto =$concepto ";
 					$mSQL  = $this->db->update_string('prenom', $data, $where);
-					var_dum($this->db->simple_query($mSQL));
+					$this->db->simple_query($mSQL);
 				}
 			}
 		}

@@ -42,15 +42,15 @@ class Mantenimiento extends Controller{
 
 	function bprefac(){
 		$mSQL="DELETE FROM sitems WHERE MID(numa,1,1)='_' AND fecha<CURDATE()";
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 		$mSQL="DELETE FROM sfac WHERE MID(numero,1,1)='_' AND fecha<CURDATE()";
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 		redirect('supervisor/mantenimiento');
 	}
 
 	function bmodbus(){
 		$mSQL="TRUNCATE modbus";
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 		redirect('supervisor/mantenimiento');
 	}
 
@@ -369,7 +369,7 @@ class Mantenimiento extends Controller{
 
 		$mSQL = $this->db->update_string('smov', $data, $where);
 
-		if(var_dum($this->db->simple_query($mSQL))){
+		if($this->db->simple_query($mSQL)){
 		echo 1;
 		return true;
 		}else{
@@ -389,7 +389,7 @@ class Mantenimiento extends Controller{
 
 		$mSQL = $this->db->update_string('smov', $data, $where);
 
-		return var_dum($this->db->simple_query($mSQL));
+		return $this->db->simple_query($mSQL);
 	}
 
 
@@ -470,9 +470,9 @@ class Mantenimiento extends Controller{
 				if(count($fields)==3){
 					if($fields[0]=='numero' AND $fields[1]=='usuario' AND $fields[2]=='fecha'){
 						$mSQL="DELETE FROM `$table` WHERE numero>=$num";
-						if(var_dum($this->db->simple_query($mSQL))){
+						if($this->db->simple_query($mSQL)){
 							$mSQL="ALTER TABLE `$table` AUTO_INCREMENT=$num";
-							if (!var_dum($this->db->simple_query($mSQL))){
+							if (!$this->db->simple_query($mSQL)){
 								$rt.= "Error cambiando el contador en $table \n";
 							}else{
 								$rt.= "$table cambiado \n";

@@ -234,12 +234,12 @@ class Usuarios extends Controller {
 
 	function soporte(){
 		$mSQL="INSERT INTO `usuario` (`us_codigo`, `us_nombre`, `us_clave`,`supervisor`) VALUES ('SOPORTE', 'PERS. DREMANVA', 'DREMANVA','S');";
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 	}
 
 	function instalar(){
 		$mSQL="ALTER TABLE `usuario`  ADD COLUMN `almacen` CHAR(4) NULL";
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 		echo "Agregado campo almacen";
 	}
 }

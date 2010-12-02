@@ -212,7 +212,7 @@ class aumentosueldo extends Controller {
 	
 	function instalar(){
 		$mSQL="ALTER TABLE ausu ADD PRIMARY KEY (codigo,fecha);";
-		var_dum($this->db->simple_query($mSQL));	
+		$this->db->simple_query($mSQL);	
 	}
 }
 ?>

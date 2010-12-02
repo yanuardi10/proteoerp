@@ -71,9 +71,9 @@ class Terminal extends Controller {
   function _procesar($fila){
 		$usuario = $this->session->userdata('usuario');
 		$mSQL="UPDATE sitems SET despacha=IF(despacha='I','S','I'), fdespacha=now(), udespacha='$usuario' WHERE numa=$fila";
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 		$mSQL="UPDATE sfac SET fdespacha=now(), udespacha='$usuario' WHERE numero=$fila";
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 	}
 }
 ?>

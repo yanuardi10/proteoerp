@@ -26,17 +26,17 @@ class prueba extends Controller{
 	
 	function bprefac(){
 		$mSQL="DELETE FROM sitems WHERE MID(numa,1,1)='_' AND fecha<CURDATE()";
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 		$mSQL="DELETE FROM sfac WHERE MID(numero,1,1)='_' AND fecha<CURDATE()";
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 		redirect('supervisor/prueba');
 	}
 	
 	function bmodbus(){
 		$mSQL="DELETE FROM sitems WHERE MID(numa,1,1)='_' AND fecha<CURDATE()";
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 		$mSQL="TRUNCATE modbus";
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 		redirect('prueba');
 	}
 	

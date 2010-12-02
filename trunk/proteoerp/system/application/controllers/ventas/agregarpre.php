@@ -282,7 +282,7 @@ class agregarpre extends Controller {
 	}	
 	function instalar(){
 		$mSQL='ALTER TABLE itscst ADD id INT AUTO_INCREMENT PRIMARY KEY';
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 	}
 }
 ?>

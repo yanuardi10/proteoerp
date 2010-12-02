@@ -146,7 +146,7 @@ class sfacpaga extends Controller {
 //			echo "UPDATE sfac SET sepago='S', WHERE numer='".$a[0]."' AND numero='".$a[1]."' ";
 			
 			$mSQL="UPDATE sfac SET sepago='S' WHERE numero='".$a[1]."' AND tipo_doc='".$a[0]."' ";
-			var_dum($this->db->simple_query($mSQL));
+			$this->db->simple_query($mSQL);
 			//exit();
 		}
 		redirect("ventas/sfacpaga/filteredgrid/search/osp");
@@ -159,14 +159,14 @@ class sfacpaga extends Controller {
 		$usuario = $this->db->escape($this->session->userdata('usuario'));
 		
 		$mSQL="UPDATE sitems SET despacha=if(despacha='S','N','S'), fdespacha=if(despacha='S',CURDATE(),null), udespacha=$usuario WHERE codigoa=$codigo AND numa=$numero AND tipoa='F' ";
-		$a   = var_dum($this->db->simple_query($mSQL));
+		$a   = $this->db->simple_query($mSQL);
 		$can = $this->datasis->dameval("SELECT COUNT(*) FROM sitems WHERE numa=$numero AND tipoa='F' AND despacha='N'");
 		if($can==0){
 			$mSQL="UPDATE sfac SET fdespacha=CURDATE(), udespacha=$usuario WHERE numero=$numero AND tipo_doc='F'";
-			var_dum($this->db->simple_query($mSQL));
+			$this->db->simple_query($mSQL);
 		}
 		//$mSQL="UPDATE sfac SET fdespacha=CURDATE(), udespacha='$usuario' WHERE numero='$numero' AND tipo_doc='F' ";
-		//$b=var_dum($this->db->simple_query($mSQL));
+		//$b=$this->db->simple_query($mSQL);
 				
 	}
 	function parcial($numero){

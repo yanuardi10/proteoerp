@@ -156,7 +156,7 @@ class bman extends validaciones {
 	}
 	function instalar(){
 		$mSQL="CREATE TABLE `bman` (`id` BIGINT AUTO_INCREMENT, `codbanc` VARCHAR (10), `tipo` VARCHAR (10), `numero` VARCHAR (12), `fecha` DATE, `beneficiario` VARCHAR (50), `monto` DECIMAL (17) , PRIMARY KEY(`id`))";
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 	}
 	function chexiste(){
 		$codbanc=$this->input->post('codbanc');

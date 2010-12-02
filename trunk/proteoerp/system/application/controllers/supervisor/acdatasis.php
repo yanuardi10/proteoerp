@@ -59,7 +59,7 @@ class acdatasis extends Controller {
      
       $usr=$filter->usuario->newValue;  
 			$mSQL="INSERT IGNORE INTO sida SELECT '$usr',b.codigo,'N'  FROM sida AS a RIGHT JOIN tmenus AS b ON a.modulo=b.codigo AND a.usuario='$usr' WHERE a.modulo IS NULL";
-			var_dum($this->db->simple_query($mSQL));
+			$this->db->simple_query($mSQL);
 			$copiar=anchor("supervisor/acdatasis/copia/$usr/",'Copiar Acceso de otro Usuario');
 			
 			$grid = new Datagrid("Resultados");
@@ -105,7 +105,7 @@ class acdatasis extends Controller {
 		$usuario=$this->input->post('usuario');
 		$codigo=$this->input->post('codigo');
 		$mSQL = "UPDATE sida SET acceso=IF(acceso='S','N','S') WHERE modulo=$codigo AND usuario = '$usuario'";
-		echo var_dum($this->db->simple_query($mSQL));
+		echo $this->db->simple_query($mSQL);
 	}
 	function copia($usua=null){
 		$this->rapyd->load("datafilter","datagrid");
@@ -136,7 +136,7 @@ class acdatasis extends Controller {
 		if($this->rapyd->uri->is_set("search") AND $filter->is_valid()){
       $usr=$filter->usuario->newValue;
 			$mSQL="INSERT IGNORE INTO sida SELECT '$usr',b.codigo,'N'  FROM sida AS a RIGHT JOIN tmenus AS b ON a.modulo=b.codigo AND a.usuario='$usr' WHERE a.modulo IS NULL";
-			var_dum($this->db->simple_query($mSQL));
+			$this->db->simple_query($mSQL);
 			$copiar=anchor("supervisor/acdatasis/copiar/$usr/$usuario",'Copiar');
 			
 			$grid = new Datagrid("Resultados");
