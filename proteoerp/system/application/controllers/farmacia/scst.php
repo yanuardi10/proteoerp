@@ -536,7 +536,7 @@ class Scst extends Controller {
 					  JOIN ${localdb}.farmaxasig AS b ON a.codigo=b.barras AND a.proveed=b.proveed
 					  SET a.codigo=b.abarras
 					WHERE a.control='$lcontrol'";
-					$rt=var_dum($this->db->simple_query($mSQL));
+					$rt=$this->db->simple_query($mSQL);
 					if(!$rt){ memowrite('farmaejec1',$sql);}
 
 					$retorna='Compra guardada con el control '.anchor("compras/scst/dataedit/show/$lcontrol",$lcontrol);
@@ -569,6 +569,6 @@ class Scst extends Controller {
 		ENGINE=MyISAM
 		ROW_FORMAT=DEFAULT";
 
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 	}
 }

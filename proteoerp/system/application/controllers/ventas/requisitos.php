@@ -62,7 +62,7 @@ class requisitos extends validaciones {
 	}	
 	function instala(){
 		$mSQL="CREATE TABLE `requisitos` (`codigo` TINYINT UNSIGNED AUTO_INCREMENT, `descrip` VARCHAR (150), PRIMARY KEY(`codigo`))";
-	  var_dum($this->db->simple_query($mSQL));	
+	  $this->db->simple_query($mSQL);	
 	}
 }
 ?>

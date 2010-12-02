@@ -125,13 +125,13 @@ class Partida extends Controller {
 			`nomgrup` varchar(30) DEFAULT NULL,
 			PRIMARY KEY (`codigo`)
 			) ENGINE=MyISAM DEFAULT CHARSET=latin1";
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 
 		$mSQL="CREATE TABLE `obgp` (
 			`grupo` char(4) NOT NULL DEFAULT '',
 			`nombre` varchar(30) DEFAULT '0',
 			PRIMARY KEY (`grupo`)
 			) ENGINE=MyISAM DEFAULT CHARSET=latin1";
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 	}
 }

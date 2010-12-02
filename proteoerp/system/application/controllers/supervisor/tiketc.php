@@ -171,7 +171,7 @@ class tiketc extends Controller {
 		}else{
 			$mSQL="UPDATE tiketc SET estado='N' WHERE id='$numero'";
 		}
-		var_dum($this->db->simple_query($mSQL));			
+		$this->db->simple_query($mSQL);			
 		//echo 'numero:'.$numero.'estado'.$estado;
 	}
 	function dataedit(){ 
@@ -340,11 +340,11 @@ function instalar(){
 		  KEY `id` (`id`)
 		) ENGINE=MyISAM AUTO_INCREMENT=10 DEFAULT CHARSET=latin1"; 
 		$mSQL2="CREATE TABLE `tiempo` (`hora` INT, `minutos` INT, `id` INT AUTO_INCREMENT, PRIMARY KEY(`id`), INDEX(`id`))";
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 	}
 	function tiempo(){
 		$mSQL="CREATE TABLE `tiempo` (`minutos` INT, `hora` INT AUTO_INCREMENT, PRIMARY KEY(`id`), INDEX(`id`))";
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 	}
 }
 ?>

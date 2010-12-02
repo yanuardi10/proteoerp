@@ -213,7 +213,7 @@ class sinvprov extends Controller {
 			  PRIMARY KEY (`proveed`,`codigop`,`codigo`)
 			) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci
 		";
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->query($mSQL);
 		
 	}
 }

@@ -272,9 +272,9 @@ scriptab;
 			$asfac['gtotal']  +=$row->base*$cant*($row->servicio/100);
 		}
 		$mSQL=$this->db->insert_string('ritems',$data);
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 		$mSQL=$this->db->update_string('rfac',$asfac,"numero='$numero'"); 
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 		
 		return true;
 	}
@@ -364,7 +364,7 @@ scriptab;
 			$data['mesonero']= $this->input->post('mesonero');
 			
 			$mSQL=$this->db->insert_string('rfac',$data);
-			var_dum($this->db->simple_query($mSQL));
+			$this->db->simple_query($mSQL);
 			
 			redirect("hospitalidad/restaurante/modificar/$numero");
 		} 
@@ -456,7 +456,7 @@ scriptab;
 		if($cant>0){
 			$data  = array('impstatus' => 'N');
 			$mSQL  = $this->db->update_string('ritems', $data, $where);
-			var_dum($this->db->simple_query($mSQL));
+			$this->db->simple_query($mSQL);
 			//$cmd="./comanda/imprime.pl $numero $mesonero";
 			//Echo $cmd;
 			//system ($cmd,$retorno);
@@ -522,19 +522,19 @@ scriptab;
 
 	function instalar(){
 		$mSQL='ALTER TABLE `meso` DROP `clave`';
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 		$mSQL='ALTER TABLE `meso` ADD `usuario` CHAR(12) NULL';
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 		$mSQL='ALTER TABLE `meso` ADD UNIQUE `usuario` (`usuario`)';
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 		$mSQL='ALTER TABLE `meso` ADD PRIMARY KEY (`mesonero`)';
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 		$mSQL='ALTER TABLE `rfac` CHANGE `mesonero` `mesonero` CHAR(5) NULL';
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 		$mSQL='ALTER TABLE `ritems` ADD id INT AUTO_INCREMENT PRIMARY KEY';
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 		$mSQL='ALTER TABLE `ritems` ADD `impstatus` CHAR(1) DEFAULT "E" NULL AFTER `id`';
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 	}
 }
 ?>

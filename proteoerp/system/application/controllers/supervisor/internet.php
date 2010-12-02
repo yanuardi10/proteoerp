@@ -77,11 +77,11 @@ class Internet extends Controller {
 		  `descrip` varchar(100) default NULL,
 		  PRIMARY KEY  (`nombre`)
 		) ENGINE=MyISAM DEFAULT CHARSET=latin1";
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 		$mSQL="INSERT INTO internet (nombre) VALUES ('IPACEPTADOS')";                        
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 		$mSQL="INSERT INTO internet (nombre) VALUES ('PAGINASNEGADAS')";
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 	}
 } 
 ?>

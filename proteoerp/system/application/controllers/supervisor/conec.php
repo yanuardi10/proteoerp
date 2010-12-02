@@ -142,7 +142,7 @@ class conec extends Controller {
 		  `observacion` text,
 		  PRIMARY KEY  (`id`)
 		) ENGINE=MyISAM AUTO_INCREMENT=0 DEFAULT CHARSET=latin1";
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 	}
 
 }

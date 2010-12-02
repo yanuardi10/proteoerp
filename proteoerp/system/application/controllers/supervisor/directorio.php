@@ -243,7 +243,7 @@ class directorio extends validaciones {
 	}	
 	function instalar(){
 		$mSQL="CREATE TABLE `datasis`.`directorio` (`id` INT AUTO_INCREMENT, `cedula` VARCHAR (13), `cliente` VARCHAR (30), `proveed` VARCHAR (30),`empleado` VARCHAR (30), `nombres` VARCHAR (50), `apellidos` VARCHAR (50), `edad` VARCHAR (2), `sexo` VARCHAR (1), `telefono1` VARCHAR (20), `telefono2` VARCHAR (20), `telefono3` VARCHAR (20),`direc1` VARCHAR (70), `direc2` VARCHAR (70), `profesion` VARCHAR (30), `cargo` VARCHAR (30), `fnacimiento` VARCHAR (20),`email` VARCHAR (50),`email2` VARCHAR (50),`email3` VARCHAR (50), PRIMARY KEY(`id`)) TYPE = MyISAM"; 
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 	}
 }
 ?>

@@ -252,7 +252,7 @@ class Comparativo extends Controller {
 			//echo "$id,$exmin";
 			$data['exmin']=$exmin;
 			$mSQL = $this->db->update_string('sinv', $data, 'id='.$this->db->escape($id));
-			if(var_dum($this->db->simple_query($mSQL))==FALSE){
+			if($this->db->simple_query($mSQL)==FALSE){
 				echo 'Error actualzando';
 			}
 			echo 'Listo!!';
@@ -260,10 +260,10 @@ class Comparativo extends Controller {
 
 	function instalar(){
 		/*$mSQL='ALTER TABLE `sinv` DROP PRIMARY KEY';
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 		$mSQL='ALTER TABLE `sinv` ADD UNIQUE `codigo` (`codigo`)';
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 		$mSQL='ALTER TABLE sinv ADD id INT AUTO_INCREMENT PRIMARY KEY';
-		var_dum($this->db->simple_query($mSQL));*/
+		$this->db->simple_query($mSQL);*/
 	}
 }

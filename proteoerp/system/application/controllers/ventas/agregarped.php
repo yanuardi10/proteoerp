@@ -286,7 +286,7 @@ class agregarped extends Controller {
 
 	function instalar(){
 		$mSQL='ALTER TABLE itpfac ADD id INT AUTO_INCREMENT PRIMARY KEY';
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 	}
 }
 ?>

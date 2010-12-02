@@ -265,7 +265,7 @@ class cargasinv extends Controller{
   PRIMARY KEY  (`codigo`)
 )
 	';
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->query($mSQL);
 	}
 
 

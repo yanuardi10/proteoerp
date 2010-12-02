@@ -477,7 +477,7 @@ class Importar extends Controller {
 				$data['estado']     ='N';
 				$mSQL = $this->db->insert_string('tiket', $data);
 
-				var_dum($this->db->simple_query($mSQL));
+				$this->db->simple_query($mSQL);
 			}
 		}
 		return $error;

@@ -289,9 +289,9 @@ scriptab;
 			$asfac['gtotal']  +=$row->base*$cant*($row->servicio/100);
 		}
 		$mSQL=$this->db->insert_string('sitems',$data);
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 		$mSQL=$this->db->update_string('sfac',$asfac,"numero='$numero'"); 
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 		//print_r($data);
 		//print_r($asfac);
 		

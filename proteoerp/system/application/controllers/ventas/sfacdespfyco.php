@@ -140,9 +140,9 @@ class sfacdespfyco extends Controller {
 		foreach($_POST['despacha'] as $fila){
 			$usuario = $this->session->userdata('usuario');
 			$mSQL="UPDATE sitems SET despacha='S', fdespacha=CURDATE(), udespacha='$usuario' WHERE numa='$fila' AND tipoa='F' ";
-			var_dum($this->db->simple_query($mSQL));
+			$this->db->simple_query($mSQL);
 			$mSQL="UPDATE sfac SET fdespacha=CURDATE(), udespacha='$usuario' WHERE numero='$fila' AND tipo_doc='F' ";
-			var_dum($this->db->simple_query($mSQL));
+			$this->db->simple_query($mSQL);
 		}
 		redirect("ventas/sfacdespfyco/filteredgrid/search/osp");
 	}
@@ -154,14 +154,14 @@ class sfacdespfyco extends Controller {
 		$usuario = $this->db->escape($this->session->userdata('usuario'));
 		
 		$mSQL="UPDATE sitems SET despacha=if(despacha='S','N','S'), fdespacha=if(despacha='S',CURDATE(),null), udespacha=$usuario WHERE codigoa=$codigo AND numa=$numero AND tipoa='F' ";
-		$a   = var_dum($this->db->simple_query($mSQL));
+		$a   = $this->db->simple_query($mSQL);
 		$can = $this->datasis->dameval("SELECT COUNT(*) FROM sitems WHERE numa=$numero AND tipoa='F' AND despacha='N'");
 		if($can==0){
 			$mSQL="UPDATE sfac SET fdespacha=CURDATE(), udespacha=$usuario WHERE numero=$numero AND tipo_doc='F'";
-			var_dum($this->db->simple_query($mSQL));
+			$this->db->simple_query($mSQL);
 		}
 		//$mSQL="UPDATE sfac SET fdespacha=CURDATE(), udespacha='$usuario' WHERE numero='$numero' AND tipo_doc='F' ";
-		//$b=var_dum($this->db->simple_query($mSQL));
+		//$b=$this->db->simple_query($mSQL);
 				
 	}
 	function parcial($numero){
@@ -313,7 +313,7 @@ class sfacdespfyco extends Controller {
 	function instalar(){
 		$mSQL="ALTER TABLE `sitems` ADD `cdespacha` DECIMAL NULL";
 		$mSQL1="ALTER TABLE `sitems` ADD `ultidespachado` DECIMAL NULL";
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 		$this->db->simple_query($mSQL1);
 		echo 'Instalado';
 	}

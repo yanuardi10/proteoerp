@@ -163,7 +163,7 @@ class Calcomi extends Controller {
 //			echo "UPDATE sfac SET sepago='S', WHERE numer='".$a[0]."' AND numero='".$a[1]."' ";
 			
 			$mSQL="UPDATE sfac SET comical=$value WHERE numero='".$a[1]."' AND tipo_doc='".$a[0]."' ";
-			var_dum($this->db->simple_query($mSQL));
+			$this->db->simple_query($mSQL);
 			//exit();
 		}
 		redirect($this->url."filteredgrid");

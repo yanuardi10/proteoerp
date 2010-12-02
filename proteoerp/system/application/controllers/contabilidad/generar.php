@@ -311,7 +311,7 @@ class Generar extends Metodos {
 		  PRIMARY KEY (`id`),
 		  UNIQUE KEY `ac` (`anno`,`cuenta`)
 		) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Cierres contables'";
-		var_dum($this->db->simple_query($mSQL));
+		$this->db->simple_query($mSQL);
 	}
 
 }
