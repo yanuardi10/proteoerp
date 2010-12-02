@@ -769,11 +769,11 @@ class sinv extends Controller {
 
 	function instalar(){
 		$mSQL='ALTER TABLE `sinv` DROP PRIMARY KEY';
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		$mSQL='ALTER TABLE `sinv` ADD UNIQUE `codigo` (`codigo`)';
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		$mSQL='ALTER TABLE sinv ADD id INT AUTO_INCREMENT PRIMARY KEY';
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 
 		$mSQL="CREATE TABLE IF NOT EXISTS `sinvcombo` (
 		`combo` char(15) NOT NULL,
@@ -788,7 +788,7 @@ class sinv extends Controller {
 		`costo` decimal(17,2) default '0.00',
 		PRIMARY KEY  (`combo`,`codigo`)
 		) ENGINE=MyISAM DEFAULT CHARSET=latin1";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 	}
 
 }

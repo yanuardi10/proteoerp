@@ -234,7 +234,7 @@ class Conci extends Controller {
 
 			$mSQL = $this->db->update_string('bmov', $ddata, $where);
 			//echo $mSQL;
-			if($this->db->simple_query($mSQL)){
+			if(var_dum($this->db->simple_query($mSQL))){
 				echo '1';
 			}else{
 				echo '0';

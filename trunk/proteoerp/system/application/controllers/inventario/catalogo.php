@@ -163,7 +163,7 @@ class Catalogo extends Controller {
 					$data = array('codigo' => $codigo, 'nombre' => basename($row['src']), 'ruta' => $this->upload_path.'Image', 'sinv_id' => $id);
 					$mSQL = $this->db->insert_string('sinvfot', $data);
 					$mSQL=str_replace('INSERT INTO','INSERT IGNORE INTO',$mSQL);
-					$this->db->simple_query($mSQL);
+					var_dum($this->db->simple_query($mSQL));
 				}
 			}
 		}
@@ -180,7 +180,7 @@ class Catalogo extends Controller {
 		  UNIQUE KEY `id` (`id`),
 		  KEY `id_2` (`id`,`codigo`)
 		) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=latin1';
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 	}
 }
 ?>

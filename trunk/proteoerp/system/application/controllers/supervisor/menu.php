@@ -188,7 +188,7 @@ class Menu extends Controller{
 		$sql = "DELETE FROM intrasida WHERE modulo like '$codigo%'";
 		$this->db->query($sql);
 		$mSQL="DELETE FROM intramenu WHERE modulo like '$codigo%'";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 	}
 
 	function _pre_insert($do){
@@ -228,18 +228,18 @@ class Menu extends Controller{
 		if($modulo[0] != '0'){
 			$usuario=$this->session->userdata('usuario');
 			$mSQL="INSERT INTO intrasida (usuario,modulo,acceso) VALUES ('$usuario','$modulo','S')";
-			$this->db->simple_query($mSQL);
+			var_dum($this->db->simple_query($mSQL));
 		}
 		redirect('/supervisor/menu');
 	}
 	
 	function instalar(){
 		$mSQL="ALTER TABLE `intramenu` ADD COLUMN `orden` TINYINT(4) NULL DEFAULT NULL AFTER `pertenece`";
-		echo $this->db->simple_query($mSQL);
+		echo var_dum($this->db->simple_query($mSQL));
 		$mSQL="ALTER TABLE `intramenu` ADD COLUMN `ancho` INT(10) UNSIGNED NULL DEFAULT '800' AFTER `orden`";
-		echo $this->db->simple_query($mSQL);
+		echo var_dum($this->db->simple_query($mSQL));
 		$mSQL="ALTER TABLE `intramenu` ADD COLUMN `alto`  INT(10) UNSIGNED NULL DEFAULT '600' AFTER `ancho`";
-		echo $this->db->simple_query($mSQL);
+		echo var_dum($this->db->simple_query($mSQL));
 	}
 }
 ?>

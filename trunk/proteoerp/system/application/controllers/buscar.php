@@ -249,7 +249,7 @@ class Buscar extends Controller
 		  PRIMARY KEY  (`id`)
 		) ENGINE=MyISAM AUTO_INCREMENT=1745 DEFAULT CHARSET=latin1";
 
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 	}
 }
 ?>

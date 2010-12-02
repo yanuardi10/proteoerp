@@ -71,7 +71,7 @@ class Cierre extends Controller {
 		$this->db->simple_query("DELETE FROM casi   WHERE comprob='$comprob'");
 
 		$mSQL = "INSERT INTO casi SET comprob='$comprob', fecha=$mfinal, descrip='ASIENTO DE CIERRE DEL EJERCICIO', total = 0, debe=0, haber=0, estampa=now(),tipo='INDETERMIN',status='A',origen='MANUAL'";
-		$centinela=$this->db->simple_query($mSQL);
+		$centinela=var_dum($this->db->simple_query($mSQL));
 		if($centinela==FALSE){ memowrite($mSQL,'casi'); $error=TRUE; }
 
 		$mSQL = "INSERT INTO itcasi 
@@ -82,7 +82,7 @@ class Cierre extends Controller {
 		    sum(haber) debe, sum(debe) haber, 0 ccosto, 0 sucu, null AS id
 		    FROM itcasi WHERE cuenta>='4' AND fecha<=$mfinal 
 		    GROUP BY cuenta ";
-		$centinela=$this->db->simple_query($mSQL);
+		$centinela=var_dum($this->db->simple_query($mSQL));
 		if($centinela==FALSE){ memowrite($mSQL,'itcasi'); $error=TRUE; }
 
 		$mSQL = "INSERT INTO itcasi 
@@ -93,7 +93,7 @@ class Cierre extends Controller {
 		    if(sum(debe-haber)>0,0,sum(haber-debe)) debe, 
 		    if(sum(debe-haber)>0,sum(debe-haber),0) haber, 0 ccosto, 0 sucu, null AS id
 		    FROM itcasi WHERE comprob='$comprob' group by comprob ";
-		$centinela=$this->db->simple_query($mSQL);
+		$centinela=var_dum($this->db->simple_query($mSQL));
 		if($centinela==FALSE){ memowrite($mSQL,'itcasi'); $error=TRUE; }
 		$this->db->simple_query("DELETE FROM itcasi WHERE debe=haber AND comprob='$comprob'");
 
@@ -113,7 +113,7 @@ class Cierre extends Controller {
                   PRIMARY KEY (`id`),
                   UNIQUE KEY `ac` (`anno`,`cuenta`)
                 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Cierres contables'"
-                $this->db->simple_query($mSQL);
+                var_dum($this->db->simple_query($mSQL));
         }
 }
 ?>

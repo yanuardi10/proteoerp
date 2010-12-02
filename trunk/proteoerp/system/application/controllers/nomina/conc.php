@@ -262,7 +262,7 @@ script;
 
 	function instalar(){
 		$mSQL="ALTER TABLE conc ADD PRIMARY KEY (concepto);";
-		$this->db->simple_query($mSQL);	
+		var_dum($this->db->simple_query($mSQL));	
 	}
 }
 ?>

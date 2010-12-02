@@ -420,12 +420,12 @@ class bitacorafyco extends Controller {
 		  `asignacion` varchar(10),
 		  PRIMARY KEY  (`id`)
 		) ENGINE=MyISAM AUTO_INCREMENT=524 DEFAULT CHARSET=latin1";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 	}
 	function _pre_insert($do){
 			$actividad=$do->get('actividad');
 			$mSQL="UPDATE bitacora SET actualizado=CURDATE(),horac=CURTIME() WHERE id=$actividad";
-			$this->db->simple_query($mSQL);
+			var_dum($this->db->simple_query($mSQL));
 	}
 } 
 ?>

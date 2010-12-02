@@ -116,7 +116,7 @@ script;
 		$data=array('viefac'=>'fecha','viepag'=>'f_factura','vieite'=>'fecha');
 		foreach($data AS $tabla=>$fcampo){
 			$mSQL="CREATE TABLE `TEMP$tabla`  SELECT * FROM $tabla WHERE $fcampo='$fecha'";
-			$this->db->simple_query($mSQL);
+			var_dum($this->db->simple_query($mSQL));
 			$tables[]="TEMP$tabla";
 		}
 		$prefs = array(
@@ -175,9 +175,9 @@ script;
 	}
 	function instalar(){
 		$mSQL='ALTER TABLE `sucu` ADD `url` VARCHAR(200) NULL';
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		$mSQL='ALTER TABLE `sucu` ADD `prefijo` CHAR(1) NULL';
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 	}
 }
 ?>

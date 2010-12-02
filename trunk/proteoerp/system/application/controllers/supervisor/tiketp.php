@@ -187,7 +187,7 @@ class tiketp extends Controller{
 	}
 	function instalar(){
 		$mSQL="CREATE TABLE IF NOT EXISTS `tiketp` (`id` TINYINT AUTO_INCREMENT, `estampa` TIMESTAMP, `fecha` DATE, `codigo` VARCHAR (20),`empresa` VARCHAR (100), `tiket` TEXT,`usuario` VARCHAR (20),`status` VARCHAR (20), `asignacion` VARCHAR (20),`nombre` VARCHAR (50),PRIMARY KEY(`id`)) TYPE = MyISAM";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 	}
 }
 ?>

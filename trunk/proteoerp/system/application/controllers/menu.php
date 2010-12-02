@@ -113,7 +113,7 @@ class Menu extends Controller
 	function eliminar(){
 		$cod=$this->uri->segment(3);
 		$mSQL="DELETE FROM intramenu WHERE codigo like '$cod%'";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		redirect('/menu');
 	}
 	function guardar(){
@@ -140,7 +140,7 @@ class Menu extends Controller
 			$mSQL = $this->db->update_string('intramenu', $data, $where);
 		}
 		$data['mSQL']=$mSQL;
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		//$this->layout->buildPage('menu/guardar', $data);
 		redirect('/menu');
 	}

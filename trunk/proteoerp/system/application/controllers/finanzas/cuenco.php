@@ -157,7 +157,7 @@ class cuenco extends validaciones {
 	}
 	function instalar(){
 		$mSQL="CREATE TABLE `cuenco` (`id` BIGINT AUTO_INCREMENT, `cliente` VARCHAR (20), `tipo` VARCHAR (10), `numero` VARCHAR (12), `fecha` DATE, `vence` DATE, `monto` DECIMAL (17), PRIMARY KEY(`id`))";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 	}
 	function chexiste(){
 		$cliente=$this->input->post('cliente');

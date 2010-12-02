@@ -56,11 +56,11 @@ class Formatos extends Controller{
 
 	function instalar(){
 		$mSQL="ALTER TABLE `formatos` ADD `proteo` TEXT NULL AFTER `forma`";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		$mSQL="ALTER TABLE `formatos` ADD `harbour` TEXT NULL AFTER `proteo`";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		$mSQL="ALTER TABLE `formatos`  ADD COLUMN `tcpdf` TEXT NULL AFTER `forma`";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 	}
 }
 ?>

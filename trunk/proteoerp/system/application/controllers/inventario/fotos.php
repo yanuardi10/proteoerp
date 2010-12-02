@@ -451,17 +451,17 @@ class Fotos extends Controller {
 		  UNIQUE KEY `foto` (`codigo`,`nombre`),
 		  KEY `id_2` (`id`,`codigo`)
 		) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=latin1';
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		$mSQL='ALTER TABLE `sinvfot` ADD `sinv_id` INT UNSIGNED NOT NULL AFTER `id`';
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		$mSQL='ALTER TABLE `sinvfot` ADD INDEX `sinv_id` (`sinv_id`)';
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		$mSQL='ALTER TABLE `sinvfot` CHANGE `estampa` `estampa` TIMESTAMP NOT NULL';
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		$mSQL='UPDATE sinvfot AS a JOIN sinv AS b ON a.codigo=b.codigo SET a.sinv_id=b.id';
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		$mSQL='ALTER TABLE `sinvfot` ADD `principal` VARCHAR(3) NULL';
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 	}
 }
 ?>

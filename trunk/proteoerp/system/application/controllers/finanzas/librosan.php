@@ -101,7 +101,7 @@ class Libros extends Controller {
 		foreach($_POST['generar'] AS $gene){
 			$this->$gene($_POST['year'].$_POST['mes']);
 			$mSQL = "UPDATE libros SET estampa=NOW(), fgenera=$_POST[year]$_POST[mes] WHERE metodo = '$gene'";
-			$this->db->simple_query($mSQL);
+			var_dum($this->db->simple_query($mSQL));
 			echo "Generado $gene";
 		}
 	}
@@ -119,10 +119,10 @@ class Libros extends Controller {
 
 		// ARREGLA SIVA PORSIA
 		$mSQL = "UPDATE siva SET impuesto=0, geneimpu=0, exento=gtotal, stotal=gtotal, general=0 where geneimpu<0 and general>=0 ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 
 		$mSQL = "UPDATE siva SET geneimpu=0, exento=exento+general, stotal=exento+general, general=0 WHERE geneimpu=0 and general<0  ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		
 		$aa = $this->datasis->ivaplica($mes.'02');
 		$tasa      = $aa['tasa'];
@@ -541,10 +541,10 @@ class Libros extends Controller {
 		
 		// ARREGLA SIVA PORSIA
 		$mSQL = "UPDATE siva SET impuesto=0, geneimpu=0, exento=gtotal, stotal=gtotal, general=0 where geneimpu<0 and general>=0 ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		
 		$mSQL = "UPDATE siva SET geneimpu=0, exento=exento+general, stotal=exento+general, general=0 WHERE geneimpu=0 and general<0  ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		$tasa = $this->datasis->traevalor('TASA');
 		
 		
@@ -910,13 +910,13 @@ class Libros extends Controller {
 
 		// ARREGLA SIVA PORSIA
 		$mSQL = "UPDATE siva SET impuesto=0, geneimpu=0, exento=gtotal, stotal=gtotal, general=0 where geneimpu<0 and general>=0 ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 
 		$mSQL = "UPDATE siva SET geneimpu=0, exento=exento+general, stotal=exento+general, general=0 WHERE geneimpu=0 and general<0  ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 
 		$mSQL = "UPDATE club SET cedula=CONCAT('V',cedula) WHERE MID(cedula,1,1) IN ('0','1','2','3','4','5','6','7','8','9')  ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 
 		$mSQL ="SELECT a.fecha AS fecha, a.numero AS numero, a.numero AS final, c.cedula AS rif, 
 		    CONCAT(c.nombres,' ', c.apellidos) AS nombre, 
@@ -1649,12 +1649,12 @@ class Libros extends Controller {
 		
 		// ARREGLA SIVA PORSIA
 		$mSQL = "UPDATE siva SET impuesto=0, geneimpu=0, exento=gtotal, stotal=gtotal, general=0 where geneimpu<0 and general>=0 ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		$mSQL = "UPDATE siva SET geneimpu=0, exento=exento+general, stotal=exento+general, general=0 WHERE geneimpu=0 and general<0  ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		
 		$mSQL = "UPDATE siva SET tipo='FC' WHERE tipo='FE' ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		
 		if ( $this->datasis->traevalor('LIBROVENTASRESUMEN') =='N' ) {
 		$mSQL  = "SELECT 
@@ -2235,12 +2235,12 @@ class Libros extends Controller {
 		
 		// ARREGLA SIVA PORSIA
 		$mSQL = "UPDATE siva SET impuesto=0, geneimpu=0, exento=gtotal, stotal=gtotal, general=0 where geneimpu<0 and general>=0 ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		$mSQL = "UPDATE siva SET geneimpu=0, exento=exento+general, stotal=exento+general, general=0 WHERE geneimpu=0 and general<0  ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		
 		$mSQL = "UPDATE siva SET tipo='FC' WHERE tipo='FE' ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		
 	
 		$mSQL  = "SELECT 
@@ -2776,12 +2776,12 @@ class Libros extends Controller {
 		
 		// ARREGLA SIVA PORSIA
 		$mSQL = "UPDATE siva SET impuesto=0, geneimpu=0, exento=gtotal, stotal=gtotal, general=0 where geneimpu<0 and general>=0 ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		$mSQL = "UPDATE siva SET geneimpu=0, exento=exento+general, stotal=exento+general, general=0 WHERE geneimpu=0 and general<0  ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		
 		$mSQL = "UPDATE siva SET tipo='FC' WHERE tipo='FE' ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		
 		$mSQL  = "SELECT 
 				a.fecha,
@@ -3323,9 +3323,9 @@ class Libros extends Controller {
 		
 		// ARREGLA SIVA PORSIA
 		$mSQL = "UPDATE siva SET impuesto=0, geneimpu=0, exento=gtotal, stotal=gtotal, general=0 where geneimpu<0 and general>=0 ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		$mSQL = "UPDATE siva SET geneimpu=0, exento=exento+general, stotal=exento+general, general=0 WHERE geneimpu=0 and general<0  ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		
 		$mSQL  = "SELECT 
 				a.fecha,
@@ -3797,19 +3797,19 @@ class Libros extends Controller {
 		
 		// ARREGLA SIVA PORSIA
 		$mSQL = "UPDATE siva SET impuesto=0, geneimpu=0, exento=gtotal, stotal=gtotal, general=0 where geneimpu<0 and general>=0 ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		$mSQL = "UPDATE siva SET geneimpu=0, exento=exento+general, stotal=exento+general, general=0 WHERE geneimpu=0 and general<0  ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		$mSQL = "UPDATE club SET cedula=CONCAT('V',cedula) WHERE MID(cedula,1,1) IN ('0','1','2','3','4','5','6','7','8','9')  ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		
 		// TRATA DE PONER FACTURA AFECTADA DESDE FMAY
 		$mSQL = "UPDATE siva a JOIN fmay b ON a.numero=b.numero AND a.fuente='FA' AND b.tipo='D' AND a.fecha=b.fecha SET a.referen=presup WHERE  EXTRACT(YEAR_MONTH FROM a.fechal)=$mes  ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		
 		// PONE NRO FISCAL EN SIVA
 		//$mSQL = "UPDATE siva a JOIN fmay b ON a.numero=b.numero AND a.fuente='FA' AND b.tipo='D' AND a.fecha=b.fecha SET a.referen=presup WHERE  EXTRACT(YEAR_MONTH FROM a.fechal)=$mes  ";
-		//$this->db->simple_query($mSQL);	
+		//var_dum($this->db->simple_query($mSQL));	
 		
 		// PARA HACERLO MENSUAL
 		$SQL[] ="SELECT 
@@ -4403,19 +4403,19 @@ class Libros extends Controller {
 		
 		// ARREGLA SIVA PORSIA
 		$mSQL = "UPDATE siva SET impuesto=0, geneimpu=0, exento=gtotal, stotal=gtotal, general=0 where geneimpu<0 and general>=0 ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		$mSQL = "UPDATE siva SET geneimpu=0, exento=exento+general, stotal=exento+general, general=0 WHERE geneimpu=0 and general<0  ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		$mSQL = "UPDATE club SET cedula=CONCAT('V',cedula) WHERE MID(cedula,1,1) IN ('0','1','2','3','4','5','6','7','8','9')  ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		
 		// TRATA DE PONER FACTURA AFECTADA DESDE FMAY
 		$mSQL = "UPDATE siva a JOIN fmay b ON a.numero=b.numero AND a.fuente='FA' AND b.tipo='D' AND a.fecha=b.fecha SET a.referen=presup WHERE  EXTRACT(YEAR_MONTH FROM a.fechal)=$mes  ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		
 		// PONE NRO FISCAL EN SIVA
 		//$mSQL = "UPDATE siva a JOIN fmay b ON a.numero=b.numero AND a.fuente='FA' AND b.tipo='D' AND a.fecha=b.fecha SET a.referen=presup WHERE  EXTRACT(YEAR_MONTH FROM a.fechal)=$mes  ";
-		//$this->db->simple_query($mSQL);	
+		//var_dum($this->db->simple_query($mSQL));	
 		
 		// PARA HACERLO MENSUAL
 		$SQL[] ="SELECT 
@@ -5368,10 +5368,10 @@ class Libros extends Controller {
 				GROUP BY a.control";
 		
 		// Procesando Compras scst
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		$mSQL = "UPDATE siva SET gtotal=exento+general+geneimpu+adicional+reduimpu+reducida+adicimpu 
 				WHERE fuente='CP' AND libro='C' ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 	}
 
 	function genegastos($mes){
@@ -5425,7 +5425,7 @@ class Libros extends Controller {
 				AND a.cajachi='N' 
 				AND (c.tipo NOT IN ('5') OR a.totiva<>0 ) 
 				ORDER BY a.fecha, a.proveed, a.numero ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 
 		// GASTOS DE  CAJACHICA
 		$mATASAS = $this->datasis->ivaplica($mes.'02');
@@ -5473,10 +5473,10 @@ class Libros extends Controller {
 				WHERE EXTRACT(YEAR_MONTH FROM b.fecha)=$mes 
 				AND b.tipo_doc='FC' AND b.cajachi='S' 
 				ORDER BY a.fecha ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		$mSQL = "UPDATE siva SET gtotal=exento+general+geneimpu+adicional+reduimpu+reducida+adicimpu 
 				WHERE fuente='GS' AND libro='C' ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 	}
 
 	function genecxp($mes){
@@ -5525,13 +5525,13 @@ class Libros extends Controller {
 							fechal=".$mes."01, 
 							referen='$referen', 
 							fafecta='$fafecta' ";
-				$this->db->simple_query($mSQL);
+				var_dum($this->db->simple_query($mSQL));
 			}
 		}
 		// Procesando Compras scst
 		$mSQL = "UPDATE siva SET gtotal=exento+general+geneimpu+adicional+reduimpu+reducida+adicimpu 
 				WHERE fuente='MP' AND libro='C' ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 	}
 
 	function genesfac($mes){
@@ -5547,7 +5547,7 @@ class Libros extends Controller {
 		// ARREGLA LAS QUE TIENEN UNA SOLA TASA
 		$mSQL = "UPDATE sfac SET tasa=iva, montasa=totals 
 			WHERE reducida=0 AND sobretasa=0 AND exento=0 AND EXTRACT(YEAR_MONTH FROM fecha)=$mes";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 
 		$mSQL = "INSERT INTO siva  
 				(id, libro, tipo, fuente, sucursal, fecha, numero, numhasta,  caja, nfiscal,  nhfiscal, 
@@ -5590,7 +5590,7 @@ class Libros extends Controller {
 				FROM sfac AS a 
 				LEFT JOIN scli AS c ON a.cod_cli=c.cliente 
 				WHERE EXTRACT(YEAR_MONTH FROM a.fecha)=$mes ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 
 		// CARGA LAS RETENCIONES DE IVA DE CONTADO
 		$mSQL = "SELECT * FROM sfpa WHERE tipo='RI' AND	EXTRACT(YEAR_MONTH FROM f_factura)=$mes AND tipo_doc='FE' ";
@@ -5598,7 +5598,7 @@ class Libros extends Controller {
 		if ($query->num_rows() > 0) {
 			foreach ( $query->result() AS $row ) {
 				$mSQL = "UPDATE siva SET reiva=".$row->monto.", comprobante='20".$row->num_ref."' WHERE tipo='".$row->tipo_doc."' AND numero='".$row->numero."' AND libro='V' AND EXTRACT(YEAR_MONTH FROM fechal)=$mes ";
-				$this->db->simple_query($mSQL); 
+				var_dum($this->db->simple_query($mSQL)); 
 			}
 		}
 		
@@ -5614,7 +5614,7 @@ class Libros extends Controller {
 		if ($query->num_rows() > 0) {
 			foreach ( $query->result() AS $row ) {
 				$mSQL = "UPDATE siva SET reiva=".$row->reteiva.", comprobante='".$row->nroriva."', fecharece='$row->recriva'  WHERE tipo='".$row->tipo_doc."' AND numero='".$row->numero."' AND libro='V' AND EXTRACT(YEAR_MONTH FROM fechal)=$mes ";
-				$this->db->simple_query($mSQL); 
+				var_dum($this->db->simple_query($mSQL)); 
 			}
 		}		
 	}
@@ -5632,7 +5632,7 @@ class Libros extends Controller {
 		// ARREGLA LAS QUE TIENEN UNA SOLA TASA
 		$mSQL = "UPDATE sfac SET tasa=iva, montasa=totals 
 			WHERE reducida=0 AND sobretasa=0 AND exento=0 AND EXTRACT(YEAR_MONTH FROM fecha)=$mes";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		$tasas=$this->_tasas($mes);
 		$mTASA=$tasas['general'];
 		
@@ -5678,7 +5678,7 @@ class Libros extends Controller {
 			LEFT JOIN scli AS c ON b.cod_cli=c.cliente 
 			WHERE EXTRACT(YEAR_MONTH FROM b.fecha)=$mes AND b.tipo!='A'
 			GROUP BY a.fecha,a.numero ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		
 		$mSQL = "INSERT INTO siva  
 			(id, libro, tipo, fuente, sucursal, fecha, numero, numhasta,  caja, nfiscal,  nhfiscal, 
@@ -5722,7 +5722,7 @@ class Libros extends Controller {
 			LEFT JOIN scli AS c ON b.cod_cli=c.cliente 
 			WHERE EXTRACT(YEAR_MONTH FROM b.fecha)=$mes AND b.tipo='A'
 			GROUP BY a.fecha,a.numero ";
-		//$this->db->simple_query($mSQL);
+		//var_dum($this->db->simple_query($mSQL));
 	}
 
 	function genesmov($mes){
@@ -5788,7 +5788,7 @@ class Libros extends Controller {
 						reiva = ".$row->reteiva.",
 						fechal = ".$mes."01,
 						fafecta ='".$row->fafecta."'";
-			$this->db->simple_query($mSQL);
+			var_dum($this->db->simple_query($mSQL));
 		}
 
 		// RETENCIONES DE IVA DEL MISMO MES
@@ -5803,7 +5803,7 @@ class Libros extends Controller {
 		$query = $this->db->query($mSQL);
 		foreach ( $query->result() as $row ){
 			$mSQL = "UPDATE siva SET reiva=$row->reteiva, comprobante=$row->nroriva WHERE tipo='FC' AND numero='$row->numero' AND libro='V' AND EXTRACT(YEAR_MONTH FROM fechal)=$mes ";
-			$this->db->simple_query($mSQL);
+			var_dum($this->db->simple_query($mSQL));
 		}
 
 		// RETENCIONES DE IVA
@@ -5857,7 +5857,7 @@ class Libros extends Controller {
 					fecharece = '$row->recriva',
 					fechal = ".$mes."01 "; 
 			
-			$this->db->simple_query($mSQL);
+			var_dum($this->db->simple_query($mSQL));
 		}
 
 		//RETENCIONES ANTERIORES PENDIENTES
@@ -5906,7 +5906,7 @@ class Libros extends Controller {
 						stotal = 0, 
 						reiva = ".$row->monto.",
 						fechal = ".$mes."01 ";
-			$this->db->simple_query($mSQL);
+			var_dum($this->db->simple_query($mSQL));
 		}
 	}
 
@@ -5957,7 +5957,7 @@ class Libros extends Controller {
 				EXTRACT(YEAR_MONTH FROM b.fecha)=$mes
 				AND (b.iva > 0 OR b.tipo_doc IN ('FC','ND') ) 
 				GROUP BY a.tipo_doc,a.numero ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		//echo $mSQL;
 		//exit;
 	}
@@ -6008,7 +6008,7 @@ class Libros extends Controller {
 			FROM rfac AS a 
 			LEFT JOIN scli AS c ON a.cod_cli=c.cliente 
 			WHERE EXTRACT(YEAR_MONTH FROM a.fecha)=$mes AND a.tipo NOT IN ('P','T')";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		//echo $mSQL;
 		
 		// CARGA LAS RETENCIONES DE IVA DE CONTADO
@@ -6017,7 +6017,7 @@ class Libros extends Controller {
 		if ($query->num_rows() > 0) {
 			foreach ( $query->result() AS $row ){
 				$mSQL = "UPDATE siva SET reiva=".$row->monto.", comprobante='20".$row->num_ref."' WHERE tipo='".$row->tipo_doc."' AND numero='".$row->numero."' AND libro='V' AND EXTRACT(YEAR_MONTH FROM fechal)=$mes ";
-				$this->db->simple_query($mSQL); 
+				var_dum($this->db->simple_query($mSQL)); 
 			}
 		}
 
@@ -6033,7 +6033,7 @@ class Libros extends Controller {
 		if ($query->num_rows() > 0) {
 			foreach ( $query->result() AS $row ){
 				$mSQL = "UPDATE siva SET reiva=".$row->reteiva.", comprobante='".$row->nroriva."', fecharece='$row->recriva'  WHERE tipo='".$row->tipo_doc."' AND numero='".$row->numero."' AND libro='V' AND EXTRACT(YEAR_MONTH FROM fechal)=$mes ";
-				$this->db->simple_query($mSQL); 
+				var_dum($this->db->simple_query($mSQL)); 
 			}
 		}
 	}
@@ -6085,7 +6085,7 @@ class Libros extends Controller {
 			FROM hfac AS a 
 			LEFT JOIN scli AS c ON a.cod_cli=c.cliente 
 			WHERE EXTRACT(YEAR_MONTH FROM a.fecha_ou)=$mes AND a.tipo NOT IN ('P','T')";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		//echo $mSQL;
 		
 		//CARGA LAS RETENCIONES DE IVA DE CONTADO
@@ -6094,7 +6094,7 @@ class Libros extends Controller {
 		if ($query->num_rows() > 0) {
 			foreach ( $query->result() AS $row ) {
 				$mSQL = "UPDATE siva SET reiva=".$row->monto.", comprobante='20".$row->num_ref."' WHERE tipo='".$row->tipo_doc."' AND numero='".$row->numero."' AND libro='V' AND EXTRACT(YEAR_MONTH FROM fechal)=$mes ";
-				$this->db->simple_query($mSQL); 
+				var_dum($this->db->simple_query($mSQL)); 
 			}
 		}
 		
@@ -6110,7 +6110,7 @@ class Libros extends Controller {
 		if ($query->num_rows() > 0) {
 			foreach ( $query->result() AS $row ){
 				$mSQL = "UPDATE siva SET reiva=".$row->reteiva.", comprobante='".$row->nroriva."', fecharece='$row->recriva'  WHERE tipo='".$row->tipo_doc."' AND numero='".$row->numero."' AND libro='V' AND EXTRACT(YEAR_MONTH FROM fechal)=$mes ";
-				$this->db->simple_query($mSQL); 
+				var_dum($this->db->simple_query($mSQL)); 
 			}
 		}
 	}
@@ -6142,7 +6142,7 @@ class Libros extends Controller {
 			}
 		}
 		$mSQL = "UPDATE scst SET exento=$mEXENTO, tasa=$mTASA,montasa=$mMONTASA,reducida=$mREDUCIDA,monredu=$mMONREDU,sobretasa=$mSOBRETASA,monadic=$mMONADIC WHERE control=$mCONTROL ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 	} 
 
 	function _tasas($mes) {
@@ -6181,7 +6181,7 @@ class Libros extends Controller {
 		}
 
 		$mSQL = "UPDATE sfac SET exento=$mEXENTO, tasa=$mTASA, montasa=$mMONTASA,reducida=$mREDUCIDA, monredu=$mMONREDU, sobretasa=$mSOBRETASA, monadic=$mMONADIC WHERE transac='$mTRANSAC' ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 
 	}
 
@@ -6238,7 +6238,7 @@ class Libros extends Controller {
 				FROM costos AS a LEFT JOIN sinv AS b ON a.codigo=b.codigo  
 				WHERE EXTRACT(YEAR_MONTH FROM a.fecha)=$mes  AND MID(b.tipo,1,1)!='S' 
 				GROUP BY EXTRACT(YEAR_MONTH FROM a.fecha),a.codigo ";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		
 		//Insertamos los del mes pasado que no tienen movimiento este mes
 		$this->db->simple_query("INSERT IGNORE INTO invresu (mes, codigo,descrip, inicial, compras,ventas, trans, fisico,notas,final, minicial, mcompras, mventas, mtrans, mfisico, mnotas, mfinal ) SELECT $mes, codigo, descrip, 0, 0,0,0,0,0,0,0,0,0,0,0,0,0 FROM invresu WHERE mes=$mesa");
@@ -6306,7 +6306,7 @@ class Libros extends Controller {
 
 	function activar($metodo){
 		$mSQL = "UPDATE libros SET activo=IF(activo='S','N','S') WHERE metodo = '$metodo'";
-		echo $this->db->simple_query($mSQL);
+		echo var_dum($this->db->simple_query($mSQL));
 	}
 
 	function cedit(){ 
@@ -6343,7 +6343,7 @@ class Libros extends Controller {
 		  `fgenera` char(6) default NULL,
 		  PRIMARY KEY  (`metodo`)
 		) ENGINE=MyISAM DEFAULT CHARSET=latin1";   
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		
 		$data[]=array('metodo'=>'wlvexcelpdv'        ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas PDV'      );
 		$data[]=array('metodo'=>'wlvexcelpdvq1'      ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas PDV Quincenta 1');
@@ -6372,9 +6372,9 @@ class Libros extends Controller {
 		
 		foreach($data AS $algo){
 			$mSQL = $this->db->insert_string('libros', $algo);
-			$this->db->simple_query($mSQL);
+			var_dum($this->db->simple_query($mSQL));
 		}
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		echo $uri = anchor('finanzas/libros/configurar','Configurar');
 	} 
 }

@@ -67,7 +67,7 @@ class valores extends Controller {
 	}
 	function moneda(){
 		$mSQL="INSERT INTO `valores` (`nombre`, `valor`, `descrip`) VALUES ('MONEDA', '$', 'Tipo de Moneda con la cual trabaja la empresa') ;";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		
 	}
 }

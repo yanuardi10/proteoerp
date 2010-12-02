@@ -54,7 +54,7 @@ class enviacaja extends Controller {
 				$join='JOIN `itscst` AS b ON a.codigo=b.codigo AND b.codigo='.$this->db->escape($control);
 			$mSQL="INSERT INTO `enviapos` (codigo,numero,precio1,fecha,hora,usuario)
 				  SELECT a.codigo,'INVENTAR',a.precio1,CURDATE(),CURTIME(),'$usr' FROM `maes` AS a $join";
-			$ban = $this->db->simple_query($mSQL);
+			$ban = var_dum($this->db->simple_query($mSQL));
 			if(!$ban) {
 				$error.="Hubo problemas al pasar los precios, comuniquese con servicio t&eacute;cnico";
 				memowrite($mSQL,'ENVIACAJA');

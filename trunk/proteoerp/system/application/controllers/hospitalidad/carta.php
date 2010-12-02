@@ -256,11 +256,11 @@ class Carta extends validaciones {
 	}
 	function instalar(){
 		$mSQL="ALTER TABLE `menu` ADD activard CHAR(5) DEFAULT '00:00'";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		$mSQL="ALTER TABLE `menu` ADD activarh CHAR(5) DEFAULT '99:99'";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		$mSQL="ALTER TABLE `menu` ADD activardia CHAR(7) DEFAULT '0123456'";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 	} 
 }   
 ?>

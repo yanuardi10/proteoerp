@@ -227,7 +227,7 @@ class formatos extends validaciones {
 		if(!empty($codigo)){
 			$pk=explode('|',$codigo);
 			$mSQL="UPDATE intrarepo SET activo=IF(activo='S','N','S') WHERE nombre='$pk[0]' AND modulo='$pk[1]'";
-			echo $this->db->simple_query($mSQL);
+			echo var_dum($this->db->simple_query($mSQL));
 		}else{
 			echo 0;
 		}
@@ -236,14 +236,14 @@ class formatos extends validaciones {
 	function _post_insert($do){
 		$nombre=$do->get('nombre');
 		$mSQL="INSERT IGNORE INTO `reportes` (nombre) VALUES ('$nombre')";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		logusu('formatos',"CREADO EL REPORTE $nombre");
 	}
 	
 	function _post_delete($do){
 		$nombre=$do->get('nombre');
 		$mSQL="DELETE FROM `reportes` WHERE `nombre`='$nombre'";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		logusu('formatos',"BORRADO EL REPORTE $nombre");
 	}
 	
@@ -256,7 +256,7 @@ class formatos extends validaciones {
 		  `activo` char(1) default 'S',
 		  PRIMARY KEY  (`nombre`,`modulo`)
 		) ENGINE=MyISAM DEFAULT CHARSET=latin1";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		
 	}
 }

@@ -314,9 +314,9 @@ class fiscalz extends Controller{
 		  `ncnumero` char(8) default NULL,
 		  PRIMARY KEY  (`serial`,`numero`)
 		) ENGINE=MyISAM DEFAULT CHARSET=latin1";
-		$this->db->simple_query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 		$mSQL="ALTER TABLE `fiscalz` ADD `manual` CHAR(1)DEFAULT 'N' NULL";
-    $this->db->simple_query($mSQL);
+    var_dum($this->db->simple_query($mSQL));
 	}
 }
 ?>
