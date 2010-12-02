@@ -269,6 +269,6 @@ class sinvpromo extends validaciones {
 			COLLATE='utf8_unicode_ci'
 			ENGINE=MyISAM
 			ROW_FORMAT=DEFAULT";
-		$this->db->query($mSQL);
+		var_dum($this->db->simple_query($mSQL));
 	}
 }
