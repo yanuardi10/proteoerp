@@ -406,5 +406,6 @@ class Factura extends Controller {
 		$do->set('estampa', 'CURDATE()', FALSE);
 		$do->set('hora'   , 'CURRENT_TIME()', FALSE);
 		$do->set('usuario', $this->session->userdata('usuario'));
+	 }
 	}
 }
