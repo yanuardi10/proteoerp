@@ -12,7 +12,7 @@ class Sinvactu extends Controller{
 		$this->upload_path =$path->getPath().'/';
 	}
 	
-	function index(){		
+	function index(){
 		redirect("inventario/sinvactu/load");
 	}
 
@@ -164,97 +164,78 @@ class Sinvactu extends Controller{
 					}else
 				 		$iva=null;
 
-				if(!empty($iva))
-				{
+				if(!empty($iva)){
 					if((!empty($row['costo']))&&$row['costo']!=0)$costo=$row['costo'];
-					for($i=1;$i <= 4;$i++)
-					{
+					for($i=1;$i <= 4;$i++){
 						$margen=null;
 						$precio=null;
 						$base=null;
-						$ban2=false;//
-						
-						if( ((!empty($row['costo']))||$row['costo']!=0)&&((!empty($row["precio$i"]))||$row["precio$i"]!=0))
-						{
+						$ban2=false;
+
+						if( ((!empty($row['costo']))||$row['costo']!=0)&&((!empty($row["precio$i"]))||$row["precio$i"]!=0)){
 							$precio=$row["precio$i"];
 							$base=$this->_base($iva,$precio);
 							$margen=$this->_margen($costo,$base);
 							$ban2=true;
 							$ban=true;
-						}elseif(!empty($row['costo']))
-						{
-							if(!empty($row["margen$i"]))
-							{
-								$margen=$row["margen$i"];								
+						}elseif(!empty($row['costo'])){
+							if(!empty($row["margen$i"])){
+								$margen=$row["margen$i"];
 								$base=$this->_base2($costo,$margen);
 								$precio=$this->_precio($iva,$base);
 								$ban2=true;
 								$ban=true;
-							}elseif(!empty($row["base$i"]))
-							{
+							}elseif(!empty($row["base$i"])){
 								$base=$row["base$i"];
 								$margen=_margen($costo,$base);
 								$precio=_precio($iva,$base);
 								$ban2=true;
 								$ban=true;
-							}elseif(!empty($row["antmargen$i"]))
-							{
-								$margen=$row["antmargen$i"];								
+							}elseif(!empty($row["antmargen$i"])){
+								$margen=$row["antmargen$i"];
 								$base=$this->_base2($costo,$margen);
 								$precio=$this->_precio($iva,$base);
 								$ban2=true;
 								$ban=true;
-							}elseif(!empty($row["antbase$i"]))
-							{
+							}elseif(!empty($row["antbase$i"])){
 								$base=$row["antbase$i"];
 								$margen=_margen($costo,$base);
 								$precio=_precio($iva,$base);
 								$ban2=true;
 								$ban=true;
-							}else
-							{
+							}else{
 							}
-						}elseif(!empty($row["precio$i"]))
-						{
+						}elseif(!empty($row["precio$i"])){
 							$precio=$row["precio$i"];
-							if(!empty($row["antcosto"]))
-							{
+							if(!empty($row["antcosto"])){
 								$costo=$row["antcosto"];
 								$base=$this->_base($iva,$precio);
 								$margen=$this->_margen($costo,$base);
 								$ban2=true;
 								$ban=true;
-							}elseif(!empty($row["margen$i"]))
-							{
+							}elseif(!empty($row["margen$i"])){
 								$margen=$row["margen$i"];
 								$base=_base($iva,$precio);
 								$costo=_costo($base,$margen);
 								$ban2=true;
 								$ban=true;
 								$ban3=true;
-							}elseif(!empty($row["base$i"]))
-							{
+							}elseif(!empty($row["base$i"])){
 								//NO SE PUEDE CALCULAR LOS 3
-							}elseif(!empty($row["antmargen$i"]))
-							{
+							}elseif(!empty($row["antmargen$i"])){
 								$margen=$row["antmargen$i"];
 								$base=_base($iva,$precio);
 								$costo=_costo($base,$margen);
 								$ban2=true;
 								$ban=true;
 								$ban3=true;
-							}elseif(!empty($row["antbase$i"]))
-							{
+							}elseif(!empty($row["antbase$i"])){
 								//NO SE PUEDE CALCULAR LOS 3
-							}else
-							{
+							}else{
 							}
-						}else
-						{
+						}else{
 						}
-						
-						if($ban2)
-						{
+						if($ban2){
 							$update.=", base$i=";
 							if(is_null($base))$update.='null';else $update.=$base;
 							$update.=", margen$i=";
@@ -262,30 +243,26 @@ class Sinvactu extends Controller{
 							$update.=", precio$i=";
 							if(is_null($precio))$update.='null';else $update.=$precio;
 							$salida.=", base$i, margen$i, precio$i";
-						}						
-					}//for
+						}
+					}
 
-					if($ban3)
-					{
+					if($ban3){
 						$salida.=", ultimo, iva";
 						$update.=", ultimo=$costo";
 						$update.=", iva=";
 						if(is_null($iva))$update.='null';$update.=$iva;
 					}
-				}else
-				{
+				}else{
 				}
 				$update.=" WHERE codigo='$codigo'";
-				if($ban)
-				{
+				if($ban){
 					//echo $salida."</br>";
 					//echo $update."</br>";
 					$mSQL2=$this->db->query($update);
 				}
 			}
 			return 1;
-		}else
-		{
+		}else{
 			return 0;
 		}
 	}
@@ -317,9 +294,8 @@ class Sinvactu extends Controller{
 		");
 		return $actualizo;
 	}
-	
+
 	function deshacer(){
-		
 		$actualizo=$this->db->query("
 		UPDATE sinv AS a 
 		JOIN sinvactu b
@@ -346,17 +322,17 @@ class Sinvactu extends Controller{
 		");
 		echo $actualizo;
 	}
-	
+
 	function _costo($base,$margen){
-		$return=($base* (100-$margen)) / 100;		
+		$return=($base* (100-$margen)) / 100;
 		return $return;
 	}
-	
+
 	function _base2($costo,$margen){
 		$return=($costo*100)/(100-$margen);
 		return $return;
 	}
-	
+
 	function _base($iva,$precio){
 	  $return=($precio*100)/(100+$iva);
 		return $return;
@@ -366,16 +342,16 @@ class Sinvactu extends Controller{
 		$return=100-($costo*100)/$base;
 		return $return;
 	}
-	
+
 	function _precio($iva,$base){
 		$return=$base*(($iva+100)/100);
 		return $return;
 	}
-	
-	function load(){		
+
+	function load(){
 		$this->rapyd->load("dataform");
 		$link=site_url('inventario/sinvactu/deshacer');
-		
+
 		$script ='
 		function deshacer(){
 			a=confirm("¿Esta Seguro que de desea deshacer la ultima actualizaci&oacute;n realizada?");
@@ -392,38 +368,35 @@ class Sinvactu extends Controller{
 					}
 				});
 			}
-		}
-		';
-    
+		}';
+
 		$form = new DataForm("inventario/sinvactu/read");
 		$form->title('Cargar Archivo de Productos (xls)');
 		$form->script($script);
-		
+
 		$form->archivo = new uploadField("Archivo","archivo");
 		$form->archivo->upload_path   = $this->upload_path;    
 		$form->archivo->allowed_types = "xls";
 		$form->archivo->delete_file   =false;
 		$form->archivo->rule   ="required";
-    
+
 		$form->submit("btnsubmit","Cargar");
-				
 		$form->build_form();
-		
-		
+
 		$salida='<a href="javascript:deshacer();" title="Haz Click para Deshacer La Ultima Actualizaci&oacute;n" onclick="">Deshacer La Ultima Actualizaci&oacute;n</a>';
-    
+
 		$data['content'] = $form->output.$salida;
 		$data['title']   = "<h1>Actualizaci&oacute;n de Inventario</h1>";
 		$data["head"]    = script("jquery.pack.js").$this->rapyd->get_head();
-		$this->load->view('view_ventanas', $data);	
-	} 
-	  
+		$this->load->view('view_ventanas', $data);
+	}
+
 	function read(){
-		
+
 		$this->load->library("Spreadsheet_Excel_Reader");
-		$this->rapyd->load("datagrid2","dataform");		
-		 
-		$salida=anchor('inventario/sinvactu', 'Atras');	
+		$this->rapyd->load("datagrid2","dataform");
+
+		$salida=anchor('inventario/sinvactu', 'Atras');
 		$type='';
 		if(isset($_FILES['archivoUserFile']['type']))$type=$_FILES['archivoUserFile']['type'];
 		
@@ -442,7 +415,7 @@ class Sinvactu extends Controller{
 				for ($i = 0; $i <= $data->sheets[0]['numRows']; $i++) {
 					$ref=0;
 					for ($j = 1; $j <= $data->sheets[0]['numCols']; $j++) {
-						$cols[$j-1]=$data->sheets[0]['cells'][$i][$j];					
+						$cols[$j-1]=$data->sheets[0]['cells'][$i][$j];
 						if(!empty($data->sheets[0]['cells'][$i][$j])){ $ref++; }
 					}
 					if($ref>2){break;}
@@ -457,17 +430,16 @@ class Sinvactu extends Controller{
 						if(!empty($data->sheets[0]['cells'][$i][$j])){ $ref++; }
 						$j++;
 					}
-					
-					
+
 					if(($ref>2)&&((implode(' ',$data3[$i]))!=(implode(' ',$cols)))){
 						$data4[$c]=$data3[$i];
 						$c++;
 					}
 				}
-				
+
 				$form = new DataForm("/inventario/sinvactu/actualiza");
 				$form->free = new freeField("Campos.Archivo xls","free","Campos de El Sistema");   
-				
+
 				$grid = new DataGrid2("Archivo Cargado",$data4);
 
 				$j=0;
@@ -499,15 +471,14 @@ class Sinvactu extends Controller{
 				$form->cols = new inputField("","cols");
 				$form->cols->insertValue=implode(',',$cols);
 				$form->cols->type='hidden';
-				
+
 				$form->dir = new inputField("","dir");
 				$form->dir->insertValue=$dir;
 				$form->dir->type='hidden';
-				
+
 				//$form->submit("btnsubmit","Actualizar");
 				$link=site_url('inventario/sinvactu/actualiza');
-			
-			
+
 				$script ='
 				function actu(){
 					a=confirm("¿Esta Seguro que de desea Actualizar el Inventario ?");
@@ -529,16 +500,15 @@ class Sinvactu extends Controller{
 					}
 				}
 				';
-				
-				
+
 				$form->script($script);
 				$form->button("actualiza","Actualizar","javascript:actu();");
 				
 				$form->build_form();
-				$grid->build();			
+				$grid->build();
 				$data2['content'] = $form->output.$salida.$grid->output;
 			}
-				
+
 		}else{
 			$data2['content'] = $salida;
 		}
@@ -547,51 +517,50 @@ class Sinvactu extends Controller{
 		$data2["head"]    = script("jquery.pack.js").$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data2);	
 	}
-	
+
 	function instalar(){
 		$mSQL='
 			CREATE TABLE /*!32312 IF NOT EXISTS*/ `sinvactu` (
-  `codigo` varchar(15) NOT NULL default "",
-  `descrip` varchar(45) default NULL,
-  `clave` varchar(8) default NULL,
-  `descrip2` varchar(45) default NULL,
-  `antdescrip2` varchar(45) default NULL,
-  `grupo` varchar(4) default NULL,
-  `costo` decimal(13,2) unsigned default NULL,
-  `precio1` decimal(13,2) unsigned default NULL,
-  `antcosto` decimal(13,2) unsigned default NULL,
-  `antprecio1` decimal(13,2) unsigned default NULL,
-  `iva` decimal(6,2) unsigned default NULL,
-  `antiva` decimal(6,2) unsigned default NULL,
-  `precio2` decimal(13,2) default NULL,
-  `precio3` decimal(13,2) default NULL,
-  `precio4` decimal(13,2) unsigned default NULL,
-  `base1` decimal(13,2) unsigned default NULL,
-  `base2` decimal(13,2) default NULL,
-  `base3` decimal(13,2) unsigned default NULL,
-  `base4` decimal(13,2) unsigned default NULL,
-  `margen1` decimal(13,2) unsigned default NULL,
-  `margen2` decimal(13,2) unsigned default NULL,
-  `margen3` decimal(13,2) unsigned default NULL,
-  `margen4` decimal(13,2) unsigned default NULL,
-  `antdescrip` varchar(45) default NULL,
-  `antclave` varchar(8) default NULL,
-  `antgrupo` varchar(4) default NULL,
-  `antprecio2` decimal(13,2) unsigned default NULL,
-  `antprecio3` decimal(13,2) unsigned default NULL,
-  `antprecio4` decimal(13,2) unsigned default NULL,
-  `antbase1` decimal(13,2) unsigned default NULL,
-  `antbase2` decimal(13,2) unsigned default NULL,
-  `antbase3` decimal(13,2) unsigned default NULL,
-  `antbase4` decimal(13,2) unsigned default NULL,
-  `antmargen1` decimal(13,2) unsigned default NULL,
-  `antmargen2` decimal(13,2) unsigned default NULL,
-  `antmargen3` decimal(13,2) unsigned default NULL,
-  `antmargen4` decimal(13,2) unsigned default NULL,
-  PRIMARY KEY  (`codigo`)
-)
-	';
-$this->db->simple_query($mSQL);	
-	}	
+		  `codigo` varchar(15) NOT NULL default "",
+		  `descrip` varchar(45) default NULL,
+		  `clave` varchar(8) default NULL,
+		  `descrip2` varchar(45) default NULL,
+		  `antdescrip2` varchar(45) default NULL,
+		  `grupo` varchar(4) default NULL,
+		  `costo` decimal(13,2) unsigned default NULL,
+		  `precio1` decimal(13,2) unsigned default NULL,
+		  `antcosto` decimal(13,2) unsigned default NULL,
+		  `antprecio1` decimal(13,2) unsigned default NULL,
+		  `iva` decimal(6,2) unsigned default NULL,
+		  `antiva` decimal(6,2) unsigned default NULL,
+		  `precio2` decimal(13,2) default NULL,
+		  `precio3` decimal(13,2) default NULL,
+		  `precio4` decimal(13,2) unsigned default NULL,
+		  `base1` decimal(13,2) unsigned default NULL,
+		  `base2` decimal(13,2) default NULL,
+		  `base3` decimal(13,2) unsigned default NULL,
+		  `base4` decimal(13,2) unsigned default NULL,
+		  `margen1` decimal(13,2) unsigned default NULL,
+		  `margen2` decimal(13,2) unsigned default NULL,
+		  `margen3` decimal(13,2) unsigned default NULL,
+		  `margen4` decimal(13,2) unsigned default NULL,
+		  `antdescrip` varchar(45) default NULL,
+		  `antclave` varchar(8) default NULL,
+		  `antgrupo` varchar(4) default NULL,
+		  `antprecio2` decimal(13,2) unsigned default NULL,
+		  `antprecio3` decimal(13,2) unsigned default NULL,
+		  `antprecio4` decimal(13,2) unsigned default NULL,
+		  `antbase1` decimal(13,2) unsigned default NULL,
+		  `antbase2` decimal(13,2) unsigned default NULL,
+		  `antbase3` decimal(13,2) unsigned default NULL,
+		  `antbase4` decimal(13,2) unsigned default NULL,
+		  `antmargen1` decimal(13,2) unsigned default NULL,
+		  `antmargen2` decimal(13,2) unsigned default NULL,
+		  `antmargen3` decimal(13,2) unsigned default NULL,
+		  `antmargen4` decimal(13,2) unsigned default NULL,
+		  PRIMARY KEY  (`codigo`)
+		)';
+		$this->db->simple_query($mSQL);	
+	}
 }
 ?>
