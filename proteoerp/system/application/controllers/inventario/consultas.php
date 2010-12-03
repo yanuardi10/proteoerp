@@ -12,41 +12,39 @@ class Consultas extends Controller {
 
 	function preciosgeneral(){
 		$this->rapyd->load('dataform','datatable');
-		$cod=$this->uri->segment(4);
+		$cod=($this->uri->segment(4)==false) ? $this->input->post('codigo') : $this->uri->segment(4);
 
-		$script='
-		$("#codigo").focus();
+		$script='<script type="text/javascript" charset=ISO-8859-1">
 		$(document).ready(function() {
-			$("a").fancybox();
 			$("#codigo").attr("value", "");
 			$("#codigo").focus();
 		});
-		$("#df1").submit(function() {
-				valor=$("#codigo").attr("value");
-				location.href="'.site_url('inventario/consultas/preciosgeneral').'/"+valor;
-				return false;
-			});';
+		</script>';
 
-		$form = new DataForm();
-		$form->script($script);
+		$barras = array(
+			'name'      => 'codigo',
+			'id'        => 'codigo',
+			'value'     => '',
+			'maxlength' => '15',
+			'size'      => '16',
+			);
 
-		$form->codigo = new inputField('C&oacute;digo','codigo');
-		$form->codigo->size=20;
-		$form->codigo->insertValue='';
-		$form->codigo->append('Presente el art&iacute;culo frente al lector de c&oacute;digo de barras o escribalo directamente y luego presione ENTER');
+		$out  = '<h1>'.form_open('inventario/consultas/preciosgeneral');
+		$out .= "Introduzca un C&oacute;digo ";
+		$out .= form_input($barras);
+		//$out .= $this->datasis->modbus($sinv);
+		$out .= form_submit('btnsubmit','Consultar').form_close().'</h1>';
 
-		$form->build_form();
-
-		$contenido = $form->output;
+		$contenido = $out;
 		if(!empty($cod)){
 			$data2=$this->rprecios($cod);
 			if($data2!==false){
 				$contenido .=$this->load->view('view_rprecios', $data2,true);
 			}else{
 				$t=array();
-				$t[1][1]="<b>PRODUCTO NO REGISTRADO</b>";
-				$t[2][1]="";
-				$t[3][1]="<b>Por Favor introduzca un C&oacute;digo de identificaci&oacute;n del Producto</b>";
+				$t[1][1]='<b>PRODUCTO NO REGISTRADO</b>';
+				$t[2][1]='';
+				$t[3][1]='<b>Por Favor introduzca un C&oacute;digo de identificaci&oacute;n del Producto</b>';
 
 				$table = new DataTable(null,$t);
 				$table->cell_attributes = 'style="vertical-align:middle; text-align: center;"';
@@ -59,7 +57,7 @@ class Consultas extends Controller {
 		}
 
 		$data['content'] = $contenido;
-		$data['head']    = script("jquery.js").script("plugins/jquery.fancybox.pack.js").script("plugins/jquery.easing.js").style('fancybox/jquery.fancybox.css').style("ventanas.css").style("estilos.css").$this->rapyd->get_head();
+		$data['head']    = script('jquery.js').style('ventanas.css').style('estilos.css').$this->rapyd->get_head().$script;
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -75,7 +73,8 @@ class Consultas extends Controller {
 			$suple  = 1;
 			$aplica = 'maes';
 		}else{
-			$mSQL_p = 'SELECT precio1,base1,precio2,precio3, barras,existen, CONCAT_WS(" ",descrip ,descrip2) AS descrip, codigo,marca,alterno,id,modelo,iva,unidad,descufijo,grupo FROM sinv';
+			$fiedesc= ($this->db->field_exists('descufijo', 'sinv')) ? 'descufijo':'0 AS descufijo';
+			$mSQL_p = 'SELECT precio1,base1,precio2,precio3, barras,existen, CONCAT_WS(" ",descrip ,descrip2) AS descrip, codigo,marca,alterno,id,modelo,iva,unidad,'.$fiedesc.',grupo FROM sinv';
 			$bbus   = array('codigo','barras','alterno');
 			$aplica = 'sinv';
 			$suple  = null;
