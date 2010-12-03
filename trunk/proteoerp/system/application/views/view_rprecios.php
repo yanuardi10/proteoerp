@@ -15,7 +15,7 @@
 		<td width='100%' >
 			<table width='100%' border='0'>
 				<tr><td align='center'><b STYLE="font-size:24pt;color:blue">Precio al p&uacute;blico: <?=$precio1 ?></b> <b><?=$moneda  ?></b></td></tr>
-				<?php $d=(isset($descufijo)? $descufijo:0);if($d>0){ $descufijo=$d; ?>
+				<?php if($descufijo>0){?>
 				<tr><td align='center'><b STYLE="font-size:24pt;color:red">Descuento <?php echo $descufijo; ?>%:</b> &nbsp;<b STYLE="font-size:30pt;color:red"><?php echo $pdescu; ?></b><b STYLE="font-size:16pt;color:red"> <?php echo $moneda;?></b></td></tr>
 				<tr><td align='center'><b STYLE="font-size:8pt;color:red"> <?php echo $descurazon;?></td></tr>
 				<?php }else{ ?>
