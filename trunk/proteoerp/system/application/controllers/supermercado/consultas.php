@@ -29,7 +29,7 @@ class Consultas extends Controller {
 			                      'titulo'  =>'Buscar Articulo');
 				    
 		$out  = form_open('supermercado/consultas/precios');
-		$out .= "Introduzca un Codigo ";
+		$out .= "Introduzca un C&oacute;digo ";
 		$out .= form_input($barras);
 		$out .= $this->datasis->modbus($sinv);
 		$out .= form_close();
@@ -66,7 +66,7 @@ class Consultas extends Controller {
 		</script>
 script;
 		$data['content'] = '<div id="resp" style=" width: 100%; height: 300px" >&nbsp;</div>';
-		$data['logo']   = "<img src='".base_url()."images/logopm.jpg' width=150>";
+		$data['logo']   = "<img src='".base_url()."images/logo.jpg' width=150>";
 		$data['title']   = "<h1>$out</h1>";
 		$data["head"]    = script("jquery-1.2.6.pack.js").$this->rapyd->get_head();
 		$this->load->view('view_consulta', $data);
