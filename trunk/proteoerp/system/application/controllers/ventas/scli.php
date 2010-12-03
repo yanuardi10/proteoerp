@@ -48,6 +48,7 @@ class Scli extends validaciones {
 		$grid->column_orderby('Cuenta','cuenta','cuenta');
 		$grid->add('ventas/scli/dataedit/create','Agregar un cliente');
 		$grid->build();
+		//echo $grid->db->last_query();
 
 
 		/*$data['content'] = $filter->output.$grid->output;

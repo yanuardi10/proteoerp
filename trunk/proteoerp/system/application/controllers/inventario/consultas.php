@@ -70,14 +70,18 @@ class Consultas extends Controller {
 		$maes= ($this->db->table_exists('maes')) ? $this->datasis->dameval('SELECT COUNT(*) FROM maes'): 0;
 
 		if($maes>$sinv){
-			$mSQL_p='SELECT precio1,base1,precio2,precio3, barras,existen, CONCAT_WS(" ",descrip ,descrip2) AS descrip, codigo,marca,alterno,id,modelo,iva,unidad FROM maes';
-			$aplica='maes';
+			$mSQL_p = 'SELECT precio1, precio2, precio3, precio4,codigo, referen, barras, descrip, corta, codigo, marca,  dvolum1, dvolum2, existen, mempaq, dempaq,unidad,iva FROM maes';
+			$bbus   = array('codigo','barras','referen');
+			$suple  = 1;
+			$aplica = 'maes';
 		}else{
-			$mSQL_p='SELECT precio1,base1,precio2,precio3, barras,existen, CONCAT_WS(" ",descrip ,descrip2) AS descrip, codigo,marca,alterno,id,modelo,iva,unidad,descufijo,grupo FROM sinv';
-			$aplica='sinv';
+			$mSQL_p = 'SELECT precio1,base1,precio2,precio3, barras,existen, CONCAT_WS(" ",descrip ,descrip2) AS descrip, codigo,marca,alterno,id,modelo,iva,unidad,descufijo,grupo FROM sinv';
+			$bbus   = array('codigo','barras','alterno');
+			$aplica = 'sinv';
+			$suple  = null;
 		}
 
-		$query=$this->_gconsul($mSQL_p,$cod_bar,array('codigo','barras','alterno'));
+		$query=$this->_gconsul($mSQL_p,$cod_bar,$bbus);
 		if($query!==false){
 			$row = $query->row();
 			//Vemos si aplica descuento solo farmacias sinv
@@ -99,6 +103,9 @@ class Consultas extends Controller {
 					$descufijo=$row->descufijo;
 					$descurazon='Descuento por producto';
 				}
+			}else{
+				$descufijo=0;
+			
 			}
 
 			$data['precio1']   = nformat($row->precio1);
@@ -106,22 +113,32 @@ class Consultas extends Controller {
 			$data['precio2']   = nformat($row->precio2);
 			$data['precio3']   = nformat($row->precio3);
 			$data['descrip']   = $row->descrip;
-			$data['base1']     = nformat($row->base1);
 			$data['codigo']    = $row->codigo;
-			$data['alterno']   = $row->alterno;
 			$data['unidad']    = $row->unidad;
 			$data['descufijo'] = nformat($descufijo);
 			$data['corta']     = (isset($row->corta)) ?$row->corta : '';
-			$data['dvolum1']   = '';
 			$data['descurazon']=(isset($descurazon)) ? $descurazon: '';
 			$data['marca']     = $row->marca;
 			$data['existen']   = nformat($row->existen);
 			$data['barras']    = $row->barras;
-			$data['modelo']    = $row->modelo;
 			$data['iva']       = nformat($row->iva);
 			$data['referen']   = (isset($row->referen)) ? $row->referen : 'No disponible';
-			$data['iva2']      = nformat($row->base1*($row->iva/100));
 			$data['moneda']    = 'Bs.F.';
+			
+			if($aplica=='maes'){
+				$data['precio4']   = nformat($row->precio4);
+				$data['dvolum1']   = $row->dvolum1;
+				$data['dvolum2']   = $row->dvolum2;
+				$data['corta']     = $row->corta;
+				$data['referen']   = $row->referen;
+				$data['existen']   = $this->datasis->dameval("SELECT sum(a.cantidad*b.fracxuni+a.fraccion) FROM ubic a JOIN maes b ON a.codigo=b.codigo WHERE a.codigo='".$row->codigo."' AND a.ubica IN ('DE00','DE01')");
+			}else{
+				$data['alterno']   = $row->alterno;
+				$data['base1']     = nformat($row->base1);
+				$data['modelo']    = $row->modelo;
+				$data['iva2']      = nformat($row->base1*($row->iva/100));
+			}
+
 			//$data['img']       = site_url('inventario/fotos/obtener/'.$row->id);
 			return $data;
 		}
