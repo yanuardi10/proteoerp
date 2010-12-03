@@ -271,11 +271,11 @@
 		$detalle->cantidad->maxlength=60;
 		$detalle->cantidad->css_class='inputnum';
 
-		$detalle->precio = new inputField("Precio", "preca<#i#>");
-		$detalle->precio->css_class='inputnum';
-		$detalle->precio->onchange='totalizar()';
-		$detalle->precio->size=20;
-		$detalle->precio->db_name='preca';
+		$detalle->preca = new inputField("Precio", "preca<#i#>");
+		$detalle->preca->css_class='inputnum';
+		$detalle->preca->onchange='totalizar()';
+		$detalle->preca->size=20;
+		$detalle->preca->db_name='preca';
 		
 		$detalle->importe = new inputField2("Importe", "totaorg<#i#>");
 		$detalle->importe->db_name='totaorg';
@@ -293,7 +293,7 @@
 		$detalle->column("C&oacute;digo"    ,  "<#codigo#>");
 		$detalle->column("Descripci&oacute;n", "<#descripcion#>");
 		$detalle->column("Cantidad"  ,  "<#cantidad#>");
-		$detalle->column("Precio"     , "<nformat><#precio#></nformat>");
+		$detalle->column("Precio"     , "<nformat><#preca#></nformat>");
 		$detalle->column("Importe"    , "<#importe#>");
 	
 		$detalle->build();	
