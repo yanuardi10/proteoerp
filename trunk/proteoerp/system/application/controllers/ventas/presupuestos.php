@@ -250,7 +250,7 @@
 		
 		$iva=$this->datasis->dameval('SELECT tasa FROM civa ORDER BY fecha DESC');
 		
-		$detalle->db->select("codigo,desca,cana,(preca*'$iva'/100)+ preca as preca, totaorg");
+		$detalle->db->select("codigo,desca,cana,(preca*$iva/100)+ preca as preca, totaorg");
 		$detalle->db->from('itspre');
 		$detalle->db->where("numero='$numero'");
 		
