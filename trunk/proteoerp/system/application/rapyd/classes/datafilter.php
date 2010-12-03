@@ -154,6 +154,8 @@ class DataFilter extends DataForm{
                     $comodin=$this->ci->datasis->traevalor('COMODIN');
                     if(!empty($comodin)){
                        $v = str_replace($comodin,'%',$value);
+                    }else{
+                       $v = $value;
                     }
                     
                     if ($field->like_side == 'before'){
