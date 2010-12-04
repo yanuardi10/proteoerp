@@ -99,7 +99,7 @@ script;
 			    $query = $this->db->query($mSQL);
 			    if ($query->num_rows()== 0){
 				// Busca por suplementarios
-				$mSQL_p='SELECT b.codigo, b.referen, a.suplemen barras, b.descrip, b.corta, b.codigo, b.marca, b.precio1, b.precio2, b.precio3, b.precio4, b.dvolum1, b.dvolum2, b.existen, b.mempaq, b.dempaq FROM suple a JOIN maes b ON a.codigo=b.codigo ';
+				$mSQL_p='SELECT a.suplemen barras, b.empaque,b.dempaq,b.mempaq,b.fracxuni,b.ensambla,b.depto,b.familia,b.grupo,b.tamano,b.medida,b.serial,b.maximo,b.minimo,b.codigo, b.referen, b.descrip, b.corta, b.codigo, b.marca, b.precio1, b.precio2, b.precio3, b.precio4,b.base1,b.base2,b.base3,b.base4, b.dvolum1, b.dvolum2, b.existen, b.mempaq, b.dempaq FROM suple a JOIN maes b ON a.codigo=b.codigo ';
 				$mSQL  =$mSQL_p." WHERE a.suplemen='$cod_bar'";
 	    			$query = $this->db->query($mSQL);
 				if ($query->num_rows()== 0){
