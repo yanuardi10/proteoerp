@@ -25,7 +25,6 @@ class Consultas extends Controller {
 			'name'      => 'codigo',
 			'id'        => 'codigo',
 			'value'     => '',
-			'maxlength' => '15',
 			'size'      => '16',
 			);
 
@@ -42,9 +41,9 @@ class Consultas extends Controller {
 				$contenido .=$this->load->view('view_rprecios', $data2,true);
 			}else{
 				$t=array();
-				$t[1][1]='<b>PRODUCTO NO REGISTRADO</b>';
+				$t[1][1]='<b>PRODUCTO NO CODIFICADO</b>';
 				$t[2][1]='';
-				$t[3][1]='<b>Por Favor introduzca un C&oacute;digo de identificaci&oacute;n del Producto</b>';
+				$t[3][1]='<b>Por Favor consulte con el personal de pasillo</b>';
 
 				$table = new DataTable(null,$t);
 				$table->cell_attributes = 'style="vertical-align:middle; text-align: center;"';
