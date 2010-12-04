@@ -70,7 +70,7 @@ class Consultas extends Controller {
 		if($maes>$sinv){
 			$mSQL_p = 'SELECT precio1, precio2, precio3, precio4,codigo, referen, barras, descrip, corta, codigo, marca,  dvolum1, dvolum2, existen, mempaq, dempaq,unidad,iva FROM maes';
 			$bbus   = array('codigo','barras','referen');
-			$suple  = 1;
+			$suple  = 'codigo';
 			$aplica = 'maes';
 		}else{
 			$fiedesc= ($this->db->field_exists('descufijo', 'sinv')) ? 'descufijo':'0 AS descufijo';
@@ -80,7 +80,7 @@ class Consultas extends Controller {
 			$suple  = null;
 		}
 
-		$query=$this->_gconsul($mSQL_p,$cod_bar,$bbus);
+		$query=$this->_gconsul($mSQL_p,$cod_bar,$bbus,$suple);
 		if($query!==false){
 			$row = $query->row();
 			//Vemos si aplica descuento solo farmacias sinv
