@@ -96,6 +96,8 @@ class Consultas extends Controller {
 								$descufijo=0;
 							}
 						}
+					}else{
+						$descufijo=0;
 					}
 				}else{
 					$descufijo=$row->descufijo;
@@ -103,7 +105,6 @@ class Consultas extends Controller {
 				}
 			}else{
 				$descufijo=0;
-			
 			}
 
 			$data['precio1']   = nformat($row->precio1);

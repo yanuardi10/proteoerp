@@ -25,6 +25,8 @@ class Scli extends validaciones {
 
 		$filter->nombre= new inputField('Nombre','nombre');
 
+		$filter->rifci= new inputField('Rif/CI','rifci');
+
 		$filter->cuenta= new inputField('Cuenta Contable','cuenta');
 		$filter->cuenta->like_side='after';
 
