@@ -15,7 +15,7 @@ class barraspos extends Controller {
 
 		$link2=site_url('inventario/common/get_linea');
 		$link3=site_url('inventario/common/get_grupo');
-		
+
 		$script='
 		<script language="javascript" type="text/javascript">
 		$(function(){
@@ -174,7 +174,7 @@ class barraspos extends Controller {
 
 	function dataedit() {
 		$this->rapyd->load('dataedit');
-		
+
 		$script='
 		<script language="javascript" type="text/javascript">
 		$(function(){
@@ -201,7 +201,8 @@ class barraspos extends Controller {
 		$edit->codigo = new inputField("C&oacute;digo", "codigo");
 		$edit->codigo->size       =  15;
 		$edit->codigo->maxlength  =  15;
-		$edit->codigo->rule 			= "required";
+		//		$edit->observ1->rule     ="trim";
+		$edit->codigo->rule 			= "required|trim|callback_chexiste";
 		$edit->codigo->append($bSPRV);
 
 
@@ -209,16 +210,27 @@ class barraspos extends Controller {
 		$edit->barras->css_class ='inputnum';
 		$edit->barras->size      =  15;
 		$edit->barras->maxlength =  15;
-		$edit->barras->rule      =  "required";
+		$edit->barras->rule      =  "required|trim";
 
 		$edit->buttons("modify", "save", "undo", "back");
 		$edit->build();
 
 		$data['content'] = $edit->output;
 		$data['title']   = "<h1>Adicionar codigo de barras</h1>";
-		
+
 		$data["head"]    = script('jquery.js').script('jquery-ui.js').script("plugins/jquery.numeric.pack.js").script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css').$this->rapyd->get_head().$script;
 		$this->load->view('view_ventanas', $data);
+	}
+
+	function chexiste($codigo){
+		$codigo=$this->input->post('codigo');
+		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM sinv WHERE codigo='$codigo'");
+		if ($chek == 0){
+			$this->validation->set_message('chexiste',"El codigo $codigo no existe en el inventario");
+			return FALSE;
+		}else {
+			return TRUE;
+		}
 	}
 
 	function instala(){
