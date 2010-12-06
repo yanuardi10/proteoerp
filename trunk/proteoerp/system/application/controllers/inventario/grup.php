@@ -1,11 +1,11 @@
 <?php require_once(BASEPATH.'application/controllers/validaciones.php');
 
 class Grup extends validaciones {
-	
+
 	function grup(){
 		parent::Controller();
 		$this->load->library("rapyd");
-	  $this->datasis->modulo_id(304,1);
+		$this->datasis->modulo_id(304,1);
 	}
 
 	function index(){
@@ -15,7 +15,7 @@ class Grup extends validaciones {
 	function filteredgrid(){
 		$this->rapyd->load("datafilter","datagrid");
 		$this->rapyd->uri->keep_persistence();
-		
+
 		function blanco($num){
 			if(empty($num)||$num==0){
 			 return '';
@@ -23,26 +23,33 @@ class Grup extends validaciones {
 				return number_format($num,2,',','.');
 			}
 		}
-		
+	
+
 		$filter = new DataFilter("Filtro de Grupo de Inventario");
-		
-		$filter->db->select("a.grupo AS grupo, a.nom_grup AS nom_grup, a.comision AS comision, b.descrip AS linea,c.descrip AS depto, a.cu_inve AS cu_inve, a.cu_venta AS cu_venta, a.cu_cost AS cu_cost, a.cu_devo AS cu_devo");
+
+		$filter->db->select("a.grupo AS grupo, a.nom_grup AS nom_grup, a.comision AS comision,a.margen AS margen,a.margenc AS margenc, b.descrip AS linea,c.descrip AS depto, a.cu_inve AS cu_inve, a.cu_venta AS cu_venta, a.cu_cost AS cu_cost, a.cu_devo AS cu_devo");
 		$filter->db->from("grup AS a");
 		$filter->db->join("line AS b","a.linea=b.linea");
 		$filter->db->join("dpto AS c","b.depto=c.depto");
-		
+
 		$filter->grupo = new inputField("Grupo","grupo");
 		$filter->grupo->size=20;
-		
+
 		$filter->nombre = new inputField("Descripci&oacute;n","nom_grup");
 		$filter->nombre->size=20;
-		
+
 		$filter->comision = new inputField("Comisi&oacute;n","comision");
 		$filter->comision->size=20;
 		
+		$filter->margen = new inputField("Margen de Venta","margen");
+		$filter->margen->size=20;
+		
+		$filter->margenc = new inputField("Margen de Compra","margenc");
+		$filter->margenc->size=20;
+
 		$filter->depto = new inputField("Departamento","c.descrip");
 		$filter->depto->size=20;
-		
+
 		$filter->linea = new inputField("L&iacute;nea","b.descrip");
 		$filter->linea->size=20;
 
@@ -59,7 +66,9 @@ class Grup extends validaciones {
 
 		$grid->column("Grupo"                       ,$uri                            ,"align='center'");
 		$grid->column("Descripci&oacute;n"          ,"nom_grup"                      ,"align='left'");
-		$grid->column("Comisi&oacute;n"             ,"<blanco><#comision#></blanco>" ,"align='right'");		
+		$grid->column("Comisi&oacute;n"             ,"<blanco><#comision#></blanco>" ,"align='right'");
+		$grid->column("M.de Venta"             ,"<blanco><#margen#></blanco>" ,"align='right'");
+		$grid->column("M.de Compra"             ,"<blanco><#margenc#></blanco>" ,"align='right'");
 		$grid->column("Departamento"                ,"depto"                         ,"align='left'");
 		$grid->column("Linea"                       ,"linea"                         ,"align='left'");
 		$grid->column("Cuenta Inventario"           ,"cu_inve"                       ,"align='center'");
@@ -70,20 +79,20 @@ class Grup extends validaciones {
 
 		$grid->add("inventario/grup/dataedit/create");
 		$grid->build();
-		
+
 		$data['content'] = $filter->output.$grid->output;
 		$data['title']   = "<h1>Grupos de Inventario</h1>";
 		$data["head"]    = $this->rapyd->get_head();
-		$this->load->view('view_ventanas', $data);	
+		$this->load->view('view_ventanas', $data);
 	}
 
 	function dataedit($status='',$id=''){
 		$this->rapyd->load("dataobject","dataedit");
-		
+
 		$qformato=$this->qformato=$this->datasis->formato_cpla();
 		$link=site_url('inventario/grup/ultimo');
 		$link2=site_url('inventario/common/sugerir_grup');
-		
+
 		$script ='
 			$(function() {
 				$(".inputnum").numeric(".");
@@ -194,30 +203,26 @@ class Grup extends validaciones {
 		//$edit->tipo->style='width:100px;';
 		//$edit->tipo->option("I","Inventario" );
 		//$edit->tipo->option("G","Gasto"  );
-		
+
 		$edit->comision = new inputField("Comisi&oacute;n. %", "comision");
 		$edit->comision->size = 18;
 		$edit->comision->maxlength=10;
 		$edit->comision->css_class='inputnum';
-		$edit->comision->rule='trim|numeric|callback_positivo';
-
+		$edit->comision->rule='trim|callback_chporcent|numeric|callback_positivo';
 
 		$edit->margen = new inputField("Margen de Venta", "margen");
 		$edit->margen->size = 18;
 		$edit->margen->maxlength=10;
 		$edit->margen->css_class='inputnum';
 		$edit->margen->group='Margenes';
-		$edit->margen->rule='trim|numeric|callback_positivo';
-
+		$edit->margen->rule='trim|callback_chporcent|callback_positivo';
 
 		$edit->margenc = new inputField("Margen de Compra", "margenc");
 		$edit->margenc->size = 18;
 		$edit->margenc->maxlength=10;
 		$edit->margenc->css_class='inputnum';
 		$edit->margenc->group='Margenes';
-		$edit->margenc->rule='trim|numeric|callback_positivo';
-
-
+		$edit->margenc->rule='trim|callback_chporcent|numeric|callback_positivo';
 
 
 		$edit->cu_inve =new inputField("Cuenta Inventario", "cu_inve");
@@ -254,29 +259,29 @@ class Grup extends validaciones {
 		$link=site_url('inventario/grup/get_linea');
 
 		$data['content'] = $edit->output;
-		$data['title']   = "<h1>Grupos de Inventario</h1>";        
+		$data['title']   = "<h1>Grupos de Inventario</h1>";
 		$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
-		$this->load->view('view_ventanas', $data);  
+		$this->load->view('view_ventanas', $data);
 	}
-	
+
 	function _post_insert($do){
 		$codigo=$do->get('grupo');
 		$nombre=$do->get('nom_grup');
 		logusu('grup',"GRUPO DE INVENTARIO $codigo NOMBRE  $nombre CREADO");
 	}
-	
+
 	function _post_update($do){
 		$codigo=$do->get('grupo');
 		$nombre=$do->get('nom_grup');
 		logusu('grup',"GRUPO DE INVENTARIO $codigo NOMBRE  $nombre  MODIFICADO");
 	}
-	
+
 	function _post_delete($do){
 		$codigo=$do->get('grupo');
 		$nombre=$do->get('nom_grup');
 		logusu('grup',"GRUPO DE INVENTARIO $codigo NOMBRE  $nombre  ELIMINADO ");
 	}
-	
+
 	function chexiste($codigo){
 		$codigo=$this->input->post('grupo');
 		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM grup WHERE grupo='$codigo'");
@@ -285,10 +290,10 @@ class Grup extends validaciones {
 			$this->validation->set_message('chexiste',"El codigo $codigo ya existe para el grupo $grupo");
 			return FALSE;
 		}else {
-  		return TRUE;
-		}	
+			return TRUE;
+		}
 	}
-	
+
 	function _pre_del($do) {
 		$codigo=$do->get('grupo');
 		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM sinv WHERE grupo='$codigo'");
@@ -309,7 +314,28 @@ class Grup extends validaciones {
 			$this->validation->set_message('positivo',"El campo comisi&oacute;n debe ser positivo");
 			return FALSE;
 		}
-  	return TRUE;
+		return TRUE;
+	}
+
+	function instala(){
+		$mSQL="CREATE TABLE `grup` (
+		  `grupo` varchar(4) NOT NULL DEFAULT '',
+		  `nom_grup` varchar(30) DEFAULT NULL,
+		  `tipo` char(1) DEFAULT NULL,
+		  `comision` decimal(10,2) NOT NULL DEFAULT '0.00',
+		  `margen` decimal(10,2) NOT NULL DEFAULT '0.00',
+		  `margenc` decimal(10,2) NOT NULL DEFAULT '0.00',
+		  `linea` char(2) DEFAULT NULL,
+		  `depto` char(2) DEFAULT NULL,
+		  `cu_inve` varchar(15) DEFAULT NULL,
+		  `cu_cost` varchar(15) DEFAULT NULL,
+		  `cu_venta` varchar(15) DEFAULT NULL,
+		  `cu_devo` varchar(15) DEFAULT NULL,
+		  PRIMARY KEY (`grupo`)
+		) ENGINE=MyISAM DEFAULT CHARSET=latin1
+		";
+		$this->db->simple_query($mSQL);
+
 	}
 }
 ?>
