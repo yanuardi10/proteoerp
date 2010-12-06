@@ -1696,55 +1696,55 @@ class Libros_calore3 extends Controller {
 			FROM siva a LEFT JOIN scli b ON a.clipro=b.cliente
 			WHERE EXTRACT(YEAR_MONTH FROM a.fechal)=$mes AND a.libro='V' AND a.tipo<>'FA' 
 			ORDER BY a.fecha, IF(a.tipo IN ('FE','FC','XE','XC'),1,2), a.numero ";
-		} else {
-		$mSQL  = "SELECT 
-				a.fecha,
-				a.numero, '' inicial, ' ' final,
-				a.nfiscal,
-				a.rif,
-				IF( b.nomfis IS NOT NULL AND b.nomfis!='',b.nomfis,b.nombre) AS nombre,
-				a.tipo, 
-				IF(a.referen=a.numero,'        ',a.referen) afecta,
-				a.gtotal*IF(a.tipo='NC',-1,1)    ventatotal,
-				a.exento*IF(a.tipo='NC',-1,1)    exento,
-				a.general*IF(a.tipo='NC',-1,1)   base,
-				a.impuesto*IF(a.tipo='NC',-1,1)  impuesto,
-				a.reiva*IF(a.tipo='NC',-1,1)     reiva,
-				a.general*IF(a.tipo='NC',-1,1)	 general,
-				a.geneimpu*IF(a.tipo='NC',-1,1)  geneimpu,
-				a.adicional*IF(a.tipo='NC',-1,1) adicional,
-				a.adicimpu*IF(a.tipo='NC',-1,1)  adicimpu,
-				a.reducida*IF(a.tipo='NC',-1,1)  reducida,
-				a.reduimpu*IF(a.tipo='NC',-1,1)  reduimpu,
-				a.contribu, a.registro, a.comprobante, a.fecharece 
-			FROM siva a LEFT JOIN scli b ON a.clipro=b.cliente
-			WHERE EXTRACT(YEAR_MONTH FROM a.fechal)=$mes AND a.libro='V' AND a.tipo<>'FA' AND a.contribu='CO' 
-			UNION
-			SELECT 
-				a.fecha,
-				' ' numero, min(a.numero) inicial, max(a.numero) final,
-				' ' nfiscal,
-				' ' rif,
-				'A NO CONTRIBUYENTES TOTAL DEL DIA' nombre,
-				a.tipo, 
-				' ' afecta,
-				sum(a.gtotal*IF(a.tipo='NC',-1,1))    ventatotal,
-				sum(a.exento*IF(a.tipo='NC',-1,1))    exento,
-				sum(a.general*IF(a.tipo='NC',-1,1))   base,
-				sum(a.impuesto*IF(a.tipo='NC',-1,1))  impuesto,
-				sum(a.reiva*IF(a.tipo='NC',-1,1))     reiva,
-				sum(a.general*IF(a.tipo='NC',-1,1))	  general,
-				sum(a.geneimpu*IF(a.tipo='NC',-1,1))  geneimpu,
-				sum(a.adicional*IF(a.tipo='NC',-1,1)) adicional,
-				sum(a.adicimpu*IF(a.tipo='NC',-1,1))  adicimpu,
-				sum(a.reducida*IF(a.tipo='NC',-1,1))  reducida,
-				sum(a.reduimpu*IF(a.tipo='NC',-1,1))  reduimpu,
-				'NO' contribu, '01' registro, ' ' comprobante, null fecharece
-			FROM siva a LEFT JOIN scli b ON a.clipro=b.cliente
-			WHERE EXTRACT(YEAR_MONTH FROM a.fechal)=$mes AND a.libro='V' AND a.tipo<>'FA' AND a.contribu='NO' AND a.tipo IN ('FE','FC','NC')
-			GROUP BY a.fecha, a.tipo
-			ORDER BY fecha, IF(tipo IN ('FE','FC','XE','XC'),1,2), numero ";
-		}
+		} //else {
+		//$mSQL  = "SELECT 
+		//		a.fecha,
+		//		a.numero, '' inicial, ' ' final,
+		//		a.nfiscal,
+		//		a.rif,
+		//		IF( b.nomfis IS NOT NULL AND b.nomfis!='',b.nomfis,b.nombre) AS nombre,
+		//		a.tipo, 
+		//		IF(a.referen=a.numero,'        ',a.referen) afecta,
+		//		a.gtotal*IF(a.tipo='NC',-1,1)    ventatotal,
+		//		a.exento*IF(a.tipo='NC',-1,1)    exento,
+		//		a.general*IF(a.tipo='NC',-1,1)   base,
+		//		a.impuesto*IF(a.tipo='NC',-1,1)  impuesto,
+		//		a.reiva*IF(a.tipo='NC',-1,1)     reiva,
+		//		a.general*IF(a.tipo='NC',-1,1)	 general,
+		//		a.geneimpu*IF(a.tipo='NC',-1,1)  geneimpu,
+		//		a.adicional*IF(a.tipo='NC',-1,1) adicional,
+		//		a.adicimpu*IF(a.tipo='NC',-1,1)  adicimpu,
+		//		a.reducida*IF(a.tipo='NC',-1,1)  reducida,
+		//		a.reduimpu*IF(a.tipo='NC',-1,1)  reduimpu,
+		//		a.contribu, a.registro, a.comprobante, a.fecharece 
+		//	FROM siva a LEFT JOIN scli b ON a.clipro=b.cliente
+		//	WHERE EXTRACT(YEAR_MONTH FROM a.fechal)=$mes AND a.libro='V' AND a.tipo<>'FA' AND a.contribu='CO' 
+		//	UNION
+		//	SELECT 
+		//		a.fecha,
+		//		' ' numero, min(a.numero) inicial, max(a.numero) final,
+		//		' ' nfiscal,
+		//		' ' rif,
+		//		'A NO CONTRIBUYENTES TOTAL DEL DIA' nombre,
+		//		a.tipo, 
+		//		' ' afecta,
+		//		sum(a.gtotal*IF(a.tipo='NC',-1,1))    ventatotal,
+		//		sum(a.exento*IF(a.tipo='NC',-1,1))    exento,
+		//		sum(a.general*IF(a.tipo='NC',-1,1))   base,
+		//		sum(a.impuesto*IF(a.tipo='NC',-1,1))  impuesto,
+		//		sum(a.reiva*IF(a.tipo='NC',-1,1))     reiva,
+		//		sum(a.general*IF(a.tipo='NC',-1,1))	  general,
+		//		sum(a.geneimpu*IF(a.tipo='NC',-1,1))  geneimpu,
+		//		sum(a.adicional*IF(a.tipo='NC',-1,1)) adicional,
+		//		sum(a.adicimpu*IF(a.tipo='NC',-1,1))  adicimpu,
+		//		sum(a.reducida*IF(a.tipo='NC',-1,1))  reducida,
+		//		sum(a.reduimpu*IF(a.tipo='NC',-1,1))  reduimpu,
+		//		'NO' contribu, '01' registro, ' ' comprobante, null fecharece
+		//	FROM siva a LEFT JOIN scli b ON a.clipro=b.cliente
+		//	WHERE EXTRACT(YEAR_MONTH FROM a.fechal)=$mes AND a.libro='V' AND a.tipo<>'FA' AND a.contribu='NO' AND a.tipo IN ('FE','FC','NC')
+		//	GROUP BY a.fecha, a.tipo
+		//	ORDER BY fecha, IF(tipo IN ('FE','FC','XE','XC'),1,2), numero ";
+		//}
 		
 		$export = $this->db->query($mSQL);
 		
