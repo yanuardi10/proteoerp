@@ -1672,7 +1672,7 @@ class Libros_calore3 extends Controller {
 		$mSQL = "UPDATE siva SET tipo='FC' WHERE tipo='FE' ";
 		$this->db->simple_query($mSQL);
 		
-		if ( $this->datasis->traevalor('LIBROVENTASRESUMEN') =='N' ) {
+		//if ( $this->datasis->traevalor('LIBROVENTASRESUMEN') =='N' ) {
 		$mSQL  = "SELECT 
 				a.fecha,
 				a.numero, '' inicial, ' ' final,
@@ -1696,7 +1696,7 @@ class Libros_calore3 extends Controller {
 			FROM siva a LEFT JOIN scli b ON a.clipro=b.cliente
 			WHERE EXTRACT(YEAR_MONTH FROM a.fechal)=$mes AND a.libro='V' AND a.tipo<>'FA' 
 			ORDER BY a.fecha, IF(a.tipo IN ('FE','FC','XE','XC'),1,2), a.numero ";
-		} //else {
+		//} //else {
 		//$mSQL  = "SELECT 
 		//		a.fecha,
 		//		a.numero, '' inicial, ' ' final,
