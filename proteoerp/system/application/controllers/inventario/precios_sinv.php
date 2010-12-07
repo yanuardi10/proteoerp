@@ -35,7 +35,7 @@ class precios_sinv extends validaciones {
 		$data['content'] =$form->output;
 		$data['head']    = script('jquery.js').script('jquery-ui.js').script("plugins/jquery.numeric.pack.js").script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css').$this->rapyd->get_head();
 
-		$data['title']   = '<h1>Cambiar Margenes</h1>';
+		$data['title']   = '<h1>Cambiar Precios</h1>';
 		$this->load->view('view_ventanas', $data);
 	}
 
