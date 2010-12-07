@@ -405,6 +405,12 @@ class Rcaj extends validaciones {
 
 		$form = new DataForm("ventas/rcaj/forcierre/$numero/process");
 
+		$form->titulos = new freeField("","","Recibido &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+		$form->titulos1 = new freeField("","","Sistema &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+		$form->titulos1->in='titulos';
+		$form->titulos2 = new freeField("","","Diferencia");
+		$form->titulos2->in='titulos';
+
 		$attr=array(
 			'class'  => 'ui-state-default ui-corner-all',
 			'onclick'=> "javascript:window.location='".site_url('ventas/rcaj/filteredgrid')."'",
@@ -463,7 +469,7 @@ class Rcaj extends validaciones {
 					recibido   =parseFloat($(this).val());
 					sistema    =parseFloat($("#sistema"+tipo).val());
 					diferencia=recibido-sistema;
-					$("#diferencia"+tipo).val(numberFormat(diferencia,2));
+					$("#diferencia"+tipo).val(roundNumber(diferencia,2));
 				}
 				if($(this).val().length>0) TRECI = TRECI+parseFloat($(this).val());
 			});
@@ -473,8 +479,8 @@ class Rcaj extends validaciones {
 					TDIFE = TDIFE+parseFloat($(this).val());
 			});
 
-			$("#trecibido").val(numberFormat(TRECI,2));
-			$("#tdiferencia").val(numberFormat(TDIFE,2));
+			$("#trecibido").val(roundNumber(TRECI,2));
+			$("#tdiferencia").val(roundNumber(TDIFE,2));
 		}';
 
 		//Cierre de caja
