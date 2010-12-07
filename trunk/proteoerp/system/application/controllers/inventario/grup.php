@@ -318,21 +318,9 @@ class Grup extends validaciones {
 	}
 
 	function instala(){
-		$mSQL="CREATE TABLE `grup` (
-		  `grupo` varchar(4) NOT NULL DEFAULT '',
-		  `nom_grup` varchar(30) DEFAULT NULL,
-		  `tipo` char(1) DEFAULT NULL,
-		  `comision` decimal(10,2) NOT NULL DEFAULT '0.00',
-		  `margen` decimal(10,2) NOT NULL DEFAULT '0.00',
-		  `margenc` decimal(10,2) NOT NULL DEFAULT '0.00',
-		  `linea` char(2) DEFAULT NULL,
-		  `depto` char(2) DEFAULT NULL,
-		  `cu_inve` varchar(15) DEFAULT NULL,
-		  `cu_cost` varchar(15) DEFAULT NULL,
-		  `cu_venta` varchar(15) DEFAULT NULL,
-		  `cu_devo` varchar(15) DEFAULT NULL,
-		  PRIMARY KEY (`grupo`)
-		) ENGINE=MyISAM DEFAULT CHARSET=latin1
+		$mSQL="ALTER TABLE `grup`  
+				ADD COLUMN `margen` DECIMAL(10,2) NOT NULL DEFAULT '0.00' AFTER `comision`,
+				ADD COLUMN `margenc` DECIMAL(10,2) NOT NULL DEFAULT '0.00' AFTER `margen`
 		";
 		$this->db->simple_query($mSQL);
 
