@@ -392,6 +392,13 @@ class pers extends validaciones {
 		$edit->horats->append('hh:mm:ss');
 		$edit->horats->in="horate";
 		$edit->horats->group="Relaci&oacute;n Laboral";
+		
+		$edit->sueldo = new inputField("Sueldo","sueldo");
+		$edit->sueldo->group = "Relaci&oacute;n Laboral";
+		$edit->sueldo->size =10;
+		$edit->sueldo->maxlength=15;
+		$edit->sueldo->rule="trim|numeric";
+		$edit->sueldo->css_class='inputnum';
 			
 		$edit->tipocuent = new dropdownField("Tipo Cuenta", "tipoe");
 		$edit->tipocuent->option("","");
