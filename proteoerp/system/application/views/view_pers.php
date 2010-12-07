@@ -165,6 +165,12 @@ echo $form_begin?>
           <td class="littletablerow"><?=$form->horate->output ?></td>
           <td class="littletablerowth"><?='Hasta' ?></td>
           <td class="littletablerow"><?=$form->horats->output ?></td>
+        </tr>
+        <tr>
+          <td class="littletablerowth"><?=$form->sueldo->label ?></td>
+          <td class="littletablerow"><?=$form->sueldo->output ?></td>
+          <td class="littletablerowth">&nbsp;</td>
+          <td class="littletablerow">&nbsp;</td>
         </tr>	     	
 		</table>
 </fieldset>		
