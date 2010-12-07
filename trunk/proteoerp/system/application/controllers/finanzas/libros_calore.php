@@ -2610,8 +2610,9 @@ function wlvexcel2($mes) {
 				// imprime contribuyente
 				$fecha = substr($row->fecha,8,2)."/".substr($row->fecha,5,2)."/".substr($row->fecha,0,4);
 				
+				$maquinaf=$this->datasis->traevalor('IMPRESORA'); 
 				$ws->write_string( $mm, 0, $fecha,  $cuerpo );				// Fecha
-				$ws->write_string( $mm, 1, 'ZZB8203048', $cuerpo );			// Numero de Caja
+				$ws->write_string( $mm, 1, $maquinaf, $cuerpo );			// Numero de Caja
 				
 				if ($row->tipo[0] == "X" ) 
 					$ws->write_string( $mm, 2, "FC", $cuerpoc );		// TIPO
