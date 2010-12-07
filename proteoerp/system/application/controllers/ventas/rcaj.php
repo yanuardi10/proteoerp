@@ -65,15 +65,16 @@ class Rcaj extends validaciones {
 				//$mSQL="SELECT cierre FROM sfpa WHERE cobrador='$cajero' AND fecha=DATE_ADD($fecha, INTERVAL 1 DAY) AND MID(hora,1,2)< 7 LIMIT 1";
 				//$cerrado = $CI->datasis->dameval($mSQL);
 
-				$mSQL="SELECT COUNT(*) FROM sfpa WHERE cobrador='$cajero' AND fecha=DATE_ADD($fecha, INTERVAL 1 DAY) AND MID(hora,1,2)< 7";
+				/*$mSQL="SELECT COUNT(*) FROM sfpa WHERE cobrador='$cajero' AND fecha=DATE_ADD($fecha, INTERVAL 1 DAY) AND MID(hora,1,2)< 7";
 				$cerrado = $CI->datasis->dameval($mSQL);
 
 				if($cerrado>0){ //caja fuera de turno
 					return image('caja_inhabilitada.gif',"Cajero Inhabilitado: $cajero",$atts).'<h3>Cajero de turno</h3>Debe gestionarse al d&iacute;a siguiente';
 				}else{
 					return image('caja_abierta.gif',"Cajero Abierto: $cajero",$atts).'<h3>Abierto</h3><center>'.anchor("ventas/rcaj/precierre/99/$cajero/$fecha", 'Pre-cerrar cajero').'</center>';
-				}
+				}*/
 			
+				return image('caja_abierta.gif',"Cajero Abierto: $cajero",$atts).'<h3>Abierto</h3><center>'.anchor("ventas/rcaj/precierre/99/$cajero/$fecha", 'Pre-cerrar cajero').'</center>';
 			}else{
 			//$cerrado = $CI->datasis->dameval("SELECT numero FROM rcaj WHERE cajero='$cajero' AND fecha='$fecha' ");
 
@@ -282,15 +283,15 @@ class Rcaj extends validaciones {
 			$dbfecha  = $this->db->escape($fecha);
 			$dbcajero = $this->db->escape($cajero);
 
-			/*$mSQL="SELECT c.tipo, IFNULL(aa.monto,0) AS monto FROM
+			$mSQL="SELECT c.tipo, IFNULL(aa.monto,0) AS monto FROM
 				(SELECT b.tipo ,SUM(b.monto) AS monto 
 				FROM sfac AS a 
 				JOIN sfpa AS b ON a.transac=b.transac 
 				WHERE a.fecha=$dbfecha AND a.cajero=$dbcajero AND a.tipo_doc<>'X'
 				GROUP BY b.tipo) AS aa
-				RIGHT JOIN tarjeta AS c ON aa.tipo=c.tipo";*/
+				RIGHT JOIN tarjeta AS c ON aa.tipo=c.tipo";
 
-			$objfecha = DateTime::createFromFormat('Ymd', $fecha);
+			/*$objfecha = DateTime::createFromFormat('Ymd', $fecha);
 			$objfecha->sub(new DateInterval('P1D'));
 			$dbfecha_s=$this->db->escape($objfecha->format('Y-m-d'));
 			$mSQL="SELECT bb.tipo, SUM(IFNULL(aa.monto,0)) AS monto FROM 
@@ -304,7 +305,7 @@ class Rcaj extends validaciones {
 				JOIN sfac AS b ON b.numero=a.numero AND a.tipo_doc=CONCAT(b.tipo_doc, IF(b.referen='M','E',b.referen)) 
 				WHERE a.f_factura=$dbfecha_s AND SUBSTRING(a.tipo_doc,2,1)!='X' AND a.cobrador=$dbcajero AND MID(a.hora,1,2)>18 ) AS aa
 			RIGHT JOIN tarjeta AS bb ON aa.tipo=bb.tipo
-			GROUP BY tipo";
+			GROUP BY tipo";*/
 
 			$query = $this->db->query($mSQL);
 			if ($query->num_rows() > 0){
