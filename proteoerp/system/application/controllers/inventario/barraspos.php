@@ -212,7 +212,7 @@ class barraspos extends Controller {
 		$edit->barras->maxlength =  15;
 		$edit->barras->rule      =  "required|trim";
 
-		$edit->buttons("modify", "save", "undo", "back");
+		$edit->buttons("modify", "save", "undo","delete" ,"back");
 		$edit->build();
 
 		$data['content'] = $edit->output;
