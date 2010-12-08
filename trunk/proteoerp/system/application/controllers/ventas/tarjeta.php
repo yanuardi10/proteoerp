@@ -20,7 +20,7 @@ class Tarjeta extends validaciones {
 		
 		$filter->tipo = new dropdownField("Tipo", "tipo");
 		$filter->tipo->options("SELECT tipo, nombre from tarjeta ORDER BY tipo");
-    $filter->tipo->style="width:180px";
+    	$filter->tipo->style="width:180px";
   
 		$filter->buttons("reset","search");
 		$filter->build();
@@ -31,11 +31,12 @@ class Tarjeta extends validaciones {
 		$grid->order_by("nombre","asc");
 		$grid->per_page = 10;
 		
-		$grid->column("Tipo",$uri);
-		$grid->column("Nombre","nombre","nombre");
-		$grid->column("Comisi&oacute;n","comision");
-		$grid->column("Impuesto","impuesto");
+		$grid->column_orderby("Tipo",$uri,'tipo');
+		$grid->column_orderby("Nombre","nombre","nombre");
+		$grid->column("Comisi&oacute;n","comision","align='right'");
+		$grid->column("Impuesto","impuesto","align='right'");
 		$grid->column("Mensaje","mensaje");
+		$grid->column_orderby("Activo","activo","activo");
 		
 		$grid->add("ventas/tarjeta/dataedit/create");
 		$grid->build();
@@ -91,6 +92,11 @@ class Tarjeta extends validaciones {
 		$edit->mensaje->maxlength=60;
 		$edit->mensaje->size=65;
 		
+		$edit->activo = new dropdownField('Activo', 'activo');
+		$edit->activo->option('S','Si');
+		$edit->activo->option('N','No');
+		
+		
 		$edit->buttons("modify", "save", "undo", "delete", "back");
 		$edit->build();
 		
@@ -134,6 +140,14 @@ class Tarjeta extends validaciones {
 		}else {
   		return TRUE;
 		}	
+	}
+	
+	function instala(){
+		$mSQL="ALTER TABLE `tarjeta`  
+				ADD COLUMN `activo` 
+				CHAR(1) NULL DEFAULT NULL AFTER `mensaje`;
+		";
+		$this->db->query($mSQL);
 	}
 }
 ?>
