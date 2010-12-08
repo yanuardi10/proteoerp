@@ -18,7 +18,14 @@ class Usuarios extends Controller {
 		$this->rapyd->load("datafilter","datagrid");
 		$this->rapyd->uri->keep_persistence();
 
-		$filter = new DataFilter("Filtro de Usuarios",'usuario');
+//		$filter = new DataFilter("Filtro de Usuarios",'usuario');
+		$filter = new DataFilter("Filtro de Usuarios");
+		$filter->db->select("a.us_codigo,a.us_nombre,a.supervisor,a.almacen,a.vendedor,a.cajero,
+							c.nombre as vendnom,b.ubides as almdes,d.nombre as cajnom");
+		$filter->db->from("usuario as a");
+		$filter->db->join("caub as b","b.ubica=a.almacen","left");
+		$filter->db->join("vend as c","c.vendedor=a.vendedor","left");
+		$filter->db->join("scaj as d","d.cajero=a.cajero","left");
 
 		$filter->us_codigo = new inputField("C&oacute;digo Usuario", "us_codigo");
 		$filter->us_codigo->size=15;
@@ -40,9 +47,9 @@ class Usuarios extends Controller {
 		$grid->column('C&oacute;digo', $uri);
 		$grid->column('Nombre','us_nombre'     );
 		$grid->column('Supervisor'     ,'supervisor','align="center"');
-		$grid->column('Almac&eacute;n' ,'almacen'   ,"align='left'");
-		$grid->column('Vendedor'       ,'vendedor'  ,"align='center'");
-		$grid->column('Cajero'         ,'cajero'    ,"align='center'");
+		$grid->column('Almac&eacute;n' ,'almdes'   ,"align='left'");
+		$grid->column('Vendedor'       ,'<#vendedor#>-<#vendnom#>'  ,"align='center'");
+		$grid->column('Cajero'         ,'<#cajero#>-<#cajnom#>'    ,"align='center'");
 		$grid->column('Cambio clave'   ,$uri2       ,'align="center"');
 		$grid->column('Asignar Accesos',$uri3       ,'align="center"');
 
