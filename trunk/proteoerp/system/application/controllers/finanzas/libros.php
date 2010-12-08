@@ -1668,7 +1668,7 @@ class Libros extends Controller {
 		$mSQL = "UPDATE siva SET tipo='FC' WHERE tipo='FE' ";
 		$this->db->simple_query($mSQL);
 		
-		//if ( $this->datasis->traevalor('LIBROVENTASRESUMEN') =='N' ) {
+		if ( $this->datasis->traevalor('LIBROVENTASRESUMEN') =='N' ) {
 		//$mSQL  = "SELECT 
 		//		a.fecha,
 		//		a.numero, '' inicial, ' ' final,
@@ -1714,7 +1714,7 @@ class Libros extends Controller {
 				a.reduimpu*IF(a.tipo='NC',-1,1)  reduimpu,
 				a.contribu, a.registro, a.comprobante, a.fecharece 
 			FROM siva a LEFT JOIN scli b ON a.clipro=b.cliente
-			WHERE a.fechal BETWEEN $fdesde AND $fhasta AND a.libro='V' AND a.tipo<>'FA' AND a.contribu='CO' 
+			WHERE a.fechal BETWEEN '$fdesde' AND '$fhasta' AND a.libro='V' AND a.tipo<>'FA' AND a.contribu='CO' 
 			UNION
 			SELECT 
 				a.fecha,IF(a.tipo='NC',referen,'')referen,
@@ -1737,7 +1737,7 @@ class Libros extends Controller {
 				sum(a.reduimpu*IF(a.tipo='NC',-1,1))  reduimpu,
 				'NO' contribu, a.registro, ' ' comprobante, null fecharece
 			FROM siva a LEFT JOIN scli b ON a.clipro=b.cliente
-			WHERE a.fechal BETWEEN $fdesde AND $fhasta AND a.libro='V' AND a.tipo<>'FA' AND a.contribu='NO' AND a.tipo IN ('FE','FC','NC','XC')
+			WHERE a.fechal BETWEEN '$fdesde' AND '$fhasta' AND a.libro='V' AND a.tipo<>'FA' AND a.contribu='NO' AND a.tipo IN ('FE','FC','NC','XC')
 			GROUP BY a.fecha, a.tipo, a.registro
 			ORDER BY fecha, IF(tipo IN ('FE','FC','XE','XC'),1,2), numero ";
 		//}
@@ -2252,7 +2252,7 @@ class Libros extends Controller {
 				a.reduimpu*IF(a.tipo='NC',-1,1)  reduimpu,
 				a.contribu, a.registro, a.comprobante, a.fecharece 
 			FROM siva a LEFT JOIN scli b ON a.clipro=b.cliente
-			WHERE a.fechal BETWEEN $fdesde AND $fhasta AND a.libro='V' AND a.tipo<>'FA' 
+			WHERE a.fechal BETWEEN '$fdesde' AND '$fhasta' AND a.libro='V' AND a.tipo<>'FA' 
 			ORDER BY a.fecha, IF(a.tipo IN ('FE','FC','XE','XC'),1,2), a.numero ";
 		//} else {
 		//$mSQL  = "SELECT 
