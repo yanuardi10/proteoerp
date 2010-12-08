@@ -8,8 +8,8 @@ class Formatos extends Controller{
 		//$this->load->library("numletra");
 		$this->load->plugin('numletra');
 		$this->load->helper('string');
-		$protocolo=explode('/',$_SERVER['SERVER_PROTOCOL']);
-		$this->_direccion=$protocolo[0].'://'.$_SERVER['SERVER_NAME'].'/'.trim_slashes($this->config->item('base_url'));
+		//$protocolo=explode('/',$_SERVER['SERVER_PROTOCOL']);
+		//$this->_direccion=$protocolo[0].'://'.$_SERVER['SERVER_NAME'].'/'.trim_slashes($this->config->item('base_url'));
 	}
 
 	function index(){
@@ -18,6 +18,7 @@ class Formatos extends Controller{
 
 	function ver(){
 		$parametros= func_get_args();
+		$this->_direccion='http://localhost/'.trim_slashes($this->config->item('base_url'));
 		if (count($parametros)>0){
 			$_arch_nombre=implode('-',$parametros);
 			$_fnombre=array_shift($parametros);
@@ -40,6 +41,7 @@ class Formatos extends Controller{
 	
 	function verhtml(){
 		$parametros= func_get_args();
+		$this->_direccion='/'.trim_slashes($this->config->item('base_url'));
 		if (count($parametros)>0){
 			$_fnombre=array_shift($parametros);
 			$query = $this->db->query("SELECT proteo FROM formatos WHERE nombre='$_fnombre'");
