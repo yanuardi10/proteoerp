@@ -1668,7 +1668,7 @@ class Libros extends Controller {
 		$mSQL = "UPDATE siva SET tipo='FC' WHERE tipo='FE' ";
 		$this->db->simple_query($mSQL);
 		
-		if ( $this->datasis->traevalor('LIBROVENTASRESUMEN') =='N' ) {
+		//if ( $this->datasis->traevalor('LIBROVENTASRESUMEN') =='N' ) {
 		//$mSQL  = "SELECT 
 		//		a.fecha,
 		//		a.numero, '' inicial, ' ' final,
