@@ -1643,7 +1643,7 @@ class Libros extends Controller {
 		header("Content-Disposition: inline; filename=\"invresu.xls\"");
 		$fh=fopen($fname,"rb");
 		fpassthru($fh);
-		unlink($fname);		
+		unlink($fname);
 	}
 	
 	function wlvexcel($mes){
@@ -6869,13 +6869,13 @@ class Libros extends Controller {
 		// Arregla las factras malas
 		$query = $this->db->query("SELECT transac FROM sfac WHERE abs(exento+montasa+monredu+monadic-totals)>0.2 AND EXTRACT(YEAR_MONTH FROM fecha)=$mes ");
 		if ($query->num_rows() > 0) 
-		    foreach ( $query->result() AS $row ) $this->_arreglatasa($row->transac);
-		    
+			foreach ( $query->result() AS $row ) $this->_arreglatasa($row->transac);
+
 		// ARREGLA LAS QUE TIENEN UNA SOLA TASA
 		$mSQL = "UPDATE sfac SET tasa=iva, montasa=totals 
 			WHERE reducida=0 AND sobretasa=0 AND exento=0 AND EXTRACT(YEAR_MONTH FROM fecha)=$mes";
 		$this->db->simple_query($mSQL);
-//consulta tipo que fue remplazada: IF(MID(a.numero,1,LOCATE('D',a.numero))='D','NC',CONCAT('F',a.tipo)) AS tipo,,
+		//consulta tipo que fue remplazada: IF(MID(a.numero,1,LOCATE('D',a.numero))='D','NC',CONCAT('F',a.tipo)) AS tipo
 		$mSQL = "
 			INSERT INTO siva  
 			(id, libro, tipo, fuente, sucursal, fecha, numero, numhasta,  caja, nfiscal,  nhfiscal, 
@@ -6889,7 +6889,7 @@ class Libros extends Controller {
 				'FA' AS fuente,
 				'00' AS sucursal, 
 				a.fecha, 
-				a.numero,
+				IF(LENGTH(a.nfiscal)>0,a.nfiscal,a.numero) AS numero,
 				' ' AS numhasta, 
 				' ' AS caja, 
 				a.nfiscal, 
@@ -6898,20 +6898,20 @@ class Libros extends Controller {
 				'  ' AS planilla, 
 				a.cod_cli AS clipro, 
 				IF(a.tipo_doc='X','DOCUMENTO ANULADO.......',a.nombre), 
-				IF(c.tiva='C','CO','NO') AS contribu, 
+				IF(c.tiva='C' OR c.tiva='E','CO','NO') AS contribu, 
 				IF(a.rifci='',c.rifci,a.rifci), 
 				IF(b.fecha<'$mFECHAF','04', '01') AS registro,
 				'S' AS nacional, 	
-				a.exento*(a.tipo_doc<>'X')  AS exento, 
-				a.montasa*(a.tipo_doc<>'X') AS general,   
-				a.tasa*(a.tipo_doc<>'X') AS geneimpu, 
-				a.monadic*(a.tipo_doc<>'X') AS adicional, 
-				a.sobretasa*(a.tipo_doc<>'X') AS adicimpu, 
-				a.monredu*(a.tipo_doc<>'X') AS reducida,  
-				a.reducida*(a.tipo_doc<>'X')  AS reduimpu, 
+				a.exento*(a.tipo_doc<>'X')  AS exento,
+				a.montasa*(a.tipo_doc<>'X') AS general,
+				a.tasa*(a.tipo_doc<>'X') AS geneimpu,
+				a.monadic*(a.tipo_doc<>'X') AS adicional,
+				a.sobretasa*(a.tipo_doc<>'X') AS adicimpu,
+				a.monredu*(a.tipo_doc<>'X') AS reducida,
+				a.reducida*(a.tipo_doc<>'X')  AS reduimpu,
 				a.totals*(a.tipo_doc<>'X') AS stotal,
-				a.iva*(a.tipo_doc<>'X')    AS impuesto, 
-				a.totalg*(a.tipo_doc<>'X') AS gtotal, 
+				a.iva*(a.tipo_doc<>'X')    AS impuesto,
+				a.totalg*(a.tipo_doc<>'X') AS gtotal,
 				0 AS reiva,
 				".$mes."01 AS fechal,
 				0 AS fafecta 
@@ -6932,7 +6932,7 @@ class Libros extends Controller {
 				$this->db->simple_query($mSQL); 
 			}
 		}
-		
+
 		// CARGA LAS RETENCIONES DE IVA DESDE SMOV
 		$mSQL = "SELECT a.tipo_doc, a.fecha, a.numero, c.nombre, c.rifci, a.cod_cli, b.monto,
 				a.numero AS afecta, a.fecha AS fafecta, a.reteiva, a.transac, a.nroriva, a.emiriva, a.recriva 
@@ -6947,9 +6947,9 @@ class Libros extends Controller {
 				$mSQL = "UPDATE siva SET reiva=".$row->reteiva.", comprobante='".$row->nroriva."', fecharece='$row->recriva'  WHERE tipo='".$row->tipo_doc."' AND numero='".$row->numero."' AND libro='V' AND EXTRACT(YEAR_MONTH FROM fechal)=$mes ";
 				$this->db->simple_query($mSQL); 
 			}
-		}		
+		}
 	}
-	
+
 	function genesfmay($mes){
 		$udia=days_in_month(substr($mes,4),substr($mes,0,4));
 		$fdesde=$mes.'01';
