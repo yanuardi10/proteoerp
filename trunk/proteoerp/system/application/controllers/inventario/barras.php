@@ -25,10 +25,20 @@ class barras extends Controller {
 		$bSPRV=$this->datasis->modbus($mSPRV);
 
 		$filter = new DataFilter2("Filtro por Producto", 'sinv');
-		$filter->codigo = new inputField("C&oacute;digo", "codigo");
+
+		//$filter->codigo = new inputField("C&oacute;digo", "codigo");
+		//$filter->codigo->size=15;
+
+		$filter->barras = new inputField("Barras", "barras");
+		$filter->barras->db_name='CONCAT_WS("-", barras, alterno,codigo)';
+		$filter->barras->size=20;
 
 		$filter->descrip = new inputField("Descripci&oacute;n", "descrip");
 		$filter->descrip->db_name='CONCAT_WS(" ",descrip,descrip2)';
+
+		//$filter->alterno = new inputField("C&oacute;digo alterno", "alterno");
+		//$filter->alterno->db_name='alterno';
+		//$filter->alterno->size=20;
 
 		$filter->clave = new inputField("Clave", "clave");
 
@@ -36,6 +46,7 @@ class barras extends Controller {
 		$filter->proveed->append($bSPRV);
 		$filter->proveed->clause ="in";
 		$filter->proveed->db_name='( prov1, prov2, prov3 )';
+		$filter->proveed->size=15;
 
 		$filter->marca = new dropdownField("Marca", "marca");
 		$filter->marca->option("","Todas");
@@ -51,6 +62,8 @@ class barras extends Controller {
 
 		$grid->use_function('str_replace');
 		$grid->column("C&oacute;digo",$link);
+		$grid->column("Alterno","alterno");
+		$grid->column("Barras","barras");
 		$grid->column("Descripci&oacute;n","descrip");
 		$grid->column("Precio 1","precio1");
 		$grid->column("Barras","barras");
@@ -58,7 +71,7 @@ class barras extends Controller {
 		$grid->build();
 
 		$data['content'] = $filter->output.$grid->output;
-		$data['title']   = "<h1>Lista de Art&iacute;culos</h1>";
+		$data['title']   = "<h1>Asignaci&oacute;n &uacute;nica de c&oacute;digo barras</h1>";
 		$data["head"]    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
@@ -69,17 +82,21 @@ class barras extends Controller {
 		$edit = new DataEdit("barras de Inventario", "sinv");
 		$edit->back_url = site_url("inventario/barras/filteredgrid/");
 
-		$edit->barras = new inputField("Barras", "barras");
-		$edit->barras->size      =  15;
-		$edit->barras->maxlength =  15;
-		$edit->barras->rule      =  "trim";
-
 		$edit->codigo = new inputField("C&oacute;digo", "codigo");
 		$edit->codigo->size       =  15;
 		$edit->codigo->maxlength  =  15;
-		$edit->codigo->rule 			= "trim|required";
-		$edit->codigo->mode				="autohide";
-		$edit->codigo->mode				= "readonly";
+		$edit->codigo->rule       = "trim|required";
+		$edit->codigo->mode       ="autohide";
+
+		$edit->barras = new inputField("Barras", "barras");
+		$edit->barras->size      =  20;
+		$edit->barras->maxlength =  15;
+		$edit->barras->rule      =  "trim";
+
+		$edit->alterno = new inputField("Alterno", "alterno");
+		$edit->alterno->size      =  20;
+		$edit->alterno->maxlength =  15;
+		$edit->alterno->rule      =  "trim";
 
 		$edit->descrip = new inputField("Descripci&oacute;n", "descrip");
 		$edit->descrip->size			=  40;

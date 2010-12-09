@@ -82,6 +82,11 @@ class barraspos extends Controller {
 		$filter->codigo->maxlength = 15;
 		$filter->codigo->append($bSINV);
 
+		$filter->suplemen = new inputField('Barras adicionales', 'suplemen');
+		$filter->suplemen->db_name   ='a.suplemen';
+		$filter->suplemen->size      = 15;
+		$filter->suplemen->maxlength = 20;
+
 		$filter->proveed = new inputField('Proveedor', 'proveed');
 		$filter->proveed->append($bSPRV);
 		$filter->proveed->db_name='b.prov1';
@@ -132,6 +137,7 @@ class barraspos extends Controller {
 		$grid->column_orderby('Barras','suplemen','suplemen','align="right"');
 		//$grid->column_orderby('F.Desde'        ,'<dbdate_to_human>fechad</dbdate_to_human>','fechad');
 		//$grid->column_orderby('F.Hasta'        ,'<dbdate_to_human>fechah</dbdate_to_human>','fechah');
+		//echo $grid->db->last_query();
 
 		$grid->add('inventario/barraspos/dataedit/create');
 		$grid->build();
