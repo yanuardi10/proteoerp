@@ -397,6 +397,8 @@ class sinv extends Controller {
 		}
 
 		$edit = new DataEdit2("Maestro de Inventario", $do);
+		$edit->pre_process('delete','_pre_del');
+
 		$edit->script($script,"create");
 		$edit->script($script,"modify");
 		$edit->back_url = site_url("inventario/sinv/filteredgrid");
@@ -410,7 +412,7 @@ class sinv extends Controller {
 		$edit->codigo->mode="autohide";
 		$edit->codigo->append($sugerir);
 		$edit->codigo->append($ultimo);
-		
+
 		$edit->alterno = new inputField("C&oacute;digo Alterno", "alterno");
 		$edit->alterno->size=20;  
 		$edit->alterno->maxlength=15;
@@ -766,6 +768,24 @@ class sinv extends Controller {
 		}
 		return $salida;
 	}
+
+	function _pre_del($do) {
+		$codigo=$this->db->escape($do->get('cliente'));
+		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM sitems WHERE codigoa=$codigo");
+		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM itscst WHERE codigo=$codigo");
+		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM itstra WHERE codigo=$codigo");
+		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM itspre WHERE codigo=$codigo");
+		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM itsnot WHERE codigo=$codigo");
+		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM itsnte WHERE codigo=$codigo");
+		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM itsinv WHERE codigo=$codigo");
+
+		if ($chek > 0){
+			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='Producto con Movimiento no puede ser Borrado';
+			return False;
+		}
+		return True;
+	}
+
 
 	function instalar(){
 		$mSQL='ALTER TABLE `sinv` DROP PRIMARY KEY';
