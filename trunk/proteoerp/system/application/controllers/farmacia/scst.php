@@ -332,7 +332,7 @@ class Scst extends Controller {
 			'columnas'=>array(
 				'codigo' =>'C&oacute;digo',
 				'barras' =>'C&oacute;digo barras',
-				'descrip'=>'descrip'),
+				'descrip'=>'Descripci&oacute;n'),
 			'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'descrip'),
 			'retornar'=>array('codigo' =>'abarras'),
 			//'where'   =>'LENGTH(barras)>0',
@@ -454,7 +454,7 @@ class Scst extends Controller {
 
 		$form = new DataForm("farmacia/scst/cargar/$control/process");
 
-		$form->nfiscal = new inputField('N&uacute;mero F&iacute;scal', 'nfiscal');
+		$form->nfiscal = new inputField('Control F&iacute;scal', 'nfiscal');
 		$form->nfiscal->rule = 'required|strtoupper';
 		$form->nfiscal->rows = 10;
 
@@ -463,10 +463,10 @@ class Scst extends Controller {
 		$form->almacen->options("SELECT ubica,CONCAT_WS('-',ubica,ubides) AS val FROM caub WHERE gasto='N' and invfis='N' ORDER BY ubides");
 		$form->almacen->rule = 'required';
 
-		$form->fecha = new DateonlyField('Vencimiento', 'vence','d/m/Y');
-		$form->fecha->insertValue = date('Y-m-d');
-		$form->fecha->rule = 'required';
-		$form->fecha->size = 10;
+		$form->dias = new inputField('D&iacute;as de cr&eacute;dito', 'dias','d/m/Y');
+		$form->dias->insertValue = 21;
+		$form->dias->rule = 'required|integer';
+		$form->dias->size = 5;
 
 		$form->submit('btnsubmit','Guardar');
 		$form->build_form();
@@ -474,8 +474,9 @@ class Scst extends Controller {
 		if ($form->on_success()){
 			$nfiscal= $form->nfiscal->newValue;
 			$almacen= $form->almacen->newValue;
-			$vence  = $form->vence->newValue;
-			$data['content'] = $this->_cargar($control,$nfiscal,$almacen,$vence).br().anchor('farmacia/scst/dataedit/show/'.$control,'Regresar');
+			$dias   = $form->dias->newValue;
+
+			$data['content'] = $this->_cargar($control,$nfiscal,$almacen,$dias).br().anchor('farmacia/scst/dataedit/show/'.$control,'Regresar');
 		}else{
 			$data['content'] = $form->output;
 		}
@@ -485,7 +486,7 @@ class Scst extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
-	function _cargar($control,$nfiscal,$almacen,$vence){
+	function _cargar($control,$nfiscal,$almacen,$dias){
 		$control =$this->db->escape($control);
 		$farmaxDB=$this->load->database('farmax',TRUE);
 		$farmaxdb=$farmaxDB->database;
@@ -512,9 +513,10 @@ class Scst extends Controller {
 					$row['transac']=$transac;
 					$row['nfiscal']=$nfiscal;
 					$row['depo']   =$almacen;
-					$row['vence']  =$vence;
+					$cd            =strtotime($row['fecha']);
+					$row['vence']  =date('Y-m-d', mktime(0,0,0,date('m',$cd),date('d',$cd)+$dias,date('Y',$cd)));
 					unset($row['pcontrol']);
-					
+
 					$mSQL[]=$this->db->insert_string('scst', $row);
 
 					$itquery = $farmaxDB->query("SELECT * FROM itscst WHERE control=$control");
