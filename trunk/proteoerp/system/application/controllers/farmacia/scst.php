@@ -333,7 +333,7 @@ class Scst extends Controller {
 				'codigo' =>'C&oacute;digo',
 				'barras' =>'C&oacute;digo barras',
 				'descrip'=>'Descripci&oacute;n'),
-			'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'descrip'),
+			'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'Descripci&oacute;n'),
 			'retornar'=>array('codigo' =>'abarras'),
 			//'where'   =>'LENGTH(barras)>0',
 			'titulo'  =>'Buscar Art&iacute;culo');
@@ -374,7 +374,7 @@ class Scst extends Controller {
 
 			$patrones = preg_split("/[\s,\-]+/", $describus);
 			foreach($patrones AS $pat){
-				if(strlen($pat)>2){
+				if(strlen($pat)>3){
 					$grid->db->like('descrip',$pat);
 				}
 			}
@@ -509,6 +509,9 @@ class Scst extends Controller {
 					$transac =$this->datasis->fprox_numero('ntransac');
 
 					$row=$query->row_array();
+					$numero=$row['numero'];
+					$row['serie']  =$numero;
+					$row['numero'] =substr($numero,-8);
 					$row['control']=$lcontrol;
 					$row['transac']=$transac;
 					$row['nfiscal']=$nfiscal;
