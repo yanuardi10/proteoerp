@@ -232,5 +232,43 @@ class Common extends controller {
 		}
 		return $valor;
 	}
+
+	function _gconsul($mSQL_p,$cod_bar,$busca,$suple=null){
+		if(!empty($suple) AND $this->db->table_exists('suple')){
+			$mSQL  ="SELECT codigo FROM suple WHERE suplemen='${cod_bar}' LIMIT 1";
+			$query = $this->db->query($mSQL);
+			if ($query->num_rows() != 0){
+				$row = $query->row();
+				$busca  =array($suple);
+				$cod_bar=$row->codigo;
+			}
+		}
+
+		foreach($busca AS $b){
+			$mSQL  =$mSQL_p." WHERE ${b}='${cod_bar}' LIMIT 1";
+			$query = $this->db->query($mSQL);
+			if ($query->num_rows() != 0){
+				return $query;
+			}
+		}
+
+		if ($this->db->table_exists('barraspos')) {
+			$mSQL  ="SELECT codigo FROM barraspos WHERE suplemen=".$this->db->escape($cod_bar)." LIMIT 1";
+			$query = $this->db->query($mSQL);
+			if ($query->num_rows() != 0){
+				$row = $query->row();
+				$cod_bar=$row->codigo;
+				
+				$mSQL  =$mSQL_p." WHERE codigo='${cod_bar}' LIMIT 1";
+				$query = $this->db->query($mSQL);
+				if($query->num_rows() == 0)
+					return false;
+			}else{
+				return false;
+			}
+		}else{
+			return false;
+		}
+		return $query;
+	}
 }
-?>
