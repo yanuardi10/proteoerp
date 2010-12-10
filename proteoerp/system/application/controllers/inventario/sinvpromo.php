@@ -151,22 +151,24 @@ class sinvpromo extends validaciones {
 
 		$link =anchor('/inventario/sinvpromo/dataedit/modify/<#id#>','<#codigo#>');
 		$llink=anchor_popup('inventario/consultas/preciosgeneral/<#codigo#>', 'Consultar precio', $attr);
+
 		$grid = new DataGrid('Lista de Art&iacute;culos');
 		$grid->use_function('dropdown');
 		$grid->order_by('codigo','asc');
 		$grid->per_page = 15;
 
-		$grid->column_orderby('C&oacute;digo'   ,$link     ,'codigo');
+		$grid->column_orderby('C&oacute;digo'     ,$link     ,'codigo');
 		$grid->column_orderby('Descripci&oacute;n', 'descrip' ,'descrip');
-		$grid->column_orderby('PVP', 'precio1' ,'precio1');
+		$grid->column_orderby('PVP'  ,'precio1' ,'precio1');
 		$grid->column_orderby('Marca', 'marca' ,'marca');
-		$grid->column_orderby('Promoci&oacute;n',"<dropdown><#codigo#>|<#margen#>|$sop</dropdown>",'margen','align="right"');
+		$grid->column_orderby('Promoci&oacute;n',"<dropdown><#id#>|<#margen#>|$sop</dropdown>",'margen','align="right"');
 		$grid->column('Consulta' ,$llink);
 		//$grid->column_orderby('F.Desde'        ,'<dbdate_to_human>fechad</dbdate_to_human>','fechad');
 		//$grid->column_orderby('F.Hasta'        ,'<dbdate_to_human>fechah</dbdate_to_human>','fechah');
 
 		$grid->add('inventario/sinvpromo/dataedit/create');
 		$grid->build();
+		//echo $grid->db->last_query();
 
 		$this->rapyd->jquery[]='
 		$("select:not(#margen)").change( function() {
@@ -265,7 +267,7 @@ class sinvpromo extends validaciones {
 		$codigo=$this->input->post('cod');
 		if($margen!==false && $codigo!==false){
 			//$codigo=trim($codigo);
-			$mSQL='UPDATE sinvpromo SET margen='.$this->db->escape($margen).' WHERE codigo='.$this->db->escape($codigo);
+			$mSQL='UPDATE sinvpromo SET margen='.$this->db->escape($margen).' WHERE id='.$this->db->escape($codigo);
 			//memowrite($mSQL);
 			//echo $mSQL;
 			$rt=$this->db->simple_query($mSQL);
@@ -283,7 +285,6 @@ class sinvpromo extends validaciones {
 				PRIMARY KEY (`id`),
 				INDEX `codigo` (`codigo`)
 			)
-			COLLATE='utf8_unicode_ci'
 			ENGINE=MyISAM
 			ROW_FORMAT=DEFAULT";
 		$this->db->query($mSQL);
