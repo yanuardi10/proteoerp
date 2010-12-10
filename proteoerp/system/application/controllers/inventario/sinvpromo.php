@@ -39,6 +39,17 @@ class sinvpromo extends validaciones {
 			'titulo'  =>'Buscar Proveedor');
 		$bSPRV=$this->datasis->modbus($mSPRV);
 
+
+		$attr = array(
+		  'width'      => '800',
+		  'height'     => '600',
+		  'scrollbars' => 'yes',
+		  'status'     => 'yes',
+		  'resizable'  => 'yes',
+		  'screenx'    => '0',
+		  'screeny'    => '0'
+		);
+
 		$op = array();
 		$mSQL='SELECT margen,CONCAT(margen,"%") AS val FROM sinvpromo GROUP BY margen';
 		$query=$this->db->query($mSQL);
@@ -90,6 +101,9 @@ class sinvpromo extends validaciones {
 		$filter->codigo->maxlength = 15;
 		$filter->codigo->append($bSINV);
 
+		$filter->descrip = new inputField('Descripci&oacute;n', 'descrip');
+		$filter->descrip->db_name   ='b.descrip';
+
 		$filter->proveed = new inputField('Proveedor', 'proveed');
 		$filter->proveed->append($bSPRV);
 		$filter->proveed->db_name='b.prov1';
@@ -105,9 +119,9 @@ class sinvpromo extends validaciones {
 		$filter->linea2->option("","Seleccione un Departamento primero");
 		$depto=$filter->getval('depto');
 		if($depto!==FALSE){
-		        $filter->linea2->options("SELECT linea, descrip FROM line WHERE depto='$depto' ORDER BY descrip");
+			$filter->linea2->options("SELECT linea, descrip FROM line WHERE depto='$depto' ORDER BY descrip");
 		}else{
-		        $filter->linea2->option("","Seleccione un Departamento primero");
+			$filter->linea2->option("","Seleccione un Departamento primero");
 		}
 
 		$filter->grupo = new dropdownField("Grupo", "grupo");
@@ -115,9 +129,9 @@ class sinvpromo extends validaciones {
 		$filter->grupo->option("","Seleccione una L&iacute;nea primero");
 		$linea=$filter->getval('linea2');
 		if($linea!==FALSE){
-		        $filter->grupo->options("SELECT grupo, nom_grup FROM grup WHERE linea='$linea' ORDER BY nom_grup");
+			$filter->grupo->options("SELECT grupo, nom_grup FROM grup WHERE linea='$linea' ORDER BY nom_grup");
 		}else{
-		        $filter->grupo->option('','Seleccione un Departamento primero');
+			$filter->grupo->option('','Seleccione un Departamento primero');
 		}
 
 		$filter->margen = new dropdownField('Promoci&oacute;n', 'margen');
@@ -135,7 +149,8 @@ class sinvpromo extends validaciones {
 		$filter->buttons('reset','search');
 		$filter->build();
 
-		$link=anchor('/inventario/sinvpromo/dataedit/modify/<#id#>','<#codigo#>');
+		$link =anchor('/inventario/sinvpromo/dataedit/modify/<#id#>','<#codigo#>');
+		$llink=anchor_popup('inventario/consultas/preciosgeneral/<#codigo#>', 'Consultar precio', $attr);
 		$grid = new DataGrid('Lista de Art&iacute;culos');
 		$grid->use_function('dropdown');
 		$grid->order_by('codigo','asc');
@@ -143,9 +158,10 @@ class sinvpromo extends validaciones {
 
 		$grid->column_orderby('C&oacute;digo'   ,$link     ,'codigo');
 		$grid->column_orderby('Descripci&oacute;n', 'descrip' ,'descrip');
+		$grid->column_orderby('PVP', 'precio1' ,'precio1');
 		$grid->column_orderby('Marca', 'marca' ,'marca');
 		$grid->column_orderby('Promoci&oacute;n',"<dropdown><#codigo#>|<#margen#>|$sop</dropdown>",'margen','align="right"');
-		$grid->column_orderby('Cantidad'        ,'cantidad','margen','align="right"');
+		$grid->column('Consulta' ,$llink);
 		//$grid->column_orderby('F.Desde'        ,'<dbdate_to_human>fechad</dbdate_to_human>','fechad');
 		//$grid->column_orderby('F.Hasta'        ,'<dbdate_to_human>fechah</dbdate_to_human>','fechah');
 
@@ -217,17 +233,17 @@ class sinvpromo extends validaciones {
 		$edit->codigo->rule      = 'required';
 		$edit->codigo->append($bSINV);
 
-		$edit->margen = new inputField('Margen', 'margen');
+		$edit->margen = new inputField('Porcentaje de descuento', 'margen');
 		$edit->margen->size      = 15;
 		$edit->margen->maxlength = 15;
 		$edit->margen->css_class = 'inputnum';
 		$edit->margen->rule      = 'required|callback_chporcent';
 
-		$edit->cantidad = new inputField('Cantidad', 'cantidad');
+		/*$edit->cantidad = new inputField('Cantidad', 'cantidad');
 		$edit->cantidad->size     = 15;
 		$edit->cantidad->maxlength= 15;
 		$edit->cantidad->css_class= 'inputnum';
-		$edit->cantidad->rule     = 'required';
+		$edit->cantidad->rule     = 'required';*/
 
 		/*$edit->fechad = new dateonlyField('Desde', 'fechad','d/m/Y');
 		$edit->fechad->insertValue = date('Y-m-d',mktime(0,0,0,date('m')+3,date('j'),date('Y')));
@@ -235,7 +251,7 @@ class sinvpromo extends validaciones {
 		$edit->fechah = new dateonlyField('Hasta', 'fechah','d/m/Y');
 		$edit->fechah->insertValue = date('Y-m-d');*/
 
-		$edit->buttons('modify', 'save','undo', 'back');
+		$edit->buttons('modify', 'save','undo','delete' ,'back');
 		$edit->build();
 
 		$data['content'] = $edit->output;
@@ -250,6 +266,7 @@ class sinvpromo extends validaciones {
 		if($margen!==false && $codigo!==false){
 			//$codigo=trim($codigo);
 			$mSQL='UPDATE sinvpromo SET margen='.$this->db->escape($margen).' WHERE codigo='.$this->db->escape($codigo);
+			//memowrite($mSQL);
 			//echo $mSQL;
 			$rt=$this->db->simple_query($mSQL);
 			echo ($rt)? 1 : 0;
