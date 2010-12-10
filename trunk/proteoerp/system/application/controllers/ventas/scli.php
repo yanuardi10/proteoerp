@@ -339,6 +339,12 @@ class Scli extends validaciones {
 		$edit->observa->cols = 70;
 		$edit->observa->rows =3;
 
+		$edit->clave = new inputField('Clave', 'clave');
+		$edit->clave->rule = 'trim';
+		$edit->clave->size = 8;
+		$edit->clave->maxlength = 12;
+
+
 		$edit->mensaje = new inputField("Mensaje", "mensaje");
 		$edit->mensaje->rule = "trim";
 		$edit->mensaje->size = 50;
