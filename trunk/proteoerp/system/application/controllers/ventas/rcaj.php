@@ -697,6 +697,8 @@ class Rcaj extends validaciones {
 		$this->db->simple_query($mSQL);
 		$mSQL="ALTER TABLE `sfpa`  ADD COLUMN `cierre` CHAR(8) DEFAULT '' AFTER `hora`";
 		$this->db->simple_query($mSQL);
+		$mSQL="ALTER TABLE `rcaj` CHANGE COLUMN `estampa` `estampa` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP";
+		$this->db->simple_query($mSQL);
 
 	}
 }
