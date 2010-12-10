@@ -69,36 +69,83 @@ class Rpcserver extends Controller {
 
 		$ult_ref=$parameters['0'];
 		$cod_cli=$parameters['1'];
-		$usr    =$parameters['1'];
-		$pwd    =$parameters['2'];
+		$usr    =$parameters['2'];
+		$pwd    =$parameters['3'];
 
 		$mSQL="SELECT numero,fecha,TRIM(nfiscal) AS nfiscal FROM sfac WHERE cod_cli=? AND numero > ? AND tipo_doc='F' LIMIT 5";
-		$query = $this->db->query($mSQL,array($cod_cli,$ult_ref));
+		$query = $this->db->query($mSQL,array($usr,$ult_ref));
 
 		$compras=array();
 		if ($query->num_rows() > 0){ 
+			$pivot=array();
 			foreach ($query->result_array() as $row){
-				$mmSQL="SELECT TRIM(codigoa) AS codigoa,TRIM(desca) AS desca,cana,preca,tota,iva FROM sitems WHERE numa=? AND tipoa='F'";
-				$qquery = $this->db->query($mmSQL,array($row['numero']));
-
+				$numero=$row['numero'];
+				//Prepara el encabezado
 				foreach($row AS $ind=>$val){
 					$row[$ind]=base64_encode($val);
 				}
-				$compras[] = serialize($row);
+				$pivot['scst']=$row;
+				//$compras[] = serialize($row);
 
+				//Prepara los articulos
 				$it=array();
+				$mmSQL="SELECT TRIM(a.codigoa) AS codigoa,TRIM(a.desca) AS desca,a.cana,a.preca,a.tota,a.iva,b.barras,b.precio1,b.precio2,b.precio3,b.precio4 FROM sitems AS a JOIN sinv AS b ON a.codigoa=b.codigo WHERE numa=? AND tipoa='F'";
+				$qquery = $this->db->query($mmSQL,array($numero));
 				foreach ($qquery->result_array() as $rrow){
 					foreach($rrow AS $ind=>$val){
 						$rrow[$ind]=base64_encode($val);
 					}
 					$it[]=$rrow;
 				}
+				//$compras[] = serialize($it);
+				$pivot['itscst']=$it;
 
-				$compras[] = serialize($it);
+				//Prepara el inventario
+				$it=array();
+				$mmSQL="SELECT TRIM(b.codigo) AS codigo,b.grupo,b.descrip,b.descrip2,b.unidad,b.ubica,b.tipo,b.clave,b.comision,b.enlace,b.pond,b.ultimo,b.existen,b.iva,b.fracci,b.codbar,b.barras,b.exmax,b.margen1,b.margen2,b.margen3,b.margen4,b.base1,b.base2,b.base3,b.base4,b.precio1,b.precio2,b.precio3,b.precio4,b.serial,b.tdecimal,b.redecen,b.formcal,b.fordeci,b.garantia,b.peso,b.pondcal,b.alterno,b.modelo,b.marca,clase,b.linea,b.depto,b.gasto,b.bonifica,b.bonicant,b.standard 
+				FROM sitems AS a JOIN sinv AS b ON a.codigoa=b.codigo WHERE a.numa=? AND a.tipoa='F'";
+				$qquery = $this->db->query($mmSQL,array($numero));
+				foreach ($qquery->result_array() as $rrow){
+					foreach($rrow AS $ind=>$val){
+						$rrow[$ind]=base64_encode($val);
+					}
+					$it[]=$rrow;
+				}
+				$pivot['sinv']=$it;
+
+				//$str = serialize($pivot);
+				//$compras[]=gzcompress($str);
+				$compras[]=serialize($pivot);
 			}
 		}
 
 		$response = array($compras,'struct');
+		//$str = serialize($compras);
+		//$response = array($str,'string');
 		return $this->xmlrpc->send_response($response);
+	}
+
+	function ProductosEmpresasAsociadas($request){
+		/*$parameters = $request->output_parameters();
+
+		$codigo =$parameters['0'];
+		$usr    =$parameters['1'];
+		$pwd    =$parameters['2'];
+
+		$mSQL="SELECT codigo,grupo,descrip,descrip2,unidad,ubica,tipo,clave,comision,enlace,prov1,prepro1,pfecha1,prov2,prepro2,pfecha2,prov3,prepro3,pfecha3,pond,ultimo,pvp_s,pvp_bs,pvpprc,contbs,contprc,mayobs,mayoprc,exmin,exord,exdes,existen,fechav,fechac,iva,fracci,codbar,barras,exmax,margen1,margen2,margen3,margen4,base1,base2,base3,base4,precio1,precio2,precio3,precio4,serial,tdecimal,activo,dolar,redecen,formcal,fordeci,garantia,costotal,fechac2,peso,pondcal,alterno,aumento,modelo,marca,clase,oferta,fdesde,fhasta,derivado,cantderi,ppos1,ppos2,ppos3,ppos4,linea,depto,id,gasto,bonifica,bonicant,standard FROM sinv WHERE codigo=?";
+		$query = $this->db->query($mSQL,array($codigo));
+
+		$compras=array();
+		if ($query->num_rows() > 0){ 
+			foreach ($query->result_array() as $row){
+				foreach($row AS $ind=>$val){
+					$row[$ind]=base64_encode($val);
+				}
+				$sinv[] = serialize($row);
+			}
+		}
+
+		$response = array($sinv,'struct');
+		return $this->xmlrpc->send_response($response);*/
 	}
 }
