@@ -39,8 +39,8 @@ class b2b extends validaciones {
 				'scrollbars' => 'yes',
 				'status'     => 'yes',
 				'resizable'  => 'yes',
-				'screenx'   => "'+((screen.availWidth/2)-175)+'",
-				'screeny'   => "'+((screen.availHeight/2)-175)+'"
+				'screenx'   => "'+((screen.availWidth/2)-200)+'",
+				'screeny'   => "'+((screen.availHeight/2)-150)+'"
 			);
 
 		$filter = new DataFilter('Filtro de b2b');
@@ -162,7 +162,6 @@ class b2b extends validaciones {
 		$edit->tipo->option('I','Inventario');
 		$edit->tipo->option('G','Gastos');
 		$edit->tipo->style ='50px';
-		
 		$edit->tipo->rule  ='required';
 
 		$edit->depo = new dropdownField('Almac&eacute;n','depo');
@@ -208,8 +207,8 @@ class b2b extends validaciones {
 				'scrollbars' => 'yes',
 				'status'     => 'yes',
 				'resizable'  => 'yes',
-				'screenx'    => '0',
-				'screeny'    => '0'
+				'screenx'   => "'+((screen.availWidth/2)-400)+'",
+				'screeny'   => "'+((screen.availHeight/2)-300)+'"
 			);
 		$modbus=array(
 			'tabla'   =>'sprv',
@@ -282,7 +281,7 @@ class b2b extends validaciones {
 		}
 
 		$edit = new DataEdit('Compras','b2b_scst');
-		$edit->back_url = 'farmacia/scst/datafilter/';
+		$edit->back_url = 'sincro/b2b/scstfilter/';
 
 		$edit->fecha = new DateonlyField('Fecha', 'fecha','d/m/Y');
 		$edit->fecha->insertValue = date('Y-m-d');
@@ -353,9 +352,9 @@ class b2b extends validaciones {
 		$detalle->db->join('sinv AS b','a.codigolocal=b.codigo','LEFT');
 		$detalle->use_function('exissinv');
 		$detalle->column('Codigo sistema'    ,'<sinulo><#codigolocal#>|No tiene</sinulo>' );
-		$detalle->column('Codigo prov.'      ,'<#codigo#>'      );
-		$detalle->column('Descrip. Proveedor','<#descrip#>'     );
-		$detalle->column('Descrip. Sistema'  ,'<#sinvdesc#>'     );
+		$detalle->column('Codigo prov.'      ,'<#codigo#>'   );
+		$detalle->column('Descrip. Proveedor','<#descrip#>'  );
+		$detalle->column('Descrip. Sistema'  ,'<#sinvdesc#>' );
 		$detalle->column('Cantidad'          ,'<#cantidad#>' ,"align='right'");
 		$detalle->column('PVP'               ,$llink         ,"align='right'");
 		$detalle->column('Costo'             ,'<#ultimo#>'   ,"align='right'");
@@ -397,7 +396,7 @@ class b2b extends validaciones {
 		}';
 
 		$edit->detalle=new freeField("detalle", 'detalle',$detalle->output);
-		$accion="javascript:window.location='".site_url('sincro/scst/cargar'.$edit->pk_URI())."'";
+		$accion="javascript:window.location='".site_url('sincro/b2b/cargacompra'.$edit->pk_URI())."'";
 		$pcontrol=$edit->_dataobject->get('pcontrol');
 		if(is_null($pcontrol)) $edit->button_status('btn_cargar','Cargar',$accion,'TR','show');
 		$edit->buttons('save','undo','back');
@@ -426,7 +425,7 @@ class b2b extends validaciones {
 // Metodos para gestionar transacciones como compras
 //****************************************************
 	function traecompra($par){
-		$rt=$this->trae_compra($par);
+		$rt=$this->_trae_compra($par);
 		if($rt!==false){
 			$str='Transacciones descargadas';
 		}else{
@@ -438,8 +437,7 @@ class b2b extends validaciones {
 		$this->load->view('view_ventanas_sola', $data);
 	}
 
-
-	function trae_compra($id=null){
+	function _trae_compra($id=null){
 		if(is_null($id)) return false; else $id=$this->db->escape($id);
 
 		$config=$this->datasis->damerow("SELECT proveed,grupo,puerto,proteo,url,usuario,clave,tipo,depo,margen1,margen2,margen3,margen4,margen5 FROM b2b_config WHERE id=$id");
@@ -457,7 +455,7 @@ class b2b extends validaciones {
 		$this->xmlrpc->server($server_url , $puerto);
 		$this->xmlrpc->method('cea');
 
-		$ufac=$this->datasis->dameval('SELECT MAX(numero) FROM b2b_scst WHERE proveed='.$this->db->escape($config['clave']));
+		$ufac=$this->datasis->dameval('SELECT MAX(numero) FROM b2b_scst WHERE proveed='.$this->db->escape($config['proveed']));
 		if(empty($ufac)) $ufac=0;
 
 		$request = array($ufac,$config['proveed'],$config['usuario'],$config['clave']);
@@ -471,8 +469,6 @@ class b2b extends validaciones {
 				$arr=unserialize($compra);
 				foreach($arr['scst'] AS $in => $val) $arr[$in]=base64_decode($val);
 
-				//$control=$this->datasis->fprox_numero('nscst');
-				//$transac=$this->datasis->fprox_numero('ntransac');
 				$proveed=$config['proveed'];
 				$pnombre=$this->datasis->dameval('SELECT nombre FROM sprv WHERE proveed='.$this->db->escape($proveed));
 
@@ -484,7 +480,9 @@ class b2b extends validaciones {
 				$data['vence']    = $arr['vence'];
 				$data['numero']   = $arr['numero'];
 				$data['serie']    = $arr['nfiscal'];
-				$data['montotot'] = $data['montoiva'] = $data['montonet'] = 0;
+				$data['montotot'] = $arr['totals'];
+				$data['montoiva'] = $arr['iva'];
+				$data['montonet'] = $arr['totalg'];
 				$mSQL=$this->db->insert_string('b2b_scst',$data);
 
 				$rt=$this->db->simple_query($mSQL);
@@ -533,9 +531,9 @@ class b2b extends validaciones {
 								$codigolocal=$row->codigo;
 							}
 						}
-						if($codigolocal===false AND $this->db->table_exists('sinvprov')){
-							$codigolocal=$this->datasis->dameval('SELECT codigo FROM sinvprov WHERE proveed='.$this->db->escape($proveed).' AND codigop='.$this->db->escape($arr[$in]['codigoa']));
-						}
+						//if($codigolocal===false AND $this->db->table_exists('sinvprov')){
+						//	$codigolocal=$this->datasis->dameval('SELECT codigo FROM sinvprov WHERE proveed='.$this->db->escape($proveed).' AND codigop='.$this->db->escape($arr[$in]['codigoa']));
+						//}
 
 						//Si no existe lo crea
 						if(empty($codigolocal)){
@@ -588,6 +586,7 @@ class b2b extends validaciones {
 							memowrite($mSQL,'B2B');
 						}$er+= !$rt;
 					}
+					$this->_cargacompra($id_scst);
 
 					//Carga el inventario
 					/*$ddata=array();
@@ -607,18 +606,19 @@ class b2b extends validaciones {
 		return $er;
 	}
 
-	function _cargacompra($id){
-		$query=$this->db->query("SELECT a.codigo FROM b2b_itscst AS a LEFT JOIN sinv AS b ON a.codigo=b.codigo WHERE a.numero IS NULL AND a.id_scst=?",array($id));
-		if ($query->num_rows() > 0){
-			$row = $query->row();
-			//$row->codigo;
-		}
+	function cargacompra($id){
+		$this->_cargacompra($id);
+		redirect('b2b/scstedit/show/'.$id);
+	}
 
-		$cana=$this->datasis->dameval('SELECT COUNT(*) FROM b2b_itscst AS a LEFT JOIN sinv AS b ON a.codigo=b.codigo WHERE a.numero IS NULL AND id_scst='.$this->db->escape($id));
-		if($cana==0){
+	function _cargacompra($id){
+		$pcontrol=$this->datasis->dameval('SELECT pcontrol FROM b2b_scst WHERE  id='.$this->db->escape($id));
+
+		$cana=$this->datasis->dameval('SELECT COUNT(*) FROM b2b_itscst AS a LEFT JOIN sinv AS b ON a.codigolocal=b.codigo WHERE a.numero IS NULL AND id_scst='.$this->db->escape($id));
+		if($cana==0 AND empty($pcontrol)){
 			$control=$this->datasis->fprox_numero('nscst');
 			$transac=$this->datasis->fprox_numero('ntransac');
-			$tt['montotot']=$tt['montoiva']=$tt['montonet']=0;
+			//$tt['montotot']=$tt['montoiva']=$tt['montonet']=0;
 
 			$query = $this->db->query('SELECT fecha,numero,proveed,depo,codigo,descrip,cantidad,devcant,devfrac,costo,importe,iva,montoiva,garantia,ultimo,precio1,precio2,precio3,precio4,licor FROM b2b_itscst WHERE id_scst=?',array($id));
 			if ($query->num_rows() > 0){
@@ -628,9 +628,9 @@ class b2b extends validaciones {
 					$itrow['control'] = $control;
 					$itrow['transac'] = $transac;
 
-					$tt['montotot']+=$itrow['importe'];
-					$tt['montoiva']+=$itrow['montoiva'];
-					$tt['montonet']+=$itrow['importe']+$itrow['montoiva'];
+					//$tt['montotot']+=$itrow['importe'];
+					//$tt['montoiva']+=$itrow['montoiva'];
+					//$tt['montonet']+=$itrow['importe']+$itrow['montoiva'];
 					$mSQL=$this->db->insert_string('itscst',$itrow);
 					$rt=$this->db->simple_query($mSQL);
 					if(!$rt){
@@ -647,9 +647,9 @@ class b2b extends validaciones {
 				$row['control'] = $control;
 				$row['transac'] = $transac;
 				$row['usuario'] = $this->session->userdata('usuario');
-				$row['montotot'] =$tt['montotot'];
-				$row['montoiva'] =$tt['montoiva'];
-				$row['montonet'] =$tt['montonet'];
+				//$row['montotot'] =$tt['montotot'];
+				//$row['montoiva'] =$tt['montoiva'];
+				//$row['montonet'] =$tt['montonet'];
 
 				$mSQL=$this->db->insert_string('scst',$row);
 				$rt=$this->db->simple_query($mSQL);
@@ -658,7 +658,7 @@ class b2b extends validaciones {
 				}
 			}
 
-			$mSQL="UPDATE b2b_scst SET control='$control' WHERE id=".$this->db->escape($id);
+			$mSQL="UPDATE b2b_scst SET pcontrol='$control' WHERE id=".$this->db->escape($id);
 			$rt=$this->db->simple_query($mSQL);
 			if(!$rt){
 				memowrite($mSQL,'B2B');
@@ -678,7 +678,6 @@ class b2b extends validaciones {
 	function _cargagasto(){
 		
 	}
-
 
 	function reasignaprecio(){
 		$this->rapyd->load('dataedit');
