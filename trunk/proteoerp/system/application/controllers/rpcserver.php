@@ -71,10 +71,10 @@ class Rpcserver extends Controller {
 		$cod_cli=$parameters['1'];
 		$usr    =$parameters['2'];
 		$pwd    =$parameters['3'];
+		$cant   =5;
 
-		$mSQL="SELECT numero,fecha,vence,TRIM(nfiscal) AS nfiscal FROM sfac WHERE cod_cli=? AND numero > ? AND tipo_doc='F' LIMIT 5";
+		$mSQL="SELECT numero,fecha,vence,TRIM(nfiscal) AS nfiscal,totals,totalg,iva FROM sfac WHERE cod_cli=? AND numero > ? AND tipo_doc='F' LIMIT $cant";
 		$query = $this->db->query($mSQL,array($usr,$ult_ref));
-		memowrite($this->db->last_query());
 
 		$compras=array();
 		if ($query->num_rows() > 0){ 
