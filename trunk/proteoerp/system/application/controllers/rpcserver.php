@@ -72,8 +72,9 @@ class Rpcserver extends Controller {
 		$usr    =$parameters['2'];
 		$pwd    =$parameters['3'];
 
-		$mSQL="SELECT numero,fecha,TRIM(nfiscal) AS nfiscal FROM sfac WHERE cod_cli=? AND numero > ? AND tipo_doc='F' LIMIT 5";
+		$mSQL="SELECT numero,fecha,vence,TRIM(nfiscal) AS nfiscal FROM sfac WHERE cod_cli=? AND numero > ? AND tipo_doc='F' LIMIT 5";
 		$query = $this->db->query($mSQL,array($usr,$ult_ref));
+		memowrite($this->db->last_query());
 
 		$compras=array();
 		if ($query->num_rows() > 0){ 
@@ -89,7 +90,7 @@ class Rpcserver extends Controller {
 
 				//Prepara los articulos
 				$it=array();
-				$mmSQL="SELECT TRIM(a.codigoa) AS codigoa,TRIM(a.desca) AS desca,a.cana,a.preca,a.tota,a.iva,b.barras,b.precio1,b.precio2,b.precio3,b.precio4,b.unidad.b.tipo FROM sitems AS a JOIN sinv AS b ON a.codigoa=b.codigo WHERE numa=? AND tipoa='F'";
+				$mmSQL="SELECT TRIM(a.codigoa) AS codigoa,TRIM(a.desca) AS desca,SUM(a.cana) AS cana ,a.preca,SUM(a.tota) AS tota,a.iva,b.barras,b.precio1,b.precio2,b.precio3,b.precio4,b.unidad, b.tipo, b.tdecimal FROM sitems AS a JOIN sinv AS b ON a.codigoa=b.codigo WHERE numa=? AND tipoa='F' GROUP BY a.codigoa";
 				$qquery = $this->db->query($mmSQL,array($numero));
 				foreach ($qquery->result_array() as $rrow){
 					foreach($rrow AS $ind=>$val){
@@ -101,7 +102,7 @@ class Rpcserver extends Controller {
 				$pivot['itscst']=$it;
 
 				//Prepara el inventario
-				$it=array();
+				/*$it=array();
 				$mmSQL="SELECT TRIM(b.codigo) AS codigo,b.grupo,b.descrip,b.descrip2,b.unidad,b.ubica,b.tipo,b.clave,b.comision,b.enlace,b.pond,b.ultimo,b.existen,b.iva,b.fracci,b.codbar,b.barras,b.exmax,b.margen1,b.margen2,b.margen3,b.margen4,b.base1,b.base2,b.base3,b.base4,b.precio1,b.precio2,b.precio3,b.precio4,b.serial,b.tdecimal,b.redecen,b.formcal,b.fordeci,b.garantia,b.peso,b.pondcal,b.alterno,b.modelo,b.marca,clase,b.linea,b.depto,b.gasto,b.bonifica,b.bonicant,b.standard 
 				FROM sitems AS a JOIN sinv AS b ON a.codigoa=b.codigo WHERE a.numa=? AND a.tipoa='F'";
 				$qquery = $this->db->query($mmSQL,array($numero));
@@ -111,7 +112,7 @@ class Rpcserver extends Controller {
 					}
 					$it[]=$rrow;
 				}
-				$pivot['sinv']=$it;
+				$pivot['sinv']=$it;*/
 
 				//$str = serialize($pivot);
 				//$compras[]=gzcompress($str);
