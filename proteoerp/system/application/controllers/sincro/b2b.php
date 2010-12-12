@@ -778,30 +778,94 @@ class b2b extends validaciones {
 	}
 
 	function instala(){
-		$mSQL="CREATE TABLE `b2b_config` (  `id` int(10) NOT NULL,  `proveed` char(5) COLLATE latin1_general_ci NOT NULL COMMENT 'Codigo del proveedor',  `url` varchar(100) COLLATE latin1_general_ci NOT NULL,  `usuario` varchar(100) COLLATE latin1_general_ci NOT NULL COMMENT 'Codigo de cliente en el proveedor',  `clave` varchar(100) COLLATE latin1_general_ci NOT NULL,  `tipo` char(1) COLLATE latin1_general_ci DEFAULT NULL COMMENT 'I para inventario G para gasto',  `depo` varchar(4) COLLATE latin1_general_ci DEFAULT NULL COMMENT 'Almacen',  `margen1` decimal(6,2) DEFAULT NULL COMMENT 'Margen para el precio1',  `margen2` decimal(6,2) DEFAULT NULL COMMENT 'Margen para el precio 2',  `margen3` decimal(6,2) DEFAULT NULL COMMENT 'Margen para el precio3',  `margen4` decimal(6,2) DEFAULT NULL COMMENT 'Margen para el precio4',
-		 `margen5` decimal(6,2) DEFAULT NULL COMMENT 'Margen para el precio5 (solo supermercado)',
-		 `grupo` varchar(5) COLLATE latin1_general_ci DEFAULT NULL COMMENT 'Grupo por defecto',
-		 PRIMARY KEY (`id`)
-		) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci COMMENT='Configuracion para los b2b'";
+		$mSQL="CREATE TABLE `b2b_config` (
+		  `id` int(10) NOT NULL AUTO_INCREMENT,
+		  `proveed` char(5)   NOT NULL COMMENT 'Codigo del proveedor',
+		  `url` varchar(100)  NOT NULL,
+		  `puerto` int(5) NOT NULL DEFAULT '80',
+		  `proteo` varchar(20) NOT NULL DEFAULT 'proteoerp',
+		  `usuario` varchar(100) NOT NULL COMMENT 'Codigo de cliente en el proveedor',
+		  `clave` varchar(100) NOT NULL,
+		  `tipo` char(1) DEFAULT NULL COMMENT 'I para inventario G para gasto',
+		  `depo` varchar(4) DEFAULT NULL COMMENT 'Almacen',
+		  `margen1` decimal(6,2) DEFAULT NULL COMMENT 'Margen para el precio1',
+		  `margen2` decimal(6,2) DEFAULT NULL COMMENT 'Margen para el precio 2',
+		  `margen3` decimal(6,2) DEFAULT NULL COMMENT 'Margen para el precio3',
+		  `margen4` decimal(6,2) DEFAULT NULL COMMENT 'Margen para el precio4',
+		  `margen5` decimal(6,2) DEFAULT NULL COMMENT 'Margen para el precio5 (solo supermercado)',
+		  `grupo` varchar(5) DEFAULT NULL COMMENT 'Grupo por defecto',
+		  PRIMARY KEY (`id`)
+		) ENGINE=MyISAM AUTO_INCREMENT=3 COMMENT='Configuracion para los b2b'";
 		var_dump($this->db->simple_query($mSQL));
-		$mSQL="CREATE TABLE `b2b_itscst` (  `id_scst` int(11) DEFAULT NULL,  `fecha` date DEFAULT NULL,  `numero` varchar(8) DEFAULT NULL,  `proveed` varchar(5) DEFAULT NULL,  `depo` varchar(4) DEFAULT NULL,  `codigo` varchar(15) DEFAULT NULL,  `descrip` varchar(45) DEFAULT NULL,  `cantidad` decimal(10,3) DEFAULT NULL,  `devcant` decimal(10,3) DEFAULT NULL,  `devfrac` int(4) DEFAULT NULL,  `costo` decimal(17,2) DEFAULT NULL,  `importe` decimal(17,2) DEFAULT NULL,  `iva` decimal(5,2) DEFAULT NULL,  `montoiva` decimal(17,2) DEFAULT NULL,  `garantia` int(3) DEFAULT NULL,  `ultimo` decimal(17,2) DEFAULT NULL,  `precio1` decimal(15,2) DEFAULT NULL,  `precio2` decimal(15,2) DEFAULT NULL,  `precio3` decimal(15,2) DEFAULT NULL,  `precio4` decimal(15,2) DEFAULT NULL,  `estampa` date DEFAULT NULL,  `hora` varchar(8) DEFAULT NULL,  `usuario` varchar(12) DEFAULT NULL,  `licor` decimal(10,2) DEFAULT '0.00',  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,  PRIMARY KEY (`id`),
-		  KEY `id_scst` (`id_scst`),
-		  KEY `fecha` (`fecha`),
-		  KEY `codigo` (`codigo`),
-		  KEY `proveedor` (`proveed`),
-		  KEY `numero` (`numero`)
-		) ENGINE=MyISAM AUTO_INCREMENT=0 DEFAULT CHARSET=latin1";
-		var_dump($this->db->simple_query($mSQL));
-		$mSQL="CREATE TABLE `b2b_scst` (  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,  `fecha` date DEFAULT NULL,  `numero` varchar(8) DEFAULT NULL,  `proveed` varchar(5) DEFAULT NULL,  `nombre` varchar(30) DEFAULT NULL,  `depo` varchar(4) DEFAULT NULL,  `montotot` decimal(17,2) DEFAULT NULL,  `montoiva` decimal(17,2) DEFAULT NULL,  `montonet` decimal(17,2) DEFAULT NULL,  `vence` date DEFAULT NULL,  `tipo_doc` char(2) DEFAULT NULL,  `control` varchar(8) NOT NULL DEFAULT '',  `peso` decimal(12,2) DEFAULT NULL,  `estampa` date DEFAULT NULL,  `hora` varchar(8) DEFAULT NULL,  `usuario` varchar(12) DEFAULT NULL,  `nfiscal` varchar(12) DEFAULT NULL,  `exento` decimal(17,2) NOT NULL DEFAULT '0.00',  `sobretasa` decimal(17,2) NOT NULL DEFAULT '0.00',
+
+		$mSQL="CREATE TABLE `b2b_scst` (
+		  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+		  `fecha` date DEFAULT NULL,
+		  `numero` varchar(8) DEFAULT NULL,
+		  `proveed` varchar(5) DEFAULT NULL,
+		  `nombre` varchar(30) DEFAULT NULL,
+		  `depo` varchar(4) DEFAULT NULL,
+		  `montotot` decimal(17,2) DEFAULT NULL,
+		  `montoiva` decimal(17,2) DEFAULT NULL,
+		  `montonet` decimal(17,2) DEFAULT NULL,
+		  `vence` date DEFAULT NULL,
+		  `tipo_doc` char(2) DEFAULT NULL,
+		  `control` varchar(8) NOT NULL DEFAULT '',
+		  `peso` decimal(12,2) DEFAULT NULL,
+		  `estampa` date DEFAULT NULL,
+		  `hora` varchar(8) DEFAULT NULL,
+		  `usuario` varchar(12) DEFAULT NULL,
+		  `nfiscal` varchar(12) DEFAULT NULL,
+		  `exento` decimal(17,2) NOT NULL DEFAULT '0.00',
+		  `sobretasa` decimal(17,2) NOT NULL DEFAULT '0.00',
 		  `reducida` decimal(17,2) NOT NULL DEFAULT '0.00',
 		  `tasa` decimal(17,2) NOT NULL DEFAULT '0.00',
 		  `montasa` decimal(17,2) DEFAULT NULL,
 		  `monredu` decimal(17,2) DEFAULT NULL,
 		  `monadic` decimal(17,2) DEFAULT NULL,
 		  `serie` char(12) DEFAULT NULL,
+		  `pcontrol` char(8) DEFAULT NULL,
 		  PRIMARY KEY (`id`),
+		  UNIQUE KEY `proveednum` (`proveed`,`numero`),
 		  KEY `proveedor` (`proveed`)
-		) ENGINE=MyISAM AUTO_INCREMENT=0 DEFAULT CHARSET=latin1";
+		) ENGINE=MyISAM AUTO_INCREMENT=6 DEFAULT CHARSET=latin1";
+		var_dump($this->db->simple_query($mSQL));
+
+		$mSQL="CREATE TABLE `b2b_itscst` (
+		  `id_scst` int(11) DEFAULT NULL,
+		  `fecha` date DEFAULT NULL,
+		  `numero` varchar(8) DEFAULT NULL,
+		  `proveed` varchar(5) DEFAULT NULL,
+		  `depo` varchar(4) DEFAULT NULL,
+		  `codigo` varchar(15) DEFAULT NULL,
+		  `descrip` varchar(45) DEFAULT NULL,
+		  `cantidad` decimal(10,3) DEFAULT NULL,
+		  `devcant` decimal(10,3) DEFAULT NULL,
+		  `devfrac` int(4) DEFAULT NULL,
+		  `costo` decimal(17,2) DEFAULT NULL,
+		  `importe` decimal(17,2) DEFAULT NULL,
+		  `iva` decimal(5,2) DEFAULT NULL,
+		  `montoiva` decimal(17,2) DEFAULT NULL,
+		  `garantia` int(3) DEFAULT NULL,
+		  `ultimo` decimal(17,2) DEFAULT NULL,
+		  `precio1` decimal(15,2) DEFAULT NULL,
+		  `precio2` decimal(15,2) DEFAULT NULL,
+		  `precio3` decimal(15,2) DEFAULT NULL,
+		  `precio4` decimal(15,2) DEFAULT NULL,
+		  `estampa` date DEFAULT NULL,
+		  `hora` varchar(8) DEFAULT NULL,
+		  `usuario` varchar(12) DEFAULT NULL,
+		  `licor` decimal(10,2) DEFAULT '0.00',
+		  `barras` varchar(15) DEFAULT NULL,
+		  `codigolocal` varchar(15) DEFAULT NULL,
+		  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+		  PRIMARY KEY (`id`),
+		  KEY `id_scst` (`id_scst`),
+		  KEY `fecha` (`fecha`),
+		  KEY `codigo` (`codigo`),
+		  KEY `proveedor` (`proveed`),
+		  KEY `numero` (`numero`)
+		) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT";
 		var_dump($this->db->simple_query($mSQL));
 	}
 }
