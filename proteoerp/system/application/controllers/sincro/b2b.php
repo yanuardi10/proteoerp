@@ -865,7 +865,7 @@ class b2b extends validaciones {
 		  KEY `codigo` (`codigo`),
 		  KEY `proveedor` (`proveed`),
 		  KEY `numero` (`numero`)
-		) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT";
+		) ENGINE=MyISAM AUTO_INCREMENT=1";
 		var_dump($this->db->simple_query($mSQL));
 	}
 }
