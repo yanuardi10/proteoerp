@@ -32,29 +32,29 @@ class Factura extends Controller {
 		$boton=$this->datasis->modbus($scli);
 
 		$filter = new DataFilter('Filtro de Facturas','sfac');
-		$filter->fechad = new dateonlyField("Desde", "fechad",'d/m/Y');
-		$filter->fechah = new dateonlyField("Hasta", "fechah",'d/m/Y');
-		$filter->fechad->clause  =$filter->fechah->clause="where";
-		$filter->fechad->db_name =$filter->fechah->db_name="fecha";
-		$filter->fechad->insertValue = date("Y-m-d"); 
-		$filter->fechah->insertValue = date("Y-m-d"); 
+		$filter->fechad = new dateonlyField('Desde', 'fechad','d/m/Y');
+		$filter->fechah = new dateonlyField('Hasta', 'fechah','d/m/Y');
+		$filter->fechad->clause  =$filter->fechah->clause ='where';
+		$filter->fechad->db_name =$filter->fechah->db_name='fecha';
+		$filter->fechad->insertValue = date('Y-m-d');
+		$filter->fechah->insertValue = date('Y-m-d');
 		$filter->fechah->size=$filter->fechad->size=10;
-		$filter->fechad->operator=">="; 
-		$filter->fechah->operator="<=";
+		$filter->fechad->operator='>=';
+		$filter->fechah->operator='<=';
 
-		$filter->numero = new inputField("N&uacute;mero", "numero");
+		$filter->numero = new inputField('N&uacute;mero','numero');
 		$filter->numero->size = 30;
 
-		$filter->cliente = new inputField("Cliente", "cod_cli");
+		$filter->cliente = new inputField('Cliente','cod_cli');
 		$filter->cliente->size = 30;
 		$filter->cliente->append($boton);
 
-		$filter->vende = new  dropdownField ("Vendedor", "vd");
-		$filter->vende->option("","Todos");  
+		$filter->vende = new  dropdownField ('Vendedor', 'vd');
+		$filter->vende->option('','Todos');
 		$filter->vende->options("SELECT vendedor, CONCAT(vendedor,' ',nombre) nombre FROM vend ORDER BY vendedor");  
 		$filter->vende->size = 5;
 
-		$filter->buttons("reset","search");
+		$filter->buttons('reset','search');
 		$filter->build();
     
 		$uri = anchor('ventas/factura/dataedit/show/<#tipo_doc#>/<#numero#>','<#numero#>');
@@ -65,6 +65,7 @@ class Factura extends Controller {
 		$grid->per_page = 15;  
 
 		$grid->column_orderby('N&uacute;mero',$uri,'numero');
+		$grid->column_orderby('N. Fiscal','nfiscal','nfisca');
 		$grid->column_orderby('Fecha','<dbdate_to_human><#fecha#></dbdate_to_human>','fecha',"align='center'");
 		$grid->column_orderby('Nombre'   ,'nombre','nombre');
 		$grid->column_orderby('Sub.Total','<nformat><#totals#></nformat>','totals',"align='right'");
