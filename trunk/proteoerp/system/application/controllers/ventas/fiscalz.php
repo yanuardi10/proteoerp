@@ -1,6 +1,5 @@
 <?php require_once(BASEPATH.'application/controllers/validaciones.php');
 class fiscalz extends Controller{
-	
 	function fiscalz(){
 		parent::Controller();
 		$this->load->library("rapyd");
@@ -17,15 +16,15 @@ class fiscalz extends Controller{
 		$select=array('serial','hora','numero','caja','fecha','fecha1','(exento+base+iva+base1+iva1+base2+iva2-ncexento-ncbase-nciva-ncbase1-nciva1-ncbase2-nciva2) AS total');
 		$filter->db->select($select);
 		$filter->db->from('fiscalz');
-		
+
 		$filter->fechad = new dateonlyField("Desde", "fechad",'d/m/Y');
 		$filter->fechad->clause  ="where";
 		$filter->fechad->db_name ="fecha";
 		$filter->fechad->insertValue = date("Y-m-d",mktime(0, 0, 0, date("m"), date("d")-30, date("Y")));
 		$filter->fechad->operator=">=";
  		$filter->fechad->group='Fecha';
- 		$filter->fechad->append(' Busca en base a la fecha final');
-		
+		$filter->fechad->append(' Busca en base a la fecha final');
+
 		$filter->fechah = new dateonlyField("Hasta", "fechah",'d/m/Y');
 		$filter->fechah->clause="where";
 		$filter->fechah->db_name="fecha";
@@ -33,48 +32,48 @@ class fiscalz extends Controller{
 		$filter->fechah->operator="<=";
 		$filter->fechah->group='Fecha';
 		$filter->fechah->append(' Busca en base a la fecha final');
-		
+
 		$filter->serial = new inputField("Serial","serial");
 		$filter->serial->size=20;
-		
+
 		$filter->numero= new inputField("Numero","numero");
 		$filter->numero->size=20;
-		
+
 		$filter->caja= new inputField("Caja","caja");
 		$filter->caja->size=5;
-		
+
 		$filter->manual = new dropdownField("Manual", "manual");
-		$filter->manual->option("","Todos");
-		$filter->manual->option("N","N");
-		$filter->manual->option("S","S");
-		$filter->manual->style = "width:70px";	
-		
+		$filter->manual->option('','Todos');
+		$filter->manual->option('N','N');
+		$filter->manual->option('S','S');
+		$filter->manual->style = 'width:70px';
+
 		$filter->buttons("reset","search");
 		$filter->build();
 
 		$uri = anchor('ventas/fiscalz/dataedit/show/<#serial#>/<#numero#>','<#serial#>');
 		$uri_2 = anchor('ventas/fiscalz/dataedit/create/<#serial#>/<#numero#>','Duplicar');
 		$uri3 = anchor('reportes/ver/fiscalz','Imprimir');
-		$grid = new DataGrid("Lista de Cierre Z");
+		$grid = new DataGrid('Lista de Cierre Z');
 		//$grid->order_by("serial","asc");
 		$grid->per_page=15;
 
-		
-		$grid->column("Serial",$uri);
-		$grid->column("Numero","numero");
+		$grid->column('Serial',$uri);
+		$grid->column('Numero','numero');
 		$grid->column_orderby("Caja","caja",'caja');
-		$grid->column_orderby("Fecha Inicial","<dbdate_to_human><#fecha1#></dbdate_to_human>",'fecha' ,"align='center'");
-		$grid->column_orderby("Fecha Final"  ,"<dbdate_to_human><#fecha#></dbdate_to_human>" ,'fecha1',"align='center'");
-		$grid->column("Hora"  ,"hora","align='center'");
-		$grid->column("Total","<number_format><#total#>|2|,|.</number_format>",'align=right');
-		$grid->column("Duplicar"                    ,$uri_2    ,"align='center'");
-		
-		$grid->add("ventas/fiscalz/dataedit/create");
+		$grid->column_orderby('Serial','serial','serial');
+		$grid->column_orderby('Fecha Inicial','<dbdate_to_human><#fecha1#></dbdate_to_human>','fecha' ,"align='center'");
+		$grid->column_orderby('Fecha Final'  ,'<dbdate_to_human><#fecha#></dbdate_to_human>' ,'fecha1',"align='center'");
+		$grid->column('Hora'    ,'hora',"align='center'");
+		$grid->column('Total'   ,'<number_format><#total#>|2|,|.</number_format>','align=right');
+		$grid->column('Duplicar',$uri_2 ,"align='center'");
+
+		$grid->add('ventas/fiscalz/dataedit/create');
 		$grid->build();
 
 		$data['content'] = $filter->output.$uri3.$grid->output;
 		$data['title']   = "<h1>Cierre Z</h1>";
-		$data["head"]    = $this->rapyd->get_head();	
+		$data["head"]    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 
