@@ -14,14 +14,14 @@ class Scst extends Controller {
 		$this->rapyd->load("datagrid","datafilter");
 
 		$atts = array(
-              'width'      => '800',
-              'height'     => '600',
-              'scrollbars' => 'yes',
-              'status'     => 'yes',
-              'resizable'  => 'yes',
-              'screenx'    => '0',
-              'screeny'    => '0'
-            );
+		  'width'      => '800',
+		  'height'     => '600',
+		  'scrollbars' => 'yes',
+		  'status'     => 'yes',
+		  'resizable'  => 'yes',
+		  'screenx'    => '0',
+		  'screeny'    => '0'
+		);
 
 		$modbus=array(
 			'tabla'   =>'sprv',
@@ -61,28 +61,29 @@ class Scst extends Controller {
 		$filter->numero = new inputField("Factura", "numero");
 		$filter->numero->size=20;
 
-		$filter->proveedor = new inputField("Proveedor", "proveed");
+		$filter->proveedor = new inputField('Proveedor','proveed');
 		$filter->proveedor->append($boton);
-		$filter->proveedor->db_name = "proveed";
+		$filter->proveedor->db_name = 'proveed';
 		$filter->proveedor->size=20;
 
-		$filter->buttons("reset","search");
+		$filter->buttons('reset','search');
 		$filter->build();
 
 		$uri = anchor('compras/scst/dataedit/show/<#control#>','<#numero#>');
 		$uri2 = anchor_popup('formatos/verhtml/COMPRA/<#numero#>',"Ver HTML",$atts);
 
 		$grid = new DataGrid();
-		$grid->order_by("fecha","desc");
-		$grid->per_page = 15;
+		$grid->order_by('fecha','desc');
+		$grid->per_page = 30;
 
-		$grid->column("Factura",$uri);
-		$grid->column("Fecha","<dbdate_to_human><#fecha#></dbdate_to_human>","align='center'");
-		$grid->column("Vence","<dbdate_to_human><#vence#></dbdate_to_human>","align='center'");
-		$grid->column("Nombre","nombre");
-		$grid->column("IVA"   ,"<nformat><#montoiva#></nformat>"  ,"align='right'");
-		$grid->column("Monto" ,"<nformat><#montonet#></nformat>" ,"align='right'");
-		$grid->column("Vista",$uri2,"align='center'");
+		$grid->column_orderby('Factura',$uri,'numero');
+		$grid->column_orderby('Fecha','<dbdate_to_human><#fecha#></dbdate_to_human>','fecha',"align='center'");
+		$grid->column_orderby('Vence','<dbdate_to_human><#vence#></dbdate_to_human>','vence',"align='center'");
+		$grid->column_orderby('Proveedor','proveed','proveed');
+		$grid->column_orderby('Nombre','nombre','nombre');
+		$grid->column_orderby('IVA'   ,'<nformat><#montoiva#></nformat>','montoiva',"align='right'");
+		$grid->column_orderby('Monto' ,'<nformat><#montonet#></nformat>','montonet',"align='right'");
+		$grid->column('Vista',$uri2,"align='center'");
 
 		//$grid->add("compras/agregar");
 		$grid->build();
@@ -234,7 +235,7 @@ class Scst extends Controller {
 
 		$edit->contado  = new inputField("Contado", "inicial");
 		$edit->contado->size = 20;
-	  $edit->contado->css_class='inputnum';
+		$edit->contado->css_class='inputnum';
 
 		$edit->rislr  = new inputField("R.ISLR", "reten");
 		$edit->rislr->size = 20;
