@@ -46,8 +46,8 @@ class b2b extends validaciones {
 		$filter = new DataFilter('Filtro de b2b');
 		$filter->db->select(array('a.id','a.proveed','a.usuario','a.depo AS depo','a.tipo','a.url','a.grupo','b.nombre','c.ubides'));
 		$filter->db->from('b2b_config AS a');
-		$filter->db->join('sprv AS b','b.proveed=a.proveed COLLATE latin1_swedish_ci','left');
-		$filter->db->join('caub AS c','c.ubica=a.depo COLLATE latin1_swedish_ci','left');
+		$filter->db->join('sprv AS b','b.proveed=a.proveed','left');
+		$filter->db->join('caub AS c','c.ubica=a.depo','left');
 
 		$filter->proveed = new inputField('Proveedor', 'proveed');
 		$filter->proveed->append($bSPRV);

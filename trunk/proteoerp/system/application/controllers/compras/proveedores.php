@@ -16,7 +16,7 @@ class Proveedores extends Controller {
 		$this->rapyd->load("datagrid2");
 		$this->rapyd->load("dataform");
 		$this->load->helper('openflash');
-		                            
+
 		if($this->uri->segment(4))$anio=$this->uri->segment(4);	elseif(isset($_POST['anio']))$anio=$_POST['anio'];
 		if (empty($anio))$anio=date("Y");
 		
@@ -54,11 +54,11 @@ class Proveedores extends Controller {
 		//$grid->db->limit(15,0);
 		
 		$grid->column("Proveedor"      ,"nombre","align='left'");
-		$grid->column("Sub-Total"     , "<number_format><#subtotal#>|2|,|.</number_format>" ,'align=right');
-		$grid->column("Impuesto"      , "<number_format><#impuesto#>|2|,|.</number_format>" ,'align=right');
-		$grid->column("Total"         , "<number_format><#grantotal#>|2|,|.</number_format>",'align=right');
-		$grid->column("Contado"       , "<number_format><#contado#>|2|,|.</number_format>"  ,'align=right');
-		$grid->column("Credito"       , "<number_format><#credito#>|2|,|.</number_format>"  ,'align=right');
+		$grid->column("Sub-Total"     , "<nformat><#subtotal#>|2</nformat>" ,'align=right');
+		$grid->column("Impuesto"      , "<nformat><#impuesto#>|2</nformat>" ,'align=right');
+		$grid->column("Total"         , "<nformat><#grantotal#>|2</nformat>",'align=right');
+		$grid->column("Contado"       , "<nformat><#contado#>|2</nformat>"  ,'align=right');
+		$grid->column("Credito"       , "<nformat><#credito#>|2</nformat>"  ,'align=right');
 		$grid->column("Cant. Fact"  , "numfac"   ,'align=right');
 		
 		$grid->totalizar('impuesto','grantotal','contado','credito','subtotal');
