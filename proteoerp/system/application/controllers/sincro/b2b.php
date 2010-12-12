@@ -424,8 +424,8 @@ class b2b extends validaciones {
 //****************************************************
 // Metodos para gestionar transacciones como compras
 //****************************************************
-	function traecompra($par){
-		$rt=$this->_trae_compra($par);
+	function traecompra($par,$ultimo=null){
+		$rt=$this->_trae_compra($par,$ultimo);
 		if($rt!==false){
 			$str='Transacciones descargadas';
 		}else{
@@ -437,7 +437,7 @@ class b2b extends validaciones {
 		$this->load->view('view_ventanas_sola', $data);
 	}
 
-	function _trae_compra($id=null){
+	function _trae_compra($id=null,$ultimo=null){
 		if(is_null($id)) return false; else $id=$this->db->escape($id);
 
 		$config=$this->datasis->damerow("SELECT proveed,grupo,puerto,proteo,url,usuario,clave,tipo,depo,margen1,margen2,margen3,margen4,margen5 FROM b2b_config WHERE id=$id");
@@ -455,8 +455,12 @@ class b2b extends validaciones {
 		$this->xmlrpc->server($server_url , $puerto);
 		$this->xmlrpc->method('cea');
 
-		$ufac=$this->datasis->dameval('SELECT MAX(numero) FROM b2b_scst WHERE proveed='.$this->db->escape($config['proveed']));
-		if(empty($ufac)) $ufac=0;
+		if(is_null($ultimo) AND is_numeric($ultimo)){
+			$ufac=$this->datasis->dameval('SELECT MAX(numero) FROM b2b_scst WHERE proveed='.$this->db->escape($config['proveed']));
+			if(empty($ufac)) $ufac=0;
+		}else{
+			$ufac=$ultimo;
+		}
 
 		$request = array($ufac,$config['proveed'],$config['usuario'],$config['clave']);
 		$this->xmlrpc->request($request);
