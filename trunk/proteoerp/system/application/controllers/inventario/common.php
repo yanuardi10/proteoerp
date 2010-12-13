@@ -137,6 +137,21 @@ class Common extends controller {
 		}
 	}
 
+	function get_grupo_tipo(){//usado con el tipo
+		$tipo=$this->input->post('tipo');
+		if(!empty($tipo)){
+			$mSQL=$this->db->query("SELECT grupo,nom_grup FROM grup WHERE tipo ='$tipo'");
+			if($mSQL){
+				echo "<option value=''>Seleccione una L&iacute;nea</option>";
+				foreach($mSQL->result() AS $fila ){
+					echo "<option value='".$fila->grupo."'>".$fila->nom_grup."</option>";
+				}
+			}
+		}else{
+			echo "<option value=''>Seleccione un tipo primero</option>";
+		}
+	}
+
 	function get_grupo_m(){//usado por maes
 		$fami=$this->input->post('fami');
 		if(!empty($fami)){
