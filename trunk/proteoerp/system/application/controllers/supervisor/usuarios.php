@@ -44,12 +44,12 @@ class Usuarios extends Controller {
 		$grid->order_by("us_codigo","asc");
 		$grid->per_page = 10;
 
-		$grid->column('C&oacute;digo', $uri);
-		$grid->column('Nombre','us_nombre'     );
-		$grid->column('Supervisor'     ,'supervisor','align="center"');
-		$grid->column('Almac&eacute;n' ,'almdes'   ,"align='left'");
-		$grid->column('Vendedor'       ,'<#vendedor#>-<#vendnom#>'  ,"align='center'");
-		$grid->column('Cajero'         ,'<#cajero#>-<#cajnom#>'    ,"align='center'");
+		$grid->column_orderby('C&oacute;digo', $uri,'us_codigo');
+		$grid->column_orderby('Nombre','us_nombre','us_nombre'     );
+		$grid->column_orderby('Supervisor'     ,'supervisor','align="center"');
+		$grid->column_orderby('Almac&eacute;n' ,'almdes'   ,"align='left'");
+		$grid->column_orderby('Vendedor'       ,'<#vendedor#>-<#vendnom#>','vendedor'  ,"align='center'");
+		$grid->column_orderby('Cajero'         ,'<#cajero#>-<#cajnom#>','cajero'    ,"align='center'");
 		$grid->column('Cambio clave'   ,$uri2       ,'align="center"');
 		$grid->column('Asignar Accesos',$uri3       ,'align="center"');
 
