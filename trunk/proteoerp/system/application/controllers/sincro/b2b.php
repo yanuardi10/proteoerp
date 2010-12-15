@@ -75,14 +75,13 @@ class b2b extends validaciones {
 		$grid->order_by('id','asc');
 		$grid->per_page = 15;
 
-		$grid->column_orderby('N&uacute;mero',$link    ,'id');
-		$grid->column_orderby('Proveedor'    ,'nombre' ,'proveed');
-		$grid->column_orderby('Url'          ,'url'    ,'url');
-		$grid->column_orderby('Usuario'      ,'usuario','usuario');
-		$grid->column_orderby('Clave'        ,'clave'  ,'clave');
-		$grid->column_orderby('Tipo'         ,'tipo'   ,'tipo');
-		$grid->column_orderby('Almacen'      ,'ubides' ,'depo');
-		$grid->column_orderby('Grupo'        ,'grupo'  ,'grupo');
+		$grid->column_orderby('N&uacute;mero' ,$link    ,'id');
+		$grid->column_orderby('Proveedor'     ,'nombre' ,'proveed');
+		$grid->column_orderby('Url'           ,'url'    ,'url');
+		$grid->column_orderby('Usuario'       ,'usuario','usuario');
+		$grid->column_orderby('Tipo'          ,'tipo'   ,'tipo');
+		$grid->column_orderby('Almac&eacute;n','ubides' ,'depo');
+		$grid->column_orderby('Grupo'         ,'grupo'  ,'grupo');
 		$grid->column('Sincronizar' ,$acti);
 		$grid->add('sincro/b2b/dataedit/create');
 		$grid->build();
@@ -455,11 +454,13 @@ class b2b extends validaciones {
 		$this->xmlrpc->server($server_url , $puerto);
 		$this->xmlrpc->method('cea');
 
-		if(is_null($ultimo) AND is_numeric($ultimo)){
+		if(is_null($ultimo)){
 			$ufac=$this->datasis->dameval('SELECT MAX(numero) FROM b2b_scst WHERE proveed='.$this->db->escape($config['proveed']));
 			if(empty($ufac)) $ufac=0;
-		}else{
+		}elseif(is_numeric($ultimo)){
 			$ufac=$ultimo;
+		}else{
+			$ufac=0;
 		}
 
 		$request = array($ufac,$config['proveed'],$config['usuario'],$config['clave']);
@@ -799,7 +800,7 @@ class b2b extends validaciones {
 		  `margen5` decimal(6,2) DEFAULT NULL COMMENT 'Margen para el precio5 (solo supermercado)',
 		  `grupo` varchar(5) DEFAULT NULL COMMENT 'Grupo por defecto',
 		  PRIMARY KEY (`id`)
-		) ENGINE=MyISAM AUTO_INCREMENT=3 COMMENT='Configuracion para los b2b'";
+		) ENGINE=MyISAM AUTO_INCREMENT=1 COMMENT='Configuracion para los b2b'";
 		var_dump($this->db->simple_query($mSQL));
 
 		$mSQL="CREATE TABLE `b2b_scst` (
@@ -832,7 +833,7 @@ class b2b extends validaciones {
 		  PRIMARY KEY (`id`),
 		  UNIQUE KEY `proveednum` (`proveed`,`numero`),
 		  KEY `proveedor` (`proveed`)
-		) ENGINE=MyISAM AUTO_INCREMENT=6 DEFAULT CHARSET=latin1";
+		) ENGINE=MyISAM AUTO_INCREMENT=1";
 		var_dump($this->db->simple_query($mSQL));
 
 		$mSQL="CREATE TABLE `b2b_itscst` (
