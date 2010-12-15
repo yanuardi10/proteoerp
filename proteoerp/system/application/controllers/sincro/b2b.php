@@ -625,7 +625,7 @@ class b2b extends validaciones {
 			$transac=$this->datasis->fprox_numero('ntransac');
 			//$tt['montotot']=$tt['montoiva']=$tt['montonet']=0;
 
-			$query = $this->db->query('SELECT fecha,numero,proveed,depo,codigo,descrip,cantidad,devcant,devfrac,costo,importe,iva,montoiva,garantia,ultimo,precio1,precio2,precio3,precio4,licor FROM b2b_itscst WHERE id_scst=?',array($id));
+			$query = $this->db->query('SELECT fecha,numero,proveed,depo,codigolocal,descrip,cantidad,devcant,devfrac,costo,importe,iva,montoiva,garantia,ultimo,precio1,precio2,precio3,precio4,licor FROM b2b_itscst WHERE id_scst=?',array($id));
 			if ($query->num_rows() > 0){
 				foreach ($query->result_array() as $itrow){
 					$itrow['estampa'] = date('Y-m-d');
