@@ -62,7 +62,7 @@ class Stra extends Controller {
 				'codigo' =>'C&oacute;digo',
 				'descrip'=>'Descripci&oacute;n',
 				'peso'=>'Peso'),
-			'filtro'  =>array('codigo' =>'C&oacutedigo','descrip'=>'descrip'),
+			'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'Descripci&oacute;n'),
 			'retornar'=>array('codigo'=>'codigo_<#i#>','descrip'=>'sinvdescrip_<#i#>'),
 			'p_uri'=>array(4=>'<#i#>'),
 			'titulo'  =>'Buscar Producto en inventario');
