@@ -613,7 +613,7 @@ class b2b extends validaciones {
 
 	function cargacompra($id){
 		$this->_cargacompra($id);
-		redirect('b2b/scstedit/show/'.$id);
+		redirect('sincro/b2b/scstedit/show/'.$id);
 	}
 
 	function _cargacompra($id){
