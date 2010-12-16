@@ -52,6 +52,7 @@ class Sfacfiscal extends Controller{
 		$filter->cajero->option('','Seleccionar');
 		$filter->cajero->option(' ','Creditos');
 		$filter->cajero->options('SELECT cajero, CONCAT_WS("-",cajero,nombre) FROM scaj ORDER BY cajero');
+		$filter->cajero->rule    ='required';
 
 		$filter->buttons('reset','search');
 		$filter->build();
