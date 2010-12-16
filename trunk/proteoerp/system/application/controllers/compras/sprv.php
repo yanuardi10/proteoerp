@@ -168,7 +168,7 @@ class Sprv extends validaciones {
 		$edit->proveed->group = 'Datos del Proveedor';
 
 		$edit->nombre = new inputField('Nombre', 'nombre');
-		$edit->nombre->rule = 'trim|strtoupper|required|callback_chci';
+		$edit->nombre->rule = 'trim|strtoupper|required';
 		$edit->nombre->size = 41;
 		$edit->nombre->maxlength =40;
 		$edit->nombre->group = "Datos del Proveedor";
@@ -348,7 +348,7 @@ class Sprv extends validaciones {
 			$nombre=$this->datasis->dameval("SELECT nombre FROM sprv WHERE proveed='$codigo'");
 			$this->validation->set_message('chexiste',"El codigo $codigo ya existe para el proveedor $nombre");
 			return FALSE;
-		}else {
+		}elseif(strlen($rif)>0){
 			$chek=$this->datasis->dameval("SELECT COUNT(*) FROM sprv WHERE rif='$rif'");
 			if ($chek > 0){
 				$nombre=$this->datasis->dameval("SELECT nombre FROM sprv WHERE rif='$rif'");
@@ -357,6 +357,8 @@ class Sprv extends validaciones {
 			}else {
 				return TRUE;
 			}
+		}else{
+			return TRUE;
 		}
 	}
 
