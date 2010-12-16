@@ -38,7 +38,7 @@ class Sfacfiscal extends Controller{
 			return $rt;
 		}
 
-		$filter = new DataFilter('Clientes inconsistentes','sfac');
+		$filter = new DataFilter('','sfac');
 		$filter->script($jquery);
 
 		$filter->fecha  = new dateonlyField('Desde','fecha');
@@ -51,7 +51,7 @@ class Sfacfiscal extends Controller{
 		$filter->cajero = new dropdownField('Cajero', 'cajero');
 		$filter->cajero->option('','Seleccionar');
 		$filter->cajero->option(' ','Creditos');
-		$filter->cajero->options('SELECT cajero, nombre FROM scaj ORDER BY cajero');
+		$filter->cajero->options('SELECT cajero, CONCAT_WS("-",cajero,nombre) FROM scaj ORDER BY cajero');
 
 		$filter->buttons('reset','search');
 		$filter->build();
@@ -60,7 +60,7 @@ class Sfacfiscal extends Controller{
 			$fecha=$filter->fecha->newValue;
 			$llink=anchor('supervisor/sfacfiscal/editsfac/show/<#tipo_doc#>/<#numero#>','<#numero#>');
 
-			$grid = new DataGrid('Almacenes inconsistentes');
+			$grid = new DataGrid('');
 			$grid->use_function('exissinv');
 			$grid->per_page = 30;
 			$grid->db->orderby('numero');
@@ -88,7 +88,13 @@ class Sfacfiscal extends Controller{
 		$edit = new DataEdit('Ajustes fiscales', 'sfac');
 		$edit->back_url = site_url('supervisor/sfacfiscal/index');
 
-		$edit->nfiscal =  new inputField('Numero fiscal','nfiscal');
+		$edit->tipo_doc = new inputField('Referencia','tipo_doc');
+		$edit->tipo_doc->mode='autohide';
+		$edit->numero = new inputField('Referencia','numero');
+		$edit->numero->mode='autohide';
+		$edit->numero->in='tipo_doc';
+
+		$edit->nfiscal =  new inputField('N&uacute;mero fiscal','nfiscal');
 		$edit->nfiscal->size = 15;
 		$edit->nfiscal->maxlength=30;
 		$edit->nfiscal->rule = 'trim|strtoupper|required';
@@ -146,7 +152,7 @@ class Sfacfiscal extends Controller{
 
 		$c=false;
 		$nnumero=ltrim($numero,'0');
-		$mSQL="SELECT TRIM(nfiscal) AS nfiscal,tipo_doc,numero FROM (`sfac`) WHERE `fecha` = $fecha AND `cajero` = $cajero ORDER BY `numero` DESC";
+		$mSQL="SELECT TRIM(nfiscal) AS nfiscal,tipo_doc,numero FROM (`sfac`) WHERE `fecha` = $fecha AND `cajero` = $cajero AND tipo_doc= 'F' ORDER BY `numero` DESC";
 		$query = $this->db->query($mSQL);
 		if ($query->num_rows() > 0){
 			$c=false;
