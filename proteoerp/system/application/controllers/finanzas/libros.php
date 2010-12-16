@@ -6311,7 +6311,7 @@ class Libros extends Controller {
 			'S' AS nacional,
 			COALESCE(b.cexento,b.exento)     AS exento,
 			COALESCE(b.cgenera,b.montasa)    AS general,
-			COALESCE(b.civagen,b,tasa)       AS geneimpu,
+			COALESCE(b.civagen,b.tasa)       AS geneimpu,
 			COALESCE(b.cadicio,b.monadic)    AS adicional,
 			COALESCE(b.civaadi,b.sobretasa)  AS reduimpu,
 			COALESCE(b.creduci,b.monredu)    AS reducida,
