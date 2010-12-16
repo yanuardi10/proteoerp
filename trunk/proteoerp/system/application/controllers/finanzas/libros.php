@@ -7598,7 +7598,7 @@ class Libros extends Controller {
 	}
 
 
-	function geneventasfiscal($mes){
+	function geneventascierrex($mes){
 		$udia=days_in_month(substr($mes,4),substr($mes,0,4));
 		$fdesde=$mes.'01';
 		$fhasta=$mes.$udia;
