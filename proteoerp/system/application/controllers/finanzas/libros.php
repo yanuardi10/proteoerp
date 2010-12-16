@@ -23,7 +23,7 @@ class Libros extends Controller {
 			else
 				$genera[]=array('accion'=>$row->metodo, 'nombre' => $row->nombre,'estampa'=>$row->estampa,'fgenera'=>$row->fgenera);
 		}
-		
+
 		$mk=mktime(0, 0 , 0, date("n")-1,date("j"), date("Y"));
 		$checkbox="<input type='checkbox' name='generar[]' value='<#accion#>' /> "; 
 		$submit= form_submit('<#accion#>', 'Generar');
@@ -36,7 +36,7 @@ class Libros extends Controller {
 			$hgene=substr($gene,4).'/'.substr($gene,0,4);
 			return "<span id='obs_$metodo'>Generado el <b>$hestampa</b> para el mes <b>$hgene</b></span>";
 		}
-		
+
 		$gene = new DataGrid("Documento para el mes $smes del a&ntilde;o $sanio",$genera);
 		$gene->use_function('obser');
 		$gene->per_page = count($genera);
@@ -6683,6 +6683,137 @@ class Libros extends Controller {
 		}
 	}
 
+	function geneventasfiscal($mes){
+		$udia=days_in_month(substr($mes,4),substr($mes,0,4));
+		$fdesde=$mes.'01';
+		$fhasta=$mes.$udia;
+		
+		$this->db->simple_query("DELETE FROM siva WHERE fechal = $fdesde AND fuente='FP'");
+		
+		$tasas = $this->_tasas($mes);
+		$mivag = $tasas['general'];
+		$mivar = $tasas['reducida'];
+		$mivaa = $tasas['adicional'];
+
+		$this->db->simple_query("UPDATE fiscalz SET caja='MAYO' WHERE caja='0001'");
+		$this->db->simple_query("UPDATE fiscalz SET hora=CONCAT_WS(':',MINUTE(hora),SECOND(hora),'00') WHERE caja='MAYO' AND HOUR(hora)=0");
+		
+		$mSQL="SELECT 
+			caja,
+			serial,
+			numero,
+			fecha,
+			factura  AS factura,
+			fecha1   AS fecha1,
+			hora     AS hora,
+			exento   AS exento,
+			base     AS base,
+			iva      AS iva,
+			base1    AS base1,
+			iva1     AS iva1,
+			base2    AS base2,
+			iva2     AS iva2,
+			ncexento AS ncexento,
+			ncbase   AS ncbase,
+			nciva    AS nciva,
+			ncbase1  AS ncbase1,
+			nciva1   AS nciva1,
+			ncbase2  AS ncbase2,
+			nciva2   AS nciva2,
+			MAX(ncnumero) AS ncnumero 
+		FROM fiscalz WHERE fecha BETWEEN $fdesde AND $fhasta";
+
+		$query = $this->db->query($mSQL);
+		if ($query->num_rows() > 0){
+			$data['libro']     ='V';
+			$data['fuente']    ='FP';
+			$data['sucursal']  ='00';
+			$data['tipo']      ='CZ';
+			$data['nacional']  ='S';
+			$data['fechal']    =$fdesde;
+
+			foreach ($query->result() as $row){
+				$data['serial']    =$row->serial;
+				$data['fecha']     =$row->fecha;
+				$data['caja']      =$row->caja;
+				$data['hora']      =$row->hora;
+				$hhasta=$row->hora;
+
+				if(!isset($ddesde[$row->caja])){
+					if($row->fecha1 == $row->fecha){
+						$hdesde='0';
+					}else{
+						$hdesde=$this->datasis->dameval("SELECT MAX(hora) FROM fiscalz WHERE fecha='{$row->fecha1}' AND serial='{$row->serial}'");
+						if(empty($hora))
+							$hdesde='0';
+					}
+					
+					$cur=$this->datasis->damerow("SELECT MAX(factura) AS ff, MAX(ncnumero) AS nc FROM fiscalz WHERE fecha<'{$row->fecha}' AND serial='{$row->serial}'");
+					if(count($cur)>0){
+						$ncdesde =(empty($cur['nc'])) ? '00000001' : $cur['nc'];
+						$ffdesde =(empty($cur['ff'])) ? '00000001' : $cur['ff'];
+					}else{
+						$ncdesde ='00000001';
+						$ffdesde ='00000001';
+					}
+					$frealnum=$this->datasis->dameval("SELECT MIN(numero) AS numero FROM viefac WHERE fecha BETWEEN '$row->fecha1' AND '$row->fecha' AND caja='$row->caja' AND hora>='$hdesde' AND hora<'$hhasta'");
+					$factor=$ffdesde-$frealnum;
+					$ddesde[$row->caja]['factor']=$factor;
+				}else{
+					$ncdesde =$ddesde[$row->caja]['ncdesde'];
+					$ffdesde =$ddesde[$row->caja]['ffdesde'];
+					$factor  =$ddesde[$row->caja]['factor'];
+				}
+			}
+
+			$mSQL = "INSERT INTO siva
+			(id, libro, tipo, fuente, sucursal, fecha, numero, numhasta,  caja, nfiscal,  nhfiscal, 
+			referen, planilla, clipro, nombre, contribu, rif, registro,
+			nacional, exento, general, geneimpu, 
+			adicional, adicimpu,  reducida,  reduimpu, stotal, impuesto, 
+			gtotal, reiva, fechal, fafecta) 
+				SELECT 0 AS id,
+				'V' AS libro, 
+				IF(a.tipo_doc='D','NC',CONCAT(a.tipo_doc,'C')) AS tipo,
+				'FA' AS fuente,
+				'00' AS sucursal, 
+				a.fecha, 
+				IF(LENGTH(a.nfiscal)>0,a.nfiscal,a.numero) AS numero,
+				' ' AS numhasta, 
+				' ' AS caja, 
+				a.nfiscal, 
+				'  ' AS nhfiscal, 
+				IF(a.tipo_doc='F',a.numero,a.factura ) AS referen, 
+				'  ' AS planilla, 
+				a.cod_cli AS clipro, 
+				IF(a.tipo_doc='X','DOCUMENTO ANULADO.......',a.nombre),
+				IF(c.tiva='C' OR c.tiva='E','CO','NO') AS contribu,
+				IF(a.rifci='',c.rifci,a.rifci), 
+				IF(b.fecha<'$mFECHAF','04', '01') AS registro,
+				'S' AS nacional,
+				a.exento*(a.tipo_doc<>'X')  AS exento,
+				a.montasa*(a.tipo_doc<>'X') AS general,
+				a.tasa*(a.tipo_doc<>'X') AS geneimpu,
+				a.monadic*(a.tipo_doc<>'X') AS adicional,
+				a.sobretasa*(a.tipo_doc<>'X') AS adicimpu,
+				a.monredu*(a.tipo_doc<>'X') AS reducida,
+				a.reducida*(a.tipo_doc<>'X')  AS reduimpu,
+				a.totals*(a.tipo_doc<>'X') AS stotal,
+				a.iva*(a.tipo_doc<>'X')    AS impuesto,
+				a.totalg*(a.tipo_doc<>'X') AS gtotal,
+				0 AS reiva,
+				".$mes."01 AS fechal,
+				0 AS fafecta 
+				FROM sfac AS a 
+				LEFT JOIN sfac AS b ON a.factura = b.numero AND a.tipo_doc='D'
+				LEFT JOIN scli AS c ON a.cod_cli=c.cliente 
+				WHERE a.fecha BETWEEN $fdesde AND $fhasta AND MID(a.numero,1,1)<>'_' AND c.tiva IN ('C','E')";
+
+			$flag=$this->db->simple_query($mSQL);
+			if(!$flag) memowrite($mSQL,'genesfac');
+		}
+	}
+
 	function genegastos($mes){
 		$udia=days_in_month(substr($mes,4),substr($mes,0,4));
 		$fdesde=$mes.'01';
@@ -6901,7 +7032,7 @@ class Libros extends Controller {
 				IF(c.tiva='C' OR c.tiva='E','CO','NO') AS contribu, 
 				IF(a.rifci='',c.rifci,a.rifci), 
 				IF(b.fecha<'$mFECHAF','04', '01') AS registro,
-				'S' AS nacional, 	
+				'S' AS nacional, 
 				a.exento*(a.tipo_doc<>'X')  AS exento,
 				a.montasa*(a.tipo_doc<>'X') AS general,
 				a.tasa*(a.tipo_doc<>'X') AS geneimpu,
@@ -6914,11 +7045,11 @@ class Libros extends Controller {
 				a.totalg*(a.tipo_doc<>'X') AS gtotal,
 				0 AS reiva,
 				".$mes."01 AS fechal,
-				0 AS fafecta 
-				FROM sfac AS a 
+				0 AS fafecta
+				FROM sfac AS a
 				LEFT JOIN sfac AS b ON a.factura = b.numero AND a.tipo_doc='D'
 				LEFT JOIN scli AS c ON a.cod_cli=c.cliente 
-				WHERE a.fecha BETWEEN $fdesde AND $fhasta AND MID(a.numero,1,1)<>'_'";
+				WHERE a.fecha BETWEEN $fdesde AND $fhasta AND MID(a.numero,1,1)<>'_' AND c.tiva IN ('C','E')";
 
 		$flag=$this->db->simple_query($mSQL);
 		if(!$flag) memowrite($mSQL,'genesfac');
@@ -7466,6 +7597,155 @@ class Libros extends Controller {
 		}
 	}
 
+
+	function geneventasfiscal($mes){
+		$udia=days_in_month(substr($mes,4),substr($mes,0,4));
+		$fdesde=$mes.'01';
+		$fhasta=$mes.$udia;
+		$this->db->simple_query("UPDATE sfac SET nfiscal=TRIM(nfiscal), maqfiscal=TRIM(maqfiscal)");
+		$this->db->simple_query("DELETE FROM siva WHERE fechal = $fdesde AND fuente='FP'");
+		$this->db->simple_query("DELETE FROM siva WHERE fechal = $fdesde AND fuente='FA'");
+		$mFECHAF = $this->datasis->dameval("SELECT max(fecha) FROM civa WHERE fecha<=$mes"."01");
+		$tasas = $this->_tasas($mes);
+		$mivag = $tasas['general'];
+		$mivar = $tasas['reducida'];
+		$mivaa = $tasas['adicional'];
+
+		//$this->db->simple_query("UPDATE fiscalz SET caja='MAYO' WHERE caja='0001'");
+		//$this->db->simple_query("UPDATE fiscalz SET hora=CONCAT_WS(':',MINUTE(hora),SECOND(hora),'00') WHERE caja='MAYO' AND HOUR(hora)=0");
+		
+		$mSQL="SELECT caja,serial,numero,fecha,factura,fecha1,hora,
+		exento  ,base  ,iva  ,base1  ,iva1  ,base2  ,iva2,
+		ncexento,ncbase,nciva,ncbase1,nciva1,ncbase2,nciva2,ncnumero 
+		FROM fiscalz WHERE fecha BETWEEN $fdesde AND $fhasta";
+		//echo $mSQL;
+
+		$query = $this->db->query($mSQL);
+		if ($query->num_rows() > 0){
+			$data['libro']     ='V';
+			$data['fuente']    ='FP';
+			$data['sucursal']  ='00';
+			$data['tipo']      ='FC';
+			$data['nacional']  ='S';
+			$data['fechal']    =$fdesde;
+
+			foreach ($query->result() as $row){
+				$data['serial']  =$row->serial;
+				$data['fecha']   =$row->fecha;
+				$data['caja']    =$row->caja;
+				$data['hora']    =$row->hora;
+				$data['numero']  =$row->numero;
+				$hhasta=$row->hora;
+
+				if($row->fecha1 == $row->fecha){
+					$hdesde='0';
+				}else{
+					$hdesde=$this->datasis->dameval("SELECT MAX(hora) FROM fiscalz WHERE fecha='{$row->fecha1}' AND serial='{$row->serial}'");
+					if(empty($hora))
+						$hdesde='0';
+				}
+
+				$cur=$this->datasis->damerow("SELECT MAX(factura) AS ff, MAX(ncnumero) AS nc FROM fiscalz WHERE fecha<'{$row->fecha}' AND serial='{$row->serial}'");
+				if(count($cur)>0){
+					$ncdesde =(empty($cur['nc'])) ? '00000001' : $cur['nc'];
+					$ffdesde =(empty($cur['ff'])) ? '00000001' : $cur['ff'];
+				}else{
+					$ncdesde = $ffdesde ='00000001';
+				}
+
+				$mmSQL="SELECT
+				'V' AS libro,
+				IF(a.tipo_doc='D','NC',CONCAT(a.tipo_doc,'C')) AS tipo,
+				'FA'   AS fuente,
+				'00'   AS sucursal,
+				a.fecha,
+				'$row->numero' AS numero,
+				' ' AS numhasta,
+				' ' AS caja,
+				a.nfiscal,
+				'  ' AS nhfiscal,
+				IF(a.tipo_doc='F',a.numero,a.factura ) AS referen,
+				'  ' AS planilla,
+				a.cod_cli AS clipro,
+				IF(a.tipo_doc='X','DOCUMENTO ANULADO...',a.nombre) AS nombre,
+				IF(c.tiva='C' OR c.tiva='E','CO','NO') AS contribu,
+				IF(a.rifci='',c.rifci,a.rifci) AS rif,
+				IF(b.fecha<'$mFECHAF','04', '01') AS registro,
+				'S' AS nacional,
+				a.exento*(a.tipo_doc<>'X')    AS exento,
+				a.montasa*(a.tipo_doc<>'X')   AS general,
+				a.tasa*(a.tipo_doc<>'X')      AS geneimpu,
+				a.monadic*(a.tipo_doc<>'X')   AS adicional,
+				a.sobretasa*(a.tipo_doc<>'X') AS adicimpu,
+				a.monredu*(a.tipo_doc<>'X')   AS reducida,
+				a.reducida*(a.tipo_doc<>'X')  AS reduimpu,
+				a.totals*(a.tipo_doc<>'X')    AS stotal,
+				a.iva*(a.tipo_doc<>'X')       AS impuesto,
+				a.totalg*(a.tipo_doc<>'X')    AS gtotal,
+				0 AS reiva,
+				".$mes."01 AS fechal,
+				0 AS fafecta,
+				a.maqfiscal AS serial
+				FROM sfac AS a 
+				LEFT JOIN sfac AS b ON a.factura = b.numero AND a.tipo_doc='D'
+				LEFT JOIN scli AS c ON a.cod_cli=c.cliente 
+				WHERE a.fecha BETWEEN $fdesde AND $fhasta AND MID(a.numero,1,1)<>'_' AND c.tiva IN ('C','E') AND a.maqfiscal='{$row->serial}'";
+
+				$tt['exento']   =0;
+				$tt['general']  =0;
+				$tt['geneimpu'] =0;
+				$tt['adicional']=0;
+				$tt['adicimpu'] =0;
+				$tt['reducida'] =0;
+				$tt['reduimpu'] =0;
+				$qquery = $this->db->query($mmSQL);
+				if ($qquery->num_rows() > 0){
+					//$m="INSERT INTO siva (libro, tipo, fuente, sucursal, fecha, numero, numhasta,  caja, nfiscal,  nhfiscal, 
+					//referen, planilla, clipro, nombre, contribu, rif, registro,
+					//nacional, exento, general, geneimpu,adicional, adicimpu,  reducida,  reduimpu, stotal, impuesto, 
+					//gtotal, reiva, fechal, fafecta,serial) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?'$row->numero')";
+					//echo $m."\n\n\n";
+					
+					foreach ($qquery->result_array() as $rrow){
+						$rrow['serial']=$row->serial;
+						$m = $this->db->insert_string('siva', $rrow);
+						$q= $this->db->query($m,$rrow);
+						$fac=($rrow['tipo']=='NC') ? -1 : 1;
+						//$fac=1;
+						$tt['exento']   +=$fac*$rrow['exento']  ;
+						$tt['general']  +=$fac*$rrow['general']  ;
+						$tt['geneimpu'] +=$fac*$rrow['geneimpu'] ;
+						$tt['adicional']+=$fac*$rrow['adicional'];
+						$tt['adicimpu'] +=$fac*$rrow['adicimpu'] ;
+						$tt['reducida'] +=$fac*$rrow['reducida'] ;
+						$tt['reduimpu'] +=$fac*$rrow['reduimpu'] ;
+					}
+				}
+				$data['nfiscal']  =$ffdesde;
+				$data['nhfiscal'] =$row->factura;
+				$data['nombre']   ='VENTAS A NO CONTRIBUYENTES';
+				$data['exento']   =$row->exento-$tt['exento']   -$row->ncexento;
+				$data['general']  =$row->base  -$tt['general']  -$row->ncbase  ;
+				$data['geneimpu'] =$row->iva   -$tt['geneimpu'] -$row->nciva   ;
+				$data['adicional']=$row->base2 -$tt['adicional']-$row->ncbase2 ;
+				$data['adicimpu'] =$row->iva2  -$tt['adicimpu'] -$row->nciva2  ;
+				$data['reducida'] =$row->base1 -$tt['reducida'] -$row->ncbase1 ;
+				$data['reduimpu'] =$row->iva1  -$tt['reduimpu'] -$row->nciva1  ;
+				$data['gtotal']   =$data['reduimpu']+$data['reducida']+$data['adicimpu']+$data['adicional']+$data['geneimpu']+$data['general']+$data['exento'];
+				$mSQL_2 = $this->db->insert_string('siva', $data); 
+				$this->db->simple_query($mSQL_2);
+
+				/*$m="INSERT INTO siva (libro, tipo, fuente, sucursal, fecha, numero, numhasta,  caja, nfiscal,  nhfiscal, 
+				referen, planilla, clipro, nombre, contribu, rif, registro,
+				nacional, exento, general, geneimpu,adicional, adicimpu,  reducida,  reduimpu, stotal, impuesto, 
+				gtotal, reiva, fechal, fafecta) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+				$data=array('V','CZ','FA','',$row->fecha,'','','','','','','','','','','','','','','','','','','','','','','','','','');
+				$q= $this->db->query($m,$rrow);*/
+			//SELECT fecha,nfiscal,nhfiscal,numero,serial,rif,nombre,'' AS debito,'' AS credito, tipo,fafecta,exento,gtotal,general,'12',geneimpu,reducida,'8',reduimpu,adicional,'22',adicimpu,'' as retenido,comprobante,'' AS percibido,'' AS importacion,contribu FROM siva ORDER BY fecha, serial LIMIT 10
+			}
+		}
+	}
+
 	//***********************************************
 	// METODOS PRIVADOS
 	//***********************************************
@@ -7519,7 +7799,7 @@ class Libros extends Controller {
 			$mTOTA   = $row->tota;
 			if ( $mIVA == $mATASAS['tasa']) {
 				$mTASA    += round($mTOTA*$mIVA/100,2);
-      	$mMONTASA += $mTOTA;
+				$mMONTASA += $mTOTA;
 			} elseif ($mIVA == $mATASAS['redutasa']) {
 				$mREDUCIDA += round($mTOTA*$mIVA/100,2);
 				$mMONREDU  += $mTOTA;
@@ -7552,7 +7832,7 @@ class Libros extends Controller {
 	function _saldofinal($mes){
 		// Calcula Saldo Final
 		$this->db->simple_query("UPDATE invresu SET final=inicial+compras-ventas-notas+trans+fisico, mfinal=minicial+mcompras-mventas-mnotas+mtrans+mfisico WHERE mes=$mes ");
-  }
+	}
 
 	function _restames($mes){
 		$ano = substr($mes,0,4);
@@ -7638,8 +7918,8 @@ class Libros extends Controller {
 		$data['script']='<script type="text/javascript">
 		$(document).ready(function() {
 			$(":checkbox").click(function () { 
-      	activar($(this).attr("value"));
-    	});
+	activar($(this).attr("value"));
+	});
 		});
 
 		function activar(metodo){
@@ -7669,11 +7949,11 @@ class Libros extends Controller {
 
 		$edit = new DataEdit("Edici&oacute;n de caja", "libros");
 		$edit->back_url = site_url("finanzas/libros/configurar");
-		
+
 		$edit->metodo = new inputField("Metodo", "metodo");
 		$edit->metodo->rule = "required";
 		//$edit->metodo->mode = "autohide";
-		
+
 		$edit->tipo = new dropdownField("Tipo", "tipo");
 		$edit->tipo->option("G","Generar" );
 		$edit->tipo->option("D","Descarga");
@@ -7748,6 +8028,5 @@ class Libros extends Controller {
 		}
 		$this->db->simple_query($mSQL);
 		echo $uri = anchor('finanzas/libros/configurar','Configurar');
-	} 
+	}
 }
-?>
