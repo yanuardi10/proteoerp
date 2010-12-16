@@ -45,6 +45,9 @@ class Factura extends Controller {
 		$filter->numero = new inputField('N&uacute;mero','numero');
 		$filter->numero->size = 30;
 
+		$filter->nfiscal = new inputField('N&uacute;mero fiscal','nfiscal');
+		$filter->nfiscal->size = 30;
+
 		$filter->cliente = new inputField('Cliente','cod_cli');
 		$filter->cliente->size = 30;
 		$filter->cliente->append($boton);
@@ -65,7 +68,7 @@ class Factura extends Controller {
 		$grid->per_page = 15;  
 
 		$grid->column_orderby('N&uacute;mero',$uri,'numero');
-		$grid->column_orderby('N. Fiscal','nfiscal','nfisca');
+		$grid->column_orderby('N. Fiscal','nfiscal','nfiscal');
 		$grid->column_orderby('Fecha','<dbdate_to_human><#fecha#></dbdate_to_human>','fecha',"align='center'");
 		$grid->column_orderby('Nombre'   ,'nombre','nombre');
 		$grid->column_orderby('Sub.Total','<nformat><#totals#></nformat>','totals',"align='right'");
