@@ -142,13 +142,13 @@ class fiscalz extends Controller{
 		$edit->caja->maxlength =4;
 		$edit->caja->rule="trim";
 
-		$edit->serial = new inputField("Serial","serial");
+		$edit->serial = new inputField("Serial de la impresora fiscal","serial");
 		$edit->serial->size =15;
 		$edit->serial->maxlength =12;
 		$edit->serial->mode = "autohide"; 
 		$edit->serial->rule="trim";
 
-		$edit->numero = new inputField("N&uacute;mero del cierre","numero");
+		$edit->numero = new inputField("N&uacute;mero del cierre Z","numero");
 		$edit->numero->size = 6;
 		$edit->numero->maxlength =4;
 		$edit->numero->mode = "autohide";
@@ -161,6 +161,13 @@ class fiscalz extends Controller{
 		$edit->fecha = new DateonlyField("Fecha Final","fecha","d/m/Y");
 		$edit->fecha->insertValue = date("Y-m-d");
 		$edit->fecha->size = 12;
+		$edit->fecha->append('Si el cierre se saco el mismo d&iacute;a de las ventas la fecha final es igual a la fecha inicial');
+
+		$edit->hora = new inputField('Hora del cierre','hora');
+		$edit->hora->size =8;
+		$edit->hora->rule='trim|callback_chhora';
+		$edit->hora->append('hh:mm:ss');
+		$edit->hora->rule='trim';
 
 		$edit->factura = new inputField("N&uacute;mero de la &uacute;ltima Factura","factura");
 		$edit->factura->size =10;
@@ -174,19 +181,28 @@ class fiscalz extends Controller{
 		$edit->ncnumero->rule="trim";
 		$edit->ncnumero->append('ULT.NOTA.CREDITO');
 
-		$edit->hora = new inputField("Hora","hora");
-		$edit->hora->size =8;
-		$edit->hora->rule='trim|callback_chhora';
-		$edit->hora->append('hh:mm:ss');
-		$edit->hora->rule="trim";
+		$edit->exento = new inputField("Montos de Facturas exentas","exento");
+		$edit->exento->size = 15;
+		$edit->exento->css_class='inputnum';
+		$edit->exento->maxlength =12;
+		$edit->exento->rule="trim";
+		$edit->exento->group='Montos exentos';
+		$edit->exento->append('EXENTO');
 
-		$edit->base = new inputField("Ventas Base","base");
+		$edit->ncexento = new inputField("Monto de notas de Cr&eacute;dito exentas","ncexento");
+		$edit->ncexento->size = 15;
+		$edit->ncexento->css_class='inputnum';
+		$edit->ncexento->maxlength =12;
+		$edit->ncexento->rule="trim";
+		$edit->ncexento->group='Montos exentos';
+		$edit->ncexento->append('NC. EXENTO');
+
+		$edit->base = new inputField("Ventas Base imponible","base");
 		$edit->base->size = 15;
 		$edit->base->css_class='inputnum';
 		$edit->base->maxlength =12;
 		$edit->base->group='Seg&uacute;n Alicuota General';
 		$edit->base->rule="trim";
-		
 
 		$edit->iva = new inputField("Ventas Iva","iva");
 		$edit->iva->size = 15;
@@ -196,7 +212,7 @@ class fiscalz extends Controller{
 		$edit->iva->rule="trim";
 		$edit->iva->append('IVA G');
 
-		$edit->base1 = new inputField("Ventas Base","base1");
+		$edit->base1 = new inputField("Ventas Base imponible","base1");
 		$edit->base1->size = 15;
 		$edit->base1->css_class='inputnum';
 		$edit->base1->maxlength =12;
@@ -210,35 +226,21 @@ class fiscalz extends Controller{
 		$edit->iva1->group='Seg&uacute;n Alicuota Reducida';
 		$edit->iva1->rule="trim";
 
-		$edit->base2 = new inputField("Ventas Base","base2");
+		$edit->base2 = new inputField("Ventas Base imponible","base2");
 		$edit->base2->size = 15;
 		$edit->base2->css_class='inputnum';
 		$edit->base2->maxlength =12;
-		$edit->base2->group='Seg&uacute;n Alicuota Sobretasa';
+		$edit->base2->group='Seg&uacute;n Alicuota Adicional';
 		$edit->base2->rule="trim";
 
 		$edit->iva2 = new inputField("Ventas Iva","iva2");
 		$edit->iva2->size = 15;
 		$edit->iva2->css_class='inputnum';
 		$edit->iva2->maxlength =12;
-		$edit->iva2->group='Seg&uacute;n Alicuota Sobretasa';
+		$edit->iva2->group='Seg&uacute;n Alicuota Adicional';
 		$edit->iva2->rule="trim";
 
-		$edit->exento = new inputField("Montos de Facturas exentas","exento");
-		$edit->exento->size = 15;
-		$edit->exento->css_class='inputnum';
-		$edit->exento->maxlength =12;
-		$edit->exento->rule="trim";
-		$edit->exento->append('EXENTO');
-
-		$edit->ncexento = new inputField("Monto de notas de Cr&eacute;dito exentas","ncexento");
-		$edit->ncexento->size = 15;
-		$edit->ncexento->css_class='inputnum';
-		$edit->ncexento->maxlength =12;
-		$edit->ncexento->rule="trim";
-		$edit->ncexento->append('NC. EXENTO');
-
-		$edit->ncbase = new inputField("Nota de Cr&eacute;dito base","ncbase");
+		$edit->ncbase = new inputField("Nota de Cr&eacute;dito base imponible","ncbase");
 		$edit->ncbase->size = 15;
 		$edit->ncbase->css_class='inputnum';
 		$edit->ncbase->maxlength =12;
@@ -254,7 +256,7 @@ class fiscalz extends Controller{
 		$edit->ncsiva->rule="trim";
 		$edit->ncsiva->append('NC. IVA G');
 
-		$edit->ncbase1 = new inputField("Nota de Cr&eacute;dito base","ncbase1");
+		$edit->ncbase1 = new inputField("Nota de Cr&eacute;dito base imponible","ncbase1");
 		$edit->ncbase1->size = 15;
 		$edit->ncbase1->css_class='inputnum';
 		$edit->ncbase1->maxlength =12;
@@ -268,18 +270,18 @@ class fiscalz extends Controller{
 		$edit->ncsiva1->group='Seg&uacute;n Alicuota Reducida';
 		$edit->ncsiva1->rule="trim";
 
-		$edit->ncbase2 = new inputField("Nota de Cr&eacute;dito base","ncbase2");
+		$edit->ncbase2 = new inputField("Nota de Cr&eacute;dito base imponible","ncbase2");
 		$edit->ncbase2->size = 15;
 		$edit->ncbase2->css_class='inputnum';
 		$edit->ncbase2->maxlength =12;
-		$edit->ncbase2->group='Seg&uacute;n Alicuota Sobretasa';
+		$edit->ncbase2->group='Seg&uacute;n Alicuota Adicional';
 		$edit->ncbase2->rule="trim";
 
 		$edit->ncsiva2 = new inputField("Nota de Cr&eacute;dito iva","nciva2");
 		$edit->ncsiva2->size = 15;
 		$edit->ncsiva2->css_class='inputnum';
 		$edit->ncsiva2->maxlength =12;
-		$edit->ncsiva2->group='Seg&uacute;n Alicuota Sobretasa';
+		$edit->ncsiva2->group='Seg&uacute;n Alicuota Adicional';
 		$edit->ncsiva2->rule="trim";
 
 		$edit->ncsiva1->append('NC. IVA R');
