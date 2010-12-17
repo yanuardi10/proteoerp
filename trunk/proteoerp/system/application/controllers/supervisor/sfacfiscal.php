@@ -11,16 +11,37 @@ class Sfacfiscal extends Controller{
 
 		$link=site_url('supervisor/sfacfiscal/arreglaserial');
 		$link2=site_url('supervisor/sfacfiscal/arreglanfiscal');
+		$link3=site_url('supervisor/sfacfiscal/traereferen');
 		$jquery='
 		function riega(id){
-			$.post("'.$link.'",{ cajero:$("#cajero").val(),fecha:$("#fecha").val(), serial:id },
-			function(data){
-				alert(data);
-			});
+			if(confirm("Esta seguro que regar el numero fiscal?")){
+				if(confirm("Desea cambiar solo los registros vacios?"))
+					resp=0;
+				else
+					resp=1;
+				$.post("'.$link.'",{ cajero:$("#cajero").val(),fecha:$("#fecha").val(), serial:id ,noresp:resp},
+				function(data){
+					alert(data);
+				});
+			}
 		}
 
 		function nfiscal(id){
-			$.post("'.$link2.'",{ cajero:$("#cajero").val(),fecha:$("#fecha").val(), numero:id },
+			if(confirm("Esta seguro que regar el numero fiscal?")){
+				if(confirm("Desea cambiar solo los registros vacios?"))
+					resp=0;
+				else
+					resp=1;
+				$.post("'.$link2.'",{ cajero:$("#cajero").val(),fecha:$("#fecha").val(), numero:id ,noresp:resp},
+				function(data){
+					alert(data);
+				});
+			}
+		}
+		
+		function buscaref(){
+			referenc = prompt("Introduce una referencia");
+			$.post("'.$link3.'",{ referen: referenc },
 			function(data){
 				alert(data);
 			});
@@ -37,8 +58,17 @@ class Sfacfiscal extends Controller{
 			}
 			return $rt;
 		}
+		 $atts = array(
+			'width'      => '800',
+			'height'     => '600',
+			'scrollbars' => 'yes',
+			'status'     => 'yes',
+			'resizable'  => 'yes',
+			'screenx'    => '0',
+			'screeny'    => '0');
 
 		$filter = new DataFilter('','sfac');
+		$filter->db->where('tipo_doc','F');
 		$filter->script($jquery);
 
 		$filter->fecha  = new dateonlyField('Desde','fecha');
@@ -47,19 +77,21 @@ class Sfacfiscal extends Controller{
 		$filter->fecha->insertValue = date("Y-m-d");
 		$filter->fecha->operator='=';
 		$filter->fecha->rule    ='required';
+		$filter->fecha->append("<a onclick='buscaref()'>Traer de referencia</a>");
 
 		$filter->cajero = new dropdownField('Cajero', 'cajero');
 		$filter->cajero->option('','Seleccionar');
 		$filter->cajero->option(' ','Creditos');
 		$filter->cajero->options('SELECT cajero, CONCAT_WS("-",cajero,nombre) FROM scaj ORDER BY cajero');
-		$filter->cajero->rule    ='required';
+		//$filter->cajero->rule    ='required';
 
 		$filter->buttons('reset','search');
 		$filter->build();
 
 		if($this->rapyd->uri->is_set('search') AND $filter->is_valid()){
 			$fecha=$filter->fecha->newValue;
-			$llink=anchor('supervisor/sfacfiscal/editsfac/show/<#tipo_doc#>/<#numero#>','<#numero#>');
+			$llink=anchor('supervisor/sfacfiscal/editsfac/modify/<#tipo_doc#>/<#numero#>','<#numero#>');
+			$uri2 = anchor_popup('formatos/verhtml/FACTURA/<#tipo_doc#>/<#numero#>',"Ver HTML",$atts);
 
 			$grid = new DataGrid('');
 			$grid->use_function('exissinv');
@@ -68,12 +100,19 @@ class Sfacfiscal extends Controller{
 			$grid->column('Fecha'      ,'<dbdate_to_human><#fecha#></dbdate_to_human>' ,'fecha');
 			$grid->column('Nombre'     ,'nombre');
 			$grid->column('Referencia' ,$llink);
-			$grid->column('N.Fiscal'   ,'<exissinv><#nfiscal#>|2</exissinv>'  );
-			$grid->column('Serial Maq.','<exissinv><#maqfiscal#>|1</exissinv>');
+			$grid->column('Monto' ,'<nformat><#totalg#></nformat>','align="right"');
+			$grid->column('N.Fiscal'   ,'<exissinv><#nfiscal#>|2</exissinv>'  ,'align="center"');
+			$grid->column('Serial Maq.','<exissinv><#maqfiscal#>|1</exissinv>','align="center"');
+			$grid->column('Ver factura',$uri2,'align="center"');
 			$grid->build();
 			//echo $grid->db->last_query();
+			$mSQL=$grid->db->last_query();
+			$mSQL=str_replace("*", "SUM(totalg)",$mSQL );
+			$corte=stripos($mSQL, 'ORDER');
+			if($corte!==false) $mSQL=substr($mSQL,0,$corte);
+			$monto=$this->datasis->dameval($mSQL);
 
-			$tabla=$grid->output;
+			$tabla='Monto: '.nformat($monto).$grid->output;
 		}else{
 			$tabla='';
 		}
@@ -98,12 +137,12 @@ class Sfacfiscal extends Controller{
 		$edit->nfiscal =  new inputField('N&uacute;mero fiscal','nfiscal');
 		$edit->nfiscal->size = 15;
 		$edit->nfiscal->maxlength=30;
-		$edit->nfiscal->rule = 'trim|strtoupper|required';
+		$edit->nfiscal->rule = 'trim|strtoupper';
 
 		$edit->maqfiscal =  new inputField('Serial de la maquina fiscal', 'maqfiscal');
 		$edit->maqfiscal->size     =15;
 		$edit->maqfiscal->maxlength=20;
-		$edit->maqfiscal->rule = 'trim|strtoupper|required';
+		$edit->maqfiscal->rule = 'trim|strtoupper';
 
 		$edit->buttons('modify','save', 'undo', 'delete', 'back');
 		$edit->build();
@@ -116,22 +155,56 @@ class Sfacfiscal extends Controller{
 
 	function arreglaserial(){
 		$cajero=$this->input->post('cajero');
-		$fecha =human_to_dbdate($this->input->post('fecha'));
+		$fecha =$this->input->post('fecha');
 		$serial=$this->input->post('serial');
-		$mSQL='UPDATE sfac SET maqfiscal='.$this->db->escape($serial).' WHERE cajero='.$this->db->escape($cajero).' AND fecha='.$this->db->escape($fecha);
+		if($cajero===false or $fecha===false or $serial===false) {
+			echo 'Error en los parametros';
+			return false;
+		}
+		if(!$this->input->post('noresp')){
+			$and=' AND LENGTH(TRIM(nfiscal))=0';
+		}else{
+			$and='';
+		}
+
+		$fecha =human_to_dbdate($fecha);
+		$mSQL='UPDATE sfac SET maqfiscal='.$this->db->escape($serial).' WHERE cajero='.$this->db->escape($cajero).' AND fecha='.$this->db->escape($fecha).$and;
 		if(!$this->db->simple_query($mSQL))
 			echo 'Hubo un problema en el cambio';
 		else
 			echo 'Cambio realizado';
 	}
 
+	function traereferen(){
+		$numero=$this->db->escape($this->input->post('referen'));
+		$query = $this->db->query("SELECT fecha,cajero FROM sfac WHERE numero=$numero AND tipo_doc='F'");
+		if ($query->num_rows() > 0){
+			$row = $query->row();
+			echo 'Fecha: '.dbdate_to_human($row->fecha).' Cajero: "'.$row->cajero.'"';
+			
+			//echo json_encode($row);
+		}else{
+			echo 'Referencia no encontrada';
+		}
+	}
+
 	function arreglanfiscal(){
-		$cajero=$this->db->escape($this->input->post('cajero'));
-		$fecha =$this->db->escape(human_to_dbdate($this->input->post('fecha')));
-		$numero=trim($this->input->post('numero'));
+		$cajero=$this->input->post('cajero');
+		$fecha =$this->input->post('fecha');
+		$numero=$this->input->post('numero');
+		if($cajero===false or $fecha===false or $numero===false) {
+			echo 'Error en los parametros';
+			return false;
+		}
+		$noresp=$this->input->post('noresp');
+
+		$cajero=$this->db->escape($cajero);
+		$fecha =$this->db->escape(human_to_dbdate($fecha));
+		$numero=trim($numero);
 
 		$nnumero=ltrim($numero,'0');
-		$mSQL="SELECT TRIM(nfiscal) AS nfiscal,tipo_doc,numero FROM (`sfac`) WHERE `fecha` = $fecha AND `cajero` = $cajero ORDER BY `numero`";
+		$wwhere="`fecha` = $fecha AND `cajero` = $cajero AND `tipo_doc`= 'F'";
+		$mSQL="SELECT TRIM(nfiscal) AS nfiscal,tipo_doc,numero FROM (`sfac`) WHERE $wwhere ORDER BY `numero`";
 		$query = $this->db->query($mSQL);
 		if ($query->num_rows() > 0){
 			$c=false;
@@ -142,18 +215,21 @@ class Sfacfiscal extends Controller{
 				}
 				if($c){
 					$nnumero++;
-					$nnnumero=str_pad($nnumero,8 , '0', STR_PAD_LEFT);
-					$data = array('nfiscal' => $nnnumero);
-					$where = 'tipo_doc = '.$this->db->escape($row->tipo_doc).' AND numero='.$this->db->escape($row->numero);
-					$str = $this->db->update_string('sfac', $data, $where); 
-					$this->db->simple_query($str);
+					if(empty($row->nfiscal) or $noresp){
+						$nnnumero=str_pad($nnumero,8 , '0', STR_PAD_LEFT);
+						$data = array('nfiscal' => $nnnumero);
+						$where = 'tipo_doc = '.$this->db->escape($row->tipo_doc).' AND numero='.$this->db->escape($row->numero);
+						$str = $this->db->update_string('sfac', $data, $where);
+						//echo $str."\n";
+						$this->db->simple_query($str);
+					}
 				}
 			}
 		}
 
 		$c=false;
 		$nnumero=ltrim($numero,'0');
-		$mSQL="SELECT TRIM(nfiscal) AS nfiscal,tipo_doc,numero FROM (`sfac`) WHERE `fecha` = $fecha AND `cajero` = $cajero AND tipo_doc= 'F' ORDER BY `numero` DESC";
+		$mSQL="SELECT TRIM(nfiscal) AS nfiscal,tipo_doc,numero FROM (`sfac`) WHERE $wwhere ORDER BY `numero` DESC";
 		$query = $this->db->query($mSQL);
 		if ($query->num_rows() > 0){
 			$c=false;
@@ -164,11 +240,14 @@ class Sfacfiscal extends Controller{
 				}
 				if($c){
 					$nnumero--;
-					$nnnumero=str_pad($nnumero,8 , '0', STR_PAD_LEFT);
-					$data = array('nfiscal' => $nnnumero);
-					$where = 'tipo_doc = '.$this->db->escape($row->tipo_doc).' AND numero='.$this->db->escape($row->numero);
-					$str = $this->db->update_string('sfac', $data, $where); 
-					$this->db->simple_query($str);
+					if(empty($row->nfiscal) or $noresp){
+						$nnnumero=str_pad($nnumero,8 , '0', STR_PAD_LEFT);
+						$data = array('nfiscal' => $nnnumero);
+						$where = 'tipo_doc = '.$this->db->escape($row->tipo_doc).' AND numero='.$this->db->escape($row->numero);
+						$str = $this->db->update_string('sfac', $data, $where);
+						//echo $str."\n";
+						$this->db->simple_query($str);
+					}
 				}
 			}
 		}
