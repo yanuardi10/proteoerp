@@ -162,13 +162,14 @@ class Sfacfiscal extends Controller{
 			return false;
 		}
 		if(!$this->input->post('noresp')){
-			$and=' AND LENGTH(TRIM(nfiscal))=0';
+			$and=' AND LENGTH(TRIM(maqfiscal))=0';
 		}else{
 			$and='';
 		}
 
 		$fecha =human_to_dbdate($fecha);
 		$mSQL='UPDATE sfac SET maqfiscal='.$this->db->escape($serial).' WHERE cajero='.$this->db->escape($cajero).' AND fecha='.$this->db->escape($fecha).$and;
+
 		if(!$this->db->simple_query($mSQL))
 			echo 'Hubo un problema en el cambio';
 		else
