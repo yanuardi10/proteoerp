@@ -437,10 +437,10 @@ class sinv extends Controller {
 		$edit->tipo->option("Fraccion","Fracci&oacute;n");
 		$edit->tipo->option("Lote","Lote");
 		
-		$AddUnidad='<a href="javascript:add_unidad();" title="Haz clic para Agregar una unidad nueva">Agregar Unidad</a>';	
+		$AddUnidad='<a href="javascript:add_unidad();" title="Haz clic para Agregar una unidad nueva">Agregar Unidad</a>';
 		$edit->unidad = new dropdownField("Unidad","unidad");
 		$edit->unidad->style='width:180px;';
-		$edit->unidad->option("","");  
+		$edit->unidad->option("","");
 		$edit->unidad->options("SELECT unidades, unidades as valor FROM unidad ORDER BY unidades");
 		$edit->unidad->append($AddUnidad);
 

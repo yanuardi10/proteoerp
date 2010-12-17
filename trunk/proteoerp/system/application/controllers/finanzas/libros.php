@@ -1706,7 +1706,7 @@ class Libros extends Controller {
 				a.general*IF(a.tipo='NC',-1,1)   base,
 				a.impuesto*IF(a.tipo='NC',-1,1)  impuesto,
 				a.reiva*IF(a.tipo='NC',-1,1)     reiva,
-				a.general*IF(a.tipo='NC',-1,1)	 general,
+				a.general*IF(a.tipo='NC',-1,1)   general,
 				a.geneimpu*IF(a.tipo='NC',-1,1)  geneimpu,
 				a.adicional*IF(a.tipo='NC',-1,1) adicional,
 				a.adicimpu*IF(a.tipo='NC',-1,1)  adicimpu,
@@ -1729,7 +1729,7 @@ class Libros extends Controller {
 				sum(a.general*IF(a.tipo='NC',-1,1))   base,
 				sum(a.impuesto*IF(a.tipo='NC',-1,1))  impuesto,
 				sum(a.reiva*IF(a.tipo='NC',-1,1))     reiva,
-				sum(a.general*IF(a.tipo='NC',-1,1))	  general,
+				sum(a.general*IF(a.tipo='NC',-1,1))   general,
 				sum(a.geneimpu*IF(a.tipo='NC',-1,1))  geneimpu,
 				sum(a.adicional*IF(a.tipo='NC',-1,1)) adicional,
 				sum(a.adicimpu*IF(a.tipo='NC',-1,1))  adicimpu,
@@ -1737,7 +1737,7 @@ class Libros extends Controller {
 				sum(a.reduimpu*IF(a.tipo='NC',-1,1))  reduimpu,
 				'NO' contribu, a.registro, ' ' comprobante, null fecharece
 			FROM siva a LEFT JOIN scli b ON a.clipro=b.cliente
-			WHERE a.fechal BETWEEN $fdesde AND $fhasta AND a.libro='V' AND a.tipo<>'FA' AND a.contribu='NO' AND a.tipo IN ('FE','FC','NC','XC')
+			WHERE a.fechal BETWEEN $fdesde AND $fhasta AND a.libro='V' AND a.tipo<>'FA' AND a.contribu='NO' AND a.tipo IN ('FE','FC','NC')
 			GROUP BY a.fecha, a.tipo, a.registro
 			ORDER BY fecha, IF(tipo IN ('FE','FC','XE','XC'),1,2), numero ";
 		//}
@@ -7049,7 +7049,7 @@ class Libros extends Controller {
 				FROM sfac AS a
 				LEFT JOIN sfac AS b ON a.factura = b.numero AND a.tipo_doc='D'
 				LEFT JOIN scli AS c ON a.cod_cli=c.cliente 
-				WHERE a.fecha BETWEEN $fdesde AND $fhasta AND MID(a.numero,1,1)<>'_' AND c.tiva IN ('C','E')";
+				WHERE a.fecha BETWEEN $fdesde AND $fhasta AND MID(a.numero,1,1)<>'_'";
 
 		$flag=$this->db->simple_query($mSQL);
 		if(!$flag) memowrite($mSQL,'genesfac');
