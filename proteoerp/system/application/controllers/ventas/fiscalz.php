@@ -13,33 +13,51 @@ class fiscalz extends Controller{
 		$this->rapyd->load("datafilter","datagrid");
 
 		$filter = new DataFilter("Filtro de Cierre Z");
-		$select=array('serial','hora','numero','caja','fecha','fecha1','(exento+base+iva+base1+iva1+base2+iva2-ncexento-ncbase-nciva-ncbase1-nciva1-ncbase2-nciva2) AS total');
+		$select=array('serial','hora','numero','caja','fecha','factura','fecha1','(exento+base+iva+base1+iva1+base2+iva2-ncexento-ncbase-nciva-ncbase1-nciva1-ncbase2-nciva2) AS total');
 		$filter->db->select($select);
 		$filter->db->from('fiscalz');
 
-		$filter->fechad = new dateonlyField("Desde", "fechad",'d/m/Y');
+		$filter->fecha1d = new dateonlyField("Fecha inicial", "fecha1d",'d/m/Y');
+		$filter->fecha1d->clause  ='where';
+		$filter->fecha1d->size =10;
+		$filter->fecha1d->db_name ='fecha1';
+		//$filter->fecha1d->insertValue = date("Y-m-d",mktime(0, 0, 0, date("m"), date("d")-30, date("Y")));
+		$filter->fecha1d->operator=">=";
+		$filter->fecha1d->group='Fechas';
+
+		$filter->fecha1h = new dateonlyField('fhasta','fecha1h','d/m/Y');
+		$filter->fecha1h->clause='where';
+		$filter->fecha1h->size =10;
+		$filter->fecha1h->db_name='fecha1';
+		//$filter->fecha1h->insertValue = date("Y-m-d");
+		$filter->fecha1h->operator='<=';
+		$filter->fecha1h->group='Fechas';
+		$filter->fecha1h->in='fecha1d';
+
+		$filter->fechad = new dateonlyField("Fecha final", "fechad",'d/m/Y');
 		$filter->fechad->clause  ="where";
 		$filter->fechad->db_name ="fecha";
-		$filter->fechad->insertValue = date("Y-m-d",mktime(0, 0, 0, date("m"), date("d")-30, date("Y")));
+		$filter->fechad->size =10;
+		//$filter->fechad->insertValue = date("Y-m-d",mktime(0, 0, 0, date("m"), date("d")-30, date("Y")));
 		$filter->fechad->operator=">=";
- 		$filter->fechad->group='Fecha';
-		$filter->fechad->append(' Busca en base a la fecha final');
+		$filter->fechad->group='Fechas';
 
 		$filter->fechah = new dateonlyField("Hasta", "fechah",'d/m/Y');
 		$filter->fechah->clause="where";
+		$filter->fechah->size =10;
 		$filter->fechah->db_name="fecha";
-		$filter->fechah->insertValue = date("Y-m-d");
+		//$filter->fechah->insertValue = date("Y-m-d");
 		$filter->fechah->operator="<=";
-		$filter->fechah->group='Fecha';
-		$filter->fechah->append(' Busca en base a la fecha final');
+		$filter->fechah->group='Fechas';
+		$filter->fechah->in='fechad';
 
-		$filter->serial = new inputField("Serial","serial");
+		$filter->serial = new inputField('Serial','serial');
 		$filter->serial->size=20;
 
-		$filter->numero= new inputField("Numero","numero");
+		$filter->numero= new inputField('Numero','numero');
 		$filter->numero->size=20;
 
-		$filter->caja= new inputField("Caja","caja");
+		$filter->caja= new inputField('Caja','caja');
 		$filter->caja->size=5;
 
 		$filter->manual = new dropdownField("Manual", "manual");
@@ -48,36 +66,38 @@ class fiscalz extends Controller{
 		$filter->manual->option('S','S');
 		$filter->manual->style = 'width:70px';
 
-		$filter->buttons("reset","search");
+		$filter->buttons('reset','search');
 		$filter->build();
 
-		$uri = anchor('ventas/fiscalz/dataedit/show/<#serial#>/<#numero#>','<#serial#>');
+		$uri   = anchor('ventas/fiscalz/dataedit/show/<#serial#>/<#numero#>','<#serial#>');
 		$uri_2 = anchor('ventas/fiscalz/dataedit/create/<#serial#>/<#numero#>','Duplicar');
-		$uri3 = anchor('reportes/ver/fiscalz','Imprimir');
-		$grid = new DataGrid('Lista de Cierre Z');
+		$uri3  = anchor('reportes/ver/fiscalz','Imprimir');
+		$grid  = new DataGrid('Lista de Cierre Z');
 		//$grid->order_by("serial","asc");
 		$grid->per_page=15;
 
 		$grid->column_orderby('Serial',$uri,'serial');
 		$grid->column_orderby('Numero','numero','numero');
-		$grid->column_orderby("Caja","caja",'caja');
-		$grid->column_orderby('Fecha Inicial','<dbdate_to_human><#fecha1#></dbdate_to_human>','fecha' ,"align='center'");
-		$grid->column_orderby('Fecha Final'  ,'<dbdate_to_human><#fecha#></dbdate_to_human>' ,'fecha1',"align='center'");
-		$grid->column('Hora'    ,'hora',"align='center'");
-		$grid->column('Total'   ,'<number_format><#total#>|2|,|.</number_format>','align=right');
-		$grid->column('Duplicar',$uri_2 ,"align='center'");
+		$grid->column_orderby('Caja','caja','caja');
+		$grid->column_orderby('Fecha Inicial','<dbdate_to_human><#fecha1#></dbdate_to_human>','fecha' ,'align=\'center\'');
+		$grid->column_orderby('Fecha Final'  ,'<dbdate_to_human><#fecha#></dbdate_to_human>' ,'fecha1','align=\'center\'');
+		$grid->column_orderby('U. Factura','factura','factura');
+		$grid->column('Hora'    ,'hora','align=\'center\'');
+		$grid->column('Total'   ,'<b><number_format><#total#>|2|,|.</number_format></b>','align=\'right\'');
+		$grid->column('Duplicar',$uri_2 ,'align=\'center\'');
 
 		$grid->add('ventas/fiscalz/dataedit/create');
 		$grid->build();
+		//echo $grid->db->last_query();
 
 		$data['content'] = $filter->output.$uri3.$grid->output;
-		$data['title']   = "<h1>Cierre Z</h1>";
-		$data["head"]    = $this->rapyd->get_head();
+		$data['title']   = '<h1>Cierre Z</h1>';
+		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 
 	function dataedit($status='',$id='',$id2=''){ 
-		$this->rapyd->load("dataobject","dataedit");
+		$this->rapyd->load('dataobject','dataedit');
 		
 		$script ='
 		$(function() {
@@ -85,7 +105,7 @@ class fiscalz extends Controller{
 			$("#banco1").change(function () { acuenta(); }).change();
 			$("#banco2").change(function () { acuenta(); }).change();
 		});';
-			
+
 		$do = new DataObject("fiscalz");
 		if(($status=="create") && !empty($id) && !empty($id2)){
 			$do->load(array("serial"=> $id,"numero"=> $id2));
@@ -106,14 +126,13 @@ class fiscalz extends Controller{
 			$do->set('ncbase2', '');
 			$do->set('nciva2', '');
 			$do->set('ncnumero', '');
-			
 		}
-		
+
 		$edit = new DataEdit("Cierre Z",$do);
 		$edit->back_url = site_url("ventas/fiscalz/filteredgrid");
 		$edit->script($script, "create");
 		$edit->script($script, "modify");
-		
+
 		$edit->post_process('insert','_post_insert');
 		$edit->post_process('update','_post_update');
 		$edit->post_process('delete','_post_delete');
