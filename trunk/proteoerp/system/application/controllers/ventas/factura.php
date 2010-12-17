@@ -52,6 +52,12 @@ class Factura extends Controller {
 		$filter->cliente->size = 30;
 		$filter->cliente->append($boton);
 
+		$filter->cajero = new dropdownField("Cajero", "cajero"); 
+		$filter->cajero->clause="where"; 
+		$filter->cajero->option("","Seleccionar");  
+		$filter->cajero->options("SELECT cajero, CONCAT_WS('-',cajero,nombre) AS val FROM scaj ORDER BY cajero ");
+		$filter->cajero->operator="=";
+
 		$filter->vende = new  dropdownField ('Vendedor', 'vd');
 		$filter->vende->option('','Todos');
 		$filter->vende->options("SELECT vendedor, CONCAT(vendedor,' ',nombre) nombre FROM vend ORDER BY vendedor");  
