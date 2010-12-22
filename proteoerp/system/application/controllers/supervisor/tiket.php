@@ -42,6 +42,9 @@ class Tiket extends Controller {
 
 		$filter = new DataFilter("Filtro de Tikets");
 
+		$filter->id = new inputField("N&uacute;mero", "id");
+		$filter->id->size=11;
+
 		$filter->estampa = new dateonlyField("Fecha", "estampa");
 		$filter->estampa->clause  ="where";
 		$filter->estampa->operator="=";

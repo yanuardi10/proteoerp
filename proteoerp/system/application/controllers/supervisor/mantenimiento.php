@@ -295,7 +295,7 @@ class Mantenimiento extends Controller{
 		$grid->column('Ajustar Saldo'          ,'<descheck><#numero#>|<#cod_cli#>|<#tipo_doc#>|<#fecha#>|<#abonoreal#></descheck>',"align=center");
 
 		$grid->build();
-		//echo $grid->db->last_query();
+		echo $grid->db->last_query();
 		//memowrite($grid->db->last_query());
 
 		$script='';
