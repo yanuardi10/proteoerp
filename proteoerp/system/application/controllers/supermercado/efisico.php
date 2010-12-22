@@ -14,6 +14,7 @@ class Efisico extends Controller{
 		$this->rapyd->load("datafilter","datagrid");
 
 		$filter = new DataFilter("Filtro inventario fisico", 'maesfisico');
+		$filter->db->select(array("TRIM(codigo) codigo","ubica","cantidad","fecha","usuario"));
 			
 		$filter->fechad = new dateonlyField("Desde", "fechad",'d/m/Y');
 		$filter->fechad->clause  ="where";
@@ -28,11 +29,14 @@ class Efisico extends Controller{
 		$filter->fechah->insertValue = date("Y-m-d");
 		$filter->fechah->operator="<=";
 		$filter->fechah->group='Fecha';
+		
+		$filter->codigo = new inputField("C&oacute;digo","codigo");
+		$filter->codigo->size=10;
 			
 		$filter->buttons("reset","search");
 		$filter->build();
 
-		$uri = anchor('supermercado/efisico/dataedit/show/<#codigo#>/<#ubica#>/<#fecha#>','<#codigo#>');
+		$uri = anchor('supermercado/efisico/dataedit/show/<#id#>','<#codigo#>');
 
 		$grid = new DataGrid("Lista de productos inventariados");
 		//$grid->order_by("serial","asc");
@@ -53,6 +57,7 @@ class Efisico extends Controller{
 	}
 
 	function dataedit(){ 
+	
 		$this->rapyd->load("dataedit");
 		
 		$modbus=array(
@@ -80,6 +85,10 @@ class Efisico extends Controller{
 		$edit->back_url = site_url("supermercado/efisico/filteredgrid");
 		$edit->script($script, "create");
 		$edit->script($script, "modify");
+    
+		$edit->id = new inputField("ID", "id");
+		$edit->id->mode = "autohide";
+		$edit->id->when =array('show');
     
 		$edit->codigo = new inputField("C&oacute;digo", "codigo");
 		$edit->codigo->size = 20;
@@ -148,6 +157,11 @@ class Efisico extends Controller{
 		$do->db->set('estampa', 'CURDATE()', FALSE);
 		$do->set('usuario', $this->session->userdata('usuario'));
 		$do->set('numero', $numero);
+	}
+	
+	function instalar(){
+	    $mSQL="ALTER TABLE `maesfisico` ADD COLUMN `id` BIGINT NOT NULL AUTO_INCREMENT  FIRST , ADD PRIMARY KEY (`id`) ";
+	    $this->db->simple_query($mSQL);
 	}
 }
 ?>
