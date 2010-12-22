@@ -558,7 +558,7 @@ class Libros extends Controller {
 
 		$mSQL="SELECT fecha,registro,referen,nfiscal,nhfiscal,numero,serial,rif,nombre,'' AS debito,'' AS credito, 
 		tipo,fafecta,exento,gtotal,general,'$tasa' AS tgeneral ,geneimpu,reducida,'$redutasa' AS treducida ,reduimpu,adicional,'$sobretasa' tadicional,adicimpu,0 AS reiva,
-		comprobante,'' AS percibido,'' AS importacion,contribu 
+		comprobante,'' AS percibido,'' AS importacion,contribu,fuente
 		FROM siva
 		WHERE fechal BETWEEN $fdesde AND $fhasta AND libro='V' AND tipo<>'FA'  AND tipo IN ('FE','FC','NC','XC')
 		ORDER BY fecha, serial";
@@ -608,8 +608,8 @@ class Libros extends Controller {
 		$mcel++;
 
 		$ws->write_string( $mm,   $mcel, "Identificacion del Documento", $titulo );
-		$ws->write_string( $mm+1, $mcel, "Nro.", $titulo );
-		$ws->write_string( $mm+2, $mcel, "Caja", $titulo );
+		$ws->write_string( $mm+1, $mcel, "Nro. De", $titulo );
+		$ws->write_string( $mm+2, $mcel, "CierreZ", $titulo );
 		$mcel++;
 
 		$ws->write_blank( $mm,   $mcel,  $titulo );
@@ -708,8 +708,8 @@ class Libros extends Controller {
 		$mcel++;
 
 		$ws->write_string( $mm,   $mcel, "", $titulo );
-		$ws->write_string( $mm+1, $mcel, "Nº Fiscal", $titulo );
-		$ws->write_string( $mm+2, $mcel, "", $titulo );
+		$ws->write_string( $mm+1, $mcel, "Serial", $titulo );
+		$ws->write_string( $mm+2, $mcel, "fiscal", $titulo );
 		$mcel++;
 
 		$ws->write_string( $mm,   $mcel, "", $titulo );
@@ -731,7 +731,7 @@ class Libros extends Controller {
 				$fecha = substr($row->fecha,8,2)."/".substr($row->fecha,5,2)."/".substr($row->fecha,0,4);
 
 				$ws->write_string( $mm, 0, $fecha,  $cuerpo );
-				$ws->write_string( $mm, 1, ' ', $cuerpo );
+				$ws->write_string( $mm, 1, $row->numero, $cuerpo );
 				if ($row->tipo[0] == "X" ) 
 					$ws->write_string( $mm, 2, "FC", $cuerpoc );
 				elseif ( $row->tipo == "XC" ) 
@@ -741,9 +741,18 @@ class Libros extends Controller {
 				else
 					$ws->write_string( $mm, 2, $row->tipo, $cuerpoc ); // TIPO
 
-				$ws->write_string( $mm, 3, $row->nfiscal, $cuerpo );  // Nro. Documento
-				$ws->write_string( $mm, 4, $row->nfiscal, $cuerpo );  // INICIAL
-				$ws->write_string( $mm, 5, $row->nhfiscal, $cuerpo ); // FINAL
+				
+				if($row->fuente=='FP'){
+					$ws->write_string( $mm, 3, '' , $cuerpo );  // Nro. Documento
+					$ws->write_string( $mm, 4, $row->nfiscal, $cuerpo );  // INICIAL
+					$ws->write_string( $mm, 5, $row->nhfiscal, $cuerpo ); // FINAL
+				}else{
+					$ws->write_string( $mm, 3, $row->nfiscal, $cuerpo );  // Nro. Documento
+					$ws->write_string( $mm, 4, '', $cuerpo ); // INICIAL
+					$ws->write_string( $mm, 5, '', $cuerpo ); // FINAL
+				}
+				//$ws->write_string( $mm, 4, $row->nfiscal, $cuerpo );  // INICIAL
+				//$ws->write_string( $mm, 5, $row->nhfiscal, $cuerpo ); // FINAL
 
 				if ($row->tipo[0] == "X" ) 
 					$ws->write_string( $mm, 6, "DOCUMENTO ANULADO", $cuerpo ); // NOMBRE
@@ -782,7 +791,7 @@ class Libros extends Controller {
 				if ( !empty($row->fecharece) )
 					$fecharece = substr($row->fecharece,8,2)."/".substr($row->fecharece,5,2)."/".substr($row->fecharece,0,4);
 				$ws->write_string( $mm,20, $fecharece, $cuerpo ); // FECHA COMPROB
-				$ws->write_string( $mm,21, $row->nfiscal, $numero );
+				$ws->write_string( $mm,21, $row->serial, $numero );
 				$mm++;
 			}
 		}
@@ -7711,7 +7720,7 @@ class Libros extends Controller {
 						reiva = ".$row->reteiva.",
 						fechal = ".$mes."01,
 						fafecta ='".$row->fafecta."'";
-			$flag=$this->db->simple_query($mSQL);    
+			$flag=$this->db->simple_query($mSQL);
 			if(!$flag) memowrite($mSQL,'genesmov');
 		}
 
@@ -8066,7 +8075,7 @@ class Libros extends Controller {
 
 		//$this->db->simple_query("UPDATE fiscalz SET caja='MAYO' WHERE caja='0001'");
 		//$this->db->simple_query("UPDATE fiscalz SET hora=CONCAT_WS(':',MINUTE(hora),SECOND(hora),'00') WHERE caja='MAYO' AND HOUR(hora)=0");
-		
+
 		$mSQL="SELECT caja,serial,numero,fecha,factura,fecha1,hora,
 		exento  ,base  ,iva  ,base1  ,iva1  ,base2  ,iva2,
 		ncexento,ncbase,nciva,ncbase1,nciva1,ncbase2,nciva2,ncnumero 
@@ -8146,7 +8155,7 @@ class Libros extends Controller {
 				LEFT JOIN scli AS c ON a.cod_cli=c.cliente 
 				WHERE a.fecha BETWEEN $fdesde AND $fhasta AND MID(a.numero,1,1)<>'_' 
 				AND c.tiva IN ('C','E') AND a.maqfiscal='{$row->serial}'
-				AND a.nfiscal>$ffdesde AND a.nfiscal<-$ffhasta";
+				AND a.nfiscal>$ffdesde AND a.nfiscal<=$ffhasta";
 				echo $mmSQL."\n\n";
 
 				$tt['exento']   =0;
@@ -8170,7 +8179,7 @@ class Libros extends Controller {
 						$q= $this->db->query($m,$rrow);
 						$fac=($rrow['tipo']=='NC') ? -1 : 1;
 						//$fac=1;
-						$tt['exento']   +=$fac*$rrow['exento']  ;
+						$tt['exento']   +=$fac*$rrow['exento']   ;
 						$tt['general']  +=$fac*$rrow['general']  ;
 						$tt['geneimpu'] +=$fac*$rrow['geneimpu'] ;
 						$tt['adicional']+=$fac*$rrow['adicional'];
