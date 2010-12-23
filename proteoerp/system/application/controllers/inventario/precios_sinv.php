@@ -27,28 +27,20 @@ class precios_sinv extends validaciones{
 		$mSINV=array(
 			'tabla'   =>'sinv',
 			'columnas'=>array(
-			'codigo' =>'C&oacute;odigo','barras'=>'Barras','alterno'=>'Alterno',
-			'descrip'=>'Descripci&oacute;n'),
+				'codigo' =>'C&oacute;odigo',
+				'descrip'=>'Descripci&oacute;n',
+		),
 			'filtro'  =>array('codigo'=>'C&oacute;digo','barras'=>'Barras','alterno'=>'Alterno','descrip'=>'Descripci&oacute;n'),
-			'retornar'=>array('codigo'=>'codigo','barras'=>'barras','alterno'=>'alterno'),
+			'retornar'=>array('codigo'=>'codigo'),
 			'titulo'  =>'Buscar Producto');
 		$bSINV=$this->datasis->modbus($mSINV);
 
-
-		$mSINVP=array(
-			'tabla'   =>'sinvpromo',
-			'columnas'=>array(
-			'codigo' =>'C&oacute;odigo','margen'=>'Margen','cantidad'=>'Cantidad'),
-			'filtro'  =>array('codigo'=>'C&oacute;digo'),
-			'retornar'=>array('codigo'=>'promo'),
-			'titulo'  =>'Buscar Codigo Promocion');
-		$bSINVP=$this->datasis->modbus($mSINVP);
 		$pr='
 			$(document).ready(function(){
 				$(".button").click(function(){
 						
-						if($("#codigo").val() == "" && $("#barras").val() == ""  && $("#alterno").val() == ""  && $("#promo").val() == ""){
-							alert("Debe ingresar al menos un codigo de producto");
+						if($("#codigo").val() == "" ){
+							alert("Debe ingresar un codigo de producto");
 							return false;
 						}
 					}
@@ -59,85 +51,61 @@ class precios_sinv extends validaciones{
 
 		$form = new DataForm("inventario/precios_sinv/precios/modifica");
 		$form->script($pr);
-		$form->codigo = new inputField2("Consultar por C&oacute;digo de Producto", "codigo");
+		$form->codigo = new inputField2("Consultar Productos", "codigo");
 		$form->codigo->size = 15;
 		$form->codigo->maxlength=15;
 		$form->codigo->append($bSINV);
 		$form->codigo->rule = 'trim';
 
-		$form->barras = new inputField2("Consultar por C&oacute;digo de Barras", "barras");
-		$form->barras->size = 15;
-		$form->barras->maxlength=15;
-		$form->barras->css_class = 'inputnum';
-		$form->barras->append($bSINV);
-		$form->barras->rule = 'trim';
-
-		$form->alterno = new inputField2("Consultar por C&oacute;digo Alterno", "alterno");
-		$form->alterno->size = 15;
-		$form->alterno->maxlength=15;
-		$form->alterno->rule = 'trim';
-		$form->alterno->append($bSINV);
-
-		$form->promo = new inputField2("Consultar por C&oacute;digo de Promosi&oacute;n", "promo");
-		$form->promo->size = 15;
-		$form->promo->maxlength=15;
-		$form->promo->rule = 'trim';
-		$form->promo->append($bSINVP);
-
 		$form->submit("btnsubmit","CONSULTAR");
 		$form->build_form();
+		$band=0;
 		$msj="";
 		if ($form->on_success()){
 			set_time_limit(600);
 			$codigo= $this->input->post("codigo");
-			$barras= $this->input->post("barras");
-			$alterno= $this->input->post("alterno");
-			$promo= $this->input->post("promo");
-			$campo="";
-			$valor="";
-			$band=1;
 
-			if($codigo !="" && $band==1){
-				$resul1=$this->db->query("SELECT count(*) as cant,id from sinv	where codigo='$codigo' ");
+			$resul1=$this->db->query("SELECT count(*) as cant,id from sinv	where codigo='$codigo' ");
+			$row1=$resul1->row();
+			if($row1->cant > 0){
+				$band=1;
+				redirect("inventario/precios_sinv/dataedit/modify/$row1->id");
+			}
+			if($band == 0){
+				$resul1=$this->db->query("SELECT count(*) as cant,id from sinv	where barras='$codigo' ");
 				$row1=$resul1->row();
 				if($row1->cant > 0){
-					$band=0;
+					$band=1;
 					redirect("inventario/precios_sinv/dataedit/modify/$row1->id");
 				}
 			}
-
-			if($barras != "" && $band==1){
-				$resul2=$this->db->query("SELECT count(*) as cant,id from sinv	where barras='$barras'" );
-				$row2=$resul2->row();
-				if($row2->cant > 0 ){
-					redirect("inventario/precios_sinv/dataedit/modify/$row2->id");
-					$band=0;
+			if($band == 0){
+				$resul1=$this->db->query("SELECT count(*) as cant,id from sinv	where alterno='$codigo' ");
+				$row1=$resul1->row();
+				if($row1->cant > 0){
+					$band=1;
+					redirect("inventario/precios_sinv/dataedit/modify/$row1->id");
 				}
 			}
-			if($alterno !="" && $band==1){
-				$resul3=$this->db->query("SELECT count(*) as cant,id from sinv	where alterno='$alterno'" );
-				$row3=$resul3->row();
-				if($row3->cant > 0 ){
-					redirect("inventario/precios_sinv/dataedit/modify/$row3->id");
-					$band=0;
+			if($band==0){
+				$resul1=$this->db->query("SELECT count(*) as cant,codigo from barraspos	where suplemen='$codigo' ");
+				$row1=$resul1->row();
+				if($row1->cant > 0){
+					$resul2=$this->db->query("SELECT count(*) as cant,id from sinv	where codigo='$row1->codigo' ");
+					$row2=$resul2->row();
+					if($row2->cant > 0){
+						redirect("inventario/precios_sinv/dataedit/modify/$row2->id");
+					}
 				}
 			}
-			if($promo !="" && $band==1){
-				$resul3=$this->db->query("SELECT count(*) as cant,a.codigo as codigo,b.id as id
-											from sinvpromo as a
-											join sinv as b on b.codigo=a.codigo 
-											where a.codigo='$promo'" );
-				$row3=$resul3->row();
-				if($row3->cant > 0 ){
-					redirect("inventario/precios_sinv/dataedit/modify/$row3->id");
-					$band=0;
-				}
+			if ($band==0){
+				$msj.= "NO se encontro el producto  <br>";
+				$atras=site_url('inventario/precios_sinv/precios');
+				$data['smenu']="<a href=".$atras.">ATRAS</a>";
 			}
-			$msj.= "NO se encontro el producto  <br>";
-			$atras=site_url('inventario/precios_sinv/precios');
-			$data['smenu']="<a href=".$atras.">ATRAS</a>";
-
 		}
+			
+
 
 
 		$data['content'] =$form->output.$msj;
@@ -148,9 +116,9 @@ class precios_sinv extends validaciones{
 	}
 
 	function dataedit(){
-		$this->pi18n->cargar('sinv','dataedit');
+
 		$this->rapyd->load("dataedit");
-		
+
 		$edit = new DataEdit('Cambios de precios',"sinv");
 		$edit->pre_process('update' ,'_pre_update');
 		$edit->post_process('update','_modifica');
@@ -208,13 +176,13 @@ class precios_sinv extends validaciones{
 
 		//base=precio*100/(100+iva)
 		//margen=100-(costo*100/base)
-//		$query1="UPDATE sinv SET
-//				precio1=$precio1,
-//				precio2=$precio2,
-//				precio3=$precio3,
-//				precio4=$precio4
-//        WHERE $campo='$codigo' ";
-//		$this->db->query($query1);
+		//		$query1="UPDATE sinv SET
+		//				precio1=$precio1,
+		//				precio2=$precio2,
+		//				precio3=$precio3,
+		//				precio4=$precio4
+		//        WHERE $campo='$codigo' ";
+		//		$this->db->query($query1);
 
 		$query2="UPDATE sinv SET
 				base1=precio1*100/(100+iva),
@@ -237,19 +205,19 @@ class precios_sinv extends validaciones{
 	}
 
 	function _pre_update($do){
-//		print("<pre>");
-//		print_R($do);
-		
+		//		print("<pre>");
+		//		print_R($do);
+
 		$p1=$do->get('precio1');
 		$p2=$do->get('precio2');
 		$p3=$do->get('precio3');
 		$p4=$do->get('precio4');
 		$do->error_message_ar['pre_upd'] = 'Los precios deben cumplir con:<br> Precio 1 > Precio 2 > Precio 3 > Precio 4';
 		if($p1>$p2 && $p2>$p3 && $p3>$p4){
-			
+
 			return true;
 		}else{
-			 
+
 			return false;
 		}
 	}
