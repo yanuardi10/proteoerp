@@ -17,6 +17,7 @@ class Posfact extends Controller {
 		$diaf =$this->uri->segment(7);
 		$mesf =$this->uri->segment(8);
 		$anof =$this->uri->segment(9);
+		$sucu =$this->uri->segment(10);
 
 		if($diai===FALSE or $mesi===FALSE or $anoi===FALSE or $diaf===FALSE or $mesf===FALSE or $anof===FALSE){
 			$usema   = mktime(0, 0, 0, date("m"), date("d"),  date("Y"));
@@ -42,6 +43,9 @@ class Posfact extends Controller {
 		$grid = new DataGrid2();
 		$grid->db->select($select);  
 		$grid->db->from("posfact");
+		$grid->db->join('scaj','posfact.cajero=scaj.cajero');
+		$grid->db->join('caub','scaj.almacen=caub.ubica');
+		$grid->db->where("caub.sucursal LIKE","$sucu%");
 		$grid->db->where("fecha","CURDATE()");
 		$grid->db->groupby("fecha");
 		$grid->column("Fecha"         , "fecha");
@@ -62,14 +66,21 @@ class Posfact extends Controller {
 		$filter->fechaf = new dateField("Hasta","fechaf","d/m/Y");
 		$filter->fechaf->insertValue=$fechaf;
 		$filter->fechai->size=$filter->fechaf->size=10;
-		$filter->button("btnsubmit", "Buscar", form2uri(site_url('supermercado/posfact/index'),array('fechai','fechaf')), $position="BL");
+		
+		$filter->sucu = new dropdownField("Sucursal","sucu");
+		$filter->sucu->option("","Todas");
+		$filter->sucu->options("SELECT codigo,sucursal FROM sucu");
+		
+		$filter->button("btnsubmit", "Buscar", form2uri(site_url('supermercado/posfact/index'),array('fechai','fechaf','sucu')), $position="BL");
 		$filter->build_form();
 		
 		$grid2 = new DataGrid2("Resultados");
 		$grid2->totalizar("subtotal","iva" ,"devolu","total");
 		$grid2->db->select($select);
 		$grid2->db->from("viefac");
-
+		$grid2->db->join('scaj','viefac.cajero=scaj.cajero');
+		$grid2->db->join('caub','scaj.almacen=caub.ubica');
+		$grid2->db->where("caub.sucursal LIKE","$sucu%");
 		$grid2->db->where("fecha >=","$qfechai");
 		$grid2->db->where("fecha <=","$qfechaf");
 		$grid2->db->groupby("fecha");
@@ -82,7 +93,7 @@ class Posfact extends Controller {
 		$grid2->column("Transferencias", "trans"   ,'align=right');
 		$grid2->build();
 
-		$data['content'] =  open_flash_chart_object(680,400, site_url("supermercado/posfact/grafico/$qfechai/$qfechaf"));
+		$data['content'] =  open_flash_chart_object(680,400, site_url("supermercado/posfact/grafico/$qfechai/$qfechaf/$sucu/"));
 		$data['content'] .= "<h3>Ventas en Curso</h3>".$grid->output;
 		$data['content'] .= "<h3>Ventas ya Cerradas</h3>";
 		$data['content'] .= $filter->output.$grid2->output;
@@ -98,13 +109,14 @@ class Posfact extends Controller {
 		
 		$qfechai =$this->uri->segment(4);
 		$qfechaf =$this->uri->segment(5);
-		
+		$sucu    =$this->uri->segment(6);
 		//$qfechai ='20070101';
 		//$qfechaf ='20070131';
 		
 		$mSQL = "SELECT if(b.tipo IS NULL,a.tipo,b.nombre) nombre, sum(a.monto*(SUBSTRING(a.numero,1,1)<>'X')) monto
 			 FROM viepag a LEFT JOIN tarjeta b ON a.tipo=b.tipo
-			 WHERE fecha BETWEEN $qfechai AND $qfechaf
+			 JOIN scaj c ON a.cajero=c.cajero JOIN caub d ON c.almacen=d.ubica
+			 WHERE fecha BETWEEN $qfechai AND $qfechaf AND d.sucursal LIKE '$sucu%'
 			 GROUP BY a.tipo ORDER BY monto DESC";
 		
 		$res = $this->db->query($mSQL) or die("Bad SQL 1");
