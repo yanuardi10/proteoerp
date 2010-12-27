@@ -87,7 +87,7 @@ class sinvpromo extends validaciones {
 			}
 		}';
 
-		$select=array('a.id','a.codigo','b.descrip','b.marca','b.precio1','a.margen','a.cantidad');
+		$select=array('a.id','a.codigo','b.descrip','b.marca','b.precio1','a.margen','a.cantidad','b.id AS sinvid');
 
 		$filter = new DataFilter2('Filtro de promociones');
 		$filter->script($js);
@@ -151,6 +151,7 @@ class sinvpromo extends validaciones {
 
 		$link =anchor('/inventario/sinvpromo/dataedit/modify/<#id#>','<#codigo#>');
 		$llink=anchor_popup('inventario/consultas/preciosgeneral/<#codigo#>', 'Consultar precio', $attr);
+		$llin2=anchor_popup('inventario/precios_sinv/dataedit/modify/<#sinvid#>', '<#precio1#>', $attr);
 
 		$grid = new DataGrid('Lista de Art&iacute;culos');
 		$grid->use_function('dropdown');
@@ -159,7 +160,8 @@ class sinvpromo extends validaciones {
 
 		$grid->column_orderby('C&oacute;digo'     ,$link     ,'codigo');
 		$grid->column_orderby('Descripci&oacute;n', 'descrip' ,'descrip');
-		$grid->column_orderby('PVP'  ,'precio1' ,'precio1');
+		//$grid->column_orderby('PVP'  ,'precio1' ,'precio1');
+		$grid->column_orderby('PVP'  ,$llin2 ,'precio1');
 		$grid->column_orderby('Marca', 'marca' ,'marca');
 		$grid->column_orderby('Promoci&oacute;n',"<dropdown><#id#>|<#margen#>|$sop</dropdown>",'margen','align="right"');
 		$grid->column('Consulta' ,$llink);
