@@ -542,8 +542,7 @@ class Libros extends Controller {
 		set_time_limit(300);
 		$ameses = array( 'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic');
 		$anomeses = array( '01' => 'ENERO', '02' => 'FEBRERO', '03' => 'MARZO', '04' => 'ABRIL', '05' => 'MAYO', '06' => 'JUNIO', '07' => 'JULIO', '08' => 'AGOSTO', '09' => 'SEPTIEMBRE', '10' => 'OCTBRE', '11' => 'NOVIEMBRE', '12' => 'DICIEMBRE');
-
-		$aaa = $this->datasis->ivaplica($mes."02");
+		$aaa = $this->datasis->ivaplica($mes.'02');
 		$tasa      = $aaa['tasa'];
 		$redutasa  = $aaa['redutasa'];
 		$sobretasa = $aaa['sobretasa'];
@@ -558,14 +557,14 @@ class Libros extends Controller {
 
 		$mSQL="SELECT fecha,registro,referen,nfiscal,nhfiscal,numero,serial,rif,nombre,'' AS debito,'' AS credito, 
 		tipo,fafecta,exento,gtotal,general,'$tasa' AS tgeneral ,geneimpu,reducida,'$redutasa' AS treducida ,reduimpu,adicional,'$sobretasa' tadicional,adicimpu,0 AS reiva,
-		comprobante,'' AS percibido,'' AS importacion,contribu,fuente
+		comprobante,'' AS percibido,'' AS importacion,contribu,fuente,IF(tipo='CZ',0,1) AS ord
 		FROM siva
-		WHERE fechal BETWEEN $fdesde AND $fhasta AND libro='V' AND tipo<>'FA'  AND tipo IN ('FE','FC','NC','XC')
-		ORDER BY fecha, serial";
+		WHERE fechal BETWEEN $fdesde AND $fhasta AND libro='V' AND tipo<>'FA'  AND tipo IN ('FE','FC','NC','CZ')
+		ORDER BY fecha, serial,numero,ord,nfiscal";
 		//memowrite($mSQL);
 
 		$export = $this->db->query($mSQL);
-		$fname = tempnam("/tmp","lventas.xls");
+		$fname = tempnam('/tmp','lventas.xls');
 		$this->load->library("workbook",array("fname" => $fname));
 		$wb =& $this->workbook;
 		$ws =& $wb->addworksheet($mes);
@@ -574,7 +573,7 @@ class Libros extends Controller {
 		$ws->set_column('A:F',11);
 		$ws->set_column('G:G',37);
 		$ws->set_column('H:H',11);
-		$ws->set_column('I:S',20);
+		$ws->set_column('I:V',20);
 		// FORMATOS
 		$h       =& $wb->addformat(array( "bold" => 1, "size" => 16, "merge" => 1));
 		$h1      =& $wb->addformat(array( "bold" => 1, "size" => 11, "align" => 'left'));
@@ -595,7 +594,7 @@ class Libros extends Controller {
 		$ws->write(2, 0, "RIF: ".$this->datasis->traevalor('RIF') , $h1 );
 
 		$ws->write(4,0, $hs, $h );
-		for ( $i=1; $i<20; $i++ ) {
+		for ( $i=1; $i<23; $i++ ) {
 			$ws->write_blank(4, $i,  $h );
 		};
 
@@ -786,7 +785,7 @@ class Libros extends Controller {
 
 				$ws->write_number( $mm,18, $row->reiva      , $numero ); // IVA RETENIDO
 				$ws->write_string( $mm,19, $row->comprobante, $cuerpo ); // NRO COMPROBANTE
-				$ws->write_string( $mm,22, $row->referen    , $numero ); // NRO FACT AFECTA
+				if($row->tipo=='NC') $ws->write_string( $mm,22, $row->referen    , $numero ); // NRO FACT AFECTA
 				$fecharece = '';
 				if ( !empty($row->fecharece) )
 					$fecharece = substr($row->fecharece,8,2)."/".substr($row->fecharece,5,2)."/".substr($row->fecharece,0,4);
@@ -8079,7 +8078,7 @@ class Libros extends Controller {
 		$mSQL="SELECT caja,serial,numero,fecha,factura,fecha1,hora,
 		exento  ,base  ,iva  ,base1  ,iva1  ,base2  ,iva2,
 		ncexento,ncbase,nciva,ncbase1,nciva1,ncbase2,nciva2,ncnumero 
-		FROM fiscalz WHERE fecha BETWEEN $fdesde AND $fhasta";
+		FROM fiscalz WHERE fecha BETWEEN $fdesde AND $fhasta ORDER BY fecha,serial,numero";
 		//echo $mSQL;
 
 		$query = $this->db->query($mSQL);
@@ -8087,7 +8086,7 @@ class Libros extends Controller {
 			$data['libro']     ='V';
 			$data['fuente']    ='FP';
 			$data['sucursal']  ='00';
-			$data['tipo']      ='FC';
+			$data['tipo']      ='CZ';
 			$data['nacional']  ='S';
 			$data['fechal']    =$fdesde;
 
@@ -8097,17 +8096,13 @@ class Libros extends Controller {
 				$data['caja']    =$row->caja;
 				$data['hora']    =$row->hora;
 				$data['numero']  =$row->numero;
-				$hhasta=$row->hora;
+				$antnum = $row->numero-1;
 
-				if($row->fecha1 == $row->fecha){
-					$hdesde='0';
-				}else{
-					$hdesde=$this->datasis->dameval("SELECT MAX(hora) FROM fiscalz WHERE fecha='{$row->fecha1}' AND serial='{$row->serial}'");
-					if(empty($hora))
-						$hdesde='0';
-				}
+				$sql="SELECT factura AS ff, ncnumero AS nc FROM fiscalz WHERE numero={$antnum} AND serial='{$row->serial}'";
+				//echo $sql."\n";
+				//echo $row->numero."\n";
 
-				$cur=$this->datasis->damerow("SELECT MAX(factura) AS ff, MAX(ncnumero) AS nc FROM fiscalz WHERE fecha<'{$row->fecha}' AND serial='{$row->serial}'");
+				$cur=$this->datasis->damerow($sql);
 				if(count($cur)>0){
 					$ncdesde =(empty($cur['nc'])) ? '00000001' : $cur['nc'];
 					$ffdesde =(empty($cur['ff'])) ? '00000001' : $cur['ff'];
@@ -8153,10 +8148,9 @@ class Libros extends Controller {
 				FROM sfac AS a 
 				LEFT JOIN sfac AS b ON a.factura = b.numero AND a.tipo_doc='D'
 				LEFT JOIN scli AS c ON a.cod_cli=c.cliente 
-				WHERE a.fecha BETWEEN $fdesde AND $fhasta AND MID(a.numero,1,1)<>'_' 
-				AND c.tiva IN ('C','E') AND a.maqfiscal='{$row->serial}'
+				WHERE MID(a.numero,1,1)<>'_' AND c.tiva IN ('C','E') AND a.maqfiscal='{$row->serial}'
 				AND a.nfiscal>$ffdesde AND a.nfiscal<=$ffhasta";
-				echo $mmSQL."\n\n";
+				//echo $mmSQL."\n\n";
 
 				$tt['exento']   =0;
 				$tt['general']  =0;
@@ -8465,7 +8459,8 @@ class Libros extends Controller {
 		$data[]=array('metodo'=>'wlvexcelpdvfiscalq1','activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas PDV Quincenta 1 Fiscal');
 		$data[]=array('metodo'=>'wlvexcelpdvfiscalq2','activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas PDV Quincenta 2 Fiscal');
 		$data[]=array('metodo'=>'wlvexcel'           ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas'          );
-		$data[]=array('metodo'=>'wlvexcel2'          ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas no Agrupadas'          );
+		$data[]=array('metodo'=>'wlvexcel2'          ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas no Agrupadas');
+		$data[]=array('metodo'=>'wlvcierrez'         ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas basado en cierre Z');
 		$data[]=array('metodo'=>'wlvexcelsucu'       ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas por Sucursal');
 		$data[]=array('metodo'=>'wlcexcel'           ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Compras'         );
 		$data[]=array('metodo'=>'wlcsexcel'          ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Compras Supermercado');
@@ -8475,6 +8470,7 @@ class Libros extends Controller {
 		$data[]=array('metodo'=>'invresu'            ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Inventario'      );
 		
 		$data[]=array('metodo'=>'genecompras'        ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de compras COMPRAS' );
+		$data[]=array('metodo'=>'genesfaccierrez'    ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas basado en cierre Z' );
 		$data[]=array('metodo'=>'genegastos'         ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de compras GASTOS'  );
 		$data[]=array('metodo'=>'genecxp'            ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de compras CXP'     );
 		$data[]=array('metodo'=>'genesfac'           ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas Facturas' );
