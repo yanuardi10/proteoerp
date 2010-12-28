@@ -66,7 +66,7 @@ class Factura extends Controller {
 		$filter->buttons('reset','search');
 		$filter->build();
     
-		$uri = anchor('ventas/factura/dataedit/show/<#tipo_doc#>/<#numero#>','<#numero#>');
+		$uri = anchor('ventas/factura/dataedit/show/<#tipo_doc#>/<#numero#>','<#tipo_doc#><#numero#>');
 		$uri2 = anchor_popup('formatos/verhtml/FACTURA/<#tipo_doc#>/<#numero#>',"Ver HTML",$atts);
     
 		$grid = new DataGrid();
