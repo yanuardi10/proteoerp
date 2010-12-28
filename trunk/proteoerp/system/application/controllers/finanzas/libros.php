@@ -578,6 +578,7 @@ class Libros extends Controller {
 		$h       =& $wb->addformat(array( "bold" => 1, "size" => 16, "merge" => 1));
 		$h1      =& $wb->addformat(array( "bold" => 1, "size" => 11, "align" => 'left'));
 		$titulo  =& $wb->addformat(array( "bold" => 1, "size" => 9, "merge" => 0, "fg_color" => 'silver' ));
+		$titulom =& $wb->addformat(array( "bold" => 1, "size" => 9, "merge" => 1, "fg_color" => 'silver' ));
 		$tt      =& $wb->addformat(array( "size" => 9, "merge" => 1, "fg_color" => 'silver' ));
 		$cuerpo  =& $wb->addformat(array( "size" => 9 ));
 		$cuerpoc =& $wb->addformat(array( "size" => 9, "align" => 'center', "merge" => 1 ));
@@ -622,12 +623,12 @@ class Libros extends Controller {
 		$mcel++;
 
 		$ws->write_blank( $mm,   $mcel, $titulo );
-		$ws->write_string( $mm+1, $mcel, "No Contribuyentes", $titulo );
+		$ws->write_string( $mm+1, $mcel, "No Contribuyentes", $titulom );
 		$ws->write_string( $mm+2, $mcel, "Inicial", $titulo );
 		$mcel++;
 
 		$ws->write_blank( $mm,   $mcel, $titulo );
-		$ws->write_blank( $mm+1, $mcel, $titulo );
+		$ws->write_blank( $mm+1, $mcel, $titulom );
 		$ws->write_string( $mm+2, $mcel, "Final", $titulo );
 		$mcel++;
 
@@ -8126,7 +8127,7 @@ class Libros extends Controller {
 				IF(a.tipo_doc='F',a.numero,a.factura ) AS referen,
 				'  ' AS planilla,
 				a.cod_cli AS clipro,
-				IF(a.tipo_doc='X','DOCUMENTO ANULADO...',a.nombre) AS nombre,
+				IF(a.tipo_doc='X','DOCUMENTO ANULADO...',COALESCE(c.nomfis,c.nombre)) AS nombre,
 				IF(c.tiva='C' OR c.tiva='E','CO','NO') AS contribu,
 				IF(a.rifci='',c.rifci,a.rifci) AS rif,
 				IF(b.fecha<'$mFECHAF','04', '01') AS registro,
@@ -8441,16 +8442,19 @@ class Libros extends Controller {
 		  PRIMARY KEY  (`metodo`)
 		) ENGINE=MyISAM DEFAULT CHARSET=latin1";   
 		$this->db->simple_query($mSQL);
-		
+
 		$mSQL="ALTER TABLE `siva` ADD `hora` TIME DEFAULT '0' NULL";
 		$this->db->simple_query($mSQL);
-		
+
 		$mSQL="ALTER TABLE `siva` CHANGE `clipro` `clipro` VARCHAR(12) NULL";
 		$this->db->simple_query($mSQL);
-		
+
 		$mSQL="ALTER TABLE `siva` ADD `serial` CHAR(12) NULL";
 		$this->db->simple_query($mSQL);
-		
+
+		$mSQL="ALTER TABLE `siva`  CHANGE COLUMN `nombre` `nombre` VARCHAR(80) NULL DEFAULT NULL AFTER `clipro`";
+		$this->db->simple_query($mSQL);
+
 		$data[]=array('metodo'=>'wlvexcelpdv'        ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas PDV'      );
 		$data[]=array('metodo'=>'wlvexcelpdvq1'      ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas PDV Quincenta 1');
 		$data[]=array('metodo'=>'wlvexcelpdvq2'      ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas PDV Quincenta 2');
@@ -8468,7 +8472,7 @@ class Libros extends Controller {
 		$data[]=array('metodo'=>'wlcexcele'          ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Compras ESPECIAL');
 		$data[]=array('metodo'=>'prorrata'           ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Prorrata'                 );
 		$data[]=array('metodo'=>'invresu'            ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Inventario'      );
-		
+
 		$data[]=array('metodo'=>'genecompras'        ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de compras COMPRAS' );
 		$data[]=array('metodo'=>'genesfaccierrez'    ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas basado en cierre Z' );
 		$data[]=array('metodo'=>'genegastos'         ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de compras GASTOS'  );
@@ -8480,7 +8484,7 @@ class Libros extends Controller {
 		$data[]=array('metodo'=>'geneotin'           ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas O.Ingresos');
 		$data[]=array('metodo'=>'generest'           ,'activo'=>'N','tipo'=>'G' ,'nombre'  =>'Generar Libro de ventas Restaurante');
 		$data[]=array('metodo'=>'genehotel'          ,'activo'=>'N','tipo'=>'G' ,'nombre'  =>'Generar Libro de ventas Hotel');
-		
+
 		foreach($data AS $algo){
 			$mSQL = $this->db->insert_string('libros', $algo);
 			$this->db->simple_query($mSQL);
