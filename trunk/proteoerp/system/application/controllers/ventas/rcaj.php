@@ -124,7 +124,7 @@ class Rcaj extends validaciones {
 		}
 		
 		$data['title']   = '<h1>Recepci&oacute;n de cajas</h1>';
-		$data["head"]    = $this->rapyd->get_head();
+		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 

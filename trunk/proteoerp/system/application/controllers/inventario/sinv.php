@@ -91,7 +91,6 @@ class sinv extends Controller {
 
 		$filter->descrip = new inputField("Descripci&oacute;n", "descrip");
 		$filter->descrip->db_name='CONCAT_WS(" ",a.descrip,a.descrip2)';
-		$filter->descrip -> size=25;
 
 		$filter->tipo = new dropdownField("Tipo", "tipo");
 		$filter->tipo->db_name=("a.tipo");
@@ -770,7 +769,7 @@ class sinv extends Controller {
 	}
 
 	function _pre_del($do) {
-		$codigo=$this->db->escape($do->get('cliente'));
+		$codigo=$this->db->escape($do->get('codigo'));
 		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM sitems WHERE codigoa=$codigo");
 		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM itscst WHERE codigo=$codigo");
 		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM itstra WHERE codigo=$codigo");
@@ -780,10 +779,10 @@ class sinv extends Controller {
 		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM itsinv WHERE codigo=$codigo");
 
 		if ($chek > 0){
-			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='Producto con Movimiento no puede ser Borrado';
-			return False;
+			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='Producto con Movimiento no puede ser Borrado, solo se puede inactivar';
+			return false;
 		}
-		return True;
+		return true;
 	}
 
 

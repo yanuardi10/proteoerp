@@ -86,8 +86,10 @@ class b2b extends validaciones {
 		$grid->add('sincro/b2b/dataedit/create');
 		$grid->build();
 
+		$smenu['link']=barra_menu('921');
 		$data['content'] =$filter->output. $grid->output;
 		$data['title']   = '<h1>B2B</h1>';
+		$data['smenu']   = $this->load->view('view_sub_menu', $smenu,true);
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
@@ -518,9 +520,9 @@ class b2b extends validaciones {
 						$ddata['garantia'] = 0;
 						$ddata['ultimo']   = $arr[$in]['preca'];
 						$ddata['precio1']  = $arr[$in]['precio1'];
-						$ddata['precio2']  = $arr[$in]['precio2'];
-						$ddata['precio3']  = $arr[$in]['precio3'];
-						$ddata['precio4']  = $arr[$in]['precio4'];
+						$ddata['precio2']  = $arr[$in]['precio1'];
+						$ddata['precio3']  = $arr[$in]['precio2'];
+						$ddata['precio4']  = $arr[$in]['precio3'];
 						$ddata['montoiva'] = $arr[$in]['tota']*($arr[$in]['iva']/100);
 						$ddata['iva']      = $arr[$in]['iva'];
 						$ddata['barras']   = $barras;

@@ -14,7 +14,7 @@
 	<tr>
 		<td width='100%' >
 			<table width='100%' border='0'>
-				<tr><td align='center'><b STYLE="font-size:24pt;color:blue">Precio al p&uacute;blico: <?=$precio1 ?></b> <b><?=$moneda  ?></b></td></tr>
+				<tr><td align='center'><b STYLE="font-size:24pt;color:blue">Precio al P&uacute;blico: <?=$precio1 ?></b> <b><?=$moneda  ?></b></td></tr>
 				<?php $descufijo=(isset($descufijo)?$descufijo:0); 
 				if($descufijo>0){?>
 				<tr><td align='center'><b STYLE="font-size:24pt;color:red">Descuento <?php echo $descufijo; ?>%:</b> &nbsp;<b STYLE="font-size:30pt;color:red"><?php echo $pdescu; ?></b><b STYLE="font-size:16pt;color:red"> <?php echo $moneda;?></b></td></tr>
@@ -37,22 +37,16 @@
 					<td><b>C&oacute;digo:</b> <?=$codigo ?> </td>
 					<td style="font-size:14pt;" rowspan=1 ><b>Marca:</b> <?=$marca ?></td>
 				</tr>
-			</table>
-		</td>
-
-	<tr>
-		<td>
-			<table width='100%' border=0>
 				<tr>
 					<td style="font-size:14pt;"><b>C&oacute;digo Barras:</b> <?=$barras ?></td>
 					<td style="font-size:14pt;"><b>Referencia:</b> <?=$referen ?></td>
 				</tr>
+				<tr>
+					<td style="font-size:18pt;" align='left'><b>Existencia:</b> <?=$existen ?></td>
+					<td style="font-size:14pt;" align='left><b>Iva:</b> <?=$iva ?></td>
+				</tr>
 			</table>
 		</td>
-	</tr>
-
-	<tr>
-		<td style="font-size:18pt;"><b>Existencia:</b> <?=$existen ?></td>
 	</tr>
 <table>
 </p>

@@ -278,7 +278,7 @@ class Scst extends Controller {
 
 
 	function asignarfiltro(){
-		$this->rapyd->load("datagrid","datafilter");
+		$this->rapyd->load('datagrid','datafilter');
 		$this->rapyd->uri->keep_persistence();
 
 		$modbus=array(
@@ -300,9 +300,11 @@ class Scst extends Controller {
 		$filter->proveedor->db_name = "proveed";
 		$filter->proveedor->size=20;
 
+		$filter->barras = new inputField('Barras', 'barras');
+
 		$filter->buttons("reset","search");
 		$filter->build();
- 
+
 		$grid = new DataGrid();
 		$grid->order_by("id","desc");
 		$grid->per_page = 15;
