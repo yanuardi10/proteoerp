@@ -232,6 +232,18 @@ class pers extends validaciones {
 		$edit->posicion->rule="trim|strtoupper";
 		$edit->posicion->style ="width:170px;";
 		*/
+		
+		$edit->civil = new dropdownField("Estado Civil", "civil");
+		$edit->civil->style = "width:100px;";
+		$edit->civil->option("S","Soltero");
+		$edit->civil->option("C","Casado");
+		$edit->civil->option("D","Divorciado");
+		$edit->civil->option("V","Viudo");
+		$edit->civil->group = "Datos del Trabajador";
+		
+		$edit->profes = new dropdownField("Profesion","profes");
+		$edit->profes->options("SELECT codigo,profesion FROM prof ORDER BY profesion");
+		
 		$edit->nacimi = new DateOnlyField("Fecha de Nacimiento", "nacimi","d/m/Y");
 		$edit->nacimi->size = 12;
 		$edit->nacimi->group = "Datos del Trabajador"; 
@@ -254,7 +266,7 @@ class pers extends validaciones {
 		$edit->depa = new dropdownField("Departamento", "depto");
 		$edit->depa->style ="width:250px;";
 		$edit->depa->option("","");
-		if($edit->_status=='modify'){
+		if($edit->_status=='modify' || $edit->_status=='show' ){
 		$divi=$edit->getval('divi');
 			if($divi!==FALSE){
 				$edit->depa->options("SELECT departa,depadesc FROM depa where division='$divi' ORDER BY division");
@@ -262,7 +274,7 @@ class pers extends validaciones {
 				$edit->depa->option("Seleccione un Division");
 			}
 		}
-		$edit->depa->group = "Relaci&oacute;n Laboral";		
+		$edit->depa->group = "Relaci&oacute;n Laboral";	
 		
 		$edit->contrato = new dropdownField("Contrato","contrato");
 		$edit->contrato->style ="width:400px;";
