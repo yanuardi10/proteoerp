@@ -270,6 +270,7 @@ class etiqueta_sinv extends Controller {
 				  c = c+String.fromCharCode(e.which);
 				} else if (e.which == 13) {
 					$("#ent").show();
+					if(c.length>0)
 					c1=c+","+c1;
 					$("#barras").val(c1);
 					$("#ent").html("Se a agregado el codigo de barras:"+c);
@@ -305,27 +306,17 @@ class etiqueta_sinv extends Controller {
 		$tabla=form_open("forma/ver/etiqueta1");
 		if($this->input->post("barras") !="" && $this->input->post("barras") !=null){
 			$barras= explode(",",$this->input->post("barras"),-1);
-			$campos="(";
-			$v=count($barras);
-			$i=1;
-			foreach($barras as $bar){
-				if($i==$v){
-					$campos=$campos."'$bar')";
-				}else{
-					$campos=$campos."'$bar',";
-				}
-				$i++;
-			}
+			$campos=implode("','",$barras);
 			
-			$consul="SELECT codigo,barras,descrip,precio1 as precio from sinv WHERE barras IN ".$campos;
+			$consul="SELECT codigo,barras,descrip,precio1 as precio from sinv WHERE barras IN ('$campos')";
 			
-			memowrite($consul,'eti');
+			//memowrite($consul,'eti');
 			$msql=$this->db->query($consul);
 			$row=$msql->result();
 			if (count($row)==0){
 				$tabla.="<h1>Los c&oacute;digos de barras insertados no exiten</h1><br><a href='".site_url('inventario/etiqueta_sinv/lee_barras')."' >atras</a>";
 			}else{
-				$tabla.=form_hidden('consul', $consul);
+			
 				$data = array(
 		              'name'        => 'cant',
 		              'id'          => 'cant',
@@ -338,14 +329,16 @@ class etiqueta_sinv extends Controller {
 				$tabla.=form_hidden('consul', $consul);
 				$tabla.=form_label("Numero de etiquetas por producto:")."&nbsp&nbsp&nbsp";
 				$tabla.=form_input($data).'<br>';
-		
 				$tabla.=form_submit('mysubmit', 'Generar');
 				$tabla.=form_close();
 
 			}
 		}else{
 			$tabla.="<h1>Debe ingresar algun c&oacute;digo de barras</h1><br><a href='".site_url('inventario/etiqueta_sinv/lee_barras')."' >atras</a>";
-		}		
+		}
+		
+		$link1=site_url('inventario/etiqueta_sinv/lee_barras');
+		$data['smenu']="<a href='".$link1."' >Atras</a>";
 		$data['title']   = "Genera Etiquetas";
 		$data['content']=$tabla;
 		$this->load->view('view_ventanas', $data);
