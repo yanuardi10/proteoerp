@@ -258,12 +258,13 @@ class etiqueta_sinv extends Controller {
 	function lee_barras($para=''){
 		$this->rapyd->load("datafilter2","datagrid","dataobject","fields");
 		$link1=site_url('inventario/etiqueta_sinv/menu');
+		$link2=site_url('inventario/sinv/barratonombre');
 		$script=script('jquery.js').script("jquery-ui.js").style("le-frog/jquery-ui-1.7.2.custom.css").
 		'<script type="text/javascript">
 		var propa=false;
 
 		$(document).ready(function() {
-			c="";c1="";
+			c="";c1="";a="";
 			$("#barras").hide();
 			$(document).keydown(function(e){
 				if (32 <= e.which && e.which <= 176) {
@@ -272,8 +273,12 @@ class etiqueta_sinv extends Controller {
 					$("#ent").show();
 					if(c.length>0)
 					c1=c+","+c1;
+					
 					$("#barras").val(c1);
-					$("#ent").html("Se a agregado el codigo de barras:"+c);
+					$.post("'.$link2.'",{barra:c},function (data){
+						a=data;
+					})
+					$("#ent").html("Se agrego:"+c+"</br>"+a);
 					if (propa!==false)
 						clearTimeout(propa);
 					propa=setTimeout(function() { $("#ent").fadeOut("slow"); },5000);
