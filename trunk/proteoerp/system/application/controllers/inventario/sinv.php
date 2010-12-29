@@ -784,6 +784,13 @@ class sinv extends Controller {
 		}
 		return true;
 	}
+	
+	function barratonombre(){
+		if($this->input->post('barra')){
+			$barra=$this->db->escape($this->input->post('barra'));
+			echo $this->datasis->dameval("SELECT descrip FROM sinv WHERE barras=$barra");
+		}
+	}
 
 
 	function instalar(){
