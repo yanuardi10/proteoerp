@@ -46,6 +46,10 @@ echo $form_begin?>
           <td class="littletablerow"><?=$form->sexo->output ?></td>
         </tr>
         <tr>
+          <td class="littletablerowth"><?=$form->civil->label  ?></td>
+          <td class="littletablerow"><?=$form->civil->output ?></td>
+        </tr>
+        <tr>
           <td class="littletablerowth"><?=$form->direc1->label  ?></td>
           <td class="littletablerow"><?=$form->direc1->output ?></td>
         </tr>
@@ -65,14 +69,15 @@ echo $form_begin?>
           <td class="littletablerowth"><?=$form->nacimi->label  ?></td>
           <td class="littletablerow"><?=$form->nacimi->output ?></td>
         </tr>
-		 <tr>
+	 <tr>
           <td class="littletablerowth"><?=$form->email->label  ?></td>
           <td class="littletablerow"><?=$form->email->output ?></td>
+        </tr>
+        <tr>
+          <td class="littletablerowth"><?=$form->profes->label  ?></td>
+          <td class="littletablerow"><?=$form->profes->output ?></td>
         </tr> 
-		 <tr>
-          <td class="littletablerowth"><?//=$form->posicion->label  ?></td>
-          <td class="littletablerow"><?//=$form->posicion->output ?></td>
-        </tr>                                
+	     
   </table>
 </fieldset>
 <fieldset>
