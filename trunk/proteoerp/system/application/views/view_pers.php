@@ -70,8 +70,8 @@ echo $form_begin?>
           <td class="littletablerow"><?=$form->email->output ?></td>
         </tr> 
 		 <tr>
-          <td class="littletablerowth"><?=$form->posicion->label  ?></td>
-          <td class="littletablerow"><?=$form->posicion->output ?></td>
+          <td class="littletablerowth"><?//=$form->posicion->label  ?></td>
+          <td class="littletablerow"><?//=$form->posicion->output ?></td>
         </tr>                                
   </table>
 </fieldset>

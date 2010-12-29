@@ -224,14 +224,14 @@ class pers extends validaciones {
 		$edit->email->group = "Datos del Trabajador";
 		$edit->email->maxlength=50;
 		$edit->email->rule="trim";
-		
+		/*
 		$edit->posicion = new dropdownField("Tipo de Escritura" ,"escritura");
 		$edit->posicion->option("","");                                                 
 		$edit->posicion->options("SELECT codigo,posicion FROM posicion  ORDER BY codigo");
 		$edit->posicion->group = "Datos del Trabajador";
 		$edit->posicion->rule="trim|strtoupper";
 		$edit->posicion->style ="width:170px;";
-		
+		*/
 		$edit->nacimi = new DateOnlyField("Fecha de Nacimiento", "nacimi","d/m/Y");
 		$edit->nacimi->size = 12;
 		$edit->nacimi->group = "Datos del Trabajador"; 
