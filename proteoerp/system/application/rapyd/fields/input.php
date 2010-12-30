@@ -20,6 +20,7 @@ class inputField extends objField{
 
   var $type = "text";
   var $readonly=FALSE;
+  var $autocomplete=TRUE;
   var $css_class = "input";
 
   function _getValue(){
@@ -69,7 +70,8 @@ class inputField extends objField{
           'class'       => $this->css_class,
           'style'       => $this->style
           );
-		if($this->readonly) $attributes['readonly']='readonly';
+		if($this->readonly)      $attributes['readonly']    ='readonly';
+		if(!$this->autocomplete) $attributes['autocomplete']='off';
         $output = form_input($attributes) . $this->extra_output;
         break;
 

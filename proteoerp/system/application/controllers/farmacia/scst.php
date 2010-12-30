@@ -295,18 +295,18 @@ class Scst extends Controller {
 
 		$filter = new DataFilter('Filtro de asignaci&oacute;n de productos','farmaxasig');
 
-		$filter->proveedor = new inputField("Proveedor", "proveed");
+		$filter->proveedor = new inputField('Proveedor', 'proveed');
 		$filter->proveedor->append($boton);
-		$filter->proveedor->db_name = "proveed";
+		$filter->proveedor->db_name = 'proveed';
 		$filter->proveedor->size=20;
 
 		$filter->barras = new inputField('Barras', 'barras');
 
-		$filter->buttons("reset","search");
+		$filter->buttons('reset','search');
 		$filter->build();
 
 		$grid = new DataGrid();
-		$grid->order_by("id","desc");
+		$grid->order_by('id','desc');
 		$grid->per_page = 15;
 
 		$uri=anchor('farmacia/scst/asignardataedit/show/<#id#>','<#id#>');
@@ -315,7 +315,7 @@ class Scst extends Controller {
 		$grid->column_orderby('Barras'   ,'barras' ,'barras' );
 		$grid->column_orderby('Mapeado a','abarras','abarras');
 
-		$grid->add("farmacia/scst/asignardataedit/create");
+		$grid->add('farmacia/scst/asignardataedit/create');
 		$grid->build();
 		//echo $grid->db->last_query();
 
