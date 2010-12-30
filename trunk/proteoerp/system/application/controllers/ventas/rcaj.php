@@ -184,6 +184,7 @@ class Rcaj extends validaciones {
 				$form->$obj->size=5+5*$o;
 				$form->$obj->style='text-align:right';
 				$form->$obj->rule='numeric';
+				$form->$obj->autocomplete=false;
 				if($o==1){
 					$form->$obj->in=$sobj;
 					$form->$obj->readonly=true;
@@ -200,6 +201,7 @@ class Rcaj extends validaciones {
 			$form->$obj->css_class='efectivo';
 			$form->$obj->rule='numeric';
 			$form->$obj->size=10;
+			$form->$obj->autocomplete=false;
 		}
 		//Fin del efectivo
 
@@ -216,6 +218,7 @@ class Rcaj extends validaciones {
 				$form->$obj->style='text-align:right';
 				$form->$obj->size=10;
 				$form->$obj->rule='numeric';
+				$form->$obj->autocomplete=false;
 				/*if($o==1){
 					$form->$obj->in=$sobj;
 				}else{
@@ -236,6 +239,7 @@ class Rcaj extends validaciones {
 			$form->$obj->rule='numeric';
 			$form->$obj->readonly=true;
 			$form->$obj->size=10;
+			$form->$obj->autocomplete=false;
 		}
 		
 		$form->$obj->readonly=false;
@@ -307,6 +311,15 @@ class Rcaj extends validaciones {
 			RIGHT JOIN tarjeta AS bb ON aa.tipo=bb.tipo
 			GROUP BY tipo";*/
 
+			//Toma en cuenta los retiros
+			$rret=array();
+			if ($this->db->table_exists('rret')){
+				$retiquery = $this->db->query("SELECT tipo,SUM(monto) AS monto FROM rret WHERE cajero=$dbcajero AND fecha=$dbfecha AND cierre IS NULL GROUP BY tipo");
+				foreach ($retiquery->result() as $rreti){
+					$rret[$rreti->tipo] = $rreti->monto;
+				}
+			}
+
 			$query = $this->db->query($mSQL);
 			if ($query->num_rows() > 0){
 				$str='';
@@ -323,6 +336,7 @@ class Rcaj extends validaciones {
 					}
 
 					$recibido = (isset($form->$nobj))? (empty($form->$nobj->newValue))? 0.00 :floatval($form->$nobj->newValue) : 0.00;
+					if(array_key_exists($row->tipo, $rret)) $recibido += $rret[$row->tipo];
 					if($row->monto>0 || $recibido>0){
 						$str.= $row->tipo.' '.$recibido.'  ';
 						$arr['tipo']       = $row->tipo;
@@ -360,10 +374,16 @@ class Rcaj extends validaciones {
 				WHERE sfpa.f_factura=$dbfecha    AND SUBSTRING(sfpa.tipo_doc,2,1)!='X' AND sfpa.cobrador=$dbcajero ";
 				$this->db->simple_query($mSQL);
 
-				$mSQL="UPDATE sfpa JOIN sfac ON sfac.numero=sfpa.numero AND sfpa.tipo_doc=CONCAT(sfac.tipo_doc, IF(sfac.referen='M','E',sfac.referen))
-				SET sfpa.cierre=$dbnumero
-				WHERE sfpa.f_factura>=$dbfecha_s AND SUBSTRING(sfpa.tipo_doc,2,1)!='X' AND sfpa.cobrador=$dbcajero AND MID(sfpa.hora,1,2)>18";
-				$this->db->simple_query($mSQL);
+				//Esto es tambien del cajero nocturno
+				//$mSQL="UPDATE sfpa JOIN sfac ON sfac.numero=sfpa.numero AND sfpa.tipo_doc=CONCAT(sfac.tipo_doc, IF(sfac.referen='M','E',sfac.referen))
+				//SET sfpa.cierre=$dbnumero
+				//WHERE sfpa.f_factura>=$dbfecha_s AND SUBSTRING(sfpa.tipo_doc,2,1)!='X' AND sfpa.cobrador=$dbcajero AND MID(sfpa.hora,1,2)>18";
+				//$this->db->simple_query($mSQL);
+
+				if($this->db->table_exists('rret')){
+					$mSQL="UPDATE rret SET cierre=$dbnumero WHERE cajero=$dbcajero AND fecha=$dbfecha AND cierre IS NULL";
+					$this->db->simple_query($mSQL);
+				}
 			}
 			if($redir){
 				redirect('ventas/rcaj/filteredgrid/search');
@@ -387,7 +407,6 @@ class Rcaj extends validaciones {
 		$data['head']    = $this->rapyd->get_head().phpscript('nformat.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js');
 		$this->load->view('view_ventanas', $data);
 	}
-
 
 	function forcierre($numero){
 		$this->rapyd->load('dataform');
@@ -436,6 +455,7 @@ class Rcaj extends validaciones {
 					$form->$obj->insertValue=$row->$nobj;
 					$form->$obj->size=10;
 					$form->$obj->rule='numeric';
+					$form->$obj->autocomplete=false;
 					if($o==0) $sobj=$obj; else $form->$obj->in=$sobj;
 					if($o!=0) $form->$obj->readonly=true;
 				}
@@ -448,6 +468,7 @@ class Rcaj extends validaciones {
 				$form->$obj->size=10;
 				$form->$obj->insertValue=$totales[$o];
 				$form->$obj->rule='numeric';
+				$form->$obj->autocomplete=false;
 				if($o==0) $sobj=$obj; else $form->$obj->in=$sobj;
 				$form->$obj->readonly=true;
 			}

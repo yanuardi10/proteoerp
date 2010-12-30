@@ -367,6 +367,29 @@ class Scli extends validaciones {
 		$this->load->view('view_ventanas', $data);
 	}
 
+	function claveedit(){
+		//$this->pi18n->cargar('scli','dataedit');
+		$this->rapyd->load("dataedit");
+
+		$edit = new DataEdit('Clientes', 'scli');
+		$edit->back_url = site_url('ventas/scli/filteredgrid');
+
+		$edit->clave = new passwordField("Clave", "clave");
+		$edit->clave->rule = 'trim';
+		$edit->clave->size = 8;
+		$edit->clave->maxlength = 12;
+
+		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
+		$edit->build();
+
+		$data['content'] = $edit->output;
+		//$data['content'].= $this->pi18n->fallas();
+		//$data['smenu']   = $this->load->view('view_sub_menu', $smenu,true);
+		$data['title']   = '<h1>Asignacion de contrase&ntilde;a a cliente</h1>';
+		$data["head"]    = $this->rapyd->get_head();
+		$this->load->view('view_ventanas', $data);
+	}
+
 	function chdfiscal($tiva){
 		$nomfis=$this->input->post('nomfis');
 		$riffis=$this->input->post('riffis');
