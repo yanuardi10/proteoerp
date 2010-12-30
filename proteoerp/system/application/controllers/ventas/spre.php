@@ -153,8 +153,6 @@ class spre extends validaciones {
 			$edit->post_process('update','_post_update');
 			$edit->post_process('delete','_post_delete');
 
-			$edit->back_url = site_url("ventas/spre/filteredgrid");
-
 			$edit->fecha = new DateonlyField("Fecha", "fecha","d/m/Y");
 			$edit->fecha->insertValue = date("Y-m-d");
 			$edit->fecha->mode="autohide";
@@ -181,14 +179,6 @@ class spre extends validaciones {
 			$edit->peso->css_class ='inputnum';
 			$edit->peso->when=array('show','modify');
 			$edit->peso->size      = 10;
-
-			$edit->subtotal  = new inputField("Sub.Total", "totals");
-			$edit->subtotal->size = 10;
-			$edit->subtotal->css_class='inputnum';
-
-			$edit->total  = new inputField("Total", "totalg");
-			$edit->total->size = 10;
-			$edit->total->css_class='inputnum';
 
 			$edit->cliente = new inputField("Cliente","cod_cli");
 			$edit->cliente->size = 10;
@@ -241,6 +231,14 @@ class spre extends validaciones {
 			$edit->totaorg->css_class='inputnum';
 			$edit->totaorg->rel_id   ='itspre';
 			$edit->totaorg->onchange='totalizar(<#i#>)';
+			
+			$edit->precio1 = new inputField("Precio1 <#o#>", "precio1_<#i#>");
+			$edit->precio1->db_name='precio1';
+			$edit->precio1->size=10;
+			$edit->precio1->css_class='inputnum';
+			$edit->precio1->rel_id   ='itspre';
+			$edit->precio1->mode="autohide";
+			$edit->precio1->when=array("");
 
 			$edit->precio4 = new inputField("Precio4 <#o#>", "precio4_<#i#>");
 			$edit->precio4->db_name='precio4';
@@ -250,7 +248,7 @@ class spre extends validaciones {
 			$edit->precio4->mode="autohide";
 			$edit->precio4->when=array("");
 
-			$edit->iva = new inputField("Precio4 <#o#>", "iva_<#i#>");
+			$edit->iva = new inputField("Iva <#o#>", "iva_<#i#>");
 			$edit->iva->db_name='iva';
 			$edit->iva->size=10;
 			$edit->iva->css_class='inputnum';
@@ -274,19 +272,19 @@ class spre extends validaciones {
 			$edit->pond->mode="autohide";
 			$edit->pond->when=array("");
 			//fin de campos para detalle
-			
+				
 			$edit->ivat = new inputField("TOTAL IVA", "iva");
 			$edit->ivat->mode="autohide";
 			$edit->ivat->css_class ='inputnum';
 			$edit->ivat->when=array('show','modify');
 			$edit->ivat->size      = 10;
-			
+				
 			$edit->totals = new inputField("SUB-TOTAL", "totals");
 			$edit->totals->mode="autohide";
 			$edit->totals->css_class ='inputnum';
 			$edit->totals->when=array('show','modify');
 			$edit->totals->size      = 10;
-			
+				
 			$edit->totalg = new inputField("TOTAL", "totalg");
 			$edit->totalg->mode="autohide";
 			$edit->totalg->css_class ='inputnum';
@@ -307,28 +305,31 @@ class spre extends validaciones {
 		$numero=$this->datasis->fprox_numero('nspre');
 		$do->set('numero',$numero);
 		$do->pk['numero'] = $numero; //Necesario cuando la clave primara se calcula por secuencia
+		
+		$do->set('usuario', $this->session->userdata('usuario'));
+		
 		$datos=$do->get_all();
 		$ivat=0;$subt=0;$total=0;
 		foreach($datos['itspre'] as $rel){
 			$total+=$rel['totaorg'];
 			$subt+=$rel['preca']*$rel['cana'];
-//			echo 'importe=>'.$rel['totaorg'].'    preca=>'.$rel['preca'].'    cana=>'.$rel['cana'].'   iva=>'.$rel['iva'].'<br>';
+			//			echo 'importe=>'.$rel['totaorg'].'    preca=>'.$rel['preca'].'    cana=>'.$rel['cana'].'   iva=>'.$rel['iva'].'<br>';
 		}
 		$ivat=$total-$subt;
-		
+
 		$do->set('totals',$subt);
 		$do->set('totalg',$total);
 		$do->set('iva',$ivat);
-		
-		
-		
-//		echo "EL SUB-Totla es :".$subt." y el el iva es".$iva."  para un total de $total";
-//		exit;
+
+
+
+		//		echo "EL SUB-Totla es :".$subt." y el el iva es".$iva."  para un total de $total";
+		//		exit;
 		return true;
 	}
 
 	function _pre_update($do){
-//				print("<pre>");
+		//				print("<pre>");
 		//		echo $do->get_rel('itspre','preca',2);
 		$datos=$do->get_all();
 		$ivat=0;$subt=0;$total=0;
@@ -338,7 +339,7 @@ class spre extends validaciones {
 			//echo 'importe=>'.$rel['totaorg'].'    preca=>'.$rel['preca'].'    cana=>'.$rel['cana'].'   iva=>'.$rel['iva'].'<br>';
 		}
 		$ivat=$total-$subt;
-		
+
 		$do->set('totals',$subt);
 		$do->set('totalg',$total);
 		$do->set('iva',$ivat);
