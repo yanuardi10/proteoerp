@@ -237,7 +237,7 @@ class Rret extends validaciones {
 
 		$attr=array(
 			'class'  => 'ui-state-default ui-corner-all',
-			'onclick'=> "javascript:window.location='".site_url('ventas/rcaj/filteredgrid/search')."'",
+			'onclick'=> "javascript:window.location='".site_url('ventas/rret/filteredgrid')."'",
 			'value'  => 'Regresar'
 		);
 
