@@ -166,6 +166,7 @@ function del_itspre(id){
 				$obj7="iva_$i";
 				$obj8="ultimo_$i";
 				$obj9="pond_$i";
+				$obj10="precio1_$i";
 
 				?>
 			<tr id='tr_itspre_<?=$i ?>'>
@@ -178,6 +179,7 @@ function del_itspre(id){
 				<td class="littletablerow"><?=$form->$obj7->output ?></td>
 				<td class="littletablerow"><?=$form->$obj8->output ?></td>
 				<td class="littletablerow"><?=$form->$obj9->output ?></td>
+				<td class="littletablerow"><?=$form->$obj10->output ?></td>
 
 
 				<?php if($form->_status!='show') {?>
