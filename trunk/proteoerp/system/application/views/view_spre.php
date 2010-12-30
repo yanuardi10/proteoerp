@@ -43,7 +43,9 @@ function ejecuta(i){
 	precio=$("#__p"+tipo.toString()).val();
 	$("#preca_"+i.toString()).val(precio);
 	p4=$("#__p4").val();
+	p1=$("#__p1").val();
 	$("#precio4_"+i.toString()).val(p4);
+	$("#precio1_"+i.toString()).val(p1);
 }
 function totalizar(i){
 	c=roundNumber($("#cana_"+i.toString()).val(),2);
