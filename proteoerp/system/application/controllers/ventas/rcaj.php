@@ -506,7 +506,7 @@ class Rcaj extends validaciones {
 
 		//Cierre de caja
 		if ($form->on_success()){
-			$mSQL="SELECT c.tipo,c.nombre ,b.recibido,b.sistema,b.diferencia
+			$mSQL="SELECT a.fecha,c.tipo,c.nombre ,b.recibido,b.sistema,b.diferencia
 			FROM rcaj    AS a 
 			JOIN itrcaj  AS b ON a.numero=b.numero
 			JOIN tarjeta AS c ON c.tipo=b.tipo 
@@ -535,7 +535,7 @@ class Rcaj extends validaciones {
 						$this->db->simple_query($mmSQL);
 						//echo $mmSQL."\n";
 					}
-				}
+				}$rcajfecha=$this->db->escape($row->fecha);
 
 				$arr = array(
 					'tipo'     => 'F',
@@ -548,18 +548,22 @@ class Rcaj extends validaciones {
 				//echo $mmSQL;
 
 				//cierra el cajero
+				
 				$cajero=$this->datasis->dameval('SELECT cajero FROM rcaj WHERE numero='.$dbnumero);
-				$arr= array('status'=>'C',
-					'fechac'=>date('Ymd'),
-					'horac' =>date('h:i:s'),
-					'cierre'=>$rrecibido,
-					'caja'  =>'99'
-					);
+				$sifact=$this->datasis->dameval("SELECT COUNT(*) FROM sfac WHERE cajero=".$this->db->escape($cajero)." AND fecha > $rcajfecha");
+				if($sifact==0){
+					$arr= array('status'=>'C',
+						'fechac'=>date('Ymd'),
+						'horac' =>date('h:i:s'),
+						'cierre'=>$rrecibido,
+						'caja'  =>'99'
+						);
 
-				$where = 'cajero='.$this->db->escape($cajero);
-				$mmSQL = $this->db->update_string('scaj', $arr, $where);
-				$ban=$this->db->simple_query($mmSQL);
-				if($ban==false) memowrite($mmSQL,'rcaj');
+					$where = 'cajero='.$this->db->escape($cajero);
+					$mmSQL = $this->db->update_string('scaj', $arr, $where);
+					$ban=$this->db->simple_query($mmSQL);
+					if($ban==false) memowrite($mmSQL,'rcaj');
+				}
 				//echo $mmSQL;
 
 				//Crea el movimiento en smov
