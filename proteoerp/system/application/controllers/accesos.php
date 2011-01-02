@@ -54,7 +54,7 @@ class Accesos extends Controller{
 			LEFT JOIN intrasida AS b ON a.modulo=b.modulo AND b.usuario=".$this->db->escape($acceso)."
 			WHERE MID(a.modulo,1,1)!=0) AS aa
 			JOIN intramenu AS bb ON MID(aa.modulo,1,3)=bb.modulo
-			ORDER BY MID(aa.modulo,1,1), MID(aa.modulo,2,2), MID(aa.modulo,2)";
+			ORDER BY MID(aa.modulo,1,1), bb.panel,MID(aa.modulo,2,2), MID(aa.modulo,2)";
 
 			$mc = $this->db->query($mSQL);
 			$data['content'].=form_open('accesos/guardar').form_hidden('usuario',$usuario).'<div id=\'ContenedoresDeData\'><table width=100% cellspacing="0">';
