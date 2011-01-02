@@ -18,7 +18,6 @@ class Usuarios extends Controller {
 		$this->rapyd->load("datafilter","datagrid");
 		$this->rapyd->uri->keep_persistence();
 
-//		$filter = new DataFilter("Filtro de Usuarios",'usuario');
 		$filter = new DataFilter("Filtro de Usuarios");
 		$filter->db->select("a.us_codigo,a.us_nombre,a.supervisor,a.almacen,a.vendedor,a.cajero,
 							c.nombre as vendnom,b.ubides as almdes,d.nombre as cajnom");
@@ -51,7 +50,7 @@ class Usuarios extends Controller {
 		$grid->column_orderby('Vendedor'       ,'<#vendedor#>-<#vendnom#>','vendedor'  ,"align='center'");
 		$grid->column_orderby('Cajero'         ,'<#cajero#>-<#cajnom#>','cajero'    ,"align='center'");
 		$grid->column('Cambio clave'   ,$uri2       ,'align="center"');
-		$grid->column('Asignar Accesos',$uri3       ,'align="center"');
+		//$grid->column('Asignar Accesos',$uri3       ,'align="center"');
 
 		$grid->add("supervisor/usuarios/dataedit/create");
 		$grid->build();
