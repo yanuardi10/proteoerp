@@ -3,7 +3,8 @@ class Mantenimiento extends Controller{
 
 	function Mantenimiento(){
 		parent::Controller();
-		$this->load->library("rapyd");
+		$this->load->library('rapyd');
+		$this->datasis->modulo_id('900',1);
 	}
 
 	function index(){
@@ -17,7 +18,7 @@ class Mantenimiento extends Controller{
 		$list[]=anchor('supervisor/mantenimiento/contadores','Cambios en contadores').'Advertencia: uselo solo si sabe lo que esta haciendo';
 		$list[]=anchor('supervisor/mantenimiento/tablas','Mantenimiento de Tablas');
 		$list[]=anchor('supervisor/mantenimiento/sntealma','Modifica el almac&eacute;n en las notas de entrega');
-		
+		$list[]=anchor('supervisor/mantenimiento/actualizaproteo','Actualiza proteo a la &uacute;ltima vesi&oacute;n en el svn');
 
 		$attributes = array(
 			'class' => 'boldlist',
@@ -26,7 +27,7 @@ class Mantenimiento extends Controller{
 
 			$out=ul($list, $attributes);
 			$data['content'] = $out;
-			$data["head"]    = script("jquery.pack.js").script("jquery.treeview.pack.js").$this->rapyd->get_head().style('jquery.treeview.css');
+			$data['head']    = script("jquery.pack.js").script("jquery.treeview.pack.js").$this->rapyd->get_head().style('jquery.treeview.css');
 			$data['title']   = '<h1>Mantenimiento</h1>';
 			$this->load->view('view_ventanas', $data);
 	}
@@ -597,33 +598,50 @@ class Mantenimiento extends Controller{
 	}
 
 	function sntecambioalma(){
-		$this->rapyd->load("dataedit");
-		$edit = new DataEdit("Realizar cambio de almacen","snte");
-		$edit->back_url = site_url("supervisor/mantenimiento/sntealma");
+		$this->rapyd->load('dataedit');
+		$edit = new DataEdit('Realizar cambio de almac&eacute;n','snte');
+		$edit->back_url = site_url('supervisor/mantenimiento/sntealma');
 
-		$edit->numero = new inputField("N&uacute;mero", "numero");
+		$edit->numero = new inputField('N&uacute;mero', 'numero');
 		$edit->numero->size = 10;
-		$edit->numero->mode="autohide";
+		$edit->numero->mode='autohide';
 
-		$edit->nombre = new inputField("Nombre", "nombre");
+		$edit->nombre = new inputField('Nombre', 'nombre');
 		$edit->nombre->size = 55;
 		$edit->nombre->maxlength=40;
-		$edit->nombre->mode="autohide";
+		$edit->nombre->mode='autohide';
 
-		$edit->almacen = new  dropdownField ("Almac&eacute;n", "almacen");
-		$edit->almacen->option("","Todos");
+		$edit->almacen = new  dropdownField ('Almac&eacute;n', 'almacen');
+		$edit->almacen->option('','Todos');
 		$edit->almacen->options("SELECT ubica,CONCAT_WS('-',ubica,ubides) AS val FROM caub WHERE gasto='N' and invfis='N' ORDER BY ubides");
 
-		$edit->buttons("modify", "save", "undo", "back");
+		$edit->buttons('modify', 'save', 'undo', 'back');
 		$edit->build();
 
 		//$smenu['link']=barra_menu('113');
 		//$data['smenu']   = $this->load->view('view_sub_menu', $smenu,true);
 		$data['content'] =$edit->output;
-		$data['title']   = "<h1>Cambio de almac&eacute;n en nota de entrega</h1>";
-		$data["head"]    = $this->rapyd->get_head();
+		$data['title']   = '<h1>Cambio de almac&eacute;n en nota de entrega</h1>';
+		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 
-}
+	function actualizaproteo(){
+		if (!extension_loaded('svn')) {
+			$data['content'] = 'La extension svn no esta cargada, debe cargarla para poder usar estas opciones';
+		}else{
+			$dir=getcwd();
+			$svn=$dir.'./svn';
+			if(is_writable($svn)){
+				$data['content']= 'No se tiene permiso al directorio .svn, comuniquese con soporte t&eacute;cnico';
+			}else{
+				$data['content'] = 'Actualizado a la version: ';
+				$data['content'].= svn_update($dir);
+			}
+		}
 
+		$data['title']   = '<h1>Actualizacion de ProteoERP desde el svn</h1>';
+		$data['head']    = '';
+		$this->load->view('view_ventanas', $data);
+	}
+}
