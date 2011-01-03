@@ -18,7 +18,7 @@ class Mantenimiento extends Controller{
 		$list[]=anchor('supervisor/mantenimiento/contadores','Cambios en contadores').'Advertencia: uselo solo si sabe lo que esta haciendo';
 		$list[]=anchor('supervisor/mantenimiento/tablas','Mantenimiento de Tablas');
 		$list[]=anchor('supervisor/mantenimiento/sntealma','Modifica el almac&eacute;n en las notas de entrega');
-		$list[]=anchor('supervisor/mantenimiento/actualizaproteo','Actualiza proteo a la &uacute;ltima vesi&oacute;n en el svn');
+		$list[]=anchor('supervisor/mantenimiento/actualizaproteo','Actualiza proteo a la &uacute;ltima vesi&oacute;n del svn');
 
 		$attributes = array(
 			'class' => 'boldlist',
@@ -631,12 +631,17 @@ class Mantenimiento extends Controller{
 			$data['content'] = 'La extension svn no esta cargada, debe cargarla para poder usar estas opciones';
 		}else{
 			$dir=getcwd();
-			$svn=$dir.'./svn';
-			if(is_writable($svn)){
+			$svn=$dir.'/.svn';
+
+			if(!is_writable($svn)){
 				$data['content']= 'No se tiene permiso al directorio .svn, comuniquese con soporte t&eacute;cnico';
 			}else{
-				$data['content'] = 'Actualizado a la version: ';
-				$data['content'].= svn_update($dir);
+				$ver=@svn_update($dir);
+				if($ver>0){
+					$data['content'] = 'Actualizado a la version: '.$ver;
+				}else{
+					$data['content'] = 'Hubo problemas con la actualizaci&oacute;n,, comuniquese con soporte t&eacute;cnico';
+				}
 			}
 		}
 
