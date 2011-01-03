@@ -636,9 +636,15 @@ class Mantenimiento extends Controller{
 			if(!is_writable($svn)){
 				$data['content']= 'No se tiene permiso al directorio .svn, comuniquese con soporte t&eacute;cnico';
 			}else{
-				$ver=@svn_update($dir);
+				$aver=0; //<-- falta consultar la version actual
+				$ver =@svn_update($dir);
+
 				if($ver>0){
-					$data['content'] = 'Actualizado a la version: '.$ver;
+					if($ver>$aver){
+						$data['content'] = 'Actualizado de la version  a la version: '.$ver;
+					}else{
+						$data['content'] = 'Ya estaba la ultima versi&oacute;n instalada '.$arr['revision'];
+					}
 				}else{
 					$data['content'] = 'Hubo problemas con la actualizaci&oacute;n,, comuniquese con soporte t&eacute;cnico';
 				}
