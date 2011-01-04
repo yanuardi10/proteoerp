@@ -319,5 +319,19 @@ document.body.setAttribute(
 		$numero=$this->prox_numero($mcontador);
 		return str_pad($numero, $long, "0", STR_PAD_LEFT);
 	}
+
+	function banprox($codban){
+		$CI =& get_instance();
+		$nom='nBAN'.$codban;
+		while(1){
+			$numero=$this->fprox_numero($nom,12);
+			$dbnumero=$CI->db->escape($numero);
+			$mSQL = "SELECT COUNT(*) AS n FROM bmov WHERE numero=$dbnumero";
+			$query= $CI->db->query($mSQL);
+			$row  = $query->first_row('array');
+			if($row['n']==0) break;
+		}
+		return $numero;
+	}
 }
 ?>
