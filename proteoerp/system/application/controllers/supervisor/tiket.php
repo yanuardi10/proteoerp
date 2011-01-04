@@ -263,7 +263,7 @@ class Tiket extends Controller {
 		}else{
 			$where="WHERE cliente=".$this->db->escape($codigoc);
 		}
-		$mSQL="SELECT cliente,url,sistema,phtml,id FROM tiketconec ".$where;
+		$mSQL="SELECT cliente,url,sistema,id FROM tiketconec ".$where;
 		$host=$this->db->query($mSQL);
 		foreach($host->result() as  $row){
 			
@@ -283,6 +283,8 @@ class Tiket extends Controller {
 			echo $this->_traeticketrpc($server_url,array($fechad),$row->id);
 			echo '</pre>'."\n";
 		}
+			$link=anchor("supervisor/conec/filteredgrid", "Regresar a Información de Conexión");
+			echo $link."\n";
 	}
 
 
