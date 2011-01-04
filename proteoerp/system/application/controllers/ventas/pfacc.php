@@ -35,62 +35,56 @@ class pfacc extends validaciones {
 	  'retornar'=>array('cliente'=>'cod_cli'),
 	  'titulo'  =>'Buscar Cliente');
                
-              $boton=$this->datasis->modbus($scli);
+       $boton=$this->datasis->modbus($scli);
 
-              $filter = new DataFilter("Filtro de Pedidos Clientes",'pfac');
+       $filter = new DataFilter("Filtro de Pedidos Clientes",'pfac');
 
-              $filter->fechad = new dateonlyField("Desde", "fechad",'d/m/Y');
-              $filter->fechah = new dateonlyField("Hasta", "fechah",'d/m/Y');
-              $filter->fechad->clause  =$filter->fechah->clause="where";
-              $filter->fechad->db_name =$filter->fechah->db_name="fecha";
-              $filter->fechad->insertValue = date("Y-m-d");
-              $filter->fechah->insertValue = date("Y-m-d");
-              $filter->fechah->size=$filter->fechad->size=10;
-              $filter->fechad->operator=">=";
-              $filter->fechah->operator="<=";
+       $filter->fechad = new dateonlyField("Desde", "fechad",'d/m/Y');
+       $filter->fechah = new dateonlyField("Hasta", "fechah",'d/m/Y');
+       $filter->fechad->clause  =$filter->fechah->clause="where";
+       $filter->fechad->db_name =$filter->fechah->db_name="fecha";
+       $filter->fechad->insertValue = date("Y-m-d");
+       $filter->fechah->insertValue = date("Y-m-d");
+       $filter->fechah->size=$filter->fechad->size=10;
+       $filter->fechad->operator=">=";
+       $filter->fechah->operator="<=";
 
-              $filter->numero = new inputField("N&uacute;mero", "numero");
-              $filter->numero->size = 30;
+       $filter->numero = new inputField("N&uacute;mero", "numero");
+       $filter->numero->size = 30;
 
-              $filter->cliente = new inputField("Cliente", "cod_cli");
-              $filter->cliente->size = 30;
-              $filter->cliente->append($boton);
+       $filter->cliente = new inputField("Cliente", "cod_cli");
+       $filter->cliente->size = 30;
+       $filter->cliente->append($boton);
 
-              $filter->buttons("reset","search");
-              $filter->build();
+       $filter->buttons("reset","search");
+       $filter->build();
 
-              $uri = anchor('ventas/pfacc/dataedit/show/<#numero#>','<#numero#>');
-              $uri2 = anchor_popup('formatos/verhtml/PFAC/<#numero#>',"Ver HTML",$atts);
+       $uri = anchor('ventas/pfacc/dataedit/show/<#numero#>','<#numero#>');
+       $uri2 = anchor_popup('formatos/verhtml/PFAC/<#numero#>',"Ver HTML",$atts);
 
+       $grid = new DataGrid();
+       $grid->order_by("fecha","desc");
+       $grid->per_page = 15;
 
-              $grid = new DataGrid();
-              $grid->order_by("fecha","desc");
-              $grid->per_page = 15;
-
-              $grid->column("N&uacute;mero",$uri);
-              $grid->column("Fecha","<dbdate_to_human><#fecha#></dbdate_to_human>","align='center'");
-              $grid->column("Nombre","nombre");
-              $grid->column("Sub.Total","<number_format><#totals#>|2</number_format>","align=right");
-              $grid->column("IVA","<number_format><#iva#>|2</number_format>","align=right");
-              $grid->column("Total","<number_format><#totalg#>|2</number_format>","align=right");
-              $grid->column("Vista",$uri2,"align='center'");
-
-
-              //$grid->add("ventas/agregarped");
-              $grid->build();
-
-              //echo $grid->db->last_query();
-
-              $data['content'] =$filter->output.$grid->output;
-              $data["head"]    = $this->rapyd->get_head();
-              $data['title']   ='<h1>Pedidos Clientes</h1>';
-              $this->load->view('view_ventanas', $data);
+       $grid->column("N&uacute;mero",$uri);
+       $grid->column("Fecha","<dbdate_to_human><#fecha#></dbdate_to_human>","align='center'");
+       $grid->column("Nombre","nombre");
+       $grid->column("Sub.Total","<number_format><#totals#>|2</number_format>","align=right");
+       $grid->column("IVA","<number_format><#iva#>|2</number_format>","align=right");
+       $grid->column("Total","<number_format><#totalg#>|2</number_format>","align=right");
+       $grid->column("Vista",$uri2,"align='center'");
+       
+       $grid->add("ventas/pfacc/dataedit/create");
+       $grid->build();
+       
+       $data['content'] =$filter->output.$grid->output;
+       $data["head"]    = $this->rapyd->get_head();
+       $data['title']   ='<h1>Pedidos Clientes</h1>';
+       $this->load->view('view_ventanas', $data);
 	}
 
 	function dataedit(){
 		$this->rapyd->load('dataobject','datadetails');
-			
-
 
 		$modbus=array(
 			'tabla'   =>'sinv',
@@ -98,7 +92,7 @@ class pfacc extends validaciones {
 			'codigo' =>'C&oacute;digo',
 			'descrip'=>'descrip'),
 			'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'descrip'),
-			'retornar'=>array('codigo'=>'codigo_<#i#>','descrip'=>'desca_<#i#>'
+			'retornar'=>array('codigo'=>'codigoa_<#i#>','descrip'=>'desca_<#i#>'
 			,'precio1'=>'__p1'
 			,'precio2'=>'__p2'
 			,'precio3'=>'__p3'
@@ -116,8 +110,6 @@ class pfacc extends validaciones {
 			$('#cana_'+id).numeric(".");
 			return true;
 		}
-		
-		
 				
 		";
 
@@ -135,7 +127,7 @@ class pfacc extends validaciones {
 			$boton =$this->datasis->modbus($mSCLId);
 
 			$do = new DataObject("pfac");
-			$do->rel_one_to_many('itpfac', 'itpfac', 'numa');
+			$do->rel_one_to_many('itpfac', 'itpfac',array('numero'=>'numa'));
 			//			$do->rel_pointer('itspre','sinv','itspre.codigo=sinv.codigo','sinv.descrip as sinvdescrip');
 
 			$edit = new DataDetails("Pedidos", $do);
@@ -158,7 +150,7 @@ class pfacc extends validaciones {
 
 			$edit->vd = new  dropdownField ("Vendedor", "vd");
 			$edit->vd->options("SELECT vendedor, CONCAT(vendedor,' ',nombre) nombre FROM vend ORDER BY vendedor");
-			$edit->vd->size = 5;
+			$edit->vd->style ="10px";
 
 			$edit->numero = new inputField("N&uacute;mero", "numero");
 			$edit->numero->size = 10;
@@ -192,7 +184,7 @@ class pfacc extends validaciones {
 			$edit->cliente->append($boton);
 
 			$edit->rifci   = new inputField("RIF/CI","rifci");
-			$edit->rifci->size = 15;
+			$edit->rifci->size = 10;
 
 			$edit->direc = new inputField("Direcci&oacute;n","direc");
 			$edit->direc->size = 30;
@@ -202,71 +194,82 @@ class pfacc extends validaciones {
 			$edit->dire1->size = 30;
 
 			//Campos para el detalle
-			$edit->codigo = new inputField("C&oacute;digo <#o#>", "codigoa_<#i#>");
-			$edit->codigo->size=18;
-			$edit->codigo->db_name='codigoa';
-			$edit->codigo->append($btn);
-			$edit->codigo->rel_id='itpfat';
+			$edit->codigoa = new inputField("C&oacute;digo <#o#>", "codigoa_<#i#>");
+			$edit->codigoa->size=10;
+			$edit->codigoa->db_name='codigoa';
+			$edit->codigoa->append($btn);
+			$edit->codigoa->rel_id='itpfac';
 
 			$edit->desca = new inputField("Descripci&oacute;n <#o#>", "desca_<#i#>");
 			$edit->desca->size=36;
 			$edit->desca->db_name='desca';
 			$edit->desca->maxlength=50;
-			$edit->desca->rel_id='itpfat';
+			$edit->desca->rel_id='itpfac';
 
 			$edit->cana = new inputField("Cantidad <#o#>", "cana_<#i#>");
 			$edit->cana->db_name  ='cana';
 			$edit->cana->css_class='inputnum';
-			$edit->cana->rel_id   ='itpfat';
+			$edit->cana->rel_id   ='itpfac';
 			$edit->cana->maxlength=10;
-			$edit->cana->size     =10;
+			$edit->cana->size     =7;
 			$edit->cana->rule='required';
 			$edit->cana->onchange='totalizar(<#i#>)';
-
-			$edit->preca = new inputField("Precio <#o#>", "preca_<#i#>");
-			$edit->preca->db_name='preca';
-			$edit->preca->css_class='inputnum';
-			$edit->preca->rel_id   ='itpfat';
-			$edit->preca->size=10;
-			$edit->preca->rule='required';
-			$edit->preca->onchange='v_preca(<#i#>)';
 			
 			$edit->mostrado = new inputField("P.IVA <#o#>", "mostrado_<#i#>");
 			$edit->mostrado->db_name='mostrado';
 			$edit->mostrado->css_class='inputnum';
-			$edit->mostrado->rel_id   ='itpfat';
-			$edit->mostrado->size=10;
+			$edit->mostrado->rel_id   ='itpfac';
+			$edit->mostrado->size=7;
 			$edit->mostrado->rule='required';
-			$edit->mostrado->onchange='v_preca(<#i#>)';
+			$edit->mostrado->onchange="valida(<#i#>)";
+			
+//			$edit->importe = new inputField("importe <#o#>", "importe_<#i#>");
+//			$edit->importe->db_name='';
+//			$edit->importe->css_class='inputnum';
+//			$edit->importe->rel_id   ='itpfac';
+//			$edit->importe->size=7;
+//			$edit->importe->rule='required';
+//			$edit->importe->onchange="valida(<#i#>)";
+			
+			$edit->preca = new inputField("Precio <#o#>", "preca_<#i#>");
+			$edit->preca->db_name='preca';
+			$edit->preca->css_class='inputnum';
+			$edit->preca->rel_id   ='itpfac';
+			$edit->preca->size=7;
+			$edit->preca->rule='required';
+			$edit->preca->mode="autohide";
+			$edit->preca->when=array("");
 
 			$edit->tota = new inputField("Tota <#o#>", "tota_<#i#>");
 			$edit->tota->db_name='tota';
-			$edit->tota->size=10;
+			$edit->tota->size=7;
 			$edit->tota->css_class='inputnum';
-			$edit->tota->rel_id   ='itpfat';
+			$edit->tota->rel_id   ='itpfac';
 			$edit->tota->onchange='totalizar(<#i#>)';
+			$edit->tota->mode="autohide";
+			$edit->tota->when=array("");
 
 			$edit->pvp = new inputField("PVP <#o#>", "pvp_<#i#>");
 			$edit->pvp->db_name='pvp';
-			$edit->pvp->size=10;
+			$edit->pvp->size=0;
 			$edit->pvp->css_class='inputnum';
-			$edit->pvp->rel_id   ='itspre';
+			$edit->pvp->rel_id   ='itpfac';
 			$edit->pvp->mode="autohide";
 			$edit->pvp->when=array("");
 
-			$edit->iva = new inputField("Precio4 <#o#>", "iva_<#i#>");
+			$edit->iva = new inputField("iva <#o#>", "iva_<#i#>");
 			$edit->iva->db_name='iva';
-			$edit->iva->size=10;
+			$edit->iva->size=0;
 			$edit->iva->css_class='inputnum';
-			$edit->iva->rel_id   ='itspre';
+			$edit->iva->rel_id   ='itpfac';
 			$edit->iva->mode="autohide";
 			$edit->iva->when=array("");
 
 			$edit->costo = new inputField("costo <#o#>", "costo_<#i#>");
 			$edit->costo->db_name='costo';
-			$edit->costo->size=10;
+			$edit->costo->size=0;
 			$edit->costo->css_class='inputnum';
-			$edit->costo->rel_id   ='itspre';
+			$edit->costo->rel_id   ='itpfac';
 			$edit->costo->mode="autohide";
 			$edit->costo->when=array("");
 
@@ -301,22 +304,25 @@ class pfacc extends validaciones {
 	}
 
 	function _pre_insert($do){
-		$numero=$this->datasis->fprox_numero('nspre');
+		$numero=$this->datasis->fprox_numero('npfac');
 		$do->set('numero',$numero);
 		$do->pk['numero'] = $numero; //Necesario cuando la clave primara se calcula por secuencia
 		$datos=$do->get_all();
 		$ivat=0;$subt=0;$total=0;
-		foreach($datos['itspre'] as $rel){
-			$total+=$rel['totaorg'];
+	
+		foreach($datos['itpfac'] as $rel){
+			$c=$rel['cana'];
+			$p=$rel['mostrado'];
+			$total+=$c*$p;
 			$subt+=$rel['preca']*$rel['cana'];
 			//			echo 'importe=>'.$rel['totaorg'].'    preca=>'.$rel['preca'].'    cana=>'.$rel['cana'].'   iva=>'.$rel['iva'].'<br>';
 		}
 		$ivat=$total-$subt;
-
+		
 		$do->set('totals',$subt);
 		$do->set('totalg',$total);
 		$do->set('iva',$ivat);
-
+//		exit;
 
 
 		//		echo "EL SUB-Totla es :".$subt." y el el iva es".$iva."  para un total de $total";
@@ -329,53 +335,60 @@ class pfacc extends validaciones {
 		//		echo $do->get_rel('itspre','preca',2);
 		$datos=$do->get_all();
 		$ivat=0;$subt=0;$total=0;
-		foreach($datos['itspre'] as $rel){
-			$total+=$rel['totaorg'];
+		foreach($datos['itpfac'] as $rel){
+			$c=$rel['cana'];
+			$p=$rel['mostrado'];
+			$total+=$c*$p;
 			$subt+=$rel['preca']*$rel['cana'];
 			//echo 'importe=>'.$rel['totaorg'].'    preca=>'.$rel['preca'].'    cana=>'.$rel['cana'].'   iva=>'.$rel['iva'].'<br>';
 		}
 		$ivat=$total-$subt;
-
+//		echo "Total es:".$total."<br>";
+//		echo "SubTotal es:".$subt."<br>";
+//		echo "Iva es:".$ivat."<br>";
+//		exit;
 		$do->set('totals',$subt);
 		$do->set('totalg',$total);
 		$do->set('iva',$ivat);
+		
+		
 		return true;
 	}
 
 	function _post_insert($do){
 		$codigo=$do->get('numero');
-		logusu('spre',"PRESUPUESTO $codigo CREADO");
+		logusu('pfat',"PEDIDO $codigo CREADO");
 		$query='select sum(b.cana * c.peso) as valor
-				from spre as a
-				join itspre as b on a.numero=b.numero
-				join sinv as c on c.codigo=b.codigo
+				from pfac as a
+				join itpfac as b on a.numero=b.numa
+				join sinv as c on c.codigo=b.codigoa
 				where a.numero="'.$codigo.'"';
 		$mSQL_1 = $this->db->query($query);
 		$resul = $mSQL_1->row();
 		$valor=$resul->valor;
-		$query='update spre set peso="'.$valor.'" where numero="'.$codigo.'" ';
+		$query='update pfac set peso="'.$valor.'" where numero="'.$codigo.'" ';
 		$this->db->query($query);
 
 	}
 
 	function _post_update($do){
 		$codigo=$do->get('numero');
-		logusu('spre',"PRESUPUESTO $codigo CREADO");
+		logusu('pfat',"PEDIDO $codigo MODIFICADO");
 		$query='select sum(b.cana * c.peso) as valor
-				from spre as a
-				join itspre as b on a.numero=b.numero
-				join sinv as c on c.codigo=b.codigo
+				from pfac as a
+				join itpfac as b on a.numero=b.numa
+				join sinv as c on c.codigo=b.codigoa
 				where a.numero="'.$codigo.'"';
 		$mSQL_1 = $this->db->query($query);
 		$resul = $mSQL_1->row();
 		$valor=$resul->valor;
-		$query='update spre set peso="'.$valor.'" where numero="'.$codigo.'" ';
+		$query='update pfac set peso="'.$valor.'" where numero="'.$codigo.'" ';
 		$this->db->query($query);
 	}
 
 	function _post_delete($do){
 		$codigo=$do->get('numero');
-		logusu('spre',"PRESUPUESTO $codigo ELIMINADO");
+		logusu('pfac',"PEDIDO $codigo ELIMINADO");
 	}
 
 }
