@@ -38,11 +38,16 @@ class conec extends Controller {
 		$filter->cliente->db_name="a.cliente";
 		$filter->cliente->size=20;
 		$filter->cliente->append($boton);
+		
+		$filter->nombre = new inputField('Nombre','nombre');
+		$filter->nombre->db_name="b.nombre";
+		$filter->nombre->size=40;
 
 		$filter->buttons('reset','search');
 		$filter->build();
 
 		$uri = anchor('supervisor/conec/dataedit/show/<#id#>','<#cliente#>');
+		$uri2 = anchor('supervisor/tiket/traertiket/<#cliente#>','Traer Ticket');
 
 		$grid = new DataGrid('Lista de Conexi&oacute;n con clientes');
 		$grid->order_by('a.cliente','asc');
@@ -51,10 +56,10 @@ class conec extends Controller {
 		$grid->column_orderby('Cliente',$uri,'cliente');
 		$grid->column_orderby('Nombre','nombre','nombre');
 		//$grid->column_orderby("Ubicacion","ubicacion",'ubicacion');
-		$grid->column_orderby('html','phtml','phtml');
-		$grid->column_orderby('Proteo','sistema','sistema');
-		//$grid->column_orderby("DB","basededato",'basededato');
-		//$grid->column_orderby("Puerto","puerto",'puerto');
+		$grid->column_orderby('Sistema','sistema','sistema');
+		$grid->column_orderby("DB","basededato",'basededato');
+		$grid->column_orderby("Puerto","puerto",'puerto');
+		$grid->column('Ticket',$uri2);
 								
 		$grid->add('supervisor/conec/dataedit/create');
 		$grid->build();
