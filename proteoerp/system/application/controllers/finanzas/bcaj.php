@@ -298,13 +298,14 @@ class Bcaj extends Controller {
 		$edit->fecha = new DateonlyField('Fecha', 'fecha','d/m/Y');
 		$edit->fecha->insertValue = date('Y-m-d');
 		$edit->fecha->rule = 'chfecha|required';
+		$edit->fecha->dbformat='Y-m-d';
 		$edit->fecha->size=10;
 
 		$edit->envia = new dropdownField('Envia','envia');
 		$edit->envia->option('','Seleccionar');
 		$edit->envia->options("SELECT  codbanc,$desca FROM banc WHERE tbanco='CAJ'");
 		$edit->envia->style = 'width:180px';
-		$edit->envia->rule  = 'chfecha|required';
+		$edit->envia->rule  = 'required';
 
 		$edit->recibe = new dropdownField('Recibe','recibe');
 		$edit->recibe->option('','Seleccionar');
@@ -324,7 +325,122 @@ class Bcaj extends Controller {
 		$salida=$edit->output;
 
 		if ($edit->on_success()){
-			echo 'pase';
+			$arrcajas=$edit->envia->options;
+
+			$numero = $this->datasis->fprox_numero('nbcaj');
+			$transac= $this->datasis->fprox_numero('transac');
+			$fecha  = $edit->fecha->newValue;
+			$monto  = $edit->monto->newValue;
+			$numeroe=$this->datasis->banprox($edit->envia->newValue);
+			$numeror=$this->datasis->banprox($edit->recibe->newValue);
+
+			$mSQL='SELECT codbanc,numcuent,tbanco,banco,saldo FROM banc WHERE codbanc IN ('.$this->db->escape($edit->envia->newValue).','.$this->db->escape($edit->recibe->newValue).')';
+			$query = $this->db->query($mSQL);
+			$infbanc=array();
+			if ($query->num_rows() > 0){
+				foreach ($query->result() as $row){
+					$infbanc[$row->codbanc]['numcuent']=$row->numcuent;
+					$infbanc[$row->codbanc]['tbanco']  =$row->tbanco;
+					$infbanc[$row->codbanc]['banco']   =$row->banco;
+					$infbanc[$row->codbanc]['saldo']   =$row->banco;
+				}
+			}
+
+			$data=array(
+				'tipo'    => 'TR',
+				'fecha'   => $fecha,
+				'numero'  => $numero,
+				'transac' => $transac,
+				'usuario' => $this->session->userdata('usuario'),
+				'envia'   => $edit->envia->newValue,
+				'tipoe'   => 'ND',
+				'numeroe' => $numeroe,
+				'bancoe'  => $arrcajas[$edit->envia->newValue],
+				'recibe'  => $edit->recibe->newValue,
+				'tipor'   => 'NC',
+				'numeror' => $numeror,
+				'bancor'  => $arrcajas[$edit->recibe->newValue],
+				'concepto'=> 'TRANSFERENCIA ENTRE CAJAS',
+				'concep2' => '',
+				'benefi'  => '',
+				'boleta'  => '',
+				'precinto'=> '',
+				'comprob' =>'',
+				'totcant' =>'',
+				'status'  =>'',
+				'estampa' =>date('Ymd'),
+				'hora'    =>date('H:i:s'),
+				'deldia'  =>$fecha,
+				'tarjeta' => 0,
+				'tdebito' => 0,
+				'cheques' => 0,
+				'efectivo'=> $monto,
+				'comision'=> 0,
+				'islr'    => 0,
+				'monto'   => $monto,
+			);
+			$sql = $this->db->insert_string('bcaj', $data);
+			echo $sql."\n";
+
+			//Crea el egreso en el banco
+			$mSQL='CALL sp_actusal('.$this->db->escape($edit->envia->newValue).",'$fecha',-$monto)";
+			echo $mSQL."\n";
+			//$ban=$this->db->simple_query($mSQL);
+			//if($ban==false) memowrite($mSQL,'bcaj');
+
+			$data=array();
+			$data['codbanc']  = $edit->envia->newValue;
+			$data['numcuent'] = $infbanc[$edit->envia->newValue]['numcuent'];
+			$data['banco']    = $arrcajas[$edit->envia->newValue];
+			$data['saldo']    = $infbanc[$edit->envia->newValue]['saldo'];
+			$data['tipo_op']  = 'ND';
+			$data['numero']   = $numeroe;
+			$data['fecha']    = $fecha;
+			$data['clipro']   = 'O';
+			$data['codcp']    = 'TRANS';
+			$data['nombre']   = 'TRANSFERENCIAS ENTRE CAJAS';
+			$data['monto']    = $monto;
+			$data['concepto'] = 'TRANSFERENCIAS ENTRE CAJAS';
+			$data['concep2']  = '';
+			$data['transac']  = $transac;
+			$data['usuario']  = $this->session->userdata('usuario');
+			$data['estampa']  = date('Ymd');
+			$data['hora']     = date('h:i:s');
+			$data['benefi']   = '-';
+			$sql = $this->db->insert_string('bcaj', $data);
+			echo $sql."\n";
+			//$ban=$this->db->simple_query($sql);
+			//if($ban==false) memowrite($sql,'bcaj');
+
+			//Crea el ingreso la otra caja
+			$mSQL='CALL sp_actusal('.$this->db->escape($edit->recibe->newValue).",'$fecha',$monto)";
+			echo $mSQL."\n";
+			//$ban=$this->db->simple_query($mSQL);
+			//if($ban==false) memowrite($mSQL,'bcaj');
+
+			$data=array();
+			$data['codbanc']  = $edit->recibe->newValue;
+			$data['numcuent'] = $infbanc[$edit->recibe->newValue]['numcuent'];
+			$data['banco']    = $arrcajas[$edit->recibe->newValue];
+			$data['saldo']    = $infbanc[$edit->recibe->newValue]['saldo'];
+			$data['tipo_op']  = 'NC';
+			$data['numero']   = $numeror;
+			$data['fecha']    = $fecha;
+			$data['clipro']   = 'O';
+			$data['codcp']    = 'TRANS';
+			$data['nombre']   = 'TRANSFERENCIAS ENTRE CAJAS';
+			$data['monto']    = $monto;-
+			$data['concepto'] = 'TRANSFERENCIAS ENTRE CAJAS';
+			$data['concep2']  = '';
+			$data['transac']  = $transac;
+			$data['usuario']  = $this->session->userdata('usuario');
+			$data['estampa']  = date('Ymd');
+			$data['hora']     = date('h:i:s');
+			$data['benefi']   = '-';
+			$sql = $this->db->insert_string('bcaj', $data);
+			echo $sql."\n";
+			//$ban=$this->db->simple_query($sql);
+			//if($ban==false) memowrite($sql,'bcaj');
 		}
 
 		$this->rapyd->jquery[]='$(".inputnum").numeric(".");';

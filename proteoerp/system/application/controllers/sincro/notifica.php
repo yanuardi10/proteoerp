@@ -23,7 +23,7 @@ class notifica extends controller {
 	function sms(){
 		$this->rapyd->load('dataform');
 
-		$form = new DataForm('sincro/notifica/index/process');
+		$form = new DataForm('sincro/notifica/sms/process');
 
 		$form->codigo = new dropdownField('N&uacute;mero', 'codigo');
 		$form->codigo->option('414','0414');

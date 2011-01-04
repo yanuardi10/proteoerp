@@ -2203,7 +2203,6 @@ class Libros extends Controller {
 			ORDER BY fecha, IF(tipo IN ('FE','FC','XE','XC'),1,2), numero ";
 		//}
 		$export = $this->db->query($mSQL);
-		exit($mSQL);
 		
 		$fname = tempnam("/tmp","lventas.xls");
 		$this->load->library("workbook",array("fname" => $fname));
