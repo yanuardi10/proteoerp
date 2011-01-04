@@ -23,13 +23,13 @@ class Mantenimiento extends Controller{
 		$attributes = array(
 			'class' => 'boldlist',
 			'id'    => 'mylist'
-			);
+		);
 
-			$out=ul($list, $attributes);
-			$data['content'] = $out;
-			$data['head']    = script("jquery.pack.js").script("jquery.treeview.pack.js").$this->rapyd->get_head().style('jquery.treeview.css');
-			$data['title']   = '<h1>Mantenimiento</h1>';
-			$this->load->view('view_ventanas', $data);
+		$out=ul($list, $attributes);
+		$data['content'] = $out;
+		$data['head']    = script("jquery.pack.js").script("jquery.treeview.pack.js").$this->rapyd->get_head().style('jquery.treeview.css');
+		$data['title']   = '<h1>Mantenimiento</h1>';
+		$this->load->view('view_ventanas', $data);
 	}
 
 	function reparatabla(){
