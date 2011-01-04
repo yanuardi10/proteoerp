@@ -151,6 +151,8 @@ class sinvpromo extends validaciones {
 
 		$link =anchor('/inventario/sinvpromo/dataedit/modify/<#id#>','<#codigo#>');
 		$llink=anchor_popup('inventario/consultas/preciosgeneral/<#codigo#>', 'Consultar precio', $attr);
+		$attr['width']  = '420';
+		$attr['height'] = '400';
 		$llin2=anchor_popup('inventario/precios_sinv/dataedit/modify/<#sinvid#>', '<#precio1#>', $attr);
 
 		$grid = new DataGrid('Lista de Art&iacute;culos');
