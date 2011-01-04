@@ -30,7 +30,8 @@ class conec extends Controller {
 		$boton =$this->datasis->modbus($mSCLId);
 
 		$filter = new DataFilter('Filtro por Conexi&oacute;n con Clientes');
-		$filter->db->select=array("a.id","a.cliente","a.ubicacion","a.url","a.basededato","a.puerto","a.usuario","a.clave","a.observacion","b.nombre"); 
+		$select=array("a.id as idc","a.cliente","a.ubicacion","a.url","a.basededato","a.puerto","a.usuario","a.clave","a.observacion","b.nombre"); 
+		$filter->db->select($select);
 		$filter->db->from('tiketconec AS a');   
 		$filter->db->join('scli AS b','a.cliente=b.cliente');
 
@@ -46,7 +47,7 @@ class conec extends Controller {
 		$filter->buttons('reset','search');
 		$filter->build();
 
-		$uri = anchor('supervisor/conec/dataedit/show/<#id#>','<#cliente#>');
+		$uri = anchor('supervisor/conec/dataedit/show/<#idc#>','<#cliente#>');
 		$uri2 = anchor('supervisor/tiket/traertiket/<#cliente#>','Traer Ticket');
 
 		$grid = new DataGrid('Lista de Conexi&oacute;n con clientes');
@@ -69,10 +70,8 @@ class conec extends Controller {
 		$data["head"]    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);	
 	}
-
 	function dataedit(){
 		$this->rapyd->load('dataedit');
-		$this->rapyd->uri->keep_persistence();
 
 		$edit = new DataEdit('Conexi&oacute;n con clientes', 'tiketconec');
 		$edit->back_url = site_url('supervisor/conec/filteredgrid');
