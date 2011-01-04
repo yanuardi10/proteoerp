@@ -56,7 +56,7 @@ class conec extends Controller {
 
 		$grid->column_orderby('Cliente',$uri,'cliente');
 		$grid->column_orderby('Nombre','nombre','nombre');
-		//$grid->column_orderby("Ubicacion","ubicacion",'ubicacion');
+		$grid->column_orderby("Url","url",'url');
 		$grid->column_orderby('Sistema','sistema','sistema');
 		$grid->column_orderby("DB","basededato",'basededato');
 		$grid->column_orderby("Puerto","puerto",'puerto');
