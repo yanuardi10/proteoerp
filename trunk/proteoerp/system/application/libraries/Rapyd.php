@@ -295,6 +295,8 @@ require_once(RAPYD_PATH.'common'.EXT);
 				$buffer .=script('jquery.jqGrid.min.js');
 				$buffer .=script('jquery.tablednd.js');
 				$buffer .=script('jquery.contextmenu.js');
+				$buffer .=script('plugins/jquery.numeric.pack.js');
+				$buffer .=script('plugins/jquery.floatnumber.js');
 
 				$script = join("\n\n",$this->jquery)."\n";
 				$script ='$(function(){'.$script.'});';
