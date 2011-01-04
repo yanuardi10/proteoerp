@@ -30,7 +30,7 @@ class conec extends Controller {
 		$boton =$this->datasis->modbus($mSCLId);
 
 		$filter = new DataFilter('Filtro por Conexi&oacute;n con Clientes');
-		$select=array("a.id as idc","a.cliente","a.ubicacion","a.url","a.basededato","a.puerto","a.usuario","a.clave","a.observacion","b.nombre"); 
+		$select=array("a.id as idc","a.sistema","a.cliente","a.ubicacion","a.url","a.basededato","a.puerto","a.usuario","a.clave","a.observacion","b.nombre"); 
 		$filter->db->select($select);
 		$filter->db->from('tiketconec AS a');   
 		$filter->db->join('scli AS b','a.cliente=b.cliente');
