@@ -51,8 +51,9 @@ class conec extends Controller {
 		$uri2 = anchor('supervisor/tiket/traertiket/<#cliente#>','Traer Ticket');
 
 		$ticket = anchor('supervisor/tiket/traertiket/','Traer Todos los Ticket');
-		
-		$grid = new DataGrid('Lista de Conexi&oacute;n con clientes --> '.$ticket);
+		$ticketc = anchor('supervisor/tiketc/filteredgrid','Ver Ticket de Clientes');
+				
+		$grid = new DataGrid('Lista de Conexi&oacute;n con clientes --> '.$ticket.' --> '.$ticketc);
 		$grid->order_by('a.cliente','asc');
 		$grid->per_page = 20;
 
@@ -133,7 +134,6 @@ class conec extends Controller {
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
-
 	function instalar(){
 		$mSQL="CREATE TABLE `tiketconec` (
 		  `id` int(11) NOT NULL auto_increment,
@@ -150,5 +150,4 @@ class conec extends Controller {
 		) ENGINE=MyISAM AUTO_INCREMENT=0 DEFAULT CHARSET=latin1";
 		$this->db->simple_query($mSQL);
 	}
-
 }

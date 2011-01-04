@@ -104,16 +104,26 @@ class tiketc extends Controller {
 		$filter->cliente->db_name="c.cliente";
 		$filter->cliente->append($boton);
 		
+		$filter->nombre = new inputField("Nombre", "nombre");
+		$filter->nombre->size=40;
+		
+		$filter->usuario = new inputField("Usuario","usuario");
+		$filter->usuario->size=20;
+		
 		$filter->idt = new inputField("Numero","idt");
 		$filter->idt->size=20;
 		$filter->idt->db_name="idt";
 
 		$filter->buttons("reset","search");
 		$filter->build();
+		
+		$ticket = anchor('supervisor/tiket/traertiket/','Traer Todos los Ticket');
+		$iticket = anchor('supervisor/conec/filteredgrid/','Ver Información de Conexión');
 
-		$grid = new DataGrid2("Lista de Control de Tiket");
+		$grid = new DataGrid2('Lista de Control de Tiket -->'.$ticket.' --> '.$iticket);
 		$grid->order_by("a.id","desc");
 		$grid->per_page = 10;
+		
 		$link=anchor("supervisor/tiketc/dataedit/modify/<#idm#>", "<#idm#>");
 		$grid->use_function('ractivo');
 
