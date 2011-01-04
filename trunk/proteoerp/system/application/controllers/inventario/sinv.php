@@ -3,11 +3,11 @@ class sinv extends Controller {
 
 	function sinv(){
 		parent::Controller(); 
-		$this->load->library("rapyd");
+		$this->load->library('rapyd');
 	}
 
 	function index(){
-		//$this->datasis->modulo_id(309,1);
+		$this->datasis->modulo_id('301',1);
 		redirect("inventario/sinv/filteredgrid");
 	}
 
