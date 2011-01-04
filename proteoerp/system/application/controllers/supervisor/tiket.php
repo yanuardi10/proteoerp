@@ -372,7 +372,7 @@ class Tiket extends Controller {
 				$rt=$this->db->simple_query($mSQL);
 				if($rt===FALSE){ $error++; memowrite($mSQL,'tiketc');}
 			}
-			if($error==0) $rt="<h2><b style='color:green;'>Transferencia Correcta</b></h2>"; else $rt="<h2><b style='color:red;'>Hubo algunos problemas en la insercion se genero un centinela</b></h2>";
+			if($error==0) $rt="<b style='color:green;'>Transferencia Correcta</b>"; else $rt="<b style='color:red;'>Hubo algunos problemas en la insercion se genero un centinela</b>";
 		}
 		return $rt;
 	}
