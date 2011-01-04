@@ -9,13 +9,14 @@ echo $form->output;
 else:
 
 
-foreach($form->detail_fields['itpfat'] AS $ind=>$data)
+foreach($form->detail_fields['itpfac'] AS $ind=>$data)
 $campos[]=$data['field'];
 
-$campos='<tr id="tr_itpfat_<#i#>"><td class="littletablerow">'.join('</td><td>',$campos).'</td>';
+$campos='<tr id="tr_itpfac_<#i#>"><td class="littletablerow">'.join('</td><td>',$campos).'</td>
+<td class="littletablerow" align="right"><input size="10" type="text" name="importe_<#i#>" value="" id="importe_<#i#>" onchange="valida(<#i#>)"/></td>';
 
 $campos=str_replace("\n",'',$campos);
-$campos.=' <td class="littletablerow"><a href=# onclick="del_itpfat(<#i#>);return false;">Eliminar</a></td></tr>';
+$campos.=' <td class="littletablerow"><a href=# onclick="del_itpfac(<#i#>);return false;">Eliminar</a></td></tr>';
 $campos=$form->js_escape($campos);
 if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</div>';
 
@@ -36,46 +37,73 @@ if($form->_status!='show'){
 
 
 <script language="javascript" type="text/javascript">
-itspre_cont=<?=$form->max_rel_count['itpfat']?>;
+itpfac_cont=<?=$form->max_rel_count['itpfac']?>;
+$(document).ready(function() {
+	//alert(itpfac_cont);
+	for(i=0;i<itpfac_cont;i++){
+		c=$("#cana_"+i.toString()).val();
+		p=$("#mostrado_"+i.toString()).val();
+		t=roundNumber(c*p,2);
+		$("#importe_"+i.toString()).val(t);
+	}
+});
+
 function ejecuta(i){
 	tipo=$("#t_cli").val();
 	if(tipo=='' || tipo=='0')tipo='1';
 	precio=$("#__p"+tipo.toString()).val();
 	$("#preca_"+i.toString()).val(precio);
 	p1=$("#__p1").val();
-	$("#pvp_"+i.toString()).val(p1);
-}
-function totalizar(i){
 	
+	p=roundNumber($("#preca_"+i.toString()).val(),2);
+	iva=$("#iva_"+i.toString()).val();
+	piva=roundNumber(p*(1+iva/100),2);
+	
+	$("#pvp_"+i.toString()).val(p1);
+	$("#mostrado_"+i.toString()).val(piva);
+}
+function valida(i){
+	alert("Este monto no puede ser modificado manualmente");
+	totalizar(i);
+}
+
+function totalizar(i){
 	c=roundNumber($("#cana_"+i.toString()).val(),2);
 	p=roundNumber($("#preca_"+i.toString()).val(),2);
 	iva=$("#iva_"+i.toString()).val();
 	piva=roundNumber(p*(1+iva/100),2);
 	$("#mostrado_"+i.toString()).val(piva);
 	t=roundNumber(c*piva,2);
-	$("#tota_"+i.toString()).val(t);	
+	b=roundNumber(c*p,2);
+	$("#tota_"+i.toString()).val(b);	
+	$("#importe_"+i.toString()).val(t);
 }
 
-function add_itpfat(){
+function add_itpfac(){
 	var htm = <?=$campos ?>;
-	can = itpfat_cont.toString();
-	con = (itpfat_cont+1).toString();
+	can = itpfac_cont.toString();
+	con = (itpfac_cont+1).toString();
 	htm = htm.replace(/<#i#>/g,can);
 	htm = htm.replace(/<#o#>/g,con);
 	$("#__UTPL__").before(htm);
 	$("#cana_"+can).numeric(".");
-	itpfat_cont=itpfat_cont+1;
+	itpfac_cont=itpfac_cont+1;
 }
 
 $(function(){
 	$(".inputnum").numeric(".");
 });
 					
-function del_itpfat(id){
+function del_itpfac(id){
 	id = id.toString();
-	$('#tr_itpfat_'+id).remove();
+	$('#tr_itpfac_'+id).remove();
 }
 </script>
+	<?php }else{?>
+<!--		<script language="javascript" type="text/javascript">-->
+<!--			ver=$("#importe_0").val();-->
+<!--			alert(ver);-->
+<!--		</script>-->
 	<?php } ?>
 
 <table align='center' width="80%">
@@ -123,9 +151,6 @@ function del_itpfat(id){
 			</tr>
 			<?php }?>
 
-
-
-
 		</table>
 		</td>
 	</tr>
@@ -139,8 +164,7 @@ function del_itpfat(id){
 				<td class="littletableheader">C&oacute;digo</td>
 				<td class="littletableheader">Descripci&oacute;n</td>
 				<td class="littletableheader">Cantidad</td>
-				<td class="littletableheader">Base</td>
-				<td class="littletableheader">Precio</td>				
+				<td class="littletableheader">Precio</td>
 				<td class="littletableheader">Importe</td>
 
 
@@ -148,36 +172,37 @@ function del_itpfat(id){
 				<!--				<td class="littletableheader">&nbsp;</td>-->
 				<?php } ?>
 			</tr>
-			<?php for($i=0;$i<$form->max_rel_count['itpfat'];$i++) {
+			<?php for($i=0;$i<$form->max_rel_count['itpfac'];$i++) {
 				$obj1="codigoa_$i";
 				$obj2="desca_$i";
 				$obj3="cana_$i";
 				$obj4="preca_$i";
-				$obj6="mostrado_$i";
-				$obj9="importe_$i";
-				$obj5="tota_$i";
-				$obj7="iva_$i";
-				$obj8="ultimo_$i";
-				$obj10="precio1_$i";
-
+				$obj6="tota_$i";
+				$obj5="mostrado_$i";
+				$obj7="importe_$i";
+				$obj8="iva_$i";
+				$obj9="costo_$i";
+				$obj10="pvp_$i";
 				?>
-			<tr id='tr_itspre_<?=$i ?>'>
+			<tr id='tr_itpfac_<?=$i ?>'>
 				<td class="littletablerow"><?=$form->$obj1->output ?></td>
 				<td class="littletablerow"><?=$form->$obj2->output ?></td>
 				<td class="littletablerow" align="right"><?=$form->$obj3->output ?></td>
+				<td class="littletablerow" align="right"><?=$form->$obj5->output ?></td>
+				
+				
+				<?php if($form->_status!='show') {?>
 				<td class="littletablerow" align="right"><?=$form->$obj4->output ?></td>
 				<td class="littletablerow" align="right"><?=$form->$obj6->output ?></td>
-				<td class="littletablerow"><?=$form->$obj7->output ?></td>
-				<td class="littletablerow"><?=$form->$obj8->output ?></td>
-				<td class="littletablerow"><?=$form->$obj9->output ?></td>
-				<td class="littletablerow"><?=$form->$obj10->output ?></td>
-
-
-				<?php if($form->_status!='show') {?>
+				<td><?=$form->$obj10->output ?></td>
+				<td><?=$form->$obj8->output ?></td>
+				<td><?=$form->$obj9->output ?></td>
+				<td class="littletablerow" align="right"><input size="10" type="text" name="<?php echo $obj7?>" value="" id="<?php echo $obj7?>" onchange="valida(<?=$i?>)" /></td>
 				<td class="littletablerow"><a href=#
-					onclick='del_itspre(<?=$i ?>);return false;'>Eliminar</a></td>
-					<?php } ?>
-				
+					onclick='del_itpfac(<?=$i ?>);return false;'>Eliminar</a></td>
+					<?php }else{ ?>
+						<td class="littletablerow" align="right"><?=($form->$obj5->output*$form->$obj3->output) ?></td>
+					<?php }?>
 			</tr>
 			<?php } ?>
 
