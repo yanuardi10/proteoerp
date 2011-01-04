@@ -3,7 +3,7 @@ class Bcaj extends Controller {
 	function bcaj(){
 		parent::Controller();
 		$this->load->library('rapyd');
-		$this->guitipo=array('DE'=>'Depositos','TR'=>'Transferencia','RM'=>'Remesas');
+		$this->guitipo=array('DE'=>'Deposito','TR'=>'Transferencia','RM'=>'Remesa');
 	}
 
 	function index(){
@@ -55,15 +55,8 @@ class Bcaj extends Controller {
 	function dataedit($uriattr='paso1'){
 		$this->rapyd->load('dataform');
 
-		$script ='
-		$(function() {
-			$(".inputnum").numeric(".");
-		});';
-
 		$edit = new DataForm('finanzas/bcaj/dataedit/'.$uriattr);
 		$edit->title='Deposito en caja';
-		$edit->script($script, 'create');
-		$edit->script($script, 'modify');
 
 		$edit->back_url = site_url('finanzas/bcaj/index');
 
@@ -90,8 +83,8 @@ class Bcaj extends Controller {
 
 		$this->rapyd->jquery[]='$(".inputnum").numeric(".");';
 		$data['content'] = $salida;
-		$data['title']   = '<h1>Deposito,transferencias y remesas</h1>';
-		$data['head']    = $this->rapyd->get_head();
+		$data['title']   = '<h1>Depositos,transferencias y remesas</h1>';
+		$data['head']    = $this->rapyd->get_head().phpscript('nformat.js');
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -113,17 +106,74 @@ class Bcaj extends Controller {
 
 		$desca='CONCAT_WS(\'-\',codbanc,banco) AS desca';
 		if($tipo=='DE'){  //Depositos
-			$edit->envia->options("SELECT  codbanc,$desca FROM banc WHERE tbanco='CAJ'");
 
-			$edit->recibe->options("SELECT codbanc,$desca FROM banc WHERE tbanco<>'CAJ'");
+			$sql='SELECT TRIM(a.codbanc) AS codbanc,b.comitc, b.comitd, b.impuesto FROM banc AS a JOIN tban AS b ON a.tbanco=b.cod_banc AND b.cod_banc<>\'CAJ\'';
+			$query = $this->db->query($sql);
+			$comis=array();
+			if ($query->num_rows() > 0){
+				foreach ($query->result() as $row){
+					$ind='_'.$row->codbanc;
+					$comis[$ind]['comitc']  =$row->comitc;
+					$comis[$ind]['comitd']  =$row->comitd;
+					$comis[$ind]['impuesto']=$row->impuesto;
+				}
+			}
+			$json_comis=json_encode($comis);
+			$script='
+				comis=eval('.$json_comis.');
+				function calcomis(){
+					if($("#recibe").val().length>0){
+						tasa='.$this->datasis->traevalor('tasa').';
+						banco="_"+$("#recibe").val();
+						eval("td=comis."+banco+".comitd;"  );
+						eval("tc=comis."+banco+".comitc;"  );
+						eval("im=comis."+banco+".impuesto;");
+
+						if($("#tarjeta").val().length>0)  tarjeta=parseFloat($("#tarjeta").val());   else tarjeta =0;
+						if($("#tdebito").val().length>0)  tdebito =parseFloat($("#tdebito").val());  else tdebito =0;
+						if($("#efectivo").val().length>0) efectivo=parseFloat($("#efectivo").val()); else efectivo=0;
+						if($("#cheques").val().length>0)  cheques =parseFloat($("#cheques").val());  else cheques =0;
+
+						islr    =tarjeta*10/(100+tasa);
+						islr    =islr*(im/10);
+						comision=tarjeta*(tc/100)+tdebito*(td/100);
+						monto   =tarjeta+tdebito+efectivo+cheques-comision-islr;
+
+						$("#monto").val(roundNumber(monto,2));
+						$("#comision").val(roundNumber(comision,2));
+						$("#islr").val(roundNumber(islr,2));
+					}
+				}
+
+				function totaliza(){
+					if($("#tarjeta").val().length>0)  tarjeta =parseFloat($("#tarjeta").val());  else tarjeta =0;
+					if($("#tdebito").val().length>0)  tdebito =parseFloat($("#tdebito").val());  else tdebito =0;
+					if($("#efectivo").val().length>0) efectivo=parseFloat($("#efectivo").val()); else efectivo=0;
+					if($("#cheques").val().length>0)  cheques =parseFloat($("#cheques").val());  else cheques =0;
+					if($("#comision").val().length>0) comision=parseFloat($("#comision").val()); else comision=0;
+					if($("#islr").val().length>0)     islr    =parseFloat($("#islr").val());     else     islr=0;
+					monto   =tarjeta+tdebito+efectivo+cheques-comision-islr;
+					$("#monto").val(roundNumber(monto,2));
+				}';
+
+			$this->rapyd->jquery[]='$("#tarjeta,#tdebito,#cheques,#efectivo").bind("keyup",function() { calcomis(); });';
+			$this->rapyd->jquery[]='$("#comision,#islr").bind("keyup",function() { totaliza(); });';
+			$this->rapyd->jquery[]='$("#recibe").change(function() { calcomis(); });';
+			$edit->script($script);
+
+			$edit->envia->options( "SELECT TRIM(codbanc) AS codbanc,$desca FROM banc WHERE tbanco='CAJ'");
+
+			$edit->recibe->options("SELECT TRIM(codbanc) AS codbanc,$desca FROM banc WHERE tbanco<>'CAJ'");
 			$edit->recibe->rule='callback_chtr|required';
 
-			$campos=array(	'tarjeta' =>'T.Cr&eacute;dito',
-					'tdebito' =>'T.Debito',
+			$campos=array(
+					'tarjeta' =>'Tarjeta de Cr&eacute;dito',
+					'tdebito' =>'Tarjeta de D&eacute;bito',
+					'comision'=>'Comisi&oacute;n',
 					'cheques' =>'Cheques',
 					'efectivo'=>'Efectivo',
-					'comision'=>'Comision',
-					'islr'    =>'I.S.L.R');
+					'islr'    =>'I.S.L.R.',
+					'monto'   =>'Monto total');
 			foreach($campos AS $obj=>$titulo){
 				$edit->$obj = new inputField($titulo, $obj);
 				$edit->$obj->css_class='inputnum';
@@ -131,7 +181,9 @@ class Bcaj extends Controller {
 				$edit->$obj->maxlength =15;
 				$edit->$obj->size = 20;
 				$edit->$obj->group = 'Montos';
+				$edit->$obj->autocomplete=false;
 			}
+			$edit->$obj->readonly=true;
 
 		}elseif($tipo=='TR'){ //Transferencias
 			$link  = site_url('finanzas/bcaj/get_trrecibe');
@@ -164,6 +216,7 @@ class Bcaj extends Controller {
 			$edit->monto->rule='trim|numeric|required';
 			$edit->monto->maxlength =15;
 			$edit->monto->size = 20;
+			$edit->monto->autocomplete=false;
 
 		}elseif($tipo=='RM'){ //Remesas
 			$edit->recibe->options("SELECT codbanc,$desca FROM banc WHERE tbanco<>'CAJ'");
@@ -176,6 +229,7 @@ class Bcaj extends Controller {
 			$edit->monto->rule='trim|numeric|required';
 			$edit->monto->maxlength =15;
 			$edit->monto->size = 20;
+			$edit->monto->autocomplete=false;
 		}
 
 		$edit->envia->rule   = 'required';
@@ -190,16 +244,95 @@ class Bcaj extends Controller {
 		$edit->submit('btnsubmit','Guardar');
 		$edit->build_form();
 
+		//**********************
+		//  Guarda el efecto
+		//**********************
 		if ($edit->on_success()){
-			//aqui es donde se deberia guardar el efecto
-			
-			
-			
-			
-			
-			
+			$numero = $this->datasis->fprox_numero('nbcaj');
+			$transac= $this->datasis->fprox_numero('transac');
+			$fecha  = human_to_dbdate($this->input->post('fecha'));
+			$monto  = $edit->tarjeta->newValue+ $edit->tdebito->newValue+$edit->cheques->newValue-$edit->comision->newValue-$edit->islr->newValue;
+
+			$data=array(
+				'tipo'    => $this->input->post('tipo'),
+				'fecha'   => $fecha,
+				'numero'  => $numero,
+				'transac' => $transac,
+				'usuario' => $this->session->userdata('usuario'),
+				'envia'   => $edit->envia->newValue,
+				'recibe'  => $edit->recibe->newValue,
+				'tarjeta' => $edit->tarjeta->newValue,
+				'tdebito' => $edit->tdebito->newValue,
+				'cheques' => $edit->cheques->newValue,
+				'efectivo'=> $edit->efectivo->newValue,
+				'comision'=> $edit->comision->newValue,
+				'islr'    => $edit->islr->newValue,
+				'monto'   => $monto,
+			);
+			$sql = $this->db->insert_string('bcaj', $data);
+			echo $sql;
+
+			/*$mSQL="CALL sp_actusal('$edit->envia->newValue','$fecha',-$monto)";
+			$ban=$this->db->simple_query($mSQL);
+			if($ban==false) memowrite($mSQL,'rcaj');
+
+			$mSQL="CALL sp_actusal('$edit->recibe->newValue','$fecha',$monto)";
+			$ban=$this->db->simple_query($mSQL);
+			if($ban==false) memowrite($mSQL,'rcaj');*/
+
 		}
 		return $edit->output;
+	}
+
+
+	//Transferencia entre cajas
+	function tranferencaj(){
+		$this->rapyd->load('dataform');
+		$desca='CONCAT_WS(\'-\',codbanc,banco) AS desca';
+
+		$edit = new DataForm('finanzas/bcaj/tranferencaj/process');
+		$edit->title='Transferencia entre cajas';
+
+		$edit->back_url = site_url('finanzas/bcaj/index');
+
+		$edit->fecha = new DateonlyField('Fecha', 'fecha','d/m/Y');
+		$edit->fecha->insertValue = date('Y-m-d');
+		$edit->fecha->rule = 'chfecha|required';
+		$edit->fecha->size=10;
+
+		$edit->envia = new dropdownField('Envia','envia');
+		$edit->envia->option('','Seleccionar');
+		$edit->envia->options("SELECT  codbanc,$desca FROM banc WHERE tbanco='CAJ'");
+		$edit->envia->style = 'width:180px';
+		$edit->envia->rule  = 'chfecha|required';
+
+		$edit->recibe = new dropdownField('Recibe','recibe');
+		$edit->recibe->option('','Seleccionar');
+		$edit->recibe->options("SELECT  codbanc,$desca FROM banc WHERE tbanco='CAJ'");
+		$edit->recibe->style = 'width:180px';
+		$edit->recibe->rule  = 'required';
+
+		$edit->monto = new inputField('Monto', 'monto');
+		$edit->monto->css_class='inputnum';
+		$edit->monto->rule='trim|numeric|required';
+		$edit->monto->maxlength =15;
+		$edit->monto->size = 20;
+		$edit->monto->autocomplete=false;
+
+		$edit->submit('btnsubmit','Guardar');
+		$edit->build_form();
+		$salida=$edit->output;
+
+		if ($edit->on_success()){
+			echo 'pase';
+		}
+
+		$this->rapyd->jquery[]='$(".inputnum").numeric(".");';
+		$data['content'] = $salida;
+		$data['title']   = '<h1>Transferencias entre cajas</h1>';
+		$data['head']    = $this->rapyd->get_head().phpscript('nformat.js');
+		$this->load->view('view_ventanas', $data);
+		
 	}
 
 	function get_trrecibe(){

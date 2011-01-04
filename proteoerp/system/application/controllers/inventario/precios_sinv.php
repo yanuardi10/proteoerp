@@ -4,7 +4,7 @@ class precios_sinv extends validaciones{
 	function precios_sinv(){
 		parent::Controller();
 		$this->load->library('rapyd');
-		$this->datasis->modulo_id(309,1);
+		$this->datasis->modulo_id('301',1);
 	}
 
 	function index(){
