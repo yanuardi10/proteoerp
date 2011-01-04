@@ -50,7 +50,9 @@ class conec extends Controller {
 		$uri = anchor('supervisor/conec/dataedit/show/<#idc#>','<#cliente#>');
 		$uri2 = anchor('supervisor/tiket/traertiket/<#cliente#>','Traer Ticket');
 
-		$grid = new DataGrid('Lista de Conexi&oacute;n con clientes');
+		$ticket = anchor('supervisor/tiket/traertiket/','Traer Todos los Ticket');
+		
+		$grid = new DataGrid('Lista de Conexi&oacute;n con clientes --> '.$ticket);
 		$grid->order_by('a.cliente','asc');
 		$grid->per_page = 20;
 
