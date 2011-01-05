@@ -7764,7 +7764,7 @@ class Libros extends Controller {
 					tipo  = 'CR',
 					fuente =  'MC',
 					sucursal = '99', 
-					fecha = '".$row->emiriva."',
+					fecha = ".$row->emiriva.",
 					numero ='',  
 					clipro ='".$row->cod_cli."', 
 					nombre ='".$row->nombre."',  
@@ -7786,7 +7786,7 @@ class Libros extends Controller {
 					stotal = 0, 
 					reiva = '".$row->reteiva."', 
 					comprobante = '$row->nroriva',
-					fecharece = '".$row->recriva."',
+					fecharece = ".$row->recriva.",
 					fechal = ".$mes."01 "; 
 			
 			$flag=$this->db->simple_query($mSQL);    
