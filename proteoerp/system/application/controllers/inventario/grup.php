@@ -4,8 +4,8 @@ class Grup extends validaciones {
 
 	function grup(){
 		parent::Controller();
-		$this->load->library("rapyd");
-		$this->datasis->modulo_id(304,1);
+		$this->load->library('rapyd');
+		$this->datasis->modulo_id(305,1);
 	}
 
 	function index(){
@@ -320,8 +320,7 @@ class Grup extends validaciones {
 	function instala(){
 		$mSQL="ALTER TABLE `grup`  
 				ADD COLUMN `margen` DECIMAL(10,2) NOT NULL DEFAULT '0.00' AFTER `comision`,
-				ADD COLUMN `margenc` DECIMAL(10,2) NOT NULL DEFAULT '0.00' AFTER `margen`
-		";
+				ADD COLUMN `margenc` DECIMAL(10,2) NOT NULL DEFAULT '0.00' AFTER `margen`";
 		$this->db->simple_query($mSQL);
 
 	}
