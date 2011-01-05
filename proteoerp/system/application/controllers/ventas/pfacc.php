@@ -99,6 +99,7 @@ class pfacc extends validaciones {
 			,'precio4'=>'__p4'
 			,'iva'=>'iva_<#i#>'
 			,'ultimo'=>'costo_<#i#>'
+			,'tdecimal'=>'tdec_<#i#>'
 			),
 			'p_uri'=>array(4=>'<#i#>'),
 			'titulo'  =>'Buscar Articulo',
@@ -223,13 +224,13 @@ class pfacc extends validaciones {
 			$edit->mostrado->rule='required';
 			$edit->mostrado->onchange="valida(<#i#>)";
 			
-//			$edit->importe = new inputField("importe <#o#>", "importe_<#i#>");
-//			$edit->importe->db_name='';
-//			$edit->importe->css_class='inputnum';
-//			$edit->importe->rel_id   ='itpfac';
-//			$edit->importe->size=7;
-//			$edit->importe->rule='required';
-//			$edit->importe->onchange="valida(<#i#>)";
+			$edit->importe = new inputField("importe <#o#>", "importe_<#i#>");
+			$edit->importe->db_name=' ';
+			$edit->importe->css_class='inputnum';
+			$edit->importe->rel_id   ='itpfac';
+			$edit->importe->size=7;
+			$edit->importe->pointer='true';
+			$edit->importe->onchange="valida(<#i#>)";
 			
 			$edit->preca = new inputField("Precio <#o#>", "preca_<#i#>");
 			$edit->preca->db_name='preca';
@@ -305,8 +306,10 @@ class pfacc extends validaciones {
 
 	function _pre_insert($do){
 		$numero=$this->datasis->fprox_numero('npfac');
+		$trans=$this->datasis->fprox_numero('ntransa');
 		$do->set('numero',$numero);
 		$do->pk['numero'] = $numero; //Necesario cuando la clave primara se calcula por secuencia
+		$do->set('transac',$trans);
 		$datos=$do->get_all();
 		$ivat=0;$subt=0;$total=0;
 	
@@ -315,7 +318,7 @@ class pfacc extends validaciones {
 			$p=$rel['mostrado'];
 			$total+=$c*$p;
 			$subt+=$rel['preca']*$rel['cana'];
-			//			echo 'importe=>'.$rel['totaorg'].'    preca=>'.$rel['preca'].'    cana=>'.$rel['cana'].'   iva=>'.$rel['iva'].'<br>';
+			//echo 'importe=>'.$rel['totaorg'].'    preca=>'.$rel['preca'].'    cana=>'.$rel['cana'].'   iva=>'.$rel['iva'].'<br>';
 		}
 		$ivat=$total-$subt;
 		
