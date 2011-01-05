@@ -119,7 +119,7 @@ class tiketc extends Controller {
 		
 		$ticket = anchor('supervisor/tiket/traertiket/','Traer Todos los Ticket');
 		$iticket = anchor('supervisor/conec/filteredgrid/','Ver Información de Conexión');
-
+		
 		$grid = new DataGrid2('Lista de Control de Tiket -->'.$ticket.' --> '.$iticket);
 		$grid->order_by("a.id","desc");
 		$grid->per_page = 10;
@@ -149,7 +149,6 @@ class tiketc extends Controller {
 		//$grid->add("supervisor/tiketc/dataedit/create");
 		$grid->build();
 		//echo $grid->db->last_query();
-
 		$script='';
 		$url=site_url('supervisor/tiketc/activar');
 		$data['script']='<script type="text/javascript">

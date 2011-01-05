@@ -641,7 +641,7 @@ class Mantenimiento extends Controller{
 
 				if($ver>0){
 					if($ver>$aver){
-						$data['content'] = 'Actualizado de la version  a la version: '.$ver;
+						$data['content'] = 'Actualizado a la versi&oacute;n: '.$ver;
 					}else{
 						$data['content'] = 'Ya estaba la ultima versi&oacute;n instalada '.$arr['revision'];
 					}
