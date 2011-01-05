@@ -380,13 +380,15 @@ class Bcaj extends Controller {
 				'monto'   => $monto,
 			);
 			$sql = $this->db->insert_string('bcaj', $data);
-			echo $sql."\n";
+			$ban=$this->db->simple_query($sql);
+			if($ban==false) memowrite($sql,'bcaj');
+			//echo $sql."\n";
 
 			//Crea el egreso en el banco
 			$mSQL='CALL sp_actusal('.$this->db->escape($edit->envia->newValue).",'$fecha',-$monto)";
-			echo $mSQL."\n";
-			//$ban=$this->db->simple_query($mSQL);
-			//if($ban==false) memowrite($mSQL,'bcaj');
+			$ban=$this->db->simple_query($mSQL);
+			if($ban==false) memowrite($mSQL,'bcaj');
+			//echo $mSQL."\n";
 
 			$data=array();
 			$data['codbanc']  = $edit->envia->newValue;
@@ -408,15 +410,15 @@ class Bcaj extends Controller {
 			$data['hora']     = date('h:i:s');
 			$data['benefi']   = '-';
 			$sql = $this->db->insert_string('bcaj', $data);
-			echo $sql."\n";
-			//$ban=$this->db->simple_query($sql);
-			//if($ban==false) memowrite($sql,'bcaj');
+			$ban=$this->db->simple_query($sql);
+			if($ban==false) memowrite($sql,'bcaj');
+			//echo $sql."\n";
 
 			//Crea el ingreso la otra caja
 			$mSQL='CALL sp_actusal('.$this->db->escape($edit->recibe->newValue).",'$fecha',$monto)";
-			echo $mSQL."\n";
-			//$ban=$this->db->simple_query($mSQL);
-			//if($ban==false) memowrite($mSQL,'bcaj');
+			$ban=$this->db->simple_query($mSQL);
+			if($ban==false) memowrite($mSQL,'bcaj');
+			//echo $mSQL."\n";
 
 			$data=array();
 			$data['codbanc']  = $edit->recibe->newValue;
@@ -438,9 +440,10 @@ class Bcaj extends Controller {
 			$data['hora']     = date('h:i:s');
 			$data['benefi']   = '-';
 			$sql = $this->db->insert_string('bcaj', $data);
-			echo $sql."\n";
-			//$ban=$this->db->simple_query($sql);
-			//if($ban==false) memowrite($sql,'bcaj');
+			$ban=$this->db->simple_query($sql);
+			if($ban==false) memowrite($sql,'bcaj');
+			//echo $sql."\n";
+			redirect('/finanzas/bcaj/listo');
 		}
 
 		$this->rapyd->jquery[]='$(".inputnum").numeric(".");';
@@ -448,7 +451,13 @@ class Bcaj extends Controller {
 		$data['title']   = '<h1>Transferencias entre cajas</h1>';
 		$data['head']    = $this->rapyd->get_head().phpscript('nformat.js');
 		$this->load->view('view_ventanas', $data);
-		
+	}
+
+	function listo(){
+		$data['content'] = 'Movimiento agregado';
+		$data['title']   = '<h1>Transferencias entre cajas</h1>';
+		$data['head']    = $this->rapyd->get_head().phpscript('nformat.js');
+		$this->load->view('view_ventanas', $data);
 	}
 
 	function get_trrecibe(){
