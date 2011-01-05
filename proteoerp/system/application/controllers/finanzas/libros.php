@@ -7786,7 +7786,7 @@ class Libros extends Controller {
 					stotal = 0, 
 					reiva = '".$row->reteiva."', 
 					comprobante = '$row->nroriva',
-					fecharece = '$row->recriva',
+					fecharece = '".$row->recriva."',
 					fechal = ".$mes."01 "; 
 			
 			$flag=$this->db->simple_query($mSQL);    
