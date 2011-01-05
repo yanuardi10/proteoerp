@@ -7481,7 +7481,7 @@ class Libros extends Controller {
 				'FA' AS fuente,
 				'00' AS sucursal, 
 				a.fecha, 
-				IF(LENGTH(a.nfiscal)>0,a.nfiscal,a.numero) AS numero,
+				a.numero AS numero,
 				' ' AS numhasta, 
 				' ' AS caja, 
 				a.nfiscal, 
