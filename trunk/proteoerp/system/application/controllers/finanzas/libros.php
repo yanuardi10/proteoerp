@@ -7747,7 +7747,7 @@ class Libros extends Controller {
 				WHERE  b.fecha<=$fhasta AND b.cod_cli='REIVA' 
 					AND a.reteiva>0 AND b.monto>b.abonos 
 					AND a.fecha<$fhasta 
-				GROUP BY a.nroriva
+				GROUP BY a.nroriva,a.cod_cli
 				UNION 
 				SELECT b.fecha, a.numero, 'OJO LLENE DATOS', 'OJO', '',
 					'' AS afecta, 0 AS fafecta, b.monto-b.abonos, a.transac, a.numero, a.fecha, a.fecha 
@@ -7764,7 +7764,7 @@ class Libros extends Controller {
 					tipo  = 'CR',
 					fuente =  'MC',
 					sucursal = '99', 
-					fecha = ".$row->emiriva.",
+					fecha = '".$row->emiriva."',
 					numero ='',  
 					clipro ='".$row->cod_cli."', 
 					nombre ='".$row->nombre."',  
@@ -7786,7 +7786,7 @@ class Libros extends Controller {
 					stotal = 0, 
 					reiva = '".$row->reteiva."', 
 					comprobante = '$row->nroriva',
-					fecharece = ".$row->recriva.",
+					fecharece = '".$row->recriva."',
 					fechal = ".$mes."01 "; 
 			
 			$flag=$this->db->simple_query($mSQL);    
