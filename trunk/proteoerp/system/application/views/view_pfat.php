@@ -13,7 +13,7 @@ foreach($form->detail_fields['itpfac'] AS $ind=>$data)
 $campos[]=$data['field'];
 
 $campos='<tr id="tr_itpfac_<#i#>"><td class="littletablerow">'.join('</td><td>',$campos).'</td>
-<td class="littletablerow" align="right"><input size="10" type="text" name="importe_<#i#>" value="" id="importe_<#i#>" onchange="valida(<#i#>)"/></td>';
+<td><input type="hidden" name="tdec_<#i#>" value="" id="tdec_<#i#>" "/></td>';
 
 $campos=str_replace("\n",'',$campos);
 $campos.=' <td class="littletablerow"><a href=# onclick="del_itpfac(<#i#>);return false;">Eliminar</a></td></tr>';
@@ -24,20 +24,17 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 echo $form_begin;
 if($form->_status!='show'){
 	?>
-<input type="hidden" name="__p1"
-	id="__p1" value="">
-<input type="hidden" name="__p2"
-	id="__p2" value="">
-<input type="hidden" name="__p3"
-	id="__p3" value="">
-<input type="hidden" name="__p4"
-	id="__p4" value="">
-<input type="hidden"
-	name="t_cli" id="t_cli" value="">
+<input type="hidden" name="__p1" id="__p1" value="">
+<input type="hidden" name="__p2" id="__p2" value="">
+<input type="hidden" name="__p3" id="__p3" value="">
+<input type="hidden" name="__p4" id="__p4" value="">
+<input type="hidden" name="t_cli"
+	id="t_cli" value="">
 
 
 <script language="javascript" type="text/javascript">
 itpfac_cont=<?=$form->max_rel_count['itpfac']?>;
+
 $(document).ready(function() {
 	//alert(itpfac_cont);
 	for(i=0;i<itpfac_cont;i++){
@@ -50,7 +47,9 @@ $(document).ready(function() {
 
 function ejecuta(i){
 	tipo=$("#t_cli").val();
+	tdec=$("#tdec_"+i.toString()).val();
 	if(tipo=='' || tipo=='0')tipo='1';
+	if(tdec=="") $("#tdec_"+i.toString()).val('N');
 	precio=$("#__p"+tipo.toString()).val();
 	$("#preca_"+i.toString()).val(precio);
 	p1=$("#__p1").val();
@@ -68,7 +67,14 @@ function valida(i){
 }
 
 function totalizar(i){
-	c=roundNumber($("#cana_"+i.toString()).val(),2);
+	dec=$("#tdec_"+i.toString()).val();
+	nd=2;
+	c=0;
+//	alert(dec);
+	if(dec == 'N'){
+		nd=0;
+	}
+	c=roundNumber($("#cana_"+i.toString()).val(),nd);
 	p=roundNumber($("#preca_"+i.toString()).val(),2);
 	iva=$("#iva_"+i.toString()).val();
 	piva=roundNumber(p*(1+iva/100),2);
@@ -77,6 +83,7 @@ function totalizar(i){
 	b=roundNumber(c*p,2);
 	$("#tota_"+i.toString()).val(b);	
 	$("#importe_"+i.toString()).val(t);
+	$("#cana_"+i.toString()).val(c);
 }
 
 function add_itpfac(){
@@ -183,26 +190,28 @@ function del_itpfac(id){
 				$obj8="iva_$i";
 				$obj9="costo_$i";
 				$obj10="pvp_$i";
+				$obj11="tdec_$i";
 				?>
 			<tr id='tr_itpfac_<?=$i ?>'>
 				<td class="littletablerow"><?=$form->$obj1->output ?></td>
 				<td class="littletablerow"><?=$form->$obj2->output ?></td>
 				<td class="littletablerow" align="right"><?=$form->$obj3->output ?></td>
 				<td class="littletablerow" align="right"><?=$form->$obj5->output ?></td>
-				
-				
+
+
 				<?php if($form->_status!='show') {?>
+				<td class="littletablerow" align="right"><?=$form->$obj7->output ?></td>
 				<td class="littletablerow" align="right"><?=$form->$obj4->output ?></td>
 				<td class="littletablerow" align="right"><?=$form->$obj6->output ?></td>
 				<td><?=$form->$obj10->output ?></td>
 				<td><?=$form->$obj8->output ?></td>
 				<td><?=$form->$obj9->output ?></td>
-				<td class="littletablerow" align="right"><input size="10" type="text" name="<?php echo $obj7?>" value="" id="<?php echo $obj7?>" onchange="valida(<?=$i?>)" /></td>
+				<td><input type="hidden" name="<?=$obj11 ?>" id="<?=$obj11 ?>" /></td>
 				<td class="littletablerow"><a href=#
 					onclick='del_itpfac(<?=$i ?>);return false;'>Eliminar</a></td>
 					<?php }else{ ?>
-						<td class="littletablerow" align="right"><?=($form->$obj5->output*$form->$obj3->output) ?></td>
-					<?php }?>
+				<td class="littletablerow" align="right"><?=($form->$obj5->output*$form->$obj3->output) ?></td>
+				<?php }?>
 			</tr>
 			<?php } ?>
 
