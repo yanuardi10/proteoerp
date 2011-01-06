@@ -299,7 +299,7 @@ class pfacc extends validaciones {
 
 			$conten["form"]  =&  $edit;
 			$data['content'] = $this->load->view('view_pfat', $conten,true);
-			$data['title']   = "<h1>Presupuesto</h1>";
+			$data['title']   = "<h1>Pedidos De Cliente</h1>";
 			$data["head"]    = script('jquery.js').script('jquery-ui.js').script("plugins/jquery.numeric.pack.js").script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css').$this->rapyd->get_head().phpscript('nformat.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js');
 			$this->load->view('view_ventanas', $data);
 	}
