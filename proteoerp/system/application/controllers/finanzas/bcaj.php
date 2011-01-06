@@ -10,8 +10,8 @@ class Bcaj extends Controller {
 	function index(){
 		$this->rapyd->load('datafilter','datagrid');
 
-		$filter = new DataFilter('Filtro de cheques');
-		$select=array('fecha','numero','nombre','CONCAT_WS(\'-\',banco ,numcuent) AS banco','tipo_op','codbanc','LEFT(concepto,20)AS concepto','anulado');
+		$filter = new DataFilter('Filtro');
+		$select=array('fecha','numero','nombre','monto','CONCAT_WS(\'-\',banco ,numcuent) AS banco','tipo_op','codbanc','LEFT(concepto,20)AS concepto','anulado');
 		$filter->db->select($select);
 		$filter->db->from('bmov');
 		$filter->db->where('tipo_op','CH');
@@ -35,7 +35,7 @@ class Bcaj extends Controller {
 
 		$uri = anchor('finanzas/bmov/dataedit/show/<#codbanc#>/<#tipo_op#>/<#numero#>','<#numero#>');
 
-		$grid = new DataGrid('Lista de cheques');
+		$grid = new DataGrid('Lista');
 		$grid->order_by('numero','desc');
 		$grid->per_page = 15;
 
@@ -45,10 +45,12 @@ class Bcaj extends Controller {
 		$grid->column('Monto'        ,'<nformat><#monto#></nformat>' ,'align=right');
 		$grid->column('Concepto'     ,'concepto');
 		$grid->column('Anulado'      ,'anulado','align=center');
+
+		$grid->add('finanzas/bcaj/autotranfer');
 		$grid->build();
 
 		$data['content'] = $filter->output.$grid->output;
-		$data['title']   = '<h1>Cheques</h1>';
+		$data['title']   = '<h1>Movimientos de Caja</h1>';
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
@@ -554,9 +556,9 @@ class Bcaj extends Controller {
 	}
 
 	function listo(){
-		$data['content'] = 'Movimiento agregado';
+		$data['content'] = 'Movimiento agregado '.anchor('finanzas/bcaj/index','Regresar');
 		$data['title']   = '<h1>Transferencias entre cajas</h1>';
-		$data['head']    = $this->rapyd->get_head().phpscript('nformat.js');
+		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 

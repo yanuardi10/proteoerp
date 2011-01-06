@@ -646,7 +646,7 @@ class Mantenimiento extends Controller{
 						$data['content'] = 'Ya estaba la ultima versi&oacute;n instalada '.$arr['revision'];
 					}
 				}else{
-					$data['content'] = 'Hubo problemas con la actualizaci&oacute;n,, comuniquese con soporte t&eacute;cnico';
+					$data['content'] = 'Hubo problemas con la actualizaci&oacute;n, comuniquese con soporte t&eacute;cnico';
 				}
 			}
 		}
