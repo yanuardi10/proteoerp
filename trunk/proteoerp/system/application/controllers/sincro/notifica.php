@@ -1,4 +1,8 @@
 <?php
+// Es necesario para que funciona las siguiesnte slibrerias de pear
+// pear install Mail
+// pear install Net_SMTP
+
 class notifica extends controller {
 
 	function notifica(){
