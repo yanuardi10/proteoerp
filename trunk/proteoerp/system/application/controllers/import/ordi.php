@@ -52,12 +52,12 @@ class Ordi extends Controller {
 		$grid->column_orderby('Monto Fact.'  ,'montofac','montofac');
 		$grid->column_orderby('Monto total'  ,'montotot','montotot');
 
-		$grid->add('import/ordi/dataedit/create');
+		$grid->add('import/ordi/dataedit/create','Agregar orden');
 		$grid->build();
 		//echo $grid->db->last_query();
 
 		$data['content'] = $filter->output.$grid->output;
-		$data['title']   = '<h1>Ordi</h1>';
+		$data['title']   = '<h1>Orden de importaci&oacute;n</h1>';
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
@@ -69,7 +69,7 @@ class Ordi extends Controller {
 			'columnas'=>array(
 				'codigo' =>'C&oacute;digo',
 				'descrip'=>'Descripci&oacute;n'),
-			'filtro'  =>array('codigo' =>'C&oacutedigo','descrip'=>'descrip'),
+			'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'descrip'),
 			'retornar'=>array('codigo'=>'codigo_<#i#>','descrip'=>'descrip_<#i#>'),
 			'p_uri'=>array(4=>'<#i#>'),
 			'titulo'  =>'Buscar Producto en inventario');
@@ -126,17 +126,17 @@ class Ordi extends Controller {
 		$edit->fecha = new  dateonlyField('Fecha','fecha');
 		$edit->fecha->insertValue = date('Y-m-d');
 		$edit->fecha->maxlength=8;
-		$edit->fecha->size =12;
+		$edit->fecha->size =10;
 
 		$edit->status = new dropdownField('Estatus', 'status');
 		$edit->status->option('A','Abierto');
 		$edit->status->option('C','Cerrado');
 		$edit->status->option('E','Eliminado');
-		$edit->status->rule = 'required';
-		$edit->status->style  = 'width:120px';
+		$edit->status->rule  = 'required';
+		$edit->status->style = 'width:120px';
 
 		$edit->proveed = new inputField('Proveedor', 'proveed');
-		$edit->proveed->rule     ='trim';
+		$edit->proveed->rule     ='trim|required';
 		$edit->proveed->maxlength=5;
 		$edit->proveed->size     =7;
 		$edit->proveed->append($boton);
@@ -168,12 +168,12 @@ class Ordi extends Controller {
 			$edit->$obj->css_class= 'inputnum';
 		}
 
-		$edit->arribo = new dateonlyField('Arribo', 'arribo');
-		$edit->arribo->rule     ='trim';
+		$edit->arribo = new dateonlyField('Fecha de Llegada', 'arribo');
+		$edit->arribo->rule     ='chfecha';
 		$edit->arribo->maxlength=8;
-		$edit->arribo->size     =12;
+		$edit->arribo->size     =10;
 
-		$edit->factura = new inputField('Factura', 'factura');
+		$edit->factura = new inputField('Nro. Factura', 'factura');
 		$edit->factura->rule     ='trim';
 		$edit->factura->maxlength=20;
 		$edit->factura->size     =20;
@@ -181,14 +181,14 @@ class Ordi extends Controller {
 		$edit->cambioofi = new inputField('Cambio Oficial', 'cambioofi');
 		$edit->cambioofi->css_class= 'inputnum';
 		$edit->cambioofi->rule     ='trim';
-		$edit->cambioofi->maxlength=5;
-		$edit->cambioofi->size     =7;
+		$edit->cambioofi->maxlength=17;
+		$edit->cambioofi->size     =10;
 
-		$edit->cambioreal = new inputField('Cambio real', 'cambioreal');
+		$edit->cambioreal = new inputField('Cambio Real', 'cambioreal');
 		$edit->cambioreal->css_class= 'inputnum';
 		$edit->cambioreal->rule     ='trim';
 		$edit->cambioreal->maxlength=17;
-		$edit->cambioreal->size     =17;
+		$edit->cambioreal->size     =10;
 
 		$edit->peso = new inputField('Peso Total', 'peso');
 		$edit->peso->css_class= 'inputnum';
@@ -196,9 +196,10 @@ class Ordi extends Controller {
 		$edit->peso->maxlength=12;
 		$edit->peso->size     =12;
 
-		$edit->condicion = new inputField('Condici&oacute;n', 'condicion');
-		$edit->condicion->rule     ='trim';
-		$edit->condicion->size     =40;
+		$edit->condicion = new textareaField('Condici&oacute;n', 'condicion');
+		$edit->condicion->rule ='trim';
+		$edit->condicion->cols = 35;
+		$edit->condicion->rows = 2;  
 
 		//comienza el detalle
 		$edit->codigo = new inputField('C&oacute;digo <#o#>','codigo_<#i#>');
@@ -206,20 +207,14 @@ class Ordi extends Controller {
 		$edit->codigo->rule     = 'trim|required';
 		$edit->codigo->rel_id   = 'itordi';
 		$edit->codigo->maxlength= 15;
-		$edit->codigo->size     = 15;
+		$edit->codigo->size     = 10;
 		$edit->codigo->append($btn);
-
-		$edit->fecha = new  dateonlyField('Fecha <#o#>','fecha_<#i#>');
-		$edit->fecha->db_name     ='fecha';
-		$edit->fecha->rel_id      = 'itordi';
-		$edit->fecha->size        = 12;
-		//$edit->fecha->insertValue = date('Y-m-d');
 
 		$edit->descrip = new inputField('Descripci&oacute;n <#o#>','descrip_<#i#>');
 		$edit->descrip->db_name  ='descrip';
 		$edit->descrip->rel_id   ='itordi';
 		$edit->descrip->maxlength=35;
-		$edit->descrip->size     =35;
+		$edit->descrip->size     =20;
 
 		$edit->cantidad = new inputField('Cantidad <#o#>','cantidad_<#i#>');
 		$edit->cantidad->db_name  = 'cantidad';
@@ -227,27 +222,49 @@ class Ordi extends Controller {
 		$edit->cantidad->rel_id   = 'itordi';
 		$edit->cantidad->rule     = 'numeric';
 		$edit->cantidad->maxlength= 10;
-		$edit->cantidad->size     = 10;
+		$edit->cantidad->size     = 7;
 
-		$arr=array('costofob','importefob','gastosi','costocif','importecif','montoaran','gastosn','costofinal','importefinal','montoiva','ultimo');
-		foreach($arr as $obj){
+		$arr=array(
+			'costofob'    =>'costofob'    ,
+			'importefob'  =>'importefob'  ,
+			//'relgastosi'  =>'gastosi'     ,
+			//'costocif'    =>'costocif'    ,
+			//'importecif'  =>'importecif'  ,
+			'montoaran'   =>'montoaran'   ,
+			//'relgastosn'  =>'gastosn'     ,
+			//'costofinal'  =>'costofinal'  ,
+			//'importefinal'=>'importefinal',
+			//'iva'           =>'iva'    ,
+			);
+		foreach($arr as $obj=>$db){
 			$edit->$obj = new inputField(ucfirst("$obj <#o#>"), "${obj}_<#i#>");
-			$edit->$obj->db_name  = $obj;
+			$edit->$obj->db_name  = $db;
 			$edit->$obj->css_class= 'inputnum';
 			$edit->$obj->rel_id   = 'itordi';
 			$edit->$obj->rule     ='trim';
 			$edit->$obj->maxlength=20;
-			$edit->$obj->size     =20;
+			$edit->$obj->size     =10;
 		}
+
+		/*$edit->iva = new inputField('IVA <#o#>', 'iva_<#i#>');
+		$edit->iva->db_name  = 'iva';
+		$edit->iva->rel_id   = 'itordi';
+		$edit->iva->rule     ='trim';
+		$edit->iva->maxlength=7;
+		$edit->iva->size     =6;*/
 
 		$edit->codaran = new inputField('Codaran <#o#>', 'codaran_<#i#>');
 		$edit->codaran->db_name  = 'codaran';
 		$edit->codaran->rel_id   = 'itordi';
 		$edit->codaran->rule     ='trim';
 		$edit->codaran->maxlength=15;
-		$edit->codaran->size     =15;
+		$edit->codaran->size     =10;
 
-		$arr=array('arancel','participan','participao');
+		$arr=array(
+			'arancel',
+			//'participam',
+			//'participao'
+		);
 		foreach($arr as $obj){
 			$edit->$obj = new inputField(ucfirst("$obj <#o#>"), "${obj}_<#i#>");
 			$edit->$obj->db_name  = $obj;
@@ -255,10 +272,10 @@ class Ordi extends Controller {
 			$edit->$obj->rel_id   = 'itordi';
 			$edit->$obj->rule     ='trim';
 			$edit->$obj->maxlength=7;
-			$edit->$obj->size     =9;
+			$edit->$obj->size     =5;
 		}
 
-		$arr=array('precio1','precio2','precio3','precio4');
+		/*$arr=array('precio1','precio2','precio3','precio4');
 		foreach($arr as $obj){
 			$edit->$obj = new inputField(ucfirst("$obj <#o#>"), "${obj}_<#i#>");
 			$edit->$obj->db_name  = $obj;
@@ -266,25 +283,33 @@ class Ordi extends Controller {
 			$edit->$obj->rel_id   = 'itordi';
 			$edit->$obj->rule     ='trim';
 			$edit->$obj->maxlength=15;
-			$edit->$obj->size     =15;
-		}
+			$edit->$obj->size     =10;
+		}*/
 		//Termina el detalle
 
 		$edit->buttons('modify','save','undo','delete','back','add_rel');
 		$edit->build();
 
 		$this->rapyd->jquery[]='$(".inputnum").numeric(".");';
-		$data['content'] = $edit->output;
-		//$conten['form']  =&  $edit;
-		//$data['content'] = $this->load->view('view_ordi',$conten,true);
-		$data['title']   = '<h1>Ordi</h1>';
-		$data['head']    = $this->rapyd->get_head();//.script('jquery.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js');
+		//$data['content'] = $edit->output;
+		$conten['form']  =& $edit;
+		$data['content'] =  $this->load->view('view_ordi',$conten,true);
+		$data['title']   =  '<h1>Orden de importaci&oacute;n</h1>';
+		$data['head']    =  $this->rapyd->get_head().phpscript('nformat.js');//.script('jquery.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js');
 		$this->load->view('view_ventanas', $data); 
   }
   
   function _pre_insert($do){
-		$numero=$this->datasis->fprox_numero('nstra');
-		$do->set('numero',$numero);
+		$numero =$this->datasis->fprox_numero('nstra');
+		$transac=$this->datasis->fprox_numero('transac');
+		$usuario=$this->session->userdata('usuario');
+
+		$do->set('numero' ,$numero );
+		$do->set('usuario',$usuario);
+		$do->set('transac',$transac);
+		$do->set('estampa',date('ymd'));
+		$do->set('hora'   ,date('H:i:s'));
+
 		$do->pk['numero'] = $numero; //Necesario cuando la clave primara se calcula por secuencia
 		return true;
 	}

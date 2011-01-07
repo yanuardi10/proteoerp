@@ -543,7 +543,7 @@ class Bcaj extends Controller {
 			$monto  = $edit->monto->newValue;
 			$envia  = $edit->envia->newValue;
 			$recibe = $edit->recibe->newValue;
-			//$this->_transferencaj($fecha,$monto,$envia,$recibe);
+			$this->_transferencaj($fecha,$monto,$envia,$recibe);
 			redirect('/finanzas/bcaj/listo');
 		}
 

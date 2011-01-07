@@ -23,7 +23,7 @@ class Desarrollo extends Controller{
 			}
 		} 
 	}
-	
+
 	function lcamposdb(){
 		$db =$this->uri->segment(3);
 		$pre=$this->uri->segment(4);
@@ -39,6 +39,26 @@ class Desarrollo extends Controller{
 		if ($query->num_rows() > 0){
 			foreach ($query->result() as $row){
 				$str=$row->Field.",";
+				echo $ant.$str;
+			}
+		} 
+	}
+
+	function ccamposdb(){
+		$db =$this->uri->segment(3);
+		$pre=$this->uri->segment(4);
+		if($pre!==FALSE)
+			$ant="$pre.";
+		else
+			$ant='';
+		if($db===false){
+			exit('Debe especificar en la uri la tabla');
+		}
+		$query = $this->db->query("DESCRIBE $db");
+
+		if ($query->num_rows() > 0){
+			foreach ($query->result() as $row){
+				$str="'$row->Field',";
 				echo $ant.$str;
 			}
 		} 
