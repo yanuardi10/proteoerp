@@ -12,21 +12,23 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 echo $form_begin; 
 
 	$objs=array(
-		'codigo'      =>'C&oacute;digo'     ,
-		'descrip'     =>'Descripci&oacute;n',
-		'cantidad'    =>'Cantidad'          ,
-		'costofob'    =>'Costo FOB'    ,
-		'importefob'  =>'Importe FOB'  ,
-		'codaran'     =>'C&oacute;digo arancelario',
-		'arancel'     =>'% Arancel'      ,
-		'montoaran'   =>'Monto Aran.'  ,
+		'codigo'     =>'C&oacute;digo',
+		'descrip'    =>'Descripci&oacute;n',
+		'cantidad'   =>'Cantidad'   ,
+		'costofob'   =>'Costo FOB'  ,
+		'importefob' =>'Importe FOB',
+		'codaran'    =>'C&oacute;digo arancelario',
+		'arancel'    =>'% Arancel'  ,
 	);
 
 	$html='<tr id="tr_itordi_<#i#>">';
 	$campos=$form->template_details('itordi');
+
 	foreach($objs AS $nom=>$nan){
+		$obj=$nom.'_0';
 		$pivot=$campos[$nom]['field'];
-		$html.='<td class="littletablerowth">'.$pivot.'</td>';
+		$align = (isset($form->$obj->css_class) AND $form->$obj->css_class=='inputnum') ? 'align="right"' : '';
+		$html.='<td class="littletablerowth" '.$align.'>'.$pivot.'</td>';
 	}
 	if($form->_status!='show') {
 		$html.='<td class="littletablerow"><a href=# onclick=\'del_itordi(<#i#>);return false;\'>Eliminar</a></td>';
@@ -41,7 +43,6 @@ echo $form_begin;
 		$('#costofob_'+id).numeric('.');
 		$('#importefob_'+id).numeric('.');
 		$('#arancel_'+id).numeric('.');
-		$('#montoaran_'+id).numeric('.');
 		<?php
 		foreach($objs AS $nom=>$nan){
 			echo "$('#${nom}_'+id).bind(\"keyup\",function() { calcula(); });";
@@ -83,16 +84,51 @@ echo $form_begin;
 	}
 
 	$(document).ready(function(){
+		$('#gastosi').bind("keyup",function() { calcula(); });
+		$('#gastosn').bind("keyup",function() { calcula(); });
+		$('#cambioofi').bind("keyup",function() { calcula(); });
+		$('#cambioreal').bind("keyup",function() { calcula(); });
 		<?php
 		foreach($objs AS $nom=>$nan){
 			echo "$('input[name^=\"${nom}\"]').bind(\"keyup\",function() { calcula(); });";
 		}
 		?>
+		calcula();
 	});
 
 	function totaliza(){
-		if($("#gastosi").val().length>0) gastosi=parseFloat($("#gastosi").val()) else gastosi=0;
-		if($("#gastosn").val().length>0) gastosi=parseFloat($("#gastosn").val()) else gastosn=0;
+		if($("#gastosi").val().length>0) gastosi=parseFloat($("#gastosi").val()); else gastosi=0;
+		if($("#gastosn").val().length>0) gastosn=parseFloat($("#gastosn").val()); else gastosn=0;
+		montofob=0;
+		arr=$('input[name^="importefob_"]');
+		jQuery.each(arr, function() {
+			if(this.value.length>0)
+				montofob = montofob + parseFloat(this.value);
+		});
+		montocif = montofob + gastosi;
+		$("#montocif").val(roundNumber(montocif,2));
+		$("#montofob").val(roundNumber(montofob,2));
+		$("#montotot").val(roundNumber(montocif+gastosn,2));
+
+		// para calcular los aranceles calculo
+		/*aranceles=0;
+		arr=$('input[name^="montoaran_"]');
+		jQuery.each(arr, function() {
+			nom=this.name
+			pos=this.name.lastIndexOf('_');
+			id = this.name.substring(pos+1);
+
+			if($("#importefob_"+id).val().length>0) importefob_=parseFloat($("#importefob_"+id).val()); else importefob_=0;
+			if($("#arancel_"+id).val().length>0)    arancel_   =parseFloat($("#arancel_"+id).val());    else arancel_=0;
+			if(montofob>0) participa_=importefob_/montofob; else participa_=0;
+			fleteseg_ =gastosi*participa_;
+			valorcif_ = importefob_+fleteseg_;
+			montoaran_=valorcif_*arancel_/100;
+
+			this.value= roundNumber(montoaran_,2);
+			aranceles = aranceles + montoaran_;
+		});
+		$("#aranceles").val(roundNumber(aranceles,2));*/
 	}
 
 	function calcula(){
@@ -117,13 +153,12 @@ echo $form_begin;
 <table align='center'>
 	<tr>
 		<td align=right><?php echo $container_tr?></td>
-	</tr>
-	<tr>
+	</tr><tr>
 		<td>
 
 <table style="margin:0;width:98%;">
 	<tr>
-		<td colspan=6 class="littletableheader">Encabezado</td>
+		<td colspan=6 class="littletableheader">Orden de importaci&oacute;n <b><?php if($form->_status=='show' or $form->_status=='modify' ) echo $form->numero->output; ?></b></td>
 	</tr>
 	<tr>
 		<td class="littletablerowth" ><?php echo $form->status->label; ?></td>
@@ -161,7 +196,7 @@ echo $form_begin;
 		<td class="littletablerow"  ><?php echo $form->peso->output;  ?></td>
 	</tr>
 </table>
-
+<p>
 <table style="margin:0;width:98%;">
 	<tr>
 		<?php
@@ -179,7 +214,8 @@ for($i=0;$i<$form->max_rel_count['itordi'];$i++) {
 	echo '<tr id="tr_itordi_'.$i.'">';
 	foreach($objs AS $nom=>$nan){
 		$obj=$nom.'_'.$i;
-		echo '<td class="littletablerowth" nowrap>'.$form->$obj->output.'</td>';
+		$align=($form->$obj->css_class=='inputnum') ? "align='right'" : '' ;
+		echo '<td class="littletablerowth" '.$align.' nowrap>'.$form->$obj->output.'</td>';
 	}
 	if($form->_status!='show') {
 		echo '<td class="littletablerow"><a href=# onclick=\'del_itordi('.$i.');return false;\'>Eliminar</a></td>';
@@ -189,31 +225,23 @@ for($i=0;$i<$form->max_rel_count['itordi'];$i++) {
 ?>
 	<tr id='__UTPL__'></tr>
 </table>
-
-<?php echo $form_end     ?>
+</p>
 <?php echo $container_bl ?>
 <?php echo $container_br ?>
 
 <table style="margin:0;width:98%;">
 	<tr>
-		<td class="littletablerowth"><?php echo $form->aranceles->label;  ?></td>
-		<td class="littletablerow"  ><?php echo $form->aranceles->output; ?></td>
+		<td class="littletablerowth"><?php echo $form->montotot->label; ?></td>
+		<td class="littletablerow"  ><?php echo $form->montotot->output;?></td>
 		<td class="littletablerowth" align='right'><?php echo $form->montocif->label;  ?></td>
 		<td class="littletablerow"  ><?php echo $form->montocif->output; ?></td>
 		<td class="littletablerowth" align='right'><?php echo $form->montofob->label; ?></td>
 		<td class="littletablerow"  ><?php echo $form->montofob->output;?></td>
-	</tr>
-	<tr>
-		<td class="littletablerow"  >&nbsp;</td>
-		<td class="littletablerow"  >&nbsp;</td>
-		<td class="littletablerow"  >&nbsp;</td>
-		<td class="littletablerow"  >&nbsp;</td>
-		<td class="littletablerowth" align='right'><?php echo $form->montotot->label; ?></td>
-		<td class="littletablerow"  ><?php echo $form->montotot->output;?></td>
 	</tr>
 </table>
 
 		<td>
 	<tr>
 <table>
+<?php echo $form_end ?>
 <?php endif; ?>
