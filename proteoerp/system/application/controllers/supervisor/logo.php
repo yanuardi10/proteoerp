@@ -1,6 +1,7 @@
 <?php
 class logo extends Controller {
 	var $upload_path;
+
 	function logo(){
 		parent::Controller();
 		$this->load->library('rapyd');
@@ -30,7 +31,9 @@ class logo extends Controller {
 
 		$form->submit('btnsubmit','Subir');
 		$form->build_form();
-		
+
+//echo $this->upload_path;
+
 		$img="<table align='center'>
 				<tr><td>LOGO ACTUAL</td></tr>
 				<tr><td><img src='".$this->upload_path."/logo.jpg'  width=150 border=0></a></td></tr>
@@ -43,29 +46,52 @@ class logo extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
-	function formato(){
-		Header('Content-type: image/png');
-		//$titu  = $this->datasis->traevalor('TITULO1');
-		$ancho = 127; $alto=100;
-		$im    = ImageCreate($ancho, $alto);
-		$red   = ImageColorAllocate($im, 255, 0, 0);
-		$white = ImageColorAllocate($im, 255, 255, 255);
-		$blue  = ImageColorAllocate($im, 0, 0, 255);
-		$black = ImageColorAllocate($im, 0, 0, 0);
-		$titu  = 'Logotipo';
-		$font_width = ImageFontWidth(5);               // para calcular el grosor de la fuente 
-		$string_width = $font_width * (strlen($titu)); // y calculamos la lingitud del strig 
+	function traer($nombre='logo.jpg'){
 		
-		ImageFill($im, 0, 0, $red);
-		//Escribimos el string en (210,30) en negro 
-		ImageString($im, 5, 5, 1, $titu, $black); //El 5 viene a ser el tamaño de la letra 1-5 
-		
-		$font_width = ImageFontWidth(5);
-		// y calculamos la lingitud del strig 
-		$string_width = $font_width * (strlen($titu));
-		// y añadimos la linia de subrallado en (210,50) en negro 
-		//ImageLine($im, 210, 50, (210+$string_width), 50, $black);
-		ImagePng($im);
+		$this->load->helper('file');
+		if(preg_match('/(?<nom>[a-zA-Z]+)(?<tam>\d*)\.(?<tip>(gif|jpg|png))/', $nombre, $match)>0){
+			$arch="images/$nombre";
+			if(!file_exists($arch)){
+				if(empty($match['tam'])) $match['tam']=127;
+				$this->_crear($arch,$match['tam'],$match['tip']);
+			}
+			$mime= get_mime_by_extension($nombre);;
+			header("Content-type: $mime");
+			echo read_file($arch);
+		}else{
+			show_404('');
+		}
+	}
+
+	function _crear($path,$ancho=127,$formato='jpg'){
+		$rif   = $this->datasis->traevalor('RIF');
+		$titu  = (empty($rif)) ? 'Logotipo' : $rif;
+		$alto=80;
+		$im    = imagecreate($ancho, $alto);
+		$white = imagecolorallocate($im, 255, 255, 255);
+		$black = imagecolorallocate($im, 0, 0, 0);
+		$font_ancho   = imagefontwidth(5); // para calcular el grosor de la fuente 
+		$string_alto  = imagefontheight(5);
+		$string_ancho = $font_ancho*strlen($titu);
+		//imagefill($im, 0, 0, $white);      //Se crea una imagen con un unico color
+		$x=floor(($ancho-$string_ancho)/2);
+		$y=floor(($alto-$string_alto)/2);
+
+		imagestring($im, 5,$x ,$y , $titu, $black); //El 5 viene a ser el tamaño de la letra 1-5 
+		imageline($im, $x, $y,$x+$string_ancho, $y, $black);
+		imageline($im, $x, $y+$string_alto,$x+$string_ancho, $y+$string_alto, $black);
+		switch ($formato) {
+			case 'jpg':
+				imagejpeg($im,$path);
+				break;
+			case 'gif':
+				imagegif($im,$path);
+				break;
+			case 'png':
+				imagepng($im,$path);
+				break;
+		}
+		imagedestroy($im);
 	}
 
 	function ver($file='logo.logo'){

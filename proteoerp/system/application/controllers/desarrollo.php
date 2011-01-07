@@ -11,7 +11,7 @@ class Desarrollo extends Controller{
 	function camposdb(){
 		$db=$this->uri->segment(3);
 		if($db===false){
-			exit('Debe especificar en la uri la tabla');	
+			exit('Debe especificar en la uri la tabla');
 		}
 		$query = $this->db->query("DESCRIBE $db");
 
@@ -32,7 +32,7 @@ class Desarrollo extends Controller{
 		else
 			$ant='';
 		if($db===false){
-			exit('Debe especificar en la uri la tabla');	
+			exit('Debe especificar en la uri la tabla');
 		}
 		$query = $this->db->query("DESCRIBE $db");
 
@@ -42,6 +42,12 @@ class Desarrollo extends Controller{
 				echo $ant.$str;
 			}
 		} 
+	}
+
+	function genecrud(){
+		
+		
+		
 	}
 
 }
