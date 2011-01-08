@@ -4,7 +4,7 @@ class Ordi extends Controller {
 	function Ordi(){
 		parent::Controller();
 		$this->load->library('rapyd');
-		//$this->datasis->modulo_id(302,1);
+		$this->datasis->modulo_id('205',1);
 	}
 
 	function index(){
@@ -287,8 +287,8 @@ class Ordi extends Controller {
 			$edit->$obj->css_class= 'inputnum';
 			$edit->$obj->rel_id   = 'itordi';
 			$edit->$obj->rule     ='trim';
-			$edit->$obj->maxlength=7;
-			$edit->$obj->size     =5;
+			$edit->$obj->maxlength= 7;
+			$edit->$obj->size     = 5;
 		}
 
 		/*$arr=array('precio1','precio2','precio3','precio4');
@@ -308,11 +308,229 @@ class Ordi extends Controller {
 
 		$this->rapyd->jquery[]='$(".inputnum").numeric(".");';
 		//$data['content'] = $edit->output;
+		//$data['smenu']   = $this->load->view('view_sub_menu','205',true);
+
+		$conten['gseri'] =  ($edit->_status!='create') ? $this->_showgeri($edit->_dataobject->pk['numero']) : '';
+		$conten['gser']  =  ($edit->_status!='create') ? $this->_showgeser($edit->_dataobject->pk['numero']): '';
 		$conten['form']  =& $edit;
 		$data['content'] =  $this->load->view('view_ordi',$conten,true);
 		$data['title']   =  '<h1>Orden de importaci&oacute;n</h1>';
 		$data['head']    =  $this->rapyd->get_head().phpscript('nformat.js');
 		$this->load->view('view_ventanas', $data); 
+	}
+
+	function _showgeri($id){
+		$this->rapyd->load('datagrid');
+
+		$grid = new DataGrid('Lista','gseri');
+		$grid->db->where('ordeni',$id);
+		$grid->use_function('str_pad');
+		$grid->order_by('numero','desc');
+		$grid->per_page = 5;
+
+		$grid = new DataGrid();
+		$grid->order_by('numero','desc');
+		$grid->per_page = 15;
+		$uri=anchor('import/ordi/gseri/'.$id.'/modify/<#id#>','<str_pad><#id#>|8|0|0</str_pad>');
+
+		$grid->column('N&uacute;mero',$uri);
+		$grid->column('N. Factura','numero');
+		$grid->column('Fecha'    ,'<dbdate_to_human><#fecha#></dbdate_to_human>',"align='center'");
+		$grid->column('Concepto' ,'concepto');
+		$grid->column('Monto'    ,'<nformat><#monto#></nformat>',"align='right'");
+
+		$grid->add('import/ordi/gseri/'.$id.'/create','Agregar gasto internacional');
+		$grid->build();
+
+		return $grid->output;
+	}
+
+	function _showgeser($id){
+		$this->rapyd->load('datagrid');
+
+		$grid = new DataGrid('Lista','gser');
+		$grid->db->where('ordeni',$id);
+		$grid->use_function('str_pad');
+		$grid->order_by('numero','desc');
+		$grid->per_page = 5;
+
+		$grid = new DataGrid();
+		$grid->order_by('numero','desc');
+		$grid->per_page = 15;
+		$uri=anchor('import/ordi/gseri/'.$id.'/modify/<#fecha#>/<#numero#>/<raencode><#proveed#></raencode>','<#numero#>');
+
+		$grid->column('N&uacute;mero','numero');
+		$grid->column('N. Factura','numero','numero');
+		$grid->column('Proveedor','proveed');
+		$grid->column('Nombre','nombre');
+		$grid->column('Fecha'    ,'<dbdate_to_human><#fecha#></dbdate_to_human>','align=\'center\'');
+		$grid->column('Concepto' ,'concepto');
+		$grid->column('Monto'    ,'<nformat><#totneto#></nformat>','align=\'right\'');
+
+		$grid->add('import/ordi/gser/'.$id,'Agregar gasto nacional');
+		$grid->build();
+
+		return $grid->output;
+	}
+
+	function gseri($ordi){
+		$this->rapyd->load('dataobject','dataedit');
+
+		$edit = new DataEdit('Gseri', 'gseri');
+		$edit->back_url = site_url('import/ordi/dataedit/show/'.$ordi);
+		$edit->post_process('insert','_post_gseri_insert');
+		$edit->post_process('update','_post_gseri_insert');
+
+		$edit->fecha = new DateonlyField('Fecha','fecha','d/m/Y');
+		$edit->fecha->rule= 'required';
+		$edit->fecha->insertValue = date('Y-m-d');
+		$edit->fecha->size = 10;
+
+		$edit->numero = new inputField('N&uacute;mero', 'numero');
+		$edit->numero->size = 10;
+		$edit->numero->maxlength=8;
+
+		$edit->concepto = new inputField('Concepto', 'concepto');
+		$edit->concepto->size     = 35;
+		$edit->concepto->maxlength= 40;
+
+		$edit->monto  = new inputField2('Monto','monto');
+		$edit->monto->rule= 'required|numeric';
+		$edit->monto->size = 20;
+		$edit->monto->css_class='inputnum';
+
+		$edit->ordeni  = new autoUpdateField('ordeni',$ordi,$ordi);
+		$edit->usuario = new autoUpdateField('usuario', $this->session->userdata('usuario'), $this->session->userdata('usuario'));
+		$edit->hora    = new autoUpdateField('hora',date('h:i:s'),date('h:i:s'));
+
+		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
+		$edit->build();
+
+		$this->rapyd->jquery[]='$(".inputnum").numeric(".");';
+		$data['content'] = $edit->output;
+		$data['title']   = '<h1>Gasto de importaci&oacute;n</h1>';
+		$data['head']    = $this->rapyd->get_head();
+		$this->load->view('view_ventanas', $data);
+	}
+
+	function gser($ordi){
+		$this->rapyd->load('datagrid','datafilter');
+
+		$modbus=array(
+			'tabla'   =>'sprv',
+			'columnas'=>array(
+			'proveed' =>'C&oacute;digo Proveedor',
+			'nombre'=>'Nombre',
+			'rif'=>'RIF'),
+			'filtro'  =>array('proveed'=>'C&oacute;digo Proveedor','nombre'=>'Nombre'),
+			'retornar'=>array('proveed'=>'proveed'),
+			'titulo'  =>'Buscar Proveedor');
+		$boton=$this->datasis->modbus($modbus);
+
+		$filter = new DataFilter('Filtro de Egresos');
+		$filter->db->select('numero,fecha,vence,nombre,totiva,totneto,proveed,ordeni');
+		$filter->db->from('gser');
+		$filter->db->where('ordeni IS NULL');
+		$filter->db->orwhere('ordeni',$ordi);
+
+		$filter->fechad = new dateonlyField('Desde', 'fechad','d/m/Y');
+		$filter->fechah = new dateonlyField('Hasta', 'fechah','d/m/Y');
+		$filter->fechad->clause  =$filter->fechah->clause='where';
+		$filter->fechad->db_name =$filter->fechah->db_name='fecha';
+		$filter->fechad->insertValue = date('Y-m-d'); 
+		$filter->fechah->insertValue = date('Y-m-d'); 
+		$filter->fechah->size=$filter->fechad->size=10;
+		$filter->fechad->operator='>='; 
+		$filter->fechah->operator='<=';
+
+		$filter->numero = new inputField('N&uacute;mero', 'numero');
+		$filter->numero->size=20;
+
+		$filter->proveedor = new inputField('Proveedor','proveed');
+		$filter->proveedor->append($boton);
+		$filter->proveedor->db_name = 'proveed';
+		$filter->proveedor->size=20;
+
+		$action = "javascript:window.location='".site_url('import/ordi/dataedit/show/'.$ordi)."'";
+		$filter->button("btn_regresa", 'Regresar', $action, "BL");
+
+		$filter->buttons('reset','search');
+		$filter->build();
+
+		$uri  = anchor('finanzas/gser/dataedit/show/<#fecha#>/<#numero#>/<#proveed#>','<#numero#>');
+
+		$grid = new DataGrid();
+		$grid->order_by('numero','desc');
+		$grid->use_function('checker');
+		$grid->per_page = 15;
+
+		function checker($conci,$proveed,$fecha,$numero,$ordi){
+			$arr=array($fecha,$numero,$proveed,$ordi);
+			if(empty($conci)){
+				return form_checkbox($proveed.$fecha.$numero, serialize($arr));
+			}else{
+				return form_checkbox($proveed.$fecha.$numero, serialize($arr),TRUE);
+			}
+		}
+
+		$grid->column('N&uacute;mero','numero');
+		$grid->column('Fecha'   ,'<dbdate_to_human><#fecha#></dbdate_to_human>','align=\'center\'');
+		$grid->column('Vence'   ,'<dbdate_to_human><#vence#></dbdate_to_human>','align=\'center\'');
+		$grid->column('Nombre'  ,'nombre');
+		$grid->column('IVA'     ,'<nformat><#totiva#></nformat>' ,'align=\'right\'');
+		$grid->column('Monto'   ,'<nformat><#totneto#></nformat>','align=\'right\'');
+		$grid->column('Vista'   ,'<checker><#ordeni#>|<#proveed#>|<#fecha#>|<#numero#>|'.$ordi.'</checker>','align=\'center\'');
+		$grid->build();
+
+		$this->rapyd->jquery[]='$(":checkbox").change(function(){
+			name=$(this).attr("name");
+			$.post("'.site_url('import/ordi/agordi').'",{ data: $(this).val()},
+			function(data){
+					if(data=="1"){
+					return true;
+				}else{
+					$("input[name=\'"+name+"\']").removeAttr("checked");
+					alert("Hubo un error, comuniquese con soporte tecnico"+data);
+					return false;
+				}
+			});
+		});';
+
+		$data['content'] =$filter->output.$grid->output;
+		$data['head']    = $this->rapyd->get_head();
+		$data['title']   ='<h1>Relacion de gastos nacionales</h1>';
+		$this->load->view('view_ventanas', $data);
+	}
+
+	function agordi(){
+		$data=$this->input->post('data');
+		
+		if($data!==false){
+			$pk=unserialize($data);
+
+			$ddata = array('ordeni' => $pk[3]);
+			$where  =       ' fecha = '.$this->db->escape($pk[0]);
+			$where .= ' AND numero  = '.$this->db->escape($pk[1]);
+			$where .= ' AND proveed = '.$this->db->escape($pk[2]);
+
+			$mSQL = $this->db->update_string('gser', $ddata, $where);
+			//echo $mSQL;
+			if($this->db->simple_query($mSQL)){
+				echo '1';
+			}else{
+				echo '0';
+			}
+		}
+	}
+
+	function _post_gseri_insert($do){
+		$ordeni=$do->get('ordeni');
+		$monto =$this->datasis->dameval("SELECT SUM(monto) FROM gseri WHERE ordeni=$ordeni");
+		
+		$data  = array('gastosi' => $monto);
+		$where = "numero= $ordeni";
+		$str = $this->db->update_string('ordi', $data, $where);
+		$this->db->simple_query($str);
 	}
 
 	function _pre_insert($do){
@@ -333,15 +551,32 @@ class Ordi extends Controller {
 	function _post_insert($do){
 		$codigo=$do->get('numero');
 		logusu('stra',"ORDI $codigo CREADO");
+		
+		$peso=$this->datasis->dameval("SELECT SUM(b.peso) AS peso FROM itordi AS a JOIN sinv AS b ON a.codigo=b.codigo AND a.numero=$codigo");
+		$data  = array('peso' => $peso);
+		$where = "numero= $codigo";
+		$str = $this->db->update_string('ordi', $data, $where);
+		$this->db->simple_query($str);
 	}
 
 	function _post_update($do){
 		$codigo=$do->get('numero');
-		logusu('stra',"ORDI $codigo MODIFICADO");
+		logusu('ordi',"ORDI $codigo MODIFICADO");
+		
+		$peso=$this->datasis->dameval("SELECT SUM(b.peso) AS peso FROM itordi AS a JOIN sinv AS b ON a.codigo=b.codigo AND a.numero=$codigo");
+		$data  = array('peso' => $peso);
+		$where = "numero= $codigo";
+		$str = $this->db->update_string('ordi', $data, $where);
+		$this->db->simple_query($str);
 	}
 
 	function _post_delete($do){
 		$codigo=$do->get('numero');
-		logusu('stra',"ORDI $codigo ELIMINADO");
+		logusu('ordi',"ORDI $codigo ELIMINADO");
+	}
+
+	function instala(){
+		$mSQL='ALTER TABLE `gser`  ADD COLUMN `ordeni` INT(15) UNSIGNED NULL DEFAULT NULL AFTER `compra`';
+		$this->db->simple_query($mSQL);
 	}
 }

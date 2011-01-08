@@ -21,6 +21,11 @@ class aran extends validaciones {
 		$filter->linea = new inputField('Descripci&oacute;n','descrip');
 		$filter->linea->size=20;
 
+		$filter->unidad = new dropdownField('Unidad','unidad');
+		$filter->unidad->style='width:180px;';
+		$filter->unidad->option('','Seleccionar');
+		$filter->unidad->options('SELECT unidades, unidades as valor FROM unidad ORDER BY unidades');
+
 		$filter->buttons('reset','search');
 		$filter->build();
 
