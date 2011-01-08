@@ -1,26 +1,26 @@
 <?php
 //egresos
 class Gser extends Controller {
-	
+
 	function gser(){
 		parent::Controller();
-		$this->load->library("rapyd");
+		$this->load->library('rapyd');
 		$this->datasis->modulo_id(518,1);
 	}
-	
-	function index() {		
-		$this->rapyd->load("datagrid","datafilter");
-		
+
+	function index() {
+		$this->rapyd->load('datagrid','datafilter');
+
 		$atts = array(
-              'width'      => '800',
-              'height'     => '600',
-              'scrollbars' => 'yes',
-              'status'     => 'yes',
-              'resizable'  => 'yes',
-              'screenx'    => '0',
-              'screeny'    => '0'
-            );
-		
+			'width'      => '800',
+			'height'     => '600',
+			'scrollbars' => 'yes',
+			'status'     => 'yes',
+			'resizable'  => 'yes',
+			'screenx'    => '0',
+			'screeny'    => '0'
+		);
+
 		$modbus=array(
 			'tabla'   =>'sprv',
 			'columnas'=>array(
@@ -30,66 +30,67 @@ class Gser extends Controller {
 			'filtro'  =>array('proveed'=>'C&oacute;digo Proveedor','nombre'=>'Nombre'),
 			'retornar'=>array('proveed'=>'proveed'),
 			'titulo'  =>'Buscar Proveedor');
-		
+
 		$boton=$this->datasis->modbus($modbus);
-		
-		$filter = new DataFilter("Filtro de Egresos");
+
+		$filter = new DataFilter('Filtro de Egresos');
 		$filter->db->select('numero,fecha,vence,nombre,totiva,totneto,proveed');
 		$filter->db->from('gser');
-		
-		$filter->fechad = new dateonlyField("Desde", "fechad",'d/m/Y');
-		$filter->fechah = new dateonlyField("Hasta", "fechah",'d/m/Y');
-		$filter->fechad->clause  =$filter->fechah->clause="where";
-		$filter->fechad->db_name =$filter->fechah->db_name="fecha";
-		$filter->fechad->insertValue = date("Y-m-d"); 
-		$filter->fechah->insertValue = date("Y-m-d"); 
+
+		$filter->fechad = new dateonlyField('Desde', 'fechad','d/m/Y');
+		$filter->fechah = new dateonlyField('Hasta', 'fechah','d/m/Y');
+		$filter->fechad->clause  =$filter->fechah->clause='where';
+		$filter->fechad->db_name =$filter->fechah->db_name='fecha';
+		$filter->fechad->insertValue = date('Y-m-d'); 
+		$filter->fechah->insertValue = date('Y-m-d'); 
 		$filter->fechah->size=$filter->fechad->size=10;
-		$filter->fechad->operator=">="; 
-		$filter->fechah->operator="<=";
-		
-		$filter->numero = new inputField("N&uacute;mero", "numero");
-    $filter->numero->size=20;
+		$filter->fechad->operator='>='; 
+		$filter->fechah->operator='<=';
 
-		$filter->proveedor = new inputField("Proveedor", "proveed");
+		$filter->numero = new inputField('N&uacute;mero', 'numero');
+		$filter->numero->size=20;
+
+		$filter->proveedor = new inputField('Proveedor','proveed');
 		$filter->proveedor->append($boton);
-		$filter->proveedor->db_name = "proveed";
-    $filter->proveedor->size=20;
+		$filter->proveedor->db_name = 'proveed';
+		$filter->proveedor->size=20;
 
-		$filter->buttons("reset","search");
+		$filter->buttons('reset','search');
 		$filter->build();
-    
-		$uri = anchor('finanzas/gser/dataedit/show/<#fecha#>/<#numero#>/<#proveed#>','<#numero#>');
-    $uri2 = anchor_popup('formatos/verhtml/gser/<#fecha#>/<#numero#>/<#proveed#>',"Ver HTML",$atts);
-		
+
+		$uri  = anchor('finanzas/gser/dataedit/show/<#fecha#>/<#numero#>/<#proveed#>','<#numero#>');
+		$uri2 = anchor_popup('formatos/verhtml/gser/<#fecha#>/<#numero#>/<#proveed#>','Ver HTML',$atts);
+
 		$grid = new DataGrid();
-		$grid->order_by("numero","desc");
+		$grid->order_by('numero','desc');
 		$grid->per_page = 15;
-		
-		$grid->column("N&uacute;mero",$uri);
-		$grid->column("Fecha"   ,"<dbdate_to_human><#fecha#></dbdate_to_human>","align='center'");
-		$grid->column("Vence"   ,"<dbdate_to_human><#vence#></dbdate_to_human>","align='center'");
-		$grid->column("Nombre"  ,"nombre");
-		$grid->column("IVA"     , "<number_format><#totiva#>|2|,|.</number_format>",'align=right');
-		$grid->column("Monto"   , "<number_format><#totneto#>|2|,|.</number_format>",'align=right');
-		$grid->column("Vista",$uri2,"align='center'");
-	
+
+		$grid->column('N&uacute;mero',$uri);
+		$grid->column('Fecha'   ,'<dbdate_to_human><#fecha#></dbdate_to_human>','align=\'center\'');
+		$grid->column('Vence'   ,'<dbdate_to_human><#vence#></dbdate_to_human>','align=\'center\'');
+		$grid->column('Nombre'  ,'nombre');
+		$grid->column('IVA'     ,'<nformat><#totiva#></nformat>' ,'align=\'right\'');
+		$grid->column('Monto'   ,'<nformat><#totneto#></nformat>','align=\'right\'');
+		$grid->column('Vista'   ,$uri2,'align=\'center\'');
+
 		//$grid->add("finanzas/agregareg/");
 		$grid->build();
-		
+
 		$data['content'] =$filter->output.$grid->output;
-		$data["head"]    = $this->rapyd->get_head();
+		$data['head']    = $this->rapyd->get_head();
 		$data['title']   ='<h1>Egresos</h1>';
 		$this->load->view('view_ventanas', $data);
 	}
+
 	function dataedit(){
- 		$this->rapyd->load("dataedit","datadetalle","fields","datagrid");
- 		
- 		$formato=$this->datasis->dameval('SELECT formato FROM cemp LIMIT 0,1');
- 		$qformato='%';
- 		for($i=1;$i<substr_count($formato, '.')+1;$i++) $qformato.='.%';
- 		$this->qformato=$qformato;
- 		
- 		 	$modbus=array(
+		$this->rapyd->load('dataedit','datadetalle','fields','datagrid');
+
+		$formato=$this->datasis->dameval('SELECT formato FROM cemp LIMIT 0,1');
+		$qformato='%';
+		for($i=1;$i<substr_count($formato, '.')+1;$i++) $qformato.='.%';
+		$this->qformato=$qformato;
+		
+		 	$modbus=array(
 			'tabla'   =>'sinv',
 			'columnas'=>array(
 				'codigo' =>'C&oacute;digo',
@@ -98,36 +99,35 @@ class Gser extends Controller {
 			'retornar'=>array('codigo'=>'codigo<#i#>','precio1'=>'precio1<#i#>','precio2'=>'precio2<#i#>','precio3'=>'precio3<#i#>','precio4'=>'precio4<#i#>','iva'=>'iva<#i#>','pond'=>'costo<#i#>'),
 			'p_uri'=>array(4=>'<#i#>'),
 			'titulo'  =>'Buscar Articulo');
- 		
- 		//Script necesario para totalizar los detalles
- 		
+
+		//Script necesario para totalizar los detalles
 		$fdepar = new dropdownField("ccosto", "ccosto");    
 		$fdepar->options("SELECT depto,descrip FROM dpto WHERE tipo='G' ORDER BY descrip");
 		$fdepar->status='create';
 		$fdepar->build();
 		$dpto=$fdepar->output;
-		
+
 		$dpto=trim($dpto);
 		$dpto=preg_replace('/\n/i', '', $dpto);
- 		
- 		$uri=site_url("/contabilidad/asientos/dpto/");
+		
+		$uri=site_url("/contabilidad/asientos/dpto/");
 
- 		$script='
- 		function totalizar(){
- 			monto=debe=haber=0;
- 			amonto=$$(\'input[id^="monto"]\');
+		$script='
+		function totalizar(){
+			monto=debe=haber=0;
+			amonto=$$(\'input[id^="monto"]\');
 			for(var i=0; i<amonto.length; i++) {
-    		valor=parseFloat(amonto[i].value);
-    		if (isNaN(valor))
+			valor=parseFloat(amonto[i].value);
+			if (isNaN(valor))
 					valor=0.0;
 				if (valor>0)
-    			haber=haber+valor;
-    		else{
-    			valor=valor*(-1);
-    			debe=debe+valor;
-    		}
+				haber=haber+valor;
+			else{
+				valor=valor*(-1);
+				debe=debe+valor;
+			}
 				$("haber").value=haber;
-    		$("debe").value=debe;
+			$("debe").value=debe;
 				$("total").value=haber-debe;
 			}
 		}
@@ -217,10 +217,10 @@ class Gser extends Controller {
 		$edit->credito->size = 20;
 		$edit->credito->css_class='inputnum';
 		
-	  $edit->anticipo  = new inputField("Anticipo", "anticipo");
+		$edit->anticipo  = new inputField("Anticipo", "anticipo");
 		$edit->anticipo->size = 20;
 		$edit->anticipo->css_class='inputnum';
-				
+
 		$edit->rislr  = new inputField("Retenci&oacute;n.ISLR", "totpre");
 		$edit->rislr->size = 20;
 		$edit->rislr->css_class='inputnum';

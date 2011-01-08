@@ -242,6 +242,19 @@ for($i=0;$i<$form->max_rel_count['itordi'];$i++) {
 
 		<td>
 	<tr>
+	<tr>
+		<td>
+<?php 
+if($form->_status=='show'){
+	echo $gseri;
+	echo $gser;
+}
+?>
+		</td>
+	</tr>
 <table>
 <?php echo $form_end ?>
+
+
+
 <?php endif; ?>
