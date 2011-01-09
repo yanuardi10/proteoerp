@@ -392,14 +392,14 @@ class Ordi extends Controller {
 		$edit->fecha->size = 10;
 
 		$edit->numero = new inputField('N&uacute;mero', 'numero');
-		$edit->numero->size = 10;
+		$edit->numero->size     = 10;
 		$edit->numero->maxlength=8;
 
 		$edit->concepto = new inputField('Concepto', 'concepto');
 		$edit->concepto->size     = 35;
 		$edit->concepto->maxlength= 40;
 
-		$edit->monto  = new inputField2('Monto $','monto');
+		$edit->monto = new inputField2('Monto $','monto');
 		$edit->monto->rule= 'required|numeric';
 		$edit->monto->size = 20;
 		$edit->monto->css_class='inputnum';
@@ -431,6 +431,8 @@ class Ordi extends Controller {
 			'retornar'=>array('proveed'=>'proveed'),
 			'titulo'  =>'Buscar Proveedor');
 		$boton=$this->datasis->modbus($modbus);
+
+		$atts = array('width'      => '800', 'height'     => '600', 'scrollbars' => 'yes', 'status'     => 'yes','resizable'  => 'yes', 'screenx'    => '0','screeny'    => '0');
 
 		$filter = new DataFilter('Filtro de Egresos');
 		$filter->db->select('numero,fecha,vence,nombre,totiva,totneto,proveed,ordeni');
@@ -483,6 +485,8 @@ class Ordi extends Controller {
 				return form_checkbox($proveed.$fecha.$numero, serialize($arr),TRUE);
 			}
 		}
+
+		$uri2 = anchor_popup('formatos/verhtml/ORDI/<#numero#>',"Ver HTML",$atts);
 
 		$grid->column('N&uacute;mero','numero');
 		$grid->column('Fecha'   ,'<dbdate_to_human><#fecha#></dbdate_to_human>','align=\'center\'');
@@ -618,7 +622,7 @@ class Ordi extends Controller {
 	function _post_gseri_insert($do){
 		$ordeni=$do->get('ordeni');
 		$monto =$this->datasis->dameval("SELECT SUM(monto) FROM gseri WHERE ordeni=$ordeni");
-		
+
 		$data  = array('gastosi' => $monto);
 		$where = "numero= $ordeni";
 		$str = $this->db->update_string('ordi', $data, $where);
@@ -643,7 +647,7 @@ class Ordi extends Controller {
 	function _post_insert($do){
 		$codigo=$do->get('numero');
 		logusu('stra',"ORDI $codigo CREADO");
-		
+
 		$peso=$this->datasis->dameval("SELECT SUM(b.peso) AS peso FROM itordi AS a JOIN sinv AS b ON a.codigo=b.codigo AND a.numero=$codigo");
 		$data  = array('peso' => $peso);
 		$where = "numero= $codigo";
@@ -654,7 +658,7 @@ class Ordi extends Controller {
 	function _post_update($do){
 		$codigo=$do->get('numero');
 		logusu('ordi',"ORDI $codigo MODIFICADO");
-		
+
 		$peso=$this->datasis->dameval("SELECT SUM(b.peso) AS peso FROM itordi AS a JOIN sinv AS b ON a.codigo=b.codigo AND a.numero=$codigo");
 		$data  = array('peso' => $peso);
 		$where = "numero= $codigo";
