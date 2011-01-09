@@ -168,12 +168,12 @@ class Ordi extends Controller {
 		$edit->agente->append($aboton);
 
 		$arr=array(
-			'montofob' =>'Total factura extrangera',
-			'gastosi'  =>'Gastos Internacionales',
-			'montocif' =>'Monto FOB+gastos Internacionales',
-			//'aranceles'=>'Suma del Impuesto Arancelario',
-			'gastosn'  =>'Gastos Nacionales',
-			'montotot' =>'Monto CIF + Gastos Nacionales');
+			'montofob' =>'Total factura extrangera $',
+			'gastosi'  =>'Gastos Internacionales $',
+			'montocif' =>'Monto FOB+gastos Internacionales $',
+			//'aranceles'=>'Suma del Impuesto Arancelario Bs',
+			'gastosn'  =>'Gastos Nacionales Bs',
+			'montotot' =>'Monto CIF + Gastos Nacionales Bs');
 
 		foreach($arr as $obj => $etiq){
 			$edit->$obj = new inputField($etiq, $obj);
@@ -195,7 +195,7 @@ class Ordi extends Controller {
 
 		$edit->cambioofi = new inputField('Cambio Oficial', 'cambioofi');
 		$edit->cambioofi->css_class= 'inputnum';
-		$edit->cambioofi->rule     ='trim';
+		$edit->cambioofi->rule     ='trim|required';
 		$edit->cambioofi->maxlength=17;
 		$edit->cambioofi->size     =10;
 
@@ -303,6 +303,11 @@ class Ordi extends Controller {
 		}*/
 		//Termina el detalle
 
+		if($edit->_status=='show'){
+			$action = "javascript:window.location='".site_url('import/ordi/calcula/'.$edit->_dataobject->pk['numero'])."'";
+			$edit->button('btn_recalculo', 'Calcular valores', $action, 'TR');
+		}
+
 		$edit->buttons('modify','save','undo','delete','back','add_rel');
 		$edit->build();
 
@@ -326,7 +331,7 @@ class Ordi extends Controller {
 		$grid->db->where('ordeni',$id);
 		$grid->use_function('str_pad');
 		$grid->order_by('numero','desc');
-		$grid->per_page = 5;
+		//$grid->per_page = 5;
 
 		$grid = new DataGrid();
 		$grid->order_by('numero','desc');
@@ -356,7 +361,7 @@ class Ordi extends Controller {
 
 		$grid = new DataGrid();
 		$grid->order_by('numero','desc');
-		$grid->per_page = 15;
+		//$grid->per_page = 15;
 		$uri=anchor('import/ordi/gseri/'.$id.'/modify/<#fecha#>/<#numero#>/<raencode><#proveed#></raencode>','<#numero#>');
 
 		$grid->column('N&uacute;mero','numero');
@@ -394,7 +399,7 @@ class Ordi extends Controller {
 		$edit->concepto->size     = 35;
 		$edit->concepto->maxlength= 40;
 
-		$edit->monto  = new inputField2('Monto','monto');
+		$edit->monto  = new inputField2('Monto $','monto');
 		$edit->monto->rule= 'required|numeric';
 		$edit->monto->size = 20;
 		$edit->monto->css_class='inputnum';
@@ -431,14 +436,14 @@ class Ordi extends Controller {
 		$filter->db->select('numero,fecha,vence,nombre,totiva,totneto,proveed,ordeni');
 		$filter->db->from('gser');
 		$filter->db->where('ordeni IS NULL');
-		$filter->db->orwhere('ordeni',$ordi);
+		//$filter->db->orwhere('ordeni',$ordi);
 
 		$filter->fechad = new dateonlyField('Desde', 'fechad','d/m/Y');
 		$filter->fechah = new dateonlyField('Hasta', 'fechah','d/m/Y');
 		$filter->fechad->clause  =$filter->fechah->clause='where';
 		$filter->fechad->db_name =$filter->fechah->db_name='fecha';
-		$filter->fechad->insertValue = date('Y-m-d'); 
-		$filter->fechah->insertValue = date('Y-m-d'); 
+		//$filter->fechad->insertValue = date('Y-m-d'); 
+		//$filter->fechah->insertValue = date('Y-m-d'); 
 		$filter->fechah->size=$filter->fechad->size=10;
 		$filter->fechad->operator='>='; 
 		$filter->fechah->operator='<=';
@@ -450,6 +455,12 @@ class Ordi extends Controller {
 		$filter->proveedor->append($boton);
 		$filter->proveedor->db_name = 'proveed';
 		$filter->proveedor->size=20;
+
+		/*$filter->monto  = new inputField2('Monto ','totneto');
+		$filter->monto->clause='where';
+		$filter->monto->operator='=';
+		$filter->monto->size = 20;
+		$filter->monto->css_class='inputnum';*/
 
 		$action = "javascript:window.location='".site_url('import/ordi/dataedit/show/'.$ordi)."'";
 		$filter->button("btn_regresa", 'Regresar', $action, "BL");
@@ -481,6 +492,7 @@ class Ordi extends Controller {
 		$grid->column('Monto'   ,'<nformat><#totneto#></nformat>','align=\'right\'');
 		$grid->column('Vista'   ,'<checker><#ordeni#>|<#proveed#>|<#fecha#>|<#numero#>|'.$ordi.'</checker>','align=\'center\'');
 		$grid->build();
+		//echo $grid->db->last_query();
 
 		$this->rapyd->jquery[]='$(":checkbox").change(function(){
 			name=$(this).attr("name");
@@ -502,9 +514,85 @@ class Ordi extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
+	function calcula($id){
+		$modo='m';
+		$dbid=$this->db->escape($id);
+
+		$mSQL="SELECT SUM(a.importefob) AS montofob, SUM(b.peso) AS pesotota
+			FROM itordi AS a
+			JOIN sinv AS b ON a.codigo=b.codigo
+			WHERE numero=$dbid";
+		$row=$this->datasis->damerow($mSQL);
+
+		$pesotota=$row['pesotota'];
+		$montofob=$row['montofob'];
+		$gastosi =$this->datasis->dameval("SELECT SUM(monto)   AS gastosi FROM gseri WHERE ordeni=$dbid");
+		$gastosn =$this->datasis->dameval("SELECT SUM(totneto) AS gastosn FROM gser  WHERE ordeni=$dbid");
+
+		$mSQL="SELECT cambioofi, cambioreal FROM ordi WHERE numero=$dbid";
+		$row=$this->datasis->damerow($mSQL);
+
+		$cambioofi =$row['cambioofi'];
+		$cambioreal=$row['cambioreal'];
+
+		if($modo=='m'){
+			$participa='participam'; //m para el monto;
+		}else{
+			$participa='participao'; //o para el peso;
+		}
+
+		//Calcula las participaciones
+		$mSQL="UPDATE itordi AS a JOIN sinv AS b ON a.codigo=b.codigo SET a.participao=b.peso/$pesotota, a.iva=b.iva WHERE a.numero=$dbid";
+		$this->db->simple_query($mSQL);
+		$mSQL="UPDATE itordi SET participam=importefob/$montofob WHERE numero=$dbid";
+		$this->db->simple_query($mSQL);
+
+		//Gastos
+		$mSQL="UPDATE itordi SET gastosi=$participa*$gastosi WHERE numero=$dbid";
+		$this->db->simple_query($mSQL);
+		$mSQL="UPDATE itordi SET gastosn=$participa*$gastosn WHERE numero=$dbid";
+		$this->db->simple_query($mSQL);
+
+		//CIF costo,seguro y flete
+		$mSQL="UPDATE itordi SET importecif=(($participa*$gastosi)+importefob)*$cambioofi WHERE numero=$dbid";
+		$this->db->simple_query($mSQL);
+		$mSQL="UPDATE itordi SET costocif=importecif/cantidad WHERE numero=$dbid";
+		$this->db->simple_query($mSQL);
+
+		//Monto del arancel
+		$mSQL="UPDATE itordi SET montoaran=importecif*(arancel/100) WHERE numero=$dbid";
+		$this->db->simple_query($mSQL);
+
+		//CIF total
+		$mSQL="UPDATE itordi SET importefinal=importecif+montoaran+gastosn WHERE numero=$dbid";
+		$this->db->simple_query($mSQL);
+		$mSQL="UPDATE itordi SET costofinal=importefinal/cantidad WHERE numero=$dbid";
+		$this->db->simple_query($mSQL);
+		$tas=$cambioreal/$cambioofi;
+
+		$mmSQL ='SELECT ';
+		$mmSQL.="codigo,cantidad, descrip, $participa*100 AS participa,";
+		$mmSQL.="costofob,ROUND(costofob*$cambioofi,2) AS fobbs, ";                                                //valor unidad fob
+		$mmSQL.="importefob,ROUND(importefob*$cambioofi,2) AS totfobbs,ROUND(gastosi*$cambioofi,2) AS gastosibs,"; //Valores totales
+		$mmSQL.='costocif,importecif, ';                                                                           //Valores CIF en BS
+		$mmSQL.='arancel,montoaran,gastosn, ';                                                                     //Arancel1
+		$mmSQL.='costofinal,importefinal, ';                                                                       //calculo al oficial
+		$mmSQL.="ROUND((montoaran+gastosn+((importecif/$cambioofi)*$cambioreal))/cantidad, 2)AS costofinal2,";     //calculo al real
+		$mmSQL.="ROUND(montoaran+gastosn+((importecif/$cambioofi)*$cambioreal),2) AS importefinal2 ";              //calculo real
+		$mmSQL.='FROM (itordi)';
+		$mmSQL.="WHERE numero = $dbid";
+
+		//echo "$mmSQL \n";
+
+		$data['content'] = 'Recalculo concluido '.anchor("import/ordi/dataedit/show/$id",'regresar');
+		$data['head']    = $this->rapyd->get_head();
+		$data['title']   ='<h1>Recalculo de la relaci&oacute;n de gastos nacionales</h1>';
+		$this->load->view('view_ventanas', $data);
+	}
+
 	function agordi(){
 		$data=$this->input->post('data');
-		
+
 		if($data!==false){
 			$pk=unserialize($data);
 
@@ -516,6 +604,10 @@ class Ordi extends Controller {
 			$mSQL = $this->db->update_string('gser', $ddata, $where);
 			//echo $mSQL;
 			if($this->db->simple_query($mSQL)){
+				$dbnum=$this->db->escape($pk[3]);
+				$gastosn=$this->datasis->dameval('SELECT SUM(totneto) FROM gser WHERE ordeni='.$dbnum);
+				$mSQL="UPDATE ordi SET gastosn=$gastosn WHERE numero=$dbnum";
+				$this->db->simple_query($mSQL);
 				echo '1';
 			}else{
 				echo '0';
