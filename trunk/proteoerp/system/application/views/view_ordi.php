@@ -15,8 +15,8 @@ echo $form_begin;
 		'codigo'     =>'C&oacute;digo',
 		'descrip'    =>'Descripci&oacute;n',
 		'cantidad'   =>'Cantidad'   ,
-		'costofob'   =>'Costo FOB'  ,
-		'importefob' =>'Importe FOB',
+		'costofob'   =>'Costo FOB $'  ,
+		'importefob' =>'Importe FOB $',
 		'codaran'    =>'C&oacute;digo arancelario',
 		'arancel'    =>'% Arancel'  ,
 	);
@@ -36,7 +36,7 @@ echo $form_begin;
 	$html.='</tr>';
 ?>
 <script language="javascript" type="text/javascript">
-	itordi_cont=1;
+	itordi_cont=<?php echo $form->max_rel_count['itordi'];?>;
 
 	function post_add_itordi(id){
 		$('#cantidad_'+id).numeric('.');
@@ -97,8 +97,9 @@ echo $form_begin;
 	});
 
 	function totaliza(){
-		if($("#gastosi").val().length>0) gastosi=parseFloat($("#gastosi").val()); else gastosi=0;
-		if($("#gastosn").val().length>0) gastosn=parseFloat($("#gastosn").val()); else gastosn=0;
+		if($("#gastosi").val().length>0)   gastosi=parseFloat($("#gastosi").val());     else gastosi  =0;
+		if($("#gastosn").val().length>0)   gastosn=parseFloat($("#gastosn").val());     else gastosn  =0;
+		if($("#cambioofi").val().length>0) cambioofi=parseFloat($("#cambioofi").val()); else cambioofi=0;
 		montofob=0;
 		arr=$('input[name^="importefob_"]');
 		jQuery.each(arr, function() {
@@ -108,27 +109,7 @@ echo $form_begin;
 		montocif = montofob + gastosi;
 		$("#montocif").val(roundNumber(montocif,2));
 		$("#montofob").val(roundNumber(montofob,2));
-		$("#montotot").val(roundNumber(montocif+gastosn,2));
-
-		// para calcular los aranceles calculo
-		/*aranceles=0;
-		arr=$('input[name^="montoaran_"]');
-		jQuery.each(arr, function() {
-			nom=this.name
-			pos=this.name.lastIndexOf('_');
-			id = this.name.substring(pos+1);
-
-			if($("#importefob_"+id).val().length>0) importefob_=parseFloat($("#importefob_"+id).val()); else importefob_=0;
-			if($("#arancel_"+id).val().length>0)    arancel_   =parseFloat($("#arancel_"+id).val());    else arancel_=0;
-			if(montofob>0) participa_=importefob_/montofob; else participa_=0;
-			fleteseg_ =gastosi*participa_;
-			valorcif_ = importefob_+fleteseg_;
-			montoaran_=valorcif_*arancel_/100;
-
-			this.value= roundNumber(montoaran_,2);
-			aranceles = aranceles + montoaran_;
-		});
-		$("#aranceles").val(roundNumber(aranceles,2));*/
+		$("#montotot").val(roundNumber((montocif*cambioofi)+gastosn,2));
 	}
 
 	function calcula(){
@@ -182,9 +163,9 @@ echo $form_begin;
 		<td class="littletablerow"  colspan=2 rowspan=2><?php echo $form->condicion->output;  ?></td>
 	</tr>
 	<tr>
-		<td class="littletablerowth"><?php echo $form->cambioofi->label;  ?></td>
+		<td class="littletablerowth"><?php echo $form->cambioofi->label;  ?>*</td>
 		<td class="littletablerow"  ><?php echo $form->cambioofi->output;  ?></td>
-		<td class="littletablerowth" align='right'><?php echo $form->cambioreal->label;  ?></td>
+		<td class="littletablerowth" align='right'><?php echo $form->cambioreal->label;  ?>*</td>
 		<td class="littletablerow"  ><?php echo $form->cambioreal->output; ?></td>
 	</tr>
 	<tr>
