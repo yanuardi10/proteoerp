@@ -90,7 +90,7 @@ class Rpcserver extends Controller {
 
 				//Prepara los articulos
 				$it=array();
-				$mmSQL="SELECT TRIM(a.codigoa) AS codigoa,TRIM(a.desca) AS desca,SUM(a.cana) AS cana ,a.preca,SUM(a.tota) AS tota,a.iva,b.barras,b.precio1,b.precio2,b.precio3,b.precio4,b.unidad, b.tipo, b.tdecimal FROM sitems AS a JOIN sinv AS b ON a.codigoa=b.codigo WHERE numa=? AND tipoa='F' GROUP BY a.codigoa";
+				$mmSQL="SELECT TRIM(a.codigoa) AS codigoa,TRIM(a.desca) AS desca,SUM(a.cana) AS cana ,a.preca,SUM(a.tota) AS tota,a.iva,b.barras,b.precio1,b.precio1,b.precio1,b.precio1,b.unidad, b.tipo, b.tdecimal FROM sitems AS a JOIN sinv AS b ON a.codigoa=b.codigo WHERE numa=? AND tipoa='F' GROUP BY a.codigoa";
 				$qquery = $this->db->query($mmSQL,array($numero));
 				foreach ($qquery->result_array() as $rrow){
 					foreach($rrow AS $ind=>$val){
