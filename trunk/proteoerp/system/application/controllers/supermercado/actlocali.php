@@ -49,11 +49,15 @@ class actlocali extends Controller {
 		$numero=$this->db->escape($numero);
 		$locali=$this->db->escape($locali);
 		
-		$bool=$this->db->query("CALL sp_maes_actlocali($numero,$locali)");
-		
-		if($bool)$salida="Se actuzalizo correctamente</br>";
-		else $salida="<div class='alert'>No se pudo actualizar la localizacion</div>";
-		
+		$cant = $this->datasis->dameval("SELECT COUNT(*) FROM maesfisico WHERE numero=$numero");
+		if($cant>0){
+			$bool=$this->db->query("CALL sp_maes_actlocali($numero,$locali)");
+			
+			if($bool)$salida="Se actuzalizo correctamente</br>";
+			else $salida="<div class='alert'>No se pudo actualizar la localizacion</div>";
+		}else{
+			$salida="<div class='alert'>No existe el numero de inventario indicado $numero</div>";
+		}
 		$data['content'] = $salida.anchor($this->url.'/index','Regresar');
 		$data['title']   = '<h1>'.$this->tits.'</h1>';
 		$data['script']  = '';
