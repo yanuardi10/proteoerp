@@ -1,7 +1,7 @@
 <?php
 class Menu extends Controller{
 	var $niveles;
-	
+
 	function Menu(){
 		parent::Controller();
 		$this->load->library("rapyd");
@@ -11,7 +11,7 @@ class Menu extends Controller{
 	function index(){
 		$this->datasis->modulo_id(905);
 		if ($this->uri->segment(3) === FALSE) $mod = FALSE; else $mod = $this->uri->segment(3);
-		
+
 		//$mSQL="SELECT titulo, modulo, codigo FROM intramenu WHERE MID(modulo,1,1)!= '0' AND modulo REGEXP  '[[:digit:]]' ORDER BY modulo";
 		//$mSQL="SELECT b.pertenece AS pertenece,IFNULL(b.modulo,a.modulo) AS modulo,IFNULL(b.titulo,a.titulo) AS titulo FROM intramenu AS a RIGHT JOIN intramenu AS b ON a.modulo= b.pertenece ORDER BY modulo";
 		$mSQL='SELECT modulo,titulo  FROM intramenu AS a ORDER BY modulo';
@@ -21,9 +21,9 @@ class Menu extends Controller{
 		$out   ='<a href="'.site_url('supervisor/menu/dataedit/m/create').'">'.image('list-add.png','Agregar opcion',$prop).'</a><b>Men&uacute;</b>';
 		$out .= '<ul id="tree">';
 		//$out .= '<li><ul>';
-		$out .= '<li><a href="'.site_url("supervisor/menu/dataedit/0/create/").'" >'.image('list-add.png','Agregar'     ,$prop).'</a>0-Libres';
+		$out .= '<li><a href="'.site_url('supervisor/menu/dataedit/0/create/').'" >'.image('list-add.png','Agregar'     ,$prop).'</a>0-Libres';
 		$n=1;
-		
+
 		foreach( $mc->result() as $row ){
 			if(strlen($row->modulo)==1){
 				if($n==2){
@@ -33,15 +33,15 @@ class Menu extends Controller{
 				}elseif($n==3){
 					$out .= '</ul></li></ul>';
 				}
-				
+
 				$n=1;
 				$out .= "\n<li>";
 				$out .= '<a href="'.site_url("supervisor/menu/dataedit/modify/$row->modulo").'" >'.image('editor.png','Editar'       ,$prop).'</a> ';
 				$out .= '<a href="'.site_url("supervisor/menu/dataedit/$row->modulo/create").'" >'.image('list-add.png','Agregar'  ,$prop).'</a> ';
 				$out .= '<a href="'.site_url("supervisor/menu/dataedit/delete/$row->modulo").'" >'.image('list-remove.png','Eliminar',$prop).'</a> ';
 				$out .= $row->modulo.'-'.$row->titulo;
-			
-			//nivel 2	
+
+			//nivel 2
 			}elseif(strlen($row->modulo)==3){
 				if($n==1){
 					$out .= "<ul>";
@@ -50,20 +50,20 @@ class Menu extends Controller{
 				}elseif($n==3){
 					$out .= '</ul></li>';
 				}
-				
+
 				$n=2;
 				$out .= "\n  <li>";
 				$out .= '<a href="'.site_url("supervisor/menu/dataedit/modify/$row->modulo").'" >'.image('editor.png','Editar'       ,$prop).'</a> ';
 				$out .= '<a href="'.site_url("supervisor/menu/dataedit/$row->modulo/create").'" >'.image('list-add.png','Agregar'  ,$prop).'</a> ';
 				$out .= '<a href="'.site_url("supervisor/menu/dataedit/delete/$row->modulo").'" >'.image('list-remove.png','Eliminar',$prop).'</a> ';
 				$out .= $row->modulo.'-'.$row->titulo;
-			
-			//nivel 3	
+
+			//nivel 3
 			}else{
 				if($n==2){
-					$out .= "<ul>";
+					$out .= '<ul>';
 				}
-				
+
 				$n=3;
 				$out .= "\n    <li>";
 				$out .= '<a href="'.site_url("supervisor/menu/dataedit/modify/$row->modulo").'" >'.image('editor.png','Editar'       ,$prop).'</a> ';
@@ -80,7 +80,7 @@ class Menu extends Controller{
 			$out .= '</ul></li>';
 		}
 		$out .= '</ul>';
-		
+
 		$data['script']  ='<script type="text/javascript">
 		$(function() {
 			$("#tree").treeview({
@@ -92,32 +92,32 @@ class Menu extends Controller{
 		})
 		</script>';
 		$data['content'] = '<div id="sidetreecontrol"><a href="?#">Contraer todos</a> | <a href="?#">Expandir todos</a> | <a href="?#">Invertir </a></div>'.$out;
-		$data["head"]    = script("jquery.pack.js").script("jquery.treeview.pack.js").$this->rapyd->get_head().style('jquery.treeview.css');
+		$data['head']    = script("jquery.pack.js").script("jquery.treeview.pack.js").$this->rapyd->get_head().style('jquery.treeview.css');
 		$data['title']   = '<h1>Administraci&oacute;n del Men&uacute;</h1>';
 		$this->load->view('view_ventanas', $data);
 		
 	}
 	
 	function dataedit($pertenece){
-		$this->rapyd->load("dataedit");
+		$this->rapyd->load('dataedit');
 
-		$edit = new DataEdit(" ", "intramenu");
-		$edit->back_url = site_url("supervisor/menu/index");
+		$edit = new DataEdit(' ', 'intramenu');
+		$edit->back_url = site_url('supervisor/menu/index');
 		$edit->pre_process('insert' ,'_pre_insert');
-		$edit->post_process('delete',"_pos_del");
-		$edit->post_process('insert',"_pos_insert");                                                                 
-		
+		$edit->post_process('delete','_pos_del');
+		$edit->post_process('insert','_pos_insert');
+
 		if ($pertenece!='m'){
-			$edit->pertenece = new inputField2("Deriva de", "pertenece");
-			$edit->pertenece->mode = "autohide";
+			$edit->pertenece = new inputField2('Deriva de', 'pertenece');
+			$edit->pertenece->mode = 'autohide';
 			$edit->pertenece->size = 15;
 			$edit->pertenece->readonly=TRUE;
 			$edit->pertenece->insertValue=$pertenece;
-			$edit->pertenece->when = array("create");
+			$edit->pertenece->when = array('create');
 		}
-		
-		$edit->titulo = new inputField("Titulo", "titulo");
-		$edit->titulo->rule = "required";
+
+		$edit->titulo = new inputField('Titulo', 'titulo');
+		$edit->titulo->rule = 'required';
 		$edit->titulo->size = 45;
 
 		$edit->mensaje = new inputField("Mensaje", "mensaje");
@@ -125,12 +125,12 @@ class Menu extends Controller{
 
 		$edit->panel = new inputField("Panel", "panel");
 		$edit->panel->size = 45;
-		
-		$edit->target= new dropdownField("Objetivo", "target");  
-		$edit->target->option("self"     ,"Link en ventana actual");  
+
+		$edit->target= new dropdownField("Objetivo", "target");
 		$edit->target->option("popu"     ,"Link en Popup");
+		$edit->target->option("self"     ,"Link en ventana actual");
 		$edit->target->option("javascript","Proceso Javascript"); 
-		
+
 		$edit->ejecutar = new inputField("Ejecutar", "ejecutar");
 		$edit->ejecutar->rule='callback_ejecutar';
 		$edit->ejecutar->size = 45;
@@ -138,10 +138,10 @@ class Menu extends Controller{
 		$edit->visible = new dropdownField("Visible", "visible");
 		$edit->visible->option("S","Si");
 		$edit->visible->option("N","No");
-		
+
 		//$edit->orden = new inputField("Orden", "orden");
 		//$edit->orden->size = 10;
-		//
+
 		$edit->ancho = new inputField("Ancho", "ancho");
 		$edit->ancho->insertValue='800'; 
 		$edit->ancho->css_class='inputnum';
@@ -155,16 +155,16 @@ class Menu extends Controller{
 		$edit->alto->rule     ='numeric';
 		$edit->alto->group      ='Ventana';
 		$edit->alto->size       =8;
-		
+
 		$edit->buttons("modify", "save", "undo", "delete", "back");
 		$edit->build();
-		
+
 		$data['content'] = $edit->output;
-		$data["head"]    = $this->rapyd->get_head();
+		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = '<h1>Menu de opciones</h1>';
 		$this->load->view('view_ventanas', $data);
 	}
-	
+
 	// Devuelve codigo disponible
 	function _coddisp($mod=0){
 		$dec=hexdec($mod);
@@ -197,9 +197,9 @@ class Menu extends Controller{
 			$mSQL="SELECT hexa FROM intramenu AS a RIGHT JOIN serie AS b ON a.modulo=LPAD(b.hexa,3,'0') WHERE modulo IS NULL LIMIT 1";
 			$retorna=$this->datasis->dameval($mSQL);
 			if(strlen($retorna)>3){
-    		$do->error_message_ar['pre_ins']="Se ha alcanzado el l&iacute;mite de opciones";
-    		return FALSE;
-    	}
+				$do->error_message_ar['pre_ins']='Se ha alcanzado el l&iacute;mite de opciones';
+				return FALSE;
+			}
 			$modulo =str_pad($retorna,3,'0',STR_PAD_LEFT);
 		}else{
 			$niveles=explode(',',$this->niveles);
@@ -209,17 +209,17 @@ class Menu extends Controller{
 					break;
 				$acu+=$level;
 			}
-    	$mod   =str_pad($mod,$acu,'0');
-    	$modulo=$this->_coddisp($mod);
-    	if(strlen($modulo)>$acu){
-    		$do->error_message_ar['pre_ins']="Se ha alcanzado el l&iacute;mite de opciones";
-    		return FALSE;
-    	}
-  	}
-  	
-    $do->set('modulo', $modulo);
-    $this->session->set_userdata('menu_m', $modulo);
-    return TRUE;
+			$mod   =str_pad($mod,$acu,'0');
+			$modulo=$this->_coddisp($mod);
+			if(strlen($modulo)>$acu){
+				$do->error_message_ar['pre_ins']="Se ha alcanzado el l&iacute;mite de opciones";
+				return FALSE;
+			}
+		}
+
+		$do->set('modulo', $modulo);
+		$this->session->set_userdata('menu_m', $modulo);
+		return TRUE;
 	}
 
 	function _pos_insert($do){
@@ -232,7 +232,7 @@ class Menu extends Controller{
 		}
 		redirect('/supervisor/menu');
 	}
-	
+
 	function instalar(){
 		$mSQL="ALTER TABLE `intramenu` ADD COLUMN `orden` TINYINT(4) NULL DEFAULT NULL AFTER `pertenece`";
 		echo $this->db->simple_query($mSQL);

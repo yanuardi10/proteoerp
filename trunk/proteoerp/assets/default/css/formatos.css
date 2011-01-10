@@ -799,8 +799,8 @@ table.change_order_items {
   font-size: 8pt;
   width: 100%;
   border-collapse: collapse;
-  margin-top: 2em;
-  margin-bottom: 2em;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
 }
 
 table.change_order_items>tbody { 

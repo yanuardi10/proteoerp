@@ -25,6 +25,8 @@ class Ordi extends Controller {
 			'titulo'  =>'Buscar Proveedor');
 		$boton=$this->datasis->modbus($modbus);
 
+		$atts = array('width'=>'800','height'=> '600', 'scrollbars' => 'yes', 'status'=> 'yes','resizable'=> 'yes', 'screenx'=> '0','screeny'=> '0');
+
 		$filter = new DataFilter('Filtro de Transferencias','ordi');
 
 		$filter->numero = new inputField('N&uacute;mero','numero');
@@ -40,7 +42,8 @@ class Ordi extends Controller {
 		$filter->buttons('reset','search');
 		$filter->build();
 
-		$uri = anchor('import/ordi/dataedit/show/<#numero#>','<str_pad><#numero#>|8|0|0</str_pad>');
+		$uri  = anchor('import/ordi/dataedit/show/<#numero#>','<str_pad><#numero#>|8|0|0</str_pad>');
+		$uri2 = anchor_popup('formatos/verhtml/ORDI/<#numero#>','Ver HTML',$atts);
 
 		$grid = new DataGrid('Lista');
 		$grid->use_function('str_pad');
@@ -52,7 +55,8 @@ class Ordi extends Controller {
 		$grid->column_orderby('Proveedor'    ,'proveed','proveed');
 		$grid->column_orderby('Nombre'       ,'nombre','nombre');
 		$grid->column_orderby('Monto Fob.'   ,'montofob','montofob','align=\'right\'');
-		$grid->column_orderby('Monto total'  ,'montotot','montotot','align=\'right\'');
+		$grid->column_orderby('Monto Total'  ,'montotot','montotot','align=\'right\'');
+		$grid->column('Vista',$uri2,'align=\'center\'');
 
 		$grid->add('import/ordi/dataedit/create','Agregar orden');
 		$grid->build();
@@ -108,7 +112,7 @@ class Ordi extends Controller {
 				'nombre'=>'Nombre',
 				'rif'=>'RIF'),
 			'filtro'  =>array('proveed'=>'C&oacute;digo Proveedor','nombre'=>'Nombre'),
-			'retornar'=>array('proveed'=>'agente'),
+			'retornar'=>array('proveed'=>'agente','nombre'=>'nomage'),
 			'titulo'  =>'Buscar Proveedor');
 		$aboton=$this->datasis->modbus($asprv,'agsprv');
 
@@ -167,19 +171,25 @@ class Ordi extends Controller {
 		$edit->agente->size     =7;
 		$edit->agente->append($aboton);
 
+		$edit->nomage = new inputField('Nombre de agente', 'nomage');
+		$edit->nomage->rule     ='trim';
+		$edit->nomage->maxlength=40;
+		$edit->nomage->size     =40;
+
 		$arr=array(
 			'montofob' =>'Total factura extrangera $',
 			'gastosi'  =>'Gastos Internacionales $',
 			'montocif' =>'Monto FOB+gastos Internacionales $',
 			//'aranceles'=>'Suma del Impuesto Arancelario Bs',
 			'gastosn'  =>'Gastos Nacionales Bs',
-			'montotot' =>'Monto CIF + Gastos Nacionales Bs');
+			'montotot' =>'Monto CIF + Gastos Nacionales Bs',
+			'montoiva' =>'Monto del iva Bs');
 
 		foreach($arr as $obj => $etiq){
 			$edit->$obj = new inputField($etiq, $obj);
 			$edit->$obj->rule     ='trim';
 			$edit->$obj->maxlength=20;
-			$edit->$obj->size     =20;
+			$edit->$obj->size     =10;
 			$edit->$obj->css_class= 'inputnum';
 		}
 
@@ -191,7 +201,7 @@ class Ordi extends Controller {
 		$edit->factura = new inputField('Nro. Factura', 'factura');
 		$edit->factura->rule     ='trim';
 		$edit->factura->maxlength=20;
-		$edit->factura->size     =20;
+		$edit->factura->size     =10;
 
 		$edit->cambioofi = new inputField('Cambio Oficial', 'cambioofi');
 		$edit->cambioofi->css_class= 'inputnum';
@@ -209,12 +219,12 @@ class Ordi extends Controller {
 		$edit->peso->css_class= 'inputnum';
 		$edit->peso->rule     ='trim';
 		$edit->peso->maxlength=12;
-		$edit->peso->size     =12;
+		$edit->peso->size     =10;
 
-		$edit->condicion = new textareaField('Condici&oacute;n', 'condicion');
+		$edit->condicion = new textareaField('Condiciones', 'condicion');
 		$edit->condicion->rule ='trim';
-		$edit->condicion->cols = 35;
-		$edit->condicion->rows = 2;  
+		$edit->condicion->cols = 37;
+		$edit->condicion->rows = 3;
 
 		//comienza el detalle
 		$edit->codigo = new inputField('C&oacute;digo <#o#>','codigo_<#i#>');
@@ -315,8 +325,9 @@ class Ordi extends Controller {
 		//$data['content'] = $edit->output;
 		//$data['smenu']   = $this->load->view('view_sub_menu','205',true);
 
-		$conten['gseri'] =  ($edit->_status!='create') ? $this->_showgeri($edit->_dataobject->pk['numero']) : '';
-		$conten['gser']  =  ($edit->_status!='create') ? $this->_showgeser($edit->_dataobject->pk['numero']): '';
+		$conten['gseri'] =  ($edit->_status!='create') ? $this->_showgeri($edit->_dataobject->pk['numero'])  : '';
+		$conten['gser']  =  ($edit->_status!='create') ? $this->_showgeser($edit->_dataobject->pk['numero']) : '';
+		$conten['ordiva']=  ($edit->_status!='create') ? $this->_showordiva($edit->_dataobject->pk['numero']): '';
 		$conten['form']  =& $edit;
 		$data['content'] =  $this->load->view('view_ordi',$conten,true);
 		$data['title']   =  '<h1>Orden de importaci&oacute;n</h1>';
@@ -327,24 +338,20 @@ class Ordi extends Controller {
 	function _showgeri($id){
 		$this->rapyd->load('datagrid');
 
-		$grid = new DataGrid('Lista','gseri');
+		$grid = new DataGrid('Lista de gastos internacionales','gseri');
 		$grid->db->where('ordeni',$id);
 		$grid->use_function('str_pad');
 		$grid->order_by('numero','desc');
-		//$grid->per_page = 5;
 
-		$grid = new DataGrid();
-		$grid->order_by('numero','desc');
-		$grid->per_page = 15;
 		$uri=anchor('import/ordi/gseri/'.$id.'/modify/<#id#>','<str_pad><#id#>|8|0|0</str_pad>');
 
 		$grid->column('N&uacute;mero',$uri);
 		$grid->column('N. Factura','numero');
-		$grid->column('Fecha'    ,'<dbdate_to_human><#fecha#></dbdate_to_human>',"align='center'");
+		$grid->column('Fecha'    ,'<dbdate_to_human><#fecha#></dbdate_to_human>','align=\'center\'');
 		$grid->column('Concepto' ,'concepto');
-		$grid->column('Monto'    ,'<nformat><#monto#></nformat>',"align='right'");
+		$grid->column('Monto'    ,'<nformat><#monto#></nformat>','align=\'right\'');
 
-		$grid->add('import/ordi/gseri/'.$id.'/create','Agregar gasto internacional');
+		$grid->add('import/ordi/gseri/'.$id.'/create','Agregar/Eliminar gasto internacional');
 		$grid->build();
 
 		return $grid->output;
@@ -353,26 +360,43 @@ class Ordi extends Controller {
 	function _showgeser($id){
 		$this->rapyd->load('datagrid');
 
-		$grid = new DataGrid('Lista','gser');
+		$grid = new DataGrid('Lista de gastos nacionales','gser');
 		$grid->db->where('ordeni',$id);
 		$grid->use_function('str_pad');
 		$grid->order_by('numero','desc');
-		$grid->per_page = 5;
 
-		$grid = new DataGrid();
-		$grid->order_by('numero','desc');
-		//$grid->per_page = 15;
 		$uri=anchor('import/ordi/gseri/'.$id.'/modify/<#fecha#>/<#numero#>/<raencode><#proveed#></raencode>','<#numero#>');
 
 		$grid->column('N&uacute;mero','numero');
 		$grid->column('N. Factura','numero','numero');
-		$grid->column('Proveedor','proveed');
-		$grid->column('Nombre','nombre');
-		$grid->column('Fecha'    ,'<dbdate_to_human><#fecha#></dbdate_to_human>','align=\'center\'');
-		$grid->column('Concepto' ,'concepto');
-		$grid->column('Monto'    ,'<nformat><#totneto#></nformat>','align=\'right\'');
+		$grid->column('Proveedor' ,'proveed');
+		$grid->column('Nombre'    ,'nombre');
+		$grid->column('Fecha'     ,'<dbdate_to_human><#fecha#></dbdate_to_human>','align=\'center\'');
+		//$grid->column('Concepto'  ,'concepto');
+		$grid->column('Monto'     ,'<nformat><#totpre#></nformat>','align=\'right\'');
 
-		$grid->add('import/ordi/gser/'.$id,'Agregar gasto nacional');
+		$grid->add('import/ordi/gser/'.$id,'Agregar/Eliminar gasto nacional');
+		$grid->build();
+
+		return $grid->output;
+	}
+
+	function _showordiva($id){
+		$this->rapyd->load('datagrid');
+
+		$grid = new DataGrid('Lista de impuestos al valor agregado','ordiva');
+		$grid->db->where('ordeni',$id);
+		$grid->use_function('str_pad');
+		$grid->order_by('id','desc');
+		$grid->per_page = 5;
+
+		$uri=anchor('import/ordi/ordiva/'.$id.'/modify/<#id#>','editar');
+
+		$grid->column('N&uacute;mero',$uri);
+		$grid->column('Tasa'    ,'<nformat><#tasa#></nformat>%','align=\'right\'');
+		$grid->column('Monto'    ,'<nformat><#monto#></nformat>','align=\'right\'');
+
+		$grid->add('import/ordi/ordiva/'.$id.'/create','Agregar/Eliminar monto de tasa');
 		$grid->build();
 
 		return $grid->output;
@@ -381,10 +405,11 @@ class Ordi extends Controller {
 	function gseri($ordi){
 		$this->rapyd->load('dataobject','dataedit');
 
-		$edit = new DataEdit('Gseri', 'gseri');
+		$edit = new DataEdit('Gastos internacionales', 'gseri');
 		$edit->back_url = site_url('import/ordi/dataedit/show/'.$ordi);
-		$edit->post_process('insert','_post_gseri_insert');
-		$edit->post_process('update','_post_gseri_insert');
+		$edit->post_process('insert','_post_gseri');
+		$edit->post_process('update','_post_gseri');
+		$edit->post_process('delete','_post_gseri');
 
 		$edit->fecha = new DateonlyField('Fecha','fecha','d/m/Y');
 		$edit->fecha->rule= 'required';
@@ -418,6 +443,42 @@ class Ordi extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
+	function ordiva($ordi){
+		$this->rapyd->load('dataobject','dataedit');
+		$fecha = $this->datasis->dameval("SELECT fecha FROM ordi WHERE numero=$ordi");
+		$iva   = $this->datasis->ivaplica($fecha);
+
+		$edit = new DataEdit('Impuestos', 'ordiva');
+		$edit->back_url = site_url('import/ordi/dataedit/show/'.$ordi);
+		$edit->post_process('insert','_post_ordiva');
+		$edit->post_process('update','_post_ordiva');
+		$edit->post_process('delete','_post_ordiva');
+
+		$edit->tasa =  new dropdownField('Tasa %','tasa');
+		foreach($iva AS $nom=>$val){
+			$edit->tasa->option($val,nformat($val).'%');
+		}
+		$edit->tasa->rule  = 'required|numeric';
+		$edit->tasa->style = 'width:100px';
+
+
+		$edit->monto = new inputField2('Monto ','monto');
+		$edit->monto->rule= 'required|numeric';
+		$edit->monto->size = 20;
+		$edit->monto->css_class='inputnum';
+
+		$edit->ordeni  = new autoUpdateField('ordeni',$ordi,$ordi);
+
+		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
+		$edit->build();
+
+		$this->rapyd->jquery[]='$(".inputnum").numeric(".");';
+		$data['content'] = $edit->output;
+		$data['title']   = '<h1>Impuestos</h1>';
+		$data['head']    = $this->rapyd->get_head();
+		$this->load->view('view_ventanas', $data);
+	}
+
 	function gser($ordi){
 		$this->rapyd->load('datagrid','datafilter');
 
@@ -432,13 +493,10 @@ class Ordi extends Controller {
 			'titulo'  =>'Buscar Proveedor');
 		$boton=$this->datasis->modbus($modbus);
 
-		$atts = array('width'      => '800', 'height'     => '600', 'scrollbars' => 'yes', 'status'     => 'yes','resizable'  => 'yes', 'screenx'    => '0','screeny'    => '0');
-
 		$filter = new DataFilter('Filtro de Egresos');
-		$filter->db->select('numero,fecha,vence,nombre,totiva,totneto,proveed,ordeni');
+		$filter->db->select('numero,fecha,vence,nombre,totiva,totneto,totpre,proveed,ordeni');
 		$filter->db->from('gser');
-		$filter->db->where('ordeni IS NULL');
-		//$filter->db->orwhere('ordeni',$ordi);
+		$filter->db->where("(ordeni IS NULL or ordeni=$ordi )");
 
 		$filter->fechad = new dateonlyField('Desde', 'fechad','d/m/Y');
 		$filter->fechah = new dateonlyField('Hasta', 'fechah','d/m/Y');
@@ -458,14 +516,16 @@ class Ordi extends Controller {
 		$filter->proveedor->db_name = 'proveed';
 		$filter->proveedor->size=20;
 
-		/*$filter->monto  = new inputField2('Monto ','totneto');
+		$filter->monto  = new inputField2('Monto ','totpre');
 		$filter->monto->clause='where';
 		$filter->monto->operator='=';
 		$filter->monto->size = 20;
-		$filter->monto->css_class='inputnum';*/
+		$filter->monto->css_class='inputnum';
+
+		$filter->checkbox = new checkboxField('Solo gastos asociados?', 'ordeni', $ordi,'');
 
 		$action = "javascript:window.location='".site_url('import/ordi/dataedit/show/'.$ordi)."'";
-		$filter->button("btn_regresa", 'Regresar', $action, "BL");
+		$filter->button('btn_regresa', 'Regresar', $action, 'BL');
 
 		$filter->buttons('reset','search');
 		$filter->build();
@@ -486,19 +546,17 @@ class Ordi extends Controller {
 			}
 		}
 
-		$uri2 = anchor_popup('formatos/verhtml/ORDI/<#numero#>',"Ver HTML",$atts);
-
 		$grid->column('N&uacute;mero','numero');
 		$grid->column('Fecha'   ,'<dbdate_to_human><#fecha#></dbdate_to_human>','align=\'center\'');
 		$grid->column('Vence'   ,'<dbdate_to_human><#vence#></dbdate_to_human>','align=\'center\'');
 		$grid->column('Nombre'  ,'nombre');
 		$grid->column('IVA'     ,'<nformat><#totiva#></nformat>' ,'align=\'right\'');
-		$grid->column('Monto'   ,'<nformat><#totneto#></nformat>','align=\'right\'');
-		$grid->column('Vista'   ,'<checker><#ordeni#>|<#proveed#>|<#fecha#>|<#numero#>|'.$ordi.'</checker>','align=\'center\'');
+		$grid->column('Monto'   ,'<nformat><#totpre#></nformat>','align=\'right\'');
+		$grid->column('Enlace'  ,'<checker><#ordeni#>|<#proveed#>|<#fecha#>|<#numero#>|'.$ordi.'</checker>','align=\'center\'');
 		$grid->build();
 		//echo $grid->db->last_query();
 
-		$this->rapyd->jquery[]='$(":checkbox").change(function(){
+		$this->rapyd->jquery[]='$(":checkbox:not(#ordeni)").change(function(){
 			name=$(this).attr("name");
 			$.post("'.site_url('import/ordi/agordi').'",{ data: $(this).val()},
 			function(data){
@@ -506,20 +564,20 @@ class Ordi extends Controller {
 					return true;
 				}else{
 					$("input[name=\'"+name+"\']").removeAttr("checked");
-					alert("Hubo un error, comuniquese con soporte tecnico"+data);
+					alert("Hubo un error, comuniquese con soporte tecnico: "+data);
 					return false;
 				}
 			});
 		});';
 
-		$data['content'] =$filter->output.$grid->output;
+		$data['content'] = $filter->output.$grid->output;
 		$data['head']    = $this->rapyd->get_head();
-		$data['title']   ='<h1>Relacion de gastos nacionales</h1>';
+		$data['title']   = '<h1>Relacion de gastos nacionales</h1>';
 		$this->load->view('view_ventanas', $data);
 	}
 
 	function calcula($id){
-		$modo='m';
+		$modo='m'; //'m' para el calculo en base al monto, 'o' para el peso
 		$dbid=$this->db->escape($id);
 
 		$mSQL="SELECT SUM(a.importefob) AS montofob, SUM(b.peso) AS pesotota
@@ -531,7 +589,13 @@ class Ordi extends Controller {
 		$pesotota=$row['pesotota'];
 		$montofob=$row['montofob'];
 		$gastosi =$this->datasis->dameval("SELECT SUM(monto)   AS gastosi FROM gseri WHERE ordeni=$dbid");
-		$gastosn =$this->datasis->dameval("SELECT SUM(totneto) AS gastosn FROM gser  WHERE ordeni=$dbid");
+		$gastosn =$this->datasis->dameval("SELECT SUM(totpre) AS gastosn  FROM gser  WHERE ordeni=$dbid");
+		$montoiva=$this->datasis->dameval("SELECT SUM(monto) AS montoiva  FROM ordiva WHERE ordeni=$dbid");
+		$baseiva =$this->datasis->dameval("SELECT SUM(monto/(tasa/100)) AS base  FROM ordiva WHERE ordeni=$dbid");
+		if(empty($gastosn))  $gastosn =0;
+		if(empty($gastosi))  $gastosi =0;
+		if(empty($montoiva)) $montoiva=0;
+		if(empty($baseiva))  $baseiva =0;
 
 		$mSQL="SELECT cambioofi, cambioreal FROM ordi WHERE numero=$dbid";
 		$row=$this->datasis->damerow($mSQL);
@@ -567,14 +631,31 @@ class Ordi extends Controller {
 		$mSQL="UPDATE itordi SET montoaran=importecif*(arancel/100) WHERE numero=$dbid";
 		$this->db->simple_query($mSQL);
 
-		//CIF total
+		//total
 		$mSQL="UPDATE itordi SET importefinal=importecif+montoaran+gastosn WHERE numero=$dbid";
 		$this->db->simple_query($mSQL);
 		$mSQL="UPDATE itordi SET costofinal=importefinal/cantidad WHERE numero=$dbid";
 		$this->db->simple_query($mSQL);
 		$tas=$cambioreal/$cambioofi;
 
-		$mmSQL ='SELECT ';
+		$importefinal =$this->datasis->dameval("SELECT SUM(importefinal) AS final  FROM itordi WHERE numero=$dbid");
+		if(empty($importefinal)) $importefinal=0;
+
+		$mSQL="SELECT SUM(montoaran) AS aranceles  FROM itordi WHERE numero=$dbid";
+		$query = $this->db->query($mSQL);
+		if ($query->num_rows() > 0){
+			$row = $query->row_array();
+			$row['gastosi'] =$gastosi;
+			$row['gastosn'] =$gastosn;
+			$row['montoiva']=$montoiva;
+			$row['montoexc']=$importefinal-$baseiva;//monto excento
+
+			$where = "numero=$dbid";
+			$str = $this->db->update_string('ordi', $row, $where);
+			$this->db->simple_query($str);
+		}
+
+		/*$mmSQL ='SELECT ';
 		$mmSQL.="codigo,cantidad, descrip, $participa*100 AS participa,";
 		$mmSQL.="costofob,ROUND(costofob*$cambioofi,2) AS fobbs, ";                                                //valor unidad fob
 		$mmSQL.="importefob,ROUND(importefob*$cambioofi,2) AS totfobbs,ROUND(gastosi*$cambioofi,2) AS gastosibs,"; //Valores totales
@@ -584,13 +665,13 @@ class Ordi extends Controller {
 		$mmSQL.="ROUND((montoaran+gastosn+((importecif/$cambioofi)*$cambioreal))/cantidad, 2)AS costofinal2,";     //calculo al real
 		$mmSQL.="ROUND(montoaran+gastosn+((importecif/$cambioofi)*$cambioreal),2) AS importefinal2 ";              //calculo real
 		$mmSQL.='FROM (itordi)';
-		$mmSQL.="WHERE numero = $dbid";
+		$mmSQL.="WHERE numero = $dbid";*/
 
-		//echo "$mmSQL \n";
-
-		$data['content'] = 'Recalculo concluido '.anchor("import/ordi/dataedit/show/$id",'regresar');
+		$url = site_url('formatos/verhtml/ORDI/'.$id);
+		//$data['content'] = 'Recalculo concluido '.anchor("import/ordi/dataedit/show/$id",'regresar');
+		$data['content'] = "<iframe src ='$url' width='100%' height='450'><p>Tu navegador no soporta iframes.</p></iframe>";
 		$data['head']    = $this->rapyd->get_head();
-		$data['title']   ='<h1>Recalculo de la relaci&oacute;n de gastos nacionales</h1>';
+		$data['title']   ='<h1>Recalculo de la relaci&oacute;n de gastos nacionales '.anchor("import/ordi/dataedit/show/$id",'regresar').'</h1>';
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -600,16 +681,16 @@ class Ordi extends Controller {
 		if($data!==false){
 			$pk=unserialize($data);
 
-			$ddata = array('ordeni' => $pk[3]);
-			$where  =       ' fecha = '.$this->db->escape($pk[0]);
-			$where .= ' AND numero  = '.$this->db->escape($pk[1]);
-			$where .= ' AND proveed = '.$this->db->escape($pk[2]);
+			$mSQL  = 'UPDATE `gser` SET `ordeni` = IF(ordeni IS NULL,'.$pk[3].',NULL)';
+			$mSQL .= ' WHERE fecha = '.$this->db->escape($pk[0]);
+			$mSQL .= ' AND numero  = '.$this->db->escape($pk[1]);
+			$mSQL .= ' AND proveed = '.$this->db->escape($pk[2]);
 
-			$mSQL = $this->db->update_string('gser', $ddata, $where);
 			//echo $mSQL;
 			if($this->db->simple_query($mSQL)){
 				$dbnum=$this->db->escape($pk[3]);
-				$gastosn=$this->datasis->dameval('SELECT SUM(totneto) FROM gser WHERE ordeni='.$dbnum);
+				$gastosn=$this->datasis->dameval('SELECT SUM(totpre) FROM gser WHERE ordeni='.$dbnum);
+				if(empty($gastosn)) $gastosn=0;
 				$mSQL="UPDATE ordi SET gastosn=$gastosn WHERE numero=$dbnum";
 				$this->db->simple_query($mSQL);
 				echo '1';
@@ -619,28 +700,38 @@ class Ordi extends Controller {
 		}
 	}
 
-	function _post_gseri_insert($do){
+	function _post_ordiva($do){
+		$ordeni=$do->get('ordeni');
+		$monto =$this->datasis->dameval("SELECT SUM(monto) FROM ordiva WHERE ordeni=$ordeni");
+		if(empty($monto)) $monto=0;
+
+		$data  = array('montoiva' => $monto);
+		$where = "numero= $ordeni";
+		$str = $this->db->update_string('ordi', $data, $where);
+		$this->db->simple_query($str);
+		return true;
+	}
+
+	function _post_gseri($do){
 		$ordeni=$do->get('ordeni');
 		$monto =$this->datasis->dameval("SELECT SUM(monto) FROM gseri WHERE ordeni=$ordeni");
+		if(empty($monto)) $monto=0;
 
 		$data  = array('gastosi' => $monto);
 		$where = "numero= $ordeni";
 		$str = $this->db->update_string('ordi', $data, $where);
 		$this->db->simple_query($str);
+		return true;
 	}
 
 	function _pre_insert($do){
-		//$numero =$this->datasis->fprox_numero('nordi');
 		$transac=$this->datasis->fprox_numero('transac');
 		$usuario=$this->session->userdata('usuario');
 
-		//$do->set('numero' ,$numero );
 		$do->set('usuario',$usuario);
 		$do->set('transac',$transac);
 		$do->set('estampa',date('ymd'));
 		$do->set('hora'   ,date('H:i:s'));
-
-		//$do->pk['numero'] = $numero; //Necesario cuando la clave primara se calcula por secuencia
 		return true;
 	}
 
@@ -649,10 +740,12 @@ class Ordi extends Controller {
 		logusu('stra',"ORDI $codigo CREADO");
 
 		$peso=$this->datasis->dameval("SELECT SUM(b.peso) AS peso FROM itordi AS a JOIN sinv AS b ON a.codigo=b.codigo AND a.numero=$codigo");
+		if(empty($peso)) $peso=0;
 		$data  = array('peso' => $peso);
 		$where = "numero= $codigo";
 		$str = $this->db->update_string('ordi', $data, $where);
 		$this->db->simple_query($str);
+		return true;
 	}
 
 	function _post_update($do){
@@ -660,15 +753,18 @@ class Ordi extends Controller {
 		logusu('ordi',"ORDI $codigo MODIFICADO");
 
 		$peso=$this->datasis->dameval("SELECT SUM(b.peso) AS peso FROM itordi AS a JOIN sinv AS b ON a.codigo=b.codigo AND a.numero=$codigo");
+		if(empty($peso)) $peso=0;
 		$data  = array('peso' => $peso);
 		$where = "numero= $codigo";
 		$str = $this->db->update_string('ordi', $data, $where);
 		$this->db->simple_query($str);
+		return true;
 	}
 
 	function _post_delete($do){
 		$codigo=$do->get('numero');
 		logusu('ordi',"ORDI $codigo ELIMINADO");
+		return true;
 	}
 
 	function instala(){
