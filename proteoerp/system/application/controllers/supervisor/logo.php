@@ -11,57 +11,81 @@ class logo extends Controller {
 		$path->setPath($this->config->item('base_url'));
 		$path->append('images');
 		$this->upload_path =$path->getPath().'/';
+		$this->write=is_writable('images');
 	}
 
 	function index(){
-		$this->datasis->modulo_id(310,1);
+		$this->datasis->modulo_id(903,1);
 		redirect('supervisor/logo/carga');
 	}
 
 	function carga(){
 		$this->rapyd->load('dataform');
-		$form = new DataForm('supervisor/logo/carga/ver');
-		$form->archivo = new uploadField('Logotipo de la Empresa','logo');
-		$form->archivo->upload_path   = $this->upload_path;
-		$form->archivo->allowed_types = 'jpg|gif|png';
-		//$form->archivo->overwrite     = true;
-		$form->archivo->append('Solo imagenes jpg, gif, png');
-		//$form->archivo->file_name = url_title('logo.jpg');
 
-		$form->submit('btnsubmit','Subir');
-		$form->build_form();
+		if($this->write){
+			$form = new DataForm('supervisor/logo/carga/ver');
+			$form->archivo = new uploadField('Logotipo de la Empresa','logo');
+			$form->archivo->upload_path   = $this->upload_path;
+			$form->archivo->allowed_types = 'jpg|gif|png';
+			$form->archivo->append('Solo imagenes jpg, gif, png');
+			$form->archivo->rule = 'required';
+			//$form->archivo->overwrite     = true;
+			//$form->archivo->file_name = url_title('logo.jpg');
 
-		if ($form->on_success()){
-			$arch=$form->archivo->upload_data['full_path'];
-			$tipo=$form->archivo->upload_data['image_type'];
-			switch ($tipo) {
-				case 'jpeg':
-					$im=imagecreatefromjpeg($arch);
-					break;
-				case 'gif':
-					$im=imagecreatefromgif($arch);
-					break;
-				case 'png':
-					$im=imagecreatefrompng($arch);
-					break;
+			$form->titulo = new inputField('Titulo', 'titulo');
+			$form->titulo->insertValue='logo';
+			$form->titulo->rule = 'trim|required|alpha';
+			$form->titulo->size=10;
+
+			$form->submit('btnsubmit','Subir');
+			$form->build_form();
+
+			if ($form->on_success()){
+				$titu=$form->titulo->newValue;
+				$arch=$form->archivo->upload_data['full_path'];
+				$tipo=$form->archivo->upload_data['image_type'];
+				switch ($tipo) {
+					case 'jpeg':
+						$im=imagecreatefromjpeg($arch);
+						break;
+					case 'gif':
+						$im=imagecreatefromgif($arch);
+						break;
+					case 'png':
+						$im=imagecreatefrompng($arch);
+						break;
+				}
+				$mask = "images/${titu}*";
+				array_map( 'unlink', glob( $mask ) );
+				imagegd2($im,"images/${titu}_generatriz.gd2");
+				imagedestroy($im);
+				unlink($arch);
 			}
-			$mask = 'images/logo*';
-			array_map( 'unlink', glob( $mask ) );
 
-			imagegd2($im,'images/logo_generatriz.gd2');
-			imagedestroy($im);
-			echo $arch;
-			unlink($arch);
+			$this->load->library('table');
+			
+			$i=0;
+			$pivot=array();
+			foreach (glob('images/*_generatriz.gd2') as $nombre_archivo) { 
+				$nn=explode('_',basename($nombre_archivo));
+				$url=site_url("supervisor/logo/traer/$nn[0].jpg");
+				$pivot[]="<img src='".$url."' alt='$nombre_archivo'>";
+				$i++;
+				if($i%3==0){
+					$this->table->add_row($pivot);
+					$pivot=array();
+				}
+			}
+			if($i==0)  $pivot[]="<img src='".site_url("supervisor/logo/traer/logo.jpg")."' alt='logo.jpg'>";
+			if(count($pivot)>0) $this->table->add_row($pivot);
+			$img=$this->table->generate(); 
+
+			$data['content'] = $form->output.br().$img;
+		}else{
+			$data['content'] = "El directorio 'images' no se puede escribir.";
 		}
 
-		$url=site_url('supervisor/logo/traer/logo.jpg');
-		$img="<table align='center'>
-				<tr><td>LOGO ACTUAL</td></tr>
-				<tr><td><img src='".$url."' border=0></a></td></tr>
-			</table>";
-
-		$data['content'] = $form->output.br().$img;
-		$data['title']   = '<h1>Subir Archivo</h1>';
+		$data['title']   = '<h1>Subir Logotipo</h1>';
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
@@ -70,13 +94,13 @@ class logo extends Controller {
 		$this->load->helper('file');
 		if(preg_match('/(?<nom>[a-zA-Z]+)(?<tam>\d*)\.(?<tip>(gif|jpg|png))/', $nombre, $match)>0){
 			$arch="images/$nombre";
+			$mime= get_mime_by_extension($nombre);
+			header("Content-type: $mime");
 			if(!file_exists($arch)){
 				if(empty($match['tam'])) $match['tam']=127;
 				$this->_crear($arch,$match['tam'],$match['tip'],$match['nom']);
 			}
-			$mime= get_mime_by_extension($nombre);
-			header("Content-type: $mime");
-			echo read_file($arch);
+			if($this->write) echo read_file($arch);
 		}else{
 			show_404('');
 		}
@@ -112,6 +136,7 @@ class logo extends Controller {
 			imageline($im, $x, $y,$x+$string_ancho, $y, $black);
 			imageline($im, $x, $y+$string_alto,$x+$string_ancho, $y+$string_alto, $black);
 		}
+		if(!$this->write) $path=null;
 		switch ($formato) {
 			case 'jpg':
 				imagejpeg($im,$path);
