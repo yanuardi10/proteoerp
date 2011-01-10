@@ -1,7 +1,7 @@
 <?php
-$container_bl=join("&nbsp;", $form->_button_container['BL']);
-$container_br=join("&nbsp;", $form->_button_container['BR']);
-$container_tr=join("&nbsp;", $form->_button_container['TR']);
+$container_bl=join('&nbsp;', $form->_button_container['BL']);
+$container_br=join('&nbsp;', $form->_button_container['BR']);
+$container_tr=join('&nbsp;', $form->_button_container['TR']);
 
 if ($form->_status=='delete' OR $form->_action=='delete'):
 	echo $form->output;
@@ -139,42 +139,48 @@ echo $form_begin;
 
 <table style="margin:0;width:98%;">
 	<tr>
-		<td colspan=6 class="littletableheader">Orden de importaci&oacute;n <b><?php if($form->_status=='show' or $form->_status=='modify' ) echo $form->numero->output; ?></b></td>
+		<td colspan=6 class="littletableheader">Orden de importaci&oacute;n <b><?php if($form->_status=='show' or $form->_status=='modify' ) echo str_pad($form->numero->output,8,0,0); ?></b></td>
 	</tr>
 	<tr>
 		<td class="littletablerowth" ><?php echo $form->status->label; ?></td>
-		<td class="littletablerow"   nowrap><?php echo $form->status->output; ?></td>
+		<td class="littletablerow"   nowrap><?php echo $form->status->output; ?>&nbsp;</td>
 		<td class="littletablerowth" align='right' ><?php echo $form->proveed->label; ?></td>
-		<td class="littletablerow"  nowrap><?php echo $form->proveed->output; ?></td>
-		<td class="littletablerow"  nowrap colspan=2><?php echo $form->nombre->output;  ?></td>
+		<td class="littletablerow"  nowrap><?php echo $form->proveed->output; ?>&nbsp;</td>
+		<td class="littletablerow"  nowrap colspan=2><?php echo $form->nombre->output;?>&nbsp;</td>
 	</tr>
 	<tr>
 		<td class="littletablerowth"><?php echo $form->fecha->label;  ?></td>
-		<td class="littletablerow"  ><?php echo $form->fecha->output; ?></td>
+		<td class="littletablerow"  ><?php echo $form->fecha->output; ?>&nbsp;</td>
 		<td class="littletablerowth" align='right'><?php echo $form->agente->label;  ?></td>
-		<td class="littletablerow"  ><?php echo $form->agente->output; ?></td>
-		<td class="littletablerowth" align='right'><?php echo $form->factura->label; ?></td>
-		<td class="littletablerow"  ><?php echo $form->factura->output;?></td>
+		<td class="littletablerow"  ><?php echo $form->agente->output; ?>&nbsp;</td>
+		<td class="littletablerow"  nowrap colspan=2><?php echo $form->nomage->output;?>&nbsp;</td>
 	</tr>
 	<tr>
 		<td class="littletablerowth"><?php echo $form->arribo->label;  ?></td>
-		<td class="littletablerow"  ><?php echo $form->arribo->output; ?></td>
-		<td class="littletablerowth" align='right' colspan=2><?php echo $form->condicion->label;  ?></td>
-		<td class="littletablerow"  colspan=2 rowspan=2><?php echo $form->condicion->output;  ?></td>
+		<td class="littletablerow"  ><?php echo $form->arribo->output; ?>&nbsp;</td>
+		<td class="littletablerowth" align='right'><?php echo $form->factura->label; ?></td>
+		<td class="littletablerow"  ><?php echo $form->factura->output;?>&nbsp;</td>
+		<td class="littletablerowth" colspan=2 align='center'><?php echo $form->condicion->label;  ?></td>
+
 	</tr>
 	<tr>
 		<td class="littletablerowth"><?php echo $form->cambioofi->label;  ?>*</td>
-		<td class="littletablerow"  ><?php echo $form->cambioofi->output;  ?></td>
+		<td class="littletablerow"  ><?php echo $form->cambioofi->output;  ?>&nbsp;</td>
 		<td class="littletablerowth" align='right'><?php echo $form->cambioreal->label;  ?>*</td>
-		<td class="littletablerow"  ><?php echo $form->cambioreal->output; ?></td>
+		<td class="littletablerow"  ><?php echo $form->cambioreal->output; ?>&nbsp;</td>
+		<td class="littletablerow" colspan=2 rowspan=3><?php echo $form->condicion->output;  ?></td>
+	</tr>
+		<tr>
+		<td class="littletablerowth"><?php echo $form->peso->label;  ?></td>
+		<td class="littletablerow"  ><?php echo $form->peso->output;  ?>&nbsp;</td>
+		<td class="littletablerowth" align='right'><?php echo $form->montoiva->label;  ?></td>
+		<td class="littletablerow"  ><?php echo $form->montoiva->output; ?>&nbsp;</td>
 	</tr>
 	<tr>
 		<td class="littletablerowth"><?php echo $form->gastosi->label;  ?></td>
-		<td class="littletablerow"  ><?php echo $form->gastosi->output; ?></td>
+		<td class="littletablerow"  ><?php echo $form->gastosi->output; ?>&nbsp;</td>
 		<td class="littletablerowth" align='right'><?php echo $form->gastosn->label;  ?></td>
-		<td class="littletablerow"  ><?php echo $form->gastosn->output; ?></td>
-		<td class="littletablerowth"><?php echo $form->peso->label;  ?></td>
-		<td class="littletablerow"  ><?php echo $form->peso->output;  ?></td>
+		<td class="littletablerow"  ><?php echo $form->gastosn->output; ?>&nbsp;</td>
 	</tr>
 </table>
 <p>
@@ -229,6 +235,7 @@ for($i=0;$i<$form->max_rel_count['itordi'];$i++) {
 if($form->_status=='show'){
 	echo $gseri;
 	echo $gser;
+	echo $ordiva;
 }
 ?>
 		</td>
