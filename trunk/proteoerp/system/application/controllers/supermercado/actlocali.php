@@ -154,6 +154,8 @@ class actlocali extends Controller {
 		END
 		";
 		
+		var_dump($this->db->simple_query($mSQL));
+		
 	}
 }
 ?>
