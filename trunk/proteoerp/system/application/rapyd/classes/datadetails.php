@@ -684,6 +684,8 @@ class DataDetails extends DataForm{
 									$this->$obj->request = $_POST;
 									$this->$obj->group   = $group;
 									$this->$obj->extra_output=str_replace('<#i#>',$i,$this->$obj->extra_output);
+									if(isset($this->$obj->onkeyup))
+										$this->$obj->onkeyup = str_replace('<#i#>',$i,$property->onkeyup);
 
 									if(get_class($property)=='dropdownField' AND isset($property->msql) AND $this->details_expand==false){
 										$mSQL=str_replace('<#i#>',$i,$property->msql );
