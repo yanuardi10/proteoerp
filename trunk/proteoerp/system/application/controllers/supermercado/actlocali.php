@@ -4,7 +4,7 @@
 class actlocali extends Controller {
 
 	var $url  ='supermercado/actlocali';
-	var $tits ='Actuzalizar Localizaciones';
+	var $tits ='Actualizar Localizaciones';
 	
 	function actlocali(){
 		parent::Controller();
@@ -24,8 +24,12 @@ class actlocali extends Controller {
 		$form->numero->minlength = 8;
 		
 		$form->locali = new inputField('Localizacion a colocar', 'locali');
-		$form->locali->rule      ='required';
 		$form->locali->size      =10;
+		
+		$form->oper = new dropdownField("Toman en cuenta : ","oper");
+		$form->oper->option("2","Todos");
+		$form->oper->option("1","Solo los que fraccion sea mayor a cero (0)");
+		$form->oper->option("0","Solo los que fraccion son igual a cero (0)");
 		
 		$form->submit('btnsubmit','Actualizar');
 		$form->build_form();
@@ -33,7 +37,8 @@ class actlocali extends Controller {
 		if ($form->on_success()){
 			$numero=$form->numero->newValue;
 			$locali=$form->locali->newValue;
-			redirect($this->url."/actualiza/".$numero."/".raencode($locali));
+			$oper  =$form->oper->newValue;
+			redirect($this->url."/actualiza/".$numero.'/'.$oper."/".raencode($locali));
 		}
 
 		$data['content'] = $form->output;
@@ -44,16 +49,16 @@ class actlocali extends Controller {
 		
 	}
 
-	function actualiza($numero,$locali){
+	function actualiza($numero,$oper,$locali=''){
 		$locali=radecode($locali);
 		$numero=$this->db->escape($numero);
 		$locali=$this->db->escape($locali);
 		
 		$cant = $this->datasis->dameval("SELECT COUNT(*) FROM maesfisico WHERE numero=$numero");
 		if($cant>0){
-			$bool=$this->db->query("CALL sp_maes_actlocali($numero,$locali)");
+			$bool=$this->db->query("CALL sp_maes_actlocali($numero,$locali,$oper)");
 			
-			if($bool)$salida="Se actuzalizo correctamente</br>";
+			if($bool)$salida="Se actualizo correctamente</br>";
 			else $salida="<div class='alert'>No se pudo actualizar la localizacion</div>";
 		}else{
 			$salida="<div class='alert'>No existe el numero de inventario indicado $numero</div>";
@@ -67,12 +72,9 @@ class actlocali extends Controller {
 
 	function instalar(){
 		$mSQL="
-		CREATE PROCEDURE `sp_maes_actlocali`(IN `Numero` VARCHAR(50), IN `Locali` VARCHAR(50))
-		BEGIN
-		UPDATE maesfisico a JOIN ubic b ON a.codigo = b.codigo AND a.ubica=b.ubica  SET b.locali=Locali WHERE a.numero=Numero;
-		END
+		CREATE PROCEDURE `sp_maes_actlocali`(IN `Numero` VARCHAR(50), IN `Locali` VARCHAR(50), IN `Oper` INT)  LANGUAGE SQL  NOT DETERMINISTIC  CONTAINS SQL  SQL SECURITY DEFINER  COMMENT '' BEGIN UPDATE maesfisico a JOIN ubic b ON a.codigo = b.codigo AND a.ubica=b.ubica SET b.locali=Locali WHERE a.numero=Numero AND ((a.fraccion>0)*(Oper=1)+(a.fraccion=0)*(Oper=0)+(a.fraccion>=0)*(Oper=2)); END;
 		";
-		$this->db->query($mSQL);
+		var_dump($this->db->simple_query($mSQL));
 	}
 }
 ?>
