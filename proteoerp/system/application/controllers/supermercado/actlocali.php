@@ -88,7 +88,7 @@ class actlocali extends Controller {
 	function mfisicocero(){
 		$this->rapyd->load("dataform");
 		
-		$form = new DataForm($this->url.'/mfisico/process');
+		$form = new DataForm($this->url.'/mfisicocero/process');
 		
 		$form->numero = new inputField('Numero de Inventario Fisico', 'numero');
 		$form->numero->rule      ='required';
