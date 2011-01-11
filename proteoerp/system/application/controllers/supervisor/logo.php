@@ -59,7 +59,8 @@ class logo extends Controller {
 				array_map( 'unlink', glob( $mask ) );
 				imagegd2($im,"images/${titu}_generatriz.gd2");
 				imagedestroy($im);
-				unlink($arch);
+				if(file_exists($arch))
+					unlink($arch);
 			}
 
 			$this->load->library('table');
