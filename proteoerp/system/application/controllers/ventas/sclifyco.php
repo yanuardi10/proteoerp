@@ -278,8 +278,8 @@ script;
 		$edit->grupo->size = 6;
 		$edit->grupo->maxlength = 4;
 		
-		$lriffis='<a href="javascript:consulrif(\'rifci\');" title="Consultar RIF en el SENIAT" onclick="">Consultar RIF en el SENIAT</a>';
-		$edit->rifci = new inputField("Ruc", "rifci");
+		//$lriffis='<a href="javascript:consulrif(\'rifci\');" title="Consultar RIF en el SENIAT" onclick="">Consultar RIF en el SENIAT</a>';
+		$edit->rifci = new inputField("Rif", "rifci");
 		$edit->rifci->rule = "trim|strtoupper|required";
 		$edit->rifci->maxlength =50;
 		//$edit->rifci->append($lriffis);
@@ -415,6 +415,7 @@ script;
 		$edit->cuenta = new inputField("Cuenta contable", "cuenta");
 		$edit->cuenta->rule='trim|callback_chcuentac';
 		$edit->cuenta->append($bcpla);
+		$edit->cuenta->insertValue ='1.1.2.02.01';
 		$edit->cuenta->size=20;
 		$edit->cuenta->maxlength =15; 
 		
@@ -554,6 +555,7 @@ script;
 		$data['smenu']   = $this->load->view('view_sub_menu', $smenu,true);
 		$data['title']   = "<h1>Clientes</h1>";
 		$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js");
+		//$data["head"]    = script('jquery.pack.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js').script('plugins/jquery.autocomplete.js').style('jquery.autocomplete.css').$this->rapyd->get_head();
 		$data["head"]   .= $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}	
