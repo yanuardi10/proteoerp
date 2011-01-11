@@ -11,11 +11,24 @@ class actlocali extends Controller {
 		$this->load->library("rapyd");
 		//$this->datasis->modulo_id(276,1);
 	}
-
+	
 	function index(){
+		
+		$salida =anchor($this->url.'/locali',"Modificar Localizaciones");
+		$salida.="</br>";
+		$salida.=anchor($this->url.'/mfisicocero','Colocar Productos no contados en Cero(0)');
+		
+		$data['content'] = $salida;
+		$data['title']   = '<h1>Menu</h1>';
+		$data['script']  = '';
+		$data['head']    = $this->rapyd->get_head();
+		$this->load->view('view_ventanas', $data);
+	}
+
+	function locali(){
 		$this->rapyd->load("dataform");
 		
-		$form = new DataForm($this->url.'/index/process');
+		$form = new DataForm($this->url.'/locali/process');
 		
 		$form->numero = new inputField('Numero de Inventario Fisico', 'numero');
 		$form->numero->rule      ='required';
@@ -41,7 +54,9 @@ class actlocali extends Controller {
 			redirect($this->url."/actualiza/".$numero.'/'.$oper."/".raencode($locali));
 		}
 
-		$data['content'] = $form->output;
+		$salida=anchor($this->url.'/index','Menu');
+
+		$data['content'] = $form->output.$salida;
 		$data['title']   = '<h1>'.$this->tits.'</h1>';
 		$data['script']  = '';
 		$data['head']    = $this->rapyd->get_head();
@@ -63,7 +78,55 @@ class actlocali extends Controller {
 		}else{
 			$salida="<div class='alert'>No existe el numero de inventario indicado $numero</div>";
 		}
-		$data['content'] = $salida.anchor($this->url.'/index','Regresar');
+		$data['content'] = $salida.anchor($this->url.'/locali','Regresar');
+		$data['title']   = '<h1>'.$this->tits.'</h1>';
+		$data['script']  = '';
+		$data['head']    = $this->rapyd->get_head();
+		$this->load->view('view_ventanas', $data);
+	}
+	
+	function mfisicocero(){
+		$this->rapyd->load("dataform");
+		
+		$form = new DataForm($this->url.'/mfisico/process');
+		
+		$form->numero = new inputField('Numero de Inventario Fisico', 'numero');
+		$form->numero->rule      ='required';
+		$form->numero->size      =10;
+		$form->numero->maxlength = 8;
+		$form->numero->minlength = 8;
+		
+		$form->submit('btnsubmit','Actualizar');
+		$form->build_form();
+
+		if ($form->on_success()){
+			$numero=$form->numero->newValue;
+			redirect($this->url."/mfisicoactualiza/".$numero);
+		}
+		
+		$salida=anchor($this->url.'/index','Menu');
+
+		$data['content'] = $form->output.$salida;
+		$data['title']   = '<h1>Colocar producto no contados en cero (0)</h1>';
+		$data['script']  = '';
+		$data['head']    = $this->rapyd->get_head();
+		$this->load->view('view_ventanas', $data);
+		
+	}
+	
+	function mfisicoactualiza($numero){
+		$numero=$this->db->escape($numero);
+		
+		$cant = $this->datasis->dameval("SELECT COUNT(*) FROM maesfisico WHERE numero=$numero");
+		if($cant>0){
+			$bool=$this->db->query("CALL sp_maes_maesfis0($numero)");
+			
+			if($bool)$salida="Se colocaron TODOS los productos de inventario NO CONTADOS en cero (0)</br>";
+			else $salida="<div class='alert'>No se pudo actualizar</div>";
+		}else{
+			$salida="<div class='alert'>No existe el numero de inventario indicado $numero</div>";
+		}
+		$data['content'] = $salida.anchor($this->url.'/mfisicocero','Regresar');
 		$data['title']   = '<h1>'.$this->tits.'</h1>';
 		$data['script']  = '';
 		$data['head']    = $this->rapyd->get_head();
