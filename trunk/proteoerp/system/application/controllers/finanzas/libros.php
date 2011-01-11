@@ -7761,7 +7761,7 @@ class Libros extends Controller {
 			$mSQL = "SELECT monto-abonos FROM smov WHERE cod_cli='REIVA' AND transac='$row->transac'";
 			$mSQL = "INSERT INTO siva SET 
 					libro = 'V',
-					tipo  = 'CR',
+					tipo  = 'CR2',
 					fuente =  'MC',
 					sucursal = '99', 
 					fecha = '".$row->emiriva."',
