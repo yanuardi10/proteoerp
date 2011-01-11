@@ -9,7 +9,7 @@ class actlocali extends Controller {
 	function actlocali(){
 		parent::Controller();
 		$this->load->library("rapyd");
-		//$this->datasis->modulo_id(276,1);
+		$this->datasis->modulo_id('31E',1);
 	}
 	
 	function index(){
@@ -138,6 +138,22 @@ class actlocali extends Controller {
 		CREATE PROCEDURE `sp_maes_actlocali`(IN `Numero` VARCHAR(50), IN `Locali` VARCHAR(50), IN `Oper` INT)  LANGUAGE SQL  NOT DETERMINISTIC  CONTAINS SQL  SQL SECURITY DEFINER  COMMENT '' BEGIN UPDATE maesfisico a JOIN ubic b ON a.codigo = b.codigo AND a.ubica=b.ubica SET b.locali=Locali WHERE a.numero=Numero AND ((a.fraccion>0)*(Oper=1)+(a.fraccion=0)*(Oper=0)+(a.fraccion>=0)*(Oper=2)); END;
 		";
 		var_dump($this->db->simple_query($mSQL));
+		
+		$mSQL="
+		BEGIN
+		DECLARE mALMA CHAR(4) ;
+		DECLARE mFECHA DATE ;
+		
+		SELECT ubica FROM maesfisico WHERE numero=mNUMERO LIMIT 1  INTO mALMA;
+		SELECT fecha FROM maesfisico WHERE numero=mNUMERO LIMIT 1 INTO mFECHA;
+		
+		INSERT INTO maesfisico 
+		SELECT 0 id,codigo,mALMA,'2011',0,0,0,0,mFECHA, mNUMERO, 'BLANCO',CURDATE(),CURTIME() 
+		FROM maes a WHERE (SELECT COUNT(*) FROM maesfisico b WHERE a.codigo=b.codigo AND b.numero=mNUMERO)=0;
+		
+		END
+		";
+		
 	}
 }
 ?>
