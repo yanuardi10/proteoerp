@@ -142,8 +142,8 @@ echo $form_begin;
 		<td colspan=6 class="littletableheader">Orden de importaci&oacute;n <b><?php if($form->_status=='show' or $form->_status=='modify' ) echo str_pad($form->numero->output,8,0,0); ?></b></td>
 	</tr>
 	<tr>
-		<td class="littletablerowth" ><?php echo $form->status->label; ?></td>
-		<td class="littletablerow"   nowrap><?php echo $form->status->output; ?>&nbsp;</td>
+		<td class="littletablerowth" ><?php echo $form->dua->label; ?></td>
+		<td class="littletablerow"   nowrap><?php echo $form->dua->output; ?>&nbsp;</td>
 		<td class="littletablerowth" align='right' ><?php echo $form->proveed->label; ?></td>
 		<td class="littletablerow"  nowrap><?php echo $form->proveed->output; ?>&nbsp;</td>
 		<td class="littletablerow"  nowrap colspan=2><?php echo $form->nombre->output;?>&nbsp;</td>

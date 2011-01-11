@@ -142,17 +142,20 @@ class Ordi extends Controller {
 		$edit->numero->apply_rules=false; //necesario cuando el campo es clave y no se pide al usuario
 		$edit->numero->when=array('show','modify');
 
+		$edit->dua= new inputField('Declaraci&oacute;n &uacute;nida de aduana', 'dua');
+		$edit->dua->size=10;
+
 		$edit->fecha = new  dateonlyField('Fecha','fecha');
 		$edit->fecha->insertValue = date('Y-m-d');
 		$edit->fecha->maxlength=8;
 		$edit->fecha->size =10;
 
-		$edit->status = new dropdownField('Estatus', 'status');
+		/*$edit->status = new dropdownField('Estatus', 'status');
 		$edit->status->option('A','Abierto');
 		$edit->status->option('C','Cerrado');
 		$edit->status->option('E','Eliminado');
 		$edit->status->rule  = 'required';
-		$edit->status->style = 'width:120px';
+		$edit->status->style = 'width:120px';*/
 
 		$edit->proveed = new inputField('Proveedor', 'proveed');
 		$edit->proveed->rule     ='trim|required';
@@ -313,6 +316,8 @@ class Ordi extends Controller {
 		}*/
 		//Termina el detalle
 
+		$edit->ordeni  = new autoUpdateField('status','A','A');
+
 		if($edit->_status=='show'){
 			$action = "javascript:window.location='".site_url('import/ordi/calcula/'.$edit->_dataobject->pk['numero'])."'";
 			$edit->button('btn_recalculo', 'Calcular valores', $action, 'TR');
@@ -394,7 +399,8 @@ class Ordi extends Controller {
 
 		$grid->column('N&uacute;mero',$uri);
 		$grid->column('Tasa'    ,'<nformat><#tasa#></nformat>%','align=\'right\'');
-		$grid->column('Monto'    ,'<nformat><#monto#></nformat>','align=\'right\'');
+		$grid->column('Base'    ,'<nformat><#base#></nformat>','align=\'right\'');
+		$grid->column('IVA'    ,'<nformat><#montoiva#></nformat>','align=\'right\'');
 
 		$grid->add('import/ordi/ordiva/'.$id.'/create','Agregar/Eliminar monto de tasa');
 		$grid->build();
@@ -448,11 +454,22 @@ class Ordi extends Controller {
 		$fecha = $this->datasis->dameval("SELECT fecha FROM ordi WHERE numero=$ordi");
 		$iva   = $this->datasis->ivaplica($fecha);
 
+		$jsc='function calcula(){
+			if($("#tasa").val().length>0) tasa=parseFloat($("#tasa").val()); else tasa=0;
+			if($("#base").val().length>0) base=parseFloat($("#base").val()); else base=0;
+			$("#montoiva").val(roundNumber(base*(tasa/100),2));
+		}';
+
 		$edit = new DataEdit('Impuestos', 'ordiva');
+
 		$edit->back_url = site_url('import/ordi/dataedit/show/'.$ordi);
 		$edit->post_process('insert','_post_ordiva');
 		$edit->post_process('update','_post_ordiva');
 		$edit->post_process('delete','_post_ordiva');
+
+		$edit->id = new inputField2('Numero','id');
+		$edit->id->mode= 'autohide';
+		$edit->id->when=array('modify');
 
 		$edit->tasa =  new dropdownField('Tasa %','tasa');
 		foreach($iva AS $nom=>$val){
@@ -460,22 +477,45 @@ class Ordi extends Controller {
 		}
 		$edit->tasa->rule  = 'required|numeric';
 		$edit->tasa->style = 'width:100px';
+		$edit->tasa->mode  = 'autohide';
 
+		$edit->base = new inputField2('Base imponible','base');
+		$edit->base->rule= 'required|numeric';
+		$edit->base->size = 20;
+		$edit->base->css_class='inputnum';
 
-		$edit->monto = new inputField2('Monto ','monto');
-		$edit->monto->rule= 'required|numeric';
-		$edit->monto->size = 20;
-		$edit->monto->css_class='inputnum';
+		$edit->montoiva = new inputField2('IVA ','montoiva');
+		$edit->montoiva->rule= 'required|numeric';
+		$edit->montoiva->size = 20;
+		$edit->montoiva->css_class='inputnum';
 
 		$edit->ordeni  = new autoUpdateField('ordeni',$ordi,$ordi);
 
+		$edit->script($jsc,'create');
+		//$edit->script($jsm,'modify');
 		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
 		$edit->build();
 
-		$this->rapyd->jquery[]='$(".inputnum").numeric(".");';
+		if($edit->_status!='show'){
+			$this->rapyd->jquery[]='$(".inputnum").numeric(".");';
+			//$this->rapyd->jquery[]='calcula();';
+			$this->rapyd->jquery[]='$("#tasa").change(function() { calcula(); });';
+			$this->rapyd->jquery[]='$("#base,#montoiva").bind("keyup",function() { calcula(); });';
+		}
+
+		if($edit->_status=='modify'){
+			$jsm='<script language="javascript" type="text/javascript">
+			function calcula(){
+				tasa='.$edit->tasa->value.';
+				if($("#base").val().length>0) base=parseFloat($("#base").val()); else base=0;
+				$("#montoiva").val(roundNumber(base*(tasa/100),2));
+			}
+			</script>';
+			$data['script'] =$jsm;
+		}
 		$data['content'] = $edit->output;
 		$data['title']   = '<h1>Impuestos</h1>';
-		$data['head']    = $this->rapyd->get_head();
+		$data['head']    = $this->rapyd->get_head().phpscript('nformat.js');
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -590,8 +630,8 @@ class Ordi extends Controller {
 		$montofob=$row['montofob'];
 		$gastosi =$this->datasis->dameval("SELECT SUM(monto)   AS gastosi FROM gseri WHERE ordeni=$dbid");
 		$gastosn =$this->datasis->dameval("SELECT SUM(totpre) AS gastosn  FROM gser  WHERE ordeni=$dbid");
-		$montoiva=$this->datasis->dameval("SELECT SUM(monto) AS montoiva  FROM ordiva WHERE ordeni=$dbid");
-		$baseiva =$this->datasis->dameval("SELECT SUM(monto/(tasa/100)) AS base  FROM ordiva WHERE ordeni=$dbid");
+		$montoiva=$this->datasis->dameval("SELECT SUM(montoiva) AS montoiva  FROM ordiva WHERE ordeni=$dbid");
+		$baseiva =$this->datasis->dameval("SELECT SUM(base)     AS base  FROM ordiva WHERE ordeni=$dbid");
 		if(empty($gastosn))  $gastosn =0;
 		if(empty($gastosi))  $gastosi =0;
 		if(empty($montoiva)) $montoiva=0;
@@ -638,8 +678,8 @@ class Ordi extends Controller {
 		$this->db->simple_query($mSQL);
 		$tas=$cambioreal/$cambioofi;
 
-		$importefinal =$this->datasis->dameval("SELECT SUM(importefinal) AS final  FROM itordi WHERE numero=$dbid");
-		if(empty($importefinal)) $importefinal=0;
+		$importecif =$this->datasis->dameval("SELECT SUM(importecif) AS final  FROM itordi WHERE numero=$dbid");
+		if(empty($importecif)) $importecif=0;
 
 		$mSQL="SELECT SUM(montoaran) AS aranceles  FROM itordi WHERE numero=$dbid";
 		$query = $this->db->query($mSQL);
@@ -648,7 +688,8 @@ class Ordi extends Controller {
 			$row['gastosi'] =$gastosi;
 			$row['gastosn'] =$gastosn;
 			$row['montoiva']=$montoiva;
-			$row['montoexc']=$importefinal-$baseiva;//monto excento
+			$row['montoexc']=$importecif-$baseiva;//monto excento
+			$row['cargoval']=(($importecif/$cambioofi)*$cambioreal)-$importecif;// diferencia dolar real e imaginario
 
 			$where = "numero=$dbid";
 			$str = $this->db->update_string('ordi', $row, $where);
@@ -700,9 +741,10 @@ class Ordi extends Controller {
 		}
 	}
 
+
 	function _post_ordiva($do){
 		$ordeni=$do->get('ordeni');
-		$monto =$this->datasis->dameval("SELECT SUM(monto) FROM ordiva WHERE ordeni=$ordeni");
+		$monto =$this->datasis->dameval("SELECT SUM(montoiva) FROM ordiva WHERE ordeni=$ordeni");
 		if(empty($monto)) $monto=0;
 
 		$data  = array('montoiva' => $monto);
