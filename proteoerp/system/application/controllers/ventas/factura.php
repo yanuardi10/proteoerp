@@ -255,7 +255,7 @@ class Factura extends Controller {
 		$detalle = new DataDetalle($edit->_status);
 
 		//Campos para el detalle
-		$detalle->db->select('codigoa,desca,cana,mostrado');
+		$detalle->db->select('codigoa,desca,cana,mostrado,preca,tota');
 		$detalle->db->from('sitems');
 		$detalle->db->where("numa='$numero'");
 		$detalle->db->where("tipoa='$tipo'");
@@ -277,14 +277,14 @@ class Factura extends Controller {
 		$detalle->cantidad->maxlength=60;
 		$detalle->cantidad->css_class='inputnum';
 
-		$detalle->precio = new inputField("Precio", "mostrado<#i#>");
+		$detalle->precio = new inputField("Precio", "preca<#i#>");
 		$detalle->precio->css_class='inputnum';
 		$detalle->precio->onchange='totalizar()';
 		$detalle->precio->size=20;
-		$detalle->precio->db_name='mostrado';
+		$detalle->precio->db_name='preca';
 		
-		$detalle->importe = new inputField2("Importe", "mostrado<#i#>");
-		$detalle->importe->db_name='mostrado';
+		$detalle->importe = new inputField2("Importe", "tota<#i#>");
+		$detalle->importe->db_name='tota';
 		$detalle->importe->size=20;
 		$detalle->importe->css_class='inputnum';
 		
