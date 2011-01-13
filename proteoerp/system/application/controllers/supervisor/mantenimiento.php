@@ -10,6 +10,7 @@ class Mantenimiento extends Controller{
 	function index(){
 		$list = array();
 		$list[]=anchor('supervisor/mantenimiento/bprefac','Borrar PreFacturas menores o iguales al d&iacute;a de ayer');
+		$list[]=anchor('supervisor/mantenimiento/puesrtosdir','Descargar PUERTOS.DIR');
 		$list[]=anchor('supervisor/mantenimiento/bmodbus','Vaciar la tabla ModBus');
 		$list[]=anchor('supervisor/mantenimiento/centinelas','Centinelas');
 		$list[]=anchor('supervisor/mantenimiento/reparatabla','Reparar Tablas');
@@ -593,7 +594,7 @@ class Mantenimiento extends Controller{
 		}
 		$data['content']  = $filter->output.$tabla;
 		$data['title']    = "<h1>Cambio de almac&eacute;n en notas de entrega</h1>";
-		$data["head"]     = $this->rapyd->get_head();
+		$data['head']     = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -655,4 +656,34 @@ class Mantenimiento extends Controller{
 		$data['head']    = '';
 		$this->load->view('view_ventanas', $data);
 	}
+
+	function puertosdir(){
+		$this->load->helper('download');
+		if (extension_loaded('dbase')) {
+			$def = array(
+			    array('FORMA'  , 'C',  10),
+			    array('PUERTO' , 'C',  60),
+			    array('DESCRIP', 'C',  200),
+			);
+			$temp =tempnam("/tmp", 'puertos');
+			$db=dbase_create($temp, $def);
+			if ($db){
+				$query = $this->db->query('SELECT nombre FROM formatos');
+				if ($query->num_rows() > 0){
+					foreach ($query->result() as $row){
+						$pivot=array($row->nombre,'C:\\spool\\'.$row->nombre.'txt','');
+						dbase_add_record($db, $pivot);
+					}
+				}
+				dbase_close($db);
+			}
+			$data = file_get_contents($temp);
+			force_download('PUERTOS.DIR', $data);
+			unlink($temp);
+		}else{
+			echo 'Debe cargar las librerias dbase para poder usar este modulo';
+		}
+	}
 }
+
+
