@@ -6757,7 +6757,7 @@ class Libros extends Controller {
 			'CP' AS fuente, 
 			'00' AS sucursal, 
 			b.fecha,
-			b.numero,
+			IF(LENGTH(b.serie)>0,b.serie,b.numero) AS numero,
 			' ' AS numhasta,
 			' ' AS caja,
 			b.nfiscal,
@@ -8488,6 +8488,9 @@ class Libros extends Controller {
 			$mSQL = $this->db->insert_string('libros', $algo);
 			$this->db->simple_query($mSQL);
 		}
+		$this->db->simple_query($mSQL);
+
+		$mSQL="ALTER TABLE `siva`  CHANGE COLUMN `numero` `numero` VARCHAR(15) NOT NULL DEFAULT '' AFTER `fecha`";
 		$this->db->simple_query($mSQL);
 		echo $uri = anchor('finanzas/libros/configurar','Configurar');
 	}
