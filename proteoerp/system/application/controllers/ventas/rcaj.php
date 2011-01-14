@@ -123,7 +123,7 @@ class Rcaj extends validaciones {
 			$grid->column('Status/Caja','<iconcaja><#cajero#>|<#fecha#>|<#numero#>|<#tipo#></iconcaja>','align="center"');
 			$grid->column('Ver html'   ,"<siinulo><#numero#>|---|$urih</siinulo>",'align=\'center\'');
 			$grid->build();
-			echo $grid->db->last_query();
+			//echo $grid->db->last_query();
 			$data['content'] .= $grid->output;
 		}
 
