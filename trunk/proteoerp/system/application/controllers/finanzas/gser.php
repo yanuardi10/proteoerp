@@ -10,6 +10,7 @@ class Gser extends Controller {
 
 	function index() {
 		$this->rapyd->load('datagrid','datafilter');
+		$this->rapyd->uri->keep_persistence();
 
 		$atts = array(
 			'width'      => '800',
@@ -60,19 +61,21 @@ class Gser extends Controller {
 
 		$uri  = anchor('finanzas/gser/dataedit/show/<#fecha#>/<#numero#>/<#proveed#>','<#numero#>');
 		$uri2 = anchor_popup('formatos/verhtml/gser/<#fecha#>/<#numero#>/<#proveed#>','Ver HTML',$atts);
-
+		$uri3  = anchor('finanzas/mgser/dataedit/modify/<#fecha#>/<#numero#>/<#proveed#>','Modificar');
+		
 		$grid = new DataGrid();
 		$grid->order_by('numero','desc');
 		$grid->per_page = 15;
 
 		$grid->column('N&uacute;mero',$uri);
+		$grid->column('Modificar',$uri3);
 		$grid->column('Fecha'   ,'<dbdate_to_human><#fecha#></dbdate_to_human>','align=\'center\'');
 		$grid->column('Vence'   ,'<dbdate_to_human><#vence#></dbdate_to_human>','align=\'center\'');
 		$grid->column('Nombre'  ,'nombre');
 		$grid->column('IVA'     ,'<nformat><#totiva#></nformat>' ,'align=\'right\'');
 		$grid->column('Monto'   ,'<nformat><#totneto#></nformat>','align=\'right\'');
 		$grid->column('Vista'   ,$uri2,'align=\'center\'');
-
+		
 		//$grid->add("finanzas/agregareg/");
 		$grid->build();
 
@@ -99,6 +102,19 @@ class Gser extends Controller {
 			'retornar'=>array('codigo'=>'codigo<#i#>','precio1'=>'precio1<#i#>','precio2'=>'precio2<#i#>','precio3'=>'precio3<#i#>','precio4'=>'precio4<#i#>','iva'=>'iva<#i#>','pond'=>'costo<#i#>'),
 			'p_uri'=>array(4=>'<#i#>'),
 			'titulo'  =>'Buscar Articulo');
+			
+			
+		$sprv=array(
+			'tabla'   =>'sprv',
+			'columnas'=>array(
+				'proveed' =>'C&oacute;digo Proveedor',
+				'nombre'=>'Nombre',
+				'rif'=>'RIF'),
+			'filtro'  =>array('proveed'=>'C&oacute;digo Proveedor','nombre'=>'Nombre'),
+			'retornar'=>array('proveed'=>'proveed','nombre'=>'nombre'),
+			'titulo'  =>'Buscar Proveedor');
+
+		$bsprv=$this->datasis->modbus($sprv);
 
 		//Script necesario para totalizar los detalles
 		$fdepar = new dropdownField("ccosto", "ccosto");    
@@ -156,32 +172,35 @@ class Gser extends Controller {
 		$edit->post_process("delete","_borra_detalle");
 		$edit->pre_process('delete','_pre_del');
 */
-		
+		//$edit->post_process("update","_actualiza");
 		$edit->back_url = "finanzas/gser";
 		
 		$edit->fecha = new DateonlyField("Fecha", "fecha","d/m/Y");
 		$edit->fecha->insertValue = date("Y-m-d");
-		$edit->fecha->mode="autohide";
+		//$edit->fecha->mode="autohide";
 		$edit->fecha->size = 10;
 		
 		$edit->vencimiento = new DateonlyField("Vencimiento", "vence","d/m/Y");
 		$edit->vencimiento->insertValue = date("Y-m-d");
 		$edit->vencimiento->size = 10;
+		$edit->vencimiento->mode="autohide";
 			
 		$edit->numero = new inputField("N&uacute;mero", "numero");
 		$edit->numero->size = 10;
 		$edit->numero->rule= "required";
-		$edit->numero->mode="autohide";
+		//$edit->numero->mode="autohide";
 		$edit->numero->maxlength=8;
 
 		$edit->numero1 = new inputField("N&uacute;mero", "cheque1");
 		$edit->numero1->size = 20;
 		$edit->numero1->rule= "required";
+		$edit->numero1->mode="autohide";
 		$edit->numero1->maxlength=20;
 		
 		$edit->codigo = new inputField("C&oacute;digo", "proveed");
-		$edit->codigo->size = 10;        
+		$edit->codigo->size =8;        
 		$edit->codigo->maxlength=5;
+		$edit->codigo->append($bsprv);
 		
 		$edit->nombre = new inputField("Nombre", "nombre");
 		$edit->nombre->size =  50;
@@ -190,52 +209,65 @@ class Gser extends Controller {
 		$edit->tipo1 = new inputField("Tipo", "tipo1");
 		$edit->tipo1->size = 5;
 		$edit->tipo1->maxlength=8;
+		$edit->tipo1->mode="autohide";
 		
 		$edit->banco = new inputField("Banco", "codb1");
 		$edit->banco->size = 5;
 		$edit->banco->maxlength=8;
+		$edit->banco->mode="autohide";
 		
 		$edit->tipo = new inputField("Tipo", "tipo_doc");
 		$edit->tipo->size = 5;
 		$edit->tipo->maxlength=8;
+		$edit->tipo->mode="autohide";
 	
 		$edit->comprob  = new inputField2("Comprobante", "comprob1");
 		$edit->comprob->size = 20;
 		$edit->comprob->css_class='inputnum';
+		$edit->comprob->mode="autohide";
 		
 		$edit->contado  = new inputField2("Contado", "monto1");
 		$edit->contado->size = 20;
 		$edit->contado->css_class='inputnum';
+		$edit->contado->mode="autohide";
 		
 		$edit->orden  = new inputField("Orden", "orden");
 		$edit->orden->size = 15;
-		
+    $edit->orden->mode="autohide";
+    
 		$edit->beneficiario  = new inputField("Beneficiario", "benefi");
 		$edit->beneficiario->size = 45;
+		$edit->beneficiario->mode="autohide";
 		
 		$edit->credito  = new inputField("Cr&eacute;dito", "credito");
 		$edit->credito->size = 20;
 		$edit->credito->css_class='inputnum';
+		$edit->credito->mode="autohide";
 		
 		$edit->anticipo  = new inputField("Anticipo", "anticipo");
 		$edit->anticipo->size = 20;
 		$edit->anticipo->css_class='inputnum';
-
+		$edit->anticipo->mode="autohide";
+		
 		$edit->rislr  = new inputField("Retenci&oacute;n.ISLR", "totpre");
 		$edit->rislr->size = 20;
 		$edit->rislr->css_class='inputnum';
+		$edit->rislr->mode="autohide";
 		
 		$edit->totalneto  = new inputField("Total Neto", "totneto");
 		$edit->totalneto->size = 20;
 		$edit->totalneto->css_class='inputnum';
+		$edit->totalneto->mode="autohide";
 		
 		$edit->riva  = new inputField("Retenciòn.IVA", "totiva");
 		$edit->riva->size = 20;
 		$edit->riva->css_class='inputnum';
+		$edit->riva->mode="autohide";
 		
 		$edit->monto  = new inputField("Monto$", "mdolar");
 		$edit->monto->size = 20;
 		$edit->monto->css_class='inputnum';
+		$edit->monto->mode="autohide";
 				
 		$numero=$edit->_dataobject->get('numero');
 		$fecha=$edit->_dataobject->get('fecha');
@@ -256,28 +288,33 @@ class Gser extends Controller {
 		$detalle->codigo->db_name='codigo';
 		$detalle->codigo->append($this->datasis->p_modbus($modbus,'<#i#>'));
 		$detalle->codigo->readonly=TRUE;
+		$detalle->codigo->mode="autohide";
 		
 		$detalle->descripcion = new inputField("Descripci&oacute;n", "descrip<#i#>");
 		$detalle->descripcion->size=30;
 		$detalle->descripcion->db_name='descrip';
 		$detalle->descripcion->maxlength=12;
+		$detalle->descripcion->mode="autohide";
 		
 		$detalle->impuesto = new inputField("Impuesto", "iva<#i#>");
 		$detalle->impuesto->size=20;
 		$detalle->impuesto->db_name='iva';
 		$detalle->impuesto->maxlength=60;
 		$detalle->impuesto->css_class='inputnum';	
+		$detalle->impuesto->mode="autohide";
 		
 		$detalle->precio = new inputField("Precio", "precio<#i#>");
 		$detalle->precio->css_class='inputnum';
 		$detalle->precio->onchange='totalizar()';
 		$detalle->precio->size=20;
 		$detalle->precio->db_name='precio';
+		$detalle->precio->mode="autohide";
 		
 		$detalle->importe = new inputField2("Importe", "importe<#i#>");
 		$detalle->importe->db_name='importe';
 		$detalle->importe->css_class='inputnum';
 		$detalle->importe->size=20;
+		$detalle->importe->mode="autohide";
 
 		//fin de campos para detalle
 		
@@ -298,15 +335,15 @@ class Gser extends Controller {
 		
 		$edit->detalle=new freeField("detalle", 'detalle',$detalle->output);
 
-		$edit->buttons("save", "undo","back");
+		$edit->buttons("undo","back");
 		$edit->build();
 		
 		$smenu['link']=barra_menu('518');
 		$data['smenu'] = $this->load->view('view_sub_menu', $smenu,true);
-		$conten["form"]  =&  $edit;
+		$conten["form"]  =&$edit;
 		$data['content'] = $this->load->view('view_egresos', $conten,true); 
 		$data["head"]    = script("tabber.js").script("prototype.js").$this->rapyd->get_head().script("scriptaculous.js").script("effects.js");
-		$data['title']   = '<h1>Compras</h1>';
+		$data['title']   = '<h1>Egresos</h1>';
 		$this->load->view('view_ventanas', $data);
 	}
 	
@@ -336,7 +373,24 @@ class Gser extends Controller {
 		$data['title']   ='<h1>Seleccione un departamento</h1>';
 		$this->load->view('view_detalle', $data);
 	}
-
+	function actualiza(){
+		//$fecha=$this->input->post("fecha");
+		//$proveed=$this->input->post("proveed");
+		//$nombre=$this->input->post("nombre");
+		//$numero=$this->input->post("numero");
+		//$update="UPDATE gser SET tfecha=$fecha, proveed=$proveed,nombre=$nombre,numero=$numero,serie=$numero WHERE fecha=$fecha AND proveed=$proveed
+		//AND numero=$numero";
+		////$this->db->query($update);
+		//
+		//echo $update;
+		//
+		//$update2="UPDATE gitser SET fecha=$fecha, proveed=$proveed,numero=$numero WHERE fecha=$fecha AND proveed=$proveed
+		//AND numero=$numero";
+		////$this->db->query($update2);	
+		//
+		//echo $update;
+		echo 'hola';
+	}
 	function _guarda_detalle($do) {
 		$cant=$this->input->post('cant_0');
 		$i=$o=0;
