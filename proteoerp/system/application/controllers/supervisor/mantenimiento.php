@@ -10,7 +10,7 @@ class Mantenimiento extends Controller{
 	function index(){
 		$list = array();
 		$list[]=anchor('supervisor/mantenimiento/bprefac','Borrar PreFacturas menores o iguales al d&iacute;a de ayer');
-		$list[]=anchor('supervisor/mantenimiento/puesrtosdir','Descargar PUERTOS.DIR');
+		$list[]=anchor('supervisor/mantenimiento/puertosdir','Descargar PUERTOS.DIR');
 		$list[]=anchor('supervisor/mantenimiento/bmodbus','Vaciar la tabla ModBus');
 		$list[]=anchor('supervisor/mantenimiento/centinelas','Centinelas');
 		$list[]=anchor('supervisor/mantenimiento/reparatabla','Reparar Tablas');
