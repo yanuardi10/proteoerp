@@ -27,17 +27,19 @@ class Rcaj extends validaciones {
 
 		$titulo  = anchor_popup('supermercado/lresumen', ' Ver Resumen de caja',$atts)." <---> ";
 		$titulo .= anchor_popup('supermercado/lresumen/indext',' Ver Resumen de todas las cajas',$atts);
-		$recep = anchor('ventas/rcaj/forcierre/',"Recepcion de Caja");
+		$recep = anchor('ventas/rcaj/forcierre/','Recepcion de Caja');
 		//$filter = new DataFilter($titulo);
-		$filter = new DataFilter("Filtro");
-		$filter->fecha = new dateonlyField("Fecha","b.fecha","d/m/Y");
+		$filter = new DataFilter('Filtro');
+		$filter->fecha = new dateonlyField('Fecha','fecha','d/m/Y');
+		$filter->fecha->db_name='c.f_factura';
 		$filter->fecha->size =11;
-		$filter->fecha->clause="where";
-		$filter->fecha->operator="=";
-		$filter->fecha->insertValue=date("Y-m-d");
+		$filter->fecha->clause='where';
+		$filter->fecha->operator='=';
+		$filter->fecha->insertValue=date('Y-m-d');
 
-		$filter->cajero = new dropdownField("Cajero", "b.cajero");
-		$filter->cajero->option("","Todos");
+		$filter->cajero = new dropdownField('Cajero', 'cajero');
+		$filter->cajero->db_name='c.cobrador';
+		$filter->cajero->option('','Todos');
 		$filter->cajero->options('SELECT cajero, nombre FROM scaj ORDER BY nombre');
 
 		$filter->buttons("reset","search");
@@ -98,16 +100,18 @@ class Rcaj extends validaciones {
 			$grid->per_page=15;
 
 			$grid = new DataGrid('Recepcion de cajas para la fecha: '.$filter->fecha->value);
-			$select=array('b.cajero','b.fecha','a.tipo','b.cajero','a.recibido','SUM(b.totalg) AS ingreso','a.numero');
+			$select=array('c.cobrador AS cajero','c.f_factura AS fecha','a.tipo','a.recibido','a.numero');
+			//$select=array('b.cajero','b.fecha','a.tipo','b.cajero','a.recibido','SUM(b.totalg) AS ingreso','a.numero');
 			//$select=array('b.cajero','b.fecha','b.cajero','b.recibido','b.numero');
 
 			$grid->db->select($select);
 			//$grid->db->from('rcaj as b');
-			$grid->db->from('sfac AS b');
-			$grid->db->join('rcaj AS a','a.cajero=b.cajero AND a.fecha=b.fecha','LEFT');
-			$grid->db->join('sfpa AS c','b.transac=c.transac');
+			//$grid->db->from('sfac AS b');
+			$grid->db->from('rcaj AS a');
+			//$grid->db->join('rcaj AS a','a.cajero=b.cajero AND a.fecha=b.fecha','LEFT');
+			$grid->db->join('sfpa AS c','a.cajero=c.cobrador AND a.fecha=c.f_factura','RIGHT');
 			//$grid->db->where('c.cierre IS NULL');
-			$grid->db->groupby('b.cajero');
+			$grid->db->groupby('c.cobrador');
 			$grid->use_function('iconcaja');
 
 			$grid->column('Numero'     ,'<sinulo><#numero#>|---</sinulo>','align=\'center\'');
@@ -119,10 +123,10 @@ class Rcaj extends validaciones {
 			$grid->column('Status/Caja','<iconcaja><#cajero#>|<#fecha#>|<#numero#>|<#tipo#></iconcaja>','align="center"');
 			$grid->column('Ver html'   ,"<siinulo><#numero#>|---|$urih</siinulo>",'align=\'center\'');
 			$grid->build();
-			//echo $grid->db->last_query();
+			echo $grid->db->last_query();
 			$data['content'] .= $grid->output;
 		}
-		
+
 		$data['title']   = '<h1>Recepci&oacute;n de cajas</h1>';
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
@@ -287,13 +291,17 @@ class Rcaj extends validaciones {
 			$dbfecha  = $this->db->escape($fecha);
 			$dbcajero = $this->db->escape($cajero);
 
-			$mSQL="SELECT c.tipo, IFNULL(aa.monto,0) AS monto FROM
-				(SELECT b.tipo ,SUM(b.monto) AS monto 
+			$mSQL="SELECT c.tipo, IFNULL(SUM(aa.monto),0) AS monto FROM
+				(SELECT b.tipo, b.monto AS monto 
 				FROM sfac AS a 
 				JOIN sfpa AS b ON a.transac=b.transac 
 				WHERE a.fecha=$dbfecha AND a.cajero=$dbcajero AND a.tipo_doc<>'X'
-				GROUP BY b.tipo) AS aa
-				RIGHT JOIN tarjeta AS c ON aa.tipo=c.tipo";
+				UNION ALL
+				SELECT e.tipo,e.monto AS monto
+				FROM sfpa AS e 
+				WHERE e.f_factura=$dbfecha AND e.cobrador=$dbcajero AND e.tipo_doc IN ('AB','AN')
+				) AS aa
+				RIGHT JOIN tarjeta AS c ON aa.tipo=c.tipo GROUP BY c.tipo";
 
 			/*$objfecha = DateTime::createFromFormat('Ymd', $fecha);
 			$objfecha->sub(new DateInterval('P1D'));
