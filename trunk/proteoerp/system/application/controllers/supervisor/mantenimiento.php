@@ -668,7 +668,7 @@ class Mantenimiento extends Controller{
 			$temp =tempnam("/tmp", 'puertos');
 			$db=dbase_create($temp, $def);
 			if ($db){
-				$query = $this->db->query('SELECT nombre FROM formatos');
+				$query = $this->db->query('SELECT nombre FROM formatos UNION SELECT nombre FROM reportes');
 				if ($query->num_rows() > 0){
 					foreach ($query->result() as $row){
 						$pivot=array($row->nombre,'C:\\spool\\'.$row->nombre.'txt','');

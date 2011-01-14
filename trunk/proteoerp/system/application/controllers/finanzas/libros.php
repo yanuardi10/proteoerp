@@ -6730,6 +6730,9 @@ class Libros extends Controller {
 		$this->db->simple_query("UPDATE scst SET monadic=0, sobretasa=0 WHERE monadic IS NULL ");
 		
 		$this->db->simple_query("DELETE FROM siva WHERE EXTRACT(YEAR_MONTH FROM fechal) = $mes AND fuente='CP' ");
+		$sql="UPDATE scst SET
+		cgenera=null, civagen=null,cadicio=null, civaadi=null,creduci=null,civared=null,cstotal=null, cimpuesto=null,ctotal=null
+		WHERE cgenera+civagen+cadicio+civaadi+creduci+civared+cstotal+cimpuesto+ctotal=0 OR cgenera+civagen+cadicio+civaadi+creduci+civared+cstotal+cimpuesto+ctotal=NULL AND recep BETWEEN $fdesde AND $fhasta";
 		
 		// REVISAR COMPRAS
 		$query = $this->db->query("SELECT control FROM scst WHERE abs(exento+montasa+monredu+monadic-montotot)>0.1 AND EXTRACT(YEAR_MONTH FROM fecha)=$mes ");
@@ -6745,6 +6748,12 @@ class Libros extends Controller {
 		$mivar = $tasas['reducida']; 
 		$mivaa = $tasas['adicional'];
 		
+		if ($this->db->field_exists('serie', 'scst')){
+			$msqlnum='IF(LENGTH(b.serie)>0,b.serie,b.numero) AS numero';
+		}else{
+			$msqlnum='b.numero AS numero';
+		}
+		
 		$mSQL = "INSERT INTO siva  
 			(id, libro, tipo, fuente, sucursal, fecha, numero, numhasta,  caja, nfiscal,  nhfiscal, 
 			referen, planilla, clipro, nombre, contribu, rif, registro,
@@ -6757,7 +6766,7 @@ class Libros extends Controller {
 			'CP' AS fuente, 
 			'00' AS sucursal, 
 			b.fecha,
-			IF(LENGTH(b.serie)>0,b.serie,b.numero) AS numero,
+			$msqlnum,
 			' ' AS numhasta,
 			' ' AS caja,
 			b.nfiscal,
