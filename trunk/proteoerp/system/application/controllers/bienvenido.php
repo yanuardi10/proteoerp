@@ -50,9 +50,9 @@ class Bienvenido extends Controller {
 		$viene=$this->session->userdata('estaba');
 		$attributes  = array('name' => 'ingresar_form');
 		$data['titulo1'] = form_open('bienvenido/autentificar',$attributes);
-		$attributes  = array('name' => 'user','size' => '6');
+		$attributes  = array('name' => 'user','size' => '6','autocomplete'=>'off');
 		$data['titulo1'] .='<table><tr><td>Usuario: </td><td>'.form_input($attributes).'</td></tr>';
-		$attributes  = array('name' => 'pws','size' => '6','type' => 'password');
+		$attributes  = array('name' => 'pws','size' => '6','type' => 'password','autocomplete'=>'off');
 		$data['titulo1'] .='<tr><td> Clave:  </td><td>'.form_input($attributes).'</td></tr>';
 		$data['titulo1'] .='<tr><td></td><td>'.form_submit('usr_submit', 'Enviar').form_close().'</td></tr></table>';
 		// Build the thing
@@ -64,9 +64,9 @@ class Bienvenido extends Controller {
 		$data['estilos'] = style("estilos.css");
 		$attributes  = array('name' => 'ingresar_form');
 		$data['cuerpo'] = form_open('bienvenido/autentificar',$attributes);
-		$attributes  = array('name' => 'user','size' => '6');
+		$attributes  = array('name' => 'user','size' => '6','autocomplete'=>'off');
 		$data['cuerpo'] .='<table><tr><td>Usuario: </td><td>'.form_input($attributes).'</td></tr>';
-		$attributes  = array('name' => 'pws','size' => '6','type' => 'password');
+		$attributes  = array('name' => 'pws','size' => '6','type' => 'password','autocomplete'=>'off');
 		$data['cuerpo'] .='<tr><td> Clave:  </td><td>'.form_input($attributes).'</td></tr>';
 		$data['cuerpo'] .='<tr><td></td><td>'.form_submit('usr_submit', 'Enviar').form_close().'</td></tr></table>';
 		// Build the thing

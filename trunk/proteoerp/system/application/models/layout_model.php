@@ -78,11 +78,11 @@ class Layout_model extends Model {
 		if ($this->session->userdata('logged_in')){
 			$retval['idus']=$this->session->userdata('nombre');
 		}else{
-			$attributes  = array('name' => 'user_form');
+			$attributes  = array('name' => 'user_form','autocomplete'=>'off');
 			$retval['idus'] = form_open('bienvenido/autentificar',$attributes);
-			$attributes  = array('name' => 'user','size' => '6');
+			$attributes  = array('name' => 'user','size' => '6','autocomplete'=>'off');
 			$retval['idus'] .='<label>Usuario: </label>'.form_input($attributes);
-			$attributes  = array('name' => 'pws','size' => '6','type' => 'password');
+			$attributes  = array('name' => 'pws','size' => '6','type' => 'password','autocomplete'=>'off');
 			$retval['idus'] .='<label> Clave:  </label>'.form_input($attributes);
 			$retval['idus'] .=form_submit('usr_submit', 'Enviar').form_close();
 		}
