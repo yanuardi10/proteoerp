@@ -5,11 +5,13 @@ class Bcaj extends Controller {
 		$this->load->library('rapyd');
 		$this->config->load('datasis');
 		$this->guitipo=array('DE'=>'Deposito','TR'=>'Transferencia','RM'=>'Remesa');
+		$this->datasis->modulo_id('51D',1);
 	}
 
 	function index(){
 		$this->rapyd->load('datafilter','datagrid');
-
+		$smenu['link']=barra_menu('51D');
+		
 		$filter = new DataFilter('Filtro');
 		$select=array('fecha','numero','nombre','monto','CONCAT_WS(\'-\',banco ,numcuent) AS banco','tipo_op','codbanc','LEFT(concepto,20)AS concepto','anulado');
 		$filter->db->select($select);
@@ -46,10 +48,12 @@ class Bcaj extends Controller {
 		$grid->column('Concepto'     ,'concepto');
 		$grid->column('Anulado'      ,'anulado','align=center');
 
-		$grid->add('finanzas/bcaj/autotranfer');
+		//$grid->add('finanzas/bcaj/autotranfer');
 		$grid->build();
 
 		$data['content'] = $filter->output.$grid->output;
+		$data['smenu']   = $this->load->view('view_sub_menu', $smenu,true);
+
 		$data['title']   = '<h1>Movimientos de Caja</h1>';
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
@@ -349,7 +353,7 @@ class Bcaj extends Controller {
 		$this->rapyd->jquery[]='$(".inputnum").bind("keyup",function() { totaliza(); });';
 
 		$data['content'] = $salida;
-		$data['title']   = '<h1>Transferencias automaticas entre cajas</h1>';
+		$data['title']   = '<h1>Conciliaci&oacute;n de cierre</h1>';
 		$data['head']    = $this->rapyd->get_head().phpscript('nformat.js');
 		$this->load->view('view_ventanas', $data);
 	}

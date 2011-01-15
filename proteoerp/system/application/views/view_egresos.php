@@ -31,10 +31,8 @@ echo $form_begin?>
               <td width="111" class="littletablerowth"><?=$form->codigo->label ?></td>
               <td width="95" class="littletablerow"><?=$form->codigo->output ?></td>
 			  <td width="92" class="littletablerow"><span class="littletablerowth">
-			    <?=$form->vencimiento->label ?>
-			  </td>
+			    <?=$form->vencimiento->label ?>			  </td>
 			  <td width="159" class="littletablerow"><?=$form->vencimiento->output ?></td>
-
             </tr>
             <tr>
               <td class="littletablerow"><?=$form->orden->output ?></td>
@@ -95,7 +93,7 @@ echo $form_begin?>
         <td colspan="6" class="littletablerow" ><?=$form->beneficiario->output ?></td>
         <td class="littletablerowth"><?=$form->monto->label ?></td>
         <td colspan="2" class="littletablerow" ><?=$form->monto->output ?></td>
-        </tr>
+      </tr>
 </table>
 
 <?php echo $form_end?>

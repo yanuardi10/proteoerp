@@ -9,6 +9,7 @@ class Factura extends Controller {
 
 	function index() {
 		$this->rapyd->load("datagrid","datafilter");
+		$this->rapyd->uri->keep_persistence();
 		
 		$atts = array(
 			'width'      => '800',

@@ -17,6 +17,7 @@ class Scli extends validaciones {
 	function filteredgrid(){
 		$this->pi18n->cargar('scli','filteredgrid');
 		$this->rapyd->load('datafilter','datagrid');
+		$this->rapyd->uri->keep_persistence();
 
 		$filter = new DataFilter('Filtro de Clientes', 'scli');
 
