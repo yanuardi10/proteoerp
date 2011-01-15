@@ -43,7 +43,6 @@ class Instalador extends Controller {
 		// lprueba.php
 		// menu.php
 		// mpru.php
-		// prueba.php
 		// recursos.php
 		// reportes.php
 
@@ -190,8 +189,6 @@ class Instalador extends Controller {
 	
 		// metodos.php
 		// reglas.php
-		// adjuntos.php
-		// comentarios.php
 		// contenedor.php
 		// definiciones.php
 		// eventos.php
@@ -254,6 +251,7 @@ class Instalador extends Controller {
 		// anuales.php
 		// apan.php
 		// banc.php
+		// bcaj.php
 		// blibros.php
 		// bman.php
 
@@ -395,6 +393,58 @@ class Instalador extends Controller {
 		$this->db->simple_query($mSQL);
 		echo $uri = anchor('finanzas/libros/configurar','Configurar');
 	
+		// libros_calore3.php
+
+		$mSQL="CREATE TABLE IF NOT EXISTS `libros` (
+		  `metodo` varchar(50) NOT NULL default '',
+		  `nombre` varchar(150) default NULL,
+		  `activo` char(1) default NULL,
+		  `tipo` char(1) default NULL,
+		  `estampa` timestamp NOT NULL default CURRENT_TIMESTAMP,
+		  `fgenera` char(6) default NULL,
+		  PRIMARY KEY  (`metodo`)
+		) ENGINE=MyISAM DEFAULT CHARSET=latin1";   
+		$this->db->simple_query($mSQL);
+		
+		$mSQL="ALTER TABLE `siva` ADD `hora` TIME DEFAULT '0' NULL";
+		$this->db->simple_query($mSQL);
+		
+		$mSQL="ALTER TABLE `siva` CHANGE `clipro` `clipro` VARCHAR(12) NULL";
+		$this->db->simple_query($mSQL);
+		
+		$data[]=array('metodo'=>'wlvexcelpdv'        ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas PDV'      );
+		$data[]=array('metodo'=>'wlvexcelpdvq1'      ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas PDV Quincenta 1');
+		$data[]=array('metodo'=>'wlvexcelpdvq2'      ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas PDV Quincenta 2');
+		$data[]=array('metodo'=>'wlvexcelpdvfiscal'  ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas PDV Fiscal');
+		$data[]=array('metodo'=>'wlvexcelpdvfiscalq1','activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas PDV Quincenta 1 Fiscal');
+		$data[]=array('metodo'=>'wlvexcelpdvfiscalq2','activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas PDV Quincenta 2 Fiscal');
+		$data[]=array('metodo'=>'wlvexcel'           ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas'          );
+		$data[]=array('metodo'=>'wlvexcelsucu'       ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas por Sucursal');
+		$data[]=array('metodo'=>'wlcexcel'           ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Compras'         );
+		$data[]=array('metodo'=>'wlcsexcel'          ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Compras Supermercado');
+		$data[]=array('metodo'=>'wlvexcele'          ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas  ESPECIAL');
+		$data[]=array('metodo'=>'wlcexcele'          ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Compras ESPECIAL');
+		$data[]=array('metodo'=>'prorrata'           ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Prorrata'                 );
+		$data[]=array('metodo'=>'invresu'            ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Inventario'      );
+		
+		$data[]=array('metodo'=>'genecompras'     ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de compras COMPRAS' );
+		$data[]=array('metodo'=>'genegastos'      ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de compras GASTOS'  );
+		$data[]=array('metodo'=>'genecxp'         ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de compras CXP'     );
+		$data[]=array('metodo'=>'genesfac'        ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas Facturas' );
+		$data[]=array('metodo'=>'geneventasfiscal','activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas Fiscal PDV'   );
+		$data[]=array('metodo'=>'genesfmay'       ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas Facturas al mayor' );
+		$data[]=array('metodo'=>'genesmov'        ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas CXC'      );
+		$data[]=array('metodo'=>'geneotin'        ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas O.Ingresos');
+		$data[]=array('metodo'=>'generest'        ,'activo'=>'N','tipo'=>'G' ,'nombre'  =>'Generar Libro de ventas Restaurante');
+		$data[]=array('metodo'=>'genehotel'       ,'activo'=>'N','tipo'=>'G' ,'nombre'  =>'Generar Libro de ventas Hotel');
+		
+		foreach($data AS $algo){
+			$mSQL = $this->db->insert_string('libros', $algo);
+			$this->db->simple_query($mSQL);
+		}
+		$this->db->simple_query($mSQL);
+		echo $uri = anchor('finanzas/libros_calore3/configurar','Configurar');
+	
 		// libros_calore.php
 
 		$mSQL="CREATE TABLE IF NOT EXISTS `libros` (
@@ -445,60 +495,7 @@ class Instalador extends Controller {
 			$this->db->simple_query($mSQL);
 		}
 		$this->db->simple_query($mSQL);
-		echo $uri = anchor('finanzas/libros/configurar','Configurar');
-	
-		// libroscalore.php
-
-		$mSQL="CREATE TABLE IF NOT EXISTS `libros` (
-		  `metodo` varchar(50) NOT NULL default '',
-		  `nombre` varchar(150) default NULL,
-		  `activo` char(1) default NULL,
-		  `tipo` char(1) default NULL,
-		  `estampa` timestamp NOT NULL default CURRENT_TIMESTAMP,
-		  `fgenera` char(6) default NULL,
-		  PRIMARY KEY  (`metodo`)
-		) ENGINE=MyISAM DEFAULT CHARSET=latin1";   
-		$this->db->simple_query($mSQL);
-		
-		$mSQL="ALTER TABLE `siva` ADD `hora` TIME DEFAULT '0' NULL";
-		$this->db->simple_query($mSQL);
-		
-		$mSQL="ALTER TABLE `siva` CHANGE `clipro` `clipro` VARCHAR(12) NULL";
-		$this->db->simple_query($mSQL);
-		
-		$data[]=array('metodo'=>'wlvexcelpdv'        ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas PDV'      );
-		$data[]=array('metodo'=>'wlvexcelpdvq1'      ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas PDV Quincenta 1');
-		$data[]=array('metodo'=>'wlvexcelpdvq2'      ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas PDV Quincenta 2');
-		$data[]=array('metodo'=>'wlvexcelpdvfiscal'  ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas PDV Fiscal');
-		$data[]=array('metodo'=>'wlvexcelpdvfiscalq1','activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas PDV Quincenta 1 Fiscal');
-		$data[]=array('metodo'=>'wlvexcelpdvfiscalq2','activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas PDV Quincenta 2 Fiscal');
-		$data[]=array('metodo'=>'wlvexcel'           ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas'          );
-		$data[]=array('metodo'=>'wlvexcel2'          ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas no Agrupadas'          );
-		$data[]=array('metodo'=>'wlvexcelsucu'       ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas por Sucursal');
-		$data[]=array('metodo'=>'wlcexcel'           ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Compras'         );
-		$data[]=array('metodo'=>'wlcsexcel'          ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Compras Supermercado');
-		$data[]=array('metodo'=>'wlvexcele'          ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas  ESPECIAL');
-		$data[]=array('metodo'=>'wlcexcele'          ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Compras ESPECIAL');
-		$data[]=array('metodo'=>'prorrata'           ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Prorrata'                 );
-		$data[]=array('metodo'=>'invresu'            ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Inventario'      );
-		
-		$data[]=array('metodo'=>'genecompras'     ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de compras COMPRAS' );
-		$data[]=array('metodo'=>'genegastos'      ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de compras GASTOS'  );
-		$data[]=array('metodo'=>'genecxp'         ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de compras CXP'     );
-		$data[]=array('metodo'=>'genesfac'        ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas Facturas' );
-		$data[]=array('metodo'=>'geneventasfiscal','activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas Fiscal PDV'   );
-		$data[]=array('metodo'=>'genesfmay'       ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas Facturas al mayor' );
-		$data[]=array('metodo'=>'genesmov'        ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas CXC'      );
-		$data[]=array('metodo'=>'geneotin'        ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas O.Ingresos');
-		$data[]=array('metodo'=>'generest'        ,'activo'=>'N','tipo'=>'G' ,'nombre'  =>'Generar Libro de ventas Restaurante');
-		$data[]=array('metodo'=>'genehotel'       ,'activo'=>'N','tipo'=>'G' ,'nombre'  =>'Generar Libro de ventas Hotel');
-		
-		foreach($data AS $algo){
-			$mSQL = $this->db->insert_string('libros', $algo);
-			$this->db->simple_query($mSQL);
-		}
-		$this->db->simple_query($mSQL);
-		echo $uri = anchor('finanzas/libros/configurar','Configurar');
+		echo $uri = anchor('finanzas/libros_calore/configurar','Configurar');
 	
 		// libroshotel.php
 		// libros.php
@@ -513,16 +510,19 @@ class Instalador extends Controller {
 		  PRIMARY KEY  (`metodo`)
 		) ENGINE=MyISAM DEFAULT CHARSET=latin1";   
 		$this->db->simple_query($mSQL);
-		
+
 		$mSQL="ALTER TABLE `siva` ADD `hora` TIME DEFAULT '0' NULL";
 		$this->db->simple_query($mSQL);
-		
+
 		$mSQL="ALTER TABLE `siva` CHANGE `clipro` `clipro` VARCHAR(12) NULL";
 		$this->db->simple_query($mSQL);
-		
+
 		$mSQL="ALTER TABLE `siva` ADD `serial` CHAR(12) NULL";
 		$this->db->simple_query($mSQL);
-		
+
+		$mSQL="ALTER TABLE `siva`  CHANGE COLUMN `nombre` `nombre` VARCHAR(80) NULL DEFAULT NULL AFTER `clipro`";
+		$this->db->simple_query($mSQL);
+
 		$data[]=array('metodo'=>'wlvexcelpdv'        ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas PDV'      );
 		$data[]=array('metodo'=>'wlvexcelpdvq1'      ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas PDV Quincenta 1');
 		$data[]=array('metodo'=>'wlvexcelpdvq2'      ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas PDV Quincenta 2');
@@ -531,7 +531,8 @@ class Instalador extends Controller {
 		$data[]=array('metodo'=>'wlvexcelpdvfiscalq1','activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas PDV Quincenta 1 Fiscal');
 		$data[]=array('metodo'=>'wlvexcelpdvfiscalq2','activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas PDV Quincenta 2 Fiscal');
 		$data[]=array('metodo'=>'wlvexcel'           ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas'          );
-		$data[]=array('metodo'=>'wlvexcel2'          ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas no Agrupadas'          );
+		$data[]=array('metodo'=>'wlvexcel2'          ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas no Agrupadas');
+		$data[]=array('metodo'=>'wlvcierrez'         ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas basado en cierre Z');
 		$data[]=array('metodo'=>'wlvexcelsucu'       ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas por Sucursal');
 		$data[]=array('metodo'=>'wlcexcel'           ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Compras'         );
 		$data[]=array('metodo'=>'wlcsexcel'          ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Compras Supermercado');
@@ -539,8 +540,9 @@ class Instalador extends Controller {
 		$data[]=array('metodo'=>'wlcexcele'          ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Compras ESPECIAL');
 		$data[]=array('metodo'=>'prorrata'           ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Prorrata'                 );
 		$data[]=array('metodo'=>'invresu'            ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Inventario'      );
-		
+
 		$data[]=array('metodo'=>'genecompras'        ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de compras COMPRAS' );
+		$data[]=array('metodo'=>'genesfaccierrez'    ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas basado en cierre Z' );
 		$data[]=array('metodo'=>'genegastos'         ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de compras GASTOS'  );
 		$data[]=array('metodo'=>'genecxp'            ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de compras CXP'     );
 		$data[]=array('metodo'=>'genesfac'           ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas Facturas' );
@@ -550,7 +552,7 @@ class Instalador extends Controller {
 		$data[]=array('metodo'=>'geneotin'           ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas O.Ingresos');
 		$data[]=array('metodo'=>'generest'           ,'activo'=>'N','tipo'=>'G' ,'nombre'  =>'Generar Libro de ventas Restaurante');
 		$data[]=array('metodo'=>'genehotel'          ,'activo'=>'N','tipo'=>'G' ,'nombre'  =>'Generar Libro de ventas Hotel');
-		
+
 		foreach($data AS $algo){
 			$mSQL = $this->db->insert_string('libros', $algo);
 			$this->db->simple_query($mSQL);
@@ -881,52 +883,53 @@ class Instalador extends Controller {
 		// lnmov.php
 		// lpersonal.php
 		// marc.php
+		// margenes_sinv.php
+		// precios_sinv.php
 		// seriales.php
 		// sinvactu.php
 
 		$mSQL='
 			CREATE TABLE /*!32312 IF NOT EXISTS*/ `sinvactu` (
-  `codigo` varchar(15) NOT NULL default "",
-  `descrip` varchar(45) default NULL,
-  `clave` varchar(8) default NULL,
-  `descrip2` varchar(45) default NULL,
-  `antdescrip2` varchar(45) default NULL,
-  `grupo` varchar(4) default NULL,
-  `costo` decimal(13,2) unsigned default NULL,
-  `precio1` decimal(13,2) unsigned default NULL,
-  `antcosto` decimal(13,2) unsigned default NULL,
-  `antprecio1` decimal(13,2) unsigned default NULL,
-  `iva` decimal(6,2) unsigned default NULL,
-  `antiva` decimal(6,2) unsigned default NULL,
-  `precio2` decimal(13,2) default NULL,
-  `precio3` decimal(13,2) default NULL,
-  `precio4` decimal(13,2) unsigned default NULL,
-  `base1` decimal(13,2) unsigned default NULL,
-  `base2` decimal(13,2) default NULL,
-  `base3` decimal(13,2) unsigned default NULL,
-  `base4` decimal(13,2) unsigned default NULL,
-  `margen1` decimal(13,2) unsigned default NULL,
-  `margen2` decimal(13,2) unsigned default NULL,
-  `margen3` decimal(13,2) unsigned default NULL,
-  `margen4` decimal(13,2) unsigned default NULL,
-  `antdescrip` varchar(45) default NULL,
-  `antclave` varchar(8) default NULL,
-  `antgrupo` varchar(4) default NULL,
-  `antprecio2` decimal(13,2) unsigned default NULL,
-  `antprecio3` decimal(13,2) unsigned default NULL,
-  `antprecio4` decimal(13,2) unsigned default NULL,
-  `antbase1` decimal(13,2) unsigned default NULL,
-  `antbase2` decimal(13,2) unsigned default NULL,
-  `antbase3` decimal(13,2) unsigned default NULL,
-  `antbase4` decimal(13,2) unsigned default NULL,
-  `antmargen1` decimal(13,2) unsigned default NULL,
-  `antmargen2` decimal(13,2) unsigned default NULL,
-  `antmargen3` decimal(13,2) unsigned default NULL,
-  `antmargen4` decimal(13,2) unsigned default NULL,
-  PRIMARY KEY  (`codigo`)
-)
-	';
-$this->db->simple_query($mSQL);	
+		  `codigo` varchar(15) NOT NULL default "",
+		  `descrip` varchar(45) default NULL,
+		  `clave` varchar(8) default NULL,
+		  `descrip2` varchar(45) default NULL,
+		  `antdescrip2` varchar(45) default NULL,
+		  `grupo` varchar(4) default NULL,
+		  `costo` decimal(13,2) unsigned default NULL,
+		  `precio1` decimal(13,2) unsigned default NULL,
+		  `antcosto` decimal(13,2) unsigned default NULL,
+		  `antprecio1` decimal(13,2) unsigned default NULL,
+		  `iva` decimal(6,2) unsigned default NULL,
+		  `antiva` decimal(6,2) unsigned default NULL,
+		  `precio2` decimal(13,2) default NULL,
+		  `precio3` decimal(13,2) default NULL,
+		  `precio4` decimal(13,2) unsigned default NULL,
+		  `base1` decimal(13,2) unsigned default NULL,
+		  `base2` decimal(13,2) default NULL,
+		  `base3` decimal(13,2) unsigned default NULL,
+		  `base4` decimal(13,2) unsigned default NULL,
+		  `margen1` decimal(13,2) unsigned default NULL,
+		  `margen2` decimal(13,2) unsigned default NULL,
+		  `margen3` decimal(13,2) unsigned default NULL,
+		  `margen4` decimal(13,2) unsigned default NULL,
+		  `antdescrip` varchar(45) default NULL,
+		  `antclave` varchar(8) default NULL,
+		  `antgrupo` varchar(4) default NULL,
+		  `antprecio2` decimal(13,2) unsigned default NULL,
+		  `antprecio3` decimal(13,2) unsigned default NULL,
+		  `antprecio4` decimal(13,2) unsigned default NULL,
+		  `antbase1` decimal(13,2) unsigned default NULL,
+		  `antbase2` decimal(13,2) unsigned default NULL,
+		  `antbase3` decimal(13,2) unsigned default NULL,
+		  `antbase4` decimal(13,2) unsigned default NULL,
+		  `antmargen1` decimal(13,2) unsigned default NULL,
+		  `antmargen2` decimal(13,2) unsigned default NULL,
+		  `antmargen3` decimal(13,2) unsigned default NULL,
+		  `antmargen4` decimal(13,2) unsigned default NULL,
+		  PRIMARY KEY  (`codigo`)
+		)';
+		$this->db->simple_query($mSQL);	
 	
 		// sinvlist.php
 
@@ -1089,6 +1092,7 @@ $this->db->simple_query($mSQL);
 		// prof.php
 		// promediosueldos.php
 		// rpers.php
+		// b2b.php
 		// cargasinv.php
 
 //		$mSQL="DROP TABLE sinvactu";
@@ -1140,6 +1144,11 @@ $this->db->simple_query($mSQL);
 		// dispmoviles.php
 		// exportar.php
 		// importar.php
+		// notifica.php
+
+			$this->error=$mail->getMessage();
+			return false;
+		
 		// analisis1.php
 		// analisis.php
 		// analisisvision.php
@@ -1169,6 +1178,10 @@ $this->db->simple_query($mSQL);
 		// cupones.php
 		// dias.php
 		// efisico.php
+
+	    $mSQL="ALTER TABLE `maesfisico` ADD COLUMN `id` BIGINT NOT NULL AUTO_INCREMENT  FIRST , ADD PRIMARY KEY (`id`) ";
+	    $this->db->simple_query($mSQL);
+	
 		// enviacaja.php
 		// envivo.php
 		// etiqueta_maes.php
@@ -1206,14 +1219,13 @@ $this->db->simple_query($mSQL);
 		) ENGINE=MyISAM DEFAULT CHARSET=latin1";
 		$this->db->simple_query($mSQL);
 	
-		// maess.php
 		// poscuadre.php
 		// posfact.php
-		// posfactsan.php
 		// precioclient.php
 		// productos.php
 		// restaurante.php
 		// rifas.php
+		// stra.php
 		// tpagos.php
 		// traer.php
 
@@ -1402,6 +1414,7 @@ $this->db->simple_query($mSQL);
 		$mSQL="CREATE TABLE `matbar`.`repotra` (`id` TINYINT AUTO_INCREMENT, `estampa` TIMESTAMP, `fecha` DATE, `t1horae` VARCHAR (8),`t2horae` VARCHAR (8), `t1horas` VARCHAR (8),`t2horas` VARCHAR (8),`empresa` VARCHAR (50), `tecnico1` VARCHAR (50), `tecnico2` VARCHAR (50), `tecnico3` VARCHAR (50), `informe` TEXT,`observa` TEXT, `t1tipos` VARCHAR(10),`t2tipos` VARCHAR(10),`t1tipoe` VARCHAR(10),`t2tipoe` VARCHAR(10),`nombre` VARCHAR(60),PRIMARY KEY(`id`)) TYPE = MyISAM";
 		$this->db->simple_query($mSQL);
 	
+		// sfacfiscal.php
 		// sitemslog.php
 		// sopor.php
 		// sucu.php
@@ -1571,6 +1584,7 @@ $this->db->simple_query($mSQL);
 		// notadespacho.php
 		// otin.php
 		// pais.php
+		// pfacc.php
 		// pfacdespfyco.php
 
 		$mSQL="ALTER TABLE `sitems` ADD `cdespacha` DECIMAL NULL";
@@ -1579,15 +1593,6 @@ $this->db->simple_query($mSQL);
 		$this->db->simple_query($mSQL1);
 		echo 'Instalado';
 	
-		// pfacdespfycosan.php
-
-		$mSQL="ALTER TABLE `sitems` ADD `cdespacha` DECIMAL NULL";
-		$mSQL1="ALTER TABLE `sitems` ADD `ultidespachado` DECIMAL NULL";
-		$this->db->simple_query($mSQL);
-		$this->db->simple_query($mSQL1);
-		echo 'Instalado';
-	
-		// pfacfyco.php
 		// pfac.php
 		// presup.php
 		// presupuestos.php
@@ -1603,9 +1608,27 @@ $this->db->simple_query($mSQL);
 		$this->db->simple_query($mSQL);
 		$mSQL="ALTER TABLE `sfpa`  ADD COLUMN `cierre` CHAR(8) DEFAULT '' AFTER `hora`";
 		$this->db->simple_query($mSQL);
+		$mSQL="ALTER TABLE `rcaj` CHANGE COLUMN `estampa` `estampa` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP";
+		$this->db->simple_query($mSQL);
 
 	
 		// requisitos.php
+		// rret.php
+
+		$mSQL="CREATE TABLE `rret` (
+		  `id` int(20) unsigned NOT NULL AUTO_INCREMENT,
+		  `cierre` varchar(8) DEFAULT NULL,
+		  `cajero` varchar(5) DEFAULT NULL,
+		  `tipo` char(2) DEFAULT NULL,
+		  `monto` decimal(12,2) DEFAULT NULL,
+		  `fecha` date DEFAULT NULL,
+		  `estampa` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+		  PRIMARY KEY (`id`),
+		  KEY `Index 2` (`tipo`,`cajero`)
+		) ENGINE=MyISAM COMMENT='Retiros de caja'";
+
+		$this->db->simple_query($mSQL);
+	
 		// scaj.php
 
 		$mSQL="CREATE TABLE IF NOT EXISTS `vieite` (
@@ -1681,19 +1704,6 @@ $this->db->simple_query($mSQL);
 		$this->db->simple_query($mSQL);
                 
 	
-		// scliperu.php
-
-		$seniat='http://www.seniat.gov.ve/BuscaRif/BuscaRif.jsp';
-		$mSQL="INSERT INTO valores (nombre,valor,descrip) VALUES ('CONSULRIF','$seniat','Pagina de consulta de rif del seniat') ON DUPLICATE KEY UPDATE valor='$seniat'";
-		$this->db->simple_query($mSQL);
-		$mSQL='ALTER TABLE `scli` ADD `modifi` TIMESTAMP DEFAULT CURRENT_TIMESTAMP NULL AFTER `mensaje`';
-		$this->db->simple_query($mSQL);
-		$mSQL='ALTER TABLE `scli` DROP PRIMARY KEY, ADD UNIQUE `cliente` (`cliente`)';
-		$this->db->simple_query($mSQL);
-		$mSQL='ALTER TABLE scli ADD id INT AUTO_INCREMENT PRIMARY KEY';
-		$this->db->simple_query($mSQL);
-                
-	
 		// scli.php
 
 		$seniat='http://www.seniat.gov.ve/BuscaRif/BuscaRif.jsp';
@@ -1721,6 +1731,7 @@ $this->db->simple_query($mSQL);
 		// sfacdesp.php
 		// sfacpaga.php
 		// snte.php
+		// spre.php
 		// supercrud.php
 		// tarjeta.php
 		// terminal.php

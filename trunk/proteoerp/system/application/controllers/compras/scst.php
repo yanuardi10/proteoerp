@@ -12,6 +12,7 @@ class Scst extends Controller {
 	}
 	function datafilter(){
 		$this->rapyd->load("datagrid","datafilter");
+		$this->rapyd->uri->keep_persistence();
 
 		$atts = array(
 		  'width'      => '800',
