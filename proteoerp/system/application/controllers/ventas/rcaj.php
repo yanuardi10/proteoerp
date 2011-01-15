@@ -291,11 +291,17 @@ class Rcaj extends validaciones {
 			$dbfecha  = $this->db->escape($fecha);
 			$dbcajero = $this->db->escape($cajero);
 
+			//$mSQL="DELETE FROM sitems WHERE MID(numero,1,1)='_' AND cajero=$dbcajero";
+			//$this->db->simple_query($mSQL);
+
+			//$mSQL="DELETE FROM sfac WHERE MID(numero,1,1)='_' AND cajero=$dbcajero";
+			//$this->db->simple_query($mSQL);
+
 			$mSQL="SELECT c.tipo, IFNULL(SUM(aa.monto),0) AS monto FROM
 				(SELECT b.tipo, b.monto AS monto 
 				FROM sfac AS a 
 				JOIN sfpa AS b ON a.transac=b.transac 
-				WHERE a.fecha=$dbfecha AND a.cajero=$dbcajero AND a.tipo_doc<>'X'
+				WHERE a.fecha=$dbfecha AND a.cajero=$dbcajero AND a.tipo_doc<>'X' AND MID(a.numero,1,1)<>'_'
 				UNION ALL
 				SELECT e.tipo,e.monto AS monto
 				FROM sfpa AS e 
