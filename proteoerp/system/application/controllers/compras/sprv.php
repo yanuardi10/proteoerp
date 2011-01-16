@@ -30,6 +30,12 @@ class Sprv extends validaciones {
 		$filter->rif->size=18;
 		$filter->rif->maxlength=30;
 
+
+		$filter->tipo = new dropdownField('Tipo', 'tipo');
+		$filter->tipo->option('','Todos');
+		$filter->tipo->options(array('1'=> 'Jur&iacute;dico Domiciliado','2'=>'Residente', '3'=>'Jur&iacute;dico No Domiciliado','4'=>'No Residente','5'=>'Excluido del Libro de Compras','0'=>'Inactivo'));
+		$filter->tipo->style = 'width:200px';
+
 		$filter->cuenta = new inputField('Cuenta contable', 'cuenta');
 		$filter->cuenta->size=13;
 		$filter->cuenta->like_side='after';
