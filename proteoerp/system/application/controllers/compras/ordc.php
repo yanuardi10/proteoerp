@@ -7,7 +7,7 @@ class Ordc extends Controller {
 		$this->load->library("rapyd");
 		$this->datasis->modulo_id(203,1);
 	}
-		function index() {		
+		function index() {
 		$this->rapyd->load("datagrid","datafilter");
 		
 		$atts = array(
