@@ -4,14 +4,14 @@ class Scst extends Controller {
 
 	function scst(){
 		parent::Controller();
-		$this->load->library("rapyd");
+		$this->load->library('rapyd');
 		$this->datasis->modulo_id(201,1);
 	}
 	function index() {
 		redirect('compras/scst/datafilter');
 	}
 	function datafilter(){
-		$this->rapyd->load("datagrid","datafilter");
+		$this->rapyd->load('datagrid','datafilter');
 		$this->rapyd->uri->keep_persistence();
 
 		$atts = array(
@@ -36,21 +36,21 @@ class Scst extends Controller {
 
 		$boton=$this->datasis->modbus($modbus);
 
-		$filter = new DataFilter("Filtro de Compras");
+		$filter = new DataFilter('Filtro de Compras');
 		$filter->db->select=array('numero','fecha','vence','nombre','montoiva','montonet','proveed','control');
 		$filter->db->from('scst');
 
-		$filter->fechad = new dateonlyField("Desde", "fechad",'d/m/Y');
-		$filter->fechah = new dateonlyField("Hasta", "fechah",'d/m/Y');
-		$filter->fechad->clause  =$filter->fechah->clause="where";
-		$filter->fechad->db_name =$filter->fechah->db_name="fecha";
-		$filter->fechad->insertValue = date("Y-m-d");
-		$filter->fechah->insertValue = date("Y-m-d");
+		$filter->fechad = new dateonlyField('Desde', 'fechad','d/m/Y');
+		$filter->fechah = new dateonlyField('Hasta', 'fechah','d/m/Y');
+		$filter->fechad->clause  =$filter->fechah->clause='where';
+		$filter->fechad->db_name =$filter->fechah->db_name='fecha';
+		//$filter->fechad->insertValue = date("Y-m-d");
+		//$filter->fechah->insertValue = date("Y-m-d");
 		$filter->fechah->size=$filter->fechad->size=10;
-		$filter->fechad->operator=">=";
-		$filter->fechah->operator="<=";
-		$filter->fechah->group="Fecha Recepci&oacute;n";
-		$filter->fechad->group="Fecha Recepci&oacute;n";
+		$filter->fechad->operator='>=';
+		$filter->fechah->operator='<=';
+		$filter->fechah->group='Fecha Recepci&oacute;n';
+		$filter->fechad->group='Fecha Recepci&oacute;n';
 
 		//$filter->fecha_recep = new dateonlyField("Fecha Recepci&oacute;n", "fecha",'d/m/Y');
 		//$filter->fecha_recep->clause  =$filter->fecha->clause="where";
@@ -59,7 +59,7 @@ class Scst extends Controller {
 		//$filter->fecha_recep->size=10;
 		//$filter->fecha_recep->operator="=";
 
-		$filter->numero = new inputField("Factura", "numero");
+		$filter->numero = new inputField('Factura', 'numero');
 		$filter->numero->size=20;
 
 		$filter->proveedor = new inputField('Proveedor','proveed');
@@ -71,33 +71,33 @@ class Scst extends Controller {
 		$filter->build();
 
 		$uri = anchor('compras/scst/dataedit/show/<#control#>','<#numero#>');
-		$uri2 = anchor_popup('formatos/verhtml/COMPRA/<#numero#>',"Ver HTML",$atts);
+		$uri2 = anchor_popup('formatos/verhtml/COMPRA/<#numero#>','Ver HTML',$atts);
 
 		$grid = new DataGrid();
 		$grid->order_by('fecha','desc');
 		$grid->per_page = 30;
 
 		$grid->column_orderby('Factura',$uri,'numero');
-		$grid->column_orderby('Fecha','<dbdate_to_human><#fecha#></dbdate_to_human>','fecha',"align='center'");
-		$grid->column_orderby('Vence','<dbdate_to_human><#vence#></dbdate_to_human>','vence',"align='center'");
+		$grid->column_orderby('Fecha','<dbdate_to_human><#fecha#></dbdate_to_human>','fecha','align=\'center\'');
+		$grid->column_orderby('Vence','<dbdate_to_human><#vence#></dbdate_to_human>','vence','align=\'center\'');
 		$grid->column_orderby('Proveedor','proveed','proveed');
 		$grid->column_orderby('Nombre','nombre','nombre');
-		$grid->column_orderby('IVA'   ,'<nformat><#montoiva#></nformat>','montoiva',"align='right'");
-		$grid->column_orderby('Monto' ,'<nformat><#montonet#></nformat>','montonet',"align='right'");
-		$grid->column('Vista',$uri2,"align='center'");
+		$grid->column_orderby('IVA'   ,'<nformat><#montoiva#></nformat>','montoiva','align=\'right\'');
+		$grid->column_orderby('Monto' ,'<nformat><#montonet#></nformat>','montonet','align=\'right\'');
+		$grid->column('Vista',$uri2,'align=\'center\'');
 
 		//$grid->add("compras/agregar");
 		$grid->build();
 		//echo $grid->db->last_query();
 
 		$data['content'] =$filter->output.$grid->output;
-		$data["head"]    = $this->rapyd->get_head();
+		$data['head']    = $this->rapyd->get_head();
 		$data['title']   ='<h1>Compras</h1>';
 		$this->load->view('view_ventanas', $data);
 	}
 
 	function dataedit(){
- 		$this->rapyd->load("dataedit","datadetalle","fields","datagrid");
+ 		$this->rapyd->load('dataedit','datadetalle','fields','datagrid');
 
 		$formato=$this->datasis->dameval('SELECT formato FROM cemp LIMIT 0,1');
 		$qformato='%';
@@ -158,19 +158,19 @@ class Scst extends Controller {
 		}
 		';
 
-		$edit = new DataEdit("Compras","scst");
+		$edit = new DataEdit('Compras','scst');
 
-		$edit->post_process("insert","_guarda_detalle");
-		$edit->post_process("update","_actualiza_detalle");
-		$edit->post_process("delete","_borra_detalle");
+		$edit->post_process('insert','_guarda_detalle');
+		$edit->post_process('update','_actualiza_detalle');
+		$edit->post_process('delete','_borra_detalle');
 		$edit->pre_process('delete','_pre_del');
 		$edit->pre_process('insert','_pre_insert');
 
-		$edit->back_url = "compras/scst";
+		$edit->back_url = 'compras/scst/datafilter';
 
-		$edit->fecha = new DateonlyField("Fecha", "fecha","d/m/Y");
-		$edit->fecha->insertValue = date("Y-m-d");
-		$edit->fecha->mode="autohide";
+		$edit->fecha = new DateonlyField('Fecha', 'fecha','d/m/Y');
+		$edit->fecha->insertValue = date('Y-m-d');
+		$edit->fecha->mode='autohide';
 		$edit->fecha->size = 10;
 
 		$edit->vence = new DateonlyField("Vence", "vence","d/m/Y");
@@ -293,7 +293,7 @@ class Scst extends Controller {
 		$detalle->onDelete('totalizar()');
 		$detalle->onAdd('totalizar()');
 		$detalle->script($script);
-		$detalle->style="width:110px";
+		$detalle->style='width:110px';
 
 		//Columnas del detalle
 		$detalle->column("C&oacute;digo"     ,  "<#codigo#>");
@@ -312,9 +312,9 @@ class Scst extends Controller {
 
 		$smenu['link']=barra_menu('201');
 		$data['smenu'] = $this->load->view('view_sub_menu', $smenu,true);
-		$conten["form"]  =&  $edit;
+		$conten['form']  =&  $edit;
 		$data['content'] = $this->load->view('view_compras', $conten,true);
-		$data["head"]    = script("tabber.js").script("prototype.js").$this->rapyd->get_head().script("scriptaculous.js").script("effects.js");
+		$data['head']    = script("tabber.js").script("prototype.js").$this->rapyd->get_head().script("scriptaculous.js").script("effects.js");
 		$data['title']   = '<h1>Compras</h1>';
 		$this->load->view('view_ventanas', $data);
 	}
@@ -341,7 +341,7 @@ class Scst extends Controller {
 		$form->build_form();
 
 		$data['content'] =$form->output;
-		$data["head"]    =script('prototype.js').$this->rapyd->get_head();
+		$data['head']    =script('prototype.js').$this->rapyd->get_head();
 		$data['title']   ='<h1>Seleccione un departamento</h1>';
 		$this->load->view('view_detalle', $data);
 	}

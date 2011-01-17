@@ -30,7 +30,6 @@ class Sprv extends validaciones {
 		$filter->rif->size=18;
 		$filter->rif->maxlength=30;
 
-
 		$filter->tipo = new dropdownField('Tipo', 'tipo');
 		$filter->tipo->option('','Todos');
 		$filter->tipo->options(array('1'=> 'Jur&iacute;dico Domiciliado','2'=>'Residente', '3'=>'Jur&iacute;dico No Domiciliado','4'=>'No Residente','5'=>'Excluido del Libro de Compras','0'=>'Inactivo'));

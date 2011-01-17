@@ -16,7 +16,7 @@ class Datasis {
 		$aa = each($rr);
 		return $aa[1];
 	}
-	
+
 	function damerow($mSQL,$data=array()){
 		$CI =& get_instance();
 		$query = $CI->db->query($mSQL,$data);
@@ -25,7 +25,7 @@ class Datasis {
 			$row = $query->row_array();
 		return $row;
 	}
-	
+
 	function traevalor($mvalor){
 		$CI =& get_instance();
 		$CI->db->query("INSERT IGNORE INTO valores SET nombre='$mvalor'");
@@ -33,49 +33,53 @@ class Datasis {
 		$rr = $qq->row_array();
 		$aa = each($rr);
 		return $aa[1];
-	}	
+	}
+
 	function prox_sql($mcontador){
 		$aa=$this->prox_numero($mcontador,'caja');
 		return $aa;
-	}	
+	}
+
 	function existetabla($tabla){
 		$CI =& get_instance();
 		return $CI->db->table_exists($tabla);
 	}
-	
+
 	function adia(){
 		$dias = array();
 		for($i=1;$i<=31;$i++) {
 			$ind=str_pad($i, 2, '0', STR_PAD_LEFT);
 			$dias[$ind]=$ind;
 		}
-	 	return $dias;
-	 }
-	 function ames(){
-	 	$mes = array();
+		return $dias;
+	}
+
+	function ames(){
+		$mes = array();
 		for($i=1;$i<=31;$i++){
 			$ind=str_pad($i, 2, '0', STR_PAD_LEFT);
 			$mes[$ind]=$ind;
 		}
 		return $mes;
 	}
-	
+
 	function aano(){
 		$ano  = array('2004'=>'2004','2005'=>'2005','2006'=>'2006','2007'=>'2007','2008'=>'2008','2009'=>'2009','2010'=>'2010');
 		return $ano;
 	}
-	
+
 	function agregacol($tabla,$columna,$tipo){
 		$CI =& get_instance();
 		$existe  = $CI->db->query("DESCRIBE $tabla $columna");
 		if ( $existe->num_rows() == 0  ) 
 			$CI->db->query("ALTER TABLE $tabla ADD COLUMN $columna $tipo");
 	}
+
 	function login(){
 		$CI =& get_instance();
 		return $CI->session->userdata('logged_in');
 	}
-	
+
 	function essuper(){
 		$CI =& get_instance();
 		$CI->load->database('default',TRUE);
@@ -83,12 +87,12 @@ class Datasis {
 			$usuario = $CI->session->userdata['usuario'];
 			// Prueba si es supervisor
 			$existe = $CI->datasis->dameval("SELECT COUNT(*) FROM usuario WHERE us_codigo='$usuario' AND supervisor='S'");
-			if ( $existe  > 0  )
+			if ($existe > 0)
 				return  true;
 		}
 		return false;
 	}
-	
+
 	function puede($id){
 		$CI =& get_instance();
 		$CI->load->database('default',TRUE);
@@ -101,15 +105,15 @@ class Datasis {
 		}
 		return false;
 	}
-	
+
 	function calendario($forma,$nombre){
 		return "<input type=\"text\" name=\"$nombre\" /><a href=\"#\" onclick=\"return getCalendar(document.$forma.$nombre);\"/><img src='calendar.png' border='0' /></a>";
 	}
-	
+
 	function jscalendario(){
 		return "<script language=\"Javascript\" src=\"calendar.js\"></script>";
 	}
-	
+
 	//Identifica el modulo y controla el acceso
 	function modulo_id($modulo,$ventana=0){
 		if ($this->essuper()) return true;
@@ -132,7 +136,7 @@ class Datasis {
 		else
 			redirect('/bienvenido/ingresar');
 	}
-	
+
 	//Convierte una consulta a un array
 	function consularray($mSQL){
 		$bote = array();
@@ -147,7 +151,7 @@ class Datasis {
 		}
 		return $bote;
 	}
-	
+
 	function form2uri($clase,$metodo,$parametros){
 		$out='';
 		if (is_array($parametros)){
@@ -159,7 +163,7 @@ class Datasis {
 		$out="'".base_url()."$clase/$metodo/'$out";
 		return (" location.href=$out;");
 	}
-	
+
 	function ivaplica($mfecha=NULL){
 		if(empty($mfecha)) $mfecha=date('Ymd');
 		$CI =& get_instance();
@@ -168,7 +172,7 @@ class Datasis {
 		//$aa = each($rr);
 		return $rr;
 	}
-	
+
 	function get_uri(){
 		$CI =& get_instance();
 		$arr=array('formatos','reportes');
@@ -176,21 +180,19 @@ class Datasis {
 			$uri=$CI->router->fetch_directory().$CI->router->fetch_class().'/'.$CI->router->fetch_method().'/'.$CI->uri->segment(3);
 		else
 			$uri=$CI->router->fetch_directory().$CI->router->fetch_class().'/'.$CI->router->fetch_method();
-		
 		return $uri;
 	}
-	
-	
+
 	function modbus($modbus,$id='',$width=800,$height=600,$puri=''){
 		$CI =& get_instance();
 		$uri=$this->get_uri();
 		//$uri  =$CI->uri->uri_string();
 		$tabla=$modbus['tabla'];
 		$parametros=serialize($modbus);
-		
+
 		$data=array();
 		if (empty($id)) $id=$modbus['tabla'];
-		
+
 		$idt=$this->dameval("SELECT id FROM modbus WHERE idm='$id' AND uri='$uri'");
 		if (!empty($idt)){
 			$mSQL="UPDATE modbus SET parametros = '$parametros' WHERE idm='$id' AND uri='$uri'";
@@ -215,7 +217,6 @@ document.body.setAttribute(
 	'onUnload',
 	'vent.close();'
 );\">".image('system-search.png',$modbus['titulo'],array('border'=>'0')).'</a>');
-
 	}
 
 	function p_modbus($modbus,$puri='',$width=800,$height=600){
@@ -224,10 +225,10 @@ document.body.setAttribute(
 		$uri=$this->get_uri();
 		$tabla=$modbus['tabla'];
 		$parametros=serialize($modbus);
-		
+
 		$data=array();
-	$id=$modbus['tabla'];
-		
+		$id=$modbus['tabla'];
+
 		$idt=$this->dameval("SELECT id FROM modbus WHERE idm='$id' AND uri='$uri'");
 		if (!empty($idt)){
 			$mSQL="UPDATE modbus SET parametros = '$parametros' WHERE idm='$id' AND uri='$uri'";
@@ -258,11 +259,11 @@ document.body.setAttribute(
 >".image('system-search.png',$modbus['titulo'],array('border'=>'0')).'</a>');
 		//return("<a href='javascript:void(0);' onclick=\"vent=window.open('".site_url("buscar/index/$idt/$puri")."','ventbuscar$id','width=$width,height=$height,scrollbars=Yes,status=Yes,resizable=Yes,screenx=5,screeny=5'); vent.focus();\">".image('system-search.png',$modbus['titulo'],array('border'=>'0')).'</a>');
 	}
-	
+
 	function periodo($mTIPO, $mFECHA ) {
 		$perido=array(1 =>$mFECHA);
 		$mFECHA=explode('-',$mFECHA);
-	
+
 		switch ($mTIPO) {
 			case 'S':
 				$perido[0]=date("Y-m-d",mktime(0, 0, 0, $mFECHA[1], $mFECHA[2]-7, $mFECHA[0]));
@@ -284,21 +285,21 @@ document.body.setAttribute(
 		}
 		return $perido;
 	}
-	
+
 	//niveles de cpla
 	function nivel(){
 		$formato=$this->dameval('SELECT formato FROM cemp LIMIT 1');
 		$formato=explode('.',$formato);
-	   return count($formato);
+		return count($formato);
 	}
-	
+
 	function formato_cpla(){
 		$formato=$this->dameval('SELECT formato FROM cemp LIMIT 0,1');
- 		$qformato='%';
- 		for($i=1;$i<substr_count($formato, '.')+1;$i++) $qformato.='.%';
- 		return $qformato;
- 	}
-	
+		$qformato='%';
+		for($i=1;$i<substr_count($formato, '.')+1;$i++) $qformato.='.%';
+		return $qformato;
+	}
+
 	function prox_numero($mcontador,$usr=NULL){
 		$CI =& get_instance();
 		if (empty($usr))
@@ -314,7 +315,7 @@ document.body.setAttribute(
 		$aa = $CI->db->insert_id();
 		return $aa;
 	}
-	
+
 	function fprox_numero($mcontador,$long=8){
 		$numero=$this->prox_numero($mcontador);
 		return str_pad($numero, $long, "0", STR_PAD_LEFT);
@@ -334,4 +335,3 @@ document.body.setAttribute(
 		return $numero;
 	}
 }
-?>
