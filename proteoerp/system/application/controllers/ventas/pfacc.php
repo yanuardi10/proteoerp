@@ -171,14 +171,7 @@ class pfacc extends validaciones {
 			$edit->peso->when=array('show','modify');
 			$edit->peso->size      = 10;
 
-			$edit->subtotal  = new inputField("Sub.Total", "totals");
-			$edit->subtotal->size = 10;
-			$edit->subtotal->css_class='inputnum';
-
-			$edit->total  = new inputField("Total", "totalg");
-			$edit->total->size = 10;
-			$edit->total->css_class='inputnum';
-
+			
 			$edit->cliente = new inputField("Cliente","cod_cli");
 			$edit->cliente->size = 10;
 			$edit->cliente->maxlength=5;
