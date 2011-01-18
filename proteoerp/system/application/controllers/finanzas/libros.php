@@ -213,7 +213,7 @@ class Libros extends Controller {
 		$ws->set_column('F:F',37);
 		$ws->set_column('G:G',14);
 		$ws->set_column('H:W',12);
-		$ws->set_column('Z:Z',12);
+		$ws->set_column('X:X',25);
 
 		// FORMATOS
 		$h       =& $wb->addformat(array( "bold" => 1, "size" => 16, "merge" => 1));
@@ -236,7 +236,7 @@ class Libros extends Controller {
 		$ws->write(2, 0, "RIF: ".$this->datasis->traevalor('RIF') , $h1 );
 		
 		$ws->write(4,0, $hs, $h );
-		for ( $i=1; $i<20; $i++ ) {
+		for ( $i=1; $i<21; $i++ ) {
 			$ws->write_blank(4, $i,  $h );
 		};
 
@@ -392,6 +392,7 @@ class Libros extends Controller {
 		$ws->write_formula( $mm, 20, "=SUM(U$dd:U$mm)", $Tnumero );   //"VENTAS EXENTAS" 
 		$ws->write_formula( $mm, 21, "=SUM(V$dd:V$mm)", $Tnumero );   //"VENTAS + IVA" 
 		$ws->write_formula( $mm, 22, "=SUM(W$dd:W$mm)", $Tnumero );   //"VENTAS EXENTAS" 
+		$ws->write_blank( $mm,  23,  $Tnumero );
 
 		$mm ++;
 		$mm ++;
@@ -8499,8 +8500,6 @@ class Libros extends Controller {
 		}
 		$this->db->simple_query($mSQL);
 
-		$mSQL="ALTER TABLE `siva`  CHANGE COLUMN `numero` `numero` VARCHAR(15) NOT NULL DEFAULT '' AFTER `fecha`";
-		$this->db->simple_query($mSQL);
 		$mSQL="ALTER TABLE `siva`  CHANGE COLUMN `numero` `numero` VARCHAR(20) NOT NULL DEFAULT '' AFTER `fecha`";
 		$this->db->simple_query($mSQL);
 		echo $uri = anchor('finanzas/libros/configurar','Configurar');
