@@ -75,6 +75,7 @@ class Rpcserver extends Controller {
 
 		$mSQL="SELECT numero,fecha,vence,TRIM(nfiscal) AS nfiscal,totals,totalg,iva FROM sfac WHERE cod_cli=? AND numero > ? AND tipo_doc='F' LIMIT $cant";
 		$query = $this->db->query($mSQL,array($usr,$ult_ref));
+		memowrite($this->db->last_query(),'B2B');
 
 		$compras=array();
 		if ($query->num_rows() > 0){ 

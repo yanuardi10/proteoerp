@@ -2529,13 +2529,13 @@ class  Cpdf {
           // load the pfb file, and put that into an object too.
           // note that pdf supports only binary format type 1 font files, though there is a
           // simple utility to convert them from pfa to pfb.
-          $tmp =  get_magic_quotes_runtime();
+         // $tmp =  get_magic_quotes_runtime();
 
-          set_magic_quotes_runtime(0);
+          //set_magic_quotes_runtime(0);
 
           $data =  file_get_contents($fbfile);
 
-          set_magic_quotes_runtime($tmp);
+          //set_magic_quotes_runtime($tmp);
 
 
           // create the font descriptor
@@ -4327,7 +4327,7 @@ class  Cpdf {
     // read in a png file, interpret it, then add to the system
     $error =  0;
 
-    $tmp =  get_magic_quotes_runtime();
+    //$tmp =  get_magic_quotes_runtime();
 
 //    set_magic_quotes_runtime(0);
 
@@ -4345,7 +4345,7 @@ class  Cpdf {
       $errormsg =  'trouble opening file: '.$file;
     }
 
-    set_magic_quotes_runtime($tmp);
+    //set_magic_quotes_runtime($tmp);
 
 
     if  (!$error) {
@@ -4667,7 +4667,7 @@ class  Cpdf {
 
     //$fp = fopen($img,'rb');
 
-    $tmp =  get_magic_quotes_runtime();
+    //$tmp =  get_magic_quotes_runtime(); //quitado por inpatibilidad
 
 //    set_magic_quotes_runtime(0);
 
@@ -4738,9 +4738,9 @@ class  Cpdf {
 
     //$fp = fopen($tmpName,'rb');
 
-    $tmp =  get_magic_quotes_runtime();
+    //$tmp =  get_magic_quotes_runtime(); //quitado por incmpatibilidad
 
-    set_magic_quotes_runtime(0);
+    //set_magic_quotes_runtime(0); //quitado por incompatibilidad
 
     if  ( ($data =  file_get_contents($tmpName)) ===  false) {
 
@@ -4757,7 +4757,7 @@ class  Cpdf {
     }
 
     //  $data = fread($fp,filesize($tmpName));
-    set_magic_quotes_runtime($tmp);
+    //set_magic_quotes_runtime($tmp); //quitado por incompatibilidad
 
     //  fclose($fp);
     unlink($tmpName);
