@@ -6733,10 +6733,10 @@ class Libros extends Controller {
 		$sql="UPDATE scst SET
 		cgenera=null, civagen=null,cadicio=null, civaadi=null,creduci=null,civared=null,cstotal=null, cimpuesto=null,ctotal=null
 		WHERE cgenera+civagen+cadicio+civaadi+creduci+civared+cstotal+cimpuesto+ctotal=0 OR cgenera+civagen+cadicio+civaadi+creduci+civared+cstotal+cimpuesto+ctotal=NULL AND recep BETWEEN $fdesde AND $fhasta";
-		
+
 		// REVISAR COMPRAS
 		$query = $this->db->query("SELECT control FROM scst WHERE abs(exento+montasa+monredu+monadic-montotot)>0.1 AND EXTRACT(YEAR_MONTH FROM fecha)=$mes ");
-		
+
 		// Procesando Compra 
 		if ($query->num_rows() > 0) foreach ($query->result() as $row) $this->scstarretasa( $row->control );
 		// VER LO DE FACTURAS RECIBIDAS CON FECHA ANTERIOR
@@ -6747,13 +6747,13 @@ class Libros extends Controller {
 		$mivag = $tasas['general'];  
 		$mivar = $tasas['reducida']; 
 		$mivaa = $tasas['adicional'];
-		
+
 		if ($this->db->field_exists('serie', 'scst')){
 			$msqlnum='IF(LENGTH(b.serie)>0,b.serie,b.numero) AS numero';
 		}else{
 			$msqlnum='b.numero AS numero';
 		}
-		
+
 		$mSQL = "INSERT INTO siva  
 			(id, libro, tipo, fuente, sucursal, fecha, numero, numhasta,  caja, nfiscal,  nhfiscal, 
 			referen, planilla, clipro, nombre, contribu, rif, registro,
@@ -8500,6 +8500,8 @@ class Libros extends Controller {
 		$this->db->simple_query($mSQL);
 
 		$mSQL="ALTER TABLE `siva`  CHANGE COLUMN `numero` `numero` VARCHAR(15) NOT NULL DEFAULT '' AFTER `fecha`";
+		$this->db->simple_query($mSQL);
+		$mSQL="ALTER TABLE `siva`  CHANGE COLUMN `numero` `numero` VARCHAR(20) NOT NULL DEFAULT '' AFTER `fecha`";
 		$this->db->simple_query($mSQL);
 		echo $uri = anchor('finanzas/libros/configurar','Configurar');
 	}
