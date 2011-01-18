@@ -136,6 +136,7 @@ class Ordi extends Controller {
 		$edit->script($script,'modify');
 
 		$edit->pre_process( 'insert','_pre_insert');
+		$edit->pre_process( 'delete','_pre_delete');
 		$edit->post_process('insert','_post_insert');
 		$edit->post_process('update','_post_update');
 		$edit->post_process('delete','_post_delete');
@@ -758,7 +759,6 @@ class Ordi extends Controller {
 				$data['content']  = "Orden cargada bajo el numero de control $rt ".br();
 			}
 
-			
 			$data['content'] .= anchor('import/ordi/dataedit/show/'.$control,'Regresar');
 		}else{
 			$data['content'] = $form->output;
@@ -786,7 +786,6 @@ class Ordi extends Controller {
 				$serie   = $row['numero'];
 				$fecha   = $row['fecha'];
 				$proveed = $row['proveed'];
-				//$depo    = '0001';
 
 				$row['tipo_doc'] = 'FC';
 				$row['serie']    = $serie;
@@ -884,14 +883,6 @@ class Ordi extends Controller {
 
 				$row['cstotal']  =$row['montotot'];
 				$row['ctotal']   =$row['montonet'];
-				/*$row['cimpuesto']=$row['montoiva'];
-				$row['cexento']  =$row['exento'];
-				$row['cgenera']  =$row['tasa'];
-				$row['civagen']  =$row['tasa']*($tasas['tasa']/100);
-				$row['creduci']  =$row['reducida'];
-				$row['civared']  =$row['reducida']*($tasas['redutasa']/100);
-				$row['cadicio']  =$row['sobretasa'];
-				$row['civaadi']  =$row['sobretasa']*($tasas['sobretasa']/100);*/
     
 				$mSQL=$this->db->insert_string('scst', $row);
 				$ban=$this->db->simple_query($mSQL);
@@ -974,6 +965,14 @@ class Ordi extends Controller {
 		$do->set('estampa',date('ymd'));
 		$do->set('hora'   ,date('H:i:s'));
 		return true;
+	}
+
+	function _pre_delete($do){
+		$status=$do->get('status');
+		if($status!='A'){
+			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='Opps Disculpe....!, no se puede borrar una orden cuyo estatus es diferente a \'A\'';
+			return false;
+		}
 	}
 
 	function _post_insert($do){

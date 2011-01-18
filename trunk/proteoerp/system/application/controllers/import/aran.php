@@ -37,8 +37,9 @@ class aran extends validaciones {
 
 		$grid->column_orderby('Codigo'            ,$uri     ,'codigo' ,'align=\'center\'');
 		$grid->column_orderby('Descripci&oacute;n','descrip','descrip','align=\'left\''  );
-		$grid->column_orderby('Tarifa'            ,'tarifa' ,'tarifa' ,'align=\'right\'' );
+		$grid->column_orderby('Tarifa'            ,'<nformat><#tarifa#></nformat>' ,'tarifa' ,'align=\'right\'' );
 		$grid->column_orderby('Unidad'            ,'unidad' ,'unidad' ,'align=\'right\'' );
+		$grid->column_orderby('Dolar'             ,'<nformat><#dolar#></nformat>' ,'dolar' ,'align=\'right\'' );
 
 		$grid->add('import/aran/dataedit/create','Agregar nuevo arancel');
 		$grid->build();
@@ -80,6 +81,12 @@ class aran extends validaciones {
 		$edit->tarifa->maxlength=10;
 		$edit->tarifa->css_class='inputnum';
 		$edit->tarifa->rule='trim|callback_positivo|numeric|required';
+
+		$edit->dolar = new inputField('Dolar', 'dolar');
+		$edit->dolar->size = 10;
+		$edit->dolar->maxlength=10;
+		$edit->dolar->css_class='inputnum';
+		$edit->dolar->rule='trim|callback_positivo|numeric';
 
 		$edit->buttons('modify','save','undo','delete','back');
 		$edit->build();
