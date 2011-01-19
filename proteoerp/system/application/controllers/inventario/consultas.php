@@ -228,8 +228,9 @@ class Consultas extends Controller {
 	}
 
 	function _gconsul($mSQL_p,$cod_bar,$busca,$suple=null){
+		$cod_bar=$this->db->escape($cod_bar);
 		if(!empty($suple) AND $this->db->table_exists('suple')){
-			$mSQL  ="SELECT codigo FROM suple WHERE suplemen='${cod_bar}' LIMIT 1";
+			$mSQL  ="SELECT codigo FROM suple WHERE suplemen=${cod_bar} LIMIT 1";
 			$query = $this->db->query($mSQL);
 			if ($query->num_rows() != 0){
 				$row = $query->row();
@@ -239,7 +240,7 @@ class Consultas extends Controller {
 		}
 
 		foreach($busca AS $b){
-			$mSQL  =$mSQL_p." WHERE ${b}='${cod_bar}' LIMIT 1";
+			$mSQL  =$mSQL_p." WHERE ${b}=${cod_bar} LIMIT 1";
 			$query = $this->db->query($mSQL);
 			if ($query->num_rows() != 0){
 				return $query;
@@ -247,7 +248,7 @@ class Consultas extends Controller {
 		}
 
 		if ($this->db->table_exists('barraspos')) {
-			$mSQL  ="SELECT codigo FROM barraspos WHERE suplemen=".$this->db->escape($cod_bar)." LIMIT 1";
+			$mSQL  ="SELECT codigo FROM barraspos WHERE suplemen=${cod_bar} LIMIT 1";
 			$query = $this->db->query($mSQL);
 			if ($query->num_rows() != 0){
 				$row = $query->row();
