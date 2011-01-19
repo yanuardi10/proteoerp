@@ -1,4 +1,5 @@
-<?php
+<?php require_once(APPPATH.'/controllers/inventario/consultas.php');
+//require_once(BASEPATH.'application/controllers/');
 /*****
  * Realizado por Judelvis A. Rivas
  * Modulo para generar etiquetas de productos de la tabla sinv
@@ -279,9 +280,9 @@ class etiqueta_sinv extends Controller {
 				if (e.which == 13) {
 					cod=$(this).val();
 					if(cod.length>0){
-						acum=acum+cod+",";
+						acum=" "+acum+cod+",";
 						$(this).val("");
-						$("#prod").append(+cod+"<br>");
+						$("#prod").append(cod+"<br>");
 						$("input[name=\'barras\']").val(acum);
 						//alert(acum);
 					}
@@ -300,6 +301,7 @@ class etiqueta_sinv extends Controller {
 		);
 
 		$tabla = form_open('inventario/etiqueta_sinv/cant');
+		$tabla.= 'Escriba el c&oacute;digo del producto y precione la tecla  <b>ENTER</b> para agregarlo a a lista, luego presione <b>Generar</b>';
 		$tabla.= form_input($data);
 		$tabla.= form_hidden('barras','');
 		$tabla.= HTML::button('btn_regresa', 'Regresar', 'javascript:window.location=\''.site_url('inventario/etiqueta_sinv').'\'','button','button');
@@ -308,7 +310,7 @@ class etiqueta_sinv extends Controller {
 		$tabla.= '<div id=\'prod\'></div>';
 
 		$data['content'] = $tabla;
-		$data['title']   = '<h1>Habladores por c&oacute;digo de barras</h1>';
+		$data['title']   = heading('Habladores por c&oacute;digo de barras');
 		$data['head']    = $script;
 		$this->load->view('view_ventanas', $data);
 	}
@@ -316,40 +318,66 @@ class etiqueta_sinv extends Controller {
 	function cant(){
 		$tabla=form_open('forma/ver/etiqueta1');
 		$cbarra=$this->input->post('barras');
-		if(empty($cbarra)){
-			$barras = explode(',',$cbarra,-1);
-			$campos = implode("','",$barras);
+		//$regresa=anchor('inventario/etiqueta_sinv/lee_barras','Regresar');
+		$regresa=HTML::button('btn_regresa', 'Regresar', 'javascript:window.location=\''.site_url('inventario/etiqueta_sinv/lee_barras').'\'','button','button');
+		$campos=$nbarras=array();
 
-			$consul="SELECT codigo,barras,descrip,precio1 as precio from sinv WHERE barras IN ('$campos')";
+		if(!empty($cbarra)){
+			$barras  = explode(',',$cbarra);
 
-			$msql=$this->db->query($consul);
-			$row=$msql->result();
-			if (count($row)==0){
-				$tabla.="<h1>Los c&oacute;digos de barras insertados no exiten</h1><br><a href='".site_url('inventario/etiqueta_sinv/lee_barras')."' >atras</a>";
-			}else{
+			foreach($barras as $cod){
+				$cod=trim($cod);
+				if(empty($cod)) continue;
+				$mSQL_p = 'SELECT codigo FROM sinv';
+				$bbus   = array('codigo','barras','alterno');
+				$q=consultas::_gconsul($mSQL_p,$cod,$bbus);
+				if($q!==false){
+					$row=$q->row();
+					$campos[]=$this->db->escape($row->codigo);
+				}else{
+					$nbarras[]=$cod;
+				}
+			}
 
-				$data = array(
-					'name'      => 'cant',
-					'id'        => 'cant',
-					'value'     => '1',
-					'maxlength' => '5',
-					'size'      => '5',
-				);
+			if(count($campos)>0){
+				$campos = implode(',',$campos);
+				$consul="SELECT codigo,barras,descrip,precio1 as precio FROM sinv WHERE codigo IN ($campos)";
+
+					$data = array(
+						'name'      => 'cant',
+						'id'        => 'cant',
+						'value'     => '1',
+						'maxlength' => '5',
+						'size'      => '5',
+						'class'     => 'inputnum',
+						'autocomplete'=>'off'
+					);
+
+				if(count($nbarras)>0){
+					$tabla.='<p>C&oacute;digos no relacionado con alg&uacute;n producto: '.implode(',',$nbarras).'</p>';
+				}
 
 				$tabla.=form_hidden('consul', $consul);
-				$tabla.=form_label("Numero de etiquetas por producto:")."&nbsp&nbsp&nbsp";
+				$tabla.=form_label('N&uacute;mero de etiquetas por producto:').nbs(4);
 				$tabla.=form_input($data).'<br>';
+				$tabla.=$regresa;
 				$tabla.=form_submit('mysubmit', 'Generar');
 				$tabla.=form_close();
+			}else{
+				$tabla.=heading('Oops! No existen productos con esos c&oacute;digos de barras',3).br().$regresa;
 			}
 		}else{
-			$tabla.="<h1>Debe ingresar algun c&oacute;digo de barras</h1><br><a href='".site_url('inventario/etiqueta_sinv/lee_barras')."' >atras</a>";
+			$tabla.=heading('Lo siento, debes ingresar alg&uacute;n c&oacute;digo de barras para poder generar los habladores',3).br().$regresa;
 		}
-		
-		$link1=site_url('inventario/etiqueta_sinv/lee_barras');
-		$data['smenu']="<a href='".$link1."' >Atras</a>";
-		$data['title']   = "Genera Etiquetas";
-		$data['content']=$tabla;
+
+		$data['script'] ='<script type="text/javascript">
+		$(function(){
+			$(".inputnum").numeric(".");
+		});
+		</script>';
+		$data['title']  = heading('Genera Etiquetas');
+		$data['head']   = script('jquery.js').script('plugins/jquery.numeric.pack.js');
+		$data['content']= $tabla;
 		$this->load->view('view_ventanas', $data);
 	}
 }
