@@ -135,7 +135,7 @@ class Libros extends Controller {
 		$sobretasa = $aa['sobretasa'];
 
 		if($this->db->field_exists('serie', 'scst') AND $this->db->field_exists('serie', 'siva')){
-			$dbcampo='a.serie';
+			$dbcampo='COALESCE(a.serie,a.numero)';
 		}else{
 			$dbcampo='a.numero';
 		}
@@ -162,7 +162,7 @@ class Libros extends Controller {
 		    sum(a.reduimpu *IF(a.tipo='NC',-1,1)) reduimpu, 
 		    sum(b.reiva    *IF(a.tipo='NC',-1,1)) reiva,
 		    CONCAT(EXTRACT(YEAR_MONTH FROM fechal),b.nrocomp) nrocomp,
-		    b.emision, a.numero numo, a.tipo tipo_doc, SUM(a.impuesto) AS impuesto, a.nacional
+		    b.emision, $dbcampo numo, a.tipo tipo_doc, SUM(a.impuesto) AS impuesto, a.nacional
 		    FROM siva AS a LEFT JOIN riva AS b ON a.numero=b.numero and a.clipro=b.clipro AND a.tipo=b.tipo_doc AND MID(b.transac,1,1)<>'_' 
 		                   LEFT JOIN provoca AS d ON a.rif=d.rif 
 		                   LEFT JOIN sprv AS e ON a.clipro=e.proveed 
@@ -192,7 +192,7 @@ class Libros extends Controller {
 		    a.reduimpu * 0, 
 		    sum(b.reiva*IF(a.tipo='NC',-1,1)) reiva,
 		    CONCAT(EXTRACT(YEAR_MONTH FROM fechal),b.nrocomp) nrocomp,
-		    b.emision, a.numero numo, a.tipo,SUM(a.impuesto) AS impuesto, a.nacional
+		    b.emision, $dbcampo numo, a.tipo,SUM(a.impuesto) AS impuesto, a.nacional
 		    FROM siva AS a JOIN riva AS b ON a.numero=b.numero and a.clipro!=b.clipro AND a.tipo=b.tipo_doc AND MID(b.transac,1,1)<>'_' AND a.reiva=b.reiva 
 		              LEFT JOIN sprv AS d ON b.clipro=d.proveed 
 		    WHERE libro='C' AND fechal BETWEEN $fdesde AND $fhasta AND a.fecha>0 AND a.reiva>0 
