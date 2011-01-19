@@ -458,7 +458,7 @@ class Mantenimiento extends Controller{
 
 		$data['content'] = $edit->output.'<pre>'.$sal.'</pre>';
 		$data['title']   = '<h1>Cambio en los contadores</h1>';
-		$data["head"]    = $this->rapyd->get_head();
+		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -627,6 +627,23 @@ class Mantenimiento extends Controller{
 		$this->load->view('view_ventanas', $data);
 	}
 
+	function secuencias(){
+		$tables = $this->db->list_tables();
+		foreach ($tables as $table){
+			$fields = $this->db->list_fields($table);
+			if(count($fields)==3){
+				if($fields[0]=='numero' AND $fields[1]=='usuario' AND $fields[2]=='fecha'){
+					$mSQL="SHOW TABLE STATUS LIKE '$table'";
+					$query = $this->db->query($mSQL);
+					if($query->num_rows() > 0){
+						$row = $query->row();
+						echo $table.' <b>'.$row->Auto_increment.'</b>'.br();
+					}
+				}
+			}
+		}
+	}
+
 	function actualizaproteo(){
 		if (!extension_loaded('svn')) {
 			$data['content'] = 'La extension svn no esta cargada, debe cargarla para poder usar estas opciones';
@@ -685,5 +702,3 @@ class Mantenimiento extends Controller{
 		}
 	}
 }
-
-
