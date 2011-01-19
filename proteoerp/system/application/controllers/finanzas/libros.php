@@ -134,16 +134,22 @@ class Libros extends Controller {
 		$redutasa  = $aa['redutasa'];
 		$sobretasa = $aa['sobretasa'];
 
+		if($this->db->field_exists('serie', 'scst') AND $this->db->field_exists('serie', 'siva')){
+			$dbcampo='a.serie';
+		}else{
+			$dbcampo='a.numero';
+		}
+
 		$mSQL = "SELECT DISTINCT a.sucursal, a.fecha, a.rif,
 		    if(e.proveed IS NULL, if(d.nombre IS NULL or d.nombre='', a.nombre, d.nombre ), if(e.nombre IS NULL or e.nombre='', a.nombre, if(e.nomfis='',e.nombre,e.nomfis)) ) nombre, 
 		    a.contribu,
 		    a.referen,
 		    a.planilla,
 		    '     ' nose,
-		    IF(a.tipo='FC',a.numero,'        ') numero,
+		    IF(a.tipo='FC',$dbcampo,'        ') numero,
 		    a.nfiscal,
-		    IF(a.tipo='ND',a.numero,'        ') numnd,
-		    IF(a.tipo='NC',a.numero,'        ') numnc,
+		    IF(a.tipo='ND',$dbcampo,'        ') numnd,
+		    IF(a.tipo='NC',$dbcampo,'        ') numnc,
 		    a.registro oper, 
 		    '        ' compla, 
 		    sum(a.gtotal   *IF(a.tipo='NC',-1,1)) gtotal,
@@ -6749,10 +6755,12 @@ class Libros extends Controller {
 		$mivar = $tasas['reducida']; 
 		$mivaa = $tasas['adicional'];
 
-		if ($this->db->field_exists('serie', 'scst')){
-			$msqlnum='IF(LENGTH(b.serie)>0,b.serie,b.numero) AS numero';
+		if($this->db->field_exists('serie', 'scst') AND $this->db->field_exists('serie', 'siva')){
+			$msqlnum=',IF(LENGTH(b.serie)>0,b.serie,b.numero) AS serie';
+			$addcamp=',serie';
 		}else{
-			$msqlnum='b.numero AS numero';
+			$msqlnum='';
+			$addcamp='';
 		}
 
 		$mSQL = "INSERT INTO siva  
@@ -6760,14 +6768,14 @@ class Libros extends Controller {
 			referen, planilla, clipro, nombre, contribu, rif, registro,
 			nacional, exento, general, geneimpu, 
 			adicional,reduimpu, reducida,adicimpu,stotal, impuesto, 
-			gtotal, reiva, fechal, fafecta) 
+			gtotal, reiva, fechal, fafecta $addcamp) 
 			SELECT 0 AS id,
 			'C' AS libro, 
 			b.tipo_doc AS tipo, 
 			'CP' AS fuente, 
 			'00' AS sucursal, 
 			b.fecha,
-			$msqlnum,
+			b.numero AS numero,
 			' ' AS numhasta,
 			' ' AS caja,
 			b.nfiscal,
@@ -6793,6 +6801,7 @@ class Libros extends Controller {
 			b.reteiva AS reiva,
 			".$mes."01 AS fechal,
 			0 fafecta 
+			$msqlnum
 		FROM itscst AS a JOIN scst as b ON a.control=b.control
 		LEFT JOIN sprv AS c ON b.proveed=c.proveed 
 		WHERE b.recep BETWEEN $fdesde AND $fhasta AND b.actuali >= b.fecha AND c.tiva<>'I'
@@ -8500,7 +8509,9 @@ class Libros extends Controller {
 		}
 		$this->db->simple_query($mSQL);
 
-		$mSQL="ALTER TABLE `siva`  CHANGE COLUMN `numero` `numero` VARCHAR(20) NOT NULL DEFAULT '' AFTER `fecha`";
+		//$mSQL="ALTER TABLE `siva`  CHANGE COLUMN `numero` `numero` VARCHAR(20) NOT NULL DEFAULT '' AFTER `fecha`";
+		//$this->db->simple_query($mSQL);
+		$mSQL="ALTER TABLE `siva`  ADD COLUMN `serie` VARCHAR(20) NULL DEFAULT NULL AFTER `serial`;";
 		$this->db->simple_query($mSQL);
 		echo $uri = anchor('finanzas/libros/configurar','Configurar');
 	}
