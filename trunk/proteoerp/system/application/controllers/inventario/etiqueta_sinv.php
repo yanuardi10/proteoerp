@@ -318,12 +318,12 @@ class etiqueta_sinv extends Controller {
 	function cant(){
 		$tabla=form_open('forma/ver/etiqueta1');
 		$cbarra=$this->input->post('barras');
-		//$regresa=anchor('inventario/etiqueta_sinv/lee_barras','Regresar');
+
 		$regresa=HTML::button('btn_regresa', 'Regresar', 'javascript:window.location=\''.site_url('inventario/etiqueta_sinv/lee_barras').'\'','button','button');
 		$campos=$nbarras=array();
 
 		if(!empty($cbarra)){
-			$barras  = explode(',',$cbarra);
+			$barras  = array_unique(explode(',',$cbarra));
 
 			foreach($barras as $cod){
 				$cod=trim($cod);
@@ -343,15 +343,15 @@ class etiqueta_sinv extends Controller {
 				$campos = implode(',',$campos);
 				$consul="SELECT codigo,barras,descrip,precio1 as precio FROM sinv WHERE codigo IN ($campos)";
 
-					$data = array(
-						'name'      => 'cant',
-						'id'        => 'cant',
-						'value'     => '1',
-						'maxlength' => '5',
-						'size'      => '5',
-						'class'     => 'inputnum',
-						'autocomplete'=>'off'
-					);
+				$data = array(
+					'name'      => 'cant',
+					'id'        => 'cant',
+					'value'     => '1',
+					'maxlength' => '5',
+					'size'      => '5',
+					'class'     => 'inputnum',
+					'autocomplete'=>'off'
+				);
 
 				if(count($nbarras)>0){
 					$tabla.='<p>C&oacute;digos no relacionado con alg&uacute;n producto: '.implode(',',$nbarras).'</p>';
@@ -375,7 +375,7 @@ class etiqueta_sinv extends Controller {
 			$(".inputnum").numeric(".");
 		});
 		</script>';
-		$data['title']  = heading('Genera Etiquetas');
+		$data['title']  = heading('Habladores por c&oacute;digo de barras');
 		$data['head']   = script('jquery.js').script('plugins/jquery.numeric.pack.js');
 		$data['content']= $tabla;
 		$this->load->view('view_ventanas', $data);
