@@ -124,6 +124,9 @@ class Ordi extends Controller {
 		function post_add_itstra(id){
 			$('#cantidad_'+id).numeric(".");
 			return true;
+		}
+		function formato(row) {
+			return row[0] + "-" + row[1];
 		}";
 
 		$do = new DataObject('ordi');
@@ -292,6 +295,7 @@ class Ordi extends Controller {
 		$edit->codaran->rule     ='trim';
 		$edit->codaran->maxlength=15;
 		$edit->codaran->size     =10;
+		$edit->codaran->readonly =true;
 		$edit->codaran->append($aran);
 
 		$arr=array(
@@ -307,6 +311,7 @@ class Ordi extends Controller {
 			$edit->$obj->rule     ='trim';
 			$edit->$obj->maxlength= 7;
 			$edit->$obj->size     = 5;
+			$edit->$obj->readonly =true;
 		}
 
 		/*$arr=array('precio1','precio2','precio3','precio4');
@@ -336,7 +341,27 @@ class Ordi extends Controller {
 		$edit->buttons('undo','back');
 		$edit->build();
 
+		$auto_aran=site_url('import/ordi/autocomplete/codaran');
 		$this->rapyd->jquery[]='$(".inputnum").numeric(".");';
+		/*$this->rapyd->jquery[]='$(\'input[name^="codara"]\').autocomplete("'.$auto_aran.'",{
+			delay:10,
+			//minChars:2,
+			matchSubset:1,
+			matchContains:1,
+			cacheLength:10,
+			formatItem:formato,
+			width:200,
+			autoFill:true,
+			onItemSelect: function(li) { 
+				srt=li.innerHTML;
+				arr=srt.split("-");
+				str=arr[1].replace(/^\s*|\s*$/g,"");
+				str=str.substring(0,str.length-1);
+				num=des_nformat(str);
+				$("#arancel_1").val(num);
+			},
+		});';*/
+
 		//$data['content'] = $edit->output;
 		//$data['smenu']   = $this->load->view('view_sub_menu','205',true);
 
@@ -346,9 +371,26 @@ class Ordi extends Controller {
 		$conten['form']  =& $edit;
 		$data['content'] =  $this->load->view('view_ordi',$conten,true);
 		$data['title']   =  '<h1>Orden de importaci&oacute;n</h1>';
-		$data['head']    =  $this->rapyd->get_head().phpscript('nformat.js');
+		$data['head']    =  $this->rapyd->get_head().phpscript('nformat.js').script('plugins/jquery.autocomplete.js').style('jquery.autocomplete.css');
 		$this->load->view('view_ventanas', $data); 
 	}
+
+	function autocomplete($campo,$cod=FALSE){
+		if($cod!==false){
+			$cod=$this->db->escape_like_str($cod);
+			$qformato=$this->datasis->formato_cpla();
+			$data['codaran']="SELECT codigo AS c1 ,tarifa AS c2, descrip AS c3 FROM aran WHERE codigo LIKE '$cod%' ORDER BY codigo LIMIT 10";
+			if(isset($data[$campo])){
+			$query=$this->db->query($data[$campo]);
+				if($query->num_rows() > 0){
+					foreach($query->result() AS $row){
+						echo $row->c1.'|'.nformat($row->c2)."%\n";
+					}
+				}
+			}
+		}
+	}
+
 
 	function _showgeri($id,$stat='C'){
 		$this->rapyd->load('datagrid');
@@ -358,10 +400,9 @@ class Ordi extends Controller {
 		$grid->use_function('str_pad');
 		$grid->order_by('numero','desc');
 
-		$uri=anchor('import/ordi/gseri/'.$id.'/modify/<#id#>','<str_pad><#id#>|8|0|0</str_pad>');
+		$uri=anchor('import/ordi/gseri/'.$id.'/modify/<#id#>','<#numero#>');
 
-		$grid->column('N&uacute;mero',$uri);
-		$grid->column('N. Factura','numero');
+		$grid->column('N. Factura',$uri);
 		$grid->column('Fecha'    ,'<dbdate_to_human><#fecha#></dbdate_to_human>','align=\'center\'');
 		$grid->column('Concepto' ,'concepto');
 		$grid->column('Monto'    ,'<nformat><#monto#></nformat>','align=\'right\'');
@@ -372,6 +413,8 @@ class Ordi extends Controller {
 		return $grid->output;
 	}
 
+
+
 	function _showgeser($id,$stat='C'){
 		$this->rapyd->load('datagrid');
 
@@ -380,10 +423,7 @@ class Ordi extends Controller {
 		$grid->use_function('str_pad');
 		$grid->order_by('numero','desc');
 
-		$uri=anchor('import/ordi/gseri/'.$id.'/modify/<#fecha#>/<#numero#>/<raencode><#proveed#></raencode>','<#numero#>');
-
-		$grid->column('N&uacute;mero','numero');
-		$grid->column('N. Factura','numero','numero');
+		$grid->column('N. Factura','numero');
 		$grid->column('Proveedor' ,'proveed');
 		$grid->column('Nombre'    ,'nombre');
 		$grid->column('Fecha'     ,'<dbdate_to_human><#fecha#></dbdate_to_human>','align=\'center\'');
@@ -405,12 +445,12 @@ class Ordi extends Controller {
 		$grid->order_by('id','desc');
 		$grid->per_page = 5;
 
-		$uri=anchor('import/ordi/ordiva/'.$id.'/modify/<#id#>','editar');
+		$uri=anchor('import/ordi/ordiva/'.$id.'/modify/<#id#>','<nformat><#tasa#></nformat>%');
 
-		$grid->column('N&uacute;mero',$uri);
-		$grid->column('Tasa'   ,'<nformat><#tasa#></nformat>%','align=\'right\'');
-		$grid->column('Base'   ,'<nformat><#base#></nformat>','align=\'right\'');
-		$grid->column('IVA'    ,'<nformat><#montoiva#></nformat>','align=\'right\'');
+		$grid->column('Tasa'          ,$uri);
+		$grid->column('Base Imponible','<nformat><#base#></nformat>','align=\'right\'');
+		$grid->column('IVA'           ,'<nformat><#montoiva#></nformat>','align=\'right\'');
+		$grid->column('Concepto'      ,'concepto');
 
 		if($stat!='C') $grid->add('import/ordi/ordiva/'.$id.'/create','Agregar/Eliminar monto de tasa');
 		$grid->build();
@@ -498,6 +538,10 @@ class Ordi extends Controller {
 		$edit->montoiva->rule= 'required|numeric';
 		$edit->montoiva->size = 20;
 		$edit->montoiva->css_class='inputnum';
+
+		$edit->concepto = new inputField2('Concepto','concepto');
+		$edit->concepto->rule= 'max_length[100]';
+		$edit->concepto->max_size = 100;
 
 		$edit->ordeni  = new autoUpdateField('ordeni',$ordi,$ordi);
 
@@ -640,10 +684,10 @@ class Ordi extends Controller {
 
 		$pesotota=$row['pesotota'];
 		$montofob=$row['montofob'];
-		$gastosi =$this->datasis->dameval("SELECT SUM(monto)   AS gastosi FROM gseri WHERE ordeni=$dbid");
-		$gastosn =$this->datasis->dameval("SELECT SUM(totpre) AS gastosn  FROM gser  WHERE ordeni=$dbid");
-		$montoiva=$this->datasis->dameval("SELECT SUM(montoiva) AS montoiva  FROM ordiva WHERE ordeni=$dbid");
-		$baseiva =$this->datasis->dameval("SELECT SUM(base)     AS base  FROM ordiva WHERE ordeni=$dbid");
+		$gastosi =$this->datasis->dameval("SELECT SUM(monto)    AS gastosi  FROM gseri WHERE ordeni=$dbid");
+		$gastosn =$this->datasis->dameval("SELECT SUM(totpre)   AS gastosn  FROM gser  WHERE ordeni=$dbid");
+		$montoiva=$this->datasis->dameval("SELECT SUM(montoiva) AS montoiva FROM ordiva WHERE ordeni=$dbid");
+		$baseiva =$this->datasis->dameval("SELECT SUM(base)     AS base     FROM ordiva WHERE ordeni=$dbid");
 		if(empty($gastosn))  $gastosn =0;
 		if(empty($gastosi))  $gastosi =0;
 		if(empty($montoiva)) $montoiva=0;
@@ -673,35 +717,33 @@ class Ordi extends Controller {
 		$mSQL="UPDATE itordi SET gastosn=$participa*$gastosn WHERE numero=$dbid";
 		$this->db->simple_query($mSQL);
 
-		//CIF costo,seguro y flete
-		$mSQL="UPDATE itordi SET importecif=(($participa*$gastosi)+importefob)*$cambioofi WHERE numero=$dbid";
+		//CIF costo,seguro y flete (fob+gastos internacionales)
+		$mSQL="UPDATE itordi SET importecif=($participa*$gastosi)+importefob WHERE numero=$dbid";
 		$this->db->simple_query($mSQL);
 		$mSQL="UPDATE itordi SET costocif=importecif/cantidad WHERE numero=$dbid";
 		$this->db->simple_query($mSQL);
 
-		//Monto del arancel
-		$mSQL="UPDATE itordi SET montoaran=importecif*(arancel/100) WHERE numero=$dbid";
+		//Monto del arancel (debe ser en moneda local)
+		$mSQL="UPDATE itordi SET montoaran=importecif*(arancel/100)*$cambioofi WHERE numero=$dbid";
 		$this->db->simple_query($mSQL);
 
 		//total
-		$mSQL="UPDATE itordi SET importefinal=importecif+montoaran+gastosn WHERE numero=$dbid";
+		$mSQL="UPDATE itordi SET importefinal=importecif*$cambioofi+montoaran+gastosn WHERE numero=$dbid";
 		$this->db->simple_query($mSQL);
 		$mSQL="UPDATE itordi SET costofinal=importefinal/cantidad WHERE numero=$dbid";
 		$this->db->simple_query($mSQL);
-		$tas=$cambioreal/$cambioofi;
 
-		$importecif =$this->datasis->dameval("SELECT SUM(importecif) AS final  FROM itordi WHERE numero=$dbid");
-		if(empty($importecif)) $importecif=0;
-
-		$mSQL="SELECT SUM(montoaran) AS aranceles  FROM itordi WHERE numero=$dbid";
+		$mSQL="SELECT SUM(montoaran) AS aranceles, SUM(importecif) AS montocif  FROM itordi WHERE numero=$dbid";
 		$query = $this->db->query($mSQL);
 		if ($query->num_rows() > 0){
 			$row = $query->row_array();
+			$importecif     =(empty($row['montocif']))? 0: $row['montocif']*$cambioofi; //montocif en moneda local
 			$row['gastosi'] =$gastosi;
 			$row['gastosn'] =$gastosn;
 			$row['montoiva']=$montoiva;
+			$row['montotot']=$importecif+$gastosn;
 			$row['montoexc']=$importecif-$baseiva;//monto excento
-			$row['cargoval']=(($importecif/$cambioofi)*$cambioreal)-$importecif;// diferencia dolar real e imaginario
+			$row['cargoval']=($row['montocif']*$cambioreal)-($row['montocif']*$cambioofi);// Diferencia dolar real e imaginario
 
 			$where = "numero=$dbid";
 			$str = $this->db->update_string('ordi', $row, $where);
@@ -808,8 +850,8 @@ class Ordi extends Controller {
 
 				$itdata=array();
 				$sql='SELECT a.codigo,a.descrip,a.cantidad,a.costofinal,a.importefinal,b.iva,
-					ROUND((montoaran+gastosn+((importecif/'.$cambioofi.')*'.$cambioreal.'))/cantidad, 2)AS costoreal,
-					ROUND(montoaran+gastosn+((importecif/'.$cambioofi.')*'.$cambioreal.'),2) AS importereal
+					ROUND(montoaran+gastosn+(costocif*'.$cambioreal.')  ,2) AS costoreal,
+					ROUND(montoaran+gastosn+(importecif*'.$cambioreal.'),2) AS importereal
 					FROM itordi AS a JOIN sinv AS b ON a.codigo=b.codigo WHERE a.numero=?';
 				$qquery=$this->db->query($sql,array($id));
 				if($qquery->num_rows()>0){
@@ -888,7 +930,7 @@ class Ordi extends Controller {
 				$ban=$this->db->simple_query($mSQL);
 				if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
     
-				$mSQL = $this->db->update_string('ordi', array('status'=>'C'), 'numero='.$this->db->escape($id));
+				$mSQL = $this->db->update_string('ordi', array('status'=>'C','control'=>$control), 'numero='.$this->db->escape($id));
 				$ban=$this->db->simple_query($mSQL);
 				if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
 				if($error>0){
@@ -930,6 +972,12 @@ class Ordi extends Controller {
 				echo '0';
 			}
 		}
+	}
+
+	//crea un contenedor para asociarlo
+	//con el crm
+	function contenedor($id){
+		
 	}
 
 	function _post_ordiva($do){
@@ -1017,8 +1065,75 @@ class Ordi extends Controller {
 		return true;
 	}
 
-	function instala(){
+	function instalar(){
 		$mSQL='ALTER TABLE `gser`  ADD COLUMN `ordeni` INT(15) UNSIGNED NULL DEFAULT NULL AFTER `compra`';
+		var_dump($this->db->simple_query($mSQL));
+
+		$mSQL="CREATE TABLE `ordi` (
+		`numero` int(15) unsigned NOT NULL AUTO_INCREMENT,
+		`fecha` date DEFAULT NULL,
+		`status` char(1) NOT NULL DEFAULT '' COMMENT 'Estatus de la Compra Abierto, Eliminado y Cerrado',
+		`proveed` varchar(5) DEFAULT NULL COMMENT 'Proveedor',
+		`nombre` varchar(40) DEFAULT NULL COMMENT 'Nombre del Proveedor',
+		`agente` char(5) DEFAULT NULL COMMENT 'Agente Aduanal (Proveedor)',
+		`nomage` varchar(40) DEFAULT NULL COMMENT 'Agente Aduanal (Proveedor)',
+		`montofob` decimal(19,2) DEFAULT NULL COMMENT 'Total de la Factura extranjera',
+		`gastosi` decimal(19,2) DEFAULT NULL COMMENT 'Gastos Internacionales (Fletes, Seguros, etc)',
+		`montocif` decimal(19,2) DEFAULT NULL COMMENT 'Monto FOB+gastos Internacionales',
+		`aranceles` decimal(19,2) DEFAULT NULL COMMENT 'Suma del Impuesto Arancelario',
+		`gastosn` decimal(19,2) DEFAULT NULL COMMENT 'Gastos Nacionales',
+		`montotot` decimal(19,2) DEFAULT NULL COMMENT 'Monto CIF + Gastos Nacionales',
+		`montoiva` decimal(19,2) DEFAULT NULL COMMENT 'Monto del IVA pagado',
+		`montoexc` decimal(12,2) DEFAULT NULL,
+		`arribo` date DEFAULT NULL COMMENT 'Fecha de Llegada',
+		`factura` varchar(20) DEFAULT NULL COMMENT 'Nro de Factura',
+		`cambioofi` decimal(17,2) NOT NULL DEFAULT '0.00' COMMENT 'Cambio Fiscal US$ X Bs.',
+		`cambioreal` decimal(17,2) NOT NULL DEFAULT '0.00' COMMENT 'Cambio Efectivamente Aplicado',
+		`peso` decimal(12,2) NOT NULL DEFAULT '0.00' COMMENT 'Peso total',
+		`condicion` text,
+		`transac` varchar(8) NOT NULL DEFAULT '',
+		`estampa` date NOT NULL DEFAULT '0000-00-00',
+		`usuario` varchar(12) NOT NULL DEFAULT '',
+		`hora` varchar(8) NOT NULL DEFAULT '',
+		`dua` char(30) DEFAULT NULL COMMENT 'DECLARACION UNICA ADUANAS',
+		`cargoval` decimal(19,2) DEFAULT NULL COMMENT 'Diferencia Cambiara $ oficial y aplicado',
+		`control` varchar(8) DEFAULT NULL COMMENT 'Apuntador a la factura con la que se relaciono',
+		`crm` int(11) unsigned DEFAULT NULL COMMENT 'Apuntador al conetendor',
+		PRIMARY KEY (`numero`)
+		) ENGINE=MyISAM AUTO_INCREMENT=0 DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC";
+		var_dump($this->db->simple_query($mSQL));
+
+		$mSQL="CREATE TABLE `itordi` (
+		`numero` int(15) unsigned NOT NULL,
+		`fecha` date DEFAULT NULL,
+		`codigo` char(15) DEFAULT NULL,
+		`descrip` char(45) DEFAULT NULL,
+		`cantidad` decimal(10,3) DEFAULT NULL,
+		`costofob` decimal(17,2) DEFAULT NULL,
+		`importefob` decimal(17,2) DEFAULT NULL,
+		`gastosi` decimal(17,2) DEFAULT NULL,
+		`costocif` decimal(17,2) DEFAULT NULL,
+		`importecif` decimal(17,2) DEFAULT NULL,
+		`codaran` char(15) DEFAULT NULL,
+		`arancel` decimal(7,2) DEFAULT NULL,
+		`montoaran` decimal(17,2) DEFAULT NULL,
+		`gastosn` decimal(17,2) DEFAULT NULL,
+		`costofinal` decimal(17,2) DEFAULT NULL,
+		`importefinal` decimal(17,2) DEFAULT NULL,
+		`participam` decimal(7,4) DEFAULT NULL,
+		`participao` decimal(7,4) DEFAULT NULL,
+		`iva` decimal(17,2) DEFAULT NULL,
+		`precio1` decimal(15,2) DEFAULT NULL,
+		`precio2` decimal(15,2) DEFAULT NULL,
+		`precio3` decimal(15,2) DEFAULT NULL,
+		`precio4` decimal(15,2) DEFAULT NULL,
+		`estampa` date DEFAULT NULL,
+		`hora` char(8) DEFAULT NULL,
+		`usuario` char(12) DEFAULT NULL,
+		`id` int(20) unsigned NOT NULL AUTO_INCREMENT,
+		PRIMARY KEY (`id`),
+		KEY `numero` (`numero`)
+		) ENGINE=MyISAM AUTO_INCREMENT=0 DEFAULT CHARSET=latin1 ROW_FORMAT=FIXED";
 		var_dump($this->db->simple_query($mSQL));
 	}
 }
