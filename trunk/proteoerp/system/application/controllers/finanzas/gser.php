@@ -109,7 +109,7 @@ class gser extends Controller {
 			'tabla'   =>'rete',
 			'columnas'=>array(
 			'codigo' =>'C&oacute;odigo','activida'=>'Actividad',
-			'base1'=>'Base1','pama1'=>'Para Mayores'),
+			'base1'=>'Base1','pama1'=>'Para Mayores','tari1'=>'%'),
 			'filtro'  =>array('codigo'=>'C&oacute;digo','activida'=>'Actividad'),
 			'retornar'=>array('codigo'=>'creten','base1'=>'__base','tari1'=>'__tar','pama1'=>'__pama'),
 			'titulo'  =>'Buscar Retencion',
@@ -651,11 +651,11 @@ class gser extends Controller {
 					$mSQL = "INSERT INTO itppro SET(".$campos.")VALUES(".$valores.") ";
 					echo $msql;
 				}
-				//				exit;
+				
 			}
 		}
 		
-		
+//		exit;
 		return true;
 	}
 
