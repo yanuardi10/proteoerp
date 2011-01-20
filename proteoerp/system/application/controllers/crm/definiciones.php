@@ -10,7 +10,7 @@ class Definiciones extends validaciones {
 	}
 
 	function index(){
-		$this->rapyd->load("datafilter","datagrid");
+		$this->rapyd->load('datafilter','datagrid');
 		$this->rapyd->uri->keep_persistence();
 
 		$filter = new DataFilter('titulo', $this->prefijo.'definiciones');
@@ -19,7 +19,7 @@ class Definiciones extends validaciones {
 
 		$filter->estructura = new inputField('Estructura', 'estructura');
 
-		$filter->buttons("reset","search");
+		$filter->buttons('reset','search');
 		$filter->build();
 
 		$uri = anchor('crm/definiciones/dataedit/show/<#id#>','<#id#>');
@@ -37,7 +37,7 @@ class Definiciones extends validaciones {
 
 		$data['content'] = $filter->output.$grid->output;
 		$data['title']   = '<h1>Definiciones</h1>';
-		$data["head"]    = $this->rapyd->get_head();
+		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -52,16 +52,17 @@ class Definiciones extends validaciones {
 		$edit->post_process('delete','_post_delete');*/
 
 		$edit->nombre =  new inputField('Nombre', 'nombre');
-		$edit->nombre->size = 15;
-		$edit->nombre->maxlength=30;
-		$edit->nombre->rule = 'trim|strtoupper|required';
+		$edit->nombre->size     = 15;
+		$edit->nombre->maxlength= 30;
+		$edit->nombre->rule     = 'trim|strtoupper|required';
 
 		$edit->estructura =  new textareaField('Estructura', 'estructura');
 		$edit->estructura->cols = 70;
 		$edit->estructura->rows = 4;
-		$edit->estructura->rule = "trim|required";
+		$edit->estructura->rule = 'trim';
+		//$edit->estructura->rule = 'trim|required';
 
-		$edit->buttons("modify", "save", "undo", "delete", "back");
+		$edit->buttons('modify','save','undo','delete', 'back');
 		$edit->build();
 
 		$data['content'] = $edit->output;
@@ -73,6 +74,4 @@ class Definiciones extends validaciones {
 	function instala(){
 	
 	}
-
-
 }

@@ -12,7 +12,6 @@ class tipos extends validaciones {
 	function index(){
 		$this->rapyd->load("datafilter","datagrid");
 		$this->rapyd->uri->keep_persistence();
-		
 
 		$filter = new DataFilter('Filtro');
 		$select=array("a.definicion","b.nombre","a.descrip","a.id");
@@ -20,7 +19,7 @@ class tipos extends validaciones {
 		$filter->db->from('crm_tipos AS a');
 		$filter->db->join('crm_definiciones AS b','a.definicion=b.id');
 
-		$filter->definicion = new dropdownField("Definici&acute;n","definicion");
+		$filter->definicion = new dropdownField("Definici&Oacute;n","definicion");
 		$filter->definicion->option("","Seleccione");
 		$filter->definicion->options("SELECT id,nombre  FROM crm_definiciones ORDER BY nombre");
 		$filter->definicion->rule = 'required';
