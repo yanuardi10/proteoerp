@@ -96,6 +96,10 @@ echo $form_begin;
 		calcula();
 	});
 
+	function formato(row) {
+		return row[0] + "-" + row[1];
+	}
+
 	function totaliza(){
 		if($("#gastosi").val().length>0)   gastosi=parseFloat($("#gastosi").val());     else gastosi  =0;
 		if($("#gastosn").val().length>0)   gastosn=parseFloat($("#gastosn").val());     else gastosn  =0;
@@ -232,10 +236,11 @@ for($i=0;$i<$form->max_rel_count['itordi'];$i++) {
 	<tr>
 		<td>
 <?php 
-if($form->_status=='show'){
-	echo $gseri;
-	echo $gser;
-	echo $ordiva;
+if(isset($peroles)){
+	echo br().br().heading('Efectos relacionados a esta orden:',3);
+	foreach($peroles as $perol){
+		echo $perol;
+	}
 }
 ?>
 		</td>

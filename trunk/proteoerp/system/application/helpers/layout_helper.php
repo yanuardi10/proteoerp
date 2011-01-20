@@ -24,7 +24,7 @@ $_FCPATH = (strpos(FCPATH,'index.php')===false) ? FCPATH :dirname(FCPATH);
 $thisobject =& get_instance();
 $thisobject->config->load('layout');
 define('ASSETS_URL', base_url() . $thisobject->config->item('layout_assets'));
-define('ASSETS_PATH', $_FCPATH . '/' . $thisobject->config->item('layout_assets'));
+define('ASSETS_PATH', $_FCPATH  . $thisobject->config->item('layout_assets'));
 define('THEME_PATH', $thisobject->config->item('layout_default') . '/');
 define('SHARED_PATH', $thisobject->config->item('layout_shared'));
 define('STYLES_PATH', $thisobject->config->item('layout_styles'));

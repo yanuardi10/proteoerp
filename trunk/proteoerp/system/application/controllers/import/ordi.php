@@ -1,4 +1,5 @@
-<?php
+<?php require_once(APPPATH.'/controllers/crm/contenedor.php');
+
 class Ordi extends Controller {
 
 	var $error_string='';
@@ -73,6 +74,7 @@ class Ordi extends Controller {
 	function dataedit(){
 		$this->rapyd->load('dataobject','datadetails');
 		$monedalocal='Bs';
+		//print_r(get_defined_constants());
 
 		$modbus=array(
 			'tabla'   =>'sinv',
@@ -93,7 +95,8 @@ class Ordi extends Controller {
 				'rif'=>'RIF'),
 			'filtro'  =>array('proveed'=>'C&oacute;digo Proveedor','nombre'=>'Nombre'),
 			'retornar'=>array('proveed'=>'proveed','nombre'=>'nombre'),
-			'titulo'  =>'Buscar Proveedor');
+			'titulo'  =>'Buscar Proveedor',
+			'where'   =>'tipo IN (3,4)');
 		$boton=$this->datasis->modbus($sprv);
 
 		$aran=array(
@@ -222,7 +225,7 @@ class Ordi extends Controller {
 
 		$edit->cambioreal = new inputField('Cambio Real', 'cambioreal');
 		$edit->cambioreal->css_class= 'inputnum';
-		$edit->cambioreal->rule     ='trim';
+		$edit->cambioreal->rule     ='trim|required';
 		$edit->cambioreal->maxlength=17;
 		$edit->cambioreal->size     =10;
 
@@ -365,9 +368,21 @@ class Ordi extends Controller {
 		//$data['content'] = $edit->output;
 		//$data['smenu']   = $this->load->view('view_sub_menu','205',true);
 
-		$conten['gseri'] =  ($edit->_status!='create') ? $this->_showgeri($edit->_dataobject->pk['numero'],$stat)  : '';
-		$conten['gser']  =  ($edit->_status!='create') ? $this->_showgeser($edit->_dataobject->pk['numero'],$stat) : '';
-		$conten['ordiva']=  ($edit->_status!='create') ? $this->_showordiva($edit->_dataobject->pk['numero'],$stat): '';
+		if($edit->_status=='show'){
+			$conten['peroles'][] = $this->_showgeri($edit->_dataobject->pk['numero'],$stat)  ;
+			$conten['peroles'][] = $this->_showgeser($edit->_dataobject->pk['numero'],$stat) ;
+			$conten['peroles'][] = $this->_showordiva($edit->_dataobject->pk['numero'],$stat);
+
+			$crm=$edit->_dataobject->get('crm');
+			if(!empty($crm)){
+				$adici=array($edit->_dataobject->pk['numero']);
+				$this->prefijo='crm_';
+				$conten['peroles'][] = Contenedor::_showAdjuntos($crm,'import/ordi/adjuntos',$adici);
+				$conten['peroles'][] = Contenedor::_showEventos($crm,'import/ordi/eventos',$adici);
+				$conten['peroles'][] = Contenedor::_showComentarios($crm,'import/ordi/comentarios',$adici);
+			}
+		}
+
 		$conten['form']  =& $edit;
 		$data['content'] =  $this->load->view('view_ordi',$conten,true);
 		$data['title']   =  '<h1>Orden de importaci&oacute;n</h1>';
@@ -391,29 +406,35 @@ class Ordi extends Controller {
 		}
 	}
 
-
 	function _showgeri($id,$stat='C'){
 		$this->rapyd->load('datagrid');
 
-		$grid = new DataGrid('Lista de gastos internacionales','gseri');
+		$grid = new DataGrid('Lista de gastos internacionales');
+		$select=array('a.numero','a.id','a.concepto','a.monto','a.fecha',
+			'IF(LENGTH(a.proveed)=0,b.proveed,b.proveed) AS proveed',
+			'IF(LENGTH(a.proveed)=0,b.nombre,b.nombre) AS nombre'
+			);
+		$grid->db->select($select);
+		$grid->db->from('gseri AS a');
+		$grid->db->join('ordi AS b','b.numero=a.ordeni');
 		$grid->db->where('ordeni',$id);
+
 		$grid->use_function('str_pad');
-		$grid->order_by('numero','desc');
+		$grid->order_by('a.numero','desc');
 
 		$uri=anchor('import/ordi/gseri/'.$id.'/modify/<#id#>','<#numero#>');
 
 		$grid->column('N. Factura',$uri);
+		$grid->column('Proveedor','<#proveed#>-<#nombre#>');
 		$grid->column('Fecha'    ,'<dbdate_to_human><#fecha#></dbdate_to_human>','align=\'center\'');
 		$grid->column('Concepto' ,'concepto');
 		$grid->column('Monto'    ,'<nformat><#monto#></nformat>','align=\'right\'');
 
-		if($stat!='C') $grid->add('import/ordi/gseri/'.$id.'/create','Agregar/Eliminar gasto internacional');
+		if($stat!='C') $grid->add('import/ordi/gseri/'.$id.'/create','Agregar gasto internacional');
 		$grid->build();
 
-		return $grid->output;
+		return ($grid->recordCount > 0) ? $grid->output : $grid->_button_container['TR'][0];
 	}
-
-
 
 	function _showgeser($id,$stat='C'){
 		$this->rapyd->load('datagrid');
@@ -433,7 +454,7 @@ class Ordi extends Controller {
 		if($stat!='C') $grid->add('import/ordi/gser/'.$id,'Agregar/Eliminar gasto nacional');
 		$grid->build();
 
-		return $grid->output;
+		return ($grid->recordCount > 0) ? $grid->output : $grid->_button_container['TR'][0];
 	}
 
 	function _showordiva($id,$stat='C'){
@@ -452,20 +473,46 @@ class Ordi extends Controller {
 		$grid->column('IVA'           ,'<nformat><#montoiva#></nformat>','align=\'right\'');
 		$grid->column('Concepto'      ,'concepto');
 
-		if($stat!='C') $grid->add('import/ordi/ordiva/'.$id.'/create','Agregar/Eliminar monto de tasa');
+		if($stat!='C') $grid->add('import/ordi/ordiva/'.$id.'/create','Agregar monto de tasa');
 		$grid->build();
 
-		return $grid->output;
+		return ($grid->recordCount > 0) ? $grid->output : $grid->_button_container['TR'][0];
 	}
 
 	function gseri($ordi){
 		$this->rapyd->load('dataobject','dataedit');
+
+		$sprv=array(
+			'tabla'   =>'sprv',
+			'columnas'=>array(
+				'proveed' =>'C&oacute;digo Proveedor',
+				'nombre'=>'Nombre',
+				'rif'=>'RIF'),
+			'filtro'  =>array('proveed'=>'C&oacute;digo Proveedor','nombre'=>'Nombre'),
+			'retornar'=>array('proveed'=>'proveed','nombre'=>'nombre'),
+			'titulo'  =>'Buscar Proveedor',
+			'where'   =>'tipo IN (3,4)');
+		$boton=$this->datasis->modbus($sprv);
 
 		$edit = new DataEdit('Gastos internacionales', 'gseri');
 		$edit->back_url = site_url('import/ordi/dataedit/show/'.$ordi);
 		$edit->post_process('insert','_post_gseri');
 		$edit->post_process('update','_post_gseri');
 		$edit->post_process('delete','_post_gseri');
+
+		$edit->proveed = new inputField('Proveedor', 'proveed');
+		$edit->proveed->rule     ='trim';
+		$edit->proveed->maxlength=5;
+		$edit->proveed->size     =7;
+		$edit->proveed->append($boton);
+
+		$edit->nombre = new inputField('Nombre', 'nombre');
+		$edit->nombre->rule     ='trim';
+		$edit->nombre->maxlength=40;
+		$edit->nombre->size     =40;
+		$edit->nombre->in       ='proveed';
+		$edit->nombre->readonly =true;
+		$edit->nombre->append('Dejar vacio si es el mismo proveedor de la orden de importaci&oacute;n');
 
 		$edit->fecha = new DateonlyField('Fecha','fecha','d/m/Y');
 		$edit->fecha->rule= 'required';
@@ -670,6 +717,24 @@ class Ordi extends Controller {
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = '<h1>Relacion de gastos nacionales</h1>';
 		$this->load->view('view_ventanas', $data);
+	}
+
+	function adjuntos($id,$ordi){
+		$this->crm_back=site_url('import/ordi/dataedit/show/'.$ordi);
+		$this->prefijo='crm_';
+		contenedor::adjuntos($id);
+	}
+
+	function comentarios($id,$ordi){
+		$this->crm_back=site_url('import/ordi/dataedit/show/'.$ordi);
+		$this->prefijo='crm_';
+		contenedor::comentario($id);
+	}
+
+	function eventos($id,$ordi){
+		$this->crm_back=site_url('import/ordi/dataedit/show/'.$ordi);
+		$this->prefijo='crm_';
+		contenedor::eventos($id);
 	}
 
 	function calcula($id){
@@ -1012,6 +1077,21 @@ class Ordi extends Controller {
 		$do->set('transac',$transac);
 		$do->set('estampa',date('ymd'));
 		$do->set('hora'   ,date('H:i:s'));
+
+		//Crea el cotenedor
+		$data['usuario']    = $usuario;
+		$data['status']     = 'A';
+		$data['fecha']      = date('Ymd');
+		$data['titulo']     = 'Importación '.$do->get('numero');
+		$data['proveed']    = $do->get('proveed');
+		$data['descripcion']= 'Importación al proveedor '.$do->get('proveed').' numero '.$do->get('numero');
+		//$data['condiciones']= '';
+		//$data['definicion'] = '';
+		//$data['tipo']       = '';
+		$str = $this->db->insert_string('crm_contenedor', $data); 
+		$this->db->simple_query($str);
+		$do->set('crm',$this->db->insert_id());
+
 		return true;
 	}
 
@@ -1033,6 +1113,9 @@ class Ordi extends Controller {
 		$where = "numero= $codigo";
 		$str = $this->db->update_string('ordi', $data, $where);
 		$this->db->simple_query($str);
+
+
+
 		return true;
 	}
 
