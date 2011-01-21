@@ -25,12 +25,13 @@ class Ordi extends Controller {
 				'rif'=>'RIF'),
 			'filtro'  =>array('proveed'=>'C&acute;digo Proveedor','nombre'=>'Nombre'),
 			'retornar'=>array('proveed'=>'proveed'),
-			'titulo'  =>'Buscar Proveedor');
+			'titulo'  =>'Buscar Proveedor',
+			'where'   =>'tipo IN (3,4)');
 		$boton=$this->datasis->modbus($modbus);
 
 		$atts = array('width'=>'800','height'=> '600', 'scrollbars' => 'yes', 'status'=> 'yes','resizable'=> 'yes', 'screenx'=> '0','screeny'=> '0');
 
-		$filter = new DataFilter('Filtro de Transferencias','ordi');
+		$filter = new DataFilter('Filtro de &Oacute;rdenes de importaci&oacute;n','ordi');
 
 		$filter->numero = new inputField('N&uacute;mero','numero');
 		$filter->numero->size=15;
@@ -57,11 +58,11 @@ class Ordi extends Controller {
 		$grid->column_orderby('Fecha'        ,'<dbdate_to_human><#fecha#></dbdate_to_human>','fecha','align=\'center\'');
 		$grid->column_orderby('Proveedor'    ,'proveed','proveed');
 		$grid->column_orderby('Nombre'       ,'nombre','nombre');
-		$grid->column_orderby('Monto Fob.'   ,'montofob','montofob','align=\'right\'');
-		$grid->column_orderby('Monto Total'  ,'montotot','montotot','align=\'right\'');
+		$grid->column_orderby('Monto Fob.'   ,'<nformat><#montofob#></nformat>','montofob','align=\'right\'');
+		$grid->column_orderby('Monto Total'  ,'<nformat><#montotot#></nformat>','montotot','align=\'right\'');
 		$grid->column('Vista',$uri2,'align=\'center\'');
 
-		$grid->add('import/ordi/dataedit/create','Agregar orden');
+		$grid->add('import/ordi/dataedit/create','Agregar nueva orden');
 		$grid->build();
 		//echo $grid->db->last_query();
 
@@ -338,6 +339,10 @@ class Ordi extends Controller {
 
 			$action = "javascript:window.location='".site_url('import/ordi/calcula/'.$edit->_dataobject->pk['numero'])."'";
 			$edit->button_status('btn_recalculo', 'Calcular valores', $action, 'TR','show');
+
+			$action = "javascript:window.location='".site_url('import/ordi/arancif/'.$edit->_dataobject->pk['numero'])."'";
+			$edit->button_status('btn_arancif', 'Reajustar los aranceles', $action, 'TR','show');
+
 			$edit->buttons('modify','save','delete','add_rel');
 		}
 
@@ -422,7 +427,7 @@ class Ordi extends Controller {
 		$grid->use_function('str_pad');
 		$grid->order_by('a.numero','desc');
 
-		$uri=anchor('import/ordi/gseri/'.$id.'/modify/<#id#>','<#numero#>');
+		$uri=anchor('import/ordi/gseri/'.$id.'/modify/<#id#>','<sinulo><#numero#>|No tiene</sinulo>');
 
 		$grid->column('N. Factura',$uri);
 		$grid->column('Proveedor','<#proveed#>-<#nombre#>');
@@ -738,6 +743,16 @@ class Ordi extends Controller {
 	}
 
 	function calcula($id){
+		$this->_calcula($id);
+
+		$url = site_url('formatos/verhtml/ORDI/'.$id);
+		$data['content'] = "<iframe src ='$url' width='100%' height='450'><p>Tu navegador no soporta iframes.</p></iframe>";
+		$data['head']    = $this->rapyd->get_head();
+		$data['title']   ='<h1>Recalculo de la relaci&oacute;n de gastos nacionales '.anchor("import/ordi/dataedit/show/$id",'regresar').'</h1>';
+		$this->load->view('view_ventanas', $data);
+	}
+
+	function _calcula($id){
 		$modo='m'; //'m' para el calculo en base al monto, 'o' para el peso
 		$dbid=$this->db->escape($id);
 
@@ -787,15 +802,26 @@ class Ordi extends Controller {
 		$this->db->simple_query($mSQL);
 		$mSQL="UPDATE itordi SET costocif=importecif/cantidad WHERE numero=$dbid";
 		$this->db->simple_query($mSQL);
+		$mSQL="UPDATE itordi SET importeciflocal=importecif*$cambioofi WHERE numero=$dbid";
+		$this->db->simple_query($mSQL);
 
 		//Monto del arancel (debe ser en moneda local)
-		$mSQL="UPDATE itordi SET montoaran=importecif*(arancel/100)*$cambioofi WHERE numero=$dbid";
+		$mSQL="UPDATE itordi SET montoaran=IF(arancif>0,arancif,importeciflocal)*(arancel/100) WHERE numero=$dbid";
 		$this->db->simple_query($mSQL);
 
-		//total
-		$mSQL="UPDATE itordi SET importefinal=importecif*$cambioofi+montoaran+gastosn WHERE numero=$dbid";
+		//Total en moneda local
+		$mSQL="UPDATE itordi SET importefinal=importeciflocal+montoaran+gastosn WHERE numero=$dbid";
 		$this->db->simple_query($mSQL);
 		$mSQL="UPDATE itordi SET costofinal=importefinal/cantidad WHERE numero=$dbid";
+		$this->db->simple_query($mSQL);
+
+		//Calculo de los precios
+		$mSQL="UPDATE itordi AS a JOIN sinv AS b ON a.codigo=b.codigo SET 
+			a.precio1=(a.costofinal*100/(100-b.margen1))*(1+(b.iva/100)),
+			a.precio2=(a.costofinal*100/(100-b.margen2))*(1+(b.iva/100)),
+			a.precio3=(a.costofinal*100/(100-b.margen3))*(1+(b.iva/100)),
+			a.precio4=(a.costofinal*100/(100-b.margen4))*(1+(b.iva/100))
+			WHERE numero=$dbid";
 		$this->db->simple_query($mSQL);
 
 		$mSQL="SELECT SUM(montoaran) AS aranceles, SUM(importecif) AS montocif  FROM itordi WHERE numero=$dbid";
@@ -826,13 +852,7 @@ class Ordi extends Controller {
 		$mmSQL.="ROUND(montoaran+gastosn+((importecif/$cambioofi)*$cambioreal),2) AS importefinal2 ";              //calculo real
 		$mmSQL.='FROM (itordi)';
 		$mmSQL.="WHERE numero = $dbid";*/
-
-		$url = site_url('formatos/verhtml/ORDI/'.$id);
-		//$data['content'] = 'Recalculo concluido '.anchor("import/ordi/dataedit/show/$id",'regresar');
-		$data['content'] = "<iframe src ='$url' width='100%' height='450'><p>Tu navegador no soporta iframes.</p></iframe>";
-		$data['head']    = $this->rapyd->get_head();
-		$data['title']   ='<h1>Recalculo de la relaci&oacute;n de gastos nacionales '.anchor("import/ordi/dataedit/show/$id",'regresar').'</h1>';
-		$this->load->view('view_ventanas', $data);
+		return true;
 	}
 
 	function cargarordi($control){
@@ -916,7 +936,8 @@ class Ordi extends Controller {
 				$itdata=array();
 				$sql='SELECT a.codigo,a.descrip,a.cantidad,a.costofinal,a.importefinal,b.iva,
 					ROUND(montoaran+gastosn+(costocif*'.$cambioreal.')  ,2) AS costoreal,
-					ROUND(montoaran+gastosn+(importecif*'.$cambioreal.'),2) AS importereal
+					ROUND(montoaran+gastosn+(importecif*'.$cambioreal.'),2) AS importereal,
+					precio1,precio2,precio3,precio4
 					FROM itordi AS a JOIN sinv AS b ON a.codigo=b.codigo WHERE a.numero=?';
 				$qquery=$this->db->query($sql,array($id));
 				if($qquery->num_rows()>0){
@@ -938,10 +959,10 @@ class Ordi extends Controller {
 						$itdata['hora']    = date('h:i:s');
 						$itdata['usuario'] = $this->session->userdata('usuario');
 						$itdata['ultimo']  = $itrow->costofinal;
-						$itdata['precio1'] = 0;
-						$itdata['precio2'] = 0;
-						$itdata['precio3'] = 0;
-						$itdata['precio4'] = 0;
+						$itdata['precio1'] = $itrow->precio1;
+						$itdata['precio2'] = $itrow->precio2;
+						$itdata['precio3'] = $itrow->precio3;
+						$itdata['precio4'] = $itrow->precio4;
 						$mSQL=$this->db->insert_string('itscst', $itdata);
 						$ban=$this->db->simple_query($mSQL);
 						if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
@@ -1012,6 +1033,72 @@ class Ordi extends Controller {
 			$this->error_string='No se puede cargar una orden que ya fue cerrada';
 			return false;
 		}
+	}
+
+	function arancif($id){
+		$this->rapyd->load('datagrid','fields');
+
+		$error='';
+		if($this->input->post('pros')!==FALSE){
+			$pmontos  =$this->input->post('arancif');
+			foreach($pmontos AS $iid=>$cant){
+				if(!is_numeric($cant)){
+					$error.="$cant no es un valor num&eacute;rico<br>";
+				}else{
+					$data  = array('arancif' => $cant);
+					$dbid=$this->db->escape($iid);
+					$where = "id = $dbid";
+					$mSQL  = $this->db->update_string('itordi', $data, $where);
+					$this->db->simple_query($mSQL);
+				}
+			}
+		}
+		$this->_calcula($id);
+
+		$ggrid =form_open('/import/ordi/arancif/'.$id);
+		$monto = new inputField('Arancif','arancif');
+		$monto->grid_name   = 'arancif[<#id#>]';
+		$monto->status      = 'modify';
+		$monto->size        = 12;
+		$monto->autocomplete= false;
+		$monto->css_class   = 'inputnum';
+
+		$expli='En caso de que en la aduana calcule el valor del arancel en base a un costo estad&iacute;stico diferente puede asignar el nuevo costo en los campos siguientes, en caso de dejarlo en cero se tomar&aacute; el valor del importe CIF real.';
+
+		$select=array('a.codigo','a.descrip','a.cantidad','a.importecif','a.id','a.arancif','a.montoaran','a.arancel','a.importeciflocal');
+		$grid = new DataGrid($expli);
+		$grid->db->select($select);
+		$grid->db->from('itordi AS a');
+		$grid->db->join('ordi AS b','a.numero=b.numero');
+		$grid->db->where('a.numero',$id);
+		//$grid->order_by('a.numero','desc');
+
+		$grid->column_orderby('C&oacute;digo'     ,'codigo'    ,'codigo'   );
+		$grid->column_orderby('Descripci&oacute;n','descrip'   ,'descrip'  );
+		$grid->column_orderby('Cantidad'          ,'<nformat><#cantidad#></nformat>'  ,'cantidad'      ,'align=\'right\'');
+		$grid->column_orderby('Importe CIF Real'   ,'<nformat><#importeciflocal#></nformat>','importeciflocal'    ,'align=\'right\'');
+		$grid->column_orderby('Monto del arancel'  ,'<b><nformat><#montoaran#></nformat></b> (<nformat><#arancel#></nformat>%)' ,'montoaran','align=\'right\'');
+		$grid->column('Importe CIF estad&iacute;stico en moneda local',$monto     ,'align=\'right\'');
+		$grid->submit('pros', 'Guardar y calcular','BR');
+		$grid->button('btn_reg', 'Regresar',"javascript:window.location='".site_url('/import/ordi/dataedit/show/'.$id)."'", 'BR');
+		$grid->build();
+		//echo $grid->db->last_query();
+
+		$ggrid.=$grid->output;
+		$ggrid.=form_close();
+
+		$script ='
+		<script type="text/javascript">
+		$(function() {
+			$(".inputnum").numeric(".");
+		});
+		</script>';
+
+		$data['content'] = '<div class=\'alert\'>'.$error.'</div>'.$ggrid;
+		$data['title']   = '<h1>Asignaci&oacute;n en los montos estad&iacute;sticos para el c&aacute;lculo de los aranceles</h1>';
+		$data['script']  = $script;
+		$data['head']    = $this->rapyd->get_head().script('jquery.pack.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js');
+		$this->load->view('view_ventanas', $data);
 	}
 
 	function agordi(){
@@ -1113,8 +1200,6 @@ class Ordi extends Controller {
 		$where = "numero= $codigo";
 		$str = $this->db->update_string('ordi', $data, $where);
 		$this->db->simple_query($str);
-
-
 
 		return true;
 	}
@@ -1220,3 +1305,8 @@ class Ordi extends Controller {
 		var_dump($this->db->simple_query($mSQL));
 	}
 }
+
+
+
+
+
