@@ -71,5 +71,3 @@ function cadAnum($num){
 
 	return $numero;
 }
-
-?>
