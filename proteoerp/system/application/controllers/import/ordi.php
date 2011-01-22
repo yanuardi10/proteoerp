@@ -1237,76 +1237,117 @@ class Ordi extends Controller {
 		$mSQL='ALTER TABLE `gser`  ADD COLUMN `ordeni` INT(15) UNSIGNED NULL DEFAULT NULL AFTER `compra`';
 		var_dump($this->db->simple_query($mSQL));
 
-		$mSQL="CREATE TABLE `ordi` (
-		`numero` int(15) unsigned NOT NULL AUTO_INCREMENT,
-		`fecha` date DEFAULT NULL,
-		`status` char(1) NOT NULL DEFAULT '' COMMENT 'Estatus de la Compra Abierto, Eliminado y Cerrado',
-		`proveed` varchar(5) DEFAULT NULL COMMENT 'Proveedor',
-		`nombre` varchar(40) DEFAULT NULL COMMENT 'Nombre del Proveedor',
-		`agente` char(5) DEFAULT NULL COMMENT 'Agente Aduanal (Proveedor)',
-		`nomage` varchar(40) DEFAULT NULL COMMENT 'Agente Aduanal (Proveedor)',
-		`montofob` decimal(19,2) DEFAULT NULL COMMENT 'Total de la Factura extranjera',
-		`gastosi` decimal(19,2) DEFAULT NULL COMMENT 'Gastos Internacionales (Fletes, Seguros, etc)',
-		`montocif` decimal(19,2) DEFAULT NULL COMMENT 'Monto FOB+gastos Internacionales',
-		`aranceles` decimal(19,2) DEFAULT NULL COMMENT 'Suma del Impuesto Arancelario',
-		`gastosn` decimal(19,2) DEFAULT NULL COMMENT 'Gastos Nacionales',
-		`montotot` decimal(19,2) DEFAULT NULL COMMENT 'Monto CIF + Gastos Nacionales',
-		`montoiva` decimal(19,2) DEFAULT NULL COMMENT 'Monto del IVA pagado',
-		`montoexc` decimal(12,2) DEFAULT NULL,
-		`arribo` date DEFAULT NULL COMMENT 'Fecha de Llegada',
-		`factura` varchar(20) DEFAULT NULL COMMENT 'Nro de Factura',
-		`cambioofi` decimal(17,2) NOT NULL DEFAULT '0.00' COMMENT 'Cambio Fiscal US$ X Bs.',
-		`cambioreal` decimal(17,2) NOT NULL DEFAULT '0.00' COMMENT 'Cambio Efectivamente Aplicado',
-		`peso` decimal(12,2) NOT NULL DEFAULT '0.00' COMMENT 'Peso total',
-		`condicion` text,
-		`transac` varchar(8) NOT NULL DEFAULT '',
-		`estampa` date NOT NULL DEFAULT '0000-00-00',
-		`usuario` varchar(12) NOT NULL DEFAULT '',
-		`hora` varchar(8) NOT NULL DEFAULT '',
-		`dua` char(30) DEFAULT NULL COMMENT 'DECLARACION UNICA ADUANAS',
-		`cargoval` decimal(19,2) DEFAULT NULL COMMENT 'Diferencia Cambiara $ oficial y aplicado',
-		`control` varchar(8) DEFAULT NULL COMMENT 'Apuntador a la factura con la que se relaciono',
-		`crm` int(11) unsigned DEFAULT NULL COMMENT 'Apuntador al conetendor',
-		PRIMARY KEY (`numero`)
-		) ENGINE=MyISAM AUTO_INCREMENT=0 DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC";
+		$mSQL="CREATE TABLE `itordi` (
+			`numero` INT(15) UNSIGNED NOT NULL,
+			`fecha` DATE NULL DEFAULT NULL,
+			`codigo` CHAR(15) NULL DEFAULT NULL,
+			`descrip` CHAR(45) NULL DEFAULT NULL,
+			`cantidad` DECIMAL(10,3) NULL DEFAULT NULL,
+			`costofob` DECIMAL(17,2) NULL DEFAULT NULL,
+			`importefob` DECIMAL(17,2) NULL DEFAULT NULL,
+			`gastosi` DECIMAL(17,2) NULL DEFAULT NULL,
+			`costocif` DECIMAL(17,2) NULL DEFAULT NULL,
+			`importecif` DECIMAL(17,2) NULL DEFAULT NULL,
+			`importeciflocal` DECIMAL(17,2) NULL DEFAULT NULL COMMENT 'importe cif en moneda local',
+			`codaran` CHAR(15) NULL DEFAULT NULL,
+			`arancel` DECIMAL(7,2) NULL DEFAULT NULL,
+			`montoaran` DECIMAL(17,2) NULL DEFAULT NULL,
+			`gastosn` DECIMAL(17,2) NULL DEFAULT NULL,
+			`costofinal` DECIMAL(17,2) NULL DEFAULT NULL,
+			`importefinal` DECIMAL(17,2) NULL DEFAULT NULL,
+			`participam` DECIMAL(7,4) NULL DEFAULT NULL,
+			`participao` DECIMAL(7,4) NULL DEFAULT NULL,
+			`arancif` DECIMAL(17,4) NULL DEFAULT '0.0000' COMMENT 'Monto del valor en base al cual se calcula el motoaran',
+			`iva` DECIMAL(17,2) NULL DEFAULT NULL,
+			`precio1` DECIMAL(15,2) NULL DEFAULT NULL,
+			`precio2` DECIMAL(15,2) NULL DEFAULT NULL,
+			`precio3` DECIMAL(15,2) NULL DEFAULT NULL,
+			`precio4` DECIMAL(15,2) NULL DEFAULT NULL,
+			`estampa` DATE NULL DEFAULT NULL,
+			`hora` CHAR(8) NULL DEFAULT NULL,
+			`usuario` CHAR(12) NULL DEFAULT NULL,
+			`id` INT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+			PRIMARY KEY (`id`),
+			INDEX `numero` (`numero`)
+		)
+		COLLATE='latin1_swedish_ci'
+		ENGINE=MyISAM
+		ROW_FORMAT=FIXED
+		AUTO_INCREMENT=0";
 		var_dump($this->db->simple_query($mSQL));
 
-		$mSQL="CREATE TABLE `itordi` (
-		`numero` int(15) unsigned NOT NULL,
-		`fecha` date DEFAULT NULL,
-		`codigo` char(15) DEFAULT NULL,
-		`descrip` char(45) DEFAULT NULL,
-		`cantidad` decimal(10,3) DEFAULT NULL,
-		`costofob` decimal(17,2) DEFAULT NULL,
-		`importefob` decimal(17,2) DEFAULT NULL,
-		`gastosi` decimal(17,2) DEFAULT NULL,
-		`costocif` decimal(17,2) DEFAULT NULL,
-		`importecif` decimal(17,2) DEFAULT NULL,
-		`codaran` char(15) DEFAULT NULL,
-		`arancel` decimal(7,2) DEFAULT NULL,
-		`montoaran` decimal(17,2) DEFAULT NULL,
-		`gastosn` decimal(17,2) DEFAULT NULL,
-		`costofinal` decimal(17,2) DEFAULT NULL,
-		`importefinal` decimal(17,2) DEFAULT NULL,
-		`participam` decimal(7,4) DEFAULT NULL,
-		`participao` decimal(7,4) DEFAULT NULL,
-		`iva` decimal(17,2) DEFAULT NULL,
-		`precio1` decimal(15,2) DEFAULT NULL,
-		`precio2` decimal(15,2) DEFAULT NULL,
-		`precio3` decimal(15,2) DEFAULT NULL,
-		`precio4` decimal(15,2) DEFAULT NULL,
-		`estampa` date DEFAULT NULL,
-		`hora` char(8) DEFAULT NULL,
-		`usuario` char(12) DEFAULT NULL,
-		`id` int(20) unsigned NOT NULL AUTO_INCREMENT,
-		PRIMARY KEY (`id`),
-		KEY `numero` (`numero`)
-		) ENGINE=MyISAM AUTO_INCREMENT=0 DEFAULT CHARSET=latin1 ROW_FORMAT=FIXED";
+		$mSQL="CREATE TABLE `ordi` (
+			`numero` INT(15) UNSIGNED NOT NULL AUTO_INCREMENT,
+			`fecha` DATE NULL DEFAULT NULL,
+			`status` CHAR(1) NOT NULL DEFAULT '' COMMENT 'Estatus de la Compra Abierto, Eliminado y Cerrado',
+			`proveed` VARCHAR(5) NULL DEFAULT NULL COMMENT 'Proveedor',
+			`nombre` VARCHAR(40) NULL DEFAULT NULL COMMENT 'Nombre del Proveedor',
+			`agente` CHAR(5) NULL DEFAULT NULL COMMENT 'Agente Aduanal (Proveedor)',
+			`nomage` VARCHAR(40) NULL DEFAULT NULL COMMENT 'Agente Aduanal (Proveedor)',
+			`montofob` DECIMAL(19,2) NULL DEFAULT NULL COMMENT 'Total de la Factura extranjera',
+			`gastosi` DECIMAL(19,2) NULL DEFAULT NULL COMMENT 'Gastos Internacionales (Fletes, Seguros, etc)',
+			`montocif` DECIMAL(19,2) NULL DEFAULT NULL COMMENT 'Monto FOB+gastos Internacionales',
+			`aranceles` DECIMAL(19,2) NULL DEFAULT NULL COMMENT 'Suma del Impuesto Arancelario',
+			`gastosn` DECIMAL(19,2) NULL DEFAULT NULL COMMENT 'Gastos Nacionales',
+			`montotot` DECIMAL(19,2) NULL DEFAULT NULL COMMENT 'Monto CIF + Gastos Nacionales',
+			`montoiva` DECIMAL(19,2) NULL DEFAULT NULL COMMENT 'Monto del IVA pagado',
+			`montoexc` DECIMAL(12,2) NULL DEFAULT NULL,
+			`arribo` DATE NULL DEFAULT NULL COMMENT 'Fecha de Llegada',
+			`factura` VARCHAR(20) NULL DEFAULT NULL COMMENT 'Nro de Factura',
+			`cambioofi` DECIMAL(17,2) NOT NULL DEFAULT '0.00' COMMENT 'Cambio Fiscal US$ X Bs.',
+			`cambioreal` DECIMAL(17,2) NOT NULL DEFAULT '0.00' COMMENT 'Cambio Efectivamente Aplicado',
+			`peso` DECIMAL(12,2) NOT NULL DEFAULT '0.00' COMMENT 'Peso total',
+			`condicion` TEXT NULL,
+			`transac` VARCHAR(8) NOT NULL DEFAULT '',
+			`estampa` DATE NOT NULL DEFAULT '0000-00-00',
+			`usuario` VARCHAR(12) NOT NULL DEFAULT '',
+			`hora` VARCHAR(8) NOT NULL DEFAULT '',
+			`dua` CHAR(30) NULL DEFAULT NULL COMMENT 'DECLARACION UNICA ADUANAS',
+			`cargoval` DECIMAL(19,2) NULL DEFAULT NULL COMMENT 'Diferencia Cambiara $ oficial y aplicado',
+			`control` VARCHAR(8) NULL DEFAULT NULL COMMENT 'Apuntador a la factura con la que se relaciono',
+			`crm` INT(11) UNSIGNED NULL DEFAULT NULL COMMENT 'Apuntador al conetendor',
+			PRIMARY KEY (`numero`)
+		)
+		COLLATE='latin1_swedish_ci'
+		ENGINE=MyISAM
+		ROW_FORMAT=DYNAMIC
+		AUTO_INCREMENT=0";
+		var_dump($this->db->simple_query($mSQL));
+
+		$mSQL="CREATE TABLE `ordiva` (
+			`id` INT(15) UNSIGNED NOT NULL AUTO_INCREMENT,
+			`ordeni` INT(15) UNSIGNED NULL DEFAULT NULL,
+			`tasa` DECIMAL(7,2) NULL DEFAULT NULL,
+			`base` DECIMAL(10,2) NULL DEFAULT NULL,
+			`montoiva` DECIMAL(10,2) NULL DEFAULT NULL,
+			`concepto` VARCHAR(100) NULL DEFAULT NULL,
+			PRIMARY KEY (`id`),
+			UNIQUE INDEX `ordi` (`ordeni`, `tasa`)
+		)
+		COLLATE='latin1_swedish_ci'
+		ENGINE=MyISAM
+		ROW_FORMAT=DEFAULT
+		AUTO_INCREMENT=0";
+		var_dump($this->db->simple_query($mSQL));
+
+		$mSQL="CREATE TABLE `gseri` (
+		`ordeni` INT(15) UNSIGNED NOT NULL,
+		`fecha` DATE NOT NULL DEFAULT '0000-00-00',
+		`numero` VARCHAR(8) NOT NULL DEFAULT '',
+		`concepto` VARCHAR(40) NULL DEFAULT NULL,
+		`monto` DECIMAL(19,2) NULL DEFAULT NULL,
+			`proveed` VARCHAR(5) NULL DEFAULT '',
+			`nombre` VARCHAR(30) NULL DEFAULT '',
+			`usuario` VARCHAR(12) NULL DEFAULT NULL,
+			`estampa` DATE NULL DEFAULT NULL,
+			`hora` VARCHAR(8) NULL DEFAULT NULL,
+			`id` INT(11) NOT NULL AUTO_INCREMENT,
+			PRIMARY KEY (`id`)
+		)
+		COLLATE='latin1_swedish_ci'
+		ENGINE=MyISAM
+		ROW_FORMAT=DYNAMIC
+		AUTO_INCREMENT=0";
 		var_dump($this->db->simple_query($mSQL));
 	}
 }
-
-
-
-
-
