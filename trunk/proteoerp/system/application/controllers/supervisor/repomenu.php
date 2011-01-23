@@ -1,5 +1,7 @@
 <?php require_once(BASEPATH.'application/controllers/validaciones.php');
-class repomenu extends validaciones  { 
+class repomenu extends validaciones {
+	var $genesal=true;
+
 	function repomenu(){
 		parent::Controller(); 
 		$this->load->library('rapyd');
@@ -12,12 +14,13 @@ class repomenu extends validaciones  {
 
 	function filteredgrid(){
 		$this->rapyd->load('datafilter','datagrid');
+		$this->rapyd->uri->keep_persistence();
 
 		function llink($nombre,$alternativo,$modulo){
 			if(!empty($nombre))
 				$uri  = anchor("supervisor/repomenu/dataedit/show/$nombre/$modulo",$nombre);
 			else
-				$uri  = anchor("supervisor/repomenu/dataedit/$alternativo/create",$alternativo);	
+				$uri  = anchor("supervisor/repomenu/dataedit/$alternativo/create",$alternativo);
 			return $uri;
 		}
 
@@ -171,39 +174,76 @@ class repomenu extends validaciones  {
 		$this->load->view('view_ventanas', $data);
 	}
 
-	function reporte($status,$nombre){
+	function reporte(){
 		$this->rapyd->load('dataedit');
+		$this->rapyd->uri->keep_persistence();
 		$atts = array(
-		          'width'      => '800',
-		          'height'     => '600',
-		          'scrollbars' => 'yes',
-		          'status'     => 'yes',
-		          'resizable'  => 'yes',
-		          'screenx'    => '0',
-		          'screeny'    => '0'
-		        );
+			'width'      => '800',
+			'height'     => '600',
+			'scrollbars' => 'yes',
+			'status'     => 'yes',
+			'resizable'  => 'yes',
+			'screenx'    => '0',
+			'screeny'    => '0'
+		);
 
-		$uri2=anchor_popup("reportes/ver/$nombre", 'Probar reporte', $atts);
-		$uri3=anchor_popup("supervisor/mantenimiento/centinelas", 'Centinela', $atts);
+		$edit = new DataEdit('', 'reportes');
+		$id=$edit->_dataobject->pk['nombre'];
+		$uri2=anchor_popup('reportes/ver/'.$id, 'Probar reporte', $atts);
+		$uri3=anchor_popup('supervisor/mantenimiento/centinelas', 'Centinela', $atts);
+		$edit->title($uri2.' '.$uri3);
 
-		$edit = new DataEdit($uri2.' '.$uri3, 'reportes');
+		$script='$("#df1").submit(function(){
+		$.post("'.site_url('supervisor/repomenu/gajax_proteo/update/'.$id).'", {nombre: "'.$id.'", proteo: proteo.getCode()},
+		//$.post("'.site_url('supervisor/repomenu/gajax_proteo/update/'.$id).'", {nombre: "'.$id.'", proteo: $("#proteo").val()},
+			function(data){
+				alert("Reporte guardado" + data);
+			},
+			"application/x-www-form-urlencoded;charset='.$this->config->item('charset').'");
+			return false;
+		});';
+
+		$edit->script($script,'modify');
+		$edit->back_save  =true;
+		$edit->back_cancel=true;
+		$edit->back_cancel_save=true;
 		$edit->back_url = site_url('supervisor/repomenu/filteredgrid');
 
-		$edit->proteo= new htmlField('', 'proteo');
+		$edit->proteo= new textareaField('', 'proteo');
 		$edit->proteo->rows =30;
-		$edit->proteo->cols=130;
-		$edit->proteo->when = array('create','modify');
-
-		$edit->pproteo = new freeField('','free',$this->phpCode('<?php '.$edit->_dataobject->get('proteo').' ?>'));
-		$edit->pproteo->when = array('show');
+		$edit->proteo->cols =130;
+		$edit->proteo->css_class='codepress php linenumbers-on readonly-off';
+		//$edit->proteo->when = array('create','modify');
 
 		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
 		$edit->build();
 
-		$data['content'] = $edit->output;
-		$data['title']   = '<h1>Reporte Proteo</h1>';
-		$data['head']    = $this->rapyd->get_head();
-		$this->load->view('view_ventanas_sola', $data);
+		if($this->genesal){
+			$data['content'] = $edit->output;
+			$data['title']   = '<h1>Reporte Proteo</h1>';
+			$data['head']    = $this->rapyd->get_head().script('jquery.js');
+			$data['head']   .= script('codepress/codepress.js');
+
+			$this->load->view('view_ventanas_sola', $data);
+		}else{
+			echo $edit->error_string;
+		}
+
+	}
+
+	function gajax_proteo(){
+		header('Content-Type: text/html; '.$this->config->item('charset'));
+		$this->genesal=false;
+		$nombre=$this->input->post('nombre');
+		$proteo=$this->input->post('proteo');
+
+		if($proteo!==false and $nombre!==false){
+			if(stripos($this->config->item('charset'), 'utf')===false){
+				$_POST['nombre']=utf8_decode($nombre);
+				$_POST['proteo']=utf8_decode($proteo);
+			}
+			$this->reporte();
+		}
 	}
 
 	function rtcpdf($status,$nombre){
@@ -212,7 +252,7 @@ class repomenu extends validaciones  {
 		$edit = new DataEdit('Editar TCPDF', 'reportes');
 		$edit->back_url = site_url('supervisor/repomenu/filteredgrid');
 
-		$edit->tcpdf= new htmlField('', 'tcpdf');
+		$edit->tcpdf= new textareaField('', 'tcpdf');
 		$edit->tcpdf->rows =30;
 		$edit->tcpdf->cols=130;
 		$edit->tcpdf->when = array('create','modify');

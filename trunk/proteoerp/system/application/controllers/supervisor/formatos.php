@@ -1,6 +1,7 @@
 <?php require_once(BASEPATH.'application/controllers/validaciones.php');
-require_once(APPPATH.'controllers/supervisor/repomenu.php');
 class formatos extends validaciones {
+	var $genesal=true;
+
 	function formatos(){
 		parent::Controller(); 
 		$this->load->library('rapyd');
@@ -12,6 +13,7 @@ class formatos extends validaciones {
 	}
 
 	function filteredgrid(){
+		$this->rapyd->uri->keep_persistence();
 		$this->rapyd->load('datafilter','datagrid');
 
 		$filter = new DataFilter('Filtro por Menu de Formatos','formatos');
@@ -101,27 +103,59 @@ class formatos extends validaciones {
 	}
 
 	function reporte(){
-		$nombre=$this->uri->segment(5);
+		$this->rapyd->uri->keep_persistence();
 		$this->rapyd->load('dataedit');
 
 		$edit = new DataEdit('Proteo', 'formatos');
+		$id=$edit->_dataobject->pk['nombre'];
+		$script='$("#df1").submit(function(){
+		$.post("'.site_url('supervisor/formatos/gajax_proteo/update/'.$id).'", {nombre: "'.$id.'", proteo: proteo.getCode()},
+			function(data){
+				alert("Reporte guardado" + data);
+			},
+			"application/x-www-form-urlencoded;charset='.$this->config->item('charset').'");
+			return false;
+		});';
+
+		$edit->script($script,'modify');
+		$edit->back_save  =true;
+		$edit->back_cancel=true;
+		$edit->back_cancel_save=true;
 		$edit->back_url = site_url('supervisor/formatos/filteredgrid');
 
 		$edit->proteo= new htmlField('', 'proteo');
 		$edit->proteo->rows =30;
 		$edit->proteo->cols=130;
-		$edit->proteo->when = array('create','modify');
-
-		$edit->pproteo = new freeField('','free',$this->phpCode($edit->_dataobject->get('proteo')));
-		$edit->pproteo->when = array('show');
+		$edit->proteo->css_class='codepress php linenumbers-on readonly-off';
 
 		$edit->buttons('modify', 'save', 'undo','back');
 		$edit->build();
 
-		$data['content'] = $edit->output;
-		$data['title']   = "<h1>Formato '$nombre'</h1>";
-		$data['head']    = $this->rapyd->get_head();
-		$this->load->view('view_ventanas_sola', $data);
+		if($this->genesal){
+			$data['content'] = $edit->output;
+			$data['title']   = "<h1>Formato '$id'</h1>";
+			$data['head']    = $this->rapyd->get_head().script('jquery.js');
+			$data['head']   .= script('codepress/codepress.js');
+
+			$this->load->view('view_ventanas_sola', $data);
+		}else{
+			echo $edit->error_string;
+		}
+	}
+
+	function gajax_proteo(){
+		header('Content-Type: text/html; '.$this->config->item('charset'));
+		$this->genesal=false;
+		$nombre=$this->input->post('nombre');
+		$proteo=$this->input->post('proteo');
+
+		if($proteo!==false and $nombre!==false){
+			if(stripos($this->config->item('charset'), 'utf')===false){
+				$_POST['nombre']=utf8_decode($nombre);
+				$_POST['proteo']=utf8_decode($proteo);
+			}
+			$this->reporte();
+		}
 	}
 
 	function rtcpdf($status,$nombre){
