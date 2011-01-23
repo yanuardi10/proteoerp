@@ -135,7 +135,7 @@ class formatos extends validaciones {
 		$edit->tcpdf->cols=130;
 		$edit->tcpdf->when = array('create','modify');
 
-		$edit->ttcpdf = new freeField('','free',$this->phpCode('<?php '$edit->_dataobject->get('tcpdf').' ?>'));
+		$edit->ttcpdf = new freeField('','free',$this->phpCode('<?php '.$edit->_dataobject->get('tcpdf').' ?>'));
 		$edit->ttcpdf->when = array('show');
 
 		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
