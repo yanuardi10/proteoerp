@@ -88,5 +88,16 @@ class validaciones extends Controller {
 		$_POST[$this->validation->_current_field]=str_replace("\r\n","\n",$cont);
 		return true;
 	}
+
+	function phpCode($code){
+		$codeE = explode("\n", $code);
+		$count_lines = count($codeE);
+		$code='';
+		foreach($codeE as $line =>$c){
+			$l=str_pad($line+1,3,' ',STR_PAD_LEFT);
+			$code.="$l: $c \n";
+		}
+		return highlight_string($code,1);
+	}
+
 }
-?>

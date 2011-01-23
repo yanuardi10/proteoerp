@@ -1,40 +1,41 @@
 <?php
- class ejecutasql extends Controller {
-	
+class ejecutasql extends Controller {
+
 	function ejecutasql(){
 		parent::Controller(); 
-		$this->load->library("rapyd");
+		$this->load->library('rapyd');
+		//$this->rapyd->config->set_item('theme','limpio');
 		//$this->datasis->modulo_id(308,1);
 		if(!$this->datasis->essuper()) show_404();
- }
- 	 
-	function index(){
-		redirect("/ejecutasql/filteredgrid");
 	}
-  
+
+	function index(){
+		redirect('/ejecutasql/filteredgrid');
+	}
+
 	function filteredgrid(){
-		$this->rapyd->load("dataform","datagrid");
+		$this->rapyd->load('dataform','datagrid');
 		$this->load->library('encrypt');
-		
-		$filter = new DataForm("ejecutasql/filteredgrid/process");  
-		
-		$filter->sql = new textareaField("Consulta SQL", "sql");
-		$filter->sql->cols = 80;
-		$filter->sql->rows = 6;
-		$filter->sql->rule = "required";
-		
-		$filter->submit("btnsubmit","Ejecutar");      
-		$filter->build_form();                     
-		
+
+		$filter = new DataForm('ejecutasql/filteredgrid/process');
+
+		$filter->sql = new textareaField('', 'sql');
+		$filter->sql->cols = 90;
+		$filter->sql->rows = 9;
+		$filter->sql->rule = 'required';
+
+		$filter->submit('btnsubmit','Ejecutar');
+		$filter->build_form();
+
 		$salida='';
 		if ($filter->on_success()){
 			$data=array();
 			$mSQL=$filter->sql->value;
-			
+
 			$link = @mysql_connect($this->db->hostname, $this->db->username, $this->db->password) or die('Error de coneccion');
 			mysql_select_db($this->db->database,$link) or die('Base de datos no seleccionable');
 			$result = mysql_query($mSQL,$link);
-			
+
 			if (!$result) {
 				$salida=mysql_errno($link) . ": " . mysql_error($link);
 			}else{
@@ -56,11 +57,11 @@
 					}
 					$grid = new DataGrid("Filas : $num_rows, Columnas : $colunas ,Afectados :$afectados",$data);
 					$grid->per_page=100000;
-					foreach ($data[0] as $campos=>$value)				
-						$grid->column($campos, $campos);					
+					foreach ($data[0] as $campos=>$value)
+						$grid->column($campos, $campos);
 					$grid->build();
 					$salida=$grid->output;
-					
+
 					if (stristr($mSQL, 'SELECT')){
 						$mSQL2 = $this->encrypt->encode($mSQL);
 
@@ -73,15 +74,14 @@
 				}elseif($afectados>0){
 					$salida="Filas afectadas $afectados";
 				}else{
-					$salida="Esta consulta no genero resultados";
+					$salida='Esta consulta no genero resultados';
 				}
 			}
 		}
-		
+
 		$data['content'] = $filter->output.$salida;
-		$data['title']   = "<h1>Consulta SQL</h1>";
-		$data["head"]    = $this->rapyd->get_head();
-		$this->load->view('view_ventanas', $data);	
+		$data['title']   = heading('Consulta SQL');
+		$data['head']    = $this->rapyd->get_head();
+		$this->load->view('view_ventanas', $data);
 	}
 }
-?>

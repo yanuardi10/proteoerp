@@ -150,6 +150,7 @@ class Buscar extends Controller
 		//$link='\'<#'.implode("#>','<#",array_keys($this->retornar)).'#>\'';
 		$link = "javascript:pasar($link);";
 		$grid = new DataGrid("Resultados");
+		$grid->use_function('j_escape');
 		$grid->per_page = 10;
 		$i=0;
 		foreach ($this->columnas as $campo => $titulo){

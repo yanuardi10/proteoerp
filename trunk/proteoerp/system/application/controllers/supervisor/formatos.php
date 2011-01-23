@@ -1,61 +1,59 @@
 <?php require_once(BASEPATH.'application/controllers/validaciones.php');
-class formatos extends validaciones { 	
+require_once(APPPATH.'controllers/supervisor/repomenu.php');
+class formatos extends validaciones {
 	function formatos(){
 		parent::Controller(); 
-		$this->load->library("rapyd");
+		$this->load->library('rapyd');
 		//$this->datasis->modulo_id(307,1);
 	}
 
 	function index(){
-		redirect("supervisor/formatos/filteredgrid");
+		redirect('supervisor/formatos/filteredgrid');
 	}
 
 	function filteredgrid(){
-		$this->rapyd->load("datafilter","datagrid");
+		$this->rapyd->load('datafilter','datagrid');
 
 		$filter = new DataFilter('Filtro por Menu de Formatos','formatos');
 
-		$filter->nombre = new inputField("Nombre", "nombre");
+		$filter->nombre = new inputField('Nombre', 'nombre');
 		$filter->nombre->db_name='nombre';
 		$filter->nombre->size=20;
 
-		$filter->proteo = new inputField("Contenido Proteo","proteo");
+		$filter->proteo = new inputField('Contenido Proteo','proteo');
 		$filter->proteo->size=40;
 		$filter->proteo->db_name='proteo';
 
-		$filter->reporte = new inputField("Contenido Datasis","forma");
+		$filter->reporte = new inputField('Contenido Datasis','forma');
 		$filter->reporte->size=40;
 		$filter->reporte->db_name='forma';
 
-		$filter->harbourd = new inputField("Contenido Harbourd","harbour");
+		$filter->harbourd = new inputField('Contenido Harbourd','harbour');
 		$filter->harbourd->size=40;
 		$filter->harbourd->db_name='harbour';
 
-		$filter->tcpdf = new inputField("Contenido TCPDF",'tcpdf');
+		$filter->tcpdf = new inputField('Contenido TCPDF','tcpdf');
 		$filter->tcpdf->size=40;
 		$filter->tcpdf->db_name='tcpdf';
 
 		$filter->buttons('reset','search');
 		$filter->build();
-		$uri  = anchor('supervisor/formatos/dataedit/show/<#nombre#>','<#nombre#>');
+		$uri  = anchor('supervisor/formatos/dataedit/show/<#nombre#>'   ,'<#nombre#>');
 		$uri1 = anchor('supervisor/formatos/reporte/modify/<#nombre#>/' ,'Editar');
 		$uri2 = anchor('supervisor/formatos/rdatasis/modify/<#nombre#>/','Editar');
 		$uri3 = anchor('supervisor/formatos/rharbour/modify/<#nombre#>/','Editar');
-		$uri4 = anchor('supervisor/formatos/observa/modify/<#nombre#>/','Editar');
-		$uri5 = anchor('supervisor/formatos/rtcpdf/modify/<#nombre#>/','Editar');
+		$uri4 = anchor('supervisor/formatos/observa/modify/<#nombre#>/' ,'Editar');
+		$uri5 = anchor('supervisor/formatos/rtcpdf/modify/<#nombre#>/'  ,'Editar');
 
-		$grid = new DataGrid("Lista de Menu de Formatos");
-		$grid->order_by("nombre","asc");
+		$grid = new DataGrid('Lista de Menu de Formatos');
+		$grid->order_by('nombre','asc');
 		$grid->per_page = 15;
 
-		$grid->column("Nombre",    $uri);
-		$grid->column("Proteo"   ,$uri1);
-		$grid->column("DataSIS"  ,$uri2);
-		$grid->column("Harbour"  ,$uri3);
-		$grid->column("TCPDF"    ,$uri5);
-
-		//$grid->column("Observa"  ,$uri4);
-		//$grid->column("Ejecutar" ,$uri4);
+		$grid->column('Nombre',    $uri);
+		$grid->column('Proteo'   ,$uri1);
+		$grid->column('DataSIS'  ,$uri2);
+		$grid->column('Harbour'  ,$uri3);
+		$grid->column('TCPDF'    ,$uri5);
 
 		$grid->add('supervisor/formatos/dataedit/create');
 		$grid->build();
@@ -79,17 +77,17 @@ class formatos extends validaciones {
 		</script>';
 		$data['content'] = $filter->output.'<form>'.$grid->output.'</form>';
 		$data['title']   = '<h1>Menu de Formatos</h1>';
-		$data['head']    = script("jquery.pack.js").$this->rapyd->get_head();
+		$data['head']    = script('jquery.pack.js').$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 
 	function observa($nombre){
-		$this->rapyd->load("dataedit");
+		$this->rapyd->load('dataedit');
 
-		$edit = new DataEdit("Agregar Observacion", "formatos");
-		$edit->back_url = site_url("supervisor/formatos/filteredgrid");
+		$edit = new DataEdit('Agregar Observacion','formatos');
+		$edit->back_url = site_url('supervisor/formatos/filteredgrid');
 
-		$edit->observa= new textareaField("", "observa");
+		$edit->observa= new textareaField('', 'observa');
 		$edit->observa->rows =3;
 		$edit->observa->cols=70;
 
@@ -104,28 +102,20 @@ class formatos extends validaciones {
 
 	function reporte(){
 		$nombre=$this->uri->segment(5);
-		$this->rapyd->load("dataedit");
-		//$atts = array(
-		//          'width'      => '800',
-		//          'height'     => '600',
-		//          'scrollbars' => 'yes',
-		//          'status'     => 'yes',
-		//          'resizable'  => 'yes',
-		//          'screenx'    => '0',
-		//          'screeny'    => '0'
-		//        );
+		$this->rapyd->load('dataedit');
 
-		//$uri2=anchor_popup("reportes/ver/$nombre", 'Probar reporte', $atts);
-		//$uri3=anchor_popup("supervisor/mantenimiento/centinelas", 'Centinela', $atts);
+		$edit = new DataEdit('Proteo', 'formatos');
+		$edit->back_url = site_url('supervisor/formatos/filteredgrid');
 
-		$edit = new DataEdit("Proteo", "formatos");
-		$edit->back_url = site_url("supervisor/formatos/filteredgrid");
-
-		$edit->proteo= new textareaField("", "proteo");
+		$edit->proteo= new htmlField('', 'proteo');
 		$edit->proteo->rows =30;
-		$edit->proteo->cols=120;
+		$edit->proteo->cols=130;
+		$edit->proteo->when = array('create','modify');
 
-		$edit->buttons("modify", "save", "undo","back");
+		$edit->pproteo = new freeField('','free',$this->phpCode($edit->_dataobject->get('proteo')));
+		$edit->pproteo->when = array('show');
+
+		$edit->buttons('modify', 'save', 'undo','back');
 		$edit->build();
 
 		$data['content'] = $edit->output;
@@ -137,35 +127,37 @@ class formatos extends validaciones {
 	function rtcpdf($status,$nombre){
 		$this->rapyd->load('dataedit');
 
-		$edit = new DataEdit('Editar TCPDF', "formatos");
-		$edit->back_url = site_url("supervisor/formatos/filteredgrid");
+		$edit = new DataEdit('Editar TCPDF', 'formatos');
+		$edit->back_url = site_url('supervisor/formatos/filteredgrid');
 
-		//highlight_string()
 		$edit->tcpdf= new textareaField('', 'tcpdf');
 		$edit->tcpdf->rows =30;
-		$edit->tcpdf->cols=120;
+		$edit->tcpdf->cols=130;
+		$edit->tcpdf->when = array('create','modify');
 
-		$edit->buttons("modify", "save", "undo", "delete", "back");
+		$edit->ttcpdf = new freeField('','free',$this->phpCode('<?php '$edit->_dataobject->get('tcpdf').' ?>'));
+		$edit->ttcpdf->when = array('show');
+
+		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
 		$edit->build();
 
 		$data['content'] = $edit->output;
-		$data['title']   = "<h1>Reporte TCPDF</h1>";
+		$data['title']   = '<h1>Reporte TCPDF</h1>';
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas_sola', $data);
 	}
 
-
 	function rdatasis(){
 		$nombre=$this->uri->segment(5);
-		$this->rapyd->load("dataedit");
+		$this->rapyd->load('dataedit');
 
-		$edit = new DataEdit("DataSIS", "formatos");
-		$edit->back_url = site_url("supervisor/formatos/filteredgrid");
+		$edit = new DataEdit('DataSIS', 'formatos');
+		$edit->back_url = site_url('supervisor/formatos/filteredgrid');
 
-		$edit->reporte= new textareaField("", "forma");
+		$edit->reporte= new textareaField('', 'forma');
 		$edit->reporte->rows =30;
-		$edit->reporte->cols=120;
-		$edit->reporte->rule = "callback_eollw";
+		$edit->reporte->cols=130;
+		$edit->reporte->rule = 'callback_eollw';
 
 		$edit->buttons("modify", "save", "undo","back");
 		$edit->build();
@@ -178,46 +170,34 @@ class formatos extends validaciones {
 
 	function rharbour(){
 		$nombre=$this->uri->segment(5);
-		$this->rapyd->load("dataedit");
+		$this->rapyd->load('dataedit');
 
-		$edit = new DataEdit("Harbour", "formatos");
-		$edit->back_url = site_url("supervisor/formatos/filteredgrid");
+		$edit = new DataEdit('Harbour', 'formatos');
+		$edit->back_url = site_url('supervisor/formatos/filteredgrid');
 
-		$edit->reporte= new textareaField("", "harbour");
+		$edit->reporte= new textareaField('', 'harbour');
 		$edit->reporte->rows =30;
-		$edit->reporte->cols=120;
-		$edit->reporte->rule = "callback_eollw";
+		$edit->reporte->cols=130;
+		$edit->reporte->rule = 'callback_eollw';
 
-		$edit->buttons("modify", "save", "undo","back");
+		$edit->buttons('modify','save','undo','back');
 		$edit->build();
 
-		$data['content'] = $edit->output;           
-		$data['title']   = "<h1>Formato '$nombre'</h1>";        
-		$data["head"]    = $this->rapyd->get_head();
-		$this->load->view('view_ventanas_sola', $data);  
+		$data['content'] = $edit->output;
+		$data['title']   = "<h1>Formato '$nombre'</h1>";
+		$data['head']    = $this->rapyd->get_head();
+		$this->load->view('view_ventanas_sola', $data);
 	}
 
 	function dataedit(){
-		$this->rapyd->load("dataedit");
+		$this->rapyd->load('dataedit');
 
-		$edit = new DataEdit("Formatos", "formatos");
+		$edit = new DataEdit('Formatos','formatos');
 		$edit->back_url = site_url("supervisor/formatos/filteredgrid");
 
-		$edit->nombre = new inputField("Nombre","nombre");
-		$edit->nombre->rule= "strtoupper|required";
+		$edit->nombre = new inputField('Nombre','nombre');
+		$edit->nombre->rule= 'strtoupper|required';
 		$edit->nombre->size = 20;
-
-		//$edit->forma = new inputField("modulo","forma");
-		//$edit->forma->size =20;
-		//$edit->forma->rule= "strtoupper|required";
-
-		//$edit->proteo = new inputField("modulo","proteo");
-		//$edit->proteo->size =20;
-		//$edit->proteo->rule= "strtoupper|required";
-
-		//$edit->habour = new inputField("modulo","habour");
-		//$edit->habour->size =20;
-		//$edit->habour->rule= "strtoupper|required";
 
 		$edit->buttons("modify", "save", "undo", "delete", "back");
 		$edit->build();

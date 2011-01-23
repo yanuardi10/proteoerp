@@ -1,16 +1,16 @@
 <?php
 class Repodupli extends Controller{
-	
+
 	function repodupli(){
 		parent::Controller(); 
-		$this->load->library("rapyd");
+		$this->load->library('rapyd');
 		$this->datasis->modulo_id('918',1);
 	}
 
-	function index(){		
+	function index(){
 		redirect("supervisor/repodupli/filteredgrid");
 	}
-	
+
 	function filteredgrid(){
 		$this->rapyd->load("datafilter","datagrid");
 		
@@ -42,15 +42,14 @@ class Repodupli extends Controller{
 
 		$grid->add("supervisor/repodupli/dataedit/create");
 		$grid->build();
-		
+
 		$data['content'] = $filter->output.$grid->output;
 		$data['title']   = "<h1>An&aacute;lisis de Reportes</h1>";
-		$data["head"]    = $this->rapyd->get_head();
+		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 
-	function dataedit()
- 	{
+	function dataedit(){
 		$this->rapyd->load("dataedit");
 		
 		//$mREPORTES1=array(
@@ -62,8 +61,8 @@ class Repodupli extends Controller{
 		//	'retornar'=>array('codigo'=>'cuenta'),
 		//	'titulo'  =>'Buscar Cuenta',
 		//	'where'=>"codigo LIKE \"$qformato\"",
-		//	);					
-		//		
+		//	);
+		//
 		//$bREPORTES1 =$this->datasis->modbus($mREPORTES1);
 
 		$edit = new DataEdit("Reporte Duplicado", "repodupli");
@@ -87,17 +86,17 @@ class Repodupli extends Controller{
 		$edit->reporte2->options("SELECT nombre, nombre as reporte FROM reportes ORDER BY nombre");
 		$edit->reporte2->rule="required";
 		$edit->reporte2->style ="width:150px;";
-		
+
 		//$edit->reporte2 =  new inputField("Reporte Duplicado", "reporte2");
 		//$edit->reporte2->size = 20;
 		//$edit->reporte2->maxlength=20;
 		//$edit->reporte2->rule = "trim|strtoupper|required";
-		
+
 		$edit->comentario =  new textareaField("Comentario", "comentario");
 		$edit->comentario->cols = 70;  
 		$edit->comentario->rows = 4;   
 		$edit->comentario->rule = "trim";
-		
+
 		$edit->status1 = new dropdownField("Status","status1");
 		$edit->status1->option("","");
 		$edit->status1->option("E","Se Elimina");
@@ -105,7 +104,7 @@ class Repodupli extends Controller{
 		$edit->status1->option("O","Otro");
 		$edit->status1->style ="width:150px;";
 		$edit->status1->in='reporte1';
-		
+
 		$edit->status2 = new dropdownField("Status","status2");
 		$edit->status2->option("","");
 		$edit->status2->option("E","Se Elimina");
@@ -113,20 +112,21 @@ class Repodupli extends Controller{
 		$edit->status2->option("O","Otro");
 		$edit->status2->style ="width:150px;";
 		$edit->status2->in='reporte2';
-		
+
 		$edit->buttons("modify", "save", "undo", "delete", "back");
 		$edit->build();
 
 		$data['content'] = $edit->output;
-    $data['title']   = "<h1>An&aacute;lisis de Reportes</h1>";
-    $data['head']    = $this->rapyd->get_head();
-    $this->load->view('view_ventanas', $data);
-    
+		$data['title']   = "<h1>An&aacute;lisis de Reportes</h1>";
+		$data['head']    = $this->rapyd->get_head();
+		$this->load->view('view_ventanas', $data);
 	}
+
 	function instalar(){
 		$mSQL="ALTER TABLE `repodupli` ADD `status` CHAR(2) NULL";
 		$this->db->simple_query($mSQL);
 	}
+
 	function copia(){
 		$mSQL="ALTER TABLE `repodupli` ADD `status` CHAR(2) NULL";
 		$this->db->simple_query($mSQL);
