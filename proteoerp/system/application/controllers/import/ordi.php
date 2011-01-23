@@ -82,7 +82,7 @@ class Ordi extends Controller {
 			'columnas'=>array(
 				'codigo' =>'C&oacute;digo',
 				'descrip'=>'Descripci&oacute;n'),
-			'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'descrip'),
+			'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'Descripci&oacute;n'),
 			'retornar'=>array('codigo'=>'codigo_<#i#>','descrip'=>'descrip_<#i#>'),
 			'p_uri'=>array(4=>'<#i#>'),
 			'titulo'  =>'Buscar Producto en inventario');
@@ -106,7 +106,7 @@ class Ordi extends Controller {
 				'codigo' =>'C&oacute;digo',
 				'descrip'=>'Descripci&oacute;n',
 				'tarifa'=>'Tarifas'),
-			'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'descrip'),
+			'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'Descripci&oacute;n'),
 			'retornar'=>array('codigo'=>'codaran_<#i#>','tarifa'=>'arancel_<#i#>'),
 			'p_uri'=>array(4=>'<#i#>'),
 			'titulo'  =>'Buscar Aranceles',
@@ -206,6 +206,7 @@ class Ordi extends Controller {
 			$edit->$obj->maxlength=20;
 			$edit->$obj->size     =10;
 			$edit->$obj->css_class= 'inputnum';
+			$edit->$obj->autocomplete= false;
 		}
 
 		$edit->arribo = new dateonlyField('Fecha de Llegada', 'arribo');
@@ -217,18 +218,21 @@ class Ordi extends Controller {
 		$edit->factura->rule     ='trim';
 		$edit->factura->maxlength=20;
 		$edit->factura->size     =10;
+		$edit->factura->autocomplete= false;
 
 		$edit->cambioofi = new inputField('Cambio Oficial', 'cambioofi');
 		$edit->cambioofi->css_class= 'inputnum';
 		$edit->cambioofi->rule     ='trim|required';
 		$edit->cambioofi->maxlength=17;
 		$edit->cambioofi->size     =10;
+		$edit->cambioofi->autocomplete= false;
 
 		$edit->cambioreal = new inputField('Cambio Real', 'cambioreal');
 		$edit->cambioreal->css_class= 'inputnum';
 		$edit->cambioreal->rule     ='trim|required';
 		$edit->cambioreal->maxlength=17;
 		$edit->cambioreal->size     =10;
+		$edit->cambioreal->autocomplete= false;
 
 		$edit->peso = new inputField('Peso Total', 'peso');
 		$edit->peso->css_class= 'inputnum';
@@ -249,12 +253,14 @@ class Ordi extends Controller {
 		$edit->codigo->maxlength= 15;
 		$edit->codigo->size     = 10;
 		$edit->codigo->append($btn);
+		$edit->codigo->autocomplete= false;
 
 		$edit->descrip = new inputField('Descripci&oacute;n <#o#>','descrip_<#i#>');
 		$edit->descrip->db_name  ='descrip';
 		$edit->descrip->rel_id   ='itordi';
 		$edit->descrip->maxlength=35;
 		$edit->descrip->size     =30;
+		$edit->descrip->autocomplete= false;
 
 		$edit->cantidad = new inputField('Cantidad <#o#>','cantidad_<#i#>');
 		$edit->cantidad->db_name  = 'cantidad';
@@ -263,6 +269,7 @@ class Ordi extends Controller {
 		$edit->cantidad->rule     = 'numeric';
 		$edit->cantidad->maxlength= 10;
 		$edit->cantidad->size     = 7;
+		$edit->cantidad->autocomplete= false;
 
 		$arr=array(
 			'costofob'    =>'costofob'    ,
@@ -284,6 +291,7 @@ class Ordi extends Controller {
 			$edit->$obj->rule     ='trim';
 			$edit->$obj->maxlength=20;
 			$edit->$obj->size     =10;
+			$edit->$obj->autocomplete= false;
 		}
 
 		/*$edit->iva = new inputField('IVA <#o#>', 'iva_<#i#>');
@@ -316,6 +324,7 @@ class Ordi extends Controller {
 			$edit->$obj->maxlength= 7;
 			$edit->$obj->size     = 5;
 			$edit->$obj->readonly =true;
+			$edit->$obj->autocomplete= false;
 		}
 
 		/*$arr=array('precio1','precio2','precio3','precio4');
@@ -478,7 +487,7 @@ class Ordi extends Controller {
 		$grid->column('IVA'           ,'<nformat><#montoiva#></nformat>','align=\'right\'');
 		$grid->column('Concepto'      ,'concepto');
 
-		if($stat!='C') $grid->add('import/ordi/ordiva/'.$id.'/create','Agregar monto de tasa');
+		if($stat!='C') $grid->add('import/ordi/ordiva/'.$id.'/create','Agregar IVA');
 		$grid->build();
 
 		return ($grid->recordCount > 0) ? $grid->output : $grid->_button_container['TR'][0];
@@ -694,13 +703,13 @@ class Ordi extends Controller {
 			}
 		}
 
-		$grid->column('N&uacute;mero','numero');
-		$grid->column('Fecha'   ,'<dbdate_to_human><#fecha#></dbdate_to_human>','align=\'center\'');
-		$grid->column('Vence'   ,'<dbdate_to_human><#vence#></dbdate_to_human>','align=\'center\'');
-		$grid->column('Nombre'  ,'nombre');
-		$grid->column('IVA'     ,'<nformat><#totiva#></nformat>' ,'align=\'right\'');
-		$grid->column('Monto'   ,'<nformat><#totpre#></nformat>','align=\'right\'');
-		$grid->column('Enlace'  ,'<checker><#ordeni#>|<#proveed#>|<#fecha#>|<#numero#>|'.$ordi.'</checker>','align=\'center\'');
+		$grid->column_orderby('N&uacute;mero','numero','numero');
+		$grid->column_orderby('Fecha'   ,'<dbdate_to_human><#fecha#></dbdate_to_human>','fecha','align=\'center\'');
+		$grid->column_orderby('Vence'   ,'<dbdate_to_human><#vence#></dbdate_to_human>','vence','align=\'center\'');
+		$grid->column_orderby('Nombre'  ,'nombre','nombre');
+		$grid->column_orderby('IVA'     ,'<nformat><#totiva#></nformat>','totiva','align=\'right\'');
+		$grid->column_orderby('Monto'   ,'<nformat><#totpre#></nformat>','totpre','align=\'right\'');
+		$grid->column_orderby('Enlace'  ,'<checker><#ordeni#>|<#proveed#>|<#fecha#>|<#numero#>|'.$ordi.'</checker>','ordeni','align=\'center\'');
 		$grid->build();
 		//echo $grid->db->last_query();
 
@@ -809,19 +818,19 @@ class Ordi extends Controller {
 		$mSQL="UPDATE itordi SET montoaran=IF(arancif>0,arancif,importeciflocal)*(arancel/100) WHERE numero=$dbid";
 		$this->db->simple_query($mSQL);
 
+		//Calculo de los precios
+		$mSQL="UPDATE itordi AS a JOIN sinv AS b ON a.codigo=b.codigo SET 
+			a.precio1=(((importecif*$cambioreal)+montoaran+gastosn)*100/(100-b.margen1))*(1+(b.iva/100)),
+			a.precio2=(((importecif*$cambioreal)+montoaran+gastosn)*100/(100-b.margen2))*(1+(b.iva/100)),
+			a.precio3=(((importecif*$cambioreal)+montoaran+gastosn)*100/(100-b.margen3))*(1+(b.iva/100)),
+			a.precio4=(((importecif*$cambioreal)+montoaran+gastosn)*100/(100-b.margen4))*(1+(b.iva/100))
+			WHERE numero=$dbid";
+		$this->db->simple_query($mSQL);
+
 		//Total en moneda local
 		$mSQL="UPDATE itordi SET importefinal=importeciflocal+montoaran+gastosn WHERE numero=$dbid";
 		$this->db->simple_query($mSQL);
 		$mSQL="UPDATE itordi SET costofinal=importefinal/cantidad WHERE numero=$dbid";
-		$this->db->simple_query($mSQL);
-
-		//Calculo de los precios
-		$mSQL="UPDATE itordi AS a JOIN sinv AS b ON a.codigo=b.codigo SET 
-			a.precio1=(a.costofinal*100/(100-b.margen1))*(1+(b.iva/100)),
-			a.precio2=(a.costofinal*100/(100-b.margen2))*(1+(b.iva/100)),
-			a.precio3=(a.costofinal*100/(100-b.margen3))*(1+(b.iva/100)),
-			a.precio4=(a.costofinal*100/(100-b.margen4))*(1+(b.iva/100))
-			WHERE numero=$dbid";
 		$this->db->simple_query($mSQL);
 
 		$mSQL="SELECT SUM(montoaran) AS aranceles, SUM(importecif) AS montocif  FROM itordi WHERE numero=$dbid";
@@ -842,16 +851,16 @@ class Ordi extends Controller {
 		}
 
 		/*$mmSQL ='SELECT ';
-		$mmSQL.="codigo,cantidad, descrip, $participa*100 AS participa,";
-		$mmSQL.="costofob,ROUND(costofob*$cambioofi,2) AS fobbs, ";                                                //valor unidad fob
-		$mmSQL.="importefob,ROUND(importefob*$cambioofi,2) AS totfobbs,ROUND(gastosi*$cambioofi,2) AS gastosibs,"; //Valores totales
-		$mmSQL.='costocif,importecif, ';                                                                           //Valores CIF en BS
-		$mmSQL.='arancel,montoaran,gastosn, ';                                                                     //Arancel1
-		$mmSQL.='costofinal,importefinal, ';                                                                       //calculo al oficial
-		$mmSQL.="ROUND((montoaran+gastosn+((importecif/$cambioofi)*$cambioreal))/cantidad, 2)AS costofinal2,";     //calculo al real
-		$mmSQL.="ROUND(montoaran+gastosn+((importecif/$cambioofi)*$cambioreal),2) AS importefinal2 ";              //calculo real
-		$mmSQL.='FROM (itordi)';
-		$mmSQL.="WHERE numero = $dbid";*/
+		$mmSQL.="a.codigo,a.cantidad, a.descrip, $participa*100 AS participa,";
+		$mmSQL.="a.costofob,ROUND(a.costofob*$cambioofi,2) AS fobbs, ";                                                  //valor unidad fob
+		$mmSQL.="a.importefob,ROUND(a.importefob*$cambioofi,2) AS totfobbs,ROUND(a.gastosi*$cambioofi,2) AS gastosibs,"; //Valores totales
+		$mmSQL.='a.costocif,a.importeciflocal, ';                                                                        //Valores CIF en BS
+		$mmSQL.='a.arancel,a.montoaran,a.gastosn, ';                                                                     //Arancel1
+		$mmSQL.='a.costofinal,a.importefinal, ';                                                                         //calculo al oficial
+		$mmSQL.="ROUND((a.montoaran+a.gastosn+(a.importecif*$cambioreal))/a.cantidad, 2)AS costofinal2,";     //calculo al real
+		$mmSQL.="ROUND(a.montoaran+a.gastosn+(a.importecif*$cambioreal),2) AS importefinal2 ";                //calculo real
+		$mmSQL.='FROM (itordi AS a)';
+		$mmSQL.="WHERE a.numero = $dbid";*/
 		return true;
 	}
 
@@ -1146,13 +1155,15 @@ class Ordi extends Controller {
 
 	function _post_gseri($do){
 		$ordeni=$do->get('ordeni');
-		$monto =$this->datasis->dameval("SELECT SUM(monto) FROM gseri WHERE ordeni=$ordeni");
+		$this->_calcula($ordeni);
+		/*$monto =$this->datasis->dameval("SELECT SUM(monto) FROM gseri WHERE ordeni=$ordeni");
 		if(empty($monto)) $monto=0;
 
-		$data  = array('gastosi' => $monto);
+		$data  = array('gastosi' => $monto,'montocif'=>"montofob+$monto");
 		$where = "numero= $ordeni";
 		$str = $this->db->update_string('ordi', $data, $where);
-		$this->db->simple_query($str);
+		//$this->db->simple_query($str);
+		*/
 		return true;
 	}
 
