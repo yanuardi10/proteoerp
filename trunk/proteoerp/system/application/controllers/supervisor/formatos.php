@@ -158,15 +158,30 @@ class formatos extends validaciones {
 		}
 	}
 
-	function rtcpdf($status,$nombre){
+	function rtcpdf(){
 		$this->rapyd->load('dataedit');
 
 		$edit = new DataEdit('Editar TCPDF', 'formatos');
+		$id=$edit->_dataobject->pk['nombre'];
+		$script='$("#df1").submit(function(){
+		$.post("'.site_url('supervisor/formatos/gajax_rtcpdf/update/'.$id).'", {nombre: "'.$id.'", tcpdf: tcpdf.getCode()},
+			function(data){
+				alert("Reporte guardado" + data);
+			},
+			"application/x-www-form-urlencoded;charset='.$this->config->item('charset').'");
+			return false;
+		});';
+
+		$edit->script($script,'modify');
+		$edit->back_save  =true;
+		$edit->back_cancel=true;
+		$edit->back_cancel_save=true;
 		$edit->back_url = site_url('supervisor/formatos/filteredgrid');
 
 		$edit->tcpdf= new textareaField('', 'tcpdf');
 		$edit->tcpdf->rows =30;
 		$edit->tcpdf->cols=130;
+		$edit->tcpdf->css_class='codepress php linenumbers-on readonly-off';
 		$edit->tcpdf->when = array('create','modify');
 
 		$edit->ttcpdf = new freeField('','free',$this->phpCode('<?php '.$edit->_dataobject->get('tcpdf').' ?>'));
@@ -175,10 +190,30 @@ class formatos extends validaciones {
 		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
 		$edit->build();
 
-		$data['content'] = $edit->output;
-		$data['title']   = '<h1>Reporte TCPDF</h1>';
-		$data['head']    = $this->rapyd->get_head();
-		$this->load->view('view_ventanas_sola', $data);
+		if($this->genesal){
+			$data['content'] = $edit->output;
+			$data['title']   = '<h1>Reporte TCPDF</h1>';
+			$data['head']    = $this->rapyd->get_head().script('jquery.js');
+			$data['head']   .= script('codepress/codepress.js');
+			$this->load->view('view_ventanas_sola', $data);
+		}else{
+			echo $edit->error_string;
+		}
+	}
+
+	function gajax_rtcpdf(){
+		header('Content-Type: text/html; '.$this->config->item('charset'));
+		$this->genesal=false;
+		$nombre=$this->input->post('nombre');
+		$tcpdf=$this->input->post('tcpdf');
+
+		if($tcpdf!==false and $nombre!==false){
+			if(stripos($this->config->item('charset'), 'utf')===false){
+				$_POST['nombre']=utf8_decode($nombre);
+				$_POST['tcpdf']=utf8_decode($tcpdf);
+			}
+			$this->rtcpdf();
+		}
 	}
 
 	function rdatasis(){

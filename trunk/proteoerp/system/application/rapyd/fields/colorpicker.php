@@ -97,7 +97,8 @@ class colorpickerField extends objField{
           'style'       => $this->style);
 
         $output  = form_input($attributes); 
-				$output .= '<img src="'.RAPYD_DIR.'images/spacer.gif" style="width:15px;height:15px;background-color:'.$value.';vertical-align:middle;" id="'.$this->name.'_image_pick" /> <A HREF="#" onClick="cp2.select(document.getElementById(\''.$this->name.'\'),\''.$this->name.'_pick\');return false;" NAME="'.$this->name.'_pick" ID="'.$this->name.'_pick">Tavolozza</A>' . $this->extra_output;
+				//$output .= '<img src="'.RAPYD_DIR.'images/spacer.gif" style="width:15px;height:15px;background-color:'.$value.';vertical-align:middle;" id="'.$this->name.'_image_pick" /> <A HREF="#" onClick="cp2.select(document.getElementById(\''.$this->name.'\'),\''.$this->name.'_pick\');return false;" NAME="'.$this->name.'_pick" ID="'.$this->name.'_pick">Paleta</A>' . $this->extra_output;
+				$output .= '<A HREF="#" onClick="cp2.select(document.getElementById(\''.$this->name.'\'),\''.$this->name.'_pick\');return false;" NAME="'.$this->name.'_pick" ID="'.$this->name.'_pick">Paleta</A>' . $this->extra_output;
 				$output .= HTML::javascriptTag('cp2.writeDiv()');
         break;
 

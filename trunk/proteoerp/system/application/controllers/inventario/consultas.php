@@ -2,12 +2,11 @@
 class Consultas extends Controller {
 	function Consultas(){
 		parent::Controller();
-		$this->load->library("rapyd");
-		define ("THISFILE",   APPPATH.'controllers/compras/'. $this->uri->segment(2).EXT);
+		$this->load->library('rapyd');
 	}
 
 	function index(){
-		redirect("inventario/consultas/preciosgeneral");
+		redirect('inventario/consultas/preciosgeneral');
 	}
 
 	function preciosgeneral(){
@@ -29,7 +28,7 @@ class Consultas extends Controller {
 			);
 
 		$out  = '<h1>'.form_open('inventario/consultas/preciosgeneral');
-		$out .= "Introduzca un C&oacute;digo ";
+		$out .= 'Introduzca un C&oacute;digo ';
 		$out .= form_input($barras);
 		//$out .= $this->datasis->modbus($sinv);
 		$out .= form_submit('btnsubmit','Consultar').form_close().'</h1>';
@@ -144,6 +143,11 @@ class Consultas extends Controller {
 		return false;
 	}
 
+
+	//***********************************
+	// Consulta de precios para el kiosk
+	//
+	//***********************************
 	function sprecios($formato='CPRECIOS'){
 		$data['conf']=$this->layout->settings;
 
@@ -157,6 +161,7 @@ class Consultas extends Controller {
 			@ob_end_clean();
 			echo $_html;
 		}else{
+			$data['link']=site_url('inventario/consultas/ssprecios');
 			$this->load->view('view_cprecios', $data);
 		}
 	}
@@ -186,7 +191,7 @@ class Consultas extends Controller {
 		);
 
 		$out  = form_open('inventario/consultas/precios');
-		$out .= form_label("Introduzca un Codigo ");
+		$out .= form_label('Introduzca un C&oacute;digo ');
 		$out .= form_input($barras);
 		$out .= form_close();
 
@@ -223,7 +228,7 @@ class Consultas extends Controller {
 
 		$data['content'] = '<div id="resp" style=" width: 100%;" ></div>';
 		$data['title']   = "<h1><center><a title='ender' href='http://192.168.0.99/proteoerp/assets/shared/images/3_b.jpg'><img src='http://192.168.0.99/proteoerp/assets/shared/images/3_s.jpg' /></a>$out</center></h1>";
-		$data["head"]    = script("jquery.js").script("plugins/jquery.fancybox.pack.js").script("plugins/jquery.easing.js").style('fancybox/jquery.fancybox.css').$this->rapyd->get_head();
+		$data['head']    = script('jquery.js').script('plugins/jquery.fancybox.pack.js').script('plugins/jquery.easing.js').style('fancybox/jquery.fancybox.css').$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -267,4 +272,3 @@ class Consultas extends Controller {
 		return $query;
 	}
 }
-?>
