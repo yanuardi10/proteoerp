@@ -910,7 +910,7 @@ class Ordi extends Controller {
 		$status=$this->datasis->dameval('SELECT status FROM ordi WHERE numero='.$this->db->escape($id));
 
 		if($status!='C'){
-			$SQL='SELECT fecha, fecha AS recep,factura AS numero,proveed,nombre,fecha,cambioofi, cambioreal AS vence FROM ordi WHERE numero=?';
+			$SQL='SELECT fecha, fecha AS recep,factura AS numero,proveed,nombre,fecha AS vence,cambioofi, cambioreal FROM ordi WHERE numero=?';
 			$query=$this->db->query($SQL,array($id));
 			if($query->num_rows()==1){
 				$control = $this->datasis->fprox_numero('nscst');
@@ -940,14 +940,15 @@ class Ordi extends Controller {
 				$importereal     = 0;
 				$cambioofi       = $row['cambioofi'];
 				$cambioreal      = $row['cambioreal'];
-				
+				unset($row['cambioofi']);
+				unset($row['cambioreal']);
 				$tasas=$this->datasis->ivaplica($fecha);
 
 				$itdata=array();
-				$sql='SELECT a.codigo,a.descrip,a.cantidad,a.costofinal,a.importefinal,b.iva,a.importecif,a.montoaran,a.gastosn
+				$sql='SELECT a.codigo,a.descrip,a.cantidad,a.costofinal,a.importefinal,b.iva,a.importecif,a.montoaran,a.gastosn,
 					ROUND(a.montoaran+a.gastosn+(a.costocif*'.$cambioreal.')  ,2) AS costoreal,
 					ROUND(a.montoaran+a.gastosn+(a.importecif*'.$cambioreal.'),2) AS importereal,
-					precio1,precio2,precio3,precio4
+					a.precio1,a.precio2,a.precio3,a.precio4
 					FROM itordi AS a JOIN sinv AS b ON a.codigo=b.codigo WHERE a.numero=?';
 				$qquery=$this->db->query($sql,array($id));
 				if($qquery->num_rows()>0){
