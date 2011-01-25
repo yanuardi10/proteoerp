@@ -212,9 +212,10 @@ class Reglas extends Metodos {
 					$encab_titu[$row->comprob]='<b>Comprobante:</b> '.$row->comprob.' <b>Fecha:</b> '.date("d/m/Y",timestampFromInputDate($row->fecha, 'Y-m-d')).' <b>Concepto:</b> '.$row->concepto;
 				}
 			}
-			//echo $query;
+			//echo $query;          
 			//Construye la data de los encabezados
 			foreach ($aregla['itcasi'] as $mSQL){
+				echo $mSQL;
 				$itcasi_query=$this->db->query($mSQL);
 				$acumulador=array(0,0);
 				if ($itcasi_query->num_rows() > 0){
