@@ -162,7 +162,7 @@ class Libros extends Controller {
 		    sum(a.reduimpu *IF(a.tipo='NC',-1,1)) reduimpu, 
 		    sum(b.reiva    *IF(a.tipo='NC',-1,1)) reiva,
 		    CONCAT(EXTRACT(YEAR_MONTH FROM fechal),b.nrocomp) nrocomp,
-		    b.emision, $dbcampo numo, a.tipo tipo_doc, SUM(a.impuesto) AS impuesto, a.nacional
+		    b.emision, $dbcampo numo, a.tipo tipo_doc, SUM(a.impuesto) AS impuesto, a.nacional,a.afecta
 		    FROM siva AS a LEFT JOIN riva AS b ON a.numero=b.numero and a.clipro=b.clipro AND a.tipo=b.tipo_doc AND MID(b.transac,1,1)<>'_' 
 		                   LEFT JOIN provoca AS d ON a.rif=d.rif 
 		                   LEFT JOIN sprv AS e ON a.clipro=e.proveed 
@@ -192,7 +192,7 @@ class Libros extends Controller {
 		    a.reduimpu * 0, 
 		    sum(b.reiva*IF(a.tipo='NC',-1,1)) reiva,
 		    CONCAT(EXTRACT(YEAR_MONTH FROM fechal),b.nrocomp) nrocomp,
-		    b.emision, $dbcampo numo, a.tipo,SUM(a.impuesto) AS impuesto, a.nacional
+		    b.emision, $dbcampo numo, a.tipo,SUM(a.impuesto) AS impuesto, a.nacional,a.afecta
 		    FROM siva AS a JOIN riva AS b ON a.numero=b.numero and a.clipro!=b.clipro AND a.tipo=b.tipo_doc AND MID(b.transac,1,1)<>'_' AND a.reiva=b.reiva 
 		              LEFT JOIN sprv AS d ON b.clipro=d.proveed 
 		    WHERE libro='C' AND fechal BETWEEN $fdesde AND $fhasta AND a.fecha>0 AND a.reiva>0 
@@ -320,6 +320,9 @@ class Libros extends Controller {
 		$ws->write_string( $mm,   23, "Numero", $titulo );
 		$ws->write_string( $mm+1, 23, "de", $titulo );
 		$ws->write_string( $mm+2, 23, "Comprobante", $titulo );
+		$ws->write_string( $mm,   24, " ", $titulo );
+		$ws->write_string( $mm+1, 24, "Factura", $titulo );
+		$ws->write_string( $mm+2, 24, "Afectada", $titulo );
 
 		$mm++;
 		$mm++;
@@ -363,6 +366,7 @@ class Libros extends Controller {
 				}
 				$ws->write_number( $mm, 22, $row->reiva, $numero );
 				$ws->write_string( $mm, 23, $row->nrocomp, $cuerpo );
+				$ws->write_string( $mm, 24, $row->afecta, $cuerpo );
 				$mm++;
 				$ii++;
 			}
@@ -399,6 +403,7 @@ class Libros extends Controller {
 		$ws->write_formula( $mm, 21, "=SUM(V$dd:V$mm)", $Tnumero );   //"VENTAS + IVA" 
 		$ws->write_formula( $mm, 22, "=SUM(W$dd:W$mm)", $Tnumero );   //"VENTAS EXENTAS" 
 		$ws->write_blank( $mm,  23,  $Tnumero );
+		$ws->write_blank( $mm,  24,  $Tnumero );
 
 		$mm ++;
 		$mm ++;
@@ -7455,7 +7460,8 @@ class Libros extends Controller {
 					stotal=".$stotal.", 
 					fechal=".$mes."01, 
 					referen='$referen', 
-					fafecta='$fafecta' ";
+					afecta=".$row->num_ref.",
+					fafecta='$fafecta'";
 				$flag=$this->db->simple_query($mSQL);    
 				if(!$flag) memowrite($mSQL,'genecxp');
 			}
