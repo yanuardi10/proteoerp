@@ -341,6 +341,8 @@ class Ordi extends Controller {
 
 		$edit->ordeni  = new autoUpdateField('status','A','A');
 
+		
+
 		$stat=$edit->_dataobject->get('status');
 		if($stat!='C'){
 			$accion="javascript:window.location='".site_url('import/ordi/cargarordi/'.$edit->_dataobject->pk['numero'])."'";
@@ -354,6 +356,7 @@ class Ordi extends Controller {
 
 			$edit->buttons('modify','save','delete','add_rel');
 		}
+
 
 		$edit->buttons('undo','back');
 		$edit->build();
@@ -447,7 +450,13 @@ class Ordi extends Controller {
 		if($stat!='C') $grid->add('import/ordi/gseri/'.$id.'/create','Agregar gasto internacional');
 		$grid->build();
 
-		return ($grid->recordCount > 0) ? $grid->output : $grid->_button_container['TR'][0];
+		if($grid->recordCount > 0){
+			return $grid->output;
+		}elseif($stat!='C'){
+			return $grid->_button_container['TR'][0];
+		}else{
+			return '';
+		}
 	}
 
 	function _showgeser($id,$stat='C'){
@@ -468,7 +477,13 @@ class Ordi extends Controller {
 		if($stat!='C') $grid->add('import/ordi/gser/'.$id,'Agregar/Eliminar gasto nacional');
 		$grid->build();
 
-		return ($grid->recordCount > 0) ? $grid->output : $grid->_button_container['TR'][0];
+		if($grid->recordCount > 0){
+			return $grid->output;
+		}elseif($stat!='C'){
+			return $grid->_button_container['TR'][0];
+		}else{
+			return '';
+		}
 	}
 
 	function _showordiva($id,$stat='C'){
@@ -489,8 +504,15 @@ class Ordi extends Controller {
 
 		if($stat!='C') $grid->add('import/ordi/ordiva/'.$id.'/create','Agregar IVA');
 		$grid->build();
+		//echo $grid->db->last_query();
 
-		return ($grid->recordCount > 0) ? $grid->output : $grid->_button_container['TR'][0];
+		if($grid->recordCount > 0){
+			return $grid->output;
+		}elseif($stat!='C'){
+			return $grid->_button_container['TR'][0];
+		}else{
+			return '';
+		}
 	}
 
 	function gseri($ordi){
@@ -509,6 +531,10 @@ class Ordi extends Controller {
 		$boton=$this->datasis->modbus($sprv);
 
 		$edit = new DataEdit('Gastos internacionales', 'gseri');
+		$edit->back_save  =true;
+		$edit->back_cancel=true;
+		$edit->back_cancel_save=true;
+
 		$edit->back_url = site_url('import/ordi/dataedit/show/'.$ordi);
 		$edit->post_process('insert','_post_gseri');
 		$edit->post_process('update','_post_gseri');
@@ -572,6 +598,10 @@ class Ordi extends Controller {
 		}';
 
 		$edit = new DataEdit('Impuestos', 'ordiva');
+		$edit->back_save  =true;
+		$edit->back_cancel=true;
+		$edit->back_cancel_save=true;
+
 
 		$edit->back_url = site_url('import/ordi/dataedit/show/'.$ordi);
 		$edit->post_process('insert','_post_ordiva');
@@ -610,6 +640,7 @@ class Ordi extends Controller {
 		//$edit->script($jsm,'modify');
 		$accion="javascript:window.location='".site_url('import/ordi/cargarordi'.$edit->pk_URI())."'";
 		$edit->button_status('btn_cargar','Cargar',$accion,'TR','show');
+
 		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
 		$edit->build();
 
@@ -653,7 +684,7 @@ class Ordi extends Controller {
 		$filter = new DataFilter('Filtro de Egresos');
 		$filter->db->select('numero,fecha,vence,nombre,totiva,totneto,totpre,proveed,ordeni');
 		$filter->db->from('gser');
-		$filter->db->where("(ordeni IS NULL or ordeni=$ordi )");
+		$filter->db->where("(ordeni IS NULL or ordeni=$ordi or ordeni=0)");
 
 		$filter->fechad = new dateonlyField('Desde', 'fechad','d/m/Y');
 		$filter->fechah = new dateonlyField('Hasta', 'fechah','d/m/Y');
@@ -707,7 +738,6 @@ class Ordi extends Controller {
 		$grid->column_orderby('Fecha'   ,'<dbdate_to_human><#fecha#></dbdate_to_human>','fecha','align=\'center\'');
 		$grid->column_orderby('Vence'   ,'<dbdate_to_human><#vence#></dbdate_to_human>','vence','align=\'center\'');
 		$grid->column_orderby('Nombre'  ,'nombre','nombre');
-		$grid->column_orderby('IVA'     ,'<nformat><#totiva#></nformat>','totiva','align=\'right\'');
 		$grid->column_orderby('Monto'   ,'<nformat><#totpre#></nformat>','totpre','align=\'right\'');
 		$grid->column_orderby('Enlace'  ,'<checker><#ordeni#>|<#proveed#>|<#fecha#>|<#numero#>|'.$ordi.'</checker>','ordeni','align=\'center\'');
 		$grid->build();
@@ -800,12 +830,6 @@ class Ordi extends Controller {
 		$mSQL="UPDATE itordi SET participam=importefob/$montofob WHERE numero=$dbid";
 		$this->db->simple_query($mSQL);
 
-		//Gastos
-		$mSQL="UPDATE itordi SET gastosi=$participa*$gastosi WHERE numero=$dbid";
-		$this->db->simple_query($mSQL);
-		$mSQL="UPDATE itordi SET gastosn=$participa*$gastosn WHERE numero=$dbid";
-		$this->db->simple_query($mSQL);
-
 		//CIF costo,seguro y flete (fob+gastos internacionales)
 		$mSQL="UPDATE itordi SET importecif=($participa*$gastosi)+importefob WHERE numero=$dbid";
 		$this->db->simple_query($mSQL);
@@ -816,6 +840,15 @@ class Ordi extends Controller {
 
 		//Monto del arancel (debe ser en moneda local)
 		$mSQL="UPDATE itordi SET montoaran=IF(arancif>0,arancif,importeciflocal)*(arancel/100) WHERE numero=$dbid";
+		$this->db->simple_query($mSQL);
+
+		//Gastos
+		$montoaran =$this->datasis->dameval("SELECT SUM(montoaran) AS montoaran FROM itordi WHERE numero=$dbid");
+		$montoiva  =$this->datasis->dameval("SELECT SUM(montoiva)  AS montoiva  FROM ordiva WHERE ordeni=$dbid");
+		$ggastosn=$gastosn-$montoaran-$montoiva;
+		$mSQL="UPDATE itordi SET gastosi=$participa*$gastosi WHERE numero=$dbid";
+		$this->db->simple_query($mSQL);
+		$mSQL="UPDATE itordi SET gastosn=$participa*$ggastosn WHERE numero=$dbid";
 		$this->db->simple_query($mSQL);
 
 		//Calculo de los precios
@@ -837,9 +870,10 @@ class Ordi extends Controller {
 		$query = $this->db->query($mSQL);
 		if ($query->num_rows() > 0){
 			$row = $query->row_array();
-			$importecif     =(empty($row['montocif']))? 0: $row['montocif']*$cambioofi; //montocif en moneda local
+			//$importecif     =(empty($row['montocif']))? 0: $row['montocif']*$cambioofi; //montocif en moneda local
+			$importecif     =(empty($row['montocif']))? 0: $row['montocif']*$cambioreal; //montocif en moneda local
 			$row['gastosi'] =$gastosi;
-			$row['gastosn'] =$gastosn;
+			$row['gastosn'] =$ggastosn;
 			$row['montoiva']=$montoiva;
 			$row['montotot']=$importecif+$gastosn;
 			$row['montoexc']=$importecif-$baseiva;//monto excento
