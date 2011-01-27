@@ -109,7 +109,7 @@ class formatos extends validaciones {
 		$edit = new DataEdit('Proteo', 'formatos');
 		$id=$edit->_dataobject->pk['nombre'];
 		$script='$("#df1").submit(function(){
-		$.post("'.site_url('supervisor/formatos/gajax_proteo/update/'.$id).'", {nombre: "'.$id.'", proteo: proteo.getCode()},
+		$.post("'.site_url('supervisor/formatos/gajax_proteo/update/'.$id).'", {nombre: "'.$id.'", proteo: $("#proteo").val()},
 			function(data){
 				alert("Reporte guardado" + data);
 			},
@@ -126,16 +126,20 @@ class formatos extends validaciones {
 		$edit->proteo= new htmlField('', 'proteo');
 		$edit->proteo->rows =30;
 		$edit->proteo->cols=130;
-		$edit->proteo->css_class='codepress php linenumbers-on readonly-off';
+		//$edit->proteo->css_class='codepress php linenumbers-on readonly-off';
 
 		$edit->buttons('modify', 'save', 'undo','back');
 		$edit->build();
 
+		$this->rapyd->jquery[]='$("#proteo").tabby();';
+		$this->rapyd->jquery[]='$("#proteo").linedtextarea();';
+
 		if($this->genesal){
 			$data['content'] = $edit->output;
 			$data['title']   = "<h1>Formato '$id'</h1>";
-			$data['head']    = $this->rapyd->get_head().script('jquery.js');
-			$data['head']   .= script('codepress/codepress.js');
+			$data['head']    = $this->rapyd->get_head();
+			$data['head']   .= script('plugins/jquery-linedtextarea.js').script('plugins/jquery.textarea.js').style('jquery-linedtextarea.css');
+			//$data['head']   .= script('codepress/codepress.js');
 
 			$this->load->view('view_ventanas_sola', $data);
 		}else{
@@ -164,7 +168,7 @@ class formatos extends validaciones {
 		$edit = new DataEdit('Editar TCPDF', 'formatos');
 		$id=$edit->_dataobject->pk['nombre'];
 		$script='$("#df1").submit(function(){
-		$.post("'.site_url('supervisor/formatos/gajax_rtcpdf/update/'.$id).'", {nombre: "'.$id.'", tcpdf: tcpdf.getCode()},
+		$.post("'.site_url('supervisor/formatos/gajax_rtcpdf/update/'.$id).'", {nombre: "'.$id.'", tcpdf: $("#tcpdf").val()},
 			function(data){
 				alert("Reporte guardado" + data);
 			},
@@ -181,7 +185,7 @@ class formatos extends validaciones {
 		$edit->tcpdf= new textareaField('', 'tcpdf');
 		$edit->tcpdf->rows =30;
 		$edit->tcpdf->cols=130;
-		$edit->tcpdf->css_class='codepress php linenumbers-on readonly-off';
+		//$edit->tcpdf->css_class='codepress php linenumbers-on readonly-off';
 		$edit->tcpdf->when = array('create','modify');
 
 		$edit->ttcpdf = new freeField('','free',$this->phpCode('<?php '.$edit->_dataobject->get('tcpdf').' ?>'));
@@ -190,11 +194,15 @@ class formatos extends validaciones {
 		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
 		$edit->build();
 
+		$this->rapyd->jquery[]='$("#tcpdf").tabby();';
+		$this->rapyd->jquery[]='$("#tcpdf").linedtextarea();';
+
 		if($this->genesal){
 			$data['content'] = $edit->output;
 			$data['title']   = '<h1>Reporte TCPDF</h1>';
-			$data['head']    = $this->rapyd->get_head().script('jquery.js');
-			$data['head']   .= script('codepress/codepress.js');
+			$data['head']    = $this->rapyd->get_head();
+			$data['head']   .= script('plugins/jquery-linedtextarea.js').script('plugins/jquery.textarea.js').style('jquery-linedtextarea.css');
+			//$data['head']   .= script('codepress/codepress.js');
 			$this->load->view('view_ventanas_sola', $data);
 		}else{
 			echo $edit->error_string;

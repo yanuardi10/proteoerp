@@ -194,8 +194,8 @@ class repomenu extends validaciones {
 		$edit->title($uri2.' '.$uri3);
 
 		$script='$("#df1").submit(function(){
-		$.post("'.site_url('supervisor/repomenu/gajax_proteo/update/'.$id).'", {nombre: "'.$id.'", proteo: proteo.getCode()},
-		//$.post("'.site_url('supervisor/repomenu/gajax_proteo/update/'.$id).'", {nombre: "'.$id.'", proteo: $("#proteo").val()},
+		//$.post("'.site_url('supervisor/repomenu/gajax_proteo/update/'.$id).'", {nombre: "'.$id.'", proteo: proteo.getCode()},
+		$.post("'.site_url('supervisor/repomenu/gajax_proteo/update/'.$id).'", {nombre: "'.$id.'", proteo: $("#proteo").val()},
 			function(data){
 				alert("Reporte guardado" + data);
 			},
@@ -212,17 +212,21 @@ class repomenu extends validaciones {
 		$edit->proteo= new textareaField('', 'proteo');
 		$edit->proteo->rows =30;
 		$edit->proteo->cols =130;
-		$edit->proteo->css_class='codepress php linenumbers-on readonly-off';
+		$edit->proteo->css_class='text-indent:100px;';
+		//$edit->proteo->css_class='codepress php linenumbers-on readonly-off';
 		//$edit->proteo->when = array('create','modify');
 
 		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
 		$edit->build();
 
+		$this->rapyd->jquery[]='$("#proteo").tabby();';
+		$this->rapyd->jquery[]='$("#proteo").linedtextarea();'; // $(".lined").linedtextarea({selectedLine: 1});
 		if($this->genesal){
 			$data['content'] = $edit->output;
 			$data['title']   = '<h1>Reporte Proteo</h1>';
-			$data['head']    = $this->rapyd->get_head().script('jquery.js');
-			$data['head']   .= script('codepress/codepress.js');
+			$data['head']    = $this->rapyd->get_head();
+			$data['head']   .= script('plugins/jquery-linedtextarea.js').script('plugins/jquery.textarea.js').style('jquery-linedtextarea.css');
+			//$data['head']   .= script('codepress/codepress.js');
 
 			$this->load->view('view_ventanas_sola', $data);
 		}else{
