@@ -290,6 +290,7 @@ class objField {
       //$this->when[] = "idle";    
       if (!in_array($this->status,$this->when)){
 	        $this->status = "hidden";
+	        $this->label = ' ';
           $this->apply_rules = false;
 	    }
 	  }
