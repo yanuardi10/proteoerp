@@ -84,8 +84,6 @@ echo $form_begin;
 	}
 
 	$(document).ready(function(){
-		$('#gastosi').bind("keyup",function() { calcula(); });
-		$('#gastosn').bind("keyup",function() { calcula(); });
 		$('#cambioofi').bind("keyup",function() { calcula(); });
 		$('#cambioreal').bind("keyup",function() { calcula(); });
 		<?php
@@ -101,8 +99,6 @@ echo $form_begin;
 	}
 
 	function totaliza(){
-		if($("#gastosi").val().length>0)   gastosi=parseFloat($("#gastosi").val());     else gastosi  =0;
-		if($("#gastosn").val().length>0)   gastosn=parseFloat($("#gastosn").val());     else gastosn  =0;
 		if($("#cambioofi").val().length>0) cambioofi=parseFloat($("#cambioofi").val()); else cambioofi=0;
 		montofob=0;
 		arr=$('input[name^="importefob_"]');
@@ -110,10 +106,7 @@ echo $form_begin;
 			if(this.value.length>0)
 				montofob = montofob + parseFloat(this.value);
 		});
-		montocif = montofob + gastosi;
-		$("#montocif").val(roundNumber(montocif,2));
 		$("#montofob").val(roundNumber(montofob,2));
-		$("#montotot").val(roundNumber((montocif*cambioofi)+gastosn,2));
 	}
 
 	function calcula(){
@@ -137,7 +130,7 @@ echo $form_begin;
 
 <table align='center'>
 	<tr>
-		<td align=right><?php echo $container_tr?></td>
+		<td align=right><?php echo $container_br ?><?php echo $container_tr ;?></td>
 	</tr><tr>
 		<td>
 
@@ -146,45 +139,45 @@ echo $form_begin;
 		<td colspan=6 class="littletableheader">Orden de importaci&oacute;n <b><?php if($form->_status=='show' or $form->_status=='modify' ) echo str_pad($form->numero->output,8,0,0); ?></b></td>
 	</tr>
 	<tr>
-		<td class="littletablerowth" ><?php echo $form->dua->label; ?></td>
-		<td class="littletablerow"   nowrap><?php echo $form->dua->output; ?>&nbsp;</td>
-		<td class="littletablerowth" align='right' ><?php echo $form->proveed->label; ?></td>
-		<td class="littletablerow"  nowrap><?php echo $form->proveed->output; ?>&nbsp;</td>
-		<td class="littletablerow"  nowrap colspan=2><?php echo $form->nombre->output;?>&nbsp;</td>
+		<td class="littletablerowth" >&nbsp;<?php echo $form->dua->label; ?></td>
+		<td class="littletablerow"   nowrap>&nbsp;<?php echo $form->dua->output; ?></td>
+		<td class="littletablerowth" align='right' >&nbsp;<?php echo $form->proveed->label; ?></td>
+		<td class="littletablerow"  nowrap>&nbsp;<?php echo $form->proveed->output; ?></td>
+		<td class="littletablerow"  nowrap colspan=2>&nbsp;<?php echo $form->nombre->output;?></td>
 	</tr>
 	<tr>
-		<td class="littletablerowth"><?php echo $form->fecha->label;  ?></td>
-		<td class="littletablerow"  ><?php echo $form->fecha->output; ?>&nbsp;</td>
-		<td class="littletablerowth" align='right'><?php echo $form->agente->label;  ?></td>
-		<td class="littletablerow"  ><?php echo $form->agente->output; ?>&nbsp;</td>
-		<td class="littletablerow"  nowrap colspan=2><?php echo $form->nomage->output;?>&nbsp;</td>
+		<td class="littletablerowth">&nbsp;<?php echo $form->fecha->label;  ?></td>
+		<td class="littletablerow"  >&nbsp;<?php echo $form->fecha->output; ?></td>
+		<td class="littletablerowth" align='right'>&nbsp;<?php echo $form->agente->label;  ?></td>
+		<td class="littletablerow"  >&nbsp;<?php echo $form->agente->output; ?></td>
+		<td class="littletablerow"  nowrap colspan=2>&nbsp;<?php echo $form->nomage->output;?></td>
 	</tr>
 	<tr>
-		<td class="littletablerowth"><?php echo $form->arribo->label;  ?></td>
-		<td class="littletablerow"  ><?php echo $form->arribo->output; ?>&nbsp;</td>
-		<td class="littletablerowth" align='right'><?php echo $form->factura->label; ?></td>
-		<td class="littletablerow"  ><?php echo $form->factura->output;?>&nbsp;</td>
-		<td class="littletablerowth" colspan=2 align='center'><?php echo $form->condicion->label;  ?></td>
+		<td class="littletablerowth">&nbsp;<?php echo $form->arribo->label;  ?></td>
+		<td class="littletablerow"  >&nbsp;<?php echo $form->arribo->output; ?></td>
+		<td class="littletablerowth" align='right'>&nbsp;<?php echo $form->factura->label; ?></td>
+		<td class="littletablerow"  >&nbsp;<?php echo $form->factura->output;?></td>
+		<td class="littletablerowth" colspan=2 align='center'>&nbsp;<?php echo $form->condicion->label;  ?></td>
 
 	</tr>
 	<tr>
-		<td class="littletablerowth"><?php echo $form->cambioofi->label;  ?>*</td>
-		<td class="littletablerow"  ><?php echo $form->cambioofi->output;  ?>&nbsp;</td>
-		<td class="littletablerowth" align='right'><?php echo $form->cambioreal->label;  ?>*</td>
-		<td class="littletablerow"  ><?php echo $form->cambioreal->output; ?>&nbsp;</td>
-		<td class="littletablerow" colspan=2 rowspan=3><?php echo $form->condicion->output;  ?></td>
+		<td class="littletablerowth">&nbsp;<?php echo $form->cambioofi->label;  ?>*</td>
+		<td class="littletablerow"  >&nbsp;<?php echo $form->cambioofi->output;  ?></td>
+		<td class="littletablerowth" align='right'>&nbsp;<?php echo $form->cambioreal->label;  ?>*</td>
+		<td class="littletablerow"  >&nbsp;<?php echo $form->cambioreal->output; ?></td>
+		<td class="littletablerow" colspan=2 rowspan=3>&nbsp;<?php echo $form->condicion->output;  ?></td>
 	</tr>
 		<tr>
-		<td class="littletablerowth"><?php echo $form->peso->label;  ?></td>
-		<td class="littletablerow"  ><?php echo $form->peso->output;  ?>&nbsp;</td>
-		<td class="littletablerowth" align='right'><?php echo $form->montoiva->label;  ?></td>
-		<td class="littletablerow"  ><?php echo $form->montoiva->output; ?>&nbsp;</td>
+		<td class="littletablerowth">&nbsp;<?php echo $form->peso->label;  ?></td>
+		<td class="littletablerow"  >&nbsp;<?php echo $form->peso->output;  ?></td>
+		<td class="littletablerowth" align='right'>&nbsp;<?php echo $form->montoiva->label;  ?></td>
+		<td class="littletablerow"  >&nbsp;<?php echo $form->montoiva->output; ?></td>
 	</tr>
 	<tr>
-		<td class="littletablerowth"><?php echo $form->gastosi->label;  ?></td>
-		<td class="littletablerow"  ><?php echo $form->gastosi->output; ?>&nbsp;</td>
-		<td class="littletablerowth" align='right'><?php echo $form->gastosn->label;  ?></td>
-		<td class="littletablerow"  ><?php echo $form->gastosn->output; ?>&nbsp;</td>
+		<td class="littletablerowth">&nbsp;<?php echo $form->gastosi->label;  ?></td>
+		<td class="littletablerow"  >&nbsp;<?php echo $form->gastosi->output; ?></td>
+		<td class="littletablerowth" align='right'>&nbsp;<?php echo $form->gastosn->label;  ?></td>
+		<td class="littletablerow"  >&nbsp;<?php echo $form->gastosn->output; ?></td>
 	</tr>
 </table>
 <p>
@@ -217,17 +210,16 @@ for($i=0;$i<$form->max_rel_count['itordi'];$i++) {
 	<tr id='__UTPL__'></tr>
 </table>
 </p>
-<?php echo $container_bl ?>
-<?php echo $container_br ?>
 
+<?php echo $container_bl; ?>
 <table style="margin:0;width:98%;">
 	<tr>
-		<td class="littletablerowth"><?php echo $form->montotot->label; ?></td>
-		<td class="littletablerow"  ><?php echo $form->montotot->output;?></td>
-		<td class="littletablerowth" align='right'><?php echo $form->montocif->label;  ?></td>
-		<td class="littletablerow"  ><?php echo $form->montocif->output; ?></td>
-		<td class="littletablerowth" align='right'><?php echo $form->montofob->label; ?></td>
-		<td class="littletablerow"  ><?php echo $form->montofob->output;?></td>
+		<td class="littletablerowth">&nbsp;<?php echo $form->montotot->label; ?></td>
+		<td class="littletablerow"  >&nbsp;<?php echo $form->montotot->output;?></td>
+		<td class="littletablerowth" align='right'>&nbsp;<?php echo $form->montocif->label;  ?></td>
+		<td class="littletablerow"  >&nbsp;<?php echo $form->montocif->output; ?></td>
+		<td class="littletablerowth" align='right'>&nbsp;<?php echo $form->montofob->label; ?></td>
+		<td class="littletablerow"  >&nbsp;<?php echo $form->montofob->output;?></td>
 	</tr>
 </table>
 
