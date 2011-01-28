@@ -97,9 +97,9 @@ class sfacpaga extends Controller {
 		$grid->column("Fecha","<dbdate_to_human><#fecha#></dbdate_to_human>");
 		$grid->column("Vence","<dbdate_to_human><#vence#></dbdate_to_human>");
 		$grid->column("Pagada","<dbdate_to_human><#pagada#></dbdate_to_human>");
-		$grid->column("Dias"    ,'<number_format><#dias#>|0|,|.</number_format>'        ,"align='right'");
-		$grid->column("Comision",'<number_format><#comision#>|2|,|.</number_format>',"align='right'");
-		$grid->column("Comisi&oacute;n Calculada",'<number_format><#comical#>|2|,|.</number_format>'  ,"align='right'");
+		$grid->column("Dias"    ,'<nformat><#dias#>|0|,|.</nformat>'        ,"align='right'");
+		$grid->column("Comision",'<nformat><#comision#>|2|,|.</nformat>',"align='right'");
+		$grid->column("Comisi&oacute;n Calculada",'<nformat><#comical#>|2|,|.</nformat>'  ,"align='right'");
 		$grid->column("Cliente",'<#cod_cli#>');
 		$grid->column("Nombre",'<#nombre#>');
 		$grid->column("Pagado","<descheck><#numero#>|<#tipo_doc#>|<#sepago#></descheck>","align=center");
