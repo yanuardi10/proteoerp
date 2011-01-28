@@ -115,6 +115,10 @@ class precios_sinv extends validaciones{
 		});';
 
 		$edit = new DataEdit('Cambios de precios','sinv');
+		
+		$edit->back_save  =true;
+		$edit->back_cancel=true;
+		$edit->back_cancel_save=true;
 		$edit->pre_process( 'update','_pre_update');
 		$edit->pre_process( 'create','_pre_create');
 		$edit->post_process('update','_pos_update');
