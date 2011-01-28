@@ -1,4 +1,5 @@
-<?php
+<?php require_once(APPPATH.'/controllers/inventario/consultas.php');
+
 class Scst extends Controller {
 
 	function scst(){
@@ -44,35 +45,35 @@ class Scst extends Controller {
 		$filter->db->select=array('numero','fecha','vence','nombre','montoiva','montonet','proveed','control');
 		$filter->db->from('scst');
 
-		$filter->fechad = new dateonlyField("Desde", "fechad",'d/m/Y');
-		$filter->fechah = new dateonlyField("Hasta", "fechah",'d/m/Y');
-		$filter->fechad->clause  =$filter->fechah->clause="where";
-		$filter->fechad->db_name =$filter->fechah->db_name="fecha";
+		$filter->fechad = new dateonlyField('Desde', 'fechad','d/m/Y');
+		$filter->fechah = new dateonlyField('Hasta', 'fechah','d/m/Y');
+		$filter->fechad->clause  =$filter->fechah->clause='where';
+		$filter->fechad->db_name =$filter->fechah->db_name='fecha';
 		$filter->fechah->size=$filter->fechad->size=10;
-		$filter->fechad->operator=">="; 
-		$filter->fechah->operator="<=";
+		$filter->fechad->operator='>='; 
+		$filter->fechah->operator='<=';
 
-		$filter->numero = new inputField("Factura", "numero");
+		$filter->numero = new inputField('Factura', 'numero');
 		$filter->numero->size=20;
 
-		$filter->proveedor = new inputField("Proveedor", "proveed");
+		$filter->proveedor = new inputField('Proveedor', 'proveed');
 		$filter->proveedor->append($boton);
-		$filter->proveedor->db_name = "proveed";
+		$filter->proveedor->db_name = 'proveed';
 		$filter->proveedor->size=20;
 
-		$filter->buttons("reset","search");
+		$filter->buttons('reset','search');
 		$filter->build();
 
 		$uri = anchor('farmacia/scst/dataedit/show/<#control#>','<#numero#>');
-		$uri2 = anchor_popup('formatos/verhtml/COMPRA/<#control#>',"Ver HTML",$atts);
+		$uri2 = anchor_popup('formatos/verhtml/COMPRA/<#control#>','Ver HTML',$atts);
 
 		$grid = new DataGrid();
-		$grid->order_by("fecha","desc");
+		$grid->order_by('fecha','desc');
 		$grid->per_page = 15;
 
 		$grid->column_orderby('Factura',$uri,'control');
-		$grid->column_orderby('Fecha'  ,"<dbdate_to_human><#fecha#></dbdate_to_human>",'fecha',"align='center'");
-		$grid->column_orderby('Vence'  ,"<dbdate_to_human><#vence#></dbdate_to_human>",'vence',"align='center'");
+		$grid->column_orderby('Fecha'  ,'<dbdate_to_human><#fecha#></dbdate_to_human>','fecha',"align='center'");
+		$grid->column_orderby('Vence'  ,'<dbdate_to_human><#vence#></dbdate_to_human>','vence',"align='center'");
 		$grid->column_orderby('Nombre' ,'nombre','nombre');
 		$grid->column_orderby('IVA'    ,'montoiva' ,'montoiva',"align='right'");
 		$grid->column_orderby('Monto'  ,'montonet' ,'montonet',"align='right'");
@@ -111,42 +112,42 @@ class Scst extends Controller {
 
 		$edit->fecha = new DateonlyField('Fecha', 'fecha','d/m/Y');
 		$edit->fecha->insertValue = date('Y-m-d');
-		$edit->fecha->mode="autohide";
+		$edit->fecha->mode='autohide';
 		$edit->fecha->size = 10;
 
-		$edit->numero = new inputField("N&uacute;mero", "numero");
+		$edit->numero = new inputField('N&uacute;mero', 'numero');
 		$edit->numero->size = 15;
-		$edit->numero->rule= "required";
-		$edit->numero->mode="autohide";
+		$edit->numero->rule= 'required';
+		$edit->numero->mode= 'autohide';
 		$edit->numero->maxlength=8;
 
-		$edit->proveedor = new inputField("Proveedor", "proveed");
+		$edit->proveedor = new inputField('Proveedor', 'proveed');
 		$edit->proveedor->size = 10;
 		$edit->proveedor->maxlength=5;
 
-		$edit->nombre = new inputField("Nombre", "nombre");
+		$edit->nombre = new inputField('Nombre', 'nombre');
 		$edit->nombre->size = 50;
 		$edit->nombre->maxlength=40;
 
-		$edit->almacen = new inputField("Almac&eacute;n", "depo");
+		$edit->almacen = new inputField('Almac&eacute;n', 'depo');
 		$edit->almacen->size = 15;
 		$edit->almacen->maxlength=8;
 
-		$edit->tipo = new dropdownField("Tipo", "tipo_doc");
-		$edit->tipo->option("FC","FC");
-		$edit->tipo->rule = "required";
+		$edit->tipo = new dropdownField('Tipo', 'tipo_doc');
+		$edit->tipo->option('FC','FC');
+		$edit->tipo->rule = 'required';
 		$edit->tipo->size = 20;
 		$edit->tipo->style='width:150px;';
 
-		$edit->subt  = new inputField("Sub-total", "montotot");
+		$edit->subt  = new inputField('Sub-total', 'montotot');
 		$edit->subt->size = 20;
 		$edit->subt->css_class='inputnum';
 
-		$edit->iva  = new inputField("Impuesto", "montoiva");
+		$edit->iva  = new inputField('Impuesto', 'montoiva');
 		$edit->iva->size = 20;
 		$edit->iva->css_class='inputnum';
 
-		$edit->total  = new inputField("Total global", "montonet");
+		$edit->total  = new inputField('Total global', 'montonet');
 		$edit->total->size = 20;
 		$edit->total->css_class='inputnum';
 
@@ -168,6 +169,7 @@ class Scst extends Controller {
 		$llink=anchor_popup('farmacia/scst/reasignaprecio/modify/<#id#>', '<b><#precio1#></b>', $atts);
 
 		//Campos para el detalle
+		$this->_autoasignar($numero);
 		$tabla=$this->db->database;
 		$detalle = new DataGrid('');
 		$select=array('a.*','a.codigo AS barras','a.costo AS pond','COALESCE( b.codigo , c.abarras) AS sinv');
@@ -225,7 +227,7 @@ class Scst extends Controller {
 			cuerpo.removeChild(fform);
 		}';
 
-		$edit->detalle=new freeField("detalle", 'detalle',$detalle->output);
+		$edit->detalle=new freeField('detalle', 'detalle',$detalle->output);
 		$accion="javascript:window.location='".site_url('farmacia/scst/cargar'.$edit->pk_URI())."'";
 		$pcontrol=$edit->_dataobject->get('pcontrol');
 		if(is_null($pcontrol)) $edit->button_status('btn_cargar','Cargar',$accion,'TR','show');
@@ -323,6 +325,40 @@ class Scst extends Controller {
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   ='<h1>Reasignar C&oacute;digo</h1>';
 		$this->load->view('view_ventanas', $data);
+	}
+
+	function _autoasignar($control=null){
+		if(!empty($control)){
+			$dbcontrol=$this->db->escape($control);
+
+			$tabla    = $this->db->database;
+			$dbfarmax = $this->load->database('farmax', TRUE);
+
+			$query = $dbfarmax->query('SELECT proveed FROM scst WHERE control='.$dbcontrol);
+			if ($query->num_rows() > 0){
+				$row = $query->row_array();
+				$proveed=$row['proveed'];
+			}
+			$dbproveed=$this->db->escape($proveed);
+
+			$mSQL="SELECT `a`.`codigo` AS barras FROM (`itscst` AS a) WHERE `a`.`control` = $dbcontrol";
+			$query = $dbfarmax->query($mSQL);
+			if ($query->num_rows() > 0){
+				foreach ($query->result() as $row){
+					$qquery=consultas::_gconsul('SELECT codigo  FROM sinv',$row->barras,array('codigo','barras','alterno'));
+					if($qquery!==false){
+						$rrow   = $qquery->row_array();
+						$codigo = $rrow['codigo'];
+						$data = array('proveed' => $proveed, 'abarras' =>$rrow['codigo'] , 'barras' => $row->barras);
+
+						$str = $this->db->insert_string('farmaxasig', $data);
+						$str = str_replace('INSERT','INSERT IGNORE',$str);
+						$this->db->simple_query($str);
+					}
+        
+				}
+			}
+		}
 	}
 
 	function asignardataedit(){
@@ -509,18 +545,73 @@ class Scst extends Controller {
 				if ($query->num_rows()==1){
 					$lcontrol=$this->datasis->fprox_numero('nscst');
 					$transac =$this->datasis->fprox_numero('ntransac');
+					$contribu=$this->datasis->traevalor('CONTRIBUYENTE');
+					$rif     =$this->datasis->traevalor('RIF');
 
 					$row=$query->row_array();
 					$numero=$row['numero'];
-					$row['serie']  =$numero;
-					$row['numero'] =substr($numero,-8);
-					$row['control']=$lcontrol;
-					$row['transac']=$transac;
-					$row['nfiscal']=$nfiscal;
-					$row['depo']   =$almacen;
-					$cd            =strtotime($row['fecha']);
-					$row['vence']  =date('Y-m-d', mktime(0,0,0,date('m',$cd),date('d',$cd)+$dias,date('Y',$cd)));
+					$row['serie']   =$numero;
+					$row['numero']  =substr($numero,-8);
+					$row['control'] =$lcontrol;
+					$row['transac'] =$transac;
+					$row['nfiscal'] =$nfiscal;
+					$row['credito'] =$row['montonet'];
+					$row['anticipo']=0;
+					$row['inicial'] =0;
+					$row['estampa'] =date('Ymd');
+					$row['estampa'] =date('H:i:s');
+					$row['usuario'] =$this->session->userdata('usuario');
+					$row['depo']    =$almacen;
+					$cd             =strtotime($row['fecha']);
+					$row['vence']   =date('Y-m-d', mktime(0,0,0,date('m',$cd),date('d',$cd)+$dias,date('Y',$cd)));
+
+					$mmsql="SELECT iva,SUM(montoiva) AS monto,SUM(importe) AS base FROM itscst WHERE control=$control GROUP BY iva";
+					$m_iva=$farmaxDB->query($mmsql);
+					$ivas=$this->datasis->ivaplica($row['fecha']);
+					$tasa=$redutasa=$sobretasa=$exento=$basetasa=$baseredu=$baseadicio=0;
+
+					foreach ($m_iva->result_array() as $ivarow){
+						if($ivarow['iva']==$ivas['redutasa']){
+							$redutasa  +=$ivarow['monto'];
+							$baseredu  +=$ivarow['base'];
+						}elseif($ivarow['iva']==$ivas['tasa']){
+							$tasa      +=$ivarow['monto'];
+							$basetasa  +=$ivarow['base'];
+						}elseif($ivarow['iva']==$ivas['sobretasa']){
+							$sobretasa +=$ivarow['monto'];
+							$baseadicio+=$ivarow['base'];
+						}elseif($ivarow['iva']==0){
+							$exento    +=$ivarow['monto'];
+						}
+					}
+					$row['reducida'] =$redutasa;
+					$row['tasa']     =$tasa;
+					$row['sobretasa']=$sobretasa;
+					$row['monredu']  =$redutasa;
+					$row['montasa']  =$tasa;
+					$row['monadic']  =$sobretasa;
+
+					$row['ctotal']   =$row['montonet'];
+					$row['cstotal']  =$row['montotot'];
+					$row['cexento']  =$exento;
+					$row['cimpuesto']=$redutasa+$tasa+$sobretasa;
+					$row['cgenera']  =$basetasa;
+					$row['civagen']  =$tasa;
+					$row['cadicio']  =$baseadicio;
+					$row['civaadi']  =$sobretasa;
+					$row['creduci']  =$baseredu;
+					$row['civared']  =$redutasa;
+
 					unset($row['pcontrol']);
+					if($contribu=='ESPECIAL' and strtoupper($rif[0])!='V'){
+						$por_rete=$this->datasis->dameval('SELECT reteiva FROM sprv WHERE proveed='.$this->db->escape($row['proveed']));
+						if($por_rete!=100){
+							$por_rete=0.75;
+						}else{
+							$por_rete=$por_rete/100;
+						}
+						$row['reteiva']=round($row['montoiva']*$por_rete,2);
+					}
 
 					$mSQL[]=$this->db->insert_string('scst', $row);
 
