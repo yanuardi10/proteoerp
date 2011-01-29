@@ -559,7 +559,7 @@ class Scst extends Controller {
 					$row['anticipo']=0;
 					$row['inicial'] =0;
 					$row['estampa'] =date('Ymd');
-					$row['estampa'] =date('H:i:s');
+					$row['hora']    =date('H:i:s');
 					$row['usuario'] =$this->session->userdata('usuario');
 					$row['depo']    =$almacen;
 					$cd             =strtotime($row['fecha']);
