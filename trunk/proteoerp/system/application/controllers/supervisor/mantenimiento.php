@@ -70,16 +70,18 @@ class Mantenimiento extends Controller{
 		}
 		$copy="<br><a href='javascript:void(0)' class='mininegro'  onclick=\"copiar()\" >Copiar texto</a>";
 		$tadata = array(
-		          'name'    => 'sql',
-		          'id'      => 'log',
-		          'rows'    => '20',
-		          'cols'    => '60'
-		          );
+			'name'  => 'sql',
+			'id'    => 'log',
+			'rows'  => '20',
+			'cols'  => '60'
+		);
 
-		          $form= form_open('ejecutasql/filteredgrid/process').form_textarea($tadata).'<br>'.form_submit('mysubmit', 'Ejecutar como SQL').form_close();
-		          $this->table->add_row(ul($lista), '<b id="fnom">Seleccione un archivo de centinela</b><br>'.$form);
-		          $link=site_url('supervisor/mantenimiento/vercentinela');
-		          $data['script']  ="<script>
+		$form = form_open('ejecutasql/filteredgrid/process').form_textarea($tadata).br();
+		$form.= ($this->datasis->essuper()) ? form_submit('mysubmit', 'Ejecutar como SQL') : '';
+		$form.= form_close();
+		$this->table->add_row(ul($lista), '<b id="fnom">Seleccione un archivo de centinela</b><br>'.$form);
+		$link=site_url('supervisor/mantenimiento/vercentinela');
+		$data['script']  ="<script>
 		  function carga(arch){
 		    link='$link'+'/'+arch;
 		    //alert(link);
@@ -91,11 +93,11 @@ class Mantenimiento extends Controller{
 		  };
 		</script>";
 
-		          $data['content'] = $this->table->generate();
-		          $data['title']   = "<h1>Centinelas</h1>";
-		          //script('plugins/jquery.clipboard.pack.js')
-		          $data["head"]    =  script("jquery.pack.js").script('plugins/jquery.copy.min.js').$this->rapyd->get_head().style('marcos.css').style('estilos.css');
-		          $this->load->view('view_ventanas', $data);
+		$data['content'] = $this->table->generate();
+		$data['title']   = heading('Centinelas');
+		//script('plugins/jquery.clipboard.pack.js')
+		$data['head']    =  script("jquery.pack.js").script('plugins/jquery.copy.min.js').$this->rapyd->get_head().style('marcos.css').style('estilos.css');
+		$this->load->view('view_ventanas', $data);
 	}
 
 	function vercentinela($file=NULL){

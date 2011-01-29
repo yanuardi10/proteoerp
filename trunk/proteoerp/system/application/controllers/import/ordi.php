@@ -967,7 +967,7 @@ class Ordi extends Controller {
 		$status=$this->datasis->dameval('SELECT status FROM ordi WHERE numero='.$this->db->escape($id));
 
 		if($status!='C'){
-			$SQL='SELECT fecha, fecha AS recep,factura AS numero,proveed,nombre,fecha AS vence,cambioofi, cambioreal FROM ordi WHERE numero=?';
+			$SQL='SELECT fecha, fecha AS recep,factura AS numero,proveed,nombre,fecha AS vence,cambioofi, cambioreal,dua FROM ordi WHERE numero=?';
 			$query=$this->db->query($SQL,array($id));
 			if($query->num_rows()==1){
 				$control = $this->datasis->fprox_numero('nscst');
@@ -993,12 +993,16 @@ class Ordi extends Controller {
 				$row['sobretasa']= 0;
 				$row['reducida'] = 0;
 				$row['tasa']     = 0;
+				$row['observa1'] = 'IMPORTACION D.U.A. '.$row['dua'];
+				$row['estampa']  = date('Ymd');
+				$row['hora']     = date('H:i:s');
 				$costoreal       = 0;
 				$importereal     = 0;
 				$costocifreal    = 0;
 				$importecifreal  = 0;
 				$cambioofi       = $row['cambioofi'];
 				$cambioreal      = $row['cambioreal'];
+				unset($row['dua']);
 				unset($row['cambioofi']);
 				unset($row['cambioreal']);
 				$tasas=$this->datasis->ivaplica($fecha);
@@ -1053,33 +1057,35 @@ class Ordi extends Controller {
 						$ban=$this->db->simple_query($mSQL);
 						if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
 
-						$mSQL='UPDATE sinv SET 
-							prov3=prov2, prepro3=prepro2, pfecha3=pfecha2, prov2=prov1, prepro2=prepro1, pfecha2=pfecha1,
-							prov1='.$this->db->escape($proveed).',
-							prepro1='.$itrow->costoreal.',
-							pfecha1='.$this->db->escape($fecha).',
-							ultimo='.$itrow->costoreal.',
-							precio1='.$this->db->escape($itrow->precio1).',
-							precio2='.$this->db->escape($itrow->precio2).',
-							precio3='.$this->db->escape($itrow->precio3).',
-							precio4='.$this->db->escape($itrow->precio4).'
+						if($itrow->precio1>0 and $itrow->precio2>0 and $itrow->precio3>0 and $itrow->precio4>0){
+							$mSQL='UPDATE sinv SET 
+								prov3=prov2, prepro3=prepro2, pfecha3=pfecha2, prov2=prov1, prepro2=prepro1, pfecha2=pfecha1,
+								prov1='.$this->db->escape($proveed).',
+								prepro1='.$itrow->costoreal.',
+								pfecha1='.$this->db->escape($fecha).',
+								ultimo='.$itrow->costoreal.',
+								precio1='.$this->db->escape($itrow->precio1).',
+								precio2='.$this->db->escape($itrow->precio2).',
+								precio3='.$this->db->escape($itrow->precio3).',
+								precio4='.$this->db->escape($itrow->precio4).'
+								WHERE codigo='.$this->db->escape($itrow->codigo);
+							$ban=$this->db->simple_query($mSQL);
+							if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
+    
+							$mSQL='UPDATE sinv SET 
+								base1=ROUND(precio1*10000/(100+iva))/100, 
+								base2=ROUND(precio2*10000/(100+iva))/100, 
+								base3=ROUND(precio3*10000/(100+iva))/100, 
+								base4=ROUND(precio4*10000/(100+iva))/100, 
+								margen1=ROUND(10000-(IF(formcal="P",pond,IF(formcal="U",ultimo,GREATEST(pond,ultimo)))*10000/base1))/100,
+								margen2=ROUND(10000-(IF(formcal="P",pond,IF(formcal="U",ultimo,GREATEST(pond,ultimo)))*10000/base2))/100,
+								margen3=ROUND(10000-(IF(formcal="P",pond,IF(formcal="U",ultimo,GREATEST(pond,ultimo)))*10000/base3))/100,
+								margen4=ROUND(10000-(IF(formcal="P",pond,IF(formcal="U",ultimo,GREATEST(pond,ultimo)))*10000/base4))/100,
+								activo="S"
 							WHERE codigo='.$this->db->escape($itrow->codigo);
-						$ban=$this->db->simple_query($mSQL);
-						if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
-
-						$mSQL='UPDATE sinv SET 
-							base1=ROUND(precio1*10000/(100+iva))/100, 
-							base2=ROUND(precio2*10000/(100+iva))/100, 
-							base3=ROUND(precio3*10000/(100+iva))/100, 
-							base4=ROUND(precio4*10000/(100+iva))/100, 
-							margen1=ROUND(10000-(IF(formcal="P",pond,IF(formcal="U",ultimo,GREATEST(pond,ultimo)))*10000/base1))/100,
-							margen2=ROUND(10000-(IF(formcal="P",pond,IF(formcal="U",ultimo,GREATEST(pond,ultimo)))*10000/base2))/100,
-							margen3=ROUND(10000-(IF(formcal="P",pond,IF(formcal="U",ultimo,GREATEST(pond,ultimo)))*10000/base3))/100,
-							margen4=ROUND(10000-(IF(formcal="P",pond,IF(formcal="U",ultimo,GREATEST(pond,ultimo)))*10000/base4))/100,
-							activo="S"
-						WHERE codigo='.$this->db->escape($itrow->codigo);
-						$ban=$this->db->simple_query($mSQL);
-						if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
+							$ban=$this->db->simple_query($mSQL);
+							if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
+						}
 						//Fin de la actualizacion de inventario
 					}
 				}
@@ -1090,6 +1096,7 @@ class Ordi extends Controller {
 
 				//Al proveedor internacional no se le paga iva
 				//por esa razon todos los montos son cero
+				$baseeimpu=0;
 				$row['cimpuesto']=0;
 				$row['cgenera']  =0;
 				$row['civagen']  =0;
@@ -1112,12 +1119,17 @@ class Ordi extends Controller {
 							$row['monredu']   = $ivarow->base;
 							$row['reducida']  = $ivarow->montoiva;
 						}
+						$baseeimpu += ($ivarow->tasa!=0)? $ivarow->montoiva+$ivarow->base: 0 ;
 					}
 				}
 
 				$row['montonet'] = $importereal+$row['tasa']+$row['sobretasa']+$row['reducida'];
 				$row['montotot'] = $importereal;
-				$row['exento']   = $costocifreal-$row['tasa']-$row['sobretasa']-$row['reducida'];
+				$row['exento']   = ($baseeimpu>$importereal)? 0 : $importereal-$baseeimpu;
+				$row['credito']  = $row['montonet'];
+				$row['usuario']  = $this->session->userdata('usuario');
+				$row['anticipo'] = $row['flete']=$row['otros']=$row['reten']=$row['ppago']=0;
+				$row['inicial']  = 0;
 
 				$mSQL=$this->db->insert_string('scst', $row);
 				$ban=$this->db->simple_query($mSQL);
@@ -1135,7 +1147,7 @@ class Ordi extends Controller {
 				$sprm['tipo_doc']='FC';
 				$sprm['numero']  = $numero;
 				$sprm['fecha']   = $actualiza;
-				$sprm['vence']   = $actualiza;
+				$sprm['vence']   = //$actualiza;
 				$sprm['monto']   = $importecifreal;
 				$sprm['impuesto']= $row['cimpuesto'];
 				$sprm['abonos']  = 0;
@@ -1143,10 +1155,11 @@ class Ordi extends Controller {
 				$sprm['causado'] = $causado;
 				$sprm['estampa'] = date('Y-m-d h:i:s');
 				$sprm['usuario'] = $this->session->userdata('usuario');
-				$sprm['hora']    = date('h:i:s');
+				$sprm['hora']    = date('H:i:s');
 				$sprm['transac'] = $transac;
 
 				$mSQL=$this->db->insert_string('sprm', $sprm);
+				echo $mSQL;
 				if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
 				//Fin de la carga de la CxP
 
@@ -1154,8 +1167,8 @@ class Ordi extends Controller {
 				$ban=$this->db->simple_query($mSQL);
 				if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
 
-				//$mSQL = $this->db->update_string('ordi', array('status'=>'A','control'=>$control), 'numero='.$this->db->escape($id)); //Solo para pruebas
-				$mSQL = $this->db->update_string('ordi', array('status'=>'C','control'=>$control), 'numero='.$this->db->escape($id));
+				$mSQL = $this->db->update_string('ordi', array('status'=>'A','control'=>$control), 'numero='.$this->db->escape($id)); //Solo para pruebas
+				//$mSQL = $this->db->update_string('ordi', array('status'=>'C','control'=>$control), 'numero='.$this->db->escape($id));
 				$ban=$this->db->simple_query($mSQL);
 				if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
 				if($error>0){

@@ -11,7 +11,7 @@ class Banc extends Validaciones {
 
 	function index(){
 		$this->datasis->modulo_id(512,1);
-		redirect("finanzas/banc/filteredgrid");
+		redirect('finanzas/banc/filteredgrid');
 	}
 
 	function filteredgrid() {
@@ -45,24 +45,24 @@ class Banc extends Validaciones {
 		$grid->use_function('pinta');
 
 		$grid->column_orderby('C&oacute;digo',$uri,'codbanc');
+		$grid->column_orderby('Activo','activo','activo');
 		$grid->column_orderby('Banco','<pinta><#activo#>|<#banco#></pinta>','banco');
 		$grid->column_orderby('Tipo','<pinta><#activo#>|<#tbanco#></pinta>','tbanco');
 		$grid->column_orderby('Nro Cuenta','<pinta><#activo#>|<#numcuent#></pinta>','numcuent');
-		$grid->column_orderby('Cuenta contable','<pinta><#activo#>|<#cuenta#></pinta>','cuenta');
 		$grid->column_orderby('Saldo','<pinta><#activo#>|<nformat><#saldo#></nformat></pinta>','saldo','align=right');
 
-		$grid->add("finanzas/banc/dataedit/create",'Agregar banco o caja');
+		$grid->add('finanzas/banc/dataedit/create','Agregar banco o caja');
 		$grid->build();
 		//echo $grid->db->last_query();
 
 		$data['content'] = $filter->output.$grid->output;
-		$data['title']   = "<h1>Bancos y Cajas</h1>";
-		$data["head"]    = $this->rapyd->get_head();
+		$data['title']   = '<h1>Bancos y Cajas</h1>';
+		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 
 	function dataedit(){
-		$this->rapyd->load("dataedit");
+		$this->rapyd->load('dataedit');
 
 		$atts = array(
 			'width'     =>'800',
@@ -137,9 +137,9 @@ class Banc extends Validaciones {
 		});';
 
 		$edit = new DataEdit('Bancos y cajas', 'banc');
-		$edit->back_url = site_url("finanzas/banc/filteredgrid");
-		$edit->script($script, "create");
-		$edit->script($script, "modify");
+		$edit->back_url = site_url('finanzas/banc/filteredgrid');
+		$edit->script($script, 'create');
+		$edit->script($script, 'modify');
 
 		$edit->post_process('insert','_post_insert');
 		$edit->post_process('update','_post_update');
@@ -154,84 +154,84 @@ class Banc extends Validaciones {
 		$edit->codbanc->append($lultimo);
 
 		$edit->activo = new dropdownField('Activo', 'activo');
-		$edit->activo->style ="width:100px;";
+		$edit->activo->style ='width:100px;';
 		$edit->activo->rule='required';
-		$edit->activo->options(array("S"=>"Si","N"=>"No" ));
+		$edit->activo->options(array('S'=>'Si','N'=>'No' ));
 
 
-		$edit->tbanco = new inputField("Caja/Banco", "tbanco");
+		$edit->tbanco = new inputField('Caja/Banco', 'tbanco');
 		$edit->tbanco->size =12;
 		$edit->tbanco->maxlength =3;
-		$edit->tbanco->rule="trim|required";
+		$edit->tbanco->rule='trim|required';
 		$edit->tbanco->readonly=true;
 		$edit->tbanco->append($bTBAN);
 
-		$edit->banco = new inputField("Descripci&oacute;n", "banco");
+		$edit->banco = new inputField('Descripci&oacute;n', 'banco');
 		$edit->banco->size =25;
 		$edit->banco->maxlength=30;
 		$edit->banco->readonly=true;
 
-		$edit->numcuent = new inputField("Nro. de Cuenta", "numcuent");
+		$edit->numcuent = new inputField('Nro. de Cuenta', 'numcuent');
 		$edit->numcuent->rule='trim';
 		$edit->numcuent->size = 25;
 		$edit->numcuent->maxlength=25;
 		
-		$edit->dire1 = new inputField("Direcci&oacute;n", "dire1");
+		$edit->dire1 = new inputField('Direcci&oacute;n', 'dire1');
 		$edit->dire1->rule='trim';
 		$edit->dire1->size =50;
 		$edit->dire1->maxlength=40;
 
-		$edit->dire2 = new inputField("", "dire2");
+		$edit->dire2 = new inputField('', 'dire2');
 		$edit->dire2->rule='trim';
 		$edit->dire2->size =50;
 		$edit->dire2->maxlength=40;
 
-		$edit->telefono = new inputField("Tel&eacute;fono", "telefono");
+		$edit->telefono = new inputField('Tel&eacute;fono', 'telefono');
 		$edit->telefono->rule='trim';
 		$edit->telefono->size =25;
 		$edit->telefono->maxlength=40;
-		
-		$edit->nombre = new inputField("Nombre del Gerente", "nombre");
+
+		$edit->nombre = new inputField('Nombre del Gerente', 'nombre');
 		$edit->nombre->rule='trim';
 		$edit->nombre->size =25;
 		$edit->nombre->maxlength=40;
 
-		$edit->moneda = new dropdownField("Moneda","moneda");
+		$edit->moneda = new dropdownField('Moneda','moneda');
 		$edit->moneda->options("SELECT moneda, descrip FROM mone ORDER BY moneda");
 		$edit->moneda->style ="width:100px;";
 
-		$edit->tipocta = new dropdownField("Tipo de Cuenta", "tipocta");
+		$edit->tipocta = new dropdownField('Tipo de Cuenta', 'tipocta');
 		$edit->tipocta->style ="width:100px;";
 		$edit->tipocta->options(array("K"=>"Caja","C"=>"Corriente","A" =>"Ahorros","P"=>"Plazo Fijo" ));
 
-		$edit->proxch = new inputField("Proximo Cheque", "proxch");
+		$edit->proxch = new inputField('Proximo Cheque', 'proxch');
 		$edit->proxch->rule='trim';
 		$edit->proxch->size =12;
 		$edit->proxch->maxlength=12;
 
-		$edit->saldo = new inputField("Saldo Actual", "saldo");
-		$edit->saldo->mode="autohide";
-		$edit->saldo->size =12;
+		$edit->saldo = new inputField('Saldo Actual','saldo');
+		$edit->saldo->mode ='autohide';
+		$edit->saldo->size = 12;
 		$edit->saldo->when=array('show');
 		$edit->saldo->css_class='inputnum';
 		$edit->saldo->readonly=true;
 
-		$edit->dbporcen = new inputField("Porcentaje de debito", "dbporcen");
+		$edit->dbporcen = new inputField('Porcentaje de debito','dbporcen');
 		$edit->dbporcen->rule='trim';
 		$edit->dbporcen->size =12;
 		$edit->dbporcen->maxlength=5;
 		$edit->dbporcen->css_class='inputnum';
 		$edit->dbporcen->rule = 'callback_chporcent';
-		$edit->dbporcen->onchange="gasto()";
+		$edit->dbporcen->onchange='gasto()';
 
-		$lcuent=anchor_popup("/contabilidad/cpla/dataedit/create","Agregar Cuenta Contable",$atts);
-		$edit->cuenta = new inputField("Cuenta. Contable", "cuenta");
+		$lcuent=anchor_popup('/contabilidad/cpla/dataedit/create','Agregar Cuenta Contable',$atts);
+		$edit->cuenta = new inputField('Cuenta. Contable', 'cuenta');
 		$edit->cuenta->rule='trim|callback_chcuentac';
 		$edit->cuenta->size =12;
 		$edit->cuenta->append($bcpla);
 		$edit->cuenta->append($lcuent);
 
-		$lsprv=anchor_popup("/compras/sprv/dataedit/create","Agregar Proveedor",$atts);
+		$lsprv=anchor_popup('/compras/sprv/dataedit/create','Agregar Proveedor',$atts);
 		$edit->codprv = new inputField('Proveedor', 'codprv');
 		$edit->codprv->rule= 'condi_required|callback_chiscaja|trim';
 		$edit->codprv->append($boton);
@@ -245,7 +245,7 @@ class Banc extends Validaciones {
 		$edit->depto->rule='required';
 		$edit->depto->style ='width:225px;';
 
-		$edit->sucur = new dropdownField("Sucursal", "sucur");
+		$edit->sucur = new dropdownField('Sucursal', 'sucur');
 		$edit->sucur->option('','Ninguna');
 		$edit->sucur->options("SELECT codigo, TRIM(sucursal) FROM sucu ORDER BY sucursal");
 		$edit->sucur->style ='width:225px;';
@@ -257,20 +257,20 @@ class Banc extends Validaciones {
 		$edit->gastoidb->options($mSQL);
 		$edit->gastoidb->style ='width:350px;';
 
-		$edit->gastocom = new dropdownField("Gasto Comisi&oacute;n", "gastocom");
+		$edit->gastocom = new dropdownField('Gasto Comisi&oacute;n', 'gastocom');
 		$edit->gastocom->rule= 'condi_required|callback_chiscaja|trim';
 		$edit->gastocom->option('','Seleccionar');
 		$edit->gastocom->options($mSQL);
 		$edit->gastocom->style ='width:350px;';
 		$edit->gastocom->append('Obligatorio solo para bancos');
 
-		$edit->buttons("modify", "save", "undo", "delete", "back");
+		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
 		$edit->build();
 
 		$data['content'] = $edit->output;
-		$data['title']   = "<h1>Bancos y cajas</h1>";
-		$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
-		$this->load->view('view_ventanas', $data);  
+		$data['title']   = '<h1>Bancos y cajas</h1>';
+		$data['head']    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
+		$this->load->view('view_ventanas', $data);
 	}
 
 	function _post_insert($do){

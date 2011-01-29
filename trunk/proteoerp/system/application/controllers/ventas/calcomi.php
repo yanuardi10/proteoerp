@@ -1,28 +1,26 @@
-<?
-
+<?php
 class Calcomi extends Controller {
-	
-	var $titp  = 'Penalizaci&oacute;n';      
+
+	var $titp  = 'Penalizaci&oacute;n';
 	var $tits  = 'Penalizaci&oacute;n';
 	var $url   = 'ventas/calcomi/';
-	
-	function Calcomi(){
 
+	function Calcomi(){
 		parent::Controller();
 		$this->load->library("rapyd");
 		$this->datasis->modulo_id('12B',1);
 	}
-	
+
 	function index() {
 		redirect($this->url."filteredgrid");
 	}
-	
+
 	function filteredgrid(){
 
- 		$this->rapyd->load("dataform");
+		$this->rapyd->load("dataform");
 
- 		$filter = new DataForm($this->url."actualiza");
-		 
+		$filter = new DataForm($this->url."actualiza");
+
 		//$filter->fechad = new dateonlyField("Desde", "fechad",'d/m/Y');
 		//$filter->fechad->db_name     = "fechah";
 		//$filter->fechad->dbformat    = 'ymd';
@@ -54,10 +52,10 @@ class Calcomi extends Controller {
 		$filter->diacomi1->maxlength=3;
 		$filter->diacomi1->rule="required";
 		$filter->diacomi1->insertValue = $diacomi1;		
-		
+
 		$filter->p1 = new freeField("","","Porcentaje ");
 		$filter->p1->in="diacomi1";
-		
+
 		$filter->porcomi1 = new inputField("Porcent ", "porcomi1");
 		$filter->porcomi1->css_class='inputnum';
 		$filter->porcomi1->size=3;
@@ -65,17 +63,17 @@ class Calcomi extends Controller {
 		$filter->porcomi1->in="diacomi1";
 		$filter->porcomi1->rule="required";
 		$filter->porcomi1->insertValue = $porcomi1;
-		
-		$filter->diacomi2 = new inputField("Hasta ", "diacomi2");
+
+		$filter->diacomi2 = new inputField("Hasta", "diacomi2");
 		$filter->diacomi2->css_class='inputnum';
 		$filter->diacomi2->size=3;
 		$filter->diacomi2->maxlength=3;
 		$filter->diacomi2->rule="required";
-		$filter->diacomi2->insertValue = $diacomi2;		
-		
+		$filter->diacomi2->insertValue = $diacomi2;
+
 		$filter->p2 = new freeField("","","Porcentaje ");
 		$filter->p2->in="diacomi2";
-		
+
 		$filter->porcomi2 = new inputField("Porcent ", "porcomi2");
 		$filter->porcomi2->css_class='inputnum';
 		$filter->porcomi2->size=3;
@@ -83,17 +81,17 @@ class Calcomi extends Controller {
 		$filter->porcomi2->in="diacomi2";
 		$filter->porcomi2->rule="required";
 		$filter->porcomi2->insertValue = $porcomi2;
-				
+
 		$filter->diacomi3 = new inputField("Hasta ", "diacomi3");
 		$filter->diacomi3->css_class='inputnum';
 		$filter->diacomi3->size=3;
 		$filter->diacomi3->maxlength=3;
 		$filter->diacomi3->rule="required";
-		$filter->diacomi3->insertValue = $diacomi3;		
-		
+		$filter->diacomi3->insertValue = $diacomi3;
+
 		$filter->p3 = new freeField("","","Porcentaje ");
 		$filter->p3->in="diacomi3";
-		
+
 		$filter->porcomi3 = new inputField("Porcent ", "porcomi3");
 		$filter->porcomi3->css_class='inputnum';
 		$filter->porcomi3->size=3;
@@ -101,20 +99,20 @@ class Calcomi extends Controller {
 		$filter->porcomi3->in="diacomi3";
 		$filter->porcomi3->rule="required";
 		$filter->porcomi3->insertValue = $porcomi3;
-				
-	  $filter->submit("btnsubmit","Calcular");
-	  
+
+		$filter->submit("btnsubmit","Calcular");
+
 		$filter->build_form();
-	
+
 		$data['content'] = $filter->output;
 		$data['title']   = "<h1>$this->tits</h1>";
-		$data["head"]    = script("jquery.js").$this->rapyd->get_head();
+		$data['head']    = script("jquery.js").$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
-	
+
 	function vista($vd='') {
 		$this->rapyd->load("datagrid2");
-		
+
 		$select=array("vd","tipo_doc","numero","fecha","vence","pagada","dias","comision","comical","cod_cli","nombre","sepago","comision");
 		$grid = new DataGrid2("Lista de ".$this->titp);
 		$grid->db->select($select);
@@ -128,9 +126,9 @@ class Calcomi extends Controller {
 		$grid->per_page = 1000;
 		$grid->use_function('substr','str_pad','comi');
 		$grid->use_function('sta');
-    
+
 		$grid->column("Vendedor",'<#vd#>');
-		$grid->column("Tipo","<colum><#tipo_doc#></colum>");		
+		$grid->column("Tipo","<colum><#tipo_doc#></colum>");
 		$grid->column("N&uacute;mero",'<#numero#>');
 		$grid->column("Fecha","<dbdate_to_human><#fecha#></dbdate_to_human>");
 		$grid->column("Vence","<dbdate_to_human><#vence#></dbdate_to_human>");
@@ -141,27 +139,17 @@ class Calcomi extends Controller {
 		$grid->column("Cliente",'<#cod_cli#>');
 		$grid->column("Nombre",'<#nombre#>');
 		//$grid->totalizar('reiva');
-		
+
 		$grid->build();
 		$data['content'] = anchor($this->url."filteredgrid",'Atras').$grid->output;
 		$data['title']   = "<h1>$this->titp</h1>";
-		$data["head"]    = $this->rapyd->get_head();
+		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
-	
-	function procesar(){		
-	//print_r($_POST['calculada']);
-	//exit();
-	
-		foreach($_POST['calculada'] as $key=>$value){		
+
+	function procesar(){
+		foreach($_POST['calculada'] as $key=>$value){
 			$a=explode("AA",$key);
-//			echo $a[0]."[]".$a[1].$value;
-			//echo "-".$b=explode("AA",$key);
-			//echo "*".$value;
-	//		echo "</br>";
-			
-//			echo "UPDATE sfac SET sepago='S', WHERE numer='".$a[0]."' AND numero='".$a[1]."' ";
-			
 			$mSQL="UPDATE sfac SET comical=$value WHERE numero='".$a[1]."' AND tipo_doc='".$a[0]."' ";
 			$this->db->simple_query($mSQL);
 			//exit();
@@ -170,7 +158,6 @@ class Calcomi extends Controller {
 	}
 	
 	function actualiza(){
-	
 		$porcomi1 = $this->input->post('porcomi1');
 		$porcomi2 = $this->input->post('porcomi2');
 		$porcomi3 = $this->input->post('porcomi3');
@@ -191,8 +178,8 @@ class Calcomi extends Controller {
 		$this->db->simple_query("UPDATE valores SET valor='$diacomi2' WHERE nombre='diacomi2'");
 		$this->db->simple_query("UPDATE valores SET valor='$diacomi3' WHERE nombre='diacomi3'");
 		//exit('as');
-		
+
 		redirect($this->url."vista/$vd");
 	}
-	
+
 }
