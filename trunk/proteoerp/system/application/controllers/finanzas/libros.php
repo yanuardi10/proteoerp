@@ -341,6 +341,7 @@ class Libros extends Controller {
 				$ws->write_string( $mm,  1, substr($row->fecha,8,2)."/".substr($row->fecha,5,2)."/".substr($row->fecha,0,4), $cuerpo );
 				$ws->write_string( $mm,  2, $row->tipo_doc,  $cuerpo ); 
 				$ws->write_string( $mm,  3, $row->numo,  $cuerpo ); 
+				$ws->write_string( $mm,  4, $row->planilla,  $cuerpo ); 
 				$ws->write_string( $mm,  5, $row->nombre,  $cuerpo ); 
 				$ws->write_string( $mm,  6, $row->rif,  $cuerpo );
 				if ($row->oper != '04' ){
@@ -6831,6 +6832,14 @@ class Libros extends Controller {
 		$iivar=$mivar/100; 
 		$iivaa=$mivaa/100;
 
+		if($this->db->table_exists('ordi')){
+			$jjoin = 'LEFT JOIN ordi AS d ON a.control=d.control';
+			$dua   = 'd.dua AS planilla';
+		}else{
+			$jjoin = '';
+			$dua   = '\' \' AS planilla';
+		}
+
 		//para los productos importados
 		$mSQL = "INSERT INTO siva 
 			(id, libro, tipo, fuente, sucursal, fecha, numero, numhasta,  caja, nfiscal,  nhfiscal, 
@@ -6850,14 +6859,14 @@ class Libros extends Controller {
 			b.nfiscal,
 			'  ' AS nhfiscal,
 			'        ' AS referen,
-			'  ' AS planilla,
+			$dua,
 			b.proveed AS clipro,
 			b.nombre,
 			'CO' AS contribu,
 			c.rif,
 			if(b.fecha<'$mFECHAF','04', '01') AS registro,
 			'N' AS nacional,
-			montotot-(b.tasa/$iivag+b.sobretasa/$iivaa+b.reducida/$iivar) exento,
+			b.montotot-(b.tasa/$iivag+b.sobretasa/$iivaa+b.reducida/$iivar) exento,
 			ROUND(b.tasa/$iivag,2)      AS general,
 			ROUND(b.tasa,2)             AS geneimpu,
 			ROUND(b.sobretasa/$iivaa,2) AS adicional,
@@ -6870,14 +6879,15 @@ class Libros extends Controller {
 			b.reteiva AS reiva,
 			".$mes."01 AS fechal,
 			0 fafecta 
-		FROM itscst AS a JOIN scst as b ON a.control=b.control
+		FROM itscst AS a JOIN scst AS b ON a.control=b.control
 		LEFT JOIN sprv AS c ON b.proveed=c.proveed 
+		$jjoin
 		WHERE b.recep BETWEEN $fdesde AND $fhasta AND b.actuali >= b.fecha AND c.tiva='I'
 		GROUP BY b.control";
-		
+
 		$flag=$this->db->simple_query($mSQL);
 		if(!$flag) memowrite($mSQL,'genecompras');
-		
+
 		$mSQL = "UPDATE siva SET gtotal=exento+general+geneimpu+adicional+reduimpu+reducida+adicimpu WHERE fuente='CP' AND libro='C' ";
 		$this->db->simple_query($mSQL);
 	}
@@ -8451,7 +8461,7 @@ class Libros extends Controller {
 
 		$data['content'] = $edit->output;
 		$data['title']   = "<h1>Configuracion de libros</h1>";
-		$data["head"]    = $this->rapyd->get_head();
+		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -8518,6 +8528,8 @@ class Libros extends Controller {
 		//$mSQL="ALTER TABLE `siva`  CHANGE COLUMN `numero` `numero` VARCHAR(20) NOT NULL DEFAULT '' AFTER `fecha`";
 		//$this->db->simple_query($mSQL);
 		$mSQL="ALTER TABLE `siva`  ADD COLUMN `serie` VARCHAR(20) NULL DEFAULT NULL AFTER `serial`;";
+		$this->db->simple_query($mSQL);
+		$mSQL="ALTER TABLE `siva`  ADD COLUMN `afecta` VARCHAR(10) NULL DEFAULT NULL AFTER `fafecta`";
 		$this->db->simple_query($mSQL);
 		echo $uri = anchor('finanzas/libros/configurar','Configurar');
 	}

@@ -43,6 +43,11 @@ class Ordi extends Controller {
 		$filter->proveed->size=12;
 		$filter->proveed->append($boton);
 
+		$filter->status = new dropdownField('Estatus', 'status');
+		$filter->status->option('' ,'Todas');
+		$filter->status->option('A','No liquidadas');
+		$filter->status->option('C','Liquidadas');
+
 		$filter->buttons('reset','search');
 		$filter->build();
 
@@ -252,6 +257,7 @@ class Ordi extends Controller {
 		$edit->peso->rule     ='trim';
 		$edit->peso->maxlength=12;
 		$edit->peso->size     =10;
+		$edit->peso->when=array('show');
 
 		$edit->condicion = new textareaField('Condiciones', 'condicion');
 		$edit->condicion->rule ='trim';
@@ -795,18 +801,22 @@ class Ordi extends Controller {
 	}
 
 	function calcula($id){
-		$this->_calcula($id);
+		$rt=$this->_calcula($id);
 
 		$url = site_url('formatos/verhtml/ORDI/'.$id);
 		$data['content'] = "<iframe src ='$url' width='100%' height='450'><p>Tu navegador no soporta iframes.</p></iframe>";
 		$data['head']    = $this->rapyd->get_head();
-		$data['title']   ='<h1>Recalculo de la relaci&oacute;n de gastos nacionales '.anchor("import/ordi/dataedit/show/$id",'regresar').'</h1>';
+		if($rt)
+			$data['title']   ='<h1>Recalculo de la relaci&oacute;n de gastos nacionales '.anchor("import/ordi/dataedit/show/$id",'regresar').'</h1>';
+		else
+			$data['title']   ='<h1>Opps! hubo problemas en el recalculo, se gener&oacute; un centinela '.anchor("import/ordi/dataedit/show/$id",'regresar').'</h1>';
 		$this->load->view('view_ventanas', $data);
 	}
 
 	function _calcula($id){
 		$modo='m'; //'m' para el calculo en base al monto, 'o' para el peso
 		$dbid=$this->db->escape($id);
+		$error=0;
 
 		$mSQL="SELECT SUM(a.importefob) AS montofob, SUM(b.peso) AS pesotota
 			FROM itordi AS a
@@ -839,40 +849,52 @@ class Ordi extends Controller {
 
 		//Calcula las participaciones
 		$mSQL="UPDATE itordi AS a JOIN sinv AS b ON a.codigo=b.codigo SET a.participao=b.peso/$pesotota, a.iva=b.iva WHERE a.numero=$dbid";
-		$this->db->simple_query($mSQL);
+		$ban=$this->db->simple_query($mSQL);
+		if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
 		$mSQL="UPDATE itordi SET participam=importefob/$montofob WHERE numero=$dbid";
-		$this->db->simple_query($mSQL);
+		$ban=$this->db->simple_query($mSQL);
+		if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
 
 		//CIF costo,seguro y flete (fob+gastos internacionales)
 		$mSQL="UPDATE itordi SET importecif=($participa*$gastosi)+importefob WHERE numero=$dbid";
-		$this->db->simple_query($mSQL);
+		$ban=$this->db->simple_query($mSQL);
+		if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
 		$mSQL="UPDATE itordi SET costocif=importecif/cantidad WHERE numero=$dbid";
-		$this->db->simple_query($mSQL);
+		$ban=$this->db->simple_query($mSQL);
+		if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
 		$mSQL="UPDATE itordi SET importeciflocal=importecif*$cambioofi,importecifreal=importecif*$cambioreal WHERE numero=$dbid";
-		$this->db->simple_query($mSQL);
+		$ban=$this->db->simple_query($mSQL);
+		if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
 
 		//Monto del arancel (debe ser en moneda local)
 		$mSQL="UPDATE itordi SET montoaran=IF(arancif>0,arancif,importeciflocal)*(arancel/100) WHERE numero=$dbid";
-		$this->db->simple_query($mSQL);
+		$ban=$this->db->simple_query($mSQL);
+		if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
 
 		//Gastos
 		$montoaran =$this->datasis->dameval("SELECT SUM(montoaran) AS montoaran FROM itordi WHERE numero=$dbid");
 		$montoiva  =$this->datasis->dameval("SELECT SUM(montoiva)  AS montoiva  FROM ordiva WHERE ordeni=$dbid");
 		$ggastosn=$gastosn-$montoaran-$montoiva;
 		$mSQL="UPDATE itordi SET gastosi=$participa*$gastosi WHERE numero=$dbid";
-		$this->db->simple_query($mSQL);
+		$ban=$this->db->simple_query($mSQL);
+		if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
 		$mSQL="UPDATE itordi SET gastosn=$participa*$ggastosn WHERE numero=$dbid";
-		$this->db->simple_query($mSQL);
+		$ban=$this->db->simple_query($mSQL);
+		if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
 
 		//Total en moneda local
 		$mSQL="UPDATE itordi SET importefinal=importeciflocal+montoaran+gastosn WHERE numero=$dbid";
-		$this->db->simple_query($mSQL);
+		$ban=$this->db->simple_query($mSQL);
+		if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
 		$mSQL="UPDATE itordi SET costofinal=importefinal/cantidad WHERE numero=$dbid";
-		$this->db->simple_query($mSQL);
+		$ban=$this->db->simple_query($mSQL);
+		if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
 		$mSQL="UPDATE itordi SET importereal=importecifreal+montoaran+gastosn WHERE numero=$dbid";
-		$this->db->simple_query($mSQL);
+		$ban=$this->db->simple_query($mSQL);
+		if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
 		$mSQL="UPDATE itordi SET costoreal=importereal/cantidad WHERE numero=$dbid";
-		$this->db->simple_query($mSQL);
+		$ban=$this->db->simple_query($mSQL);
+		if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
 
 		//Calculo de los precios
 		$mSQL="UPDATE itordi AS a JOIN sinv AS b ON a.codigo=b.codigo SET 
@@ -881,7 +903,8 @@ class Ordi extends Controller {
 			a.precio3=(costoreal*100/(100-b.margen3))*(1+(b.iva/100)),
 			a.precio4=(costoreal*100/(100-b.margen4))*(1+(b.iva/100))
 			WHERE numero=$dbid";
-		$this->db->simple_query($mSQL);
+		$ban=$this->db->simple_query($mSQL);
+		if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
 
 		$mSQL="SELECT SUM(montoaran) AS aranceles, SUM(importecif) AS montocif  FROM itordi WHERE numero=$dbid";
 		$query = $this->db->query($mSQL);
@@ -889,16 +912,18 @@ class Ordi extends Controller {
 			$row = $query->row_array();
 			//$importecif     =(empty($row['montocif']))? 0: $row['montocif']*$cambioofi; //montocif en moneda local
 			$importecif     =(empty($row['montocif']))? 0: $row['montocif']*$cambioreal; //montocif en moneda local
+			$row['peso']    =$pesotota;
 			$row['gastosi'] =$gastosi;
 			$row['gastosn'] =$ggastosn;
 			$row['montoiva']=$montoiva;
 			$row['montotot']=$importecif+$gastosn;
-			$row['montoexc']=$importecif-$baseiva;//monto excento
+			$row['montoexc']=$row['montotot']-$baseiva-$montoiva;//monto excento
 			$row['cargoval']=($row['montocif']*$cambioreal)-($row['montocif']*$cambioofi);// Diferencia dolar real y oficial
 
 			$where = "numero=$dbid";
 			$str = $this->db->update_string('ordi', $row, $where);
-			$this->db->simple_query($str);
+			$ban=$this->db->simple_query($str);
+			if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
 		}
 
 		/*$mmSQL ='SELECT ';
@@ -912,7 +937,8 @@ class Ordi extends Controller {
 		$mmSQL.="ROUND(a.montoaran+a.gastosn+(a.importecif*$cambioreal),2) AS importefinal2 ";                //calculo real
 		$mmSQL.='FROM (itordi AS a)';
 		$mmSQL.="WHERE a.numero = $dbid";*/
-		return true;
+		
+		return ($error==0) ? true: false;
 	}
 
 	function cargarordi($control){
@@ -949,7 +975,7 @@ class Ordi extends Controller {
 			if($rt===false){
 				$data['content']  = $this->error_string.br();
 			}else{
-				$data['content']  = "Orden cargada bajo el numero de control $rt ".br();
+				$data['content']  = "Liquidaci&oacute;n cargada bajo el numero de control $rt ".br();
 			}
 
 			$data['content'] .= anchor('import/ordi/dataedit/show/'.$control,'Regresar');
@@ -958,20 +984,21 @@ class Ordi extends Controller {
 		}
 
 		$data['head']    = $this->rapyd->get_head();
-		$data['title']   = '<h1>Cargar orden de importaci&oacute;n '.str_pad($control,8,0,0).'</h1>';
+		$data['title']   = '<h1>Cargar liquidaci&oacute;n de importaci&oacute;n '.str_pad($control,8,0,0).'</h1>';
 		$this->load->view('view_ventanas', $data);
 	}
 
 	function _cargarordi($id,$depo,$actualiza){
 		$error =0;
 		$status=$this->datasis->dameval('SELECT status FROM ordi WHERE numero='.$this->db->escape($id));
+		//$gacona =$this->datasis->dameval("SELECT SUM(totpre)   AS gastosn  FROM gser  WHERE ordeni=$id"); //gastos comunes nacionales
 
 		if($status!='C'){
-			$SQL='SELECT fecha, fecha AS recep,factura AS numero,proveed,nombre,fecha AS vence,cambioofi, cambioreal,dua FROM ordi WHERE numero=?';
+			$SQL='SELECT fecha, fecha AS recep,factura AS numero,proveed,nombre,fecha AS vence,peso,montocif AS mdolar,montoexc AS exento,cambioofi, cambioreal,dua FROM ordi WHERE numero=?';
 			$query=$this->db->query($SQL,array($id));
 			if($query->num_rows()==1){
 				$control = $this->datasis->fprox_numero('nscst');
-				$transac = $this->datasis->fprox_numero('ntransac');
+				$transac = $this->datasis->fprox_numero('ntransa');
 				$row     = $query->row_array();
 				$numero  = substr($row['numero'],-8);
 				$serie   = $row['numero'];
@@ -987,13 +1014,12 @@ class Ordi extends Controller {
 				$row['nfiscal']  = $numero;
 				$row['depo']     = $depo;
 				$row['montonet'] = 0;
-				$row['montoiva'] = 0;
 				$row['montotot'] = 0;
-				$row['exento']   = 0;
+				//$row['exento']   = 0;
 				$row['sobretasa']= 0;
 				$row['reducida'] = 0;
 				$row['tasa']     = 0;
-				$row['observa1'] = 'IMPORTACION D.U.A. '.$row['dua'];
+				$row['observa1'] = 'LIQUIDACION DE IMPORTACION D.U.A. '.$row['dua'].' numero '.$id;
 				$row['estampa']  = date('Ymd');
 				$row['hora']     = date('H:i:s');
 				$costoreal       = 0;
@@ -1093,6 +1119,8 @@ class Ordi extends Controller {
 				$row['cstotal'] = $importecifreal;
 				$row['ctotal']  = $importecifreal;
 				$row['cexento'] = $importecifreal;
+				$row['montotot'] = $importereal;
+				$row['apagar']  = 0;
 
 				//Al proveedor internacional no se le paga iva
 				//por esa razon todos los montos son cero
@@ -1104,6 +1132,13 @@ class Ordi extends Controller {
 				$row['civaadi']  =0;
 				$row['creduci']  =0;
 				$row['civared']  =0;
+
+				$row['montasa']   = 0;
+				$row['tasa']      = 0;
+				$row['monadic']   = 0;
+				$row['sobretasa'] = 0;
+				$row['monredu']   = 0;
+				$row['reducida']  = 0;
 
 				$ssql='SELECT tasa,base,montoiva FROM ordiva WHERE ordeni=?';
 				$qqquery=$this->db->query($ssql,array($id));
@@ -1119,14 +1154,14 @@ class Ordi extends Controller {
 							$row['monredu']   = $ivarow->base;
 							$row['reducida']  = $ivarow->montoiva;
 						}
-						$baseeimpu += ($ivarow->tasa!=0)? $ivarow->montoiva+$ivarow->base: 0 ;
+						$baseeimpu += ($ivarow->tasa!=0)? $ivarow->base: 0 ;
 					}
 				}
 
+				$row['montoiva'] = $row['tasa']+$row['sobretasa']+$row['reducida'];
 				$row['montonet'] = $importereal+$row['tasa']+$row['sobretasa']+$row['reducida'];
-				$row['montotot'] = $importereal;
-				$row['exento']   = ($baseeimpu>$importereal)? 0 : $importereal-$baseeimpu;
-				$row['credito']  = $row['montonet'];
+				//$row['exento']   = ($baseeimpu>$importereal)? 0 : $importereal-$baseeimpu;
+				$row['credito']  = $importecifreal;
 				$row['usuario']  = $this->session->userdata('usuario');
 				$row['anticipo'] = $row['flete']=$row['otros']=$row['reten']=$row['ppago']=0;
 				$row['inicial']  = 0;
@@ -1142,24 +1177,25 @@ class Ordi extends Controller {
 
 				$sprm=array();
 				$causado = $this->datasis->fprox_numero('ncausado');
-				$sprm['cod_prv'] = $proveed;
-				$sprm['nombre']  = $row['nombre'];
-				$sprm['tipo_doc']='FC';
-				$sprm['numero']  = $numero;
-				$sprm['fecha']   = $actualiza;
-				$sprm['vence']   = //$actualiza;
-				$sprm['monto']   = $importecifreal;
-				$sprm['impuesto']= $row['cimpuesto'];
-				$sprm['abonos']  = 0;
-				$sprm['reteiva'] = 0;
-				$sprm['causado'] = $causado;
-				$sprm['estampa'] = date('Y-m-d h:i:s');
-				$sprm['usuario'] = $this->session->userdata('usuario');
-				$sprm['hora']    = date('H:i:s');
-				$sprm['transac'] = $transac;
+				$sprm['cod_prv']  = $proveed;
+				$sprm['nombre']   = $row['nombre'];
+				$sprm['tipo_doc'] = 'FC';
+				$sprm['numero']   = $numero;
+				$sprm['fecha']    = $actualiza;
+				$sprm['vence']    = $actualiza;
+				$sprm['monto']    = $importecifreal;
+				$sprm['impuesto'] = $row['cimpuesto'];
+				$sprm['abonos']   = 0;
+				$sprm['observa1'] = 'IMPORTACION '.$id.' MONTO EN DOLARES '.nformat($row['mdolar']);
+				$sprm['reteiva']  = 0;
+				$sprm['causado']  = $causado;
+				$sprm['estampa']  = date('Y-m-d H:i:s');
+				$sprm['usuario']  = $this->session->userdata('usuario');
+				$sprm['hora']     = date('H:i:s');
+				$sprm['transac']  = $transac;
 
 				$mSQL=$this->db->insert_string('sprm', $sprm);
-				echo $mSQL;
+				$ban =$this->db->simple_query($mSQL);
 				if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
 				//Fin de la carga de la CxP
 
@@ -1167,8 +1203,8 @@ class Ordi extends Controller {
 				$ban=$this->db->simple_query($mSQL);
 				if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
 
-				$mSQL = $this->db->update_string('ordi', array('status'=>'A','control'=>$control), 'numero='.$this->db->escape($id)); //Solo para pruebas
-				//$mSQL = $this->db->update_string('ordi', array('status'=>'C','control'=>$control), 'numero='.$this->db->escape($id));
+				//$mSQL = $this->db->update_string('ordi', array('status'=>'A','control'=>$control), 'numero='.$this->db->escape($id)); //Solo para pruebas
+				$mSQL = $this->db->update_string('ordi', array('status'=>'C','control'=>$control), 'numero='.$this->db->escape($id));
 				$ban=$this->db->simple_query($mSQL);
 				if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
 				if($error>0){

@@ -1,8 +1,7 @@
 <?php
 include('metodos.php');
-
 class Reglas extends Metodos {
-	
+
 	function Reglas(){
 		parent::Controller();
 		$this->load->library("rapyd");
@@ -10,7 +9,7 @@ class Reglas extends Metodos {
 		//$this->rapyd->set_connection('supermer');
 		//$this->load->database('supermer',TRUE);
 	}
-	
+
 	function index() {
 		$this->rapyd->load("datagrid","dataform");
 		$fecha=$this->uri->segment(4);
@@ -51,16 +50,16 @@ class Reglas extends Metodos {
 		</script>";
 		
 		$data['content'] =$form->output.$grid->output;
-		$data["head"]    = $this->rapyd->get_head();
+		$data['head']    = $this->rapyd->get_head();
 		$data['title']   ='<h1>Reglas de Contabilidad</h1>';
 		$this->load->view('view_ventanas', $data);
 	}
-	
+
 	function detalle() {
 		$this->rapyd->load("datagrid","dataform");
 		$modulo=($this->uri->segment(4) ? $this->uri->segment(4) : $this->input->post('modulo'));
 		if(!$modulo) redirect('/contabilidad/reglas');
-		
+
 		$form = new DataForm('contabilidad/reglas/ejecutar');  
 		$form->title('Fecha para la ejecuci&oacute;n');
 		$form->fecha = new dateonlyField("Fecha", "fecha","d/m/Y");
@@ -212,10 +211,10 @@ class Reglas extends Metodos {
 					$encab_titu[$row->comprob]='<b>Comprobante:</b> '.$row->comprob.' <b>Fecha:</b> '.date("d/m/Y",timestampFromInputDate($row->fecha, 'Y-m-d')).' <b>Concepto:</b> '.$row->concepto;
 				}
 			}
-			//echo $query;          
+			//echo $query;
 			//Construye la data de los encabezados
 			foreach ($aregla['itcasi'] as $mSQL){
-				echo $mSQL;
+				//echo $mSQL;
 				$itcasi_query=$this->db->query($mSQL);
 				$acumulador=array(0,0);
 				if ($itcasi_query->num_rows() > 0){
@@ -238,8 +237,7 @@ class Reglas extends Metodos {
 					$pivote['diferencia']=number_format($acumulador[0]-$acumulador[1],2,',','.');
 					//$encab[$row->comprob][]=$pivote;
 				}
-
-			}   
+			}
 			foreach ($encab  as $comprob=>$tabla){
 					if (array_key_exists($comprob, $encab_titu))
 						$titulo=$encab_titu[$comprob];
@@ -258,22 +256,20 @@ class Reglas extends Metodos {
 				//$grid->column("Diferencia" , "<dif><#debe#>|<#haber#></dif>",'align=right');
 				$grid->column('Sucursal'  , 'sucursal','align=right');
 				$grid->column('C. Costo'  , 'ccosto'  ,'align=right');
-				
+
 				$grid->totalizar('debe','haber');
 				$grid->build();
 				//echo $grid->db->last_query();
 				$data['content'] .=$grid->output;
 
 			}
-	
 		}
-		
 		$data['content'] .= HTML::button('regresa', RAPYD_BUTTON_BACK, $action, "button", "button");
-		$data["head"]    = $this->rapyd->get_head();
+		$data['head']    = $this->rapyd->get_head();
 		$data['title']   ="<h1>Ejecuci&oacute;n de la regla $modulo</h1>";
 		$this->load->view('view_ventanas', $data);
 	}
-	
+
 	function duplicar(){
 		$modulo=$this->uri->segment(4);
 		$regla =$this->uri->segment(5);
@@ -282,8 +278,8 @@ class Reglas extends Metodos {
 		$this->db->query($mSQL);
 		redirect('/contabilidad/reglas/detalle/'.$modulo);
 		//if($modulo AND $regla ) redirect('/contabilidad/reglas/detalle');
-		
 	}
+
 	function _rdisponible($modulo=''){
 		if(empty($modulo)) return FALSE;
 		$query = $this->db->query("SELECT regla FROM `reglascont` WHERE modulo='$modulo'");
