@@ -6,17 +6,25 @@ class Bcaj extends Controller {
 		$this->config->load('datasis');
 		$this->guitipo=array('DE'=>'Deposito','TR'=>'Transferencia','RM'=>'Remesa');
 		$this->datasis->modulo_id('51D',1);
+		$cajas=$this->config->item('cajas');
+		foreach($cajas AS $inv=>$val){
+			$codban=$this->db->escape($val);
+			$cana=$this->datasis->dameval("SELECT COUNT(*) AS cana FROM banc WHERE codbanc=$codban");
+			if($cana==0){
+				show_error('La caja '.$val.' no esta registrada en el sistema, debe registrarla por el modulo de bancos o ajustar la configuracion en config/datasis.php');
+			}
+		}
 	}
 
 	function index(){
 		$this->rapyd->load('datafilter','datagrid');
 		$smenu['link']=barra_menu('51D');
-		
-		$filter = new DataFilter('Filtro');
-		$select=array('fecha','numero','nombre','monto','CONCAT_WS(\'-\',banco ,numcuent) AS banco','tipo_op','codbanc','LEFT(concepto,20)AS concepto','anulado');
-		$filter->db->select($select);
-		$filter->db->from('bmov');
-		$filter->db->where('tipo_op','CH');
+
+		$filter = new DataFilter('Filtro','bcaj');
+
+		//$select=array('fecha','numero','nombre','monto','CONCAT_WS(\'-\',banco ,numcuent) AS banco','tipo_op','codbanc','LEFT(concepto,20)AS concepto','anulado');
+		//$filter->db->select($select);
+		//$filter->db->from('bcaj');
 
 		$filter->fecha = new dateonlyField('Fecha','fecha');
 		$filter->fecha->size=10;
@@ -25,28 +33,28 @@ class Bcaj extends Controller {
 		$filter->numero = new inputField('N&uacute;mero', 'numero');
 		$filter->numero->size=20;
 
-		$filter->nombre = new inputField('Nombre', 'nombre');
-		$filter->nombre->size=40;
+		//$filter->nombre = new inputField('Nombre', 'nombre');
+		//$filter->nombre->size=40;
 
-		$filter->banco = new dropdownField('Banco', 'codbanc');
-		$filter->banco->option('','');
-		$filter->banco->options('SELECT codbanc,banco FROM banc where tbanco<>\'CAJ\' ORDER BY codbanc');
+		//$filter->banco = new dropdownField('Banco', 'codbanc');
+		//$filter->banco->option('','');
+		//$filter->banco->options('SELECT codbanc,banco FROM banc where tbanco<>\'CAJ\' ORDER BY codbanc');
 
 		$filter->buttons('reset','search');
 		$filter->build();
 
-		$uri = anchor('finanzas/bmov/dataedit/show/<#codbanc#>/<#tipo_op#>/<#numero#>','<#numero#>');
+		//$uri = anchor('finanzas/bmov/dataedit/show/<#codbanc#>/<#tipo_op#>/<#numero#>','<#numero#>');
 
 		$grid = new DataGrid('Lista');
 		$grid->order_by('numero','desc');
 		$grid->per_page = 15;
 
-		$grid->column('N&uacute;mero',$uri );
-		$grid->column('Nombre'       ,'nombre');
-		$grid->column('Banco'        ,'banco');
+		$grid->column('N&uacute;mero','numero');
+		$grid->column('Fecha'        ,'<dbdate_to_human><#fecha#></dbdate_to_human>');
+		$grid->column('Env&iacute;a' ,'<#envia#>-<#bancoe#>');
+		$grid->column('Recibe'       ,'<#recibe#>-<#bancor#>');
 		$grid->column('Monto'        ,'<nformat><#monto#></nformat>' ,'align=right');
 		$grid->column('Concepto'     ,'concepto');
-		$grid->column('Anulado'      ,'anulado','align=center');
 
 		//$grid->add('finanzas/bcaj/autotranfer');
 		$grid->build();
@@ -309,7 +317,7 @@ class Bcaj extends Controller {
 		$edit->title='Transferencia automatica entre cajas';
 		$edit->script($script);
 
-		$edit->back_url = site_url('finanzas/bcaj/index');
+		//$edit->back_url = site_url('finanzas/bcaj/index');
 
 		$edit->fecha = new DateonlyField('Fecha', 'fecha','d/m/Y');
 		$edit->fecha->insertValue = date('Y-m-d');
@@ -320,7 +328,7 @@ class Bcaj extends Controller {
 		$campos=array(
 			'efectivo'=>'Efectivo',
 			'tarjeta' =>'Tarjeta de D&eacute;bito y Cr&eacute;dito',
-			'gastos'  =>'Gastos justificados',
+			'gastos'  =>'Gastos por Justificar',
 			'valores' =>'Valores, Cesta Tickes y Chequs',
 			'monto'   =>'Monto total');
 
@@ -336,6 +344,8 @@ class Bcaj extends Controller {
 		$edit->$obj->rule='trim|numeric|callback_chtotal|required';
 		$edit->$obj->readonly=true;
 
+		$back_url=site_url('finanzas/bcaj/index');
+		$edit->button('btn_undo','Regresar',"javascript:window.location='$back_url'",'BL');
 		$edit->submit('btnsubmit','Guardar');
 		$edit->build_form();
 		$salida=$edit->output;
@@ -345,8 +355,12 @@ class Bcaj extends Controller {
 			foreach($campos AS $obj=>$titulo){
 				$$obj=$edit->$obj->newValue;
 			}
-			$this->_autotranfer($fecha,$efectivo,$tarjeta,$gastos,$valores);
-			redirect('/finanzas/bcaj/listo');
+			$rt=$this->_autotranfer($fecha,$efectivo,$tarjeta,$gastos,$valores);
+			if($rt){
+				//redirect('/finanzas/bcaj/listo');
+			}else{
+				//redirect('/finanzas/bcaj/listo/s');
+			}
 		}
 
 		$this->rapyd->jquery[]='$(".inputnum").numeric(".");';
@@ -364,7 +378,7 @@ class Bcaj extends Controller {
 		$arr=array(
 			'efectivo'=>$cajas['efectivo'],
 			'tarjeta' =>$cajas['tarjetas'],
-			'gastos'  =>$cajas['efectivo'],
+			'gastos'  =>$cajas['gastos'],
 			'valores' =>$cajas['valores']
 		);
 
@@ -378,6 +392,7 @@ class Bcaj extends Controller {
 		$transac= $this->datasis->fprox_numero('transac');
 		$numeroe= $this->datasis->banprox($envia);
 		$numeror= $this->datasis->banprox($recibe);
+		$error  = 0;
 
 		$mSQL='SELECT codbanc,numcuent,tbanco,banco,saldo FROM banc WHERE codbanc IN ('.$this->db->escape($envia).','.$this->db->escape($recibe).')';
 		$query = $this->db->query($mSQL);
@@ -426,14 +441,12 @@ class Bcaj extends Controller {
 		);
 		$sql=$this->db->insert_string('bcaj', $data);
 		$ban=$this->db->simple_query($sql);
-		if($ban==false) memowrite($sql,'bcaj');
-		//echo $sql."\n";
+		if($ban==false){ memowrite($sql,'bcaj'); $error++; echo $sql;}
 
 		//Crea el egreso en el banco
 		$mSQL='CALL sp_actusal('.$this->db->escape($envia).",'$fecha',-$monto)";
 		$ban=$this->db->simple_query($mSQL);
-		if($ban==false) memowrite($mSQL,'bcaj');
-		//echo $mSQL."\n";
+		//if($ban==false){ memowrite($mSQL,'bcaj'); $error++; }
 
 		$data=array();
 		$data['codbanc']  = $envia;
@@ -453,16 +466,14 @@ class Bcaj extends Controller {
 		$data['estampa']  = date('Ymd');
 		$data['hora']     = date('h:i:s');
 		$data['benefi']   = '-';
-		$sql=$this->db->insert_string('bcaj', $data);
+		$sql=$this->db->insert_string('bmov', $data);
 		$ban=$this->db->simple_query($sql);
-		if($ban==false) memowrite($sql,'bcaj');
-		//echo $sql."\n";
+		if($ban==false){ memowrite($sql,'bcaj'); $error++; }
 
 		//Crea el ingreso la otra caja
 		$mSQL='CALL sp_actusal('.$this->db->escape($recibe).",'$fecha',$monto)";
 		$ban=$this->db->simple_query($mSQL);
-		if($ban==false) memowrite($mSQL,'bcaj');
-		//echo $mSQL."\n";
+		//if($ban==false){ memowrite($mSQL,'bcaj'); $error++; }
 
 		$data=array();
 		$data['codbanc']  = $recibe;
@@ -482,10 +493,11 @@ class Bcaj extends Controller {
 		$data['estampa']  = date('Ymd');
 		$data['hora']     = date('h:i:s');
 		$data['benefi']   = '-';
-		$sql=$this->db->insert_string('bcaj', $data);
+		$sql=$this->db->insert_string('bmov', $data);
 		$ban=$this->db->simple_query($sql);
-		if($ban==false) memowrite($sql,'bcaj');
-		//echo $sql."\n";
+		if($ban==false){ memowrite($sql,'bcaj'); $error++; echo $sql;}
+
+		return ($error==0) ? true : false;
 	}
 
 	function chtotal($monto){
@@ -559,8 +571,12 @@ class Bcaj extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
-	function listo(){
-		$data['content'] = 'Movimiento agregado '.anchor('finanzas/bcaj/index','Regresar');
+	function listo($error=null){
+		if(empty($error)){
+			$data['content'] = 'Movimiento agregado '.anchor('finanzas/bcaj/index','Regresar');
+		}else{
+			$data['content'] = 'Lo siento pero hubo alg&uacute;n error en la transacci&oacute;n, se genero un centinela '.anchor('finanzas/bcaj/index','Regresar');
+		}
 		$data['title']   = '<h1>Transferencias entre cajas</h1>';
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
