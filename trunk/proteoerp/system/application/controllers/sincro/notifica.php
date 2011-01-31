@@ -211,6 +211,12 @@ class notifica extends controller {
 		return false;
 	}
 
+	//Funcion que notifica a los usuarios de un evento dado
+	function enventos(){
+	
+	}
+
+
 	function _movilnet($codigo,$numero,$msg){
 		$this->error='M&eacute;todo no definido';
 		return false;
