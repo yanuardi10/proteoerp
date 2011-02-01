@@ -32,14 +32,14 @@ class aran extends validaciones {
 		$uri = anchor('import/aran/dataedit/show/<raencode><#codigo#></raencode>','<#codigo#>');
 
 		$grid = new DataGrid('Lista de Arancenles');
-		//$grid->order_by('grupo','asc');
+		$grid->order_by('codigo','asc');
 		$grid->per_page = 20;
 
-		$grid->column_orderby('Codigo'            ,$uri     ,'codigo' ,'align=\'center\'');
+		$grid->column_orderby('C&oacute;digo'     ,$uri     ,'codigo' ,'align=\'center\'');
 		$grid->column_orderby('Descripci&oacute;n','descrip','descrip','align=\'left\''  );
 		$grid->column_orderby('Tarifa'            ,'<nformat><#tarifa#></nformat>' ,'tarifa' ,'align=\'right\'' );
 		$grid->column_orderby('Unidad'            ,'unidad' ,'unidad' ,'align=\'right\'' );
-		//$grid->column_orderby('Dolar'             ,'<nformat><#dolar#></nformat>' ,'dolar' ,'align=\'right\'' );
+		$grid->column_orderby('D&oacute;lar'      ,'<nformat><#dolar#></nformat>' ,'dolar' ,'align=\'right\'' );
 
 		$grid->add('import/aran/dataedit/create','Agregar nuevo arancel');
 		$grid->build();
@@ -80,13 +80,13 @@ class aran extends validaciones {
 		$edit->tarifa->size = 10;
 		$edit->tarifa->maxlength=10;
 		$edit->tarifa->css_class='inputnum';
-		$edit->tarifa->rule='trim|callback_positivo|numeric|required';
+		$edit->tarifa->rule='callback_positivo|numeric|required';
 
-		/*$edit->dolar = new inputField('Dolar', 'dolar');
+		$edit->dolar = new inputField('D&oacute;lar', 'dolar');
 		$edit->dolar->size = 10;
 		$edit->dolar->maxlength=10;
 		$edit->dolar->css_class='inputnum';
-		$edit->dolar->rule='trim|callback_positivo|numeric';*/
+		$edit->dolar->rule='callback_positivo|numeric';
 
 		$edit->buttons('modify','save','undo','delete','back');
 		$edit->build();
@@ -104,16 +104,16 @@ class aran extends validaciones {
 	}
 
 	function _pre_del($do) {
-		$codigo=$do->get('codigo');
-		/*$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM sinv WHERE grupo='$codigo'");
+		$codigo=$this->db->escape($do->get('codigo'));
+		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM itordi WHERE codaran=$codigo");
 		if ($chek > 0){
-			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='El grupo contiene productos, por ello no puede ser eliminado.';
-			return False;
-		}*/
-		return True;
+			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='El arancel a borra contiene productos relacionados, por ello no puede ser eliminado.';
+			return false;
+		}
+		return true;
 	}
 
-	function instala(){
+	function instalar(){
 		$mSQL="CREATE TABLE `aran` (
 		 `codigo` varchar(15) NOT NULL DEFAULT '',
 		 `descrip` text,
@@ -121,6 +121,9 @@ class aran extends validaciones {
 		 `unidad` varchar(20) DEFAULT NULL,
 		 PRIMARY KEY (`codigo`)
 		) ENGINE=MyISAM DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC";
+		$this->db->simple_query($mSQL);
+
+		$mSQL="ALTER TABLE `aran`  ADD COLUMN `dolar` DECIMAL(8,2) NULL AFTER `unidad`";
 		$this->db->simple_query($mSQL);
 	}
 }
