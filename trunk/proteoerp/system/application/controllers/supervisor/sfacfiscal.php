@@ -126,6 +126,9 @@ class Sfacfiscal extends Controller{
 	function editsfac(){
 		$this->rapyd->load('dataedit');
 		$edit = new DataEdit('Ajustes fiscales', 'sfac');
+		$edit->back_save  =true;
+		$edit->back_cancel=true;
+		$edit->back_cancel_save=true;
 		$edit->back_url = site_url('supervisor/sfacfiscal/index');
 
 		$edit->tipo_doc = new inputField('Referencia','tipo_doc');
@@ -144,7 +147,7 @@ class Sfacfiscal extends Controller{
 		$edit->maqfiscal->maxlength=20;
 		$edit->maqfiscal->rule = 'trim|strtoupper';
 
-		$edit->buttons('modify','save', 'undo', 'delete', 'back');
+		$edit->buttons('modify','save', 'undo', 'back');
 		$edit->build();
 
 		$data['content'] = $edit->output;
