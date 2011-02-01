@@ -67,15 +67,15 @@ class Rpcserver extends Controller {
 	function ComprasEmpresasAsociadas($request){
 		$parameters = $request->output_parameters();
 
-		$ult_ref=$parameters['0'];
+		$ult_ref=intval($parameters['0']);
 		$cod_cli=$parameters['1'];
 		$usr    =$parameters['2'];
 		$pwd    =$parameters['3'];
 		$cant   =5;
 
-		$mSQL="SELECT numero,fecha,vence,TRIM(nfiscal) AS nfiscal,totals,totalg,iva FROM sfac WHERE cod_cli=? AND numero > ? AND tipo_doc='F' LIMIT $cant";
+		$mSQL="SELECT numero,fecha,vence,TRIM(nfiscal) AS nfiscal,totals,totalg,iva FROM sfac WHERE cod_cli=? AND numero >= ? AND tipo_doc='F' LIMIT $cant";
 		$query = $this->db->query($mSQL,array($usr,$ult_ref));
-		memowrite($this->db->last_query(),'B2B');
+		//memowrite($this->db->last_query(),'B2B');
 
 		$compras=array();
 		if ($query->num_rows() > 0){ 
@@ -91,7 +91,7 @@ class Rpcserver extends Controller {
 
 				//Prepara los articulos
 				$it=array();
-				$mmSQL="SELECT TRIM(a.codigoa) AS codigoa,TRIM(a.desca) AS desca,SUM(a.cana) AS cana ,a.preca,SUM(a.tota) AS tota,a.iva,b.barras,b.precio1,b.precio1,b.precio1,b.precio1,b.unidad, b.tipo, b.tdecimal FROM sitems AS a JOIN sinv AS b ON a.codigoa=b.codigo WHERE numa=? AND tipoa='F' GROUP BY a.codigoa";
+				$mmSQL="SELECT TRIM(a.codigoa) AS codigoa,TRIM(a.desca) AS desca,SUM(a.cana) AS cana ,a.preca,SUM(a.tota) AS tota,a.iva,b.barras,b.precio1,b.precio1 AS precio2,b.precio1 AS precio3,b.precio1 AS precio4,b.unidad, b.tipo, b.tdecimal FROM sitems AS a JOIN sinv AS b ON a.codigoa=b.codigo WHERE numa=? AND tipoa='F' GROUP BY a.codigoa";
 				$qquery = $this->db->query($mmSQL,array($numero));
 				foreach ($qquery->result_array() as $rrow){
 					foreach($rrow AS $ind=>$val){
