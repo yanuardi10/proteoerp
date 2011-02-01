@@ -441,12 +441,12 @@ class Bcaj extends Controller {
 		);
 		$sql=$this->db->insert_string('bcaj', $data);
 		$ban=$this->db->simple_query($sql);
-		if($ban==false){ memowrite($sql,'bcaj'); $error++; echo $sql;}
+		if($ban==false){ memowrite($sql,'bcaj'); $error++; }
 
 		//Crea el egreso en el banco
 		$mSQL='CALL sp_actusal('.$this->db->escape($envia).",'$fecha',-$monto)";
 		$ban=$this->db->simple_query($mSQL);
-		//if($ban==false){ memowrite($mSQL,'bcaj'); $error++; }
+		if($ban==false){ memowrite($mSQL,'bcaj'); $error++; }
 
 		$data=array();
 		$data['codbanc']  = $envia;
@@ -473,7 +473,7 @@ class Bcaj extends Controller {
 		//Crea el ingreso la otra caja
 		$mSQL='CALL sp_actusal('.$this->db->escape($recibe).",'$fecha',$monto)";
 		$ban=$this->db->simple_query($mSQL);
-		//if($ban==false){ memowrite($mSQL,'bcaj'); $error++; }
+		if($ban==false){ memowrite($mSQL,'bcaj'); $error++; }
 
 		$data=array();
 		$data['codbanc']  = $recibe;
@@ -495,7 +495,7 @@ class Bcaj extends Controller {
 		$data['benefi']   = '-';
 		$sql=$this->db->insert_string('bmov', $data);
 		$ban=$this->db->simple_query($sql);
-		if($ban==false){ memowrite($sql,'bcaj'); $error++; echo $sql;}
+		if($ban==false){ memowrite($sql,'bcaj'); $error++; }
 
 		return ($error==0) ? true : false;
 	}

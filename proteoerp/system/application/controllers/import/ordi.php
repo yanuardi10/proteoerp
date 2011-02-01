@@ -375,6 +375,9 @@ class Ordi extends Controller {
 
 			$edit->buttons('modify','save','delete','add_rel');
 		}
+		$accion="javascript:window.location='".site_url('import/limport/liqui/'.$edit->_dataobject->pk['numero'])."'";
+		$edit->button_status('btn_liqui','Descargar Caldeco',$accion,'BR','show');
+
 		$edit->buttons('undo','back');
 		$edit->build();
 
