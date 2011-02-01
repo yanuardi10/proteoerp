@@ -7432,9 +7432,11 @@ class Libros extends Controller {
 		$this->db->simple_query("UPDATE sprv SET nomfis=nombre WHERE nomfis='' OR nomfis IS NULL ");
 		$mFECHAF = $this->datasis->dameval("SELECT max(fecha) FROM civa WHERE fecha<=$mes"."01");
 
-		$mSQL = "SELECT a.*,b.rif, b.nomfis FROM sprm AS a LEFT JOIN sprv AS b ON a.cod_prv=b.proveed 
-				WHERE fecha BETWEEN $fdesde AND $fhasta AND b.tipo<>'5' 
-				AND a.tipo_doc='NC' AND a.codigo NOT IN ('NOCON','') ";
+		$mSQL = "SELECT a.*,b.rif, b.nomfis,c.numero as afecta FROM sprm AS a 
+		LEFT JOIN sprv AS b ON a.cod_prv=b.proveed
+		JOIN itppro  AS c ON a.numero=c.numppro AND a.tipo_doc=c.tipoppro
+		WHERE a.fecha BETWEEN $fdesde AND $fhasta AND b.tipo<>'5 
+		AND a.tipo_doc='NC' AND a.codigo NOT IN ('NOCON','') ";
 		$query = $this->db->query($mSQL);
 		
 		if ( $query->num_rows() > 0 ){
@@ -7470,7 +7472,7 @@ class Libros extends Controller {
 					stotal=".$stotal.", 
 					fechal=".$mes."01, 
 					referen='$referen', 
-					afecta=".$row->num_ref.",
+					afecta=".$row->afecta.",
 					fafecta='$fafecta'";
 				$flag=$this->db->simple_query($mSQL);    
 				if(!$flag) memowrite($mSQL,'genecxp');
