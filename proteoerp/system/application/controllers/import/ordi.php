@@ -807,10 +807,10 @@ class Ordi extends Controller {
 		$rt=$this->_calcula($id);
 
 		$url = site_url('formatos/verhtml/ORDI/'.$id);
-		$data['content'] = "<iframe src ='$url' width='100%' height='450'><p>Tu navegador no soporta iframes.</p></iframe>";
+		$data['content'] = "<iframe name='fordi' src ='$url' width='100%' height='450'><p>Tu navegador no soporta iframes.</p></iframe>";
 		$data['head']    = $this->rapyd->get_head();
 		if($rt)
-			$data['title']   ='<h1>Recalculo de la relaci&oacute;n de gastos nacionales '.anchor("import/ordi/dataedit/show/$id",'regresar').'</h1>';
+			$data['title']   ='<h1>Recalculo concluido, puede <a href="#" onclick="fordi.print();">imprimir</a> la orden o haga click '.anchor("import/ordi/dataedit/show/$id",'aqui').' para regresar</h1>';
 		else
 			$data['title']   ='<h1>Opps! hubo problemas en el recalculo, se gener&oacute; un centinela '.anchor("import/ordi/dataedit/show/$id",'regresar').'</h1>';
 		$this->load->view('view_ventanas', $data);
