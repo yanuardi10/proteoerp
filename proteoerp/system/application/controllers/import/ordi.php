@@ -47,6 +47,7 @@ class Ordi extends Controller {
 		$filter->status->option('' ,'Todas');
 		$filter->status->option('A','No liquidadas');
 		$filter->status->option('C','Liquidadas');
+		$filter->status->style ="width:120px;";
 
 		$filter->buttons('reset','search');
 		$filter->build();
@@ -614,16 +615,24 @@ class Ordi extends Controller {
 		$iva   = $this->datasis->ivaplica($fecha);
 
 		$jsc='function calcula(){
-			if($("#tasa").val().length>0) tasa=parseFloat($("#tasa").val()); else tasa=0;
-			if($("#base").val().length>0) base=parseFloat($("#base").val()); else base=0;
-			$("#montoiva").val(roundNumber(base*(tasa/100),2));
+			if($("#tasa").val().length>0){
+				tasa=parseFloat($("#tasa").val());
+				if($("#base").val().length>0) base=parseFloat($("#base").val()); else base=0;
+				$("#montoiva").val(roundNumber(base*(tasa/100),2));
+			}
+		}
+		function calculaiva(){
+			if($("#tasa").val().length>0){
+				tasa=parseFloat($("#tasa").val());
+				if($("#montoiva").val().length>0) montoiva=parseFloat($("#montoiva").val()); else montoiva=0;
+				$("#base").val(roundNumber(montoiva*100/tasa,2));
+			}
 		}';
 
-		$edit = new DataEdit('Impuestos', 'ordiva');
+		$edit = new DataEdit(' ', 'ordiva');
 		$edit->back_save  =true;
 		$edit->back_cancel=true;
 		$edit->back_cancel_save=true;
-
 
 		$edit->back_url = site_url('import/ordi/dataedit/show/'.$ordi);
 		$edit->post_process('insert','_post_ordiva');
@@ -638,18 +647,20 @@ class Ordi extends Controller {
 		foreach($iva AS $nom=>$val){
 			$edit->tasa->option($val,nformat($val).'%');
 		}
-		$edit->tasa->rule  = 'required|numeric';
+		$edit->tasa->rule  = 'unique|required|numeric';
 		$edit->tasa->style = 'width:100px';
 		$edit->tasa->mode  = 'autohide';
 
-		$edit->base = new inputField2('Base imponible','base');
+		$edit->base = new inputField('Base imponible','base');
 		$edit->base->rule= 'required|numeric';
-		$edit->base->size = 20;
+		$edit->base->size = 15;
 		$edit->base->css_class='inputnum';
+		$edit->base->autocomplete= false;
 
-		$edit->montoiva = new inputField2('IVA ','montoiva');
+		$edit->montoiva = new inputField('IVA ','montoiva');
 		$edit->montoiva->rule= 'required|numeric';
-		$edit->montoiva->size = 20;
+		$edit->montoiva->size = 15;
+		$edit->montoiva->autocomplete= false;
 		$edit->montoiva->css_class='inputnum';
 
 		$edit->concepto = new inputField2('Concepto','concepto');
@@ -668,9 +679,9 @@ class Ordi extends Controller {
 
 		if($edit->_status!='show'){
 			$this->rapyd->jquery[]='$(".inputnum").numeric(".");';
-			//$this->rapyd->jquery[]='calcula();';
 			$this->rapyd->jquery[]='$("#tasa").change(function() { calcula(); });';
-			$this->rapyd->jquery[]='$("#base,#montoiva").bind("keyup",function() { calcula(); });';
+			$this->rapyd->jquery[]='$("#base").bind("keyup",function() { calcula(); });';
+			$this->rapyd->jquery[]='$("#montoiva").bind("keyup",function() { calculaiva(); });';
 		}
 
 		if($edit->_status=='modify'){
@@ -680,11 +691,16 @@ class Ordi extends Controller {
 				if($("#base").val().length>0) base=parseFloat($("#base").val()); else base=0;
 				$("#montoiva").val(roundNumber(base*(tasa/100),2));
 			}
+			function calculaiva(){
+				tasa='.$edit->tasa->value.';
+				if($("#montoiva").val().length>0) montoiva=parseFloat($("#montoiva").val()); else montoiva=0;
+				$("#base").val(roundNumber(montoiva*100/tasa,2));
+			}
 			</script>';
 			$data['script'] =$jsm;
 		}
 		$data['content'] = $edit->output;
-		$data['title']   = '<h1>Impuestos</h1>';
+		$data['title']   = '<h1>Impuestos IVA</h1>';
 		$data['head']    = $this->rapyd->get_head().phpscript('nformat.js');
 		$this->load->view('view_ventanas', $data);
 	}
