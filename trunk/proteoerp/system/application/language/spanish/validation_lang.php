@@ -14,7 +14,7 @@ $lang['integer']	   	= "El campo %s debe contener solo n&uacute;meros.";
 
 //addons
 
-$lang['unique']		= "The %s field does not match the image verification code.";
-$lang['captcha']		= "The %s field must contain a valid date.";
-$lang['valid_date']		= "The %s field must contain a unique value.";
+$lang['unique']		= "Ya existe un registro con el campo  %s igual al que esta registrando";
+$lang['captcha']		= "El texto %s no coincide con la imagen";
+$lang['valid_date']		= "El campo  %s no contiene una fecha valida.";;
 ?>
