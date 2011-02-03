@@ -7435,10 +7435,10 @@ class Libros extends Controller {
 		$mSQL = "SELECT a.*,b.rif, b.nomfis,c.numero as afecta FROM sprm AS a 
 		LEFT JOIN sprv AS b ON a.cod_prv=b.proveed
 		JOIN itppro  AS c ON a.numero=c.numppro AND a.tipo_doc=c.tipoppro
-		WHERE a.fecha BETWEEN $fdesde AND $fhasta AND b.tipo<>'5 
+		WHERE a.fecha BETWEEN $fdesde AND $fhasta AND b.tipo<>'5'
 		AND a.tipo_doc='NC' AND a.codigo NOT IN ('NOCON','') ";
 		$query = $this->db->query($mSQL);
-		
+
 		if ( $query->num_rows() > 0 ){
 			foreach( $query->result() as $row ) {
 				if ($row->impuesto == 0 and empty($row->codigo) ) continue;
