@@ -5,7 +5,7 @@ class b2b extends validaciones {
 	function b2b(){
 		parent::Controller();
 		$this->load->library('rapyd');
-		//$this->datasis->modulo_id(135,1);
+		$this->datasis->modulo_id('921',1);
 	}
 
 	function index(){
@@ -71,7 +71,7 @@ class b2b extends validaciones {
 
 		$acti=anchor_popup('/sincro/b2b/traecompra/<#id#>','Traer Transacciones',$atts);
 		$link=anchor('/sincro/b2b/dataedit/show/<#id#>','<#id#>');
-		$grid = new DataGrid('b2b');
+		$grid = new DataGrid('lista de conexiones definidas');
 		$grid->order_by('id','asc');
 		$grid->per_page = 15;
 
@@ -179,6 +179,7 @@ class b2b extends validaciones {
 			$edit->$obj->css_class = 'inputnum';
 			$edit->$obj->rule      = 'callback_chporcent';
 			$edit->$obj->group = 'Margenes de ganancia';
+			$edit->$obj->autocomplete = false;
 			if($i==5) $edit->$obj->append('Solo aplica a supermercados');
 		}
 
@@ -242,6 +243,8 @@ class b2b extends validaciones {
 		$filter->proveedor->db_name = 'proveed';
 		$filter->proveedor->size=20;
 
+		$action = "javascript:window.location='".site_url('sincro/b2b/index')."'";
+		$filter->button('btn_regresa', 'Regresar', $action, 'TR');
 		$filter->buttons('reset','search');
 		$filter->build();
 
@@ -427,10 +430,10 @@ class b2b extends validaciones {
 //****************************************************
 	function traecompra($par,$ultimo=null){
 		$rt=$this->_trae_compra($par,$ultimo);
-		if($rt!==false){
-			$str='Transacciones descargadas';
+		if($rt==0){
+			$str=$this->comprasCargadas.' transacciones descargadas';
 		}else{
-			$str='Hubo problemas durante la  descarga, se generaron centinelas';
+			$str='Hubo problemas durante la  descarga, se generar&oacute;n centinelas';
 		}
 		$data['content'] = $str;
 		$data['head']    = $this->rapyd->get_head();
@@ -440,6 +443,8 @@ class b2b extends validaciones {
 
 	function _trae_compra($id=null,$ultimo=null){
 		if(is_null($id)) return false; else $id=$this->db->escape($id);
+		$contribu=$this->datasis->traevalor('CONTRIBUYENTE');
+		$rif     =$this->datasis->traevalor('RIF');
 
 		$config=$this->datasis->damerow("SELECT proveed,grupo,puerto,proteo,url,usuario,clave,tipo,depo,margen1,margen2,margen3,margen4,margen5 FROM b2b_config WHERE id=$id");
 		if(count($config)==0) return false;
@@ -465,14 +470,16 @@ class b2b extends validaciones {
 			$ufac=0;
 		}
 
-		$request = array($ufac,$config['proveed'],$config['usuario'],$config['clave']);
+		$request = array($ufac,$config['proveed'],$config['usuario'],md5($config['clave']));
 		$this->xmlrpc->request($request);
+		$this->comprasCargadas=0;
 
 		if (!$this->xmlrpc->send_request()){
 			echo $this->xmlrpc->display_error();
 		}else{
 			$res=$this->xmlrpc->display_response();
 			foreach($res AS $ind=>$compra){
+				$this->comprasCargadas++;
 				$arr=unserialize($compra);
 				foreach($arr['scst'] AS $in => $val) $arr[$in]=base64_decode($val);
 
@@ -490,16 +497,45 @@ class b2b extends validaciones {
 				$data['montotot'] = $arr['totals'];
 				$data['montoiva'] = $arr['iva'];
 				$data['montonet'] = $arr['totalg'];
+
+				if($contribu=='ESPECIAL' and strtoupper($rif[0])!='V'){
+					$por_rete=$this->datasis->dameval('SELECT reteiva FROM sprv WHERE proveed='.$this->db->escape($proveed));
+					if($por_rete!=100){
+						$por_rete=0.75;
+					}else{
+						$por_rete=$por_rete/100;}
+					$data['reteiva']=round($data['montoiva']*$por_rete,2);
+				}
+
+				$data['reducida'] =$arr['monredu'];
+				$data['tasa']     =$arr['montasa'];
+				$data['sobretasa']=$arr['monadic'];
+				$data['monredu']  =$arr['monredu'];
+				$data['montasa']  =$arr['montasa'];
+				$data['monadic']  =$arr['monadic'];
+    
+				$data['ctotal']   =$arr['totalg'];
+				$data['cstotal']  =$arr['totals'];
+				$data['cexento']  =$arr['exento'];
+				$data['cimpuesto']=$arr['iva'];
+				$data['cgenera']  =$arr['montasa'];
+				$data['civagen']  =$arr['tasa'];
+				$data['cadicio']  =$arr['monadic'];
+				$data['civaadi']  =$arr['sobretasa'];
+				$data['creduci']  =$arr['monredu'];
+				$data['civared']  =$arr['reducida'];
+
 				$mSQL=$this->db->insert_string('b2b_scst',$data);
 
 				$rt=$this->db->simple_query($mSQL);
 				if(!$rt){
 					memowrite($mSQL,'B2B');
 					$maestro=false;
+					$er++;
 				}else{
 					$id_scst=$this->db->insert_id();
 					$maestro=true;
-				} $er+= !$rt;
+				}
 
 				if($maestro){
 					$itscst =& $arr['itscst'];
@@ -581,9 +617,10 @@ class b2b extends validaciones {
 							$rt=$this->db->simple_query($mSQL);
 							if(!$rt){
 								memowrite($mSQL,'B2B');
+								$er++;
 							}else{
 								$codigolocal=$barras;
-							}$er+= !$rt;
+							}
 						}
 						$ddata['codigolocal'] = $codigolocal;
 
@@ -591,9 +628,10 @@ class b2b extends validaciones {
 						$rt=$this->db->simple_query($mSQL);
 						if(!$rt){
 							memowrite($mSQL,'B2B');
-						}$er+= !$rt;
+							$er++;
+						}
 					}
-					$this->_cargacompra($id_scst);
+					if(!$this->_cargacompra($id_scst)) $er=false;
 
 					//Carga el inventario
 					/*$ddata=array();
@@ -614,11 +652,12 @@ class b2b extends validaciones {
 	}
 
 	function cargacompra($id){
-		$this->_cargacompra($id);
+		$rt=$this->_cargacompra($id);
 		redirect('sincro/b2b/scstedit/show/'.$id);
 	}
 
 	function _cargacompra($id){
+		$error   =0;
 		$pcontrol=$this->datasis->dameval('SELECT pcontrol FROM b2b_scst WHERE  id='.$this->db->escape($id));
 
 		$cana=$this->datasis->dameval('SELECT COUNT(*) FROM b2b_itscst AS a LEFT JOIN sinv AS b ON a.codigolocal=b.codigo WHERE a.numero IS NULL AND id_scst='.$this->db->escape($id));
@@ -640,38 +679,37 @@ class b2b extends validaciones {
 					//$tt['montonet']+=$itrow['importe']+$itrow['montoiva'];
 					$mSQL=$this->db->insert_string('itscst',$itrow);
 					$rt=$this->db->simple_query($mSQL);
-					if(!$rt){
-						memowrite($mSQL,'B2B');
-					}
+					if(!$rt){ memowrite($mSQL,'B2B'); $error++;}
 				}
 			}
 
-			$query = $this->db->query('SELECT fecha,numero,depo,proveed,nombre,montotot,montoiva,montonet,vence,tipo_doc,peso,usuario,nfiscal,exento,sobretasa,reducida,tasa,montasa,monredu,monadic,serie FROM b2b_scst WHERE id=?',array($id));
+			$query = $this->db->query('SELECT fecha,numero,depo,proveed,nombre,montotot,montoiva,montonet,vence,tipo_doc,
+				peso,usuario,nfiscal,exento,sobretasa,reducida,tasa,montasa,monredu,monadic,serie,
+				cimpuesto,ctotal,cstotal,civaadi,cadicio,civared,creduci,civagen,cgenera,cexento,reteiva
+				FROM b2b_scst WHERE id=?',array($id));
 			if ($query->num_rows() > 0){
+
 				$row = $query->row_array();
 				$row['estampa'] = date('Y-m-d');
 				$row['hora']    = date('h:m:s');
 				$row['control'] = $control;
 				$row['transac'] = $transac;
 				$row['usuario'] = $this->session->userdata('usuario');
+				$row['numero']  = substr($row['serie'],-8);
 				//$row['montotot'] =$tt['montotot'];
 				//$row['montoiva'] =$tt['montoiva'];
 				//$row['montonet'] =$tt['montonet'];
 
 				$mSQL=$this->db->insert_string('scst',$row);
 				$rt=$this->db->simple_query($mSQL);
-				if(!$rt){
-					memowrite($mSQL,'B2B');
-				}
+				if(!$rt){memowrite($mSQL,'B2B'); $error++;}
 			}
 
 			$mSQL="UPDATE b2b_scst SET pcontrol='$control' WHERE id=".$this->db->escape($id);
 			$rt=$this->db->simple_query($mSQL);
-			if(!$rt){
-				memowrite($mSQL,'B2B');
-			}
-
+			if(!$rt){memowrite($mSQL,'B2B'); $error++; }
 		}
+		return ($error==0) ? true : false;
 	}
 
 //****************************************************
@@ -784,7 +822,7 @@ class b2b extends validaciones {
 		return $query;
 	}
 
-	function instala(){
+	function instalar(){
 		$mSQL="CREATE TABLE `b2b_config` (
 		  `id` int(10) NOT NULL AUTO_INCREMENT,
 		  `proveed` char(5)   NOT NULL COMMENT 'Codigo del proveedor',
@@ -874,5 +912,29 @@ class b2b extends validaciones {
 		  KEY `numero` (`numero`)
 		) ENGINE=MyISAM AUTO_INCREMENT=1";
 		var_dump($this->db->simple_query($mSQL));
+
+		$mSQL="ALTER TABLE `b2b_scst`  ADD COLUMN `reteiva` DECIMAL(17,2) NULL DEFAULT '0.00' AFTER `reducida`;";
+		var_dump($this->db->simple_query($mSQL));
+		$mSQL="ALTER TABLE `b2b_scst`  ADD COLUMN  `cexento` decimal(17,2) DEFAULT NULL AFTER `reducida`";
+		var_dump($this->db->simple_query($mSQL));
+		$mSQL="ALTER TABLE `b2b_scst`  ADD COLUMN   `cgenera` decimal(17,2) DEFAULT NULL AFTER `reducida`";
+		var_dump($this->db->simple_query($mSQL));
+		$mSQL="ALTER TABLE `b2b_scst`  ADD COLUMN   `civagen` decimal(17,2) DEFAULT NULL AFTER `reducida`";
+		var_dump($this->db->simple_query($mSQL));
+		$mSQL="ALTER TABLE `b2b_scst`  ADD COLUMN   `creduci` decimal(17,2) DEFAULT NULL AFTER `reducida`";
+		var_dump($this->db->simple_query($mSQL));
+		$mSQL="ALTER TABLE `b2b_scst`  ADD COLUMN   `civared` decimal(17,2) DEFAULT NULL AFTER `reducida`";
+		var_dump($this->db->simple_query($mSQL));
+		$mSQL="ALTER TABLE `b2b_scst`  ADD COLUMN   `cadicio` decimal(17,2) DEFAULT NULL AFTER `reducida`";
+		var_dump($this->db->simple_query($mSQL));
+		$mSQL="ALTER TABLE `b2b_scst`  ADD COLUMN   `civaadi` decimal(17,2) DEFAULT NULL AFTER `reducida`";
+		var_dump($this->db->simple_query($mSQL));
+		$mSQL="ALTER TABLE `b2b_scst`  ADD COLUMN   `cstotal` decimal(17,2) DEFAULT NULL AFTER `reducida`";
+		var_dump($this->db->simple_query($mSQL));
+		$mSQL="ALTER TABLE `b2b_scst`  ADD COLUMN   `ctotal` decimal(17,2) DEFAULT NULL AFTER `reducida`";
+		var_dump($this->db->simple_query($mSQL));
+		$mSQL="ALTER TABLE `b2b_scst`  ADD COLUMN   `cimpuesto` decimal(17,2) DEFAULT NULL AFTER `reducida`";
+		var_dump($this->db->simple_query($mSQL));
+
 	}
 }
