@@ -73,57 +73,39 @@ class Rpcserver extends Controller {
 		$pwd    =$parameters['3'];
 		$cant   =5;
 
-		$mSQL="SELECT numero,fecha,vence,TRIM(nfiscal) AS nfiscal,totals,totalg,iva FROM sfac WHERE cod_cli=? AND numero >= ? AND tipo_doc='F' LIMIT $cant";
-		$query = $this->db->query($mSQL,array($usr,$ult_ref));
-		//memowrite($this->db->last_query(),'B2B');
-
 		$compras=array();
-		if ($query->num_rows() > 0){ 
-			$pivot=array();
-			foreach ($query->result_array() as $row){
-				$numero=$row['numero'];
-				//Prepara el encabezado
-				foreach($row AS $ind=>$val){
-					$row[$ind]=base64_encode($val);
-				}
-				$pivot['scst']=$row;
-				//$compras[] = serialize($row);
-
-				//Prepara los articulos
-				$it=array();
-				$mmSQL="SELECT TRIM(a.codigoa) AS codigoa,TRIM(a.desca) AS desca,SUM(a.cana) AS cana ,a.preca,SUM(a.tota) AS tota,a.iva,b.barras,b.precio1,b.precio1 AS precio2,b.precio1 AS precio3,b.precio1 AS precio4,b.unidad, b.tipo, b.tdecimal FROM sitems AS a JOIN sinv AS b ON a.codigoa=b.codigo WHERE numa=? AND tipoa='F' GROUP BY a.codigoa";
-				$qquery = $this->db->query($mmSQL,array($numero));
-				foreach ($qquery->result_array() as $rrow){
-					foreach($rrow AS $ind=>$val){
-						$rrow[$ind]=base64_encode($val);
+		if($this->secu->cliente($usr,$pwd)){
+			$mSQL="SELECT numero,fecha,vence,TRIM(nfiscal) AS nfiscal,totals,totalg,iva,exento,tasa,reducida,sobretasa,montasa,monredu,monadic FROM sfac WHERE cod_cli=? AND numero > ? AND tipo_doc='F' LIMIT $cant";
+			$query = $this->db->query($mSQL,array($usr,$ult_ref));
+			//memowrite($this->db->last_query(),'B2B');
+			if ($query->num_rows() > 0){ 
+				$pivot=array();
+				foreach ($query->result_array() as $row){
+					$numero=$row['numero'];
+					//Prepara el encabezado
+					foreach($row AS $ind=>$val){
+						$row[$ind]=base64_encode($val);
 					}
-					$it[]=$rrow;
-				}
-				//$compras[] = serialize($it);
-				$pivot['itscst']=$it;
-
-				//Prepara el inventario
-				/*$it=array();
-				$mmSQL="SELECT TRIM(b.codigo) AS codigo,b.grupo,b.descrip,b.descrip2,b.unidad,b.ubica,b.tipo,b.clave,b.comision,b.enlace,b.pond,b.ultimo,b.existen,b.iva,b.fracci,b.codbar,b.barras,b.exmax,b.margen1,b.margen2,b.margen3,b.margen4,b.base1,b.base2,b.base3,b.base4,b.precio1,b.precio2,b.precio3,b.precio4,b.serial,b.tdecimal,b.redecen,b.formcal,b.fordeci,b.garantia,b.peso,b.pondcal,b.alterno,b.modelo,b.marca,clase,b.linea,b.depto,b.gasto,b.bonifica,b.bonicant,b.standard 
-				FROM sitems AS a JOIN sinv AS b ON a.codigoa=b.codigo WHERE a.numa=? AND a.tipoa='F'";
-				$qquery = $this->db->query($mmSQL,array($numero));
-				foreach ($qquery->result_array() as $rrow){
-					foreach($rrow AS $ind=>$val){
-						$rrow[$ind]=base64_encode($val);
+					$pivot['scst']=$row;
+    
+					//Prepara los articulos
+					$it=array();
+					$mmSQL="SELECT TRIM(a.codigoa) AS codigoa,TRIM(a.desca) AS desca,SUM(a.cana) AS cana ,a.preca,SUM(a.tota) AS tota,a.iva,b.barras,b.precio1,b.precio1 AS precio2,b.precio1 AS precio3,b.precio1 AS precio4,b.unidad, b.tipo, b.tdecimal FROM sitems AS a JOIN sinv AS b ON a.codigoa=b.codigo WHERE numa=? AND tipoa='F' GROUP BY a.codigoa";
+					$qquery = $this->db->query($mmSQL,array($numero));
+					foreach ($qquery->result_array() as $rrow){
+						foreach($rrow AS $ind=>$val){
+							$rrow[$ind]=base64_encode($val);
+						}
+						$it[]=$rrow;
 					}
-					$it[]=$rrow;
+					$pivot['itscst']=$it;
+    
+					$compras[]=serialize($pivot);
 				}
-				$pivot['sinv']=$it;*/
-
-				//$str = serialize($pivot);
-				//$compras[]=gzcompress($str);
-				$compras[]=serialize($pivot);
 			}
 		}
 
 		$response = array($compras,'struct');
-		//$str = serialize($compras);
-		//$response = array($str,'string');
 		return $this->xmlrpc->send_response($response);
 	}
 

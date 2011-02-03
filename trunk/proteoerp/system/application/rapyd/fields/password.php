@@ -24,10 +24,10 @@ class passwordField extends objField{
   
   var $encrypt = true;
   // We can choose not to encrypt the value by using $form->password->encrypt = false;
-  var $show_null = '** Not set (null) **';
-  var $show_empty = '** Not set **';
-  var $show_mask_encrypted = '** Encrypted **';
-  var $show_mask_hidden = '** Hidden **';
+  var $show_null           = '** No asignado **';
+  var $show_empty          = '** No asignado **';
+  var $show_mask_encrypted = '******';
+  var $show_mask_hidden    = '******';
 
   var $css_class = "password";
 

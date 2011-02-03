@@ -1,6 +1,5 @@
 <?php
 class secu{
-
 	var $ci;
 	var $db;
 	var $dbindex='default';
@@ -25,6 +24,7 @@ class secu{
 				$row = $query->row();
 				return ($row->cana>0) ? TRUE : FALSE;
 			}
+		}
 		return FALSE;
 	}
 
@@ -38,16 +38,17 @@ class secu{
 				$row = $query->row();
 				return ($row->cana>0) ? TRUE : FALSE;
 			}
+		}
 		return FALSE;
 	}
 
 	function es_shell(){
-		return (isset($_SERVER['argv']) && !isset($_SERVER['SERVER_NAME']) ? TRUE : FALSE;
+		return (isset($_SERVER['argv']) && !isset($_SERVER['SERVER_NAME'])) ? TRUE : FALSE;
 	}
 
 
 	function es_interno(){
-		echo $_SERVER['REMOTE_ADDR'];
+		return $this->ip_interno($_SERVER['REMOTE_ADDR']);
 	}
 
 	function ip_interno($ip){
@@ -56,11 +57,15 @@ class secu{
 		//192.168.0.0 - 192.168.255.255 | 192.168.0.0/16
 		return (preg_match("/^(10\\..+|192\\.168\\..+|172\\.(1[6-9]|2[0-9]|3[01])\\..+)$/", $ip)>0) ? TRUE : FALSE;
 	}
+
+	function cliente($codigo,$pws){
+		$codigo = $this->db->escape($codigo);
+		$pws    = $this->db->escape($pws);
+		$query = $this->db->query("SELECT COUNT(*) AS cana FROM scli WHERE cliente=$codigo AND clave=$pws");
+		if ($query->num_rows() > 0){
+			$row = $query->row();
+			return ($row->cana>0) ? TRUE : FALSE;
+		}
+		return FALSE;
+	}
 }
-//$ss= new secu;
-//var_dump($ss->ip_interno('192.168.0.99'));
-//var_dump($ss->ip_interno('172.130.0.99'));
-//var_dump($ss->ip_interno('172.16.0.99'));
-//var_dump($ss->ip_interno('10.168.0.99'));
-//var_dump($ss->ip_interno('200.168.0.99'));
-?>

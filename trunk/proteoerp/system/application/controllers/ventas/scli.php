@@ -3,15 +3,15 @@ class Scli extends validaciones {
 
 	function scli(){
 		parent::Controller();
-		$this->load->library("rapyd");
-		$this->load->library("pi18n");
+		$this->load->library('rapyd');
+		$this->load->library('pi18n');
 		//$this->load->library("menues");
 		$this->datasis->modulo_id(131,1);
 		$this->load->database();
 	}
 
 	function index(){
-		redirect("ventas/scli/filteredgrid");
+		redirect('ventas/scli/filteredgrid');
 	}
 
 	function filteredgrid(){
@@ -44,33 +44,29 @@ class Scli extends validaciones {
 		$grid->order_by('nombre','asc');
 		$grid->per_page=15;
 
+		$cclave=anchor('ventas/scli/claveedit/modify/<#id#>','Asignar clave');
 		$grid->column_orderby('Cliente',$uri,'cliente');
 		$grid->column_orderby('Nombre','nombre','nombre');
 		$grid->column_orderby($this->pi18n->msj('rifci','Rif/CI'),'rifci','rifci');
 		$grid->column_orderby($this->pi18n->msj('tiva','Contribuyente') ,'tiva','tiva','align=\'center\'');
 		$grid->column_orderby('Cuenta','cuenta','cuenta');
+		$grid->column('Acci&oacute;n',$cclave);
 		$grid->add('ventas/scli/dataedit/create','Agregar un cliente');
 		$grid->build();
 		//echo $grid->db->last_query();
 
-
-		/*$data['content'] = $filter->output.$grid->output;
-		$data['title']   = "<h1>Clientes</h1>";
-		$data["head"]    = $this->rapyd->get_head();*/
-
 		$data['content'] = $filter->output.$grid->output;
 		$data['content'].= $this->pi18n->fallas();
-		$data['title']   = "<h1>Clientes</h1>";
-		$data["script"]  = script("jquery.js")."\n";
-		$data["head"]    = $this->rapyd->get_head();
-		$data["extras"]  = ''; //'<div style="margin:20"><table id="flex1" style="display:none"></table></div>';
-		
+		$data['title']   = heading('Clientes');
+		$data['script']  = script('jquery.js')."\n";
+		$data['head']    = $this->rapyd->get_head();
+		$data['extras']  = '';
 		$this->load->view('view_ventanas', $data);
 	}
 
 	function dataedit(){
 		$this->pi18n->cargar('scli','dataedit');
-		$this->rapyd->load("dataedit");
+		$this->rapyd->load('dataedit');
 
 		$mSCLId=array(
 			'tabla'   =>'scli',
@@ -134,9 +130,7 @@ class Scli extends validaciones {
 				}
 			);
 			//$(":input").enter2tab();
-
 		});
-
 
 		function anomfis(){
 				vtiva=$("#tiva").val();
@@ -162,8 +156,8 @@ class Scli extends validaciones {
 				}
 		}';
 
-		$edit = new DataEdit('Clientes', "scli");
-		$edit->back_url = site_url("ventas/scli/filteredgrid");
+		$edit = new DataEdit('Clientes', 'scli');
+		$edit->back_url = site_url('ventas/scli/filteredgrid');
 		$edit->script($script, 'create');
 		$edit->script($script, 'modify');
 
@@ -205,7 +199,7 @@ class Scli extends validaciones {
 		for($i=1;$i<=2;$i++){
 			for($o=1;$o<=2;$o++){
 				$obj  ="dire$i$o";
-				$label= ($o%2!=0) ? "Direcci&oacute;n": '&nbsp;&nbsp;Continuaci&oacute;n';
+				$label= ($o%2!=0) ? 'Direcci&oacute;n': '&nbsp;&nbsp;Continuaci&oacute;n';
 				$edit->$obj = new inputField($label,$obj);
 				$edit->$obj->rule = 'trim';
 				$edit->$obj->size      = 60;
@@ -213,7 +207,7 @@ class Scli extends validaciones {
 				$edit->$obj->group = "Direcci&oacute;n ($i)";
 			}
 			$obj="ciudad$i";
-			$edit->$obj = new dropdownField("Ciudad",$obj);
+			$edit->$obj = new dropdownField('Ciudad',$obj);
 			$edit->$obj->rule = 'trim';
 			$edit->$obj->option('','Seleccionar');
 			$edit->$obj->options('SELECT ciudad codigo, ciudad FROM ciud ORDER BY ciudad');
@@ -237,7 +231,6 @@ class Scli extends validaciones {
 		$edit->socio->size = 8;
 		$edit->socio->maxlength =5;
 		$edit->socio->append($boton);
-
 
 		$arr_tiva=$this->pi18n->arr_msj('tivaarr','C=Contribuyente,N=No Contribuyente,E=Especial,R=Regimen Exento,O=Otro');
 		$edit->tiva = new dropdownField('Condici&oacute;n F&iacute;scal', 'tiva');
@@ -293,7 +286,7 @@ class Scli extends validaciones {
 		$edit->telefon2->maxlength =25;
 
 		$edit->tipo = new dropdownField('Precio Asignado', 'tipo');
-		$edit->tipo->options(array("1"=> "Precio 1","2"=>"Precio 2", "3"=>"Precio 3","4"=>"Precio 4","0"=>"Inactivo"));
+		$edit->tipo->options(array('1'=> 'Precio 1','2'=>'Precio 2', '3'=>'Precio 3','4'=>'Precio 4','0'=>'Inactivo'));
 		$edit->tipo->style = 'width:90px';
 		$edit->tipo->group = 'Informaci&oacute;n financiera';
 
@@ -309,49 +302,43 @@ class Scli extends validaciones {
 		$edit->limite->rule='trim|numeric';
 		$edit->limite->maxlength =15;
 		$edit->limite->size = 20;
-		$edit->limite->group = "Informaci&oacute;n financiera";
+		$edit->limite->group = 'Informaci&oacute;n financiera';
 
-		$edit->vendedor = new dropdownField("Vendedor", "vendedor");
-		$edit->vendedor->option("","Ninguno");
+		$edit->vendedor = new dropdownField('Vendedor', 'vendedor');
+		$edit->vendedor->option('','Ninguno');
 		$edit->vendedor->options("SELECT vendedor, CONCAT(vendedor,'-',nombre) AS nom FROM vend WHERE tipo IN ('V','A') ORDER BY vendedor");
-		$edit->vendedor->group = "Informaci&oacute;n financiera";
+		$edit->vendedor->group = 'Informaci&oacute;n financiera';
 
-		$edit->porvend = new inputField("&nbsp;&nbsp;% Comisi&oacute;n venta", "porvend");
+		$edit->porvend = new inputField('&nbsp;&nbsp;% Comisi&oacute;n venta', 'porvend');
 		$edit->porvend->css_class='inputnum';
 		$edit->porvend->rule='trim|numeric';
 		$edit->porvend->size=8;
 		$edit->porvend->maxlength =5;
-		$edit->porvend->group = "Informaci&oacute;n financiera";
+		$edit->porvend->group = 'Informaci&oacute;n financiera';
 
-		$edit->cobrador = new dropdownField("Cobrador", "cobrador");
-		$edit->cobrador->option("","Ninguno");
+		$edit->cobrador = new dropdownField('Cobrador', 'cobrador');
+		$edit->cobrador->option('','Ninguno');
 		$edit->cobrador->options("SELECT vendedor, nombre FROM vend WHERE tipo IN ('C','A') ORDER BY nombre");
-		$edit->cobrador->group = "Informaci&oacute;n financiera";
+		$edit->cobrador->group = 'Informaci&oacute;n financiera';
 
-		$edit->porcobr = new inputField("&nbsp;&nbsp;% Comisi&oacute;n cobro", "porcobr");
+		$edit->porcobr = new inputField('&nbsp;&nbsp;% Comisi&oacute;n cobro', 'porcobr');
 		$edit->porcobr->css_class='inputnum';
 		$edit->porcobr->rule='trim|numeric';
 		$edit->porcobr->size=8;
 		$edit->porcobr->maxlength =5;
-		$edit->porcobr->group = "Informaci&oacute;n financiera";
+		$edit->porcobr->group = 'Informaci&oacute;n financiera';
 
-		$edit->observa = new textareaField("Observaci&oacute;n", "observa");
-		$edit->observa->rule = "trim";
+		$edit->observa = new textareaField('Observaci&oacute;n', 'observa');
+		$edit->observa->rule = 'trim';
 		$edit->observa->cols = 70;
 		$edit->observa->rows =3;
 
-		$edit->clave = new inputField('Clave', 'clave');
-		$edit->clave->rule = 'trim';
-		$edit->clave->size = 8;
-		$edit->clave->maxlength = 12;
-
-
-		$edit->mensaje = new inputField("Mensaje", "mensaje");
-		$edit->mensaje->rule = "trim";
+		$edit->mensaje = new inputField('Mensaje', 'mensaje');
+		$edit->mensaje->rule = 'trim';
 		$edit->mensaje->size = 50;
 		$edit->mensaje->maxlength =40;
 
-		$edit->buttons("modify", "save", "undo", "delete", "back");
+		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
 		$edit->build();
 
 		//$data['script']  ='<script type="text/javascript">
@@ -363,31 +350,66 @@ class Scli extends validaciones {
 		$data['content'] = $edit->output;
 		$data['content'].= $this->pi18n->fallas();
 		$data['smenu']   = $this->load->view('view_sub_menu', $smenu,true);
-		$data['title']   = "<h1>Clientes</h1>";
-		$data["head"]    = script('jquery.pack.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js').script('plugins/jquery.autocomplete.js').style('jquery.autocomplete.css').$this->rapyd->get_head();
+		$data['title']   = heading('Clientes');
+		$data['head']    = script('jquery.pack.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js').script('plugins/jquery.autocomplete.js').style('jquery.autocomplete.css').$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 
 	function claveedit(){
 		//$this->pi18n->cargar('scli','dataedit');
-		$this->rapyd->load("dataedit");
+		$this->rapyd->load('dataedit');
 
 		$edit = new DataEdit('Clientes', 'scli');
-		$edit->back_url = site_url('ventas/scli/filteredgrid');
+		$id=$edit->_dataobject->pk['id'];
+		$edit->back_save   =true;
+		$edit->back_cancel =true;
+		$edit->back_cancel_save=true;
+		//$edit->back_url = site_url('ventas/scli/dataedit/show/'.$id);
+		$edit->back_url = site_url('ventas/scli/index');
 
-		$edit->clave = new passwordField("Clave", "clave");
-		$edit->clave->rule = 'trim';
-		$edit->clave->size = 8;
-		$edit->clave->maxlength = 12;
+		$edit->cliente = new inputField('Cliente', 'cliente');
+		$edit->cliente->mode = 'autohide';
+		$edit->cliente->when=array('show','modify');
+		$edit->nombre = new inputField('Nombre', 'nombre');
+		$edit->nombre->mode = 'autohide';
+		$edit->nombre->in='cliente';
+		$edit->nombre->when=array('show','modify');
+
+		$edit->clave = new inputField('Clave', 'clave');
+		$edit->clave->type = 'password';
+		$edit->clave->rule = 'matches[clave1]';
+		$edit->clave->when = array('modify');
+
+		$edit->clave1 = new inputField('Confirmaci&oacute;n de clave', 'clave1');
+		$edit->clave1->type    = 'password';
+		$edit->clave1->db_name = 'clave';
+		$edit->clave1->when    = array('modify');
+
+		$edit->clave->size      = $edit->clave1->size = 8;
+		$edit->clave->maxlength = $edit->clave1->maxlength = 12;
 
 		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
 		$edit->build();
 
+		$this->rapyd->jquery[]="$('#df1').submit(function(){
+			if( $('#clave').val() != '' ) {
+				pwEncrypt = $().crypt( {
+					method: 'md5',
+					source: $('#clave').val()
+				});
+				$('#clave').val(pwEncrypt);
+
+				pwEncrypt = $().crypt( {
+					method: 'md5',
+					source: $('#clave1').val()
+				});
+				$('#clave1').val(pwEncrypt);
+			}
+			return true;
+		});";
 		$data['content'] = $edit->output;
-		//$data['content'].= $this->pi18n->fallas();
-		//$data['smenu']   = $this->load->view('view_sub_menu', $smenu,true);
-		$data['title']   = '<h1>Asignacion de contrase&ntilde;a a cliente</h1>';
-		$data["head"]    = $this->rapyd->get_head();
+		$data['title']   = heading('Asignacion de contrase&ntilde;a a cliente');
+		$data['head']    = $this->rapyd->get_head().script('plugins/jquery.crypt.js');
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -419,21 +441,25 @@ class Scli extends validaciones {
 		}
 		return True;
 	}
+
 	function _post_insert($do){
 		$codigo=$do->get('cliente');
 		$limite=$do->get('limite');
 		logusu('scli',"CLIENTE $codigo CREADO, LIMITE $limite");
 	}
+
 	function _post_update($do){
 		$codigo=$do->get('cliente');
 		$limite=$do->get('limite');
 		logusu('scli',"CLIENTE $codigo MODIFICADO, LIMITE $limite");
 	}
+
 	function _post_delete($do){
 		$codigo=$do->get('cliente');
 		$limite=$do->get('limite');
 		logusu('scli',"CLIENTE $codigo ELIMINADO, LIMITE $limite");
 	}
+
 	function chexiste($codigo){
 		$codigo=$this->input->post('cliente');
 		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM scli WHERE cliente='$codigo'");
@@ -445,7 +471,7 @@ class Scli extends validaciones {
 			$this->validation->set_message('chexiste',"El codigo $codigo ya existe para el cliente $nombre  $rifci ");
 			return FALSE;
 		}else {
-  		return TRUE;
+		return TRUE;
 		}
 	}
 
@@ -465,21 +491,21 @@ class Scli extends validaciones {
 		}
 	}
 
-
 	function instalar(){
 		$seniat='http://www.seniat.gov.ve/BuscaRif/BuscaRif.jsp';
 		$mSQL="INSERT INTO valores (nombre,valor,descrip) VALUES ('CONSULRIF','$seniat','Pagina de consulta de rif del seniat') ON DUPLICATE KEY UPDATE valor='$seniat'";
-		$this->db->simple_query($mSQL);
+		var_dump($this->db->simple_query($mSQL));
 		$mSQL='ALTER TABLE `scli` ADD `modifi` TIMESTAMP DEFAULT CURRENT_TIMESTAMP NULL AFTER `mensaje`';
-		$this->db->simple_query($mSQL);
+		var_dump($this->db->simple_query($mSQL));
 		$mSQL='ALTER TABLE `scli` DROP PRIMARY KEY, ADD UNIQUE `cliente` (`cliente`)';
-		$this->db->simple_query($mSQL);
+		var_dump($this->db->simple_query($mSQL));
 		$mSQL='ALTER TABLE scli ADD id INT AUTO_INCREMENT PRIMARY KEY';
-		$this->db->simple_query($mSQL);
+		var_dump($this->db->simple_query($mSQL));
 		$mSQL='ALTER TABLE `scli`  CHANGE COLUMN `formap` `formap` INT(6) NULL DEFAULT 0';
-		$this->db->simple_query($mSQL);
+		var_dump($this->db->simple_query($mSQL));
 		$mSQL='ALTER TABLE `scli`  CHANGE COLUMN `email` `email` VARCHAR(100) NULL DEFAULT NULL';
-		$this->db->simple_query($mSQL);
+		var_dump($this->db->simple_query($mSQL));
+		$mSQL='ALTER TABLE `scli`  CHANGE COLUMN `clave` `clave` VARCHAR(50) NULL DEFAULT NULL AFTER `tiva`';
+		var_dump($this->db->simple_query($mSQL));
 	}
 }
-?>
