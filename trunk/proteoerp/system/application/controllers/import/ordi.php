@@ -68,12 +68,12 @@ class Ordi extends Controller {
 		$grid->column_orderby('Monto Total'  ,'<nformat><#montotot#></nformat>','montotot','align=\'right\'');
 		$grid->column('Vista',$uri2,'align=\'center\'');
 
-		$grid->add('import/ordi/dataedit/create','Agregar nueva orden');
+		$grid->add('import/ordi/dataedit/create','Agregar nuevo registro');
 		$grid->build();
 		//echo $grid->db->last_query();
 
 		$data['content'] = $filter->output.$grid->output;
-		$data['title']   = '<h1>Orden de importaci&oacute;n</h1>';
+		$data['title']   = '<h1>Importaciones</h1>';
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
@@ -423,7 +423,7 @@ class Ordi extends Controller {
 
 		$conten['form']  =& $edit;
 		$data['content'] =  $this->load->view('view_ordi',$conten,true);
-		$data['title']   =  '<h1>Orden de importaci&oacute;n</h1>';
+		$data['title']   =  '<h1>Importaciones</h1>';
 		$data['head']    =  $this->rapyd->get_head().phpscript('nformat.js').script('plugins/jquery.autocomplete.js').style('jquery.autocomplete.css');
 		$this->load->view('view_ventanas', $data); 
 	}
@@ -575,7 +575,7 @@ class Ordi extends Controller {
 		$edit->nombre->size     =40;
 		$edit->nombre->in       ='proveed';
 		$edit->nombre->readonly =true;
-		$edit->nombre->append('Dejar vacio si es el mismo proveedor de la orden de importaci&oacute;n');
+		$edit->nombre->append('Dejar vacio si es el mismo proveedor de la importaci&oacute;n');
 
 		$edit->fecha = new DateonlyField('Fecha','fecha','d/m/Y');
 		$edit->fecha->rule= 'required';
@@ -826,7 +826,7 @@ class Ordi extends Controller {
 		$data['content'] = "<iframe name='fordi' src ='$url' width='100%' height='450'><p>Tu navegador no soporta iframes.</p></iframe>";
 		$data['head']    = $this->rapyd->get_head();
 		if($rt)
-			$data['title']   ='<h1>Recalculo concluido, puede <a href="#" onclick="fordi.print();">imprimir</a> la orden o haga click '.anchor("import/ordi/dataedit/show/$id",'aqui').' para regresar</h1>';
+			$data['title']   ='<h1>Recalculo concluido, puede <a href="#" onclick="fordi.print();">imprimir</a> la importaci&oacute;n o haga click '.anchor("import/ordi/dataedit/show/$id",'aqui').' para regresar</h1>';
 		else
 			$data['title']   ='<h1>Opps! hubo problemas en el recalculo, se gener&oacute; un centinela '.anchor("import/ordi/dataedit/show/$id",'regresar').'</h1>';
 		$this->load->view('view_ventanas', $data);
