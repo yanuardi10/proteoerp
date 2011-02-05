@@ -124,6 +124,8 @@ class b2b extends validaciones {
 		</script>';
 
 		$edit = new DataEdit('B2B', 'b2b_config');
+		$edit->pre_process('insert','_pre_inup');
+		$edit->pre_process('update','_pre_inup');
 		$edit->back_url = site_url('sincro/b2b/index/');
 
 		$edit->proveed = new inputField('Proveedor', 'proveed');
@@ -542,6 +544,17 @@ class b2b extends validaciones {
 					foreach($itscst AS $in => $aarr){
 						foreach($aarr AS $i=>$val) $arr[$in][$i]=base64_decode($val);
 
+						//Arregla los precios en caso de llegar malos
+						for($j=1;$j<5;$j++){
+							$ind='precio'.$j;
+							if($arr[$in][$ind]<0 && $j>1){
+								$ind2='precio'.$i-1;
+								$arr[$in][$ind]=$arr[$in][$ind];
+							}elseif($arr[$in][$ind]<0 && $j==1){
+								$arr[$in][$ind]=round(($arr[$in]['preca']*100/(100-$config['margen1'])),2);
+							}
+						}
+
 						$barras=trim($arr[$in]['barras']);
 						$ddata['id_scst']  = $id_scst;
 						$ddata['proveed']  = $proveed;
@@ -555,10 +568,10 @@ class b2b extends validaciones {
 						$ddata['importe']  = $arr[$in]['tota'];
 						$ddata['garantia'] = 0;
 						$ddata['ultimo']   = $arr[$in]['preca'];
-						$ddata['precio1']  = $arr[$in]['precio1'];
-						$ddata['precio2']  = $arr[$in]['precio1'];
-						$ddata['precio3']  = $arr[$in]['precio2'];
-						$ddata['precio4']  = $arr[$in]['precio3'];
+						$ddata['precio1']  = ($config['margen1']==0)? $arr[$in]['precio1'] : round(($arr[$in]['preca']*100/(100-$config['margen1'])),2);
+						$ddata['precio2']  = ($config['margen2']==0)? $arr[$in]['precio2'] : round(($arr[$in]['preca']*100/(100-$config['margen2'])),2);
+						$ddata['precio3']  = ($config['margen3']==0)? $arr[$in]['precio3'] : round(($arr[$in]['preca']*100/(100-$config['margen3'])),2);
+						$ddata['precio4']  = ($config['margen4']==0)? $arr[$in]['precio4'] : round(($arr[$in]['preca']*100/(100-$config['margen4'])),2);
 						$ddata['montoiva'] = $arr[$in]['tota']*($arr[$in]['iva']/100);
 						$ddata['iva']      = $arr[$in]['iva'];
 						$ddata['barras']   = $barras;
@@ -602,10 +615,10 @@ class b2b extends validaciones {
 							$invent['base2']    = round($base2,2);
 							$invent['base3']    = round($base3,2);
 							$invent['base4']    = round($base4,2);
-							$invent['precio1']  = $arr[$in]['precio1'];
-							$invent['precio2']  = $arr[$in]['precio2'];
-							$invent['precio3']  = $arr[$in]['precio3'];
-							$invent['precio4']  = $arr[$in]['precio4'];
+							$invent['precio1']  = ($config['margen1']==0)? $arr[$in]['precio1'] : round(($arr[$in]['preca']*100/(100-$config['margen1'])),2);
+							$invent['precio2']  = ($config['margen2']==0)? $arr[$in]['precio2'] : round(($arr[$in]['preca']*100/(100-$config['margen2'])),2);
+							$invent['precio3']  = ($config['margen3']==0)? $arr[$in]['precio3'] : round(($arr[$in]['preca']*100/(100-$config['margen3'])),2);
+							$invent['precio4']  = ($config['margen4']==0)? $arr[$in]['precio4'] : round(($arr[$in]['preca']*100/(100-$config['margen4'])),2);
 							$invent['iva']      = $arr[$in]['iva'];
 							$invent['redecen']  = 'N';
 							$invent['activo']   = 'S';
@@ -822,6 +835,20 @@ class b2b extends validaciones {
 		return $query;
 	}
 
+	function _pre_inup($do){
+		for($i=1;$i<6;$i++){
+			$mar='margen'.$i;
+			$$mar=round($do->get($mar),2); //optenemos el margen
+		}
+
+		if($margen1>=$margen2 && $margen2>=$margen3 && $margen3>=$margen4 && $margen4>=$margen5){
+			return true;
+		}else{
+			$do->error_message_ar['pre_upd'] = 'Los margenes deben cumplir con:<br> Margen 1 mayor o igual al Margen 2 mayor o igual al  Margen 3 mayor o igual al Margen 4 mayor o igual al Margen 5';
+			return false;
+		}
+	}
+
 	function instalar(){
 		$mSQL="CREATE TABLE `b2b_config` (
 		  `id` int(10) NOT NULL AUTO_INCREMENT,
@@ -935,6 +962,5 @@ class b2b extends validaciones {
 		var_dump($this->db->simple_query($mSQL));
 		$mSQL="ALTER TABLE `b2b_scst`  ADD COLUMN   `cimpuesto` decimal(17,2) DEFAULT NULL AFTER `reducida`";
 		var_dump($this->db->simple_query($mSQL));
-
 	}
 }
