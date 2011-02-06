@@ -45,6 +45,15 @@ class MY_Validation extends CI_Validation
 		
 	}
 
+	function mac($mac){
+		$pattern='/[0-9AaBbCcDdEeFf]{2}(:[0-9AaBbCcDdEeFf]{2}){5}/';
+		if(preg_match($pattern,$mac)>0){
+			return TRUE;
+		}else{
+			return FALSE;
+		}
+	}
+
 	function chfecha($validar,$format=null,$fname=null){
 		$formato= (empty($format))? RAPYD_DATE_FORMAT: $format;
 		$fnombre= (empty($fname)) ? 'chfecha' : $fname;
@@ -146,7 +155,7 @@ class MY_Validation extends CI_Validation
 						if (FALSE === ($line = $this->CI->lang->line('isset')))
 						{
 							$line = 'The field was not set';
-						}							
+						}
 					}
 					else
 					{
