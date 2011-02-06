@@ -581,7 +581,7 @@ class Scst extends Controller {
 							$sobretasa +=$ivarow['monto'];
 							$baseadicio+=$ivarow['base'];
 						}elseif($ivarow['iva']==0){
-							$exento    +=$ivarow['monto'];
+							$exento    +=$ivarow['base'];
 						}
 					}
 					$row['reducida'] =$redutasa;
