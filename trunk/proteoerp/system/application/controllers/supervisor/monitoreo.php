@@ -44,6 +44,74 @@ class Monitoreo extends Controller{
 		echo $pag;
 	}
 
+	function wol(){
+		if (!extension_loaded('sockets')) show_error('La extension "sockets" no esta cargada, debe cargarla para poder usar estas opciones');
+		$this->load->library('rapyd');
+		$this->rapyd->load('dataform');
+		$form = new DataForm('supervisor/monitoreo/wol/process');
+
+		$form->mac = new inputField('Direcci&oacute;n MAC', 'mac');
+		$form->mac->append('Ejemplo: 00:01:02:03:04:05');
+		$form->mac->rule = 'required|mac';
+		$form->mac->maxlength =17;
+		$form->mac->size =20;
+
+		$form->submit('btnsubmit','Enviar');
+		$form->build_form();
+
+		if ($form->on_success()){
+			$mac=$form->mac->newValue;
+
+			$rt=$this->_wol($mac);
+			if(!$rt){
+				$form->error_string=$this->error;
+				$form->build_form();
+				$salida=$form->output.br();
+			}else{
+				$salida=$form->output.br().'Se&ntilde;al enviada satisfactoriamente';
+			}
+		}else{
+			$salida=$form->output;
+		}
+
+		$this->rapyd->jquery[]='$(".inputnum").numeric(".");';
+		$data['content'] = $salida;
+		$data['title']   = heading('Envio de se&ntilde;al de encendido por LAN');
+		$data['head']    = $this->rapyd->get_head();
+		$this->load->view('view_ventanas', $data);
+	}
+
+	function _wol($mac, $host='255.255.255.255',$socket_number=7){
+		$addr_byte = explode(':', $mac);
+		$hw_addr   = $msg = '';
+
+		for ($a=0; $a<6; $a++){
+			$hw_addr .= chr(hexdec($addr_byte[$a]));
+			$msg     .= chr(255);
+		}
+
+		for ($a = 1; $a <= 16; $a++) $msg .= $hw_addr;
+
+		if (!$s = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP)){
+			$this->error = 'No se pudo crear el socket';
+			return false;
+		}
+
+		if (socket_set_option($s, 1, 6, TRUE) < 0){
+			$this->error = 'setsockopt_fail';
+			return false;
+		}
+
+		if (socket_sendto($s, $msg, strlen($msg), 0, $host, $socket_number)){
+			$this->error = 'OK';
+			socket_close($s);
+			return true;
+		}else{
+			$this->error = 'send_fail';
+			return false;
+		}
+	}
+
 	function language(){
 		header('content-type: text/xml'); 
 		echo '<?xml version="1.0" encoding="utf-8"?>';
