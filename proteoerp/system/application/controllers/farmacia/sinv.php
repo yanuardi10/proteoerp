@@ -193,7 +193,7 @@ class sinv extends Controller {
 
 		$data['content'] = $filter->output.$grid->output;
 		$data['title']   = '<h1>Maestro de Inventario</h1>';
-		$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").script("sinvmaes2.js").$this->rapyd->get_head();
+		$data['head']    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").script("sinvmaes2.js").$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -413,32 +413,32 @@ class sinv extends Controller {
 		$edit->codigo->mode="autohide";
 		//$edit->codigo->append($sugerir);
 		//$edit->codigo->append($ultimo);
-		
+
 		$edit->alterno = new inputField("C&oacute;digo Alterno", "alterno");
 		$edit->alterno->size=20;  
 		$edit->alterno->maxlength=15;
 		$edit->alterno->rule = "trim|strtoupper|callback_chexiste2";
-		
+
 		$edit->enlace  = new inputField("C&oacute;digo Caja", "enlace");
 		$edit->enlace ->size=20;
 		$edit->enlace->maxlength=15;
 		$edit->enlace->rule = "trim|strtoupper";
-				
+
 		$edit->barras = new inputField("C&oacute;digo Barras", "barras");
 		$edit->barras->size=20;
 		$edit->barras->maxlength=15;
 		$edit->barras->rule = "trim";
-		
-		$edit->tipo = new dropdownField("Tipo", "tipo");
+
+		$edit->tipo = new dropdownField('Tipo', 'tipo');
 		$edit->tipo->style='width:180px;';
-		$edit->tipo->option("Standar","Standar" );
+		//$edit->tipo->option("Standar","Standar" );
 		$edit->tipo->option("Articulo","Art&iacute;culo" );
-		$edit->tipo->option("Servicio","Servicio");
-		$edit->tipo->option("Descartar","Descartar");
-		$edit->tipo->option("Consumo","Consumo");
-		$edit->tipo->option("Fraccion","Fracci&oacute;n");
-		$edit->tipo->option("Lote","Lote");
-		
+		//$edit->tipo->option("Servicio","Servicio");
+		//$edit->tipo->option("Descartar","Descartar");
+		//$edit->tipo->option("Consumo","Consumo");
+		//$edit->tipo->option("Fraccion","Fracci&oacute;n");
+		//$edit->tipo->option("Lote","Lote");
+
 		$AddUnidad='<a href="javascript:add_unidad();" title="Haz clic para Agregar una unidad nueva">Agregar Unidad</a>';	
 		$edit->unidad = new dropdownField("Unidad","unidad");
 		$edit->unidad->style='width:180px;';
@@ -512,8 +512,8 @@ class sinv extends Controller {
 
 		$edit->tdecimal = new dropdownField("Unidad Decimal", "tdecimal");
 		$edit->tdecimal->style='width:100px;';
-		$edit->tdecimal->option("N","No" );
-		$edit->tdecimal->option("S","Si" );
+		$edit->tdecimal->option('N','No' );
+		$edit->tdecimal->option('S','Si' );
 		$edit->tdecimal->in="activo"; 
 
 		$edit->descrip = new inputField("Descripci&oacute;n", "descrip");
@@ -539,11 +539,11 @@ class sinv extends Controller {
 		$edit->garantia->rule='numeric|callback_positivo|trim';
 
 		$AddMarca='<a href="javascript:add_marca();" title="Haz clic para Agregar una marca nueva">Agregar Marca</a>';
-		$edit->marca = new dropdownField("Marca", "marca");
+		$edit->marca = new dropdownField('Marca', 'marca');
 		$edit->marca->style='width:180px;';
-		$edit->marca->option("","");
-		$edit->marca->rule="required";
-		$edit->marca->options("SELECT marca as codigo, marca FROM marc ORDER BY marca");
+		$edit->marca->option('','');
+		$edit->marca->rule='required';
+		$edit->marca->options("SELECT marca AS codigo, marca FROM marc ORDER BY marca");
 		$edit->marca->append($AddMarca);
 
 		/*$edit->modelo  = new inputField("Modelo", "modelo");
@@ -558,7 +558,7 @@ class sinv extends Controller {
 		$edit->clase->option("C","Baja Rotacion");
 		$edit->clase->option("I","Importacion Propia");
 
-		$edit->iva = new inputField("Iva", "iva");
+		$edit->iva = new inputField('IVA', 'iva');
 		$edit->iva->css_class='inputnum';
 		$edit->iva->size=10;
 		$edit->iva->maxlength=6;
@@ -583,23 +583,19 @@ class sinv extends Controller {
 		$edit->pond->onchange = "requeridos();";
 		$edit->pond->rule="required";
 
-		$edit->us = new inputField("US$", "dolar");
-		$edit->us->size=10;
-		$edit->us->maxlength=13;
-
 		$edit->formcal = new dropdownField("Base C&aacute;lculo", "formcal");
 		$edit->formcal->style='width:100px;';
 		//$edit->formcal->rule="required";
 		//$edit->formcal->option("","Seleccione" );
-		$edit->formcal->option("S","Standar" );
-		$edit->formcal->option("U","Ultimo" );
-		$edit->formcal->option("P","Promedio" );
-		$edit->formcal->option("M","Mayor" );
+		$edit->formcal->option('S','Standar');
+		$edit->formcal->option('U','Ultimo' );
+		$edit->formcal->option('P','Promedio' );
+		$edit->formcal->option('M','Mayor' );
 		$edit->formcal->onchange = "requeridos();calculos('I');";
 
 		$edit->redecen = new dropdownField("Redondear", "redecen");
 		$edit->redecen->style='width:100px;';
-		$edit->redecen->option("NO","No");
+		$edit->redecen->option("N","No");
 		$edit->redecen->option("F","Fracci&oacute;n");
 		$edit->redecen->option("D","Decena" );  
 		$edit->redecen->option("C","Centena"  );
