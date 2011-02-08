@@ -6,8 +6,8 @@ class Bcaj extends Controller {
 		$this->config->load('datasis');
 		$this->guitipo=array('DE'=>'Deposito','TR'=>'Transferencia','RM'=>'Remesa');
 		$this->datasis->modulo_id('51D',1);
-		$cajas=$this->config->item('cajas');
-		foreach($cajas AS $inv=>$val){
+		$this->cajas=$this->config->item('cajas');
+		foreach($this->cajas AS $inv=>$val){
 			$codban=$this->db->escape($val);
 			$cana=$this->datasis->dameval("SELECT COUNT(*) AS cana FROM banc WHERE codbanc=$codban");
 			if($cana==0){
@@ -21,10 +21,6 @@ class Bcaj extends Controller {
 		$smenu['link']=barra_menu('51D');
 
 		$filter = new DataFilter('Filtro','bcaj');
-
-		//$select=array('fecha','numero','nombre','monto','CONCAT_WS(\'-\',banco ,numcuent) AS banco','tipo_op','codbanc','LEFT(concepto,20)AS concepto','anulado');
-		//$filter->db->select($select);
-		//$filter->db->from('bcaj');
 
 		$filter->fecha = new dateonlyField('Fecha','fecha');
 		$filter->fecha->size=10;
@@ -43,20 +39,20 @@ class Bcaj extends Controller {
 		$filter->buttons('reset','search');
 		$filter->build();
 
-		//$uri = anchor('finanzas/bmov/dataedit/show/<#codbanc#>/<#tipo_op#>/<#numero#>','<#numero#>');
+		$uri = anchor('finanzas/bcaj/dataedit/show/<#numero#>','<#numero#>');
 
 		$grid = new DataGrid('Lista');
 		$grid->order_by('numero','desc');
 		$grid->per_page = 15;
 
-		$grid->column('N&uacute;mero','numero');
-		$grid->column('Fecha'        ,'<dbdate_to_human><#fecha#></dbdate_to_human>');
-		$grid->column('Env&iacute;a' ,'<#envia#>-<#bancoe#>');
-		$grid->column('Recibe'       ,'<#recibe#>-<#bancor#>');
-		$grid->column('Monto'        ,'<nformat><#monto#></nformat>' ,'align=right');
-		$grid->column('Concepto'     ,'concepto');
+		$grid->column_orderby('N&uacute;mero',$uri,'numero');
+		$grid->column_orderby('Fecha'        ,'<dbdate_to_human><#fecha#></dbdate_to_human>','fecha');
+		$grid->column_orderby('Env&iacute;a' ,'<#envia#>-<#bancoe#>','bancoe');
+		$grid->column_orderby('Recibe'       ,'<#recibe#>-<#bancor#>','bancor');
+		$grid->column_orderby('Monto'        ,'<nformat><#monto#></nformat>' ,'monto','align=right');
+		$grid->column_orderby('Concepto'     ,'concepto','concepto');
 
-		//$grid->add('finanzas/bcaj/autotranfer');
+		$grid->add('finanzas/bcaj/wdataedit');
 		$grid->build();
 
 		$data['content'] = $filter->output.$grid->output;
@@ -67,10 +63,42 @@ class Bcaj extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
-	function dataedit($uriattr='paso1'){
+	function dataedit(){
+		$this->rapyd->load('dataedit');
+		$edit = new DataEdit('Deposito en caja', 'bcaj');
+		$edit->back_url = site_url('finanzas/bcaj/index');
+
+		$edit->fecha = new DateonlyField('Fecha', 'fecha','d/m/Y');
+		$edit->fecha->insertValue = date('Y-m-d');
+		$edit->fecha->rule = 'chfecha|required';
+
+		$edit->tipo = new dropdownField('Tipo', 'tipo');
+		$edit->tipo->options($this->guitipo);
+		$edit->tipo->rule = 'required';
+		$edit->tipo->style = 'width:180px';
+
+		$edit->envia = new dropdownField('Envia','envia');
+		$edit->envia->option('','Seleccionar');
+
+		$edit->recibe = new dropdownField('Recibe','recibe');
+		$edit->recibe->option('','Seleccionar');
+
+		//Poner los campos que faltan
+
+		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
+		$edit->build();
+
+		$data['content'] = $edit->output;
+		$data['title']   = '<h1>Depositos,transferencias y remesas</h1>';
+		$data['head']    = $this->rapyd->get_head().phpscript('nformat.js');
+		$this->load->view('view_ventanas', $data);
+	}
+
+	//Inicio del Winzard
+	function wdataedit($uriattr='paso1'){
 		$this->rapyd->load('dataform');
 
-		$edit = new DataForm('finanzas/bcaj/dataedit/'.$uriattr);
+		$edit = new DataForm('finanzas/bcaj/wdataedit/'.$uriattr);
 		$edit->title='Deposito en caja';
 
 		$edit->back_url = site_url('finanzas/bcaj/index');
@@ -84,6 +112,9 @@ class Bcaj extends Controller {
 		$edit->tipo->rule = 'required';
 		$edit->tipo->style = 'width:180px';
 
+		$back_url = site_url('finanzas/bcaj/index');
+		$edit->button('btn_undo', 'Regresar', "javascript:window.location='${back_url}'", 'BL');
+
 		$edit->submit('btnsubmit','Siguiente');
 		$edit->build_form();
 
@@ -91,7 +122,7 @@ class Bcaj extends Controller {
 			$arr['fecha'] = 'fecha';
 			$salida=$this->_dataedit2($arr);
 		}else{
-			$edit->_process_uri='finanzas/bcaj/dataedit/paso1';
+			$edit->_process_uri='finanzas/bcaj/wdataedit/paso1';
 			$edit->build_form();
 			$salida=$edit->output;
 		}
@@ -253,7 +284,7 @@ class Bcaj extends Controller {
 
 		$edit->container = new containerField('alert',form_hidden($arr));
 
-		$back_url = site_url('finanzas/bcaj/dataedit/');
+		$back_url = site_url('finanzas/bcaj/wdataedit/');
 		$edit->button('btn_undo', 'Regresar', "javascript:window.location='${back_url}'", 'TR');
 
 		$edit->submit('btnsubmit','Guardar');
@@ -298,6 +329,7 @@ class Bcaj extends Controller {
 		}
 		return $edit->output;
 	}
+	//Fin del Winzard
 
 	//Auto transferencia
 	function autotranfer(){
@@ -323,13 +355,14 @@ class Bcaj extends Controller {
 		$edit->fecha->insertValue = date('Y-m-d');
 		$edit->fecha->rule = 'chfecha|required';
 		$edit->fecha->dbformat='Y-m-d';
+		$edit->fecha->append(HTML::button('traesaldo', 'Consultar monto', '', 'button', 'button'));
 		$edit->fecha->size=10;
 
 		$campos=array(
-			'efectivo'=>'Efectivo',
-			'tarjeta' =>'Tarjeta de D&eacute;bito y Cr&eacute;dito',
-			'gastos'  =>'Gastos por Justificar',
-			'valores' =>'Valores, Cesta Tickes y Chequs',
+			'efectivo'=>'Efectivo caja: '.$this->cajas['efectivo'],
+			'tarjeta' =>'Tarjeta de D&eacute;bito y Cr&eacute;dito caja: '.$this->cajas['tarjetas'],
+			'gastos'  =>'Gastos por Justificar caja: '.$this->cajas['gastos'],
+			'valores' =>'Valores, Cesta Tickes y Cheques caja: '.$this->cajas['valores'],
 			'monto'   =>'Monto total');
 
 		foreach($campos AS $obj=>$titulo){
@@ -348,38 +381,76 @@ class Bcaj extends Controller {
 		$edit->button('btn_undo','Regresar',"javascript:window.location='$back_url'",'BL');
 		$edit->submit('btnsubmit','Guardar');
 		$edit->build_form();
-		$salida=$edit->output;
 
 		if ($edit->on_success()){
 			$fecha=$edit->fecha->newValue;
 			foreach($campos AS $obj=>$titulo){
 				$$obj=$edit->$obj->newValue;
 			}
-			$rt=$this->_autotranfer($fecha,$efectivo,$tarjeta,$gastos,$valores);
-			if($rt){
-				//redirect('/finanzas/bcaj/listo');
+			$montosis=$this->_montoautotranf($this->cajas['cobranzas'],$fecha);
+			if($montosis==$efectivo+$tarjeta+$gastos+$valores){
+				$rt=$this->_autotranfer($fecha,$efectivo,$tarjeta,$gastos,$valores);
+				if($rt){
+					redirect('/finanzas/bcaj/listo');
+				}else{
+					redirect('/finanzas/bcaj/listo/s');
+				}
 			}else{
-				//redirect('/finanzas/bcaj/listo/s');
+				$edit->error_string='El monto total a transferir debe ser de :<b>'.nformat($montosis).'</b>';
+				$edit->build_form();
+				$salida=$edit->output;
 			}
+		}else{
+			$fecha= (empty($edit->fecha->value))? date('Y-m-d'): human_to_dbdate($edit->fecha->value);
+
+			$montosis= $this->_montoautotranf($this->cajas['cobranzas'],$fecha);
+			$salida  = $edit->output;
 		}
 
+		$url=site_url('finanzas/bcaj/ajaxmonto');
 		$this->rapyd->jquery[]='$(".inputnum").numeric(".");';
 		$this->rapyd->jquery[]='$(".inputnum").bind("keyup",function() { totaliza(); });';
+		$this->rapyd->jquery[]='$("td").removeAttr("style");';
+		$this->rapyd->jquery[]='$("input[name=\'traesaldo\']").click(function() {
+			fecha=$("#fecha").val();
+			if(fecha.length > 0){
+				$.post("'.$url.'", { fecha: $("#fecha").val() },
+					function(data){
+						$("#mmonto").html(nformat(data));
+						$("#ffecha").html($("#fecha").val());
+						$(".alert").hide("slow");
+					});
+			}else{
+				alert("Debe introducir una fecha");
+			}
+			});';
 
-		$data['content'] = $salida;
-		$data['title']   = '<h1>Conciliaci&oacute;n de cierre</h1>';
+		$data['content'] = 'El monto total a tranferir para la fecha <b id="ffecha">'.dbdate_to_human($fecha).'</b> debe ser de: <b id="mmonto">'.nformat($montosis).'</b>';
+		$data['content'].= $salida;
+		$data['title']   = '<h1>Conciliaci&oacute;n de cierre </h1>';
 		$data['head']    = $this->rapyd->get_head().phpscript('nformat.js');
 		$this->load->view('view_ventanas', $data);
 	}
 
+	function ajaxmonto(){
+		$fecha=$this->input->post('fecha');
+		if($fecha!==false){
+			$fecha=human_to_dbdate($fecha);
+			$monto=$this->_montoautotranf($this->cajas['cobranzas'],$fecha);
+		}else{
+			$monto=0;
+		}
+		echo $monto;
+	}
+
 	function _autotranfer($fecha,$efectivo=0,$tarjeta=0,$gastos=0,$valores=0){
-		$cajas=$this->config->item('cajas');
-		$envia=$cajas['cobranzas'];
+		//$cajas=$this->config->item('cajas');
+		$envia=$this->cajas['cobranzas'];
 		$arr=array(
-			'efectivo'=>$cajas['efectivo'],
-			'tarjeta' =>$cajas['tarjetas'],
-			'gastos'  =>$cajas['gastos'],
-			'valores' =>$cajas['valores']
+			'efectivo'=>$this->cajas['efectivo'],
+			'tarjeta' =>$this->cajas['tarjetas'],
+			'gastos'  =>$this->cajas['gastos'],
+			'valores' =>$this->cajas['valores']
 		);
 
 		foreach($arr as $monto=>$recibe){
@@ -388,8 +459,9 @@ class Bcaj extends Controller {
 	}
 
 	function _transferencaj($fecha,$monto,$envia,$recibe){
+		if($monto<=0) return true;
 		$numero = $this->datasis->fprox_numero('nbcaj');
-		$transac= $this->datasis->fprox_numero('transac');
+		$transac= $this->datasis->fprox_numero('ntransa');
 		$numeroe= $this->datasis->banprox($envia);
 		$numeror= $this->datasis->banprox($recibe);
 		$error  = 0;
@@ -420,7 +492,7 @@ class Bcaj extends Controller {
 			'tipor'   => 'NC',
 			'numeror' => $numeror,
 			'bancor'  => $infbanc[$recibe]['banco'],
-			'concepto'=> 'TRANSFERENCIA ENTRE CAJAS',
+			'concepto'=> 'TRANSFERENCIA ENTRE CAJA '.$envia.' A '.$recibe,
 			'concep2' => '',
 			'benefi'  => '',
 			'boleta'  => '',
@@ -459,7 +531,7 @@ class Bcaj extends Controller {
 		$data['clipro']   = 'O';
 		$data['codcp']    = 'TRANS';
 		$data['monto']    = $monto;
-		$data['concepto'] = 'TRANSFERENCIAS ENTRE CAJAS';
+		$data['concepto'] = 'TRANSFERENCIAS ENTRE CAJA '.$envia.' A '.$recibe;
 		$data['concep2']  = '';
 		$data['transac']  = $transac;
 		$data['usuario']  = $this->session->userdata('usuario');
@@ -486,7 +558,7 @@ class Bcaj extends Controller {
 		$data['clipro']   = 'O';
 		$data['codcp']    = 'TRANS';
 		$data['monto']    = $monto;
-		$data['concepto'] = 'TRANSFERENCIAS ENTRE CAJAS';
+		$data['concepto'] = 'TRANSFERENCIAS ENTRE CAJA '.$envia.' A '.$recibe;
 		$data['concep2']  = '';
 		$data['transac']  = $transac;
 		$data['usuario']  = $this->session->userdata('usuario');
@@ -498,6 +570,15 @@ class Bcaj extends Controller {
 		if($ban==false){ memowrite($sql,'bcaj'); $error++; }
 
 		return ($error==0) ? true : false;
+	}
+
+	function _montoautotranf($caja,$fecha){
+		$dbfecha=$this->db->escape($fecha);
+		$dbcaja =$this->db->escape($caja);
+		$mSQL="SELECT SUM(if(tipo_op IN ('NC','DE'),1,-1)*monto) AS monto FROM bmov WHERE codbanc=$dbcaja AND fecha=$dbfecha";
+		$monto=$this->datasis->dameval($mSQL);
+
+		return (empty($monto))? 0 : $monto;
 	}
 
 	function chtotal($monto){
