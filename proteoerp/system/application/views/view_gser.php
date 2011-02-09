@@ -46,6 +46,8 @@ $(document).ready(function() {
 		miva=roundNumber(p*iva/100,2);
 		$("#iva_"+i.toString()).val(miva);
 	}
+	
+	
 });
 
 function valida(i){
@@ -97,10 +99,8 @@ function totalizar(i){
 	$("#totbruto").val(tb);
 	totiva=roundNumber(tb-tp,2);
 	$("#totiva").val(totiva);
-	if($("#breten").val()!= "" ){
+	if($("#creten").val()!= "" ){
 		islr();
-		totneto=roundNumber($("#totbruto").val()-$("#reteiva").val()-$("#reten").val(),2);
-		$("#totneto").val(totneto);
 	}
 	<?php if ($tipo_rete=="ESPECIAL"){ ?>
 			valor=0;
