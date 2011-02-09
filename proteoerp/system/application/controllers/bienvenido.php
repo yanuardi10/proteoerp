@@ -7,21 +7,15 @@ class Bienvenido extends Controller {
 	function index(){
 		$this->session->set_userdata('panel', $this->uri->segment(3));
 		$data['titulo1']  = '<center>';
-		$data['titulo1']  .= '<h1>SISTEMA ADMINISTRATIVO ERP</h1>';
-		$data['titulo1'] ='
-			<div id="tumblelog">
-			<div class="story col2">
-			<h2>Sistemas Administrativos</h2>';
-		$data['titulo1']  .= image('portada.jpg')."</p>\n";
-		$data['titulo1'] .='
-		<p></p>
-		</div>
-		
-		</div> <!-- /#tumblelog -->'."\n";
-		
+		$data['titulo1'] .= '<div id="tumblelog">';
+		$data['titulo1'] .= image('portada.jpg');
+		$data['titulo1'] .= '<h2>Sistemas Administrativos</h2>';
+		$data['titulo1'] .= '<p></p>';
+		$data['titulo1'] .= '</div>';
+
 		if ($this->datasis->login())
-		$data['titulo1']  .= "<p>&nbsp;</p>";
-		$data['titulo1']  .= "</center><br>";
+		$data['titulo1']  .= '<p>&nbsp;</p>';
+		$data['titulo1']  .= '</center>';
 		$this->layout->buildPage('bienvenido/home', $data);
 	}
 	

@@ -73,21 +73,26 @@ $(document).ready(function() {
 			</tr>
 		</table>
 
-		<table width="100%" border=0 cellspacing=0 cellpadding=0>
-		    <tr>
-			<td width='178px'><div id="pielateral"><p style="font-size:10px"><?php echo "Conectado a: ".$this->db->database; ?></p></div></td>
-			<td>
-			    <div id="pie"><p style="font-size:8px"><?php echo $copyright ?></p><?php echo image('codeigniter.gif'); ?>
-				<?=image('php-power-micro.png')?>
-				<?=image('jquery-icon.png')?>
-				<?=image('mysqlpowered.png')?>
-				<?=image('buttongnugpl.png')?>
-			    </div>
-			</td>
-			<td width='150px' ><div id="pielateral"><p style="font-color:white">
-			<a href='javascript:void(0);' onclick="window.open('/proteoerp/chat', 'wchat', 'width=580,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+((screen.availWidth/2)-290)+',screeny='+((screen.availHeight/2)-300)+'');" style="font-color:white;">Chat</a></p></div></td>
-		    </tr>
+		<div id="pie">
+		<table class='pie' width="100%" border=0 cellspacing=0 cellpadding=0>
+			<tr>
+				<td width='178px' valign='top'>
+					<div><p style="font-size:10px"><?php echo "Conectado a: ".$this->db->database; ?></p></div>
+				</td>
+				<td align='center'>
+					<p style="font-size:8px"><?php echo $copyright ?></p>
+					<?php echo image('codeigniter.gif'); ?>
+					<?=image('php-power-micro.png')?>
+					<?=image('jquery-icon.png')?>
+					<?=image('mysqlpowered.png')?>
+					<?=image('buttongnugpl.png')?>
+				</td>
+				<td width='178px'>
+					<div>&nbsp;</div>
+				</td>
+			</tr>
 		</table>
+		</div>
 	</div>
 </body>
 </html>
