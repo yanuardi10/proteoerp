@@ -3,14 +3,14 @@ class Rcaj extends validaciones {
 
 	function Rcaj(){
 		parent::Controller(); 
-		$this->load->library("rapyd");
+		$this->load->library('rapyd');
 		//$this->load->library("menues");
 		$this->datasis->modulo_id('12A',1);
 		$this->load->database();
 	}
 
 	function index(){
-		redirect("ventas/rcaj/filteredgrid");
+		redirect('ventas/rcaj/filteredgrid');
 	}
 
 	function filteredgrid(){
