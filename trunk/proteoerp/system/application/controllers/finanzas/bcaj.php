@@ -96,13 +96,36 @@ class Bcaj extends Controller {
 	}
 
 	function agregar(){
-		$data['content'] = anchor('finanzas/bcaj/depositoefe'  ,'Deposito de efectivo').br();
-		$data['content'].= anchor('finanzas/bcaj/depositotar'  ,'Deposito de tarjetas').br();
-		$data['content'].= anchor('finanzas/bcaj/transferencia','Transferencias').br();
-		$data['content'].= anchor('finanzas/bcaj/index'        ,'Regresar').br();
+		$data['content'] = '<table align="center">'.br();
+		
+		$data['content'].= '<tr><td><img src="'.base_url().'images/dinero.jpg'.'" height="100px"></td><td>';
+		$data['content'].= '<p>Esta opcion se utiliza para depositar lo recaudado en efectivo desde 
+		                       las cajas para los bancos, debe tener a mano el numero del deposito</p>';
+		                       
+		$data['content'].= anchor('finanzas/bcaj/depositoefe'  ,'Deposito de efectivo').br();
 
+		$data['content'].= '</td></tr><tr><td><img src="'.base_url().'images/tarjetas.jpg'.'" height="100px"></td><td>';
+		$data['content'].= '<p>Para registrar lo recaudado mediante tarjetas electronicas (Credito, Debito, Cesta Ticket) 
+		                       segun los valores impresos en los cierres diarios de los puntos de venta electronicos</p>';
+		$data['content'].= anchor('finanzas/bcaj/depositotar'  ,'Deposito de tarjetas').br();
+
+		$data['content'].= '</td></tr><tr><td><img src="'.base_url().'images/transfer.jpg'.'" height="100px" ></td><td>';
+		$data['content'].= '<p>Puede hacer transferencias entre cajas o entre cuentas bancarias, las que correspondan a
+		                       cuentas bancarias pueden realizarce mediante cheque-deposito (manual) o NC-ND por transferencia   
+		                       electronica, en cualquier caso debe tener los numeros de documentos correspondientes.  </p>';
+		$data['content'].= anchor('finanzas/bcaj/transferencia','Transferencias').br();
+		
+
+		$data['content'].= '</td></tr><tr><td><img src="'.base_url().'images/caja_activa.gif'.'" height="100px" ></td><td>';
+		$data['content'].= '<p>Si por politica de la empresa se quiere descargar la caja de recaudacion todos los dias, esta
+		                       opcion facilita el proceso ya que puede hacer varias transferencias en una sola operacion..  </p>';
+		$data['content'].= anchor('finanzas/bcaj/autotranfer','Transferencias').br();
+
+		$data['content'].= '</td></tr><tr><td colspan=2 align="center">'.anchor('finanzas/bcaj/index'        ,'Regresar').br();
+		$data['content'].= '</td></tr></table>'.br();
+		
 		$data['title']   = heading('Selecciona la operaci&oacute;n que desea realizar');
-		$data['head']    = $this->rapyd->get_head().phpscript('nformat.js');
+		$data['head']    = $this->rapyd->get_head();  //.phpscript('nformat.js');
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -161,7 +184,7 @@ class Bcaj extends Controller {
 		$edit->envia->style  = 'width:180px';
 		$edit->recibe->style = 'width:180px';
 
-		$back_url = site_url('finanzas/bcaj/index');
+		$back_url = site_url('finanzas/bcaj/agregar');
 		$edit->button('btn_undo', 'Regresar', "javascript:window.location='${back_url}'", 'BL');
 
 		$edit->submit('btnsubmit','Siguiente');
@@ -241,7 +264,7 @@ class Bcaj extends Controller {
 		$edit->envia->style  = 'width:180px';
 		$edit->recibe->style = 'width:180px';
 
-		$back_url = site_url('finanzas/bcaj/index');
+		$back_url = site_url('finanzas/bcaj/agregar');
 		$edit->button('btn_undo', 'Regresar', "javascript:window.location='${back_url}'", 'TR');
 
 		$edit->submit('btnsubmit','Guardar');
@@ -369,7 +392,7 @@ class Bcaj extends Controller {
 		$edit->envia->style  = 'width:180px';
 		$edit->recibe->style = 'width:180px';
 
-		$back_url = site_url('finanzas/bcaj/index');
+		$back_url = site_url('finanzas/bcaj/agregar');
 		$edit->button('btn_undo', 'Regresar', "javascript:window.location='${back_url}'", 'TR');
 
 		$edit->submit('btnsubmit','Guardar');
@@ -406,22 +429,19 @@ class Bcaj extends Controller {
 	//Auto transferencia
 	function autotranfer(){
 		$this->rapyd->load('dataform');
-
 		$edit = new DataForm('finanzas/bcaj/autotranfer/process');
 		$edit->title='Transferencia automatica entre cajas';
-		//$edit->script($script);
 
 		$edit->fecha = new DateonlyField('Fecha', 'fecha','d/m/Y');
 		$edit->fecha->insertValue = date('Y-m-d');
 		$edit->fecha->rule = 'chfecha|required';
 		$edit->fecha->dbformat='Y-m-d';
 		$edit->fecha->size=10;
-
-		$back_url=site_url('finanzas/bcaj/index');
+		
+		$back_url=site_url('finanzas/bcaj/agregar');
 		$edit->button('btn_undo','Regresar',"javascript:window.location='$back_url'",'BL');
 		$edit->submit('btnsubmit','Siguiente');
 		$edit->build_form();
-
 		if ($edit->on_success()){
 			$fecha=$edit->fecha->newValue;
 			redirect('finanzas/bcaj/autotranfer2/'.$fecha);
