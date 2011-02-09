@@ -3,7 +3,7 @@
 <tr>
 <td width="170px">&nbsp</td>
 <td align='center'><h2><?=$this->datasis->traevalor("TITULO1")  ?></h2></td>
-<td align="right"><?=$idus ?> <div id="form_usr">Usuario: </div> </td>
+<td align="right"><?=$idus ?></td>
 </tr>
 <tr>
 <td>&nbsp</td>
