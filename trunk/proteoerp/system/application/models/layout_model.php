@@ -76,7 +76,7 @@ class Layout_model extends Model {
 
 	function idus(){
 		if ($this->session->userdata('logged_in')){
-			$retval['idus']=$this->session->userdata('nombre');
+			$retval['idus']='Usuario: '.$this->session->userdata('nombre');
 		}else{
 			$attributes  = array('name' => 'user_form','autocomplete'=>'off');
 			$retval['idus'] = form_open('bienvenido/autentificar',$attributes);
