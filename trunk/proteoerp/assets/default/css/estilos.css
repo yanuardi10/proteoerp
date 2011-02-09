@@ -2,12 +2,14 @@ body{
 	margin:0;
 	padding:0;
 }
+
 #container{
-	background:url(vline.jpg) 125px repeat-y;
+	background:url(vline.jpg) 165px repeat-y;
 	margin:0 auto;
 	top:0;
 	padding:0;
 }
+
 #header{
 	background:url(templete_01.jpg) no-repeat;
 	background-color:#2067B5;
@@ -16,6 +18,7 @@ body{
 	margin:0px;
 	padding:0;
 }
+
 #header h1{
 	/*padding:10;*/
 	font-family:Verdana, Arial, Helvetica, sans-serif;
@@ -24,28 +27,42 @@ body{
 	border-color: #000000;
 	font-weight:bold;
 }
+
+#header h2{
+	/*padding:10;*/
+	font-family:Verdana, Arial, Helvetica, sans-serif;
+	margin: 0;
+	color:#FFFFFF;
+	border-color: #000000;
+	font-weight:bold;
+	font-size: 18px;
+}
+
 #menu{
 	background-color:#2E4B77;
 	height:15px;
 }
+
 #linea{
 	background-color:#B2B2B2;
 	height:10px;
 }
+
 #micelanias{
 	float:left;
-	width:142px;
+	width:182px;
 	padding-bottom:10px;
 	padding-top:10px;
 	height:350px;
 }
+
 #tablemenu{
-	width:142px;
+	width:182px;
 }
+
 #pie{
 	clear:both;
 	background:url(templete_16.jpg) right no-repeat;
-	background-position:right top;
 	background-color:#2E4B77;
 	color:#FFFFFF;
 	height:66px;
@@ -53,6 +70,18 @@ body{
  	font-size: 10px;
 	text-align:center;
 }
+
+#pielateral{
+	clear:both;
+	background-color:#2E4B77;
+	color:#FFFFFF;
+	height:66px;
+	font-weight: bold;
+	font-size: 10px;
+	text-align:center;
+
+}
+
 #contenido{
 	float:left;
 	top:auto;
@@ -60,6 +89,7 @@ body{
 	width:100%;
 	min-width:580px;
 }
+
 #form_usr{
 	margin:5px;
 	float:right;
@@ -69,22 +99,26 @@ body{
 	font-size:10px;
 	font-weight:bold;
 }
+
 #form_usr form{
 	margin:0px;
 	font-size:12px;
 	font-weight:bold;
 }
+
 #form_usr form input{
 	font-size:inherit;
 	font-weight:inherit;
 	background-image:url(form_fon.jpg);
 	border:0;
 }
+
 #home{
 	margin:2px;
 	padding:2px;
 	width:100%;
 }
+
 #home h1{
 	/*padding:10;*/
 	font-family:Verdana, Arial, Helvetica, sans-serif;
@@ -107,6 +141,15 @@ body{
 	/*padding:10;*/
 	font-family:Verdana, Arial, Helvetica, sans-serif;
 	font-size: 8px;
+	margin: 5px;
+	font-weight:bold;
+	color:white;
+}
+
+.miniblanco1{
+	/*padding:10;*/
+	font-family:Verdana, Arial, Helvetica, sans-serif;
+	font-size: 9px;
 	margin: 5px;
 	font-weight:bold;
 	color:white;
