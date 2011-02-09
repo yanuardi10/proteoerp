@@ -1,5 +1,5 @@
 <div id="header">
-<table align="center" border=2 width="99%" cellpadding=0 cellspacing=0>
+<table align="center" border=0 width="99%" cellpadding=0 cellspacing=0>
 <tr>
 <td width="170px">&nbsp</td>
 <td align='center'><h2><?=$this->datasis->traevalor("TITULO1")  ?></h2></td>
