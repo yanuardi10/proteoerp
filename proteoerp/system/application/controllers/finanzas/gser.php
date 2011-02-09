@@ -39,7 +39,7 @@ class gser extends Controller {
 
 		$uri = anchor('finanzas/gser/dataedit/show/<#id#>','<#numero#>');
 		$uri3  = anchor('finanzas/mgser/dataedit/modify/<#fecha#>/<#numero#>/<#proveed#>','Modificar');
-		
+
 		$grid = new DataGrid();
 		$grid->order_by("numero","desc");
 		$grid->per_page = 15;
@@ -73,7 +73,7 @@ class gser extends Controller {
 			'p_uri'=>array(4=>'<#i#>'),
 			'titulo'  =>'Buscar Articulo',
 			'script'  =>array('lleva(<#i#>)'));
-	
+
 		$btn=$this->datasis->p_modbus($modbus,'<#i#>');
 
 		$script='$(function(){
@@ -170,7 +170,7 @@ class gser extends Controller {
 		//$edit->numero->mode="autohide";
 		$edit->numero->maxlength=8;
 		//$edit->numero->apply_rules=false; //necesario cuando el campo es clave y no se pide al usuario
-		$edit->numero->when=array('create','modify');
+//		$edit->numero->when=array('create','modify');
 
 		$edit->proveedg = new inputField("Proveedor","proveed");
 		$edit->proveedg->size = 10;
@@ -267,12 +267,12 @@ class gser extends Controller {
 		$edit->reteiva->css_class='inputnum';
 		$edit->reteiva->onkeyup="valida(0)";
 
-//		$edit->anticipo = new inputField("Anticipo","anticipo");
-//		$edit->anticipo->size = 10;
-//		$edit->anticipo->maxlength=10;
-//		$edit->anticipo->css_class='inputnum';
-//		$edit->anticipo->mode="autohide";
-		
+		//		$edit->anticipo = new inputField("Anticipo","anticipo");
+		//		$edit->anticipo->size = 10;
+		//		$edit->anticipo->maxlength=10;
+		//		$edit->anticipo->css_class='inputnum';
+		//		$edit->anticipo->mode="autohide";
+
 		$edit->totneto = new inputField("Total Neto","totneto");
 		$edit->totneto->size = 10;
 		$edit->totneto->maxlength=10;
@@ -327,7 +327,7 @@ class gser extends Controller {
 
 		$edit->departa =  new dropdownField("Departamento <#o#>", "departa_<#i#>");
 		$edit->departa->option('',"Seleccion Departamento");
-		$edit->departa->options("SELECT depto,CONCAT(depto,'-',descrip) as descrip FROM dpto ORDER BY descrip");
+		$edit->departa->options("SELECT departa,CONCAT(departa,'-',depadesc) as descrip FROM depa ORDER BY departa");
 		$edit->departa->db_name='departa';
 		$edit->departa->style="30px";
 		$edit->departa->rel_id   ='gitser';
@@ -420,17 +420,17 @@ class gser extends Controller {
 			$i=$rel['iva'];
 			$total+=$i+$p;
 			$subt+=$p;
-//			$rel['fecha']=$do->get('fecha');
+			//			$rel['fecha']=$do->get('fecha');
 		}
 		$ivat=$total-$subt;
 		$do->set('tasa',$tasa);$do->set('montasa',$montasa);
 		$do->set('reducida',$reducida);$do->set('monredu',$monredu);
 		$do->set('sobretasa',$sobretasa);$do->set('monadic',$monadic);
 		$do->set('exento',$exento);
-//		$do->set('totpre',$subt);
-//		$do->set('totbruto',$total);
-//		$do->set('totiva',$ivat);
-	
+		//		$do->set('totpre',$subt);
+		//		$do->set('totbruto',$total);
+		//		$do->set('totiva',$ivat);
+
 		if ($do->get('monto1') != 0){
 			$negreso  = $this->datasis->fprox_numero("negreso");
 			$ncausado = "";
@@ -495,7 +495,7 @@ class gser extends Controller {
 
 				$mSQL .= "AND tipo_ref='OS' ";
 				$banticipo=$this->db->query($mSQL);
-				
+
 				$resultado=$banticipo->num_rows();
 
 				foreach($banticipo->result() as $registro){
@@ -562,9 +562,9 @@ class gser extends Controller {
 		$do->set('reducida',$reducida);$do->set('monredu',$monredu);
 		$do->set('sobretasa',$sobretasa);$do->set('monadic',$monadic);
 		$do->set('exento',$exento);
-	
 
-	if ($do->get('monto1') != 0){
+
+		if ($do->get('monto1') != 0){
 			$negreso  = $this->datasis->fprox_numero("negreso");
 			$ncausado = "";
 		}else{
@@ -651,25 +651,25 @@ class gser extends Controller {
 					$mSQL = "INSERT INTO itppro SET(".$campos.")VALUES(".$valores.") ";
 					echo $msql;
 				}
-				
+
 			}
 		}
-		
-//		exit;
+
+//				exit;
 		return true;
 	}
 
 	function _post_insert($do){
 		$codigo=$do->get('numero');
 		logusu('gser',"Gasto $codigo CREADO");
-		
+
 
 	}
 
 	function _post_update($do){
 		$codigo=$do->get('numero');
 		logusu('gser',"Gasto $codigo Modificado");
-		
+
 	}
 
 	function _post_delete($do){
