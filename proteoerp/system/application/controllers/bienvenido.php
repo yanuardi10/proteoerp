@@ -3,19 +3,23 @@ class Bienvenido extends Controller {
 	function Bienvenido(){
 		parent::Controller();
 	}
-
+	
 	function index(){
 		$this->session->set_userdata('panel', $this->uri->segment(3));
-
 		$data['titulo1']  = '<center>';
-		$data['titulo1']  .= '<h1>'.$this->datasis->traevalor("TITULO1")."</h1>\n";
-		$data['titulo1']  .= "<p class='mininegro'>";
-		$data['titulo1']  .= substr($this->datasis->traevalor("TITULO2"),0,70)."<br>";
-		$data['titulo1']  .= substr($this->datasis->traevalor("TITULO3"),0,55)."<br>";
-		$data['titulo1']  .= "RIF: ".substr($this->datasis->traevalor("RIF"),0,15)."<br>";
+		$data['titulo1']  .= '<h1>SISTEMA ADMINISTRATIVO ERP</h1>';
+		$data['titulo1'] ='
+			<div id="tumblelog">
+			<div class="story col2">
+			<h2>Sistemas Administrativos</h2>';
 		$data['titulo1']  .= image('portada.jpg')."</p>\n";
+		$data['titulo1'] .='
+		<p></p>
+		</div>
+		
+		</div> <!-- /#tumblelog -->'."\n";
+		
 		if ($this->datasis->login())
-		//$data['titulo1']  .= "<p><a href='javascript:void(0);' onclick=\"window.open('/proteoerp/chat', 'wchat', 'width=580,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+((screen.availWidth/2)-290)+',screeny='+((screen.availHeight/2)-300)+'');\">Chat</a></p>";
 		$data['titulo1']  .= "<p>&nbsp;</p>";
 		$data['titulo1']  .= "</center><br>";
 		$this->layout->buildPage('bienvenido/home', $data);
@@ -41,7 +45,7 @@ class Bienvenido extends Controller {
 		$this->session->set_userdata($sess_data);
 		redirect($this->session->userdata('estaba'));
 	}
-
+	
 	function cese(){
 		$this->session->sess_destroy();
 		redirect();
@@ -58,7 +62,7 @@ class Bienvenido extends Controller {
 		// Build the thing
 		$this->layout->buildPage('bienvenido/ingresar', $data);
 	}
-
+	
 	function ingresarVentana(){
 		$viene=$this->session->userdata('estaba');
 		$data['estilos'] = style("estilos.css");
@@ -95,9 +99,39 @@ class Bienvenido extends Controller {
 		}
 		echo $out;
 	}
-
+	
 	function error(){
 		$this->layout->buildPage('bienvenido/error');
 	}
+	
+	function cargapanel($pertenece=NULL) {
+		if(empty($pertenece)) return;
+		$out='';
+		$arreglo=arr_menu(2,$pertenece);
+		$arreglo=arr2panel($arreglo);
+		if (count($arreglo)>0){
+			$out  = '<div id=\'tumblelog\'> ';
+			$desca  = $this->datasis->dameval("SELECT mensaje FROM intramenu WHERE modulo='".$pertenece."' ");
+			$imagen = $this->datasis->dameval("SELECT imagen  FROM intramenu WHERE modulo='".$pertenece."' ");
+			$desca  = htmlentities($desca);
+			$out .="<div class='col6'> ";
+			$out .= "<table ><tr><td>".image($imagen)."</td><td>";
+			$out .= "<h2>".$desca."</h2></td></tr></table>";
+			$out .= "</div>";
+			foreach($arreglo as $panel => $opciones ){
+				$out .="<div class='box col1'><h3>".htmlentities($panel)."</h3></h1>\n";
+				$out .= "<table width='100%' cellspacing='1' border='0'>\n";
+				$color = "#FFFFFF";
+				foreach ($opciones as $opcion) {
+					$out .= "<tr bgcolor='$color'><td>";
+					$out .= arr2link($opcion);
+					$out .= "</td></tr>\n";
+					if ( $color == "#FFFFFF" ) $color = "#F4F4F4"; else  $color = "#FFFFFF";
+				}$out .="</table></div>\n";
+			}$out .='</div>';
+		}
+		echo $out;
+	}
+	
 }
 ?>

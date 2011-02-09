@@ -11,13 +11,14 @@
 <meta name="Copyright" content="<?=property('app_copyright')?>" />
 <title><?php echo property('app_title')?></title>
 <?php echo style("estilos.css");  ?>
-<?php //echo style("classic.css");?>
 <?php echo style("menutab.css");  ?>
 <?php echo style("acordeon.css"); ?>
+<?php echo style("masonry.css"); ?>
 
 <?php echo script("jquery.js"); ?>
 <?php echo script("plugins/myAccordion.js"); ?>
 <?php echo script("plugins/interface.js"); ?>
+<?php echo script("jquery.masonry.min.js"); ?>
 
 
 <script type="text/javascript" charset=<?=$this->config->item('charset'); ?>">
@@ -33,9 +34,10 @@ $(document).ready(function() {
 		pos=url.lastIndexOf('/');
 		carga=url.substring(pos);
 		$('#accordion').load('<?php echo site_url('bienvenido/accordion') ?>'+carga,'',function() {
-  		$('#accordion').myAccordion({ speed: 'fast', defautContent: 0 });
- 		});
- 		$(this).addClass("current");
+		$('#accordion').myAccordion({ speed: 'fast', defautContent: 0 });
+		});
+		$(this).addClass("current");
+		$('#tumblelog').load('<?php echo site_url('bienvenido/cargapanel') ?>'+carga );
 		return false;
 	});
 
@@ -51,10 +53,6 @@ $(document).ready(function() {
 
 </script>
 
-<?php //echo script("prototype.js");?>
-<?php //echo script("menutab.js");  ?>
-<?php //echo script("accordion.js");?>
-<?php //echo script("effects.js");  ?>
 </head>
 <body>
 	<div id="container">
@@ -74,8 +72,22 @@ $(document).ready(function() {
 				</td>
 			</tr>
 		</table>
-		<b class='mininegro'><?php echo "Conectado a: ".$this->db->database; ?></b>
-		<div id="pie"><p><?php echo $copyright ?></p><?php echo image('codeigniter.gif'); ?></div>
+
+		<table width="100%" border=0 cellspacing=0 cellpadding=0>
+		    <tr>
+			<td width='178px'><div id="pielateral"><p style="font-size:10px"><?php echo "Conectado a: ".$this->db->database; ?></p></div></td>
+			<td>
+			    <div id="pie"><p style="font-size:8px"><?php echo $copyright ?></p><?php echo image('codeigniter.gif'); ?>
+				<?=image('php-power-micro.png')?>
+				<?=image('jquery-icon.png')?>
+				<?=image('mysqlpowered.png')?>
+				<?=image('buttongnugpl.png')?>
+			    </div>
+			</td>
+			<td width='150px' ><div id="pielateral"><p style="font-color:white">
+			<a href='javascript:void(0);' onclick="window.open('/proteoerp/chat', 'wchat', 'width=580,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+((screen.availWidth/2)-290)+',screeny='+((screen.availHeight/2)-300)+'');" style="font-color:white;">Chat</a></p></div></td>
+		    </tr>
+		</table>
 	</div>
 </body>
 </html>
