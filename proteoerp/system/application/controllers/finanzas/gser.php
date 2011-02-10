@@ -130,7 +130,6 @@ class gser extends Controller {
 
 	function datagserchi(){
 		$this->rapyd->load('dataedit');
-
 		$mgas=array(
 			'tabla'   => 'mgas',
 			'columnas'=> array('codigo' =>'C&oacute;digo','descrip'=>'Descripci&oacute;n','tipo'=>'Tipo'),
