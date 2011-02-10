@@ -84,7 +84,6 @@ class Desarrollo extends Controller{
 				$crud.="\t\t".'$edit->hora    = new autoUpdateField(\'hora\',date(\'H:m:s\'), date(\'H:m:s\'));'."\n\n";
 			}else{
 				preg_match('/(?P<tipo>\w+)(\((?P<length>[0-9\,]+)\)){0,1}/', $field->Type, $matches);
-				print_r($matches);
 				if(isset($matches['length'])){
 					$def=explode(',',$matches['length']);
 				}else{
