@@ -3394,7 +3394,7 @@ class ventas{
 					foreach ($qquery->result_array() as $rrow){
 						$rrow['serial']=$row->serial;
 						$m = $this->db->insert_string('siva', $rrow);
-						$q= $this->db->query($m,$rrow);
+						$q = $this->db->query($m);
 						$fac=($rrow['tipo']=='NC') ? -1 : 1;
 						//$fac=1;
 						$tt['exento']   +=$fac*$rrow['exento']   ;
