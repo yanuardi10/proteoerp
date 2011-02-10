@@ -37,8 +37,7 @@ gitser_cont=<?=$form->max_rel_count['gitser']?>;
 $(document).ready(function() {
 	//alert(itpfac_cont);
 	pr=$("#proveed").val();
-	
-	
+
 	for(i=0;i<gitser_cont;i++){
 		$("#proveed_"+i.toString()).val(pr);
 		iva=$("#tasaiva_"+i.toString()).val();
@@ -132,7 +131,7 @@ function add_gitser(){
 $(function(){
 	$(".inputnum").numeric(".");
 });
-					
+
 function del_gitser(id){
 	id = id.toString();
 	$('#tr_gitser_'+id).remove();
@@ -150,20 +149,20 @@ function del_gitser(id){
 
 			<tr>
 				<td class="littletableheader"><?=$form->tipo_doc->label  ?>*&nbsp;</td>
-				<td class="littletablerow"><?=$form->tipo_doc->output ?>&nbsp;</td>
+				<td class="littletablerow">   <?=$form->tipo_doc->output ?>&nbsp; </td>
 				<td class="littletableheader"><?=$form->ffactura->label  ?>*&nbsp;</td>
-				<td class="littletablerow"><?=$form->ffactura->output ?>&nbsp;</td>
+				<td class="littletablerow">   <?=$form->ffactura->output ?>&nbsp; </td>
 				<td class="littletableheader"><?=$form->proveedg->label  ?>*&nbsp;</td>
-				<td class="littletablerow"><?=$form->proveedg->output ?>&nbsp;</td>
+				<td class="littletablerow">   <?=$form->proveedg->output ?>&nbsp; </td>
 			</tr>
 
 			<tr>
 				<td class="littletableheader">N&uacute;mero</td>
-				<td class="littletablerow"><?php  echo str_pad(trim($form->numero->output),8,0,STR_PAD_LEFT) ?>&nbsp;</td>
-				<td class="littletableheader"><?=$form->fecha->label  ?>*&nbsp;</td>
-				<td class="littletablerow"><?=$form->fecha->output ?>&nbsp;</td>
+				<td class="littletablerow">   <?php  echo str_pad(trim($form->numero->output),8,0,STR_PAD_LEFT) ?>&nbsp;</td>
+				<td class="littletableheader"><?=$form->fecha->label   ?>*&nbsp;</td>
+				<td class="littletablerow">   <?=$form->fecha->output  ?>&nbsp; </td>
 				<td class="littletableheader"><?=$form->nombre->label  ?>*&nbsp;</td>
-				<td class="littletablerow"><?=$form->nombre->output ?>&nbsp;</td>
+				<td class="littletablerow">   <?=$form->nombre->output ?>&nbsp; </td>
 
 			</tr>
 			<tr>
@@ -224,7 +223,6 @@ function del_gitser(id){
 				<td class="littletablerow"><?=$form->$obj9->output ?></td>
 				<td class="littletablerow"><?=$form->$obj10->output ?></td>
 
-
 				<?php if($form->_status!='show') {?>
 				<td class="littletablerow"><a href=#
 					onclick='del_gitser(<?=$i ?>);return false;'>Eliminar</a></td>
@@ -238,13 +236,10 @@ function del_gitser(id){
 				<td class="littletablefooterb" align="right">&nbsp;</td>
 				<td class="littletablefooterb" align="right">&nbsp;</td>
 				<td class="littletablefooterb" align="right">&nbsp;</td>
-
-
 				<?php if($form->_status!='show') {?>
 
 				<?php } ?>
 			</tr>
-
 
 			<?php if ($form->_status =='show'){?>
 
@@ -287,25 +282,25 @@ function del_gitser(id){
 					</tr>
 					<tr>
 						<td class="littletableheader"><?=$form->tipo1->label  ?></td>
-						<td class="littletablerow"><?=$form->tipo1->output?></td>
+						<td class="littletablerow">   <?=$form->tipo1->output?></td>
 						<td class="littletableheader"><?=$form->cheque1->label  ?></td>
-						<td class="littletablerow"><?=$form->cheque1->output?></td>
+						<td class="littletablerow">   <?=$form->cheque1->output?></td>
 					</tr>
 					<tr>
 						<td class="littletableheader"><?=$form->benefi->label  ?></td>
-						<td class="littletablerow"><?=$form->benefi->output?></td>
+						<td class="littletablerow">   <?=$form->benefi->output?></td>
 					</tr>
 					<tr>
 						<td class="littletableheader"><?=$form->monto1->label  ?></td>
-						<td class="littletablerow"><?=$form->monto1->output?></td>
+						<td class="littletablerow">   <?=$form->monto1->output?></td>
 						<td class="littletableheader"><?=$form->credito->label  ?></td>
-						<td class="littletablerow"><?=$form->credito->output?></td>
+						<td class="littletablerow">   <?=$form->credito->output?></td>
 					</tr>
 					<tr>
 						<td class="littletableheader"><?=$form->comprob1->label  ?></td>
-						<td class="littletablerow"><?=$form->comprob1->output?></td>
+						<td class="littletablerow">   <?=$form->comprob1->output?></td>
 						<td class="littletableheader"><?=$form->transac->label  ?></td>
-						<td class="littletablerow"><?=$form->transac->output?></td>
+						<td class="littletablerow">   <?=$form->transac->output?></td>
 					</tr>
 				</table>
 				</td>

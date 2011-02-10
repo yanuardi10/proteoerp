@@ -97,32 +97,37 @@ class Bienvenido extends Controller {
 	function error(){
 		$this->layout->buildPage('bienvenido/error');
 	}
-	
+
 	function cargapanel($pertenece=NULL) {
 		if(empty($pertenece)) return;
+		$dbpertenece=$this->db->escape($pertenece);
 		$out='';
 		$arreglo=arr_menu(2,$pertenece);
 		$arreglo=arr2panel($arreglo);
 		if (count($arreglo)>0){
-			$out  = '<div id=\'tumblelog\'> ';
-			$desca  = $this->datasis->dameval("SELECT mensaje FROM intramenu WHERE modulo='".$pertenece."' ");
-			$imagen = $this->datasis->dameval("SELECT imagen  FROM intramenu WHERE modulo='".$pertenece."' ");
+			$out  ='';
+			$desca  = $this->datasis->dameval("SELECT mensaje FROM intramenu WHERE modulo=$dbpertenece");
+			$imagen = $this->datasis->dameval("SELECT imagen  FROM intramenu WHERE modulo=$dbpertenece");
 			$desca  = htmlentities($desca);
-			$out .="<div class='col6'> ";
-			$out .= "<table ><tr><td>".image($imagen)."</td><td>";
-			$out .= "<h2>".$desca."</h2></td></tr></table>";
-			$out .= "</div>";
-			foreach($arreglo as $panel => $opciones ){
-				$out .="<div class='box col1'><h3>".htmlentities($panel)."</h3></h1>\n";
-				$out .= "<table width='100%' cellspacing='1' border='0'>\n";
-				$color = "#FFFFFF";
-				foreach ($opciones as $opcion) {
-					$out .= "<tr bgcolor='$color'><td>";
+			$out .= '<div class=\'col6\'>';
+			$out .= '<table><tr>';
+			$out .= '<td>'.image($imagen).'</td>';
+			$out .= '<td><h2>'.$desca.'</h2></td>';
+			$out .= '</tr></table>';
+			$out .= '</div>';
+			//$out='';
+			$i=0;
+			foreach($arreglo as $panel => $opciones ){ $i++;
+				$out .= '<div class=\'box col1\'><h3>'.htmlentities($panel).'</h3>';
+				$out .= '<table width=\'100%\' cellspacing=\'1\' border=\'0\'>';
+
+				foreach ($opciones as $id=>$opcion) {
+					$color = ($id%2==0)? 'F4F4F4':'FFFFFF';
+					$out .= "<tr bgcolor='#$color'><td>";
 					$out .= arr2link($opcion);
-					$out .= "</td></tr>\n";
-					if ( $color == "#FFFFFF" ) $color = "#F4F4F4"; else  $color = "#FFFFFF";
-				}$out .="</table></div>\n";
-			}$out .='</div>';
+					$out .= '</td></tr>';
+				}$out .='</table></div>';
+			}
 		}
 		echo $out;
 	}

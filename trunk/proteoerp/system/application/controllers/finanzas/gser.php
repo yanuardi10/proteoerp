@@ -3,61 +3,271 @@ class gser extends Controller {
 
 	function gser(){
 		parent::Controller();
-		$this->load->library("rapyd");
+		$this->load->library('rapyd');
 		//$this->datasis->modulo_id(604,1);
 	}
+
 	function index() {
-		redirect("finanzas/gser/filteredgrid");
+		redirect('finanzas/gser/filteredgrid');
 	}
+
 	function filteredgrid(){
-		$this->rapyd->load("datafilter","datagrid");
-		$this->rapyd->uri->keep_persistence();
+		$this->rapyd->load('datafilter','datagrid');
 		$this->rapyd->uri->keep_persistence();
 
-		$filter = new DataFilter("Filtro de Gastos",'gser');
-		//		$filter->db->select("numero,fecha,vence,nombre,totiva,totneto");
-		//		$filter->db->from('gser');
+		$filter = new DataFilter('Filtro de Gastos','gser');
+		//$filter->db->select("numero,fecha,vence,nombre,totiva,totneto");
+		//$filter->db->from('gser');
 
-		$filter->fechad = new dateonlyField("Desde", "fechad",'d/m/Y');
-		$filter->fechah = new dateonlyField("Hasta", "fechah",'d/m/Y');
-		$filter->fechad->clause  =$filter->fechah->clause="where";
-		$filter->fechad->db_name =$filter->fechah->db_name="fecha";
-		$filter->fechad->insertValue = date("Y-m-d");
-		$filter->fechah->insertValue = date("Y-m-d");
+		$filter->fechad = new dateonlyField('Desde', 'fechad','d/m/Y');
+		$filter->fechah = new dateonlyField('Hasta', 'fechah','d/m/Y');
+		$filter->fechad->clause  =$filter->fechah->clause ='where';
+		$filter->fechad->db_name =$filter->fechah->db_name='fecha';
 		$filter->fechah->size=$filter->fechad->size=10;
-		$filter->fechad->operator=">=";
-		$filter->fechah->operator="<=";
+		$filter->fechad->operator='>=';
+		$filter->fechah->operator='<=';
 
-		$filter->numero = new inputField("N&uacute;mero", "numero");
-			
-		$filter->proveed = new inputField("Proveedor", "proveed");
+		$filter->numero = new inputField('N&uacute;mero', 'numero');
+
+		$filter->proveed = new inputField('Proveedor', 'proveed');
 		//$filter->proveed->append($boton);
-		$filter->proveed->db_name = "proveed";
+		$filter->proveed->db_name = 'proveed';
 
-		$filter->buttons("reset","search");
+		$filter->buttons('reset','search');
 		$filter->build();
 
-		$uri = anchor('finanzas/gser/dataedit/show/<#id#>','<#numero#>');
-		$uri3  = anchor('finanzas/mgser/dataedit/modify/<#fecha#>/<#numero#>/<#proveed#>','Modificar');
+		$uri = anchor('finanzas/gser/datagserchi/show/<#id#>','<#numero#>');
 
 		$grid = new DataGrid();
-		$grid->order_by("numero","desc");
+		$grid->order_by('numero','desc');
 		$grid->per_page = 15;
-		$grid->column("N&uacute;mero",$uri);
-		$grid->column("Fecha","<dbdate_to_human><#fecha#></dbdate_to_human>","align='center'");
-		$grid->column("Vence","<dbdate_to_human><#vence#></dbdate_to_human>","align='center'");
-		$grid->column("Nombre","nombre");
-		$grid->column("IVA"  ,"totiva"  ,"align='right'");
-		$grid->column("monto" ,"totneto" ,"align='right'");
+		$grid->column_orderby('N&uacute;mero',$uri,'numero');
+		$grid->column_orderby('Fecha' ,'<dbdate_to_human><#fecha#></dbdate_to_human>','fecha','align=\'center\'');
+		$grid->column_orderby('Fecha' ,'<dbdate_to_human><#vence#></dbdate_to_human>','vence','align=\'center\'');
+		$grid->column_orderby('Nombre','nombre'  ,'nombre');
+		$grid->column_orderby('IVA'   ,'totiva'  ,'totiva' ,'align=\'right\'');
+		$grid->column_orderby('monto' ,'totneto' ,'totneto','align=\'right\'');
 
-		$grid->add("finanzas/gser/dataedit/create");
+		$grid->add('finanzas/gser/agregar');
 		$grid->build();
 		//echo $grid->db->last_query();
 
-		$data['content'] =$filter->output.$grid->output;
-		$data["head"]    = $this->rapyd->get_head();
-		$data['title']   ='<h1>Gastos</h1>';
+		$data['content'] = $filter->output.$grid->output;
+		$data['head']    = $this->rapyd->get_head();
+		$data['title']   = heading('Gastos');
 		$this->load->view('view_ventanas', $data);
+	}
+
+	function agregar(){
+		$data['content'] = '<table align="center">'.br();
+
+		$data['content'].= '<tr><td><img src="'.base_url().'images/dinero.jpg'.'" height="100px"></td><td>';
+		$data['content'].= '<p></p>';
+		$data['content'].= anchor('finanzas/gser/gserchi'  ,'Caja Chica').br();
+
+		$data['content'].= '</td></tr><tr><td colspan=2 align="center">'.anchor('finanzas/gser/index'        ,'Regresar').br();
+		$data['content'].= '</td></tr></table>'.br();
+
+		$data['title']   = heading('Selecciona la operaci&oacute;n que desea realizar');
+		$data['head']    = $this->rapyd->get_head();
+		$this->load->view('view_ventanas', $data);
+	}
+
+	//Para Caja chica
+	function gserchi(){
+		$this->rapyd->load('datafilter','datagrid');
+		$this->rapyd->uri->keep_persistence();
+
+		$filter = new DataFilter('Filtro de Cajas Chicas','gserchi');
+		$select=array('numfac','fechafac','proveedor','tasa + sobretasa + reducida AS totiva','montasa + monadic + monredu AS totneto');
+		$filter->db->select($select);
+
+		$filter->codbanc = new dropdownField('C&oacute;digo de la caja','codbanc');
+		$filter->codbanc->option('','Todos');
+		$filter->codbanc->options("SELECT codbanc, CONCAT_WS('-',codbanc,banco) AS label FROM banc WHERE tbanco='CAJ' ORDER BY codbanc");
+
+		$filter->fechad = new dateonlyField('Desde', 'fechad','d/m/Y');
+		$filter->fechah = new dateonlyField('Hasta', 'fechah','d/m/Y');
+		$filter->fechad->clause  =$filter->fechah->clause ='where';
+		$filter->fechad->db_name =$filter->fechah->db_name='fechafac';
+		$filter->fechad->insertValue = date('Y-m-d');
+		$filter->fechah->insertValue = date('Y-m-d');
+		$filter->fechah->size=$filter->fechad->size=10;
+		$filter->fechad->operator='>=';
+		$filter->fechah->operator='<=';
+
+		$filter->numero = new inputField('N&uacute;mero', 'numfac');
+
+		$filter->proveed = new inputField('Proveedor', 'proveedor');
+		//$filter->proveed->append($boton);
+		$filter->proveed->db_name = 'proveedor';
+
+		$action = "javascript:window.location='".site_url('finanzas/gser/agregar')."'";
+		$filter->button('btn_regresa', 'Regresar', $action, 'TR');
+		$filter->buttons('reset','search');
+		$filter->build();
+
+		$uri  = anchor('finanzas/gser/datagserchi/show/<#id#>','<#numfac#>');
+
+		$grid = new DataGrid();
+		//$grid->order_by('numero','desc');
+		$grid->per_page = 15;
+		$grid->column_orderby('N&uacute;mero',$uri,'numfac');
+		$grid->column_orderby('Fecha' ,'<dbdate_to_human><#fechafac#></dbdate_to_human>','fechafac','align=\'center\'');
+		$grid->column_orderby('Proveedor','proveedor','proveedor');
+		$grid->column_orderby('IVA'   ,'totiva'  ,'totiva' ,'align=\'right\'');
+		$grid->column_orderby('Monto' ,'totneto' ,'totneto','align=\'right\'');
+
+		$grid->add('finanzas/gser/datagserchi/create');
+		$grid->build();
+		//echo $grid->db->last_query();
+
+		$data['content'] = $filter->output.$grid->output;
+		$data['head']    = $this->rapyd->get_head();
+		$data['title']   = heading('Caja chica temporal');
+		$this->load->view('view_ventanas', $data);
+	}
+
+	function datagserchi(){
+		$this->rapyd->load('dataedit');
+
+		$mgas=array(
+			'tabla'   => 'mgas',
+			'columnas'=> array('codigo' =>'C&oacute;digo','descrip'=>'Descripci&oacute;n','tipo'=>'Tipo'),
+			'filtro'  => array('descrip'=>'Descripci&oacute;n'),
+			'retornar'=> array('codigo' =>'codigo','descrip'=>'descrip'),
+			'titulo'  => 'Buscar enlace administrativo');
+		$bcodigo=$this->datasis->modbus($mgas);
+
+		$script="
+		function totaliza(){
+			if($('#montasa').val().length>0)   montasa  =parseFloat($('#montasa').val());   else  montasa  =0;
+			if($('#tasa').val().length>0)      tasa     =parseFloat($('#tasa').val());      else  tasa     =0;
+			if($('#monredu').val().length>0)   monredu  =parseFloat($('#monredu').val());   else  monredu  =0;
+			if($('#reducida').val().length>0)  reducida =parseFloat($('#reducida').val());  else  reducida =0;
+			if($('#monadic').val().length>0)   monadic  =parseFloat($('#monadic').val());   else  monadic  =0;
+			if($('#sobretasa').val().length>0) sobretasa=parseFloat($('#sobretasa').val()); else  sobretasa=0;
+			if($('#exento').val().length>0)    exento   =parseFloat($('#exento').val());    else  exento   =0;
+
+			total=montasa+tasa+monredu+reducida+monadic+sobretasa+exento;
+			$('#importe').val(total);
+		}";
+
+		$edit = new DataEdit('Gastos de caja chica', 'gserchi');
+		$edit->back_url = site_url('finanzas/gser/gserchi');
+		$edit->script($script,'create');
+		$edit->script($script,'modify');
+
+		$edit->codbanc = new dropdownField('C&oacute;digo de la caja','codbanc');
+		$edit->codbanc->option('','Seleccionar');
+		$edit->codbanc->options("SELECT codbanc, CONCAT_WS('-',codbanc,banco) AS label FROM banc WHERE tbanco='CAJ' ORDER BY codbanc");
+		$edit->codbanc->rule='max_length[5]|required';
+
+		$edit->fechafac = new dateField('Fecha de la factura','fechafac');
+		$edit->fechafac->rule='max_length[10]|required';
+		$edit->fechafac->size =12;
+		$edit->fechafac->maxlength =10;
+
+		$edit->numfac = new inputField('N&uacute;mero de la factura','numfac');
+		$edit->numfac->rule='max_length[8]|required';
+		$edit->numfac->size =10;
+		$edit->numfac->maxlength =2;
+
+		$edit->nfiscal = new inputField('Control fiscal','nfiscal');
+		$edit->nfiscal->rule='max_length[12]|required';
+		$edit->nfiscal->size =14;
+		$edit->nfiscal->maxlength =12;
+
+		$edit->rif = new inputField('RIF','rif');
+		$edit->rif->rule='max_length[13]|required';
+		$edit->rif->size =13;
+		$edit->rif->maxlength =13;
+		$edit->rif->append(HTML::button('traesprv', 'Consultar Proveedor', '', 'button', 'button'));
+
+		$edit->proveedor = new inputField('Proveedor','proveedor');
+		$edit->proveedor->rule='max_length[40]';
+		$edit->proveedor->size =40;
+		$edit->proveedor->maxlength =40;
+
+		$edit->codigo = new inputField('C&oacute;digo del gasto','codigo');
+		$edit->codigo->rule ='max_length[6]|required';
+		$edit->codigo->size =6;
+		$edit->codigo->maxlength =8;
+		$edit->codigo->append($bcodigo);
+
+		$edit->descrip = new inputField('Descripci&oacute;n','descrip');
+		$edit->descrip->rule='max_length[50]';
+		$edit->descrip->size =50;
+		$edit->descrip->maxlength =50;
+
+		$arr=array(
+			'exento'   =>'Monto exento',
+			'montasa'  =>'Base Alicuota general',
+			'tasa'     =>'Monto Alicuota general',
+			'monredu'  =>'Base Alicuota reducida',
+			'reducida' =>'Monto Alicuota reducida',
+			'monadic'  =>'Base Alicuota adicional',
+			'sobretasa'=>'Monto Alicuota adicional',
+			'importe'  =>'Importe total');
+
+		foreach($arr AS $obj=>$label){
+			$edit->$obj = new inputField($label,$obj);
+			$edit->$obj->rule='max_length[17]|numeric';
+			$edit->$obj->css_class='inputnum';
+			$edit->$obj->size =17;
+			$edit->$obj->maxlength =17;
+			$edit->$obj->group='Montos';
+			$edit->$obj->autocomplete=false;
+		}
+		$edit->$obj->readonly=true;
+
+		$edit->sucursal = new dropdownField('Sucursal','sucursal');
+		$edit->sucursal->options('SELECT codigo,sucursal FROM sucu ORDER BY sucursal');
+		$edit->sucursal->rule='max_length[2]|required';
+
+		$edit->departa = new dropdownField('Departamento','departa');
+		$edit->departa->options("SELECT depto, CONCAT_WS('-',depto,descrip) AS label FROM dpto WHERE tipo='G' ORDER BY depto");
+		$edit->departa->rule='max_length[2]';
+
+		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
+		$edit->estampa = new autoUpdateField('estampa' ,date('YmD'), date('Ymd'));
+		$edit->hora    = new autoUpdateField('hora',date('H:m:s'), date('H:m:s'));
+
+		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
+		$edit->build();
+
+		$url=site_url('finanzas/gser/ajaxsprv');
+		$this->rapyd->jquery[]='$(".inputnum").bind("keyup",function() { totaliza(); })';
+		$this->rapyd->jquery[]='$("input[name=\'traesprv\']").click(function() {
+			rif=$("#rif").val();
+			if(rif.length > 0){
+				$.post("'.$url.'", { rif: rif },function(data){
+					$("#proveedor").val(data);
+				});
+			}else{
+				alert("Debe introducir un rif");
+			}
+			});';
+
+
+		$data['content'] = $edit->output;
+		$data['title']   = heading('Agregar/Modificar Gasto de caja chica');
+		$data['head']    = $this->rapyd->get_head();
+		$data['head']   .= phpscript('nformat.js');
+		//$data['head']   .= script('plugins/jquery.numeric.pack.js');
+		//$data['head']   .= script('plugins/jquery.floatnumber.js');
+		$this->load->view('view_ventanas', $data);
+	}
+
+	function ajaxsprv(){
+		$rif=$this->input->post('rif');
+		if($rif!==false){
+			$dbrif=$this->db->escape($rif);
+			$nombre=$this->datasis->dameval("SELECT nombre FROM provoca WHERE rif=$dbrif");
+			if(empty($nombre))
+				$nombre=$this->datasis->dameval("SELECT nombre FROM sprv WHERE rif=$dbrif");
+			echo $nombre;
+		}
 	}
 
 	function dataedit(){
@@ -115,11 +325,8 @@ class gser extends Controller {
 			'titulo'  =>'Buscar Retencion',
 			'script'=>array('islr()'));
 		$bRETE=$this->datasis->modbus($mRETE);
-			
 
-
-
-		$do = new DataObject("gser");
+		$do = new DataObject('gser');
 		$do->rel_one_to_many('gitser', 'gitser',array('id'=>'idgser'));
 		//			$do->rel_pointer('itspre','sinv','itspre.codigo=sinv.codigo','sinv.descrip as sinvdescrip');
 
@@ -170,7 +377,7 @@ class gser extends Controller {
 		//$edit->numero->mode="autohide";
 		$edit->numero->maxlength=8;
 		//$edit->numero->apply_rules=false; //necesario cuando el campo es clave y no se pide al usuario
-//		$edit->numero->when=array('create','modify');
+		//$edit->numero->when=array('create','modify');
 
 		$edit->proveedg = new inputField("Proveedor","proveed");
 		$edit->proveedg->size = 10;
@@ -182,7 +389,7 @@ class gser extends Controller {
 		$edit->nfiscal  = new inputField("Control Fiscal", "nfiscal");
 		$edit->nfiscal->size = 10;
 		$edit->nfiscal->maxlength=20;
-		//			$edit->nfiscal->css_class='inputnum';
+		//$edit->nfiscal->css_class='inputnum';
 
 		$edit->nombre = new inputField("Nombre", "nombre");
 		$edit->nombre->size = 30;
@@ -200,9 +407,9 @@ class gser extends Controller {
 		$edit->totbruto->onkeyup="valida(0)";
 
 		$edit->totiva = new inputField("TOTAL IVA", "totiva");
-		//			$edit->totiva->mode="autohide";
+		//$edit->totiva->mode="autohide";
 		$edit->totiva->css_class ='inputnum';
-		//			$edit->totiva->when=array('show','modify');
+		//$edit->totiva->when=array('show','modify');
 		$edit->totiva->size      = 10;
 		$edit->totiva->onkeyup="valida(0)";
 
@@ -247,7 +454,7 @@ class gser extends Controller {
 		$edit->creten->size = 10;
 		$edit->creten->maxlength=10;
 		$edit->creten->append($bRETE);
-		//			$edit->creten->rule= "required";
+		//$edit->creten->rule= "required";
 
 		$edit->breten = new inputField("Base","breten");
 		$edit->breten->size = 10;
@@ -267,11 +474,11 @@ class gser extends Controller {
 		$edit->reteiva->css_class='inputnum';
 		$edit->reteiva->onkeyup="valida(0)";
 
-		//		$edit->anticipo = new inputField("Anticipo","anticipo");
-		//		$edit->anticipo->size = 10;
-		//		$edit->anticipo->maxlength=10;
-		//		$edit->anticipo->css_class='inputnum';
-		//		$edit->anticipo->mode="autohide";
+		//$edit->anticipo = new inputField("Anticipo","anticipo");
+		//$edit->anticipo->size = 10;
+		//$edit->anticipo->maxlength=10;
+		//$edit->anticipo->css_class='inputnum';
+		//$edit->anticipo->mode="autohide";
 
 		$edit->totneto = new inputField("Total Neto","totneto");
 		$edit->totneto->size = 10;
@@ -360,12 +567,12 @@ class gser extends Controller {
 		$edit->proveed->mode="autohide";
 		$edit->proveed->when=array("");
 
-		//			$edit->idgser = new inputField("id <#o#>", "idgser_<#i#>");
-		//			$edit->idgser->db_name='idgser';
-		//			$edit->idgser->size=0;
-		//			$edit->idgser->rel_id   ='gitser';
-		//			$edit->idgser->mode="autohide";
-		//			$edit->idgser->when=array("");
+		//$edit->idgser = new inputField("id <#o#>", "idgser_<#i#>");
+		//$edit->idgser->db_name='idgser';
+		//$edit->idgser->size=0;
+		//$edit->idgser->rel_id   ='gitser';
+		//$edit->idgser->mode="autohide";
+		//$edit->idgser->when=array("");
 
 		//fin de campos para detalle
 
@@ -373,10 +580,10 @@ class gser extends Controller {
 		$edit->build();
 		//			echo $edit->_dataobject->db->last_query();
 
-		$conten["form"]  =&$edit;
+		$conten['form']  =&$edit;
 		$data['content'] = $this->load->view('view_gser', $conten,true);
 		$data['title']   = "<h1>Gastos</h1>";
-		$data["head"]    = script('jquery.js').script('jquery-ui.js').script("plugins/jquery.numeric.pack.js").script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css').$this->rapyd->get_head().phpscript('nformat.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js');
+		$data['head']    = script('jquery.js').script('jquery-ui.js').script("plugins/jquery.numeric.pack.js").script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css').$this->rapyd->get_head().phpscript('nformat.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js');
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -677,8 +884,8 @@ class gser extends Controller {
 		logusu('gser',"Gasto $codigo ELIMINADO");
 	}
 
-	function instala(){
-		$query="show index FROM gser";
+	function instalar(){
+		$query="SHOW INDEX FROM gser";
 		$resul=$this->db->query($query);
 		$existe=0;
 		foreach($resul->result() as $ind){
@@ -689,27 +896,24 @@ class gser extends Controller {
 			}
 		}
 		if($existe != 1){
-			$query="ALTER TABLE `gser`  DROP PRIMARY KEY";
-			$this->db->query($query);
-			$query="ALTER TABLE `gser`  ADD UNIQUE INDEX `gser` (`fecha`, `numero`, `proveed`)";
-			$this->db->query($query);
-			$query="ALTER TABLE `gser`  ADD COLUMN `id` INT(15) UNSIGNED NULL AUTO_INCREMENT AFTER `tipo_or`,  ADD PRIMARY KEY (`id`);";
-			$this->db->query($query);
-			$query="ALTER TABLE `gitser`  ADD COLUMN `idgser`
-					INT(15) UNSIGNED NOT NULL DEFAULT '0' AFTER `id`,ADD INDEX `idgser` (`idgser`)";
-			$this->db->query($query);
+			$query="ALTER TABLE `gser` DROP PRIMARY KEY";
+			var_dump($this->db->simple_query($query));
+			$query="ALTER TABLE `gser` ADD UNIQUE INDEX `gser` (`fecha`, `numero`, `proveed`)";
+			var_dump($this->db->simple_query($query));
+			$query="ALTER TABLE `gser` ADD COLUMN `id` INT(15) UNSIGNED NULL AUTO_INCREMENT AFTER `ncausado`,  ADD PRIMARY KEY (`id`)";
+			var_dump($this->db->simple_query($query));
+			$query="ALTER TABLE `gitser` ADD COLUMN `idgser` INT(15) UNSIGNED NOT NULL DEFAULT '0' AFTER `id`, ADD INDEX `idgser` (`idgser`)";
+			var_dump($this->db->simple_query($query));
 
-			$query="update gitser as a
-					join gser as b on (a.numero=b.numero and a.fecha = b.fecha and a.proveed = b.proveed)
-					set a.idgser=b.id";
-			$this->db->query($query);
+			$query="UPDATE gitser AS a
+					JOIN gser AS b on a.numero=b.numero and a.fecha = b.fecha and a.proveed = b.proveed
+					SET a.idgser=b.id";
+			var_dump($this->db->simple_query($query));
 
-			$query="ALTER TABLE `gitser`  ADD COLUMN `tasaiva` DECIMAL(7,2)
-					UNSIGNED NOT NULL DEFAULT '0' AFTER `idgser`;";
-			$this->db->query($query);
+			//$query="ALTER TABLE `gitser`  ADD COLUMN `tasaiva` DECIMAL(7,2) UNSIGNED NOT NULL DEFAULT '0' AFTER `idgser`;";
+			//$this->db->simple_query($query);
 		}
 
 	}
 
 }
-?>

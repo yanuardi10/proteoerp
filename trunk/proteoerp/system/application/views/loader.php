@@ -18,7 +18,7 @@
 <?php echo script("jquery.js"); ?>
 <?php echo script("plugins/myAccordion.js"); ?>
 <?php echo script("plugins/interface.js"); ?>
-<?php echo script("jquery.masonry.min.js"); ?>
+<?php echo script("plugins/jquery.masonry.min.js"); ?>
 
 
 <script type="text/javascript" charset=<?=$this->config->item('charset'); ?>">
@@ -34,10 +34,12 @@ $(document).ready(function() {
 		pos=url.lastIndexOf('/');
 		carga=url.substring(pos);
 		$('#accordion').load('<?php echo site_url('bienvenido/accordion') ?>'+carga,'',function() {
-		$('#accordion').myAccordion({ speed: 'fast', defautContent: 0 });
+			$('#accordion').myAccordion({ speed: 'fast', defautContent: 0 });
 		});
-		$(this).addClass("current");
-		$('#tumblelog').load('<?php echo site_url('bienvenido/cargapanel') ?>'+carga );
+		$(this).addClass('current');
+		$('#tumblelog').load('<?php echo site_url('bienvenido/cargapanel') ?>'+carga ,function(){
+			//$('#tumblelog').masonry({ singleMode: true,   itemSelector: '.box' });
+		});
 		return false;
 	});
 
