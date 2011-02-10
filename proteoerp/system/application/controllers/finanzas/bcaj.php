@@ -132,7 +132,7 @@ class Bcaj extends Controller {
 	function transferencia(){
 		$this->rapyd->load('dataform');
 
-		$edit = new DataForm('finanzas/bcaj/transferencia/');
+		$edit = new DataForm('finanzas/bcaj/transferencia/process');
 		$edit->title='Deposito en caja';
 
 		$edit->back_url = site_url('finanzas/bcaj/index');
@@ -187,11 +187,14 @@ class Bcaj extends Controller {
 		$back_url = site_url('finanzas/bcaj/agregar');
 		$edit->button('btn_undo', 'Regresar', "javascript:window.location='${back_url}'", 'BL');
 
-		$edit->submit('btnsubmit','Siguiente');
+		$edit->submit('btnsubmit','Guardar');
 		$edit->build_form();
 
 		if ($edit->on_success()){
+			$fecha  = $edit->fecha->newValue;
 			$monto  = $edit->monto->newValue;
+			$envia  = $edit->envia->newValue;
+			$recibe = $edit->recibe->newValue;
 			$rt=$this->_transferencaj($fecha,$monto,$envia,$recibe);
 			if($rt){
 				redirect('/finanzas/bcaj/listo');
@@ -274,13 +277,14 @@ class Bcaj extends Controller {
 		//  Guarda el efecto
 		//**********************
 		if ($edit->on_success()){
-			$fecha  = $edit->fecha->newValue;
-			$envia  = $edit->envia->newValue;
-			$recibe = $edit->recibe->newValue;
-			$numeror= $edit->numeror->newValue;
-			$monto  = $edit->efectivo->newValue+$edit->cheque->newValue;
+			$fecha   = $edit->fecha->newValue;
+			$envia   = $edit->envia->newValue;
+			$recibe  = $edit->recibe->newValue;
+			$numeror = $edit->numeror->newValue;
+			$efectivo= $edit->efectivo->newValue;
+			$cheque  = $edit->cheques->newValue;
 
-			$rt=$this->_transferendepefe($fecha,$monto,$envia,$recibe,$numeror);
+			$rt=$this->_transferendepefe($fecha,$efectivo,$cheque,$envia,$recibe,$numeror);
 			if($rt){
 				redirect('finanzas/bcaj/listo');
 			}else{
@@ -310,6 +314,10 @@ class Bcaj extends Controller {
 
 		$edit->recibe = new dropdownField('Recibe','recibe');
 		$edit->recibe->option('','Seleccionar');
+
+		$edit->tipo = new dropdownField('Tipo','tipo');
+		$edit->tipo->option('NC','Nota de credito');
+		$edit->tipo->option('DE','Deposito');
 
 		$edit->numero = new inputField('N&uacute;mero de deposito', 'numero');
 		$edit->numero->rule='required';
@@ -410,8 +418,9 @@ class Bcaj extends Controller {
 			$comision=$edit->comision->newValue;
 			$islr    =$edit->islr->newValue;
 			$numeror =$edit->numero->newValue;
+			$tipo    =$edit->tipo->newValue;
 
-			$rt=$this->_transferendeptar($fecha,$tarjeta,$tdebito,$comision,$islr,$envia,$recibe,$numeror);
+			$rt=$this->_transferendeptar($fecha,$tarjeta,$tdebito,$comision,$islr,$envia,$recibe,$numeror,$tipo);
 			if($rt){
 				redirect('/finanzas/bcaj/listo');
 			}else{
@@ -749,12 +758,13 @@ class Bcaj extends Controller {
 		$sql=$this->db->insert_string('bmov', $data);
 		$ban=$this->db->simple_query($sql);
 		if($ban==false){ memowrite($sql,'bcaj'); $error++; }
-		logusu("Transferencia de caja $numero creada");
+		logusu('bcaj',"Transferencia de caja $numero creada");
 
 		return ($error==0) ? true : false;
 	}
 
-	function _transferendepefe($fecha,$monto,$envia,$recibe,$numeror){
+	function _transferendepefe($fecha,$efectivo,$cheque,$envia,$recibe,$numeror){
+		$monto=$efectivo+$cheque;
 		if($monto<=0) return true;
 		$numero = $this->datasis->fprox_numero('nbcaj');
 		$transac= $this->datasis->fprox_numero('ntransa');
@@ -789,7 +799,7 @@ class Bcaj extends Controller {
 			'tipor'   => 'DE',
 			'numeror' => $numeror,
 			'bancor'  => $infbanc[$recibe]['banco'],
-			'concepto'=> 'TRANSFERENCIA ENTRE CAJA '.$envia.' A '.$recibe,
+			'concepto'=> 'DEPOSITO ENTRE CAJA '.$envia.' A BANCO '.$recibe,
 			'concep2' => ($auto)? 'AUTOTRANFER' : '',
 			'benefi'  => '',
 			'boleta'  => '',
@@ -802,8 +812,8 @@ class Bcaj extends Controller {
 			'deldia'  => $fecha,
 			'tarjeta' => 0,
 			'tdebito' => 0,
-			'cheques' => 0,
-			'efectivo'=> $monto,
+			'cheques' => $cheque,
+			'efectivo'=> $efectivo,
 			'comision'=> 0,
 			'islr'    => 0,
 			'monto'   => $monto,
@@ -871,7 +881,8 @@ class Bcaj extends Controller {
 	}
 
 
-	function _transferendeptar($fecha,$tarjeta,$tdebito,$comision,$islr,$envia,$recibe,$numeror){
+	function _transferendeptar($fecha,$tarjeta,$tdebito,$comision,$islr,$envia,$recibe,$numeror,$tipo){
+		$monto=$tarjeta+$tdebito;
 		if($monto<=0) return true;
 		$numero  = $this->datasis->fprox_numero('nbcaj');
 		$transac = $this->datasis->fprox_numero('ntransa');
@@ -880,9 +891,9 @@ class Bcaj extends Controller {
 		$sp_fecha= str_replace('-','',$fecha);
 		$error   = 0;
 
-		$mSQL="SELECT a.tipotra ,a.formaca FROM tban AS a JOIN banc AS b ON a.cod_banc=b.tbanco WHERE a.codbanc=$dbrecibe";
+		$mSQL="SELECT a.tipotra ,a.formaca FROM tban AS a JOIN banc AS b ON a.cod_banc=b.tbanco WHERE a.cod_banc=$dbrecibe";
 		$parr=$this->datasis->damerow($mSQL);
-		$formaca=(empty($parr['formaca']))? 'NETA': 'BRUTA';
+		$formaca=(empty($parr['formaca']) OR $parr['formaca']=='NETA')? 'NETA': 'BRUTA';
 
 		$mSQL='SELECT codbanc,numcuent,tbanco,banco,saldo,codprv,gastocom,depto FROM banc WHERE codbanc IN ('.$this->db->escape($envia).','.$this->db->escape($recibe).')';
 		$query = $this->db->query($mSQL);
@@ -910,12 +921,12 @@ class Bcaj extends Controller {
 			'numeroe' => $numeroe,
 			'bancoe'  => $infbanc[$envia]['banco'],
 			'recibe'  => $recibe,
-			'tipor'   => 'DE',
+			'tipor'   => $tipo,
 			'numeror' => $numeror,
 			'bancor'  => $infbanc[$recibe]['banco'],
 			'concepto'=> 'DEP/TARJETAS DE '.$envia.' A BANCO '.$recibe,
-			'concep2' => ($auto)? 'AUTOTRANFER' : '',
-			'benefi'  => $this->traevalor('TITULO1'),
+			'concep2' => '',
+			'benefi'  => $this->datasis->traevalor('TITULO1'),
 			'boleta'  => '',
 			'precinto'=> '',
 			'comprob' => '',
@@ -964,7 +975,6 @@ class Bcaj extends Controller {
 		$ban=$this->db->simple_query($mSQL);
 		if($ban==false){ memowrite($mSQL,'bcaj'); $error++; }
 
-
 		//Crea el ingreso la otra caja
 
 		$data=array();
@@ -979,7 +989,7 @@ class Bcaj extends Controller {
 		$data['codcp']    = 'CAJAS';
 		$data['comision'] = $comision;
 		$data['impuesto'] = $islr;
-		$data['monto']    = ($formaca=='NETA')? $tarjeta+$tdebito : $tarjeta+$tdebito-$islr-$comision ;
+		$data['monto']    = ($formaca=='NETA')?  $tarjeta+$tdebito-$islr-$comision : $tarjeta+$tdebito ;
 		$data['nombre']   = 'DEPOSITO DESDE CAJA';
 		$data['concepto'] = 'DEP/TARJETAS DE '.$envia.' A '.$recibe;;
 		$data['concep2']  = '';
@@ -1000,6 +1010,35 @@ class Bcaj extends Controller {
 
 
 		if($comision>0){
+			if($formaca=='BRUTA'){
+				$data=array();
+				$data['codbanc']  = $recibe;
+				$data['numcuent'] = $infbanc[$recibe]['numcuent'];
+				$data['banco']    = $infbanc[$recibe]['banco'];
+				$data['saldo']    = $infbanc[$recibe]['saldo'];
+				$data['tipo_op']  = 'ND';
+				$data['numero']   = 'C'.substr($numeror,1);
+				$data['fecha']    = $fecha;
+				$data['clipro']   = 'O';
+				$data['codcp']    = 'CAJAS';
+				$data['comision'] = $comision;
+				$data['impuesto'] = $islr;
+				$data['monto']    = $comision;
+				$data['nombre']   = 'COMISION POR TC/TD';
+				$data['concepto'] = 'COMISION POR TC/TD';
+				$data['concep2']  = '';
+				$data['bruto']    = $tarjeta;
+				$data['comprob']  = $numero;
+				$data['documen']  = $numero;
+				$data['transac']  = $transac;
+				$data['usuario']  = $this->session->userdata('usuario');
+				$data['estampa']  = date('Ymd');
+				$data['hora']     = date('H:i:s');
+				$sql=$this->db->insert_string('bmov', $data);
+				$ban=$this->db->simple_query($sql);
+				if($ban==false){ memowrite($sql,'bcaj'); $error++; }
+			}
+
 			$data=array();
 			$data['fecha']    = $fecha;
 			$data['numero']   = 'CTC'.substr($numero,-5);
@@ -1061,10 +1100,38 @@ class Bcaj extends Controller {
 		}
 
 		if($islr>0){
+			if($formaca=='BRUTA'){
+				$data=array();
+				$data['codbanc']  = $recibe;
+				$data['numcuent'] = $infbanc[$recibe]['numcuent'];
+				$data['banco']    = $infbanc[$recibe]['banco'];
+				$data['saldo']    = $infbanc[$recibe]['saldo'];
+				$data['tipo_op']  = 'ND';
+				$data['numero']   = 'R'.substr($numeror,1);
+				$data['fecha']    = $fecha;
+				$data['clipro']   = 'O';
+				$data['codcp']    = 'CAJAS';
+				$data['comision'] = $comision;
+				$data['impuesto'] = $islr;
+				$data['monto']    = $islr;
+				$data['nombre']   = 'RETENCION DE ISLR POR TC';
+				$data['concepto'] = 'RETENCION DE ISLR POR TC';
+				$data['concep2']  = '';
+				$data['bruto']    = $tarjeta;
+				$data['comprob']  = $numero;
+				$data['documen']  = $numero;
+				$data['transac']  = $transac;
+				$data['usuario']  = $this->session->userdata('usuario');
+				$data['estampa']  = date('Ymd');
+				$data['hora']     = date('H:i:s');
+				$sql=$this->db->insert_string('bmov', $data);
+				$ban=$this->db->simple_query($sql);
+				if($ban==false){ memowrite($sql,'bcaj'); $error++; }
+			}
 			$nccli = $this->datasis->fprox_numero('nccli');
 			$nsmov = $this->datasis->fprox_numero('nsmov');
-			$ff    = explode('-',$fecha);
-			$udia  = days_in_month($ff[0],$ff[1]);
+			$ff    = str_replace('-','',$fecha);
+			$udia  = days_in_month(substr($ff,0,4),substr($ff,4,2));
 
 			$data=array();
 			$data['cod_cli']  = 'RETED';
@@ -1074,7 +1141,7 @@ class Bcaj extends Controller {
 			$data['fecha']    = $fecha;
 			$data['monto']    = $islr;
 			$data['impuesto'] = 0;
-			$data['vence']    = $ff[0].$ff[1].$udia;
+			$data['vence']    = substr($ff,0,6).$udia;
 			$data['tipo_ref'] = 'DC';
 			$data['num_ref']  = '';
 			$data['observa1'] = 'RET/ISLR TC POR DEP '.$infbanc[$recibe]['banco'];
@@ -1089,7 +1156,7 @@ class Bcaj extends Controller {
 			if($ban==false){ memowrite($sql,'bcaj'); $error++; }
 		}
 
-		logusu("Transferencia de caja $numero creada");
+		logusu('bcaj',"Transferencia de caja $numero creada");
 
 		return ($error==0) ? true : false;
 	}

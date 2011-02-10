@@ -107,7 +107,23 @@ class logo extends Controller {
 		}
 	}
 
-	function _crear($path,$ancho=127,$formato='jpg',$nombre){
+	function traerv($nombre='logo.jpg'){
+		$this->load->helper('file');
+		if(preg_match('/(?<nom>[a-zA-Z]+)(?<tam>\d*)\.(?<tip>(gif|jpg|png))/', $nombre, $match)>0){
+			$arch="images/$nombre";
+			$mime= get_mime_by_extension($nombre);
+			header("Content-type: $mime");
+			if(!file_exists($arch)){
+				if(empty($match['tam'])) $match['tam']=80;
+				$this->_crear($arch,$match['tam'],$match['tip'],$match['nom'],true);
+			}
+			if($this->write) echo read_file($arch);
+		}else{
+			show_404('');
+		}
+	}
+
+	function _crear($path,$medida=127,$formato='jpg',$nombre,$vert=false){
 		$nom =basename($path,'.'.$formato);
 		$gene=$nombre.'_generatriz.gd2';
 
@@ -116,13 +132,25 @@ class logo extends Controller {
 			$image = imagecreatefromgd2($dir);
 			$oancho= imagesx($image);
 			$oalto = imagesy($image);
-			$alto  = round($ancho*$oalto/$oancho);
+			if($vert){
+				$ancho=$medida;
+				$alto  = round($ancho*$oalto/$oancho);
+			}else{
+				$alto = $medida;
+				$ancho=round($alto*$oancho/$oalto);
+			}
 			$im    = imagecreatetruecolor($ancho, $alto);
 			imagecopyresampled($im, $image, 0, 0, 0, 0, $ancho, $alto, $oancho, $oalto);
 		}else{ //si no existe la generatriz
 			$rif   = $this->datasis->traevalor('RIF');
 			$titu  = (empty($rif)) ? 'Logotipo' : $rif;
-			$alto  = 80;
+			if($vert){
+				$ancho=$medida;
+				$alto  = 80;
+			}else{
+				$alto = $medida;
+				$ancho=127;
+			}
 			$im    = imagecreate($ancho, $alto);
 			$white = imagecolorallocate($im, 255, 255, 255);
 			$black = imagecolorallocate($im, 0, 0, 0);
