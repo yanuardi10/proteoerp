@@ -134,6 +134,17 @@ class Bcaj extends Controller {
 
 		$edit = new DataForm('finanzas/bcaj/transferencia/process');
 		$edit->title='Deposito en caja';
+		$link  = site_url('finanzas/bcaj/get_trrecibe');
+		$script='
+		function get_trrecibe(){
+			if($("#envia").val().length>0){
+				$.post("'.$link.'",{ envia: $("#envia").val()}, function(data){
+					//alert(data);
+					$("#recibe").html(data);
+				});
+			}
+		}';
+		$edit->script($script);
 
 		$edit->back_url = site_url('finanzas/bcaj/index');
 
@@ -144,21 +155,29 @@ class Bcaj extends Controller {
 		$edit->envia = new dropdownField('Envia','envia');
 		$edit->envia->option('','Seleccionar');
 
+		$edit->numeroe = new inputField('N&uacute;mero de envio', 'numeroe');
+		$edit->numeroe->in='envia';
+		$edit->numeroe->rule='condi_required|callback_chnumeroe';
+		$edit->numeroe->size=20;
+		$edit->numeroe->append('Solo si el que env&iacute;a es un banco');
+
+		$env=$this->input->post('envia');
 		$edit->recibe = new dropdownField('Recibe','recibe');
 		$edit->recibe->option('','Seleccionar');
+		if($env!==false){
+			$tipo  = $this->_traetipo($env);
+			$ww    = ($tipo=='CAJ') ? 'AND tbanco="CAJ"' : '';
+			$desca = 'CONCAT_WS(\'-\',codbanc,banco) AS desca';
+			$edit->recibe->options("SELECT codbanc,$desca FROM banc WHERE codbanc<>".$this->db->escape($env)." $ww ORDER BY banco");
+		}
+
+		$edit->numeror = new inputField('N&uacute;mero de envio', 'numeror');
+		$edit->numeror->in='recibe';
+		$edit->numeror->rule='condi_required|callback_chnumeror';
+		$edit->numeror->size=20;
+		$edit->numeror->append('Solo si el que recibe es un banco');
 
 		$desca='CONCAT_WS(\'-\',codbanc,banco) AS desca';
-
-		$link  = site_url('finanzas/bcaj/get_trrecibe');
-		$script='
-		function get_trrecibe(){
-			$.post("'.$link.'",{ envia: $("#envia").val()}, function(data){
-				//alert(data);
-				$("#recibe").html(data);
-			});
-		}';
-		$edit->script($script);
-
 		$edit->envia->options("SELECT codbanc,$desca FROM banc ORDER BY banco");
 		$edit->envia->onchange = 'get_trrecibe();';
 		$edit->envia->rule     = 'required';
@@ -195,7 +214,9 @@ class Bcaj extends Controller {
 			$monto  = $edit->monto->newValue;
 			$envia  = $edit->envia->newValue;
 			$recibe = $edit->recibe->newValue;
-			$rt=$this->_transferencaj($fecha,$monto,$envia,$recibe);
+			$numeror= $edit->numeror->newValue;
+			$numeroe= $edit->numeroe->newValue;
+			$rt=$this->_transferencaj($fecha,$monto,$envia,$recibe,false,$numeror,$numeroe);
 			if($rt){
 				redirect('/finanzas/bcaj/listo');
 			}else{
@@ -204,6 +225,7 @@ class Bcaj extends Controller {
 		}
 
 		$this->rapyd->jquery[]='$(".inputnum").numeric(".");';
+		//$this->rapyd->jquery[]='get_trrecibe();';
 		$data['content'] = $edit->output;
 		$data['title']   = heading('Transferencias');
 		$data['head']    = $this->rapyd->get_head().phpscript('nformat.js');
@@ -226,6 +248,7 @@ class Bcaj extends Controller {
 
 		$edit->recibe = new dropdownField('Recibe','recibe');
 		$edit->recibe->option('','Seleccionar');
+
 
 		$edit->numeror = new inputField('N&uacute;mero de deposito', 'numeror');
 		$edit->numeror->rule='required';
@@ -647,12 +670,14 @@ class Bcaj extends Controller {
 		return $rt;
 	}
 
-	function _transferencaj($fecha,$monto,$envia,$recibe,$auto=false){
+	function _transferencaj($fecha,$monto,$envia,$recibe,$auto=false,$numeror=null,$numeroe=null){
 		if($monto<=0) return true;
-		$numero = $this->datasis->fprox_numero('nbcaj');
-		$transac= $this->datasis->fprox_numero('ntransa');
-		$numeroe= $this->datasis->banprox($envia);
-		$numeror= $this->datasis->banprox($recibe);
+		$numero  = $this->datasis->fprox_numero('nbcaj');
+		$transac = $this->datasis->fprox_numero('ntransa');
+		$_numeroe= $this->datasis->banprox($envia);
+		$_numeror= $this->datasis->banprox($recibe);
+		$numeroe = ($_numeroe===false)? str_pad($numeroe, 12, '0', STR_PAD_LEFT): $_numeroe;
+		$numeror = ($_numeror===false)? str_pad($numeror, 12, '0', STR_PAD_LEFT): $_numeror;
 		$sp_fecha= str_replace('-','',$fecha);
 		$error  = 0;
 
@@ -1008,7 +1033,6 @@ class Bcaj extends Controller {
 		$ban=$this->db->simple_query($mSQL);
 		if($ban==false){ memowrite($mSQL,'bcaj'); $error++; }
 
-
 		if($comision>0){
 			if($formaca=='BRUTA'){
 				$data=array();
@@ -1157,7 +1181,6 @@ class Bcaj extends Controller {
 		}
 
 		logusu('bcaj',"Transferencia de caja $numero creada");
-
 		return ($error==0) ? true : false;
 	}
 
@@ -1251,7 +1274,6 @@ class Bcaj extends Controller {
 		if($ban==false){ memowrite($sql,'bcaj'); $error++; }
 
 		//Crea el ingreso la otra caja
-		
 		$mSQL='CALL sp_actusal('.$this->db->escape($recibe).",'$sp_fecha',$monto)";
 		$ban=$this->db->simple_query($mSQL);
 		if($ban==false){ memowrite($mSQL,'bcaj'); $error++; }
@@ -1285,8 +1307,31 @@ class Bcaj extends Controller {
 		$dbcaja =$this->db->escape($caja);
 		$mSQL="SELECT SUM(if(tipo_op IN ('NC','DE'),1,-1)*monto) AS monto FROM bmov WHERE codbanc=$dbcaja AND fecha=$dbfecha";
 		$monto=$this->datasis->dameval($mSQL);
-
 		return (empty($monto))? 0 : $monto;
+	}
+
+	function chnumeror($numero){
+		$dbcodban=$this->db->escape($this->input->post('recibe'));
+		$tipo=$this->datasis->dameval("SELECT tbanco FROM banc WHERE codbanc=$dbcodban");
+
+		if($tipo!='CAJ' && empty($numero)){
+			$this->validation->set_message('chnumeror', 'Cuando el que recibe es un banco es obligatorio el n&uacute;mero de deposito');
+			return false;
+		}else{
+			return true;
+		}
+	}
+
+	function chnumeroe($numero){
+		$dbcodban=$this->db->escape($this->input->post('envia'));
+		$tipo=$this->datasis->dameval("SELECT tbanco FROM banc WHERE codbanc=$dbcodban");
+
+		if($tipo!='CAJ' && empty($numero)){
+			$this->validation->set_message('chnumeroe', 'Cuando el que env&iacute;a es un banco es obligatorio el n&uacute;mero de deposito');
+			return false;
+		}else{
+			return true;
+		}
 	}
 
 	function chtotal($monto){
@@ -1393,9 +1438,5 @@ class Bcaj extends Controller {
 	function _traetipo($codigo){
 		$sql='SELECT tbanco FROM banc WHERE codbanc='.$this->db->escape($codigo);
 		return $this->datasis->dameval($sql);
-	}
-
-	function chtr(){
-		$recibe=$this->input->post('recibe');
 	}
 }
