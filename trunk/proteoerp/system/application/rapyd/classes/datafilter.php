@@ -174,12 +174,26 @@ class DataFilter extends DataForm{
                     $this->db->orlike($name, $value);
                 break;
             
-                case "where":
+                case "where":{
+		    if(is_numeric($value)){
+			$value =1*$value;
+			$bool  =FALSE;
+		    }else{
+			$bool=TRUE;
+		    }
                     $this->db->where($name." ".$field->operator, $value);
+                }
                 break;
                    
-                case "orwhere":
+                case "orwhere":{
+		    if(is_numeric($value)){
+			$value =1*$value;
+			$bool  =FALSE;
+		    }else{
+			$bool=TRUE;
+		    }
                     $this->db->orwhere($name." ".$field->operator, $value);
+                }
                 break;
             
               //..
