@@ -2,11 +2,11 @@
 class Consultas extends Controller {
 	function Consultas(){
 		parent::Controller(); 
-		$this->load->library("rapyd");
+		$this->load->library('rapyd');
 	}
 
 	function index(){
-		redirect("inventario/consultas/precios");
+		redirect('inventario/consultas/precios');
 	}
 
 	function precios(){
@@ -21,15 +21,15 @@ class Consultas extends Controller {
 		);
 
 
-                $sinv=array('tabla'   =>'maes',
-	                    'columnas'=>array('codigo' =>'C&oacute;digo',
-			                      'descrip'=>'descrip'),
-			                      'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'descrip'),
-			                      'retornar'=>array('codigo'=>'barras'),
-			                      'titulo'  =>'Buscar Articulo');
-				    
+		$sinv=array('tabla'   =>'maes',
+			'columnas'=>array('codigo' =>'C&oacute;digo',
+			'descrip'=>'descrip'),
+			'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'descrip'),
+			'retornar'=>array('codigo'=>'barras'),
+			'titulo'  =>'Buscar Articulo');
+
 		$out  = form_open('supermercado/consultas/precios');
-		$out .= "Introduzca un C&oacute;digo ";
+		$out .= 'Introduzca un C&oacute;digo ';;
 		$out .= form_input($barras);
 		$out .= $this->datasis->modbus($sinv);
 		$out .= form_close();

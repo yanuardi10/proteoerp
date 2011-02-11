@@ -3,6 +3,10 @@ class Consultas extends Controller {
 	function Consultas(){
 		parent::Controller();
 		$this->load->library('rapyd');
+		$sinv= ($this->db->table_exists('sinv')) ? $this->datasis->dameval('SELECT COUNT(*) FROM sinv'): 0;
+		$maes= ($this->db->table_exists('maes')) ? $this->datasis->dameval('SELECT COUNT(*) FROM maes'): 0;
+
+		$this->tipo=($maes>$sinv) ? 'maes' : 'sinv';
 	}
 
 	function index(){
@@ -26,10 +30,30 @@ class Consultas extends Controller {
 			'value'     => '',
 			'size'      => '16',
 			);
+		if($this->tipo='sinv'){
+			$modbus=array('tabla'   =>'sinv',
+				'columnas'=>array(
+					'codigo' =>'C&oacute;digo',
+					'barras' =>'C&oacute;digo barras',
+					'descrip'=>'Descripci&oacute;n'),
+				'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'Descripci&oacute;n'),
+				'retornar'=>array('codigo' =>'codigo'),
+				'where'   =>'activo = "S"',
+				'titulo'  =>'Buscar Art&iacute;culo');
+		}else{
+			$modbus=array('tabla'   =>'maes',
+				'columnas'=>array('codigo' =>'C&oacute;digo',
+				'descrip'=>'descrip'),
+				'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'descrip'),
+				'retornar'=>array('codigo'=>'codigo'),
+				'where'   =>'activo = "S"',
+				'titulo'  =>'Buscar Articulo');
+		}
+		$boton=$this->datasis->modbus($modbus);
 
 		$out  = '<h1>'.form_open('inventario/consultas/preciosgeneral');
 		$out .= 'Introduzca un C&oacute;digo ';
-		$out .= form_input($barras);
+		$out .= form_input($barras).$boton;
 		//$out .= $this->datasis->modbus($sinv);
 		$out .= form_submit('btnsubmit','Consultar').form_close().'</h1>';
 
@@ -62,10 +86,10 @@ class Consultas extends Controller {
 	function rprecios($cod_bar=NULL){
 		if(!$cod_bar)$cod_bar=$this->input->post('barras');
 
-		$sinv= ($this->db->table_exists('sinv')) ? $this->datasis->dameval('SELECT COUNT(*) FROM sinv'): 0;
-		$maes= ($this->db->table_exists('maes')) ? $this->datasis->dameval('SELECT COUNT(*) FROM maes'): 0;
+		//$sinv= ($this->db->table_exists('sinv')) ? $this->datasis->dameval('SELECT COUNT(*) FROM sinv'): 0;
+		//$maes= ($this->db->table_exists('maes')) ? $this->datasis->dameval('SELECT COUNT(*) FROM maes'): 0;
 
-		if($maes>$sinv){
+		if($this->tipo=='maes'){
 			$mSQL_p = 'SELECT precio1, precio2, precio3, precio4,codigo, referen, barras, descrip, corta, codigo, marca,  dvolum1, dvolum2, existen, mempaq, dempaq,unidad,iva FROM maes';
 			$bbus   = array('codigo','barras','referen');
 			$suple  = 'codigo';

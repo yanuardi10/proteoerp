@@ -1,19 +1,19 @@
 <html>
 <head>
-<title>Sistemas DataSIS</title>
+<title>ProteoERP<?php if(isset($title)) echo ':'.preg_replace('/<[^>]*>/', '', $title); ?></title>
 <?=style("ventanas.css");?>
 <?php if (isset($head))   echo $head;   ?>
 <?php if (isset($script)) echo $script; ?>
 </head>
 <body>	
-<div id='contenido'>	
-	<table width="95%" border=0 align="center">	
+<div id='contenido'>
+	<table width="95%" border=0 align="center">
 		<tr>
-			<td></td>	
+			<td></td>
 			<td><?php if (isset($title)) echo $title; ?></td>
 		</tr>
 	<table>
-	
+
 	<table width="95%" border=0 align="center">
 		<tr>
 			<td valign=top><?php if (isset($lista)) echo $lista; ?></td>
