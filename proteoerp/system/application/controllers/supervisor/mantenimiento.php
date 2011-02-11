@@ -510,27 +510,26 @@ class Mantenimiento extends Controller{
 			$re="repara_".$tabla;
 			$op="optimi_".$tabla;
 			$ob1="con_".$tabla;
-            $ob2="con2_".$tabla;
-			
-			
+			$ob2="con2_".$tabla;
+
 			$form->$che = new checkboxField("$tabla", "$che","CHECK TABLE $tabla","no");
 			$form->$ob1 = new containerField("","&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
-            $form->$ob1->in="$che";
+			$form->$ob1->in="$che";
 			$form->$re = new checkboxField("", "$re","REPAIR TABLE $tabla","no");
 			$form->$re->in="$che";
 			$form->$ob2 = new containerField("","&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
-            $form->$ob2->in="$che";
+			$form->$ob2->in="$che";
 			$form->$op = new checkboxField("", "$op","OPTIMIZE TABLE $tabla","no");
 			$form->$op->in="$che";
-		} 
-		
+		}
+
 		$form->submit("btnsubmit","Aceptar");
 		$form->build_form();
-		 
+
 		if  ($form->on_show() || $form->on_error()) {
 			$data["content"] =$form->output;
 		}
-		 
+
 		if ($form->on_success()){
 			$data["content"] = "<h1>Procesos y Consultas generadas</h1><br>";
 			$atras=anchor('supervisor/mantenimiento/tablas','Atras');
@@ -690,7 +689,7 @@ class Mantenimiento extends Controller{
 				$query = $this->db->query('SELECT nombre FROM formatos UNION SELECT nombre FROM reportes');
 				if ($query->num_rows() > 0){
 					foreach ($query->result() as $row){
-						$pivot=array($row->nombre,'C:\\spool\\'.$row->nombre.'txt','');
+						$pivot=array($row->nombre,'C:\\spool\\'.$row->nombre.'.TXT','');
 						dbase_add_record($db, $pivot);
 					}
 				}
