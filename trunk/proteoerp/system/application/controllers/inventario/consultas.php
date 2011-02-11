@@ -22,6 +22,9 @@ class Consultas extends Controller {
 			$("#codigo").attr("value", "");
 			$("#codigo").focus();
 		});
+		function dbuscar(){
+			$("form").submit();
+		}
 		</script>';
 
 		$barras = array(
@@ -36,25 +39,26 @@ class Consultas extends Controller {
 					'codigo' =>'C&oacute;digo',
 					'barras' =>'C&oacute;digo barras',
 					'descrip'=>'Descripci&oacute;n'),
-				'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'Descripci&oacute;n'),
+				'filtro'  =>array('descrip'=>'Descripci&oacute;n'),
 				'retornar'=>array('codigo' =>'codigo'),
 				'where'   =>'activo = "S"',
-				'titulo'  =>'Buscar Art&iacute;culo');
+				'titulo'  =>'Buscar Art&iacute;culo',
+				'script'  => array('dbuscar()'));
 		}else{
 			$modbus=array('tabla'   =>'maes',
 				'columnas'=>array('codigo' =>'C&oacute;digo',
 				'descrip'=>'descrip'),
-				'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'descrip'),
+				'filtro'  =>array('descrip'=>'descrip'),
 				'retornar'=>array('codigo'=>'codigo'),
 				'where'   =>'activo = "S"',
-				'titulo'  =>'Buscar Articulo');
+				'titulo'  =>'Buscar Articulo',
+				'script'  => array('dbuscar()'));
 		}
 		$boton=$this->datasis->modbus($modbus);
 
 		$out  = '<h1>'.form_open('inventario/consultas/preciosgeneral');
 		$out .= 'Introduzca un C&oacute;digo ';
 		$out .= form_input($barras).$boton;
-		//$out .= $this->datasis->modbus($sinv);
 		$out .= form_submit('btnsubmit','Consultar').form_close().'</h1>';
 
 		$contenido = $out;
