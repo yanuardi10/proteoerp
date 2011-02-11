@@ -1,7 +1,7 @@
 <html>
 <head>
 	<meta http-equiv="Content-type" content="text/html; charset=<?=$this->config->item('charset'); ?>" />
-	<title>Sistemas DataSIS</title>
+	<title>ProteoERP<?php if(isset($title)) echo ':'.preg_replace('/<[^>]*>/', '', $title); ?></title>
 	<?=style("ventanas.css");?>
 	<?php if (isset($head))   echo $head;   ?>
 	<?php if (isset($script)) echo $script; ?>
@@ -24,6 +24,7 @@
 		<p>Tiempo de la consulta {elapsed_time} seg | Proteo ERP </p>
 	</div>
 </div>
+
 <?php if (isset($extras)) echo $extras; ?>
 </body>
 </html>
