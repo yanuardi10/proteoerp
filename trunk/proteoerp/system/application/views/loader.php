@@ -15,16 +15,16 @@
 <?php echo style("acordeon.css"); ?>
 <?php echo style("masonry.css"); ?>
 
-<?php echo script("jquery.js"); ?>
+<?php //echo script("jquery.js"); ?>
+<?php echo script("jquery-1.2.6.pack.js"); ?>
 <?php echo script("plugins/myAccordion.js"); ?>
 <?php echo script("plugins/interface.js"); ?>
 <?php echo script("plugins/jquery.masonry.min.js"); ?>
 
-
 <script type="text/javascript" charset=<?=$this->config->item('charset'); ?>">
 $(document).ready(function() {
 	$("#accordion").myAccordion({
-		speed: "fast", // @param : low, medium, fast
+		speed: "fast",   // @param : low, medium, fast
 		defautContent: 0 // @param : number
 	});
 	
@@ -42,17 +42,7 @@ $(document).ready(function() {
 		});
 		return false;
 	});
-
-	//$('a').ToolTip(
-	//	{
-	//	className: 'inputsTooltip',
-	//	position: 'mouse',
-	//	alpha: 0.80,
-	//	delay: 200
-	//	}
-	//);
 });
-
 </script>
 
 </head>

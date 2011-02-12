@@ -1,6 +1,6 @@
 <html>
 <head>
-	<meta http-equiv="Content-type" content="text/html; charset=<?=$this->config->item('charset'); ?>" />
+	<meta http-equiv="Content-type" content="text/html; charset=<?=$this->config->item('charset'); ?>" >
 	<title>ProteoERP<?php if(isset($title)) echo ':'.preg_replace('/<[^>]*>/', '', $title); ?></title>
 	<?=style("ventanas.css");?>
 	<?php if (isset($head))   echo $head;   ?>
