@@ -554,7 +554,7 @@ class Bcaj extends Controller {
 							redirect('/finanzas/bcaj/listo/s');
 						}
 					}else{
-						$edit->error_string='El monto total a transferir debe ser de :<b>'.nformat($montosis).'</b>';
+						$edit->error_string='El monto total a transferir debe ser de :<b>'.nformat($montosis).'</b>, faltan '.nformat($montosis-$efectivo-$tarjeta-$gastos-$valores);
 						$edit->build_form();
 						//$salida .= $edit->output;
 					}
