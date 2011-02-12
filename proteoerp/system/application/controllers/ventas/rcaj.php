@@ -339,7 +339,7 @@ class Rcaj extends validaciones {
 				$str='';
 				$ingreso= $rrecibido=$parcial=0;
 				$numero = $this->datasis->fprox_numero('ningreso');
-				$transac= $this->datasis->fprox_numero('transac');
+				$transac= $this->datasis->fprox_numero('ntransa');
 				$arr    = array('numero'=>$numero);
 
 				foreach ($query->result() as $row){
@@ -581,7 +581,7 @@ class Rcaj extends validaciones {
 				//echo $mmSQL;
 
 				//Crea el movimiento en smov
-				$transac=$this->datasis->fprox_numero('transac');
+				$transac=$this->datasis->fprox_numero('ntransa');
 				$mSQL  = 'SELECT fecha, cajero FROM rcaj WHERE numero='.$dbnumero;
 				$query = $this->db->query($mSQL);
 				$row   = $query->first_row();
