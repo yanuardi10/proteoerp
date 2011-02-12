@@ -169,7 +169,7 @@ class Banc extends Validaciones {
 		$edit->banco = new inputField('Descripci&oacute;n', 'banco');
 		$edit->banco->size =25;
 		$edit->banco->maxlength=30;
-		$edit->banco->readonly=true;
+		//$edit->banco->readonly=true;
 
 		$edit->numcuent = new inputField('Nro. de Cuenta', 'numcuent');
 		$edit->numcuent->rule='trim';
