@@ -702,4 +702,28 @@ class Mantenimiento extends Controller{
 			echo 'Debe cargar las librerias dbase para poder usar este modulo';
 		}
 	}
+
+	//Para reconstruir sfac a partir de sfpa, sitems,scli y sinv
+	function ressfac(){
+		$mSQL="INSERT INTO sfacSELECTaa.tipoa,aa.numa,aa.fecha,aa.fecha,aa.vendedor,aa.codigoa,aa.rifci,aa.nombre,aa.dire11,aa.dire12,'' AS orden,'' AS referen,SUM(aa.iva),0 AS inicial,SUM(aa.tota) AS totals,SUM(aa.tota+aa.iva) AS totalg,'' AS status, '' AS observa,'' AS observ1,0 AS devolu,aa.cajero,'0001' AS almacen,0 AS peso,'' AS factura,'' AS pedido,aa.usuario,aa.estampa,aa.hora,aa.transac,'' AS nfiscal,'' AS zona,'' AS ciudad,0 AS comision,'N' AS pagada,'N' AS sepago,
+		0  AS dias,
+		'' AS fpago,
+		0  AS comical,
+		SUM(aa.tota*(aa.sinviva=0))  AS exento,
+		SUM(aa.iva*(aa.sinviva=12))  AS tasa,
+		SUM(aa.iva*(aa.sinviva=8))   AS reducida,
+		SUM(aa.iva*(aa.sinviva=22))  AS sobretasa,
+		SUM(aa.tota*(aa.sinviva=12)) AS montasa,
+		SUM(aa.tota*(aa.sinviva=8))  AS monredu,
+		SUM(aa.tota*(aa.sinviva=22)) AS monadic,
+		'' AS notcred,'' AS fentrega,'' AS  fpagom,'' AS fdespacha,'' AS udespacha,'' AS numarma,'' AS maqfiscal,null AS id,'' AS dmaqfiscal,'' AS nromanual,'' AS fmanual,'' AS lleva
+		FROM
+		(SELECT b.*,c.iva AS sinviva,c.peso,e.cliente,e.nombre,e.dire11,e.dire12,e.rifci
+		FROM sfac AS a 
+		RIGHT JOIN sitems AS b ON a.tipo_doc=b.tipoa AND a.numero=b.numa
+		JOIN sinv AS c ON b.codigoa=c.codigo
+		JOIN sfpa AS d ON b.tipoa=MID(d.tipo_doc,1,1) AND b.numa=d.numero
+		JOIN scli AS e ON d.cod_cli=e.cliente WHERE a.numero IS NULL) AS aa
+		GROUP BY aa.tipoa,aa.numa";
+	}
 }

@@ -323,15 +323,20 @@ document.body.setAttribute(
 
 	function banprox($codban){
 		$CI =& get_instance();
-		$nom='nBAN'.$codban;
-		while(1){
-			$numero=$this->fprox_numero($nom,12);
-			$dbnumero=$CI->db->escape($numero);
-			$mSQL = "SELECT COUNT(*) AS n FROM bmov WHERE numero=$dbnumero";
-			$query= $CI->db->query($mSQL);
-			$row  = $query->first_row('array');
-			if($row['n']==0) break;
+		$dbcodban=$CI->db->escape($codban);
+		$tipo=$this->dameval("SELECT tbanco FROM banc WHERE codbanc=$dbcodban");
+		if($tipo=='CAJ'){
+			$nom='nBAN'.$codban;
+			while(1){
+				$numero=$this->fprox_numero($nom,12);
+				$dbnumero=$CI->db->escape($numero);
+				$mSQL = "SELECT COUNT(*) AS n FROM bmov WHERE numero=$dbnumero";
+				$query= $CI->db->query($mSQL);
+				$row  = $query->first_row('array');
+				if($row['n']==0) break;
+			}
+			return $numero;
 		}
-		return $numero;
+		return false;
 	}
 }
