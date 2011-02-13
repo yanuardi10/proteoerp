@@ -122,7 +122,7 @@ class comprassuper{
 		$ws->write(2, 0, "RIF: ".$this->datasis->traevalor('RIF') , $h1 );
 		
 		$ws->write(4,0, $hs, $h );
-		for ( $i=1; $i<20; $i++ ) {
+		for ( $i=1; $i<24; $i++ ) {
 			$ws->write_blank(4, $i,  $h );
 		};
 		

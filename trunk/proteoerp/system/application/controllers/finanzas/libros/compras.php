@@ -412,8 +412,10 @@ class compras{
 		
 		$this->db->simple_query("DELETE FROM siva WHERE EXTRACT(YEAR_MONTH FROM fechal) = $mes AND fuente='CP' ");
 		$sql="UPDATE scst SET
-		cgenera=null, civagen=null,cadicio=null, civaadi=null,creduci=null,civared=null,cstotal=null, cimpuesto=null,ctotal=null
-		WHERE cgenera+civagen+cadicio+civaadi+creduci+civared+cstotal+cimpuesto+ctotal=0 OR cgenera+civagen+cadicio+civaadi+creduci+civared+cstotal+cimpuesto+ctotal=NULL AND recep BETWEEN $fdesde AND $fhasta";
+		cexento=null,cgenera=null, civagen=null,cadicio=null, civaadi=null,creduci=null,civared=null,cstotal=null, cimpuesto=null,ctotal=null
+		WHERE (cexento+cgenera+civagen+cadicio+civaadi+creduci+civared+cstotal+cimpuesto+ctotal=0 OR 
+		       cexento+cgenera+civagen+cadicio+civaadi+creduci+civared+cstotal+cimpuesto+ctotal IS NULL) AND recep BETWEEN $fdesde AND $fhasta";
+		$this->db->simple_query($sql);
 
 		// REVISAR COMPRAS
 		$query = $this->db->query("SELECT control FROM scst WHERE abs(exento+montasa+monredu+monadic-montotot)>0.1 AND EXTRACT(YEAR_MONTH FROM fecha)=$mes ");
