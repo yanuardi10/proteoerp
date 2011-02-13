@@ -56,32 +56,38 @@ class Reportes extends Controller
 			$repo=strtoupper($repo);
 			
 			$grid = new DataTable();
-			//$grid->db->select('titulo, mensaje, SUBSTR(SUBSTRING_INDEX(REPLACE(ejecutar, "\'",\'"\'), \'"\', 2),10) AS nombre');  
-			//$grid->db->from("tmenus");
-			//$grid->db->where("modulo='".$repo."LIS' AND TRIM(ejecutar) LIKE 'REPOSQL(%)'");
-			$grid->db->select('a.titulo, a.mensaje, a.nombre'); 
-			$grid->db->from("intrarepo AS a");
-			$grid->db->join("reportes AS b","a.nombre=b.nombre");
-			$grid->db->where('a.modulo',$repo);
-			$grid->db->where('a.activo','S');
+			$grid->db->_escape_char='';
+			$grid->db->_protect_identifiers=false;
+			
+			$grid->db->select('CONCAT(a.secu," ",c.titulo) titulo, c.mensaje, c.nombre'); 
+			$grid->db->from("tmenus    a" );
+			$grid->db->join("sida      b","a.codigo=b.modulo");
+			$grid->db->join("intrarepo c","REPLACE(MID(a.ejecutar,10,30),"."'".'")'."','')=c.nombre ");
+			$grid->db->join("reportes  d","c.nombre=d.nombre");
+			$grid->db->where('c.activo','S');
+			$grid->db->where('b.acceso','S');
+			$grid->db->where('b.usuario',$this->session->userdata('usuario') );
+			$grid->db->like("a.ejecutar","REPOSQL", "after");
+			$grid->db->where('c.modulo',$repo);
+			$grid->db->orderby("a.secu");
 			
 			$grid->per_row = 3; 
-			$grid->use_function("substr","strtoupper");
+			//$grid->use_function("substr","strtoupper");
 			$grid->cell_template = '
 			<div style="padding:4px">
-			  <div style="color:#119911; font-weight:bold">'.anchor('reportes/ver/<#nombre#>/'.$repo,"<#titulo#>",array('onclick'=>"parent.navegador.afiltro()")).'</div>
-			   <htmlspecialchars><#mensaje#></htmlspecialchars>
+			<div style="color:#119911; font-weight:bold; font-size:24px">'.anchor('reportes/ver/<#nombre#>/'.$repo,"<#titulo#>",array('onclick'=>"parent.navegador.afiltro()")).'</div>
+			<htmlspecialchars><#mensaje#></htmlspecialchars>
 			</div>'; 
 			$grid->build();
-			//echo $grid->db->last_query();
 		}
-		if($repo AND $grid->recordCount>0) $data['forma'] = $grid->output; else $data['forma'] ='<p class="mainheader">No se encontrar&oacute;n reportes.</p>';
-		//echo $grid->db->last_query();
-		
-		$data['head']=$this->rapyd->get_head();
-		$data['titulo'] = "<center><h2>Listados Disponibles</h2></center>";
+		if($repo AND $grid->recordCount>0) 
+			$data['forma'] = $grid->output; 
+		else 
+			$data['forma'] = '<p class="mainheader">No hay reportes disponibles.</p>';
+		$meco = $this->datasis->dameval("SELECT titulo FROM intramenu a WHERE a.panel='REPORTES' AND a.ejecutar LIKE '%$repo' ");
+		$data['head']="";   //$this->rapyd->get_head();
+		$data['titulo'] = "<center><h2>$meco</h2></center>";
 		$data['repo']=$repo;
-		//$CI->session->set_userdata('estaba', $CI->uri->uri_string());
 		$this->load->view('view_reportes', $data);
 		
 	}
