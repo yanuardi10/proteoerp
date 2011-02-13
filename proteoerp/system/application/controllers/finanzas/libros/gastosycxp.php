@@ -28,7 +28,7 @@ class gastosycxp{
 			'GS' AS fuente, 
 			'00' AS sucursal, 
 			a.ffactura, 
-			a.numero, 
+			COALESCE(a.serie,a.numero),
 			' ' AS numhasta, 
 			' ' AS caja, 
 			a.nfiscal, 
