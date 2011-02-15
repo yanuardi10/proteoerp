@@ -96,30 +96,34 @@ class Bcaj extends Controller {
 	}
 
 	function agregar(){
-		$data['content'] = '<table align="center">'.br();
-		
-		$data['content'].= '<tr><td><img src="'.base_url().'images/dinero.jpg'.'" height="100px"></td><td>';
-		$data['content'].= '<p>Esta opcion se utiliza para depositar lo recaudado en efectivo desde 
-		                       las cajas para los bancos, debe tener a mano el numero del deposito</p>';
-		                       
-		$data['content'].= anchor('finanzas/bcaj/depositoefe'  ,'Deposito de efectivo').br();
+		$data['content'] = '<table align="center">';
+
+		$data['content'].= '<tr><td><img src="'.base_url().'images/dinero.jpg'.'" height="100px"></td><td bgcolor="#ddeedd">';
+		$data['content'].= '<p>'.anchor('finanzas/bcaj/depositoefe'  ,'Deposito de efectivo: ');
+		$data['content'].= 'Esta opcion se utiliza para depositar lo recaudado en efectivo desde 
+		                    las cajas para los bancos, debe tener a mano el numero del deposito</p>';
+
 
 		$data['content'].= '</td></tr><tr><td><img src="'.base_url().'images/tarjetas.jpg'.'" height="100px"></td><td>';
-		$data['content'].= '<p>Para registrar lo recaudado mediante tarjetas electronicas (Credito, Debito, Cesta Ticket) 
-		                       segun los valores impresos en los cierres diarios de los puntos de venta electronicos</p>';
-		$data['content'].= anchor('finanzas/bcaj/depositotar'  ,'Deposito de tarjetas').br();
+		$data['content'].= '<p>'.anchor('finanzas/bcaj/depositotar'  ,'Deposito de tarjetas: ');
+		$data['content'].= 'Para registrar lo recaudado mediante tarjetas electronicas (Credito, Debito, Cesta Ticket) 
+		                    segun los valores impresos en los cierres diarios de los puntos de venta electronicos</p>';
 
-		$data['content'].= '</td></tr><tr><td><img src="'.base_url().'images/transfer.jpg'.'" height="100px" ></td><td>';
-		$data['content'].= '<p>Puede hacer transferencias entre cajas o entre cuentas bancarias, las que correspondan a
-		                       cuentas bancarias pueden realizarce mediante cheque-deposito (manual) o NC-ND por transferencia   
-		                       electronica, en cualquier caso debe tener los numeros de documentos correspondientes.  </p>';
-		$data['content'].= anchor('finanzas/bcaj/transferencia','Transferencias').br();
+		$data['content'].= '</td></tr><tr><td><img src="'.base_url().'images/transfer.jpg'.'" height="100px" ></td><td bgcolor="#ddeedd">';
+		$data['content'].= '<p>'.anchor('finanzas/bcaj/transferencia','Transferencias: ');
+		$data['content'].= 'Puede hacer transferencias entre cajas o entre cuentas bancarias, las que correspondan a
+		                    cuentas bancarias pueden realizarce mediante cheque-deposito (manual) o NC-ND por transferencia   
+		                    electronica, en cualquier caso debe tener los numeros de documentos correspondientes.  </p>';
 		
 
 		$data['content'].= '</td></tr><tr><td><img src="'.base_url().'images/caja_activa.gif'.'" height="100px" ></td><td>';
-		$data['content'].= '<p>Si por politica de la empresa se quiere descargar la caja de recaudacion todos los dias, esta
-		                       opcion facilita el proceso ya que puede hacer varias transferencias en una sola operacion..  </p>';
-		$data['content'].= anchor('finanzas/bcaj/autotranfer','Transferencias').br();
+		$data['content'].= '<p>'.anchor('finanzas/bcaj/autotranfer','Transferencia de Cierre de Caja: ');
+		$data['content'].= 'Si por politica de la empresa se quiere descargar la caja de recaudacion todos los dias, esta
+		                    opcion facilita el proceso ya que puede hacer varias transferencias en una sola operacion..  </p>';
+
+		$data['content'].= '</td></tr><tr><td><img src="'.base_url().'images/blindado.gif'.'" height="60px" ></td><td bgcolor="#ddeedd">';
+		$data['content'].= '<p>'.anchor('finanzas/bcaj/remesa','Remesas: ');
+		$data['content'].= 'Cuando se entrega la relacion de cesta tickets a la empresa de valores de parte del Banco  </p>';
 
 		$data['content'].= '</td></tr><tr><td colspan=2 align="center">'.anchor('finanzas/bcaj/index'        ,'Regresar').br();
 		$data['content'].= '</td></tr></table>'.br();
@@ -128,6 +132,149 @@ class Bcaj extends Controller {
 		$data['head']    = $this->rapyd->get_head();  //.phpscript('nformat.js');
 		$this->load->view('view_ventanas', $data);
 	}
+
+	function remesa(){
+		$this->rapyd->load('dataform');
+
+		$edit = new DataForm('finanzas/bcaj/depositoefe/process');
+		$edit->title('Remesa de Valores');
+
+		$edit->numero = new inputField2("N&uacute;mero", "numero");
+		$edit->numero->size = 10;
+		$edit->numero->mode="autohide";
+		$edit->numero->maxlength=8;
+		$edit->numero->readonly=TRUE;
+
+		$edit->fecha = new DateonlyField('Fecha', 'fecha','d/m/Y');
+		$edit->fecha->insertValue = date('Y-m-d');
+		$edit->fecha->size = 10;
+		$edit->fecha->rule = 'chfecha|required';
+
+		$edit->envia = new dropdownField('Caja','envia');
+		$edit->envia->option('','Seleccionar');
+		$desca='CONCAT_WS(\'-\',codbanc,banco) AS desca';
+		$edit->envia->options( "SELECT TRIM(codbanc) AS codbanc,$desca FROM banc WHERE tbanco='CAJ'");
+		$edit->envia->rule   = 'required';
+		$edit->envia->style  = 'width:180px';
+
+		$edit->boleta = new inputField('Nro de Boleta', 'boleta');
+		$edit->boleta->rule='required';
+		$edit->boleta->size=20;
+
+		$edit->precinto = new inputField('Nro de Precinto', 'precinto');
+		$edit->precinto->rule='required';
+		$edit->precinto->size=20;
+
+		$edit->comprob = new inputField('Comp. de Servicio', 'comprob');
+		$edit->comprob->rule='required';
+		$edit->comprob->size=20;
+
+		$script='
+			function totaliza(){
+				if($("#efectivo").val().length>0) efectivo=parseFloat($("#efectivo").val()); else efectivo=0;
+				if($("#cheques").val().length>0)  cheques =parseFloat($("#cheques").val());  else cheques =0;
+				monto   =efectivo+cheques;
+				$("#monto").val(roundNumber(monto,2));
+			}';
+
+		$script='';
+
+		//$this->rapyd->jquery[]='$("#cheques,#efectivo").bind("keyup",function() { totaliza(); });';
+		//$edit->script($script);
+
+		$obj = "monto";
+		$edit->$obj = new inputField("Monto Bruto: ", $obj);
+		$edit->$obj->css_class='inputnum';
+		$edit->$obj->rule='trim|numeric';
+		$edit->$obj->maxlength =15;
+		$edit->$obj->size = 20;
+		$edit->$obj->group = 'Montos';
+		$edit->$obj->autocomplete=false;
+
+
+		//$edit->$obj->readonly=true;
+		//$edit->recibe->style = 'width:180px';
+
+		$numero=$edit->_dataobject->get('numero');
+		$detalle = new DataDetalle($edit->_status);
+		
+			//Campos para el detalle
+			$detalle->db->select('numero,tipo,concep, denomi, cantidad, monto ');
+			$detalle->db->from('itbcaj');
+			$detalle->db->where("numero='$numero'");
+			
+			$detalle->codigo = new inputField2("Tipo", "tipo<#i#>");
+			$detalle->codigo->size=3;
+			$detalle->codigo->db_name='tipo';
+			$detalle->codigo->append($this->datasis->p_modbus($modbus,'<#i#>'));
+			$detalle->codigo->readonly=TRUE;
+			
+			$detalle->concep = new inputField("Conc.", "concep<#i#>");
+			$detalle->concep->size=15;
+			$detalle->concep->db_name='concep';
+			$detalle->concep->maxlength=12;
+
+			$detalle->denomi = new inputField("Denom", "denomi<#i#>");
+			$detalle->denomi->css_class='inputnum';
+			$detalle->denomi->size=20;
+			$detalle->denomi->db_name='denomi';
+			
+			$detalle->cantidad = new inputField("Cant", "cantidad<#i#>");
+			$detalle->cantidad->css_class='inputnum';
+			$detalle->cantidad->size=20;
+			$detalle->cantidad->db_name='cantidad';
+			
+			$detalle->monto = new inputField("Monto", "monto<#i#>");
+			$detalle->monto->css_class='inputnum';
+			$detalle->monto->size=20;
+			$detalle->monto->db_name='monto';
+
+			//fin de campos para detalle
+			
+			//Columnas del detalle
+			$detalle->column("Tipo","<#tipo#><#concep#><#denomi#><#cantidad#><#monto#>");
+			//$detalle->column("Descripci&oacute;n","<#descrip#>");
+			//$detalle->column("Cantidad"          ,"<#cantidad#>");
+			$detalle->build();	
+			
+		$edit->detalle=new freeField("detalle", 'detalle',$detalle->output);
+
+
+
+
+		$back_url = site_url('finanzas/bcaj/agregar');
+		$edit->button('btn_undo', 'Regresar', "javascript:window.location='${back_url}'", 'TR');
+
+		$edit->submit('btnsubmit','Guardar');
+		$edit->build_form();
+
+		//**********************
+		//  Guarda el efecto
+		//**********************
+		if ($edit->on_success()){
+			$fecha   = $edit->fecha->newValue;
+			$envia   = $edit->envia->newValue;
+			$recibe  = $edit->recibe->newValue;
+			$numeror = $edit->numeror->newValue;
+			$efectivo= $edit->efectivo->newValue;
+			$cheque  = $edit->cheques->newValue;
+
+			$rt=$this->_transferendepefe($fecha,$efectivo,$cheque,$envia,$recibe,$numeror);
+			if($rt){
+				redirect('finanzas/bcaj/listo');
+			}else{
+				redirect('finanzas/bcaj/listo/s');
+			}
+		}
+
+		$data['content'] = $edit->output;
+		$data['title']   = heading('Deposito');
+		$data['head']    = $this->rapyd->get_head().phpscript('nformat.js');
+		$this->load->view('view_ventanas', $data);
+	}
+
+
+
 
 	function transferencia(){
 		$this->rapyd->load('dataform');
