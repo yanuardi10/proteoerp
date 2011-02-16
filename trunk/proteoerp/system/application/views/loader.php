@@ -37,8 +37,14 @@ $(document).ready(function() {
 			$('#accordion').myAccordion({ speed: 'fast', defautContent: 0 });
 		});
 		$(this).addClass('current');
-		$('#tumblelog').load('<?php echo site_url('bienvenido/cargapanel') ?>'+carga ,function(){
-			//$('#tumblelog').masonry({ singleMode: true,   itemSelector: '.box' });
+		$('#tumblelog').load('<?php echo site_url('bienvenido/cargapanel') ?>'+carga,'' ,function(){
+			//$('#tumblelog').removeClass();
+			//$('#tumblelog').attr('style','')
+			//alert($('#tumblelog').attr('class'));
+			$('#maso').masonry({ 
+				singleMode: true,
+				itemSelector: '.box'
+			});
 		});
 		return false;
 	});
