@@ -109,13 +109,13 @@ class Bienvenido extends Controller {
 			$desca  = $this->datasis->dameval("SELECT mensaje FROM intramenu WHERE modulo=$dbpertenece");
 			$imagen = $this->datasis->dameval("SELECT imagen  FROM intramenu WHERE modulo=$dbpertenece");
 			$desca  = htmlentities($desca);
-			$out .= '<div class=\'col6\'>';
+			$out .= '<div>';
 			$out .= '<table><tr>';
 			$out .= '<td>'.image($imagen).'</td>';
 			$out .= '<td><h2>'.$desca.'</h2></td>';
 			$out .= '</tr></table>';
 			$out .= '</div>';
-			//$out='';
+			$out .= '<div id="maso">';
 			$i=0;
 			foreach($arreglo as $panel => $opciones ){ $i++;
 				$out .= '<div class=\'box col1\'><h3>'.htmlentities($panel).'</h3>';
@@ -128,7 +128,9 @@ class Bienvenido extends Controller {
 					$out .= '</td></tr>';
 				}$out .='</table></div>';
 			}
+			$out .= '</div>';
 		}
+		
 		echo $out;
 	}
 	
