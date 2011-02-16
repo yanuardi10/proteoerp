@@ -8,6 +8,7 @@ class Bcaj extends Controller {
 		$this->guitipo=array('DE'=>'Deposito','TR'=>'Transferencia');
 		$this->datasis->modulo_id('51D',1);
 		$this->cajas=$this->config->item('cajas');
+		$this->bcajnumero='';
 		foreach($this->cajas AS $inv=>$val){
 			$codban=$this->db->escape($val);
 			$cana=$this->datasis->dameval("SELECT COUNT(*) AS cana FROM banc WHERE codbanc=$codban");
@@ -100,30 +101,31 @@ class Bcaj extends Controller {
 
 		$data['content'].= '<tr><td><img src="'.base_url().'images/dinero.jpg'.'" height="100px"></td><td bgcolor="#ddeedd">';
 		$data['content'].= '<p>'.anchor('finanzas/bcaj/depositoefe'  ,'Deposito de efectivo: ');
-		$data['content'].= 'Esta opcion se utiliza para depositar lo recaudado en efectivo desde 
-		                    las cajas para los bancos, debe tener a mano el numero del deposito</p>';
+		$data['content'].= 'Esta opci&oacute;n se utiliza para depositar lo recaudado en efectivo desde 
+		                    las cajas para los bancos, debe tener a mano el n&uacute;mero del deposito.</p>';
 
 
 		$data['content'].= '</td></tr><tr><td><img src="'.base_url().'images/tarjetas.jpg'.'" height="100px"></td><td>';
 		$data['content'].= '<p>'.anchor('finanzas/bcaj/depositotar'  ,'Deposito de tarjetas: ');
-		$data['content'].= 'Para registrar lo recaudado mediante tarjetas electronicas (Credito, Debito, Cesta Ticket) 
-		                    segun los valores impresos en los cierres diarios de los puntos de venta electronicos</p>';
+		$data['content'].= 'Para registrar lo recaudado mediante tarjetas electr&oacute;nicas (Cr&eacute;dito, Debito, Cesta Ticket) 
+		                    seg&uacute;n los valores impresos en los cierres diarios de los puntos de venta electr&oacute;nicos.</p>';
 
 		$data['content'].= '</td></tr><tr><td><img src="'.base_url().'images/transfer.jpg'.'" height="100px" ></td><td bgcolor="#ddeedd">';
 		$data['content'].= '<p>'.anchor('finanzas/bcaj/transferencia','Transferencias: ');
 		$data['content'].= 'Puede hacer transferencias entre cajas o entre cuentas bancarias, las que correspondan a
-		                    cuentas bancarias pueden realizarce mediante cheque-deposito (manual) o NC-ND por transferencia   
-		                    electronica, en cualquier caso debe tener los numeros de documentos correspondientes.  </p>';
+		                    cuentas bancarias pueden realizarce mediante cheque-deposito (manual) o NC-ND por transferencia 
+		                    electr&oacute;nica, en cualquier caso debe tener los n&uacute;meros de documentos correspondientes.</p>';
 		
 
 		$data['content'].= '</td></tr><tr><td><img src="'.base_url().'images/caja_activa.gif'.'" height="100px" ></td><td>';
 		$data['content'].= '<p>'.anchor('finanzas/bcaj/autotranfer','Transferencia de Cierre de Caja: ');
-		$data['content'].= 'Si por politica de la empresa se quiere descargar la caja de recaudacion todos los dias, esta
-		                    opcion facilita el proceso ya que puede hacer varias transferencias en una sola operacion..  </p>';
+		$data['content'].= 'Si por pol&iacute;tica de la empresa se quiere descargar la caja de recaudaci&oacute;n todos los d&iacute;as, esta
+		                    opci&oacute;n facilita el proceso ya que puede hacer varias transferencias en una sola operaci&oacute;n, por lo
+		                    que se recomienda hacerla despues de cerrar todas la cajas.</p>';
 
 		$data['content'].= '</td></tr><tr><td><img src="'.base_url().'images/blindado.gif'.'" height="60px" ></td><td bgcolor="#ddeedd">';
 		$data['content'].= '<p>'.anchor('finanzas/bcaj/remesa','Remesas: ');
-		$data['content'].= 'Cuando se entrega la relacion de cesta tickets a la empresa de valores de parte del Banco  </p>';
+		$data['content'].= 'Cuando se entrega la relaci&oacute;n de cesta tickets a la empresa de valores de parte del Banco.</p>';
 
 		$data['content'].= '</td></tr><tr><td colspan=2 align="center">'.anchor('finanzas/bcaj/index'        ,'Regresar').br();
 		$data['content'].= '</td></tr></table>'.br();
@@ -261,7 +263,7 @@ class Bcaj extends Controller {
 
 			$rt=$this->_transferendepefe($fecha,$efectivo,$cheque,$envia,$recibe,$numeror);
 			if($rt){
-				redirect('finanzas/bcaj/listo');
+				redirect('finanzas/bcaj/listo/n/'.$this->bcajnumero);
 			}else{
 				redirect('finanzas/bcaj/listo/s');
 			}
@@ -272,9 +274,6 @@ class Bcaj extends Controller {
 		$data['head']    = $this->rapyd->get_head().phpscript('nformat.js');
 		$this->load->view('view_ventanas', $data);
 	}
-
-
-
 
 	function transferencia(){
 		$this->rapyd->load('dataform');
@@ -299,7 +298,7 @@ class Bcaj extends Controller {
 		$edit->fecha->insertValue = date('Y-m-d');
 		$edit->fecha->rule = 'chfecha|required';
 
-		$edit->envia = new dropdownField('Envia','envia');
+		$edit->envia = new dropdownField('Envia y N&uacute;mero','envia');
 		$edit->envia->option('','Seleccionar');
 
 		$edit->numeroe = new inputField('N&uacute;mero de envio', 'numeroe');
@@ -309,7 +308,7 @@ class Bcaj extends Controller {
 		$edit->numeroe->append('Solo si el que env&iacute;a es un banco');
 
 		$env=$this->input->post('envia');
-		$edit->recibe = new dropdownField('Recibe','recibe');
+		$edit->recibe = new dropdownField('Recibe y N&uacute;mero','recibe');
 		$edit->recibe->option('','Seleccionar');
 		if($env!==false){
 			$tipo  = $this->_traetipo($env);
@@ -365,7 +364,7 @@ class Bcaj extends Controller {
 			$numeroe= $edit->numeroe->newValue;
 			$rt=$this->_transferencaj($fecha,$monto,$envia,$recibe,false,$numeror,$numeroe);
 			if($rt){
-				redirect('/finanzas/bcaj/listo');
+				redirect('/finanzas/bcaj/listo/n/'.$this->bcajnumero);
 			}else{
 				redirect('/finanzas/bcaj/listo/s');
 			}
@@ -456,7 +455,7 @@ class Bcaj extends Controller {
 
 			$rt=$this->_transferendepefe($fecha,$efectivo,$cheque,$envia,$recibe,$numeror);
 			if($rt){
-				redirect('finanzas/bcaj/listo');
+				redirect('finanzas/bcaj/listo/n'.$this->bcajnumero);
 			}else{
 				redirect('finanzas/bcaj/listo/s');
 			}
@@ -592,7 +591,7 @@ class Bcaj extends Controller {
 
 			$rt=$this->_transferendeptar($fecha,$tarjeta,$tdebito,$comision,$islr,$envia,$recibe,$numeror,$tipo);
 			if($rt){
-				redirect('/finanzas/bcaj/listo');
+				redirect('/finanzas/bcaj/listo/n/'.$this->bcajnumero);
 			}else{
 				redirect('/finanzas/bcaj/listo/s');
 			}
@@ -696,7 +695,7 @@ class Bcaj extends Controller {
 					if($montosis==$efectivo+$tarjeta+$gastos+$valores){
 						$rt=$this->_autotranfer($fecha,$efectivo,$tarjeta,$gastos,$valores);
 						if($rt){
-							redirect('/finanzas/bcaj/listo');
+							redirect('/finanzas/bcaj/listo/n'.$this->bcajnumero);
 						}else{
 							redirect('/finanzas/bcaj/listo/s');
 						}
@@ -766,7 +765,7 @@ class Bcaj extends Controller {
 		if($val){
 			$rt=$this->_reverautotranfer($fecha);
 			if($rt)
-				redirect('finanzas/bcaj/listo');
+				redirect('finanzas/bcaj/listo/n');
 			else
 				redirect('finanzas/bcaj/listo/s');
 		}
@@ -817,6 +816,7 @@ class Bcaj extends Controller {
 		return $rt;
 	}
 
+
 	function _transferencaj($fecha,$monto,$envia,$recibe,$auto=false,$numeror=null,$numeroe=null){
 		if($monto<=0) return true;
 		$numero  = $this->datasis->fprox_numero('nbcaj');
@@ -827,6 +827,7 @@ class Bcaj extends Controller {
 		$numeror = ($_numeror===false)? str_pad($numeror, 12, '0', STR_PAD_LEFT): $_numeror;
 		$sp_fecha= str_replace('-','',$fecha);
 		$error  = 0;
+		$this->bcajnumero=$numero;
 
 		$mSQL='SELECT codbanc,numcuent,tbanco,banco,saldo FROM banc WHERE codbanc IN ('.$this->db->escape($envia).','.$this->db->escape($recibe).')';
 		$query = $this->db->query($mSQL);
@@ -944,6 +945,7 @@ class Bcaj extends Controller {
 		//$numeror= $this->datasis->banprox($recibe);
 		$sp_fecha= str_replace('-','',$fecha);
 		$error  = 0;
+		$this->bcajnumero=$numero;
 
 		$mSQL='SELECT codbanc,numcuent,tbanco,banco,saldo FROM banc WHERE codbanc IN ('.$this->db->escape($envia).','.$this->db->escape($recibe).')';
 		$query = $this->db->query($mSQL);
@@ -1062,6 +1064,7 @@ class Bcaj extends Controller {
 		$dbrecibe= $this->db->escape($recibe);
 		$sp_fecha= str_replace('-','',$fecha);
 		$error   = 0;
+		$this->bcajnumero=$numero;
 
 		$mSQL="SELECT a.tipotra ,a.formaca FROM tban AS a JOIN banc AS b ON a.cod_banc=b.tbanco WHERE a.cod_banc=$dbrecibe";
 		$parr=$this->datasis->damerow($mSQL);
@@ -1341,6 +1344,7 @@ class Bcaj extends Controller {
 		$numeror = $this->datasis->banprox($recibe);
 		$sp_fecha= str_replace('-','',$fecha);
 		$error   = 0;
+		$this->bcajnumero=$numero;
 
 		$mSQL='SELECT codbanc,numcuent,tbanco,banco,saldo FROM banc WHERE codbanc IN ('.$this->db->escape($envia).','.$this->db->escape($recibe).')';
 		$query = $this->db->query($mSQL);
@@ -1540,8 +1544,12 @@ class Bcaj extends Controller {
 			$monto  = $edit->monto->newValue;
 			$envia  = $edit->envia->newValue;
 			$recibe = $edit->recibe->newValue;
-			$this->_transferencaj($fecha,$monto,$envia,$recibe);
-			redirect('/finanzas/bcaj/listo');
+			$rt=$this->_transferencaj($fecha,$monto,$envia,$recibe);
+			if($rt){
+				redirect('finanzas/bcaj/listo/n/'.$this->bcajnumero);
+			}else{
+				redirect('finanzas/bcaj/listo/s');
+			}
 		}
 
 		$data=array();
@@ -1552,9 +1560,43 @@ class Bcaj extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
-	function listo($error=null){
-		if(empty($error)){
-			$data['content'] = 'Transacci&oacute;n completada '.anchor('finanzas/bcaj/index','Regresar');
+	function _imprimir($numero,$tipo){
+		//Deposito BANCAJA
+		//Transferencia entre cajas BTRANCJ
+		//Transferencia con ND BTRANND
+		//Transferencia con cheque BTRANCH
+		$dbnumero=$this->db->escape($numero);
+		$mSQL  = "SELECT a.tipo,a.tipoe,a.tipor,TRIM(b.tbanco) AS envia, TRIM(c.tbanco) AS recibe FROM bcaj AS a JOIN banc AS b ON a.envia=b.codbanc JOIN banc AS c ON a.recibe=c.codbanc WHERE a.numero = $dbnumero";
+
+		$query = $this->db->query($mSQL);
+		$row   = $query->first_row();
+		if ($query->num_rows() > 0){
+			if($row->tipo=='DE'){
+				$formato='BANCAJA';
+			}elseif($row->tipo=='TR' && $row->recibe=='CAJ' && $row->envia=='CAJ'){
+				$formato='BTRANCJ';
+			}elseif($row->recibe!='CAJ' && $row->envia!='CAJ' && $row->tipoe=='ND' && $row->tipor=='NC'){
+				$formato='BTRANND';
+			}elseif($row->recibe!='CAJ' && $row->envia!='CAJ' && $row->tipoe=='CH' && $row->tipor=='DE'){
+				$formato='BTRANCH';
+			}
+			return site_url('formatos/'.$tipo.'/'.$formato.'/'.$numero);
+		}
+		return '';
+	}
+
+	function listo($error,$numero=null){
+		if($error='n'){
+			$data['content'] = 'Transacci&oacute;n completada ';
+			if(!empty($numero)){
+				$url=$this->_imprimir($numero,'verhtml');
+
+				$data['content'] .= ', puede <a href="#" onclick="fordi.print();">imprimirla</a>';
+				$data['content'] .= ' o '.anchor('finanzas/bcaj/index','Regresar');
+				$data['content'] .= "<iframe name='fordi' src ='$url' width='100%' height='450'><p>Tu navegador no soporta iframes.</p></iframe>";
+			}else{
+				$data['content'] .= anchor('finanzas/bcaj/index','Regresar');
+			}
 		}else{
 			$data['content'] = 'Lo siento pero hubo alg&uacute;n error en la transacci&oacute;n, se genero un centinela '.anchor('finanzas/bcaj/index','Regresar');
 		}
