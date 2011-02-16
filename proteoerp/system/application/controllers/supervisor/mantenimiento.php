@@ -675,6 +675,23 @@ class Mantenimiento extends Controller{
 		$this->load->view('view_ventanas', $data);
 	}
 
+	function respaldo(){
+		if(!$this->datasis->essuper()) show_404();
+		$this->load->library('zip');
+		$host= $this->db->hostname;
+		$db  = $this->db->database;
+		$pwd = $this->db->password;
+		$usr = $this->db->username;
+		$file= tempnam('/tmp',$db.'.sql');
+
+		$cmd="mysqldump -u $usr -p $pwd -h $host --opt --routines $db > $file";
+		$sal=exec($cmd);
+
+		$this->zip->read_file($file);
+		$this->zip->download($db.'.zip'); 
+		unlink($file);
+	}
+
 	function puertosdir(){
 		$this->load->helper('download');
 		if (extension_loaded('dbase')) {
