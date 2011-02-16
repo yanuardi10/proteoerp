@@ -75,7 +75,7 @@ class Reportes extends Controller
 			//$grid->use_function("substr","strtoupper");
 			$grid->cell_template = '
 			<div style="padding:4px">
-			<div style="color:#119911; font-weight:bold; font-size:24px">'.anchor('reportes/ver/<#nombre#>/'.$repo,"<#titulo#>",array('onclick'=>"parent.navegador.afiltro()")).'</div>
+			<div style="color:#119911; font-weight:bold; font-size:18px">'.anchor('reportes/ver/<#nombre#>/'.$repo,"<#titulo#>",array('onclick'=>"parent.navegador.afiltro()")).'</div>
 			<htmlspecialchars><#mensaje#></htmlspecialchars>
 			</div>'; 
 			$grid->build();
