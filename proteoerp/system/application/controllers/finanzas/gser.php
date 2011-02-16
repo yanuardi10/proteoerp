@@ -165,12 +165,13 @@ class gser extends Controller {
 		$edit->fechafac = new dateField('Fecha de la factura','fechafac');
 		$edit->fechafac->rule='max_length[10]|required';
 		$edit->fechafac->size =12;
+		$edit->fechafac->insertValue=date('Y-m-d');
 		$edit->fechafac->maxlength =10;
 
 		$edit->numfac = new inputField('N&uacute;mero de la factura','numfac');
 		$edit->numfac->rule='max_length[8]|required';
 		$edit->numfac->size =10;
-		$edit->numfac->maxlength =2;
+		$edit->numfac->maxlength =8;
 
 		$edit->nfiscal = new inputField('Control fiscal','nfiscal');
 		$edit->nfiscal->rule='max_length[12]|required';
@@ -184,7 +185,7 @@ class gser extends Controller {
 		$edit->rif->append(HTML::button('traesprv', 'Consultar Proveedor', '', 'button', 'button'));
 
 		$edit->proveedor = new inputField('Proveedor','proveedor');
-		$edit->proveedor->rule='max_length[40]';
+		$edit->proveedor->rule='max_length[40]|strtoupper';
 		$edit->proveedor->size =40;
 		$edit->proveedor->maxlength =40;
 
@@ -195,27 +196,37 @@ class gser extends Controller {
 		$edit->codigo->append($bcodigo);
 
 		$edit->descrip = new inputField('Descripci&oacute;n','descrip');
-		$edit->descrip->rule='max_length[50]';
+		$edit->descrip->rule='max_length[50]|strtoupper';
 		$edit->descrip->size =50;
 		$edit->descrip->maxlength =50;
 
+		//$ivas=$this->datasis->ivaaplica();
 		$arr=array(
-			'exento'   =>'Monto exento',
-			'montasa'  =>'Base Alicuota general',
-			'tasa'     =>'Monto Alicuota general',
-			'monredu'  =>'Base Alicuota reducida',
-			'reducida' =>'Monto Alicuota reducida',
-			'monadic'  =>'Base Alicuota adicional',
-			'sobretasa'=>'Monto Alicuota adicional',
+			'exento'   =>'Monto <b>Exento</b>|Base exenta',
+			'montasa'  =>'Montos con Alicuota <b>general</b>|Base imponible',
+			'tasa'     =>'Montos con Alicuota <b>general</b>|Monto del IVA',
+			'monredu'  =>'Montos con Alicuota <b>reducida</b>|Base imponible',
+			'reducida' =>'Montos con Alicuota <b>reducida</b>|Monto del IVA',
+			'monadic'  =>'Montos con Alicuota <b>adicional</b>|Base imponible',
+			'sobretasa'=>'Montos con Alicuota <b>adicional</b>|Monto del IVA',
 			'importe'  =>'Importe total');
 
 		foreach($arr AS $obj=>$label){
+			$pos = strrpos($label, '|');
+			if($pos!==false){
+				$piv=explode('|',$label);
+				$label=$piv[1];
+				$grupo=$piv[0];
+			}else{
+				$grupo='';
+			}
+
 			$edit->$obj = new inputField($label,$obj);
 			$edit->$obj->rule='max_length[17]|numeric';
 			$edit->$obj->css_class='inputnum';
 			$edit->$obj->size =17;
 			$edit->$obj->maxlength =17;
-			$edit->$obj->group='Montos';
+			$edit->$obj->group=$grupo;
 			$edit->$obj->autocomplete=false;
 		}
 		$edit->$obj->readonly=true;
@@ -246,7 +257,7 @@ class gser extends Controller {
 			}else{
 				alert("Debe introducir un rif");
 			}
-			});';
+		});';
 
 
 		$data['content'] = $edit->output;
@@ -327,7 +338,7 @@ class gser extends Controller {
 
 		$do = new DataObject('gser');
 		$do->rel_one_to_many('gitser', 'gitser',array('id'=>'idgser'));
-		//			$do->rel_pointer('itspre','sinv','itspre.codigo=sinv.codigo','sinv.descrip as sinvdescrip');
+		//$do->rel_pointer('itspre','sinv','itspre.codigo=sinv.codigo','sinv.descrip as sinvdescrip');
 
 		$edit = new DataDetails("Gastos", $do);
 		$edit->back_url = site_url("finanzas/gser/filteredgrid");
@@ -357,12 +368,12 @@ class gser extends Controller {
 
 		$edit->fecha = new DateonlyField("Fecha Recepci&oacute;n", "fecha","d/m/Y");
 		$edit->fecha->insertValue = date("Y-m-d");
-		//			$edit->fecha->mode="autohide";
+		//$edit->fecha->mode="autohide";
 		$edit->fecha->size = 10;
 
 		$edit->vence = new DateonlyField("Fecha Vencimiento", "vence","d/m/Y");
-		//			$edit->vence->insertValue = date("Y-m-d");
-		//			$edit->vence->mode="autohide";
+		//$edit->vence->insertValue = date("Y-m-d");
+		//$edit->vence->mode="autohide";
 		$edit->vence->size = 10;
 
 		$edit->id = new inputField("ID", "id");
@@ -730,8 +741,8 @@ class gser extends Controller {
 	}
 
 	function _pre_update($do){
-		//				print("<pre>");
-		//		echo $do->get_rel('itspre','preca',2);
+		//print("<pre>");
+		//echo $do->get_rel('itspre','preca',2);
 		$datos=$do->get_all();
 		$ivat=0;$subt=0;$total=0;
 		$cana=$do->count_rel("gitser");
@@ -860,8 +871,6 @@ class gser extends Controller {
 
 			}
 		}
-
-//				exit;
 		return true;
 	}
 
@@ -912,6 +921,34 @@ class gser extends Controller {
 			//$query="ALTER TABLE `gitser`  ADD COLUMN `tasaiva` DECIMAL(7,2) UNSIGNED NOT NULL DEFAULT '0' AFTER `idgser`;";
 			//$this->db->simple_query($query);
 		}
+
+		$query="CREATE TABLE IF NOT EXISTS `gserchi` (
+			`codbanc` varchar(5) NOT NULL DEFAULT '', 
+			`fechafac` date DEFAULT NULL, 
+			`numfac` varchar(8) DEFAULT NULL, 
+			`nfiscal` varchar(12) DEFAULT NULL, 
+			`rif` varchar(13) DEFAULT NULL, 
+			`proveedor` varchar(40) DEFAULT NULL, 
+			`codigo` varchar(6) DEFAULT NULL, 
+			`descrip` varchar(50) DEFAULT NULL, 
+			`moneda` char(2) DEFAULT NULL, 
+			`montasa` decimal(17,2) DEFAULT '0.00', 
+			`tasa` decimal(17,2) DEFAULT NULL, 
+			`monredu` decimal(17,2) DEFAULT '0.00', 
+			`reducida` decimal(17,2) DEFAULT NULL, 
+			`monadic` decimal(17,2) DEFAULT '0.00', 
+			`sobretasa` decimal(17,2) DEFAULT NULL, 
+			`exento` decimal(17,2) DEFAULT '0.00', 
+			`importe` decimal(12,2) DEFAULT NULL, 
+			`sucursal` char(2) DEFAULT NULL, 
+			`departa` char(2) DEFAULT NULL, 
+			`usuario` varchar(12) DEFAULT NULL, 
+			`estampa` date DEFAULT NULL, 
+			`hora` varchar(8) DEFAULT NULL, 
+			`id` int(11) unsigned NOT NULL AUTO_INCREMENT, 
+			PRIMARY KEY (`id`)
+		) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC";
+		var_dump($this->db->simple_query($query));
 
 	}
 
