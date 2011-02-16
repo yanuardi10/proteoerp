@@ -90,8 +90,6 @@ class gser extends Controller {
 		$filter->fechah = new dateonlyField('Hasta', 'fechah','d/m/Y');
 		$filter->fechad->clause  =$filter->fechah->clause ='where';
 		$filter->fechad->db_name =$filter->fechah->db_name='fechafac';
-		$filter->fechad->insertValue = date('Y-m-d');
-		$filter->fechah->insertValue = date('Y-m-d');
 		$filter->fechah->size=$filter->fechad->size=10;
 		$filter->fechad->operator='>=';
 		$filter->fechah->operator='<=';
@@ -138,7 +136,19 @@ class gser extends Controller {
 			'titulo'  => 'Buscar enlace administrativo');
 		$bcodigo=$this->datasis->modbus($mgas);
 
+		$consulrif=$this->datasis->traevalor('CONSULRIF');
 		$script="
+		function consulrif(){
+			vrif=$('#rif').val();
+			if(vrif.length==0){
+				alert('Debe introducir primero un RIF');
+			}else{
+				vrif=vrif.toUpperCase();
+				$('#rif').val(vrif);
+				window.open('$consulrif'+'?p_rif='+vrif,'CONSULRIF','height=350,width=410');
+			}
+		}
+
 		function totaliza(){
 			if($('#montasa').val().length>0)   montasa  =parseFloat($('#montasa').val());   else  montasa  =0;
 			if($('#tasa').val().length>0)      tasa     =parseFloat($('#tasa').val());      else  tasa     =0;
@@ -156,6 +166,8 @@ class gser extends Controller {
 		$edit->back_url = site_url('finanzas/gser/gserchi');
 		$edit->script($script,'create');
 		$edit->script($script,'modify');
+		$edit->pre_process('insert' ,'_pre_gserchi');
+		$edit->pre_process('update' ,'_pre_gserchi');
 
 		$edit->codbanc = new dropdownField('C&oacute;digo de la caja','codbanc');
 		$edit->codbanc->option('','Seleccionar');
@@ -178,15 +190,19 @@ class gser extends Controller {
 		$edit->nfiscal->size =14;
 		$edit->nfiscal->maxlength =12;
 
+		$lriffis='<a href="javascript:consulrif();" title="Consultar RIF en el SENIAT" onclick="">Consultar RIF en el SENIAT</a>';
 		$edit->rif = new inputField('RIF','rif');
 		$edit->rif->rule='max_length[13]|required';
 		$edit->rif->size =13;
 		$edit->rif->maxlength =13;
+		$edit->rif->group='Datos del proveedor';
 		$edit->rif->append(HTML::button('traesprv', 'Consultar Proveedor', '', 'button', 'button'));
+		$edit->rif->append($lriffis);
 
-		$edit->proveedor = new inputField('Proveedor','proveedor');
+		$edit->proveedor = new inputField('Nombre del proveedor','proveedor');
 		$edit->proveedor->rule='max_length[40]|strtoupper';
 		$edit->proveedor->size =40;
+		$edit->proveedor->group='Datos del proveedor';
 		$edit->proveedor->maxlength =40;
 
 		$edit->codigo = new inputField('C&oacute;digo del gasto','codigo');
@@ -267,6 +283,15 @@ class gser extends Controller {
 		//$data['head']   .= script('plugins/jquery.numeric.pack.js');
 		//$data['head']   .= script('plugins/jquery.floatnumber.js');
 		$this->load->view('view_ventanas', $data);
+	}
+
+	function _pre_gserchi($do){
+		$rif   =$do->get('rif');
+		$nombre=$do->get('proveedor');
+		$fecha =date('Y-m-d');
+		$mSQL='INSERT IGNORE INTO provoca (rif,nombre,fecha) VALUES ('.$this->db->escape($rif).','.$this->db->escape($nombre).','.$this->db->escape($fecha).')';
+		$this->db->simple_query($mSQL);
+		return true;
 	}
 
 	function ajaxsprv(){
