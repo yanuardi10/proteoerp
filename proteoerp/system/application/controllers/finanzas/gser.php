@@ -108,7 +108,7 @@ class gser extends Controller {
 		$uri  = anchor('finanzas/gser/datagserchi/show/<#id#>','<#numfac#>');
 
 		$grid = new DataGrid();
-		//$grid->order_by('numero','desc');
+		$grid->order_by('numfac','desc');
 		$grid->per_page = 15;
 		$grid->column_orderby('N&uacute;mero',$uri,'numfac');
 		$grid->column_orderby('Fecha' ,'<dbdate_to_human><#fechafac#></dbdate_to_human>','fechafac','align=\'center\'');
@@ -136,6 +136,13 @@ class gser extends Controller {
 			'titulo'  => 'Buscar enlace administrativo');
 		$bcodigo=$this->datasis->modbus($mgas);
 
+		$ivas=$this->datasis->ivaplica();
+
+		$tasa      = $ivas['tasa']/100;
+		$redutasa  = $ivas['redutasa']/100;
+		$sobretasa = $ivas['sobretasa']/100;
+
+		//print_r($ivas);
 		$consulrif=$this->datasis->traevalor('CONSULRIF');
 		$script="
 		function consulrif(){
@@ -149,6 +156,25 @@ class gser extends Controller {
 			}
 		}
 
+		function poneiva(tipo){
+			if(tipo==1){
+				ptasa = $redutasa;
+				campo = 'reducida';
+				monto = 'monredu';
+			} else if (tipo==3){
+				ptasa = $sobretasa;
+				campo = 'sobretasa';
+				monto = 'monadic'
+			} else {
+				ptasa = $tasa;
+				campo = 'tasa';
+				monto = 'montasa';
+			}
+			if($('#'+monto).val().length>0)  base=parseFloat($('#'+monto).val());   else  base  =0;
+			$('#'+campo).val(roundNumber(base*ptasa,2));
+			totaliza();
+		}
+
 		function totaliza(){
 			if($('#montasa').val().length>0)   montasa  =parseFloat($('#montasa').val());   else  montasa  =0;
 			if($('#tasa').val().length>0)      tasa     =parseFloat($('#tasa').val());      else  tasa     =0;
@@ -158,7 +184,7 @@ class gser extends Controller {
 			if($('#sobretasa').val().length>0) sobretasa=parseFloat($('#sobretasa').val()); else  sobretasa=0;
 			if($('#exento').val().length>0)    exento   =parseFloat($('#exento').val());    else  exento   =0;
 
-			total=montasa+tasa+monredu+reducida+monadic+sobretasa+exento;
+			total=roundNumber(montasa+tasa+monredu+reducida+monadic+sobretasa+exento,2);
 			$('#importe').val(total);
 		}";
 
@@ -216,7 +242,6 @@ class gser extends Controller {
 		$edit->descrip->size =50;
 		$edit->descrip->maxlength =50;
 
-		//$ivas=$this->datasis->ivaaplica();
 		$arr=array(
 			'exento'   =>'Monto <b>Exento</b>|Base exenta',
 			'montasa'  =>'Montos con Alicuota <b>general</b>|Base imponible',
@@ -247,6 +272,14 @@ class gser extends Controller {
 		}
 		$edit->$obj->readonly=true;
 
+		/*$edit->montasa->rule='max_length[17]|numeric|callback_chmontasa';
+		$edit->monredu->rule='max_length[17]|numeric|callback_chmonredu';
+		$edit->monadic->rule='max_length[17]|numeric|callback_chmonadic';*/
+
+		$edit->tasa->rule     ='max_length[17]|numeric|condi_required|callback_chtasa';
+		$edit->reducida->rule ='max_length[17]|numeric|condi_required|callback_chreducida';
+		$edit->sobretasa->rule='max_length[17]|numeric|condi_required|callback_chsobretasa';
+
 		$edit->sucursal = new dropdownField('Sucursal','sucursal');
 		$edit->sucursal->options('SELECT codigo,sucursal FROM sucu ORDER BY sucursal');
 		$edit->sucursal->rule='max_length[2]|required';
@@ -263,7 +296,16 @@ class gser extends Controller {
 		$edit->build();
 
 		$url=site_url('finanzas/gser/ajaxsprv');
-		$this->rapyd->jquery[]='$(".inputnum").bind("keyup",function() { totaliza(); })';
+		//$this->rapyd->jquery[]='$(".inputnum").bind("keyup",function() { totaliza(); })';
+		$this->rapyd->jquery[]='$(".inputnum").numeric(".");';
+		$this->rapyd->jquery[]='$("#exento"   ).bind("keyup",function() { totaliza(); })';
+		$this->rapyd->jquery[]='$("#montasa"  ).bind("keyup",function() { poneiva(2); })';
+		$this->rapyd->jquery[]='$("#tasa"     ).bind("keyup",function() { totaliza(); })';
+		$this->rapyd->jquery[]='$("#monredu"  ).bind("keyup",function() { poneiva(1); })';
+		$this->rapyd->jquery[]='$("#reducida" ).bind("keyup",function() { totaliza(); })';
+		$this->rapyd->jquery[]='$("#monadic"  ).bind("keyup",function() { poneiva(3); })';
+		$this->rapyd->jquery[]='$("#sobretasa").bind("keyup",function() { totaliza(); })';
+
 		$this->rapyd->jquery[]='$("input[name=\'traesprv\']").click(function() {
 			rif=$("#rif").val();
 			if(rif.length > 0){
@@ -280,8 +322,6 @@ class gser extends Controller {
 		$data['title']   = heading('Agregar/Modificar Gasto de caja chica');
 		$data['head']    = $this->rapyd->get_head();
 		$data['head']   .= phpscript('nformat.js');
-		//$data['head']   .= script('plugins/jquery.numeric.pack.js');
-		//$data['head']   .= script('plugins/jquery.floatnumber.js');
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -291,7 +331,22 @@ class gser extends Controller {
 		$fecha =date('Y-m-d');
 		$mSQL='INSERT IGNORE INTO provoca (rif,nombre,fecha) VALUES ('.$this->db->escape($rif).','.$this->db->escape($nombre).','.$this->db->escape($fecha).')';
 		$this->db->simple_query($mSQL);
-		return true;
+
+		$total  = 0;
+		$total += $do->get('exento')   ;
+		$total += $do->get('montasa')  ;
+		$total += $do->get('tasa')     ;
+		$total += $do->get('monredu')  ;
+		$total += $do->get('reducida') ;
+		$total += $do->get('monadic')  ;
+		$total += $do->get('sobretasa');
+
+		if($total>0){
+			return true;
+		}else{
+			$do->error_message_ar['pre_ins'] = $do->error_message_ar['pre_upd'] = 'No se puede guardar un gasto con monto cero';
+			return false;
+		}
 	}
 
 	function ajaxsprv(){
@@ -899,11 +954,46 @@ class gser extends Controller {
 		return true;
 	}
 
+	function chtasa($monto){
+		$iva=$this->input->post('montasa');
+		if($monto>0 && $iva>0){
+			return true;
+		}elseif($monto==0 && $iva==0){
+			return true;
+		}else{
+			$this->validation->set_message('chtasa', "Si la base general es mayor que cero debe generar impuesto");
+			return false;
+		}
+	}
+
+	function chreducida($monto){
+		$iva=$this->input->post('monredu');
+		if($monto>0 && $iva>0){
+			return true;
+		}elseif($monto==0 && $iva==0){
+			return true;
+		}else{
+			$this->validation->set_message('chreducida', "Si la base reducida es mayor que cero debe generar impuesto");
+			return false;
+		}
+	}
+
+	function chsobretasa($monto){
+		$iva=$this->input->post('monadic');
+		if($monto>0 && $iva>0){
+			return true;
+		}elseif($monto==0 && $iva==0){
+			return true;
+		}else{
+			$this->validation->set_message('chsobretasa', "Si la base adicional es mayor que cero debe generar impuesto");
+			return false;
+		}
+	}
+
+
 	function _post_insert($do){
 		$codigo=$do->get('numero');
 		logusu('gser',"Gasto $codigo CREADO");
-
-
 	}
 
 	function _post_update($do){

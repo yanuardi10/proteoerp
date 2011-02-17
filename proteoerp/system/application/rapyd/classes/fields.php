@@ -70,6 +70,7 @@ class objField {
   var $extra_output;
   var $css_class;
   var $title=null;
+  var $valid_error=''; //Para los errores de validacion
   
   //unused
   var $externalTable;
@@ -414,7 +415,9 @@ class objField {
         
       default:
     }
-    return $this->output = $output.$this->extra_output."\n";
+    $out=$output.$this->extra_output."\n";
+    if(!empty($this->valid_error)) $out.=br().$this->valid_error;
+    return $this->output = $out;
   }
   
   

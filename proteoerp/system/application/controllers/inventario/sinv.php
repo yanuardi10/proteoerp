@@ -747,8 +747,7 @@ class sinv extends Controller {
 	}
 
 	function _detalle($codigo){
-	$salida='';
-	
+		$salida='';
 		if(!empty($codigo)){
 			$this->rapyd->load('dataedit','datagrid');
 
