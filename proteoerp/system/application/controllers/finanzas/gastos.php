@@ -58,7 +58,7 @@ class gastos extends Controller {
 		$filter->buttons('reset','search');
 		$filter->build();
 
-		$uri  = anchor('finanzas/gastos/dataedit/show/<#fecha#>/<#numero#>/<#proveed#>','<#numero#>');
+		$uri  = anchor('finanzas/gastos/dataedit/show/<#id#>','<#numero#>');
 		$uri2 = anchor_popup('formatos/verhtml/gastos/<#fecha#>/<#numero#>/<#proveed#>','Ver HTML',$atts);
 
 		$grid = new DataGrid();
