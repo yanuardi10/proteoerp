@@ -51,6 +51,16 @@ class Reportes extends Controller
 		$repo =$this->uri->segment(3);
 		$this->rapyd->load("datatable");
 		$this->rapyd->config->set_item("theme","clean");   
+
+		$mSQL="UPDATE tmenus SET ejecutar=REPLACE(ejecutar,"."'".'( "'."','".'("'."') WHERE modulo LIKE '%LIS'";
+		$this->db->simple_query($mSQL);
+		//echo $mSQL;
+
+		$mSQL="UPDATE tmenus SET ejecutar=REPLACE(ejecutar,"."'".'" )'."','".'")'."') WHERE modulo LIKE '%LIS'";
+		$this->db->simple_query($mSQL);
+		//echo $mSQL;
+
+
 		
 		if($repo){
 			$repo=strtoupper($repo);
@@ -59,16 +69,16 @@ class Reportes extends Controller
 			$grid->db->_escape_char='';
 			$grid->db->_protect_identifiers=false;
 			
-			$grid->db->select('CONCAT(a.secu," ",c.titulo) titulo, c.mensaje, c.nombre'); 
+			$grid->db->select("CONCAT(a.secu,' ',a.titulo) titulo, a.mensaje, REPLACE(MID(a.ejecutar,10,30),"."'".'")'."','')  nombre"); 
 			$grid->db->from("tmenus    a" );
 			$grid->db->join("sida      b","a.codigo=b.modulo");
-			$grid->db->join("intrarepo c","REPLACE(MID(a.ejecutar,10,30),"."'".'")'."','')=c.nombre ");
-			$grid->db->join("reportes  d","c.nombre=d.nombre");
-			$grid->db->where('c.activo','S');
+			//$grid->db->join("intrarepo c","REPLACE(MID(a.ejecutar,10,30),"."'".'")'."','')=c.nombre ");
+			$grid->db->join("reportes  d","REPLACE(MID(a.ejecutar,10,30),"."'".'")'."','')=d.nombre");
+			//$grid->db->where('c.activo','S');
 			$grid->db->where('b.acceso','S');
 			$grid->db->where('b.usuario',$this->session->userdata('usuario') );
 			$grid->db->like("a.ejecutar","REPOSQL", "after");
-			$grid->db->where('c.modulo',$repo);
+			$grid->db->where('a.modulo',$repo."LIS");
 			$grid->db->orderby("a.secu");
 			
 			$grid->per_row = 3; 
@@ -79,6 +89,7 @@ class Reportes extends Controller
 			<htmlspecialchars><#mensaje#></htmlspecialchars>
 			</div>'; 
 			$grid->build();
+			//echo $grid->db->last_query();
 		}
 		if($repo AND $grid->recordCount>0) 
 			$data['forma'] = $grid->output; 
@@ -171,6 +182,10 @@ class Reportes extends Controller
 		$this->db->simple_query($mSQL);
 		$mSQL="ALTER TABLE `reportes` ADD `harbour` TEXT NULL";
 		$this->db->simple_query($mSQL);
+		$mSQL="UPDATE tmenus SET ejecutar=REPLACE(ejecutar,"."'".'" )'."','".'")'."') ";
+		$this->db->simple_query($mSQL);
+
+		
 	}
 }
 ?>
