@@ -22,7 +22,7 @@ class mgser extends Controller {
 
 		$bsprv=$this->datasis->modbus($sprv);
 
-		$edit = new DataEdit("Egreso","gser");
+		$edit = new DataEdit("Modificar Egreso","gser");
 		$edit->post_process("update","_actualiza");
 		$edit->back_url = "finanzas/gser";
 		

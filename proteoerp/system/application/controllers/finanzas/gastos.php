@@ -1,8 +1,8 @@
 <?php
 //egresos
-class Gser extends Controller {
+class gastos extends Controller {
 
-	function gser(){
+	function gastos(){
 		parent::Controller();
 		$this->load->library('rapyd');
 		$this->datasis->modulo_id(518,1);
@@ -58,8 +58,8 @@ class Gser extends Controller {
 		$filter->buttons('reset','search');
 		$filter->build();
 
-		$uri  = anchor('finanzas/gser/dataedit/show/<#fecha#>/<#numero#>/<#proveed#>','<#numero#>');
-		$uri2 = anchor_popup('formatos/verhtml/gser/<#fecha#>/<#numero#>/<#proveed#>','Ver HTML',$atts);
+		$uri  = anchor('finanzas/gastos/dataedit/show/<#fecha#>/<#numero#>/<#proveed#>','<#numero#>');
+		$uri2 = anchor_popup('formatos/verhtml/gastos/<#fecha#>/<#numero#>/<#proveed#>','Ver HTML',$atts);
 
 		$grid = new DataGrid();
 		$grid->order_by('numero','desc');
@@ -157,7 +157,7 @@ class Gser extends Controller {
 		$edit->pre_process('delete','_pre_del');
 */
 		
-		$edit->back_url = "finanzas/gser";
+		$edit->back_url = "finanzas/gastos";
 		
 		$edit->fecha = new DateonlyField("Fecha", "fecha","d/m/Y");
 		$edit->fecha->insertValue = date("Y-m-d");
@@ -306,7 +306,7 @@ class Gser extends Controller {
 		$conten["form"]  =&  $edit;
 		$data['content'] = $this->load->view('view_egresos', $conten,true); 
 		$data["head"]    = script("tabber.js").script("prototype.js").$this->rapyd->get_head().script("scriptaculous.js").script("effects.js");
-		$data['title']   = '<h1>Compras</h1>';
+		$data['title']   = '<h1>Egreso</h1>';
 		$this->load->view('view_ventanas', $data);
 	}
 	
