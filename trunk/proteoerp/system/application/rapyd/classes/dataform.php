@@ -553,7 +553,17 @@ class DataForm{
 
     $result = $this->validation->run();
     $this->error_string = $this->validation->error_string;
-    
+
+	//Resalta los campos con errores
+	$claves=array_keys($this->_fields);
+	foreach($claves as $campo){
+		$obj=$campo.'_error';
+		if(isset($this->validation->$obj) && strlen($this->validation->$obj)>0){
+			$this->_fields[$campo]->style='border: 2px solid #FF3300;';
+			$this->_fields[$campo]->valid_error=$this->validation->$obj;
+		}
+	}
+
     return $result;
     
   }
