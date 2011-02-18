@@ -93,7 +93,7 @@ class ingresos{
 					LEFT JOIN scli AS c ON a.cod_cli=c.cliente 
 				WHERE  b.fecha<=$fhasta AND b.cod_cli='REIVA' 
 					AND a.reteiva>0 AND b.monto>b.abonos 
-					AND a.fecha<$fhasta 
+					AND a.fecha BETWEEN $fdesde AND $fhasta
 				GROUP BY a.nroriva,a.cod_cli
 				UNION 
 				SELECT b.fecha, a.numero, 'OJO LLENE DATOS', 'OJO', '',
