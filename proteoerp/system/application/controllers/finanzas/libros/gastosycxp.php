@@ -54,7 +54,7 @@ class gastosycxp{
 			FROM gser AS a  
 			LEFT JOIN sprv AS c ON a.proveed=c.proveed 
 			WHERE a.fecha BETWEEN $fdesde AND $fhasta
-			AND a.cajachi='N' 
+			AND a.cajachi='N' AND tipo_doc<>'XX' 
 			AND (c.tipo NOT IN ('5') OR a.totiva<>0 ) 
 			ORDER BY a.fecha, a.proveed, a.numero ";
 		$flag=$this->db->simple_query($mSQL);
