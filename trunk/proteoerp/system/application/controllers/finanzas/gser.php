@@ -78,7 +78,7 @@ class gser extends Controller {
 		$this->rapyd->load('datafilter','datagrid');
 		$this->rapyd->uri->keep_persistence();
 
-		$filter = new DataFilter('Filtro de Cajas Chicas','gserchi');
+		$filter = new DataFilter('Filtro de gastos de cajas chicas','gserchi');
 		$select=array('numfac','fechafac','proveedor','tasa + sobretasa + reducida AS totiva','montasa + monadic + monredu AS totneto');
 		$filter->db->select($select);
 
@@ -86,10 +86,10 @@ class gser extends Controller {
 		$filter->codbanc->option('','Todos');
 		$filter->codbanc->options("SELECT codbanc, CONCAT_WS('-',codbanc,banco) AS label FROM banc WHERE tbanco='CAJ' ORDER BY codbanc");
 
-		$filter->fechad = new dateonlyField('Desde', 'fechad','d/m/Y');
-		$filter->fechah = new dateonlyField('Hasta', 'fechah','d/m/Y');
-		$filter->fechad->clause  =$filter->fechah->clause ='where';
-		$filter->fechad->db_name =$filter->fechah->db_name='fechafac';
+		$filter->fechad = new dateonlyField('Fecha desde', 'fechad','d/m/Y');
+		$filter->fechah = new dateonlyField('Fecha hasta', 'fechah','d/m/Y');
+		$filter->fechad->clause  = $filter->fechah->clause ='where';
+		$filter->fechad->db_name = $filter->fechah->db_name='fechafac';
 		$filter->fechah->size=$filter->fechad->size=10;
 		$filter->fechad->operator='>=';
 		$filter->fechah->operator='<=';
@@ -100,8 +100,12 @@ class gser extends Controller {
 		//$filter->proveed->append($boton);
 		$filter->proveed->db_name = 'proveedor';
 
+		$action = "javascript:window.location='".site_url('finanzas/gser/gserchipros')."'";
+		$filter->button('btn_pross', 'Procesar gatos', $action, 'TR');
+
 		$action = "javascript:window.location='".site_url('finanzas/gser/agregar')."'";
 		$filter->button('btn_regresa', 'Regresar', $action, 'TR');
+
 		$filter->buttons('reset','search');
 		$filter->build();
 
@@ -117,8 +121,6 @@ class gser extends Controller {
 		$grid->column_orderby('Monto' ,'totneto' ,'totneto','align=\'right\'');
 
 		$grid->add('finanzas/gser/datagserchi/create');
-		$action = "javascript:window.location='" . site_url('finanzas/gser/gserchipros') . "'";
-		$grid->button('btn_pross', 'Procesar gatos', $action, 'TR');
 		$grid->build();
 		//echo $grid->db->last_query();
 
@@ -736,6 +738,18 @@ class gser extends Controller {
 		$edit->nombre->maxlength=40; 
 		$edit->nombre->rule= 'required';
 		//$edit->nombre->group='Proveedor';
+
+		$edit->totpre = new inputField('Monto neto', 'totpre');
+		$edit->totpre->mode='autohide';
+		$edit->totpre->group='Montos';
+
+		$edit->totiva = new inputField('Impuesto', 'totiva');
+		$edit->totiva->mode='autohide';
+		$edit->totiva->group='Montos';
+
+		$edit->totbruto = new inputField('Monto total', 'totbruto');
+		$edit->totbruto->mode='autohide';
+		$edit->totbruto->group='Montos';
 
 		$edit->buttons('save','undo','modify','back');
 		$edit->build();
