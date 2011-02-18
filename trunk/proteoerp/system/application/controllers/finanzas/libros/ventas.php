@@ -3278,6 +3278,7 @@ class ventas{
 				LEFT JOIN scli AS c ON a.cod_cli=c.cliente 
 			WHERE b.fecha BETWEEN $fdesde AND $fhasta AND b.cod_cli='REIVA' 
 				AND a.reteiva>0 AND b.monto>b.abonos ";
+				
 			
 		$query = $this->db->query($mSQL);
 		if ($query->num_rows() > 0) {
