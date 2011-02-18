@@ -4,13 +4,13 @@ class Kardex extends Controller {
 	function Kardex(){
 		parent::Controller(); 
 		$this->load->helper('text');
-		$this->load->library("rapyd");
+		$this->load->library('rapyd');
 		//$this->rapyd->load_db();
 	}
 
 	function index(){
 		$this->datasis->modulo_id(317,1);
-		redirect("inventario/kardex/filteredgrid");
+		redirect('inventario/kardex/filteredgrid');
 	}
 
 	function filteredgrid(){
@@ -54,30 +54,30 @@ class Kardex extends Controller {
 
 		$boton=$this->datasis->modbus($modbus);
 
-		$filter = new DataFilter("Kardex de Inventario");
-		$filter->codigo = new inputField("C&oacute;digo De Producto", "codigo");
-		$filter->codigo->rule = "required";  
-		$filter->codigo->append($boton);  
+		$filter = new DataFilter('Kardex de Inventario');
+		$filter->codigo = new inputField('C&oacute;digo De Producto', 'codigo');
+		$filter->codigo->rule = "required";
+		$filter->codigo->append($boton);
 
-		$filter->ubica = new dropdownField("Almacen", "ubica");  
-		$filter->ubica->option("","Todos");
+		$filter->ubica = new dropdownField('Almac&eacute;n', 'ubica');
+		$filter->ubica->option('','Todos');
 		$filter->ubica->db_name='a.ubica';
 		$filter->ubica->options("SELECT ubica,CONCAT(ubica,' ',ubides) descrip FROM caub WHERE gasto='N' ");
-		$filter->ubica->operator="=";
-		$filter->ubica->clause="where";
+		$filter->ubica->operator='=';
+		$filter->ubica->clause  ='where';
 
-		$filter->fechad = new dateonlyField("Desde", "fecha","d/m/Y");
-		$filter->fechad->operator=">=";
+		$filter->fechad = new dateonlyField('Desde', 'fecha','d/m/Y');
+		$filter->fechad->operator='>=';
 		$filter->fechad->insertValue = date("Y-m-d",mktime(0, 0, 0, date("m"), date("d")-30,   date("Y")));
 
-		$filter->fechah = new dateonlyField("Hasta", "fechah","d/m/Y");
+		$filter->fechah = new dateonlyField('Hasta', 'fechah','d/m/Y');
 		$filter->fechah->db_name='fecha';
-		$filter->fechah->operator="<=";
-		$filter->fechah->insertValue = date("Y-m-d");
+		$filter->fechah->operator='<=';
+		$filter->fechah->insertValue = date('Y-m-d');
 
-		$filter->fechah->clause=$filter->fechad->clause=$filter->codigo->clause="where";
+		$filter->fechah->clause=$filter->fechad->clause=$filter->codigo->clause='where';
 		$filter->fechah->size=$filter->fechad->size=10;
-		
+
 		$filter->buttons("reset","search");
 		$filter->build();
 
@@ -117,7 +117,7 @@ class Kardex extends Controller {
 		}
 		$data['forma'] ='';
 		
-		$data['title'] = "<h1>Kardex de Inventario</h1>";
+		$data['title'] = heading('Kardex de Inventario');
 		$data['head']  = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 
@@ -128,24 +128,32 @@ class Kardex extends Controller {
 		$fecha  =$this->uri->segment(5);
 		$codigo =$this->uri->segment(6);
 		$almacen=$this->uri->segment(7);
-		if($fecha===FALSE or $codigo===FALSE or $tipo===FALSE or $almacen===FALSE) redirect("inventario/kardex");
+		if($fecha===FALSE or $codigo===FALSE or $tipo===FALSE or $almacen===FALSE) redirect('inventario/kardex');
 		$this->rapyd->load('datagrid');
 
 		$grid = new DataGrid();
 		$grid->use_function('number_format');
-		$grid->order_by("numero","desc");
+		$grid->order_by('numero','desc');
 		$grid->per_page = 20;
 
 		if($tipo=='3I' or $tipo=='3M'){  //ventas de caja
+			$fields = $this->db->field_data('table_name');
+			$ppk=array();
+			foreach ($fields as $field){
+				if($field->primary_key==1){
+					$ppk[]='<#'.$field->name.'#>';
+				}
+			}
+
 			$grid->title('Facturas');
-			$link=anchor("ventas/factura/dataedit/show/<#tipo_doc#>/<#numa#>","<#numero#>");
-			$grid->column("N&uacute;mero",$link);
-			$grid->column("Cliente"      ,"cliente" );
-			$grid->column("Cantidad"     ,"<nformat><#cana#></format>",'align=right');
-			$grid->column("Fecha"        ,"<dbdate_to_human><#fecha#></dbdate_to_human>"   ,'align=center');
-			$grid->column("vendedor"     ,"vendedor",'align=center');
-			$grid->column("Precio"       ,"<nformat><#preca#>|2|,|.</nformat>",'align=right');
-			$grid->column("Total"        ,"<nformat><#tota#>|2|,|.</nformat>" ,'align=right');
+			$link=anchor('ventas/factura/dataedit/show/'.implode('/'.$ppk),'<#numero#>');
+			$grid->column('N&uacute;mero',$link);
+			$grid->column('Cliente'      ,'cliente' );
+			$grid->column('Cantidad'     ,'<nformat><#cana#></format>','align=right');
+			$grid->column('Fecha'        ,'<dbdate_to_human><#fecha#></dbdate_to_human>'   ,'align=center');
+			$grid->column('Vendedor'     ,'vendedor','align=center');
+			$grid->column('Precio'       ,'<nformat><#preca#></nformat>','align=\'right\'');
+			$grid->column('Total'        ,'<nformat><#tota#></nformat>' ,'align=\'right\'');
 			$grid->db->select(array('a.numa','CONCAT(a.tipoa,a.numa) numero','CONCAT("(",b.cod_cli,") ",b.nombre) cliente','a.cana','a.fecha','a.vendedor','a.preca','a.tota','tipo_doc'));
 			$grid->db->from('sitems a');
 			$grid->db->join('sfac b','b.numero=a.numa  AND b.tipo_doc=a.tipoa');
@@ -170,7 +178,15 @@ class Kardex extends Controller {
 			$grid->db->where('a.fecha' ,$fecha );
 			$grid->db->where('c.codigo',$codigo);
 		}elseif($tipo=='1T'){ //Transferencias
-			$link=anchor("/inventario/stra/dataedit/show/<#numero#>","<#numero#>");
+			$fields = $this->db->field_data('stra');
+			$ppk=array();
+			foreach ($fields as $field){
+				if($field->primary_key==1){
+					$ppk[]='<#'.$field->name.'#>';
+				}
+			}
+
+			$link=anchor('/inventario/stra/dataedit/show/'.implode('/'.$ppk),'<#numero#>');
 			$grid->title('Tranferencias');
 			$grid->column("N&uacute;mero",$link);
 			$grid->column("Env&iacute;a"      ,"envia" );
@@ -185,7 +201,15 @@ class Kardex extends Controller {
 			$grid->db->where('b.fecha' ,$fecha );
 			$grid->db->where('a.codigo',$codigo);
 		}elseif($tipo=='2C'){ //compras
-			$link=anchor("compras/scst/dataedit/show/<#control#>","<#numero#>");
+			$fields = $this->db->field_data('scst');
+			$ppk=array();
+			foreach ($fields as $field){
+				if($field->primary_key==1){
+					$ppk[]='<#'.$field->name.'#>';
+				}
+			}
+
+			$link=anchor('compras/scst/dataedit/show/'.implode('/'.$ppk),'<#numero#>');
 			$grid->title('Compras');
 			$grid->column("N&uacute;mero",$link);
 			$grid->column("Fecha"    ,"<dbdate_to_human><#fecha#></dbdate_to_human>",'align=center');
