@@ -704,34 +704,38 @@ class gser extends Controller {
 		$edit->back_save  =true;
 		$edit->back_cancel=true;
 		$edit->back_cancel_save=true;
-		$edit->post_process('update','_pre_mgserupdate');
-		$edit->post_process('create','_pre_mgsercreate');
+		$edit->pre_process('update','_pre_mgserupdate');
+		$edit->pre_process('create','_pre_mgsercreate');
+		$edit->post_process('update','_post_mgserupdate');
 		$edit->back_url = 'finanzas/gser';
-
-		$edit->transac = new inputField('Transacci&oacute;n','transac');
-		$edit->transac->size = 15;
-		$edit->transac->when = array('show');
 
 		$edit->fecha = new dateonlyField('Fecha', 'fecha');
 		$edit->fecha->insertValue = date('Y-m-d');
 		$edit->fecha->size = 10;
 		$edit->fecha->rule= 'required';
 
-		$edit->numero = new inputField('N&uacute;mero', 'numero');
-		$edit->numero->size = 10;
-		$edit->numero->rule= 'required';
-		$edit->numero->maxlength=8;
+		$edit->serie = new inputField('N&uacute;mero', 'serie');
+		$edit->serie->size = 10;
+		$edit->serie->rule= 'required|trim';
+		$edit->serie->maxlength=20;
 
-		$edit->codigo = new inputField('C&oacute;digo', 'proveed');
+		$edit->nfiscal = new inputField('Control F&iacute;scal', 'nfiscal');
+		$edit->nfiscal->size = 10;
+		$edit->nfiscal->rule= 'required|max_length[12]|trim';
+		$edit->nfiscal->maxlength=12;
+
+		$edit->codigo = new inputField('C&oacute;digo del proveedor', 'proveed');
 		$edit->codigo->size =8;
 		$edit->codigo->maxlength=5;
 		$edit->codigo->append($bsprv);
-		$edit->codigo->rule= 'required';
+		$edit->codigo->rule = 'required|trim';
+		//$edit->codigo->group='Proveedor';
 
-		$edit->nombre = new inputField('Nombre', 'nombre');
+		$edit->nombre = new inputField('Nombre del proveedor', 'nombre');
 		$edit->nombre->size =  50;
 		$edit->nombre->maxlength=40; 
-		$edit->nombre->rule= 'required';  
+		$edit->nombre->rule= 'required';
+		//$edit->nombre->group='Proveedor';
 
 		$edit->buttons('save','undo','modify','back');
 		$edit->build();
@@ -743,12 +747,18 @@ class gser extends Controller {
 	}
 
 	function _pre_mgserupdate($do){
+		$serie     = $do->get('serie');
+		$nnumero   = substr($serie,-8);
+		$do->set('numero',$nnumero);
+	}
+
+	function _post_mgserupdate($do){
 		$fecha     = $this->db->escape($do->get('fecha'));
 		$proveed   = $this->db->escape($do->get('proveed'));
 		$nombre    = $this->db->escape($do->get('nombre'));
-		$numero    = $this->db->escape($do->get('numero'));
 		$transac   = $this->db->escape($do->get('transac'));
 		$dbtransac = $this->db->escape($transac);
+		$numero    = $this->db->escape($do->get('numero'));
 
 		$update="UPDATE gser SET serie=$numero WHERE transac=$dbtransac";
 		$this->db->query($update);
@@ -769,7 +779,6 @@ class gser extends Controller {
 		$this->db->query($update5);
 
 		logusu('gser',"Gasto $numero CAMBIADO");
-
 		return true;
 	}
 
