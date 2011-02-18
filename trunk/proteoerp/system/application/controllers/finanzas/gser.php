@@ -36,7 +36,7 @@ class gser extends Controller {
 		$filter->buttons('reset','search');
 		$filter->build();
 
-		$uri = anchor('finanzas/gser/datagserchi/show/<#id#>','<#numero#>');
+		$uri = anchor('finanzas/gser/mgserdataedit/modify/<#id#>','<#numero#>');
 
 		$grid = new DataGrid();
 		$grid->order_by('numero','desc');
@@ -684,6 +684,100 @@ class gser extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
+	function mgserdataedit(){
+		$this->rapyd->load('dataedit');
+		$this->rapyd->uri->keep_persistence();
+
+		$sprv=array(
+			'tabla'   =>'sprv',
+			'columnas'=>array(
+			'proveed' =>'C&oacute;digo Proveedor',
+			'nombre'=>'Nombre',
+			'rif'=>'RIF'),
+			'filtro'  =>array('proveed'=>'C&oacute;digo Proveedor','nombre'=>'Nombre'),
+			'retornar'=>array('proveed'=>'proveed','nombre'=>'nombre'),
+			'titulo'  =>'Buscar Proveedor');
+
+		$bsprv=$this->datasis->modbus($sprv);
+
+		$edit = new DataEdit('Modificar Egreso','gser');
+		$edit->back_save  =true;
+		$edit->back_cancel=true;
+		$edit->back_cancel_save=true;
+		$edit->post_process('update','_pre_mgserupdate');
+		$edit->post_process('create','_pre_mgsercreate');
+		$edit->back_url = 'finanzas/gser';
+
+		$edit->transac = new inputField('Transacci&oacute;n','transac');
+		$edit->transac->size = 15;
+		$edit->transac->when = array('show');
+
+		$edit->fecha = new dateonlyField('Fecha', 'fecha');
+		$edit->fecha->insertValue = date('Y-m-d');
+		$edit->fecha->size = 10;
+		$edit->fecha->rule= 'required';
+
+		$edit->numero = new inputField('N&uacute;mero', 'numero');
+		$edit->numero->size = 10;
+		$edit->numero->rule= 'required';
+		$edit->numero->maxlength=8;
+
+		$edit->codigo = new inputField('C&oacute;digo', 'proveed');
+		$edit->codigo->size =8;
+		$edit->codigo->maxlength=5;
+		$edit->codigo->append($bsprv);
+		$edit->codigo->rule= 'required';
+
+		$edit->nombre = new inputField('Nombre', 'nombre');
+		$edit->nombre->size =  50;
+		$edit->nombre->maxlength=40; 
+		$edit->nombre->rule= 'required';  
+
+		$edit->buttons('save','undo','modify','back');
+		$edit->build();
+
+		$data['content'] = $edit->output;
+		$data['head']    = $this->rapyd->get_head();
+		$data['title']   = heading('Egresos');
+		$this->load->view('view_ventanas', $data);
+	}
+
+	function _pre_mgserupdate($do){
+		$fecha     = $this->db->escape($do->get('fecha'));
+		$proveed   = $this->db->escape($do->get('proveed'));
+		$nombre    = $this->db->escape($do->get('nombre'));
+		$numero    = $this->db->escape($do->get('numero'));
+		$transac   = $this->db->escape($do->get('transac'));
+		$dbtransac = $this->db->escape($transac);
+
+		$update="UPDATE gser SET serie=$numero WHERE transac=$dbtransac";
+		$this->db->query($update);
+
+		$update2="UPDATE gitser SET fecha=$fecha, proveed=$proveed,numero=$numero WHERE transac=$dbtransac";
+		$this->db->query($update2);
+
+		//MODIFICA SPRM
+		$update3="UPDATE sprm SET fecha=$fecha, numero=$numero, cod_prv=$proveed,nombre=$nombre WHERE tipo_doc='FC'AND transac=$dbtransac";
+		$this->db->query($update3);
+
+		//MODIFICA BMOV
+		$update4="UPDATE bmov SET fecha=$fecha, numero=$numero, codcp=$proveed,nombre=$nombre WHERE clipro='P' AND transac=$dbtransac";
+		$this->db->query($update4);
+
+		//MODIFICA RIVA
+		$update5="UPDATE riva SET fecha=$fecha, numero=$numero,clipro=$proveed,nombre=$nombre WHERE transac=$dbtransac";
+		$this->db->query($update5);
+
+		logusu('gser',"Gasto $numero CAMBIADO");
+
+		return true;
+	}
+
+	function _pre_mgsercreate($do){
+		return false;
+	}
+
+
 	function _pre_insert($do){
 		if($do->get('numero')==""){
 			$numero=$this->datasis->fprox_numero('ngser');
@@ -724,16 +818,16 @@ class gser extends Controller {
 			$i=$rel['iva'];
 			$total+=$i+$p;
 			$subt+=$p;
-			//			$rel['fecha']=$do->get('fecha');
+			//$rel['fecha']=$do->get('fecha');
 		}
 		$ivat=$total-$subt;
 		$do->set('tasa',$tasa);$do->set('montasa',$montasa);
 		$do->set('reducida',$reducida);$do->set('monredu',$monredu);
 		$do->set('sobretasa',$sobretasa);$do->set('monadic',$monadic);
 		$do->set('exento',$exento);
-		//		$do->set('totpre',$subt);
-		//		$do->set('totbruto',$total);
-		//		$do->set('totiva',$ivat);
+		//$do->set('totpre',$subt);
+		//$do->set('totbruto',$total);
+		//$do->set('totiva',$ivat);
 
 		if ($do->get('monto1') != 0){
 			$negreso  = $this->datasis->fprox_numero("negreso");
@@ -1072,94 +1166,5 @@ class gser extends Controller {
 		) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC";
 		var_dump($this->db->simple_query($query));
 
-	}
-
-}
-
-class mgser extends Controller {
-
-	function mgser(){
-		parent::Controller();
-		$this->load->library('rapyd');
-		//$this->datasis->modulo_id(518,1);
-	}
-	function dataedit(){
-		$this->rapyd->load('dataedit');
-
-		$sprv=array(
-			'tabla'   =>'sprv',
-			'columnas'=>array(
-			'proveed' =>'C&oacute;digo Proveedor',
-			'nombre'=>'Nombre',
-			'rif'=>'RIF'),
-			'filtro'  =>array('proveed'=>'C&oacute;digo Proveedor','nombre'=>'Nombre'),
-			'retornar'=>array('proveed'=>'proveed','nombre'=>'nombre'),
-			'titulo'  =>'Buscar Proveedor');
-
-		$bsprv=$this->datasis->modbus($sprv);
-
-		$edit = new DataEdit('Modificar Egreso','gser');
-		$edit->post_process('update','_mgser');
-		$edit->back_url = 'finanzas/gser';
-
-		$edit->transac = new inputField('Transacci&oacute;n','transac');
-		$edit->transac->size = 15;
-		$edit->transac->when = array('show');
-
-		$edit->fecha = new dateonlyField('Fecha', 'fecha','Y-m-d');
-		$edit->fecha->insertValue = date('Y-m-d');
-		$edit->fecha->size = 10;
-		$edit->fecha->rule= 'required';
-
-		$edit->numero = new inputField('N&uacute;mero', 'numero');
-		$edit->numero->size = 10;
-		$edit->numero->rule= 'required';
-		$edit->numero->maxlength=8;
-
-		$edit->codigo = new inputField('C&oacute;digo', 'proveed');
-		$edit->codigo->size =8;
-		$edit->codigo->maxlength=5;
-		$edit->codigo->append($bsprv);
-		$edit->codigo->rule= 'required';
-
-		$edit->nombre = new inputField('Nombre', 'nombre');
-		$edit->nombre->size =  50;
-		$edit->nombre->maxlength=40; 
-		$edit->nombre->rule= 'required';  
-
-		$edit->buttons('save','undo','modify','back');
-		$edit->build();
-
-		$data['content'] = $edit->output;
-		$data['head']    = $this->rapyd->get_head()
-		$data['title']   = heading('Egresos');
-		$this->load->view('view_ventanas', $data);
-	}
-
-	function _mgser($do){
-		$fecha   = $do->get('fecha');
-		$proveed = $do->get('proveed');
-		$nombre  = $do->get('nombre');
-		$numero  = $do->get('numero');
-		$transac = $do->get('transac');
-
-		$update="UPDATE gser SET serie='$numero' WHERE transac='$transac'";
-		$this->db->query($update);
-
-		$update2="UPDATE gitser SET fecha='$fecha', proveed='$proveed',numero='$numero' WHERE transac='$transac'";
-		$this->db->query($update2);
-
-		//MODIFICA SPRM
-		$update3="UPDATE sprm SET fecha='$fecha', numero='$numero', cod_prv='$proveed',nombre='$nombre' WHERE tipo_doc='FC'AND transac='$transac'";
-		$this->db->query($update3);
-
-		//MODIFICA BMOV
-		$update4="UPDATE bmov SET fecha='$fecha', numero='$numero', codcp='$proveed',nombre='$nombre' WHERE clipro='P' AND transac='$transac'";
-		$this->db->query($update4);
-
-		//MODIFICA RIVA
-		$update5="UPDATE riva SET fecha='$fecha', numero='$numero',clipro='$proveed',nombre='$nombre' WHERE transac='$transac'";
-		$this->db->query($update5);
-		}
 	}
 }

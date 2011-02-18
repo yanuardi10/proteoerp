@@ -473,7 +473,7 @@ class Bcaj extends Controller {
 
 			$rt=$this->_transferendepefe($fecha,$efectivo,$cheque,$envia,$recibe,$numeror);
 			if($rt){
-				redirect('finanzas/bcaj/listo/n'.$this->bcajnumero);
+				redirect('finanzas/bcaj/listo/n/'.$this->bcajnumero);
 			}else{
 				redirect('finanzas/bcaj/listo/s');
 			}
@@ -713,7 +713,7 @@ class Bcaj extends Controller {
 					if($montosis==$efectivo+$tarjeta+$gastos+$valores){
 						$rt=$this->_autotranfer($fecha,$efectivo,$tarjeta,$gastos,$valores);
 						if($rt){
-							redirect('/finanzas/bcaj/listo/n'.$this->bcajnumero);
+							redirect('/finanzas/bcaj/listo/n/'.$this->bcajnumero);
 						}else{
 							redirect('/finanzas/bcaj/listo/s');
 						}
