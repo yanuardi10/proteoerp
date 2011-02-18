@@ -358,14 +358,16 @@ class Scli extends validaciones {
 	function claveedit(){
 		//$this->pi18n->cargar('scli','dataedit');
 		$this->rapyd->load('dataedit');
+		$this->rapyd->uri->keep_persistence();
+		$persistence = $this->rapyd->session->get_persistence('ventas/scli/filteredgrid', $this->rapyd->uri->gfid);
+		$back= (isset($persistence['back_uri'])) ? $persistence['back_uri'] : site_url('ventas/scli/filteredgrid');
 
 		$edit = new DataEdit('Clientes', 'scli');
 		$id=$edit->_dataobject->pk['id'];
-		$edit->back_save   =true;
-		$edit->back_cancel =true;
+		$edit->back_url    = $back;
+		$edit->back_save   = true;
+		$edit->back_cancel = true;
 		$edit->back_cancel_save=true;
-		//$edit->back_url = site_url('ventas/scli/dataedit/show/'.$id);
-		$edit->back_url = site_url('ventas/scli/index');
 
 		$edit->cliente = new inputField('Cliente', 'cliente');
 		$edit->cliente->mode = 'autohide';
@@ -408,7 +410,7 @@ class Scli extends validaciones {
 			return true;
 		});";
 		$data['content'] = $edit->output;
-		$data['title']   = heading('Asignacion de contrase&ntilde;a a cliente');
+		$data['title']   = heading('Asignaci&oacute;n de contrase&ntilde;a a cliente');
 		$data['head']    = $this->rapyd->get_head().script('plugins/jquery.crypt.js');
 		$this->load->view('view_ventanas', $data);
 	}

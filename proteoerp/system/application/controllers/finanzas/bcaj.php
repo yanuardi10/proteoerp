@@ -199,18 +199,18 @@ class Bcaj extends Controller {
 
 		$numero=$edit->_dataobject->get('numero');
 		$detalle = new DataDetalle($edit->_status);
-		
+
 			//Campos para el detalle
 			$detalle->db->select('numero,tipo,concep, denomi, cantidad, monto ');
 			$detalle->db->from('itbcaj');
 			$detalle->db->where("numero='$numero'");
-			
+
 			$detalle->codigo = new inputField2("Tipo", "tipo<#i#>");
 			$detalle->codigo->size=3;
 			$detalle->codigo->db_name='tipo';
 			$detalle->codigo->append($this->datasis->p_modbus($modbus,'<#i#>'));
 			$detalle->codigo->readonly=TRUE;
-			
+
 			$detalle->concep = new inputField("Conc.", "concep<#i#>");
 			$detalle->concep->size=15;
 			$detalle->concep->db_name='concep';
@@ -220,19 +220,18 @@ class Bcaj extends Controller {
 			$detalle->denomi->css_class='inputnum';
 			$detalle->denomi->size=20;
 			$detalle->denomi->db_name='denomi';
-			
+
 			$detalle->cantidad = new inputField("Cant", "cantidad<#i#>");
 			$detalle->cantidad->css_class='inputnum';
 			$detalle->cantidad->size=20;
 			$detalle->cantidad->db_name='cantidad';
-			
+
 			$detalle->monto = new inputField("Monto", "monto<#i#>");
 			$detalle->monto->css_class='inputnum';
 			$detalle->monto->size=20;
 			$detalle->monto->db_name='monto';
-
 			//fin de campos para detalle
-			
+
 			//Columnas del detalle
 			$detalle->column("Tipo","<#tipo#><#concep#><#denomi#><#cantidad#><#monto#>");
 			//$detalle->column("Descripci&oacute;n","<#descrip#>");
@@ -1628,7 +1627,7 @@ class Bcaj extends Controller {
 	}
 
 	function listo($error,$numero=null){
-		if($error='n'){
+		if($error=='n'){
 			$data['content'] = 'Transacci&oacute;n completada ';
 			if(!empty($numero)){
 				$url=$this->_imprimir($numero,'verhtml');
