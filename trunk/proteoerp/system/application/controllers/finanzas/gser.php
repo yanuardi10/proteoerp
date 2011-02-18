@@ -117,6 +117,8 @@ class gser extends Controller {
 		$grid->column_orderby('Monto' ,'totneto' ,'totneto','align=\'right\'');
 
 		$grid->add('finanzas/gser/datagserchi/create');
+		$action = "javascript:window.location='" . site_url('finanzas/gser/gserchipros') . "'";
+		$grid->button('btn_pross', 'Procesar gatos', $action, 'TR');
 		$grid->build();
 		//echo $grid->db->last_query();
 
@@ -327,10 +329,14 @@ class gser extends Controller {
 
 	function _pre_gserchi($do){
 		$rif   =$do->get('rif');
+		$dbrif = $this->db->escape($rif);
 		$nombre=$do->get('proveedor');
 		$fecha =date('Y-m-d');
-		$mSQL='INSERT IGNORE INTO provoca (rif,nombre,fecha) VALUES ('.$this->db->escape($rif).','.$this->db->escape($nombre).','.$this->db->escape($fecha).')';
-		$this->db->simple_query($mSQL);
+		$csprv =$this->datasis->dameval('SELECT COUNT(*) FROM sprv WHERE rif='.$dbrif);
+		if($csprv==0){
+			$mSQL ='INSERT IGNORE INTO provoca (rif,nombre,fecha) VALUES ('.$dbrif.','.$this->db->escape($nombre).','.$this->db->escape($fecha).')';
+			$this->db->simple_query($mSQL);
+		}
 
 		$total  = 0;
 		$total += $do->get('exento')   ;
@@ -342,6 +348,7 @@ class gser extends Controller {
 		$total += $do->get('sobretasa');
 
 		if($total>0){
+			$do->set('importe',$total);
 			return true;
 		}else{
 			$do->error_message_ar['pre_ins'] = $do->error_message_ar['pre_upd'] = 'No se puede guardar un gasto con monto cero';
@@ -668,7 +675,7 @@ class gser extends Controller {
 
 		$edit->buttons("modify", "save", "undo", "delete", "back","add_rel");
 		$edit->build();
-		//			echo $edit->_dataobject->db->last_query();
+		//echo $edit->_dataobject->db->last_query();
 
 		$conten['form']  =&$edit;
 		$data['content'] = $this->load->view('view_gser', $conten,true);
@@ -1067,4 +1074,92 @@ class gser extends Controller {
 
 	}
 
+}
+
+class mgser extends Controller {
+
+	function mgser(){
+		parent::Controller();
+		$this->load->library('rapyd');
+		//$this->datasis->modulo_id(518,1);
+	}
+	function dataedit(){
+		$this->rapyd->load('dataedit');
+
+		$sprv=array(
+			'tabla'   =>'sprv',
+			'columnas'=>array(
+			'proveed' =>'C&oacute;digo Proveedor',
+			'nombre'=>'Nombre',
+			'rif'=>'RIF'),
+			'filtro'  =>array('proveed'=>'C&oacute;digo Proveedor','nombre'=>'Nombre'),
+			'retornar'=>array('proveed'=>'proveed','nombre'=>'nombre'),
+			'titulo'  =>'Buscar Proveedor');
+
+		$bsprv=$this->datasis->modbus($sprv);
+
+		$edit = new DataEdit('Modificar Egreso','gser');
+		$edit->post_process('update','_mgser');
+		$edit->back_url = 'finanzas/gser';
+
+		$edit->transac = new inputField('Transacci&oacute;n','transac');
+		$edit->transac->size = 15;
+		$edit->transac->when = array('show');
+
+		$edit->fecha = new dateonlyField('Fecha', 'fecha','Y-m-d');
+		$edit->fecha->insertValue = date('Y-m-d');
+		$edit->fecha->size = 10;
+		$edit->fecha->rule= 'required';
+
+		$edit->numero = new inputField('N&uacute;mero', 'numero');
+		$edit->numero->size = 10;
+		$edit->numero->rule= 'required';
+		$edit->numero->maxlength=8;
+
+		$edit->codigo = new inputField('C&oacute;digo', 'proveed');
+		$edit->codigo->size =8;
+		$edit->codigo->maxlength=5;
+		$edit->codigo->append($bsprv);
+		$edit->codigo->rule= 'required';
+
+		$edit->nombre = new inputField('Nombre', 'nombre');
+		$edit->nombre->size =  50;
+		$edit->nombre->maxlength=40; 
+		$edit->nombre->rule= 'required';  
+
+		$edit->buttons('save','undo','modify','back');
+		$edit->build();
+
+		$data['content'] = $edit->output;
+		$data['head']    = $this->rapyd->get_head()
+		$data['title']   = heading('Egresos');
+		$this->load->view('view_ventanas', $data);
+	}
+
+	function _mgser($do){
+		$fecha   = $do->get('fecha');
+		$proveed = $do->get('proveed');
+		$nombre  = $do->get('nombre');
+		$numero  = $do->get('numero');
+		$transac = $do->get('transac');
+
+		$update="UPDATE gser SET serie='$numero' WHERE transac='$transac'";
+		$this->db->query($update);
+
+		$update2="UPDATE gitser SET fecha='$fecha', proveed='$proveed',numero='$numero' WHERE transac='$transac'";
+		$this->db->query($update2);
+
+		//MODIFICA SPRM
+		$update3="UPDATE sprm SET fecha='$fecha', numero='$numero', cod_prv='$proveed',nombre='$nombre' WHERE tipo_doc='FC'AND transac='$transac'";
+		$this->db->query($update3);
+
+		//MODIFICA BMOV
+		$update4="UPDATE bmov SET fecha='$fecha', numero='$numero', codcp='$proveed',nombre='$nombre' WHERE clipro='P' AND transac='$transac'";
+		$this->db->query($update4);
+
+		//MODIFICA RIVA
+		$update5="UPDATE riva SET fecha='$fecha', numero='$numero',clipro='$proveed',nombre='$nombre' WHERE transac='$transac'";
+		$this->db->query($update5);
+		}
+	}
 }

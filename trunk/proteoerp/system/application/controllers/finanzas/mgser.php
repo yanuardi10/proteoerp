@@ -59,6 +59,7 @@ class mgser extends Controller {
 		$data['title']   = '<h1>Egresos</h1>';
 		$this->load->view('view_ventanas', $data);
 	}
+
 	function _actualiza(){
 		$fecha=$this->input->post("fecha");
 		$proveed=$this->input->post("proveed");
