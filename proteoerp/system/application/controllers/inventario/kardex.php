@@ -36,7 +36,7 @@ class Kardex extends Controller {
 			case '5C': return('Ajuste de inventario'); break;
 			case '0F': return('Inventario'); break;
 			case '9F': return('Inventario'); break;
-			default:   return($par); };	
+			default:   return($par); };
 		}
 
 		$modbus=array(
@@ -97,7 +97,7 @@ class Kardex extends Controller {
 			$grid = new DataGrid2("($code) $descrip");
 			$grid->agrupar('Almacen: ', 'almacen');
 			$grid->use_function('convierte','str_replace');
-			$grid->db->select(array('IFNULL( b.ubides , a.ubica ) almacen','a.ubica','a.fecha','a.venta','a.cantidad', 'a.saldo', 'a.monto', 'a.salcant', 'a.codigo', 'a.origen', 'a.promedio','a.venta / a.cantidad AS vpromedio'));
+			$grid->db->select(array('IFNULL( b.ubides , a.ubica ) almacen','a.ubica','a.fecha','a.venta','a.cantidad', 'a.saldo', 'a.monto', 'a.salcant', 'TRIM(a.codigo) AS codigo', 'a.origen', 'a.promedio','a.venta / a.cantidad AS vpromedio'));
 			$grid->db->from('costos a');
 			$grid->db->join('caub b ','b.ubica=a.ubica','LEFT');
 			$grid->db->orderby('almacen, fecha, origen');
@@ -137,16 +137,15 @@ class Kardex extends Controller {
 		$grid->per_page = 20;
 
 		if($tipo=='3I' or $tipo=='3M'){  //ventas de caja
-			$fields = $this->db->field_data('table_name');
+			$fields = $this->db->field_data('sfac');
 			$ppk=array();
 			foreach ($fields as $field){
 				if($field->primary_key==1){
 					$ppk[]='<#'.$field->name.'#>';
 				}
 			}
-
 			$grid->title('Facturas');
-			$link=anchor('ventas/factura/dataedit/show/'.implode('/'.$ppk),'<#numero#>');
+			$link=anchor('ventas/factura/dataedit/show/'.implode('/',$ppk),'<#tipoa#><#numero#>');
 			$grid->column('N&uacute;mero',$link);
 			$grid->column('Cliente'      ,'cliente' );
 			$grid->column('Cantidad'     ,'<nformat><#cana#></format>','align=right');
@@ -154,7 +153,7 @@ class Kardex extends Controller {
 			$grid->column('Vendedor'     ,'vendedor','align=center');
 			$grid->column('Precio'       ,'<nformat><#preca#></nformat>','align=\'right\'');
 			$grid->column('Total'        ,'<nformat><#tota#></nformat>' ,'align=\'right\'');
-			$grid->db->select(array('a.numa','CONCAT(a.tipoa,a.numa) numero','CONCAT("(",b.cod_cli,") ",b.nombre) cliente','a.cana','a.fecha','a.vendedor','a.preca','a.tota','tipo_doc'));
+			$grid->db->select(array('a.numa','a.tipoa','a.numa AS numero','CONCAT("(",b.cod_cli,") ",b.nombre) cliente','a.cana','a.fecha','a.vendedor','a.preca','a.tota','tipo_doc'));
 			$grid->db->from('sitems a');
 			$grid->db->join('sfac b','b.numero=a.numa  AND b.tipo_doc=a.tipoa');
 			$grid->db->where('a.fecha',$fecha);
@@ -165,8 +164,8 @@ class Kardex extends Controller {
 			$grid->title('Facturas');
 			$link=anchor("hospitalidad/factura/dataedit/show/<#numa#>","<#numero#>");
 			$grid->column("N&uacute;mero",'numero');
-			$grid->column("Cliente"      ,"cliente" );
-			$grid->column("Cantidad"     ,"<nformat><#cantidad#></nformat>",'align=right');
+			$grid->column("Cliente"      ,'cliente' );
+			$grid->column("Cantidad"     ,'<nformat><#cantidad#></nformat>','align=right');
 			$grid->column("Fecha"        ,"<dbdate_to_human><#fecha#></dbdate_to_human>"   ,'align=center');
 			$grid->column("Mesonero"     ,"mesonero",'align=center');
 			$grid->column("Precio"       ,"<nformat><#precio#></nformat>",'align=right');
@@ -186,7 +185,7 @@ class Kardex extends Controller {
 				}
 			}
 
-			$link=anchor('/inventario/stra/dataedit/show/'.implode('/'.$ppk),'<#numero#>');
+			$link=anchor('/inventario/stra/dataedit/show/'.implode('/',$ppk),'<#numero#>');
 			$grid->title('Tranferencias');
 			$grid->column("N&uacute;mero",$link);
 			$grid->column("Env&iacute;a"      ,"envia" );
@@ -209,7 +208,7 @@ class Kardex extends Controller {
 				}
 			}
 
-			$link=anchor('compras/scst/dataedit/show/'.implode('/'.$ppk),'<#numero#>');
+			$link=anchor('compras/scst/dataedit/show/'.implode('/',$ppk),'<#numero#>');
 			$grid->title('Compras');
 			$grid->column("N&uacute;mero",$link);
 			$grid->column("Fecha"    ,"<dbdate_to_human><#fecha#></dbdate_to_human>",'align=center');
@@ -225,7 +224,14 @@ class Kardex extends Controller {
 			$grid->db->where('b.recep',$fecha);
 			$grid->db->where('b.actuali >= b.fecha');
 		}elseif($tipo=='4N'){ //Nota de entrega
-			$link=anchor("ventas/snte/dataedit/show/<#numero#>","<#numero#>");
+			$fields = $this->db->field_data('snte');
+			$ppk=array();
+			foreach ($fields as $field){
+				if($field->primary_key==1){
+					$ppk[]='<#'.$field->name.'#>';
+				}
+			}
+			$link=anchor('ventas/snte/dataedit/show/'.implode('/',$ppk),"<#numero#>");
 			$grid->title('Notas de Entrega');
 			$grid->column("N&uacute;mero",$link);
 			$grid->column("Fecha"    ,"<dbdate_to_human><#fecha#></dbdate_to_human>",'align=center');
@@ -239,7 +245,14 @@ class Kardex extends Controller {
 			$grid->db->where('b.codigo',$codigo);
 			$grid->db->where('a.fecha',$fecha);
 		}elseif($tipo=='6C'){ //Conversiones
-			$link=anchor("inventario/conversiones/dataedit/show/<#numero#>","<#numero#>");
+			$fields = $this->db->field_data('conv');
+			$ppk=array();
+			foreach ($fields as $field){
+				if($field->primary_key==1){
+					$ppk[]='<#'.$field->name.'#>';
+				}
+			}
+			$link=anchor('inventario/conversiones/dataedit/show/'.implode('/',$ppk),'<#numero#>');
 			$grid->title('Conversiones');
 			$grid->column("N&uacute;mero",$link);
 			$grid->column("Fecha"    ,"<dbdate_to_human><#estampa#></dbdate_to_human>",'align=center');
@@ -255,8 +268,8 @@ class Kardex extends Controller {
 		//echo $grid->db->last_query();
 		
 		$data['content'] = $grid->output;
-		$data['title']   = "<h1>Transacciones del producto $codigo </h1>";
-		$data["head"]    = $this->rapyd->get_head();
+		$data['title']   = heading("Transacciones del producto $codigo");
+		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 
