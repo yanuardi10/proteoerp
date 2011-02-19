@@ -160,7 +160,7 @@ class Ordi extends Controller {
 		//$edit->numero->apply_rules=false; //necesario cuando el campo es clave y no se pide al usuario
 		$edit->numero->when=array('show','modify');
 
-		$edit->dua= new inputField('Declaraci&oacute;n &uacute;nida de aduana', 'dua');
+		$edit->dua= new inputField('Declaraci&oacute;n &uacute;nica de aduana', 'dua');
 		$edit->dua->size=10;
 
 		$edit->fecha = new  dateonlyField('Fecha','fecha');
