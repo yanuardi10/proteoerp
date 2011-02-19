@@ -39,7 +39,7 @@ class gser extends Controller {
 		$uri = anchor('finanzas/gser/mgserdataedit/modify/<#id#>','<#numero#>');
 
 		$grid = new DataGrid();
-		$grid->order_by('numero','desc');
+		$grid->order_by('fecha','desc');
 		$grid->per_page = 15;
 		$grid->column_orderby('N&uacute;mero',$uri,'numero');
 		$grid->column_orderby('Fecha' ,'<dbdate_to_human><#fecha#></dbdate_to_human>','fecha','align=\'center\'');
@@ -146,7 +146,6 @@ class gser extends Controller {
 		$redutasa  = $ivas['redutasa']/100;
 		$sobretasa = $ivas['sobretasa']/100;
 
-		//print_r($ivas);
 		$consulrif=$this->datasis->traevalor('CONSULRIF');
 		$script="
 		function consulrif(){
@@ -724,14 +723,14 @@ class gser extends Controller {
 		$edit->vence->rule= 'required';
 
 		$edit->serie = new inputField('N&uacute;mero', 'serie');
-		$edit->serie->size = 10;
+		$edit->serie->size = 20;
 		$edit->serie->rule= 'required|trim';
 		$edit->serie->maxlength=20;
 
 		$edit->nfiscal = new inputField('Control F&iacute;scal', 'nfiscal');
-		$edit->nfiscal->size = 10;
+		$edit->nfiscal->size = 20;
 		$edit->nfiscal->rule= 'required|max_length[12]|trim';
-		$edit->nfiscal->maxlength=12;
+		$edit->nfiscal->maxlength=20;
 
 		$edit->codigo = new inputField('C&oacute;digo del proveedor', 'proveed');
 		$edit->codigo->size =8;
@@ -775,6 +774,7 @@ class gser extends Controller {
 
 	function _post_mgserupdate($do){
 		$fecha     = $this->db->escape($do->get('fecha'));
+		$vence     = $this->db->escape($do->get('vence'));
 		$proveed   = $this->db->escape($do->get('proveed'));
 		$nombre    = $this->db->escape($do->get('nombre'));
 		$transac   = $do->get('transac');
@@ -788,7 +788,7 @@ class gser extends Controller {
 		$this->db->query($update2);
 
 		//MODIFICA SPRM
-		$update3="UPDATE sprm SET fecha=$fecha, numero=$numero, cod_prv=$proveed,nombre=$nombre WHERE tipo_doc='FC'AND transac=$dbtransac";
+		$update3="UPDATE sprm SET fecha=$fecha,vence=$vence, numero=$numero, cod_prv=$proveed,nombre=$nombre WHERE tipo_doc='FC'AND transac=$dbtransac";
 		$this->db->query($update3);
 
 		//MODIFICA BMOV
