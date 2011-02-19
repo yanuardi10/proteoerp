@@ -706,15 +706,22 @@ class gser extends Controller {
 		$edit->back_save  =true;
 		$edit->back_cancel=true;
 		$edit->back_cancel_save=true;
-		$edit->pre_process('update','_pre_mgserupdate');
-		$edit->pre_process('create','_pre_mgsercreate');
+		$edit->pre_process( 'create','_pre_mgsercreate' );
+		$edit->pre_process( 'update','_pre_mgserupdate' );
 		$edit->post_process('update','_post_mgserupdate');
 		$edit->back_url = 'finanzas/gser';
 
-		$edit->fecha = new dateonlyField('Fecha', 'fecha');
-		$edit->fecha->insertValue = date('Y-m-d');
+		$edit->fecha = new dateonlyField('Fecha recepci&oacute;n', 'fecha');
 		$edit->fecha->size = 10;
 		$edit->fecha->rule= 'required';
+
+		$edit->ffactura = new dateonlyField('Fecha de factura', 'ffactura');
+		$edit->ffactura->size = 10;
+		$edit->ffactura->rule= 'required';
+
+		$edit->vence = new dateonlyField('Vencimiento', 'vence');
+		$edit->vence->size = 10;
+		$edit->vence->rule= 'required';
 
 		$edit->serie = new inputField('N&uacute;mero', 'serie');
 		$edit->serie->size = 10;
@@ -770,7 +777,7 @@ class gser extends Controller {
 		$fecha     = $this->db->escape($do->get('fecha'));
 		$proveed   = $this->db->escape($do->get('proveed'));
 		$nombre    = $this->db->escape($do->get('nombre'));
-		$transac   = $this->db->escape($do->get('transac'));
+		$transac   = $do->get('transac');
 		$dbtransac = $this->db->escape($transac);
 		$numero    = $this->db->escape($do->get('numero'));
 
