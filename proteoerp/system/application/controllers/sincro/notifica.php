@@ -132,6 +132,52 @@ class notifica extends controller {
 		return $rt;
 	}
 
+	//Funcion que notifica a los usuarios de un evento dado
+	function eventos(){
+		$this->rapyd->load('dataedit');
+
+		$edit = new DataEdit('Programador de eventos', 'eventos');
+
+		$edit->nombre = new inputField('Nombre del evento','nombre');
+		$edit->nombre->rule='max_length[100]';
+		$edit->nombre->maxlength =100;
+
+		$edit->fechahora = new dateField('Fecha de arranque','fechahora');
+		$edit->fechahora->rule='chfecha';
+		$edit->fechahora->size =10;
+		$edit->fechahora->maxlength =8;
+
+		$edit->concurrencia = new inputField('concurrencia','concurrencia');
+		$edit->concurrencia->rule='max_length[1]';
+		$edit->concurrencia->size =3;
+		$edit->concurrencia->maxlength =1;
+
+		$edit->activador = new textareaField('Funcion activadora','activador');
+		$edit->activador->rule='max_length[8]';
+		$edit->activador->cols = 70;
+		$edit->activador->rows = 4;
+
+		$edit->para = new textareaField('Para','para');
+		//$edit->para->rule='max_length[8]';
+		$edit->para->cols = 70;
+		$edit->para->rows = 3;
+
+		$edit->accion = new textareaField('accion','accion');
+		//$edit->accion->rule='max_length[8]';
+		$edit->accion->cols = 70;
+		$edit->accion->rows = 4;
+
+		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
+		$edit->estampa = new autoUpdateField('estampa' ,date('Ymd'), date('Ymd'));
+
+		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
+		$edit->build();
+		$data['content'] = $edit->output;
+		$data['head']    = $this->rapyd->get_head();
+		$data['title']   = heading('Programador de eventos');
+		$this->load->view('view_ventanas', $data);
+	}
+
 	function _movistar($codigo,$numero,$msg){
 		$host ='https://sms.mipunto.com/servlet/ServletAutenticacion';
 
@@ -210,12 +256,6 @@ class notifica extends controller {
 		}
 		return false;
 	}
-
-	//Funcion que notifica a los usuarios de un evento dado
-	function enventos(){
-	
-	}
-
 
 	function _movilnet($codigo,$numero,$msg){
 		$this->error='M&eacute;todo no definido';

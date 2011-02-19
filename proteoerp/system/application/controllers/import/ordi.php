@@ -1564,5 +1564,8 @@ class Ordi extends Controller {
 
 		$mSQL="ALTER TABLE `itordi`  ADD COLUMN `costoreal` DECIMAL(17,2) NULL DEFAULT NULL COMMENT 'costo unitario al dolar real' AFTER `importefinal`,  ADD COLUMN `importereal` DECIMAL(17,2) NULL DEFAULT NULL COMMENT 'importe al dolar real' AFTER `costoreal`";
 		var_dump($this->db->simple_query($mSQL));
+
+		$this->prefijo='crm_';
+		contenedor::instalar();
 	}
 }
