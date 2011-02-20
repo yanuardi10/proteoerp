@@ -1,17 +1,14 @@
 <?php
 class sfacdesp extends Controller {
 
-	function sfacdesp()
-	{
+	function sfacdesp(){
 		parent::Controller();
-		$this->load->library("rapyd");
+		$this->load->library('rapyd');
 		$this->datasis->modulo_id(111,1);
-		//I use THISFILE, instead __FILE__ to prevent some documented php-bugs with higlight_syntax()&__FILE__
-		define ("THISFILE",   APPPATH."controllers/ventas/". $this->uri->segment(2).EXT);
 	}
 
 	function index(){
-		redirect("ventas/sfacdesp/filteredgrid");
+		redirect('ventas/sfacdesp/filteredgrid');
 	}
 
 	function filteredgrid(){
@@ -21,55 +18,57 @@ class sfacdesp extends Controller {
 		//$this->rapyd->uri->keep_persistence();
 
 		//filter
-		$filter = new DataFilter("Filtro");
-		$select=array("a.cod_cli as cliente","a.fecha","if(a.referen='C','Cred','Cont') referen","a.numero","a.nombre","a.totalg as total","a.vd","d.nombre as vendedor");
-		$select[]="GROUP_CONCAT(e.despacha) LIKE '%S%' AS parcial";
+		$filter = new DataFilter('Filtro');
+		$select=array('a.cod_cli AS cliente','a.fecha','if(a.referen=\'C\',\'Cred\',\'Cont\') referen','a.numero','a.nombre','a.totalg AS total','a.vd','d.nombre AS vendedor');
+		$select[]='GROUP_CONCAT(e.despacha) LIKE \'%S%\' AS parcial';
 		$filter->db->select($select);
 		$filter->db->from('sitems AS e');
 		$filter->db->join('itsnot AS c' ,'c.factura=e.numa AND c.codigo=e.codigoa','LEFT');
 		$filter->db->join('sfac AS a','e.numa=a.numero AND e.tipoa=a.tipo_doc');
+		$filter->db->join('sfac AS g','a.numero=g.factura AND g.tipo_doc=\'D\'','LEFT');
 		//$filter->db->join('snot AS c' ,'a.numero=c.factura','LEFT');
 		$filter->db->join('vend AS d' ,'a.vd=d.vendedor');
 		//$filter->db->join('sfac AS f','a.numero=e.factura','LEFT');
 		$filter->db->groupby('e.numa');
 		$filter->db->where('a.fdespacha IS NULL');
+		$filter->db->where('g.factura IS NULL');
 		$filter->db->where('a.tipo_doc','F');
 		$filter->db->where('c.factura IS NULL');
-		$filter->db->orderby("a.fecha DESC, a.numero");
+		$filter->db->orderby('a.fecha DESC, a.numero');
 		$filter->db->_escape_char='';
 		$filter->db->_protect_identifiers=false;
 
-		$filter->fechad = new dateonlyField("Desde", "fechad");
-		$filter->fechah = new dateonlyField("Hasta", "fechah");
-		$filter->fechad->clause  =$filter->fechah->clause="where";
-		$filter->fechad->db_name =$filter->fechah->db_name="a.fecha";
-		$filter->fechad->insertValue = date("Y-m-d");
-		$filter->fechah->insertValue = date("Y-m-d");
-		$filter->fechad->operator=">=";
-		$filter->fechah->operator="<=";
+		$filter->fechad = new dateonlyField('Desde', 'fechad');
+		$filter->fechah = new dateonlyField('Hasta', 'fechah');
+		$filter->fechad->clause  =$filter->fechah->clause ='where';
+		$filter->fechad->db_name =$filter->fechah->db_name='a.fecha';
+		$filter->fechad->insertValue = date('Y-m-d');
+		$filter->fechah->insertValue = date('Y-m-d');
+		$filter->fechad->operator='>=';
+		$filter->fechah->operator='<=';
 
-		$filter->numero = new inputField("N&uacute;mero", "a.numero");
+		$filter->numero = new inputField('N&uacute;mero', 'a.numero');
 		$filter->numero->size = 20;
 
-		$filter->buttons("reset","search");
+		$filter->buttons('reset','search');
 		$filter->build();
 
-		$uri = "ventas/cajeros/dataedit/show/<#cajero#>";
+		$uri = 'ventas/cajeros/dataedit/show/<#cajero#>';
 
-		if(!$this->rapyd->uri->is_set("search")) $filter->db->where('a.fecha','CURDATE()');
+		if(!$this->rapyd->uri->is_set('search')) $filter->db->where('a.fecha','CURDATE()');
 
 		function descheck($numero){
 			$data = array(
-			  'name'    => 'despacha[]',
-			  'id'      => $numero,
-			  'value'   => $numero,
-			  'checked' => FALSE);
+				'name'    => 'despacha[]',
+				'id'      => $numero,
+				'value'   => $numero,
+				'checked' => FALSE);
 			return form_checkbox($data);
 		}
 
 		$seltodos='Seleccionar <a id="todos" href=# >Todos</a> <a id="nada" href=# >Ninguno</a> <a id="alter" href=# >Invertir</a>';
 		//grid
-		$grid = new DataGrid("$seltodos");
+		$grid = new DataGrid($seltodos);
 		$grid->use_function('descheck');
 		$grid->use_function('colum');
 		$grid->use_function('parcial');
