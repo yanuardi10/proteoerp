@@ -8,9 +8,9 @@ class Factura extends Controller {
 	}
 
 	function index() {
-		$this->rapyd->load("datagrid","datafilter");
+		$this->rapyd->load('datagrid','datafilter');
 		$this->rapyd->uri->keep_persistence();
-		
+
 		$atts = array(
 			'width'      => '800',
 			'height'     => '600',
@@ -37,8 +37,8 @@ class Factura extends Controller {
 		$filter->fechah = new dateonlyField('Hasta', 'fechah','d/m/Y');
 		$filter->fechad->clause  =$filter->fechah->clause ='where';
 		$filter->fechad->db_name =$filter->fechah->db_name='fecha';
-		$filter->fechad->insertValue = date('Y-m-d');
-		$filter->fechah->insertValue = date('Y-m-d');
+		//$filter->fechad->insertValue = date('Y-m-d');
+		//$filter->fechah->insertValue = date('Y-m-d');
 		$filter->fechah->size=$filter->fechad->size=10;
 		$filter->fechad->operator='>=';
 		$filter->fechah->operator='<=';
@@ -53,6 +53,11 @@ class Factura extends Controller {
 		$filter->cliente->size = 30;
 		$filter->cliente->append($boton);
 
+		$filter->tipo_doc = new  dropdownField ('Tipo', 'tipo_doc');
+		$filter->tipo_doc->option('','Todos');
+		$filter->tipo_doc->option('F','Facturas');
+		$filter->tipo_doc->option('D','Devoluciones');
+
 		$filter->cajero = new dropdownField("Cajero", "cajero"); 
 		$filter->cajero->clause="where"; 
 		$filter->cajero->option("","Seleccionar");  
@@ -61,14 +66,14 @@ class Factura extends Controller {
 
 		$filter->vende = new  dropdownField ('Vendedor', 'vd');
 		$filter->vende->option('','Todos');
-		$filter->vende->options("SELECT vendedor, CONCAT(vendedor,' ',nombre) nombre FROM vend ORDER BY vendedor");  
-		$filter->vende->size = 5;
+		$filter->vende->options("SELECT vendedor, CONCAT(vendedor,' ',nombre) nombre FROM vend ORDER BY vendedor");
 
 		$filter->buttons('reset','search');
 		$filter->build();
     
 		$uri = anchor('ventas/factura/dataedit/show/<#tipo_doc#>/<#numero#>','<#tipo_doc#><#numero#>');
-		$uri2 = anchor_popup('formatos/verhtml/FACTURA/<#tipo_doc#>/<#numero#>',"Ver HTML",$atts);
+		$uri2 = anchor_popup('formatos/verhtml/FACTURA/<#tipo_doc#>/<#numero#>','Ver HTML',$atts);
+		$uri3 = anchor_popup('formatos/verhtml/FACTURA/<#tipo_doc#>/<#factura#>','<#factura#>',$atts);
     
 		$grid = new DataGrid();
 		$grid->order_by('fecha','desc');
@@ -76,6 +81,7 @@ class Factura extends Controller {
 
 		$grid->column_orderby('N&uacute;mero',$uri,'numero');
 		$grid->column_orderby('N. Fiscal','nfiscal','nfiscal');
+		$grid->column_orderby('Afecta','<siinulo><#factura#>| |'.$uri3.'</siinulo>','factura');
 		$grid->column_orderby('Fecha','<dbdate_to_human><#fecha#></dbdate_to_human>','fecha',"align='center'");
 		$grid->column_orderby('Nombre'   ,'nombre','nombre');
 		$grid->column_orderby('Sub.Total','<nformat><#totals#></nformat>','totals',"align='right'");
@@ -89,7 +95,7 @@ class Factura extends Controller {
 		//echo $grid->db->last_query();
 		$data['content'] =$filter->output.$grid->output;
 		$data["head"]    = $this->rapyd->get_head();
-		$data['title']   ='<h1>Factura</h1>';
+		$data['title']   =heading('Facturas');
 		$this->load->view('view_ventanas', $data);
 	}
 
