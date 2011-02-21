@@ -56,7 +56,9 @@ class Kardex extends Controller {
 
 		$filter = new DataFilter('Kardex de Inventario');
 		$filter->codigo = new inputField('C&oacute;digo De Producto', 'codigo');
-		$filter->codigo->rule = "required";
+		$filter->codigo->rule = 'required';
+		$filter->codigo->operator='=';
+		$filter->codigo->clause  ='where';
 		$filter->codigo->append($boton);
 
 		$filter->ubica = new dropdownField('Almac&eacute;n', 'ubica');
