@@ -4,18 +4,10 @@ class Bcaj extends Controller {
 		parent::Controller();
 		$this->load->library('rapyd');
 		$this->config->load('datasis');
-		//$this->guitipo=array('DE'=>'Deposito','TR'=>'Transferencia','RM'=>'Remesa');
+
 		$this->guitipo=array('DE'=>'Deposito','TR'=>'Transferencia');
 		$this->datasis->modulo_id('51D',1);
-		$this->cajas=$this->config->item('cajas');
 		$this->bcajnumero='';
-		foreach($this->cajas AS $inv=>$val){
-			$codban=$this->db->escape($val);
-			$cana=$this->datasis->dameval("SELECT COUNT(*) AS cana FROM banc WHERE codbanc=$codban");
-			if($cana==0){
-				show_error('La caja '.$val.' no esta registrada en el sistema, debe registrarla por el modulo de bancos o ajustar la configuracion en config/datasis.php');
-			}
-		}
 	}
 
 	function index(){
@@ -650,6 +642,17 @@ class Bcaj extends Controller {
 	}
 
 	function autotranfer2($fecha=null){
+		//***************************
+		$this->cajas=$this->config->item('cajas');
+		foreach($this->cajas AS $inv=>$val){
+			$codban=$this->db->escape($val);
+			$cana=$this->datasis->dameval("SELECT COUNT(*) AS cana FROM banc WHERE codbanc=$codban");
+			if($cana==0){
+				show_error('La caja '.$val.' no esta registrada en el sistema, debe registrarla por el modulo de bancos o ajustar la configuracion en config/datasis.php');
+			}
+		}
+		//***************************
+
 		$this->rapyd->load('dataform');
 		$this->load->library('validation');
 		$val=$this->validation->chfecha($fecha,'Y-m-d');
