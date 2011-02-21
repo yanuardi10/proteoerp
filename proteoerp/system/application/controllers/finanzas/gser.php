@@ -360,10 +360,28 @@ class gser extends Controller {
 	//Convierte los gastos en caja chica
 	function gserchipros(){
 		$this->rapyd->load('dataform');
+
+		$banc=array(
+			'tabla'   => 'banc',
+			'columnas'=> array(
+				'codbanc' =>'C&oacute;digo',
+				'banco'   =>'Descripci&oacute;n',
+				'codprv'  =>'Proveedor',
+				),
+			'filtro'  => array('codbanc'=>'Descripci&oacute;n'),
+			'retornar'=> array('codbanc' =>'codbanc','codprv'=>'codprv'),
+			'titulo'  => 'Buscar caja',
+			'where'   => 'tbanco = "CAJ"',
+			'join'    => array('sprv','sprv.proveed=banc.codprv','LEFT'),
+			);
+		$modbus=$this->datasis->modbus($banc);
+
+
 		$form = new DataForm('gser/gserchipros/process');
 
 		$form->codbanc = new inputField('C&oacute;digo de la caja', 'codbanc');
 		$form->codbanc->size=5;
+		$form->codbanc->append($modbus);
 
 		/*$form->codbanc = new dropdownField('C&oacute;digo de la caja','codbanc');
 		$form->codbanc->option('','Seleccionar');
