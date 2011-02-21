@@ -14,6 +14,16 @@ class Bcaj extends Controller {
 		$this->rapyd->load('datafilter','datagrid');
 		$smenu['link']=barra_menu('51D');
 
+		$atts = array(
+			'width'      => '800',
+			'height'     => '600',
+			'scrollbars' => 'yes',
+			'status'     => 'yes',
+			'resizable'  => 'yes',
+			'screenx'    => '0',
+			'screeny'    => '0'
+		);
+
 		$filter = new DataFilter('Filtro','bcaj');
 
 		$filter->fecha = new dateonlyField('Fecha','fecha');
@@ -39,12 +49,15 @@ class Bcaj extends Controller {
 		$grid->order_by('numero','desc');
 		$grid->per_page = 15;
 
+		$uri2 = anchor_popup('finanzas/bcaj/formato/<#numero#>/<#tipo#>','Ver HTML',$atts);
+
 		$grid->column_orderby('N&uacute;mero',$uri,'numero');
 		$grid->column_orderby('Fecha'        ,'<dbdate_to_human><#fecha#></dbdate_to_human>','fecha');
 		$grid->column_orderby('Env&iacute;a' ,'<#envia#>-<#bancoe#>','bancoe');
 		$grid->column_orderby('Recibe'       ,'<#recibe#>-<#bancor#>','bancor');
 		$grid->column_orderby('Monto'        ,'<nformat><#monto#></nformat>' ,'monto','align=right');
 		$grid->column_orderby('Concepto'     ,'concepto','concepto');
+		$grid->column('Vista',$uri2,"align='center'");
 
 		$grid->add('finanzas/bcaj/agregar');
 		$grid->build();
@@ -55,6 +68,12 @@ class Bcaj extends Controller {
 		$data['title']   = '<h1>Movimientos de Caja</h1>';
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
+	}
+
+	function formato($numero){
+		$formato=$this->_formato($numero);
+		$url='formatos/verhtml/'.$formato.'/'.$numero;
+		redirect($url);
 	}
 
 	function dataedit(){
@@ -96,7 +115,6 @@ class Bcaj extends Controller {
 		$data['content'].= 'Esta opci&oacute;n se utiliza para depositar lo recaudado en efectivo desde 
 		                    las cajas para los bancos, debe tener a mano el n&uacute;mero del deposito.</p>';
 
-
 		$data['content'].= '</td></tr><tr><td><img src="'.base_url().'images/tarjetas.jpg'.'" height="100px"></td><td>';
 		$data['content'].= '<p>'.anchor('finanzas/bcaj/depositotar'  ,'Deposito de tarjetas: ');
 		$data['content'].= 'Para registrar lo recaudado mediante tarjetas electr&oacute;nicas (Cr&eacute;dito, Debito, Cesta Ticket) 
@@ -107,7 +125,6 @@ class Bcaj extends Controller {
 		$data['content'].= 'Puede hacer transferencias entre cajas o entre cuentas bancarias, las que correspondan a
 		                    cuentas bancarias pueden realizarce mediante cheque-deposito (manual) o NC-ND por transferencia 
 		                    electr&oacute;nica, en cualquier caso debe tener los n&uacute;meros de documentos correspondientes.</p>';
-		
 
 		$data['content'].= '</td></tr><tr><td><img src="'.base_url().'images/caja_activa.gif'.'" height="100px" ></td><td>';
 		$data['content'].= '<p>'.anchor('finanzas/bcaj/autotranfer','Transferencia de Cierre de Caja: ');
@@ -1604,11 +1621,7 @@ class Bcaj extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
-	function _imprimir($numero,$tipo){
-		//Deposito BANCAJA
-		//Transferencia entre cajas BTRANCJ
-		//Transferencia con ND BTRANND
-		//Transferencia con cheque BTRANCH
+	function _formato($numero){
 		$dbnumero=$this->db->escape($numero);
 		$mSQL  = "SELECT a.tipo,a.tipoe,a.tipor,TRIM(b.tbanco) AS envia, TRIM(c.tbanco) AS recibe FROM bcaj AS a JOIN banc AS b ON a.envia=b.codbanc JOIN banc AS c ON a.recibe=c.codbanc WHERE a.numero = $dbnumero";
 
@@ -1624,9 +1637,18 @@ class Bcaj extends Controller {
 			}elseif($row->recibe!='CAJ' && $row->envia!='CAJ' && $row->tipoe=='CH' && $row->tipor=='DE'){
 				$formato='BTRANCH';
 			}
-			return site_url('formatos/'.$tipo.'/'.$formato.'/'.$numero);
+			return $formato;
 		}
 		return '';
+	}
+
+	function _imprimir($numero,$tipo){
+		//Deposito BANCAJA
+		//Transferencia entre cajas BTRANCJ
+		//Transferencia con ND BTRANND
+		//Transferencia con cheque BTRANCH
+		$formato=$this->_formato($numero);
+		return (!empty($formato))? site_url('formatos/'.$tipo.'/'.$formato.'/'.$numero) : '';
 	}
 
 	function listo($error,$numero=null){
