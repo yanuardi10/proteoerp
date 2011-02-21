@@ -175,23 +175,23 @@ class DataFilter extends DataForm{
                 break;
             
                 case "where":{
-		    if(is_numeric($value)){
-			$value =1*$value;
-			$bool  =FALSE;
-		    }else{
-			$bool=TRUE;
-		    }
+					/*if(is_numeric($value)){
+						$value =1*$value;
+						$bool  =FALSE;
+					}else{
+						$bool=TRUE;
+					}*/
                     $this->db->where($name." ".$field->operator, $value);
                 }
                 break;
-                   
+
                 case "orwhere":{
-		    if(is_numeric($value)){
-			$value =1*$value;
-			$bool  =FALSE;
-		    }else{
-			$bool=TRUE;
-		    }
+					/*if(is_numeric($value)){
+						$value =1*$value;
+						$bool  =FALSE;
+					}else{
+						$bool=TRUE;
+					}*/
                     $this->db->orwhere($name." ".$field->operator, $value);
                 }
                 break;

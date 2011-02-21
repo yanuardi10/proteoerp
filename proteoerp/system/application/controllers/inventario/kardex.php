@@ -80,7 +80,7 @@ class Kardex extends Controller {
 		$filter->fechah->clause=$filter->fechad->clause=$filter->codigo->clause='where';
 		$filter->fechah->size=$filter->fechad->size=10;
 
-		$filter->buttons("reset","search");
+		$filter->buttons('reset','search');
 		$filter->build();
 
 		$data['content'] =  $filter->output;
@@ -104,21 +104,21 @@ class Kardex extends Controller {
 			$grid->db->join('caub b ','b.ubica=a.ubica','LEFT');
 			$grid->db->orderby('almacen, fecha, origen');
 			$grid->per_page = 20;
-			$grid->column("Fecha"        ,"<dbdate_to_human><#fecha#></dbdate_to_human>");
-			$grid->column("Or&iacute;gen","<convierte><#origen#>|$link</convierte>",'align=left' );
-			$grid->column("Cantidad"     ,"<nformat><#cantidad#></nformat>",'align=right');
-			$grid->column("Acumulado"    ,"<nformat><#salcant#></nformat>" ,'align=right');
-			$grid->column("Monto"        ,"<nformat><#monto#></nformat>"   ,'align=right');
-			$grid->column("Saldo"        ,"<nformat><#saldo#></nformat>"   ,'align=right');
-			$grid->column("Costo Prom."  ,"<nformat><#promedio#></nformat>",'align=right');
-			$grid->column("Ventas"       ,"<nformat><#venta#></nformat>"   ,'align=right');
-			$grid->column("Precio Prom." ,"<nformat><#vpromedio#></nformat>",'align=right');
+			$grid->column('Fecha'        ,'<dbdate_to_human><#fecha#></dbdate_to_human>');
+			$grid->column('Or&iacute;gen','<convierte><#origen#>|$link</convierte>','align=left' );
+			$grid->column('Cantidad'     ,'<nformat><#cantidad#></nformat>' ,'align=right');
+			$grid->column('Acumulado'    ,'<nformat><#salcant#></nformat>'  ,'align=right');
+			$grid->column('Monto'        ,'<nformat><#monto#></nformat>'    ,'align=right');
+			$grid->column('Saldo'        ,'<nformat><#saldo#></nformat>'    ,'align=right');
+			$grid->column('Costo Prom.'  ,'<nformat><#promedio#></nformat>' ,'align=right');
+			$grid->column('Ventas'       ,'<nformat><#venta#></nformat>'    ,'align=right');
+			$grid->column('Precio Prom.' ,'<nformat><#vpromedio#></nformat>','align=right');
 			$grid->build();
 			$data['content'] .= $grid->output;
 			//echo $grid->db->last_query();
 		}
 		$data['forma'] ='';
-		
+
 		$data['title'] = heading('Kardex de Inventario');
 		$data['head']  = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
@@ -190,11 +190,11 @@ class Kardex extends Controller {
 			$link=anchor('/inventario/stra/dataedit/show/'.implode('/',$ppk),'<#numero#>');
 			$grid->title('Tranferencias');
 			$grid->column("N&uacute;mero",$link);
-			$grid->column("Env&iacute;a"      ,"envia" );
-			$grid->column("Recibe"            ,"recibe");
-			$grid->column("Cantidad"          ,"<nformat><#cantidad#></nformat>",'align=right');
-			$grid->column("Fecha"             ,"<dbdate_to_human><#fecha#></dbdate_to_human>",'align=center');
-			$grid->column("Observaci&oacute;n","observ1");
+			$grid->column("Env&iacute;a"      ,'envia' );
+			$grid->column("Recibe"            ,'recibe');
+			$grid->column("Cantidad"          ,'<nformat><#cantidad#></nformat>','align=\'right\'');
+			$grid->column("Fecha"             ,'<dbdate_to_human><#fecha#></dbdate_to_human>','align=\'center\'');
+			$grid->column("Observaci&oacute;n",'observ1');
 			//$grid->column("Costo"             ,"<nformat><#costo#></nformat>",'align=right');
 			$grid->db->select(array('a.numero','b.envia','b.recibe','a.cantidad','b.fecha','b.observ1','a.costo'));
 			$grid->db->from('itstra a');

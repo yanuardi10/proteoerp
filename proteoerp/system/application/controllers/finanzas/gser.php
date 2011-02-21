@@ -357,6 +357,110 @@ class gser extends Controller {
 		}
 	}
 
+	//Convierte los gastos en caja chica
+	function gserchipros(){
+		$this->rapyd->load('dataform');
+		$form = new DataForm('gser/gserchipros/process');
+
+		$form->codbanc = new inputField('C&oacute;digo de la caja', 'codbanc');
+		$form->codbanc->size=5;
+
+		/*$form->codbanc = new dropdownField('C&oacute;digo de la caja','codbanc');
+		$form->codbanc->option('','Seleccionar');
+		$form->codbanc->options("SELECT codbanc, CONCAT_WS('-',codbanc,banco) AS label FROM banc WHERE tbanco='CAJ' ORDER BY codbanc");
+		$form->codbanc->rule='max_length[5]|required';*/
+
+		$form->codprv = new inputField('Proveedor', 'codprv');
+		$form->codprv->size=5;
+		$form->nombre = new inputField('Nombre', 'nombre');
+		$form->nombre->in = 'codprv';
+
+		$form->submit('btnsubmit','Procesar');
+		$form->build_form();
+
+
+		if($form->on_success()){
+			$numero=('ngser');
+			$mSQL='SELECT codbanc,fechafac,numfac,nfiscal,rif,proveedor,codigo,descrip,
+			  moneda,montasa,tasa,monredu,reducida,monadic,sobretasa,exento,importe,sucursal,departa,usuario,estampa,hora
+			FROM gserchi';
+
+			$query = $this->db->query($mSQL);
+			if ($query->num_rows() > 0){
+				foreach ($query->result() as $row){
+					echo $row->title;
+				}
+
+				$data['fecha']      =date('Y-m-d');
+				$data['numero']     =$numero;
+				$data['proveed']    ='';//preguntar
+				$data['nombre']     ='';
+				$data['vence']      =date('Y-m-d');
+				$data['totpre']     ='';
+				$data['totiva']     ='';
+				$data['totbruto']   ='';
+				$data['reten']      =0;
+				$data['totneto']    ='';//totneto=totbruto-reten
+				$data['codb1']      ='';
+				$data['tipo1']      ='';
+				$data['cheque1']    ='';
+				$data['comprob1']   ='';
+				$data['monto1']     ='';
+				$data['codb2']      ='';
+				$data['tipo2']      ='';
+				$data['cheque2']    ='';
+				$data['comprob2']   ='';
+				$data['monto2']     ='';
+				$data['codb3']      ='';
+				$data['tipo3']      ='';
+				$data['cheque3']    ='';
+				$data['comprob3']   ='';
+				$data['monto3']     ='';
+				$data['credito']    ='';
+				$data['tipo_doc']   ='';
+				$data['orden']      ='';
+				$data['anticipo']   ='';
+				$data['benefi']     ='';
+				$data['mdolar']     ='';
+				$data['usuario']    ='';
+				$data['estampa']    ='';
+				$data['hora']       ='';
+				$data['transac']    ='';
+				$data['preten']     ='';
+				$data['creten']     ='';
+				$data['breten']     ='';
+				$data['huerfano']   ='';
+				$data['reteiva']    ='';
+				$data['nfiscal']    ='';
+				$data['afecta']     ='';
+				$data['fafecta']    ='';
+				$data['ffactura']   ='';
+				$data['cajachi']    ='';
+				$data['montasa']    ='';
+				$data['monredu']    ='';
+				$data['monadic']    ='';
+				$data['tasa']       ='';
+				$data['reducida']   ='';
+				$data['sobretasa']  ='';
+				$data['exento']     ='';
+				$data['compra']     ='';
+				$data['serie']      ='';
+				$data['reteica']    ='';
+				$data['retesimple'] ='';
+				$data['negreso']    ='';
+				$data['ncausado']   ='';
+				$data['id']         ='';
+				$data['tipo_or']    ='';
+			}
+		}
+
+		$data['content'] = $form->output;
+		$data['title']   = heading('Agregar/Modificar Gasto de caja chica');
+		$data['head']    = $this->rapyd->get_head();
+		$data['head']   .= phpscript('nformat.js');
+		$this->load->view('view_ventanas', $data);
+	}
+
 	function ajaxsprv(){
 		$rif=$this->input->post('rif');
 		if($rif!==false){
@@ -680,7 +784,7 @@ class gser extends Controller {
 
 		$conten['form']  =&$edit;
 		$data['content'] = $this->load->view('view_gser', $conten,true);
-		$data['title']   = "<h1>Gastos</h1>";
+		$data['title']   = heading('Gastos');
 		$data['head']    = script('jquery.js').script('jquery-ui.js').script("plugins/jquery.numeric.pack.js").script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css').$this->rapyd->get_head().phpscript('nformat.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js');
 		$this->load->view('view_ventanas', $data);
 	}
