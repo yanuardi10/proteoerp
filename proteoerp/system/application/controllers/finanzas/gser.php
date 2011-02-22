@@ -361,7 +361,7 @@ class gser extends Controller {
 	function gserchipros(){
 		$this->rapyd->load('dataform');
 
-		$banc=array(
+		/*$banc=array(
 			'tabla'   => 'banc',
 			'columnas'=> array(
 				'codbanc' =>'C&oacute;digo',
@@ -374,53 +374,95 @@ class gser extends Controller {
 			'where'   => 'tbanco = "CAJ"',
 			'join'    => array('sprv','sprv.proveed=banc.codprv','LEFT'),
 			);
-		$modbus=$this->datasis->modbus($banc);
+		$modbus=$this->datasis->modbus($banc);*/
 
+		$modbus=array(
+			'tabla'   =>'sprv',
+			'columnas'=>array(
+				'proveed' =>'C&oacute;digo Proveedor',
+				'nombre'  =>'Nombre',
+				'rif'     =>'RIF'),
+			'filtro'  =>array('proveed'=>'C&oacute;digo Proveedor','nombre'=>'Nombre'),
+			'retornar'=>array('proveed'=>'codprv','nombre'=>'nombre'),
+			'titulo'  =>'Buscar Proveedor'
+		);
+		$bsprv=$this->datasis->modbus($modbus);
 
 		$form = new DataForm('gser/gserchipros/process');
 
-		$form->codbanc = new inputField('C&oacute;digo de la caja', 'codbanc');
+		/*$form->codbanc = new inputField('C&oacute;digo de la caja', 'codbanc');
 		$form->codbanc->size=5;
-		$form->codbanc->append($modbus);
+		$form->codbanc->append($modbus);*/
 
-		/*$form->codbanc = new dropdownField('C&oacute;digo de la caja','codbanc');
+		$form->codbanc = new dropdownField('C&oacute;digo de la caja','codbanc');
 		$form->codbanc->option('','Seleccionar');
 		$form->codbanc->options("SELECT codbanc, CONCAT_WS('-',codbanc,banco) AS label FROM banc WHERE tbanco='CAJ' ORDER BY codbanc");
-		$form->codbanc->rule='max_length[5]|required';*/
+		$form->codbanc->rule='max_length[5]|required';
 
 		$form->codprv = new inputField('Proveedor', 'codprv');
+		$form->codprv->rule='required';
 		$form->codprv->size=5;
+		$form->codprv->append($bsprv);
+
 		$form->nombre = new inputField('Nombre', 'nombre');
+		$form->nombre->rule='required';
 		$form->nombre->in = 'codprv';
 
 		$form->submit('btnsubmit','Procesar');
 		$form->build_form();
 
-
 		if($form->on_success()){
-			$numero=('ngser');
+			$codbanc=$form->codbanc->newValue;
+			$codprv =$form->codprv->newValue;
+			$nombre =$form->nombre->newValue;
+
+		}
+
+		$data['content'] = $form->output;
+		$data['title']   = heading('Agregar/Modificar Gasto de caja chica');
+		$data['head']    = $this->rapyd->get_head();
+		$data['head']   .= phpscript('nformat.js');
+		$this->load->view('view_ventanas', $data);
+	}
+
+	function _gserchipros($codbanc,$codprv){
+			$transac  = $this->datasis->fprox_numero('ntransa');
+			$numero   = $this->datasis->fprox_numero('ngser');
+			$dbcodprv = $this->db->escape($codprv);
+			$nombre   = $this->datasis->dameval('SELECT nombre FROM sprv WHERE proveed='.$dbcodprv);
+
 			$mSQL='SELECT codbanc,fechafac,numfac,nfiscal,rif,proveedor,codigo,descrip,
 			  moneda,montasa,tasa,monredu,reducida,monadic,sobretasa,exento,importe,sucursal,departa,usuario,estampa,hora
-			FROM gserchi';
+			FROM gserchi WHERE ngasto IS NULL AND codbanc';
 
 			$query = $this->db->query($mSQL);
 			if ($query->num_rows() > 0){
+				$montasa=$monredu=$monadic=$tasa=$reducida=$sobretasa=$exento=$totpre=$totiva=0;
 				foreach ($query->result() as $row){
-					echo $row->title;
+					$montasa  +=$row->montasa  ;
+					$monredu  +=$row->monredu  ;
+					$monadic  +=$row->monadic  ;
+					$tasa     +=$row->tasa     ;
+					$reducida +=$row->reducida ;
+					$sobretasa+=$row->sobretasa;
+					$exento   +=$row->exento   ;
 				}
+				$totpre = $montasa+$monredu+$monadic+$exento;
+				$totiva = $tasa+$reducida+$sobretasa;
+				$totneto= $totpre+$totiva;
 
 				$data['fecha']      =date('Y-m-d');
 				$data['numero']     =$numero;
-				$data['proveed']    ='';//preguntar
-				$data['nombre']     ='';
+				$data['proveed']    =$codprv;//preguntar
+				$data['nombre']     =$nombre;
 				$data['vence']      =date('Y-m-d');
-				$data['totpre']     ='';
-				$data['totiva']     ='';
-				$data['totbruto']   ='';
+				$data['totpre']     =$totpre;
+				$data['totiva']     =$totiva;
+				$data['totbruto']   =$totneto;
 				$data['reten']      =0;
-				$data['totneto']    ='';//totneto=totbruto-reten
-				$data['codb1']      ='';
-				$data['tipo1']      ='';
+				$data['totneto']    =$totneto;//totneto=totbruto-reten
+				$data['codb1']      =$codbanc;
+				$data['tipo1']      ='ND';
 				$data['cheque1']    ='';
 				$data['comprob1']   ='';
 				$data['monto1']     ='';
@@ -470,13 +512,6 @@ class gser extends Controller {
 				$data['id']         ='';
 				$data['tipo_or']    ='';
 			}
-		}
-
-		$data['content'] = $form->output;
-		$data['title']   = heading('Agregar/Modificar Gasto de caja chica');
-		$data['head']    = $this->rapyd->get_head();
-		$data['head']   .= phpscript('nformat.js');
-		$this->load->view('view_ventanas', $data);
 	}
 
 	function ajaxsprv(){
@@ -1318,5 +1353,7 @@ class gser extends Controller {
 		) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC";
 		var_dump($this->db->simple_query($query));
 
+		$mSQL="ALTER TABLE `gserchi` ADD COLUMN `ngasto` VARCHAR(8) NULL DEFAULT NULL AFTER `departa`";
+		var_dump($this->db->simple_query($query));
 	}
 }

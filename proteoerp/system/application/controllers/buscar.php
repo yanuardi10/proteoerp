@@ -24,18 +24,17 @@ class Buscar extends Controller
 	//Parametros para agupar
 	var $groupby='';
 
-
 	function Buscar(){
 		parent::Controller();
-		$this->load->library("rapyd");
+		$this->load->library('rapyd');
 	}
-	
+
 	function index(){
-		$this->rapyd->load("datafilter2","datagrid");
+		$this->rapyd->load('datafilter2','datagrid');
 		$this->_db2prop();
-		
+
 		$join=false;
-		//extrae las varibles provenientes de las uris	
+		//extrae las varibles provenientes de las uris
 		if ($this->p_uri){
 			$uris=array();
 			foreach($this->p_uri as $segment=>$nombre){
@@ -43,68 +42,67 @@ class Buscar extends Controller
 				//if($valor==false){
 				//	echo 'entre';
 				//	$this->p_uri=false;
-				//	break;	
+				//	break;
 				//}
 				$uris[$nombre]=$valor;
 			}
 		}
-		
+
 		//Filtro
 		$codigo=$this->filtro;
 		$mSQL="SHOW FIELDS FROM $this->tabla WHERE Field IN ('".implode('\',\'',array_keys($this->filtro)).'\')';
-		//echo $mSQL;
 		$query = $this->db->query($mSQL);
-		
+
 		$prev= array_merge(array_keys($this->columnas), array_keys($this->retornar));
-		$prev= array_unique($prev);     
+		$prev= array_unique($prev);
 		foreach($prev AS $ddata){
 				$ddata=$this->tabla.'.'.$ddata;
 				$select[]=$ddata;
 		}
 
-		$filter = new DataFilter2("Parametros de B&uacute;squeda");
-		
+		$filter = new DataFilter2('Parametros de B&uacute;squeda');
+
 		$filter->db->select($select);
 		$filter->db->from($this->tabla);
-		
+
 		if (!empty($this->groupby)) $filter->db->groupby($this->tabla.'.'.$this->groupby);
 		if (count($this->join)==3){  
 			$join=true;
 			$filter->db->join($this->join[0],$this->join[1],$this->join[2]);
 		}
-			
+
 		foreach ($query->result() as $fila){
 			$campo=$fila->Field;
 			$titulo=$this->filtro[$campo];
 			if(strncasecmp ($fila->Type,'date', 4)==0){
 				if(is_array ($titulo)){
-					$filter->$campo = new dateField($titulo[0],$campo,"Y/m/d");
-					$filter->$campo->clause="where";
-					$filter->$campo->operator=">=";
+					$filter->$campo = new dateField($titulo[0],$campo,'Y/m/d');
+					$filter->$campo->clause='where';
+					$filter->$campo->operator='>=';
 					$campo2=$campo.'2';
-					$filter->$campo2 = new dateField($titulo[1],$campo2,"Y/m/d");
+					$filter->$campo2 = new dateField($titulo[1],$campo2,'Y/m/d');
 					$filter->$campo2->db_name=$this->tabla.'.'.$campo;
-					$filter->$campo2->clause="where";
-					$filter->$campo2->operator="<=";
+					$filter->$campo2->clause='where';
+					$filter->$campo2->operator='<=';
 				}else{
-					$filter->$campo = new dateField($titulo,$campo,"Y/m/d");
-					$filter->$campo->clause="where";
-					$filter->$campo->operator="=";
+					$filter->$campo = new dateField($titulo,$campo,'Y/m/d');
+					$filter->$campo->clause='where';
+					$filter->$campo->operator='=';
 				}
 			}else{
 				if(is_array ($titulo)){
 					$filter->$campo = new inputField($titulo[0],$campo);
-					$filter->$campo->clause="where";
-					$filter->$campo->operator=">=";
+					$filter->$campo->clause='where';
+					$filter->$campo->operator='>=';
 					$campo2=$campo.'2';
 					$filter->$campo2 = new inputField($titulo[1],$campo2);
 					$filter->$campo2->db_name=$this->tabla.'.'.$campo;
 					$filter->$campo2->db_name=$campo;
-					$filter->$campo2->clause="where";
-					$filter->$campo2->operator="<=";
-				}else{ //
+					$filter->$campo2->clause='where';
+					$filter->$campo2->operator='<=';
+				}else{
 					$nobj=$campo.'_CDROPDOWN';
-					$filter->$nobj = new dropdownField($titulo, "$nobj");
+					$filter->$nobj = new dropdownField($titulo, $nobj);
 					$filter->$nobj->clause='';
 					$filter->$nobj->style='width:120px';
 					$filter->$nobj->option('both'  ,'Contiene');
@@ -120,7 +118,7 @@ class Buscar extends Controller
 			}
 			$filter->$campo->db_name=$this->tabla.'.'.$campo;
 		}
-		
+
 		if (!empty($this->where)) {
 			if(isset($uris)){
 				$valores=array_values($uris);
@@ -132,9 +130,9 @@ class Buscar extends Controller
 			}
 			$filter->db->where($where);
 		};
-		$filter->buttons("reset","search");
+		$filter->buttons('reset','search');
 		$filter->build();
-	
+
 		//Tabla
 		function j_escape($parr){
 			$search[] = '\''; $replace[] = '\'+String.fromCharCode(39)+\'';
@@ -145,7 +143,7 @@ class Buscar extends Controller
 			$pattern = str_replace($search, $replace, $parr);
 			return '\''.$pattern.'\'';
 		}
-		
+
 		$link='<j_escape><#'.implode("#></j_escape>,<j_escape><#",array_keys($this->retornar)).'#></j_escape>';
 		//$link='\'<#'.implode("#>','<#",array_keys($this->retornar)).'#>\'';
 		$link = "javascript:pasar($link);";
@@ -175,7 +173,7 @@ class Buscar extends Controller
 			$pjs2.="window.opener.document.getElementById('$id').value = p$i;\n";
 			$i++;
 		}
-		
+
 		$jscript ="<SCRIPT LANGUAGE=\"JavaScript\">\n";
 		$jscript.="function pasar($pjs1) {\n";
 		$jscript.=" if (window.opener && !window.opener.closed){\n";
@@ -186,23 +184,24 @@ class Buscar extends Controller
 			$jscript.=" window.opener.$funcion;\n";
 		}
 		$jscript.="}\n}\n</SCRIPT>";
-		
+
 		//echo $grid->db->last_query();
-		$data["crud"]   = $filter->output . $grid->output;
-		$data["titulo"] = '';
+		$data['crud']   = $filter->output . $grid->output;
+		$data['titulo'] = '';
 		$data['encab']=$this->titulo;
-		$content["content"]   = $this->load->view('rapyd/crud', $data, true);
-		$content["rapyd_head"]= $jscript.$this->rapyd->get_head();
-		$content["code"]  = '';
+		$content['content']   = $this->load->view('rapyd/crud', $data, true);
+		$content['rapyd_head']= $jscript.$this->rapyd->get_head();
+		$content['code']  = '';
 		//$content["titulo"]=$this->titulo;
-		$content["lista"] = "";
-		
+		$content['lista'] = "";
+
 		$this->load->view('rapyd/modbus', $content);
-	
+
 		//echo $filter->db->last_query();
 	}
+
 	function _sess2prop(){
-		$id = $this->uri->segment(3);	
+		$id = $this->uri->segment(3);
 		$arreglo=$this->session->flashdata('modbus');
 		//echo '<pre>';print_r($this->session->userdata);echo '</pre>';
 		//echo 'ARREGLO <pre>';print_r($arreglo);echo '</pre>';
@@ -218,9 +217,9 @@ class Buscar extends Controller
 		$this->columnas=$modbus['columnas'];
 		$this->filtro  =$modbus['filtro'];
 		$this->retornar=$modbus['retornar'];
-	  $this->titulo  =$modbus['titulo'];
-	}	
-	
+		$this->titulo  =$modbus['titulo'];
+	}
+
 	function _db2prop(){
 		$id = $this->uri->segment(3);
 		$query = $this->db->query("SELECT parametros FROM modbus WHERE id='$id'");
@@ -232,15 +231,16 @@ class Buscar extends Controller
 			$this->columnas=$modbus['columnas'];
 			$this->filtro  =$modbus['filtro'];
 			$this->retornar=$modbus['retornar'];
-	  	$this->titulo  =$modbus['titulo'];
-	  	if (isset($modbus['p_uri']))   $this->p_uri  =$modbus['p_uri'];
-	  	if (isset($modbus['where']))   $this->where  =$modbus['where'];
-	  	if (isset($modbus['script']))  $this->script =$modbus['script'];
-	  	if (isset($modbus['join']))    $this->join   =$modbus['join'];
-	  	if (isset($modbus['groupby'])) $this->groupby =$modbus['groupby'];
+			$this->titulo  =$modbus['titulo'];
+			if (isset($modbus['p_uri']))   $this->p_uri  =$modbus['p_uri'];
+			if (isset($modbus['where']))   $this->where  =$modbus['where'];
+			if (isset($modbus['script']))  $this->script =$modbus['script'];
+			if (isset($modbus['join']))    $this->join   =$modbus['join'];
+			if (isset($modbus['groupby'])) $this->groupby =$modbus['groupby'];
 		}
 		//echo '<pre>';print_r($this->session->userdata);echo '</pre>';
 	}
+
 	function instalar(){
 		$mSQL="CREATE TABLE IF NOT EXISTS `modbus` (
 		  `id` int(10) unsigned NOT NULL auto_increment,
@@ -253,4 +253,3 @@ class Buscar extends Controller
 		$this->db->simple_query($mSQL);
 	}
 }
-?>

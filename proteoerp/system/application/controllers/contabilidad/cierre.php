@@ -42,10 +42,11 @@ class Cierre extends Controller {
 				generar();
 				return false;
 			});
+			$('#preloader').hide();
 		});
 		</script>";
 
-		$data['extras']="<div id='preloader' style='display: none;	position:absolute; left:40%; top:40%; font-family:Verdana, Arial, Helvetica, sans-serif;'>
+		$data['extras']="<div id='preloader' style='position:absolute; left:40%; top:40%; font-family:Verdana, Arial, Helvetica, sans-serif;'>
 			<center>".image("loading4.gif")."<br>".image("loadingBarra.gif")."<br>
 			<b>Generando . . . </b>
 			</center>
@@ -101,19 +102,18 @@ class Cierre extends Controller {
 			echo "Hubo algunos errores, favor comunicarse con servicio tecnico";
 		else
 			echo "Cierre realizado $comprob";
-  }
+		}
 
-        function instalar(){
-                $mSQL="CREATE TABLE IF NOT EXISTS `cplacierre` (
-                  `id` int(20) unsigned NOT NULL AUTO_INCREMENT,
-                  `anno` int(10) DEFAULT NULL,
-                  `cuenta` varchar(250) DEFAULT NULL,
-                  `descrip` varchar(250) DEFAULT NULL,
-                  `monto` decimal(15,2) DEFAULT NULL,
-                  PRIMARY KEY (`id`),
-                  UNIQUE KEY `ac` (`anno`,`cuenta`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Cierres contables'"
-                $this->db->simple_query($mSQL);
-        }
+		function instalar(){
+			$mSQL="CREATE TABLE IF NOT EXISTS `cplacierre` (
+			  `id` int(20) unsigned NOT NULL AUTO_INCREMENT,
+			  `anno` int(10) DEFAULT NULL,
+			  `cuenta` varchar(250) DEFAULT NULL,
+			  `descrip` varchar(250) DEFAULT NULL,
+			  `monto` decimal(15,2) DEFAULT NULL,
+			  PRIMARY KEY (`id`),
+			  UNIQUE KEY `ac` (`anno`,`cuenta`)
+			) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Cierres contables'"
+			$this->db->simple_query($mSQL);
+		}
 }
-?>
