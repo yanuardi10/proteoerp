@@ -388,7 +388,7 @@ class gser extends Controller {
 		);
 		$bsprv=$this->datasis->modbus($modbus);
 
-		$form = new DataForm('gser/gserchipros/process');
+		$form = new DataForm('finanzas/gser/gserchipros/process');
 
 		/*$form->codbanc = new inputField('C&oacute;digo de la caja', 'codbanc');
 		$form->codbanc->size=5;
@@ -408,14 +408,30 @@ class gser extends Controller {
 		$form->nombre->rule='required';
 		$form->nombre->in = 'codprv';
 
+		$form->cheque = new inputField('N&uacute;mero de cheque', 'cheque');
+		$form->cheque->rule='condi_required';
+		$form->cheque->append('Aplica  solo si la caja es un banco');
+
+		$form->benefi = new inputField('Beneficiario', 'benefi');
+		$form->benefi->rule='condi_required';
+		$form->benefi->append('Aplica  solo si la caja es un banco');
+
 		$form->submit('btnsubmit','Procesar');
 		$form->build_form();
 
 		if($form->on_success()){
-			$codbanc=$form->codbanc->newValue;
-			$codprv =$form->codprv->newValue;
-			$nombre =$form->nombre->newValue;
+			$codbanc = $form->codbanc->newValue;
+			$codprv  = $form->codprv->newValue;
+			$nombre  = $form->nombre->newValue;
+			$benefi  = $form->benefi->newValue;
+			$cheque  = $form->cheque->newValue;
 
+			$rt=$this->_gserchipros($codbanc,$codprv,$benefi,$cheque);
+			if($rt){
+				redirect('finanzas/gser/listo/n');
+			}else{
+				redirect('finanzas/gser/listo/s');
+			}
 		}
 
 		$data['content'] = $form->output;
@@ -425,11 +441,17 @@ class gser extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
-	function _gserchipros($codbanc,$codprv){
-			$transac  = $this->datasis->fprox_numero('ntransa');
-			$numero   = $this->datasis->fprox_numero('ngser');
+	function _gserchipros($codbanc,$codprv,$benefi,$numeroch=null){
 			$dbcodprv = $this->db->escape($codprv);
 			$nombre   = $this->datasis->dameval('SELECT nombre FROM sprv WHERE proveed='.$dbcodprv);
+			$fecha    = date('Y-m-d');
+			$sp_fecha = str_replace('-','',$fecha);
+			$error    = 0;
+
+			$sql  = 'SELECT tbanco FROM banc WHERE codbanc='.$this->db->escape($codbanc);
+			$tipo = $this->datasis->dameval($sql);
+
+			$cheque = ($tipo=='CAJ')? $this->datasis->banprox($codbanc): $numeroch ;
 
 			$mSQL='SELECT codbanc,fechafac,numfac,nfiscal,rif,proveedor,codigo,descrip,
 			  moneda,montasa,tasa,monredu,reducida,monadic,sobretasa,exento,importe,sucursal,departa,usuario,estampa,hora
@@ -437,8 +459,55 @@ class gser extends Controller {
 
 			$query = $this->db->query($mSQL);
 			if ($query->num_rows() > 0){
+				$transac  = $this->datasis->fprox_numero('ntransa');
+				$numero   = $this->datasis->fprox_numero('ngser');
+				$negreso  = $this->datasis->fprox_numero('negreso');
+
 				$montasa=$monredu=$monadic=$tasa=$reducida=$sobretasa=$exento=$totpre=$totiva=0;
 				foreach ($query->result() as $row){
+
+					$data = array();
+					$data['fecha']      = $fecha;
+					$data['numero']     = $numero;
+					$data['proveed']    = $codprv;
+					$data['codigo']     = $row->codigo;
+					$data['descrip']    = $row->descrip;
+					$data['precio']     = $row->montasa+$row->monredu+$row->monadic+$row->exento;
+					$data['iva']        = $row->tasa+$row->reducida+$row->sobretasa;
+					$data['importe']    = $data['precio']+$data['iva'];
+					$data['unidades']   = 1;
+					$data['fraccion']   = 0;
+					$data['almacen']    = '';
+					$data['sucursal']   = $row->sucursal;
+					$data['departa']    = $row->departa ;
+					$data['transac']    = $transac;
+					$data['usuario']    = $this->session->userdata('usuario');
+					$data['estampa']    = date('Y-m-d');
+					$data['hora']       = date('H:i:s');
+					$data['huerfano']   = '';
+					$data['rif']        = $row->rif      ;
+					$data['proveedor']  = $row->proveedor;
+					$data['numfac']     = $row->numfac   ;
+					$data['fechafac']   = $row->fechafac ;
+					$data['nfiscal']    = $row->nfiscal  ;
+					$data['feprox']     = '';
+					$data['dacum']      = '';
+					$data['residual']   = '';
+					$data['vidau']      = '';
+					$data['montasa']    = $row->montasa  ;
+					$data['monredu']    = $row->monredu  ;
+					$data['monadic']    = $row->monadic  ;
+					$data['tasa']       = $row->tasa     ;
+					$data['reducida']   = $row->reducida ;
+					$data['sobretasa']  = $row->sobretasa;
+					$data['exento']     = $row->exento   ;
+					$data['reteica']    = 0;
+					//$data['idgser']     = '';
+
+					$sql=$this->db->insert_string('gitser', $data);
+					$ban=$this->db->simple_query($sql);
+					if($ban==false){ memowrite($sql,'bcaj'); $error++;}
+
 					$montasa  +=$row->montasa  ;
 					$monredu  +=$row->monredu  ;
 					$monadic  +=$row->monadic  ;
@@ -451,67 +520,76 @@ class gser extends Controller {
 				$totiva = $tasa+$reducida+$sobretasa;
 				$totneto= $totpre+$totiva;
 
-				$data['fecha']      =date('Y-m-d');
-				$data['numero']     =$numero;
-				$data['proveed']    =$codprv;//preguntar
-				$data['nombre']     =$nombre;
-				$data['vence']      =date('Y-m-d');
-				$data['totpre']     =$totpre;
-				$data['totiva']     =$totiva;
-				$data['totbruto']   =$totneto;
-				$data['reten']      =0;
-				$data['totneto']    =$totneto;//totneto=totbruto-reten
-				$data['codb1']      =$codbanc;
-				$data['tipo1']      ='ND';
-				$data['cheque1']    ='';
-				$data['comprob1']   ='';
-				$data['monto1']     ='';
-				$data['codb2']      ='';
-				$data['tipo2']      ='';
-				$data['cheque2']    ='';
-				$data['comprob2']   ='';
-				$data['monto2']     ='';
-				$data['codb3']      ='';
-				$data['tipo3']      ='';
-				$data['cheque3']    ='';
-				$data['comprob3']   ='';
-				$data['monto3']     ='';
-				$data['credito']    ='';
-				$data['tipo_doc']   ='';
-				$data['orden']      ='';
-				$data['anticipo']   ='';
-				$data['benefi']     ='';
-				$data['mdolar']     ='';
-				$data['usuario']    ='';
-				$data['estampa']    ='';
-				$data['hora']       ='';
-				$data['transac']    ='';
-				$data['preten']     ='';
-				$data['creten']     ='';
-				$data['breten']     ='';
-				$data['huerfano']   ='';
-				$data['reteiva']    ='';
-				$data['nfiscal']    ='';
-				$data['afecta']     ='';
-				$data['fafecta']    ='';
-				$data['ffactura']   ='';
-				$data['cajachi']    ='';
-				$data['montasa']    ='';
-				$data['monredu']    ='';
-				$data['monadic']    ='';
-				$data['tasa']       ='';
-				$data['reducida']   ='';
-				$data['sobretasa']  ='';
-				$data['exento']     ='';
-				$data['compra']     ='';
-				$data['serie']      ='';
-				$data['reteica']    ='';
-				$data['retesimple'] ='';
-				$data['negreso']    ='';
-				$data['ncausado']   ='';
-				$data['id']         ='';
-				$data['tipo_or']    ='';
+				$data = array();
+				$data['fecha']      = $fecha;
+				$data['numero']     = $numero;
+				$data['proveed']    = $codprv;
+				$data['nombre']     = $nombre;
+				$data['vence']      = $fecha;
+				$data['totpre']     = $totpre;
+				$data['totiva']     = $totiva;
+				$data['totbruto']   = $totneto;
+				$data['reten']      = 0;
+				$data['totneto']    = $totneto;//totneto=totbruto-reten
+				$data['codb1']      = $codbanc;
+				$data['tipo1']      = 'ND';
+				$data['cheque1']    = $cheque;
+				$data['comprob1']   = '';
+				$data['monto1']     = '';
+				$data['codb2']      = '';
+				$data['tipo2']      = '';
+				$data['cheque2']    = '';
+				$data['comprob2']   = '';
+				$data['monto2']     = '';
+				$data['codb3']      = '';
+				$data['tipo3']      = '';
+				$data['cheque3']    = '';
+				$data['comprob3']   = '';
+				$data['monto3']     = '';
+				$data['credito']    = 0;
+				$data['tipo_doc']   = 'FC';
+				$data['orden']      = '';
+				$data['anticipo']   = 0;
+				$data['benefi']     = $benefi;
+				$data['mdolar']     = '';
+				$data['usuario']    = $this->session->userdata('usuario');
+				$data['estampa']    = date('Y-m-d');
+				$data['hora']       = date('H:i:s');
+				$data['transac']    = $transac;
+				$data['preten']     = '';
+				$data['creten']     = '';
+				$data['breten']     = '';
+				$data['huerfano']   = '';
+				$data['reteiva']    = 0;
+				$data['nfiscal']    = '';
+				$data['afecta']     = '';
+				$data['fafecta']    = '';
+				$data['ffactura']   = '';
+				$data['cajachi']    = 'S';
+				$data['montasa']    = $montasa;
+				$data['monredu']    = $monredu;
+				$data['monadic']    = $monadic;
+				$data['tasa']       = $tasa;
+				$data['reducida']   = $reducida;
+				$data['sobretasa']  = $sobretasa;
+				$data['exento']     = $exento;
+				$data['compra']     = '';
+				$data['serie']      = '';
+				$data['reteica']    = '';
+				$data['retesimple'] = 3;
+				$data['negreso']    = $negreso;
+				$data['ncausado']   = '';
+				$data['tipo_or']    = '';
+
+				$sql=$this->db->insert_string('gser', $data);
+				$ban=$this->db->simple_query($sql);
+				if($ban==false){ memowrite($sql,'bcaj'); $error++;}
+
+				$mSQL='CALL sp_actusal('.$this->db->escape($codbanc).",'$sp_fecha',-$totneto)";
+				$ban=$this->db->simple_query($mSQL); 
+				if($ban==false){ memowrite($mSQL,'bcaj'); $error++; }
 			}
+		return ($error==0)? true : false;
 	}
 
 	function ajaxsprv(){
@@ -523,6 +601,26 @@ class gser extends Controller {
 				$nombre=$this->datasis->dameval("SELECT nombre FROM sprv WHERE rif=$dbrif");
 			echo $nombre;
 		}
+	}
+
+	function listo($error,$numero=null){
+		if($error=='n'){
+			$data['content'] = 'Transacci&oacute;n completada ';
+			if(!empty($numero)){
+				$url='formatos/verhtml/';
+
+				$data['content'] .= ', puede <a href="#" onclick="fordi.print();">imprimirla</a>';
+				$data['content'] .= ' o '.anchor('finanzas/gser/index','Regresar');
+				$data['content'] .= "<iframe name='fordi' src ='$url' width='100%' height='450'><p>Tu navegador no soporta iframes.</p></iframe>";
+			}else{
+				$data['content'] .= anchor('finanzas/gser/index','Regresar');
+			}
+		}else{
+			$data['content'] = 'Lo siento pero hubo alg&uacute;n error en la transacci&oacute;n, se genero un centinela '.anchor('finanzas/gser/index','Regresar');
+		}
+		$data['title']   = heading('Transferencias entre cajas');
+		$data['head']    = $this->rapyd->get_head();
+		$this->load->view('view_ventanas', $data);
 	}
 
 	function dataedit(){
