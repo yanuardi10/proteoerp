@@ -40,17 +40,17 @@ class Libros extends Controller {
 		$gene = new DataGrid("Documento para el mes $smes del a&ntilde;o $sanio",$genera);
 		$gene->use_function('obser');
 		$gene->per_page = count($genera);
-		$gene->column("Generar"  ,$checkbox);
-		$gene->column("Documento","nombre");
-		$gene->column("Observaciones","<obser><#fgenera#>|<#estampa#>|<#accion#></obser>");
+		$gene->column('Generar'  ,$checkbox);
+		$gene->column('Documento','nombre');
+		$gene->column('Observaciones','<obser><#fgenera#>|<#estampa#>|<#accion#></obser>');
 		$gene->submit('enviar', 'Generar');
 		$gene->build();
 
 		$link='<a href="javascript:void(0);" title="Descargar" onclick="descarga(\'<#accion#>\');">Descargar</a>';
 		$desca = new DataGrid("Descarga de documentos",$descarga);
 		$desca->per_page = count($descarga);
-		$desca->column("Descargar"  ,$link);
-		$desca->column("Documento","nombre");
+		$desca->column('Descargar'  ,$link);
+		$desca->column('Documento','nombre');
 		$desca->build();
 
 		$link=site_url('finanzas/libros/generar');
@@ -61,6 +61,7 @@ class Libros extends Controller {
 				geneDoc();
 				return false;
 			});
+			$("#preloader").hide();
 		});
 
 		function geneDoc(){
@@ -91,8 +92,8 @@ class Libros extends Controller {
 		$conf=anchor('finanzas/libros/configurar','Configurar');
 		$form=  form_open('/finanzas/libros');
 		$data['content'] = $form.$gene->output.form_close().$desca->output.$conf;
-		$data['title']   = "<h1>Generar libros Contables</h1>";
-		$data["head"]    = script("jquery-1.2.6.pack.js").$this->rapyd->get_head();
+		$data['title']   = heading('Generar libros Contables');
+		$data['head']    = script('jquery.js').$this->rapyd->get_head();
 		$data['extras']  = $this->load->view('view_preloader',array(),true);
 		$this->load->view('view_ventanas', $data);
 	}

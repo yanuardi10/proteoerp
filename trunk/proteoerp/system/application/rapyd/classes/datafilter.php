@@ -27,6 +27,7 @@ require_once("dataform.php");
 class DataFilter extends DataForm{
 
   var $_buttons = array();
+  var $dbtypes  = array();
   
  /**
   * PHP4 constructor.
