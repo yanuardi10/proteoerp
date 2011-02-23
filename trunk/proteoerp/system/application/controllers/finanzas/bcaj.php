@@ -25,7 +25,6 @@ class Bcaj extends Controller {
 		);
 
 		$filter = new DataFilter('Filtro','bcaj');
-
 		$filter->fecha = new dateonlyField('Fecha','fecha');
 		$filter->fecha->size=10;
 		$filter->fecha->operator='=';
@@ -44,6 +43,7 @@ class Bcaj extends Controller {
 		$filter->build();
 
 		$uri = anchor('finanzas/bcaj/dataedit/show/<#numero#>','<#numero#>');
+		$uri1 = anchor('formatos/verhtml/BANCAJA/<#numero#>','<#numero#>');
 
 		$grid = new DataGrid('Lista');
 		$grid->order_by('numero','desc');
@@ -977,12 +977,16 @@ class Bcaj extends Controller {
 		return ($error==0) ? true : false;
 	}
 
-	function _transferendepefe($fecha,$efectivo,$cheque,$envia,$recibe,$numeror,$moneda='Bs'){
+	function _transferendepefe($fecha, $efectivo, $cheque, $envia, $recibe, $numeror, $moneda='Bs'){
 		$monto=$efectivo+$cheque;
 		if($monto<=0) return true;
 		$numero = $this->datasis->fprox_numero('nbcaj');
 		$transac= $this->datasis->fprox_numero('ntransa');
 		$numeroe= $this->datasis->banprox($envia);
+		$numeroe = str_pad($numeroe, 12, '0', STR_PAD_LEFT);
+		//$numeror = ($_numeror===false)? str_pad($numeror, 12, '0', STR_PAD_LEFT): $_numeror;
+
+
 		//$numeror= $this->datasis->banprox($recibe);
 		$sp_fecha= str_replace('-','',$fecha);
 		$error  = 0;
@@ -1014,7 +1018,7 @@ class Bcaj extends Controller {
 			'tipor'   => 'DE',
 			'numeror' => $numeror,
 			'bancor'  => $infbanc[$recibe]['banco'],
-			'concepto'=> 'DEPOSITO ENTRE CAJA '.$envia.' A BANCO '.$recibe,
+			'concepto'=> 'DEPOSITO DE CAJA '.$envia.' A BANCO '.$recibe,
 			'concep2' => ($auto)? 'AUTOTRANFER' : '',
 			'benefi'  => '',
 			'boleta'  => '',
@@ -1033,6 +1037,7 @@ class Bcaj extends Controller {
 			'islr'    => 0,
 			'monto'   => $monto,
 		);
+
 		$sql=$this->db->insert_string('bcaj', $data);
 		$ban=$this->db->simple_query($sql);
 		if($ban==false){ memowrite($sql,'bcaj'); $error++; }
@@ -1043,24 +1048,25 @@ class Bcaj extends Controller {
 		if($ban==false){ memowrite($mSQL,'bcaj'); $error++; }
 
 		$data=array();
-		$data['codbanc']  = $envia;
-		$data['numcuent'] = $infbanc[$envia]['numcuent'];
-		$data['banco']    = $infbanc[$envia]['banco'];
-		$data['saldo']    = $infbanc[$envia]['saldo'];
-		$data['tipo_op']  = 'ND';
-		$data['numero']   = $numeroe;
-		$data['fecha']    = $fecha;
-		$data['clipro']   = 'O';
-		$data['codcp']    = 'TRANS';
-		$data['monto']    = $monto;
-		$data['concepto'] = 'TRANSFERENCIAS ENTRE CAJA '.$envia.' A '.$recibe;
-		$data['concep2']  = '';
-		$data['transac']  = $transac;
-		$data['usuario']  = $this->session->userdata('usuario');
-		$data['estampa']  = date('Ymd');
-		$data['hora']     = date('H:i:s');
-		$data['benefi']   = '-';
-		$data['moneda']   = $moneda;
+			$data['codbanc']  = $envia;
+			$data['numcuent'] = $infbanc[$envia]['numcuent'];
+			$data['banco']    = $infbanc[$envia]['banco'];
+			$data['saldo']    = $infbanc[$envia]['saldo'];
+			$data['tipo_op']  = 'ND';
+			$data['numero']   = $numeroe;
+			$data['fecha']    = $fecha;
+			$data['clipro']   = 'O';
+			$data['codcp']    = 'TRANS';
+			$data['monto']    = $monto;
+			$data['concepto'] = 'DEPOSITO DE CAJA '.$envia.' A BANCO '.$recibe;
+			$data['concep2']  = '';
+			$data['transac']  = $transac;
+			$data['usuario']  = $this->session->userdata('usuario');
+			$data['estampa']  = date('Ymd');
+			$data['hora']     = date('H:i:s');
+			$data['benefi']   = '-';
+			$data['moneda']   = $moneda;
+
 		$sql=$this->db->insert_string('bmov', $data);
 		$ban=$this->db->simple_query($sql);
 		if($ban==false){ memowrite($sql,'bcaj'); $error++; }
@@ -1081,7 +1087,7 @@ class Bcaj extends Controller {
 		$data['clipro']   = 'O';
 		$data['codcp']    = 'TRANS';
 		$data['monto']    = $monto;
-		$data['concepto'] = 'TRANSFERENCIAS ENTRE CAJA '.$envia.' A '.$recibe;
+		$data['concepto'] = 'DEPOSITO DE CAJA '.$envia.' A BANCO '.$recibe;
 		$data['concep2']  = '';
 		$data['transac']  = $transac;
 		$data['usuario']  = $this->session->userdata('usuario');
@@ -1093,10 +1099,8 @@ class Bcaj extends Controller {
 		$ban=$this->db->simple_query($sql);
 		if($ban==false){ memowrite($sql,'bcaj'); $error++; }
 		logusu("Transferencia de caja $numero creada");
-
 		return ($error==0) ? true : false;
 	}
-
 
 	function _transferendeptar($fecha,$tarjeta,$tdebito,$comision,$islr,$envia,$recibe,$numeror,$tipo,$moneda='Bs'){
 		$monto=$tarjeta+$tdebito;
@@ -1142,7 +1146,7 @@ class Bcaj extends Controller {
 			'tipor'   => $tipo,
 			'numeror' => $numeror,
 			'bancor'  => $infbanc[$recibe]['banco'],
-			'concepto'=> 'DEP/TARJETAS DE '.$envia.' A BANCO '.$recibe,
+			'concepto'=> 'DEP/TARJETAS DE CAJA '.$envia.' A BANCO '.$recibe,
 			'concep2' => '',
 			'benefi'  => $this->datasis->traevalor('TITULO1'),
 			'boleta'  => '',
@@ -1178,7 +1182,7 @@ class Bcaj extends Controller {
 		$data['codcp']    = 'CAJAS';
 		$data['nombre']   = 'DEPOSITO DESDE CAJA';
 		$data['monto']    = $tarjeta+$tdebito;
-		$data['concepto'] = 'DEP/TARJETAS DE '.$envia.' A '.$recibe;
+		$data['concepto'] = 'DEP/TARJETAS DE CAJA '.$envia.' A BANCO '.$recibe;
 		$data['concep2']  = '';
 		$data['comprob']  = $numero;
 		$data['transac']  = $transac;
@@ -1189,7 +1193,6 @@ class Bcaj extends Controller {
 		$sql=$this->db->insert_string('bmov', $data);
 		$ban=$this->db->simple_query($sql);
 		if($ban==false){ memowrite($sql,'bcaj'); $error++; }
-
 		$mSQL='CALL sp_actusal('.$this->db->escape($envia).",'$sp_fecha',-$data[monto])";
 		$ban=$this->db->simple_query($mSQL);
 		if($ban==false){ memowrite($mSQL,'bcaj'); $error++; }
@@ -1210,7 +1213,7 @@ class Bcaj extends Controller {
 		$data['impuesto'] = $islr;
 		$data['monto']    = ($formaca=='NETA')?  $tarjeta+$tdebito-$islr-$comision : $tarjeta+$tdebito ;
 		$data['nombre']   = 'DEPOSITO DESDE CAJA';
-		$data['concepto'] = 'DEP/TARJETAS DE '.$envia.' A '.$recibe;;
+		$data['concepto'] = 'DEP/TARJETAS DE CAJA '.$envia.' A BANCO '.$recibe;;
 		$data['concep2']  = '';
 		$data['bruto']    = $tarjeta;
 		$data['comprob']  = $numero;
@@ -1651,14 +1654,13 @@ class Bcaj extends Controller {
 		return (!empty($formato))? site_url('formatos/'.$tipo.'/'.$formato.'/'.$numero) : '';
 	}
 
-	function listo($error,$numero=null){
+	function listo($error, $numero=null){
 		if($error=='n'){
 			$data['content'] = 'Transacci&oacute;n completada ';
 			if(!empty($numero)){
 				$url=$this->_imprimir($numero,'verhtml');
-
 				$data['content'] .= ', puede <a href="#" onclick="fordi.print();">imprimirla</a>';
-				$data['content'] .= ' o '.anchor('finanzas/bcaj/index','Regresar');
+				$data['content'] .= ' o '.anchor('finanzas/bcaj/agregar','Regresar');
 				$data['content'] .= "<iframe name='fordi' src ='$url' width='100%' height='450'><p>Tu navegador no soporta iframes.</p></iframe>";
 			}else{
 				$data['content'] .= anchor('finanzas/bcaj/index','Regresar');
