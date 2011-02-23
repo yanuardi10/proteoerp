@@ -63,7 +63,11 @@ class gser extends Controller {
 
 		$data['content'].= '<tr><td><img src="'.base_url().'images/dinero.jpg'.'" height="100px"></td><td>';
 		$data['content'].= '<p></p>';
-		$data['content'].= anchor('finanzas/gser/gserchi'  ,'Caja Chica').br();
+		$data['content'].= anchor('finanzas/gser/gserchi'  ,'Ingresar/eliminar/modifcar facturas a caja Chica').br();
+
+		$data['content'].= '<tr><td><img src="'.base_url().'images/dinero.jpg'.'" height="100px"></td><td>';
+		$data['content'].= '<p></p>';
+		$data['content'].= anchor('finanzas/gser/cierregserchi'  ,'Cerrar Caja Chica').br();
 
 		$data['content'].= '</td></tr><tr><td colspan=2 align="center">'.anchor('finanzas/gser/index'        ,'Regresar').br();
 		$data['content'].= '</td></tr></table>'.br();
@@ -100,8 +104,8 @@ class gser extends Controller {
 		//$filter->proveed->append($boton);
 		$filter->proveed->db_name = 'proveedor';
 
-		$action = "javascript:window.location='".site_url('finanzas/gser/gserchipros')."'";
-		$filter->button('btn_pross', 'Procesar gatos', $action, 'TR');
+		//$action = "javascript:window.location='".site_url('finanzas/gser/gserchipros')."'";
+		//$filter->button('btn_pross', 'Procesar gatos', $action, 'TR');
 
 		$action = "javascript:window.location='".site_url('finanzas/gser/agregar')."'";
 		$filter->button('btn_regresa', 'Regresar', $action, 'TR');
@@ -114,19 +118,20 @@ class gser extends Controller {
 		$grid = new DataGrid();
 		$grid->order_by('numfac','desc');
 		$grid->per_page = 15;
+		$grid->column_orderby('Caja','codbanc','caja');
 		$grid->column_orderby('N&uacute;mero',$uri,'numfac');
 		$grid->column_orderby('Fecha' ,'<dbdate_to_human><#fechafac#></dbdate_to_human>','fechafac','align=\'center\'');
 		$grid->column_orderby('Proveedor','proveedor','proveedor');
 		$grid->column_orderby('IVA'   ,'totiva'  ,'totiva' ,'align=\'right\'');
 		$grid->column_orderby('Monto' ,'totneto' ,'totneto','align=\'right\'');
 
-		$grid->add('finanzas/gser/datagserchi/create');
+		$grid->add('finanzas/gser/datagserchi/create','Agregar nueva factura');
 		$grid->build();
 		//echo $grid->db->last_query();
 
 		$data['content'] = $filter->output.$grid->output;
 		$data['head']    = $this->rapyd->get_head();
-		$data['title']   = heading('Caja chica temporal');
+		$data['title']   = heading('Agregar/Modificar facturas de Caja Chica');
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -322,7 +327,7 @@ class gser extends Controller {
 
 
 		$data['content'] = $edit->output;
-		$data['title']   = heading('Agregar/Modificar Gasto de caja chica');
+		$data['title']   = heading('Agregar/Modificar facturas de Caja Chica');
 		$data['head']    = $this->rapyd->get_head();
 		$data['head']   .= phpscript('nformat.js');
 		$this->load->view('view_ventanas', $data);
@@ -357,24 +362,57 @@ class gser extends Controller {
 		}
 	}
 
-	//Convierte los gastos en caja chica
-	function gserchipros(){
-		$this->rapyd->load('dataform');
+	//Para Caja chica
+	function cierregserchi(){
+		$this->rapyd->load('datafilter','datagrid');
+		$this->rapyd->uri->keep_persistence();
 
-		/*$banc=array(
-			'tabla'   => 'banc',
-			'columnas'=> array(
-				'codbanc' =>'C&oacute;digo',
-				'banco'   =>'Descripci&oacute;n',
-				'codprv'  =>'Proveedor',
-				),
-			'filtro'  => array('codbanc'=>'Descripci&oacute;n'),
-			'retornar'=> array('codbanc' =>'codbanc','codprv'=>'codprv'),
-			'titulo'  => 'Buscar caja',
-			'where'   => 'tbanco = "CAJ"',
-			'join'    => array('sprv','sprv.proveed=banc.codprv','LEFT'),
-			);
-		$modbus=$this->datasis->modbus($banc);*/
+		$uri  = anchor('finanzas/gser/gserchipros/<#codbanc#>','<#codbanc#>');
+
+		$grid = new DataGrid('Lista de cajas chicas para cerrar');
+		$select=array('MAX(fechafac) AS fdesde',
+					  'MIN(fechafac) AS fhasta',
+					  'SUM(tasa+sobretasa+reducida) AS totiva',
+					  'SUM(montasa+monadic+monredu) AS totneto',
+					  'TRIM(codbanc) AS codbanc',
+					  'COUNT(*) AS cana');
+		$grid->db->select($select);
+		$grid->db->from('gserchi');
+		$grid->db->groupby('codbanc');
+
+		$grid->order_by('codbanc','desc');
+		$grid->per_page = 15;
+		$grid->column_orderby('Caja',$uri,'codbanc');
+		$grid->column('N.facturas','cana','align=\'center\'');
+		$grid->column_orderby('Fecha inicial','<dbdate_to_human><#fdesde#></dbdate_to_human>','fdesde','align=\'center\'');
+		$grid->column_orderby('Fecha final'  ,'<dbdate_to_human><#fhasta#></dbdate_to_human>','fdesde','align=\'center\'');
+		$grid->column_orderby('IVA'   ,'<nformat><#totiva#></nformat>'  ,'totiva' ,'align=\'right\'');
+		$grid->column_orderby('Monto' ,'<nformat><#totneto#></nformat>' ,'totneto','align=\'right\'');
+
+		//$grid->add('finanzas/gser/datagserchi/create','Agregar nueva factura');
+		$grid->build();
+		//echo $grid->db->last_query();
+
+		$data['content'] = $grid->output;
+		$data['head']    = $this->rapyd->get_head();
+		$data['title']   = heading('Agregar/Modificar facturas de Caja Chica');
+		$this->load->view('view_ventanas', $data);
+	}
+
+	//Convierte los gastos en caja chica
+	function gserchipros($codbanc){
+		$dbcodbanc=$this->db->escape($codbanc);
+		$mSQL="SELECT a.codprv, b.nombre FROM banc AS a JOIN sprv AS b ON a.codprv=b.proveed WHERE a.codbanc=$dbcodbanc";
+		$query = $this->db->query($mSQL);
+		if ($query->num_rows() > 0){
+			$row    = $query->row(); 
+			$nombre = $row->nombre;
+			$codprv = $row->codprv;
+		}else{
+			$nombre =$codprv = '';
+		}
+
+		$this->rapyd->load('dataform');
 
 		$modbus=array(
 			'tabla'   =>'sprv',
@@ -390,22 +428,20 @@ class gser extends Controller {
 
 		$form = new DataForm('finanzas/gser/gserchipros/process');
 
-		/*$form->codbanc = new inputField('C&oacute;digo de la caja', 'codbanc');
-		$form->codbanc->size=5;
-		$form->codbanc->append($modbus);*/
-
-		$form->codbanc = new dropdownField('Caja chica o fondo','codbanc');
+		/*$form->codbanc = new dropdownField('Caja chica o fondo','codbanc');
 		$form->codbanc->option('','Seleccionar');
 		$form->codbanc->options("SELECT codbanc, CONCAT_WS('-',codbanc,banco) AS label FROM banc WHERE tbanco='CAJ' ORDER BY codbanc");
-		$form->codbanc->rule='max_length[5]|required';
+		$form->codbanc->rule='max_length[5]|required';*/
 
 		$form->codprv = new inputField('Proveedor', 'codprv');
 		$form->codprv->rule='required';
+		$form->codprv->insertValue=$codprv;
 		$form->codprv->size=5;
 		$form->codprv->append($bsprv);
 
 		$form->nombre = new inputField('Nombre', 'nombre');
 		$form->nombre->rule='required';
+		$form->nombre->insertValue=$nombre;
 		$form->nombre->in = 'codprv';
 
 		$form->cargo = new dropdownField('Con cargo a','cargo');
@@ -425,7 +461,6 @@ class gser extends Controller {
 		$form->build_form();
 
 		if($form->on_success()){
-			$codbanc = $form->codbanc->newValue;
 			$codprv  = $form->codprv->newValue;
 			$cargo   = $form->cargo->newValue;
 			$nombre  = $form->nombre->newValue;
