@@ -1658,9 +1658,9 @@ class Bcaj extends Controller {
 		if($error=='n'){
 			$data['content'] = 'Transacci&oacute;n completada ';
 			if(!empty($numero)){
-				$url=$this->_imprimir($numero,'verhtml');
-				$data['content'] .= ', puede <a href="#" onclick="fordi.print();">imprimirla</a>';
-				$data['content'] .= ' o '.anchor('finanzas/bcaj/agregar','Regresar');
+				$url=$this->_imprimir($numero,'ver');
+				//$data['content'] .= ', puede <a href="#" onclick="fordi.print();">imprimirla</a>';
+				$data['content'] .= ' '.anchor('finanzas/bcaj/agregar','Regresar');
 				$data['content'] .= "<iframe name='fordi' src ='$url' width='100%' height='450'><p>Tu navegador no soporta iframes.</p></iframe>";
 			}else{
 				$data['content'] .= anchor('finanzas/bcaj/index','Regresar');
