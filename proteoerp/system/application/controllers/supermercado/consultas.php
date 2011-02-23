@@ -80,7 +80,7 @@ script;
 				return 0;
 			}
 		}
-		$mSQL_p='SELECT codigo, referen, barras, descrip, corta, codigo, marca, precio1, precio2, precio3, precio4, dvolum1, dvolum2, existen, mempaq, dempaq FROM maes';
+		$mSQL_p='SELECT iva,codigo, referen, barras, descrip, corta, codigo, marca, precio1, precio2, precio3, precio4, dvolum1, dvolum2, existen, mempaq, dempaq FROM maes';
 		$mSQL  =$mSQL_p." WHERE barras='$cod_bar'";
 		$query = $this->db->query($mSQL);
 		if ($query->num_rows() == 0){
@@ -110,7 +110,7 @@ script;
 
 		$data['dvolum1'] = $row->dvolum1;
 		$data['dvolum2'] = $row->dvolum2;
-
+		$data['iva']     = $row->iva;
 		$data['descrip'] = $row->descrip;
 
 		$data['corta'] = $row->corta;
