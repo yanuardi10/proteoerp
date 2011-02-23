@@ -1,4 +1,4 @@
-<?php
+<?php include('common.php');
 class gser extends Controller {
 
 	function gser(){
@@ -394,7 +394,7 @@ class gser extends Controller {
 		$form->codbanc->size=5;
 		$form->codbanc->append($modbus);*/
 
-		$form->codbanc = new dropdownField('C&oacute;digo de la caja','codbanc');
+		$form->codbanc = new dropdownField('Caja chica o fondo','codbanc');
 		$form->codbanc->option('','Seleccionar');
 		$form->codbanc->options("SELECT codbanc, CONCAT_WS('-',codbanc,banco) AS label FROM banc WHERE tbanco='CAJ' ORDER BY codbanc");
 		$form->codbanc->rule='max_length[5]|required';
@@ -408,12 +408,17 @@ class gser extends Controller {
 		$form->nombre->rule='required';
 		$form->nombre->in = 'codprv';
 
+		$form->cargo = new dropdownField('Con cargo a','cargo');
+		$form->cargo->option('CR','Cr&eacute;dito');
+		$form->cargo->options("SELECT codbanc, CONCAT_WS('-',codbanc,banco) AS label FROM banc ORDER BY codbanc");
+		$form->cargo->rule='max_length[5]|required';
+
 		$form->cheque = new inputField('N&uacute;mero de cheque', 'cheque');
-		$form->cheque->rule='condi_required';
+		$form->cheque->rule='condi_required|callback_chobligaban';
 		$form->cheque->append('Aplica  solo si la caja es un banco');
 
 		$form->benefi = new inputField('Beneficiario', 'benefi');
-		$form->benefi->rule='condi_required';
+		$form->benefi->rule='condi_required|callback_chobligaban';
 		$form->benefi->append('Aplica  solo si la caja es un banco');
 
 		$form->submit('btnsubmit','Procesar');
@@ -422,11 +427,12 @@ class gser extends Controller {
 		if($form->on_success()){
 			$codbanc = $form->codbanc->newValue;
 			$codprv  = $form->codprv->newValue;
+			$cargo   = $form->cargo->newValue;
 			$nombre  = $form->nombre->newValue;
 			$benefi  = $form->benefi->newValue;
 			$cheque  = $form->cheque->newValue;
 
-			$rt=$this->_gserchipros($codbanc,$codprv,$benefi,$cheque);
+			$rt=$this->_gserchipros($codbanc,$cargo,$codprv,$benefi,$cheque);
 			if($rt){
 				redirect('finanzas/gser/listo/n');
 			}else{
@@ -441,12 +447,25 @@ class gser extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
-	function _gserchipros($codbanc,$codprv,$benefi,$numeroch=null){
+	function chobligaban($val){
+		$ban=$this->input->post('cargo');
+		$tipo=common::_traetipo($ban);
+		if($tipo!='CAJ'){
+			if(empty($val)){
+				$this->validation->set_message('chobligaban', 'El campo %s es obligatorio cuando el caja es un banco');
+				return false;
+			}
+		}
+		return true;
+	}
+
+	function _gserchipros($codbanc,$cargo,$codprv,$benefi,$numeroch=null){
 			$dbcodprv = $this->db->escape($codprv);
 			$nombre   = $this->datasis->dameval('SELECT nombre FROM sprv WHERE proveed='.$dbcodprv);
 			$fecha    = date('Y-m-d');
 			$sp_fecha = str_replace('-','',$fecha);
 			$error    = 0;
+			$cr='CR';//Marca para el credito
 
 			$sql  = 'SELECT tbanco FROM banc WHERE codbanc='.$this->db->escape($codbanc);
 			$tipo = $this->datasis->dameval($sql);
@@ -519,6 +538,74 @@ class gser extends Controller {
 				$totpre = $montasa+$monredu+$monadic+$exento;
 				$totiva = $tasa+$reducida+$sobretasa;
 				$totneto= $totpre+$totiva;
+				
+				if($ttipo==$cr){
+					$nombre = $this->datasis->dameval('SELECT nombre FROM sprv WHERE proveed='.$this->db->escape($codprv));
+					$tipo1  = '';
+					$credito= $totneto;
+					$causado = $this->datasis->fprox_numero('ncausado');
+
+					$data=array();
+					$data['cod_prv']    = $codprv;
+					$data['nombre']     = $nombre;
+					$data['tipo_doc']   = 'FC';
+					$data['numero']     = $numero ;
+					$data['fecha']      = $fecha ;
+					$data['monto']      = $totneto;
+					$data['impuesto']   = $totiva ;
+					$data['abonos']     = 0;
+					$data['vence']      = $fecha;
+					/*$data['tipo_ref']   = '';
+					$data['num_ref']    = '';
+					$data['observa1']   = '';
+					$data['observa2']   = '';
+					$data['banco']      = '';
+					$data['tipo_op']    = '';
+					$data['comprob']    = '';
+					$data['numche']     = '';
+					$data['codigo']     = '';
+					$data['descrip']    = '';
+					$data['ppago']      = '';
+					$data['nppago']     = '';
+					$data['reten']      = '';
+					$data['nreten']     = '';
+					$data['mora']       = '';
+					$data['posdata']    = '';
+					$data['benefi']     = '';
+					$data['control']    = '';*/
+					$data['transac']    = $transac;
+					$data['estampa']    = date('Y-m-d');
+					$data['hora']       = date('H:i:s');
+					$data['usuario']    = $this->session->userdata('usuario');
+					//$data['cambio']     ='';
+					//$data['pmora']      ='';
+					$data['reteiva']    = 0;
+					//$data['nfiscal']    ='';
+					$data['montasa']    = $montasa;
+					$data['monredu']    = $monredu;
+					$data['monadic']    = $monadic;
+					$data['tasa']       = $tasa;
+					$data['reducida']   = $reducida;
+					$data['sobretasa']  = $sobretasa;
+					$data['exento']     = $exento;
+					/*$data['fecdoc']     = '';
+					$data['afecta']     = '';
+					$data['fecapl']     = '';
+					$data['serie']      = '';
+					$data['depto']      = '';
+					$data['negreso']    = '';
+					$data['ndebito']    = '';*/
+					$data['causado']    = $causado;
+
+					$sql=$this->db->insert_string('gser', $data);
+					$ban=$this->db->simple_query($sql);
+					if($ban==false){ memowrite($sql,'bcaj'); $error++;}
+				}else{
+					$ttipo  = common::_traetipo($cargo);
+					$tipo1  = ($ttipo=='CAJ') ? 'ND': 'CH';
+					$credito= 0;
+				}
+				
 
 				$data = array();
 				$data['fecha']      = $fecha;
@@ -531,8 +618,8 @@ class gser extends Controller {
 				$data['totbruto']   = $totneto;
 				$data['reten']      = 0;
 				$data['totneto']    = $totneto;//totneto=totbruto-reten
-				$data['codb1']      = $codbanc;
-				$data['tipo1']      = 'ND';
+				$data['codb1']      = $cargo;
+				$data['tipo1']      = $tipo1;
 				$data['cheque1']    = $cheque;
 				$data['comprob1']   = '';
 				$data['monto1']     = '';
@@ -546,7 +633,7 @@ class gser extends Controller {
 				$data['cheque3']    = '';
 				$data['comprob3']   = '';
 				$data['monto3']     = '';
-				$data['credito']    = 0;
+				$data['credito']    = $credito;
 				$data['tipo_doc']   = 'FC';
 				$data['orden']      = '';
 				$data['anticipo']   = 0;
