@@ -18,7 +18,8 @@ class  rpers extends Controller {
 		$filter->tabla=new dropdownField("Tabla","tabla");
 		$filter->tabla->option("pers","Personal");
 		$filter->tabla->option("sprm","Nomina");
-		//$filter->tabla->option("sprv","Proveedores");
+		$filter->tabla->option("sprv","Proveedores");
+		$filter->tabla->option("abonotros","Abono Otros");
 		$filter->tabla->clause="";
 		
 		//$filter->obra = new dropdownField("Obra", "depto"); 
