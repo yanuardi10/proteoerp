@@ -389,7 +389,8 @@ class gser extends Controller {
 		$grid->column_orderby('IVA'   ,'<nformat><#totiva#></nformat>'  ,'totiva' ,'align=\'right\'');
 		$grid->column_orderby('Monto' ,'<nformat><#totneto#></nformat>' ,'totneto','align=\'right\'');
 
-		//$grid->add('finanzas/gser/datagserchi/create','Agregar nueva factura');
+		$action = "javascript:window.location='".site_url('finanzas/gser/agregar')."'";
+		$grid->button('btn_regresa', 'Regresar', $action, 'TR');
 		$grid->build();
 		//echo $grid->db->last_query();
 
@@ -446,7 +447,7 @@ class gser extends Controller {
 
 		$form->cargo = new dropdownField('Con cargo a','cargo');
 		$form->cargo->option('CR','Cr&eacute;dito');
-		$form->cargo->options("SELECT codbanc, CONCAT_WS('-',codbanc,banco) AS label FROM banc ORDER BY codbanc");
+		$form->cargo->options("SELECT codbanc, CONCAT_WS('-',codbanc,banco) AS label FROM banc WHERE activo='S' AND codbanc<>$dbcodbanc ORDER BY codbanc");
 		$form->cargo->rule='max_length[5]|required';
 
 		$form->cheque = new inputField('N&uacute;mero de cheque', 'cheque');
@@ -454,8 +455,12 @@ class gser extends Controller {
 		$form->cheque->append('Aplica  solo si la caja es un banco');
 
 		$form->benefi = new inputField('Beneficiario', 'benefi');
+		$form->benefi->insertValue=$nombre;
 		$form->benefi->rule='condi_required|callback_chobligaban';
 		$form->benefi->append('Aplica  solo si la caja es un banco');
+
+		$action = "javascript:window.location='".site_url('finanzas/gser/cierregserchi/'.$codbanc)."'";
+		$form->button('btn_regresa', 'Regresar', $action, 'BR');
 
 		$form->submit('btnsubmit','Procesar');
 		$form->build_form();
