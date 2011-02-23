@@ -4,6 +4,7 @@ class gser extends Controller {
 	function gser(){
 		parent::Controller();
 		$this->load->library('rapyd');
+		$this->mcred='_CR';
 		//$this->datasis->modulo_id(604,1);
 	}
 
@@ -373,7 +374,7 @@ class gser extends Controller {
 		$select=array('MAX(fechafac) AS fdesde',
 					  'MIN(fechafac) AS fhasta',
 					  'SUM(tasa+sobretasa+reducida) AS totiva',
-					  'SUM(montasa+monadic+monredu) AS totneto',
+					  'SUM(montasa+monadic+monredu+tasa+sobretasa+reducida) AS total',
 					  'TRIM(codbanc) AS codbanc',
 					  'COUNT(*) AS cana');
 		$grid->db->select($select);
@@ -387,7 +388,7 @@ class gser extends Controller {
 		$grid->column_orderby('Fecha inicial','<dbdate_to_human><#fdesde#></dbdate_to_human>','fdesde','align=\'center\'');
 		$grid->column_orderby('Fecha final'  ,'<dbdate_to_human><#fhasta#></dbdate_to_human>','fdesde','align=\'center\'');
 		$grid->column_orderby('IVA'   ,'<nformat><#totiva#></nformat>'  ,'totiva' ,'align=\'right\'');
-		$grid->column_orderby('Monto' ,'<nformat><#totneto#></nformat>' ,'totneto','align=\'right\'');
+		$grid->column_orderby('Monto' ,'<nformat><#total#></nformat>' ,'total','align=\'right\'');
 
 		$action = "javascript:window.location='".site_url('finanzas/gser/agregar')."'";
 		$grid->button('btn_regresa', 'Regresar', $action, 'TR');
@@ -446,7 +447,7 @@ class gser extends Controller {
 		$form->nombre->in = 'codprv';
 
 		$form->cargo = new dropdownField('Con cargo a','cargo');
-		$form->cargo->option('CR','Cr&eacute;dito');
+		$form->cargo->option($this->mcred,'Cr&eacute;dito');
 		$form->cargo->options("SELECT codbanc, CONCAT_WS('-',codbanc,banco) AS label FROM banc WHERE activo='S' AND codbanc<>$dbcodbanc ORDER BY codbanc");
 		$form->cargo->rule='max_length[5]|required';
 
@@ -490,7 +491,7 @@ class gser extends Controller {
 	function chobligaban($val){
 		$ban=$this->input->post('cargo');
 		$tipo=common::_traetipo($ban);
-		if($tipo!='CAJ'){
+		if($tipo!='CAJ' OR $tipo!=$this->mcred){
 			if(empty($val)){
 				$this->validation->set_message('chobligaban', 'El campo %s es obligatorio cuando el caja es un banco');
 				return false;
@@ -501,11 +502,12 @@ class gser extends Controller {
 
 	function _gserchipros($codbanc,$cargo,$codprv,$benefi,$numeroch=null){
 			$dbcodprv = $this->db->escape($codprv);
+			$numeroch = str_pad($numeroch, 12, '0', STR_PAD_LEFT);
 			$nombre   = $this->datasis->dameval('SELECT nombre FROM sprv WHERE proveed='.$dbcodprv);
 			$fecha    = date('Y-m-d');
 			$sp_fecha = str_replace('-','',$fecha);
 			$error    = 0;
-			$cr='CR';//Marca para el credito
+			$cr=$this->mcred;//Marca para el credito
 
 			$sql  = 'SELECT tbanco FROM banc WHERE codbanc='.$this->db->escape($codbanc);
 			$tipo = $this->datasis->dameval($sql);
@@ -1578,7 +1580,7 @@ class gser extends Controller {
 		) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC";
 		var_dump($this->db->simple_query($query));
 
-		$mSQL="ALTER TABLE `gserchi` ADD COLUMN `ngasto` VARCHAR(8) NULL DEFAULT NULL AFTER `departa`";
+		$query="ALTER TABLE `gserchi` ADD COLUMN `ngasto` VARCHAR(8) NULL DEFAULT NULL AFTER `departa`";
 		var_dump($this->db->simple_query($query));
 	}
 }
