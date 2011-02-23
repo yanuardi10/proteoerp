@@ -1661,7 +1661,7 @@ class Bcaj extends Controller {
 				$url=$this->_imprimir($numero,'ver');
 				//$data['content'] .= ', puede <a href="#" onclick="fordi.print();">imprimirla</a>';
 				$data['content'] .= ' '.anchor('finanzas/bcaj/agregar','Regresar');
-				$data['content'] .= "<iframe name='fordi' src ='$url' width='100%' height='450'><p>Tu navegador no soporta iframes.</p></iframe>";
+				$data['content'] .= br()."<iframe name='fordi' src ='$url' width='10' height='10' style='display:none;'><p>Tu navegador no soporta iframes.</p></iframe>";
 			}else{
 				$data['content'] .= anchor('finanzas/bcaj/index','Regresar');
 			}
