@@ -402,7 +402,8 @@ class gser extends Controller {
 	}
 
 	//Convierte los gastos en caja chica
-	function gserchipros($codbanc){
+	function gserchipros($codbanc=null){
+		if(empty($codbanc)) show_error('Faltan par&aacute;metros');
 		$dbcodbanc=$this->db->escape($codbanc);
 		$mSQL="SELECT a.codprv, b.nombre FROM banc AS a JOIN sprv AS b ON a.codprv=b.proveed WHERE a.codbanc=$dbcodbanc";
 		$query = $this->db->query($mSQL);
@@ -490,8 +491,9 @@ class gser extends Controller {
 
 	function chobligaban($val){
 		$ban=$this->input->post('cargo');
+		if($ban==$this->mcred) return true;
 		$tipo=common::_traetipo($ban);
-		if($tipo!='CAJ' OR $tipo!=$this->mcred){
+		if($tipo!='CAJ'){
 			if(empty($val)){
 				$this->validation->set_message('chobligaban', 'El campo %s es obligatorio cuando el caja es un banco');
 				return false;
