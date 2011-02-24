@@ -295,14 +295,25 @@ class Scst extends Controller {
 
 		$boton=$this->datasis->modbus($modbus);
 
-		$filter = new DataFilter('Filtro de asignaci&oacute;n de productos','farmaxasig');
+		$filter = new DataFilter('Filtro de asignaci&oacute;n de productos');
+		$select=array('a.proveed','a.abarras','a.barras','c.nombre','b.descrip','a.id','b.codigo');
+		$filter->db->select($select);
+		$filter->db->from('farmaxasig AS a');
+		$filter->db->join('sinv AS b','a.abarras=b.codigo');
+		$filter->db->join('sprv AS c','a.proveed=c.proveed');
 
 		$filter->proveedor = new inputField('Proveedor', 'proveed');
+		$filter->proveedor->db_name='a.proveed';
 		$filter->proveedor->append($boton);
 		$filter->proveedor->db_name = 'proveed';
 		$filter->proveedor->size=20;
 
-		$filter->barras = new inputField('Barras', 'barras');
+		$filter->barras = new inputField('C&oacute;digo seg&uacute;n proveedor', 'barras');
+		$filter->barras->db_name='a.barras';
+		$filter->barras->append('C&oacute;digo del producto seg&uacute;n el proveedor');
+
+		$filter->abarras = new inputField('C&oacute;digo local', 'abarras');
+		$filter->abarras->db_name='a.abarras';
 
 		$filter->buttons('reset','search');
 		$filter->build();
@@ -311,15 +322,14 @@ class Scst extends Controller {
 		$grid->order_by('id','desc');
 		$grid->per_page = 15;
 
-		$uri=anchor('farmacia/scst/asignardataedit/show/<#id#>','<#id#>');
-		$grid->column_orderby('Id'       ,$uri     ,'id'     );
-		$grid->column_orderby('Proveedor','proveed','proveed');
-		$grid->column_orderby('Barras'   ,'barras' ,'barras' );
-		$grid->column_orderby('Mapeado a','abarras','abarras');
+		$uri=anchor('farmacia/scst/asignardataedit/show/<#id#>','<#barras#>');
+		$grid->column_orderby('Proveedor','(<#proveed#>) <#nombre#>' ,'proveed');
+		$grid->column_orderby('C&oacute;digo seg&uacute;n proveedor' ,$uri,'barras');
+		$grid->column_orderby('Mapeado a','(<#abarras#>) <#descrip#>','abarras');
 
 		$grid->add('farmacia/scst/asignardataedit/create');
 		$grid->build();
-		//echo $grid->db->last_query();
+		echo $grid->db->last_query();
 
 		$data['content'] = $filter->output.$grid->output;
 		$data['head']    = $this->rapyd->get_head();
@@ -391,9 +401,10 @@ class Scst extends Controller {
 		$edit->barras->rule = 'required|trim|callback_fueasignado|callback_noexiste';
 		$edit->barras->mode = 'autohide';
 		$edit->barras->size = 50;
+		
 		$edit->barras->maxlength=250;
 
-		$edit->abarras = new inputField('Barras en sistema','abarras');
+		$edit->abarras = new inputField('Producto en sistema','abarras');
 		$edit->abarras->rule = 'required|trim|callback_siexiste';
 		$edit->abarras->size = 50;
 		$edit->abarras->maxlength=250;

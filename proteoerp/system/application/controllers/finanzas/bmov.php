@@ -1,83 +1,262 @@
-<?php	//cheques
+<?php
 class Bmov extends Controller {
 	function bmov(){
 		parent::Controller(); 
-		$this->load->library("rapyd");
-	} 
+		$this->load->library('rapyd');
+	}
+
 	function index(){
-		$this->rapyd->load("datafilter","datagrid");
+		$this->rapyd->load('datafilter','datagrid');
 		$this->rapyd->uri->keep_persistence();
-            
-		$filter = new DataFilter("Filtro de cheques", 'bmov');
-		$select=array("fecha","numero","nombre","CONCAT_WS('',banco ,'(',numcuent,')')AS banco","tipo_op","codbanc","LEFT(concepto,20)AS concepto","anulado");
+
+		$filter = new DataFilter('Filtro de cheques', 'bmov');
+		$select=array('fecha','numero','nombre',"CONCAT_WS('',banco ,'(',numcuent,')') AS banco",'tipo_op','codbanc','LEFT(concepto,20) AS concepto','anulado');
 		$filter->db->select($select);
 		$filter->db->from('bmov');
 		$filter->db->where('tipo_op','CH');
-		
-		$filter->fecha = new dateonlyField("Fecha", "fecha");
-		$filter->fecha->size=10;
-		$filter->fecha->operator="=";
-		
-		$filter->numero = new inputField("N&uacute;mero", "numero");
+
+		$filter->fecha = new dateonlyField('Fecha', 'fecha');
+		$filter->fecha->size     = 10;
+		$filter->fecha->operator = '=';
+		$filter->fecha->clause   = 'where';
+
+		$filter->numero = new inputField('N&uacute;mero', 'numero');
 		$filter->numero->size=20;
-		
-		$filter->nombre = new inputField("Nombre", "nombre");
+
+		$filter->nombre = new inputField('Nombre', 'nombre');
 		$filter->nombre->size=40;
 
-		$filter->banco = new dropdownField("Banco", "codbanc");                    
-		$filter->banco->option("","");                            
-		$filter->banco->options("SELECT codbanc,banco FROM banc where tbanco<>'CAJ' ORDER BY codbanc");  
-		
-		$filter->buttons("reset","search");
+		$filter->banco = new dropdownField('Banco', 'codbanc');
+		$filter->banco->option('','Todos');
+		$filter->banco->options("SELECT codbanc,banco FROM banc where tbanco<>'CAJ' ORDER BY codbanc");
+
+		$filter->buttons('reset','search');
 		$filter->build();
-	  
-	  $uri = anchor('finanzas/bmov/dataedit/show/<#codbanc#>/<#tipo_op#>/<#numero#>','<#numero#>');
-	
-		$grid = new DataGrid("Lista de cheques");
-		$grid->order_by("numero","desc");                          
+
+		$uri = anchor('finanzas/bmov/dataedit/show/<#codbanc#>/<#tipo_op#>/<#numero#>','<#numero#>');
+		$grid = new DataGrid('Lista de cheques');
+		$grid->order_by('numero','desc');
 		$grid->per_page = 15;
-	
-		$grid->column("N&uacute;mero"       ,$uri );
-		$grid->column("Nombre"       ,"nombre");
-		$grid->column("Banco"        ,"banco");
-		$grid->column("Monto"        ,"<number_format><#monto#>|2|,|.</number_format>" ,'align=right'); 
-		$grid->column("Concepto"     ,"concepto");
-		$grid->column("Anulado"      ,"anulado",'align=center');
-		                                        		
+
+		$grid->column_orderby('N&uacute;mero',$uri ,'numero');
+		$grid->column_orderby('Nombre'       ,'nombre','nombre');
+		$grid->column_orderby('Banco'        ,'banco','banco');
+		$grid->column_orderby('Monto'        ,'<nformat><#monto#></nformat>' ,'monto','align=\'right\'');
+		$grid->column_orderby('Concepto'     ,'concepto','concepto');
+		$grid->column_orderby('Anulado'      ,'anulado','anulado','align=center');
+
 		$grid->build();
-		
+
 		$data['content'] = $filter->output.$grid->output;
-		$data['title']   = "<h1>Cheques</h1>";
-		$data["head"]    = $this->rapyd->get_head();
+		$data['title']   = heading('Cheques');
+		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
+
 	function dataedit(){
-		
-		$this->rapyd->load("dataedit");
-		$edit = new DataEdit("Cheque", "bmov");
-		$edit->back_url = site_url("finanzas/bmov/index");
-		
-		$edit->fecha = new DateonlyField("Fecha", "fecha","d/m/Y");
-		$edit->fecha->insertValue = date("Y-m-d");
-		
-		$edit->numero   = new textareaField("N&uacute;mero", "numero");
-		$edit->nombre   = new textareaField("Nombre", "nombre");
-		$edit->banco    = new textareaField("Banco", "banco");
-		$edit->numcuent = new textareaField("N&uacute;mero Cuenta", "numcuent");
-		$edit->monto    = new textareaField("Monto", "monto");
-		$edit->concepto = new textareaField("Concepto", "concepto");
-	  	$edit->Benefi   = new textareaField("Beneficiario", "benefi");
-		$edit->anulado  = new textareaField("Anulado", "anulado");
-		
-		$edit->buttons("back");
+		$this->rapyd->load('dataedit');
+
+		$edit = new DataEdit('Movimiento', 'bmov');
+		$status=$edit->_status;
+		if($status!='show') show_error('Error de par&aacute;metros');
+
+		$edit->codbanc = new inputField('codbanc','codbanc');
+		$edit->codbanc->rule='max_length[2]';
+		$edit->codbanc->size =4;
+		$edit->codbanc->maxlength =2;
+
+		$edit->moneda = new inputField('moneda','moneda');
+		$edit->moneda->rule='max_length[2]';
+		$edit->moneda->size =4;
+		$edit->moneda->maxlength =2;
+
+		$edit->numcuent = new inputField('numcuent','numcuent');
+		$edit->numcuent->rule='max_length[18]';
+		$edit->numcuent->size =20;
+		$edit->numcuent->maxlength =18;
+
+		$edit->banco = new inputField('banco','banco');
+		$edit->banco->rule='max_length[30]';
+		$edit->banco->size =32;
+		$edit->banco->maxlength =30;
+
+		$edit->saldo = new inputField('saldo','saldo');
+		$edit->saldo->rule='max_length[17]|numeric';
+		$edit->saldo->css_class='inputnum';
+		$edit->saldo->size =19;
+		$edit->saldo->maxlength =17;
+
+		$edit->tipo_op = new inputField('tipo_op','tipo_op');
+		$edit->tipo_op->rule='max_length[2]';
+		$edit->tipo_op->size =4;
+		$edit->tipo_op->maxlength =2;
+
+		$edit->numero = new inputField('numero','numero');
+		$edit->numero->rule='max_length[12]';
+		$edit->numero->size =14;
+		$edit->numero->maxlength =12;
+
+		$edit->fecha = new dateField('fecha','fecha');
+		$edit->fecha->rule='chfecha';
+		$edit->fecha->size =10;
+		$edit->fecha->maxlength =8;
+
+		$edit->clipro = new inputField('clipro','clipro');
+		$edit->clipro->rule='max_length[1]';
+		$edit->clipro->size =3;
+		$edit->clipro->maxlength =1;
+
+		$edit->codcp = new inputField('codcp','codcp');
+		$edit->codcp->rule='max_length[5]';
+		$edit->codcp->size =7;
+		$edit->codcp->maxlength =5;
+
+		$edit->nombre = new inputField('nombre','nombre');
+		$edit->nombre->rule='max_length[30]';
+		$edit->nombre->size =32;
+		$edit->nombre->maxlength =30;
+
+		$edit->monto = new inputField('monto','monto');
+		$edit->monto->rule='max_length[17]|numeric';
+		$edit->monto->css_class='inputnum';
+		$edit->monto->size =19;
+		$edit->monto->maxlength =17;
+
+		$edit->concepto = new inputField('concepto','concepto');
+		$edit->concepto->rule='max_length[50]';
+		$edit->concepto->size =52;
+		$edit->concepto->maxlength =50;
+
+		$edit->concep2 = new inputField('concep2','concep2');
+		$edit->concep2->rule='max_length[50]';
+		$edit->concep2->size =52;
+		$edit->concep2->maxlength =50;
+
+		$edit->concep3 = new inputField('concep3','concep3');
+		$edit->concep3->rule='max_length[50]';
+		$edit->concep3->size =52;
+		$edit->concep3->maxlength =50;
+
+		$edit->documen = new inputField('documen','documen');
+		$edit->documen->rule='max_length[8]';
+		$edit->documen->size =10;
+		$edit->documen->maxlength =8;
+
+		$edit->comprob = new inputField('comprob','comprob');
+		$edit->comprob->rule='max_length[6]';
+		$edit->comprob->size =8;
+		$edit->comprob->maxlength =6;
+
+		$edit->status = new inputField('status','status');
+		$edit->status->rule='max_length[1]';
+		$edit->status->size =3;
+		$edit->status->maxlength =1;
+
+		$edit->cuenta = new inputField('cuenta','cuenta');
+		$edit->cuenta->rule='max_length[15]';
+		$edit->cuenta->size =17;
+		$edit->cuenta->maxlength =15;
+
+		$edit->enlace = new inputField('enlace','enlace');
+		$edit->enlace->rule='max_length[15]';
+		$edit->enlace->size =17;
+		$edit->enlace->maxlength =15;
+
+		$edit->bruto = new inputField('bruto','bruto');
+		$edit->bruto->rule='max_length[17]|numeric';
+		$edit->bruto->css_class='inputnum';
+		$edit->bruto->size =19;
+		$edit->bruto->maxlength =17;
+
+		$edit->comision = new inputField('comision','comision');
+		$edit->comision->rule='max_length[17]|numeric';
+		$edit->comision->css_class='inputnum';
+		$edit->comision->size =19;
+		$edit->comision->maxlength =17;
+
+		$edit->impuesto = new inputField('impuesto','impuesto');
+		$edit->impuesto->rule='max_length[17]|numeric';
+		$edit->impuesto->css_class='inputnum';
+		$edit->impuesto->size =19;
+		$edit->impuesto->maxlength =17;
+
+		$edit->registro = new inputField('registro','registro');
+		$edit->registro->rule='max_length[10]';
+		$edit->registro->size =12;
+		$edit->registro->maxlength =10;
+
+		$edit->concilia = new dateField('concilia','concilia');
+		$edit->concilia->rule='chfecha';
+		$edit->concilia->size =10;
+		$edit->concilia->maxlength =8;
+
+		$edit->benefi = new inputField('benefi','benefi');
+		$edit->benefi->rule='max_length[40]';
+		$edit->benefi->size =42;
+		$edit->benefi->maxlength =40;
+
+		$edit->posdata = new dateField('posdata','posdata');
+		$edit->posdata->rule='chfecha';
+		$edit->posdata->size =10;
+		$edit->posdata->maxlength =8;
+
+		$edit->abanco = new inputField('abanco','abanco');
+		$edit->abanco->rule='max_length[1]';
+		$edit->abanco->size =3;
+		$edit->abanco->maxlength =1;
+
+		$edit->liable = new inputField('liable','liable');
+		$edit->liable->rule='max_length[1]';
+		$edit->liable->size =3;
+		$edit->liable->maxlength =1;
+
+		$edit->transac = new inputField('transac','transac');
+		$edit->transac->rule='max_length[8]';
+		$edit->transac->size =10;
+		$edit->transac->maxlength =8;
+
+		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
+
+		$edit->estampa = new autoUpdateField('estampa' ,date('Ymd'), date('Ymd'));
+
+		$edit->hora    = new autoUpdateField('hora',date('H:m:s'), date('H:m:s'));
+
+		$edit->anulado = new inputField('anulado','anulado');
+		$edit->anulado->rule='max_length[1]';
+		$edit->anulado->size =3;
+		$edit->anulado->maxlength =1;
+
+		$edit->susti = new inputField('susti','susti');
+		$edit->susti->rule='max_length[16]';
+		$edit->susti->size =18;
+		$edit->susti->maxlength =16;
+
+		$edit->negreso = new inputField('negreso','negreso');
+		$edit->negreso->rule='max_length[8]';
+		$edit->negreso->size =10;
+		$edit->negreso->maxlength =8;
+
+		$edit->ndebito = new inputField('ndebito','ndebito');
+		$edit->ndebito->rule='max_length[8]';
+		$edit->ndebito->size =10;
+		$edit->ndebito->maxlength =8;
+
+		$edit->ncausado = new inputField('ncausado','ncausado');
+		$edit->ncausado->rule='max_length[8]';
+		$edit->ncausado->size =10;
+		$edit->ncausado->maxlength =8;
+
+		$edit->ncredito = new inputField('ncredito','ncredito');
+		$edit->ncredito->rule='max_length[8]';
+		$edit->ncredito->size =10;
+		$edit->ncredito->maxlength =8;
+
+		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
 		$edit->build();
-		
-	  	$data['content'] = $edit->output;
-	  	$data['title']   = "<h1>Consulta de Cheques</h1>";
-	  	$data["head"]    = $this->rapyd->get_head();
-	  	$this->load->view('view_ventanas', $data);  
-	}  
-  }
-?>
+		$data['content'] = $edit->output;
+		$data['head']    = $this->rapyd->get_head();
+		$data['title']   = heading('Movimientos de bancos');
+		$this->load->view('view_ventanas', $data);
+	}
 
-
+}
