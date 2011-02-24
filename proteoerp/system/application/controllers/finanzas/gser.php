@@ -509,11 +509,9 @@ class gser extends Controller {
 			$fecha    = date('Y-m-d');
 			$sp_fecha = str_replace('-','',$fecha);
 			$error    = 0;
-			$cr=$this->mcred;//Marca para el credito
+			$cr=$this->mcred; //Marca para el credito
 
-			$sql  = 'SELECT tbanco FROM banc WHERE codbanc='.$this->db->escape($codbanc);
-			$tipo = $this->datasis->dameval($sql);
-
+			$tipo = common::_traetipo($codbanc);
 			$cheque = ($tipo=='CAJ')? $this->datasis->banprox($codbanc): $numeroch ;
 
 			$mSQL='SELECT codbanc,fechafac,numfac,nfiscal,rif,proveedor,codigo,descrip,
@@ -569,7 +567,7 @@ class gser extends Controller {
 
 					$sql=$this->db->insert_string('gitser', $data);
 					$ban=$this->db->simple_query($sql);
-					if($ban==false){ memowrite($sql,'bcaj'); $error++;}
+					if($ban==false){ memowrite($sql,'gser'); $error++;}
 
 					$montasa  +=$row->montasa  ;
 					$monredu  +=$row->monredu  ;
@@ -582,11 +580,11 @@ class gser extends Controller {
 				$totpre = $montasa+$monredu+$monadic+$exento;
 				$totiva = $tasa+$reducida+$sobretasa;
 				$totneto= $totpre+$totiva;
-				
-				if($ttipo==$cr){
-					$nombre = $this->datasis->dameval('SELECT nombre FROM sprv WHERE proveed='.$this->db->escape($codprv));
-					$tipo1  = '';
-					$credito= $totneto;
+
+				if($cargo==$cr){
+					$nombre  = $this->datasis->dameval('SELECT nombre FROM sprv WHERE proveed='.$this->db->escape($codprv));
+					$tipo1   = '';
+					$credito = $totneto;
 					$causado = $this->datasis->fprox_numero('ncausado');
 
 					$data=array();
@@ -641,15 +639,17 @@ class gser extends Controller {
 					$data['ndebito']    = '';*/
 					$data['causado']    = $causado;
 
-					$sql=$this->db->insert_string('gser', $data);
+					$sql=$this->db->insert_string('sprm', $data);
 					$ban=$this->db->simple_query($sql);
-					if($ban==false){ memowrite($sql,'bcaj'); $error++;}
+					if($ban==false){ memowrite($sql,'gser'); $error++;}
+					$cargo ='';
+					$cheque='';
+					$tipo1 ='';
 				}else{
 					$ttipo  = common::_traetipo($cargo);
 					$tipo1  = ($ttipo=='CAJ') ? 'ND': 'CH';
 					$credito= 0;
 				}
-				
 
 				$data = array();
 				$data['fecha']      = $fecha;
@@ -714,11 +714,11 @@ class gser extends Controller {
 
 				$sql=$this->db->insert_string('gser', $data);
 				$ban=$this->db->simple_query($sql);
-				if($ban==false){ memowrite($sql,'bcaj'); $error++;}
+				if($ban==false){ memowrite($sql,'gser'); $error++;}
 
 				$mSQL='CALL sp_actusal('.$this->db->escape($codbanc).",'$sp_fecha',-$totneto)";
 				$ban=$this->db->simple_query($mSQL); 
-				if($ban==false){ memowrite($mSQL,'bcaj'); $error++; }
+				if($ban==false){ memowrite($mSQL,'gser'); $error++; }
 			}
 		return ($error==0)? true : false;
 	}
