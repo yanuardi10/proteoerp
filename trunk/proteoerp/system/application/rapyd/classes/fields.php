@@ -13,7 +13,7 @@
 if (!defined('RAPYD_FIELD_SYMBOL_NULL')){
 //MODIF 3 design path 
 $ci =& get_instance();
-define('RAPYD_FIELD_SYMBOL_NULL',           '<em>[NULL]</em>');
+define('RAPYD_FIELD_SYMBOL_NULL',           '<em>[NULO]</em>');
 define('RAPYD_FIELD_SYMBOL_TRUE',           '<img src="'.$ci->rapyd->get_elements_path('true.gif').'" />');
 define('RAPYD_FIELD_SYMBOL_FALSE',          '<img src="'.$ci->rapyd->get_elements_path('false.gif').'" />');
 define('RAPYD_FIELD_SYMBOL_REQUIRED',       '*');

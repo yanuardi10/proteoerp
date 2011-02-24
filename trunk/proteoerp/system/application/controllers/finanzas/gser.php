@@ -374,7 +374,7 @@ class gser extends Controller {
 		$select=array('MAX(fechafac) AS fdesde',
 					  'MIN(fechafac) AS fhasta',
 					  'SUM(tasa+sobretasa+reducida) AS totiva',
-					  'SUM(montasa+monadic+monredu+tasa+sobretasa+reducida) AS total',
+					  'SUM(montasa+monadic+monredu+tasa+sobretasa+reducida+exento) AS total',
 					  'TRIM(codbanc) AS codbanc',
 					  'COUNT(*) AS cana');
 		$grid->db->select($select);
@@ -405,6 +405,10 @@ class gser extends Controller {
 	function gserchipros($codbanc=null){
 		if(empty($codbanc)) show_error('Faltan par&aacute;metros');
 		$dbcodbanc=$this->db->escape($codbanc);
+		$mSQL='SELECT COUNT(*) AS cana, SUM(montasa+monadic+monredu+tasa+sobretasa+reducida) AS monto FROM gserchi WHERE ngasto IS NULL AND codbanc='.$dbcodbanc;
+		$r   =$this->datasis->damerow($mSQL);
+		if($r['cana']==0) show_error('Caja sin gastos');
+		
 		$mSQL="SELECT a.codprv, b.nombre FROM banc AS a JOIN sprv AS b ON a.codprv=b.proveed WHERE a.codbanc=$dbcodbanc";
 		$query = $this->db->query($mSQL);
 		if ($query->num_rows() > 0){
@@ -429,12 +433,8 @@ class gser extends Controller {
 		);
 		$bsprv=$this->datasis->modbus($modbus);
 
-		$form = new DataForm('finanzas/gser/gserchipros/process');
-
-		/*$form->codbanc = new dropdownField('Caja chica o fondo','codbanc');
-		$form->codbanc->option('','Seleccionar');
-		$form->codbanc->options("SELECT codbanc, CONCAT_WS('-',codbanc,banco) AS label FROM banc WHERE tbanco='CAJ' ORDER BY codbanc");
-		$form->codbanc->rule='max_length[5]|required';*/
+		$form = new DataForm('finanzas/gser/gserchipros/'.$codbanc.'/process');
+		$form->title("Total de facturas $r[cana], monto total <b>".nformat($r['monto']).'</b>');
 
 		$form->codprv = new inputField('Proveedor', 'codprv');
 		$form->codprv->rule='required';
@@ -449,7 +449,7 @@ class gser extends Controller {
 
 		$form->cargo = new dropdownField('Con cargo a','cargo');
 		$form->cargo->option($this->mcred,'Cr&eacute;dito');
-		$form->cargo->options("SELECT codbanc, CONCAT_WS('-',codbanc,banco) AS label FROM banc WHERE activo='S' AND codbanc<>$dbcodbanc ORDER BY codbanc");
+		$form->cargo->options("SELECT codbanc, CONCAT_WS('-',codbanc,banco) AS label FROM banc WHERE activo='S' ORDER BY codbanc");
 		$form->cargo->rule='max_length[5]|required';
 
 		$form->cheque = new inputField('N&uacute;mero de cheque', 'cheque');
@@ -475,6 +475,7 @@ class gser extends Controller {
 			$cheque  = $form->cheque->newValue;
 
 			$rt=$this->_gserchipros($codbanc,$cargo,$codprv,$benefi,$cheque);
+			//var_dump($rt);
 			if($rt){
 				redirect('finanzas/gser/listo/n');
 			}else{
@@ -504,25 +505,31 @@ class gser extends Controller {
 
 	function _gserchipros($codbanc,$cargo,$codprv,$benefi,$numeroch=null){
 			$dbcodprv = $this->db->escape($codprv);
-			$numeroch = str_pad($numeroch, 12, '0', STR_PAD_LEFT);
 			$nombre   = $this->datasis->dameval('SELECT nombre FROM sprv WHERE proveed='.$dbcodprv);
 			$fecha    = date('Y-m-d');
+			$numeroch = str_pad($numeroch, 12, '0', STR_PAD_LEFT);
 			$sp_fecha = str_replace('-','',$fecha);
+			$dbcodbanc= $this->db->escape($codbanc);
 			$error    = 0;
-			$cr=$this->mcred; //Marca para el credito
-
-			$tipo = common::_traetipo($codbanc);
-			$cheque = ($tipo=='CAJ')? $this->datasis->banprox($codbanc): $numeroch ;
+			$cr       = $this->mcred; //Marca para el credito
+			
+			$databan  = common::_traebandata($codbanc);
+			$datacar  = common::_traebandata($cargo);
+			if(!is_null($databan)){
+				$tipo  = $databan['tbanco'];
+				$moneda= $databan['moneda'];
+			}
 
 			$mSQL='SELECT codbanc,fechafac,numfac,nfiscal,rif,proveedor,codigo,descrip,
 			  moneda,montasa,tasa,monredu,reducida,monadic,sobretasa,exento,importe,sucursal,departa,usuario,estampa,hora
-			FROM gserchi WHERE ngasto IS NULL AND codbanc';
+			FROM gserchi WHERE ngasto IS NULL AND codbanc='.$dbcodbanc;
 
 			$query = $this->db->query($mSQL);
 			if ($query->num_rows() > 0){
 				$transac  = $this->datasis->fprox_numero('ntransa');
 				$numero   = $this->datasis->fprox_numero('ngser');
-				$negreso  = $this->datasis->fprox_numero('negreso');
+				$cheque   = ($tipo=='CAJ')? $this->datasis->banprox($codbanc): $numeroch ;
+				
 
 				$montasa=$monredu=$monadic=$tasa=$reducida=$sobretasa=$exento=$totpre=$totiva=0;
 				foreach ($query->result() as $row){
@@ -642,13 +649,65 @@ class gser extends Controller {
 					$sql=$this->db->insert_string('sprm', $data);
 					$ban=$this->db->simple_query($sql);
 					if($ban==false){ memowrite($sql,'gser'); $error++;}
-					$cargo ='';
-					$cheque='';
-					$tipo1 ='';
+					$cargo   = '';
+					$cheque  = '';
+					$tipo1   = '';
+					$negreso = '';
 				}else{
-					$ttipo  = common::_traetipo($cargo);
-					$tipo1  = ($ttipo=='CAJ') ? 'ND': 'CH';
+					$ttipo  = $datacar['tbanco'];
+					$tipo1  = ($ttipo=='CAJ') ? 'D': 'C';
+					$negreso= $this->datasis->fprox_numero('negreso');
 					$credito= 0;
+					$causado='';
+
+					$data=array();
+					$data['codbanc']    = $cargo;
+					$data['moneda']     = $moneda;
+					$data['numcuent']   = $datacar['numcuent'];
+					$data['banco']      = $datacar['banco'];
+					$data['saldo']      = $datacar['saldo'];
+					$data['tipo_op']    = ($ttipo=='CAJ') ? 'ND': 'CH';
+					$data['numero']     = $numeroch;
+					$data['fecha']      = $fecha;
+					$data['clipro']     = 'P';
+					$data['codcp']      = $codprv;
+					$data['nombre']     = $nombre;
+					$data['monto']      = $totneto;
+					$data['concepto']   = 'REPOSICION DE CAJA CHICA '.$codbanc;
+					/*$data['concep2']    = '';
+					$data['concep3']    = '';
+					$data['documen']    = '';
+					$data['comprob']    = '';
+					$data['status']     = '';
+					$data['cuenta']     = '';
+					$data['enlace']     = '';
+					$data['bruto']      = '';
+					$data['comision']   = '';
+					$data['impuesto']   = '';
+					$data['registro']   = '';
+					$data['concilia']   = '';*/
+					$data['benefi']     = $benefi;
+					$data['posdata']    = '';
+					$data['abanco']     = '';
+					$data['liable']     = ($ttipo=='CAJ') ? 'S': 'N';;
+					$data['transac']    = $transac;
+					$data['usuario']    = $this->session->userdata('usuario');
+					$data['estampa']    = date('Y-m-d');
+					$data['hora']       = date('H:i:s');
+					$data['anulado']    = 'N';
+					$data['susti']      = '';
+					$data['negreso']    = $negreso;
+					$data['ndebito']    = '';
+					$data['ncausado']   = '';
+					$data['ncredito']   = '';
+
+					$sql=$this->db->insert_string('bmov', $data);
+					$ban=$this->db->simple_query($sql);
+					if($ban==false){ memowrite($sql,'gser'); $error++;}
+
+					$sql='CALL sp_actusal('.$this->db->escape($cargo).",'$sp_fecha',-$totneto)";
+					$ban=$this->db->simple_query($sql);
+					if($ban==false){ memowrite($sql,'bcaj'); $error++; }
 				}
 
 				$data = array();
@@ -665,7 +724,7 @@ class gser extends Controller {
 				$data['codb1']      = $cargo;
 				$data['tipo1']      = $tipo1;
 				$data['cheque1']    = $cheque;
-				$data['comprob1']   = '';
+				/*$data['comprob1']   = '';
 				$data['monto1']     = '';
 				$data['codb2']      = '';
 				$data['tipo2']      = '';
@@ -676,7 +735,7 @@ class gser extends Controller {
 				$data['tipo3']      = '';
 				$data['cheque3']    = '';
 				$data['comprob3']   = '';
-				$data['monto3']     = '';
+				$data['monto3']     = '';*/
 				$data['credito']    = $credito;
 				$data['tipo_doc']   = 'FC';
 				$data['orden']      = '';
@@ -706,19 +765,22 @@ class gser extends Controller {
 				$data['exento']     = $exento;
 				$data['compra']     = '';
 				$data['serie']      = '';
-				$data['reteica']    = '';
-				$data['retesimple'] = 3;
+				$data['reteica']    = 0;
+				$data['retesimple'] = 0;
 				$data['negreso']    = $negreso;
-				$data['ncausado']   = '';
+				$data['ncausado']   = $causado;
 				$data['tipo_or']    = '';
 
 				$sql=$this->db->insert_string('gser', $data);
 				$ban=$this->db->simple_query($sql);
 				if($ban==false){ memowrite($sql,'gser'); $error++;}
-
-				$mSQL='CALL sp_actusal('.$this->db->escape($codbanc).",'$sp_fecha',-$totneto)";
-				$ban=$this->db->simple_query($mSQL); 
-				if($ban==false){ memowrite($mSQL,'gser'); $error++; }
+				
+				$data = array('ngasto' => $numero);
+				$where = "ngasto IS NULL AND  codbanc=$dbcodbanc";
+				$mSQL = $this->db->update_string('gserchi', $data, $where);
+				//$ban=$this->db->simple_query($mSQL); 
+				//if($ban==false){ memowrite($mSQL,'gser'); $error++; }
+				
 			}
 		return ($error==0)? true : false;
 	}
@@ -1118,18 +1180,32 @@ class gser extends Controller {
 		$edit->nfiscal->rule= 'required|max_length[12]|trim';
 		$edit->nfiscal->maxlength=20;
 
-		$edit->codigo = new inputField('C&oacute;digo del proveedor', 'proveed');
+		$edit->codigo = new inputField('C&oacute;digo', 'proveed');
 		$edit->codigo->size =8;
 		$edit->codigo->maxlength=5;
 		$edit->codigo->append($bsprv);
 		$edit->codigo->rule = 'required|trim';
-		//$edit->codigo->group='Proveedor';
+		$edit->codigo->group='Datos Proveedor';
 
-		$edit->nombre = new inputField('Nombre del proveedor', 'nombre');
+		$edit->nombre = new inputField('Nombre ', 'nombre');
 		$edit->nombre->size =  50;
 		$edit->nombre->maxlength=40; 
 		$edit->nombre->rule= 'required';
-		//$edit->nombre->group='Proveedor';
+		$edit->nombre->group='Datos Proveedor';
+
+		$edit->codb1 = new inputField('C&oacute;digo del banco', 'codb1');
+		$edit->codb1->mode='autohide';
+		$edit->codb1->group='Datos finacieros';
+
+		$edit->tipo1 = new dropdownField('Tipo de operaci&oacute;n', 'tipo1');
+		$edit->tipo1->option('N','Nota de d&eacute;bito');
+		$edit->tipo1->option('C','Cheque');  
+		$edit->tipo1->mode='autohide';
+		$edit->tipo1->group='Datos finacieros';
+
+		$edit->cheque1 = new inputField('N&uacute;mero', 'cheque1');
+		$edit->cheque1->mode='autohide';
+		$edit->cheque1->group='Datos finacieros';
 
 		$edit->totpre = new inputField('Monto neto', 'totpre');
 		$edit->totpre->mode='autohide';
@@ -1138,6 +1214,10 @@ class gser extends Controller {
 		$edit->totiva = new inputField('Impuesto', 'totiva');
 		$edit->totiva->mode='autohide';
 		$edit->totiva->group='Montos';
+
+		$edit->credito = new inputField('Monto a Cr&eacute;dito', 'credito');
+		$edit->credito->mode='autohide';
+		$edit->credito->group='Montos';
 
 		$edit->totbruto = new inputField('Monto total', 'totbruto');
 		$edit->totbruto->mode='autohide';
