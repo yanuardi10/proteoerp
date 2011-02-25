@@ -329,7 +329,7 @@ class Scst extends Controller {
 
 		$grid->add('farmacia/scst/asignardataedit/create');
 		$grid->build();
-		echo $grid->db->last_query();
+		//echo $grid->db->last_query();
 
 		$data['content'] = $filter->output.$grid->output;
 		$data['head']    = $this->rapyd->get_head();
@@ -650,13 +650,13 @@ class Scst extends Controller {
 
 					$retorna='Compra guardada con el control '.anchor("compras/scst/dataedit/show/$lcontrol",$lcontrol);
 				}else{
-					$retorna="Al parecer la factura fue ya pasada";
+					$retorna='Al parecer la factura fue ya pasada';
 				}
 			}else{
-				$retorna="No se puede pasar porque hay productos que no existen en inventario";
+				$retorna='No se puede pasar porque hay productos que no existen en inventario';
 			}
 		}else{
-			$retorna="Error en la consulta";
+			$retorna='Error en la consulta';
 		}
 		return $retorna;
 	}
@@ -668,16 +668,24 @@ class Scst extends Controller {
 	function instalar(){
 		$mSQL="CREATE TABLE IF NOT EXISTS `farmaxasig` (
 		`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-		`proveed` VARCHAR(50) NOT NULL,
-		`barras` VARCHAR(250) NOT NULL,
-		`abarras` VARCHAR(250) NOT NULL,
+		`proveed` VARCHAR(5) NOT NULL,
+		`barras` VARCHAR(20) NOT NULL,
+		`abarras` VARCHAR(12) NOT NULL,
 		PRIMARY KEY (`id`),
 		UNIQUE INDEX `proveed` (`proveed`, `barras`)
 		)
 		COMMENT='Tabla de equivalencias de productos'
 		ENGINE=MyISAM
 		ROW_FORMAT=DEFAULT";
+		var_dump($this->db->simple_query($mSQL));
 
-		$this->db->simple_query($mSQL);
+		$mSQL="ALTER TABLE `farmaxasig`  CHANGE COLUMN `barras` `barras` VARCHAR(20) NOT NULL COLLATE 'latin1_general_ci' AFTER `proveed`";
+		var_dump($this->db->simple_query($mSQL));
+		$mSQL="ALTER TABLE `farmaxasig`  CHANGE COLUMN `abarras` `abarras` VARCHAR(12) NOT NULL COLLATE 'latin1_general_ci' AFTER `barras`";
+		var_dump($this->db->simple_query($mSQL));
+		$mSQL="ALTER TABLE `farmaxasig`  CHANGE COLUMN `proveed` `proveed` VARCHAR(5) NOT NULL COLLATE 'utf8_unicode_ci' AFTER `id`";
+		var_dump($this->db->simple_query($mSQL));
+		$mSQL="ALTER TABLE `farmaxasig`  COLLATE='latin1_general_ci',  CONVERT TO CHARSET latin1";
+		var_dump($this->db->simple_query($mSQL));
 	}
 }
