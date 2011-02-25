@@ -778,8 +778,8 @@ class gser extends Controller {
 				$data = array('ngasto' => $numero);
 				$where = "ngasto IS NULL AND  codbanc=$dbcodbanc";
 				$mSQL = $this->db->update_string('gserchi', $data, $where);
-				//$ban=$this->db->simple_query($mSQL); 
-				//if($ban==false){ memowrite($mSQL,'gser'); $error++; }
+				$ban=$this->db->simple_query($mSQL); 
+				if($ban==false){ memowrite($mSQL,'gser'); $error++; }
 				
 			}
 		return ($error==0)? true : false;
