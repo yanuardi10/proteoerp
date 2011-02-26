@@ -515,9 +515,9 @@ class gser extends Controller {
 			
 			$databan  = common::_traebandata($codbanc);
 			$datacar  = common::_traebandata($cargo);
-			if(!is_null($databan)){
-				$tipo  = $databan['tbanco'];
-				$moneda= $databan['moneda'];
+			if(!is_null($datacar)){
+				$tipo  = $datacar['tbanco'];
+				$moneda= $datacar['moneda'];
 			}
 
 			$mSQL='SELECT codbanc,fechafac,numfac,nfiscal,rif,proveedor,codigo,descrip,
