@@ -5,7 +5,7 @@ class gser extends Controller {
 		parent::Controller();
 		$this->load->library('rapyd');
 		$this->mcred='_CR';
-		//$this->datasis->modulo_id(604,1);
+		$this->datasis->modulo_id('518',1);
 	}
 
 	function index() {
@@ -379,6 +379,7 @@ class gser extends Controller {
 					  'COUNT(*) AS cana');
 		$grid->db->select($select);
 		$grid->db->from('gserchi');
+		$grid->db->where('ngasto IS NULL');
 		$grid->db->groupby('codbanc');
 
 		$grid->order_by('codbanc','desc');
@@ -604,10 +605,10 @@ class gser extends Controller {
 					$data['impuesto']   = $totiva ;
 					$data['abonos']     = 0;
 					$data['vence']      = $fecha;
-					/*$data['tipo_ref']   = '';
-					$data['num_ref']    = '';
-					$data['observa1']   = '';
-					$data['observa2']   = '';
+					//$data['tipo_ref']   = '';
+					//$data['num_ref']    = '';
+					$data['observa1']   = 'REPOSICION DE CAJA CHICA '.$codbanc;
+					/*$data['observa2']   = '';
 					$data['banco']      = '';
 					$data['tipo_op']    = '';
 					$data['comprob']    = '';
@@ -651,7 +652,6 @@ class gser extends Controller {
 					if($ban==false){ memowrite($sql,'gser'); $error++;}
 					$cargo   = '';
 					$cheque  = '';
-					$tipo1   = '';
 					$negreso = '';
 				}else{
 					$ttipo  = $datacar['tbanco'];
@@ -667,7 +667,7 @@ class gser extends Controller {
 					$data['banco']      = $datacar['banco'];
 					$data['saldo']      = $datacar['saldo'];
 					$data['tipo_op']    = ($ttipo=='CAJ') ? 'ND': 'CH';
-					$data['numero']     = $numeroch;
+					$data['numero']     = $cheque;
 					$data['fecha']      = $fecha;
 					$data['clipro']     = 'P';
 					$data['codcp']      = $codprv;
@@ -780,7 +780,6 @@ class gser extends Controller {
 				$mSQL = $this->db->update_string('gserchi', $data, $where);
 				$ban=$this->db->simple_query($mSQL); 
 				if($ban==false){ memowrite($mSQL,'gser'); $error++; }
-				
 			}
 		return ($error==0)? true : false;
 	}

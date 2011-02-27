@@ -131,9 +131,100 @@ class notifica extends controller {
 		}
 		return $rt;
 	}
+	function eventos(){
+		$this->rapyd->load('datafilter','datagrid');
+        $this->rapyd->uri->keep_persistence();
+
+        $filter = new DataFilter('Filtro de Eventos', 'eventos');
+
+        $filter->nombre = new inputField('Nombre del evento', 'nombre');
+		$filter->nombre->size=15;
+        $filter->nombre->maxsize=12;
+
+        $filter->buttons('reset','search');
+        $filter->build();
+
+        $grid = new DataGrid('Cheques emitidos');
+        $grid->per_page = 10;
+
+        $uri = anchor('sincro/notifica/dataediteventos/show/<#id#>','<#nombre#>');
+        $grid->column_orderby('Nombre'      ,$uri,'nombre');
+        $grid->column_orderby('Fecha'        ,'<dbdate_to_human><#fechahora#></dbdate_to_human>','fechahora');
+        $grid->column_orderby('Concurrencia' ,'concurrencia'  ,'concurrencia');
+		$grid->add('sincro/notifica/dataediteventos/create');
+        $grid->build();
+
+        $data['content'] = $filter->output.$grid->output;
+        $data['title']   = heading('Gestor de eventos');
+        $data['head']    = $this->rapyd->get_head();
+        $this->load->view('view_ventanas', $data);
+	}
+
+	function ejecutor(){
+		if($this->secu->es_shell()){
+			$mSQL='SELECT *,UNIX_TIMESTAMP(`disparo`) AS utime FROM eventos';
+			$query = $this->db->query($mSQL);
+			$time=time();
+			$not=0;
+
+			if ($query->num_rows() > 0){
+				foreach ($query->result() as $__row){
+					switch($__row->concurrencia){
+						case 'D':
+							$tt=24*3600;
+							break;
+						case 'S':
+							$tt=7*24*3600;
+							break;
+						case 'M':
+							$tt=30*24*3600;
+							break;
+						case 'A':
+							$tt=365*24*3600;
+							break;
+						default:
+							$tt=0;
+					}
+
+					if($time-$__row->utime>=$tt){
+						$activa=$this->meval($__row->activador);
+						if($activa){
+							$msj=$this->meval($__row->accion);
+
+							preg_match_all("/(?<para>[0-9]{4}\-[0-9]{7})/" ,$__row->para,$matches);
+							$telefonos= $matches['para'];
+							if(count($telefonos)>0){
+								foreach($telefonos AS $telefono){
+									$telef=explode('-',$telefono);
+									$this->_enviar($telef[0],$telef[1],$msj);
+								}
+							}
+
+							preg_match_all("/(?<para>[\w-\.]+@([\w-]+\.)+[\w-]{2,4})/" ,$__row->para,$matches);
+							$correos  = $matches['para'];
+							$titulo=$this->datasis->traevalor('TITULO1');
+							if(count($correos)>0){
+								foreach($correos AS $correo){
+									$this->_mail($correo,'Notificacion ProteoERP::'.$titulo,$msj);
+								}
+							}
+							$this->db->simple_query('UPDATE eventos SET disparo=NOW() WHERE id='.$__row->id);
+							$not++;
+							//echo $msj.' '.strlen($msj);
+						}
+					}
+				}
+			}
+			echo "Se enviaron $not notificaciones \n";
+		}
+	}
+
+	function meval($code){
+		return eval($code);
+	}
 
 	//Funcion que notifica a los usuarios de un evento dado
-	function eventos(){
+	function dataediteventos(){
 		$this->rapyd->load('dataedit');
 
 		$edit = new DataEdit('Programador de eventos', 'eventos');
@@ -142,36 +233,41 @@ class notifica extends controller {
 		$edit->nombre->rule='max_length[100]';
 		$edit->nombre->maxlength =100;
 
+		$edit->comenta = new inputField('Comentario','comenta');
+		$edit->comenta->rule='max_length[100]';
+		$edit->comenta->maxlength =100;
+
 		$edit->fechahora = new dateField('Fecha de arranque','fechahora');
 		$edit->fechahora->rule='chfecha';
 		$edit->fechahora->size =10;
 		$edit->fechahora->maxlength =8;
 
-		$edit->concurrencia = new inputField('concurrencia','concurrencia');
+		$edit->concurrencia = new dropdownField('Concurrencia','concurrencia');
+		$edit->concurrencia->option('D','Diaria' );
+		$edit->concurrencia->option('S','Semanal');
+		$edit->concurrencia->option('M','Mensual');
+		$edit->concurrencia->option('A','Anual'  );
+		$edit->concurrencia->option('F','Funci&oacute;n activadora');
 		$edit->concurrencia->rule='max_length[1]';
-		$edit->concurrencia->size =3;
-		$edit->concurrencia->maxlength =1;
 
 		$edit->activador = new textareaField('Funcion activadora','activador');
-		$edit->activador->rule='max_length[8]';
 		$edit->activador->cols = 70;
 		$edit->activador->rows = 4;
 
 		$edit->para = new textareaField('Para','para');
-		//$edit->para->rule='max_length[8]';
 		$edit->para->cols = 70;
 		$edit->para->rows = 3;
 
 		$edit->accion = new textareaField('accion','accion');
-		//$edit->accion->rule='max_length[8]';
 		$edit->accion->cols = 70;
-		$edit->accion->rows = 4;
+		$edit->accion->rows = 8;
 
 		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
 		$edit->estampa = new autoUpdateField('estampa' ,date('Ymd'), date('Ymd'));
 
 		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
 		$edit->build();
+
 		$data['content'] = $edit->output;
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = heading('Programador de eventos');
@@ -301,5 +397,24 @@ class notifica extends controller {
 		} else {
 			return true;
 		}
+	}
+
+	function instalar(){
+		$mSQL="CREATE TABLE `eventos` (
+		  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+		  `nombre` varchar(100) NOT NULL,
+		  `comenta` varchar(100) NOT NULL COMMENT 'Comentario del evento',
+		  `fechahora` datetime NOT NULL,
+		  `activador` tinytext NOT NULL COMMENT 'Funcion a evaluar, si devuelve verdadero se dispara',
+		  `concurrencia` char(1) NOT NULL COMMENT 'S semanal, D diario, H cada hora,',
+		  `para` tinytext NOT NULL COMMENT 'a quienes se les notifica',
+		  `accion` text NOT NULL,
+		  `disparo` datetime NOT NULL,
+		  `usuario` varbinary(10) NOT NULL,
+		  `estampa` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		  PRIMARY KEY (`id`),
+		  UNIQUE KEY `nombre` (`nombre`)
+		) ENGINE=MyISAM DEFAULT CHARSET=latin1 COMMENT='Tabla que guarda las acciones por eventos'";
+		$this->db->simple_query($mSQL);
 	}
 }

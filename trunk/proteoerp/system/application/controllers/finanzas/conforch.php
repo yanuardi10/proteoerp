@@ -12,49 +12,45 @@ class Conforch extends Validaciones {
 	}
 
 	function filteredgrid() {
-		$this->rapyd->load('datafilter','datagrid');
-		$this->rapyd->uri->keep_persistence();
+		$this->rapyd->load('dataform','datagrid');
+		//$this->rapyd->uri->keep_persistence();
 
-		$filter = new DataFilter('Filtro de Cheques', 'bmov');
-		$filter->db->where('tipo_op','CH');
-		$filter->db->orderby('fecha','desc');
+		$filter = new DataForm('finanzas/conforch/filteredgrid/process');
+		//$filter->title('Filtro de Cheques');
 
-		$filter->numero = new inputField('N&uacute;mero de cheque', 'numero');
-		$filter->numero->size=15;
-		$filter->numero->maxsize=12;
+		$filter->valor = new inputField('N&uacute;mero o Beneficiario', 'valor');
+		$filter->valor->rule ='required';
+		$filter->valor->autocomplete=false;
 
-		$filter->banco = new dropdownField('Banco', 'codbanc');
-		$filter->banco->option('','Todos');
-		$filter->banco->options('SELECT codbanc,CONCAT_WS(\' \',banco,numcuent) AS val FROM banc where tbanco<>\'CAJ\' ORDER BY banco');
-		$filter->banco->style  = 'width:400px';
+		$filter->submit('btnsubmit','Buscar');
+		$filter->build_form();
 
-		$filter->benefi = new inputField('Beneficiario', 'benefi');
-		$filter->benefi->maxsize=40;
+		$tabla='';
+		if($filter->on_success()){
+			$valor=$filter->valor->newValue;
 
-		$filter->anulado = new dropdownField('Anulado', 'anulado');
-		$filter->anulado->option('','Todos');
-		$filter->anulado->option('S','Si');
-		$filter->anulado->option('N','No');
-		$filter->anulado->style  = 'width:80px';
+			$grid = new DataGrid('Cheques emitidos','bmov');
+			$grid->db->where('tipo_op','CH');
+			$grid->db->like('CONCAT(`numero`,`benefi`)', $valor); 
+			$grid->db->orderby('fecha','desc');
+			$grid->db->limit(10);
+			//$grid->per_page = 20;
 
-		$filter->buttons('reset','search');
-		$filter->build();
+			$uri = anchor('finanzas/conforch/dataedit/show/<#codbanc#>/<#tipo_op#>/<#numero#>','<#numero#>');
+			//$grid->column("Nombre"      ,'nombre'  );
+			$grid->column('Fecha'        ,'<dbdate_to_human><#fecha#></dbdate_to_human>');
+			$grid->column('N&uacute;mero',$uri  );
+			$grid->column('Beneficiario' ,'benefi'  ,'benefi');
+			$grid->column('Monto'        ,'<nformat><#monto#></nformat>','align=\'right\'');
+			$grid->column('Banco'        ,'banco'   );
+			$grid->column('Concepto'     ,'concepto');
+			$grid->column('Anulado'      ,'anulado' ,'align=\'center\'');
+			$grid->build();
+			//echo $grid->db->last_query();
+			$tabla=$grid->output;
+		}  
 
-		$grid = new DataGrid('Cheques emitidos');
-		$grid->per_page = 10;
-
-		$uri = anchor('finanzas/conforch/dataedit/show/<#codbanc#>/<#tipo_op#>/<#numero#>','<#numero#>');
-		//$grid->column("Nombre"      ,'nombre'  );
-		$grid->column_orderby('Fecha'        ,'<dbdate_to_human><#fecha#></dbdate_to_human>','fecha');
-		$grid->column_orderby('N&uacute;mero',$uri  ,'numero');
-		$grid->column_orderby('Beneficiario' ,'benefi'  ,'benefi');
-		$grid->column_orderby('Monto'        ,'<nformat><#monto#></nformat>','monto','align=\'right\'');
-		$grid->column_orderby('Banco'        ,'banco'   ,'banco');
-		$grid->column_orderby('Concepto'     ,'concepto','concepto');
-		$grid->column_orderby('Anulado'      ,'anulado'  ,'anulado','align=\'center\'');
-		$grid->build();
-
-		$data['content'] = $filter->output.$grid->output;
+		$data['content'] = $filter->output.$tabla;
 		$data['title']   = heading('Conformaci&oacute;n de Cheques');
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
