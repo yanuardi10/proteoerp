@@ -99,7 +99,7 @@ class ingresos{
 				SELECT b.fecha, a.numero, 'OJO LLENE DATOS', 'OJO', '',
 					'' AS afecta, 0 AS fafecta, b.monto-b.abonos, a.transac, a.numero, a.fecha, a.fecha 
 				FROM smov AS b JOIN prmo AS a ON a.transac=b.transac 
-				WHERE a.fecha BETWEEN $fdesde AND $fhasta AND b.cod_cli='REIVA' 
+				WHERE b.fecha BETWEEN $fdesde AND $fhasta AND b.cod_cli='REIVA' 
 				AND b.monto>b.abonos";
 
 		$query = $this->db->query($mSQL);
