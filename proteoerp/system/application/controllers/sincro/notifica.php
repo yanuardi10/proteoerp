@@ -149,6 +149,7 @@ class notifica extends controller {
 
         $uri = anchor('sincro/notifica/dataediteventos/show/<#id#>','<#nombre#>');
         $grid->column_orderby('Nombre'      ,$uri,'nombre');
+		$grid->column_orderby('Activo'      ,'activo','activo');
         $grid->column_orderby('Fecha'        ,'<dbdate_to_human><#fechahora#></dbdate_to_human>','fechahora');
         $grid->column_orderby('Concurrencia' ,'concurrencia'  ,'concurrencia');
 		$grid->add('sincro/notifica/dataediteventos/create');
@@ -162,7 +163,7 @@ class notifica extends controller {
 
 	function ejecutor(){
 		if($this->secu->es_shell()){
-			$mSQL='SELECT *,UNIX_TIMESTAMP(`disparo`) AS utime FROM eventos';
+			$mSQL='SELECT *,UNIX_TIMESTAMP(`disparo`) AS utime FROM eventos WHERE activo="S"';
 			$query = $this->db->query($mSQL);
 			$time=time();
 			$not=0;
@@ -187,6 +188,11 @@ class notifica extends controller {
 					}
 
 					if($time-$__row->utime>=$tt){
+						$pte=explode(' ',$__row->fechahora);
+						$pte=explode(':',$pte[1]);
+						$updfecha=$this->db->escape(date('Y-m-d H:i:s',mktime($pte[0], $pte[1], $pte[2])));
+						$this->db->simple_query("UPDATE eventos SET disparo=$updfecha WHERE id=".$__row->id);
+
 						$activa=$this->meval($__row->activador);
 						if($activa){
 							$msj=$this->meval($__row->accion);
@@ -196,7 +202,10 @@ class notifica extends controller {
 							if(count($telefonos)>0){
 								foreach($telefonos AS $telefono){
 									$telef=explode('-',$telefono);
-									$this->_enviar($telef[0],$telef[1],$msj);
+									$rt=$this->_enviar($telef[0],$telef[1],$msj);
+									if(!$rt){
+										echo "Error enviando mensaje al telefono $telef[0]-$telef[1] \n";
+									}
 								}
 							}
 
@@ -205,10 +214,12 @@ class notifica extends controller {
 							$titulo=$this->datasis->traevalor('TITULO1');
 							if(count($correos)>0){
 								foreach($correos AS $correo){
-									$this->_mail($correo,'Notificacion ProteoERP::'.$titulo,$msj);
+									$rt=$this->_mail($correo,'Notificacion ProteoERP::'.$titulo,$msj);
+									if(!$rt){
+										echo "Error enviando correo $correo \n";
+									}
 								}
 							}
-							$this->db->simple_query('UPDATE eventos SET disparo=NOW() WHERE id='.$__row->id);
 							$not++;
 							//echo $msj.' '.strlen($msj);
 						}
@@ -237,10 +248,20 @@ class notifica extends controller {
 		$edit->comenta->rule='max_length[100]';
 		$edit->comenta->maxlength =100;
 
-		$edit->fechahora = new dateField('Fecha de arranque','fechahora');
-		$edit->fechahora->rule='chfecha';
-		$edit->fechahora->size =10;
-		$edit->fechahora->maxlength =8;
+		$edit->activo = new dropdownField('Activo','activo');
+		$edit->activo->rule = 'required|max_length[1]';
+		$edit->activo->option('','Seleccionar');
+		$edit->activo->option('S','S&iacute;' );
+		$edit->activo->option('N','No');
+
+		$edit->fechahora = new dateField('Fecha de arranque','fechahora','d/m/Y H:i:s');
+		$edit->fechahora->rule='chfecha|max_length[19]';
+		$edit->fechahora->size =20;
+		$edit->fechahora->insertValue=date("Y-m-d H:i:s");
+		$edit->fechahora->calendar=false;
+		$edit->fechahora->maxlength =19;
+		$edit->fechahora->autocomplete=false;
+		$edit->fechahora->append('Si el evento tiene concurrencia se va a ejecutar desde la fecha data a la misma hora');
 
 		$edit->concurrencia = new dropdownField('Concurrencia','concurrencia');
 		$edit->concurrencia->option('D','Diaria' );
@@ -254,11 +275,12 @@ class notifica extends controller {
 		$edit->activador->cols = 70;
 		$edit->activador->rows = 4;
 
-		$edit->para = new textareaField('Para','para');
+		$edit->para = new textareaField('Destinatarios','para');
 		$edit->para->cols = 70;
 		$edit->para->rows = 3;
+		$edit->para->append('Correos electr&oacute;nicos o n&uacute;mero de telefonos 9999-9999999');
 
-		$edit->accion = new textareaField('accion','accion');
+		$edit->accion = new textareaField('Acci&oacute;n','accion');
 		$edit->accion->cols = 70;
 		$edit->accion->rows = 8;
 
@@ -267,9 +289,25 @@ class notifica extends controller {
 
 		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
 		$edit->build();
+		/*$this->rapyd->jquery[]='$("#fechahora").AnyTime_picker({
+			format: "%d/%m/%Y %H:%i:%s%#",
+			formatUtcOffset: "%: (%@)",
+			hideInput: true,
+			labelHour: "Horas",
+			labelMinute: "Minutos",
+			labelMonth: "Mes",
+			labelSecond: "Segundos",
+			labelYear: "A&ntilde;o",
+			labelDayOfMonth: "D&iacute;a del mes",
+			dayAbbreviations:Array("Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"),
+			monthAbbreviations: Array("Ene", "Feb", "Mar", "Abr", "Mayo", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"),
+			monthNames: Array("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"),
+			placement: "inline",
+			labelTitle: "Seleccione el d&iacute;a y la hora"
+		});';*/
 
 		$data['content'] = $edit->output;
-		$data['head']    = $this->rapyd->get_head();
+		$data['head']    = $this->rapyd->get_head().style('anytimec.css').script('plugins/anytimec.js');
 		$data['title']   = heading('Programador de eventos');
 		$this->load->view('view_ventanas', $data);
 	}
@@ -401,20 +439,21 @@ class notifica extends controller {
 
 	function instalar(){
 		$mSQL="CREATE TABLE `eventos` (
-		  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-		  `nombre` varchar(100) NOT NULL,
-		  `comenta` varchar(100) NOT NULL COMMENT 'Comentario del evento',
-		  `fechahora` datetime NOT NULL,
-		  `activador` tinytext NOT NULL COMMENT 'Funcion a evaluar, si devuelve verdadero se dispara',
-		  `concurrencia` char(1) NOT NULL COMMENT 'S semanal, D diario, H cada hora,',
-		  `para` tinytext NOT NULL COMMENT 'a quienes se les notifica',
-		  `accion` text NOT NULL,
-		  `disparo` datetime NOT NULL,
-		  `usuario` varbinary(10) NOT NULL,
-		  `estampa` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-		  PRIMARY KEY (`id`),
-		  UNIQUE KEY `nombre` (`nombre`)
-		) ENGINE=MyISAM DEFAULT CHARSET=latin1 COMMENT='Tabla que guarda las acciones por eventos'";
+		`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+		`nombre` varchar(100) NOT NULL,
+		`comenta` varchar(100) NOT NULL COMMENT 'Comentario del evento',
+		`fechahora` datetime NOT NULL,
+		`activador` tinytext NOT NULL COMMENT 'Funcion a evaluar, si devuelve verdadero se dispara',
+		`concurrencia` char(1) NOT NULL COMMENT 'S semanal, D diario, H cada hora,',
+		`para` tinytext NOT NULL COMMENT 'a quienes se les notifica',
+		`accion` text NOT NULL,
+		`disparo` datetime NOT NULL,
+		`activo` char(1) NOT NULL DEFAULT 'N',
+		`usuario` varbinary(10) NOT NULL,
+		`estampa` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		PRIMARY KEY (`id`),
+		UNIQUE KEY `nombre` (`nombre`)
+		) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=latin1 COMMENT='Tabla que guarda las acciones por eventos'";
 		$this->db->simple_query($mSQL);
 	}
 }
