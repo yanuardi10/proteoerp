@@ -7,6 +7,7 @@ class notifica extends controller {
 
 	function notifica(){
 		parent::Controller();
+		$this->datasis->modulo_id('923',1);
 		$this->config->load('notifica');
 		$this->load->library('rapyd');
 		$this->error='';
@@ -140,6 +141,11 @@ class notifica extends controller {
         $filter->nombre = new inputField('Nombre del evento', 'nombre');
 		$filter->nombre->size=15;
         $filter->nombre->maxsize=12;
+		
+		$filter->activo = new dropdownField('Activos','activo');
+		$filter->activo->option('','Todos');
+		$filter->activo->option('S','S&iacute;' );
+		$filter->activo->option('N','No');
 
         $filter->buttons('reset','search');
         $filter->build();
@@ -152,6 +158,7 @@ class notifica extends controller {
 		$grid->column_orderby('Activo'      ,'activo','activo');
         $grid->column_orderby('Fecha'        ,'<dbdate_to_human><#fechahora#></dbdate_to_human>','fechahora');
         $grid->column_orderby('Concurrencia' ,'concurrencia'  ,'concurrencia');
+		$grid->column_orderby('U. Ejecuci&oacute;n','disparo','disparos');
 		$grid->add('sincro/notifica/dataediteventos/create');
         $grid->build();
 
@@ -234,11 +241,12 @@ class notifica extends controller {
 		return eval($code);
 	}
 
-	//Funcion que notifica a los usuarios de un evento dado
 	function dataediteventos(){
 		$this->rapyd->load('dataedit');
 
 		$edit = new DataEdit('Programador de eventos', 'eventos');
+		$edit->pre_process('insert','_pre_insert');
+		$edit->back_url = site_url('sincro/notifica/eventos');
 
 		$edit->nombre = new inputField('Nombre del evento','nombre');
 		$edit->nombre->rule='max_length[100]';
@@ -284,8 +292,17 @@ class notifica extends controller {
 		$edit->accion->cols = 70;
 		$edit->accion->rows = 8;
 
-		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
-		$edit->estampa = new autoUpdateField('estampa' ,date('Ymd'), date('Ymd'));
+		$edit->disparo = new dateField('Fecha de la &uacute;ltima ejecuci&oacute;n','disparo','d/m/Y H:i:s');
+		$edit->disparo->rule = 'chfecha|max_length[19]';
+		$edit->disparo->size = 20;
+		$edit->disparo->insertValue=date("Y-m-d H:i:s");
+		$edit->disparo->calendar  = false;
+		$edit->disparo->maxlength = 19;
+		$edit->disparo->autocomplete=false;
+		$edit->disparo->when=array('show','modify');
+
+		$edit->usuario  = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
+		$edit->estampa  = new autoUpdateField('estampa' ,date('Ymd'), date('Ymd'));
 
 		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
 		$edit->build();
@@ -310,6 +327,13 @@ class notifica extends controller {
 		$data['head']    = $this->rapyd->get_head().style('anytimec.css').script('plugins/anytimec.js');
 		$data['title']   = heading('Programador de eventos');
 		$this->load->view('view_ventanas', $data);
+	}
+
+	function _pre_insert($do){
+		$codigo = $do->get('nombre');
+		$fecha  = $do->get('fechahora');
+		$do->set('disparo',$fecha );
+		logusu('notifica',"EVENTO $codigo CREADO");
 	}
 
 	function _movistar($codigo,$numero,$msg){
