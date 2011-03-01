@@ -32,6 +32,8 @@ class dateField extends objField{
   
   var $readonly=FALSE;
   
+  var $calendar = true; //true para que muestre el calendario
+  
   //costruttore
   function dateField($label, $name, $format=RAPYD_DATE_FORMAT){
 
@@ -111,17 +113,19 @@ class dateField extends objField{
           'style'       => $this->style);
         if($this->readonly) $attributes['readonly']='readonly';
         $output  = form_input($attributes); //'<div>'.
-        $output .= ' <img src="'.RAPYD_LIBRARIES.'jscalendar/calender_icon.gif" id="'.$this->name.'_button" border="0" style="vertical-align:middle;" />'.$this->extra_output;
-        $output .= HTML::javascriptTag('
-         Calendar.setup({
-        inputField  : "'.$this->name.'",
-        ifFormat    : "'.datestamp_from_format($this->format).'",
-        button      : "'.$this->name.'_button",
-        align       : "Bl",
-        singleClick : false,
-        mondayFirst : true,
-        weekNumbers : false
-       });');
+        if($this->calendar){
+          $output .= ' <img src="'.RAPYD_LIBRARIES.'jscalendar/calender_icon.gif" id="'.$this->name.'_button" border="0" style="vertical-align:middle;" />'.$this->extra_output;
+          $output .= HTML::javascriptTag('
+           Calendar.setup({
+          inputField  : "'.$this->name.'",
+          ifFormat    : "'.datestamp_from_format($this->format).'",
+          button      : "'.$this->name.'_button",
+          align       : "Bl",
+          singleClick : false,
+          mondayFirst : true,
+          weekNumbers : false
+         });');
+        }
         
         break;
 

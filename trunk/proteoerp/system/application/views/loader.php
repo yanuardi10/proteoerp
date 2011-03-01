@@ -75,7 +75,12 @@ $(document).ready(function() {
 		<table class='pie' width="100%" border=0 cellspacing=0 cellpadding=0>
 			<tr>
 				<td width='178px' valign='top'>
-					<div><p style="font-size:10px"><?php echo "Conectado a: ".$this->db->database; ?></p></div>
+					<div><p style="font-size:10px"><?php 
+						echo "Conectado a: ".$this->db->database; 
+						if(isset($_SERVER['REMOTE_ADDR'])){
+							echo br().'Tu ip: '.$_SERVER['REMOTE_ADDR'];
+						}
+					?></p></div>
 				</td>
 				<td align='center'>
 					<p style="font-size:8px"><?php echo $copyright ?></p>
