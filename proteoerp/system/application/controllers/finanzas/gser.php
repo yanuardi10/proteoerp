@@ -1225,6 +1225,10 @@ class gser extends Controller {
 
 
 	function _pre_insert($do){
+		$fecha  = $do->get('fecha');
+		$usuario= $do->get('usuario');
+		$proveed= $do->get('proveed');
+		$ffecha = $do->get('ffactura');
 		if($do->get('numero')==""){
 			$numero=$this->datasis->fprox_numero('ngser');
 			$do->set('numero',$numero);
@@ -1232,48 +1236,57 @@ class gser extends Controller {
 			$numero=$do->get('numero');
 		}
 
+		$mSQL='SELECT COUNT(*) FROM gser WHERE proveed='.$this->db->escape($proveed).' AND numero='.$this->db->escape($numero).' AND fecha='.$this->db->escape($fecha);
+		$ca=$this->datasis->dameval($mSQL);
+		if($ca>0){
+			$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='Al parecer ya esta registrado un gasto con la misma fecha, n&uacute;mero y proveedor.';
+			return false;
+		}
+
 		$trans=$this->datasis->fprox_numero('ntransa');
-		//$do->set('numero',$numero);
 		$do->set('transac',$trans);
 
-		$datos  = $do->get_all();
-		$fecha  = $do->get('fecha');
-		$usuario= $do->get('usuario');
-		$proveed= $do->get('proveed');
-		$ffecha = $do->get('ffactura');
-		
-		$ivat=0;$subt=0;$total=0;
+		$ivat=$subt=$total=0;
 		$cana=$do->count_rel("gitser");
+		$tasa=$reducida=$sobretasa=$montasa=$monredu=$monadic=$exento=0;
+		$con=$this->db->query("select tasa,redutasa,sobretasa from civa order by fecha desc limit 1");
+		$t=$con->row('tasa');$rt=$con->row('redutasa');$st=$con->row('sobretasa');
+
 		for($i=0;$i<$cana;$i++){
+			$auxt   = $do->get_rel('gitser','tasaiva',$i);
+			$precio = $do->get_rel('gitser','precio',$i);
+			$iva    = $do->get_rel('gitser','iva',$i);
+			if($auxt-$t==0) {
+				$tasa   +=$iva;
+				$montasa+=$precio;
+				$do->set_rel('gitser','tasa'     ,$iva   ,$i);
+				$do->set_rel('gitser','montasa'  ,$precio,$i);
+			}elseif($auxt-$rt==0) {
+				$reducida+=$iva;
+				$monredu +=$precio;
+				$do->set_rel('gitser','reducida' ,$iva   ,$i);
+				$do->set_rel('gitser','monredu'  ,$precio,$i);
+			}elseif($auxt-$st==0) {
+				$sobretasa+=$iva;
+				$monadic  +=$precio;
+				$do->set_rel('gitser','sobretasa',$iva   ,$i);
+				$do->set_rel('gitser','monadic'  ,$precio,$i);
+			}else{
+				$exento+=$precio;
+				$do->set_rel('gitser','exento'   ,$precio,$i);
+			}
+
 			$do->set_rel('gitser','fecha'   ,$fecha  ,$i);
 			$do->set_rel('gitser','numero'  ,$numero ,$i);
 			$do->set_rel('gitser','transac' ,$trans  ,$i);
 			$do->set_rel('gitser','usuario' ,$usuario,$i);
 			$do->set_rel('gitser','proveed' ,$proveed,$i);
-			$do->set_rel('gitser','fechafec',$ffecha ,$i);
-		}
-		$tasa=0;$reducida=0;$sobretasa=0;$montasa=0;$monredu=0;$monadic=0;$exento=0;
-		$con=$this->db->query("select tasa,redutasa,sobretasa from civa order by fecha desc limit 1");
-		$t=$con->row('tasa');$rt=$con->row('redutasa');$st=$con->row('sobretasa');
+			$do->set_rel('gitser','fechafac',$ffecha ,$i);
 
-		foreach($do->data_rel['gitser'] as $rel){
-			$auxt=$rel['tasaiva'];
-			if($auxt==$t) {
-				$tasa   +=$rel['iva'];
-				$montasa+=$rel['precio'];
-			}elseif($auxt==$rt) {
-				$reducida+=$rel['iva'];
-				$monredu +=$rel['precio'];
-			}elseif($auxt==$st) {
-				$sobretasa+=$rel['iva'];
-				$monadic  +=$rel['precio'];
-			}else{
-				$exento+=$rel['precio'];
-			}
-			$p = $rel['precio'];
-			$i = $rel['iva'];
-			$total+=$i+$p;
-			$subt +=$p;
+			$total+=$iva+$precio;
+			$subt +=$precio;
+
+			$do->rel_rm_field('gitser','tasaiva',$i);//elimina el campo comodin
 		}
 
 		$ivat=$total-$subt;
@@ -1287,10 +1300,6 @@ class gser extends Controller {
 		//$do->set('totpre',$subt);
 		//$do->set('totbruto',$total);
 		//$do->set('totiva',$ivat);
-
-		for($i=0;$i<$cana;$i++){
-			$do->rel_rm_field('gitser','tasaiva',$i);
-		}
 
 		if ($do->get('monto1') != 0){
 			$negreso  = $this->datasis->fprox_numero("negreso");
