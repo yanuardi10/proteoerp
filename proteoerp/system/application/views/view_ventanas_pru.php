@@ -1,58 +1,38 @@
 <html>
 <head>
-<meta http-equiv="Content-type"
-	content="text/html; charset=<?=$this->config->item('charset'); ?>" />
+<meta http-equiv="Content-type" content="text/html; charset=<?=$this->config->item('charset'); ?>" />
 <title><?=$this->datasis->traevalor("SISTEMA") ?></title>
 <?=style("ventanas.css");?>
+<?=script("jquery.js") ?>
 <?php if (isset($style))  echo $style;   ?>
 <style type="text/css">
 <?php if($tabla=="") {?>
-#caja {
-	width: 100%;
-	display: block;
-	padding: 5px;
-	border: 2px solid #D0D0D0;
-	background-color: #FDFdFD;
-}
+#cajafiltro {width: 100%;display: block;padding: 5px;border: 2px solid #D0D0D0;background-color: #FDFdFD;}
 <?php } else{?>
-	#caja {
-	width: 100%;
-	display: block;
-	padding: 5px;
-	border: 2px solid #D0D0D1;
-	background-color: #FFFFFF;
-}	
+#cajafiltro {width: 100%;display: block;padding: 5px;border: 2px solid #D0D0D1;background-color: #FFFFFF;}	
 <?php }?>
-#mostrar {
-	display: block;
-	width: 100%;
-	padding: 5px;
-	border: 2px solid #D0D0D0;
-	background-color: #F0F0F0;
-}
+#mostrafiltro {display: block;width: 100%;padding: 5px;border: 2px solid #D0D0D0;background-color: #F0F0F0;}
 </style>
 <?php if (isset($head))   echo $head;   ?>
 <?php if (isset($script)) echo $script; ?>
 
 <script type="text/javascript">
-$(function()
-{	
-	
-	$("#mostrar").click(function(event) {
-		estado = $("#caja").css("display");
-		
+$(function(){
+	$("#mostrafiltro").click(function(event) {
+		estado = $("#cajafiltro").css("display");
 		//abre la ventana
 		if(estado == "none"){
-			$("#caja").show();
+			$("#cajafiltro").show();
 		}else{
-			$("#caja").hide();
+			$("#cajafiltro").hide();
 		}
-		
-		
-		});
-//$("#mostrar").click(function(event) {event.preventDefault();$("#caja").slideToggle();});
-//$("#caja a").click(function(event) {event.preventDefault();$("#caja").slideUp();});
+	});
+	
+//$("#mostrar").click(function(event) {event.preventDefault();$("#cajafiltro").slideToggle();});
+//$("#cajafiltro a").click(function(event) {event.preventDefault();$("#cajafiltro").slideUp();});
+$("#cajafiltro").hide();
 });
+
 </script>
 </head>
 <body>
@@ -67,9 +47,9 @@ $(function()
 	<tr>
 		<td></td>
 		<td><?php if (isset($filtro)) { ?>
-		<div><a href="#" id="mostrar">Filtro<?=image("", "#", array("border"=>"none")); ?></a>
+		<div><a href="#" id="mostrafiltro">Filtro<?=image("", "#", array("border"=>"none")); ?></a>
 		</div>
-		<div id="caja"><?=$filtro.$tabla; ?></div>
+		<div id="cajafiltro"><?=$filtro.$tabla; ?></div>
 		<?php } ?></td>
 	</tr>
 	<tr>
@@ -80,7 +60,6 @@ $(function()
 		<td colspan=4 align="center">
 		<div class="footer">
 
-
 		<p style='font-size: 10'>Tiempo de la consulta seg | Proteo ERP  |<a
 			href="#" onClick="window.close()">Cerrar</a></p>
 
@@ -89,6 +68,6 @@ $(function()
 		</td>
 	</tr>
 </table>
-		<?php if (isset($extras)) echo $extras; ?></div>
+<?php if (isset($extras)) echo $extras; ?></div>
 </body>
 </html>

@@ -43,13 +43,13 @@ class Bcaj extends Controller {
 		$filter->build();
 
 		$uri = anchor('finanzas/bcaj/dataedit/show/<#numero#>','<#numero#>');
-		$uri1 = anchor('formatos/verhtml/BANCAJA/<#numero#>','<#numero#>');
+		$uri1 = anchor('formatos/ver/BANCAJA/<#numero#>','<#numero#>');
 
 		$grid = new DataGrid('Lista');
 		$grid->order_by('numero','desc');
 		$grid->per_page = 15;
 
-		$uri2 = anchor_popup('finanzas/bcaj/formato/<#numero#>/<#tipo#>','Ver HTML',$atts);
+		$uri2 = anchor_popup('finanzas/bcaj/formato/<#numero#>/<#tipo#>','PDF',$atts);
 
 		$grid->column_orderby('N&uacute;mero',$uri,'numero');
 		$grid->column_orderby('Fecha'        ,'<dbdate_to_human><#fecha#></dbdate_to_human>','fecha');
@@ -72,7 +72,7 @@ class Bcaj extends Controller {
 
 	function formato($numero){
 		$formato=$this->_formato($numero);
-		$url='formatos/verhtml/'.$formato.'/'.$numero;
+		$url='formatos/ver/'.$formato.'/'.$numero;
 		redirect($url);
 	}
 

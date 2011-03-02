@@ -37,6 +37,7 @@ class gastos extends Controller {
 		$select=array('id','numero','fecha','vence','nombre','totiva','totneto','proveed');
 		$filter->db->select($select);
 		$filter->db->from('gser');
+		$filter->db->orderby('fecha DESC');
 
 		$filter->fechad = new dateonlyField('Desde', 'fechad','d/m/Y');
 		$filter->fechah = new dateonlyField('Hasta', 'fechah','d/m/Y');
@@ -77,10 +78,13 @@ class gastos extends Controller {
 		//$grid->add("finanzas/agregareg/");
 		$grid->build();
 
-		$data['content'] =$filter->output.$grid->output;
+		$data['content'] = $grid->output;
+		$data['filtro']  = $filter->output;
+		$data['tabla']  = "";
+		
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   ='<h1>Egresos</h1>';
-		$this->load->view('view_ventanas', $data);
+		$this->load->view('view_ventanas_pru', $data);
 	}
 
 	function dataedit(){

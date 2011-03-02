@@ -375,7 +375,7 @@ class gser extends Controller {
 
 		$uri  = anchor('finanzas/gser/gserchipros/<#codbanc#>','<#codbanc#>');
 
-		$grid = new DataGrid('Lista de cajas chicas para cerrar');
+		$grid = new DataGrid('');
 		$select=array('MAX(fechafac) AS fdesde',
 					  'MIN(fechafac) AS fhasta',
 					  'SUM(tasa+sobretasa+reducida) AS totiva',
@@ -403,7 +403,7 @@ class gser extends Controller {
 
 		$data['content'] = $grid->output;
 		$data['head']    = $this->rapyd->get_head();
-		$data['title']   = heading('Agregar/Modificar facturas de Caja Chica');
+		$data['title']   = heading('Cajas pendientes por cerrar');
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -490,7 +490,7 @@ class gser extends Controller {
 		}
 
 		$data['content'] = $form->output;
-		$data['title']   = heading('Agregar/Modificar Gasto de caja chica');
+		$data['title']   = heading('Cierre de caja $codbanc');
 		$data['head']    = $this->rapyd->get_head();
 		$data['head']   .= phpscript('nformat.js');
 		$this->load->view('view_ventanas', $data);

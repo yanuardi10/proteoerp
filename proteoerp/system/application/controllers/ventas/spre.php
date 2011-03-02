@@ -16,76 +16,75 @@ class spre extends validaciones {
 		$this->rapyd->load("datagrid","datafilter");
 
 		$atts = array(
-              'width'      => '800',
-              'height'     => '600',
-              'scrollbars' => 'yes',
-              'status'     => 'yes',
-              'resizable'  => 'yes',
-              'screenx'    => '0',
-              'screeny'    => '0'
-              );
+		'width'      => '800',
+		'height'     => '600',
+		'scrollbars' => 'yes',
+		'status'     => 'yes',
+		'resizable'  => 'yes',
+		'screenx'    => '0',
+		'screeny'    => '0'
+		);
 
-              $scli=array(
-	  'tabla'   =>'scli',
-	  'columnas'=>array(
+		$scli=array(
+		'tabla'   =>'scli',
+		'columnas'=>array(
 		'cliente' =>'C&oacute;digo Cliente',
 		'nombre'=>'Nombre',
 		'contacto'=>'Contacto'),
-	  'filtro'  =>array('cliente'=>'C&oacute;digo Cliente','nombre'=>'Nombre'),
-	  'retornar'=>array('cliente'=>'cod_cli'),
-	  'titulo'  =>'Buscar Cliente');
+		'filtro'  =>array('cliente'=>'C&oacute;digo Cliente','nombre'=>'Nombre'),
+		'retornar'=>array('cliente'=>'cod_cli'),
+		'titulo'  =>'Buscar Cliente');
                
-              $boton=$this->datasis->modbus($scli);
+		$boton=$this->datasis->modbus($scli);
 
+		$filter = new DataFilter("Filtro de Presupuestos");
+		$filter->db->select(array('fecha','numero','cod_cli','nombre','totals','totalg','iva'));
+		$filter->db->from('spre');
 
-              $filter = new DataFilter("Filtro de Presupuestos");
-              $filter->db->select(array('fecha','numero','cod_cli','nombre','totals','totalg','iva'));
-              $filter->db->from('spre');
+		$filter->fechad = new dateonlyField("Desde", "fechad",'d/m/Y');
+		$filter->fechah = new dateonlyField("Hasta", "fechah",'d/m/Y');
+		$filter->fechad->clause  =$filter->fechah->clause="where";
+		$filter->fechad->db_name =$filter->fechah->db_name="fecha";
+		$filter->fechad->insertValue = date("Y-m-d");
+		$filter->fechah->insertValue = date("Y-m-d");
+		$filter->fechah->size=$filter->fechad->size=10;
+		$filter->fechad->operator=">=";
+		$filter->fechah->operator="<=";
 
-              $filter->fechad = new dateonlyField("Desde", "fechad",'d/m/Y');
-              $filter->fechah = new dateonlyField("Hasta", "fechah",'d/m/Y');
-              $filter->fechad->clause  =$filter->fechah->clause="where";
-              $filter->fechad->db_name =$filter->fechah->db_name="fecha";
-              $filter->fechad->insertValue = date("Y-m-d");
-              $filter->fechah->insertValue = date("Y-m-d");
-              $filter->fechah->size=$filter->fechad->size=10;
-              $filter->fechad->operator=">=";
-              $filter->fechah->operator="<=";
+		$filter->numero = new inputField("N&uacute;mero", "numero");
+		$filter->numero->size = 30;
 
-              $filter->numero = new inputField("N&uacute;mero", "numero");
-              $filter->numero->size = 30;
+		$filter->cliente = new inputField("Cliente", "cod_cli");
+		$filter->cliente->size = 30;
+		$filter->cliente->append($boton);
 
-              $filter->cliente = new inputField("Cliente", "cod_cli");
-              $filter->cliente->size = 30;
-              $filter->cliente->append($boton);
+		$filter->buttons("reset","search");
+		$filter->build();
 
-              $filter->buttons("reset","search");
-              $filter->build();
+		$uri = anchor('ventas/spre/dataedit/show/<#numero#>','<#numero#>');
+		$uri2 = anchor_popup('formatos/verhtml/PRESUP/<#numero#>',"Ver HTML",$atts);
 
-              $uri = anchor('ventas/spre/dataedit/show/<#numero#>','<#numero#>');
-              $uri2 = anchor_popup('formatos/verhtml/PRESUP/<#numero#>',"Ver HTML",$atts);
+		$grid = new DataGrid();
+		$grid->order_by("numero","desc");
+		$grid->per_page = 15;
 
-              $grid = new DataGrid();
-              $grid->order_by("numero","desc");
-              $grid->per_page = 15;
+		$grid->column("N&uacute;mero",$uri);
+		$grid->column("Fecha","<dbdate_to_human><#fecha#></dbdate_to_human>","align='center'");
+		$grid->column("Nombre","nombre");
+		$grid->column("Sub.Total","<number_format><#totals#>|2</number_format>","align=right");
+		$grid->column("IVA","<number_format><#iva#>|2</number_format>","align=right");
+		$grid->column("Total","<number_format><#totalg#>|2</number_format>","align=right");
+		$grid->column("Vista",$uri2,"align='center'");
 
-              $grid->column("N&uacute;mero",$uri);
-              $grid->column("Fecha","<dbdate_to_human><#fecha#></dbdate_to_human>","align='center'");
-              $grid->column("Nombre","nombre");
-              $grid->column("Sub.Total","<number_format><#totals#>|2</number_format>","align=right");
-              $grid->column("IVA","<number_format><#iva#>|2</number_format>","align=right");
-              $grid->column("Total","<number_format><#totalg#>|2</number_format>","align=right");
-              $grid->column("Vista",$uri2,"align='center'");
-
-              $grid->add("ventas/spre/dataedit/create");
-              $grid->build();
+		$grid->add("ventas/spre/dataedit/create");
+		$grid->build();
                
-              //echo $grid->db->last_query();
+		//echo $grid->db->last_query();
 
-              $data['content'] =$filter->output.$grid->output;
-              $data["head"]    = $this->rapyd->get_head();
-              $data['title']   ='<h1>Presupuesto</h1>';
-              $this->load->view('view_ventanas', $data);
+		$data['content'] =$filter->output.$grid->output;
+		$data["head"]    = $this->rapyd->get_head();
+		$data['title']   ='<h1>Presupuesto</h1>';
+		$this->load->view('view_ventanas', $data);
 	}
 
 	function dataedit(){

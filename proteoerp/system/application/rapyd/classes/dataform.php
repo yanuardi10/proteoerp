@@ -260,154 +260,137 @@ class DataForm{
   * @access   private
   * @return   void
   */
-  function build_form(){
+  function build_form($miview='dataform'){
        
     if (!$this->_built) $this->build();
-    
+
     if (!array_key_exists("id", $this->attributes)) $this->attributes["id"] = $this->cid;
 
     if ($this->_multipart){
-      $this->form_open = form_open_multipart($this->_process_uri, $this->attributes);
+	$this->form_open = form_open_multipart($this->_process_uri, $this->attributes);
     } else {
-      $this->form_open = form_open($this->_process_uri, $this->attributes);
+	$this->form_open = form_open($this->_process_uri, $this->attributes);
     }
     
     $this->form_close = form_close();
-		
-		
-		$this->rapyd->set_view_path();
-		
-		$data["title"] = "";
-		$data["error_string"] = "";
-		$data["form_scripts"] = "";
-		$data["container_tr"] = "";
-		$data["container_bl"] = "";
-		$data["container_br"] = "";
-		
-		//title
-		$data["title"] = $this->_title;
 
-		//buttons
+    $this->rapyd->set_view_path();
+
+    $data["title"] = "";
+    $data["error_string"] = "";
+    $data["form_scripts"] = "";
+    $data["container_tr"] = "";
+    $data["container_bl"] = "";
+    $data["container_br"] = "";
+
+    //title
+    $data["title"] = $this->_title;
+
+    //buttons
     if ( (count($this->_button_container["TR"])>0) || (isset($this->_button_status[$this->_status]["TR"])) ){
-      if (isset($this->_button_status[$this->_status]["TR"])){
-        foreach ($this->_button_status[$this->_status]["TR"] as $state_buttons){
-          $this->_button_container["TR"][] = $state_buttons;
-        }
-      }
-			$data["container_tr"] = join("&nbsp;", $this->_button_container["TR"]);
+	if (isset($this->_button_status[$this->_status]["TR"])){
+	    foreach ($this->_button_status[$this->_status]["TR"] as $state_buttons){
+		$this->_button_container["TR"][] = $state_buttons;
+	    }
+	}
+	$data["container_tr"] = join("&nbsp;", $this->_button_container["TR"]);
     }
     if ( (count($this->_button_container["BL"])>0) || (isset($this->_button_status[$this->_status]["BL"])) ){
-      if (isset($this->_button_status[$this->_status]["BL"])){
-        foreach ($this->_button_status[$this->_status]["BL"] as $state_buttons){
-          $this->_button_container["BL"][] = $state_buttons;
-        }
-      }
-			$data["container_bl"] = join("&nbsp;", $this->_button_container["BL"]);
+	if (isset($this->_button_status[$this->_status]["BL"])){
+	    foreach ($this->_button_status[$this->_status]["BL"] as $state_buttons){
+	    $this->_button_container["BL"][] = $state_buttons;
+	    }
+	}
+	$data["container_bl"] = join("&nbsp;", $this->_button_container["BL"]);
     }
     if ( (count($this->_button_container["BR"])>0) || (isset($this->_button_status[$this->_status]["BR"])) ){
-      if (isset($this->_button_status[$this->_status]["BR"])){
-        foreach ($this->_button_status[$this->_status]["BR"] as $state_buttons){
-          $this->_button_container["BR"][] = $state_buttons;
-        }
-      }
-			$data["container_br"] = join("&nbsp;", $this->_button_container["BR"]);
+	if (isset($this->_button_status[$this->_status]["BR"])){
+	    foreach ($this->_button_status[$this->_status]["BR"] as $state_buttons){
+	    $this->_button_container["BR"][] = $state_buttons;
+	    }
+	}
+	$data["container_br"] = join("&nbsp;", $this->_button_container["BR"]);
     }
     
-		$data["form_scripts"] = HTML::javascriptTag($this->_script[$this->_status]);
-		$data["title"] = $this->_title;
-		$data["error_string"] = $this->error_string;
-		$data["form_begin"] = $this->form_open;
-		$data["form_end"] = $this->form_close;
-
+    $data["form_scripts"] = HTML::javascriptTag($this->_script[$this->_status]);
+    $data["title"] = $this->_title;
+    $data["error_string"] = $this->error_string;
+    $data["form_begin"] = $this->form_open;
+    $data["form_end"] = $this->form_close;
 
     //$prg=0;
     //nest fields (fields can be nested/joined with others)
     foreach ( $this->_fields as $field_name => $field_ref )
     {
-      //$prg++;
-      if (isset($field_ref->in)){
-        $series_of_fields[$field_ref->in][] = $field_name; 
-      } else {
-      
-        //if ($field_name==null) $field_name = "__".$prg;
-        $series_of_fields[$field_name][] = $field_name;
-      }
+	//$prg++;
+	if (isset($field_ref->in)){
+	    $series_of_fields[$field_ref->in][] = $field_name; 
+	} else {
+	    //if ($field_name==null) $field_name = "__".$prg;
+	    $series_of_fields[$field_name][] = $field_name;
+	}
     }
 
     //group fields (fields can be organized in groups)
     foreach ( $this->_fields as $field_name => $field_ref )
     {
-      if (!isset($field_ref->in)){
-        if (isset($field_ref->group)){
-          $ordered_fields[$field_ref->group][$field_name] = $series_of_fields[$field_name]; 
-        } else {
-          $ordered_fields["ungrouped"][$field_name] = $series_of_fields[$field_name];
-        }
-      }
+	if (!isset($field_ref->in)){
+	    if (isset($field_ref->group)){
+		$ordered_fields[$field_ref->group][$field_name] = $series_of_fields[$field_name]; 
+	    } else {
+		$ordered_fields["ungrouped"][$field_name] = $series_of_fields[$field_name];
+	    }
+	}
     }
     unset($series_of_fields);
-    
 
-    foreach ($ordered_fields as $group=>$series_of_fields){
+    foreach ($ordered_fields as $group=>$series_of_fields) {
+	unset($gr);
+	if(strpos($group,'|')>0) {
+	    $arr=explode('|',$group);
+	    $gid  =$arr[1];
+	    $gname=$arr[0];
+	} else {
+	    $gname=$group;
+	    $gid  =underscore(strtolower($group));
+	}
+
+	$gr["group_name"] = $gname;
+	$gr["group_tr"]   = 'id="tr_'.$gid.'"';
       
-			unset($gr);
-			if(strpos($group,'|')>0){
-				$arr=explode('|',$group);
-				$gid  =$arr[1];
-				$gname=$arr[0];
-			}else{
-				$gname=$group;
-				$gid  =underscore(strtolower($group));
-			}
-			
-			$gr["group_name"] = $gname;
-			$gr["group_tr"]   = 'id="tr_'.$gid.'"';
-      
-      foreach ($series_of_fields as $series_name=>$fields ) {
-        unset($sr);
-        $sr["is_hidden"] = false;
-        $sr["series_name"] = $series_name;
-        $sr["series_tr"] = 'id="tr_'.$series_name.'"';
-        $sr["series_td"] = 'id="td_'.$series_name.'"';
+	foreach ($series_of_fields as $series_name=>$fields ) {
+	    unset($sr);
+	    $sr["is_hidden"] = false;
+	    $sr["series_name"] = $series_name;
+	    $sr["series_tr"] = 'id="tr_'.$series_name.'"';
+	    $sr["series_td"] = 'id="td_'.$series_name.'"';
 
-        foreach ($fields as $field_name ) {
-          unset($fld);
-        
-          $field_ref =& $this->$field_name;
+	    foreach ($fields as $field_name ) {
+		unset($fld);
+		$field_ref =& $this->$field_name;
 
-
-          if (($field_ref->status == "hidden" ||  in_array($field_ref->type, array("hidden","auto"))))
-          {
-            $sr["is_hidden"] = true;
-          }
+		if (($field_ref->status == "hidden" ||  in_array($field_ref->type, array("hidden","auto")))) {
+		    $sr["is_hidden"] = true;
+		}
           
-          $fld["label"] = $field_ref->label.($this->_status=="show"?'':$field_ref->_required);
-          $fld["field_td"] = 'id="td_'.$field_ref->name.'"';
-          $fld["field"] = $field_ref->output;
-          $fld["type"] = $field_ref->type;
-          $fld["status"] = $field_ref->status;
-          
-          
-          $sr["fields"][] = $fld;
-
-        }
-        $gr["series"][] = $sr;
-      
-      }
-			$grps[] = $gr;
-
+		$fld["label"]    = $field_ref->label.($this->_status=="show"?'':$field_ref->_required);
+		$fld["field_td"] = 'id="td_'.$field_ref->name.'"';
+		$fld["field"]    = $field_ref->output;
+		$fld["type"]     = $field_ref->type;
+		$fld["status"]   = $field_ref->status;
+		
+		$sr["fields"][]  = $fld;
+	    }
+	    $gr["series"][] = $sr;
+	}
+	$grps[] = $gr;
     }
     $data["groups"] = $grps;
 
-		$this->output = $this->ci->load->view('dataform', $data, true);
-
-		$this->rapyd->reset_view_path();
-
-		return  $this->output;
-    
+    $this->output = $this->ci->load->view($miview, $data, true);
+    $this->rapyd->reset_view_path();
+    return  $this->output;
   }
-
-
 
 
  /**
