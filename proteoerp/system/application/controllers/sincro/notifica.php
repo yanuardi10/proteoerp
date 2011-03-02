@@ -7,13 +7,13 @@ class notifica extends controller {
 
 	function notifica(){
 		parent::Controller();
-		$this->datasis->modulo_id('923',1);
 		$this->config->load('notifica');
 		$this->load->library('rapyd');
 		$this->error='';
 	}
 
 	function index(){
+		$this->datasis->modulo_id('923',1);
 		$list[]=anchor('sincro/notifica/sms','Mensajes SMS');
 		$list[]=anchor('sincro/notifica/email','E-Mail');
 		$attributes = array('class' => 'boldlist','id'    => 'mylist');
@@ -26,6 +26,7 @@ class notifica extends controller {
 	}
 
 	function sms(){
+		$this->datasis->modulo_id('923',1);
 		$this->rapyd->load('dataform');
 
 		$form = new DataForm('sincro/notifica/sms/process');
@@ -76,6 +77,7 @@ class notifica extends controller {
 	}
 
 	function email(){
+		$this->datasis->modulo_id('923',1);
 		$this->rapyd->load('dataform');
 
 		$form = new DataForm('sincro/notifica/email/process');
@@ -132,40 +134,43 @@ class notifica extends controller {
 		}
 		return $rt;
 	}
+
 	function eventos(){
+		$this->datasis->modulo_id('923',1);
+
 		$this->rapyd->load('datafilter','datagrid');
-        $this->rapyd->uri->keep_persistence();
+		$this->rapyd->uri->keep_persistence();
 
-        $filter = new DataFilter('Filtro de Eventos', 'eventos');
+		$filter = new DataFilter('Filtro de Eventos', 'eventos');
 
-        $filter->nombre = new inputField('Nombre del evento', 'nombre');
+		$filter->nombre = new inputField('Nombre del evento', 'nombre');
 		$filter->nombre->size=15;
-        $filter->nombre->maxsize=12;
-		
+		$filter->nombre->maxsize=12;
+
 		$filter->activo = new dropdownField('Activos','activo');
 		$filter->activo->option('','Todos');
 		$filter->activo->option('S','S&iacute;' );
 		$filter->activo->option('N','No');
 
-        $filter->buttons('reset','search');
-        $filter->build();
+		$filter->buttons('reset','search');
+		$filter->build();
 
-        $grid = new DataGrid('Cheques emitidos');
-        $grid->per_page = 10;
+		$grid = new DataGrid('Cheques emitidos');
+		$grid->per_page = 10;
 
-        $uri = anchor('sincro/notifica/dataediteventos/show/<#id#>','<#nombre#>');
-        $grid->column_orderby('Nombre'      ,$uri,'nombre');
+		$uri = anchor('sincro/notifica/dataediteventos/show/<#id#>','<#nombre#>');
+		$grid->column_orderby('Nombre'      ,$uri,'nombre');
 		$grid->column_orderby('Activo'      ,'activo','activo');
-        $grid->column_orderby('Fecha'        ,'<dbdate_to_human><#fechahora#></dbdate_to_human>','fechahora');
-        $grid->column_orderby('Concurrencia' ,'concurrencia'  ,'concurrencia');
+		$grid->column_orderby('Fecha'        ,'<dbdate_to_human><#fechahora#></dbdate_to_human>','fechahora');
+		$grid->column_orderby('Concurrencia' ,'concurrencia'  ,'concurrencia');
 		$grid->column_orderby('U. Ejecuci&oacute;n','disparo','disparos');
 		$grid->add('sincro/notifica/dataediteventos/create');
-        $grid->build();
+		$grid->build();
 
-        $data['content'] = $filter->output.$grid->output;
-        $data['title']   = heading('Gestor de eventos');
-        $data['head']    = $this->rapyd->get_head();
-        $this->load->view('view_ventanas', $data);
+		$data['content'] = $filter->output.$grid->output;
+		$data['title']   = heading('Gestor de eventos');
+		$data['head']    = $this->rapyd->get_head();
+		$this->load->view('view_ventanas', $data);
 	}
 
 	function ejecutor(){
@@ -242,6 +247,7 @@ class notifica extends controller {
 	}
 
 	function dataediteventos(){
+		$this->datasis->modulo_id('923',1);
 		$this->rapyd->load('dataedit');
 
 		$edit = new DataEdit('Programador de eventos', 'eventos');

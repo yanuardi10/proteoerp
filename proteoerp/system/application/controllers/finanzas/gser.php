@@ -70,6 +70,11 @@ class gser extends Controller {
 		$data['content'].= '<p></p>';
 		$data['content'].= anchor('finanzas/gser/cierregserchi'  ,'Cerrar Caja Chica').br();
 
+		$data['content'].= '<tr><td><img src="'.base_url().'images/dinero.jpg'.'" height="100px"></td><td>';
+		$data['content'].= '<p></p>';
+		$data['content'].= anchor('finanzas/gser/dataedit/create'  ,'Agregar un gasto').br();
+
+
 		$data['content'].= '</td></tr><tr><td colspan=2 align="center">'.anchor('finanzas/gser/index'        ,'Regresar').br();
 		$data['content'].= '</td></tr></table>'.br();
 
@@ -831,10 +836,6 @@ class gser extends Controller {
 
 		$btn=$this->datasis->p_modbus($modbus,'<#i#>');
 
-		$script='$(function(){
-			$(".inputnum").numeric(".");
-			
-			';
 
 		$mSPRV=array(
 			'tabla'   =>'sprv',
@@ -847,18 +848,6 @@ class gser extends Controller {
 			
 			'titulo'  =>'Buscar Proveedorr');
 		$bSPRV=$this->datasis->modbus($mSPRV);
-
-		$mBANC=array(
-			'tabla'   =>'banc',
-			'columnas'=>array(
-			'codbanc' =>'C&oacute;odigo','tbanco'=>'Entidad',
-			'banco'=>'Banco',
-			'dire1'=>'Direcci&oacute;n','proxch'=>'ProxChe'),
-			'filtro'  =>array('codbanc'=>'C&oacute;digo','banco'=>'Banco'),
-			'retornar'=>array('codbanc'=>'codb1','proxch'=>'cheque1'),
-			
-			'titulo'  =>'Buscar Banco');
-		$bBANC=$this->datasis->modbus($mBANC);
 
 		$mRETE=array(
 			'tabla'   =>'rete',
@@ -879,62 +868,56 @@ class gser extends Controller {
 		$edit->back_url = site_url("finanzas/gser/filteredgrid");
 		$edit->set_rel_title('gitser','Gasto <#o#>');
 
-		$edit->script($script,'create');
-		$edit->script($script,'modify');
+		//$edit->script($script,'create');
+		//$edit->script($script,'modify');
 
-		$edit->pre_process('insert' ,'_pre_insert');
-		$edit->pre_process('update' ,'_pre_update');
+		$edit->pre_process( 'insert','_pre_insert' );
+		$edit->pre_process( 'update','_pre_update' );
 		$edit->post_process('insert','_post_insert');
 		$edit->post_process('update','_post_update');
 		$edit->post_process('delete','_post_delete');
 
 		$edit->tipo_doc =  new dropdownField("Tipo Documento", "tipo_doc");
-
+		$edit->tipo_doc->style="width:100px";
 		$edit->tipo_doc->option('FC',"Factura");
 		$edit->tipo_doc->option('ND',"Nota Debito");
 		$edit->tipo_doc->option('AD',"Amortizaci&oacute;n");
-		$edit->tipo_doc->option('GA',"Gasto de N&oacute;mina");
-		$edit->tipo_doc->style="30px";
+		//$edit->tipo_doc->option('GA',"Gasto de N&oacute;mina");
 
 		$edit->ffactura = new DateonlyField("Fecha Documento", "ffactura","d/m/Y");
-		//$edit->ffactura->insertValue = date("Y-m-d");
-		//$edit->ffactura->mode="autohide";
 		$edit->ffactura->size = 10;
+		$edit->ffactura->rule = 'required';
+		//$edit->ffactura->insertValue = date("Y-m-d");
 
-		$edit->fecha = new DateonlyField("Fecha Recepci&oacute;n", "fecha","d/m/Y");
+		$edit->fecha = new DateonlyField('Fecha Recepci&oacute;n', 'fecha');
 		$edit->fecha->insertValue = date("Y-m-d");
-		//$edit->fecha->mode="autohide";
 		$edit->fecha->size = 10;
+		$edit->fecha->rule = 'required';
 
 		$edit->vence = new DateonlyField("Fecha Vencimiento", "vence","d/m/Y");
-		//$edit->vence->insertValue = date("Y-m-d");
-		//$edit->vence->mode="autohide";
 		$edit->vence->size = 10;
+		//$edit->vence->insertValue = date("Y-m-d");
 
-		$edit->id = new inputField("ID", "id");
-		$edit->id->size = 10;
-		$edit->id->mode="autohide";
-		$edit->id->maxlength=8;
-		$edit->id->when=array("");
+		$edit->compra = new inputField('Compra asociada','compra');
+		$edit->compra->rule='max_length[8]';
+		$edit->compra->size =10;
+		$edit->compra->maxlength =8;
 
 		$edit->numero = new inputField("N&uacute;mero", "numero");
 		$edit->numero->size = 10;
-		//$edit->numero->mode="autohide";
 		$edit->numero->maxlength=8;
-		//$edit->numero->apply_rules=false; //necesario cuando el campo es clave y no se pide al usuario
-		//$edit->numero->when=array('create','modify');
+		$edit->numero->rule='required';
 
-		$edit->proveedg = new inputField("Proveedor","proveed");
-		$edit->proveedg->size = 10;
-		$edit->proveedg->maxlength=5;
-		$edit->proveedg->append($bSPRV);
-		$edit->proveedg->rule= "required";
-		//$edit->proveedg->mode="autohide";
+		$edit->proveed = new inputField("Proveedor","proveed");
+		$edit->proveed->size = 6;
+		$edit->proveed->maxlength=5;
+		$edit->proveed->append($bSPRV);
+		$edit->proveed->rule= "required";
 
 		$edit->nfiscal  = new inputField("Control Fiscal", "nfiscal");
+		$edit->nfiscal->rule = 'required';
 		$edit->nfiscal->size = 10;
 		$edit->nfiscal->maxlength=20;
-		//$edit->nfiscal->css_class='inputnum';
 
 		$edit->nombre = new inputField("Nombre", "nombre");
 		$edit->nombre->size = 30;
@@ -951,17 +934,16 @@ class gser extends Controller {
 		$edit->totbruto->css_class='inputnum';
 		$edit->totbruto->onkeyup="valida(0)";
 
-		$edit->totiva = new inputField("TOTAL IVA", "totiva");
-		//$edit->totiva->mode="autohide";
+		$edit->totiva = new inputField("Total IVA", "totiva");
 		$edit->totiva->css_class ='inputnum';
-		//$edit->totiva->when=array('show','modify');
 		$edit->totiva->size      = 10;
 		$edit->totiva->onkeyup="valida(0)";
 
-		$edit->codb1 = new inputField("Banco","codb1");
-		$edit->codb1->size = 5;
-		$edit->codb1->maxlength=2;
-		$edit->codb1->append($bBANC);
+		$edit->codb1 = new dropdownField('Caja o Banco','codb1');
+		$edit->codb1->option('','Cr&eacute;dito');
+		$edit->codb1->options("SELECT codbanc, CONCAT_WS('-',codbanc,banco) AS label FROM banc ORDER BY codbanc");
+		$edit->codb1->rule  = 'max_length[5]';
+		$edit->codb1->style = 'width:120px';
 
 		$edit->tipo1 =  new dropdownField("Tipo", "tipo1");
 		$edit->tipo1->option('',"Tipo");
@@ -980,38 +962,34 @@ class gser extends Controller {
 		$edit->monto1= new inputField("Monto", "monto1");
 		$edit->monto1->size = 10;
 		$edit->monto1->css_class='inputnum';
+		$edit->monto1->when=array('show');
 
 		$edit->credito= new inputField("Saldo Cr&eacute;dito", "credito");
 		$edit->credito->size = 10;
 		$edit->credito->css_class='inputnum';
+		$edit->credito->when=array('show');
+		//$edit->credito->onkeyup="ccredito()";
 
-		$edit->comprob1= new inputField("Comprobante externo", "comprob1");
+		/*$edit->comprob1= new inputField("Comprobante ext.", "comprob1");
 		$edit->comprob1->size = 20;
-		$edit->comprob1->css_class='inputnum';
+		$edit->comprob1->css_class='inputnum';*/
 
-		$edit->transac= new inputField("Transacci&oacute;n", "transac");
-		$edit->transac->size = 10;
-		$edit->transac->css_class='inputnum';
-		$edit->transac->mode="autohide";
-		$edit->transac->when=array('show','modify');
-
-		$edit->creten = new inputField("Literal","creten");
+		/*$edit->creten = new inputField("C&oacute;digo de la retencion","creten");
 		$edit->creten->size = 10;
 		$edit->creten->maxlength=10;
-		$edit->creten->append($bRETE);
-		//$edit->creten->rule= "required";
+		$edit->creten->append($bRETE);*/
 
-		$edit->breten = new inputField("Base","breten");
+		/*$edit->breten = new inputField("Base de la retenci&oacute;n","breten");
 		$edit->breten->size = 10;
 		$edit->breten->maxlength=10;
 		$edit->breten->css_class='inputnum';
-		$edit->breten->onkeyup="valida(0)";
+		$edit->breten->onkeyup="valida(0)";*/
 
-		$edit->reten = new inputField("Monto","reten");
+		/*$edit->reten = new inputField("Monto de la retenci&oacute;n","reten");
 		$edit->reten->size = 10;
 		$edit->reten->maxlength=10;
 		$edit->reten->css_class='inputnum';
-		$edit->reten->onkeyup="valida(0)";
+		$edit->reten->onkeyup="valida(0)";*/
 
 		$edit->reteiva = new inputField("Retenci&oacute;n de IVA","reteiva");
 		$edit->reteiva->size = 10;
@@ -1019,28 +997,25 @@ class gser extends Controller {
 		$edit->reteiva->css_class='inputnum';
 		$edit->reteiva->onkeyup="valida(0)";
 
-		//$edit->anticipo = new inputField("Anticipo","anticipo");
-		//$edit->anticipo->size = 10;
-		//$edit->anticipo->maxlength=10;
-		//$edit->anticipo->css_class='inputnum';
-		//$edit->anticipo->mode="autohide";
-
 		$edit->totneto = new inputField("Total Neto","totneto");
 		$edit->totneto->size = 10;
 		$edit->totneto->maxlength=10;
 		$edit->totneto->css_class='inputnum';
 
+		$edit->usuario  = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
+
+		//***************************
 		//Campos para el detalle
+		//***************************
 		$edit->codigo = new inputField("C&oacute;digo <#o#>", "codigo_<#i#>");
-		$edit->codigo->size=8;
+		$edit->codigo->size=5;
 		$edit->codigo->db_name='codigo';
 		$edit->codigo->append($btn);
 		$edit->codigo->rule="required";
 		$edit->codigo->rel_id='gitser';
-		$detalle->importe->mode="autohide";
 
 		$edit->descrip = new inputField("Descripci&oacute;n <#o#>", "descrip_<#i#>");
-		$edit->descrip->size=36;
+		$edit->descrip->size=30;
 		$edit->descrip->db_name='descrip';
 		$edit->descrip->maxlength=50;
 		$edit->descrip->rel_id='gitser';
@@ -1051,17 +1026,18 @@ class gser extends Controller {
 		$edit->precio->size=7;
 		$edit->precio->rule='required';
 		$edit->precio->rel_id='gitser';
-		$edit->precio->onkeyup="totalizar(<#i#>)";
+		$edit->precio->onkeyup="importe(<#i#>)";
 
+		$ivas=$this->datasis->ivaplica();
 		$edit->tasaiva =  new dropdownField("IVA <#o#>", "tasaiva_<#i#>");
-		$edit->tasaiva->options("SELECT tasa,tasa as t1 FROM civa ORDER BY fecha desc limit 1");
-		$edit->tasaiva->options("SELECT redutasa,redutasa as rt1 FROM civa ORDER BY fecha desc limit 1");
-		$edit->tasaiva->options("SELECT sobretasa,sobretasa as st1 FROM civa ORDER BY fecha desc limit 1");
-		$edit->tasaiva->option('0','0.00');
+		$edit->tasaiva->option($ivas['tasa']     ,$ivas['tasa'].'%');
+		$edit->tasaiva->option($ivas['redutasa'] ,$ivas['redutasa'].'%');
+		$edit->tasaiva->option($ivas['sobretasa'],$ivas['sobretasa'].'%');
+		$edit->tasaiva->option('0','0.00%');
 		$edit->tasaiva->db_name='tasaiva';
 		$edit->tasaiva->style="30px";
 		$edit->tasaiva->rel_id   ='gitser';
-		$edit->tasaiva->onchange="totalizar(<#i#>)";
+		$edit->tasaiva->onchange="importe(<#i#>)";
 
 		$edit->iva = new inputField("importe <#o#>", "iva_<#i#>");
 		$edit->iva->db_name='iva';
@@ -1078,48 +1054,23 @@ class gser extends Controller {
 		$edit->importe->onkeyup="valida(<#i#>)";
 
 		$edit->departa =  new dropdownField("Departamento <#o#>", "departa_<#i#>");
-		$edit->departa->option('',"Seleccion Departamento");
+		$edit->departa->option('','Seleccionar');
 		$edit->departa->options("SELECT departa,CONCAT(departa,'-',depadesc) as descrip FROM depa ORDER BY departa");
 		$edit->departa->db_name='departa';
-		$edit->departa->style="30px";
+		$edit->departa->rule='required';
+		$edit->departa->style = 'width:100px';
 		$edit->departa->rel_id   ='gitser';
 
 		$edit->sucursal =  new dropdownField("Sucursal <#o#>", "sucursal_<#i#>");
-		$edit->sucursal->option('',"Seleccion Sucursal");
-		$edit->sucursal->options("SELECT codigo,CONCAT(codigo,'-', sucursal)as sucursal FROM sucu ORDER BY codigo");
+		$edit->sucursal->option('','Seleccionar');
+		$edit->sucursal->options("SELECT codigo,CONCAT(codigo,'-', sucursal) AS sucursal FROM sucu ORDER BY codigo");
 		$edit->sucursal->db_name='sucursal';
-		$edit->sucursal->style="20px";
+		$edit->sucursal->rule='required';
+		$edit->sucursal->style = 'width:100px';
 		$edit->sucursal->rel_id   ='gitser';
-
-		$edit->fechad = new inputField("fecha <#o#>", "fecha_<#i#>");
-		$edit->fechad->db_name='fecha';
-		$edit->fechad->size=0;
-		$edit->fechad->rel_id   ='gitser';
-		$edit->fechad->mode="autohide";
-		$edit->fechad->when=array("");
-
-		$edit->numerod = new inputField("numero <#o#>", "numero_<#i#>");
-		$edit->numerod->db_name='numero';
-		$edit->numerod->size=0;
-		$edit->numerod->rel_id   ='gitser';
-		$edit->numerod->mode="autohide";
-		$edit->numerod->when=array("");
-
-		$edit->proveed = new inputField("Proveedor <#o#>", "proveed_<#i#>");
-		$edit->proveed->db_name='proveed';
-		$edit->proveed->size=0;
-		$edit->proveed->rel_id   ='gitser';
-		$edit->proveed->mode="autohide";
-		$edit->proveed->when=array("");
-
-		//$edit->idgser = new inputField("id <#o#>", "idgser_<#i#>");
-		//$edit->idgser->db_name='idgser';
-		//$edit->idgser->size=0;
-		//$edit->idgser->rel_id   ='gitser';
-		//$edit->idgser->mode="autohide";
-		//$edit->idgser->when=array("");
-
-		//fin de campos para detalle
+		//*****************************
+		//Fin de campos para detalle
+		//*****************************
 
 		$edit->buttons("modify", "save", "undo", "delete", "back","add_rel");
 		$edit->build();
@@ -1277,52 +1228,69 @@ class gser extends Controller {
 		if($do->get('numero')==""){
 			$numero=$this->datasis->fprox_numero('ngser');
 			$do->set('numero',$numero);
+		}else{
+			$numero=$do->get('numero');
 		}
-		else $numero=$do->get('numero');
+
 		$trans=$this->datasis->fprox_numero('ntransa');
-		//		$do->set('numero',$numero);
+		//$do->set('numero',$numero);
 		$do->set('transac',$trans);
 
-		$datos=$do->get_all();
+		$datos  = $do->get_all();
+		$fecha  = $do->get('fecha');
+		$usuario= $do->get('usuario');
+		$proveed= $do->get('proveed');
+		$ffecha = $do->get('ffactura');
+		
 		$ivat=0;$subt=0;$total=0;
 		$cana=$do->count_rel("gitser");
 		for($i=0;$i<$cana;$i++){
-			$do->set_rel('gitser','fecha',$do->get('fecha'),$i);
-			$do->set_rel('gitser','numero',$numero,$i);
-
+			$do->set_rel('gitser','fecha'   ,$fecha  ,$i);
+			$do->set_rel('gitser','numero'  ,$numero ,$i);
+			$do->set_rel('gitser','transac' ,$trans  ,$i);
+			$do->set_rel('gitser','usuario' ,$usuario,$i);
+			$do->set_rel('gitser','proveed' ,$proveed,$i);
+			$do->set_rel('gitser','fechafec',$ffecha ,$i);
 		}
 		$tasa=0;$reducida=0;$sobretasa=0;$montasa=0;$monredu=0;$monadic=0;$exento=0;
 		$con=$this->db->query("select tasa,redutasa,sobretasa from civa order by fecha desc limit 1");
 		$t=$con->row('tasa');$rt=$con->row('redutasa');$st=$con->row('sobretasa');
 
-		foreach($datos['gitser'] as $rel){
+		foreach($do->data_rel['gitser'] as $rel){
 			$auxt=$rel['tasaiva'];
 			if($auxt==$t) {
-				$tasa+=$rel['iva'];
+				$tasa   +=$rel['iva'];
 				$montasa+=$rel['precio'];
 			}elseif($auxt==$rt) {
 				$reducida+=$rel['iva'];
-				$monredu+=$rel['precio'];
+				$monredu +=$rel['precio'];
 			}elseif($auxt==$st) {
 				$sobretasa+=$rel['iva'];
-				$monadic+=$rel['precio'];
+				$monadic  +=$rel['precio'];
 			}else{
 				$exento+=$rel['precio'];
 			}
-			$p=$rel['precio'];
-			$i=$rel['iva'];
+			$p = $rel['precio'];
+			$i = $rel['iva'];
 			$total+=$i+$p;
-			$subt+=$p;
-			//$rel['fecha']=$do->get('fecha');
+			$subt +=$p;
 		}
+
 		$ivat=$total-$subt;
-		$do->set('tasa',$tasa);$do->set('montasa',$montasa);
-		$do->set('reducida',$reducida);$do->set('monredu',$monredu);
-		$do->set('sobretasa',$sobretasa);$do->set('monadic',$monadic);
-		$do->set('exento',$exento);
+		$do->set('tasa'     ,$tasa     );
+		$do->set('montasa'  ,$montasa  );
+		$do->set('reducida' ,$reducida );
+		$do->set('monredu'  ,$monredu  );
+		$do->set('sobretasa',$sobretasa);
+		$do->set('monadic'  ,$monadic  );
+		$do->set('exento'   ,$exento   );
 		//$do->set('totpre',$subt);
 		//$do->set('totbruto',$total);
 		//$do->set('totiva',$ivat);
+
+		for($i=0;$i<$cana;$i++){
+			$do->rel_rm_field('gitser','tasaiva',$i);
+		}
 
 		if ($do->get('monto1') != 0){
 			$negreso  = $this->datasis->fprox_numero("negreso");
@@ -1331,10 +1299,11 @@ class gser extends Controller {
 			$ncausado = $this->datasis->fprox_numero("ncausado");
 			$negreso  = "";
 		}
-		$do->set('negreso',$negreso);
+		$do->set('negreso' ,$negreso );
 		$do->set('ncausado',$ncausado);
-		//		echo $this->datasis->traevalor('pais');
-		if ($this->datasis->traevalor('pais') == 'COLOMBIA'){
+		
+		//echo $this->datasis->traevalor('pais');
+		/*if ($this->datasis->traevalor('pais') == 'COLOMBIA'){
 			if($this->datasis->dameval("SELECT tiva FROM sprv WHERE proveed='".$do->get('proveed')."'")=='S'){
 				foreach($datos['gitser'] as $rel){
 					$mIVA  = $rel['iva'];
@@ -1357,7 +1326,6 @@ class gser extends Controller {
 			$ncontrol=$this->datasis->fprox_numero('nsprm');
 			$abonos=$do->get("monto1")+$do->get("anticipo");
 
-
 			$IMPUESTO=$ivat;
 			$VENCE=$do->get('vence');
 			$ABONOS =$abonos+$do->get('reten')+$do->get('reteiva');
@@ -1373,19 +1341,15 @@ class gser extends Controller {
 			'".$do->get('fecha')."',".$total.",".$ivat.",'".$do->get('vence')."',
 			".$ABONOS.",'','','".$do->get('nfiscal')."','".$ncontrol."',
 			".$do->get('reteiva').",".$montasa.",".$monredu.",".$monadic.",
-			".$tasa.",".$reducida.",".$sobretasa.",".$exento.")
-			";
+			".$tasa.",".$reducida.",".$sobretasa.",".$exento.")";
 			$this->db->query($sql);
 
 			if(empty($XORDEN)){
 				$mANTICIPO = $do->get('anticipo');
-
-
+				
 				//Luego buscar anticipos
 				$mSQL = "SELECT * FROM sprm WHERE cod_prv='".$do->get('proveed')."' ";
-
 				$mSQL .= "AND tipo_doc='AN' AND num_ref='".$XORDEN."' ";
-
 				$mSQL .= "AND tipo_ref='OS' ";
 				$banticipo=$this->db->query($mSQL);
 
@@ -1411,7 +1375,7 @@ class gser extends Controller {
 					echo $msql;
 				}
 			}
-		}
+		}*/
 
 		return true;
 	}

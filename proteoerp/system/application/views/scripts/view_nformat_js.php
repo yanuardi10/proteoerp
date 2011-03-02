@@ -1,3 +1,11 @@
+function numberval(valor){
+	if(valor.length>0){
+		return parseFloat(valor);
+	}else{
+		return 0;
+	}
+}
+
 function nformat(num,n){
 	var i=0;
 	var fact=1;

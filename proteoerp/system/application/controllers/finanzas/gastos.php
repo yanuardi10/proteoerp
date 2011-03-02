@@ -34,7 +34,8 @@ class gastos extends Controller {
 		$boton=$this->datasis->modbus($modbus);
 
 		$filter = new DataFilter('Filtro de Egresos');
-		$filter->db->select('numero,fecha,vence,nombre,totiva,totneto,proveed');
+		$select=array('id','numero','fecha','vence','nombre','totiva','totneto','proveed');
+		$filter->db->select($select);
 		$filter->db->from('gser');
 
 		$filter->fechad = new dateonlyField('Desde', 'fechad','d/m/Y');
