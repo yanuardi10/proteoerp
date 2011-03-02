@@ -124,7 +124,7 @@ class DataFilter extends DataForm{
   }
 
 
-  function process(){
+  function process($miview='dataform'){
   
     $result = parent::process();
    
@@ -205,19 +205,19 @@ class DataFilter extends DataForm{
         }
         
         $this->_build_buttons();
-        $this->build_form();
+        $this->build_form($miview);
       break;
       
       case "reset":
         //pulire sessioni 
         
         $this->_build_buttons();
-        $this->build_form();
+        $this->build_form($miview);
       break;
       
       default:
         $this->_build_buttons();
-        $this->build_form();
+        $this->build_form($miview);
       break;      
     }
     
@@ -303,14 +303,14 @@ class DataFilter extends DataForm{
   * @access   public
   * @return   void
   */
-  function build(){
+  function build($miview='dataform'){
 
     //sniff and build fields
     $this->_sniff_fields();
 
     $this->_built = true;
     
-    $this->process();
+    $this->process($miview);
     
 
   }

@@ -23,20 +23,29 @@ class Scli extends validaciones {
 
 		$filter->cliente = new inputField('C&oacute;digo', 'cliente');
 		$filter->cliente->size=10;
+		$filter->cliente->group = "CLIENTE";
 
 		$filter->nombre= new inputField('Nombre','nombre');
+		$filter->nombre->size=30;
+		$filter->nombre->group = "CLIENTE";
 
 		$filter->rifci= new inputField('Rif/CI','rifci');
+		$filter->rifci->size=15;
+		$filter->rifci->group = "CLIENTE";
 
 		$filter->cuenta= new inputField('Cuenta Contable','cuenta');
 		$filter->cuenta->like_side='after';
+		$filter->cuenta->size=15;
+		$filter->cuenta->group = "VALORES";
 
 		$filter->grupo = new dropdownField('Grupo', 'grupo');
 		$filter->grupo->option('','Todos');
 		$filter->grupo->options('SELECT grupo, gr_desc FROM grcl ORDER BY gr_desc');
+		$filter->grupo->size=20;
+		$filter->grupo->group = "VALORES";
 
 		$filter->buttons('reset','search');
-		$filter->build();
+		$filter->build('dataformfiltro');
 
 		$uri = anchor('ventas/scli/dataedit/show/<#id#>','<#cliente#>');
 
@@ -48,16 +57,18 @@ class Scli extends validaciones {
 		$grid->column_orderby('Cliente',$uri,'cliente');
 		$grid->column_orderby('Nombre','nombre','nombre');
 		$grid->column_orderby($this->pi18n->msj('rifci','Rif/CI'),'rifci','rifci');
-		$grid->column_orderby($this->pi18n->msj('tiva','Contribuyente') ,'tiva','tiva','align=\'center\'');
+		$grid->column_orderby($this->pi18n->msj('tiva','Tipo') ,'tiva','tiva','align=\'center\'');
 		$grid->column_orderby('Cuenta','cuenta','cuenta');
 		$grid->column('Acci&oacute;n',$cclave);
 		$grid->add('ventas/scli/dataedit/create','Agregar un cliente');
 		$grid->build();
 		//echo $grid->db->last_query();
 
-		$data['content'] = $filter->output.$grid->output;
+		$data['content'] = $grid->output;
 		$data['content'].= $this->pi18n->fallas();
-		$data['title']   = heading('Clientes');
+		$data['filtro']  = $filter->output;
+
+		$data['title']   = heading('Modulo de Clientes');
 		$data['script']  = script('jquery.js')."\n";
 		$data['head']    = $this->rapyd->get_head();
 		$data['extras']  = '';

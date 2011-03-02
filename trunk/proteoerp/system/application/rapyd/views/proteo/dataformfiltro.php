@@ -3,7 +3,7 @@
   <tr>
     <td>
 <?php if($title!=""):?>
-      <table style="margin:0;width:100%;border-collapse:collapse;padding:0;">
+      <table  style="margin:0;width:100%;border-collapse:collapse;padding:0;">
         <tr>
           <td class="mainheader"><?php echo $title?></td>
           <td class="mainheader" align="right"><?php echo $container_tr?></td>
@@ -14,16 +14,19 @@
       <div class="alert"><?php echo $error_string?></div>
       <table style="margin:0;width:98%;">
 <?php if (isset($groups)):?>
+
+<?php $iii = 0; ?>
 <?php foreach ($groups as $group)://groups?>
 <?php //@BOFS ?>
   <?php if ($group["group_name"] != "ungrouped"):?>
-      <tr <?php echo $group["group_tr"]?>>
-        <td colspan="2" style="padding:0;">
-
+      <?php if ($iii==0)  echo "<tr ".$group["group_tr"].">"; ?>
+        <td  colspan="2" style="padding:0;">
         <table style="margin:0;width:100%;">
-          <tr>
-            <td colspan="2" class="micro"><?php echo $group["group_name"]?></td>
-          </tr>
+<?php
+//          <tr>
+//            <td colspan="2" class="micro">< ? p hp echo $group["group_name"]? ></td>
+//          </tr>
+?>
   <?php endif?>
   <?php foreach ($group["series"] as $field_series)://field_series?>
 
@@ -46,7 +49,7 @@
               <td colspan="2">
               <?php echo $field["field"]?>
             <?php else:?>
-              <td style="width:120px;" class="littletableheader"><?php echo $field["label"]?></td>
+              <td style="width:120px;" class="littletablefilter"><?php echo $field["label"]?></td>
               <td style="padding:1px;" class="littletablerow" <?php echo $field["field_td"]?>>
               <?php echo $field["field"]?>&nbsp;
             <?php endif;?>
@@ -56,7 +59,7 @@
         <?php endforeach;//fields?>
       <?php endif;?>
               </td>
-            </tr>
+            <tr>
     <?php endif;//hidden?>
   <?php endforeach;//field_series?>
 
@@ -67,10 +70,11 @@
           </table>
 
         </td>
-      </tr>
+      <? if ($iii > 0) echo "</tr>"; $iii++; ?>
   <?php endif;?>
 <?php //@EOFS ?>
 <?php endforeach;//groups?>
+</tr>
 <?php endif;?>
         <tr id='__UTPL__'>
           <td colspan="2" ></td>
@@ -83,9 +87,9 @@
       </table>
       <?php echo $form_scripts?>
       </div>
-      <div class="mainfooter">
+      <div class="mainfooter" style="background-color:#DADADA;">
         <div>
-          <div style="float:left"><?php echo  $container_bl ?></div>
+          <div style="float:left;"><?php echo  $container_bl ?></div>
           <div style="float:right"><?php echo $container_br?></div>
         </div><div style="clear:both;"></div>
       </div>

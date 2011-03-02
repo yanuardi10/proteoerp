@@ -3,14 +3,14 @@
 <meta http-equiv="Content-type" content="text/html; charset=<?=$this->config->item('charset'); ?>" >
 <title>ProteoERP<?php if(isset($title)) echo ':'.preg_replace('/<[^>]*>/', '', $title); ?></title>
 <?=style("ventanas.css");?>
-<?php if(!isset($tabla))   $tabla=''; ?>
+<?php if( !isset($tabla) )   $tabla=''; ?>
 <style type="text/css">
 <?php if($tabla=="") {?>
-#cajafiltro {width: 100%;display: block;padding: 5px;border: 2px solid #D0D0D0;background-color: #ECFCFC;}
+#cajafiltro {width: 100%;display: block;padding: 5px;border-bottom: 1px solid #2067B5;background-color: #D7DEF0;}
 <?php } else{?>
-#cajafiltro {width: 100%;display: block;padding: 5px;border: 2px solid #D0D0D1;background-color: #FDFDFD;}	
+#cajafiltro {width: 100%;display: block;padding: 5px;border-bottom: 1px solid #2067B5;background-color: #D7DEF0;}	
 <?php }?>
-#mostrafiltro {display: block;width: 100%;padding: 5px;border: 2px solid #D0D0D0;background-color: #D0D0D0;}
+#mostrafiltro {display: block;width: 100%;padding: 5px;border-bottom: 1px solid #2067B5;background-color: #F5F5F5;background:url(<?=base_url();?>images/huellaazul.gif);}
 </style>
 
 <?=script("jquery.js") ?>
@@ -36,8 +36,8 @@ $(function(){
 	<table width="95%" border=0 align="center">
 		<tr>
 			<td></td>
-			<td><?php if (isset($filtro)) { ?>
-			<div><a href="#" id="mostrafiltro">Buscar y Filtrar <?=image("visible_16.png", "#", array("border"=>"none")); ?></a>
+			<td background="<?=base_url();?>images/huellaazul.gif"  ><?php if (isset($filtro)) { ?>
+			<div><a style="text-decoration:none;color:#4F1010;font: bold 18px Verdana;" href="#" id="mostrafiltro"><?=image("huella.jpg", "#", array("border"=>"none")); ?> Buscar y Filtrar </a>
 			</div>
 			<div id="cajafiltro"><?=$filtro.$tabla; ?></div>
 			<?php } ?></td>

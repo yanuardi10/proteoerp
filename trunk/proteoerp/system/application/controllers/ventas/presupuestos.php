@@ -5,8 +5,9 @@
 	{
 		parent::Controller(); 
 		$this->load->library("rapyd");
-    $this->datasis->modulo_id(104,1);   
+		$this->datasis->modulo_id(104,1);   
 	}
+	
 	function index() {		
 		$this->rapyd->load("datagrid","datafilter");
 		
@@ -18,26 +19,25 @@
               'resizable'  => 'yes',
               'screenx'    => '0',
               'screeny'    => '0'
-            );		
+        );		
 		
-    $scli=array(
+	$scli=array(
 	  'tabla'   =>'scli',
 	  'columnas'=>array(
 		'cliente' =>'C&oacute;digo Cliente',
 		'nombre'=>'Nombre',
 		'contacto'=>'Contacto'),
-	  'filtro'  =>array('cliente'=>'C&oacute;digo Cliente','nombre'=>'Nombre'),
-	  'retornar'=>array('cliente'=>'cod_cli'),
-	  'titulo'  =>'Buscar Cliente');
+		'filtro'  =>array('cliente'=>'C&oacute;digo Cliente','nombre'=>'Nombre'),
+		'retornar'=>array('cliente'=>'cod_cli'),
+		'titulo'  =>'Buscar Cliente');
 			
 		$boton=$this->datasis->modbus($scli);
-		
 			
 		$filter = new DataFilter("Filtro de Presupuestos");
 		$filter->db->select('fecha,numero,cod_cli,nombre,totals,totalg,iva');
 		$filter->db->from('spre');
 		
-    $filter->fechad = new dateonlyField("Desde", "fechad",'d/m/Y');
+		$filter->fechad = new dateonlyField("Desde", "fechad",'d/m/Y');
 		$filter->fechah = new dateonlyField("Hasta", "fechah",'d/m/Y');
 		$filter->fechad->clause  =$filter->fechah->clause="where";
 		$filter->fechad->db_name =$filter->fechah->db_name="fecha";
@@ -50,31 +50,29 @@
 		$filter->numero = new inputField("N&uacute;mero", "numero");
 		$filter->numero->size = 30;
 
-    $filter->cliente = new inputField("Cliente", "cod_cli");
-    $filter->cliente->size = 30;
+		$filter->cliente = new inputField("Cliente", "cod_cli");
+		$filter->cliente->size = 30;
 		$filter->cliente->append($boton);
 
 		$filter->buttons("reset","search");
 		$filter->build();
     
 		$uri = anchor('ventas/presupuestos/dataedit/show/<#numero#>','<#numero#>');
-    $uri2 = anchor_popup('formatos/verhtml/PRESUP/<#numero#>',"Ver HTML",$atts);
+		$uri2 = anchor_popup('formatos/verhtml/PRESUP/<#numero#>',"Ver HTML",$atts);
 		
 		$grid = new DataGrid();
 		$grid->order_by("numero","desc");
 		$grid->per_page = 15;  
 		
 		$grid->column("N&uacute;mero",$uri);
-    $grid->column("Fecha","<dbdate_to_human><#fecha#></dbdate_to_human>","align='center'");
-    $grid->column("Nombre","nombre");
-    $grid->column("Sub.Total","<number_format><#totals#>|2</number_format>","align=right");
-    $grid->column("IVA","<number_format><#iva#>|2</number_format>","align=right");
-    $grid->column("Total","<number_format><#totalg#>|2</number_format>","align=right");
+		$grid->column("Fecha","<dbdate_to_human><#fecha#></dbdate_to_human>","align='center'");
+		$grid->column("Nombre","nombre");
+		$grid->column("Sub.Total","<number_format><#totals#>|2</number_format>","align=right");
+		$grid->column("IVA","<number_format><#iva#>|2</number_format>","align=right");
+		$grid->column("Total","<number_format><#totalg#>|2</number_format>","align=right");
 		$grid->column("Vista",$uri2,"align='center'");
 		
-		//$grid->add("ventas/agregarpre");
 		$grid->build();
-		
 		//echo $grid->db->last_query();
 		
 		$data['content'] =$filter->output.$grid->output;
@@ -134,18 +132,17 @@
  			monto=debe=haber=0;
  			amonto=$$(\'input[id^="monto"]\');
 			for(var i=0; i<amonto.length; i++) {
-    		valor=parseFloat(amonto[i].value);
-    		if (isNaN(valor))
-					valor=0.0;
+				valor=parseFloat(amonto[i].value);
+				if (isNaN(valor)) valor=0.0;
 				if (valor>0)
-    			haber=haber+valor;
-    		else{
-    			valor=valor*(-1);
-    			debe=debe+valor;
-    		}
-				$("haber").value=haber;
-    		$("debe").value=debe;
-				$("total").value=haber-debe;
+					haber=haber+valor;
+				else {
+					valor=valor*(-1);
+					debe=debe+valor;
+				}
+			$("haber").value=haber;
+			$("debe").value=debe;
+			$("total").value=haber-debe;
 			}
 		}
 		function departa(i){
@@ -187,9 +184,9 @@
 		$edit->numero->maxlength=8;
 		
 		$edit->tipo = new inputField("Tipo", "tipo_doc");  
-	  $edit->tipo->size = 5;  
+		$edit->tipo->size = 5;  
 		
-    $edit->nombre = new inputField("Nombre", "nombre");
+		$edit->nombre = new inputField("Nombre", "nombre");
 		$edit->nombre->size = 55;
 		$edit->nombre->maxlength=40;   
 		$edit->nombre->rule= "required";
@@ -212,11 +209,11 @@
 		 
 		$edit->orden  = new inputField("Orden", "orden");           
 		$edit->orden->size = 20;                                                      
-    $edit->orden->css_class='inputnum';   
+		$edit->orden->css_class='inputnum';   
     
-    $edit->formapago  = new inputField("Forma de Pago", "referen");                           
-    $edit->formapago->size = 20;                          
-	  $edit->formapago->css_class='inputnum';               
+		$edit->formapago  = new inputField("Forma de Pago", "referen");                           
+		$edit->formapago->size = 20;                          
+		$edit->formapago->css_class='inputnum';               
 		
 		$edit->cliente = new inputField("Cliente","cod_cli");
 		$edit->cliente->size = 10;        
@@ -257,7 +254,7 @@
 		$detalle->codigo = new inputField("C&oacute;digo", "codigo<#i#>");
 		$detalle->codigo->size=18;
 		$detalle->codigo->db_name='codigo';
-    $detalle->codigo->append($this->datasis->p_modbus($modbus,'<#i#>'));
+		$detalle->codigo->append($this->datasis->p_modbus($modbus,'<#i#>'));
 		$detalle->codigo->readonly=TRUE;
 		
 		$detalle->descripcion = new inputField("Descripci&oacute;n", "desca<#i#>");
@@ -339,11 +336,13 @@
 		$data['title']   ='<h1>Seleccione un departamento</h1>';
 		$this->load->view('view_detalle', $data);
 	}
+	
 	function _actualiza_detalle($do){
 		$this->_borra_detalle($do);
 		$this->_guarda_detalle($do);
-	 }
-  function _guarda_detalle($do){
+	}
+	
+	function _guarda_detalle($do){
 		$cant=$this->input->post('cant_0');
 		$i=$o=0;
 		while($o<$cant){
@@ -384,15 +383,16 @@
 	}
 	function _pre_insert($do){
 		$sql    = 'INSERT INTO ntransa (usuario,fecha) VALUES ("'.$this->session->userdata('usuario').'",NOW())';
-    $query  =$this->db->query($sql);
+		$query  =$this->db->query($sql);
       
 		$sql    = 'INSERT INTO nspre(usuario,fecha) VALUES ("'.$this->session->userdata('usuario').'",NOW())';
-    $query  =$this->db-> query($sql);
-    $numero =str_pad($this->db->insert_id(),8, "0", STR_PAD_LEFT);
+		$query  =$this->db-> query($sql);
+		$numero =str_pad($this->db->insert_id(),8, "0", STR_PAD_LEFT);
     
-    $do->set('numero', $numero);
+		$do->set('numero', $numero);
 		$do->set('usuario', $this->session->userdata('usuario'));
 	}
+	
 	function presupdolar($numero){
 		
 		$this->rapyd->load("dataform");
@@ -409,7 +409,6 @@
 		$filter->dolar->option("b.dolar3","Precio3");
 		$filter->dolar->option("b.dolar4","Precio4");
 		$filter->dolar->style='width:150px;';
-		
 
 		$filter->button("btnsubmit", "Aceptar", form2uri(site_url("formatos/ver/PRESDOLAR/$numero/"),array('dolar')), $position="BL");
 		$filter->build_form();                   

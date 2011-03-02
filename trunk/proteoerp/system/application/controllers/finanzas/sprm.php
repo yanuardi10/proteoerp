@@ -54,7 +54,8 @@ class Sprm extends validaciones {
 		$grid->add("finanzas/sprm/dataedit/create");
 		$grid->build();
 
-		$data['content'] = $filter->output.$grid->output;
+		$data['content'] = $grid->output;
+		$data['filtro']  = $filter->output;
 		$data['title']   = "<h1>Pago a Proveedores</h1>";
 		$data["head"]    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);		
@@ -207,34 +208,34 @@ class Sprm extends validaciones {
 		$edit->descrip->rule="trim";
 		
 		$edit->ppago =new inputField("Ppago","ppago");
-    $edit->ppago->size = 12;
-    $edit->ppago->maxlength = 17;
-    $edit->ppago->rule = "trim|numeric";
-    $edit->ppago->css_class='inputnum';
+		$edit->ppago->size = 12;
+		$edit->ppago->maxlength = 17;
+		$edit->ppago->rule = "trim|numeric";
+		$edit->ppago->css_class='inputnum';
     
-    $edit->nppago = new inputField("NPpago", "nppago");
+		$edit->nppago = new inputField("NPpago", "nppago");
 		$edit->nppago->size=12;
 		$edit->nppago->maxlength=8;
 		$edit->nppago->rule="trim";
 		
 		$edit->reten =new inputField("Retencion","reten");
-    $edit->reten->size = 12;
-    $edit->reten->maxlength = 17;
-    $edit->reten->rule = "trim|numeric";
-    $edit->reten->css_class='inputnum';
+		$edit->reten->size = 12;
+		$edit->reten->maxlength = 17;
+		$edit->reten->rule = "trim|numeric";
+		$edit->reten->css_class='inputnum';
     
-    $edit->nreten = new inputField("Nreten", "nreten");
-    $edit->nreten->size=12;
-    $edit->nreten->maxlength=8;
+		$edit->nreten = new inputField("Nreten", "nreten");
+		$edit->nreten->size=12;
+		$edit->nreten->maxlength=8;
 		$edit->nreten->rule="trim";
 		
 		$edit->mora =new inputField("Mora","mora");
-    $edit->mora->size = 12;
-    $edit->mora->maxlength = 17;
-    $edit->mora->rule = "trim|numeric";
-    $edit->mora->css_class='inputnum';
+		$edit->mora->size = 12;
+		$edit->mora->maxlength = 17;
+		$edit->mora->rule = "trim|numeric";
+		$edit->mora->css_class='inputnum';
     
-    $edit->posdata = new DateonlyField("Posdata", "posdata","Y/m/d");
+		$edit->posdata = new DateonlyField("Posdata", "posdata","Y/m/d");
 		$edit->posdata->size=12;	  
 		
 		$edit->benefi = new inputField("Beneficiario", "benefi");

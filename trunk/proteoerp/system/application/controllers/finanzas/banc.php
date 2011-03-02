@@ -55,7 +55,8 @@ class Banc extends Validaciones {
 		$grid->build();
 		//echo $grid->db->last_query();
 
-		$data['content'] = $filter->output.$grid->output;
+		$data['content'] = $grid->output;
+		$data['filtro']  = $filter->output;
 		$data['title']   = '<h1>Bancos y Cajas</h1>';
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
