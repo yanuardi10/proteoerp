@@ -292,7 +292,7 @@ class notifica extends controller {
 		$edit->para = new textareaField('Destinatarios','para');
 		$edit->para->cols = 70;
 		$edit->para->rows = 3;
-		$edit->para->append('Correos electr&oacute;nicos o n&uacute;mero de telefonos 9999-9999999');
+		$edit->para->append(br().'Correos electr&oacute;nicos o n&uacute;mero de tel&eacute;fonos, Ej 9999-9999999 correo@dominio.com');
 
 		$edit->accion = new textareaField('Acci&oacute;n','accion');
 		$edit->accion->cols = 70;
