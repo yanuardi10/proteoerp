@@ -507,12 +507,14 @@ class DataForm{
   function is_valid(){
       
     //some fields mode can disable or change some rules.
+    $claves=array();
     foreach ($this->_fields as $field_name => $field_copy){
 
       //reference
       $field =& $this->$field_name;
       $field->action = $this->_action;
       $field->_getMode();
+      $claves[]=$field->name;
       
       if (isset($field->rule)){
 
@@ -555,7 +557,7 @@ class DataForm{
     $this->error_string = $this->validation->error_string;
 
 	//Resalta los campos con errores
-	$claves=array_keys($this->_fields);
+	//$claves=array_keys($this->_fields);
 	foreach($claves as $campo){
 		$obj=$campo.'_error';
 		if(isset($this->validation->$obj) && strlen($this->validation->$obj)>0){

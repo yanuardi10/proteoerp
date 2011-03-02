@@ -980,6 +980,45 @@ class DataObject{
 		}
 		return $on;
 	}
+ 
+ /**
+  * Borra un campo de la matriz de data de relacion
+  *
+  * @access   private
+  * @return   bolean
+  */
+  function rel_rm_field($rel_id,$field,$id){
+	if($this->_rel_type[$rel_id][0]==0){
+	  if (isset($this->data_rel[$rel_id][$field])) {
+	  	unset($this->data_rel[$rel_id][$field]);
+		return true;
+	  } else {
+	  	return false;
+	  }
+	}elseif($this->_rel_type[$rel_id][0]==1){
+	  if($id<0) $id=$this->_rel_type[$rel_id][1];
+	  if (isset($this->data_rel[$rel_id][$id][$field])) {
+	  	unset($this->data_rel[$rel_id][$id][$field]);
+		return true;
+	  }else{
+		return false;
+	  }
+	}
+  }
 
+  /**
+  * Borra un campo de la matriz de data
+  *
+  * @access   private
+  * @return   bolean
+  */
+  function rm_get($field){
+    if (isset($this->data[$field])) {
+      unset($this->data[$field]);
+	  return true;
+    } else {
+      return false;
+    }
+  }
 }
 ?>
