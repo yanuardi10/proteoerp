@@ -497,7 +497,7 @@ class DataForm{
       $field =& $this->$field_name;
       $field->action = $this->_action;
       $field->_getMode();
-      $claves[]=$field->name;
+      $claves[$field_name]=$field->name;
       
       if (isset($field->rule)){
 
@@ -541,11 +541,11 @@ class DataForm{
 
 	//Resalta los campos con errores
 	//$claves=array_keys($this->_fields);
-	foreach($claves as $campo){
+	foreach($claves as $nobj=>$campo){
 		$obj=$campo.'_error';
 		if(isset($this->validation->$obj) && strlen($this->validation->$obj)>0){
-			$this->_fields[$campo]->style='border: 2px solid #FF3300;';
-			$this->_fields[$campo]->valid_error=$this->validation->$obj;
+			$this->_fields[$nobj]->style='border: 2px solid #FF3300;';
+			$this->_fields[$nobj]->valid_error=$this->validation->$obj;
 		}
 	}
 

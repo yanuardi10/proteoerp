@@ -502,7 +502,40 @@ class gser extends Controller {
 		$tipo=common::_traetipo($ban);
 		if($tipo!='CAJ'){
 			if(empty($val)){
+				$this->validation->set_message('chobligaban', 'El campo %s es obligatorio cuando el cargo es a un banco');
+				return false;
+			}
+		}
+		return true;
+	}
+
+	function chobliganumero($val){
+		/*$ban=$this->input->post('cargo');
+		if($ban==$this->mcred) return true;
+		$tipo=common::_traetipo($ban);
+		if($tipo!='CAJ'){
+			if(empty($val)){
 				$this->validation->set_message('chobligaban', 'El campo %s es obligatorio cuando el caja es un banco');
+				return false;
+			}
+		}
+		return true;*/
+		return $this->_chobliganumero($val,'cargo');
+	}
+
+	function chobliganumerog($val){
+		return $this->_chobliganumero($val,'codb1');
+	}
+
+	function _chobliganumero($val,$campo){
+		$ban=$this->input->post($campo);
+		echo 'aqui';
+		exit();
+		if($ban==$this->mcred) return true;
+		$tipo=common::_traetipo($ban);
+		if($tipo!='CAJ'){
+			if(empty($val)){
+				$this->validation->set_message('chobligaban', 'El campo %s es obligatorio cuando el cargo es a un banco');
 				return false;
 			}
 		}
@@ -824,15 +857,15 @@ class gser extends Controller {
 		$this->rapyd->load('dataobject','datadetails');
 
 		$modbus=array(
-			'tabla'   =>'mgas',
-			'columnas'=>array(
-			'codigo' =>'C&oacute;digo',
-			'descrip'=>'descrip'),
-			'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'descrip'),
-			'retornar'=>array('codigo'=>'codigo_<#i#>','descrip'=>'descrip_<#i#>'),
-			'p_uri'=>array(4=>'<#i#>'),
-			'titulo'  =>'Buscar Articulo',
-			'script'  =>array('lleva(<#i#>)'));
+			'tabla'   => 'mgas',
+			'columnas'=> array(
+			'codigo'  => 'C&oacute;digo',
+			'descrip' => 'descrip'),
+			'filtro'  => array('codigo' =>'C&oacute;digo','descrip'=>'descrip'),
+			'retornar'=> array('codigo'=>'codigo_<#i#>','descrip'=>'descrip_<#i#>'),
+			'p_uri'   => array(4=>'<#i#>'),
+			'titulo'  => 'Buscar Articulo',
+			'script'  => array('lleva(<#i#>)'));
 
 		$btn=$this->datasis->p_modbus($modbus,'<#i#>');
 
@@ -885,6 +918,7 @@ class gser extends Controller {
 		//$edit->tipo_doc->option('GA',"Gasto de N&oacute;mina");
 
 		$edit->ffactura = new DateonlyField("Fecha Documento", "ffactura","d/m/Y");
+		$edit->ffactura->insertValue = date("Y-m-d");
 		$edit->ffactura->size = 10;
 		$edit->ffactura->rule = 'required';
 		//$edit->ffactura->insertValue = date("Y-m-d");
@@ -895,6 +929,7 @@ class gser extends Controller {
 		$edit->fecha->rule = 'required';
 
 		$edit->vence = new DateonlyField("Fecha Vencimiento", "vence","d/m/Y");
+		$edit->vence->insertValue = date("Y-m-d");
 		$edit->vence->size = 10;
 		//$edit->vence->insertValue = date("Y-m-d");
 
@@ -946,12 +981,13 @@ class gser extends Controller {
 		$edit->codb1->style = 'width:120px';
 
 		$edit->tipo1 =  new dropdownField("Tipo", "tipo1");
-		$edit->tipo1->option('',"Tipo");
-		$edit->tipo1->option('C',"Cheque");
-		$edit->tipo1->option('D',"Debito");
+		$edit->tipo1->option('','Ninguno');
+		$edit->tipo1->option('C','Cheque');
+		$edit->tipo1->option('D','D&eacute;bito');
 		$edit->tipo1->style="20px";
 
 		$edit->cheque1 = new inputField("N&uacute;mero","cheque1");
+		$edit->cheque1->rule = 'callback_chobliganumerog';
 		$edit->cheque1->size = 15;
 		$edit->cheque1->maxlength=20;
 
@@ -1015,7 +1051,7 @@ class gser extends Controller {
 		$edit->codigo->rel_id='gitser';
 
 		$edit->descrip = new inputField("Descripci&oacute;n <#o#>", "descrip_<#i#>");
-		$edit->descrip->size=30;
+		$edit->descrip->size=25;
 		$edit->descrip->db_name='descrip';
 		$edit->descrip->maxlength=50;
 		$edit->descrip->rel_id='gitser';
@@ -1023,7 +1059,7 @@ class gser extends Controller {
 		$edit->precio = new inputField("Precio <#o#>", "precio_<#i#>");
 		$edit->precio->db_name='precio';
 		$edit->precio->css_class='inputnum';
-		$edit->precio->size=7;
+		$edit->precio->size=4;
 		$edit->precio->rule='required';
 		$edit->precio->rel_id='gitser';
 		$edit->precio->onkeyup="importe(<#i#>)";
@@ -1043,14 +1079,14 @@ class gser extends Controller {
 		$edit->iva->db_name='iva';
 		$edit->iva->css_class='inputnum';
 		$edit->iva->rel_id   ='gitser';
-		$edit->iva->size=7;
+		$edit->iva->size=3;
 		$edit->iva->onkeyup="valida(<#i#>)";
 
 		$edit->importe = new inputField("importe <#o#>", "importe_<#i#>");
 		$edit->importe->db_name='importe';
 		$edit->importe->css_class='inputnum';
 		$edit->importe->rel_id   ='gitser';
-		$edit->importe->size=7;
+		$edit->importe->size=5;
 		$edit->importe->onkeyup="valida(<#i#>)";
 
 		$edit->departa =  new dropdownField("Departamento <#o#>", "departa_<#i#>");

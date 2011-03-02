@@ -248,6 +248,42 @@ class Common extends controller {
 		return $valor;
 	}
 
+	function _descufijo($codigo,$aplica){
+		$dbcodigo=$this->db->escape($codigo);
+		if($aplica=='sinv'){
+			if ($this->db->field_exists('descufijo', 'sinv')){
+				$mSQL='SELECT descufijo FROM sinv WHERE codigo='.$dbcodigo;
+				$descu=$this->datasis->dameval($mSQL);
+			}else{
+				$descu=0;
+			}
+			if(empty($descu) || $descu==0){
+				if($this->db->table_exists('sinvpromo')){
+					$descufijo=$this->datasis->dameval('SELECT margen FROM sinvpromo WHERE codigo='.$dbcodigo);
+					$descurazon='Descuento promocional';
+					if(empty($descufijo)){
+						if($this->db->field_exists('margen','grup')){
+							$mSQL ='SELECT descufijo FROM sinv WHERE grupo='.$dbcodigo;
+							$grupo=$this->datasis->dameval($mSQL);
+							$descufijo=$this->datasis->dameval('SELECT margen FROM grup WHERE grupo='.$this->db->escape($grupo));
+							$descurazon='Descuento por grupo';
+						}else{
+							$descufijo=0;
+						}
+					}
+				}else{
+					$descufijo=0;
+				}
+			}else{
+				$descufijo=$descu;
+				$descurazon='Descuento por producto';
+			}
+		}else{
+			$descufijo=0;
+		}
+		return $descufijo;
+	}
+
 	function _gconsul($mSQL_p,$cod_bar,$busca,$suple=null){
 		if(!empty($suple) AND $this->db->table_exists('suple')){
 			$mSQL  ="SELECT codigo FROM suple WHERE suplemen='${cod_bar}' LIMIT 1";
