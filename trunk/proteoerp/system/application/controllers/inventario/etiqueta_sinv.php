@@ -139,7 +139,7 @@ class etiqueta_sinv extends Controller {
 
 			$grid = new DataGrid('Lista de Art&iacute;culos para imprimir');
 			$grid->per_page = 15;
-			$select=array('a.tipo','a.id','a.codigo','a.descrip','a.precio1 AS precio','a.barras','b.nom_grup',
+			$select=array('a.tipo','a.id','a.codigo','a.descrip','a.precio1 AS precio','a.precio2 AS precio2','a.precio3 AS precio3','a.barras','b.nom_grup',
 			'b.grupo AS grupoid','c.descrip AS nom_linea', 'c.linea','d.descrip AS nom_depto', 'd.depto AS depto');
 
 			$grid->db->select($select);
@@ -236,7 +236,7 @@ class etiqueta_sinv extends Controller {
 		$tabla=form_open('forma/ver/etiqueta1');
 
 		$grid = new DataGrid('Lista de art&iacute;culos a imprimir');
-		$grid->db->select(array('a.barras AS  barras','a.codigo AS codigo','a.descrip AS descrip','a.precio1 AS precio','b.control AS control'));
+		$grid->db->select(array('a.barras AS  barras','a.precio2 AS precio2','a.grupo AS grupoid','a.precio3 AS precio3','a.codigo AS codigo','a.descrip AS descrip','a.precio1 AS precio','b.control AS control'));
 		$grid->db->from('sinv AS a');
 		$grid->db->join('itscst AS b','a.codigo=b.codigo');
 		$grid->db->where('b.control',$control);
@@ -341,7 +341,7 @@ class etiqueta_sinv extends Controller {
 
 			if(count($campos)>0){
 				$campos = implode(',',$campos);
-				$consul="SELECT codigo,barras,descrip,precio1 as precio FROM sinv WHERE codigo IN ($campos)";
+				$consul="SELECT codigo,barras,descrip,precio1 AS precio, precio2, precio3 ,grupo AS grupoid FROM sinv WHERE codigo IN ($campos)";
 
 				$data = array(
 					'name'      => 'cant',
