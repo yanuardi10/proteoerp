@@ -637,7 +637,7 @@ class gser extends Controller {
 				$totiva = $tasa+$reducida+$sobretasa;
 				$totneto= $totpre+$totiva;
 
-				if($cargo==$cr){
+				if($cargo==$cr){ //si el cargo va a credito
 					$nombre  = $this->datasis->dameval('SELECT nombre FROM sprv WHERE proveed='.$this->db->escape($codprv));
 					$tipo1   = '';
 					$credito = $totneto;
@@ -830,6 +830,86 @@ class gser extends Controller {
 				if($ban==false){ memowrite($mSQL,'gser'); $error++; }
 			}
 		return ($error==0)? true : false;
+	}
+
+	//Crea la cuenta por pagar en caso de que el gasto sea a credito
+	function _gsersprm($codprv,$numero,$fecha,$totneto,$totiva,$montasa,$monredu,$monadic,$tasa,$reducida,$sobretasa,$exento,$causado){
+		$nombre  = $this->datasis->dameval('SELECT nombre FROM sprv WHERE proveed='.$this->db->escape($codprv));
+
+		$data=array();
+		$data['cod_prv']    = $codprv;
+		$data['nombre']     = $nombre;
+		$data['tipo_doc']   = 'FC';
+		$data['numero']     = $numero ;
+		$data['fecha']      = $fecha ;
+		$data['monto']      = $totneto;
+		$data['impuesto']   = $totiva ;
+		$data['abonos']     = 0;
+		$data['vence']      = $fecha;
+		$data['observa1']   = 'REPOSICION DE CAJA CHICA '.$codbanc;
+		$data['transac']    = $transac;
+		$data['estampa']    = date('Y-m-d');
+		$data['hora']       = date('H:i:s');
+		$data['usuario']    = $this->session->userdata('usuario');
+		$data['reteiva']    = 0;
+		$data['montasa']    = $montasa;
+		$data['monredu']    = $monredu;
+		$data['monadic']    = $monadic;
+		$data['tasa']       = $tasa;
+		$data['reducida']   = $reducida;
+		$data['sobretasa']  = $sobretasa;
+		$data['exento']     = $exento;
+		$data['causado']    = $causado;
+
+		$sql=$this->db->insert_string('sprm', $data);
+		$ban=$this->db->simple_query($sql);
+		if($ban==false){ memowrite($sql,'gser'); $error++;}
+	}
+
+	//genera el movimiento de banco cuando el pago es al contado
+	function _bmovgser(){
+		$ttipo  = $datacar['tbanco'];
+		$tipo1  = ($ttipo=='CAJ') ? 'D': 'C';
+		$negreso= $this->datasis->fprox_numero('negreso');
+		$credito= 0;
+		$causado='';
+
+		$data=array();
+		$data['codbanc']    = $cargo;
+		$data['moneda']     = $moneda;
+		$data['numcuent']   = $datacar['numcuent'];
+		$data['banco']      = $datacar['banco'];
+		$data['saldo']      = $datacar['saldo'];
+		$data['tipo_op']    = ($ttipo=='CAJ') ? 'ND': 'CH';
+		$data['numero']     = $cheque;
+		$data['fecha']      = $fecha;
+		$data['clipro']     = 'P';
+		$data['codcp']      = $codprv;
+		$data['nombre']     = $nombre;
+		$data['monto']      = $totneto;
+		$data['concepto']   = 'REPOSICION DE CAJA CHICA '.$codbanc;
+		$data['benefi']     = $benefi;
+		$data['posdata']    = '';
+		$data['abanco']     = '';
+		$data['liable']     = ($ttipo=='CAJ') ? 'S': 'N';;
+		$data['transac']    = $transac;
+		$data['usuario']    = $this->session->userdata('usuario');
+		$data['estampa']    = date('Y-m-d');
+		$data['hora']       = date('H:i:s');
+		$data['anulado']    = 'N';
+		$data['susti']      = '';
+		$data['negreso']    = $negreso;
+		$data['ndebito']    = '';
+		$data['ncausado']   = '';
+		$data['ncredito']   = '';
+
+		$sql=$this->db->insert_string('bmov', $data);
+		$ban=$this->db->simple_query($sql);
+		if($ban==false){ memowrite($sql,'gser'); $error++;}
+
+		$sql='CALL sp_actusal('.$this->db->escape($cargo).",'$sp_fecha',-$totneto)";
+		$ban=$this->db->simple_query($sql);
+		if($ban==false){ memowrite($sql,'bcaj'); $error++; }
 	}
 
 	function ajaxsprv(){
