@@ -496,8 +496,20 @@ class gser extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
+	function chtipoe($tipoe){
+		$eenvia = $this->input->post('codb1');
+		$envia  = common::_traetipo($eenvia);
+
+		if($envia=='CAJ' && $tipoe!='ND'){
+			$this->validation->set_message('chtipoe', 'Cuando el gasto se carga a una caja es una caja el %s debe ser nota de d&eacute;bito');
+			return false;
+		}else{
+			return true;
+		}
+	}
+
 	function chobligaban($val){
-		$ban=$this->input->post('cargo');
+		$ban=$this->input->post('codb1');
 		if($ban==$this->mcred) return true;
 		$tipo=common::_traetipo($ban);
 		if($tipo!='CAJ'){
@@ -520,22 +532,20 @@ class gser extends Controller {
 			}
 		}
 		return true;*/
-		return $this->_chobliganumero($val,'cargo');
+		return $this->_chobliganumero($val,'cargo','chobliganumero');
 	}
 
 	function chobliganumerog($val){
-		return $this->_chobliganumero($val,'codb1');
+		return $this->_chobliganumero($val,'codb1','chobliganumerog');
 	}
 
-	function _chobliganumero($val,$campo){
+	function _chobliganumero($val,$campo,$func){
 		$ban=$this->input->post($campo);
-		echo 'aqui';
-		exit();
-		if($ban==$this->mcred) return true;
+		if(empty($ban)) return true;
 		$tipo=common::_traetipo($ban);
 		if($tipo!='CAJ'){
 			if(empty($val)){
-				$this->validation->set_message('chobligaban', 'El campo %s es obligatorio cuando el cargo es a un banco');
+				$this->validation->set_message($func, 'El campo %s es obligatorio cuando el cargo es a un banco');
 				return false;
 			}
 		}
@@ -984,10 +994,11 @@ class gser extends Controller {
 		$edit->tipo1->option('','Ninguno');
 		$edit->tipo1->option('C','Cheque');
 		$edit->tipo1->option('D','D&eacute;bito');
+		$edit->tipo1->rule = 'condi_required|callback_chtipoe';
 		$edit->tipo1->style="20px";
 
-		$edit->cheque1 = new inputField("N&uacute;mero","cheque1");
-		$edit->cheque1->rule = 'callback_chobliganumerog';
+		$edit->cheque1 = new inputField('Cheque/ND',"cheque1");
+		$edit->cheque1->rule = 'condi_required|callback_chobliganumerog';
 		$edit->cheque1->size = 15;
 		$edit->cheque1->maxlength=20;
 
