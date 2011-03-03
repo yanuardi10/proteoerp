@@ -263,7 +263,7 @@ class Common extends controller {
 					$descurazon='Descuento promocional';
 					if(empty($descufijo)){
 						if($this->db->field_exists('margen','grup')){
-							$mSQL ='SELECT descufijo FROM sinv WHERE grupo='.$dbcodigo;
+							$mSQL ='SELECT grupo FROM sinv WHERE codigo='.$dbcodigo;
 							$grupo=$this->datasis->dameval($mSQL);
 							$descufijo=$this->datasis->dameval('SELECT margen FROM grup WHERE grupo='.$this->db->escape($grupo));
 							$descurazon='Descuento por grupo';
