@@ -45,11 +45,12 @@ class Banc extends Validaciones {
 		$grid->use_function('pinta');
 
 		$grid->column_orderby('C&oacute;digo',$uri,'codbanc');
-		$grid->column_orderby('Activo','activo','activo');
-		$grid->column_orderby('Banco','<pinta><#activo#>|<#banco#></pinta>','banco');
+		$grid->column_orderby('C. Contable','cuenta','cuenta');
 		$grid->column_orderby('Tipo','<pinta><#activo#>|<#tbanco#></pinta>','tbanco');
+		$grid->column_orderby('Banco','<pinta><#activo#>|<#banco#></pinta>','banco');
 		$grid->column_orderby('Nro Cuenta','<pinta><#activo#>|<#numcuent#></pinta>','numcuent');
 		$grid->column_orderby('Saldo','<pinta><#activo#>|<nformat><#saldo#></nformat></pinta>','saldo','align=right');
+		$grid->column_orderby('Activo','activo','activo');
 
 		$grid->add('finanzas/banc/dataedit/create','Agregar banco o caja');
 		$grid->build();

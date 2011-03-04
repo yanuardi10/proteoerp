@@ -113,7 +113,7 @@ class Cierre extends Controller {
 			  `monto` decimal(15,2) DEFAULT NULL,
 			  PRIMARY KEY (`id`),
 			  UNIQUE KEY `ac` (`anno`,`cuenta`)
-			) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Cierres contables'"
+			) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Cierres contables'";
 			$this->db->simple_query($mSQL);
 		}
 }
