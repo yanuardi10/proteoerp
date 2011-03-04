@@ -279,6 +279,7 @@ class gser extends Controller {
 			$edit->$obj = new inputField($label,$obj);
 			$edit->$obj->rule='max_length[17]|numeric';
 			$edit->$obj->css_class='inputnum';
+			$edit->$obj->insertValue =0;
 			$edit->$obj->size =17;
 			$edit->$obj->maxlength =17;
 			$edit->$obj->group=$grupo;
@@ -500,8 +501,11 @@ class gser extends Controller {
 		$eenvia = $this->input->post('codb1');
 		$envia  = common::_traetipo($eenvia);
 
-		if($envia=='CAJ' && $tipoe!='ND'){
-			$this->validation->set_message('chtipoe', 'Cuando el gasto se carga a una caja es una caja el %s debe ser nota de d&eacute;bito');
+		if($envia=='CAJ' && $tipoe!='D'){
+			$this->validation->set_message('chtipoe', 'Cuando el gasto se carga a una caja el %s debe ser nota de d&eacute;bito.');
+			return false;
+		}elseif($envia!='CAJ' && empty($tipoe)){
+			$this->validation->set_message('chtipoe', 'Cuando el gasto se carga a un banco el %s es obligatorio.');
 			return false;
 		}else{
 			return true;
@@ -1078,7 +1082,7 @@ class gser extends Controller {
 		$edit->codb1->rule  = 'max_length[5]';
 		$edit->codb1->style = 'width:120px';
 
-		$edit->tipo1 =  new dropdownField("Tipo", "tipo1");
+		$edit->tipo1 =  new dropdownField("Tipo de operaci&oacute;n", "tipo1");
 		$edit->tipo1->option('','Ninguno');
 		$edit->tipo1->option('C','Cheque');
 		$edit->tipo1->option('D','D&eacute;bito');
@@ -1195,6 +1199,7 @@ class gser extends Controller {
 		$edit->departa->rule='required';
 		$edit->departa->style = 'width:100px';
 		$edit->departa->rel_id   ='gitser';
+		$edit->departa->onchange="gdeparta(this.value)";
 
 		$edit->sucursal =  new dropdownField("Sucursal <#o#>", "sucursal_<#i#>");
 		$edit->sucursal->option('','Seleccionar');
@@ -1203,6 +1208,7 @@ class gser extends Controller {
 		$edit->sucursal->rule='required';
 		$edit->sucursal->style = 'width:100px';
 		$edit->sucursal->rel_id   ='gitser';
+		$edit->sucursal->onchange="gsucursal(this.value)";
 		//*****************************
 		//Fin de campos para detalle
 		//*****************************
@@ -1365,6 +1371,14 @@ class gser extends Controller {
 		$proveed= $do->get('proveed');
 		$ffecha = $do->get('ffactura');
 		$codb1  = $do->get('codb1');
+		$tipo1  = $do->get('tipo1');
+		$benefi = $do->get('benefi');
+		$nombre = $do->get('nombre');
+		
+		if(empty($benefi) && $tipo1=='C'){			
+			$do->set('benefi',$nombre);
+		}
+
 		if($do->get('numero')==""){
 			$numero=$this->datasis->fprox_numero('ngser');
 			$do->set('numero',$numero);
