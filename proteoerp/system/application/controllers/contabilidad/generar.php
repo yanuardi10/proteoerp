@@ -145,19 +145,23 @@ class Generar extends Metodos {
 				}
 
 				$query=mysql_unbuffered_query($mSQL,$DBbig->conn_id);
-				while ($fila = mysql_fetch_assoc($query)) {
+				if($query!==false){
+					while ($fila = mysql_fetch_assoc($query)) {
 
-					$aregla = $this->_hace_regla($modulo, $mCONTROL, $fila['mgrupo']);
-					foreach ($aregla['casi'] as $casi){
-						$ejecasi='INSERT IGNORE INTO casi ( comprob, fecha, descrip, origen ) '.$casi;
-						$ejec=$this->db->simple_query($ejecasi);
-						if($ejec==FALSE){ memowrite($ejecasi,'generar'); $error=true; }
+						$aregla = $this->_hace_regla($modulo, $mCONTROL, $fila['mgrupo']);
+						foreach ($aregla['casi'] as $casi){
+							$ejecasi='INSERT IGNORE INTO casi ( comprob, fecha, descrip, origen ) '.$casi;
+							$ejec=$this->db->simple_query($ejecasi);
+							if($ejec==FALSE){ memowrite($ejecasi,'generar'); $error=true; }
+						}
+						foreach ($aregla['itcasi'] as $itcasi){
+							$ejeitcasi ='INSERT INTO itcasi (fecha, comprob, origen,  cuenta, referen, concepto, debe,  haber, sucursal, ccosto) '.$itcasi;
+							$ejec=$this->db->simple_query($ejeitcasi);
+							if($ejec==FALSE){ memowrite($ejeitcasi,'generar'); $error=true; }
+						}
 					}
-					foreach ($aregla['itcasi'] as $itcasi){
-						$ejeitcasi ='INSERT INTO itcasi (fecha, comprob, origen,  cuenta, referen, concepto, debe,  haber, sucursal, ccosto) '.$itcasi;
-						$ejec=$this->db->simple_query($ejeitcasi);
-						if($ejec==FALSE){ memowrite($ejeitcasi,'generar'); $error=true; }
-					}
+				}else{
+					//memowrite($mSQL,'generar');
 				}
 				$this->_borra_huerfano();
 				
