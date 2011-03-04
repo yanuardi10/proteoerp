@@ -98,23 +98,22 @@ class Generar extends Metodos {
 		//redirect('contabilidad/generar/index/completo');
 	}
 	
-	function procesarshell($qfechai=null,$qfechaf=null,$modulos='APAN|BCAJ|CRUC|GSER|NOMI|OTIN|PRMO|RCAJ|SCST|SFAC|SMOV|SPRM'){
+	function procesarshell($qfechai=null,$qfechaf=null,$modulos='APAN,BCAJ,CRUC,GSER,NOMI,OTIN,PRMO,RCAJ,SCST,SFAC,SMOV,SPRM'){
 		if(isset($_SERVER['argv']) && !isset($_SERVER['SERVER_NAME'])){ //asegura que se ejecute desde shell
 			if(empty($qfechai) OR empty($qfechai) OR strlen($qfechai)+strlen($qfechaf)<16){
 				echo "USO: php index.php contabilidad generar procesarshell fecha_inicial fecha_final [modulos]\n";
 				echo "  fecha_inicial YYYYDDMM\n";
 				echo "  fecha_final   YYYYDDMM\n";
-				echo "  modulos APAN|BCAJ|CRUC|GSER|NOMI|OTIN|PRMO|RCAJ|SCST|SFAC|SMOV|SPRM \n";
+				echo "  modulos APAN,BCAJ,CRUC,GSER,NOMI,OTIN,PRMO,RCAJ,SCST,SFAC,SMOV,SPRM \n";
 				return TRUE;
 			}
 
-			//$modulos='APAN|BCAJ|CRUC|GSER|NOMI|OTIN|PRMO|RCAJ|SCST|SFAC|SMOV|SPRM';
 			preg_match('/(?P<anio>\d{4})(?P<mes>\d{2})(?P<dia>\d{2})/', $qfechai, $matches);
 			if(!checkdate($matches['mes'],$matches['dia'],$matches['anio'])) { echo 'Error: fecha inicial invalida'."\n"; return TRUE; }
 			preg_match('/(?P<anio>\d{4})(?P<mes>\d{2})(?P<dia>\d{2})/', $qfechaf, $matches);
 			if(!checkdate($matches['mes'],$matches['dia'],$matches['anio'])) { echo 'Error: fecha final invalida'."\n"; return TRUE; }
 			
-			$generar=explode('|',$modulos);
+			$generar=explode(',',$modulos);
 			$salida=$this->_procesar($qfechai,$qfechaf,$generar);
 			echo $salida."\n";
 			return FALSE;	
@@ -132,12 +131,22 @@ class Generar extends Metodos {
 		//while ($row = mysql_fetch_assoc($query)) {}
 
 		if($generar){
-			foreach ($generar as $modulo){ 
-				$query=$this->db->simple_query("DELETE FROM casi   WHERE fecha BETWEEN $qfechai AND $qfechaf AND origen='$modulo'");
-				$query=$this->db->simple_query("DELETE FROM itcasi WHERE fecha BETWEEN $qfechai AND $qfechaf AND origen LIKE '$modulo%'");
+			foreach ($generar as $modulo){
+				$dbmodulo= $this->db->escape($modulo);
 
-				$mTABLA  =$this->datasis->dameval("SELECT origen  FROM reglascont WHERE modulo='$modulo' AND regla=1 ");
-				$mCONTROL=$this->datasis->dameval("SELECT control FROM reglascont WHERE modulo='$modulo' AND regla=1 ");
+				$mod_query  = $this->db->query("SELECT origen, control FROM reglascont WHERE modulo=$dbmodulo AND regla=1");
+				if ($mod_query->num_rows() > 0){
+					$mod_row = $mod_query->row_array();
+
+					$mTABLA  =$mod_row['origen'];
+					$mCONTROL=$mod_row['control'];
+
+					$query=$this->db->simple_query("DELETE FROM casi   WHERE fecha BETWEEN $qfechai AND $qfechaf AND origen='$modulo'");
+					$query=$this->db->simple_query("DELETE FROM itcasi WHERE fecha BETWEEN $qfechai AND $qfechaf AND origen LIKE '$modulo%'");
+				}else{
+					continue;
+				}
+
 				if ($modulo == 'SCST' ) {
 					$mSQL="SELECT a.$mCONTROL mgrupo FROM $mTABLA WHERE a.recep BETWEEN $qfechai AND $qfechaf GROUP BY a.$mCONTROL";
 				} else {
@@ -161,7 +170,7 @@ class Generar extends Metodos {
 						}
 					}
 				}else{
-					//memowrite($mSQL,'generar');
+					memowrite($mSQL,'generar');
 				}
 				$this->_borra_huerfano();
 				
