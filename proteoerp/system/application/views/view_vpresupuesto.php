@@ -6,11 +6,11 @@
 .Estilo8 {font-family: Arial, Helvetica, sans-serif; font-size: 14px; }
 .Estilo10 {font-family: Arial, Helvetica, sans-serif; font-weight: bold; font-size: 36px; }
 </style>
-</head>																																														
+</head>
 <body>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<p>&nbsp;</p>																																															
+<p>&nbsp;</p>
 <div id="Layer1" style="position:absolute; left:186px; top:4px; width:86px; height:83px; z-index:1"><img src="<?php echo $_direccion ?>/images/logo.jpg" width="127" height="77"></div>
 <div id="Layer2" style="position:absolute; left:326px; top:22px; width:310px; height:46px; z-index:2">
 <table width="484" border="0">

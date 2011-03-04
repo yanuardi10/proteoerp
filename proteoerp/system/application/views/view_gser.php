@@ -3,7 +3,7 @@ $container_bl=join("&nbsp;", $form->_button_container["BL"]);
 $container_br=join("&nbsp;", $form->_button_container["BR"]);
 $container_tr=join("&nbsp;", $form->_button_container["TR"]);
 
-if ($form->_status=='delete' OR $form->_action=='delete'):
+if ($form->_status=='delete' || $form->_action=='delete' || $form->_status=='unknow_record'):
 	echo $form->output;
 else:
 
@@ -24,7 +24,8 @@ if($form->_status!='show'){
 
 <script language="javascript" type="text/javascript">
 gitser_cont=<?=$form->max_rel_count['gitser']?>;
-
+var departa='';
+var sucursal='';
 $(document).ready(function() {
 	$(".inputnum").numeric(".");
 	pr=$("#proveed").val();
@@ -40,6 +41,14 @@ $(document).ready(function() {
 function valida(i){
 	alert("Este monto no puede ser modificado manualmente");
 	totalizar(i);
+}
+
+function gdeparta(val){
+	departa=val;
+}
+
+function gsucursal(val){
+	sucursal=val;
 }
 
 function lleva(i){
@@ -114,12 +123,15 @@ function add_gitser(){
 	htm = htm.replace(/<#i#>/g,can);
 	htm = htm.replace(/<#o#>/g,con);
 	$("#__UTPL__").before(htm);
+	$("#departa_"+can).val(departa);
+	$("#sucursal_"+can).val(sucursal);
 	gitser_cont=gitser_cont+1;
 }
 
 function del_gitser(id){
 	id = id.toString();
 	$('#tr_gitser_'+id).remove();
+	totalizar();
 }
 </script>
 <?php } ?>
