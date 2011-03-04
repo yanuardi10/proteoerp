@@ -730,7 +730,7 @@ class Bcaj extends Controller {
 					foreach($campos AS $obj=>$titulo){
 						$$obj=$edit->$obj->newValue;
 					}
-					if($montosis==$efectivo+$tarjeta+$gastos+$valores){
+					if( round($montosis,2) == round($efectivo+$tarjeta+$gastos+$valores)) {
 						$rt=$this->_autotranfer($fecha,$efectivo,$tarjeta,$gastos,$valores);
 						if($rt){
 							redirect('/finanzas/bcaj/listo/n/'.$this->bcajnumero);
