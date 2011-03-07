@@ -45,6 +45,10 @@ class MY_Validation extends CI_Validation
 		
 	}
 
+	function positive($val){
+		return ($val>=0)? true : false;
+	}
+
 	function mac($mac){
 		$pattern='/[0-9AaBbCcDdEeFf]{2}(:[0-9AaBbCcDdEeFf]{2}){5}/';
 		if(preg_match($pattern,$mac)>0){

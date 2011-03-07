@@ -11,31 +11,41 @@ $tipo_rete=$this->datasis->traevalor('CONTRIBUYENTE');
 foreach($form->detail_fields['gitser'] AS $ind=>$data) $campos[]=$data['field'];
 $campos='<tr id="tr_gitser_<#i#>"><td class="littletablerow">'.join('</td><td>',$campos).'</td>';
 $campos=str_replace("\n",'',$campos);
-$campos.=' <td class="littletablerow"><a href=# onclick="del_gitser(<#i#>);return false;">Eliminar</a></td></tr>';
+$campos.=' <td class="littletablerow"><a href=\'#\' onclick="del_gitser(<#i#>);return false;">Eliminar</a></td></tr>';
 $campos=$form->js_escape($campos);
 //echo $form_scripts;
 echo $form_begin;
 if($form->_status!='show'){
+
+$sql='SELECT TRIM(a.codbanc) AS codbanc,tbanco FROM banc AS a';
+$query = $this->db->query($sql);
+$comis=array();
+if ($query->num_rows() > 0){
+	foreach ($query->result() as $row){
+		$ind='_'.$row->codbanc;
+		$comis[$ind]['tbanco']  =$row->tbanco;
+	}
+}
+$json_comis=json_encode($comis);
 ?>
-<input type="hidden" name="__reteiva" id="__reteiva" value="">
-<input type="hidden" name="__pama" id="__pama" value="">
-<input type="hidden" name="__tar" id="__tar" value="">
-<input type="hidden" name="__base" id="__base" value="">
 
 <script language="javascript" type="text/javascript">
 gitser_cont=<?=$form->max_rel_count['gitser']?>;
-var departa='';
-var sucursal='';
+var departa  = '';
+var sucursal = '';
+var comis    = <?php echo $json_comis; ?>;
+
 $(document).ready(function() {
 	$(".inputnum").numeric(".");
-	pr=$("#proveed").val();
+	/*pr=$("#proveed").val();
 	for(i=0;i<gitser_cont;i++){
 		$("#proveed_"+i.toString()).val(pr);
 		iva=$("#tasaiva_"+i.toString()).val();
 		p=roundNumber($("#precio_"+i.toString()).val(),2);
 		miva=roundNumber(p*iva/100,2);
 		$("#iva_"+i.toString()).val(miva);
-	}
+	}*/
+	totalizar();
 });
 
 function valida(i){
@@ -61,6 +71,14 @@ function islr(){
 	$("#totneto").val(totneto);
 }
 
+function reteiva(){
+	totiva=Number($("#totiva").val());
+	preten=Number($("#__reteiva").val());
+	preten=totiva*(preten/100);
+
+	$("#reteiva").val(roundNumber(preten,2));
+}
+
 function importe(i){
 	ind    = i.toString();
 	precio = Number($("#precio_"+ind).val());
@@ -73,6 +91,13 @@ function importe(i){
 
 function totalizar(){
 	tp=tb=ti=ite=0;
+
+	//arr=$('input[name^="importe_"]');
+	//jQuery.each(arr, function() {
+	//	if(this.value.length>0)
+	//		montofob = montofob + parseFloat(this.value);
+	//});
+
 	for(j=0;j<gitser_cont;j++){
 		ind=j.toString();
 		tp1=Number($("#precio_"+ind).val());
@@ -85,23 +110,12 @@ function totalizar(){
 	$("#totbruto").val(roundNumber(tb,2));
 	totiva=roundNumber(tb-tp,2);
 	$("#totiva").val(totiva);
-	<?php if ($tipo_rete=="ESPECIAL"){ ?>
-		valor=0;
-		if ($("#__reteiva").val()==0 || $("#__reteiva").val()==75){
-			valor=roundNumber(totiva*75/100,2);
-			$("#reteiva").val(valor);
-		}else{
-			valor=roundNumber(totiva,2);
-			$("#reteiva").val(valor);
-		}
-	<?php }elseif($tipo_rete=="NORMAL"){?>
-		valor=roundNumber(0,2);
-		$("#reteiva").val(valor);
-	<?php }?>
+
 	totneto=roundNumber(tb-numberval($("#reteiva").val()),2);
 	$("#totneto").val(totneto);
-	monto1=numberval($("#monto1").val());
-	$("#credito").val(totneto-monto1);
+	reteiva();
+	monto1=Number($("#monto1").val());
+	$("#credito").val(roundNumber(totneto-monto1,2));
 }
 
 function ccredito(){
@@ -114,6 +128,15 @@ function contado(){
 	monto1  =Number($("#monto1").val());
 	montonet=Number($("#totneto").val());
 	$("#credito").val(roundNumber(montonet-monto1,2));
+}
+function esbancaja(codb1){
+	eval("tbanco=comis._"+codb1+".tbanco;"  );
+	if(tbanco=='CAJ'){
+		$("#tipo1").val('D');
+		$('#tipo1').attr('readonly','readonly');
+	}else{
+		$('#tipo1').attr('readonly',false);
+	}
 }
 
 function add_gitser(){
@@ -130,12 +153,28 @@ function add_gitser(){
 
 function del_gitser(id){
 	id = id.toString();
-	$('#tr_gitser_'+id).remove();
+	obj='#tr_gitser_'+id;
+	$(obj).remove();
 	totalizar();
 }
 </script>
-<?php } ?>
-
+<?php }
+$cod_prov=$form->getval('proveed');
+if ($tipo_rete=="ESPECIAL"){
+	if($cod_prov===false || empty($cod_prov)){
+		$_preteiva=75;
+	}else{
+		$dbcod_prov=$this->db->escape($cod_prov);
+		$_preteiva=$this->datasis->dameval('SELECT reteiva FROM sprv WHERE proveed='.$dbcod_prov);
+	}
+}else{
+	$_preteiva=0;
+}
+?>
+<input type="hidden" name="__reteiva" id="__reteiva" value="<?php echo $_preteiva; ?>">
+<input type="hidden" name="__pama" id="__pama" value="">
+<input type="hidden" name="__tar" id="__tar" value="">
+<input type="hidden" name="__base" id="__base" value="">
 <table align='center' width="80%">
 	<tr>
 		<td align='right'><?php echo $container_tr?></td>
@@ -218,8 +257,11 @@ function del_gitser(id){
 				<td class="littletablerow" align="right"><?php echo $form->$obj5->output  ?></td>
 				<td class="littletablerow"><?php echo $form->$obj7->output  ?></td>
 				<td class="littletablerow"><?php echo $form->$obj8->output  ?></td>
+				
+				
+				
 				<?php if($form->_status!='show') {?>
-					<td class="littletablerow"><a href=#onclick='del_gitser(<?=$i ?>);return false;'>Eliminar</a></td>
+					<td class="littletablerow"><a href='#' onclick='del_gitser(<?php echo $i; ?>);return false;'>Eliminar</a></td>
 				<?php } ?>
 			</tr>
 			<?php } ?>
@@ -249,30 +291,30 @@ function del_gitser(id){
 					<th class="littletableheader" colspan='4'>Res&uacute;men de montos totales</th>
 				</tr>
 				<tr>
-					<td class="littletableheader"><?php echo $form->codb1->label  ?>&nbsp;</td>
-					<td class="littletablerow">   <?php echo $form->codb1->output ?>&nbsp;</td>
-					<td class="littletableheader"><?php echo $form->tipo1->label  ?>&nbsp;</td>
-					<td class="littletablerow">   <?php echo $form->tipo1->output ?>&nbsp;</td>
+					<td class="littletableheader"><?php echo $form->codb1->label     ?>&nbsp;</td>
+					<td class="littletablerow">   <?php echo $form->codb1->output    ?>&nbsp;</td>
+					<td class="littletableheader"><?php echo $form->tipo1->label     ?>&nbsp;</td>
+					<td class="littletablerow">   <?php echo $form->tipo1->output    ?>&nbsp;</td>
 					<td class="littletableheader"><?php echo $form->totpre->label    ?>&nbsp;</td>
 					<td class="littletablerow">   <?php echo $form->totpre->output   ?>&nbsp;</td>
 					<td class="littletableheader"><?php echo $form->totbruto->label  ?>&nbsp;</td>
 					<td class="littletablerow">   <?php echo $form->totbruto->output ?>&nbsp;</td>
 				</tr>
 				<tr>
-					<td class="littletableheader"><?php echo $form->cheque1->label ?>&nbsp;</td>
-					<td class="littletablerow">   <?php echo $form->cheque1->output?>&nbsp;</td>
-					<td class="littletableheader"><?php echo $form->benefi->label  ?>&nbsp;</td>
-					<td class="littletablerow">   <?php echo $form->benefi->output ?>&nbsp;</td>
+					<td class="littletableheader"><?php echo $form->cheque1->label  ?>&nbsp;</td>
+					<td class="littletablerow">   <?php echo $form->cheque1->output ?>&nbsp;</td>
+					<td class="littletableheader"><?php echo $form->benefi->label   ?>&nbsp;</td>
+					<td class="littletablerow">   <?php echo $form->benefi->output  ?>&nbsp;</td>
 					<td class="littletableheader"><?php echo $form->totiva->label   ?>&nbsp;</td>
 					<td class="littletablerow">   <?php echo $form->totiva->output  ?>&nbsp;</td>
 					<td class="littletableheader"><?php echo $form->reteiva->label  ?>&nbsp;</td>
 					<td class="littletablerow">   <?php echo $form->reteiva->output ?>&nbsp;</td>
 				</tr>
 				<tr>
-					<td class="littletableheader"><?php echo $form->monto1->label  ?>&nbsp;</td>
-					<td class="littletablerow">   <?php echo $form->monto1->output ?>&nbsp;</td>
-					<td class="littletableheader"><?php echo $form->credito->label ?>&nbsp;</td>
-					<td class="littletablerow">   <?php echo $form->credito->output?>&nbsp;</td>
+					<td class="littletableheader"><?php echo $form->monto1->label   ?>&nbsp;</td>
+					<td class="littletablerow">   <?php echo $form->monto1->output  ?>&nbsp;</td>
+					<td class="littletableheader"><?php echo $form->credito->label  ?>&nbsp;</td>
+					<td class="littletablerow">   <?php echo $form->credito->output ?>&nbsp;</td>
 					<td class="littletableheader">&nbsp;</td>
 					<td class="littletablerow">   &nbsp;</td>
 					<td class="littletableheader"><?php echo $form->totneto->label  ?>&nbsp;</td>

@@ -544,7 +544,7 @@ class DataForm{
 	foreach($claves as $nobj=>$campo){
 		$obj=$campo.'_error';
 		if(isset($this->validation->$obj) && strlen($this->validation->$obj)>0){
-			$this->_fields[$nobj]->style='border: 2px solid #FF3300;';
+			$this->_fields[$nobj]->style='border: 2px solid #FF3300;'.$this->_fields[$nobj]->style;
 			$this->_fields[$nobj]->valid_error=$this->validation->$obj;
 		}
 	}
