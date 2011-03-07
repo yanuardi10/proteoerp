@@ -1050,6 +1050,7 @@ class gser extends Controller {
 		$edit->numero = new inputField("N&uacute;mero", "numero");
 		$edit->numero->size = 10;
 		$edit->numero->maxlength=8;
+		$edit->numero->autocomplete=false;
 		$edit->numero->rule='required';
 
 		$edit->proveed = new inputField("Proveedor","proveed");
@@ -1061,6 +1062,7 @@ class gser extends Controller {
 		$edit->nfiscal  = new inputField("Control Fiscal", "nfiscal");
 		$edit->nfiscal->rule = 'required';
 		$edit->nfiscal->size = 10;
+		$edit->nfiscal->autocomplete=false;
 		$edit->nfiscal->maxlength=20;
 
 		$edit->nombre = new inputField("Nombre", "nombre");
@@ -1504,7 +1506,7 @@ class gser extends Controller {
 		}
 		if($monto1 > 0.00){ //monto al contado
 			$benefi=$do->get('benefi');
-			$this->_bmovgser($codbanc,$codprv,$cargo,$negreso,$cheque,$fecha,$monto1,$benefi,$transac);	
+			$this->_bmovgser($codbanc,$codprv,$codbanc,$negreso,$cheque,$fecha,$monto1,$benefi,$transac);	
 		}
 
 		logusu('gser',"Gasto $numero CREADO");

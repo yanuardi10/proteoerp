@@ -92,19 +92,19 @@ function importe(i){
 function totalizar(){
 	tp=tb=ti=ite=0;
 
-	//arr=$('input[name^="importe_"]');
-	//jQuery.each(arr, function() {
-	//	if(this.value.length>0)
-	//		montofob = montofob + parseFloat(this.value);
-	//});
+	arr=$('input[name^="importe_"]');
+	jQuery.each(arr, function() {
+			nom=this.name
+			pos=this.name.lastIndexOf('_');
+			if(pos>0){
+				ind = this.name.substring(pos+1);
+				tp1=Number($("#precio_"+ind).val());
+				ite=Number(this.value);
 
-	for(j=0;j<gitser_cont;j++){
-		ind=j.toString();
-		tp1=Number($("#precio_"+ind).val());
-		ite=Number($("#importe_"+ind).val());
-		tp=tp+tp1;
-		tb=tb+ite;
-	}
+				tp=tp+tp1;
+				tb=tb+ite;
+			}
+	});
 
 	$("#totpre").val(roundNumber(tp,2));
 	$("#totbruto").val(roundNumber(tb,2));
