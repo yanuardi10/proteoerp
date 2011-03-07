@@ -512,6 +512,15 @@ class gser extends Controller {
 		}
 	}
 
+	function chcodb($codb1){
+		$monto1=$this->input->post('monto1');
+		if($monto1>0 && empty($codb1)){
+			$this->validation->set_message('chcodb', 'El campo %s es obligatorio cuando se paga un monto al contado');
+			return false;
+		}
+		
+	}
+
 	function chobligaban($val){
 		$ban=$this->input->post('codb1');
 		if($ban==$this->mcred) return true;
@@ -837,7 +846,7 @@ class gser extends Controller {
 	}
 
 	//Crea la cuenta por pagar en caso de que el gasto sea a credito
-	function _gsersprm($codbanc,$codprv,$numero,$fecha,$montasa,$monredu,$monadic,$tasa,$reducida,$sobretasa,$exento,$causado,$transac){
+	function _gsersprm($codbanc,$codprv,$numero,$fecha,$montasa,$monredu,$monadic,$tasa,$reducida,$sobretasa,$exento,$causado,$transac,$abono=0){
 		$nombre  = $this->datasis->dameval('SELECT nombre FROM sprv WHERE proveed='.$this->db->escape($codprv));
 		$totpre = $montasa+$monredu+$monadic+$exento;
 		$totiva = $tasa+$reducida+$sobretasa;
@@ -852,7 +861,7 @@ class gser extends Controller {
 		$data['fecha']      = $fecha ;
 		$data['monto']      = $totneto;
 		$data['impuesto']   = $totiva ;
-		$data['abonos']     = 0;
+		$data['abonos']     = $abono;
 		$data['vence']      = $fecha;
 		$data['observa1']   = '';
 		$data['transac']    = $transac;
@@ -968,9 +977,7 @@ class gser extends Controller {
 			'p_uri'   => array(4=>'<#i#>'),
 			'titulo'  => 'Buscar Articulo',
 			'script'  => array('lleva(<#i#>)'));
-
 		$btn=$this->datasis->p_modbus($modbus,'<#i#>');
-
 
 		$mSPRV=array(
 			'tabla'   =>'sprv',
@@ -980,7 +987,7 @@ class gser extends Controller {
 			'rif'=>'Rif'),
 			'filtro'  =>array('proveed'=>'C&oacute;digo','nombre'=>'Nombre'),
 			'retornar'=>array('proveed'=>'proveed','nombre'=>'nombre','reteiva'=>'__reteiva'),
-			
+			'script'  => array('totalizar()'),
 			'titulo'  =>'Buscar Proveedorr');
 		$bSPRV=$this->datasis->modbus($mSPRV);
 
@@ -1025,7 +1032,7 @@ class gser extends Controller {
 		$edit->ffactura->rule = 'required';
 		//$edit->ffactura->insertValue = date("Y-m-d");
 
-		$edit->fecha = new DateonlyField('Fecha Recepci&oacute;n', 'fecha');
+		$edit->fecha = new DateonlyField('Fecha Registro', 'fecha');
 		$edit->fecha->insertValue = date("Y-m-d");
 		$edit->fecha->size = 10;
 		$edit->fecha->rule = 'required';
@@ -1077,10 +1084,11 @@ class gser extends Controller {
 		$edit->totiva->onkeyup="valida(0)";
 
 		$edit->codb1 = new dropdownField('Caja o Banco','codb1');
-		$edit->codb1->option('','Cr&eacute;dito');
-		$edit->codb1->options("SELECT codbanc, CONCAT_WS('-',codbanc,banco) AS label FROM banc ORDER BY codbanc");
-		$edit->codb1->rule  = 'max_length[5]';
+		$edit->codb1->option('','');
+		$edit->codb1->options("SELECT TRIM(codbanc) AS ind, CONCAT_WS('-',codbanc,banco) AS label FROM banc ORDER BY codbanc");
+		$edit->codb1->rule  = 'max_length[5]|callback_chcodb|condi_required';
 		$edit->codb1->style = 'width:120px';
+		$edit->codb1->onchange="esbancaja(this.value)";
 
 		$edit->tipo1 =  new dropdownField("Tipo de operaci&oacute;n", "tipo1");
 		$edit->tipo1->option('','Ninguno');
@@ -1098,16 +1106,19 @@ class gser extends Controller {
 		$edit->benefi->size = 30;
 		$edit->benefi->maxlength=40;
 
-		$edit->monto1= new inputField("Monto", "monto1");
+		$edit->monto1= new inputField("Monto al Contado", "monto1");
 		$edit->monto1->size = 10;
 		$edit->monto1->css_class='inputnum';
-		$edit->monto1->when=array('show');
+		$edit->monto1->onkeyup="contado()";
+		$edit->monto1->autocomplete=false;
+		//$edit->monto1->when=array('show');
 
 		$edit->credito= new inputField("Saldo Cr&eacute;dito", "credito");
 		$edit->credito->size = 10;
 		$edit->credito->css_class='inputnum';
-		$edit->credito->when=array('show');
-		//$edit->credito->onkeyup="ccredito()";
+		$edit->credito->onkeyup="ccredito()";
+		$edit->credito->autocomplete=false;
+		//$edit->credito->when=array('show');
 
 		/*$edit->comprob1= new inputField("Comprobante ext.", "comprob1");
 		$edit->comprob1->size = 20;
@@ -1134,12 +1145,13 @@ class gser extends Controller {
 		$edit->reteiva->size = 10;
 		$edit->reteiva->maxlength=10;
 		$edit->reteiva->css_class='inputnum';
-		$edit->reteiva->onkeyup="valida(0)";
+		//$edit->reteiva->onkeyup="reteiva()";
 
 		$edit->totneto = new inputField("Total Neto","totneto");
 		$edit->totneto->size = 10;
 		$edit->totneto->maxlength=10;
 		$edit->totneto->css_class='inputnum';
+		$edit->totneto->readonly=true;
 
 		$edit->usuario  = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
 
@@ -1163,8 +1175,9 @@ class gser extends Controller {
 		$edit->precio->db_name='precio';
 		$edit->precio->css_class='inputnum';
 		$edit->precio->size=4;
-		$edit->precio->rule='required';
+		$edit->precio->rule='required|positive';
 		$edit->precio->rel_id='gitser';
+		$edit->precio->autocomplete=false;
 		$edit->precio->onkeyup="importe(<#i#>)";
 
 		$ivas=$this->datasis->ivaplica();
@@ -1372,6 +1385,7 @@ class gser extends Controller {
 		$ffecha = $do->get('ffactura');
 		$codb1  = $do->get('codb1');
 		$tipo1  = $do->get('tipo1');
+		$monto1 = $do->get('monto1');
 		$benefi = $do->get('benefi');
 		$nombre = $do->get('nombre');
 		
@@ -1451,14 +1465,12 @@ class gser extends Controller {
 		//$do->set('totbruto',$total);
 		//$do->set('totiva',$ivat);
 
-		if (empty($codb1)){
-			$ncausado = $this->datasis->fprox_numero('ncausado');
-			$negreso  = "";
-			$do->set('monto1',0);
-		}else{
+		if ($monto1>0){
 			$negreso  = $this->datasis->fprox_numero('negreso');
 			$ncausado = "";
-			$do->set('monto1',$total);
+		}else{
+			$ncausado = $this->datasis->fprox_numero('ncausado');
+			$negreso  = "";
 		}
 		$do->set('negreso' ,$negreso );
 		$do->set('ncausado',$ncausado);
@@ -1482,13 +1494,17 @@ class gser extends Controller {
 		$negreso  = $do->get('negreso');
 		$transac  = $do->get('transac');
 		$cheque   = $do->get('cheque1');
+		$monto1   = $do->get('monto1');
+		//$totneto  = $do->get('totneto');
+		$totneto=round($montasa+$monredu+$monadic+$tasa+$reducida+$sobretasa+$exento,2);
+		$totcred=round($totneto-$monto1,2);
 
-		if(empty($codbanc)){ //va a credito
-			$this->_gsersprm($codbanc,$codprv,$numero,$fecha,$montasa,$monredu,$monadic,$tasa,$reducida,$sobretasa,$exento,$causado,$transac);
-		}else{ //va al contado
-			$totneto=$montasa+$monredu+$monadic+$tasa+$reducida+$sobretasa+$exento;
+		if($totcred > 0.00){ //monto a credito
+			$this->_gsersprm($codbanc,$codprv,$numero,$fecha,$montasa,$monredu,$monadic,$tasa,$reducida,$sobretasa,$exento,$causado,$transac,$monto1);
+		}
+		if($monto1 > 0.00){ //monto al contado
 			$benefi=$do->get('benefi');
-			$this->_bmovgser($codbanc,$codprv,$cargo,$negreso,$cheque,$fecha,$totneto,$benefi,$transac);	
+			$this->_bmovgser($codbanc,$codprv,$cargo,$negreso,$cheque,$fecha,$monto1,$benefi,$transac);	
 		}
 
 		logusu('gser',"Gasto $numero CREADO");
