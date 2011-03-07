@@ -87,10 +87,13 @@ class sinv extends Controller {
 		$filter->script($script);
 
 		$filter->codigo = new inputField("C&oacute;digo", "codigo");
-		$filter->codigo -> size=25;
+		$filter->codigo-> size=15;
+		$filter->codigo->group = "Uno";
 
 		$filter->descrip = new inputField("Descripci&oacute;n", "descrip");
 		$filter->descrip->db_name='CONCAT_WS(" ",a.descrip,a.descrip2)';
+		$filter->descrip-> size=30;
+		$filter->descrip->group = "Uno";
 
 		$filter->tipo = new dropdownField("Tipo", "tipo");
 		$filter->tipo->db_name=("a.tipo");
@@ -100,41 +103,52 @@ class sinv extends Controller {
 		$filter->tipo->option("Descartar","Descartar");
 		$filter->tipo->option("Consumo","Consumo");
 		$filter->tipo->option("Fraccion","Fracci&oacute;n");
-		$filter->tipo ->style='width:220px;';
+		$filter->tipo ->style='width:120px;';
+		$filter->tipo->group = "Uno";
 
 		$filter->clave = new inputField("Clave", "clave");
-		$filter->clave -> size=25;
+		$filter->clave -> size=15;
+		$filter->clave->group = "Uno";
 
 		$filter->activo = new dropdownField("Activo", "activo");
 		$filter->activo->option("","");
 		$filter->activo->option("S","Si");
 		$filter->activo->option("N","No");
-		$filter->activo ->style='width:220px;';
+		$filter->activo ->style='width:120px;';
+		$filter->activo->group = "Uno";
 
 		$filter->proveed = new inputField("Proveedor", "proveed");
 		$filter->proveed->append($bSPRV);
 		$filter->proveed->clause ="in";
 		$filter->proveed->db_name='( a.prov1, a.prov2, a.prov3 )';
-		$filter->proveed -> size=25;
+		$filter->proveed -> size=10;
+		$filter->proveed->group = "Dos";
 
 		$filter->depto2 = new inputField("Departamento", "nom_depto");
 		$filter->depto2->db_name="d.descrip";
-		$filter->depto2 -> size=10;
+		$filter->depto2 -> size=5;
+		$filter->depto2->group = "Dos";
 
 		$filter->depto = new dropdownField("Departamento","depto");
 		$filter->depto->db_name="d.depto";
 		$filter->depto->option("","Seleccione un Departamento");
 		$filter->depto->options("SELECT depto, descrip FROM dpto WHERE tipo='I' ORDER BY depto");
 		$filter->depto->in="depto2";
+		$filter->depto->group = "Dos";
+		$filter->depto->style='width:190px;';
 
 		$filter->linea = new inputField("Linea", "nom_linea");
 		$filter->linea->db_name="c.descrip";
-		$filter->linea -> size=10;
+		$filter->linea -> size=5;
+		$filter->linea->group = "Dos";
 
 		$filter->linea2 = new dropdownField("L&iacute;nea","linea");
 		$filter->linea2->db_name="c.linea";
 		$filter->linea2->option("","Seleccione un Departamento primero");
 		$filter->linea2->in="linea";
+		$filter->linea2->group = "Dos";
+		$filter->linea2->style='width:190px;';
+
 		$depto=$filter->getval('depto');
 		if($depto!==FALSE){
 			$filter->linea2->options("SELECT linea, descrip FROM line WHERE depto='$depto' ORDER BY descrip");
@@ -144,12 +158,16 @@ class sinv extends Controller {
 
 		$filter->grupo2 = new inputField("Grupo", "nom_grupo");
 		$filter->grupo2->db_name="b.nom_grup";
-		$filter->grupo2 -> size=10;
+		$filter->grupo2 -> size=5;
+		$filter->grupo2->group = "Dos";
 
 		$filter->grupo = new dropdownField("Grupo", "grupo");
 		$filter->grupo->db_name="b.grupo";
 		$filter->grupo->option("","Seleccione una L&iacute;nea primero");
 		$filter->grupo->in="grupo2";
+		$filter->grupo->group = "Dos";
+		$filter->grupo->style='width:190px;';
+
 		$linea=$filter->getval('linea2');
 		if($linea!==FALSE){
 			$filter->grupo->options("SELECT grupo, nom_grup FROM grup WHERE linea='$linea' ORDER BY nom_grup");
@@ -161,9 +179,10 @@ class sinv extends Controller {
 		$filter->marca->option('','Todas');
 		$filter->marca->options("SELECT TRIM(marca) AS clave, TRIM(marca) AS valor FROM marc ORDER BY marca"); 
 		$filter->marca -> style='width:220px;';
+		$filter->marca->group = "Dos";
 
 		$filter->buttons("reset","search");
-		$filter->build();
+		$filter->build("dataformfiltro");
 
 		$uri = "inventario/sinv/dataedit/show/<#codigo#>";
 
@@ -174,22 +193,20 @@ class sinv extends Controller {
 		$uri_2 = anchor('inventario/sinv/dataedit/create/<#id#>','Duplicar');
 
 		$grid->column_orderby("C&oacute;digo",$link,"codigo");
-		//$grid->column("Departamento","<#nom_depto#>"   ,'align=left');
-		//$grid->column("L&iacute;nea","<#nom_linea#>"   ,'align=left');
-		//$grid->column("Grupo","<#nom_grup#>",'align=left');
 		$grid->column_orderby("Descripci&oacute;n","descrip","descrip");
 		$grid->column_orderby("Marca","marca","marca");
 		$grid->column_orderby("Precio 1","<nformat><#precio1#></nformat>","precio1",'align=right');
 		$grid->column_orderby("Precio 2","<nformat><#precio2#></nformat>","precio2",'align=right');
 		$grid->column_orderby("Precio 3","<nformat><#precio3#></nformat>","precio3",'align=right');
 		$grid->column_orderby("Existencia","<nformat><#existen#></nformat>","existen",'align=right');
-		//$grid->column("Precio 4","<nformat><#precio4#></nformat>",'align=right');
 		$grid->column("Acci&oacute;n",$uri_2     ,"align='center'");
 
 		$grid->add('inventario/sinv/dataedit/create');
 		$grid->build();
 
-		$data['content'] = $filter->output.$grid->output;
+		//echo $grid->db->last_query();
+		$data['content'] = $grid->output;
+		$data['filtro']  = $filter->output;
 		$data['title']   = '<h1>Maestro de Inventario</h1>';
 		$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").script("sinvmaes2.js").$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
