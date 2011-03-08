@@ -17,8 +17,6 @@ class gser extends Controller {
 		$this->rapyd->uri->keep_persistence();
 
 		$filter = new DataFilter('Filtro de Gastos','gser');
-		//$filter->db->select("numero,fecha,vence,nombre,totiva,totneto");
-		//$filter->db->from('gser');
 
 		$filter->fechad = new dateonlyField('Desde', 'fechad','d/m/Y');
 		$filter->fechah = new dateonlyField('Hasta', 'fechah','d/m/Y');
@@ -31,11 +29,10 @@ class gser extends Controller {
 		$filter->numero = new inputField('N&uacute;mero', 'numero');
 
 		$filter->proveed = new inputField('Proveedor', 'proveed');
-		//$filter->proveed->append($boton);
 		$filter->proveed->db_name = 'proveed';
 
 		$filter->buttons('reset','search');
-		$filter->build();
+		$filter->build("dataformfiltro");
 
 		$uri2 = anchor('finanzas/gser/mgserdataedit/modify/<#id#>','Edici&oacute;n');
 		$uri = anchor('finanzas/gser/dataedit/show/<#id#>','<#numero#>');
@@ -52,38 +49,52 @@ class gser extends Controller {
 		$grid->column_orderby('monto' ,'totneto' ,'totneto','align=\'right\'');
 		$grid->column('Acciones',$uri2);
 
-		$grid->add('finanzas/gser/agregar');
+		$grid->add('finanzas/gser/agregar','Agregar Egreso');
 		$grid->build();
 		//echo $grid->db->last_query();
 
-		$data['content'] = $filter->output.$grid->output;
+		$data['content'] = $grid->output;
+		$data['filtro']  = $filter->output;
 		$data['head']    = $this->rapyd->get_head();
-		$data['title']   = heading('Gastos');
+		$data['title']   = heading('Egresos por Gastos');
 		$this->load->view('view_ventanas', $data);
 	}
 
 	function agregar(){
-		$data['content'] = '<table align="center">'.br();
+		$data['content'] = '<div align="center" id="maso" >';
 
-		$data['content'].= '<tr><td><img src="'.base_url().'images/dinero.jpg'.'" height="100px"></td><td>';
-		$data['content'].= '<p></p>';
-		$data['content'].= anchor('finanzas/gser/gserchi'  ,'Ingresar/eliminar/modifcar facturas a caja Chica').br();
+		$data['content'].= '<div class="box" style="width:240px;background-color: #D9F7F9;">'.br();
+		$data['content'].= '<a href="'.base_url().'finanzas/gser/gserchi"><img border=0 src="'.base_url().'images/cajachica.gif'.'" height="80px"></a>'.br();
+		$data['content'].= '<p>Incluir gastos pagados con dinero de caja chica para ser relacionados al cierre y/o reposicion</p>'.br();
+		//$data['content'].= anchor('finanzas/gser/gserchi'  ,'Gastos de Caja Chica').br();
+		$data['content'].= '</div>'.br();
 
-		$data['content'].= '<tr><td><img src="'.base_url().'images/dinero.jpg'.'" height="100px"></td><td>';
-		$data['content'].= '<p></p>';
-		$data['content'].= anchor('finanzas/gser/cierregserchi'  ,'Cerrar Caja Chica').br();
+		$data['content'].= '<div  class="box" style="width:240px;background-color: #D9F7F9;" class="box">'.br();
+		$data['content'].= '<a href="'.base_url().'finanzas/gser/cierregserchi">';
+		$data['content'].= '<img border=0 src="'.base_url().'images/rendicion.jpg'.'" height="90px"></a>'.br();
+		$data['content'].= '<p>Reposicion de caja con las facturas ingresadas</p>'.br();
+		//$data['content'].= anchor('finanzas/gser/cierregserchi'  ,'Cerrar Caja Chica').br();
+		$data['content'].= '</div>'.br();
 
-		$data['content'].= '<tr><td><img src="'.base_url().'images/dinero.jpg'.'" height="100px"></td><td>';
-		$data['content'].= '<p></p>';
-		$data['content'].= anchor('finanzas/gser/dataedit/create'  ,'Agregar un gasto').br();
+		$data['content'].= '<div class="box" style="width:240px;background-color: #E9F7F9;">'.br();
+		$data['content'].= '<a href="'.base_url().'finanzas/gser/dataedit/create">';
+		$data['content'].= '<img border="0" src="'.base_url().'images/gastos.jpg'.'" height="70px"></a>'.br();
+		$data['content'].= '<p>Agregar factura y Notas de Debito individuales de gastos, donde permite hacer las retenciones de impuestos que correspondan</p>'.br();
+		//$data['content'].= anchor('finanzas/gser/dataedit/create'  ,'Agregar un gasto').br();
+		$data['content'].= '</div>'.br();
 
+		$data['content'].= '<div class="box" style="width:240px;background-color: #F9F7F9;">'.br();
+		$data['content'].= '<a href="'.base_url().'finanzas/gser/index">';
+		$data['content'].= '<img border="0" src="'.base_url().'images/regresar.jpg'.'" height="100px"></a>'.br();
+		$data['content'].= '<p>Regresar al modulo de gastos';
+		$data['content'].= '</p>'.br();
+		$data['content'].= '</div>'.br();
 
-		$data['content'].= '</td></tr><tr><td colspan=2 align="center">'.anchor('finanzas/gser/index'        ,'Regresar').br();
-		$data['content'].= '</td></tr></table>'.br();
+		$data['content'].= '</div><center>';
 
-		$data['title']   = heading('Selecciona la operaci&oacute;n que desea realizar');
+		$data['title']   = heading('Agregar Gastos');
 		$data['head']    = $this->rapyd->get_head();
-		$this->load->view('view_ventanas', $data);
+		$this->load->view('view_ventanas_masonry', $data);
 	}
 
 	//Para Caja chica
