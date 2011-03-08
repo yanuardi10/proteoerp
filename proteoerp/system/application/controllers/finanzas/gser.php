@@ -37,7 +37,9 @@ class gser extends Controller {
 		$filter->buttons('reset','search');
 		$filter->build();
 
-		$uri = anchor('finanzas/gser/mgserdataedit/modify/<#id#>','<#numero#>');
+		$uri2 = anchor('finanzas/gser/mgserdataedit/modify/<#id#>','Edici&oacute;n');
+		$uri = anchor('finanzas/gser/dataedit/show/<#id#>','<#numero#>');
+		
 
 		$grid = new DataGrid();
 		$grid->order_by('fecha','desc');
@@ -48,6 +50,7 @@ class gser extends Controller {
 		$grid->column_orderby('Nombre','nombre'  ,'nombre');
 		$grid->column_orderby('IVA'   ,'totiva'  ,'totiva' ,'align=\'right\'');
 		$grid->column_orderby('monto' ,'totneto' ,'totneto','align=\'right\'');
+		$grid->column('Acciones',$uri2);
 
 		$grid->add('finanzas/gser/agregar');
 		$grid->build();
@@ -534,6 +537,21 @@ class gser extends Controller {
 		return true;
 	}
 
+	//Chequea que el iva retenido sea 100, 0, 75%
+	function chreteiva($monto){
+		$totiva = round($this->input->post('totiva'),2);
+		$monto  = round($monto,2);
+
+		if($monto==0.00 || $monto==$totiva || round($totiva*0.75,2)==$monto){
+			return true;
+		}else{
+			$this->validation->set_message('chreteiva', 'El campo %s tiene que ser 0, 75 o 100\% del monto del iva');
+			return false;
+		}
+		
+		
+	}
+
 	function chobliganumero($val){
 		/*$ban=$this->input->post('cargo');
 		if($ban==$this->mcred) return true;
@@ -758,9 +776,9 @@ class gser extends Controller {
 					$data['anulado']    = 'N';
 					$data['susti']      = '';
 					$data['negreso']    = $negreso;
-					$data['ndebito']    = '';
+					/*$data['ndebito']    = '';
 					$data['ncausado']   = '';
-					$data['ncredito']   = '';
+					$data['ncredito']   = '';*/
 
 					$sql=$this->db->insert_string('bmov', $data);
 					$ban=$this->db->simple_query($sql);
@@ -768,7 +786,7 @@ class gser extends Controller {
 
 					$sql='CALL sp_actusal('.$this->db->escape($cargo).",'$sp_fecha',-$totneto)";
 					$ban=$this->db->simple_query($sql);
-					if($ban==false){ memowrite($sql,'bcaj'); $error++; }
+					if($ban==false){ memowrite($sql,'gser'); $error++; }
 				}
 
 				$data = array();
@@ -863,7 +881,7 @@ class gser extends Controller {
 		$data['impuesto']   = $totiva ;
 		$data['abonos']     = $abono;
 		$data['vence']      = $fecha;
-		$data['observa1']   = '';
+		$data['observa1']   = 'EGRESO NRO. '.$numero.' PROVEEDOR '.$nombre;
 		$data['transac']    = $transac;
 		$data['estampa']    = date('Y-m-d');
 		$data['hora']       = date('H:i:s');
@@ -889,6 +907,7 @@ class gser extends Controller {
 	function _bmovgser($codbanc,$codprv,$cargo,$negreso,$cheque,$fecha,$totneto,$benefi,$transac){
 		$nombre  = $this->datasis->dameval('SELECT nombre FROM sprv WHERE proveed='.$this->db->escape($codprv));
 		$datacar = common::_traebandata($cargo);
+		$sp_fecha = str_replace('-','',$fecha);
 		$ttipo   = $datacar['tbanco'];
 		$tipo1   = ($ttipo=='CAJ') ? 'D': 'C';
 		$error   = 0;
@@ -900,7 +919,7 @@ class gser extends Controller {
 		$data['banco']      = $datacar['banco'];
 		$data['saldo']      = $datacar['saldo'];
 		$data['tipo_op']    = ($ttipo=='CAJ') ? 'ND': 'CH';
-		$data['numero']     = $cheque;
+		$data['numero']     = str_pad($cheque, 12, '0', STR_PAD_LEFT);
 		$data['fecha']      = $fecha;
 		$data['clipro']     = 'P';
 		$data['codcp']      = $codprv;
@@ -918,9 +937,9 @@ class gser extends Controller {
 		$data['anulado']    = 'N';
 		$data['susti']      = '';
 		$data['negreso']    = $negreso;
-		$data['ndebito']    = '';
+		/*$data['ndebito']    = '';
 		$data['ncausado']   = '';
-		$data['ncredito']   = '';
+		$data['ncredito']   = '';*/
 
 		$sql=$this->db->insert_string('bmov', $data);
 		$ban=$this->db->simple_query($sql);
@@ -928,7 +947,7 @@ class gser extends Controller {
 
 		$sql='CALL sp_actusal('.$this->db->escape($cargo).",'$sp_fecha',-$totneto)";
 		$ban=$this->db->simple_query($sql);
-		if($ban==false){ memowrite($sql,'bcaj'); $error++; }
+		if($ban==false){ memowrite($sql,'gser'); $error++; }
 
 		return ($error==0)? true : false;
 	}
@@ -1060,7 +1079,6 @@ class gser extends Controller {
 		$edit->proveed->rule= "required";
 
 		$edit->nfiscal  = new inputField("Control Fiscal", "nfiscal");
-		$edit->nfiscal->rule = 'required';
 		$edit->nfiscal->size = 10;
 		$edit->nfiscal->autocomplete=false;
 		$edit->nfiscal->maxlength=20;
@@ -1073,7 +1091,8 @@ class gser extends Controller {
 		$edit->totpre  = new inputField("Sub.Total", "totpre");
 		$edit->totpre->size = 10;
 		$edit->totpre->css_class='inputnum';
-		$edit->totpre->onkeyup="valida(0)";
+		$edit->totpre->readonly = true;
+		//$edit->totpre->onkeyup="valida(0)";
 
 		$edit->totbruto= new inputField("Total", "totbruto");
 		$edit->totbruto->size = 10;
@@ -1083,7 +1102,7 @@ class gser extends Controller {
 		$edit->totiva = new inputField("Total IVA", "totiva");
 		$edit->totiva->css_class ='inputnum';
 		$edit->totiva->size      = 10;
-		$edit->totiva->onkeyup="valida(0)";
+		//$edit->totiva->onkeyup="valida(0)";
 
 		$edit->codb1 = new dropdownField('Caja o Banco','codb1');
 		$edit->codb1->option('','');
@@ -1112,6 +1131,7 @@ class gser extends Controller {
 		$edit->monto1->size = 10;
 		$edit->monto1->css_class='inputnum';
 		$edit->monto1->onkeyup="contado()";
+		$edit->monto1->rule = 'condi_required|callback_chmontocontado';
 		$edit->monto1->autocomplete=false;
 		//$edit->monto1->when=array('show');
 
@@ -1146,6 +1166,7 @@ class gser extends Controller {
 		$edit->reteiva = new inputField("Retenci&oacute;n de IVA","reteiva");
 		$edit->reteiva->size = 10;
 		$edit->reteiva->maxlength=10;
+		$edit->reteiva->rule = 'callback_chreteiva';
 		$edit->reteiva->css_class='inputnum';
 		//$edit->reteiva->onkeyup="reteiva()";
 
@@ -1228,7 +1249,7 @@ class gser extends Controller {
 		//Fin de campos para detalle
 		//*****************************
 
-		$edit->buttons("modify", "save", "undo", "delete", "back","add_rel");
+		$edit->buttons('save', 'undo', 'delete', 'back','add_rel');
 		$edit->build();
 		//echo $edit->_dataobject->db->last_query();
 
@@ -1390,17 +1411,29 @@ class gser extends Controller {
 		$monto1 = $do->get('monto1');
 		$benefi = $do->get('benefi');
 		$nombre = $do->get('nombre');
+		$numero = $do->get('numero');
+		$nfiscal= $do->get('nfiscal');
+		//$cheque1= $do->get('cheque1');
+		$_tipo=common::_traetipo($codb1);
 		
-		if(empty($benefi) && $tipo1=='C'){			
+		
+		if(empty($benefi) && $tipo1=='C'){
 			$do->set('benefi',$nombre);
 		}
 
-		if($do->get('numero')==""){
+		if(empty($nfiscal)){
+			$do->set('nfiscal',$numero);
+		}
+
+		if($_tipo=='CAJ'){
+			$nn=$this->datasis->banprox($codb1);
+			$do->set('cheque1',$nn);
+		}
+		
+		/*if(empty($numero)){
 			$numero=$this->datasis->fprox_numero('ngser');
 			$do->set('numero',$numero);
-		}else{
-			$numero=$do->get('numero');
-		}
+		}*/
 
 		$mSQL='SELECT COUNT(*) FROM gser WHERE proveed='.$this->db->escape($proveed).' AND numero='.$this->db->escape($numero).' AND fecha='.$this->db->escape($fecha);
 		$ca=$this->datasis->dameval($mSQL);
@@ -1501,12 +1534,13 @@ class gser extends Controller {
 		$totneto=round($montasa+$monredu+$monadic+$tasa+$reducida+$sobretasa+$exento,2);
 		$totcred=round($totneto-$monto1,2);
 
-		if($totcred > 0.00){ //monto a credito
-			$this->_gsersprm($codbanc,$codprv,$numero,$fecha,$montasa,$monredu,$monadic,$tasa,$reducida,$sobretasa,$exento,$causado,$transac,$monto1);
-		}
 		if($monto1 > 0.00){ //monto al contado
 			$benefi=$do->get('benefi');
 			$this->_bmovgser($codbanc,$codprv,$codbanc,$negreso,$cheque,$fecha,$monto1,$benefi,$transac);	
+		}
+
+		if($totcred > 0.00){ //monto a credito
+			$this->_gsersprm($codbanc,$codprv,$numero,$fecha,$montasa,$monredu,$monadic,$tasa,$reducida,$sobretasa,$exento,$causado,$transac,$monto1);
 		}
 
 		logusu('gser',"Gasto $numero CREADO");
@@ -1641,6 +1675,18 @@ class gser extends Controller {
 					echo $msql;
 				}
 
+			}
+		}
+		return true;
+	}
+
+	//chequea que exista un monto cuando se seleccion un banco/caja
+	function chmontocontado($val){
+		$codb1=$this->input->post('codb1');
+		if(!empty($codb1)){
+			if($val<=0){
+				$this->validation->set_message('chmontocontado', 'El campo %s no puede ser menor o igual a cero si selecciono una caja o banco');
+				return false;
 			}
 		}
 		return true;

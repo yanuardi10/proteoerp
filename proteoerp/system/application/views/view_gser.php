@@ -46,6 +46,8 @@ $(document).ready(function() {
 		$("#iva_"+i.toString()).val(miva);
 	}*/
 	totalizar();
+	codb1=$('#codb1').val();
+	desactivacampo(codb1)
 });
 
 function valida(i){
@@ -121,7 +123,7 @@ function totalizar(){
 function ccredito(){
 	credito =Number($("#credito").val());
 	montonet=Number($("#totneto").val());
-	$("#monto1").val(montonet-credito);
+	$("#monto1").val(roundNumber(montonet-credito,2));
 }
 
 function contado(){
@@ -130,13 +132,27 @@ function contado(){
 	$("#credito").val(roundNumber(montonet-monto1,2));
 }
 function esbancaja(codb1){
-	eval("tbanco=comis._"+codb1+".tbanco;"  );
-	if(tbanco=='CAJ'){
-		$("#tipo1").val('D');
-		$('#tipo1').attr('readonly','readonly');
-	}else{
-		$('#tipo1').attr('readonly',false);
+	if(codb1.length>0){
+		desactivacampo(codb1);
+		montonet=Number($("#totneto").val());
+		$("#credito").val(0);
+		$("#monto1").val(roundNumber(montonet,2));
 	}
+}
+
+function desactivacampo(codb1){
+	if(codb1.length>0){
+		eval("tbanco=comis._"+codb1+".tbanco;"  );
+		if(tbanco=='CAJ'){
+			$("#tipo1").val('D');
+			$('#tipo1').attr('readonly','readonly');
+			$('#cheque1').attr('disabled','disabled');
+		}else{
+			$('#tipo1').attr('readonly',false);
+			$('#cheque1').removeAttr('disabled');
+		}
+	}
+	
 }
 
 function add_gitser(){
@@ -206,7 +222,7 @@ if ($tipo_rete=="ESPECIAL"){
 
 			</tr>
 			<tr>
-				<td class="littletableheader"><?php echo $form->nfiscal->label  ?>*&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->nfiscal->label  ?>&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->nfiscal->output ?>&nbsp;</td>
 				<td class="littletableheader"><?php echo $form->vence->label    ?>&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->vence->output   ?>&nbsp;</td>
