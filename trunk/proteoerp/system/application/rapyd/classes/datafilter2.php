@@ -16,7 +16,7 @@ class DataFilter2 extends DataFilter{
     parent::DataFilter($title, $table);
   }
 
-  function process(){
+  function process($miview='dataform'){
   
     $result = parent::process();
    
@@ -59,19 +59,19 @@ class DataFilter2 extends DataFilter{
         }
         
         $this->_build_buttons();
-        $this->build_form();
+        $this->build_form($miview);
       break;
       
       case "reset":
         //pulire sessioni 
         
         $this->_build_buttons();
-        $this->build_form();
+        $this->build_form($miview);
       break;
       
       default:
         $this->_build_buttons();
-        $this->build_form();
+        $this->build_form($miview);
       break;      
     }
     
