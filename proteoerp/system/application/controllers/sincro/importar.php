@@ -133,7 +133,7 @@ class Importar extends Controller {
 		$sucu=$this->db->escape($this->sucu);
 		$this->datasis->modulo_id('91E',1);
 
-		$form = new DataForm("sincro/importar/uitraegalma/process");
+		$form = new DataForm("sincro/importar/uitraepara/process");
 
 		$form->sucu = new dropdownField("Sucursal", "sucu");
 		$form->sucu->rule ='required';
@@ -180,11 +180,9 @@ class Importar extends Controller {
 		$data['content'] = $form->output.$exito;
 		$data['title']   = '<h1>Importar data de Sucursal</h1>';
 		$data['script']  = '';
-		$data["head"]    = $this->rapyd->get_head();
+		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
-
-
 
 	function uicarga(){
 		set_time_limit(600);
@@ -278,7 +276,7 @@ class Importar extends Controller {
 			echo $rt;
 		}
 	}
-	
+
 	function traetodoprin($fecha=null){
 		if(isset($_SERVER['argv']) && !isset($_SERVER['SERVER_NAME'])){ //asegura que se ejecute desde shell
 
