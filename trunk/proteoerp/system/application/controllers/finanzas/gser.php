@@ -34,7 +34,9 @@ class gser extends Controller {
 		$filter->buttons('reset','search');
 		$filter->build("dataformfiltro");
 
-		$uri2 = anchor('finanzas/gser/mgserdataedit/modify/<#id#>','Edici&oacute;n');
+		$uri2 = anchor('finanzas/gser/mgserdataedit/modify/<#id#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar')));
+		$uri2 .= "&nbsp;".anchor('finanzas/gser/mgserdataedit/modify/<#id#>',img(array('src'=>'images/pdf_logo.gif','border'=>'0','alt'=>'PDF')));
+
 		$uri = anchor('finanzas/gser/dataedit/show/<#id#>','<#numero#>');
 		
 
@@ -63,20 +65,20 @@ class gser extends Controller {
 	function agregar(){
 		$data['content'] = '<div align="center" id="maso" >';
 
-		$data['content'].= '<div class="box" style="width:240px;background-color: #D9F7F9;">'.br();
+		$data['content'].= '<div class="box" style="width:240px;background-color: #F9F7F9;">'.br();
 		$data['content'].= '<a href="'.base_url().'finanzas/gser/gserchi"><img border=0 src="'.base_url().'images/cajachica.gif'.'" height="80px"></a>'.br();
 		$data['content'].= '<p>Incluir gastos pagados con dinero de caja chica para ser relacionados al cierre y/o reposicion</p>'.br();
 		//$data['content'].= anchor('finanzas/gser/gserchi'  ,'Gastos de Caja Chica').br();
 		$data['content'].= '</div>'.br();
 
-		$data['content'].= '<div  class="box" style="width:240px;background-color: #D9F7F9;" class="box">'.br();
+		$data['content'].= '<div  class="box" style="width:240px;background-color: #F9F7F9;" class="box">'.br();
 		$data['content'].= '<a href="'.base_url().'finanzas/gser/cierregserchi">';
 		$data['content'].= '<img border=0 src="'.base_url().'images/rendicion.jpg'.'" height="90px"></a>'.br();
 		$data['content'].= '<p>Reposicion de caja con las facturas ingresadas</p>'.br();
 		//$data['content'].= anchor('finanzas/gser/cierregserchi'  ,'Cerrar Caja Chica').br();
 		$data['content'].= '</div>'.br();
 
-		$data['content'].= '<div class="box" style="width:240px;background-color: #E9F7F9;">'.br();
+		$data['content'].= '<div class="box" style="width:240px;background-color: #F9F7F9;">'.br();
 		$data['content'].= '<a href="'.base_url().'finanzas/gser/dataedit/create">';
 		$data['content'].= '<img border="0" src="'.base_url().'images/gastos.jpg'.'" height="70px"></a>'.br();
 		$data['content'].= '<p>Agregar factura y Notas de Debito individuales de gastos, donde permite hacer las retenciones de impuestos que correspondan</p>'.br();
@@ -84,9 +86,9 @@ class gser extends Controller {
 		$data['content'].= '</div>'.br();
 
 		$data['content'].= '<div class="box" style="width:240px;background-color: #F9F7F9;">'.br();
-		$data['content'].= '<a href="'.base_url().'finanzas/gser/index">';
-		$data['content'].= '<img border="0" src="'.base_url().'images/regresar.jpg'.'" height="100px"></a>'.br();
-		$data['content'].= '<p>Regresar al modulo de gastos';
+		$data['content'].= '<a href="'.base_url().'finanzas/gser/index" >';
+		$data['content'].= '<p><img border="0" src="'.base_url().'images/regresar.jpg'.'" height="40px"></a>'.br();
+		$data['content'].= 'Regresar al modulo de gastos';
 		$data['content'].= '</p>'.br();
 		$data['content'].= '</div>'.br();
 
@@ -1034,10 +1036,14 @@ class gser extends Controller {
 
 		$do = new DataObject('gser');
 		$do->rel_one_to_many('gitser', 'gitser',array('id'=>'idgser'));
-		//$do->rel_pointer('itspre','sinv','itspre.codigo=sinv.codigo','sinv.descrip as sinvdescrip');
 
 		$edit = new DataDetails("Gastos", $do);
-		$edit->back_url = site_url("finanzas/gser/filteredgrid");
+		if ( $edit->_status == 'show' ) {
+			$edit->back_url = site_url("finanzas/gser/filteredgrid");
+		} else {
+			$edit->back_url = site_url("finanzas/gser/agregar");
+		}
+
 		$edit->set_rel_title('gitser','Gasto <#o#>');
 
 		//$edit->script($script,'create');
@@ -1053,7 +1059,7 @@ class gser extends Controller {
 		$edit->tipo_doc->style="width:100px";
 		$edit->tipo_doc->option('FC',"Factura");
 		$edit->tipo_doc->option('ND',"Nota Debito");
-		$edit->tipo_doc->option('AD',"Amortizaci&oacute;n");
+		//$edit->tipo_doc->option('AD',"Amortizaci&oacute;n");
 		//$edit->tipo_doc->option('GA',"Gasto de N&oacute;mina");
 
 		$edit->ffactura = new DateonlyField("Fecha Documento", "ffactura","d/m/Y");
@@ -1072,7 +1078,7 @@ class gser extends Controller {
 		$edit->vence->size = 10;
 		//$edit->vence->insertValue = date("Y-m-d");
 
-		$edit->compra = new inputField('Compra asociada','compra');
+		$edit->compra = new inputField('Doc.Asociado','compra');
 		$edit->compra->rule='max_length[8]';
 		$edit->compra->size =10;
 		$edit->compra->maxlength =8;
@@ -1115,47 +1121,57 @@ class gser extends Controller {
 		$edit->totiva->size      = 10;
 		//$edit->totiva->onkeyup="valida(0)";
 
-		$edit->codb1 = new dropdownField('Caja o Banco','codb1');
+		$edit->codb1 = new dropdownField('Caja/Banco','codb1');
 		$edit->codb1->option('','');
 		$edit->codb1->options("SELECT TRIM(codbanc) AS ind, CONCAT_WS('-',codbanc,banco) AS label FROM banc ORDER BY codbanc");
 		$edit->codb1->rule  = 'max_length[5]|callback_chcodb|condi_required';
 		$edit->codb1->style = 'width:120px';
 		$edit->codb1->onchange="esbancaja(this.value)";
 
-		$edit->tipo1 =  new dropdownField("Tipo de operaci&oacute;n", "tipo1");
+		$edit->tipo1 =  new dropdownField("Cheque/ND", "tipo1");
 		$edit->tipo1->option('','Ninguno');
 		$edit->tipo1->option('C','Cheque');
 		$edit->tipo1->option('D','D&eacute;bito');
 		$edit->tipo1->rule = 'condi_required|callback_chtipoe';
-		$edit->tipo1->style="20px";
+		$edit->tipo1->style="width:100px";
 
-		$edit->cheque1 = new inputField('N&uacute;mero de Cheque/ND',"cheque1");
+		$edit->cheque1 = new inputField('N&uacute;mero',"cheque1");
 		$edit->cheque1->rule = 'condi_required|callback_chobliganumerog';
-		$edit->cheque1->size = 15;
+		$edit->cheque1->size = 12;
 		$edit->cheque1->maxlength=20;
 
 		$edit->benefi = new inputField("Beneficiario","benefi");
-		$edit->benefi->size = 30;
+		$edit->benefi->size = 39;
 		$edit->benefi->maxlength=40;
 
-		$edit->monto1= new inputField("Monto al Contado", "monto1");
+		$edit->monto1= new inputField("Contado", "monto1");
 		$edit->monto1->size = 10;
 		$edit->monto1->css_class='inputnum';
 		$edit->monto1->onkeyup="contado()";
 		$edit->monto1->rule = 'condi_required|callback_chmontocontado';
 		$edit->monto1->autocomplete=false;
-		//$edit->monto1->when=array('show');
 
-		$edit->credito= new inputField("Saldo Cr&eacute;dito", "credito");
+		$edit->credito= new inputField("Cr&eacute;dito", "credito");
 		$edit->credito->size = 10;
 		$edit->credito->css_class='inputnum';
 		$edit->credito->onkeyup="ccredito()";
 		$edit->credito->autocomplete=false;
-		//$edit->credito->when=array('show');
 
-		/*$edit->comprob1= new inputField("Comprobante ext.", "comprob1");
-		$edit->comprob1->size = 20;
-		$edit->comprob1->css_class='inputnum';*/
+		$edit->transac= new inputField("Transaccion", "transac");
+		$edit->transac->size = 10;
+		$edit->transac->when=array('show');
+
+		$edit->usuarios= new inputField("Usuario", "usuario");
+		$edit->usuarios->size = 10;
+		$edit->usuarios->when=array('show');
+
+		$edit->estampa= new inputField("Estampa", "estampa");
+		$edit->estampa->size = 10;
+		$edit->estampa->when=array('show');
+
+		$edit->hora= new inputField("Hora", "hora");
+		$edit->hora->size = 8;
+		$edit->hora->when=array('show');
 
 		/*$edit->creten = new inputField("C&oacute;digo de la retencion","creten");
 		$edit->creten->size = 10;
@@ -1174,14 +1190,14 @@ class gser extends Controller {
 		$edit->reten->css_class='inputnum';
 		$edit->reten->onkeyup="valida(0)";*/
 
-		$edit->reteiva = new inputField("Retenci&oacute;n de IVA","reteiva");
+		$edit->reteiva = new inputField("Ret.de IVA","reteiva");
 		$edit->reteiva->size = 10;
 		$edit->reteiva->maxlength=10;
 		$edit->reteiva->rule = 'callback_chreteiva';
 		$edit->reteiva->css_class='inputnum';
 		//$edit->reteiva->onkeyup="reteiva()";
 
-		$edit->totneto = new inputField("Total Neto","totneto");
+		$edit->totneto = new inputField("Neto","totneto");
 		$edit->totneto->size = 10;
 		$edit->totneto->maxlength=10;
 		$edit->totneto->css_class='inputnum';
@@ -1266,7 +1282,7 @@ class gser extends Controller {
 
 		$conten['form']  =&$edit;
 		$data['content'] = $this->load->view('view_gser', $conten,true);
-		$data['title']   = heading('Gastos');
+		$data['title']   = heading('Registro de Gastos o Nota de Debito');
 		$data['head']    = script('jquery.js').script('jquery-ui.js').script("plugins/jquery.numeric.pack.js").script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css').$this->rapyd->get_head().phpscript('nformat.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js');
 		$this->load->view('view_ventanas', $data);
 	}

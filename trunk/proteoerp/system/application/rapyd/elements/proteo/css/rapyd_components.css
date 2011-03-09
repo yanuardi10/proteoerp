@@ -14,6 +14,7 @@
 .littletablerowth { color: #153D51;	border-bottom: 1px solid #ECECEC;	 font-family: Lucida Grande, Verdana, Geneva, Sans-serif;	font-size: 12px; font-weight: bold;}
 .littletableheader { background: #F9F9F9; 	border-bottom: 1px solid #ECECEC;	color: #999999;	font-family: Lucida Grande, Verdana, Geneva, Sans-serif; font-size: 12px;	padding-left:5px;}
 .littletablefilter { background: #D7DEFE; 	border-bottom: 1px solid #ECECEC;	color: #333333;	font-family: Lucida Grande, Verdana, Geneva, Sans-serif; font-size: 12px;	padding-left:5px;}
+.littletableheaderdet { background: #0404B4; 	border-bottom: 1px solid #ECECEC;	color: #FCFCFC;	font-family: Lucida Grande, Verdana, Geneva, Sans-serif; font-size: 12px;	padding-left:5px;}
 .tableheader       { background: #A9D9D9; 	border-bottom: 1px solid #FcFcFc;	color: #003311;	font-family: Lucida Grande, Verdana, Geneva, Sans-serif; font-size: 12px;}
 .tableheader_clean { background: #A1D1D1; color: #003311;	font-family: Lucida Grande, Verdana, Geneva, Sans-serif; font-size: 12px;}
 .tablerow {	border-bottom: 1px solid #D0D0D0;	color: #153D51;	font-family: Verdana, Arial, Helvetica;	font-size: 11px;	font-weight: normal;}
