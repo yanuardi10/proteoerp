@@ -8,7 +8,7 @@
 <tr>
 	<td>&nbsp</td>
 	<td align="center" NOWRAP><p class="miniblanco1"><?php echo $this->datasis->traevalor("TITULO2")."<br>".$this->datasis->traevalor("TITULO3")."<br>RIF ".$this->datasis->traevalor("RIF")?><p></td>
-	<td align="right"  NOWRAP><img src="<?php echo base_url() ?>images/logo.jpg" height="38px" ></td>
+	<td align="right"  NOWRAP><img src="<?php echo base_url() ?>images/logo.jpg" height="38px" alt="Logotipo" ></td>
 </tr>
 </table>
 
