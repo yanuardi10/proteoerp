@@ -191,7 +191,8 @@ if ($tipo_rete=="ESPECIAL"){
 <input type="hidden" name="__pama" id="__pama" value="">
 <input type="hidden" name="__tar" id="__tar" value="">
 <input type="hidden" name="__base" id="__base" value="">
-<table align='center' width="80%">
+	
+<table align='center' width="99%">
 	<tr>
 		<td align='right'><?php echo $container_tr?></td>
 	</tr>
@@ -202,7 +203,7 @@ if ($tipo_rete=="ESPECIAL"){
 		<td>
 		<table width="100%" style="margin: 0; width: 100%;">
 			<tr>
-				<th class="littletableheader" colspan='6'>Datos del gasto</th>
+				<th align='left' colspan='6' style='font-size:14px;color:#1C1C1C;background-color:#F5D0A9;' >DOCUMENTO</th>
 			</tr>
 			<tr>
 				<td class="littletableheader"><?php echo $form->tipo_doc->label  ?>*&nbsp;</td>
@@ -238,20 +239,18 @@ if ($tipo_rete=="ESPECIAL"){
 	<tr>
 		<td>
 		<table width='100%'>
+			<?php //<tr><th class="littletableheader" colspan='9'>Detalle del gasto </th></tr> ?>
 			<tr>
-				<th class="littletableheader" colspan='9'>Detalle del gasto </th>
-			</tr>
-			<tr>
-				<td class="littletableheader">C&oacute;digo</td>
-				<td class="littletableheader">Descripci&oacute;n</td>
-				<td class="littletableheader" align="right">Precio</td>
-				<td class="littletableheader" align="right">Tasa</td>
-				<td class="littletableheader" align="right">IVA</td>
-				<td class="littletableheader" align="right">Importe</td>
-				<td class="littletableheader">Departamento</td>
-				<td class="littletableheader">Sucursal</td>
+				<td class="littletableheaderdet">C&oacute;digo</td>
+				<td class="littletableheaderdet">Descripci&oacute;n</td>
+				<td class="littletableheaderdet" align="right">Precio</td>
+				<td class="littletableheaderdet" align="right">Tasa</td>
+				<td class="littletableheaderdet" align="right">IVA</td>
+				<td class="littletableheaderdet" align="right">Importe</td>
+				<td class="littletableheaderdet">Departamento</td>
+				<td class="littletableheaderdet">Sucursal</td>
 				<?php if($form->_status!='show') {?>
-					<td class="littletableheader">Acci&oacute;n&nbsp;</td>
+					<td class="littletableheaderdet">Acci&oacute;n&nbsp;</td>
 				<?php } ?>
 			</tr>
 			<?php for($i=0;$i<$form->max_rel_count['gitser'];$i++) {
@@ -283,7 +282,7 @@ if ($tipo_rete=="ESPECIAL"){
 			<?php } ?>
 
 			<tr id='__UTPL__'>
-				<td></td>
+				<td colspan='9' class="littletableheaderdet">Totales</td>
 			</tr>
 
 			<?php if ($form->_status =='show'){?>
@@ -301,43 +300,78 @@ if ($tipo_rete=="ESPECIAL"){
 	</tr>
 	<tr>
 		<td align='center'>
+			<table width='100%'><tr><td valign='top'>
+
 			<table width='100%'>
 				<tr>
-					<th class="littletableheader" colspan='4'>Informaci&oacute;n Financiera</th>
-					<th class="littletableheader" colspan='4'>Res&uacute;men de montos totales</th>
+					<th colspan='4' align='left' colspan='6' style='font-size:14px;color:#1C1C1C;background-color:#F5D0A9;'>Forma de Pago</th>
 				</tr>
 				<tr>
 					<td class="littletableheader"><?php echo $form->codb1->label     ?>&nbsp;</td>
 					<td class="littletablerow">   <?php echo $form->codb1->output    ?>&nbsp;</td>
 					<td class="littletableheader"><?php echo $form->tipo1->label     ?>&nbsp;</td>
 					<td class="littletablerow">   <?php echo $form->tipo1->output    ?>&nbsp;</td>
+				</tr>
+				<tr>
+					<td class="littletableheader"><?php echo $form->cheque1->label  ?>&nbsp;</td>
+					<td class="littletablerow">   <?php echo $form->cheque1->output ?>&nbsp;</td>
+					<td class="littletableheader"><?php echo $form->monto1->label   ?>&nbsp;</td>
+					<td class="littletablerow">   <?php echo $form->monto1->output  ?>&nbsp;</td>
+				</tr>
+				<tr>
+					<td class="littletableheader"><?php echo $form->benefi->label   ?>&nbsp;</td>
+					<td colspan='3' class="littletablerow">   <?php echo $form->benefi->output  ?>&nbsp;</td>
+				</tr>
+			</table>
+			</td><td valign='top'>
+			<table width='100%'>
+				<tr>
+					<th colspan='4' align='left' colspan='6' style='font-size:14px;color:#1C1C1C;background-color:#F5D0A9;'>Totales</th>
+				</tr>
+				<tr>
 					<td class="littletableheader"><?php echo $form->totpre->label    ?>&nbsp;</td>
 					<td class="littletablerow">   <?php echo $form->totpre->output   ?>&nbsp;</td>
 					<td class="littletableheader"><?php echo $form->totbruto->label  ?>&nbsp;</td>
 					<td class="littletablerow">   <?php echo $form->totbruto->output ?>&nbsp;</td>
 				</tr>
 				<tr>
-					<td class="littletableheader"><?php echo $form->cheque1->label  ?>&nbsp;</td>
-					<td class="littletablerow">   <?php echo $form->cheque1->output ?>&nbsp;</td>
-					<td class="littletableheader"><?php echo $form->benefi->label   ?>&nbsp;</td>
-					<td class="littletablerow">   <?php echo $form->benefi->output  ?>&nbsp;</td>
 					<td class="littletableheader"><?php echo $form->totiva->label   ?>&nbsp;</td>
 					<td class="littletablerow">   <?php echo $form->totiva->output  ?>&nbsp;</td>
 					<td class="littletableheader"><?php echo $form->reteiva->label  ?>&nbsp;</td>
 					<td class="littletablerow">   <?php echo $form->reteiva->output ?>&nbsp;</td>
 				</tr>
 				<tr>
-					<td class="littletableheader"><?php echo $form->monto1->label   ?>&nbsp;</td>
-					<td class="littletablerow">   <?php echo $form->monto1->output  ?>&nbsp;</td>
 					<td class="littletableheader"><?php echo $form->credito->label  ?>&nbsp;</td>
 					<td class="littletablerow">   <?php echo $form->credito->output ?>&nbsp;</td>
-					<td class="littletableheader">&nbsp;</td>
-					<td class="littletablerow">   &nbsp;</td>
 					<td class="littletableheader"><?php echo $form->totneto->label  ?>&nbsp;</td>
 					<td class="littletablerow">   <?php echo $form->totneto->output ?>&nbsp;</td>
 				</tr>
 			</table>
+			</td></tr></table>
 		</td>
 	</tr>
+	<?php if($form->_status == 'show'){ ?>
+	<tr>
+		<td align='center'>
+			<table>
+				<tr>
+					<th colspan='4' style='font-size:14px;color:#1C1C1C;background-color:#D5D5D5;'>Informacion de Control</th>
+				</tr>
+				<tr>
+					<td class="littletableheader"><?php echo $form->usuarios->label ?>&nbsp;</td>
+					<td class="littletableheader"><?php echo $form->estampa->label ?>&nbsp;</td>
+					<td class="littletableheader"><?php echo $form->hora->label ?>&nbsp;</td>
+					<td class="littletableheader"><?php echo $form->transac->label ?>&nbsp;</td>
+				</tr>
+				<tr>
+					<td class="littletablerow"><?php echo $form->usuarios->output ?>&nbsp;</td>
+					<td class="littletablerow"><?php echo $form->estampa->output ?>&nbsp;</td>
+					<td class="littletablerow"><?php echo $form->hora->output ?>&nbsp;</td>
+					<td class="littletablerow"><?php echo $form->transac->output ?>&nbsp;</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	<?php } ?>
 </table>
 <?php endif; ?>

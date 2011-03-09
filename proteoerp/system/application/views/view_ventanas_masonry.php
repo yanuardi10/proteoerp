@@ -26,9 +26,7 @@ $(window).load(function() {
 
 <div id='contenido' align="center">
 	<?php if (isset($content)) echo $content; ?>
-	<div class="footer">
-		<p>Proteo ERP </p>
-	</div>
+	<div class="footer"></p><?php if (isset($pie)) echo $pie; ?></div>
 </div>
 
 <?php if (isset($extras)) echo $extras; ?>

@@ -38,9 +38,6 @@ $(document).ready(function() {
 		});
 		$(this).addClass('current');
 		$('#tumblelog').load('<?php echo site_url('bienvenido/cargapanel') ?>'+carga,'' ,function(){
-			//$('#tumblelog').removeClass();
-			//$('#tumblelog').attr('style','')
-			//alert($('#tumblelog').attr('class'));
 			$('#maso').masonry({ 
 				singleMode: true,
 				itemSelector: '.box'

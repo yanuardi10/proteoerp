@@ -82,11 +82,8 @@ class Factura extends Controller {
 		$filter->vende->group = "Cliente";
 		$filter->vende->style ="width:220px";;
 
-
-
 		$filter->buttons('reset','search');
 		$filter->build("dataformfiltro");
-
     
 		$uri = anchor('ventas/factura/dataedit/show/<#tipo_doc#>/<#numero#>','<#tipo_doc#><#numero#>');
 		$uri2 = anchor_popup('formatos/verhtml/FACTURA/<#tipo_doc#>/<#numero#>','Ver',$atts);
