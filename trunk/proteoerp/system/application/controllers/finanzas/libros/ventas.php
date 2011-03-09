@@ -572,9 +572,8 @@ class ventas{
 		$ws =& $wb->addworksheet($mes);
 		
 		// ANCHO DE LAS COLUMNAS
-		$ws->set_column('A:F',11);
-		$ws->set_column('G:G',37);
-		$ws->set_column('H:H',11);
+		$ws->set_column('A:G',11);
+		$ws->set_column('H:H',34);
 		$ws->set_column('I:S',20);
 		
 		// FORMATOS
@@ -609,6 +608,11 @@ class ventas{
 		$mcel = 0;
 		// TITULOS
 		
+		$ws->write_string( $mm,   0, "", $titulo );
+		$ws->write_string( $mm+1, 0, "Oper.", $titulo );
+		$ws->write_string( $mm+2, 0, "Nro.", $titulo );
+		$mcel++;
+				
 		$ws->write_string( $mm,   $mcel, "", $titulo );
 		$ws->write_string( $mm+1, $mcel, "Fecha", $titulo );
 		$ws->write_string( $mm+2, $mcel, "", $titulo );
@@ -715,7 +719,7 @@ class ventas{
 		$mcel++;
 		
 		$ws->write_string( $mm,   $mcel, "", $titulo );
-		$ws->write_string( $mm+1, $mcel, "Nï¿½ Fiscal", $titulo );
+		$ws->write_string( $mm+1, $mcel, "Nº Fiscal", $titulo );
 		$ws->write_string( $mm+2, $mcel, "", $titulo );
 		$mcel++;
 		
@@ -725,7 +729,9 @@ class ventas{
 		$mcel++;
 		
 		$mm +=3;
+		$contador = 1;
 		$ii = $mm+1;
+		//$ii = 1;
 		$mtiva = 'X';
 		$mfecha = '2000-00-00';
 		$tventas=$texenta=$tbase=$timpue=$treiva=$tperci=$mforza=$contri=0;
@@ -737,85 +743,89 @@ class ventas{
 				// imprime contribuyente
 				$fecha = substr($row->fecha,8,2)."/".substr($row->fecha,5,2)."/".substr($row->fecha,0,4);
 				
-				$ws->write_string( $mm, 0, $fecha,  $cuerpo );				// Fecha
-				$ws->write_string( $mm, 1, ' ', $cuerpo );			// Numero de Caja
+				$ws->write_string( $mm, 0, $contador, $cuerpo );
+				$ws->write_string( $mm, 1, $fecha,  $cuerpo );				// Fecha
+				$ws->write_string( $mm, 2, ' ', $cuerpo );			// Numero de Caja
 				
 				if ($row->tipo[0] == "X" ) 
-					$ws->write_string( $mm, 2, "FC", $cuerpoc );		// TIPO
+					$ws->write_string( $mm, 3, "FC", $cuerpoc );		// TIPO
 				elseif ( $row->tipo == "XC" ) 
-					$ws->write_string( $mm, 2, "NC", $cuerpoc );		// TIPO
+					$ws->write_string( $mm, 3, "NC", $cuerpoc );		// TIPO
 				elseif ( $row->tipo == "FE" ) 
-					$ws->write_string( $mm, 2, "FC", $cuerpoc );		// TIPO
+					$ws->write_string( $mm, 3, "FC", $cuerpoc );		// TIPO
 				else
-					$ws->write_string( $mm, 2, $row->tipo, $cuerpoc );	// TIPO
+					$ws->write_string( $mm, 3, $row->tipo, $cuerpoc );	// TIPO
 				
-				$ws->write_string( $mm, 3, $row->numero, $cuerpo );		// Nro. Documento
-				$ws->write_string( $mm, 4, $row->inicial, $cuerpo );	// INICIAL
-				$ws->write_string( $mm, 5, $row->final, $cuerpo );		// FINAL
+				$ws->write_string( $mm, 4, $row->numero, $cuerpo );		// Nro. Documento
+				$ws->write_string( $mm, 5, $row->inicial, $cuerpo );	// INICIAL
+				$ws->write_string( $mm, 6, $row->final, $cuerpo );		// FINAL
 
 				if ($row->tipo[0] == "X" ) 
-					$ws->write_string( $mm, 6, "DOCUMENTO ANULADO", $cuerpo );			// NOMBRE
+					$ws->write_string( $mm, 7, "DOCUMENTO ANULADO", $cuerpo );			// NOMBRE
 				else
-					$ws->write_string( $mm, 6, $row->nombre, $cuerpo );			// NOMBRE
-				$ws->write_string( $mm, 7, $row->rif, $cuerpo );			// CONTRIBUYENTE
+					$ws->write_string( $mm, 7, $row->nombre, $cuerpo );			// NOMBRE
+				$ws->write_string( $mm, 8, $row->rif, $cuerpo );			// CONTRIBUYENTE
 				
 				if ( $row->registro=='04' ) {
-					$ws->write_number( $mm, 8, 0, $numero );		// VENTAS + IVA
-					$ws->write_number( $mm, 9, 0, $numero );		// VENTAS EXENTAS
-					$ws->write_number( $mm,10, 0, $cuerpo );		// EXPORTACION
-					$ws->write_number( $mm,11, 0, $numero );		// GENERAL
-					$ws->write_number( $mm,12, 0, $numero );		// GENEIMPU
-					$ws->write_number( $mm,13, 0, $numero );		// ADICIONAL
-					$ws->write_number( $mm,14, 0, $numero );		// ADICIMPU
-					$ws->write_number( $mm,15, 0, $numero );		// REDUCIDA
-					$ws->write_number( $mm,16, 0, $numero );		// REDUIMPU
-					$ws->write_number( $mm,17, $row->geneimpu + $row->adicimpu+$row->reduimpu, $numero );		// REDUIMPU
-				} else {
-					$ws->write_number( $mm, 8, $row->ventatotal, $numero );	// VENTAS + IVA
-					$ws->write_number( $mm, 9, $row->exento, $numero );   	// VENTAS EXENTAS
-					$ws->write_number( $mm,10, 0, $cuerpo );   					    // EXPORTACION
-					$ws->write_number( $mm,11, $row->general, $numero );		// GENERAL
-					$ws->write_number( $mm,12, $row->geneimpu, $numero );		// GENEIMPU
-					$ws->write_number( $mm,13, $row->adicional, $numero );	// ADICIONAL
-					$ws->write_number( $mm,14, $row->adicimpu, $numero );		// ADICIMPU
-					$ws->write_number( $mm,15, $row->reducida, $numero );		// REDUCIDA
-					$ws->write_number( $mm,16, $row->reduimpu, $numero );		// REDUIMPU
+					$ws->write_number( $mm, 9, 0, $numero );		// VENTAS + IVA
+					$ws->write_number( $mm,10, 0, $numero );		// VENTAS EXENTAS
+					$ws->write_number( $mm,11, 0, $cuerpo );		// EXPORTACION
+					$ws->write_number( $mm,12, 0, $numero );		// GENERAL
+					$ws->write_number( $mm,13, 0, $numero );		// GENEIMPU
+					$ws->write_number( $mm,14, 0, $numero );		// ADICIONAL
+					$ws->write_number( $mm,15, 0, $numero );		// ADICIMPU
+					$ws->write_number( $mm,16, 0, $numero );		// REDUCIDA
 					$ws->write_number( $mm,17, 0, $numero );		// REDUIMPU
+					$ws->write_number( $mm,18, $row->geneimpu + $row->adicimpu+$row->reduimpu, $numero );		// REDUIMPU
+				} else {
+					$ws->write_number( $mm, 9, $row->ventatotal, $numero );	// VENTAS + IVA
+					$ws->write_number( $mm,10, $row->exento, $numero );   	// VENTAS EXENTAS
+					$ws->write_number( $mm,11, 0, $cuerpo );   					    // EXPORTACION
+					$ws->write_number( $mm,12, $row->general, $numero );		// GENERAL
+					$ws->write_number( $mm,13, $row->geneimpu, $numero );		// GENEIMPU
+					$ws->write_number( $mm,14, $row->adicional, $numero );	// ADICIONAL
+					$ws->write_number( $mm,15, $row->adicimpu, $numero );		// ADICIMPU
+					$ws->write_number( $mm,16, $row->reducida, $numero );		// REDUCIDA
+					$ws->write_number( $mm,17, $row->reduimpu, $numero );		// REDUIMPU
+					$ws->write_number( $mm,18, 0, $numero );		// REDUIMPU
 				}
 		
-				$ws->write_number( $mm,18, $row->reiva, $numero );		    // IVA RETENIDO
-				$ws->write_string( $mm,19, $row->comprobante, $cuerpo );	// NRO COMPROBANTE
-				$ws->write_string( $mm,22, $row->referen, $numero ); //Nï¿½ FACT AFECTA
+				$ws->write_number( $mm,19, $row->reiva, $numero );		    // IVA RETENIDO
+				$ws->write_string( $mm,20, $row->comprobante, $cuerpo );	// NRO COMPROBANTE
+				$ws->write_string( $mm,23, $row->referen, $numero ); //Nï¿½ FACT AFECTA
 				$fecharece = '';
 				if ( !empty($row->fecharece) )
 					$fecharece = substr($row->fecharece,8,2)."/".substr($row->fecharece,5,2)."/".substr($row->fecharece,0,4);
-				$ws->write_string( $mm,20, $fecharece, $cuerpo );	// FECHA COMPROB
-				$ws->write_string( $mm,21, $row->nfiscal, $numero );
+				$ws->write_string( $mm,21, $fecharece, $cuerpo );	// FECHA COMPROB
+				$ws->write_string( $mm,22, $row->nfiscal, $numero );
 				$mm++;
+				$contador++;
 			}
 		}
 		
 		//Imprime el Ultimo
 		$celda = $mm+1;
 		
-		$fventas = "=I$celda";   // VENTAS
-		$fexenta = "=J$celda";   // VENTAS EXENTAS
+		//echo 'hola'.$celda;
 		
-		$ffob    = "=K$celda";   // BASE IMPONIBLE
+		$fventas = "=J$celda";   // VENTAS
+		$fexenta = "=K$celda";   // VENTAS EXENTAS
 		
-		$fgeneral  = "=L$celda";   // general
-		$fgeneimpu = "=M$celda";   // general
+		$ffob    = "=L$celda";   // BASE IMPONIBLE
 		
-		$fadicional = "=N$celda";   // general
-		$fadicimpu  = "=O$celda";   // general
+		$fgeneral  = "=M$celda";   // general
+		$fgeneimpu = "=N$celda";   // general
 		
-		$freducida = "=P$celda";   // general
-		$freduimpu = "=Q$celda";   // general
+		$fadicional = "=O$celda";   // general
+		$fadicimpu  = "=P$celda";   // general
 		
-		$fivaret   = "=R$celda";   // general
+		$freducida = "=Q$celda";   // general
+		$freduimpu = "=R$celda";   // general
+		
+		$fivaret   = "=U$celda";   // general
 		//$fivaperu  = "=U$celda";   // general
 		
-		$fivajuste = "=S$celda";   // general
+		$fivajuste = "=T$celda";   // general
 		
 		$ws->write( $mm, 0,"Totales...",  $titulo );
 		$ws->write_blank( $mm, 1,  $titulo );
@@ -825,8 +835,8 @@ class ventas{
 		$ws->write_blank( $mm, 5,  $titulo );
 		$ws->write_blank( $mm, 6,  $titulo );
 		$ws->write_blank( $mm, 7,  $titulo );
-		
-		$ws->write_formula( $mm, 8, "=SUM(I$ii:I$mm)", $Tnumero );   //"VENTAS + IVA" 
+		$ws->write_blank( $mm, 8,  $titulo );
+
 		$ws->write_formula( $mm, 9, "=SUM(J$ii:J$mm)", $Tnumero );   //"VENTAS EXENTAS" 
 		$ws->write_formula( $mm,10, "=SUM(K$ii:K$mm)", $Tnumero );   //"BASE IMPONIBLE" 
 		
@@ -845,6 +855,7 @@ class ventas{
 		$ws->write_blank( $mm, 20,  $Tnumero );
 		$ws->write_blank( $mm, 21,  $Tnumero );
 		$ws->write_blank( $mm, 22,  $Tnumero );
+		$ws->write_blank( $mm, 23,  $Tnumero );
 		//$ws->write_formula( $mm,20, "=SUM(U$ii:U$mm)", $Tnumero );   //IMPUESTO PERCIBIDO 
 		
 		$mm ++;
