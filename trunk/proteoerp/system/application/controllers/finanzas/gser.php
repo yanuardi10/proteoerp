@@ -105,7 +105,7 @@ class gser extends Controller {
 		$this->rapyd->uri->keep_persistence();
 
 		$filter = new DataFilter('Filtro de gastos de cajas chicas','gserchi');
-		$select=array('numfac','fechafac','proveedor','tasa + sobretasa + reducida AS totiva','montasa + monadic + monredu AS totneto');
+		$select=array('numfac','fechafac','proveedor','tasa + sobretasa + reducida AS totiva','exento + montasa + monadic + monredu AS totneto');
 		$filter->db->select($select);
 
 		$filter->codbanc = new dropdownField('C&oacute;digo de la caja','codbanc');
@@ -126,6 +126,12 @@ class gser extends Controller {
 		//$filter->proveed->append($boton);
 		$filter->proveed->db_name = 'proveedor';
 
+		$filter->aceptado = new dropdownField('Aceptados','aceptado');
+		$filter->aceptado->option('','Todos');
+		$filter->aceptado->option('S','Aceptados');
+		$filter->aceptado->option('N','No aceptados');
+		$filter->aceptado->style = 'width:120px';
+
 		//$action = "javascript:window.location='".site_url('finanzas/gser/gserchipros')."'";
 		//$filter->button('btn_pross', 'Procesar gatos', $action, 'TR');
 
@@ -137,24 +143,65 @@ class gser extends Controller {
 
 		$uri  = anchor('finanzas/gser/datagserchi/show/<#id#>','<#numfac#>');
 
+		function checker($id,$conci){
+			if($conci=='S'){
+				return form_checkbox('nn'.$id,$id,true);
+			}else{
+				return form_checkbox('nn'.$id,$id,false);
+			}
+		}
+
 		$grid = new DataGrid();
+		$grid->use_function('checker');
 		$grid->order_by('numfac','desc');
 		$grid->per_page = 15;
 		$grid->column_orderby('Caja','codbanc','caja');
 		$grid->column_orderby('N&uacute;mero',$uri,'numfac');
 		$grid->column_orderby('Fecha' ,'<dbdate_to_human><#fechafac#></dbdate_to_human>','fechafac','align=\'center\'');
 		$grid->column_orderby('Proveedor','proveedor','proveedor');
-		$grid->column_orderby('IVA'   ,'totiva'  ,'totiva' ,'align=\'right\'');
-		$grid->column_orderby('Monto' ,'totneto' ,'totneto','align=\'right\'');
+		$grid->column_orderby('IVA'   ,'totiva'    ,'totiva'  ,'align=\'right\'');
+		$grid->column_orderby('Monto' ,'totneto'   ,'totneto' ,'align=\'right\'');
+		$grid->column_orderby('Aceptado','<checker><#id#>|<#aceptado#></checker>','aceptado','align=\'center\'');
 
 		$grid->add('finanzas/gser/datagserchi/create','Agregar nueva factura');
 		$grid->build();
 		//echo $grid->db->last_query();
 
+		$this->rapyd->jquery[]='$(":checkbox").change(function(){
+			name=$(this).attr("name");
+			$.post("'.site_url('finanzas/gser/gserchiajax').'",{ id: $(this).val()},
+			function(data){
+					if(data=="1"){
+					return true;
+				}else{
+					$("input[name=\'"+name+"\']").removeAttr("checked");
+					alert("Hubo un error, comuniquese con soporte tecnico: "+data);
+					return false;
+				}
+			});
+		});';
+
 		$data['content'] = $filter->output.$grid->output;
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = heading('Agregar/Modificar facturas de Caja Chica');
 		$this->load->view('view_ventanas', $data);
+	}
+
+	function gserchiajax(){
+		$id   = $this->input->post('id');
+		$dbid = $this->db->escape($id);
+		$rt='0';
+		if($id!==false){
+			$mSQL="UPDATE gserchi SET aceptado=IF(aceptado='S','N','S') WHERE id=$dbid";
+			$ban=$this->db->simple_query($mSQL);
+			if($ban==false){
+				$rt='0';
+				memowrite($mSQL,'gser');
+			}else{
+				$rt='1';
+			}
+		}
+		echo $rt;
 	}
 
 	function datagserchi(){
@@ -240,11 +287,13 @@ class gser extends Controller {
 		$edit->numfac->rule='max_length[8]|required';
 		$edit->numfac->size =10;
 		$edit->numfac->maxlength =8;
+		$edit->numfac->autocomplete =false;
 
 		$edit->nfiscal = new inputField('Control fiscal','nfiscal');
 		$edit->nfiscal->rule='max_length[12]|required';
 		$edit->nfiscal->size =14;
 		$edit->nfiscal->maxlength =12;
+		$edit->nfiscal->autocomplete =false;
 
 		$lriffis='<a href="javascript:consulrif();" title="Consultar RIF en el SENIAT" onclick="">Consultar RIF en el SENIAT</a>';
 		$edit->rif = new inputField('RIF','rif');
@@ -303,20 +352,17 @@ class gser extends Controller {
 		}
 		$edit->$obj->readonly=true;
 
-		/*$edit->montasa->rule='max_length[17]|numeric|callback_chmontasa';
-		$edit->monredu->rule='max_length[17]|numeric|callback_chmonredu';
-		$edit->monadic->rule='max_length[17]|numeric|callback_chmonadic';*/
-
-		$edit->tasa->rule     ='max_length[17]|numeric|condi_required|callback_chtasa';
-		$edit->reducida->rule ='max_length[17]|numeric|condi_required|callback_chreducida';
-		$edit->sobretasa->rule='max_length[17]|numeric|condi_required|callback_chsobretasa';
+		$edit->tasa->rule     ='condi_required|max_length[17]|callback_chtasa';
+		$edit->reducida->rule ='condi_required|max_length[17]|callback_chreducida';
+		$edit->sobretasa->rule='condi_required|max_length[17]|callback_chsobretasa';
+		$edit->importe->rule  ='max_length[17]|numeric|positive';
 
 		$edit->sucursal = new dropdownField('Sucursal','sucursal');
 		$edit->sucursal->options('SELECT codigo,sucursal FROM sucu ORDER BY sucursal');
 		$edit->sucursal->rule='max_length[2]|required';
 
 		$edit->departa = new dropdownField('Departamento','departa');
-		$edit->departa->options("SELECT depto, CONCAT_WS('-',depto,descrip) AS label FROM dpto WHERE tipo='G' ORDER BY depto");
+		$edit->departa->options("SELECT codigo, CONCAT_WS('-',codigo,departam) AS label FROM dept ORDER BY codigo");
 		$edit->departa->rule='max_length[2]';
 
 		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
@@ -402,6 +448,7 @@ class gser extends Controller {
 		$grid->db->select($select);
 		$grid->db->from('gserchi');
 		$grid->db->where('ngasto IS NULL');
+		$grid->db->where('aceptado','S');
 		$grid->db->groupby('codbanc');
 
 		$grid->order_by('codbanc','desc');
@@ -428,7 +475,7 @@ class gser extends Controller {
 	function gserchipros($codbanc=null){
 		if(empty($codbanc)) show_error('Faltan par&aacute;metros');
 		$dbcodbanc=$this->db->escape($codbanc);
-		$mSQL='SELECT COUNT(*) AS cana, SUM(montasa+monadic+monredu+tasa+sobretasa+reducida) AS monto FROM gserchi WHERE ngasto IS NULL AND codbanc='.$dbcodbanc;
+		$mSQL='SELECT COUNT(*) AS cana, SUM(exento+montasa+monadic+monredu+tasa+sobretasa+reducida) AS monto FROM gserchi WHERE ngasto IS NULL AND aceptado="S" AND codbanc='.$dbcodbanc;
 		$r   =$this->datasis->damerow($mSQL);
 		if($r['cana']==0) show_error('Caja sin gastos');
 		
@@ -442,7 +489,18 @@ class gser extends Controller {
 			$nombre =$codprv = '';
 		}
 
-		$this->rapyd->load('dataform');
+		$sql='SELECT TRIM(a.codbanc) AS codbanc,tbanco FROM banc AS a';
+		$query = $this->db->query($sql);
+		$comis=array();
+		if ($query->num_rows() > 0){
+			foreach ($query->result() as $row){
+				$ind='_'.$row->codbanc;
+				$comis[$ind]['tbanco']  =$row->tbanco;
+			}
+		}
+		$json_comis=json_encode($comis);
+
+		$this->rapyd->load('dataform','datagrid');
 
 		$modbus=array(
 			'tabla'   =>'sprv',
@@ -456,8 +514,31 @@ class gser extends Controller {
 		);
 		$bsprv=$this->datasis->modbus($modbus);
 
+		$script='var comis = '.$json_comis.';
+		
+		$(document).ready(function() {
+			desactivacampo("");
+		});
+		
+		function desactivacampo(codb1){
+			if(codb1.length>0 && codb1!="'.$this->mcred.'"){
+				eval("tbanco=comis._"+codb1+".tbanco;"  );
+				if(tbanco=="CAJ"){
+					$("#cheque").attr("disabled","disabled");
+					$("#benefi").attr("disabled","disabled");
+				}else{
+					$("#cheque").removeAttr("disabled");
+					$("#benefi").removeAttr("disabled");
+				}
+			}else{
+				$("#cheque").attr("disabled","disabled");
+				$("#benefi").attr("disabled","disabled");
+			}
+		}';
+
 		$form = new DataForm('finanzas/gser/gserchipros/'.$codbanc.'/process');
-		$form->title("Total de facturas $r[cana], monto total <b>".nformat($r['monto']).'</b>');
+		$form->title("N&uacute;mero de facturas aceptadas $r[cana], monto total <b>".nformat($r['monto']).'</b>');
+		$form->script($script);
 
 		$form->codprv = new inputField('Proveedor', 'codprv');
 		$form->codprv->rule='required';
@@ -473,22 +554,43 @@ class gser extends Controller {
 		$form->cargo = new dropdownField('Con cargo a','cargo');
 		$form->cargo->option($this->mcred,'Cr&eacute;dito');
 		$form->cargo->options("SELECT codbanc, CONCAT_WS('-',codbanc,banco) AS label FROM banc WHERE activo='S' ORDER BY codbanc");
+		$form->cargo->onchange='desactivacampo(this.value)';
 		$form->cargo->rule='max_length[5]|required';
 
 		$form->cheque = new inputField('N&uacute;mero de cheque', 'cheque');
 		$form->cheque->rule='condi_required|callback_chobligaban';
-		$form->cheque->append('Aplica  solo si la caja es un banco');
+		$form->cheque->append('Aplica  solo si el cargo es a un banco');
 
 		$form->benefi = new inputField('Beneficiario', 'benefi');
 		$form->benefi->insertValue=$nombre;
 		$form->benefi->rule='condi_required|callback_chobligaban';
-		$form->benefi->append('Aplica  solo si la caja es un banco');
+		$form->benefi->append('Aplica  solo si el cargo es a un banco');
 
 		$action = "javascript:window.location='".site_url('finanzas/gser/cierregserchi/'.$codbanc)."'";
 		$form->button('btn_regresa', 'Regresar', $action, 'BR');
 
 		$form->submit('btnsubmit','Procesar');
 		$form->build_form();
+
+		$grid = new DataGrid('Lista de Gastos','gserchi');
+		$select=array('exento + montasa + monadic + monredu + tasa + sobretasa + reducida AS totneto',
+					  'tasa + sobretasa + reducida AS totiva','proveedor','fechafac','numfac','codbanc' );
+		$grid->db->select($select);
+		$grid->db->where('aceptado','S');
+		$grid->db->where('ngasto IS NULL');
+		$grid->db->where('codbanc',$codbanc);
+
+		$grid->order_by('numfac','desc');
+		$grid->per_page = 15;
+		$grid->column('Caja','codbanc');
+		$grid->column('N&uacute;mero','numfac');
+		$grid->column('Fecha' ,'<dbdate_to_human><#fechafac#></dbdate_to_human>','align=\'center\'');
+		$grid->column('Proveedor','proveedor');
+		$grid->column('IVA'   ,'totiva'    ,'align=\'right\'');
+		$grid->column('Monto' ,'totneto'   ,'align=\'right\'');
+
+		//$grid->add('finanzas/gser/datagserchi/create','Agregar nueva factura');
+		$grid->build();
 
 		if($form->on_success()){
 			$codprv  = $form->codprv->newValue;
@@ -506,9 +608,9 @@ class gser extends Controller {
 			}
 		}
 
-		$data['content'] = $form->output;
-		$data['title']   = heading('Cierre de caja $codbanc');
-		$data['head']    = $this->rapyd->get_head();
+		$data['content'] = $form->output.$grid->output;
+		$data['title']   = heading('Reposici&oacute;n de caja chica '.$codbanc);
+		$data['head']    = $this->rapyd->get_head().script('jquery.js');
 		$data['head']   .= phpscript('nformat.js');
 		$this->load->view('view_ventanas', $data);
 	}
@@ -534,7 +636,6 @@ class gser extends Controller {
 			$this->validation->set_message('chcodb', 'El campo %s es obligatorio cuando se paga un monto al contado');
 			return false;
 		}
-		
 	}
 
 	function chobligaban($val){
@@ -561,8 +662,6 @@ class gser extends Controller {
 			$this->validation->set_message('chreteiva', 'El campo %s tiene que ser 0, 75 o 100\% del monto del iva');
 			return false;
 		}
-		
-		
 	}
 
 	function chobliganumero($val){
@@ -615,7 +714,7 @@ class gser extends Controller {
 
 			$mSQL='SELECT codbanc,fechafac,numfac,nfiscal,rif,proveedor,codigo,descrip,
 			  moneda,montasa,tasa,monredu,reducida,monadic,sobretasa,exento,importe,sucursal,departa,usuario,estampa,hora
-			FROM gserchi WHERE ngasto IS NULL AND codbanc='.$dbcodbanc;
+			FROM gserchi WHERE ngasto IS NULL AND aceptado="S" AND codbanc='.$dbcodbanc;
 
 			$query = $this->db->query($mSQL);
 			if ($query->num_rows() > 0){
@@ -866,7 +965,17 @@ class gser extends Controller {
 				$sql=$this->db->insert_string('gser', $data);
 				$ban=$this->db->simple_query($sql);
 				if($ban==false){ memowrite($sql,'gser'); $error++;}
-				
+				$idgser=$this->db->insert_id();
+
+				$data = array('idgser' => $idgser);
+				$dbfecha  = $this->db->escape($fecha);
+				$dbnumero = $this->db->escape($numero);
+				$dbcodprv = $this->db->escape($codprv);
+				$where = "fecha=$dbfecha AND proveed=$dbcodprv AND  numero=$dbnumero";
+				$mSQL = $this->db->update_string('gitser', $data, $where);
+				$ban=$this->db->simple_query($mSQL); 
+				if($ban==false){ memowrite($mSQL,'gser'); $error++; }
+
 				$data = array('ngasto' => $numero);
 				$where = "ngasto IS NULL AND  codbanc=$dbcodbanc";
 				$mSQL = $this->db->update_string('gserchi', $data, $where);
@@ -1257,7 +1366,7 @@ class gser extends Controller {
 
 		$edit->departa =  new dropdownField("Departamento <#o#>", "departa_<#i#>");
 		$edit->departa->option('','Seleccionar');
-		$edit->departa->options("SELECT departa,CONCAT(departa,'-',depadesc) as descrip FROM depa ORDER BY departa");
+		$edit->departa->options("SELECT codigo, CONCAT_WS('-',codigo,departam) AS label FROM dept ORDER BY codigo");
 		$edit->departa->db_name='departa';
 		$edit->departa->rule='required';
 		$edit->departa->style = 'width:100px';
@@ -1426,7 +1535,6 @@ class gser extends Controller {
 	function _pre_mgsercreate($do){
 		return false;
 	}
-
 
 	function _pre_insert($do){
 		$fecha  = $do->get('fecha');
@@ -1720,7 +1828,14 @@ class gser extends Controller {
 	}
 
 	function chtasa($monto){
-		$iva=$this->input->post('montasa');
+		$iva   = $this->input->post('montasa');
+		$iva   = (empty($iva))?   0: $iva  ;
+		$monto = (empty($monto))? 0: $monto;
+		if(!is_numeric($monto)){
+			$this->validation->set_message('chtasa', 'El campo %s general debe contener n&uacute;meros.');
+			return false;			
+		}
+
 		if($monto>0 && $iva>0){
 			return true;
 		}elseif($monto==0 && $iva==0){
@@ -1733,6 +1848,13 @@ class gser extends Controller {
 
 	function chreducida($monto){
 		$iva=$this->input->post('monredu');
+		$iva   = (empty($iva))?   0: $iva  ;
+		$monto = (empty($monto))? 0: $monto;
+		if(!is_numeric($monto)){
+			$this->validation->set_message('chreducida', 'El campo %s reducida debe contener n&uacute;meros.');
+			return false;			
+		}
+
 		if($monto>0 && $iva>0){
 			return true;
 		}elseif($monto==0 && $iva==0){
@@ -1745,6 +1867,13 @@ class gser extends Controller {
 
 	function chsobretasa($monto){
 		$iva=$this->input->post('monadic');
+		$iva   = (empty($iva))?   0: $iva  ;
+		$monto = (empty($monto))? 0: $monto;
+		if(!is_numeric($monto)){
+			$this->validation->set_message('chsobretasa', 'El campo %s adicional debe contener n&uacute;meros.');
+			return false;			
+		}
+
 		if($monto>0 && $iva>0){
 			return true;
 		}elseif($monto==0 && $iva==0){
