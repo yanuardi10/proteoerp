@@ -129,8 +129,9 @@ class invresu extends Controller {
 		if ( abs($porcent) > 0  ) {
 			$this->db->simple_query("CALL sp_invresufix(".$meco.",".$porcent.")");
 			$meco++;
+			// debe pasar los saldos a las siguientes meses
 			while ( $meco-$ano < 13 ) {
-				$this->db->simple_query("CALL sp_invresu(".$meco.")");
+				$this->db->simple_query("CALL sp_invresusum(".$meco.")");
 				$meco++;
 			};
 			echo "Recalculo Concluido";
