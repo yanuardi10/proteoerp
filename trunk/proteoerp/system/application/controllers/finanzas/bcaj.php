@@ -3,7 +3,12 @@ class Bcaj extends Controller {
 	function bcaj(){
 		parent::Controller();
 		$this->load->library('rapyd');
-		$this->config->load('datasis');
+		$this->load->helper('file');
+		if ( read_file('./system/application/config/datasis.php')) {
+			$this->config->load('datasis');
+		} else {
+			$this->config->set_item('cajas', array('cobranzas'=>'99','efectivo'=>'99', 'valores'=>'99', 'tarjetas'=>'99', 'gastos'=>'99'));
+		}
 
 		$this->guitipo=array('DE'=>'Deposito','TR'=>'Transferencia');
 		$this->datasis->modulo_id('51D',1);
@@ -49,7 +54,8 @@ class Bcaj extends Controller {
 		$grid->order_by('numero','desc');
 		$grid->per_page = 15;
 
-		$uri2 = anchor_popup('finanzas/bcaj/formato/<#numero#>/<#tipo#>','PDF',$atts);
+		$uri2 = anchor_popup('finanzas/bcaj/formato/<#numero#>/<#tipo#>', img(array('src'=>'images/pdf_logo.gif','border'=>'0','alt'=>'PDF'))  ,$atts);
+		//$uri2 .= "&nbsp;".anchor('finanzas/gser/mgserdataedit/modify/<#id#>',img(array('src'=>'images/pdf_logo.gif','border'=>'0','alt'=>'PDF')));
 
 		$grid->column_orderby('N&uacute;mero',$uri,'numero');
 		$grid->column_orderby('Fecha'        ,'<dbdate_to_human><#fecha#></dbdate_to_human>','fecha');
@@ -448,6 +454,7 @@ class Bcaj extends Controller {
 				'cheques' =>'Cheques',
 				'efectivo'=>'Efectivo',
 				'monto'   =>'Monto total');
+		
 		foreach($campos AS $obj=>$titulo){
 			$edit->$obj = new inputField($titulo, $obj);
 			$edit->$obj->css_class='inputnum';
