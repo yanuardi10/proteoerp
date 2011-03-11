@@ -31,7 +31,7 @@ class Ordi extends Controller {
 
 		$atts = array('width'=>'800','height'=> '600', 'scrollbars' => 'yes', 'status'=> 'yes','resizable'=> 'yes', 'screenx'=> '0','screeny'=> '0');
 
-		$filter = new DataFilter('Filtro de &Oacute;rdenes de importaci&oacute;n','ordi');
+		$filter = new DataFilter('Filtro','ordi');
 
 		$filter->numero = new inputField('N&uacute;mero','numero');
 		$filter->numero->size=15;
@@ -91,7 +91,7 @@ class Ordi extends Controller {
 			'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'Descripci&oacute;n'),
 			'retornar'=>array('codigo'=>'codigo_<#i#>','descrip'=>'descrip_<#i#>'),
 			'p_uri'=>array(4=>'<#i#>'),
-			'titulo'  =>'Buscar Producto en inventario');
+			'titulo'  => 'Buscar Producto en inventario');
 		$btn=$this->datasis->p_modbus($modbus,'<#i#>');
 
 		$sprv=array(
@@ -115,8 +115,8 @@ class Ordi extends Controller {
 			'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'Descripci&oacute;n'),
 			'retornar'=>array('codigo'=>'codaran_<#i#>','tarifa'=>'arancel_<#i#>'),
 			'p_uri'=>array(4=>'<#i#>'),
-			'titulo'  =>'Buscar Aranceles',
-			'script'  =>array('calcula()'));
+			'titulo'  =>'Buscar Aranceles', 
+			'script'  =>array('aranpresis(<#i#>)'));
 		$aran=$this->datasis->p_modbus($aran,'<#i#>');
 
 		$asprv=array(
