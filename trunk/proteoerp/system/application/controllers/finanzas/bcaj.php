@@ -1427,7 +1427,7 @@ class Bcaj extends Controller {
 			'numeroe' => $numeroe,
 			'bancoe'  => $infbanc[$envia]['banco'],
 			'recibe'  => $edit->recibe->newValue,
-			'tipor'   => 'NC',
+			'tipor'   => 'DE',
 			'numeror' => $numeror,
 			'bancor'  => $infbanc[$recibe]['banco'],
 			'concepto'=> 'DEPOSITO ENTRE '.$envia.' A '.$recibe,
@@ -1468,7 +1468,7 @@ class Bcaj extends Controller {
 		$data['numero']   = $numeroe;
 		$data['fecha']    = $fecha;
 		$data['clipro']   = 'O';
-		$data['codcp']    = 'TRANS';
+		$data['codcp']    = 'CAJAS';
 		$data['monto']    = $monto;
 		$data['concepto'] = 'DEPOSITO ENTRE CAJA '.$envia.' A '.$recibe;
 		$data['concep2']  = '';
@@ -1492,13 +1492,13 @@ class Bcaj extends Controller {
 		$data['numcuent'] = $infbanc[$recibe]['numcuent'];
 		$data['banco']    = $infbanc[$recibe]['banco'];
 		$data['saldo']    = $infbanc[$recibe]['saldo'];
-		$data['tipo_op']  = 'NC';
+		$data['tipo_op']  = 'DE';
 		$data['numero']   = $numeror;
 		$data['fecha']    = $fecha;
 		$data['clipro']   = 'O';
-		$data['codcp']    = 'TRANS';
+		$data['codcp']    = 'CAJAS';
 		$data['monto']    = $monto;
-		$data['concepto'] = 'TRANSFERENCIAS ENTRE CAJA '.$envia.' A '.$recibe;
+		$data['concepto'] = 'DEPOSITO ENTRE CAJA '.$envia.' A '.$recibe;
 		$data['concep2']  = '';
 		$data['transac']  = $transac;
 		$data['usuario']  = $this->session->userdata('usuario');

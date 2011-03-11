@@ -988,6 +988,55 @@ class gser extends Controller {
 		return ($error==0)? true : false;
 	}
 
+	//Crea la retencion
+	function _gserrete($fecha,$tipo,$fechafac,$numero,$nfiscal,$afecta,$clipro,$montasa,$monredu,$monadic,$tasa,$reducida,$sobretasa,$exento,$reiva){
+		$nrocomp=$this->datasis->fprox_numero('niva');
+		$sp_fecha = str_replace('-','',$fecha);
+		$row     = $this->datasis->damerow('SELECT nombre,rif FROM sprv WHERE proveed='.$this->db->escape($clipro));
+		$totpre  = $montasa+$monredu+$monadic+$exento;
+		$totiva  = $tasa+$reducida+$sobretasa;
+		$totneto = $totpre+$totiva;
+		$error   = 0;
+
+		$data['nrocomp']    = $nrocomp;
+		$data['emision']    = $fecha;
+		$data['periodo']    = substr($sp_fecha,0,6);
+		$data['tipo_doc']   = $tipo;
+		$data['fecha']      = $fechafac;
+		$data['numero']     = $numero;
+		$data['nfiscal']    = $nfiscal;
+		$data['afecta']     = $afecta;
+		$data['clipro']     = $clipro;
+		$data['nombre']     = $row['nombre'];
+		$data['rif']        = $row['rif'];
+		$data['exento']     = $exento;
+		$data['tasa']       = round($tasa*100/$montasa,2);
+		$data['general']    = $montasa;
+		$data['geneimpu']   = $tasa;
+		$data['tasaadic']   = round($sobretasa*100/$monadic,2);
+		$data['adicional']  = $monadic;
+		$data['adicimpu']   = $sobretasa;
+		$data['tasaredu']   = round($reducida*100/$monredu,2);
+		$data['reducida']   = $monredu;
+		$data['reduimpu']   = $reducida;
+		$data['stotal']     = $totpre;
+		$data['impuesto']   = $totiva;
+		$data['gtotal']     = $totneto;
+		$data['reiva']      = $reiva;
+		$data['transac']    = $transac;
+		$data['estampa']    = date('Y-m-d');
+		$data['hora']       = date('H:i:s');
+		$data['usuario']    = $this->session->userdata('usuario');
+		//$data['ffactura']   = '';
+		//$data['modificado'] = '';
+		
+		$sql=$this->db->insert_string('riva', $data);
+		$ban=$this->db->simple_query($sql);
+		if($ban==false){ memowrite($sql,'gser'); $error++;}
+
+		return ($error==0)? true : false;
+	}
+
 	//Crea la cuenta por pagar en caso de que el gasto sea a credito
 	function _gsersprm($codbanc,$codprv,$numero,$fecha,$montasa,$monredu,$monadic,$tasa,$reducida,$sobretasa,$exento,$causado,$transac,$abono=0){
 		$nombre  = $this->datasis->dameval('SELECT nombre FROM sprv WHERE proveed='.$this->db->escape($codprv));
@@ -1656,6 +1705,7 @@ class gser extends Controller {
 		$codprv   = $do->get('proveed');
 		$numero   = $do->get('numero');
 		$fecha    = $do->get('fecha');
+		$fechafac = $do->get('ffactura');
 		$montasa  = $do->get('montasa');
 		$monredu  = $do->get('monredu');
 		$monadic  = $do->get('monadic');
@@ -1668,6 +1718,11 @@ class gser extends Controller {
 		$transac  = $do->get('transac');
 		$cheque   = $do->get('cheque1');
 		$monto1   = $do->get('monto1');
+		$reiva    = $do->get('reteiva');
+		$nfiscal  = $do->get('nfiscal');
+		$tipo     = $do->get('tipo_doc');
+		$afecta   = $do->get('afecta');
+
 		//$totneto  = $do->get('totneto');
 		$totneto=round($montasa+$monredu+$monadic+$tasa+$reducida+$sobretasa+$exento,2);
 		$totcred=round($totneto-$monto1,2);
@@ -1679,6 +1734,11 @@ class gser extends Controller {
 
 		if($totcred > 0.00){ //monto a credito
 			$this->_gsersprm($codbanc,$codprv,$numero,$fecha,$montasa,$monredu,$monadic,$tasa,$reducida,$sobretasa,$exento,$causado,$transac,$monto1);
+		}
+
+		//Guarda la retencion
+		if($reiva>0){
+			$this->_gserrete($fecha,$tipo,$fechafac,$numero,$nfiscal,$afecta,$codprv,$montasa,$monredu,$monadic,$tasa,$reducida,$sobretasa,$exento,$reiva);
 		}
 
 		logusu('gser',"Gasto $numero CREADO");

@@ -37,6 +37,8 @@ echo $form_begin;
 ?>
 <script language="javascript" type="text/javascript">
 	itordi_cont=<?php echo $form->max_rel_count['itordi'];?>;
+	var persis_codaran='';
+	var persis_arancel='';
 
 	function post_add_itordi(id){
 		$('#cantidad_'+id).numeric('.');
@@ -48,6 +50,8 @@ echo $form_begin;
 			echo "$('#${nom}_'+id).bind(\"keyup\",function() { calcula(); });";
 		}
 		?>
+		$("#codaran_"+id).val(persis_codaran);
+		$('#arancel_'+id).val(persis_arancel);
 		return true;
 	}
 
@@ -98,6 +102,13 @@ echo $form_begin;
 		return row[0] + "-" + row[1];
 	}
 
+	function aranpresis(i){
+		var can = i.toString();
+		persis_codaran=$("#codaran_"+can).val();
+		persis_arancel=$("#arancel_"+can).val();
+		calcula();
+	}
+
 	function totaliza(){
 		if($("#cambioofi").val().length>0) cambioofi=parseFloat($("#cambioofi").val()); else cambioofi=0;
 		montofob=0;
@@ -136,7 +147,7 @@ echo $form_begin;
 
 <table style="margin:0;width:98%;">
 	<tr>
-		<td colspan=6 class="littletableheader">Orden de importaci&oacute;n <b><?php if($form->_status=='show' or $form->_status=='modify' ) echo str_pad($form->numero->output,8,0,0); ?></b></td>
+		<th colspan='6' class="littletableheader">Liquidaci&oacute;n de importaci&oacute;n <b><?php if($form->_status=='show' or $form->_status=='modify' ) echo str_pad($form->numero->output,8,0,0); ?></b></th>
 	</tr>
 	<tr>
 		<td class="littletablerowth" >&nbsp;<?php echo $form->dua->label; ?></td>
@@ -183,6 +194,9 @@ echo $form_begin;
 <p>
 <table style="margin:0;width:98%;">
 	<tr>
+		<th colspan='8' class="littletableheader"><b>Lista de art&iacute;culos</b></th>
+	</tr>
+	<tr>
 		<?php
 			foreach($objs AS $nom=>$nan){
 				echo '<th class="littletableheader">'.$nan.'</th>';
@@ -214,6 +228,9 @@ for($i=0;$i<$form->max_rel_count['itordi'];$i++) {
 <?php echo $container_bl; ?>
 <table style="margin:0;width:98%;">
 	<tr>
+		<th colspan='6' class="littletableheader"><b>Res&uacute;men Financiero</b></th>
+	</tr>
+	<tr>
 		<td class="littletablerowth">&nbsp;<?php echo $form->montotot->label; ?></td>
 		<td class="littletablerow"  >&nbsp;<?php echo $form->montotot->output;?></td>
 		<td class="littletablerowth" align='right'>&nbsp;<?php echo $form->montocif->label;  ?></td>
@@ -239,7 +256,5 @@ if(isset($peroles)){
 	</tr>
 <table>
 <?php echo $form_end ?>
-
-
 
 <?php endif; ?>
