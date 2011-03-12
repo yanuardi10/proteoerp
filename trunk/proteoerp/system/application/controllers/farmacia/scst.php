@@ -505,6 +505,7 @@ class Scst extends Controller {
 
 		$form->nfiscal = new inputField('Control F&iacute;scal', 'nfiscal');
 		$form->nfiscal->rule = 'required|strtoupper';
+		$form->nfiscal->autocomplete=false;
 		$form->nfiscal->rows = 10;
 
 		$form->almacen = new  dropdownField ("Almac&eacute;n", "almacen");
@@ -555,9 +556,11 @@ class Scst extends Controller {
 
 				if ($query->num_rows()==1){
 					$lcontrol=$this->datasis->fprox_numero('nscst');
-					$transac =$this->datasis->fprox_numero('ntransac');
+					$transac =$this->datasis->fprox_numero('ntransa');
 					$contribu=$this->datasis->traevalor('CONTRIBUYENTE');
 					$rif     =$this->datasis->traevalor('RIF');
+					$estampa =date('Ymd');
+					$hora    =date('H:i:s');
 
 					$row=$query->row_array();
 					$numero=$row['numero'];
@@ -569,8 +572,8 @@ class Scst extends Controller {
 					$row['credito'] =$row['montonet'];
 					$row['anticipo']=0;
 					$row['inicial'] =0;
-					$row['estampa'] =date('Ymd');
-					$row['hora']    =date('H:i:s');
+					$row['estampa'] =$estampa;
+					$row['hora']    =$hora;
 					$row['usuario'] =$this->session->userdata('usuario');
 					$row['depo']    =$almacen;
 					$cd             =strtotime($row['fecha']);
@@ -626,9 +629,23 @@ class Scst extends Controller {
 
 					$mSQL[]=$this->db->insert_string('scst', $row);
 
-					$itquery = $farmaxDB->query("SELECT * FROM itscst WHERE control=$control");
+
+					$itmSQL="SELECT a.fecha,a.numero,a.proveed,a.depo,
+					COALESCE(c.barras,b.codigo) AS codigo,
+					a.descrip,a.cantidad,a.devcant,a.devfrac,a.costo,a.importe,a.iva,a.montoiva,a.control,a.garantia,a.ultimo,a.precio1,a.precio2,a.precio3,a.precio4,a.licor,a.flote
+					  FROM ${farmaxdb}.itscst AS a 
+					  LEFT JOIN ${localdb}.sinv AS b ON a.codigo=b.codigo 
+					  LEFT JOIN ${localdb}.farmaxasig AS c ON a.codigo=c.barras AND c.proveed=a.proveed 
+					WHERE a.control=$control";
+
+					$itquery = $farmaxDB->query($itmSQL);
 					foreach ($itquery->result_array() as $itrow){
-						$itrow['control']=$lcontrol;
+						$itrow['control'] = $lcontrol;
+						$itrow['transac'] = $transac;
+						$itrow['usuario']    = $this->session->userdata('usuario');
+						$itrow['estampa']    = $estampa;
+						$itrow['hora']       = $hora;
+
 						unset($itrow['id']);
 						$mSQL[]=$this->db->insert_string('itscst', $itrow);
 					}
