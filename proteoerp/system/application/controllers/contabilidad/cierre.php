@@ -3,7 +3,7 @@ class Cierre extends Controller {
 
 	function Cierre(){
 		parent::Controller();
-		$this->load->library("rapyd");
+		$this->load->library('rapyd');
 		$this->datasis->modulo_id(606,1);
 	}
 
@@ -13,10 +13,10 @@ class Cierre extends Controller {
 		$fecha=$this->uri->segment(4);
 		$form = new DataForm();  
 		$form->title('Fecha para la ejecuci&oacute;n');
-		$form->fecha = new dateonlyField("Fecha de Cierre", "fecha","d/m/Y");
+		$form->fecha = new dateonlyField('Fecha de Cierre', 'fecha','d/m/Y');
 		$form->fecha->size = 10;
-		$form->fecha->insertValue = ($fecha ? $fecha : date("Ymd", mktime  (0, 0, 0,12,31,date('Y')-1 )));
-		$form->submit("btnsubmit","Cerrar");
+		$form->fecha->insertValue = ($fecha ? $fecha : date('Ymd', mktime  (0, 0, 0,12,31,date('Y')-1 )));
+		$form->submit('btnsubmit','Cerrar');
 		$form->build_form();
 		$link=site_url('contabilidad/cierre/ejecutar');
 
@@ -47,13 +47,13 @@ class Cierre extends Controller {
 		</script>";
 
 		$data['extras']="<div id='preloader' style='position:absolute; left:40%; top:40%; font-family:Verdana, Arial, Helvetica, sans-serif;'>
-			<center>".image("loading4.gif")."<br>".image("loadingBarra.gif")."<br>
+			<center>".image('loading4.gif').'<br>'.image('loadingBarra.gif')."<br>
 			<b>Generando . . . </b>
 			</center>
 		</div>";
 		$data['content'] =$form->output;
-		$data["head"]    = script("jquery.pack.js").$this->rapyd->get_head();
-		$data['title']   ='<h1>Cierre Contable</h1>';
+		$data['head']    = script('jquery.js').$this->rapyd->get_head();
+		$data['title']   = heading('Cierre Contable');
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -64,7 +64,7 @@ class Cierre extends Controller {
 		//$mfinal='31/12/2009';
 		if($mfinal==FALSE) redirect('contabilidad/cierre');
 
-		$mfinal  = date("Ymd",timestampFromInputDate($mfinal));
+		$mfinal  = date('Ymd',timestampFromInputDate($mfinal));
 		$ano     = substr($mfinal,2,2);
 		$comprob = "ZIERRE$ano";
 
@@ -75,31 +75,31 @@ class Cierre extends Controller {
 		$centinela=$this->db->simple_query($mSQL);
 		if($centinela==FALSE){ memowrite($mSQL,'casi'); $error=TRUE; }
 
-		$mSQL = "INSERT INTO itcasi 
+		$mSQL = "INSERT INTO itcasi (fecha,comprob,origen,cuenta,referen,concepto,debe,haber,ccosto,sucursal)
 		    SELECT $mfinal fecha, 
 		    '$comprob' comp, 'MANUAL' origen,
 		    cuenta, 'CIERRE ".substr($mfinal,0,2)."' referen, 
 		    'CIERRE DE CUENTAS DE RESULTADO EJERCICIO ".substr($mfinal,0,2)."' concepto,
-		    sum(haber) debe, sum(debe) haber, 0 ccosto, 0 sucu, null AS id
+		    sum(haber) debe, sum(debe) haber, 0 ccosto, 0 sucu
 		    FROM itcasi WHERE cuenta>='4' AND fecha<=$mfinal 
 		    GROUP BY cuenta ";
 		$centinela=$this->db->simple_query($mSQL);
 		if($centinela==FALSE){ memowrite($mSQL,'itcasi'); $error=TRUE; }
 
-		$mSQL = "INSERT INTO itcasi 
+		$mSQL = "INSERT INTO itcasi (fecha,comprob,origen,cuenta,referen,concepto,debe,haber,ccosto,sucursal)
 		 SELECT fecha, comprob, origen, 
 		    (SELECT resultado FROM cemp limit 1) cuenta, 
 		    referen, 
 		    concepto, 
 		    if(sum(debe-haber)>0,0,sum(haber-debe)) debe, 
-		    if(sum(debe-haber)>0,sum(debe-haber),0) haber, 0 ccosto, 0 sucu, null AS id
+		    if(sum(debe-haber)>0,sum(debe-haber),0) haber, 0 ccosto, 0 sucu
 		    FROM itcasi WHERE comprob='$comprob' group by comprob ";
 		$centinela=$this->db->simple_query($mSQL);
 		if($centinela==FALSE){ memowrite($mSQL,'itcasi'); $error=TRUE; }
 		$this->db->simple_query("DELETE FROM itcasi WHERE debe=haber AND comprob='$comprob'");
 
 		if($error)
-			echo "Hubo algunos errores, favor comunicarse con servicio tecnico";
+			echo "Hubo algunos errores, se generaron centinelas, favor comunicarse con servicio tecnico";
 		else
 			echo "Cierre realizado $comprob";
 		}
