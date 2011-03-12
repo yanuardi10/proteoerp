@@ -86,6 +86,9 @@ class sinv extends Controller {
 		$filter->db->join('dpto AS d','c.depto=d.depto');
 		$filter->script($script);
 
+		$filter->barras = new inputField("C&oacute;digo de barras", "barras");
+		$filter->barras -> size=25;
+
 		$filter->codigo = new inputField("C&oacute;digo", "codigo");
 		$filter->codigo-> size=15;
 		$filter->codigo->group = "Uno";
