@@ -180,14 +180,14 @@ class Scaj extends validaciones {
 	}
 
 	function _pre_del($do) {
-		$codigo=$this->db->escape($do->get('codigo'));
+		$codigo=$this->db->escape($do->get('cajero'));
 		$tables = $this->db->list_tables();
 		$sum=0;
 		if(in_array('vieite',$tables)) $sum+=$this->datasis->dameval("SELECT COUNT(*) FROM vieite WHERE cajero=$codigo");
 		if(in_array('fmay'  ,$tables)) $sum+=$this->datasis->dameval("SELECT COUNT(*) FROM fmay   WHERE cajero=$codigo");
 		if(in_array('sfac'  ,$tables)) $sum+=$this->datasis->dameval("SELECT COUNT(*) FROM sfac   WHERE cajero=$codigo");
 
-		if($sum==0){
+		if($sum != 0){
 			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='No se puede borrar un cajero con ventas';
 			return False;
 		}else
