@@ -59,8 +59,6 @@ class Reportes extends Controller
 		$mSQL="UPDATE tmenus SET ejecutar=REPLACE(ejecutar,"."'".'" )'."','".'")'."') WHERE modulo LIKE '%LIS'";
 		$this->db->simple_query($mSQL);
 		//echo $mSQL;
-
-
 		
 		if($repo){
 			$repo=strtoupper($repo);
@@ -72,9 +70,7 @@ class Reportes extends Controller
 			$grid->db->select("CONCAT(a.secu,' ',a.titulo) titulo, a.mensaje, REPLACE(MID(a.ejecutar,10,30),"."'".'")'."','')  nombre"); 
 			$grid->db->from("tmenus    a" );
 			$grid->db->join("sida      b","a.codigo=b.modulo");
-			//$grid->db->join("intrarepo c","REPLACE(MID(a.ejecutar,10,30),"."'".'")'."','')=c.nombre ");
 			$grid->db->join("reportes  d","REPLACE(MID(a.ejecutar,10,30),"."'".'")'."','')=d.nombre");
-			//$grid->db->where('c.activo','S');
 			$grid->db->where('b.acceso','S');
 			$grid->db->where('b.usuario',$this->session->userdata('usuario') );
 			$grid->db->like("a.ejecutar","REPOSQL", "after");
@@ -82,19 +78,52 @@ class Reportes extends Controller
 			$grid->db->orderby("a.secu");
 			
 			$grid->per_row = 3; 
-			//$grid->use_function("substr","strtoupper");
 			$grid->cell_template = '
 			<div style="padding:4px">
-			<div style="color:#119911; font-weight:bold; font-size:18px">'.anchor('reportes/ver/<#nombre#>/'.$repo,"<#titulo#>",array('onclick'=>"parent.navegador.afiltro()")).'</div>
+			<div style="color:#119911; font-weight:bold; font-size:14px;">'.
+			anchor('reportes/ver/<#nombre#>/'.$repo,"<#titulo#>",array('onclick'=>"parent.navegador.afiltro()")).
+			'</div>
 			<htmlspecialchars><#mensaje#></htmlspecialchars>
 			</div>'; 
 			$grid->build();
-			//echo $grid->db->last_query();
+
+			$grid1 = new DataTable();
+			$grid1->db->_escape_char='';
+			$grid1->db->_protect_identifiers=false;
+			
+			$grid1->db->select("a.titulo, a.mensaje, a.nombre");
+			$grid1->db->from("intrarepo a" );
+			$grid1->db->join("tmenus    b","CONCAT(a.modulo,'LIS')=b.modulo AND b.ejecutar LIKE CONCAT('%',a.nombre,'%') ","left");
+			$grid1->db->where("b.codigo IS NULL");
+			$grid1->db->where("a.modulo",$repo );
+			$grid->db->where("a.activo","S");
+			$grid1->db->orderby("a.titulo");
+			$grid1->per_row = 3; 
+			$grid1->cell_template = '
+			<div style="padding:4px">
+			<div style="color:#119911; font-weight:bold; font-size:14px;background-color:#D3E3D3;">'.anchor('reportes/ver/<#nombre#>/'.$repo,"<#titulo#>",array('onclick'=>"parent.navegador.afiltro()")).'</div>
+			<htmlspecialchars><#mensaje#></htmlspecialchars>
+			</div>'; 
+			$grid1->build();
+			//echo $grid1->db->last_query();
+			
 		}
-		if($repo AND $grid->recordCount>0) 
-			$data['forma'] = $grid->output; 
-		else 
-			$data['forma'] = '<p class="mainheader">No hay reportes disponibles.</p>';
+		$data['forma'] = '';
+		if($repo AND $grid->recordCount>0) {
+			$data['forma']  = '<div style="color:#111911; font-weight:bold; font-size:10px;background-color:#F1FFF1">SISTEMA</div>';
+			$data['forma'] .= $grid->output; 
+		} else {
+			$data['forma'] = '<p class="mainheader">No hay reportes disponibles del SISTEMA.</p>';
+		}
+
+		if($repo AND $grid1->recordCount>0) {
+			$data['forma'] .= '<div style="color:#111911; font-weight:bold; font-size:10px;background-color:#F1FFF1">PROTEO</div>';
+			$data['forma'] .=$grid1->output; 
+		} else {
+			$data['forma'] .= '<p class="mainheader">No hay reportes disponibles por PROTEO.</p>';
+		};
+			
+			
 		$meco = $this->datasis->dameval("SELECT titulo FROM intramenu a WHERE a.panel='REPORTES' AND a.ejecutar LIKE '%$repo' ");
 		$data['head']="";   //$this->rapyd->get_head();
 		$data['titulo'] = "<center><h2>$meco</h2></center>";
