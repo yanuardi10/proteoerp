@@ -444,6 +444,7 @@ class b2b extends validaciones {
 	}
 
 	function _trae_compra($id=null,$ultimo=null){
+		$this->comprasCargadas=0;
 		if(is_null($id)) return false; else $id=$this->db->escape($id);
 		$contribu=$this->datasis->traevalor('CONTRIBUYENTE');
 		$rif     =$this->datasis->traevalor('RIF');
@@ -474,7 +475,6 @@ class b2b extends validaciones {
 
 		$request = array($ufac,$config['proveed'],$config['usuario'],md5($config['clave']));
 		$this->xmlrpc->request($request);
-		$this->comprasCargadas=0;
 
 		if (!$this->xmlrpc->send_request()){
 			echo $this->xmlrpc->display_error();
@@ -676,14 +676,16 @@ class b2b extends validaciones {
 		$cana=$this->datasis->dameval('SELECT COUNT(*) FROM b2b_itscst AS a LEFT JOIN sinv AS b ON a.codigolocal=b.codigo WHERE a.numero IS NULL AND id_scst='.$this->db->escape($id));
 		if($cana==0 AND empty($pcontrol)){
 			$control=$this->datasis->fprox_numero('nscst');
-			$transac=$this->datasis->fprox_numero('ntransac');
+			$transac=$this->datasis->fprox_numero('ntransa');
 			//$tt['montotot']=$tt['montoiva']=$tt['montonet']=0;
+			$estampa=date('Y-m-d');
+			$hora   =date('h:m:s');
 
 			$query = $this->db->query('SELECT fecha,numero,proveed,depo,codigolocal AS codigo,descrip,cantidad,devcant,devfrac,costo,importe,iva,montoiva,garantia,ultimo,precio1,precio2,precio3,precio4,licor FROM b2b_itscst WHERE id_scst=?',array($id));
 			if ($query->num_rows() > 0){
 				foreach ($query->result_array() as $itrow){
-					$itrow['estampa'] = date('Y-m-d');
-					$itrow['hora']    = date('h:m:s');
+					$itrow['estampa'] = $estampa;
+					$itrow['hora']    = $hora;
 					$itrow['control'] = $control;
 					$itrow['transac'] = $transac;
 
@@ -697,18 +699,23 @@ class b2b extends validaciones {
 			}
 
 			$query = $this->db->query('SELECT fecha,numero,depo,proveed,nombre,montotot,montoiva,montonet,vence,tipo_doc,
-				peso,usuario,nfiscal,exento,sobretasa,reducida,tasa,montasa,monredu,monadic,serie,
+				peso,usuario,nfiscal,exento,sobretasa,reducida,tasa,montasa,monredu,monadic,TRIM(serie) AS serie,
 				cimpuesto,ctotal,cstotal,civaadi,cadicio,civared,creduci,civagen,cgenera,cexento,reteiva
 				FROM b2b_scst WHERE id=?',array($id));
 			if ($query->num_rows() > 0){
 
 				$row = $query->row_array();
-				$row['estampa'] = date('Y-m-d');
-				$row['hora']    = date('h:m:s');
+				$row['estampa'] = $estampa;
+				$row['hora']    = $hora;
 				$row['control'] = $control;
 				$row['transac'] = $transac;
 				$row['usuario'] = $this->session->userdata('usuario');
-				$row['numero']  = substr($row['serie'],-8);
+				if(empty($row['serie'])){
+					$row['serie'] = $row['numero'];
+				}else{
+					$row['numero']  = substr($row['serie'],-8);
+				}
+
 				//$row['montotot'] =$tt['montotot'];
 				//$row['montoiva'] =$tt['montoiva'];
 				//$row['montonet'] =$tt['montonet'];
