@@ -144,9 +144,9 @@ class gastosycxp{
 					fuente='MP', 
 					sucursal='00', 
 					fecha='${fecha}',
-					numero='".$row->numero."', 
-					clipro='".$row->cod_prv."', 
-					nombre='".$row->nomfis."', 
+					numero=".$this->db->escape($row->numero).", 
+					clipro=".$this->db->escape($row->cod_prv).", 
+					nombre=".$this->db->escape($row->nomfis).", 
 					contribu='CO', 
 					rif='".$row->rif."',
 					registro=if('${fecha}'<'${mFECHAF}','04', '01'), 
@@ -164,8 +164,8 @@ class gastosycxp{
 					stotal=".$stotal.", 
 					fechal=".$mes."01, 
 					referen='$referen', 
-					afecta=".$row->afecta.",
-					fafecta='$fafecta'";
+					afecta=".$this->db->escape($row->afecta).",
+					fafecta=".$this->db->escape($fafecta);
 				$flag=$this->db->simple_query($mSQL);    
 				if(!$flag) memowrite($mSQL,'genecxp');
 			}
