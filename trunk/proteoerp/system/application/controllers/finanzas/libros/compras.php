@@ -123,7 +123,7 @@ class compras{
 		$ws->write(2, 0, "RIF: ".$this->datasis->traevalor('RIF') , $h1 );
 		
 		$ws->write(4,0, $hs, $h );
-		for ( $i=1; $i<21; $i++ ) {
+		for ( $i=1; $i<26; $i++ ) {
 			$ws->write_blank(4, $i,  $h );
 		};
 
@@ -204,6 +204,9 @@ class compras{
 		$ws->write_string( $mm,   24, " ", $titulo );
 		$ws->write_string( $mm+1, 24, "Factura", $titulo );
 		$ws->write_string( $mm+2, 24, "Afectada", $titulo );
+		$ws->write_string( $mm,   25, " ", $titulo );
+		$ws->write_string( $mm+1, 25, "Numero", $titulo );
+		$ws->write_string( $mm+2, 25, "Fiscal", $titulo );
 
 		$mm++;
 		$mm++;
@@ -248,6 +251,7 @@ class compras{
 				$ws->write_number( $mm, 22, $row->reiva, $numero );
 				$ws->write_string( $mm, 23, $row->nrocomp, $cuerpo );
 				$ws->write_string( $mm, 24, $row->afecta, $cuerpo );
+				$ws->write_string( $mm, 25, $row->nfiscal, $cuerpo );
 				$mm++;
 				$ii++;
 			}
@@ -285,6 +289,7 @@ class compras{
 		$ws->write_formula( $mm, 22, "=SUM(W$dd:W$mm)", $Tnumero );   //"VENTAS EXENTAS" 
 		$ws->write_blank( $mm,  23,  $Tnumero );
 		$ws->write_blank( $mm,  24,  $Tnumero );
+		$ws->write_blank( $mm,  25,  $Tnumero );
 
 		$mm ++;
 		$mm ++;
