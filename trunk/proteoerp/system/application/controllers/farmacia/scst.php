@@ -365,7 +365,7 @@ class Scst extends Controller {
 						$str = str_replace('INSERT','INSERT IGNORE',$str);
 						$this->db->simple_query($str);
 					}
-        
+
 				}
 			}
 		}
@@ -631,7 +631,7 @@ class Scst extends Controller {
 
 
 					$itmSQL="SELECT a.fecha,a.numero,a.proveed,a.depo,
-					COALESCE(c.barras,b.codigo) AS codigo,
+					COALESCE(c.abarras,b.codigo) AS codigo,
 					a.descrip,a.cantidad,a.devcant,a.devfrac,a.costo,a.importe,a.iva,a.montoiva,a.control,a.garantia,a.ultimo,a.precio1,a.precio2,a.precio3,a.precio4,a.licor,a.flote
 					  FROM ${farmaxdb}.itscst AS a 
 					  LEFT JOIN ${localdb}.sinv AS b ON a.codigo=b.codigo 
