@@ -1,5 +1,4 @@
 <?php require_once(APPPATH.'/controllers/inventario/consultas.php');
-
 class Scst extends Controller {
 
 	function scst(){
@@ -278,7 +277,6 @@ class Scst extends Controller {
 		$this->load->view('view_ventanas_sola', $data);
 	}
 
-
 	function asignarfiltro(){
 		$this->rapyd->load('datagrid','datafilter');
 		$this->rapyd->uri->keep_persistence();
@@ -299,7 +297,7 @@ class Scst extends Controller {
 		$select=array('a.proveed','a.abarras','a.barras','c.nombre','b.descrip','a.id','b.codigo');
 		$filter->db->select($select);
 		$filter->db->from('farmaxasig AS a');
-		$filter->db->join('sinv AS b','a.abarras=b.codigo');
+		$filter->db->join('sinv AS b','a.abarras=b.codigo','LEFT');
 		$filter->db->join('sprv AS c','a.proveed=c.proveed');
 
 		$filter->proveedor = new inputField('Proveedor', 'proveed');
@@ -341,6 +339,10 @@ class Scst extends Controller {
 		if(!empty($control)){
 			$dbcontrol=$this->db->escape($control);
 
+			//Limpia la tabla farmaxasig
+			$mmSQL="DELETE farmaxasig FROM farmaxasig LEFT JOIN sinv ON farmaxasig.abarras=sinv.codigo WHERE sinv.codigo IS NULL";
+			$this->db->simple_query($mmSQL);
+
 			$tabla    = $this->db->database;
 			$dbfarmax = $this->load->database('farmax', TRUE);
 
@@ -365,7 +367,7 @@ class Scst extends Controller {
 						$str = str_replace('INSERT','INSERT IGNORE',$str);
 						$this->db->simple_query($str);
 					}
-
+        
 				}
 			}
 		}
@@ -383,7 +385,6 @@ class Scst extends Controller {
 				'descrip'=>'Descripci&oacute;n'),
 			'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'Descripci&oacute;n'),
 			'retornar'=>array('codigo' =>'abarras'),
-			//'where'   =>'LENGTH(barras)>0',
 			'titulo'  =>'Buscar Art&iacute;culo');
 		$boton=$this->datasis->modbus($modbus);
 
@@ -505,7 +506,6 @@ class Scst extends Controller {
 
 		$form->nfiscal = new inputField('Control F&iacute;scal', 'nfiscal');
 		$form->nfiscal->rule = 'required|strtoupper';
-		$form->nfiscal->autocomplete=false;
 		$form->nfiscal->rows = 10;
 
 		$form->almacen = new  dropdownField ("Almac&eacute;n", "almacen");
@@ -556,11 +556,9 @@ class Scst extends Controller {
 
 				if ($query->num_rows()==1){
 					$lcontrol=$this->datasis->fprox_numero('nscst');
-					$transac =$this->datasis->fprox_numero('ntransa');
+					$transac =$this->datasis->fprox_numero('ntransac');
 					$contribu=$this->datasis->traevalor('CONTRIBUYENTE');
 					$rif     =$this->datasis->traevalor('RIF');
-					$estampa =date('Ymd');
-					$hora    =date('H:i:s');
 
 					$row=$query->row_array();
 					$numero=$row['numero'];
@@ -572,8 +570,8 @@ class Scst extends Controller {
 					$row['credito'] =$row['montonet'];
 					$row['anticipo']=0;
 					$row['inicial'] =0;
-					$row['estampa'] =$estampa;
-					$row['hora']    =$hora;
+					$row['estampa'] =date('Ymd');
+					$row['hora']    =date('H:i:s');
 					$row['usuario'] =$this->session->userdata('usuario');
 					$row['depo']    =$almacen;
 					$cd             =strtotime($row['fecha']);
@@ -629,23 +627,9 @@ class Scst extends Controller {
 
 					$mSQL[]=$this->db->insert_string('scst', $row);
 
-
-					$itmSQL="SELECT a.fecha,a.numero,a.proveed,a.depo,
-					COALESCE(c.abarras,b.codigo) AS codigo,
-					a.descrip,a.cantidad,a.devcant,a.devfrac,a.costo,a.importe,a.iva,a.montoiva,a.control,a.garantia,a.ultimo,a.precio1,a.precio2,a.precio3,a.precio4,a.licor,a.flote
-					  FROM ${farmaxdb}.itscst AS a 
-					  LEFT JOIN ${localdb}.sinv AS b ON a.codigo=b.codigo 
-					  LEFT JOIN ${localdb}.farmaxasig AS c ON a.codigo=c.barras AND c.proveed=a.proveed 
-					WHERE a.control=$control";
-
-					$itquery = $farmaxDB->query($itmSQL);
+					$itquery = $farmaxDB->query("SELECT * FROM itscst WHERE control=$control");
 					foreach ($itquery->result_array() as $itrow){
-						$itrow['control'] = $lcontrol;
-						$itrow['transac'] = $transac;
-						$itrow['usuario']    = $this->session->userdata('usuario');
-						$itrow['estampa']    = $estampa;
-						$itrow['hora']       = $hora;
-
+						$itrow['control']=$lcontrol;
 						unset($itrow['id']);
 						$mSQL[]=$this->db->insert_string('itscst', $itrow);
 					}
