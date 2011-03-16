@@ -422,12 +422,16 @@ class Scst extends Controller {
 			$grid->db->from('sinv');
 			$grid->paged=false;
 
+			$sstr='';
 			$patrones = preg_split("/[\s,\-]+/", $describus);
 			foreach($patrones AS $pat){
 				if(strlen($pat)>3){
-					$grid->db->like('descrip',$pat);
+					$sstr.=$pat.' ';
+					//$grid->db->like('descrip',$pat);
 				}
 			}
+			$sstr=$this->db->escape($sstr);
+			$grid->db->where("MATCH(descrip) AGAINST ($sstr)");
 			$grid->db->limit(10);
 			$url='<a onclick=\'pasacod("<#codigo#>")\'  href=\'#\'><#codigo#></a>';
 
@@ -436,6 +440,7 @@ class Scst extends Controller {
 			$grid->column('Precio 1'          ,'precio1' ,"align='right'");
 
 			$grid->build();
+			//echo $grid->db->last_query();
 			$tabla=($grid->recordCount>0)? $grid->output : 'No existe descripci&oacute;n semejante a <b>'.$describus.'</b>';
 
 			$edit->script($js,'create');
