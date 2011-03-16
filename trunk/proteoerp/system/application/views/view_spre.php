@@ -94,33 +94,27 @@ function del_itspre(id){
 	<tr>
 		<td>
 		<table width="100%" style="margin: 0; width: 100%;">
-
 			<tr>
-				<td class="littletableheader">N&uacute;mero</td>
-				<td class="littletablerow"><?php  echo str_pad(trim($form->numero->output),8,0,STR_PAD_LEFT) ?>&nbsp;</td>
-				<td class="littletableheader"><?=$form->cliente->label  ?>*&nbsp;</td>
-				<td class="littletablerow"><?=$form->cliente->output ?>&nbsp;</td>
-				<td class="littletableheader"><?=$form->rifci->label  ?>*&nbsp;</td>
-				<td class="littletablerow"><?=$form->rifci->output ?>&nbsp;</td>
+				<th colspan='5' class="littletableheader">Presupuesto <b><?php if($form->_status=='show' or $form->_status=='modify' ) echo str_pad($form->numero->output,8,0,0); ?></b></th>
 			</tr>
 			<tr>
-
-				<td class="littletableheader"><?=$form->fecha->label  ?>*&nbsp;</td>
-				<td class="littletablerow"><?=$form->fecha->output ?>&nbsp;</td>
-				<td class="littletableheader"><?=$form->nombre->label  ?>*&nbsp;</td>
-				<td class="littletablerow"><?=$form->nombre->output ?>&nbsp;</td>
-				<td class="littletablerow">&nbsp;</td>
-				<td class="littletablerow">&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->fecha->label;    ?>*&nbsp;</td>
+				<td class="littletablerow">   <?php echo $form->fecha->output;   ?>&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->cliente->label;  ?>*&nbsp;</td>
+				<td class="littletablerow">   <?php echo $form->cliente->output; ?>&nbsp;</td>
+				<td class="littletablerow">   <?php echo $form->nombre->output;  ?>&nbsp;</td>
 			</tr>
 			<tr>
-				<td class="littletableheader"><?=$form->vd->label  ?>&nbsp;</td>
-				<td class="littletablerow"><?=$form->vd->output ?>&nbsp;</td>
-				<td class="littletableheader"><?=$form->direc->label  ?>&nbsp;</td>
-				<td class="littletablerow"><?=$form->direc->output ?>&nbsp;</td>
-				<td class="littletablerow">&nbsp;</td>
-				<td class="littletablerow">&nbsp;</td>
+				
+				<td class="littletableheader"><?php echo $form->rifci->label;    ?>*&nbsp;</td>
+				<td class="littletablerow" colspan='2'>   <?php echo $form->rifci->output;   ?>&nbsp;</td>
 			</tr>
-
+			<tr>
+				<td class="littletableheader"><?php echo $form->vd->label     ?>&nbsp;</td>
+				<td class="littletablerow">   <?php echo $form->vd->output    ?>&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->direc->label  ?>&nbsp;</td>
+				<td class="littletablerow" colspan='2'><?php echo $form->direc->output ?>&nbsp;</td>
+			</tr>
 			<?php if($form->_status=='show'){?>
 			<tr>
 				<td class="littletableheader"><?=$form->peso->label  ?>&nbsp;</td>
@@ -128,13 +122,8 @@ function del_itspre(id){
 				<td class="littletablerow">&nbsp;</td>
 				<td class="littletablerow">&nbsp;</td>
 				<td class="littletablerow">&nbsp;</td>
-				<td class="littletablerow">&nbsp;</td>
 			</tr>
 			<?php }?>
-
-
-
-
 		</table>
 		</td>
 	</tr>
@@ -167,8 +156,8 @@ function del_itspre(id){
 				$obj8="ultimo_$i";
 				$obj9="pond_$i";
 				$obj10="precio1_$i";
-
 				?>
+
 			<tr id='tr_itspre_<?=$i ?>'>
 				<td class="littletablerow"><?=$form->$obj1->output ?></td>
 				<td class="littletablerow"><?=$form->$obj2->output ?></td>
@@ -195,28 +184,25 @@ function del_itspre(id){
 				<td class="littletablefooterb" align="right">&nbsp;</td>
 				<td class="littletablefooterb" align="right">&nbsp;</td>
 				<td class="littletablefooterb" align="right">&nbsp;</td>
-
-
 				<?php if($form->_status!='show') {?>
-				<!--				<td class="littletablefooterb" align="right">&nbsp;</td>-->
+				<!--<td class="littletablefooterb" align="right">&nbsp;</td>-->
 				<?php } ?>
 			</tr>
 			<?php if ($form->_status =='show'){?>
 			<tr>
-				<td class="littletableheader"><?=$form->ivat->label  ?></td>
-				<td class="littletablerow"><?=$form->ivat->output?></td>
-				<td class="littletableheader"><?=$form->totals->label  ?></td>
-				<td class="littletablerow"><?=$form->totals->output ?></td>
-				<td class="littletableheader"><?=$form->totalg->label  ?></td>
-				<td class="littletablerow"><?=$form->totalg->output ?></td>
+				<td class="littletableheader"><?php echo $form->ivat->label;    ?></td>
+				<td class="littletablerow">   <?php echo $form->ivat->output;   ?></td>
+				<td class="littletableheader"><?php echo $form->totals->label;  ?></td>
+				<td class="littletablerow">   <?php echo $form->totals->output; ?></td>
+				<td class="littletableheader"><?php echo $form->totalg->label;  ?></td>
+				<td class="littletablerow">   <?php echo $form->totalg->output; ?></td>
 			</tr>
 			<?php }?>
 		</table>
-
-		<?php echo $form_end     ?> <?php echo $container_bl ?> <?php echo $container_br ?>
+		<?php echo $form_end     ?>
+		<?php echo $container_bl ?>
+		<?php echo $container_br ?>
 		</td>
 	</tr>
-
 </table>
-
 		<?php endif; ?>
