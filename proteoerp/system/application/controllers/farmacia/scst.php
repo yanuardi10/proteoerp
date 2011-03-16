@@ -694,7 +694,7 @@ class Scst extends Controller {
 
 		$mSQL="ALTER TABLE `farmaxasig`  CHANGE COLUMN `barras` `barras` VARCHAR(20) NOT NULL COLLATE 'latin1_general_ci' AFTER `proveed`";
 		var_dump($this->db->simple_query($mSQL));
-		$mSQL="ALTER TABLE `farmaxasig`  CHANGE COLUMN `abarras` `abarras` VARCHAR(12) NOT NULL COLLATE 'latin1_general_ci' AFTER `barras`";
+		$mSQL="ALTER TABLE `farmaxasig`  CHANGE COLUMN `abarras` `abarras` VARCHAR(20) NOT NULL COLLATE 'latin1_general_ci' AFTER `barras`";
 		var_dump($this->db->simple_query($mSQL));
 		$mSQL="ALTER TABLE `farmaxasig`  CHANGE COLUMN `proveed` `proveed` VARCHAR(5) NOT NULL COLLATE 'utf8_unicode_ci' AFTER `id`";
 		var_dump($this->db->simple_query($mSQL));
