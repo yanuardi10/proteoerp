@@ -8,7 +8,6 @@ if ($form->_status=='delete' || $form->_action=='delete' || $form->_status=='unk
 	echo $form->output;
 else:
 
-
 foreach($form->detail_fields['itspre'] AS $ind=>$data)
 $campos[]=$data['field'];
 
@@ -17,26 +16,16 @@ $campos='<tr id="tr_itspre_<#i#>"><td class="littletablerow">'.join('</td><td>',
 $campos=str_replace("\n",'',$campos);
 $campos.=' <td class="littletablerow"><a href=# onclick="del_itspre(<#i#>);return false;">Eliminar</a></td></tr>';
 $campos=$form->js_escape($campos);
-if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</div>';
+if(isset($form->error_string)) echo '<div class="alert">'.$form->error_string.'</div>';
 
 //echo $form_scripts;
 echo $form_begin;
-if($form->_status!='show'){
-	?>
-<input type="hidden" name="__p1"
-	id="__p1" value="">
-<input type="hidden" name="__p2"
-	id="__p2" value="">
-<input type="hidden" name="__p3"
-	id="__p3" value="">
-<input type="hidden" name="__p4"
-	id="__p4" value="">
-<input type="hidden"
-	name="t_cli" id="t_cli" value="">
-
+if($form->_status!='show'){ ?>
+<input type="hidden" name="t_cli" id="t_cli" value="">
 
 <script language="javascript" type="text/javascript">
-itspre_cont=<?=$form->max_rel_count['itspre']?>;
+itspre_cont=<?php echo $form->max_rel_count['itspre']; ?>;
+
 function ejecuta(i){
 	tipo=$("#t_cli").val();
 	if(tipo=='' || tipo=='0')tipo='1';
@@ -47,6 +36,7 @@ function ejecuta(i){
 	$("#precio4_"+i.toString()).val(p4);
 	$("#precio1_"+i.toString()).val(p1);
 }
+
 function totalizar(i){
 	c=roundNumber($("#cana_"+i.toString()).val(),2);
 	p=roundNumber($("#preca_"+i.toString()).val(),2);
@@ -78,14 +68,58 @@ function add_itspre(){
 
 $(function(){
 	$(".inputnum").numeric(".");
+	for(var i=0;i < <?php echo $form->max_rel_count['itspre']; ?>;i++){
+		cdropdown(i);
+	}
 });
-					
+
+function cdropdown(nind){
+	var ind=nind.toString();
+	var preca=$("#preca_"+ind).val();
+	var pprecio  = document.createElement("select");
+	pprecio.setAttribute("id"    , "preca_"+ind);
+	pprecio.setAttribute("name"  , "preca_"+ind);
+	pprecio.setAttribute("class" , "select");
+	pprecio.setAttribute("style" , "width: 100px");
+
+	var ban=0;
+	var ii=0;
+	var id='';
+	
+	for(ii=1;ii<5;ii++){
+		id =ii.toString();
+		val=$("#precio"+id+"_"+ind).val();
+		opt=document.createElement("option");
+		opt.text =nformat(val);
+		opt.value=val;
+		pprecio.add(opt,null);
+		if(val==preca){
+			ban=1;
+			pprecio.selectedIndex=ii-1;
+		}
+	}
+	if(ban==0){
+		opt=document.createElement("option");
+		opt.text = nformat(preca);
+		opt.value= preca;
+		pprecio.add(opt,null);
+		pprecio.selectedIndex=4;
+	}
+
+	opt=document.createElement("option");
+	opt.text = 'Otro';
+	opt.value= 'otro';
+	pprecio.add(opt,null);
+
+	$("#preca_"+ind).replaceWith(pprecio);
+}
+
 function del_itspre(id){
 	id = id.toString();
 	$('#tr_itspre_'+id).remove();
 }
 </script>
-	<?php } ?>
+<?php } ?>
 
 <table align='center' width="80%">
 	<tr>
@@ -105,90 +139,84 @@ function del_itspre(id){
 				<td class="littletablerow">   <?php echo $form->nombre->output;  ?>&nbsp;</td>
 			</tr>
 			<tr>
-				
-				<td class="littletableheader"><?php echo $form->rifci->label;    ?>*&nbsp;</td>
-				<td class="littletablerow" colspan='2'>   <?php echo $form->rifci->output;   ?>&nbsp;</td>
-			</tr>
-			<tr>
 				<td class="littletableheader"><?php echo $form->vd->label     ?>&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->vd->output    ?>&nbsp;</td>
-				<td class="littletableheader"><?php echo $form->direc->label  ?>&nbsp;</td>
-				<td class="littletablerow" colspan='2'><?php echo $form->direc->output ?>&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->rifci->label; ?>*&nbsp;</td>
+				<td class="littletablerow" colspan='2'><?php echo $form->rifci->output;   ?>&nbsp;</td>
 			</tr>
-			<?php if($form->_status=='show'){?>
 			<tr>
 				<td class="littletableheader"><?=$form->peso->label  ?>&nbsp;</td>
 				<td class="littletablerow" align="left"><?=$form->peso->output ?>&nbsp;</td>
-				<td class="littletablerow">&nbsp;</td>
-				<td class="littletablerow">&nbsp;</td>
-				<td class="littletablerow">&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->direc->label  ?>&nbsp;</td>
+				<td class="littletablerow" colspan='2'><?php echo $form->direc->output ?>&nbsp;</td>
 			</tr>
-			<?php }?>
-		</table>
+		</table><br>
 		</td>
-	</tr>
-	<tr>
-		<td>&nbsp;</td>
 	</tr>
 	<tr>
 		<td>
 		<table width='100%'>
+			<tr>
+				<th colspan='6' class="littletableheader">Lista de Art&iacute;culos</th>
+			</tr>
 			<tr>
 				<td class="littletableheader">C&oacute;digo</td>
 				<td class="littletableheader">Descripci&oacute;n</td>
 				<td class="littletableheader">Cantidad</td>
 				<td class="littletableheader">Precio</td>
 				<td class="littletableheader">Importe</td>
-
-
 				<?php if($form->_status!='show') {?>
-				<!--				<td class="littletableheader">&nbsp;</td>-->
+					<td class="littletableheader">&nbsp;</td>
 				<?php } ?>
 			</tr>
+
 			<?php for($i=0;$i<$form->max_rel_count['itspre'];$i++) {
-				$obj1="codigo_$i";
-				$obj2="desca_$i";
-				$obj3="cana_$i";
-				$obj4="preca_$i";
-				$obj5="totaorg_$i";
-				$obj6="precio4_$i";
-				$obj7="iva_$i";
-				$obj8="ultimo_$i";
-				$obj9="pond_$i";
-				$obj10="precio1_$i";
-				?>
+				$it_codigo  = "codigo_$i";
+				$it_desca   = "desca_$i";
+				$it_cana    = "cana_$i";
+				$it_preca   = "preca_$i";
+				$it_totaorg = "totaorg_$i";
+				$it_iva     = "iva_$i";
+				$it_ultimo  = "ultimo_$i";
+				$it_pond    = "pond_$i";
 
-			<tr id='tr_itspre_<?=$i ?>'>
-				<td class="littletablerow"><?=$form->$obj1->output ?></td>
-				<td class="littletablerow"><?=$form->$obj2->output ?></td>
-				<td class="littletablerow" align="right"><?=$form->$obj3->output ?></td>
-				<td class="littletablerow" align="right"><?=$form->$obj4->output ?></td>
-				<td class="littletablerow" align="right"><?=$form->$obj5->output ?></td>
-				<td class="littletablerow"><?=$form->$obj6->output ?></td>
-				<td class="littletablerow"><?=$form->$obj7->output ?></td>
-				<td class="littletablerow"><?=$form->$obj8->output ?></td>
-				<td class="littletablerow"><?=$form->$obj9->output ?></td>
-				<td class="littletablerow"><?=$form->$obj10->output ?></td>
+				$pprecios='';
+				for($o=1;$o<5;$o++){
+					$it_obj   = "precio${o}_${i}";
+					$pprecios.="<input type='hidden' name='$it_obj' id='$it_obj' value='".floatval($form->$it_obj->output)."'>";
+					//$pprecios.=form_hidden($it_obj, floatval($form->$it_obj->output));
+				}
+			?>
 
+			<tr id='tr_itspre_<?php echo $i; ?>'>
+				<td class="littletablerow" align="left" ><?php echo $form->$it_codigo->output; ?></td>
+				<td class="littletablerow" align="left" ><?php echo $form->$it_desca->output;  ?></td>
+				<td class="littletablerow" align="right"><?php echo $form->$it_cana->output;   ?></td>
+				<td class="littletablerow" align="right"><?php echo $form->$it_preca->output;  ?></td>
+				<td class="littletablerow" align="right"><?php echo $form->$it_totaorg->output.$pprecios;?></td>
 
 				<?php if($form->_status!='show') {?>
-				<td class="littletablerow"><a href=#
-					onclick='del_itspre(<?=$i ?>);return false;'>Eliminar</a></td>
-					<?php } ?>
-				
+				<td class="littletablerow">
+					<a href='#' onclick='del_itspre(<?=$i ?>);return false;'>Eliminar</a>
+				</td>
+				<?php } ?>
 			</tr>
 			<?php } ?>
 
 			<tr id='__UTPL__'>
-				<td class="littletablefooterb" align="right">&nbsp;</td>
-				<td class="littletablefooterb" align="right">&nbsp;</td>
-				<td class="littletablefooterb" align="right">&nbsp;</td>
-				<td class="littletablefooterb" align="right">&nbsp;</td>
-				<?php if($form->_status!='show') {?>
-				<!--<td class="littletablefooterb" align="right">&nbsp;</td>-->
-				<?php } ?>
+				<td id='cueca'></td>
 			</tr>
-			<?php if ($form->_status =='show'){?>
+		</table>
+		<?php echo $container_bl ?>
+		<?php echo $container_br ?>
+		</td>
+	</tr>
+	<tr>
+		<td>
+		<table width='100%'>
+			<tr>
+				<th colspan='6' class="littletableheader">Res&uacute;men Financiero</th>
+			</tr>
 			<tr>
 				<td class="littletableheader"><?php echo $form->ivat->label;    ?></td>
 				<td class="littletablerow">   <?php echo $form->ivat->output;   ?></td>
@@ -197,12 +225,9 @@ function del_itspre(id){
 				<td class="littletableheader"><?php echo $form->totalg->label;  ?></td>
 				<td class="littletablerow">   <?php echo $form->totalg->output; ?></td>
 			</tr>
-			<?php }?>
 		</table>
-		<?php echo $form_end     ?>
-		<?php echo $container_bl ?>
-		<?php echo $container_br ?>
+		<?php echo $form_end; ?>
 		</td>
 	</tr>
 </table>
-		<?php endif; ?>
+<?php endif; ?>
