@@ -29,10 +29,10 @@ class Tban extends Controller {
 		$uri = anchor('finanzas/tban/dataedit/show/<#cod_banc#>','<#cod_banc#>');
 
 		$grid = new DataGrid("Lista de Tabla de Bancos");
-		$grid->per_page = 10;
+		$grid->per_page = 12;
 
-		$grid->column("C&oacute;digo",$uri);
-		$grid->column("Banco","nomb_banc");
+		$grid->column_orderby("C&oacute;digo",$uri,"cod_banc");
+		$grid->column_orderby("Banco","nomb_banc","nomb_banc");
 		$grid->column("Tipo","tipotra");
 		$grid->column("Formaca","formaca");
 
@@ -91,25 +91,25 @@ class Tban extends Controller {
 		$edit->formaca->option("NETO","NETO");
 		$edit->formaca->style='width:90px';
 
-		$edit->tcredito = new inputField("T.Credito","comitc");
+		$edit->tcredito = new inputField("Comison T.Credito%","comitc");
 		$edit->tcredito->size =8;
 		$edit->tcredito->maxlength=6;
 		$edit->tcredito->css_class='inputnum';
 		$edit->tcredito->rule='numeric';
 
-		$edit->tdebito = new inputField("T.Debito","comitd");
+		$edit->tdebito = new inputField("Comision T.Debito%","comitd");
 		$edit->tdebito->size =8;
 		$edit->tdebito->maxlength=6;
 		$edit->tdebito->css_class='inputnum';
 		$edit->tdebito->rule='numeric';
 
-		$edit->retencion = new inputField("Retenciones","impuesto");
+		$edit->retencion = new inputField("Retencion ISLR%","impuesto");
 		$edit->retencion->size =8;
 		$edit->retencion->maxlength=6;
 		$edit->retencion->css_class='inputnum';
 		$edit->retencion->rule='numeric';
 		
-		$edit->idb = new inputField("I.D.B","debito");
+		$edit->idb = new inputField("Debito Bancario%","debito");
 		$edit->idb->size =8;
 		$edit->idb->maxlength=6;
 		$edit->idb->css_class='inputnum';
@@ -118,9 +118,9 @@ class Tban extends Controller {
 		$edit->buttons("modify", "save", "undo", "delete", "back");
 		$edit->build();
 		
-		$data['content'] = $edit->output;           
+		$data['content'] = str_replace("120px;", "160px;background-color: #EFEFEF", $edit->output);
 		$data['title']   = "<h1>Tabla de Bancos</h1>";        
-		$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
+		$data["head"]    = script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);  
 	}
 

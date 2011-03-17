@@ -79,12 +79,10 @@ class Reportes extends Controller
 			
 			$grid->per_row = 3; 
 			$grid->cell_template = '
-			<div style="padding:4px">
-			<div style="color:#119911; font-weight:bold; font-size:14px;">'.
-			anchor('reportes/ver/<#nombre#>/'.$repo,"<#titulo#>",array('onclick'=>"parent.navegador.afiltro()")).
-			'</div>
-			<htmlspecialchars><#mensaje#></htmlspecialchars>
-			</div>'; 
+			<div style="color:#119911; font-weight:bold; font-size:16px;">'.
+			anchor('reportes/ver/<#nombre#>/'.$repo,"<#titulo#>",array('onclick'=>"parent.navegador.afiltro()")).'</div>
+			<div style="color:#114411; font-weight:normal; font-size:12px;padding:4px;border-bottom: 1px solid;">
+			<htmlspecialchars><#mensaje#></htmlspecialchars></div>'; 
 			$grid->build();
 
 			$grid1 = new DataTable();
@@ -100,10 +98,10 @@ class Reportes extends Controller
 			$grid1->db->orderby("a.titulo");
 			$grid1->per_row = 3; 
 			$grid1->cell_template = '
-			<div style="padding:4px">
-			<div style="color:#119911; font-weight:bold; font-size:14px;background-color:#D3E3D3;">'.anchor('reportes/ver/<#nombre#>/'.$repo,"<#titulo#>",array('onclick'=>"parent.navegador.afiltro()")).'</div>
-			<htmlspecialchars><#mensaje#></htmlspecialchars>
-			</div>'; 
+			<div style="color:#119911; font-weight:bold; font-size:16px;background-color:#D3E3D3;padding:4px;border-left: 1px solid;">'
+			.anchor('reportes/ver/<#nombre#>/'.$repo,"<#titulo#>",array('onclick'=>"parent.navegador.afiltro()")).'
+			</div><div style="color:#112211; font-weight:normal; font-size:12px;padding:4px;border-left: 1px solid;">
+			<htmlspecialchars><#mensaje#></htmlspecialchars></div>'; 
 			$grid1->build();
 			//echo $grid1->db->last_query();
 			
@@ -120,27 +118,30 @@ class Reportes extends Controller
 			$data['forma'] .= '<div style="color:#111911; font-weight:bold; font-size:10px;background-color:#F1FFF1">PROTEO</div>';
 			$data['forma'] .=$grid1->output; 
 		} else {
-			$data['forma'] .= '<p class="mainheader">No hay reportes disponibles por PROTEO.</p>';
+			//$data['forma'] .= '<p class="mainheader">No hay reportes disponibles por PROTEO.</p>';
 		};
-			
-			
+		
 		$meco = $this->datasis->dameval("SELECT titulo FROM intramenu a WHERE a.panel='REPORTES' AND a.ejecutar LIKE '%$repo' ");
-		$data['head']="";   //$this->rapyd->get_head();
-		$data['titulo'] = "<center><h2>$meco</h2></center>";
+		$data['head']="";     //$this->rapyd->get_head();
+		$data['titulo'] = ''; //"<center><h2>$meco</h2></center>";
 		$data['repo']=$repo;
 		$this->load->view('view_reportes', $data);
 		
 	}
+
 	function cabeza(){
 		$data['repo']  =$this->uri->segment(3);
 		$data['nombre']=$this->uri->segment(4);
+		$meco = $this->datasis->dameval("SELECT titulo FROM intramenu a WHERE a.panel='REPORTES' AND a.ejecutar LIKE '%".$data['repo']."'");
+		$data['titulo']="<h1 style='font-size: 20px;color: #FFFFFF' onclick='history.back()'>".$meco."</h1>";
 		
 		$this->load->view('view_repoCabeza',$data);
 	}
+
 	function consulstatus(){
 		echo 'esto es una prueba';
 	}
-	
+
 	function sinvlineas(){
 		if (!empty($_POST["dpto"])){ 
 			$departamento=$_POST["dpto"];
@@ -185,6 +186,7 @@ class Reportes extends Controller
 		$grupo->build();
 		echo $grupo->output; 
 	}
+
 	function modelos(){
 		$this->rapyd->load("fields");  
 		$where = "";  
@@ -205,7 +207,7 @@ class Reportes extends Controller
 		echo $modelo->output;
 		 
 	}
-	
+
 	function instalar(){
 		$mSQL="ALTER TABLE `reportes` ADD `proteo` TEXT NULL";
 		$this->db->simple_query($mSQL);

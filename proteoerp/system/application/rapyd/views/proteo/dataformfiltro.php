@@ -87,7 +87,7 @@
       </table>
       <?php echo $form_scripts?>
       </div>
-      <div class="mainfooter" style='background-image: url(<?=base_url()?>images/dblue212.gif);'>
+      <div class="mainfooter" style='background-color: #DDDDFF;'>
         <div>
           <div style="float:left;"><?php echo  $container_bl ?></div>
           <div style="float:right"><?php echo $container_br?></div>

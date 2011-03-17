@@ -6,7 +6,7 @@
 .normal {	color: #9B9B9B;	font-family: Verdana, Arial, Helvetica;	font-size: 9pt;}
 
 .mainbackground { }
-.pagenav { background: #A9D9D9;	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;	font-size: 12px;	font-weight: bold; }
+.pagenav { background: #7098D0;	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;	font-size: 12px;	font-weight: bold; }
 .pagenav a {	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;	font-size: 11px;	font-weight: bold; }
 .mainheader { clear:both;  border-bottom: 1px solid #ECECEC; height:22px; padding:4px; color: #153D51; font-family: Lucida Grande, Verdana, Geneva, Sans-serif;	font-size: 12px;	font-weight: bold;}
 .mainfooter { clear:both;  border-color: #92B8CB;  border-top:1px solid #ECECEC; height:22px; padding:4px; color: #153D51; font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;	font-size: 11px;	font-weight: bold;}
@@ -15,8 +15,8 @@
 .littletableheader { background: #F9F9F9; 	border-bottom: 1px solid #ECECEC;	color: #999999;	font-family: Lucida Grande, Verdana, Geneva, Sans-serif; font-size: 12px;	padding-left:5px;}
 .littletablefilter { background: #D7DEFE; 	border-bottom: 1px solid #ECECEC;	color: #333333;	font-family: Lucida Grande, Verdana, Geneva, Sans-serif; font-size: 12px;	padding-left:5px;}
 .littletableheaderdet { background: #0404B4; 	border-bottom: 1px solid #ECECEC;	color: #FCFCFC;	font-family: Lucida Grande, Verdana, Geneva, Sans-serif; font-size: 12px;	padding-left:5px;}
-.tableheader       { background: #A9D9D9; 	border-bottom: 1px solid #FcFcFc;	color: #003311;	font-family: Lucida Grande, Verdana, Geneva, Sans-serif; font-size: 12px;}
-.tableheader_clean { background: #A1D1D1; color: #003311;	font-family: Lucida Grande, Verdana, Geneva, Sans-serif; font-size: 12px;}
+.tableheader       { background: #7098D0; 	border-bottom: 1px solid #FcFcFc;	color: #003311;	font-family: Lucida Grande, Verdana, Geneva, Sans-serif; font-size: 12px;}
+.tableheader_clean { background: #8FB6EE; color: #002211;	font-family: Lucida Grande, Verdana, Geneva, Sans-serif; font-size: 12px;}
 .tablerow {	border-bottom: 1px solid #D0D0D0;	color: #153D51;	font-family: Verdana, Arial, Helvetica;	font-size: 11px;	font-weight: normal;}
 tr.odd {background-color:inherit;}
 tr.even {background-color:#F3F3F3;}
