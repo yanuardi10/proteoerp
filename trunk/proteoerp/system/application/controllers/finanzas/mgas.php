@@ -16,32 +16,39 @@ class Mgas extends validaciones {
 		$this->rapyd->uri->keep_persistence();
 
 		$modbus=array(
-		  'tabla'   =>'grcl',
-		  'columnas'=>array('grupo' =>'Codigo',
-		  'gr_desc'=>'Descripci&oacute;n'),
-		  'filtro'  =>array('grupo'=>'C&oacute;digo','gr_desc'=>'Descripci&oacute;n'),
+		  'tabla'   =>'grga',
+		  'columnas'=>array(
+					'grupo' =>'Codigo',
+					'nom_grup'=>'Descripci&oacute;n'
+				   ),
+		  'filtro'  =>array('grupo'=>'C&oacute;digo','nom_grup'=>'Descripci&oacute;n'),
 		  'retornar'=>array('grupo'=>'grupo'),
-		'titulo'  =>'Buscar Grupo');
+		'titulo'  =>'Buscar Grupo de Gastos');
 
 		$boton=$this->datasis->modbus($modbus);
 
 		$filter = new DataFilter("Filtro Maestro de Gastos", 'mgas');
 
 		$filter->codigo = new inputField("C&oacute;digo", "codigo");
-		$filter->codigo->size=20;
+		$filter->codigo->size=10;
+		$filter->codigo->group = 'UNO';
 
 		$filter->cuenta = new inputField('Cuenta contable', 'cuenta');
+		$filter->cuenta->size=15;
 		$filter->cuenta->like_side='after';
+		$filter->cuenta->group = 'UNO';
 
 		$filter->descrip = new inputField("Descripci&oacute;n", "descrip");
 		$filter->descrip->size=20;
+		$filter->descrip->group = 'DOS';
 		
 		$filter->grupo = new inputField("Grupo", "grupo");
-		$filter->grupo->size=20;
+		$filter->grupo->size=10;
 		$filter->grupo->append($boton);
+		$filter->grupo->group = 'DOS';
 
 		$filter->buttons("reset","search");
-		$filter->build();
+		$filter->build("dataformfiltro");
 
 		$uri = anchor('finanzas/mgas/dataedit/show/<#codigo#>','<#codigo#>');
 
@@ -50,7 +57,7 @@ class Mgas extends validaciones {
 		$grid->per_page = 15;
 
 		$grid->column_orderby("C&oacute;digo",$uri ,'codigo');
-		$grid->column("Tipo","tipo");
+		$grid->column_orderby("Tipo","tipo","tipo");
 		$grid->column_orderby("Descripci&oacute;n","descrip",'descrip');
 		$grid->column_orderby("Grupo","grupo",'grupo');
 		$grid->column_orderby('Nombre del Grupo','nom_grup','nom_grup');
@@ -58,7 +65,8 @@ class Mgas extends validaciones {
 		$grid->add("finanzas/mgas/dataedit/create");
 		$grid->build();
 
-		$data['content'] = $filter->output.$grid->output;
+		$data['filtro'] = $filter->output;
+		$data['content'] = $grid->output;
 		$data['title']   = "<h1>Maestro de Gastos</h1>";
 		$data["head"]    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);	
@@ -133,41 +141,11 @@ class Mgas extends validaciones {
 		$edit->tipo->option("A","Activo");
 
 		$edit->grupo= new dropdownField("Grupo", "grupo");
-		$edit->grupo->options('SELECT grupo, nom_grup from grga order by nom_grup');
+		$edit->grupo->options('SELECT grupo, CONCAT(grupo," - ",nom_grup) nom_grup from grga order by nom_grup');
 		$edit->grupo->style ="width:250px;";
 		$edit->grupo->onchange ="grupo();";
 
-		$edit->nom_grup  = new inputField("nom_grup", "nom_grup");
-
-		$edit->iva       = new inputField("Iva", "iva");
-		$edit->iva->css_class='inputnum';//no sirve
-		$edit->iva->size =12;
-		$edit->iva->maxlength =5;
-		$edit->iva->rule ="trim";
-
-		$edit->medida    = new inputField("Unidad Medida", "medida");
-		$edit->medida->size = 10;  
-
-		$edit->fraxuni   = new inputField("Unidad Fracc.", "fraxuni");
-		$edit->fraxuni->size = 10;
-
-		$edit->minimo    = new inputField("Existencia M&iacute;nima", "minimo");
-		$edit->minimo->size = 10;
-
-		$edit->maximo    = new inputField("Existencia M&aacute;xima", "maximo");
-		$edit->maximo->size = 10;
-
-		$edit->ultimo    = new inputField("Ultima Venta", "ultimo");
-		$edit->ultimo->size = 15;
-
-		$edit->promedio  = new inputField("Promedio", "promedio");
-		$edit->promedio->size = 15;
-
-		$edit->unidades  = new inputField("Unidades", "unidades");
-		$edit->unidades->size = 5;
-
-		$edit->fraccion  = new inputField("Fracci&oacute;n", "fraccion");
-		$edit->fraccion->size = 5;
+		//$edit->nom_grup  = new inputField("nom_grup", "nom_grup");
 
 		$lcuent=anchor_popup("/contabilidad/cpla/dataedit/create","Agregar Cuenta Contable",$atts);
 		$edit->cuenta    = new inputField("Cuenta Contable #", "cuenta");
@@ -178,6 +156,49 @@ class Mgas extends validaciones {
 		$edit->cuenta->append($lcuent);
 		$edit->cuenta->readonly=true;
 
+		$edit->iva       = new inputField("Iva", "iva");
+		$edit->iva->css_class='inputnum';//no sirve
+		$edit->iva->size =12;
+		$edit->iva->maxlength =5;
+		$edit->iva->rule ="trim";
+
+		$edit->medida    = new inputField("Unidad Medida", "medida");
+		$edit->medida->size = 10;  
+
+		$edit->ultimo    = new inputField("Ultima Costo", "ultimo");
+		$edit->ultimo->css_class='inputnum';//no sirve
+		$edit->ultimo->size = 15;
+
+		$edit->promedio  = new inputField("Costo Promedio", "promedio");
+		$edit->promedio->css_class='inputnum';//no sirve
+		$edit->promedio->size = 15;
+
+		$edit->fraxuni   = new inputField("Fracciones por Unidad/Caja", "fraxuni");
+		$edit->fraxuni->css_class='inputnum';//no sirve
+		$edit->fraxuni->group = 'Existencias';
+		$edit->fraxuni->size = 10;
+
+		$edit->minimo    = new inputField("Existencia M&iacute;nima", "minimo");
+		$edit->minimo->css_class='inputnum';//no sirve
+		$edit->minimo->group = 'Existencias';
+		$edit->minimo->size = 10;
+
+		$edit->maximo    = new inputField("Existencia M&aacute;xima", "maximo");
+		$edit->maximo->css_class='inputnum';//no sirve
+		$edit->maximo->group = 'Existencias';
+		$edit->maximo->size = 10;
+
+		$edit->unidades  = new inputField("Existencia Actual en Unidades o Cajas", "unidades");
+		$edit->unidades->css_class='inputnum';//no sirve
+		$edit->unidades->group = 'Existencias';
+		$edit->unidades->size = 5;
+
+		$edit->fraccion  = new inputField("Existencia Actual en Fracci&oacute;nes", "fraccion");
+		$edit->fraccion->css_class='inputnum';//no sirve
+		$edit->fraccion->group = 'Existencias';
+		$edit->fraccion->size = 5;
+
+/*
 		$edit->tasa1     = new inputField("Tasa1", "tasa1");
 		$edit->tasa1->size = 5;
 
@@ -219,7 +240,7 @@ class Mgas extends validaciones {
 
 		$edit->dacumu    = new inputField("D.Acum","dacumu");
 		$edit->dacumu->size =15;
-
+*/
 		$codigo=$edit->_dataobject->get("codigo");
 		$edit->almacenes = new containerField('almacenes',$this->_detalle($codigo));
 		$edit->almacenes->when = array("show","modify");
@@ -228,9 +249,11 @@ class Mgas extends validaciones {
 		$edit->build();
 
 		//echo $edit->codigo->value;
-		$conten["form"]  =&  $edit;
-		$data['content'] = $this->load->view('view_maestrodegasto', $conten,true);
-		$data["head"]    =script("tabber.js").script("prototype.js").script("sinvmaes.js").script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
+		//$conten["form"]  =&  $edit;
+		$data['content'] = $edit->output;   //$this->load->view('view_maestrodegasto', $conten,true);
+		$data["head"]    =script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
+		
+		//$data["head"]    =script("tabber.js").script("prototype.js").script("sinvmaes.js").script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
 		$data['title']   = '<h1>Maestro de Gasto</h1>';
 		$this->load->view('view_ventanas', $data);
 	}
