@@ -14,9 +14,9 @@ body{	background-color:#2E4B77;margin:0;padding:0;}
 			<td align='left' width="100px" ><img src="/proteoerp/assets/default/css/templete_01.jpg" width="120" ></td>
 			<td align='center'><?=$titulo ?></td>
 			<td align="right" width="100px">
-			<?=anchor("reportes/ver/",image('go-previous.png','Volver al Filtro',array('border'=>0)),array('target'=>'contenido','id'=>'rgfil'));?>
+			<?php //=anchor("reportes/ver/",image('go-previous.png','Volver al Filtro',array('border'=>0)),array('target'=>'contenido','id'=>'rgfil'));?>
 			<?=anchor("reportes/enlistar/$repo",image('listado.png','Volver al Listado',array('border'=>0)),array('target'=>'contenido'));?>
-			<?=image('cerrar.png','Cerrar Ventana',array('onclick'=>'window.close()',"width"=>"25")) ?></td>
+			<?=image('cerrar.png','Cerrar Ventana',array('onclick'=>'parent.window.close()',"width"=>"25")) ?></td>
 		</tr>
 	</table>
 	</div>
