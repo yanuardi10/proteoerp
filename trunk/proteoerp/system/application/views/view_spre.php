@@ -8,14 +8,21 @@ if ($form->_status=='delete' || $form->_action=='delete' || $form->_status=='unk
 	echo $form->output;
 else:
 
-foreach($form->detail_fields['itspre'] AS $ind=>$data)
-$campos[]=$data['field'];
+$campos=$form->template_details('itspre');
+$scampos  ='<tr id="tr_itspre_<#i#>">';
+$scampos .='<td class="littletablerow" align="left" >'.$campos['codigo']['field'].'</td>';
+$scampos .='<td class="littletablerow" align="left" >'.$campos['desca']['field']. '</td>';
+$scampos .='<td class="littletablerow" align="right">'.$campos['cana']['field'].  '</td>';
+$scampos .='<td class="littletablerow" align="right">'.$campos['preca']['field']. '</td>';
+$scampos .='<td class="littletablerow" align="right">'.$campos['importe']['field'];
+for($o=1;$o<5;$o++){
+	$it_obj   = "precio${o}_<#i#>";
+	$scampos .="<input type='hidden' name='$it_obj' id='$it_obj' value='0'>";
+}
+$scampos .= "<input type='hidden' name='itiva_<#i#>' id='itiva_<#i#>' value='0'>";
+$scampos .= '<td class="littletablerow"><a href=# onclick="del_itspre(<#i#>);return false;">Eliminar</a></td></tr>';
+$campos=$form->js_escape($scampos);
 
-$campos='<tr id="tr_itspre_<#i#>"><td class="littletablerow">'.join('</td><td>',$campos).'</td>';
-
-$campos=str_replace("\n",'',$campos);
-$campos.=' <td class="littletablerow"><a href=# onclick="del_itspre(<#i#>);return false;">Eliminar</a></td></tr>';
-$campos=$form->js_escape($campos);
 if(isset($form->error_string)) echo '<div class="alert">'.$form->error_string.'</div>';
 
 //echo $form_scripts;
@@ -37,12 +44,40 @@ function ejecuta(i){
 	$("#precio1_"+i.toString()).val(p1);
 }
 
-function totalizar(i){
-	c=roundNumber($("#cana_"+i.toString()).val(),2);
-	p=roundNumber($("#preca_"+i.toString()).val(),2);
-	iva=$("#iva_"+i.toString()).val();
-	t=roundNumber(c*p*(1+iva/100),2);
-	$("#totaorg_"+i.toString()).val(t);	
+function importe(id){
+	var ind     = id.toString();
+	var cana    = Number($("#cana_"+ind).val());
+	var preca   = Number($("#preca_"+ind).val());
+	var importe = roundNumber(cana*preca,2);
+	$("#importe_"+ind).val(importe);
+
+	//iva=$("#iva_"+i.toString()).val();
+	//t=roundNumber(c*p*(1+iva/100),2);
+	totalizar();
+}
+
+function totalizar(){
+	var iva    =0;
+	var totalg =0;
+	var itiva  =0;
+	var totalg =0;
+	var importe=0;
+	var arr=$('input[name^="importe_"]');
+	jQuery.each(arr, function() {
+		nom=this.name
+		pos=this.name.lastIndexOf('_');
+		if(pos>0){
+			ind     = this.name.substring(pos+1);
+			itiva   = Number($("#itiva_"+ind).val());
+			importe = Number(this.value);
+
+			iva     = iva+importe*(itiva/100);
+			totalg  = totalg+importe;
+		}
+	});
+	$("#totalg").val(roundNumber(totalg,2));
+	$("#totals").val(roundNumber(totalg-iva,2));
+	$("#iva").val(roundNumber(iva,2));
 }
 
 function v_preca(i){
@@ -68,10 +103,31 @@ function add_itspre(){
 
 $(function(){
 	$(".inputnum").numeric(".");
+	totalizar();
 	for(var i=0;i < <?php echo $form->max_rel_count['itspre']; ?>;i++){
 		cdropdown(i);
 	}
 });
+
+function post_precioselec(ind,obj){
+	if(obj.value=='o'){
+		otro = prompt('Precio nuevo','');
+		otro = Number(otro);
+		if(otro>0){
+			var opt=document.createElement("option");
+			opt.text = nformat(otro,2);
+			opt.value= otro;
+			obj.add(opt,null);
+			obj.selectedIndex=obj.length-1;
+		}
+	}
+	importe(ind);
+}
+
+function post_modbus(nind){
+	cdropdown(nind);
+	totalizar();
+}
 
 function cdropdown(nind){
 	var ind=nind.toString();
@@ -81,16 +137,18 @@ function cdropdown(nind){
 	pprecio.setAttribute("name"  , "preca_"+ind);
 	pprecio.setAttribute("class" , "select");
 	pprecio.setAttribute("style" , "width: 100px");
+	pprecio.setAttribute("onchange" , "post_precioselec("+ind+",this)");
 
 	var ban=0;
 	var ii=0;
 	var id='';
 	
+	if(preca.length==0) ban=1;
 	for(ii=1;ii<5;ii++){
 		id =ii.toString();
 		val=$("#precio"+id+"_"+ind).val();
 		opt=document.createElement("option");
-		opt.text =nformat(val);
+		opt.text =nformat(val,2);
 		opt.value=val;
 		pprecio.add(opt,null);
 		if(val==preca){
@@ -100,7 +158,7 @@ function cdropdown(nind){
 	}
 	if(ban==0){
 		opt=document.createElement("option");
-		opt.text = nformat(preca);
+		opt.text = nformat(preca,2);
 		opt.value= preca;
 		pprecio.add(opt,null);
 		pprecio.selectedIndex=4;
@@ -108,7 +166,7 @@ function cdropdown(nind){
 
 	opt=document.createElement("option");
 	opt.text = 'Otro';
-	opt.value= 'otro';
+	opt.value= 'o';
 	pprecio.add(opt,null);
 
 	$("#preca_"+ind).replaceWith(pprecio);
@@ -134,14 +192,14 @@ function del_itspre(id){
 			<tr>
 				<td class="littletableheader"><?php echo $form->fecha->label;    ?>*&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->fecha->output;   ?>&nbsp;</td>
-				<td class="littletableheader"><?php echo $form->cliente->label;  ?>*&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->cliente->label;  ?>&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->cliente->output; ?>&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->nombre->output;  ?>&nbsp;</td>
 			</tr>
 			<tr>
 				<td class="littletableheader"><?php echo $form->vd->label     ?>&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->vd->output    ?>&nbsp;</td>
-				<td class="littletableheader"><?php echo $form->rifci->label; ?>*&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->rifci->label; ?>&nbsp;</td>
 				<td class="littletablerow" colspan='2'><?php echo $form->rifci->output;   ?>&nbsp;</td>
 			</tr>
 			<tr>
@@ -175,8 +233,8 @@ function del_itspre(id){
 				$it_desca   = "desca_$i";
 				$it_cana    = "cana_$i";
 				$it_preca   = "preca_$i";
-				$it_totaorg = "totaorg_$i";
-				$it_iva     = "iva_$i";
+				$it_importe = "importe_$i";
+				$it_iva     = "itiva_$i";
 				$it_ultimo  = "ultimo_$i";
 				$it_pond    = "pond_$i";
 
@@ -186,6 +244,7 @@ function del_itspre(id){
 					$pprecios.="<input type='hidden' name='$it_obj' id='$it_obj' value='".floatval($form->$it_obj->output)."'>";
 					//$pprecios.=form_hidden($it_obj, floatval($form->$it_obj->output));
 				}
+				$pprecios.="<input type='hidden' name='$it_iva' id='$it_iva' value='".floatval($form->$it_iva->output)."'>";
 			?>
 
 			<tr id='tr_itspre_<?php echo $i; ?>'>
@@ -193,7 +252,7 @@ function del_itspre(id){
 				<td class="littletablerow" align="left" ><?php echo $form->$it_desca->output;  ?></td>
 				<td class="littletablerow" align="right"><?php echo $form->$it_cana->output;   ?></td>
 				<td class="littletablerow" align="right"><?php echo $form->$it_preca->output;  ?></td>
-				<td class="littletablerow" align="right"><?php echo $form->$it_totaorg->output.$pprecios;?></td>
+				<td class="littletablerow" align="right"><?php echo $form->$it_importe->output.$pprecios;?></td>
 
 				<?php if($form->_status!='show') {?>
 				<td class="littletablerow">
@@ -218,12 +277,12 @@ function del_itspre(id){
 				<th colspan='6' class="littletableheader">Res&uacute;men Financiero</th>
 			</tr>
 			<tr>
-				<td class="littletableheader"><?php echo $form->ivat->label;    ?></td>
-				<td class="littletablerow">   <?php echo $form->ivat->output;   ?></td>
-				<td class="littletableheader"><?php echo $form->totals->label;  ?></td>
-				<td class="littletablerow">   <?php echo $form->totals->output; ?></td>
-				<td class="littletableheader"><?php echo $form->totalg->label;  ?></td>
-				<td class="littletablerow">   <?php echo $form->totalg->output; ?></td>
+				<td class="littletableheader">           <?php echo $form->ivat->label;    ?></td>
+				<td class="littletablerow" align='right'><?php echo $form->ivat->output;   ?></td>
+				<td class="littletableheader">           <?php echo $form->totals->label;  ?></td>
+				<td class="littletablerow" align='right'><?php echo $form->totals->output; ?></td>
+				<td class="littletableheader">           <?php echo $form->totalg->label;  ?></td>
+				<td class="littletablerow" align='right'><?php echo $form->totalg->output; ?></td>
 			</tr>
 		</table>
 		<?php echo $form_end; ?>
