@@ -30,7 +30,7 @@ $(function(){
 </script>
 </head>
 <body>
-<div id='encabe'><?php if (isset($title)) echo '<table width="98%"><tr><td>'.$title.'</td><td align="right" width="40px">'.image('cerrar.png','Cerrar Ventana',array('onclick'=>'window.close()')).'</td></tr></table>'; ?></div>
+<div id='encabe'><?php if (isset($title)) echo '<table width="98%"><tr><td>'.$title.'</td><td align="right" width="40">'.image('cerrar.png','Cerrar Ventana',array('onclick'=>'window.close()','height'=>'20px')).'</td></tr></table>'; ?></div>
 <?php if(isset($smenu)) echo '<div id="smenu">'.$smenu.'</div>'; ?>
 <div id='contenido'>
 	<table width="95%" border=0 align="center">

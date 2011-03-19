@@ -135,10 +135,10 @@ class Mgas extends validaciones {
 		$edit->tipo= new dropdownField("Tipo", "tipo");
 		$edit->tipo->style ="width:100px;";
 		$edit->tipo->option("G","Gasto");
-		$edit->tipo->option("G","Gasto");
+		//$edit->tipo->option("G","Gasto");
 		$edit->tipo->option("I","Inventario");
 		$edit->tipo->option("S","Suministro");
-		$edit->tipo->option("A","Activo");
+		$edit->tipo->option("A","Activo Fijo");
 
 		$edit->grupo= new dropdownField("Grupo", "grupo");
 		$edit->grupo->options('SELECT grupo, CONCAT(grupo," - ",nom_grup) nom_grup from grga order by nom_grup');
@@ -148,7 +148,7 @@ class Mgas extends validaciones {
 		//$edit->nom_grup  = new inputField("nom_grup", "nom_grup");
 
 		$lcuent=anchor_popup("/contabilidad/cpla/dataedit/create","Agregar Cuenta Contable",$atts);
-		$edit->cuenta    = new inputField("Cuenta Contable #", "cuenta");
+		$edit->cuenta    = new inputField("Cuenta Contable", "cuenta");
 		$edit->cuenta->size = 12;
 		$edit->cuenta->maxlength = 15;
 		$edit->cuenta->rule = "trim|callback_chcuentac";
@@ -157,7 +157,7 @@ class Mgas extends validaciones {
 		$edit->cuenta->readonly=true;
 
 		$edit->iva       = new inputField("Iva", "iva");
-		$edit->iva->css_class='inputnum';//no sirve
+		$edit->iva->css_class='inputnum';
 		$edit->iva->size =12;
 		$edit->iva->maxlength =5;
 		$edit->iva->rule ="trim";
@@ -165,18 +165,18 @@ class Mgas extends validaciones {
 		$edit->medida    = new inputField("Unidad Medida", "medida");
 		$edit->medida->size = 10;  
 
-		$edit->ultimo    = new inputField("Ultima Costo", "ultimo");
+		$edit->fraxuni   = new inputField("Cantidad por Caja", "fraxuni");
+		$edit->fraxuni->css_class='inputnum';//no sirve
+		$edit->fraxuni->group = 'Existencias';
+		$edit->fraxuni->size = 10;
+
+		$edit->ultimo    = new inputField("Ultimo Costo", "ultimo");
 		$edit->ultimo->css_class='inputnum';//no sirve
 		$edit->ultimo->size = 15;
 
 		$edit->promedio  = new inputField("Costo Promedio", "promedio");
 		$edit->promedio->css_class='inputnum';//no sirve
 		$edit->promedio->size = 15;
-
-		$edit->fraxuni   = new inputField("Fracciones por Unidad/Caja", "fraxuni");
-		$edit->fraxuni->css_class='inputnum';//no sirve
-		$edit->fraxuni->group = 'Existencias';
-		$edit->fraxuni->size = 10;
 
 		$edit->minimo    = new inputField("Existencia M&iacute;nima", "minimo");
 		$edit->minimo->css_class='inputnum';//no sirve
@@ -197,6 +197,11 @@ class Mgas extends validaciones {
 		$edit->fraccion->css_class='inputnum';//no sirve
 		$edit->fraccion->group = 'Existencias';
 		$edit->fraccion->size = 5;
+
+		$edit->rica= new dropdownField("Impuesto Ind.Com.", "rica");
+		$edit->rica->options('SELECT codigo, CONCAT(codigo," - ",aplica) aplica FROM rica order by aplica');
+		$edit->rica->style ="width:350px;";
+		//$edit->grupo->onchange ="grupo();";
 
 /*
 		$edit->tasa1     = new inputField("Tasa1", "tasa1");
@@ -249,8 +254,8 @@ class Mgas extends validaciones {
 		$edit->build();
 
 		//echo $edit->codigo->value;
-		//$conten["form"]  =&  $edit;
-		$data['content'] = $edit->output;   //$this->load->view('view_maestrodegasto', $conten,true);
+		$conten["form"]  =&  $edit;
+		$data['content'] = $this->load->view('view_maestrodegasto', $conten,true);
 		$data["head"]    =script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
 		
 		//$data["head"]    =script("tabber.js").script("prototype.js").script("sinvmaes.js").script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();

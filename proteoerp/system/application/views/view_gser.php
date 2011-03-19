@@ -37,14 +37,6 @@ var comis    = <?php echo $json_comis; ?>;
 
 $(document).ready(function() {
 	$(".inputnum").numeric(".");
-	/*pr=$("#proveed").val();
-	for(i=0;i<gitser_cont;i++){
-		$("#proveed_"+i.toString()).val(pr);
-		iva=$("#tasaiva_"+i.toString()).val();
-		p=roundNumber($("#precio_"+i.toString()).val(),2);
-		miva=roundNumber(p*iva/100,2);
-		$("#iva_"+i.toString()).val(miva);
-	}*/
 	totalizar();
 	codb1=$('#codb1').val();
 	desactivacampo(codb1)
@@ -174,6 +166,21 @@ function del_gitser(id){
 	totalizar();
 }
 </script>
+<?php } else { ?>
+<script language="javascript" type="text/javascript">
+function toggle() {
+	var ele = document.getElementById("asociados");
+	var text = document.getElementById("mostrasocio");
+	if(ele.style.display == "block") {
+    		ele.style.display = "none";
+		text.innerHTML = "Mostrar Complementos ";
+  	}
+	else {
+		ele.style.display = "block";
+		text.innerHTML = "Ocultar Complementos";
+	}
+} 
+</script>
 <?php }
 $cod_prov=$form->getval('proveed');
 if ($tipo_rete=="ESPECIAL"){
@@ -201,10 +208,9 @@ if ($tipo_rete=="ESPECIAL"){
 	</tr>
 	<tr>
 		<td>
+		<fieldset style='border: 1px solid #9AC8DA;background: #FFFDE9;'>
+		<legend class="subtitulotabla" style='color: #114411;'>Documento</legend>
 		<table width="100%" style="margin: 0; width: 100%;">
-			<tr>
-				<th align='left' colspan='6' style='font-size:14px;color:#1C1C1C;background-color:#F5D0A9;' >DOCUMENTO</th>
-			</tr>
 			<tr>
 				<td class="littletableheader"><?php echo $form->tipo_doc->label  ?>*&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->tipo_doc->output ?>&nbsp; </td>
@@ -231,15 +237,14 @@ if ($tipo_rete=="ESPECIAL"){
 				<td class="littletablerow">   <?php echo $form->compra->output  ?>&nbsp;</td>
 			</tr>
 		</table>
+		</fieldset>
 		</td>
 	</tr>
 	<tr>
-		<td>&nbsp;</td>
-	</tr>
-	<tr>
 		<td>
+		<fieldset style='border: 1px solid #9AC8DA;background: #EFEFFF;'>
+		<legend class="subtitulotabla" style='color: #114411;'>Detalle</legend>
 		<table width='100%'>
-			<?php //<tr><th class="littletableheader" colspan='9'>Detalle del gasto </th></tr> ?>
 			<tr>
 				<td class="littletableheaderdet">C&oacute;digo</td>
 				<td class="littletableheaderdet">Descripci&oacute;n</td>
@@ -280,37 +285,30 @@ if ($tipo_rete=="ESPECIAL"){
 				<?php } ?>
 			</tr>
 			<?php } ?>
-
 			<tr id='__UTPL__'>
-				<td colspan='9' class="littletableheaderdet">Totales</td>
+				<td colspan='9' class="littletableheaderdet">&nbsp;</td>
 			</tr>
-
 			<?php if ($form->_status =='show'){?>
 			
 			<?php }?>
 		</table>
-
+		</fieldset>
 		<?php echo $form_end     ?>
 		<?php echo $container_bl ?>
 		<?php echo $container_br ?>
 		</td>
 	</tr>
 	<tr>
-		<td class="littletablefooterb" align="right">&nbsp;</td>
-	</tr>
-	<tr>
 		<td align='center'>
 			<table width='100%'><tr><td valign='top'>
-
+			<fieldset style='border: 1px solid #9AC8DA;background: #FFFBE9;'>
+			<legend class="subtitulotabla" style='color: #114411;'>Forma de Pago</legend>
 			<table width='100%'>
 				<tr>
-					<th colspan='4' align='left' colspan='6' style='font-size:14px;color:#1C1C1C;background-color:#F5D0A9;'>Forma de Pago</th>
-				</tr>
-				<tr>
-					<td class="littletableheader"><?php echo $form->codb1->label     ?>&nbsp;</td>
-					<td class="littletablerow">   <?php echo $form->codb1->output    ?>&nbsp;</td>
-					<td class="littletableheader"><?php echo $form->tipo1->label     ?>&nbsp;</td>
-					<td class="littletablerow">   <?php echo $form->tipo1->output    ?>&nbsp;</td>
+					<td class="littletableheader"><?php echo $form->codb1->label   ?>&nbsp;</td>
+					<td class="littletablerow">   <?php echo $form->codb1->output  ?>&nbsp;</td>
+					<td class="littletableheader"><?php echo $form->tipo1->label   ?>&nbsp;</td>
+					<td class="littletablerow">   <?php echo $form->tipo1->output  ?>&nbsp;</td>
 				</tr>
 				<tr>
 					<td class="littletableheader"><?php echo $form->cheque1->label  ?>&nbsp;</td>
@@ -323,53 +321,148 @@ if ($tipo_rete=="ESPECIAL"){
 					<td colspan='3' class="littletablerow">   <?php echo $form->benefi->output  ?>&nbsp;</td>
 				</tr>
 			</table>
+			</fieldset>
 			</td><td valign='top'>
+			<fieldset style='border: 1px solid #9AC8DA;background: #FFFBE9;'>
+			<legend class="subtitulotabla" style='color: #114411;'>Totales</legend>
 			<table width='100%'>
 				<tr>
-					<th colspan='4' align='left' colspan='6' style='font-size:14px;color:#1C1C1C;background-color:#F5D0A9;'>Totales</th>
-				</tr>
-				<tr>
 					<td class="littletableheader"><?php echo $form->totpre->label    ?>&nbsp;</td>
-					<td class="littletablerow">   <?php echo $form->totpre->output   ?>&nbsp;</td>
+					<td class="littletablerow" align='right'>   <?php echo $form->totpre->output   ?>&nbsp;</td>
 					<td class="littletableheader"><?php echo $form->totbruto->label  ?>&nbsp;</td>
-					<td class="littletablerow">   <?php echo $form->totbruto->output ?>&nbsp;</td>
+					<td class="littletablerow" align='right'>   <?php echo $form->totbruto->output ?>&nbsp;</td>
 				</tr>
 				<tr>
 					<td class="littletableheader"><?php echo $form->totiva->label   ?>&nbsp;</td>
-					<td class="littletablerow">   <?php echo $form->totiva->output  ?>&nbsp;</td>
+					<td class="littletablerow" align='right'>   <?php echo $form->totiva->output  ?>&nbsp;</td>
 					<td class="littletableheader"><?php echo $form->reteiva->label  ?>&nbsp;</td>
-					<td class="littletablerow">   <?php echo $form->reteiva->output ?>&nbsp;</td>
+					<td class="littletablerow" align='right'>   <?php echo $form->reteiva->output ?>&nbsp;</td>
 				</tr>
 				<tr>
 					<td class="littletableheader"><?php echo $form->credito->label  ?>&nbsp;</td>
-					<td class="littletablerow">   <?php echo $form->credito->output ?>&nbsp;</td>
+					<td class="littletablerow" align='right'>   <?php echo $form->credito->output ?>&nbsp;</td>
 					<td class="littletableheader"><?php echo $form->totneto->label  ?>&nbsp;</td>
-					<td class="littletablerow">   <?php echo $form->totneto->output ?>&nbsp;</td>
+					<td class="littletablerow" align='right'>   <?php echo $form->totneto->output ?>&nbsp;</td>
 				</tr>
 			</table>
+			</fieldset>
 			</td></tr></table>
 		</td>
 	</tr>
 	<?php if($form->_status == 'show'){ ?>
 	<tr>
-		<td align='center'>
-			<table>
-				<tr>
-					<th colspan='4' style='font-size:14px;color:#1C1C1C;background-color:#D5D5D5;'>Informacion de Control</th>
+		<td>
+			<fieldset style='border: 1px solid ##8A0808;background: #FFFBE9;'>
+			<legend class="subtitulotabla" style='color: #114411;'>Informacion del Registro</legend>
+			<table width='100%' cellspacing='1' >
+				<tr style='font-size:12px;color:#0B3B0B;background-color: #F7BE81;'>
+					<td align='center' ><?php echo $form->usuarios->label ?>&nbsp;</td>
+					<td align='center' >Nombre&nbsp;</td>
+					<td align='center' ><?php echo $form->estampa->label ?>&nbsp;</td>
+					<td align='center' ><?php echo $form->hora->label ?>&nbsp;</td>
+					<td align='center' ><?php echo $form->transac->label ?>&nbsp;</td>
 				</tr>
 				<tr>
-					<td class="littletableheader"><?php echo $form->usuarios->label ?>&nbsp;</td>
-					<td class="littletableheader"><?php echo $form->estampa->label ?>&nbsp;</td>
-					<td class="littletableheader"><?php echo $form->hora->label ?>&nbsp;</td>
-					<td class="littletableheader"><?php echo $form->transac->label ?>&nbsp;</td>
-				</tr>
-				<tr>
-					<td class="littletablerow"><?php echo $form->usuarios->output ?>&nbsp;</td>
-					<td class="littletablerow"><?php echo $form->estampa->output ?>&nbsp;</td>
-					<td class="littletablerow"><?php echo $form->hora->output ?>&nbsp;</td>
-					<td class="littletablerow"><?php echo $form->transac->output ?>&nbsp;</td>
+					<?php
+						$mSQL="SELECT us_nombre FROM usuario WHERE us_codigo='".trim($form->usuarios->output)."'";
+						$us_nombre = $this->datasis->dameval($mSQL);
+					
+					?>
+					<td class="littletablerow" align='center'><?php echo $form->usuarios->output ?>&nbsp;</td>
+					<td class="littletablerow" align='center'><?php echo $us_nombre ?>&nbsp;</td>
+					<td class="littletablerow" align='center'><?php echo $form->estampa->output ?>&nbsp;</td>
+					<td class="littletablerow" align='center'><?php echo $form->hora->output ?>&nbsp;</td>
+					<td class="littletablerow" align='center'><?php echo $form->transac->output ?>&nbsp;</td>
 				</tr>
 			</table>
+			</fieldset>
+		</td>
+	</tr>
+
+	<tr>
+		<td align='center'>
+			<a id="mostrasocio" href="javascript:toggle();">Mostrar Complementos</a> 
+			<div id='asociados' style='display: none'>
+				<?php
+					$mSQL = "SELECT periodo, nrocomp, emision, impuesto, reiva, round(reiva*100/impuesto,0) porcent FROM riva WHERE transac=? LIMIT 1";
+					$query = $this->db->query($mSQL, array(TRIM($form->transac->output)) );
+					if ( $query->num_rows() > 0 ) { 
+						$row = $query->row();
+				?>
+			<fieldset style='border: 1px solid ##8A0808;background: #FFFBE9;'>
+			<legend class="subtitulotabla" style='color: #114411;'>Retencion de Impuesto</legend>
+			<table width='100%' cellspacing='1' >
+				<tr style='font-size:12px;color:#FFEEFF;background-color: #393B0B;'>
+					<td align='center'>Periodo &nbsp;</td>
+					<td align='center'>Numero &nbsp;</td>
+					<td align='center'>Emision &nbsp;</td>
+					<td align='center'>Impuesto &nbsp;</td>
+					<td align='center'>Monto &nbsp;</td>
+					<td align='center'>% &nbsp;</td>
+				</tr>
+				<tr>
+					<td class="littletablerow" align='center'><?php echo $row->periodo ?>&nbsp;</td>
+					<td class="littletablerow" align='center'><?php echo $row->nrocomp ?>&nbsp;</td>
+					<td class="littletablerow" align='center'><?php echo dbdate_to_human($row->emision) ?>&nbsp;</td>
+					<td class="littletablerow" align='center'><?php echo nformat($row->impuesto) ?>&nbsp;</td>
+					<td class="littletablerow" align='center'><?php echo nformat($row->reiva) ?>&nbsp;</td>
+					<td class="littletablerow" align='center'><?php echo nformat($row->porcent) ?>&nbsp;</td>
+				</tr>
+			</table>
+			</fieldset>
+				<?php }; ?>
+				<?php
+					$mSQL = "SELECT CONCAT(tipo_op, numero) numero, CONCAT(codbanc,'-', banco) codbanc, monto, concepto FROM bmov WHERE transac=? LIMIT 1";
+					$query = $this->db->query($mSQL, array(TRIM($form->transac->output)) );
+					if ( $query->num_rows() > 0 ) {
+						$row = $query->row(); ?>
+			<fieldset style='border: 1px solid ##8A0808;background: #FFFBE9;'>
+			<legend class="subtitulotabla" style='color: #114411;'>Registro en Bancos</legend>
+			<table width='100%' cellspacing='1'>
+				<tr>
+					<td align='center' style='font-size:12px;color:#FFEEFF;background-color: #582314;'>Numero&nbsp;</td>
+					<td align='center' style='font-size:12px;color:#FFEEFF;background-color: #582314;'>Caja/Banco&nbsp;</td>
+					<td align='center' style='font-size:12px;color:#FFEEFF;background-color: #582314;'>Monto &nbsp;</td>
+					<td align='center' style='font-size:12px;color:#FFEEFF;background-color: #582314;'>Concepto &nbsp;</td>
+				</tr>
+				<tr>
+					<td class="littletablerow" align='center'><?php echo $row->numero ?>&nbsp;</td>
+					<td class="littletablerow" align='center'><?php echo $row->codbanc ?>&nbsp;</td>
+					<td class="littletablerow" align='center'><?php echo nformat($row->monto) ?>&nbsp;</td>
+					<td class="littletablerow" align='center'><?php echo $row->concepto ?>&nbsp;</td>
+				</tr>
+			</table>
+			</fieldset>
+				<?php }; ?>
+
+			<?php
+				$mSQL = "SELECT CONCAT(tipo_doc, numero) numero, CONCAT(cod_prv,' ',nombre) cod_prv, monto*(tipo_doc IN ('FC','ND','GI')) debe, monto*(tipo_doc NOT IN ('FC','ND','GI')) haber , monto-abonos saldo FROM sprm WHERE transac=? ";
+				$query = $this->db->query($mSQL, array(TRIM($form->transac->output)) );
+				if ( $query->num_rows() > 0 ) { ?>
+			<fieldset style='border: 1px solid ##8A0808;background: #FFFBE9;'>
+			<legend class="subtitulotabla" style='color: #114411;'>Estado de Cuenta</legend>
+			<table width='100%' cellspacing='1'>
+				<tr style='font-size:12px;color:#FFEEFF;background-color: #61380B;'>
+					<td align='center'>Numero &nbsp;</td>
+					<td align='center'>Proveedor &nbsp;</td>
+					<td align='center'>Debe &nbsp;</td>
+					<td align='center'>Haber &nbsp;</td>
+					<td align='center'>Saldo &nbsp;</td>
+				</tr>
+						<?php foreach( $query->result() as $row ){ ?>
+				<tr>
+
+					<td class="littletablerow" align='center'><?php echo $row->numero ?>&nbsp;</td>
+					<td class="littletablerow" align='left'><?php echo $row->cod_prv ?>&nbsp;</td>
+					<td class="littletablerow" align='right'><?php echo nformat($row->debe) ?>&nbsp;</td>
+					<td class="littletablerow" align='right'><?php echo nformat($row->haber) ?>&nbsp;</td>
+					<td class="littletablerow" align='right'><?php echo nformat($row->saldo) ?>&nbsp;</td>
+				</tr>
+						<?php }; ?>
+			</fieldset>
+			</table>
+				<?php }; ?>
+			</div>
 		</td>
 	</tr>
 	<?php } ?>
