@@ -17,15 +17,16 @@ class Grga extends validaciones {
 
 		$filter = new DataFilter('Filtro por Grupo', 'grga');
 		$filter->grupo = new inputField('Grupo', 'grupo');
-		$filter->grupo->size=15;
+		$filter->grupo->size=6;
 
 		$filter->nom_grup = new inputField('Descripci&oacute;n','nom_grup');
 
 		$filter->cu_inve = new inputField('Cuenta','cu_inve');
+		$filter->cu_inve->size=15;
 		$filter->cu_inve->like_side='after';
 
 		$filter->buttons('reset','search');
-		$filter->build();
+		$filter->build('dataformfiltro');
 
 		$uri = anchor('finanzas/grga/dataedit/show/<#grupo#>','<#grupo#>');
 
@@ -33,14 +34,15 @@ class Grga extends validaciones {
 		$grid->order_by('grupo','asc');
 		$grid->per_page = 20;
 
-		$grid->column('Grupo',$uri,'grupo');
-		$grid->column('Nombre del Grupo','nom_grup','nom_grup');
-		$grid->column('Cuenta Contable','cu_inve','cu_inve');
+		$grid->column_orderby('Grupo',$uri,'grupo');
+		$grid->column_orderby('Nombre del Grupo','nom_grup','nom_grup');
+		$grid->column_orderby('Cuenta Contable','cu_inve','cu_inve');
 
 		$grid->add('finanzas/grga/dataedit/create');
 		$grid->build();
 
-		$data['content'] = $filter->output.$grid->output;
+		$data['content'] = $grid->output;
+		$data['filtro']  = $filter->output;
 		$data['title']   = '<h1>Grupos de Gastos</h1>';
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);

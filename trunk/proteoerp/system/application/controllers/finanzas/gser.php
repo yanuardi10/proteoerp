@@ -20,16 +20,39 @@ class gser extends Controller {
 
 		$filter->fechad = new dateonlyField('Desde', 'fechad','d/m/Y');
 		$filter->fechah = new dateonlyField('Hasta', 'fechah','d/m/Y');
+
 		$filter->fechad->clause  =$filter->fechah->clause ='where';
 		$filter->fechad->db_name =$filter->fechah->db_name='fecha';
+
 		$filter->fechah->size=$filter->fechad->size=10;
+
 		$filter->fechad->operator='>=';
 		$filter->fechah->operator='<=';
 
+		$filter->fechad->group = 'UNO';
+		$filter->fechah->group = 'UNO';
+
+		$filter->tipo_doc = new inputField('Tipo', 'tipo_doc');
+		$filter->tipo_doc->db_name = 'tipo_doc';
+		$filter->tipo_doc->size = 5;
+		$filter->tipo_doc->group = 'UNO';
+
+
+
 		$filter->numero = new inputField('N&uacute;mero', 'numero');
+		$filter->numero->size = 10;
+		$filter->numero->group = 'DOS';
 
 		$filter->proveed = new inputField('Proveedor', 'proveed');
 		$filter->proveed->db_name = 'proveed';
+		$filter->proveed->size = 10;
+		$filter->proveed->group = 'DOS';
+
+		$filter->nombre = new inputField('Nombre', 'nombre');
+		$filter->nombre->db_name = 'nombre';
+		$filter->nombre->size = 20;
+		$filter->nombre->group = 'DOS';
+
 
 		$filter->buttons('reset','search');
 		$filter->build("dataformfiltro");
@@ -46,12 +69,13 @@ class gser extends Controller {
 		$grid = new DataGrid();
 		$grid->order_by('fecha','desc');
 		$grid->per_page = 15;
+		$grid->column_orderby('Tipo',"tipo_doc",'tipo_doc');
 		$grid->column_orderby('N&uacute;mero',$uri,'numero');
 		$grid->column_orderby('Fecha' ,'<dbdate_to_human><#fecha#></dbdate_to_human>','fecha','align=\'center\'');
-		$grid->column_orderby('Fecha' ,'<dbdate_to_human><#vence#></dbdate_to_human>','vence','align=\'center\'');
+		//$grid->column_orderby('Fecha' ,'<dbdate_to_human><#vence#></dbdate_to_human>','vence','align=\'center\'');
 		$grid->column_orderby('Nombre','nombre'  ,'nombre');
-		$grid->column_orderby('IVA'   ,'totiva'  ,'totiva' ,'align=\'right\'');
-		$grid->column_orderby('monto' ,'totneto' ,'totneto','align=\'right\'');
+		$grid->column_orderby('IVA'   ,'<nformat><#totiva#></nformat>'  ,'totiva' ,'align=\'right\'');
+		$grid->column_orderby('monto' ,'<nformat><#totneto#></nformat>' ,'totneto','align=\'right\'');
 		$grid->column('Acciones',$uri2);
 
 		$grid->add('finanzas/gser/agregar','Agregar Egreso');
@@ -396,7 +420,6 @@ class gser extends Controller {
 				alert("Debe introducir un rif");
 			}
 		});';
-
 
 		$data['content'] = $edit->output;
 		$data['title']   = heading('Agregar/Modificar facturas de Caja Chica');
@@ -1220,7 +1243,8 @@ class gser extends Controller {
 		$edit->tipo_doc->style="width:100px";
 		$edit->tipo_doc->option('FC',"Factura");
 		$edit->tipo_doc->option('ND',"Nota Debito");
-		//$edit->tipo_doc->option('AD',"Amortizaci&oacute;n");
+		$edit->tipo_doc->option('AD',"Amortizaci&oacute;n");
+		$edit->tipo_doc->option('GA',"Gasto");
 		//$edit->tipo_doc->option('GA',"Gasto de N&oacute;mina");
 
 		$edit->ffactura = new DateonlyField("Fecha Documento", "ffactura","d/m/Y");
@@ -1326,7 +1350,7 @@ class gser extends Controller {
 		$edit->usuarios->size = 10;
 		$edit->usuarios->when=array('show');
 
-		$edit->estampa= new inputField("Estampa", "estampa");
+		$edit->estampa= new inputField("Fecha", "estampa");
 		$edit->estampa->size = 10;
 		$edit->estampa->when=array('show');
 
@@ -1444,7 +1468,14 @@ class gser extends Controller {
 		$conten['form']  =&$edit;
 		$data['content'] = $this->load->view('view_gser', $conten,true);
 		$data['title']   = heading('Registro de Gastos o Nota de Debito');
-		$data['head']    = script('jquery.js').script('jquery-ui.js').script("plugins/jquery.numeric.pack.js").script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css').$this->rapyd->get_head().phpscript('nformat.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js');
+		$data['head']    = 	script('jquery-ui.js').
+					script("plugins/jquery.numeric.pack.js").
+					script('plugins/jquery.meiomask.js').
+					style('vino/jquery-ui.css').
+					$this->rapyd->get_head().
+					phpscript('nformat.js').
+					script('plugins/jquery.floatnumber.js');
+		//$data['head']    = script('jquery.js').script('jquery-ui.js').script("plugins/jquery.numeric.pack.js").script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css').$this->rapyd->get_head().phpscript('nformat.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js');
 		$this->load->view('view_ventanas', $data);
 	}
 
