@@ -181,7 +181,7 @@ class sinv extends Controller {
 		$filter->marca = new dropdownField("Marca", "marca");
 		$filter->marca->option('','Todas');
 		$filter->marca->options("SELECT TRIM(marca) AS clave, TRIM(marca) AS valor FROM marc ORDER BY marca"); 
-		$filter->marca -> style='width:220px;';
+		$filter->marca->style='width:220px;';
 		$filter->marca->group = "Dos";
 
 		$filter->buttons("reset","search");
@@ -435,7 +435,7 @@ class sinv extends Controller {
 		$edit->alterno = new inputField("C&oacute;digo Alterno", "alterno");
 		$edit->alterno->size=20;  
 		$edit->alterno->maxlength=15;
-		$edit->alterno->rule = "trim|strtoupper|callback_chexiste2";
+		$edit->alterno->rule = "trim|strtoupper|unique";
 		
 		$edit->enlace  = new inputField("C&oacute;digo Caja", "enlace");
 		$edit->enlace ->size=20;
@@ -759,7 +759,7 @@ class sinv extends Controller {
 		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM sinv WHERE alterno='$alterno'");
 		if ($chek > 0){
 			$descrip=$this->datasis->dameval("SELECT descrip FROM sinv WHERE alterno='$alterno'");
-			$this->validation->set_message('chexiste',"El codigo alterno $alterno ya existe para el producto $descrip");
+			$this->validation->set_message('chexiste2',"El codigo alterno $alterno ya existe para el producto $descrip");
 			return FALSE;
 		}else {
 			return TRUE;

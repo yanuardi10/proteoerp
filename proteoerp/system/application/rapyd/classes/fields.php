@@ -465,6 +465,7 @@ include_once(RAPYD_PATH."fields/submit.php");
 include_once(RAPYD_PATH."fields/reset.php");
 include_once(RAPYD_PATH."fields/button.php");
 include_once(RAPYD_PATH."fields/upload.php");
+include_once(RAPYD_PATH."fields/hidden.php");
 
 include_once(RAPYD_PATH."fields/free.php");
 include_once(RAPYD_PATH."fields/container.php");
