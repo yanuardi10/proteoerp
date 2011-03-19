@@ -16,10 +16,12 @@ $scampos .='<td class="littletablerow" align="right">'.$campos['cana']['field'].
 $scampos .='<td class="littletablerow" align="right">'.$campos['preca']['field']. '</td>';
 $scampos .='<td class="littletablerow" align="right">'.$campos['importe']['field'];
 for($o=1;$o<5;$o++){
-	$it_obj   = "precio${o}_<#i#>";
-	$scampos .="<input type='hidden' name='$it_obj' id='$it_obj' value='0'>";
+	$it_obj   = "precio${o}";
+	$scampos .= $campos[$it_obj]['field'];
 }
-$scampos .= "<input type='hidden' name='itiva_<#i#>' id='itiva_<#i#>' value='0'>";
+$scampos .= $campos['itiva']['field'];
+$scampos .= $campos['sinvtipo']['field'];
+$scampos .= $campos['sinvpeso']['field'].'</td>';
 $scampos .= '<td class="littletablerow"><a href=# onclick="del_itspre(<#i#>);return false;">Eliminar</a></td></tr>';
 $campos=$form->js_escape($scampos);
 
@@ -28,21 +30,9 @@ if(isset($form->error_string)) echo '<div class="alert">'.$form->error_string.'<
 //echo $form_scripts;
 echo $form_begin;
 if($form->_status!='show'){ ?>
-<input type="hidden" name="t_cli" id="t_cli" value="">
 
 <script language="javascript" type="text/javascript">
 itspre_cont=<?php echo $form->max_rel_count['itspre']; ?>;
-
-function ejecuta(i){
-	tipo=$("#t_cli").val();
-	if(tipo=='' || tipo=='0')tipo='1';
-	precio=$("#__p"+tipo.toString()).val();
-	$("#preca_"+i.toString()).val(precio);
-	p4=$("#__p4").val();
-	p1=$("#__p1").val();
-	$("#precio4_"+i.toString()).val(p4);
-	$("#precio1_"+i.toString()).val(p1);
-}
 
 function importe(id){
 	var ind     = id.toString();
@@ -51,8 +41,6 @@ function importe(id){
 	var importe = roundNumber(cana*preca,2);
 	$("#importe_"+ind).val(importe);
 
-	//iva=$("#iva_"+i.toString()).val();
-	//t=roundNumber(c*p*(1+iva/100),2);
 	totalizar();
 }
 
@@ -60,23 +48,30 @@ function totalizar(){
 	var iva    =0;
 	var totalg =0;
 	var itiva  =0;
-	var totalg =0;
+	var itpeso =0;
+	var totals =0;
 	var importe=0;
+	var peso=0;
+	var cana=0;
 	var arr=$('input[name^="importe_"]');
 	jQuery.each(arr, function() {
 		nom=this.name
 		pos=this.name.lastIndexOf('_');
 		if(pos>0){
 			ind     = this.name.substring(pos+1);
+			cana    = Number($("#cana_"+ind).val());
 			itiva   = Number($("#itiva_"+ind).val());
+			itpeso  = Number($("#sinvpeso_"+ind).val());
 			importe = Number(this.value);
 
+			peso    = peso+(itpeso*cana);
 			iva     = iva+importe*(itiva/100);
-			totalg  = totalg+importe;
+			totals  = totals+importe;
 		}
 	});
-	$("#totalg").val(roundNumber(totalg,2));
-	$("#totals").val(roundNumber(totalg-iva,2));
+	$("#peso").val(roundNumber(peso,2));
+	$("#totalg").val(roundNumber(totals+iva,2));
+	$("#totals").val(roundNumber(totals,2));
 	$("#iva").val(roundNumber(iva,2));
 }
 
@@ -124,8 +119,30 @@ function post_precioselec(ind,obj){
 	importe(ind);
 }
 
-function post_modbus(nind){
+function post_modbus_scli(){
+	var tipo  =Number($("#sclitipo").val()); if(tipo>0) tipo=tipo-1;
+	//var cambio=confirm('¿Deseas cambiar los precios por los que tenga asginado el cliente?');
+
+	var arr=$('select[name^="preca_"]');
+	jQuery.each(arr, function() {
+		nom=this.name;
+		pos=this.name.lastIndexOf('_');
+		if(pos>0){
+			ind = this.name.substring(pos+1);
+			id  = Number(ind);
+			this.selectedIndex=tipo;
+			importe(id);
+		}
+	});
+	totalizar();
+}
+
+function post_modbus_sinv(nind){
+	var tipo =Number($("#sclitipo").val()); if(tipo>0) tipo=tipo-1;
 	cdropdown(nind);
+	ind=nind.toString();
+	var arr=$('#preca_'+ind);
+	jQuery.each(arr, function() { this.selectedIndex=tipo; });
 	totalizar();
 }
 
@@ -133,6 +150,7 @@ function cdropdown(nind){
 	var ind=nind.toString();
 	var preca=$("#preca_"+ind).val();
 	var pprecio  = document.createElement("select");
+
 	pprecio.setAttribute("id"    , "preca_"+ind);
 	pprecio.setAttribute("name"  , "preca_"+ind);
 	pprecio.setAttribute("class" , "select");
@@ -179,7 +197,7 @@ function del_itspre(id){
 </script>
 <?php } ?>
 
-<table align='center' width="80%">
+<table align='center' width="95%">
 	<tr>
 		<td align=right><?php echo $container_tr?></td>
 	</tr>
@@ -193,7 +211,7 @@ function del_itspre(id){
 				<td class="littletableheader"><?php echo $form->fecha->label;    ?>*&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->fecha->output;   ?>&nbsp;</td>
 				<td class="littletableheader"><?php echo $form->cliente->label;  ?>&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->cliente->output; ?>&nbsp;</td>
+				<td class="littletablerow">   <?php echo $form->cliente->output,$form->sclitipo->output; ?>&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->nombre->output;  ?>&nbsp;</td>
 			</tr>
 			<tr>
@@ -237,14 +255,17 @@ function del_itspre(id){
 				$it_iva     = "itiva_$i";
 				$it_ultimo  = "ultimo_$i";
 				$it_pond    = "pond_$i";
+				$it_peso    = "sinvpeso_$i";
+				$it_tipo    = "sinvtipo_$i";
 
 				$pprecios='';
 				for($o=1;$o<5;$o++){
 					$it_obj   = "precio${o}_${i}";
-					$pprecios.="<input type='hidden' name='$it_obj' id='$it_obj' value='".floatval($form->$it_obj->output)."'>";
-					//$pprecios.=form_hidden($it_obj, floatval($form->$it_obj->output));
+					$pprecios.= $form->$it_obj->output;
 				}
-				$pprecios.="<input type='hidden' name='$it_iva' id='$it_iva' value='".floatval($form->$it_iva->output)."'>";
+				$pprecios .= $form->$it_iva->output;
+				$pprecios .= $form->$it_peso->output;
+				$pprecios .= $form->$it_tipo->output;
 			?>
 
 			<tr id='tr_itspre_<?php echo $i; ?>'>

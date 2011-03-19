@@ -93,8 +93,8 @@ class spre extends validaciones {
 			'tabla'   =>'sinv',
 			'columnas'=>array(
 				'codigo' =>'C&oacute;digo',
-				'descrip'=>'descrip'),
-			'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'descrip'),
+				'descrip'=>'Descripci&oacute;n'),
+			'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'Descripci&oacute;n'),
 			'retornar'=>array(
 				'codigo'=>'codigo_<#i#>',
 				'descrip'=>'desca_<#i#>',
@@ -103,12 +103,13 @@ class spre extends validaciones {
 				'base3'=>'precio3_<#i#>',
 				'base4'=>'precio4_<#i#>',
 				'iva'  =>'itiva_<#i#>',
+				'peso' =>'sinvpeso_<#i#>',
 				//'pond'=>'pond_<#i#>',
 				//'ultimo'=>'ultimo_<#i#>'
 				),
 			'p_uri'   => array(4=>'<#i#>'),
 			'titulo'  => 'Buscar Articulo',
-			'script'  => array('post_modbus(<#i#>)')
+			'script'  => array('post_modbus_sinv(<#i#>)')
 		);
 
 		$btn=$this->datasis->p_modbus($modbus,'<#i#>');
@@ -127,20 +128,23 @@ class spre extends validaciones {
 			'dire11'=>'Direcci&oacute;n',
 			'tipo'=>'Tipo'),
 		'filtro'  =>array('cliente'=>'C&oacute;digo Cliente','nombre'=>'Nombre'),
-		'retornar'=>array('cliente'=>'cod_cli','nombre'=>'nombre','rifci'=>'rifci','dire11'=>'direc','tipo'=>'t_cli'),
-		'titulo'  =>'Buscar Cliente');
+		'retornar'=>array('cliente'=>'cod_cli','nombre'=>'nombre','rifci'=>'rifci',
+						  'dire11'=>'direc','tipo'=>'sclitipo'),
+		'titulo'  =>'Buscar Cliente',
+		'script'  => array('post_modbus_scli()'));
 		$boton =$this->datasis->modbus($mSCLId);
 
 		$do = new DataObject("spre");
 		$do->rel_one_to_many('itspre', 'itspre', 'numero');
-		$do->rel_pointer('itspre','sinv','itspre.codigo=sinv.codigo','sinv.descrip AS sinvdescrip, sinv.precio1 AS sinvprecio1, sinv.precio2 AS sinvprecio2, sinv.precio3 AS sinvprecio3, sinv.precio4 AS sinvprecio4, sinv.iva AS sinviva');
+		$do->pointer('scli' ,'scli.cliente=spre.cod_cli','tipo AS sclitipo','left');
+		$do->rel_pointer('itspre','sinv','itspre.codigo=sinv.codigo','sinv.descrip AS sinvdescrip, sinv.precio1 AS sinvprecio1, sinv.precio2 AS sinvprecio2, sinv.precio3 AS sinvprecio3, sinv.precio4 AS sinvprecio4, sinv.iva AS sinviva, sinv.peso AS sinvpeso,sinv.tipo AS sinvtipo');
 
 		$edit = new DataDetails("Presupuestos", $do);
 		$edit->back_url = site_url("ventas/spre/filteredgrid");
 		$edit->set_rel_title('itspre','Producto <#o#>');
 
-		$edit->script($script,'create');
-		$edit->script($script,'modify');
+		//$edit->script($script,'create');
+		//$edit->script($script,'modify');
 
 		$edit->pre_process('insert' ,'_pre_insert');
 		/*$edit->pre_process('update' ,'_pre_update');
@@ -156,6 +160,7 @@ class spre extends validaciones {
 
 		$edit->vd = new  dropdownField ("Vendedor", "vd");
 		$edit->vd->options("SELECT vendedor, CONCAT(vendedor,' ',nombre) nombre FROM vend ORDER BY vendedor");
+		$edit->vd->style='width:200px;';
 		$edit->vd->size = 5;
 
 		$edit->numero = new inputField("N&uacute;mero", "numero");
@@ -165,33 +170,39 @@ class spre extends validaciones {
 		$edit->numero->apply_rules=false; //necesario cuando el campo es clave y no se pide al usuario
 		$edit->numero->when=array('show','modify');
 
-		$edit->nombre = new inputField("Nombre", "nombre");
-		$edit->nombre->size = 30;
-		$edit->nombre->maxlength=40;
-		$edit->nombre->autocomplete=false;
-		$edit->nombre->rule= "required";
-
 		$edit->peso = new inputField("Peso", "peso");
-		$edit->peso->css_class ='inputnum';
-		$edit->peso->when=array('show');
+		$edit->peso->css_class = 'inputnum';
+		$edit->peso->readonly  = true;
 		$edit->peso->size      = 10;
 
-		$edit->cliente = new inputField("Cliente","cod_cli");
+		$edit->cliente = new inputField('Cliente','cod_cli');
 		$edit->cliente->size = 6;
 		$edit->cliente->maxlength=5;
 		$edit->cliente->append($boton);
 
-		$edit->rifci   = new inputField("RIF/CI","rifci");
+		$edit->nombre = new inputField('Nombre', 'nombre');
+		$edit->nombre->size = 25;
+		$edit->nombre->maxlength=40;
+		$edit->nombre->autocomplete=false;
+		$edit->nombre->rule= 'required';
+
+		$edit->rifci   = new inputField('RIF/CI','rifci');
 		$edit->rifci->autocomplete=false;
 		$edit->rifci->size = 15;
 
-		$edit->direc = new inputField("Direcci&oacute;n","direc");
-		$edit->direc->size = 30;
+		$edit->direc = new inputField('Direcci&oacute;n','direc');
+		$edit->direc->size = 40;
+
+		//Para saber que precio se le va a dar al cliente
+		$edit->sclitipo = new hiddenField('', 'sclitipo');
+		$edit->sclitipo->db_name     = 'sclitipo';
+		$edit->sclitipo->pointer     = true;
+		$edit->sclitipo->insertValue = 1;
 
 		//**************************
 		//  Campos para el detalle
 		//**************************
-		$edit->codigo = new inputField("C&oacute;digo <#o#>", "codigo_<#i#>");
+		$edit->codigo = new inputField('C&oacute;digo <#o#>', 'codigo_<#i#>');
 		$edit->codigo->size     = 12;
 		$edit->codigo->db_name  = 'codigo';
 		$edit->codigo->readonly = true;
@@ -199,14 +210,14 @@ class spre extends validaciones {
 		$edit->codigo->rule     = 'required';
 		$edit->codigo->append($btn);
 
-		$edit->desca = new inputField("Descripci&oacute;n <#o#>", "desca_<#i#>");
+		$edit->desca = new inputField('Descripci&oacute;n <#o#>', 'desca_<#i#>');
 		$edit->desca->size=36;
 		$edit->desca->db_name='desca';
 		$edit->desca->maxlength=50;
 		//$edit->desca->readonly  = true;
 		$edit->desca->rel_id='itspre';
 
-		$edit->cana = new inputField("Cantidad <#o#>", "cana_<#i#>");
+		$edit->cana = new inputField('Cantidad <#o#>', 'cana_<#i#>');
 		$edit->cana->db_name  = 'cana';
 		$edit->cana->css_class= 'inputnum';
 		$edit->cana->rel_id   = 'itspre';
@@ -216,7 +227,7 @@ class spre extends validaciones {
 		$edit->cana->autocomplete=false;
 		$edit->cana->onkeyup  ='importe(<#i#>)';
 
-		$edit->preca = new inputField('Precio <#o#>', "preca_<#i#>");
+		$edit->preca = new inputField('Precio <#o#>', 'preca_<#i#>');
 		$edit->preca->db_name   = 'preca';
 		$edit->preca->css_class = 'inputnum';
 		$edit->preca->rel_id    = 'itspre';
@@ -225,7 +236,7 @@ class spre extends validaciones {
 		$edit->preca->readonly  = true;
 		$edit->preca->onchange  = 'v_preca(<#i#>)';
 
-		$edit->importe = new inputField("Importe <#o#>", "importe_<#i#>");
+		$edit->importe = new inputField('Importe <#o#>', 'importe_<#i#>');
 		$edit->importe->db_name='totaorg';
 		$edit->importe->size=10;
 		$edit->importe->css_class='inputnum';
@@ -233,22 +244,26 @@ class spre extends validaciones {
 
 		for($i=1;$i<5;$i++){
 			$obj='precio'.$i;
-			$edit->$obj = new inputField('Precio <#o#>', $obj.'_<#i#>');
-			$edit->$obj->css_class = 'inputnum';
+			$edit->$obj = new hiddenField('Precio <#o#>', $obj.'_<#i#>');
 			$edit->$obj->db_name   = 'sinv'.$obj;
-			$edit->$obj->size      = 10;
 			$edit->$obj->rel_id    = 'itspre';
 			$edit->$obj->pointer   = true;
-			$edit->$obj->mode      = 'autohide';
 		}
 
-		$edit->itiva = new inputField('Iva <#o#>', 'itiva_<#i#>');
-		$edit->itiva->db_name  = 'sinviva';
+		$edit->itiva = new hiddenField('Iva <#o#>', 'itiva_<#i#>');
+		$edit->itiva->db_name  = 'iva';
 		$edit->itiva->size     = 10;
-		$edit->itiva->css_class= 'inputnum';
 		$edit->itiva->rel_id   = 'itspre';
-		$edit->itiva->pointer   = true;
-		$edit->itiva->mode     = 'autohide';
+
+		$edit->sinvpeso = new hiddenField('', 'sinvpeso_<#i#>');
+		$edit->sinvpeso->db_name   = 'sinvpeso';
+		$edit->sinvpeso->rel_id    = 'itspre';
+		$edit->sinvpeso->pointer   = true;
+
+		$edit->sinvtipo = new hiddenField('', 'sinvtipo_<#i#>');
+		$edit->sinvtipo->db_name   = 'sinvtipo';
+		$edit->sinvtipo->rel_id    = 'itspre';
+		$edit->sinvtipo->pointer   = true;
 
 		/*$edit->ultimo = new inputField("ultimo <#o#>", 'ultimo_<#i#>');
 		$edit->ultimo->db_name   = 'ultimo';
@@ -267,26 +282,25 @@ class spre extends validaciones {
 		//fin de campos para detalle
 		//**************************
 
-		$edit->ivat = new inputField("Impuesto", "iva");
+		$edit->ivat = new inputField('Impuesto', 'iva');
 		$edit->ivat->css_class ='inputnum';
 		$edit->ivat->readonly  =true;
 		$edit->ivat->size      = 10;
 
-		$edit->totals = new inputField("Sub-Total", "totals");
+		$edit->totals = new inputField('Sub-Total', 'totals');
 		$edit->totals->css_class ='inputnum';
 		$edit->totals->readonly  =true;
 		$edit->totals->size      = 10;
 
-		$edit->totalg = new inputField("Monto Total", "totalg");
+		$edit->totalg = new inputField('Monto Total', 'totalg');
 		$edit->totalg->css_class ='inputnum';
 		$edit->totalg->readonly  =true;
 		$edit->totalg->size      = 10;
 
 		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
 
-		$edit->buttons("modify", "save", "undo", "delete", "back","add_rel");
+		$edit->buttons('modify', 'save', 'undo', 'delete', 'back','add_rel');
 		$edit->build();
-		//print_r($do->_rel_pointer_data);
 
 		$conten["form"]  =&  $edit;
 		$data['content'] = $this->load->view('view_spre', $conten,true);
@@ -298,28 +312,27 @@ class spre extends validaciones {
 	function _pre_insert($do){
 		$numero=$this->datasis->fprox_numero('nspre');
 		$do->set('numero',$numero);
-		//$do->pk['numero'] = $numero; //Necesario cuando la clave primara se calcula por secuencia
 
 		$ivat=$subt=$total=0;
 		$cana=$do->count_rel('itspre');
 		for($i=0;$i<$cana;$i++){
 			//$importe = $do->get_rel('itspre','importe',$i);
 			$cana    = $do->get_rel('itspre','cana',$i);
-			$precio  = $do->get_rel('itspre','preca',$i);
+			$preca   = $do->get_rel('itspre','preca',$i);
 			$iva     = $do->get_rel('itspre','iva',$i);
-			$importe = $precio*$cana;
+			$importe = $preca*$cana;
 			$do->set_rel('itspre','importe',$importe,$i);
 			$do->set_rel('itspre','totaorg',$importe,$i);
-			//$do->set_rel('itspre','numero' ,$numero ,$i);
 
 			$ivat +=$importe*($iva/100);
 			$subt +=$importe;
-			$total+=$ivat+$precio;
 		}
+		$total+=$ivat+$subt;
 
 		$do->set('totals',round($subt,2) );
 		$do->set('totalg',round($total,2));
 		$do->set('iva'   ,round($ivat,2) );
+		//print_r($do->get_all()); return false;
 
 		return true;
 	}
@@ -328,7 +341,6 @@ class spre extends validaciones {
 		$ivat=$subt=$total=0;
 		$cana=$do->count_rel('itspre');
 		for($i=0;$i<$cana;$i++){
-			//$importe = $do->get_rel('itspre','importe',$i);
 			$cana    = $do->get_rel('itspre','cana',$i);
 			$precio  = $do->get_rel('itspre','preca',$i);
 			$iva     = $do->get_rel('itspre','iva',$i);
@@ -347,7 +359,7 @@ class spre extends validaciones {
 	}
 
 	function _post_insert($do){
-		$codigo=$do->get('numero');
+		/*$codigo=$do->get('numero');
 		logusu('spre',"PRESUPUESTO $codigo CREADO");
 		$query='select sum(b.cana * c.peso) as valor
 				from spre as a
@@ -358,12 +370,12 @@ class spre extends validaciones {
 		$resul = $mSQL_1->row();
 		$valor=$resul->valor;
 		$query='update spre set peso="'.$valor.'" where numero="'.$codigo.'" ';
-		$this->db->query($query);
+		$this->db->query($query);*/
 	}
 
 	function chpreca($preca,$ind){
 		$codigo  = $this->input->post('codigo_'.$ind);
-		$precio4 = $this->datasis->dameval('SELECT precio4 FROM sinv WHERE codigo='.$this->db->escape($codigo));
+		$precio4 = $this->datasis->dameval('SELECT base4 FROM sinv WHERE codigo='.$this->db->escape($codigo));
 		if($precio4<0) $precio4=0;
 
 		if($preca<$precio4){
