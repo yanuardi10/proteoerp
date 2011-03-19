@@ -133,7 +133,7 @@ class spre extends validaciones {
 
 		$do = new DataObject("spre");
 		$do->rel_one_to_many('itspre', 'itspre', 'numero');
-		$do->rel_pointer('itspre','sinv','itspre.codigo=sinv.codigo','sinv.descrip AS sinvdescrip, sinv.precio1 AS sinvprecio1, sinv.precio2 AS sinvprecio2, sinv.precio3 AS sinvprecio3, sinv.precio4 AS sinvprecio4');
+		$do->rel_pointer('itspre','sinv','itspre.codigo=sinv.codigo','sinv.descrip AS sinvdescrip, sinv.precio1 AS sinvprecio1, sinv.precio2 AS sinvprecio2, sinv.precio3 AS sinvprecio3, sinv.precio4 AS sinvprecio4, sinv.iva AS sinviva');
 
 		$edit = new DataDetails("Presupuestos", $do);
 		$edit->back_url = site_url("ventas/spre/filteredgrid");
@@ -192,11 +192,12 @@ class spre extends validaciones {
 		//  Campos para el detalle
 		//**************************
 		$edit->codigo = new inputField("C&oacute;digo <#o#>", "codigo_<#i#>");
-		$edit->codigo->size=12;
-		$edit->codigo->db_name='codigo';
+		$edit->codigo->size     = 12;
+		$edit->codigo->db_name  = 'codigo';
+		$edit->codigo->readonly = true;
+		$edit->codigo->rel_id   = 'itspre';
+		$edit->codigo->rule     = 'required';
 		$edit->codigo->append($btn);
-		$edit->codigo->readonly  = true;
-		$edit->codigo->rel_id='itspre';
 
 		$edit->desca = new inputField("Descripci&oacute;n <#o#>", "desca_<#i#>");
 		$edit->desca->size=36;
@@ -206,12 +207,12 @@ class spre extends validaciones {
 		$edit->desca->rel_id='itspre';
 
 		$edit->cana = new inputField("Cantidad <#o#>", "cana_<#i#>");
-		$edit->cana->db_name  ='cana';
-		$edit->cana->css_class='inputnum';
-		$edit->cana->rel_id   ='itspre';
-		$edit->cana->maxlength=10;
-		$edit->cana->size     =6;
-		$edit->cana->rule     ='required';
+		$edit->cana->db_name  = 'cana';
+		$edit->cana->css_class= 'inputnum';
+		$edit->cana->rel_id   = 'itspre';
+		$edit->cana->maxlength= 10;
+		$edit->cana->size     = 6;
+		$edit->cana->rule     = 'required|positive';
 		$edit->cana->autocomplete=false;
 		$edit->cana->onkeyup  ='importe(<#i#>)';
 
@@ -220,7 +221,7 @@ class spre extends validaciones {
 		$edit->preca->css_class = 'inputnum';
 		$edit->preca->rel_id    = 'itspre';
 		$edit->preca->size      = 10;
-		$edit->preca->rule      = 'required';
+		$edit->preca->rule      = 'required|positive|callback_chpreca[<#i#>]';
 		$edit->preca->readonly  = true;
 		$edit->preca->onchange  = 'v_preca(<#i#>)';
 
@@ -242,11 +243,11 @@ class spre extends validaciones {
 		}
 
 		$edit->itiva = new inputField('Iva <#o#>', 'itiva_<#i#>');
-		$edit->itiva->db_name  = 'iva';
+		$edit->itiva->db_name  = 'sinviva';
 		$edit->itiva->size     = 10;
 		$edit->itiva->css_class= 'inputnum';
 		$edit->itiva->rel_id   = 'itspre';
-		//$edit->itiva->pointer   = true;
+		$edit->itiva->pointer   = true;
 		$edit->itiva->mode     = 'autohide';
 
 		/*$edit->ultimo = new inputField("ultimo <#o#>", 'ultimo_<#i#>');
@@ -297,7 +298,7 @@ class spre extends validaciones {
 	function _pre_insert($do){
 		$numero=$this->datasis->fprox_numero('nspre');
 		$do->set('numero',$numero);
-		$do->pk['numero'] = $numero; //Necesario cuando la clave primara se calcula por secuencia
+		//$do->pk['numero'] = $numero; //Necesario cuando la clave primara se calcula por secuencia
 
 		$ivat=$subt=$total=0;
 		$cana=$do->count_rel('itspre');
@@ -309,7 +310,7 @@ class spre extends validaciones {
 			$importe = $precio*$cana;
 			$do->set_rel('itspre','importe',$importe,$i);
 			$do->set_rel('itspre','totaorg',$importe,$i);
-			$do->set_rel('itspre','numero' ,$numero,$i);
+			//$do->set_rel('itspre','numero' ,$numero ,$i);
 
 			$ivat +=$importe*($iva/100);
 			$subt +=$importe;
@@ -319,6 +320,7 @@ class spre extends validaciones {
 		$do->set('totals',round($subt,2) );
 		$do->set('totalg',round($total,2));
 		$do->set('iva'   ,round($ivat,2) );
+
 		return true;
 	}
 
@@ -357,6 +359,19 @@ class spre extends validaciones {
 		$valor=$resul->valor;
 		$query='update spre set peso="'.$valor.'" where numero="'.$codigo.'" ';
 		$this->db->query($query);
+	}
+
+	function chpreca($preca,$ind){
+		$codigo  = $this->input->post('codigo_'.$ind);
+		$precio4 = $this->datasis->dameval('SELECT precio4 FROM sinv WHERE codigo='.$this->db->escape($codigo));
+		if($precio4<0) $precio4=0;
+
+		if($preca<$precio4){
+			$this->validation->set_message('chpreca', 'El art&iacute;culo '.$codigo.' debe contener un precio de al menos '.nformat($precio4));
+			return false;
+		}else{
+			return true;
+		}
 	}
 
 	function _post_update($do){

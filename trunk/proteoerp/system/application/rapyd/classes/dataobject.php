@@ -402,7 +402,10 @@ class DataObject{
     //INSERT
     if (!$this->loaded) {
 
-			//by default pk is AutoIncrement and reloaded after an insert, otherwise new value of pk(s) is loaded from user input
+      //exec pre process function to escape the insert if it return false
+      $escape = $this->_exec_pre_process_functions("insert");
+
+	  //by default pk is AutoIncrement and reloaded after an insert, otherwise new value of pk(s) is loaded from user input
   	  $pk_ai = true;
   	  foreach ($this->pk as $keyfield => $keyvalue)
       {
@@ -411,9 +414,6 @@ class DataObject{
         	$pk_ai = false;
         }
       }
-
-      //exec pre process function to escape the insert if it return false
-      $escape = $this->_exec_pre_process_functions("insert");
 
       if ($escape !== false)
       {

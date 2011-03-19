@@ -46,6 +46,7 @@ class MY_Validation extends CI_Validation
 	}
 
 	function positive($val){
+		$this->set_message('positive', 'El campo %s debe contener un valor positivo');
 		return ($val>=0)? true : false;
 	}
 
