@@ -11,7 +11,7 @@ else:
 $campos=$form->template_details('itspre');
 $scampos  ='<tr id="tr_itspre_<#i#>">';
 $scampos .='<td class="littletablerow" align="left" >'.$campos['codigo']['field'].'</td>';
-$scampos .='<td class="littletablerow" align="left" >'.$campos['desca']['field']. '</td>';
+$scampos .='<td class="littletablerow" align="left" >'.$campos['desca']['field'].$campos['detalle']['field'].'</td>';
 $scampos .='<td class="littletablerow" align="right">'.$campos['cana']['field'].  '</td>';
 $scampos .='<td class="littletablerow" align="right">'.$campos['preca']['field']. '</td>';
 $scampos .='<td class="littletablerow" align="right">'.$campos['importe']['field'];
@@ -21,6 +21,8 @@ for($o=1;$o<5;$o++){
 }
 $scampos .= $campos['itiva']['field'];
 $scampos .= $campos['sinvtipo']['field'];
+$scampos .= $campos['ultimo']['field'];
+$scampos .= $campos['pond']['field'];
 $scampos .= $campos['sinvpeso']['field'].'</td>';
 $scampos .= '<td class="littletablerow"><a href=# onclick="del_itspre(<#i#>);return false;">Eliminar</a></td></tr>';
 $campos=$form->js_escape($scampos);
@@ -33,6 +35,15 @@ if($form->_status!='show'){ ?>
 
 <script language="javascript" type="text/javascript">
 itspre_cont=<?php echo $form->max_rel_count['itspre']; ?>;
+
+$(function(){
+	$(".inputnum").numeric(".");
+	totalizar();
+	for(var i=0;i < <?php echo $form->max_rel_count['itspre']; ?>;i++){
+		cdropdown(i);
+		cdescrip(i);
+	}
+});
 
 function importe(id){
 	var ind     = id.toString();
@@ -51,8 +62,8 @@ function totalizar(){
 	var itpeso =0;
 	var totals =0;
 	var importe=0;
-	var peso=0;
-	var cana=0;
+	var peso   =0;
+	var cana   =0;
 	var arr=$('input[name^="importe_"]');
 	jQuery.each(arr, function() {
 		nom=this.name
@@ -75,16 +86,6 @@ function totalizar(){
 	$("#iva").val(roundNumber(iva,2));
 }
 
-function v_preca(i){
-	precio=$("#preca_"+i.toString()).val();
-	precio4=$("#precio4_"+i.toString()).val();
-	if (precio < precio4){
-		alert("El precio minimo es precio4="+precio4);
-		$("#preca_"+i.toString()).val(precio4);
-	}
-	totalizar(i);
-}
-
 function add_itspre(){
 	var htm = <?=$campos ?>;
 	can = itspre_cont.toString();
@@ -95,14 +96,6 @@ function add_itspre(){
 	$("#cana_"+can).numeric(".");
 	itspre_cont=itspre_cont+1;
 }
-
-$(function(){
-	$(".inputnum").numeric(".");
-	totalizar();
-	for(var i=0;i < <?php echo $form->max_rel_count['itspre']; ?>;i++){
-		cdropdown(i);
-	}
-});
 
 function post_precioselec(ind,obj){
 	if(obj.value=='o'){
@@ -138,11 +131,14 @@ function post_modbus_scli(){
 }
 
 function post_modbus_sinv(nind){
-	var tipo =Number($("#sclitipo").val()); if(tipo>0) tipo=tipo-1;
-	cdropdown(nind);
 	ind=nind.toString();
+	var tipo =Number($("#sclitipo").val()); if(tipo>0) tipo=tipo-1;
+	$("#preca_"+ind).empty();
 	var arr=$('#preca_'+ind);
+	cdropdown(nind);
+	cdescrip(nind);
 	jQuery.each(arr, function() { this.selectedIndex=tipo; });
+	importe(nind);
 	totalizar();
 }
 
@@ -161,7 +157,7 @@ function cdropdown(nind){
 	var ii=0;
 	var id='';
 	
-	if(preca.length==0) ban=1;
+	if(preca==null || preca.length==0) ban=1;
 	for(ii=1;ii<5;ii++){
 		id =ii.toString();
 		val=$("#precio"+id+"_"+ind).val();
@@ -188,6 +184,55 @@ function cdropdown(nind){
 	pprecio.add(opt,null);
 
 	$("#preca_"+ind).replaceWith(pprecio);
+}
+
+//Cambia el campo descripcion en caso ser servicio
+function cdescrip(nind){
+	var ind=nind.toString();
+	var tipo =$("#sinvtipo_"+ind).val();
+
+	if(tipo=='Servicio'){
+		var desca  =$("#desca_"+ind).val();
+		var detalle=$("#detalle_"+ind).val();
+		var ddetalle = document.createElement("textarea");
+		ddetalle.setAttribute("id"    , "detalle_"+ind);
+		ddetalle.setAttribute("name"  , "detalle_"+ind);
+		ddetalle.setAttribute("class" , "textarea");
+		ddetalle.setAttribute("cols"  , 34);
+		ddetalle.setAttribute("rows"  , 3);
+		$("#detalle_"+ind).replaceWith(ddetalle);
+
+		if(detalle.length==0){
+			$("#detalle_"+ind).val(desca);
+		}else{
+			$("#detalle_"+ind).val(detalle);
+		}
+
+		var ddesca = document.createElement("input");
+		ddesca.setAttribute("type"  , "hidden");
+		ddesca.setAttribute("id"    , "desca_"+ind);
+		ddesca.setAttribute("name"  , "desca_"+ind);
+		ddesca.setAttribute("value" , desca);
+		$("#desca_"+ind).replaceWith(ddesca);
+	}else{
+		var ddetalle = document.createElement("input");
+		ddetalle.setAttribute("type", "hidden");
+		ddetalle.setAttribute("id"    , "detalle_"+ind);
+		ddetalle.setAttribute("name"  , "detalle_"+ind);
+		ddetalle.setAttribute("value" , "");
+		$("#detalle_"+ind).replaceWith(ddetalle);
+
+		var desca = $("#desca_"+ind).val();
+		var ddeca = document.createElement("input");
+		ddeca.setAttribute("id"    , "desca_"+ind);
+		ddeca.setAttribute("name"  , "desca_"+ind);
+		ddeca.setAttribute("class" , "input");
+		ddeca.setAttribute("size"  , 36);
+		ddeca.setAttribute("maxlength", 50);
+		ddeca.setAttribute("readonly" ,"readonly");
+		ddeca.setAttribute("value"    ,desca);
+		$("#desca_"+ind).replaceWith(ddeca);
+	}
 }
 
 function del_itspre(id){
@@ -257,12 +302,17 @@ function del_itspre(id){
 				$it_pond    = "pond_$i";
 				$it_peso    = "sinvpeso_$i";
 				$it_tipo    = "sinvtipo_$i";
+				$it_ultimo  = "ultimo_$i";
+				$it_detalle = "detalle_$i";
+				$it_pond    = "pond_$i";
 
 				$pprecios='';
 				for($o=1;$o<5;$o++){
 					$it_obj   = "precio${o}_${i}";
 					$pprecios.= $form->$it_obj->output;
 				}
+				$pprecios .= $form->$it_ultimo->output;
+				$pprecios .= $form->$it_pond->output;
 				$pprecios .= $form->$it_iva->output;
 				$pprecios .= $form->$it_peso->output;
 				$pprecios .= $form->$it_tipo->output;
@@ -270,7 +320,7 @@ function del_itspre(id){
 
 			<tr id='tr_itspre_<?php echo $i; ?>'>
 				<td class="littletablerow" align="left" ><?php echo $form->$it_codigo->output; ?></td>
-				<td class="littletablerow" align="left" ><?php echo $form->$it_desca->output;  ?></td>
+				<td class="littletablerow" align="left" ><?php echo $form->$it_desca->output.$form->$it_detalle->output;  ?></td>
 				<td class="littletablerow" align="right"><?php echo $form->$it_cana->output;   ?></td>
 				<td class="littletablerow" align="right"><?php echo $form->$it_preca->output;  ?></td>
 				<td class="littletablerow" align="right"><?php echo $form->$it_importe->output.$pprecios;?></td>
