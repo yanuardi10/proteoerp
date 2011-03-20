@@ -139,8 +139,8 @@ class spre extends validaciones {
 		$do->pointer('scli' ,'scli.cliente=spre.cod_cli','tipo AS sclitipo','left');
 		$do->rel_pointer('itspre','sinv','itspre.codigo=sinv.codigo','sinv.descrip AS sinvdescrip, sinv.precio1 AS sinvprecio1, sinv.precio2 AS sinvprecio2, sinv.precio3 AS sinvprecio3, sinv.precio4 AS sinvprecio4, sinv.iva AS sinviva, sinv.peso AS sinvpeso,sinv.tipo AS sinvtipo');
 
-		$edit = new DataDetails("Presupuestos", $do);
-		$edit->back_url = site_url("ventas/spre/filteredgrid");
+		$edit = new DataDetails('Presupuestos', $do);
+		$edit->back_url = site_url('ventas/spre/filteredgrid');
 		$edit->set_rel_title('itspre','Producto <#o#>');
 
 		//$edit->script($script,'create');
@@ -152,25 +152,25 @@ class spre extends validaciones {
 		$edit->post_process('update','_post_update');
 		$edit->post_process('delete','_post_delete');*/
 
-		$edit->fecha = new DateonlyField("Fecha", "fecha","d/m/Y");
-		$edit->fecha->insertValue = date("Y-m-d");
+		$edit->fecha = new DateonlyField('Fecha', 'fecha','d/m/Y');
+		$edit->fecha->insertValue = date('Y-m-d');
 		$edit->fecha->rule = 'required';
-		$edit->fecha->mode = "autohide";
+		$edit->fecha->mode = 'autohide';
 		$edit->fecha->size = 10;
 
-		$edit->vd = new  dropdownField ("Vendedor", "vd");
-		$edit->vd->options("SELECT vendedor, CONCAT(vendedor,' ',nombre) nombre FROM vend ORDER BY vendedor");
+		$edit->vd = new  dropdownField ('Vendedor', 'vd');
+		$edit->vd->options('SELECT vendedor, CONCAT(vendedor,\' \',nombre) nombre FROM vend ORDER BY vendedor');
 		$edit->vd->style='width:200px;';
 		$edit->vd->size = 5;
 
-		$edit->numero = new inputField("N&uacute;mero", "numero");
+		$edit->numero = new inputField('N&uacute;mero', 'numero');
 		$edit->numero->size = 10;
-		$edit->numero->mode="autohide";
+		$edit->numero->mode='autohide';
 		$edit->numero->maxlength=8;
 		$edit->numero->apply_rules=false; //necesario cuando el campo es clave y no se pide al usuario
 		$edit->numero->when=array('show','modify');
 
-		$edit->peso = new inputField("Peso", "peso");
+		$edit->peso = new inputField('Peso', 'peso');
 		$edit->peso->css_class = 'inputnum';
 		$edit->peso->readonly  = true;
 		$edit->peso->size      = 10;
@@ -237,7 +237,7 @@ class spre extends validaciones {
 		$edit->preca->onchange  = 'v_preca(<#i#>)';
 
 		$edit->importe = new inputField('Importe <#o#>', 'importe_<#i#>');
-		$edit->importe->db_name='totaorg';
+		$edit->importe->db_name='importe';
 		$edit->importe->size=10;
 		$edit->importe->css_class='inputnum';
 		$edit->importe->rel_id   ='itspre';
@@ -302,10 +302,10 @@ class spre extends validaciones {
 		$edit->buttons('modify', 'save', 'undo', 'delete', 'back','add_rel');
 		$edit->build();
 
-		$conten["form"]  =&  $edit;
+		$conten['form']  =&  $edit;
 		$data['content'] = $this->load->view('view_spre', $conten,true);
 		$data['title']   = heading('Presupuesto');
-		$data["head"]    = script('jquery.js').script('jquery-ui.js').script("plugins/jquery.numeric.pack.js").script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css').$this->rapyd->get_head().phpscript('nformat.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js').phpscript('nformat.js');
+		$data['head']    = script('jquery.js').script('jquery-ui.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css').$this->rapyd->get_head().phpscript('nformat.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js').phpscript('nformat.js');
 		$this->load->view('view_ventanas', $data);
 	}
 
