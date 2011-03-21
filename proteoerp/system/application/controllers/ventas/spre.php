@@ -235,17 +235,13 @@ class spre extends validaciones {
 		$edit->importe->css_class='inputnum';
 		$edit->importe->rel_id   ='itspre';
 
-		for($i=2;$i<4;$i++){
+		for($i=1;$i<4;$i++){
 			$obj='precio'.$i;
 			$edit->$obj = new hiddenField('Precio <#o#>', $obj.'_<#i#>');
 			$edit->$obj->db_name   = 'sinv'.$obj;
 			$edit->$obj->rel_id    = 'itspre';
 			$edit->$obj->pointer   = true;
 		}
-
-		$edit->precio1 = new hiddenField('', 'precio1_<#i#>');
-		$edit->precio1->db_name   = 'precio1';
-		$edit->precio1->rel_id    = 'itspre';
 
 		$edit->precio4 = new hiddenField('', 'precio4_<#i#>');
 		$edit->precio4->db_name   = 'precio4';
