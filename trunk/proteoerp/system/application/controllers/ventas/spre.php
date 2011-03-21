@@ -354,7 +354,7 @@ class spre extends validaciones {
 
 			$iva    +=$itimporte*($itiva/100);
 			$totals +=$itimporte;
-			$do->set_rel('itspre','mostrado',$iva+$totals,$i);
+			//$do->set_rel('itspre','mostrado',$iva+$totals,$i);
 		}
 		$totalg = $totals+$iva;
 
