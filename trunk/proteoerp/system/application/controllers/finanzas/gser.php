@@ -6,6 +6,7 @@ class gser extends Controller {
 		$this->load->library('rapyd');
 		$this->mcred='_CR';
 		$this->datasis->modulo_id('518',1);
+		$this->instalar();
 	}
 
 	function index() {
@@ -37,8 +38,6 @@ class gser extends Controller {
 		$filter->tipo_doc->size = 5;
 		$filter->tipo_doc->group = 'UNO';
 
-
-
 		$filter->numero = new inputField('N&uacute;mero', 'numero');
 		$filter->numero->size = 10;
 		$filter->numero->group = 'DOS';
@@ -53,7 +52,6 @@ class gser extends Controller {
 		$filter->nombre->size = 20;
 		$filter->nombre->group = 'DOS';
 
-
 		$filter->buttons('reset','search');
 		$filter->build("dataformfiltro");
 
@@ -65,11 +63,11 @@ class gser extends Controller {
 
 		$uri = anchor('finanzas/gser/dataedit/show/<#id#>','<#numero#>');
 		
-
 		$grid = new DataGrid();
 		$grid->order_by('fecha','desc');
 		$grid->per_page = 15;
 		$grid->column_orderby('Tipo',"tipo_doc",'tipo_doc');
+		$grid->column_orderby('Caja',"cajachi",'cajachi');
 		$grid->column_orderby('N&uacute;mero',$uri,'numero');
 		$grid->column_orderby('Fecha' ,'<dbdate_to_human><#fecha#></dbdate_to_human>','fecha','align=\'center\'');
 		//$grid->column_orderby('Fecha' ,'<dbdate_to_human><#vence#></dbdate_to_human>','vence','align=\'center\'');
@@ -2000,7 +1998,8 @@ class gser extends Controller {
 				break;
 			}
 		}
-		if($existe != 1){
+
+		if($existe != 1) {
 			$query="ALTER TABLE `gser` DROP PRIMARY KEY";
 			var_dump($this->db->simple_query($query));
 			$query="ALTER TABLE `gser` ADD UNIQUE INDEX `gser` (`fecha`, `numero`, `proveed`)";
@@ -2008,46 +2007,61 @@ class gser extends Controller {
 			$query="ALTER TABLE `gser` ADD COLUMN `id` INT(15) UNSIGNED NULL AUTO_INCREMENT AFTER `ncausado`,  ADD PRIMARY KEY (`id`)";
 			var_dump($this->db->simple_query($query));
 			$query="ALTER TABLE `gitser` ADD COLUMN `idgser` INT(15) UNSIGNED NOT NULL DEFAULT '0' AFTER `id`, ADD INDEX `idgser` (`idgser`)";
-			var_dump($this->db->simple_query($query));
+			$this->db->simple_query($query);
 
 			$query="UPDATE gitser AS a
-					JOIN gser AS b on a.numero=b.numero and a.fecha = b.fecha and a.proveed = b.proveed
-					SET a.idgser=b.id";
-			var_dump($this->db->simple_query($query));
-
-			//$query="ALTER TABLE `gitser`  ADD COLUMN `tasaiva` DECIMAL(7,2) UNSIGNED NOT NULL DEFAULT '0' AFTER `idgser`;";
-			//$this->db->simple_query($query);
+				JOIN gser AS b on a.numero=b.numero and a.fecha = b.fecha and a.proveed = b.proveed
+				SET a.idgser=b.id";
+			$this->db->simple_query($query);
+		}
+		
+		if ($this->db->table_exists('gserchi')) {
+			$query="CREATE TABLE IF NOT EXISTS `gserchi` (
+				`codbanc` varchar(5) NOT NULL DEFAULT '', 
+				`fechafac` date DEFAULT NULL, 
+				`numfac` varchar(8) DEFAULT NULL, 
+				`nfiscal` varchar(12) DEFAULT NULL, 
+				`rif` varchar(13) DEFAULT NULL, 
+				`proveedor` varchar(40) DEFAULT NULL, 
+				`codigo` varchar(6) DEFAULT NULL, 
+				`descrip` varchar(50) DEFAULT NULL, 
+				`moneda` char(2) DEFAULT NULL, 
+				`montasa` decimal(17,2) DEFAULT '0.00', 
+				`tasa` decimal(17,2) DEFAULT NULL, 
+				`monredu` decimal(17,2) DEFAULT '0.00', 
+				`reducida` decimal(17,2) DEFAULT NULL, 
+				`monadic` decimal(17,2) DEFAULT '0.00', 
+				`sobretasa` decimal(17,2) DEFAULT NULL, 
+				`exento` decimal(17,2) DEFAULT '0.00', 
+				`importe` decimal(12,2) DEFAULT NULL, 
+				`sucursal` char(2) DEFAULT NULL, 
+				`departa` char(2) DEFAULT NULL, 
+				`usuario` varchar(12) DEFAULT NULL, 
+				`estampa` date DEFAULT NULL, 
+				`hora` varchar(8) DEFAULT NULL, 
+				`id` int(11) unsigned NOT NULL AUTO_INCREMENT, 
+				PRIMARY KEY (`id`)
+				) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC";
+			$this->db->simple_query($query);
 		}
 
-		$query="CREATE TABLE IF NOT EXISTS `gserchi` (
-			`codbanc` varchar(5) NOT NULL DEFAULT '', 
-			`fechafac` date DEFAULT NULL, 
-			`numfac` varchar(8) DEFAULT NULL, 
-			`nfiscal` varchar(12) DEFAULT NULL, 
-			`rif` varchar(13) DEFAULT NULL, 
-			`proveedor` varchar(40) DEFAULT NULL, 
-			`codigo` varchar(6) DEFAULT NULL, 
-			`descrip` varchar(50) DEFAULT NULL, 
-			`moneda` char(2) DEFAULT NULL, 
-			`montasa` decimal(17,2) DEFAULT '0.00', 
-			`tasa` decimal(17,2) DEFAULT NULL, 
-			`monredu` decimal(17,2) DEFAULT '0.00', 
-			`reducida` decimal(17,2) DEFAULT NULL, 
-			`monadic` decimal(17,2) DEFAULT '0.00', 
-			`sobretasa` decimal(17,2) DEFAULT NULL, 
-			`exento` decimal(17,2) DEFAULT '0.00', 
-			`importe` decimal(12,2) DEFAULT NULL, 
-			`sucursal` char(2) DEFAULT NULL, 
-			`departa` char(2) DEFAULT NULL, 
-			`usuario` varchar(12) DEFAULT NULL, 
-			`estampa` date DEFAULT NULL, 
-			`hora` varchar(8) DEFAULT NULL, 
-			`id` int(11) unsigned NOT NULL AUTO_INCREMENT, 
-			PRIMARY KEY (`id`)
-		) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC";
-		var_dump($this->db->simple_query($query));
+		if ($this->db->table_exists('rica')) {
+			$query="CREATE TABLE `rica` (
+				`codigo` CHAR(5)    NOT  NULL,
+				`activi` CHAR(14)   NULL DEFAULT NULL,
+				`aplica` CHAR(100)  NULL DEFAULT NULL,
+				`tasa` DECIMAL(8,2) NULL DEFAULT NULL,
+				PRIMARY KEY (`codigo`)
+				) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC";
+			$this->db->simple_query($query);
+		}
 
-		$query="ALTER TABLE `gserchi` ADD COLUMN `ngasto` VARCHAR(8) NULL DEFAULT NULL AFTER `departa`";
-		var_dump($this->db->simple_query($query));
+		
+		if ($this->db->field_exists('ngasto','gserchi')) {
+			$query="ALTER TABLE `gserchi` ADD COLUMN `ngasto` VARCHAR(8) NULL DEFAULT NULL AFTER `departa`";
+			$this->db->simple_query($query);
+		}
+		
+		
 	}
 }
