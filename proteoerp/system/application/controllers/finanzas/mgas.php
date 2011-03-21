@@ -1,9 +1,12 @@
-<?php require_once(BASEPATH.'application/controllers/validaciones.php');
+<?php
+require_once(BASEPATH.'application/controllers/validaciones.php');
+require_once(APPPATH.'/controllers/finanzas/gser.php');
 class Mgas extends validaciones {
 
 	function mgas(){
 		parent::Controller(); 
 		$this->load->library("rapyd");
+		gser::instalar();
 	}
 
 	function index(){
@@ -253,7 +256,6 @@ class Mgas extends validaciones {
 		$edit->buttons("modify", "save", "undo", "back");
 		$edit->build();
 
-		//echo $edit->codigo->value;
 		$conten["form"]  =&  $edit;
 		$data['content'] = $this->load->view('view_maestrodegasto', $conten,true);
 		$data["head"]    =script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();

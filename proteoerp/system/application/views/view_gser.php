@@ -252,13 +252,13 @@ if ($tipo_rete=="ESPECIAL"){
 				<td class="littletableheaderdet" align="right">Tasa</td>
 				<td class="littletableheaderdet" align="right">IVA</td>
 				<td class="littletableheaderdet" align="right">Importe</td>
-				<td class="littletableheaderdet">Departamento</td>
+				<td class="littletableheaderdet">Depto.</td>
 				<td class="littletableheaderdet">Sucursal</td>
 				<?php if($form->_status!='show') {?>
 					<td class="littletableheaderdet">Acci&oacute;n&nbsp;</td>
 				<?php } ?>
 			</tr>
-			<?php for($i=0;$i<$form->max_rel_count['gitser'];$i++) {
+			<?php for($i=0; $i < $form->max_rel_count['gitser']; $i++) {
 				$obj1 ="codigo_$i";
 				$obj2 ="descrip_$i";
 				$obj3 ="precio_$i";
@@ -278,19 +278,28 @@ if ($tipo_rete=="ESPECIAL"){
 				<td class="littletablerow"><?php echo $form->$obj7->output  ?></td>
 				<td class="littletablerow"><?php echo $form->$obj8->output  ?></td>
 				
-				
-				
 				<?php if($form->_status!='show') {?>
 					<td class="littletablerow"><a href='#' onclick='del_gitser(<?php echo $i; ?>);return false;'>Eliminar</a></td>
 				<?php } ?>
 			</tr>
+			<?php if( $form->_status == 'show') {?>
+				<?php if( $form->_dataobject->get('cajachi') == 'S' ) { ?>
+			<tr id='tr_gitser_D<?=$i ?>'>
+				<td style='font-size:11px;background: #DFEFFF;font-weight: bold;' colspan=8>
+				<?php
+					echo '* '.$form->_dataobject->get_rel('gitser','rif',$i);
+					echo ' '.$form->_dataobject->get_rel('gitser','proveedor',$i);
+					echo ' Factura: '.$form->_dataobject->get_rel('gitser','numfac',$i);
+					echo ' Fecha: '.dbdate_to_human($form->_dataobject->get_rel('gitser','fechafac',$i));
+				?>
+				</td>
+			</tr>
+				<?php } // caja chica ?>
+			<?php } // SHOW ?>
 			<?php } ?>
 			<tr id='__UTPL__'>
 				<td colspan='9' class="littletableheaderdet">&nbsp;</td>
 			</tr>
-			<?php if ($form->_status =='show'){?>
-			
-			<?php }?>
 		</table>
 		</fieldset>
 		<?php echo $form_end     ?>
