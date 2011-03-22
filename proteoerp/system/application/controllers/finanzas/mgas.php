@@ -257,7 +257,7 @@ class Mgas extends validaciones {
 		$edit->build();
 
 		$conten["form"]  =&  $edit;
-		$data['content'] = $this->load->view('view_maestrodegasto', $conten,true);
+		$data['content'] = $this->load->view('view_mgas', $conten,true);
 		$data["head"]    =script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
 		
 		//$data["head"]    =script("tabber.js").script("prototype.js").script("sinvmaes.js").script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();

@@ -23,7 +23,6 @@ class Grup extends validaciones {
 				return number_format($num,2,',','.');
 			}
 		}
-	
 
 		$filter = new DataFilter("Filtro de Grupo de Inventario");
 
