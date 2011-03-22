@@ -1211,10 +1211,12 @@ class gser extends Controller {
 			'codigo' =>'C&oacute;odigo','activida'=>'Actividad',
 			'base1'=>'Base1','pama1'=>'Para Mayores','tari1'=>'%'),
 			'filtro'  =>array('codigo'=>'C&oacute;digo','activida'=>'Actividad'),
-			'retornar'=>array('codigo'=>'creten','base1'=>'__base','tari1'=>'__tar','pama1'=>'__pama'),
+			'retornar'=>array('codigo'=>'codigorete_<#i#>','activida'=>'actividad_<#i#>','tari1'=>'porcen_<#i#>'),
+			'p_uri'   => array(4=>'<#i#>'),
 			'titulo'  =>'Buscar Retencion',
-			'script'=>array('islr()'));
-		$bRETE=$this->datasis->modbus($mRETE);
+			//'script'=>array('islr()')
+			);
+		$bRETE=$this->datasis->p_modbus($mRETE,'<#i#>');
 
 		$do = new DataObject('gser');
 		$do->rel_one_to_many('gitser' ,'gitser' ,array('id'=>'idgser'));
@@ -1469,27 +1471,39 @@ class gser extends Controller {
 		$edit->tipo->rel_id    ='gereten';
 		$edit->tipo->maxlength =1;*/
 
-		$edit->descrip = new inputField('','descrip');
-		$edit->descrip->rule='max_length[50]';
-		$edit->descrip->size =52;
-		$edit->descrip->rel_id    ='gereten';
-		$edit->descrip->maxlength =50;
+		$edit->codigorete = new inputField('','codigorete_<#i#>');
+		$edit->codigorete->db_name='codigorete';
+		$edit->codigorete->rule='max_length[4]';
+		$edit->codigorete->rel_id ='gereten';
+		$edit->codigorete->size   = 6;
+		$edit->codigorete->maxlength =4;
+		$edit->codigorete->append($bRETE);
 
-		$edit->base = new inputField('base','base');
+		$edit->actividad = new inputField('','actividad_<#i#>');
+		$edit->actividad->db_name='actividad';
+		$edit->actividad->rule   = 'max_length[45]';
+		$edit->actividad->rel_id ='gereten';
+		$edit->actividad->size =30;
+		$edit->actividad->maxlength =45;
+
+		$edit->base = new inputField('base','base_<#i#>');
+		$edit->base->db_name='base';
 		$edit->base->rule='max_length[10]|numeric';
 		$edit->base->css_class='inputnum';
 		$edit->base->size =12;
 		$edit->base->rel_id    ='gereten';
 		$edit->base->maxlength =10;
 
-		$edit->porcen = new inputField('porcen','porcen');
+		$edit->porcen = new inputField('porcen','porcen_<#i#>');
+		$edit->porcen->db_name='porcen';
 		$edit->porcen->rule='max_length[5]|numeric';
 		$edit->porcen->css_class='inputnum';
 		$edit->porcen->size =7;
 		$edit->porcen->rel_id    ='gereten';
 		$edit->porcen->maxlength =5;
 
-		$edit->monto = new inputField('monto','monto');
+		$edit->monto = new inputField('monto','monto_<#i#>');
+		$edit->monto->db_name='monto';
 		$edit->monto->rule='max_length[10]|numeric';
 		$edit->monto->css_class='inputnum';
 		$edit->monto->rel_id    ='gereten';
