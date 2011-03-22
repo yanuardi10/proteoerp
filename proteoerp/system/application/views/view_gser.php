@@ -11,7 +11,6 @@ $tipo_rete=$this->datasis->traevalor('CONTRIBUYENTE');
 
 foreach($form->detail_fields['gitser'] AS $ind=>$data) $campos[]=$data['field'];
 $campos='<tr id="tr_gitser_<#i#>"><td class="littletablerow">'.join('</td><td>',$campos).'</td>';
-//$campos=str_replace("\n",'',$campos);
 $campos.=' <td class="littletablerow"><a href=\'#\' onclick="del_gitser(<#i#>);return false;">Eliminar</a></td></tr>';
 $campos=$form->js_escape($campos);
 
@@ -344,6 +343,7 @@ if ($tipo_rete=="ESPECIAL"){
 		<legend class="subtitulotabla" style='color: #114411;'>Retenciones</legend>
 		<table width='100%'>
 			<tr>
+				<td class="littletableheaderdet">C&oacute;digo</td>
 				<td class="littletableheaderdet">Nombre</td>
 				<td class="littletableheaderdet">Base</td>
 				<td class="littletableheaderdet" align="right">Porcentaje</td>
@@ -353,16 +353,18 @@ if ($tipo_rete=="ESPECIAL"){
 				<?php } ?>
 			</tr>
 			<?php for($i=0; $i < $form->max_rel_count['gereten']; $i++) {
-				$obj1 ="descrip_$i";
-				$obj2 ="base_$i";
-				$obj3 ="porcen_$i";
-				$obj4 ="monto_$i";
+				$it_codigorete= "codigorete_$i";
+				$it_actividad = "actividad_$i";
+				$it_base      = "base_$i";
+				$it_porcen    = "porcen_$i";
+				$it_monto     = "monto_$i";
 			?>
 			<tr id='tr_gereten_<?php echo $i; ?>'>
-				<td class="littletablerow" nowrap><?php echo $form->$obj1->output ?></td>
-				<td class="littletablerow"><?php echo $form->$obj2->output  ?></td>
-				<td class="littletablerow"><?php echo $form->$obj3->output  ?></td>
-				<td class="littletablerow"><?php echo $form->$obj4->output  ?></td>
+				<td class="littletablerow" nowrap><?php echo $form->$it_codigorete->output ?></td>
+				<td class="littletablerow"><?php echo $form->$it_actividad->output ?></td>
+				<td class="littletablerow"><?php echo $form->$it_base->output      ?></td>
+				<td class="littletablerow"><?php echo $form->$it_porcen->output    ?></td>
+				<td class="littletablerow"><?php echo $form->$it_monto->output     ?></td>
 				<?php if($form->_status!='show') {?>
 					<td class="littletablerow"><a href='#' onclick='del_gereten(<?php echo $i; ?>);return false;'>Eliminar</a></td>
 				<?php }
