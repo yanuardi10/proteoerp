@@ -1,5 +1,4 @@
 <?php
-//compras
 class Scst extends Controller {
 
 	function scst(){
@@ -7,9 +6,11 @@ class Scst extends Controller {
 		$this->load->library('rapyd');
 		$this->datasis->modulo_id(201,1);
 	}
+
 	function index() {
 		redirect('compras/scst/datafilter');
 	}
+
 	function datafilter(){
 		$this->rapyd->load('datagrid','datafilter');
 		$this->rapyd->uri->keep_persistence();
@@ -44,20 +45,11 @@ class Scst extends Controller {
 		$filter->fechah = new dateonlyField('Hasta', 'fechah','d/m/Y');
 		$filter->fechad->clause  =$filter->fechah->clause='where';
 		$filter->fechad->db_name =$filter->fechah->db_name='fecha';
-		//$filter->fechad->insertValue = date("Y-m-d");
-		//$filter->fechah->insertValue = date("Y-m-d");
 		$filter->fechah->size=$filter->fechad->size=10;
 		$filter->fechad->operator='>=';
 		$filter->fechah->operator='<=';
-		$filter->fechah->group='Fecha Recepci&oacute;n';
-		$filter->fechad->group='Fecha Recepci&oacute;n';
-
-		//$filter->fecha_recep = new dateonlyField("Fecha Recepci&oacute;n", "fecha",'d/m/Y');
-		//$filter->fecha_recep->clause  =$filter->fecha->clause="where";
-		//$filter->fecha_recep->db_name =$filter->fecha->db_name="recep";
-		//$filter->fecha_recep->insertValue = date("Y-m-d");
-		//$filter->fecha_recep->size=10;
-		//$filter->fecha_recep->operator="=";
+		$filter->fechah->group='Fecha Emisi&oacute;n';
+		$filter->fechad->group='Fecha Emisi&oacute;n';
 
 		$filter->numero = new inputField('Factura', 'numero');
 		$filter->numero->size=20;
@@ -92,7 +84,7 @@ class Scst extends Controller {
 
 		$data['content'] =$filter->output.$grid->output;
 		$data['head']    = $this->rapyd->get_head();
-		$data['title']   ='<h1>Compras</h1>';
+		$data['title']   =heading('Compras');
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -416,18 +408,16 @@ class Scst extends Controller {
 
 	function _pre_insert($do){
 		$sql    = 'INSERT INTO ntransa (usuario,fecha) VALUES ("'.$this->session->userdata('usuario').'",NOW())';
-    $query  =$this->db->query($sql);
-    $transac=$this->db->insert_id();
+		$query  =$this->db->query($sql);
+		$transac=$this->db->insert_id();
 
 		$sql    = 'INSERT INTO nscst (usuario,fecha) VALUES ("'.$this->session->userdata('usuario').'",NOW())';
-    $query  =$this->db->query($sql);
-    $control =str_pad($this->db->insert_id(),8, "0", STR_PAD_LEFT);
-
-    $do->set('control', $control);
+		$query  =$this->db->query($sql);
+		$control =str_pad($this->db->insert_id(),8, "0", STR_PAD_LEFT);
+		$do->set('control', $control);
 		$do->set('transac', $transac);
 		$do->set('estampa', 'CURDATE()', FALSE);
 		$do->set('hora'   , 'CURRENT_TIME()', FALSE);
 		$do->set('usuario', $this->session->userdata('usuario'));
 	}
 }
-?>
