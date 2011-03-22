@@ -8,11 +8,18 @@ if ($form->_status=='delete' || $form->_action=='delete' || $form->_status=='unk
 else:
 
 $tipo_rete=$this->datasis->traevalor('CONTRIBUYENTE');
+
 foreach($form->detail_fields['gitser'] AS $ind=>$data) $campos[]=$data['field'];
 $campos='<tr id="tr_gitser_<#i#>"><td class="littletablerow">'.join('</td><td>',$campos).'</td>';
-$campos=str_replace("\n",'',$campos);
+//$campos=str_replace("\n",'',$campos);
 $campos.=' <td class="littletablerow"><a href=\'#\' onclick="del_gitser(<#i#>);return false;">Eliminar</a></td></tr>';
 $campos=$form->js_escape($campos);
+
+foreach($form->detail_fields['gereten'] AS $ind=>$data) $ggereten[]=$data['field'];
+$cgereten='<tr id="tr_gereten_<#i#>"><td class="littletablerow">'.join('</td><td>',$ggereten).'</td>';
+$cgereten.=' <td class="littletablerow"><a href=\'#\' onclick="del_gereten(<#i#>);return false;">Eliminar</a></td></tr>';
+$cgereten=$form->js_escape($cgereten);
+
 //echo $form_scripts;
 echo $form_begin;
 if($form->_status!='show'){
@@ -30,7 +37,9 @@ $json_comis=json_encode($comis);
 ?>
 
 <script language="javascript" type="text/javascript">
-gitser_cont=<?=$form->max_rel_count['gitser']?>;
+gitser_cont =<?php echo $form->max_rel_count['gitser']; ?>;
+gereten_cont=<?php echo $form->max_rel_count['gereten'];?>;
+
 var departa  = '';
 var sucursal = '';
 var comis    = <?php echo $json_comis; ?>;
@@ -157,6 +166,23 @@ function add_gitser(){
 	$("#departa_"+can).val(departa);
 	$("#sucursal_"+can).val(sucursal);
 	gitser_cont=gitser_cont+1;
+}
+
+function add_gereten(){
+	var htm = <?php echo $cgereten; ?>;
+	var can = gereten_cont.toString();
+	var con = (gereten_cont+1).toString();
+	htm = htm.replace(/<#i#>/g,can);
+	htm = htm.replace(/<#o#>/g,con);
+	$("#__UTPL__gereten").before(htm);
+	gereten_cont=gereten_cont+1;
+}
+
+function del_gereten(id){
+	id = id.toString();
+	obj='#tr_gereten_'+id;
+	$(obj).remove();
+	//totalizar();
 }
 
 function del_gitser(id){
@@ -302,10 +328,61 @@ if ($tipo_rete=="ESPECIAL"){
 			</tr>
 		</table>
 		</fieldset>
-		<?php echo $form_end     ?>
-		<?php echo $container_bl ?>
-		<?php echo $container_br ?>
+		<?php //echo $form_end     ?>
+		<?php //echo $container_bl ?>
+		<?php //echo $container_br ?>
+		<?php if( $form->_status != 'show') {?>
+			<input name="btn_add_gitser" value="Agregar Gasto" onclick="add_gitser()" class="button" type="button">
+		<?php } ?>
 		</td>
+
+
+	</tr>
+	<tr>
+		<td>
+		<fieldset style='border: 1px solid #9AC8DA;background: #EFEFFF;'>
+		<legend class="subtitulotabla" style='color: #114411;'>Retenciones</legend>
+		<table width='100%'>
+			<tr>
+				<td class="littletableheaderdet">Nombre</td>
+				<td class="littletableheaderdet">Base</td>
+				<td class="littletableheaderdet" align="right">Porcentaje</td>
+				<td class="littletableheaderdet" align="right">Monto</td>
+				<?php if($form->_status!='show') {?>
+					<td class="littletableheaderdet">Acci&oacute;n&nbsp;</td>
+				<?php } ?>
+			</tr>
+			<?php for($i=0; $i < $form->max_rel_count['gereten']; $i++) {
+				$obj1 ="descrip_$i";
+				$obj2 ="base_$i";
+				$obj3 ="porcen_$i";
+				$obj4 ="monto_$i";
+			?>
+			<tr id='tr_gereten_<?php echo $i; ?>'>
+				<td class="littletablerow" nowrap><?php echo $form->$obj1->output ?></td>
+				<td class="littletablerow"><?php echo $form->$obj2->output  ?></td>
+				<td class="littletablerow"><?php echo $form->$obj3->output  ?></td>
+				<td class="littletablerow"><?php echo $form->$obj4->output  ?></td>
+				<?php if($form->_status!='show') {?>
+					<td class="littletablerow"><a href='#' onclick='del_gereten(<?php echo $i; ?>);return false;'>Eliminar</a></td>
+				<?php }
+			}?>
+			</tr>
+			<tr id='__UTPL__gereten'>
+				<td colspan='9' class="littletableheaderdet">&nbsp;</td>
+			</tr>
+		</table>
+		</fieldset>
+		<?php if( $form->_status != 'show') {?>
+			<input name="btn_add_gereten" value="Agregar Retenciones " onclick="add_gereten()" class="button" type="button">
+		<?php } ?>
+		<?php echo $form_end     ?>
+		<?php //echo $container_bl ?>
+		<?php //echo $container_br ?>
+		</td>
+
+
+
 	</tr>
 	<tr>
 		<td align='center'>
@@ -358,6 +435,8 @@ if ($tipo_rete=="ESPECIAL"){
 			</td></tr></table>
 		</td>
 	</tr>
+	
+	
 	<?php if($form->_status == 'show'){ ?>
 	<tr>
 		<td>

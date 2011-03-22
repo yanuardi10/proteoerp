@@ -1217,7 +1217,8 @@ class gser extends Controller {
 		$bRETE=$this->datasis->modbus($mRETE);
 
 		$do = new DataObject('gser');
-		$do->rel_one_to_many('gitser', 'gitser',array('id'=>'idgser'));
+		$do->rel_one_to_many('gitser' ,'gitser' ,array('id'=>'idgser'));
+		$do->rel_one_to_many('gereten','gereten',array('id'=>'idd'));
 
 		$edit = new DataDetails("Gastos", $do);
 		if ( $edit->_status == 'show' ) {
@@ -1389,7 +1390,7 @@ class gser extends Controller {
 		$edit->usuario  = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
 
 		//***************************
-		//Campos para el detalle
+		//Campos para el detalle 1
 		//***************************
 		$edit->codigo = new inputField("C&oacute;digo <#o#>", "codigo_<#i#>");
 		$edit->codigo->size=5;
@@ -1455,6 +1456,46 @@ class gser extends Controller {
 		$edit->sucursal->style = 'width:100px';
 		$edit->sucursal->rel_id   ='gitser';
 		$edit->sucursal->onchange="gsucursal(this.value)";
+		//*****************************
+		//Fin de campos para detalle
+		//*****************************
+
+		//***************************
+		//Campos para el detalle 2
+		//**************************
+		/*$edit->tipo = new inputField('tipo','tipo');
+		$edit->tipo->rule='max_length[1]';
+		$edit->tipo->size =3;
+		$edit->tipo->rel_id    ='gereten';
+		$edit->tipo->maxlength =1;*/
+
+		$edit->descrip = new inputField('','descrip');
+		$edit->descrip->rule='max_length[50]';
+		$edit->descrip->size =52;
+		$edit->descrip->rel_id    ='gereten';
+		$edit->descrip->maxlength =50;
+
+		$edit->base = new inputField('base','base');
+		$edit->base->rule='max_length[10]|numeric';
+		$edit->base->css_class='inputnum';
+		$edit->base->size =12;
+		$edit->base->rel_id    ='gereten';
+		$edit->base->maxlength =10;
+
+		$edit->porcen = new inputField('porcen','porcen');
+		$edit->porcen->rule='max_length[5]|numeric';
+		$edit->porcen->css_class='inputnum';
+		$edit->porcen->size =7;
+		$edit->porcen->rel_id    ='gereten';
+		$edit->porcen->maxlength =5;
+
+		$edit->monto = new inputField('monto','monto');
+		$edit->monto->rule='max_length[10]|numeric';
+		$edit->monto->css_class='inputnum';
+		$edit->monto->rel_id    ='gereten';
+		$edit->monto->size =12;
+		$edit->monto->maxlength =10;
+
 		//*****************************
 		//Fin de campos para detalle
 		//*****************************
@@ -2062,6 +2103,22 @@ class gser extends Controller {
 			$this->db->simple_query($query);
 		}
 		
+		if ($this->db->table_exists('gereten')) {
+			$query="CREATE TABLE `gereten` (
+				`id` INT(10) NULL,
+				`idd` INT NULL,
+				`tipo` CHAR(1) NULL,
+				`descrip` VARCHAR(50) NULL,
+				`numero` VARCHAR(8) NULL,
+				`base` DECIMAL(10,2) NULL,
+				`porcen` DECIMAL(5,2) NULL,
+				`monto` DECIMAL(10,2) NULL,
+				PRIMARY KEY (`id`)
+			)
+			ENGINE=MyISAM
+			ROW_FORMAT=DEFAULT";
+			$this->db->simple_query($query);
+		}
 		
 	}
 }
