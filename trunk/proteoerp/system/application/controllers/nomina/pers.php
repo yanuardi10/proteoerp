@@ -64,9 +64,10 @@ class pers extends validaciones {
 		$grid->add("nomina/pers/dataedit/create");
 		$grid->build();
 		
-		$data['content'] = $filter->output.$grid->output;
+		$data['filtro']  = $filter->output;
+		$data['content'] = $grid->output;
 		$data['title']   = "<h1>Personal</h1>";
-		$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
+		$data["head"]    = script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);	
 	}
 	

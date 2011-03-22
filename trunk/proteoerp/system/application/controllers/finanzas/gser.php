@@ -1517,10 +1517,11 @@ class gser extends Controller {
 		$edit->buttons('save', 'undo', 'delete', 'back','add_rel');
 		$edit->build();
 		//echo $edit->_dataobject->db->last_query();
-
-		$conten['form']  =&$edit;
-		$data['content'] = $this->load->view('view_gser', $conten,true);
-		$data['title']   = heading('Registro de Gastos o Nota de Debito');
+		$smenu['link']   = barra_menu('518');
+		$conten['form']  =& $edit;
+		$data['content'] =  $this->load->view('view_gser', $conten,true);
+		$data['smenu']   =  $this->load->view('view_sub_menu', $smenu,true);
+		$data['title']   =  heading('Registro de Gastos o Nota de Debito');
 		$data['head']    = 	script('jquery-ui.js').
 					script("plugins/jquery.numeric.pack.js").
 					script('plugins/jquery.meiomask.js').
@@ -1548,24 +1549,24 @@ class gser extends Controller {
 
 		$bsprv=$this->datasis->modbus($sprv);
 
-		$edit = new DataEdit('Modificar Egreso','gser');
-		$edit->back_save  =true;
-		$edit->back_cancel=true;
+		$edit = new DataEdit('Correccion','gser');
+		//$edit->back_save  =true;
+		//$edit->back_cancel=true;
 		$edit->back_cancel_save=true;
 		$edit->pre_process( 'create','_pre_mgsercreate' );
 		$edit->pre_process( 'update','_pre_mgserupdate' );
 		$edit->post_process('update','_post_mgserupdate');
 		$edit->back_url = 'finanzas/gser';
 
-		$edit->fecha = new dateonlyField('Fecha recepci&oacute;n', 'fecha');
+		$edit->fecha = new dateonlyField('Fecha Registro', 'fecha');
 		$edit->fecha->size = 10;
 		$edit->fecha->rule= 'required';
 
-		$edit->ffactura = new dateonlyField('Fecha de factura', 'ffactura');
+		$edit->ffactura = new dateonlyField('Fecha Documento', 'ffactura');
 		$edit->ffactura->size = 10;
 		$edit->ffactura->rule= 'required';
 
-		$edit->vence = new dateonlyField('Vencimiento', 'vence');
+		$edit->vence = new dateonlyField('Fecha Vencimiento', 'vence');
 		$edit->vence->size = 10;
 		$edit->vence->rule= 'required';
 
@@ -1579,18 +1580,19 @@ class gser extends Controller {
 		$edit->nfiscal->rule= 'required|max_length[12]|trim';
 		$edit->nfiscal->maxlength=20;
 
-		$edit->codigo = new inputField('C&oacute;digo', 'proveed');
-		$edit->codigo->size =8;
-		$edit->codigo->maxlength=5;
-		$edit->codigo->append($bsprv);
-		$edit->codigo->rule = 'required|trim';
-		$edit->codigo->group='Datos Proveedor';
+		$edit->proveed = new inputField('C&oacute;digo', 'proveed');
+		$edit->proveed->size =8;
+		$edit->proveed->maxlength=5;
+		$edit->proveed->append($bsprv);
+		$edit->proveed->rule = 'required|trim';
+		//$edit->proveed->group='Datos Proveedor';
 
 		$edit->nombre = new inputField('Nombre ', 'nombre');
 		$edit->nombre->size =  50;
-		$edit->nombre->maxlength=40; 
+		$edit->nombre->maxlength=40;
+		$edit->nombre->readonly = true;
 		$edit->nombre->rule= 'required';
-		$edit->nombre->group='Datos Proveedor';
+		//$edit->nombre->group='Datos Proveedor';
 
 		$edit->codb1 = new inputField('C&oacute;digo del banco', 'codb1');
 		$edit->codb1->mode='autohide';
@@ -1622,22 +1624,25 @@ class gser extends Controller {
 		$edit->totbruto->mode='autohide';
 		$edit->totbruto->group='Montos';
 
-		$edit->buttons('save','undo','modify','back');
+		$edit->buttons('save');
 		$edit->build();
 
-		$data['content'] = $edit->output;
+		$conten["form"]  =&  $edit;
+		$data['content'] = $this->load->view('view_gsermgser', $conten,true);
+
+		//$data['content'] = $edit->output;
 		$data['head']    = $this->rapyd->get_head();
-		$data['title']   = heading('Egresos');
+		$data['title']   = heading('Correccion de Egresos');
 		$this->load->view('view_ventanas', $data);
 	}
 
 	function _pre_mgserupdate($do){
-		$serie     = $do->get('serie');
-		$nnumero   = substr($serie,-8);
+		$serie   = $do->get('serie');
+		$nnumero = substr($serie,-8);
 		$do->set('numero',$nnumero);
 	}
 
-	function _post_mgserupdate($do){
+	function _post_mgserupdate($do) {
 		$fecha     = $this->db->escape($do->get('fecha'));
 		$vence     = $this->db->escape($do->get('vence'));
 		$proveed   = $this->db->escape($do->get('proveed'));
@@ -2069,8 +2074,8 @@ class gser extends Controller {
 				SET a.idgser=b.id";
 			$this->db->simple_query($query);
 		}
-		
-		if ($this->db->table_exists('gserchi')) {
+
+		if (!$this->db->table_exists('gserchi')) {
 			$query="CREATE TABLE IF NOT EXISTS `gserchi` (
 				`codbanc` varchar(5) NOT NULL DEFAULT '', 
 				`fechafac` date DEFAULT NULL, 
@@ -2100,7 +2105,7 @@ class gser extends Controller {
 			$this->db->simple_query($query);
 		}
 
-		if ($this->db->table_exists('rica')) {
+		if (!$this->db->table_exists('rica')) {
 			$query="CREATE TABLE `rica` (
 				`codigo` CHAR(5)    NOT  NULL,
 				`activi` CHAR(14)   NULL DEFAULT NULL,
@@ -2112,12 +2117,12 @@ class gser extends Controller {
 		}
 
 		
-		if ($this->db->field_exists('ngasto','gserchi')) {
+		if (!$this->db->field_exists('ngasto','gserchi')) {
 			$query="ALTER TABLE `gserchi` ADD COLUMN `ngasto` VARCHAR(8) NULL DEFAULT NULL AFTER `departa`";
 			$this->db->simple_query($query);
 		}
 		
-		if ($this->db->table_exists('gereten')) {
+		if (!$this->db->table_exists('gereten')) {
 			$query="CREATE TABLE `gereten` (
 				`id` INT(10) NULL,
 				`idd` INT NULL,
