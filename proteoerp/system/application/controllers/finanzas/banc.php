@@ -156,10 +156,9 @@ class Banc extends Validaciones {
 		$edit->codbanc->append($lultimo);
 
 		$edit->activo = new dropdownField('Activo', 'activo');
-		$edit->activo->style ='width:100px;';
+		$edit->activo->style ='width:50px;';
 		$edit->activo->rule='required';
 		$edit->activo->options(array('S'=>'Si','N'=>'No' ));
-
 
 		$edit->tbanco = new inputField('Caja/Banco', 'tbanco');
 		$edit->tbanco->size =12;
@@ -167,8 +166,9 @@ class Banc extends Validaciones {
 		$edit->tbanco->rule='trim|required';
 		$edit->tbanco->readonly=true;
 		$edit->tbanco->append($bTBAN);
+		$edit->tbanco->style ='width:80px;';
 
-		$edit->banco = new inputField('Descripci&oacute;n', 'banco');
+		$edit->banco = new inputField('Nombre', 'banco');
 		$edit->banco->size =25;
 		$edit->banco->maxlength=30;
 		//$edit->banco->readonly=true;
@@ -180,33 +180,33 @@ class Banc extends Validaciones {
 		
 		$edit->dire1 = new inputField('Direcci&oacute;n', 'dire1');
 		$edit->dire1->rule='trim';
-		$edit->dire1->size =50;
+		$edit->dire1->size =45;
 		$edit->dire1->maxlength=40;
 
 		$edit->dire2 = new inputField('', 'dire2');
 		$edit->dire2->rule='trim';
-		$edit->dire2->size =50;
+		$edit->dire2->size =45;
 		$edit->dire2->maxlength=40;
 
 		$edit->telefono = new inputField('Tel&eacute;fono', 'telefono');
 		$edit->telefono->rule='trim';
-		$edit->telefono->size =25;
+		$edit->telefono->size =45;
 		$edit->telefono->maxlength=40;
 
-		$edit->nombre = new inputField('Nombre del Gerente', 'nombre');
+		$edit->nombre = new inputField('Gerente', 'nombre');
 		$edit->nombre->rule='trim';
-		$edit->nombre->size =25;
+		$edit->nombre->size =45;
 		$edit->nombre->maxlength=40;
 
 		$edit->moneda = new dropdownField('Moneda','moneda');
 		$edit->moneda->options("SELECT moneda, descrip FROM mone ORDER BY moneda");
 		$edit->moneda->style ="width:100px;";
 
-		$edit->tipocta = new dropdownField('Tipo de Cuenta', 'tipocta');
+		$edit->tipocta = new dropdownField('Cuenta Tipo', 'tipocta');
 		$edit->tipocta->style ="width:100px;";
 		$edit->tipocta->options(array("K"=>"Caja","C"=>"Corriente","A" =>"Ahorros","P"=>"Plazo Fijo" ));
 
-		$edit->proxch = new inputField('Proximo Cheque', 'proxch');
+		$edit->proxch = new inputField('Proximo Doc.', 'proxch');
 		$edit->proxch->rule='trim';
 		$edit->proxch->size =12;
 		$edit->proxch->maxlength=12;
@@ -218,7 +218,7 @@ class Banc extends Validaciones {
 		$edit->saldo->css_class='inputnum';
 		$edit->saldo->readonly=true;
 
-		$edit->dbporcen = new inputField('Porcentaje de debito','dbporcen');
+		$edit->dbporcen = new inputField('Debito %','dbporcen');
 		$edit->dbporcen->rule='trim';
 		$edit->dbporcen->size =12;
 		$edit->dbporcen->maxlength=5;
@@ -238,7 +238,7 @@ class Banc extends Validaciones {
 		$edit->codprv->rule= 'condi_required|callback_chiscaja|trim';
 		$edit->codprv->append($boton);
 		$edit->codprv->append($lsprv);
-		$edit->codprv->append(' Obligatorio solo para bancos');
+		$edit->codprv->append(' Solo bancos');
 		$edit->codprv->size = 12;
 
 		$edit->depto = new dropdownField('Departamento', 'depto');
@@ -250,7 +250,7 @@ class Banc extends Validaciones {
 		$edit->sucur = new dropdownField('Sucursal', 'sucur');
 		$edit->sucur->option('','Ninguna');
 		$edit->sucur->options("SELECT codigo, TRIM(sucursal) FROM sucu ORDER BY sucursal");
-		$edit->sucur->style ='width:225px;';
+		$edit->sucur->style ='width:80px;';
 
 		$mSQL="SELECT codigo, CONCAT_WS('-',TRIM(descrip),TRIM(codigo)) AS descrip FROM mgas ORDER BY descrip";
 		$edit->gastoidb = new dropdownField('Gasto I.D.B.','gastoidb');
@@ -264,14 +264,17 @@ class Banc extends Validaciones {
 		$edit->gastocom->option('','Seleccionar');
 		$edit->gastocom->options($mSQL);
 		$edit->gastocom->style ='width:350px;';
-		$edit->gastocom->append('Obligatorio solo para bancos');
+		$edit->gastocom->append('Solo bancos');
 
 		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
 		$edit->build();
 
-		$data['content'] = $edit->output;
+		$conten["form"]  =&  $edit;
+		$data['content'] = $this->load->view('view_banc', $conten,true);
+
+		//$data['content'] = $edit->output;
 		$data['title']   = '<h1>Bancos y cajas</h1>';
-		$data['head']    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
+		$data['head']    = script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 
