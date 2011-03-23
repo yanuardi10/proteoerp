@@ -14,10 +14,21 @@ $campos='<tr id="tr_gitser_<#i#>"><td class="littletablerow">'.join('</td><td>',
 $campos.=' <td class="littletablerow"><a href=\'#\' onclick="del_gitser(<#i#>);return false;">Eliminar</a></td></tr>';
 $campos=$form->js_escape($campos);
 
-foreach($form->detail_fields['gereten'] AS $ind=>$data) $ggereten[]=$data['field'];
+foreach($form->detail_fields['gereten'] AS $ind=>$data){ if(!empty($data['field'])) $ggereten[]=$data['field']; }
 $cgereten='<tr id="tr_gereten_<#i#>"><td class="littletablerow">'.join('</td><td>',$ggereten).'</td>';
 $cgereten.=' <td class="littletablerow"><a href=\'#\' onclick="del_gereten(<#i#>);return false;">Eliminar</a></td></tr>';
 $cgereten=$form->js_escape($cgereten);
+
+$rete=array();
+$mSQL='SELECT TRIM(codigo) AS codigo,TRIM(CONCAT_WS("-",codigo,activida)) AS activida ,base1,tari1,pama1,TRIM(tipo) AS tipo FROM rete ORDER BY codigo';
+$query = $this->db->query($mSQL);
+if ($query->num_rows() > 0){
+	foreach ($query->result() as $row){
+		$ind='_'.$row->codigo;
+		$rete[$ind]=array($row->activida,$row->base1,$row->tari1,$row->pama1,$row->tipo);
+	}
+}
+$json_rete=json_encode($rete);
 
 //echo $form_scripts;
 echo $form_begin;
@@ -36,18 +47,20 @@ $json_comis=json_encode($comis);
 ?>
 
 <script language="javascript" type="text/javascript">
-gitser_cont =<?php echo $form->max_rel_count['gitser']; ?>;
-gereten_cont=<?php echo $form->max_rel_count['gereten'];?>;
+var gitser_cont =<?php echo $form->max_rel_count['gitser']; ?>;
+var gereten_cont=<?php echo $form->max_rel_count['gereten'];?>;
 
 var departa  = '';
 var sucursal = '';
 var comis    = <?php echo $json_comis; ?>;
+var rete     = <?php echo $json_rete;  ?>;
 
 $(document).ready(function() {
 	$(".inputnum").numeric(".");
 	totalizar();
 	codb1=$('#codb1').val();
-	desactivacampo(codb1)
+	desactivacampo(codb1);
+	cdropdowncodigorete(0);
 });
 
 function valida(i){
@@ -73,9 +86,10 @@ function islr(){
 	$("#totneto").val(totneto);
 }
 
+//Calcula la retencion del iva
 function reteiva(){
 	totiva=Number($("#totiva").val());
-	preten=Number($("#__reteiva").val());
+	preten=Number($("#sprvreteiva").val());
 	preten=totiva*(preten/100);
 
 	$("#reteiva").val(roundNumber(preten,2));
@@ -112,8 +126,8 @@ function totalizar(){
 	$("#totbruto").val(roundNumber(tb,2));
 	totiva=roundNumber(tb-tp,2);
 	$("#totiva").val(totiva);
-
-	totneto=roundNumber(tb-numberval($("#reteiva").val()),2);
+	var reten=totalrete();
+	totneto=roundNumber(tb-Number($("#reteiva").val())-reten,2);
 	$("#totneto").val(totneto);
 	reteiva();
 	monto1=Number($("#monto1").val());
@@ -131,6 +145,7 @@ function contado(){
 	montonet=Number($("#totneto").val());
 	$("#credito").val(roundNumber(montonet-monto1,2));
 }
+
 function esbancaja(codb1){
 	if(codb1.length>0){
 		desactivacampo(codb1);
@@ -152,11 +167,10 @@ function desactivacampo(codb1){
 			$('#cheque1').removeAttr('disabled');
 		}
 	}
-	
 }
 
 function add_gitser(){
-	var htm = <?=$campos ?>;
+	var htm = <?php echo $campos; ?>;
 	can = gitser_cont.toString();
 	con = (gitser_cont+1).toString();
 	htm = htm.replace(/<#i#>/g,can);
@@ -165,6 +179,74 @@ function add_gitser(){
 	$("#departa_"+can).val(departa);
 	$("#sucursal_"+can).val(sucursal);
 	gitser_cont=gitser_cont+1;
+}
+
+//Hace el dropdown para las retenciones
+function cdropdowncodigorete(nind){
+	/*var ind=nind.toString();
+	var codigorete  = $("#codigorete_"+ind).val();
+	var ccodigorete = document.createElement("select");
+
+	ccodigorete.setAttribute("id"      , "codigorete_"+ind);
+	ccodigorete.setAttribute("name"    , "codigorete_"+ind);
+	ccodigorete.setAttribute("class"   , "select");
+	ccodigorete.setAttribute("style"   , "width: 350px");
+	ccodigorete.setAttribute("onchange" , "post_codigoreteselec("+ind+",this.value)");
+
+	var opt=document.createElement("option");
+	opt.text ='Seleccionar';
+	opt.value='';
+	ccodigorete.add(opt,null);
+
+	$.each(rete, function(key, arreglo) {
+		val=$("#codigorete_"+ind).val();
+		opt=document.createElement("option");
+		opt.text =arreglo[0];
+		opt.value=key.substring(1);
+		ccodigorete.add(opt,null);
+	});
+
+	$("#codigorete_"+ind).replaceWith(ccodigorete);*/
+}
+
+function importerete(nind){
+	var ind=nind.toString();
+	var codigo  = $("#codigorete_"+ind).val();
+	if(codigo.length>0){
+		//var tari1   = Number($("#porcen_"+ind).val());
+		var importe = Number($("#base_"+ind).val());
+		var base1   = Number(eval('rete._'+codigo+'[1]'));
+		var tari1   = Number(eval('rete._'+codigo+'[2]'));
+		var pama1   = Number(eval('rete._'+codigo+'[3]'));
+		
+		var tt=codigo.substring(0,1);
+		if(tt=='1')
+			monto=(importe*base1*tari1)/10000;
+		else if(importe>pama1)
+			monto=((importe-pama1)*base1)/10000;
+		else
+			monto=0;
+
+		$("#monto_"+ind).val(roundNumber(monto,2));
+	}
+	totalizar();
+}
+
+function totalrete(){
+	monto=0;
+	arr  =$('input[name^="monto_"]');
+	jQuery.each(arr, function() {
+		monto=monto+Number(this.value);
+	});
+	return monto;
+}
+
+function post_codigoreteselec(nind,cod){
+	var ind=nind.toString();
+	var porcen=eval('rete._'+cod+'[2]');
+	var base1 =eval('rete._'+cod+'[1]');
+	$("#porcen_"+ind).val(porcen);
+	importerete(nind);
 }
 
 function add_gereten(){
@@ -181,7 +263,7 @@ function del_gereten(id){
 	id = id.toString();
 	obj='#tr_gereten_'+id;
 	$(obj).remove();
-	//totalizar();
+	totalizar();
 }
 
 function del_gitser(id){
@@ -206,23 +288,7 @@ function toggle() {
 	}
 } 
 </script>
-<?php }
-$cod_prov=$form->getval('proveed');
-if ($tipo_rete=="ESPECIAL"){
-	if($cod_prov===false || empty($cod_prov)){
-		$_preteiva=75;
-	}else{
-		$dbcod_prov=$this->db->escape($cod_prov);
-		$_preteiva=$this->datasis->dameval('SELECT reteiva FROM sprv WHERE proveed='.$dbcod_prov);
-	}
-}else{
-	$_preteiva=0;
-}
-?>
-<input type="hidden" name="__reteiva" id="__reteiva" value="<?php echo $_preteiva; ?>">
-<input type="hidden" name="__pama" id="__pama" value="">
-<input type="hidden" name="__tar" id="__tar" value="">
-<input type="hidden" name="__base" id="__base" value="">
+<?php } ?>
 	
 <table align='center' width="99%">
 	<tr>
@@ -242,7 +308,7 @@ if ($tipo_rete=="ESPECIAL"){
 				<td class="littletableheader"><?php echo $form->ffactura->label  ?>*&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->ffactura->output ?>&nbsp; </td>
 				<td class="littletableheader"><?php echo $form->proveed->label   ?>*&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->proveed->output  ?>&nbsp; </td>
+				<td class="littletablerow">   <?php echo $form->proveed->output.$form->sprvtipo->output.$form->sprvreteiva->output  ?>&nbsp; </td>
 			</tr>
 			<tr>
 				<td class="littletableheader"><?php echo $form->numero->label  ?>*</td>
@@ -251,7 +317,6 @@ if ($tipo_rete=="ESPECIAL"){
 				<td class="littletablerow">   <?php echo $form->fecha->output  ?>&nbsp; </td>
 				<td class="littletableheader"><?php echo $form->nombre->label  ?>*&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->nombre->output ?>&nbsp; </td>
-
 			</tr>
 			<tr>
 				<td class="littletableheader"><?php echo $form->nfiscal->label  ?>&nbsp;</td>
@@ -342,7 +407,6 @@ if ($tipo_rete=="ESPECIAL"){
 		<table width='100%'>
 			<tr>
 				<td class="littletableheaderdet">C&oacute;digo</td>
-				<td class="littletableheaderdet">Nombre</td>
 				<td class="littletableheaderdet">Base</td>
 				<td class="littletableheaderdet" align="right">Porcentaje</td>
 				<td class="littletableheaderdet" align="right">Monto</td>
@@ -352,14 +416,13 @@ if ($tipo_rete=="ESPECIAL"){
 			</tr>
 			<?php for($i=0; $i < $form->max_rel_count['gereten']; $i++) {
 				$it_codigorete= "codigorete_$i";
-				$it_actividad = "actividad_$i";
+				//$it_actividad = "actividad_$i";
 				$it_base      = "base_$i";
 				$it_porcen    = "porcen_$i";
 				$it_monto     = "monto_$i";
 			?>
 			<tr id='tr_gereten_<?php echo $i; ?>'>
 				<td class="littletablerow" nowrap><?php echo $form->$it_codigorete->output ?></td>
-				<td class="littletablerow"><?php echo $form->$it_actividad->output ?></td>
 				<td class="littletablerow"><?php echo $form->$it_base->output      ?></td>
 				<td class="littletablerow"><?php echo $form->$it_porcen->output    ?></td>
 				<td class="littletablerow"><?php echo $form->$it_monto->output     ?></td>
@@ -444,23 +507,23 @@ if ($tipo_rete=="ESPECIAL"){
 			<legend class="subtitulotabla" style='color: #114411;'>Informacion del Registro</legend>
 			<table width='100%' cellspacing='1' >
 				<tr style='font-size:12px;color:#0B3B0B;background-color: #F7BE81;'>
-					<td align='center' ><?php echo $form->usuarios->label ?>&nbsp;</td>
-					<td align='center' >Nombre&nbsp;</td>
-					<td align='center' ><?php echo $form->estampa->label ?>&nbsp;</td>
-					<td align='center' ><?php echo $form->hora->label ?>&nbsp;</td>
-					<td align='center' ><?php echo $form->transac->label ?>&nbsp;</td>
+					<td align='center' >Usuario</td>
+					<td align='center' >Nombre </td>
+					<td align='center' >Fecha  </td>
+					<td align='center' >Hora   </td>
+					<td align='center' >Transacci&oacute;n</td>
 				</tr>
 				<tr>
 					<?php
-						$mSQL="SELECT us_nombre FROM usuario WHERE us_codigo='".trim($form->usuarios->output)."'";
+						$mSQL="SELECT us_nombre FROM usuario WHERE us_codigo='".trim($form->_dataobject->get('usuario'))."'";
 						$us_nombre = $this->datasis->dameval($mSQL);
 					
 					?>
-					<td class="littletablerow" align='center'><?php echo $form->usuarios->output ?>&nbsp;</td>
+					<td class="littletablerow" align='center'><?php echo $form->_dataobject->get('usuario'); ?>&nbsp;</td>
 					<td class="littletablerow" align='center'><?php echo $us_nombre ?>&nbsp;</td>
-					<td class="littletablerow" align='center'><?php echo $form->estampa->output ?>&nbsp;</td>
-					<td class="littletablerow" align='center'><?php echo $form->hora->output ?>&nbsp;</td>
-					<td class="littletablerow" align='center'><?php echo $form->transac->output ?>&nbsp;</td>
+					<td class="littletablerow" align='center'><?php echo $form->_dataobject->get('estampa'); ?>&nbsp;</td>
+					<td class="littletablerow" align='center'><?php echo $form->_dataobject->get('hora'); ?>&nbsp;</td>
+					<td class="littletablerow" align='center'><?php echo $form->_dataobject->get('transac'); ?>&nbsp;</td>
 				</tr>
 			</table>
 			</fieldset>
@@ -473,7 +536,7 @@ if ($tipo_rete=="ESPECIAL"){
 			<div id='asociados' style='display: none'>
 				<?php
 					$mSQL = "SELECT periodo, nrocomp, emision, impuesto, reiva, round(reiva*100/impuesto,0) porcent FROM riva WHERE transac=? LIMIT 1";
-					$query = $this->db->query($mSQL, array(TRIM($form->transac->output)) );
+					$query = $this->db->query($mSQL, array(TRIM($form->_dataobject->get('transac'))) );
 					if ( $query->num_rows() > 0 ) { 
 						$row = $query->row();
 				?>
@@ -501,7 +564,7 @@ if ($tipo_rete=="ESPECIAL"){
 				<?php }; ?>
 				<?php
 					$mSQL = "SELECT CONCAT(tipo_op, numero) numero, CONCAT(codbanc,'-', banco) codbanc, monto, concepto FROM bmov WHERE transac=? LIMIT 1";
-					$query = $this->db->query($mSQL, array(TRIM($form->transac->output)) );
+					$query = $this->db->query($mSQL, array(trim($form->_dataobject->get('transac'))) );
 					if ( $query->num_rows() > 0 ) {
 						$row = $query->row(); ?>
 			<fieldset style='border: 1px solid ##8A0808;background: #FFFBE9;'>
@@ -525,7 +588,7 @@ if ($tipo_rete=="ESPECIAL"){
 
 			<?php
 				$mSQL = "SELECT CONCAT(tipo_doc, numero) numero, CONCAT(cod_prv,' ',nombre) cod_prv, monto*(tipo_doc IN ('FC','ND','GI')) debe, monto*(tipo_doc NOT IN ('FC','ND','GI')) haber , monto-abonos saldo FROM sprm WHERE transac=? ";
-				$query = $this->db->query($mSQL, array(TRIM($form->transac->output)) );
+				$query = $this->db->query($mSQL, array(trim($form->_dataobject->get('transac'))) );
 				if ( $query->num_rows() > 0 ) { ?>
 			<fieldset style='border: 1px solid ##8A0808;background: #FFFBE9;'>
 			<legend class="subtitulotabla" style='color: #114411;'>Estado de Cuenta</legend>

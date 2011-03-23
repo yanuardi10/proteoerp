@@ -81,7 +81,7 @@ class Desarrollo extends Controller{
 			}elseif($field->Field=='estampa'){
 				$crud.="\t\t".'$edit->estampa = new autoUpdateField(\'estampa\' ,date(\'Ymd\'), date(\'Ymd\'));'."\n\n";
 			}elseif($field->Field=='hora'){
-				$crud.="\t\t".'$edit->hora    = new autoUpdateField(\'hora\',date(\'H:m:s\'), date(\'H:m:s\'));'."\n\n";
+				$crud.="\t\t".'$edit->hora    = new autoUpdateField(\'hora\',date(\'H:i:s\'), date(\'H:i:s\'));'."\n\n";
 			}else{
 				preg_match('/(?P<tipo>\w+)(\((?P<length>[0-9\,]+)\)){0,1}/', $field->Type, $matches);
 				if(isset($matches['length'])){

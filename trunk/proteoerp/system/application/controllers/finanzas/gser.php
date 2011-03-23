@@ -641,14 +641,18 @@ class gser extends Controller {
 
 	function chtipoe($tipoe){
 		$eenvia = $this->input->post('codb1');
-		$envia  = common::_traetipo($eenvia);
+		if(!empty($eenvia)){
+			$envia  = common::_traetipo($eenvia);
 
-		if($envia=='CAJ' && $tipoe!='D'){
-			$this->validation->set_message('chtipoe', 'Cuando el gasto se carga a una caja el %s debe ser nota de d&eacute;bito.');
-			return false;
-		}elseif($envia!='CAJ' && empty($tipoe)){
-			$this->validation->set_message('chtipoe', 'Cuando el gasto se carga a un banco el %s es obligatorio.');
-			return false;
+			if($envia=='CAJ' && $tipoe!='D'){
+				$this->validation->set_message('chtipoe', 'Cuando el gasto se carga a una caja el %s debe ser nota de d&eacute;bito.');
+				return false;
+			}elseif($envia!='CAJ' && empty($tipoe)){
+				$this->validation->set_message('chtipoe', 'Cuando el gasto se carga a un banco el %s es obligatorio.');
+				return false;
+			}else{
+				return true;
+			}
 		}else{
 			return true;
 		}
@@ -1010,7 +1014,7 @@ class gser extends Controller {
 	}
 
 	//Crea la retencion
-	function _gserrete($fecha,$tipo,$fechafac,$numero,$nfiscal,$afecta,$clipro,$montasa,$monredu,$monadic,$tasa,$reducida,$sobretasa,$exento,$reiva){
+	function _gserrete($fecha,$tipo,$fechafac,$numero,$nfiscal,$afecta,$clipro,$montasa,$monredu,$monadic,$tasa,$reducida,$sobretasa,$exento,$reiva,$transac){
 		$nrocomp=$this->datasis->fprox_numero('niva');
 		$sp_fecha = str_replace('-','',$fecha);
 		$row     = $this->datasis->damerow('SELECT nombre,rif FROM sprv WHERE proveed='.$this->db->escape($clipro));
@@ -1031,13 +1035,13 @@ class gser extends Controller {
 		$data['nombre']     = $row['nombre'];
 		$data['rif']        = $row['rif'];
 		$data['exento']     = $exento;
-		$data['tasa']       = round($tasa*100/$montasa,2);
+		$data['tasa']       = ($montasa>0)? round($tasa*100/$montasa,2) : 0;
 		$data['general']    = $montasa;
 		$data['geneimpu']   = $tasa;
-		$data['tasaadic']   = round($sobretasa*100/$monadic,2);
+		$data['tasaadic']   = ($monadic>0)? round($sobretasa*100/$monadic,2) : 0;
 		$data['adicional']  = $monadic;
 		$data['adicimpu']   = $sobretasa;
-		$data['tasaredu']   = round($reducida*100/$monredu,2);
+		$data['tasaredu']   = ($monredu>0)? round($reducida*100/$monredu,2) : 0;
 		$data['reducida']   = $monredu;
 		$data['reduimpu']   = $reducida;
 		$data['stotal']     = $totpre;
@@ -1180,6 +1184,8 @@ class gser extends Controller {
 
 	function dataedit(){
 		$this->rapyd->load('dataobject','datadetails');
+		$tipo_rete=$this->datasis->traevalor('CONTRIBUYENTE');
+		$rif      =$this->datasis->traevalor('RIF');
 
 		$modbus=array(
 			'tabla'   => 'mgas',
@@ -1196,31 +1202,21 @@ class gser extends Controller {
 		$mSPRV=array(
 			'tabla'   =>'sprv',
 			'columnas'=>array(
-			'proveed' =>'C&oacute;odigo',
-			'nombre'=>'Nombre',
-			'rif'=>'Rif'),
-			'filtro'  =>array('proveed'=>'C&oacute;digo','nombre'=>'Nombre'),
-			'retornar'=>array('proveed'=>'proveed','nombre'=>'nombre','reteiva'=>'__reteiva'),
+				'proveed' =>'C&oacute;odigo',
+				'nombre'=>'Nombre',
+				'rif'=>'Rif'
+			),
+			'filtro'  => array('proveed'=>'C&oacute;digo','nombre'=>'Nombre'),
+			'retornar'=> array('proveed'=>'proveed','nombre'=>'nombre','tipo'=>'sprvtipo','reteiva'=>'sprvreteiva'),
 			'script'  => array('totalizar()'),
-			'titulo'  =>'Buscar Proveedorr');
+			'titulo'  =>'Buscar Proveedor');
 		$bSPRV=$this->datasis->modbus($mSPRV);
 
-		$mRETE=array(
-			'tabla'   =>'rete',
-			'columnas'=>array(
-			'codigo' =>'C&oacute;odigo','activida'=>'Actividad',
-			'base1'=>'Base1','pama1'=>'Para Mayores','tari1'=>'%'),
-			'filtro'  =>array('codigo'=>'C&oacute;digo','activida'=>'Actividad'),
-			'retornar'=>array('codigo'=>'codigorete_<#i#>','activida'=>'actividad_<#i#>','tari1'=>'porcen_<#i#>'),
-			'p_uri'   => array(4=>'<#i#>'),
-			'titulo'  =>'Buscar Retencion',
-			//'script'=>array('islr()')
-			);
-		$bRETE=$this->datasis->p_modbus($mRETE,'<#i#>');
-
 		$do = new DataObject('gser');
+		$do->pointer('sprv' ,'sprv.proveed=gser.proveed','sprv.tipo AS sprvtipo, sprv.reteiva AS sprvreteiva','left');
 		$do->rel_one_to_many('gitser' ,'gitser' ,array('id'=>'idgser'));
 		$do->rel_one_to_many('gereten','gereten',array('id'=>'idd'));
+		//$do->rel_pointer('rete','rete','gereten.codigorete=rete.codigo','rete.pama1 AS retepama1');
 
 		$edit = new DataDetails("Gastos", $do);
 		if ( $edit->_status == 'show' ) {
@@ -1291,11 +1287,17 @@ class gser extends Controller {
 		$edit->nombre->maxlength=40;
 		$edit->nombre->rule= "required";
 
+		$edit->sprvtipo = new hiddenField('','sprvtipo');
+		$edit->sprvtipo->pointer = true;
+
+		$edit->sprvreteiva = new hiddenField('','sprvreteiva');		
+		$edit->sprvreteiva->insertValue=($tipo_rete=='ESPECIAL' && strtoupper($rif[0])!='V') ? '75':'0';
+		$edit->sprvreteiva->pointer = true;
+
 		$edit->totpre  = new inputField("Sub.Total", "totpre");
 		$edit->totpre->size = 10;
 		$edit->totpre->css_class='inputnum';
 		$edit->totpre->readonly = true;
-		//$edit->totpre->onkeyup="valida(0)";
 
 		$edit->totbruto= new inputField("Total", "totbruto");
 		$edit->totbruto->size = 10;
@@ -1305,7 +1307,6 @@ class gser extends Controller {
 		$edit->totiva = new inputField("Total IVA", "totiva");
 		$edit->totiva->css_class ='inputnum';
 		$edit->totiva->size      = 10;
-		//$edit->totiva->onkeyup="valida(0)";
 
 		$edit->codb1 = new dropdownField('Caja/Banco','codb1');
 		$edit->codb1->option('','');
@@ -1334,7 +1335,7 @@ class gser extends Controller {
 		$edit->monto1->size = 10;
 		$edit->monto1->css_class='inputnum';
 		$edit->monto1->onkeyup="contado()";
-		$edit->monto1->rule = 'condi_required|callback_chmontocontado';
+		$edit->monto1->rule = 'condi_required|callback_chmontocontado|positive';
 		$edit->monto1->autocomplete=false;
 
 		$edit->credito= new inputField("Cr&eacute;dito", "credito");
@@ -1342,22 +1343,6 @@ class gser extends Controller {
 		$edit->credito->css_class='inputnum';
 		$edit->credito->onkeyup="ccredito()";
 		$edit->credito->autocomplete=false;
-
-		$edit->transac= new inputField("Transaccion", "transac");
-		$edit->transac->size = 10;
-		$edit->transac->when=array('show');
-
-		$edit->usuarios= new inputField("Usuario", "usuario");
-		$edit->usuarios->size = 10;
-		$edit->usuarios->when=array('show');
-
-		$edit->estampa= new inputField("Fecha", "estampa");
-		$edit->estampa->size = 10;
-		$edit->estampa->when=array('show');
-
-		$edit->hora= new inputField("Hora", "hora");
-		$edit->hora->size = 8;
-		$edit->hora->when=array('show');
 
 		/*$edit->creten = new inputField("C&oacute;digo de la retencion","creten");
 		$edit->creten->size = 10;
@@ -1389,7 +1374,9 @@ class gser extends Controller {
 		$edit->totneto->css_class='inputnum';
 		$edit->totneto->readonly=true;
 
-		$edit->usuario  = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
+		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
+		$edit->estampa = new autoUpdateField('estampa' ,date('Ymd'), date('Ymd'));
+		$edit->hora    = new autoUpdateField('hora',date('H:i:s'), date('H:i:s'));
 
 		//***************************
 		//Campos para el detalle 1
@@ -1399,6 +1386,7 @@ class gser extends Controller {
 		$edit->codigo->db_name='codigo';
 		$edit->codigo->append($btn);
 		$edit->codigo->rule="required";
+		$edit->codigo->readonly=true;
 		$edit->codigo->rel_id='gitser';
 
 		$edit->descrip = new inputField("Descripci&oacute;n <#o#>", "descrip_<#i#>");
@@ -1423,6 +1411,7 @@ class gser extends Controller {
 		$edit->tasaiva->option($ivas['sobretasa'],$ivas['sobretasa'].'%');
 		$edit->tasaiva->option('0','0.00%');
 		$edit->tasaiva->db_name='tasaiva';
+		$edit->tasaiva->rule='positive';
 		$edit->tasaiva->style="30px";
 		$edit->tasaiva->rel_id   ='gitser';
 		$edit->tasaiva->onchange="importe(<#i#>)";
@@ -1432,6 +1421,7 @@ class gser extends Controller {
 		$edit->iva->css_class='inputnum';
 		$edit->iva->rel_id   ='gitser';
 		$edit->iva->size=3;
+		$edit->iva->rule='positive';
 		$edit->iva->onkeyup="valida(<#i#>)";
 
 		$edit->importe = new inputField("importe <#o#>", "importe_<#i#>");
@@ -1462,54 +1452,47 @@ class gser extends Controller {
 		//Fin de campos para detalle
 		//*****************************
 
-		//***************************
-		//Campos para el detalle 2
-		//**************************
-		/*$edit->tipo = new inputField('tipo','tipo');
-		$edit->tipo->rule='max_length[1]';
-		$edit->tipo->size =3;
-		$edit->tipo->rel_id    ='gereten';
-		$edit->tipo->maxlength =1;*/
+		//*****************************
+		//Campos para el detalle reten
+		//****************************
+		$edit->itorigen = new autoUpdateField('origen','SCST','SCST');
+		$edit->itorigen->rel_id ='gereten';
 
-		$edit->codigorete = new inputField('','codigorete_<#i#>');
+		$edit->codigorete = new dropdownField('','codigorete_<#i#>');
+		$edit->codigorete->option('','Seleccionar');  
+		$edit->codigorete->options('SELECT TRIM(codigo) AS codigo,TRIM(CONCAT_WS("-",codigo,activida)) AS activida FROM rete ORDER BY codigo'); 
 		$edit->codigorete->db_name='codigorete';
-		$edit->codigorete->rule='max_length[4]';
+		$edit->codigorete->rule   ='max_length[4]';
+		$edit->codigorete->style  ='width: 350px';
 		$edit->codigorete->rel_id ='gereten';
-		$edit->codigorete->size   = 6;
-		$edit->codigorete->maxlength =4;
-		$edit->codigorete->append($bRETE);
-
-		$edit->actividad = new inputField('','actividad_<#i#>');
-		$edit->actividad->db_name='actividad';
-		$edit->actividad->rule   = 'max_length[45]';
-		$edit->actividad->rel_id ='gereten';
-		$edit->actividad->size =30;
-		$edit->actividad->maxlength =45;
+		$edit->codigorete->onchange='post_codigoreteselec(<#i#>,this.value)';
 
 		$edit->base = new inputField('base','base_<#i#>');
 		$edit->base->db_name='base';
-		$edit->base->rule='max_length[10]|numeric';
+		$edit->base->rule='max_length[10]|numeric|positive';
 		$edit->base->css_class='inputnum';
 		$edit->base->size =12;
 		$edit->base->rel_id    ='gereten';
 		$edit->base->maxlength =10;
+		$edit->base->onkeyup   ='importerete(<#i#>)';
 
 		$edit->porcen = new inputField('porcen','porcen_<#i#>');
 		$edit->porcen->db_name='porcen';
-		$edit->porcen->rule='max_length[5]|numeric';
+		$edit->porcen->rule='max_length[5]|numeric|positive';
 		$edit->porcen->css_class='inputnum';
 		$edit->porcen->size =7;
 		$edit->porcen->rel_id    ='gereten';
+		$edit->porcen->readonly  = true;
 		$edit->porcen->maxlength =5;
 
 		$edit->monto = new inputField('monto','monto_<#i#>');
 		$edit->monto->db_name='monto';
-		$edit->monto->rule='max_length[10]|numeric';
+		$edit->monto->rule='max_length[10]|numeric|positive';
 		$edit->monto->css_class='inputnum';
 		$edit->monto->rel_id    ='gereten';
 		$edit->monto->size =12;
-		$edit->monto->maxlength =10;
-
+		$edit->monto->readonly  = true;
+		$edit->monto->maxlength =8;
 		//*****************************
 		//Fin de campos para detalle
 		//*****************************
@@ -1521,7 +1504,7 @@ class gser extends Controller {
 		$conten['form']  =& $edit;
 		$data['content'] =  $this->load->view('view_gser', $conten,true);
 		$data['smenu']   =  $this->load->view('view_sub_menu', $smenu,true);
-		$data['title']   =  heading('Registro de Gastos o Nota de Debito');
+		$data['title']   =  heading('Registro de Gastos o Nota de D&eacute;bito');
 		$data['head']    = 	script('jquery-ui.js').
 					script("plugins/jquery.numeric.pack.js").
 					script('plugins/jquery.meiomask.js').
@@ -1529,7 +1512,6 @@ class gser extends Controller {
 					$this->rapyd->get_head().
 					phpscript('nformat.js').
 					script('plugins/jquery.floatnumber.js');
-		//$data['head']    = script('jquery.js').script('jquery-ui.js').script("plugins/jquery.numeric.pack.js").script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css').$this->rapyd->get_head().phpscript('nformat.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js');
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -1558,7 +1540,7 @@ class gser extends Controller {
 		$edit->post_process('update','_post_mgserupdate');
 		$edit->back_url = 'finanzas/gser';
 
-		$edit->fecha = new dateonlyField('Fecha Registro', 'fecha');
+		$edit->fecha = new dateonlyField('Fecha Recepci&oacute;n', 'fecha');
 		$edit->fecha->size = 10;
 		$edit->fecha->rule= 'required';
 
@@ -1689,10 +1671,10 @@ class gser extends Controller {
 		$nombre = $do->get('nombre');
 		$numero = $do->get('numero');
 		$nfiscal= $do->get('nfiscal');
+		$tipo_doc=$do->get('tipo_doc');
 		//$cheque1= $do->get('cheque1');
 		$_tipo=common::_traetipo($codb1);
-		
-		
+
 		if(empty($benefi) && $tipo1=='C'){
 			$do->set('benefi',$nombre);
 		}
@@ -1711,26 +1693,89 @@ class gser extends Controller {
 			$do->set('numero',$numero);
 		}*/
 
-		$mSQL='SELECT COUNT(*) FROM gser WHERE proveed='.$this->db->escape($proveed).' AND numero='.$this->db->escape($numero).' AND fecha='.$this->db->escape($fecha);
+		$mSQL='SELECT COUNT(*) FROM gser WHERE proveed='.$this->db->escape($proveed).' AND numero='.$this->db->escape($numero).' AND fecha='.$this->db->escape($fecha).' AND tipo_doc='.$this->db->escape($tipo_doc);
 		$ca=$this->datasis->dameval($mSQL);
 		if($ca>0){
-			$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='Al parecer ya esta registrado un gasto con la misma fecha, n&uacute;mero y proveedor.';
+			$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='Al parecer ya esta registrado un gasto con la misma fecha de recepci&oacute;n, n&uacute;mero y proveedor.';
 			return false;
 		}
 
-		$trans=$this->datasis->fprox_numero('ntransa');
-		$do->set('transac',$trans);
+		//Totalizamos la retenciones (exepto la de iva)
+		$retemonto=$rete_cana_vacio=0;
+		$rete_cana=$do->count_rel('gereten');
+		for($i=0;$i<$rete_cana;$i++){
+			$codigorete = $do->get_rel('gereten','codigorete',$i);
+			if(!empty($codigorete)){
+				$importe    = $do->get_rel('gereten','base'      ,$i);
+				$rete=$this->datasis->damerow('SELECT base1,tari1,pama1,activida FROM rete WHERE codigo='.$this->db->escape($codigorete));
+			
+				if($codigorete[0]=='1'){
+					$monto=($importe*$rete['base1']*$rete['tari1'])/10000;
+				}elseif($importe>$rete['pama1']){
+					$monto=(($importe-$rete['pama1'])*$rete['base1'])/10000;
+				}else{
+					$monto=0;
+				}
+				$do->set_rel('gereten','monto'    ,$monto           ,$i);
+				$do->set_rel('gereten','porcen'   ,$rete['tari1']   ,$i);
+				$retemonto += $monto;
+			}else{
+				$rete_cana_vacio++;
+			}
+		}
+		if($rete_cana_vacio==$rete_cana) $do->unset_rel('gereten'); //si no hay retencion elimina la relacion
+		$do->set('reten',$retemonto);
 
 		$ivat=$subt=$total=0;
-		$cana=$do->count_rel("gitser");
 		$tasa=$reducida=$sobretasa=$montasa=$monredu=$monadic=$exento=0;
-		$con=$this->db->query("select tasa,redutasa,sobretasa from civa order by fecha desc limit 1");
+		$con=$this->db->query("SELECT tasa,redutasa,sobretasa FROM civa ORDER BY fecha desc LIMIT 1");
 		$t=$con->row('tasa');$rt=$con->row('redutasa');$st=$con->row('sobretasa');
+		$cana=$do->count_rel("gitser");
 
 		for($i=0;$i<$cana;$i++){
 			$auxt   = $do->get_rel('gitser','tasaiva',$i);
-			$precio = $do->get_rel('gitser','precio',$i);
-			$iva    = $do->get_rel('gitser','iva',$i);
+			$precio = $do->get_rel('gitser','precio' ,$i);
+			$iva    = $precio*($auxt/100);
+
+			$total+=$iva+$precio;
+			$ivat +=$iva;
+			$subt +=$precio;
+
+			$do->set_rel('gitser','iva'    ,$iva  ,$i);
+			$do->set_rel('gitser','importe',$total,$i);
+		}
+
+		//Calcula la retencion del iva
+		$contribu= $this->datasis->traevalor('CONTRIBUYENTE');
+		$rif     = $this->datasis->traevalor('RIF');
+		if($contribu=='ESPECIAL' && strtoupper($rif[0])!='V'){
+			$prete=$this->datasis->dameval('SELECT reteiva FROM sprv WHERE proveed='.$this->db->escape($proveed));
+			if(empty($prete)) $prete=75;
+			$reteiva=$ivat*$prete/100;
+		}else{
+			$reteiva=0;
+		}
+		$do->get('reteiva', $reteiva);
+
+		//Chequea que el monto retenido no sea mayor a la base del gasto
+		if($retemonto+$reteiva>$subt){
+			$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='Opps!! no se puede cargar un gasto cuyas retenciones sean mayores a la base del mismo.';
+			return false;
+		}
+
+		//Calcula los totales
+		$do->set('totpre'  ,$subt );
+		$do->set('totbruto',$total);
+		$do->set('totiva'  ,$ivat );
+		$do->set('totneto' ,$total-$retemonto-$reteiva);
+
+		//Calcula la tasa particulares
+		$trans=$this->datasis->fprox_numero('ntransa');
+		$do->set('transac',$trans);
+		for($i=0;$i<$cana;$i++){
+			$auxt   = $do->get_rel('gitser','tasaiva',$i);
+			$precio = $do->get_rel('gitser','precio' ,$i);
+			$iva    = $do->get_rel('gitser','iva'    ,$i);
 			if($auxt-$t==0) {
 				$tasa   +=$iva;
 				$montasa+=$precio;
@@ -1758,13 +1803,9 @@ class gser extends Controller {
 			$do->set_rel('gitser','proveed' ,$proveed,$i);
 			$do->set_rel('gitser','fechafac',$ffecha ,$i);
 
-			$total+=$iva+$precio;
-			$subt +=$precio;
-
 			$do->rel_rm_field('gitser','tasaiva',$i);//elimina el campo comodin
 		}
 
-		$ivat=$total-$subt;
 		$do->set('tasa'     ,$tasa     );
 		$do->set('montasa'  ,$montasa  );
 		$do->set('reducida' ,$reducida );
@@ -1772,9 +1813,6 @@ class gser extends Controller {
 		$do->set('sobretasa',$sobretasa);
 		$do->set('monadic'  ,$monadic  );
 		$do->set('exento'   ,$exento   );
-		//$do->set('totpre',$subt);
-		//$do->set('totbruto',$total);
-		//$do->set('totiva',$ivat);
 
 		if ($monto1>0){
 			$negreso  = $this->datasis->fprox_numero('negreso');
@@ -1827,9 +1865,8 @@ class gser extends Controller {
 
 		//Guarda la retencion
 		if($reiva>0){
-			$this->_gserrete($fecha,$tipo,$fechafac,$numero,$nfiscal,$afecta,$codprv,$montasa,$monredu,$monadic,$tasa,$reducida,$sobretasa,$exento,$reiva);
+			$this->_gserrete($fecha,$tipo,$fechafac,$numero,$nfiscal,$afecta,$codprv,$montasa,$monredu,$monadic,$tasa,$reducida,$sobretasa,$exento,$reiva,$transac);
 		}
-
 		logusu('gser',"Gasto $numero CREADO");
 	}
 
@@ -2130,16 +2167,18 @@ class gser extends Controller {
 		
 		if (!$this->db->table_exists('gereten')) {
 			$query="CREATE TABLE `gereten` (
-				`id` INT(10) NULL,
-				`idd` INT NULL,
-				`tipo` CHAR(1) NULL,
-				`descrip` VARCHAR(50) NULL,
-				`numero` VARCHAR(8) NULL,
-				`base` DECIMAL(10,2) NULL,
-				`porcen` DECIMAL(5,2) NULL,
-				`monto` DECIMAL(10,2) NULL,
+				`id` INT(10) NOT NULL DEFAULT '0',
+				`idd` INT(11) NULL DEFAULT NULL,
+				`origen` CHAR(4) NULL DEFAULT NULL COLLATE 'utf8_unicode_ci',
+				`numero` VARCHAR(25) NULL DEFAULT NULL COLLATE 'utf8_unicode_ci',
+				`codigorete` VARCHAR(4) NULL DEFAULT NULL COLLATE 'utf8_unicode_ci',
+				`actividad` VARCHAR(45) NULL DEFAULT NULL COLLATE 'utf8_unicode_ci',
+				`base` DECIMAL(10,2) NULL DEFAULT NULL,
+				`porcen` DECIMAL(5,2) NULL DEFAULT NULL,
+				`monto` DECIMAL(10,2) NULL DEFAULT NULL,
 				PRIMARY KEY (`id`)
 			)
+			COLLATE='latin1_swedish_ci'
 			ENGINE=MyISAM
 			ROW_FORMAT=DEFAULT";
 			$this->db->simple_query($query);

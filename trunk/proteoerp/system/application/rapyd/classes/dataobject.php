@@ -432,6 +432,7 @@ class DataObject{
 					//guarda detalles
 					foreach($this->data_rel AS $rel=>$items){
 						//hace las equivalencias de las claves primarias
+						$pk_rel=array();
 						foreach($this->_rel_fields[$rel] AS $iind){ // $iind[0] encab $iind[1] detalle
 							$indiceit=$iind[1];
 							$indice =$iind[0];
@@ -742,6 +743,14 @@ class DataObject{
     //$this->data_rel[$rel_id][$field] = $value;
   }
 
+  //Borra una relacion
+  function unset_rel($rel_id)
+  {
+	if(isset($this->_rel_type[$rel_id])){
+	  unset($this->_rel_type[$rel_id]);
+	  unset($this->data_rel[$rel_id]);
+	}
+  }
 
 
  /**
