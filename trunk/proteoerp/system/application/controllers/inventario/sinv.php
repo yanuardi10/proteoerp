@@ -743,7 +743,6 @@ class sinv extends Controller {
 		$data['content'] = $this->load->view('view_sinvmaestro', $conten,true);
 		$data["head"]    =script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
 
-
 		//$data['content'] = $edit->output;
 		$data['title']   = "<h1>Maestro de Inventario</h1>";
 		//$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").script("sinvmaes.js").$this->rapyd->get_head();

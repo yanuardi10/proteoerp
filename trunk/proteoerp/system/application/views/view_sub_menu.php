@@ -1,3 +1,3 @@
 <?php
-	echo implode(' | ',$link);
+	echo  implode('  ',$link);
 ?>

@@ -2121,6 +2121,12 @@ class gser extends Controller {
 			$query="ALTER TABLE `gserchi` ADD COLUMN `ngasto` VARCHAR(8) NULL DEFAULT NULL AFTER `departa`";
 			$this->db->simple_query($query);
 		}
+
+		if (!$this->db->field_exists('aceptado','gserchi')) {
+			$query="ALTER TABLE gserchi ADD COLUMN aceptado CHAR(1) NULL DEFAULT NULL";
+			$this->db->simple_query($query);
+		}
+
 		
 		if (!$this->db->table_exists('gereten')) {
 			$query="CREATE TABLE `gereten` (
