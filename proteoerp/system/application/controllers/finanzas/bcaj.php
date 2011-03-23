@@ -1515,7 +1515,7 @@ class Bcaj extends Controller {
 	function _montoautotranf($caja,$fecha){
 		$dbfecha=$this->db->escape($fecha);
 		$dbcaja =$this->db->escape($caja);
-		$mSQL="SELECT SUM(if(tipo_op IN ('NC','DE'),1,-1)*monto) AS monto FROM bmov WHERE codbanc=$dbcaja AND fecha=$dbfecha";
+		$mSQL="SELECT SUM(if(tipo_op IN ('NC','DE'),1,-1)*monto) AS monto FROM bmov WHERE codbanc=$dbcaja AND fecha=$dbfecha AND anulado='N'";
 		$monto=$this->datasis->dameval($mSQL);
 		return (empty($monto))? 0 : $monto;
 	}
