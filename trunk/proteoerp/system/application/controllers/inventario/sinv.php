@@ -685,9 +685,6 @@ class sinv extends Controller {
 		$edit->exord->css_class='inputonlynum';
 		$edit->exord->style='background:#F5F6CE;';
 
-
-		//$edit->exord->when =array("show");
-
 		$edit->exdes = new inputField("Pedidos Cliente","exdes");
 		$edit->exdes->readonly = true;
 		$edit->exdes->size=10;
@@ -740,7 +737,7 @@ class sinv extends Controller {
 		$edit->build();
 
 		$conten["form"]  =&  $edit;
-		$data['content'] = $this->load->view('view_sinvmaestro', $conten,true);
+		$data['content'] = $this->load->view('view_sinv', $conten,true);
 		$data["head"]    =script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
 
 		//$data['content'] = $edit->output;
