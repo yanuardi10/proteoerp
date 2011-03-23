@@ -1,8 +1,8 @@
 <?php
 
-$container_bl=join("&nbsp;", $form->_button_container["BL"]);
-$container_br=join("&nbsp;", $form->_button_container["BR"]);
-$container_tr=join("&nbsp;", $form->_button_container["TR"]);
+$container_bl=join('&nbsp;', $form->_button_container['BL']);
+$container_br=join('&nbsp;', $form->_button_container['BR']);
+$container_tr=join('&nbsp;', $form->_button_container['TR']);
 
 if ($form->_status=='delete' || $form->_action=='delete' || $form->_status=='unknow_record'):
 	echo $form->output;
@@ -34,7 +34,7 @@ echo $form_begin;
 if($form->_status!='show'){ ?>
 
 <script language="javascript" type="text/javascript">
-itspre_cont=<?php echo $form->max_rel_count['itspre']; ?>;
+var itspre_cont=<?php echo $form->max_rel_count['itspre']; ?>;
 
 $(function(){
 	$(".inputnum").numeric(".");
@@ -87,7 +87,7 @@ function totalizar(){
 }
 
 function add_itspre(){
-	var htm = <?=$campos ?>;
+	var htm = <?php echo $campos; ?>;
 	can = itspre_cont.toString();
 	con = (itspre_cont+1).toString();
 	htm = htm.replace(/<#i#>/g,can);
@@ -238,6 +238,7 @@ function cdescrip(nind){
 function del_itspre(id){
 	id = id.toString();
 	$('#tr_itspre_'+id).remove();
+	totalizar();
 }
 </script>
 <?php } ?>
