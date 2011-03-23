@@ -334,8 +334,6 @@ if ($tipo_rete=="ESPECIAL"){
 			<input name="btn_add_gitser" value="Agregar Gasto" onclick="add_gitser()" class="button" type="button">
 		<?php } ?>
 		</td>
-
-
 	</tr>
 	<tr>
 		<td>
