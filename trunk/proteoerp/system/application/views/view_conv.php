@@ -13,9 +13,8 @@ $scampos  ='<tr id="tr_itconv_<#i#>">';
 $scampos .='<td class="littletablerow" align="left" >'.$campos['codigo']['field'].'</td>';
 $scampos .='<td class="littletablerow" align="left" >'.$campos['descrip']['field'].'</td>';
 $scampos .='<td class="littletablerow" align="right">'.$campos['entrada']['field'].  '</td>';
-$scampos .='<td class="littletablerow" align="right">'.$campos['salida']['field']. '</td>';
-$scampos .='<td class="littletablerow" align="right">'.$campos['costo']['field'];
-
+$scampos .='<td class="littletablerow" align="right">'.$campos['salida']['field'];
+$scampos .= $campos['costo']['field'].'</td>';
 $scampos .= '<td class="littletablerow"><a href=# onclick="del_itconv(<#i#>);return false;">Eliminar</a></td></tr>';
 $campos=$form->js_escape($scampos);
 
@@ -32,6 +31,35 @@ $(function(){
 	$(".inputnum").numeric(".");
 	
 });
+
+function validaEnt(i){
+	salida =$("#salida_"+i).val();
+	entrada =Number($("#entrada_"+i).val());
+	
+	if (salida !="" && Number(salida)>0 && entrada!=0){
+		alert("Este monto debe ser 0, ya que posee una salida");
+		$("#entrada_"+i).val(0);
+	}else{
+		$("#entrada_"+i).val(entrada)
+	}
+	if(entrada==0 && Number(salida)==0){
+		$("#salida_"+i).val(1);
+	}
+}
+function validaSalida(i){
+	entrada =$("#entrada_"+i).val();
+	salida =Number($("#salida_"+i).val());
+	if (entrada !="" && Number(entrada)>0 && salida!=0){
+		alert("Este monto debe ser 0, ya que posee una entrada");
+		$("#salida_"+i).val(0);
+	}else{
+		$("#salida_"+i).val(salida);
+	}
+	if(salida==0 && Number(entrada)==0){
+		$("#entrada_"+i).val(1);
+	}
+	
+}
 
 function add_itconv(){
 	var htm = <?php echo $campos; ?>;
@@ -93,7 +121,6 @@ function del_itconv(id){
 				<td class="littletableheader">Descripci&oacute;n</td>
 				<td class="littletableheader">Entrada</td>
 				<td class="littletableheader">Salida</td>
-				<td class="littletableheader">Costo</td>
 				<?php if($form->_status!='show') {?>
 					<td class="littletableheader">&nbsp;</td>
 				<?php } ?>
@@ -105,15 +132,15 @@ function del_itconv(id){
 				$it_salida    = "salida_$i";
 				$it_entrada   = "entrada_$i";
 				$it_costo = "costo_$i";
-				
+
+				$pprecios = $form->$it_costo->output;
 			?>
 
 			<tr id='tr_itconv_<?php echo $i; ?>'>
 				<td class="littletablerow" align="left" ><?php echo $form->$it_codigo->output; ?></td>
 				<td class="littletablerow" align="left" ><?php echo $form->$it_descrip->output;  ?></td>
 				<td class="littletablerow" align="right"><?php echo $form->$it_entrada->output;   ?></td>
-				<td class="littletablerow" align="right"><?php echo $form->$it_salida->output;  ?></td>
-				<td class="littletablerow" align="right"><?php echo $form->$it_costo->output;?></td>
+				<td class="littletablerow" align="right"><?php echo $form->$it_salida->output.$pprecios;  ?></td>
 
 				<?php if($form->_status!='show') {?>
 				<td class="littletablerow">
