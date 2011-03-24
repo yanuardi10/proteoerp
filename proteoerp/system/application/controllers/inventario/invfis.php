@@ -270,6 +270,9 @@ class Invfis extends Controller {
 		$filter->marca->options("SELECT TRIM(marca) AS clave, TRIM(marca) AS valor FROM marc ORDER BY marca");
 		$filter->marca -> style='width:220px;';
 
+		$action = "javascript:window.location='".site_url($this->url)."'";
+		$filter->button('btn_regresa', 'Regresar', $action, 'TR');
+
 		$filter->buttons("reset","search");
 		$filter->build();
 
@@ -292,15 +295,15 @@ class Invfis extends Controller {
 			else
 				return "<span style='color:FF0000;'>$cont</span>";
 		}
-		
+
 		$atts = array(
-              'width'      => '800',
-              'height'     => '600',
-              'scrollbars' => 'yes',
-              'status'     => 'yes',
-              'resizable'  => 'yes',
-              'screenx'    => '0',
-              'screeny'    => '0');
+			'width'      => '800',
+			'height'     => '600',
+			'scrollbars' => 'yes',
+			'status'     => 'yes',
+			'resizable'  => 'yes',
+			'screenx'    => '0',
+			'screeny'    => '0');
 
 		$titulo = anchor_popup("reportes/ver/INVFIS/$tabla",'Imprimir',$atts);
 		
@@ -376,10 +379,10 @@ class Invfis extends Controller {
 		});
 		</script>';
 
-		$salida=anchor($this->url,"Regresar");
-		$data['content'] = $filter->output.$salida.$grid->output;
-		//$data['title']   = "($codigoadm) $codigoadmdes $tipo";
-		$data["head"]    = script("jquery.js").script("plugins/jquery.numeric.pack.js").$this->rapyd->get_head();
+		$salida=anchor($this->url,'Regresar');
+		$data['content'] = $filter->output.$grid->output;
+		$data['title']   = heading('Conteo de inventario');
+		$data['head']    = script('jquery.js').script('plugins/jquery.numeric.pack.js').$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -430,7 +433,7 @@ class Invfis extends Controller {
 
 			$mSQL = "INSERT IGNORE INTO `$tabla`
 			(`codigo`,`grupo`,`existen`,`contado`,`agregar`,`quitar`,`sustituir`,`fecha`,`modificado`,`actualizado`,`pond`)
-			SELECT TRIM(a.codigo),TRIM(a.grupo),b.existen,0 contado,0 agregar,0 quitar,0 sustituir, NOW() fecha,CAST(NULL AS DATE ) modificado, CAST(NULL AS DATE) actualizado,a.pond
+			SELECT TRIM(a.codigo),TRIM(a.grupo),IFNULL(b.existen,0) AS existen,0 contado,0 agregar,0 quitar,0 sustituir, NOW() fecha,CAST(NULL AS DATE ) modificado, CAST(NULL AS DATE) actualizado,a.pond
 			FROM sinv a
 			LEFT JOIN itsinv b ON a.codigo=b.codigo AND b.alma=$dbalma";
 			$ban=$this->db->simple_query($mSQL);
