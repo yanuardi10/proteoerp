@@ -1,6 +1,8 @@
 <?php //require_once(BASEPATH.'application/controllers/validaciones.php');
 class conv extends Controller {
 
+	var $chrepetidos=array();
+
 	function conv(){
 		parent::Controller();
 		$this->load->library('rapyd');
@@ -14,7 +16,10 @@ class conv extends Controller {
 		$this->rapyd->load('datafilter','datagrid');
 		$this->rapyd->uri->keep_persistence();
 
-		$filter = new DataFilter('Filtro de Conversiones', 'conv');
+		$filter = new DataFilter('Filtro de Conversiones');
+		$filter->db->select(array('a.fecha','a.numero','a.almacen','b.ubides'));
+		$filter->db->from('conv AS a');
+		$filter->db->join('caub AS b','a.almacen=b.ubica');
 
 		$filter->fecha = new dateonlyField('Fecha', 'fecha');
 		$filter->fecha->size=15;
@@ -37,9 +42,9 @@ class conv extends Controller {
 		$grid->order_by('numero','desc');
 		$grid->per_page = 10;
 
-		$grid->column('N&uacute;mero', $uri);
-		$grid->column('Fecha','<dbdate_to_human><#fecha#></dbdate_to_human>');
-		$grid->column('Almac&eacute;n','almacen');
+		$grid->column_orderby('N&uacute;mero', $uri,'numero');
+		$grid->column_orderby('Fecha','<dbdate_to_human><#fecha#></dbdate_to_human>','fecha');
+		$grid->column_orderby('Almac&eacute;n','ubides','almacen');
 
 		$grid->add('inventario/conv/dataedit/create');
 		$grid->build();
@@ -62,17 +67,18 @@ class conv extends Controller {
 			'retornar'=>array(
 				'codigo' =>'codigo_<#i#>',
 				'descrip'=>'descrip_<#i#>',
+				'ultimo'=>'costo_<#i#>'
 			),
 			'p_uri'   => array(4=>'<#i#>'),
 			'titulo'  => 'Buscar Articulo',
-			'where'   => '`activo` = "S"',
+			'where'   => '`activo` = "S" AND `tipo` = "Articulo"',
 			'script'  => array('post_modbus_sinv(<#i#>)')
 		);
 		$btn=$this->datasis->p_modbus($modbus,'<#i#>');
 
 		$do = new DataObject('conv');
 		$do->rel_one_to_many('itconv', 'itconv', 'numero');
-		$do->rel_pointer('itconv','sinv','itconv.codigo=sinv.codigo','sinv.descrip AS sinvdescrip');
+		$do->rel_pointer('itconv','sinv','itconv.codigo=sinv.codigo','sinv.descrip AS sinvdescrip','sinv.ultimo AS sinvultimo');
 
 		$edit = new DataDetails('Conversiones', $do);
 		$edit->back_url = site_url('inventario/conv/filteredgrid');
@@ -120,7 +126,7 @@ class conv extends Controller {
 		$edit->codigo->db_name  = 'codigo';
 		$edit->codigo->readonly = true;
 		$edit->codigo->rel_id   = 'itconv';
-		$edit->codigo->rule     = 'required';
+		$edit->codigo->rule     = 'required|callback_chrepetidos';
 		$edit->codigo->append($btn);
 
 		$edit->descrip = new inputField('Descripci&oacute;n <#o#>', 'descrip_<#i#>');
@@ -138,6 +144,7 @@ class conv extends Controller {
 		$edit->entrada->size     = 6;
 		$edit->entrada->rule     = 'required|positive';
 		$edit->entrada->autocomplete=false;
+		$edit->entrada->onkeyup  ='validaEnt(<#i#>)';
 
 		$edit->salida = new inputField('Salida <#o#>', 'salida_<#i#>');
 		$edit->salida->db_name  = 'salida';
@@ -147,13 +154,11 @@ class conv extends Controller {
 		$edit->salida->size     = 6;
 		$edit->salida->rule     = 'required|positive';
 		$edit->salida->autocomplete=false;
+		$edit->salida->onkeyup  ='validaSalida(<#i#>)';
 
-		$edit->costo = new inputField('Costo <#o#>', 'costo_<#i#>');
+		$edit->costo = new hiddenField('', 'costo_<#i#>');
 		$edit->costo->db_name   = 'costo';
-		$edit->costo->css_class = 'inputnum';
 		$edit->costo->rel_id    = 'itconv';
-		$edit->costo->size      = 10;
-		$edit->costo->rule      = 'required|positive';
 		//**************************
 		//fin de campos para detalle
 		//**************************
@@ -168,21 +173,62 @@ class conv extends Controller {
 		$data['head']    = script('jquery.js').script('jquery-ui.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css').$this->rapyd->get_head().phpscript('nformat.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js').phpscript('nformat.js');
 		$this->load->view('view_ventanas', $data);
 	}
+	
+	function chrepetidos($cod){
+		if(array_search($cod, $this->chrepetidos)===false){
+			$this->chrepetidos[]=$cod;
+			return true;
+		}else{
+			$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='Opps!! no se puede cargar un gasto cuyas retenciones sean mayores a la base del mismo.';
+			return false;
+		}
+	}
 
 	function _pre_insert($do){
+		
 		$numero=$this->datasis->fprox_numero('nconv');
 		$do->set('numero',$numero);
 		$transac=$this->datasis->fprox_numero('ntransa');
 		$do->set('transac',$transac);
-		$do->set('estampa',date('Y-m-d'));
-		$do->set('hora',date("H:i:s"));
+		$estampa=date('Ymd');
+		$hora=date("H:i:s");
+		$do->set('estampa',$estampa);
+		$do->set('hora',$hora);
 		$cana=$do->count_rel('itconv');
+		$monto=0;
+		$entradas=0;
+		$salidas=0;
+		//Hasta aca en costo trae el valor del ultimo de sinv, se opera para cambiarlo a:
+		//costo=costo*(entrada o salida segun se el caso)
 		for($i=0;$i<$cana;$i++){
-			$do->set_rel('itconv','estampa' ,date('Y-m-d'),$i);
-			$do->set_rel('itconv','hora' ,date("H:i:s"),$i);
+			$ent=$do->get_rel('itconv','entrada',$i);
+			$sal=$do->get_rel('itconv','salida',$i);
+			if ($ent!=0 && $sal!=0){
+				$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='No puede tener entradas y salidas en el rubro .'.$i;
+				return false;	
+			}
+			if($ent != 0){
+				$entradas+=$ent;
+				$monto=round($ent*$do->get_rel('itconv','costo',$i),2);
+			}
+			if($sal != 0){
+				$salidas+=$sal;
+				$monto=round($sal*$do->get_rel('itconv','costo',$i),2);
+			}
+			$do->set_rel('itconv','costo' ,$monto,$i);
+			$do->set_rel('itconv','estampa' ,$estampa,$i);
+			$do->set_rel('itconv','hora' ,$hora,$i);
 			$do->set_rel('itconv','transac'   ,$transac  ,$i);
 			$do->set_rel('itconv','usuario',$do->get('usuario'),$i);
-
+			//echo $do->get_rel("itconv","costo",$i)."<br>";
+		}
+		if ($entradas == 0){
+			$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='Debe ingresar al menos una entrada.';
+			return false;	
+		}
+		if ($salidas == 0){
+			$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='Debe ingresar al menos una salida.';
+			return false;	
 		}
 		return true;
 	}
