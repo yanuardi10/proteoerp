@@ -1187,6 +1187,26 @@ class gser extends Controller {
 		$tipo_rete=$this->datasis->traevalor('CONTRIBUYENTE');
 		$rif      =$this->datasis->traevalor('RIF');
 
+		$fields = $this->db->field_data('gser');
+		$url_pk = $this->uri->segment_array();
+		$coun=0; $pk=array();
+		foreach ($fields as $field){
+			if($field->primary_key==1){
+				$coun++;
+				$pk[]=$field->name;
+			}
+		}
+		$values=array_slice($url_pk,-$coun);
+		$claves=array_combine (array_reverse($pk) ,$values );
+		//print_r($claves);
+		
+		$query="UPDATE gitser AS a
+			JOIN gser AS b on a.numero=b.numero and a.fecha = b.fecha and a.proveed = b.proveed
+			SET a.idgser=b.id
+			WHERE a.id=".$claves['id']." ";
+			$this->db->simple_query($query);
+
+
 		$modbus=array(
 			'tabla'   => 'mgas',
 			'columnas'=> array(
