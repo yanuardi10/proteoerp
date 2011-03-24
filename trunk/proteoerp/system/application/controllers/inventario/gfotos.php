@@ -180,14 +180,13 @@ class gfotos extends Controller {
 			
 		}
 
-
 		$back="<table width='100%'border='0'><tr><td width='80%'></td><td width='20%'><a href='javascript:atras()'><spam id='regresar'align='right'>REGRESAR</spam></a></td></tr></table>";
 		$data['filtro']=$filter->output;
-		$data['tabla']=$tabla;
+		$data['content']=$tabla;
 		//$data['smenu'] = $back;//.$grid->output;
 		$data['title']   = "Genera Catalogo";
 		$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").script("sinvmaes2.js").$this->rapyd->get_head();
-		$this->load->view('view_ventanas_pru', $data);
+		$this->load->view('view_ventanas', $data);
 	}
 	
 	

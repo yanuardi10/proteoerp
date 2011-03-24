@@ -97,13 +97,29 @@ class Generar extends Metodos {
 		return true;
 		//redirect('contabilidad/generar/index/completo');
 	}
-	
+
+	function procesarshellmes($anio=null,$mes=null,$modulos='APAN,BCAJ,CRUC,GSER,NOMI,OTIN,PRMO,RCAJ,SCST,SFAC,SMOV,SPRM'){
+		if(empty($anio) || empty($mes) || strlen($anio)!=4 || strlen($mes)!=2){
+			echo "USO: php index.php contabilidad generar procesarshellmems anio mes [modulos]\n";
+			echo "  anio YYYY\n";
+			echo "  mes   MM\n";
+			echo "  modulos APAN,BCAJ,CRUC,GSER,NOMI,OTIN,PRMO,RCAJ,SCST,SFAC,SMOV,SPRM \n";
+			return TRUE;
+		}
+		$this->load->helper('date');
+		$udate   = days_in_month($mes, $anio);
+		$qfechai = $anio.$mes.'01';
+		$qfechaf = $anio.$mes.str_pad($udate, 2, '0', STR_PAD_LEFT);
+		$this->procesarshell($qfechai,$qfechaf,$modulos);
+		return false;
+	}
+
 	function procesarshell($qfechai=null,$qfechaf=null,$modulos='APAN,BCAJ,CRUC,GSER,NOMI,OTIN,PRMO,RCAJ,SCST,SFAC,SMOV,SPRM'){
 		if(isset($_SERVER['argv']) && !isset($_SERVER['SERVER_NAME'])){ //asegura que se ejecute desde shell
 			if(empty($qfechai) OR empty($qfechai) OR strlen($qfechai)+strlen($qfechaf)<16){
 				echo "USO: php index.php contabilidad generar procesarshell fecha_inicial fecha_final [modulos]\n";
-				echo "  fecha_inicial YYYYDDMM\n";
-				echo "  fecha_final   YYYYDDMM\n";
+				echo "  fecha_inicial YYYYMMDD\n";
+				echo "  fecha_final   YYYYMMDD\n";
 				echo "  modulos APAN,BCAJ,CRUC,GSER,NOMI,OTIN,PRMO,RCAJ,SCST,SFAC,SMOV,SPRM \n";
 				return TRUE;
 			}

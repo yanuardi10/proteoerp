@@ -146,17 +146,17 @@ class Reportes extends Controller
 		if (!empty($_POST["dpto"])){ 
 			$departamento=$_POST["dpto"];
 		}elseif (!empty($_POST["depto"])){
- 			$departamento=$_POST["depto"];
+			$departamento=$_POST["depto"];
 		}
 		
 		$this->rapyd->load("fields");  
 		$where = "";  
-		$sql = "SELECT linea, descrip FROM line $where";
+		$sql = "SELECT linea, CONCAT_WS('-',linea,descrip) FROM line $where";
 		$linea = new dropdownField("Subcategoria", "linea");  
 		
 		if (!empty($departamento)){  
 		  $where = "WHERE depto = ".$this->db->escape($departamento);
-		  $sql = "SELECT linea, descrip FROM line $where";
+		  $sql = "SELECT linea,CONCAT_WS('-',linea,descrip) FROM line $where";
 		  $linea->option("","");  
 			$linea->options($sql); 
 		}else{
@@ -176,7 +176,7 @@ class Reportes extends Controller
 		if (!empty($_POST["linea"]) AND !empty($_POST["dpto"])) {
 			if($_POST["dpto"]!='T')$where .= "depto = ".$this->db->escape($_POST["dpto"]).' AND ';
 			$where .= "linea = ".$this->db->escape($_POST["linea"]);
-			$sql = "SELECT grupo, nom_grup FROM grup $where";
+			$sql = "SELECT grupo,CONCAT_WS('-',grupo,nom_grup) FROM grup $where";
 			$grupo->option("",""); 
 			$grupo->options($sql);
 		}else{
