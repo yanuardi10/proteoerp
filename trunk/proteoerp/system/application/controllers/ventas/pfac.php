@@ -1,392 +1,407 @@
-<?php
-//pedidosclientes
-	class Pfac extends Controller {
-	 
-	function pfac(){
-		parent::Controller(); 
-		$this->load->library("rapyd");
-    $this->datasis->modulo_id(120,1);           
-	}
-	function index() {		
-		$this->rapyd->load("datagrid","datafilter");
-		
-		$atts = array(
-              'width'      => '800',
-              'height'     => '600',
-              'scrollbars' => 'yes',
-              'status'     => 'yes',
-              'resizable'  => 'yes',
-              'screenx'    => '0',
-              'screeny'    => '0'
-            );
-		
-    $scli=array(
-	  'tabla'   =>'scli',
-	  'columnas'=>array(
-		'cliente' =>'C&oacute;digo Cliente',
-		'nombre'=>'Nombre',
-		'contacto'=>'Contacto'),
-	  'filtro'  =>array('cliente'=>'C&oacute;digo Cliente','nombre'=>'Nombre'),
-	  'retornar'=>array('cliente'=>'cod_cli'),
-	  'titulo'  =>'Buscar Cliente');
-			
-		$boton=$this->datasis->modbus($scli);
-		
-		$filter = new DataFilter("Filtro de Pedidos Clientes",'pfac');
-		
-    $filter->fechad = new dateonlyField("Desde", "fechad",'d/m/Y');
-		$filter->fechah = new dateonlyField("Hasta", "fechah",'d/m/Y');
-		$filter->fechad->clause  =$filter->fechah->clause="where";
-		$filter->fechad->db_name =$filter->fechah->db_name="fecha";
-		$filter->fechad->insertValue = date("Y-m-d"); 
-		$filter->fechah->insertValue = date("Y-m-d"); 
-		$filter->fechah->size=$filter->fechad->size=10;
-		$filter->fechad->operator=">="; 
-		$filter->fechah->operator="<=";
-    
-		$filter->numero = new inputField("N&uacute;mero", "numero");
-		$filter->numero->size = 30;
+<?php require_once(BASEPATH . 'application/controllers/validaciones.php');
+class pfac extends validaciones{
 
-    $filter->cliente = new inputField("Cliente", "cod_cli");
-    $filter->cliente->size = 30;
+	function pfac(){
+		parent :: Controller();
+		$this->load->library('rapyd');
+		// $this->datasis->modulo_id(104,1);
+	}
+
+	function index(){
+		redirect('ventas/pfac/filteredgrid');
+	}
+
+	function filteredgrid(){
+		$this->rapyd->load('datagrid', 'datafilter');
+
+		$atts = array(
+			'width'      => '800',
+			'height'     => '600',
+			'scrollbars' => 'yes',
+			'status'     => 'yes',
+			'resizable'  => 'yes',
+			'screenx'    => '0',
+			'screeny'    => '0'
+		);
+
+		$scli = array(
+			'tabla' => 'scli',
+			'columnas' => array(
+				'cliente' => 'C&oacute;digo Cliente',
+				'nombre' => 'Nombre',
+				'contacto' => 'Contacto'),
+			'filtro' => array('cliente' => 'C&oacute;digo Cliente', 'nombre' => 'Nombre'),
+			'retornar' => array('cliente' => 'cod_cli'),
+			'titulo' => 'Buscar Cliente');
+
+		$boton = $this->datasis->modbus($scli);
+
+		$filter = new DataFilter('Filtro de Pedidos Clientes', 'pfac');
+
+		$filter->fechad = new dateonlyField('Desde', 'fechad');
+		$filter->fechah = new dateonlyField('Hasta', 'fechah');
+		$filter->fechad->clause = $filter->fechah->clause   = 'where';
+		$filter->fechad->db_name = $filter->fechah->db_name = 'fecha';
+		//$filter->fechad->insertValue = date('Y-m-d');
+		//$filter->fechah->insertValue = date('Y-m-d');
+		$filter->fechah->size = $filter->fechad->size = 10;
+		$filter->fechad->operator = '>=';
+		$filter->fechah->operator = '<=';
+
+		$filter->numero = new inputField('N&uacute;mero', 'numero');
+		$filter->numero->size = 10;
+
+		$filter->cliente = new inputField('Cliente', 'cod_cli');
+		$filter->cliente->size = 8;
 		$filter->cliente->append($boton);
 
-		$filter->buttons("reset","search");
+		$filter->buttons('reset', 'search');
 		$filter->build();
-    
-		$uri = anchor('ventas/pfac/dataedit/show/<#numero#>','<#numero#>');
-    $uri2 = anchor_popup('formatos/verhtml/PFAC/<#numero#>',"Ver HTML",$atts);
-    
-		
+
+		$uri = anchor('ventas/pfac/dataedit/show/<#numero#>', '<#numero#>');
+		$uri2 = anchor_popup('formatos/verhtml/PFAC/<#numero#>', 'Ver HTML', $atts);
+
 		$grid = new DataGrid();
-		$grid->order_by("fecha","desc");
-		$grid->per_page = 15;  
-	
-		$grid->column("N&uacute;mero",$uri);
-    $grid->column("Fecha","<dbdate_to_human><#fecha#></dbdate_to_human>","align='center'");
-    $grid->column("Nombre","nombre");
-    $grid->column("Sub.Total","<number_format><#totals#>|2</number_format>","align=right");
-    $grid->column("IVA","<number_format><#iva#>|2</number_format>","align=right");
-    $grid->column("Total","<number_format><#totalg#>|2</number_format>","align=right");
-    $grid->column("Vista",$uri2,"align='center'");
-    
-		
-		//$grid->add("ventas/agregarped");
+		$grid->order_by('numero', 'desc');
+		$grid->per_page = 15;
+
+		$grid->column("N&uacute;mero", $uri);
+		$grid->column("Fecha", "<dbdate_to_human><#fecha#></dbdate_to_human>", "align='center'");
+		$grid->column("Nombre", "nombre");
+		$grid->column("Sub.Total", "<number_format><#totals#>|2</number_format>", "align=right");
+		$grid->column("IVA", "<number_format><#iva#>|2</number_format>", "align=right");
+		$grid->column("Total", "<number_format><#totalg#>|2</number_format>", "align=right");
+		$grid->column("Vista", $uri2, "align='center'");
+
+		$grid->add("ventas/pfac/dataedit/create");
 		$grid->build();
-		
-		//echo $grid->db->last_query();
-		
-		$data['content'] =$filter->output.$grid->output;
-		$data["head"]    = $this->rapyd->get_head();
-		$data['title']   ='<h1>Pedidos Clientes</h1>';
+
+		$data['content'] = $filter->output . $grid->output;
+		$data["head"] = $this->rapyd->get_head();
+		$data['title'] = '<h1>Pedidos Clientes</h1>';
 		$this->load->view('view_ventanas', $data);
-	}
+		}
 	
 	function dataedit(){
-		$this->rapyd->load("dataedit","datadetalle","fields","datagrid");
-		
-		$formato=$this->datasis->dameval('SELECT formato FROM cemp LIMIT 0,1');
-		$qformato='%';
-		for($i=1;$i<substr_count($formato, '.')+1;$i++) $qformato.='.%';
-		$this->qformato=$qformato;
-		
-		$modbus=array(
-			'tabla'   =>'sinv',
-			'columnas'=>array(
-			'codigo' =>'C&oacute;digo',
-			'descrip'=>'descrip'),
-			'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'descrip'),
-			//'retornar'=>array('codigo'=>'codigo<#i#>','precio1'=>'precio1<#i#>','precio2'=>'precio2<#i#>','precio3'=>'precio3<#i#>','precio4'=>'precio4<#i#>','iva'=>'iva<#i#>','pond'=>'costo<#i#>'),
-			'retornar'=>array('codigo'=>'codigoa<#i#>','descrip'=>'desca<#i#>'),
-			'p_uri'=>array(4=>'<#i#>'),
-			'titulo'  =>'Buscar Articulo');
-		
-		$mSCLId=array(
-			'tabla'   =>'scli',
-			'columnas'=>array(
-			'cliente' =>'C&oacute;digo Cliente',
-			'nombre'=>'Nombre', 
-			'cirepre'=>'Rif/Cedula',
-			'dire11'=>'Direcci&oacute;n'),
-			'filtro'  =>array('cliente'=>'C&oacute;digo Cliente','nombre'=>'Nombre'),
-			'retornar'=>array('cliente'=>'cod_cli','nombre'=>'nombre','cirepre'=>'rifci','dire11'=>'direc'),
-			'titulo'  =>'Buscar Cliente');
-		
-		$boton =$this->datasis->modbus($mSCLId);
-		//Script necesario para totalizar los detalles
-		
-		$fdepar = new dropdownField("ccosto", "ccosto");    
-		$fdepar->options("SELECT depto,descrip FROM dpto WHERE tipo='G' ORDER BY descrip");
-		$fdepar->status='create';
-		$fdepar->build();
-		$dpto=$fdepar->output;
-		
-		$dpto=trim($dpto);
-		$dpto=preg_replace('/\n/i', '', $dpto);
-		
-		$uri=site_url("/contabilidad/casi/dpto/");
-		
-		$script='
-		function totalizar(){
-			monto=debe=haber=0;
-			amonto=$$(\'input[id^="monto"]\');
-			for(var i=0; i<amonto.length; i++) {
-				valor=parseFloat(amonto[i].value);
-				if (isNaN(valor))
-					valor=0.0;
-				if (valor>0)
-					haber=haber+valor;
-				else{
-					valor=valor*(-1);
-					debe=debe+valor;
-				}
-				$("haber").value=haber;
-				$("debe").value=debe;
-				$("total").value=haber-debe;
-			}
-		}
-		function departa(i){
-			ccosto=$F(\'ccosto\'+i.toString())
-			if (ccosto==\'S\'){
-				//alert("come una matina");
-				departamen=window.open("'.$uri.'/"+i.toString(),"buscardeparta","width=500,height=200,scrollbars=Yes,status=Yes,resizable=Yes,screenx=5,screeny=5,top="+ ((screen.height - 200) / 2) + ",left=" + ((screen.width - 500) / 2)); 
-				departamen.focus();
-				//new Insertion.Before(\'departa\'+i.toString(), \''.$dpto.'\')
-			}
-		}
-		';
-		
-		$edit = new DataEdit("pedidosclientes","pfac");
-		
-		$edit->post_process("insert","_guarda_detalle");
-		$edit->post_process("update","_actualiza_detalle");
-		$edit->post_process("delete","_borra_detalle");
-		$edit->pre_process('insert','_pre_insert');
-								
-		$edit->back_url = "ventas/pfac";
-		
-		$edit->fecha = new DateonlyField("Fecha", "fecha","d/m/Y");
-		$edit->fecha->insertValue = date("Y-m-d");
-		$edit->fecha->mode="autohide";
+		$this->rapyd->load('dataobject', 'datadetails');
+
+		$modbus = array(
+			'tabla' => 'sinv',
+			'columnas' => array(
+				'codigo' => 'C&oacute;digo',
+				'descrip' => 'Descripci&oacute;n'),
+			'filtro' => array('codigo' => 'C&oacute;digo', 'descrip' => 'Descripci&oacute;n'),
+			'retornar' => array(
+				'codigo' => 'codigoa_<#i#>',
+				'descrip' => 'desca_<#i#>',
+				'base1' => 'precio1_<#i#>',
+				'base2' => 'precio2_<#i#>',
+				'base3' => 'precio3_<#i#>',
+				'base4' => 'precio4_<#i#>',
+				'iva' => 'itiva_<#i#>',
+				'tipo' => 'sinvtipo_<#i#>',
+				'peso' => 'sinvpeso_<#i#>',
+				'precio1' => 'itpvp_<#i#>',
+				'pond' => 'itcosto_<#i#>',
+			),
+			'p_uri' => array(4 => '<#i#>'),
+			'titulo' => 'Buscar Articulo',
+			'where' => '`activo` = "S"',
+			'script' => array('post_modbus_sinv(<#i#>)')
+		);
+		$btn = $this->datasis->p_modbus($modbus, '<#i#>');
+
+		$mSCLId = array(
+			'tabla'    => 'scli',
+			'columnas' => array(
+				'cliente' => 'C&oacute;digo Cliente',
+				'nombre'  => 'Nombre',
+				'cirepre' => 'Rif/Cedula',
+				'dire11'  => 'Direcci&oacute;n',
+				'tipo' => 'Tipo'),
+			'filtro'   => array('cliente' => 'C&oacute;digo Cliente', 'nombre' => 'Nombre'),
+			'retornar' => array('cliente' => 'cod_cli', 'nombre' => 'nombre', 'rifci' => 'rifci',
+				'dire11' => 'direc', 'tipo' => 'sclitipo'),
+			'titulo' => 'Buscar Cliente',
+			'script' => array('post_modbus_scli()'));
+		$boton = $this->datasis->modbus($mSCLId);
+
+		$do = new DataObject("pfac");
+		$do->rel_one_to_many('itpfac', 'itpfac', array('numero' => 'numa'));
+		$do->pointer('scli' , 'scli.cliente=pfac.cod_cli', 'tipo AS sclitipo', 'left');
+		$do->rel_pointer('itpfac', 'sinv', 'itpfac.codigoa=sinv.codigo', 'sinv.descrip AS sinvdescrip, sinv.base1 AS sinvprecio1, sinv.base2 AS sinvprecio2, sinv.base3 AS sinvprecio3, sinv.base4 AS sinvprecio4, sinv.iva AS sinviva, sinv.peso AS sinvpeso,sinv.tipo AS sinvtipo,sinv.precio1 As sinvprecio1,sinv.pond AS sinvpond');
+
+		$edit = new DataDetails('Pedidos', $do);
+		$edit->back_url = site_url("ventas/pfac/filteredgrid");
+		$edit->set_rel_title('itpfac', 'Producto <#o#>');
+
+		$edit->pre_process('insert' , '_pre_insert');
+		$edit->pre_process('update' , '_pre_update');
+		$edit->pre_process('delete' , '_pre_delete');
+		$edit->post_process('insert', '_post_insert');
+		$edit->post_process('update', '_post_update');
+		$edit->post_process('delete', '_post_delete');
+
+		$edit->fecha = new DateonlyField('Fecha', 'fecha', 'd/m/Y');
+		$edit->fecha->insertValue = date('Y-m-d');
+		$edit->fecha->rule = 'required';
+		$edit->fecha->mode = 'autohide';
 		$edit->fecha->size = 10;
-		
-		$edit->vence = new DateonlyField("Vence", "vence","d/m/Y");
-		$edit->vence->insertValue = date("Y-m-d"); 
-		$edit->vence->size = 10;
-		
-		$edit->vende = new  dropdownField ("Vendedor", "vd");
-		$edit->vende->options("SELECT vendedor, CONCAT(vendedor,' ',nombre) nombre FROM vend ORDER BY vendedor");  
-		$edit->vende->size = 5;
-		
-		$edit->presupuesto = new inputField("Presupuesto", "presup");
-		$edit->presupuesto->size = 15;
-			
-		$edit->numero = new inputField("N&uacute;mero", "numero");
+
+		$edit->vd = new dropdownField ('Vendedor', 'vd');
+		$edit->vd->options('SELECT vendedor, CONCAT(vendedor,\' \',nombre) nombre FROM vend ORDER BY vendedor');
+		$edit->vd->style = 'width:200px;';
+		$edit->vd->size = 5;
+
+		$edit->numero = new inputField('N&uacute;mero', 'numero');
 		$edit->numero->size = 10;
-		$edit->numero->rule= "required";
-		$edit->numero->mode="autohide";
-		$edit->numero->maxlength=8;
-		
-		$edit->nombre = new inputField("Nombre", "nombre");
-		$edit->nombre->size = 55;
-		$edit->nombre->maxlength=40;   
-		
-		$edit->iva  = new inputField("IVA", "iva");
-		$edit->iva->size = 20;
-		$edit->iva->css_class='inputnum';
-		
-		$edit->subtotal  = new inputField("Sub.Total", "totals");
-		$edit->subtotal->size = 20;
-		$edit->subtotal->css_class='inputnum';
-		
-		$edit->total  = new inputField("Total", "totalg");
-		$edit->total->size = 20;
-		$edit->total->css_class='inputnum';
-		
-		$edit->referencia  = new inputField("Referencia", "referen");
-		$edit->referencia->size = 20;
-		$edit->referencia->css_class='inputnum';
-		
-		$edit->anticipo  = new inputField("Anticipo", "anticipo");
-		$edit->anticipo->size = 20;
-		$edit->anticipo->css_class='inputnum';
-		
-		$edit->cliente = new inputField("Cliente","cod_cli");
-		$edit->cliente->size = 10;        
-		$edit->cliente->maxlength=5;
-		$edit->cliente->append($boton);  
-		
-		$edit->rifci   = new inputField("RIF/CI"  , "rifci");
-		$edit->rifci->size = 20;        
-		
-		$edit->direc = new inputField("Direcci&oacute;n","direc");
-		$edit->direc->size = 55;  
-		
-		$edit->dire1 = new inputField(" ","dire1");
-		$edit->dire1->size = 55;  		  
-		
-		$numero=$edit->_dataobject->get('numero');
-		
-		$detalle = new DataDetalle($edit->_status);
-		
-		//Campos para el detalle
-		
-		$detalle->db->select('codigoa,desca,cana,mostrado,ROUND(mostrado*cana,2) AS importe');
-		$detalle->db->from('itpfac');
-		$detalle->db->where("numa='$numero'");
-		
-		$detalle->codigo = new inputField("C&oacute;digo", "codigoa<#i#>");
-		$detalle->codigo->size=18;
-		$detalle->codigo->db_name='codigoa';
-		$detalle->codigo->append($this->datasis->p_modbus($modbus,'<#i#>'));
-		$detalle->codigo->readonly=TRUE;
-		
-		$detalle->descripcion = new inputField("Descripci&oacute;n", "desca<#i#>");
-		$detalle->descripcion->size=30;
-		$detalle->descripcion->db_name='desca';
-		$detalle->descripcion->maxlength=12;
-		
-		$detalle->cantidad = new inputField("Cantidad", "cana<#i#>");
-		$detalle->cantidad->size=10;
-		$detalle->cantidad->db_name='cana';
-		$detalle->cantidad->maxlength=60;
-		$detalle->cantidad->css_class='inputnum';
-		
-		$detalle->precio = new inputField("Precio", "mostrado<#i#>");
-		$detalle->precio->css_class='inputnum';
-		$detalle->precio->onchange='totalizar()';
-		$detalle->precio->size=20;
-		$detalle->precio->db_name='mostrado';
-		
-		$detalle->importe = new inputField2("Importe", "importe<#i#>");
-		$detalle->importe->db_name='importe';
-		$detalle->importe->size=20;
-		$detalle->importe->css_class='inputnum';
-		
-		//fin de campos para detalle
-		$detalle->onDelete('totalizar()');
-		$detalle->onAdd('totalizar()');
-		$detalle->script($script);
-		$detalle->style="width:110px";
-		
-		//Columnas del detalle
-		$detalle->column("C&oacute;digo"    ,  "<#codigo#>");
-		$detalle->column("Descripci&oacute;n", "<#descripcion#>");
-		$detalle->column("Cantidad"  ,  "<#cantidad#>");
-		$detalle->column("Precio"     , "<#precio#>");
-		$detalle->column("Importe"    , "<#importe#>");
-		
-		$detalle->build();	
-		$conten["detalle"] = $detalle->output;
-		
-		$edit->detalle=new freeField("detalle", 'detalle',$detalle->output);
-		
-		$edit->buttons("save", "undo","back");
-		$edit->build();
-		
-		$smenu['link']=barra_menu('120');                                
-		$data['smenu'] = $this->load->view('view_sub_menu', $smenu,true);
-		$conten["form"]  =&  $edit;
-		$data['content'] = $this->load->view('view_pedidosclientes', $conten,true); 
-		$data["head"]    = script("tabber.js").script("prototype.js").$this->rapyd->get_head().script("scriptaculous.js").script("effects.js");
-		$data['title']   = '<h1>Pedidos clientes</h1>';
-		$this->load->view('view_ventanas', $data);
-	}
+		$edit->numero->mode = 'autohide';
+		$edit->numero->maxlength = 8;
+		$edit->numero->apply_rules = false; //necesario cuando el campo es clave y no se pide al usuario
+		$edit->numero->when = array('show', 'modify');
 
-	function dpto() {		
-		$this->rapyd->load("dataform");
-		$campo='ccosto'.$this->uri->segment(4);
- 		$script='
- 		function pasar(){
-			if($F("departa")!="-!-"){
-				window.opener.document.getElementById("'.$campo.'").value = $F("departa");
-				window.close();
-			}else{
-				alert("Debe elegir un departamento");
-			}
-		}';
-		
-		$form = new DataForm('');
-		$form->script($script);
-		$form->fdepar = new dropdownField("Departamento", "departa");
-		$form->fdepar->option('-!-','Seleccion un departamento');
-		$form->fdepar->options("SELECT depto,descrip FROM dpto WHERE tipo='G' ORDER BY descrip");
-		$form->fdepar->onchange='pasar()';
-		$form->build_form();
-		
-		$data['content'] =$form->output;
-		$data["head"]    =script('prototype.js').$this->rapyd->get_head();
-		$data['title']   ='<h1>Seleccione un departamento</h1>';
-		$this->load->view('view_detalle', $data);
-	}
+		$edit->peso = new inputField('Peso', 'peso');
+		$edit->peso->css_class = 'inputnum';
+		$edit->peso->readonly = true;
+		$edit->peso->size = 10;
 
-	function _actualiza_detalle($do){
-		$this->_borra_detalle($do);
-		$this->_guarda_detalle($do);
-	}
-	
-	function _guarda_detalle($do) {
-		$cant=$this->input->post('cant_0');
-		$i=$o=0;
-		while($o<$cant){
-			if (isset($_POST["codigoa$i"])){
-				if($this->input->post("codigoa$i")){
-					$sql = "INSERT INTO itpfac (tipoa,numa,codigoa,desca,cana,preca,tota,iva,fecha,vendedor,costo,pos,pvp,comision,cajero,mostrado,usuario,estampa,hora,transac,entregado) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-					//$haber=($this->input->post("monto$i") < 0)? $this->input->post("monto$i")*(-1) : 0;
-					
-					$llena=array(
-							0=> $this->input->post("tipoa$i"),       
-							1=> $this->input->post("numa$i"),
-							2=> $this->input->post("codigoa$i"),
-							3=> $this->input->post("desca$i"),
-							4=> $this->input->post("cana$i"),
-							5=> $this->input->post("preca$i"),
-							6=> $this->input->post("tota$i"),
-							7=> $do->get('iva'),
-							8=> $do->get('fecha'), 
-							9=> $this->input->post("vendedor$i"),
-						 10=> $this->input->post("costo$i"),
-						 11=> $this->input->post("pos$i"),
-						 12=> $this->input->post("pvp$i"),
-						 13=>	$this->input->post("comision$i"),
-	           14=> $do->get('cajero'), 
-						 15=> $this->input->post("mostrado$i"),
-						 16=> $do->get('usuario'), 
-						 17=> $do->get('estampa'), 
-						 18=> $do->get('hora'), 
-						 19=> $do->get('transac'), 
-						 20=> $this->input->post("entregado$i"),
-					
-							);
-					$this->db->query($sql,$llena);
-				}
-				$o++;
-			}
-			$i++;
+		$edit->cliente = new inputField('Cliente', 'cod_cli');
+		$edit->cliente->size = 6;
+		$edit->cliente->rule = 'required';
+		$edit->cliente->maxlength = 5;
+		$edit->cliente->append($boton);
+
+		$edit->nombre = new inputField('Nombre', 'nombre');
+		$edit->nombre->size = 30;
+		$edit->nombre->maxlength = 40;
+		$edit->nombre->rule = 'required';
+
+		$edit->rifci = new inputField('RIF/CI', 'rifci');
+		$edit->rifci->autocomplete = false;
+		$edit->rifci->size = 15;
+
+		$edit->direc = new inputField('Direcci&oacute;n', 'direc');
+		$edit->direc->size = 40;
+
+		// Para saber que precio se le va a dar al cliente
+		$edit->sclitipo = new hiddenField('', 'sclitipo');
+		$edit->sclitipo->db_name = 'sclitipo';
+		$edit->sclitipo->pointer = true;
+		$edit->sclitipo->insertValue = 1;
+
+		// Campos para el detalle
+		$edit->codigoa = new inputField('C&oacute;digo <#o#>', 'codigoa_<#i#>');
+		$edit->codigoa->size = 12;
+		$edit->codigoa->db_name = 'codigoa';
+		$edit->codigoa->readonly = true;
+		$edit->codigoa->rel_id = 'itpfac';
+		$edit->codigoa->rule = 'required';
+		$edit->codigoa->append($btn);
+
+		$edit->desca = new inputField('Descripci&oacute;n <#o#>', 'desca_<#i#>');
+		$edit->desca->size = 36;
+		$edit->desca->db_name = 'desca';
+		$edit->desca->maxlength = 50;
+		$edit->desca->readonly = true;
+		$edit->desca->rel_id = 'itpfac';
+
+		$edit->cana = new inputField('Cantidad <#o#>', 'cana_<#i#>');
+		$edit->cana->db_name = 'cana';
+		$edit->cana->css_class = 'inputnum';
+		$edit->cana->rel_id = 'itpfac';
+		$edit->cana->maxlength = 10;
+		$edit->cana->size = 6;
+		$edit->cana->rule = 'required|positive';
+		$edit->cana->autocomplete = false;
+		$edit->cana->onkeyup = 'importe(<#i#>)';
+
+		$edit->preca = new inputField('Precio <#o#>', 'preca_<#i#>');
+		$edit->preca->db_name = 'preca';
+		$edit->preca->css_class = 'inputnum';
+		$edit->preca->rel_id = 'itpfac';
+		$edit->preca->size = 10;
+		$edit->preca->rule = 'required|positive|callback_chpreca[<#i#>]';
+		$edit->preca->readonly = true;
+
+		$edit->tota = new inputField('importe <#o#>', 'tota_<#i#>');
+		$edit->tota->db_name = 'tota';
+		$edit->tota->size = 10;
+		$edit->tota->css_class = 'inputnum';
+		$edit->tota->rel_id = 'itpfac';
+		
+		for($i = 1;$i <= 4;$i++){
+			$obj = 'precio' . $i;
+			$edit->$obj = new hiddenField('Precio <#o#>', $obj . '_<#i#>');
+			$edit->$obj->db_name = 'sinv' . $obj;
+			$edit->$obj->rel_id = 'itpfac';
+			$edit->$obj->pointer = true;
 		}
-	}
-	
-	function _borra_detalle($do){
-		$numero=$do->get('numero');
-		$sql = "DELETE FROM itpfac WHERE numa='$numero'";
-		$this->db->query($sql);
+
+		$edit->itiva = new hiddenField('', 'itiva_<#i#>');
+		$edit->itiva->db_name = 'iva';
+		$edit->itiva->rel_id = 'itpfac';
+
+		$edit->itpvp = new hiddenField('', 'itpvp_<#i#>');
+		$edit->itpvp->db_name = 'pvp';
+		$edit->itpvp->rel_id = 'itpfac';
+
+		$edit->itcosto = new hiddenField('', 'itcosto_<#i#>');
+		$edit->itcosto->db_name = 'costo';
+		$edit->itcosto->rel_id = 'itpfac';
+
+		$edit->sinvpeso = new hiddenField('', 'sinvpeso_<#i#>');
+		$edit->sinvpeso->db_name = 'sinvpeso';
+		$edit->sinvpeso->rel_id = 'itpfac';
+		$edit->sinvpeso->pointer = true;
+
+		$edit->sinvtipo = new hiddenField('', 'sinvtipo_<#i#>');
+		$edit->sinvtipo->db_name = 'sinvtipo';
+		$edit->sinvtipo->rel_id = 'itpfac';
+		$edit->sinvtipo->pointer = true;
+		// fin de campos para detalle
+
+		$edit->ivat = new inputField('Impuesto', 'iva');
+		$edit->ivat->css_class = 'inputnum';
+		$edit->ivat->readonly = true;
+		$edit->ivat->size = 10;
+
+		$edit->totals = new inputField('Sub-Total', 'totals');
+		$edit->totals->css_class = 'inputnum';
+		$edit->totals->readonly = true;
+		$edit->totals->size = 10;
+
+		$edit->totalg = new inputField('Monto Total', 'totalg');
+		$edit->totalg->css_class = 'inputnum';
+		$edit->totalg->readonly = true;
+		$edit->totalg->size = 10;
+
+		$edit->usuario = new autoUpdateField('usuario', $this->session->userdata('usuario'), $this->session->userdata('usuario'));
+
+		$edit->buttons('modify', 'save', 'undo', 'delete', 'back', 'add_rel');
+		$edit->build();
+
+		$conten['form'] = & $edit;
+		$data['content'] = $this->load->view('view_pfac', $conten, true);
+		$data['title'] = heading('Pedidos');
+		$data['head'] = script('jquery.js') . script('jquery-ui.js') . script('plugins/jquery.numeric.pack.js') . script('plugins/jquery.meiomask.js') . style('vino/jquery-ui.css') . $this->rapyd->get_head() . phpscript('nformat.js') . script('plugins/jquery.numeric.pack.js') . script('plugins/jquery.floatnumber.js') . phpscript('nformat.js');
+		$this->load->view('view_ventanas', $data);
 	}
 	
 	function _pre_insert($do){
-		$sql    = 'INSERT INTO ntransa (usuario,fecha) VALUES ("'.$this->session->userdata('usuario').'",NOW())';
-		$query  =$this->db->query($sql);
-		$transac=$this->db->insert_id();
-		
-		$sql    = 'INSERT INTO npfac (usuario,fecha) VALUES ("'.$this->session->userdata('usuario').'",NOW())';
-		$query  =$this->db->query($sql);
-		$numero =str_pad($this->db->insert_id(),8, "0", STR_PAD_LEFT);
-		
+		$numero = $this->datasis->fprox_numero('npfac');
 		$do->set('numero', $numero);
+		$transac = $this->datasis->fprox_numero('ntransa');
 		$do->set('transac', $transac);
-		$do->set('estampa', 'CURDATE()', FALSE);
-		$do->set('hora'   , 'CURRENT_TIME()', FALSE);
-		$do->set('usuario', $this->session->userdata('usuario'));
-	}
+		$fecha = $do->get('fecha');
+		$vd = $do->get('vd');
 
+		$iva = $totals = 0;
+		$cana = $do->count_rel('itpfac');
+		for($i = 0;$i < $cana;$i++){
+			$itcana = $do->get_rel('itpfac', 'cana', $i);
+			$itpreca = $do->get_rel('itpfac', 'preca', $i);
+			$itiva = $do->get_rel('itpfac', 'iva', $i);
+			$ittota = $itpreca * $itcana;
+			$do->set_rel('itpfac', 'tota' , $ittota, $i);
+			$do->set_rel('itpfac', 'fecha' , $fecha , $i);
+			$do->set_rel('itpfac', 'vendedor', $vd , $i);
+
+			$iva  += $ittota * ($itiva / 100);
+			$totals += $ittota;
+			$do->set_rel('itpfac', 'mostrado', $iva + $ittota, $i);
+		}
+		$totalg = $totals + $iva;
+
+		$do->set('totals' , round($totals , 2));
+		$do->set('totalg' , round($totalg , 2));
+		$do->set('iva'    , round($iva    , 2));
+		return true;
+	}
+	
+	function _pre_update($do){
+		$codigo = $do->get('numero');
+		$fecha  = $do->get('fecha');
+		$vd     = $do->get('vd');
+
+		$iva = $totals = 0;
+		$cana = $do->count_rel('itpfac');
+		for($i = 0;$i < $cana;$i++){
+			$itcana  = $do->get_rel('itpfac', 'cana' , $i);
+			$itpreca = $do->get_rel('itpfac', 'preca', $i);
+			$itiva   = $do->get_rel('itpfac', 'iva'  , $i);
+			$ittota  = $itpreca * $itcana;
+			$do->set_rel('itpfac', 'tota'    , $ittota, $i);
+			$do->set_rel('itpfac', 'fecha'   , $fecha , $i);
+			$do->set_rel('itpfac', 'vendedor', $vd    , $i);
+
+			$iva    += $ittota*$itiva/100;
+			$totals += $ittota;
+			$do->set_rel('itpfac', 'mostrado', $iva + $ittota, $i);
+		}
+		$totalg = $totals + $iva;
+
+		$do->set('totals' , round($totals , 2));
+		$do->set('totalg' , round($totalg , 2));
+		$do->set('iva'    , round($iva    , 2));
+
+		$mSQL='UPDATE sinv JOIN itpfac ON sinv.codigo=itpfac.codigoa SET sinv.exdes=sinv.exdes-itpfac.cana WHERE itpfac.numa='.$this->db->escape($codigo);
+		$ban=$this->db->simple_query($mSQL);
+		if($ban==false){ memowrite($mSQL,'pfac'); }
+		return true;
+	}
+	
+	function _post_insert($do){
+		$cana = $do->count_rel('itpfac');
+		for($i = 0;$i < $cana;$i++){
+			$itcodigo= $do->get_rel('itpfac', 'codigoa', $i);
+			$itcana  = $do->get_rel('itpfac', 'cana', $i);
+			$mSQL = "UPDATE sinv SET exdes=exdes+$itcana WHERE codigo=".$this->db->escape($itcodigo);
+
+			$ban=$this->db->simple_query($mSQL);
+			if($ban==false){ memowrite($mSQL,'pfac'); }
+		}
+
+		$codigo = $do->get('numero');
+		logusu('pfac', "Pedido $codigo CREADO");
+	}
+	
+	function chpreca($preca, $ind){
+		$codigo = $this->input->post('codigoa_' . $ind);
+		$precio4 = $this->datasis->dameval('SELECT base4 FROM sinv WHERE codigo=' . $this->db->escape($codigo));
+		if($precio4 < 0) $precio4 = 0;
+
+		if($preca < $precio4){
+			$this->validation->set_message('chpreca', 'El art&iacute;culo ' . $codigo . ' debe contener un precio de al menos ' . nformat($precio4));
+			return false;
+		}else{
+			return true;
+		}
+	}
+	
+	function _post_update($do){
+		$cana = $do->count_rel('itpfac');
+		for($i = 0;$i < $cana;$i++){
+			$itcodigo= $do->get_rel('itpfac', 'codigoa', $i);
+			$itcana  = $do->get_rel('itpfac', 'cana', $i);
+			$mSQL = "UPDATE sinv SET exdes=exdes+$itcana WHERE codigo=".$this->db->escape($itcodigo);
+
+			$ban=$this->db->simple_query($mSQL);
+			if($ban==false){ memowrite($mSQL,'pfac'); }
+		}
+		$codigo = $do->get('numero');
+		logusu('pfac', "Pedido $codigo MODIFICADO");
+	}
+	
+	function _pre_delete(){
+		$codigo = $do->get('numero');
+		$mSQL='UPDATE sinv JOIN itpfac ON sinv.codigo=itpfac.codigoa SET sinv.exdes=sinv.exdes-itpfac.cana WHERE itpfac.numa='.$this->db->escape($codigo);
+		$ban=$this->db->simple_query($mSQL);
+		if($ban==false){ memowrite($mSQL,'pfac'); }
+		return true;
+	}
+	
+	function _post_delete($do){
+		$codigo = $do->get('numero');
+		logusu('pfac', "Pedido $codigo ELIMINADO");
+	}
 }
-?>

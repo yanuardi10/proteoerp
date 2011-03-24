@@ -41,7 +41,6 @@ $(function(){
 	totalizar();
 	for(var i=0;i < <?php echo $form->max_rel_count['itpfac']; ?>;i++){
 		cdropdown(i);
-		cdescrip(i);
 	}
 });
 
@@ -186,39 +185,6 @@ function cdropdown(nind){
 	$("#preca_"+ind).replaceWith(pprecio);
 }
 
-//Cambia el campo descripcion en caso ser servicio
-function cdescrip(nind){
-	var ind=nind.toString();
-	var tipo =$("#sinvtipo_"+ind).val();
-
-	if(tipo=='Servicio'){
-		var desca  =$("#desca_"+ind).val();
-		var ddesca = document.createElement("textarea");
-		ddesca.setAttribute("id"    , "desca_"+ind);
-		ddesca.setAttribute("name"  , "desca_"+ind);
-		ddesca.setAttribute("class" , "textarea");
-		ddesca.setAttribute("cols"  , 34);
-		ddesca.setAttribute("rows"  , 3);
-		//ddesca.setAttribute("readonly" ,"readonly");
-		
-		$("#desca_"+ind).replaceWith(ddesca);
-		$("#desca_"+ind).val(desca);
-
-	}else{
-
-		var desca = $("#desca_"+ind).val();
-		var ddeca = document.createElement("input");
-		ddeca.setAttribute("id"    , "desca_"+ind);
-		ddeca.setAttribute("name"  , "desca_"+ind);
-		ddeca.setAttribute("class" , "input");
-		ddeca.setAttribute("size"  , 36);
-		ddeca.setAttribute("maxlength", 50);
-		ddeca.setAttribute("readonly" ,"readonly");
-		ddeca.setAttribute("value"    ,desca);
-		$("#desca_"+ind).replaceWith(ddeca);
-	}
-}
-
 function del_itpfac(id){
 	id = id.toString();
 	$('#tr_itpfac_'+id).remove();
@@ -256,7 +222,8 @@ function del_itpfac(id){
 				<td class="littletableheader"><?php echo $form->direc->label  ?>&nbsp;</td>
 				<td class="littletablerow" colspan='2'><?php echo $form->direc->output ?>&nbsp;</td>
 			</tr>
-		</table><br>
+		</table>
+		<br>
 		</td>
 	</tr>
 	<tr>
@@ -278,15 +245,15 @@ function del_itpfac(id){
 
 			<?php for($i=0;$i<$form->max_rel_count['itpfac'];$i++) {
 				$it_codigoa  = "codigoa_$i";
-				$it_desca   = "desca_$i";
-				$it_cana    = "cana_$i";
-				$it_preca   = "preca_$i";
-				$it_tota = "tota_$i";
-				$it_iva     = "itiva_$i";
-				$it_peso    = "sinvpeso_$i";
-				$it_tipo    = "sinvtipo_$i";
+				$it_desca    = "desca_$i";
+				$it_cana     = "cana_$i";
+				$it_preca    = "preca_$i";
+				$it_tota     = "tota_$i";
+				$it_iva      = "itiva_$i";
+				$it_peso     = "sinvpeso_$i";
+				$it_tipo     = "sinvtipo_$i";
 				$it_costo    = "itcosto_$i";
-				$it_pvp    = "itpvp_$i";
+				$it_pvp      = "itpvp_$i";
 
 				$pprecios='';
 				for($o=1;$o<5;$o++){
@@ -314,7 +281,6 @@ function del_itpfac(id){
 				<?php } ?>
 			</tr>
 			<?php } ?>
-
 			<tr id='__UTPL__'>
 				<td id='cueca'></td>
 			</tr>
