@@ -1,5 +1,5 @@
-<?php require_once(BASEPATH.'application/controllers/validaciones.php');
-class conv extends validaciones {
+<?php //require_once(BASEPATH.'application/controllers/validaciones.php');
+class conv extends Controller {
 
 	function conv(){
 		parent::Controller();
@@ -7,48 +7,47 @@ class conv extends validaciones {
 	}
 
 	function index() {
-		redirect('inventrario/conv/filteredgrid');
+		redirect('inventario/conv/filteredgrid');
 	}
 
 	function filteredgrid(){
-		$this->rapyd->load("datafilter","datagrid");
+		$this->rapyd->load('datafilter','datagrid');
 		$this->rapyd->uri->keep_persistence();
-		
-		$filter = new DataFilter("Filtro de Conversiones", 'conv');
-		
-		$filter->fecha = new dateonlyField("Fecha", "fecha");	
+
+		$filter = new DataFilter('Filtro de Conversiones', 'conv');
+
+		$filter->fecha = new dateonlyField('Fecha', 'fecha');
 		$filter->fecha->size=15;
 		$filter->fecha->maxlength=15;
-		$filter->fecha->rule="trim";
-		
-		$filter->numero = new inputField("N&uacute;mero", "numero");
+		$filter->fecha->rule='trim';
+
+		$filter->numero = new inputField('N&uacute;mero', 'numero');
 		$filter->numero->size=15;
-		
-		$filter->almacen = new inputField("Almacen", "almacen");
+
+		$filter->almacen = new inputField('Almac&eacute;n', 'almacen');
 		$filter->almacen->size=15;
-		
-		$filter->buttons("reset","search");
+
+		$filter->buttons('reset','search');
 		$filter->build();
-		
+
 		$uri = anchor('inventario/conv/dataedit/show/<#numero#>','<#numero#>');
-		
-		$grid = new DataGrid("Lista de Conversiones");
+
+		$grid = new DataGrid('Lista de Conversiones');
 		$grid->use_function('dbdate_to_human');
-		$grid->order_by("numero","asc");
+		$grid->order_by('numero','desc');
 		$grid->per_page = 10;
-		
-		$grid->column("N&uacute;mero", $uri);
-		$grid->column("Fecha","<dbdate_to_human><#fecha#></dbdate_to_human>");
-		$grid->column("Almacen","almacen");
-		$grid->column("Usuario", "usuario");
-				
-		$grid->add("inventario/conv/dataedit/create");
+
+		$grid->column('N&uacute;mero', $uri);
+		$grid->column('Fecha','<dbdate_to_human><#fecha#></dbdate_to_human>');
+		$grid->column('Almac&eacute;n','almacen');
+
+		$grid->add('inventario/conv/dataedit/create');
 		$grid->build();
-		
+
 		$data['content'] = $filter->output.$grid->output;
-		$data['title']   = "<h1>Conversiones</h1>";
-		$data["head"]    = $this->rapyd->get_head();
-		$this->load->view('view_ventanas', $data);	
+		$data['title']   = heading('Conversiones de inventario');
+		$data['head']    = $this->rapyd->get_head();
+		$this->load->view('view_ventanas', $data);
 	}
 
 	function dataedit(){
@@ -63,8 +62,7 @@ class conv extends validaciones {
 			'retornar'=>array(
 				'codigo' =>'codigo_<#i#>',
 				'descrip'=>'descrip_<#i#>',
-				
-				),
+			),
 			'p_uri'   => array(4=>'<#i#>'),
 			'titulo'  => 'Buscar Articulo',
 			'where'   => '`activo` = "S"',
@@ -72,7 +70,7 @@ class conv extends validaciones {
 		);
 		$btn=$this->datasis->p_modbus($modbus,'<#i#>');
 
-		$do = new DataObject("conv");
+		$do = new DataObject('conv');
 		$do->rel_one_to_many('itconv', 'itconv', 'numero');
 		$do->rel_pointer('itconv','sinv','itconv.codigo=sinv.codigo','sinv.descrip AS sinvdescrip');
 
@@ -86,14 +84,13 @@ class conv extends validaciones {
 		$edit->pre_process('insert' ,'_pre_insert');
 		$edit->pre_process('update' ,'_pre_update');
 		$edit->post_process('insert','_post_insert');
-		$edit->post_process('update','_post_update');
 		$edit->post_process('delete','_post_delete');
 
 		$edit->fecha = new DateonlyField('Fecha', 'fecha','d/m/Y');
 		$edit->fecha->insertValue = date('Y-m-d');
 		$edit->fecha->rule = 'required';
 		$edit->fecha->mode = 'autohide';
-		$edit->fecha->size = 10;		
+		$edit->fecha->size = 10;
 
 		$edit->numero = new inputField('N&uacute;mero', 'numero');
 		$edit->numero->size = 10;
@@ -141,7 +138,7 @@ class conv extends validaciones {
 		$edit->entrada->size     = 6;
 		$edit->entrada->rule     = 'required|positive';
 		$edit->entrada->autocomplete=false;
-		
+
 		$edit->salida = new inputField('Salida <#o#>', 'salida_<#i#>');
 		$edit->salida->db_name  = 'salida';
 		$edit->salida->css_class= 'inputnum';
@@ -150,26 +147,24 @@ class conv extends validaciones {
 		$edit->salida->size     = 6;
 		$edit->salida->rule     = 'required|positive';
 		$edit->salida->autocomplete=false;
-		
+
 		$edit->costo = new inputField('Costo <#o#>', 'costo_<#i#>');
 		$edit->costo->db_name   = 'costo';
 		$edit->costo->css_class = 'inputnum';
 		$edit->costo->rel_id    = 'itconv';
 		$edit->costo->size      = 10;
 		$edit->costo->rule      = 'required|positive';
-
-		
 		//**************************
 		//fin de campos para detalle
 		//**************************
 
 		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
 
-		$edit->buttons('modify', 'save', 'undo', 'delete', 'back','add_rel');
+		$edit->buttons('save', 'undo', 'delete', 'back','add_rel');
 		$edit->build();
 		$conten['form']  =&  $edit;
 		$data['content'] = $this->load->view('view_conv', $conten,true);
-		$data['title']   = heading('Conversiones');
+		$data['title']   = heading('Conversiones de inventario');
 		$data['head']    = script('jquery.js').script('jquery-ui.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css').$this->rapyd->get_head().phpscript('nformat.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js').phpscript('nformat.js');
 		$this->load->view('view_ventanas', $data);
 	}
@@ -193,27 +188,12 @@ class conv extends validaciones {
 	}
 
 	function _pre_update($do){
-		
-		$cana=$do->count_rel('itconv');
-		for($i=0;$i<$cana;$i++){
-			$do->set_rel('itconv','estampa' ,date('Y-m-d'),$i);
-			$do->set_rel('itconv','hora' ,date("H:i:s"),$i);
-			$do->set_rel('itconv','transac'   ,$do->get('transac')  ,$i);
-			$do->set_rel('itconv','usuario',$do->get('usuario'),$i);
-
-		}
-		
+		return false;
 	}
 
 	function _post_insert($do){
 		$codigo=$do->get('numero');
 		logusu('conv',"Conversion $codigo CREADO");
-	}
-
-
-	function _post_update($do){
-		$codigo=$do->get('numero');
-		logusu('conv',"Conversion $codigo MODIFICADO");
 	}
 
 	function _post_delete($do){
