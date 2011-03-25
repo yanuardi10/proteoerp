@@ -111,12 +111,8 @@ class conv extends Controller {
 		$edit->numero->when=array('show','modify');
 
 		$edit->observa1 = new inputField('Observaciones', 'observ1');
-		$edit->observa1->size      = 35;
-		$edit->observa1->maxlength = 38;
-
-		$edit->observa2 = new inputField('Observaciones', 'observ2');
-		$edit->observa2->size      = 35;
-		$edit->observa2->maxlength = 38;
+		$edit->observa1->size      = 40;
+		$edit->observa1->maxlength = 80;
 
 		$edit->almacen = new  dropdownField ('Almac&eacute;n', 'almacen');
 		$edit->almacen->options('SELECT ubica, CONCAT(ubica,\' \',ubides) nombre FROM caub ORDER BY ubica');
@@ -231,7 +227,19 @@ class conv extends Controller {
 		$usuario=$do->get('usuario');
 		$estampa=date('Ymd');
 		$hora   =date("H:i:s");
-
+		
+		$obs1=$obs2=$observa="";
+		if(strlen($do->get("observ1")) >80 ) $observa=substr($do->get("observ1"),0,80);
+		else $observa=$do->get("observ1");
+		if (strlen($observa)>40){
+			$obs1=substr($observa, 0, 39 );
+			$obs2=substr($observa,40);
+		}else{
+			$obs1=$observa;
+		}
+		
+		$do->set('observ1',$obs1);
+		$do->set('observ2',$obs2);
 		$do->set('estampa',$estampa);
 		$do->set('hora'   ,$hora);
 		$do->set('numero' ,$numero);
