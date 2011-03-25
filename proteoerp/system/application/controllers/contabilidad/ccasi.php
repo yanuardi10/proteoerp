@@ -67,7 +67,7 @@ class ccasi extends Controller {
 		$grid->column_orderby("Haber" ,"haber" ,'haber',"align='right'");
 		$grid->column_orderby("Total" ,"total" ,'total',"align='right'");
 		
-		$grid->add("contabilidad/casi/dataedit/create");
+		$grid->add("contabilidad/ccasi/dataedit/create");
 		$grid->build();
 		
 		$data['content'] =$filter->output.$grid->output;
@@ -165,29 +165,29 @@ class ccasi extends Controller {
 		$edit->referen->maxlength = 12;
 		$edit->referen->rel_id    = 'itcasi';
 
-		$edit->debe = new inputField('Debe <#o#>', 'debe_<#i#>');
-		$edit->debe->db_name      = 'debe';
-		$edit->debe->css_class    = 'inputnum';
-		$edit->debe->rel_id       = 'itcasi';
-		$edit->debe->maxlength    = 10;
-		$edit->debe->size         = 6;
-		$edit->debe->rule         = 'required|positive';
-		$edit->debe->autocomplete = false;
-		$edit->debe->onkeyup      = 'validaDebe(<#i#>)';
+		$edit->itdebe = new inputField('Debe <#o#>', 'itdebe_<#i#>');
+		$edit->itdebe->db_name      = 'debe';
+		$edit->itdebe->css_class    = 'inputnum';
+		$edit->itdebe->rel_id       = 'itcasi';
+		$edit->itdebe->maxlength    = 10;
+		$edit->itdebe->size         = 6;
+		$edit->itdebe->rule         = 'required|positive';
+		$edit->itdebe->autocomplete = false;
+		$edit->itdebe->onkeyup      = 'validaDebe(<#i#>)';
 
-		$edit->haber = new inputField('Haber <#o#>', 'haber_<#i#>');
-		$edit->haber->db_name      = 'haber';
-		$edit->haber->css_class    = 'inputnum';
-		$edit->haber->rel_id       = 'itcasi';
-		$edit->haber->maxlength    = 10;
-		$edit->haber->size         = 6;
-		$edit->haber->rule         = 'required|positive';
-		$edit->haber->autocomplete = false;
-		$edit->haber->onkeyup      = 'validaHaber(<#i#>)';
+		$edit->ithaber = new inputField('Haber <#o#>', 'ithaber_<#i#>');
+		$edit->ithaber->db_name      = 'haber';
+		$edit->ithaber->css_class    = 'inputnum';
+		$edit->ithaber->rel_id       = 'itcasi';
+		$edit->ithaber->maxlength    = 10;
+		$edit->ithaber->size         = 6;
+		$edit->ithaber->rule         = 'required|positive';
+		$edit->ithaber->autocomplete = false;
+		$edit->ithaber->onkeyup      = 'validaHaber(<#i#>)';
 		
-		$edit->cccosto = new hiddenField('', 'ccosto_<#i#>');
-		$edit->cccosto->db_name   = 'ccosto';
-		$edit->cccosto->rel_id    = 'itcasi';
+		$edit->ccosto = new hiddenField('', 'ccosto_<#i#>');
+		$edit->ccosto->db_name   = 'ccosto';
+		$edit->ccosto->rel_id    = 'itcasi';
 		
 		$edit->cplaccosto = new hiddenField('', 'cplaccosto_<#i#>');
 		$edit->cplaccosto->db_name   = 'cplaccosto';
