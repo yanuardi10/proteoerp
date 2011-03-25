@@ -92,9 +92,10 @@ class Tiket extends Controller {
 		$grid->build();
 		//echo $grid->db->last_query();
 
-		$data['content'] =$filter->output.$grid->output;
+		$data['content'] = $grid->output;
+		$data['filtro']  = $filter->output;
 		$data["head"]    = $this->rapyd->get_head();
-		$data['title']   ='<h1>Control de Tikets</h1>';
+		$data['title']   = '<h1>Control de Tikets</h1>';
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -221,9 +222,10 @@ class Tiket extends Controller {
 		$prop3=array('type'=>'button','value'=>'Regresar','name'=>'mas'  ,'onclick' => "javascript:window.location='".site_url("supervisor/tiket/filteredgrid")."'");
 		$form3=form_input($prop3);
 
-		$data['content'] = $table->output.$form.$form2.$form3;
-		$data["head"]    = $this->rapyd->get_head().style('marcos.css').style('estilos.css');
-		$data['title']   = "<h1>Tiket N&uacute;mero: $id</h1> Prioridad: <b>".$this->prioridad[$prioridad]."</b>, Estado: <b>".$this->estado[$estado]."</b><br>";
+		$data['content']  = "<br>Prioridad: <b>".$this->prioridad[$prioridad]."</b>, Estado: <b>".$this->estado[$estado]."</b><br>";
+		$data['content'] .= $table->output.$form.$form2.$form3;
+		$data["head"]     = $this->rapyd->get_head().style('marcos.css').style('estilos.css');
+		$data['title']    = "<h1>Tiket N&uacute;mero: $id</h1> ";
 		$this->load->view('view_ventanas', $data);
 	}
 
