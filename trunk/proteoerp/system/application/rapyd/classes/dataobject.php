@@ -489,6 +489,7 @@ class DataObject{
 				if($this->save_rel){
 					foreach($this->data_rel AS $rel=>$items){
 						//hace las equivalencias de las claves primarias
+						$pk_rel=array();
 						foreach($this->_rel_fields[$rel] AS $iind){ // $iind[0] encab $iind[1] detalle
 							$indiceit=$iind[1];
 							$indice =$iind[0];

@@ -209,7 +209,7 @@ class sinv extends Controller {
 		//echo $grid->db->last_query();
 		$data['content'] = $grid->output;
 		$data['filtro']  = $filter->output;
-		$data['title']   = '<h1>Maestro de Inventario</h1>';
+		$data['title']   = heading('Maestro de Inventario');
 		$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").script("sinvmaes2.js").$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
@@ -741,10 +741,267 @@ class sinv extends Controller {
 		$data["head"]    =script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
 
 		//$data['content'] = $edit->output;
-		$data['title']   = "<h1>Maestro de Inventario</h1>";
+		$data['title']   = heading('Maestro de Inventario');
 		//$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").script("sinvmaes.js").$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
+
+	function cprecios(){
+		$this->rapyd->uri->keep_persistence();
+		
+		$cpre=$this->input->post('pros');
+		if($cpre!==false){
+			$msj=$this->_cprecios();
+		}else{
+			$msj='';
+		}
+		
+		$this->rapyd->load("datafilter2","datagrid");
+		$mSPRV=array(
+				'tabla'   =>'sprv',
+				'columnas'=>array(
+				'proveed' =>'C&oacute;digo',
+				'nombre'=>'Nombre',
+				'contacto'=>'Contacto'),
+				'filtro'  =>array('proveed'=>'C&oacute;digo','nombre'=>'Nombre'),
+				'retornar'=>array('proveed'=>'proveed'),
+				'titulo'  =>'Buscar Proveedor');
+
+		$bSPRV=$this->datasis->modbus($mSPRV);
+
+		$link2=site_url('inventario/common/get_linea');
+		$link3=site_url('inventario/common/get_grupo');
+
+		$script='
+		$(document).ready(function(){
+			$(".inputnum").numeric(".");
+			$("#depto").change(function(){
+				depto();
+				$.post("'.$link2.'",{ depto:$(this).val() },function(data){$("#linea").html(data);})
+				$.post("'.$link3.'",{ linea:"" },function(data){$("#grupo").html(data);})
+			});
+			$("#linea").change(function(){
+				linea();
+				$.post("'.$link3.'",{ linea:$(this).val() },function(data){$("#grupo").html(data);})
+			});
+			$("#grupo").change(function(){
+				grupo();
+			});
+			$("#sinvprecioc").submit(function() {
+				return confirm("Estas seguro de que quieres actualizar los precios??");
+			});
+			depto();
+			linea();
+			grupo();
+		});
+
+		function depto(){
+			if($("#depto").val()!=""){
+				$("#nom_depto").attr("disabled","disabled");
+			}
+			else{
+				$("#nom_depto").attr("disabled","");
+			}
+		}
+
+		function linea(){
+			if($("#linea").val()!=""){
+				$("#nom_linea").attr("disabled","disabled");
+			}
+			else{
+				$("#nom_linea").attr("disabled","");
+			}
+		}
+
+		function grupo(){
+			if($("#grupo").val()!=""){
+				$("#nom_grupo").attr("disabled","disabled");
+			}
+			else{
+				$("#nom_grupo").attr("disabled","");
+			}
+		}';
+
+		$filter = new DataFilter2('Filtro por Producto');
+		$filter->error_string=$msj;
+
+		$filter->db->select("a.existen AS existen,a.marca marca,a.tipo AS tipo,a.id,TRIM(codigo) AS codigo,a.descrip,precio1,precio2,precio3,precio4,b.nom_grup AS nom_grup,b.grupo AS grupoid,c.descrip AS nom_linea,c.linea AS linea,d.descrip AS nom_depto,d.depto AS depto,a.base1,a.base2,a.base3,a.base4");
+		$filter->db->from('sinv AS a');
+		$filter->db->join('grup AS b','a.grupo=b.grupo');
+		$filter->db->join('line AS c','b.linea=c.linea');
+		$filter->db->join('dpto AS d','c.depto=d.depto');
+		$filter->db->where('a.activo','S');
+		$filter->script($script);
+
+		$filter->codigo = new inputField("C&oacute;digo", "codigo");
+		$filter->codigo-> size=15;
+		$filter->codigo->group = "Uno";
+
+		$filter->descrip = new inputField("Descripci&oacute;n", "descrip");
+		$filter->descrip->db_name='CONCAT_WS(" ",a.descrip,a.descrip2)';
+		$filter->descrip-> size=30;
+		$filter->descrip->group = "Uno";
+
+		$filter->tipo = new dropdownField("Tipo", "tipo");
+		$filter->tipo->db_name=("a.tipo");
+		$filter->tipo->option("","Todos");
+		$filter->tipo->option("Articulo","Art&iacute;culo");
+		$filter->tipo->option("Servicio","Servicio");
+		$filter->tipo->option("Descartar","Descartar");
+		$filter->tipo->option("Consumo","Consumo");
+		$filter->tipo->option("Fraccion","Fracci&oacute;n");
+		$filter->tipo->style='width:120px;';
+		$filter->tipo->group = "Uno";
+
+		$filter->clave = new inputField("Clave", "clave");
+		$filter->clave -> size=15;
+		$filter->clave->group = "Uno";
+
+		$filter->proveed = new inputField("Proveedor", "proveed");
+		$filter->proveed->append($bSPRV);
+		$filter->proveed->clause ="in";
+		$filter->proveed->db_name='( a.prov1, a.prov2, a.prov3 )';
+		$filter->proveed -> size=10;
+		$filter->proveed->group = "Dos";
+
+		$filter->depto2 = new inputField("Departamento", "nom_depto");
+		$filter->depto2->db_name="d.descrip";
+		$filter->depto2 -> size=5;
+		$filter->depto2->group = "Dos";
+
+		$filter->depto = new dropdownField("Departamento","depto");
+		$filter->depto->db_name="d.depto";
+		$filter->depto->option("","Seleccione un Departamento");
+		$filter->depto->options("SELECT depto, CONCAT(depto,'-',descrip) descrip FROM dpto WHERE tipo='I' ORDER BY depto");
+		$filter->depto->in="depto2";
+		$filter->depto->group = "Dos";
+		$filter->depto->style='width:190px;';
+
+		$filter->linea = new inputField("Linea", "nom_linea");
+		$filter->linea->db_name="c.descrip";
+		$filter->linea -> size=5;
+		$filter->linea->group = "Dos";
+
+		$filter->linea2 = new dropdownField("L&iacute;nea","linea");
+		$filter->linea2->db_name="c.linea";
+		$filter->linea2->option("","Seleccione un Departamento primero");
+		$filter->linea2->in="linea";
+		$filter->linea2->group = "Dos";
+		$filter->linea2->style='width:190px;';
+
+		$depto=$filter->getval('depto');
+		if($depto!==FALSE){
+			$filter->linea2->options("SELECT linea, CONCAT(linea,'-',descrip) descrip FROM line WHERE depto='$depto' ORDER BY descrip");
+		}else{
+			$filter->linea2->option("","Seleccione un Departamento primero");
+		}
+
+		$filter->grupo2 = new inputField("Grupo", "nom_grupo");
+		$filter->grupo2->db_name="b.nom_grup";
+		$filter->grupo2 -> size=5;
+		$filter->grupo2->group = "Dos";
+
+		$filter->grupo = new dropdownField("Grupo", "grupo");
+		$filter->grupo->db_name="b.grupo";
+		$filter->grupo->option("","Seleccione una L&iacute;nea primero");
+		$filter->grupo->in="grupo2";
+		$filter->grupo->group = "Dos";
+		$filter->grupo->style='width:190px;';
+
+		$linea=$filter->getval('linea2');
+		if($linea!==FALSE){
+			$filter->grupo->options("SELECT grupo, CONCAT(grupo,'-',nom_grup) nom_grup FROM grup WHERE linea='$linea' ORDER BY nom_grup");
+		}else{
+			$filter->grupo->option("","Seleccione un Departamento primero");
+		}
+
+		$filter->marca = new dropdownField("Marca", "marca");
+		$filter->marca->option('','Todas');
+		$filter->marca->options("SELECT TRIM(marca) AS clave, TRIM(marca) AS valor FROM marc ORDER BY marca"); 
+		$filter->marca->style='width:220px;';
+		$filter->marca->group = "Dos";
+
+		$filter->buttons("reset","search");
+		$filter->build("dataformfiltro");
+
+		$ggrid='';
+		if($filter->is_valid()){
+			$attr=array('id'=>'sinvprecioc');
+			$ggrid =form_open(uri_string(),$attr);
+			foreach ($filter->_fields as $field_name => $field_copy){
+				$ggrid.= form_hidden($field_copy->id, $field_copy->value);
+			}
+
+			$grid = new DataGrid("Art&iacute;culos de Inventario");
+			$grid->order_by("codigo","asc");
+			$grid->per_page = 15;
+			$link  = anchor('inventario/sinv/dataedit/show/<#id#>','<#codigo#>');
+			$uri_2 = anchor('inventario/sinv/dataedit/create/<#id#>','Duplicar');
+
+			$grid->column_orderby('C&oacute;digo','codigo','codigo');
+			$grid->column_orderby('Descripci&oacute;n','descrip','descrip');
+			$grid->column_orderby('Marca','marca','marca');
+			for($i=1;$i<5;$i++){
+				$obj='precio'.$i;
+				$$obj = new inputField($obj, $obj);
+				$$obj->grid_name=$obj.'[<#id#>]';
+				$$obj->status   ='modify';
+				$$obj->size     =12;
+				$$obj->css_class='inputnum';
+				$$obj->autocomplete=false;
+
+				$grid->column("Precio $i",$$obj,'align=right');
+			};
+
+			$grid->submit('pros', 'Cambiar','BR');
+			$grid->build();
+			$ggrid.=$grid->output;
+			$ggrid.=form_close();
+		}
+
+		$data['content'] = $filter->output.$ggrid;
+		$data['title']   = heading('Cambio de precios');
+		$data['head']    = $this->rapyd->get_head().script('jquery.pack.js');
+		$data['head']   .= script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js');
+		$this->load->view('view_ventanas', $data);
+	}
+
+	function _cprecios(){
+		$precio1=$this->input->post('precio1');
+		$precio2=$this->input->post('precio2');
+		$precio3=$this->input->post('precio3');
+		$precio4=$this->input->post('precio4');
+
+		$msj=''; $error=0;
+		foreach($precio1 as $id => $p1){
+			$p2=floatval($precio2[$id]);
+			$p3=floatval($precio3[$id]);
+			$p4=floatval($precio4[$id]);
+
+			if($p1>=$p2 && $p2>=$p3 && $p4>=$p4 && $p1*$p2*$p3*$p4>0){
+				$dbid=$this->db->escape($id);
+				$sql=array();
+				for($i=1;$i<5;$i++){
+					$pprecio='p'.$i;
+					$precio=round($$pprecio,2);
+
+					$sql[]="precio${i}=${precio}";
+					$sql[]="base${i}  =ROUND(${precio}/(1+(iva/100)),2)";
+					$sql[]="margen${i}=ROUND(100-(ultimo*100/(${precio}/(1+(iva/100)))),2)";
+				}
+				$campos=implode(',',$sql);
+				
+				$mSQL="UPDATE `sinv` SET ${campos} WHERE id=${dbid}";
+				$ban=$this->db->simple_query($mSQL);
+				if($ban==false){ memowrite($mSQL,'sinv'); $error++; }
+			}else{
+				$msj.="Los precios deben tener valores decrecientes y mayores que cero ($id)".br();
+			}
+		}
+		if($error>0) $msj.='Hubo alg&uacute;n error, se gener&oacute; un centinela';
+		return $msj;
+	}
+
 
 	function sug($tabla=''){
 		if($tabla=='dpto'){
@@ -833,7 +1090,6 @@ class sinv extends Controller {
 		}
 	}
 
-
 	function instalar(){
 		$mSQL='ALTER TABLE `sinv` DROP PRIMARY KEY';
 		$this->db->simple_query($mSQL);
@@ -857,5 +1113,4 @@ class sinv extends Controller {
 		) ENGINE=MyISAM DEFAULT CHARSET=latin1";
 		$this->db->simple_query($mSQL);
 	}
-
 }
