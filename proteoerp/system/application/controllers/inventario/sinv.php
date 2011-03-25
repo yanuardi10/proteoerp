@@ -823,7 +823,7 @@ class sinv extends Controller {
 		}';
 
 		$filter = new DataFilter2('Filtro por Producto');
-		$filter->error_string=$msj;
+		//$filter->error_string=$msj;
 
 		$filter->db->select("a.existen AS existen,a.marca marca,a.tipo AS tipo,a.id,TRIM(codigo) AS codigo,a.descrip,precio1,precio2,precio3,precio4,b.nom_grup AS nom_grup,b.grupo AS grupoid,c.descrip AS nom_linea,c.linea AS linea,d.descrip AS nom_depto,d.depto AS depto,a.base1,a.base2,a.base3,a.base4");
 		$filter->db->from('sinv AS a');
@@ -957,9 +957,12 @@ class sinv extends Controller {
 			$grid->build();
 			$ggrid.=$grid->output;
 			$ggrid.=form_close();
+			//echo $this->db->last_query();
 		}
 
-		$data['content'] = $filter->output.$ggrid;
+		$data['content'] = '<div class="alert">'.$msj.'</div>';
+		$data['content'].= $ggrid;
+		$data['filtro']  = $filter->output;
 		$data['title']   = heading('Cambio de precios');
 		$data['head']    = $this->rapyd->get_head().script('jquery.pack.js');
 		$data['head']   .= script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js');
@@ -974,34 +977,36 @@ class sinv extends Controller {
 
 		$msj=''; $error=0;
 		foreach($precio1 as $id => $p1){
+			$dbid=$this->db->escape($id);
 			$p2=floatval($precio2[$id]);
 			$p3=floatval($precio3[$id]);
 			$p4=floatval($precio4[$id]);
 
 			if($p1>=$p2 && $p2>=$p3 && $p4>=$p4 && $p1*$p2*$p3*$p4>0){
-				$dbid=$this->db->escape($id);
 				$sql=array();
 				for($i=1;$i<5;$i++){
 					$pprecio='p'.$i;
 					$precio=round($$pprecio,2);
+					$base  = "${precio}*100/(100+iva)";
+					$costo = "IF(formcal='U',ultimo,IF(formcal='P',pond,IF(formcal='S',standard,GREATEST(ultimo,pond))))";
 
 					$sql[]="precio${i}=${precio}";
-					$sql[]="base${i}  =ROUND(${precio}/(1+(iva/100)),2)";
-					$sql[]="margen${i}=ROUND(100-(ultimo*100/(${precio}/(1+(iva/100)))),2)";
+					$sql[]="base${i}  =ROUND(${base},2)";
+					$sql[]="margen${i}=ROUND(100-((${costo})*100/(${base})),2)";
 				}
 				$campos=implode(',',$sql);
-				
+
 				$mSQL="UPDATE `sinv` SET ${campos} WHERE id=${dbid}";
 				$ban=$this->db->simple_query($mSQL);
 				if($ban==false){ memowrite($mSQL,'sinv'); $error++; }
 			}else{
-				$msj.="Los precios deben tener valores decrecientes y mayores que cero ($id)".br();
+				$codigo=$this->datasis->dameval("SELECT codigo FROM sinv WHERE id=${dbid}");
+				$msj.='En el art&iacute;culo '.TRIM($codigo).' los precios deben tener valores mayores que cero y en forma decrecientes (Precio 1 >= Precio 2 >= Precio 3 >= Precio 4).'.br();
 			}
 		}
 		if($error>0) $msj.='Hubo alg&uacute;n error, se gener&oacute; un centinela';
 		return $msj;
 	}
-
 
 	function sug($tabla=''){
 		if($tabla=='dpto'){
