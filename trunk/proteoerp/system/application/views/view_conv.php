@@ -35,12 +35,14 @@ function validaEnt(i){
 	var entrada = Number($("#entrada_"+i).val());
 	if(entrada>0)
 		 $("#salida_"+i).val('0');
+	$("#entrada_"+i).val(entrada);
 }
 
 function validaSalida(i){
 	var salida =Number($("#salida_"+i).val());
 	if(salida>0)
 		$("#entrada_"+i).val('0');
+	$("#salida_"+i).val(salida)
 }
 
 function add_itconv(){
