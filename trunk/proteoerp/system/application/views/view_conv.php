@@ -88,8 +88,6 @@ function del_itconv(id){
 			<tr>
 				<td class="littletableheader"><?php echo $form->observa1->label;  ?>&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->observa1->output; ?>&nbsp;</td>
-				<td class="littletableheader"><?php echo $form->observa2->label;  ?>&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->observa2->output; ?>&nbsp;</td>
 			</tr>
 		</table><br>
 		</td>
