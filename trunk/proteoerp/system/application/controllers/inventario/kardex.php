@@ -141,18 +141,18 @@ class Kardex extends Controller {
 		if($tipo=='3I' or $tipo=='3M'){  //ventas de caja
 			$fields = $this->db->field_data('sfac');
 			$ppk=array();
-			$select=array('a.numa','a.tipoa','a.numa AS numero','CONCAT("(",b.cod_cli,") ",b.nombre) cliente','a.cana','a.fecha','a.vendedor','a.preca','a.tota','tipo_doc');
+			$select=array('a.numa','a.tipoa','a.numa','CONCAT("(",b.cod_cli,") ",b.nombre) cliente','a.cana','a.fecha','a.vendedor','a.preca','a.tota','b.tipo_doc');
 			foreach ($fields as $field){
 				if($field->primary_key==1){
 					$ppk[]='<#'.$field->name.'#>';
-					$pknombre='a.'.$field->name;
+					$pknombre='b.'.$field->name;
 					if(array_search($pknombre, $select)===false){
 						$select[]=$pknombre;
 					}
 				}
 			}
 			$grid->title('Facturas');
-			$link=anchor('ventas/factura/dataedit/show/'.implode('/',$ppk),'<#tipoa#><#numero#>');
+			$link=anchor('ventas/factura/dataedit/show/'.implode('/',$ppk),'<#tipoa#><#numa#>');
 			$grid->column('N&uacute;mero',$link);
 			$grid->column('Cliente'      ,'cliente' );
 			$grid->column('Cantidad'     ,'<nformat><#cana#></format>','align=right');
@@ -169,14 +169,14 @@ class Kardex extends Controller {
 			$grid->db->where('b.almacen',$almacen);
 		}elseif($tipo=='3R'){ //ventas de Restaurante
 			$grid->title('Facturas');
-			$link=anchor("hospitalidad/factura/dataedit/show/<#numa#>","<#numero#>");
-			$grid->column("N&uacute;mero",'numero');
-			$grid->column("Cliente"      ,'cliente' );
-			$grid->column("Cantidad"     ,'<nformat><#cantidad#></nformat>','align=right');
-			$grid->column("Fecha"        ,"<dbdate_to_human><#fecha#></dbdate_to_human>"   ,'align=center');
-			$grid->column("Mesonero"     ,"mesonero",'align=center');
-			$grid->column("Precio"       ,"<nformat><#precio#></nformat>",'align=right');
-			$grid->column("Total"        ,"<nformat><#importe#></nformat>" ,'align=right');
+			$link=anchor('hospitalidad/factura/dataedit/show/<#numa#>','<#numero#>');
+			$grid->column('N&uacute;mero','numero');
+			$grid->column('Cliente'      ,'cliente' );
+			$grid->column('Cantidad'     ,'<nformat><#cantidad#></nformat>','align=right');
+			$grid->column('Fecha'        ,'<dbdate_to_human><#fecha#></dbdate_to_human>'   ,'align=center');
+			$grid->column('Mesonero'     ,'mesonero','align=center');
+			$grid->column('Precio'       ,'<nformat><#precio#></nformat>'  ,'align=right');
+			$grid->column('Total'        ,'<nformat><#importe#></nformat>' ,'align=right');
 			$grid->db->select(array('a.numero','CONCAT("(",b.cod_cli,") ",b.nombre) cliente','c.cantidad','a.fecha', 'a.mesonero','a.precio','a.importe'));
 			$grid->db->from('ritems a');
 			$grid->db->join('rfac b','b.numero=a.numero');
@@ -190,7 +190,7 @@ class Kardex extends Controller {
 			foreach ($fields as $field){
 				if($field->primary_key==1){
 					$ppk[]='<#'.$field->name.'#>';
-					$pknombre='a.'.$field->name;
+					$pknombre='b.'.$field->name;
 					if(array_search($pknombre, $select)===false){
 						$select[]=$pknombre;
 					}
@@ -199,12 +199,12 @@ class Kardex extends Controller {
 
 			$link=anchor('/inventario/stra/dataedit/show/'.implode('/',$ppk),'<#numero#>');
 			$grid->title('Tranferencias');
-			$grid->column("N&uacute;mero",$link);
-			$grid->column("Env&iacute;a"      ,'envia' );
-			$grid->column("Recibe"            ,'recibe');
-			$grid->column("Cantidad"          ,'<nformat><#cantidad#></nformat>','align=\'right\'');
-			$grid->column("Fecha"             ,'<dbdate_to_human><#fecha#></dbdate_to_human>','align=\'center\'');
-			$grid->column("Observaci&oacute;n",'observ1');
+			$grid->column('N&uacute;mero',$link);
+			$grid->column('Env&iacute;a'      ,'envia' );
+			$grid->column('Recibe'            ,'recibe');
+			$grid->column('Cantidad'          ,'<nformat><#cantidad#></nformat>','align=\'right\'');
+			$grid->column('Fecha'             ,'<dbdate_to_human><#fecha#></dbdate_to_human>','align=\'center\'');
+			$grid->column('Observaci&oacute;n','observ1');
 			//$grid->column("Costo"             ,"<nformat><#costo#></nformat>",'align=right');
 			$grid->db->select($select);
 			$grid->db->from('itstra a');
@@ -217,7 +217,7 @@ class Kardex extends Controller {
 			foreach ($fields as $field){
 				if($field->primary_key==1){
 					$ppk[]='<#'.$field->name.'#>';
-					$pknombre='a.'.$field->name;
+					$pknombre='b.'.$field->name;
 					$select=array('a.numero', 'a.fecha','a.proveed', 'a.depo', 'a.cantidad', 'a.costo', 'a.importe','a.control');
 					if(array_search($pknombre, $select)===false){
 						$select[]=$pknombre;
@@ -258,9 +258,9 @@ class Kardex extends Controller {
 			$grid->column("N&uacute;mero",$link);
 			$grid->column("Fecha"    ,"<dbdate_to_human><#fecha#></dbdate_to_human>",'align=center');
 			$grid->column("Proveedor","Nombre");
-			$grid->column("Cantidad" ,"<nformat><#cana#>|2|,|.   </nformat>",'align=right');
-			$grid->column("Costo"    ,"<nformat><#precio#>|2|,|. </nformat>",'align=right');
-			$grid->column("Importe"  ,"<nformat><#importe#>|2|,|.</nformat>",'align=right');
+			$grid->column("Cantidad" ,"<nformat><#cana#>   </nformat>",'align=right');
+			$grid->column("Costo"    ,"<nformat><#precio#> </nformat>",'align=right');
+			$grid->column("Importe"  ,"<nformat><#importe#></nformat>",'align=right');
 			$grid->db->select($select);
 			$grid->db->from('snte a');
 			$grid->db->join('itsnte b','a.numero=b.numero');
@@ -281,10 +281,10 @@ class Kardex extends Controller {
 			}
 			$link=anchor('inventario/conversiones/dataedit/show/'.implode('/',$ppk),'<#numero#>');
 			$grid->title('Conversiones');
-			$grid->column("N&uacute;mero",$link);
-			$grid->column("Fecha"    ,"<dbdate_to_human><#estampa#></dbdate_to_human>",'align=center');
-			$grid->column("Entrada"  ,"<nformat><#entrada#>|2|,|.</nformat>",'align=right');
-			$grid->column("Salida"   ,"<nformat><#salida#>|2|,|. </nformat>",'align=right');
+			$grid->column('N&uacute;mero',$link);
+			$grid->column('Fecha'    ,"<dbdate_to_human><#estampa#></dbdate_to_human>",'align=center');
+			$grid->column("Entrada"  ,"<nformat><#entrada#></nformat>",'align=right');
+			$grid->column("Salida"   ,"<nformat><#salida#> </nformat>",'align=right');
 			$grid->db->select($select);
 			$grid->db->from('conv AS a');
 			$grid->db->join('itconv AS b','a.numero=b.numero');
@@ -295,7 +295,7 @@ class Kardex extends Controller {
 		//echo $grid->db->last_query();
 		
 		$data['content'] = $grid->output;
-		$data['title']   = heading("Transacciones del producto $codigo");
+		$data['title']   = heading('Transacciones del producto $codigo');
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
@@ -308,7 +308,7 @@ class Kardex extends Controller {
 
 		$data["crud"]   = $grid->output;
 		$data["titulo"] = '';
-		$content["content"]    = $this->load->view('rapyd/crud', $data, true);   
+		$content["content"]    = $this->load->view('rapyd/crud', $data, true);
 		$content["rapyd_head"] = $this->rapyd->get_head();
 		$this->load->view('view_kardex', $content);
 	}
