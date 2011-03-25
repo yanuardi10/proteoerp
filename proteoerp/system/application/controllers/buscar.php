@@ -60,7 +60,7 @@ class Buscar extends Controller
 				$select[]=$ddata;
 		}
 
-		$filter = new DataFilter2('Parametros de B&uacute;squeda');
+		$filter = new DataFilter2('Par&aacute;metros de B&uacute;squeda');
 
 		$filter->db->select($select);
 		$filter->db->from($this->tabla);

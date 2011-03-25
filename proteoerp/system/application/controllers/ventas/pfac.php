@@ -78,7 +78,7 @@ class pfac extends validaciones{
 
 		$data['content'] = $filter->output . $grid->output;
 		$data["head"] = $this->rapyd->get_head();
-		$data['title'] = '<h1>Pedidos Clientes</h1>';
+		$data['title'] = heading('Pedidos Clientes');
 		$this->load->view('view_ventanas', $data);
 		}
 	
@@ -87,9 +87,14 @@ class pfac extends validaciones{
 
 		$modbus = array(
 			'tabla' => 'sinv',
-			'columnas' => array(
-				'codigo' => 'C&oacute;digo',
-				'descrip' => 'Descripci&oacute;n'),
+			'columnas'=>array(
+				'codigo'  =>'C&oacute;digo',
+				'descrip' =>'Descripci&oacute;n',
+				'precio1' =>'Precio 1',
+				'precio2' =>'Precio 2',
+				'precio3' =>'Precio 3',
+				'existen' =>'Existencia',
+				),
 			'filtro' => array('codigo' => 'C&oacute;digo', 'descrip' => 'Descripci&oacute;n'),
 			'retornar' => array(
 				'codigo' => 'codigoa_<#i#>',

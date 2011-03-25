@@ -61,13 +61,18 @@ class conv extends Controller {
 		$modbus=array(
 			'tabla'   =>'sinv',
 			'columnas'=>array(
-				'codigo' =>'C&oacute;digo',
-				'descrip'=>'Descripci&oacute;n'),
+				'codigo'  =>'C&oacute;digo',
+				'descrip' =>'Descripci&oacute;n',
+				'precio1' =>'Precio 1',
+				'precio2' =>'Precio 2',
+				'precio3' =>'Precio 3',
+				'existen' =>'Existencia',
+				),
 			'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'Descripci&oacute;n'),
 			'retornar'=>array(
 				'codigo' =>'codigo_<#i#>',
 				'descrip'=>'descrip_<#i#>',
-				'ultimo'=>'costo_<#i#>'
+				'ultimo' =>'costo_<#i#>'
 			),
 			'p_uri'   => array(4=>'<#i#>'),
 			'titulo'  => 'Buscar Articulo',
@@ -113,8 +118,9 @@ class conv extends Controller {
 		$edit->observa2->size      = 35;
 		$edit->observa2->maxlength = 38;
 
-		$edit->almacen = new  dropdownField ('Almacen', 'almacen');
+		$edit->almacen = new  dropdownField ('Almac&eacute;n', 'almacen');
 		$edit->almacen->options('SELECT ubica, CONCAT(ubica,\' \',ubides) nombre FROM caub ORDER BY ubica');
+		$edit->almacen->rule = 'required';
 		$edit->almacen->style='width:200px;';
 		$edit->almacen->size = 5;
 
@@ -167,6 +173,7 @@ class conv extends Controller {
 
 		$edit->buttons('save', 'undo', 'delete', 'back','add_rel');
 		$edit->build();
+
 		$conten['form']  =&  $edit;
 		$data['content'] = $this->load->view('view_conv', $conten,true);
 		$data['title']   = heading('Conversiones de inventario');
@@ -179,32 +186,32 @@ class conv extends Controller {
 			$this->chrepetidos[]=$cod;
 			return true;
 		}else{
-			$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='Opps!! no se puede cargar un gasto cuyas retenciones sean mayores a la base del mismo.';
+			$this->validation->set_message('chrepetidos', 'El art&iacute;culo '.$cod.' esta repetido');
 			return false;
 		}
 	}
 
 	function _pre_insert($do){
-		
-		$numero=$this->datasis->fprox_numero('nconv');
-		$do->set('numero',$numero);
+		$numero =$this->datasis->fprox_numero('nconv');
 		$transac=$this->datasis->fprox_numero('ntransa');
-		$do->set('transac',$transac);
+		$usuario=$do->get('usuario');
 		$estampa=date('Ymd');
-		$hora=date("H:i:s");
+		$hora   =date("H:i:s");
+
 		$do->set('estampa',$estampa);
-		$do->set('hora',$hora);
+		$do->set('hora'   ,$hora);
+		$do->set('numero' ,$numero);
+		$do->set('transac',$transac);
+
 		$cana=$do->count_rel('itconv');
-		$monto=0;
-		$entradas=0;
-		$salidas=0;
+		$monto=$entradas=$salidas=0;
 		//Hasta aca en costo trae el valor del ultimo de sinv, se opera para cambiarlo a:
 		//costo=costo*(entrada o salida segun se el caso)
 		for($i=0;$i<$cana;$i++){
 			$ent=$do->get_rel('itconv','entrada',$i);
-			$sal=$do->get_rel('itconv','salida',$i);
+			$sal=$do->get_rel('itconv','salida' ,$i);
 			if ($ent!=0 && $sal!=0){
-				$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='No puede tener entradas y salidas en el rubro .'.$i;
+				$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='No puede tener entradas y salidas en el rubro .'.$i+1;
 				return false;	
 			}
 			if($ent != 0){
@@ -215,12 +222,11 @@ class conv extends Controller {
 				$salidas+=$sal;
 				$monto=round($sal*$do->get_rel('itconv','costo',$i),2);
 			}
-			$do->set_rel('itconv','costo' ,$monto,$i);
+			$do->set_rel('itconv','costo'   ,$monto  ,$i);
 			$do->set_rel('itconv','estampa' ,$estampa,$i);
-			$do->set_rel('itconv','hora' ,$hora,$i);
-			$do->set_rel('itconv','transac'   ,$transac  ,$i);
-			$do->set_rel('itconv','usuario',$do->get('usuario'),$i);
-			//echo $do->get_rel("itconv","costo",$i)."<br>";
+			$do->set_rel('itconv','hora'    ,$hora   ,$i);
+			$do->set_rel('itconv','transac' ,$transac,$i);
+			$do->set_rel('itconv','usuario' ,$usuario,$i);;
 		}
 		if ($entradas == 0){
 			$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='Debe ingresar al menos una entrada.';
@@ -238,6 +244,7 @@ class conv extends Controller {
 	}
 
 	function _post_insert($do){
+		//trafrac ittrafrac
 		$codigo=$do->get('numero');
 		logusu('conv',"Conversion $codigo CREADO");
 	}

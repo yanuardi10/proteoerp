@@ -29,36 +29,18 @@ var itconv_cont=<?php echo $form->max_rel_count['itconv']; ?>;
 
 $(function(){
 	$(".inputnum").numeric(".");
-	
 });
 
 function validaEnt(i){
-	salida =$("#salida_"+i).val();
-	entrada =Number($("#entrada_"+i).val());
-	
-	if (salida !="" && Number(salida)>0 && entrada!=0){
-		alert("Este monto debe ser 0, ya que posee una salida");
-		$("#entrada_"+i).val(0);
-	}else{
-		$("#entrada_"+i).val(entrada)
-	}
-	if(entrada==0 && Number(salida)==0){
-		$("#salida_"+i).val(1);
-	}
+	var entrada = Number($("#entrada_"+i).val());
+	if(entrada>0)
+		 $("#salida_"+i).val('0');
 }
+
 function validaSalida(i){
-	entrada =$("#entrada_"+i).val();
-	salida =Number($("#salida_"+i).val());
-	if (entrada !="" && Number(entrada)>0 && salida!=0){
-		alert("Este monto debe ser 0, ya que posee una entrada");
-		$("#salida_"+i).val(0);
-	}else{
-		$("#salida_"+i).val(salida);
-	}
-	if(salida==0 && Number(entrada)==0){
-		$("#entrada_"+i).val(1);
-	}
-	
+	var salida =Number($("#salida_"+i).val());
+	if(salida>0)
+		$("#entrada_"+i).val('0');
 }
 
 function add_itconv(){
@@ -98,8 +80,8 @@ function del_itconv(id){
 			<tr>
 				<td class="littletableheader"><?php echo $form->fecha->label;    ?>*&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->fecha->output;   ?>&nbsp;</td>
-				<td class="littletableheader"><?php echo $form->almacen->label     ?>&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->almacen->output    ?>&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->almacen->label   ?>*&nbsp;</td>
+				<td class="littletablerow">   <?php echo $form->almacen->output  ?>&nbsp;</td>
 			</tr>
 			<tr>
 				<td class="littletableheader"><?php echo $form->observa1->label;  ?>&nbsp;</td>
@@ -127,11 +109,11 @@ function del_itconv(id){
 			</tr>
 
 			<?php for($i=0;$i<$form->max_rel_count['itconv'];$i++) {
-				$it_codigo  = "codigo_$i";
-				$it_descrip   = "descrip_$i";
-				$it_salida    = "salida_$i";
-				$it_entrada   = "entrada_$i";
-				$it_costo = "costo_$i";
+				$it_codigo   = "codigo_$i";
+				$it_descrip  = "descrip_$i";
+				$it_salida   = "salida_$i";
+				$it_entrada  = "entrada_$i";
+				$it_costo    = "costo_$i";
 
 				$pprecios = $form->$it_costo->output;
 			?>
