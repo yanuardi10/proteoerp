@@ -334,7 +334,7 @@ class Scst extends Controller {
 
 		$data['content'] =$form->output;
 		$data['head']    =script('prototype.js').$this->rapyd->get_head();
-		$data['title']   ='<h1>Seleccione un departamento</h1>';
+		$data['title']   =heading('Seleccione un departamento');
 		$this->load->view('view_detalle', $data);
 	}
 
