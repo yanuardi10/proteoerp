@@ -11,9 +11,9 @@ $campos=$form->template_details('itcasi');
 $scampos  ='<tr id="tr_itcasi_<#i#>">';
 $scampos .='<td class="littletablerow" align="left" >'.$campos['cuenta']['field'].'</td>';
 $scampos .='<td class="littletablerow" align="left" >'.$campos['concepto']['field'].'</td>';
-$scampos .='<td class="littletablerow" align="right">'.$campos['referen']['field'].  '</td>';
-$scampos .='<td class="littletablerow" align="right">'.$campos['debe']['field'].  '</td>';
-$scampos .='<td class="littletablerow" align="right">'.$campos['haber']['field'];
+$scampos .='<td class="littletablerow" align="left">'.$campos['referen']['field'].  '</td>';
+$scampos .='<td class="littletablerow" align="right">'.$campos['itdebe']['field'].  '</td>';
+$scampos .='<td class="littletablerow" align="right">'.$campos['ithaber']['field'];
 $scampos .= $campos['ccosto']['field'];
 $scampos .= $campos['cplaccosto']['field'].'</td>';
 $scampos .= '<td class="littletablerow"><a href=# onclick="del_itcasi(<#i#>);return false;">Eliminar</a></td></tr>';
@@ -108,11 +108,12 @@ function del_itcasi(id){
 
 			<?php for($i=0;$i<$form->max_rel_count['itcasi'];$i++) {
 				$it_cuenta   = "cuenta_$i";
-				$it_cocepto  = "concepto_$i";
+				$it_concepto  = "concepto_$i";
 				$it_referen  = "referen_$i";
-				$it_debe     = "debe_$i";
-				$it_haber    = "haber_$i";
-
+				$it_debe     = "itdebe_$i";
+				$it_haber    = "ithaber_$i";
+				$it_ccosto    = "ccosto_$i";
+				$it_cplaccosto    = "cplaccosto_$i";
 				$pprecios = $form->$it_ccosto->output;
 				$pprecios = $form->$it_cplaccosto->output;
 			?>
