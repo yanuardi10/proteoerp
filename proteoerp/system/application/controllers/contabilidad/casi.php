@@ -65,7 +65,7 @@ class Casi extends Controller {
 		$grid->column("Haber" ,"haber" ,"align='right'");
 		$grid->column("Total" ,"total" ,"align='right'");
 		
-		//$grid->add("contabilidad/casi/dataedit/create");
+		$grid->add("contabilidad/casi/dataedit/create");
 		$grid->build();
 		//echo $grid->db->last_query();
 		
