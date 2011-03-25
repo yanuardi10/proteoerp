@@ -192,17 +192,6 @@ class conv extends Controller {
 	}
 
 	function _pre_insert($do){
-		$numero =$this->datasis->fprox_numero('nconv');
-		$transac=$this->datasis->fprox_numero('ntransa');
-		$usuario=$do->get('usuario');
-		$estampa=date('Ymd');
-		$hora   =date("H:i:s");
-
-		$do->set('estampa',$estampa);
-		$do->set('hora'   ,$hora);
-		$do->set('numero' ,$numero);
-		$do->set('transac',$transac);
-
 		$cana=$do->count_rel('itconv');
 		$monto=$entradas=$salidas=0;
 		//Hasta aca en costo trae el valor del ultimo de sinv, se opera para cambiarlo a:
@@ -214,6 +203,10 @@ class conv extends Controller {
 				$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='No puede tener entradas y salidas en el rubro .'.$i+1;
 				return false;	
 			}
+			if ($ent==0 && $sal==0){
+				$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='Debe tener entradas o salidas en el rubro .'.$i+1;
+				return false;	
+			}
 			if($ent != 0){
 				$entradas+=$ent;
 				$monto=round($ent*$do->get_rel('itconv','costo',$i),2);
@@ -223,10 +216,6 @@ class conv extends Controller {
 				$monto=round($sal*$do->get_rel('itconv','costo',$i),2);
 			}
 			$do->set_rel('itconv','costo'   ,$monto  ,$i);
-			$do->set_rel('itconv','estampa' ,$estampa,$i);
-			$do->set_rel('itconv','hora'    ,$hora   ,$i);
-			$do->set_rel('itconv','transac' ,$transac,$i);
-			$do->set_rel('itconv','usuario' ,$usuario,$i);;
 		}
 		if ($entradas == 0){
 			$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='Debe ingresar al menos una entrada.';
@@ -235,6 +224,24 @@ class conv extends Controller {
 		if ($salidas == 0){
 			$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='Debe ingresar al menos una salida.';
 			return false;	
+		}
+		
+		$numero =$this->datasis->fprox_numero('nconv');
+		$transac=$this->datasis->fprox_numero('ntransa');
+		$usuario=$do->get('usuario');
+		$estampa=date('Ymd');
+		$hora   =date("H:i:s");
+
+		$do->set('estampa',$estampa);
+		$do->set('hora'   ,$hora);
+		$do->set('numero' ,$numero);
+		$do->set('transac',$transac);
+		
+		for($i=0;$i<$cana;$i++){
+			$do->set_rel('itconv','estampa' ,$estampa,$i);
+			$do->set_rel('itconv','hora'    ,$hora   ,$i);
+			$do->set_rel('itconv','transac' ,$transac,$i);
+			$do->set_rel('itconv','usuario' ,$usuario,$i);;
 		}
 		return true;
 	}
