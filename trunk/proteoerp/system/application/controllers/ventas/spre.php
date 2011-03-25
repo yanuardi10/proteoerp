@@ -90,8 +90,13 @@ class spre extends validaciones {
 		$modbus=array(
 			'tabla'   =>'sinv',
 			'columnas'=>array(
-				'codigo' =>'C&oacute;digo',
-				'descrip'=>'Descripci&oacute;n'),
+				'codigo'  =>'C&oacute;digo',
+				'descrip' =>'Descripci&oacute;n',
+				'precio1' =>'Precio 1',
+				'precio2' =>'Precio 2',
+				'precio3' =>'Precio 3',
+				'existen' =>'Existencia',
+				),
 			'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'Descripci&oacute;n'),
 			'retornar'=>array(
 				'codigo' =>'codigo_<#i#>',
@@ -107,7 +112,7 @@ class spre extends validaciones {
 				'ultimo' =>'ultimo_<#i#>'
 				),
 			'p_uri'   => array(4=>'<#i#>'),
-			'titulo'  => 'Buscar Articulo',
+			'titulo'  => 'Buscar Art&iacute;culo',
 			'where'   => '`activo` = "S"',
 			'script'  => array('post_modbus_sinv(<#i#>)')
 		);
