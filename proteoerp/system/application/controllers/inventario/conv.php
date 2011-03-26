@@ -6,6 +6,7 @@ class conv extends Controller {
 	function conv(){
 		parent::Controller();
 		$this->load->library('rapyd');
+		$this->back_dataedit='inventario/conv/filteredgrid';
 	}
 
 	function index() {
@@ -87,7 +88,7 @@ class conv extends Controller {
 		$do->rel_pointer('itconv','sinv','itconv.codigo=sinv.codigo','sinv.descrip AS sinvdescrip','sinv.ultimo AS sinvultimo');
 
 		$edit = new DataDetails('Conversiones', $do);
-		$edit->back_url = site_url('inventario/conv/filteredgrid');
+		$edit->back_url = $this->back_dataedit;
 		$edit->set_rel_title('itconv','Producto <#o#>');
 
 		//$edit->script($script,'create');

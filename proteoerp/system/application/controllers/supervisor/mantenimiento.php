@@ -722,7 +722,8 @@ class Mantenimiento extends Controller{
 
 	//Para reconstruir sfac a partir de sfpa, sitems,scli y sinv
 	function ressfac(){
-		$mSQL="INSERT INTO sfacSELECTaa.tipoa,aa.numa,aa.fecha,aa.fecha,aa.vendedor,aa.codigoa,aa.rifci,aa.nombre,aa.dire11,aa.dire12,'' AS orden,'' AS referen,SUM(aa.iva),0 AS inicial,SUM(aa.tota) AS totals,SUM(aa.tota+aa.iva) AS totalg,'' AS status, '' AS observa,'' AS observ1,0 AS devolu,aa.cajero,'0001' AS almacen,0 AS peso,'' AS factura,'' AS pedido,aa.usuario,aa.estampa,aa.hora,aa.transac,'' AS nfiscal,'' AS zona,'' AS ciudad,0 AS comision,'N' AS pagada,'N' AS sepago,
+		$mSQL="INSERT INTO sfac 
+		SELECTaa.tipoa,aa.numa,aa.fecha,aa.fecha,aa.vendedor,aa.codigoa,aa.rifci,aa.nombre,aa.dire11,aa.dire12,'' AS orden,'' AS referen,SUM(aa.iva),0 AS inicial,SUM(aa.tota) AS totals,SUM(aa.tota+aa.iva) AS totalg,'' AS status, '' AS observa,'' AS observ1,0 AS devolu,aa.cajero,'0001' AS almacen,0 AS peso,'' AS factura,'' AS pedido,aa.usuario,aa.estampa,aa.hora,aa.transac,'' AS nfiscal,'' AS zona,'' AS ciudad,0 AS comision,'N' AS pagada,'N' AS sepago,
 		0  AS dias,
 		'' AS fpago,
 		0  AS comical,
@@ -742,5 +743,6 @@ class Mantenimiento extends Controller{
 		JOIN sfpa AS d ON b.tipoa=MID(d.tipo_doc,1,1) AND b.numa=d.numero
 		JOIN scli AS e ON d.cod_cli=e.cliente WHERE a.numero IS NULL) AS aa
 		GROUP BY aa.tipoa,aa.numa";
+		echo $mSQL;
 	}
 }

@@ -397,7 +397,7 @@ class pfac extends validaciones{
 		logusu('pfac', "Pedido $codigo MODIFICADO");
 	}
 	
-	function _pre_delete(){
+	function _pre_delete($do){
 		$codigo = $do->get('numero');
 		$mSQL='UPDATE sinv JOIN itpfac ON sinv.codigo=itpfac.codigoa SET sinv.exdes=sinv.exdes-itpfac.cana WHERE itpfac.numa='.$this->db->escape($codigo);
 		$ban=$this->db->simple_query($mSQL);

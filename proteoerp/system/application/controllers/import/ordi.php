@@ -1565,6 +1565,19 @@ class Ordi extends Controller {
 		$mSQL="ALTER TABLE `itordi`  ADD COLUMN `costoreal` DECIMAL(17,2) NULL DEFAULT NULL COMMENT 'costo unitario al dolar real' AFTER `importefinal`,  ADD COLUMN `importereal` DECIMAL(17,2) NULL DEFAULT NULL COMMENT 'importe al dolar real' AFTER `costoreal`";
 		var_dump($this->db->simple_query($mSQL));
 
+		$mSQL="CREATE TABLE `ordiestima` (
+			`id` INT(15) UNSIGNED NOT NULL AUTO_INCREMENT,
+			`ordeni` INT(15) UNSIGNED NULL DEFAULT NULL,
+			`monto` DECIMAL(10,2) NULL DEFAULT NULL,
+			`concepto` VARCHAR(100) NULL DEFAULT NULL,
+			PRIMARY KEY (`id`),
+			UNIQUE INDEX `ordi` (`ordeni`)
+		)
+		COLLATE='latin1_swedish_ci'
+		ENGINE=MyISAM
+		ROW_FORMAT=DEFAULT";
+		var_dump($this->db->simple_query($mSQL));
+
 		$this->prefijo='crm_';
 		contenedor::instalar();
 	}
