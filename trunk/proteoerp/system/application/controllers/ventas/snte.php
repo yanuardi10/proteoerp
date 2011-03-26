@@ -68,15 +68,15 @@ class Snte extends Controller {
 		$grid->order_by("numero","desc");
 		$grid->per_page = 15;  
 
-		$grid->column("N&uacute;mero"		,$uri);
-		$grid->column("Fecha"			,"<dbdate_to_human><#fecha#></dbdate_to_human>","align='center'");
-		$grid->column("Nombre"		,"nombre");
-		$grid->column("Sub.Total"	,"<number_format><#stotal#>|2</number_format>","align=right");
-		$grid->column("IVA"				,"<number_format><#impuesto#>|2</number_format>","align=right");
-		$grid->column("Total"			,"<number_format><#gtotal#>|2</number_format>","align=right");
-		$grid->column("Vista",$uri2,"align='center'");
+		$grid->column_orderby("N&uacute;mero"		,$uri,'numero');
+		$grid->column_orderby("Fecha"			,"<dbdate_to_human><#fecha#></dbdate_to_human>",'fecha',"align='center'");
+		$grid->column_orderby("Nombre"		,"nombre",'nombre');
+		$grid->column_orderby("Sub.Total"	,"<number_format><#stotal#>|2</number_format>",'stotal',"align=right");
+		$grid->column_orderby("IVA"				,"<number_format><#impuesto#>|2</number_format>",'iva',"align=right");
+		$grid->column_orderby("Total"			,"<number_format><#gtotal#>|2</number_format>",'gtotal',"align=right");
+		$grid->column_orderby("Vista",$uri2,"align='center'");
 		
-		//$grid->add("ventas/agregarne");
+		$grid->add("ventas/snte/dataedit/create");
 		$grid->build();
 		//echo $grid->db->last_query();
 		
@@ -87,294 +87,299 @@ class Snte extends Controller {
 	}
 
 	function dataedit(){
-		$this->rapyd->load("dataedit","datadetalle","fields","datagrid");
+		$this->rapyd->load('dataobject','datadetails');
+				
+		$modbus=array(
+		'tabla'   =>'sinv',
+		'columnas'=>array(
+		'codigo' =>'C&oacute;digo',
+		'descrip'=>'descrip'),
+		'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'descrip'),
+		'retornar'=>array(
+			'codigo' =>'codigo_<#i#>',
+			'descrip'=>'desca_<#i#>',
+			'base1'  =>'precio1_<#i#>',
+			'base2'  =>'precio2_<#i#>',
+			'base3'  =>'precio3_<#i#>',
+			'base4'  =>'precio4_<#i#>',
+			'iva'    =>'itiva_<#i#>',
+			'peso'   =>'sinvpeso_<#i#>',
+			'tipo'   =>'sinvtipo_<#i#>',
+		),
+		'p_uri'=>array(4=>'<#i#>'),
+		'where'   => '`activo` = "S" AND `tipo` = "Articulo"',
+		'script'  => array('post_modbus_sinv(<#i#>)'),
+		'titulo'  =>'Buscar Articulo');
+		$btn=$this->datasis->p_modbus($modbus,'<#i#>');
 		
-		$formato=$this->datasis->dameval('SELECT formato FROM cemp LIMIT 0,1');
-		$qformato='%';
-		for($i=1;$i<substr_count($formato, '.')+1;$i++) $qformato.='.%';
-		$this->qformato=$qformato;
-		
-			$modbus=array(
-			'tabla'   =>'sinv',
-			'columnas'=>array(
-			'codigo' =>'C&oacute;digo',
-			'descrip'=>'descrip'),
-			'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'descrip'),
-			//'retornar'=>array('codigo'=>'codigo<#i#>','precio1'=>'precio1<#i#>','precio2'=>'precio2<#i#>','precio3'=>'precio3<#i#>','precio4'=>'precio4<#i#>','iva'=>'iva<#i#>','pond'=>'costo<#i#>'),
-			'retornar'=>array('codigo'=>'codigo<#i#>','descrip'=>'desca<#i#>'),
-			'p_uri'=>array(4=>'<#i#>'),
-			'titulo'  =>'Buscar Articulo');
-
-			$mSCLId=array(
-			'tabla'   =>'scli',
-			'columnas'=>array(
+		$mSCLId=array(
+		'tabla'   =>'scli',
+		'columnas'=>array(
 			'cliente' =>'C&oacute;digo Cliente',
 			'nombre'=>'Nombre', 
 			'cirepre'=>'Rif/Cedula',
-			'dire11'=>'Direcci&oacute;n'),
-			'filtro'  =>array('cliente'=>'C&oacute;digo Cliente','nombre'=>'Nombre'),
-			'retornar'=>array('cliente'=>'cod_cli','nombre'=>'nombre','cirepre'=>'rifci','dire11'=>'direc'),
-			'titulo'  =>'Buscar Cliente');
+			'dire11'=>'Direcci&oacute;n',
+			'tipo'=>'Tipo'),
+		'filtro'  =>array('cliente'=>'C&oacute;digo Cliente','nombre'=>'Nombre'),
+		'retornar'=>array('cliente'=>'cod_cli','nombre'=>'nombre',
+						  'dire11'=>'dir_cli','tipo'=>'sclitipo'),
+		'titulo'  =>'Buscar Cliente',
+		'script'  => array('post_modbus_scli()'));
+		$btnc =$this->datasis->modbus($mSCLId);
 		
-		$boton =$this->datasis->modbus($mSCLId);
-		//Script necesario para totalizar los detalles
+		$do = new DataObject("snte");
+		$do->rel_one_to_many('itsnte', 'itsnte', 'numero');
+		$do->pointer('scli' ,'scli.cliente=snte.cod_cli','scli.tipo AS sclitipo','left');
+		$do->rel_pointer('itsnte','sinv','itsnte.codigo=sinv.codigo','sinv.descrip AS sinvdescrip, sinv.base1 AS sinvprecio1, sinv.base2 AS sinvprecio2, sinv.base3 AS sinvprecio3, sinv.base4 AS sinvprecio4, sinv.iva AS sinviva, sinv.peso AS sinvpeso,sinv.tipo AS sinvtipo');
 		
-		$fdepar = new dropdownField("ccosto", "ccosto");    
-		$fdepar->options("SELECT depto,descrip FROM dpto WHERE tipo='G' ORDER BY descrip");
-		$fdepar->status='create';
-		$fdepar->build();
-		$dpto=$fdepar->output;
-		
-		$dpto=trim($dpto);
-		$dpto=preg_replace('/\n/i', '', $dpto);
- 		
- 		$uri=site_url("/contabilidad/casi/dpto/");
-
-		$script='
-		function totalizar(){
-			monto=debe=haber=0;
-			amonto=$$(\'input[id^="monto"]\');
-			for(var i=0; i<amonto.length; i++) {
-		valor=parseFloat(amonto[i].value);
-		if (isNaN(valor))
-					valor=0.0;
-				if (valor>0)
-			haber=haber+valor;
-		else{
-			valor=valor*(-1);
-			debe=debe+valor;
-		}
-				$("haber").value=haber;
-		$("debe").value=debe;
-				$("total").value=haber-debe;
-			}
-		}
-		function departa(i){
-			ccosto=$F(\'ccosto\'+i.toString())
-			if (ccosto==\'S\'){
-				//alert("come una matina");
-				departamen=window.open("'.$uri.'/"+i.toString(),"buscardeparta","width=500,height=200,scrollbars=Yes,status=Yes,resizable=Yes,screenx=5,screeny=5,top="+ ((screen.height - 200) / 2) + ",left=" + ((screen.width - 500) / 2)); 
-				departamen.focus();
-				//new Insertion.Before(\'departa\'+i.toString(), \''.$dpto.'\')
-			}
-		}
-		';
- 		
-		$edit = new DataEdit("notaentrega","snte");
-		
-		$edit->post_process("insert","_guarda_detalle");
-		$edit->post_process("update","_actualiza_detalle");
-		$edit->post_process("delete","_borra_detalle");
-		$edit->pre_process('insert','_pre_insert');
+		$edit = new DataDetails('Nota de entrega', $do);
+		$edit->back_url = site_url('ventas/snte/filteredgrid');
+		$edit->set_rel_title('itsnte','Producto <#o#>');
 		
 		$edit->back_url = $this->back_dataedit;
 		
-		$edit->fecha = new DateonlyField("Fecha", "fecha","d/m/Y");
-		$edit->fecha->insertValue = date("Y-m-d");
-		$edit->fecha->mode="autohide";
+		$edit->pre_process('insert' ,'_pre_insert');
+		$edit->pre_process('update' ,'_pre_update');
+		$edit->post_process('insert','_post_insert');
+		$edit->post_process('update','_post_update');
+		$edit->post_process('delete','_post_delete');
+
+		$edit->fecha = new DateonlyField('Fecha', 'fecha','d/m/Y');
+		$edit->fecha->insertValue = date('Y-m-d');
+		$edit->fecha->rule = 'required';
+		$edit->fecha->mode = 'autohide';
 		$edit->fecha->size = 10;
-                                              		
-		$edit->vendedor = new  dropdownField ("Vendedor", "vende");
-		$edit->vendedor->options("SELECT vendedor, CONCAT(vendedor,' ',nombre) nombre FROM vend ORDER BY vendedor");  
-		$edit->vendedor->size = 10;
+
+		$edit->vende = new  dropdownField ('Vendedor', 'vende');
+		$edit->vende->options('SELECT vendedor, CONCAT(vendedor,\' \',nombre) nombre FROM vend ORDER BY vendedor');
+		$edit->vende->style='width:200px;';
+		$edit->vende->size = 5;
+
+		$edit->numero = new inputField('N&uacute;mero', 'numero');
+		$edit->numero->size = 10;
+		$edit->numero->mode='autohide';
+		$edit->numero->maxlength=8;
+		$edit->numero->apply_rules=false; //necesario cuando el campo es clave y no se pide al usuario
+		$edit->numero->when=array('show','modify');
+
+		$edit->peso = new inputField('Peso', 'peso');
+		$edit->peso->css_class = 'inputnum';
+		$edit->peso->readonly  = true;
+		$edit->peso->size      = 10;
+
+		$edit->cliente = new inputField('Cliente','cod_cli');
+		$edit->cliente->size = 6;
+		$edit->cliente->maxlength=5;
+		$edit->cliente->append($btnc);
+
+		$edit->nombre = new inputField('Nombre', 'nombre');
+		$edit->nombre->size = 25;
+		$edit->nombre->maxlength=40;
+		$edit->nombre->autocomplete=false;
+		$edit->nombre->rule= 'required';
 		
 		$edit->factura = new inputField("Factura", "factura");
 		$edit->factura->size = 10;
-			
-		$edit->numero = new inputField("N&uacute;mero", "numero");
-		$edit->numero->size = 10;
-		$edit->numero->rule= "required";
-		$edit->numero->mode="autohide";
-		$edit->numero->maxlength=8;
 		
-		$edit->nombre = new inputField("Nombre", "nombre");
-		$edit->nombre->size = 55;
-		$edit->nombre->maxlength=40;   
-		
-		$edit->almacen = new dropdownField("Almacen", "almacen");
-		$edit->almacen->option("0001","0001");
-		$edit->almacen->size = 20;
-		$edit->almacen->style='width:90px;'; 
+		$edit->almacen = new  dropdownField ('Almac&eacute;n', 'almacen');
+		$edit->almacen->options('SELECT ubica, CONCAT(ubica,\' \',ubides) nombre FROM caub ORDER BY ubica');
+		$edit->almacen->rule = 'required';
+		$edit->almacen->style='width:200px;';
+		$edit->almacen->size = 5;
 		
 		$edit->orden = new inputField("Orden", "orden");
-		$edit->orden->size = 20;
+		$edit->orden->size = 10;
 		
-		$edit->observacion = new inputField("Observaci&oacute;n", "observa");
-		$edit->observacion->size = 20;
-		
-		$edit->iva  = new inputField("IVA", "impuesto");
-		$edit->iva->size = 20;
-		$edit->iva->css_class='inputnum';
-		
-		$edit->subtotal  = new inputField("Sub.Total", "stotal");
-		$edit->subtotal->size = 20;
-		$edit->subtotal->css_class='inputnum';
-		
-		$edit->total  = new inputField("Total", "gtotal");
-		$edit->total->size = 20;
-		$edit->total->css_class='inputnum';
-
-		$edit->cliente = new inputField("Cliente"  , "cod_cli");
-		$edit->cliente->size = 10;        
-		$edit->cliente->maxlength=5;
-		$edit->cliente->append($boton); 
+		$edit->observa = new inputField("Observaci&oacute;n", "observa");
+		$edit->observa->size = 55;
 		
 		$edit->dir_cli = new inputField("Direcci&oacute;n","dir_cli");
 		$edit->dir_cli->size = 55;
 		
-		$edit->dir_cli1 = new inputField(" ","dire1");
-		$edit->dir_cli1->size = 55;  		  
-		
-		$numero=$edit->_dataobject->get('numero');
-				
-		$detalle = new DataDetalle($edit->_status);
+//		$edit->dir_cl1 = new inputField(" ","dir_cl1");
+//		$edit->dir_cl1->size = 55; 
+
+		//Para saber que precio se le va a dar al cliente
+		$edit->sclitipo = new hiddenField('', 'sclitipo');
+		$edit->sclitipo->db_name     = 'sclitipo';
+		$edit->sclitipo->pointer     = true;
+		$edit->sclitipo->insertValue = 1;
 		
 		//Campos para el detalle
 		
-		$detalle->db->select('codigo,desca,cana,ROUND(precio*(1+(iva/100)),2) AS precio1, ROUND(importe*(1+(iva/100)),2) AS importe1,precio,importe');
-		$detalle->db->from('itsnte');
-		$detalle->db->where("numero='$numero'");
-		
-		$detalle->codigo = new inputField("C&oacute;digo", "codigoa<#i#>");
-		$detalle->codigo->size=18;
-		$detalle->codigo->db_name='codigo';
-		$detalle->codigo->append($this->datasis->p_modbus($modbus,'<#i#>'));
-		$detalle->codigo->readonly=TRUE;
-		
-		$detalle->descripcion = new inputField("Descripci&oacute;n", "desca<#i#>");
-		$detalle->descripcion->size=30;
-		$detalle->descripcion->db_name='desca';
-		$detalle->descripcion->maxlength=12;
-		
-		$detalle->cantidad = new inputField("Cantidad", "cana<#i#>");
-		$detalle->cantidad->size=10;
-		$detalle->cantidad->db_name='cana';
-		$detalle->cantidad->maxlength=60;
-		$detalle->cantidad->css_class='inputnum';
+		$edit->codigo = new inputField('C&oacute;digo <#o#>', 'codigo_<#i#>');
+		$edit->codigo->size     = 12;
+		$edit->codigo->db_name  = 'codigo';
+		$edit->codigo->readonly = true;
+		$edit->codigo->rel_id   = 'itsnte';
+		$edit->codigo->rule     = 'required';
+		$edit->codigo->append($btn);
 
-		$detalle->precio = new inputField("Precio", "precio<#i#>");
-		$detalle->precio->css_class='inputnum';
-		$detalle->precio->onchange='totalizar()';
-		$detalle->precio->size=20;
-		$detalle->precio->db_name='precio';
+		$edit->desca = new inputField('Descripci&oacute;n <#o#>', 'desca_<#i#>');
+		$edit->desca->size=36;
+		$edit->desca->db_name='desca';
+		$edit->desca->maxlength=50;
+		$edit->desca->readonly  = true;
+		$edit->desca->rel_id='itsnte';
+
+		$edit->cana = new inputField('Cantidad <#o#>', 'cana_<#i#>');
+		$edit->cana->db_name  = 'cana';
+		$edit->cana->css_class= 'inputnum';
+		$edit->cana->rel_id   = 'itsnte';
+		$edit->cana->maxlength= 10;
+		$edit->cana->size     = 6;
+		$edit->cana->rule     = 'required|positive';
+		$edit->cana->autocomplete=false;
+		$edit->cana->onkeyup  ='importe(<#i#>)';
+
+		$edit->precio = new inputField('Precio <#o#>', 'precio_<#i#>');
+		$edit->precio->db_name   = 'precio';
+		$edit->precio->css_class = 'inputnum';
+		$edit->precio->rel_id    = 'itsnte';
+		$edit->precio->size      = 10;
+		$edit->precio->rule      = 'required|positive|callback_chpreca[<#i#>]';
+		$edit->precio->readonly  = true;
+
+		$edit->importe = new inputField('Importe <#o#>', 'importe_<#i#>');
+		$edit->importe->db_name='importe';
+		$edit->importe->size=10;
+		$edit->importe->css_class='inputnum';
+		$edit->importe->rel_id   ='itsnte';
+
+		for($i=1;$i<=4;$i++){
+			$obj='precio'.$i;
+			$edit->$obj = new hiddenField('Precio <#o#>', $obj.'_<#i#>');
+			$edit->$obj->db_name   = 'sinv'.$obj;
+			$edit->$obj->rel_id    = 'itsnte';
+			$edit->$obj->pointer   = true;
+		}
+		$edit->itiva = new hiddenField('', 'itiva_<#i#>');
+		$edit->itiva->db_name  = 'iva';
+		$edit->itiva->rel_id   = 'itsnte';
 		
-		$detalle->importe = new inputField2("Importe", "importe<#i#>");
-		$detalle->importe->db_name='importe';
-		$detalle->importe->size=20;
-		$detalle->importe->css_class='inputnum';
+		$edit->sinvpeso = new hiddenField('', 'sinvpeso_<#i#>');
+		$edit->sinvpeso->db_name   = 'sinvpeso';
+		$edit->sinvpeso->rel_id    = 'itsnte';
+		$edit->sinvpeso->pointer   = true;
+
+		$edit->sinvtipo = new hiddenField('', 'sinvtipo_<#i#>');
+		$edit->sinvtipo->db_name   = 'sinvtipo';
+		$edit->sinvtipo->rel_id    = 'itsnte';
+		$edit->sinvtipo->pointer   = true;
 		
 		//fin de campos para detalle
 		
-		$detalle->onDelete('totalizar()');
-		$detalle->onAdd('totalizar()');
-		$detalle->script($script);
-		$detalle->style="width:110px";
+		$edit->impuesto  = new inputField("IVA", "impuesto");
+		$edit->impuesto->size = 20;
+		$edit->impuesto->css_class='inputnum';
 		
-		//Columnas del detalle
-		$detalle->column("C&oacute;digo"    	,  "<#codigo#>");
-		$detalle->column("Descripci&oacute;n", "<#descripcion#>");
-		$detalle->column("Cantidad"   ,  "<#cantidad#>");
-		$detalle->column("Precio"     , "<#precio#>");
-		$detalle->column("Total"    	, "<#importe#>");
-	
-		$detalle->build();	
-		$conten["detalle"] = $detalle->output;
+		$edit->stotal  = new inputField("Sub.Total", "stotal");
+		$edit->stotal->size = 20;
+		$edit->stotal->css_class='inputnum';
 		
-		$edit->detalle=new freeField("detalle", 'detalle',$detalle->output);
+		$edit->gtotal  = new inputField("Total", "gtotal");
+		$edit->gtotal->size = 20;
+		$edit->gtotal->css_class='inputnum';
+		
+		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
 
-		$edit->buttons("save", "undo", "back");
+		$edit->buttons('modify', 'save', 'undo', 'delete', 'back','add_rel');
 		$edit->build();
-		
-		$smenu['link']=barra_menu('107');
-		$data['smenu'] = $this->load->view('view_sub_menu', $smenu,true);
-		$conten["form"]  =&  $edit;
-		$data['content'] = $this->load->view('view_notaentrega', $conten,true); 
-		$data["head"]    = script("tabber.js").script("prototype.js").$this->rapyd->get_head().script("scriptaculous.js").script("effects.js");
-		$data['title']   = '<h1>Nota de Entrega</h1>';
+
+		$conten['form']  =&  $edit;
+		$data['content'] = $this->load->view('view_snte', $conten,true);
+		$data['title']   = heading('Nota de Entrega');
+		$data['head']    = script('jquery.js').script('jquery-ui.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css').$this->rapyd->get_head().phpscript('nformat.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js').phpscript('nformat.js');
 		$this->load->view('view_ventanas', $data);
 	}
 
-	function dpto() {
-		$this->rapyd->load("dataform");
-		$campo='ccosto'.$this->uri->segment(4);
-		$script='
-		function pasar(){
-			if($F("departa")!="-!-"){
-				window.opener.document.getElementById("'.$campo.'").value = $F("departa");
-				window.close();
-			}else{
-				alert("Debe elegir un departamento");
-			}
-		}';
-		
-		$form = new DataForm('');
-		$form->script($script);
-		$form->fdepar = new dropdownField("Departamento", "departa");
-		$form->fdepar->option('-!-','Seleccion un departamento');
-		$form->fdepar->options("SELECT depto,descrip FROM dpto WHERE tipo='G' ORDER BY descrip");
-		$form->fdepar->onchange='pasar()';
-		$form->build_form();
-		
-		$data['content'] =$form->output;
-		$data["head"]    =script('prototype.js').$this->rapyd->get_head();
-		$data['title']   ='<h1>Seleccione un departamento</h1>';
-		$this->load->view('view_detalle', $data);
+	function _pre_insert($do){
+		$numero=$this->datasis->fprox_numero('nsnte');
+		$transac=$this->datasis->fprox_numero('ntransa');
+		$fecha =$do->get('fecha');
+		$vende =$do->get('vende');
+		$usuario=$do->get('usuario');
+		$estampa=date('Ymd');
+		$hora   =date("H:i:s");
+
+		$iva=$stotal=0;
+		$cana=$do->count_rel('itsnte');
+		for($i=0;$i<$cana;$i++){
+			$itcana    = $do->get_rel('itsnte','cana',$i);
+			$itprecio   = $do->get_rel('itsnte','precio',$i);
+			$itiva     = $do->get_rel('itsnte','iva',$i);
+			$itimporte = $itprecio*$itcana;
+			$do->set_rel('itsnte','importe' ,$itimporte,$i);
+
+			$iva    +=$itimporte*($itiva/100);
+			$stotal +=$itimporte;
+			//$do->set_rel('itspre','mostrado',$iva+$totals,$i);
+		}
+		$gtotal=$stotal+$iva;
+		$do->set('numero',$numero);
+		$do->set('estampa',$estampa);
+		$do->set('hora'   ,$hora);
+		$do->set('numero' ,$numero);
+		$do->set('transac',$transac);
+		$do->set('stotal' ,round($stotal ,2));
+		$do->set('gtotal' ,round($gtotal ,2));
+		$do->set('impuesto'    ,round($iva    ,2));
+
+		return true;
 	}
 
-	function _guarda_detalle($do) {
-		$cant=$this->input->post('cant_0');
-		$i=$o=0;
-		while($o<$cant){
-			if (isset($_POST["codigo$i"])){
-				if($this->input->post("codigo$i")){
-						
-					$sql = "INSERT INTO itsnte (numero,codigo,desca,cana,precio,importe,iva,tipo) VALUES(?,?,?,?,?,?,?,?)";
-					//$haber=($this->input->post("monto$i") < 0)? $this->input->post("monto$i")*(-1) : 0;
-					
-					$llena=array(
-							0=>$do->get('numero'),
-							1=>$this->input->post("codigo$i"),
-							2=>$this->input->post("desca$i"),
-							3=>$this->input->post("cana$i"),
-							4=>$this->input->post("precio$i"),
-							5=>$this->input->post("importe$i"),
-							6=>$do->get('iva'),
-							7=>$this->input->post("tipo$i"),
+	function _pre_update($do){
+		$fecha =$do->get('fecha');
+		$vende =$do->get('vende');
+		$usuario=$do->get('usuario');
+		$estampa=date('Ymd');
+		$hora   =date("H:i:s");
 
-							);
-					$this->db->query($sql,$llena);
-				}
-				$o++;
-			}
-			$i++;
+		$iva=$stotal=0;
+		$cana=$do->count_rel('itsnte');
+		for($i=0;$i<$cana;$i++){
+			$itcana    = $do->get_rel('itsnte','cana',$i);
+			$itprecio   = $do->get_rel('itsnte','precio',$i);
+			$itiva     = $do->get_rel('itsnte','iva',$i);
+			$itimporte = $itprecio*$itcana;
+			$do->set_rel('itsnte','importe' ,$itimporte,$i);
+			$iva    +=$itimporte*($itiva/100);
+			$stotal +=$itimporte;
+			//$do->set_rel('itspre','mostrado',$iva+$totals,$i);
+		}
+		$gtotal=$stotal+$iva;
+		$do->set('stotal' ,round($stotal ,2));
+		$do->set('gtotal' ,round($gtotal ,2));
+		$do->set('impuesto'    ,round($iva    ,2));
+		return true;
+	}
+
+	function _post_insert($do){
+		$codigo=$do->get('numero');
+		logusu('snte',"Nora entrega $codigo CREADO");
+	}
+
+	function chpreca($preca,$ind){
+		$codigo  = $this->input->post('codigo_'.$ind);
+		$precio4 = $this->datasis->dameval('SELECT base4 FROM sinv WHERE codigo='.$this->db->escape($codigo));
+		if($precio4<0) $precio4=0;
+
+		if($preca<$precio4){
+			$this->validation->set_message('chpreca', 'El art&iacute;culo '.$codigo.' debe contener un precio de al menos '.nformat($precio4));
+			return false;
+		}else{
+			return true;
 		}
 	}
 
-	function _actualiza_detalle($do){
-		$this->_borra_detalle($do);
-		$this->_guarda_detalle($do);
+	function _post_update($do){
+		$codigo=$do->get('numero');
+		logusu('snte',"Nota Entrega $codigo MODIFICADO");
 	}
 
-	function _borra_detalle($do){
-		$numero=$do->get('numero');
-		$sql = "DELETE FROM itsnte WHERE numero='$numero'";
-		$this->db->query($sql);
-	}
-
-	function _pre_insert($do){
-		$sql    = 'INSERT INTO ntransa (usuario,fecha) VALUES ("'.$this->session->userdata('usuario').'",NOW())';
-		$query  =$this->db->query($sql);
-		$transac=$this->db->insert_id();
-
-		$sql    = 'INSERT INTO nsnte (usuario,fecha) VALUES ("'.$this->session->userdata('usuario').'",NOW())';
-		$query  =$this->db->query($sql);
-		$numero =str_pad($this->db->insert_id(),8, "0", STR_PAD_LEFT);
-
-		$do->set('numero', $numero);
-		$do->set('transac', $transac);
-		$do->set('estampa', 'CURDATE()', FALSE);
-		$do->set('hora'   , 'CURRENT_TIME()', FALSE);
-		$do->set('usuario', $this->session->userdata('usuario'));
+	function _post_delete($do){
+		$codigo=$do->get('numero');
+		logusu('snte',"Nota Entrega $codigo ELIMINADO");
 	}
 }
 ?>
