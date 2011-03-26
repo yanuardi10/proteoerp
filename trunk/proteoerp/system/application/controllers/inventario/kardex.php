@@ -285,8 +285,8 @@ class Kardex extends Controller {
 					}
 				}
 			}
-			$link=anchor('inventario/conv/dataedit/show/'.implode('/',$ppk),'<#numero#>');
-			//$link=anchor('inventario/kardex/conv/'.$this->_unionuri().'/show/'.implode('/',$ppk),'<#numero#>');
+			//$link=anchor('inventario/conv/dataedit/show/'.implode('/',$ppk),'<#numero#>');
+			$link=anchor('inventario/kardex/conv/'.$this->_unionuri().'/show/'.implode('/',$ppk),'<#numero#>');
 			$grid->title('Conversiones');
 			$grid->column('N&uacute;mero',$link);
 			$grid->column('Fecha'    ,"<dbdate_to_human><#estampa#></dbdate_to_human>",'align=center');
