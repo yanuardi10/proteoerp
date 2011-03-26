@@ -189,7 +189,7 @@ class Kardex extends Controller {
 		}elseif($tipo=='1T'){ //Transferencias
 			$fields = $this->db->field_data('stra');
 			$ppk=array();
-			$select=array('a.numero','b.envia','b.recibe','a.cantidad','b.fecha','b.observ1','a.costo');
+			$select=array('b.numero','b.envia','b.recibe','a.cantidad','b.fecha','b.observ1','a.costo');
 			foreach ($fields as $field){
 				if($field->primary_key==1){
 					$ppk[]='<#'.$field->name.'#>';
@@ -212,7 +212,7 @@ class Kardex extends Controller {
 			//$grid->column("Costo"             ,"<nformat><#costo#></nformat>",'align=right');
 			$grid->db->select($select);
 			$grid->db->from('itstra a');
-			$grid->db->join('stra b','a.numero=b.numero','LEFT');
+			$grid->db->join('stra b','a.numero=b.numero');
 			$grid->db->where('b.fecha' ,$fecha );
 			$grid->db->where('a.codigo',$codigo);
 		}elseif($tipo=='2C'){ //compras
@@ -229,8 +229,8 @@ class Kardex extends Controller {
 				}
 			}
 
-			$link=anchor('compras/scst/dataedit/show/'.implode('/',$ppk),'<#numero#>');
-			//$link=anchor('inventario/kardex/scst/'.$this->_unionuri().'/show/'.implode('/',$ppk),'<#numero#>');
+			//$link=anchor('compras/scst/dataedit/show/'.implode('/',$ppk),'<#numero#>');
+			$link=anchor('inventario/kardex/scst/'.$this->_unionuri().'/show/'.implode('/',$ppk),'<#numero#>');
 			$grid->title('Compras');
 			$grid->column("N&uacute;mero",$link);
 			$grid->column("Fecha"    ,"<dbdate_to_human><#fecha#></dbdate_to_human>",'align=center');
