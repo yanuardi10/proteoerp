@@ -6,6 +6,7 @@ class Snte extends Controller {
 		parent::Controller(); 
 		$this->load->library("rapyd");
 		$this->datasis->modulo_id(107,1);
+		$this->back_dataedit='ventas/snte';
 	}
 
 	function index() {
@@ -166,7 +167,7 @@ class Snte extends Controller {
 		$edit->post_process("delete","_borra_detalle");
 		$edit->pre_process('insert','_pre_insert');
 		
-		$edit->back_url = "ventas/snte";
+		$edit->back_url = $this->back_dataedit;
 		
 		$edit->fecha = new DateonlyField("Fecha", "fecha","d/m/Y");
 		$edit->fecha->insertValue = date("Y-m-d");

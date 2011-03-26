@@ -790,7 +790,7 @@ class sinv extends Controller {
 				grupo();
 			});
 			$("#sinvprecioc").submit(function() {
-				return confirm("Estas seguro de que quieres actualizar los precios??");
+				return confirm("Se van a actualizar todos los precios en pantalla \nEstas seguro de que quieres seguir??");
 			});
 			depto();
 			linea();
@@ -825,9 +825,17 @@ class sinv extends Controller {
 		}';
 
 		$filter = new DataFilter2('Filtro por Producto');
-		//$filter->error_string=$msj;
 
-		$filter->db->select("a.existen AS existen,a.marca marca,a.tipo AS tipo,a.id,TRIM(codigo) AS codigo,a.descrip,precio1,precio2,precio3,precio4,b.nom_grup AS nom_grup,b.grupo AS grupoid,c.descrip AS nom_linea,c.linea AS linea,d.descrip AS nom_depto,d.depto AS depto,a.base1,a.base2,a.base3,a.base4");
+		$select=array(
+			'IF(formcal=\'U\',ultimo,IF(formcal=\'P\',pond,IF(formcal=\'S\',standard,GREATEST(ultimo,pond)))) AS costo',
+			'a.existen','a.marca','a.tipo','a.id',
+			'TRIM(codigo) AS codigo',
+			'a.descrip','precio1','precio2','precio3','precio4','b.nom_grup','b.grupo',
+			'c.descrip AS nom_linea','c.linea','d.descrip AS nom_depto','d.depto AS depto',
+			'a.base1','a.base2','a.base3','a.base4'
+		);
+
+		$filter->db->select($select);
 		$filter->db->from('sinv AS a');
 		$filter->db->join('grup AS b','a.grupo=b.grupo');
 		$filter->db->join('line AS c','b.linea=c.linea');
@@ -948,12 +956,14 @@ class sinv extends Controller {
 				$$obj = new inputField($obj, $obj);
 				$$obj->grid_name=$obj.'[<#id#>]';
 				$$obj->status   ='modify';
-				$$obj->size     =12;
+				$$obj->size     =8;
 				$$obj->css_class='inputnum';
 				$$obj->autocomplete=false;
 
 				$grid->column("Precio $i",$$obj,'align=right');
 			};
+			$grid->column('Costo'     ,'<nformat><#costo#></nformat>'  ,'align=right');
+			$grid->column('Existencia','<nformat><#existen#></nformat>','align=right');
 
 			$grid->submit('pros', 'Cambiar','BR');
 			$grid->build();
@@ -983,8 +993,9 @@ class sinv extends Controller {
 			$p2=floatval($precio2[$id]);
 			$p3=floatval($precio3[$id]);
 			$p4=floatval($precio4[$id]);
+			$dbcosto=$this->datasis->dameval("SELECT IF(formcal='U',ultimo,IF(formcal='P',pond,IF(formcal='S',standard,GREATEST(ultimo,pond)))) AS costo FROM sinv WHERE id=${dbid}");
 
-			if($p1>=$p2 && $p2>=$p3 && $p4>=$p4 && $p1*$p2*$p3*$p4>0){
+			if($p1>=$p2 && $p2>=$p3 && $p4>=$p4 && $p1*$p2*$p3*$p4>0 && $p1>=$dbcosto && $p2>=$dbcosto && $p3>=$dbcosto && $p4>=$dbcosto){
 				$sql=array();
 				for($i=1;$i<5;$i++){
 					$pprecio='p'.$i;
@@ -995,6 +1006,7 @@ class sinv extends Controller {
 					$sql[]="precio${i}=${precio}";
 					$sql[]="base${i}  =ROUND(${base},2)";
 					$sql[]="margen${i}=ROUND(100-((${costo})*100/(${base})),2)";
+
 				}
 				$campos=implode(',',$sql);
 
@@ -1003,7 +1015,7 @@ class sinv extends Controller {
 				if($ban==false){ memowrite($mSQL,'sinv'); $error++; }
 			}else{
 				$codigo=$this->datasis->dameval("SELECT codigo FROM sinv WHERE id=${dbid}");
-				$msj.='En el art&iacute;culo '.TRIM($codigo).' los precios deben tener valores mayores que cero y en forma decrecientes (Precio 1 >= Precio 2 >= Precio 3 >= Precio 4).'.br();
+				$msj.='En el art&iacute;culo '.TRIM($codigo).' no se actualizo porque los precios deben tener valores mayores que el costo y en forma decrecientes (Precio 1 >= Precio 2 >= Precio 3 >= Precio 4).'.br();
 			}
 		}
 		if($error>0) $msj.='Hubo alg&uacute;n error, se gener&oacute; un centinela';

@@ -58,6 +58,7 @@ class Kardex extends Controller {
 		$filter->codigo = new inputField('C&oacute;digo De Producto', 'codigo');
 		$filter->codigo->rule = 'required';
 		$filter->codigo->operator='=';
+		$filter->codigo->size    = 10;
 		$filter->codigo->clause  ='where';
 		$filter->codigo->append($boton);
 
@@ -106,13 +107,13 @@ class Kardex extends Controller {
 			$grid->per_page = 20;
 			$grid->column('Fecha'        ,'<dbdate_to_human><#fecha#></dbdate_to_human>');
 			$grid->column('Or&iacute;gen',"<convierte><#origen#>|$link</convierte>",'align=left' );
-			$grid->column('Cantidad'     ,'<nformat><#cantidad#></nformat>' ,'align=right');
-			$grid->column('Acumulado'    ,'<nformat><#salcant#></nformat>'  ,'align=right');
-			$grid->column('Monto'        ,'<nformat><#monto#></nformat>'    ,'align=right');
-			$grid->column('Saldo'        ,'<nformat><#saldo#></nformat>'    ,'align=right');
-			$grid->column('Costo Prom.'  ,'<nformat><#promedio#></nformat>' ,'align=right');
-			$grid->column('Ventas'       ,'<nformat><#venta#></nformat>'    ,'align=right');
-			$grid->column('Precio Prom.' ,'<nformat><#vpromedio#></nformat>','align=right');
+			$grid->column('Cantidad'     ,'<nformat><#cantidad#>|2</nformat>' ,'align=right');
+			$grid->column('Acumulado'    ,'<nformat><#salcant#>|2</nformat>'  ,'align=right');
+			$grid->column('Monto'        ,'<nformat><#monto#>|2</nformat>'    ,'align=right');
+			$grid->column('Saldo'        ,'<nformat><#saldo#>|2</nformat>'    ,'align=right');
+			$grid->column('Costo Prom.'  ,'<nformat><#promedio#>|2</nformat>' ,'align=right');
+			$grid->column('Ventas'       ,'<nformat><#venta#>|2</nformat>'    ,'align=right');
+			$grid->column('Precio Prom.' ,'<nformat><#vpromedio#>|2</nformat>','align=right');
 			$grid->build();
 			$data['content'] .= $grid->output;
 			//echo $grid->db->last_query();
@@ -151,15 +152,17 @@ class Kardex extends Controller {
 					}
 				}
 			}
+
+			//$link=anchor('ventas/factura/dataedit/show/'.implode('/',$ppk),'<#tipoa#><#numa#>');
+			$link=anchor('inventario/kardex/sfac/'.$this->_unionuri().'/show/'.implode('/',$ppk),'<#tipoa#><#numa#>');
 			$grid->title('Facturas');
-			$link=anchor('ventas/factura/dataedit/show/'.implode('/',$ppk),'<#tipoa#><#numa#>');
 			$grid->column('N&uacute;mero',$link);
 			$grid->column('Cliente'      ,'cliente' );
-			$grid->column('Cantidad'     ,'<nformat><#cana#></format>','align=right');
+			$grid->column('Cantidad'     ,'<nformat><#cana#>|2</nformat>','align=right');
 			$grid->column('Fecha'        ,'<dbdate_to_human><#fecha#></dbdate_to_human>'   ,'align=center');
 			$grid->column('Vendedor'     ,'vendedor','align=center');
-			$grid->column('Precio'       ,'<nformat><#preca#></nformat>','align=\'right\'');
-			$grid->column('Total'        ,'<nformat><#tota#></nformat>' ,'align=\'right\'');
+			$grid->column('Precio'       ,'<nformat><#preca#>|2</nformat>','align=\'right\'');
+			$grid->column('Total'        ,'<nformat><#tota#>|2</nformat>' ,'align=\'right\'');
 			$grid->db->select($select);
 			$grid->db->from('sitems a');
 			$grid->db->join('sfac b','b.numero=a.numa  AND b.tipo_doc=a.tipoa');
@@ -169,14 +172,14 @@ class Kardex extends Controller {
 			$grid->db->where('b.almacen',$almacen);
 		}elseif($tipo=='3R'){ //ventas de Restaurante
 			$grid->title('Facturas');
-			$link=anchor('hospitalidad/factura/dataedit/show/<#numa#>','<#numero#>');
+			//$link=anchor('inventario/kardex/rfac/'.$this->_unionuri().'/show/'.implode('/',$ppk),'<#tipoa#><#numa#>');
 			$grid->column('N&uacute;mero','numero');
 			$grid->column('Cliente'      ,'cliente' );
-			$grid->column('Cantidad'     ,'<nformat><#cantidad#></nformat>','align=right');
+			$grid->column('Cantidad'     ,'<nformat><#cantidad#>|2</nformat>','align=right');
 			$grid->column('Fecha'        ,'<dbdate_to_human><#fecha#></dbdate_to_human>'   ,'align=center');
 			$grid->column('Mesonero'     ,'mesonero','align=center');
-			$grid->column('Precio'       ,'<nformat><#precio#></nformat>'  ,'align=right');
-			$grid->column('Total'        ,'<nformat><#importe#></nformat>' ,'align=right');
+			$grid->column('Precio'       ,'<nformat><#precio#>|2</nformat>'  ,'align=right');
+			$grid->column('Total'        ,'<nformat><#importe#>|2</nformat>' ,'align=right');
 			$grid->db->select(array('a.numero','CONCAT("(",b.cod_cli,") ",b.nombre) cliente','c.cantidad','a.fecha', 'a.mesonero','a.precio','a.importe'));
 			$grid->db->from('ritems a');
 			$grid->db->join('rfac b','b.numero=a.numero');
@@ -197,12 +200,13 @@ class Kardex extends Controller {
 				}
 			}
 
-			$link=anchor('/inventario/stra/dataedit/show/'.implode('/',$ppk),'<#numero#>');
+			//$link=anchor('/inventario/stra/dataedit/show/'.implode('/',$ppk),'<#numero#>');
+			$link=anchor('inventario/kardex/stra/'.$this->_unionuri().'/show/'.implode('/',$ppk),'<#numero#>');
 			$grid->title('Tranferencias');
 			$grid->column('N&uacute;mero',$link);
 			$grid->column('Env&iacute;a'      ,'envia' );
 			$grid->column('Recibe'            ,'recibe');
-			$grid->column('Cantidad'          ,'<nformat><#cantidad#></nformat>','align=\'right\'');
+			$grid->column('Cantidad'          ,'<nformat><#cantidad#>|2</nformat>','align=\'right\'');
 			$grid->column('Fecha'             ,'<dbdate_to_human><#fecha#></dbdate_to_human>','align=\'center\'');
 			$grid->column('Observaci&oacute;n','observ1');
 			//$grid->column("Costo"             ,"<nformat><#costo#></nformat>",'align=right');
@@ -226,14 +230,15 @@ class Kardex extends Controller {
 			}
 
 			$link=anchor('compras/scst/dataedit/show/'.implode('/',$ppk),'<#numero#>');
+			//$link=anchor('inventario/kardex/scst/'.$this->_unionuri().'/show/'.implode('/',$ppk),'<#numero#>');
 			$grid->title('Compras');
 			$grid->column("N&uacute;mero",$link);
 			$grid->column("Fecha"    ,"<dbdate_to_human><#fecha#></dbdate_to_human>",'align=center');
 			$grid->column("Proveedor","proveed" );
 			$grid->column("Deposito" ,"depo");
-			$grid->column("Cantidad" ,"<nformat><#cantidad#></nformat>",'align=right');
-			$grid->column("Costo"    ,"<nformat><#costo#></nformat>",'align=right');
-			$grid->column("Importe"  ,"<nformat><#importe#></nformat>",'align=right');
+			$grid->column("Cantidad" ,"<nformat><#cantidad#>|2</nformat>",'align=right');
+			$grid->column("Costo"    ,"<nformat><#costo#>|2</nformat>",'align=right');
+			$grid->column("Importe"  ,"<nformat><#importe#>|2</nformat>",'align=right');
 			$grid->db->select($select);
 			$grid->db->from('itscst a');
 			$grid->db->join('scst b','a.control=b.control');
@@ -253,19 +258,20 @@ class Kardex extends Controller {
 					}
 				}
 			}
-			$link=anchor('ventas/snte/dataedit/show/'.implode('/',$ppk),"<#numero#>");
+			//$link=anchor('ventas/snte/dataedit/show/'.implode('/',$ppk),"<#numero#>");
+			$link=anchor('inventario/kardex/snte/'.$this->_unionuri().'/show/'.implode('/',$ppk),'<#numero#>');
 			$grid->title('Notas de Entrega');
 			$grid->column("N&uacute;mero",$link);
 			$grid->column("Fecha"    ,"<dbdate_to_human><#fecha#></dbdate_to_human>",'align=center');
 			$grid->column("Proveedor","Nombre");
-			$grid->column("Cantidad" ,"<nformat><#cana#>   </nformat>",'align=right');
-			$grid->column("Costo"    ,"<nformat><#precio#> </nformat>",'align=right');
-			$grid->column("Importe"  ,"<nformat><#importe#></nformat>",'align=right');
+			$grid->column("Cantidad" ,"<nformat><#cana#>|2</nformat>",'align=right');
+			$grid->column("Costo"    ,"<nformat><#precio#>|2</nformat>",'align=right');
+			$grid->column("Importe"  ,"<nformat><#importe#>|2</nformat>",'align=right');
 			$grid->db->select($select);
 			$grid->db->from('snte a');
 			$grid->db->join('itsnte b','a.numero=b.numero');
 			$grid->db->where('b.codigo',$codigo);
-			$grid->db->where('a.fecha',$fecha);
+			$grid->db->where('a.fecha' ,$fecha);
 		}elseif($tipo=='6C'){ //Conversiones
 			$fields = $this->db->field_data('conv');
 			$ppk=array();
@@ -279,7 +285,8 @@ class Kardex extends Controller {
 					}
 				}
 			}
-			$link=anchor('inventario/conversiones/dataedit/show/'.implode('/',$ppk),'<#numero#>');
+			$link=anchor('inventario/conv/dataedit/show/'.implode('/',$ppk),'<#numero#>');
+			//$link=anchor('inventario/kardex/conv/'.$this->_unionuri().'/show/'.implode('/',$ppk),'<#numero#>');
 			$grid->title('Conversiones');
 			$grid->column('N&uacute;mero',$link);
 			$grid->column('Fecha'    ,"<dbdate_to_human><#estampa#></dbdate_to_human>",'align=center');
@@ -293,24 +300,49 @@ class Kardex extends Controller {
 		}
 		$grid->build();
 		//echo $grid->db->last_query();
-		
+
 		$data['content'] = $grid->output;
-		$data['title']   = heading('Transacciones del producto $codigo');
+		$data['title']   = heading("Transacciones del producto $codigo");
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 
-	function factura(){
+	function stra($tipo,$fecha,$codigo,$almacen){
+		$this->back_dataedit='inventario/kardex/grid/'.raencode($tipo).'/'.raencode($fecha).'/'.raencode($codigo).'/'.raencode($almacen);
+		stra::dataedit();
+	}
+
+	function sfac($tipo,$fecha,$codigo,$almacen){
+		$this->back_dataedit='inventario/kardex/grid/'.raencode($tipo).'/'.raencode($fecha).'/'.raencode($codigo).'/'.raencode($almacen);
+		sfac::dataedit();
+	}
+
+	function snte($tipo,$fecha,$codigo,$almacen){
+		$this->back_dataedit='inventario/kardex/grid/'.raencode($tipo).'/'.raencode($fecha).'/'.raencode($codigo).'/'.raencode($almacen);
+		snte::dataedit();
+	}
+
+	function conv($tipo,$fecha,$codigo,$almacen){
+		$this->back_dataedit='inventario/kardex/grid/'.raencode($tipo).'/'.raencode($fecha).'/'.raencode($codigo).'/'.raencode($almacen);
+		conv::dataedit();
+	}
+
+	function scst($tipo,$fecha,$codigo,$almacen){
+		$this->back_dataedit='inventario/kardex/grid/'.raencode($tipo).'/'.raencode($fecha).'/'.raencode($codigo).'/'.raencode($almacen);
+		scst::dataedit();
+	}
+	
+	function _unionuri(){
 		$tipo   =$this->uri->segment(4);
 		$fecha  =$this->uri->segment(5);
 		$codigo =$this->uri->segment(6);
 		$almacen=$this->uri->segment(7);
-
-		$data["crud"]   = $grid->output;
-		$data["titulo"] = '';
-		$content["content"]    = $this->load->view('rapyd/crud', $data, true);
-		$content["rapyd_head"] = $this->rapyd->get_head();
-		$this->load->view('view_kardex', $content);
+		return raencode($tipo).'/'.raencode($fecha).'/'.raencode($codigo).'/'.raencode($almacen);
 	}
 }
-?>
+
+require_once(APPPATH.'/controllers/inventario/stra.php');
+require_once(APPPATH.'/controllers/inventario/conv.php');
+require_once(APPPATH.'/controllers/ventas/sfac.php');
+require_once(APPPATH.'/controllers/ventas/snte.php');
+require_once(APPPATH.'/controllers/compras/scst.php');
