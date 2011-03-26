@@ -30,13 +30,13 @@ $(function(){
 </script>
 </head>
 <body>
-<div id='encabe'><?php if (isset($title)) echo '<table width="98%"><tr><td>'.$title.'</td><td align="right" width="40">'.image('cerrar.png','Cerrar Ventana',array('onclick'=>'window.close()','height'=>'20px')).'</td></tr></table>'; ?></div>
+<div id='encabe'><?php if (isset($title)) echo '<table width="98%"><tr><td>'.$title.'</td><td align="right" width="40">'.image('cerrar.png','Cerrar Ventana',array('onclick'=>'window.close()','height'=>'20')).'</td></tr></table>'; ?></div>
 <?php if(isset($smenu)) echo '<div id="smenu">'.$smenu.'</div>'; ?>
 <div id='contenido'>
 	<table width="95%" border=0 align="center">
 		<tr>
 			<td></td>
-			<td background="<?=base_url();?>images/huellaazul.gif"  ><?php if (isset($filtro)) { ?>
+			<td ><?php if (isset($filtro)) { ?>
 			<div><a style="text-decoration:none;color:#4F1010;font: bold 18px Verdana;" href="#" id="mostrafiltro"><?=image("huella.jpg", "#", array("border"=>"none")); ?> Buscar y Filtrar </a>
 			</div>
 			<div id="cajafiltro"><?=$filtro.$tabla; ?></div>

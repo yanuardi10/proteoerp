@@ -49,7 +49,8 @@ class conv extends Controller {
 		$grid->add('inventario/conv/dataedit/create');
 		$grid->build();
 
-		$data['content'] = $filter->output.$grid->output;
+		$data['content'] = $grid->output;
+		$data['filtro']  = $filter->output;
 		$data['title']   = heading('Conversiones de inventario');
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
@@ -268,4 +269,10 @@ class conv extends Controller {
 		$codigo=$do->get('numero');
 		logusu('conv',"Conversion $codigo ELIMINADO");
 	}
+
+	function instalar(){
+		$mSQL = "ALTER TABLE conv ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ";;
+		$this->db->simple_query($mSQL);
+	}
+
 }

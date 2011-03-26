@@ -302,27 +302,76 @@ class Mgas extends validaciones {
 		return $salida;
 	}
   
-/*    
-	function sinvlineas(){  
-		$this->rapyd->load("fields");
-		$where = "";
-		$sql = "SELECT linea,descrip FROM line ";
-		$linea = new dropdownField("Linea", "linea");
-		$dpto=$this->input->post('dpto');
+	function mgasconsulta(){  
+		$this->rapyd->load("datagrid");
+		$fields = $this->db->field_data('mgas');
+		$url_pk = $this->uri->segment_array();
+		$coun=0; $pk=array();
+		foreach ($fields as $field){
+			if($field->primary_key==1){
+				$coun++;
+				$pk[]=$field->name;
+			}
+		}
+		
+		$values=array_slice($url_pk,-$coun);
+		$claves=array_combine (array_reverse($pk) ,$values );
 
-		if ($dpto){
-		  $where = "WHERE depto = ".$this->db->escape($dpto);
-		  $sql = "SELECT linea,descrip FROM line $where ORDER BY descrip";
-		  $linea->option("","");
-			$linea->options($sql);
-		}else{
-			 $linea->option("","Seleccione Un Departamento");
-		} 
-		$linea->status   = "modify";
-		$linea->onchange = "get_grupo();";
-		$linea->build();
-		echo $linea->output;
+		$grid = new DataGrid('Ultimos Movimientos');
+		$grid->db->select( array('a.fecha', 'a.numero','a.descrip', 'a.proveed', 'b.nombre', 'a.precio', 'a.iva', 'a.importe') );
+		$grid->db->from('gitser a');
+		$grid->db->join('sprv b','a.proveed=b.proveed');
+		$grid->db->where('a.codigo', $claves['codigo'] );
+		$grid->db->orderby('fecha DESC');
+		$grid->db->limit(6);
+			
+		$grid->column("Fecha"   ,"fecha" );
+		$grid->column("Descripcion"   ,"descrip" );
+		$grid->column("Proveed" ,"proveed");
+		//$grid->column("Nombre"  ,"nombre");
+		$grid->column("Monto"   ,"<nformat><#precio#></nformat>",'align="RIGHT"');
+		$grid->build();
+
+		$grid1 = new DataGrid('Totales por Mes');
+		$grid1->db->select( array('a.fecha', 'a.descrip', 'a.proveed', 'b.nombre', 'sum(a.precio) monto', 'a.iva', 'a.importe') );
+		$grid1->db->from('gitser a');
+		$grid1->db->join('sprv b','a.proveed=b.proveed');
+		$grid1->db->where('a.codigo', $claves['codigo'] );
+		$grid1->db->groupby('fecha DESC ');
+		$grid1->db->limit(6);
+			
+		$grid1->column("Fecha"   ,"fecha" );
+		$grid1->column("Monto"   ,"<nformat><#monto#></nformat>",'align="RIGHT"');
+			
+		$grid1->build();
+
+		$grid2 = new DataGrid('Totales por Proveedor');
+		$grid2->db->select( array('a.fecha', 'a.proveed', 'b.nombre', 'sum(a.precio) monto') );
+		$grid2->db->from('gitser a');
+		$grid2->db->join('sprv b','a.proveed=b.proveed');
+		$grid2->db->where('a.codigo', $claves['codigo'] );
+		$grid2->db->groupby('a.proveed');
+		$grid2->db->orderby('monto DESC ');
+		$grid2->db->limit(6);
+			
+		$grid2->column("Proveed" ,"proveed");
+		$grid2->column("Nombre"  ,"nombre");
+		$grid2->column("Monto"   ,"<nformat><#monto#></nformat>",'align="RIGHT"');
+		
+		$grid2->build();
+
+		$data['content'] = "<table width='100%'><tr><td valign='top' style='background:#DFDFEF'>".
+				$grid1->output.
+				"</td><td valign='top' style='background:#DFEFDF'>".
+				$grid2->output."</td></tr><tr><td colspan='2'  style='background:#FFFDE9'>".
+				$grid->output."</td></tr></table>";
+		$data["head"]    = script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
+		$data['title']   = '<h1>Consultas</h1>';
+
+		$this->load->view('view_ventanas', $data);
+		
 	}
+/*
 	function sinvgrupos(){
 		$this->rapyd->load("fields");  
 		$where = "";  

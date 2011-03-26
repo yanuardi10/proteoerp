@@ -82,7 +82,8 @@ class Scst extends Controller {
 		$grid->build();
 		//echo $grid->db->last_query();
 
-		$data['content'] =$filter->output.$grid->output;
+		$data['content'] =$grid->output;
+		$data['filtrot'] =$filter->output;
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   =heading('Compras');
 		$this->load->view('view_ventanas', $data);
@@ -305,6 +306,7 @@ class Scst extends Controller {
 		$smenu['link']=barra_menu('201');
 		$data['smenu'] = $this->load->view('view_sub_menu', $smenu,true);
 		$conten['form']  =&  $edit;
+		
 		$data['content'] = $this->load->view('view_compras', $conten,true);
 		$data['head']    = script("tabber.js").script("prototype.js").$this->rapyd->get_head().script("scriptaculous.js").script("effects.js");
 		$data['title']   = '<h1>Compras</h1>';

@@ -736,6 +736,8 @@ class sinv extends Controller {
 		$edit->buttons("modify", "save", "undo", "delete", "back");
 		$edit->build();
 
+		$smenu['link']   = barra_menu('301');
+
 		$conten["form"]  =&  $edit;
 		$data['content'] = $this->load->view('view_sinv', $conten,true);
 		$data["head"]    =script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
@@ -1057,14 +1059,19 @@ class sinv extends Controller {
 		if(!empty($codigo)){
 			$this->rapyd->load('dataedit','datagrid');
 			$grid = new DataGrid('Existencias por Almacen');
-			$grid->db->select(array('b.ubides','a.codigo','a.alma','a.existen',"IF(b.ubides IS NULL,'ALMACEN INCONSISTENTE',b.ubides) AS nombre"));
-			$grid->db->from('itsinv AS a');
+			//$grid->db->select(array('b.ubides','a.codigo','a.alma','a.existen','a.precio1','a.precio2','a.precio3','a.precio4',"IF(b.ubides IS NULL,'ALMACEN INCONSISTENTE',b.ubides) AS nombre"));
+			$grid->db->select(array('b.ubides','a.codigo','a.alma','a.existen',"IF(b.ubides IS NULL,'ALMACEN INCONSISTENTE',b.ubides) AS nombre"));			$grid->db->from('itsinv AS a');
 			$grid->db->join('caub as b','a.alma=b.ubica','LEFT');
 			$grid->db->where('codigo',$codigo);
 			
 			$grid->column('Almac&eacute;n','alma');
 			$grid->column('Nombre'       ,'<#nombre#>');	
 			$grid->column('Cantidad'      ,'existen','align="RIGHT"');
+			//$grid->column('Precio1'      ,'precio1','align="RIGHT"');
+			//$grid->column('Precio2'      ,'precio2','align="RIGHT"');
+			//$grid->column('Precio3'      ,'precio3','align="RIGHT"');
+			//$grid->column('Precio4'      ,'precio3','align="RIGHT"');
+			
 			$grid->build();
 			if($grid->recordCount>0) $salida=$grid->output;
 		}
