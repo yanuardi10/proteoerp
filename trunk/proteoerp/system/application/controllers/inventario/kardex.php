@@ -297,6 +297,32 @@ class Kardex extends Controller {
 			$grid->db->join('itconv AS b','a.numero=b.numero');
 			$grid->db->where('b.codigo' ,$codigo);
 			$grid->db->where('a.estampa',$fecha);
+		}elseif($tipo=='5C'){ //Ajustes de inventario
+			$fields = $this->db->field_data('ssal');
+			$ppk=array();
+			$select=array('a.numero','a.fecha','a.almacen','a.motivo','b.descrip','b.cantidad','b.costo');
+			foreach ($fields as $field){
+				if($field->primary_key==1){
+					$ppk[]='<#'.$field->name.'#>';
+					$pknombre='a.'.$field->name;
+					if(array_search($pknombre, $select)===false){
+						$select[]=$pknombre;
+					}
+				}
+			}
+			//$link=anchor('inventario/conv/dataedit/show/'.implode('/',$ppk),'<#numero#>');
+			//$link=anchor('inventario/kardex/conv/'.$this->_unionuri().'/show/'.implode('/',$ppk),'<#numero#>');
+			$grid->title('Ajustes de inventario');
+			$grid->column('N&uacute;mero','numero');
+			$grid->column('Descripci&oacute;n','descrip');
+			$grid->column('Fecha'    ,"<dbdate_to_human><#fecha#></dbdate_to_human>",'align=center');
+			$grid->column('Cantidad' ,"<nformat><#cantidad#>|2</nformat>",'align=right');
+			$grid->column("Costo"    ,"<nformat><#costo#>|2</nformat>",'align=right');
+			$grid->db->select($select);
+			$grid->db->from('ssal AS a');
+			$grid->db->join('itssal AS b','a.numero=b.numero');
+			$grid->db->where('b.codigo' ,$codigo);
+			$grid->db->where('a.fecha',$fecha);
 		}
 		$grid->build();
 		//echo $grid->db->last_query();

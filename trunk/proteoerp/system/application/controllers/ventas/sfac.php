@@ -68,7 +68,6 @@ class sfac extends Controller {
 		$filter->tipo_doc->group = "Cliente";
 		$filter->tipo_doc->style ="width:120px";;
 
-
 		$filter->cajero = new dropdownField("Cajero", "cajero"); 
 		$filter->cajero->clause="where"; 
 		$filter->cajero->option("","Seleccionar");  
