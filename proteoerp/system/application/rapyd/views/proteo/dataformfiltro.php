@@ -66,11 +66,11 @@
 										</tr>
 									</table>
 								</td>
-<?php //if ($iii > 0) echo "</tr>1"; $iii++; ?>
+<?php if ($iii > 0) echo "</tr>"; $iii++; ?>
 <?php endif;?>
 <?php //@EOFS ?>
 <?php endforeach;//groups?>
-</tr>
+<?php //</tr> ?>
 <?php endif;?>
 							<tr id='__UTPL__'>
 								<td colspan="2" ></td>

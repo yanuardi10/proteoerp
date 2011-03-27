@@ -302,7 +302,7 @@ class Mgas extends validaciones {
 		return $salida;
 	}
   
-	function mgasconsulta(){  
+	function consulta(){  
 		$this->rapyd->load("datagrid");
 		$fields = $this->db->field_data('mgas');
 		$url_pk = $this->uri->segment_array();
@@ -322,7 +322,7 @@ class Mgas extends validaciones {
 		$grid->db->from('gitser a');
 		$grid->db->join('sprv b','a.proveed=b.proveed');
 		$grid->db->where('a.codigo', $claves['codigo'] );
-		$grid->db->where('a.fecha', "curdate()-365" );
+		$grid->db->where('a.fecha >', "curdate()-365" );
 		$grid->db->orderby('fecha DESC');
 		$grid->db->limit(6);
 			
@@ -338,6 +338,7 @@ class Mgas extends validaciones {
 		$grid1->db->from('gitser a');
 		$grid1->db->join('sprv b','a.proveed=b.proveed');
 		$grid1->db->where('a.codigo', $claves['codigo'] );
+		$grid1->db->where('a.fecha >', "curdate()-365" );
 		$grid1->db->groupby('fecha DESC ');
 		$grid1->db->limit(6);
 			
@@ -351,6 +352,7 @@ class Mgas extends validaciones {
 		$grid2->db->from('gitser a');
 		$grid2->db->join('sprv b','a.proveed=b.proveed');
 		$grid2->db->where('a.codigo', $claves['codigo'] );
+		$grid2->db->where('a.fecha >', "curdate()-365" );
 		$grid2->db->groupby('a.proveed');
 		$grid2->db->orderby('monto DESC ');
 		$grid2->db->limit(6);

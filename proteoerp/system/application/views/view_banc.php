@@ -9,7 +9,7 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 <table border=0 width="100%">
 	<tr>
 		<td>
-			<a href='<?php echo base_url()."finanzas/mgas/mgasconsulta/".$form->codigo->output; ?>'>
+			<a href='<?php echo base_url()."finanzas/banc/consulta/".$form->codbanc->output; ?>'>
 			<?php
 				$propiedad = array('src' => 'images/ojos.png', 'alt' => 'Consultar Movimiento', 'title' => 'Consultar Detalles','border'=>'0','height'=>'25');
 				echo img($propiedad);
@@ -43,6 +43,7 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 		</td>
 		<td>
 			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
+			<legend>&nbsp;</legend>
 			<table border=0 width="100%">
 			<tr>
 				<td width='100' class="littletableheaderc"><?=$form->activo->label ?></td>
@@ -69,19 +70,19 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 			<table width= "100%" >
 				<tr>
 					<td width='60px' class="littletableheaderc"><?=$form->nombre->label ?></td>
-					<td class="littletablerow"><?=$form->nombre->output ?></td>
+					<td class="littletablerow"><?=$form->nombre->output ?>&nbsp;</td>
 				</tr>
 				<tr>
 					<td class="littletableheaderc"><?=$form->telefono->label ?></td>
-					<td class="littletablerow"><?=$form->telefono->output ?></td>
+					<td class="littletablerow"><?=$form->telefono->output ?>&nbsp;</td>
 				</tr>
 				<tr>
 					<td class="littletableheaderc"><?=$form->dire1->label   ?></td>
-					<td class="littletablerow" style='font-size:11;'><?=$form->dire1->output  ?></td>
+					<td class="littletablerow" style='font-size:11;'><?=$form->dire1->output  ?>&nbsp;</td>
 				</tr>
 				<tr>
 					<td class="littletableheaderc"><?=$form->dire2->label ?></td>
-					<td class="littletablerow" style='font-size:11;'><?=$form->dire2->output ?></td>
+					<td class="littletablerow" style='font-size:11;'><?=$form->dire2->output ?>&nbsp;</td>
 				</tr>
 			</table>
 			</fieldset>
@@ -154,15 +155,14 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 			<table width= '100%' >
 				<tr>
 					<td>
-					<table width= '100%' >
-						<tr>
-							<td>&nbsp;</td>
-						</tr>
-						<tr>
-							<td align='center' style='font-size:14;font-weight: bold'>SALDO ACTUAL</td>
-						</tr>
-						</tr>
-					</table>
+						<table width= '100%' >
+							<tr>
+								<td>&nbsp;</td>
+							</tr>
+							<tr>
+								<td align='center' style='font-size:14;font-weight: bold'>SALDO ACTUAL</td>
+							</tr>
+						</table>
 					<td>
 				</tr>
 				<tr>

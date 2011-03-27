@@ -6,13 +6,24 @@ $container_bl=join("&nbsp;", $form->_button_container["BL"]);
 $container_br=join("&nbsp;", $form->_button_container["BR"]);
 ?>
 <?php if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</div>'; ?>
-<table border=0 width="100%">
+<table border='0' width="100%">
 	<tr>
-		<td align='right' colspan='2' ><?php echo $container_tr; ?></td>
+		<td>
+			<a href='<?php echo base_url()."finanzas/sinv/consulta/".$form->codbanc->output; ?>'>
+			<?php
+				$propiedad = array('src' => 'images/ojos.png', 'alt' => 'Consultar Movimiento', 'title' => 'Consultar Detalles','border'=>'0','height'=>'25');
+				echo img($propiedad);
+			?>
+			</a>
+		</td>
+		<td align='center' valign='middle'>
+			<?php  if ($form->activo->value=='N') echo "<div style='font-size:14px;font-weight:bold;color: #B40404'>***DESACTIVADO***</div>"; ?>&nbsp;
+		</td>
+		<td align='right'><?php echo $container_tr; ?></td>
 	</tr>
 	<tr>
-		<td valign='top'>
-			<fieldset style='border: 2px outset #81BEF7;background: #E0ECF8;'>
+		<td colspan='2' valign='top'>
+			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
 			<legend class="titulofieldset" >Identificacion del Producto </legend>
 			<table border=0 width="100%">
 				<tr>
@@ -56,7 +67,7 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 			</fieldset>
 		</td>
 		<td valign='top'>
-			<fieldset style='border: 2px outset #9AC8DA;background: #EFEFFF;'>
+			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
 			<legend class="titulofieldset" >Caracteristicas</legend>
 			<table border=0 width="100%">
 				<tr>
@@ -261,7 +272,9 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 <table width='100%'>
 	<tr>
 		<td valign="top">
+			<fieldset  style='border: 2px outset #AEB404;background: #F5F6CE;'>
 			<?=$form->almacenes->output ?>
+			</fieldset>
 		</td>
 		<td valign='top'>
 			<?php if($form->_status=="show"){ ?>
