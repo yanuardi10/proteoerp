@@ -206,6 +206,7 @@ class DataEdit extends DataForm {
 		$this->error_string = $pk_error . $this->error_string;
 		return $result;
 	}
+
 	function process() {
 		$result = parent::process();
 		switch ($this->_action) {
@@ -257,223 +258,235 @@ class DataEdit extends DataForm {
 						$this->build_message_form(RAPYD_MSG_0202);
 					}
 				}
-				break;
-			}
-			switch ($this->_status) {
-				case "show":
-				case "modify":
-				case "create":
-					$this->_build_buttons();
-					$this->build_form();
-				break;
-				case "delete":
-					$this->_build_buttons();
-					$this->build_message_form(RAPYD_MSG_0209);
-				break;
-				case "unknow_record":
-					$this->_build_buttons();
-					$this->build_message_form(RAPYD_MSG_0208);
-				break;
-			}
+			break;
 		}
-		/**
-		 * append a default button
-		 *
-		 * @access   public
-		 * @param    string  $name     a default button name ('modify','save','undo','backedit','back')
-		 * @param    string  $caption  the label of the button (if not set, the default labels will used)
-		 * @return   void
-		 */
-		function crud_button($name = "", $caption = null) {
-			$this->_buttons[$name] = $caption;
-		}
-		/**
-		 * append a set of default buttons
-		 *
-		 * @access   public
-		 * @param    mixed  $names   a list of button names.  For example 'modify','save','undo','backedit','back'
-		 * @return   void
-		 */
-		function buttons($names) {
-			$buttons = func_get_args();
-			foreach ($buttons as $button) {
-				$this->crud_button($button);
-			}
-		}
-		/**
-		 * build the appended buttons
-		 *
-		 * @access   private
-		 * @return   void
-		 */
-		function _build_buttons() {
-			foreach ($this->_buttons as $button => $caption) {
-				$build_button = "_build_" . $button . "_button";
-				if ($caption == null) {
-					$this->$build_button();
-				} else {
-					$this->$build_button($caption);
-				}
-			}
-			$this->_buttons = array();
-		}
-		/**
-		 * append the default "modify" button, modify is the button that appears in the top-right corner when the status is "show"
-		 *
-		 * @access   public
-		 * @param    string $caption  the label of the button (if not set, the default labels will used)
-		 * @return   void
-		 */
-		function _build_modify_button($caption = RAPYD_BUTTON_MODIFY) {
-			if ($this->_status == "show" && $this->rapyd->uri->is_set("show")) {
-				$modify_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "show", "modify");
-				$action = "javascript:window.location='" . site_url($modify_uri) . "'";
-				$this->button("btn_modify", $caption, $action, "TR");
-			}
-		}
-		/**
-		 * append the default "delete" button, delete is the button that appears in the top-right corner when the status is "show"
-		 *
-		 * @access   public
-		 * @param    string  $caption  the label of the button (if not set, the default labels will used)
-		 * @return   void
-		 */
-		function _build_delete_button($caption = RAPYD_BUTTON_DELETE) {
-			if ($this->_status == "show" && $this->rapyd->uri->is_set("show")) {
-				$delete_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "show", "delete");
-				$action = "javascript:window.location='" . site_url($delete_uri) . "'";
-				$this->button("btn_delete", $caption, $action, "TR");
-			} elseif ($this->_status == "delete") {
-				$action = "javascript:window.location='" . site_url($this->_process_uri) . "'";
-				$this->button("btn_delete", $caption, $action, "BL");
-			}
-		}
-		/**
-		 * append the default "save" button,  save is the button that appears in the bottom-left corner when the status is "create" or "modify"
-		 *
-		 * @access   public
-		 * @param    string  $caption  the label of the button (if not set, the default labels will used)
-		 * @return   void
-		 */
-		function _build_save_button($caption = RAPYD_BUTTON_SAVE) {
-			if (($this->_status == "create") || ($this->_status == "modify")) {
-				$this->submit("btn_submit", $caption, "TR"); // ANTES bl
-				
-			}
-		}
-		/**
-		 * append the default "undo" button, undo is the button that appears in the top-right corner when the status is "create" or "modify"
-		 *
-		 * @access   public
-		 * @param    string  $caption  the label of the button (if not set, the default labels will used)
-		 * @return   void
-		 */
-		function _build_undo_button($caption = RAPYD_BUTTON_UNDO) {
-			if ($this->_status == "create") {
-				$action = "javascript:window.location='{$this->back_url}'";
-				$this->button("btn_undo", $caption, $action, "TR");
-			} elseif ($this->_status == "modify") {
-				if (($this->back_cancel_save === FALSE) || ($this->back_cancel === FALSE)) {
-					//is modify
-					if ($this->rapyd->uri->is_set("modify")) {
-						$undo_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "modify", "show");
-						//is modify on error
-						
-					} elseif ($this->rapyd->uri->is_set("update")) {
-						$undo_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "update", "show");
-					}
-					$action = "javascript:window.location='" . site_url($undo_uri) . "'";
-				} else {
-					$action = "javascript:window.location='{$this->back_url}'";
-				}
-				$this->button("btn_undo", $caption, $action, "TR");
-			} elseif ($this->_status == "delete") {
-				if (($this->back_cancel_delete === FALSE) || ($this->back_cancel === FALSE)) {
-					$undo_uri = site_url($this->_undo_uri);
-					$action = "javascript:window.location='$undo_uri'";
-				} else {
-					$action = "javascript:window.location='{$this->back_url}'";
-				}
-				$this->button("btn_undo", $caption, $action, "TR");
-			}
-		}
-		/**
-		 * append the default "back" button, back is the button that appears in the bottom-left corner when the status is "show"
-		 *
-		 * @access   public
-		 * @param    string  $caption  the label of the button (if not set, the default labels will used)
-		 * @return   void
-		 */
-		function _build_back_button($caption = RAPYD_BUTTON_BACK) {
-			if (($this->_status == "show") || ($this->_status == "unknow_record") || ($this->_action == "delete")) {
-				$action = "javascript:window.location='{$this->back_url}'";
-				$this->button("btn_back", $caption, $action, "TR"); //ANTES BL
-				
-			}
-		}
-		/**
-		 * append the default "backerror" button
-		 *
-		 * @access   public
-		 * @param    string  $caption  the label of the button (if not set, the default labels will used)
-		 * @return   void
-		 */
-		function _build_backerror_button($caption = RAPYD_BUTTON_BACKERROR) {
-			if (($this->_action == "do_delete") && ($this->_on_error)) {
-				$action = "javascript:window.history.back()";
-				$this->button("btn_backerror", $caption, $action, "TR");
-			}
-		}
-		/**
-		 * process , main build method, it lunch process() method
-		 *
-		 * @access   public
-		 * @return   void
-		 */
-		function build() {
-			//temp. back compatibility
-			if (site_url("") != "/") {
-				$this->back_uri = ($this->back_uri != "") ? $this->back_uri : trim(str_replace(site_url(""), "", str_replace($this->ci->config->item('url_suffix'), "", $this->back_url)), "/");
-			} else {
-				$this->back_uri = ($this->back_uri != "") ? $this->back_uri : trim($this->back_url, "/");
-			}
-			if (($this->back_uri == "") && isset($this->_buttons["back"])) {
-				show_error('you must give a correct "BACK URI": $edit->back_uri');
-			}
-			//sniff and build fields
-			$this->_sniff_fields();
-			//sniff and perform action
-			$this->_sniff_action();
-			//build back_url
-			$persistence = $this->rapyd->session->get_persistence($this->back_uri, $this->rapyd->uri->gfid);
-			if (isset($persistence["back_post"])) {
-				$this->back_url = site_url($persistence["back_uri"]);
-			} else {
-				$this->back_url = site_url($this->back_uri);
-			}
-			$this->_built = true;
-			$this->process();
-		}
-		function rel_count() {
-			if (($this->requestRefill == true)) {
-			} elseif (($this->status == "create")) {
-				return 1;
-			} elseif (($this->status == "modify")) {
-			} elseif (($this->_dataobject->loaded) && (!isset($this->request[$this->name]))) {
-				return $this->_dataobject->count_rel('itstra');
-			}
-		}
-		function pk_URI() {
-			return $this->pk_to_URI($this->_dataobject->pk);
-		}
-		function getval($obj) {
-			$name = $this->$obj->name;
-			$requestValue = $this->ci->input->post($name);
-			if ($requestValue === FALSE AND $this->_dataobject->loaded) {
-				$requestValue = $this->_dataobject->get($this->$obj->db_name);
-				if (empty($requestValue)) $requestValue = FALSE;
-			}
-			return (empty($requestValue)) ? FALSE : $requestValue;
+		switch ($this->_status) {
+			case "show":
+			case "modify":
+			case "create":
+				$this->_build_buttons();
+				$this->build_form();
+			break;
+			case "delete":
+				$this->_build_buttons();
+				$this->build_message_form(RAPYD_MSG_0209);
+			break;
+			case "unknow_record":
+				$this->_build_buttons();
+				$this->build_message_form(RAPYD_MSG_0208);
+			break;
 		}
 	}
-?>
+	/**
+	 * append a default button
+	 *
+	 * @access   public
+	 * @param    string  $name     a default button name ('modify','save','undo','backedit','back')
+	 * @param    string  $caption  the label of the button (if not set, the default labels will used)
+	 * @return   void
+	 */
+	function crud_button($name = "", $caption = null) {
+		$this->_buttons[$name] = $caption;
+	}
+	/**
+	 * append a set of default buttons
+	 *
+	 * @access   public
+	 * @param    mixed  $names   a list of button names.  For example 'modify','save','undo','backedit','back'
+	 * @return   void
+	 */
+	function buttons($names) {
+		$buttons = func_get_args();
+		foreach ($buttons as $button) {
+			$this->crud_button($button);
+		}
+	}
+	/**
+	 * build the appended buttons
+	 *
+	 * @access   private
+	 * @return   void
+	 */
+	function _build_buttons() {
+		foreach ($this->_buttons as $button => $caption) {
+			$build_button = "_build_" . $button . "_button";
+			if ($caption == null) {
+				$this->$build_button();
+			} else {
+				$this->$build_button($caption);
+			}
+		}
+		$this->_buttons = array();
+	}
+	/**
+	 * append the default "modify" button, modify is the button that appears in the top-right corner when the status is "show"
+	 *
+	 * @access   public
+	 * @param    string $caption  the label of the button (if not set, the default labels will used)
+	 * @return   void
+	 */
+	function _build_modify_button($caption = RAPYD_BUTTON_MODIFY) {
+		if ($this->_status == "show" && $this->rapyd->uri->is_set("show")) {
+			$modify_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "show", "modify");
+			$action = "javascript:window.location='" . site_url($modify_uri) . "'";
+			$this->button("btn_modify", $caption, $action, "TR");
+		}
+	}
+	/**
+	 * append the default "delete" button, delete is the button that appears in the top-right corner when the status is "show"
+	 *
+	 * @access   public
+	 * @param    string  $caption  the label of the button (if not set, the default labels will used)
+	 * @return   void
+	 */
+	function _build_delete_button($caption = RAPYD_BUTTON_DELETE) {
+		if ($this->_status == "show" && $this->rapyd->uri->is_set("show")) {
+			$delete_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "show", "delete");
+			$action = "javascript:window.location='" . site_url($delete_uri) . "'";
+			$this->button("btn_delete", $caption, $action, "TR");
+		} elseif ($this->_status == "delete") {
+			$action = "javascript:window.location='" . site_url($this->_process_uri) . "'";
+			$this->button("btn_delete", $caption, $action, "BL");
+		}
+	}
+	/**
+	 * append the default "save" button,  save is the button that appears in the bottom-left corner when the status is "create" or "modify"
+	 *
+	 * @access   public
+	 * @param    string  $caption  the label of the button (if not set, the default labels will used)
+	 * @return   void
+	 */
+	function _build_save_button($caption = RAPYD_BUTTON_SAVE) {
+		if (($this->_status == "create") || ($this->_status == "modify")) {
+			$this->submit("btn_submit", $caption, "TR"); // ANTES bl
+			
+		}
+	}
+	/**
+	 * append the default "undo" button, undo is the button that appears in the top-right corner when the status is "create" or "modify"
+	 *
+	 * @access   public
+	 * @param    string  $caption  the label of the button (if not set, the default labels will used)
+	 * @return   void
+	 */
+	function _build_undo_button($caption = RAPYD_BUTTON_UNDO) {
+		if ($this->_status == "create") {
+			$action = "javascript:window.location='{$this->back_url}'";
+			$this->button("btn_undo", $caption, $action, "TR");
+		} elseif ($this->_status == "modify") {
+			if (($this->back_cancel_save === FALSE) || ($this->back_cancel === FALSE)) {
+				//is modify
+				if ($this->rapyd->uri->is_set("modify")) {
+					$undo_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "modify", "show");
+					//is modify on error
+					
+				} elseif ($this->rapyd->uri->is_set("update")) {
+					$undo_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "update", "show");
+				}
+				$action = "javascript:window.location='" . site_url($undo_uri) . "'";
+			} else {
+				$action = "javascript:window.location='{$this->back_url}'";
+			}
+			$this->button("btn_undo", $caption, $action, "TR");
+		} elseif ($this->_status == "delete") {
+			if (($this->back_cancel_delete === FALSE) || ($this->back_cancel === FALSE)) {
+				$undo_uri = site_url($this->_undo_uri);
+				$action = "javascript:window.location='$undo_uri'";
+			} else {
+				$action = "javascript:window.location='{$this->back_url}'";
+			}
+			$this->button("btn_undo", $caption, $action, "TR");
+		}
+	}
+	/**
+	 * append the default "back" button, back is the button that appears in the bottom-left corner when the status is "show"
+	 *
+	 * @access   public
+	 * @param    string  $caption  the label of the button (if not set, the default labels will used)
+	 * @return   void
+	 */
+	function _build_back_button($caption = RAPYD_BUTTON_BACK) {
+		if (($this->_status == "show") || ($this->_status == "unknow_record") || ($this->_action == "delete")) {
+			$action = "javascript:window.location='{$this->back_url}'";
+			$this->button("btn_back", $caption, $action, "TR"); //ANTES BL
+			
+		}
+	}
+	/**
+	 * append the default "backerror" button
+	 *
+	 * @access   public
+	 * @param    string  $caption  the label of the button (if not set, the default labels will used)
+	 * @return   void
+	 */
+	function _build_backerror_button($caption = RAPYD_BUTTON_BACKERROR) {
+		if (($this->_action == "do_delete") && ($this->_on_error)) {
+			$action = "javascript:window.history.back()";
+			$this->button("btn_backerror", $caption, $action, "TR");
+		}
+	}
+	/**
+	 * process , main build method, it lunch process() method
+	 *
+	 * @access   public
+	 * @return   void
+	 */
+	function build() {
+		//temp. back compatibility
+		if (site_url("") != "/") {
+			$this->back_uri = ($this->back_uri != "") ? $this->back_uri : trim(str_replace(site_url(""), "", str_replace($this->ci->config->item('url_suffix'), "", $this->back_url)), "/");
+		} else {
+			$this->back_uri = ($this->back_uri != "") ? $this->back_uri : trim($this->back_url, "/");
+		}
+		if (($this->back_uri == "") && isset($this->_buttons["back"])) {
+			show_error('you must give a correct "BACK URI": $edit->back_uri');
+		}
+		//sniff and build fields
+		$this->_sniff_fields();
+		//sniff and perform action
+		$this->_sniff_action();
+		//build back_url
+		$persistence = $this->rapyd->session->get_persistence($this->back_uri, $this->rapyd->uri->gfid);
+		if (isset($persistence["back_post"])) {
+			$this->back_url = site_url($persistence["back_uri"]);
+		} else {
+			$this->back_url = site_url($this->back_uri);
+		}
+		$this->_built = true;
+		$this->process();
+	}
+
+	function rel_count() {
+		if (($this->requestRefill == true)) {
+		} elseif (($this->status == "create")) {
+			return 1;
+		} elseif (($this->status == "modify")) {
+		} elseif (($this->_dataobject->loaded) && (!isset($this->request[$this->name]))) {
+			return $this->_dataobject->count_rel('itstra');
+		}
+	}
+
+	function pk_URI() {
+		return $this->pk_to_URI($this->_dataobject->pk);
+	}
+
+	function getval($obj) {
+		if(isset($this->$obj)){
+			$name = $this->$obj->name;
+			$requestValue = $this->ci->input->post($name);
+			if ($requestValue === false AND $this->_dataobject->loaded) {
+				$requestValue = $this->_dataobject->get($this->$obj->db_name);
+				if (empty($requestValue)) $requestValue = false;
+			}
+		}elseif($this->_dataobject->loaded){
+			$requestValue = $this->_dataobject->get($obj);
+		}else{
+			return false;
+		}
+		return (empty($requestValue)) ? false : $requestValue;
+	}
+
+	function getstatus(){
+		return $this->_status;
+	}
+}
