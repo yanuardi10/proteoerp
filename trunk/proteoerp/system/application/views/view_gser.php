@@ -299,8 +299,8 @@ function toggle() {
 	</tr>
 	<tr>
 		<td>
-		<fieldset style='border: 1px solid #9AC8DA;background: #FFFDE9;'>
-		<legend class="subtitulotabla" style='color: #114411;'>Documento</legend>
+		<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
+		<legend class="titulofieldset" style='color: #114411;'>Documento</legend>
 		<table width="100%" style="margin: 0; width: 100%;">
 			<tr>
 				<td class="littletableheader"><?php echo $form->tipo_doc->label  ?>*&nbsp;</td>
@@ -332,8 +332,8 @@ function toggle() {
 	</tr>
 	<tr>
 		<td>
-		<fieldset style='border: 1px solid #9AC8DA;background: #EFEFFF;'>
-		<legend class="subtitulotabla" style='color: #114411;'>Detalle</legend>
+		<fieldset style='border: 2px outset #9AC8DA;background: #EFEFFF;'>
+		<legend class="titulofieldset" style='color: #114411;'>Detalle</legend>
 		<table width='100%'>
 			<tr>
 				<td class="littletableheaderdet">C&oacute;digo</td>
@@ -402,8 +402,8 @@ function toggle() {
 	</tr>
 	<tr>
 		<td>
-		<fieldset style='border: 1px solid #9AC8DA;background: #EFEFFF;'>
-		<legend class="subtitulotabla" style='color: #114411;'>Retenciones</legend>
+		<fieldset style='border: 2px outset #9AC8DA;background: #EFEFFF;'>
+		<legend class="titulofieldset" style='color: #114411;'>Retenciones</legend>
 		<table width='100%'>
 			<tr>
 				<td class="littletableheaderdet">C&oacute;digo</td>
@@ -450,8 +450,8 @@ function toggle() {
 	<tr>
 		<td align='center'>
 			<table width='100%'><tr><td valign='top'>
-			<fieldset style='border: 1px solid #9AC8DA;background: #FFFBE9;'>
-			<legend class="subtitulotabla" style='color: #114411;'>Forma de Pago</legend>
+			<fieldset style='border: 2px outset #9AC8DA;background: #FFFBE9;'>
+			<legend class="titulofieldset" style='color: #114411;'>Forma de Pago</legend>
 			<table width='100%'>
 				<tr>
 					<td class="littletableheader"><?php echo $form->codb1->label   ?>&nbsp;</td>
@@ -472,8 +472,8 @@ function toggle() {
 			</table>
 			</fieldset>
 			</td><td valign='top'>
-			<fieldset style='border: 1px solid #9AC8DA;background: #FFFBE9;'>
-			<legend class="subtitulotabla" style='color: #114411;'>Totales</legend>
+			<fieldset style='border: 2px outset #9AC8DA;background: #FFFBE9;'>
+			<legend class="titulofieldset" style='color: #114411;'>Totales</legend>
 			<table width='100%'>
 				<tr>
 					<td class="littletableheader"><?php echo $form->totpre->label    ?>&nbsp;</td>
@@ -503,8 +503,8 @@ function toggle() {
 	<?php if($form->_status == 'show'){ ?>
 	<tr>
 		<td>
-			<fieldset style='border: 1px solid ##8A0808;background: #FFFBE9;'>
-			<legend class="subtitulotabla" style='color: #114411;'>Informacion del Registro</legend>
+			<fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
+			<legend class="titulofieldset" style='color: #114411;'>Informacion del Registro</legend>
 			<table width='100%' cellspacing='1' >
 				<tr style='font-size:12px;color:#0B3B0B;background-color: #F7BE81;'>
 					<td align='center' >Usuario</td>
@@ -540,8 +540,8 @@ function toggle() {
 					if ( $query->num_rows() > 0 ) { 
 						$row = $query->row();
 				?>
-			<fieldset style='border: 1px solid ##8A0808;background: #FFFBE9;'>
-			<legend class="subtitulotabla" style='color: #114411;'>Retencion de Impuesto</legend>
+			<fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
+			<legend class="titulofieldset" style='color: #114411;'>Retencion de Impuesto</legend>
 			<table width='100%' cellspacing='1' >
 				<tr style='font-size:12px;color:#FFEEFF;background-color: #393B0B;'>
 					<td align='center'>Periodo &nbsp;</td>
@@ -567,8 +567,8 @@ function toggle() {
 					$query = $this->db->query($mSQL, array(trim($form->_dataobject->get('transac'))) );
 					if ( $query->num_rows() > 0 ) {
 						$row = $query->row(); ?>
-			<fieldset style='border: 1px solid ##8A0808;background: #FFFBE9;'>
-			<legend class="subtitulotabla" style='color: #114411;'>Registro en Bancos</legend>
+			<fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
+			<legend class="titulofieldset" style='color: #114411;'>Registro en Bancos</legend>
 			<table width='100%' cellspacing='1'>
 				<tr>
 					<td align='center' style='font-size:12px;color:#FFEEFF;background-color: #582314;'>Numero&nbsp;</td>
@@ -590,8 +590,8 @@ function toggle() {
 				$mSQL = "SELECT CONCAT(tipo_doc, numero) numero, CONCAT(cod_prv,' ',nombre) cod_prv, monto*(tipo_doc IN ('FC','ND','GI')) debe, monto*(tipo_doc NOT IN ('FC','ND','GI')) haber , monto-abonos saldo FROM sprm WHERE transac=? ";
 				$query = $this->db->query($mSQL, array(trim($form->_dataobject->get('transac'))) );
 				if ( $query->num_rows() > 0 ) { ?>
-			<fieldset style='border: 1px solid ##8A0808;background: #FFFBE9;'>
-			<legend class="subtitulotabla" style='color: #114411;'>Estado de Cuenta</legend>
+			<fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
+			<legend class="titulofieldset" style='color: #114411;'>Estado de Cuenta</legend>
 			<table width='100%' cellspacing='1'>
 				<tr style='font-size:12px;color:#FFEEFF;background-color: #61380B;'>
 					<td align='center'>Numero &nbsp;</td>

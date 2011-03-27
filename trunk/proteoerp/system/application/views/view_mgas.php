@@ -10,7 +10,7 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 	<tr>
 		<td valign='center'><a href='<?php echo base_url()."finanzas/mgas/mgasconsulta/".$form->codigo->output; ?>'>
 		<?php
-			$propiedad = array('src' => 'images/consultar.gif', 'alt' => 'Consultar Movimiento', 'title' => 'Consultas','border'=>'0');
+			$propiedad = array('src' => 'images/ojos.png', 'alt' => 'Consultar Movimiento', 'title' => 'Consultas','border'=>'0','height'=>'25');
 			echo img($propiedad);
 		?>
 		</a></td>
@@ -19,8 +19,8 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 	</tr>
 	<tr>
 		<td colspan='2'>
-			<fieldset style='border: 2px outset  #9AC8DA;background: #EFEFFF;'>
-			<legend class="subtitulotabla" style='color: #114411;'>Gasto</legend>
+			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
+			<legend class="titulofieldset" style='color: #114411;'>Gasto</legend>
 			<table border=0 width="100%">
 			<tr>
 				<td width="140" class="littletableheaderc"><?=$form->codigo->label  ?></td>
@@ -62,7 +62,7 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 	<tr>
 		<td valign='top'>
 			<fieldset style='border: 2px outset #81BEF7;background: #E0ECF8;'>
-			<legend class="subtitulotabla" style='color: #114411;'>Costos</legend>
+			<legend class="titulofieldset" style='color: #114411;'>Costos</legend>
 			<table style="height: 100%;width: 100%" >
 				<tr>
 					<td width="120" class="littletableheaderc"><?=$form->iva->label   ?></td>
@@ -81,7 +81,7 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 		</td>
 		<td  valign="top">	
 			<fieldset style='border: 3px outset #81BEF7;background: #E0ECF8;'>
-			<legend class="subtitulotabla" style='color: #114411;'>Existencias</legend>
+			<legend class="titulofieldset" style='color: #114411;'>Existencias</legend>
 			<table style="height: 100%;width: 100%">
 				<tr>
 					<td class="littletableheaderc"><?=$form->fraxuni->label  ?></td>
@@ -101,8 +101,8 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 	</tr>
 	<tr>
 		<td colspan='2'>
-			<fieldset style='border: 2px outset #9AC8DA;background: #EFEFFF;'>
-			<legend class="subtitulotabla" style='color: #114411;'>Cantidad Actual</legend>
+			<fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
+			<legend class="titulofieldset" style='color: #114411;'>Cantidad Actual</legend>
 			<table style="height: 100%;width: 100%" >
 				<tr>
 					<td class="littletableheaderc"><?=$form->unidades->label  ?></td>
@@ -116,8 +116,8 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
         <?php if ( $this->datasis->traevalor('PAIS') == 'COLOMBIA' ) { ?>
 	<tr>
 		<td colspan='2'>
-			<fieldset style='border: 1px solid #9AC8DA;background: #EFEFFF;' >
-			<legend class="subtitulotabla" style='color: #114411;' >Retencion</legend>
+			<fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
+			<legend class="titulofieldset" style='color: #114411;' >Retencion</legend>
 			<table style="height: 100%;width: 100%" >
 				<tr>
 					<td class="littletableheaderc"><?=$form->rica->label   ?></td>
