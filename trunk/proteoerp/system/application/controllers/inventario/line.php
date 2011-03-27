@@ -23,16 +23,16 @@
 		$filter->db->join("dpto AS b","a.depto=b.depto");
 		
 		$filter->linea = new inputField("C&oacute;digo L&iacute;nea", "linea");
-		$filter->linea->size=20;
+		$filter->linea->size=10;
 		
 		$filter->nombre = new inputField("Descripción","descrip");
-		$filter->nombre->size=20;
+		$filter->nombre->size=30;
 		
 		$filter->depto = new inputField("Departamento","b.descrip");
-		$filter->depto->size=20;
+		$filter->depto->size=10;
 		
 		$filter->buttons("reset","search");
-		$filter->build();
+		$filter->build('dataformfiltro');
 
 		$uri = anchor('inventario/line/dataedit/show/<raencode><#linea#></raencode>','<#linea#>');
 		$uri_2 = anchor('inventario/line/dataedit/create/<raencode><#linea#></raencode>','Duplicar');
@@ -47,14 +47,15 @@
 		$grid->column("Cuenta Costo"              ,"cu_cost"  ,"align='center'");
 		$grid->column("Cuenta Inventario"         ,"cu_inve"  ,"align='center'");
 		$grid->column("Cuenta Venta"              ,"cu_venta" ,"align='center'");
-		$grid->column("Cuenta Devoluci&oacute;n"  ,"cu_devo"  ,"align='center'");
+		//$grid->column("Cuenta Devoluci&oacute;n"  ,"cu_devo"  ,"align='center'");
 		$grid->column("Duplicar"                  ,$uri_2     ,"align='center'");
 
 
 		$grid->add("inventario/line/dataedit/create");
 		$grid->build();
 		
-		$data['content'] = $filter->output.$grid->output;
+		$data['content'] = $grid->output;
+		$data['filtro']  = $filter->output;
 		$data['title']   = "<h1>Lineas de Inventario</h1>";
 		$data["head"]    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);

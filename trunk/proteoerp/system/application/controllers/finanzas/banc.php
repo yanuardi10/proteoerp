@@ -24,18 +24,19 @@ class Banc extends Validaciones {
 		$filter->banco = new dropdownField('Banco', 'tbanco');
 		$filter->banco->option('','Todos');
 		$filter->banco->options("SELECT TRIM(cod_banc),TRIM(nomb_banc) FROM tban ORDER BY nomb_banc");
-		$filter->banco->style ='width:190px;';
+		$filter->banco->style ='width:200px;';
 
 		$filter->numcuenta = new inputField('Nro. de Cuenta', 'numcuent');
+		$filter->numcuenta->size = 20;
 
 		$filter->buttons('reset','search');
-		$filter->build();
+		$filter->build('dataformfiltro');
 
 		$uri = anchor('finanzas/banc/dataedit/show/<#codbanc#>','<#codbanc#>');
 
 		function pinta($activo,$palabra){
 			if($activo=='N'){
-				return "<b style='color:#ff0000'>$palabra</b>";
+				return "<b style='color:#ff0000;'>$palabra</b>";
 			}
 			return $palabra;
 		}
@@ -45,14 +46,14 @@ class Banc extends Validaciones {
 		$grid->use_function('pinta');
 
 		$grid->column_orderby('C&oacute;digo',$uri,'codbanc');
-		$grid->column_orderby('C. Contable','cuenta','cuenta');
 		$grid->column_orderby('Tipo','<pinta><#activo#>|<#tbanco#></pinta>','tbanco');
 		$grid->column_orderby('Banco','<pinta><#activo#>|<#banco#></pinta>','banco');
 		$grid->column_orderby('Nro Cuenta','<pinta><#activo#>|<#numcuent#></pinta>','numcuent');
 		$grid->column_orderby('Saldo','<pinta><#activo#>|<nformat><#saldo#></nformat></pinta>','saldo','align=right');
-		$grid->column_orderby('Activo','activo','activo');
+		$grid->column_orderby('C. Contable','<pinta><#activo#>|<#cuenta#></pinta>','cuenta');
+		//$grid->column_orderby('Activo','activo','activo');
 
-		$grid->add('finanzas/banc/dataedit/create','Agregar banco o caja');
+		$grid->add('finanzas/banc/dataedit/create','Agregar');
 		$grid->build();
 		//echo $grid->db->last_query();
 
@@ -336,4 +337,84 @@ class Banc extends Validaciones {
 		$consul=$this->datasis->dameval("SELECT codbanc FROM banc ORDER BY codbanc DESC");
 		echo $consul;
 	}
+
+	function consulta(){  
+		$this->rapyd->load("datagrid");
+		$fields = $this->db->field_data('banc');
+		$url_pk = $this->uri->segment_array();
+		$coun=0; $pk=array();
+		foreach ($fields as $field){
+			if($field->primary_key==1){
+				$coun++;
+				$pk[]=$field->name;
+			}
+		}
+		
+		$values=array_slice($url_pk,-$coun);
+		$claves=array_combine (array_reverse($pk) ,$values );
+
+		$grid = new DataGrid('Movimientos ultimos 30 dias');
+		$grid->db->select( array('a.fecha', 'a.tipo_op','a.numero','CONCAT(a.concepto," ",a.concep2) concepto', 'a.monto') );
+		$grid->db->from('bmov a');
+		$grid->db->where('a.codbanc', $claves['codbanc'] );
+		$grid->db->where('a.fecha > SUBDATE(curdate(),30)' );
+		$grid->db->orderby('fecha DESC');
+		$grid->db->limit(6);
+			
+		$grid->column("Fecha"   ,"fecha" );
+		$grid->column("Tipo"   ,"Tipo_op" );
+		$grid->column("Numero" ,"numero");
+		$grid->column("Concepto"   ,"concepto" );
+		//$grid->column("Nombre"  ,"nombre");
+		$grid->column("Monto"   ,"<nformat><#monto#></nformat>",'align="RIGHT"');
+		$grid->build();
+		//echo $grid->db->last_query();
+/*
+		$grid1 = new DataGrid('Totales por Mes');
+		$grid1->db->select( array('a.fecha', 'a.descrip', 'a.proveed', 'b.nombre', 'sum(a.precio) monto', 'a.iva', 'a.importe') );
+		$grid1->db->from('gitser a');
+		$grid1->db->join('sprv b','a.proveed=b.proveed');
+		$grid1->db->where('a.codigo', $claves['codigo'] );
+		$grid1->db->groupby('fecha DESC ');
+		$grid1->db->limit(6);
+			
+		$grid1->column("Fecha"   ,"fecha" );
+		$grid1->column("Monto"   ,"<nformat><#monto#></nformat>",'align="RIGHT"');
+			
+		$grid1->build();
+
+		$grid2 = new DataGrid('Totales por Proveedor');
+		$grid2->db->select( array('a.fecha', 'a.proveed', 'b.nombre', 'sum(a.precio) monto') );
+		$grid2->db->from('gitser a');
+		$grid2->db->join('sprv b','a.proveed=b.proveed');
+		$grid2->db->where('a.codigo', $claves['codigo'] );
+		$grid2->db->groupby('a.proveed');
+		$grid2->db->orderby('monto DESC ');
+		$grid2->db->limit(6);
+			
+		$grid2->column("Proveed" ,"proveed");
+		$grid2->column("Nombre"  ,"nombre");
+		$grid2->column("Monto"   ,"<nformat><#monto#></nformat>",'align="RIGHT"');
+		
+		$grid2->build();
+*/
+		$descrip = $this->datasis->dameval("SELECT CONCAT(banco, '', cuenta) cuenta FROM banc WHERE codbanc='".$claves['codbanc']."'");
+		$data['content'] = "
+		<table width='100%'>
+			<tr>
+				<td valign='top'>
+					<div style='border: 2px outset #EFEFEF;background: #EFEFFF '>".
+					$grid->output."
+					</div>".
+				"</td>
+			</tr>
+		</table>";
+		$data["head"]     = script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
+		$data['title']    = '<h1>Consulta de Banco</h1>';
+		$data["subtitle"] = "<div align='center' style='border: 2px outset #EFEFEF;background: #EFEFEF '><a href='javascript:javascript:history.go(-1)'>(".$claves['codbanc'].") ".$descrip."</a></div>";
+		$this->load->view('view_ventanas', $data);
+		
+	}
+
+
 }

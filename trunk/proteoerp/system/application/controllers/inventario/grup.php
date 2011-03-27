@@ -33,27 +33,31 @@ class Grup extends validaciones {
 
 		$filter->grupo = new inputField("Grupo","grupo");
 		$filter->grupo->size=20;
+		$filter->grupo->group = 'UNO';
 
 		$filter->nombre = new inputField("Descripci&oacute;n","nom_grup");
 		$filter->nombre->size=20;
+		$filter->nombre->group = 'UNO';
 
-		$filter->comision = new inputField("Comisi&oacute;n","comision");
-		$filter->comision->size=20;
+		//$filter->comision = new inputField("Comisi&oacute;n","comision");
+		//$filter->comision->size=20;
 		
-		$filter->margen = new inputField("Margen de Venta","margen");
-		$filter->margen->size=20;
+		//$filter->margen = new inputField("Margen de Venta","margen");
+		//$filter->margen->size=20;
 		
-		$filter->margenc = new inputField("Margen de Compra","margenc");
-		$filter->margenc->size=20;
-
-		$filter->depto = new inputField("Departamento","c.descrip");
-		$filter->depto->size=20;
+		//$filter->margenc = new inputField("Margen de Compra","margenc");
+		//$filter->margenc->size=20;
 
 		$filter->linea = new inputField("L&iacute;nea","b.descrip");
 		$filter->linea->size=20;
+		$filter->linea->group = 'DOS';
+
+		$filter->depto = new inputField("Departamento","c.descrip");
+		$filter->depto->size=20;
+		$filter->depto->group = 'DOS';
 
 		$filter->buttons("reset","search");
-		$filter->build();
+		$filter->build('dataformfiltro');
 
 		$uri = anchor('inventario/grup/dataedit/show/<raencode><#grupo#></raencode>','<#grupo#>');
 		$uri_2 = anchor('inventario/grup/dataedit/create/<raencode><#grupo#></raencode>','Duplicar');
@@ -65,21 +69,23 @@ class Grup extends validaciones {
 
 		$grid->column("Grupo"                       ,$uri                            ,"align='center'");
 		$grid->column("Descripci&oacute;n"          ,"nom_grup"                      ,"align='left'");
-		$grid->column("Comisi&oacute;n"             ,"<blanco><#comision#></blanco>" ,"align='right'");
-		$grid->column("M.de Venta"             ,"<blanco><#margen#></blanco>" ,"align='right'");
-		$grid->column("M.de Compra"             ,"<blanco><#margenc#></blanco>" ,"align='right'");
+		//$grid->column("Comisi&oacute;n"             ,"<blanco><#comision#></blanco>" ,"align='right'");
+		//$grid->column("M.de Venta"             ,"<blanco><#margen#></blanco>" ,"align='right'");
+		//$grid->column("M.de Compra"             ,"<blanco><#margenc#></blanco>" ,"align='right'");
 		$grid->column("Departamento"                ,"depto"                         ,"align='left'");
 		$grid->column("Linea"                       ,"linea"                         ,"align='left'");
-		$grid->column("Cuenta Inventario"           ,"cu_inve"                       ,"align='center'");
-		$grid->column("Cuenta Costo"                ,"cu_cost"                       ,"align='center'");
-		$grid->column("Cuenta Venta"                ,"cu_venta"                      ,"align='center'");
-		$grid->column("Cuenta Devoluci&oacute;n"    ,"cu_devo"                       ,"align='center'");
-		$grid->column("Duplicar"                    ,$uri_2                          ,"align='center'");
+		//$grid->column("Cuenta Inventario"           ,"cu_inve"                       ,"align='center'");
+		//$grid->column("Cuenta Costo"                ,"cu_cost"                       ,"align='center'");
+		//$grid->column("Cuenta Venta"                ,"cu_venta"                      ,"align='center'");
+		//$grid->column("Cuenta Devoluci&oacute;n"    ,"cu_devo"                       ,"align='center'");
+		$grid->column("Acciones"                    ,$uri_2                          ,"align='center'");
 
 		$grid->add("inventario/grup/dataedit/create");
 		$grid->build();
+		
 
-		$data['content'] = $filter->output.$grid->output;
+		$data['content'] = $grid->output;
+		$data['filtro']  = $filter->output;
 		$data['title']   = "<h1>Grupos de Inventario</h1>";
 		$data["head"]    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
@@ -119,7 +125,7 @@ class Grup extends validaciones {
 						}
 					});
 			}
-    	
+	
 			function get_linea(){
 				$.ajax({
 					type: "POST",

@@ -1114,6 +1114,56 @@ class sinv extends Controller {
 		}
 	}
 
+	function consulta(){  
+		$this->rapyd->load("datagrid");
+		$fields = $this->db->field_data('banc');
+		$url_pk = $this->uri->segment_array();
+		$coun=0; $pk=array();
+		foreach ($fields as $field){
+			if($field->primary_key==1){
+				$coun++;
+				$pk[]=$field->name;
+			}
+		}
+		$mCodigo = $this->datasis->dameval("SELECT codigo FROM sinv WHERE id=".$claves['id']."");
+		
+		$values=array_slice($url_pk,-$coun);
+		$claves=array_combine (array_reverse($pk) ,$values );
+
+		$grid = new DataGrid('Ultimas ventas');
+		$grid->db->select( array('a.fecha', 'a.tipo_op','a.numero','CONCAT(a.concepto," ",a.concep2) concepto', 'a.monto') );
+		$grid->db->from('bmov a');
+		$grid->db->where('a.codbanc', $claves['codbanc'] );
+		$grid->db->where('a.fecha > SUBDATE(curdate(),30)' );
+		$grid->db->orderby('fecha DESC');
+		$grid->db->limit(6);
+			
+		$grid->column("Fecha"   ,"fecha" );
+		$grid->column("Tipo"   ,"Tipo_op" );
+		$grid->column("Numero" ,"numero");
+		$grid->column("Concepto"   ,"concepto" );
+		//$grid->column("Nombre"  ,"nombre");
+		$grid->column("Monto"   ,"<nformat><#monto#></nformat>",'align="RIGHT"');
+		$grid->build();
+
+		$descrip = $this->datasis->dameval("SELECT descrip FROM sinv WHERE id=".$claves['codbanc']." ");
+		$data['content'] = "
+		<table width='100%'>
+			<tr>
+				<td valign='top'>
+					<div style='border: 2px outset #EFEFEF;background: #EFEFFF '>".
+					$grid->output."
+					</div>".
+				"</td>
+			</tr>
+		</table>";
+		$data["head"]     = script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
+		$data['title']    = '<h1>Consulta de Banco</h1>';
+		$data["subtitle"] = "<div align='center' style='border: 2px outset #EFEFEF;background: #EFEFEF '><a href='javascript:javascript:history.go(-1)'>(".$claves['codbanc'].") ".$mCodigo." ".$descrip."</a></div>";
+		$this->load->view('view_ventanas', $data);
+		
+	}
+
 	function instalar(){
 		$mSQL='ALTER TABLE `sinv` DROP PRIMARY KEY';
 		$this->db->simple_query($mSQL);
