@@ -43,7 +43,7 @@ $(function(){
 </div>
 <?php if(isset($smenu)) echo '<div id="smenu">'.$smenu.'</div>'; ?>
 <div id='contenido'>
-	<table width="95%" border=0 align="center">
+	<table width="100%" border=0 align="center">
 		<?php if (isset($filtro)) { ?>
 		<tr>
 			<td colspan='2'>

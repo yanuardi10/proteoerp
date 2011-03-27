@@ -1,23 +1,24 @@
-<?php
-//asientos
-class Casi extends Controller {
-	
+<?php //require_once(BASEPATH.'application/controllers/validaciones.php');
+class casi extends Controller {
 	var $qformato;
-	
+	var $chrepetidos=array();
+
 	function casi(){
 		parent::Controller();
-		$this->load->library("rapyd");
-		define ("THISFILE",   APPPATH."controllers/contabilidad/". $this->uri->segment(2).EXT);
+		$this->load->library('rapyd');
 	}
-	
-	function index() {		
+
+	function index() {
+		redirect('contabilidad/casi/filteredgrid');
+	}
+
+	function filteredgrid(){
 		$this->rapyd->load("datagrid","datafilter");
-		$this->datasis->modulo_id(607,1);
-		
+
 		$filter = new DataFilter("Filtro de Asientos");
 		$filter->db->select=array("comprob","fecha","descrip","origen","debe","haber","total");
 		$filter->db->from('casi');
-		
+
 		$filter->fechad = new dateonlyField("Desde", "fechad",'d/m/Y');
 		$filter->fechah = new dateonlyField("Hasta", "fechah",'d/m/Y');
 		$filter->fechad->clause  =$filter->fechah->clause="where";
@@ -27,62 +28,57 @@ class Casi extends Controller {
 		$filter->fechah->size=$filter->fechad->size=10;
 		$filter->fechad->operator=">="; 
 		$filter->fechah->operator="<=";
-		
+
 		$filter->comprob = new inputField("N&uacute;mero"     , "comprob");
-		
+		$filter->comprob->size=15;
+
 		$filter->descrip = new inputField("Descripci&oacute;n", "descrip");
 		$filter->descrip->db_name="descrip"; 
-		
+
 		$filter->origen = new dropdownField("Or&iacute;gen", "origen");  
 		$filter->origen->option("","Todos");
 		$filter->origen->options("SELECT modulo, modulo valor FROM reglascont GROUP BY modulo");
-		
+
 		$filter->status = new dropdownField("Status", "status");  
 		$filter->status->option("","Todos");
 		$filter->status->option("A","Actualizado");
 		$filter->status->option("D","Diferido");
-		
+
 		$filter->vdes = new checkboxField("Ver solo asientos descuadrados","vdes",'S','N');
 		$filter->vdes->insertValue='N';
 		$filter->vdes->clause='';
-		
+
 		$filter->buttons("reset","search");
 		$filter->build();
-		
+
 		$uri = anchor('contabilidad/casi/dataedit/show/<#comprob#>','<#comprob#>');
-    
+
 		$grid = new DataGrid();
 		$vdes = $this->input->post('vdes');
-		if($vdes)
-		$grid->db->where('(debe-haber) <>',0);
+		if($vdes) $grid->db->where('(debe-haber) <>',0);
 		$grid->order_by("comprob","asc");
 		$grid->per_page = 15;
-		$grid->column("N&uacute;mero",$uri);
-		$grid->column("Fecha","<dbdate_to_human><#fecha#></dbdate_to_human>","align='center'");
-		$grid->column("Descripci&oacute;n","descrip");
-		$grid->column("Or&iacute;gen"  ,"origen"  ,"align='center'");
-		$grid->column("Debe"  ,"debe"  ,"align='right'");
-		$grid->column("Haber" ,"haber" ,"align='right'");
-		$grid->column("Total" ,"total" ,"align='right'");
-		
+		$grid->column_orderby("N&uacute;mero",$uri,'comprob');
+		$grid->column_orderby("Fecha","<dbdate_to_human><#fecha#></dbdate_to_human>",'fecha',"align='center'");
+		$grid->column_orderby("Descripci&oacute;n","descrip",'descrip');
+		$grid->column_orderby("Or&iacute;gen"  ,"origen"  ,'origen',"align='center'");
+		$grid->column_orderby("Debe"  ,"debe"  ,'debe',"align='right'");
+		$grid->column_orderby("Haber" ,"haber" ,'haber',"align='right'");
+		$grid->column_orderby("Total" ,"total" ,'total',"align='right'");
+
 		$grid->add("contabilidad/casi/dataedit/create");
 		$grid->build();
-		//echo $grid->db->last_query();
-		
+
 		$data['content'] =$filter->output.$grid->output;
 		$data["head"]    = $this->rapyd->get_head();
-		$data['title']   ='<h1>Asientos</h1>';
+		$data['title']   =heading('Asientos');
 		$this->load->view('view_ventanas', $data);
 	}
-	
+
 	function dataedit(){
- 		$this->rapyd->load("dataedit","datadetalle");
- 		
- 		//$formato=$this->datasis->dameval('SELECT formato FROM cemp LIMIT 0,1');
- 		//$qformato='%';
- 		//for($i=1;$i<substr_count($formato, '.')+1;$i++) $qformato.='.%';
- 		//$this->qformato=$qformato;
- 		$this->qformato=$qformato=$this->datasis->formato_cpla();
+		$this->rapyd->load('dataobject','datadetails');
+		
+		$this->qformato=$qformato=$this->datasis->formato_cpla();
  		
  		$modbus=array(
 			'tabla'   =>'cpla',
@@ -90,237 +86,284 @@ class Casi extends Controller {
 				'codigo' =>'C&oacute;digo',
 				'descrip'=>'Descripci&oacute;n'),
 			'filtro'  =>array('codigo'=>'C&oacute;digo','descrip'=>'Descripci&oacute;n'),
-			'retornar'=>array('codigo'=>'cuenta<#i#>','descrip'=>'concepto<#i#>','departa'=>'ccosto<#i#>'),
+			'retornar'=>array(
+				'codigo' =>'cuenta_<#i#>',
+ 				'departa'=>'ccosto<#i#>',
+				'descrip'=>'concepto_<#i#>',
+				'departa'=>'cpladeparta_<#i#>',
+				'ccosto' =>'cplaccosto_<#i#>'
+ 			),
 			'titulo'  =>'Buscar Cuenta',
 			'p_uri'=>array(4=>'<#i#>'),
 			'where'=>"codigo LIKE \"$qformato\"",
-			'script'=>array('departa(<#i#>)')
+			'script'=>array('post_modbus(<#i#>)')
 			);
- 		 			
+		$btn=$this->datasis->p_modbus($modbus,'<#i#>');
+
  		$uri="/contabilidad/casi/dpto/";
 
-		//Script necesario para totalizar los detalles
- 		$script='
- 		function totalizar(){
- 			monto=debe=haber=0;
- 			amonto=$$(\'input[id^="monto"]\');
-			for(var i=0; i<amonto.length; i++) {
-    		valor=parseFloat(amonto[i].value);
-    		if (isNaN(valor))
-					valor=0.0;
-				if (valor>0)
-    			haber=haber+valor;
-    		else{
-    			valor=valor*(-1);
-    			debe=debe+valor;
-    		}
-				$("haber").value=haber;
-    		$("debe").value=debe;
-				$("total").value=haber-debe;
-			}
-		}
-		function departa(i){
-			ccosto=$F(\'ccosto\'+i.toString())
-			if (ccosto==\'S\'){
-				departamen=window.open("'.$uri.'/"+i.toString(),"buscardeparta","width=500,height=200,scrollbars=Yes,status=Yes,resizable=Yes,screenx=5,screeny=5,top="+ ((screen.height - 200) / 2) + ",left=" + ((screen.width - 500) / 2)); 
-				departamen.focus();
-			}
-		}
-		';
- 		
-		$edit = new DataEdit("Asientos","casi");
-		
-		$edit->_dataobject->db->set('transac', 'MANUAL');
-		$edit->_dataobject->db->set('origen' , 'MANUAL');
-		$edit->_dataobject->db->set('usuario', $this->session->userdata('usuario'));
-		$edit->_dataobject->db->set('hora'   , 'CURRENT_TIME()', FALSE);
-		$edit->_dataobject->db->set('estampa', 'NOW()', FALSE);
-		
-		$edit->post_process("insert","_guarda_detalle");
-		$edit->post_process("update","_actualiza_detalle");
-		$edit->post_process("delete","_borra_detalle");
-		$edit->pre_process('delete','_pre_del');
-		
-		$edit->back_url = site_url("contabilidad/casi/index");
-		
-		$edit->fecha = new DateonlyField("Fecha", "fecha","d/m/Y");
-		$edit->fecha->insertValue = date("Y-m-d");
+		$do = new DataObject('casi');
+		$do->rel_one_to_many('itcasi', 'itcasi', 'comprob');
+		$do->rel_pointer('itcasi','cpla','itcasi.cuenta=cpla.codigo','cpla.ccosto AS cplaccosto,cpla.departa AS cpladeparta');
+
+		$edit = new DataDetails('Asientos', $do);
+		$edit->back_url = site_url('contabilidad/casi/filteredgrid');
+		$edit->set_rel_title('itcasi','cuenta contables');
+
+		$edit->pre_process('insert' ,'_pre_insert');
+		$edit->pre_process('update' ,'_pre_update');
+		$edit->post_process('insert','_post_insert');
+		$edit->post_process('delete','_post_delete');
+
+		$edit->fecha = new DateonlyField('Fecha', 'fecha','d/m/Y');
+		$edit->fecha->insertValue = date('Y-m-d');
+		$edit->fecha->rule = 'required';
+		$edit->fecha->mode = 'autohide';
 		$edit->fecha->size = 10;
-		
-		$edit->comprob = new inputField("N&uacute;mero", "comprob");
-		$edit->comprob->size = 10;
-		$edit->comprob->rule= "required";
-		$edit->comprob->mode="autohide";
-		$edit->comprob->maxlength=8;
-		
-		$edit->descrip  = new inputField("Descripci&oacute;n", "descrip");
-		$edit->descrip->maxlength=60;
-		
-		$edit->debe  = new inputField2("Debe", "debe");
-		$edit->debe->size = 30;
-		$edit->debe->css_class='inputnum';
-		$edit->debe->readonly=TRUE;
-		
-		$edit->haber = new inputField2("Haber", "haber");
-		$edit->haber->size = 30;
-		$edit->haber->css_class='inputnum';
-		$edit->haber->readonly=TRUE;
-		
-		$edit->total = new inputField("Saldo", "total");
-		$edit->total->size = 25;
-		$edit->total->css_class='inputnum';
-		$edit->total->readonly=TRUE;
 
-		$edit->status = new dropdownField("Status", "status");
-		$edit->status->style="width:110px";
-		$edit->status->option("A","Actualizado");
-		$edit->status->option("D","Diferido");
-		
-		$comprob=$edit->_dataobject->get('comprob');
-		
-		$detalle = new DataDetalle($edit->_status);
-		
-			//Campos para el detalle
-			$detalle->db->select('cuenta,referen,concepto,ccosto, debe-haber AS monto');
-			$detalle->db->from('itcasi');
-			$detalle->db->where('comprob',$comprob);
-			
-			$detalle->cuenta = new inputField2("Cuenta", "cuenta<#i#>");
-			$detalle->cuenta->size=11;
-			$detalle->cuenta->db_name='cuenta';
-			$detalle->cuenta->append($this->datasis->p_modbus($modbus,'<#i#>'));
-			$detalle->cuenta->readonly=TRUE;
-			
-			$detalle->referencia = new inputField("Referencia", "referen<#i#>");
-			$detalle->referencia->size=15;
-			$detalle->referencia->db_name='referen';
-			$detalle->referencia->maxlength=12;
-			
-			$detalle->concepto = new inputField("Concepto", "concepto<#i#>");
-			$detalle->concepto->size=30;
-			$detalle->concepto->db_name='concepto';
-			$detalle->concepto->maxlength=60;
-			
-			$detalle->monto = new inputField("Monto", "monto<#i#>");
-			$detalle->monto->css_class='inputnum';
-			$detalle->monto->onchange='totalizar()';
-			$detalle->monto->size=20;
-			$detalle->monto->db_name='monto';
-			
-			$detalle->departa = new inputField2("Centro Costo", "ccosto<#i#>");
-			$detalle->departa->type='hidden';
-			$detalle->departa->db_name='ccosto';
-			$detalle->departa->onchange='departa(<#i#>)';
-    	
-			//fin de campos para detalle
-			
-			$detalle->onDelete('totalizar()');
-			$detalle->onAdd('totalizar()');
-			$detalle->script($script);
-			$detalle->style="width:110px";
-			
-			//Columnas del detalle
-			$detalle->column("Cuenta"    ,"<#cuenta#>");
-			$detalle->column("Referencia","<#referencia#>");
-			$detalle->column("Concepto"  ,"<#concepto#>");
-			$detalle->column("Monto"     ,"<#monto#><#departa#>",'align=right');
-			$detalle->build();
-		
-		$edit->detalle=new freeField("detalle", 'detalle',$detalle->output);
+		$edit->comprob = new inputField('N&uacute;mero', 'comprob');
+		$edit->comprob->size     = 12;
+		$edit->comprob->maxlength= 8;
+		$edit->comprob->rule     ='required';
+		$edit->comprob->apply_rules=false; //necesario cuando el campo es clave y no se pide al usuario
+		$edit->comprob->when=array('show','modify');
+		$edit->comprob->mode='autohide';
 
-		$edit->buttons("save", "undo","back");
+		$edit->descrip = new inputField('Descripci&oacute;n', 'descrip');
+		$edit->descrip->size      = 40;
+		$edit->descrip->maxlength = 60;
+
+		$edit->status = new  dropdownField ('Status', 'status');
+		$edit->status->option('A','Actualizado');
+		$edit->status->option('D','Diferido');
+		$edit->status->style='width:110px;';
+		$edit->status->size = 5;
+
+		//**************************
+		//  Campos para el detalle
+		//**************************
+		$edit->cuenta = new inputField('Cuenta <#o#>', 'cuenta_<#i#>');
+		$edit->cuenta->size     = 8;
+		$edit->cuenta->db_name  = 'cuenta';
+		$edit->cuenta->readonly = true;
+		$edit->cuenta->rel_id   = 'itcasi';
+		$edit->cuenta->rule     = 'required|callback_chrepetidos';
+		$edit->cuenta->append($btn);
+
+		$edit->referen = new inputField('Referencia <#o#>', 'referen_<#i#>');
+		$edit->referen->size      = 12;
+		$edit->referen->db_name   = 'referen';
+		$edit->referen->maxlength = 12;
+		$edit->referen->rel_id    = 'itcasi';
+
+		$edit->concepto = new inputField('Concepto <#o#>', 'concepto_<#i#>');
+		$edit->concepto->size      = 24;
+		$edit->concepto->db_name   = 'concepto';
+		$edit->concepto->maxlength = 50;
+		$edit->concepto->readonly  = true;
+		$edit->concepto->rel_id    = 'itcasi';
+
+		$edit->itdebe = new inputField('Debe <#o#>', 'itdebe_<#i#>');
+		$edit->itdebe->db_name      = 'debe';
+		$edit->itdebe->css_class    = 'inputnum';
+		$edit->itdebe->rel_id       = 'itcasi';
+		$edit->itdebe->maxlength    = 10;
+		$edit->itdebe->size         = 5;
+		$edit->itdebe->rule         = 'required|positive';
+		$edit->itdebe->autocomplete = false;
+		$edit->itdebe->onkeyup      = 'validaDebe(<#i#>)';
+
+		$edit->ithaber = new inputField('Haber <#o#>', 'ithaber_<#i#>');
+		$edit->ithaber->db_name      = 'haber';
+		$edit->ithaber->css_class    = 'inputnum';
+		$edit->ithaber->rel_id       = 'itcasi';
+		$edit->ithaber->maxlength    = 10;
+		$edit->ithaber->size         = 5;
+		$edit->ithaber->rule         = 'required|positive';
+		$edit->ithaber->autocomplete = false;
+		$edit->ithaber->onkeyup      = 'validaHaber(<#i#>)';
+
+		$edit->itccosto = new dropdownField('Centro de costo', 'itccosto_<#i#>');
+		$edit->itccosto->option('','Ninguno');
+		$edit->itccosto->options("SELECT depto,descrip FROM dpto WHERE tipo='G' ORDER BY descrip");
+		$edit->itccosto->db_name   = 'ccosto';
+		$edit->itccosto->rel_id    = 'itcasi';
+		$edit->itccosto->rule      = 'condi_required|callback_chdepaccosto[<#i#>]';
+		$edit->itccosto->style     = 'width:110px;';
+
+		$edit->itsucursal =  new dropdownField('Sucursal', 'itsucursal_<#i#>');
+		$edit->itsucursal->option('','Ninguno');
+		$edit->itsucursal->options("SELECT codigo,CONCAT(codigo,'-', sucursal) AS sucursal FROM sucu ORDER BY codigo");
+		$edit->itsucursal->db_name   = 'sucursal';
+		$edit->itsucursal->rel_id    = 'itcasi';
+		$edit->itsucursal->rule      = 'condi_required|callback_chdepaccosto[<#i#>]';
+		$edit->itsucursal->style     = 'width:100px';
+
+		$edit->cplaccosto = new hiddenField('', 'cplaccosto_<#i#>');
+		$edit->cplaccosto->db_name   = 'cplaccosto';
+		$edit->cplaccosto->rel_id    = 'itcasi';
+		$edit->cplaccosto->pointer   = true;
+
+		$edit->cpladeparta = new hiddenField('', 'cpladeparta_<#i#>');
+		$edit->cpladeparta->db_name   = 'cpladeparta';
+		$edit->cpladeparta->rel_id    = 'itcasi';
+		$edit->cpladeparta->pointer   = true;
+		//**************************
+		//fin de campos para detalle
+		//**************************
+
+		$edit->debe = new inputField('Debe', 'debe');
+		$edit->debe->css_class ='inputnum';
+		$edit->debe->readonly  =true;
+		$edit->debe->size      = 10;
+
+		$edit->haber = new inputField('Haber', 'haber');
+		$edit->haber->css_class ='inputnum';
+		$edit->haber->readonly  =true;
+		$edit->haber->size      = 10;
+
+		$edit->total = new inputField('Saldo', 'total');
+		$edit->total->css_class ='inputnum';
+		$edit->total->readonly  =true;
+		$edit->total->size      = 10;
+
+		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
+		$edit->origen = new autoUpdateField('origen'  ,'MANUAL','MANUAL');
+
+		$edit->buttons('save', 'undo', 'delete','modify', 'back','add_rel');
 		$edit->build();
-		
-		$conten["form"]  =&  $edit;
-		$data['content'] = $this->load->view('view_asiento', $conten,true); 
-		$data["head"]    = script("tabber.js").script("prototype.js").$this->rapyd->get_head().script("scriptaculous.js").script("effects.js");
-		$data['title']   = '<h1>Asientos Contables</h1>';
+
+		$conten['form']  =&  $edit;
+		$data['content'] = $this->load->view('view_casi', $conten,true);
+		$data['title']   = heading('Asientos Contables');
+		$data['head']    = script('jquery.js').script('jquery-ui.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css').$this->rapyd->get_head().phpscript('nformat.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js').phpscript('nformat.js');
 		$this->load->view('view_ventanas', $data);
 	}
 	
-	function dpto() {		
-		$this->rapyd->load("dataform");
-		$campo='ccosto'.$this->uri->segment(4);
- 		$script='
- 		function pasar(){
-			if($F("departa")!="-!-"){
-				window.opener.document.getElementById("'.$campo.'").value = $F("departa");
-				window.close();
-			}else{
-				alert("Debe elegir un departamento");
-			}
-		}';
-		
-		$form = new DataForm('');
-		$form->script($script);
-		$form->fdepar = new dropdownField("Departamento", "departa");
-		$form->fdepar->option('-!-','Seleccion un departamento');
-		$form->fdepar->options("SELECT depto,descrip FROM dpto WHERE tipo='G' ORDER BY descrip");
-		$form->fdepar->onchange='pasar()';
-		$form->build_form();
-		
-		$data['content'] =$form->output;
-		$data["head"]    =script('prototype.js').$this->rapyd->get_head();
-		$data['title']   ='<h1>Seleccione un departamento</h1>';
-		$this->load->view('view_detalle', $data);
-	}
-	
-	function _guarda_detalle($do) {
-		$cant=$this->input->post('cant_0');
-		$i=$o=0;
-		while($o<$cant){
-			if (isset($_POST["cuenta$i"])){
-				if($this->input->post("cuenta$i")){
-					$ccosto=$this->input->post("ccosto$i");
-					if ($ccosto!='N')
-						$ccosto="'$ccosto'";
-					else
-						$ccosto="NULL";
-						
-					$sql = "INSERT INTO itcasi (fecha,comprob,cuenta,referen,concepto,debe,haber,origen,ccosto) VALUES(?,?,?,?,?,?,?,'MANUAL',$ccosto)";
-					$debe =($this->input->post("monto$i") > 0)? $this->input->post("monto$i") : 0;
-					$haber=($this->input->post("monto$i") < 0)? $this->input->post("monto$i")*(-1) : 0;
-					$llena=array(
-							0=>$do->get('fecha'),
-							1=>$do->get('comprob'),
-							2=>$this->input->post("cuenta$i"),
-							3=>$this->input->post("referen$i"),
-							4=>$this->input->post("concepto$i"),
-							5=>$debe,
-							6=>$haber);
-					$this->db->query($sql,$llena);
-				}
-				$o++;
-			}
-			$i++;
+	function chrepetidos($cod){
+		if(array_search($cod, $this->chrepetidos)===false){
+			$this->chrepetidos[]=$cod;
+			return true;
+		}else{
+			$this->validation->set_message('chrepetidos', 'El art&iacute;culo '.$cod.' esta repetido');
+			return false;
 		}
-	}
-	
-	function _actualiza_detalle($do){
-		$this->_borra_detalle($do);
-		$this->_guarda_detalle($do);
-	}
-	
-	function _borra_detalle($do){
-		$comprob=$do->get('comprob');
-		$sql = "DELETE FROM itcasi WHERE comprob='$comprob'";
-		$this->db->query($sql);
 	}
 
-	function _pre_del($do) {
-		$codigo=$do->get('comprob');
-		$chek =   $this->datasis->dameval("SELECT COUNT(*) FROM cpla WHERE codigo LIKE '$codigo.%'");
-		$chek +=  $this->datasis->dameval("SELECT COUNT(*) FROM itcasi WHERE cuenta='$codigo'");
-		
-		if ($chek > 0){
-			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='Plan de Cuenta tiene derivados o movimientos';
-			return False;
+	function chdepaccosto($val,$ind){;
+		$codigo   = $this->input->post('cuenta_'.$ind);
+		$dbcodigo = $this->db->escape($codigo);
+		$departa  = $this->datasis->dameval('SELECT departa FROM cpla WHERE codigo='.$dbcodigo);
+		if($departa=='S' && empty($val)){
+			$this->validation->set_message('chdepaccosto', 'El campo %s es requerido para la cuenta contable '.$codigo);
+			return false;
 		}
-		return True;
+		return true;
 	}
-	function instalar(){
-		$mSQL='ALTER TABLE itcasi ADD id INT AUTO_INCREMENT PRIMARY KEY';
-                $this->db->simple_query($mSQL);
+
+	function _pre_insert($do){
+		$cana=$do->count_rel('itcasi');
+		$monto=$debe=$haber=0;
+		//Hasta aca en costo trae el valor del ultimo de sinv, se opera para cambiarlo a:
+		//costo=costo*(entrada o salida segun se el caso)
+		for($i=0;$i<$cana;$i++){ $o=$i+1;
+			$adebe=$do->get_rel('itcasi','debe',$i);
+			$ahaber=$do->get_rel('itcasi','haber' ,$i);
+			if ($adebe!=0 && $ahaber!=0){
+				$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='No puede tener debe y haber en el asiento '.$o;
+				return false;	
+			}
+			if ($adebe==0 && $ahaber==0){
+				$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='Debe tener debe o haber en el asiento '.$o;
+				return false;	
+			}
+			if($adebe != 0){
+				$debe+=$adebe;
+			}
+			if($ahaber != 0){
+				$haber+=$ahaber;
+			}
+		}
+		if ($debe == 0){
+			$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='Debe ingresar al menos un monto en la columna de debe.';
+			return false;	
+		}
+		if ($haber == 0){
+			$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='Debe ingresar al menos un monto en la columna de haber.';
+			return false;	
+		}
+		if($debe-$haber != 0){ $do->set('status' ,'D'); }
+
+		$comprob=$this->datasis->fprox_numero('ncasi');
+		$transac=$this->datasis->fprox_numero('ntransa');
+		$usuario=$do->get('usuario');
+		$estampa=date('Ymd');
+		$hora   =date('H:i:s');
+
+		$do->set('debe' ,$debe);
+		$do->set('haber',$haber);
+		$do->set('total',$debe-$haber);
+		$do->set('comprob',$comprob);
+		$do->set('estampa',$estampa);
+		$do->set('hora'   ,$hora);
+		$do->set('transac',$transac);
+
+		return true;
+	}
+
+	function _pre_update($do){
+		$cana=$do->count_rel('itcasi');
+		$monto=$debe=$haber=0;
+
+		for($i=0;$i<$cana;$i++){ $o=$i+1;
+			$adebe=$do->get_rel('itcasi','debe',$i);
+			$ahaber=$do->get_rel('itcasi','haber' ,$i);
+			if ($adebe!=0 && $ahaber!=0){
+				$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='No puede tener debe y haber en el asiento '.$o;
+				return false;	
+			}
+			if ($adebe==0 && $ahaber==0){
+				$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='Debe tener debe o haber en el asiento '.$o;
+				return false;	
+			}
+			if($adebe != 0){
+				$debe+=$adebe;
+			}
+			if($ahaber != 0){
+				$haber+=$ahaber;
+			}
+		}
+		if ($debe == 0){
+			$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='Debe ingresar al menos un monto en la columna de debe.';
+			return false;	
+		}
+		if ($haber == 0){
+			$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='Debe ingresar al menos un monto en la columna de haber.';
+			return false;	
+		}
+		if($debe-$haber != 0){ $do->set('status' ,'D'); }
+
+		$do->set('debe' ,$debe);
+		$do->set('haber',$haber);
+		$do->set('total',$debe-$haber);
+
+		return true;
+	}
+
+	function _post_update($do){
+		//trafrac ittrafrac
+		$codigo=$do->get('comprob');
+		logusu('casi',"Asiento $codigo MODIFICADO");
+	}
+
+	function _post_insert($do){
+		//trafrac ittrafrac
+		$codigo=$do->get('comprob');
+		logusu('casi',"Asiento $codigo CREADO");
+	}
+
+	function _post_delete($do){
+		$codigo=$do->get('comprob');
+		logusu('casi',"Asiento $codigo ELIMINADO");
 	}
 }
-?>

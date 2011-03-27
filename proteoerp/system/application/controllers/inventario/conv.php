@@ -96,8 +96,8 @@ class conv extends Controller {
 
 		$edit->pre_process('insert' ,'_pre_insert');
 		$edit->pre_process('update' ,'_pre_update');
+		$edit->pre_process('delete','_pre_delete');
 		$edit->post_process('insert','_post_insert');
-		$edit->post_process('delete','_post_delete');
 
 		$edit->fecha = new DateonlyField('Fecha', 'fecha','d/m/Y');
 		$edit->fecha->insertValue = date('Y-m-d');
@@ -169,7 +169,7 @@ class conv extends Controller {
 
 		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
 
-		$edit->buttons('save', 'undo', 'delete', 'back','add_rel');
+		$edit->buttons('save', 'undo', 'back','add_rel');
 		$edit->build();
 
 		$conten['form']  =&  $edit;
@@ -266,9 +266,8 @@ class conv extends Controller {
 		logusu('conv',"Conversion $codigo CREADO");
 	}
 
-	function _post_delete($do){
-		$codigo=$do->get('numero');
-		logusu('conv',"Conversion $codigo ELIMINADO");
+	function _pre_delete($do){
+		return false;
 	}
 
 	function instalar(){
