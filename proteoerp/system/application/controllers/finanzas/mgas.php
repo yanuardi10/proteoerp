@@ -10,7 +10,7 @@ class Mgas extends validaciones {
 	}
 
 	function index(){
-		$this->datasis->modulo_id(511,1);
+		$this->datasis->modulo_id(501,1);
 		redirect("finanzas/mgas/filteredgrid");
 	}
 
@@ -322,6 +322,7 @@ class Mgas extends validaciones {
 		$grid->db->from('gitser a');
 		$grid->db->join('sprv b','a.proveed=b.proveed');
 		$grid->db->where('a.codigo', $claves['codigo'] );
+		$grid->db->where('a.fecha', "curdate()-365" );
 		$grid->db->orderby('fecha DESC');
 		$grid->db->limit(6);
 			
@@ -360,14 +361,32 @@ class Mgas extends validaciones {
 		
 		$grid2->build();
 
-		$data['content'] = "<table width='100%'><tr><td valign='top' style='background:#DFDFEF'>".
-				$grid1->output.
-				"</td><td valign='top' style='background:#DFEFDF'>".
-				$grid2->output."</td></tr><tr><td colspan='2'  style='background:#FFFDE9'>".
-				$grid->output."</td></tr></table>";
-		$data["head"]    = script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
-		$data['title']   = '<h1>Consultas</h1>';
-
+		$descrip = $this->datasis->dameval("SELECT descrip FROM mgas WHERE codigo='".$claves['codigo']."'");
+		$data['content'] = "
+		<table width='100%'>
+			<tr>
+				<td valign='top'>
+					<div style='border: 2px outset #EFEFEF;background: #EFEFFF '>".
+					$grid1->output."
+					</div>".
+				"</td>
+				<td valign='top'>
+					<div style='border: 2px outset #EFEFEF;background: #EFFFEF '>".
+					$grid2->output."
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<td colspan='2'>
+					<div style='border: 2px outset #EFEFEF;background: #FFFDE9 '>".
+					$grid->output."
+					</div>
+				</td>
+			</tr>
+		</table>";
+		$data["head"]     = script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
+		$data['title']    = '<h1>Consulta de Maestro de Gasto</h1>';
+		$data["subtitle"] = "<div align='center' style='border: 2px outset #EFEFEF;background: #EFEFEF '><a href='javascript:javascript:history.go(-1)'>(".$claves['codigo'].") ".$descrip."</a></div>";
 		$this->load->view('view_ventanas', $data);
 		
 	}
