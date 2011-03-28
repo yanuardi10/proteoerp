@@ -15,6 +15,7 @@ class Mantenimiento extends Controller{
 		$list[]=anchor('supervisor/mantenimiento/centinelas','Centinelas');
 		$list[]=anchor('supervisor/mantenimiento/reparatabla','Reparar Tablas');
 		$list[]=anchor('supervisor/mantenimiento/clinconsis','Incosistencias Clientes');
+		$list[]=anchor('supervisor/mantenimiento/calcosto','Recalcula Inventario');
 		$list[]=anchor('supervisor/repodupli/','Reportes Duplicado');
 		$list[]=anchor('supervisor/mantenimiento/contadores','Cambios en contadores').'Advertencia: uselo solo si sabe lo que esta haciendo';
 		$list[]=anchor('supervisor/mantenimiento/tablas','Mantenimiento de Tablas');
@@ -745,4 +746,12 @@ class Mantenimiento extends Controller{
 		GROUP BY aa.tipoa,aa.numa";
 		echo $mSQL;
 	}
+	
+
+	function calcosto(){
+		$this->db->simple_query("CALL sp_calcopasa()");
+		$this->db->simple_query("CALL sp_calcoinv()");
+	}
+
+	
 }
