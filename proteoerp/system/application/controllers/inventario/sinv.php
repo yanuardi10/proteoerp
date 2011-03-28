@@ -1164,10 +1164,10 @@ class sinv extends Controller {
 			</tr>
 			<tr>
 				<td valign='top'>
-				".open_flash_chart_object( 400,300, site_url("inventario/sinv/ventas/$mCodigo"))."
+				".open_flash_chart_object( 300,200, site_url("inventario/sinv/ventas/$mCodigo"))."
 				</td>
 				<td valign='top'>
-				".open_flash_chart_object( 400,300, site_url("inventario/sinv/compras/$mCodigo"))."
+				".open_flash_chart_object( 300,200, site_url("inventario/sinv/compras/$mCodigo"))."
 				</td>
 			</tr>
 			
@@ -1292,7 +1292,6 @@ class sinv extends Controller {
 		$g->bg_colour='#FFFFFF';                                                                 
 		echo utf8_encode($g->render());
 	}
-
 
 	function instalar(){
 		$mSQL='ALTER TABLE `sinv` DROP PRIMARY KEY';
