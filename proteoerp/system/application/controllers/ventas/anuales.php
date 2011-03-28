@@ -57,7 +57,7 @@ class Anuales extends Controller {
 		$grid->column("Cant. Fact" , "numfac"   ,'align=right');
 		$grid->build();
 				
-    $data['content'] = open_flash_chart_object(680,300, site_url("ventas/anuales/grafico/$anio"));
+		$data['content'] = open_flash_chart_object(680,300, site_url("ventas/anuales/grafico/$anio"));
 		$data['content'] .= $filter->output.$grid->output;
 		$data['title'] = $this->rapyd->get_head()."<h1>Ventas Anuales</h1>";
 		//$data['script']='<script type="text/javascript">
@@ -78,7 +78,8 @@ class Anuales extends Controller {
 		$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
- function grafico($anio=''){
+
+	function grafico($anio=''){
 		if (empty($anio)) return; 
 		$this->load->library('Graph');
 		$titulo=$data_1=$data_2=$data_3=$data_tips_1=$data_tips_2=$data_tips_3=array();
@@ -145,6 +146,7 @@ class Anuales extends Controller {
 		$g->bg_colour='#FFFFFF';
 		echo utf8_encode($g->render());
 	}
+
 	function _sincrodata($fechai,$fechaf){
 		$maxval=0;
 		
@@ -159,7 +161,7 @@ class Anuales extends Controller {
 		$mSQL_2="SELECT fecha, DATE_FORMAT(fecha,'%m') AS mes , SUM(monto) AS cobrado FROM sfpa 
 		WHERE tipo_doc<>'X' AND fecha>='$fechai' AND fecha<='$fechaf' AND tipo_doc='AB'
 		GROUP BY MONTH(fecha) ORDER BY fecha";
-	  //echo $mSQL_2;			
+		//echo $mSQL_2;			
 		$DB2 = $this->load->database('default', TRUE); 
 		
 		$query_1=$this->db->query($mSQL_1);

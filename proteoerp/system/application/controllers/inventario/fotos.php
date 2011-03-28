@@ -19,7 +19,7 @@ class Fotos extends Controller {
 	function filteredgrid(){
 		$this->rapyd->load("datafilter2","datagrid");
 		
-		rapydlib("prototype");
+		//rapydlib("prototype");
 		$ajax_onchange = '
 			  function get_linea(){
 			    var url = "'.site_url('reportes/sinvlineas').'";
@@ -47,7 +47,7 @@ class Fotos extends Controller {
 		$filter = new DataFilter2("Filtro por Producto");
 		
 		if ($this->input->post("fotos"))
-	    	$ddire='';
+		$ddire='';
 		else
 			$ddire='left';
 		
@@ -101,7 +101,7 @@ class Fotos extends Controller {
 		$filter->fotos->insertValue = "n";
 
 		$filter->buttons("reset","search");
-		$filter->build();
+		$filter->build('dataformfiltro');
 
 		$grid = new DataGrid("Lista de Art&iacute;culos");
 		$grid->order_by("a.codigo","asc");
@@ -118,9 +118,10 @@ class Fotos extends Controller {
 
 		$grid->build();
 		//echo $grid->db->last_query();
-		$data['content'] = $filter->output.$grid->output;
+		$data['content'] = $grid->output;
+		$data['filtro']  = $filter->output;
 		$data["head"]    = script("tabber.js").script("prototype.js").$this->rapyd->get_head().script("scriptaculous.js").script("effects.js");
-		$data['title']   = '<h1>Lista de Art&iacute;culos</h1>';
+		$data['title']   = '<h1>Lista de Art&iacute;culos para Fotos </h1>';
 		$this->load->view('view_ventanas', $data);
 		
 	}

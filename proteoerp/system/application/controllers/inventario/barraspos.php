@@ -95,14 +95,14 @@ class barraspos extends Controller {
 		$filter->depto = new dropdownField('Departamento','depto');
 		$filter->depto->db_name='b.depto';
 		$filter->depto->option("","Seleccione un Departamento");
-		$filter->depto->options("SELECT depto, descrip FROM dpto WHERE tipo='I' ORDER BY depto");
+		$filter->depto->options("SELECT depto, CONCAT(depto,' ',descrip) descrip FROM dpto WHERE tipo='I' ORDER BY depto");
 
 		$filter->linea2 = new dropdownField("L&iacute;nea","linea");
 		$filter->linea2->db_name="b.linea";
 		$filter->linea2->option("","Seleccione un Departamento primero");
 		$depto=$filter->getval('depto');
 		if($depto!==FALSE){
-			$filter->linea2->options("SELECT linea, descrip FROM line WHERE depto='$depto' ORDER BY descrip");
+			$filter->linea2->options("SELECT linea, CONCAT(linea,' ',descrip) descrip FROM line WHERE depto='$depto' ORDER BY descrip");
 		}else{
 			$filter->linea2->option("","Seleccione un Departamento primero");
 		}
@@ -124,7 +124,7 @@ class barraspos extends Controller {
 		$filter->marca->style='width:220px;';
 
 		$filter->buttons('reset','search');
-		$filter->build();
+		$filter->build('dataformfiltro');
 
 		$link=anchor('/inventario/barraspos/dataedit/show/<#codigo#>/<#suplemen#>','<#codigo#>');
 		$grid = new DataGrid('Lista de Productoss');
@@ -172,8 +172,9 @@ class barraspos extends Controller {
 		});
 		depto();linea();grupo();';
 
-		$data['content'] = $filter->output.$grid->output;
-		$data['title']   = '<h1>Adicionar codigo de barras</h1>';
+		$data['content'] = $grid->output;
+		$data['filtro']  = $filter->output;
+		$data['title']   = '<h1>Codigos de Baraas Adicionales</h1>';
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}

@@ -280,7 +280,7 @@ class Clientes extends Controller {
 		$grid->db->select($select);  
 		$grid->db->from("sfac");
 		$grid->db->where('tipo_doc<>','X');
-        $grid->db->where('fecha >= ', $fechai);  
+		$grid->db->where('fecha >= ', $fechai);  
 		$grid->db->where('fecha <= ',$fechaf);  
 		$grid->db->where('cod_cli',$cliente);   
 		$grid->db->groupby("fecha");

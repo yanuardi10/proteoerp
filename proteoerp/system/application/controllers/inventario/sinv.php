@@ -216,7 +216,7 @@ class sinv extends Controller {
 
 	function dataedit($status='',$id='' ) {
 		$this->rapyd->uri->keep_persistence();
-		$this->rapyd->load('dataedit2','dataobject');
+		$this->rapyd->load('dataedit','dataobject');
 
 		$link  =site_url('inventario/common/add_marc');
 		$link4 =site_url('inventario/common/get_marca');
@@ -415,7 +415,7 @@ class sinv extends Controller {
 			$do->set('codigo', '');
 		}
 
-		$edit = new DataEdit2("Maestro de Inventario", $do);
+		$edit = new DataEdit("Maestro de Inventario", $do);
 		$edit->pre_process('delete','_pre_del');
 
 		$edit->script($script,"create");
@@ -1115,8 +1115,10 @@ class sinv extends Controller {
 	}
 
 	function consulta(){  
+		//$this->load->library('Graph');
+		$this->load->helper('openflash');
 		$this->rapyd->load("datagrid");
-		$fields = $this->db->field_data('banc');
+		$fields = $this->db->field_data('sinv');
 		$url_pk = $this->uri->segment_array();
 		$coun=0; $pk=array();
 		foreach ($fields as $field){
@@ -1125,44 +1127,172 @@ class sinv extends Controller {
 				$pk[]=$field->name;
 			}
 		}
-		$mCodigo = $this->datasis->dameval("SELECT codigo FROM sinv WHERE id=".$claves['id']."");
-		
 		$values=array_slice($url_pk,-$coun);
 		$claves=array_combine (array_reverse($pk) ,$values );
 
-		$grid = new DataGrid('Ultimas ventas');
-		$grid->db->select( array('a.fecha', 'a.tipo_op','a.numero','CONCAT(a.concepto," ",a.concep2) concepto', 'a.monto') );
-		$grid->db->from('bmov a');
-		$grid->db->where('a.codbanc', $claves['codbanc'] );
-		$grid->db->where('a.fecha > SUBDATE(curdate(),30)' );
-		$grid->db->orderby('fecha DESC');
-		$grid->db->limit(6);
+		$mCodigo = $this->datasis->dameval("SELECT codigo FROM sinv WHERE id=".$claves['id']."");
+		
+		$grid = new DataGrid('Ventas por Mes');
+		$grid->db->_protect_identifiers=false;
+		$grid->db->select( array('a.tipoa','MID(a.fecha,1,7) mes', 'sum(a.cana*(a.tipoa="F")) cventa', 'sum(a.cana*(a.tipoa="D")) cdevol', 'sum(a.cana*if(a.tipoa="D",-1,1)) cana', 'sum(a.tota*(a.tipoa="F")) mventa','sum(a.tota*(a.tipoa="D")) mdevol','sum(a.tota*if(a.tipoa="D",-1,1)) tota') );
+		$grid->db->from('sitems a');
+		$grid->db->where('a.codigoa', $mCodigo );
+		$grid->db->where('a.tipoa IN ("F","D")');
+		$grid->db->where('a.fecha >= CONCAT(MID(SUBDATE(curdate(),365),1,8),"01")' );
+		$grid->db->groupby('MID( `a`.`fecha` , 1 , 7 )  WITH ROLLUP');
+		//$grid->db->orderby('fecha DESC');
+		//$grid->db->limit(12);
 			
-		$grid->column("Fecha"   ,"fecha" );
-		$grid->column("Tipo"   ,"Tipo_op" );
-		$grid->column("Numero" ,"numero");
-		$grid->column("Concepto"   ,"concepto" );
-		//$grid->column("Nombre"  ,"nombre");
-		$grid->column("Monto"   ,"<nformat><#monto#></nformat>",'align="RIGHT"');
+		$grid->column("Mes"   ,"mes" );
+		$grid->column("Cant. Venta", "<nformat><#cventa#></nformat>",'align="RIGHT"');
+		$grid->column("Cant. Dev.",  "<nformat><#cdevol#></nformat>",'align="RIGHT"');
+		$grid->column("Cantidad",    "<nformat><#cana#></nformat>",  'align="RIGHT"');
+		$grid->column("Total Vent",  "<nformat><#mventa#></nformat>",'align="RIGHT"');
+		$grid->column("Total Dev.",  "<nformat><#mdevol#></nformat>",'align="RIGHT"');
+		$grid->column("Total",       "<nformat><#tota#></nformat>",'  align="RIGHT"');
 		$grid->build();
 
-		$descrip = $this->datasis->dameval("SELECT descrip FROM sinv WHERE id=".$claves['codbanc']." ");
+		$descrip = $this->datasis->dameval("SELECT descrip FROM sinv WHERE id=".$claves['id']." ");
 		$data['content'] = "
 		<table width='100%'>
 			<tr>
-				<td valign='top'>
-					<div style='border: 2px outset #EFEFEF;background: #EFEFFF '>".
-					$grid->output."
-					</div>".
-				"</td>
+				<td valign='top' colspan='2'>
+					<div style='border: 2px outset #EFEFEF;background: #EFEFFF '>
+					".$grid->output."
+					</div>
+				</td>
 			</tr>
+			<tr>
+				<td valign='top'>
+				".open_flash_chart_object( 400,300, site_url("inventario/sinv/ventas/$mCodigo"))."
+				</td>
+				<td valign='top'>
+				".open_flash_chart_object( 400,300, site_url("inventario/sinv/compras/$mCodigo"))."
+				</td>
+			</tr>
+			
 		</table>";
 		$data["head"]     = script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
-		$data['title']    = '<h1>Consulta de Banco</h1>';
-		$data["subtitle"] = "<div align='center' style='border: 2px outset #EFEFEF;background: #EFEFEF '><a href='javascript:javascript:history.go(-1)'>(".$claves['codbanc'].") ".$mCodigo." ".$descrip."</a></div>";
+		$data['title']    = '<h1>Consulta de Articulo de Inventario</h1>';
+		$data["subtitle"] = "
+			<div align='center' style='border: 2px outset #EFEFEF;background: #EFEFEF;font-size:18px'>
+				<a href='javascript:javascript:history.go(-1)'>(".$mCodigo.") ".$descrip."</a>
+			</div>";
 		$this->load->view('view_ventanas', $data);
 		
 	}
+
+	function ventas($codigo=''){
+		if (empty($codigo)) return; 
+		$this->load->library('Graph');
+		                           	                            
+		$mSQL = "SELECT	a.tipoa,MID(a.fecha,1,7) mes,
+			sum(a.cana*(a.tipoa='F')) cventa,
+			sum(a.cana*(a.tipoa='D')) cdevol,
+			sum(a.cana*if(a.tipoa='D',-1,1)) cana,
+			sum(a.tota*(a.tipoa='F')) mventa,
+			sum(a.tota*(a.tipoa='D')) mdevol,
+			sum(a.tota*if(a.tipoa='D',-1,1)) tota
+		FROM sitems a 
+		WHERE a.codigoa='$codigo' AND a.tipoa IN ('F','D') AND a.fecha >= CONCAT(MID(SUBDATE(curdate(),365),1,8),'01')
+		GROUP BY MID( a.fecha, 1,7 )  ";
+		
+		$maxval = 0;
+		$query = $this->db->query($mSQL);
+		$data_1=$data_2=$meses=array(); 
+		foreach($query->result() as $row ){
+			if ($row->cana>$maxval) $maxval=$row->cana;
+			$meses[]   = $row->mes;
+			$data_1[]  = $row->cana;
+		}
+		$om=1;while($maxval/$om>100) $om=$om*10;
+		
+		$bar_1 = new bar(75, '#0053A4');
+		
+		$bar_1->key('Venta',10);
+		
+		for($i=0;$i<count($data_1);$i++ ){
+			$bar_1->add_data_tip($data_1[$i]/$om, graph::esc( number_format($data_1[$i],2,',','.')));
+			$bar_1->links[]= site_url("/ventas/clientes/mensuales/$codigo/".$meses[$i]);
+		} 			 
+		$g = new graph();
+		$g->set_is_decimal_separator_comma(1);
+		if($maxval > 0 ) {
+			$g->title( 'Ventas por Mes ','{font-size: 16px; color:#0F3054}' ); 
+			$g->data_sets[] = $bar_1;
+		
+			$g->set_x_labels($meses);
+			$g->set_x_label_style( 10, '#000000', 2, 1 );
+			$g->set_x_axis_steps( 10 );
+			$g->set_x_legend( 'Meses ', 14,'#004381' );        
+		
+			$g->bg_colour = '#FFFFFF';
+			$g->set_tool_tip( '#key#<br>Mes: #x_label# <br>Cantidad: #tip#' );
+			$g->set_y_max(ceil($maxval/$om));
+			$g->y_label_steps(5);
+			$g->set_y_legend('Ventas x '.number_format($om,0,'','.'), 16, '#004381' );
+		} else                                                                                           
+			$g->title( 'No existen ventas en el a&ntilde;o seleccionado','{font-size:18px; color: #d01f3c}');
+		$g->bg_colour='#FFFFFF';                                                                 
+		echo utf8_encode($g->render());
+	}
+
+	function compras($codigo=''){
+		if (empty($codigo)) return; 
+		$this->load->library('Graph');
+		                           	                            
+		$mSQL = "SELECT	MID(a.fecha,1,7) mes,
+			sum(a.cantidad*(b.tipo_doc='FC')) cventa,
+			sum(a.cantidad*(b.tipo_doc='NC')) cdevol,
+			sum(a.cantidad*if(b.tipo_doc='NC',-1,1)) cana,
+			sum(a.importe*(b.tipo_doc='FC')) mventa,
+			sum(a.importe*(b.tipo_doc='NC')) mdevol,
+			sum(a.importe*if(b.tipo_doc='NC',-1,1)) tota
+		FROM itscst a JOIN scst b ON a.control=b.control 
+		WHERE a.codigo='$codigo' AND b.tipo_doc IN ('FC','NC') AND b.fecha >= CONCAT(MID(SUBDATE(curdate(),365),1,8),'01')
+				AND  a.fecha <= b.actuali 
+		GROUP BY MID( b.fecha, 1,7 )  ";
+		
+		$maxval = 0;
+		$query = $this->db->query($mSQL);
+		$data_1=$data_2=$meses=array(); 
+		foreach($query->result() as $row ){
+			if ($row->cana>$maxval) $maxval=$row->cana;
+			$meses[]   = $row->mes;
+			$data_1[]  = $row->cana;
+		}
+		$om=1;while($maxval/$om>100) $om=$om*10;
+		
+		$bar_1 = new bar(75, '#9053A4');
+		
+		$bar_1->key('Compra',10);
+		
+		for($i=0;$i<count($data_1);$i++ ){
+			$bar_1->add_data_tip($data_1[$i]/$om, graph::esc( number_format($data_1[$i],2,',','.')));
+			$bar_1->links[]= site_url("/ventas/clientes/mensuales/$codigo/".$meses[$i]);
+		} 			 
+		$g = new graph();
+		$g->set_is_decimal_separator_comma(1);
+		if($maxval > 0 ) {
+			$g->title( 'Compras por Mes ','{font-size: 16px; color:#0F3054}' ); 
+			$g->data_sets[] = $bar_1;
+		
+			$g->set_x_labels($meses);
+			$g->set_x_label_style( 10, '#000000', 2, 1 );
+			$g->set_x_axis_steps( 10 );
+			$g->set_x_legend( 'Meses ', 14,'#004381' );        
+		
+			$g->bg_colour = '#FFFFFF';
+			$g->set_tool_tip( '#key#<br>Mes: #x_label# <br>Cantidad: #tip#' );
+			$g->set_y_max(ceil($maxval/$om));
+			$g->y_label_steps(5);
+			$g->set_y_legend('Compras x '.number_format($om,0,'','.'), 16, '#004381' );
+		} else                                                                                           
+			$g->title( 'No existen ventas en el a&ntilde;o seleccionado','{font-size:18px; color: #d01f3c}');
+		$g->bg_colour='#FFFFFF';                                                                 
+		echo utf8_encode($g->render());
+	}
+
 
 	function instalar(){
 		$mSQL='ALTER TABLE `sinv` DROP PRIMARY KEY';

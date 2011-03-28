@@ -70,7 +70,8 @@ class barras extends Controller {
 
 		$grid->build();
 
-		$data['content'] = $filter->output.$grid->output;
+		$data['content'] = $grid->output;
+		$data['filtro']  = $filter->output;
 		$data['title']   = "<h1>Asignaci&oacute;n &uacute;nica de c&oacute;digo barras</h1>";
 		$data["head"]    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
