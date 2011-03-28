@@ -40,17 +40,17 @@ class Caub extends validaciones {
 		$filter->descrip = new inputField("Descripci&oacute;n", "ubides");
 		$filter->descrip->size=20;
 		
-		$filter->gasto=new dropdownField("Gasto","gasto");
-		$filter->gasto->option("","");
-		$filter->gasto->option("S","Si");
-		$filter->gasto->option("N","No");
-		$filter->gasto->style='width:150px;';
+		//$filter->gasto=new dropdownField("Gasto","gasto");
+		//$filter->gasto->option("","");
+		//$filter->gasto->option("S","Si");
+		//$filter->gasto->option("N","No");
+		//$filter->gasto->style='width:150px;';
 
-		$filter->invfis=new dropdownField("Inventario F&iacute;sico","invfis");
-		$filter->invfis->option("","");
-		$filter->invfis->option("S","Si");
-		$filter->invfis->option("N","No");
-		$filter->invfis->style='width:150px;';
+		//$filter->invfis=new dropdownField("Inventario F&iacute;sico","invfis");
+		//$filter->invfis->option("","");
+		//$filter->invfis->option("S","Si");
+		//$filter->invfis->option("N","No");
+		//$filter->invfis->style='width:150px;';
 		
 		$filter->sucursal = new dropdownField("Sucursal","codigo");
 		$filter->sucursal->option("","");
@@ -58,7 +58,7 @@ class Caub extends validaciones {
 		$filter->sucursal->style='width:150px;';
 				
 		$filter->buttons("reset","search");
-		$filter->build();
+		$filter->build('dataformfiltro');
 		
 		function si_no($valor){
 			if($valor=='S'){
@@ -88,7 +88,8 @@ class Caub extends validaciones {
 		$grid->add("inventario/caub/dataedit/create");
 		$grid->build();
 		
-    $data['content'] = $filter->output.$grid->output;
+		$data['content'] = $grid->output;
+		$data['filtro']  = $filter->output;
 		$data['title']   = "<h1>Almacenes</h1>";
 		$data["head"]    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);	

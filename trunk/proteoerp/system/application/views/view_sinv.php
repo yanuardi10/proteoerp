@@ -9,7 +9,7 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 <table border='0' width="100%">
 	<tr>
 		<td>
-			<a href='<?php echo base_url()."finanzas/sinv/consulta/".$form->codbanc->output; ?>'>
+			<a href='<?php echo base_url()."inventario/sinv/consulta/".$form->_dataobject->get('id'); ?>'>
 			<?php
 				$propiedad = array('src' => 'images/ojos.png', 'alt' => 'Consultar Movimiento', 'title' => 'Consultar Detalles','border'=>'0','height'=>'25');
 				echo img($propiedad);
