@@ -5,7 +5,7 @@ class psinv extends Controller {
 	function psinv(){
 		parent::Controller(); 
 		$this->load->library('rapyd');
-		$this->datasis->modulo_id(107,1);
+		$this->datasis->modulo_id('320',1);
 		$this->back_dataedit='inventario/psinv';
 	}
 
@@ -80,7 +80,7 @@ class psinv extends Controller {
 		
 		$data['content'] =$filter->output.$grid->output;
 		$data["head"]    = $this->rapyd->get_head();
-		$data['title']   =heading('Prestamos de inventario a cliente');
+		$data['title']   =heading('Pr&eacute;stamos de inventario a cliente');
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -285,7 +285,7 @@ class psinv extends Controller {
 
 		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
 
-		$edit->buttons('modify', 'save', 'undo', 'delete', 'back','add_rel');
+		$edit->buttons('save', 'undo', 'delete', 'back','add_rel');
 		$edit->build();
 
 		$conten['form']  =&  $edit;
@@ -365,8 +365,25 @@ class psinv extends Controller {
 	}
 
 	function _post_delete($do){
-		$codigo=$do->get('numero');
-		logusu('psinv',"Nota Entrega $codigo ELIMINADO");
+		/*$codigo=$do->get('numero');
+
+		$cana=$do->count_rel('itpsinv');
+		for($i=0;$i<$cana;$i++){
+			$itcana    = $do->get_rel('itpsinv','cana',$i);
+			$itprecio  = $do->get_rel('itpsinv','precio',$i);
+			$itiva     = $do->get_rel('itpsinv','iva',$i);
+			$itimporte = $itprecio*$itcana;
+			$iiva      = $itimporte*($itiva/100);
+
+			$do->set_rel('itpsinv','importe'  ,$itimporte,$i);
+			$do->set_rel('itpsinv','mostrado' ,$itimporte+$iiva,$i);
+
+			$iva    +=$iiva ;
+			$stotal +=$itimporte;
+		}
+		
+		
+		logusu('psinv',"Nota Entrega $codigo ELIMINADO");*/
 	}
 
 	function instalar(){
