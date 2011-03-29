@@ -211,9 +211,9 @@ class sfac extends Controller {
 		$edit->numero->mode="autohide";
 		
 		$edit->tipo = new dropdownField("Tipo", "tipo_doc");  
-		$edit->tipo->option("D","D");
-		$edit->tipo->option("F","F");
-		$edit->tipo->option("X","X");
+		$edit->tipo->option("D","Devolucion");
+		$edit->tipo->option("F","Fatura");
+		$edit->tipo->option("X","Anulado");
 		$edit->tipo->style='width:60px';
 
 		$edit->nombre = new inputField("Nombre", "nombre");

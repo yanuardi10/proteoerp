@@ -1,17 +1,17 @@
 <?php
 //notaentrega
-class Snte extends Controller {
+class psinv extends Controller {
 
-	function snte(){
+	function psinv(){
 		parent::Controller(); 
-		$this->load->library("rapyd");
+		$this->load->library('rapyd');
 		$this->datasis->modulo_id(107,1);
-		$this->back_dataedit='ventas/snte';
+		$this->back_dataedit='inventario/psinv';
 	}
 
 	function index() {
-		$this->rapyd->load("datagrid","datafilter");
-		
+		$this->rapyd->load('datagrid','datafilter');
+
 		$atts = array(
 		'width'      => '800',
 		'height'     => '600',
@@ -33,24 +33,22 @@ class Snte extends Controller {
 
 		$boton=$this->datasis->modbus($scli);
 		
-		$filter = new DataFilter("Filtro de Nota Entrega");
+		$filter = new DataFilter('Filtro de Prestamos de inventario');
 		$filter->db->select('fecha,numero,cod_cli,nombre,stotal,gtotal,impuesto');
-		$filter->db->from('snte');
+		$filter->db->from('psinv');
 		
-		$filter->fechad = new dateonlyField("Desde", "fechad",'d/m/Y');
-		$filter->fechah = new dateonlyField("Hasta", "fechah",'d/m/Y');
-		$filter->fechad->clause  =$filter->fechah->clause="where";
-		$filter->fechad->db_name =$filter->fechah->db_name="fecha";
-		$filter->fechad->insertValue = date("Y-m-d"); 
-		$filter->fechah->insertValue = date("Y-m-d"); 
+		$filter->fechad = new dateonlyField('Desde', 'fechad');
+		$filter->fechah = new dateonlyField('Hasta', 'fechah');
+		$filter->fechad->clause  =$filter->fechah->clause ='where';
+		$filter->fechad->db_name =$filter->fechah->db_name='fecha';
 		$filter->fechah->size=$filter->fechad->size=10;
-		$filter->fechad->operator=">="; 
-		$filter->fechah->operator="<=";
+		$filter->fechad->operator='>=';
+		$filter->fechah->operator='<=';
 
-		$filter->numero = new inputField("N&uacute;mero", "numero");
+		$filter->numero = new inputField('N&uacute;mero', 'numero');
 		$filter->numero->size = 30;
 
-		$filter->factura = new inputField("Factura", "factura");
+		$filter->factura = new inputField('Factura', 'factura');
 		$filter->factura->size = 30;
 
 
@@ -61,28 +59,28 @@ class Snte extends Controller {
 		$filter->buttons("reset","search");
 		$filter->build();
 
-		$uri = anchor('ventas/snte/dataedit/show/<#numero#>','<#numero#>');
-		$uri2 = anchor_popup('formatos/verhtml/SNTE/<#numero#>',"Ver HTML",$atts);
+		$uri = anchor('inventario/psinv/dataedit/show/<#numero#>','<#numero#>');
+		$uri2 = anchor_popup('formatos/verhtml/PSINV/<#numero#>',"Ver HTML",$atts);
 
 		$grid = new DataGrid();
 		$grid->order_by("numero","desc");
 		$grid->per_page = 15;  
 
-		$grid->column_orderby("N&uacute;mero"		,$uri,'numero');
-		$grid->column_orderby("Fecha"			,"<dbdate_to_human><#fecha#></dbdate_to_human>",'fecha',"align='center'");
-		$grid->column_orderby("Nombre"		,"nombre",'nombre');
-		$grid->column_orderby("Sub.Total"	,"<number_format><#stotal#>|2</number_format>",'stotal',"align=right");
-		$grid->column_orderby("IVA"				,"<number_format><#impuesto#>|2</number_format>",'iva',"align=right");
-		$grid->column_orderby("Total"			,"<number_format><#gtotal#>|2</number_format>",'gtotal',"align=right");
-		$grid->column_orderby("Vista",$uri2,"align='center'");
-		
-		$grid->add("ventas/snte/dataedit/create");
+		$grid->column_orderby("N&uacute;mero" ,$uri,'numero');
+		$grid->column_orderby('Fecha'         ,"<dbdate_to_human><#fecha#></dbdate_to_human>",'fecha',"align='center'");
+		$grid->column_orderby('Nombre'        ,'nombre','nombre');
+		$grid->column_orderby('Sub.Total'     ,'<nformat><#stotal#></nformat>'  ,'stotal','align=\'right\'');
+		$grid->column_orderby('IVA'           ,'<nformat><#impuesto#></nformat>','iva'   ,'align=\'right\'');
+		$grid->column_orderby('Total'         ,'<nformat><#gtotal#></nformat>'  ,'gtotal','align=\'right\'');
+		//$grid->column_orderby("Vista",$uri2,"align='center'");
+
+		$grid->add('inventario/psinv/dataedit/create');
 		$grid->build();
 		//echo $grid->db->last_query();
 		
 		$data['content'] =$filter->output.$grid->output;
 		$data["head"]    = $this->rapyd->get_head();
-		$data['title']   ='<h1>Nota de Entrega</h1>';
+		$data['title']   =heading('Prestamos de inventario a cliente');
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -114,7 +112,7 @@ class Snte extends Controller {
 		'p_uri'=>array(4=>'<#i#>'),
 		'where'   => '`activo` = "S" AND `tipo` = "Articulo"',
 		'script'  => array('post_modbus_sinv(<#i#>)'),
-		'titulo'  =>'Buscar Articulo');
+		'titulo'  =>'Buscar Art&iacute;culo');
 		$btn=$this->datasis->p_modbus($modbus,'<#i#>');
 		
 		$mSCLId=array(
@@ -132,14 +130,14 @@ class Snte extends Controller {
 		'script'  => array('post_modbus_scli()'));
 		$btnc =$this->datasis->modbus($mSCLId);
 		
-		$do = new DataObject("snte");
-		$do->rel_one_to_many('itsnte', 'itsnte', 'numero');
-		$do->pointer('scli' ,'scli.cliente=snte.cod_cli','scli.tipo AS sclitipo','left');
-		$do->rel_pointer('itsnte','sinv','itsnte.codigo=sinv.codigo','sinv.descrip AS sinvdescrip, sinv.base1 AS sinvprecio1, sinv.base2 AS sinvprecio2, sinv.base3 AS sinvprecio3, sinv.base4 AS sinvprecio4, sinv.iva AS sinviva, sinv.peso AS sinvpeso,sinv.tipo AS sinvtipo');
+		$do = new DataObject("psinv");
+		$do->rel_one_to_many('itpsinv', 'itpsinv', 'numero');
+		$do->pointer('scli' ,'scli.cliente=psinv.cod_cli','scli.tipo AS sclitipo','left');
+		$do->rel_pointer('itpsinv','sinv','itpsinv.codigo=sinv.codigo','sinv.descrip AS sinvdescrip, sinv.base1 AS sinvprecio1, sinv.base2 AS sinvprecio2, sinv.base3 AS sinvprecio3, sinv.base4 AS sinvprecio4, sinv.iva AS sinviva, sinv.peso AS sinvpeso,sinv.tipo AS sinvtipo');
 		
-		$edit = new DataDetails('Nota de entrega', $do);
-		$edit->back_url = site_url('ventas/snte/filteredgrid');
-		$edit->set_rel_title('itsnte','Producto <#o#>');
+		$edit = new DataDetails('Pr&eacute;stamo de inventario', $do);
+		$edit->back_url = site_url('inventario/psinv/filteredgrid');
+		$edit->set_rel_title('itpsinv','Producto <#o#>');
 		
 		$edit->back_url = $this->back_dataedit;
 		
@@ -216,7 +214,7 @@ class Snte extends Controller {
 		$edit->codigo->size     = 12;
 		$edit->codigo->db_name  = 'codigo';
 		$edit->codigo->readonly = true;
-		$edit->codigo->rel_id   = 'itsnte';
+		$edit->codigo->rel_id   = 'itpsinv';
 		$edit->codigo->rule     = 'required';
 		$edit->codigo->append($btn);
 
@@ -225,12 +223,12 @@ class Snte extends Controller {
 		$edit->desca->db_name='desca';
 		$edit->desca->maxlength=50;
 		$edit->desca->readonly  = true;
-		$edit->desca->rel_id='itsnte';
+		$edit->desca->rel_id='itpsinv';
 
 		$edit->cana = new inputField('Cantidad <#o#>', 'cana_<#i#>');
 		$edit->cana->db_name  = 'cana';
 		$edit->cana->css_class= 'inputnum';
-		$edit->cana->rel_id   = 'itsnte';
+		$edit->cana->rel_id   = 'itpsinv';
 		$edit->cana->maxlength= 10;
 		$edit->cana->size     = 6;
 		$edit->cana->rule     = 'required|positive';
@@ -240,7 +238,7 @@ class Snte extends Controller {
 		$edit->precio = new inputField('Precio <#o#>', 'precio_<#i#>');
 		$edit->precio->db_name   = 'precio';
 		$edit->precio->css_class = 'inputnum';
-		$edit->precio->rel_id    = 'itsnte';
+		$edit->precio->rel_id    = 'itpsinv';
 		$edit->precio->size      = 10;
 		$edit->precio->rule      = 'required|positive|callback_chpreca[<#i#>]';
 		$edit->precio->readonly  = true;
@@ -249,27 +247,27 @@ class Snte extends Controller {
 		$edit->importe->db_name='importe';
 		$edit->importe->size=10;
 		$edit->importe->css_class='inputnum';
-		$edit->importe->rel_id   ='itsnte';
+		$edit->importe->rel_id   ='itpsinv';
 
 		for($i=1;$i<=4;$i++){
 			$obj='precio'.$i;
 			$edit->$obj = new hiddenField('Precio <#o#>', $obj.'_<#i#>');
 			$edit->$obj->db_name   = 'sinv'.$obj;
-			$edit->$obj->rel_id    = 'itsnte';
+			$edit->$obj->rel_id    = 'itpsinv';
 			$edit->$obj->pointer   = true;
 		}
 		$edit->itiva = new hiddenField('', 'itiva_<#i#>');
 		$edit->itiva->db_name  = 'iva';
-		$edit->itiva->rel_id   = 'itsnte';
+		$edit->itiva->rel_id   = 'itpsinv';
 
 		$edit->sinvpeso = new hiddenField('', 'sinvpeso_<#i#>');
 		$edit->sinvpeso->db_name   = 'sinvpeso';
-		$edit->sinvpeso->rel_id    = 'itsnte';
+		$edit->sinvpeso->rel_id    = 'itpsinv';
 		$edit->sinvpeso->pointer   = true;
 
 		$edit->sinvtipo = new hiddenField('', 'sinvtipo_<#i#>');
 		$edit->sinvtipo->db_name   = 'sinvtipo';
-		$edit->sinvtipo->rel_id    = 'itsnte';
+		$edit->sinvtipo->rel_id    = 'itpsinv';
 		$edit->sinvtipo->pointer   = true;
 		//fin de campos para detalle
 
@@ -291,14 +289,14 @@ class Snte extends Controller {
 		$edit->build();
 
 		$conten['form']  =&  $edit;
-		$data['content'] = $this->load->view('view_snte', $conten,true);
-		$data['title']   = heading('Nota de Entrega');
+		$data['content'] = $this->load->view('view_psinv', $conten,true);
+		$data['title']   = heading('Prestamo de inventario');
 		$data['head']    = script('jquery.js').script('jquery-ui.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css').$this->rapyd->get_head().phpscript('nformat.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js').phpscript('nformat.js');
 		$this->load->view('view_ventanas', $data);
 	}
 
 	function _pre_insert($do){
-		$numero = $this->datasis->fprox_numero('nsnte');
+		//$numero = $this->datasis->fprox_numero('npsinv');
 		$transac= $this->datasis->fprox_numero('ntransa');
 		$fecha  = $do->get('fecha');
 		$vende  = $do->get('vende');
@@ -307,20 +305,21 @@ class Snte extends Controller {
 		$hora   = date("H:i:s");
 
 		$iva=$stotal=0;
-		$cana=$do->count_rel('itsnte');
+		$cana=$do->count_rel('itpsinv');
 		for($i=0;$i<$cana;$i++){
-			$itcana    = $do->get_rel('itsnte','cana',$i);
-			$itprecio  = $do->get_rel('itsnte','precio',$i);
-			$itiva     = $do->get_rel('itsnte','iva',$i);
+			$itcana    = $do->get_rel('itpsinv','cana',$i);
+			$itprecio  = $do->get_rel('itpsinv','precio',$i);
+			$itiva     = $do->get_rel('itpsinv','iva',$i);
 			$itimporte = $itprecio*$itcana;
 			$iiva      = $itimporte*($itiva/100);
 
-			$do->set_rel('itsnte','importe'  ,$itimporte,$i);
-			$do->set_rel('itsnte','mostrado' ,$itimporte+$iiva,$i);
+			$do->set_rel('itpsinv','importe'  ,$itimporte,$i);
+			$do->set_rel('itpsinv','mostrado' ,$itimporte+$iiva,$i);
 
 			$iva    +=$iiva ;
 			$stotal +=$itimporte;
 		}
+
 		$gtotal=$stotal+$iva;
 		$do->set('estampa' ,$estampa);
 		$do->set('hora'    ,$hora);
@@ -336,16 +335,16 @@ class Snte extends Controller {
 		$codigo = $do->get('numero');
 		$almacen= $do->get('almacen');
 
-		$mSQL='UPDATE sinv JOIN itsnte ON sinv.codigo=itsnte.codigo SET sinv.existen=sinv.existen-itsnte.cana WHERE itsnte.numero='.$this->db->escape($codigo);
+		$mSQL='UPDATE sinv JOIN itpsinv ON sinv.codigo=itpsinv.codigo SET sinv.existen=sinv.existen-itpsinv.cana WHERE itpsinv.numero='.$this->db->escape($codigo);
 		$ban=$this->db->simple_query($mSQL);
-		if($ban==false){ memowrite($mSQL,'snte'); }
+		if($ban==false){ memowrite($mSQL,'psinv'); }
 
-		$mSQL='UPDATE itsinv JOIN itsnte ON itsinv.codigo=itsnte.codigo SET itsinv.existen=itsinv.existen-itsnte.cana WHERE itsnte.numero='.$this->db->escape($codigo).' AND itsinv.alma='.$this->db->escape($almacen);
+		$mSQL='UPDATE itsinv JOIN itpsinv ON itsinv.codigo=itpsinv.codigo SET itsinv.existen=itsinv.existen-itpsinv.cana WHERE itpsinv.numero='.$this->db->escape($codigo).' AND itsinv.alma='.$this->db->escape($almacen);
 		$ban=$this->db->simple_query($mSQL);
-		if($ban==false){ memowrite($mSQL,'snte'); }
+		if($ban==false){ memowrite($mSQL,'psinv'); }
 
 		$codigo=$do->get('numero');
-		logusu('snte',"Nota entrega $codigo CREADO");
+		logusu('psinv',"Nota entrega $codigo CREADO");
 	}
 
 	function chpreca($preca,$ind){
@@ -367,6 +366,64 @@ class Snte extends Controller {
 
 	function _post_delete($do){
 		$codigo=$do->get('numero');
-		logusu('snte',"Nota Entrega $codigo ELIMINADO");
+		logusu('psinv',"Nota Entrega $codigo ELIMINADO");
+	}
+
+	function instalar(){
+		$mSQL="CREATE TABLE  IF NOT EXISTS `psinv` (
+				`numero` INT(12) NOT NULL AUTO_INCREMENT,
+				`fecha` DATE NULL DEFAULT NULL,
+				`vende` VARCHAR(5) NULL DEFAULT NULL,
+				`factura` VARCHAR(8) NULL DEFAULT NULL,
+				`cod_cli` VARCHAR(5) NULL DEFAULT NULL,
+				`almacen` VARCHAR(4) NULL DEFAULT NULL,
+				`nombre` VARCHAR(40) NULL DEFAULT NULL,
+				`dir_cli` VARCHAR(40) NULL DEFAULT NULL,
+				`dir_cl1` VARCHAR(40) NULL DEFAULT NULL,
+				`orden` VARCHAR(12) NULL DEFAULT NULL,
+				`observa` VARCHAR(105) NULL DEFAULT NULL,
+				`stotal` DECIMAL(12,2) NULL DEFAULT NULL,
+				`impuesto` DECIMAL(12,2) NULL DEFAULT NULL,
+				`gtotal` DECIMAL(12,2) NULL DEFAULT NULL,
+				`cajero` VARCHAR(5) NULL DEFAULT NULL,
+				`fechafac` DATE NULL DEFAULT NULL,
+				`tipo` CHAR(1) NULL DEFAULT NULL,
+				`peso` DECIMAL(15,3) NULL DEFAULT NULL,
+				`estampa` DATE NULL DEFAULT NULL,
+				`usuario` VARCHAR(12) NULL DEFAULT NULL,
+				`hora` VARCHAR(4) NULL DEFAULT NULL,
+				`transac` VARCHAR(8) NULL DEFAULT NULL,
+				`modificado` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+				PRIMARY KEY (`numero`),
+				INDEX `factura` (`factura`),
+				INDEX `modificado` (`modificado`)
+			)
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM
+			ROW_FORMAT=DEFAULT";
+		var_dump($this->db->simple_query($mSQL));
+
+		$mSQL="CREATE TABLE IF NOT EXISTS `itpsinv` (
+				`numero` INT(12) NULL DEFAULT NULL,
+				`codigo` VARCHAR(15) NULL DEFAULT NULL,
+				`desca` VARCHAR(28) NULL DEFAULT NULL,
+				`cana` DECIMAL(12,3) NULL DEFAULT '0.000',
+				`precio` DECIMAL(12,2) NULL DEFAULT NULL,
+				`importe` DECIMAL(12,2) NULL DEFAULT NULL,
+				`iva` DECIMAL(6,2) NULL DEFAULT NULL,
+				`mostrado` DECIMAL(17,2) NULL DEFAULT NULL,
+				`entregado` DECIMAL(12,3) NULL DEFAULT NULL,
+				`tipo` CHAR(1) NULL DEFAULT NULL,
+				`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+				`modificado` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+				PRIMARY KEY (`id`),
+				INDEX `numero` (`numero`),
+				INDEX `codigo` (`codigo`),
+				INDEX `modificado` (`modificado`)
+			)
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM
+			ROW_FORMAT=DEFAULT";
+		var_dump($this->db->simple_query($mSQL));
 	}
 }
