@@ -1,5 +1,4 @@
 <?php
-
 $container_bl=join('&nbsp;', $form->_button_container['BL']);
 $container_br=join('&nbsp;', $form->_button_container['BR']);
 $container_tr=join('&nbsp;', $form->_button_container['TR']);
@@ -8,8 +7,8 @@ if ($form->_status=='delete' || $form->_action=='delete' || $form->_status=='unk
 	echo $form->output;
 else:
 
-$campos=$form->template_details('itsnte');
-$scampos  ='<tr id="tr_itsnte_<#i#>">';
+$campos=$form->template_details('itpsinv');
+$scampos  ='<tr id="tr_itpsinv_<#i#>">';
 $scampos .='<td class="littletablerow" align="left" >'.$campos['codigo']['field'].'</td>';
 $scampos .='<td class="littletablerow" align="left" >'.$campos['desca']['field'].'</td>';
 $scampos .='<td class="littletablerow" align="right">'.$campos['cana']['field'].  '</td>';
@@ -22,7 +21,7 @@ for($o=1;$o<5;$o++){
 $scampos .= $campos['itiva']['field'];
 $scampos .= $campos['sinvpeso']['field'];
 $scampos .= $campos['sinvtipo']['field'].'</td>';
-$scampos .= '<td class="littletablerow"><a href=# onclick="del_itsnte(<#i#>);return false;">Eliminar</a></td></tr>';
+$scampos .= '<td class="littletablerow"><a href=# onclick="del_itpsinv(<#i#>);return false;">Eliminar</a></td></tr>';
 $campos=$form->js_escape($scampos);
 
 if(isset($form->error_string)) echo '<div class="alert">'.$form->error_string.'</div>';
@@ -32,12 +31,12 @@ echo $form_begin;
 if($form->_status!='show'){ ?>
 
 <script language="javascript" type="text/javascript">
-var itsnte_cont=<?php echo $form->max_rel_count['itsnte']; ?>;
+var itpsinv_cont=<?php echo $form->max_rel_count['itpsinv']; ?>;
 
 $(function(){
 	$(".inputnum").numeric(".");
 	totalizar();
-	for(var i=0;i < <?php echo $form->max_rel_count['itsnte']; ?>;i++){
+	for(var i=0;i < <?php echo $form->max_rel_count['itpsinv']; ?>;i++){
 		cdropdown(i);
 	}
 });
@@ -84,15 +83,15 @@ function totalizar(){
 	
 }
 
-function add_itsnte(){
+function add_itpsinv(){
 	var htm = <?php echo $campos; ?>;
-	can = itsnte_cont.toString();
-	con = (itsnte_cont+1).toString();
+	can = itpsinv_cont.toString();
+	con = (itpsinv_cont+1).toString();
 	htm = htm.replace(/<#i#>/g,can);
 	htm = htm.replace(/<#o#>/g,con);
 	$("#__UTPL__").before(htm);
 	$("#cana_"+can).numeric(".");
-	itsnte_cont=itsnte_cont+1;
+	itpsinv_cont=itpsinv_cont+1;
 }
 
 function post_precioselec(ind,obj){
@@ -184,9 +183,9 @@ function cdropdown(nind){
 	$("#precio_"+ind).replaceWith(pprecio);
 }
 
-function del_itsnte(id){
+function del_itpsinv(id){
 	id = id.toString();
-	$('#tr_itsnte_'+id).remove();
+	$('#tr_itpsinv_'+id).remove();
 	totalizar();
 }
 </script>
@@ -200,7 +199,7 @@ function del_itsnte(id){
 		<td>
 		<table width="100%" style="margin: 0; width: 100%;">
 			<tr>
-				<th colspan='5' class="littletableheader">Notas de Entrega <b><?php if($form->_status=='show' or $form->_status=='modify' ) echo str_pad($form->numero->output,8,0,0); ?></b></th>
+				<th colspan='5' class="littletableheader">Pr&eacute;stamo de inventario <b><?php if($form->_status=='show' or $form->_status=='modify' ) echo str_pad($form->numero->output,8,0,0); ?></b></th>
 			</tr>
 			<tr>
 				<td class="littletableheader"><?php echo $form->fecha->label;    ?>*&nbsp;</td>
@@ -253,7 +252,7 @@ function del_itsnte(id){
 				<?php } ?>
 			</tr>
 
-			<?php for($i=0;$i<$form->max_rel_count['itsnte'];$i++) {
+			<?php for($i=0;$i<$form->max_rel_count['itpsinv'];$i++) {
 				$it_codigo  = "codigo_$i";
 				$it_desca   = "desca_$i";
 				$it_cana    = "cana_$i";
@@ -273,7 +272,7 @@ function del_itsnte(id){
 				$pprecios .= $form->$it_peso->output;
 			?>
 
-			<tr id='tr_itsnte_<?php echo $i; ?>'>
+			<tr id='tr_itpsinv_<?php echo $i; ?>'>
 				<td class="littletablerow" align="left" ><?php echo $form->$it_codigo->output; ?></td>
 				<td class="littletablerow" align="left" ><?php echo $form->$it_desca->output;  ?></td>
 				<td class="littletablerow" align="right"><?php echo $form->$it_cana->output;   ?></td>
@@ -282,7 +281,7 @@ function del_itsnte(id){
 
 				<?php if($form->_status!='show') {?>
 				<td class="littletablerow">
-					<a href='#' onclick='del_itsnte(<?=$i ?>);return false;'>Eliminar</a>
+					<a href='#' onclick='del_itpsinv(<?=$i ?>);return false;'>Eliminar</a>
 				</td>
 				<?php } ?>
 			</tr>
