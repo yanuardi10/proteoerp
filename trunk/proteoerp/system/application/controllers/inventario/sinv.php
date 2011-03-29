@@ -740,7 +740,7 @@ class sinv extends Controller {
 
 		$conten["form"]  =&  $edit;
 		$data['content'] = $this->load->view('view_sinv', $conten,true);
-		$data["head"]    =script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
+		$data["head"]    =script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head().script("sinvmaes.js");
 
 		//$data['content'] = $edit->output;
 		$data['title']   = heading('Maestro de Inventario');
@@ -1166,8 +1166,8 @@ class sinv extends Controller {
 				<td valign='top'>
 				".open_flash_chart_object( 300,200, site_url("inventario/sinv/ventas/$mCodigo"))."
 				</td>
-				<td valign='top'>
-				".open_flash_chart_object( 300,200, site_url("inventario/sinv/compras/$mCodigo"))."
+				<td valign='top'>".
+				open_flash_chart_object( 300,200, site_url("inventario/sinv/compras/".raencode($mCodigo)))."
 				</td>
 			</tr>
 			
@@ -1207,7 +1207,7 @@ class sinv extends Controller {
 		}
 		$om=1;while($maxval/$om>100) $om=$om*10;
 		
-		$bar_1 = new bar(75, '#0053A4');
+		$bar_1 = new bar_3D(75, '#0053A4');
 		
 		$bar_1->key('Venta',10);
 		
