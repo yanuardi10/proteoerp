@@ -35,7 +35,7 @@ class Consultas extends Controller {
 			'value'     => '',
 			'size'      => '16',
 			);
-		if($this->tipo='sinv'){
+		if($this->tipo=='sinv'){
 			$modbus=array('tabla'   =>'sinv',
 				'columnas'=>array(
 					'codigo' =>'C&oacute;digo',
@@ -263,6 +263,8 @@ class Consultas extends Controller {
 	}
 
 	function _gconsul($mSQL_p,$cod_bar,$busca,$suple=null){
+		$tabla=trim(substr($mSQL_p,(strripos($mSQL_p, 'FROM')+4)));
+		$activo=$this->db->field_exists('activo',$tabla)? 'AND activo=\'S\'' : '';
 		$cod_bar=$this->db->escape($cod_bar);
 		if(!empty($suple) AND $this->db->table_exists('suple')){
 			$mSQL  ="SELECT codigo FROM suple WHERE suplemen=${cod_bar} LIMIT 1";
@@ -275,7 +277,7 @@ class Consultas extends Controller {
 		}
 
 		foreach($busca AS $b){
-			$mSQL  =$mSQL_p." WHERE ${b}=${cod_bar}  AND activo='S' LIMIT 1";
+			$mSQL  =$mSQL_p." WHERE ${b}=${cod_bar} ${activo} LIMIT 1";
 			$query = $this->db->query($mSQL);
 			if ($query->num_rows() != 0){
 				return $query;
@@ -289,7 +291,7 @@ class Consultas extends Controller {
 				$row = $query->row();
 				$cod_bar=$row->codigo;
 
-				$mSQL  =$mSQL_p." WHERE codigo='${cod_bar}' AND activo='S' LIMIT 1";
+				$mSQL  =$mSQL_p." WHERE codigo='${cod_bar}' ${activo} LIMIT 1";
 				$query = $this->db->query($mSQL);
 				if($query->num_rows() == 0)
 					 return false;
