@@ -225,7 +225,7 @@ function requeridos(load){
 			}else{
 				bloquea_precios(true);
 				if(!load)
-				alert("Si en Forma de c√°lculo selecciona ULTIMO, debe de completar el valor del campo ULTIMO con un valor v√°lido");
+				alert("Si en Forma de c·lculo selecciona ULTIMO, debe de completar el valor del campo ULTIMO con un valor v·lido");
 			}
 			break;
 		}
@@ -235,7 +235,7 @@ function requeridos(load){
 			}else{
 				bloquea_precios(true);
 				if(!load)
-				alert("Si en Forma de c√°lculo selecciona PROMEDIO, debe de completar el valor del campo PROMEDIO con un valor v√°lido");
+				alert("Si en Forma de c·lculo selecciona PROMEDIO, debe de completar el valor del campo PROMEDIO con un valor v·lido");
 			}
 			break;
 		}
@@ -245,7 +245,7 @@ function requeridos(load){
 			}else{
 				bloquea_precios(true);
 				if(!load)
-				alert("Si en Forma de c√°lculo selecciona MAYOR, debe de completar el valor del campo PROMEDIO √≥ ULTIMO con un valor v√°lido");
+				alert("Si en Forma de c·lculo selecciona MAYOR, debe de completar el valor del campo PROMEDIO Û ULTIMO con un valor v·lido");
 			}
 			break;
 		}
