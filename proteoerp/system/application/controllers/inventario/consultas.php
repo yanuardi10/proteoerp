@@ -5,6 +5,8 @@ class Consultas extends Controller {
 		$this->load->library('rapyd');
 		$sinv= ($this->db->table_exists('sinv')) ? $this->datasis->dameval('SELECT COUNT(*) FROM sinv'): 0;
 		$maes= ($this->db->table_exists('maes')) ? $this->datasis->dameval('SELECT COUNT(*) FROM maes'): 0;
+		if(is_null($sinv)) $sinv=0;
+		if(is_null($maes)) $maes=0;
 
 		$this->tipo=($maes>$sinv) ? 'maes' : 'sinv';
 	}
@@ -273,7 +275,7 @@ class Consultas extends Controller {
 		}
 
 		foreach($busca AS $b){
-			$mSQL  =$mSQL_p." WHERE ${b}=${cod_bar} LIMIT 1";
+			$mSQL  =$mSQL_p." WHERE ${b}=${cod_bar}  AND activo='S' LIMIT 1";
 			$query = $this->db->query($mSQL);
 			if ($query->num_rows() != 0){
 				return $query;
@@ -287,7 +289,7 @@ class Consultas extends Controller {
 				$row = $query->row();
 				$cod_bar=$row->codigo;
 
-				$mSQL  =$mSQL_p." WHERE codigo='${cod_bar}' LIMIT 1";
+				$mSQL  =$mSQL_p." WHERE codigo='${cod_bar}' AND activo='S' LIMIT 1";
 				$query = $this->db->query($mSQL);
 				if($query->num_rows() == 0)
 					 return false;

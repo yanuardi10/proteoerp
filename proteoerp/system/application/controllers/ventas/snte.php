@@ -287,7 +287,7 @@ class Snte extends Controller {
 
 		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
 
-		$edit->buttons('modify', 'save', 'undo', 'delete', 'back','add_rel');
+		$edit->buttons('save', 'undo', 'delete', 'back','add_rel');
 		$edit->build();
 
 		$conten['form']  =&  $edit;
