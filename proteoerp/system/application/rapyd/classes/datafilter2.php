@@ -41,7 +41,7 @@ class DataFilter2 extends DataFilter{
            
             switch ($field->clause){  
                 case "in":
-                    $this->db->where("'$value' IN $name");
+                    $this->db->where($this->db->escape($value)." IN $name");
                 break;
                 
                 case "likesensitive":

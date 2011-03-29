@@ -1,6 +1,4 @@
-<?php echo $form_scripts?>
-<?php echo $form_begin?>
-<?php 
+<?php echo $form_scripts.$form_begin;
 $container_tr=join("&nbsp;", $form->_button_container["TR"]);
 $container_bl=join("&nbsp;", $form->_button_container["BL"]);
 $container_br=join("&nbsp;", $form->_button_container["BR"]);
@@ -24,7 +22,7 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 	<tr>
 		<td colspan='2' valign='top'>
 			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
-			<legend class="titulofieldset" >Identificacion del Producto </legend>
+			<legend class="titulofieldset" >Identificaci&oacute;n del Producto </legend>
 			<table border=0 width="100%">
 				<tr>
 					<td width="100" class="littletableheaderc"><?=$form->codigo->label ?></td>
@@ -52,7 +50,7 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 					<td class="littletablerow"><?=$form->descrip->output   ?></td>
 				</tr>
 				<tr>
-					<td class='littletableheaderc'><?php //=$form->descrip2->label ?>&nbsp;</td>
+					<td class='littletableheaderc'><?php //echo $form->descrip2->label ?>&nbsp;</td>
 					<td class="littletablerow"><?=$form->descrip2->output   ?></td>
 				</tr>
 				<tr>
@@ -111,7 +109,7 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 	<tr>
 		<td valign='top'>
 			<fieldset style='border: 2px outset #0B610B;background: #E0F8E0;'>
-			<legend class="titulofieldset" >Organizacion</legend>
+			<legend class="titulofieldset" >Organizaci&oacute;n</legend>
 			<table border=0 width="100%">
 				<tr>
 					<td width='50' class='littletableheaderc'><?=$form->depto->label ?></td>
@@ -129,7 +127,7 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 			</fieldset>
 		<td valign='top'>
 			<fieldset style='border: 2px outset #0B610B;background: #E0F8E0;'>
-			<legend class="titulofieldset" >Clasificacion</legend>
+			<legend class="titulofieldset" >Clasificaci&oacute;n</legend>
 			<table border=0 width="100%">
 				<tr>
 					<td class='littletableheaderc'><?=$form->clase->label ?></td>
@@ -152,7 +150,7 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 			<table border=0 width="100%">
 				<tr>
 					<td class="littletableheaderc"><?=$form->iva->label   ?></td>
-					<td class="littletablerow" align='right'><?=$form->iva->output  ?></td>
+					<td class="littletablerow" align='right'><?=$form->iva->output ?></td>
 				</tr>
 				<tr>
 					<td class="littletableheaderc"><?=$form->formcal->label ?></td>
@@ -277,9 +275,9 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 			</fieldset>
 		</td>
 		<td valign='top'>
-			<?php if($form->_status=="show"){ ?>
+			<?php if($form->_status=='show'){ ?>
 			<fieldset  style='border: 2px outset #AEB404;background: #F5F6CE;'>
-			<legend class="titulofieldset" >Ultimos Movimientos</legend>
+			<legend class="titulofieldset" >&Uacute;ltimos Movimientos</legend>
 			<table width='100%' >
 				<tr>
 					<td class="littletableheader" style='background:#F5F6CE;color:#112211' >Compras</td>

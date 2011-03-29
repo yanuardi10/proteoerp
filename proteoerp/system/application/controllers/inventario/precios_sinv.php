@@ -177,12 +177,12 @@ class precios_sinv extends validaciones{
 				$base='base'.$i;
 				$marg='margen'.$i;
 
-				$$base=round($$prec*100/(100+$iva),2);   //calculamos la base
-				$$marg=round(100-($costo*100/$$base),2); //calculamos el margen
+				$$base=$$prec*100/(100+$iva);   //calculamos la base
+				$$marg=100-($costo*100/$$base); //calculamos el margen
 
-				$do->set($prec,$$prec);
-				$do->set($base,$$base);
-				$do->set($marg,$$marg);
+				$do->set($prec,round($$prec,2));
+				$do->set($base,round($$base,2));
+				$do->set($marg,round($$marg,2));
 			}
 			return true;
 		}else{

@@ -113,16 +113,17 @@ class sinv extends Controller {
 		$filter->clave->group = "Uno";
 
 		$filter->activo = new dropdownField("Activo", "activo");
-		$filter->activo->option("","");
-		$filter->activo->option("S","Si");
-		$filter->activo->option("N","No");
+		$filter->activo->option('','Todos');
+		$filter->activo->option('S','Si');
+		$filter->activo->option('N','No');
 		$filter->activo ->style='width:120px;';
 		$filter->activo->group = "Uno";
 
 		$filter->proveed = new inputField("Proveedor", "proveed");
 		$filter->proveed->append($bSPRV);
-		$filter->proveed->clause ="in";
-		$filter->proveed->db_name='( a.prov1, a.prov2, a.prov3 )';
+		//$filter->proveed->clause ="in";
+		$filter->proveed->db_name='CONCAT_WS("-",`a`.`prov1`, `a`.`prov2`, `a`.`prov3`)';
+		//$filter->proveed->db_name='( a.prov1, a.prov2, a.prov3 )';
 		$filter->proveed -> size=10;
 		$filter->proveed->group = "Dos";
 
@@ -416,6 +417,8 @@ class sinv extends Controller {
 		}
 
 		$edit = new DataEdit("Maestro de Inventario", $do);
+		$edit->pre_process('insert','_pre_inserup');
+		$edit->pre_process('update','_pre_inserup');
 		$edit->pre_process('delete','_pre_del');
 
 		$edit->script($script,"create");
@@ -573,38 +576,37 @@ class sinv extends Controller {
 
 		$edit->clase= new dropdownField("Clase", "clase");
 		$edit->clase->style='width:100px;';
-		$edit->clase->option("A","Alta Rotacion");
-		$edit->clase->option("B","Media Rotacion");
-		$edit->clase->option("C","Baja Rotacion");
-		$edit->clase->option("I","Importacion Propia");
+		$edit->clase->option('A',"Alta Rotacion");
+		$edit->clase->option('B',"Media Rotacion");
+		$edit->clase->option('C',"Baja Rotacion");
+		$edit->clase->option('I',"Importacion Propia");
 
-		$edit->iva = new inputField("IVA%", "iva");
-		$edit->iva->css_class='inputnum';
-		$edit->iva->size=10;
-		$edit->iva->maxlength=6;
-		$edit->iva->onchange = "requeridos();";
-		//$edit->iva->append("%");
-		if($edit->_status=='create'){
-			$iva=$this->datasis->dameval("SELECT valor FROM valores WHERE nombre='IVA'");
-			$edit->iva->insertValue=($iva);
+		$ivas=$this->datasis->ivaplica();
+		$edit->iva = new dropdownField('IVA %', 'iva');
+		foreach($ivas as $tasa=>$ivamonto){
+			$edit->iva->option($ivamonto,nformat($ivamonto));
 		}
+		$edit->iva->style='width:100px;';
 
 		$edit->ultimo = new inputField("Ultimo", "ultimo");
 		$edit->ultimo->css_class='inputnum';
 		$edit->ultimo->size=10;
 		$edit->ultimo->maxlength=13;
-		$edit->ultimo->onchange = "requeridos();";
+		$edit->ultimo->autcomplete=false;
+		$edit->ultimo->onkeyup = "requeridos();";
 		$edit->ultimo->rule="required";
 
 		$edit->pond = new inputField("Promedio", "pond");
 		$edit->pond->css_class='inputnum';
 		$edit->pond->size=10;
 		$edit->pond->maxlength=13;
-		$edit->pond->onchange = "requeridos();";
+		$edit->pond->autcomplete=false;
+		$edit->pond->onkeyup = "requeridos();";
 		$edit->pond->rule="required";
 
 		$edit->standard = new inputField("Standard", "standard");
 		$edit->standard->css_class='inputnum';
+		$edit->standard->autcomplete=false;
 		$edit->standard->size=10;
 		$edit->standard->maxlength=13;
 
@@ -631,7 +633,8 @@ class sinv extends Controller {
 			$edit->$objeto->css_class='inputnum';
 			$edit->$objeto->size=10;
 			$edit->$objeto->maxlength=6;
-			$edit->$objeto->onchange = "calculos('I');";
+			$edit->$objeto->onkeyup = "calculos('I');";
+			$edit->$objeto->autcomplete=false;
 			$edit->$objeto->rule="required";
 
 			$objeto="Ebase$i";
@@ -643,8 +646,9 @@ class sinv extends Controller {
 			$edit->$objeto->css_class='inputnum';
 			$edit->$objeto->size=10;
 			$edit->$objeto->maxlength=13;
+			$edit->$objeto->autcomplete=false;
 			$edit->$objeto->in="margen$i";
-			$edit->$objeto->onchange = "cambiobase('I');";
+			$edit->$objeto->onkeyup = "cambiobase('I');";
 			$edit->$objeto->rule="required";
 
 			$objeto="Eprecio$i";
@@ -655,9 +659,10 @@ class sinv extends Controller {
 			$edit->$objeto = new inputField("Margen $i", $objeto);
 			$edit->$objeto->css_class='inputnum';
 			$edit->$objeto->size=10;
+			$edit->$objeto->autcomplete=false;
 			$edit->$objeto->maxlength=6;
 			$edit->$objeto->in="margen$i";
-			$edit->$objeto->onchange = "cambioprecio('I');";
+			$edit->$objeto->onkeyup = "cambioprecio('I');";
 			$edit->$objeto->rule="required";
 		}
 
@@ -746,6 +751,36 @@ class sinv extends Controller {
 		$data['title']   = heading('Maestro de Inventario');
 		//$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").script("sinvmaes.js").$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
+	}
+
+	function _pre_inserup(){
+		for($i=1;$i<5;$i++){
+			$prec='precio'.$i;
+			$$prec=round($do->get($prec),2); //optenemos el precio
+		}
+
+		if($precio1>=$precio2 && $precio2>=$precio3 && $precio3>=$precio4){
+			$formcal= $do->get('formcal');
+			$iva= $do->get('iva');
+			$costo=($formcal=='U')? $do->get('ultimo'):($formcal=='P')? $do->get('pond'):($do->get('pond')>$do->get('ultimo'))? $do->get('pond') : $do->get('ultimo');
+
+			for($i=1;$i<5;$i++){
+				$prec='precio'.$i;
+				$base='base'.$i;
+				$marg='margen'.$i;
+
+				$$base=$$prec*100/(100+$iva);   //calculamos la base
+				$$marg=100-($costo*100/$$base); //calculamos el margen
+
+				$do->set($prec,round($$prec,2));
+				$do->set($base,round($$base,2));
+				$do->set($marg,round($$marg,2));
+			}
+			return true;
+		}else{
+			$do->error_message_ar['pre_upd'] = 'Los precios deben cumplir con:<br> Precio 1 mayor o igual al Precio 2 mayor o igual al  Precio 3 mayor o igual al Precio 4';
+			return false;
+		}
 	}
 
 	function cprecios(){
@@ -869,8 +904,7 @@ class sinv extends Controller {
 
 		$filter->proveed = new inputField("Proveedor", "proveed");
 		$filter->proveed->append($bSPRV);
-		$filter->proveed->clause ="in";
-		$filter->proveed->db_name='( a.prov1, a.prov2, a.prov3 )';
+		$filter->proveed->db_name='CONCAT_WS("-",`a`.`prov1`, `a`.`prov2`, `a`.`prov3`)';
 		$filter->proveed -> size=10;
 		$filter->proveed->group = "Dos";
 
