@@ -11,15 +11,13 @@ class sfacdesp extends Controller {
 		$data['content'] = '<div align="center" id="maso" >';
 
 		$data['content'].= '<div class="box" style="width:240px;background-color: #F9F7F9;">'.br();
-		$data['content'].= '<a href="'.site_url('ventas/sfacdesp/filteredgrid').'"><img border=0 src="'.base_url().'images/despachoexp1.png'.'"></a>'.br();
-		$data['content'].= '<p>Seleccione esta opci&oacute;n para depachos masivos de <b>varios d&iacute;as</b></p>'.br();
-		//$data['content'].= anchor('finanzas/gser/gserchi'  ,'Gastos de Caja Chica').br();
+		$data['content'].= '<a href="'.site_url('ventas/sfacdesp/filterexpress').'"><img border=0 src="'.base_url().'images/despachoexp1.png'.'"></a>'.br();
+		$data['content'].= '<p>Seleccione esta opci&oacute;n para despachos masivos de <b>varios d&iacute;as</b> en forma r&aacute;pida y eficiente</p>.'.br();
 		$data['content'].= '</div>'.br();
 
 		$data['content'].= '<div class="box" style="width:240px;background-color: #F9F7F9;">'.br();
-		$data['content'].= '<a href="'.site_url('ventas/sfacdesp/filterexpress').'"><img border=0 src="'.base_url().'images/despachoexp2.png'.'"></a>'.br();
-		$data['content'].= '<p>Seleccione esta opci&oacute;n para hacer despachos solo de <b>un solod&iacute;a espec&iacute;fico</b></p>'.br();
-		//$data['content'].= anchor('finanzas/gser/gserchi'  ,'Gastos de Caja Chica').br();
+		$data['content'].= '<a href="'.site_url('ventas/sfacdesp/filteredgrid').'"><img border=0 src="'.base_url().'images/despachoexp2.png'.'"></a>'.br();
+		$data['content'].= '<p>Seleccione esta opci&oacute;n para hacer despachos de <b>un solo d&iacute;a espec&iacute;fico, permite despachos parciales</b>.</p>'.br();
 		$data['content'].= '</div>'.br();
 		$data['content'].= '</div>';
 
@@ -33,17 +31,16 @@ class sfacdesp extends Controller {
 		$this->load->library('encrypt');
 		//$this->rapyd->uri->keep_persistence();
 
-		//filter
-		$filter = new DataFilter('Filtro');
+		$filter = new DataFilter('Recuerde que la fecha es obligatoria');
 		$select=array('a.cod_cli AS cliente','a.fecha','if(a.referen=\'C\',\'Cred\',\'Cont\') referen','a.numero','a.nombre','a.totalg AS total','a.vd','d.nombre AS vendedor');
 		$select[]='GROUP_CONCAT(e.despacha) LIKE \'%S%\' AS parcial';
 		$filter->db->select($select);
 		$filter->db->from('sitems AS e');
 		$filter->db->join('itsnot AS c' ,'c.factura=e.numa AND c.codigo=e.codigoa','LEFT');
-		$filter->db->join('sfac AS a','e.numa=a.numero AND e.tipoa=a.tipo_doc');
-		$filter->db->join('sfac AS g','a.numero=g.factura AND g.tipo_doc=\'D\'','LEFT');
+		$filter->db->join('sfac AS a'   ,'e.numa=a.numero AND e.tipoa=a.tipo_doc');
+		$filter->db->join('sfac AS g'   ,'a.numero=g.factura AND g.tipo_doc=\'D\'','LEFT');
+		$filter->db->join('vend AS d'   ,'a.vd=d.vendedor');
 		//$filter->db->join('snot AS c' ,'a.numero=c.factura','LEFT');
-		$filter->db->join('vend AS d' ,'a.vd=d.vendedor');
 		//$filter->db->join('sfac AS f','a.numero=e.factura','LEFT');
 		$filter->db->groupby('e.numa');
 		$filter->db->where('a.fdespacha IS NULL');
@@ -59,11 +56,13 @@ class sfacdesp extends Controller {
 		$filter->fechad->db_name = 'a.fecha';
 		$filter->fechad->size = 10;
 		$filter->fechad->operator = '=';
+		$filter->fechad->rule='required';
+		$filter->fechad->insertValue=date('Y-m-d');
 
 		$filter->numero = new inputField('N&uacute;mero', 'a.numero');
 		$filter->numero->size = 20;
 
-		$action = "javascript:window.location='".site_url('ventas/sfacdesp')."'";
+		$action = "javascript:window.location='".site_url('ventas/sfacdesp/index')."'";
 		$filter->button('btn_regresa', 'Regresar', $action, 'TR');
 
 		$filter->buttons('reset','search');
@@ -97,23 +96,28 @@ class sfacdesp extends Controller {
 				return '';
 		}
 
-		$grid = new DataGrid($seltodos);
-		$grid->use_function('descheck');
-		$grid->use_function('colum');
-		$grid->use_function('parcial');
+		if($filter->is_valid()){
+			$grid = new DataGrid($seltodos);
+			$grid->use_function('descheck');
+			$grid->use_function('colum');
+			$grid->use_function('parcial');
 
-		$link=anchor('ventas/sfacdesp/parcial/<#numero#>','<#numero#>');
-		$grid->column("Fecha"        ,'<dbdate_to_human><#fecha#></dbdate_to_human>');
-		$grid->column("Tipo"         ,'referen');
-		$grid->column("N&uacute;mero",'<parcial><#parcial#></parcial>'.$link);
-		$grid->column("Cliente"      ,'cliente');
-		$grid->column('Nombre'       ,'nombre');
-		$grid->column('Total'        ,'<nformat><#total#></nformat>'   ,"align='right'");
-		$grid->column('Vendedor'     ,'(<#vd#>) <#vendedor#>'          ,"align='center'");
-		$grid->column('Despachado'   ,'<descheck><#numero#></descheck>',"align='center'");
-		//$grid->submit('boton', 'Descargar a Excel','BR');
-		$grid->build();
-		//echo $grid->db->last_query();
+			$link=anchor('ventas/sfacdesp/parcial/<#numero#>','<#numero#>');
+			$grid->column('Fecha'        ,'<dbdate_to_human><#fecha#></dbdate_to_human>');
+			$grid->column('Tipo'         ,'referen');
+			$grid->column('N&uacute;mero','<parcial><#parcial#></parcial>'.$link);
+			$grid->column('Cliente'      ,'cliente');
+			$grid->column('Nombre'       ,'nombre');
+			$grid->column('Total'        ,'<nformat><#total#></nformat>'   ,"align='right'");
+			$grid->column('Vendedor'     ,'(<#vd#>) <#vendedor#>'          ,"align='center'");
+			$grid->column('Despachado'   ,'<descheck><#numero#></descheck>',"align='center'");
+			$grid->build();
+			echo $grid->db->last_query();
+			exit();
+			$cana=$grid->recordCount;
+		}else{
+			$cana=0;
+		}
 
 		$script ='<script type="text/javascript">
 		$(document).ready(function() {
@@ -122,20 +126,11 @@ class sfacdesp extends Controller {
 			$("#alter").click(function() { $("#adespacha").toggleCheckboxes();  });
 		});
 		</script>';
-		$consulta = $grid->db->last_query();
-		$mSQL     = $this->encrypt->encode($consulta);
-
-		//$ggrid.=form_hidden('mSQL', $mSQL);
-
-		$campo="<form action='/../../proteoerp/xlsauto/repoauto2/' method='post'>
-		<input size='100' type='hidden' name='mSQL' value='$mSQL'>
-		<input type='submit' value='Descargar a Excel' name='boton' class = 'button'/>
-		</form>";
 
 		$attributes = array('id' => 'adespacha');
 		$data['content'] =  $filter->output;
-		if($grid->recordCount>0)
-			$data['content'] .=form_open('ventas/sfacdesp/procesar',$attributes).$grid->output.form_submit('mysubmit', 'Aceptar').form_close().$campo.$script;
+		if($cana>0)
+			$data['content'] .=form_open('ventas/sfacdesp/procesar',$attributes).$grid->output.form_submit('mysubmit', 'Aceptar').form_close().$script;
 		$data['title']   =  heading('Despacho Express');
 		$data['head']    =  script('jquery-1.2.6.pack.js');
 		$data['head']    .= script("plugins/jquery.checkboxes.pack.js").$this->rapyd->get_head();
@@ -148,15 +143,14 @@ class sfacdesp extends Controller {
 		$this->load->library('encrypt');
 		//$this->rapyd->uri->keep_persistence();
 
-		$filter = new DataFilter('Filtro');
+		$filter = new DataFilter('Recuerde que las fechas son obligatoria');
 		$select=array("IF(a.tipo_doc='F','Activa',IF(a.tipo_doc='D','Devolucion',IF(a.tipo_doc='X','Anulada','Otro'))) AS tipo_doc", 
-		"a.cod_cli as cliente","a.fecha","if(a.referen='C','Cred','Cont') referen","a.numero","a.nombre","a.totalg as total","a.vd","d.nombre as vendedor");
-		$select[]="GROUP_CONCAT(e.despacha) LIKE '%S%' AS parcial";
+		"a.cod_cli AS cliente","a.fecha","if(a.referen='C','Cred','Cont') referen","a.numero","a.nombre","a.totalg AS total","a.vd");
 		$filter->db->select($select);
 		$filter->db->from('sfac AS a');
 		$filter->db->join('snot AS c' ,'a.numero=c.factura','LEFT');
-		$filter->db->join('vend AS d' ,'a.vd=d.vendedor');
-		$filter->db->join('sitems AS e','e.numa=a.numero AND e.tipoa=a.tipo_doc');
+		//$filter->db->join('vend AS d' ,'a.vd=d.vendedor');
+		//$filter->db->join('sitems AS e','e.numa=a.numero AND e.tipoa=a.tipo_doc');
 		$filter->db->groupby('a.numero,a.tipo_doc');
 		$filter->db->where('a.fdespacha IS NULL');
 		$filter->db->where('a.tipo_doc','F');
@@ -171,22 +165,23 @@ class sfacdesp extends Controller {
 		$filter->fechad->db_name =$filter->fechah->db_name='a.fecha';
 		$filter->fechad->insertValue = date('Y-m-d');
 		$filter->fechah->insertValue = date('Y-m-d');
+		$filter->fechad->rule=$filter->fechah->rule='required';
 		$filter->fechad->operator='>=';
 		$filter->fechah->operator='<=';
 		$filter->fechah->group = $filter->fechad->group ='Fechas';
 
-		$filter->numero = new inputField("N&uacute;mero", "a.numero");
+		$filter->numero = new inputField('N&uacute;mero', 'a.numero');
 		$filter->numero->size = 20;
 
-		$action = "javascript:window.location='".site_url('ventas/sfacdesp')."'";
+		$action = "javascript:window.location='".site_url('ventas/sfacdesp/index')."'";
 		$filter->button('btn_regresa', 'Regresar', $action, 'TR');
 
-		$filter->buttons("reset","search");
+		$filter->buttons('reset','search');
 		$filter->build();
 
-		$uri = "ventas/cajeros/dataedit/show/<#cajero#>";
+		$uri = 'ventas/cajeros/dataedit/show/<#cajero#>';
 
-		if(!$this->rapyd->uri->is_set("search")) $filter->db->where('a.fecha','CURDATE()');
+		if(!$this->rapyd->uri->is_set('search')) $filter->db->where('a.fecha','CURDATE()');
 
 		function descheck($numero){
 			$data = array(
@@ -198,43 +193,38 @@ class sfacdesp extends Controller {
 		}
 
 		$seltodos='Seleccionar <a id="todos" href=# >Todos</a> <a id="nada" href=# >Ninguno</a> <a id="alter" href=# >Invertir</a>';
-		//grid
-		$grid = new DataGrid("$seltodos");
-		$grid->use_function('descheck');
-		$grid->use_function('colum');
-		$grid->use_function('parcial');
 
-		function colum($tipo_doc) {
-			if ($tipo_doc=='Anulada')
-				return ('<b style="color:red;">'.$tipo_doc.'</b>');
-			else
-				return ($tipo_doc);
+		if($filter->is_valid()){
+			$grid = new DataGrid($seltodos);
+			$grid->use_function('descheck');
+			$grid->use_function('colum');
+			$grid->use_function('parcial');
+
+			$grid = new DataGrid($seltodos);
+			$grid->use_function('descheck');
+
+			$grid->column('Fecha'        ,'<dbdate_to_human><#fecha#></dbdate_to_human>');
+			$grid->column('Tipo'         ,'referen');
+			$grid->column('N&uacute;mero','numero');
+			$grid->column('Cliente'      ,'cliente');
+			$grid->column('Nombre'       ,'nombre');
+			$grid->column('Total'        ,'<nformat><#total#></nformat>',"align=right");
+			$grid->column('Vendedor'     ,'vd',"align=center");
+			$grid->column('Despachado'   ,'<descheck><#numero#></descheck>',"align=center");
+			$grid->build();
+			//echo $grid->db->last_query();
+			$cana=$grid->recordCount;
+
+			$consulta = $grid->db->last_query();
+			$mSQL     = $this->encrypt->encode($consulta);
+			$campo="<form action='/../../proteoerp/xlsauto/repoauto2/' method='post'>
+			<input size='100' type='hidden' name='mSQL' value='$mSQL'>
+			<input type='submit' value='Descargar a Excel' name='boton' class = 'button'/>
+			</form>";
+		}else{
+			$campos='';
+			$cana=0;
 		}
-
-		function parcial($parcial) {
-			if ($parcial)
-				return '*';
-			else
-				return '';
-		}
-
-		$grid = new DataGrid($seltodos);
-		$grid->use_function('descheck');
-		$grid->use_function('colum');
-		$grid->use_function('parcial');
-
-		$link=anchor('ventas/sfacdesp/parcial/<#numero#>','<#numero#>');
-		$grid->column("Fecha"        ,'<dbdate_to_human><#fecha#></dbdate_to_human>');
-		$grid->column("Tipo"         ,'referen');
-		$grid->column("N&uacute;mero",'<parcial><#parcial#></parcial>'.$link);
-		$grid->column("Cliente","cliente");
-		$grid->column("Nombre","nombre");
-		$grid->column("Total","<number_format><#total#>|2</number_format>","align=right");
-		$grid->column("Vendedor","vd","align=center");
-		$grid->column("Status","<colum><#tipo_doc#></colum>");
-		$grid->column("Despachado","<descheck><#numero#></descheck>","align=center");
-		$grid->build();
-		//echo $grid->db->last_query();
 
 		$script ='<script type="text/javascript">
 		$(document).ready(function() {
@@ -243,19 +233,15 @@ class sfacdesp extends Controller {
 			$("#alter").click(function() { $("#adespacha").toggleCheckboxes();  });
 		});
 		</script>';
-		$consulta = $grid->db->last_query();
-		$mSQL     = $this->encrypt->encode($consulta);
+
 
 		//$ggrid.=form_hidden('mSQL', $mSQL);
 
-		$campo="<form action='/../../proteoerp/xlsauto/repoauto2/' method='post'>
-		<input size='100' type='hidden' name='mSQL' value='$mSQL'>
-		<input type='submit' value='Descargar a Excel' name='boton' class = 'button'/>
-		</form>";
+
 
 		$attributes = array('id' => 'adespacha');
 		$data['content'] =  $filter->output;
-		if($grid->recordCount>0)
+		if($cana>0)
 			$data['content'] .=form_open('ventas/sfacdesp/procesar',$attributes).$grid->output.form_submit('mysubmit', 'Aceptar').form_close().$campo.$script;
 		$data['title']   =  heading('Despacho Express');
 		$data['head']    =  script('jquery-1.2.6.pack.js');
