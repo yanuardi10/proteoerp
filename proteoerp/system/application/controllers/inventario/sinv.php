@@ -234,7 +234,7 @@ class sinv extends Controller {
 
 		$script='
 		function dpto_change(){
-			$.post("'.$link12.'",{ depto:$("#depto").val() },function(data){$("#linea").html(data);})
+			$.post("'.$link12.'",{ depto:$("#depto").val() },function(data){alert("sasa");$("#linea").html(data);})
 			$.post("'.$link14.'",{ linea:"" },function(data){$("#grupo").html(data);})
 		}
 		
@@ -753,7 +753,7 @@ class sinv extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
-	function _pre_inserup(){
+	function _pre_inserup($do){
 		for($i=1;$i<5;$i++){
 			$prec='precio'.$i;
 			$$prec=round($do->get($prec),2); //optenemos el precio
