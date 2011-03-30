@@ -112,8 +112,7 @@ class sfacdesp extends Controller {
 			$grid->column('Vendedor'     ,'(<#vd#>) <#vendedor#>'          ,"align='center'");
 			$grid->column('Despachado'   ,'<descheck><#numero#></descheck>',"align='center'");
 			$grid->build();
-			echo $grid->db->last_query();
-			exit();
+
 			$cana=$grid->recordCount;
 		}else{
 			$cana=0;
