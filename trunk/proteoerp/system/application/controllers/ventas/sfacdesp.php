@@ -54,15 +54,11 @@ class sfacdesp extends Controller {
 		$filter->db->_escape_char='';
 		$filter->db->_protect_identifiers=false;
 
-		$filter->fechad = new dateonlyField('Desde', 'fechad');
-		$filter->fechah = new dateonlyField('Hasta', 'fechah');
-		$filter->fechad->clause  =$filter->fechah->clause ='where';
-		$filter->fechad->db_name =$filter->fechah->db_name='a.fecha';
-		$filter->fechad->insertValue = date('Y-m-d');
-		$filter->fechah->insertValue = date('Y-m-d');
-		$filter->fechad->operator='>=';
-		$filter->fechah->operator='<=';
-		$filter->fechah->group = $filter->fechad->group ='Fechas';
+		$filter->fechad = new dateonlyField('Fecha', 'fechad');
+		$filter->fechad->clause = 'where';
+		$filter->fechad->db_name = 'a.fecha';
+		$filter->fechad->size = 10;
+		$filter->fechad->operator = '=';
 
 		$filter->numero = new inputField('N&uacute;mero', 'a.numero');
 		$filter->numero->size = 20;
@@ -160,7 +156,8 @@ class sfacdesp extends Controller {
 		$filter->db->from('sfac AS a');
 		$filter->db->join('snot AS c' ,'a.numero=c.factura','LEFT');
 		$filter->db->join('vend AS d' ,'a.vd=d.vendedor');
-		$filter->db->join('sitems AS e','e.numa=a.numero AND e.tipoa=a.tipo_doc'); $filter->db->groupby('a.numero,a.tipo_doc');
+		$filter->db->join('sitems AS e','e.numa=a.numero AND e.tipoa=a.tipo_doc');
+		$filter->db->groupby('a.numero,a.tipo_doc');
 		$filter->db->where('a.fdespacha IS NULL');
 		$filter->db->where('a.tipo_doc','F');
 		$filter->db->where('c.factura IS NULL');
@@ -168,17 +165,15 @@ class sfacdesp extends Controller {
 		$filter->db->_escape_char='';
 		$filter->db->_protect_identifiers=false;
 
-		$filter->fechad = new dateonlyField('Fecha', 'fechad');
-		$filter->fechad->clause = 'where';
-		$filter->fechad->db_name = 'a.fecha';
-		$filter->fechad->size = 10;
-		$filter->fechad->operator = '=';
-
-		/*$filter->fechah = new dateonlyField('Hasta', 'fechah');
-		$filter->fechah->clause   = 'where';
-		$filter->fechah->db_name = 'fecha';
-		$filter->fechah->size = 10;
-		$filter->fechah->operator = '<=';*/
+		$filter->fechad = new dateonlyField('Desde', 'fechad');
+		$filter->fechah = new dateonlyField('Hasta', 'fechah');
+		$filter->fechad->clause  =$filter->fechah->clause ='where';
+		$filter->fechad->db_name =$filter->fechah->db_name='a.fecha';
+		$filter->fechad->insertValue = date('Y-m-d');
+		$filter->fechah->insertValue = date('Y-m-d');
+		$filter->fechad->operator='>=';
+		$filter->fechah->operator='<=';
+		$filter->fechah->group = $filter->fechad->group ='Fechas';
 
 		$filter->numero = new inputField("N&uacute;mero", "a.numero");
 		$filter->numero->size = 20;
