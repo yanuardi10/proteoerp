@@ -4,7 +4,7 @@ class pfac extends validaciones{
 	function pfac(){
 		parent :: Controller();
 		$this->load->library('rapyd');
-		// $this->datasis->modulo_id(104,1);
+		$this->datasis->modulo_id(120,1);
 	}
 
 	function index(){
