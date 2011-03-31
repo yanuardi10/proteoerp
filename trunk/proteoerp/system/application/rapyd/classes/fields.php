@@ -70,6 +70,7 @@ class objField {
   var $extra_output;
   var $css_class;
   var $title=null;
+  var $tabindex=null;
   var $valid_error=''; //Para los errores de validacion
   
   //unused

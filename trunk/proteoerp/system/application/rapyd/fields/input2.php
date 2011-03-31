@@ -69,6 +69,7 @@ class inputField2 extends objField{
           'style'       => $this->style
           );
 		if($this->readonly) $attributes['readonly']='readonly';
+		if(!empty($this->tabindex)) $attributes['tabindex']=$this->tabindex;
         $output = form_input($attributes) . $this->extra_output;
         break;
 
