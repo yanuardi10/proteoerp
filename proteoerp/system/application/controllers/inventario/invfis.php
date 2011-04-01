@@ -423,7 +423,7 @@ class Invfis extends Controller {
 
 		if(!$this->db->table_exists($tabla)){
 			$dbalma=$this->db->escape($alma);
-			$mSQL="CREATE TABLE `INVDECA20110324` (  `id` int(11) NOT NULL AUTO_INCREMENT,
+			$mSQL="CREATE TABLE $tabla (  `id` int(11) NOT NULL AUTO_INCREMENT,
 				`codigo` varchar(15) NOT NULL DEFAULT '',
 				`grupo` varchar(4) DEFAULT NULL,
 				`alma` varchar(4) DEFAULT 'DECA',

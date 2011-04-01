@@ -400,7 +400,7 @@ class Sinvactu extends Controller{
 		$type='';
 		if(isset($_FILES['archivoUserFile']['type']))$type=$_FILES['archivoUserFile']['type'];
 		
-		if($type=='application/x-msexcel'){
+		if(true || $type=='application/x-msexcel'){
 			$name=$_FILES['archivoUserFile']['name'];
 			$dir=".././".$name;
 			if (copy($_FILES['archivoUserFile']['tmp_name'], $dir)){
