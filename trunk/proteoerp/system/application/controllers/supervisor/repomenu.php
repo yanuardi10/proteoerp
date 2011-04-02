@@ -43,39 +43,46 @@ class repomenu extends validaciones {
 		$filter->nombre = new inputField('Nombre', 'nombre');
 		$filter->nombre->db_name='b.nombre';
 		$filter->nombre->size=20;
+		$filter->nombre->group = 'Uno';
 
 		$filter->modulo = new dropdownField('Modulo','modulo');
 		$filter->modulo->option('','Todos');
 		$filter->modulo->options('SELECT modulo,modulo as value FROM intrarepo GROUP BY modulo');
 		$filter->modulo->style='width:130px';
+		$filter->modulo->group = 'Uno';
 
 		$filter->titulo = new inputField('T&iacute;tulo','titulo');
 		$filter->titulo->size=30;
+		$filter->titulo->group = 'Uno';
 
 		$filter->activo = new dropdownField('Activo','activo');
 		$filter->activo->option('','Todos');
 		$filter->activo->option('S','Si');
 		$filter->activo->option('N','No');
 		$filter->activo->style='width:80px';
+		$filter->activo->group = 'Uno';
 
 		$filter->proteo = new inputField('Contenido Proteo','proteo');
 		$filter->proteo->size=40;
 		$filter->proteo->db_name='b.proteo';
+		$filter->proteo->group = 'Dos';
 
 		$filter->reporte = new inputField('Contenido Datasis','reporte');
 		$filter->reporte->size=40;
 		$filter->reporte->db_name='b.reporte';
+		$filter->reporte->group = 'Dos';
 
 		$filter->harbourd = new inputField('Contenido Harbourd','harbourd');
 		$filter->harbourd->size=40;
 		$filter->harbourd->db_name='b.harbour';
+		$filter->harbourd->group = 'Dos';
 
 		/*$filter->tcpdf = new inputField('Contenido TCPDF','tcpdf');
 		$filter->tcpdf->size=40;
 		$filter->tcpdf->db_name='b.tcpdf';*/
 
 		$filter->buttons('reset','search');
-		$filter->build();
+		$filter->build('dataformfiltro');
 
 		$uri1 = anchor('supervisor/repomenu/reporte/modify/<#alternativo#>/' ,'Editar');
 		$uri2 = anchor('supervisor/repomenu/rdatasis/modify/<#alternativo#>/','Editar');
@@ -130,8 +137,9 @@ class repomenu extends validaciones {
 			}).change();
 		});
 		</script>';
-		$data['content'] = $filter->output.'<form>'.$grid->output.'</form>';
-		$data['title']   = '<h1>Menu de Reportes</h1>';
+		$data['content'] = '<form>'.$grid->output.'</form>';
+		$data['filtro']  = $filter->output;
+		$data['title']   = '<h1>Gestor de Reportes</h1>';
 		$data['head']    = script("jquery.pack.js").$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}

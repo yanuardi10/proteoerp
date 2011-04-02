@@ -27,7 +27,7 @@ class sfacpaga extends Controller {
 		$filter->db->from('sfac'); 
 		$filter->db->where('pagada >= fecha');
 		$filter->db->where('tipo_doc !=','X');
-		$filter->db->orderby("fecha");
+		$filter->db->orderby('fecha');
 		$filter->db->_escape_char='';
 		$filter->db->_protect_identifiers=false;
 

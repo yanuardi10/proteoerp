@@ -100,7 +100,7 @@ class Kardex extends Controller {
 			$grid = new DataGrid2("($code) $descrip");
 			$grid->agrupar('Almacen: ', 'almacen');
 			$grid->use_function('convierte','str_replace');
-			$grid->db->select(array('IFNULL( b.ubides , a.ubica ) almacen','a.ubica','a.fecha','a.venta','a.cantidad', 'a.saldo', 'a.monto', 'a.salcant', 'TRIM(a.codigo) AS codigo', 'a.origen', 'a.promedio','a.venta / a.cantidad AS vpromedio'));
+			$grid->db->select(array('IFNULL( b.ubides , a.ubica ) almacen','a.ubica','a.fecha','a.venta','a.cantidad', 'a.saldo', 'a.monto', 'a.salcant', 'TRIM(a.codigo) AS codigo', 'a.origen', 'a.promedio','(a.venta / a.cantidad) AS vpromedio'));
 			$grid->db->from('costos a');
 			$grid->db->join('caub b ','b.ubica=a.ubica','LEFT');
 			$grid->db->orderby('almacen, fecha, origen');
