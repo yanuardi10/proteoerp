@@ -7,6 +7,9 @@ class Invfis extends Controller {
 		parent::Controller();
 		$this->load->library('rapyd');
 		$this->datasis->modulo_id(319,1);
+		if (!extension_loaded('sysvsem')) {
+			show_error('La extension sysvsem no esta cargada, debe cargarla para poder usar estas opciones');
+		}
 	}
 
 	function index(){
@@ -14,13 +17,13 @@ class Invfis extends Controller {
 	}
 
 	function define(){
-		$this->rapyd->load("dataform");
+		$this->rapyd->load('dataform');
 
 		$form0 = new DataForm('inventario/invfis/define/process/crear');
 		$form0->title('Crear Inventario');
 		$form0->explica1 = new containerField("","<p style='color:blue;background-color:C6DAF6;align:center'>Esta seccion crea una tabla de inventario vacia de el Almac&eacute;n seleccionado donde se ingresa los valores resultantes del conteo de Inventario.<BR><BR></p> ");
 		$form0->alma = new dropdownField("Almac&eacute;n", "alma");
-		$form0->alma->options("SELECT TRIM(ubica),TRIM(ubides) FROM caub WHERE gasto='N' AND invfis='N' ORDER BY ubides");
+		$form0->alma->options("SELECT TRIM(ubica),CONCAT_WS('-',TRIM(ubides),TRIM(ubica)) AS desca FROM caub WHERE gasto='N' AND invfis='N' ORDER BY ubides");
 		$form0->alma->rule='required';
 		$form0->explica2 = new containerField("","<p style='color:blue;background-color:C6DAF6;align:center'>La fecha es muy importante, si el conteo fisico se realizo en la ma&ntilde;ana antes de abrir debe colocar la fecha de ayer, de lo contrario si el conteo se hizo en la tarde al final de la jornada debe colocar la fecha de Hoy.</p>");
 
@@ -54,17 +57,17 @@ class Invfis extends Controller {
 		$form3->inv->style = 'width:400px';
 		$form3->submit("btnDELETE" ,"Descartar Inventario");
 
-		$mSQL=$this->db->query("SHOW TABLES LIKE 'INV%'");
+		$mSQL=$this->db->query("SHOW TABLES LIKE 'INV%________'");
 		foreach($mSQL->result_array() AS $row){
 			foreach($row AS $key=>$value){
-				$vval='Almacen:'.$this->datasis->dameval("SELECT ubides FROM caub WHERE ubica ='".substr($value,3,strlen($value)-11)."'").' de Fecha '.dbdate_to_human(substr($value,-8));
+				$vval='Almacen:'.$this->datasis->dameval("SELECT ubides FROM caub WHERE ubica ='".substr($value,3,-8)."'").' de Fecha '.dbdate_to_human(substr($value,-8));
 				$form3->inv->option($value,$vval);
 				$form2->inv->option($value,$vval);
 				$form1->inv->option($value,$vval);
 			}
 		}
-		$form2->submit("btnSiCero" ,"Cierre de Inventario (Asume existencia cero para los no contados)");
-		$form2->submit("btnNoCero" ,"Cierre de Inventario (Pasa solo los contados)");
+		$form2->submit('btnSiCero' ,'Cierre de Inventario (Asume existencia cero para los no contados)');
+		$form2->submit('btnNoCero' ,'Cierre de Inventario (Pasa solo los contados)');
 
 		$form0->build_form();
 		$form1->build_form();
@@ -116,6 +119,10 @@ class Invfis extends Controller {
 	}
 
 	function inven($tabla){
+		if(!$this->db->table_exists($tabla)) show_error('Inventario f&iacute;sico no exite');
+		$tifecha  =dbdate_to_human(substr($tabla,-8));
+		$tialmacen=substr($tabla,3,-8);
+
 		$this->rapyd->load('datagrid','dataobject','fields','datafilter2');
 
 		$mSPRV=array(
@@ -182,7 +189,7 @@ class Invfis extends Controller {
 		}';
 
 		$filter = new DataFilter2('Filtro por Producto');
-		$filter->db->select("e.existen,e.modificado,e.contado,e.agregar,e.quitar,e.sustituir,a.tipo AS tipo,a.id,e.codigo,a.descrip,precio1,precio2,precio3,precio4,b.nom_grup AS nom_grup,b.grupo AS grupoid,c.descrip AS nom_linea,c.linea AS linea,d.descrip AS nom_depto,d.depto AS depto,e.id AS idfis");
+		$filter->db->select("e.existen,e.modificado,e.contado,e.agregar,e.quitar,e.sustituir,a.tipo AS tipo,a.id,e.codigo,a.descrip,precio1,precio2,precio3,precio4,b.nom_grup AS nom_grup,b.grupo AS grupoid,c.descrip AS nom_linea,c.linea AS linea,d.descrip AS nom_depto,d.depto AS depto,e.id AS idfis,e.despacha");
 		$filter->db->from("$tabla AS e");
 		$filter->db->join('sinv AS a','a.codigo=e.codigo');
 		$filter->db->join('grup AS b','a.grupo=b.grupo');
@@ -276,7 +283,7 @@ class Invfis extends Controller {
 			$campo = new inputField2('Title', $campo2);
 			$campo->status   = 'create';
 			$campo->css_class='inputnum';
-			$campo->size=8;
+			$campo->size=5;
 			$campo->insertValue=$valor;
 			$campo->readonly = $readonly;
 			$campo->name = $codigo;
@@ -314,26 +321,27 @@ class Invfis extends Controller {
 		$action = "javascript:window.location='".site_url($this->url)."'";
 		$grid->button('btn_regresa', 'Regresar', $action, 'TR');
 
-		$grid->column_orderby('Codigo'            ,'<pinta><#modificado#>|<#codigo#>|<#idfis#>|a</pinta>','codigo','align=center');
-		$grid->column_orderby('Descripci&oacute;n','<pinta><#modificado#>|<#descrip#>|<#idfis#>|b</pinta>','descrip');
-		$grid->column_orderby('Anterior'          ,'<pinta><#modificado#>|<#existen#>|<#idfis#>|c</pinta>','existen','align=right');
-		$grid->column_orderby('Contado'           ,'<caja>c|<#contado#>|<#idfis#>|true|<#dg_row_id#>|0|'.$cana.'</caja>');
+		$grid->column_orderby('Codigo'            ,'<pinta><#modificado#>|<#codigo#>|<#idfis#>|a</pinta>'  ,'codigo'  ,'align=center');
+		$grid->column_orderby('Descripci&oacute;n','<pinta><#modificado#>|<#descrip#>|<#idfis#>|b</pinta>' ,'descrip' );
+		$grid->column_orderby('P.Desp,'           ,'<pinta><#modificado#>|<#despacha#>|<#idfis#>|d</pinta>','despacha','align=right');
+		$grid->column_orderby('Anterior'          ,'<pinta><#modificado#>|<#existen#>|<#idfis#>|d</pinta>' ,'existen' ,'align=right');
+		$grid->column_orderby('Contado'           ,'<caja>c|<#contado#>|<#idfis#>|true|<#dg_row_id#>|0|'.$cana.'</caja>','contado');
 		$grid->column('Agregar'                   ,'<caja>a|<#agregar#>|<#idfis#>|false|<#dg_row_id#>|1|'.$cana.'</caja>');
 		$grid->column('Quitar'                    ,'<caja>q|<#quitar#>|<#idfis#>|false|<#dg_row_id#>|2|'.$cana.'</caja>');
 		$grid->column('Sustituir'                 ,'<caja>s||<#idfis#>|false|<#dg_row_id#>|3|'.$cana.'</caja>');
-		//$grid->column('id'                 ,'<#dg_row_id#>');
 		$grid->build();
 		//echo $grid->db->last_query();
 
 		$data['script']  ='<script language="javascript" type="text/javascript">
+
+		function traer(cod){
+			$.post("'.site_url($this->url.'traer').'",{ codigo:cod,tabla:"'.$tabla.'" },function(data){
+				$("#Ic_"+cod).val(data);
+			})
+		}
+
 		$(function(){
 			$(".inputnum").numeric(".");
-
-			function traer(cod){
-				$.post("'.site_url($this->url.'traer').'",{ codigo:cod,tabla:"'.$tabla.'" },function(data){
-					$("#Ic_"+cod).val(data);
-				})
-			}
 
 			$("input[id^=\'I\']").focus(function(){
 				var cod =$(this).attr("name");
@@ -351,7 +359,7 @@ class Invfis extends Controller {
 					}else{
 						$("[id$=\'"+cod+"span\']").attr("style","color:orange;");
 					}
-				})
+				});
 				traer(cod);
 			});
 
@@ -360,13 +368,13 @@ class Invfis extends Controller {
 				var val = $("#Iq_"+cod).val();
 				var con = $("#Ic_"+cod).val();
 				$.post("'.site_url($this->url.'quitar').'",{ codigo:cod,valor:val,tabla:"'.$tabla.'",contado:con },function(data){
-						$("#Iq_"+cod).val(0);
-						if(data.length>0){
-							alert(data);
-						}else{
-							$("[id$=\'"+cod+"span\']").attr("style","color:orange;");
+					$("#Iq_"+cod).val(0);
+					if(data.length>0){
+						alert(data);
+					}else{
+						$("[id$=\'"+cod+"span\']").attr("style","color:orange;");
 					}
-				})
+				});
 				traer(cod);
 			});
 
@@ -375,13 +383,13 @@ class Invfis extends Controller {
 				var val = $("#Is_"+cod).val();
 				var con = $("#Ic_"+cod).val();
 				$.post("'.site_url($this->url.'sustituir').'",{ codigo:cod,valor:val,tabla:"'.$tabla.'",contado:con },function(data){
-						$("#Is_"+cod).val("");
-						if(data.length>0){
-							alert(data);
-						}else{
-							$("[id$=\'"+cod+"span\']").attr("style","color:orange;");
+					$("#Is_"+cod).val("");
+					if(data.length>0){
+						alert(data);
+					}else{
+						$("[id$=\'"+cod+"span\']").attr("style","color:orange;");
 					}
-				})
+				});
 				traer(cod);
 			});
 		});
@@ -394,8 +402,9 @@ class Invfis extends Controller {
 		$salida=anchor($this->url,'Regresar');
 		$data['content'] = $grid->output.$leyenda;
 		$data['filtro']  = $filter->output;
-		$data['title']   = heading('Conteo de inventario');
-		$data['head']    = script('jquery.js').script('plugins/jquery.numeric.pack.js').$this->rapyd->get_head();
+		$data['title']   = heading("Conteo de inventario, fecha ${tifecha}, almac&eacute;n ${tialmacen}");
+		//$data['head']    = script('jquery.js').
+		$data['head']    = script('plugins/jquery.numeric.pack.js').$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -427,6 +436,7 @@ class Invfis extends Controller {
 				`codigo` varchar(15) NOT NULL DEFAULT '',
 				`grupo` varchar(4) DEFAULT NULL,
 				`alma` varchar(4) DEFAULT 'DECA',
+				`despacha` decimal(13,2) DEFAULT '0.00',
 				`existen` decimal(13,2) DEFAULT '0.00',
 				`contado` decimal(10,1) NOT NULL DEFAULT '0.0',
 				`agregar` decimal(10,1) NOT NULL DEFAULT '0.0',
@@ -446,13 +456,25 @@ class Invfis extends Controller {
 			$ban=$this->db->simple_query($mSQL);
 			if(!$ban){ $error.='Error creando la tabla parcial '; memowrite($mSQL,'INVFIS');  }
 
-			$mSQL = "INSERT IGNORE INTO `$tabla`
+			$mSQL = "INSERT IGNORE INTO `${tabla}`
 			(`codigo`,`grupo`,`existen`,`contado`,`agregar`,`quitar`,`sustituir`,`fecha`,`modificado`,`actualizado`,`pond`)
 			SELECT TRIM(a.codigo),TRIM(a.grupo),IFNULL(b.existen,0) AS existen,0 contado,0 agregar,0 quitar,0 sustituir, NOW() fecha,CAST(NULL AS DATE ) modificado, CAST(NULL AS DATE) actualizado,a.pond
 			FROM sinv a
-			LEFT JOIN itsinv b ON a.codigo=b.codigo AND b.alma=$dbalma";
+			LEFT JOIN itsinv b ON a.codigo=b.codigo AND b.alma=${dbalma}";
 			$ban=$this->db->simple_query($mSQL);
 			if(!$ban){ $error.='Error llenando la tabla parcial '; memowrite($mSQL,'INVFIS'); }
+
+			$mSQL="CREATE TEMPORARY TABLE `tem${tabla}` SELECT c.codigoa,SUM(IF(c.tipoa='D',-1,1)*c.cana) AS cana 
+			FROM sitems AS c
+			JOIN sfac AS d ON c.tipoa=d.tipo_doc AND c.numa=d.numero
+			WHERE c.despacha<>'S' AND d.almacen=${dbalma}
+			GROUP BY c.codigoa";
+			$ban=$this->db->simple_query($mSQL);
+			if(!$ban){ $error.='Error llenando la tabla de despachos '; memowrite($mSQL,'INVFIS'); }
+
+			$mSQL="UPDATE `${tabla}` AS a JOIN `tem${tabla}` AS b ON `a`.`codigo`= `b`.`codigoa` SET `a`.`despacha`=`b`.`cana`";
+			$ban=$this->db->simple_query($mSQL);
+			if(!$ban){ $error.='Error llenando la tabla de despachos '; memowrite($mSQL,'INVFIS'); }
 		}else{
 			$error.="Ya existe un inventario creado para el almac&eacute;n $alma y la fecha seleccionada";
 		}
@@ -532,42 +554,44 @@ class Invfis extends Controller {
 		$valor  = $this->input->post('valor');
 		$tabla  = $this->input->post('tabla');
 		$contado= $this->input->post('contado');
-		$id   = $this->_idsem($tabla);
+		$id     = $this->_idsem($tabla);
 		$error='Oops lo siento!! pero hubo un problema actualizando el registro, por favor comuniquese con soporte';
 
 		if(is_numeric($valor)){
 			$seg=sem_get($id,1,0666,-1);
-			sem_acquire($seg);
-			if($this->db->table_exists($tabla)){
-				$condb  = $this->datasis->damerow("SELECT contado,actualizado FROM ${tabla} WHERE id=${codigo}");
-				if(array_key_exists('contado',$condb) && array_key_exists('actualizado',$condb)){
-					if($condb['actualizado']!=null){
-						echo "Advertencia: El productos ya fue actualizado, no lo puede modificar";
-					}elseif(round($contado,2) != round($condb['contado'],2)){
-						echo "Advertencia: El valor Contado (${contado}) se modifico a ($condb[contado]) mientras usted modificaba el valor";
-					}else{
-						switch($ac){
-							case '=':
-								$mSQL="UPDATE ${tabla} SET contado=${valor},modificado=now() WHERE id=${codigo}";
-							break;
-							case '+':
-								$mSQL="UPDATE ${tabla} SET contado=contado+${valor},modificado=now() WHERE id=${codigo}";
-							break;
-							case '-':
-								$mSQL="UPDATE ${tabla} SET contado=contado-${valor},modificado=now() WHERE id=${codigo}";
-							break;
+			if($seg!==false){
+				sem_acquire($seg);
+				if($this->db->table_exists($tabla)){
+					$condb  = $this->datasis->damerow("SELECT contado,actualizado FROM ${tabla} WHERE id=${codigo}");
+					if(array_key_exists('contado',$condb) && array_key_exists('actualizado',$condb)){
+						if($condb['actualizado']!=null){
+							echo "Advertencia: El productos ya fue actualizado, no lo puede modificar";
+						}elseif(round($contado,2) != round($condb['contado'],2)){
+							echo "Advertencia: El valor Contado (${contado}) se modifico a ($condb[contado]) mientras usted modificaba el valor";
+						}else{
+							switch($ac){
+								case '=':
+									$mSQL="UPDATE ${tabla} SET contado=${valor},modificado=now() WHERE id=${codigo}";
+								break;
+								case '+':
+									$mSQL="UPDATE ${tabla} SET contado=contado+${valor},modificado=now() WHERE id=${codigo}";
+								break;
+								case '-':
+									$mSQL="UPDATE ${tabla} SET contado=contado-${valor},modificado=now() WHERE id=${codigo}";
+								break;
+							}
+							$ban=$this->db->simple_query($mSQL);
+							if(!$ban){ echo $error; }
 						}
-						$ban=$this->db->simple_query($mSQL);
-						if(!$ban){ echo $error; }
+					}else{
+						echo $error.' 1';
 					}
+					sem_release($seg);
 				}else{
-					echo $error.' 1';
+					sem_release($seg);
+					sem_remove($seg);
+					echo 'Advertencia: Este inventario ya fue cerrado, no puede modificar mas nada';
 				}
-				sem_release($seg);
-			}else{
-				sem_release($seg);
-				sem_remove($seg);
-				echo 'Advertencia: Este inventario ya fue cerrado, no puede modificar mas nada';
 			}
 		}else{
 			echo $error.' 2';
@@ -580,5 +604,6 @@ class Invfis extends Controller {
 		for($i=0;$i<$len;$i++){
 			$int+=ord($var[$i]);
 		}
+		return $int;
 	}
 }
