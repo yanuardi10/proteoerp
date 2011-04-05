@@ -209,16 +209,16 @@ function del_itpsinv(id){
 				
 			</tr>
 			<tr>
-				<td class="littletableheader"><?php echo $form->vende->label     ?>&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->vende->output    ?>&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->vende->label    ?>&nbsp;</td>
+				<td class="littletablerow">   <?php echo $form->vende->output   ?>&nbsp;</td>
 				<td class="littletableheader"><?php echo $form->dir_cli->label  ?>&nbsp;</td>
 				<td class="littletablerow"   ><?php echo $form->dir_cli->output ?>&nbsp;</td>
 			</tr>
 			<tr>
-				<td class="littletableheader"><?php echo $form->peso->label;  ?>&nbsp;</td>
-				<td class="littletablerow" align="left"><?php echo $form->peso->output; ?>&nbsp;</td>
-				<td class="littletableheader"><?php echo $form->observa->label;  ?>&nbsp;</td>
-				<td class="littletablerow"   ><?php echo $form->observa->output; ?>&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->tipo->label    ?>&nbsp;</td>
+				<td class="littletablerow">   <?php echo $form->tipo->output   ?>&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->observa->label; ?>&nbsp;</td>
+				<td class="littletablerow"   ><?php echo $form->observa->output;?>&nbsp;</td>
 			</tr>
 			<tr>
 				<td class="littletableheader"><?php echo $form->orden->label;  ?>&nbsp;</td>
@@ -227,10 +227,10 @@ function del_itpsinv(id){
 				<td class="littletablerow">   <?php echo $form->almacen->output;    ?>&nbsp;</td>
 			</tr>
 			<tr>
+				<td class="littletableheader"><?php echo $form->peso->label;  ?>&nbsp;</td>
+				<td class="littletablerow" align="left"><?php echo $form->peso->output; ?>&nbsp;</td>
 				<td class="littletableheader"><?php echo $form->factura->label;  ?>&nbsp;</td>
 				<td class="littletablerow" align="left"><?php echo $form->factura->output; ?>&nbsp;</td>
-				<td class="littletableheader">&nbsp;</td>
-				<td class="littletablerow">   &nbsp;</td>
 			</tr>
 		</table><br>
 		</td>
