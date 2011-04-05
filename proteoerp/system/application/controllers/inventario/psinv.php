@@ -1,5 +1,4 @@
 <?php
-//notaentrega
 class psinv extends Controller {
 
 	function psinv(){
@@ -21,6 +20,7 @@ class psinv extends Controller {
 		'screenx'    => '0',
 		'screeny'    => '0'
 		);
+
 		$scli=array(
 		'tabla'   =>'scli',
 		'columnas'=>array(
@@ -32,11 +32,11 @@ class psinv extends Controller {
 		'titulo'  =>'Buscar Cliente');
 
 		$boton=$this->datasis->modbus($scli);
-		
+
 		$filter = new DataFilter('Filtro de Prestamos de inventario');
 		$filter->db->select('fecha,numero,cod_cli,nombre,stotal,gtotal,impuesto');
 		$filter->db->from('psinv');
-		
+
 		$filter->fechad = new dateonlyField('Desde', 'fechad');
 		$filter->fechah = new dateonlyField('Hasta', 'fechah');
 		$filter->fechad->clause  =$filter->fechah->clause ='where';
@@ -50,7 +50,6 @@ class psinv extends Controller {
 
 		$filter->factura = new inputField('Factura', 'factura');
 		$filter->factura->size = 30;
-
 
 		$filter->cliente = new inputField("Cliente","cod_cli");
 		$filter->cliente->size = 30;
@@ -77,16 +76,16 @@ class psinv extends Controller {
 		$grid->add('inventario/psinv/dataedit/create');
 		$grid->build();
 		//echo $grid->db->last_query();
-		
+
 		$data['content'] =$filter->output.$grid->output;
-		$data["head"]    = $this->rapyd->get_head();
+		$data['head']    = $this->rapyd->get_head();
 		$data['title']   =heading('Pr&eacute;stamos de inventario a cliente');
 		$this->load->view('view_ventanas', $data);
 	}
 
 	function dataedit(){
 		$this->rapyd->load('dataobject','datadetails');
-				
+
 		$modbus=array(
 		'tabla'   =>'sinv',
 		'columnas'=>array(
@@ -114,7 +113,7 @@ class psinv extends Controller {
 		'script'  => array('post_modbus_sinv(<#i#>)'),
 		'titulo'  =>'Buscar Art&iacute;culo');
 		$btn=$this->datasis->p_modbus($modbus,'<#i#>');
-		
+
 		$mSCLId=array(
 		'tabla'   =>'scli',
 		'columnas'=>array(
@@ -129,8 +128,8 @@ class psinv extends Controller {
 		'titulo'  =>'Buscar Cliente',
 		'script'  => array('post_modbus_scli()'));
 		$btnc =$this->datasis->modbus($mSCLId);
-		
-		$do = new DataObject("psinv");
+
+		$do = new DataObject('psinv');
 		$do->rel_one_to_many('itpsinv', 'itpsinv', 'numero');
 		$do->pointer('scli' ,'scli.cliente=psinv.cod_cli','scli.tipo AS sclitipo','left');
 		$do->rel_pointer('itpsinv','sinv','itpsinv.codigo=sinv.codigo','sinv.descrip AS sinvdescrip, sinv.base1 AS sinvprecio1, sinv.base2 AS sinvprecio2, sinv.base3 AS sinvprecio3, sinv.base4 AS sinvprecio4, sinv.iva AS sinviva, sinv.peso AS sinvpeso,sinv.tipo AS sinvtipo');
@@ -138,9 +137,9 @@ class psinv extends Controller {
 		$edit = new DataDetails('Pr&eacute;stamo de inventario', $do);
 		$edit->back_url = site_url('inventario/psinv/filteredgrid');
 		$edit->set_rel_title('itpsinv','Producto <#o#>');
-		
+
 		$edit->back_url = $this->back_dataedit;
-		
+
 		$edit->pre_process('insert' ,'_pre_insert');
 		$edit->pre_process('update' ,'_pre_update');
 		$edit->post_process('insert','_post_insert');
@@ -152,6 +151,12 @@ class psinv extends Controller {
 		$edit->fecha->rule = 'required';
 		$edit->fecha->mode = 'autohide';
 		$edit->fecha->size = 10;
+
+		$edit->tipo = new dropdownField('Tipo', 'tipo');
+		$edit->tipo->option('R','Recibido');
+		$edit->tipo->option('C','Cedido');
+		//$edit->tipo->option('X','Anulado');
+		$edit->tipo->style='width:160px';
 
 		$edit->vende = new  dropdownField ('Vendedor', 'vende');
 		$edit->vende->options('SELECT vendedor, CONCAT(vendedor,\' \',nombre) nombre FROM vend ORDER BY vendedor');
@@ -334,17 +339,19 @@ class psinv extends Controller {
 	function _post_insert($do){
 		$codigo = $do->get('numero');
 		$almacen= $do->get('almacen');
+		$tipo   = $do->get('tipo');
+		$fact = ($tipo=='R') ? 1 : -1;
 
-		$mSQL='UPDATE sinv JOIN itpsinv ON sinv.codigo=itpsinv.codigo SET sinv.existen=sinv.existen-itpsinv.cana WHERE itpsinv.numero='.$this->db->escape($codigo);
+		$mSQL='UPDATE sinv JOIN itpsinv ON sinv.codigo=itpsinv.codigo SET sinv.existen=sinv.existen+('.$fact.')*(itpsinv.cana) WHERE itpsinv.numero='.$this->db->escape($codigo);
 		$ban=$this->db->simple_query($mSQL);
 		if($ban==false){ memowrite($mSQL,'psinv'); }
 
-		$mSQL='UPDATE itsinv JOIN itpsinv ON itsinv.codigo=itpsinv.codigo SET itsinv.existen=itsinv.existen-itpsinv.cana WHERE itpsinv.numero='.$this->db->escape($codigo).' AND itsinv.alma='.$this->db->escape($almacen);
+		$mSQL='UPDATE itsinv JOIN itpsinv ON itsinv.codigo=itpsinv.codigo SET itsinv.existen=itsinv.existen+('.$fact.')(itpsinv.cana) WHERE itpsinv.numero='.$this->db->escape($codigo).' AND itsinv.alma='.$this->db->escape($almacen);
 		$ban=$this->db->simple_query($mSQL);
 		if($ban==false){ memowrite($mSQL,'psinv'); }
 
 		$codigo=$do->get('numero');
-		logusu('psinv',"Nota entrega $codigo CREADO");
+		logusu('psinv',"Prestamo de inventario $codigo CREADO");
 	}
 
 	function chpreca($preca,$ind){
