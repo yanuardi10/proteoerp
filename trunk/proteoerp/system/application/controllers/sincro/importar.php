@@ -20,9 +20,9 @@ class Importar extends Controller {
 
 	function index(){
 		$data['content'] = 'hola';
-		$data['title']   = '<h1>Importar</h1>';
+		$data['title']   = heading('Importar');
 		$data['script']  = '';
-		$data["head"]    = $this->rapyd->get_head();
+		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -34,30 +34,31 @@ class Importar extends Controller {
 		$sucu=$this->db->escape($this->sucu);
 		$this->datasis->modulo_id('91E',1);
 
-		$form = new DataForm("sincro/importar/uitraeg/process");
+		$form = new DataForm('sincro/importar/uitraeg/process');
 
-		$form->sucu = new dropdownField("Sucursal", "sucu");
+		$form->sucu = new dropdownField('Sucursal', 'sucu');
 		$form->sucu->rule ='required';
-		$form->sucu->option("","Selecionar");
+		$form->sucu->option('','Selecionar');
 		$form->sucu->options("SELECT codigo, sucursal  FROM sucu WHERE codigo <> $sucu AND CHAR_LENGTH(url)>0");
 
-		$form->qtrae = new dropdownField("Que traer?", "qtrae");
+		$form->qtrae = new dropdownField('Que traer?', 'qtrae');
 		$form->qtrae->rule ='required';
-		$form->qtrae->option("","Selecionar");
-		$form->qtrae->option("scli"  ,"Clientes");
-		$form->qtrae->option("sinv"  ,"Inventario");
-		$form->qtrae->option("maes"  ,"Inventario Supermercado");
-		$form->qtrae->option("smov"  ,"Movimientos de clientes");
-		$form->qtrae->option("transa","Facturas y transferencias");
-		$form->qtrae->option("rcaj"   ,"Cierres de caja");
-		$form->qtrae->option("fiscalz","Cierres Z");
-		$form->qtrae->option("supertransa","Transacciones de Supermercado");
+		$form->qtrae->option('','Selecionar');
+		$form->qtrae->option('scli'       ,'Clientes');
+		$form->qtrae->option('sinv'       ,'Inventario (clonar)');
+		$form->qtrae->option('sinvpre'    ,'Inventario (Solo precios)');
+		$form->qtrae->option('maes'       ,'Inventario Supermercado');
+		$form->qtrae->option('smov'       ,'Movimientos de clientes');
+		$form->qtrae->option('transa'     ,'Facturas y transferencias');
+		$form->qtrae->option('rcaj'       ,'Cierres de caja');
+		$form->qtrae->option('fiscalz'    ,'Cierres Z');
+		$form->qtrae->option('supertransa','Transacciones de Supermercado');
 
-		$form->fecha = new dateonlyField("Fecha","fecha");
-		$form->fecha->insertValue = date("Y-m-d");
-		$form->fecha->rule ="required|chfecha";
+		$form->fecha = new dateonlyField('Fecha','fecha');
+		$form->fecha->insertValue = date('Y-m-d');
+		$form->fecha->rule ='required|chfecha';
 		$form->fecha->size =12;
-		$form->submit("btnsubmit","Descargar");
+		$form->submit('btnsubmit','Descargar');
 		$form->build_form();
 
 		$exito='';
@@ -78,9 +79,9 @@ class Importar extends Controller {
 		}
 
 		$data['content'] = $form->output.$exito;
-		$data['title']   = '<h1>Importar data de Sucursal</h1>';
+		$data['title']   = heading('Importar data de Sucursal');
 		$data['script']  = '';
-		$data["head"]    = $this->rapyd->get_head();
+		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 
 	}
@@ -119,9 +120,9 @@ class Importar extends Controller {
 		}
 
 		$data['content'] = $form->output.$exito;
-		$data['title']   = '<h1>Importar data de Sucursal ('.$metodo.')</h1>';
+		$data['title']   = heading('Importar data de Sucursal ('.$metodo.')');
 		$data['script']  = '';
-		$data["head"]    = $this->rapyd->get_head();
+		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 #########################################
@@ -178,7 +179,7 @@ class Importar extends Controller {
 		}
 
 		$data['content'] = $form->output.$exito;
-		$data['title']   = '<h1>Importar data de Sucursal</h1>';
+		$data['title']   = heading('Importar data de Sucursal');
 		$data['script']  = '';
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
@@ -345,6 +346,12 @@ class Importar extends Controller {
 	function _scli($sucu,$fecha=null){
 		set_time_limit(600);
 		$rt=$this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/scli/'.$fecha,'scli');
+		return $rt;
+	}
+
+	function _sinvpre($sucu,$fecha=null){
+		set_time_limit(600);
+		$rt=$this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/sinvpre/'.$fecha,'sinvpre');
 		return $rt;
 	}
 

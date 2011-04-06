@@ -5,6 +5,9 @@ class Sqlinex{
 	var $separador;
 	var $ignore;
 	var $limpiar;
+	var $dupli;
+	var $dupli_field;
+	var $dupli_condi;
 
 	function Sqlinex(){
 		$this->ci =& get_instance();
@@ -14,6 +17,17 @@ class Sqlinex{
 		$this->separador='-#-';
 		$this->ignore   =false;
 		$this->limpiar  =true;
+		$this->dupli    =false;
+		$this->dupli_field=array();
+		$this->dupli_condi='';
+	}
+
+	function onduply($campos,$condi=null){
+		$this->dupli_field = $campos;
+		$this->dupli_condi = $condi ;
+		$this->ignore   =false;
+		$this->limpiar  =false;
+		$this->dupli    =true;
 	}
 
 	function import($arch){
@@ -24,7 +38,6 @@ class Sqlinex{
 				if(strlen($mSQL)>0){
 					$rt=$this->ci->db->simple_query($mSQL);
 					if($rt===FALSE) memowrite($mSQL,'sqlinex');
-
 				}
 			}
 			fclose($file);
@@ -65,8 +78,8 @@ class Sqlinex{
 	}
 
 	function exportzip($datas,$nomb='sqlinex',$add_encrip=NULL){
-		$nombre=tempnam("/tmp", $nomb);
-		$handle = fopen($nombre, "w");
+		$nombre=tempnam('/tmp', $nomb);
+		$handle = fopen($nombre, 'w');
 
 		foreach($datas AS $data){
 			if(isset($data['select']) AND count($data['select'])>0 )$this->ci->db->select($data['select']);
@@ -85,7 +98,7 @@ class Sqlinex{
 
 				foreach ($query->result_array() as $row){
 					$mSQL = $this->ci->db->insert_string($data['table'], $row);
-					if($this->ignore){
+					if(isset($data['ignore']) && $data['ignore']){
 						$mSQL='INSERT IGNORE '.substr($mSQL,6);
 					}
 					$mSQL.="\n";
@@ -108,8 +121,8 @@ class Sqlinex{
 	}
 
 	function exportunbufferzip($datas,$nomb='sqlinex',$add_encrip=NULL){
-		$nombre=tempnam("/tmp", $nomb);
-		$handle = fopen($nombre, "w");
+		$nombre=tempnam('/tmp', $nomb);
+		$handle = fopen($nombre, 'w');
 
 		//ON DUPLICATE KEY UPDATE `cedula`=IF(VALUES(`modifi`)>`modifi`,VALUES(`cedula`),`cedula`),`direc1`=IF(VALUES(`modifi`)>`modifi`,VALUES(`direc1`),`direc1`)
 
@@ -117,7 +130,7 @@ class Sqlinex{
 			if(isset($data['select']) AND count($data['select'])>0 )$this->ci->db->select($data['select']);
 			if(isset($data['where'])) $this->ci->db->where($data['where'],NULL,FALSE); else $data['where']='';
 			if(isset($data['distinc']) AND $data['distinc']) $this->ci->db->distinct();
-			
+
 			if(isset($data['join']) AND is_array($data['join'])){
 				foreach($data['join'] AS $ddata){
 					if(isset($ddata['side'])) $side=$ddata['side']; else $side=null;
@@ -131,26 +144,37 @@ class Sqlinex{
 			//echo $mSQL;
 			$this->ci->db->_reset_select();
 			//$query = $this->ci->db->get();
-			memowrite($mSQL);
+			//memowrite($mSQL);
 			$query=mysql_unbuffered_query($mSQL,$this->ci->db->conn_id);
 
 			if ($query!==false){
-				if($this->limpiar){
+				if(!isset($data['limpiar'])) $data['limpiar']=true;
+				if($data['limpiar']){
 					$mSQL="DELETE FROM $data[table]"; if(!empty($data['where'])) $mSQL.=' WHERE '.$data['where'];
 					$mSQL.="\n";
 					fwrite($handle, $mSQL);
 				}
 
 				while ($row = mysql_fetch_assoc($query)) {
-  				$mSQL = $this->ci->db->insert_string($data['table'], $row);
-					if($this->ignore){
+				$mSQL = $this->ci->db->insert_string($data['table'], $row);
+					if(isset($data['dupli'])){
+						$ccampo=array();
+						foreach($data['dupli'] as $campos){
+							if(isset($data['condi'])){
+								$ccampo[]="`${campos}`= IF(".$data['condi'].",VALUES(`${campos}`),`${campos}`)";
+							}else{
+								$ccampo[]="`${campos}`= VALUES(`${campos}`)";
+							}
+						}
+						$mSQL.=' ON DUPLICATE KEY UPDATE '.implode(',',$ccampo);
+					}elseif(isset($data['ignore']) && $data['ignore']){
 						$mSQL='INSERT IGNORE '.substr($mSQL,6);
 					}
 					$mSQL.="\n";
 					fwrite($handle, $mSQL);
-  	
+
 				}
-				mysql_free_result($query); 
+				mysql_free_result($query);
 			}
 		}
 		fclose($handle);
@@ -167,4 +191,3 @@ class Sqlinex{
 		unlink($nombre);
 	}
 }
-?>

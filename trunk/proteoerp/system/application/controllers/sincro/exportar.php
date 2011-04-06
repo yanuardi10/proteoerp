@@ -3,7 +3,7 @@ class Exportar extends Controller {
 
 	function Exportar(){
 		parent::Controller();
-		$this->load->library("rapyd");
+		$this->load->library('rapyd');
 		$this->sucu=$this->datasis->traevalor('NROSUCU');
 		$sucu = $this->db->escape($this->sucu);
 		$this->prefijo = $this->datasis->dameval("SELECT prefijo FROM sucu WHERE codigo=$sucu");
@@ -25,7 +25,7 @@ class Exportar extends Controller {
 		$form->fecha->insertValue = date("Y-m-d");
 		$form->fecha->rule ="required|chfecha";
 		$form->fecha->size =12;
-		$form->submit("btnsubmit","Descargar");
+		$form->submit('btnsubmit','Descargar');
 		$form->build_form();
 
 		if ($form->on_success()){
@@ -37,7 +37,7 @@ class Exportar extends Controller {
 		$data['content'] = $form->output;
 		$data['title']   = '<h1>Exportar data a zip ('.$metodo.')</h1>';
 		$data['script']  = '';
-		$data["head"]    = $this->rapyd->get_head();
+		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -46,25 +46,26 @@ class Exportar extends Controller {
 		$this->datasis->modulo_id('91D',1);
 		$sucu=$this->db->escape($this->sucu);
 
-		$form = new DataForm("sincro/exportar/uig/process");
+		$form = new DataForm('sincro/exportar/uig/process');
 
-		$form->qtrae = new dropdownField("Que exportar?", "qtrae");
+		$form->qtrae = new dropdownField('Que exportar?', 'qtrae');
 		$form->qtrae->rule ='required';
-		$form->qtrae->option("","Selecionar");
-		$form->qtrae->option("scli"  ,"Clientes");
-		$form->qtrae->option("sinv"  ,"Inventario");
-		$form->qtrae->option("maes"  ,"Inventario Supermercado");
-		$form->qtrae->option("smov"  ,"Movimientos de clientes");
-		$form->qtrae->option("transacciones","Facturas y transferencias");
-		$form->qtrae->option("supertransa"  ,"Ventas Supermercado");
-		$form->qtrae->option("rcaj"  ,"Cierres de cajas");
-		$form->qtrae->option("fiscalz"  ,"Cierres Z");
+		$form->qtrae->option('','Selecionar');
+		$form->qtrae->option('scli'     ,'Clientes');
+		$form->qtrae->option('sinv'     ,'Inventario');
+		$form->qtrae->option('sinvprec' ,'Inventario solo precios');
+		$form->qtrae->option('maes'     ,'Inventario Supermercado');
+		$form->qtrae->option('smov'     ,'Movimientos de clientes');
+		$form->qtrae->option('transacciones','Facturas y transferencias');
+		$form->qtrae->option('supertransa'  ,'Ventas Supermercado');
+		$form->qtrae->option('rcaj'         ,'Cierres de cajas');
+		$form->qtrae->option('fiscalz'      ,'Cierres Z');
 
-		$form->fecha = new dateonlyField("Fecha","fecha");
-		$form->fecha->insertValue = date("Y-m-d");
-		$form->fecha->rule ="required|chfecha";
+		$form->fecha = new dateonlyField('Fecha','fecha');
+		$form->fecha->insertValue = date('Y-m-d');
+		$form->fecha->rule ='required|chfecha';
 		$form->fecha->size =12;
-		$form->submit("btnsubmit","Descargar");
+		$form->submit('btnsubmit','Descargar');
 		$form->build_form();
 
 		$exito='';
@@ -142,7 +143,8 @@ class Exportar extends Controller {
 //***********************
 	function _sinv($fecha,$opt=null){
 		set_time_limit(600);
-		$this->load->library("sqlinex");
+		$dupli_sinv=array('precio1','precio2','precio3','precio4','base1','base2','base3','base4','margen1','margen2','margen3','margen4');
+		$this->load->library('sqlinex');
 		$data[]=array('table' => 'dpto');
 		$data[]=array('table' => 'line');
 		$data[]=array('table' => 'grup');
@@ -150,22 +152,40 @@ class Exportar extends Controller {
 		$data[]=array('table' => 'marc');
 		$data[]=array('table' => 'itsinv');
 		$fecha=date('d-m-Y');
-		
+
 		$nombre='sinv_'.$fecha.'_'.$this->sucu;
 		if(!array_key_exists('HTTP_USER_AGENT', $_SERVER)) $_SERVER['HTTP_USER_AGENT']='curl';
+
+		$this->sqlinex->exportunbufferzip($data,$nombre,$this->sucu);
+	}
+
+	function _sinvprec($fecha,$opt=null){
+		set_time_limit(600);
+		$dupli_sinv=array('precio1','precio2','precio3','precio4','base1','base2','base3','base4','margen1','margen2','margen3','margen4');
+		$this->load->library('sqlinex');
+		$data[]=array('table' => 'dpto','limpiar'=>false,'ignore'=>true);
+		$data[]=array('table' => 'line','limpiar'=>false,'ignore'=>true);
+		$data[]=array('table' => 'grup','limpiar'=>false,'ignore'=>true);
+		$data[]=array('table' => 'marc','limpiar'=>false,'ignore'=>true);
+		$data[]=array('table' => 'sinv','dupli'=>$dupli_sinv,'limpiar'=>false);
+		$fecha=date('d-m-Y');
+
+		$nombre='sinv_'.$fecha.'_'.$this->sucu;
+		if(!array_key_exists('HTTP_USER_AGENT', $_SERVER)) $_SERVER['HTTP_USER_AGENT']='curl';
+
 		$this->sqlinex->exportunbufferzip($data,$nombre,$this->sucu);
 	}
 
 	function _transacciones($fecha,$opt=null){
 		set_time_limit(600);
-		$this->load->library("sqlinex");
+		$this->load->library('sqlinex');
 
 		$sucu     = $this->db->escape($this->sucu);
 		$pre_caja = $this->datasis->dameval("SELECT prefijo FROM sucu WHERE codigo=$sucu");
 		$cant     = strlen($pre_caja);
 		$pre_caja = $this->db->escape($pre_caja);
 
-		$this->load->library("sqlinex");
+		$this->load->library('sqlinex');
 
 		$data[]=array('select' =>'tipo_doc,numero,fecha,vence,vd,cod_cli,rifci,nombre,direc,dire1,orden,referen,iva,inicial,totals,totalg,status,observa,observ1,devolu,cajero,almacen,peso,factura,pedido,usuario,estampa,hora,transac,nfiscal,zona,ciudad,comision,pagada,sepago,dias,fpago,comical,exento,tasa,reducida,sobretasa,montasa,monredu,monadic,notcred,fentrega,fpagom,fdespacha,udespacha,numarma,maqfiscal,dmaqfiscal',
 				'distinc'=>false,
@@ -183,7 +203,7 @@ class Exportar extends Controller {
 		/*$data[]=array('distinc'=>false,
 				'table'  =>'fiscalz',
 				'where'  =>"fecha >= $fecha");*/
-		
+
 		$data[]=array('select'=>'numero,fecha,envia,recibe,observ1,observ2,totalg,tratot,estampa,hora,usuario,transac,gasto,numeen,numere',
 				'distinc'=>false,
 				'table'  =>'stra',
@@ -192,7 +212,7 @@ class Exportar extends Controller {
 				'distinc'=>false,
 				'table'  =>'itstra',
 				'where'  =>"MID(numero,1,$cant)=$pre_caja");
-		
+
 		$data[]=array(
 			'distinc'   =>true,
 			'select'    =>'itccli.numccli, itccli.tipoccli, itccli.cod_cli, itccli.tipo_doc, itccli.numero, itccli.fecha, itccli.monto, itccli.abono, itccli.ppago, itccli.reten, itccli.cambio, itccli.mora, itccli.transac, itccli.estampa, itccli.hora, itccli.usuario, itccli.reteiva, itccli.nroriva, itccli.emiriva, itccli.recriva',
@@ -210,9 +230,8 @@ class Exportar extends Controller {
 
 		$data[]=array('table' => 'smov',
 				'where' => "estampa >= $fecha AND MID(transac,1,$cant)='".$this->prefijo."'"
-				);
-		
-		
+		);
+
 		$nombre='ve_'.$fecha.'_'.$this->sucu;
 		if(!array_key_exists('HTTP_USER_AGENT', $_SERVER)) $_SERVER['HTTP_USER_AGENT']='curl';
 		$this->sqlinex->exportunbufferzip($data,$nombre,$this->sucu);
@@ -220,40 +239,28 @@ class Exportar extends Controller {
 
 	function _scli($fecha,$opt=null){
 		set_time_limit(600);
-		$this->load->library("sqlinex");
-		$this->sqlinex->ignore   =TRUE;
-		$this->sqlinex->limpiar  =FALSE;
+		$this->load->library('sqlinex');
+		$this->sqlinex->ignore   =true;
+
 		$data[]=array('select' => 'cliente,nombre,grupo,gr_desc,nit,cuenta,formap,tipo,limite,socio,contacto,dire11,dire12,ciudad1,dire21,dire22,ciudad2,telefono,telefon2,zona,pais,email,vendedor,porvend,cobrador,porcobr,repre,cirepre,ciudad,separa,copias,regimen,comisio,porcomi,rifci,observa,fecha1,fecha2,tiva,clave,nomfis,riffis,mensaje,modifi',
 				'table'  =>'scli',
-				'where'  =>"modifi>=$fecha");
+				'where'  =>"modifi>=$fecha",
+				'limpiar'=>false,
+				'ignore' =>true);
 
-		$data[]=array('table' => 'grcl');
+		$data[]=array('table' => 'grcl',
+				'limpiar'=> false,
+				'ignore' =>true);
 
 		$nombre='scli_'.$fecha.'_'.$this->sucu;
 		if(!array_key_exists('HTTP_USER_AGENT', $_SERVER)) $_SERVER['HTTP_USER_AGENT']='curl';
 		$this->sqlinex->exportunbufferzip($data,$nombre,$this->sucu);
 	}
 
-	/*function _smov($fecha,$opt=null){
-		set_time_limit(600);
-		$this->load->library("sqlinex");
-		$this->sqlinex->ignore   =TRUE;
-		$this->sqlinex->limpiar  =FALSE;
-		
-		$cant = strlen($this->prefijo);
-		
-		$data[]=array('table' => 'smov',
-				'where' => "estampa >= $fecha AND tipo_doc='FC'");
-
-		$nombre='smov_'.$fecha.'_'.$this->sucu;
-		if(!array_key_exists('HTTP_USER_AGENT', $_SERVER)) $_SERVER['HTTP_USER_AGENT']='curl';
-		$this->sqlinex->exportunbufferzip($data,'smov_'.$this->sucu,$this->sucu);
-	}*/
-
 
 	function _smov($fecha,$opt=null){
 		set_time_limit(600);
-		$this->load->library("sqlinex");
+		$this->load->library('sqlinex');
 		$cant = strlen($this->prefijo);
 
 		$data[]=array(
@@ -270,21 +277,6 @@ class Exportar extends Controller {
 					),
 			'where'   =>"itccli.fecha=$fecha AND MID(itccli.transac,1,$cant)='".$this->prefijo."'"
 		);
-
-/*		$data[]=array(
-			'distinc'   =>true,
-			'select'    =>'sfpa.*',
-			'table'     =>'sfpa',
-			'join'      =>array(
-					0 => array(
-						'table'=>'itccli',
-						'on'=>'itccli.transac=sfpa.transac'),
-					1 => array(
-						'table'=>'smov',
-						'on'=>'smov.transac=sfpa.transac')
-					),
-			'where'   =>"sfpa.fecha=$fecha AND MID(sfpa.transac,1,$cant)='".$this->prefijo."' AND sfpa.tipo_doc NOT IN ('FE','DE','AN')"
-		);*/
 
 		$data[]=array(
 			'distinc'   =>true,
@@ -306,13 +298,16 @@ class Exportar extends Controller {
 		if(!array_key_exists('HTTP_USER_AGENT', $_SERVER)) $_SERVER['HTTP_USER_AGENT']='curl';
 		$this->sqlinex->exportunbufferzip($data,$nombre,$this->sucu);
 	}
+
 	function _fiscalz($fecha,$opt=null){
 		set_time_limit(600);
-		$this->load->library("sqlinex");
-		$this->sqlinex->ignore   =TRUE;
-		$this->sqlinex->limpiar  =FALSE;
+		$this->load->library('sqlinex');
+		//$this->sqlinex->ignore   =TRUE;
+
 		$data[]=array('table' => 'fiscalz',
-				'where' => "fecha >= $fecha");
+				'where'  => "fecha >= $fecha",
+				'limpiar'=>false,
+				'ignore' =>true);
 
 		$nombre='fiscalz_'.$fecha.'_'.$this->sucu;
 		if(!array_key_exists('HTTP_USER_AGENT', $_SERVER)) $_SERVER['HTTP_USER_AGENT']='curl';
@@ -322,14 +317,14 @@ class Exportar extends Controller {
 	//Para supermercado
 	function _supertransa($fecha,$opt=null){
 		set_time_limit(600);
-		$this->load->library("sqlinex");
+		$this->load->library('sqlinex');
 
 		$sucu=$this->datasis->traevalor('NROSUCU');
 		$pre_caja=$this->prefijo;
 		$cant=strlen($pre_caja);
 		$pre_caja=$this->db->escape($this->prefijo);
 
-		$this->load->library("sqlinex");
+		$this->load->library('sqlinex');
 
 		$data[]=array('distinc'=>false,
 		              'table'  =>'viefac',
@@ -350,7 +345,7 @@ class Exportar extends Controller {
 	}
 
 	function _maes($fecha,$opt=null){
-		$this->load->library("sqlinex");
+		$this->load->library('sqlinex');
 		$data[]=array('table'  =>'dpto');
 		$data[]=array('table'  =>'fami');
 		$data[]=array('table'  =>'grup');
@@ -368,12 +363,13 @@ class Exportar extends Controller {
 		//$prefijo=str_pad($this->prefijo,8,'0');
 		$prefijo=$this->prefijo;
 		$cant=strlen($this->prefijo)+1;
-		$this->load->library("sqlinex");
-		$this->sqlinex->ignore   =TRUE;
-		$this->sqlinex->limpiar  =FALSE;
+		$this->load->library('sqlinex');
+		//$this->sqlinex->ignore   =TRUE;
 		$data[]=array('table' => 'rcaj',
 		                'select'=>"fecha,cajero,tipo,usuario,caja,recibido,ingreso,parcial,observa, CONCAT('$prefijo',MID(numero,$cant)) AS numero ,transac,estampa,hora",
-		                'where' => "fecha >= $fecha");
+		                'where' => "fecha >= $fecha",
+		                'limpiar'=>false,
+		                'ignore' =>true);
 
 		$nombre='rcaj_'.$fecha.'_'.$this->sucu;
 		if(!array_key_exists('HTTP_USER_AGENT', $_SERVER)) $_SERVER['HTTP_USER_AGENT']='curl';
@@ -409,15 +405,18 @@ class Exportar extends Controller {
 	function _tranalma($fecha,$opt=null){
 		if(empty($opt)) return false;
 		$this->load->library("sqlinex");
-		$this->sqlinex->ignore   =TRUE;
-		$this->sqlinex->limpiar  =FALSE;
+		//$this->sqlinex->ignore   =TRUE;
 
 		$dbalma=$this->db->escape($opt[0]);
 		$data[]=array('table'  =>'ittran',
-			'where'=>"recibe=$dbalma AND fecha>=$fecha"
+			'where'=>"recibe=$dbalma AND fecha>=$fecha",
+			'limpiar'=>false,
+			'ignore' =>true
 		);
 		$data[]=array('table'  =>'tran',
-			'where'=>"recibe=$dbalma AND fecha>=$fecha"
+			'where'=>"recibe=$dbalma AND fecha>=$fecha",
+			'limpiar'=>false,
+			'ignore' =>true
 		);
 
 		$nombre='tranalma_'.$opt[0].'_'.$fecha.'_'.$this->sucu;
@@ -429,11 +428,11 @@ class Exportar extends Controller {
 		if(empty($opt)) return false;
 		$this->load->library("sqlinex");
 		//$this->sqlinex->ignore   =TRUE;
-		//$this->sqlinex->limpiar  =FALSE;
 
 		$dbalma=$this->db->escape($opt[0]);
 		$data[]=array('table'  =>'ubic',
-			'where'=>"ubica=$dbalma"
+			'where' =>"ubica=$dbalma",
+			'ignore'=>true
 		);
 
 		$nombre='ubicalma_'.$opt[0].'_'.$fecha.'_'.$this->sucu;
