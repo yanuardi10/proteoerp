@@ -57,9 +57,9 @@ class gser extends Controller {
 
 		$uri2  = anchor('finanzas/gser/mgserdataedit/modify/<#id#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar')));
 		$uri2 .= "&nbsp;";
-		$uri2 .= anchor('finanzas/gser/mgserdataedit/modify/<#id#>',img(array('src'=>'images/pdf_logo.gif','border'=>'0','alt'=>'PDF')));
+		$uri2 .= anchor('formatos/ver/GSER/<#id#>',img(array('src'=>'images/pdf_logo.gif','border'=>'0','alt'=>'PDF')));
 		$uri2 .= "&nbsp;";
-		$uri2 .= anchor('finanzas/gser/mgserdataedit/modify/<#id#>',img(array('src'=>'images/html_icon.gif','border'=>'0','alt'=>'HTML')));
+		$uri2 .= anchor('formatos/verhtml/GSER/<#id#>',img(array('src'=>'images/html_icon.gif','border'=>'0','alt'=>'HTML')));
 
 		$uri = anchor('finanzas/gser/dataedit/show/<#id#>','<#numero#>');
 		

@@ -12,7 +12,7 @@
 #mostrafiltro {display: block;width: 100%;padding: 5px;border-bottom: 1px solid #2067B5;background-color: #F5F5F5;background:url(<?=base_url();?>images/huellaazul.gif);}
 </style>
 <?php }; ?>
-<?=script("jquery.js") ?>
+<?=script("jquery.pack.js") ?>
 
 <?php if (isset($head))   echo $head;   ?>
 <?php if (isset($script)) echo $script; ?>

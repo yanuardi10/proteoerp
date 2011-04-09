@@ -741,11 +741,15 @@ class sinv extends Controller {
 		$edit->buttons("modify", "save", "undo", "delete", "back");
 		$edit->build();
 
+		if($edit->_status=="show"){
+
+		}
+
 		$smenu['link']   = barra_menu('301');
 
 		$conten["form"]  =&  $edit;
 		$data['content'] = $this->load->view('view_sinv', $conten,true);
-		$data["head"]    =script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head().script("sinvmaes.js");
+		$data["head"]    = script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").script("sinvmaes.js").$this->rapyd->get_head();
 
 		//$data['content'] = $edit->output;
 		$data['title']   = heading('Maestro de Inventario');
@@ -1149,7 +1153,6 @@ class sinv extends Controller {
 	}
 
 	function consulta(){  
-		//$this->load->library('Graph');
 		$this->load->helper('openflash');
 		$this->rapyd->load("datagrid");
 		$fields = $this->db->field_data('sinv');
@@ -1174,8 +1177,6 @@ class sinv extends Controller {
 		$grid->db->where('a.tipoa IN ("F","D")');
 		$grid->db->where('a.fecha >= CONCAT(MID(SUBDATE(curdate(),365),1,8),"01")' );
 		$grid->db->groupby('MID( `a`.`fecha` , 1 , 7 )  WITH ROLLUP');
-		//$grid->db->orderby('fecha DESC');
-		//$grid->db->limit(12);
 			
 		$grid->column("Mes"   ,"mes" );
 		$grid->column("Cant. Venta", "<nformat><#cventa#></nformat>",'align="RIGHT"');
@@ -1241,7 +1242,7 @@ class sinv extends Controller {
 		}
 		$om=1;while($maxval/$om>100) $om=$om*10;
 		
-		$bar_1 = new bar_3D(75, '#0053A4');
+		$bar_1 = new bar(75, '#0053A4');
 		
 		$bar_1->key('Venta',10);
 		

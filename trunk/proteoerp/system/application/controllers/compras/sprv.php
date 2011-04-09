@@ -57,7 +57,9 @@ class Sprv extends validaciones {
 		$grid->add('compras/sprv/dataedit/create','Agregar un proveedor');
 		$grid->build();
 
-		$data['content'] = $filter->output.$grid->output;
+		$data['content'] = $grid->output;
+		$data['filtro']  = $filter->output;
+		
 		$data['title']   = '<h1>Proveedores</h1>';
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
@@ -170,64 +172,79 @@ class Sprv extends validaciones {
 		$edit->proveed->size = 13;
 		$edit->proveed->maxlength =5;
 		$edit->proveed->append($lproveed);
-		$edit->proveed->group = 'Datos del Proveedor';
+		//$edit->proveed->group = 'Datos del Proveedor';
 
 		$edit->nombre = new inputField('Nombre', 'nombre');
 		$edit->nombre->rule = 'trim|strtoupper|required';
 		$edit->nombre->size = 41;
 		$edit->nombre->maxlength =40;
-		$edit->nombre->group = "Datos del Proveedor";
 
-		$lriffis='<a href="javascript:consulrif();" title="Consultar RIF en el SENIAT" onclick="">Consultar RIF en el SENIAT</a>';
+		$lriffis='<a href="javascript:consulrif();" title="Consultar RIF en el SENIAT" onclick="" style="color:red;font-size:9px;border:none;">SENIAT</a>';
 		$edit->rif =  new inputField("Rif", "rif");
-		//$edit->rif->mode="autohide";
 		$edit->rif->rule = "trim|strtoupper|required|callback_chci";
 		$edit->rif->append($lriffis);
-		$edit->rif->maxlength=20;
-		$edit->rif->size =18;
-		$edit->rif->group = "Datos del Proveedor";
+		$edit->rif->maxlength=13;
+		$edit->rif->size =12;
 
-		//$edit->nit = new inputField("NIT", "nit");
-		//$edit->nit->size =15;
-		//$edit->nit->maxlength =12;
-		//$edit->nit->group = "Datos del Proveedor";
-
-		$edit->contacto = new inputField("Persona de contacto", "contacto");
+		$edit->contacto = new inputField("Contacto", "contacto");
 		$edit->contacto->size =41;
 		$edit->contacto->rule ="trim";
 		$edit->contacto->maxlength =40;
-		$edit->contacto->group = "Datos del Proveedor";
-
-		$edit->tipo = new dropdownField("Tipo", "tipo");
-		$edit->tipo->option("","Seleccionar");
-		$edit->tipo->options(array("1"=> "Jur&iacute;dico Domiciliado","2"=>"Residente", "3"=>"Jur&iacute;dico No Domiciliado","4"=>"No Residente","5"=>"Excluido del Libro de Compras","0"=>"Inactivo"));
-		$edit->tipo->style = "width:290px";
-		$edit->tipo->rule = "required";
-		$edit->tipo->group = "Datos del Proveedor";
+		//$edit->contacto->group = "Datos del Proveedor";
 
 		$edit->grupo = new dropdownField("Grupo", "grupo");
 		$edit->grupo->option("","Seleccionar");
 		$edit->grupo->options("SELECT grupo,gr_desc,grupo FROM grpr ORDER BY gr_desc");
-		$edit->grupo->style = "width:290px";
+		$edit->grupo->style = "width:190px";
 		//$edit->grupo->rule = "required";
 		$edit->grupo->group = "Datos del Proveedor";
-
 		$edit->gr_desc = new inputField("gr_desc", "gr_desc");
 
-		for($i=1;$i<=3;$i++){
-			$obj="direc$i";
-			$edit->$obj = new inputField("Direcci&oacute;n $i",$obj);
-			$edit->$obj->size =41;
-			$edit->$obj->rule ="trim";
-			$edit->$obj->maxlength =40;
-			$edit->$obj->group = "Datos del Proveedor";
-		}
+		$edit->tipo = new dropdownField("Tipo", "tipo");
+		$edit->tipo->option("","Seleccionar");
+		$edit->tipo->options(array("1"=> "Jur&iacute;dico Domiciliado","2"=>"Residente", "3"=>"Jur&iacute;dico No Domiciliado","4"=>"No Residente","5"=>"Excluido del Libro de Compras","0"=>"Inactivo"));
+		$edit->tipo->style = "width:190px";
+		$edit->tipo->rule = "required";
+		$edit->tipo->group = "Datos del Proveedor";
+
+		$edit->tiva  = new dropdownField("Origen", "tiva");
+		$edit->tiva->option("N","Nacional");
+		$edit->tiva->options(array("N"=>"Nacional","I"=>"Internacional","O"=>"Otros"));
+		$edit->tiva->style='width:190px;';
+
+		$edit->direc1 = new inputField("Direcci&oacute;n ",'direc1');
+		$edit->direc1->size =50;
+		$edit->direc1->rule ="trim";
+		$edit->direc1->maxlength =40;
+
+		$edit->direc2 = new inputField(" ",'direc2');
+		$edit->direc2->size =50;
+		$edit->direc2->rule ="trim";
+		$edit->direc2->maxlength =40;
+
+		$edit->direc3 = new inputField(" ",'direc3');
+		$edit->direc3->size =50;
+		$edit->direc3->rule ="trim";
+		$edit->direc3->maxlength =40;
+
 
 		$edit->telefono = new inputField("Tel&eacute;fono", "telefono");
-		$edit->telefono->size = 41;
+		$edit->telefono->size = 30;
 		$edit->telefono->rule = "trim";
 		$edit->telefono->group = "Datos del Proveedor";
 		$edit->telefono->maxlength =40;
+
+		$edit->email  = new inputField("Email", "email");
+		$edit->email->rule = "trim|valid_email";
+		$edit->email->size =30;
+		$edit->email->maxlength =30;
+		//$edit->email->group = "Datos del Proveedor";
+
+		$edit->url   = new inputField("URL", "url");
+		$edit->url->group = "Datos del Proveedor";
+		$edit->url->rule = "trim";
+		$edit->url->size =30;
+		$edit->url->maxlength =30;
 
 		$atts = array(
 				'width'     =>'800',
@@ -238,48 +255,48 @@ class Sprv extends validaciones {
 				'screenx'   =>'5',
 				'screeny'   =>'5');
 
-		$lcli=anchor_popup("/ventas/scli/dataedit/create","Agregar Cliente",$atts);
+		$lcli=anchor_popup("/ventas/scli/dataedit/create",image('list_plus.png','Agregar',array("border"=>"0")),$atts);
+		//$AddUnidad='<a href="javascript:add_unidad();" title="Haz clic para Agregar una unidad nueva">'.image('list_plus.png','Agregar',array("border"=>"0")).'</a>';
 
 		$edit->observa  = new inputField("Observaci&oacute;n", "observa");
 		$edit->observa->group = "Datos del Proveedor";
 		$edit->observa->rule = "trim";
 		$edit->observa->size = 41;
 
-		$edit->email  = new inputField("Email", "email");
-		$edit->email->rule = "trim|valid_email";
-		$edit->email->size =41;
-		$edit->email->maxlength =30;
-		$edit->email->group = "Datos del Proveedor";
+		$obj="banco1";
+		$edit->$obj = new dropdownField("Cuenta en bco. (1)", $obj);
+		$edit->$obj->clause="where";
+		$edit->$obj->option("","Ninguno");
+		$edit->$obj->options("SELECT cod_banc,nomb_banc FROM tban ORDER BY nomb_banc");
+		$edit->$obj->operator="=";
+		$edit->$obj->group = "Cuentas Bancarias";
+		$edit->$obj->style='width:150px;';
 
-		$edit->url   = new inputField("URL", "url");
-		$edit->url->group = "Datos del Proveedor";
-		$edit->url->rule = "trim";
-		$edit->url->size =41;
-		$edit->url->maxlength =30;
+		$obj="cuenta1";
+		$edit->$obj = new inputField("&nbsp;&nbsp;N&uacute;mero (1)",$obj);
+		$edit->$obj->size = 41;
+		$edit->$obj->rule = "trim";
+		$edit->$obj->maxlength = 15;
+		$edit->$obj->group = "Cuentas Bancarias";
+		//$edit->$obj->in="banco$i";
 
-		for($i=1;$i<=2;$i++){
-			$obj="banco$i";
-			$edit->$obj = new dropdownField("Cuenta en bco. ($i)", $obj);
-			$edit->$obj->clause="where";
-			$edit->$obj->option("","Ninguno");
-			$edit->$obj->options("SELECT cod_banc,nomb_banc FROM tban ORDER BY nomb_banc");
-			$edit->$obj->operator="=";
-			$edit->$obj->group = "Cuentas Bancarias";
-			$edit->$obj->style='width:290px;';
+		$obj="banco2";
+		$edit->$obj = new dropdownField("Cuenta en bco. (2)", $obj);
+		$edit->$obj->clause="where";
+		$edit->$obj->option("","Ninguno");
+		$edit->$obj->options("SELECT cod_banc,nomb_banc FROM tban ORDER BY nomb_banc");
+		$edit->$obj->operator="=";
+		$edit->$obj->group = "Cuentas Bancarias";
+		$edit->$obj->style='width:150px;';
 
-			$obj="cuenta$i";
-			$edit->$obj = new inputField("&nbsp;&nbsp;N&uacute;mero ($i)",$obj);
-			$edit->$obj->size = 41;
-			$edit->$obj->rule = "trim";
-			$edit->$obj->maxlength = 15;
-			$edit->$obj->group = "Cuentas Bancarias";
-			//$edit->$obj->in="banco$i";
-		}
+		$obj="cuenta2";
+		$edit->$obj = new inputField("&nbsp;&nbsp;N&uacute;mero (2)",$obj);
+		$edit->$obj->size = 41;
+		$edit->$obj->rule = "trim";
+		$edit->$obj->maxlength = 15;
+		$edit->$obj->group = "Cuentas Bancarias";
 
-		$edit->tiva  = new dropdownField("Contribuyente T.", "tiva");
-		$edit->tiva->option("N","Nacional");
-		$edit->tiva->options(array("N"=>"Nacional","I"=>"Internacional","O"=>"Otros"));
-		$edit->tiva->style='width:290px;';
+
 
 		$edit->cliente  = new inputField("Cliente", "cliente");
 		$edit->cliente->size =13;
@@ -289,7 +306,7 @@ class Sprv extends validaciones {
 		$edit->cliente->append($lcli);
 		//$edit->cliente->group = "Datos del Proveedor";
 
-		$edit->nomfis = new inputField("Nombre Fiscal", "nomfis");
+		$edit->nomfis = new inputField("Nombre", "nomfis");
 		$edit->nomfis->size =41;
 		$edit->nomfis->rule ="rule";
 		$edit->nomfis->readonly =true;
@@ -309,8 +326,12 @@ class Sprv extends validaciones {
 		$edit->buttons("modify", "save", "undo", "delete", "back");
 		$edit->build();
 
+		$conten["form"]  =&  $edit;
+		$data['content'] = $this->load->view('view_sprv', $conten,true);
+
+
 		//$smenu['link']=barra_menu('230');
-		$data['content'] = $edit->output;
+		//$data['content'] = $edit->output;
 		//$data['smenu']   = $this->load->view('view_sub_menu', $smenu,true);
 		$data['title']   = "<h1>Proveedores</h1>";
 		$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
@@ -387,6 +408,77 @@ class Sprv extends validaciones {
 		$consulproveed=$this->datasis->dameval('SELECT MAX(proveed) FROM sprv');
 		echo $consulproveed;
 	}
+
+	function consulta(){  
+		$this->load->helper('openflash');
+		$this->rapyd->load("datagrid");
+		$fields = $this->db->field_data('sprv');
+		$url_pk = $this->uri->segment_array();
+		$coun=0; $pk=array();
+		foreach ($fields as $field){
+			if($field->primary_key==1){
+				$coun++;
+				$pk[]=$field->name;
+			}
+		}
+		$values=array_slice($url_pk,-$coun);
+		$claves=array_combine (array_reverse($pk) ,$values );
+
+		$mCodigo = $this->datasis->dameval("SELECT proveed FROM sprv WHERE id=".$claves['id']."");
+		
+		$grid = new DataGrid('Ventas por Mes');
+		$grid->db->_protect_identifiers=false;
+		$grid->db->select( array('a.tipo_doc','a.fecha', 'a.numero', 'a.monto', 'a.abonos', 'a.monto-a.abonos saldo' ) );
+		$grid->db->from('sprm a');
+		$grid->db->where('a.cod_prv', $mCodigo );
+		$grid->db->where('a.monto <> a.abonos');
+		$grid->db->where('a.tipo_doc IN ("FC","ND","GI") ' );
+		$grid->db->orderby('a.fecha');
+			
+		$grid->column("Fecha"   ,"fecha" );
+		$grid->column("Tipo", "tipo_doc",'align="CENTER"');
+		$grid->column("Numero",  "numero",'align="LEFT"');
+		$grid->column("Monto",    "<nformat><#monto#></nformat>",  'align="RIGHT"');
+		$grid->column("Abonos",  "<nformat><#abonos#></nformat>",'align="RIGHT"');
+		$grid->column("Saldo",  "<nformat><#saldo#></nformat>",'align="RIGHT"');
+		$grid->build();
+
+		$nombre = $this->datasis->dameval("SELECT nombre FROM sprv WHERE id=".$claves['id']." ");
+
+		/*
+		$descrip = $this->datasis->dameval("SELECT descrip FROM sinv WHERE id=".$claves['id']." ");
+		$data['content'] = "
+		<table width='100%'>
+			<tr>
+				<td valign='top' colspan='2'>
+					<div style='border: 2px outset #EFEFEF;background: #EFEFFF '>
+					".$grid->output."
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<td valign='top'>
+				".open_flash_chart_object( 300,200, site_url("inventario/sinv/ventas/$mCodigo"))."
+				</td>
+				<td valign='top'>".
+				open_flash_chart_object( 300,200, site_url("inventario/sinv/compras/".raencode($mCodigo)))."
+				</td>
+			</tr>
+			
+		</table>";
+		*/
+		$data['content'] = $grid->output;
+		$data["head"]     = script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
+		$data['title']    = '<h1>Consulta de Proveedor</h1>';
+		$data["subtitle"] = "
+			<div align='center' style='border: 2px outset #EFEFEF;background: #EFEFEF;font-size:18px'>
+				<a href='javascript:javascript:history.go(-1)'>(".$mCodigo.") ".$nombre."</a>
+			</div>";
+		$this->load->view('view_ventanas', $data);
+		
+	}
+
+
 
 	function instalar(){
 
