@@ -193,7 +193,10 @@ class sinv extends Controller {
 		$grid->order_by("codigo","asc");
 		$grid->per_page = 15;
 		$link=anchor('/inventario/sinv/dataedit/show/<#id#>','<#codigo#>');
-		$uri_2 = anchor('inventario/sinv/dataedit/create/<#id#>','Duplicar');
+
+		$uri_2  = anchor('inventario/sinv/dataedit/create/<#id#>',img(array('src'=>'images/duplicar.jpeg','border'=>'0','alt'=>'Duplicar','height'=>'12')));
+		$uri_2 .= anchor('inventario/sinv/consulta/<#id#>',img(array('src'=>'images/estadistica.jpeg','border'=>'0','alt'=>'Consultar','height'=>'12')));
+
 
 		$grid->column_orderby("C&oacute;digo",$link,"codigo");
 		$grid->column_orderby("Descripci&oacute;n","descrip","descrip");
@@ -1187,25 +1190,44 @@ class sinv extends Controller {
 		$grid->column("Total",       "<nformat><#tota#></nformat>",'  align="RIGHT"');
 		$grid->build();
 
+		$grid2 = new DataGrid('Ultimos Cambios');
+		$grid2->db->_protect_identifiers=false;
+		$grid2->db->select( array( 'a.usuario','a.fecha', 'MID(a.hora,1,5) hora', 'a.comenta' ) );
+		$grid2->db->from('logusu a');
+		$grid2->db->where('a.comenta LIKE "%$mCodigo%"' );
+		$grid2->db->orderby('a.fecha DESC');
+		$grid2->db->limit(10);
+			
+		$grid2->column("Fecha"   ,   "fecha"     );
+		$grid2->column("Usuario",    "usuario"   );
+		$grid2->column("hora",       "hora"      );
+		$grid2->column("Comentario", "comentario");
+		$grid2->build();
+
+
+
 		$descrip = $this->datasis->dameval("SELECT descrip FROM sinv WHERE id=".$claves['id']." ");
 		$data['content'] = "
-		<table width='100%'>
+		<table width='100%' border='1'>
 			<tr>
-				<td valign='top' colspan='2'>
+				<td rowspan='2' valign='top'>
 					<div style='border: 2px outset #EFEFEF;background: #EFEFFF '>
 					".$grid->output."
 					</div>
+					<div style='border: 2px outset #EFEFEF;background: #EFEFFF '>
+					".$grid2->output."
+					</div>
+					
+				</td>
+				<td>".
+				open_flash_chart_object( 250,180, site_url("inventario/sinv/ventas/$mCodigo"))."
 				</td>
 			</tr>
 			<tr>
-				<td valign='top'>
-				".open_flash_chart_object( 300,200, site_url("inventario/sinv/ventas/$mCodigo"))."
-				</td>
-				<td valign='top'>".
-				open_flash_chart_object( 300,200, site_url("inventario/sinv/compras/".raencode($mCodigo)))."
+				<td>".
+				open_flash_chart_object( 250,180, site_url("inventario/sinv/compras/".raencode($mCodigo)))."
 				</td>
 			</tr>
-			
 		</table>";
 		$data["head"]     = script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
 		$data['title']    = '<h1>Consulta de Articulo de Inventario</h1>';
