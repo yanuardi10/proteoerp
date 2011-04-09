@@ -50,8 +50,8 @@ class Banc extends Validaciones {
 		$grid->column_orderby('Banco','<pinta><#activo#>|<#banco#></pinta>','banco');
 		$grid->column_orderby('Nro Cuenta','<pinta><#activo#>|<#numcuent#></pinta>','numcuent');
 		$grid->column_orderby('Saldo','<pinta><#activo#>|<nformat><#saldo#></nformat></pinta>','saldo','align=right');
-		$grid->column_orderby('C. Contable','<pinta><#activo#>|<#cuenta#></pinta>','cuenta');
-		//$grid->column_orderby('Activo','activo','activo');
+		$grid->column_orderby('Contable','<pinta><#activo#>|<#cuenta#></pinta>','cuenta');
+		$grid->column('Acion','activo','activo');
 
 		$grid->add('finanzas/banc/dataedit/create','Agregar');
 		$grid->build();
@@ -349,7 +349,6 @@ class Banc extends Validaciones {
 				$pk[]=$field->name;
 			}
 		}
-		
 		$values=array_slice($url_pk,-$coun);
 		$claves=array_combine (array_reverse($pk) ,$values );
 
@@ -357,12 +356,12 @@ class Banc extends Validaciones {
 		$grid->db->select( array('a.fecha', 'a.tipo_op','a.numero','CONCAT(a.concepto," ",a.concep2) concepto', 'a.monto') );
 		$grid->db->from('bmov a');
 		$grid->db->where('a.codbanc', $claves['codbanc'] );
-		$grid->db->where('a.fecha > SUBDATE(curdate(),30)' );
+		$grid->db->where('a.fecha > SUBDATE(curdate(),90)' );
 		$grid->db->orderby('fecha DESC');
-		$grid->db->limit(6);
+		//$grid->db->limit();
 			
 		$grid->column("Fecha"   ,"fecha" );
-		$grid->column("Tipo"   ,"Tipo_op" );
+		$grid->column("Tipo"   ,"tipo_op" );
 		$grid->column("Numero" ,"numero");
 		$grid->column("Concepto"   ,"concepto" );
 		//$grid->column("Nombre"  ,"nombre");

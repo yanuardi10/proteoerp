@@ -20,26 +20,32 @@ class formatos extends validaciones {
 
 		$filter->nombre = new inputField('Nombre', 'nombre');
 		$filter->nombre->db_name='nombre';
-		$filter->nombre->size=20;
+		$filter->nombre->size=15;
+		$filter->nombre->group = 'UNO';
 
-		$filter->proteo = new inputField('Contenido Proteo','proteo');
-		$filter->proteo->size=40;
+		$filter->proteo = new inputField('Proteo','proteo');
+		$filter->proteo->size=30;
 		$filter->proteo->db_name='proteo';
+		$filter->proteo->group = 'UNO';
 
-		$filter->reporte = new inputField('Contenido Datasis','forma');
-		$filter->reporte->size=40;
+		$filter->reporte = new inputField('Datasis','forma');
+		$filter->reporte->size=30;
 		$filter->reporte->db_name='forma';
+		$filter->reporte->group = 'UNO';
 
-		$filter->harbourd = new inputField('Contenido Harbourd','harbour');
-		$filter->harbourd->size=40;
-		$filter->harbourd->db_name='harbour';
+		$filter->harbour = new inputField('Harbour','harbour');
+		$filter->harbour->size=30;
+		$filter->harbour->db_name='harbour';
+		$filter->harbour->group = 'DOS';
 
-		$filter->tcpdf = new inputField('Contenido TCPDF','tcpdf');
-		$filter->tcpdf->size=40;
+		$filter->tcpdf = new inputField('TCPDF','tcpdf');
+		$filter->tcpdf->size=30;
 		$filter->tcpdf->db_name='tcpdf';
+		$filter->tcpdf->group = 'DOS';
 
 		$filter->buttons('reset','search');
-		$filter->build();
+		$filter->build('dataformfiltro');
+		
 		$uri  = anchor('supervisor/formatos/dataedit/show/<#nombre#>'   ,'<#nombre#>');
 		$uri1 = anchor('supervisor/formatos/reporte/modify/<#nombre#>/' ,'Editar');
 		$uri2 = anchor('supervisor/formatos/rdatasis/modify/<#nombre#>/','Editar');
@@ -77,7 +83,8 @@ class formatos extends validaciones {
 		}).change();
 		});
 		</script>';
-		$data['content'] = $filter->output.'<form>'.$grid->output.'</form>';
+		$data['content'] = '<form>'.$grid->output.'</form>';
+		$data['filtro']  = $filter->output;
 		$data['title']   = '<h1>Menu de Formatos</h1>';
 		$data['head']    = script('jquery.pack.js').$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);

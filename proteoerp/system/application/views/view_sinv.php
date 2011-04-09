@@ -7,12 +7,14 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 <table border='0' width="100%">
 	<tr>
 		<td>
+			<?php if($form->_status=='show'){ ?>
 			<a href='<?php echo base_url()."inventario/sinv/consulta/".$form->_dataobject->get('id'); ?>'>
 			<?php
 				$propiedad = array('src' => 'images/ojos.png', 'alt' => 'Consultar Movimiento', 'title' => 'Consultar Detalles','border'=>'0','height'=>'25');
 				echo img($propiedad);
 			?>
 			</a>
+			<?php } ?>
 		</td>
 		<td align='center' valign='middle'>
 			<?php  if ($form->activo->value=='N') echo "<div style='font-size:14px;font-weight:bold;color: #B40404'>***DESACTIVADO***</div>"; ?>&nbsp;
@@ -269,11 +271,13 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 </table>
 <table width='100%'>
 	<tr>
+		<?php if( !empty($form->almacenes->output)) { ?>
 		<td valign="top">
 			<fieldset  style='border: 2px outset #AEB404;background: #F5F6CE;'>
-			<?=$form->almacenes->output ?>
+			<?php echo $form->almacenes->output ?>
 			</fieldset>
 		</td>
+		<?php } ?>
 		<td valign='top'>
 			<?php if($form->_status=='show'){ ?>
 			<fieldset  style='border: 2px outset #AEB404;background: #F5F6CE;'>
@@ -311,5 +315,82 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 		</td>
 	</tr>
 </table>
+<?php if($form->_status=='show'){ ?>
+<fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
+<legend class="titulofieldset" >Promociones</legend>
+<table border=0 width='100%'>
+	<tr>
+		<td valign="top">Descuento por Grupo 
+			<?php
+			$margen =  $this->datasis->dameval("SELECT margen FROM grup WHERE grupo='".$form->_dataobject->get('grupo')."'");
+			echo $margen."% ";
+			echo "Precio ".nformat($form->precio1->value * (100-$margen)/100); ?>
+		</td>
+		<td valign="top"><?php
+	
+			$margen =  $this->datasis->dameval("SELECT margen FROM sinvpromo WHERE codigo='".$form->_dataobject->get('codigo')."'");
+			if ($margen > 0 ) {
+			   echo "Descuento por Promocion ".$margen."% ";
+			   echo "Precio ".nformat($form->precio1->value * (100-$margen)/100);
+			} else echo "No tiene descuento promocional";
+			
+			?>
+		</td>
+	</tr>
+</table>
+<br>
+<?php
+$query = $this->db->query("SELECT suplemen FROM barraspos WHERE codigo='".$form->_dataobject->get('codigo')."'");
+if ($query->num_rows()>0 ) {
+?>
+</fieldset>
+<fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
+<legend class="titulofieldset" >Codigos de Barras Asociados</legend>
+<table width='100%'>
+	<tr>
+		<?php 
+			$m = 1;
+			foreach($query->result() as $row ){
+				if ( $m > 5 ) {
+					echo "</tr><tr>";
+					$m = 1;
+				}
+				echo "<td class='littletablerow'>".$row->suplemen."</td>";
+				
+				$m += 1; 
+			}
+			?>
+	</tr>
+</table>
+</fieldset>
+<?php }  // rows>0 ?>
+
+<?php
+$query = $this->db->query("SELECT CONCAT(codigo,' ', descrip,' ',fracci) producto FROM sinv WHERE MID(tipo,1,1)='F' AND enlace='".$form->_dataobject->get('codigo')."'");
+if ($query->num_rows()>0 ) {
+?>
+</fieldset>
+<fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
+<legend class="titulofieldset" >Fracciones</legend>
+<table width='100%'>
+	<tr>
+		<?php 
+			$m = 1;
+			foreach($query->result() as $row ){
+				if ( $m > 5 ) {
+					echo "</tr><tr>";
+					$m = 1;
+				}
+				echo "<td class='littletablerow'>".$row->producto."</td>";
+				
+				$m += 1; 
+			}
+			?>
+	</tr>
+</table>
+</fieldset>
+<?php }  // rows>0 ?>
+
+<?php }  //show    ?>
 <?php echo $container_bl.$container_br; ?>
 <?php echo $form_end?>
