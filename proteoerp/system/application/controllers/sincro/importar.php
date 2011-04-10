@@ -5,7 +5,7 @@ class Importar extends Controller {
 		parent::Controller();
 		$this->geneticket=true;
 		$this->load->helper('string');
-		$this->load->library("rapyd");
+		$this->load->library('rapyd');
 		$this->load->library('encrypt');
 		$this->sucu = $this->datasis->traevalor('NROSUCU');
 		$this->clave=sha1($this->config->item('encryption_key'));
@@ -19,7 +19,7 @@ class Importar extends Controller {
 	}
 
 	function index(){
-		$data['content'] = 'hola';
+		$data['content'] = '';
 		$data['title']   = heading('Importar');
 		$data['script']  = '';
 		$data['head']    = $this->rapyd->get_head();
@@ -46,7 +46,7 @@ class Importar extends Controller {
 		$form->qtrae->option('','Selecionar');
 		$form->qtrae->option('scli'       ,'Clientes');
 		$form->qtrae->option('sinv'       ,'Inventario (clonar)');
-		$form->qtrae->option('sinvpre'    ,'Inventario (Solo precios)');
+		$form->qtrae->option('sinvprec'   ,'Inventario (Solo precios)');
 		$form->qtrae->option('maes'       ,'Inventario Supermercado');
 		$form->qtrae->option('smov'       ,'Movimientos de clientes');
 		$form->qtrae->option('transa'     ,'Facturas y transferencias');
@@ -349,9 +349,9 @@ class Importar extends Controller {
 		return $rt;
 	}
 
-	function _sinvpre($sucu,$fecha=null){
+	function _sinvprec($sucu,$fecha=null){
 		set_time_limit(600);
-		$rt=$this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/sinvpre/'.$fecha,'sinvpre');
+		$rt=$this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/sinvprec/'.$fecha,'sinvpre');
 		return $rt;
 	}
 
@@ -561,4 +561,3 @@ class Importar extends Controller {
 		return '';
 	}
 }
-?>
