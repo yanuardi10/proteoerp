@@ -30,7 +30,11 @@ class Formatos extends Controller{
 					echo eval('?>'.preg_replace("/;*\s*\?>/", "; ?>", str_replace('<?=', '<?php echo ', $row->proteo)).'<?php ');
 					$_html=ob_get_contents();
 				@ob_end_clean();
-				pdf_create($_html, $_arch_nombre);
+				if(strlen($_html)>0)
+					pdf_create($_html, $_arch_nombre);
+				else
+					echo 'Formato no definido';
+				
 			}else{
 				echo 'Formato no existe';
 			}
@@ -38,7 +42,33 @@ class Formatos extends Controller{
 			echo 'Faltan parametros';
 		}
 	}
-	
+
+	function ver2(){
+		$parametros= func_get_args();
+		$this->_direccion='http://localhost/'.trim_slashes($this->config->item('base_url'));
+		if (count($parametros)>0){
+			$_arch_nombre=implode('-',$parametros);
+			$_fnombre=array_shift($parametros);
+			$this->load->library('dompdf/cidompdf');
+			$query = $this->db->query("SELECT proteo FROM formatos WHERE nombre='$_fnombre'");
+			if ($query->num_rows() > 0){
+				$row = $query->row();
+				ob_start();
+					echo eval('?>'.preg_replace("/;*\s*\?>/", "; ?>", str_replace('<?=', '<?php echo ', $row->proteo)).'<?php ');
+					$_html=ob_get_contents();
+				@ob_end_clean();
+				if(strlen($_html)>0)
+					$this->cidompdf->html2pdf($_html,$_arch_nombre);
+				else
+					echo 'Formato no definido';
+			}else{
+				echo 'Formato no existe';
+			}
+		}else{
+			echo 'Faltan parametros';
+		}
+	}
+
 	function verhtml(){
 		$parametros= func_get_args();
 		$this->_direccion='/'.trim_slashes($this->config->item('base_url'));
@@ -65,4 +95,3 @@ class Formatos extends Controller{
 		$this->db->simple_query($mSQL);
 	}
 }
-?>
