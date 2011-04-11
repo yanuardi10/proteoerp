@@ -159,7 +159,7 @@ class Exportar extends Controller {
 		$this->sqlinex->exportunbufferzip($data,$nombre,$this->sucu);
 	}
 
-	function _sinvprec($fecha,$opt=null){
+	/*function _sinvprec($fecha,$opt=null){
 		set_time_limit(600);
 		$dupli_sinv=array('precio1','precio2','precio3','precio4','base1','base2','base3','base4','margen1','margen2','margen3','margen4');
 		$this->load->library('sqlinex');
@@ -174,6 +174,50 @@ class Exportar extends Controller {
 		if(!array_key_exists('HTTP_USER_AGENT', $_SERVER)) $_SERVER['HTTP_USER_AGENT']='curl';
 
 		$this->sqlinex->exportunbufferzip($data,$nombre,$this->sucu);
+	}*/
+
+	function _sinvprec($fecha=null,$opt=null){
+		set_time_limit(600);
+		$mSQL  = "SELECT a.codigo,a.grupo,a.descrip,a.descrip2,a.unidad,a.ubica,a.tipo,a.clave,a.comision,a.enlace,a.prov1,a.prepro1,a.pfecha1,a.prov2,a.prepro2,a.pfecha2,a.prov3,a.prepro3,a.pfecha3,a.pond,a.ultimo,a.pvp_s,a.pvp_bs,a.pvpprc,a.contbs,a.contprc,a.mayobs,a.mayoprc,a.exmin,a.exord,a.exdes,a.existen,a.fechav,a.fechac,a.iva,a.fracci,a.codbar,a.barras,a.exmax,a.margen1,a.margen2,a.margen3,a.margen4,a.base1,a.base2,a.base3,a.base4,a.precio1,a.precio2,a.precio3,a.precio4,a.serial,a.tdecimal,'N' AS activo,a.dolar,a.redecen,a.formcal,a.fordeci,a.garantia,a.costotal,a.fechac2,a.peso,a.pondcal,a.alterno,a.aumento,a.modelo,a.marca,a.clase,a.oferta,a.fdesde,a.fhasta,a.derivado,a.cantderi,a.ppos1,a.ppos2,a.ppos3,a.ppos4,a.linea,a.depto,a.gasto,a.bonifica,a.bonicant,a.standard,a.modificado,a.descufijo
+		FROM sinv AS a";
+
+		$nombre = tempnam('/tmp', 'sinvprec');
+		$handle = fopen($nombre, 'w');
+		$sql='';
+
+		$query=mysql_unbuffered_query($mSQL,$this->db->conn_id);
+		if ($query!==false){
+			while ($row = mysql_fetch_assoc($query)) {
+				$sql = $this->db->insert_string('sinv', $row);
+				$sql.=' ON DUPLICATE KEY UPDATE ';
+				$sql.=' `precio1`='.$row['precio1'];
+				$sql.=',`precio2`='.$row['precio2'];
+				$sql.=',`precio3`='.$row['precio3'];
+				$sql.=',`precio4`='.$row['precio4'];
+				$sql.=',`iva`    ='.$row['iva'];
+				$sql.=',`base1`  ='.$row['base1'];
+				$sql.=',`base2`  ='.$row['base2'];
+				$sql.=',`base3`  ='.$row['base3'];
+				$sql.=',`base4`  ='.$row['base4'];
+				$sql.=',`margen1`= ROUND(100-((IF(formcal=\'U\',ultimo,IF(formcal=\'P\',pond,IF(formcal=\'S\',standard,GREATEST(ultimo,pond)))))*100/('.$row['base1'].')),2)';
+				$sql.=',`margen2`= ROUND(100-((IF(formcal=\'U\',ultimo,IF(formcal=\'P\',pond,IF(formcal=\'S\',standard,GREATEST(ultimo,pond)))))*100/('.$row['base2'].')),2)';
+				$sql.=',`margen3`= ROUND(100-((IF(formcal=\'U\',ultimo,IF(formcal=\'P\',pond,IF(formcal=\'S\',standard,GREATEST(ultimo,pond)))))*100/('.$row['base3'].')),2)';
+				$sql.=',`margen4`= ROUND(100-((IF(formcal=\'U\',ultimo,IF(formcal=\'P\',pond,IF(formcal=\'S\',standard,GREATEST(ultimo,pond)))))*100/('.$row['base4'].')),2)';
+				$sql.=',`marca`  ='.$row['marca'];
+				$sql.="\n";
+				fwrite($handle, $sql);
+			}
+			mysql_free_result($query);
+		}
+		fclose($handle);
+		$firma=md5_file($nombre);
+		$this->load->library('encrypt');
+		$firma=$this->encrypt->encode($this->sucu.'-#-'.$firma);
+		$this->load->library('zip');
+		$this->zip->add_data('firma.txt',$firma);
+		$this->zip->read_file($nombre);
+		$this->zip->download('ssinvpre.zip');
+		unlink($nombre);
 	}
 
 	function _transacciones($fecha,$opt=null){
@@ -377,12 +421,12 @@ class Exportar extends Controller {
 	}
 
 //***********************
-// Metodos dependientes 
+// Metodos dependientes
 //     del almacen
 //***********************
 	function _maesalma($fecha,$opt=null){
 		if(empty($opt)) return false;
-		$this->load->library("sqlinex");
+		$this->load->library('sqlinex');
 		$dbalma=$this->db->escape($opt[0]);
 		$data[]=array('table'  =>'dpto');
 		$data[]=array('table'  =>'fami');
