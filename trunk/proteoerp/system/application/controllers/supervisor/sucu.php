@@ -3,25 +3,25 @@ class sucu extends Controller{
 	
 	function sucu(){
 		parent::Controller();
-		$this->load->library("rapyd");
+		$this->load->library('rapyd');
 	}
 
 	function index(){
-		redirect("supervisor/sucu/filteredgrid");
+		redirect('supervisor/sucu/filteredgrid');
 	}
 
 	function filteredgrid(){
 		$this->rapyd->load("datafilter","datagrid");
 
 		$filter = new DataFilter("Filtro de Sucursales", 'sucu');
-		
+
 		$filter->codigo = new inputField("C&oacute;digo", "codigo");
 		$filter->codigo->size=10;
-		
+
 		$filter->sucursal= new inputField("Sucursal","sucursal");
 		$filter->sucursal->size=20;
-			
-		$filter->buttons("reset","search");
+
+		$filter->buttons('reset','search');
 		$filter->build();
 
 		$uri = anchor('supervisor/sucu/dataedit/show/<#codigo#>','<#codigo#>');
@@ -39,46 +39,54 @@ class sucu extends Controller{
 		$grid->build();
 
 		$data['content'] = $filter->output.$grid->output;
-		$data['title']   = "<h1>Sucursal</h1>";
-		$data["head"]    = $this->rapyd->get_head();	
+		$data['title']   = heading('Sucursal');
+		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 
 	function dataedit(){ 
-		$this->rapyd->load("dataedit");
-		
-		$edit = new DataEdit("Sucursal","sucu");
-		$edit->back_url = site_url("supervisor/sucu/filteredgrid");
+		$this->rapyd->load('dataedit');
 
-		$edit->codigo = new inputField("C&oacute;digo", "codigo");
-		$edit->codigo->rule = "required";
-		$edit->codigo->mode = "autohide";
+		$edit = new DataEdit('Sucursal','sucu');
+		$edit->back_url = site_url('supervisor/sucu/filteredgrid');
+
+		$edit->codigo = new inputField('C&oacute;digo', 'codigo');
+		$edit->codigo->rule = 'required';
+		$edit->codigo->mode = 'autohide';
 		$edit->codigo->size = 4;
 		$edit->codigo->maxlength = 2;
-		
-		$edit->sucursal = new inputField("Sucursal","sucursal");
-		$edit->sucursal->rule = "strtoupper";
+
+		$edit->sucursal = new inputField('Nombre de la Sucursal','sucursal');
+		$edit->sucursal->rule = 'strtoupper';
 		$edit->sucursal->size = 60;
 		$edit->sucursal->maxlength = 45;
-		
-		$edit->url = new inputField("URL","url");
-		$edit->url->size =80;
+
+		$edit->url = new inputField('Direcci&oacute;n URL','url');
+		$edit->url->size =60;
 		$edit->url->maxlength =200;
-		
-		$edit->prefijo = new inputField("Prefijo","prefijo");
+		$edit->url->append('Ej: www.example.com o www.example.com:8080');
+
+		$edit->prefijo = new inputField('Prefijo','prefijo');
 		$edit->prefijo->size = 5;
 		$edit->prefijo->maxlength = 3;
+		$edit->prefijo->rule='required';
+		$edit->prefijo->append('Prefijo de las transacciones en la sucursal');
 	
-		$edit->proteo = new inputField("Proteo","proteo");
+		$edit->proteo = new inputField('Direcctorio Proteo','proteo');
 		$edit->proteo->maxlength =50;
-		$edit->proteo->size =70;
-		  
-		$edit->buttons("modify", "save", "undo", "delete", "back");
+
+		/*$edit->puerto = new inputField('Puerto http','puerto');
+		$edit->puerto->insertValue='80';
+		$edit->puerto->maxlength =5;
+		$edit->puerto->size      =8;
+		$edit->puerto->rule      ='required|numeric';*/
+
+		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
 		$edit->build();
 		
 		$data['content'] = $edit->output; 		
-		$data['title']   = "<h1>Sucursal</h1>";
-		$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
+		$data['title']   = heading('Sucursal');
+		$data['head']    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 	function instalar(){
@@ -92,4 +100,3 @@ class sucu extends Controller{
 		$this->db->simple_query($mSQL);
 	}
 }
-?>

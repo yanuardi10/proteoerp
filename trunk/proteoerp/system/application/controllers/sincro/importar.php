@@ -214,9 +214,9 @@ class Importar extends Controller {
 		}
 
 		$data['content'] = $form->output.$msg;
-		$data['title']   = '<h1>Cargas de Zip</h1>';
+		$data['title']   = heading('Cargas de Zip');
 		$data['script']  = '';
-		$data["head"]    = $this->rapyd->get_head();
+		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -224,7 +224,7 @@ class Importar extends Controller {
 		set_time_limit(600);
 		if(empty($sucu)) $sucu='01';
 		$ssucu=$this->db->escape($sucu);
-		
+
 		$cant=$this->datasis->dameval("SELECT * FROM sucu WHERE codigo=$ssucu");
 		if($cant>0){
 			$rt=$this->__traerzip($sucu,'finanzas/exportar/vendambul');
@@ -252,7 +252,7 @@ class Importar extends Controller {
 			if(!method_exists($this,$obj)) { echo "Error metodo $metodo no existe \n"; return false;}
 			if(!$this->__chekfecha($fecha)){ echo "Error fecha no valida \n"; return false;}
 			if($psucu!='*') $where='AND codigo ='.$this->db->escape($psucu); else $where='';
-			
+
 			$sucu=$this->sucu;
 			$query = $this->db->query("SELECT * FROM sucu WHERE codigo<>$sucu $where");
 			if(empty($fecha)) $fecha = date('Ymd');
@@ -440,7 +440,7 @@ class Importar extends Controller {
 		set_time_limit(600);
 		$this->load->library('Sqlinex');
 		$sucu  = $this->db->escape($sucu);
-		
+
 		$query = $this->db->query("SELECT * FROM sucu WHERE codigo=$sucu");
 		$fecha = date('Ymd');
 		$error='';
@@ -452,16 +452,20 @@ class Importar extends Controller {
 			$url=$row->url.'/'.$row->proteo.'/'.$dir_url;
 			$url=reduce_double_slashes($url);
 			$ch = curl_init('http://'.$url);
-			$tmpfname = tempnam($dir, "cargagen");
+			$tmpfname = tempnam($dir, 'cargagen');
 
-			$fp = fopen($tmpfname, "w");
+			$fp = fopen($tmpfname, 'w');
 			curl_setopt($ch, CURLOPT_FILE, $fp);
 			curl_setopt($ch, CURLOPT_HEADER, 0);
-			curl_exec($ch);
+
+			if(curl_exec($ch) === false){
+				return 'Curl error: ' . curl_error($ch);
+			}else{
+				$nombre=basename($tmpfname);
+				$error=$this->__cargazip($nombre);
+			}
 			curl_close($ch);
 			fclose($fp);
-			$nombre=basename($tmpfname);
-			$error=$this->__cargazip($nombre);
 
 			if(!empty($error) AND $this->geneticket){
 				$atts = array(
@@ -473,7 +477,7 @@ class Importar extends Controller {
 				    'screenx'    => '0',
 				    'screeny'    => '0'
 				);
-				
+
 				$link=anchor_popup('sincro/importar/uitrae/'.$iden,'traer manual',$atts);
 				$data['padre']      ='S';
 				$data['prioridad']  ='5';
