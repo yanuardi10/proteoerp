@@ -87,7 +87,7 @@ class Exportar extends Controller {
 		$data['content'] = $form->output.$exito;
 		$data['title']   = '<h1>Exportar data de Sucursal</h1>';
 		$data['script']  = '';
-		$data["head"]    = $this->rapyd->get_head();
+		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 
 	}
@@ -209,6 +209,8 @@ class Exportar extends Controller {
 			}
 			mysql_free_result($query);
 		}
+
+		if(!array_key_exists('HTTP_USER_AGENT', $_SERVER)) $_SERVER['HTTP_USER_AGENT']='curl';
 		fclose($handle);
 		$firma=md5_file($nombre);
 		$this->load->library('encrypt');
