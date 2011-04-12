@@ -673,8 +673,17 @@ class b2b extends validaciones {
 		$error   =0;
 		$pcontrol=$this->datasis->dameval('SELECT pcontrol FROM b2b_scst WHERE  id='.$this->db->escape($id));
 
+		if(empty($pcontrol)){
+			$eexiste = 0;
+		}else{
+			$eexiste = $this->datasis->dameval('SELECT COUNT(*) FROM scst WHERE  control='.$this->db->escape($pcontrol));
+			if(empty($eexiste)){
+				$eexisten = 0;
+			}
+		}
+
 		$cana=$this->datasis->dameval('SELECT COUNT(*) FROM b2b_itscst AS a LEFT JOIN sinv AS b ON a.codigolocal=b.codigo WHERE a.numero IS NULL AND id_scst='.$this->db->escape($id));
-		if($cana==0 AND empty($pcontrol)){
+		if($cana==0 AND $eexiste==0){
 			$control=$this->datasis->fprox_numero('nscst');
 			$transac=$this->datasis->fprox_numero('ntransa');
 			//$tt['montotot']=$tt['montoiva']=$tt['montonet']=0;
