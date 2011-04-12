@@ -178,12 +178,21 @@ class Exportar extends Controller {
 
 	function _sinvprec($fecha=null,$opt=null){
 		set_time_limit(600);
-		$mSQL  = "SELECT a.codigo,a.grupo,a.descrip,a.descrip2,a.unidad,a.ubica,a.tipo,a.clave,a.comision,a.enlace,a.prov1,a.prepro1,a.pfecha1,a.prov2,a.prepro2,a.pfecha2,a.prov3,a.prepro3,a.pfecha3,a.pond,a.ultimo,a.pvp_s,a.pvp_bs,a.pvpprc,a.contbs,a.contprc,a.mayobs,a.mayoprc,a.exmin,a.exord,a.exdes,a.existen,a.fechav,a.fechac,a.iva,a.fracci,a.codbar,a.barras,a.exmax,a.margen1,a.margen2,a.margen3,a.margen4,a.base1,a.base2,a.base3,a.base4,a.precio1,a.precio2,a.precio3,a.precio4,a.serial,a.tdecimal,'N' AS activo,a.dolar,a.redecen,a.formcal,a.fordeci,a.garantia,a.costotal,a.fechac2,a.peso,a.pondcal,a.alterno,a.aumento,a.modelo,a.marca,a.clase,a.oferta,a.fdesde,a.fhasta,a.derivado,a.cantderi,a.ppos1,a.ppos2,a.ppos3,a.ppos4,a.linea,a.depto,a.gasto,a.bonifica,a.bonicant,a.standard,a.modificado,a.descufijo
-		FROM sinv AS a";
+		$sucu   = '01';
+		$sscucu =$this->db->escape($sucu);
+
+		if ($this->db->table_exists('sinvcontrol')){
+			$mSQL  = "SELECT a.codigo,a.grupo,a.descrip,a.descrip2,a.unidad,a.ubica,a.tipo,a.clave,a.comision,a.enlace,a.prov1,a.prepro1,a.pfecha1,a.prov2,a.prepro2,a.pfecha2,a.prov3,a.prepro3,a.pfecha3,a.pond,a.ultimo,a.pvp_s,a.pvp_bs,a.pvpprc,a.contbs,a.contprc,a.mayobs,a.mayoprc,a.exmin,a.exord,a.exdes,a.existen,a.fechav,a.fechac,a.iva,a.fracci,a.codbar,a.barras,a.exmax,a.margen1,a.margen2,a.margen3,a.margen4,a.base1,a.base2,a.base3,a.base4,a.precio1,a.precio2,a.precio3,a.precio4,a.serial,a.tdecimal,'N' AS activo,a.dolar,a.redecen,a.formcal,a.fordeci,a.garantia,a.costotal,a.fechac2,a.peso,a.pondcal,a.alterno,a.aumento,a.modelo,a.marca,a.clase,a.oferta,a.fdesde,a.fhasta,a.derivado,a.cantderi,a.ppos1,a.ppos2,a.ppos3,a.ppos4,a.linea,a.depto,a.gasto,a.bonifica,a.bonicant,a.standard,a.modificado,a.descufijo
+			FROM sinv AS a LEFT JOIN sinvcontrol AS b ON a.codigo=b.codigo AND b.sucursal=${sscucu}
+			WHERE b.codigo IS NULL or b.codigo='S'";
+		}else{
+			$mSQL  = "SELECT a.codigo,a.grupo,a.descrip,a.descrip2,a.unidad,a.ubica,a.tipo,a.clave,a.comision,a.enlace,a.prov1,a.prepro1,a.pfecha1,a.prov2,a.prepro2,a.pfecha2,a.prov3,a.prepro3,a.pfecha3,a.pond,a.ultimo,a.pvp_s,a.pvp_bs,a.pvpprc,a.contbs,a.contprc,a.mayobs,a.mayoprc,a.exmin,a.exord,a.exdes,a.existen,a.fechav,a.fechac,a.iva,a.fracci,a.codbar,a.barras,a.exmax,a.margen1,a.margen2,a.margen3,a.margen4,a.base1,a.base2,a.base3,a.base4,a.precio1,a.precio2,a.precio3,a.precio4,a.serial,a.tdecimal,'N' AS activo,a.dolar,a.redecen,a.formcal,a.fordeci,a.garantia,a.costotal,a.fechac2,a.peso,a.pondcal,a.alterno,a.aumento,a.modelo,a.marca,a.clase,a.oferta,a.fdesde,a.fhasta,a.derivado,a.cantderi,a.ppos1,a.ppos2,a.ppos3,a.ppos4,a.linea,a.depto,a.gasto,a.bonifica,a.bonicant,a.standard,a.modificado,a.descufijo
+			FROM sinv AS a";
+		}
 
 		$nombre = tempnam('/tmp', 'sinvprec');
 		$handle = fopen($nombre, 'w');
-		$sql='';
+		$sql    = '';
 
 		$query=mysql_unbuffered_query($mSQL,$this->db->conn_id);
 		if ($query!==false){
