@@ -190,20 +190,20 @@ class Exportar extends Controller {
 			while ($row = mysql_fetch_assoc($query)) {
 				$sql = $this->db->insert_string('sinv', $row);
 				$sql.=' ON DUPLICATE KEY UPDATE ';
-				$sql.=' `precio1`='.$row['precio1'];
-				$sql.=',`precio2`='.$row['precio2'];
-				$sql.=',`precio3`='.$row['precio3'];
-				$sql.=',`precio4`='.$row['precio4'];
-				$sql.=',`iva`    ='.$row['iva'];
-				$sql.=',`base1`  ='.$row['base1'];
-				$sql.=',`base2`  ='.$row['base2'];
-				$sql.=',`base3`  ='.$row['base3'];
-				$sql.=',`base4`  ='.$row['base4'];
+				$sql.=' `precio1`='.$this->db->escape($row['precio1']);
+				$sql.=',`precio2`='.$this->db->escape($row['precio2']);
+				$sql.=',`precio3`='.$this->db->escape($row['precio3']);
+				$sql.=',`precio4`='.$this->db->escape($row['precio4']);
+				$sql.=',`iva`    ='.$this->db->escape($row['iva']);
+				$sql.=',`base1`  ='.$this->db->escape($row['base1']);
+				$sql.=',`base2`  ='.$this->db->escape($row['base2']);
+				$sql.=',`base3`  ='.$this->db->escape($row['base3']);
+				$sql.=',`base4`  ='.$this->db->escape($row['base4']);
 				$sql.=',`margen1`= ROUND(100-((IF(formcal=\'U\',ultimo,IF(formcal=\'P\',pond,IF(formcal=\'S\',standard,GREATEST(ultimo,pond)))))*100/('.$row['base1'].')),2)';
 				$sql.=',`margen2`= ROUND(100-((IF(formcal=\'U\',ultimo,IF(formcal=\'P\',pond,IF(formcal=\'S\',standard,GREATEST(ultimo,pond)))))*100/('.$row['base2'].')),2)';
 				$sql.=',`margen3`= ROUND(100-((IF(formcal=\'U\',ultimo,IF(formcal=\'P\',pond,IF(formcal=\'S\',standard,GREATEST(ultimo,pond)))))*100/('.$row['base3'].')),2)';
 				$sql.=',`margen4`= ROUND(100-((IF(formcal=\'U\',ultimo,IF(formcal=\'P\',pond,IF(formcal=\'S\',standard,GREATEST(ultimo,pond)))))*100/('.$row['base4'].')),2)';
-				$sql.=',`marca`  ='.$row['marca'];
+				$sql.=',`marca`  ='.$this->db->escape($row['marca']);
 				$sql.="\n";
 				fwrite($handle, $sql);
 			}
