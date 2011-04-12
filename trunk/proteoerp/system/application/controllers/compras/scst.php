@@ -5,6 +5,7 @@ class Scst extends Controller {
 		parent::Controller();
 		$this->load->library('rapyd');
 		$this->datasis->modulo_id(201,1);
+		$this->back_dataedit='compras/scst/datafilter';
 	}
 
 	function index() {
@@ -159,7 +160,7 @@ class Scst extends Controller {
 		$edit->pre_process('delete','_pre_del');
 		$edit->pre_process('insert','_pre_insert');
 
-		$edit->back_url = 'compras/scst/datafilter';
+		$edit->back_url = $this->back_dataedit;
 
 		$edit->fecha = new DateonlyField('Fecha', 'fecha','d/m/Y');
 		$edit->fecha->insertValue = date('Y-m-d');
