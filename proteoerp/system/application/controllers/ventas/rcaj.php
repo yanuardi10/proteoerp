@@ -520,7 +520,7 @@ class Rcaj extends validaciones {
 
 		//Cierre de caja
 		if ($form->on_success()){
-			$mSQL="SELECT a.fecha,c.tipo,c.nombre ,b.recibido,b.sistema,b.diferencia
+			$mSQL="SELECT a.fecha,c.tipo,c.nombre ,b.recibido,b.sistema,b.diferencia, a.transac
 			FROM rcaj    AS a 
 			JOIN itrcaj  AS b ON a.numero=b.numero
 			JOIN tarjeta AS c ON c.tipo=b.tipo 
@@ -550,6 +550,8 @@ class Rcaj extends validaciones {
 						//echo $mmSQL."\n";
 					}
 				}$rcajfecha=$this->db->escape($row->fecha);
+				$transac=$row->transac;
+				//$transac=$this->datasis->fprox_numero('ntransa');
 
 				$arr = array(
 					'tipo'     => 'F',
@@ -581,7 +583,6 @@ class Rcaj extends validaciones {
 				//echo $mmSQL;
 
 				//Crea el movimiento en smov
-				$transac=$this->datasis->fprox_numero('ntransa');
 				$mSQL  = 'SELECT fecha, cajero FROM rcaj WHERE numero='.$dbnumero;
 				$query = $this->db->query($mSQL);
 				$row   = $query->first_row();
