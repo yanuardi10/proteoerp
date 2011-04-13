@@ -278,6 +278,14 @@ class Importar extends Controller {
 		}
 	}
 
+	function traesinvprec($principal,$fecha=null){
+		if(isset($_SERVER['argv']) && !isset($_SERVER['SERVER_NAME'])){ //asegura que se ejecute desde shell
+			if(empty($fecha)) $fecha = date('Ymd');
+			$rt=$this->_sinvprec($principal,null);
+			echo $rt;
+		}
+	}
+
 	function traetodoprin($fecha=null){
 		if(isset($_SERVER['argv']) && !isset($_SERVER['SERVER_NAME'])){ //asegura que se ejecute desde shell
 
