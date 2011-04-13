@@ -116,6 +116,12 @@ class Libros extends Controller {
 		$this->_telefono('compras');
 		compras::wlcexcel($mes);
 	}
+	// libros ventas fiscal	
+	function wlcexcel3($mes=null) {
+		if(!$this->_checkfecha($mes)) show_error('Parametro inv&aacute;lido');
+		$this->_telefono('compras');
+		compras::wlcexcel($mes);
+	}
 
 	//libro de ventas basado en cierres z
 	function wlvcierrez($mes=null){
@@ -157,12 +163,11 @@ class Libros extends Controller {
 	}
 
 	//Libro de ventas fiscal
-	function wlvexcelfiscal($mes=null) {
+	function wlvexcel3($mes=null){
 		if(!$this->_checkfecha($mes)) show_error('Parametro inv&aacute;lido');
 		$this->_telefono('ventas');
-		ventas::wlvexcelfiscal($mes);
+		ventas::wlvexcel3($mes);
 	}
-
 	//libro de ventas separado por sucursal
 	function wlvexcelsucu($mes=null) {
 		if(!$this->_checkfecha($mes)) show_error('Parametro inv&aacute;lido');
