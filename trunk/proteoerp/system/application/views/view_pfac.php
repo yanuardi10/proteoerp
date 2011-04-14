@@ -35,15 +35,88 @@ if($form->_status!='show'){ ?>
 
 <script language="javascript" type="text/javascript">
 itpfac_cont=<?php echo $form->max_rel_count['itpfac']; ?>;
+invent = (<?php echo $inven; ?>);
+//jinven = eval('('+invent+')');
 
 $(function(){
+	$(document).keydown(function(e){
+		if (e.which == 13) return false;
+	});
+
 	$(".inputnum").numeric(".");
 	totalizar();
 	for(var i=0;i < <?php echo $form->max_rel_count['itpfac']; ?>;i++){
 		cdropdown(i);
 	}
+
+	//alert(invent._TPC01[0]);
+	/*if(typeof invent._TP0C01 == "undefined"){
+		alert('no existo');
+	}*/
 });
 
+function OnEnter(e,ind){
+	var keynum;
+	var keychar;
+	var numcheck;
+
+	if(window.event){ //IE
+		keynum = e.keyCode;
+	}else if(e.which){ //Netscape/Firefox/Opera
+		keynum = e.which;
+	}
+	if(keynum==13){
+		dacodigo(ind);
+		return false;
+	}
+
+	//keychar = String.fromCharCode(keynum);
+	return true;
+}
+
+function dacodigo(nind){
+	ind=nind.toString();
+	var codigo = $("#codigoa_"+ind).val();
+	var eeval;
+	eval('eeval= typeof invent._'+codigo);
+	//alert(eeval);
+	var descrip='';
+	if(eeval != "undefined"){
+		eval('descrip=invent._'+codigo+'[0]');
+		eval('tipo   =invent._'+codigo+'[1]');
+		eval('base1  =invent._'+codigo+'[2]');
+		eval('base2  =invent._'+codigo+'[3]');
+		eval('base3  =invent._'+codigo+'[4]');
+		eval('base4  =invent._'+codigo+'[5]');
+		eval('itiva  =invent._'+codigo+'[6]');
+		eval('peso   =invent._'+codigo+'[7]');
+		eval('precio1=invent._'+codigo+'[8]');
+		eval('pond   =invent._'+codigo+'[9]');
+
+		$("#desca_"+ind).val(descrip);
+		$("#precio1_"+ind).val(base1);
+		$("#precio2_"+ind).val(base2);
+		$("#precio3_"+ind).val(base3);
+		$("#precio4_"+ind).val(base4);
+		$("#itiva_"+ind).val(itiva);
+		$("#sinvtipo_"+ind).val(tipo);
+		$("#sinvpeso_"+ind).val(peso);
+		$("#itpvp_"+ind).val(precio1);
+		$("#itcosto_"+ind).val(pond);
+	}else{
+		$("#desca_"+ind).val('');
+		$("#precio1_"+ind).val('');
+		$("#precio2_"+ind).val('');
+		$("#precio3_"+ind).val('');
+		$("#precio4_"+ind).val('');
+		$("#itiva_"+ind).val('');
+		$("#sinvtipo_"+ind).val('');
+		$("#sinvpeso_"+ind).val('');
+		$("#itpvp_"+ind).val('');
+		$("#itcosto_"+ind).val('');
+	}
+	post_modbus_sinv(nind);
+}
 function importe(id){
 	var ind     = id.toString();
 	var cana    = Number($("#cana_"+ind).val());
@@ -86,7 +159,7 @@ function totalizar(){
 }
 
 function add_itpfac(){
-	var htm = <?=$campos ?>;
+	var htm = <?php echo $campos; ?>;
 	can = itpfac_cont.toString();
 	con = (itpfac_cont+1).toString();
 	htm = htm.replace(/<#i#>/g,can);
@@ -268,7 +341,7 @@ function del_itpfac(id){
 			?>
 
 			<tr id='tr_itpfac_<?php echo $i; ?>'>
-				<td class="littletablerow" align="left" ><?php echo $form->$it_codigoa->output; ?></td>
+				<td class="littletablerow" align="left" nowrap><?php echo $form->$it_codigoa->output; ?></td>
 				<td class="littletablerow" align="left" ><?php echo $form->$it_desca->output;  ?></td>
 				<td class="littletablerow" align="right"><?php echo $form->$it_cana->output;   ?></td>
 				<td class="littletablerow" align="right"><?php echo $form->$it_preca->output;  ?></td>

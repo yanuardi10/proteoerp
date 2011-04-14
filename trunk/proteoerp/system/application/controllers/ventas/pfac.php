@@ -65,23 +65,23 @@ class pfac extends validaciones{
 		$grid->order_by('numero', 'desc');
 		$grid->per_page = 15;
 
-		$grid->column("N&uacute;mero", $uri);
-		$grid->column("Fecha", "<dbdate_to_human><#fecha#></dbdate_to_human>", "align='center'");
-		$grid->column("Nombre", "nombre");
-		$grid->column("Sub.Total", "<number_format><#totals#>|2</number_format>", "align=right");
-		$grid->column("IVA", "<number_format><#iva#>|2</number_format>", "align=right");
-		$grid->column("Total", "<number_format><#totalg#>|2</number_format>", "align=right");
-		$grid->column("Vista", $uri2, "align='center'");
+		$grid->column_orderby('N&uacute;mero', $uri,'numero');
+		$grid->column_orderby("Fecha"        , '<dbdate_to_human><#fecha#></dbdate_to_human>','fecha', "align='center'");
+		$grid->column_orderby("Nombre"       , 'nombre','nombre');
+		$grid->column_orderby('Sub.Total'    , '<nformat><#totals#></nformat>', "align=right");
+		$grid->column_orderby('IVA'          , '<nformat><#iva#></nformat>'   , "align=right");
+		$grid->column_orderby('Total'        , '<nformat><#totalg#></nformat>', "align=right");
+		$grid->column('Vista'    , $uri2, "align='center'");
 
-		$grid->add("ventas/pfac/dataedit/create");
+		$grid->add('ventas/pfac/dataedit/create');
 		$grid->build();
 
 		$data['content'] = $filter->output . $grid->output;
-		$data["head"] = $this->rapyd->get_head();
-		$data['title'] = heading('Pedidos Clientes');
+		$data['head']    = $this->rapyd->get_head();
+		$data['title']   = heading('Pedidos Clientes');
 		$this->load->view('view_ventanas', $data);
 		}
-	
+
 	function dataedit(){
 		$this->rapyd->load('dataobject', 'datadetails');
 
@@ -96,18 +96,18 @@ class pfac extends validaciones{
 				'existen' =>'Existencia',
 				),
 			'filtro' => array('codigo' => 'C&oacute;digo', 'descrip' => 'Descripci&oacute;n'),
-			'retornar' => array(
-				'codigo' => 'codigoa_<#i#>',
+			'retornar'  => array(
+				'codigo'  => 'codigoa_<#i#>',
 				'descrip' => 'desca_<#i#>',
-				'base1' => 'precio1_<#i#>',
-				'base2' => 'precio2_<#i#>',
-				'base3' => 'precio3_<#i#>',
-				'base4' => 'precio4_<#i#>',
-				'iva' => 'itiva_<#i#>',
-				'tipo' => 'sinvtipo_<#i#>',
-				'peso' => 'sinvpeso_<#i#>',
+				'base1'   => 'precio1_<#i#>',
+				'base2'   => 'precio2_<#i#>',
+				'base3'   => 'precio3_<#i#>',
+				'base4'   => 'precio4_<#i#>',
+				'iva'     => 'itiva_<#i#>',
+				'tipo'    => 'sinvtipo_<#i#>',
+				'peso'    => 'sinvpeso_<#i#>',
 				'precio1' => 'itpvp_<#i#>',
-				'pond' => 'itcosto_<#i#>',
+				'pond'    => 'itcosto_<#i#>',
 			),
 			'p_uri' => array(4 => '<#i#>'),
 			'titulo' => 'Buscar Articulo',
@@ -131,13 +131,23 @@ class pfac extends validaciones{
 			'script' => array('post_modbus_scli()'));
 		$boton = $this->datasis->modbus($mSCLId);
 
-		$do = new DataObject("pfac");
+		$inven=array();
+		$query=$this->db->query('SELECT TRIM(codigo) AS codigo ,TRIM(descrip) AS descrip,tipo,base1,base2,base3,base4,iva,peso,precio1,pond FROM sinv WHERE activo=\'S\'');
+		if ($query->num_rows() > 0){
+			foreach ($query->result() as $row){
+				$ind='_'.$row->codigo;
+				$inven[$ind]=array($row->descrip,$row->tipo,$row->base1,$row->base2,$row->base3,$row->base4,$row->iva,$row->peso,$row->precio1,$row->pond);
+			}
+		}
+		$jinven=json_encode($inven);
+
+		$do = new DataObject('pfac');
 		$do->rel_one_to_many('itpfac', 'itpfac', array('numero' => 'numa'));
 		$do->pointer('scli' , 'scli.cliente=pfac.cod_cli', 'tipo AS sclitipo', 'left');
 		$do->rel_pointer('itpfac', 'sinv', 'itpfac.codigoa=sinv.codigo', 'sinv.descrip AS sinvdescrip, sinv.base1 AS sinvprecio1, sinv.base2 AS sinvprecio2, sinv.base3 AS sinvprecio3, sinv.base4 AS sinvprecio4, sinv.iva AS sinviva, sinv.peso AS sinvpeso,sinv.tipo AS sinvtipo,sinv.precio1 As sinvprecio1,sinv.pond AS sinvpond');
 
 		$edit = new DataDetails('Pedidos', $do);
-		$edit->back_url = site_url("ventas/pfac/filteredgrid");
+		$edit->back_url = site_url('ventas/pfac/filteredgrid');
 		$edit->set_rel_title('itpfac', 'Producto <#o#>');
 
 		$edit->pre_process('insert' , '_pre_insert');
@@ -198,13 +208,14 @@ class pfac extends validaciones{
 		$edit->codigoa = new inputField('C&oacute;digo <#o#>', 'codigoa_<#i#>');
 		$edit->codigoa->size = 12;
 		$edit->codigoa->db_name = 'codigoa';
-		$edit->codigoa->readonly = true;
+		//$edit->codigoa->readonly = true;
 		$edit->codigoa->rel_id = 'itpfac';
-		$edit->codigoa->rule = 'required';
+		$edit->codigoa->rule = 'required|callback_chcodigoa';
+		$edit->codigoa->onkeyup = 'OnEnter(event,<#i#>)';
 		$edit->codigoa->append($btn);
 
 		$edit->desca = new inputField('Descripci&oacute;n <#o#>', 'desca_<#i#>');
-		$edit->desca->size = 36;
+		$edit->desca->size = 32;
 		$edit->desca->db_name = 'desca';
 		$edit->desca->maxlength = 50;
 		$edit->desca->readonly = true;
@@ -285,13 +296,14 @@ class pfac extends validaciones{
 		$edit->buttons('modify', 'save', 'undo', 'delete', 'back', 'add_rel');
 		$edit->build();
 
+		$conten['inven']=$jinven;
 		$conten['form'] = & $edit;
 		$data['content'] = $this->load->view('view_pfac', $conten, true);
 		$data['title'] = heading('Pedidos');
 		$data['head'] = script('jquery.js') . script('jquery-ui.js') . script('plugins/jquery.numeric.pack.js') . script('plugins/jquery.meiomask.js') . style('vino/jquery-ui.css') . $this->rapyd->get_head() . phpscript('nformat.js') . script('plugins/jquery.numeric.pack.js') . script('plugins/jquery.floatnumber.js') . phpscript('nformat.js');
 		$this->load->view('view_ventanas', $data);
 	}
-	
+
 	function _pre_insert($do){
 		$numero = $this->datasis->fprox_numero('npfac');
 		$do->set('numero', $numero);
@@ -354,7 +366,16 @@ class pfac extends validaciones{
 		if($ban==false){ memowrite($mSQL,'pfac'); }
 		return true;
 	}
-	
+
+	function chcodigoa($codigo){
+		$cana=$this->datasis->dameval('SELECT COUNT(*) FROM sinv WHERE activo=\'S\' AND codigo='.$this->db->escape($codigo));
+		if(empty($cana) || $cana==0){
+			$this->validation->set_message('chcodigoa', 'El campo %s contiene un codigo no v&aacute;lido o inactivo');
+			return false;
+		}
+		return true;
+	}
+
 	function _post_insert($do){
 		$cana = $do->count_rel('itpfac');
 		for($i = 0;$i < $cana;$i++){
@@ -369,7 +390,7 @@ class pfac extends validaciones{
 		$codigo = $do->get('numero');
 		logusu('pfac', "Pedido $codigo CREADO");
 	}
-	
+
 	function chpreca($preca, $ind){
 		$codigo = $this->input->post('codigoa_' . $ind);
 		$precio4 = $this->datasis->dameval('SELECT base4 FROM sinv WHERE codigo=' . $this->db->escape($codigo));
