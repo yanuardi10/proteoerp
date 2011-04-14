@@ -1,6 +1,6 @@
-<?php require_once(BASEPATH.'application/controllers/validaciones.php');
-class precios_sinv extends validaciones{
+<?php  require_once(BASEPATH.'application/controllers/inventario/common.php');
 
+class precios_sinv extends Controller{
 	function precios_sinv(){
 		parent::Controller();
 		$this->load->library('rapyd');
@@ -51,7 +51,18 @@ class precios_sinv extends validaciones{
 		if ($form->on_success()){
 			$codigo= $form->codigo->newValue;
 
-			$resul1=$this->db->query("SELECT count(*) AS cant,id FROM sinv WHERE codigo='$codigo' ");
+			$mSQL_p = 'SELECT id FROM sinv';
+			$bbus   = array('codigo','barras','alterno');
+			$suple  = null;
+			$query  = Common::_gconsul($mSQL_p,$codigo,$bbus,$suple);
+			if($query!==false){
+				$row = $query->row();
+				redirect('inventario/precios_sinv/dataedit/modify/'.$row->id);
+			}else{
+				$msj.= 'No se encontro el producto';
+			}
+
+			/*$resul1=$this->db->query("SELECT count(*) AS cant,id FROM sinv WHERE codigo='$codigo' ");
 			$row1=$resul1->row();
 			if($row1->cant > 0){
 				$band=1;
@@ -86,7 +97,7 @@ class precios_sinv extends validaciones{
 			}
 			if ($band==0){
 				$msj.= "No se encontro el producto";
-			}
+			}*/
 		}
 
 		$data['content'] =$form->output.$msj;
