@@ -21,38 +21,47 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 		</td>
 		<td align='right'><?php echo $container_tr; ?></td>
 	</tr>
+</table>
+<table border='0' width="100%">
 	<tr>
 		<td colspan='2' valign='top'>
 			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
-			<legend class="titulofieldset" >Identificaci&oacute;n del Producto </legend>
+			<legend class="titulofieldset" >Codigos del Producto </legend>
 			<table border=0 width="100%">
 				<tr>
-					<td width="100" class="littletableheaderc"><?=$form->codigo->label ?></td>
+					<td width="60" class="littletableheaderc"><?=$form->codigo->label ?></td>
 					<?php if( $form->_status == "modify" ) { ?>
 					<td class="littletablerow">
-					<input readonly value="<?=$form->codigo->output ?>" class='input' size='20' style='background: #F5F6CE;'  />
+					<input readonly value="<?=$form->codigo->output ?>" class='input' size='15' style='background: #F5F6CE;'  />
 					<?php } else { ?>
 					<td class="littletablerow"><?=$form->codigo->output ?>
 					<?php } ?>
 				</tr>
 				<tr>
-					<td class='littletableheaderc'><?=$form->alterno->label ?></td>
+					<td class='littletableheaderc'>Alterno</td>
 					<td class="littletablerow"><?=$form->alterno->output   ?></td>
 				</tr>
 				<tr>
-					<td class='littletableheaderc'><?=$form->enlace->label ?></td>
+					<td class='littletableheaderc'>Caja</td>
 					<td class="littletablerow"><?=$form->enlace->output   ?></td>
 				</tr>
 				<tr>
-					<td class='littletableheaderc'><?=$form->barras->label ?></td>
+					<td class='littletableheaderc'>Barras</td>
 					<td class="littletablerow"><?=$form->barras->output   ?></td>
 				</tr>
+			</table>
+			</fieldset>
+		</td>
+		<td colspan='2' valign='top'>
+			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
+			<legend class="titulofieldset" >Descripcion</legend>
+			<table border=0 width="100%">
 				<tr>
-					<td class='littletableheaderc'><?=$form->descrip->label ?></td>
+					<td class='littletableheaderc'>Principal</td>
 					<td class="littletablerow"><?=$form->descrip->output   ?></td>
 				</tr>
 				<tr>
-					<td class='littletableheaderc'><?php //echo $form->descrip2->label ?>&nbsp;</td>
+					<td class='littletableheaderc'>Adicional</td>
 					<td class="littletablerow"><?=$form->descrip2->output   ?></td>
 				</tr>
 				<tr>
@@ -66,9 +75,13 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 			</table>
 			</fieldset>
 		</td>
-		<td valign='top'>
+	</tr>
+</table>
+<table border='0' width="100%">
+	<tr>
+		<td colspan='2' valign='top'>
 			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
-			<legend class="titulofieldset" >Caracteristicas</legend>
+			<legend class="titulofieldset" >Identificaci&oacute;n del Producto </legend>
 			<table border=0 width="100%">
 				<tr>
 					<td width="100" class="littletableheaderc"><?=$form->tipo->label    ?></td>
@@ -86,8 +99,15 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 					<td class='littletableheaderc'><?=$form->serial->label ?></td>
 					<td class="littletablerow"><?=$form->serial->output   ?></td>
 				</tr>
+			</table>
+			</fieldset>
+		</td>
+		<td valign='top'>
+			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
+			<legend class="titulofieldset" >Caracteristicas</legend>
+			<table border=0 width="100%">
 				<tr>
-					<td class='littletableheaderc'><?=$form->clave->label ?></td>
+					<td width="100" class='littletableheaderc'><?=$form->clave->label ?></td>
 					<td class="littletablerow"><?=$form->clave->output   ?></td>
 				</tr>
 				<tr>
@@ -105,28 +125,6 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 			</table>
 			</fieldset>
 		</td>
-	</tr>
-</table>
-<table border=0 width="100%">
-	<tr>
-		<td valign='top'>
-			<fieldset style='border: 2px outset #0B610B;background: #E0F8E0;'>
-			<legend class="titulofieldset" >Organizaci&oacute;n</legend>
-			<table border=0 width="100%">
-				<tr>
-					<td width='50' class='littletableheaderc'><?=$form->depto->label ?></td>
-					<td class="littletablerow"><?=$form->depto->output   ?></td>
-				</tr>
-				<tr>
-					<td class='littletableheaderc'><?=$form->linea->label ?></td>
-					<td class="littletablerow" id='td_linea'><?=$form->linea->output   ?></td>
-				</tr>
-				<tr>
-					<td class='littletableheaderc'><?=$form->grupo->label ?></td>
-					<td class="littletablerow" id='td_grupo'><?=$form->grupo->output   ?></td>
-				</tr>
-			</table>
-			</fieldset>
 		<td valign='top'>
 			<fieldset style='border: 2px outset #0B610B;background: #E0F8E0;'>
 			<legend class="titulofieldset" >Clasificaci&oacute;n</legend>
@@ -146,13 +144,35 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 			</table>
 			</fieldset>
 		</td>
+	</tr>
+</table>
+<table border=0 width="100%">
+	<tr>
+		<td valign='top'>
+			<fieldset style='border: 2px outset #0B610B;background: #E0F8E0;'>
+			<legend class="titulofieldset" >Organizaci&oacute;n</legend>
+			<table border=0 width="100%">
+				<tr>
+					<td width='60' class='littletableheaderc'><?=$form->depto->label ?></td>
+					<td class="littletablerow"><?=$form->depto->output   ?></td>
+				</tr>
+				<tr>
+					<td class='littletableheaderc'><?=$form->linea->label ?></td>
+					<td class="littletablerow" id='td_linea'><?=$form->linea->output   ?></td>
+				</tr>
+				<tr>
+					<td class='littletableheaderc'><?=$form->grupo->label ?></td>
+					<td class="littletablerow" id='td_grupo'><?=$form->grupo->output   ?></td>
+				</tr>
+			</table>
+			</fieldset>
 		<td valign='top'>
 			<fieldset style='border: 2px outset #0B610B;background: #E0F8E0;'>
 			<legend class="titulofieldset" >Impuesto</legend>
 			<table border=0 width="100%">
 				<tr>
-					<td class="littletableheaderc"><?=$form->iva->label   ?></td>
-					<td class="littletablerow" align='right'><?=$form->iva->output ?></td>
+					<td width='100' class="littletableheaderc"><?=$form->iva->label   ?></td>
+					<td class="littletablerow" ><?=$form->iva->output ?></td>
 				</tr>
 				<tr>
 					<td class="littletableheaderc"><?=$form->formcal->label ?></td>
@@ -170,33 +190,6 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 
 <table width='100%'>
 	<tr>
-  		<td valign="top">
-			<fieldset style='border: 2px outset #B45F04;background: #F8ECE0;'>
-			<legend class="titulofieldset" >Existencias</legend>
-			<table width='100%' border=0 >
-				<tr>
-					<td class="littletableheaderc"><?=$form->existen->label  ?></td>
-					<td class="littletablerow" align='right'><?=$form->existen->output ?></td>
-				</tr>
-				<tr>
-					<td class="littletableheaderc"><?=$form->exmin->label  ?></td>
-					<td class="littletablerow" align='right'><?=$form->exmin->output ?></td>
-				</tr>
-				<tr>
-					<td class="littletableheaderc"><?=$form->exmax->label  ?></td>
-					<td class="littletablerow" align='right'><?=$form->exmax->output ?></td>
-				</tr>
-				<tr>
-					<td class="littletableheaderc"><?=$form->exord->label  ?></td>
-					<td class="littletablerow" align='right'><?=$form->exord->output ?></td>
-				</tr>
-				<tr>
-					<td class="littletableheaderc"><?=$form->exdes->label  ?></td>
-					<td class="littletablerow" align='right'><?=$form->exdes->output ?></td>
-				</tr>
-			</table>
-			</fieldset>
-		</td>
 		<td valign='top'>
 			<fieldset style='border: 2px outset #B45F04;background: #F8ECE0;'>
 			<legend class="titulofieldset" >Costos</legend>
@@ -271,6 +264,33 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 </table>
 <table width='100%'>
 	<tr>
+  		<td valign="top">
+			<fieldset style='border: 2px outset #B45F04;background: #F8ECE0;'>
+			<legend class="titulofieldset" >Existencias</legend>
+			<table width='100%' border=0 >
+				<tr>
+					<td class="littletableheaderc"><?=$form->existen->label  ?></td>
+					<td class="littletablerow" align='right'><?=$form->existen->output ?></td>
+				</tr>
+				<tr>
+					<td class="littletableheaderc"><?=$form->exmin->label  ?></td>
+					<td class="littletablerow" align='right'><?=$form->exmin->output ?></td>
+				</tr>
+				<tr>
+					<td class="littletableheaderc"><?=$form->exmax->label  ?></td>
+					<td class="littletablerow" align='right'><?=$form->exmax->output ?></td>
+				</tr>
+				<tr>
+					<td class="littletableheaderc"><?=$form->exord->label  ?></td>
+					<td class="littletablerow" align='right'><?=$form->exord->output ?></td>
+				</tr>
+				<tr>
+					<td class="littletableheaderc"><?=$form->exdes->label  ?></td>
+					<td class="littletablerow" align='right'><?=$form->exdes->output ?></td>
+				</tr>
+			</table>
+			</fieldset>
+		</td>
 		<?php if( !empty($form->almacenes->output)) { ?>
 		<td valign="top">
 			<fieldset  style='border: 2px outset #AEB404;background: #F5F6CE;'>
@@ -278,6 +298,10 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 			</fieldset>
 		</td>
 		<?php } ?>
+	</tr>
+</table>
+<table width='100%'>
+	<tr>
 		<td valign='top'>
 			<?php if($form->_status=='show'){ ?>
 			<fieldset  style='border: 2px outset #AEB404;background: #F5F6CE;'>
