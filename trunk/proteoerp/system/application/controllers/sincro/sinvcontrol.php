@@ -108,40 +108,41 @@ class sinvcontrol extends validaciones {
 		$filter->db->where('a.activo','S');
 		$filter->script($script);
 
-		$filter->codigo = new inputField("C&oacute;digo", "codigo");
+		$filter->codigo = new inputField('C&oacute;digo', 'codigo');
+		$filter->codigo->db_name='a.codigo';
 		$filter->codigo-> size=15;
-		$filter->codigo->group = "Uno";
+		$filter->codigo->group = 'Uno';
 
-		$filter->descrip = new inputField("Descripci&oacute;n", "descrip");
+		$filter->descrip = new inputField('Descripci&oacute;n', 'descrip');
 		$filter->descrip->db_name='CONCAT_WS(" ",a.descrip,a.descrip2)';
 		$filter->descrip-> size=30;
-		$filter->descrip->group = "Uno";
+		$filter->descrip->group ='Uno';
 
-		$filter->tipo = new dropdownField("Tipo", "tipo");
-		$filter->tipo->db_name=("a.tipo");
-		$filter->tipo->option("","Todos");
-		$filter->tipo->option("Articulo",'Art&iacute;culo');
-		$filter->tipo->option("Servicio","Servicio");
-		$filter->tipo->option("Descartar","Descartar");
-		$filter->tipo->option("Consumo","Consumo");
-		$filter->tipo->option("Fraccion","Fracci&oacute;n");
+		$filter->tipo = new dropdownField('Tipo', 'tipo');
+		$filter->tipo->db_name='a.tipo';
+		$filter->tipo->option('','Todos');
+		$filter->tipo->option('Articulo' ,'Art&iacute;culo');
+		$filter->tipo->option('Servicio' ,'Servicio');
+		$filter->tipo->option('Descartar','Descartar');
+		$filter->tipo->option('Consumo'  ,'Consumo');
+		$filter->tipo->option('Fraccion' ,'Fracci&oacute;n');
 		$filter->tipo->style='width:120px;';
-		$filter->tipo->group = "Uno";
+		$filter->tipo->group = 'Uno';
 
-		$filter->clave = new inputField("Clave", "clave");
-		$filter->clave -> size=15;
-		$filter->clave->group = "Uno";
+		$filter->clave = new inputField('Clave', 'clave');
+		$filter->clave->size  = 15;
+		$filter->clave->group = 'Uno';
 
-		$filter->proveed = new inputField("Proveedor", "proveed");
+		$filter->proveed = new inputField('Proveedor', 'proveed');
 		$filter->proveed->append($bSPRV);
 		$filter->proveed->db_name='CONCAT_WS("-",`a`.`prov1`, `a`.`prov2`, `a`.`prov3`)';
 		$filter->proveed -> size=10;
-		$filter->proveed->group = "Dos";
+		$filter->proveed->group = 'Dos';
 
-		$filter->depto2 = new inputField("Departamento", "nom_depto");
-		$filter->depto2->db_name="d.descrip";
+		$filter->depto2 = new inputField('Departamento', 'nom_depto');
+		$filter->depto2->db_name='d.descrip';
 		$filter->depto2 -> size=5;
-		$filter->depto2->group = "Dos";
+		$filter->depto2->group = 'Dos';
 
 		$filter->depto = new dropdownField("Departamento","depto");
 		$filter->depto->db_name="d.depto";
