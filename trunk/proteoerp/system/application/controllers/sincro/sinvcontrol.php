@@ -105,7 +105,7 @@ class sinvcontrol extends validaciones {
 		$filter->db->join('line AS c','b.linea=c.linea');
 		$filter->db->join('dpto AS d','c.depto=d.depto');
 		$filter->db->join('sinvcontrol AS e','e.codigo=a.codigo','left');
-		$filter->db->where('a.activo','S');
+		//$filter->db->where('a.activo','S');
 		$filter->script($script);
 
 		$filter->codigo = new inputField('C&oacute;digo', 'codigo');
