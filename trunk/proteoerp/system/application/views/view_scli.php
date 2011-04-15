@@ -39,8 +39,8 @@
 				</td>
 			</tr>	
 			<tr>
-				<td class="littletableheaderc"><?=$form->nomfis->label ?></td>
-				<td colspan='3' class="littletablerow"><?=$form->nomfis->output?></td>
+				<td class="littletableheaderc"><?=$form->nombre->label ?></td>
+				<td colspan='3' class="littletablerow"><?=$form->nombre->output?></td>
 			</tr>
 			<tr>
 				<td class="littletableheaderc"><?=$form->contacto->label  ?></td>
