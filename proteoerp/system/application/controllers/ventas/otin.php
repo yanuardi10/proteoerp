@@ -1,5 +1,5 @@
 <?php
-	class Otin extends Controller {
+class Otin extends Controller {
 	//otrosingresos
 	function otin()
 	{
@@ -20,15 +20,15 @@
               'screeny'    => '0'
             );		
 		
-    $scli=array(
-	  'tabla'   =>'scli',
-	  'columnas'=>array(
-		'cliente' =>'C&oacute;digo Cliente',
-		'nombre'=>'Nombre',
-		'contacto'=>'Contacto'),
-	  'filtro'  =>array('cliente'=>'C&oacute;digo Cliente','nombre'=>'Nombre'),
-	  'retornar'=>array('cliente'=>'cod_cli'),
-	  'titulo'  =>'Buscar Cliente');
+    	$scli=array(
+	  	'tabla'   =>'scli',
+	  	'columnas'=>array(
+			'cliente' =>'C&oacute;digo Cliente',
+			'nombre'=>'Nombre',
+			'contacto'=>'Contacto'),
+	  	'filtro'  =>array('cliente'=>'C&oacute;digo Cliente','nombre'=>'Nombre'),
+	  	'retornar'=>array('cliente'=>'cod_cli'),
+	  	'titulo'  =>'Buscar Cliente');
 			
 		$boton=$this->datasis->modbus($scli);
 		
@@ -36,7 +36,7 @@
 		$filter->db->select('fecha,numero,cod_cli,nombre,totals,totalg,iva,tipo_doc');
 		$filter->db->from('otin');
 		
-    $filter->fechad = new dateonlyField("Desde", "fechad",'d/m/Y');
+    	$filter->fechad = new dateonlyField("Desde", "fechad",'d/m/Y');
 		$filter->fechah = new dateonlyField("Hasta", "fechah",'d/m/Y');
 		$filter->fechad->clause  =$filter->fechah->clause="where";
 		$filter->fechad->db_name =$filter->fechah->db_name="fecha";
@@ -49,27 +49,27 @@
 		$filter->numero = new inputField("N&uacute;mero", "numero");
 		$filter->numero->size = 30;
 
-    $filter->cliente = new inputField("Cliente", "cod_cli");
-    $filter->cliente->size = 30;
+    	$filter->cliente = new inputField("Cliente", "cod_cli");
+    	$filter->cliente->size = 30;
 		$filter->cliente->append($boton);
 
 		$filter->buttons("reset","search");
 		$filter->build();
     
 		$uri = anchor('ventas/otin/dataedit/show/<#tipo_doc#>/<#numero#>','<#numero#>');
-    $uri2 = anchor_popup('formatos/verhtml/OTINND/<#tipo_doc#>/<#numero#>',"Ver HTML",$atts);
+    	$uri2 = anchor_popup('formatos/verhtml/OTINND/<#tipo_doc#>/<#numero#>',"Ver HTML",$atts);
 		
 		$grid = new DataGrid();
 		$grid->order_by("fecha","desc");
 		$grid->per_page = 15;  
 		
-		$grid->column("N&uacute;mero",$uri);
-    $grid->column("Fecha","<dbdate_to_human><#fecha#></dbdate_to_human>","align='center'");
-    $grid->column("Nombre","nombre");
-    $grid->column("Sub.Total","<number_format><#totals#>|2</number_format>","align=right");
-    $grid->column("IVA","<number_format><#iva#>|2</number_format>","align=right");
-    $grid->column("Total","<number_format><#totalg#>|2</number_format>","align=right");
-    $grid->column("Vista",$uri2,"align='center'");
+		$grid->column_orderby("N&uacute;mero",$uri,'numero');
+    	$grid->column_orderby("Fecha","<dbdate_to_human><#fecha#></dbdate_to_human>",'fecha',"align='center'");
+    	$grid->column_orderby("Nombre","nombre",'nombre');
+    	$grid->column_orderby("Sub.Total","<number_format><#totals#>|2</number_format>",'totals',"align=right");
+    	$grid->column_orderby("IVA","<number_format><#iva#>|2</number_format>",'iva',"align=right");
+    	$grid->column_orderby("Total","<number_format><#totalg#>|2</number_format>",'totalg',"align=right");
+    	//$grid->column("Vista",$uri2,"align='center'");
     
 
 		//$grid->add("ventas/agregaroi");
@@ -180,7 +180,7 @@
 		$edit->numero->mode="autohide";
 		$edit->numero->maxlength=8;
 		
-    $edit->nombre = new inputField("Nombre", "nombre");
+    	$edit->nombre = new inputField("Nombre", "nombre");
 		$edit->nombre->size = 55;
 		$edit->nombre->maxlength=40;   
 		
