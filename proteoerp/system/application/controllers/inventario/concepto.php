@@ -21,8 +21,8 @@ class concepto extends Controller {
 		$filter->codigo = new inputField("C&oacute;digo", "codigo");	
 		$filter->codigo->size=20;		
 		
-		$filter->cedula = new inputField("Concepto", "concepto");
-		$filter->cedula->size=20;
+		$filter->nombre = new inputField("C&oacute;ncepto", "concepto");
+		$filter->nombre->size=20;
 
 		$filter->buttons("reset","search");
 		$filter->build();
@@ -36,9 +36,9 @@ class concepto extends Controller {
 		$grid->column_orderby("C&oacute;digo",$uri,'codigo');
 		$grid->column_orderby("Concepto ","concepto",'concepto');
 		$grid->column_orderby("Gasto" ,"gasto",'gasto');
-		$grid->column_orderby("Gastos de:","gastode",'gastode');
+		$grid->column_orderby("Denominaci&oacute;n de Gasto","gastode",'gastode');
 		$grid->column_orderby("Ingreso", "ingreso",'ingreso');
-		$grid->column_orderby("Ingresos de:", "ingresod",'ingresod');
+		$grid->column_orderby("Denominaci&oacute;n de Ingreso", "ingresod",'ingresod');
 		
 		$grid->add("inventario/concepto/dataedit/create");
 		$grid->build();
