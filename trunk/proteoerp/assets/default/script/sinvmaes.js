@@ -253,17 +253,18 @@ function requeridos(load){
 	}
 }
 
+/*
 $(function() {
 	$(".inputnum").numeric(".");
 	$(".inputonlynum").numeric("0");
 	$("input[@type=text]").keydown(function(e){
 		if (e.keyCode == 13) {
-			/*var  tabIndex = parseFloat($(this).attr("tabindex")) + 1;
-		    $("input[@tabindex=" + tabIndex + "]").focus();*/ 
+			//var  tabIndex = parseFloat($(this).attr("tabindex")) + 1;   $("input[@tabindex=" + tabIndex + "]").focus();
 			return false;
 		}
 	});
 });
+*/
 
 function bloquea_precios(ban){
 	t=4;

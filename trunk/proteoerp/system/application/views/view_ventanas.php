@@ -4,19 +4,17 @@
 <meta http-equiv="Content-type" content="text/html; charset=<?=$this->config->item('charset'); ?>" >
 <title>ProteoERP<?php if(isset($title)) echo ':'.preg_replace('/<[^>]*>/', '', $title); ?></title>
 <?php echo style("ventanas.css");?>
-<?php if( !isset($tabla) )   $tabla=''; ?>
-
+<?php if (isset($style))  echo $style; ?>
 <?php if (isset($filtro)) { ?>
 <style type="text/css">
 #cajafiltro {width: 100%;display: block;padding: 5px;border-bottom: 1px solid #2067B5;background-color: #D7DEF0;}	
 #mostrafiltro {display: block;width: 100%;padding: 5px;border-bottom: 1px solid #2067B5;background-color: #F5F5F5;background:url(<?=base_url();?>images/huellaazul.gif);}
 </style>
 <?php }; ?>
-<?php echo script("jquery-1.3.2.min.js") ?>
 
+<?php if( !isset($tabla) )   $tabla=''; ?>
 <?php if (isset($head))   echo $head;   ?>
 <?php if (isset($script)) echo $script; ?>
-<?php if (isset($style))  echo $style; ?>
 
 <?php if (isset($filtro)) { ?>
 <script type="text/javascript">
@@ -42,8 +40,8 @@ $(function(){
 	</tr>
 </table>
 <?php }; ?>
-
 </div>
+
 <?php if(isset($smenu)) echo '<div id="smenu">'.$smenu.'</div>'; ?>
 <div id='contenido'>
 	<table width="100%" border=0 align="center">
@@ -77,5 +75,6 @@ $(function(){
 </div>
 
 <?php if (isset($extras)) echo $extras; ?>
+
 </body>
 </html>

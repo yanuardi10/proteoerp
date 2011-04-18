@@ -145,7 +145,7 @@ class DataGrid extends DataSet{
   * @access   private
   * @return   void
   */
-  function _buildGrid(){
+  function _buildGrid($mivista='datagrid'){
 
 		$mypointer = 0;
 		$output = "";
@@ -216,7 +216,7 @@ class DataGrid extends DataSet{
 
 		$data["total_rows"] = $this->recordCount;
     
-		$output = $this->ci->load->view('datagrid', $data, true);
+		$output = $this->ci->load->view($mivista, $data, true);
 
 		$this->rapyd->reset_view_path();
 
@@ -231,7 +231,7 @@ class DataGrid extends DataSet{
   * @access   public
   * @return   string  datagrid output
   */
-  function build(){
+  function build( $mivista='datagrid' ){
 
     parent::build();
 
@@ -239,7 +239,7 @@ class DataGrid extends DataSet{
       //gestire l'errore in CI
     }
 
-    return $this->output = $this->_buildGrid();
+    return $this->output = $this->_buildGrid( $mivista );
   }
 
  /**

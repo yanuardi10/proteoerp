@@ -65,24 +65,77 @@ class gser extends Controller {
 		
 		$grid = new DataGrid();
 		$grid->order_by('fecha','desc');
-		$grid->per_page = 15;
-		$grid->column_orderby('Tipo',"tipo_doc",'tipo_doc');
-		$grid->column_orderby('Caja',"cajachi",'cajachi');
+		$grid->per_page = 50;
+		$grid->column('Acciones',$uri2);
+		$grid->column('Tipo',"tipo_doc",'tipo_doc');
+		$grid->column('Caja',"cajachi",'cajachi');
 		$grid->column_orderby('N&uacute;mero',$uri,'numero');
 		$grid->column_orderby('Fecha' ,'<dbdate_to_human><#fecha#></dbdate_to_human>','fecha','align=\'center\'');
-		//$grid->column_orderby('Fecha' ,'<dbdate_to_human><#vence#></dbdate_to_human>','vence','align=\'center\'');
 		$grid->column_orderby('Nombre','nombre'  ,'nombre');
+		$grid->column_orderby('Base' ,'<nformat><#totpre#></nformat>' ,'totneto','align=\'right\'');
 		$grid->column_orderby('IVA'   ,'<nformat><#totiva#></nformat>'  ,'totiva' ,'align=\'right\'');
-		$grid->column_orderby('monto' ,'<nformat><#totneto#></nformat>' ,'totneto','align=\'right\'');
-		$grid->column('Acciones',$uri2);
+		$grid->column_orderby('Total' ,'<nformat><#totbruto#></nformat>' ,'totbruto','align=\'right\'');
+		$grid->column_orderby('Ret.IVA'   ,'reteiva'  ,'reteiva' ,'align=\'right\'');
+		$grid->column_orderby('Ret.ISLR'   ,'reten'  ,'reten' ,'align=\'right\'');
+		$grid->column_orderby('Total Neto' ,'<nformat><#totneto#></nformat>' ,'totneto','align=\'right\'');
+
+		$grid->column_orderby('Vence' ,'<dbdate_to_human><#vence#></dbdate_to_human>','vence','align=\'center\'');
+		$grid->column_orderby('Prov.' ,'proveed','proveed','align=\'center\'');
+
+		$grid->column_orderby('Banco'  , 'codb1'  ,'codb1' );
+		$grid->column('Tipo'   , 'tipo1'  ,'tipo11' );
+		$grid->column_orderby('Numero' , 'cheque1'  ,'cheque1' );
+	
+		
 
 		$grid->add('finanzas/gser/agregar','Agregar Egreso');
-		$grid->build();
+		$grid->build('datagridST');
 		//echo $grid->db->last_query();
+
+// Para usar SuperTable
+		$extras = '
+<script type="text/javascript">
+//<![CDATA[
+
+(function() {
+	var mySt = new superTable("demoTable", {
+	cssSkin : "sSky",
+	fixedCols : 1,
+		headerRows : 1,
+		onStart : function () {
+		this.start = new Date();
+		},
+		onFinish : function () {
+		document.getElementById("testDiv").innerHTML += "Finished...<br>" + ((new Date()) - this.start) + "ms.<br>";
+		}
+	});
+})();
+
+//]]>
+
+</script>
+';
+
+		$style ='
+<style type="text/css">
+.fakeContainer { /* The parent container */
+    margin: 5px;
+    padding: 0px;
+    border: none;
+    width: 640px; /* Required to set */
+    height: 320px; /* Required to set */
+    overflow: hidden; /* Required to set */
+}
+</style>	
+		';
+
+
 
 		$data['content'] = $grid->output;
 		$data['filtro']  = $filter->output;
-		$data['head']    = $this->rapyd->get_head();
+		$data['style']   = $style.style('superTables.css');
+		$data['extras'] = $extras;		
+		$data['head']    = script('superTables.js').$this->rapyd->get_head();
 		$data['title']   = heading('Egresos por Gastos');
 		$this->load->view('view_ventanas', $data);
 	}
