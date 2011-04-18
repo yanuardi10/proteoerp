@@ -220,6 +220,9 @@ class Exportar extends Controller {
 				$sql.=',`base2`  ='.$this->db->escape($row['base2']);
 				$sql.=',`base3`  ='.$this->db->escape($row['base3']);
 				$sql.=',`base4`  ='.$this->db->escape($row['base4']);
+				$sql.=',`grupo`  ='.$this->db->escape($row['grupo']);
+				$sql.=',`linea`  ='.$this->db->escape($row['linea']);
+				$sql.=',`depto`  ='.$this->db->escape($row['depto']);
 				$sql.=',`margen1`= ROUND(100-((IF(formcal=\'U\',ultimo,IF(formcal=\'P\',pond,IF(formcal=\'S\',standard,GREATEST(ultimo,pond)))))*100/('.$row['base1'].')),2)';
 				$sql.=',`margen2`= ROUND(100-((IF(formcal=\'U\',ultimo,IF(formcal=\'P\',pond,IF(formcal=\'S\',standard,GREATEST(ultimo,pond)))))*100/('.$row['base2'].')),2)';
 				$sql.=',`margen3`= ROUND(100-((IF(formcal=\'U\',ultimo,IF(formcal=\'P\',pond,IF(formcal=\'S\',standard,GREATEST(ultimo,pond)))))*100/('.$row['base3'].')),2)';
@@ -307,7 +310,6 @@ class Exportar extends Controller {
 	function _scli($fecha,$opt=null){
 		set_time_limit(600);
 		$this->load->library('sqlinex');
-		$this->sqlinex->ignore   =true;
 
 		$data[]=array('select' => 'cliente,nombre,grupo,gr_desc,nit,cuenta,formap,tipo,limite,socio,contacto,dire11,dire12,ciudad1,dire21,dire22,ciudad2,telefono,telefon2,zona,pais,email,vendedor,porvend,cobrador,porcobr,repre,cirepre,ciudad,separa,copias,regimen,comisio,porcomi,rifci,observa,fecha1,fecha2,tiva,clave,nomfis,riffis,mensaje,modifi',
 				'table'  =>'scli',
@@ -324,6 +326,25 @@ class Exportar extends Controller {
 		$this->sqlinex->exportunbufferzip($data,$nombre,$this->sucu);
 	}
 
+
+	function _sclilimit($fecha,$opt=null){
+		set_time_limit(600);
+		$this->load->library('sqlinex');
+
+		$data[]=array('select' => 'cliente,nombre,grupo,gr_desc,nit,cuenta,formap,tipo,0 AS limite,socio,contacto,dire11,dire12,ciudad1,dire21,dire22,ciudad2,telefono,telefon2,zona,pais,email,vendedor,porvend,cobrador,porcobr,repre,cirepre,ciudad,separa,copias,regimen,comisio,porcomi,rifci,observa,fecha1,fecha2,tiva,clave,nomfis,riffis,mensaje,modifi',
+				'table'  =>'scli',
+				'where'  =>"modifi>=$fecha",
+				'limpiar'=>false,
+				'ignore' =>true);
+
+		$data[]=array('table' => 'grcl',
+				'limpiar'=> false,
+				'ignore' =>true);
+
+		$nombre='scli_'.$fecha.'_'.$this->sucu;
+		if(!array_key_exists('HTTP_USER_AGENT', $_SERVER)) $_SERVER['HTTP_USER_AGENT']='curl';
+		$this->sqlinex->exportunbufferzip($data,$nombre,$this->sucu);
+	}
 
 	function _smov($fecha,$opt=null){
 		set_time_limit(600);

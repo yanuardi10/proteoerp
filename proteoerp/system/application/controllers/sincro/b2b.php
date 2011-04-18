@@ -401,7 +401,7 @@ class b2b extends validaciones {
 			cuerpo.removeChild(fform);
 		}';
 
-		$edit->detalle=new freeField("detalle", 'detalle',$detalle->output);
+		$edit->detalle=new freeField('detalle', 'detalle',$detalle->output);
 		$accion="javascript:window.location='".site_url('sincro/b2b/cargacompra'.$edit->pk_URI())."'";
 		$pcontrol=$edit->_dataobject->get('pcontrol');
 		if(is_null($pcontrol)) $edit->button_status('btn_cargar','Cargar',$accion,'TR','show');
@@ -482,11 +482,11 @@ class b2b extends validaciones {
 		$uri2 = anchor_popup('formatos/verhtml/PSINV/<#numero#>',"Ver HTML",$atts);
 
 		$grid = new DataGrid();
-		$grid->order_by("numero","desc");
-		$grid->per_page = 15;  
+		$grid->order_by('numero','desc');
+		$grid->per_page = 15;
 
-		$grid->column_orderby("N&uacute;mero" ,$uri,'numero');
-		$grid->column_orderby('Fecha'         ,"<dbdate_to_human><#fecha#></dbdate_to_human>",'fecha',"align='center'");
+		$grid->column_orderby('N&uacute;mero' ,$uri,'numero');
+		$grid->column_orderby('Fecha'         ,'<dbdate_to_human><#fecha#></dbdate_to_human>','fecha',"align='center'");
 		$grid->column_orderby('Nombre'        ,'nombre','nombre');
 		$grid->column_orderby('Sub.Total'     ,'<nformat><#stotal#></nformat>'  ,'stotal','align=\'right\'');
 		$grid->column_orderby('IVA'           ,'<nformat><#impuesto#></nformat>','iva'   ,'align=\'right\'');
@@ -846,7 +846,7 @@ class b2b extends validaciones {
 						$ddata['fecha']    = $data['fecha'];
 						$ddata['numero']   = $data['numero'];
 						$ddata['depo']     = $data['depo'];
-						$ddata['codigo']   = $arr[$in]['codigoa'];
+						$ddata['codigo']   = trim($arr[$in]['codigoa']);
 						$ddata['descrip']  = $arr[$in]['desca'];
 						$ddata['cantidad'] = $arr[$in]['cana'];
 						$ddata['costo']    = $arr[$in]['preca'];
@@ -867,6 +867,14 @@ class b2b extends validaciones {
 							$mSQL_p = 'SELECT codigo FROM sinv';
 							$bbus   = array('codigo','barras','alterno');
 							$query=$this->_gconsul($mSQL_p,$barras,$bbus);
+							if($query){
+								$row = $query->row();
+								$codigolocal=$row->codigo;
+							}
+						}elseif(!empty($ddata['codigo'])){
+							$mSQL_p = 'SELECT codigo FROM sinv';
+							$bbus   = array('codigo','barras','alterno');
+							$query=$this->_gconsul($mSQL_p,$ddata['codigo'],$bbus);
 							if($query){
 								$row = $query->row();
 								$codigolocal=$row->codigo;
