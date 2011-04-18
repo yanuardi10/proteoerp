@@ -80,7 +80,7 @@ class pfac extends validaciones{
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = heading('Pedidos Clientes');
 		$this->load->view('view_ventanas', $data);
-		}
+	}
 
 	function dataedit(){
 		$this->rapyd->load('dataobject', 'datadetails');

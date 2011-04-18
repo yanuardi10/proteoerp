@@ -359,7 +359,10 @@ class Importar extends Controller {
 
 	function _sinvprec($sucu,$fecha=null){
 		set_time_limit(600);
-		$rt=$this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/sinvprec/'.$fecha,'sinvpre');
+		$rt='';
+		$rt.= $this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/sinvprec/'.$fecha,'sinvpre');
+		if ($this->db->table_exists('sinvcontrol'))
+			$rt.= $this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/sinvcontrol/'.$fecha,'sinvpre');
 		return $rt;
 	}
 
