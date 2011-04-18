@@ -357,6 +357,14 @@ class Importar extends Controller {
 		return $rt;
 	}
 
+	//Clientes con limite de credito 0
+	function _sclilimit($sucu,$fecha=null){
+		set_time_limit(600);
+		$rt=$this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/sclilimit/'.$fecha,'scli');
+		return $rt;
+	}
+
+
 	function _sinvprec($sucu,$fecha=null){
 		set_time_limit(600);
 		$rt='';
