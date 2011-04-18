@@ -29,7 +29,7 @@ class sinv extends Controller {
 		$link2=site_url('inventario/common/get_linea');
 		$link3=site_url('inventario/common/get_grupo');
 
-		$script='
+		$DepoScript='
 		$(document).ready(function(){
 			$("#depto").change(function(){
 				depto();
@@ -74,23 +74,56 @@ class sinv extends Controller {
 			else{
 				$("#nom_grupo").attr("disabled","");
 			}
-		}';
+		}
+		';
+
+// Para usar SuperTable
+		$extras = '
+<script type="text/javascript">
+//<![CDATA[
+(function() {
+	var mySt = new superTable("demoTable", {
+	cssSkin : "sSky",
+	fixedCols : 1,
+	headerRows : 1,
+	onStart : function () {	this.start = new Date();},
+	onFinish : function () {document.getElementById("testDiv").innerHTML += "Finished...<br>" + ((new Date()) - this.start) + "ms.<br>";}
+	});
+})();
+//]]>
+</script>
+';
+		$style ='
+<style type="text/css">
+.fakeContainer { /* The parent container */
+    margin: 5px;
+    padding: 0px;
+    border: none;
+    width: 640px; /* Required to set */
+    height: 320px; /* Required to set */
+    overflow: hidden; /* Required to set */
+}
+</style>	
+		';
+
 
 		$filter = new DataFilter2('Filtro por Producto');
 
-		$filter->db->select("a.existen AS existen,a.marca marca,a.tipo AS tipo,id,codigo,a.descrip,precio1,precio2,precio3,precio4,b.nom_grup AS nom_grup,b.grupo AS grupoid,c.descrip AS nom_linea,c.linea AS linea,d.descrip AS nom_depto,d.depto AS depto");
+		$filter->db->select("a.existen AS existen,a.marca marca,a.tipo AS tipo,id,codigo,a.descrip,precio1,precio2,precio3,precio4,b.nom_grup AS nom_grup,b.grupo AS grupoid,c.descrip AS nom_linea,c.linea AS linea,d.descrip AS nom_depto,d.depto AS depto, activo ");
 		$filter->db->from('sinv AS a');
 		$filter->db->join('grup AS b','a.grupo=b.grupo');
 		$filter->db->join('line AS c','b.linea=c.linea');
 		$filter->db->join('dpto AS d','c.depto=d.depto');
-		$filter->script($script);
+		$filter->script($DepoScript);
 
-		$filter->barras = new inputField("C&oacute;digo de barras", "barras");
-		$filter->barras -> size=25;
 
 		$filter->codigo = new inputField("C&oacute;digo", "codigo");
 		$filter->codigo-> size=15;
 		$filter->codigo->group = "Uno";
+
+		$filter->barras = new inputField("C&oacute;digo de barras", "barras");
+		$filter->barras -> size=25;
+		$filter->barras->group = "Uno";
 
 		$filter->descrip = new inputField("Descripci&oacute;n", "descrip");
 		$filter->descrip->db_name='CONCAT_WS(" ",a.descrip,a.descrip2)';
@@ -181,7 +214,7 @@ class sinv extends Controller {
 		$filter->marca = new dropdownField("Marca", "marca");
 		$filter->marca->option('','Todas');
 		$filter->marca->options("SELECT TRIM(marca) AS clave, TRIM(marca) AS valor FROM marc ORDER BY marca"); 
-		$filter->marca->style='width:220px;';
+		$filter->marca->style='width:190px;';
 		$filter->marca->group = "Dos";
 
 		$filter->buttons("reset","search");
@@ -191,30 +224,44 @@ class sinv extends Controller {
 
 		$grid = new DataGrid("Art&iacute;culos de Inventario");
 		$grid->order_by("codigo","asc");
-		$grid->per_page = 15;
+		$grid->per_page = 50;
 		$link=anchor('/inventario/sinv/dataedit/show/<#id#>','<#codigo#>');
 
 		$uri_2  = anchor('inventario/sinv/dataedit/create/<#id#>',img(array('src'=>'images/duplicar.jpeg','border'=>'0','alt'=>'Duplicar','height'=>'12')));
 		$uri_2 .= anchor('inventario/sinv/consulta/<#id#>',img(array('src'=>'images/estadistica.jpeg','border'=>'0','alt'=>'Consultar','height'=>'12')));
+		$uri_2 .= img(array('src'=>'images/<#activo#>.gif','border'=>'0','alt'=>'Estado'));
 
 
+		$grid->column("Acci&oacute;n",$uri_2     ,"align='center'");
 		$grid->column_orderby("C&oacute;digo",$link,"codigo");
 		$grid->column_orderby("Descripci&oacute;n","descrip","descrip");
-		$grid->column_orderby("Marca","marca","marca");
 		$grid->column_orderby("Precio 1","<nformat><#precio1#></nformat>","precio1",'align=right');
 		$grid->column_orderby("Precio 2","<nformat><#precio2#></nformat>","precio2",'align=right');
-//		$grid->column_orderby("Precio 3","<nformat><#precio3#></nformat>","precio3",'align=right');
 		$grid->column_orderby("Existencia","<nformat><#existen#></nformat>","existen",'align=right');
-		$grid->column("Acci&oacute;n",$uri_2     ,"align='center'");
+		$grid->column_orderby("Tipo","tipo","tipo");
+		$grid->column_orderby("Grupo","nom_grup","nom_grup");
+		$grid->column_orderby("Linea","nom_linea","nom_linea");
+		$grid->column_orderby("Depto","nom_depto","nom_depto");
+		$grid->column_orderby("Precio 3","<nformat><#precio3#></nformat>","precio3",'align=right');
+		$grid->column_orderby("Marca","marca","marca");
 
 		$grid->add('inventario/sinv/dataedit/create');
-		$grid->build();
+		$grid->build('datagridST');
+		$this->rapyd->uri->jquery[] = '';
 
-		//echo $grid->db->last_query();
 		$data['content'] = $grid->output;
 		$data['filtro']  = $filter->output;
-		$data['title']   = heading('Maestro de Inventario');
-		$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").script("sinvmaes2.js").$this->rapyd->get_head();
+		$data['style']   = $style;
+		$data['style']  .= style('superTables.css');
+		$data['extras']  = $extras;		
+		$data['title']   = heading('Maestro de Inventario ');
+
+		$data["head"]    = script("jquery-1.3.2.min.js");
+		$data["head"]   .= script("plugins/jquery.numeric.pack.js");
+		$data["head"]   .= script("plugins/jquery.floatnumber.js");
+		$data["head"]   .= script('superTables.js');
+		$data["head"]   .= $this->rapyd->get_head();
+
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -236,182 +283,202 @@ class sinv extends Controller {
 		$link14=site_url('inventario/common/get_grupo');
 
 		$script='
-		function dpto_change(){
-			$.post("'.$link12.'",{ depto:$("#depto").val() },function(data){alert("sasa");$("#linea").html(data);})
-			$.post("'.$link14.'",{ linea:"" },function(data){$("#grupo").html(data);})
+
+<script type="text/javascript">
+
+$(document).ready(function() {
+
+	//Default Action
+	$(".tab_content").hide(); //Hide all content
+	$("ul.tabs li:first").addClass("active").show(); //Activate first tab
+	$(".tab_content:first").show(); //Show first tab content
+	
+	//On Click Event
+	$("ul.tabs li").click(function() {
+		$("ul.tabs li").removeClass("active"); //Remove any "active" class
+		$(this).addClass("active"); //Add "active" class to selected tab
+		$(".tab_content").hide(); //Hide all tab content
+		var activeTab = $(this).find("a").attr("href"); //Find the rel attribute value to identify the active tab + content
+		$(activeTab).fadeIn(); //Fade in the active content
+		return false;
+	});
+
+
+	$("#depto").change(function(){dpto_change(); });
+	$("#linea").change(function(){ $.post("'.$link14.'",{ linea:$(this).val() },function(data){$("#grupo").html(data);}) });
+
+	$("#tdecimal").change(function(){
+		var clase;
+		if($(this).attr("value")=="S") clase="inputnum"; else clase="inputonlynum";	
+		$("#exmin").unbind();$("#exmin").removeClass(); $("#exmin").addClass(clase);
+		$("#exmax").unbind();$("#exmax").removeClass(); $("#exmax").addClass(clase);
+		$("#exord").unbind();$("#exord").removeClass(); $("#exord").addClass(clase);
+		$("#exdes").unbind();$("#exdes").removeClass(); $("#exdes").addClass(clase);
+
+		$(".inputnum").numeric(".");
+		$(".inputonlynum").numeric("0");
+	});
+
+	requeridos(true);
+
+});
+			
+function dpto_change(){
+	$.post("'.$link12.'",{ depto:$("#depto").val() },function(data){alert("sasa");$("#linea").html(data);})
+	$.post("'.$link14.'",{ linea:"" },function(data){$("#grupo").html(data);})
+}
+
+function ultimo(){
+	$.ajax({
+		url: "'.$link7.'",
+		success: function(msg){
+			alert( "El &uacute;ltimo c&oacute;digo ingresado fue: " + msg );
 		}
-		
-		$(function(){
-			$("#depto").change(function(){dpto_change(); });
-			$("#linea").change(function(){ $.post("'.$link14.'",{ linea:$(this).val() },function(data){$("#grupo").html(data);}) });
+	});
+}
 
-			$("#tdecimal").change(function(){
-				var clase;
-				if($(this).attr("value")=="S") clase="inputnum"; else clase="inputonlynum";	
-				$("#exmin").unbind();$("#exmin").removeClass(); $("#exmin").addClass(clase);
-				$("#exmax").unbind();$("#exmax").removeClass(); $("#exmax").addClass(clase);
-				$("#exord").unbind();$("#exord").removeClass(); $("#exord").addClass(clase);
-				$("#exdes").unbind();$("#exdes").removeClass(); $("#exdes").addClass(clase);
+function sugerir(){
+	$.ajax({
+		url: "'.$link8.'",
+		success: function(msg){
+			if(msg){
+				$("#codigo").val(msg);
+			} else {
+				alert("No es posible generar otra sugerencia. Coloque el c&oacute;digo manualmente");
+			}
+		}
+	});
+}
 
-				$(".inputnum").numeric(".");
-				$(".inputonlynum").numeric("0");
-			});
-
-			requeridos(true);
-		});
-
-		function ultimo(){
-			$.ajax({
-				url: "'.$link7.'",
-				success: function(msg){
-				  alert( "El &uacute;ltimo c&oacute;digo ingresado fue: " + msg );
+function add_marca(){
+	marca=prompt("Introduza el nombre de la MARCA a agregar");
+	if(marca==null){
+	} else {
+		$.ajax({
+		type: "POST",
+		processData:false,
+			url: "'.$link.'",
+			data: "valor="+marca,
+			success: function(msg){
+				if(msg=="s.i"){
+					marca=marca.substr(0,30);
+					$.post("'.$link4.'",{ x:"" },function(data){$("#marca").html(data);$("#marca").val(marca);})
+				} else {
+					alert("Disculpe. En este momento no se ha podido agregar la marca, por favor intente mas tarde");
 				}
-			});
-		}
+			}
+		});
+	}
+}
 
-		function sugerir(){
+function add_unidad(){
+	unidad=prompt("Introduza el nombre de la UNIDAD a agregar");
+	if(unidad==null){
+	}else{
+		$.ajax({
+		 type: "POST",
+		 processData:false,
+			url: "'.$link5.'",
+			data: "valor="+unidad,
+			success: function(msg){
+				if(msg=="s.i"){
+					unidad=unidad.substr(0,8);					
+					$.post("'.$link6.'",{ x:"" },function(data){$("#unidad").html(data);$("#unidad").val(unidad);})
+				}
+				else{
+					alert("Disculpe. En este momento no se ha podido agregar la unidad, por favor intente mas tarde");
+				}
+			}
+		});
+	}
+}
+
+function add_depto(){
+	depto=prompt("Introduza el nombre del DEPARTAMENTO a agregar");
+	if(depto==null){
+	}else{
+		$.ajax({
+		 type: "POST",
+		 processData:false,
+			url: "'.$link9.'",
+			data: "valor="+depto,
+			success: function(msg){
+				if(msg=="Y.a-Existe"){
+					alert("Ya existe un Departamento con esa Descripcion");
+				}
+				else{
+					if(msg=="N.o-SeAgrego"){
+						alert("Disculpe. En este momento no se ha podido agregar el departamento, por favor intente mas tarde");
+					}else{
+						$.post("'.$link10.'",{ x:"" },function(data){$("#depto").html(data);$("#depto").val(msg);})
+					}
+				}
+			}
+		});
+	}
+}
+
+function add_linea(){
+	deptoval=$("#depto").val();
+	if(deptoval==""){
+		alert("Debe seleccionar un Departamento al cual agregar la linea");
+		}else{
+		linea=prompt("Introduza el nombre de la LINEA a agregar al DEPARTAMENTO seleccionado");
+		if(linea==null){
+		}else{			
 			$.ajax({
-				url: "'.$link8.'",
+			 type: "POST",
+			 processData:false,
+				url: "'.$link11.'",
+				data: "valor="+linea+"&&valor2="+deptoval,
 				success: function(msg){
-					if(msg){
-						$("#codigo").val(msg);
+					if(msg=="Y.a-Existe"){
+						alert("Ya existe una Linea con esa Descripcion");
 					}
 					else{
-						alert("No es posible generar otra sugerencia. Coloque el c&oacute;digo manualmente");
+						if(msg=="N.o-SeAgrego"){
+							alert("Disculpe. En este momento no se ha podido agregar la linea, por favor intente mas tarde");
+						}else{
+							$.post("'.$link12.'",{ depto:deptoval },function(data){$("#linea").html(data);$("#linea").val(msg);})
+						}
 					}
 				}
 			});
 		}
+	}
+}
 
-		function add_marca(){
-			marca=prompt("Introduza el nombre de la MARCA a agregar");
-			if(marca==null){
-			}else{
-				$.ajax({
-				 type: "POST",
-				 processData:false,
-					url: "'.$link.'",
-					data: "valor="+marca,
-					success: function(msg){
-						if(msg=="s.i"){
-							marca=marca.substr(0,30);
-							$.post("'.$link4.'",{ x:"" },function(data){$("#marca").html(data);$("#marca").val(marca);})
-						}
-						else{
-							alert("Disculpe. En este momento no se ha podido agregar la marca, por favor intente mas tarde");
+function add_grupo(){
+	lineaval=$("#linea").val();
+	deptoval=$("#depto").val();
+	if(lineaval==""){
+		alert("Debe seleccionar una Linea a la cual agregar el departamento");
+	}else{
+	grupo=prompt("Introduza el nombre del GRUPO a agregar a la LINEA seleccionada");
+		if(grupo==null){
+		}else{
+			$.ajax({
+			 type: "POST",
+		 processData:false,
+				url: "'.$link13.'",
+				data: "valor="+grupo+"&&valor2="+lineaval+"&&valor3="+deptoval,
+				success: function(msg){
+					if(msg=="Y.a-Existe"){
+						alert("Ya existe una Linea con esa Descripcion");
+					}
+					else{
+						if(msg=="N.o-SeAgrego"){
+							alert("Disculpe. En este momento no se ha podido agregar la linea, por favor intente mas tarde");
+						}else{
+							$.post("'.$link14.'",{ linea:lineaval },function(data){$("#grupo").html(data);$("#grupo").val(msg);})
 						}
 					}
-				});
-			}
-		}
-
-		function add_unidad(){
-			unidad=prompt("Introduza el nombre de la UNIDAD a agregar");
-			if(unidad==null){
-			}else{
-				$.ajax({
-				 type: "POST",
-				 processData:false,
-					url: "'.$link5.'",
-					data: "valor="+unidad,
-					success: function(msg){
-						if(msg=="s.i"){
-							unidad=unidad.substr(0,8);					
-							$.post("'.$link6.'",{ x:"" },function(data){$("#unidad").html(data);$("#unidad").val(unidad);})
-						}
-						else{
-							alert("Disculpe. En este momento no se ha podido agregar la unidad, por favor intente mas tarde");
-						}
-					}
-				});
-			}
-		}
-
-		function add_depto(){
-			depto=prompt("Introduza el nombre del DEPARTAMENTO a agregar");
-			if(depto==null){
-			}else{
-				$.ajax({
-				 type: "POST",
-				 processData:false,
-					url: "'.$link9.'",
-					data: "valor="+depto,
-					success: function(msg){
-						if(msg=="Y.a-Existe"){
-							alert("Ya existe un Departamento con esa Descripcion");
-						}
-						else{
-							if(msg=="N.o-SeAgrego"){
-								alert("Disculpe. En este momento no se ha podido agregar el departamento, por favor intente mas tarde");
-							}else{
-								$.post("'.$link10.'",{ x:"" },function(data){$("#depto").html(data);$("#depto").val(msg);})
-							}
-						}
-					}
-				});
-			}
-		}
-
-		function add_linea(){
-			deptoval=$("#depto").val();
-			if(deptoval==""){
-				alert("Debe seleccionar un Departamento al cual agregar la linea");
-			}else{
-				linea=prompt("Introduza el nombre de la LINEA a agregar al DEPARTAMENTO seleccionado");
-				if(linea==null){
-				}else{			
-					$.ajax({
-					 type: "POST",
-					 processData:false,
-						url: "'.$link11.'",
-						data: "valor="+linea+"&&valor2="+deptoval,
-						success: function(msg){
-							if(msg=="Y.a-Existe"){
-								alert("Ya existe una Linea con esa Descripcion");
-							}
-							else{
-								if(msg=="N.o-SeAgrego"){
-									alert("Disculpe. En este momento no se ha podido agregar la linea, por favor intente mas tarde");
-								}else{
-									$.post("'.$link12.'",{ depto:deptoval },function(data){$("#linea").html(data);$("#linea").val(msg);})
-								}
-							}
-						}
-					});
 				}
-			}
+			});
 		}
-
-		function add_grupo(){
-			lineaval=$("#linea").val();
-			deptoval=$("#depto").val();
-			if(lineaval==""){
-				alert("Debe seleccionar una Linea a la cual agregar el departamento");
-			}else{
-				grupo=prompt("Introduza el nombre del GRUPO a agregar a la LINEA seleccionada");
-				if(grupo==null){
-				}else{
-					$.ajax({
-					 type: "POST",
-					 processData:false,
-						url: "'.$link13.'",
-						data: "valor="+grupo+"&&valor2="+lineaval+"&&valor3="+deptoval,
-						success: function(msg){
-							if(msg=="Y.a-Existe"){
-								alert("Ya existe una Linea con esa Descripcion");
-							}
-							else{
-								if(msg=="N.o-SeAgrego"){
-									alert("Disculpe. En este momento no se ha podido agregar la linea, por favor intente mas tarde");
-								}else{
-									$.post("'.$link14.'",{ linea:lineaval },function(data){$("#grupo").html(data);$("#grupo").val(msg);})
-								}
-							}
-						}
-					});
-				}
-			}
-		}';
+	}
+};
+</script>';
 
 		$do = new DataObject("sinv");
 		if($status=="create" && !empty($id)){
@@ -431,7 +498,7 @@ class sinv extends Controller {
 		$ultimo='<a href="javascript:ultimo();" title="Consultar ultimo c&oacute;digo ingresado"> Consultar ultimo c&oacute;digo</a>';
 		$sugerir='<a href="javascript:sugerir();" title="Sugerir un C&oacute;digo aleatorio">Sugerir C&oacute;digo </a>';
 		$edit->codigo = new inputField("C&oacute;digo", "codigo");
-		$edit->codigo->size=20;
+		$edit->codigo->size=15;
 		$edit->codigo->maxlength=15;
 		$edit->codigo->rule = "trim|required|strtoupper|callback_chexiste";
 		$edit->codigo->mode="autohide";
@@ -439,17 +506,17 @@ class sinv extends Controller {
 		$edit->codigo->append($ultimo);
 
 		$edit->alterno = new inputField("C&oacute;digo Alterno", "alterno");
-		$edit->alterno->size=20;  
+		$edit->alterno->size=15;  
 		$edit->alterno->maxlength=15;
 		$edit->alterno->rule = "trim|strtoupper|unique";
 		
 		$edit->enlace  = new inputField("C&oacute;digo Caja", "enlace");
-		$edit->enlace ->size=20;
+		$edit->enlace ->size=15;
 		$edit->enlace->maxlength=15;
 		$edit->enlace->rule = "trim|strtoupper";
 				
 		$edit->barras = new inputField("C&oacute;digo Barras", "barras");
-		$edit->barras->size=20;
+		$edit->barras->size=15;
 		$edit->barras->maxlength=15;
 		$edit->barras->rule = "trim";
 		
@@ -467,7 +534,7 @@ class sinv extends Controller {
 		$edit->unidad->style='width:100px;';
 		$edit->unidad->option("","");
 		$edit->unidad->options("SELECT unidades, unidades as valor FROM unidad ORDER BY unidades");
-		$edit->unidad->append($AddUnidad);
+		//$edit->unidad->append($AddUnidad);
 
 		$edit->clave = new inputField("Clave", "clave");
 		$edit->clave->size=10;
@@ -475,18 +542,18 @@ class sinv extends Controller {
 		$edit->clave->rule = "trim|strtoupper";
 
 		$AddDepto='<a href="javascript:add_depto();" title="Haz clic para Agregar un nuevo Departamento">'.image('list_plus.png','Agregar',array("border"=>"0")).'</a>';
-		$edit->depto = new dropdownField("Depto.", "depto");
+		$edit->depto = new dropdownField("Departamento", "depto");
 		$edit->depto->rule ="required";
-		$edit->depto->style='width:180px;';
+		$edit->depto->style='width:300px;white-space:nowrap;';
 		$edit->depto->option("","Seleccione un Departamento");
 		$edit->depto->options("SELECT depto, CONCAT(depto,'-',descrip) descrip FROM dpto WHERE tipo='I' ORDER BY depto");
-		$edit->depto->append($AddDepto);
+		//$edit->depto->append($AddDepto);
 
 		$AddLinea='<a href="javascript:add_linea();" title="Haz clic para Agregar una nueva Linea;">'.image('list_plus.png','Agregar',array("border"=>"0")).'</a>';
 		$edit->linea = new dropdownField("L&iacute;nea","linea");
 		$edit->linea->rule ="required";
-		$edit->linea->style='width:180px;';
-		$edit->linea->append($AddLinea);
+		$edit->linea->style='width:300px;';
+		//$edit->linea->append($AddLinea);
 		$depto=$edit->getval('depto');
 		if($depto!==FALSE){
 			$edit->linea->options("SELECT linea, CONCAT(LINEA,'-',descrip) descrip FROM line WHERE depto='$depto' ORDER BY descrip");
@@ -497,9 +564,9 @@ class sinv extends Controller {
 		$AddGrupo='<a href="javascript:add_grupo();" title="Haz clic para Agregar un nuevo Grupo;">'.image('list_plus.png','Agregar',array("border"=>"0")).'</a>';
 		$edit->grupo = new dropdownField("Grupo", "grupo");
 		$edit->grupo->rule="required";
-		$edit->grupo->style='width:180px;';
+		$edit->grupo->style='width:300px;';
 
-		$edit->grupo->append($AddGrupo);
+		//$edit->grupo->append($AddGrupo);
 		$linea=$edit->getval('linea');
 		if($linea!==FALSE){
 			$edit->grupo->options("SELECT grupo, CONCAT(grupo,'-',nom_grup) nom_grup FROM grup WHERE linea='$linea' ORDER BY nom_grup");
@@ -508,7 +575,7 @@ class sinv extends Controller {
 		}
 
 		$edit->comision  = new inputField("Comisi&oacute;n %", "comision");
-		$edit->comision ->size=10;
+		$edit->comision ->size=7;
 		$edit->comision->maxlength=5;
 		$edit->comision->css_class='inputnum';
 		$edit->comision->rule='numeric|callback_positivo|trim';
@@ -573,7 +640,7 @@ class sinv extends Controller {
 		$edit->marca->append($AddMarca);
 
 		$edit->modelo  = new inputField("Modelo", "modelo");
-		$edit->modelo->size=20;  
+		$edit->modelo->size=24;  
 		$edit->modelo->maxlength=20;
 		$edit->modelo->rule = "trim|strtoupper";
 
@@ -625,9 +692,11 @@ class sinv extends Controller {
 		$edit->redecen = new dropdownField("Redondear", "redecen");
 		$edit->redecen->style='width:80px;';
 		$edit->redecen->option("NO","No");
+		$edit->redecen->option("M","Centesima"  );
 		$edit->redecen->option("F","Fracci&oacute;n");
 		$edit->redecen->option("D","Decena" );  
 		$edit->redecen->option("C","Centena"  );
+		
 		//$edit->redecen->onchange = "redon();";
 
 		for($i=1;$i<=4;$i++){
@@ -687,7 +756,7 @@ class sinv extends Controller {
 		$edit->exmax->css_class='inputonlynum';
 		$edit->exmax->rule='numeric|callback_positivo|trim';
 
-		$edit->exord = new inputField("Orden a Prv..","exord");
+		$edit->exord = new inputField("Orden Proveedor","exord");
 		$edit->exord->readonly = true;
 		$edit->exord->size=10;
 		$edit->exord->css_class='inputonlynum';
@@ -698,7 +767,6 @@ class sinv extends Controller {
 		$edit->exdes->size=10;
 		$edit->exdes->css_class='inputonlynum';
 		$edit->exdes->style='background:#F5F6CE;';
-		//$edit->exdes->when =array("show");
 
 		$edit->fechav = new dateField("Ultima Venta",'fechav','d/m/Y');
 		$edit->fechav->readonly = true;
@@ -744,19 +812,75 @@ class sinv extends Controller {
 		$edit->buttons("modify", "save", "undo", "delete", "back");
 		$edit->build();
 
-		if($edit->_status=="show"){
+		$prueba = '
+<div class="container">
+	<ul class="tabs">
+		<li><a href="#tab1">Gallery</a></li>
+		<li><a href="#tab2">Submit</a></li>
+		<li><a href="#tab3">Resources</a></li>
+		<li><a href="#tab4">Contact</a></li>
+	</ul>
+	<div class="tab_container">
+	<div id="tab1" class="tab_content">
+            <h2>Gallery</h2>
+            <a href="http://www.designbombs.com/light/simona-munteanu/"><img src="http://www.designbombs.com/wp-content/themes/DesignBombs/images/gallery/simonamunteanu_thumb.gif" alt="" /></a>
+            <h3><a href="http://www.designbombs.com">www.DesignBombs.com</a></h3>
+            <p>Smokin driveway wrestlin go darn truck moonshine wirey cow grandpa saw, coonskin bull, java, huntin. </p>
+             <p>Stinky yonder pigs in, rustle kinfolk gonna marshal sittin wagon, grandpa. Ya them firewood buffalo, tobaccee cabin.</p>
+        </div>
+        <div id="tab2" class="tab_content">
+            <h2>Submit</h2>
+            <a href="http://www.designbombs.com/blog/sketch-blog/"> <img src="http://www.designbombs.com/wp-content/themes/DesignBombs/images/gallery/sketchblog_thumb.gif" alt="" /></a>
+            <h3><a href="http://www.designbombs.com">www.DesignBombs.com</a></h3>
+            <p>Grandma been has bankrupt said hospitality fence everlastin wrestlin rodeo redblooded chitlins marshal. Boobtube soap her hootch lordy cow, rattler. </p>
+            <p>Rottgut havin ignorant go, hee-haw shiney jail fetched hillbilly havin cipherin. Bacon no cowpoke tobaccee horse water rightly trailer tools git hillbilly. </p>
+            <p>Jezebel had whiskey snakeoil, askin werent, skanky aunt townfolk fetched. Fit tractor, them broke askin, them havin rattler fell heffer, been tax-collectors buffalo. Quarrel confounded fence wagon trailer, moonshine wuz, city-slickers fixin cow. </p>
+        </div>
+        <div id="tab3" class="tab_content">
+            <h2>Resources</h2>
+          	<a href="http://www.designbombs.com/fashion/lukas-mynus/"><img src="http://www.designbombs.com/wp-content/themes/DesignBombs/images/gallery/mynus_thumb.gif" alt="" /></a>
+            <h3><a href="http://www.designbombs.com">www.DesignBombs.com</a></h3>
+            <p>Dirt tools thar, pot buffalo put jehosephat rent, ya pot promenade. Come pickled far greasy fightin, wirey, it poor yer, drive jig landlord. Rustle is been moonshine whomp hogtied. Stew, wirey stew cold uncle ails. Slap hoosegow road cooked, where gal pot, commencin country. Werent dogs backwoods, city-slickers me afford boxcar fat, dumb sittin sittin drive rustle slap, tornado. Fuss stinky knickers whomp aint, city-slickers sherrif darn ignorant tobaccee round-up old buckshot that. </p>
+            <p>Deep-fried over shootin a wagon cheatin work cowpoke poor, wuz, whiskey got wirey that. Shot beer, broke kickin havin buckshot gritts. Drunk, em moonshine his commencin country drunk chitlins stole. Fer tonic boxcar liar ass jug cousin simple, wuz showed yonder hee-haw drive is me. Horse country inbred wirey, skanky kinfolk. Rattler, sittin darn skanky fence, shot huntin.</p> 
+        </div>
+        <div id="tab4" class="tab_content">
+            <h2>Contact</h2>
+            <a href="http://www.designbombs.com/illustrations/esteban-munoz/"> <img src="http://www.designbombs.com/wp-content/themes/DesignBombs/images/gallery/estebanmunoz_thumb.gif" alt="" /></a>
+            <h3><a href="http://www.designbombs.com">www.DesignBombs.com</a></h3>
+            <p>Grandma been has bankrupt said hospitality fence everlastin wrestlin rodeo redblooded chitlins marshal. Boobtube soap her hootch lordy cow, rattler. </p>
+            <p>Rottgut havin ignorant go, hee-haw shiney jail fetched hillbilly havin cipherin. Bacon no cowpoke tobaccee horse water rightly trailer tools git hillbilly. </p>
+            <p>Jezebel had whiskey snakeoil, askin werent, skanky aunt townfolk fetched. Fit tractor, them broke askin, them havin rattler fell heffer, been tax-collectors buffalo. Quarrel confounded fence wagon trailer, moonshine wuz, city-slickers fixin cow. </p>
+        </div>
+    </div>
+</div>
+';
 
-		}
+
+		$style = '
+<style type="text/css">
+.maintabcontainer {width: 780px; margin: 5px auto;}
+</style>
+';
 
 		$smenu['link']   = barra_menu('301');
 
 		$conten["form"]  =&  $edit;
 		$data['content'] = $this->load->view('view_sinv', $conten,true);
-		$data["head"]    = script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").script("sinvmaes.js").$this->rapyd->get_head();
 
-		//$data['content'] = $edit->output;
-		$data['title']   = heading('Maestro de Inventario');
-		//$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").script("sinvmaes.js").$this->rapyd->get_head();
+		$data["script"]  = $script;
+		$data['style']	 = $style;
+		//$data['extras']  = $prueba;
+		
+		$data["head"]    = script("jquery.js");
+		//$data["head"]   .= script("jquery-ui.js");
+		$data["head"]   .= script("plugins/jquery.numeric.pack.js");
+		$data["head"]   .= script("plugins/jquery.floatnumber.js");
+		$data["head"]   .= script("sinvmaes.js");
+		$data["head"]   .= $this->rapyd->get_head();
+		
+
+		$data['title']   = heading( substr($edit->descrip->value,0,30) );
+
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -1112,23 +1236,26 @@ class sinv extends Controller {
 		if(!empty($codigo)){
 			$this->rapyd->load('dataedit','datagrid');
 			$grid = new DataGrid('Existencias por Almacen');
-			//$grid->db->select(array('b.ubides','a.codigo','a.alma','a.existen','a.precio1','a.precio2','a.precio3','a.precio4',"IF(b.ubides IS NULL,'ALMACEN INCONSISTENTE',b.ubides) AS nombre"));
-			$grid->db->select(array('b.ubides','a.codigo','a.alma','a.existen',"IF(b.ubides IS NULL,'ALMACEN INCONSISTENTE',b.ubides) AS nombre"));			$grid->db->from('itsinv AS a');
+			$grid->db->select(array('b.ubides','a.codigo','a.alma','a.existen',"IF(b.ubides IS NULL,'SIN ALMACEN',b.ubides) AS nombre"));
+			$grid->db->from('itsinv AS a');
 			$grid->db->join('caub as b','a.alma=b.ubica','LEFT');
 			$grid->db->where('codigo',$codigo);
 			
-			$grid->column('Almac&eacute;n','alma');
-			$grid->column('Nombre'       ,'<#nombre#>');	
-			$grid->column('Cantidad'      ,'existen','align="RIGHT"');
-			//$grid->column('Precio1'      ,'precio1','align="RIGHT"');
-			//$grid->column('Precio2'      ,'precio2','align="RIGHT"');
-			//$grid->column('Precio3'      ,'precio3','align="RIGHT"');
-			//$grid->column('Precio4'      ,'precio3','align="RIGHT"');
-			
-			$grid->build();
+			$grid->column('Almac&eacute;n' ,'alma', "style='font-size: 10px'");
+			$grid->column('Nombre'         ,'nombre',"style='font-size: 10px'");
+			$grid->column('Cantidad'       ,'existen','align="right" '."style='font-size: 10px'");
+		
+			$grid->build('datagridsimple');
 			if($grid->recordCount>0) $salida=$grid->output;
+			$estilo="
+<style type='text/css'>
+.simplerow  { color: #153D51;border-bottom: 1px solid #ECECEC; font-family: Lucida Grande, Verdana, Geneva, Sans-serif;	font-size: 12px; font-weight: bold;}
+.simplehead { background: #382408; border-bottom: 1px solid #ECECEC;color: #EEFFEE;font-family: Lucida Grande, Verdana, Geneva, Sans-serif; font-size: 12px;padding-left:5px;}
+.simpletabla { width:100%;colspacing:0px; colpadding:0px}
+</style>
+";
 		}
-		return $salida;
+		return $estilo.$salida;
 	}
 
 	function _pre_del($do) {
@@ -1169,80 +1296,217 @@ class sinv extends Controller {
 		}
 		$values=array_slice($url_pk,-$coun);
 		$claves=array_combine (array_reverse($pk) ,$values );
+		$id = $claves['id'];
 
 		$mCodigo = $this->datasis->dameval("SELECT codigo FROM sinv WHERE id=".$claves['id']."");
+
+		$mSQL  = 'SELECT a.tipoa, MID(a.fecha,1,7) mes, sum(a.cana*(a.tipoa="F")) cventa, sum(a.cana*(a.tipoa="D")) cdevol, sum(a.cana*if(a.tipoa="D",-1,1)) cana, sum(a.tota*(a.tipoa="F")) mventa, sum(a.tota*(a.tipoa="D")) mdevol, sum(a.tota*if(a.tipoa="D",-1,1)) tota ';
+		$mSQL .= "FROM sitems a WHERE a.codigoa='".$mCodigo."' ";
+		$mSQL .= "AND a.fecha >= CONCAT(MID(SUBDATE(curdate(),365),1,8),'01') ";
+		$mSQL .= "GROUP BY MID( a.fecha ,1,7)  WITH ROLLUP LIMIT 24";
+		$query = $this->db->query($mSQL);
 		
-		$grid = new DataGrid('Ventas por Mes');
-		$grid->db->_protect_identifiers=false;
-		$grid->db->select( array('a.tipoa','MID(a.fecha,1,7) mes', 'sum(a.cana*(a.tipoa="F")) cventa', 'sum(a.cana*(a.tipoa="D")) cdevol', 'sum(a.cana*if(a.tipoa="D",-1,1)) cana', 'sum(a.tota*(a.tipoa="F")) mventa','sum(a.tota*(a.tipoa="D")) mdevol','sum(a.tota*if(a.tipoa="D",-1,1)) tota') );
-		$grid->db->from('sitems a');
-		$grid->db->where('a.codigoa', $mCodigo );
-		$grid->db->where('a.tipoa IN ("F","D")');
-		$grid->db->where('a.fecha >= CONCAT(MID(SUBDATE(curdate(),365),1,8),"01")' );
-		$grid->db->groupby('MID( `a`.`fecha` , 1 , 7 )  WITH ROLLUP');
+		if ($query->num_rows() > 0){
+			$mGrid1 = '
+			<div id="tableDiv_Arrays" class="tableDiv">
+			<table id="Open_text_Arrays" class="FixedTables" >
+			<thead>
+			<tr>
+				<th>Mes</th>
+				<th>Venta</th>
+				<th>Devuelta</th>
+				<th>Total</th>
+				<th>Ventas</th>
+				<th>Devolucion</th>
+				<th>Total</th>
+			</tr>
+			</thead>
+			<tbody>';
+		
+			$m = 1;
+			foreach ($query->result() as $row){
+				$mGrid1.='
+				<tr>';
+				/*
+				$mGrid1 .= "
+					<td align='center'>".$row->mes."</td>
+					<td width='60' align='right'>".str_replace("_","&nbsp;",str_pad(nformat($row->cventa),20,"_",STR_PAD_LEFT))."</td>
+					<td width='60' align='right'>".str_replace("_","&nbsp;",str_pad(nformat($row->cdevol),20,"_",STR_PAD_LEFT))."</td>
+				</tr>";
+				*/
+				$mGrid1 .= "
+					<td>".$row->mes."</td>
+					<td>".$row->cventa."</td>
+					<td>".$row->cdevol."</td>
+					<td>".$row->cana."</td>
+					<td>".$row->mventa."</td>
+					<td>".$row->mdevol."</td>
+					<td>".$row->tota."</td>
+				</tr>";
+				$m++;
+			}
+			$mGrid1 .= "
+			</tbody>
+			</table>
+			</div>";
+		} else {
 			
-		$grid->column("Mes"   ,"mes" );
-		$grid->column("Cant. Venta", "<nformat><#cventa#></nformat>",'align="RIGHT"');
-		$grid->column("Cant. Dev.",  "<nformat><#cdevol#></nformat>",'align="RIGHT"');
-		$grid->column("Cantidad",    "<nformat><#cana#></nformat>",  'align="RIGHT"');
-		$grid->column("Total Vent",  "<nformat><#mventa#></nformat>",'align="RIGHT"');
-		$grid->column("Total Dev.",  "<nformat><#mdevol#></nformat>",'align="RIGHT"');
-		$grid->column("Total",       "<nformat><#tota#></nformat>",'  align="RIGHT"');
-		$grid->build();
+			$mGrid1 = "NO SE ENCONTRO MOVIMIENTO";
+		}
 
-		$grid2 = new DataGrid('Ultimos Cambios');
-		$grid2->db->_protect_identifiers=false;
-		$grid2->db->select( array( 'a.usuario','a.fecha', 'MID(a.hora,1,5) hora', 'a.comenta' ) );
-		$grid2->db->from('logusu a');
-		$grid2->db->where('a.comenta LIKE "%$mCodigo%"' );
-		$grid2->db->orderby('a.fecha DESC');
-		$grid2->db->limit(10);
 			
-		$grid2->column("Fecha"   ,   "fecha"     );
-		$grid2->column("Usuario",    "usuario"   );
-		$grid2->column("hora",       "hora"      );
-		$grid2->column("Comentario", "comentario");
-		$grid2->build();
+		$mSQL  = 'SELECT a.usuario, a.fecha, MID(a.hora,1,5) hora, MID(REPLACE(a.comenta,"ARTICULO DE INVENTARIO",""),1,30) comenta, a.modulo ';
+		$mSQL .= 'FROM logusu a WHERE a.comenta LIKE "%'.$mCodigo.'%" ';
+		$mSQL .= "ORDER BY a.fecha DESC LIMIT 30";
 
+		$query = $this->db->query($mSQL);
 
+		if ($query->num_rows() > 0){
+			$mGrid2 = '
+			<div id="tableDiv_Logusu" class="tableDiv">
+			<table id="Open_text_Logusu" class="FixedTables" >
+			<thead>
+			<tr>
+				<th>Fecha</th>
+				<th>Usuario</th>
+				<th>Hora</th>
+				<th>Modulo</th>
+				<th>Accion</th>
+			</tr>
+			</thead>
+			<tbody>';
+
+			$m = 1;
+			foreach ($query->result() as $row){
+				if($m == 1) { $mGrid2.='<tr id="firstTr">'; } else { $mGrid2.='<tr>'; };
+				$mGrid2.="
+				<tr>
+					<td>".$row->fecha."</td>
+					<td>".$row->usuario."</td>
+					<td>".$row->hora."</td>
+					<td>".$row->modulo."</td>
+					<td>".$row->comenta."</td>
+				</tr>";
+				$m++;
+			}
+			$mGrid2 .= "
+			</tbody>
+			</table>
+			</div>";
+		} else {
+			
+			$mGrid2 = "NO SE ENCONTRO MOVIMIENTO";
+		}
 
 		$descrip = $this->datasis->dameval("SELECT descrip FROM sinv WHERE id=".$claves['id']." ");
+
+		
+		$script = '
+<script type="text/javascript">
+$(document).ready(function() {
+	// this "tableDiv" must be the tables class
+	$(".tableDiv").each(function() {
+		var Id = $(this).get(0).id;
+		var maintbheight = 200;
+		var maintbwidth = 350;
+
+		$("#" + Id + " .FixedTables").fixedTable({
+			width: maintbwidth,
+			height: maintbheight,
+			fixedColumns: 1,
+			// header style
+			classHeader: "fixedHead",
+			// footer style        
+			classFooter: "fixedFoot",
+			// fixed column on the left        
+			classColumn: "fixedColumn",
+			// the width of fixed column on the left      
+			fixedColumnWidth: 70,
+			// tables parent divs id           
+			outerId: Id,
+			// tds in content area default background color                     
+			Contentbackcolor: "#FFFFFF",
+			// tds in content area background color while hover.     
+			Contenthovercolor: "#99CCFF", 
+			// tds in fixed column default background color   
+			fixedColumnbackcolor:"#187BAF", 
+			// tds in fixed column background color while hover. 
+			fixedColumnhovercolor:"#99CCFF"  
+		});        
+	});
+});
+</script>';
+
+		$style = '
+<style type="text/css">
+	.fixedColumn .fixedTable td
+	{
+		color: #FFFFFF;
+		background-color: #187BAF;
+		font-size: 10px;
+		font-weight: normal;
+	}
+        
+	.fixedHead td, .fixedFoot td
+	{
+		color: #FFFFFF;
+		background-color: #187BAF;
+		font-size: 10px;
+		font-weight: normal;
+		padding: 1px;
+		border: 1px solid #187BAF;
+	}
+	.fixedTable td
+	{
+		font-size: 8.5pt;
+		background-color: #FFFFFF;
+		padding: 1px;
+		text-align: left;
+		border: 1px solid #CEE7FF;
+	}
+</style>
+';
+
 		$data['content'] = "
-		<table width='100%' border='1'>
+		<table align='center' border='0' cellspacing='2' cellpadding='2' width='98%'>
 			<tr>
-				<td rowspan='2' valign='top'>
-					<div style='border: 2px outset #EFEFEF;background: #EFEFFF '>
-					".$grid->output."
+				<td valign='top'>
+					<div style='border: 3px outset #EFEFEF;background: #EFEFFF '>
+					".$mGrid1."
 					</div>
-					<div style='border: 2px outset #EFEFEF;background: #EFEFFF '>
-					".$grid2->output."
+				</td>
+				<td>".
+				open_flash_chart_object( 250,180, site_url("inventario/sinv/ventas/$id"))."
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<div style='border: 3px outset #EFEFEF;background: #EFEFFF '>
+					".$mGrid2."
 					</div>
 					
 				</td>
 				<td>".
-				open_flash_chart_object( 250,180, site_url("inventario/sinv/ventas/$mCodigo"))."
-				</td>
-			</tr>
-			<tr>
-				<td>".
-				open_flash_chart_object( 250,180, site_url("inventario/sinv/compras/".raencode($mCodigo)))."
+				open_flash_chart_object( 250,180, site_url("inventario/sinv/compras/$id"))."
 				</td>
 			</tr>
 		</table>";
-		$data["head"]     = script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
+		$data["head"]     = script("plugins/jquery.fixedtable.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
 		$data['title']    = '<h1>Consulta de Articulo de Inventario</h1>';
+		$data['script']   = $script;
+		$data['style']   = $style;
 		$data["subtitle"] = "
 			<div align='center' style='border: 2px outset #EFEFEF;background: #EFEFEF;font-size:18px'>
 				<a href='javascript:javascript:history.go(-1)'>(".$mCodigo.") ".$descrip."</a>
 			</div>";
 		$this->load->view('view_ventanas', $data);
-		
 	}
 
-	function ventas($codigo=''){
-		if (empty($codigo)) return; 
+	function ventas($id=''){
+		if (empty($id)) return;
 		$this->load->library('Graph');
-		                           	                            
+		
+		$codigo = $this->datasis->dameval("SELECT codigo FROM sinv WHERE id=$id");                           	                            
 		$mSQL = "SELECT	a.tipoa,MID(a.fecha,1,7) mes,
 			sum(a.cana*(a.tipoa='F')) cventa,
 			sum(a.cana*(a.tipoa='D')) cdevol,
@@ -1252,7 +1516,7 @@ class sinv extends Controller {
 			sum(a.tota*if(a.tipoa='D',-1,1)) tota
 		FROM sitems a 
 		WHERE a.codigoa='$codigo' AND a.tipoa IN ('F','D') AND a.fecha >= CONCAT(MID(SUBDATE(curdate(),365),1,8),'01')
-		GROUP BY MID( a.fecha, 1,7 )  ";
+		GROUP BY MID( a.fecha, 1,7 )  LIMIT 7";
 		
 		$maxval = 0;
 		$query = $this->db->query($mSQL);
@@ -1294,10 +1558,11 @@ class sinv extends Controller {
 		echo utf8_encode($g->render());
 	}
 
-	function compras($codigo=''){
-		if (empty($codigo)) return; 
+	function compras($id=''){
+		if (empty($id)) return; 
 		$this->load->library('Graph');
 		                           	                            
+		$codigo = $this->datasis->dameval("SELECT codigo FROM sinv WHERE id=$id");                           	                            
 		$mSQL = "SELECT	MID(a.fecha,1,7) mes,
 			sum(a.cantidad*(b.tipo_doc='FC')) cventa,
 			sum(a.cantidad*(b.tipo_doc='NC')) cdevol,
@@ -1308,7 +1573,7 @@ class sinv extends Controller {
 		FROM itscst a JOIN scst b ON a.control=b.control 
 		WHERE a.codigo='$codigo' AND b.tipo_doc IN ('FC','NC') AND b.fecha >= CONCAT(MID(SUBDATE(curdate(),365),1,8),'01')
 				AND  a.fecha <= b.actuali 
-		GROUP BY MID( b.fecha, 1,7 )  ";
+		GROUP BY MID( b.fecha, 1,7 ) LIMIT 7  ";
 		
 		$maxval = 0;
 		$query = $this->db->query($mSQL);

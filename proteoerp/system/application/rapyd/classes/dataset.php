@@ -38,12 +38,12 @@ class DataSet {
   var $base_url     = "";
   var $pagination_function = "";
   var $uri_segment  = null;
-  var $num_links    = 5;
+  var $num_links    = 4;
     
-  var $first_link   		= '&lsaquo; Primero';
+  var $first_link   		= '&lt;&lt;';
   var $next_link			= '&gt;';
   var $prev_link			= '&lt;';
-  var $last_link    		= '&Uacute;ltimo &rsaquo;';
+  var $last_link    		= '&gt;&gt;';
   var $extra_anchor   = "";
 
 
