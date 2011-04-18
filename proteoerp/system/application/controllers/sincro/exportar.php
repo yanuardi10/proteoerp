@@ -109,7 +109,7 @@ class Exportar extends Controller {
 		
 		if (empty($fecha)){
 			$dias=3;
-			$fecha=date("Ymd",mktime(0,0,0,date('n'),date('j')-$dias,date('Y')));
+			$fecha=date('Ymd',mktime(0,0,0,date('n'),date('j')-$dias,date('Y')));
 		}elseif(!$this->__chekfecha($fecha)){
 			return false;
 		}
@@ -175,6 +175,18 @@ class Exportar extends Controller {
 
 		$this->sqlinex->exportunbufferzip($data,$nombre,$this->sucu);
 	}*/
+
+	function _sinvcontrol($fecha,$opt=null){
+		set_time_limit(600);
+		$this->load->library('sqlinex');
+		$data[]=array('table' => 'sinvcontrol');
+		$fecha=date('d-m-Y');
+
+		$nombre='sinvcontrol_'.$fecha.'_'.$this->sucu;
+		if(!array_key_exists('HTTP_USER_AGENT', $_SERVER)) $_SERVER['HTTP_USER_AGENT']='curl';
+
+		$this->sqlinex->exportunbufferzip($data,$nombre,$this->sucu);
+	}
 
 	function _sinvprec($fecha=null,$opt=null){
 		set_time_limit(600);

@@ -77,9 +77,9 @@ class psinv extends Controller {
 		$grid->build();
 		//echo $grid->db->last_query();
 
-		$data['content'] =$filter->output.$grid->output;
+		$data['content'] = $filter->output.$grid->output;
 		$data['head']    = $this->rapyd->get_head();
-		$data['title']   =heading('Pr&eacute;stamos de inventario a cliente');
+		$data['title']   = heading('Consignaci&oacute;n de inventario');
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -295,7 +295,7 @@ class psinv extends Controller {
 
 		$conten['form']  =&  $edit;
 		$data['content'] = $this->load->view('view_psinv', $conten,true);
-		$data['title']   = heading('Prestamo de inventario');
+		$data['title']   = heading('Consiganci&oacute;n de inventario');
 		$data['head']    = script('jquery.js').script('jquery-ui.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css').$this->rapyd->get_head().phpscript('nformat.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js').phpscript('nformat.js');
 		$this->load->view('view_ventanas', $data);
 	}
@@ -448,6 +448,15 @@ class psinv extends Controller {
 			COLLATE='latin1_swedish_ci'
 			ENGINE=MyISAM
 			ROW_FORMAT=DEFAULT";
+		var_dump($this->db->simple_query($mSQL));
+
+		$mSQL="ALTER TABLE `itpsinv`  ADD COLUMN `canareci` DECIMAL(12,3) NULL DEFAULT '0.000' AFTER `cana`";
+		var_dump($this->db->simple_query($mSQL));
+
+		$mSQL="ALTER TABLE `itpsinv`  ADD UNIQUE INDEX `numero_codigo` (`numero`, `codigo`)";
+		var_dump($this->db->simple_query($mSQL));
+
+		$mSQL="ALTER TABLE `psinv`  ADD COLUMN `status` CHAR(1) NULL DEFAULT NULL COMMENT 'T=en trancito C=conciliado' AFTER `vende`";
 		var_dump($this->db->simple_query($mSQL));
 	}
 }
