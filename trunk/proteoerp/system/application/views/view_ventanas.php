@@ -28,7 +28,6 @@ $(function(){
 });
 </script>
 <?php }; ?>
-<meta http-equiv="Pragma" content="no-cache">
 </head>
 <body>
 <div id='encabe'>
