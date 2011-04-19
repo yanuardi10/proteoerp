@@ -35,17 +35,17 @@ class Apan extends validaciones {
 		$filter->buttons("reset","search");
 		$filter->build();
 
-		$uri = anchor('finanzas/apan/dataedit/show/<#numero#>','<#numero#>');
+		$uri = anchor('finanzas/apan/dataedit/show/<#id#>','<#numero#>');
 
 		$grid = new DataGrid("Lista de Aplicaci&oacute;n de Anticipos");
 		$grid->order_by("numero","asc");
 		$grid->per_page = 20;
 
-		$grid->column("N&uacute;mero",$uri);
-		$grid->column("Fecha","<dbdate_to_human><#fecha#></dbdate_to_human>","align='center'");
-		$grid->column("Tipo","tipo");
-		$grid->column("Clipro","clipro");
-		$grid->column("Nombre","nombre");
+		$grid->column_orderby("N&uacute;mero",$uri,'numero');
+		$grid->column_orderby("Fecha","<dbdate_to_human><#fecha#></dbdate_to_human>",'fecha',"align='center'");
+		$grid->column_orderby("Tipo","tipo",'tipo');
+		$grid->column_orderby("Clipro","clipro",'clipro');
+		$grid->column_orderby("Nombre","nombre",'nombre');
 		$grid->column("Monto","<number_format><#monto#>|2|,|.</number_format>" ,'align=right');
 								 
 		$grid->add("finanzas/apan/dataedit/create");
@@ -259,6 +259,12 @@ class Apan extends validaciones {
 	function uanticipos(){
 		$consul=$this->datasis->dameval("SELECT numero FROM apan ORDER BY numero DESC");
 		echo $consul;
+	}
+	
+	function instalar(){
+		$sql="ALTER TABLE `apan`  ADD COLUMN `id` INT(10) NULL AUTO_INCREMENT AFTER `usuario`,  ADD PRIMARY KEY (`id`)";
+		$this->db->query($sql);
+		
 	}
 }
 ?>
