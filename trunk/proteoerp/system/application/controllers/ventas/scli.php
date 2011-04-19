@@ -30,20 +30,20 @@ class Scli extends validaciones {
 		$filter->nombre->size=30;
 		$filter->nombre->group = "CLIENTE";
 
+		$filter->grupo = new dropdownField('Grupo', 'grupo');
+		$filter->grupo->option('','Todos');
+		$filter->grupo->options('SELECT grupo, gr_desc FROM grcl ORDER BY gr_desc');
+		$filter->grupo->style = 'width:140px';
+		$filter->grupo->group = "CLIENTE";
+
 		$filter->rifci= new inputField('Rif/CI','rifci');
 		$filter->rifci->size=15;
-		$filter->rifci->group = "CLIENTE";
+		$filter->rifci->group = "VALORES";
 
 		$filter->cuenta= new inputField('Cuenta Contable','cuenta');
 		$filter->cuenta->like_side='after';
 		$filter->cuenta->size=15;
 		$filter->cuenta->group = "VALORES";
-
-		$filter->grupo = new dropdownField('Grupo', 'grupo');
-		$filter->grupo->option('','Todos');
-		$filter->grupo->options('SELECT grupo, gr_desc FROM grcl ORDER BY gr_desc');
-		$filter->grupo->size=20;
-		$filter->grupo->group = "VALORES";
 
 		$filter->buttons('reset','search');
 		$filter->build('dataformfiltro');
@@ -52,27 +52,68 @@ class Scli extends validaciones {
 
 		$grid = new DataGrid('Lista de Clientes');
 		$grid->order_by('nombre','asc');
-		$grid->per_page=15;
+		$grid->per_page=50;
 
 		$cclave=anchor('ventas/scli/claveedit/modify/<#id#>','Asignar clave');
+		$grid->column('Acci&oacute;n',$cclave);
 		$grid->column_orderby('Cliente',$uri,'cliente');
 		$grid->column_orderby('Nombre','nombre','nombre');
 		$grid->column_orderby($this->pi18n->msj('rifci','Rif/CI'),'rifci','rifci');
 		$grid->column_orderby($this->pi18n->msj('tiva','Tipo') ,'tiva','tiva','align=\'center\'');
+		$grid->column_orderby('Telefono','telefono','telefono');
+		$grid->column_orderby('Contacto','contacto','contacto');
 		$grid->column_orderby('Cuenta','cuenta','cuenta');
-		$grid->column('Acci&oacute;n',$cclave);
-		$grid->add('ventas/scli/dataedit/create','Agregar un cliente');
-		$grid->build();
-		//echo $grid->db->last_query();
+
+		$grid->add('ventas/scli/dataedit/create','Agregar');
+		$grid->build('datagridST');
+
+
+//************ SUPER TABLE ************* 
+		$extras = '
+<script type="text/javascript">
+//<![CDATA[
+(function() {
+	var mySt = new superTable("demoTable", {
+	cssSkin : "sSky",
+	fixedCols : 1,
+	headerRows : 1,
+	onStart : function () {	this.start = new Date();},
+	onFinish : function () {document.getElementById("testDiv").innerHTML += "Finished...<br>" + ((new Date()) - this.start) + "ms.<br>";}
+	});
+})();
+//]]>
+</script>
+';
+		$style ='
+<style type="text/css">
+.fakeContainer { /* The parent container */
+    margin: 5px;
+    padding: 0px;
+    border: none;
+    width: 740px; /* Required to set */
+    height: 320px; /* Required to set */
+    overflow: hidden; /* Required to set */
+}
+</style>	
+';
+//****************************************
+
+
+		$data['style']   = $style;
+		$data['style']  .= style('superTables.css');
+
+		$data['extras']  = $extras;		
+
 
 		$data['content'] = $grid->output;
 		$data['content'].= $this->pi18n->fallas();
 		$data['filtro']  = $filter->output;
 
-		$data['title']   = heading('Modulo de Clientes');
-		$data['script']  = script('jquery.js')."\n";
-		$data['head']    = $this->rapyd->get_head();
-		$data['extras']  = '';
+		$data['title']  = heading('Modulo de Clientes');
+		$data['head']   = script('jquery.js');
+		$data["head"]  .= script('superTables.js');
+		$data['head']  .= $this->rapyd->get_head();
+
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -209,25 +250,44 @@ class Scli extends validaciones {
 		$edit->rifci->append($lriffis);
 		$edit->rifci->size =15;
 
-		for($i=1;$i<=2;$i++){
-			for($o=1;$o<=2;$o++){
-				$obj  ="dire$i$o";
-				$label= ($o%2!=0) ? "Direc. $i": '&nbsp;';
-				$edit->$obj = new inputField($label,$obj);
-				$edit->$obj->rule = 'trim';
-				$edit->$obj->size      = 45;
-				$edit->$obj->maxlength = 40;
-				//$edit->$obj->group = "Direcci&oacute;n ($i)";
-			}
-			$obj="ciudad$i";
-			$edit->$obj = new dropdownField('Ciudad',$obj);
-			$edit->$obj->rule = 'trim';
-			$edit->$obj->option('','Seleccionar');
-			$edit->$obj->options('SELECT ciudad codigo, ciudad FROM ciud ORDER BY ciudad');
-			$edit->$obj->maxlength = 40;
-			$edit->$obj->size      = 45;
-			//$edit->$obj->group = "Direcci&oacute;n ($i)";
-		}
+		$obj  ="dire11";
+		$edit->$obj = new inputField('Oficina',$obj);
+		$edit->$obj->rule = 'trim';
+		$edit->$obj->size      = 50;
+		$edit->$obj->maxlength = 40;
+
+		$obj  ="dire12";
+		$edit->$obj = new inputField('',$obj);
+		$edit->$obj->rule = 'trim';
+		$edit->$obj->size      = 50;
+		$edit->$obj->maxlength = 40;
+
+		$obj="ciudad1";
+		$edit->$obj = new dropdownField('Ciudad',$obj);
+		$edit->$obj->rule = 'trim';
+		$edit->$obj->option('','Seleccionar');
+		$edit->$obj->options('SELECT ciudad codigo, ciudad FROM ciud ORDER BY ciudad');
+		$edit->$obj->maxlength = 40;
+
+
+		$obj  ="dire21";
+		$edit->$obj = new inputField('Oficina',$obj);
+		$edit->$obj->rule = 'trim';
+		$edit->$obj->size      = 50;
+		$edit->$obj->maxlength = 40;
+
+		$obj  ="dire22";
+		$edit->$obj = new inputField('',$obj);
+		$edit->$obj->rule = 'trim';
+		$edit->$obj->size      = 50;
+		$edit->$obj->maxlength = 40;
+
+		$obj="ciudad2";
+		$edit->$obj = new dropdownField('Ciudad',$obj);
+		$edit->$obj->rule = 'trim';
+		$edit->$obj->option('','Seleccionar');
+		$edit->$obj->options('SELECT ciudad codigo, ciudad FROM ciud ORDER BY ciudad');
+		$edit->$obj->maxlength = 40;
 
 		$edit->repre  = new inputField('Representante', 'repre');
 		$edit->repre->rule = 'trim';
@@ -370,7 +430,12 @@ class Scli extends validaciones {
 		$data['content'].= $this->pi18n->fallas();
 		$data['smenu']   = $this->load->view('view_sub_menu', $smenu,true);
 		$data['title']   = heading('Clientes');
-		$data['head']    = script('jquery.pack.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js').script('plugins/jquery.autocomplete.js').style('jquery.autocomplete.css').$this->rapyd->get_head();
+		$data['head']    = script('jquery.js');
+		$data['head']   .= script('plugins/jquery.numeric.pack.js');
+		$data['head']   .= script('plugins/jquery.floatnumber.js');
+		$data['head']   .= script('plugins/jquery.autocomplete.js');
+		$data['head']   .= style('jquery.autocomplete.css');
+		$data['head']   .= $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 

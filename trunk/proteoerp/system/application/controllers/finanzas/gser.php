@@ -134,8 +134,10 @@ class gser extends Controller {
 		$data['content'] = $grid->output;
 		$data['filtro']  = $filter->output;
 		$data['style']   = $style.style('superTables.css');
-		$data['extras'] = $extras;		
-		$data['head']    = script('superTables.js').$this->rapyd->get_head();
+		$data['extras']  = $extras;		
+		$data['head']    = script('jquery.js');
+		$data['head']   .= script('superTables.js');
+		$data['head']   .= $this->rapyd->get_head();
 		$data['title']   = heading('Egresos por Gastos');
 		$this->load->view('view_ventanas', $data);
 	}
@@ -260,7 +262,8 @@ class gser extends Controller {
 		});';
 
 		$data['content'] = $filter->output.$grid->output;
-		$data['head']    = $this->rapyd->get_head();
+		$data['head']    = script('jquery.js');
+		$data['head']   .= $this->rapyd->get_head();
 		$data['title']   = heading('Agregar/Modificar facturas de Caja Chica');
 		$this->load->view('view_ventanas', $data);
 	}
