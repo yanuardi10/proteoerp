@@ -23,14 +23,16 @@ class Usol extends Controller {
 		$filter->nombre->size=20;
 
 		$filter->buttons("reset","search");
-		$filter->build();
+		$filter->build('dataformfiltro');
 		
 		$uri = anchor('inventario/usol/dataedit/show/<#codigo#>','<#codigo#>');
+		$uri_2  = anchor('inventario/usol/dataedit/show/<#codigo#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar','height'=>'12')));
 	
 		$grid = new DataGrid("Lista de Conceptos");
 		$grid->order_by("codigo","asc");
-		$grid->per_page = 10;
+		$grid->per_page = 50;
 
+		$grid->column('Acci&oacute;n',$uri_2,'align=center');
 		$grid->column_orderby("C&oacute;digo",$uri,'codigo');
 		$grid->column_orderby("Nombre","nombre",'nombre');
 		$grid->column_orderby("Gasto" ,"gasto",'gasto');
@@ -38,12 +40,52 @@ class Usol extends Controller {
 		$grid->column_orderby("Sucursal", "sucursal",'sucursal');
 		
 		$grid->add("inventario/usol/dataedit/create");
-		$grid->build();
+		$grid->build('datagridST');
 		
-    	$data['content'] = $filter->output.$grid->output;
-		$data['title']   = "<h1>Unidad Solicitante</h1>";
-		$data["head"]    = $this->rapyd->get_head();
-		$this->load->view('view_ventanas', $data);	
+		//************ SUPER TABLE ************* 
+		$extras = '
+<script type="text/javascript">
+//<![CDATA[
+(function() {
+	var mySt = new superTable("demoTable", {
+	cssSkin : "sSky",
+	fixedCols : 1,
+	headerRows : 1,
+	onStart : function () {	this.start = new Date();},
+	onFinish : function () {document.getElementById("testDiv").innerHTML += "Finished...<br>" + ((new Date()) - this.start) + "ms.<br>";}
+	});
+})();
+//]]>
+</script>
+';
+		$style ='
+<style type="text/css">
+.fakeContainer { /* The parent container */
+    margin: 5px;
+    padding: 0px;
+    border: none;
+    width: 540px; /* Required to set */
+    height: 320px; /* Required to set */
+    overflow: hidden; /* Required to set */
+}
+</style>	
+';
+//****************************************
+
+
+		$data['style']   = $style;
+		$data['style']  .= style('superTables.css');
+		$data['extras']  = $extras;		
+
+		$data['content'] = $grid->output;
+		$data['filtro']  = $filter->output;
+
+		$data['title']  = heading('Unidad Solicitante');
+		$data['head']   = script('jquery.js');
+		$data["head"]  .= script('superTables.js');
+		$data['head']  .= $this->rapyd->get_head();
+
+		$this->load->view('view_ventanas', $data);
 	}
 
 	function dataedit(){ 
