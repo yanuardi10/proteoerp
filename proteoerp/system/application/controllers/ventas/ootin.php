@@ -33,7 +33,7 @@ class Ootin extends Controller {
 		$boton=$this->datasis->modbus($scli);
 		
 		$filter = new DataFilter("Filtro de Otros Ingresos");
-		$filter->db->select('fecha,numero,cod_cli,nombre,totals,totalg,iva,tipo_doc');
+		$filter->db->select('fecha,numero,cod_cli,nombre,totals,totalg,iva,tipo_doc,orden,rifci,observa1,observa2');
 		$filter->db->from('otin');
 		
     	$filter->fechad = new dateonlyField("Desde", "fechad",'d/m/Y');
@@ -54,28 +54,74 @@ class Ootin extends Controller {
 		$filter->cliente->append($boton);
 
 		$filter->buttons("reset","search");
-		$filter->build();
+		$filter->build('dataformfiltro');
     
 		$uri = anchor('ventas/ootin/dataedit/show/<#tipo_doc#>/<#numero#>','<#numero#>');
+		$uri_2  = anchor('ventas/ootin/dataedit/show/<#tipo_doc#>/<#numero#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar','height'=>'12')));
 		
 		$grid = new DataGrid();
 		$grid->order_by("fecha","desc");
-		$grid->per_page = 15;  
+		$grid->per_page = 50;  
 		
+		$grid->column('Acci&oacute;n',$uri_2,'align=center');
 		$grid->column_orderby("N&uacute;mero",$uri,'numero');
     	$grid->column_orderby("Fecha","<dbdate_to_human><#fecha#></dbdate_to_human>",'fecha',"align='center'");
+    	$grid->column_orderby("C&oacute;digo Cliente","cod_cli",'cod_cli');
+    	$grid->column_orderby("Orden","orden",'orden');
+    	$grid->column_orderby("Rif","rifci",'rifci');
     	$grid->column_orderby("Nombre","nombre",'nombre');
-    	$grid->column_orderby("Sub.Total","<number_format><#totals#>|2</number_format>",'totals',"align=right");
-    	$grid->column_orderby("IVA","<number_format><#iva#>|2</number_format>",'iva',"align=right");
-    	$grid->column_orderby("Total","<number_format><#totalg#>|2</number_format>",'totalg',"align=right");
+    	$grid->column_orderby("Observaci&oacute;n 1","observa1",'observa1');
+    	$grid->column_orderby("Observaci&oacute;n 2","observa2",'observa2');
+    	$grid->column_orderby("Sub.Total","<nformat><#totals#>|2</nformat>",'totals',"align=right");
+    	$grid->column_orderby("IVA","<nformat><#iva#>|2</nformat>",'iva',"align=right");
+    	$grid->column_orderby("Total","<nformat><#totalg#>|2</nformat>",'totalg',"align=right");
     	
 		$grid->add("ventas/ootin/dataedit/create");
-		$grid->build();
+		$grid->build('datagridST');
 		
+		//************ SUPER TABLE ************* 
+		$extras = '
+<script type="text/javascript">
+//<![CDATA[
+(function() {
+	var mySt = new superTable("demoTable", {
+	cssSkin : "sSky",
+	fixedCols : 1,
+	headerRows : 1,
+	onStart : function () {	this.start = new Date();},
+	onFinish : function () {document.getElementById("testDiv").innerHTML += "Finished...<br>" + ((new Date()) - this.start) + "ms.<br>";}
+	});
+})();
+//]]>
+</script>
+';
+		$style ='
+<style type="text/css">
+.fakeContainer { /* The parent container */
+    margin: 5px;
+    padding: 0px;
+    border: none;
+    width: 740px; /* Required to set */
+    height: 320px; /* Required to set */
+    overflow: hidden; /* Required to set */
+}
+</style>	
+';
+//****************************************
+
+
+		$data['style']   = $style;
+		$data['style']  .= style('superTables.css');
+		$data['extras']  = $extras;		
 		
-		$data['content'] =$filter->output.$grid->output;
-		$data["head"]    = $this->rapyd->get_head();
-		$data['title']   ='<h1> Otros Ingresos</h1>';
+		$data['content'] = $grid->output;
+		$data['filtro']  = $filter->output;
+
+		$data['title']  = heading('Otros Ingresos');
+		$data['head']   = script('jquery.js');
+		$data["head"]  .= script('superTables.js');
+		$data['head']  .= $this->rapyd->get_head();
+
 		$this->load->view('view_ventanas', $data);
 	}
 	
@@ -120,9 +166,11 @@ class Ootin extends Controller {
 		$btn=$this->datasis->p_modbus($modbus,'<#i#>');
 
  		$do = new DataObject("otin");
-		$do->rel_one_to_many('itotin', 'itotin', array('numero','tipo_doc'));
+		$do->rel_one_to_many('itotin', 'itotin', array('tipo_doc','numero'));
 		$do->pointer('scli' ,'scli.cliente=otin.cod_cli','tipo AS sclitipo','left');
 		//$do->rel_pointer('itspre','sinv','itspre.codigo=sinv.codigo','sinv.descrip AS sinvdescrip, sinv.base1 AS sinvprecio1, sinv.base2 AS sinvprecio2, sinv.base3 AS sinvprecio3, sinv.base4 AS sinvprecio4, sinv.iva AS sinviva, sinv.peso AS sinvpeso,sinv.tipo AS sinvtipo');
+//		print('<pre>');
+//		print_R($do);
 		
 		$edit = new DataDetails('Otros Ingresos', $do);
 		$edit->back_url = site_url('ventas/ootin/index');
