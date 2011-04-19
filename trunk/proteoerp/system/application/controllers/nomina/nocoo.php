@@ -8,7 +8,6 @@ class Nocoo extends Controller {
 	
 	function index() {		
 		$this->rapyd->load("datagrid","datafilter");
-		$this->datasis->modulo_id(715,1);
 		
 		$filter = new DataFilter("Filtro de Contrato de Nomina",'noco');
 		
@@ -19,25 +18,67 @@ class Nocoo extends Controller {
 		$filter->nombre->size=40;
 		
 		$filter->buttons("reset","search");
-		$filter->build();
+		$filter->build('dataformfiltro');
     
 		$uri = anchor('nomina/nocoo/dataedit/show/<#codigo#>','<#codigo#>');
+		$uri_2  = anchor('nomina/nocoo/dataedit/show/<#codigo#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar','height'=>'12')));
     
 		$grid = new DataGrid();
 		$grid->order_by("codigo","asc");
-		$grid->per_page = 15;
+		$grid->per_page = 50;
 		
+		$grid->column('Acci&oacute;n',$uri_2,'align=center');
 		$grid->column_orderby("C&oacute;digo",$uri,'codigo');
 		$grid->column_orderby("Nombre","nombre",'nombre');
 		$grid->column_orderby("Observaci&oacute;n","observa1",'observa1');
+		$grid->column_orderby("Observaci&oacute;n","observa2",'observa2');
 		
 		$grid->add("nomina/nocoo/dataedit/create");
-		$grid->build();
-		//echo $grid->db->last_query();
+		$grid->build('datagridST');
 		
-		$data['content'] =$filter->output.$grid->output;
-		$data["head"]    = $this->rapyd->get_head();
-		$data['title']   ='<h1>Contratos</h1>';
+		//************ SUPER TABLE ************* 
+		$extras = '
+<script type="text/javascript">
+//<![CDATA[
+(function() {
+	var mySt = new superTable("demoTable", {
+	cssSkin : "sSky",
+	fixedCols : 1,
+	headerRows : 1,
+	onStart : function () {	this.start = new Date();},
+	onFinish : function () {document.getElementById("testDiv").innerHTML += "Finished...<br>" + ((new Date()) - this.start) + "ms.<br>";}
+	});
+})();
+//]]>
+</script>
+';
+		$style ='
+<style type="text/css">
+.fakeContainer { /* The parent container */
+    margin: 5px;
+    padding: 0px;
+    border: none;
+    width: 740px; /* Required to set */
+    height: 320px; /* Required to set */
+    overflow: hidden; /* Required to set */
+}
+</style>	
+';
+//****************************************
+
+
+		$data['style']   = $style;
+		$data['style']  .= style('superTables.css');
+		$data['extras']  = $extras;		
+
+		$data['content'] = $grid->output;
+		$data['filtro']  = $filter->output;
+
+		$data['title']  = heading('Contratos');
+		$data['head']   = script('jquery.js');
+		$data["head"]  .= script('superTables.js');
+		$data['head']  .= $this->rapyd->get_head();
+
 		$this->load->view('view_ventanas', $data);
 	}
 	
