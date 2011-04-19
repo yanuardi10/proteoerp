@@ -23,10 +23,12 @@
 		</td>
 		<td align='right'><?php echo $container_tr; ?></td>
 	</tr>
+</table>
+<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
+<legend class="titulofieldset" style='color: #114411;'>Identificacion</legend>
+<table border=0 width="100%">
 	<tr>
-		<td colspan='2'>
-			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
-			<legend class="titulofieldset" style='color: #114411;'>Identificacion</legend>
+		<td>
 			<table border=0 width="100%">
 			<tr>
 				<td width="100" class="littletableheaderc"><?=$form->cliente->label  ?></td>
@@ -42,6 +44,8 @@
 				<td class="littletableheaderc"><?=$form->nombre->label ?></td>
 				<td colspan='3' class="littletablerow"><?=$form->nombre->output?></td>
 			</tr>
+				<td class="littletableheaderc"><?=$form->nomfis->label ?></td>
+				<td colspan='3' class="littletablerow"><?=$form->nomfis->output?></td>
 			<tr>
 				<td class="littletableheaderc"><?=$form->contacto->label  ?></td>
 				<td colspan='3' class="littletablerow"><?=$form->contacto->output ?></td>
@@ -51,11 +55,9 @@
 				<td colspan='3' class="littletablerow"><?=$form->repre->output ?></td>
 			</tr>
 			</table>
-			</fieldset>
 		</td>
 		<td>
-			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
-			<legend>&nbsp;</legend>
+
 			<table border=0 width="100%">
 			<tr>
 				<td width='100' class="littletableheaderc"><?=$form->grupo->label ?></td>
@@ -73,10 +75,10 @@
 			</tr>
 			
 			</table>
-			</fieldset>
 		</td>
 	</tr>
 </table>
+</fieldset>
 <table  width="100%" border='0'>
 	<tr>
 		<td valign='top'>
