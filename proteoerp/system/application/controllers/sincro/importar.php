@@ -45,6 +45,7 @@ class Importar extends Controller {
 		$form->qtrae->rule ='required';
 		$form->qtrae->option('','Selecionar');
 		$form->qtrae->option('scli'       ,'Clientes');
+		$form->qtrae->option('sprv'       ,'Proveedores');
 		$form->qtrae->option('sinv'       ,'Inventario (clonar)');
 		$form->qtrae->option('sinvprec'   ,'Inventario (Solo precios)');
 		$form->qtrae->option('maes'       ,'Inventario Supermercado');
@@ -236,9 +237,9 @@ class Importar extends Controller {
 			$msg='Error, la sucursal '.$sucu.' no existe, revise la configuracion aqui: '.anchor('supervisor/sucu','sucursales');
 		}
 		$data['content'] = $msg.'<p>'.anchor('inventario/fotos/traerfotos/'.$sucu,'Traer fotos de invetario').'</p>';
-		$data['title']   = '<h1>Descarga de informaci&oacute;n para vendedores ambulantes</h1>';
+		$data['title']   = heading('Descarga de informaci&oacute;n para vendedores ambulantes');
 		$data['script']  = '';
-		$data["head"]    = $this->rapyd->get_head();
+		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -263,6 +264,41 @@ class Importar extends Controller {
 					$rt.=$this->$obj($row->codigo,$fecha);
 				}
 				echo $rt;
+			}
+		}
+	}
+
+	function gtraeshell($sucu=null,$metodo=null,$fecha=null){
+		if($this->secu->es_shell()){
+			if(empty($sucu) || empty($metodo)){
+				echo "USO: gtraesusu sucursal metodo [fecha] \n";
+				$sucu=$this->sucu;
+				$query = $this->db->query("SELECT * FROM sucu WHERE codigo<>$sucu");
+
+				if ($query->num_rows() > 0){
+					echo " Sucursales:\n";
+					foreach ($query->result() as $row){
+						echo '   '.$row->codigo.' -> '.$row->sucursal."\n";
+					}
+				}
+				echo " Metodos: scli,sprv,maes,smov,fiscalz...\n";
+				echo " Fecha Ymd \n";
+				echo " Ej: ./traeshell.sh 01 sinv 20110101 \n";
+				return true;
+			}
+
+			if(empty($fecha)) $fecha = date('Ymd');
+			$cana = $this->datasis->dameval('SELECT COUNT(*) FROM sucu WHERE codigo='.$this->db->escape($sucu));
+			if($cana>0){
+				$obj='_'.str_replace('_','',$metodo);
+				if(method_exists($this,$obj)){
+					$rt.=$this->$obj($row->codigo,$fecha);
+				}else{
+					echo "Metodo '$metodo' no existe\n";
+				}
+			}else{
+				echo "Sucursal '$sucu' no valida \n";
+				return true;
 			}
 		}
 	}
@@ -323,6 +359,23 @@ class Importar extends Controller {
 		}
 	}
 
+	function traesclilimitsucu($fecha=null){
+		if(isset($_SERVER['argv']) && !isset($_SERVER['SERVER_NAME'])){ //asegura que se ejecute desde shell
+			$this->geneticket=false;
+			$sucu=$this->sucu;
+			$query = $this->db->query("SELECT * FROM sucu WHERE codigo<>$sucu");
+			if(empty($fecha)) $fecha = date('Ymd');
+
+			if ($query->num_rows() > 0){
+				$rt='';
+				foreach ($query->result() as $row){
+					$rt.=$this->_sclilimit($row->codigo,$fecha);
+				}
+				echo $rt;
+			}
+		}
+	}
+
 	function traemaesalma($fecha=null,$sucu,$alma){
 		if(isset($_SERVER['argv']) && !isset($_SERVER['SERVER_NAME'])){ //asegura que se ejecute desde shell
 			if(empty($fecha)) $fecha = date('Ymd');
@@ -354,6 +407,12 @@ class Importar extends Controller {
 	function _scli($sucu,$fecha=null){
 		set_time_limit(600);
 		$rt=$this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/scli/'.$fecha,'scli');
+		return $rt;
+	}
+
+	function _sprv($sucu,$fecha=null){
+		set_time_limit(600);
+		$rt=$this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/sprv/'.$fecha,'sprv');
 		return $rt;
 	}
 
