@@ -52,6 +52,7 @@ class Exportar extends Controller {
 		$form->qtrae->rule ='required';
 		$form->qtrae->option('','Selecionar');
 		$form->qtrae->option('scli'     ,'Clientes');
+		$form->qtrae->option('sprv'     ,'Proveedores');
 		$form->qtrae->option('sinv'     ,'Inventario');
 		$form->qtrae->option('sinvprec' ,'Inventario solo precios');
 		$form->qtrae->option('maes'     ,'Inventario Supermercado');
@@ -464,6 +465,23 @@ class Exportar extends Controller {
 		$this->sqlinex->exportunbufferzip($data,$nombre,$this->sucu);
 	}
 
+	function _sprv($fecha,$opt=null){
+		set_time_limit(600);
+		//$prefijo=str_pad($this->prefijo,8,'0');
+		$prefijo=$this->prefijo;
+		$cant=strlen($this->prefijo)+1;
+		$this->load->library('sqlinex');
+		//$this->sqlinex->ignore   =TRUE;
+		$data[]=array('table' => 'sprv',
+		                'select'=>"proveed,nombre,rif,tipo,grupo,cuenta,gr_desc,direc1,direc2,direc3,telefono,contacto,cliente,observa,nit,codigo,email,url,banco1,cuenta1,banco2,cuenta2,tiva,nomfis,reteiva,modificado",
+		                'where' => " modificado >= $fecha",
+		                'limpiar'=>false,
+		                'ignore' =>true);
+
+		$nombre='sprv_'.$fecha.'_'.$this->sucu;
+		if(!array_key_exists('HTTP_USER_AGENT', $_SERVER)) $_SERVER['HTTP_USER_AGENT']='curl';
+		$this->sqlinex->exportunbufferzip($data,$nombre,$this->sucu);
+	}
 //***********************
 // Metodos dependientes
 //     del almacen
