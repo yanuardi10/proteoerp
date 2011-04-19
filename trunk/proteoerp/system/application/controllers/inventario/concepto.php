@@ -25,14 +25,16 @@ class concepto extends Controller {
 		$filter->nombre->size=20;
 
 		$filter->buttons("reset","search");
-		$filter->build();
+		$filter->build('dataformfiltro');
 		
 		$uri = anchor('inventario/concepto/dataedit/show/<#codigo#>','<#codigo#>');
+		$uri_2  = anchor('inventario/concepto/dataedit/show/<#codigo#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar','height'=>'12')));
 	
 		$grid = new DataGrid("Lista de Conceptos");
 		$grid->order_by("codigo","asc");
-		$grid->per_page = 10;
+		$grid->per_page = 50;
 
+		$grid->column('Acci&oacute;n',$uri_2,'align=center');
 		$grid->column_orderby("C&oacute;digo",$uri,'codigo');
 		$grid->column_orderby("Concepto ","concepto",'concepto');
 		$grid->column_orderby("Gasto" ,"gasto",'gasto');
@@ -41,12 +43,51 @@ class concepto extends Controller {
 		$grid->column_orderby("Denominaci&oacute;n de Ingreso", "ingresod",'ingresod');
 		
 		$grid->add("inventario/concepto/dataedit/create");
-		$grid->build();
+		$grid->build('datagridST');
+		//************ SUPER TABLE ************* 
+		$extras = '
+<script type="text/javascript">
+//<![CDATA[
+(function() {
+	var mySt = new superTable("demoTable", {
+	cssSkin : "sSky",
+	fixedCols : 1,
+	headerRows : 1,
+	onStart : function () {	this.start = new Date();},
+	onFinish : function () {document.getElementById("testDiv").innerHTML += "Finished...<br>" + ((new Date()) - this.start) + "ms.<br>";}
+	});
+})();
+//]]>
+</script>
+';
+		$style ='
+<style type="text/css">
+.fakeContainer { /* The parent container */
+    margin: 5px;
+    padding: 0px;
+    border: none;
+    width: 740px; /* Required to set */
+    height: 320px; /* Required to set */
+    overflow: hidden; /* Required to set */
+}
+</style>	
+';
+//****************************************
+
+		$data['style']   = $style;
+		$data['style']  .= style('superTables.css');
+		$data['extras']  = $extras;		
 		
-    	$data['content'] = $filter->output.$grid->output;
-		$data['title']   = "<h1>Otros Conceptos</h1>";
-		$data["head"]    = $this->rapyd->get_head();
-		$this->load->view('view_ventanas', $data);	
+		$data['content'] = $grid->output;
+		$data['filtro']  = $filter->output;
+
+		$data['title']  = heading('Otros Conceptos');
+		$data['head']   = script('jquery.js');
+		$data["head"]  .= script('superTables.js');
+		$data['head']  .= $this->rapyd->get_head();
+
+		$this->load->view('view_ventanas', $data);
+			
 	}
 
 	function dataedit(){ 
@@ -103,11 +144,11 @@ class concepto extends Controller {
 		$edit->gasto->rule 			= "trim";
 		$edit->gasto->append($botonE);
 		
-		$edit->gastode = new inputField("Gasto de:", "gastode");		
+		$edit->gastode = new inputField("Gasto denominaci&oacute;n", "gastode");		
 		$edit->gastode->size 		= 30;
 		$edit->gastode->maxlength 	= 30;
 		$edit->gastode->rule 		= "trim";
-		$edit->gastode->readonly  =true;
+		//$edit->gastode->readonly  =true;
 		
 		$edit->ingreso = new inputField("Ingreso", "ingreso");
 		$edit->ingreso->size 		= 10;
@@ -116,11 +157,11 @@ class concepto extends Controller {
 		$edit->ingreso->readonly  =true;
 		$edit->ingreso->append($botonI);
 		
-		$edit->ingresod = new inputField("Ingreso de:", "ingresod"); 
+		$edit->ingresod = new inputField("Ingreso denominaci&oacute;n", "ingresod"); 
 		$edit->ingresod->size 		= 30;
 		$edit->ingresod->maxlength 	= 30;
 		$edit->ingresod->rule 		= "trim";
-		$edit->ingresod->readonly  =true;
+		//$edit->ingresod->readonly  =true;
 		
 		$edit->buttons("modify", "save", "undo", "back");		
 		$edit->build();
