@@ -1235,6 +1235,7 @@ function add_grupo(){
 
 	function _detalle($codigo){
 		$salida='';
+		$estilo='';
 		if(!empty($codigo)){
 			$this->rapyd->load('dataedit','datagrid');
 			$grid = new DataGrid('Existencias por Almacen');

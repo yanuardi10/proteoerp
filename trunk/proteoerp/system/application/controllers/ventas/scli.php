@@ -55,7 +55,13 @@ class Scli extends validaciones {
 		$grid->per_page=50;
 
 		$cclave=anchor('ventas/scli/claveedit/modify/<#id#>','Asignar clave');
-		$grid->column('Acci&oacute;n',$cclave);
+
+		$uri_2  = anchor('ventas/scli/dataedit/show/<#id#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar','height'=>'12')));
+		$uri_2 .= anchor('ventas/scli/consulta/<#id#>',img(array('src'=>'images/estadistica.jpeg','border'=>'0','alt'=>'Consultar','height'=>'12')));
+		$uri_2 .= img(array('src'=>'images/<siinulo><#tipo#>|N|S</siinulo>.gif','border'=>'0','alt'=>'Estado'));
+		
+		
+		$grid->column('Acci&oacute;n',$uri_2);
 		$grid->column_orderby('Cliente',$uri,'cliente');
 		$grid->column_orderby('Nombre','nombre','nombre');
 		$grid->column_orderby($this->pi18n->msj('rifci','Rif/CI'),'rifci','rifci');
@@ -313,9 +319,10 @@ class Scli extends validaciones {
 		$edit->tiva->rule='required|callback_chdfiscal';
 		//$edit->tiva->group = 'Informaci&oacute;n f&iacute;scal';
 
-		$edit->nomfis = new inputField('Nombre F&iacute;scal', 'nomfis');
+		$edit->nomfis = new textareaField('Nombre F&iacute;scal', 'nomfis');
 		$edit->nomfis->rule = 'trim';
-		$edit->nomfis->size=50;
+		$edit->nomfis->cols = 48;
+		$edit->nomfis->rows =  2;
 		$edit->nomfis->maxlength =80;
 		//$edit->nomfis->group = 'Informaci&oacute;n f&iacute;scal';
 
@@ -323,7 +330,7 @@ class Scli extends validaciones {
 		$edit->riffis = new inputField('RIF F&iacute;scal', 'riffis');
 		$edit->riffis->size = 13;
 		$edit->riffis->maxlength =10;
-		$edit->riffis->rule = 'trim|callback_chrif';
+		//$edit->riffis->rule = 'trim|callback_chrif';
 		$edit->riffis->append($lriffis);
 		//$edit->riffis->group = 'Informaci&oacute;n f&iacute;scal';
 
