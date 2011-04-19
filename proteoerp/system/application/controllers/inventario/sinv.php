@@ -99,7 +99,7 @@ class sinv extends Controller {
     margin: 5px;
     padding: 0px;
     border: none;
-    width: 640px; /* Required to set */
+    width: 740px; /* Required to set */
     height: 320px; /* Required to set */
     overflow: hidden; /* Required to set */
 }
@@ -247,16 +247,18 @@ class sinv extends Controller {
 
 		$grid->add('inventario/sinv/dataedit/create');
 		$grid->build('datagridST');
-		$this->rapyd->uri->jquery[] = '';
+		//$this->rapyd->uri->jquery[] = '';
 
 		$data['content'] = $grid->output;
 		$data['filtro']  = $filter->output;
+
 		$data['style']   = $style;
 		$data['style']  .= style('superTables.css');
+
 		$data['extras']  = $extras;		
 		$data['title']   = heading('Maestro de Inventario ');
 
-		$data["head"]    = script("jquery-1.3.2.min.js");
+		$data["head"]    = script("jquery.js");
 		$data["head"]   .= script("plugins/jquery.numeric.pack.js");
 		$data["head"]   .= script("plugins/jquery.floatnumber.js");
 		$data["head"]   .= script('superTables.js');

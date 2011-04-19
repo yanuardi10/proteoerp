@@ -22,46 +22,106 @@ class Sprv extends validaciones {
 
 		$filter->proveed = new inputField('C&oacute;digo','proveed');
 		$filter->proveed->size=13;
+		$filter->proveed->group = "UNO";
 
 		$filter->nombre = new inputField('Nombre', 'nombre');
-		$filter->nombre->maxlength=40;
-
-		$filter->rif = new inputField('Rif', 'rif');
-		$filter->rif->size=18;
-		$filter->rif->maxlength=30;
+		$filter->nombre->maxlength=30;
+		$filter->nombre->group = "UNO";
 
 		$filter->tipo = new dropdownField('Tipo', 'tipo');
 		$filter->tipo->option('','Todos');
 		$filter->tipo->options(array('1'=> 'Jur&iacute;dico Domiciliado','2'=>'Residente', '3'=>'Jur&iacute;dico No Domiciliado','4'=>'No Residente','5'=>'Excluido del Libro de Compras','0'=>'Inactivo'));
 		$filter->tipo->style = 'width:200px';
+		$filter->tipo->group = "UNO";
+
+		$filter->rif = new inputField('R.I.F.', 'rif');
+		$filter->rif->size=18;
+		$filter->rif->maxlength=30;
+		$filter->rif->group = "DOS";
 
 		$filter->cuenta = new inputField('Cuenta contable', 'cuenta');
 		$filter->cuenta->size=13;
 		$filter->cuenta->like_side='after';
+		$filter->cuenta->group = "DOS";
+
+		$filter->telefono = new inputField('Telefono', 'telefono');
+		$filter->telefono->size=18;
+		$filter->telefono->like_side='after';
+		$filter->telefono->group = "DOS";
+
+		$filter->cuenta = new inputField('Cuenta contable', 'cuenta');
+		$filter->cuenta->size=13;
+		$filter->cuenta->like_side='after';
+		$filter->cuenta->group = "DOS";
 
 		$filter->buttons('reset','search');
-		$filter->build();
+		$filter->build("dataformfiltro");
 
 		$uri = anchor('compras/sprv/dataedit/show/<#id#>','<#proveed#>');
 
 		$grid = new DataGrid('Lista de Proveedores');
 		$grid->order_by('proveed','asc');
-		$grid->per_page = 10;
+		$grid->per_page = 50;
+		$uri2  = anchor('compras/sprv/dataedit/show/<#id#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar','height'=>'12px')));
 
+
+		$grid->column('Acciones',$uri2,'align=\'center\'');
 		$grid->column_orderby('C&oacute;digo',$uri,'codigo');
 		$grid->column_orderby('Nombre','nombre','nombre');
 		$grid->column_orderby('R.I.F.','rif','rif');
+		$grid->column_orderby('Telefonos','telefono','telefono');
+		$grid->column_orderby('Contacto','contacto','contacto');
 		$grid->column_orderby('% Ret.','reteiva','reteiva','align=\'right\'');
 		$grid->column_orderby('Cuenta','cuenta','cuenta','align=\'right\'');
 
 		$grid->add('compras/sprv/dataedit/create','Agregar un proveedor');
-		$grid->build();
+		$grid->build('datagridST');
+
+
+//************ SUPER TABLE ************* 
+		$extras = '
+<script type="text/javascript">
+//<![CDATA[
+(function() {
+	var mySt = new superTable("demoTable", {
+	cssSkin : "sSky",
+	fixedCols : 1,
+	headerRows : 1,
+	onStart : function () {	this.start = new Date();},
+	onFinish : function () {document.getElementById("testDiv").innerHTML += "Finished...<br>" + ((new Date()) - this.start) + "ms.<br>";}
+	});
+})();
+//]]>
+</script>
+';
+		$style ='
+<style type="text/css">
+.fakeContainer { /* The parent container */
+    margin: 5px;
+    padding: 0px;
+    border: none;
+    width: 740px; /* Required to set */
+    height: 320px; /* Required to set */
+    overflow: hidden; /* Required to set */
+}
+</style>	
+';
+//****************************************
+
 
 		$data['content'] = $grid->output;
 		$data['filtro']  = $filter->output;
 		
 		$data['title']   = '<h1>Proveedores</h1>';
-		$data['head']    = $this->rapyd->get_head();
+
+		$data['style']   = $style;
+		$data['style']  .= style('superTables.css');
+
+		$data['extras']  = $extras;		
+
+		$data['head']    = script('jquery.js');
+		$data["head"]   .= script('superTables.js');
+		$data['head']   .= $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -330,11 +390,17 @@ class Sprv extends validaciones {
 		$data['content'] = $this->load->view('view_sprv', $conten,true);
 
 
+
 		//$smenu['link']=barra_menu('230');
 		//$data['content'] = $edit->output;
 		//$data['smenu']   = $this->load->view('view_sub_menu', $smenu,true);
 		$data['title']   = "<h1>Proveedores</h1>";
-		$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
+
+
+		$data["head"]    = script("jquery.js");
+		$data["head"]   .= script("plugins/jquery.numeric.pack.js");
+		$data["head"]   .= script("plugins/jquery.floatnumber.js");
+		$data["head"]   .= $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 
