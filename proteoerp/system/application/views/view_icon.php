@@ -18,33 +18,36 @@ if($form->_status!='show'){ ?>
 $(function(){
 	$("#gastos").hide();
 	$("#ingresos").hide();
-	$("#gastode").attr("disabled","disabled");
-	$("#ingresod").attr("disabled","disabled");
+	$("#gastosde").hide();
+	$("#ingresosde").hide();
 	$("#tipo").change(function(){
 		var tipo=$("#tipo").val();
 		if(tipo=="I"){
-			$("#gastode").attr("disabled","disabled");
-			$("#ingresod").attr("disabled","");
+			$("#gastode").val("");
+			$("#gasto").val("");
+			$("#gastosde").hide();
+			$("#ingresosde").show();
 			$("#gastos").hide();
 			$("#ingresos").show();
-			$("#gastode").val("");
-			$("#gasto").val("");
+			
 		}else if(tipo=="E"){
-			$("#gastode").attr("disabled","");
-			$("#ingresod").attr("disabled","disabled");
+			$("#ingresod").val("");
+			$("#ingreso").val("");
+			$("#gastosde").show();
+			$("#ingresosde").hide();
 			$("#gastos").show();
 			$("#ingresos").hide();
-			$("#ingresod").val("");
-			$("#ingreso").val("");
+			
 		}else{
-			$("#gastos").hide();
-			$("#ingresos").hide();
-			$("#gastode").attr("disabled","disabled");
-			$("#ingresod").attr("disabled","disabled");
 			$("#ingresod").val("");
 			$("#ingreso").val("");
 			$("#gastode").val("");
 			$("#gasto").val("");
+			$("#gastos").hide();
+			$("#ingresos").hide();
+			$("#gastosde").hide();
+			$("#ingresosde").hide();
+			
 		}
 	});
 
@@ -60,7 +63,7 @@ $(function(){
 		<td>
 		<table width="100%" style="margin: 0; width: 100%;">
 			<tr>
-				<th colspan='5' class="littletableheader">Conceptos de Inventario <b><?php if($form->_status=='show' or $form->_status=='modify' ) echo str_pad($form->codigo->output,8,0,0); ?></b></th>
+				<th colspan='5' class="littletableheader">Conceptos de Inventario </th>
 			</tr>
 			<tr>
 				<td class="littletableheader"><?php echo $form->codigo->label;    ?>*&nbsp;</td>
@@ -80,7 +83,7 @@ $(function(){
 				</tr>
 				<tr>
 					<td class="littletableheader"><?php echo $form->gastode->label;  ?>&nbsp;</td>
-					<td class="littletablerow">   <?php echo $form->gastode->output; ?>&nbsp;</td>
+					<td class="littletablerow"><div id="gastosde">   <?php echo $form->gastode->output; ?>&nbsp;</div></td>
 				</tr>
 				<tr>
 					<td class="littletableheader"><?php echo $form->ingreso->label;  ?>&nbsp;</td>
@@ -88,7 +91,7 @@ $(function(){
 				</tr>
 				<tr>
 					<td class="littletableheader"><?php echo $form->ingresod->label;  ?>&nbsp;</td>
-					<td class="littletablerow">   <?php echo $form->ingresod->output; ?>&nbsp;</td>
+					<td class="littletablerow"><div id="ingresosde">   <?php echo $form->ingresod->output; ?>&nbsp;</div></td>
 				</tr>
 			
 			
