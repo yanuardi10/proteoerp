@@ -292,15 +292,18 @@ class Importar extends Controller {
 			if($cana>0){
 				$obj='_'.str_replace('_','',$metodo);
 				if(method_exists($this,$obj)){
-					$rt.=$this->$obj($row->codigo,$fecha);
+					$rt =$this->$obj($sucu,$fecha);
+					return $rt;
 				}else{
 					echo "Metodo '$metodo' no existe\n";
+					return true;
 				}
 			}else{
 				echo "Sucursal '$sucu' no valida \n";
 				return true;
 			}
 		}
+		return true;
 	}
 
 	function traetodosucu($principal,$fecha=null){
