@@ -120,7 +120,7 @@ class Rpcserver extends Controller {
 
 		$cosignacion=array();
 		if($this->secu->cliente($usr,$pwd)){
-			$mSQL="SELECT numero,fecha,vende,status,factura,cod_cli,almacen,nombre,dir_cli,dir_cl1,orden,observa,stotal,impuesto,gtotal,tipo,peso FROM psinv WHERE cod_cli=? AND numero > ? AND status='T' AND tipo='E' LIMIT $cant";
+			$mSQL="SELECT numero,fecha,status,orden,observa,stotal,impuesto,gtotal,tipo,peso FROM psinv WHERE cod_cli=? AND numero > ? AND status='T' AND tipo='E' LIMIT $cant";
 			$query = $this->db->query($mSQL,array($usr,$ult_ref));
 			//memowrite($this->db->last_query(),'B2B');
 			if ($query->num_rows() > 0){ 
