@@ -109,6 +109,51 @@ class Rpcserver extends Controller {
 		return $this->xmlrpc->send_response($response);
 	}
 
+	function ConsignacionesEmpresasAsociadas($request){
+		$parameters = $request->output_parameters();
+
+		$ult_ref=intval($parameters['0']);
+		$cod_cli=$parameters['1'];
+		$usr    =$parameters['2'];
+		$pwd    =$parameters['3'];
+		$cant   =5;
+
+		$cosignacion=array();
+		if($this->secu->cliente($usr,$pwd)){
+			$mSQL="SELECT numero,fecha,vende,status,factura,cod_cli,almacen,nombre,dir_cli,dir_cl1,orden,observa,stotal,impuesto,gtotal,tipo,peso FROM psinv WHERE cod_cli=? AND numero > ? AND status='T' AND tipo='E' LIMIT $cant";
+			$query = $this->db->query($mSQL,array($usr,$ult_ref));
+			//memowrite($this->db->last_query(),'B2B');
+			if ($query->num_rows() > 0){ 
+				$pivot=array();
+				foreach ($query->result_array() as $row){
+					$numero=$row['numero'];
+					//Prepara el encabezado
+					foreach($row AS $ind=>$val){
+						$row[$ind]=base64_encode($val);
+					}
+					$pivot['psinv']=$row;
+    
+					//Prepara los articulos
+					$it=array();
+					$mmSQL="SELECT a.numero,TRIM(a.codigo) AS codigo,TRIM(a.desca) AS desca,SUM(a.cana) AS cana ,a.precio,SUM(a.importe) AS importe,a.iva,b.barras,b.precio1,b.precio2 AS precio2,b.precio3 AS precio3,b.precio4 AS precio4,b.unidad, b.tipo, b.tdecimal FROM itpsinv AS a JOIN sinv AS b ON a.codigo=b.codigo WHERE a.numero=? GROUP BY a.codigo";
+					$qquery = $this->db->query($mmSQL,array($numero));
+					foreach ($qquery->result_array() as $rrow){
+						foreach($rrow AS $ind=>$val){
+							$rrow[$ind]=base64_encode($val);
+						}
+						$it[]=$rrow;
+					}
+					$pivot['itpsinv']=$it;
+    
+					$comsignacion[]=serialize($pivot);
+				}
+			}
+		}
+
+		$response = array($comsignacion,'struct');
+		return $this->xmlrpc->send_response($response);
+	}
+
 	function ProductosEmpresasAsociadas($request){
 		/*$parameters = $request->output_parameters();
 

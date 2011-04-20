@@ -724,7 +724,7 @@ class b2b extends validaciones {
 		}
 		$data['content'] = $str;
 		$data['head']    = $this->rapyd->get_head();
-		$data['title']   = '<h1>Compras Descargadas</h1>';
+		$data['title']   = heading('Compras Descargadas');
 		$this->load->view('view_ventanas_sola', $data);
 	}
 
@@ -878,6 +878,7 @@ class b2b extends validaciones {
 							if($query){
 								$row = $query->row();
 								$codigolocal=$row->codigo;
+								$barras     =$codigolocal;
 							}
 						}
 						//if($codigolocal===false AND $this->db->table_exists('sinvprov')){
@@ -1033,6 +1034,205 @@ class b2b extends validaciones {
 		}
 		return ($error==0) ? true : false;
 	}
+//****************************************************
+// Metodos para gestionar las consignaciones
+//****************************************************
+	function traeconsigna($par,$ultimo=null){
+		$rt=$this->_trae_consigna($par,$ultimo);
+		if($rt==0){
+			$str=$this->consignaCargadas.' transacciones descargadas';
+		}else{
+			$str='Hubo problemas durante la  descarga, se generar&oacute;n centinelas';
+		}
+		$data['content'] = $str;
+		$data['head']    = $this->rapyd->get_head();
+		$data['title']   = heading('Consginaciones Descargadas');
+		$this->load->view('view_ventanas_sola', $data);
+	}
+
+	function _trae_consigna($id=null,$ultimo=null){
+		$this->consignaCargadas=0;
+		if(is_null($id)) return false; else $id=$this->db->escape($id);
+		$contribu=$this->datasis->traevalor('CONTRIBUYENTE');
+		$rif     =$this->datasis->traevalor('RIF');
+
+		$config=$this->datasis->damerow("SELECT proveed,grupo,puerto,proteo,url,usuario,clave,tipo,depo,margen1,margen2,margen3,margen4,margen5 FROM b2b_config WHERE id=$id");
+		if(count($config)==0) return false;
+
+		$er=0;
+		$this->load->helper('url');
+		$server_url = reduce_double_slashes($config['url'].'/'.$config['proteo'].'/'.'rpcserver');
+
+		$this->load->library('xmlrpc');
+		$this->xmlrpc->xmlrpc_defencoding=$this->config->item('charset');
+		//$this->xmlrpc->set_debug(TRUE);
+		$puerto= (empty($config['puerto'])) ? 80 : $config['puerto'];
+
+		$this->xmlrpc->server($server_url , $puerto);
+		$this->xmlrpc->method('cea');
+
+		if(is_null($ultimo)){
+			$ufac=$this->datasis->dameval('SELECT MAX(numero) FROM b2b_psinv WHERE cod_cli='.$this->db->escape($config['proveed']));
+			if(empty($ufac)) $ufac=0;
+		}elseif(is_numeric($ultimo)){
+			$ufac=$ultimo;
+		}else{
+			$ufac=0;
+		}
+
+		$request = array($ufac,$config['proveed'],$config['usuario'],md5($config['clave']));
+		$this->xmlrpc->request($request);
+
+		if (!$this->xmlrpc->send_request()){
+			echo $this->xmlrpc->display_error();
+		}else{
+			$res=$this->xmlrpc->display_response();
+			foreach($res AS $ind=>$exdata){
+				$this->consignaCargadas++;
+				$arr=unserialize($exdata);
+				foreach($arr['pres'] AS $in => $val) $arr[$in]=base64_decode($val);
+
+				$proveed=$config['proveed'];
+				$pnombre=$this->datasis->dameval('SELECT nombre FROM sprv WHERE proveed='.$this->db->escape($proveed));
+
+				$data['fecha']      = $arr['fecha'];
+				$data['status']     = 'T';
+				$data['cod_cli']    = $proveed;
+				$data['almacen']    = $config['depo'];
+				$data['nombre']     = $pnombre;
+				$data['orden']      = $arr['numero'];
+				$data['observa']    = $arr['observa'];
+				$data['stotal']     = $arr['stotal'];
+				$data['impuesto']   = $arr['impuesto'];
+				$data['gtotal']     = $arr['gtotal'];
+				$data['tipo']       = 'R';
+				$data['peso']       = $arr['peso'];
+				$data['estampa']    = date('Ymd');
+
+				$mSQL=$this->db->insert_string('b2b_psinv',$data);
+
+				$rt=$this->db->simple_query($mSQL);
+				if(!$rt){
+					memowrite($mSQL,'B2B');
+					$maestro=false;
+					$er++;
+				}else{
+					$id_psinv=$this->db->insert_id();
+					$maestro=true;
+				}
+
+				if($maestro){
+					$itscst =& $arr['itpsinv'];
+					foreach($itscst AS $in => $aarr){
+						foreach($aarr AS $i=>$val) $arr[$in][$i]=base64_decode($val);
+
+						//Arregla los precios en caso de llegar malos
+						for($j=1;$j<5;$j++){
+							$ind='precio'.$j;
+							if($arr[$in][$ind]<0 && $j>1){
+								$ind2='precio'.$i-1;
+								$arr[$in][$ind]=$arr[$in][$ind];
+							}elseif($arr[$in][$ind]<0 && $j==1){
+								$arr[$in][$ind]=round(($arr[$in]['precio']*100/(100-$config['margen1'])),2);
+							}
+						}
+
+						$data['numero']     =$id_psinv;
+						$data['codigo']     =trim($arr[$in]['codigo']);
+						$data['desca']      =$arr[$in]['desca'];
+						$data['cana']       =$arr[$in]['cana'];
+						$data['canareci']   =0;
+						$data['precio']     =$arr[$in]['precio'];
+						$data['importe']    =$arr[$in]['importe'];
+						$data['iva']        =$arr[$in]['iva'];
+						$data['mostrado']   =$arr[$in]['mostrado'];
+						//$data['entregado']  ='';
+						$data['tipo']       ='R';
+
+						$barras=trim($arr[$in]['barras']);
+
+						//procedimiento de determinacion del codigo del articulo en sistema local
+						$codigolocal=false;
+						if(!empty($barras)){
+							$mSQL_p = 'SELECT codigo FROM sinv';
+							$bbus   = array('codigo','barras','alterno');
+							$query=$this->_gconsul($mSQL_p,$barras,$bbus);
+							if($query){
+								$row = $query->row();
+								$codigolocal=$row->codigo;
+							}
+						}elseif(!empty($ddata['codigo'])){
+							$mSQL_p = 'SELECT codigo FROM sinv';
+							$bbus   = array('codigo','barras','alterno');
+							$query=$this->_gconsul($mSQL_p,$ddata['codigo'],$bbus);
+							if($query){
+								$row = $query->row();
+								$codigolocal=$row->codigo;
+								$barras=$codigolocal;
+							}
+						}
+
+						//Si no existe lo crea
+						if(empty($codigolocal)){
+							$base1 = ($arr[$in]['precio1']*100)/(100+$arr[$in]['iva']);
+							$base2 = ($arr[$in]['precio2']*100)/(100+$arr[$in]['iva']);
+							$base3 = ($arr[$in]['precio3']*100)/(100+$arr[$in]['iva']);
+							$base4 = ($arr[$in]['precio4']*100)/(100+$arr[$in]['iva']);
+							$invent['codigo']   = $barras;
+							$invent['grupo']    = $config['grupo'];
+							$invent['prov1']    = $proveed;
+							$invent['descrip']  = $arr[$in]['desca'];
+							$invent['existen']  = $arr[$in]['cana'];
+							$invent['pond']     = $arr[$in]['preca'];
+							$invent['ultimo']   = $arr[$in]['preca'];
+							$invent['unidad']   = $arr[$in]['unidad'];
+							$invent['tipo']     = $arr[$in]['tipo'];
+							$invent['tdecimal'] = $arr[$in]['tdecimal'];
+							$invent['margen1']  = round(100-($arr[$in]['preca']*100/$base1),2);
+							$invent['margen2']  = round(100-($arr[$in]['preca']*100/$base2),2);
+							$invent['margen3']  = round(100-($arr[$in]['preca']*100/$base3),2);
+							$invent['margen4']  = round(100-($arr[$in]['preca']*100/$base4),2);
+							$invent['base1']    = round($base1,2);
+							$invent['base2']    = round($base2,2);
+							$invent['base3']    = round($base3,2);
+							$invent['base4']    = round($base4,2);
+							$invent['precio1']  = ($config['margen1']==0)? $arr[$in]['precio1'] : round(($arr[$in]['preca']*100/(100-$config['margen1'])),2);
+							$invent['precio2']  = ($config['margen2']==0)? $arr[$in]['precio2'] : round(($arr[$in]['preca']*100/(100-$config['margen2'])),2);
+							$invent['precio3']  = ($config['margen3']==0)? $arr[$in]['precio3'] : round(($arr[$in]['preca']*100/(100-$config['margen3'])),2);
+							$invent['precio4']  = ($config['margen4']==0)? $arr[$in]['precio4'] : round(($arr[$in]['preca']*100/(100-$config['margen4'])),2);
+							$invent['iva']      = $arr[$in]['iva'];
+							$invent['redecen']  = 'N';
+							$invent['activo']   = 'S';
+							$invent['formcal']  = 'U';
+							$invent['clase']    = 'C';
+							$invent['garantia'] = 0;
+
+							$mSQL=$this->db->insert_string('sinv',$invent);
+							$rt=$this->db->simple_query($mSQL);
+							if(!$rt){
+								memowrite($mSQL,'B2B');
+								$er++;
+							}else{
+								$codigolocal=$barras;
+							}
+						}
+						$ddata['codigolocal'] = $codigolocal;
+
+						$mSQL=$this->db->insert_string('b2b_itscst',$ddata);
+						$rt=$this->db->simple_query($mSQL);
+						if(!$rt){
+							memowrite($mSQL,'B2B');
+							$er++;
+						}
+					}
+					if(!$this->_cargacompra($id_scst)) $er=false;
+
+				}
+			}
+		}
+		return $er;
+	}
+
 
 //****************************************************
 // Metodos para gestionar transacciones como gasto
@@ -1271,8 +1471,55 @@ class b2b extends validaciones {
 		var_dump($this->db->simple_query($mSQL));
 		$mSQL="ALTER TABLE `b2b_scst`  ADD COLUMN   `cimpuesto` decimal(17,2) DEFAULT NULL AFTER `reducida`";
 		var_dump($this->db->simple_query($mSQL));
+		
+		$mSQL="CREATE TABLE `b2b_psinv` (
+			`numero` INT(12) NOT NULL AUTO_INCREMENT,
+			`fecha` DATE NULL DEFAULT NULL,
+			`vende` VARCHAR(5) NULL DEFAULT NULL,
+			`status` CHAR(1) NULL DEFAULT NULL COMMENT 'T=en trancito C=conciliado',
+			`factura` VARCHAR(8) NULL DEFAULT NULL,
+			`cod_cli` VARCHAR(5) NULL DEFAULT NULL,
+			`almacen` VARCHAR(4) NULL DEFAULT NULL,
+			`nombre` VARCHAR(40) NULL DEFAULT NULL,
+			`orden` VARCHAR(12) NULL DEFAULT NULL,
+			`observa` VARCHAR(105) NULL DEFAULT NULL,
+			`stotal` DECIMAL(12,2) NULL DEFAULT NULL,
+			`impuesto` DECIMAL(12,2) NULL DEFAULT NULL,
+			`gtotal` DECIMAL(12,2) NULL DEFAULT NULL,
+			`tipo` CHAR(1) NULL DEFAULT NULL,
+			`peso` DECIMAL(15,3) NULL DEFAULT NULL,
+			`estampa` DATE NULL DEFAULT NULL,
+			PRIMARY KEY (`numero`),
+			INDEX `factura` (`factura`)
+		)
+		COLLATE='latin1_swedish_ci'
+		ENGINE=MyISAM
+		ROW_FORMAT=DEFAULT";
+		var_dump($this->db->simple_query($mSQL));
 
-		
-		
+		$mSQL="CREATE TABLE `b2b_itpsinv` (
+			`numero` INT(12) NULL DEFAULT NULL,
+			`codigo` VARCHAR(15) NULL DEFAULT NULL,
+			`desca` VARCHAR(28) NULL DEFAULT NULL,
+			`cana` DECIMAL(12,3) NULL DEFAULT '0.000',
+			`canareci` DECIMAL(12,3) NULL DEFAULT '0.000',
+			`precio` DECIMAL(12,2) NULL DEFAULT NULL,
+			`importe` DECIMAL(12,2) NULL DEFAULT NULL,
+			`iva` DECIMAL(6,2) NULL DEFAULT NULL,
+			`mostrado` DECIMAL(17,2) NULL DEFAULT NULL,
+			`entregado` DECIMAL(12,3) NULL DEFAULT NULL,
+			`tipo` CHAR(1) NULL DEFAULT NULL,
+			`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+			`modificado` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+			PRIMARY KEY (`id`),
+			UNIQUE INDEX `numero_codigo` (`numero`, `codigo`),
+			INDEX `numero` (`numero`),
+			INDEX `codigo` (`codigo`),
+			INDEX `modificado` (`modificado`)
+		)
+		COLLATE='latin1_swedish_ci'
+		ENGINE=MyISAM
+		ROW_FORMAT=DEFAULT";
+		var_dump($this->db->simple_query($mSQL));
 	}
 }
