@@ -10,6 +10,7 @@ class Rpcserver extends Controller {
 		$config['functions']['sprecios'] = array('function' => 'Rpcserver.precio_supermer');
 		$config['functions']['ttiket']   = array('function' => 'Rpcserver.traer_tiket');
 		$config['functions']['cea']      = array('function' => 'Rpcserver.ComprasEmpresasAsociadas');
+		$config['functions']['consiea']  = array('function' => 'Rpcserver.ConsignacionEmpresasAsociadas');
 
 		$this->xmlrpcs->initialize($config);
 		$this->xmlrpcs->serve();
@@ -120,7 +121,7 @@ class Rpcserver extends Controller {
 
 		$cosignacion=array();
 		if($this->secu->cliente($usr,$pwd)){
-			$mSQL="SELECT numero,fecha,status,orden,observa,stotal,impuesto,gtotal,tipo,peso FROM psinv WHERE cod_cli=? AND numero > ? AND status='T' AND tipo='E' LIMIT $cant";
+			$mSQL="SELECT numero,fecha,status,orden,observa,stotal,impuesto,gtotal,tipo,peso FROM psinv WHERE clipro=? AND numero > ? AND status='T' AND tipo='E' LIMIT $cant";
 			$query = $this->db->query($mSQL,array($usr,$ult_ref));
 			//memowrite($this->db->last_query(),'B2B');
 			if ($query->num_rows() > 0){ 

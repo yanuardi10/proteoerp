@@ -32,14 +32,81 @@ if($form->_status!='show'){ ?>
 
 <script language="javascript" type="text/javascript">
 var itpsinv_cont=<?php echo $form->max_rel_count['itpsinv']; ?>;
-
+var invent = (<?php echo $inven; ?>);
 $(function(){
+	$(document).keydown(function(e){
+		if (e.which == 13) return false;
+	});
+
 	$(".inputnum").numeric(".");
 	totalizar();
 	for(var i=0;i < <?php echo $form->max_rel_count['itpsinv']; ?>;i++){
 		cdropdown(i);
 	}
 });
+
+function OnEnter(e,ind){
+	var keynum;
+	var keychar;
+	var numcheck;
+
+	if(window.event){ //IE
+		keynum = e.keyCode;
+	}else if(e.which){ //Netscape/Firefox/Opera
+		keynum = e.which;
+	}
+	if(keynum==13){
+		dacodigo(ind);
+		return false;
+	}
+
+	//keychar = String.fromCharCode(keynum);
+	return true;
+}
+
+function dacodigo(nind){
+	ind=nind.toString();
+	var codigo = $("#codigo_"+ind).val();
+	var eeval;
+	eval('eeval= typeof invent._'+codigo);
+
+	var descrip='';
+	if(eeval != "undefined"){
+		eval('descrip=invent._'+codigo+'[0]');
+		eval('tipo   =invent._'+codigo+'[1]');
+		eval('base1  =invent._'+codigo+'[2]');
+		eval('base2  =invent._'+codigo+'[3]');
+		eval('base3  =invent._'+codigo+'[4]');
+		eval('base4  =invent._'+codigo+'[5]');
+		eval('itiva  =invent._'+codigo+'[6]');
+		eval('peso   =invent._'+codigo+'[7]');
+		eval('precio1=invent._'+codigo+'[8]');
+		eval('pond   =invent._'+codigo+'[9]');
+
+		$("#desca_"+ind).val(descrip);
+		$("#precio1_"+ind).val(base1);
+		$("#precio2_"+ind).val(base2);
+		$("#precio3_"+ind).val(base3);
+		$("#precio4_"+ind).val(base4);
+		$("#itiva_"+ind).val(itiva);
+		$("#sinvtipo_"+ind).val(tipo);
+		$("#sinvpeso_"+ind).val(peso);
+		$("#itpvp_"+ind).val(precio1);
+		$("#itcosto_"+ind).val(pond);
+	}else{
+		$("#desca_"+ind).val('');
+		$("#precio1_"+ind).val('');
+		$("#precio2_"+ind).val('');
+		$("#precio3_"+ind).val('');
+		$("#precio4_"+ind).val('');
+		$("#itiva_"+ind).val('');
+		$("#sinvtipo_"+ind).val('');
+		$("#sinvpeso_"+ind).val('');
+		$("#itpvp_"+ind).val('');
+		$("#itcosto_"+ind).val('');
+	}
+	post_modbus_sinv(nind);
+}
 
 function importe(id){
 	var ind     = id.toString();
@@ -110,7 +177,7 @@ function post_precioselec(ind,obj){
 }
 
 function post_modbus_scli(){
-	var tipo  =Number($("#sclitipo").val()); if(tipo>0) tipo=tipo-1;
+	var tipo  =Number($("#cliprotipo").val()); if(tipo>0) tipo=tipo-1;
 	//var cambio=confirm('�Deseas cambiar los precios por los que tenga asginado el cliente?');
 
 	var arr=$('select[name^="precio_"]');
@@ -129,11 +196,10 @@ function post_modbus_scli(){
 
 function post_modbus_sinv(nind){
 	ind=nind.toString();
-	var tipo =Number($("#sclitipo").val()); if(tipo>0) tipo=tipo-1;
+	var tipo =Number($("#cliprotipo").val()); if(tipo>0) tipo=tipo-1;
 	$("#precio_"+ind).empty();
 	var arr=$('#precio_'+ind);
 	cdropdown(nind);
-	cdescrip(nind);
 	jQuery.each(arr, function() { this.selectedIndex=tipo; });
 	importe(nind);
 	totalizar();
@@ -202,33 +268,32 @@ function del_itpsinv(id){
 				<th colspan='5' class="littletableheader">Pr&eacute;stamo de inventario <b><?php if($form->_status=='show' or $form->_status=='modify' ) echo str_pad($form->numero->output,8,0,0); ?></b></th>
 			</tr>
 			<tr>
-				<td class="littletableheader"><?php echo $form->fecha->label;    ?>*&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->fecha->output;   ?>&nbsp;</td>
-				<td class="littletableheader"><?php echo $form->cliente->label;  ?>*&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->cliente->output,$form->sclitipo->output,$form->nombre->output; ?>&nbsp;</td>
-				
+				<td class="littletableheader"><?php echo $form->fecha->label;   ?>*&nbsp;</td>
+				<td class="littletablerow">   <?php echo $form->fecha->output;  ?>&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->clipro->label;  ?>*&nbsp;</td>
+				<td class="littletablerow">   <?php echo $form->clipro->output,$form->cliprotipo->output,$form->nombre->output; ?>&nbsp;</td>
 			</tr>
 			<tr>
-				<td class="littletableheader"><?php echo $form->vende->label    ?>&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->vende->output   ?>&nbsp;</td>
-				<td class="littletableheader"><?php echo $form->dir_cli->label  ?>&nbsp;</td>
-				<td class="littletablerow"   ><?php echo $form->dir_cli->output ?>&nbsp;</td>
-			</tr>
-			<tr>
-				<td class="littletableheader"><?php echo $form->tipo->label    ?>&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->tipo->output   ?>&nbsp;</td>
-				<td class="littletableheader"><?php echo $form->observa->label; ?>&nbsp;</td>
-				<td class="littletablerow"   ><?php echo $form->observa->output;?>&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->vende->label       ?>&nbsp;</td>
+				<td class="littletablerow">   <?php echo $form->vende->output      ?>&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->dir_clipro->label  ?>&nbsp;</td>
+				<td class="littletablerow"   ><?php echo $form->dir_clipro->output ?>&nbsp;</td>
 			</tr>
 			<tr>
 				<td class="littletableheader"><?php echo $form->orden->label;  ?>&nbsp;</td>
 				<td class="littletablerow" align="left"><?php echo $form->orden->output; ?>&nbsp;</td>
-				<td class="littletableheader"><?php echo $form->almacen->label;     ?>&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->almacen->output;    ?>&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->observa->label; ?>&nbsp;</td>
+				<td class="littletablerow"   ><?php echo $form->observa->output;?>&nbsp;</td>
 			</tr>
 			<tr>
 				<td class="littletableheader"><?php echo $form->peso->label;  ?>&nbsp;</td>
 				<td class="littletablerow" align="left"><?php echo $form->peso->output; ?>&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->almacen->label;     ?>&nbsp;</td>
+				<td class="littletablerow">   <?php echo $form->almacen->output;    ?>&nbsp;</td>
+			</tr>
+			<tr>
+				<td class="littletableheader">&nbsp;</td>
+				<td class="littletablerow" align="left">&nbsp;</td>
 				<td class="littletableheader"><?php echo $form->factura->label;  ?>&nbsp;</td>
 				<td class="littletablerow" align="left"><?php echo $form->factura->output; ?>&nbsp;</td>
 			</tr>
@@ -273,7 +338,7 @@ function del_itpsinv(id){
 			?>
 
 			<tr id='tr_itpsinv_<?php echo $i; ?>'>
-				<td class="littletablerow" align="left" ><?php echo $form->$it_codigo->output; ?></td>
+				<td class="littletablerow" align="left" nowrap><?php echo $form->$it_codigo->output; ?></td>
 				<td class="littletablerow" align="left" ><?php echo $form->$it_desca->output;  ?></td>
 				<td class="littletablerow" align="right"><?php echo $form->$it_cana->output;   ?></td>
 				<td class="littletablerow" align="right"><?php echo $form->$it_precio->output;  ?></td>

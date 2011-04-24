@@ -33,8 +33,8 @@ class psinv extends Controller {
 
 		$boton=$this->datasis->modbus($scli);
 
-		$filter = new DataFilter('Filtro de Prestamos de inventario');
-		$filter->db->select('fecha,numero,cod_cli,nombre,stotal,gtotal,impuesto');
+		$filter = new DataFilter('Filtro de consignaciones');
+		$filter->db->select('fecha,numero,clipro,nombre,stotal,gtotal,impuesto,agente');
 		$filter->db->from('psinv');
 
 		$filter->fechad = new dateonlyField('Desde', 'fechad');
@@ -55,14 +55,14 @@ class psinv extends Controller {
 		$filter->cliente->size = 30;
 		$filter->cliente->append($boton);
 
-		$filter->buttons("reset","search");
+		$filter->buttons('reset','search');
 		$filter->build();
 
-		$uri = anchor('inventario/psinv/dataedit/show/<#numero#>','<#numero#>');
+		$uri = anchor('inventario/psinv/dataedit/<#agente#>/show/<#numero#>','<#numero#>');
 		$uri2 = anchor_popup('formatos/verhtml/PSINV/<#numero#>',"Ver HTML",$atts);
 
 		$grid = new DataGrid();
-		$grid->order_by("numero","desc");
+		$grid->order_by('numero','desc');
 		$grid->per_page = 15;  
 
 		$grid->column_orderby("N&uacute;mero" ,$uri,'numero');
@@ -73,7 +73,7 @@ class psinv extends Controller {
 		$grid->column_orderby('Total'         ,'<nformat><#gtotal#></nformat>'  ,'gtotal','align=\'right\'');
 		//$grid->column_orderby("Vista",$uri2,"align='center'");
 
-		$grid->add('inventario/psinv/dataedit/create');
+		$grid->add('inventario/psinv/agregar');
 		$grid->build();
 		//echo $grid->db->last_query();
 
@@ -83,7 +83,22 @@ class psinv extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
-	function dataedit(){
+	function agregar(){
+		$data['content'] = anchor('inventario/psinv/dataedit/sprv/create','Consignacion recibida por proveedor').br();
+		$data['content'].= anchor('inventario/psinv/dataedit/sprv/create','Devolver Consignacion recibida por proveedor').br();
+		$data['content'].= anchor('inventario/psinv/dataedit/scli/create','Consignacion dada a cliente').br();
+		$data['content'].= anchor('inventario/psinv/dataedit/scli/create','Devolver Consignacion dada a cliente').br();
+
+		$data['title']   = heading('Inventario a consignaci&oacute;n');
+		$data['head']    = $this->rapyd->get_head();
+		$this->load->view('view_ventanas', $data);
+	}
+
+	function dataedit($opttipo){
+		$opt_key = array_search($opttipo,array('scli','sprv'));
+		if($opt_key===false){
+			show_404('');
+		}
 		$this->rapyd->load('dataobject','datadetails');
 
 		$modbus=array(
@@ -96,45 +111,77 @@ class psinv extends Controller {
 				'precio3' =>'Precio 3',
 				'existen' =>'Existencia',
 				),
-		'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'descrip'),
-		'retornar'=>array(
-			'codigo' =>'codigo_<#i#>',
-			'descrip'=>'desca_<#i#>',
-			'base1'  =>'precio1_<#i#>',
-			'base2'  =>'precio2_<#i#>',
-			'base3'  =>'precio3_<#i#>',
-			'base4'  =>'precio4_<#i#>',
-			'iva'    =>'itiva_<#i#>',
-			'peso'   =>'sinvpeso_<#i#>',
-			'tipo'   =>'sinvtipo_<#i#>',
-		),
-		'p_uri'=>array(4=>'<#i#>'),
+		'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'Descripci&oacute;n'),
+		'p_uri'   =>array(4=>'<#i#>'),
 		'where'   => '`activo` = "S" AND `tipo` = "Articulo"',
 		'script'  => array('post_modbus_sinv(<#i#>)'),
 		'titulo'  =>'Buscar Art&iacute;culo');
-		$btn=$this->datasis->p_modbus($modbus,'<#i#>');
 
-		$mSCLId=array(
-		'tabla'   =>'scli',
-		'columnas'=>array(
-			'cliente' =>'C&oacute;digo Cliente',
-			'nombre'=>'Nombre', 
-			'cirepre'=>'Rif/Cedula',
-			'dire11'=>'Direcci&oacute;n',
-			'tipo'=>'Tipo'),
-		'filtro'  =>array('cliente'=>'C&oacute;digo Cliente','nombre'=>'Nombre'),
-		'retornar'=>array('cliente'=>'cod_cli','nombre'=>'nombre',
-						  'dire11'=>'dir_cli','tipo'=>'sclitipo'),
-		'titulo'  =>'Buscar Cliente',
-		'script'  => array('post_modbus_scli()'));
-		$btnc =$this->datasis->modbus($mSCLId);
+		if($opttipo=='scli'){
+			$mCLIPRO=array(
+			'tabla'   =>'scli',
+			'columnas'=>array(
+				'cliente' =>'C&oacute;digo Cliente',
+				'nombre'=>'Nombre', 
+				'cirepre'=>'Rif/Cedula',
+				'dire11'=>'Direcci&oacute;n',
+				'tipo'=>'Tipo'),
+			'filtro'  =>array('cliente'=>'C&oacute;digo Cliente','nombre'=>'Nombre'),
+			'retornar'=>array('cliente'=>'clipro','nombre'=>'nombre',
+							'dire11'=>'dir_clipro','tipo'=>'sclitipo'),
+			'titulo'  =>'Buscar Cliente',
+			'script'  => array('post_modbus_scli()'));
+
+			$modbus['retornar']=array(
+				'codigo' =>'codigo_<#i#>',
+				'descrip'=>'desca_<#i#>',
+				'base1'  =>'precio1_<#i#>',
+				'base2'  =>'precio2_<#i#>',
+				'base3'  =>'precio3_<#i#>',
+				'base4'  =>'precio4_<#i#>',
+				'iva'    =>'itiva_<#i#>',
+				'peso'   =>'sinvpeso_<#i#>',
+				'tipo'   =>'sinvtipo_<#i#>',
+			);
+		}else{
+			$mCLIPRO=array(
+			'tabla'   =>'sprv',
+			'columnas'=>array(
+				'proveed' =>'C&oacute;digo Proveedor',
+				'nombre'=>'Nombre',
+				'direc1'=>'Direcci&oacute;n',
+				'rif'=>'RIF'),
+			'filtro'  =>array('proveed'=>'C&oacute;digo Proveedor','nombre'=>'Nombre'),
+			'retornar'=>array('proveed'=>'clipro','nombre'=>'nombre',
+							'direc1'=>'dir_clipro'),
+			'titulo'  =>'Buscar Proveedor');
+
+			$modbus['retornar']=array(
+				'codigo' =>'codigo_<#i#>',
+				'descrip'=>'desca_<#i#>',
+				'ultimo' =>'precio1_<#i#>',
+				'ultimo' =>'precio2_<#i#>',
+				'ultimo' =>'precio3_<#i#>',
+				'ultimo' =>'precio4_<#i#>',
+				'iva'    =>'itiva_<#i#>',
+				'peso'   =>'sinvpeso_<#i#>',
+				'tipo'   =>'sinvtipo_<#i#>',
+			);
+		}
+		$btnc =$this->datasis->modbus($mCLIPRO);
+		$btn  =$this->datasis->p_modbus($modbus,'<#i#>');
 
 		$do = new DataObject('psinv');
 		$do->rel_one_to_many('itpsinv', 'itpsinv', 'numero');
-		$do->pointer('scli' ,'scli.cliente=psinv.cod_cli','scli.tipo AS sclitipo','left');
-		$do->rel_pointer('itpsinv','sinv','itpsinv.codigo=sinv.codigo','sinv.descrip AS sinvdescrip, sinv.base1 AS sinvprecio1, sinv.base2 AS sinvprecio2, sinv.base3 AS sinvprecio3, sinv.base4 AS sinvprecio4, sinv.iva AS sinviva, sinv.peso AS sinvpeso,sinv.tipo AS sinvtipo');
-		
-		$edit = new DataDetails('Pr&eacute;stamo de inventario', $do);
+		if($opttipo=='scli'){
+			$do->pointer('scli' ,'scli.cliente=psinv.clipro','scli.tipo AS cliprotipo','left');
+			$do->rel_pointer('itpsinv','sinv','itpsinv.codigo=sinv.codigo','sinv.descrip AS sinvdescrip, sinv.base1 AS sinvprecio1, sinv.base2 AS sinvprecio2, sinv.base3 AS sinvprecio3, sinv.base4 AS sinvprecio4, sinv.iva AS sinviva, sinv.peso AS sinvpeso,sinv.tipo AS sinvtipo');
+		}else{
+			//$do->pointer('sprv' ,'sprv.proveed=psinv.clipro','"1" AS `cliprotipo`','left');
+			$do->rel_pointer('itpsinv','sinv','itpsinv.codigo=sinv.codigo','sinv.descrip AS sinvdescrip, sinv.ultimo AS sinvprecio1, sinv.ultimo AS sinvprecio2, sinv.ultimo AS sinvprecio3, sinv.ultimo AS sinvprecio4, sinv.iva AS sinviva, sinv.peso AS sinvpeso,sinv.tipo AS sinvtipo');
+		}
+
+		$edit = new DataDetails('Inventario a consignaci&oacute;n', $do);
 		$edit->back_url = site_url('inventario/psinv/filteredgrid');
 		$edit->set_rel_title('itpsinv','Producto <#o#>');
 
@@ -152,11 +199,11 @@ class psinv extends Controller {
 		$edit->fecha->mode = 'autohide';
 		$edit->fecha->size = 10;
 
-		$edit->tipo = new dropdownField('Tipo', 'tipo');
+		/*$edit->tipo = new dropdownField('Tipo', 'tipo');
 		$edit->tipo->option('R','Recibido');
 		$edit->tipo->option('C','Cedido');
 		//$edit->tipo->option('X','Anulado');
-		$edit->tipo->style='width:160px';
+		$edit->tipo->style='width:160px';*/
 
 		$edit->vende = new  dropdownField ('Vendedor', 'vende');
 		$edit->vende->options('SELECT vendedor, CONCAT(vendedor,\' \',nombre) nombre FROM vend ORDER BY vendedor');
@@ -175,11 +222,11 @@ class psinv extends Controller {
 		$edit->peso->readonly  = true;
 		$edit->peso->size      = 10;
 
-		$edit->cliente = new inputField('Cliente','cod_cli');
-		$edit->cliente->size = 6;
-		$edit->cliente->maxlength=5;
-		$edit->cliente->rule = 'required';
-		$edit->cliente->append($btnc);
+		$edit->clipro = new inputField(($opttipo=='scli') ? 'Cliente':'Proveedor','clipro');
+		$edit->clipro->size = 6;
+		$edit->clipro->maxlength=5;
+		$edit->clipro->rule = 'required';
+		$edit->clipro->append($btnc);
 
 		$edit->nombre = new inputField('Nombre', 'nombre');
 		$edit->nombre->size = 25;
@@ -202,29 +249,31 @@ class psinv extends Controller {
 		$edit->observa = new inputField("Observaci&oacute;n", "observa");
 		$edit->observa->size = 37;
 
-		$edit->dir_cli = new inputField("Direcci&oacute;n","dir_cli");
-		$edit->dir_cli->size = 37;
+		$edit->dir_clipro = new inputField("Direcci&oacute;n","dir_clipro");
+		$edit->dir_clipro->size = 37;
 
 		//$edit->dir_cl1 = new inputField(" ","dir_cl1");
 		//$edit->dir_cl1->size = 55; 
 
 		//Para saber que precio se le va a dar al cliente
-		$edit->sclitipo = new hiddenField('', 'sclitipo');
-		$edit->sclitipo->db_name     = 'sclitipo';
-		$edit->sclitipo->pointer     = true;
-		$edit->sclitipo->insertValue = 1;
+		$edit->cliprotipo = new hiddenField('', 'cliprotipo');
+		$edit->cliprotipo->db_name     = 'cliprotipo';
+		$edit->cliprotipo->pointer     = true;
+		$edit->cliprotipo->insertValue = 1;
 
 		//Campos para el detalle
 		$edit->codigo = new inputField('C&oacute;digo <#o#>', 'codigo_<#i#>');
 		$edit->codigo->size     = 12;
 		$edit->codigo->db_name  = 'codigo';
-		$edit->codigo->readonly = true;
+		//$edit->codigo->readonly = true;
+		$edit->codigo->onkeyup = 'OnEnter(event,<#i#>)';
+		$edit->codigo->autocomplete=false;
 		$edit->codigo->rel_id   = 'itpsinv';
 		$edit->codigo->rule     = 'required';
 		$edit->codigo->append($btn);
 
 		$edit->desca = new inputField('Descripci&oacute;n <#o#>', 'desca_<#i#>');
-		$edit->desca->size=36;
+		$edit->desca->size=34;
 		$edit->desca->db_name='desca';
 		$edit->desca->maxlength=50;
 		$edit->desca->readonly  = true;
@@ -245,7 +294,11 @@ class psinv extends Controller {
 		$edit->precio->css_class = 'inputnum';
 		$edit->precio->rel_id    = 'itpsinv';
 		$edit->precio->size      = 10;
-		$edit->precio->rule      = 'required|positive|callback_chpreca[<#i#>]';
+		if($opttipo=='scli'){
+			$edit->precio->rule      = 'required|positive|callback_chpreca[<#i#>]';
+		}else{
+			$edit->precio->rule      = 'required|positive';
+		}
 		$edit->precio->readonly  = true;
 
 		$edit->importe = new inputField('Importe <#o#>', 'importe_<#i#>');
@@ -289,13 +342,33 @@ class psinv extends Controller {
 		$edit->gtotal->css_class='inputnum';
 
 		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
+		$edit->agente  = new autoUpdateField('agente',$opttipo,$opttipo);
 
 		$edit->buttons('save', 'undo', 'delete', 'back','add_rel');
 		$edit->build();
 
+		$inven=array();
+		if($opttipo=='scli'){
+			$titulo='Dar a cliente inventario a consignaci&oacute;n';
+			$query=$this->db->query('SELECT TRIM(codigo) AS codigo ,TRIM(descrip) AS descrip,tipo,base1,base2,base3,base4,iva,peso,precio1,pond FROM sinv WHERE activo=\'S\'');
+			$edit->tipo  = new autoUpdateField('tipo','C','C');
+		}else{
+			$titulo='Recibir inventario a consignaci&oacute;n de proveedor';
+			$query=$this->db->query('SELECT TRIM(codigo) AS codigo ,TRIM(descrip) AS descrip,tipo,ultimo AS base1,ultimo AS base2,ultimo AS base3,ultimo AS base4,iva,peso,precio1,pond FROM sinv WHERE activo=\'S\'');
+			$edit->tipo  = new autoUpdateField('tipo','R','R');
+		}
+		if ($query->num_rows() > 0){
+			foreach ($query->result() as $row){
+				$ind='_'.$row->codigo;
+				$inven[$ind]=array($row->descrip,$row->tipo,$row->base1,$row->base2,$row->base3,$row->base4,$row->iva,$row->peso,$row->precio1,$row->pond);
+			}
+		}
+		$jinven=json_encode($inven);
+
+		$conten['inven'] =$jinven;
 		$conten['form']  =&  $edit;
 		$data['content'] = $this->load->view('view_psinv', $conten,true);
-		$data['title']   = heading('Consiganci&oacute;n de inventario');
+		$data['title']   = heading($titulo);
 		$data['head']    = script('jquery.js').script('jquery-ui.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css').$this->rapyd->get_head().phpscript('nformat.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js').phpscript('nformat.js');
 		$this->load->view('view_ventanas', $data);
 	}
@@ -337,10 +410,11 @@ class psinv extends Controller {
 	}
 
 	function _post_insert($do){
+		//$opttipo=$this->uri->segment(4);
 		$codigo = $do->get('numero');
 		$almacen= $do->get('almacen');
 		$tipo   = $do->get('tipo');
-		$fact = ($tipo=='R') ? 1 : -1;
+		$fact   = ($tipo=='R') ? 1 : -1;
 
 		$mSQL='UPDATE sinv JOIN itpsinv ON sinv.codigo=itpsinv.codigo SET sinv.existen=sinv.existen+('.$fact.')*(itpsinv.cana) WHERE itpsinv.numero='.$this->db->escape($codigo);
 		$ban=$this->db->simple_query($mSQL);
@@ -399,17 +473,16 @@ class psinv extends Controller {
 				`fecha` DATE NULL DEFAULT NULL,
 				`vende` VARCHAR(5) NULL DEFAULT NULL,
 				`factura` VARCHAR(8) NULL DEFAULT NULL,
-				`cod_cli` VARCHAR(5) NULL DEFAULT NULL,
+				`clipro` VARCHAR(5) NULL DEFAULT NULL,
 				`almacen` VARCHAR(4) NULL DEFAULT NULL,
 				`nombre` VARCHAR(40) NULL DEFAULT NULL,
-				`dir_cli` VARCHAR(40) NULL DEFAULT NULL,
-				`dir_cl1` VARCHAR(40) NULL DEFAULT NULL,
+				`dir_clipro` VARCHAR(40) NULL DEFAULT NULL,
+				`dir_cl1pro` VARCHAR(40) NULL DEFAULT NULL,
 				`orden` VARCHAR(12) NULL DEFAULT NULL,
 				`observa` VARCHAR(105) NULL DEFAULT NULL,
 				`stotal` DECIMAL(12,2) NULL DEFAULT NULL,
 				`impuesto` DECIMAL(12,2) NULL DEFAULT NULL,
 				`gtotal` DECIMAL(12,2) NULL DEFAULT NULL,
-				`cajero` VARCHAR(5) NULL DEFAULT NULL,
 				`fechafac` DATE NULL DEFAULT NULL,
 				`tipo` CHAR(1) NULL DEFAULT NULL,
 				`peso` DECIMAL(15,3) NULL DEFAULT NULL,
@@ -457,6 +530,9 @@ class psinv extends Controller {
 		var_dump($this->db->simple_query($mSQL));
 
 		$mSQL="ALTER TABLE `psinv`  ADD COLUMN `status` CHAR(1) NULL DEFAULT NULL COMMENT 'T=en trancito C=conciliado' AFTER `vende`";
+		var_dump($this->db->simple_query($mSQL));
+
+		$mSQL="ALTER TABLE `psinv`  ADD COLUMN `agente` VARCHAR(5) NULL DEFAULT NULL AFTER `peso`;";
 		var_dump($this->db->simple_query($mSQL));
 	}
 }
