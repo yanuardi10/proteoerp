@@ -77,7 +77,11 @@ class sinv extends Controller {
 		}
 		';
 
-// Para usar SuperTable
+// *************************************
+//
+//       Para usar SuperTable
+//
+// *************************************
 		$extras = '
 <script type="text/javascript">
 //<![CDATA[
@@ -222,15 +226,60 @@ class sinv extends Controller {
 
 		$uri = "inventario/sinv/dataedit/show/<#codigo#>";
 
-		$grid = new DataGrid("Art&iacute;culos de Inventario");
+		$mtool  = "<table background='#554455'><tr>";
+		$mtool .= "<td>&nbsp;</td>";
+
+		$mtool .= "<td>&nbsp;<a href='".base_url()."inventario/sinv/dataedit/create'>";
+		$mtool .= img(array('src' => 'images/agregar.jpg', 'alt' => 'Agregar Registro', 'title' => 'Agregar Registro','border'=>'0','height'=>'32'));
+		$mtool .= "</a>&nbsp;</td>";
+
+		$mtool .= "<td>&nbsp;<a href='".base_url()."inventario/sinv/dataedit/create'>";
+		$mtool .= img(array('src' => 'images/recalcular.jpg', 'alt' => 'Recalcular Precios', 'title' => 'Recalcular Precios','border'=>'0','height'=>'32'));
+		$mtool .= "</a>&nbsp;</td>";
+
+		$mtool .= "<td>&nbsp;<a href='".base_url()."inventario/sinv/dataedit/create'>";
+		$mtool .= img(array('src' => 'images/recalcular.png', 'alt' => 'Recalcular Margenes', 'title' => 'Recalcular Margenes','border'=>'0','height'=>'28'));
+		$mtool .= "</a>&nbsp;</td>";
+
+		$mtool .= "<td>&nbsp;<a href='".base_url()."inventario/sinv/dataedit/create'>";
+		$mtool .= img(array('src' => 'images/redondear.jpg', 'alt' => 'Redondear Precios', 'title' => 'Redondear Precios','border'=>'0','height'=>'30'));
+		$mtool .= "</a>&nbsp;</td>";
+/*
+		$mtool .= "<td>&nbsp;<a href='".base_url()."inventario/sinv/dataedit/create'>";
+		$mtool .= img(array('src' => 'images/aprecios.gif', 'alt' => 'Aumeto de Precios', 'title' => 'Aumento de Precios','border'=>'0','height'=>'32'));
+		$mtool .= "</a>&nbsp;</td>";
+*/
+		$mtool .= "<td>&nbsp;<a href='javascript:void(0);' ";
+		$mtool .= 'onclick="window.open(\''.base_url()."inventario/precios_sinv', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');".'" heigth="600"'.'>';
+		$mtool .= img(array('src' => 'images/aprecios.gif', 'alt' => 'Aumento de Precios', 'title' => 'Aumento de Precios','border'=>'0','height'=>'32'));
+		$mtool .= "</a>&nbsp;</td>";
+
+		$mtool .= "<td>&nbsp;<a href='javascript:void(0);' ";
+		$mtool .= 'onclick="window.open(\''.base_url()."inventario/etiqueta_sinv/menu', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');".'" heigth="600"'.'>';
+		$mtool .= img(array('src' => 'images/etiquetas.jpg', 'alt' => 'Etiquetas', 'title' => 'Etiquetas','border'=>'0','height'=>'32'));
+		$mtool .= "</a>&nbsp;</td>";
+
+		$mtool .= "<td>&nbsp;<a href='javascript:void(0);' ";
+		$mtool .= 'onclick="window.open(\''.base_url()."reportes/index/sinv', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');".'" heigth="600" width="900" '.'>';
+		$mtool .= img(array('src' => 'images/reportes.gif', 'alt' => 'Reportes', 'title' => 'Reportes','border'=>'0','height'=>'32'));
+		$mtool .= "</a>&nbsp;</td>";
+
+		$mtool .= "</tr></table>";
+
+		$grid = new DataGrid($mtool);
 		$grid->order_by("codigo","asc");
 		$grid->per_page = 50;
 		$link=anchor('/inventario/sinv/dataedit/show/<#id#>','<#codigo#>');
 
-		$uri_2  = anchor('inventario/sinv/dataedit/create/<#id#>',img(array('src'=>'images/duplicar.jpeg','border'=>'0','alt'=>'Duplicar','height'=>'12')));
+		$uri_2  = anchor('inventario/sinv/dataedit/modify/<#id#>',img(array('src'=>'images/duplicar.jpeg','border'=>'0','alt'=>'Duplicar','height'=>'12')));
 		$uri_2 .= anchor('inventario/sinv/consulta/<#id#>',img(array('src'=>'images/estadistica.jpeg','border'=>'0','alt'=>'Consultar','height'=>'12')));
-		$uri_2 .= img(array('src'=>'images/<#activo#>.gif','border'=>'0','alt'=>'Estado'));
 
+		$uri_2 .= "<a href='javascript:void(0);' ";
+		$uri_2 .= 'onclick="window.open(\''.base_url()."inventario/fotos/dataedit/<#id#>/create', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');".'" heigth="600"'.'>';
+		$uri_2 .= img(array('src' => 'images/foto.gif', 'alt' => 'Foto', 'title' => 'Foto','border'=>'0','height'=>'12'));
+		$uri_2 .= "</a>";
+
+		$uri_2 .= img(array('src'=>'images/<#activo#>.gif','border'=>'0','alt'=>'Estado'));
 
 		$grid->column("Acci&oacute;n",$uri_2     ,"align='center'");
 		$grid->column_orderby("C&oacute;digo",$link,"codigo");
@@ -245,7 +294,7 @@ class sinv extends Controller {
 		$grid->column_orderby("Precio 3","<nformat><#precio3#></nformat>","precio3",'align=right');
 		$grid->column_orderby("Marca","marca","marca");
 
-		$grid->add('inventario/sinv/dataedit/create');
+		//$grid->add('inventario/sinv/dataedit/create');
 		$grid->build('datagridST');
 		//$this->rapyd->uri->jquery[] = '';
 
@@ -267,6 +316,12 @@ class sinv extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
+
+	// ************************************
+	//
+	//   DATAEDIT
+	//
+	// ************************************
 	function dataedit($status='',$id='' ) {
 		$this->rapyd->uri->keep_persistence();
 		$this->rapyd->load('dataedit','dataobject');
@@ -285,7 +340,6 @@ class sinv extends Controller {
 		$link14=site_url('inventario/common/get_grupo');
 
 		$script='
-
 <script type="text/javascript">
 
 $(document).ready(function() {
@@ -814,50 +868,6 @@ function add_grupo(){
 		$edit->buttons("modify", "save", "undo", "delete", "back");
 		$edit->build();
 
-		$prueba = '
-<div class="container">
-	<ul class="tabs">
-		<li><a href="#tab1">Gallery</a></li>
-		<li><a href="#tab2">Submit</a></li>
-		<li><a href="#tab3">Resources</a></li>
-		<li><a href="#tab4">Contact</a></li>
-	</ul>
-	<div class="tab_container">
-	<div id="tab1" class="tab_content">
-            <h2>Gallery</h2>
-            <a href="http://www.designbombs.com/light/simona-munteanu/"><img src="http://www.designbombs.com/wp-content/themes/DesignBombs/images/gallery/simonamunteanu_thumb.gif" alt="" /></a>
-            <h3><a href="http://www.designbombs.com">www.DesignBombs.com</a></h3>
-            <p>Smokin driveway wrestlin go darn truck moonshine wirey cow grandpa saw, coonskin bull, java, huntin. </p>
-             <p>Stinky yonder pigs in, rustle kinfolk gonna marshal sittin wagon, grandpa. Ya them firewood buffalo, tobaccee cabin.</p>
-        </div>
-        <div id="tab2" class="tab_content">
-            <h2>Submit</h2>
-            <a href="http://www.designbombs.com/blog/sketch-blog/"> <img src="http://www.designbombs.com/wp-content/themes/DesignBombs/images/gallery/sketchblog_thumb.gif" alt="" /></a>
-            <h3><a href="http://www.designbombs.com">www.DesignBombs.com</a></h3>
-            <p>Grandma been has bankrupt said hospitality fence everlastin wrestlin rodeo redblooded chitlins marshal. Boobtube soap her hootch lordy cow, rattler. </p>
-            <p>Rottgut havin ignorant go, hee-haw shiney jail fetched hillbilly havin cipherin. Bacon no cowpoke tobaccee horse water rightly trailer tools git hillbilly. </p>
-            <p>Jezebel had whiskey snakeoil, askin werent, skanky aunt townfolk fetched. Fit tractor, them broke askin, them havin rattler fell heffer, been tax-collectors buffalo. Quarrel confounded fence wagon trailer, moonshine wuz, city-slickers fixin cow. </p>
-        </div>
-        <div id="tab3" class="tab_content">
-            <h2>Resources</h2>
-          	<a href="http://www.designbombs.com/fashion/lukas-mynus/"><img src="http://www.designbombs.com/wp-content/themes/DesignBombs/images/gallery/mynus_thumb.gif" alt="" /></a>
-            <h3><a href="http://www.designbombs.com">www.DesignBombs.com</a></h3>
-            <p>Dirt tools thar, pot buffalo put jehosephat rent, ya pot promenade. Come pickled far greasy fightin, wirey, it poor yer, drive jig landlord. Rustle is been moonshine whomp hogtied. Stew, wirey stew cold uncle ails. Slap hoosegow road cooked, where gal pot, commencin country. Werent dogs backwoods, city-slickers me afford boxcar fat, dumb sittin sittin drive rustle slap, tornado. Fuss stinky knickers whomp aint, city-slickers sherrif darn ignorant tobaccee round-up old buckshot that. </p>
-            <p>Deep-fried over shootin a wagon cheatin work cowpoke poor, wuz, whiskey got wirey that. Shot beer, broke kickin havin buckshot gritts. Drunk, em moonshine his commencin country drunk chitlins stole. Fer tonic boxcar liar ass jug cousin simple, wuz showed yonder hee-haw drive is me. Horse country inbred wirey, skanky kinfolk. Rattler, sittin darn skanky fence, shot huntin.</p> 
-        </div>
-        <div id="tab4" class="tab_content">
-            <h2>Contact</h2>
-            <a href="http://www.designbombs.com/illustrations/esteban-munoz/"> <img src="http://www.designbombs.com/wp-content/themes/DesignBombs/images/gallery/estebanmunoz_thumb.gif" alt="" /></a>
-            <h3><a href="http://www.designbombs.com">www.DesignBombs.com</a></h3>
-            <p>Grandma been has bankrupt said hospitality fence everlastin wrestlin rodeo redblooded chitlins marshal. Boobtube soap her hootch lordy cow, rattler. </p>
-            <p>Rottgut havin ignorant go, hee-haw shiney jail fetched hillbilly havin cipherin. Bacon no cowpoke tobaccee horse water rightly trailer tools git hillbilly. </p>
-            <p>Jezebel had whiskey snakeoil, askin werent, skanky aunt townfolk fetched. Fit tractor, them broke askin, them havin rattler fell heffer, been tax-collectors buffalo. Quarrel confounded fence wagon trailer, moonshine wuz, city-slickers fixin cow. </p>
-        </div>
-    </div>
-</div>
-';
-
-
 		$style = '
 <style type="text/css">
 .maintabcontainer {width: 780px; margin: 5px auto;}
@@ -1304,62 +1314,15 @@ function add_grupo(){
 		$mCodigo = $this->datasis->dameval("SELECT codigo FROM sinv WHERE id=".$claves['id']."");
 
 		$mSQL  = 'SELECT a.tipoa, MID(a.fecha,1,7) mes, sum(a.cana*(a.tipoa="F")) cventa, sum(a.cana*(a.tipoa="D")) cdevol, sum(a.cana*if(a.tipoa="D",-1,1)) cana, sum(a.tota*(a.tipoa="F")) mventa, sum(a.tota*(a.tipoa="D")) mdevol, sum(a.tota*if(a.tipoa="D",-1,1)) tota ';
-		$mSQL .= "FROM sitems a WHERE a.codigoa='".$mCodigo."' ";
+		$mSQL .= "FROM sitems a WHERE a.codigoa='".addslashes($mCodigo)."' ";
 		$mSQL .= "AND a.fecha >= CONCAT(MID(SUBDATE(curdate(),365),1,8),'01') ";
 		$mSQL .= "GROUP BY MID( a.fecha ,1,7)  WITH ROLLUP LIMIT 24";
-		$query = $this->db->query($mSQL);
-		
-		if ($query->num_rows() > 0){
-			$mGrid1 = '
-			<div id="tableDiv_Arrays" class="tableDiv">
-			<table id="Open_text_Arrays" class="FixedTables" >
-			<thead>
-			<tr>
-				<th>Mes</th>
-				<th>Venta</th>
-				<th>Devuelta</th>
-				<th>Total</th>
-				<th>Ventas</th>
-				<th>Devolucion</th>
-				<th>Total</th>
-			</tr>
-			</thead>
-			<tbody>';
-		
-			$m = 1;
-			foreach ($query->result() as $row){
-				$mGrid1.='
-				<tr>';
-				/*
-				$mGrid1 .= "
-					<td align='center'>".$row->mes."</td>
-					<td width='60' align='right'>".str_replace("_","&nbsp;",str_pad(nformat($row->cventa),20,"_",STR_PAD_LEFT))."</td>
-					<td width='60' align='right'>".str_replace("_","&nbsp;",str_pad(nformat($row->cdevol),20,"_",STR_PAD_LEFT))."</td>
-				</tr>";
-				*/
-				$mGrid1 .= "
-					<td>".$row->mes."</td>
-					<td>".$row->cventa."</td>
-					<td>".$row->cdevol."</td>
-					<td>".$row->cana."</td>
-					<td>".$row->mventa."</td>
-					<td>".$row->mdevol."</td>
-					<td>".$row->tota."</td>
-				</tr>";
-				$m++;
-			}
-			$mGrid1 .= "
-			</tbody>
-			</table>
-			</div>";
-		} else {
-			
-			$mGrid1 = "NO SE ENCONTRO MOVIMIENTO";
-		}
+//		$query = $this->db->query($mSQL);
+		$mGrid1 = '';
 
 			
 		$mSQL  = 'SELECT a.usuario, a.fecha, MID(a.hora,1,5) hora, MID(REPLACE(a.comenta,"ARTICULO DE INVENTARIO",""),1,30) comenta, a.modulo ';
-		$mSQL .= 'FROM logusu a WHERE a.comenta LIKE "%'.$mCodigo.'%" ';
+		$mSQL .= 'FROM logusu a WHERE a.comenta LIKE "%'.addslashes($mCodigo).'%" ';
 		$mSQL .= "ORDER BY a.fecha DESC LIMIT 30";
 
 		$query = $this->db->query($mSQL);
@@ -1403,79 +1366,91 @@ function add_grupo(){
 
 		$descrip = $this->datasis->dameval("SELECT descrip FROM sinv WHERE id=".$claves['id']." ");
 
-		
-		$script = '
-<script type="text/javascript">
-$(document).ready(function() {
-	// this "tableDiv" must be the tables class
-	$(".tableDiv").each(function() {
-		var Id = $(this).get(0).id;
-		var maintbheight = 200;
-		var maintbwidth = 350;
+		$script = "
+<script type=\"text/javascript\" >  
 
-		$("#" + Id + " .FixedTables").fixedTable({
-			width: maintbwidth,
-			height: maintbheight,
-			fixedColumns: 1,
-			// header style
-			classHeader: "fixedHead",
-			// footer style        
-			classFooter: "fixedFoot",
-			// fixed column on the left        
-			classColumn: "fixedColumn",
-			// the width of fixed column on the left      
-			fixedColumnWidth: 70,
-			// tables parent divs id           
-			outerId: Id,
-			// tds in content area default background color                     
-			Contentbackcolor: "#FFFFFF",
-			// tds in content area background color while hover.     
-			Contenthovercolor: "#99CCFF", 
-			// tds in fixed column default background color   
-			fixedColumnbackcolor:"#187BAF", 
-			// tds in fixed column background color while hover. 
-			fixedColumnhovercolor:"#99CCFF"  
-		});        
-	});
-});
-</script>';
+<!-- All the scripts will go here  --> 
 
-		$style = '
-<style type="text/css">
-	.fixedColumn .fixedTable td
-	{
-		color: #FFFFFF;
-		background-color: #187BAF;
-		font-size: 10px;
-		font-weight: normal;
-	}
-        
-	.fixedHead td, .fixedFoot td
-	{
-		color: #FFFFFF;
-		background-color: #187BAF;
-		font-size: 10px;
-		font-weight: normal;
-		padding: 1px;
-		border: 1px solid #187BAF;
-	}
-	.fixedTable td
-	{
-		font-size: 8.5pt;
-		background-color: #FFFFFF;
-		padding: 1px;
-		text-align: left;
-		border: 1px solid #CEE7FF;
-	}
-</style>
-';
+var dsOption= {
+	fields :[
+		{name : 'mes'},
+		{name : 'cventa', type: 'float' },
+		{name : 'cdevol', type: 'float' },
+		{name : 'cana' ,  type: 'float' },
+		{name : 'mventa', type: 'float' },
+		{name : 'mdevol', type: 'float' },
+		{name : 'tota' ,  type: 'float' }    
+	],
+	recordType : 'object'
+} 
+
+var colsOption = [
+	{id: 'mes',     header: 'Mes',        width :60, frozen: true },
+	{id: 'cventa' , header: 'Venta',      width :80, align: 'right' },
+	{id: 'cdevol' , header: 'Devolucion', width :80, align: 'right' },
+	{id: 'cana' ,   header: 'Total',      width :80, align: 'right' },
+	{id: 'mventa' , header: 'Venta',      width :80, align: 'right' },
+	{id: 'mdevol' , header: 'Devolucion', width :80, align: 'right' },
+	{id: 'tota' ,   header: 'Total',      width :80, align: 'right' }
+];
+
+var gridOption={
+	id : 'grid1',
+	loadURL : '/proteoerp/inventario/sinv/consulta_ventas/".$id."',
+	container : 'grid1_container', 
+	dataset : dsOption ,
+	columns : colsOption,
+	toolbarContent: 'pdf'	
+};
+ 
+
+var dsOption1= {
+	fields :[
+		{name : 'fecha'   },
+		{name : 'usuario' },
+		{name : 'hora'    },
+		{name : 'modulo'  },
+		{name : 'comenta' }
+	],
+	recordType : 'object'
+} 
+
+var colsOption1 = [
+	{id: 'fecha',   header: 'Fecha',      width :70, frozen: true },
+	{id: 'usuario', header: 'Usuario',    width :60 },
+	{id: 'hora' ,   header: 'Hora',       width :60 },
+	{id: 'modulo' , header: 'Modulo',     width :60 },
+	{id: 'comenta', header: 'Comentario', width :200 }
+];
+
+var gridOption1={
+	id : 'grid2',
+	loadURL : '/proteoerp/inventario/sinv/consulta_logusu/".$id."',
+	container : 'grid2_container', 
+	dataset : dsOption1 ,
+	columns : colsOption1,
+	toolbarContent: 'pdf',
+	allowCustomSkin: true,
+	skin: 'vista'
+};
+ 
+var mygrid=new Sigma.Grid(gridOption);
+Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
+
+var mygrid1=new Sigma.Grid(gridOption1);
+Sigma.Util.onLoad( Sigma.Grid.render(mygrid1) );
+
+</script>  
+";
+
+		$style = '';
 
 		$data['content'] = "
 		<table align='center' border='0' cellspacing='2' cellpadding='2' width='98%'>
 			<tr>
 				<td valign='top'>
 					<div style='border: 3px outset #EFEFEF;background: #EFEFFF '>
-					".$mGrid1."
+					<div id='grid1_container' style='width:500px;height:250px'></div>
 					</div>
 				</td>
 				<td>".
@@ -1485,7 +1460,7 @@ $(document).ready(function() {
 			<tr>
 				<td>
 					<div style='border: 3px outset #EFEFEF;background: #EFEFFF '>
-					".$mGrid2."
+					<div id='grid2_container' style='width:500px;height:250px'></div>
 					</div>
 					
 				</td>
@@ -1493,17 +1468,81 @@ $(document).ready(function() {
 				open_flash_chart_object( 250,180, site_url("inventario/sinv/compras/$id"))."
 				</td>
 			</tr>
-		</table>";
-		$data["head"]     = script("plugins/jquery.fixedtable.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
+		</table>
+		  
+";
+
 		$data['title']    = '<h1>Consulta de Articulo de Inventario</h1>';
-		$data['script']   = $script;
-		$data['style']   = $style;
+
+		$data['script']   = script("plugins/jquery.fixedtable.js");
+		$data['script']  .= script("plugins/jquery.numeric.pack.js");
+		$data['script']  .= script("plugins/jquery.floatnumber.js");
+		$data['script']  .= script("gt_msg_en.js");
+		//$data['script']  .= script("gt_const.js");
+		$data['script']  .= script("gt_grid_all.js");
+		$data['script']  .= $script;
+		
+		$data['style']    = style('gt_grid.css');
+		//$data['style'] .= $style;
 		$data["subtitle"] = "
 			<div align='center' style='border: 2px outset #EFEFEF;background: #EFEFEF;font-size:18px'>
-				<a href='javascript:javascript:history.go(-1)'>(".$mCodigo.") ".$descrip."</a>
+				<a href='javascript:javascript:history.go(-1)'>(".addslashes($mCodigo).") ".$descrip."</a>
 			</div>";
+
+		$data["head"]  = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
+
+	function consulta_ventas() {
+		$id = $this->uri->segment($this->uri->total_segments());
+		$mCodigo = $this->datasis->dameval("SELECT codigo FROM sinv WHERE id=".$id."");
+
+		$mSQL  = 'SELECT MID(a.fecha,1,7) mes, sum(a.cana*(a.tipoa="F")) cventa, sum(a.cana*(a.tipoa="D")) cdevol, sum(a.cana*if(a.tipoa="D",-1,1)) cana, sum(a.tota*(a.tipoa="F")) mventa, sum(a.tota*(a.tipoa="D")) mdevol, sum(a.tota*if(a.tipoa="D",-1,1)) tota ';
+		$mSQL .= "FROM sitems a WHERE a.codigoa='".addslashes($mCodigo)."' ";
+		$mSQL .= "AND a.fecha >= CONCAT(MID(SUBDATE(curdate(),365),1,8),'01') ";
+		$mSQL .= "GROUP BY MID( a.fecha ,1,7)  WITH ROLLUP LIMIT 60";
+		$query = $this->db->query($mSQL);
+
+		if ($query->num_rows() > 0){
+			$retArray = array();
+			foreach( $query->result_array() as  $row ) {
+				$retArray[] = $row;
+			}
+			$data = json_encode($retArray);
+			$ret = "{data:" . $data .",\n";
+			$ret .= "recordType : 'array'}";
+			//$ret .= $mSQL;
+		} else {
+			$ret = '{data : []}';
+		}
+		echo $ret;
+	}
+
+
+	function consulta_logusu() {
+		$id = $this->uri->segment($this->uri->total_segments());
+		$mCodigo = $this->datasis->dameval("SELECT codigo FROM sinv WHERE id=".$id."");
+
+		$mSQL  = 'SELECT a.fecha, a.usuario,  MID(a.hora,1,5) hora, a.modulo, MID(REPLACE(a.comenta,"ARTICULO DE INVENTARIO",""),1,30) comenta ';
+		$mSQL .= 'FROM logusu a WHERE a.comenta LIKE "%'.addslashes($mCodigo).'%" ';
+		$mSQL .= "ORDER BY a.fecha DESC LIMIT 60";
+		$query = $this->db->query($mSQL);
+
+		if ($query->num_rows() > 0){
+			$retArray = array();
+			foreach( $query->result_array() as  $row ) {
+				$retArray[] = $row;
+			}
+			$data = json_encode($retArray);
+			$ret = "{data:" . $data .",\n";
+			$ret .= "recordType : 'array'}";
+			//$ret .= $mSQL;
+		} else {
+			$ret = '{data : []}';
+		}
+		echo $ret;
+	}
+
 
 	function ventas($id=''){
 		if (empty($id)) return;

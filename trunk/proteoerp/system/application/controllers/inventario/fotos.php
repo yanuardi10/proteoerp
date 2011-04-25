@@ -51,7 +51,7 @@ class Fotos extends Controller {
 		else
 			$ddire='left';
 		
-		$filter->db->select("a.codigo as scodigo,a.descrip,a.grupo,b.codigo,a.id,a.precio1,a.precio2,a.precio3,a.precio4"); 
+		$filter->db->select("a.codigo as scodigo,a.descrip,a.grupo,b.codigo,a.id, a.marca, a.precio1,a.precio2,a.precio3,a.precio4"); 
 		$filter->db->from("sinv AS a");   
 		$filter->db->join("sinvfot AS b","a.codigo=b.codigo",$ddire);
 		$filter->db->groupby("a.codigo");
@@ -105,22 +105,66 @@ class Fotos extends Controller {
 
 		$grid = new DataGrid("Lista de Art&iacute;culos");
 		$grid->order_by("a.codigo","asc");
-		$grid->per_page = 15;
+		$grid->per_page = 50;
 		$link=anchor('/inventario/fotos/dataedit/<#id#>/create/','<#scodigo#>');
 
 		$grid->use_function('str_replace');
 		$grid->column("C&oacute;digo",$link);
 		$grid->column("Descripci&oacute;n","descrip");
-		$grid->column("Precio 1","<number_format><#precio1#>|2|,|.</number_format>",'align=Right');
-		$grid->column("Precio 2","<number_format><#precio2#>|2|,|.</number_format>",'align=Right');
-		$grid->column("Precio 3","<number_format><#precio3#>|2|,|.</number_format>",'align=Right');
-		$grid->column("Precio 4","<number_format><#precio4#>|2|,|.</number_format>",'align=Right');	
+		$grid->column("Precio 1","<nformat><#precio1#></nformat>",'align=Right');
+		$grid->column("Precio 2","<nformat><#precio2#></nformat>",'align=Right');
+		$grid->column("Precio 3","<nformat><#precio3#></nformat>",'align=Right');
+		$grid->column("Precio 4","<nformat><#precio4#></nformat>",'align=Right');	
 
-		$grid->build();
+		$grid->build('datagridST');
 		//echo $grid->db->last_query();
+
+
+//************ SUPER TABLE ************* 
+		$extras = '
+<script type="text/javascript">
+//<![CDATA[
+(function() {
+	var mySt = new superTable("demoTable", {
+	cssSkin : "sSky",
+	fixedCols : 1,
+	headerRows : 1,
+	onStart : function () {	this.start = new Date();},
+	onFinish : function () {document.getElementById("testDiv").innerHTML += "Finished...<br>" + ((new Date()) - this.start) + "ms.<br>";}
+	});
+})();
+//]]>
+</script>
+';
+		$style ='
+<style type="text/css">
+.fakeContainer { /* The parent container */
+    margin: 5px;
+    padding: 0px;
+    border: none;
+    width: 740px; /* Required to set */
+    height: 320px; /* Required to set */
+    overflow: hidden; /* Required to set */
+}
+</style>	
+';
+//****************************************
+
 		$data['content'] = $grid->output;
 		$data['filtro']  = $filter->output;
-		$data["head"]    = script("tabber.js").script("prototype.js").$this->rapyd->get_head().script("scriptaculous.js").script("effects.js");
+		
+		$data['script']  = script('jquery.js');
+
+		$data["head"]   = $this->rapyd->get_head();
+		$data['style']	 = $style;
+
+		//$data["script"]  = script("tabber.js");
+		//$data["script"] .= script("prototype.js");
+		//$data["script"] .= script("scriptaculous.js");
+		//$data["script"] .= script("effects.js");
+
+		$data['extras']  = $extras;		
+
 		$data['title']   = '<h1>Lista de Art&iacute;culos para Fotos </h1>';
 		$this->load->view('view_ventanas', $data);
 		
@@ -132,14 +176,14 @@ class Fotos extends Controller {
 
 		$this->rapyd->load("dataedit");
 		$sinv=array(
-		  'tabla'   =>'sinv',
-		  'columnas'=>array(
-		  'codigo' =>'C&acute;digo',
-		  'descrip'=>'Descripci&oacuten'),
-		  'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'descrip'),
-		  'retornar'=>array('codigo'=>'mcod'),
-		  'titulo'  =>'Buscar Art&iacute;culo',
-		  'script'=>array('agregar()'));
+			'tabla'   =>'sinv',
+			'columnas'=>array(
+			'codigo'  =>'C&acute;digo',
+			'descrip' =>'Descripci&oacuten'),
+			'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'descrip'),
+			'retornar'=>array('codigo'=>'mcod'),
+			'titulo'  =>'Buscar Art&iacute;culo',
+			'script'=>array('agregar()'));
 		$bSINV=$this->datasis->modbus($sinv);
 
 		$edit = new DataEdit("Fotos de Inventario", "sinvfot");

@@ -55,11 +55,9 @@ class Scli extends validaciones {
 		$grid->per_page=50;
 
 		$cclave=anchor('ventas/scli/claveedit/modify/<#id#>','Asignar clave');
-
 		$uri_2  = anchor('ventas/scli/dataedit/show/<#id#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar','height'=>'12')));
 		$uri_2 .= anchor('ventas/scli/consulta/<#id#>',img(array('src'=>'images/estadistica.jpeg','border'=>'0','alt'=>'Consultar','height'=>'12')));
 		$uri_2 .= img(array('src'=>'images/<siinulo><#tipo#>|N|S</siinulo>.gif','border'=>'0','alt'=>'Estado'));
-		
 		
 		$grid->column('Acci&oacute;n',$uri_2);
 		$grid->column_orderby('Cliente',$uri,'cliente');
@@ -68,6 +66,9 @@ class Scli extends validaciones {
 		$grid->column_orderby($this->pi18n->msj('tiva','Tipo') ,'tiva','tiva','align=\'center\'');
 		$grid->column_orderby('Telefono','telefono','telefono');
 		$grid->column_orderby('Contacto','contacto','contacto');
+		$grid->column_orderby('Nombre Fiscal','nomfis','nomfis');
+		$grid->column_orderby('Grupo','grupo','grupo','align=\'center\'');
+		$grid->column_orderby('Credito','limite','limite','align=\'right\'');
 		$grid->column_orderby('Cuenta','cuenta','cuenta');
 
 		$grid->add('ventas/scli/dataedit/create','Agregar');
@@ -123,6 +124,11 @@ class Scli extends validaciones {
 		$this->load->view('view_ventanas', $data);
 	}
 
+
+	// **************************************
+	//     DATAEDIT
+	//
+	// **************************************
 	function dataedit(){
 		$this->pi18n->cargar('scli','dataedit');
 		$this->rapyd->load('dataedit');
@@ -159,68 +165,88 @@ class Scli extends validaciones {
 		$lcuenta=site_url('contabilidad/cpla/autocomplete/codigo');
 		$lsocio =site_url('ventas/scli/autocomplete/cliente');
 		$script ='
-		function formato(row) {
-			return row[0] + "-" + row[1];
-		}
+<script type="text/javascript" >
+$(function() {
 
-		$(function() {
-			$(".inputnum").numeric(".");
-			$("#tiva").change(function () { anomfis(); }).change();
-			$("#cuenta").autocomplete("'.$lcuenta.'",{
-				delay:10,
-				//minChars:2,
-				matchSubset:1,
-				matchContains:1,
-				cacheLength:10,
-				formatItem:formato,
-				width:350,
-				autoFill:true
-				}
-			);
+	//Default Action
+	$(".tab_content").hide(); //Hide all content
+	$("ul.tabs li:first").addClass("active").show(); //Activate first tab
+	$(".tab_content:first").show(); //Show first tab content
+	
+	//On Click Event
+	$("ul.tabs li").click(function() {
+		$("ul.tabs li").removeClass("active"); //Remove any "active" class
+		$(this).addClass("active"); //Add "active" class to selected tab
+		$(".tab_content").hide(); //Hide all tab content
+		var activeTab = $(this).find("a").attr("href"); //Find the rel attribute value to identify the active tab + content
+		$(activeTab).fadeIn(); //Fade in the active content
+		return false;
+	});
 
-			$("#socio").autocomplete("'.$lsocio.'",{
-				delay:10,
-				matchSubset:1,
-				matchContains:1,
-				cacheLength:10,
-				formatItem:formato,
-				width:350,
-				autoFill:true
-				}
-			);
-			//$(":input").enter2tab();
-		});
+	$(".inputnum").numeric(".");
+	$("#tiva").change(function () { anomfis(); }).change();
+	$("#cuenta").autocomplete("'.$lcuenta.'",{
+		delay:10,
+		//minChars:2,
+		matchSubset:1,
+		matchContains:1,
+		cacheLength:10,
+		formatItem:formato,
+		width:350,
+		autoFill:true
+	});
 
-		function anomfis(){
-				vtiva=$("#tiva").val();
-				if(vtiva=="C" || vtiva=="E" || vtiva=="R"){
-					$("#tr_nomfis").show();
-					$("#tr_riffis").show();
-				}else{
-					$("#nomfis").val("");
-					$("#riffis").val("");
-					$("#tr_nomfis").hide();
-					$("#tr_riffis").hide();
-				}
-		}
+	$("#socio").autocomplete("'.$lsocio.'",{
+		delay:10,
+		matchSubset:1,
+		matchContains:1,
+		cacheLength:10,
+		formatItem:formato,
+		width:350,
+		autoFill:true
+	});
+	//$(":input").enter2tab();
+});
 
-		function consulrif(campo){
-				vrif=$("#"+campo).val();
-				if(vrif.length==0){
-					alert("Debe introducir primero un RIF");
-				}else{
-					vrif=vrif.toUpperCase();
-					$("#riffis").val(vrif);
-					window.open("'.$consulrif.'"+"?p_rif="+vrif,"CONSULRIF","height=350,width=410");
-				}
-		}';
+function formato(row) {
+	return row[0] + "-" + row[1];
+}
+
+function anomfis(){
+	vtiva=$("#tiva").val();
+	if(vtiva=="C" || vtiva=="E" || vtiva=="R"){
+		$("#tr_nomfis").show();
+		$("#tr_riffis").show();
+	}else{
+		$("#nomfis").val("");
+		$("#riffis").val("");
+		$("#tr_nomfis").hide();
+		$("#tr_riffis").hide();
+	}
+}
+
+function consulrif(campo){
+	vrif=$("#"+campo).val();
+	if(vrif.length==0){
+		alert("Debe introducir primero un RIF");
+	}else{
+		vrif=vrif.toUpperCase();
+		$("#riffis").val(vrif);
+		window.open("'.$consulrif.'"+"?p_rif="+vrif,"CONSULRIF","height=350,width=410");
+	}
+}
+</script>
+';
 
 		$edit = new DataEdit('Clientes', 'scli');
 		$edit->back_url = site_url('ventas/scli/filteredgrid');
-		$edit->script($script, 'create');
-		$edit->script($script, 'modify');
+//		$edit->script($script, 'create');
+//		$edit->script($script, 'modify');
 
 		$edit->pre_process('delete','_pre_del');
+		$edit->pre_process('insert','_pre_ins');
+		$edit->pre_process('update','_pre_ins');
+
 		$edit->post_process('insert','_post_insert');
 		$edit->post_process('update','_post_update');
 		$edit->post_process('delete','_post_delete');
@@ -243,29 +269,30 @@ class Scli extends validaciones {
 
 		$edit->grupo = new dropdownField('Grupo', 'grupo');
 		$edit->grupo->option('','Seleccione un grupo');
-		$edit->grupo->options('SELECT grupo, gr_desc FROM grcl ORDER BY gr_desc');
+		$edit->grupo->options('SELECT grupo, CONCAT(grupo," ",gr_desc) gr_desc FROM grcl ORDER BY gr_desc');
 		$edit->grupo->rule = 'required';
 		$edit->grupo->size = 6;
 		$edit->grupo->maxlength = 4;
-		$edit->grupo->style = 'width:150px';
+		$edit->grupo->style = 'width:160px';
+		$edit->grupo->insertValue = $this->datasis->dameval('SELECT grupo FROM grcl WHERE gr_desc like "CONSUMIDOR FINAL%"');
 
 		$lriffis='<a href="javascript:consulrif(\'rifci\');" title="SENIAT" onclick="" style="color:red;font-size:9px;border:none; "> SENIAT</a>';
 		$edit->rifci = new inputField($this->pi18n->msj('rifci','RIF o C.I.'), 'rifci');
 		$edit->rifci->rule = 'trim|strtoupper|required|callback_chci';
 		$edit->rifci->maxlength =13;
 		$edit->rifci->append($lriffis);
-		$edit->rifci->size =15;
+		$edit->rifci->size =14;
 
 		$obj  ="dire11";
 		$edit->$obj = new inputField('Oficina',$obj);
 		$edit->$obj->rule = 'trim';
-		$edit->$obj->size      = 50;
+		$edit->$obj->size      = 45;
 		$edit->$obj->maxlength = 40;
 
 		$obj  ="dire12";
 		$edit->$obj = new inputField('',$obj);
 		$edit->$obj->rule = 'trim';
-		$edit->$obj->size      = 50;
+		$edit->$obj->size      = 45;
 		$edit->$obj->maxlength = 40;
 
 		$obj="ciudad1";
@@ -273,19 +300,19 @@ class Scli extends validaciones {
 		$edit->$obj->rule = 'trim';
 		$edit->$obj->option('','Seleccionar');
 		$edit->$obj->options('SELECT ciudad codigo, ciudad FROM ciud ORDER BY ciudad');
-		$edit->$obj->maxlength = 40;
-
+		$edit->$obj->style = 'width:200px';
+		$edit->$obj->insertValue = $this->datasis->traevalor("CIUDAD");
 
 		$obj  ="dire21";
-		$edit->$obj = new inputField('Oficina',$obj);
+		$edit->$obj = new inputField('Envio',$obj);
 		$edit->$obj->rule = 'trim';
-		$edit->$obj->size      = 50;
+		$edit->$obj->size      = 45;
 		$edit->$obj->maxlength = 40;
 
 		$obj  ="dire22";
 		$edit->$obj = new inputField('',$obj);
 		$edit->$obj->rule = 'trim';
-		$edit->$obj->size      = 50;
+		$edit->$obj->size      = 45;
 		$edit->$obj->maxlength = 40;
 
 		$obj="ciudad2";
@@ -293,17 +320,17 @@ class Scli extends validaciones {
 		$edit->$obj->rule = 'trim';
 		$edit->$obj->option('','Seleccionar');
 		$edit->$obj->options('SELECT ciudad codigo, ciudad FROM ciud ORDER BY ciudad');
-		$edit->$obj->maxlength = 40;
+		$edit->$obj->style = 'width:200px';
 
 		$edit->repre  = new inputField('Representante', 'repre');
 		$edit->repre->rule = 'trim';
 		$edit->repre->maxlength =30;
-		$edit->repre->size = 50;
+		$edit->repre->size = 30;
 
 		$edit->cirepre = new inputField('C&eacute;dula de Rep.', 'cirepre');
 		$edit->cirepre->rule = 'trim|strtoupper|callback_chci';
 		$edit->cirepre->maxlength =13;
-		$edit->cirepre->size = 16;
+		$edit->cirepre->size = 14;
 
 		$edit->socio = new inputField('Socio del cliente', 'socio');
 		$edit->socio->rule = 'trim';
@@ -312,104 +339,97 @@ class Scli extends validaciones {
 		$edit->socio->append($boton);
 
 		$arr_tiva=$this->pi18n->arr_msj('tivaarr','C=Contribuyente,N=No Contribuyente,E=Especial,R=Regimen Exento,O=Otro');
-		$edit->tiva = new dropdownField('Condici&oacute;n F&iacute;scal', 'tiva');
+		$edit->tiva = new dropdownField('Tipo F&iacute;scal', 'tiva');
 		$edit->tiva->option('','Seleccionar');
 		$edit->tiva->options($arr_tiva);
-		$edit->tiva->style = 'width:140px';
-		$edit->tiva->rule='required|callback_chdfiscal';
-		//$edit->tiva->group = 'Informaci&oacute;n f&iacute;scal';
+		$edit->tiva->style = 'width:160px';
+		$edit->tiva->insertValue = 'N';
+
+		//$edit->tiva->rule='required|callback_chdfiscal';
 
 		$edit->nomfis = new textareaField('Nombre F&iacute;scal', 'nomfis');
 		$edit->nomfis->rule = 'trim';
 		$edit->nomfis->cols = 48;
 		$edit->nomfis->rows =  2;
-		$edit->nomfis->maxlength =80;
-		//$edit->nomfis->group = 'Informaci&oacute;n f&iacute;scal';
+		$edit->nomfis->maxlength =200;
 
 		$lriffis='<a href="javascript:consulrif(\'riffis\');" title="Consultar RIF en el SENIAT" onclick=""> SENIAT</a>';
 		$edit->riffis = new inputField('RIF F&iacute;scal', 'riffis');
 		$edit->riffis->size = 13;
 		$edit->riffis->maxlength =10;
-		//$edit->riffis->rule = 'trim|callback_chrif';
 		$edit->riffis->append($lriffis);
-		//$edit->riffis->group = 'Informaci&oacute;n f&iacute;scal';
 
 		$edit->zona = new dropdownField('Zona', 'zona');
 		$edit->zona->rule = 'trim|required';
 		$edit->zona->option('','Seleccionar');
-		$edit->zona->options('SELECT codigo, nombre FROM zona ORDER BY nombre');
-		$edit->zona->style = 'width:120px';
+		$edit->zona->options('SELECT codigo, CONCAT(codigo," ", nombre) nombre FROM zona ORDER BY nombre');
+		$edit->zona->style = 'width:166px';
+		$edit->zona->insertValue = $this->datasis->traevalor("ZONAXDEFECTO");
 
 		$edit->pais = new inputField('Pa&iacute;s','pais');
 		$edit->pais->rule = 'trim';
-		$edit->pais->size =25;
+		$edit->pais->size =20;
 		$edit->pais->maxlength =30;
 
 		$edit->email = new inputField('E-mail', 'email');
 		$edit->email->rule = 'trim|valid_email';
-		$edit->email->size =25;
+		$edit->email->size =20;
 		$edit->email->maxlength =100;
 
 		$edit->cuenta = new inputField('Contable', 'cuenta');
 		$edit->cuenta->rule='trim|callback_chcuentac';
 		$edit->cuenta->append($bcpla);
-		$edit->cuenta->size=20;
+		$edit->cuenta->size=15;
 		$edit->cuenta->maxlength =15;
+		$edit->cuenta->insertValue = $this->datasis->dameval('SELECT cuenta FROM grcl WHERE gr_desc like "CONSUMIDOR FINAL%"');
 
 		$edit->telefono = new inputField('Tel&eacute;fonos', 'telefono');
 		$edit->telefono->rule = 'trim';
-		$edit->telefono->size=25;
+		$edit->telefono->size=20;
 		$edit->telefono->maxlength =30;
 
 		$edit->telefon2 = new inputField('Fax', 'telefon2');
 		$edit->telefon2->rule = 'trim';
-		$edit->telefon2->size=25;
+		$edit->telefon2->size=20;
 		$edit->telefon2->maxlength =25;
 
-		$edit->tipo = new dropdownField('Precio ', 'tipo');
+		$edit->tipo = new dropdownField('Tipo ', 'tipo');
 		$edit->tipo->options(array('1'=> 'Precio 1','2'=>'Precio 2', '3'=>'Precio 3','4'=>'Precio 4','0'=>'Inactivo'));
 		$edit->tipo->style = 'width:90px';
-		//$edit->tipo->group = 'Informaci&oacute;n financiera';
 
 		$edit->formap = new inputField('D&iacute;as', 'formap');
 		$edit->formap->css_class='inputnum';
 		$edit->formap->rule='trim|integer';
 		$edit->formap->maxlength =10;
 		$edit->formap->size =6;
-		//$edit->formap->group = 'Informaci&oacute;n financiera';
 
 		$edit->limite = new inputField('L&iacute;mite', 'limite');
 		$edit->limite->css_class='inputnum';
 		$edit->limite->rule='trim|numeric';
 		$edit->limite->maxlength =12;
-		$edit->limite->size = 20;
-		//$edit->limite->group = 'Informaci&oacute;n financiera';
+		$edit->limite->size = 10;
 
 		$edit->vendedor = new dropdownField('Vendedor', 'vendedor');
 		$edit->vendedor->option('','Ninguno');
 		$edit->vendedor->options("SELECT vendedor, CONCAT(vendedor,'-',nombre) AS nom FROM vend WHERE tipo IN ('V','A') ORDER BY vendedor");
-		//$edit->vendedor->group = 'Informaci&oacute;n financiera';
-		$edit->vendedor->style = 'width:150px';
+		$edit->vendedor->style = 'width:250px';
 
 		$edit->porvend = new inputField('Comisi&oacute;n%', 'porvend');
 		$edit->porvend->css_class='inputnum';
 		$edit->porvend->rule='trim|numeric';
 		$edit->porvend->size=4;
 		$edit->porvend->maxlength =5;
-		//$edit->porvend->group = 'Informaci&oacute;n financiera';
 
 		$edit->cobrador = new dropdownField('Cobrador', 'cobrador');
 		$edit->cobrador->option('','Ninguno');
 		$edit->cobrador->options("SELECT vendedor, CONCAT(vendedor,'-',nombre) nombre FROM vend WHERE tipo IN ('C','A') ORDER BY vendedor");
-		//$edit->cobrador->group = 'Informaci&oacute;n financiera';
-		$edit->cobrador->style = 'width:150px';
+		$edit->cobrador->style = 'width:250px';
 
 		$edit->porcobr = new inputField('Comisi&oacute;n%', 'porcobr');
 		$edit->porcobr->css_class='inputnum';
 		$edit->porcobr->rule='trim|numeric';
 		$edit->porcobr->size=4;
 		$edit->porcobr->maxlength =5;
-		//$edit->porcobr->group = 'Informaci&oacute;n financiera';
 
 		$edit->observa = new textareaField('Observaci&oacute;n', 'observa');
 		$edit->observa->rule = 'trim';
@@ -424,24 +444,30 @@ class Scli extends validaciones {
 		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
 		$edit->build();
 
-		//$data['script']  ='<script type="text/javascript">
-		//function pelusa(){
-		//	alert(screen.availWidth);
-		//}
-		//</script>';
+
+		$style = '
+<style type="text/css">
+.maintabcontainer {width: 780px; margin: 5px auto;}
+</style>
+';
 
 		$conten["form"]  =&  $edit;
 		$data['content'] = $this->load->view('view_scli', $conten,true);
 
-		//$data['content'] = $edit->output;
 		$data['content'].= $this->pi18n->fallas();
 		$data['smenu']   = $this->load->view('view_sub_menu', $smenu,true);
-		$data['title']   = heading('Clientes');
-		$data['head']    = script('jquery.js');
-		$data['head']   .= script('plugins/jquery.numeric.pack.js');
-		$data['head']   .= script('plugins/jquery.floatnumber.js');
-		$data['head']   .= script('plugins/jquery.autocomplete.js');
-		$data['head']   .= style('jquery.autocomplete.css');
+		
+		$data['title']   = heading('('.$edit->cliente->value.') '.substr($edit->nombre->value,0,30));
+		
+		$data['script']   = script('jquery.js');
+		$data['script']  .= script('plugins/jquery.numeric.pack.js');
+		$data['script']  .= script('plugins/jquery.floatnumber.js');
+		$data['script']  .= script('plugins/jquery.autocomplete.js');
+		$data['script']  .= style('jquery.autocomplete.css');
+		$data["script"]  .= $script;
+
+		$data['style']	 = $style;
+
 		$data['head']   .= $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
@@ -510,10 +536,14 @@ class Scli extends validaciones {
 		$nomfis=$this->input->post('nomfis');
 		$riffis=$this->input->post('riffis');
 		if($tiva=='C' OR $tiva=='E' OR $tiva=='R')
-			if(empty($nomfis) OR empty($riffis)){
-				$this->validation->set_message('chdfiscal', "Debe introducir rif y nombre fiscal cuando el cliente es contribuyente, especial o regimen excento");
+			if(empty($nomfis)){
+				$this->validation->set_message('chdfiscal', "Debe introducir el nombre fiscal cuando el cliente es contribuyente");
 				return FALSE;
 			}
+			//elseif (empty($riffis)) {
+			//	$this->validation->set_message('chdfiscal', "Debe introducir rif fiscal");
+			//	return FALSE;
+			//}
 		return TRUE;
 	}
 
@@ -531,6 +561,15 @@ class Scli extends validaciones {
 		if ($chek > 0){
 			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='Cliente con Movimiento no puede ser Borrado';
 			return False;
+		}
+		return True;
+	}
+
+	function _pre_ins($do) {
+		$do->set('riffis',trim($do->get('rifci')));
+		$nomfis = $do->get('nomfis');
+		if ( empty( $nomfis ) ) {
+			$do->set('nomfis',trim($do->get('nombre')));
 		}
 		return True;
 	}

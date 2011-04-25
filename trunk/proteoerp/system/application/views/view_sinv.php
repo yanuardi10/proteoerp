@@ -3,7 +3,14 @@ echo $form_scripts.$form_begin;
 $container_tr=join("&nbsp;", $form->_button_container["TR"]);
 $container_bl=join("&nbsp;", $form->_button_container["BL"]);
 $container_br=join("&nbsp;", $form->_button_container["BR"]);
+
+if ($form->_status=='delete' || $form->_action=='delete' || $form->_status=='unknow_record'):
+	$meco = $form->output;
+	$meco = str_replace('class="tablerow"','class="tablerow" style="font-size:20px; align:center;" ',$meco);
+	echo $meco."</td><td align='center'>".img("images/borrar.jpg");
+else:
 ?>
+
 <?php if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</div>'; ?>
 <table border='0' width="100%">
 	<tr>
@@ -114,8 +121,6 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 </table>
 </fieldset>
 
-
-
 <div class="maintabcontainer">
 	<ul class="tabs">
 		<li><a href="#tab1">Parametros</a></li>
@@ -199,7 +204,6 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 	</tr>
 </table>
         </div>
-
         <div id="tab2" class="tab_content">
 <table width='100%'>
 	<tr>
@@ -444,3 +448,4 @@ if ($query->num_rows()>0 ) {
 <?php }  //show    ?>
 <?php echo $container_bl.$container_br; ?>
 <?php echo $form_end?>
+<?php endif; ?>

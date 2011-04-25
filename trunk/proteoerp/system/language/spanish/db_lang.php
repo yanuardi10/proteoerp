@@ -1,7 +1,7 @@
 <?php
-$lang['db_invalid_connection_str'] = 'No se han podido determinar la configuración de la base de datos basados en la cadena enviada.';
-$lang['db_unable_to_connect'] = 'No se ha podido conectar al servidor de base de datos usando la configuración suministrada.';
-$lang['db_unable_to_select'] = 'No se ha podido seleccionar la base de dato especificada: %s';
+$lang["db_invalid_connection_str"] = 'No se han podido determinar la configuración de la base de datos basados en la cadena enviada.';
+$lang["db_unable_to_connect"] = 'No se ha podido conectar al servidor de base de datos usando la configuración suministrada.';
+$lang["db_unable_to_select"] = 'No se ha podido seleccionar la base de dato especificada: %s';
 $lang['db_unable_to_create'] = 'No se ha podido crear la base de datos especificada: %s';
 $lang['db_invalid_query'] = 'La consulta enviada no es válida.';
 $lang['db_must_set_table'] = 'Debe especificar la tabla que será usada en su consulta.';
@@ -16,5 +16,5 @@ $lang['db_unable_to_drop'] = 'No se ha podido eliminar la base de datos especifi
 $lang['db_unsuported_feature'] = 'Característica no soportada por la plataforma de base de datos que estás usando.';
 $lang['db_unsuported_compression'] = 'El formato de compresion de ficheros que ha seleccionado no está soportado por su servidor.';
 $lang['db_filepath_error'] = 'No se puede escribir los datos en el fichero que has enviado.';
-$lang['db_invalid_cache_path'] = 'El directorio para escribir los datos de la cache no posee permisos de escritura.';
+$lang["db_invalid_cache_path"] = 'El directorio para escribir los datos de la cache no posee permisos de escritura.';
 ?>

@@ -8,8 +8,6 @@ define('RAPYD_DECIMALS' , ","); //separador de decimales
 define('RAPYD_THOUSANDS', "."); //separador de miles
 define('RAPYD_NUM'      , 2);   //cantidad de decimales
 
-
-
 // messages
 
 define('RAPYD_MSG_0200',"nuevo registro insertado.");
@@ -21,7 +19,7 @@ define('RAPYD_MSG_0205',"Error actualizando registro.");
 define('RAPYD_MSG_0206',"Error eliminando registro.");
 define('RAPYD_MSG_0207',"Error, [DataEdit][ExecCommand]");
 define('RAPYD_MSG_0208',"Error, no hay registros seleccionados.");
-define('RAPYD_MSG_0209',"&iquest;Quiere eliminar el registro?");
+define('RAPYD_MSG_0209',"&iquest;Seguro que desea  eliminar el registro?");
 define('RAPYD_MSG_0210',"Error, Clave Primaria no es &uacute;nica");
 
 define('RAPYD_FIELD_TEXT_UPLOAD_REMOVE',  ' Borrar');

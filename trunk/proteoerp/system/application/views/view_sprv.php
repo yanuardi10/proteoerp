@@ -1,4 +1,4 @@
-<?php echo $form_scripts?>
+b n<?php echo $form_scripts?>
 <?php echo $form_begin?>
 <?php 
 //$container_tr=join("&nbsp;", $form->_button_container["TR"]);
