@@ -511,28 +511,6 @@ class Sprv extends validaciones {
 
 		$nombre = $this->datasis->dameval("SELECT nombre FROM sprv WHERE id=".$claves['id']." ");
 
-		/*
-		$descrip = $this->datasis->dameval("SELECT descrip FROM sinv WHERE id=".$claves['id']." ");
-		$data['content'] = "
-		<table width='100%'>
-			<tr>
-				<td valign='top' colspan='2'>
-					<div style='border: 2px outset #EFEFEF;background: #EFEFFF '>
-					".$grid->output."
-					</div>
-				</td>
-			</tr>
-			<tr>
-				<td valign='top'>
-				".open_flash_chart_object( 300,200, site_url("inventario/sinv/ventas/$mCodigo"))."
-				</td>
-				<td valign='top'>".
-				open_flash_chart_object( 300,200, site_url("inventario/sinv/compras/".raencode($mCodigo)))."
-				</td>
-			</tr>
-			
-		</table>";
-		*/
 		$data['content'] = $grid->output;
 		$data["head"]     = script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
 		$data['title']    = '<h1>Consulta de Proveedor</h1>';

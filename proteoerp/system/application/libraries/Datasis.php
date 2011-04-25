@@ -216,7 +216,7 @@ onclick=\"vent=window.open(
 document.body.setAttribute(
 	'onUnload',
 	'vent.close();'
-);\">".image('system-search.png',$modbus['titulo'],array('border'=>'0')).'</a>');
+);\">".image('system-search.png',$modbus['titulo'],array('border'=>'0','height'=>'16px')).'</a>');
 	}
 
 	function p_modbus($modbus,$puri='',$width=800,$height=600){
