@@ -1474,11 +1474,10 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid1) );
 
 		$data['title']    = '<h1>Consulta de Articulo de Inventario</h1>';
 
-		$data['script']   = script("plugins/jquery.fixedtable.js");
-		$data['script']  .= script("plugins/jquery.numeric.pack.js");
+		//$data['script']   = script("plugins/jquery.fixedtable.js");
+		$data['script']   = script("plugins/jquery.numeric.pack.js");
 		$data['script']  .= script("plugins/jquery.floatnumber.js");
 		$data['script']  .= script("gt_msg_en.js");
-		//$data['script']  .= script("gt_const.js");
 		$data['script']  .= script("gt_grid_all.js");
 		$data['script']  .= $script;
 		
