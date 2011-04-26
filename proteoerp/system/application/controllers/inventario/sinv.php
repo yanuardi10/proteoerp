@@ -223,6 +223,7 @@ class sinv extends Controller {
 
 		$filter->buttons("reset","search");
 		$filter->build("dataformfiltro");
+		//echo $this->db->last_query();
 
 		$uri = "inventario/sinv/dataedit/show/<#codigo#>";
 
@@ -233,24 +234,19 @@ class sinv extends Controller {
 		$mtool .= img(array('src' => 'images/agregar.jpg', 'alt' => 'Agregar Registro', 'title' => 'Agregar Registro','border'=>'0','height'=>'32'));
 		$mtool .= "</a>&nbsp;</td>";
 
-		$mtool .= "<td>&nbsp;<a href='".base_url()."inventario/sinv/dataedit/create'>";
+		$mtool .= "<td>&nbsp;<a href='javascript:recalcular(\"P\")'>";
 		$mtool .= img(array('src' => 'images/recalcular.jpg', 'alt' => 'Recalcular Precios', 'title' => 'Recalcular Precios','border'=>'0','height'=>'32'));
 		$mtool .= "</a>&nbsp;</td>";
 
-		$mtool .= "<td>&nbsp;<a href='".base_url()."inventario/sinv/dataedit/create'>";
+		$mtool .= "<td>&nbsp;<a href='javascript:recalcular(\"M\")'>";
 		$mtool .= img(array('src' => 'images/recalcular.png', 'alt' => 'Recalcular Margenes', 'title' => 'Recalcular Margenes','border'=>'0','height'=>'28'));
 		$mtool .= "</a>&nbsp;</td>";
 
-		$mtool .= "<td>&nbsp;<a href='".base_url()."inventario/sinv/dataedit/create'>";
+		$mtool .= "<td>&nbsp;<a href='javascript:redondear()'>";
 		$mtool .= img(array('src' => 'images/redondear.jpg', 'alt' => 'Redondear Precios', 'title' => 'Redondear Precios','border'=>'0','height'=>'30'));
 		$mtool .= "</a>&nbsp;</td>";
-/*
-		$mtool .= "<td>&nbsp;<a href='".base_url()."inventario/sinv/dataedit/create'>";
-		$mtool .= img(array('src' => 'images/aprecios.gif', 'alt' => 'Aumeto de Precios', 'title' => 'Aumento de Precios','border'=>'0','height'=>'32'));
-		$mtool .= "</a>&nbsp;</td>";
-*/
-		$mtool .= "<td>&nbsp;<a href='javascript:void(0);' ";
-		$mtool .= 'onclick="window.open(\''.base_url()."inventario/precios_sinv', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');".'" heigth="600"'.'>';
+
+		$mtool .= "<td>&nbsp;<a href='javascript:auprec()'>";
 		$mtool .= img(array('src' => 'images/aprecios.gif', 'alt' => 'Aumento de Precios', 'title' => 'Aumento de Precios','border'=>'0','height'=>'32'));
 		$mtool .= "</a>&nbsp;</td>";
 
@@ -288,6 +284,7 @@ class sinv extends Controller {
 		$grid->column_orderby("Precio 2","<nformat><#precio2#></nformat>","precio2",'align=right');
 		$grid->column_orderby("Existencia","<nformat><#existen#></nformat>","existen",'align=right');
 		$grid->column_orderby("Tipo","tipo","tipo");
+		$grid->column_orderby("Grupo","grupoid","grupoid");
 		$grid->column_orderby("Grupo","nom_grup","nom_grup");
 		$grid->column_orderby("Linea","nom_linea","nom_linea");
 		$grid->column_orderby("Depto","nom_depto","nom_depto");
@@ -296,10 +293,81 @@ class sinv extends Controller {
 
 		//$grid->add('inventario/sinv/dataedit/create');
 		$grid->build('datagridST');
-		//$this->rapyd->uri->jquery[] = '';
+
+		$lastq = $this->db->last_query();
+		$where = substr($lastq,stripos($lastq,"WHERE" ));
+		$where = substr($where,0,stripos($where,"ORDER BY" ));
+
+		$from = substr($lastq,stripos($lastq,"FROM" ));
+		$from = substr($from,4,stripos($from,"WHERE" )-4);
+		//echo $from;
+
+		$id = $this->datasis->guardasesion(array("data1"=>$from,"data2"=>$where));
+		
+		$mSQL = "UPDATE $from SET a.precio1=a.precio1*, a.precio2=a.precio2*, a.precio3=a.precio3*, a.precio4=a.precio4* $where";
+		//echo $from." id=$id  sesion:".$this->session->userdata('session_id');
+		$link1  =site_url('inventario/sinv/redondear');
+		$link2  =site_url('inventario/sinv/recalcular');
+		$link3  =site_url("inventario/sinv/auprec/$id"); 
+		
+		$script = '
+<script type="text/javascript">
+function isNumeric(value) {
+  if (value == null || !value.toString().match(/^[-]?\d*\.?\d*$/)) return false;
+  return true;
+};
+
+function redondear(){
+	var mayor=prompt("Redondear precios Mayores a");
+	if( mayor==null){
+		alert("Cancelado");
+	} else {
+		if( isNumeric(mayor) ){
+			$.ajax({ url: "'.$link1.'/"+mayor,
+			complete: function(){ alert(("Redondeo Finalizado")) }
+			});
+		} else {
+			alert("Entrada no numerica");
+		}
+	}
+};
+
+function recalcular(mtipo){
+	var seguro = true;
+	if(mtipo == "P"){
+		seguro = confirm("Recalcular margenes dejando fijos los precios ");
+	} else {
+		seguro = confirm("Recalcular margenes, dejando fijos los precios ");
+	}
+	if( seguro){
+		$.ajax({ url: "'.$link2.'/"+mtipo,
+			complete: function(){ alert(("Recalculo Finalizado")) }
+		})
+	}
+};
+
+function auprec(){
+	var porcen=prompt("Porcentaje de Aumento?");
+	if( porcen ==null){
+		alert("Cancelado");
+	} else {
+		if( isNumeric(porcen) ){
+			$.ajax({ url: "'.$link3.'/"+porcen,
+			complete: function(){ alert(("Aumento Finalizado")) }
+			});
+		} else {
+			alert("Entrada no numerica");
+		}
+	}
+};
+</script>
+';
+
 
 		$data['content'] = $grid->output;
 		$data['filtro']  = $filter->output;
+
+		$data['script']   = $script;
 
 		$data['style']   = $style;
 		$data['style']  .= style('superTables.css');
@@ -380,7 +448,7 @@ $(document).ready(function() {
 });
 			
 function dpto_change(){
-	$.post("'.$link12.'",{ depto:$("#depto").val() },function(data){alert("sasa");$("#linea").html(data);})
+	$.post("'.$link12.'",{ depto:$("#depto").val() },function(data){$("#linea").html(data);})
 	$.post("'.$link14.'",{ linea:"" },function(data){$("#grupo").html(data);})
 }
 
@@ -926,6 +994,194 @@ function add_grupo(){
 		}
 	}
 
+	/* REDONDEA LOS PRECIOS DE TODOS LOS PRODUCTOS */
+	function redondear($maximo) {
+		$maximo = $this->uri->segment($this->uri->total_segments());
+		$manterior = $this->datasis->traevalor("SINVREDONDEO");
+		if (!empty($manterior)) {
+			if ($manterior > $maximo ) {
+				$this->db->simple_query("UPDATE sinv SET redecen='F' WHERE precio1<=$anterior");
+			}
+		}
+		$this->datasis->ponevalor("SINVREDONDEO",$maximo);
+		$this->db->update_string("sinv", array("redecen"=>'N'), "precio1<=$maximo");
+		$this->db->call_function("sp_sinv_redondea");
+		logusu('SINV',"Redondea Precios $maximo");
+	}
+
+	/* RECALCULA LOS PRECIOS DE TODOS LOS PRODUCTOS */
+	function recalcular() {
+		$mtipo = $this->uri->segment($this->uri->total_segments());
+		$this->db->call_function("sp_sinv_recalcular", $mtipo );
+		$this->db->call_function("sp_sinv_redondea");
+		logusu('SINV',"Recalcula Precios $mtipo");
+	}
+
+
+	// **************************************
+	//
+	// -- Aumento de Precios -- //
+	//
+	// **************************************
+	function auprec() {
+		$porcent = $this->uri->segment($this->uri->total_segments());
+		$id = $this->uri->segment($this->uri->total_segments()-1);
+		$data = $this->datasis->damesesion($id);
+		
+		$from = $data['data1'];
+		$where  = $data['data2'];
+
+		// Respalda los precios anteriores
+		$mN = $this->datasis->prox_sql('nsinvplog');
+		$ms_codigo = $this->session->userdata('usuario');
+		$mSQL = "INSERT INTO sinvplog ";
+		$mSQL .= "SELECT '".$mN."', '".addslashes($ms_codigo)."', now(), curtime(), a.codigo, a.precio1, a.precio2, a.precio3, a.precio4 ";
+		$mSQL .= "FROM $from"." ".$where;
+		$this->db->simple_query($mSQL);
+
+		$mSQL = "SET 
+			a.precio1=ROUND(a.precio1*(100+$porcent)/100,2), 
+			a.precio2=ROUND(a.precio2*(100+$porcent)/100,2), 
+			a.precio3=ROUND(a.precio3*(100+$porcent)/100,2), 
+			a.precio4=ROUND(a.precio4*(100+$porcent)/100,2)";
+		echo "UPDATE ".$from." ".$mSQL." ".$where;
+		$this->db->simple_query("UPDATE ".$from." ".$mSQL." ".$where);
+		$this->db->call_function("sp_sinv_recalcular", "M" );
+		$this->db->call_function("sp_sinv_redondea");
+
+
+	}
+
+		
+
+
+/*
+LOCAL mCONDI , mAUMENT := 0.00, GETLIST := {}, mPA, mTODO := 0
+LOCAL mSQL, mPORCEN
+LOCAL mGRUPO:='    '
+LOCAL mWHERE := ''
+LOCAL mASELE, mOPCI, mCUAL, mNUMERO
+mSELE := CMNJ("AUMENTO Y RESTAURACION DE PRECIOS", {"Aumentar","Recuperar","Salir"} )
+
+   IF mSELE = 1
+      IF AT("WHERE",cSQL[1,1]) = 0
+         CMNJ("Va a modificar todo el inventario?")
+         mWHERE := ""
+      ELSE
+         mWHERE := SUBSTR(cSQL[1,1],AT("WHERE",cSQL[1,1]),10000)
+         mWHERE := ALLTRIM(STRTRAN(mWHERE,'WHERE',''))
+         mWHERE := SUBSTR(mWHERE,1,AT("ORDER BY",mWHERE)-1)
+      ENDIF
+
+      mPA := RECUADRO(10,40,17,75)
+      @ 12,41 SAY "Porcentaj de Aumento   " GET mAUMENT PICT "999.99"
+//      @ 14,41 SAY "Se aumentaran los productos" 
+      READ                                                                              
+
+      IF LASTKEY() = 27
+         RESTSCREEN(10,40,17,75,mPA)
+         RETURN .F.
+      ENDIF
+
+      IF mAUMENT = 0                                                                    
+         RESTSCREEN(10,40,17,75,mPA)
+         RETURN .F.
+      ENDIF
+
+      IF SINO(" Continuar ? ", 1 ) = 2
+         RESTSCREEN(10,40,17,75,mPA)
+         CLOSE DATA
+         RETURN .F.
+      ENDIF
+
+      mPORCEN := ALLTRIM(STR(mAUMENT))
+      RECUADRO(10,40,17,75)
+      @ 11,42 SAY "Procesando...espere "
+      mSQL := "SET "
+      mSQL += "a.precio1=ROUND(a.precio1*(100+"+mPORCEN+")/100,2), "
+      mSQL += "a.precio2=ROUND(a.precio2*(100+"+mPORCEN+")/100,2), "
+      mSQL += "a.precio3=ROUND(a.precio3*(100+"+mPORCEN+")/100,2), "
+      mSQL += "a.precio4=ROUND(a.precio4*(100+"+mPORCEN+")/100,2), "
+      mSQL += "a.base1=ROUND(a.precio1*100/(100+iva),2), "
+      mSQL += "a.base2=ROUND(a.precio2*100/(100+iva),2), "
+      mSQL += "a.base3=ROUND(a.precio3*100/(100+iva),2), "
+      mSQL += "a.base4=ROUND(a.precio4*100/(100+iva),2), "
+      mSQL += "a.margen1=100-(a.pond*100/ROUND(a.precio1*100/(100+a.iva),2)),"
+      mSQL += "a.margen2=100-(a.pond*100/ROUND(a.precio2*100/(100+a.iva),2)),"
+      mSQL += "a.margen3=100-(a.pond*100/ROUND(a.precio3*100/(100+a.iva),2)),"
+      mSQL += "a.margen4=100-(a.pond*100/ROUND(a.precio4*100/(100+a.iva),2)) "
+      IF !EMPTY(mWHERE)
+         mSQL := "UPDATE sinv AS a, grup AS b, line AS c  "+mSQL
+         mSQL += " WHERE "+mWHERE
+      ELSE
+         mSQL := "UPDATE sinv AS a "+mSQL
+      ENDIF
+
+      SINVPLOGINS(mWHERE)
+
+      EJECUTASQL(mSQL)
+      oCursor:Refresh()
+
+      RESTSCREEN(10,40,17,75,mPA)
+      LOGUSU("AUMENTO DE PRECIOS "+mPORCEN+'% GRUPO='+mGRUPO)
+
+      // ARREGLA LAS BASES Y LOS MARGENES
+      mSQL := "SET "
+      mSQL += "a.base1=ROUND(a.precio1*100/(100+iva),2), "
+      mSQL += "a.base2=ROUND(a.precio2*100/(100+iva),2), "
+      mSQL += "a.base3=ROUND(a.precio3*100/(100+iva),2), "
+      mSQL += "a.base4=ROUND(a.precio4*100/(100+iva),2), "
+      mSQL += "a.margen1=100-(IF(a.formcal='P',a.pond,a.ultimo)*100/ROUND(a.precio1*100/(100+a.iva),2)),"
+      mSQL += "a.margen2=100-(IF(a.formcal='P',a.pond,a.ultimo)*100/ROUND(a.precio2*100/(100+a.iva),2)),"
+      mSQL += "a.margen3=100-(IF(a.formcal='P',a.pond,a.ultimo)*100/ROUND(a.precio3*100/(100+a.iva),2)),"
+      mSQL += "a.margen4=100-(IF(a.formcal='P',a.pond,a.ultimo)*100/ROUND(a.precio4*100/(100+a.iva),2)) "
+      IF !EMPTY(mWHERE)
+         mSQL := "UPDATE sinv AS a, grup AS b, line AS c  "+mSQL
+         mSQL += " WHERE "+mWHERE
+      ELSE
+         mSQL := "UPDATE sinv AS a "+mSQL
+      ENDIF
+      EJECUTASQL(mSQL)
+
+   ELSEIF mSELE = 2  // Recuperar
+      mSQL := "SELECT CONCAT(numero,' ',fecha, ' ', hora, ' ', usuario) FROM sinvplog GROUP BY numero ORDER BY numero DESC LIMIT 20 "
+      mASELE := DAMEAREG(mSQL)
+      mOPCI := {}
+      FOR i := 1 TO LEN(mASELE)
+         AADD(mOPCI, mASELE[i,1] )
+      NEXT
+      mPA   := RECUADRO( 7, 10, 16, 60,,"N/G,GR+/G")
+      @ 7, 10 SAY PADC("CAMBIOS DE PRECIOS",49) COLOR "W/GR"
+      mCUAL := ACHOICE( 09, 12, 16, 56, mOPCI)
+      RESTSCREEN( 7, 10, 16, 60, mPA)
+
+      IF LASTKEY() = 27
+         RETURN .T.
+      ENDIF
+
+      mNUMERO := SUBSTR( mOPCI[mCUAL],1,8)
+      IF SINO("SEGURO QUE DESEA RECUPERAR EL CAMBIO "+mNUMERO,1) = 1
+         mSQL := "UPDATE sinvplog a JOIN sinv b ON a.codigo=b.codigo "
+         mSQL += "SET b.precio1=a.precio1, b.precio2=a.precio2, b.precio3=a.precio3, b.precio4=a.precio4, "
+         mSQL += "b.base1=ROUND(a.precio1*100/(100+b.iva),2), "
+         mSQL += "b.base2=ROUND(a.precio2*100/(100+b.iva),2), "
+         mSQL += "b.base3=ROUND(a.precio3*100/(100+b.iva),2), "
+         mSQL += "b.base4=ROUND(a.precio4*100/(100+b.iva),2), "
+         mSQL += "b.margen1=100-(b.pond*100/ROUND(a.precio1*100/(100+b.iva),2)),"
+         mSQL += "b.margen2=100-(b.pond*100/ROUND(a.precio2*100/(100+b.iva),2)),"
+         mSQL += "b.margen3=100-(b.pond*100/ROUND(a.precio3*100/(100+b.iva),2)),"
+         mSQL += "b.margen4=100-(b.pond*100/ROUND(a.precio4*100/(100+b.iva),2)) "
+         mSQL += "WHERE a.numero= "+mNUMERO
+         EJECUTASQL(mSQL)
+         CMNJ("PRECIOS RESTAURADOS")
+      ENDIF
+   ENDIF
+
+RETURN("")
+*/
+
+
+
 	function cprecios(){
 		$this->rapyd->uri->keep_persistence();
 		
@@ -1400,6 +1656,8 @@ var gridOption={
 	container : 'grid1_container', 
 	dataset : dsOption ,
 	columns : colsOption,
+	allowCustomSkin: true,
+	skin: 'vista',
 	toolbarContent: 'pdf'	
 };
  
@@ -1678,5 +1936,6 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid1) );
 		PRIMARY KEY  (`combo`,`codigo`)
 		) ENGINE=MyISAM DEFAULT CHARSET=latin1";
 		$this->db->simple_query($mSQL);
+		
 	}
 }
