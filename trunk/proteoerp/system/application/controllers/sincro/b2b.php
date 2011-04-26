@@ -69,7 +69,8 @@ class b2b extends validaciones {
 		$filter->buttons('reset','search');
 		$filter->build();
 
-		$acti=anchor_popup('/sincro/b2b/traecompra/<#id#>','Traer Transacciones',$atts);
+		$acti =anchor_popup('/sincro/b2b/traecompra/<#id#>'  ,'Compras'       ,$atts);
+		$acti2=anchor_popup('/sincro/b2b/traeconsigna/<#id#>','Consignaciones',$atts);
 		$link=anchor('/sincro/b2b/dataedit/show/<#id#>','<#id#>');
 		$grid = new DataGrid('lista de conexiones definidas');
 		$grid->order_by('id','asc');
@@ -82,13 +83,13 @@ class b2b extends validaciones {
 		$grid->column_orderby('Tipo'          ,'tipo'   ,'tipo');
 		$grid->column_orderby('Almac&eacute;n','ubides' ,'depo');
 		$grid->column_orderby('Grupo'         ,'grupo'  ,'grupo');
-		$grid->column('Sincronizar' ,$acti);
+		$grid->column('Traer' ,$acti.' | '.$acti2);
 		$grid->add('sincro/b2b/dataedit/create');
 		$grid->build();
 
-		$smenu['link']=barra_menu('921');
+		$smenu['link']   =barra_menu('921');
 		$data['content'] =$filter->output. $grid->output;
-		$data['title']   = '<h1>B2B</h1>';
+		$data['title']   = heading('B2B');
 		$data['smenu']   = $this->load->view('view_sub_menu', $smenu,true);
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
@@ -135,20 +136,22 @@ class b2b extends validaciones {
 		$edit->proveed->append($bSPRV);
 
 		$edit->url = new inputField('Direcci&oacute;n Url', 'url');
-		$edit->url->size      =  50;
-		$edit->url->maxlength =  50;
-		$edit->url->rule      = 'required';
+		$edit->url->insertValue='http://';
+		$edit->url->size       =  50;
+		$edit->url->maxlength  =  50;
+		$edit->url->rule       = 'required';
+		$edit->url->append('Ej: http://www.ejemplo.com');
 
 		$edit->puerto = new inputField('Puerto', 'puerto');
-		$edit->puerto->inserValue=  80;
-		$edit->puerto->size      =  5;
-		$edit->puerto->maxlength =  20;
-		$edit->puerto->rule      = 'required|numeric';
+		$edit->puerto->insertValue=  80;
+		$edit->puerto->size       =  5;
+		$edit->puerto->maxlength  =  20;
+		$edit->puerto->rule       = 'required|numeric';
 
-		$edit->proteo = new inputField('Proteo', 'proteo');
-		$edit->proteo->inserValue=  80;
-		$edit->proteo->size      =  20;
-		$edit->proteo->maxlength =  20;
+		$edit->proteo = new inputField('Ruta a proteo', 'proteo');
+		$edit->proteo->insertValue='proteoerp';
+		$edit->proteo->size       =  20;
+		$edit->proteo->maxlength  =  20;
 
 		$edit->usuario = new inputField('Usuario', 'usuario');
 		$edit->usuario->size      =  20;
@@ -267,7 +270,7 @@ class b2b extends validaciones {
 
 		$data['content'] =$filter->output.$grid->output;
 		$data['head']    = $this->rapyd->get_head();
-		$data['title']   ='<h1>Compras de B2B</h1>';
+		$data['title']   =heading('Compras de B2B');
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -441,21 +444,20 @@ class b2b extends validaciones {
 		'screeny'    => '0'
 		);
 
-		$scli=array(
-		'tabla'   =>'scli',
-		'columnas'=>array(
-		'cliente' =>'C&oacute;digo Cliente',
-		'nombre'=>'Nombre',
-		'contacto'=>'Contacto'),
-		'filtro'  =>array('cliente'=>'C&oacute;digo Cliente','nombre'=>'Nombre'),
-		'retornar'=>array('cliente'=>'cod_cli'),
-		'titulo'  =>'Buscar Cliente');
+		$modbus=array(
+			'tabla'   =>'sprv',
+			'columnas'=>array(
+				'proveed' =>'C&oacute;digo Proveedor',
+				'nombre'=>'Nombre',
+				'rif'=>'RIF'),
+			'filtro'  =>array('proveed'=>'C&oacute;digo Proveedor','nombre'=>'Nombre'),
+			'retornar'=>array('proveed'=>'clipro'),
+			'titulo'  =>'Buscar Proveedor');
+		$boton=$this->datasis->modbus($modbus);
 
-		$boton=$this->datasis->modbus($scli);
-
-		$filter = new DataFilter('Filtro de Prestamos de inventario');
-		$filter->db->select('fecha,numero,cod_cli,nombre,stotal,gtotal,impuesto');
-		$filter->db->from('psinv');
+		$filter = new DataFilter('Filtro de Conseci&oacute;n de inventario');
+		$filter->db->select('fecha,numero,clipro,nombre,stotal,gtotal,impuesto');
+		$filter->db->from('b2b_psinv');
 
 		$filter->fechad = new dateonlyField('Desde', 'fechad');
 		$filter->fechah = new dateonlyField('Hasta', 'fechah');
@@ -471,14 +473,14 @@ class b2b extends validaciones {
 		$filter->factura = new inputField('Factura', 'factura');
 		$filter->factura->size = 30;
 
-		$filter->cliente = new inputField("Cliente","cod_cli");
+		$filter->cliente = new inputField("Cliente",'clipro');
 		$filter->cliente->size = 30;
 		$filter->cliente->append($boton);
 
 		$filter->buttons('reset','search');
 		$filter->build();
 
-		$uri = anchor('inventario/psinv/dataedit/show/<#numero#>','<#numero#>');
+		$uri = anchor('sincro/b2b/psinvedit/show/<#numero#>','<#numero#>');
 		$uri2 = anchor_popup('formatos/verhtml/PSINV/<#numero#>',"Ver HTML",$atts);
 
 		$grid = new DataGrid();
@@ -504,7 +506,7 @@ class b2b extends validaciones {
 	}
 
 	function psinvedit(){
-				$this->rapyd->load('dataobject','datadetails');
+		$this->rapyd->load('dataobject','datadetails');
 
 		$modbus=array(
 		'tabla'   =>'sinv',
@@ -551,14 +553,14 @@ class b2b extends validaciones {
 
 		$do = new DataObject('b2b_psinv');
 		$do->rel_one_to_many('itpsinv', 'b2b_itpsinv', 'numero');
-		$do->pointer('scli' ,'scli.cliente=psinv.cod_cli','scli.tipo AS sclitipo','left');
-		$do->rel_pointer('itpsinv','sinv','itpsinv.codigo=sinv.codigo','sinv.descrip AS sinvdescrip, sinv.base1 AS sinvprecio1, sinv.base2 AS sinvprecio2, sinv.base3 AS sinvprecio3, sinv.base4 AS sinvprecio4, sinv.iva AS sinviva, sinv.peso AS sinvpeso,sinv.tipo AS sinvtipo');
+		//$do->pointer('scli' ,'scli.cliente=psinv.cod_cli','scli.tipo AS sclitipo','left');
+		$do->rel_pointer('itpsinv','sinv','b2b_itpsinv.codigo=sinv.codigo','sinv.descrip AS sinvdescrip, sinv.base1 AS sinvprecio1, sinv.base2 AS sinvprecio2, sinv.base3 AS sinvprecio3, sinv.base4 AS sinvprecio4, sinv.iva AS sinviva, sinv.peso AS sinvpeso,sinv.tipo AS sinvtipo');
 		
 		$edit = new DataDetails('Pr&eacute;stamo de inventario', $do);
 		$edit->back_url = site_url('inventario/psinv/filteredgrid');
 		$edit->set_rel_title('itpsinv','Producto <#o#>');
 
-		$edit->back_url = $this->back_dataedit;
+		$edit->back_url = site_url('sincro/b2b/psinvfilter'); //$this->back_dataedit;
 
 		$edit->fecha = new DateonlyField('Fecha', 'fecha','d/m/Y');
 		$edit->fecha->insertValue = date('Y-m-d');
@@ -566,16 +568,11 @@ class b2b extends validaciones {
 		$edit->fecha->mode = 'autohide';
 		$edit->fecha->size = 10;
 
-		$edit->tipo = new dropdownField('Tipo', 'tipo');
+		/*$edit->tipo = new dropdownField('Tipo', 'tipo');
 		$edit->tipo->option('R','Recibido');
 		$edit->tipo->option('C','Cedido');
 		//$edit->tipo->option('X','Anulado');
-		$edit->tipo->style='width:160px';
-
-		$edit->vende = new  dropdownField ('Vendedor', 'vende');
-		$edit->vende->options('SELECT vendedor, CONCAT(vendedor,\' \',nombre) nombre FROM vend ORDER BY vendedor');
-		$edit->vende->style='width:200px;';
-		$edit->vende->size = 5;
+		$edit->tipo->style='width:160px';*/
 
 		$edit->numero = new inputField('N&uacute;mero', 'numero');
 		$edit->numero->size = 10;
@@ -583,47 +580,40 @@ class b2b extends validaciones {
 		$edit->numero->maxlength=8;
 		$edit->numero->apply_rules=false; //necesario cuando el campo es clave y no se pide al usuario
 		$edit->numero->when=array('show','modify');
+		$edit->numero->mode='autohide';
 
 		$edit->peso = new inputField('Peso', 'peso');
 		$edit->peso->css_class = 'inputnum';
 		$edit->peso->readonly  = true;
 		$edit->peso->size      = 10;
+		$edit->peso->mode='autohide';
 
-		$edit->cliente = new inputField('Cliente','cod_cli');
-		$edit->cliente->size = 6;
-		$edit->cliente->maxlength=5;
-		$edit->cliente->rule = 'required';
-		$edit->cliente->append($btnc);
+		$edit->clipro = new inputField('Cliente','clipro');
+		$edit->clipro->size = 6;
+		$edit->clipro->maxlength=5;
+		$edit->clipro->rule = 'required';
+		$edit->clipro->append($btnc);
+		$edit->clipro->mode='autohide';
 
 		$edit->nombre = new inputField('Nombre', 'nombre');
 		$edit->nombre->size = 25;
 		$edit->nombre->maxlength=40;
 		$edit->nombre->autocomplete=false;
-
-		$edit->factura = new inputField('Factura', 'factura');
-		$edit->factura->size = 10;
-		$edit->factura->when=array('show');
+		$edit->nombre->mode='autohide';
 
 		$edit->almacen = new  dropdownField ('Almac&eacute;n', 'almacen');
 		$edit->almacen->options('SELECT ubica, CONCAT(ubica,\' \',ubides) nombre FROM caub ORDER BY ubica');
 		$edit->almacen->rule = 'required';
 		$edit->almacen->style='width:200px;';
 		$edit->almacen->size = 5;
+		$edit->almacen->mode='autohide';
 
 		$edit->orden = new inputField("Orden", "orden");
+		$edit->orden->mode='autohide';
 		$edit->orden->size = 10;
 
 		$edit->observa = new inputField("Observaci&oacute;n", "observa");
 		$edit->observa->size = 37;
-
-		$edit->dir_cli = new inputField("Direcci&oacute;n","dir_cli");
-		$edit->dir_cli->size = 37;
-
-		//Para saber que precio se le va a dar al cliente
-		$edit->sclitipo = new hiddenField('', 'sclitipo');
-		$edit->sclitipo->db_name     = 'sclitipo';
-		$edit->sclitipo->pointer     = true;
-		$edit->sclitipo->insertValue = 1;
 
 		//Campos para el detalle
 		$edit->codigo = new inputField('C&oacute;digo <#o#>', 'codigo_<#i#>');
@@ -632,6 +622,7 @@ class b2b extends validaciones {
 		$edit->codigo->readonly = true;
 		$edit->codigo->rel_id   = 'itpsinv';
 		$edit->codigo->rule     = 'required';
+		$edit->codigo->readonly=false;
 		$edit->codigo->append($btn);
 
 		$edit->desca = new inputField('Descripci&oacute;n <#o#>', 'desca_<#i#>');
@@ -649,19 +640,32 @@ class b2b extends validaciones {
 		$edit->cana->size     = 6;
 		$edit->cana->rule     = 'required|positive';
 		$edit->cana->autocomplete=false;
+		$edit->cana->readonly=false;
 		$edit->cana->onkeyup  ='importe(<#i#>)';
+
+		$edit->canareci = new inputField('Cantidad recibida <#o#>', 'canareci_<#i#>');
+		$edit->canareci->db_name  = 'canareci';
+		$edit->canareci->css_class= 'inputnum';
+		$edit->canareci->rel_id   = 'itpsinv';
+		$edit->canareci->maxlength= 10;
+		$edit->canareci->size     = 6;
+		$edit->canareci->rule     = 'required|positive';
+		$edit->canareci->autocomplete=false;
+		$edit->canareci->onkeyup  ='importe(<#i#>)';
 
 		$edit->precio = new inputField('Precio <#o#>', 'precio_<#i#>');
 		$edit->precio->db_name   = 'precio';
 		$edit->precio->css_class = 'inputnum';
 		$edit->precio->rel_id    = 'itpsinv';
 		$edit->precio->size      = 10;
+		$edit->precio->readonly=false;
 		$edit->precio->rule      = 'required|positive|callback_chpreca[<#i#>]';
 		$edit->precio->readonly  = true;
 
 		$edit->importe = new inputField('Importe <#o#>', 'importe_<#i#>');
 		$edit->importe->db_name='importe';
 		$edit->importe->size=10;
+		$edit->importe->readonly=false;
 		$edit->importe->css_class='inputnum';
 		$edit->importe->rel_id   ='itpsinv';
 
@@ -689,23 +693,30 @@ class b2b extends validaciones {
 
 		$edit->impuesto  = new inputField('Impuesto', 'impuesto');
 		$edit->impuesto->size = 20;
+		$edit->impuesto->mode='autohide';
 		$edit->impuesto->css_class='inputnum';
+		$edit->impuesto->readonly=false;
 
 		$edit->stotal  = new inputField('Sub.Total', 'stotal');
 		$edit->stotal->size = 20;
+		$edit->stotal->mode='autohide';
 		$edit->stotal->css_class='inputnum';
 
 		$edit->gtotal  = new inputField('Total', 'gtotal');
 		$edit->gtotal->size = 20;
+		$edit->gtotal->mode='autohide';
 		$edit->gtotal->css_class='inputnum';
 
 		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
 
-		$edit->buttons('save', 'undo', 'delete', 'back','add_rel');
+		$action = "javascript:window.location='".site_url('sincro/b2b/cargarpsinv/'.$edit->_dataobject->pk['numero'])."'";
+		$edit->button_status('btn_conci', 'Cargar Conciliacion', $action, 'TR','show');
+
+		$edit->buttons('save','modify', 'undo', 'delete', 'back');
 		$edit->build();
 
 		$conten['form']  =&  $edit;
-		$data['content'] = $this->load->view('view_psinv', $conten,true);
+		$data['content'] = $this->load->view('view_b2b_psinv', $conten,true);
 		$data['title']   = heading('Consiganci&oacute;n de inventario');
 		$data['head']    = script('jquery.js').script('jquery-ui.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css').$this->rapyd->get_head().phpscript('nformat.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js').phpscript('nformat.js');
 		$this->load->view('view_ventanas', $data);
@@ -762,7 +773,8 @@ class b2b extends validaciones {
 		$this->xmlrpc->request($request);
 
 		if (!$this->xmlrpc->send_request()){
-			echo $this->xmlrpc->display_error();
+			memowrite($this->xmlrpc->display_error(),'B2B');
+			return true;
 		}else{
 			$res=$this->xmlrpc->display_response();
 			foreach($res AS $ind=>$compra){
@@ -1069,10 +1081,10 @@ class b2b extends validaciones {
 		$puerto= (empty($config['puerto'])) ? 80 : $config['puerto'];
 
 		$this->xmlrpc->server($server_url , $puerto);
-		$this->xmlrpc->method('cea');
+		$this->xmlrpc->method('consiea');
 
 		if(is_null($ultimo)){
-			$ufac=$this->datasis->dameval('SELECT MAX(numero) FROM b2b_psinv WHERE cod_cli='.$this->db->escape($config['proveed']));
+			$ufac=$this->datasis->dameval('SELECT MAX(orden) FROM b2b_psinv WHERE clipro='.$this->db->escape($config['proveed']));
 			if(empty($ufac)) $ufac=0;
 		}elseif(is_numeric($ultimo)){
 			$ufac=$ultimo;
@@ -1084,20 +1096,22 @@ class b2b extends validaciones {
 		$this->xmlrpc->request($request);
 
 		if (!$this->xmlrpc->send_request()){
-			echo $this->xmlrpc->display_error();
+			memowrite($this->xmlrpc->display_error(),'B2B');
+			return true;
 		}else{
 			$res=$this->xmlrpc->display_response();
 			foreach($res AS $ind=>$exdata){
 				$this->consignaCargadas++;
 				$arr=unserialize($exdata);
-				foreach($arr['pres'] AS $in => $val) $arr[$in]=base64_decode($val);
+				foreach($arr['psinv'] AS $in => $val) $arr[$in]=base64_decode($val);
 
 				$proveed=$config['proveed'];
 				$pnombre=$this->datasis->dameval('SELECT nombre FROM sprv WHERE proveed='.$this->db->escape($proveed));
 
+				$data=array();
 				$data['fecha']      = $arr['fecha'];
 				$data['status']     = 'T';
-				$data['cod_cli']    = $proveed;
+				$data['clipro']     = $proveed;
 				$data['almacen']    = $config['depo'];
 				$data['nombre']     = $pnombre;
 				$data['orden']      = $arr['numero'];
@@ -1136,18 +1150,19 @@ class b2b extends validaciones {
 								$arr[$in][$ind]=round(($arr[$in]['precio']*100/(100-$config['margen1'])),2);
 							}
 						}
+						$ddata=array();
 
-						$data['numero']     =$id_psinv;
-						$data['codigo']     =trim($arr[$in]['codigo']);
-						$data['desca']      =$arr[$in]['desca'];
-						$data['cana']       =$arr[$in]['cana'];
-						$data['canareci']   =0;
-						$data['precio']     =$arr[$in]['precio'];
-						$data['importe']    =$arr[$in]['importe'];
-						$data['iva']        =$arr[$in]['iva'];
-						$data['mostrado']   =$arr[$in]['mostrado'];
-						//$data['entregado']  ='';
-						$data['tipo']       ='R';
+						$ddata['numero']     =$id_psinv;
+						$ddata['codigo']     =trim($arr[$in]['codigo']);
+						$ddata['desca']      =$arr[$in]['desca'];
+						$ddata['cana']       =$arr[$in]['cana'];
+						$ddata['canareci']   =$arr[$in]['cana'];
+						$ddata['precio']     =$arr[$in]['precio'];
+						$ddata['importe']    =$arr[$in]['importe'];
+						$ddata['iva']        =$arr[$in]['iva'];
+						//$ddata['mostrado']   =$arr[$in]['mostrado'];
+						//$ddata['entregado']  ='';
+						$ddata['tipo']       ='R';
 
 						$barras=trim($arr[$in]['barras']);
 
@@ -1183,15 +1198,15 @@ class b2b extends validaciones {
 							$invent['prov1']    = $proveed;
 							$invent['descrip']  = $arr[$in]['desca'];
 							$invent['existen']  = $arr[$in]['cana'];
-							$invent['pond']     = $arr[$in]['preca'];
-							$invent['ultimo']   = $arr[$in]['preca'];
+							$invent['pond']     = $arr[$in]['precio'];
+							$invent['ultimo']   = $arr[$in]['precio'];
 							$invent['unidad']   = $arr[$in]['unidad'];
 							$invent['tipo']     = $arr[$in]['tipo'];
 							$invent['tdecimal'] = $arr[$in]['tdecimal'];
-							$invent['margen1']  = round(100-($arr[$in]['preca']*100/$base1),2);
-							$invent['margen2']  = round(100-($arr[$in]['preca']*100/$base2),2);
-							$invent['margen3']  = round(100-($arr[$in]['preca']*100/$base3),2);
-							$invent['margen4']  = round(100-($arr[$in]['preca']*100/$base4),2);
+							$invent['margen1']  = round(100-($arr[$in]['precio']*100/$base1),2);
+							$invent['margen2']  = round(100-($arr[$in]['precio']*100/$base2),2);
+							$invent['margen3']  = round(100-($arr[$in]['precio']*100/$base3),2);
+							$invent['margen4']  = round(100-($arr[$in]['precio']*100/$base4),2);
 							$invent['base1']    = round($base1,2);
 							$invent['base2']    = round($base2,2);
 							$invent['base3']    = round($base3,2);
@@ -1218,22 +1233,95 @@ class b2b extends validaciones {
 						}
 						$ddata['codigolocal'] = $codigolocal;
 
-						$mSQL=$this->db->insert_string('b2b_itscst',$ddata);
+						$mSQL=$this->db->insert_string('b2b_itpsinv',$ddata);
 						$rt=$this->db->simple_query($mSQL);
 						if(!$rt){
 							memowrite($mSQL,'B2B');
 							$er++;
 						}
 					}
-					if(!$this->_cargacompra($id_scst)) $er=false;
-
 				}
 			}
 		}
 		return $er;
 	}
 
+	function cargarpsinv($id){
+		$rt=$this->_cargarpsinv($id);
+		//redirect('sincro/b2b/psinvedit/show/'.$id);
+	}
 
+	function _cargarpsinv($id){
+		$er=0;
+
+		$query=$this->db->query('SELECT numero,fecha,vende,status,factura,clipro,almacen,nombre,orden,observa,stotal,impuesto,gtotal,tipo,peso,estampa,pcontrol FROM b2b_psinv WHERE numero = ?',$id);
+
+		if ($query->num_rows() > 0){
+			$row = $query->row();
+
+			$transac= $this->datasis->fprox_numero('ntransa');
+			$estampa=date('Ymd');
+			$hora   =date('H:m:s');
+			$data['fecha']      =$row->fecha;
+			$data['vende']      ='';
+			$data['status']     ='R';
+			$data['factura']    ='';
+			$data['clipro']     =$row->clipro;
+			$data['almacen']    =$row->almacen;
+			$data['nombre']     =$row->nombre;
+			$data['dir_clipro'] ='';
+			$data['orden']      =$row->orden;
+			$data['observa']    =$row->observa;
+			$data['stotal']     =$row->stotal;
+			$data['impuesto']   =$row->impuesto;
+			$data['gtotal']     =$row->gtotal;
+			$data['tipo']       ='R';
+			$data['peso']       =$row->peso;
+			$data['agente']     ='sprv';
+			$data['estampa']    =$estampa;
+			$data['usuario']    =$this->session->userdata('usuario');
+			$data['hora']       =$estampa;
+			$data['transac']    =$transac;
+
+			$mSQL=$this->db->insert_string('psinv',$data);
+			$rt=$this->db->simple_query($mSQL);
+			if(!$rt){
+				memowrite($mSQL,'B2B');
+				$maestro=false;
+				$er++;
+			}else{
+				$id_psinv=$this->db->insert_id();
+				$maestro=true;
+			}
+
+			if($maestro){
+				$data=array();
+				$importe=0;
+				$qquery=$this->db->query('SELECT numero,codigo,codigolocal,desca,cana,canareci,precio,importe,iva,mostrado,entregado,tipo,id,modificado FROM b2b_itpsinv WHERE numero = ?',$id);
+				foreach ($qquery->result() as $rrow){
+					$data['numero']   = $id_psinv;
+					$data['codigo']   = $rrow->codigolocal;
+					$data['desca']    = $rrow->desca;
+					$data['cana']     = $rrow->canareci;
+					$data['canareci'] = $rrow->canareci;
+					$data['precio']   = $rrow->precio;
+					$data['importe']  = $rrow->canareci*$rrow->precio;
+					$data['iva']      = $rrow->iva;
+					$data['mostrado'] = $rrow->precio*(100+$rrow->iva)/100;
+					$data['tipo']     = 'R';
+					$importe += $data['importe'];
+
+					$mSQL=$this->db->insert_string('itpsinv',$data);
+					$rt  =$this->db->simple_query($mSQL);
+					if(!$rt){
+						memowrite($mSQL,'B2B');
+						$er++;
+					}
+				}
+			}
+		}
+		return $er;
+	}
 //****************************************************
 // Metodos para gestionar transacciones como gasto
 //****************************************************
