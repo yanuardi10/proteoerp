@@ -5,7 +5,7 @@ class sfac extends Controller {
 		parent::Controller(); 
 		$this->load->library("rapyd");
 		$this->datasis->modulo_id(103,1);
-		$this->back_dataedit='ventas/factura/index';
+		$this->back_dataedit='ventas/sfac/index';
 	}
 
 	function index() {
@@ -85,7 +85,7 @@ class sfac extends Controller {
 		$filter->buttons('reset','search');
 		$filter->build("dataformfiltro");
     
-		$uri = anchor('ventas/factura/dataedit/show/<#tipo_doc#>/<#numero#>','<#tipo_doc#><#numero#>');
+		$uri = anchor('ventas/sfac/dataedit/show/<#tipo_doc#>/<#numero#>','<#tipo_doc#><#numero#>');
 		$uri2 = anchor_popup('formatos/verhtml/FACTURA/<#tipo_doc#>/<#numero#>','Ver',$atts);
 		$uri3 = anchor_popup('formatos/verhtml/FACTURA/<#tipo_doc#>/<#factura#>','<#factura#>',$atts);
     

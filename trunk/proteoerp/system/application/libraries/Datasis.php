@@ -8,7 +8,7 @@
  **/
 
 class Datasis {
-
+	// TRAE EL PRIMER CAMPO DEL PRIMER REGISTRO DE LA CONSULTA
 	function dameval($mpara,$data=array()){
 		$CI =& get_instance();
 		$qq = $CI->db->query($mpara,$data);
@@ -26,14 +26,22 @@ class Datasis {
 		return $row;
 	}
 
-	function traevalor($mvalor){
+	// Tae valor de la table VALORES
+	function traevalor($nombre){
 		$CI =& get_instance();
-		$CI->db->query("INSERT IGNORE INTO valores SET nombre='$mvalor'");
-		$qq = $CI->db->query("SELECT valor FROM valores WHERE nombre='$mvalor'");
+		$CI->db->query("INSERT IGNORE INTO valores SET nombre='$nombre'");
+		$qq = $CI->db->query("SELECT valor FROM valores WHERE nombre='$nombre'");
 		$rr = $qq->row_array();
 		$aa = each($rr);
 		return $aa[1];
 	}
+
+	// Pone un valor en la tabla Valores
+	function ponevalor($nombre, $mvalor){
+		$CI =& get_instance();
+		$CI->db->simple_query("REPLACE INTO valores SET nombre='$nombre', valor=".$CI->db->escape($mvalor));
+	}
+
 
 	function prox_sql($mcontador){
 		$aa=$this->prox_numero($mcontador,'caja');
@@ -339,4 +347,54 @@ document.body.setAttribute(
 		}
 		return false;
 	}
+
+	// GUARDA DATOS DE SESION EN MYSQL
+	function guardasesion($datos){
+		$CI =& get_instance();
+
+		$mSQL = "CREATE TABLE IF NOT EXISTS data_sesion (
+			id INT(11) NULL AUTO_INCREMENT,
+			sesionid VARCHAR(40) NULL,
+			data1 TEXT NULL, data2 TEXT NULL, data3 TEXT NULL, data4 TEXT NULL,
+			fecha TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+			PRIMARY KEY (id), UNIQUE INDEX sesion (sesionid)
+			)COLLATE='lotin1' ENGINE=MyISAM ";
+		$CI->db->simple_query($mSQL);
+		
+		$id = $CI->session->userdata('session_id');
+		
+		$mSQL = $CI->db->insert_string("data_sesion", array("sesionid"=>$id));
+		$CI->db->simple_query($mSQL);
+
+		$mSQL = $CI->db->update_string('data_sesion', $datos, "sesionid='$id'");
+		$CI->db->simple_query($mSQL);
+		return $this->dameval("SELECT id FROM data_sesion WHERE sesionid='$id'");
+		
+		
+	}
+
+	// GUARDA DATOS DE SESION EN MYSQL
+	function damesesion($id){
+		$CI =& get_instance();
+
+		$mSQL = "CREATE TABLE IF NOT EXISTS data_sesion (
+			id INT(11) NULL AUTO_INCREMENT,
+			sesionid VARCHAR(40) NULL,
+			data1 TEXT NULL, data2 TEXT NULL, data3 TEXT NULL, data4 TEXT NULL,
+			fecha TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+			PRIMARY KEY (id), UNIQUE INDEX sesion (sesionid)
+			)COLLATE='lotin1' ENGINE=MyISAM ";
+			
+		$CI->db->simple_query($mSQL);
+		
+		//$id = $CI->session->userdata('session_id');
+		$mSQL = "SELECT data1, data2, data3, data4 FROM data_sesion WHERE id='$id'";
+		$query = $CI->db->query($mSQL);
+		return $query->row_array();
+	
+		
+	}
+
+
+
 }
