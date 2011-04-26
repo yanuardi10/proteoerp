@@ -10,7 +10,7 @@ class Rpcserver extends Controller {
 		$config['functions']['sprecios'] = array('function' => 'Rpcserver.precio_supermer');
 		$config['functions']['ttiket']   = array('function' => 'Rpcserver.traer_tiket');
 		$config['functions']['cea']      = array('function' => 'Rpcserver.ComprasEmpresasAsociadas');
-		$config['functions']['consiea']  = array('function' => 'Rpcserver.ConsignacionEmpresasAsociadas');
+		$config['functions']['consiea']  = array('function' => 'Rpcserver.ConsignacionesEmpresasAsociadas');
 
 		$this->xmlrpcs->initialize($config);
 		$this->xmlrpcs->serve();
@@ -91,7 +91,9 @@ class Rpcserver extends Controller {
     
 					//Prepara los articulos
 					$it=array();
-					$mmSQL="SELECT TRIM(a.codigoa) AS codigoa,TRIM(a.desca) AS desca,SUM(a.cana) AS cana ,a.preca,SUM(a.tota) AS tota,a.iva,b.barras,b.precio1,b.precio1 AS precio2,b.precio1 AS precio3,b.precio1 AS precio4,b.unidad, b.tipo, b.tdecimal FROM sitems AS a JOIN sinv AS b ON a.codigoa=b.codigo WHERE numa=? AND tipoa='F' GROUP BY a.codigoa";
+					$mmSQL="SELECT TRIM(a.codigoa) AS codigoa,TRIM(a.desca) AS desca,SUM(a.cana) AS cana ,a.preca,SUM(a.tota) AS tota,a.iva,b.barras,b.precio1,b.precio1 AS precio2,b.precio1 AS precio3,b.precio1 AS precio4,b.unidad, b.tipo, b.tdecimal
+						FROM sitems AS a JOIN sinv AS b ON a.codigoa=b.codigo
+						WHERE numa=? AND tipoa='F' GROUP BY a.codigoa";
 					$qquery = $this->db->query($mmSQL,array($numero));
 					foreach ($qquery->result_array() as $rrow){
 						foreach($rrow AS $ind=>$val){
@@ -104,6 +106,8 @@ class Rpcserver extends Controller {
 					$compras[]=serialize($pivot);
 				}
 			}
+		}else{
+			return $this->xmlrpc->send_error_message('100', 'Acceso Negado');
 		}
 
 		$response = array($compras,'struct');
@@ -119,39 +123,48 @@ class Rpcserver extends Controller {
 		$pwd    =$parameters['3'];
 		$cant   =5;
 
-		$cosignacion=array();
-		if($this->secu->cliente($usr,$pwd)){
-			$mSQL="SELECT numero,fecha,status,orden,observa,stotal,impuesto,gtotal,tipo,peso FROM psinv WHERE clipro=? AND numero > ? AND status='T' AND tipo='E' LIMIT $cant";
-			$query = $this->db->query($mSQL,array($usr,$ult_ref));
-			//memowrite($this->db->last_query(),'B2B');
-			if ($query->num_rows() > 0){ 
-				$pivot=array();
-				foreach ($query->result_array() as $row){
-					$numero=$row['numero'];
-					//Prepara el encabezado
-					foreach($row AS $ind=>$val){
-						$row[$ind]=base64_encode($val);
-					}
-					$pivot['psinv']=$row;
-    
-					//Prepara los articulos
-					$it=array();
-					$mmSQL="SELECT a.numero,TRIM(a.codigo) AS codigo,TRIM(a.desca) AS desca,SUM(a.cana) AS cana ,a.precio,SUM(a.importe) AS importe,a.iva,b.barras,b.precio1,b.precio2 AS precio2,b.precio3 AS precio3,b.precio4 AS precio4,b.unidad, b.tipo, b.tdecimal FROM itpsinv AS a JOIN sinv AS b ON a.codigo=b.codigo WHERE a.numero=? GROUP BY a.codigo";
-					$qquery = $this->db->query($mmSQL,array($numero));
-					foreach ($qquery->result_array() as $rrow){
-						foreach($rrow AS $ind=>$val){
-							$rrow[$ind]=base64_encode($val);
+		if($this->db->table_exists('psinv') && $this->db->table_exists('itpsinv')){
+			$consignacion=array();
+			if($this->secu->cliente($usr,$pwd)){
+				$mSQL="SELECT numero,fecha,status,orden,observa,stotal,impuesto,gtotal,tipo,peso
+					FROM psinv
+					WHERE clipro=? AND numero > ?
+					AND status='T' AND agente='scli' LIMIT $cant";
+				$query = $this->db->query($mSQL,array($usr,$ult_ref));
+				//memowrite($this->db->last_query(),'B2B');
+				if ($query->num_rows() > 0){ 
+					$pivot=array();
+					foreach ($query->result_array() as $row){
+						$numero=$row['numero'];
+						//Prepara el encabezado
+						foreach($row AS $ind=>$val){
+							$row[$ind]=base64_encode($val);
 						}
-						$it[]=$rrow;
+						$pivot['psinv']=$row;
+		
+						//Prepara los articulos
+						$it=array();
+						$mmSQL="SELECT a.numero,TRIM(a.codigo) AS codigo,TRIM(a.desca) AS desca,SUM(a.cana) AS cana ,a.precio,SUM(a.importe) AS importe,a.iva,b.barras,b.precio1,b.precio2 AS precio2,b.precio3 AS precio3,b.precio4 AS precio4,b.unidad, b.tipo, b.tdecimal FROM itpsinv AS a JOIN sinv AS b ON a.codigo=b.codigo WHERE a.numero=? GROUP BY a.codigo";
+						$qquery = $this->db->query($mmSQL,array($numero));
+						foreach ($qquery->result_array() as $rrow){
+							foreach($rrow AS $ind=>$val){
+								$rrow[$ind]=base64_encode($val);
+							}
+							$it[]=$rrow;
+						}
+						$pivot['itpsinv']=$it;
+		
+						$consignacion[]=serialize($pivot);
 					}
-					$pivot['itpsinv']=$it;
-    
-					$comsignacion[]=serialize($pivot);
 				}
+			}else{
+				return $this->xmlrpc->send_error_message('100', 'Acceso Negado');
 			}
+		}else{
+			return $this->xmlrpc->send_error_message('101', 'Servicio no esta disponible');
 		}
 
-		$response = array($comsignacion,'struct');
+		$response = array($consignacion,'struct');
 		return $this->xmlrpc->send_response($response);
 	}
 

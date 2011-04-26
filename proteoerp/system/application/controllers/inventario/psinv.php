@@ -128,7 +128,7 @@ class psinv extends Controller {
 				'tipo'=>'Tipo'),
 			'filtro'  =>array('cliente'=>'C&oacute;digo Cliente','nombre'=>'Nombre'),
 			'retornar'=>array('cliente'=>'clipro','nombre'=>'nombre',
-							'dire11'=>'dir_clipro','tipo'=>'sclitipo'),
+							'dire11'=>'dir_clipro','tipo'=>'cliprotipo'),
 			'titulo'  =>'Buscar Cliente',
 			'script'  => array('post_modbus_scli()'));
 
@@ -189,9 +189,10 @@ class psinv extends Controller {
 
 		$edit->pre_process('insert' ,'_pre_insert');
 		$edit->pre_process('update' ,'_pre_update');
+		$edit->pre_process('delete' ,'_pre_delete');
 		$edit->post_process('insert','_post_insert');
-		$edit->post_process('update','_post_update');
-		$edit->post_process('delete','_post_delete');
+		//$edit->post_process('update','_post_update');
+		//$edit->post_process('delete','_post_delete');
 
 		$edit->fecha = new DateonlyField('Fecha', 'fecha','d/m/Y');
 		$edit->fecha->insertValue = date('Y-m-d');
@@ -380,7 +381,7 @@ class psinv extends Controller {
 		$vende  = $do->get('vende');
 		$usuario= $do->get('usuario');
 		$estampa= date('Ymd');
-		$hora   = date("H:i:s");
+		$hora   = date('H:i:s');
 
 		$iva=$stotal=0;
 		$cana=$do->count_rel('itpsinv');
@@ -405,16 +406,36 @@ class psinv extends Controller {
 		$do->set('stotal'  ,round($stotal,2));
 		$do->set('gtotal'  ,round($gtotal,2));
 		$do->set('impuesto',round($iva   ,2));
+		$do->set('status'  ,'T');
 
 		return true;
 	}
 
 	function _post_insert($do){
-		//$opttipo=$this->uri->segment(4);
+		$opttipo= $do->get('agente');
 		$codigo = $do->get('numero');
 		$almacen= $do->get('almacen');
 		$tipo   = $do->get('tipo');
-		$fact   = ($tipo=='R') ? 1 : -1;
+		$fact   = ($opttipo=='scli') ? -1 : 1;
+
+		$mSQL='UPDATE sinv JOIN itpsinv ON sinv.codigo=itpsinv.codigo SET sinv.existen=sinv.existen+('.$fact.')*(itpsinv.cana) WHERE itpsinv.numero='.$this->db->escape($codigo);
+		$ban=$this->db->simple_query($mSQL);
+		if($ban==false){ memowrite($mSQL,'psinv'); }
+
+		$mSQL='UPDATE itsinv JOIN itpsinv ON itsinv.codigo=itpsinv.codigo SET itsinv.existen=itsinv.existen+('.$fact.')*(itpsinv.cana) WHERE itpsinv.numero='.$this->db->escape($codigo).' AND itsinv.alma='.$this->db->escape($almacen);
+		$ban=$this->db->simple_query($mSQL);
+		if($ban==false){ memowrite($mSQL,'psinv'); }
+
+		$codigo=$do->get('numero');
+		logusu('psinv',"Prestamo de inventario $codigo CREADO");
+	}
+
+	function _pre_delete($do){
+		$opttipo= $do->get('agente');
+		$codigo = $do->get('numero');
+		$almacen= $do->get('almacen');
+		$tipo   = $do->get('tipo');
+		$fact   = ($opttipo=='scli') ? 1 : -1;
 
 		$mSQL='UPDATE sinv JOIN itpsinv ON sinv.codigo=itpsinv.codigo SET sinv.existen=sinv.existen+('.$fact.')*(itpsinv.cana) WHERE itpsinv.numero='.$this->db->escape($codigo);
 		$ban=$this->db->simple_query($mSQL);
@@ -425,7 +446,7 @@ class psinv extends Controller {
 		if($ban==false){ memowrite($mSQL,'psinv'); }
 
 		$codigo=$do->get('numero');
-		logusu('psinv',"Prestamo de inventario $codigo CREADO");
+		logusu('psinv',"Prestamo de inventario $codigo ELIMINADO");
 	}
 
 	function chpreca($preca,$ind){
