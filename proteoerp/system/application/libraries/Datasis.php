@@ -358,7 +358,7 @@ document.body.setAttribute(
 			data1 TEXT NULL, data2 TEXT NULL, data3 TEXT NULL, data4 TEXT NULL,
 			fecha TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 			PRIMARY KEY (id), UNIQUE INDEX sesion (sesionid)
-			)COLLATE='lotin1' ENGINE=MyISAM ";
+			)DEFAULT CHARSET 'latin1' ENGINE=MyISAM ";
 		$CI->db->simple_query($mSQL);
 		
 		$id = $CI->session->userdata('session_id');
@@ -383,7 +383,7 @@ document.body.setAttribute(
 			data1 TEXT NULL, data2 TEXT NULL, data3 TEXT NULL, data4 TEXT NULL,
 			fecha TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 			PRIMARY KEY (id), UNIQUE INDEX sesion (sesionid)
-			)COLLATE='lotin1' ENGINE=MyISAM ";
+			)DEFAULT CHARSET 'latin1' ENGINE=MyISAM ";
 			
 		$CI->db->simple_query($mSQL);
 		

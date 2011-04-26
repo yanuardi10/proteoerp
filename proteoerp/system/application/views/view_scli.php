@@ -93,8 +93,9 @@ else:
 					<td class="littletablerow"><?=$form->formap->output ?></td>
 				</tr>
 				<tr>
-					<td class="littletableheaderc"><?=$form->limite->label  ?></td>
-					<td class="littletablerow"><?php echo nformat($form->limite->value,0) ?></td>
+					<td class="littletableheaderc"><?php echo $form->limite->label  ?></td>
+					
+					<td class="littletablerow">    <?php echo $form->limite->output ?></td>
 				</tr>				
 			</table>
 			</fieldset>
