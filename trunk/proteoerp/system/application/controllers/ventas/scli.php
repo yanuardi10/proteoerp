@@ -468,7 +468,7 @@ function consulrif(campo){
 
 		$data['style']	 = $style;
 
-		$data['head']   .= $this->rapyd->get_head();
+		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 
