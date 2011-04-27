@@ -126,33 +126,38 @@ class Rpcserver extends Controller {
 		if($this->db->table_exists('psinv') && $this->db->table_exists('itpsinv')){
 			$consignacion=array();
 			if($this->secu->cliente($usr,$pwd)){
-				$mSQL="SELECT numero,fecha,status,orden,observa,stotal,impuesto,gtotal,tipo,peso
-					FROM psinv
-					WHERE clipro=? AND numero > ?
-					AND status='T' AND agente='scli' LIMIT $cant";
+				$mSQL="SELECT numero,fecha,status,observ1,stotal,impuesto,gtotal,peso,id
+					FROM scon
+					WHERE clipro=? AND id > ?
+					AND status='T' AND tipo='C' AND tipod='E' LIMIT $cant";
 				$query = $this->db->query($mSQL,array($usr,$ult_ref));
-				//memowrite($this->db->last_query(),'B2B');
+				//memowrite($this->db->last_query(),'B2Ba');
 				if ($query->num_rows() > 0){ 
 					$pivot=array();
 					foreach ($query->result_array() as $row){
-						$numero=$row['numero'];
+						$id=$row['id'];
 						//Prepara el encabezado
 						foreach($row AS $ind=>$val){
 							$row[$ind]=base64_encode($val);
 						}
-						$pivot['psinv']=$row;
+						$pivot['scon']=$row;
 		
 						//Prepara los articulos
 						$it=array();
-						$mmSQL="SELECT a.numero,TRIM(a.codigo) AS codigo,TRIM(a.desca) AS desca,SUM(a.cana) AS cana ,a.precio,SUM(a.importe) AS importe,a.iva,b.barras,b.precio1,b.precio2 AS precio2,b.precio3 AS precio3,b.precio4 AS precio4,b.unidad, b.tipo, b.tdecimal FROM itpsinv AS a JOIN sinv AS b ON a.codigo=b.codigo WHERE a.numero=? GROUP BY a.codigo";
-						$qquery = $this->db->query($mmSQL,array($numero));
+						$mmSQL="SELECT a.numero,TRIM(a.codigo) AS codigo,TRIM(a.desca) AS desca,SUM(a.cana) AS cana ,
+							a.precio,SUM(a.importe) AS importe,a.iva,b.barras,b.precio1,b.precio2 AS precio2,
+							b.precio3 AS precio3,b.precio4 AS precio4,b.unidad, b.tipo, b.tdecimal
+							FROM itscon AS a JOIN sinv AS b ON a.codigo=b.codigo
+							WHERE a.id_scon=? GROUP BY a.codigo";
+						$qquery = $this->db->query($mmSQL,array($id));
+						//memowrite($this->db->last_query(),'B2Ba');
 						foreach ($qquery->result_array() as $rrow){
 							foreach($rrow AS $ind=>$val){
 								$rrow[$ind]=base64_encode($val);
 							}
 							$it[]=$rrow;
 						}
-						$pivot['itpsinv']=$it;
+						$pivot['itscon']=$it;
 		
 						$consignacion[]=serialize($pivot);
 					}
