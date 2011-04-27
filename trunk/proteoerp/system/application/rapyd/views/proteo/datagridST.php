@@ -51,11 +51,12 @@
 			</div>
 			<div class="mainbackground">
 				<div class="pagenav"><?php echo $pager;?></div></div>
-			<div class="mainfooter">
-			<div>
-			<div style="float:left"><?php echo $container_bl?></div>
-			<div style="float:right"><?php echo $container_br?></div>
-			</div><div style="clear:both;"></div>
+				<div class="mainfooter"><?php echo "Cantidad de Registros ".nformat($total_rows,0) ?>
+					<div>
+						<div style="float:left"><?php echo $container_bl?></div>
+						<div style="float:right"><?php echo $container_br?></div>
+					</div>
+				<div style="clear:both;"></div>
 			</div>
 		</td>
 	</tr>
