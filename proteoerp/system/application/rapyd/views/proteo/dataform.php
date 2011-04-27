@@ -55,7 +55,7 @@
 		<?php endif;//hidden?>
 	<?php endforeach;//field_series?>
 	<?php if ($group["group_name"] != "ungrouped"):?>
-							tr>
+							<tr>
 								<td colspan="2"></td>
 							</tr>
 						</table>
