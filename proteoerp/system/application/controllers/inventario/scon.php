@@ -34,8 +34,6 @@ class scon extends Controller {
 		$boton=$this->datasis->modbus($scli);
 
 		$filter = new DataFilter('Filtro de consignaciones','scon');
-		//$filter->db->select(array('fecha','numero','clipro','nombre','stotal','gtotal','impuesto','tipo','id'));
-		//$filter->db->from('scon');
 
 		$filter->fechad = new dateonlyField('Desde', 'fechad');
 		$filter->fechah = new dateonlyField('Hasta', 'fechah');
@@ -73,7 +71,7 @@ class scon extends Controller {
 		$grid->column_orderby('Total'         ,'<nformat><#gtotal#></nformat>'  ,'gtotal','align=\'right\'');
 		//$grid->column_orderby("Vista",$uri2,"align='center'");
 
-		$grid->add('inventario/psinv/agregar');
+		$grid->add('inventario/scon/agregar');
 		$grid->build();
 		//echo $grid->db->last_query();
 
@@ -84,11 +82,15 @@ class scon extends Controller {
 	}
 
 	function agregar(){
-		$data['content'] = anchor('inventario/scon/dataedit/sprv/create','Consignacion recibida por proveedor').br();
-		$data['content'].= anchor('inventario/scon/dataedit/sprv/create','Devolver Consignacion recibida por proveedor').br();
-		$data['content'].= anchor('inventario/scon/dataedit/scli/create','Consignacion dada a cliente').br();
-		$data['content'].= anchor('inventario/scon/dataedit/scli/create','Devolver Consignacion dada a cliente').br();
 
+		$ul=array();
+		$ul[] = anchor('inventario/scon/dataedit/P/create','Consignaci&oacute;n de <b>proveedor</b>').': Recibir o Devolver mercanc&iacute;a a proveedor.';
+		//$ul[] = anchor('inventario/scon/dataedit/P/create','Devolver Consignacion recibida por proveedor');
+		$ul[] = anchor('inventario/scon/dataedit/C/create','Consignaci&oacute;n de <b>cliente</b>').': Recibir o Devolver mercanc&iacute;a a cliente.';
+		//$ul[] = anchor('inventario/scon/dataedit/C/create','Devolver Consignacion dada a cliente');
+
+		$data['content'] = heading('Seleccione una modalidad:',2);
+		$data['content'].= ul($ul).anchor('inventario/scon/index','Regresar');
 		$data['title']   = heading('Inventario a consignaci&oacute;n');
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
@@ -128,7 +130,7 @@ class scon extends Controller {
 				'tipo'=>'Tipo'),
 			'filtro'  =>array('cliente'=>'C&oacute;digo Cliente','nombre'=>'Nombre'),
 			'retornar'=>array('cliente'=>'clipro','nombre'=>'nombre',
-							'dire11'=>'dir_clipro','tipo'=>'cliprotipo'),
+							'dire11'=>'direc1','tipo'=>'cliprotipo'),
 			'titulo'  =>'Buscar Cliente',
 			'script'  => array('post_modbus_scli()'));
 
@@ -153,7 +155,7 @@ class scon extends Controller {
 				'rif'=>'RIF'),
 			'filtro'  =>array('proveed'=>'C&oacute;digo Proveedor','nombre'=>'Nombre'),
 			'retornar'=>array('proveed'=>'clipro','nombre'=>'nombre',
-							'direc1'=>'dir_clipro'),
+							'direc1'=>'direc1'),
 			'titulo'  =>'Buscar Proveedor');
 
 			$modbus['retornar']=array(
@@ -172,7 +174,7 @@ class scon extends Controller {
 		$btn  =$this->datasis->p_modbus($modbus,'<#i#>');
 
 		$do = new DataObject('scon');
-		$do->rel_one_to_many('itscon', 'itscon', 'numero');
+		$do->rel_one_to_many('itscon', 'itscon', array('id'=>'id_scon'));
 		if($opttipo=='C'){
 			$do->pointer('scli' ,'scli.cliente=scon.clipro','scli.tipo AS cliprotipo','left');
 			$do->rel_pointer('itscon','sinv','itscon.codigo=sinv.codigo','sinv.descrip AS sinvdescrip, sinv.base1 AS sinvprecio1, sinv.base2 AS sinvprecio2, sinv.base3 AS sinvprecio3, sinv.base4 AS sinvprecio4, sinv.iva AS sinviva, sinv.peso AS sinvpeso,sinv.tipo AS sinvtipo');
@@ -182,7 +184,7 @@ class scon extends Controller {
 		}
 
 		$edit = new DataDetails('Inventario a consignaci&oacute;n', $do);
-		$edit->back_url = site_url('inventario/psinv/filteredgrid');
+		$edit->back_url = site_url('inventario/scon/filteredgrid');
 		$edit->set_rel_title('itscon','Producto <#o#>');
 
 		$edit->back_url = $this->back_dataedit;
@@ -198,10 +200,12 @@ class scon extends Controller {
 		$edit->fecha->mode = 'autohide';
 		$edit->fecha->size = 10;
 
-		/*$edit->tipo = new dropdownField('Tipo', 'tipo');
-		$edit->tipo->option('C','Cliente');
-		$edit->tipo->option('P','Proveedor');
-		$edit->tipo->style='width:160px';*/
+		$edit->tipod = new dropdownField('Tipo de movimiento', 'tipod');
+		$edit->tipod->option('E','Entregado');
+		$edit->tipod->option('R','Recibido');
+		$edit->tipod->rule ='required';
+		$edit->tipod->insertValue= ($opttipo=='C') ? 'E' : 'R';
+		$edit->tipod->style='width:160px';
 
 		$edit->numero = new inputField('N&uacute;mero', 'numero');
 		$edit->numero->size = 10;
@@ -215,10 +219,11 @@ class scon extends Controller {
 		$edit->peso->readonly  = true;
 		$edit->peso->size      = 10;
 
-		$edit->clipro = new inputField(($opttipo=='scli') ? 'Cliente':'Proveedor','clipro');
+		$edit->clipro = new inputField(($opttipo=='C') ? 'Cliente':'Proveedor','clipro');
 		$edit->clipro->size = 6;
 		$edit->clipro->maxlength=5;
 		$edit->clipro->rule = 'required';
+		$edit->clipro->readonly=true;
 		$edit->clipro->append($btnc);
 
 		$edit->nombre = new inputField('Nombre', 'nombre');
@@ -226,9 +231,9 @@ class scon extends Controller {
 		$edit->nombre->maxlength=40;
 		$edit->nombre->autocomplete=false;
 
-		$edit->factura = new inputField('Factura', 'factura');
-		$edit->factura->size = 10;
-		$edit->factura->when=array('show');
+		$edit->asociado = new inputField('Doc. Asociado', 'asociado');
+		$edit->asociado->mode='autohide';
+		$edit->asociado->size = 10;
 
 		$edit->almacen = new  dropdownField ('Almac&eacute;n', 'almacen');
 		$edit->almacen->options('SELECT ubica, CONCAT(ubica,\' \',ubides) nombre FROM caub ORDER BY ubica');
@@ -236,17 +241,11 @@ class scon extends Controller {
 		$edit->almacen->style='width:200px;';
 		$edit->almacen->size = 5;
 
-		$edit->orden = new inputField('Orden', 'orden');
-		$edit->orden->size = 10;
+		$edit->observ1 = new inputField('Observaci&oacute;n', 'observ1');
+		$edit->observ1s->size = 37;
 
-		$edit->observa = new inputField('Observaci&oacute;n', 'observa');
-		$edit->observa->size = 37;
-
-		$edit->dir_clipro = new inputField("Direcci&oacute;n","dir_clipro");
+		$edit->dir_clipro = new inputField("Direcci&oacute;n","direc1");
 		$edit->dir_clipro->size = 37;
-
-		//$edit->dir_cl1 = new inputField(" ","dir_cl1");
-		//$edit->dir_cl1->size = 55; 
 
 		//Para saber que precio se le va a dar al cliente
 		$edit->cliprotipo = new hiddenField('', 'cliprotipo');
@@ -258,8 +257,7 @@ class scon extends Controller {
 		$edit->codigo = new inputField('C&oacute;digo <#o#>', 'codigo_<#i#>');
 		$edit->codigo->size     = 12;
 		$edit->codigo->db_name  = 'codigo';
-		//$edit->codigo->readonly = true;
-		$edit->codigo->onkeyup = 'OnEnter(event,<#i#>)';
+		$edit->codigo->onkeyup   = 'OnEnter(event,<#i#>)';
 		$edit->codigo->autocomplete=false;
 		$edit->codigo->rel_id   = 'itscon';
 		$edit->codigo->rule     = 'required';
@@ -334,19 +332,18 @@ class scon extends Controller {
 		$edit->gtotal->size = 20;
 		$edit->gtotal->css_class='inputnum';
 
-		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
-		$edit->agente  = new autoUpdateField('tipo',$opttipo,$opttipo);
+		$edit->tipo = new autoUpdateField('tipo',$opttipo,$opttipo);
 
-		$edit->buttons('save', 'undo', 'delete', 'back','add_rel');
+		$edit->buttons('save', 'undo', 'back','add_rel');
 		$edit->build();
 
 		$inven=array();
 		if($opttipo=='C'){
-			$titulo='Dar a cliente inventario a consignaci&oacute;n';
+			$titulo='Consignaci&oacute;n a Cliente';
 			$query=$this->db->query('SELECT TRIM(codigo) AS codigo ,TRIM(descrip) AS descrip,tipo,base1,base2,base3,base4,iva,peso,precio1,pond FROM sinv WHERE activo=\'S\'');
 			$edit->tipo  = new autoUpdateField('tipo','C','C');
 		}else{
-			$titulo='Recibir inventario a consignaci&oacute;n de proveedor';
+			$titulo='Consignaci&oacute;n a Proveedor';
 			$query=$this->db->query('SELECT TRIM(codigo) AS codigo ,TRIM(descrip) AS descrip,tipo,ultimo AS base1,ultimo AS base2,ultimo AS base3,ultimo AS base4,iva,peso,precio1,pond FROM sinv WHERE activo=\'S\'');
 			$edit->tipo  = new autoUpdateField('tipo','R','R');
 		}
@@ -374,12 +371,7 @@ class scon extends Controller {
 			$numero = $this->datasis->fprox_numero('nsconp');
 		}
 
-		$transac= $this->datasis->fprox_numero('ntransa');
 		$fecha  = $do->get('fecha');
-		$vende  = $do->get('vende');
-		$usuario= $do->get('usuario');
-		$estampa= date('Ymd');
-		$hora   = date('H:i:s');
 
 		$iva=$stotal=0;
 		$cana=$do->count_rel('itscon');
@@ -390,8 +382,8 @@ class scon extends Controller {
 			$itimporte = $itprecio*$itcana;
 			$iiva      = $itimporte*($itiva/100);
 
-			$do->set_rel('itscon','importe'  ,$itimporte,$i);
-			$do->set_rel('itscon','mostrado' ,$itimporte+$iiva,$i);
+			$do->set_rel('itscon','importe',$itimporte,$i);
+			$do->set_rel('itscon','numero' ,$numero,$i);
 
 			$iva    +=$iiva ;
 			$stotal +=$itimporte;
@@ -399,9 +391,6 @@ class scon extends Controller {
 
 		$gtotal=$stotal+$iva;
 		$do->set('numero'  ,$numero);
-		$do->set('estampa' ,$estampa);
-		$do->set('hora'    ,$hora);
-		$do->set('transac' ,$transac);
 		$do->set('stotal'  ,round($stotal,2));
 		$do->set('gtotal'  ,round($gtotal,2));
 		$do->set('impuesto',round($iva   ,2));
@@ -411,42 +400,27 @@ class scon extends Controller {
 	}
 
 	function _post_insert($do){
-		$opttipo= $do->get('agente');
+		$tipod  = $do->get('tipod');
 		$codigo = $do->get('numero');
+		$id     = $do->get('id');
 		$almacen= $do->get('almacen');
 		$tipo   = $do->get('tipo');
-		$fact   = ($opttipo=='scli') ? -1 : 1;
+		$fact   = ($tipod=='E') ? -1 : 1;
 
-		$mSQL='UPDATE sinv JOIN itscon ON sinv.codigo=itscon.codigo SET sinv.existen=sinv.existen+('.$fact.')*(itscon.cana) WHERE itscon.numero='.$this->db->escape($codigo);
+		$mSQL='UPDATE sinv JOIN itscon ON sinv.codigo=itscon.codigo SET sinv.existen=sinv.existen+('.$fact.')*(itscon.cana) WHERE itscon.id_scon='.$this->db->escape($id);
 		$ban=$this->db->simple_query($mSQL);
-		if($ban==false){ memowrite($mSQL,'psinv'); }
+		if($ban==false){ memowrite($mSQL,'scon'); }
 
-		$mSQL='UPDATE itsinv JOIN itscon ON itsinv.codigo=itscon.codigo SET itsinv.existen=itsinv.existen+('.$fact.')*(itscon.cana) WHERE itscon.numero='.$this->db->escape($codigo).' AND itsinv.alma='.$this->db->escape($almacen);
+		$mSQL='UPDATE itsinv JOIN itscon ON itsinv.codigo=itscon.codigo SET itsinv.existen=itsinv.existen+('.$fact.')*(itscon.cana) WHERE itscon.id_scon='.$this->db->escape($id).' AND itsinv.alma='.$this->db->escape($almacen);
 		$ban=$this->db->simple_query($mSQL);
-		if($ban==false){ memowrite($mSQL,'psinv'); }
+		if($ban==false){ memowrite($mSQL,'scon'); }
 
 		$codigo=$do->get('numero');
-		logusu('psinv',"Prestamo de inventario $codigo CREADO");
+		logusu('scon',"Prestamo de inventario $codigo CREADO");
 	}
 
 	function _pre_delete($do){
 		return false;
-		/*$opttipo= $do->get('agente');
-		$codigo = $do->get('numero');
-		$almacen= $do->get('almacen');
-		$tipo   = $do->get('tipo');
-		$fact   = ($opttipo=='scli') ? 1 : -1;
-
-		$mSQL='UPDATE sinv JOIN itscon ON sinv.codigo=itscon.codigo SET sinv.existen=sinv.existen+('.$fact.')*(itscon.cana) WHERE itscon.numero='.$this->db->escape($codigo);
-		$ban=$this->db->simple_query($mSQL);
-		if($ban==false){ memowrite($mSQL,'psinv'); }
-
-		$mSQL='UPDATE itsinv JOIN itscon ON itsinv.codigo=itscon.codigo SET itsinv.existen=itsinv.existen+('.$fact.')(itscon.cana) WHERE itscon.numero='.$this->db->escape($codigo).' AND itsinv.alma='.$this->db->escape($almacen);
-		$ban=$this->db->simple_query($mSQL);
-		if($ban==false){ memowrite($mSQL,'psinv'); }
-
-		$codigo=$do->get('numero');
-		logusu('psinv',"Conseccion de inventario $codigo ELIMINADO");*/
 	}
 
 	function chpreca($preca,$ind){
@@ -467,10 +441,50 @@ class scon extends Controller {
 	}
 
 	function instalar(){
-		$mSQL="";
+		$mSQL="CREATE TABLE IF NOT EXISTS `scon` (
+			`numero` CHAR(8) NULL DEFAULT NULL,
+			`fecha` DATE NULL DEFAULT NULL,
+			`tipo` CHAR(1) NULL DEFAULT NULL,
+			`tipod` CHAR(1) NULL DEFAULT NULL,
+			`status` CHAR(1) NULL DEFAULT 'T',
+			`asociado` CHAR(8) NULL DEFAULT NULL,
+			`clipro` CHAR(5) NULL DEFAULT NULL,
+			`almacen` CHAR(4) NULL DEFAULT NULL,
+			`nombre` CHAR(40) NULL DEFAULT NULL,
+			`direc1` CHAR(40) NULL DEFAULT NULL,
+			`direc2` CHAR(40) NULL DEFAULT NULL,
+			`observ1` CHAR(33) NULL DEFAULT NULL,
+			`observ2` CHAR(33) NULL DEFAULT NULL,
+			`stotal` DECIMAL(12,2) NULL DEFAULT NULL,
+			`impuesto` DECIMAL(12,2) NULL DEFAULT NULL,
+			`gtotal` DECIMAL(12,2) NULL DEFAULT NULL,
+			`peso` DECIMAL(10,3) NULL DEFAULT NULL,
+			`id` INT(15) UNSIGNED NOT NULL AUTO_INCREMENT,
+			PRIMARY KEY (`id`),
+			UNIQUE INDEX `numero` (`numero`, `tipo`)
+		)
+		COLLATE='latin1_swedish_ci'
+		ENGINE=MyISAM
+		ROW_FORMAT=DEFAULT";
 		var_dump($this->db->simple_query($mSQL));
 
-		$mSQL="";
+		$mSQL="CREATE TABLE IF NOT EXISTS `itscon` (
+			`numero` CHAR(8) NULL DEFAULT NULL,
+			`codigo` VARCHAR(15) NULL DEFAULT NULL,
+			`desca` VARCHAR(40) NULL DEFAULT NULL,
+			`cana` DECIMAL(5,0) NULL DEFAULT NULL,
+			`recibido` DECIMAL(5,0) NULL DEFAULT NULL,
+			`precio` DECIMAL(12,2) NULL DEFAULT NULL,
+			`importe` DECIMAL(12,2) NULL DEFAULT NULL,
+			`iva` DECIMAL(8,2) NULL DEFAULT NULL,
+			`id_scon` INT(15) UNSIGNED NOT NULL,
+			`id` INT(15) UNSIGNED NOT NULL AUTO_INCREMENT,
+			PRIMARY KEY (`id`),
+			INDEX `id_scon` (`id_scon`)
+		)
+		COLLATE='latin1_swedish_ci'
+		ENGINE=MyISAM
+		ROW_FORMAT=DEFAULT";
 		var_dump($this->db->simple_query($mSQL));
 
 	}
