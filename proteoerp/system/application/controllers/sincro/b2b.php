@@ -455,7 +455,7 @@ class b2b extends validaciones {
 			'titulo'  =>'Buscar Proveedor');
 		$boton=$this->datasis->modbus($modbus);
 
-		$filter = new DataFilter('Filtro de Conseci&oacute;n de inventario','b2b_scon');
+		$filter = new DataFilter('Filtro','b2b_scon');
 
 		$filter->fechad = new dateonlyField('Desde', 'fechad');
 		$filter->fechah = new dateonlyField('Hasta', 'fechah');
