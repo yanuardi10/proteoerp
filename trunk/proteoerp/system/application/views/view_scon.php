@@ -274,28 +274,22 @@ function del_itscon(id){
 				<td class="littletablerow">   <?php echo $form->clipro->output,$form->cliprotipo->output,$form->nombre->output; ?>&nbsp;</td>
 			</tr>
 			<tr>
-				<td class="littletableheader">&nbsp;</td>
-				<td class="littletablerow">   &nbsp;</td>
+				<td class="littletableheader"><?php echo $form->tipod->label  ?>&nbsp;</td>
+				<td class="littletablerow">   <?php echo $form->tipod->output ?>&nbsp;</td>
 				<td class="littletableheader"><?php echo $form->dir_clipro->label  ?>&nbsp;</td>
 				<td class="littletablerow"   ><?php echo $form->dir_clipro->output ?>&nbsp;</td>
 			</tr>
 			<tr>
-				<td class="littletableheader"><?php echo $form->orden->label;  ?>&nbsp;</td>
-				<td class="littletablerow" align="left"><?php echo $form->orden->output; ?>&nbsp;</td>
-				<td class="littletableheader"><?php echo $form->observa->label; ?>&nbsp;</td>
-				<td class="littletablerow"   ><?php echo $form->observa->output;?>&nbsp;</td>
+				<td class="littletableheader">          <?php echo $form->asociado->label;  ?>&nbsp;</td>
+				<td class="littletablerow" align="left"><?php echo $form->asociado->output; ?>&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->observ1->label; ?>&nbsp;</td>
+				<td class="littletablerow"   ><?php echo $form->observ1->output;?>&nbsp;</td>
 			</tr>
 			<tr>
-				<td class="littletableheader"><?php echo $form->peso->label;  ?>&nbsp;</td>
+				<td class="littletableheader">          <?php echo $form->peso->label;  ?>&nbsp;</td>
 				<td class="littletablerow" align="left"><?php echo $form->peso->output; ?>&nbsp;</td>
 				<td class="littletableheader"><?php echo $form->almacen->label;     ?>&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->almacen->output;    ?>&nbsp;</td>
-			</tr>
-			<tr>
-				<td class="littletableheader">&nbsp;</td>
-				<td class="littletablerow" align="left">&nbsp;</td>
-				<td class="littletableheader"><?php echo $form->factura->label;  ?>&nbsp;</td>
-				<td class="littletablerow" align="left"><?php echo $form->factura->output; ?>&nbsp;</td>
 			</tr>
 		</table><br>
 		</td>

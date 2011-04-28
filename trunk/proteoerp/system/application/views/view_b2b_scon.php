@@ -7,23 +7,6 @@ if ($form->_status=='delete' || $form->_action=='delete' || $form->_status=='unk
 	echo $form->output;
 else:
 
-$campos=$form->template_details('itpsinv');
-$scampos  ='<tr id="tr_itpsinv_<#i#>">';
-$scampos .='<td class="littletablerow" align="left" >'.$campos['codigo']['field'].'</td>';
-$scampos .='<td class="littletablerow" align="left" >'.$campos['desca']['field'].'</td>';
-$scampos .='<td class="littletablerow" align="right">'.$campos['cana']['field'].  '</td>';
-$scampos .='<td class="littletablerow" align="right">'.$campos['precio']['field']. '</td>';
-$scampos .='<td class="littletablerow" align="right">'.$campos['importe']['field'];
-for($o=1;$o<5;$o++){
-	$it_obj   = "precio${o}";
-	$scampos .= $campos[$it_obj]['field'];
-}
-$scampos .= $campos['itiva']['field'];
-$scampos .= $campos['sinvpeso']['field'];
-$scampos .= $campos['sinvtipo']['field'].'</td>';
-$scampos .= '<td class="littletablerow"><a href=# onclick="del_itpsinv(<#i#>);return false;">Eliminar</a></td></tr>';
-$campos=$form->js_escape($scampos);
-
 if(isset($form->error_string)) echo '<div class="alert">'.$form->error_string.'</div>';
 
 //echo $form_scripts;
@@ -31,7 +14,7 @@ echo $form_begin;
 if($form->_status!='show'){ ?>
 
 <script language="javascript" type="text/javascript">
-var itpsinv_cont=<?php echo $form->max_rel_count['itpsinv']; ?>;
+var itscon_cont=<?php echo $form->max_rel_count['itscon']; ?>;
 var invent = (<?php echo $inven; ?>);
 $(function(){
 	$(document).keydown(function(e){
@@ -51,7 +34,7 @@ $(function(){
 		<td>
 		<table width="100%" style="margin: 0; width: 100%;">
 			<tr>
-				<th colspan='5' class="littletableheader">Pr&eacute;stamo de inventario <b><?php if($form->_status=='show' or $form->_status=='modify' ) echo str_pad($form->numero->output,8,0,0); ?></b></th>
+				<th colspan='5' class="littletableheader">Consignaci&oacute;n de inventario <b><?php if($form->_status=='show' or $form->_status=='modify' ) echo str_pad($form->numero->output,8,0,0); ?></b></th>
 			</tr>
 			<tr>
 				<td class="littletableheader"><?php echo $form->fecha->label;   ?>*&nbsp;</td>
@@ -60,13 +43,19 @@ $(function(){
 				<td class="littletablerow">   <?php echo $form->clipro->output,$form->nombre->output; ?>&nbsp;</td>
 			</tr>
 			<tr>
-				<td class="littletableheader"><?php echo $form->orden->label;  ?>&nbsp;</td>
-				<td class="littletablerow" align="left"><?php echo $form->orden->output; ?>&nbsp;</td>
-				<td class="littletableheader"><?php echo $form->observa->label; ?>&nbsp;</td>
-				<td class="littletablerow"   ><?php echo $form->observa->output;?>&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->pid->label  ?>&nbsp;</td>
+				<td class="littletablerow">   <?php echo $form->pid->output ?>&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->direc1->label  ?>&nbsp;</td>
+				<td class="littletablerow"   ><?php echo $form->direc1->label  ?>&nbsp;</td>
 			</tr>
 			<tr>
-				<td class="littletableheader"><?php echo $form->peso->label;  ?>&nbsp;</td>
+				<td class="littletableheader">          <?php echo $form->asociado->label;  ?>&nbsp;</td>
+				<td class="littletablerow" align="left"><?php echo $form->asociado->output; ?>&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->observ1->label; ?>&nbsp;</td>
+				<td class="littletablerow"   ><?php echo $form->observ1->output;?>&nbsp;</td>
+			</tr>
+			<tr>
+				<td class="littletableheader">          <?php echo $form->peso->label;  ?>&nbsp;</td>
 				<td class="littletablerow" align="left"><?php echo $form->peso->output; ?>&nbsp;</td>
 				<td class="littletableheader"><?php echo $form->almacen->label;     ?>&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->almacen->output;    ?>&nbsp;</td>
@@ -78,10 +67,11 @@ $(function(){
 		<td>
 		<table width='100%'>
 			<tr>
-				<th colspan='6' class="littletableheader">Lista de Art&iacute;culos</th>
+				<th colspan='7' class="littletableheader">Lista de Art&iacute;culos</th>
 			</tr>
 			<tr>
 				<td class="littletableheader">C&oacute;digo</td>
+				<td class="littletableheader">C&oacute;digo Local</td>
 				<td class="littletableheader">Descripci&oacute;n</td>
 				<td class="littletableheader">Cantidad</td>
 				<td class="littletableheader">Recibido</td>
@@ -89,8 +79,9 @@ $(function(){
 				<td class="littletableheader">Importe</td>
 			</tr>
 
-			<?php for($i=0;$i<$form->max_rel_count['itpsinv'];$i++) {
+			<?php for($i=0;$i<$form->max_rel_count['itscon'];$i++) {
 				$it_codigo  = "codigo_$i";
+				$it_codigolocal  = "codigolocal_$i";
 				$it_desca   = "desca_$i";
 				$it_cana    = "cana_$i";
 				$it_canareci= "recibido_$i";
@@ -110,8 +101,9 @@ $(function(){
 				$pprecios .= $form->$it_peso->output;
 			?>
 
-			<tr id='tr_itpsinv_<?php echo $i; ?>'>
+			<tr id='tr_itscon_<?php echo $i; ?>'>
 				<td class="littletablerow" align="left" nowrap><?php echo $form->$it_codigo->output; ?></td>
+				<td class="littletablerow" align="left" ><?php echo $form->$it_codigolocal->output;  ?></td>
 				<td class="littletablerow" align="left" ><?php echo $form->$it_desca->output;  ?></td>
 				<td class="littletablerow" align="right"><?php echo $form->$it_cana->output;   ?></td>
 				<td class="littletablerow" align="right"><?php echo $form->$it_canareci->output;   ?></td>

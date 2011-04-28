@@ -224,6 +224,8 @@ class Exportar extends Controller {
 				$sql.=',`grupo`  ='.$this->db->escape($row['grupo']);
 				$sql.=',`linea`  ='.$this->db->escape($row['linea']);
 				$sql.=',`depto`  ='.$this->db->escape($row['depto']);
+				$sql.=',`descrip`='.$this->db->escape($row['descrip']);
+				$sql.=',`descrip2`='.$this->db->escape($row['descrip2']);
 				$sql.=',`margen1`= ROUND(100-((IF(formcal=\'U\',ultimo,IF(formcal=\'P\',pond,IF(formcal=\'S\',standard,GREATEST(ultimo,pond)))))*100/('.$row['base1'].')),2)';
 				$sql.=',`margen2`= ROUND(100-((IF(formcal=\'U\',ultimo,IF(formcal=\'P\',pond,IF(formcal=\'S\',standard,GREATEST(ultimo,pond)))))*100/('.$row['base2'].')),2)';
 				$sql.=',`margen3`= ROUND(100-((IF(formcal=\'U\',ultimo,IF(formcal=\'P\',pond,IF(formcal=\'S\',standard,GREATEST(ultimo,pond)))))*100/('.$row['base3'].')),2)';
