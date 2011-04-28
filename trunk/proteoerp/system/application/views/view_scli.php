@@ -94,7 +94,6 @@ else:
 				</tr>
 				<tr>
 					<td class="littletableheaderc"><?php echo $form->limite->label  ?></td>
-					
 					<td class="littletablerow">    <?php echo $form->limite->output ?></td>
 				</tr>				
 			</table>

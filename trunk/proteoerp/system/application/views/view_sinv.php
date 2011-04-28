@@ -18,10 +18,18 @@ else:
 			<?php if($form->_status=='show'){ ?>
 			<a href='<?php echo base_url()."inventario/sinv/consulta/".$form->_dataobject->get('id'); ?>'>
 			<?php
-				$propiedad = array('src' => 'images/ojos.png', 'alt' => 'Consultar Movimiento', 'title' => 'Consultar Detalles','border'=>'0','height'=>'25');
+				$propiedad = array('src' => 'images/ojos.png', 'alt' => 'Consultar Movimiento', 'title' => 'Consultar Detalles','border'=>'0','height'=>'30');
 				echo img($propiedad);
 			?>
 			</a>
+			
+			<a href='javascript:sinvcodigo("<?php echo $form->_dataobject->get('id'); ?>")'>
+			<?php
+				$propiedad = array('src' => 'images/cambiocodigo.jpg', 'alt' => 'Cambio de Codigo', 'title' => 'Cambio de codigo','border'=>'0','height'=>'30');
+				echo img($propiedad);
+			?>
+			</a>
+			
 			<?php } else { ?>
 			Agregar: 
 			<a href="javascript:add_depto();" title="Agregar departamentos"><?php echo image('list_plus.png','Agregar Departamentos',array("border"=>"0","height"=>"12"));?>Deptos</a>
