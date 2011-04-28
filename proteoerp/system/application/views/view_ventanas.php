@@ -54,6 +54,7 @@ $(function(){
 			</td>
 		</tr>
 		<?php } ?>
+		
 		<?php if (isset($subtitle)) { ?>
 		<tr>
 			<td colspan='2'><?php echo $subtitle; ?></td>

@@ -267,15 +267,15 @@ class sinv extends Controller {
 		$grid->per_page = 50;
 		$link=anchor('/inventario/sinv/dataedit/show/<#id#>','<#codigo#>');
 
-		$uri_2  = anchor('inventario/sinv/dataedit/modify/<#id#>',img(array('src'=>'images/duplicar.jpeg','border'=>'0','alt'=>'Duplicar','height'=>'12')));
-		$uri_2 .= anchor('inventario/sinv/consulta/<#id#>',img(array('src'=>'images/estadistica.jpeg','border'=>'0','alt'=>'Consultar','height'=>'12')));
+		$uri_2  = anchor('inventario/sinv/dataedit/modify/<#id#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar','height'=>'12','title'=>'Editar')));
+		$uri_2 .= anchor('inventario/sinv/consulta/<#id#>',img(array('src'=>'images/estadistica.jpeg','border'=>'0','alt'=>'Consultar','height'=>'12','title'=>'Consultar')));
 
 		$uri_2 .= "<a href='javascript:void(0);' ";
 		$uri_2 .= 'onclick="window.open(\''.base_url()."inventario/fotos/dataedit/<#id#>/create', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');".'" heigth="600"'.'>';
 		$uri_2 .= img(array('src' => 'images/foto.gif', 'alt' => 'Foto', 'title' => 'Foto','border'=>'0','height'=>'12'));
 		$uri_2 .= "</a>";
 
-		$uri_2 .= img(array('src'=>'images/<#activo#>.gif','border'=>'0','alt'=>'Estado'));
+		$uri_2 .= img(array('src'=>'images/<#activo#>.gif','border'=>'0','alt'=>'Estado','title'=>'Estado Activo/Inactivo'));
 
 		$grid->column("Acci&oacute;n",$uri_2     ,"align='center'");
 		$grid->column_orderby("C&oacute;digo",$link,"codigo");
@@ -363,7 +363,6 @@ function auprec(){
 </script>
 ';
 
-
 		$data['content'] = $grid->output;
 		$data['filtro']  = $filter->output;
 
@@ -372,7 +371,7 @@ function auprec(){
 		$data['style']   = $style;
 		$data['style']  .= style('superTables.css');
 
-		$data['extras']  = $extras;		
+		$data['extras']  = $extras;
 		$data['title']   = heading('Maestro de Inventario ');
 
 		$data["head"]    = script("jquery.js");
@@ -406,6 +405,9 @@ function auprec(){
 		$link12=site_url('inventario/common/get_linea');
 		$link13=site_url('inventario/common/add_grupo');
 		$link14=site_url('inventario/common/get_grupo');
+
+		$link20=site_url('inventario/sinv/sinvcodigoexiste');
+		$link21=site_url('inventario/sinv/sinvcodigo');
 
 		$script='
 <script type="text/javascript">
@@ -602,7 +604,56 @@ function add_grupo(){
 		}
 	}
 };
-</script>';
+
+function sinvcodigo(mviejo){
+	var yurl = "";
+	var mcodigo=prompt("Codigo nuevo");
+	if( mcodigo==null){
+		alert("Cancelado");
+	} else {
+		yurl = encodeURIComponent(mcodigo);
+		//alert("codigo="+yurl);
+		
+		$.ajax({
+			url: "'.$link20.'",
+			global: false,
+			type: "POST",
+			data: ({ codigo : encodeURIComponent(mcodigo) }),
+			dataType: "text",
+			async: false,
+			success: function(sino) {
+				if (sino=="S"){
+					if (confirm("Codigo ["+mcodigo+"] ya existe, desea Fusionarlos?")){
+						sinvcodigocambia("S", mviejo, mcodigo);
+					};
+				} else {
+					if (confirm("Confirmar Cambio de codigo? ")){
+						sinvcodigocambia("N", mviejo, mcodigo);
+					}
+				}
+			},
+			error: function(h,t,e) { alert("Error..codigo="+yurl+" "+e) } 
+		});
+	}
+};
+
+function sinvcodigocambia( mtipo, mviejo, mcodigo ) {
+	$.ajax({
+		url: "'.$link21.'",
+		global: false,
+		type: "POST",
+		data: ({ tipo:  mtipo,
+			 viejo: mviejo,
+			 codigo: encodeURIComponent(mcodigo) }),
+		dataType: "text",
+		async: false,
+		success: function(sino) { alert("Cambio finalizado") },
+		error: function(h,t,e) { alert("Error.." ) } 
+	});
+	alert("Que belleza "+mtipo+" "+mviejo+" "+mcodigo);
+}
+</script>
+';
 
 		$do = new DataObject("sinv");
 		if($status=="create" && !empty($id)){
@@ -1178,6 +1229,201 @@ mSELE := CMNJ("AUMENTO Y RESTAURACION DE PRECIOS", {"Aumentar","Recuperar","Sali
    ENDIF
 
 RETURN("")
+*/
+
+
+	//*****************************
+	//
+	//  Cambia el Codigo
+	//
+	function sinvcodigoexiste(){
+		$id = rawurldecode($this->input->post('codigo'));
+		//$id = $this->uri->segment($this->uri->total_segments());
+		$existe = $this->datasis->dameval("SELECT count(*) FROM sinv WHERE codigo='".addslashes($id)."'");
+		$devo = 'N '.$id;
+		if ($existe > 0 ) $devo='S';
+		echo $devo;
+	}
+	
+	function sinvcodigo() {
+		$mexiste  = $this->input->post('tipo');
+		$mcodigo  = rawurldecode($this->input->post('codigo'));
+		$mviejoid = $this->input->post('viejo');
+
+		$mviejo  = $this->datasis->dameval("SELECT codigo FROM sinv WHERE id=$mviejoid ");
+		
+		// Busca si ya existe
+		$mSQL = "SELECT count(*) FROM sinv WHERE codigo='".addslashes($mcodigo)."'";
+		if ( $this->datasis($mSQL) > 0 ) {
+			$mexiste = true;
+		}
+
+		if ( $mexiste=='S' ) {
+			$mSQL = "DELETE FROM sinv WHERE codigo='".addslashes($mviejo)."'";
+			$this->db->simple_query($mSQL);
+		} else {
+			$mSQL = "UPDATE sinv SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."'";
+			$this->db->simple_query($mSQL);
+		}
+
+		if ( $mexiste=='S' ) {
+			$mSQL  = "SELECT * FROM itsinv WHERE codigo='".addslashes($mviejo)."'";
+			$query = $this->db->query($mSQL);
+			$mexisten = 0;
+			if ($query->num_rows() > 0 ) {
+				foreach ($query->result() as $row ) {
+					$mSQL = "UPDATE itsinv SET existen=existen+".$row->existen."
+						WHERE codigo='".addslashes($mcodigo)."' AND alma='".addslashes($row->alma)."'";
+					$this->simple_query($mSQL);
+					$mexisten += $row->existen;
+				}				
+			}
+			//Actualiza sinv
+			$mSQL = "UPDATE sinv SET existen=exiten+".$mexisten." WHERE codigo='".addslashes($mcodigo)."'";
+			// Borra los items
+			$mSQL = "DELETE FROM itsinv WHERE codigo='".addslashes($mviejo)."'";
+			$this->db->simple_query(mSQL);
+		} else { 
+			$mSQL = "UPDATE itsinv SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."' ";
+			$this->db->simple_query(mSQL);
+		}
+
+		$mSQL = "UPDATE itstra SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."'";
+		$this->db->simple_query(mSQL);
+
+		$mSQL = "UPDATE itscst SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."'";
+		$this->db->simple_query(mSQL);
+
+		$mSQL = "UPDATE sitems SET codigoa='".addslashes($mcodigo)."' WHERE codigoa='".addslashes($mviejo)."'";
+		$this->db->simple_query(mSQL);
+
+		$mSQL = "UPDATE itsnot SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."' ";
+		$this->db->simple_query(mSQL);
+
+		$mSQL = "UPDATE itsnte SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."' ";
+		$this->db->simple_query(mSQL);
+
+		$mSQL = "UPDATE itspre SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."' ";
+		$this->db->simple_query(mSQL);
+
+		$mSQL = "UPDATE itssal SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."' ";
+		$this->db->simple_query(mSQL);
+
+		$mSQL = "UPDATE itconv SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."' ";
+		$this->db->simple_query(mSQL);
+
+		$mSQL = "UPDATE seri SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."' ";
+		$this->db->simple_query(mSQL);
+
+		$mSQL = "UPDATE itpfac SET codigoa='".addslashes($mcodigo)."' WHERE codigoa='".addslashes($mviejo)."' ";
+		$this->db->simple_query(mSQL);
+
+		$mSQL = "UPDATE itordc SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."' ";
+		$this->db->simple_query(mSQL);
+
+		$mSQL = "UPDATE IGNORE invresu SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."' ";
+		$this->db->simple_query(mSQL);
+
+		logusu("Cambio codigo ".$mViejo."-->".$mcodigo);
+	}
+
+/*
+LOCAL mCODIGO := oCursor:FieldGet("CODIGO")
+LOCAL mVIEJO  := oCursor:FieldGet("CODIGO")
+LOCAL oModal, oDA, mCANT:=''
+LOCAL AMPI := SINVADD()
+LOCAL MEXISTE := .F., mC
+
+XCODIGO := PADR(mCODIGO,15)
+mCODIGO := XCODIGO
+AMPI[1]:POSTBLOCK := { || .T. }
+READMODAL(AMPI)
+
+IF EMPTY(XCODIGO)
+   RETURN .T.
+ENDIF
+
+IF XCODIGO=mCODIGO
+   RETURN .T.
+ENDIF
+
+// BUSCA SI EXISTE EL CODIGO
+mSQL := "SELECT count(*) FROM sinv WHERE codigo='"+XCODIGO+"'"
+mEXISTE := .F.
+IF DAMEVAL(mSQL,,'N') > 0
+   CMNJ("Ya existe ese codigo!!!")
+   IF SINO("Fusionar Codigo?",2) = 2
+      RETURN .F.
+   ENDIF
+   mEXISTE := .T.
+ENDIF
+
+IF SINO("Cambiar codigo "+ALLTRIM(mCODIGO)+"-->"+ALLTRIM(XCODIGO),1) = 1
+   IF mEXISTE 
+      mSQL := "DELETE FROM sinv WHERE codigo=? "
+      EJECUTASQL(mSQL,{mCODIGO})
+   ELSE
+      mSQL := "UPDATE sinv SET codigo=? WHERE codigo=? "
+      EJECUTASQL(mSQL,{XCODIGO,mCODIGO})
+   ENDIF
+
+   IF mEXISTE 
+      mSQL  := "SELECT * FROM itsinv WHERE codigo=? "
+      mC    := DAMECUR(mSQL,{mCODIGO})
+      DO WHILE !mC:EoF()
+         SINVCARGA(XCODIGO,mC:FieldGet("ALMA"),mC:FieldGet("EXISTEN"))
+         mC:Skip()
+      ENDDO
+      mC:Destroy()
+      mSQL := "DELETE FROM itsinv WHERE codigo=?"
+      EJECUTASQL(mSQL,{mCODIGO})
+   ELSE
+      mSQL := "UPDATE itsinv SET codigo=? WHERE codigo=? "
+      EJECUTASQL(mSQL,{XCODIGO,mCODIGO})
+   ENDIF
+
+   mSQL := "UPDATE itstra SET codigo=? WHERE codigo=? "
+   EJECUTASQL(mSQL,{XCODIGO,mCODIGO})
+
+   mSQL := "UPDATE itscst SET codigo=? WHERE codigo=? "
+   EJECUTASQL(mSQL,{XCODIGO,mCODIGO})
+
+   mSQL := "UPDATE sitems SET codigoa=? WHERE codigoa=? "
+   EJECUTASQL(mSQL,{XCODIGO,mCODIGO})
+
+   mSQL := "UPDATE itsnot SET codigo=? WHERE codigo=? "
+   EJECUTASQL(mSQL,{XCODIGO,mCODIGO})
+
+   mSQL := "UPDATE itsnte SET codigo=? WHERE codigo=? "
+   EJECUTASQL(mSQL,{XCODIGO,mCODIGO})
+
+   mSQL := "UPDATE itspre SET codigo=? WHERE codigo=? "
+   EJECUTASQL(mSQL,{XCODIGO,mCODIGO})
+
+   mSQL := "UPDATE itssal SET codigo=? WHERE codigo=? "
+   EJECUTASQL(mSQL,{XCODIGO,mCODIGO})
+
+   mSQL := "UPDATE itconv SET codigo=? WHERE codigo=? "
+   EJECUTASQL(mSQL,{XCODIGO,mCODIGO})
+
+   mSQL := "UPDATE seri SET codigo=? WHERE codigo=? "
+   EJECUTASQL(mSQL,{XCODIGO,mCODIGO})
+
+   mSQL := "UPDATE itpfac SET codigoa=? WHERE codigoa=? "
+   EJECUTASQL(mSQL,{XCODIGO,mCODIGO})
+
+   mSQL := "UPDATE itordc SET codigo=? WHERE codigo=? "
+   EJECUTASQL(mSQL,{XCODIGO,mCODIGO})
+
+   mSQL := "UPDATE IGNORE invresu SET codigo=? WHERE codigo=? "
+   EJECUTASQL(mSQL,{XCODIGO,mCODIGO})
+
+   LOGUSU("Cambio codigo "+ALLTRIM(mCODIGO)+"-->"+ALLTRIM(XCODIGO))
+
+ENDIF
+
+RETURN(.T.)
+
 */
 
 

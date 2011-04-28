@@ -54,10 +54,12 @@ class Scli extends validaciones {
 		$grid->order_by('nombre','asc');
 		$grid->per_page=50;
 
-		$cclave=anchor('ventas/scli/claveedit/modify/<#id#>','Asignar clave');
-		$uri_2  = anchor('ventas/scli/dataedit/show/<#id#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar','height'=>'12')));
-		$uri_2 .= anchor('ventas/scli/consulta/<#id#>',img(array('src'=>'images/estadistica.jpeg','border'=>'0','alt'=>'Consultar','height'=>'12')));
-		$uri_2 .= img(array('src'=>'images/<siinulo><#tipo#>|N|S</siinulo>.gif','border'=>'0','alt'=>'Estado'));
+		$cclave=anchor('ventas/scli/claveedit/modify/<#id#>',img(array('src'=>'images/candado.jpg','border'=>'0','alt'=>'Clave','height'=>'12','title'=>'Clave')));
+		
+		$uri_2  = anchor('ventas/scli/dataedit/show/<#id#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar','height'=>'12','title'=>'Editar')));
+		$uri_2 .= anchor('ventas/scli/consulta/<#id#>',img(array('src'=>'images/estadistica.jpeg','border'=>'0','alt'=>'Consultar','height'=>'12','title'=>'Consultar')));
+		$uri_2 .= $cclave;
+		$uri_2 .= img(array('src'=>'images/<siinulo><#tipo#>|N|S</siinulo>.gif','border'=>'0','alt'=>'Estado','title'=>'Estado'));
 		
 		$grid->column('Acci&oacute;n',$uri_2);
 		$grid->column_orderby('Cliente',$uri,'cliente');
