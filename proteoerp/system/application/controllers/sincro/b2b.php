@@ -472,6 +472,8 @@ class b2b extends validaciones {
 		$filter->clipro->size = 30;
 		$filter->clipro->append($boton);
 
+		$action = "javascript:window.location='".site_url('sincro/b2b/index')."'";
+		$filter->button('btn_regresa', 'Regresar', $action, 'TR');
 		$filter->buttons('reset','search');
 		$filter->build();
 
