@@ -39,7 +39,7 @@ else:
 			<?php } ?>
 		</td>
 		<td align='center' valign='middle'>
-			<?php  if ($form->activo->value=='N') echo "<div style='font-size:14px;font-weight:bold;color: #B40404'>***DESACTIVADO***</div>"; ?>&nbsp;
+			<?php  if ($form->activo->value=='N') echo "<div style='font-size:14px;font-weight:bold;background: #B40404;color: #FFFFFF'>***DESACTIVADO***</div>"; ?>&nbsp;
 		</td>
 		<td align='right'><?php echo $container_tr; ?></td>
 	</tr>
@@ -51,7 +51,7 @@ else:
 		<td colspan='2' valign='top'>
 			<table border=0 width="100%">
 				<tr>
-					<td width="60" class="littletableheaderc"><?=$form->codigo->label ?></td>
+					<td width="60" class="littletableheaderc"><? echo $form->codigo->label ?></td>
 					<?php if( $form->_status == "modify" ) { ?>
 					<td class="littletablerow">
 					<input readonly value="<?=$form->codigo->output ?>" class='input' size='15' style='background: #F5F6CE;'  /></td>
@@ -386,7 +386,7 @@ else:
 		</td>
 		<td valign="top"><?php
 	
-			$margen =  $this->datasis->dameval("SELECT margen FROM sinvpromo WHERE codigo='".$form->_dataobject->get('codigo')."'");
+			$margen =  $this->datasis->dameval("SELECT margen FROM sinvpromo WHERE codigo='".addslashes($form->_dataobject->get('codigo'))."'");
 			if ($margen > 0 ) {
 			   echo "Descuento por Promocion ".$margen."% ";
 			   echo "Precio ".nformat($form->precio1->value * (100-$margen)/100);
@@ -399,7 +399,7 @@ else:
 </fieldset>
 <br/>
 <?php
-$query = $this->db->query("SELECT suplemen FROM barraspos WHERE codigo='".$form->_dataobject->get('codigo')."'");
+$query = $this->db->query("SELECT suplemen FROM barraspos WHERE codigo='".addslashes($form->_dataobject->get('codigo'))."'");
 if ($query->num_rows()>0 ) {
 ?>
 
@@ -425,7 +425,7 @@ if ($query->num_rows()>0 ) {
 <?php }  // rows>0 ?>
 
 <?php
-$query = $this->db->query("SELECT CONCAT(codigo,' ', descrip,' ',fracci) producto FROM sinv WHERE MID(tipo,1,1)='F' AND enlace='".$form->_dataobject->get('codigo')."'");
+$query = $this->db->query("SELECT CONCAT(codigo,' ', descrip,' ',fracci) producto FROM sinv WHERE MID(tipo,1,1)='F' AND enlace='".addslashes($form->_dataobject->get('codigo'))."'");
 if ($query->num_rows()>0 ) {
 ?>
 </fieldset>
