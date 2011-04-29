@@ -366,7 +366,11 @@ function auprec(){
 		$data['content'] = $grid->output;
 		$data['filtro']  = $filter->output;
 
-		$data['script']   = $script;
+		$data["script"]  = script("jquery.js");
+		$data["script"] .= script("plugins/jquery.numeric.pack.js");
+		$data["script"] .= script("plugins/jquery.floatnumber.js");
+		$data["script"] .= script('superTables.js');
+		$data['script'] .= $script;
 
 		$data['style']   = $style;
 		$data['style']  .= style('superTables.css');
@@ -374,11 +378,7 @@ function auprec(){
 		$data['extras']  = $extras;
 		$data['title']   = heading('Maestro de Inventario ');
 
-		$data["head"]    = script("jquery.js");
-		$data["head"]   .= script("plugins/jquery.numeric.pack.js");
-		$data["head"]   .= script("plugins/jquery.floatnumber.js");
-		$data["head"]   .= script('superTables.js');
-		$data["head"]   .= $this->rapyd->get_head();
+		$data["head"]   = $this->rapyd->get_head();
 
 		$this->load->view('view_ventanas', $data);
 	}
@@ -607,37 +607,50 @@ function add_grupo(){
 
 function sinvcodigo(mviejo){
 	var yurl = "";
-	var mcodigo=prompt("Codigo nuevo");
-	if( mcodigo==null){
-		alert("Cancelado");
-	} else {
-		yurl = encodeURIComponent(mcodigo);
-		//alert("codigo="+yurl);
-		
-		$.ajax({
-			url: "'.$link20.'",
-			global: false,
-			type: "POST",
-			data: ({ codigo : encodeURIComponent(mcodigo) }),
-			dataType: "text",
-			async: false,
-			success: function(sino) {
-				if (sino=="S"){
-					if (confirm("Codigo ["+mcodigo+"] ya existe, desea Fusionarlos?")){
-						sinvcodigocambia("S", mviejo, mcodigo);
-					};
-				} else {
-					if (confirm("Confirmar Cambio de codigo? ")){
-						sinvcodigocambia("N", mviejo, mcodigo);
+	//var mcodigo=jPrompt("Ingrese el Codigo a cambiar ");
+	jPrompt("Codigo Nuevo","" ,"Codigo Nuevo", function(mcodigo){
+		if( mcodigo==null ){
+			jAlert("Cancelado por el usuario","Informacion");
+		} else if( mcodigo=="" ) {
+			jAlert("Cancelado,  Codigo vacio","Informacion");
+		} else {
+			//mcodigo=jQuery.trim(mcodig);
+			//jAlert("Aceptado "+mcodigo);
+			yurl = encodeURIComponent(mcodigo);
+			$.ajax({
+				url: "'.$link20.'",
+				global: false,
+				type: "POST",
+				data: ({ codigo : encodeURIComponent(mcodigo) }),
+				dataType: "text",
+				async: false,
+				success: function(sino) {
+					if (sino.substring(0,1)=="S"){
+						jConfirm(
+							"Ya existe el codigo <div style=\"font-size: 200%;font-weight: bold \">"+mcodigo+"</div>"+sino.substring(1)+"<p>si prosigue se eliminara el producto anterior y<br/> todo el movimiento de este, pasara al codigo "+mcodigo+"</p> <p style=\"align: center;\">Desea <strong>Fusionarlos?</strong></p>",
+							"Confirmar Fusion",
+							function(r){
+							if (r) { sinvcodigocambia("S", mviejo, mcodigo); }
+							}
+						);
+					} else {
+						jConfirm(
+							"Sustitur el codigo actual  por: <center><h2 style=\"background: #ddeedd\">"+mcodigo+"</h2></center> <p>Al cambiar de codigo el producto, todos los<br/> movimientos y estadisticas se cambiaran<br/> correspondientemente.</p> ",
+							"Confirmar cambio de codigo",
+							function(r) {
+								if (r) { sinvcodigocambia("N", mviejo, mcodigo); }
+							}
+						)
 					}
-				}
-			},
-			error: function(h,t,e) { alert("Error..codigo="+yurl+" "+e) } 
-		});
-	}
+				},
+				error: function(h,t,e) { jAlert("Error..codigo="+yurl+" ",e) } 
+			});
+		}
+	})
 };
 
 function sinvcodigocambia( mtipo, mviejo, mcodigo ) {
+	$.blockUI({ message: "<h1>Convirtiendo movimientos...</h1>" }); 
 	$.ajax({
 		url: "'.$link21.'",
 		global: false,
@@ -647,10 +660,12 @@ function sinvcodigocambia( mtipo, mviejo, mcodigo ) {
 			 codigo: encodeURIComponent(mcodigo) }),
 		dataType: "text",
 		async: false,
-		success: function(sino) { alert("Cambio finalizado") },
-		error: function(h,t,e) { alert("Error.." ) } 
+		complete: function() { $.unblockUI(); },
+		success: function(sino) {jAlert("Cambio finalizado "+sino,"Finalizado Exitosamente")},
+		error: function(h,t,e) {jAlert("Error..","Finalizado con Error" )
+		}
 	});
-	alert("Que belleza "+mtipo+" "+mviejo+" "+mcodigo);
+	location.reload(true);
 }
 </script>
 ';
@@ -998,17 +1013,20 @@ function sinvcodigocambia( mtipo, mviejo, mcodigo ) {
 		$conten["form"]  =&  $edit;
 		$data['content'] = $this->load->view('view_sinv', $conten,true);
 
-		$data["script"]  = $script;
-		$data['style']	 = $style;
-		//$data['extras']  = $prueba;
-		
-		$data["head"]    = script("jquery.js");
-		//$data["head"]   .= script("jquery-ui.js");
-		$data["head"]   .= script("plugins/jquery.numeric.pack.js");
-		$data["head"]   .= script("plugins/jquery.floatnumber.js");
-		$data["head"]   .= script("sinvmaes.js");
-		$data["head"]   .= $this->rapyd->get_head();
-		
+		$data["script"]   = script("jquery.js");
+		$data["script"]  .= script("jquery-ui.js");
+		//$data["script"]  .= script("jquery.git.js");
+		$data["script"]  .= script("jquery.alerts.js");
+		$data["script"]  .= script("plugins/jquery.blockUI.js");
+		$data["script"]  .= script("plugins/jquery.numeric.pack.js");
+		$data["script"]  .= script("plugins/jquery.floatnumber.js");
+		$data["script"]  .= script("sinvmaes.js");
+		$data["script"]  .= $script;
+
+		$data['style']	 = style("jquery.alerts.css");
+		$data['style']	.= $style;
+
+		$data["head"]   = $this->rapyd->get_head();
 
 		$data['title']   = heading( substr($edit->descrip->value,0,30) );
 
@@ -1241,7 +1259,10 @@ RETURN("")
 		//$id = $this->uri->segment($this->uri->total_segments());
 		$existe = $this->datasis->dameval("SELECT count(*) FROM sinv WHERE codigo='".addslashes($id)."'");
 		$devo = 'N '.$id;
-		if ($existe > 0 ) $devo='S';
+		if ($existe > 0 ) {
+			$devo  ='S';
+			$devo .= $this->datasis->dameval("SELECT descrip FROM sinv WHERE codigo='".addslashes($id)."'");
+		}
 		echo $devo;
 	}
 	
@@ -1251,13 +1272,8 @@ RETURN("")
 		$mviejoid = $this->input->post('viejo');
 
 		$mviejo  = $this->datasis->dameval("SELECT codigo FROM sinv WHERE id=$mviejoid ");
+		//echo "$mexiste  $mcodigo  $mviejo ";
 		
-		// Busca si ya existe
-		$mSQL = "SELECT count(*) FROM sinv WHERE codigo='".addslashes($mcodigo)."'";
-		if ( $this->datasis($mSQL) > 0 ) {
-			$mexiste = true;
-		}
-
 		if ( $mexiste=='S' ) {
 			$mSQL = "DELETE FROM sinv WHERE codigo='".addslashes($mviejo)."'";
 			$this->db->simple_query($mSQL);
@@ -1282,49 +1298,62 @@ RETURN("")
 			$mSQL = "UPDATE sinv SET existen=exiten+".$mexisten." WHERE codigo='".addslashes($mcodigo)."'";
 			// Borra los items
 			$mSQL = "DELETE FROM itsinv WHERE codigo='".addslashes($mviejo)."'";
-			$this->db->simple_query(mSQL);
+			$this->db->simple_query($mSQL);
 		} else { 
 			$mSQL = "UPDATE itsinv SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."' ";
-			$this->db->simple_query(mSQL);
+			$this->db->simple_query($mSQL);
 		}
 
 		$mSQL = "UPDATE itstra SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."'";
-		$this->db->simple_query(mSQL);
+		$this->db->simple_query($mSQL);
 
 		$mSQL = "UPDATE itscst SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."'";
-		$this->db->simple_query(mSQL);
+		$this->db->simple_query($mSQL);
 
 		$mSQL = "UPDATE sitems SET codigoa='".addslashes($mcodigo)."' WHERE codigoa='".addslashes($mviejo)."'";
-		$this->db->simple_query(mSQL);
+		$this->db->simple_query($mSQL);
 
 		$mSQL = "UPDATE itsnot SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."' ";
-		$this->db->simple_query(mSQL);
+		$this->db->simple_query($mSQL);
 
 		$mSQL = "UPDATE itsnte SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."' ";
-		$this->db->simple_query(mSQL);
+		$this->db->simple_query($mSQL);
 
 		$mSQL = "UPDATE itspre SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."' ";
-		$this->db->simple_query(mSQL);
+		$this->db->simple_query($mSQL);
 
 		$mSQL = "UPDATE itssal SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."' ";
-		$this->db->simple_query(mSQL);
+		$this->db->simple_query($mSQL);
 
 		$mSQL = "UPDATE itconv SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."' ";
-		$this->db->simple_query(mSQL);
+		$this->db->simple_query($mSQL);
 
 		$mSQL = "UPDATE seri SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."' ";
-		$this->db->simple_query(mSQL);
+		$this->db->simple_query($mSQL);
 
 		$mSQL = "UPDATE itpfac SET codigoa='".addslashes($mcodigo)."' WHERE codigoa='".addslashes($mviejo)."' ";
-		$this->db->simple_query(mSQL);
+		$this->db->simple_query($mSQL);
 
 		$mSQL = "UPDATE itordc SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."' ";
-		$this->db->simple_query(mSQL);
+		$this->db->simple_query($mSQL);
 
 		$mSQL = "UPDATE IGNORE invresu SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."' ";
-		$this->db->simple_query(mSQL);
+		$this->db->simple_query($mSQL);
+		
+		$mSQL = "UPDATE IGNORE invresu SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."' ";
+		$this->db->simple_query($mSQL);
+		
+		$mSQL = "UPDATE IGNORE barraspos SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."' ";
+		$this->db->simple_query($mSQL);
 
-		logusu("Cambio codigo ".$mViejo."-->".$mcodigo);
+		$mSQL = "UPDATE IGNORE sinvfot SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."' ";
+		$this->db->simple_query($mSQL);
+
+		$mSQL = "UPDATE IGNORE sinvpromo SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."' ";
+		$this->db->simple_query($mSQL);
+
+		logusu("SINV","Cambio codigo ".$mviejo."-->".$mcodigo);
+
 	}
 
 /*

@@ -1727,7 +1727,7 @@ class gser extends Controller {
 		$update5="UPDATE riva SET fecha=$fecha, numero=$numero,clipro=$proveed,nombre=$nombre WHERE transac=$dbtransac";
 		$this->db->query($update5);
 
-		logusu('gser',"Gasto $numero CAMBIADO");
+		logusu('GSER',"Gasto $numero CAMBIADO");
 		return true;
 	}
 
