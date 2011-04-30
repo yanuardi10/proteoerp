@@ -77,40 +77,6 @@ class sinv extends Controller {
 		}
 		';
 
-// *************************************
-//
-//       Para usar SuperTable
-//
-// *************************************
-		$extras = '
-<script type="text/javascript">
-//<![CDATA[
-(function() {
-	var mySt = new superTable("demoTable", {
-	cssSkin : "sSky",
-	fixedCols : 1,
-	headerRows : 1,
-	onStart : function () {	this.start = new Date();},
-	onFinish : function () {document.getElementById("testDiv").innerHTML += "Finished...<br>" + ((new Date()) - this.start) + "ms.<br>";}
-	});
-})();
-//]]>
-</script>
-';
-		$style ='
-<style type="text/css">
-.fakeContainer { /* The parent container */
-    margin: 5px;
-    padding: 0px;
-    border: none;
-    width: 740px; /* Required to set */
-    height: 320px; /* Required to set */
-    overflow: hidden; /* Required to set */
-}
-</style>	
-		';
-
-
 		$filter = new DataFilter2('Filtro por Producto');
 
 		$filter->db->select("a.existen AS existen,a.marca marca,a.tipo AS tipo,id,codigo,a.descrip,precio1,precio2,precio3,precio4,b.nom_grup AS nom_grup,b.grupo AS grupoid,c.descrip AS nom_linea,c.linea AS linea,d.descrip AS nom_depto,d.depto AS depto, activo ");
@@ -363,6 +329,40 @@ function auprec(){
 </script>
 ';
 
+// *************************************
+//
+//       Para usar SuperTable
+//
+// *************************************
+		$extras = '
+<script type="text/javascript">
+//<![CDATA[
+(function() {
+	var mySt = new superTable("demoTable", {
+	cssSkin : "sSky",
+	fixedCols : 1,
+	headerRows : 1,
+	onStart : function () {	this.start = new Date();},
+	onFinish : function () {document.getElementById("testDiv").innerHTML += "Finished...<br>" + ((new Date()) - this.start) + "ms.<br>";}
+	});
+})();
+//]]>
+</script>
+';
+		$style ='
+<style type="text/css">
+.fakeContainer { /* The parent container */
+    margin: 5px;
+    padding: 0px;
+    border: none;
+    width: 740px; /* Required to set */
+    height: 320px; /* Required to set */
+    overflow: hidden; /* Required to set */
+}
+</style>	
+		';
+
+
 		$data['content'] = $grid->output;
 		$data['filtro']  = $filter->output;
 
@@ -384,11 +384,11 @@ function auprec(){
 	}
 
 
-	// ************************************
-	//
-	//   DATAEDIT
-	//
-	// ************************************
+// ************************************
+//
+//   DATAEDIT
+//
+// ************************************
 	function dataedit($status='',$id='' ) {
 		$this->rapyd->uri->keep_persistence();
 		$this->rapyd->load('dataedit','dataobject');
@@ -650,7 +650,6 @@ function sinvcodigo(mviejo){
 };
 
 function sinvcodigocambia( mtipo, mviejo, mcodigo ) {
-	$.blockUI({ message: "<h1>Convirtiendo movimientos...</h1>" }); 
 	$.ajax({
 		url: "'.$link21.'",
 		global: false,
@@ -660,12 +659,22 @@ function sinvcodigocambia( mtipo, mviejo, mcodigo ) {
 			 codigo: encodeURIComponent(mcodigo) }),
 		dataType: "text",
 		async: false,
-		complete: function() { $.unblockUI(); },
-		success: function(sino) {jAlert("Cambio finalizado "+sino,"Finalizado Exitosamente")},
+		success: function(sino) {
+			//$.blockUI({ message: "<h1>Cambio finalizado Exitosamente..</h1>" });
+			//setTimeout($.unblock, 600000);
+			jAlert("Cambio finalizado "+sino,"Finalizado Exitosamente")
+		
+		},
 		error: function(h,t,e) {jAlert("Error..","Finalizado con Error" )
 		}
 	});
-	location.reload(true);
+	
+	if( mtipo=="N" ) {
+		location.reload(true);
+	} else {
+		location.replace("'.site_url("inventario/sinv/filteredgrid").'");
+	}
+
 }
 </script>
 ';
@@ -1008,6 +1017,26 @@ function sinvcodigocambia( mtipo, mviejo, mcodigo ) {
 </style>
 ';
 
+
+		$mcodigo = $edit->codigo->value;
+		$mfdesde = $this->datasis->dameval("SELECT ADDDATE(MAX(fecha),-30) FROM costos WHERE codigo='".addslashes($mcodigo)."'");
+		$mfhasta  = $this->datasis->dameval("SELECT MAX(fecha) FROM costos WHERE codigo='".addslashes($mcodigo)."'");
+
+$extras = '
+<div style="display: none">
+	<form action="'.base_url().'/inventario/kardex/filteredgrid/search/osp" method="post" id="df1">>
+		<input type="text" name="codigo" value="'.$mcodigo.'" />
+		<input type="text" name="ubica"  value="" />
+		<input type="text" name="fecha"  value="'.$mfdesde.'" />
+		<input type="text" name="fechah" value="'.$mfhasta.'" />
+		<input type="submit">
+	</form>
+	
+</div>
+';
+
+
+
 		$smenu['link']   = barra_menu('301');
 
 		$conten["form"]  =&  $edit;
@@ -1025,6 +1054,8 @@ function sinvcodigocambia( mtipo, mviejo, mcodigo ) {
 
 		$data['style']	 = style("jquery.alerts.css");
 		$data['style']	.= $style;
+		
+		$data['extras']  = $extras;
 
 		$data["head"]   = $this->rapyd->get_head();
 
@@ -1290,7 +1321,7 @@ RETURN("")
 				foreach ($query->result() as $row ) {
 					$mSQL = "UPDATE itsinv SET existen=existen+".$row->existen."
 						WHERE codigo='".addslashes($mcodigo)."' AND alma='".addslashes($row->alma)."'";
-					$this->simple_query($mSQL);
+					$this->db->simple_query($mSQL);
 					$mexisten += $row->existen;
 				}				
 			}

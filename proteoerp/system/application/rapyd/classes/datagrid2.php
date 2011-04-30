@@ -29,7 +29,7 @@ class DataGrid2 extends DataGrid{
 	var $gvalor = '';
 	var $tgrupo = '';
 	var $totales=array();
-	
+
  /**
   * PHP4 constructor.
   *
@@ -38,22 +38,24 @@ class DataGrid2 extends DataGrid{
   * @param mixed $data
   */
 	
-  function DataGrid2($title=null, $data=null){
-    parent::DataGrid($title, $data);
-  }
-  function agrupar($tgrupo=null, $agrupar=null){
-  	if(!empty($agrupar)){
-  		$this->agrupar=$agrupar;
-  		if (!is_array($this->data))
-  			$this->db->orderby($agrupar);
-  	}
-  	if(!empty($tgrupo))
-  		$this->tgrupo=$tgrupo;
-  	else
-  		$this->tgrupo=$agrupar;
-  }
+	function DataGrid2($title=null, $data=null){
+		parent::DataGrid($title, $data);
+	}
+
+	function agrupar($tgrupo=null, $agrupar=null){
+		if(!empty($agrupar)){
+			$this->agrupar=$agrupar;
+			if (!is_array($this->data))
+				$this->db->orderby($agrupar);
+		}
+
+		if(!empty($tgrupo))
+			$this->tgrupo=$tgrupo;
+		else
+			$this->tgrupo=$agrupar;
+	}
   
-  function _buildGrid(){
+	function _buildGrid($mivista='datagrid'){
 
 		$mypointer = 0;
 		$output = "";
@@ -65,7 +67,7 @@ class DataGrid2 extends DataGrid{
 		$data["columns"] = array();
 		$data["rows"] = array();
 
-    $this->rapyd->set_view_path();
+		$this->rapyd->set_view_path();
 
 		//title
 		$data["title"] = $this->_title;
@@ -137,7 +139,7 @@ class DataGrid2 extends DataGrid{
 		
     $data["total_rows"] = $this->recordCount;
     
-		$output = $this->ci->load->view('datagrid', $data, true);
+		$output = $this->ci->load->view($mivista, $data, true);
 
 		$this->rapyd->reset_view_path();
 
@@ -154,8 +156,8 @@ class DataGrid2 extends DataGrid{
   * @access   public
   * @return   string  datagrid output
   */
-	function build(){
-		parent::build();
+	function build($mivista='datagrid'){
+		parent::build($mivista);
 		if (count($this->totales)>0 AND count($this->data)>0){
 			foreach ($this->totales as $indice) $tot[$indice]=0;
 			foreach ($this->data as $tablerow){
@@ -170,7 +172,7 @@ class DataGrid2 extends DataGrid{
 		}
 		//print_r($this->data);
 
-		return $this->output = $this->_buildGrid();
+		return $this->output = $this->_buildGrid($mivista);
 	}
 }
 
