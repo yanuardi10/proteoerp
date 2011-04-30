@@ -596,7 +596,7 @@ class b2b extends validaciones {
 		$edit->cana->size     = 5;
 		$edit->cana->rule     = 'required|positive';
 		$edit->cana->autocomplete=false;
-		$edit->cana->readonly=false;
+		$edit->cana->readonly = true;
 		$edit->cana->onkeyup  ='importe(<#i#>)';
 
 		$edit->recibido = new inputField('Cantidad recibida <#o#>', 'recibido_<#i#>');
@@ -665,7 +665,7 @@ class b2b extends validaciones {
 		$action = "javascript:window.location='".site_url('sincro/b2b/cargascon/'.$edit->_dataobject->pk['id'])."'";
 		$edit->button_status('btn_conci', 'Cargar Conciliaci&oacute;n', $action, 'TR','show');
 
-		$edit->buttons('save','modify', 'undo', 'delete', 'back');
+		$edit->buttons('save', 'undo', 'delete', 'back');
 		$edit->build();
 
 		$conten['form']  =&  $edit;
@@ -952,15 +952,37 @@ class b2b extends validaciones {
 			$query = $this->db->query('SELECT fecha,numero,proveed,depo,codigolocal AS codigo,descrip,cantidad,devcant,devfrac,costo,importe,iva,montoiva,garantia,ultimo,precio1,precio2,precio3,precio4,licor FROM b2b_itscst WHERE id_scst=?',array($id));
 			if ($query->num_rows() > 0){
 				foreach ($query->result_array() as $itrow){
-					$itrow['estampa'] = $estampa;
-					$itrow['hora']    = $hora;
-					$itrow['control'] = $control;
-					$itrow['transac'] = $transac;
+					$itdata=array();
+					$itdata['fecha']     = $itrow['fecha']   ;
+					$itdata['numero']    = $itrow['numero']  ;
+					$itdata['proveed']   = $itrow['proveed'] ;
+					$itdata['depo']      = $itrow['depo']    ;
+					$itdata['codigo']    = $itrow['codigo']  ;
+					$itdata['descrip']   = $itrow['descrip'] ;
+					$itdata['cantidad']  = $itrow['cantidad'];
+					$itdata['devcant']   = $itrow['devcant'] ;
+					$itdata['devfrac']   = $itrow['devfrac'] ;
+					$itdata['costo']     = $itrow['costo']   ;
+					$itdata['importe']   = $itrow['importe'] ;
+					$itdata['iva']       = $itrow['iva']     ;
+					$itdata['montoiva']  = $itrow['montoiva'];
+					$itdata['garantia']  = $itrow['garantia'];
+					$itdata['ultimo']    = $itrow['ultimo']  ;
+					$itdata['precio1']   = $itrow['precio1'] ;
+					$itdata['precio2']   = $itrow['precio2'] ;
+					$itdata['precio3']   = $itrow['precio3'] ;
+					$itdata['precio4']   = $itrow['precio4'] ;
+					$itdata['usuario']   = $itrow['usuario'] ;
+					$itdata['licor']     = $itrow['licor']   ;
+					$itdata['estampa']   = $estampa;
+					$itdata['hora']      = $hora   ;
+					$itdata['control']   = $control;
+					$itdata['transac']   = $transac;
 
 					//$tt['montotot']+=$itrow['importe'];
 					//$tt['montoiva']+=$itrow['montoiva'];
 					//$tt['montonet']+=$itrow['importe']+$itrow['montoiva'];
-					$mSQL=$this->db->insert_string('itscst',$itrow);
+					$mSQL=$this->db->insert_string('itscst',$itdata);
 					$rt=$this->db->simple_query($mSQL);
 					if(!$rt){ memowrite($mSQL,'B2B'); $error++;}
 				}
@@ -973,22 +995,60 @@ class b2b extends validaciones {
 			if ($query->num_rows() > 0){
 
 				$row = $query->row_array();
-				$row['estampa'] = $estampa;
-				$row['hora']    = $hora;
-				$row['control'] = $control;
-				$row['transac'] = $transac;
-				$row['usuario'] = $this->session->userdata('usuario');
+				$data['fecha']     = $row['fecha']    ;
+				$data['numero']    = $row['numero']   ;
+				$data['proveed']   = $row['proveed']  ;
+				$data['nombre']    = $row['nombre']   ;
+				$data['depo']      = $row['depo']     ;
+				$data['montotot']  = $row['montotot'] ;
+				$data['montoiva']  = $row['montoiva'] ;
+				$data['montonet']  = $row['montonet'] ;
+				$data['vence']     = $row['vence']    ;
+				$data['tipo_doc']  = $row['tipo_doc'] ;
+				$data['peso']      = $row['peso']     ;
+				$data['nfiscal']   = $row['nfiscal']  ;
+				$data['exento']    = $row['exento']   ;
+				$data['sobretasa'] = $row['sobretasa'];
+				$data['reducida']  = $row['reducida'] ;
+				$data['cimpuesto'] = $row['cimpuesto'];
+				$data['ctotal']    = $row['ctotal']   ;
+				$data['cstotal']   = $row['cstotal']  ;
+				$data['civaadi']   = $row['civaadi']  ;
+				$data['cadicio']   = $row['cadicio']  ;
+				$data['civared']   = $row['civared']  ;
+				$data['creduci']   = $row['creduci']  ;
+				$data['civagen']   = $row['civagen']  ;
+				$data['cgenera']   = $row['cgenera']  ;
+				$data['cexento']   = $row['cexento']  ;
+				$data['reteiva']   = $row['reteiva']  ;
+				$data['tasa']      = $row['tasa']     ;
+				$data['montasa']   = $row['montasa']  ;
+				$data['monredu']   = $row['monredu']  ;
+				$data['monadic']   = $row['monadic']  ;
+				$data['serie']     = $row['serie']    ;
+
+				$data['estampa']   = $estampa;
+				$data['hora']      = $hora;
+				$data['control']   = $control;
+				$data['transac']   = $transac;
+				$data['usuario']   = $this->session->userdata('usuario');
+
 				if(empty($row['serie'])){
-					$row['serie'] = $row['numero'];
-				}else{
-					$row['numero']  = substr($row['serie'],-8);
+					$data['serie'] = $row['numero'];
+				}
+				/*else{
+					$data['numero']= substr($row['serie'],-8);
+				}*/
+
+				if(empty($data['nfiscal'])){
+					$data['nfiscal']=substr($row['serie'],-12);
 				}
 
 				//$row['montotot'] =$tt['montotot'];
 				//$row['montoiva'] =$tt['montoiva'];
 				//$row['montonet'] =$tt['montonet'];
 
-				$mSQL=$this->db->insert_string('scst',$row);
+				$mSQL=$this->db->insert_string('scst',$data);
 				$rt=$this->db->simple_query($mSQL);
 				if(!$rt){memowrite($mSQL,'B2B'); $error++;}
 			}

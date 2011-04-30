@@ -22,7 +22,7 @@ class extimpor extends Controller {
 		foreach ($query->result() as $row) $titu[$row->columna]=$row->valor;
 
 		$uri = anchor('finanzas/bmov/dataedit/show/<#codbanc#>/<#tipo_op#>/<#numero#>','<#numero#>');
-		$grid = new DataGrid('Tabla importada');		
+		$grid = new DataGrid('Tabla importada');
 		$grid->db->from($tabla);
 		$grid->db->where('id_tabla',$id_tabla);
 		$grid->db->where('fila >',0);
