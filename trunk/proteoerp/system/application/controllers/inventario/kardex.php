@@ -25,17 +25,17 @@ class Kardex extends Controller {
 				'screenx'   =>'5',
 				'screeny'   =>'5');
 
-		 switch ($par) {
-			case '3I': return(anchor_popup($link,'Ventas Caja'       ,$atts)); break;
-			case '3R': return(anchor_popup($link,'Ventas Restaurante',$atts)); break;
-			case '3M': return(anchor_popup($link,'Ventas Mayor'      ,$atts)); break;
-			case '1T': return(anchor_popup($link,'Transferencias'    ,$atts)); break;
-			case '2C': return(anchor_popup($link,'Compras'           ,$atts)); break;
-			case '4N': return(anchor_popup($link,'Nota/Entrega'      ,$atts)); break;
-			case '6C': return(anchor_popup($link,'Conversion'        ,$atts)); break;
-			case '5C': return('Ajuste de inventario'); break;
-			case '0F': return('Inventario'); break;
-			case '9F': return('Inventario'); break;
+			switch ($par) {
+				case '3I': return(anchor_popup($link,'Ventas Caja'       ,$atts)); break;
+				case '3R': return(anchor_popup($link,'Ventas Restaurante',$atts)); break;
+				case '3M': return(anchor_popup($link,'Ventas Mayor'      ,$atts)); break;
+				case '1T': return(anchor_popup($link,'Transferencias'    ,$atts)); break;
+				case '2C': return(anchor_popup($link,'Compras'           ,$atts)); break;
+				case '4N': return(anchor_popup($link,'Nota/Entrega'      ,$atts)); break;
+				case '6C': return(anchor_popup($link,'Conversion'        ,$atts)); break;
+				case '5C': return('Ajuste de inventario'); break;
+				case '0F': return('Inventario'); break;
+				case '9F': return('Inventario'); break;
 			default:   return($par); };
 		}
 
@@ -55,12 +55,14 @@ class Kardex extends Controller {
 		$boton=$this->datasis->modbus($modbus);
 
 		$filter = new DataFilter('Kardex de Inventario');
-		$filter->codigo = new inputField('C&oacute;digo De Producto', 'codigo');
+		$filter->codigo = new inputField('C&oacute;digo ', 'codigo');
+		$filter->codigo->db_name ='a.codigo';
 		$filter->codigo->rule = 'required';
 		$filter->codigo->operator='=';
 		$filter->codigo->size    = 10;
 		$filter->codigo->clause  ='where';
 		$filter->codigo->append($boton);
+		$filter->codigo->group = "UNO";
 
 		$filter->ubica = new dropdownField('Almac&eacute;n', 'ubica');
 		$filter->ubica->option('','Todos');
@@ -68,24 +70,31 @@ class Kardex extends Controller {
 		$filter->ubica->options("SELECT ubica,CONCAT(ubica,' ',ubides) descrip FROM caub WHERE gasto='N' ");
 		$filter->ubica->operator='=';
 		$filter->ubica->clause  ='where';
+		$filter->ubica->group = "UNO";
 
 		$filter->fechad = new dateonlyField('Desde', 'fecha','d/m/Y');
 		$filter->fechad->operator='>=';
 		$filter->fechad->insertValue = date("Y-m-d",mktime(0, 0, 0, date("m"), date("d")-30,   date("Y")));
+
+		$filter->fechad->group = "DOS";
 
 		$filter->fechah = new dateonlyField('Hasta', 'fechah','d/m/Y');
 		$filter->fechah->db_name='fecha';
 		$filter->fechah->operator='<=';
 		$filter->fechah->insertValue = date('Y-m-d');
 
+		$filter->fechah->group = "DOS";
+
 		$filter->fechah->clause=$filter->fechad->clause=$filter->codigo->clause='where';
 		$filter->fechah->size=$filter->fechad->size=10;
 
 		$filter->buttons('reset','search');
-		$filter->build();
+		$filter->build("dataformfiltro");
 
-		$data['content'] =  $filter->output;
+		$data['filtro'] =  $filter->output;
+
 		$code=$this->input->post('codigo');
+	
 		if($code){
 
 			$mSQL="SELECT CONCAT_WS(' ',TRIM(descrip),TRIM(descrip2)) descrip FROM sinv WHERE codigo='$code'";
@@ -97,16 +106,34 @@ class Kardex extends Controller {
 			}
 
 			$link="/inventario/kardex/grid/<#origen#>/<dbdate_to_human><#fecha#>|Ymd</dbdate_to_human>/<str_replace>/|:slach:|<#codigo#></str_replace>/<#ubica#>";
-			$grid = new DataGrid2("($code) $descrip");
-			$grid->agrupar('Almacen: ', 'almacen');
+			$grid = new DataGrid2("Producto: ($code) $descrip");
+			$grid->agrupar(' ', 'almacen');
 			$grid->use_function('convierte','str_replace');
-			$grid->db->select(array('IFNULL( b.ubides , a.ubica ) almacen','a.ubica','a.fecha','a.venta','a.cantidad', 'a.saldo', 'a.monto', 'a.salcant', 'TRIM(a.codigo) AS codigo', 'a.origen', 'a.promedio','(a.venta / a.cantidad) AS vpromedio'));
+			$grid->db->select(array(
+						'IFNULL( b.ubides , a.ubica ) almacen',
+						'a.ubica','a.fecha',
+						'a.venta',
+						'a.cantidad',
+						'a.saldo',
+						'a.monto',
+						'a.salcant',
+						'TRIM(a.codigo) AS codigo',
+						'a.origen',
+						'a.promedio',
+						'(a.venta/a.cantidad)*(a.cantidad>0) AS vpromedio',
+						'ROUND(100-(a.promedio*100/(a.venta/a.cantidad)),2)*(a.origen="3I") AS vmargen',
+						'((a.venta/a.cantidad)-a.promedio)*a.cantidad*(a.origen="3I") AS vutil',
+						'c.activo',
+						'c.grupo'));
+			
 			$grid->db->from('costos a');
 			$grid->db->join('caub b ','b.ubica=a.ubica','LEFT');
+			$grid->db->join('sinv c ','a.codigo=c.codigo','LEFT');
 			$grid->db->orderby('almacen, fecha, origen');
-			$grid->per_page = 20;
-			$grid->column('Fecha'        ,'<dbdate_to_human><#fecha#></dbdate_to_human>');
+			$grid->per_page = 60;
+			
 			$grid->column('Or&iacute;gen',"<convierte><#origen#>|$link</convierte>",'align=left' );
+			$grid->column('Fecha'        ,'<dbdate_to_human><#fecha#></dbdate_to_human>');
 			$grid->column('Cantidad'     ,'<nformat><#cantidad#>|2</nformat>' ,'align=right');
 			$grid->column('Acumulado'    ,'<nformat><#salcant#>|2</nformat>'  ,'align=right');
 			$grid->column('Monto'        ,'<nformat><#monto#>|2</nformat>'    ,'align=right');
@@ -114,17 +141,78 @@ class Kardex extends Controller {
 			$grid->column('Costo Prom.'  ,'<nformat><#promedio#>|2</nformat>' ,'align=right');
 			$grid->column('Ventas'       ,'<nformat><#venta#>|2</nformat>'    ,'align=right');
 			$grid->column('Precio Prom.' ,'<nformat><#vpromedio#>|2</nformat>','align=right');
-			$grid->build();
-			$data['content'] .= $grid->output;
+			$grid->column('Margen %' ,    '<nformat><#vmargen#>|2</nformat>','align=right');
+			$grid->column('Margen Bs.' ,'<nformat><#vutil#>|2</nformat>','align=right');
+			
+			$grid->build('datagridST');
+			$data['content'] = $grid->output;
 			//echo $grid->db->last_query();
 		}
 		$data['forma'] ='';
+
+// *************************************
+//
+//       Para usar SuperTable
+//
+// *************************************
+		$extras = '
+<script type="text/javascript">
+//<![CDATA[
+(function() {
+	var mySt = new superTable("demoTable", {
+	cssSkin : "sSky",
+	fixedCols : 1,
+	headerRows : 1,
+	onStart : function () {	this.start = new Date();},
+	onFinish : function () {document.getElementById("testDiv").innerHTML += "Finished...<br>" + ((new Date()) - this.start) + "ms.<br>";}
+	});
+})();
+//]]>
+</script>
+';
+		$style ='
+<style type="text/css">
+.fakeContainer { /* The parent container */
+    margin: 5px;
+    padding: 0px;
+    border: none;
+    width: 740px; /* Required to set */
+    height: 320px; /* Required to set */
+    overflow: hidden; /* Required to set */
+}
+</style>	
+		';
+
+		$data["script"]  = script("jquery.js");
+		$data["script"] .= script('superTables.js');
+
+		$data['style']   = $style;
+		$data['style']  .= style('superTables.css');
+		
+		$data['extras']  = $extras;
 
 		$data['title'] = heading('Kardex de Inventario');
 		$data['head']  = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 
 	}
+
+
+	function kardexpres() {
+		$id = 0;
+		$mcodigo = '';
+		$mfdesde = 0;
+		$mfhasta = 0;
+		$id = $this->uri->segment(4);
+		if ($id > 0){
+			$mcodigo = $this->datasis->dameval("SELECT codigo FROM sinv WHERE id=$id");
+			$mfdesde = $this->datasis->dameval("SELECT ADDDATE(MAX(fecha),-30) FROM costos WHERE codigo='".addslashes($mcodigo)."'");
+			$mfhasta  = $this->datasis->dameval("SELECT MAX(fecha) FROM costos WHERE codigo='".addslashes($mcodigo)."'");
+		}
+		
+		
+	}
+	
 
 	function grid(){
 		$tipo   =$this->uri->segment(4);

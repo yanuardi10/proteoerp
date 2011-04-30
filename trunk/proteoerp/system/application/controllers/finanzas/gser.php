@@ -20,17 +20,15 @@ class gser extends Controller {
 		$filter = new DataFilter('Filtro de Gastos','gser');
 
 		$filter->fechad = new dateonlyField('Desde', 'fechad','d/m/Y');
-		$filter->fechah = new dateonlyField('Hasta', 'fechah','d/m/Y');
-
 		$filter->fechad->clause  =$filter->fechah->clause ='where';
-		$filter->fechad->db_name =$filter->fechah->db_name='fecha';
-
-		$filter->fechah->size=$filter->fechad->size=10;
-
+		$filter->fechad->db_name ='fecha';
 		$filter->fechad->operator='>=';
-		$filter->fechah->operator='<=';
-
 		$filter->fechad->group = 'UNO';
+
+		$filter->fechah = new dateonlyField('Hasta', 'fechah','d/m/Y');
+		$filter->fechah->db_name='fecha';
+		$filter->fechah->size=$filter->fechad->size=10;
+		$filter->fechah->operator='<=';
 		$filter->fechah->group = 'UNO';
 
 		$filter->tipo_doc = new inputField('Tipo', 'tipo_doc');

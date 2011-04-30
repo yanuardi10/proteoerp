@@ -16,19 +16,41 @@ else:
 	<tr>
 		<td>
 			<?php if($form->_status=='show'){ ?>
-			<a href='<?php echo base_url()."inventario/sinv/consulta/".$form->_dataobject->get('id'); ?>'>
-			<?php
-				$propiedad = array('src' => 'images/ojos.png', 'alt' => 'Consultar Movimiento', 'title' => 'Consultar Detalles','border'=>'0','height'=>'30');
-				echo img($propiedad);
-			?>
-			</a>
-			
-			<a href='javascript:sinvcodigo("<?php echo $form->_dataobject->get('id'); ?>")'>
-			<?php
-				$propiedad = array('src' => 'images/cambiocodigo.jpg', 'alt' => 'Cambio de Codigo', 'title' => 'Cambio de codigo','border'=>'0','height'=>'30');
-				echo img($propiedad);
-			?>
-			</a>
+			<table>
+				<tr>
+					<td>&nbsp;</td>
+					<td>&nbsp;
+						<a href='<?php echo base_url()."inventario/sinv/consulta/".$form->_dataobject->get('id'); ?>'>
+						<?php
+							$propiedad = array('src' => 'images/ojos.png', 'alt' => 'Consultar Movimiento', 'title' => 'Consultar Detalles','border'=>'0','height'=>'30');
+							echo img($propiedad);
+						?>
+						</a>
+					</td>
+					<td>&nbsp;
+						<a href='javascript:sinvcodigo("<?php echo $form->_dataobject->get('id'); ?>")'>
+						<?php
+							$propiedad = array('src' => 'images/cambiocodigo.jpg', 'alt' => 'Cambio de Codigo', 'title' => 'Cambio de codigo','border'=>'0','height'=>'30');
+							echo img($propiedad);
+						?>
+						</a>
+					</td>
+					<td>&nbsp;
+						<a href='javascript:void(0);'
+		<?php				   
+		echo 'onclick="window.open(\'';
+		echo base_url().'inventario/kardex/filteredgrid/'.$form->_dataobject->get('id');
+		echo "', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');";
+		echo '" heigth="600"'.'>';
+		?>
+						<?php
+							$propiedad = array('src' => 'images/kardex.jpg', 'alt' => 'Kardex de Inventario', 'title' => 'Kardex de Inventario','border'=>'0','height'=>'30');
+							echo img($propiedad);
+						?>
+					</a>
+					</td>
+				<tr>
+			</table>
 			
 			<?php } else { ?>
 			Agregar: 
@@ -36,7 +58,7 @@ else:
 			<a href="javascript:add_linea();" title="Agregar una Linea"><?php echo image('list_plus.png','Agregar Lineas',array("border"=>"0","height"=>"12"));?>Lineas</a>
 			<a href="javascript:add_grupo();" title="Agregar un grupo"><?php echo image('list_plus.png','Agregar Grupos',array("border"=>"0","height"=>"12"));?>Grupos</a>
 			
-			<?php } ?>
+			<?php } // show ?>
 		</td>
 		<td align='center' valign='middle'>
 			<?php  if ($form->activo->value=='N') echo "<div style='font-size:14px;font-weight:bold;background: #B40404;color: #FFFFFF'>***DESACTIVADO***</div>"; ?>&nbsp;
@@ -457,3 +479,4 @@ if ($query->num_rows()>0 ) {
 <?php echo $container_bl.$container_br; ?>
 <?php echo $form_end?>
 <?php endif; ?>
+
