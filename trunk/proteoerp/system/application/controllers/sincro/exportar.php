@@ -195,11 +195,11 @@ class Exportar extends Controller {
 		$sscucu =$this->db->escape($sucu);
 
 		if ($this->db->table_exists('sinvcontrol')){
-			$mSQL  = "SELECT a.codigo,a.grupo,a.descrip,a.descrip2,a.unidad,a.ubica,a.tipo,a.clave,a.comision,a.enlace,a.prov1,a.prepro1,a.pfecha1,a.prov2,a.prepro2,a.pfecha2,a.prov3,a.prepro3,a.pfecha3,a.pond,a.ultimo,a.pvp_s,a.pvp_bs,a.pvpprc,a.contbs,a.contprc,a.mayobs,a.mayoprc,a.exmin,a.exord,a.exdes,a.existen,a.fechav,a.fechac,a.iva,a.fracci,a.codbar,a.barras,a.exmax,a.margen1,a.margen2,a.margen3,a.margen4,a.base1,a.base2,a.base3,a.base4,a.precio1,a.precio2,a.precio3,a.precio4,a.serial,a.tdecimal,'N' AS activo,a.dolar,a.redecen,a.formcal,a.fordeci,a.garantia,a.costotal,a.fechac2,a.peso,a.pondcal,a.alterno,a.aumento,a.modelo,a.marca,a.clase,a.oferta,a.fdesde,a.fhasta,a.derivado,a.cantderi,a.ppos1,a.ppos2,a.ppos3,a.ppos4,a.linea,a.depto,a.gasto,a.bonifica,a.bonicant,a.standard,a.modificado,a.descufijo
+			$mSQL  = "SELECT a.codigo,a.grupo,a.descrip,a.descrip2,a.unidad,a.ubica,a.tipo,a.clave,a.comision,a.enlace,a.prov1,a.prepro1,a.pfecha1,a.prov2,a.prepro2,a.pfecha2,a.prov3,a.prepro3,a.pfecha3,a.pond,a.ultimo,a.pvp_s,a.pvp_bs,a.pvpprc,a.contbs,a.contprc,a.mayobs,a.mayoprc, 0 AS exmin, 0 AS exord,0 AS exdes,0 AS existen,a.fechav,a.fechac,a.iva,a.fracci,a.codbar,a.barras,0 AS exmax,a.margen1,a.margen2,a.margen3,a.margen4,a.base1,a.base2,a.base3,a.base4,a.precio1,a.precio2,a.precio3,a.precio4,a.serial,a.tdecimal,'N' AS activo,a.dolar,a.redecen,a.formcal,a.fordeci,a.garantia,a.costotal,a.fechac2,a.peso,a.pondcal,a.alterno,a.aumento,a.modelo,a.marca,a.clase,a.oferta,a.fdesde,a.fhasta,a.derivado,a.cantderi,a.ppos1,a.ppos2,a.ppos3,a.ppos4,a.linea,a.depto,a.gasto,a.bonifica,a.bonicant,a.standard,a.modificado,a.descufijo
 			FROM sinv AS a LEFT JOIN sinvcontrol AS b ON a.codigo=b.codigo AND b.sucursal=${sscucu}
 			WHERE b.codigo IS NULL or b.codigo='S'";
 		}else{
-			$mSQL  = "SELECT a.codigo,a.grupo,a.descrip,a.descrip2,a.unidad,a.ubica,a.tipo,a.clave,a.comision,a.enlace,a.prov1,a.prepro1,a.pfecha1,a.prov2,a.prepro2,a.pfecha2,a.prov3,a.prepro3,a.pfecha3,a.pond,a.ultimo,a.pvp_s,a.pvp_bs,a.pvpprc,a.contbs,a.contprc,a.mayobs,a.mayoprc,a.exmin,a.exord,a.exdes,a.existen,a.fechav,a.fechac,a.iva,a.fracci,a.codbar,a.barras,a.exmax,a.margen1,a.margen2,a.margen3,a.margen4,a.base1,a.base2,a.base3,a.base4,a.precio1,a.precio2,a.precio3,a.precio4,a.serial,a.tdecimal,'N' AS activo,a.dolar,a.redecen,a.formcal,a.fordeci,a.garantia,a.costotal,a.fechac2,a.peso,a.pondcal,a.alterno,a.aumento,a.modelo,a.marca,a.clase,a.oferta,a.fdesde,a.fhasta,a.derivado,a.cantderi,a.ppos1,a.ppos2,a.ppos3,a.ppos4,a.linea,a.depto,a.gasto,a.bonifica,a.bonicant,a.standard,a.modificado,a.descufijo
+			$mSQL  = "SELECT a.codigo,a.grupo,a.descrip,a.descrip2,a.unidad,a.ubica,a.tipo,a.clave,a.comision,a.enlace,a.prov1,a.prepro1,a.pfecha1,a.prov2,a.prepro2,a.pfecha2,a.prov3,a.prepro3,a.pfecha3,a.pond,a.ultimo,a.pvp_s,a.pvp_bs,a.pvpprc,a.contbs,a.contprc,a.mayobs,a.mayoprc, 0 AS exmin, 0 AS exord,0 AS exdes,0 AS existen,a.fechav,a.fechac,a.iva,a.fracci,a.codbar,a.barras,0 AS exmax,a.margen1,a.margen2,a.margen3,a.margen4,a.base1,a.base2,a.base3,a.base4,a.precio1,a.precio2,a.precio3,a.precio4,a.serial,a.tdecimal,'N' AS activo,a.dolar,a.redecen,a.formcal,a.fordeci,a.garantia,a.costotal,a.fechac2,a.peso,a.pondcal,a.alterno,a.aumento,a.modelo,a.marca,a.clase,a.oferta,a.fdesde,a.fhasta,a.derivado,a.cantderi,a.ppos1,a.ppos2,a.ppos3,a.ppos4,a.linea,a.depto,a.gasto,a.bonifica,a.bonicant,a.standard,a.modificado,a.descufijo
 			FROM sinv AS a";
 		}
 
@@ -212,6 +212,10 @@ class Exportar extends Controller {
 			while ($row = mysql_fetch_assoc($query)) {
 				$sql = $this->db->insert_string('sinv', $row);
 				$sql.=' ON DUPLICATE KEY UPDATE ';
+				$sql.=' `alterno`='.$this->db->escape($row['alterno']);
+				$sql.=' `peso`   ='.$this->db->escape($row['peso']);
+				$sql.=' `clase`  ='.$this->db->escape($row['clase']);
+				$sql.=' `redecen`='.$this->db->escape($row['redecen']);
 				$sql.=' `precio1`='.$this->db->escape($row['precio1']);
 				$sql.=',`precio2`='.$this->db->escape($row['precio2']);
 				$sql.=',`precio3`='.$this->db->escape($row['precio3']);
@@ -479,6 +483,12 @@ class Exportar extends Controller {
 		                'where' => " modificado >= $fecha",
 		                'limpiar'=>false,
 		                'ignore' =>true);
+
+		if($this->db->table_exists('sinvprov')){
+			$data[]=array('table' => 'sinvprov',
+			        'limpiar'=>false,
+			        'ignore' =>true);
+		}
 
 		$nombre='sprv_'.$fecha.'_'.$this->sucu;
 		if(!array_key_exists('HTTP_USER_AGENT', $_SERVER)) $_SERVER['HTTP_USER_AGENT']='curl';
