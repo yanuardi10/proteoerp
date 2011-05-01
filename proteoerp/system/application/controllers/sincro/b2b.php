@@ -974,9 +974,7 @@ class b2b extends validaciones {
 					$itdata['precio3']   = $itrow['precio3'] ;
 					$itdata['precio4']   = $itrow['precio4'] ;
 					$itdata['licor']     = $itrow['licor']   ;
-					$itdata['anticipo']  = 0;
-					$itdata['inicial']   = 0;
-					$itdata['credito']   = 0;
+
 
 					$itdata['usuario']   = $this->session->userdata('usuario');
 					$itdata['estampa']   = $estampa;
@@ -1033,6 +1031,9 @@ class b2b extends validaciones {
 				$data['monadic']   = $row['monadic']  ;
 				$data['serie']     = $row['serie']    ;
 
+				$data['anticipo']  = 0;
+				$data['inicial']   = 0;
+				$data['credito']   = 0;
 				$data['estampa']   = $estampa;
 				$data['hora']      = $hora;
 				$data['control']   = $control;
