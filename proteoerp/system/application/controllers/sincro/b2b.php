@@ -745,7 +745,8 @@ class b2b extends validaciones {
 				$data['fecha']    = $arr['fecha'];
 				$data['vence']    = $arr['vence'];
 				$data['numero']   = $arr['numero'];
-				$data['serie']    = $arr['nfiscal'];
+				$data['nfiscal']  = $arr['nfiscal'];
+				$data['serie']    = $arr['numero'];
 				$data['montotot'] = $arr['totals'];
 				$data['montoiva'] = $arr['iva'];
 				$data['montonet'] = $arr['totalg'];
@@ -972,8 +973,12 @@ class b2b extends validaciones {
 					$itdata['precio2']   = $itrow['precio2'] ;
 					$itdata['precio3']   = $itrow['precio3'] ;
 					$itdata['precio4']   = $itrow['precio4'] ;
-					$itdata['usuario']   = $itrow['usuario'] ;
 					$itdata['licor']     = $itrow['licor']   ;
+					$itdata['anticipo']  = 0;
+					$itdata['inicial']   = 0;
+					$itdata['credito']   = 0;
+
+					$itdata['usuario']   = $this->session->userdata('usuario');
 					$itdata['estampa']   = $estampa;
 					$itdata['hora']      = $hora   ;
 					$itdata['control']   = $control;
@@ -993,6 +998,7 @@ class b2b extends validaciones {
 				cimpuesto,ctotal,cstotal,civaadi,cadicio,civared,creduci,civagen,cgenera,cexento,reteiva
 				FROM b2b_scst WHERE id=?',array($id));
 			if ($query->num_rows() > 0){
+				$data=array();
 
 				$row = $query->row_array();
 				$data['fecha']     = $row['fecha']    ;
