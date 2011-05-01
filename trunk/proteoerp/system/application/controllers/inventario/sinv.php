@@ -1023,16 +1023,24 @@ function sinvcodigocambia( mtipo, mviejo, mcodigo ) {
 		$mfhasta  = $this->datasis->dameval("SELECT MAX(fecha) FROM costos WHERE codigo='".addslashes($mcodigo)."'");
 
 $extras = '
+
 <div style="display: none">
-	<form action="'.base_url().'/inventario/kardex/filteredgrid/search/osp" method="post" id="df1">>
+	<form action="'.base_url().'/inventario/kardex/filteredgrid/search/osp" method="post" id="kardex" name="kardex" target="kpopup">
 		<input type="text" name="codigo" value="'.$mcodigo.'" />
 		<input type="text" name="ubica"  value="" />
-		<input type="text" name="fecha"  value="'.$mfdesde.'" />
-		<input type="text" name="fechah" value="'.$mfhasta.'" />
+		<input type="text" name="fecha"  value="'.dbdate_to_human($mfdesde).'" />
+		<input type="text" name="fechah" value="'.dbdate_to_human($mfhasta).'" />
 		<input type="submit">
 	</form>
 	
 </div>
+<script type="text/javascript">
+function submitkardex() {
+	window.open("", "kpopup", "width=800,height=600,resizeable,scrollbars");
+	document.kardex.submit();
+}
+
+</script>
 ';
 
 

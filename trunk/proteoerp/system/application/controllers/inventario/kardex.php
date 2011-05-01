@@ -34,6 +34,7 @@ class Kardex extends Controller {
 				case '4N': return(anchor_popup($link,'Nota/Entrega'      ,$atts)); break;
 				case '6C': return(anchor_popup($link,'Conversion'        ,$atts)); break;
 				case '5C': return('Ajuste de inventario'); break;
+				case '5D': return('Consignacion'); break;
 				case '0F': return('Inventario'); break;
 				case '9F': return('Inventario'); break;
 			default:   return($par); };
