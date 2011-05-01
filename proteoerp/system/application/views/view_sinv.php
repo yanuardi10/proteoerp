@@ -37,11 +37,15 @@ else:
 					</td>
 					<td>&nbsp;
 						<a href='javascript:void(0);'
-		<?php				   
+		<?php
+		/*
 		echo 'onclick="window.open(\'';
 		echo base_url().'inventario/kardex/filteredgrid/'.$form->_dataobject->get('id');
 		echo "', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');";
 		echo '" heigth="600"'.'>';
+		*/
+		echo "onclick='javascript:submitkardex()'>";
+		echo "";		
 		?>
 						<?php
 							$propiedad = array('src' => 'images/kardex.jpg', 'alt' => 'Kardex de Inventario', 'title' => 'Kardex de Inventario','border'=>'0','height'=>'30');
