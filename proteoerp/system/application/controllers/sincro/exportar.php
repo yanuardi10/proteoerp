@@ -210,31 +210,37 @@ class Exportar extends Controller {
 		$query=mysql_unbuffered_query($mSQL,$this->db->conn_id);
 		if ($query!==false){
 			while ($row = mysql_fetch_assoc($query)) {
+
+				$base1=(empty($row['base1']))? 1 : $row['base1'];
+				$base2=(empty($row['base2']))? 1 : $row['base2'];
+				$base3=(empty($row['base3']))? 1 : $row['base3'];
+				$base4=(empty($row['base4']))? 1 : $row['base4'];
+
 				$sql = $this->db->insert_string('sinv', $row);
 				$sql.=' ON DUPLICATE KEY UPDATE ';
-				$sql.=' `alterno`='.$this->db->escape($row['alterno']);
-				$sql.=' `peso`   ='.$this->db->escape($row['peso']);
-				$sql.=' `clase`  ='.$this->db->escape($row['clase']);
-				$sql.=' `redecen`='.$this->db->escape($row['redecen']);
-				$sql.=' `precio1`='.$this->db->escape($row['precio1']);
-				$sql.=',`precio2`='.$this->db->escape($row['precio2']);
-				$sql.=',`precio3`='.$this->db->escape($row['precio3']);
-				$sql.=',`precio4`='.$this->db->escape($row['precio4']);
-				$sql.=',`iva`    ='.$this->db->escape($row['iva']);
-				$sql.=',`base1`  ='.$this->db->escape($row['base1']);
-				$sql.=',`base2`  ='.$this->db->escape($row['base2']);
-				$sql.=',`base3`  ='.$this->db->escape($row['base3']);
-				$sql.=',`base4`  ='.$this->db->escape($row['base4']);
-				$sql.=',`grupo`  ='.$this->db->escape($row['grupo']);
-				$sql.=',`linea`  ='.$this->db->escape($row['linea']);
-				$sql.=',`depto`  ='.$this->db->escape($row['depto']);
-				$sql.=',`descrip`='.$this->db->escape($row['descrip']);
-				$sql.=',`descrip2`='.$this->db->escape($row['descrip2']);
-				$sql.=',`margen1`= ROUND(100-((IF(formcal=\'U\',ultimo,IF(formcal=\'P\',pond,IF(formcal=\'S\',standard,GREATEST(ultimo,pond)))))*100/('.$row['base1'].')),2)';
-				$sql.=',`margen2`= ROUND(100-((IF(formcal=\'U\',ultimo,IF(formcal=\'P\',pond,IF(formcal=\'S\',standard,GREATEST(ultimo,pond)))))*100/('.$row['base2'].')),2)';
-				$sql.=',`margen3`= ROUND(100-((IF(formcal=\'U\',ultimo,IF(formcal=\'P\',pond,IF(formcal=\'S\',standard,GREATEST(ultimo,pond)))))*100/('.$row['base3'].')),2)';
-				$sql.=',`margen4`= ROUND(100-((IF(formcal=\'U\',ultimo,IF(formcal=\'P\',pond,IF(formcal=\'S\',standard,GREATEST(ultimo,pond)))))*100/('.$row['base4'].')),2)';
-				$sql.=',`marca`  ='.$this->db->escape($row['marca']);
+				$sql.=' `alterno` ='.$this->db->escape($row['alterno']);
+				$sql.=',`peso`    ='.$this->db->escape($row['peso']);
+				$sql.=',`clase`   ='.$this->db->escape($row['clase']);
+				$sql.=',`redecen` ='.$this->db->escape($row['redecen']);
+				$sql.=',`precio1` ='.$this->db->escape($row['precio1']);
+				$sql.=',`precio2` ='.$this->db->escape($row['precio2']);
+				$sql.=',`precio3` ='.$this->db->escape($row['precio3']);
+				$sql.=',`precio4` ='.$this->db->escape($row['precio4']);
+				$sql.=',`iva`     ='.$this->db->escape($row['iva']);
+				$sql.=',`base1`   ='.$this->db->escape($row['base1']);
+				$sql.=',`base2`   ='.$this->db->escape($row['base2']);
+				$sql.=',`base3`   ='.$this->db->escape($row['base3']);
+				$sql.=',`base4`   ='.$this->db->escape($row['base4']);
+				$sql.=',`grupo`   ='.$this->db->escape($row['grupo']);
+				$sql.=',`linea`   ='.$this->db->escape($row['linea']);
+				$sql.=',`depto`   ='.$this->db->escape($row['depto']);
+				$sql.=',`descrip` ='.$this->db->escape($row['descrip']);
+				//$sql.=',`descrip2`='.$this->db->escape($row['descrip2']);
+				$sql.=',`margen1` = ROUND(100-((IF(formcal=\'U\',ultimo,IF(formcal=\'P\',pond,IF(formcal=\'S\',standard,GREATEST(ultimo,pond)))))*100/('.$base1.')),2)';
+				$sql.=',`margen2` = ROUND(100-((IF(formcal=\'U\',ultimo,IF(formcal=\'P\',pond,IF(formcal=\'S\',standard,GREATEST(ultimo,pond)))))*100/('.$base2.')),2)';
+				$sql.=',`margen3` = ROUND(100-((IF(formcal=\'U\',ultimo,IF(formcal=\'P\',pond,IF(formcal=\'S\',standard,GREATEST(ultimo,pond)))))*100/('.$base3.')),2)';
+				$sql.=',`margen4` = ROUND(100-((IF(formcal=\'U\',ultimo,IF(formcal=\'P\',pond,IF(formcal=\'S\',standard,GREATEST(ultimo,pond)))))*100/('.$base4.')),2)';
+				$sql.=',`marca`   ='.$this->db->escape($row['marca']);
 				$sql.="\n";
 				fwrite($handle, $sql);
 			}
