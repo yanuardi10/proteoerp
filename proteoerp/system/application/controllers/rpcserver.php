@@ -129,7 +129,7 @@ class Rpcserver extends Controller {
 				$mSQL="SELECT numero,fecha,status,observ1,stotal,impuesto,gtotal,peso,id
 					FROM scon
 					WHERE clipro=? AND id > ?
-					AND status='T' AND tipo='C' AND tipod='E' LIMIT $cant";
+					AND tipo='C' AND tipod='E' LIMIT $cant";
 				$query = $this->db->query($mSQL,array($usr,$ult_ref));
 				//memowrite($this->db->last_query(),'B2Ba');
 				if ($query->num_rows() > 0){ 
