@@ -196,11 +196,25 @@ class sinvcontrol extends validaciones {
 		$filter->marca->style='width:220px;';
 		$filter->marca->group = "Dos";
 
+		$filter->fijado = new dropdownField('Solos precios no fijos ', 'fijado');
+		//$filter->fijado->clause='';
+		$filter->fijado->db_name='e.precio';
+		$filter->fijado->option('','No');
+		$filter->fijado->option('N' ,'Si');
+		$filter->fijado->style='width:120px;';
+		$filter->fijado->group = 'Uno';
+
 		$filter->buttons('reset','search');
 		$filter->build('dataformfiltro');
 
 		$ggrid='';
 		if($filter->is_valid()){
+			$fijado=$filter->fijado->newValue;
+			if($fijado=='S'){
+			
+			}
+			
+			
 			$ggrid ='';
 			foreach ($filter->_fields as $field_name => $field_copy){
 				$ggrid.= form_hidden($field_copy->id, $field_copy->value);
