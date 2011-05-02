@@ -118,10 +118,10 @@ class Scli extends validaciones {
 		$data['content'].= $this->pi18n->fallas();
 		$data['filtro']  = $filter->output;
 
-		$data['title']  = heading('Modulo de Clientes');
-		$data['head']   = script('jquery.js');
-		$data["head"]  .= script('superTables.js');
-		$data['head']  .= $this->rapyd->get_head();
+		$data['title']   = heading('Modulo de Clientes');
+		$data['script']  = script('jquery.js');
+		$data["script"] .= script('superTables.js');
+		$data['head']    = $this->rapyd->get_head();
 
 		$this->load->view('view_ventanas', $data);
 	}

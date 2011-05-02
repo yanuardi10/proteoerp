@@ -234,7 +234,11 @@ class sinv extends Controller {
 		$link=anchor('/inventario/sinv/dataedit/show/<#id#>','<#codigo#>');
 
 		$uri_2  = anchor('inventario/sinv/dataedit/modify/<#id#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar','height'=>'12','title'=>'Editar')));
-		$uri_2 .= anchor('inventario/sinv/consulta/<#id#>',img(array('src'=>'images/estadistica.jpeg','border'=>'0','alt'=>'Consultar','height'=>'12','title'=>'Consultar')));
+
+		$uri_2 .= "<a href='javascript:void(0);' ";
+		$uri_2 .= 'onclick="window.open(\''.base_url()."inventario/sinv/consulta/<#id#>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');".'" heigth="600"'.'>';
+		$uri_2 .= img(array('src'=>'images/estadistica.jpeg','border'=>'0','alt'=>'Consultar','height'=>'12','title'=>'Consultar'));
+		$uri_2 .= "</a>";
 
 		$uri_2 .= "<a href='javascript:void(0);' ";
 		$uri_2 .= 'onclick="window.open(\''.base_url()."inventario/fotos/dataedit/<#id#>/create', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');".'" heigth="600"'.'>';
@@ -696,6 +700,7 @@ function sinvcodigocambia( mtipo, mviejo, mcodigo ) {
 
 		$ultimo='<a href="javascript:ultimo();" title="Consultar ultimo c&oacute;digo ingresado"> Consultar ultimo c&oacute;digo</a>';
 		$sugerir='<a href="javascript:sugerir();" title="Sugerir un C&oacute;digo aleatorio">Sugerir C&oacute;digo </a>';
+
 		$edit->codigo = new inputField("C&oacute;digo", "codigo");
 		$edit->codigo->size=15;
 		$edit->codigo->maxlength=15;
@@ -890,11 +895,11 @@ function sinvcodigocambia( mtipo, mviejo, mcodigo ) {
 
 		$edit->redecen = new dropdownField("Redondear", "redecen");
 		$edit->redecen->style='width:80px;';
-		$edit->redecen->option("NO","No");
-		$edit->redecen->option("M","Centesima"  );
-		$edit->redecen->option("F","Fracci&oacute;n");
-		$edit->redecen->option("D","Decena" );  
-		$edit->redecen->option("C","Centena"  );
+		$edit->redecen->option("NO","No Cambiar");
+		$edit->redecen->option("M","Solo un Decimal "  );
+		$edit->redecen->option("F","Sin Decimales");
+		$edit->redecen->option("D","Decenas" );  
+		$edit->redecen->option("C","Centenas"  );
 		
 		//$edit->redecen->onchange = "redon();";
 
@@ -1936,32 +1941,47 @@ RETURN(.T.)
 
 		$descrip = $this->datasis->dameval("SELECT descrip FROM sinv WHERE id=".$claves['id']." ");
 
+/*
+mes, 
+cventa, 
+mventa, 
+mpvp, 
+ccompra, 
+mcompra,
+util, 
+margen, 
+promedio
+*/
+
 		$script = "
 <script type=\"text/javascript\" >  
 
 <!-- All the scripts will go here  --> 
-
 var dsOption= {
 	fields :[
 		{name : 'mes'},
-		{name : 'cventa', type: 'float' },
-		{name : 'cdevol', type: 'float' },
-		{name : 'cana' ,  type: 'float' },
-		{name : 'mventa', type: 'float' },
-		{name : 'mdevol', type: 'float' },
-		{name : 'tota' ,  type: 'float' }    
+		{name : 'cventa',   type: 'float' },
+		{name : 'mventa',   type: 'float' },
+		{name : 'mpvp' ,    type: 'float' },
+		{name : 'ccompra',  type: 'float' },
+		{name : 'mcompra',  type: 'float' },
+		{name : 'util',     type: 'float' },
+		{name : 'margen',   type: 'float' },
+		{name : 'promedio', type: 'float' }    
 	],
 	recordType : 'object'
 } 
 
 var colsOption = [
-	{id: 'mes',     header: 'Mes',        width :60, frozen: true },
-	{id: 'cventa' , header: 'Venta',      width :80, align: 'right' },
-	{id: 'cdevol' , header: 'Devolucion', width :80, align: 'right' },
-	{id: 'cana' ,   header: 'Total',      width :80, align: 'right' },
-	{id: 'mventa' , header: 'Venta',      width :80, align: 'right' },
-	{id: 'mdevol' , header: 'Devolucion', width :80, align: 'right' },
-	{id: 'tota' ,   header: 'Total',      width :80, align: 'right' }
+	{id: 'mes',      header: 'Mes',          width :60, frozen: true   },
+	{id: 'cventa' ,  header: 'Cant. Venta',  width :80, align: 'right' },
+	{id: 'mventa' ,  header: 'Costo Venta',  width :80, align: 'right' },
+	{id: 'mpvp' ,    header: 'Precio Venta', width :80, align: 'right' },
+	{id: 'ccompra' , header: 'Cant Compra',  width :80, align: 'right' },
+	{id: 'mcompra' , header: 'Monto Compra', width :80, align: 'right' },
+	{id: 'util' ,    header: 'Utilidad',     width :80, align: 'right' },
+	{id: 'margen' ,  header: 'Margen %',     width :80, align: 'right' },
+	{id: 'promedio', header: 'Costo Prom.',  width :80, align: 'right' }
 ];
 
 var gridOption={
@@ -2072,6 +2092,23 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid1) );
 		$mSQL .= "FROM sitems a WHERE a.codigoa='".addslashes($mCodigo)."' ";
 		$mSQL .= "AND a.fecha >= CONCAT(MID(SUBDATE(curdate(),365),1,8),'01') ";
 		$mSQL .= "GROUP BY MID( a.fecha ,1,7)  WITH ROLLUP LIMIT 60";
+		
+		$mSQL  = "
+SELECT 
+	MID(a.fecha,1,7) mes, 
+	sum(a.cantidad*(a.origen='3I')) cventa, 
+	ROUND(sum(a.promedio*a.cantidad*(a.origen='3I')),2) mventa, 
+	ROUND(sum(a.venta*(a.origen='3I')),2) mpvp, 
+	sum(a.cantidad*(a.origen='2C')) ccompra, 
+	sum(a.monto*(a.origen='2C')) mcompra,
+	ROUND(sum((a.venta-a.cantidad*a.promedio)*(a.origen='3I')),2) util, 
+	100- ROUND( sum(a.cantidad*a.promedio*(a.origen='3I'))*100/SUM(a.venta), 2) margen, 
+	round(avg(promedio),2) promedio
+FROM costos a WHERE a.codigo='".addslashes($mCodigo)."' AND a.origen IN ('3I','2C')
+	AND a.fecha >= CONCAT(MID(SUBDATE(curdate(),365),1,8),'01') 
+GROUP BY MID( a.fecha ,1,7)  WITH ROLLUP LIMIT 24
+";
+
 		$query = $this->db->query($mSQL);
 
 		if ($query->num_rows() > 0){
@@ -2082,7 +2119,6 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid1) );
 			$data = json_encode($retArray);
 			$ret = "{data:" . $data .",\n";
 			$ret .= "recordType : 'array'}";
-			//$ret .= $mSQL;
 		} else {
 			$ret = '{data : []}';
 		}

@@ -20,7 +20,7 @@ else:
 				<tr>
 					<td>&nbsp;</td>
 					<td>&nbsp;
-						<a href='<?php echo base_url()."inventario/sinv/consulta/".$form->_dataobject->get('id'); ?>'>
+						<a href='javascript:void(0);' onclick="window.open('<?php echo base_url();?>inventario/sinv/consulta/<?php echo $form->_dataobject->get('id'); ?>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+', screeny='+((screen.availHeight/2)-300)+'');">
 						<?php
 							$propiedad = array('src' => 'images/ojos.png', 'alt' => 'Consultar Movimiento', 'title' => 'Consultar Detalles','border'=>'0','height'=>'30');
 							echo img($propiedad);
@@ -36,17 +36,7 @@ else:
 						</a>
 					</td>
 					<td>&nbsp;
-						<a href='javascript:void(0);'
-		<?php
-		/*
-		echo 'onclick="window.open(\'';
-		echo base_url().'inventario/kardex/filteredgrid/'.$form->_dataobject->get('id');
-		echo "', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');";
-		echo '" heigth="600"'.'>';
-		*/
-		echo "onclick='javascript:submitkardex()'>";
-		echo "";		
-		?>
+						<a href='javascript:void(0);' onclick='javascript:submitkardex()'>
 						<?php
 							$propiedad = array('src' => 'images/kardex.jpg', 'alt' => 'Kardex de Inventario', 'title' => 'Kardex de Inventario','border'=>'0','height'=>'30');
 							echo img($propiedad);
