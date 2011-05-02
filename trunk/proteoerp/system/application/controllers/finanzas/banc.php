@@ -40,25 +40,63 @@ class Banc extends Validaciones {
 			}
 			return $palabra;
 		}
-
-		$grid = new DataGrid('Lista de Bancos y cajas');
-		$grid->per_page = 10;
+		$grid = new DataGrid('Bancos y cajas');
+		$grid->per_page = 20;
 		$grid->use_function('pinta');
-
 		$grid->column_orderby('C&oacute;digo',$uri,'codbanc');
 		$grid->column_orderby('Tipo','<pinta><#activo#>|<#tbanco#></pinta>','tbanco');
 		$grid->column_orderby('Banco','<pinta><#activo#>|<#banco#></pinta>','banco');
 		$grid->column_orderby('Nro Cuenta','<pinta><#activo#>|<#numcuent#></pinta>','numcuent');
 		$grid->column_orderby('Saldo','<pinta><#activo#>|<nformat><#saldo#></nformat></pinta>','saldo','align=right');
 		$grid->column_orderby('Contable','<pinta><#activo#>|<#cuenta#></pinta>','cuenta');
-		$grid->column('Acion','activo','activo');
-
+		$grid->column('Telefono','telefono');
+		$grid->column('Nombre','nombre');
+		$grid->column('Activo','activo','activo');
 		$grid->add('finanzas/banc/dataedit/create','Agregar');
-		$grid->build();
+		$grid->build('datagridST');
 		//echo $grid->db->last_query();
+
+//************ SUPER TABLE ************* 
+		$extras = '
+<script type="text/javascript">
+//<![CDATA[
+(function() {
+	var mySt = new superTable("demoTable", {
+	cssSkin : "sSky",
+	fixedCols : 1,
+	headerRows : 1,
+	onStart : function () {	this.start = new Date();},
+	onFinish : function () {document.getElementById("testDiv").innerHTML += "Finished...<br>" + ((new Date()) - this.start) + "ms.<br>";}
+	});
+})();
+//]]>
+</script>
+';
+		$style ='
+<style type="text/css">
+.fakeContainer { /* The parent container */
+    margin: 5px;
+    padding: 0px;
+    border: none;
+    width: 740px; /* Required to set */
+    height: 320px; /* Required to set */
+    overflow: hidden; /* Required to set */
+}
+</style>	
+';
+//****************************************
+
+		$data['style']   = $style;
+		$data['style']  .= style('superTables.css');
+
+		$data['extras']  = $extras;		
+
+		$data['script']  = script('jquery.js');
+		$data["script"] .= script('superTables.js');
 
 		$data['content'] = $grid->output;
 		$data['filtro']  = $filter->output;
+
 		$data['title']   = '<h1>Bancos y Cajas</h1>';
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
