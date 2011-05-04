@@ -11,6 +11,7 @@ class Rpcserver extends Controller {
 		$config['functions']['ttiket']   = array('function' => 'Rpcserver.traer_tiket');
 		$config['functions']['cea']      = array('function' => 'Rpcserver.ComprasEmpresasAsociadas');
 		$config['functions']['consiea']  = array('function' => 'Rpcserver.ConsignacionesEmpresasAsociadas');
+		$config['functions']['montven']  = array('function' => 'MontosVentas');
 
 		$this->xmlrpcs->initialize($config);
 		$this->xmlrpcs->serve();
@@ -170,6 +171,31 @@ class Rpcserver extends Controller {
 		}
 
 		$response = array($consignacion,'struct');
+		return $this->xmlrpc->send_response($response);
+	}
+
+	function MontosVentas(){
+		$parameters = $request->output_parameters();
+
+		$fecha = $this->db->escape($parameters['0']);
+		$clave = $parameters['1'];
+
+		$mSQL="SELECT 
+		 SUM(totals*IF(tipo_doc='D',-1,1)) AS totales
+		 FROM sfac 
+		 WHERE fecha=$fecha AND tipo_doc<>'X' AND MID(numero,1,1)<>'_'";
+		$row=$this->datasis->damerow($mSQL);
+
+		$fdesde=date('Ym');
+		$mSQL="SELECT 
+		 SUM(totals*IF(tipo_doc='D',-1,1)) AS acumulado
+		 FROM sfac 
+		 WHERE fecha >=${fdesde}01 AND fecha<=$fecha AND tipo_doc<>'X' AND MID(numero,1,1)<>'_'";
+		$row2=$this->datasis->damerow($mSQL);
+
+		$data=array('diaria'=>$row['totales'],'acumulada'=>$row2['acumilado']);
+
+		$response = array($data,'struct');
 		return $this->xmlrpc->send_response($response);
 	}
 
