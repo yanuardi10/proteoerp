@@ -2,6 +2,7 @@
 // Es necesario para que funciona las siguiesnte slibrerias de pear
 // pear install Mail
 // pear install Net_SMTP
+// pear install Mail_mime
 
 class notifica extends controller {
 
@@ -10,6 +11,7 @@ class notifica extends controller {
 		$this->config->load('notifica');
 		$this->load->library('rapyd');
 		$this->error='';
+		$this->adjuntos=null;
 	}
 
 	function index(){
@@ -228,7 +230,7 @@ class notifica extends controller {
 								foreach($correos AS $correo){
 									$rt=$this->_mail($correo,'Notificacion ProteoERP::'.$titulo,$msj);
 									if(!$rt){
-										echo "Error enviando correo $correo \n";
+										echo $this->error."Error enviando correo $correo \n";
 									}
 								}
 							}
@@ -436,6 +438,10 @@ class notifica extends controller {
 			$this->error='Problemas al cargar la clase Mail, probablemente sea necesario instalarla desde PEAR, comuniquese con soporte t&eacute;cnico';
 			return false;
 		}
+		if(!@include_once 'Mail/mime.php'){
+			$this->error='Problemas al cargar la clase Mail_mime, probablemente sea necesario instalarla desde PEAR, comuniquese con soporte t&eacute;cnico';
+			return false;
+		}
 
 		$from = $this->config->item('mail_smtp_from');
 		$host = $this->config->item('mail_smtp_host');
@@ -443,11 +449,31 @@ class notifica extends controller {
 		$user = $this->config->item('mail_smtp_usr');
 		$pass = $this->config->item('mail_smtp_pwd');
 
-		$headers = array (
-			'From'    => $from,
-			'To'      => $to,
-			'Subject' => $subject
-		);
+		if(is_array($this->adjuntos)){
+			$message = new Mail_mime();
+			$message->setTXTBody($body);
+
+			foreach($this->adjuntos AS $adj){
+				$message->addAttachment($adj);
+			}
+
+			$body = $message->get(); 
+			$extraheaders =  array (
+				'From'    => $from,
+				'To'      => $to,
+				'Subject' => $subject
+			);
+			$headers = $message->headers($extraheaders);
+
+		}else{
+			$headers = array (
+				'From'    => $from,
+				'To'      => $to,
+				'Subject' => $subject
+			);
+			$body.="\n\nEsta es una cuenta de correo no monitoreada. Por favor no responda o reenvíe mensajes a esta cuenta.";
+		}
+
 		$parr=array (
 			'host'     => $host,
 			'port'     => $port,
@@ -455,7 +481,6 @@ class notifica extends controller {
 			'username' => $user,
 			'password' => $pass
 		);
-		$body.="\n\nEsta es una cuenta de correo no monitoreada. Por favor no responda o reenvíe mensajes a esta cuenta.";
 
 		$smtp = Mail::factory('smtp',$parr);
 		$mail = $smtp->send($to, $headers, $body);
@@ -466,6 +491,40 @@ class notifica extends controller {
 			return true;
 		}
 	}
+
+
+	function _traermonventas($id=null){
+		if(is_null($id)) return null; else $id=$this->db->escape($id);
+
+		$config=$this->datasis->damerow("SELECT proveed,grupo,puerto,proteo,url,usuario,clave,tipo,depo,margen1,margen2,margen3,margen4,margen5 FROM b2b_config WHERE id=$id");
+		if(count($config)==0) return null;
+
+		$er=0;
+		$this->load->helper('url');
+		$server_url = reduce_double_slashes($config['url'].'/'.$config['proteo'].'/'.'rpcserver');
+
+		$this->load->library('xmlrpc');
+		$this->xmlrpc->xmlrpc_defencoding=$this->config->item('charset');
+		//$this->xmlrpc->set_debug(TRUE);
+		$puerto= (empty($config['puerto'])) ? 80 : $config['puerto'];
+
+		$this->xmlrpc->server($server_url , $puerto);
+		$this->xmlrpc->method('montven');
+
+		$fecha   = date('Ymd');
+		$request = array($fecha,'****');
+		$this->xmlrpc->request($request);
+
+		if (!$this->xmlrpc->send_request()){
+			memowrite($this->xmlrpc->display_error(),'notifica');
+			return null;
+		}else{
+			$res=$this->xmlrpc->display_response();
+			return $res;
+		}
+		return null;
+	}
+
 
 	function instalar(){
 		$mSQL="CREATE TABLE `eventos` (
