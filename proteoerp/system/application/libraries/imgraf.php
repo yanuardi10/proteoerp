@@ -24,7 +24,7 @@ class imgraf{
 
 		$Test->AntialiasQuality = 0;
 		$Test->setShadowProperties(2,2,200,200,200);
-		$Test->drawFlatPieGraphWithShadow($DataSet->GetData(),$DataSet->GetDataDescription(),120,100,60,PIE_PERCENTAGE,8);
+		$Test->drawFlatPieGraphWithShadow($DataSet->GetData(),$DataSet->GetDataDescription(),120,110,60,PIE_PERCENTAGE,8);
 		$Test->clearShadow();
 		$Test->drawPieLegend(210,30,$DataSet->GetData(),$DataSet->GetDataDescription(),250,250,250);
 		$Test->drawTitle(10,22,$titulo,50,50,50,300);
