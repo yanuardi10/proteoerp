@@ -11,7 +11,7 @@ class Rpcserver extends Controller {
 		$config['functions']['ttiket']   = array('function' => 'Rpcserver.traer_tiket');
 		$config['functions']['cea']      = array('function' => 'Rpcserver.ComprasEmpresasAsociadas');
 		$config['functions']['consiea']  = array('function' => 'Rpcserver.ConsignacionesEmpresasAsociadas');
-		$config['functions']['montven']  = array('function' => 'MontosVentas');
+		$config['functions']['montven']  = array('function' => 'Rpcserver.MontosVentas');
 
 		$this->xmlrpcs->initialize($config);
 		$this->xmlrpcs->serve();
@@ -174,7 +174,7 @@ class Rpcserver extends Controller {
 		return $this->xmlrpc->send_response($response);
 	}
 
-	function MontosVentas(){
+	function MontosVentas($request){
 		$parameters = $request->output_parameters();
 
 		$fecha = $this->db->escape($parameters['0']);
@@ -193,7 +193,7 @@ class Rpcserver extends Controller {
 		 WHERE fecha >=${fdesde}01 AND fecha<=$fecha AND tipo_doc<>'X' AND MID(numero,1,1)<>'_'";
 		$row2=$this->datasis->damerow($mSQL);
 
-		$data=array('diaria'=>$row['totales'],'acumulada'=>$row2['acumilado']);
+		$data=array('diaria'=>$row['totales'],'acumulada'=>$row2['acumulado']);
 
 		$response = array($data,'struct');
 		return $this->xmlrpc->send_response($response);
