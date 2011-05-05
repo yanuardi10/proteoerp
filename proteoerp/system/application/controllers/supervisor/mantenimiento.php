@@ -751,6 +751,7 @@ class Mantenimiento extends Controller{
 	function calcosto(){
 		$this->db->simple_query("CALL sp_calcopasa()");
 		$this->db->simple_query("CALL sp_calcoinv()");
+		$this->db->simple_query("CALL sp_calcoestadis()");
 	}
 
 	
