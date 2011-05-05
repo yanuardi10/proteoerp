@@ -23,7 +23,16 @@ class Noco extends Controller {
 		$uri = anchor('nomina/noco/dataedit/show/<#codigo#>','<#codigo#>');
 		$uri_2  = anchor('nomina/noco/dataedit/show/<#codigo#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar','height'=>'12')));
     
-		$grid = new DataGrid();
+		$mtool  = "<table background='#554455'><tr>";
+		$mtool .= "<td>&nbsp;</td>";
+
+		$mtool .= "<td>&nbsp;<a href='".base_url()."nomina/noco/dataedit/create'>";
+		$mtool .= img(array('src' => 'images/agregar.jpg', 'alt' => 'Agregar Registro', 'title' => 'Agregar Registro','border'=>'0','height'=>'32'));
+		$mtool .= "</a>&nbsp;</td>";
+
+		$mtool .= "</tr></table>";
+		
+		$grid = new DataGrid($mtool);
 		$grid->order_by("codigo","asc");
 		$grid->per_page = 50;
 		
@@ -33,7 +42,7 @@ class Noco extends Controller {
 		$grid->column_orderby("Observaci&oacute;n","observa1",'observa1');
 		$grid->column_orderby("Observaci&oacute;n","observa2",'observa2');
 		
-		$grid->add("nomina/noco/dataedit/create");
+		//$grid->add("nomina/noco/dataedit/create");
 		$grid->build('datagridST');
 		
 		//************ SUPER TABLE ************* 
