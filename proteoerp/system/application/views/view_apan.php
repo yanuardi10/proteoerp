@@ -85,7 +85,7 @@ function del_itccli(id){
 				<td class="littletableheader"><?php echo $form->fecha->label  ?>*&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->fecha->output ?>&nbsp; </td>
 				<td class="littletableheader"><?php echo $form->monto->label  ?>*&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->monto->output ?>&nbsp; </td>
+				<td class="littletablerow" align="right">    <?php echo $form->monto->output ?>&nbsp; </td>
 				<td class="littletableheader"><?php echo $form->observa1->label  ?>*&nbsp;</td>
 				<td class="littletablerow" colspan="3">   <?php echo $form->observa1->output.' _'.$form->observa2->output ?>&nbsp; </td>
 			</tr>

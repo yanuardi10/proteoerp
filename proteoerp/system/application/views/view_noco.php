@@ -52,10 +52,9 @@ function del_itnoco(id){
 	</tr>
 	<tr>
 		<td>
+		<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
+		<legend class="titulofieldset" style='color: #114411;'>Contrato de N&oacute;mina</legend>
 		<table width="100%" style="margin: 0; width: 100%;">
-			<tr>
-				<th colspan='5' class="littletableheader">Contrato de N&oacute;mina </th>
-			</tr>
 			<tr>
 				<td class="littletableheader"><?php echo $form->codigo->label;    ?>*&nbsp;</td>
 				<td class="littletablerow"><?php echo $form->codigo->output;   ?>&nbsp;</td>
@@ -76,22 +75,22 @@ function del_itnoco(id){
 				<td class="littletablerow" colspan='2'><?php echo $form->observa2->output ?>&nbsp;</td>
 			</tr>
 		</table>
+		</fieldset>
 		<br>
 		</td>
 	</tr>
 	<tr>
 		<td>
+		<fieldset style='border: 2px outset #9AC8DA;background: #EFEFFF;'>
+		<legend class="titulofieldset" style='color: #114411;'>Lista de Conceptos</legend>
 		<table width='100%'>
 			<tr>
-				<th colspan='6' class="littletableheader">Lista de Conceptos</th>
-			</tr>
-			<tr>
-				<td class="littletableheader">C&oacute;ncepto</td>
-				<td class="littletableheader">Descripci&oacute;n</td>
-				<td class="littletableheader">Tipo</td>
-				<td class="littletableheader">Grupo</td>
+				<td class="littletableheaderdet">C&oacute;ncepto</td>
+				<td class="littletableheaderdet">Descripci&oacute;n</td>
+				<td class="littletableheaderdet">Tipo</td>
+				<td class="littletableheaderdet">Grupo</td>
 				<?php if($form->_status!='show') {?>
-				<td class="littletableheader">&nbsp;</td>
+				<td class="littletableheaderdet">&nbsp;</td>
 				<?php } ?>
 			</tr>
 
@@ -116,9 +115,10 @@ function del_itnoco(id){
 			<?php } ?>
 
 			<tr id='__UTPL__'>
-				<td id='cueca'></td>
+				<td id='cueca' colspan="4" class="littletableheaderdet"></td>
 			</tr>
 		</table>
+		</fieldset>
 		<?php echo $container_bl ?> <?php echo $container_br ?></td>
 		<?php echo $form_end; ?></td>
 	</tr>
