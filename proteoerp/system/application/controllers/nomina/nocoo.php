@@ -1,116 +1,88 @@
 <?php
+//contratos
 class Nocoo extends Controller {
+	
+	var $qformato;
 	
 	function nocoo(){
 		parent::Controller();
 		$this->load->library("rapyd");
+		define ("THISFILE",   APPPATH."controllers/contabilidad/". $this->uri->segment(2).EXT);
+		//$this->datasis->modulo_id(604,1);
 	}
 	
 	function index() {		
 		$this->rapyd->load("datagrid","datafilter");
+		$this->datasis->modulo_id(715,1);
 		
-		$filter = new DataFilter("Filtro de Contrato de Nomina",'noco');
-		
-		$filter->codigo = new inputField("C&oacute;digo", "codigo");
-		$filter->codigo->size=10;
+		$filter = new DataFilter("Filtro de noco");
+		$filter->db->select("codigo,tipo,nombre,CONCAT_WS('',observa1,observa2 ) AS observa");
+		$filter->db->from('noco');
 		
 		$filter->nombre = new inputField("Nombre", "nombre");
 		$filter->nombre->size=40;
 		
+		//$filter->status = new dropdownField("Status", "tipo");  
+		//$filter->status->option("S","Semanal");
+		//$filter->status->option("Q","Quincenal");
+		//$filter->status->option("M","Mensual");
+		//$filter->status->option("O","Otro");
+		//$filter->status->style='width:100px';
+		
 		$filter->buttons("reset","search");
-		$filter->build('dataformfiltro');
+		$filter->build();
     
 		$uri = anchor('nomina/nocoo/dataedit/show/<#codigo#>','<#codigo#>');
-		$uri_2  = anchor('nomina/nocoo/dataedit/show/<#codigo#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar','height'=>'12')));
     
 		$grid = new DataGrid();
 		$grid->order_by("codigo","asc");
-		$grid->per_page = 50;
+		$grid->per_page = 15;
 		
-		$grid->column('Acci&oacute;n',$uri_2,'align=center');
-		$grid->column_orderby("C&oacute;digo",$uri,'codigo');
-		$grid->column_orderby("Nombre","nombre",'nombre');
-		$grid->column_orderby("Observaci&oacute;n","observa1",'observa1');
-		$grid->column_orderby("Observaci&oacute;n","observa2",'observa2');
+		$grid->column("C&oacute;digo",$uri);
+		//$grid->column("T&iacute;tulo","nombre");
+		//$grid->column("Observaci&oacute;n","observa");
+		//$grid->column("Tipo" ,"tipo" ,"align='center'");
 		
 		$grid->add("nomina/nocoo/dataedit/create");
-		$grid->build('datagridST');
+		$grid->build();
+		//echo $grid->db->last_query();
 		
-		//************ SUPER TABLE ************* 
-		$extras = '
-<script type="text/javascript">
-//<![CDATA[
-(function() {
-	var mySt = new superTable("demoTable", {
-	cssSkin : "sSky",
-	fixedCols : 1,
-	headerRows : 1,
-	onStart : function () {	this.start = new Date();},
-	onFinish : function () {document.getElementById("testDiv").innerHTML += "Finished...<br>" + ((new Date()) - this.start) + "ms.<br>";}
-	});
-})();
-//]]>
-</script>
-';
-		$style ='
-<style type="text/css">
-.fakeContainer { /* The parent container */
-    margin: 5px;
-    padding: 0px;
-    border: none;
-    width: 740px; /* Required to set */
-    height: 320px; /* Required to set */
-    overflow: hidden; /* Required to set */
-}
-</style>	
-';
-//****************************************
-
-
-		$data['style']   = $style;
-		$data['style']  .= style('superTables.css');
-		$data['extras']  = $extras;		
-
-		$data['content'] = $grid->output;
-		$data['filtro']  = $filter->output;
-
-		$data['title']  = heading('Contratos');
-		$data['head']   = script('jquery.js');
-		$data["head"]  .= script('superTables.js');
-		$data['head']  .= $this->rapyd->get_head();
-
+		$data['content'] =$filter->output.$grid->output;
+		$data["head"]    = $this->rapyd->get_head();
+		$data['title']   ='<h1>Contratos</h1>';
 		$this->load->view('view_ventanas', $data);
 	}
 	
 	function dataedit(){
- 		$this->rapyd->load('dataobject','datadetails');
+ 		$this->rapyd->load("dataedit","datadetalle","fields","datagrid");
  		$modbus=array(
 			'tabla'   =>'conc',
 			'columnas'=>array(
 				'concepto' =>'Concepto',
 				'tipo'=>'tipo',
-				'descrip'=>'Descripci&oacute;n',
- 				'grupo'=>'Grupo'),
-			'filtro'  =>array('concepto'=>'C&ocaute;digo','descrip'=>'Descripci&oacute;n'),
-			'retornar'=>array('concepto'=>'concepto_<#i#>','descrip'=>'descrip_<#i#>',
-								'tipo'=>'it_tipo_<#i#>','grupo'=>'grupo_<#i#>'),
+				'descrip'=>'Descripci&oacute;n'),
+			'filtro'  =>array('descrip'=>'Descripci&oacute;n'),
+			'retornar'=>array('concepto'=>'concepto<#i#>','descrip'=>'descrip<#i#>','tipo'=>'tipo<#i#>'),
 			'titulo'  =>'Buscar Cconcepto',
 			'p_uri'=>array(4=>'<#i#>')
 			);
- 		$btn=$this->datasis->p_modbus($modbus,'<#i#>');
  		
-		$do = new DataObject("noco");
-		$do->rel_one_to_many('itnoco', 'itnoco', array('codigo'));
+ 		
+		$edit = new DataEdit("Contratos","noco");
+		/*
+		$edit->_dataobject->db->set('transac', 'MANUAL');
+		$edit->_dataobject->db->set('origen' , 'MANUAL');
+		$edit->_dataobject->db->set('usuario', $this->session->userdata('usuario'));
+		$edit->_dataobject->db->set('hora'   , 'CURRENT_TIME()', FALSE);
+		$edit->_dataobject->db->set('estampa', 'NOW()', FALSE);
+		*/
 		
-		$edit = new DataDetails('Contratos', $do);
-		$edit->back_url = site_url('nomina/nocoo/index');
-		$edit->set_rel_title('itnoco','Contratos <#o#>');
-
-		//$edit->pre_process('insert' ,'_pre_insert');
-		//$edit->pre_process('update' ,'_pre_update');
-		$edit->post_process('insert','_post_insert');
-		$edit->post_process('update','_post_update');
-		$edit->post_process('delete','_post_delete');
+		$edit->post_process("insert","_guarda_detalle");
+		$edit->post_process("update","_actualiza_detalle");
+		$edit->post_process("delete","_borra_detalle");
+		$edit->pre_process('delete','_pre_del');
+		
+		$edit->back_url = "nomina/nocoo";
 		
 		$edit->codigo = new inputField("C&oacute;digo", "codigo");
 		$edit->codigo->size = 10;
@@ -119,9 +91,7 @@ class Nocoo extends Controller {
 		$edit->codigo->maxlength=8;
 		
 		$edit->nombre  = new inputField("Nombre", "nombre");
-		$edit->nombre->maxlength=40;
-		$edit->nombre->rule="required";
-		$edit->codigo->size = 30;
+		$edit->nombre->maxlength=60;
 
 		$edit->tipo = new dropdownField("Tipo", "tipo");
 		$edit->tipo->style="width:110px";
@@ -132,66 +102,137 @@ class Nocoo extends Controller {
 		
 		$edit->observa1  = new inputField("Observaciones", "observa1");
 		$edit->observa1->maxlength=60;
-		$edit->observa1->size = 60;
 		
 		$edit->observa2  = new inputField("Observaci&oacute;n", "observa2");
 		$edit->observa2->maxlength=60;
-		$edit->observa2->size = 60;
 		
+		$codigo=$edit->_dataobject->get('codigo');
+		
+		$detalle = new DataDetalle($edit->_status);
 		
 		//Campos para el detalle
+		$detalle->db->select('concepto,descrip,tipo,grupo');
+		$detalle->db->from('itnoco');
+		$detalle->db->where("codigo='$codigo'");
 		
-		$edit->concepto = new inputField("C&oacute;ncepto <#o#>", "concepto_<#i#>");
-		$edit->concepto->size=11;
-		$edit->concepto->db_name='concepto';
-		$edit->concepto->append($btn);
-		$edit->concepto->readonly=TRUE;
-		$edit->concepto->rel_id = 'itnoco';
+		$detalle->codigo = new inputField2("C&oacute;digo", "concepto<#i#>");
+		$detalle->codigo->size=11;
+		$detalle->codigo->db_name='concepto';
+		$detalle->codigo->append($this->datasis->p_modbus($modbus,'<#i#>'));
+		$detalle->codigo->readonly=TRUE;
 		
-		$edit->descrip = new inputField("Descripci&oacute;n <#o#>", "descrip_<#i#>");
-		$edit->descrip->size=45;
-		$edit->descrip->db_name='descrip';
-		$edit->descrip->maxlength=60;
-		$edit->descrip->rel_id = 'itnoco';
-		$edit->descrip->readonly=TRUE;
+		$detalle->descrip = new inputField("Descripci&oacute;n", "descrip<#i#>");
+		$detalle->descrip->size=45;
+		$detalle->descrip->db_name='descrip';
+		$detalle->descrip->maxlength=60;
 		
-		$edit->it_tipo = new inputField("Tipo <#o#>", "it_tipo_<#i#>");
-		$edit->it_tipo->size=2;
-		$edit->it_tipo->db_name='tipo';
-		$edit->it_tipo->rel_id = 'itnoco';
-		$edit->it_tipo->readonly=TRUE;
+		$detalle->tipo = new inputField("Tipo", "tipo<#i#>");
+		$detalle->tipo->size=2;
+		$detalle->tipo->db_name='tipo';
 		
-		$edit->grupo = new inputField("Grupo <#o#>", "grupo_<#i#>");
-		$edit->grupo->size=5;
-		$edit->grupo->db_name='grupo';
-		$edit->grupo->rel_id = 'itnoco';
-		$edit->grupo->readonly=TRUE;
+		$detalle->grupo = new inputField2("Grupo", "grupo<#i#>");
+		$detalle->grupo->size=5;
+		$detalle->grupo->db_name='grupo';
 
 		//fin de campos para detalle
+		/*		
+		$detalle->onDelete('totalizar()');
+		$detalle->onAdd('totalizar()');
+		$detalle->script($script);
+		*/
+		//$detalle->style="width:110px";
+		
+		//Columnas del detalle
+		$detalle->column("C&oacute;digo"      , "<#codigo#>");
+		$detalle->column("Descripci&oacute;n" , "<#descrip#>");
+		$detalle->column("Tipo"               , "<#tipo#>");
+		$detalle->column("Grupo"              , "<#grupo#>");
+		$detalle->build();	
+		$conten["detalle"] = $detalle->output;
+		
+		$edit->detalle=new freeField("detalle", 'detalle',$detalle->output);
 
-		$edit->buttons('modify', 'save', 'undo', 'delete', 'back','add_rel');
+		$edit->buttons("modify", "save", "undo", "delete", "back");
 		$edit->build();
 		
-		$conten['form']  =&  $edit;
-		$data['content'] = $this->load->view('view_noco', $conten,true);
-		$data['title']   = heading('Contratos de Nomina');
-		$data['head']    = script('jquery.js').script('jquery-ui.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css').$this->rapyd->get_head().phpscript('nformat.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js').phpscript('nformat.js');
+		$conten["form"]  =&  $edit;
+		$data['content'] = $this->load->view('view_contratos', $conten,true); 
+		$data["head"]    = script("tabber.js").script("prototype.js").$this->rapyd->get_head().script("scriptaculous.js").script("effects.js");
+		$data['title']   = '<h1>Contratos</h1>';
 		$this->load->view('view_ventanas', $data);
 	}
 	
-	function _post_insert($do){
+	function dpto() {		
+		$this->rapyd->load("dataform");
+		$campo='ccosto'.$this->uri->segment(4);
+ 		$script='
+ 		function pasar(){
+			if($F("departa")!="-!-"){
+				window.opener.document.getElementById("'.$campo.'").value = $F("departa");
+				window.close();
+			}else{
+				alert("Debe elegir un departamento");
+			}
+		}';
+		
+		$form = new DataForm('');
+		$form->script($script);
+		$form->fdepar = new dropdownField("Departamento", "departa");
+		$form->fdepar->option('-!-','Selecci&oacute;n un departamento');
+		$form->fdepar->options("SELECT depto,descrip FROM dpto WHERE tipo='G' ORDER BY descrip");
+		$form->fdepar->onchange='pasar()';
+		$form->build_form();
+		
+		$data['content'] =$form->output;
+		$data["head"]    =script('prototype.js').$this->rapyd->get_head();
+		$data['title']   ='<h1>Seleccione un departamento</h1>';
+		$this->load->view('view_detalle', $data);
+	}
+	
+	function _guarda_detalle($do) {
+		$cant=$this->input->post('cant_0');
+		$i=$o=0;
+		while($o<$cant){
+			if (isset($_POST["concepto$i"])){
+				if($this->input->post("concepto$i")){
+					
+					$sql = "INSERT INTO itnoco (codigo,concepto,descrip,tipo,grupo) VALUES(?,?,?,?,?)";
+					$llena=array(
+							0=>$do->get('codigo'),
+							1=>$this->input->post("concepto$i"),
+							2=>$this->input->post("descrip$i"),
+							3=>$this->input->post("tipo$i"),
+							4=>$this->input->post("grupo$i"),
+							);
+					$this->db->query($sql,$llena);
+				}
+				$o++;
+			}
+			$i++;
+		}
+	}
+	
+	function _actualiza_detalle($do){
+		$this->_borra_detalle($do);
+		$this->_guarda_detalle($do);
+	}
+	
+	function _borra_detalle($do){
 		$codigo=$do->get('codigo');
-		logusu('noco',"Contrato de Nomina $codigo CREADO");
+		$sql = "DELETE FROM itnoco WHERE codigo='$codigo'";
+		$this->db->query($sql);
 	}
 
-	function _post_update($do){
-		$codigo=$do->get('codigo');
-		logusu('noco',"Contrato de Nomina $codigo MODIFICADO");
-	}
-
-	function _post_delete($do){
-		$codigo=$do->get('codigo');
-		logusu('noco',"Contrato de Nomina $codigo ELIMINADO");
+	function _pre_del($do) {
+		$codigo=$do->get('comprob');
+		$chek =   $this->datasis->dameval("SELECT COUNT(*) FROM cpla WHERE codigo LIKE '$codigo.%'");
+		$chek +=  $this->datasis->dameval("SELECT COUNT(*) FROM itcasi WHERE cuenta='$codigo'");
+		
+		if ($chek > 0){
+			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='Plan de Cuenta tiene derivados o movimientos';
+			return False;
+		}
+		return True;
 	}
 }
 ?>
