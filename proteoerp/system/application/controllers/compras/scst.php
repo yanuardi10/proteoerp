@@ -84,7 +84,7 @@ class Scst extends Controller {
 		//echo $grid->db->last_query();
 
 		$data['content'] =$grid->output;
-		$data['filtrot'] =$filter->output;
+		$data['filtro'] =$filter->output;
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   =heading('Compras');
 		$this->load->view('view_ventanas', $data);
