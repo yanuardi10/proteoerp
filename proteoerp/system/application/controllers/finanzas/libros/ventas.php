@@ -3102,18 +3102,18 @@ class ventas{
 				a.adicimpu*IF(a.tipo='NC',-1,1)  adicimpu,
 				a.reducida*IF(a.tipo='NC',-1,1)  reducida,
 				a.reduimpu*IF(a.tipo='NC',-1,1)  reduimpu,
-				a.contribu, a.registro, a.comprobante, a.fecharece,c.maqfiscal
+				a.contribu, a.registro, a.comprobante, a.fecharece,IF(c.tipo_doc ='D',(SELECT sfac.nfiscal FROM sfac WHERE c.factura=sfac.numero AND sfac.tipo_doc='F' LIMIT 1),'') afecta,c.maqfiscal
 			FROM siva a LEFT JOIN scli b ON a.clipro=b.cliente
-			JOIN sfac as c ON a.numero=c.numero
+			JOIN sfac as c ON a.numero=c.numero AND a.tipo=IF(c.tipo_doc='F','FC','NC')
 			WHERE a.fechal BETWEEN $fdesde AND $fhasta AND a.libro='V' AND a.tipo<>'FA' AND a.contribu='CO' 
 			UNION
 			SELECT 
 				a.fecha,IF(a.tipo='NC',a.referen,'')referen,
-				' ' numero, min(a.numero) inicial, max(a.numero) final,
+				' ' numero, min(a.nfiscal) inicial, max(a.nfiscal)  final,
 				' ' nfiscal,
 				' ' rif,
 				IF(a.registro<>'04','A NO CONTRIBUYENTES TOTAL DEL DIA',b.nombre) nombre,
-				a.tipo, 
+				IF(sum(a.gtotal*IF(a.tipo='NC',-1,1))>0,'FC','NC') tipo, 
 				' ' afecta,
 				sum(a.gtotal*IF(a.tipo='NC',-1,1))    ventatotal,
 				sum(a.exento*IF(a.tipo='NC',-1,1))    exento,
@@ -3126,11 +3126,11 @@ class ventas{
 				sum(a.adicimpu*IF(a.tipo='NC',-1,1))  adicimpu,
 				sum(a.reducida*IF(a.tipo='NC',-1,1))  reducida,
 				sum(a.reduimpu*IF(a.tipo='NC',-1,1))  reduimpu,
-				'NO' contribu, a.registro, ' ' comprobante, null fecharece,c.maqfiscal
+				'NO' contribu, a.registro, ' ' comprobante, null fecharece,'' afecta,c.maqfiscal
 			FROM siva a LEFT JOIN scli b ON a.clipro=b.cliente
-			JOIN sfac as c ON a.numero=c.numero
+			JOIN sfac as c ON a.numero=c.numero  AND a.tipo=IF(c.tipo_doc='F','FC','NC')
 			WHERE a.fechal BETWEEN $fdesde AND $fhasta AND a.libro='V' AND a.tipo<>'FA' AND a.contribu='NO' AND a.tipo IN ('FE','FC','NC')
-			GROUP BY a.fecha, a.tipo, a.registro,c.maqfiscal
+			GROUP BY a.fecha, a.registro,c.maqfiscal
 			ORDER BY fecha, IF(tipo IN ('FE','FC','XE','XC'),1,2), numero ";
 		//}
 		$export = $this->db->query($mSQL);
@@ -3283,10 +3283,10 @@ class ventas{
 		$ws->write_string( $mm+2,$mcel, "Recepcion", $titulo );
 		$mcel++;
 		
-		$ws->write_string( $mm,   $mcel, "", $titulo );
-		$ws->write_string( $mm+1, $mcel, "N Fiscal", $titulo );
-		$ws->write_string( $mm+2, $mcel, "", $titulo );
-		$mcel++;
+		//$ws->write_string( $mm,   $mcel, "", $titulo );
+		//$ws->write_string( $mm+1, $mcel, "N Fiscal", $titulo );
+		//$ws->write_string( $mm+2, $mcel, "", $titulo );
+		//$mcel++;
 		
 		$ws->write_string( $mm,   $mcel, "", $titulo );
 		$ws->write_string( $mm+1, $mcel, "Afecta", $titulo );
@@ -3324,7 +3324,7 @@ class ventas{
 					$ws->write_string( $mm, 2, $row->tipo, $cuerpoc );	// TIPO
 
 				$ws->write_string( $mm, 3, $row->nfiscal, $cuerpo );		// Nro. Control
-				$ws->write_string( $mm, 3, $row->numero, $cuerpo );		// Nro. Documento
+				//$ws->write_string( $mm, 3, $row->numero, $cuerpo );		// Nro. Documento
 				$ws->write_string( $mm, 4, $row->inicial, $cuerpo );	// INICIAL
 				$ws->write_string( $mm, 5, $row->final, $cuerpo );		// FINAL
 
@@ -3360,13 +3360,14 @@ class ventas{
 		
 				$ws->write_number( $mm,18, $row->reiva, $numero );		    // IVA RETENIDO
 				$ws->write_string( $mm,19, $row->comprobante, $cuerpo );	// NRO COMPROBANTE
-				$ws->write_string( $mm,22, $row->referen, $numero ); //N� FACT AFECTA
+				//$ws->write_string( $mm,22, $row->referen, $numero ); //N� FACT AFECTA
 				$fecharece = '';
 				if ( !empty($row->fecharece) )
 					$fecharece = substr($row->fecharece,8,2)."/".substr($row->fecharece,5,2)."/".substr($row->fecharece,0,4);
 				$ws->write_string( $mm,20, $fecharece, $cuerpo );	// FECHA COMPROB
-				$ws->write_string( $mm,21, $row->nfiscal, $numero );
-				$ws->write_string( $mm,23, $row->maqfiscal, $numero );
+				//$ws->write_string( $mm,21, $row->nfiscal, $numero );
+				$ws->write_string( $mm,21, $row->afecta, $numero );
+				$ws->write_string( $mm,22, $row->maqfiscal, $numero );
 				$mm++;
 			}
 		}
