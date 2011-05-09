@@ -48,12 +48,15 @@ class tiketmaes extends Controller {
 		$filter->nombre->size=40;
 
 		$filter->buttons('reset','search');
-		$filter->build();
+		$filter->build('dataformfiltro');
+		
 		
 		$ver=anchor('supervisor/tiketmaes/ver_cliente/<#cliente#>','<#cliente#>');
 		$uri = anchor('supervisor/conec/dataedit/show/<#idc#>','<#cliente#>');
 		$uri2 = anchor('supervisor/tiket/traertiket/<#cliente#>','Traer Ticket');
 		$ticket = anchor('supervisor/tiket/traertiket/','Traer Todos los Ticket');
+		
+		$uri_3  = anchor('supervisor/tiketmaes/ver_cliente/<#cliente#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Ver','height'=>'12')));
 
 		$ticket = anchor('supervisor/tiket/traertiket/','Traer Todos los Ticket');
 		$ticketc = anchor('supervisor/tiketc/filteredgrid','Ver Ticket de Clientes');
@@ -62,6 +65,7 @@ class tiketmaes extends Controller {
 		$grid->order_by('a.cliente','asc');
 		$grid->per_page = 20;
 
+		$grid->column('Acci&oacute;n',$uri_3,'align=center');
 		$grid->column_orderby('Cliente',$ver,'cliente');
 		$grid->column_orderby('Nombre','nombre','nombre');
 		$grid->column_orderby('Cantidad ','cant','cant');
@@ -71,10 +75,48 @@ class tiketmaes extends Controller {
 		//$grid->column('Ticket',$uri2);
 								
 		
-		$grid->build();
+		$grid->build('datagridST');
 		
-		$data['content'] = $filter->output.$grid->output;
-		$data['title']   = '<h1>Tikets de Clientes</h1>';
+		//************ SUPER TABLE ************* 
+		$extras = '
+<script type="text/javascript">
+//<![CDATA[
+(function() {
+	var mySt = new superTable("demoTable", {
+	cssSkin : "sSky",
+	fixedCols : 1,
+	headerRows : 1,
+	onStart : function () {	this.start = new Date();},
+	onFinish : function () {document.getElementById("testDiv").innerHTML += "Finished...<br>" + ((new Date()) - this.start) + "ms.<br>";}
+	});
+})();
+//]]>
+</script>
+';
+		$style ='
+<style type="text/css">
+.fakeContainer { /* The parent container */
+    margin: 5px;
+    padding: 0px;
+    border: none;
+    width: 620px; /* Required to set */
+    height: 320px; /* Required to set */
+    overflow: hidden; /* Required to set */
+}
+</style>	
+';
+//****************************************
+		$data['style']   = $style;
+		$data['style']  .= style('superTables.css');
+		$data['extras']  = $extras;	
+		
+		$data['content'] = $grid->output;
+		$data['filtro']  = $filter->output;
+		
+		$data['script'] = script('jquery.js');
+		$data["script"].= script('superTables.js');
+		
+		$data['title']  = heading('Clientes Clientes');
 		$data["head"]    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);	
 	}
@@ -129,11 +171,12 @@ class tiketmaes extends Controller {
 		$filter->usuario->size=20;
 		
 		$filter->buttons("reset","search");
-		$filter->build();
+		$filter->build('dataformfiltro');
 		
 		$ticket = anchor('supervisor/tiket/traertiket/','Traer Todos los Ticket');
 		$atras = anchor('supervisor/tiketmaes/','Atras');
 		$uri2 = anchor('supervisor/tiketmaes/traertiket/'.$cli,'Traer Ticket');
+		$uri_3  = anchor("supervisor/tiketc/dataedit/modify/<#idm#>",img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar','height'=>'12')));
 		
 		$grid = new DataGrid2('Lista de Control de Tiket -->'.$uri2);
 		$grid->order_by("a.id","desc");
@@ -142,7 +185,9 @@ class tiketmaes extends Controller {
 		$link=anchor("supervisor/tiketc/dataedit/modify/<#idm#>", "<#idm#>");
 		$grid->use_function('ractivo');
 
+		$grid->column('Acci&oacute;n',$uri_3,'align=center');
 		$grid->column("Resuelto", "<ractivo><#testado#>|<#idm#></ractivo>",'align="center"');
+		
 		$grid->column_orderby("Id",$link,'idm');
 		$grid->column_orderby("Numero tiket","idt",'idt');
 		$grid->column_orderby("Fecha de Ingreso","<dbdate_to_human><#estampa#>|d/m/Y h:m:s</dbdate_to_human>",'estampa');
@@ -155,13 +200,42 @@ class tiketmaes extends Controller {
    
 		$resp = '<a href="http://<#url#>/proteoerp/supervisor/tiket/dataedit/pertenece/<#idt#>/create">Ir</a>';
 
-		//$resp='http://merida.matloca.com/proteoerp/supervisor/tiket/dataedit/pertenece/67/create';
 		$grid->column("Responder",$resp);
 		
 		$grid->totalizar('minutos');
-		//$grid->add("supervisor/tiketc/dataedit/create");
-		$grid->build();
-		//echo $grid->db->last_query();
+		$grid->build('datagridST');
+
+		//************ SUPER TABLE ************* 
+		$extras = '
+<script type="text/javascript">
+//<![CDATA[
+(function() {
+	var mySt = new superTable("demoTable", {
+	cssSkin : "sSky",
+	fixedCols : 1,
+	headerRows : 1,
+	onStart : function () {	this.start = new Date();},
+	onFinish : function () {document.getElementById("testDiv").innerHTML += "Finished...<br>" + ((new Date()) - this.start) + "ms.<br>";}
+	});
+})();
+//]]>
+</script>
+';
+		$style ='
+<style type="text/css">
+.fakeContainer { /* The parent container */
+    margin: 5px;
+    padding: 0px;
+    border: none;
+    width: 740px; /* Required to set */
+    height: 320px; /* Required to set */
+    overflow: hidden; /* Required to set */
+}
+</style>	
+';
+//****************************************
+		
+		
 		$script='';
 		$url=site_url('supervisor/tiketc/activar');
 		$data['script']='<script type="text/javascript">
@@ -178,11 +252,20 @@ class tiketmaes extends Controller {
     	    }).change();
 			});
 			</script>';
+		
+		$data['style']   = $style;
+		$data['style']  .= style('superTables.css');
+		$data['extras']  = $extras;	
+		
+		//$data['content'] = $grid->output;
+		$data['filtro']  = $filter->output;
+		
+		$data['script'] = script('jquery.js');
+		$data["script"].= script('superTables.js').script("jquery-1.2.6.pack.js").script("plugins/jquery.checkboxes.pack.js");
 
-		$data['content'] = $filter->output.$atras.form_open('').$grid->output.form_close().$script;
-		$data['title']   = "<h1>Ticket de Clientes</h1>";
-		$data["head"]    = script("jquery-1.2.6.pack.js");
-		$data["head"]   .= script("plugins/jquery.checkboxes.pack.js").$this->rapyd->get_head();
+		$data['content']= $atras.form_open('').$grid->output.form_close().$script;
+		$data['title']  = "<h1>Ticket de Clientes</h1>";
+		$data["head"]   = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	
 	}
