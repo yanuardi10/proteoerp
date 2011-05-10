@@ -34,9 +34,11 @@ class tiketmaes extends Controller {
 		$filter->db->join('scli AS c','c.cliente=a.cliente');
 		$filter->db->join("tiketc AS b","b.sucursal=a.id");  
 		
-		$filter->db->where(array("b.estado"=>"P"));
-		//$filter->db->where("b.estado","P");
+		//$filter->db->where(array("b.estado !="=>"R","b.estado !="=>'C'));
+		$filter->db->where("b.estado !=","R");
+		$filter->db->where("b.estado !=","C");
 		$filter->db->groupby("a.id");
+		
 
 		$filter->cliente = new inputField('Cliente','cliente');
 		$filter->cliente->db_name="a.cliente";
@@ -73,9 +75,10 @@ class tiketmaes extends Controller {
 		$grid->column_orderby("Url","url",'url');
 		
 		//$grid->column('Ticket',$uri2);
-								
+						
 		
 		$grid->build('datagridST');
+		
 		
 		//************ SUPER TABLE ************* 
 		$extras = '
@@ -116,7 +119,7 @@ class tiketmaes extends Controller {
 		$data['script'] = script('jquery.js');
 		$data["script"].= script('superTables.js');
 		
-		$data['title']  = heading('Clientes Clientes');
+		$data['title']  = heading('Tickets de Clientes');
 		$data["head"]    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);	
 	}
@@ -143,6 +146,8 @@ class tiketmaes extends Controller {
 		}
 		$this->rapyd->load("datafilter","datagrid2");
 		
+		$cliente=$this->datasis->dameval("Select nombre from scli where cliente='".$cli."'");
+		//echo $cliente;
 		 		
 		$filter = new DataFilter("Filtro de Control de Tiket");
 		$select=array("a.id as idm","a.sucursal","a.asignacion","a.idt as idt","a.padre","a.pertenece","a.prioridad","a.usuario as usuarios","a.contenido","a.estampa","a.actualizado","a.estado as testado","IF(a.estado='N','Nuevo',IF(a.estado='R','Resuelto',IF(a.estado='P','Pendiente','En Proceso')))as estado",
@@ -151,7 +156,9 @@ class tiketmaes extends Controller {
 		$filter->db->from("tiketc AS a");   
 		$filter->db->join("tiketconec AS b","a.sucursal=b.id");
 		$filter->db->join("scli AS c","b.cliente=c.cliente");
-		$filter->db->where(array("b.cliente"=>"$cli","a.estado"=>"P"));
+		$filter->db->where("b.cliente","$cli");
+		$filter->db->where("a.estado !=","R");
+		$filter->db->where("a.estado !=","C");
 
 		$filter->estado = new dropdownField("Estado", "estado");
 		$filter->estado->option("P","Pendiente");
@@ -174,11 +181,11 @@ class tiketmaes extends Controller {
 		$filter->build('dataformfiltro');
 		
 		$ticket = anchor('supervisor/tiket/traertiket/','Traer Todos los Ticket');
-		$atras = anchor('supervisor/tiketmaes/','Atras');
+		$atras = anchor('supervisor/tiketmaes/',img(array('src'=>'images/regresar.jpg','border'=>'0','alt'=>'Editar','height'=>'40')));
 		$uri2 = anchor('supervisor/tiketmaes/traertiket/'.$cli,'Traer Ticket');
 		$uri_3  = anchor("supervisor/tiketc/dataedit/modify/<#idm#>",img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar','height'=>'12')));
 		
-		$grid = new DataGrid2('Lista de Control de Tiket -->'.$uri2);
+		$grid = new DataGrid2($atras.'<br><center>Lista de Ticket Pendientes y Nuevos -->'.$uri2."</center>");
 		$grid->order_by("a.id","desc");
 		$grid->per_page = 10;
 		
@@ -204,6 +211,7 @@ class tiketmaes extends Controller {
 		
 		$grid->totalizar('minutos');
 		$grid->build('datagridST');
+		//echo $grid->db->last_query();
 
 		//************ SUPER TABLE ************* 
 		$extras = '
@@ -263,8 +271,8 @@ class tiketmaes extends Controller {
 		$data['script'] = script('jquery.js');
 		$data["script"].= script('superTables.js').script("jquery-1.2.6.pack.js").script("plugins/jquery.checkboxes.pack.js");
 
-		$data['content']= $atras.form_open('').$grid->output.form_close().$script;
-		$data['title']  = "<h1>Ticket de Clientes</h1>";
+		$data['content']= form_open('').$grid->output.form_close().$script;
+		$data['title']  = "<h1>Ticket $cliente</h1>";
 		$data["head"]   = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	
