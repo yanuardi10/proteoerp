@@ -439,8 +439,8 @@ else:
 	
 			$margen =  $this->datasis->dameval("SELECT margen FROM sinvpromo WHERE codigo='".addslashes($form->_dataobject->get('codigo'))."'");
 			if ($margen > 0 ) {
-			   echo "Descuento por Promocion ".$margen."% ";
-			   echo "Precio ".nformat($form->precio1->value * (100-$margen)/100);
+				echo "Descuento por Promocion ".$margen."% ";
+				echo "Precio ".nformat($form->precio1->value * (100-$margen)/100);
 			} else echo "No tiene descuento promocional";
 			
 			?>
@@ -456,16 +456,28 @@ if ($query->num_rows()>0 ) {
 
 <fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
 <legend class="titulofieldset" >Codigos de Barras Asociados</legend>
-<table width='100%'>
-	<tr>
+<table width='100%' border=0>
+	<tr >
 		<?php 
 			$m = 1;
 			foreach($query->result() as $row ){
-				if ( $m > 5 ) {
-					echo "</tr><tr>";
+				if ( $m > 3 ) {
+					echo "
+	</tr><tr>";
 					$m = 1;
 				}
-				echo "<td class='littletablerow'>".$row->suplemen."</td>";
+				echo "
+			<td style='font-size: 16px;font-weight: bold'>
+				<table cellpadding='0' cellspacing='0' style='height: 30px; border: 1px solid'><tr>
+					<td style='height: 18px;'>
+						<a href='javascript:sinvborrasuple(\"$row->suplemen\")'>
+						".img(array('src' => 'images/delete.jpg', 'alt' => 'Eliminar', 'title' => 'Eliminar','border'=>'0','height'=>'16'))."
+						</a>
+					</td><td valign='top' style='height: 18px;'>
+						".$row->suplemen."
+					</td>
+				</tr></table>
+			</td>";
 				
 				$m += 1; 
 			}
@@ -487,7 +499,7 @@ if ($query->num_rows()>0 ) {
 		<?php 
 			$m = 1;
 			foreach($query->result() as $row ){
-				if ( $m > 5 ) {
+				if ( $m > 4 ) {
 					echo "</tr><tr>";
 					$m = 1;
 				}

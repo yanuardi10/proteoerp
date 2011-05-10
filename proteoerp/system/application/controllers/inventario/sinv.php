@@ -418,9 +418,15 @@ function auprec(){
 
 		$link27=site_url('inventario/sinv/sinvpromo');
 
+		$link30=site_url('inventario/sinv/sinvborrasuple/');
+
 
 		$script='
 <script type="text/javascript">
+function isNumeric(value) {
+  if (value == null || !value.toString().match(/^[-]?\d*\.?\d*$/)) return false;
+  return true;
+};
 
 $(document).ready(function() {
 
@@ -708,25 +714,47 @@ function sinvbarras(mcodigo){
 
 
 function sinvpromo(mcodigo){
-	var yurl = "";
 	jPrompt("Descuento Promocional","" ,"Descuento", function(margen){
 		if( margen==null ){
 			jAlert("Cancelado por el usuario","Informacion");
 		} else if( margen=="" ) {
 			jAlert("Cancelado,  Codigo vacio","Informacion");
 		} else {
+			if (isNumeric(margen)) {
+				$.ajax({
+					url: "'.$link27.'",
+					global: false,
+					type: "POST",
+					data: ({ id : mcodigo, margen : margen }),
+					dataType: "text",
+					async: false,
+					success: function(sino)  { jAlert( sino,"Informacion")},
+					error:   function(h,t,e) { jAlert("Error..codigo="+margen+" <p>"+e+"</p>","Error") }
+				});
+			} else { jAlert("Entrada no numerica","Alerta") }
+		}
+	})
+};
+
+function sinvborrasuple(mcodigo){
+	jConfirm(
+		"Desea eliminar este codigo suplementario?<p><strong>"+mcodigo+"</strong></p>",
+		"Confirmar Borrado",
+		function(r){
+			if (r) {
 			$.ajax({
-				url: "'.$link27.'",
+				url: "'.$link30.'",
 				global: false,
 				type: "POST",
-				data: ({ id : mcodigo, margen : margen }),
+				data: ({ codigo : mcodigo }),
 				dataType: "text",
 				async: false,
 				success: function(sino)  { jAlert( sino,"Informacion")},
-				error:   function(h,t,e) { jAlert("Error..codigo="+margen+" <p>"+e+"</p>","Error") }
+				error:   function(h,t,e) { jAlert("Error..codigo="+mcodigo+" <p>"+e+"</p>","Error") }
 			});
+			}
 		}
-	})
+	);
 };
 
 
@@ -1348,20 +1376,38 @@ function submitkardex() {
 		}
 	}
 
+	function sinvborrasuple() {
+		$codigo   = $this->input->post('codigo');
+		$mSQL = "DELETE FROM barraspos WHERE suplemen='$codigo'";
+		$this->db->simple_query($mSQL);
+		logusu("SINV","Eliminado Codigo Suplementario ".$codigo);
+		echo "Codigo Eliminado";
+	}
+
+
+
 	// Promociones
 	function sinvpromo() {
 		$mid     = $this->input->post('id');
 		$margen  = $this->input->post('margen');
-		//echo "SELECT codigo FROM sinv WHERE id=$mid";
 		$mcodigo = $this->datasis->dameval("SELECT codigo FROM sinv WHERE id=$mid");
 		$htmlcod = addslashes($mcodigo);
 		
 		//Busca si ya esta
-		$mSQL = "REPLACE INTO sinvpromo SET codigo='$htmlcod', margen=$margen ";
-		//echo $mSQL;
+		$check = $this->datasis->dameval("SELECT count(*) FROM sinvpromo WHERE codigo='".$htmlcod."'");
+
+		if ($check == 0 ) {
+			$this->db->simple_query("INSERT INTO sinvpromo SET codigo='"+$htmlcod+"'");
+		}
+		
+		if ( $margen == 0 ) {
+			$mSQL = "DELETE FROM sinvpromo WHERE WHERE codigo='$htmlcod' ";
+		} else {
+			$mSQL = "UPDATE sinvpromo SET margen=$margen WHERE codigo='$htmlcod' ";
+		}
 		$this->db->simple_query($mSQL);
 		logusu("SINV","Promocion ".$mcodigo."-->".$margen);
-		
+
 		echo "Cambio Exitoso";
 	}
 
