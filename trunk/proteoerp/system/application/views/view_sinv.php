@@ -42,6 +42,38 @@ else:
 							echo img($propiedad);
 						?>
 					</a>
+					<td>&nbsp;
+						<a href='javascript:void(0);' onclick='javascript:sinvbarras("<?php echo $form->_dataobject->get('id'); ?>")'>
+						<?php
+							$propiedad = array('src' => 'images/addcode.png', 'alt' => 'Codigo Suplementarios', 'title' => 'Codigo de Barras Suplementarios','border'=>'0','height'=>'30');
+							echo img($propiedad);
+						?>
+					</a>
+					</td>
+					<td>&nbsp;
+						<a href='javascript:void(0);' onclick='javascript:sinvpromo("<?php echo $form->_dataobject->get('id'); ?>")'>
+						<?php
+							$propiedad = array('src' => 'images/camion.png', 'alt' => 'Codigo en el proveedor', 'title' => 'Codigo en el proveedor','border'=>'0','height'=>'30');
+							echo img($propiedad);
+						?>
+					</a>
+					</td>
+					<td>&nbsp;
+						<a href='javascript:void(0);' onclick='javascript:sinvpromo("<?php echo $form->_dataobject->get('id'); ?>")'>
+						<?php
+							$propiedad = array('src' => 'images/descuento.jpg', 'alt' => 'Descuentos y Promociones', 'title' => 'Descuentos y Promociones','border'=>'0','height'=>'30');
+							echo img($propiedad);
+						?>
+					</a>
+					</td>
+					<td>&nbsp;
+						<a href='javascript:void(0);'
+						onclick="window.open('<?php echo base_url(); ?>inventario/fotos/dataedit/<?php echo $form->_dataobject->get('id'); ?>/create', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');" heigth="600">
+						<?php
+							$propiedad = array('src' => 'images/camara.jpg', 'alt' => 'Imagenes', 'title' => 'Imagenes','border'=>'0','height'=>'30');
+							echo img($propiedad);
+						?>
+					</a>
 					</td>
 				<tr>
 			</table>
@@ -151,6 +183,7 @@ else:
 		<li><a href="#tab2">Precios</a></li>
 		<li><a href="#tab3">Existencias</a></li>
 		<li><a href="#tab4">Movimientos</a></li>
+		<li><a href="#tab5">Promociones</a></li>
 	</ul>
 	<div class="tab_container">
 	<div id="tab1" class="tab_content" style='background:#eeffff'>
@@ -386,6 +419,8 @@ else:
 </table>
 <?php };?>
 
+        </div>
+        <div id="tab5" class="tab_content">
 <?php if($form->_status=='show'){ ?>
 <fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
 <legend class="titulofieldset" >Promociones</legend>

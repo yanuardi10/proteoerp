@@ -81,9 +81,10 @@ class sinv extends Controller {
 
 		$filter->db->select("a.existen AS existen,a.marca marca,a.tipo AS tipo,id,codigo,a.descrip,precio1,precio2,precio3,precio4,b.nom_grup AS nom_grup,b.grupo AS grupoid,c.descrip AS nom_linea,c.linea AS linea,d.descrip AS nom_depto,d.depto AS depto, activo ");
 		$filter->db->from('sinv AS a');
-		$filter->db->join('grup AS b','a.grupo=b.grupo');
-		$filter->db->join('line AS c','b.linea=c.linea');
-		$filter->db->join('dpto AS d','c.depto=d.depto');
+		$filter->db->join('grup AS b','a.grupo=b.grupo','LEFT');
+		$filter->db->join('line AS c','b.linea=c.linea', 'LEFT');
+		$filter->db->join('dpto  d','c.depto=d.depto','LECT');
+		//$filter->db->join('sinvfoto  e','e.codigo=a.codigo','LEFT');
 		$filter->script($DepoScript);
 
 
@@ -413,6 +414,11 @@ function auprec(){
 		$link20=site_url('inventario/sinv/sinvcodigoexiste');
 		$link21=site_url('inventario/sinv/sinvcodigo');
 
+		$link25=site_url('inventario/sinv/sinvbarras');
+
+		$link27=site_url('inventario/sinv/sinvpromo');
+
+
 		$script='
 <script type="text/javascript">
 
@@ -664,10 +670,7 @@ function sinvcodigocambia( mtipo, mviejo, mcodigo ) {
 		dataType: "text",
 		async: false,
 		success: function(sino) {
-			//$.blockUI({ message: "<h1>Cambio finalizado Exitosamente..</h1>" });
-			//setTimeout($.unblock, 600000);
 			jAlert("Cambio finalizado "+sino,"Finalizado Exitosamente")
-		
 		},
 		error: function(h,t,e) {jAlert("Error..","Finalizado con Error" )
 		}
@@ -680,6 +683,53 @@ function sinvcodigocambia( mtipo, mviejo, mcodigo ) {
 	}
 
 }
+
+function sinvbarras(mcodigo){
+	var yurl = "";
+	jPrompt("Nuevo Codigo de Barras","" ,"Codigo Barras", function(mbarras){
+		if( mbarras==null ){
+			jAlert("Cancelado por el usuario","Informacion");
+		} else if( mbarras=="" ) {
+			jAlert("Cancelado,  Codigo vacio","Informacion");
+		} else {
+			$.ajax({
+				url: "'.$link25.'",
+				global: false,
+				type: "POST",
+				data: ({ id : mcodigo, codigo : encodeURIComponent(mbarras) }),
+				dataType: "text",
+				async: false,
+				success: function(sino)  { jAlert( sino,"Informacion")},
+				error:   function(h,t,e) { jAlert("Error..codigo="+mbarras+" <p>"+e+"</p>","Error") }
+			});
+		}
+	})
+};
+
+
+function sinvpromo(mcodigo){
+	var yurl = "";
+	jPrompt("Descuento Promocional","" ,"Descuento", function(margen){
+		if( margen==null ){
+			jAlert("Cancelado por el usuario","Informacion");
+		} else if( margen=="" ) {
+			jAlert("Cancelado,  Codigo vacio","Informacion");
+		} else {
+			$.ajax({
+				url: "'.$link27.'",
+				global: false,
+				type: "POST",
+				data: ({ id : mcodigo, margen : margen }),
+				dataType: "text",
+				async: false,
+				success: function(sino)  { jAlert( sino,"Informacion")},
+				error:   function(h,t,e) { jAlert("Error..codigo="+margen+" <p>"+e+"</p>","Error") }
+			});
+		}
+	})
+};
+
+
 </script>
 ';
 
@@ -1168,132 +1218,6 @@ function submitkardex() {
 		
 
 
-/*
-LOCAL mCONDI , mAUMENT := 0.00, GETLIST := {}, mPA, mTODO := 0
-LOCAL mSQL, mPORCEN
-LOCAL mGRUPO:='    '
-LOCAL mWHERE := ''
-LOCAL mASELE, mOPCI, mCUAL, mNUMERO
-mSELE := CMNJ("AUMENTO Y RESTAURACION DE PRECIOS", {"Aumentar","Recuperar","Salir"} )
-
-   IF mSELE = 1
-      IF AT("WHERE",cSQL[1,1]) = 0
-         CMNJ("Va a modificar todo el inventario?")
-         mWHERE := ""
-      ELSE
-         mWHERE := SUBSTR(cSQL[1,1],AT("WHERE",cSQL[1,1]),10000)
-         mWHERE := ALLTRIM(STRTRAN(mWHERE,'WHERE',''))
-         mWHERE := SUBSTR(mWHERE,1,AT("ORDER BY",mWHERE)-1)
-      ENDIF
-
-      mPA := RECUADRO(10,40,17,75)
-      @ 12,41 SAY "Porcentaj de Aumento   " GET mAUMENT PICT "999.99"
-//      @ 14,41 SAY "Se aumentaran los productos" 
-      READ                                                                              
-
-      IF LASTKEY() = 27
-         RESTSCREEN(10,40,17,75,mPA)
-         RETURN .F.
-      ENDIF
-
-      IF mAUMENT = 0                                                                    
-         RESTSCREEN(10,40,17,75,mPA)
-         RETURN .F.
-      ENDIF
-
-      IF SINO(" Continuar ? ", 1 ) = 2
-         RESTSCREEN(10,40,17,75,mPA)
-         CLOSE DATA
-         RETURN .F.
-      ENDIF
-
-      mPORCEN := ALLTRIM(STR(mAUMENT))
-      RECUADRO(10,40,17,75)
-      @ 11,42 SAY "Procesando...espere "
-      mSQL := "SET "
-      mSQL += "a.precio1=ROUND(a.precio1*(100+"+mPORCEN+")/100,2), "
-      mSQL += "a.precio2=ROUND(a.precio2*(100+"+mPORCEN+")/100,2), "
-      mSQL += "a.precio3=ROUND(a.precio3*(100+"+mPORCEN+")/100,2), "
-      mSQL += "a.precio4=ROUND(a.precio4*(100+"+mPORCEN+")/100,2), "
-      mSQL += "a.base1=ROUND(a.precio1*100/(100+iva),2), "
-      mSQL += "a.base2=ROUND(a.precio2*100/(100+iva),2), "
-      mSQL += "a.base3=ROUND(a.precio3*100/(100+iva),2), "
-      mSQL += "a.base4=ROUND(a.precio4*100/(100+iva),2), "
-      mSQL += "a.margen1=100-(a.pond*100/ROUND(a.precio1*100/(100+a.iva),2)),"
-      mSQL += "a.margen2=100-(a.pond*100/ROUND(a.precio2*100/(100+a.iva),2)),"
-      mSQL += "a.margen3=100-(a.pond*100/ROUND(a.precio3*100/(100+a.iva),2)),"
-      mSQL += "a.margen4=100-(a.pond*100/ROUND(a.precio4*100/(100+a.iva),2)) "
-      IF !EMPTY(mWHERE)
-         mSQL := "UPDATE sinv AS a, grup AS b, line AS c  "+mSQL
-         mSQL += " WHERE "+mWHERE
-      ELSE
-         mSQL := "UPDATE sinv AS a "+mSQL
-      ENDIF
-
-      SINVPLOGINS(mWHERE)
-
-      EJECUTASQL(mSQL)
-      oCursor:Refresh()
-
-      RESTSCREEN(10,40,17,75,mPA)
-      LOGUSU("AUMENTO DE PRECIOS "+mPORCEN+'% GRUPO='+mGRUPO)
-
-      // ARREGLA LAS BASES Y LOS MARGENES
-      mSQL := "SET "
-      mSQL += "a.base1=ROUND(a.precio1*100/(100+iva),2), "
-      mSQL += "a.base2=ROUND(a.precio2*100/(100+iva),2), "
-      mSQL += "a.base3=ROUND(a.precio3*100/(100+iva),2), "
-      mSQL += "a.base4=ROUND(a.precio4*100/(100+iva),2), "
-      mSQL += "a.margen1=100-(IF(a.formcal='P',a.pond,a.ultimo)*100/ROUND(a.precio1*100/(100+a.iva),2)),"
-      mSQL += "a.margen2=100-(IF(a.formcal='P',a.pond,a.ultimo)*100/ROUND(a.precio2*100/(100+a.iva),2)),"
-      mSQL += "a.margen3=100-(IF(a.formcal='P',a.pond,a.ultimo)*100/ROUND(a.precio3*100/(100+a.iva),2)),"
-      mSQL += "a.margen4=100-(IF(a.formcal='P',a.pond,a.ultimo)*100/ROUND(a.precio4*100/(100+a.iva),2)) "
-      IF !EMPTY(mWHERE)
-         mSQL := "UPDATE sinv AS a, grup AS b, line AS c  "+mSQL
-         mSQL += " WHERE "+mWHERE
-      ELSE
-         mSQL := "UPDATE sinv AS a "+mSQL
-      ENDIF
-      EJECUTASQL(mSQL)
-
-   ELSEIF mSELE = 2  // Recuperar
-      mSQL := "SELECT CONCAT(numero,' ',fecha, ' ', hora, ' ', usuario) FROM sinvplog GROUP BY numero ORDER BY numero DESC LIMIT 20 "
-      mASELE := DAMEAREG(mSQL)
-      mOPCI := {}
-      FOR i := 1 TO LEN(mASELE)
-         AADD(mOPCI, mASELE[i,1] )
-      NEXT
-      mPA   := RECUADRO( 7, 10, 16, 60,,"N/G,GR+/G")
-      @ 7, 10 SAY PADC("CAMBIOS DE PRECIOS",49) COLOR "W/GR"
-      mCUAL := ACHOICE( 09, 12, 16, 56, mOPCI)
-      RESTSCREEN( 7, 10, 16, 60, mPA)
-
-      IF LASTKEY() = 27
-         RETURN .T.
-      ENDIF
-
-      mNUMERO := SUBSTR( mOPCI[mCUAL],1,8)
-      IF SINO("SEGURO QUE DESEA RECUPERAR EL CAMBIO "+mNUMERO,1) = 1
-         mSQL := "UPDATE sinvplog a JOIN sinv b ON a.codigo=b.codigo "
-         mSQL += "SET b.precio1=a.precio1, b.precio2=a.precio2, b.precio3=a.precio3, b.precio4=a.precio4, "
-         mSQL += "b.base1=ROUND(a.precio1*100/(100+b.iva),2), "
-         mSQL += "b.base2=ROUND(a.precio2*100/(100+b.iva),2), "
-         mSQL += "b.base3=ROUND(a.precio3*100/(100+b.iva),2), "
-         mSQL += "b.base4=ROUND(a.precio4*100/(100+b.iva),2), "
-         mSQL += "b.margen1=100-(b.pond*100/ROUND(a.precio1*100/(100+b.iva),2)),"
-         mSQL += "b.margen2=100-(b.pond*100/ROUND(a.precio2*100/(100+b.iva),2)),"
-         mSQL += "b.margen3=100-(b.pond*100/ROUND(a.precio3*100/(100+b.iva),2)),"
-         mSQL += "b.margen4=100-(b.pond*100/ROUND(a.precio4*100/(100+b.iva),2)) "
-         mSQL += "WHERE a.numero= "+mNUMERO
-         EJECUTASQL(mSQL)
-         CMNJ("PRECIOS RESTAURADOS")
-      ENDIF
-   ENDIF
-
-RETURN("")
-*/
-
-
 	//*****************************
 	//
 	//  Cambia el Codigo
@@ -1397,108 +1321,49 @@ RETURN("")
 		$this->db->simple_query($mSQL);
 
 		logusu("SINV","Cambio codigo ".$mviejo."-->".$mcodigo);
-
 	}
 
-/*
-LOCAL mCODIGO := oCursor:FieldGet("CODIGO")
-LOCAL mVIEJO  := oCursor:FieldGet("CODIGO")
-LOCAL oModal, oDA, mCANT:=''
-LOCAL AMPI := SINVADD()
-LOCAL MEXISTE := .F., mC
+	// Codigos de barra suplementarios
+	function sinvbarras() {
+		$mid      = $this->input->post('id');
+		$mbarras  = rawurldecode($this->input->post('codigo'));
+		$mcodigo  = $this->datasis->dameval("SELECT codigo FROM sinv WHERE id=$mid");
+		$htmlcod  = addslashes($mcodigo);
+		//echo "SELECT codigo FROM sinv WHERE id=$mid";
+		
+		//Busca si ya esta
+		$check = $this->datasis->dameval("SELECT COUNT(*) FROM sinv WHERE codigo='$mbarras' OR barras='$mbarras' OR alterno='$mbarras' ");
+		if ($check > 0 ) {
+			echo "Codigo ya existen en Inventario";
+		} else {
+			$check = $this->datasis->dameval("SELECT COUNT(*) FROM barraspos WHERE suplemen='$mbarras' ");
+			if ($check > 0 ) {
+				echo "Codigo ya existen en codigos suplementarios";
+			} else {
+				$mSQL = "INSERT INTO barraspos SET codigo='$htmlcod', suplemen='$mbarras'";
+				$this->db->simple_query($mSQL);
+				logusu("SINV","Codigo de Barras Agregado".$mcodigo."-->".$mbarras);
+				echo "Registro de Codigo Exitoso";
+			}
+		}
+	}
 
-XCODIGO := PADR(mCODIGO,15)
-mCODIGO := XCODIGO
-AMPI[1]:POSTBLOCK := { || .T. }
-READMODAL(AMPI)
-
-IF EMPTY(XCODIGO)
-   RETURN .T.
-ENDIF
-
-IF XCODIGO=mCODIGO
-   RETURN .T.
-ENDIF
-
-// BUSCA SI EXISTE EL CODIGO
-mSQL := "SELECT count(*) FROM sinv WHERE codigo='"+XCODIGO+"'"
-mEXISTE := .F.
-IF DAMEVAL(mSQL,,'N') > 0
-   CMNJ("Ya existe ese codigo!!!")
-   IF SINO("Fusionar Codigo?",2) = 2
-      RETURN .F.
-   ENDIF
-   mEXISTE := .T.
-ENDIF
-
-IF SINO("Cambiar codigo "+ALLTRIM(mCODIGO)+"-->"+ALLTRIM(XCODIGO),1) = 1
-   IF mEXISTE 
-      mSQL := "DELETE FROM sinv WHERE codigo=? "
-      EJECUTASQL(mSQL,{mCODIGO})
-   ELSE
-      mSQL := "UPDATE sinv SET codigo=? WHERE codigo=? "
-      EJECUTASQL(mSQL,{XCODIGO,mCODIGO})
-   ENDIF
-
-   IF mEXISTE 
-      mSQL  := "SELECT * FROM itsinv WHERE codigo=? "
-      mC    := DAMECUR(mSQL,{mCODIGO})
-      DO WHILE !mC:EoF()
-         SINVCARGA(XCODIGO,mC:FieldGet("ALMA"),mC:FieldGet("EXISTEN"))
-         mC:Skip()
-      ENDDO
-      mC:Destroy()
-      mSQL := "DELETE FROM itsinv WHERE codigo=?"
-      EJECUTASQL(mSQL,{mCODIGO})
-   ELSE
-      mSQL := "UPDATE itsinv SET codigo=? WHERE codigo=? "
-      EJECUTASQL(mSQL,{XCODIGO,mCODIGO})
-   ENDIF
-
-   mSQL := "UPDATE itstra SET codigo=? WHERE codigo=? "
-   EJECUTASQL(mSQL,{XCODIGO,mCODIGO})
-
-   mSQL := "UPDATE itscst SET codigo=? WHERE codigo=? "
-   EJECUTASQL(mSQL,{XCODIGO,mCODIGO})
-
-   mSQL := "UPDATE sitems SET codigoa=? WHERE codigoa=? "
-   EJECUTASQL(mSQL,{XCODIGO,mCODIGO})
-
-   mSQL := "UPDATE itsnot SET codigo=? WHERE codigo=? "
-   EJECUTASQL(mSQL,{XCODIGO,mCODIGO})
-
-   mSQL := "UPDATE itsnte SET codigo=? WHERE codigo=? "
-   EJECUTASQL(mSQL,{XCODIGO,mCODIGO})
-
-   mSQL := "UPDATE itspre SET codigo=? WHERE codigo=? "
-   EJECUTASQL(mSQL,{XCODIGO,mCODIGO})
-
-   mSQL := "UPDATE itssal SET codigo=? WHERE codigo=? "
-   EJECUTASQL(mSQL,{XCODIGO,mCODIGO})
-
-   mSQL := "UPDATE itconv SET codigo=? WHERE codigo=? "
-   EJECUTASQL(mSQL,{XCODIGO,mCODIGO})
-
-   mSQL := "UPDATE seri SET codigo=? WHERE codigo=? "
-   EJECUTASQL(mSQL,{XCODIGO,mCODIGO})
-
-   mSQL := "UPDATE itpfac SET codigoa=? WHERE codigoa=? "
-   EJECUTASQL(mSQL,{XCODIGO,mCODIGO})
-
-   mSQL := "UPDATE itordc SET codigo=? WHERE codigo=? "
-   EJECUTASQL(mSQL,{XCODIGO,mCODIGO})
-
-   mSQL := "UPDATE IGNORE invresu SET codigo=? WHERE codigo=? "
-   EJECUTASQL(mSQL,{XCODIGO,mCODIGO})
-
-   LOGUSU("Cambio codigo "+ALLTRIM(mCODIGO)+"-->"+ALLTRIM(XCODIGO))
-
-ENDIF
-
-RETURN(.T.)
-
-*/
-
+	// Promociones
+	function sinvpromo() {
+		$mid     = $this->input->post('id');
+		$margen  = $this->input->post('margen');
+		//echo "SELECT codigo FROM sinv WHERE id=$mid";
+		$mcodigo = $this->datasis->dameval("SELECT codigo FROM sinv WHERE id=$mid");
+		$htmlcod = addslashes($mcodigo);
+		
+		//Busca si ya esta
+		$mSQL = "REPLACE INTO sinvpromo SET codigo='$htmlcod', margen=$margen ";
+		//echo $mSQL;
+		$this->db->simple_query($mSQL);
+		logusu("SINV","Promocion ".$mcodigo."-->".$margen);
+		
+		echo "Cambio Exitoso";
+	}
 
 
 	function cprecios(){

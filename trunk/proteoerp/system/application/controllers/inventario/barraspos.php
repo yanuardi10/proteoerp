@@ -135,9 +135,6 @@ class barraspos extends Controller {
 		$grid->column_orderby('Descripci&oacute;n', 'descrip' ,'descrip');
 		$grid->column_orderby('Marca', 'marca' ,'marca');
 		$grid->column_orderby('Barras','suplemen','suplemen','align="right"');
-		//$grid->column_orderby('F.Desde'        ,'<dbdate_to_human>fechad</dbdate_to_human>','fechad');
-		//$grid->column_orderby('F.Hasta'        ,'<dbdate_to_human>fechah</dbdate_to_human>','fechah');
-		//echo $grid->db->last_query();
 
 		$grid->add('inventario/barraspos/dataedit/create');
 		$grid->build();
