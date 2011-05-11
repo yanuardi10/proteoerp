@@ -1126,13 +1126,21 @@ class b2b extends validaciones {
 				foreach($arr['scon'] AS $in => $val) $arr[$in]=base64_decode($val);
 
 				$proveed=$config['proveed'];
-				$pnombre=$this->datasis->dameval('SELECT nombre FROM sprv WHERE proveed='.$this->db->escape($proveed));
-				$pdirec1=$this->datasis->dameval('SELECT direc1 FROM sprv WHERE proveed='.$this->db->escape($proveed));
+				$cliente=$this->datasis->dameval('SELECT TRIM(cliente) AS scli FROM sprv WHERE proveed='.$this->db->escape($proveed));
+				if(!empty($cliente)){
+					$tipo   ='C';
+					$pnombre=$this->datasis->dameval('SELECT nombre FROM scli WHERE cliente='.$this->db->escape($cliente));
+					$pdirec1=$this->datasis->dameval('SELECT dire11 FROM scli WHERE cliente='.$this->db->escape($cliente));
+				}else{
+					$tipo   ='P';
+					$pnombre=$this->datasis->dameval('SELECT nombre FROM sprv WHERE proveed='.$this->db->escape($proveed));
+					$pdirec1=$this->datasis->dameval('SELECT direc1 FROM sprv WHERE proveed='.$this->db->escape($proveed));
+				}
 
 				$data=array();
 				$data['numero']   = $arr['numero'];
 				$data['fecha']    = $arr['fecha'];
-				$data['tipo']     = 'P';
+				$data['tipo']     = $tipo;
 				$data['tipod']    = 'R';
 				$data['status']   = 'T';
 				$data['clipro']   = $proveed;
@@ -1289,7 +1297,7 @@ class b2b extends validaciones {
 			$cana=$this->datasis->dameval('SELECT COUNT(*) FROM b2b_itscon AS a LEFT JOIN sinv AS b ON a.codigolocal=b.codigo WHERE b.codigo IS NULL AND a.id_scon='.$this->db->escape($id));
 			if($cana>0){ return 1; }
 
-			$query=$this->db->query('SELECT numero,fecha,status,direc1,clipro,almacen,nombre,asociado,observ1,stotal,impuesto,gtotal,tipo,peso,pid FROM b2b_scon WHERE id = ?',$id);
+			$query=$this->db->query('SELECT numero,fecha,status,direc1,clipro,tipo,almacen,nombre,asociado,observ1,stotal,impuesto,gtotal,tipo,peso,pid FROM b2b_scon WHERE id = ?',$id);
 			if ($query->num_rows() > 0){
 				$row = $query->row();
 
@@ -1309,7 +1317,7 @@ class b2b extends validaciones {
 				$data['gtotal']     =$row->gtotal;
 				$data['peso']       =$row->peso;
 				$data['tipod']      ='R';
-				$data['tipo']       ='P';
+				$data['tipo']       =$row->tipo;
 				$data['status']     ='C'; //Cerrado
 
 				$mSQL=$this->db->insert_string('scon',$data);
