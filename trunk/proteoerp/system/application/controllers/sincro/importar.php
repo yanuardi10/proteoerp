@@ -4,6 +4,7 @@ class Importar extends Controller {
 	function Importar(){
 		parent::Controller();
 		$this->geneticket=true;
+		$this->noborra=false;
 		$this->load->helper('string');
 		$this->load->library('rapyd');
 		$this->load->library('encrypt');
@@ -544,9 +545,16 @@ class Importar extends Controller {
 			$fp = fopen($tmpfname, 'w');
 			curl_setopt($ch, CURLOPT_FILE, $fp);
 			curl_setopt($ch, CURLOPT_HEADER, 0);
+			//curl_setopt($ch, CURLOPT_TIMEOUT, 10);
 
 			if(curl_exec($ch) === false){
-				return 'Curl error: ' . curl_error($ch);
+				$errort='Curl error: '.curl_error($ch);
+				//memowrite($url,'importar');
+				curl_close($ch);
+				fclose($fp);
+				unlink($tmpfname);
+
+				return $errort;
 			}else{
 				$nombre=basename($tmpfname);
 				$error=$this->__cargazip($nombre);
@@ -618,7 +626,8 @@ class Importar extends Controller {
 					if($sucu==$sucursal){
 						unlink($dir_nom.'/firma.txt');
 						unlink($dir_nom.'/'.$exp_nombre);
-						unlink($dir.$nombre);
+						if($this->noborra==false)
+							unlink($dir.$nombre);
 						rmdir($dir_nom);
 						return 'No se puede cargar el archivo en la misma sucursal que fue generada';
 					}
@@ -630,7 +639,8 @@ class Importar extends Controller {
 				if($firma!=$firma2){
 					unlink($dir_nom.'/firma.txt');
 					unlink($dir_nom.'/'.$exp_nombre);
-					unlink($dir.$nombre);
+					if($this->noborra==false)
+						unlink($dir.$nombre);
 					rmdir($dir_nom);
 					return 'Firmas no concuerdan';
 				}
@@ -639,14 +649,17 @@ class Importar extends Controller {
 
 				unlink($dir_nom.'/firma.txt');
 				unlink($dir_nom.'/'.$exp_nombre);
-				unlink($dir.$nombre);
+				if($this->noborra==false)
+					unlink($dir.$nombre);
 				rmdir($dir_nom);
 			}else{
-				unlink($dir.$nombre);
+				if($this->noborra==false)
+					unlink($dir.$nombre);
 				return 'El archivo zip no parece ser de importacion';
 			}
 		} else {
-			unlink($dir.$nombre);
+			if($this->noborra==false)
+				unlink($dir.$nombre);
 			return 'Error con el archivo zip';
 		}
 		return '';
