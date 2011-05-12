@@ -272,7 +272,7 @@ class tiketmaes extends Controller {
 		$data["script"].= script('superTables.js').script("jquery-1.2.6.pack.js").script("plugins/jquery.checkboxes.pack.js");
 
 		//$data['content']= form_open('').$grid->output.form_close().$script;
-		$data['title']  = "<h1>Ticket $cliente</h1>";
+		$data['title']  = heading('Ticket '. $cliente);
 		$data["head"]   = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	
