@@ -259,6 +259,36 @@ class Exportar extends Controller {
 		unlink($nombre);
 	}
 
+	function _datacenter($fecha,$opt=null){
+		set_time_limit(600);
+		$this->load->library('sqlinex');
+
+		$data[]=array('select' =>'tipo_doc,numero,fecha,vence,vd,cod_cli,rifci,nombre,direc,dire1,orden,referen,iva,inicial,totals,totalg,status,observa,observ1,devolu,cajero,almacen,peso,factura,pedido,usuario,estampa,hora,transac,nfiscal,zona,ciudad,comision,pagada,sepago,dias,fpago,comical,exento,tasa,reducida,sobretasa,montasa,monredu,monadic,notcred,fentrega,fpagom,fdespacha,udespacha,numarma,maqfiscal,dmaqfiscal',
+				'distinc'=>false,
+				'ignore' =>true,
+				'limpiar'=>false,
+				'table'  =>'sfac',
+				'where'  =>"fecha >= $fecha");
+		$data[]=array('select' =>'tipoa,numa,codigoa,desca,cana,preca,tota,iva,fecha,vendedor,costo,pos,pvp,comision,cajero,mostrado,usuario,estampa,hora,transac,despacha,flote,precio4,detalle,fdespacha,udespacha,combo,descuento',
+				'distinc'=>false,
+				'ignore' =>true,
+				'limpiar'=>false,
+				'table'  =>'sitems',
+				'where'  =>"fecha >= $fecha");
+		$data[]=array('select' =>'tipo_doc,numero,tipo,monto,num_ref,clave,fecha,banco,f_factura,cod_cli,vendedor,cobrador,status,cobro,cambio,almacen,transac,usuario,estampa,hora',
+				'distinc'=>false,
+				'ignore' =>true,
+				'limpiar'=>false,
+				'table'  =>'sfpa',
+				'where'  =>"fecha >= $fecha");
+		$data[]=array('table' => 'smov',
+				'where' => "estampa >= $fecha");
+
+		$nombre='ve_'.$fecha.'_'.$this->sucu;
+		if(!array_key_exists('HTTP_USER_AGENT', $_SERVER)) $_SERVER['HTTP_USER_AGENT']='curl';
+		$this->sqlinex->exportunbufferzip($data,$nombre,$this->sucu);
+	}
+
 	function _transacciones($fecha,$opt=null){
 		set_time_limit(600);
 		$this->load->library('sqlinex');
@@ -268,7 +298,6 @@ class Exportar extends Controller {
 		$cant     = strlen($pre_caja);
 		$pre_caja = $this->db->escape($pre_caja);
 
-		$this->load->library('sqlinex');
 
 		$data[]=array('select' =>'tipo_doc,numero,fecha,vence,vd,cod_cli,rifci,nombre,direc,dire1,orden,referen,iva,inicial,totals,totalg,status,observa,observ1,devolu,cajero,almacen,peso,factura,pedido,usuario,estampa,hora,transac,nfiscal,zona,ciudad,comision,pagada,sepago,dias,fpago,comical,exento,tasa,reducida,sobretasa,montasa,monredu,monadic,notcred,fentrega,fpagom,fdespacha,udespacha,numarma,maqfiscal,dmaqfiscal',
 				'distinc'=>false,
@@ -295,7 +324,6 @@ class Exportar extends Controller {
 				'distinc'=>false,
 				'table'  =>'itstra',
 				'where'  =>"MID(numero,1,$cant)=$pre_caja");
-
 		$data[]=array(
 			'distinc'   =>true,
 			'select'    =>'itccli.numccli, itccli.tipoccli, itccli.cod_cli, itccli.tipo_doc, itccli.numero, itccli.fecha, itccli.monto, itccli.abono, itccli.ppago, itccli.reten, itccli.cambio, itccli.mora, itccli.transac, itccli.estampa, itccli.hora, itccli.usuario, itccli.reteiva, itccli.nroriva, itccli.emiriva, itccli.recriva',
@@ -308,9 +336,7 @@ class Exportar extends Controller {
 						'table'=>'sfpa',
 						'on'=>'sfpa.transac=itccli.transac')
 					),
-			'where'   =>"itccli.fecha>=$fecha AND MID(itccli.transac,1,$cant)='".$this->prefijo."'"
-		);
-
+			'where'   =>"itccli.fecha>=$fecha AND MID(itccli.transac,1,$cant)='".$this->prefijo."'");
 		$data[]=array('table' => 'smov',
 				'where' => "estampa >= $fecha AND MID(transac,1,$cant)='".$this->prefijo."'"
 		);
