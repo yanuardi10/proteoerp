@@ -61,7 +61,7 @@ class Scst extends Controller {
 		$filter->proveedor->size=20;
 
 		$filter->buttons('reset','search');
-		$filter->build();
+		$filter->build('dataformfiltro');
 
 		$uri = anchor('compras/scst/dataedit/show/<#control#>','<#numero#>');
 		$uri2 = anchor_popup('formatos/verhtml/COMPRA/<#control#>','Ver HTML',$atts);
@@ -80,12 +80,49 @@ class Scst extends Controller {
 		$grid->column('Vista',$uri2,'align=\'center\'');
 
 		//$grid->add("compras/agregar");
-		$grid->build();
-		//echo $grid->db->last_query();
+		$grid->build('datagridST');
+
+//************ SUPER TABLE ************* 
+		$extras = '
+<script type="text/javascript">
+//<![CDATA[
+(function() {
+	var mySt = new superTable("demoTable", {
+	cssSkin : "sSky",
+	fixedCols : 1,
+	headerRows : 1,
+	onStart : function () {	this.start = new Date();},
+	onFinish : function () {document.getElementById("testDiv").innerHTML += "Finished...<br>" + ((new Date()) - this.start) + "ms.<br>";}
+	});
+})();
+//]]>
+</script>
+';
+		$style ='
+<style type="text/css">
+.fakeContainer { /* The parent container */
+    margin: 5px;
+    padding: 0px;
+    border: none;
+    width: 740px; /* Required to set */
+    height: 320px; /* Required to set */
+    overflow: hidden; /* Required to set */
+}
+</style>	
+';
+//****************************************
+
+
+		$data['style']   = $style;
+		$data['style']  .= style('superTables.css');
+		$data['extras']  = $extras;		
+		$data['script']  = script('jquery.js');
+		$data["script"] .= script('superTables.js');
 
 		$data['content'] =$grid->output;
 		$data['filtro'] =$filter->output;
 		$data['head']    = $this->rapyd->get_head();
+
 		$data['title']   =heading('Compras');
 		$this->load->view('view_ventanas', $data);
 	}
