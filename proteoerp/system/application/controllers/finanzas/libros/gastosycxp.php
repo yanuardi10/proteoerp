@@ -13,6 +13,13 @@ class gastosycxp{
 		// REVISA GSER A VER SI HAY PROBLEMAS
 		$this->db->simple_query("UPDATE gser SET exento=totbruto WHERE exento<>totbruto and totiva=0");
 
+		if($this->db->field_exists('serie', 'gser')){
+			$iserie =',serie';
+			$serie =',a.serie';
+		}else{
+			$iserie =$serie='';
+		}
+
 		$fciva=$this->datasis->dameval("SELECT MAX(fecha) FROM civa");
 		$fciva = str_replace('-', '', $fciva);
 		// Procesando Gastos
@@ -21,14 +28,14 @@ class gastosycxp{
 			referen, planilla, clipro, nombre, contribu, rif, registro,
 			nacional, exento, general, geneimpu, 
 			adicional, adicimpu,  reducida,  reduimpu, stotal, impuesto, 
-			gtotal, reiva, fechal, fafecta) 
+			gtotal, reiva, fechal, fafecta $iserie) 
 			SELECT 0 AS id,
 			'C' AS libro, 
 			a.tipo_doc AS tipo, 
 			'GS' AS fuente, 
 			'00' AS sucursal, 
 			a.ffactura, 
-			COALESCE(a.serie,a.numero),
+			a.numero,
 			' ' AS numhasta, 
 			' ' AS caja, 
 			a.nfiscal, 
@@ -51,6 +58,7 @@ class gastosycxp{
 			a.reteiva  AS reiva, 
 			".$mes."01 AS fechal, 
 			a.fafecta AS fafecta 
+			$serie
 			FROM gser AS a  
 			LEFT JOIN sprv AS c ON a.proveed=c.proveed 
 			WHERE a.fecha BETWEEN $fdesde AND $fhasta

@@ -26,7 +26,7 @@ class comprassuper{
 			a.contribu,
 			a.referen,
 			a.planilla,'  ' meco1,
-			a.numero,
+			COALESCE(a.serie,a.numero) AS numero,
 			a.nfiscal,
 			IF(a.tipo='ND',a.numero,'        ') numnd,
 			IF(a.tipo='NC',a.numero,'        ') numnc,
