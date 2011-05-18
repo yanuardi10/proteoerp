@@ -226,7 +226,7 @@ class ordcc extends validaciones {
 		$edit->arribo->mode = 'autohide';
 		$edit->arribo->size = 10;
 		
-		$edit->fechafac = new DateonlyField('fecha Factura', 'fechafac','d/m/Y');
+		$edit->fechafac = new DateonlyField('Fecha Factura', 'fechafac','d/m/Y');
 		$edit->fechafac->insertValue = date('Y-m-d');
 		$edit->fechafac->rule = 'required';
 		$edit->fechafac->mode = 'autohide';
