@@ -247,10 +247,10 @@ class Ordc extends Controller {
 		$detalle->cantidad->maxlength=10; 
 		$detalle->cantidad->css_class='inputnum';
 		
-    $detalle->recibido = new inputField2("Recibido", "recibido<#i#>");           
-    $detalle->recibido->db_name='recibido'; 
-    $detalle->recibido->css_class='inputnum';
-    $detalle->recibido->size=20;
+    	$detalle->recibido = new inputField2("Recibido", "recibido<#i#>");           
+    	$detalle->recibido->db_name='recibido'; 
+    	$detalle->recibido->css_class='inputnum';
+    	$detalle->recibido->size=20;
                                                                               
 		$detalle->precio = new inputField("Precio", "costo<#i#>");
 		$detalle->precio->css_class='inputnum';
