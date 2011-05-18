@@ -128,7 +128,7 @@ class fiscalz extends Controller{
 			$do->set('ncnumero', '');
 		}
 
-		$edit = new DataEdit("Cierre Z",$do);
+		$edit = new DataEdit('Cierre Z',$do);
 		$edit->back_url = site_url("ventas/fiscalz/filteredgrid");
 		$edit->script($script, "create");
 		$edit->script($script, "modify");
@@ -140,45 +140,47 @@ class fiscalz extends Controller{
 		$edit->caja = new inputField("Caja", "caja");
 		$edit->caja->size = 6;
 		$edit->caja->maxlength =4;
-		$edit->caja->rule="trim";
+		$edit->caja->rule="trim|required";
 
 		$edit->serial = new inputField("Serial de la impresora fiscal","serial");
 		$edit->serial->size =15;
 		$edit->serial->maxlength =12;
 		$edit->serial->mode = "autohide"; 
-		$edit->serial->rule="trim";
+		$edit->serial->rule="trim|required";
 
 		$edit->numero = new inputField("N&uacute;mero del cierre Z","numero");
 		$edit->numero->size = 6;
 		$edit->numero->maxlength =4;
-		$edit->numero->mode = "autohide";
+		$edit->numero->mode = "autohide|required";
 		$edit->numero->rule="trim";
-
 		$edit->fecha1 = new DateonlyField("Fecha Inicial","fecha1","d/m/Y");
-		$edit->fecha1->insertValue = date("Y-m-d");
+
+		$edit->fecha1->insertValue = date('Y-m-d');
+		$edit->fecha1->rule='required';
 		$edit->fecha1->size = 12;
 
 		$edit->fecha = new DateonlyField("Fecha Final","fecha","d/m/Y");
 		$edit->fecha->insertValue = date("Y-m-d");
+		$edit->fecha->rule='required';
 		$edit->fecha->size = 12;
 		$edit->fecha->append('Si el cierre se saco el mismo d&iacute;a de las ventas la fecha final es igual a la fecha inicial');
 
 		$edit->hora = new inputField('Hora del cierre','hora');
 		$edit->hora->size =8;
-		$edit->hora->rule='trim|callback_chhora';
+		$edit->hora->rule='trim|callback_chhora|required';
 		$edit->hora->append('hh:mm:ss');
 		$edit->hora->rule='trim';
 
 		$edit->factura = new inputField("N&uacute;mero de la &uacute;ltima Factura","factura");
 		$edit->factura->size =10;
 		$edit->factura->maxlength =8;
-		$edit->factura->rule="trim";
+		$edit->factura->rule="trim|required";
 		$edit->factura->append('ULT.FACTURA');
 
 		$edit->ncnumero = new inputField("N&uacute;mero de la &uacute;ltima Nota de Cr&eacute;dito numero","ncnumero");
 		$edit->ncnumero->size =10;
 		$edit->ncnumero->maxlength =8;
-		$edit->ncnumero->rule="trim";
+		$edit->ncnumero->rule="trim|required";
 		$edit->ncnumero->append('ULT.NOTA.CREDITO');
 
 		$edit->exento = new inputField("Montos de Facturas exentas","exento");
