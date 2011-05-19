@@ -129,14 +129,18 @@ class Scst extends Controller {
 $script ='
 <script type="text/javascript">
 function scstserie(mcontrol){
-	var mserie=prompt("Numero de Serie");
-	if( mserie==null){
-		alert("Cancelado");
-	} else {
-		$.ajax({ url: "'.site_url().'compras/scst/scstserie/"+mcontrol+"/"+mserie,
-			success: function(msg){ alert(("Cambio Finalizado "+msg)) }
-		});
-	}
+	//var mserie=Prompt("Numero de Serie");
+	jAlert("Cancelado","Informacion");
+
+	jPrompt("Numero de Serie","" ,"Cambio de Serie", function(mserie){
+		if( mserie==null){
+			jAlert("Cancelado","Informacion");
+		} else {
+			$.ajax({ url: "'.site_url().'compras/scst/scstserie/"+mcontrol+"/"+mserie,
+				success: function(msg){ jAlert("Cambio Finalizado "+msg,"Informacion") }
+			});
+		}
+	})
 }
 
 </script>';
@@ -144,9 +148,12 @@ function scstserie(mcontrol){
 
 		$data['style']   = $style;
 		$data['style']  .= style('superTables.css');
+		$data['style']	.= style("jquery.alerts.css");
+
 		$data['extras']  = $extras;		
 
 		$data['script']  = script('jquery.js');
+		$data["script"] .= script("jquery.alerts.js");
 		$data["script"] .= script('superTables.js');
 		$data["script"] .= $script;
 		
