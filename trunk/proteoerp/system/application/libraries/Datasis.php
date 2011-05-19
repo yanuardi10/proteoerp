@@ -175,7 +175,7 @@ class Datasis {
 	function ivaplica($mfecha=NULL){
 		if(empty($mfecha)) $mfecha=date('Ymd');
 		$CI =& get_instance();
-		$qq = $CI->db->query("SELECT tasa, redutasa, sobretasa FROM civa WHERE fecha < '$mfecha' ORDER BY fecha DESC LIMIT 1");
+		$qq = $CI->db->query("SELECT 0 exento, tasa, redutasa, sobretasa FROM civa WHERE fecha < '$mfecha' ORDER BY fecha DESC LIMIT 1");
 		$rr = $qq->row_array();
 		//$aa = each($rr);
 		return $rr;

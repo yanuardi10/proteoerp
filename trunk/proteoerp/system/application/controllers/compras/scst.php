@@ -39,7 +39,7 @@ class Scst extends Controller {
 		$boton=$this->datasis->modbus($modbus);
 
 		$filter = new DataFilter('Filtro de Compras');
-		$filter->db->select=array('numero','fecha','vence','nombre','montoiva','montonet','proveed','control');
+		$filter->db->select=array('numero','fecha','vence','nombre','montoiva','montonet','proveed','control','serie');
 		$filter->db->from('scst');
 
 		$filter->fechad = new dateonlyField('Desde', 'fechad','d/m/Y');
@@ -63,14 +63,28 @@ class Scst extends Controller {
 		$filter->buttons('reset','search');
 		$filter->build('dataformfiltro');
 
-		$uri = anchor('compras/scst/dataedit/show/<#control#>','<#numero#>');
+		$uri   = anchor('compras/scst/dataedit/show/<#control#>','<#numero#>');
 		$uri2 = anchor_popup('formatos/verhtml/COMPRA/<#control#>','Ver HTML',$atts);
+		$uri3 = anchor_popup('compras/scst/dataedit/show/<#control#>','<#serie#>',$atts);
 
 		$grid = new DataGrid();
 		$grid->order_by('fecha','desc');
 		$grid->per_page = 30;
 
+
+		$uri_2  = "<a href='javascript:void(0);' ";
+		$uri_2 .= 'onclick="window.open(\''.base_url()."compras/scst/serie/<#control#>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');".'" heigth="600"'.'>';
+		$uri_2 .= img(array('src'=>'images/estadistica.jpeg','border'=>'0','alt'=>'Consultar','height'=>'12','title'=>'Consultar'));
+		$uri_2 .= "</a>";
+
+		$uri_2  = "<a href='javascript:void(0);' onclick='javascript:scstserie(\"<#control#>\")'>";
+		$propiedad = array('src' => 'images/editar.png', 'alt' => 'Modifoca Serie', 'title' => 'Modifica Serie','border'=>'0','height'=>'16');
+		$uri_2 .= img($propiedad);
+		$uri_2 .= "</a>";
+
+		$grid->column('Acci&oacute;n',$uri_2);
 		$grid->column_orderby('Factura',$uri,'numero');
+		$grid->column_orderby('Serie','serie','serie');
 		$grid->column_orderby('Fecha','<dbdate_to_human><#fecha#></dbdate_to_human>','fecha','align=\'center\'');
 		$grid->column_orderby('Vence','<dbdate_to_human><#vence#></dbdate_to_human>','vence','align=\'center\'');
 		$grid->column_orderby('Proveedor','proveed','proveed');
@@ -112,15 +126,33 @@ class Scst extends Controller {
 ';
 //****************************************
 
+$script ='
+<script type="text/javascript">
+function scstserie(mcontrol){
+	var mserie=prompt("Numero de Serie");
+	if( mserie==null){
+		alert("Cancelado");
+	} else {
+		$.ajax({ url: "'.site_url().'compras/scst/scstserie/"+mcontrol+"/"+mserie,
+			success: function(msg){ alert(("Cambio Finalizado "+msg)) }
+		});
+	}
+}
+
+</script>';
+
 
 		$data['style']   = $style;
 		$data['style']  .= style('superTables.css');
 		$data['extras']  = $extras;		
+
 		$data['script']  = script('jquery.js');
 		$data["script"] .= script('superTables.js');
+		$data["script"] .= $script;
+		
 
-		$data['content'] =$grid->output;
-		$data['filtro'] =$filter->output;
+		$data['content'] = $grid->output;
+		$data['filtro']  = $filter->output;
 		$data['head']    = $this->rapyd->get_head();
 
 		$data['title']   =heading('Compras');
@@ -376,6 +408,19 @@ class Scst extends Controller {
 		$data['head']    =script('prototype.js').$this->rapyd->get_head();
 		$data['title']   =heading('Seleccione un departamento');
 		$this->load->view('view_detalle', $data);
+	}
+
+
+	function scstserie(){
+		$serie   = $this->uri->segment($this->uri->total_segments());
+		$control = $this->uri->segment($this->uri->total_segments()-1);
+		if (!empty($serie)) {
+			$this->db->simple_query("UPDATE scst SET serie='$serie' WHERE control='$control'");
+			echo " con exito ";
+		} else {
+			echo " NO se guardo ";
+		}
+		logusu('SCST',"Cambia Nro. Serie $control ->  $serie ");
 	}
 
 	function _guarda_detalle($do) {

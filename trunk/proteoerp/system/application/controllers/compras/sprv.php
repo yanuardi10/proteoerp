@@ -62,7 +62,9 @@ class Sprv extends validaciones {
 		$grid = new DataGrid('Lista de Proveedores');
 		$grid->order_by('proveed','asc');
 		$grid->per_page = 50;
+
 		$uri2  = anchor('compras/sprv/dataedit/show/<#id#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar','height'=>'12px')));
+		$uri2 .= img(array('src'=>'images/<siinulo><#tipo#>|N|S</siinulo>.gif','border'=>'0','alt'=>'Estado','title'=>'Estado'));
 
 
 		$grid->column('Acciones',$uri2,'align=\'center\'');
