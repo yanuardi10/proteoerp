@@ -48,10 +48,10 @@ else:
 							$propiedad = array('src' => 'images/addcode.png', 'alt' => 'Codigo Suplementarios', 'title' => 'Codigo de Barras Suplementarios','border'=>'0','height'=>'30');
 							echo img($propiedad);
 						?>
-					</a>
+						</a>
 					</td>
 					<td>&nbsp;
-						<a href='javascript:void(0);' onclick='javascript:sinvpromo("<?php echo $form->_dataobject->get('id'); ?>")'>
+						<a href='javascript:void(0);' onclick='javascript:sinvproveed("<?php echo $form->_dataobject->get('id'); ?>")'>
 						<?php
 							$propiedad = array('src' => 'images/camion.png', 'alt' => 'Codigo en el proveedor', 'title' => 'Codigo en el proveedor','border'=>'0','height'=>'30');
 							echo img($propiedad);
@@ -92,6 +92,7 @@ else:
 		<td align='right'><?php echo $container_tr; ?></td>
 	</tr>
 </table>
+
 <fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
 <legend class="titulofieldset" >Identificacion del Producto </legend>
 <table border='0' width="100%">
