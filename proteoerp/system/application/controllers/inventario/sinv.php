@@ -1272,7 +1272,7 @@ function submitkardex() {
 		$data["script"]  .= $script;
 
 		$data['style']	 = style("jquery.alerts.css");
-		$data['style']	.= style("redmond/jquery-ui-1.8.13.custom.css");
+		$data['style']	.= style("redmond/jquery-ui.css");
 		$data['style']	.= $style;
 		
 		$data['extras']  = $extras;

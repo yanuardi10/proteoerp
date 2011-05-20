@@ -39,7 +39,7 @@ class Scst extends Controller {
 		$boton=$this->datasis->modbus($modbus);
 
 		$filter = new DataFilter('Filtro de Compras');
-		$filter->db->select=array('numero','fecha','vence','nombre','montoiva','montonet','proveed','control','serie');
+		$filter->db->select=array('numero','fecha','recep','vence','depo','nombre','montoiva','montonet','montotot','reiva','proveed','control','serie','usuario');
 		$filter->db->from('scst');
 
 		$filter->fechad = new dateonlyField('Desde', 'fechad','d/m/Y');
@@ -63,7 +63,7 @@ class Scst extends Controller {
 		$filter->buttons('reset','search');
 		$filter->build('dataformfiltro');
 
-		$uri   = anchor('compras/scst/dataedit/show/<#control#>','<#numero#>');
+		$uri  = anchor('compras/scst/dataedit/show/<#control#>','<#numero#>');
 		$uri2 = anchor_popup('formatos/verhtml/COMPRA/<#control#>','Ver HTML',$atts);
 		$uri3 = anchor_popup('compras/scst/dataedit/show/<#control#>','<#serie#>',$atts);
 
@@ -77,21 +77,31 @@ class Scst extends Controller {
 		$uri_2 .= img(array('src'=>'images/estadistica.jpeg','border'=>'0','alt'=>'Consultar','height'=>'12','title'=>'Consultar'));
 		$uri_2 .= "</a>";
 
-		$uri_2  = "<a href='javascript:void(0);' onclick='javascript:scstserie(\"<#control#>\")'>";
-		$propiedad = array('src' => 'images/editar.png', 'alt' => 'Modifoca Serie', 'title' => 'Modifica Serie','border'=>'0','height'=>'16');
-		$uri_2 .= img($propiedad);
-		$uri_2 .= "</a>";
+		$uri_2  = anchor('compras/scst/dataedit/show/<#control#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar','height'=>'16','title'=>'Editar')));
+		$uri_2 .= "&nbsp;";
+		$uri_2 .= anchor('formatos/verhtml/COMPRA/<#control#>',img(array('src'=>'images/html_icon.gif','border'=>'0','alt'=>'HTML')));
+
+		$uri_3  = "<a href='javascript:void(0);' onclick='javascript:scstserie(\"<#control#>\")'>";
+		$propiedad = array('src' => 'images/engrana.png', 'alt' => 'Modifica Nro de Serie', 'title' => 'Modifica Nro. de Serie','border'=>'0','height'=>'12');
+		$uri_3 .= img($propiedad);
+		$uri_3 .= "</a>";
 
 		$grid->column('Acci&oacute;n',$uri_2);
 		$grid->column_orderby('Factura',$uri,'numero');
-		$grid->column_orderby('Serie','serie','serie');
+		$grid->column_orderby('Serie',$uri_3.'<#serie#>','serie');
 		$grid->column_orderby('Fecha','<dbdate_to_human><#fecha#></dbdate_to_human>','fecha','align=\'center\'');
+		$grid->column_orderby('Recep','<dbdate_to_human><#recep#></dbdate_to_human>','recep','align=\'center\'');
 		$grid->column_orderby('Vence','<dbdate_to_human><#vence#></dbdate_to_human>','vence','align=\'center\'');
-		$grid->column_orderby('Proveedor','proveed','proveed');
+		$grid->column_orderby('Alma','depo','depo');
+		$grid->column_orderby('Prv.','proveed','proveed');
 		$grid->column_orderby('Nombre','nombre','nombre');
+		$grid->column_orderby('Base' ,'<nformat><#montotot#></nformat>','montotot','align=\'right\'');
 		$grid->column_orderby('IVA'   ,'<nformat><#montoiva#></nformat>','montoiva','align=\'right\'');
-		$grid->column_orderby('Monto' ,'<nformat><#montonet#></nformat>','montonet','align=\'right\'');
-		$grid->column('Vista',$uri2,'align=\'center\'');
+		$grid->column_orderby('Importe' ,'<nformat><#montonet#></nformat>','montonet','align=\'right\'');
+		$grid->column_orderby('Ret.IVA' ,'<nformat><#reteiva#></nformat>','reteiva','align=\'right\'');
+		$grid->column_orderby('Control','control','control');
+		$grid->column_orderby('Usuario','usuario','usuario');
+//		$grid->column('Vista',$uri2,'align=\'center\'');
 
 		//$grid->add("compras/agregar");
 		$grid->build('datagridST');
@@ -130,14 +140,16 @@ $script ='
 <script type="text/javascript">
 function scstserie(mcontrol){
 	//var mserie=Prompt("Numero de Serie");
-	jAlert("Cancelado","Informacion");
-
+	//jAlert("Cancelado","Informacion");
 	jPrompt("Numero de Serie","" ,"Cambio de Serie", function(mserie){
 		if( mserie==null){
 			jAlert("Cancelado","Informacion");
 		} else {
 			$.ajax({ url: "'.site_url().'compras/scst/scstserie/"+mcontrol+"/"+mserie,
-				success: function(msg){ jAlert("Cambio Finalizado "+msg,"Informacion") }
+				success: function(msg){
+					jAlert("Cambio Finalizado "+msg,"Informacion");
+					location.reload();
+					}
 			});
 		}
 	})
