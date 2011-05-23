@@ -190,7 +190,6 @@ class sinv extends Controller {
 
 		$filter->buttons("reset","search");
 		$filter->build("dataformfiltro");
-		//echo $this->db->last_query();
 
 		$uri = "inventario/sinv/dataedit/show/<#codigo#>";
 
@@ -262,7 +261,7 @@ class sinv extends Controller {
 		$grid->column_orderby("Precio 3","<nformat><#precio3#></nformat>","precio3",'align=right');
 		$grid->column_orderby("Marca","marca","marca");
 
-		//$grid->add('inventario/sinv/dataedit/create');
+		$grid->add('inventario/sinv/dataedit/create');
 		$grid->build('datagridST');
 
 		$lastq = $this->db->last_query();
@@ -415,8 +414,10 @@ function auprec(){
 		$link21=site_url('inventario/sinv/sinvcodigo');
 		$link25=site_url('inventario/sinv/sinvbarras');
 		$link27=site_url('inventario/sinv/sinvpromo');
-		$link28=site_url('inventario/sinv/sinvproveed');
+		$link28=site_url('inventario/sinv/sinvproveed/');
+		$link29=site_url('inventario/sinv/sinvsprv/'.$id);
 		$link30=site_url('inventario/sinv/sinvborrasuple/');
+		$link35=site_url('inventario/sinv/sinvborraprv/');
 
 		$script='
 <script type="text/javascript">
@@ -426,21 +427,6 @@ function isNumeric(value) {
 };
 
 $(document).ready(function() {
-
-	//Default Action
-	$(".tab_content").hide(); //Hide all content
-	$("ul.tabs li:first").addClass("active").show(); //Activate first tab
-	$(".tab_content:first").show(); //Show first tab content
-
-	//On Click Event
-	$("ul.tabs li").click(function() {
-		$("ul.tabs li").removeClass("active"); //Remove any "active" class
-		$(this).addClass("active"); //Add "active" class to selected tab
-		$(".tab_content").hide(); //Hide all tab content
-		var activeTab = $(this).find("a").attr("href"); //Find the rel attribute value to identify the active tab + content
-		$(activeTab).fadeIn(); //Fade in the active content
-		return false;
-	});
 
 	$("#depto").change(function(){dpto_change(); });
 	$("#linea").change(function(){ $.post("'.$link14.'",{ linea:$(this).val() },function(data){$("#grupo").html(data);}) });
@@ -452,20 +438,18 @@ $(document).ready(function() {
 		$("#exmax").unbind();$("#exmax").removeClass(); $("#exmax").addClass(clase);
 		$("#exord").unbind();$("#exord").removeClass(); $("#exord").addClass(clase);
 		$("#exdes").unbind();$("#exdes").removeClass(); $("#exdes").addClass(clase);
-
 		$(".inputnum").numeric(".");
 		$(".inputonlynum").numeric("0");
 	});
-
 	requeridos(true);
 
 	$( "#dialog:ui-dialog" ).dialog( "destroy" );
 
 	var proveedor = $( "#proveedor" ),
+		cod_prv = $( "#cod_prv" ),
 		codigo = $( "#codigo" ),
-		allFields = $( [] ).add( proveedor ).add( codigo ),
+		allFields = $( [] ).add( proveedor ).add( codigo ).add( cod_prv ),
 		tips = $( ".validateTips" );
-
 
 	$( "#sinvprv" ).dialog({
 		autoOpen: false,
@@ -477,7 +461,8 @@ $(document).ready(function() {
 				var bValid = true;
 				allFields.removeClass( "ui-state-error" );
 
-				bValid = bValid && checkLength( proveedor, "proveedor", 3, 15 );
+				bValid = bValid && checkLength( proveedor, "proveedor", 3, 50 );
+				bValid = bValid && checkLength( cod_prv, "cod_prv", 1, 5 );
 				bValid = bValid && checkLength( codigo, "codigo", 6, 15 );
 
 				//bValid = bValid && checkRegexp( proveedor, /^[a-z]([0-9a-z_])+$/i, "Username may consist of a-z, 0-9, underscores, begin with a letter." );
@@ -485,10 +470,22 @@ $(document).ready(function() {
 				//bValid = bValid ;
 
 				if ( bValid ) {
+					/*
 					$( "#users tbody" ).append( "<tr>" +
-						"<td>" + proveedor.val() + "</td>" + 
-						"<td>" + codigo.val() + "</td>" + 
-					"</tr>" ); 
+						"<td>" + cod_prv.val() + "</"+"td>" + 
+						"<td>" + proveedor.val() + "</"+"td>" + 
+						"<td>" + codigo.val() + "</"+"td>" + 
+					"</"+"tr>" );
+					*/
+					$.ajax({
+						  url: "'.$link29.'/"+cod_prv.val()+"/"+codigo.val(),
+						  //context: document.body,
+						  success: function(msg){
+						    alert("Terminado: "+msg);
+						  }
+					});					
+					
+					
 					$( this ).dialog( "close" );
 				}
 			},
@@ -505,22 +502,30 @@ $(document).ready(function() {
 		source: function( req, add){
 			$.ajax({
 				url: "'.$link28.'",
-				type: 	"POST",
+				type: "POST",
 				dataType: "json",
-				data: 	"tecla="+req,
+				data: "tecla="+req.term,
 				success:
 					function(data) {
 						var sugiere = [];
 						$.each(data,
 							function(i, val){
-								sugiere.push(val,nombre);
+								sugiere.push( val );
 							}
 						);
-						add(sugeiere);
-					}
+						add(sugiere);
+					},
 			})
+		},
+		minLength: 3,
+		select: function(evento, ui){
+			//$("#proveedor").val(ui.item.value.substr(0,ui.item.value.length-6));
+			//$("#cod_prv").val(ui.item.value.substr(ui.item.value.length-6, 5));
+			$("#cod_prv").val(ui.item.codigo);
 		}
 	});
+	$( "#maintabcontainer" ).tabs();
+
 });
 
 function updateTips( t ) {
@@ -732,7 +737,7 @@ function sinvcodigo(mviejo){
 				success: function(sino) {
 					if (sino.substring(0,1)=="S"){
 						jConfirm(
-							"Ya existe el codigo <div style=\"font-size: 200%;font-weight: bold \">"+mcodigo+"</div>"+sino.substring(1)+"<p>si prosigue se eliminara el producto anterior y<br/> todo el movimiento de este, pasara al codigo "+mcodigo+"</p> <p style=\"align: center;\">Desea <strong>Fusionarlos?</strong></p>",
+							"Ya existe el codigo <div style=\"font-size: 200%;font-weight: bold \">"+mcodigo+"</"+"div>"+sino.substring(1)+"<p>si prosigue se eliminara el producto anterior y<br/> todo el movimiento de este, pasara al codigo "+mcodigo+"</"+"p> <p style=\"align: center;\">Desea <strong>Fusionarlos?</"+"strong></"+"p>",
 							"Confirmar Fusion",
 							function(r){
 							if (r) { sinvcodigocambia("S", mviejo, mcodigo); }
@@ -740,7 +745,7 @@ function sinvcodigo(mviejo){
 						);
 					} else {
 						jConfirm(
-							"Sustitur el codigo actual  por: <center><h2 style=\"background: #ddeedd\">"+mcodigo+"</h2></center> <p>Al cambiar de codigo el producto, todos los<br/> movimientos y estadisticas se cambiaran<br/> correspondientemente.</p> ",
+							"Sustitur el codigo actual  por: <center><h2 style=\"background: #ddeedd\">"+mcodigo+"</"+"h2></"+"center> <p>Al cambiar de codigo el producto, todos los<br/> movimientos y estadisticas se cambiaran<br/> correspondientemente.</"+"p> ",
 							"Confirmar cambio de codigo",
 							function(r) {
 								if (r) { sinvcodigocambia("N", mviejo, mcodigo); }
@@ -795,7 +800,7 @@ function sinvbarras(mcodigo){
 				dataType: "text",
 				async: false,
 				success: function(sino)  { jAlert( sino,"Informacion")},
-				error:   function(h,t,e) { jAlert("Error..codigo="+mbarras+" <p>"+e+"</p>","Error") }
+				error:   function(h,t,e) { jAlert("Error..codigo="+mbarras+" <p>"+e+"</"+"p>","Error") }
 			});
 		}
 	})
@@ -818,7 +823,7 @@ function sinvpromo(mcodigo){
 					dataType: "text",
 					async: false,
 					success: function(sino)  { jAlert( sino,"Informacion")},
-					error:   function(h,t,e) { jAlert("Error..codigo="+margen+" <p>"+e+"</p>","Error") }
+					error:   function(h,t,e) { jAlert("Error..codigo="+margen+" <p>"+e+"</"+"p>","Error") }
 				});
 			} else { jAlert("Entrada no numerica","Alerta") }
 		}
@@ -844,7 +849,7 @@ function sinvproveed(mcodigo){
 					dataType: "text",
 					async: false,
 					success: function(sino)  { jAlert( sino,"Informacion")},
-					error:   function(h,t,e) { jAlert("Error..codigo="+margen+" <p>"+e+"</p>","Error") }
+					error:   function(h,t,e) { jAlert("Error..codigo="+margen+" <p>"+e+"</"+"p>","Error") }
 				});
 			} else { jAlert("Entrada no numerica","Alerta") }
 		}
@@ -852,11 +857,9 @@ function sinvproveed(mcodigo){
 */
 };
 
-
-
 function sinvborrasuple(mcodigo){
 	jConfirm(
-		"Desea eliminar este codigo suplementario?<p><strong>"+mcodigo+"</strong></p>",
+		"Desea eliminar este codigo suplementario?<p><strong>"+mcodigo+"</"+"strong></"+"p>",
 		"Confirmar Borrado",
 		function(r){
 			if (r) {
@@ -868,12 +871,35 @@ function sinvborrasuple(mcodigo){
 				dataType: "text",
 				async: false,
 				success: function(sino)  { jAlert( sino,"Informacion")},
-				error:   function(h,t,e) { jAlert("Error..codigo="+mcodigo+" <p>"+e+"</p>","Error") }
+				error:   function(h,t,e) { jAlert("Error..codigo="+mcodigo+" <p>"+e+"</"+"p>","Error") }
 			});
 			}
 		}
 	);
 };
+
+
+function sinvborraprv(mproveed, mcodigo){
+	jConfirm(
+		"Desea eliminar este codigo de proveedor?<p><strong>"+mcodigo+"</"+"strong></"+"p>",
+		"Confirmar Borrado",
+		function(r){
+			if (r) {
+			$.ajax({
+				url: "'.$link35.'",
+				global: false,
+				type: "POST",
+				data: ({ proveed : mproveed, codigo : mcodigo }),
+				dataType: "text",
+				async: false,
+				success: function(sino)  { jAlert( sino,"Informacion")},
+				error:   function(h,t,e) { jAlert("Error..codigo="+mcodigo+" <p>"+e+"</"+"p>","Error") }
+			});
+			}
+		}
+	);
+};
+
 
 </script>
 ';
@@ -1235,15 +1261,19 @@ div#sinvprv h1 { font-size: 1.2em; margin: .6em 0; }
 		<input type="text" name="ubica"  value="" />
 		<input type="text" name="fecha"  value="'.dbdate_to_human($mfdesde).'" />
 		<input type="text" name="fechah" value="'.dbdate_to_human($mfhasta).'" />
-		<input type="submit">
+		<input type="submit" />
 	</form>
 </div>
 <div id="sinvprv" title="Agregar codigo de Proveedor">
-	<p class="validateTips">Introduzca el codigo que usa el proveedor para este producto</p>
+	<p class="validateTips">Codigo del proveedor para este producto</p>
 	<form>
 	<fieldset>
 		<label for="proveedor">Proveedor</label>
-		<input type="text" name="proveedor" id="proveedor" class="text ui-widget-content ui-corner-all" />
+		<table cellspacing="0" callpadding="0" width="100%"><tr><td>
+		<input type="text" size="90%" name="proveedor" id="proveedor" class="text ui-widget-content ui-corner-all" />
+		</td><td>
+		<input type="text" readonly="readonly" size="8%" name="cod_prv" id="cod_prv" class="text ui-widget-content ui-corner-all" />
+		</td></tr><table>
 		<label for="codigo">Codigo</label>
 		<input type="text" name="codigo" id="codigo" value="" class="text ui-widget-content ui-corner-all" />
 	</fieldset>
@@ -1514,25 +1544,52 @@ function submitkardex() {
 		echo "Codigo Eliminado";
 	}
 
+	// Borra Codigo de barras suplementarios
+	function sinvborraprv() {
+		$codigo   = $this->input->post('codigo');
+		$proveed  = $this->input->post('proveed');
+		
+		$mSQL = "DELETE FROM sinvprov WHERE codigop='$codigo' AND proveed='$proveed'";
+		$this->db->simple_query($mSQL);
+		logusu("SINV","Eliminado Codigo de proveedor $codigo => $proveed");
+		echo "Codigo Eliminado";
+	}
 
+	// Busca Proveedor por autocomplete
 	function sinvproveed(){
 		$mid   = $this->input->post('tecla');
-		$mSQL  = "SELECT CONCAT(proveed,' ',nombre) nombre FROM sprv WHERE nombre LIKE '%".$mid."%' LIMIT 10";
+		if (empty($mid)) $mid='AN';
+		$mSQL  = "SELECT CONCAT(TRIM(nombre),'(',RPAD(proveed,5,' '),')') nombre, proveed codigo FROM sprv WHERE nombre LIKE '%".$mid."%' ORDER BY nombre LIMIT 10";
+		$data = "[]";
 		$query = $this->db->query($mSQL);
 		$retArray = array();
+		$retorno = array();
 		if ($query->num_rows() > 0){
 			foreach( $query->result_array() as  $row ) {
-				$retArray[] = array("nombre"=>$row);
+				$retArray['label'] = $row['nombre'];
+				$retArray['codigo'] = $row['codigo'];
+				array_push($retorno, $retArray);
 			}
-			$data = json_encode($retArray);
-			$ret = "{data:" . $data .",\n";
-			$ret .= "recordType : 'array'}";
+			$data = json_encode($retorno);
+			//$ret = "{data:" . $data .",\n";
+			//$ret .= "recordType : 'array'}";
 		} else {
 			$ret = '{data : []}';
 		}
-		echo $ret;
+		echo $data;
 	}
 	
+	// Crea el codigo segun el Proveedor
+	function sinvsprv(){
+		$codigo  = $this->uri->segment($this->uri->total_segments());
+		$cod_prv = $this->uri->segment($this->uri->total_segments()-1);
+		$id      = $this->uri->segment($this->uri->total_segments()-2);
+		$mSQL = "REPLACE INTO sinvprov SELECT '$cod_prv' proveed, '$codigo' codigop, codigo FROM sinv WHERE id=$id ";
+		$this->db->simple_query($mSQL);
+		echo " codigo=$codigo guardado al prv $cod_prv " ;
+		
+	}
+
 
 	// Promociones
 	function sinvpromo() {

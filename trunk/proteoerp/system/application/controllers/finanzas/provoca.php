@@ -31,7 +31,7 @@ class Provoca extends validaciones {
 		$uri = anchor('finanzas/provoca/dataedit/show/<#rif#>','<#rif#>');
 
 		$grid = new DataGrid("Filtro de Proveedores Ocasionales");
-		$grid->order_by("nombre","asc");
+		//$grid->order_by("nombre","asc");
 		$grid->per_page = 10;
 		
 		$grid->column_orderby('RIF'   ,$uri,'rif');

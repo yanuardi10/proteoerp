@@ -255,7 +255,6 @@ class Consultas extends Controller {
 			});
 		}
 		</script>';
-
 		$data['content'] = '<div id="resp" style=" width: 100%;" ></div>';
 		$data['title']   = "<h1><center><a title='ender' href='http://192.168.0.99/proteoerp/assets/shared/images/3_b.jpg'><img src='http://192.168.0.99/proteoerp/assets/shared/images/3_s.jpg' /></a>$out</center></h1>";
 		$data['head']    = script('jquery.js').script('plugins/jquery.fancybox.pack.js').script('plugins/jquery.easing.js').style('fancybox/jquery.fancybox.css').$this->rapyd->get_head();

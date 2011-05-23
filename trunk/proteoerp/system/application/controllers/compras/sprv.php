@@ -275,20 +275,19 @@ class Sprv extends validaciones {
 		$edit->tiva->style='width:190px;';
 
 		$edit->direc1 = new inputField("Direcci&oacute;n ",'direc1');
-		$edit->direc1->size =50;
+		$edit->direc1->size =40;
 		$edit->direc1->rule ="trim";
 		$edit->direc1->maxlength =40;
 
 		$edit->direc2 = new inputField(" ",'direc2');
-		$edit->direc2->size =50;
+		$edit->direc2->size =40;
 		$edit->direc2->rule ="trim";
 		$edit->direc2->maxlength =40;
 
 		$edit->direc3 = new inputField(" ",'direc3');
-		$edit->direc3->size =50;
+		$edit->direc3->size =40;
 		$edit->direc3->rule ="trim";
 		$edit->direc3->maxlength =40;
-
 
 		$edit->telefono = new inputField("Tel&eacute;fono", "telefono");
 		$edit->telefono->size = 30;
@@ -359,7 +358,6 @@ class Sprv extends validaciones {
 		$edit->$obj->group = "Cuentas Bancarias";
 
 
-
 		$edit->cliente  = new inputField("Cliente", "cliente");
 		$edit->cliente->size =13;
 		$edit->cliente->rule ="trim";
@@ -369,15 +367,14 @@ class Sprv extends validaciones {
 		//$edit->cliente->group = "Datos del Proveedor";
 
 		$edit->nomfis = new inputField("Nombre", "nomfis");
-		$edit->nomfis->size =41;
+		$edit->nomfis->size =80;
 		$edit->nomfis->rule ="rule";
-		$edit->nomfis->readonly =true;
+		//$edit->nomfis->readonly =true;
 
 		$lcuent=anchor_popup("/contabilidad/cpla/dataedit/create","Agregar Cuenta Contable",$atts);
 		$edit->cuenta = new inputField("Cuenta. Contable", "cuenta");
 		$edit->cuenta->rule='trim|callback_chcuentac';
 		$edit->cuenta->size =13;
-		//$edit->cuenta->readonly=true;
 		$edit->cuenta->append($bcpla);
 		$edit->cuenta->append($lcuent);
 
