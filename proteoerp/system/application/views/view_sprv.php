@@ -1,4 +1,4 @@
-b n<?php echo $form_scripts?>
+<?php echo $form_scripts?>
 <?php echo $form_begin?>
 <?php 
 //$container_tr=join("&nbsp;", $form->_button_container["TR"]);
@@ -35,8 +35,8 @@ b n<?php echo $form_scripts?>
 				<td class="littletablerow"><?=$form->rif->output ?></td>
 			</tr>	
 			<tr>
-				<td class="littletableheaderc"><?=$form->nomfis->label ?></td>
-				<td colspan='3' class="littletablerow"><?=$form->nomfis->output?></td>
+				<td class="littletableheaderc"><?=$form->nombre->label ?></td>
+				<td colspan='3' class="littletablerow"><?=$form->nombre->output?></td>
 			</tr>
 			<tr>
 				<td class="littletableheaderc"><?=$form->contacto->label  ?></td>
@@ -60,6 +60,18 @@ b n<?php echo $form_scripts?>
 				<td class="littletablerow"><?=$form->tiva->output ?></td>
 			</tr>
 			
+			</table>
+			</fieldset>
+		</td>
+	</tr>
+	<tr>
+		<td colspan='3'>
+			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
+			<legend class="titulofieldset" style='color: #114411;'>Nombre Fiscal/Completo</legend>
+			<table border=0 width="100%">
+			<tr>
+				<td colspan='3' class="littletablerow"><?=$form->nomfis->output?></td>
+			</tr>
 			</table>
 			</fieldset>
 		</td>
@@ -137,6 +149,16 @@ b n<?php echo $form_scripts?>
 			</tr>
 			</table>
 			</fieldset>
+			<fieldset style='border: 5px outset #3FCF3F;background: #3FCF3F;'>
+			<table width= '100%' >
+				<tr>
+					<td>SALDO</td>
+					<td style='font-size:18px;color:#0;font-weight: bold'><? echo nformat($this->datasis->dameval("SELECT SUM(monto*IF(tipo_doc IN ('FC','ND','GI'),1,-1)) monto FROM sprm WHERE cod_prv='".$form->_dataobject->get('proveed')."'")) ?></td>
+				</tr>
+			</tr>
+			</table>
+			</fieldset>
+			
 		</td>
 		<?php if( $form->_status == 'show') {  ?>
 		<?php } ?>

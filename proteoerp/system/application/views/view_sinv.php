@@ -68,14 +68,14 @@ else:
 					</td>
 					<td>&nbsp;
 						<a href='javascript:void(0);'
-						onclick="window.open('<?php echo base_url(); ?>inventario/fotos/dataedit/<?php echo $form->_dataobject->get('id'); ?>/create', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');" heigth="600">
+						onclick="window.open('<?php echo base_url(); ?>inventario/fotos/dataedit/<?php echo $form->_dataobject->get('id'); ?>/create', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');" >
 						<?php
 							$propiedad = array('src' => 'images/camara.jpg', 'alt' => 'Imagenes', 'title' => 'Imagenes','border'=>'0','height'=>'30');
 							echo img($propiedad);
 						?>
 					</a>
 					</td>
-				<tr>
+				</tr>
 			</table>
 			
 			<?php } else { ?>
@@ -93,7 +93,7 @@ else:
 	</tr>
 </table>
 
-<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
+<fieldset style='border: 2px outset #9AC8DA;background: #FFFFF9;'>
 <legend class="titulofieldset" >Identificacion del Producto </legend>
 <table border='0' width="100%">
 	<tr>
@@ -178,18 +178,18 @@ else:
 </table>
 </fieldset>
 
-<div class="maintabcontainer">
-	<ul class="tabs">
+<div id="maintabcontainer">
+	<ul>
 		<li><a href="#tab1">Parametros</a></li>
 		<li><a href="#tab2">Precios</a></li>
 		<li><a href="#tab3">Existencias</a></li>
 		<li><a href="#tab4">Movimientos</a></li>
 		<li><a href="#tab5">Promociones</a></li>
 	</ul>
-	<div class="tab_container">
-	<div id="tab1" class="tab_content" style='background:#eeffff'>
+	<?php //<div class="tab_container"> ?>
 
-<table width="100%" border='0'>
+<div id="tab1" style='background:#FFFFFA'>
+	<table width="100%" border='0'>
 	<tr>
 		<td colspan='2' valign='top'>
 			<table border='0' width="100%" style='border-collapse;border: 1px dotted'>
@@ -224,8 +224,8 @@ else:
 			</table>
 		</td>
 	</tr>
-</table>
-<table width="100%" border='0'>
+	</table>
+	<table width="100%" border='0'>
 	<tr>
 		<td valign='top' align='left'>
 			<table border='0' >
@@ -260,10 +260,10 @@ else:
 			</table>
 		</td>
 	</tr>
-</table>
-        </div>
-        <div id="tab2" class="tab_content">
-<table width='100%'>
+	</table>
+</div>
+<div id="tab2">
+	<table width='100%'>
 	<tr>
 		<td valign='top'>
 			<fieldset style='border: 2px outset #B45F04;background: #F8ECE0;'>
@@ -336,10 +336,10 @@ else:
 			</fieldset>
 		</td>
 	</tr>
-</table>
-        </div>
-        <div id="tab3" class="tab_content">
-<table width='100%'>
+	</table>
+</div>
+<div id="tab3">
+	<table width='100%'>
 	<tr>
   		<td valign="top">
 			<fieldset  style='border: 2px outset #AEB404;background: #FFFBE2;'>
@@ -370,18 +370,19 @@ else:
 		</td>
 		<?php if( !empty($form->almacenes->output)) { ?>
 		<td valign="top">
-			<fieldset  style='border: 2px outset #AEB404;background: #FFFBE2;'>
+			<fieldset style='border: 2px outset #AEB404;background: #FFFBE2;'>
 			<legend class="titulofieldset" >Almacenes</legend>
 			<?php echo $form->almacenes->output ?>
+			</div>
 			</fieldset>
 		</td>
 		<?php } ?>
 	</tr>
-</table>
-        </div>
-        <div id="tab4" class="tab_content">
+	</table>
+</div>
+<div id="tab4">
 <?php if($form->_status=='show'){ ?>
-<table width='100%'>
+	<table width='100%'>
 	<tr>
 		<td valign='top'>
 			<fieldset  style='border: 2px outset #AEB404;background: #F5F6CE;'>
@@ -391,7 +392,6 @@ else:
 					<td class="littletableheader" style='background:#F5F6CE;color:#112211' >Compras</td>
 					<td class="littletableheader" style='background:#F5F6CE;color:#112211' align='right'><?=$form->fechav->label?></td>
 					<td class="littletablerow"><?=$form->fechav->output   ?></td>
-					
 				</tr>
 				<tr>
 					<td class="littletableheader" align='center' style='background: #393B0B;color: #FFEEFF;font-weight: bold'>Fecha</td>
@@ -417,15 +417,45 @@ else:
 			</fieldset>
 		</td>
 	</tr>
-</table>
+	</table>
 <?php };?>
 
-        </div>
-        <div id="tab5" class="tab_content">
+<?php
+$query = $this->db->query("SELECT a.proveed, b.nombre, a.codigop FROM sinvprov a JOIN sprv b ON a.proveed=b.proveed WHERE a.codigo='".addslashes($form->_dataobject->get('codigo'))."'");
+if ($query->num_rows()>0 ) {
+?>
+
+	<fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
+	<legend class="titulofieldset" >Codigos de segun el proveedor</legend>
+	<table width='50%' border='0'>
+		<?php 
+			foreach($query->result() as $row ){
+				echo "
+	<tr>
+		<td style='font-size: 12px;font-weight: normal'>".$row->proveed."</td>
+		<td style='font-size: 12px;font-weight: normal'>".$row->nombre."</td>
+		<td style='font-size: 12px;font-weight: bold'>".$row->codigop."</td>
+		<td valign='top' style='height: 18px;'>
+			<a href='javascript:sinvborraprv(\"$row->proveed\",\"$row->codigop\")'>
+			".img(array('src' => 'images/delete.jpg', 'alt' => 'Eliminar', 'title' => 'Eliminar','border'=>'0','height'=>'16'))."
+			</a>
+		</td>
+	</tr>";
+				} 
+				echo "
+	</table>";
+			?>
+	</fieldset>
+<?php }  // rows>0 ?>
+
+
+
+</div>
+<div id="tab5">
 <?php if($form->_status=='show'){ ?>
-<fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
-<legend class="titulofieldset" >Promociones</legend>
-<table border=0 width='100%'>
+	<fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
+	<legend class="titulofieldset" >Promociones</legend>
+	<table border=0 width='100%'>
 	<tr>
 		<td valign="top"><?php 
 			$margen =  $this->datasis->dameval("SELECT margen FROM grup WHERE grupo='".$form->_dataobject->get('grupo')."'");
@@ -447,55 +477,54 @@ else:
 			?>
 		</td>
 	</tr>
-</table>
-</fieldset>
-<br/>
+	</table>
+	</fieldset>
+	<br/>
 <?php
 $query = $this->db->query("SELECT suplemen FROM barraspos WHERE codigo='".addslashes($form->_dataobject->get('codigo'))."'");
 if ($query->num_rows()>0 ) {
 ?>
 
-<fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
-<legend class="titulofieldset" >Codigos de Barras Asociados</legend>
-<table width='100%' border=0>
+	<fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
+	<legend class="titulofieldset" >Codigos de Barras Asociados</legend>
+	<table width='100%' border=0>
 	<tr >
 		<?php 
 			$m = 1;
 			foreach($query->result() as $row ){
-				if ( $m > 3 ) {
-					echo "
-	</tr><tr>";
-					$m = 1;
+				if ( $m > 3 ) { ?>
+	</tr><tr>
+				<?php	$m = 1;
 				}
 				echo "
-			<td style='font-size: 16px;font-weight: bold'>
-				<table cellpadding='0' cellspacing='0' style='height: 30px; border: 1px solid'><tr>
-					<td style='height: 18px;'>
-						<a href='javascript:sinvborrasuple(\"$row->suplemen\")'>
-						".img(array('src' => 'images/delete.jpg', 'alt' => 'Eliminar', 'title' => 'Eliminar','border'=>'0','height'=>'16'))."
-						</a>
-					</td><td valign='top' style='height: 18px;'>
-						".$row->suplemen."
-					</td>
-				</tr></table>
-			</td>";
+		<td style='font-size: 16px;font-weight: bold'>
+			<table cellpadding='0' cellspacing='0'><tr>
+				<td style='height: 18px;'>
+					".$row->suplemen."
+				</td><td valign='top' style='height: 18px;'>
+					<a href='javascript:sinvborrasuple(\"$row->suplemen\")'>
+					".img(array('src' => 'images/delete.jpg', 'alt' => 'Eliminar', 'title' => 'Eliminar','border'=>'0','height'=>'16'))."
+					</a>
+				</td>
+			</tr></table>
+		</td>";
 				
 				$m += 1; 
 			}
 			?>
 	</tr>
-</table>
-</fieldset>
+	</table>
+	</fieldset>
 <?php }  // rows>0 ?>
 
 <?php
 $query = $this->db->query("SELECT CONCAT(codigo,' ', descrip,' ',fracci) producto FROM sinv WHERE MID(tipo,1,1)='F' AND enlace='".addslashes($form->_dataobject->get('codigo'))."'");
 if ($query->num_rows()>0 ) {
 ?>
-</fieldset>
-<fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
-<legend class="titulofieldset" >Fracciones</legend>
-<table width='100%'>
+	</fieldset>
+	<fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
+	<legend class="titulofieldset" >Productos Derivados</legend>
+	<table width='100%'>
 	<tr>
 		<?php 
 			$m = 1;
@@ -510,15 +539,13 @@ if ($query->num_rows()>0 ) {
 			}
 			?>
 	</tr>
-</table>
-</fieldset>
-<?php }  // rows>0 ?>
-        </div>
-    </div>
+	</table>
+	</fieldset>
+<?php }  // rows>0  </div> ?>
+</div>
 </div>
 
-<?php }  //show    ?>
+<?php } //show ?>
 <?php echo $container_bl.$container_br; ?>
 <?php echo $form_end?>
 <?php endif; ?>
-
