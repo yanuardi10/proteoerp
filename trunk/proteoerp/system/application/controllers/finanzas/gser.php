@@ -60,6 +60,11 @@ class gser extends Controller {
 		$uri2 .= anchor('formatos/verhtml/GSER/<#id#>',img(array('src'=>'images/html_icon.gif','border'=>'0','alt'=>'HTML')));
 
 		$uri = anchor('finanzas/gser/dataedit/show/<#id#>','<#numero#>');
+
+		$uri_3  = "<a href='javascript:void(0);' onclick='javascript:gserserie(\"<#id#>\")'>";
+		$propiedad = array('src' => 'images/engrana.png', 'alt' => 'Modifica Nro de Serie', 'title' => 'Modifica Nro. de Serie','border'=>'0','height'=>'12');
+		$uri_3 .= img($propiedad);
+		$uri_3 .= "</a>";
 		
 		$grid = new DataGrid();
 		$grid->order_by('fecha','desc');
@@ -68,6 +73,7 @@ class gser extends Controller {
 		$grid->column('Tipo',"tipo_doc",'tipo_doc');
 		$grid->column('Caja',"cajachi",'cajachi');
 		$grid->column_orderby('N&uacute;mero',$uri,'numero');
+		$grid->column_orderby('Serie',$uri_3.'<#serie#>','serie');
 		$grid->column_orderby('Fecha' ,'<dbdate_to_human><#fecha#></dbdate_to_human>','fecha','align=\'center\'');
 		$grid->column_orderby('Nombre','nombre'  ,'nombre');
 		$grid->column_orderby('Base' ,'<nformat><#totpre#></nformat>' ,'totneto','align=\'right\'');
@@ -127,18 +133,59 @@ class gser extends Controller {
 </style>	
 		';
 
+$script ='
+<script type="text/javascript">
+function gserserie(mid){
+	//var mserie=Prompt("Numero de Serie");
+	//jAlert("Cancelado","Informacion");
+	jPrompt("Numero de Serie","" ,"Cambio de Serie", function(mserie){
+		if( mserie==null){
+			jAlert("Cancelado","Informacion");
+		} else {
+			$.ajax({ url: "'.site_url().'finanzas/gser/gserserie/"+mid+"/"+mserie,
+				success: function(msg){
+					jAlert("Cambio Finalizado "+msg,"Informacion");
+					location.reload();
+					}
+			});
+		}
+	})
+}
 
+</script>';
 
 		$data['content'] = $grid->output;
 		$data['filtro']  = $filter->output;
-		$data['style']   = $style.style('superTables.css');
-		$data['extras']  = $extras;		
-		$data['head']    = script('jquery.js');
-		$data['head']   .= script('superTables.js');
-		$data['head']   .= $this->rapyd->get_head();
+		
+		$data['script']  = $script;
+		$data['script'] .= script('jquery.js');
+		$data["script"] .= script("jquery.alerts.js");
+		$data['script'] .= script('superTables.js');
+		
+		$data['style']   = $style;
+		$data['style']  .=style('superTables.css');
+		$data['style']	.= style("jquery.alerts.css");
+
+
+		$data['extras']  = $extras;
+		
+		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = heading('Egresos por Gastos');
 		$this->load->view('view_ventanas', $data);
 	}
+
+	function gserserie(){
+		$serie   = $this->uri->segment($this->uri->total_segments());
+		$id = $this->uri->segment($this->uri->total_segments()-1);
+		if (!empty($serie)) {
+			$this->db->simple_query("UPDATE gser SET serie='$serie' WHERE id='$id'");
+			echo " con exito ";
+		} else {
+			echo " NO se guardo ";
+		}
+		logusu('GSER',"Cambia Nro. Serie $id ->  $serie ");
+	}
+
 
 	function agregar(){
 		$data['content'] = '<div align="center" id="maso" >';

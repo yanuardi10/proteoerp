@@ -171,9 +171,10 @@ class Scli extends validaciones {
 $(function() {
 
 	//Default Action
-	$(".tab_content").hide(); //Hide all content
-	$("ul.tabs li:first").addClass("active").show(); //Activate first tab
-	$(".tab_content:first").show(); //Show first tab content
+	//$(".tab_content").hide(); //Hide all content
+	//$("ul.tabs li:first").addClass("active").show(); //Activate first tab
+	//$(".tab_content:first").show(); //Show first tab content
+	$( "#maintabcontainer" ).tabs();
 	
 	//On Click Event
 	$("ul.tabs li").click(function() {
@@ -462,13 +463,24 @@ function consulrif(campo){
 		$data['title']   = heading('('.$edit->cliente->value.') '.substr($edit->nombre->value,0,30));
 		
 		$data['script']   = script('jquery.js');
+		$data["script"]  .= script("jquery-ui.js");
+		$data["script"]  .= script("jquery.alerts.js");
 		$data['script']  .= script('plugins/jquery.numeric.pack.js');
 		$data['script']  .= script('plugins/jquery.floatnumber.js');
 		$data['script']  .= script('plugins/jquery.autocomplete.js');
 		$data['script']  .= style('jquery.autocomplete.css');
 		$data["script"]  .= $script;
 
-		$data['style']	 = $style;
+
+		$data["script"]  .= script("plugins/jquery.blockUI.js");
+		$data["script"]  .= script("plugins/jquery.numeric.pack.js");
+		$data["script"]  .= script("plugins/jquery.floatnumber.js");
+		$data["script"]  .= script("sinvmaes.js");
+		$data["script"]  .= $script;
+
+		$data['style']	 = style("jquery.alerts.css");
+		$data['style']	.= style("redmond/jquery-ui.css");
+		$data['style']	.= $style;
 
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);

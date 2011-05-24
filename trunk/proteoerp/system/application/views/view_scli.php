@@ -136,14 +136,13 @@ else:
 </fieldset>
 
 <div class="maintabcontainer">
-	<ul class="tabs">
+	<ul>
 		<li><a href="#tab1">Direcciones</a></li>
 		<li><a href="#tab2">Valores</a></li>
 		<li><a href="#tab3">Anexo</a></li>
 		<li><a href="#tab4">Historia</a></li>
 	</ul>
-	<div class="tab_container">
-	<div id="tab1" class="tab_content" style='background:#eeffff'>
+	<div id="tab1"  style='background:#eeffff'>
 
 <table border='0' width="100%">
 	<tr>
@@ -168,8 +167,8 @@ else:
 			<table border='0'  width='100%'>
 				<tr>
 					<td colspan='2' class="littletableheaderc">Direccion de Envio</td>
-				<tr>
 				</tr>
+				<tr>
 					<td colspan='2' class="littletablerow"><?=$form->dire21->output ?>&nbsp;</td>
 				</tr>
 				<tr>
@@ -181,9 +180,9 @@ else:
 				</tr>
 			</table>
 		</td>
-	<tr>
+	</tr>
 </table>
-<br>
+<br />
 <table style='height: 100%;width: 100%;border: 1px dotted;'>
 	<tr>
 		<td class="littletableheaderc"><?=$form->telefono->label  ?></td>
@@ -199,7 +198,7 @@ else:
 	</tr>
 </table>
         </div>
-        <div id="tab2" class="tab_content">
+        <div id="tab2">
 
 <fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
 <table border='0' >
@@ -210,7 +209,7 @@ else:
 		<td class="littletablerow"><?=$form->cirepre->output ?></td>
 	</tr>
 </table>
-<br>
+<br />
 <table >
 	<tr>
 		<td class="littletableheaderc"><?=$form->vendedor->label  ?></td>
@@ -225,13 +224,13 @@ else:
 		<td class="littletablerow"><?=$form->porcobr->output ?></td>
 	</tr>				
 </table>
-<br>	
+<br />	
 
 </fieldset>
 		<?php if( $form->_status == 'show') {  ?>
 		<?php } ?>
         </div>
-        <div id="tab3" class="tab_content">
+        <div id="tab3">
 <fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
 <table width= '100%' >
 	<tr>
@@ -245,7 +244,7 @@ else:
 </table>
 </fieldset>
         </div>
-        <div id="tab4" class="tab_content">
+        <div id="tab4">
 <fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
 
 <?php if($form->_status=='show'){ ?>
@@ -279,16 +278,17 @@ else:
 					$query = $this->db->query("SELECT fecha, tipo_doc,numero, totalg FROM sfac WHERE cod_cli='".$form->cliente->value."' AND tipo_doc='F'ORDER BY fecha DESC LIMIT 1 ");
 					if($query->num_rows() == 0) {
 						echo "No tiene compras registradas";
-					} else {
-						$row = $query->row_array();
-						echo '<table><tr>';
-					        echo "<td class='littletablerow'>".dbdate_to_human($row['fecha'])."</td>";
-					        echo "<td class='littletablerow'>".$row['tipo_doc'].$row['numero']."</td>";
-					        echo "<td class='littletablerow'>Bs.</td>";
-					        echo "<td width='70' class='littletablerow' align='right'>".nformat($row['totalg'])."</td>";
-						echo '</tr></table>';
-					}
-					?>
+					} else { 
+						$row = $query->row_array(); ?>
+						<table>
+							<tr>
+								<td class='littletablerow'><?php echo dbdate_to_human($row['fecha']) ?></td>
+								<td class='littletablerow'><?php echo $row['tipo_doc'].$row['numero']; ?></td>
+								<td class='littletablerow'>Bs.</td>
+								<td width='70' class='littletablerow' align='right'><?php echo nformat($row['totalg']) ?></td>
+							</tr>
+						</table>
+					<?php } ?>
 					</td>
 				</tr>				
 				<tr>
@@ -334,22 +334,26 @@ else:
 					if($query->num_rows() == 0) {
 						echo "No tiene creditos registradas";
 					} else {
-						$row = $query->row_array();
-						echo '<table width="100%"><tr>';
-						echo '<td class="littletableheaderc">Total Comprado</td>';
-						echo "<td width='100' class='littletablerow' align='right'>".nformat($row['debe'])."</td>";
-						echo "<tr></tr>";
-						echo '<td class="littletableheaderc">Total Pagado</td>';
-						echo "<td width='100' class='littletablerow' align='right'>".nformat($row['haber'])."</td>";
-						echo "<tr></tr>";
-						echo '<td class="littletableheaderc">Saldo Actual</td>';
-						echo "<td width='100' class='littletablerow' align='right'>".nformat($row['saldo'])."</td>";
-						echo "<tr></tr>";
-						echo '<td class="littletableheaderc">Credito Disponible</td>';
-						echo "<td width='100' class='littletablerow' align='right'>".nformat($form->limite->value-$row['saldo'])."</td>";
-						echo '</tr></table>';
-					}
-					?>
+						$row = $query->row_array(); ?>
+						<table width="100%">
+							<tr>
+								<td class="littletableheaderc">Total Comprado</td>
+								<td width='100' class='littletablerow' align='right'><?php echo nformat($row['debe']); ?></td>
+							</tr>
+							<tr>
+								<td class="littletableheaderc">Total Pagado</td>
+								<td width='100' class='littletablerow' align='right'><?php echo nformat($row['haber']); ?></td>
+							</tr>
+							<tr>
+								<td class="littletableheaderc">Saldo Actual</td>
+								<td width='100' class='littletablerow' align='right'><?php echo nformat($row['saldo']); ?></td>
+							</tr>
+							<tr>
+								<td class="littletableheaderc">Credito Disponible</td>
+								<td width='100' class='littletablerow' align='right'><?php echo nformat($form->limite->value-$row['saldo']); ?></td>
+							</tr>
+					<?php } ?>
+						</table>
 					</td>
 				</tr>				
 			</table>
@@ -360,7 +364,6 @@ else:
 echo "<center><h1>Informacion no Disponible en este momento </h1><center>";
 }; ?>
 </fieldset>
-        </div>
     </div>
 </div>
 
