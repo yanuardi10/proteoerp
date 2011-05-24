@@ -497,7 +497,6 @@ $(document).ready(function() {
 			allFields.val( "" ).removeClass( "ui-state-error" );
 		}
 	});
-
 	$( "#proveedor" ).autocomplete({
 		source: function( req, add){
 			$.ajax({
@@ -525,7 +524,6 @@ $(document).ready(function() {
 		}
 	});
 	$( "#maintabcontainer" ).tabs();
-
 });
 
 function updateTips( t ) {
