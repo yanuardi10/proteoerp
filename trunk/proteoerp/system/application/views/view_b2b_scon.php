@@ -140,4 +140,11 @@ $(function(){
 		</td>
 	</tr>
 </table>
+<center>
+<div class='alert'>
+<p>Nota: en caso de que las cantidades recibidas sean diferentes a las enviadas, llame e informe al encargado de alamac&eacute;n de donde se envio para que le realize una nueva consignaci&oacute;n corregida y el revise lo sucedido.
+</p>
+<p>Luego usted elimine esta nota.</p>
+</div>
+</center>
 <?php endif; ?>
