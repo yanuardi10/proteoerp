@@ -663,7 +663,7 @@ class b2b extends validaciones {
 		$edit->gtotal->css_class='inputnum';
 
 		$action = "javascript:window.location='".site_url('sincro/b2b/cargascon/'.$edit->_dataobject->pk['id'])."'";
-		$edit->button_status('btn_conci', 'Cargar Conciliaci&oacute;n', $action, 'TR','show');
+		$edit->button_status('btn_conci', 'Cargar Consignaci&oacute;n', $action, 'TR','show');
 
 		$edit->buttons('save', 'undo', 'delete', 'back');
 		$edit->build();
