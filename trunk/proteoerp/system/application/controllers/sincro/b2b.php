@@ -1129,40 +1129,47 @@ class b2b extends validaciones {
 				$cliente=$this->datasis->dameval('SELECT TRIM(cliente) AS scli FROM sprv WHERE proveed='.$this->db->escape($proveed));
 				if(!empty($cliente)){
 					$tipo   ='C';
-					$pnombre=$this->datasis->dameval('SELECT nombre FROM scli WHERE cliente='.$this->db->escape($cliente));
-					$pdirec1=$this->datasis->dameval('SELECT dire11 FROM scli WHERE cliente='.$this->db->escape($cliente));
+					$clipro =$this->db->escape($cliente);
+					$pnombre=$this->datasis->dameval('SELECT nombre FROM scli WHERE cliente='.$clipro);
+					$pdirec1=$this->datasis->dameval('SELECT dire11 FROM scli WHERE cliente='.$clipro);
 				}else{
 					$tipo   ='P';
-					$pnombre=$this->datasis->dameval('SELECT nombre FROM sprv WHERE proveed='.$this->db->escape($proveed));
-					$pdirec1=$this->datasis->dameval('SELECT direc1 FROM sprv WHERE proveed='.$this->db->escape($proveed));
+					$clipro =$this->db->escape($proveed);
+					$pnombre=$this->datasis->dameval('SELECT nombre FROM sprv WHERE proveed='.$this->db->escape($clipro));
+					$pdirec1=$this->datasis->dameval('SELECT direc1 FROM sprv WHERE proveed='.$this->db->escape($clipro));
 				}
-
-				$data=array();
-				$data['numero']   = $arr['numero'];
-				$data['fecha']    = $arr['fecha'];
-				$data['tipo']     = $tipo;
-				$data['tipod']    = 'R';
-				$data['status']   = 'T';
-				$data['clipro']   = $proveed;
-				$data['direc1']   = $pdirec1;
-				$data['almacen']  = $config['depo'];
-				$data['nombre']   = $pnombre;
-				$data['asociado'] = $arr['numero'];
-				$data['observ1']  = $arr['observ1'];
-				$data['stotal']   = $arr['stotal'];
-				$data['impuesto'] = $arr['impuesto'];
-				$data['gtotal']   = $arr['gtotal'];
-				$data['peso']     = $arr['peso'];
-				$mSQL=$this->db->insert_string('b2b_scon',$data);
-
-				$rt=$this->db->simple_query($mSQL);
-				if(!$rt){
-					memowrite($mSQL,'B2B');
-					$maestro=false;
-					$er++;
+				
+				$cc=$this->datasis->dameval('SELECT COUNT(*) FROM b2b_scon WHERE numero='.$this->db->escape($arr['numero']).' AND tipo='.$this->db->escape($tipo).' AND clipro='.$clipro);
+				if($cc==0){
+					$data=array();
+					$data['numero']   = $arr['numero'];
+					$data['fecha']    = $arr['fecha'];
+					$data['tipo']     = $tipo;
+					$data['tipod']    = 'R';
+					$data['status']   = 'T';
+					$data['clipro']   = $proveed;
+					$data['direc1']   = $pdirec1;
+					$data['almacen']  = $config['depo'];
+					$data['nombre']   = $pnombre;
+					$data['asociado'] = $arr['numero'];
+					$data['observ1']  = $arr['observ1'];
+					$data['stotal']   = $arr['stotal'];
+					$data['impuesto'] = $arr['impuesto'];
+					$data['gtotal']   = $arr['gtotal'];
+					$data['peso']     = $arr['peso'];
+					$mSQL=$this->db->insert_string('b2b_scon',$data);
+	
+					$rt=$this->db->simple_query($mSQL);
+					if(!$rt){
+						memowrite($mSQL,'B2B');
+						$maestro=false;
+						$er++;
+					}else{
+						$id_scon=$this->db->insert_id();
+						$maestro=true;
+					}
 				}else{
-					$id_scon=$this->db->insert_id();
-					$maestro=true;
+					$maestro=false;
 				}
 
 				if($maestro){
@@ -1354,6 +1361,22 @@ class b2b extends validaciones {
 							memowrite($mSQL,'B2B');
 							$er++;
 						}
+
+						$cc=$this->datasis->dameval('SELECT COUNT(*) FROM itsinv WHERE codigo='.$this->db->escape($rrow->codigolocal).' AND alma='.$this->db->escape($almacen));
+						if($cc==0 or is_null($cc)){
+							$itsinvdat=array();
+							$itsinvdat['codigo'] = $rrow->codigolocal;
+							$itsinvdat['alma']   = $almacen;
+							$itsinvdat['existen']= 0;
+
+							$mSQL=$this->db->insert_string('itsinv',$itsinvdat);
+							$rt  =$this->db->simple_query($mSQL);
+							if(!$rt){
+								memowrite($mSQL,'B2B');
+								$er++;
+							}
+						}
+
 					}
 					$mSQL="UPDATE b2b_scon SET pid=$id_scon WHERE id=".$this->db->escape($id);
 					$rt=$this->db->simple_query($mSQL);
@@ -1361,6 +1384,7 @@ class b2b extends validaciones {
 						memowrite($mSQL,'B2B');
 						$er++;
 					}
+
 
 					//Actualiza las cantidades en inventario
 					$fact=1;
