@@ -188,7 +188,7 @@ else:
 	</ul>
 	<?php //<div class="tab_container"> ?>
 
-<div id="tab1" style='background:#FFFFFA'>
+	<div id="tab1" style='background:#FFFFFA'>
 	<table width="100%" border='0'>
 	<tr>
 		<td colspan='2' valign='top'>

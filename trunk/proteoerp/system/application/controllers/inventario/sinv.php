@@ -555,8 +555,7 @@ function checkRegexp( o, regexp, n ) {
 		return true;
 	}
 }
-
-			
+		
 function dpto_change(){
 	$.post("'.$link12.'",{ depto:$("#depto").val() },function(data){$("#linea").html(data);})
 	$.post("'.$link14.'",{ linea:"" },function(data){$("#grupo").html(data);})
@@ -830,29 +829,6 @@ function sinvpromo(mcodigo){
 
 function sinvproveed(mcodigo){
 	$( "#sinvprv" ).dialog( "open" );
-
-/*	
-	jPrompt("Codigo segun el Proveedor","" ,"Descuento", function(margen){
-		if( margen==null ){
-			jAlert("Cancelado por el usuario","Informacion");
-		} else if( margen=="" ) {
-			jAlert("Cancelado,  Codigo vacio","Informacion");
-		} else {
-			if (isNumeric(margen)) {
-				$.ajax({
-					url: "'.$link28.'",
-					global: false,
-					type: "POST",
-					data: ({ id : mcodigo, margen : margen }),
-					dataType: "text",
-					async: false,
-					success: function(sino)  { jAlert( sino,"Informacion")},
-					error:   function(h,t,e) { jAlert("Error..codigo="+margen+" <p>"+e+"</"+"p>","Error") }
-				});
-			} else { jAlert("Entrada no numerica","Alerta") }
-		}
-	})
-*/
 };
 
 function sinvborrasuple(mcodigo){
@@ -1418,7 +1394,8 @@ function submitkardex() {
 		}
 		echo $devo;
 	}
-	
+
+	// Cambia el codigo	
 	function sinvcodigo() {
 		$mexiste  = $this->input->post('tipo');
 		$mcodigo  = rawurldecode($this->input->post('codigo'));

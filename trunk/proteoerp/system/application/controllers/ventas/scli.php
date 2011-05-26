@@ -166,26 +166,16 @@ class Scli extends validaciones {
 		$consulrif=trim($this->datasis->traevalor('CONSULRIF'));
 		$lcuenta=site_url('contabilidad/cpla/autocomplete/codigo');
 		$lsocio =site_url('ventas/scli/autocomplete/cliente');
+
+		$link20=site_url('inventario/scli/scliexiste');
+		$link21=site_url('inventario/scli/sclicodigo');
+
+
 		$script ='
 <script type="text/javascript" >
 $(function() {
 
 	//Default Action
-	//$(".tab_content").hide(); //Hide all content
-	//$("ul.tabs li:first").addClass("active").show(); //Activate first tab
-	//$(".tab_content:first").show(); //Show first tab content
-	$( "#maintabcontainer" ).tabs();
-	
-	//On Click Event
-	$("ul.tabs li").click(function() {
-		$("ul.tabs li").removeClass("active"); //Remove any "active" class
-		$(this).addClass("active"); //Add "active" class to selected tab
-		$(".tab_content").hide(); //Hide all tab content
-		var activeTab = $(this).find("a").attr("href"); //Find the rel attribute value to identify the active tab + content
-		$(activeTab).fadeIn(); //Fade in the active content
-		return false;
-	});
-
 	$(".inputnum").numeric(".");
 	$("#tiva").change(function () { anomfis(); }).change();
 	$("#cuenta").autocomplete("'.$lcuenta.'",{
@@ -209,6 +199,7 @@ $(function() {
 		autoFill:true
 	});
 	//$(":input").enter2tab();
+	$( "#maintabcontainer" ).tabs();
 });
 
 function formato(row) {
@@ -238,6 +229,75 @@ function consulrif(campo){
 		window.open("'.$consulrif.'"+"?p_rif="+vrif,"CONSULRIF","height=350,width=410");
 	}
 }
+
+function fusionar(mviejo){
+	var yurl = "";
+	//var mcodigo=jPrompt("Ingrese el Codigo a ");
+	jPrompt("Codigo Nuevo","" ,"Codigo Nuevo", function(mcodigo){
+		if( mcodigo==null ){
+			jAlert("Cancelado por el usuario","Informacion");
+		} else if( mcodigo=="" ) {
+			jAlert("Cancelado,  Codigo vacio","Informacion");
+		} else {
+			//mcodigo=jQuery.trim(mcodig);
+			//jAlert("Aceptado "+mcodigo);
+			yurl = encodeURIComponent(mcodigo);
+			$.ajax({
+				url: "'.$link20.'",
+				global: false,
+				type: "POST",
+				data: ({ codigo : encodeURIComponent(mcodigo) }),
+				dataType: "text",
+				async: false,
+				success: function(sino) {
+					if (sino.substring(0,1)=="S"){
+						jConfirm(
+							"Ya existe el codigo <div style=\"font-size: 200%;font-weight: bold \">"+mcodigo+"</"+"div>"+sino.substring(1)+"<p>si prosigue se eliminara el producto anterior y<br/> todo el movimiento de este, pasara al codigo "+mcodigo+"</"+"p> <p style=\"align: center;\">Desea <strong>Fusionarlos?</"+"strong></"+"p>",
+							"Confirmar Fusion",
+							function(r){
+							if (r) { sclicambia("S", mviejo, mcodigo); }
+							}
+						);
+					} else {
+						jConfirm(
+							"Sustitur el codigo actual  por: <center><h2 style=\"background: #ddeedd\">"+mcodigo+"</"+"h2></"+"center> <p>Al cambiar de codigo el producto, todos los<br/> movimientos y estadisticas se cambiaran<br/> correspondientemente.</"+"p> ",
+							"Confirmar cambio de codigo",
+							function(r) {
+								if (r) { sclicambia("N", mviejo, mcodigo); }
+							}
+						)
+					}
+				},
+				error: function(h,t,e) { jAlert("Error..codigo="+yurl+" ",e) } 
+			});
+		}
+	})
+};
+
+function sclicambia( mtipo, mviejo, mcodigo ) {
+	$.ajax({
+		url: "'.$link21.'",
+		global: false,
+		type: "POST",
+		data: ({ tipo:  mtipo,
+			 viejo: mviejo,
+			 codigo: encodeURIComponent(mcodigo) }),
+		dataType: "text",
+		async: false,
+		success: function(sino) {
+			jAlert("Cambio finalizado "+sino,"Finalizado Exitosamente")
+		},
+		error: function(h,t,e) {jAlert("Error..","Finalizado con Error" )
+		}
+	});
+	
+	if( mtipo=="N" ) {
+		location.reload(true);
+	} else {
+		location.replace("'.site_url("inventario/sinv/filteredgrid").'");
+	}
+}
+
 </script>
 ';
 
@@ -447,7 +507,6 @@ function consulrif(campo){
 		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
 		$edit->build();
 
-
 		$style = '
 <style type="text/css">
 .maintabcontainer {width: 780px; margin: 5px auto;}
@@ -468,18 +527,13 @@ function consulrif(campo){
 		$data['script']  .= script('plugins/jquery.numeric.pack.js');
 		$data['script']  .= script('plugins/jquery.floatnumber.js');
 		$data['script']  .= script('plugins/jquery.autocomplete.js');
-		$data['script']  .= style('jquery.autocomplete.css');
-		$data["script"]  .= $script;
-
-
 		$data["script"]  .= script("plugins/jquery.blockUI.js");
-		$data["script"]  .= script("plugins/jquery.numeric.pack.js");
-		$data["script"]  .= script("plugins/jquery.floatnumber.js");
-		$data["script"]  .= script("sinvmaes.js");
+		//$data["script"]  .= script("sinvmaes.js");
 		$data["script"]  .= $script;
-
+		
 		$data['style']	 = style("jquery.alerts.css");
 		$data['style']	.= style("redmond/jquery-ui.css");
+		$data['style']  .= style('jquery.autocomplete.css');
 		$data['style']	.= $style;
 
 		$data['head']    = $this->rapyd->get_head();
@@ -545,6 +599,26 @@ function consulrif(campo){
 		$data['head']    = $this->rapyd->get_head().script('plugins/jquery.crypt.js');
 		$this->load->view('view_ventanas', $data);
 	}
+
+
+	// Revisa si existe el codigo
+	function scliexiste(){
+		$cliente = rawurldecode($this->input->post('codigo'));
+		$existe  = $this->datasis->dameval("SELECT count(*) FROM scli WHERE cliente='".addslashes($cliente)."'");
+		$devo    = 'N '.$id;
+		if ($existe > 0 ) {
+			$devo  ='S';
+			$devo .= $this->datasis->dameval("SELECT descrip FROM sinv WHERE codigo='".addslashes($id)."'");
+		}
+		echo $devo;
+	}
+
+	function sinvcodigo(){
+		
+		
+	}
+
+
 
 	function chdfiscal($tiva){
 		$nomfis=$this->input->post('nomfis');
