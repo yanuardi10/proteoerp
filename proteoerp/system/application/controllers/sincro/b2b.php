@@ -1308,7 +1308,11 @@ class b2b extends validaciones {
 			if ($query->num_rows() > 0){
 				$row = $query->row();
 
-				$numero = $this->datasis->fprox_numero('nsconp');
+				if(strtoupper($row->tipo)=='P'){
+					$numero = $this->datasis->fprox_numero('nsconp');
+				}else{
+					$numero = $this->datasis->fprox_numero('nsconc');
+				}
 				$almacen=$row->almacen;
 
 				$data['numero']     =$numero;
