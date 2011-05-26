@@ -166,7 +166,6 @@ function gserserie(mid){
 		$data['style']  .=style('superTables.css');
 		$data['style']	.= style("jquery.alerts.css");
 
-
 		$data['extras']  = $extras;
 		
 		$data['head']    = $this->rapyd->get_head();

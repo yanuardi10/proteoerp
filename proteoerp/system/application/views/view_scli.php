@@ -13,7 +13,7 @@ else:
 <?php echo $form_begin?>
 
 <?php if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</div>'; ?>
-<table border='0' width="100%" style='background: #EEEEEE'>
+<table border='0' width='100%' style='background: #EEEEEE'>
 	<tr>
 		<td width='40' align='center'>
 			<?php if($form->_status=='show'){ ?>
@@ -24,13 +24,15 @@ else:
 			?>
 			</a>
 		</td>
-		<td align='center' valign='middle' width='60'>
-			<a href='<?php echo base_url()."ventas/scli/fusionar/".$form->_dataobject->get('id'); ?>'>
+		<td width='40' align='center'>
+			<a href='javascript:fusionar("<?php echo $form->_dataobject->get('cliente'); ?>")'>
 			<?php
-				$propiedad = array('src' => 'images/fusionar.png', 'alt' => 'Fucionar o Cambiar', 'title' => 'Fusionar/Cambiar Codigo','border'=>'0','height'=>'20');
+				$propiedad = array('src' => 'images/fusionar.png', 'alt' => 'Cambio de Codigo', 'title' => 'Cambio de codigo','border'=>'0','height'=>'30','width'=>'32');
 				echo img($propiedad);
 			?>
 			</a>
+		</td>
+
 		</td>
 		<td align='center' valign='middle' width='40'>
 			<?php } ?>
@@ -132,10 +134,14 @@ else:
 <?php }; ?>
 	</tr>
 </table>
-
 </fieldset>
 
-<div class="maintabcontainer">
+
+
+
+
+
+<div id="maintabcontainer">
 	<ul>
 		<li><a href="#tab1">Direcciones</a></li>
 		<li><a href="#tab2">Valores</a></li>
@@ -143,8 +149,7 @@ else:
 		<li><a href="#tab4">Historia</a></li>
 	</ul>
 	<div id="tab1"  style='background:#eeffff'>
-
-<table border='0' width="100%">
+	<table border='0' width="100%">
 	<tr>
 		<td valign='top' width='50%' style='border-top: 1px dotted; border-right: 1px dotted'>
 			<table border='0' width='100%' >
@@ -181,9 +186,9 @@ else:
 			</table>
 		</td>
 	</tr>
-</table>
-<br />
-<table style='height: 100%;width: 100%;border: 1px dotted;'>
+	</table>
+	<br />
+	<table style='height: 100%;width: 100%;border: 1px dotted;'>
 	<tr>
 		<td class="littletableheaderc"><?=$form->telefono->label  ?></td>
 		<td class="littletablerow"    ><?=$form->telefono->output ?></td>
@@ -196,21 +201,21 @@ else:
 		<td class="littletableheaderc"><?=$form->email->label  ?></td>
 		<td class="littletablerow"    ><?=$form->email->output ?></td>
 	</tr>
-</table>
-        </div>
-        <div id="tab2">
+	</table>
+	</div>
 
-<fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
-<table border='0' >
+        <div id="tab2">
+	<fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
+	<table border='0' >
 	<tr>
 		<td class="littletableheaderc">Representante Legal</td>
 		<td class="littletablerow"><?=$form->repre->output ?></td>
 		<td class="littletableheaderc">C.I.</td>
 		<td class="littletablerow"><?=$form->cirepre->output ?></td>
 	</tr>
-</table>
-<br />
-<table >
+	</table>
+	<br />
+	<table >
 	<tr>
 		<td class="littletableheaderc"><?=$form->vendedor->label  ?></td>
 		<td class="littletablerow"><?=$form->vendedor->output ?></td>
@@ -223,32 +228,30 @@ else:
 		<td class="littletableheaderc">Comision %</td>
 		<td class="littletablerow"><?=$form->porcobr->output ?></td>
 	</tr>				
-</table>
-<br />	
+	</table>
+	</fieldset>
+        </div>
 
-</fieldset>
-		<?php if( $form->_status == 'show') {  ?>
-		<?php } ?>
-        </div>
         <div id="tab3">
-<fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
-<table width= '100%' >
-	<tr>
-		<td class="littletableheaderc"><?=$form->mensaje->label  ?></td>
-		<td class="littletablerow"><?=$form->mensaje->output ?></td>
-	</tr>				
-	<tr>
-		<td class="littletableheaderc"><?=$form->observa->label  ?></td>
-		<td class="littletablerow"><?=$form->observa->output ?></td>
-	</tr>				
-</table>
-</fieldset>
+	<fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
+	<table width= '100%' >
+		<tr>
+			<td class="littletableheaderc"><?=$form->mensaje->label  ?></td>
+			<td class="littletablerow"><?=$form->mensaje->output ?></td>
+		</tr>				
+		<tr>
+			<td class="littletableheaderc"><?=$form->observa->label  ?></td>
+			<td class="littletablerow"><?=$form->observa->output ?></td>
+		</tr>				
+	</table>
+	</fieldset>
         </div>
+
         <div id="tab4">
-<fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
+	<fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
 
 <?php if($form->_status=='show'){ ?>
-<table  width='100%'>
+	<table  width='100%'>
 	<tr>
 		<td width='60%'>
 			<table border='0' width='100%'>
@@ -359,14 +362,16 @@ else:
 			</table>
 		</td>
 	</tr>				
-</table>
+	</table>
 <?php } else {
 echo "<center><h1>Informacion no Disponible en este momento </h1><center>";
 }; ?>
 </fieldset>
-    </div>
-</div>
 
+    </div>
+
+
+</div>
 
 <?php echo $container_bl.$container_br; ?>
 <?php echo $form_end?>
