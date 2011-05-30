@@ -208,7 +208,7 @@ else:
 			</table>
 		</td>
 		<td valign='top' align='center'>
-			<table border='0' >
+			<table border='0'  width='100%'>
 				<tr>
 					<td class='littletableheaderc'><?=$form->peso->label ?></td>
 					<td class="littletablerow"><?=$form->peso->output   ?></td>
@@ -220,6 +220,22 @@ else:
 				<tr>
 					<td class='littletableheaderc'><?=$form->fracci->label ?></td>
 					<td class="littletablerow"><?=$form->fracci->output   ?></td>
+				</tr>
+			</table>
+		</td>
+		<td valign='top' align='center'>
+			<table border='0' width='100%' style='border-collapse;border: 1px dotted'>
+				<tr>
+					<td width='50' class='littletableheaderc'><?=$form->alto->label ?></td>
+					<td class="littletablerow"><?=$form->alto->output   ?></td>
+				</tr>
+				<tr>
+					<td class='littletableheaderc'><?=$form->ancho->label ?></td>
+					<td class="littletablerow"><?=$form->ancho->output   ?></td>
+				</tr>
+				<tr>
+					<td class='littletableheaderc'><?=$form->largo->label ?></td>
+					<td class="littletablerow"><?=$form->largo->output   ?></td>
 				</tr>
 			</table>
 		</td>

@@ -4,6 +4,17 @@ class sinv extends Controller {
 	function sinv(){
 		parent::Controller(); 
 		$this->load->library('rapyd');
+		$esta = $this->datasis->dameval( "SHOW columns FROM sinv WHERE Field='alto'" );
+		if ( empty($esta) ) $this->db->simple_query("ALTER TABLE sinv ADD alto DECIMAL(10,2) ");
+		
+		$esta = $this->datasis->dameval( "SHOW columns FROM sinv WHERE Field='ancho'" );
+		if ( empty($esta) ) $this->db->simple_query("ALTER TABLE sinv ADD ancho DECIMAL(10,2) ");
+		
+		$esta = $this->datasis->dameval( "SHOW columns FROM sinv WHERE Field='largo'" );
+		if ( empty($esta) ) $this->db->simple_query("ALTER TABLE sinv ADD largo DECIMAL(10,2) ");
+		
+		$esta = $this->datasis->dameval( "SHOW columns FROM sinv WHERE Field='forma'" );
+		if ( empty($esta) ) $this->db->simple_query("ALTER TABLE sinv ADD forma VARCHAR(50) ");
 	}
 
 	function index(){
@@ -1019,10 +1030,31 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->descrip2->rule = "trim|strtoupper";
 
 		$edit->peso  = new inputField("Peso", "peso");
-		$edit->peso ->size=10;
+		$edit->peso->size=10;
 		$edit->peso->maxlength=12;
 		$edit->peso->css_class='inputnum';
 		$edit->peso->rule='numeric|callback_positivo|trim';
+
+
+		$edit->alto = new inputField("Alto", "alto");
+		$edit->alto->size=10;
+		$edit->alto->maxlength=12;
+		$edit->alto->css_class='inputnum';
+		$edit->alto->rule='numeric|callback_positivo|trim';
+
+		$edit->ancho = new inputField("Ancho", "ancho");
+		$edit->ancho->size=10;
+		$edit->ancho->maxlength=12;
+		$edit->ancho->css_class='inputnum';
+		$edit->ancho->rule='numeric|callback_positivo|trim';
+
+		$edit->largo = new inputField("Largo", "largo");
+		$edit->largo->size=10;
+		$edit->largo->maxlength=12;
+		$edit->largo->css_class='inputnum';
+		$edit->largo->rule='numeric|callback_positivo|trim';
+
+
 
 		$edit->garantia = new inputField("Garantia", "garantia");
 		$edit->garantia->size=5;
@@ -1250,6 +1282,21 @@ div#sinvprv h1 { font-size: 1.2em; margin: .6em 0; }
 		</td></tr><table>
 		<label for="codigo">Codigo</label>
 		<input type="text" name="codigo" id="codigo" value="" class="text ui-widget-content ui-corner-all" />
+	</fieldset>
+	</form>
+</div>
+<div id="sinvdescu" title="Agregar Descuento">
+	<p class="validateTips">Descuento para este producto</p>
+	<form>
+	<fieldset>
+		<label for="cliente">Cliente</label>
+		<table cellspacing="0" callpadding="0" width="100%"><tr><td>
+		<input type="text" size="90%" name="cliente" id="cliente" class="text ui-widget-content ui-corner-all" />
+		</td><td>
+		<input type="text" readonly="readonly" size="8%" name="cod_cli" id="cod_cli" class="text ui-widget-content ui-corner-all" />
+		</td></tr><table>
+		<label for="descuento">Descuento</label>
+		<input type="text" name="descuento" id="descuento" value="" class="text ui-widget-content ui-corner-all" />
 	</fieldset>
 	</form>
 </div>
