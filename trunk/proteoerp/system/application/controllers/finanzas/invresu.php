@@ -105,7 +105,7 @@ class invresu extends Controller {
 		$data['title']   = heading('Libro de inventario');
 		
 		$data['script']  = script("jquery.js");
-		$data['script'] .= script('plugins/jquery.numeric.pack.js')
+		$data['script'] .= script('plugins/jquery.numeric.pack.js');
 		$data['script'] .= script('plugins/jquery.floatnumber.js');
 		$data['script'] .= script('plugins/jquery.blockUI.js');
 		$data['script'] .= $script;
