@@ -101,9 +101,16 @@ class invresu extends Controller {
 		$porcent .= form_input(array('name'=>'porcent','id'=>'porcent','value'=>'0','size'=>'10','style'=>'text-align:right' ) );
 		$porcent .= "</div>";
 		$data['content'] = $filter->output.$porcent.$ggrid.$espera;
+		
 		$data['title']   = heading('Libro de inventario');
-		$data['script']  = script('plugins/jquery.blockUI.js').$script;
-		$data['head']    = $this->rapyd->get_head().script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js');
+		
+		$data['script']  = script("jquery.js");
+		$data['script'] .= script('plugins/jquery.numeric.pack.js')
+		$data['script'] .= script('plugins/jquery.floatnumber.js');
+		$data['script'] .= script('plugins/jquery.blockUI.js');
+		$data['script'] .= $script;
+
+		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 
