@@ -5,10 +5,11 @@ class sinvcontrol extends validaciones {
 	function sinvcontrol(){
 		parent::Controller();
 		$this->load->library('rapyd');
-		$this->datasis->modulo_id('924',1);
+		//$this->datasis->modulo_id('924',1);
 		$this->sucu=$this->datasis->traevalor('NROSUCU');
 		$sucu = $this->db->escape($this->sucu);
 		$this->prefijo = $this->datasis->dameval("SELECT prefijo FROM sucu WHERE codigo=$sucu");
+		$this->mSQL="";
 	}
 
 	function index(){
@@ -105,7 +106,7 @@ class sinvcontrol extends validaciones {
 		$filter->db->join('line AS c','b.linea=c.linea');
 		$filter->db->join('dpto AS d','c.depto=d.depto');
 		$filter->db->join('sinvcontrol AS e','e.codigo=a.codigo','left');
-		//$filter->db->where('a.activo','S');
+		$filter->db->where('a.activo','S');
 		$filter->script($script);
 
 		$filter->codigo = new inputField('C&oacute;digo', 'codigo');
@@ -216,6 +217,7 @@ class sinvcontrol extends validaciones {
 			
 			
 			$ggrid ='';
+			
 			foreach ($filter->_fields as $field_name => $field_copy){
 				$ggrid.= form_hidden($field_copy->id, $field_copy->value);
 			}
@@ -225,7 +227,9 @@ class sinvcontrol extends validaciones {
 			$grid->per_page = 15;
 			$link2 = anchor('sincro/sinvcontrol/dataedit/modify/<#idcontrol#>','<#codigo#>');
 			$link1 = anchor('sincro/sinvcontrol/dataedit/<raencode><#codigo#></raencode>/create/','<#codigo#>');
+			$uri_2 =anchor('sincro/sinvcontrol/dataedit/modify/<#idcontrol#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar','height'=>'12')));
 
+			$grid->column('Acci&oacute;n',$uri_2,'align=center');
 			$grid->column_orderby('C&oacute;digo',"<siinulo><#sucursal#>|$link1|$link2</siinulo>",'codigo');
 			$grid->column_orderby('Descripci&oacute;n','descrip','descrip');
 			$grid->column_orderby('Marca','marca','marca');
@@ -238,21 +242,112 @@ class sinvcontrol extends validaciones {
 			$grid->column('Sucursal'  ,'<sinulo><#sucursal#>|Todas</sinulo>');
 			$grid->column('F. Precio'  ,'<sinulo><#precio#>|S</sinulo>');
 
-			$grid->build();
+			$grid->build('datagridST');
 			$ggrid.=$grid->output;
-
-			//echo $this->db->last_query();
+			///
+			$lastq = $this->db->last_query();
+			$where = substr($lastq,stripos($lastq,"WHERE" ));
+			
+			$where = substr($where,0,stripos($where,"ORDER BY" ));
+			//echo $where;
+			$from = substr($lastq,stripos($lastq,"FROM" ));
+			$from = substr($from,4,stripos($from,"WHERE" )-4);
+			//echo "<br>".$from;
+			$id = $this->datasis->guardasesion(array("data1"=>$from,"data2"=>$where));
+		
+			$mSQL = "Select a.codigo FROM ".$from." ".$where;
+			$resul=$this->db->query($mSQL);
+			
+			$this->mSQL=$resul->result();
+			
+			
+			///ECHO $mSQL;
+			///
 		}
-
+		$options = array(
+                 'S'  => 'SI',
+                 'N' => 'NO',
+                );
+		$out  = '<h1>'.form_open('sincro/sinvcontrol/cambia');
+		$out .= form_hidden("consulta",$mSQL);
+		$out .= form_dropdown("opt",$options);
+		$out .= form_submit('btnsubmit','Fijar Precios').form_close().'</h1>';
+		// *************************************
+//
+//       Para usar SuperTable
+//
+// *************************************
+		$extras = '
+<script type="text/javascript">
+//<![CDATA[
+(function() {
+	var mySt = new superTable("demoTable", {
+	cssSkin : "sSky",
+	fixedCols : 1,
+	headerRows : 1,
+	onStart : function () {	this.start = new Date();},
+	onFinish : function () {document.getElementById("testDiv").innerHTML += "Finished...<br>" + ((new Date()) - this.start) + "ms.<br>";}
+	});
+})();
+//]]>
+</script>
+';
+		$style ='
+<style type="text/css">
+.fakeContainer { /* The parent container */
+    margin: 5px;
+    padding: 0px;
+    border: none;
+    width: 740px; /* Required to set */
+    height: 320px; /* Required to set */
+    overflow: hidden; /* Required to set */
+}
+</style>	
+		';
+		
+		$data['style']   = $style;
+		$data['style']  .= style('superTables.css');
+		$data['extras']  = $extras;
+		
+		
 		$data['content'] = '<div class="alert">'.$msj.'</div>';
-		$data['content'].= $ggrid;
+		$data['content'].= $ggrid.$out."<br>";
 		$data['filtro']  = $filter->output;
 		$data['title']   = heading('Control de cambio de precios');
 		$data['head']    = $this->rapyd->get_head().script('jquery.pack.js');
 		$data['head']   .= script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js');
 		$this->load->view('view_ventanas', $data);
 	}
-
+	
+	function cambia(){
+		$atras=base_url().'sincro/sinvcontrol/index';
+		$opt   = $this->input->post('opt');
+		$consul = $this->input->post('consulta');
+		//echo $consul;
+		$result = $this->db->query($consul);
+		//print_R($result->result());
+		$codigos=$result->result();
+		$msj = "";
+		foreach($codigos as $cod){
+			//echo $cod->codigo."<br>";
+			$cant=$this->datasis->dameval("select count(*) from sinvcontrol where codigo='".$cod->codigo."' ");
+			if ($cant!=0){
+				$query="UPDATE sinvcontrol SET precio='".$opt."'";
+				$resul=$this->db->query($query);
+				$msj.="El producto con codigo fue ACTUALIZADO con exito <br>";
+			}else{
+				$query="INSERT INTO sinvcontrol (codigo,precio) VALUES('".$cod->codigo."','".$opt."')";
+				$resul=$this->db->query($query);
+				$msj.="El producto con codigo fue AGREGADO con exito <br>";
+			}
+		}
+		$data['content'] = '<div class="alert">'.$msj.'</div>';
+		$data['content'].="<a href='".$atras."'>ATRAS</a>"; 
+		$data['title']   = heading('Control de cambio de precios');
+		$data['head']    = $this->rapyd->get_head().script('jquery.pack.js');
+		$data['head']   .= script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js');
+		$this->load->view('view_ventanas', $data);
+	}
 
 	function dataedit($codigo){
 		$this->rapyd->load('dataedit');
