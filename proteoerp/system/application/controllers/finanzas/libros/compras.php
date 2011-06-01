@@ -48,11 +48,11 @@ class compras{
 		    sum(a.adicimpu *IF(a.tipo='NC',-1,1)) adicimpu, 
 		    sum(a.reducida *IF(a.tipo='NC',-1,1)) reducida,
 		    sum(a.reduimpu *IF(a.tipo='NC',-1,1)) reduimpu, 
-		    sum(b.reiva    *IF(a.tipo='NC',-1,1)) reiva,
-		    CONCAT(EXTRACT(YEAR_MONTH FROM fechal),b.nrocomp) nrocomp,
-		    b.emision, $dbcampo numo, a.tipo tipo_doc, SUM(a.impuesto) AS impuesto, a.nacional,a.afecta
-		    FROM siva AS a LEFT JOIN riva AS b ON a.numero=b.numero and a.clipro=b.clipro AND a.tipo=b.tipo_doc AND MID(b.transac,1,1)<>'_' 
-		                   LEFT JOIN provoca AS d ON a.rif=d.rif 
+		    0 reiva,
+		    ' ' nrocomp,
+		    NULL AS emision, 
+		    $dbcampo numo, a.tipo tipo_doc, SUM(a.impuesto) AS impuesto, a.nacional,a.afecta
+		    FROM siva AS a LEFT JOIN provoca AS d ON a.rif=d.rif 
 		                   LEFT JOIN sprv AS e ON a.clipro=e.proveed 
 		    WHERE libro='C' AND fechal BETWEEN $fdesde AND $fhasta AND a.fecha>0 
 		    GROUP BY a.fecha,a.tipo,numo,a.rif 
