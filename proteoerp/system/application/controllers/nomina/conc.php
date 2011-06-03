@@ -25,26 +25,77 @@ class Conc extends validaciones{
 		$filter->descrip  = new inputField("Descripci&oacute;n", "descrip");
 		
 		$filter->buttons("reset","search");
-		$filter->build();
+		$filter->build('dataformfiltro');
 		
 		$uri = anchor('nomina/conc/dataedit/show/<#concepto#>','<#concepto#>');
-
-		$grid = new DataGrid("Lista de Conceptos");
-		$grid->order_by("concepto","asc");
-		$grid->per_page = 20;
-
-		$grid->column_orderby("Concepto",$uri,'concepto');
-		$grid->column("Tipo","tipo");
-		$grid->column("Descripci&oacute;n","descrip");
-		$grid->column("Tipoa","tipoa");
-		//$grid->column("F&oacute;rmula","formula");
+		$uri_2  = anchor('nomina/conc/dataedit/modify/<#concepto#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar','height'=>'12')));
 		
-		$grid->add("nomina/conc/dataedit/create");
-		$grid->build();
+		$mtool  = "<table background='#554455'><tr>";
+		$mtool .= "<td>&nbsp;</td>";
+
+		$mtool .= "<td>&nbsp;<a href='".base_url()."nomina/conc/dataedit/create'>";
+		$mtool .= img(array('src' => 'images/agregar.jpg', 'alt' => 'Agregar Registro', 'title' => 'Agregar Registro','border'=>'0','height'=>'32'));
+		$mtool .= "</a>&nbsp;</td>";
+
+		$mtool .= "</tr></table>";
+
+		$grid = new DataGrid($mtool);
+		$grid->order_by("concepto","asc");
+		$grid->per_page = 30;
+
+		$grid->column('Acci&oacute;n',$uri_2,'align=center');
+		$grid->column_orderby("Concepto",$uri,'concepto');
+		$grid->column_orderby("Tipo","tipo",'tipo');
+		$grid->column_orderby("Descripci&oacute;n","descrip",'descrip');
+		$grid->column_orderby("Tipoa","tipoa",'tipoa');
+		$grid->column_orderby("Aplica","aplica",'aplica');
+		$grid->column_orderby("Liquida","liquida",'liquida');
+		$grid->column("F&oacute;rmula","formula");
+		
+		//$grid->add("nomina/conc/dataedit/create");
+		$grid->build('datagridST');
+		
+				//************ SUPER TABLE ************* 
+		$extras = '
+<script type="text/javascript">
+//<![CDATA[
+(function() {
+	var mySt = new superTable("demoTable", {
+	cssSkin : "sSky",
+	fixedCols : 1,
+	headerRows : 1,
+	onStart : function () {	this.start = new Date();},
+	onFinish : function () {document.getElementById("testDiv").innerHTML += "Finished...<br>" + ((new Date()) - this.start) + "ms.<br>";}
+	});
+})();
+//]]>
+</script>
+';
+		$style ='
+<style type="text/css">
+.fakeContainer { /* The parent container */
+    margin: 5px;
+    padding: 0px;
+    border: none;
+    width: 640px; /* Required to set */
+    height: 320px; /* Required to set */
+    overflow: hidden; /* Required to set */
+}
+</style>	
+';
+//****************************************
 	
-		$data['content'] = $filter->output.$grid->output;
-		$data['title']   = "<h1>Conceptos</h1>";
-		$data["head"]    = $this->rapyd->get_head();
+		$data['style']   = $style;
+		$data['style']  .= style('superTables.css');
+		$data['extras']  = $extras;
+		
+		$data['content'] = $grid->output;
+		$data['filtro']  = $filter->output;
+		
+		$data['title']  = heading('Conceptos');
+		$data['script'] = script('jquery.js');
+		$data["script"].= script('superTables.js');
+		$data['head']   = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 	function getctade($tipoa=NULL){
