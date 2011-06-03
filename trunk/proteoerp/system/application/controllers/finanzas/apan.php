@@ -284,6 +284,8 @@ class apan extends validaciones {
 	}
 
 		function instalar(){
+			//$sql="ALTER TABLE `apan`  DROP PRIMARY KEY";
+			//$this->db->query($sql);
 			$sql="ALTER TABLE `apan`  ADD COLUMN `id` INT(10) NULL AUTO_INCREMENT AFTER `usuario`,  ADD PRIMARY KEY (`id`)";
 			$this->db->query($sql);
 

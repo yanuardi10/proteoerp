@@ -26,14 +26,16 @@ class ccruc extends validaciones {
 		$filter->cliente->size=15;
 		
 		$filter->buttons("reset","search");
-		$filter->build();
+		$filter->build("dataformfiltro");
 
 		$uri = anchor('finanzas/ccruc/dataedit/show/<#numero#>','<#numero#>');
+		$uri_2 = anchor('finanzas/ccruc/dataedit/show/<#numero#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar','height'=>'12')));
 
 		$grid = new DataGrid("Lista de Cruce de Cuentas");
 		$grid->order_by("numero","asc");
 		$grid->per_page = 20;
 
+		$grid->column('Acci&oacute;n',$uri_2,'align=center');
 		$grid->column_orderby("N&uacute;mero",$uri,'numero');
 		$grid->column_orderby("Fecha"   ,"<dbdate_to_human><#fecha#></dbdate_to_human>",'fecha',"align='center'");
 		$grid->column_orderby("Tipo","tipo",'tipo');
@@ -44,11 +46,49 @@ class ccruc extends validaciones {
 		$grid->column_orderby("Concepto","concept1",'concep1');
 									
 		//$grid->add("finanzas/cruc/dataedit/create");
-		$grid->build();
+		$grid->build('datagridST');
 		
-    	$data['content'] = $filter->output.$grid->output;
-		$data['title']   = "<h1>Cruce de Cuentas</h1>";
-		$data["head"]    = $this->rapyd->get_head();
+		//********** SUPER TABLE *************
+		$extras = '
+<script type="text/javascript">
+//<![CDATA[
+(function() {
+	var mySt = new superTable("demoTable", {
+	cssSkin : "sSky",
+	fixedCols : 1,
+	headerRows : 1,
+	onStart : function () {	this.start = new Date();},
+	onFinish : function () {document.getElementById("testDiv").innerHTML += "Finished...<br>" + ((new Date()) - this.start) + "ms.<br>";}
+	});
+})();
+//]]>
+</script>
+';
+		$style ='
+<style type="text/css">
+.fakeContainer { /* The parent container */
+    margin: 5px;
+    padding: 0px;
+    border: none;
+    width: 740px; /* Required to set */
+    height: 320px; /* Required to set */
+    overflow: hidden; /* Required to set */
+}
+</style>	
+';
+		//****************************************
+		
+    	$data['style']   = $style;
+		$data['style']  .= style('superTables.css');
+		$data['extras']  = $extras;
+
+		$data['content'] = $grid->output;
+		$data['filtro']  = $filter->output;
+
+		$data['title']  = heading('Cruce de Cuentas');
+		$data['script']   = script('jquery.js');
+		$data["script"]  .= script('superTables.js');
+		$data['head']  = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);	
 	}
 	
@@ -110,6 +150,7 @@ class ccruc extends validaciones {
 
 		//$edit->script($script,'create');
 		//$edit->script($script,'modify');
+		//echo $do->db->last_query();
 
 		$edit->pre_process('insert' ,'_pre_insert');
 		$edit->pre_process('update' ,'_pre_update');
