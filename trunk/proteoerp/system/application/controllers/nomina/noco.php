@@ -21,7 +21,7 @@ class Noco extends Controller {
 		$filter->build('dataformfiltro');
     
 		$uri = anchor('nomina/noco/dataedit/show/<#codigo#>','<#codigo#>');
-		$uri_2  = anchor('nomina/noco/dataedit/show/<#codigo#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar','height'=>'12')));
+		$uri_2  = anchor('nomina/noco/dataedit/modify/<#codigo#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar','height'=>'12')));
     
 		$mtool  = "<table background='#554455'><tr>";
 		$mtool .= "<td>&nbsp;</td>";
@@ -38,6 +38,7 @@ class Noco extends Controller {
 		
 		$grid->column('Acci&oacute;n',$uri_2,'align=center');
 		$grid->column_orderby("C&oacute;digo",$uri,'codigo');
+		$grid->column_orderby("Tipo","tipo",'tipo');
 		$grid->column_orderby("Nombre","nombre",'nombre');
 		$grid->column_orderby("Observaci&oacute;n","observa1",'observa1');
 		$grid->column_orderby("Observaci&oacute;n","observa2",'observa2');
@@ -202,6 +203,11 @@ class Noco extends Controller {
 	function _post_delete($do){
 		$codigo=$do->get('codigo');
 		logusu('noco',"Contrato de Nomina $codigo ELIMINADO");
+	}
+	function instala(){
+		$sql="ALTER TABLE `noco`  ADD PRIMARY KEY (`codigo`)";
+		$this->db->query($sql);	
+		
 	}
 }
 ?>

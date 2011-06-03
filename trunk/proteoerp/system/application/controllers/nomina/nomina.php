@@ -24,7 +24,7 @@ class Nomina extends Controller {
 		$filter->buttons("reset","search");
 		$filter->build();
 
-		$uri = anchor('nomina/nomina/dataedit/show/<#numero#>/<#codigo#>/<#concepto#>/<#fecha#>','<#numero#>');
+		$uri = anchor('nomina/nomina/dataedit/show/<#id#>','<#numero#>');
 
 		$grid = new DataGrid("Lista de Nomina");
 		$grid->order_by("numero","asc");
@@ -47,8 +47,8 @@ class Nomina extends Controller {
 		$this->rapyd->load("dataedit");
 		$edit = new DataEdit("clientes", "nomina");
 		$edit->back_url = site_url("nomina/nomina/filteredgrid");
-		$edit->script($script, "create");
-		$edit->script($script, "modify");
+		//$edit->script($script, "create");
+		//$edit->script($script, "modify");
 		
 		$edit->post_process('insert','_post_insert');
 		$edit->post_process('update','_post_update');

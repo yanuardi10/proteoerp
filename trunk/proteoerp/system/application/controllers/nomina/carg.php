@@ -26,24 +26,72 @@ class Carg extends Controller {
 		$filter->cargo->clause = "likerigth";
 		
 		$filter->buttons("reset","search");
-		$filter->build();
+		$filter->build('dataformfiltro');
  
 		$uri = anchor('nomina/carg/dataedit/show/<#cargo#>','<#cargo#>');
+		$uri_2  = anchor('nomina/carg/dataedit/modify/<#cargo#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar','height'=>'12')));
+		
+		$mtool  = "<table background='#554455'><tr>";
+		$mtool .= "<td>&nbsp;</td>";
 
-		$grid = new DataGrid("Lista de Cargos");
+		$mtool .= "<td>&nbsp;<a href='".base_url()."nomina/carg/dataedit/create'>";
+		$mtool .= img(array('src' => 'images/agregar.jpg', 'alt' => 'Agregar Registro', 'title' => 'Agregar Registro','border'=>'0','height'=>'32'));
+		$mtool .= "</a>&nbsp;</td>";
+
+		$mtool .= "</tr></table>";
+
+		$grid = new DataGrid($mtool);
 		$grid->order_by("cargo","asc");
-		$grid->per_page = 10;
+		$grid->per_page = 50;
 		
-		$grid->column("Cargo",$uri                                                                             );
-		$grid->column("Descripci&oacute;n"                                                     ,"descrip"      );
-		$grid->column("Sueldo"               ,"<number_format><#sueldo#>|2|,|.</number_format>","align='right'");
+		$grid->column('Acci&oacute;n',$uri_2,'align=center');
+		$grid->column_orderby("Cargo",$uri,'cargo');
+		$grid->column_orderby("Descripci&oacute;n","descrip","descrip");
+		$grid->column_orderby("Sueldo"               ,"<number_format><#sueldo#>|2|,|.</number_format>",'sueldo',"align='right'");
 		
-		$grid->add("nomina/carg/dataedit/create");
-		$grid->build();
+		//$grid->add("nomina/carg/dataedit/create");
+		$grid->build('datagridST');
 		
-		$data['content'] = $filter->output.$grid->output;
-		$data['title']   = "<h1>Cargos</h1>";
-		$data["head"]    = $this->rapyd->get_head();
+		//************ SUPER TABLE ************* 
+		$extras = '
+<script type="text/javascript">
+//<![CDATA[
+(function() {
+	var mySt = new superTable("demoTable", {
+	cssSkin : "sSky",
+	fixedCols : 1,
+	headerRows : 1,
+	onStart : function () {	this.start = new Date();},
+	onFinish : function () {document.getElementById("testDiv").innerHTML += "Finished...<br>" + ((new Date()) - this.start) + "ms.<br>";}
+	});
+})();
+//]]>
+</script>
+';
+		$style ='
+<style type="text/css">
+.fakeContainer { /* The parent container */
+    margin: 5px;
+    padding: 0px;
+    border: none;
+    width: 290px; /* Required to set */
+    height: 320px; /* Required to set */
+    overflow: hidden; /* Required to set */
+}
+</style>	
+';
+//****************************************
+		$data['style']   = $style;
+		$data['style']  .= style('superTables.css');
+		$data['extras']  = $extras;
+		
+		$data['content'] = $grid->output;
+		$data['filtro']  = $filter->output;
+		
+		$data['title']  = heading('Cargos');
+		$data['script'] = script('jquery.js');
+		$data["script"].= script('superTables.js');
+		$data['head']   = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);	
 
 	}

@@ -49,25 +49,83 @@ class pers extends validaciones {
 		$filter->divi->options("SELECT division,descrip FROM divi ORDER BY division");
 				
 		$filter->buttons("reset","search");
-		$filter->build();
+		$filter->build('dataformfiltro');
 
 		$uri = anchor('nomina/pers/dataedit/show/<#codigo#>','<#codigo#>');
+		$uri_2  = anchor('nomina/pers/dataedit/modify/<#codigo#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar','height'=>'12')));
 
-		$grid = new DataGrid("Lista de Personal");
-		$grid->order_by("codigo","asc");
-		$grid->per_page = 20;
+		$mtool  = "<table background='#554455'><tr>";
+		$mtool .= "<td>&nbsp;</td>";
 
-		$grid->column("C&oacute;digo",$uri);
-		$grid->column("C&eacute;dula","cedula");
-		$grid->column("Nombre","nombre");
-		$grid->column("Apellidos","apellido");
-		$grid->add("nomina/pers/dataedit/create");
-		$grid->build();
+		$mtool .= "<td>&nbsp;<a href='".base_url()."nomina/pers/dataedit/create'>";
+		$mtool .= img(array('src' => 'images/agregar.jpg', 'alt' => 'Agregar Registro', 'title' => 'Agregar Registro','border'=>'0','height'=>'32'));
+		$mtool .= "</a>&nbsp;</td>";
+
+		$mtool .= "</tr></table>";
 		
-		$data['filtro']  = $filter->output;
+		$grid = new DataGrid($mtool);
+		$grid->order_by("codigo","asc");
+		$grid->per_page = 30;
+
+		$grid->column('Acci&oacute;n',$uri_2,'align=center');
+		$grid->column_orderby("C&oacute;digo",$uri,'codigo');
+		$grid->column_orderby("C&eacute;dula","cedula",'cedula');
+		$grid->column_orderby("Nombre","nombre",'nombre');
+		$grid->column_orderby("Apellidos","apellido",'apellido');
+		$grid->column_orderby("Sexo","sexo",'sexo');
+		$grid->column_orderby("E.Civil","civil",'civil');
+		$grid->column_orderby("Direcci&oacute;n","direc1",'direc1');
+		$grid->column_orderby("Telefono","telefono",'telefono');
+		$grid->column_orderby("F.Nacimiento","<dbdate_to_human><#nacimi#></dbdate_to_human>",'nacimi');
+		$grid->column_orderby("F.Ingreso","<dbdate_to_human><#ingreso#></dbdate_to_human>",'ingreso');
+		$grid->column_orderby("Sueldo","<nformat><#sueldo#></nformat>",'sueldo');
+		
+		//$grid->add("nomina/pers/dataedit/create");
+		$grid->build('datagridST');
+		
+		//************ SUPER TABLE ************* 
+		$extras = '
+<script type="text/javascript">
+//<![CDATA[
+(function() {
+	var mySt = new superTable("demoTable", {
+	cssSkin : "sSky",
+	fixedCols : 1,
+	headerRows : 1,
+	onStart : function () {	this.start = new Date();},
+	onFinish : function () {document.getElementById("testDiv").innerHTML += "Finished...<br>" + ((new Date()) - this.start) + "ms.<br>";}
+	});
+})();
+//]]>
+</script>
+';
+		$style ='
+<style type="text/css">
+.fakeContainer { /* The parent container */
+    margin: 5px;
+    padding: 0px;
+    border: none;
+    width: 740px; /* Required to set */
+    height: 320px; /* Required to set */
+    overflow: hidden; /* Required to set */
+}
+</style>	
+';
+//****************************************
+
+
+		$data['style']   = $style;
+		$data['style']  .= style('superTables.css');
+		$data['extras']  = $extras;		
+
 		$data['content'] = $grid->output;
-		$data['title']   = "<h1>Personal</h1>";
-		$data["head"]    = script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
+		$data['filtro']  = $filter->output;
+		
+		$data['title']  = heading('Personal');
+		$data['script'] = script('jquery.js').script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js");
+		$data["script"].= script('superTables.js');
+		$data['head']   = $this->rapyd->get_head();
+		
 		$this->load->view('view_ventanas', $data);	
 	}
 	
@@ -376,14 +434,14 @@ class pers extends validaciones {
 		$edit->turno->group = "Relaci&oacute;n Laboral";
 		$edit->turno->style = "width:100px;";
 		
-		$edit->horame  = new inputField("Turno Mañana","horame");
+		$edit->horame  = new inputField("Turno Maï¿½ana","horame");
 		$edit->horame->maxlength=8;
 		$edit->horame->size=10;
 		$edit->horame->rule='trim|callback_chhora';
 		$edit->horame->append('hh:mm:ss');
 		$edit->horame->group="Relaci&oacute;n Laboral";
 
-		$edit->horams  = new inputField("Turno Mañana","horams");
+		$edit->horams  = new inputField("Turno Maï¿½ana","horams");
 		$edit->horams->maxlength=8;
 		$edit->horams->size=10;
 		$edit->horams->rule='trim|callback_chhora';
