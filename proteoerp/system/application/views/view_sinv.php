@@ -64,7 +64,15 @@ else:
 							$propiedad = array('src' => 'images/descuento.jpg', 'alt' => 'Descuentos y Promociones', 'title' => 'Descuentos y Promociones','border'=>'0','height'=>'30');
 							echo img($propiedad);
 						?>
-					</a>
+						</a>
+					</td>
+					<td>&nbsp;
+						<a href='javascript:void(0);' onclick='javascript:sinvdescu("<?php echo $form->_dataobject->get('id'); ?>")'>
+						<?php
+							$propiedad = array('src' => 'images/cliente.jpg', 'alt' => 'Descuentos por Cliente', 'title' => 'Descuentos por Cliente','border'=>'0','height'=>'30');
+							echo img($propiedad);
+						?>
+						</a>
 					</td>
 					<td>&nbsp;
 						<a href='javascript:void(0);'
@@ -93,7 +101,7 @@ else:
 	</tr>
 </table>
 
-<fieldset style='border: 2px outset #9AC8DA;background: #FFFFF9;'>
+<fieldset style='border: 1px outset #9AC8DA;background: #FFFFF9;'>
 <legend class="titulofieldset" >Identificacion del Producto </legend>
 <table border='0' width="100%">
 	<tr>
@@ -114,7 +122,17 @@ else:
 				</tr>
 				<tr>
 					<td class='littletableheaderc'>Caja</td>
-					<td class="littletablerow"><?=$form->enlace->output   ?></td>
+					<td class="littletablerow">
+						<?php
+						if($form->_status=='show'){
+							if( !empty($form->enlace->output))
+							{
+								$mID = $this->datasis->dameval("SELECT id FROM sinv WHERE codigo='".addslashes(trim($form->enlace->output))."'");
+								echo anchor('inventario/sinv/dataedit/show/'.$mID,$form->enlace->output); 
+							}
+						} else { echo $form->enlace->output; }
+						?>
+					</td>
 				</tr>
 				<tr>
 					<td class='littletableheaderc'>Barras</td>
@@ -188,7 +206,7 @@ else:
 	</ul>
 	<?php //<div class="tab_container"> ?>
 
-	<div id="tab1" style='background:#FFFFFA'>
+	<div id="tab1" style='background:#EFEFFF'>
 	<table width="100%" border='0'>
 	<tr>
 		<td colspan='2' valign='top'>
@@ -278,11 +296,11 @@ else:
 	</tr>
 	</table>
 </div>
-<div id="tab2">
+<div id="tab2" style='background:#EFEFFF'>
 	<table width='100%'>
 	<tr>
 		<td valign='top'>
-			<fieldset style='border: 2px outset #B45F04;background: #F8ECE0;'>
+			<fieldset style='border: 1px outset #B45F04;background: #FFEFFF;'>
 			<legend class="titulofieldset" >Costos</legend>
 			<table width='100%'>
 				<tr>
@@ -309,7 +327,7 @@ else:
 			</fieldset>
 		</td>
 		<td valign='top'>
-			<fieldset style='border: 1px outset #B45F04;background: #F8ECE0;'>
+			<fieldset style='border: 1px outset #B45F04;background: #FFEFFF;'>
 			<legend class="titulofieldset" style='font-size:16' >Precios</legend>
 			<table width='100%' cellspacing='0'>
 				<tr>
@@ -354,11 +372,11 @@ else:
 	</tr>
 	</table>
 </div>
-<div id="tab3">
+<div id="tab3" style='background:#EFEFFF'>
 	<table width='100%'>
 	<tr>
   		<td valign="top">
-			<fieldset  style='border: 2px outset #AEB404;background: #FFFBE2;'>
+			<fieldset  style='border: 2px outset #FEB404;background: #FFFCE8;'>
 			<legend class="titulofieldset" >Existencias</legend>
 			<table width='100%' border=0 >
 				<tr>
@@ -386,7 +404,7 @@ else:
 		</td>
 		<?php if( !empty($form->almacenes->output)) { ?>
 		<td valign="top">
-			<fieldset style='border: 2px outset #AEB404;background: #FFFBE2;'>
+			<fieldset style='border: 1px outset #FEB404;background: #FFFCE8;'>
 			<legend class="titulofieldset" >Almacenes</legend>
 			<?php echo $form->almacenes->output ?>
 			</div>
@@ -396,36 +414,71 @@ else:
 	</tr>
 	</table>
 </div>
-<div id="tab4">
+<div id="tab4" style='background:#EFEFFF'>
 <?php if($form->_status=='show'){ ?>
 	<table width='100%'>
 	<tr>
 		<td valign='top'>
-			<fieldset  style='border: 2px outset #AEB404;background: #F5F6CE;'>
+			<fieldset  style='border: 2px outset #FEB404;background: #FFFCE8;'>
+			<legend class="titulofieldset" >Ventas</legend>
+			<table width='100%' >
+				<tr>
+					<td class="littletableheader" ><?=$form->fechav->label?></td>
+				</tr><tr>
+					<td class="littletablerow"><?=$form->fechav->output   ?></td>
+				</tr>
+			</table>
+			</fieldset>
+		</td>
+		<td valign='top'>
+			<fieldset  style='border: 2px outset #FEB404;background: #FFFCE8;'>
 			<legend class="titulofieldset" >&Uacute;ltimos Movimientos</legend>
 			<table width='100%' >
 				<tr>
-					<td class="littletableheader" style='background:#F5F6CE;color:#112211' >Compras</td>
-					<td class="littletableheader" style='background:#F5F6CE;color:#112211' align='right'><?=$form->fechav->label?></td>
-					<td class="littletablerow"><?=$form->fechav->output   ?></td>
-				</tr>
-				<tr>
 					<td class="littletableheader" align='center' style='background: #393B0B;color: #FFEEFF;font-weight: bold'>Fecha</td>
+					<td class="littletableheader" align='center' style='background: #393B0B;color: #FFEEFF;font-weight: bold'>Codigo</td>
 					<td class="littletableheader" align='center' style='background: #393B0B;color: #FFEEFF;font-weight: bold'>Proveedor</td>
 					<td class="littletableheader" align='center' style='background: #393B0B;color: #FFEEFF;font-weight: bold'>Precio</td>
 				</tr>
 				<tr>
 					<td class="littletablerow" style='font-size:10px'><?=$form->pfecha1->output?></td>
+					<td class="littletablerow" style='font-size:10px'>
+					<?php
+						$mID = $this->datasis->dameval("SELECT id FROM sprv WHERE proveed='".addslashes(trim($form->prov1->output))."'");
+						echo "<a href=\"javascript:void(0);\" onclick=\"window.open('".base_url();
+						echo "compras/sprv/dataedit/show/$mID', '_blank', 'width=800,height=600,scrollbars=Yes,status=Yes,resizable=Yes,screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');\" heigth=\"600\">";
+						echo $form->prov1->output;
+						echo "</a>";
+					?>
+					</td>
 					<td class="littletablerow" style='font-size:10px'><?=$form->proveed1->output?></td>
 					<td class="littletablerow" style='font-size:10px' align='right'><?=$form->prepro1->output?></td>
 				</tr>
 				<tr>
 					<td class="littletablerow" style='font-size:10px'><?=$form->pfecha2->output?></td>
+					<td class="littletablerow" style='font-size:10px'>
+					<?php
+						$mID = $this->datasis->dameval("SELECT id FROM sprv WHERE proveed='".addslashes(trim($form->prov2->output))."'");
+						echo "<a href=\"javascript:void(0);\" onclick=\"window.open('".base_url();
+						echo "compras/sprv/dataedit/show/$mID', '_blank', 'width=800,height=600,scrollbars=Yes,status=Yes,resizable=Yes,screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');\" heigth=\"600\">";
+						echo $form->prov2->output;
+						echo "</a>";
+					?>
+					</td>
 					<td class="littletablerow" style='font-size:10px'><?=$form->proveed2->output?></td>
 					<td class="littletablerow" style='font-size:10px' align='right'><?=$form->prepro2->output?></td>
 				</tr>
 				<tr>
 					<td class="littletablerow" style='font-size:10px;'><?=$form->pfecha3->output?></td>
+					<td class="littletablerow" style='font-size:10px'>
+					<?php
+						$mID = $this->datasis->dameval("SELECT id FROM sprv WHERE proveed='".addslashes(trim($form->prov3->output))."'");
+						echo "<a href=\"javascript:void(0);\" onclick=\"window.open('".base_url();
+						echo "compras/sprv/dataedit/show/$mID', '_blank', 'width=800,height=600,scrollbars=Yes,status=Yes,resizable=Yes,screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');\" heigth=\"600\">";
+						echo $form->prov3->output;
+						echo "</a>";
+					?>
+					</td>
 					<td class="littletablerow" style='font-size:10px;'><?=$form->proveed3->output?></td>
 					<td class="littletablerow" style='font-size:10px;' align='right'><?=$form->prepro3->output?></td>
 				</tr>
@@ -437,12 +490,11 @@ else:
 <?php };?>
 
 <?php
-$query = $this->db->query("SELECT a.proveed, b.nombre, a.codigop FROM sinvprov a JOIN sprv b ON a.proveed=b.proveed WHERE a.codigo='".addslashes($form->_dataobject->get('codigo'))."'");
+$query = $this->db->query("SELECT a.proveed, MID(b.nombre,1,25) nombre, a.codigop FROM sinvprov a JOIN sprv b ON a.proveed=b.proveed WHERE a.codigo='".addslashes($form->_dataobject->get('codigo'))."'");
 if ($query->num_rows()>0 ) {
 ?>
-
-	<fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
-	<legend class="titulofieldset" >Codigos de segun el proveedor</legend>
+	<fieldset style='border: 2px outset #FEB404;background: #FFFCE8;'>
+	<legend class="titulofieldset" >Codigo del proveedor</legend>
 	<table width='50%' border='0'>
 		<?php 
 			foreach($query->result() as $row ){
@@ -464,12 +516,10 @@ if ($query->num_rows()>0 ) {
 	</fieldset>
 <?php }  // rows>0 ?>
 
-
-
 </div>
-<div id="tab5">
+<div id="tab5" style='background:#EFEFFF'>
 <?php if($form->_status=='show'){ ?>
-	<fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
+	<fieldset style='border: 1px outset #8A0808;background: #FFFBE9;'>
 	<legend class="titulofieldset" >Promociones</legend>
 	<table border=0 width='100%'>
 	<tr>
@@ -483,7 +533,6 @@ if ($query->num_rows()>0 ) {
 			?>
 		</td>
 		<td valign="top"><?php
-	
 			$margen =  $this->datasis->dameval("SELECT margen FROM sinvpromo WHERE codigo='".addslashes($form->_dataobject->get('codigo'))."'");
 			if ($margen > 0 ) {
 				echo "Descuento por Promocion ".$margen."% ";
@@ -501,7 +550,7 @@ $query = $this->db->query("SELECT suplemen FROM barraspos WHERE codigo='".addsla
 if ($query->num_rows()>0 ) {
 ?>
 
-	<fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
+	<fieldset style='border: 1px outset #8A0808;background: #FFFBE9;'>
 	<legend class="titulofieldset" >Codigos de Barras Asociados</legend>
 	<table width='100%' border=0>
 	<tr >
@@ -534,7 +583,7 @@ if ($query->num_rows()>0 ) {
 <?php }  // rows>0 ?>
 
 <?php
-$query = $this->db->query("SELECT CONCAT(codigo,' ', descrip,' ',fracci) producto FROM sinv WHERE MID(tipo,1,1)='F' AND enlace='".addslashes($form->_dataobject->get('codigo'))."'");
+$query = $this->db->query("SELECT CONCAT(codigo,' ', descrip,' ',fracci) producto, id FROM sinv WHERE MID(tipo,1,1)='F' AND enlace='".addslashes($form->_dataobject->get('codigo'))."'");
 if ($query->num_rows()>0 ) {
 ?>
 	</fieldset>
@@ -549,8 +598,9 @@ if ($query->num_rows()>0 ) {
 					echo "</tr><tr>";
 					$m = 1;
 				}
-				echo "<td class='littletablerow'>".$row->producto."</td>";
-				
+				echo "<td class='littletablerow'>";
+				echo anchor('inventario/sinv/dataedit/show/'.$row->id,$row->producto); 
+				echo "</td>";
 				$m += 1; 
 			}
 			?>

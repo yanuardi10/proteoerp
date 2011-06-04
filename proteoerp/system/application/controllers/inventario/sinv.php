@@ -425,10 +425,15 @@ function auprec(){
 		$link21=site_url('inventario/sinv/sinvcodigo');
 		$link25=site_url('inventario/sinv/sinvbarras');
 		$link27=site_url('inventario/sinv/sinvpromo');
+
 		$link28=site_url('inventario/sinv/sinvproveed/');
 		$link29=site_url('inventario/sinv/sinvsprv/'.$id);
+
 		$link30=site_url('inventario/sinv/sinvborrasuple/');
 		$link35=site_url('inventario/sinv/sinvborraprv/');
+
+		$link40=site_url('inventario/sinv/sinvdescu/'.$id);
+		$link41=site_url('inventario/sinv/sinvcliente/');
 
 		$script='
 <script type="text/javascript">
@@ -459,6 +464,9 @@ $(document).ready(function() {
 	var proveedor = $( "#proveedor" ),
 		cod_prv = $( "#cod_prv" ),
 		codigo = $( "#codigo" ),
+		cod_cli = $( "#cod_cli" ),
+		descuento = $( "#descuento" ),
+		tipo = $( "#tipo" ),
 		allFields = $( [] ).add( proveedor ).add( codigo ).add( cod_prv ),
 		tips = $( ".validateTips" );
 
@@ -479,7 +487,6 @@ $(document).ready(function() {
 				//bValid = bValid && checkRegexp( proveedor, /^[a-z]([0-9a-z_])+$/i, "Username may consist of a-z, 0-9, underscores, begin with a letter." );
 				// From jquery.validate.js (by joern), contributed by Scott Gonzalez: http://projects.scottsplayground.com/email_address_validation/
 				//bValid = bValid ;
-
 				if ( bValid ) {
 					/*
 					$( "#users tbody" ).append( "<tr>" +
@@ -508,6 +515,39 @@ $(document).ready(function() {
 			allFields.val( "" ).removeClass( "ui-state-error" );
 		}
 	});
+	$( "#sinvdescu" ).dialog({
+		autoOpen: false,
+		height: 350,
+		width: 350,
+		modal: true,
+		buttons: {
+			"Guardar Descuento": function() {
+				var bValid = true;
+				allFields.removeClass( "ui-state-error" );
+
+				//bValid = bValid && checkLength( cliente,   "cliente",   3, 50 );
+				//bValid = bValid && checkLength( cod_cli,   "cod_cli",   1,  5 );
+				//bValid = bValid && checkLength( descuento, "descuento", 1, 15 );
+				//bValid = bValid && checkLength( tipo, "tipo", 1, 1 );
+				if ( bValid ) {
+					$.ajax({
+						url: "'.$link40.'/"+cod_cli.val()+"/"+descuento.val()+"/"+tipo.val(),
+						success: function(msg){
+							alert("Terminado: "+msg);
+						}
+					});
+					$( this ).dialog( "close" );
+				}
+			},
+			Cancelar: function() {
+				$( this ).dialog( "close" );
+			}
+		},
+		close: function() {
+			allFields.val( "" ).removeClass( "ui-state-error" );
+		}
+	});
+
 	$( "#proveedor" ).autocomplete({
 		source: function( req, add){
 			$.ajax({
@@ -532,6 +572,30 @@ $(document).ready(function() {
 			//$("#proveedor").val(ui.item.value.substr(0,ui.item.value.length-6));
 			//$("#cod_prv").val(ui.item.value.substr(ui.item.value.length-6, 5));
 			$("#cod_prv").val(ui.item.codigo);
+		}
+	});
+	$( "#cliente" ).autocomplete({
+		source: function( req, add){
+			$.ajax({
+				url: "'.$link41.'",
+				type: "POST",
+				dataType: "json",
+				data: "tecla="+req.term,
+				success:
+					function(data) {
+						var sugiere = [];
+						$.each(data,
+							function(i, val){
+								sugiere.push( val );
+							}
+						);
+						add(sugiere);
+					},
+			})
+		},
+		minLength: 3,
+		select: function(evento, ui){
+			$("#cod_cli").val(ui.item.codigo);
 		}
 	});
 	$( "#maintabcontainer" ).tabs();
@@ -789,7 +853,6 @@ function sinvcodigocambia( mtipo, mviejo, mcodigo ) {
 	} else {
 		location.replace("'.site_url("inventario/sinv/filteredgrid").'");
 	}
-
 }
 
 function sinvbarras(mcodigo){
@@ -813,8 +876,6 @@ function sinvbarras(mcodigo){
 		}
 	})
 };
-
-
 function sinvpromo(mcodigo){
 	jPrompt("Descuento Promocional","" ,"Descuento", function(margen){
 		if( margen==null ){
@@ -837,7 +898,11 @@ function sinvpromo(mcodigo){
 		}
 	})
 };
-
+// Descuento por Cliente
+function sinvdescu(mcodigo){
+	$( "#sinvdescu" ).dialog( "open" );
+};
+// Codigo de producto en el Proveedor
 function sinvproveed(mcodigo){
 	$( "#sinvprv" ).dialog( "open" );
 };
@@ -1204,7 +1269,6 @@ function sinvborraprv(mproveed, mcodigo){
 		//$edit->fechav->when =array("show");
 		$edit->fechav->size=10;
 
-
 		for($i=1;$i<=3;$i++){
 			$objeto="pfecha$i";
 			$edit->$objeto = new dateField("Fecha $i",$objeto,'d/m/Y');
@@ -1221,6 +1285,12 @@ function sinvborraprv(mproveed, mcodigo){
 			$edit->$objeto->when =array("show");
 			$edit->$objeto->size=10;
 			$edit->$objeto->in="pfecha$i";
+
+			$objeto="prov$i";
+			$edit->$objeto = new inputField("",$objeto);
+			$edit->$objeto->when =array("show");
+			$edit->$objeto->size=10;
+			//$edit->$objeto->in="pfecha$i";
 
 			$objeto="Eprov$i";
 			$edit->$objeto = new freeField("","","Proveedor");
@@ -1251,11 +1321,17 @@ div#sinvprv input { display:block; }
 div#sinvprv input.text { margin-bottom:12px; width:95%; padding: .4em; }
 div#sinvprv fieldset { padding:0; border:0; margin-top:20px; }
 div#sinvprv h1 { font-size: 1.2em; margin: .6em 0; }
+div#sinvdescu label { display:block; }
+div#sinvdescu input { display:block; }
+div#sinvdescu input.text { margin-bottom:12px; width:95%; padding: .4em; }
+div#sinvdescu select { display:block; }
+div#sinvdescu select.text { margin-bottom:12px; width:95%; padding: .4em; }
+div#sinvdescu fieldset { padding:0; border:0; margin-top:20px; }
+div#sinvdescu h1 { font-size: 1.2em; margin: .6em 0; }
 .ui-dialog .ui-state-error { padding: .3em; }
 .validateTips { border: 1px solid transparent; padding: 0.3em; }
 </style>
 ';
-
 		$mcodigo = $edit->codigo->value;
 		$mfdesde = $this->datasis->dameval("SELECT ADDDATE(MAX(fecha),-30) FROM costos WHERE codigo='".addslashes($mcodigo)."'");
 		$mfhasta  = $this->datasis->dameval("SELECT MAX(fecha) FROM costos WHERE codigo='".addslashes($mcodigo)."'");
@@ -1275,11 +1351,16 @@ div#sinvprv h1 { font-size: 1.2em; margin: .6em 0; }
 	<form>
 	<fieldset>
 		<label for="proveedor">Proveedor</label>
-		<table cellspacing="0" callpadding="0" width="100%"><tr><td>
-		<input type="text" size="90%" name="proveedor" id="proveedor" class="text ui-widget-content ui-corner-all" />
-		</td><td>
-		<input type="text" readonly="readonly" size="8%" name="cod_prv" id="cod_prv" class="text ui-widget-content ui-corner-all" />
-		</td></tr><table>
+		<table cellspacing="0" cellpadding="0" width="100%">
+			<tr>
+				<td>
+					<input type="text" size="80" name="proveedor" id="proveedor" class="text ui-widget-content ui-corner-all" />
+				</td>
+				<td>
+					<input type="text" readonly="readonly" size="8" name="cod_prv" id="cod_prv" class="text ui-widget-content ui-corner-all" />
+				</td>
+			</tr>
+		</table>
 		<label for="codigo">Codigo</label>
 		<input type="text" name="codigo" id="codigo" value="" class="text ui-widget-content ui-corner-all" />
 	</fieldset>
@@ -1290,13 +1371,23 @@ div#sinvprv h1 { font-size: 1.2em; margin: .6em 0; }
 	<form>
 	<fieldset>
 		<label for="cliente">Cliente</label>
-		<table cellspacing="0" callpadding="0" width="100%"><tr><td>
-		<input type="text" size="90%" name="cliente" id="cliente" class="text ui-widget-content ui-corner-all" />
-		</td><td>
-		<input type="text" readonly="readonly" size="8%" name="cod_cli" id="cod_cli" class="text ui-widget-content ui-corner-all" />
-		</td></tr><table>
-		<label for="descuento">Descuento</label>
+		<table cellspacing="0" cellpadding="0" width="100%">
+			<tr>
+				<td>
+					<input type="text" size="80" name="cliente" id="cliente" class="text ui-widget-content ui-corner-all" />
+				</td>
+				<td>
+					<input type="text" readonly="readonly" size="8" name="cod_cli" id="cod_cli" class="text ui-widget-content ui-corner-all" />
+				</td>
+			</tr>
+		</table>
+		<label for="descuento">Porcentaje %</label>
 		<input type="text" name="descuento" id="descuento" value="" class="text ui-widget-content ui-corner-all" />
+		<label for="descuento">Aplicacion del Porcentaje</label>
+		<select name="tipo" id="tipo" value="D" class="text ui-widget-content ui-corner-all" >
+			<option value="D">Descuento: Precio1 - Porcentaje</option>
+			<option value="A">Aumento: Costo + Porcentaje</option>
+		</select>
 	</fieldset>
 	</form>
 </div>
@@ -1581,7 +1672,7 @@ function submitkardex() {
 	function sinvproveed(){
 		$mid   = $this->input->post('tecla');
 		if (empty($mid)) $mid='AN';
-		$mSQL  = "SELECT CONCAT(TRIM(nombre),'(',RPAD(proveed,5,' '),')') nombre, proveed codigo FROM sprv WHERE nombre LIKE '%".$mid."%' ORDER BY nombre LIMIT 10";
+		$mSQL  = "SELECT CONCAT(TRIM(nombre),' (',RPAD(proveed,5,' '),')') nombre, proveed codigo FROM sprv WHERE nombre LIKE '%".$mid."%' ORDER BY nombre LIMIT 10";
 		$data = "[]";
 		$query = $this->db->query($mSQL);
 		$retArray = array();
@@ -1600,6 +1691,29 @@ function submitkardex() {
 		}
 		echo $data;
 	}
+
+	// Busca Cliente por autocomplete
+	function sinvcliente(){
+		$mid   = $this->input->post('tecla');
+		if (empty($mid)) $mid='AN';
+		$mSQL  = "SELECT CONCAT(TRIM(nombre),' (',RPAD(cliente,5,' '),')') nombre, cliente codigo FROM scli WHERE nombre LIKE '%".$mid."%' ORDER BY nombre LIMIT 10";
+		$data = "[]";
+		$query = $this->db->query($mSQL);
+		$retArray = array();
+		$retorno = array();
+		if ($query->num_rows() > 0){
+			foreach( $query->result_array() as  $row ) {
+				$retArray['label'] = $row['nombre'];
+				$retArray['codigo'] = $row['codigo'];
+				array_push($retorno, $retArray);
+			}
+			$data = json_encode($retorno);
+		} else {
+			$ret = '{data : []}';
+		}
+		echo $data;
+	}
+
 	
 	// Crea el codigo segun el Proveedor
 	function sinvsprv(){
@@ -1611,7 +1725,6 @@ function submitkardex() {
 		echo " codigo=$codigo guardado al prv $cod_prv " ;
 		
 	}
-
 
 	// Promociones
 	function sinvpromo() {
@@ -1633,9 +1746,40 @@ function submitkardex() {
 			$mSQL = "UPDATE sinvpromo SET margen=$margen WHERE codigo='$htmlcod' ";
 		}
 		$this->db->simple_query($mSQL);
-		logusu("SINV","Promocion ".$mcodigo."-->".$margen);
-
+		logusu("SINV","Promocion ".$htmlcod."-->".$margen);
 		echo "Cambio Exitoso";
+	}
+
+
+	// Promociones
+	function sinvdescu() {
+		$tipo     = $this->uri->segment($this->uri->total_segments());
+		$porcent  = $this->uri->segment($this->uri->total_segments()-1);
+		$cod_cli  = $this->uri->segment($this->uri->total_segments()-2);
+		$id       = $this->uri->segment($this->uri->total_segments()-3);
+		
+		$codigo   = $this->datasis->dameval("SELECT codigo FROM sinv WHERE id=$id");
+		$htmlcod = addslashes($codigo);
+		
+		//Busca si ya esta
+		$check = $this->datasis->dameval("SELECT count(*) FROM sinvpromo a JOIN sinv b ON a.codigo=b.codigo WHERE b.id=$id AND cliente='".$cod_cli."'");
+
+		if ($check == 0 ) {
+			$this->db->simple_query("INSERT INTO sinvpromo SET codigo='".$htmlcod."', cliente='$cod_cli'");
+		}
+		
+		if ( $porcent == 0 ) {
+			$mSQL = "DELETE FROM sinvpromo WHERE WHERE codigo='$htmlcod' AND cliente='$cod_cli'";
+		} else {
+			$mSQL = "UPDATE sinvpromo SET margen=$porcent, tipo='$tipo' WHERE codigo='$htmlcod' AND cliente='$cod_cli'";
+		}
+		$this->db->simple_query($mSQL);
+		logusu("SINV","Promocion cliente $cod_cli codigo ".$htmlcod."-->".$porcent);
+		
+		echo "Descuento Guardado ";
+		//porcent=$porcent, tipo=$tipo, cod_cli=$cod_cli, codigo=$htmlcod, check=$check\n";
+		//echo "SELECT count(*) FROM sinvpromo a JOIN sinv b ON a.codigo=b.codigo WHERE b.id=$id AND cliente='".$cod_cli."'\n";
+		//echo "INSERT INTO sinvpromo SET codigo='".$htmlcod."', cliente='$cod_cli'\n";
 	}
 
 
@@ -1966,13 +2110,20 @@ function submitkardex() {
 			$grid->db->from('itsinv AS a');
 			$grid->db->join('caub as b','a.alma=b.ubica','LEFT');
 			$grid->db->where('codigo',$codigo);
+
+			//$link=anchor('/inventario/caub/dataedit/show/<#alma#>','<#alma#>');
 			
-			$grid->column('Almac&eacute;n' ,'alma', "style='font-size: 10px'");
+			$link  = "<a href=\"javascript:void(0);\" onclick=\"window.open('".base_url();
+			$link .= "inventario/caub', '_blank', 'width=800,height=600,scrollbars=Yes,status=Yes,resizable=Yes,screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');\" heigth=\"600\"><#alma#></a>";
+			
+			$grid->column('Almac&eacute;n' ,$link, "style='font-size:12px;font-weight:bold;'");
 			$grid->column('Nombre'         ,'nombre',"style='font-size: 10px'");
 			$grid->column('Cantidad'       ,'existen','align="right" '."style='font-size: 10px'");
 		
 			$grid->build('datagridsimple');
+			
 			if($grid->recordCount>0) $salida=$grid->output;
+			$salida = html_entity_decode($salida);
 			$estilo="
 <style type='text/css'>
 .simplerow  { color: #153D51;border-bottom: 1px solid #ECECEC; font-family: Lucida Grande, Verdana, Geneva, Sans-serif;	font-size: 12px; font-weight: bold;}
