@@ -168,5 +168,4 @@ class inventario{
 		unlink($fname);
 	}
 
-
 }
