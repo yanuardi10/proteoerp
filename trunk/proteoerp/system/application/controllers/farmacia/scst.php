@@ -101,7 +101,7 @@ class Scst extends Controller {
 				$rt =form_button('create' ,'Crear','onclick="pcrear('.$id.');"');
 				$rt.=form_button('asignar','Asig.','onclick="pasig('.$id.');"');
 			}else{
-				$rt='--';
+				$rt=$cen;
 			}
 			return $rt;
 		}
@@ -178,13 +178,13 @@ class Scst extends Controller {
 		$detalle->db->join($tabla.'.sinv AS b','a.codigo=b.codigo','LEFT');
 		$detalle->db->join($tabla.'.farmaxasig AS c',"a.codigo=c.barras AND c.proveed=$proveed",'LEFT');
 		$detalle->use_function('exissinv');
-		$detalle->column("Barras"            ,"<#codigo#>" );
-		$detalle->column("Descripci&oacute;n","<#descrip#>");
-		$detalle->column("Cantidad"          ,"<#cantidad#>","align='right'");
-		$detalle->column("PVP"               ,$llink  ,"align='right'");
-		$detalle->column("Costo"             ,"<#ultimo#>"  ,"align='right'");
-		$detalle->column("Importe"           ,"<#importe#>" ,"align='right'");
-		$detalle->column("Acciones "         ,"<exissinv><#sinv#>|<#dg_row_id#></exissinv>","bgcolor='#D7F7D7' align='center'");
+		$detalle->column("Barras"             ,"<#codigo#>" );
+		$detalle->column("Descripci&oacute;n" ,"<#descrip#>");
+		$detalle->column("Cantidad"           ,"<#cantidad#>","align='right'");
+		$detalle->column("PVP"                ,$llink  ,"align='right'");
+		$detalle->column("Costo"              ,"<#ultimo#>"  ,"align='right'");
+		$detalle->column("Importe"            ,"<#importe#>" ,"align='right'");
+		$detalle->column("C&oacute;digo local","<exissinv><#sinv#>|<#dg_row_id#></exissinv>","bgcolor='#D7F7D7' align='center'");
 		$detalle->build();
 		//echo $detalle->db->last_query();
 
@@ -570,6 +570,7 @@ class Scst extends Controller {
 
 					$row=$query->row_array();
 					$numero=$row['numero'];
+					$proveed=$row['proveed'];
 					$row['serie']   =$numero;
 					$row['numero']  =substr($numero,-8);
 					$row['control'] =$lcontrol;
@@ -637,11 +638,13 @@ class Scst extends Controller {
 
 					$itquery = $farmaxDB->query("SELECT * FROM itscst WHERE control=$control");
 					foreach ($itquery->result_array() as $itrow){
+						$codigo=$this->datasis->dameval('SELECT abarras FROM farmaxasig WHERE barras='.$this->db->escape($itrow['codigo']).' AND proveed='.$this->db->escape($proveed));
+						$itrow['codigo']  = $codigo;
 						$itrow['control'] = $lcontrol;
 						$itrow['usuario'] = $this->session->userdata('usuario');
 						$itrow['estampa'] = $estampa;
 						$itrow['hora']    = $hora;
-						
+
 						unset($itrow['id']);
 						$mSQL[]=$this->db->insert_string('itscst', $itrow);
 					}
@@ -653,13 +656,13 @@ class Scst extends Controller {
 					$rt=$farmaxDB->simple_query($sql);
 					if(!$rt) memowrite('farmaejec',$sql);
 
-					$mSQL="UPDATE 
+					/*$mSQL="UPDATE 
 					  ${localdb}.itscst AS a
 					  JOIN ${localdb}.farmaxasig AS b ON a.codigo=b.barras AND a.proveed=b.proveed
 					  SET a.codigo=b.abarras
 					WHERE a.control='$lcontrol'";
 					$rt=$this->db->simple_query($mSQL);
-					if(!$rt){ memowrite('farmaejec1',$sql);}
+					if(!$rt){ memowrite('farmaejec1',$sql);}*/
 
 					$retorna='Compra guardada con el control '.anchor("compras/scst/dataedit/show/$lcontrol",$lcontrol);
 				}else{
