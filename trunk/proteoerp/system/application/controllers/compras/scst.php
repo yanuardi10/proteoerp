@@ -389,6 +389,8 @@ function scstserie(mcontrol){
 
 		$edit->detalle=new freeField("detalle", 'detalle',$detalle->output);
 
+		$accion="javascript:window.location='".site_url('compras/scst/actualizar/'.$edit->_dataobject->pk['control'])."'";
+		$edit->button_status('btn_actuali','Actualizar',$accion,'TR','show');
 		$edit->buttons("save", "undo","back");
 		$edit->build();
 
@@ -398,7 +400,7 @@ function scstserie(mcontrol){
 		
 		$data['content'] = $this->load->view('view_compras', $conten,true);
 		$data['head']    = script("tabber.js").script("prototype.js").$this->rapyd->get_head().script("scriptaculous.js").script("effects.js");
-		$data['title']   = '<h1>Compras</h1>';
+		$data['title']   = heading('Compras');
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -484,6 +486,207 @@ function scstserie(mcontrol){
 					}
 				}
 			}
+		}
+	}
+
+	function actualizar($control){
+		$this->rapyd->uri->keep_persistence();
+		$this->rapyd->load('dataform');
+
+		$form = new DataForm("compras/scst/actualizar/$control/process");
+
+		$form->cprecio = new  dropdownField ('Actualizar precios', 'cprecio');
+		$form->cprecio->option('S','Si');
+		$form->cprecio->option('N','No');
+		$form->cprecio->rule = 'required';
+
+		/*$form->fecha = new dateonlyField('Fecha de llegada de la mercancia', 'fecha','d/m/Y');
+		$form->fecha->insertValue = date('Y-m-d');
+		$form->fecha->rule='required';
+		$form->fecha->size=10;*/
+
+		$form->submit('btnsubmit','Actualizar');
+		$accion="javascript:window.location='".site_url('compras/scst/dataedit/show/'.$control)."'";
+		$form->button('btn_regre','Regresar',$accion,'BR','show');
+		$form->build_form();
+
+		if ($form->on_success()){
+			$cprecio  = $form->cprecio->newValue;
+			//$actualiza= $form->fecha->newValue;
+			$cambio = ($cprecio=='S') ? true : false;
+			
+			$rt=$this->_actualizar($control,$cambio);
+			if($rt===false){
+				$data['content']  = $this->error_string.br();
+			}else{
+				$data['content']  = 'Compra actualizada'.br();
+			}
+
+			$data['content'] .= anchor('compras/scst/dataedit/show/'.$control,'Regresar');
+		}else{
+			$data['content'] = $form->output;
+		}
+
+		$data['head']    = $this->rapyd->get_head();
+		$data['title']   = heading('Actualizar compra');
+		$this->load->view('view_ventanas', $data);
+	}
+
+	function _actualizar($control,$cprecio){
+		$error =0;
+		$pasa=$this->datasis->dameval('SELECT COUNT(*) FROM scst WHERE actuali>=fecha AND control='.$this->db->escape($control));
+
+		if($pasa==0){
+			$SQL='SELECT transac,depo,proveed,fecha,vence, nombre,tipo_doc,nfiscal,fafecta,reteiva,
+			cexento,cgenera,civagen,creduci,civared,cadicio,civaadi,cstotal,ctotal,cimpuesto,numero
+			FROM scst WHERE control=?';
+			$query=$this->db->query($SQL,array($control));
+			if($query->num_rows()==1){
+				$row     = $query->row_array();
+				$transac = $row['transac'];
+				$depo    = $row['depo'];
+				$proveed = $row['proveed'];
+				$fecha   = str_replace('-','',$row['fecha']);
+				$vence   = $row['vence'];
+				$reteiva = $row['reteiva'];
+				$actuali = date('Ymd');
+
+				$itdata=array();
+				$sql='SELECT a.codigo,a.cantidad,a.importe,a.importe/a.cantidad AS costo,
+					a.precio1,a.precio2,a.precio3,a.precio4
+					FROM itscst AS a JOIN sinv AS b ON a.codigo=b.codigo WHERE a.control=?';
+				$qquery=$this->db->query($sql,array($control));
+				if($qquery->num_rows()>0){
+					foreach ($qquery->result() as $itrow){
+
+						//Actualiza el inventario
+						$mSQL='UPDATE sinv SET 
+							pond=(existen*IF(formcal="P",pond,IF(formcal="U",ultimo,GREATEST(pond,ultimo)))+'.$itrow->importe.')/(existen+'.$itrow->cantidad.'),
+							existen=existen+'.$itrow->cantidad.' WHERE codigo='.$this->db->escape($itrow->codigo);
+						$ban=$this->db->simple_query($mSQL);
+						if(!$ban){ memowrite($mSQL,'scst'); $error++; }
+
+						$mSQL='UPDATE itsinv SET existen=existen+'.$itrow->cantidad.' WHERE codigo='.$this->db->escape($itrow->codigo).' AND alma='.$this->db->escape($depo);
+						$ban=$this->db->simple_query($mSQL);
+						if(!$ban){ memowrite($mSQL,'scst'); $error++; }
+
+						if($itrow->precio1>0 and $itrow->precio2>0 and $itrow->precio3>0 and $itrow->precio4>0){
+							$mSQL='UPDATE sinv SET 
+								prov3=prov2, prepro3=prepro2, pfecha3=pfecha2, prov2=prov1, prepro2=prepro1, pfecha2=pfecha1,
+								prov1='.$this->db->escape($proveed).',
+								prepro1='.$itrow->costo.',
+								pfecha1='.$this->db->escape($fecha).',
+								ultimo='.$itrow->costo.',
+								precio1='.$this->db->escape($itrow->precio1).',
+								precio2='.$this->db->escape($itrow->precio2).',
+								precio3='.$this->db->escape($itrow->precio3).',
+								precio4='.$this->db->escape($itrow->precio4).'
+								WHERE codigo='.$this->db->escape($itrow->codigo);
+							$ban=$this->db->simple_query($mSQL);
+							if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
+    
+							if($cprecio){
+								$mSQL='UPDATE sinv SET 
+									base1=ROUND(precio1*10000/(100+iva))/100, 
+									base2=ROUND(precio2*10000/(100+iva))/100, 
+									base3=ROUND(precio3*10000/(100+iva))/100, 
+									base4=ROUND(precio4*10000/(100+iva))/100, 
+									margen1=ROUND(10000-(IF(formcal="P",pond,IF(formcal="U",ultimo,GREATEST(pond,ultimo)))*10000/base1))/100,
+									margen2=ROUND(10000-(IF(formcal="P",pond,IF(formcal="U",ultimo,GREATEST(pond,ultimo)))*10000/base2))/100,
+									margen3=ROUND(10000-(IF(formcal="P",pond,IF(formcal="U",ultimo,GREATEST(pond,ultimo)))*10000/base3))/100,
+									margen4=ROUND(10000-(IF(formcal="P",pond,IF(formcal="U",ultimo,GREATEST(pond,ultimo)))*10000/base4))/100,
+									activo="S"
+								WHERE codigo='.$this->db->escape($itrow->codigo);
+								$ban=$this->db->simple_query($mSQL);
+								if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
+							}
+						}
+						//Fin de la actualizacion de inventario
+					}
+				}
+
+				//Carga la CxP
+				$mSQL='DELETE FROM sprm WHERE transac='.$this->db->escape($transac);
+				$ban=$this->db->simple_query($mSQL);
+				if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
+
+				$sprm=array();
+				$causado = $this->datasis->fprox_numero('ncausado');
+				$sprm['cod_prv']  = $proveed;
+				$sprm['nombre']   = $row['nombre'];
+				$sprm['tipo_doc'] = $row['tipo_doc'];
+				$sprm['numero']   = $row['numero'];
+				$sprm['fecha']    = $actuali;
+				$sprm['vence']    = $vence;
+				$sprm['monto']    = $row['ctotal'];
+				$sprm['impuesto'] = $row['cimpuesto'];
+				$sprm['abonos']   = 0;
+				$sprm['observa1'] = 'FACTURA DE COMPRA';
+				$sprm['reteiva']  = $reteiva;
+				$sprm['causado']  = $causado;
+				$sprm['estampa']  = date('Y-m-d H:i:s');
+				$sprm['usuario']  = $this->session->userdata('usuario');
+				$sprm['hora']     = date('H:i:s');
+				$sprm['transac']  = $transac;
+				//$sprm['montasa']  = $row['cimpuesto'];
+				//$sprm['impuesto'] = $row['cimpuesto'];
+				//$sprm['impuesto'] = $row['cimpuesto'];
+
+				$mSQL=$this->db->insert_string('sprm', $sprm);
+				$ban =$this->db->simple_query($mSQL);
+				if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
+				//Fin de la carga de la CxP
+
+				//Inicio de la retencion
+				if($reteiva>0){
+					$niva    = $this->datasis->fprox_numero('niva');
+					$ivaplica=$this->datasis->ivaplica($fecha);
+
+					$riva['nrocomp']    = $niva;
+					$riva['emision']    = ($fecha > $actuali) ? $fecha : $actuali;
+					$riva['periodo']    = substr($riva['emision'],0,6) ;
+					$riva['tipo_doc']   = $row['tipo_doc'];
+					$riva['fecha']      = $fecha; 
+					$riva['numero']     = $row['numero'];
+					$riva['nfiscal']    = $row['nfiscal'];
+					$riva['afecta']     = $row['fafecta'];
+					$riva['clipro']     = $proveed;
+					$riva['nombre']     = $row['nombre'];
+					$riva['rif']        = $this->datasis->dameval('SELECT rif FROM sprv WHERE proveed='.$this->db->escape($proveed));
+					$riva['exento']     = $row['cexento'];
+					$riva['tasa']       = $ivaplica['tasa'];
+					$riva['tasaadic']   = $ivaplica['sobretasa'];
+					$riva['tasaredu']   = $ivaplica['redutasa'];
+					$riva['general']    = $row['cgenera'];
+					$riva['geneimpu']   = $row['civagen'];
+					$riva['adicional']  = $row['cadicio'];
+					$riva['adicimpu']   = $row['civaadi'];
+					$riva['reducida']   = $row['creduci'];
+					$riva['reduimpu']   = $row['civared'];
+					$riva['stotal']     = $row['cstotal'];
+					$riva['impuesto']   = $row['cimpuesto'];
+					$riva['gtotal']     = $row['ctotal'];
+					$riva['reiva']      = $reteiva;
+					$riva['transac']    = $transac;
+					$riva['estampa']    = date('Y-m-d H:i:s');
+					$riva['hora']       = date('H:i:s');
+					$riva['usuario']    = $this->session->userdata('usuario');
+
+					$mSQL=$this->db->insert_string('riva', $riva);
+					$ban =$this->db->simple_query($mSQL);
+					if(!$ban){ memowrite($mSQL,'scst'); $error++; }
+				}//Fin de la retencion
+
+				$mSQL='UPDATE scst SET `actuali`='.$actuali.', `recep`='.$actuali.' WHERE `control`='.$this->db->escape($control);
+				$ban=$this->db->simple_query($mSQL);
+				if(!$ban){ memowrite($mSQL,'scst'); $error++; }
+			}else{
+				$this->error_string='Compra no existe';
+				return false;
+			}
+		}else{
+			$this->error_string='No se puede actualizar una compra que ya fue actualizada';
+			return false;
 		}
 	}
 
