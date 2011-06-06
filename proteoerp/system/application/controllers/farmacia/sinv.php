@@ -702,9 +702,11 @@ class sinv extends Controller {
 		$edit->buttons("modify", "save", "undo", "delete", "back");
 		$edit->build();
 
+		$this->rapyd->jquery[]='$(window).unload(function() { window.opener.location.reload(); });';
+
 		$data['content'] = $edit->output;
-		$data['title']   = "<h1>Inventario de Farmacia</h1>";
-		$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").script("sinvmaes.js").$this->rapyd->get_head();
+		$data['title']   = heading('Inventario de Farmacia');
+		$data['head']    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").script("sinvmaes.js").$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 
