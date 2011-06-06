@@ -74,17 +74,17 @@ class Scst extends Controller {
 		$grid->column_orderby('Fecha'  ,'<dbdate_to_human><#fecha#></dbdate_to_human>','fecha',"align='center'");
 		$grid->column_orderby('Vence'  ,'<dbdate_to_human><#vence#></dbdate_to_human>','vence',"align='center'");
 		$grid->column_orderby('Nombre' ,'nombre','nombre');
-		$grid->column_orderby('IVA'    ,'montoiva' ,'montoiva',"align='right'");
-		$grid->column_orderby('Monto'  ,'montonet' ,'montonet',"align='right'");
+		$grid->column_orderby('IVA'    ,'<nformat><#montoiva#></nformat>' ,'montoiva',"align='right'");
+		$grid->column_orderby('Monto'  ,'<nformat><#montonet#></nformat>' ,'montonet',"align='right'");
 		$grid->column_orderby('Control','pcontrol' ,'pcontrol',"align='right'");
 
 		//$grid->add('compras/agregar');
 		$grid->build();
 		//echo $grid->db->last_query();
 
-		$data['content'] =$filter->output.$grid->output;
+		$data['content'] = $filter->output.$grid->output;
 		$data['head']    = $this->rapyd->get_head();
-		$data['title']   ='<h1>Compras</h1>';
+		$data['title']   = heading('Compras a droguerias');
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -101,7 +101,18 @@ class Scst extends Controller {
 				$rt =form_button('create' ,'Crear','onclick="pcrear('.$id.');"');
 				$rt.=form_button('asignar','Asig.','onclick="pasig('.$id.');"');
 			}else{
-				$rt=$cen;
+					$attr = array(
+						'width'      => '800',
+						'height'     => '600',
+						'scrollbars' => 'yes',
+						'status'     => 'yes',
+						'resizable'  => 'yes',
+						'screenx'    => "'+((screen.availWidth/2)-400)+'",
+						'screeny'    => "'+((screen.availHeight/2)-300)+'"
+					);
+
+				$llink=anchor_popup('inventario/consultas/preciosgeneral/'.raencode($cen), $cen, $attr);
+				$rt=$llink;
 			}
 			return $rt;
 		}
@@ -158,33 +169,55 @@ class Scst extends Controller {
 
 		$atts = array(
 			'width'     => '250',
-			'height'    => '250',
+			'height'    => '340',
 			'scrollbars'=> 'no',
 			'status'    => 'no',
 			'resizable' => 'no',
 			'screenx'   => "'+((screen.availWidth/2)-175)+'",
 			'screeny'   => "'+((screen.availHeight/2)-175)+'"
 		);
-		$llink=anchor_popup('farmacia/scst/reasignaprecio/modify/<#id#>', '<b><#precio1#></b>', $atts);
+		$llink=anchor_popup('farmacia/scst/reasignaprecio/modify/<#id#>', '<b><nformat><#precio1#></nformat></b>', $atts);
+
+		function similar($st1,$st2,$id){
+			$st1 =trim(strtoupper($st1));
+			$st2 =trim(strtoupper($st2));
+
+			$rt=similar_text($st1,$st2,$por);
+
+			$atts = array(
+				'width'     => '400',
+				'height'    => '300',
+				'scrollbars'=> 'no',
+				'status'    => 'no',
+				'resizable' => 'no',
+				'screenx'   => "'+((screen.availWidth/2)-200)+'",
+				'screeny'   => "'+((screen.availHeight/2)-150)+'"
+			);
+
+			$llink=anchor_popup('farmacia/scst/asignardataedit/modify/'.$id, nformat($por).'%' , $atts);
+			return $llink;
+		}
 
 		//Campos para el detalle
 		$this->_autoasignar($numero);
 		$tabla=$this->db->database;
 		$detalle = new DataGrid('');
-		$select=array('a.*','a.codigo AS barras','a.costo AS pond','COALESCE( b.codigo , c.abarras) AS sinv');
+		$detalle->use_function('similar');
+		$select=array('a.*','a.codigo AS barras','COALESCE(b.descrip, d.descrip) AS sinvdesc','a.costo AS pond','COALESCE( b.codigo , c.abarras) AS sinv','c.id AS farmaid');
 		$detalle->db->select($select);
 		$detalle->db->from('itscst AS a');
 		$detalle->db->where('a.control',$numero);
 		$detalle->db->join($tabla.'.sinv AS b','a.codigo=b.codigo','LEFT');
 		$detalle->db->join($tabla.'.farmaxasig AS c',"a.codigo=c.barras AND c.proveed=$proveed",'LEFT');
+		$detalle->db->join($tabla.'.sinv AS d','d.codigo=c.abarras','LEFT');
 		$detalle->use_function('exissinv');
-		$detalle->column("Barras"             ,"<#codigo#>" );
-		$detalle->column("Descripci&oacute;n" ,"<#descrip#>");
-		$detalle->column("Cantidad"           ,"<#cantidad#>","align='right'");
-		$detalle->column("PVP"                ,$llink  ,"align='right'");
-		$detalle->column("Costo"              ,"<#ultimo#>"  ,"align='right'");
-		$detalle->column("Importe"            ,"<#importe#>" ,"align='right'");
-		$detalle->column("C&oacute;digo local","<exissinv><#sinv#>|<#dg_row_id#></exissinv>","bgcolor='#D7F7D7' align='center'");
+		$detalle->column('Barras'             ,'<#codigo#>' );
+		$detalle->column('Semejanza% -Descripci&oacute;n' ,'<similar><#descrip#>|<#sinvdesc#>|<#farmaid#></similar> - <#descrip#>');
+		$detalle->column('Cantidad'           ,'<nformat><#cantidad#></nformat>','align=\'right\'');
+		$detalle->column('PVP'                ,$llink  ,'align=\'right\'');
+		$detalle->column('Costo'              ,'<nformat><#ultimo#></nformat>'  ,'align=\'right\'');
+		$detalle->column('Importe'            ,'<nformat><#importe#></nformat>' ,'align=\'right\'');
+		$detalle->column('C&oacute;digo local','<exissinv><#sinv#>|<#dg_row_id#></exissinv>',"bgcolor='#D7F7D7' align='center'");
 		$detalle->build();
 		//echo $detalle->db->last_query();
 
@@ -257,6 +290,7 @@ class Scst extends Controller {
 		$this->rapyd->set_connection('farmax');
 		$this->rapyd->load('dataedit');
 		$edit = new DataEdit('Cambios de precios','itscst');
+		$edit->pre_process( 'update','_pre_update');
 		$edit->descrip  = new inputField('Descripci&oacute;n', 'descrip');
 		$edit->descrip->mode = 'autohide';
 
@@ -275,6 +309,20 @@ class Scst extends Controller {
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   ='';
 		$this->load->view('view_ventanas_sola', $data);
+	}
+
+	function _pre_update($do){
+		for($i=1;$i<5;$i++){
+			$prec='precio'.$i;
+			$$prec=round($do->get($prec),2); //optenemos el precio
+		}
+
+		if($precio1>=$precio2 && $precio2>=$precio3 && $precio3>=$precio4){
+			return true;
+		}else{
+			$do->error_message_ar['pre_upd'] = 'Los precios deben cumplir con:<br> Precio 1 mayor o igual al Precio 2 mayor o igual al  Precio 3 mayor o igual al Precio 4';
+			return false;
+		}
 	}
 
 	function asignarfiltro(){
@@ -384,12 +432,16 @@ class Scst extends Controller {
 				'barras' =>'C&oacute;digo barras',
 				'descrip'=>'Descripci&oacute;n'),
 			'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'Descripci&oacute;n'),
-			'retornar'=>array('codigo' =>'abarras'),
+			'retornar'=>array('codigo' =>'abarras','descrip'=>'sinvdescrip'),
 			'titulo'  =>'Buscar Art&iacute;culo');
 		$boton=$this->datasis->modbus($modbus);
 
-		$js='function pasacod(val) { $("#abarras").val(val) }';
-		$edit = new DataEdit('Reasignaciones de c&oacute;digo','farmaxasig');
+		$do = new DataObject('farmaxasig');
+		$do->pointer('sinv','sinv.codigo=farmaxasig.abarras' , 'descrip AS sinvdescrip', 'left');
+		$do->pointer('sprv','sprv.proveed=farmaxasig.proveed', 'nombre', 'left');
+
+		$js='function pasacod(val,desc) { $("#abarras").val(val); $("#sinvdescrip").val(desc); }';
+		$edit = new DataEdit('Reasignaciones de c&oacute;digo',$do);
 		$edit->back_url = 'farmacia/scst/asignarfiltro';
 
 		$edit->proveedor = new inputField('Proveedor','proveed');
@@ -398,18 +450,27 @@ class Scst extends Controller {
 		$edit->proveedor->size = 10;
 		$edit->proveedor->maxlength=50;
 
+		$edit->nombre = new inputField('Nombre del proveedor','nombre');
+		$edit->nombre->pointer=true;
+		$edit->nombre->mode = 'autohide';
+		$edit->nombre->when=array('show','modify');
+
 		$edit->barras = new inputField('Barras en el proveedor','barras');
 		$edit->barras->rule = 'required|trim|callback_fueasignado|callback_noexiste';
 		$edit->barras->mode = 'autohide';
-		$edit->barras->size = 50;
-		
+		$edit->barras->size = 20;
 		$edit->barras->maxlength=250;
 
 		$edit->abarras = new inputField('Producto en sistema','abarras');
 		$edit->abarras->rule = 'required|trim|callback_siexiste';
-		$edit->abarras->size = 50;
+		$edit->abarras->size = 20;
 		$edit->abarras->maxlength=250;
 		$edit->abarras->append($boton);
+
+		$edit->sinvdescrip = new inputField('Descripcion en el sistema','sinvdescrip');
+		$edit->sinvdescrip->pointer=true;
+		$edit->sinvdescrip->in='abarras';
+		$edit->sinvdescrip->readonly=true;
 
 		$edit->buttons('modify','save','delete','undo','back');
 
@@ -430,14 +491,16 @@ class Scst extends Controller {
 					//$grid->db->like('descrip',$pat);
 				}
 			}
+
 			$sstr=$this->db->escape($sstr);
+			$grid->use_function('str_replace');
 			$grid->db->where("MATCH(descrip) AGAINST ($sstr)");
 			$grid->db->limit(10);
-			$url='<a onclick=\'pasacod("<#codigo#>")\'  href=\'#\'><#codigo#></a>';
+			$url='<a onclick=\'pasacod("<#codigo#>","<str_replace>"| |<#descrip#></str_replace>")\'  href=\'#\'><#codigo#></a>';
 
 			$grid->column('C&oacute;digo'     ,$url);
 			$grid->column('Descripci&oacute;n','descrip');
-			$grid->column('Precio 1'          ,'precio1' ,"align='right'");
+			$grid->column('Precio 1'          ,'<nformat>precio1</nformat>' ,"align='right'");
 
 			$grid->build();
 			//echo $grid->db->last_query();
@@ -451,9 +514,9 @@ class Scst extends Controller {
 		$edit->build();
 
 		$this->rapyd->jquery[]='$(window).unload(function() { window.opener.location.reload(); });';
-		$data['content'] =$edit->output.$tabla;
+		$data['content'] = $edit->output.$tabla;
 		$data['head']    = $this->rapyd->get_head();
-		$data['title']   ='<h1>Reasignar c&oacute;digo</h1>';
+		$data['title']   = heading('Reasignar c&oacute;digo');
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -514,8 +577,9 @@ class Scst extends Controller {
 		$form->nfiscal->autocomplete=false;
 		$form->nfiscal->rows = 10;
 
-		$form->almacen = new  dropdownField ("Almac&eacute;n", "almacen");
-		$form->almacen->option('','Seleccionar');
+		$cana=$this->datasis->dameval("SELECT COUNT(*) AS val FROM caub WHERE gasto='N' and invfis='N'");
+		$form->almacen = new  dropdownField ('Almac&eacute;n', 'almacen');
+		if ($cana>1)$form->almacen->option('','Seleccionar');
 		$form->almacen->options("SELECT ubica,CONCAT_WS('-',ubica,ubides) AS val FROM caub WHERE gasto='N' and invfis='N' ORDER BY ubides");
 		$form->almacen->rule = 'required';
 
@@ -554,6 +618,7 @@ class Scst extends Controller {
 		  LEFT JOIN ${localdb}.sinv AS b ON a.codigo=b.codigo 
 		  LEFT JOIN ${localdb}.farmaxasig AS c ON a.codigo=c.barras AND c.proveed=a.proveed 
 		WHERE a.control=$control AND b.codigo IS NULL AND c.abarras IS NULL";
+
 		$query=$this->db->query($sql);
 		if($query->num_rows()>0){
 			$row=$query->row_array();
