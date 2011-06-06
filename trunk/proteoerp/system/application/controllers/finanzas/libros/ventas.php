@@ -3812,31 +3812,29 @@ class ventas{
 		if(!$flag) memowrite($mSQL,'genesfac');
 
 		// CARGA LAS RETENCIONES DE IVA DE CONTADO
-		$mSQL = "SELECT * FROM sfpa WHERE tipo='RI' AND	EXTRACT(YEAR_MONTH FROM f_factura)=$mes AND tipo_doc='FE' ";
+		/*$mSQL = "SELECT * FROM sfpa WHERE tipo='RI' AND	EXTRACT(YEAR_MONTH FROM f_factura)=$mes AND tipo_doc='FE' ";
 		$query = $this->db->query($mSQL);
 		if ($query->num_rows() > 0) {
 			foreach ( $query->result() AS $row ) {
 				$mSQL = "UPDATE siva SET reiva=".$row->monto.", comprobante='20".$row->num_ref."' WHERE tipo='".$row->tipo_doc."' AND numero='".$row->numero."' AND libro='V' AND EXTRACT(YEAR_MONTH FROM fechal)=$mes ";
 				$this->db->simple_query($mSQL); 
 			}
-		}
+		}*/
 
 		// CARGA LAS RETENCIONES DE IVA DESDE SMOV
-		$mSQL = "SELECT a.tipo_doc, a.fecha, a.numero, c.nombre, c.rifci, a.cod_cli, b.monto,
+		/*$mSQL = "SELECT a.tipo_doc, a.fecha, a.numero, c.nombre, c.rifci, a.cod_cli, b.monto,
 				a.numero AS afecta, a.fecha AS fafecta, a.reteiva, a.transac, a.nroriva, a.emiriva, a.recriva 
 			FROM itccli AS a JOIN smov AS b ON a.transac=b.transac 
 				LEFT JOIN scli AS c ON a.cod_cli=c.cliente 
 			WHERE b.fecha BETWEEN $fdesde AND $fhasta AND b.cod_cli='REIVA' 
 				AND a.reteiva>0 AND b.monto>b.abonos ";
-				
-			
 		$query = $this->db->query($mSQL);
 		if ($query->num_rows() > 0) {
 			foreach ( $query->result() AS $row ) {
 				$mSQL = "UPDATE siva SET reiva=".$row->reteiva.", comprobante='".$row->nroriva."', fecharece='$row->recriva'  WHERE tipo='".$row->tipo_doc."' AND numero='".$row->numero."' AND libro='V' AND EXTRACT(YEAR_MONTH FROM fechal)=$mes ";
 				$this->db->simple_query($mSQL); 
 			}
-		}
+		}*/
 	}
 
 	function genesfaccierrez($mes) {

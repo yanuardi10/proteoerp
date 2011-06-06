@@ -58,7 +58,7 @@ class compras{
 		    GROUP BY a.fecha,a.tipo,numo,a.rif 
 		UNION
 		    SELECT DISTINCT a.sucursal, 
-		    a.fecha, 
+		    b.emision AS fecha, 
 		    d.rif,
 		    d.nomfis nombre, 
 		    a.contribu,
@@ -78,15 +78,17 @@ class compras{
 		    a.adicimpu * 0, 
 		    a.reducida * 0,
 		    a.reduimpu * 0, 
-		    sum(b.reiva*IF(a.tipo='NC',-1,1)) reiva,
-		    CONCAT(EXTRACT(YEAR_MONTH FROM fechal),b.nrocomp) nrocomp,
-		    b.emision, $dbcampo numo, a.tipo,SUM(a.impuesto) AS impuesto, a.nacional,a.afecta
-		    FROM siva AS a JOIN riva AS b ON a.numero=b.numero and a.clipro!=b.clipro AND a.tipo=b.tipo_doc AND MID(b.transac,1,1)<>'_' AND a.reiva=b.reiva 
+		    SUM(b.reiva*IF(a.tipo='NC',-1,1)) reiva,
+		    ' ' nrocomp,
+		    b.emision, CONCAT(EXTRACT(YEAR_MONTH FROM fechal),b.nrocomp) numo, 'CR' AS tipo_doc,SUM(a.impuesto) AS impuesto, a.nacional,$dbcampo AS afecta
+		    FROM siva AS a JOIN riva AS b ON a.numero=b.numero AND a.tipo=b.tipo_doc AND MID(b.transac,1,1)<>'_' AND a.reiva=b.reiva 
 		              LEFT JOIN sprv AS d ON b.clipro=d.proveed 
 		    WHERE libro='C' AND fechal BETWEEN $fdesde AND $fhasta AND a.fecha>0 AND a.reiva>0 
 		    GROUP BY a.fecha,a.tipo,numo,a.rif
 		    ORDER BY fecha,numo ";
 
+//FROM siva AS a JOIN riva AS b ON a.numero=b.numero AND a.tipo=b.tipo_doc AND MID(b.transac,1,1)<>'_' AND a.reiva=b.reiva 
+//WHERE libro='C' AND fechal BETWEEN $fdesde AND $fhasta AND a.fecha>0 AND a.reiva>0 
 		$fname = tempnam("/tmp","lcompras.xls");
 		$this->load->library("workbook", array("fname"=>$fname));
 		$wb = & $this->workbook ;
