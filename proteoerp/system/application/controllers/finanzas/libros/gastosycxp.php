@@ -126,17 +126,20 @@ class gastosycxp{
 		$udia=days_in_month(substr($mes,4),substr($mes,0,4));
 		$fdesde=$mes.'01';
 		$fhasta=$mes.$udia;
-		
+
 		//Procesando Compras scst
 		$this->db->simple_query("DELETE FROM siva WHERE EXTRACT(YEAR_MONTH FROM fechal) = $mes AND fuente='MP' ");
 		$this->db->simple_query("UPDATE sprv SET nomfis=nombre WHERE nomfis='' OR nomfis IS NULL ");
 		$mFECHAF = $this->datasis->dameval("SELECT max(fecha) FROM civa WHERE fecha<=$mes"."01");
 
-		$mSQL = "SELECT a.*,b.rif, b.nomfis,c.numero as afecta FROM sprm AS a 
+		$mSQL = "SELECT a.cod_prv, a.tipo_doc, a.numero,a.nfiscal,a.transac,a.montasa,a.tasa,a.monredu,a.reducida,a.monadic,
+		a.sobretasa, a.exento, a.impuesto, a.monto, a.reteiva, a.fecha, a.fecapl, b.rif, b.nomfis,GROUP_CONCAT(TRIM(c.numero)) AS afecta 
+		FROM sprm AS a 
 		LEFT JOIN sprv AS b ON a.cod_prv=b.proveed
-		JOIN itppro  AS c ON a.numero=c.numppro AND a.tipo_doc=c.tipoppro
+		JOIN itppro  AS c ON a.numero=c.numppro AND a.tipo_doc=c.tipoppro AND c.cod_prv=a.cod_prv
 		WHERE a.fecha BETWEEN $fdesde AND $fhasta AND b.tipo<>'5'
-		AND a.tipo_doc='NC' AND a.codigo NOT IN ('NOCON','') ";
+		AND a.tipo_doc='NC' AND a.codigo NOT IN ('NOCON','') 
+		GROUP BY cod_prv,tipo_doc,numero";
 		$query = $this->db->query($mSQL);
 
 		if ( $query->num_rows() > 0 ){
@@ -172,6 +175,7 @@ class gastosycxp{
 					stotal=".$stotal.", 
 					fechal=".$mes."01, 
 					referen='$referen', 
+					reiva=".$row->reteiva.", 
 					afecta=".$this->db->escape($row->afecta).",
 					fafecta=".$this->db->escape($fafecta);
 				$flag=$this->db->simple_query($mSQL);    
