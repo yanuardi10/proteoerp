@@ -95,9 +95,8 @@ class Kardex extends Controller {
 		$data['filtro'] =  $filter->output;
 
 		$code=$this->input->post('codigo');
-	
-		if($code){
 
+		if($code){
 			$mSQL="SELECT CONCAT_WS(' ',TRIM(descrip),TRIM(descrip2)) descrip FROM sinv WHERE codigo='$code'";
 			$query = $this->db->query($mSQL);
 			$descrip='';
@@ -106,7 +105,7 @@ class Kardex extends Controller {
 				$descrip=$row->descrip;
 			}
 
-			$link="/inventario/kardex/grid/<#origen#>/<dbdate_to_human><#fecha#>|Ymd</dbdate_to_human>/<str_replace>/|:slach:|<#codigo#></str_replace>/<#ubica#>";
+			$link="/inventario/kardex/grid/<#origen#>/<dbdate_to_human><#fecha#>|Ymd</dbdate_to_human>/<raencode><#codigo#></raencode>/<raencode><#ubica#></raencode>";
 			$grid = new DataGrid2("Producto: ($code) $descrip");
 			$grid->agrupar(' ', 'almacen');
 			$grid->use_function('convierte','str_replace');
@@ -126,13 +125,13 @@ class Kardex extends Controller {
 						'((a.venta/a.cantidad)-a.promedio)*a.cantidad*(a.origen="3I") AS vutil',
 						'c.activo',
 						'c.grupo'));
-			
+
 			$grid->db->from('costos a');
 			$grid->db->join('caub b ','b.ubica=a.ubica','LEFT');
 			$grid->db->join('sinv c ','a.codigo=c.codigo','LEFT');
 			$grid->db->orderby('almacen, fecha, origen');
 			$grid->per_page = 60;
-			
+
 			$grid->column('Or&iacute;gen',"<convierte><#origen#>|$link</convierte>",'align=left' );
 			$grid->column('Fecha'        ,'<dbdate_to_human><#fecha#></dbdate_to_human>');
 			$grid->column('Cantidad'     ,'<nformat><#cantidad#>|2</nformat>' ,'align=right');
@@ -181,11 +180,10 @@ class Kardex extends Controller {
     height: 320px; /* Required to set */
     overflow: hidden; /* Required to set */
 }
-</style>	
-		';
+</style>';
 
-		$data["script"]  = script("jquery.js");
-		$data["script"] .= script('superTables.js');
+		$data['script']  = script("jquery.js");
+		$data['script'] .= script('superTables.js');
 
 		$data['style']   = $style;
 		$data['style']  .= style('superTables.css');
@@ -210,21 +208,17 @@ class Kardex extends Controller {
 			$mfdesde = $this->datasis->dameval("SELECT ADDDATE(MAX(fecha),-30) FROM costos WHERE codigo='".addslashes($mcodigo)."'");
 			$mfhasta  = $this->datasis->dameval("SELECT MAX(fecha) FROM costos WHERE codigo='".addslashes($mcodigo)."'");
 		}
-		
-		
 	}
-	
 
 	function grid(){
 		$tipo   =$this->uri->segment(4);
 		$fecha  =$this->uri->segment(5);
-		$codigo =$this->uri->segment(6);
-		$almacen=$this->uri->segment(7);
+		$codigo =radecode($this->uri->segment(6));
+		$almacen=radecode($this->uri->segment(7));
 		if($fecha===FALSE or $codigo===FALSE or $tipo===FALSE or $almacen===FALSE) redirect('inventario/kardex');
 		$this->rapyd->load('datagrid');
 
 		$grid = new DataGrid();
-		$grid->use_function('number_format');
 		$grid->order_by('numero','desc');
 		$grid->per_page = 20;
 
@@ -247,11 +241,11 @@ class Kardex extends Controller {
 			$grid->title('Facturas');
 			$grid->column('N&uacute;mero',$link);
 			$grid->column('Cliente'      ,'cliente' );
-			$grid->column('Cantidad'     ,'<nformat><#cana#>|2</nformat>','align=right');
+			$grid->column('Cantidad'     ,'<nformat><#cana#></nformat>','align=right');
 			$grid->column('Fecha'        ,'<dbdate_to_human><#fecha#></dbdate_to_human>'   ,'align=center');
 			$grid->column('Vendedor'     ,'vendedor','align=center');
-			$grid->column('Precio'       ,'<nformat><#preca#>|2</nformat>','align=\'right\'');
-			$grid->column('Total'        ,'<nformat><#tota#>|2</nformat>' ,'align=\'right\'');
+			$grid->column('Precio'       ,'<nformat><#preca#></nformat>','align=\'right\'');
+			$grid->column('Total'        ,'<nformat><#tota#></nformat>' ,'align=\'right\'');
 			$grid->db->select($select);
 			$grid->db->from('sitems a');
 			$grid->db->join('sfac b','b.numero=a.numa  AND b.tipo_doc=a.tipoa');
@@ -264,11 +258,11 @@ class Kardex extends Controller {
 			//$link=anchor('inventario/kardex/rfac/'.$this->_unionuri().'/show/'.implode('/',$ppk),'<#tipoa#><#numa#>');
 			$grid->column('N&uacute;mero','numero');
 			$grid->column('Cliente'      ,'cliente' );
-			$grid->column('Cantidad'     ,'<nformat><#cantidad#>|2</nformat>','align=right');
+			$grid->column('Cantidad'     ,'<nformat><#cantidad#></nformat>','align=right');
 			$grid->column('Fecha'        ,'<dbdate_to_human><#fecha#></dbdate_to_human>'   ,'align=center');
 			$grid->column('Mesonero'     ,'mesonero','align=center');
-			$grid->column('Precio'       ,'<nformat><#precio#>|2</nformat>'  ,'align=right');
-			$grid->column('Total'        ,'<nformat><#importe#>|2</nformat>' ,'align=right');
+			$grid->column('Precio'       ,'<nformat><#precio#></nformat>'  ,'align=right');
+			$grid->column('Total'        ,'<nformat><#importe#></nformat>' ,'align=right');
 			$grid->db->select(array('a.numero','CONCAT("(",b.cod_cli,") ",b.nombre) cliente','c.cantidad','a.fecha', 'a.mesonero','a.precio','a.importe'));
 			$grid->db->from('ritems a');
 			$grid->db->join('rfac b','b.numero=a.numero');
@@ -295,7 +289,7 @@ class Kardex extends Controller {
 			$grid->column('N&uacute;mero',$link);
 			$grid->column('Env&iacute;a'      ,'envia' );
 			$grid->column('Recibe'            ,'recibe');
-			$grid->column('Cantidad'          ,'<nformat><#cantidad#>|2</nformat>','align=\'right\'');
+			$grid->column('Cantidad'          ,'<nformat><#cantidad#></nformat>','align=\'right\'');
 			$grid->column('Fecha'             ,'<dbdate_to_human><#fecha#></dbdate_to_human>','align=\'center\'');
 			$grid->column('Observaci&oacute;n','observ1');
 			//$grid->column("Costo"             ,"<nformat><#costo#></nformat>",'align=right');
@@ -325,9 +319,9 @@ class Kardex extends Controller {
 			$grid->column("Fecha"    ,"<dbdate_to_human><#fecha#></dbdate_to_human>",'align=center');
 			$grid->column("Proveedor","proveed" );
 			$grid->column("Deposito" ,"depo");
-			$grid->column("Cantidad" ,"<nformat><#cantidad#>|2</nformat>",'align=right');
-			$grid->column("Costo"    ,"<nformat><#costo#>|2</nformat>",'align=right');
-			$grid->column("Importe"  ,"<nformat><#importe#>|2</nformat>",'align=right');
+			$grid->column("Cantidad" ,"<nformat><#cantidad#></nformat>",'align=right');
+			$grid->column("Costo"    ,"<nformat><#costo#></nformat>",'align=right');
+			$grid->column("Importe"  ,"<nformat><#importe#></nformat>",'align=right');
 			$grid->db->select($select);
 			$grid->db->from('itscst a');
 			$grid->db->join('scst b','a.control=b.control');
