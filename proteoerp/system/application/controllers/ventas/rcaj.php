@@ -301,7 +301,7 @@ class Rcaj extends validaciones {
 				(SELECT b.tipo, b.monto AS monto 
 				FROM sfac AS a 
 				JOIN sfpa AS b ON a.transac=b.transac 
-				WHERE a.fecha=$dbfecha AND b.cobrado=$dbcajero AND a.tipo_doc<>'X' AND MID(a.numero,1,1)<>'_'
+				WHERE a.fecha=$dbfecha AND b.cobrador=$dbcajero AND a.tipo_doc<>'X' AND MID(a.numero,1,1)<>'_'
 				UNION ALL
 				SELECT e.tipo,e.monto AS monto
 				FROM sfpa AS e 
