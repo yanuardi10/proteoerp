@@ -59,7 +59,7 @@ class spre extends validaciones {
 		$filter->buttons('reset','search');
 		$filter->build();
 
-		$uri = anchor('ventas/spre/dataedit/show/<#numero#>','<#numero#>');
+		$uri = anchor('ventas/spre/dataedit/<#numero#>','<#numero#>');
 		$uri2 = anchor_popup('formatos/verhtml/PRESUP/<#numero#>','Ver HTML',$atts);
 
 		$grid = new DataGrid();
@@ -304,7 +304,8 @@ class spre extends validaciones {
 		$conten['form']  =&  $edit;
 		$data['content'] = $this->load->view('view_spre', $conten,true);
 		$data['title']   = heading('Presupuesto');
-		$data['head']    = script('jquery.js').script('jquery-ui.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css').$this->rapyd->get_head().phpscript('nformat.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js').phpscript('nformat.js');
+		$data['script']  =script('jquery.js').script('jquery-ui.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css').phpscript('nformat.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js').phpscript('nformat.js');
+		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 
