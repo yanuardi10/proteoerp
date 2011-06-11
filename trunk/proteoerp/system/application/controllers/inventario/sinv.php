@@ -15,6 +15,9 @@ class sinv extends Controller {
 		
 		$esta = $this->datasis->dameval( "SHOW columns FROM sinv WHERE Field='forma'" );
 		if ( empty($esta) ) $this->db->simple_query("ALTER TABLE sinv ADD forma VARCHAR(50) ");
+		
+		$esta = $this->datasis->dameval( "SHOW columns FROM sinv WHERE Field='exento'" );
+		if ( empty($esta) ) $this->db->simple_query("ALTER TABLE sinv ADD exento CHAR(1) DEFAULT 'N' ");
 	}
 
 	function index(){
@@ -1153,6 +1156,12 @@ function sinvborraprv(mproveed, mcodigo){
 			$edit->iva->option($ivamonto,nformat($ivamonto));
 		}
 		$edit->iva->style='width:100px;';
+		
+		$edit->exento = new dropdownField("Puede Exento", "exento");
+		$edit->exento->style='width:50px;';
+		$edit->exento->option("N","No" );
+		$edit->exento->option("S","Si" );
+		
 
 		$edit->ultimo = new inputField("Ultimo", "ultimo");
 		$edit->ultimo->css_class='inputnum';
