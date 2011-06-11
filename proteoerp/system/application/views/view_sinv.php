@@ -189,6 +189,14 @@ else:
 							</tr>
 						</table>
 					</td>
+					<td valign='top'  align='center'>
+						<table border='0'>
+							<tr>
+								<td width='90' class="littletableheaderc"><?=$form->exento->label   ?></td>
+								<td class="littletablerow" ><?=$form->exento->output ?></td>
+							</tr>
+						</table>
+					</td>
 				</tr>
 			</table>
 		</td>
