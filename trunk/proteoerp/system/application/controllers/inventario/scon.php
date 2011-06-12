@@ -96,6 +96,64 @@ class scon extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
+	function devoscon(){
+		$this->rapyd->load('datagrid','datafilter');
+
+		$atts = array(
+			'width'      => '800',
+			'height'     => '600',
+			'scrollbars' => 'yes',
+			'status'     => 'yes',
+			'resizable'  => 'yes',
+			'screenx'    => '0',
+			'screeny'    => '0'
+		);
+
+		$scli=array(
+		'tabla'   =>'scli',
+		'columnas'=>array(
+		'cliente' =>'C&oacute;digo Cliente',
+		'nombre'=>'Nombre',
+		'contacto'=>'Contacto'),
+		'filtro'  =>array('cliente'=>'C&oacute;digo Cliente','nombre'=>'Nombre'),
+		'retornar'=>array('cliente'=>'cod_cli'),
+		'titulo'  =>'Buscar Cliente');
+
+		$boton=$this->datasis->modbus($scli);
+
+		$filter = new DataFilter('Filtro de consignaciones','scon');
+		$filter->db->select(array('a.clipro','a.nombre','SUM(IF(a.tipod=\'E\',1,-1)*a.gtotal) AS saldo'));
+		$filter->db->from('scon AS a');
+		$filter->db->join('itscon AS b','a.id=b.id_scon');
+		$filter->db->where('a.tipo','C');
+		$filter->db->groupby('a.clipro');
+
+		$filter->cliente = new inputField('Cliente/Proveedor','clipro');
+		$filter->cliente->size = 30;
+		$filter->cliente->append($boton);
+
+		$filter->buttons('reset','search');
+		$filter->build();
+
+		$grid = new DataGrid();
+		$grid->order_by('numero','desc');
+		$grid->per_page = 15;  
+
+		$grid->column_orderby('Cliente' ,'(<#clipro#>)-<#nombre#>','nombre');
+		$grid->column_orderby('Saldo'   ,'<nformat><#stotal#></nformat>'  ,'stotal','align=\'right\'');
+		//$grid->column_orderby('Editar'   ,'<nformat><#gtotal#></nformat>'  ,'gtotal');
+		//$grid->column_orderby("Vista",$uri2,"align='center'");
+
+		$grid->add('inventario/scon/agregar');
+		$grid->build();
+		echo $grid->db->last_query();
+
+		$data['content'] = $filter->output.$grid->output;
+		$data['head']    = $this->rapyd->get_head();
+		$data['title']   = heading('Consignaci&oacute;n de inventario');
+		$this->load->view('view_ventanas', $data);
+	}
+
 	function dataedit($opttipo){
 		$opt_key = array_search($opttipo,array('C','P'));
 		if($opt_key===false){

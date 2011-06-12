@@ -5,6 +5,7 @@ class ssal extends validaciones {
 		parent::Controller();
 		$this->load->library('rapyd');
 		//$this->datasis->modulo_id(104,1);
+		$this->back_dataedit='inventario/ssal/index';
 	}
 
 	function index() {
@@ -13,13 +14,14 @@ class ssal extends validaciones {
 
 	function filteredgrid(){
 		$this->rapyd->load('datagrid','datafilter');
-		
+
 		$caub=array(
-		'tabla'   =>'caub',
-		'columnas'=>array(
-		'ubica' =>'C&oacute;digo',
-		'ubides'=>'Nombre',
+			'tabla'   =>'caub',
+			'columnas'=>array(
+			'ubica' =>'C&oacute;digo',
+			'ubides'=>'Nombre',
 		),
+
 		'filtro'  =>array('ubica'=>'C&oacute;digo','ubides'=>'Nombre'),
 		'retornar'=>array('ubica'=>'almacen'),
 		'titulo'  =>'Buscar Almacen');
@@ -34,7 +36,7 @@ class ssal extends validaciones {
 		$filter->fechah = new dateonlyField('Hasta', 'fechah','d/m/Y');
 		$filter->fechad->clause  =$filter->fechah->clause ='where';
 		$filter->fechad->db_name =$filter->fechah->db_name='fecha';
-		
+
 		$filter->fechah->size=$filter->fechad->size=10;
 		$filter->fechad->operator='>=';
 		$filter->fechah->operator='<=';
@@ -48,19 +50,19 @@ class ssal extends validaciones {
 		$filter->tipo->option('E','Entrada');
 		$filter->tipo->style='width:80px;';
 		$filter->tipo->size = 5;
-		
+
 		$filter->alamcen = new inputField('Alamcen', 'almacen');
 		$filter->alamcen->size = 5;
 		$filter->alamcen->append($boton);
-		
+
 		$filter->buttons('reset','search');
 		$filter->build();
 
 		$uri = anchor('inventario/ssal/dataedit/show/<#numero#>','<#numero#>');
-		
+
 		function tipo($t){
-			if($t=='S')return "Salida";
-			if($t=='E')return "Entrada";
+			if($t=='S')return 'Salida';
+			if($t=='E')return 'Entrada';
 		}
 
 		$grid = new DataGrid();
@@ -80,7 +82,7 @@ class ssal extends validaciones {
 		//echo $grid->db->last_query();
 
 		$data['content'] = $filter->output.$grid->output;
-		$data["head"]    = $this->rapyd->get_head();
+		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = heading('Entrada y Salidas');
 		$this->load->view('view_ventanas', $data);
 	}
@@ -119,13 +121,13 @@ class ssal extends validaciones {
 		);
 		$boton =$this->datasis->modbus($mCAUB);
 
-		$do = new DataObject("ssal");
+		$do = new DataObject('ssal');
 		$do->rel_one_to_many('itssal', 'itssal', 'numero');
 		$do->pointer('caub' ,'caub.ubica=ssal.almacen','ubides AS caububides','left');
 		$do->rel_pointer('itssal','sinv','itssal.codigo=sinv.codigo','sinv.descrip AS sinvdescrip, sinv.base1 AS sinvprecio1, sinv.base2 AS sinvprecio2, sinv.base3 AS sinvprecio3, sinv.base4 AS sinvprecio4, sinv.iva AS sinviva, sinv.peso AS sinvpeso,sinv.tipo AS sinvtipo');
 
 		$edit = new DataDetails('Entradas y Salidas', $do);
-		$edit->back_url = site_url('inventario/ssal/filteredgrid');
+		$edit->back_url = $this->back_dataedit;
 		$edit->set_rel_title('itssal','Producto <#o#>');
 
 		//$edit->script($script,'create');
@@ -230,7 +232,7 @@ class ssal extends validaciones {
 		$transac=$this->datasis->fprox_numero('ntransa');
 		$usuario=$do->get('usuario');
 		$estampa=date('Ymd');
-		$hora   =date("H:i:s");
+		$hora   =date('H:i:s');
 
 		$cana=$do->count_rel('itssal');
 		for($i=0;$i<$cana;$i++){
