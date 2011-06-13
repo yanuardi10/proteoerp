@@ -1,6 +1,6 @@
 <?php
 class ventas{
-	//Libro de ventras basado en Z
+	//Libro de ventas basado en Z
 	function wlvcierrez($mes) {
 		$udia=days_in_month(substr($mes,4),substr($mes,0,4));
 		$fdesde=$mes.'01';
@@ -469,7 +469,8 @@ class ventas{
 		unlink($fname);
 	}
 
-	function wlvexcel($mes) {
+	//Libro de ventas agrupado fiscal y no fiscal
+	function _wlvexcel($mes,$fiscal=false) {
 		$udia=days_in_month(substr($mes,4),substr($mes,0,4));
 		$fdesde=$mes.'01';
 		$fhasta=$mes.$udia;
@@ -477,12 +478,17 @@ class ventas{
 		set_time_limit(300);
 		$ameses = array( 'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic');
 		$anomeses = array( '01' => 'ENERO', '02' => 'FEBRERO', '03' => 'MARZO', '04' => 'ABRIL', '05' => 'MAYO', '06' => 'JUNIO', '07' => 'JULIO', '08' => 'AGOSTO', '09' => 'SEPTIEMBRE', '10' => 'OCTBRE', '11' => 'NOVIEMBRE', '12' => 'DICIEMBRE');
-		
-		$aaa = $this->datasis->ivaplica($mes."02");
+
+		$aaa = $this->datasis->ivaplica($mes.'02');
 		$tasa      = $aaa['tasa'];
 		$redutasa  = $aaa['redutasa'];
 		$sobretasa = $aaa['sobretasa'];
-		
+		if($fiscal){
+			$group=', a.serial';
+		}else{
+			$group='';
+		}
+
 		// ARREGLA SIVA PORSIA
 		$mSQL = "UPDATE siva SET impuesto=0, geneimpu=0, exento=gtotal, stotal=gtotal, general=0 where geneimpu<0 and general>=0 ";
 		$this->db->simple_query($mSQL);
@@ -490,35 +496,10 @@ class ventas{
 		$this->db->simple_query($mSQL);
 		$mSQL = "UPDATE siva SET tipo='FC' WHERE tipo='FE' ";
 		$this->db->simple_query($mSQL);
-		
-		//if ( $this->datasis->traevalor('LIBROVENTASRESUMEN') =='N' ) {
-		//$mSQL  = "SELECT 
-		//		a.fecha,
-		//		a.numero, '' inicial, ' ' final,
-		//		a.nfiscal,
-		//		a.rif,
-		//		IF( b.nomfis IS NOT NULL AND b.nomfis!='',b.nomfis,b.nombre) AS nombre,
-		//		a.tipo, 
-		//		IF(a.referen=a.numero,'        ',a.referen) afecta,
-		//		a.gtotal*IF(a.tipo='NC',-1,1)    ventatotal,
-		//		a.exento*IF(a.tipo='NC',-1,1)    exento,
-		//		a.general*IF(a.tipo='NC',-1,1)   base,
-		//		a.impuesto*IF(a.tipo='NC',-1,1)  impuesto,
-		//		a.reiva*IF(a.tipo='NC',-1,1)     reiva,
-		//		a.general*IF(a.tipo='NC',-1,1)	 general,
-		//		a.geneimpu*IF(a.tipo='NC',-1,1)  geneimpu,
-		//		a.adicional*IF(a.tipo='NC',-1,1) adicional,
-		//		a.adicimpu*IF(a.tipo='NC',-1,1)  adicimpu,
-		//		a.reducida*IF(a.tipo='NC',-1,1)  reducida,
-		//		a.reduimpu*IF(a.tipo='NC',-1,1)  reduimpu,
-		//		a.contribu, a.registro, a.comprobante, a.fecharece 
-		//	FROM siva a LEFT JOIN scli b ON a.clipro=b.cliente
-		//	WHERE EXTRACT(YEAR_MONTH FROM a.fechal)=$mes AND a.libro='V' AND a.tipo<>'FA' 
-		//	ORDER BY a.fecha, IF(a.tipo IN ('FE','FC','XE','XC'),1,2), a.numero ";
-		//} else {
+
 		$mSQL  = "SELECT 
 				a.fecha,IF(a.tipo='NC',referen,'')referen,
-				a.numero, '' inicial, ' ' final,
+				a.numero, a.serial , '' inicial, '' final,
 				a.nfiscal,
 				a.rif,
 				IF( b.nomfis IS NOT NULL AND b.nomfis!='',b.nomfis,b.nombre) AS nombre,
@@ -540,12 +521,12 @@ class ventas{
 			WHERE a.fechal BETWEEN $fdesde AND $fhasta AND a.libro='V' AND a.tipo<>'FA' AND a.contribu='CO' 
 			UNION
 			SELECT 
-				a.fecha,IF(a.tipo='NC',referen,'')referen,
-				' ' numero, min(a.numero) inicial, max(a.numero) final,
+				a.fecha,'' referen,
+				' ' numero, a.serial , min(a.numero) inicial, max(a.numero) final,
 				' ' nfiscal,
 				' ' rif,
 				IF(a.registro<>'04','A NO CONTRIBUYENTES TOTAL DEL DIA',b.nombre) nombre,
-				a.tipo, 
+				' ' AS tipo, 
 				' ' afecta,
 				sum(a.gtotal*IF(a.tipo='NC',-1,1))    ventatotal,
 				sum(a.exento*IF(a.tipo='NC',-1,1))    exento,
@@ -561,79 +542,79 @@ class ventas{
 				'NO' contribu, a.registro, ' ' comprobante, null fecharece
 			FROM siva a LEFT JOIN scli b ON a.clipro=b.cliente
 			WHERE a.fechal BETWEEN $fdesde AND $fhasta AND a.libro='V' AND a.tipo<>'FA' AND a.contribu='NO' AND a.tipo IN ('FE','FC','NC')
-			GROUP BY a.fecha, a.tipo, a.registro
+			GROUP BY a.fecha, a.tipo, a.registro $group
 			ORDER BY fecha, IF(tipo IN ('FE','FC','XE','XC'),1,2), numero ";
-		//}
+//memowrite($mSQL);
 		$export = $this->db->query($mSQL);
-		
-		$fname = tempnam("/tmp","lventas.xls");
-		$this->load->library("workbook",array("fname" => $fname));
+
+		$fname = tempnam('/tmp','lventas.xls');
+		$this->load->library('workbook',array('fname' => $fname));
 		$wb =& $this->workbook;
 		$ws =& $wb->addworksheet($mes);
-		
+
 		// ANCHO DE LAS COLUMNAS
 		$ws->set_column('A:F',11);
 		$ws->set_column('G:G',37);
 		$ws->set_column('H:H',11);
 		$ws->set_column('I:S',20);
-		
+
 		// FORMATOS
 		$h      =& $wb->addformat(array( "bold" => 1, "size" => 16, "merge" => 1));
 		$h1     =& $wb->addformat(array( "bold" => 1, "size" => 11, "align" => 'left'));
-		
+
 		$titulo =& $wb->addformat(array( "bold" => 1, "size" => 9, "merge" => 0, "fg_color" => 'silver' ));
 		$tt =& $wb->addformat(array( "size" => 9, "merge" => 1, "fg_color" => 'silver' ));
-		
+
 		$cuerpo  =& $wb->addformat(array( "size" => 9 ));
 		$cuerpoc =& $wb->addformat(array( "size" => 9, "align" => 'center', "merge" => 1 ));
 		$cuerpob =& $wb->addformat(array( "size" => 9, "align" => 'center', "bold" => 1, "merge" => 1 ));
-		
+
 		$numero  =& $wb->addformat(array( "num_format" => '#,##0.00' , "size" => 9 ));
 		$Tnumero =& $wb->addformat(array( "num_format" => '#,##0.00' , "size" => 9, "bold" => 1, "fg_color" => 'silver' ));
 		$Rnumero =& $wb->addformat(array( "num_format" => '#,##0.00' , "size" => 9, "bold" => 1, "align" => 'right' ));
-		
+
 		// COMIENZA A ESCRIBIR
 		$nomes = substr($mes,4,2);
 		$nomes1 = $anomeses[$nomes];
 		$hs = "LIBRO DE VENTAS CORRESPONDIENTE AL MES DE ".$anomeses[$nomes]." DEL ".substr($mes,0,4);
-		
+
 		$ws->write(1, 0, $this->datasis->traevalor('TITULO1') , $h1 );
 		$ws->write(2, 0, "RIF: ".$this->datasis->traevalor('RIF') , $h1 );
-		
+
 		$ws->write(4,0, $hs, $h );
 		for ( $i=1; $i<20; $i++ ) {
 			$ws->write_blank(4, $i,  $h );
 		};
-		
+
 		$mm=6;
 		$mcel = 0;
 		// TITULOS
-		
+
 		$ws->write_string( $mm,   $mcel, "", $titulo );
 		$ws->write_string( $mm+1, $mcel, "Fecha", $titulo );
 		$ws->write_string( $mm+2, $mcel, "", $titulo );
 		$mcel++;
-		
+
 		$ws->write_string( $mm,   $mcel, "Identificacion del Documento", $titulo );
 		$ws->write_string( $mm+1, $mcel, "Nro.", $titulo );
 		$ws->write_string( $mm+2, $mcel, "Caja", $titulo );
 		$mcel++;
-		
+
 		$ws->write_blank( $mm,   $mcel,  $titulo );
 		$ws->write_string( $mm+1, $mcel, "Tipo", $titulo );
 		$ws->write_string( $mm+2, $mcel, "Doc.", $titulo );
 		$mcel++;
-		
+
 		$ws->write_blank( $mm,   $mcel, $titulo );
 		$ws->write_string( $mm+1, $mcel, "Contribuyentes", $titulo );
 		$ws->write_string( $mm+2, $mcel, "Numero", $titulo );
 		$mcel++;
-		
+
 		$ws->write_blank( $mm,   $mcel, $titulo );
 		$ws->write_string( $mm+1, $mcel, "No Contribuyentes", $titulo );
 		$ws->write_string( $mm+2, $mcel, "Inicial", $titulo );
 		$mcel++;
-		
+
 		$ws->write_blank( $mm,   $mcel, $titulo );
 		$ws->write_blank( $mm+1, $mcel, $titulo );
 		$ws->write_string( $mm+2, $mcel, "Final", $titulo );
@@ -658,72 +639,72 @@ class ventas{
 		$ws->write_string( $mm+1, $mcel, "Exentas o", $titulo );
 		$ws->write_string( $mm+2, $mcel, "no Sujetas",$titulo );
 		$mcel++;
-		
+
 		$ws->write_string( $mm,  $mcel, "Valor", $titulo );
 		$ws->write_string( $mm+1,$mcel, "FOB Op.", $titulo );
 		$ws->write_string( $mm+2,$mcel, "Export", $titulo );
 		$mcel++;
-		
+
 		$ws->write_string( $mm,  $mcel, "VENTAS GRAVADAS", $titulo );
 		$ws->write_string( $mm+1,$mcel, "ALICUOTA GENERAL $tasa%", $titulo );
 		$ws->write_string( $mm+2,$mcel, "Base", $titulo );
 		$mcel++;
-		
+
 		$ws->write_blank(  $mm,  $mcel, $titulo );
 		$ws->write_blank(  $mm+1,$mcel, $titulo );
 		$ws->write_string( $mm+2,$mcel, "Impuesto", $titulo );
 		$mcel++;
-		
+
 		$ws->write_blank(  $mm,  $mcel, $titulo );
 		$ws->write_string( $mm+1,$mcel, "ALICUOTA ADICIONAL $sobretasa%", $titulo );
 		$ws->write_string( $mm+2,$mcel, "Base", $titulo );
 		$mcel++;
-		
+
 		$ws->write_blank(  $mm,  $mcel, $titulo );
 		$ws->write_blank(  $mm+1,$mcel, $titulo );
 		$ws->write_string( $mm+2,$mcel, "Impuesto", $titulo );
 		$mcel++;
-		
+
 		$ws->write_blank(  $mm,  $mcel, $titulo );
 		$ws->write_string( $mm+1,$mcel, "ALICUOTA REDUCIDA $redutasa%", $titulo );
 		$ws->write_string( $mm+2,$mcel, "Base", $titulo );
 		$mcel++;
-		
+
 		$ws->write_blank(  $mm,  $mcel, $titulo );
 		$ws->write_blank(  $mm+1,$mcel, $titulo );
 		$ws->write_string( $mm+2,$mcel, "Impuesto", $titulo );
 		$mcel++;
-		
+
 		$ws->write_string( $mm,  $mcel, "Ajuste a los", $titulo );
 		$ws->write_string( $mm+1,$mcel, "DB Fiscales", $titulo );
 		$ws->write_string( $mm+2,$mcel, "Per. Anterior", $titulo );
 		$mcel++;
-		
+
 		$ws->write_string( $mm,  $mcel, "I.V.A. ", $titulo );
 		$ws->write_string( $mm+1,$mcel, "Retenido", $titulo );
 		$ws->write_string( $mm+2,$mcel, "Comprador", $titulo );
 		$mcel++;
-		
+
 		$ws->write_string( $mm,  $mcel, "Numero ", $titulo );
 		$ws->write_string( $mm+1,$mcel, "de", $titulo );
 		$ws->write_string( $mm+2,$mcel, "Comp.", $titulo );
 		$mcel++;
-		
+
 		$ws->write_string( $mm,  $mcel, "Fecha ", $titulo );
 		$ws->write_string( $mm+1,$mcel, "de", $titulo );
 		$ws->write_string( $mm+2,$mcel, "Recepcion", $titulo );
 		$mcel++;
-		
+
 		$ws->write_string( $mm,   $mcel, "", $titulo );
-		$ws->write_string( $mm+1, $mcel, "N Fiscal", $titulo );
+		$ws->write_string( $mm+1, $mcel, ($fiscal) ? 'Serial' : 'N Fiscal', $titulo );
 		$ws->write_string( $mm+2, $mcel, "", $titulo );
 		$mcel++;
-		
+
 		$ws->write_string( $mm,   $mcel, "", $titulo );
 		$ws->write_string( $mm+1, $mcel, "Afecta", $titulo );
 		$ws->write_string( $mm+2, $mcel, "", $titulo );
 		$mcel++;
-		
+
 		$mm +=3;
 		$ii = $mm+1;
 		$mtiva = 'X';
@@ -731,16 +712,16 @@ class ventas{
 		$tventas=$texenta=$tbase=$timpue=$treiva=$tperci=$mforza=$contri=0;
 		$finicial = '99999999';
 		$ffinal   = '00000000';
-		
+
 		if ( $export->num_rows() > 0 ){
 			foreach( $export->result() as $row ){
 				// imprime contribuyente
 				$fecha = substr($row->fecha,8,2)."/".substr($row->fecha,5,2)."/".substr($row->fecha,0,4);
-				
+
 				$ws->write_string( $mm, 0, $fecha,  $cuerpo );				// Fecha
 				$ws->write_string( $mm, 1, ' ', $cuerpo );			// Numero de Caja
-				
-				if ($row->tipo[0] == "X" ) 
+
+				if ($row->tipo[0] == 'X' )
 					$ws->write_string( $mm, 2, "FC", $cuerpoc );		// TIPO
 				elseif ( $row->tipo == "XC" ) 
 					$ws->write_string( $mm, 2, "NC", $cuerpoc );		// TIPO
@@ -748,7 +729,7 @@ class ventas{
 					$ws->write_string( $mm, 2, "FC", $cuerpoc );		// TIPO
 				else
 					$ws->write_string( $mm, 2, $row->tipo, $cuerpoc );	// TIPO
-				
+
 				$ws->write_string( $mm, 3, $row->numero, $cuerpo );		// Nro. Documento
 				$ws->write_string( $mm, 4, $row->inicial, $cuerpo );	// INICIAL
 				$ws->write_string( $mm, 5, $row->final, $cuerpo );		// FINAL
@@ -782,7 +763,7 @@ class ventas{
 					$ws->write_number( $mm,16, $row->reduimpu, $numero );		// REDUIMPU
 					$ws->write_number( $mm,17, 0, $numero );		// REDUIMPU
 				}
-		
+
 				$ws->write_number( $mm,18, $row->reiva, $numero );		    // IVA RETENIDO
 				$ws->write_string( $mm,19, $row->comprobante, $cuerpo );	// NRO COMPROBANTE
 				$ws->write_string( $mm,22, $row->referen, $numero ); //N� FACT AFECTA
@@ -790,33 +771,31 @@ class ventas{
 				if ( !empty($row->fecharece) )
 					$fecharece = substr($row->fecharece,8,2)."/".substr($row->fecharece,5,2)."/".substr($row->fecharece,0,4);
 				$ws->write_string( $mm,20, $fecharece, $cuerpo );	// FECHA COMPROB
-				$ws->write_string( $mm,21, $row->nfiscal, $numero );
+				$ws->write_string( $mm,21, ($fiscal)? $row->serial : $row->nfiscal, $numero );
 				$mm++;
 			}
 		}
-		
 		//Imprime el Ultimo
 		$celda = $mm+1;
-		
+
 		$fventas = "=I$celda";   // VENTAS
 		$fexenta = "=J$celda";   // VENTAS EXENTAS
-		
 		$ffob    = "=K$celda";   // BASE IMPONIBLE
-		
+
 		$fgeneral  = "=L$celda";   // general
 		$fgeneimpu = "=M$celda";   // general
-		
+
 		$fadicional = "=N$celda";   // general
 		$fadicimpu  = "=O$celda";   // general
-		
+
 		$freducida = "=P$celda";   // general
 		$freduimpu = "=Q$celda";   // general
-		
+
 		$fivaret   = "=R$celda";   // general
 		//$fivaperu  = "=U$celda";   // general
-		
+
 		$fivajuste = "=S$celda";   // general
-		
+
 		$ws->write( $mm, 0,"Totales...",  $titulo );
 		$ws->write_blank( $mm, 1,  $titulo );
 		$ws->write_blank( $mm, 2,  $titulo );
@@ -825,37 +804,37 @@ class ventas{
 		$ws->write_blank( $mm, 5,  $titulo );
 		$ws->write_blank( $mm, 6,  $titulo );
 		$ws->write_blank( $mm, 7,  $titulo );
-		
+
 		$ws->write_formula( $mm, 8, "=SUM(I$ii:I$mm)", $Tnumero );   //"VENTAS + IVA" 
 		$ws->write_formula( $mm, 9, "=SUM(J$ii:J$mm)", $Tnumero );   //"VENTAS EXENTAS" 
 		$ws->write_formula( $mm,10, "=SUM(K$ii:K$mm)", $Tnumero );   //"BASE IMPONIBLE" 
-		
+
 		$ws->write_formula( $mm,11, "=SUM(L$ii:L$mm)", $Tnumero );   //"VENTAS + IVA" 
 		$ws->write_formula( $mm,12, "=SUM(M$ii:M$mm)", $Tnumero );   //"VENTAS EXENTAS" 
 		$ws->write_formula( $mm,13, "=SUM(N$ii:N$mm)", $Tnumero );   //"BASE IMPONIBLE" 
-		
+
 		$ws->write_formula( $mm,14, "=SUM(O$ii:O$mm)", $Tnumero );   //"VENTAS + IVA" 
 		$ws->write_formula( $mm,15, "=SUM(P$ii:P$mm)", $Tnumero );   //"VENTAS EXENTAS" 
 		$ws->write_formula( $mm,16, "=SUM(Q$ii:Q$mm)", $Tnumero );   //"BASE IMPONIBLE" 
-		
+
 		$ws->write_formula( $mm,17, "=SUM(R$ii:R$mm)", $Tnumero );   //"BASE IMPONIBLE" 
 		$ws->write_formula( $mm,18, "=SUM(S$ii:S$mm)", $Tnumero );   //"BASE IMPONIBLE" 
-		
+
 		$ws->write_blank( $mm, 19,  $Tnumero );
 		$ws->write_blank( $mm, 20,  $Tnumero );
 		$ws->write_blank( $mm, 21,  $Tnumero );
 		$ws->write_blank( $mm, 22,  $Tnumero );
 		//$ws->write_formula( $mm,20, "=SUM(U$ii:U$mm)", $Tnumero );   //IMPUESTO PERCIBIDO 
-		
+
 		$mm ++;
 		$mm ++;
-		
+
 		$ws->write($mm, 1, 'RESUMEN DE VENTAS Y DEBITOS:', $titulo );
 		$ws->write_blank( $mm+1, 1,  $titulo );
-		
+
 		$ws->write_blank( $mm  , 2, $titulo );
 		$ws->write_blank( $mm+1, 2, $titulo );
-		
+
 		$ws->write_blank( $mm  , 3, $titulo );
 		$ws->write_blank( $mm+1, 3, $titulo );
 		
@@ -3743,7 +3722,8 @@ class ventas{
 		}
 	}
 
-	function genesfac($mes) {
+	//Genera libro de ventas fiscal o no fiscal
+	function _genesfac($mes,$fiscal=false) {
 		$udia=days_in_month(substr($mes,4),substr($mes,0,4));
 		$fdesde=$mes.'01';
 		$fhasta=$mes.$udia;
@@ -3764,20 +3744,36 @@ class ventas{
 			WHERE reducida=0 AND sobretasa=0 AND exento=0 AND EXTRACT(YEAR_MONTH FROM fecha)=$mes";
 		$this->db->simple_query($mSQL);
 		//consulta tipo que fue remplazada: IF(MID(a.numero,1,LOCATE('D',a.numero))='D','NC',CONCAT('F',a.tipo)) AS tipo
+		if($fiscal){
+			$mSQL = "UPDATE sfac SET nfiscal  =null WHERE LENGTH(TRIM(nfiscal))  =0"; $this->db->simple_query($mSQL);
+			$mSQL = "UPDATE sfac SET maqfiscal=null WHERE LENGTH(TRIM(maqfiscal))=0"; $this->db->simple_query($mSQL);
+
+			$nfiscal   ='a.nfiscal';
+			#$where     =' AND a.nfiscal IS NOT NULL AND a.maqfiscal IS NOT NULL';
+			$where     ='';
+			$sivainsert=', serial';
+			$sfacinsert=',a.maqfiscal';
+		}else{
+			$nfiscal   ='a.numero';
+			$where     ='';
+			$sivainsert='';
+			$sfacinsert='';
+		}
+
 		$mSQL = "
 			INSERT INTO siva  
 			(id, libro, tipo, fuente, sucursal, fecha, numero, numhasta,  caja, nfiscal,  nhfiscal, 
 			referen, planilla, clipro, nombre, contribu, rif, registro,
 			nacional, exento, general, geneimpu, 
 			adicional, adicimpu,  reducida,  reduimpu, stotal, impuesto, 
-			gtotal, reiva, fechal, fafecta) 
+			gtotal, reiva, fechal, fafecta $sivainsert) 
 				SELECT 0 AS id,
 				'V' AS libro, 
 				IF(a.tipo_doc='D','NC',CONCAT(a.tipo_doc,'C')) AS tipo,
 				'FA' AS fuente,
 				'00' AS sucursal, 
 				a.fecha, 
-				a.numero AS numero,
+				${nfiscal} AS numero,
 				' ' AS numhasta, 
 				' ' AS caja, 
 				a.nfiscal, 
@@ -3803,10 +3799,11 @@ class ventas{
 				0 AS reiva,
 				".$mes."01 AS fechal,
 				0 AS fafecta
+				$sfacinsert
 				FROM sfac AS a
 				LEFT JOIN sfac AS b ON a.factura = b.numero AND a.tipo_doc='D'
 				LEFT JOIN scli AS c ON a.cod_cli=c.cliente 
-				WHERE a.fecha BETWEEN $fdesde AND $fhasta AND MID(a.numero,1,1)<>'_'";
+				WHERE a.fecha BETWEEN $fdesde AND $fhasta AND MID(a.numero,1,1)<>'_' $where";
 
 		$flag=$this->db->simple_query($mSQL);
 		if(!$flag) memowrite($mSQL,'genesfac');
