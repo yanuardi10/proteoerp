@@ -19,7 +19,7 @@ class Sfacfiscal extends Controller{
 					resp=0;
 				else
 					resp=1;
-				$.post("'.$link.'",{ cajero:$("#cajero").val(),fecha:$("#fecha").val(), serial:id ,noresp:resp},
+				$.post("'.$link.'",{ cajero:$("#cajero").val(),fecha:$("#fecha").val(), serial:id ,noresp:resp, nulos:$("#nulos").val()},
 				function(data){
 					alert(data);
 				});
@@ -32,7 +32,7 @@ class Sfacfiscal extends Controller{
 					resp=0;
 				else
 					resp=1;
-				$.post("'.$link2.'",{ cajero:$("#cajero").val(),fecha:$("#fecha").val(), numero:id ,noresp:resp},
+				$.post("'.$link2.'",{ cajero:$("#cajero").val(),fecha:$("#fecha").val(), numero:id ,noresp:resp, nulos:$("#nulos").val()},
 				function(data){
 					alert(data);
 				});
@@ -58,7 +58,8 @@ class Sfacfiscal extends Controller{
 			}
 			return $rt;
 		}
-		 $atts = array(
+
+		$atts = array(
 			'width'      => '800',
 			'height'     => '600',
 			'scrollbars' => 'yes',
@@ -74,7 +75,7 @@ class Sfacfiscal extends Controller{
 		$filter->fecha  = new dateonlyField('Desde','fecha');
 		$filter->fecha->clause  ='where';
 		$filter->fecha->db_name ='fecha';
-		$filter->fecha->insertValue = date("Y-m-d");
+		$filter->fecha->insertValue = date('Y-m-d');
 		$filter->fecha->operator='=';
 		$filter->fecha->rule    ='required';
 		$filter->fecha->append("<a onclick='buscaref()'>Traer de referencia</a>");
@@ -85,13 +86,21 @@ class Sfacfiscal extends Controller{
 		$filter->cajero->options('SELECT cajero, CONCAT_WS("-",cajero,nombre) FROM scaj ORDER BY cajero');
 		//$filter->cajero->rule    ='required';
 
+		$filter->nulos = new dropdownField('Filtrar seriales nulos', 'nulos');
+		$filter->nulos->option('s','Si');
+		$filter->nulos->option('n','No');
+		$filter->nulos->clause ='';
+		$filter->nulos->group='No afecta el filtro';
+		$filter->nulos->append('Si se activa esta opcion no se riega el n&uacute;mero en los campos donde el serial de la m&aacute;quina fiscal es nulo');
+
 		$filter->buttons('reset','search');
 		$filter->build();
 
 		if($this->rapyd->uri->is_set('search') AND $filter->is_valid()){
 			$fecha=$filter->fecha->newValue;
+
 			$llink=anchor('supervisor/sfacfiscal/editsfac/modify/<#tipo_doc#>/<#numero#>','<#numero#>');
-			$uri2 = anchor_popup('formatos/verhtml/FACTURA/<#tipo_doc#>/<#numero#>',"Ver HTML",$atts);
+			$uri2 = anchor_popup('formatos/verhtml/FACTURA/<#tipo_doc#>/<#numero#>','Ver HTML',$atts);
 
 			$grid = new DataGrid('');
 			$grid->use_function('exissinv');
@@ -100,7 +109,7 @@ class Sfacfiscal extends Controller{
 			$grid->column('Fecha'      ,'<dbdate_to_human><#fecha#></dbdate_to_human>' ,'fecha');
 			$grid->column('Nombre'     ,'nombre');
 			$grid->column('Referencia' ,$llink);
-			$grid->column('Monto' ,'<nformat><#totalg#></nformat>','align="right"');
+			$grid->column('Monto'      ,'<nformat><#totalg#></nformat>','align="right"');
 			$grid->column('N.Fiscal'   ,'<exissinv><#nfiscal#>|2</exissinv>'  ,'align="center"');
 			$grid->column('Serial Maq.','<exissinv><#maqfiscal#>|1</exissinv>','align="center"');
 			$grid->column('Ver factura',$uri2,'align="center"');
@@ -113,6 +122,12 @@ class Sfacfiscal extends Controller{
 			$monto=$this->datasis->dameval($mSQL);
 
 			$tabla='Monto: '.nformat($monto).$grid->output;
+			$mSQL='SELECT serial, MAX(factura) AS factura FROM fiscalz WHERE fecha="'.$fecha.'" GROUP BY serial';
+			$query = $this->db->query($mSQL);
+
+			foreach ($query->result() as $row){
+				$tabla .= $row->serial.' - '.$row->factura.br();
+			}
 		}else{
 			$tabla='';
 		}
@@ -196,6 +211,8 @@ class Sfacfiscal extends Controller{
 		$cajero=$this->input->post('cajero');
 		$fecha =$this->input->post('fecha');
 		$numero=$this->input->post('numero');
+		$nulos =$this->input->post('nulos');
+
 		if($cajero===false or $fecha===false or $numero===false) {
 			echo 'Error en los parametros';
 			return false;
@@ -208,6 +225,7 @@ class Sfacfiscal extends Controller{
 
 		$nnumero=ltrim($numero,'0');
 		$wwhere="`fecha` = $fecha AND `cajero` = $cajero AND `tipo_doc`= 'F'";
+		if($nulos=='s') $wwhere.=' AND maqfiscal IS NOT NULL';
 		$mSQL="SELECT TRIM(nfiscal) AS nfiscal,tipo_doc,numero FROM (`sfac`) WHERE $wwhere ORDER BY `numero`";
 		$query = $this->db->query($mSQL);
 		if ($query->num_rows() > 0){
