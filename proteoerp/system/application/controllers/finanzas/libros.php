@@ -603,6 +603,9 @@ class Libros extends Controller {
 		$mSQL="ALTER TABLE `siva`  CHANGE COLUMN `nombre` `nombre` VARCHAR(80) NULL DEFAULT NULL AFTER `clipro`";
 		$this->db->simple_query($mSQL);
 
+		//$mSQL='TRUNCATE libros';
+		//$this->db->simple_query($mSQL);
+
 		$data[]=array('metodo'=>'wlvexcelpdv'        ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas PDV'      );
 		$data[]=array('metodo'=>'wlvexcelpdvq1'      ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas PDV Quincenta 1');
 		$data[]=array('metodo'=>'wlvexcelpdvq2'      ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas PDV Quincenta 2');
@@ -610,28 +613,28 @@ class Libros extends Controller {
 		$data[]=array('metodo'=>'wlvexcelpdvfiscal2' ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas PDV Fiscal V2');
 		$data[]=array('metodo'=>'wlvexcelpdvfiscalq1','activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas PDV Quincenta 1 Fiscal');
 		$data[]=array('metodo'=>'wlvexcelpdvfiscalq2','activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas PDV Quincenta 2 Fiscal');
-		$data[]=array('metodo'=>'wlvexcel'           ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas'          );
-		$data[]=array('metodo'=>'wlvexcel2'          ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas no Agrupadas');
-		$data[]=array('metodo'=>'wlvexcelfiscal'     ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas no Agrupadas Fiscal');
+		$data[]=array('metodo'=>'wlvexcel'           ,'activo'=>'S','tipo'=>'D' ,'nombre' => 'Libro de Ventas'          );
+		$data[]=array('metodo'=>'wlvexcel2'          ,'activo'=>'S','tipo'=>'D' ,'nombre' => 'Libro de Ventas no Agrupadas');
+		$data[]=array('metodo'=>'wlvexcelfiscal'     ,'activo'=>'S','tipo'=>'D' ,'nombre' => 'Libro de Ventas Agrupadas Fiscal');
 		$data[]=array('metodo'=>'wlvcierrez'         ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas basado en cierre Z');
 		$data[]=array('metodo'=>'wlvexcelsucu'       ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas por Sucursal');
-		$data[]=array('metodo'=>'wlcexcel'           ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Compras'         );
+		$data[]=array('metodo'=>'wlcexcel'           ,'activo'=>'S','tipo'=>'D' ,'nombre' => 'Libro de Compras'         );
 		$data[]=array('metodo'=>'wlcsexcel'          ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Compras Supermercado');
 		$data[]=array('metodo'=>'wlvexcele'          ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas  ESPECIAL');
 		$data[]=array('metodo'=>'wlcexcele'          ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Compras ESPECIAL');
 		$data[]=array('metodo'=>'prorrata'           ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Prorrata'                 );
 		$data[]=array('metodo'=>'invresu'            ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Inventario'      );
 
-		$data[]=array('metodo'=>'genecompras'        ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de compras COMPRAS' );
+		$data[]=array('metodo'=>'genecompras'        ,'activo'=>'S','tipo'=>'G' ,'nombre' => 'Generar Libro de compras COMPRAS' );
 		$data[]=array('metodo'=>'genesfaccierrez'    ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas basado en cierre Z' );
-		$data[]=array('metodo'=>'genegastos'         ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de compras GASTOS'  );
-		$data[]=array('metodo'=>'genecxp'            ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de compras CXP'     );
-		$data[]=array('metodo'=>'genesfac'           ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas Facturas' );
-		$data[]=array('metodo'=>'genesfacfiscal'     ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas Facturas Fiscal' );
+		$data[]=array('metodo'=>'genegastos'         ,'activo'=>'S','tipo'=>'G' ,'nombre' => 'Generar Libro de compras GASTOS'  );
+		$data[]=array('metodo'=>'genecxp'            ,'activo'=>'S','tipo'=>'G' ,'nombre' => 'Generar Libro de compras CXP'     );
+		$data[]=array('metodo'=>'genesfac'           ,'activo'=>'S','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas Facturas' );
+		$data[]=array('metodo'=>'genesfacfiscal'     ,'activo'=>'S','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas Facturas Fiscal' );
 		$data[]=array('metodo'=>'geneventasfiscalpdv','activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas Fiscal PDV'   );
-		$data[]=array('metodo'=>'genesfmay'          ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas Facturas al mayor' );
+		$data[]=array('metodo'=>'genesfmay'          ,'activo'=>'S','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas Facturas al mayor' );
 		$data[]=array('metodo'=>'genesmov'           ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas CXC'      );
-		$data[]=array('metodo'=>'geneotin'           ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas O.Ingresos');
+		$data[]=array('metodo'=>'geneotin'           ,'activo'=>'S','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas O.Ingresos');
 		$data[]=array('metodo'=>'generest'           ,'activo'=>'N','tipo'=>'G' ,'nombre'  =>'Generar Libro de ventas Restaurante');
 		$data[]=array('metodo'=>'genehotel'          ,'activo'=>'N','tipo'=>'G' ,'nombre'  =>'Generar Libro de ventas Hotel');
 
