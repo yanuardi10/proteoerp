@@ -485,8 +485,10 @@ class ventas{
 		$sobretasa = $aaa['sobretasa'];
 		if($fiscal){
 			$group=', a.serial';
+			$order=', serial';
 		}else{
 			$group='';
+			$order=", IF(tipo IN ('FE','FC','XE','XC'),1,2)";
 		}
 
 		// ARREGLA SIVA PORSIA
@@ -526,7 +528,7 @@ class ventas{
 				' ' nfiscal,
 				' ' rif,
 				IF(a.registro<>'04','A NO CONTRIBUYENTES TOTAL DEL DIA',b.nombre) nombre,
-				' ' AS tipo, 
+				a.tipo AS tipo, 
 				' ' afecta,
 				sum(a.gtotal*IF(a.tipo='NC',-1,1))    ventatotal,
 				sum(a.exento*IF(a.tipo='NC',-1,1))    exento,
@@ -543,8 +545,8 @@ class ventas{
 			FROM siva a LEFT JOIN scli b ON a.clipro=b.cliente
 			WHERE a.fechal BETWEEN $fdesde AND $fhasta AND a.libro='V' AND a.tipo<>'FA' AND a.contribu='NO' AND a.tipo IN ('FE','FC','NC')
 			GROUP BY a.fecha, a.tipo, a.registro $group
-			ORDER BY fecha, IF(tipo IN ('FE','FC','XE','XC'),1,2), numero ";
-//memowrite($mSQL);
+			ORDER BY fecha $order, numero ";
+
 		$export = $this->db->query($mSQL);
 
 		$fname = tempnam('/tmp','lventas.xls');
@@ -557,6 +559,7 @@ class ventas{
 		$ws->set_column('G:G',37);
 		$ws->set_column('H:H',11);
 		$ws->set_column('I:S',20);
+		$ws->set_column('V:V',11);
 
 		// FORMATOS
 		$h      =& $wb->addformat(array( "bold" => 1, "size" => 16, "merge" => 1));
@@ -619,22 +622,22 @@ class ventas{
 		$ws->write_blank( $mm+1, $mcel, $titulo );
 		$ws->write_string( $mm+2, $mcel, "Final", $titulo );
 		$mcel++;
-		
+
 		$ws->write_string( $mm,   $mcel, "Nombre, Razon Social", $titulo );
 		$ws->write_string( $mm+1, $mcel, "o Denominacion del ", $titulo );
 		$ws->write_string( $mm+2, $mcel, "Comprador", $titulo );
 		$mcel++;
-		
+
 		$ws->write_string( $mm,   $mcel, "Numero", $titulo );
 		$ws->write_string( $mm+1, $mcel, "del", $titulo );
 		$ws->write_string( $mm+2, $mcel, "R.I.F.", $titulo );
 		$mcel++;
-		
+
 		$ws->write_string( $mm,   $mcel, "Total Ventas", $titulo );
 		$ws->write_string( $mm+1, $mcel, "Incluyendo el", $titulo );
 		$ws->write_string( $mm+2, $mcel, "I.V.A.", $titulo );
 		$mcel++;
-		
+
 		$ws->write_string( $mm,   $mcel, "Ventas",    $titulo );
 		$ws->write_string( $mm+1, $mcel, "Exentas o", $titulo );
 		$ws->write_string( $mm+2, $mcel, "no Sujetas",$titulo );
@@ -858,22 +861,22 @@ class ventas{
 		
 		$ws->write($mm,  10, 'Debito', $titulo );
 		$ws->write($mm+1,10, 'Fiscal', $titulo );
-		
+
 		$ws->write($mm, 16, 'LEYENDAS:', $titulo );
 		$ws->write_blank( $mm+1, 16,  $titulo );
-		
+
 		$ws->write_blank( $mm,   17,  $titulo );
 		$ws->write_blank( $mm+1, 17,  $titulo );
-		
+
 		$ws->write($mm,   18, 'Tipo de Contribuyente',  $titulo );
 		$ws->write($mm+1, 18, 'CO -Contribuyente',$cuerpo );
-		
+
 		$ws->write_blank( $mm,   19, $cuerpob );
 		$ws->write_blank( $mm+1, 19, $cuerpo );
-		
+
 		$mm ++;
 		$mm ++;
-		
+
 		$ws->write($mm, 1, 'Total Ventas Internas no Gravadas:', $h1 );
 		$ws->write_blank( $mm, 2,  $h1 );
 		$ws->write_blank( $mm, 3,  $h1 );
@@ -886,7 +889,7 @@ class ventas{
 		$ws->write_blank( $mm, 17,  $cuerpob );
 		$ws->write($mm, 18, 'NO -No Contribuyente', $cuerpo );
 		$mm ++;
-		
+
 		$ws->write($mm, 1, 'Total Ventas de Exportacion:', $h1 );
 		$ws->write_blank( $mm, 2,  $h1 );
 		$ws->write_blank( $mm, 3,  $h1 );
@@ -897,12 +900,11 @@ class ventas{
 		$ws->write_formula($mm, 8, "=K$celda" , $Rnumero );
 		$ws->write($mm, 16, 'FC -Factura', $cuerpo );
 		$ws->write_blank( $mm+1, 16,  $cuerpo );
-		
+
 		$ws->write($mm, 18, 'Tipo de Transaccion', $titulo );
 		$ws->write_blank( $mm, 19,  $cuerpob );
-		
 		$mm ++;
-		
+
 		$ws->write($mm, 1, 'Total Ventas Internas Gravadas Alicuota General:', $h1 );
 		$ws->write_blank( $mm, 2,  $h1 );
 		$ws->write_blank( $mm, 3,  $h1 );
@@ -968,14 +970,14 @@ class ventas{
 		$ws->write_formula($mm, 8, "=J$celda+K$celda+L$celda+N$celda+P$celda" , $Rnumero );
 		$ws->write($mm, 9, "47" , $cuerpoc );
 		$ws->write_formula($mm, 10, "=M$celda+O$celda+Q$celda", $Rnumero );
-		
+
 		$ws->write($mm, 16, 'CR -Comprobante Ret.', $cuerpo );
 		$ws->write_blank( $mm+1, 16,  $cuerpo );
 		$ws->write($mm, 18, '04 -Ajuste', $cuerpo );
 		$ws->write_blank( $mm, 19,  $cuerpo );
 		$mm ++;
 		$mm ++;
-		
+
 		$ws->write($mm, 1, 'Total IVA retenido por el Comprador:', $titulo );
 		$ws->write_blank( $mm, 2,  $titulo );
 		$ws->write_blank( $mm, 3,  $titulo );
@@ -986,7 +988,7 @@ class ventas{
 		$ws->write_blank( $mm, 8,  $Rnumero );
 		$ws->write($mm, 9, "66" , $cuerpoc );
 		$ws->write_formula($mm, 10, "=S$celda", $Rnumero );
-		
+
 		$mm ++;
 		$mm ++;
 		$ws->write($mm, 1, 'Total Ajustes a los debitos fiscales de periodos Anteriores:', $titulo );
@@ -999,9 +1001,9 @@ class ventas{
 		$ws->write_blank( $mm, 8,  $Rnumero );
 		$ws->write($mm, 9, "48" , $cuerpoc );
 		$ws->write_formula($mm, 10, "=R$celda", $Rnumero );
-		
+
 		$wb->close();
-		
+
 		header("Content-type: application/x-msexcel; name=\"lventas.xls\"");
 		header("Content-Disposition: inline; filename=\"lventas.xls\"");
 		$fh=fopen($fname,"rb");
