@@ -73,11 +73,17 @@ class Rpcserver extends Controller {
 		$cod_cli=$parameters['1'];
 		$usr    =$parameters['2'];
 		$pwd    =$parameters['3'];
+		if(isset($parameters['4']))
+			$uniq = $parameters['4'];
+		else
+			$uniq = false;
+
+		$op = ($uniq) ? '=' : '>';
 		$cant   =5;
 
 		$compras=array();
 		if($this->secu->cliente($usr,$pwd)){
-			$mSQL="SELECT numero,fecha,vence,TRIM(nfiscal) AS nfiscal,totals,totalg,iva,exento,tasa,reducida,sobretasa,montasa,monredu,monadic FROM sfac WHERE cod_cli=? AND numero > ? AND tipo_doc='F' LIMIT $cant";
+			$mSQL="SELECT numero,fecha,vence,TRIM(nfiscal) AS nfiscal,totals,totalg,iva,exento,tasa,reducida,sobretasa,montasa,monredu,monadic FROM sfac WHERE cod_cli=? AND numero $op ? AND tipo_doc='F' LIMIT $cant";
 			$query = $this->db->query($mSQL,array($usr,$ult_ref));
 			//memowrite($this->db->last_query(),'B2B');
 			if ($query->num_rows() > 0){ 
