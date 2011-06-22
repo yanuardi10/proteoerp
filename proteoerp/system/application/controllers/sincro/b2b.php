@@ -709,7 +709,7 @@ class b2b extends validaciones {
 		$form->tipo->option('scon','Consignacion');
 		$form->tipo->rule='required';
 
-		$form->numero = new inputField('N&uacute;mero','numero');
+		$form->numero = new inputField('Referencia','numero');
 		$form->numero->rule = 'required';
 		$form->numero->size = 10;
 
