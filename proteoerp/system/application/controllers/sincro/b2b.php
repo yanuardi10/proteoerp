@@ -85,6 +85,8 @@ class b2b extends validaciones {
 		$grid->column_orderby('Grupo'         ,'grupo'  ,'grupo');
 		$grid->column('Traer' ,$acti.' | '.$acti2);
 		$grid->add('sincro/b2b/dataedit/create');
+		$action = "javascript:window.location='".site_url('sincro/b2b/traecomprauniq')."'";
+		$grid->button('btn_uniq', 'Descarga Unitaria', $action, 'TR');
 		$grid->build();
 
 		$smenu['link']   =barra_menu('921');
@@ -506,7 +508,7 @@ class b2b extends validaciones {
 		$do = new DataObject('b2b_scon');
 		$do->rel_one_to_many('itscon', 'b2b_itscon', array('id'=>'id_scon'));
 		$do->rel_pointer('itscon','sinv','b2b_itscon.codigo=sinv.codigo','sinv.descrip AS sinvdescrip, sinv.base1 AS sinvprecio1, sinv.base2 AS sinvprecio2, sinv.base3 AS sinvprecio3, sinv.base4 AS sinvprecio4, sinv.iva AS sinviva, sinv.peso AS sinvpeso,sinv.tipo AS sinvtipo');
-		
+
 		$edit = new DataDetails('Pr&eacute;stamo de inventario', $do);
 		$edit->back_url = site_url('inventario/psinv/filteredgrid');
 		$edit->set_rel_title('itscon','Producto <#o#>');
@@ -692,7 +694,50 @@ class b2b extends validaciones {
 		$this->load->view('view_ventanas_sola', $data);
 	}
 
-	function _trae_compra($id=null,$ultimo=null){
+	function traecomprauniq(){
+		$this->rapyd->load('dataform');
+
+		$form = new DataForm('sincro/b2b/traecomprauniq/process');
+
+		$form->par = new dropdownField('Proveedor', 'proveed');
+		$form->par->option('','Seleccionar');
+		$form->par->options('SELECT a.id,b.nombre FROM b2b_config AS a JOIN sprv AS b ON a.proveed=b.proveed ORDER BY b.nombre');
+		$form->par->rule='required';
+
+		$form->tipo = new dropdownField('Tipo de transacci&oacute;n', 'tipo');
+		$form->tipo->option('scst','Compra');
+		$form->tipo->option('scon','Consignacion');
+		$form->tipo->rule='required';
+
+		$form->numero = new inputField('N&uacute;mero','numero');
+		$form->numero->rule = 'required';
+		$form->numero->size = 10;
+
+		$action = "javascript:window.location='".site_url('sincro/b2b/index')."'";
+		$form->button('btn_regresar', 'Regresar', $action, 'BR');
+
+		$form->submit('btnsubmit','Traer');
+		$form->build_form();
+
+		$msj='';
+		if ($form->on_success()){
+			$id     = $form->par->newValue;
+			$ultimo = $form->numero->newValue;
+			if($form->tipo->newValue=='scst'){
+				$this->_trae_compra($id,$ultimo,true);
+				$msj=$this->comprasCargadas.' transacciones descargadas';
+			}else{
+				$msj='M&eacute;todo aun no definido';
+			}
+		}
+
+		$data['content'] = $msj.$form->output;
+		$data['title']   = heading('Traer transacci&oacute;nes');
+		$data['head']    = script('jquery.js').script('jquery-ui.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css').$this->rapyd->get_head().phpscript('nformat.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js').phpscript('nformat.js');
+		$this->load->view('view_ventanas', $data);
+	}
+
+	function _trae_compra($id=null,$ultimo=null,$uniq=false){
 		$this->comprasCargadas=0;
 		if(is_null($id)) return false; else $id=$this->db->escape($id);
 		$contribu=$this->datasis->traevalor('CONTRIBUYENTE');
@@ -722,7 +767,7 @@ class b2b extends validaciones {
 			$ufac=0;
 		}
 
-		$request = array($ufac,$config['proveed'],$config['usuario'],md5($config['clave']));
+		$request = array($ufac,$config['proveed'],$config['usuario'],md5($config['clave']),$uniq);
 		$this->xmlrpc->request($request);
 
 		if (!$this->xmlrpc->send_request()){
@@ -737,6 +782,12 @@ class b2b extends validaciones {
 
 				$proveed=$config['proveed'];
 				$pnombre=$this->datasis->dameval('SELECT nombre FROM sprv WHERE proveed='.$this->db->escape($proveed));
+
+				$iid=$this->datasis->dameval('SELECT id FROM b2b_scst WHERE proveed='.$this->db->escape($proveed).' AND numero='.$this->db->escape($arr['numero']));
+				if(!empty($iid)){
+					$this->db->simple_query('DELETE FROM b2b_scst WHERE id='.$iid);
+					$this->db->simple_query('DELETE FROM b2b_itscst WHERE id_scst='.$iid);
+				}
 
 				$data['proveed']  = $proveed;
 				$data['nombre']   = $pnombre;
