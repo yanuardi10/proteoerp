@@ -39,7 +39,20 @@ class sinv extends Controller {
 				'titulo'  =>'Buscar Proveedor');
 
 		$bSPRV=$this->datasis->modbus($mSPRV);
+		
+		$mGRUP=array(
+				'tabla'   =>'grup',
+				'columnas'=>array(
+				'grupo'   =>'Grupo',
+				'nom_grup'=>'Nombre',
+				'linea'=>'Linea',
+				'depto'=>'Depto'),
+				'filtro'  =>array('grupo'=>'Grupo','nom_grup'=>'Nombre'),
+				'retornar'=>array('grupo'=>'popup_prompt'),
+				'titulo'  =>'Buscar Grupo');
 
+		$bGRUP=$this->datasis->modbus($mGRUP);
+		
 		$link2=site_url('inventario/common/get_linea');
 		$link3=site_url('inventario/common/get_grupo');
 
@@ -240,6 +253,11 @@ class sinv extends Controller {
 		$mtool .= img(array('src' => 'images/reportes.gif', 'alt' => 'Reportes', 'title' => 'Reportes','border'=>'0','height'=>'32'));
 		$mtool .= "</a>&nbsp;</td>";
 
+		$mtool .= "<td>&nbsp;<a href='javascript:cambgrupo()'>";
+		$mtool .= img(array('src' => 'images/grupo.jpg', 'alt' => 'Cambiar Grupo', 'title' => 'Cambiar Grupo','border'=>'0','height'=>'30'));
+		$mtool .= "</a>&nbsp;</td>";
+
+
 		$mtool .= "</tr></table>";
 
 		$grid = new DataGrid($mtool);
@@ -248,18 +266,16 @@ class sinv extends Controller {
 		$link=anchor('/inventario/sinv/dataedit/show/<#id#>','<#codigo#>');
 
 		$uri_2  = anchor('inventario/sinv/dataedit/modify/<#id#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar','height'=>'12','title'=>'Editar')));
-
 		$uri_2 .= "<a href='javascript:void(0);' ";
 		$uri_2 .= 'onclick="window.open(\''.base_url()."inventario/sinv/consulta/<#id#>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');".'" heigth="600"'.'>';
 		$uri_2 .= img(array('src'=>'images/estadistica.jpeg','border'=>'0','alt'=>'Consultar','height'=>'12','title'=>'Consultar'));
 		$uri_2 .= "</a>";
-
 		$uri_2 .= "<a href='javascript:void(0);' ";
 		$uri_2 .= 'onclick="window.open(\''.base_url()."inventario/fotos/dataedit/<#id#>/create', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');".'" heigth="600"'.'>';
 		$uri_2 .= img(array('src' => 'images/foto.gif', 'alt' => 'Foto', 'title' => 'Foto','border'=>'0','height'=>'12'));
 		$uri_2 .= "</a>";
-
 		$uri_2 .= img(array('src'=>'images/<#activo#>.gif','border'=>'0','alt'=>'Estado','title'=>'Estado Activo/Inactivo'));
+		$uri_2 .= "<input type='checkbox' name='<#id#>' id='<#id#>' style='height: 10px;'> ";
 
 		$grid->column("Acci&oacute;n",$uri_2     ,"align='center'");
 		$grid->column_orderby("C&oacute;digo",$link,"codigo");
@@ -275,7 +291,7 @@ class sinv extends Controller {
 		$grid->column_orderby("Precio 3","<nformat><#precio3#></nformat>","precio3",'align=right');
 		$grid->column_orderby("Marca","marca","marca");
 
-		$grid->add('inventario/sinv/dataedit/create');
+		//$grid->add('inventario/sinv/dataedit/create');
 		$grid->build('datagridST');
 
 		$lastq = $this->db->last_query();
@@ -293,6 +309,7 @@ class sinv extends Controller {
 		$link1  =site_url('inventario/sinv/redondear');
 		$link2  =site_url('inventario/sinv/recalcular');
 		$link3  =site_url("inventario/sinv/auprec/$id"); 
+		$link4  =site_url("inventario/sinv/sinvcamgrup/"); 
 		
 		$script = '
 <script type="text/javascript">
@@ -344,6 +361,43 @@ function auprec(){
 		}
 	}
 };
+
+function cambgrupo(){
+	var yurl = "";
+	var n = $("input:checked").length;
+	var a = "";
+	var mbusca = "'.addslashes($bGRUP).'";
+	
+	$("input:checked").each( function() { a += this.id+","; });
+	
+	if( n==0) {
+		jAlert("No hay productos Seleccionados","Informacion");
+	}else{
+	jPrompt("Selecciono "+n+" Productos<br>Introduzca el Grupo "+mbusca,"" ,"Cambiar de Grupo", function(mgrupo){
+		if( mgrupo==null ){
+			jAlert("Cancelado por el usuario","Informacion");
+		} else if( mgrupo=="" ) {
+			jAlert("Cancelado,  Grupo vacio","Informacion");
+		} else {
+			yurl = encodeURIComponent(mgrupo);
+			$.ajax({
+				url: "'.$link4.'",
+				global: false,
+				type: "POST",
+				data: ({ grupo : encodeURIComponent(mgrupo), productos : a }),
+				dataType: "text",
+				async: false,
+				success: function(sino) {
+				jAlert(sino,"Informacion");
+				location.reload();
+				},
+				error: function(h,t,e)  { jAlert("Error..codigo="+yurl+" ",e) } 
+			});
+		}
+	})
+	}
+};
+
 </script>
 ';
 
@@ -385,6 +439,8 @@ function auprec(){
 		$data['filtro']  = $filter->output;
 
 		$data["script"]  = script("jquery.js");
+		$data["script"]  .= script("jquery-ui.js");
+		$data["script"]  .= script("jquery.alerts.js");
 		$data["script"] .= script("plugins/jquery.numeric.pack.js");
 		$data["script"] .= script("plugins/jquery.floatnumber.js");
 		$data["script"] .= script('superTables.js');
@@ -392,6 +448,7 @@ function auprec(){
 
 		$data['style']   = $style;
 		$data['style']  .= style('superTables.css');
+		$data['style']	.= style("jquery.alerts.css");
 
 		$data['extras']  = $extras;
 		$data['title']   = heading('Maestro de Inventario ');
@@ -799,8 +856,6 @@ function sinvcodigo(mviejo){
 		} else if( mcodigo=="" ) {
 			jAlert("Cancelado,  Codigo vacio","Informacion");
 		} else {
-			//mcodigo=jQuery.trim(mcodig);
-			//jAlert("Aceptado "+mcodigo);
 			yurl = encodeURIComponent(mcodigo);
 			$.ajax({
 				url: "'.$link20.'",
@@ -1427,11 +1482,8 @@ function submitkardex() {
 		$data['style']	.= $style;
 		
 		$data['extras']  = $extras;
-
 		$data["head"]   = $this->rapyd->get_head();
-
 		$data['title']   = heading( substr($edit->descrip->value,0,30) );
-
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -1519,13 +1571,36 @@ function submitkardex() {
 		$this->db->simple_query("UPDATE ".$from." ".$mSQL." ".$where);
 		$this->db->call_function("sp_sinv_recalcular", "M" );
 		$this->db->call_function("sp_sinv_redondea");
-
-
 	}
 
+
+	//*****************************
+	//
+	//  Cambia el Grupo
+	//
+	function sinvcamgrup() {
+		$productos  = $this->input->post('productos');
+		$mgrupo     = rawurldecode($this->input->post('grupo'));
 		
+		if ( $this->datasis->dameval("SELECT COUNT(*) FROM grup WHERE grupo='$mgrupo'") == 0 )
+		{
+			echo "Grupo no existe $mgrupo";
+		} else {
+			//Busca el Depto y Linea del grupo
+			$depto = $this->datasis->dameval("SELECT depto FROM grup WHERE grupo='$mgrupo'");
+			$linea = $this->datasis->dameval("SELECT linea FROM grup WHERE grupo='$mgrupo'");
+			$productos = substr(trim($productos),0,-1);
+			//echo "$mgrupo $productos";
+			$mSQL = "UPDATE sinv SET grupo='$mgrupo', linea='$linea', depto='$depto' WHERE id IN ($productos) ";
+			$this->db->simple_query($mSQL);
+			logusu("SINV","Cambio grupo ".$mgrupo."-->".$productos);
+			echo "Cambiado a Depto $depto, linea $linea, grupo $mgrupo Exitosamente";
+		}
+	}
 
 
+
+		
 	//*****************************
 	//
 	//  Cambia el Codigo

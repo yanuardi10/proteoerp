@@ -65,7 +65,7 @@ class gser extends Controller {
 		$propiedad = array('src' => 'images/engrana.png', 'alt' => 'Modifica Nro de Serie', 'title' => 'Modifica Nro. de Serie','border'=>'0','height'=>'12');
 		$uri_3 .= img($propiedad);
 		$uri_3 .= "</a>";
-		
+
 		$grid = new DataGrid();
 		$grid->order_by('fecha','desc');
 		$grid->per_page = 50;
