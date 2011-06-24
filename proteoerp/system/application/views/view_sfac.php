@@ -12,13 +12,20 @@ $campos='<tr id="tr_sitems_<#i#>"><td class="littletablerow">'.join('</td><td>',
 $campos.=' <td class="littletablerow"><a href=\'#\' onclick="del_sitems(<#i#>);return false;">Eliminar</a></td></tr>';
 $campos=$form->js_escape($campos);
 
+
+
+foreach($form->detail_fields['sitems'] AS $ind=>$data) $campos[]=$data['field'];
+$campos='<tr id="tr_sitems_<#i#>"><td class="littletablerow">'.join('</td><td>',$campos).'</td>';
+$campos.=' <td class="littletablerow"><a href=\'#\' onclick="del_sitems(<#i#>);return false;">Eliminar</a></td></tr>';
+$campos=$form->js_escape($campos);
+
 foreach($form->detail_fields['sfpa'] AS $ind=>$data){ if(!empty($data['field'])) $campossfpa[]=$data['field']; }
 $campossfpa='<tr id="tr_sfpa_<#i#>"><td class="littletablerow">'.join('</td><td>',$campossfpa).'</td>';
 $campossfpa.=' <td class="littletablerow"><a href=\'#\' onclick="del_sfpa(<#i#>);return false;">Eliminar</a></td></tr>';
 $campossfpa=$form->js_escape($campossfpa);
 
 //echo $form_scripts;
-echo $form_begin;
+//echo $form_begin;
 if($form->_status!='show'){
 
 ?>
@@ -189,7 +196,7 @@ function del_sitems(id){
 		<?php if( $form->_status != 'show') {?>
 			<input name="btn_add_sfpa" value="Agregar Retenciones " onclick="add_sfpa()" class="button" type="button">
 		<?php } ?>
-		<?php echo $form_end     ?>
+		//<?php echo $form_end     ?>
 		<?php //echo $container_bl ?>
 		<?php //echo $container_br ?>
 		</td>
