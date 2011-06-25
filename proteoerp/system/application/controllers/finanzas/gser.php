@@ -62,6 +62,7 @@ class gser extends Controller {
 		$uri = anchor('finanzas/gser/dataedit/show/<#id#>','<#numero#>');
 
 		$uri_3  = "<a href='javascript:void(0);' onclick='javascript:gserserie(\"<#id#>\")'>";
+		
 		$propiedad = array('src' => 'images/engrana.png', 'alt' => 'Modifica Nro de Serie', 'title' => 'Modifica Nro. de Serie','border'=>'0','height'=>'12');
 		$uri_3 .= img($propiedad);
 		$uri_3 .= "</a>";

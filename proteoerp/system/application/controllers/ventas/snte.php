@@ -34,7 +34,7 @@ class Snte extends Controller {
 		$boton=$this->datasis->modbus($scli);
 		
 		$filter = new DataFilter("Filtro de Nota Entrega");
-		$filter->db->select('fecha,numero,cod_cli,nombre,stotal,gtotal,impuesto');
+		$filter->db->select('fecha,numero,cod_cli,nombre,stotal,gtotal,impuesto,tipo, factura, usuario, estampa, transac');
 		$filter->db->from('snte');
 		
 		$filter->fechad = new dateonlyField("Desde", "fechad",'d/m/Y');
@@ -59,31 +59,119 @@ class Snte extends Controller {
 		$filter->cliente->append($boton);
 
 		$filter->buttons("reset","search");
-		$filter->build();
+		$filter->build('dataformfiltro');
+
+		$uri2  = anchor('finanzas/gser/mgserdataedit/modify/<#id#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar')));
+		$uri2 .= "&nbsp;";
+		$uri2 .= anchor('formatos/ver/GSER/<#id#>',img(array('src'=>'images/pdf_logo.gif','border'=>'0','alt'=>'PDF')));
+		$uri2 .= "&nbsp;";
+		$uri2 .= anchor('formatos/verhtml/GSER/<#id#>',img(array('src'=>'images/html_icon.gif','border'=>'0','alt'=>'HTML')));
+
+		//$uri = anchor('finanzas/gser/dataedit/show/<#id#>','<#numero#>');
+
+		$uri_3  = "<a href='javascript:void(0);' onclick='javascript:sntefactura(\"<#numero#>\")'>";
+		$propiedad = array('src' => 'images/engrana.png', 'alt' => 'Modifica Nro de Factura', 'title' => 'Modifica Nro. de Factura','border'=>'0','height'=>'12');
+		$uri_3 .= img($propiedad);
+		$uri_3 .= "</a>";
 
 		$uri = anchor('ventas/snte/dataedit/show/<#numero#>','<#numero#>');
-		$uri2 = anchor_popup('formatos/verhtml/SNTE/<#numero#>',"Ver HTML",$atts);
+		$uri2 = anchor_popup('formatos/verhtml/SNTE/<#numero#>',img(array('src'=>'images/html_icon.gif','border'=>'0','alt'=>'HTML')));
+		//$uri2 = anchor('formatos/verhtml/GSER/<#id#>',img(array('src'=>'images/html_icon.gif','border'=>'0','alt'=>'HTML')));
 
 		$grid = new DataGrid();
 		$grid->order_by("numero","desc");
 		$grid->per_page = 15;  
 
-		$grid->column_orderby("N&uacute;mero"		,$uri,'numero');
-		$grid->column_orderby("Fecha"			,"<dbdate_to_human><#fecha#></dbdate_to_human>",'fecha',"align='center'");
-		$grid->column_orderby("Nombre"		,"nombre",'nombre');
-		$grid->column_orderby("Sub.Total"	,"<number_format><#stotal#>|2</number_format>",'stotal',"align=right");
-		$grid->column_orderby("IVA"				,"<number_format><#impuesto#>|2</number_format>",'iva',"align=right");
-		$grid->column_orderby("Total"			,"<number_format><#gtotal#>|2</number_format>",'gtotal',"align=right");
 		$grid->column_orderby("Vista",$uri2,"align='center'");
+		$grid->column_orderby("N&uacute;mero"	,$uri,'numero');
+		$grid->column_orderby("Fecha"		,"<dbdate_to_human><#fecha#></dbdate_to_human>",'fecha',"align='center'");
+		$grid->column_orderby("Cliente"		,"cod_cli",'cod_cli');
+		$grid->column_orderby("Nombre"		,"nombre",'nombre');
+		$grid->column_orderby("Tipo"		,"tipo",'tipo');
+		$grid->column_orderby("Factura"		,$uri_3."<#factura#>",'factura');
+		$grid->column_orderby("Sub.Total"	,"<number_format><#stotal#>|2</number_format>",'stotal',"align=right");
+		$grid->column_orderby("IVA"		,"<number_format><#impuesto#>|2</number_format>",'iva',"align=right");
+		$grid->column_orderby("Total"		,"<number_format><#gtotal#>|2</number_format>",'gtotal',"align=right");
 		
 		$grid->add("ventas/snte/dataedit/create");
-		$grid->build();
-		//echo $grid->db->last_query();
+		$grid->build('datagridST');
+
+
+//************ SUPER TABLE ************* 
+		$extras = '
+<script type="text/javascript">
+//<![CDATA[
+(function() {
+	var mySt = new superTable("demoTable", {
+	cssSkin : "sSky",
+	fixedCols : 1,
+	headerRows : 1,
+	onStart : function () {	this.start = new Date();},
+	onFinish : function () {document.getElementById("testDiv").innerHTML += "Finished...<br>" + ((new Date()) - this.start) + "ms.<br>";}
+	});
+})();
+//]]>
+</script>
+';
+		$style ='
+<style type="text/css">
+.fakeContainer { /* The parent container */
+    margin: 5px;
+    padding: 0px;
+    border: none;
+    width: 740px; /* Required to set */
+    height: 320px; /* Required to set */
+    overflow: hidden; /* Required to set */
+}
+</style>	
+';
+//****************************************
 		
-		$data['content'] =$filter->output.$grid->output;
-		$data["head"]    = $this->rapyd->get_head();
-		$data['title']   ='<h1>Nota de Entrega</h1>';
+$script = '
+<script type="text/javascript">
+function sntefactura(mnumero){
+	//var mserie=Prompt("Numero de Factura");
+	//jAlert("Cancelado","Informacion");
+	
+	jPrompt("Numero de Factura","" ,"Cambio de Factura", function(mfactura){
+		if( mfactura==null){
+			jAlert("Cancelado","Informacion");
+		} else {
+			$.ajax({ url: "'.site_url().'ventas/snte/sntefactura/"+mnumero+"/"+mfactura,
+				success: function(msg){
+					jAlert("Cambio Finalizado "+msg,"Informacion");
+					location.reload();
+					}
+			});
+		}
+	})
+
+}
+</script>';
+
+		
+		$data['style']   = $style;
+		$data['style']  .= style('superTables.css');
+		$data['style']	.= style("jquery.alerts.css");
+
+		$data['extras']  = $extras;		
+
+
+		$data['content'] = $grid->output;
+		$data['filtro']  = $filter->output;
+
+		$data['title']   = heading('Notas de Entrega');
+	
+		$data['script']  = $script;
+		$data['script'] .= script('jquery.js');
+		$data["script"] .= script("jquery.alerts.js");
+		$data['script'] .= script('superTables.js');
+		
+		$data['head']    = $this->rapyd->get_head();
+
 		$this->load->view('view_ventanas', $data);
+
+
 	}
 
 	function dataedit(){
@@ -296,6 +384,29 @@ class Snte extends Controller {
 		$data['head']    = script('jquery.js').script('jquery-ui.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css').$this->rapyd->get_head().phpscript('nformat.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js').phpscript('nformat.js');
 		$this->load->view('view_ventanas', $data);
 	}
+
+	function sntefactura(){
+		$factura = $this->uri->segment($this->uri->total_segments());
+		$numero  = $this->uri->segment($this->uri->total_segments()-1);
+		$cod_cli = $this->datasis->dameval("SELECT cod_cli FROM snte WHERE numero='$numero'");
+		
+		//revisa si elimina el nro
+		if ($factura == 0) {
+			$this->db->simple_query("UPDATE snte SET factura='' WHERE numero='$numero'");
+			logusu('SNTE',"Quita Nro. Factura $numero  ");
+			echo "Nro de Factura eliminado";
+		} else {
+			if ($this->datasis->dameval("SELECT COUNT(*) FROM sfac WHERE tipo_doc='F' AND numero='$factura' AND cod_cli='$cod_cli'")==1)
+			{
+				$this->db->simple_query("UPDATE snte SET factura='$factura' WHERE numero='$numero'");
+				logusu('SNTE',"Cambia Nro. Factura $numero -> $factura ");
+				echo "Nro de Factura Cambiado ";
+			} else {
+				echo "Nro. de Factura errada ";
+			}
+		}
+	}
+
 
 	function _pre_insert($do){
 		$numero = $this->datasis->fprox_numero('nsnte');

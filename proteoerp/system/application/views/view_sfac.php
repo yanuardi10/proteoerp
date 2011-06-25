@@ -13,7 +13,6 @@ $campos.=' <td class="littletablerow"><a href=\'#\' onclick="del_sitems(<#i#>);r
 $campos=$form->js_escape($campos);
 
 
-
 foreach($form->detail_fields['sitems'] AS $ind=>$data) $campos[]=$data['field'];
 $campos='<tr id="tr_sitems_<#i#>"><td class="littletablerow">'.join('</td><td>',$campos).'</td>';
 $campos.=' <td class="littletablerow"><a href=\'#\' onclick="del_sitems(<#i#>);return false;">Eliminar</a></td></tr>';
