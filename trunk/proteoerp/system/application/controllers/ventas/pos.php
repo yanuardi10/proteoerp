@@ -31,27 +31,51 @@ class Pos extends Controller {
 		$conten=array();
 		$data['content'] = $this->load->view('view_pos', $conten,true);
 		//$data['title']   = heading('Punto de ventas');
-		$data['head']    = style('redmond/jquery-ui-1.8.1.custom.css');
-		$data['head']   .= style('ui.jqgrid.css');
-		$data['head']   .= style('ui.multiselect.css');
-		$data['head']   .= script('jquery.js');
-		$data['head']   .= script('interface.js');
-		$data['head']   .= script('jquery-ui.js');
-		$data['head']   .= script('jquery.layout.js');
-		$data['head']   .= script('i18n/grid.locale-sp.js');
-		$data['head']   .= script('ui.multiselect.js');
-		$data['head']   .= script('jquery.jqGrid.min.js');
-		$data['head']   .= script('jquery.tablednd.js');
-		$data['head']   .= script('jquery.contextmenu.js');
-		$data['head']   .= script('plugins/jquery.numeric.pack.js');
-		$data['head']   .= script('plugins/jquery.floatnumber.js');
+		$data['head']  = style('redmond/jquery-ui-1.8.1.custom.css');
+		$data['head'] .= style('ui.jqgrid.css');
+		$data['head'] .= style('ui.multiselect.css');
+		$data['head'] .= script('jquery.js');
+		$data['head'] .= script('interface.js');
+		$data['head'] .= script('jquery-ui.js');
+		$data['head'] .= script('jquery.layout.js');
+		$data['head'] .= script('i18n/grid.locale-sp.js');
+		$data['head'] .= script('ui.multiselect.js');
+		$data['head'] .= script('jquery.jqGrid.min.js');
+		$data['head'] .= script('jquery.tablednd.js');
+		$data['head'] .= script('jquery.contextmenu.js');
+		$data['head'] .= script('plugins/jquery.numeric.pack.js');
+		$data['head'] .= script('plugins/jquery.floatnumber.js');
+		$data['head'] .= phpscript('nformat.js');
 
 		$this->load->view('view_ventanas_sola', $data);
 	}
 
+	// Busca Productos por autocomplete
 	function buscasinv(){
-		$mSQL='SELECT codigo,descrip,precio1 FROM sinv LIMIT 5';
-		$query = $this->db->query($mSQL);
-		echo json_encode($query->result_array());
+		$mid = $this->input->post('q');
+		$qdb=$this->db->escape('%'.$mid.'%');
+		//$mid = 'cabilla';
+		$data = '{[ ]}';
+		if($mid !== false){
+			$retArray = $retorno = array();
+			$mSQL="SELECT TRIM(descrip) AS descrip, TRIM(codigo) AS codigo, precio1 AS precio, iva
+				FROM sinv WHERE codigo LIKE $qdb OR descrip LIKE  $qdb OR barras LIKE $qdb
+				ORDER BY descrip LIMIT 10";
+
+			$query = $this->db->query($mSQL);
+			if ($query->num_rows() > 0){
+				foreach( $query->result_array() as  $row ) {
+					$retArray['label']   = '('.$row['codigo'].') '.$row['descrip'];
+					$retArray['codigo']  = $row['codigo'];
+					$retArray['precio']  = $row['precio'];
+					//$retArray['descrip'] = $row['descrip'];
+					$retArray['descrip'] = wordwrap($row['descrip'], 25, '<br />');
+					$retArray['iva']     = $row['iva'];
+					array_push($retorno, $retArray);
+				}
+				$data = json_encode($retorno);
+			}
+		}
+		echo $data;
 	}
 }
