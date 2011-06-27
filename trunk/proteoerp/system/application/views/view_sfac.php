@@ -6,7 +6,7 @@ $container_tr=join("&nbsp;", $form->_button_container["TR"]);
 if ($form->_status=='delete' || $form->_action=='delete' || $form->_status=='unknow_record'):
 	echo $form->output;
 else:
-
+/*
 foreach($form->detail_fields['sitems'] AS $ind=>$data) $campos[]=$data['field'];
 $campos='<tr id="tr_sitems_<#i#>"><td class="littletablerow">'.join('</td><td>',$campos).'</td>';
 $campos.=' <td class="littletablerow"><a href=\'#\' onclick="del_sitems(<#i#>);return false;">Eliminar</a></td></tr>';
@@ -16,7 +16,7 @@ foreach($form->detail_fields['sfpa'] AS $ind=>$data){ if(!empty($data['field']))
 $campossfpa='<tr id="tr_sfpa_<#i#>"><td class="littletablerow">'.join('</td><td>',$campossfpa).'</td>';
 $campossfpa.=' <td class="littletablerow"><a href=\'#\' onclick="del_sfpa(<#i#>);return false;">Eliminar</a></td></tr>';
 $campossfpa=$form->js_escape($campossfpa);
-
+*/
 //echo $form_scripts;
 //echo $form_begin;
 if($form->_status!='show'){
