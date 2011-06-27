@@ -36,7 +36,7 @@ class sfac extends validaciones {
 		$boton=$this->datasis->modbus($scli);
 
 		$filter = new DataFilter('Filtro de Facturas');
-		$filter->db->select(array('fecha','numero','cod_cli','nombre','totals','totalg','iva','tipo_doc','exento', 'IF(referen="C","Credito","Contado") referen','IF(tipo_doc="X","N","S") nulo','almacen','vd','usuario', 'hora', 'estampa','nfiscal','cajero', 'transac','maqfiscal', 'id'));
+		$filter->db->select(array('fecha','numero','cod_cli','nombre','totals','totalg','iva','tipo_doc','exento', 'IF(referen="C","Credito","Contado") referen','IF(tipo_doc="X","N","S") nulo','almacen','vd','usuario', 'hora', 'estampa','nfiscal','cajero', 'transac','maqfiscal', 'factura' ,'id'));
 		$filter->db->from('sfac');
 
 		$filter->fechad = new dateonlyField('Desde', 'fechad','d/m/Y');
@@ -68,7 +68,7 @@ class sfac extends validaciones {
 		$filter->buttons('reset','search');
 		$filter->build("dataformfiltro");
 
-		$uri = anchor('ventas/sfac/dataedit/show/<#id#>','<#numero#>');
+		$uri = anchor('ventas/sfac/dataedit/show/<#id#>','<#tipo_doc#><#numero#>');
 		$uri2  = anchor('ventas/sfac/dataedit/show/<#tipo_doc#>/<#numero#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar')));
 		$uri2 .= "&nbsp;";
 		$uri2 .= anchor('formatos/ver/FACTURA/<#tipo_doc#>/<#numero#>',img(array('src'=>'images/pdf_logo.gif','border'=>'0','alt'=>'PDF')));
@@ -84,22 +84,23 @@ class sfac extends validaciones {
 		$grid->column('Acciones',$uri2);
 		$grid->column_orderby('N&uacute;mero',$uri,'numero');
 		$grid->column_orderby('Fecha',    '<dbdate_to_human><#fecha#></dbdate_to_human>','fecha','align=\'center\'');
-		$grid->column_orderby('Cliente',  'cod_cli','cod_cli');
-		$grid->column_orderby('Nombre',   'nombre', 'nombre');
-		$grid->column_orderby('Almacen',  'almacen','almacen');
+		$grid->column_orderby('Cliente',  'cod_cli',  'cod_cli');
+		$grid->column_orderby('Nombre',   'nombre',   'nombre');
+		$grid->column_orderby('Almacen',  'almacen',  'almacen');
 		$grid->column_orderby('Sub.Total','<nformat><#totals#></nformat>','totals','align=\'right\'');
 		$grid->column_orderby('IVA',      '<nformat><#iva#></nformat>'   ,'iva',   'align=\'right\'');
 		$grid->column_orderby('Total',    '<nformat><#totalg#></nformat>','totalg','align=\'right\'');
 		$grid->column_orderby('Exento',   '<nformat><#exento#></nformat>','totalg','align=\'right\'');
-		$grid->column_orderby('Tipo',     'referen','referen','align=\'left\'');
-		$grid->column_orderby('N.Fiscal', 'nfiscal','nfiscal','align=\'left\'');
+		$grid->column_orderby('Tipo',     'referen',  'referen','align=\'left\'');
+		$grid->column_orderby('N.Fiscal', 'nfiscal',  'nfiscal','align=\'left\'');
 		$grid->column_orderby('M.Fiscal', 'maqfiscal','maqfiscal','align=\'left\'');
 		$grid->column_orderby('Vende',    'vd',       'vd');
 		$grid->column_orderby('Cajero',   'cajero',   'cajero');
 		$grid->column_orderby('Usuario',  'usuario',  'nfiscal','align=\'left\'');
 		$grid->column_orderby('Hora',     'hora',     'hora',   'align=\'center\'');
-		$grid->column_orderby('Transac',   'transac', 'transac','align=\'left\'');
-		$grid->column_orderby('I.D.',      'id',      'id',     'align=\'right\'');
+		$grid->column_orderby('Transac',  'transac',  'transac','align=\'left\'');
+		$grid->column_orderby('Afecta',   'factura',  'factura','align=\'left\'');
+		$grid->column_orderby('I.D.',     'id',       'id',     'align=\'right\'');
 		
 		//$grid->add('ventas/sfac/dataedit/create');
 		$grid->build('datagridST');
