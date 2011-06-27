@@ -53,6 +53,17 @@ class sinv extends Controller {
 
 		$bGRUP=$this->datasis->modbus($mGRUP);
 		
+		$mMARC=array(
+				'tabla'   =>'marc',
+				'columnas'=>array(
+				'marca'   =>'Marca'),
+				'filtro'  =>array('marca'=>'Marca'),
+				'retornar'=>array('marca'=>'popup_prompt'),
+				'titulo'  =>'Buscar Marca');
+
+		$bMARC=$this->datasis->modbus($mMARC);
+
+
 		$link2=site_url('inventario/common/get_linea');
 		$link3=site_url('inventario/common/get_grupo');
 
@@ -257,6 +268,9 @@ class sinv extends Controller {
 		$mtool .= img(array('src' => 'images/grupo.jpg', 'alt' => 'Cambiar Grupo', 'title' => 'Cambiar Grupo','border'=>'0','height'=>'30'));
 		$mtool .= "</a>&nbsp;</td>";
 
+		$mtool .= "<td>&nbsp;<a href='javascript:cambmarca()'>";
+		$mtool .= img(array('src' => 'images/marca.jpg', 'alt' => 'Cambiar Marca', 'title' => 'Cambiar Marca','border'=>'0','height'=>'30'));
+		$mtool .= "</a>&nbsp;</td>";
 
 		$mtool .= "</tr></table>";
 
@@ -310,6 +324,7 @@ class sinv extends Controller {
 		$link2  =site_url('inventario/sinv/recalcular');
 		$link3  =site_url("inventario/sinv/auprec/$id"); 
 		$link4  =site_url("inventario/sinv/sinvcamgrup/"); 
+		$link5  =site_url("inventario/sinv/sinvcammarca/"); 
 		
 		$script = '
 <script type="text/javascript">
@@ -397,6 +412,44 @@ function cambgrupo(){
 	})
 	}
 };
+
+
+function cambmarca(){
+	var yurl = "";
+	var n = $("input:checked").length;
+	var a = "";
+	var mbusca = "'.addslashes($bMARC).'";
+	
+	$("input:checked").each( function() { a += this.id+","; });
+	
+	if( n==0) {
+		jAlert("No hay productos Seleccionados","Informacion");
+	}else{
+	jPrompt("Selecciono "+n+" Productos<br>Introduzca la Marca "+mbusca,"" ,"Cambiar Marca", function(mmarca){
+		if( mmarca==null ){
+			jAlert("Cancelado por el usuario","Informacion");
+		} else if( mmarca=="" ) {
+			jAlert("Cancelado, Marca vacia","Informacion");
+		} else {
+			yurl = encodeURIComponent(mmarca);
+			$.ajax({
+				url: "'.$link5.'",
+				global: false,
+				type: "POST",
+				data: ({ marca : encodeURIComponent(mmarca), productos : a }),
+				dataType: "text",
+				async: false,
+				success: function(sino) {
+				jAlert(sino,"Informacion");
+				location.reload();
+				},
+				error: function(h,t,e)  { jAlert("Error..codigo="+yurl+" ",e) } 
+			});
+		}
+	})
+	}
+};
+
 
 </script>
 ';
@@ -1598,7 +1651,26 @@ function submitkardex() {
 		}
 	}
 
-
+	//*****************************
+	//
+	//  Cambia el Marca
+	//
+	function sinvcammarca() {
+		$productos  = $this->input->post('productos');
+		$mmarca     = rawurldecode($this->input->post('marca'));
+		
+		if ( $this->datasis->dameval("SELECT COUNT(*) FROM marc WHERE TRIM(marca)='".addslashes($mmarca)."'") == 0 )
+		{
+			echo "Marca no existe $mmarca";
+		} else {
+			//Busca el Depto y Linea del grupo
+			$productos = substr(trim($productos),0,-1);
+			$mSQL = "UPDATE sinv SET marca='".addslashes($mmarca)."' WHERE id IN ($productos) ";
+			$this->db->simple_query($mSQL);
+			logusu("SINV","Cambio marca ".$mmarca."-->".$productos);
+			echo "Cambiadas las  marcas $mmarca Exitosamente";
+		}
+	}
 
 		
 	//*****************************
