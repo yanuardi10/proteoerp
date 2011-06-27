@@ -1741,7 +1741,7 @@ function submitkardex() {
 		echo "Codigo Eliminado";
 	}
 
-	// Borra Codigo de barras suplementarios
+	// Borra Codigo de proveedores
 	function sinvborraprv() {
 		$codigo   = $this->input->post('codigo');
 		$proveed  = $this->input->post('proveed');
@@ -1768,8 +1768,6 @@ function submitkardex() {
 				array_push($retorno, $retArray);
 			}
 			$data = json_encode($retorno);
-			//$ret = "{data:" . $data .",\n";
-			//$ret .= "recordType : 'array'}";
 		} else {
 			$ret = '{data : []}';
 		}
@@ -1799,7 +1797,7 @@ function submitkardex() {
 	}
 
 	
-	// Crea el codigo segun el Proveedor
+	// Agrega el codigo del producto segun el Proveedor
 	function sinvsprv(){
 		$codigo  = $this->uri->segment($this->uri->total_segments());
 		$cod_prv = $this->uri->segment($this->uri->total_segments()-1);
@@ -1835,7 +1833,7 @@ function submitkardex() {
 	}
 
 
-	// Promociones
+	// Promociones a clientes
 	function sinvdescu() {
 		$tipo     = $this->uri->segment($this->uri->total_segments());
 		$porcent  = $this->uri->segment($this->uri->total_segments()-1);
@@ -1861,9 +1859,6 @@ function submitkardex() {
 		logusu("SINV","Promocion cliente $cod_cli codigo ".$htmlcod."-->".$porcent);
 		
 		echo "Descuento Guardado ";
-		//porcent=$porcent, tipo=$tipo, cod_cli=$cod_cli, codigo=$htmlcod, check=$check\n";
-		//echo "SELECT count(*) FROM sinvpromo a JOIN sinv b ON a.codigo=b.codigo WHERE b.id=$id AND cliente='".$cod_cli."'\n";
-		//echo "INSERT INTO sinvpromo SET codigo='".$htmlcod."', cliente='$cod_cli'\n";
 	}
 
 
@@ -2099,6 +2094,7 @@ function submitkardex() {
 		$this->load->view('view_ventanas', $data);
 	}
 
+	//Segun coicoi cambia los precios
 	function _cprecios(){
 		$precio1=$this->input->post('precio1');
 		$precio2=$this->input->post('precio2');
@@ -2140,6 +2136,7 @@ function submitkardex() {
 		return $msj;
 	}
 
+	// Sugiere proximo codigo de inventario
 	function sug($tabla=''){
 		if($tabla=='dpto'){
 			$valor=$this->datasis->dameval("SELECT LPAD(hexa,2,0) FROM serie LEFT JOIN dpto ON LPAD(depto,2,0)=LPAD(hexa,2,0) WHERE valor<255 AND depto IS NULL LIMIT 1");
@@ -2151,6 +2148,7 @@ function submitkardex() {
 		return $valor;
 	}
 
+	// Busca el Ultimo codigo
 	function ultimo(){
 		$ultimo=$this->datasis->dameval("SELECT codigo FROM sinv ORDER BY codigo DESC LIMIT 1");
 		echo $ultimo;
@@ -2162,7 +2160,6 @@ function submitkardex() {
 	}
 
 	function chexiste($codigo){
-		//$codigo=$this->input->post('codigo');
 		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM sinv WHERE codigo='$codigo'");
 		if ($chek > 0){
 			$descrip=$this->datasis->dameval("SELECT descrip FROM sinv WHERE codigo='$codigo'");
@@ -2173,6 +2170,7 @@ function submitkardex() {
 		}
 	}
 
+	// Si exsite el codigo Alterno
 	function chexiste2($alterno){
 		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM sinv WHERE alterno='$alterno'");
 		if ($chek > 0){
@@ -2184,6 +2182,7 @@ function submitkardex() {
 		}
 	}
 
+	//
 	function _detalle($codigo){
 		$salida='';
 		$estilo='';
@@ -2236,6 +2235,7 @@ function submitkardex() {
 		return true;
 	}
 	
+	// Trae la descripcion de una Barra
 	function barratonombre(){
 		if($this->input->post('barra')){
 			$barra=$this->db->escape($this->input->post('barra'));
@@ -2243,6 +2243,7 @@ function submitkardex() {
 		}
 	}
 
+	//Consulta rapida
 	function consulta(){  
 		$this->load->helper('openflash');
 		$this->rapyd->load("datagrid");
@@ -2266,7 +2267,6 @@ function submitkardex() {
 		$mSQL .= "AND a.fecha >= CONCAT(MID(SUBDATE(curdate(),365),1,8),'01') ";
 		$mSQL .= "GROUP BY MID( a.fecha ,1,7)  WITH ROLLUP LIMIT 24";
 		$mGrid1 = '';
-
 			
 		$mSQL  = 'SELECT a.usuario, a.fecha, MID(a.hora,1,5) hora, MID(REPLACE(a.comenta,"ARTICULO DE INVENTARIO",""),1,30) comenta, a.modulo ';
 		$mSQL .= 'FROM logusu a WHERE a.comenta LIKE "%'.addslashes($mCodigo).'%" ';
@@ -2313,17 +2313,7 @@ function submitkardex() {
 
 		$descrip = $this->datasis->dameval("SELECT descrip FROM sinv WHERE id=".$claves['id']." ");
 
-/*
-mes, 
-cventa, 
-mventa, 
-mpvp, 
-ccompra, 
-mcompra,
-util, 
-margen, 
-promedio
-*/
+/*mes, cventa, mventa, mpvp, ccompra, mcompra,util, margen, promedio*/
 
 		$script = "
 <script type=\"text/javascript\" >  
@@ -2438,7 +2428,6 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid1) );
 
 		$data['title']    = '<h1>Consulta de Articulo de Inventario</h1>';
 
-		//$data['script']   = script("plugins/jquery.fixedtable.js");
 		$data['script']   = script("plugins/jquery.numeric.pack.js");
 		$data['script']  .= script("plugins/jquery.floatnumber.js");
 		$data['script']  .= script("gt_msg_en.js");
@@ -2446,7 +2435,6 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid1) );
 		$data['script']  .= $script;
 		
 		$data['style']    = style('gt_grid.css');
-		//$data['style'] .= $style;
 		$data["subtitle"] = "
 			<div align='center' style='border: 2px outset #EFEFEF;background: #EFEFEF;font-size:18px'>
 				<a href='javascript:javascript:history.go(-1)'>(".addslashes($mCodigo).") ".$descrip."</a>

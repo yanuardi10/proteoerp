@@ -36,25 +36,34 @@ class sfac extends validaciones {
 		$boton=$this->datasis->modbus($scli);
 
 		$filter = new DataFilter('Filtro de Facturas');
-		$filter->db->select(array('fecha','numero','cod_cli','nombre','totals','totalg','iva','tipo_doc','exento', 'IF(referen="C","Credito","Contado") referen','IF(tipo_doc="X","N","S") nulo','almacen','vd','usuario', 'hora', 'estampa','nfiscal','cajero', 'transac', 'id'));
+		$filter->db->select(array('fecha','numero','cod_cli','nombre','totals','totalg','iva','tipo_doc','exento', 'IF(referen="C","Credito","Contado") referen','IF(tipo_doc="X","N","S") nulo','almacen','vd','usuario', 'hora', 'estampa','nfiscal','cajero', 'transac','maqfiscal', 'id'));
 		$filter->db->from('sfac');
 
 		$filter->fechad = new dateonlyField('Desde', 'fechad','d/m/Y');
-		$filter->fechah = new dateonlyField('Hasta', 'fechah','d/m/Y');
-		$filter->fechad->clause  =$filter->fechah->clause ='where';
-		$filter->fechad->db_name =$filter->fechah->db_name='fecha';
+		$filter->fechad->clause  = 'where';
+		$filter->fechad->db_name = 'fecha';
 		$filter->fechad->insertValue = date('Y-m-d');
-		$filter->fechah->insertValue = date('Y-m-d');
-		$filter->fechah->size=$filter->fechad->size=10;
+		$filter->fechad->size=10;
 		$filter->fechad->operator='>=';
+		$filter->fechad->group = '1';
+
+		$filter->fechah = new dateonlyField('Hasta', 'fechah','d/m/Y');
+		$filter->fechah->clause = 'where';
+		$filter->fechah->db_name='fecha';
+		$filter->fechah->insertValue = date('Y-m-d');
+		$filter->fechah->size=10;
 		$filter->fechah->operator='<=';
+		$filter->fechah->group = '1';
 
 		$filter->numero = new inputField('N&uacute;mero', 'numero');
-		$filter->numero->size = 30;
+		$filter->numero->size = 20;
+		$filter->numero->group = '2';
+
 
 		$filter->cliente = new inputField('Cliente', 'cod_cli');
-		$filter->cliente->size = 30;
+		$filter->cliente->size = 20;
 		$filter->cliente->append($boton);
+		$filter->cliente->group = '2';
 
 		$filter->buttons('reset','search');
 		$filter->build("dataformfiltro");
@@ -84,6 +93,7 @@ class sfac extends validaciones {
 		$grid->column_orderby('Exento',   '<nformat><#exento#></nformat>','totalg','align=\'right\'');
 		$grid->column_orderby('Tipo',     'referen','referen','align=\'left\'');
 		$grid->column_orderby('N.Fiscal', 'nfiscal','nfiscal','align=\'left\'');
+		$grid->column_orderby('M.Fiscal', 'maqfiscal','maqfiscal','align=\'left\'');
 		$grid->column_orderby('Vende',    'vd',       'vd');
 		$grid->column_orderby('Cajero',   'cajero',   'cajero');
 		$grid->column_orderby('Usuario',  'usuario',  'nfiscal','align=\'left\'');
@@ -190,7 +200,7 @@ class sfac extends validaciones {
 
 		$do = new DataObject('sfac');
 		$do->rel_one_to_many('sitems', 'sitems', array('numero'=>'numa','tipo_doc'=>'tipoa'));
-		$do->rel_one_to_many('sfpa', 'sfpa', array('numero','tipo_doc'));
+		$do->rel_one_to_many('sfpa', 'sfpa', array('numero','transac'));
 
 		$edit = new DataDetails('Facturas', $do);
 		$edit->back_url = site_url('ventas/sfac/filteredgrid');
@@ -208,7 +218,7 @@ class sfac extends validaciones {
 		$edit->fecha->mode = 'autohide';
 		$edit->fecha->size = 10;
 		
-		$edit->tipo_doc = new  dropdownField ('Tipo D.', 'tipo_doc');
+		$edit->tipo_doc = new  dropdownField ('Documento', 'tipo_doc');
 		$edit->tipo_doc->option('F','Factura');
 		$edit->tipo_doc->option('D','Devoluci&oacute;n');
 		$edit->tipo_doc->style='width:200px;';
@@ -298,6 +308,14 @@ class sfac extends validaciones {
 		$edit->tipo->readonly = true;
 		$edit->tipo->rel_id   = 'sfpa';
 		$edit->tipo->rule     = 'required';
+
+		$edit->numref = new inputField('Numero <#o#>', 'numero_<#i#>');
+		$edit->numref->size     = 12;
+		$edit->numref->db_name  = 'numref';
+		$edit->numref->readonly = true;
+		$edit->numref->rel_id   = 'sfpa';
+		$edit->numref->rule     = 'required';
+
 		
 		$edit->monto = new inputField('Monto <#o#>', 'monto_<#i#>');
 		$edit->monto->db_name   = 'monto';
@@ -333,6 +351,25 @@ class sfac extends validaciones {
 		$edit->totalg->readonly  =true;
 		$edit->totalg->size      = 10;
 
+		$edit->observa = new inputField('Observacion', 'observa');
+		//$edit->observa->size  = 100;
+
+		$edit->nfiscal = new inputField('No.Fiscal', 'nfiscal');
+		//$edit->observa->size  = 10;
+
+		$edit->observ1 = new inputField('Observacion', 'observ1');
+		//$edit->observ1->size  = 100;
+
+		$edit->zona = new inputField('Zona', 'zona');
+		//$edit->zona->size  = 10;
+
+		$edit->ciudad = new inputField('Ciudad', 'ciudad');
+		//$edit->ciudad->size  = 10;
+
+		$edit->exento = new inputField('Exento', 'exento');
+		//$edit->exento->size  = 10;
+
+
 		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
 
 		$edit->buttons('modify', 'save', 'undo', 'delete', 'back','add_rel');
@@ -340,10 +377,114 @@ class sfac extends validaciones {
 
 		$conten['form']  =&  $edit;
 		$data['content'] = $this->load->view('view_sfac', $conten,true);
-		$data['title']   = heading('Facturas');
-		$data['head']    = script('jquery.js').script('jquery-ui.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css').$this->rapyd->get_head().phpscript('nformat.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js').phpscript('nformat.js');
+
+		if($edit->tipo_doc->value=='F'){$mDoc = "Factura";}
+		elseif( $edit->tipo_doc->value=='D') { $mDoc = "Devolucion";}
+		else { $mDoc = "Anulado";}
+
+		$script = "
+<script type=\"text/javascript\" >  
+
+<!-- All the scripts will go here  -->
+
+var dsOption= {
+	fields :[
+		{name : 'codigoa'},
+		{name : 'desca'  },
+		{name : 'cana',		type: 'float' },
+		{name : 'preca',	type: 'float' },
+		{name : 'tota',		type: 'float' },
+		{name : 'iva',		type: 'float' },
+		{name : 'pvp',		type: 'float' },
+		{name : 'descuento',	type: 'float' },
+		{name : 'precio4',	type: 'float' },
+		{name : 'detalle' },
+		{name : 'fdespacha',	type: 'date'  },
+		{name : 'udespacha' },
+		{name : 'bonifica',	type: 'integer' }
+
+	],
+	recordType : 'object'
+} 
+
+var colsOption = [
+	{id: 'codigoa',		header: 'Codigo',	width :100, frozen: true  },
+	{id: 'desca',		header: 'Descripcion',	width :340, align: 'left' },
+	{id: 'cana',		header: 'Cant',		width :60, align: 'right' },
+	{id: 'preca',		header: 'Precio',	width :90, align: 'right' },
+	{id: 'tota',		header: 'Total',	width :90, align: 'right' },
+	{id: 'iva',		header: 'IVA',		width :50, align: 'right' },
+	{id: 'pvp',		header: 'PVP',		width :80, align: 'right' },
+	{id: 'descuento',	header: 'Desc%',	width :80, align: 'right' },
+	{id: 'precio4',		header: 'Control',	width :80, align: 'right' },
+	{id: 'detalle',		header: 'Detalle',	width :80, align: 'right' },
+	{id: 'fdespacha',	header: 'Despacha',	width :80, align: 'center' },
+	{id: 'udespacha',	header: 'Usuario D',	width :80, align: 'left' },
+	{id: 'bonifica',	header: 'Bonifica',	width :80, align: 'right' }
+	
+];
+
+var gridOption={
+	id : 'grid1',
+	loadURL : '".base_url()."ventas/sfac/sfacsitems/".$edit->_dataobject->get("tipo_doc")."/".$edit->numero->value."',
+	container : 'grid1_container', 
+	dataset : dsOption ,
+	columns : colsOption,
+	allowCustomSkin: true,
+	skin: 'vista',
+	toolbarContent: 'pdf'	
+};
+
+var mygrid=new Sigma.Grid(gridOption);
+Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
+</script>  
+";
+
+		$data['title']  = heading($mDoc." Nro. ".$edit->numero->value);
+		
+		$data['style']  = style("redmond/jquery-ui.css");
+		$data['style'] .= style('gt_grid.css');
+
+		$data['script']  = script('jquery.js');
+		$data['script'] .= script('jquery-ui.js');
+		$data['script'] .= script('plugins/jquery.numeric.pack.js');
+		$data['script'] .= phpscript('nformat.js');
+		$data['script'] .= script('plugins/jquery.floatnumber.js');
+		$data['script'] .= script("gt_msg_en.js");
+		$data['script'] .= script("gt_grid_all.js");
+		$data['script'] .= $script;
+
+		
+		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
+
+	// json para llena la tabla de inventario
+	function sfacsitems() {
+		$numa  = $this->uri->segment($this->uri->total_segments());
+		$tipoa = $this->uri->segment($this->uri->total_segments()-1);
+		
+		$mSQL  = 'SELECT codigoa, desca, cana, preca, tota, iva, IF(pvp<preca,preca, pvp)  pvp, ROUND(100-preca*100/IF(pvp<preca,preca, pvp),2) descuento, ROUND(100-ROUND(precio4*100/(100+iva),2)*100/preca,2) precio4, detalle, fdespacha, udespacha, bonifica ';
+		$mSQL .= "FROM sitems  WHERE tipoa='$tipoa' AND numa='$numa' ";
+		$mSQL .= "ORDER BY codigoa";
+		
+
+		$query = $this->db->query($mSQL);
+
+		if ($query->num_rows() > 0){
+			$retArray = array();
+			foreach( $query->result_array() as  $row ) {
+				$retArray[] = $row;
+			}
+			$data = json_encode($retArray);
+			$ret = "{data:" . $data .",\n";
+			$ret .= "recordType : 'array'}";
+		} else {
+			$ret = '{data : []}';
+		}
+		echo $ret;
+	}
+
 
 	function _pre_insert($do){
 		return false;
