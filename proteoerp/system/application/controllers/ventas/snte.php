@@ -76,7 +76,7 @@ class Snte extends Controller {
 
 		$uri = anchor('ventas/snte/dataedit/show/<#numero#>','<#numero#>');
 		$uri2 = anchor_popup('formatos/verhtml/SNTE/<#numero#>',img(array('src'=>'images/html_icon.gif','border'=>'0','alt'=>'HTML')));
-		//$uri2 = anchor('formatos/verhtml/GSER/<#id#>',img(array('src'=>'images/html_icon.gif','border'=>'0','alt'=>'HTML')));
+
 
 		$grid = new DataGrid();
 		$grid->order_by("numero","desc");
@@ -389,6 +389,7 @@ function sntefactura(mnumero){
 		$factura = $this->uri->segment($this->uri->total_segments());
 		$numero  = $this->uri->segment($this->uri->total_segments()-1);
 		$cod_cli = $this->datasis->dameval("SELECT cod_cli FROM snte WHERE numero='$numero'");
+		$fecha   = $this->datasis->dameval("SELECT fecha FROM snte WHERE numero='$numero'");
 		
 		//revisa si elimina el nro
 		if ($factura == 0) {
@@ -402,7 +403,7 @@ function sntefactura(mnumero){
 				logusu('SNTE',"Cambia Nro. Factura $numero -> $factura ");
 				echo "Nro de Factura Cambiado ";
 			} else {
-				echo "Nro. de Factura errada ";
+				echo "Esa Factura no corresponde ";
 			}
 		}
 	}
