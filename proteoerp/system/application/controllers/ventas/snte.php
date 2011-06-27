@@ -393,13 +393,14 @@ function sntefactura(mnumero){
 		
 		//revisa si elimina el nro
 		if ($factura == 0) {
-			$this->db->simple_query("UPDATE snte SET factura='' WHERE numero='$numero'");
+			$this->db->simple_query("UPDATE snte SET factura='', fechafac=0 WHERE numero='$numero'");
 			logusu('SNTE',"Quita Nro. Factura $numero  ");
 			echo "Nro de Factura eliminado";
 		} else {
 			if ($this->datasis->dameval("SELECT COUNT(*) FROM sfac WHERE tipo_doc='F' AND numero='$factura' AND cod_cli='$cod_cli'")==1)
 			{
-				$this->db->simple_query("UPDATE snte SET factura='$factura' WHERE numero='$numero'");
+				$fechafac=$this->datasis->dameval("SELECT fecha FROM sfac WHERE tipo_doc='F' AND numero='$factura' AND cod_cli='$cod_cli'");
+				$this->db->simple_query("UPDATE snte SET factura='$factura', fechafac=$fechafac WHERE numero='$numero'");
 				logusu('SNTE',"Cambia Nro. Factura $numero -> $factura ");
 				echo "Nro de Factura Cambiado ";
 			} else {
