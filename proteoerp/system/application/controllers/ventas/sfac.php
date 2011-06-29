@@ -4,7 +4,7 @@ class sfac extends validaciones {
 	function sfac(){
 		parent::Controller();
 		$this->load->library('rapyd');
-		$this->datasis->modulo_id(104,1);
+		$this->datasis->modulo_id(103,1);
 	}
 
 	function index() {
@@ -337,7 +337,7 @@ class sfac extends validaciones {
 		//Fin detalle 2
 		//**************************
 
-		$edit->ivat = new inputField('Impuesto', 'iva');
+		$edit->ivat = new inputField('I.V.A', 'iva');
 		$edit->ivat->css_class ='inputnum';
 		$edit->ivat->readonly  =true;
 		$edit->ivat->size      = 10;
@@ -347,33 +347,23 @@ class sfac extends validaciones {
 		$edit->totals->readonly  =true;
 		$edit->totals->size      = 10;
 
-		$edit->totalg = new inputField('Monto Total', 'totalg');
+		$edit->totalg = new inputField('Total', 'totalg');
 		$edit->totalg->css_class ='inputnum';
 		$edit->totalg->readonly  =true;
 		$edit->totalg->size      = 10;
 
-		$edit->observa = new inputField('Observacion', 'observa');
-		//$edit->observa->size  = 100;
-
-		$edit->nfiscal = new inputField('No.Fiscal', 'nfiscal');
-		//$edit->observa->size  = 10;
-
-		$edit->observ1 = new inputField('Observacion', 'observ1');
-		//$edit->observ1->size  = 100;
-
-		$edit->zona = new inputField('Zona', 'zona');
-		//$edit->zona->size  = 10;
-
-		$edit->ciudad = new inputField('Ciudad', 'ciudad');
-		//$edit->ciudad->size  = 10;
-
-		$edit->exento = new inputField('Exento', 'exento');
-		//$edit->exento->size  = 10;
-
+		$edit->observa   = new inputField('Observacion', 'observa');
+		$edit->nfiscal   = new inputField('No.Fiscal', 'nfiscal');
+		$edit->observ1   = new inputField('Observacion', 'observ1');
+		$edit->zona      = new inputField('Zona', 'zona');
+		$edit->ciudad    = new inputField('Ciudad', 'ciudad');
+		$edit->exento    = new inputField('Exento', 'exento');
+		$edit->maqfiscal = new inputField('Mq.Fiscal', 'maqfiscal');
+		$edit->cajero    = new inputField('Cajero', 'cajero');
 
 		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
 
-		$edit->buttons('modify', 'save', 'undo', 'delete', 'back','add_rel');
+		$edit->buttons(  'delete', 'back','add_rel');
 		$edit->build();
 
 		$conten['form']  =&  $edit;
