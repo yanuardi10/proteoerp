@@ -97,8 +97,8 @@ class invresu extends Controller {
 		}
 		</script>';
 		$espera = '<div id="displayBox" style="display:none" ><p>Espere.....</p><img  src="'.base_url().'images/doggydig.gif" width="131px" height="79px"  /></div>';
-		$porcent = "<div align='left'><a href='".base_url()."reportes/ver/INVENTA/SINV'>Listado</a></div> ";
-		$porcent = "<div align='right'>Porcentaje de Variacion ";
+		$porcent  = "<div align='left'><a href='".base_url()."reportes/ver/INVENTA/SINV'>Listado</a></div> ";
+		$porcent .= "<div align='right'>Porcentaje de Variacion ";
 		$porcent .= form_input(array('name'=>'porcent','id'=>'porcent','value'=>'0','size'=>'10','style'=>'text-align:right' ) );
 		$porcent .= "</div>";
 
