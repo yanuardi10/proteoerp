@@ -68,16 +68,16 @@ function del_sitems(id){
 				<legend class="subtitulotabla" style='color: #114411;'>Documento</legend>
 				<table style="margin: 0; ">
 					<tr>
+						<td class="littletableheader"><?php echo $form->fecha->label  ?>&nbsp;</td>
+						<td class="littletablerow">   <?php echo $form->fecha->output ?>&nbsp; </td>
+					</tr>
+					<tr>
 						<td class="littletableheader" width='80'><?php echo $form->nfiscal->label ?>&nbsp; </td>
 						<td class="littletablerow">   <?php echo $form->nfiscal->output ?>&nbsp; </td>
 					</tr>
 					<tr>
-						<td class="littletableheader"><?php echo $form->tipo_doc->label ?>&nbsp;</td>
-						<td class="littletablerow">   <?php echo $form->tipo_doc->output ?>&nbsp; </td>
-					</tr>
-					<tr>
-						<td class="littletableheader"><?php echo $form->fecha->label  ?>&nbsp;</td>
-						<td class="littletablerow">   <?php echo $form->fecha->output ?>&nbsp; </td>
+						<td class="littletableheader"><?php echo $form->maqfiscal->label ?>&nbsp;</td>
+						<td class="littletablerow">   <?php echo $form->maqfiscal->output ?>&nbsp; </td>
 					</tr>
 				</table>
 				</fieldset>
@@ -117,7 +117,7 @@ function del_sitems(id){
 	<tr>
 		<td align='center'>
 			<table width='100%'><tr>
-				<td valign='top' width='70%'>
+				<td valign='top' >
 				<fieldset style='border: 1px solid #9AC8DA;background: #FFFBE9;'>
 				<legend class="subtitulotabla" style='color: #114411;'>Observaciones</legend>
 				<table width='100%'>
@@ -130,12 +130,10 @@ function del_sitems(id){
 					</tr><tr>
 						<td>
 						<table width='100%'><tr>
-						<td class="littletableheader"><?php echo $form->ciudad->label ?>&nbsp;</td>
-						<td class="littletablerow"><?php echo $form->ciudad->output  ?>&nbsp;</td>
-						<td class="littletableheader"><?php echo $form->zona->label ?>&nbsp;</td>
-						<td class="littletablerow"><?php echo $form->zona->output  ?>&nbsp;</td>
-						<td class="littletableheader"><?php echo $form->exento->label ?>&nbsp;</td>
-						<td class="littletablerow" align='right'><?php echo $form->exento->output  ?>&nbsp;</td>
+						<td class="littletableheader"><?php echo $form->ciudad->label  ?>&nbsp;</td>
+						<td class="littletablerow">   <?php echo $form->ciudad->output ?>&nbsp;</td>
+						<td class="littletableheader"><?php echo $form->zona->label    ?>&nbsp;</td>
+						<td class="littletablerow">   <?php echo $form->zona->output   ?>&nbsp;</td>
 						</tr></table>
 						</td>
 					</tr>
@@ -147,14 +145,18 @@ function del_sitems(id){
 				<legend class="subtitulotabla" style='color: #114411;'>Totales</legend>
 				<table width='100%'>
 					<tr>
-						<td class="littletableheader"><strong><?php echo $form->totals->label    ?>&nbsp;</strong></td>
-						<td style='font-size: large;font-weight: bold'align='right' ><?php echo $form->totals->output?>&nbsp;</td>
+						<td class="littletableheader"><strong><?php echo $form->exento->label ?>&nbsp;</strong></td>
+						<td style='font-size: 14px;font-weight: bold'align='right' ><?php echo nformat($form->exento->value)?>&nbsp;</td>
 					</tr><tr>
-						<td class="littletableheader"><strong><?php echo $form->ivat->label   ?>&nbsp;</strong></td>
-						<td style='font-size: large;font-weight: bold' align='right'>   <?php echo $form->ivat->output  ?>&nbsp;</td>
+					<tr>
+						<td class="littletableheader"><strong><?php echo $form->totals->label ?>&nbsp;</strong></td>
+						<td style='font-size: 14px;font-weight: bold'align='right' ><?php echo nformat($form->totals->value)?>&nbsp;</td>
 					</tr><tr>
-						<td class="littletableheader"><strong><?php echo $form->totalg->label  ?>&nbsp;</strong></td>
-						<td style='font-size: large;font-weight: bold' align='right'>   <?php echo $form->totalg->output ?>&nbsp;</td>
+						<td class="littletableheader"><strong><?php echo $form->ivat->label ?>&nbsp;</strong></td>
+						<td style='font-size: 14px;font-weight: bold' align='right'>   <?php echo nformat($form->ivat->value)  ?>&nbsp;</td>
+					</tr><tr>
+						<td class="littletableheader"><strong><?php echo $form->totalg->label ?>&nbsp;</strong></td>
+						<td style='font-size: 22px;font-weight: bold' align='right'>   <?php echo nformat($form->totalg->value) ?>&nbsp;</td>
 					</tr>
 				</table>
 				</fieldset>
@@ -224,6 +226,7 @@ function del_sitems(id){
 					<td align='center' >Fecha  </td>
 					<td align='center' >Hora   </td>
 					<td align='center' >Transacci&oacute;n</td>
+					<td align='center' >Cajero</td>
 				</tr>
 				<tr>
 					<?php
@@ -236,6 +239,7 @@ function del_sitems(id){
 					<td class="littletablerow" align='center'><?php echo $form->_dataobject->get('estampa'); ?>&nbsp;</td>
 					<td class="littletablerow" align='center'><?php echo $form->_dataobject->get('hora'); ?>&nbsp;</td>
 					<td class="littletablerow" align='center'><?php echo $form->_dataobject->get('transac'); ?>&nbsp;</td>
+					<td class="littletablerow" align='center'><?php echo $form->cajero->output   ?>&nbsp;</td>
 				</tr>
 			</table>
 			</fieldset>
