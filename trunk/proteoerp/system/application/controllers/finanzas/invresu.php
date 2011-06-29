@@ -13,11 +13,13 @@ class invresu extends Controller {
 
 		$filter = new DataFilter('Filtro del libro de inventario','view_invresutotal');
 		//$filter->error_string=$error;
-
+		$mes = $this->datasis->dameval("SELECT MID(MAX(mes),1,4) FROM invresu");
+	
 		$filter->fecha = new inputField('A&ntilde;o', 'anno');
 		$filter->fecha->size     = 4;
 		$filter->fecha->operator = '=';
 		$filter->fecha->clause   = 'where';
+		$filter->fecha->insertValue = $mes;
 
 		$filter->buttons('reset','search');
 		$filter->build();
@@ -48,8 +50,6 @@ class invresu extends Controller {
 		$grid->column('Por Despachar' ,'<nformat><#despachar#></nformat>','align=\'right\'');
 		$grid->column('Final'     ,'<nformat><#final#></nformat>'    ,'align=\'right\'');
 		$grid->column('Accion',$uri2, 'align=\'center\'');
-		//$grid->column('Ajuste',$monto,'align=\'right\'');
-		//$grid->submit('pros', 'Guardar','BR');
 		
 		$grid->build();
 
@@ -97,9 +97,11 @@ class invresu extends Controller {
 		}
 		</script>';
 		$espera = '<div id="displayBox" style="display:none" ><p>Espere.....</p><img  src="'.base_url().'images/doggydig.gif" width="131px" height="79px"  /></div>';
+		$porcent = "<div align='left'><a href='".base_url()."reportes/ver/INVENTA/SINV'>Listado</a></div> ";
 		$porcent = "<div align='right'>Porcentaje de Variacion ";
 		$porcent .= form_input(array('name'=>'porcent','id'=>'porcent','value'=>'0','size'=>'10','style'=>'text-align:right' ) );
 		$porcent .= "</div>";
+
 		$data['content'] = $filter->output.$porcent.$ggrid.$espera;
 		
 		$data['title']   = heading('Libro de inventario');
