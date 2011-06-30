@@ -17,7 +17,7 @@ class secu{
 	}
 
 	function essuper(){
-		if ($this->logeado()){
+		if ($this->es_logeado()){
 			$usuario = $this->db->escape($this->ci->session->userdata('usuario'));
 			$query = $this->db->query("SELECT COUNT(*) AS cana FROM usuario WHERE us_codigo=$usuario AND supervisor='S'");
 			if ($query->num_rows() > 0){
@@ -29,7 +29,7 @@ class secu{
 	}
 
 	function puede($id){
-		if ($this->logeado()){
+		if ($this->es_logeado()){
 			$usuario = $this->db->escape($this->ci->session->userdata('usuario'));
 			$id      = $this->db->escape($id);
 			//$query = $this->db->query("SELECT COUNT(*) AS cana FROM intrasida WHERE usuario=$usuario AND id=$id"); //Tortuga

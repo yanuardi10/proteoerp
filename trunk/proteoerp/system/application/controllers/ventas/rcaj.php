@@ -47,7 +47,7 @@ class Rcaj extends validaciones {
 
 		$data['content'] = $filter->output;
 
-		function iconcaja($cajero,$fecha,$numero='',$tipo=''){
+		function iconcaja($cajero,$fecha,$numero='',$tipo='',$reve=0){
 			$cajero=trim($cajero);
 			$fecha =trim($fecha);
 			$numero=trim($numero);
@@ -79,11 +79,11 @@ class Rcaj extends validaciones {
 				return image('caja_abierta.gif',"Cajero Abierto: $cajero",$atts).'<h3>Abierto</h3><center>'.anchor("ventas/rcaj/precierre/99/$cajero/$fecha", 'Pre-cerrar cajero').'</center>';
 			}else{
 			//$cerrado = $CI->datasis->dameval("SELECT numero FROM rcaj WHERE cajero='$cajero' AND fecha='$fecha' ");
-
+				$reversar=($reve==1) ? anchor('ventas/rcaj/reversar/'.$numero, 'Reversar'):'';
 				if($tipo=='T'){
-					return image('caja_precerrada.gif',"Cajero Pre-Cerrado: $cajero",$atts).'<h3>'.anchor("ventas/rcaj/forcierre/$numero/", 'Cerrar cajero').'</h3><center>'.anchor('formatos/ver/RECAJA/'.$numero, ' Ver cuadre de caja');
+					return image('caja_precerrada.gif',"Cajero Pre-Cerrado: $cajero",$atts).'<h3>'.anchor("ventas/rcaj/forcierre/$numero/", 'Cerrar cajero').'</h3><center>'.anchor('formatos/ver/RECAJA/'.$numero, ' Ver cuadre de caja').br().$reversar.'</center>';
 				}else{
-					return image('caja_cerrada.gif',"Cajero Cerrado: $cajero",$atts).'<h3>Cerrado</h3><center>'.anchor('formatos/ver/RECAJA/'.$numero, ' Ver cuadre de caja');
+					return image('caja_cerrada.gif',"Cajero Cerrado: $cajero",$atts).'<h3>Cerrado</h3><center>'.anchor('formatos/ver/RECAJA/'.$numero, ' Ver cuadre de caja').br().$reversar.'</center>';
 				}
 			}
 		}
@@ -114,13 +114,14 @@ class Rcaj extends validaciones {
 			$grid->db->groupby('c.cobrador');
 			$grid->use_function('iconcaja');
 
+			$reve=$this->secu->puede('12A0');
 			$grid->column('Numero'     ,'<sinulo><#numero#>|---</sinulo>','align=\'center\'');
 			//$grid->column('Tipo'       ,'<#tipo#>','align=\'center\'');
 			$grid->column('Fecha'      ,'<dbdate_to_human><#fecha#></dbdate_to_human>');
 			$grid->column('Cajero'     ,'cajero','align=\'center\'');
 			$grid->column('Recibido'   ,'<sinulo><nformat><#recibido#></nformat>|0.00</sinulo>','align=\'right\'');
 			//$grid->column('Ingreso'    ,'<nformat><#ingreso#></nformat>' ,'align=\'right\'');
-			$grid->column('Status/Caja','<iconcaja><#cajero#>|<#fecha#>|<#numero#>|<#tipo#></iconcaja>','align="center"');
+			$grid->column('Status/Caja','<iconcaja><#cajero#>|<#fecha#>|<#numero#>|<#tipo#>|'.$reve.'</iconcaja>','align="center"');
 			$grid->column('Ver html'   ,"<siinulo><#numero#>|---|$urih</siinulo>",'align=\'center\'');
 			$grid->build();
 			//echo $grid->db->last_query();
@@ -694,7 +695,6 @@ class Rcaj extends validaciones {
 					}
 
 					$mSQL="CALL sp_actusal('DF','$sfecha',$dif)";
-					echo $mSQL;
 					$ban=$this->db->simple_query($mSQL);
 					if($ban==false) memowrite($mSQL,'rcaj');
 				}
@@ -710,9 +710,64 @@ class Rcaj extends validaciones {
 		);
 
 		$data['content'] = $form->output;
-		$data['title']   = '<h1>Recepci&oacute;n de cajas</h1>';
+		$data['title']   = heading('Recepci&oacute;n de cajas');
 		$data['head']    = $this->rapyd->get_head().script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js').phpscript('nformat.js');
 		$this->load->view('view_ventanas', $data);
+	}
+
+	function reversar($numero){
+		if($this->secu->puede('12A0')){
+			$this->rapyd->uri->keep_persistence();
+			$persistence = $this->rapyd->session->get_persistence('ventas/rcaj/filteredgrid', $this->rapyd->uri->gfid);
+			$back= (isset($persistence['back_uri'])) ? $persistence['back_uri'] : 'ventas/rcaj/filteredgrid';
+
+			$rt=$this->_reversar($numero);
+		}
+		redirect($back);
+	}
+
+	function _reversar($numero){
+		$dbnumero=$this->db->escape($numero);
+		$mSQL='SELECT tipo, transac FROM rcaj WHERE numero='.$dbnumero;
+		$query = $this->db->query($mSQL);
+		$er    = 0;
+
+		if ($query->num_rows() > 0){
+			$row = $query->row();
+			if($row->tipo=='F'){
+				$transac  = $row->transac;
+				$dbtransac= $this->db->escape($transac);
+				$sfecha   = date('Ymd');
+
+				//Reversa los movimientos de caja
+				$mmSQL='SELECT codbanc,monto,tipo_op FROM bmov WHERE transac='.$dbtransac;
+				$qquery = $this->db->query($mmSQL);
+				if ($qquery->num_rows() > 0){
+					$rrow = $qquery->row();
+					$caja = $rrow->codbanc;
+					$monto= ($rrow->tipo_op=='NC') ? $rrow->monto : (-1)*$rrow->monto;
+
+					$mSQL="CALL sp_actusal('$caja','$sfecha',$monto)";
+					$ban =$this->db->simple_query($mSQL);
+					if($ban==false) memowrite($mSQL,'rcaj');
+					$er +=$ban;
+				}
+				$mSQL='DELETE FROM bmov WHERE transac='.$dbtransac;
+				$ban =$this->db->simple_query($mSQL);
+				if($ban==false) memowrite($mSQL,'rcaj');
+				$er +=$ban;
+			}
+
+			$mSQL='DELETE FROM rcaj   WHERE numero='.$dbnumero;
+			$ban =$this->db->simple_query($mSQL);
+			if($ban==false) memowrite($mSQL,'rcaj');
+			$er +=$ban;
+			$mSQL='DELETE FROM itrcaj WHERE numero='.$dbnumero;
+			$ban =$this->db->simple_query($mSQL);
+			if($ban==false) memowrite($mSQL,'rcaj');
+			$er +=$ban;
+		}
+		return ($er>0) ? false: true;
 	}
 
 	function _banprox($codban){
@@ -739,6 +794,5 @@ class Rcaj extends validaciones {
 		$this->db->simple_query($mSQL);
 		$mSQL="ALTER TABLE `rcaj` CHANGE COLUMN `estampa` `estampa` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP";
 		$this->db->simple_query($mSQL);
-
 	}
 }
