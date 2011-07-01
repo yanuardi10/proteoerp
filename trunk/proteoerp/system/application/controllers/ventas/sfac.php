@@ -71,7 +71,7 @@ class sfac extends validaciones {
 		$uri = anchor('ventas/sfac/dataedit/show/<#id#>','<#tipo_doc#><#numero#>');
 		$uri2  = anchor('ventas/sfac/dataedit/show/<#tipo_doc#>/<#numero#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar')));
 		$uri2 .= "&nbsp;";
-		$uri2 .= anchor('formatos/ver/FACTURA/<#tipo_doc#>/<#numero#>',img(array('src'=>'images/pdf_logo.gif','border'=>'0','alt'=>'PDF')));
+		$uri2 .= anchor('formatos/ver2/FACTURA/<#tipo_doc#>/<#numero#>',img(array('src'=>'images/pdf_logo.gif','border'=>'0','alt'=>'PDF')));
 		$uri2 .= "&nbsp;";
 		$uri2 .= anchor('formatos/verhtml/FACTURA/<#tipo_doc#>/<#numero#>',img(array('src'=>'images/html_icon.gif','border'=>'0','alt'=>'HTML')));
 		$uri2 .= "&nbsp;";
