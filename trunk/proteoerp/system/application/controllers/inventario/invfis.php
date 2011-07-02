@@ -60,10 +60,12 @@ class Invfis extends Controller {
 		$mSQL=$this->db->query("SHOW TABLES LIKE 'INV%________'");
 		foreach($mSQL->result_array() AS $row){
 			foreach($row AS $key=>$value){
-				$vval='Almacen:'.$this->datasis->dameval("SELECT ubides FROM caub WHERE ubica ='".substr($value,3,-8)."'").' de Fecha '.dbdate_to_human(substr($value,-8));
-				$form3->inv->option($value,$vval);
-				$form2->inv->option($value,$vval);
-				$form1->inv->option($value,$vval);
+				if(preg_match('/^INV[a-zA-Z0-9]+\d{8}$/', $value)){
+					$vval='Almacen:'.$this->datasis->dameval("SELECT ubides FROM caub WHERE ubica ='".substr($value,3,-8)."'").' de Fecha '.dbdate_to_human(substr($value,-8));
+					$form3->inv->option($value,$vval);
+					$form2->inv->option($value,$vval);
+					$form1->inv->option($value,$vval);
+				}
 			}
 		}
 		$form2->submit('btnSiCero' ,'Cierre de Inventario (Asume existencia cero para los no contados)');
@@ -403,8 +405,8 @@ class Invfis extends Controller {
 		$data['content'] = $grid->output.$leyenda;
 		$data['filtro']  = $filter->output;
 		$data['title']   = heading("Conteo de inventario, fecha ${tifecha}, almac&eacute;n ${tialmacen}");
-		//$data['head']    = script('jquery.js').
-		$data['head']    = script('plugins/jquery.numeric.pack.js').$this->rapyd->get_head();
+		$data['head']    = script('jquery.js');
+		$data['head']   .= script('plugins/jquery.numeric.pack.js').$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 
