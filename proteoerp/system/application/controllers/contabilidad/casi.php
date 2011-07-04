@@ -266,8 +266,9 @@ class casi extends Controller {
 		$data['content'] = anchor('contabilidad/casi/auditcasi','Auditoria en Asientos'   ).br();
 		$data['content'].= anchor('contabilidad/casi/auditsprv','Auditoria en Proveedores').br();
 		$data['content'].= anchor('contabilidad/casi/auditscli','Auditoria en Clientes'   ).br();
+		$data['content'].= anchor('contabilidad/casi/auditbotr','Auditoria en Conceptos'  ).br();
 		$data['head']    = '';
-		$data['title']   =heading('Auditorita de Contable');
+		$data['title']   = heading('Auditorita de Contable');
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -300,7 +301,7 @@ class casi extends Controller {
 		$filter->build();
 
 		function regla($origen){
-			if(preg_match('/(?P<regla>\w+)(?P<numero>\d+)/', $origen, $match)>0){
+			if(preg_match('/(?P<regla>[A-Za-z]+)(?P<numero>\d+)/', $origen, $match)>0){
 				$regla  =$match['regla'];
 				$numero =$match['numero'];
 
@@ -343,7 +344,21 @@ class casi extends Controller {
 	}
 
 	function auditscli(){
-		$this->rapyd->load('datagrid');
+		$this->rapyd->load('datagrid','dataform');
+
+		$qformato=$this->datasis->formato_cpla();
+		$mCPLA=array(
+			'tabla'   =>'cpla',
+			'columnas'=>array(
+			        'codigo' =>'C&oacute;digo',
+			        'descrip'=>'Descripci&oacute;n'),
+			'filtro'  =>array('codigo'=>'C&oacute;digo','descrip'=>'Descripci&oacute;n'),
+			'retornar'=>array('codigo'=>'cuenta'),
+			'titulo'  =>'Buscar Cuenta',
+			'where'=>"codigo LIKE \"$qformato\"",
+		);
+		$bcpla =$this->datasis->modbus($mCPLA);
+
 
 		$grid = new DataGrid();
 		$grid->db->select(array('a.cliente','a.rifci','a.nombre','a.cuenta'));
@@ -359,15 +374,96 @@ class casi extends Controller {
 		$grid->button('btn_regresa', 'Regresar', $action, 'TR');
 		$grid->build();
 
-		//($grid->recordCount>0)
-		$data['content'] = $grid->output;
+		$form = new DataForm('contabilidad/casi/auditscli/process');
+		$form->cuenta = new inputField('Cuenta', 'cuenta');
+		$form->cuenta->rule = 'trim|required|callback_chcuentac';
+		$form->cuenta->size =15;
+                $form->cuenta->append($bcpla);
+
+		$form->submit('btnsubmit','Cambiar');
+		$form->build_form();
+
+		if ($form->on_success()){
+			$cuenta= $this->db->escape($form->cuenta->newValue);
+			$mSQL='UPDATE scli AS a LEFT JOIN cpla AS b ON a.cuenta=b.codigo SET a.cuenta='.$cuenta.' WHERE b.codigo IS NULL';
+			$this->db->simple_query($mSQL);
+			redirect('contabilidad/casi/auditscli');
+		}
+
+		$data['content'] = ($grid->recordCount > 0) ? $form->output : '';
+		$data['content'].= $grid->output;
+		$data['head']    = $this->rapyd->get_head();
+		$data['title']   = heading('Auditorita de cuentas en clientes');
+		$this->load->view('view_ventanas', $data);
+	}
+
+	function auditbotr(){
+		$this->rapyd->load('datagrid','dataform');
+
+		$qformato=$this->datasis->formato_cpla();
+		$mCPLA=array(
+			'tabla'   =>'cpla',
+			'columnas'=>array(
+			        'codigo' =>'C&oacute;digo',
+			        'descrip'=>'Descripci&oacute;n'),
+			'filtro'  =>array('codigo'=>'C&oacute;digo','descrip'=>'Descripci&oacute;n'),
+			'retornar'=>array('codigo'=>'cuenta'),
+			'titulo'  =>'Buscar Cuenta',
+			'where'=>"codigo LIKE \"$qformato\"",
+		);
+		$bcpla =$this->datasis->modbus($mCPLA);
+
+		$grid = new DataGrid();
+		$grid->db->select(array('a.codigo','a.nombre','a.cuenta'));
+		$grid->db->from('botr AS a');
+		$grid->db->join('cpla AS b','a.cuenta=b.codigo','LEFT');
+		$grid->db->where('b.codigo IS NULL');
+		$grid->per_page = 40;
+		$grid->column_orderby('C&oacute;digo','codigo','codigo');
+		$grid->column_orderby('Nombre','nombre','nombre');
+		$grid->column_orderby('Cuenta','cuenta','cuenta');
+		$action = "javascript:window.location='".site_url('contabilidad/casi/auditoria')."'";
+		$grid->button('btn_regresa', 'Regresar', $action, 'TR');
+		$grid->build();
+
+		$form = new DataForm('contabilidad/casi/auditbotr/process');
+		$form->cuenta = new inputField('Cuenta', 'cuenta');
+		$form->cuenta->rule = 'trim|required|callback_chcuentac';
+		$form->cuenta->size =15;
+                $form->cuenta->append($bcpla);
+
+		$form->submit('btnsubmit','Cambiar');
+		$form->build_form();
+
+		if ($form->on_success()){
+			$cuenta= $this->db->escape($form->cuenta->newValue);
+			$mSQL='UPDATE botr AS a LEFT JOIN cpla AS b ON a.cuenta=b.codigo SET a.cuenta='.$cuenta.' WHERE b.codigo IS NULL';
+			$this->db->simple_query($mSQL);
+			redirect('contabilidad/casi/auditscli');
+		}
+
+		$data['content'] = ($grid->recordCount > 0) ? $form->output : '';
+		$data['content'].= $grid->output;
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = heading('Auditorita de cuentas en clientes');
 		$this->load->view('view_ventanas', $data);
 	}
 
 	function auditsprv(){
-		$this->rapyd->load('datagrid');
+		$this->rapyd->load('datagrid','dataform');
+
+		$qformato=$this->datasis->formato_cpla();
+		$mCPLA=array(
+			'tabla'   =>'cpla',
+			'columnas'=>array(
+			        'codigo' =>'C&oacute;digo',
+			        'descrip'=>'Descripci&oacute;n'),
+			'filtro'  =>array('codigo'=>'C&oacute;digo','descrip'=>'Descripci&oacute;n'),
+			'retornar'=>array('codigo'=>'cuenta'),
+			'titulo'  =>'Buscar Cuenta',
+			'where'=>"codigo LIKE \"$qformato\"",
+		);
+		$bcpla =$this->datasis->modbus($mCPLA);
 
 		$grid = new DataGrid();
 		$grid->db->select(array('a.proveed','a.rif','a.nombre','a.cuenta'));
@@ -383,7 +479,24 @@ class casi extends Controller {
 		$grid->button('btn_regresa', 'Regresar', $action, 'TR');
 		$grid->build();
 
-		$data['content'] = $grid->output;
+		$form = new DataForm('contabilidad/casi/auditsprv/process');
+		$form->cuenta = new inputField('Cuenta', 'cuenta');
+		$form->cuenta->rule = 'trim|required|callback_chcuentac';
+		$form->cuenta->size =15;
+                $form->cuenta->append($bcpla);
+
+		$form->submit('btnsubmit','Cambiar');
+		$form->build_form();
+
+		if ($form->on_success()){
+			$cuenta= $this->db->escape($form->cuenta->newValue);
+			$mSQL='UPDATE sprv AS a LEFT JOIN cpla AS b ON a.cuenta=b.codigo SET a.cuenta='.$cuenta.' WHERE b.codigo IS NULL';
+			$this->db->simple_query($mSQL);
+			redirect('contabilidad/casi/auditsprv');
+		}
+
+		$data['content'] = ($grid->recordCount > 0) ? $form->output : '';
+		$data['content'].= $grid->output;
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = heading('Auditorita de cuentas en proveedores');
 		$this->load->view('view_ventanas', $data);
