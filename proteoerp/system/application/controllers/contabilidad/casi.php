@@ -58,20 +58,20 @@ class casi extends Controller {
 		if($vdes) $grid->db->where('(debe-haber) <>',0);
 		$grid->order_by("comprob","asc");
 		$grid->per_page = 15;
-		$grid->column_orderby("N&uacute;mero",$uri,'comprob');
-		$grid->column_orderby("Fecha","<dbdate_to_human><#fecha#></dbdate_to_human>",'fecha',"align='center'");
-		$grid->column_orderby("Descripci&oacute;n","descrip",'descrip');
-		$grid->column_orderby("Or&iacute;gen"  ,"origen"  ,'origen',"align='center'");
-		$grid->column_orderby("Debe"  ,"debe"  ,'debe',"align='right'");
-		$grid->column_orderby("Haber" ,"haber" ,'haber',"align='right'");
-		$grid->column_orderby("Total" ,"total" ,'total',"align='right'");
+		$grid->column_orderby('N&uacute;mero',$uri,'comprob');
+		$grid->column_orderby('Fecha','<dbdate_to_human><#fecha#></dbdate_to_human>','fecha',"align='center'");
+		$grid->column_orderby('Descripci&oacute;n','descrip','descrip');
+		$grid->column_orderby('Or&iacute;gen'  ,'origen'  ,'origen',"align='center'");
+		$grid->column_orderby('Debe'  ,'<nformat><#debe#></nformat>' ,'debe' ,"align='right'");
+		$grid->column_orderby('Haber' ,'<nformat><#haber#></nformat>','haber',"align='right'");
+		$grid->column_orderby('Total' ,'<nformat><#total#></nformat>','total',"align='right'");
 
-		$grid->add("contabilidad/casi/dataedit/create");
+		$grid->add('contabilidad/casi/dataedit/create');
 		$grid->build();
 
-		$data['content'] =$filter->output.$grid->output;
-		$data["head"]    = $this->rapyd->get_head();
-		$data['title']   =heading('Asientos');
+		$data['content'] = $filter->output.$grid->output;
+		$data['head']    = $this->rapyd->get_head();
+		$data['title']   = heading('Asientos');
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -259,6 +259,134 @@ class casi extends Controller {
 			return false;
 		}
 		return true;
+	}
+
+	function auditoria(){
+
+		$data['content'] = anchor('contabilidad/casi/auditcasi','Auditoria en Asientos'   ).br();
+		$data['content'].= anchor('contabilidad/casi/auditsprv','Auditoria en Proveedores').br();
+		$data['content'].= anchor('contabilidad/casi/auditscli','Auditoria en Clientes'   ).br();
+		$data['head']    = '';
+		$data['title']   =heading('Auditorita de Contable');
+		$this->load->view('view_ventanas', $data);
+	}
+
+	function auditcasi(){
+		$this->rapyd->load('datagrid','datafilter');
+
+		$filter = new DataFilter('Auditoria de Asientos');
+		$filter->db->select(array('a.comprob','a.fecha','a.concepto','a.origen','a.debe','a.haber','a.cuenta'));
+		$filter->db->from('itcasi AS a');
+		$filter->db->join('cpla AS b' ,'a.cuenta=b.codigo','LEFT');
+		$filter->db->where('b.codigo IS NULL');
+		//$filter->db->where('cuenta NOT REGEXP \'^([0-9]+\.)+[0-9]+\' OR cuenta IS NULL');
+
+		$filter->fechad = new dateonlyField('Desde', 'fechad','d/m/Y');
+		$filter->fechah = new dateonlyField('Hasta', 'fechah','d/m/Y');
+		$filter->fechad->clause  =$filter->fechah->clause ='where';
+		$filter->fechad->db_name =$filter->fechah->db_name='fecha';
+		$filter->fechah->size=$filter->fechad->size=12;
+		$filter->fechad->operator='>=';
+		$filter->fechah->operator='<=';
+
+		$filter->comprob = new inputField('N&uacute;mero'     , 'comprob');
+		$filter->comprob->size=15;
+
+		$filter->origen = new dropdownField('Or&iacute;gen', 'origen');
+		$filter->origen->option('','Todos');
+		$filter->origen->options('SELECT modulo, modulo valor FROM reglascont GROUP BY modulo');
+
+		$filter->buttons('reset','search');
+		$filter->build();
+
+		function regla($origen){
+			if(preg_match('/(?P<regla>\w+)(?P<numero>\d+)/', $origen, $match)>0){
+				$regla  =$match['regla'];
+				$numero =$match['numero'];
+
+				$atts = array(
+					'width'      => '800',
+					'height'     => '600',
+					'scrollbars' => 'yes',
+					'status'     => 'yes',
+					'resizable'  => 'yes',
+					'screenx'    => '0',
+					'screeny'    => '0'
+				);
+
+				$rt = anchor_popup('contabilidad/reglas/dataedit/'.$regla.'/show/'.$regla.'/'.$numero,$origen,$atts);
+			}else{
+				$rt=$origen;
+			}
+			return $rt;
+		}
+
+		$grid = new DataGrid();
+		$grid->use_function('regla');
+		$grid->order_by('fecha','asc');
+		$grid->per_page = 40;
+		$grid->column_orderby('N&uacute;mero','comprob','comprob');
+		$grid->column_orderby('Cuenta','cuenta','cuenta');
+		$grid->column_orderby('Fecha'   ,'<dbdate_to_human><#fecha#></dbdate_to_human>','fecha',"align='center'");
+		$grid->column_orderby('Concepto','concepto','concepto');
+		$grid->column_orderby('Or&iacute;gen','<regla><#origen#></regla>','origen',"align='center'");
+		$grid->column_orderby('Debe'    ,'<nformat><#debe#></nformat>'   ,'debe'  ,"align='right'" );
+		$grid->column_orderby('Haber'   ,'<nformat><#haber#></nformat>'  ,'haber' ,"align='right'" );
+		$action = "javascript:window.location='".site_url('contabilidad/casi/auditoria')."'";
+                $grid->button('btn_regresa', 'Regresar', $action, 'TR');
+		$grid->build();
+
+		$data['content'] =$filter->output.$grid->output;
+		$data['head']    = $this->rapyd->get_head();
+		$data['title']   =heading('Auditorita de Asientos');
+		$this->load->view('view_ventanas', $data);
+	}
+
+	function auditscli(){
+		$this->rapyd->load('datagrid');
+
+		$grid = new DataGrid();
+		$grid->db->select(array('a.cliente','a.rifci','a.nombre','a.cuenta'));
+		$grid->db->from('scli AS a');
+		$grid->db->join('cpla AS b','a.cuenta=b.codigo','LEFT');
+		$grid->db->where('b.codigo IS NULL');
+		$grid->per_page = 40;
+		$grid->column_orderby('C&oacute;digo','cliente','cliente');
+		$grid->column_orderby('Nombre','nombre','nombre');
+		$grid->column_orderby('Rif/CI','rifci' ,'rifci');
+		$grid->column_orderby('Cuenta','cuenta','cuenta');
+		$action = "javascript:window.location='".site_url('contabilidad/casi/auditoria')."'";
+		$grid->button('btn_regresa', 'Regresar', $action, 'TR');
+		$grid->build();
+
+		//($grid->recordCount>0)
+		$data['content'] = $grid->output;
+		$data['head']    = $this->rapyd->get_head();
+		$data['title']   = heading('Auditorita de cuentas en clientes');
+		$this->load->view('view_ventanas', $data);
+	}
+
+	function auditsprv(){
+		$this->rapyd->load('datagrid');
+
+		$grid = new DataGrid();
+		$grid->db->select(array('a.proveed','a.rif','a.nombre','a.cuenta'));
+		$grid->db->from('sprv AS a');
+		$grid->db->join('cpla AS b','a.cuenta=b.codigo','LEFT');
+		$grid->db->where('b.codigo IS NULL');
+		$grid->per_page = 40;
+		$grid->column_orderby('C&oacute;digo','proveed','proveed');
+		$grid->column_orderby('Nombre','nombre','nombre');
+		$grid->column_orderby('Rif'   ,'ri' ,'rifci');
+		$grid->column_orderby('Cuenta','cuenta','cuenta');
+		$action = "javascript:window.location='".site_url('contabilidad/casi/auditoria')."'";
+		$grid->button('btn_regresa', 'Regresar', $action, 'TR');
+		$grid->build();
+
+		$data['content'] = $grid->output;
+		$data['head']    = $this->rapyd->get_head();
+		$data['title']   = heading('Auditorita de cuentas en proveedores');
+		$this->load->view('view_ventanas', $data);
 	}
 
 	function _pre_insert($do){

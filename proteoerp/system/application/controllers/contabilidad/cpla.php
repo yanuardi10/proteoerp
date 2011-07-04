@@ -36,12 +36,13 @@ class Cpla extends Controller {
 		$grid->build();
 
 		$data['content'] =$filter->output.$grid->output;
-		$data["head"]    = $this->rapyd->get_head();
+		$data['head']    = $this->rapyd->get_head();
 		$data['title']   ='<h1>Plan de Cuentas</h1>';
 		$this->load->view('view_ventanas', $data);
 	}
+
 	function dataedit(){
- 		$this->rapyd->load("dataedit");
+		$this->rapyd->load("dataedit");
 
 		$edit = new DataEdit("Plan de cuenta","cpla");
 		$edit->back_url = "contabilidad/cpla";
