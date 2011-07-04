@@ -36,7 +36,7 @@ class sfac extends validaciones {
 		$boton=$this->datasis->modbus($scli);
 
 		$filter = new DataFilter('Filtro de Facturas');
-		$filter->db->select(array('fecha','numero','cod_cli','nombre','totals','totalg','iva','tipo_doc','exento', 'IF(referen="C","Credito","Contado") referen','IF(tipo_doc="X","N","S") nulo','almacen','vd','usuario', 'hora', 'estampa','nfiscal','cajero', 'transac','maqfiscal', 'factura' ,'id'));
+		$filter->db->select(array('fecha','numero','cod_cli','nombre','totals','totalg','iva','tipo_doc','exento', 'IF(referen="C","Credito",IF(referen="E","Contado","Pendiente")) referen','IF(tipo_doc="X","N","S") nulo','almacen','vd','usuario', 'hora', 'estampa','nfiscal','cajero', 'transac','maqfiscal', 'factura' ,'id'));
 		$filter->db->from('sfac');
 
 		$filter->fechad = new dateonlyField('Desde', 'fechad','d/m/Y');
@@ -69,7 +69,7 @@ class sfac extends validaciones {
 		$filter->build("dataformfiltro");
 
 		$uri = anchor('ventas/sfac/dataedit/show/<#id#>','<#tipo_doc#><#numero#>');
-		$uri2  = anchor('ventas/sfac/dataedit/show/<#tipo_doc#>/<#numero#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar')));
+		$uri2  = anchor('ventas/sfac/dataedit/show/<#id#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar')));
 		$uri2 .= "&nbsp;";
 		$uri2 .= anchor('formatos/ver2/FACTURA/<#tipo_doc#>/<#numero#>',img(array('src'=>'images/pdf_logo.gif','border'=>'0','alt'=>'PDF')));
 		$uri2 .= "&nbsp;";
@@ -147,7 +147,7 @@ class sfac extends validaciones {
 		$data["script"] .= script("jquery.alerts.js");
 		$data['script'] .= script('superTables.js');
 		//$data['script'] .= $script;
-		
+
 		$data['style']   = $style;
 		$data['style']  .=style('superTables.css');
 		$data['style']	.= style("jquery.alerts.css");
@@ -360,6 +360,9 @@ class sfac extends validaciones {
 		$edit->exento    = new inputField('Exento', 'exento');
 		$edit->maqfiscal = new inputField('Mq.Fiscal', 'maqfiscal');
 		$edit->cajero    = new inputField('Cajero', 'cajero');
+		$edit->referen   = new inputField('Referencia', 'referen');
+		$edit->transac   = new inputField('Transaccion', 'transac');
+		$edit->vence     = new inputField('Vence', 'vence');
 
 		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
 
@@ -392,14 +395,23 @@ var dsOption= {
 		{name : 'detalle' },
 		{name : 'fdespacha',	type: 'date'  },
 		{name : 'udespacha' },
-		{name : 'bonifica',	type: 'integer' }
+		{name : 'bonifica',	type: 'integer' },
+		{name : 'url' }
 
 	],
 	recordType : 'object'
 } 
 
+function codigoaurl( value, record, columnObj, grid, colNo, rowNo ) {
+	var no=  value;
+	var url= '';
+	url = '<a href=\"#\" onclick=\"window.open(\'".base_url()."inventario/sinv/dataedit/show/'+grid.getCellValue(13,rowNo)+ '\', \'_blank\', \'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'\')\"; heigth=\"600\" >';
+	url = url +no+'</a>';
+	return url;
+}
+
 var colsOption = [
-	{id: 'codigoa',		header: 'Codigo',	width :100, frozen: true  },
+	{id: 'codigoa',		header: 'Codigo',	width :100, frozen: true, renderer:codigoaurl },
 	{id: 'desca',		header: 'Descripcion',	width :340, align: 'left' },
 	{id: 'cana',		header: 'Cant',		width :60, align: 'right' },
 	{id: 'preca',		header: 'Precio',	width :90, align: 'right' },
@@ -411,7 +423,8 @@ var colsOption = [
 	{id: 'detalle',		header: 'Detalle',	width :80, align: 'right' },
 	{id: 'fdespacha',	header: 'Despacha',	width :80, align: 'center' },
 	{id: 'udespacha',	header: 'Usuario D',	width :80, align: 'left' },
-	{id: 'bonifica',	header: 'Bonifica',	width :80, align: 'right' }
+	{id: 'bonifica',	header: 'Bonifica',	width :80, align: 'right' },
+	{id: 'url',	header: 'Id',	width :80, align: 'right' }
 	
 ];
 
@@ -455,9 +468,9 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$numa  = $this->uri->segment($this->uri->total_segments());
 		$tipoa = $this->uri->segment($this->uri->total_segments()-1);
 		
-		$mSQL  = 'SELECT codigoa, desca, cana, preca, tota, iva, IF(pvp<preca,preca, pvp)  pvp, ROUND(100-preca*100/IF(pvp<preca,preca, pvp),2) descuento, ROUND(100-ROUND(precio4*100/(100+iva),2)*100/preca,2) precio4, detalle, fdespacha, udespacha, bonifica ';
-		$mSQL .= "FROM sitems  WHERE tipoa='$tipoa' AND numa='$numa' ";
-		$mSQL .= "ORDER BY codigoa";
+		$mSQL  = 'SELECT a.codigoa, a.desca, a.cana, a.preca, a.tota, a.iva, IF(a.pvp < a.preca, a.preca, a.pvp)  pvp, ROUND(100-a.preca*100/IF(a.pvp<a.preca,a.preca, a.pvp),2) descuento, ROUND(100-ROUND(a.precio4*100/(100+a.iva),2)*100/a.preca,2) precio4, a.detalle, a.fdespacha, a.udespacha, a.bonifica, b.id url ';
+		$mSQL .= "FROM sitems a LEFT JOIN sinv b ON a.codigoa=b.codigo WHERE a.tipoa='$tipoa' AND a.numa='$numa' ";
+		$mSQL .= "ORDER BY a.codigoa";
 		
 
 		$query = $this->db->query($mSQL);
