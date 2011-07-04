@@ -20,7 +20,6 @@ class Reportes extends Controller
 	}
 	function ver(){
 		//$this->load->library('XLSReporte');
-		
 		$this->rapyd->load("datafilter2");
 		$repo =$this->uri->segment(3);
 		$esta =$this->uri->segment(4);

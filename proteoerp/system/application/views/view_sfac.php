@@ -61,7 +61,7 @@ function del_sitems(id){
 	</tr>
 	<tr>
 		<td><div class="alert"> <?php if(isset($form->error_string)) echo $form->error_string; ?></div></td>
-	</tr>
+	</tr><tr>
 		<td>
 			<table width="100%"><tr><td>
 				<fieldset style='border: 1px solid #9AC8DA;background: #FFFDE9;'>
@@ -83,7 +83,11 @@ function del_sitems(id){
 				</fieldset>
 				</td><td>
 				<fieldset style='border: 1px solid #9AC8DA;background: #FFFDE9;'>
-				<legend class="subtitulotabla" style='color: #114411;'>Cliente [<?php echo $form->cliente->value ?>]</legend>
+				<legend class="subtitulotabla" style='color: #114411;'>Cliente [
+				<a href="#" onclick="window.open('<?php echo base_url()?>ventas/scli/dataedit/show/<?php echo $form->cliente->value ?>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');" heigth="600" >
+				
+					
+				<?php echo $form->cliente->value ?></a>]</legend>
 				<table border='0' width="100%" style="margin: 0; width: 100%;">
 					<tr>
 						<td class="littletableheader"><?php echo $form->nombre->label  ?>&nbsp;</td>
@@ -116,7 +120,8 @@ function del_sitems(id){
 	</tr>
 	<tr>
 		<td align='center'>
-			<table width='100%'><tr>
+			<table width='100%'>
+			<tr>
 				<td valign='top' >
 				<fieldset style='border: 1px solid #9AC8DA;background: #FFFBE9;'>
 				<legend class="subtitulotabla" style='color: #114411;'>Observaciones</legend>
@@ -138,8 +143,8 @@ function del_sitems(id){
 						</td>
 					</tr>
 				</table>
-				</td><td>
 				</fieldset>
+				</td>
 				<td valign='top'>
 				<fieldset style='border: 1px solid #9AC8DA;background: #FFFBE9;'>
 				<legend class="subtitulotabla" style='color: #114411;'>Totales</legend>
@@ -148,7 +153,6 @@ function del_sitems(id){
 						<td class="littletableheader"><strong><?php echo $form->exento->label ?>&nbsp;</strong></td>
 						<td style='font-size: 14px;font-weight: bold'align='right' ><?php echo nformat($form->exento->value)?>&nbsp;</td>
 					</tr><tr>
-					<tr>
 						<td class="littletableheader"><strong><?php echo $form->totals->label ?>&nbsp;</strong></td>
 						<td style='font-size: 14px;font-weight: bold'align='right' ><?php echo nformat($form->totals->value)?>&nbsp;</td>
 					</tr><tr>
@@ -171,16 +175,33 @@ function del_sitems(id){
 		<fieldset style='border: 1px solid #9AC8DA;background: #EFEFFF;'>
 		<legend class="subtitulotabla" style='color: #114411;'>Forma de Pago</legend>
 		<table width='100%'>
+			<?php
+			if( $form->referen->value == 'C' ) { ?>
+			<tr>
+				<td class="littletableheaderdet">Tipo</td>
+				<td class="littletableheaderdet">Numero</td>
+				<td class="littletableheaderdet">Banco</td>
+				<td class="littletableheaderdet">Saldo</td>
+			</tr>
+			<?php } else { ?>
 			<tr>
 				<td class="littletableheaderdet">Tipo</td>
 				<td class="littletableheaderdet">Numero</td>
 				<td class="littletableheaderdet">Banco</td>
 				<td class="littletableheaderdet">Monto</td>
-				<?php if($form->_status!='show') {?>
-					<td class="littletableheaderdet">Acci&oacute;n&nbsp;</td>
-				<?php } ?>
 			</tr>
-			<?php
+			<?php } 
+			if( $form->referen->value == 'C' ) { 
+			echo "
+			<tr id='tr_sfpa_1'>
+				<td class='littletablerow'nowrap>CR</td>
+				<td class='littletablerow'>Vence ".dbdate_to_human($form->vence->value)."</td>
+				<td class='littletablerow'></td>
+				<td class='littletablerow' align='right'>";
+				echo nformat($this->datasis->dameval("SELECT monto-abonos FROM smov WHERE transac=".$form->transac->value.""));
+				echo "</td>";
+			}
+			//echo "		</tr>";
 			
 			for($i=0; $i < $form->max_rel_count['sfpa']; $i++) {
 				$tipo   = "tipo_$i";
@@ -190,13 +211,10 @@ function del_sitems(id){
 			?>
 			<tr id='tr_sfpa_<?php echo $i; ?>'>
 				<td class="littletablerow" nowrap><?php echo $form->$tipo->output ?></td>
-				<td class="littletablerow"><?php echo $form->$numref->output    ?></td>
-				<td class="littletablerow"><?php echo $form->$banco->output    ?></td>
-				<td class="littletablerow" align="right"><?php echo $form->$monto->output      ?></td>
-				<?php if($form->_status!='show') {?>
-					<td class="littletablerow"><a href='#' onclick='del_sfpa(<?php echo $i; ?>);return false;'>Eliminar</a></td>
-				<?php }
-			}?>
+				<td class="littletablerow"><?php echo $form->$numref->output ?></td>
+				<td class="littletablerow"><?php echo $form->$banco->output ?></td>
+				<td class="littletablerow" align="right"><?php echo $form->$monto->output ?></td>
+			<?php } ?>
 			</tr>
 			<tr id='__UTPL__sfpa'>
 				<td colspan='9' class="littletableheaderdet">&nbsp;</td>
@@ -232,7 +250,6 @@ function del_sitems(id){
 					<?php
 						$mSQL="SELECT us_nombre FROM usuario WHERE us_codigo='".trim($form->_dataobject->get('usuario'))."'";
 						$us_nombre = $this->datasis->dameval($mSQL);
-					
 					?>
 					<td class="littletablerow" align='center'><?php echo $form->_dataobject->get('usuario'); ?>&nbsp;</td>
 					<td class="littletablerow" align='center'><?php echo $us_nombre ?>&nbsp;</td>
