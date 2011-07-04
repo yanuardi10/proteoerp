@@ -377,7 +377,7 @@ class casi extends Controller {
 		$grid->per_page = 40;
 		$grid->column_orderby('C&oacute;digo','proveed','proveed');
 		$grid->column_orderby('Nombre','nombre','nombre');
-		$grid->column_orderby('Rif'   ,'ri' ,'rifci');
+		$grid->column_orderby('Rif'   ,'rif'   ,'rif');
 		$grid->column_orderby('Cuenta','cuenta','cuenta');
 		$action = "javascript:window.location='".site_url('contabilidad/casi/auditoria')."'";
 		$grid->button('btn_regresa', 'Regresar', $action, 'TR');
