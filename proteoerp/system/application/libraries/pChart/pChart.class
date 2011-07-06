@@ -2495,8 +2495,8 @@
        return(0);
       }
 
-     $SpliceRatio   = 360 / $PieSum;
-     $SplicePercent = 100 / $PieSum;
+     $SpliceRatio   = ($PieSum==0)? 0 : 360 / $PieSum;
+     $SplicePercent = ($PieSum==0)? 0 : 100 / $PieSum;
 
      /* Calculate all polygons */
      $Angle = 0; $TopPlots = "";

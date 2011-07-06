@@ -79,7 +79,7 @@ class spre extends validaciones {
 		//echo $grid->db->last_query();
 
 		$data['content'] = $filter->output.$grid->output;
-		$data["head"]    = $this->rapyd->get_head();
+		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = heading('Presupuesto');
 		$this->load->view('view_ventanas', $data);
 	}
@@ -133,9 +133,9 @@ class spre extends validaciones {
 		'script'  => array('post_modbus_scli()'));
 		$boton =$this->datasis->modbus($mSCLId);
 
-		$do = new DataObject("spre");
+		$do = new DataObject('spre');
 		$do->rel_one_to_many('itspre', 'itspre', 'numero');
-		$do->pointer('scli' ,'scli.cliente=spre.cod_cli','tipo AS sclitipo','left');
+		$do->pointer('scli' ,'scli.cliente=spre.cod_cli','scli.tipo AS sclitipo','left');
 		$do->rel_pointer('itspre','sinv','itspre.codigo=sinv.codigo','sinv.descrip AS sinvdescrip, sinv.base1 AS sinvprecio1, sinv.base2 AS sinvprecio2, sinv.base3 AS sinvprecio3, sinv.base4 AS sinvprecio4, sinv.iva AS sinviva, sinv.peso AS sinvpeso,sinv.tipo AS sinvtipo');
 
 		$edit = new DataDetails('Presupuestos', $do);

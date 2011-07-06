@@ -91,26 +91,31 @@ class Accesos extends Controller{
 
 	function guardar(){
 		$this->datasis->modulo_id(904001);
-		$usuario = $_POST['usuario'];
+		$usuario = $this->db->escape($_POST['usuario']);
 		$modprin=0;
-		$mSQL="DELETE FROM intrasida WHERE usuario='$usuario'";
+		$mSQL="DELETE FROM intrasida WHERE usuario=$usuario";
 		$this->db->simple_query($mSQL);
 
 		if (isset($_POST['accesos']) > 0 ){
 			foreach( $_POST['accesos'] as $codigo ){
 				if($modprin != $codigo[0]){
 					$modprin=$codigo[0];
-					$mSQL="INSERT INTO intrasida (usuario,modulo,acceso) VALUES('$usuario','$modprin' ,'S')";
+					$mSQL="INSERT INTO intrasida (usuario,modulo,acceso) VALUES($usuario,'$modprin' ,'S')";
 					$this->db->simple_query($mSQL);
 				}
-				$mSQL="INSERT INTO intrasida (usuario,modulo,acceso) VALUES('$usuario','$codigo' ,'S')";
+				$mSQL="INSERT INTO intrasida (usuario,modulo,acceso) VALUES($usuario,'$codigo' ,'S')";
 				$this->db->simple_query($mSQL);
 			}
 		}
 
 		$data['head']    = style('estilos.css');
-		$data['title']   = "<h1>Accesos Guardados para el usuario: $usuario</h1>";
+		$data['title']   = heading('Accesos Guardados para el usuario: '.$usuario);
 		$data['content'] = anchor('/accesos','Regresar');
 		$this->load->view('view_ventanas', $data);
+	}
+	
+	function instalar(){
+		$mSQL="ALTER TABLE `intrasida`  CHANGE COLUMN `modulo` `modulo` VARCHAR(11) NOT NULL DEFAULT '0' AFTER `usuario`";
+		$this->db->simple_query($mSQL);
 	}
 }

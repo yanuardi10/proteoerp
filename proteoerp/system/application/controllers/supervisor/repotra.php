@@ -224,10 +224,10 @@ class repotra extends validaciones{
 		$edit->observa->rows = 3;
 		$edit->observa->rule = "trim|strtoupper";
 
-		$edit->cobrado = new dropdownField("Cobrado","cobrado");
-		$edit->cobrado->option("N","N");
-		$edit->cobrado->option("S","S");
-		$edit->cobrado->style="width:70px";
+		$edit->cobrado = new dropdownField('Cobrado','cobrado');
+		$edit->cobrado->option('N','No');
+		$edit->cobrado->option('S','Si');
+		$edit->cobrado->style='width:70px';
  
 		$edit->buttons("modify", "save", "undo", "delete", "back");
 		$edit->build();
@@ -235,7 +235,7 @@ class repotra extends validaciones{
 		$smenu['link']=barra_menu('912');
 		$data['content'] = $edit->output;
 		$data['smenu']   = $this->load->view('view_sub_menu', $smenu,true);
-		$data['title']   = "<h1>Reporte de Trabajo</h1>";
+		$data['title']   = heading('Reporte de Trabajo');
 		$data['head']    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
