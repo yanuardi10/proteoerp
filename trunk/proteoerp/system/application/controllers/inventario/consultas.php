@@ -191,6 +191,7 @@ class Consultas extends Controller {
 			@ob_end_clean();
 			echo $_html;
 		}else{
+			//$reporte=file_get_contents(APPPATH.'views/view_cprecios.php');
 			$data['link']=site_url('inventario/consultas/ssprecios');
 			$this->load->view('view_cprecios', $data);
 		}

@@ -3,14 +3,12 @@ class Sprv extends validaciones {
 
 	function sprv(){
 		parent::Controller();
-		$this->load->library("rapyd");
+		$this->load->library('rapyd');
 		$this->datasis->modulo_id(206,1);
-		//I use THISFILE, instead __FILE__ to prevent some documented php-bugs with higlight_syntax()&__FILE__
-		define ("THISFILE",   APPPATH."controllers/compras/". $this->uri->segment(2).EXT);
 	}
 
 	function index(){
-		redirect("compras/sprv/filteredgrid");
+		redirect('compras/sprv/filteredgrid');
 	}
 
 	function filteredgrid(){
@@ -128,7 +126,7 @@ class Sprv extends validaciones {
 	}
 
 	function dataedit(){
-		$this->rapyd->load("dataedit");
+		$this->rapyd->load('dataedit');
 
 		$mSCLId=array(
 		'tabla'   =>'scli',
@@ -242,7 +240,7 @@ class Sprv extends validaciones {
 		$edit->nombre->maxlength =40;
 
 		$lriffis='<a href="javascript:consulrif();" title="Consultar RIF en el SENIAT" onclick="" style="color:red;font-size:9px;border:none;">SENIAT</a>';
-		$edit->rif =  new inputField("Rif", "rif");
+		$edit->rif =  new inputField('Rif', 'rif');
 		$edit->rif->rule = "trim|strtoupper|required|callback_chci";
 		$edit->rif->append($lriffis);
 		$edit->rif->maxlength=13;

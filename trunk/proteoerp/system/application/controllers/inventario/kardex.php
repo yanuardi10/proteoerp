@@ -35,7 +35,7 @@ class Kardex extends Controller {
 				case '4N': return(anchor_popup($link,'Nota/Entrega'        ,$atts)); break;
 				case '6C': return(anchor_popup($link,'Conversion'          ,$atts)); break;
 				case '5C': return(anchor_popup($link,'Ajuste de inventario',$atts)); break;
-				case '5D': return('Consignacion'); break;
+				case '5D': return(anchor_popup($link,'Consignacion'        ,$atts)); break;
 				case '0F': return('Inventario'); break;
 				case '9F': return('Inventario'); break;
 			default:   return($par); };
@@ -69,7 +69,7 @@ class Kardex extends Controller {
 		$filter->ubica = new dropdownField('Almac&eacute;n', 'ubica');
 		$filter->ubica->option('','Todos');
 		$filter->ubica->db_name='a.ubica';
-		$filter->ubica->options("SELECT ubica,CONCAT(ubica,' ',ubides) descrip FROM caub WHERE gasto='N' ");
+		$filter->ubica->options("SELECT ubica,CONCAT(ubica,' ',ubides) descrip FROM caub WHERE gasto='N'");
 		$filter->ubica->operator='=';
 		$filter->ubica->clause  ='where';
 		$filter->ubica->group   = 'UNO';
@@ -443,6 +443,11 @@ class Kardex extends Controller {
 		ssal::dataedit();
 	}
 
+	function scon($tipo,$fecha,$codigo,$almacen){
+		$this->back_dataedit='inventario/kardex/grid/'.raencode($tipo).'/'.raencode($fecha).'/'.raencode($codigo).'/'.raencode($almacen);
+		scon::dataedit();
+	}
+
 	function _unionuri(){
 		$tipo   =$this->uri->segment(4);
 		$fecha  =$this->uri->segment(5);
@@ -455,6 +460,7 @@ class Kardex extends Controller {
 require_once(APPPATH.'/controllers/inventario/stra.php');
 require_once(APPPATH.'/controllers/inventario/conv.php');
 require_once(APPPATH.'/controllers/inventario/ssal.php');
+require_once(APPPATH.'/controllers/inventario/scon.php');
 require_once(APPPATH.'/controllers/ventas/sfac.php');
 require_once(APPPATH.'/controllers/ventas/snte.php');
 require_once(APPPATH.'/controllers/compras/scst.php');

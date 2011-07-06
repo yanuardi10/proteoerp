@@ -71,3 +71,15 @@ function cadAnum($num){
 
 	return $numero;
 }
+
+function jsescape($string){
+	$string=str_replace("\r",'',$string);
+	$string=str_replace("\n",'',$string);
+	$string=preg_replace('/\s\s+/', ' ', $string);
+	$string=addslashes($string);
+	$string=str_replace('<','\<',$string);
+	$string=str_replace('>','\>',$string);
+	$string=str_replace(';','\;',$string);
+	$string='\''.$string.'\'';
+	return $string;
+}
