@@ -36,8 +36,10 @@ class Kardex extends Controller {
 				case '6C': return(anchor_popup($link,'Conversion'          ,$atts)); break;
 				case '5C': return(anchor_popup($link,'Ajuste de inventario',$atts)); break;
 				case '5D': return(anchor_popup($link,'Consignacion'        ,$atts)); break;
-				case '0F': return('Inventario'); break;
-				case '9F': return('Inventario'); break;
+				case '0F': return(anchor_popup($link,'Inventario'          ,$atts)); break;
+				case '9F': return(anchor_popup($link,'Inventario'          ,$atts)); break;
+				//case '0F': return('Inventario'); break;
+				//case '9F': return('Inventario'); break;
 			default:   return($par); };
 		}
 
@@ -269,7 +271,7 @@ class Kardex extends Controller {
 			$grid->db->join('itrece c','c.menu=a.codigo');
 			$grid->db->where('a.fecha' ,$fecha );
 			$grid->db->where('c.codigo',$codigo);
-		}elseif($tipo=='1T'){ //Transferencias
+		}elseif($tipo=='1T' || $tipo='0F' || $tipo='9F'){ //Transferencias
 			$fields = $this->db->field_data('stra');
 			$ppk=array();
 			$select=array('b.numero','b.envia','b.recibe','a.cantidad','b.fecha','b.observ1','a.costo');
