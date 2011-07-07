@@ -59,7 +59,6 @@ class sfac extends validaciones {
 		$filter->numero->size = 20;
 		$filter->numero->group = '2';
 
-
 		$filter->cliente = new inputField('Cliente', 'cod_cli');
 		$filter->cliente->size = 20;
 		$filter->cliente->append($boton);
@@ -101,7 +100,7 @@ class sfac extends validaciones {
 		$grid->column_orderby('Transac',  'transac',  'transac','align=\'left\'');
 		$grid->column_orderby('Afecta',   'factura',  'factura','align=\'left\'');
 		$grid->column_orderby('I.D.',     'id',       'id',     'align=\'right\'');
-		
+
 		//$grid->add('ventas/sfac/dataedit/create');
 		$grid->build('datagridST');
 		//echo $grid->db->last_query();
@@ -140,6 +139,9 @@ class sfac extends validaciones {
 </style>	
 ';
 
+$sigma = "";
+
+
 		$data['content'] = $grid->output;
 		$data['filtro']  = $filter->output;
 		
@@ -149,7 +151,7 @@ class sfac extends validaciones {
 		//$data['script'] .= $script;
 
 		$data['style']   = $style;
-		$data['style']  .=style('superTables.css');
+		$data['style']  .= style('superTables.css');
 		$data['style']	.= style("jquery.alerts.css");
 
 		$data['extras']  = $extras;
@@ -488,6 +490,33 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		}
 		echo $ret;
 	}
+
+	// json para llena la tabla de inventario
+	function sfacsig() {
+		$numa  = $this->uri->segment($this->uri->total_segments());
+		$tipoa = $this->uri->segment($this->uri->total_segments()-1);
+		
+		$mSQL  = 'SELECT a.codigoa, a.desca, a.cana, a.preca, a.tota, a.iva, IF(a.pvp < a.preca, a.preca, a.pvp)  pvp, ROUND(100-a.preca*100/IF(a.pvp<a.preca,a.preca, a.pvp),2) descuento, ROUND(100-ROUND(a.precio4*100/(100+a.iva),2)*100/a.preca,2) precio4, a.detalle, a.fdespacha, a.udespacha, a.bonifica, b.id url ';
+		$mSQL .= "FROM sitems a LEFT JOIN sinv b ON a.codigoa=b.codigo WHERE a.tipoa='$tipoa' AND a.numa='$numa' ";
+		$mSQL .= "ORDER BY a.codigoa";
+		
+
+		$query = $this->db->query($mSQL);
+
+		if ($query->num_rows() > 0){
+			$retArray = array();
+			foreach( $query->result_array() as  $row ) {
+				$retArray[] = $row;
+			}
+			$data = json_encode($retArray);
+			$ret = "{data:" . $data .",\n";
+			$ret .= "recordType : 'array'}";
+		} else {
+			$ret = '{data : []}';
+		}
+		echo $ret;
+	}
+
 
 
 	function _pre_insert($do){

@@ -25,7 +25,7 @@ class sfacpaga extends Controller {
 		#$select[]="GROUP_CONCAT(e.despacha) LIKE '%S%' AS parcial";
 		$filter->db->select($select);
 		$filter->db->from('sfac'); 
-		$filter->db->where('pagada >= fecha');
+		$filter->db->where('pagada > 0');
 		$filter->db->where('tipo_doc !=','X');
 		$filter->db->orderby('fecha');
 		$filter->db->_escape_char='';
