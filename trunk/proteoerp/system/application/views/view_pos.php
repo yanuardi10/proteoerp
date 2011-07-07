@@ -3,10 +3,20 @@ var idtot=0;
 var idsfpa=1;
 $(document).ready(function() {
 	$('form').submit(function() {return false;});
+	$("#radioset").buttonset();
+	$("mysubmit").button();
 	$('#barras').focus();
 	$('#barras').focus(function() { $(this).val(''); });
-	$('#barras').focusout(function() { $(this).val('Introduzca un código de producto'); });
+	$('#barras').focusout(function() {
+		var tipo_doc = $('input:radio[name=tipo_doc]:checked').val();
+		if(tipo_doc=='F')
+			$(this).val('Introduzca un código de producto');
+		else
+			$('#barras').val('Introduzca la referencia de la factura'); 
+	});
 	$("#tarjeta_0").numeric(".");
+	$('#tipo_doc1').change(function() { $('#barras').val('Introduzca un código de producto');       });
+	$('#tipo_doc2').change(function() { $('#barras').val('Introduzca la referencia de la factura'); });
 	
 	$('input[name^="tarjeta_"]').keyup( function(event) { porpagar(this,event); });
 
@@ -20,7 +30,7 @@ $(document).ready(function() {
 				url:  "<?php echo site_url('ventas/pos/buscasinv'); ?>",
 				type: "POST",
 				dataType: "json",
-				data: "q="+req.term,
+				data: "q="+req.term+"&tipo_doc="+$('input:radio[name=tipo_doc]:checked').val(),
 				success:
 					function(data){
 						var cana=0;
@@ -60,7 +70,7 @@ $(document).ready(function() {
 
 			if(crea){
 				precio=Number(ui.item.precio);
-				html = "<tr>";
+				html = "<tr id='sitems_"+id+"'>";
 				html+= "<td><input type='hidden' name='codigo_"+id+"' id='codigo_"+id+"' value='"+ui.item.codigo+"'>"+ui.item.codigo+"</td>";
 				html+= "<td align='right'><input type='text' style='text-align: right;' onkeyup='cimporte(\""+id+"\")' name='cana_"+id+"' id='cana_"+id+"' size=6 class='ui-widget-content ui-corner-all' value='1' autocomplete='off'></td>";
 				html+= "<td align='right'><input type='text' style='text-align: right;' name='precio_"+id+"' id='precio_"+id+"' size=8 class='ui-widget-content ui-corner-all' value='"+ui.item.precio+"' autocomplete='off' ><input type='hidden' name='iva_"+id+"' id='iva_"+id+"' value='"+ui.item.iva+"'></td>";
@@ -102,8 +112,7 @@ $(document).ready(function() {
 		select: function( event, ui ) {
 			$('#nombre').val(ui.item.nombre);
 			$('#rifci').val(ui.item.rifci);
-		},
-		change: function(event, ui) { $(this).val(ui.item.rifci); }
+		}
 	});
 
 	$( "#dialog-scli" ).dialog({
@@ -173,15 +182,14 @@ function addsfpa() {
 		html+= "</tr>";
 		html+= "<tr id='sfpa_tbanc_"+id+"'>";
 		html+= <?php echo str_replace('tbanc_0','tbanc_\'+id+\'' , jsescape('<td>'.form_dropdown('tbanc_0', $tban, '','class="ui-widget-content ui-corner-all" style="width:195px;"').'</td>')); ?>;
-		//html+= "<td><input type='text' name='tbanc_"+id+"' id='tbanc_"+id+"' style='text-align: right; width:100%;' class='ui-widget-content ui-corner-all' value='' autocomplete='off'></td>";
 		html+= "<td><input type='text' name='tnum_"+id+"' id='tnum_"+id+"' size=10 class='ui-widget-content ui-corner-all' value='' autocomplete='off'></td>";
 		html+= "<td></td>";
-		html+="</tr>";
+		html+= "</tr>";
 
 		$("#_itsfpa").before(html);
 		$('input[name^="tarjeta_'+id+'"]').focusout(function() { addsfpa(); });
 		$('input[name^="tarjeta_'+id+'"]').numeric(".");
-		$('input[name^="tarjeta_'+id+'"]').keyup( function(event) { porpagar(this,event); });
+		$('input[name^="tarjeta_'+id+'"]').keyup(function(event) { porpagar(this,event); });
 		$('input[name^="tarjeta_'+id+'"]').focus();
 		idsfpa+=1;
 	}
@@ -292,6 +300,10 @@ function tarjeta(monto){
 	<div class=" ui-widget-content ui-corner-all" >
 		<div class="ui-widget-header ui-corner-top" style='text-align:center;'>
 			Punto de venta
+		</div>
+		<div id="radioset" style="text-align:center;">
+			<input type="radio" id="tipo_doc1" name="tipo_doc" value='F' checked="checked" /><label for="tipo_doc1" style="width:50%;">Facturaci&oacute;n</label>
+			<input type="radio" id="tipo_doc2" name="tipo_doc" value='D' />                  <label for="tipo_doc2" style="width:50%;">Devoluci&oacute;n </label>
 		</div>
 		<div  class="ui-widget-content" id="dialog">
 			<p>

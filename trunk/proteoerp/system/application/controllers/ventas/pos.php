@@ -126,4 +126,7 @@ class Pos extends Controller {
 					  'rifci'  => $rifci);
 		$str = $this->db->insert_string('scli', $data);
 	}
+	function crearfactura(){
+		print_r($_POST);
+	}
 }
