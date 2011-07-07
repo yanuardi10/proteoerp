@@ -12,8 +12,8 @@
  */ 
  
 /**
- * rapyd's commons functions inclusion
- */
+* rapyd's commons functions inclusion
+*/
 require_once("dataobject.php");
 require_once("fields.php");
 
@@ -52,14 +52,14 @@ class DataForm{
 	var $default_group;
 
   
- /**
-  * PHP4 constructor.
-  *
-  * @access   public
-  * @param    string   $process_uri  uri/post action, if DF is used in a controller uri "contoller/registration".. it must have one segment more: "controller/registration/process"
-  * @param    object   $data  a dataobject instance, if it's loaded.. the form is pre-filled by record values, and exec an update, else it's empty and exec an insert, if dataobject "is null".. the dataform is just a form helper. (with CI validations)
-  * @return   void
-  */
+/**
+ * PHP4 constructor.
+ *
+ * @access   public
+ * @param    string   $process_uri  uri/post action, if DF is used in a controller uri "contoller/registration".. it must have one segment more: "controller/registration/process"
+ * @param    object   $data  a dataobject instance, if it's loaded.. the form is pre-filled by record values, and exec an update, else it's empty and exec an insert, if dataobject "is null".. the dataform is just a form helper. (with CI validations)
+ * @return   void
+*/
 	function DataForm($process_uri=null, $dataobject=null){
   
 		$this->ci =& get_instance();

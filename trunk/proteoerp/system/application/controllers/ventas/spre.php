@@ -57,32 +57,232 @@ class spre extends validaciones {
 		$filter->cliente->append($boton);
 
 		$filter->buttons('reset','search');
-		$filter->build();
+		$filter->build("dataformfiltro");
+
 
 		$uri = anchor('ventas/spre/dataedit/<#numero#>','<#numero#>');
 		$uri2 = anchor_popup('formatos/verhtml/PRESUP/<#numero#>','Ver HTML',$atts);
 
 		$grid = new DataGrid();
 		$grid->order_by('numero','desc');
-		$grid->per_page = 15;
+		$grid->per_page = 50;
 
-		$grid->column('N&uacute;mero',$uri);
-		$grid->column('Fecha'    ,'<dbdate_to_human><#fecha#></dbdate_to_human>','align=\'center\'');
-		$grid->column('Nombre'   ,'nombre');
-		$grid->column('Sub.Total','<nformat><#totals#></nformat>','align=\'right\'');
-		$grid->column('IVA'      ,'<nformat><#iva#></nformat>'   ,'align=\'right\'');
-		$grid->column('Total'    ,'<nformat><#totalg#></nformat>','align=\'right\'');
-		$grid->column('Vista'    ,$uri2,"align='center'");
+		//$grid->column_detail('N&uacute;mero','numero',"ventas/spre/dataedit/<#numero#>");
+		//$grid->column('N&uacute;mero',$uri);
+	
+		$grid->column_sigma('N&uacute;mero','numero','','width: 60, frozen: true, renderer:sprever');
+		$grid->column_sigma('Fecha'    ,'fecha', 'date', 'width: 70');
+		$grid->column_sigma('Codigo'   ,'cod_cli','','width: 50');
+		$grid->column_sigma('Nombre'   ,'nombre','','width: 300');
+		$grid->column_sigma('Sub.Total','totals', 'float',"width: 80, align: 'right'");
+		$grid->column_sigma('IVA'      ,'iva'   , 'float',"width: 80, align: 'right'");
+		$grid->column_sigma('Total'    ,'totalg', 'float',"width: 80, align: 'right'");
 
+		$sigmaA     = $grid->sigmaDsConfig();
+		$dsOption   = $sigmaA["dsOption"];
+		$sprever    = "
+function sprever(value, record, columnObj, grid, colNo, rowNo){
+	var url = '';
+	url = '<a href=\"#\" onclick=\"window.open(\'".base_url()."ventas/spre/dataedit/'+value+ '\', \'_blank\', \'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'\')\"; heigth=\"600\" >';
+	url = url +value+'</a>';
+	return url;	
+}
+
+";
+		$colsOption = $sigmaA["colsOption"];
+		$gridOption = "
+var gridOption={
+	id : 'grid1',
+	loadURL : '".base_url()."ventas/spre/controlador',
+	width: 700,
+	height: 500,
+	container : 'grid1_container',
+	replaceContainer: true,
+	dataset : dsOption ,
+	columns : colsOption,
+	allowCustomSkin: true,
+	skin: 'vista',
+	pageSize: ".$grid->per_page.",
+	pageSizeList: [30,50,70, 100],
+	toolbarPosition : 'bottom',
+	toolbarContent: 'nav | pagesize | reload print excel pdf filter state',
+	//showGridMenu : true,
+	remotePaging: true,
+	remoteSorting: true,
+	remoteFilter: true,
+	autoload: true
+};
+
+var mygrid=new Sigma.Grid(gridOption);
+Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );		
+";		
+		$SigmaCont = "<center><div id=\"grid1_container\" style=\"width:700px;height:500px;\"></div></center>";
 		$grid->add('ventas/spre/dataedit/create');
-		$grid->build();
+		$grid->build('datagridSG');
 		//echo $grid->db->last_query();
 
-		$data['content'] = $filter->output.$grid->output;
+		$data['style']  = style("redmond/jquery-ui.css");
+		$data['style'] .= style('gt_grid.css');
+
+		$data["script"]  = script("jquery.js");
+		$data['script'] .= script("gt_msg_es.js");
+		$data['script'] .= script("gt_grid_all.js");
+		//$data['script'] .= $grid->output;
+		$data['script'] .= "<script type=\"text/javascript\" >\n".$dsOption.$sprever."\n".$colsOption."\n".$gridOption."</script>";
+
+		//$data['filtro']  = $filter->output;
+		$data['content'] = $SigmaCont; //$grid->output;
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = heading('Presupuesto');
 		$this->load->view('view_ventanas', $data);
 	}
+
+
+	function controlador(){
+		//header('Content-type:text/javascript;charset=UTF-8');
+		if (isset($_POST["_gt_json"]) ) {
+			$json=json_decode(stripslashes($_POST["_gt_json"]));
+			$pageNo   = $json->{'pageInfo'}->{'pageNum'};
+			$pageSize = $json->{'pageInfo'}->{'pageSize'};
+			$filter = '';
+
+memowrite($_POST["_gt_json"],"jsonrecibido");
+			if(isset($json->{'sortInfo'}[0]->{'columnId'})){
+				$sortField = $json->{'sortInfo'}[0]->{'columnId'};
+			} else {
+				$sortField = "numero";
+			}    
+ 
+			if(isset($json->{'sortInfo'}[0]->{'sortOrder'})){
+				$sortOrder = $json->{'sortInfo'}[0]->{'sortOrder'};
+			} else {
+				$sortOrder = "DESC";
+			}    
+
+			for ($i = 0; $i < count($json->{'filterInfo'}); $i++) {
+				if($json->{'filterInfo'}[$i]->{'logic'} == "equal"){
+					$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . "='" . $json->{'filterInfo'}[$i]->{'value'} . "' ";
+				}elseif($json->{'filterInfo'}[$i]->{'logic'} == "notEqual"){
+					$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . "!='" . $json->{'filterInfo'}[$i]->{'value'} . "' ";    
+				}elseif($json->{'filterInfo'}[$i]->{'logic'} == "less"){
+					$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . "<" . $json->{'filterInfo'}[$i]->{'value'} . " ";
+				}elseif($json->{'filterInfo'}[$i]->{'logic'} == "lessEqual"){
+					$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . "<=" . $json->{'filterInfo'}[$i]->{'value'} . " ";    
+				}elseif($json->{'filterInfo'}[$i]->{'logic'} == "great"){
+					$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . ">" . $json->{'filterInfo'}[$i]->{'value'} . " ";
+				}elseif($json->{'filterInfo'}[$i]->{'logic'} == "greatEqual"){
+					$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . ">=" . $json->{'filterInfo'}[$i]->{'value'} . " ";        
+				}elseif($json->{'filterInfo'}[$i]->{'logic'} == "like"){
+					$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . " LIKE '%" . $json->{'filterInfo'}[$i]->{'value'} . "%' ";        
+				}elseif($json->{'filterInfo'}[$i]->{'logic'} == "startWith"){
+					$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . " LIKE '" . $json->{'filterInfo'}[$i]->{'value'} . "%' ";        
+				}elseif($json->{'filterInfo'}[$i]->{'logic'} == "endWith"){
+					$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . " LIKE '%" . $json->{'filterInfo'}[$i]->{'value'} . "' ";                
+				}
+				$filter .= " AND ";
+			}
+
+			if($json->{'action'} == 'load'){
+
+				//to get how many total records.
+				$mSQL = "SELECT count(*) FROM spre WHERE $filter numero>0";
+				$totalRec = $this->datasis->dameval($mSQL);
+ 
+ 
+				//make sure pageNo is inbound
+				if($pageNo<1||$pageNo>ceil(($totalRec/$pageSize))){
+					$pageNo = 1;
+				}
+ 
+				$mSQL = "SELECT numero, fecha, cod_cli, nombre, totals, iva, totalg FROM spre WHERE $filter numero>0 ORDER BY ".$sortField." ".$sortOrder." LIMIT ".($pageNo - 1)*$pageSize.", ".$pageSize;
+memowrite($mSQL,"mSQL");
+				$query = $this->db->query($mSQL);
+				if ($query->num_rows() > 0){
+					$retArray = array();
+					foreach( $query->result_array() as  $row ) {
+						$retArray[] = $row;
+					}
+					$data = json_encode($retArray);
+					$ret = "{data:" . $data .",\n";
+					$ret .= "pageInfo:{totalRowNum:" . $totalRec . "},\n";
+					$ret .= "recordType : 'object'}";
+				} else {
+					$ret = '{data : []}';
+				}
+				echo $ret;
+
+			}else if($json->{'action'} == 'save'){
+/*				$sql = "";
+				$params = array();
+				$errors = "";
+  
+				//deal with those deleted
+				$deletedRecords = $json->{'deletedRecords'};
+				foreach ($deletedRecords as $value){
+					$params[] = $value->id;
+				}
+				$sql = "delete from dbtable where id in (" . join(",", $params) . ")";
+				if(mysql_query($sql)==FALSE){
+					$errors .= mysql_error();
+				}
+				//deal with those updated
+				$sql = "";
+				$updatedRecords = $json->{'updatedRecords'};
+				foreach ($updatedRecords as $value){
+					$sql = "update `dbtable` set ".
+					//fill out fields to be updated here
+					"where `id`=".$value->id;
+					if(mysql_query($sql)==FALSE){
+						$errors .= mysql_error();
+					}
+				}
+				//deal with those inserted
+				$sql = "";
+				$insertedRecords = $json->{'insertedRecords'};
+				foreach ($insertedRecords as $value){
+					$sql = "insert into dbtable (//fields to be inserted)";
+					if(mysql_query($sql)==FALSE){
+						$errors .= mysql_error();
+					}
+				}
+				$ret = "{success : true,exception:''}";
+				echo $ret;*/
+			}
+		} else {
+			$pageNo = 1;
+			$sortField = "numero";
+			$sortOrder = "DESC";
+			$pageSize = 50;//10 rows per page
+
+			//to get how many records totally.
+			$sql = "select count(*) as cnt from spre";
+			$totalRec = $this->datasis->dameval($sql);
+
+			//make sure pageNo is inbound
+			if($pageNo<1||$pageNo>ceil(($totalRec/$pageSize))){
+				$pageNo = 1;
+			}
+
+			//pageno starts with 1 instead of 0
+			$mSQL = "SELECT numero, fecha, cod_cli, nombre, totals, iva, totalg FROM spre ORDER BY numero DESC LIMIT ".($pageNo - 1)*$pageSize.", ".$pageSize;
+			$query = $this->db->query($mSQL);
+	
+			if ($query->num_rows() > 0){
+				$retArray = array();
+				foreach( $query->result_array() as  $row ) {
+					$retArray[] = $row;
+				}
+				$data = json_encode($retArray);
+				$ret = "{data:" . $data .",\n";
+				$ret .= "pageInfo:{totalRowNum:" . $totalRec . "},\n";
+				$ret .= "recordType : 'object'}";
+			} else {
+				$ret = '{data : []}';
+			}
+			echo $ret;
+		}
+	}
+
 
 	function dataedit(){
 		$this->rapyd->load('dataobject','datadetails');
