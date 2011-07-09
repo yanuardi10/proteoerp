@@ -98,8 +98,16 @@ class Sfacfiscal extends Controller{
 
 		if($this->rapyd->uri->is_set('search') AND $filter->is_valid()){
 			$fecha=$filter->fecha->newValue;
+			
+			$fields = $this->db->field_data('sfac');
+			$ppk=array();
+			foreach ($fields as $field){
+				if($field->primary_key==1){
+					$ppk[]='<#'.$field->name.'#>';
+				}
+			}
 
-			$llink=anchor('supervisor/sfacfiscal/editsfac/modify/<#tipo_doc#>/<#numero#>','<#numero#>');
+			$llink=anchor('supervisor/sfacfiscal/editsfac/modify/'.implode('/',$ppk),'<#numero#>');
 			$uri2 = anchor_popup('formatos/verhtml/FACTURA/<#tipo_doc#>/<#numero#>','Ver HTML',$atts);
 
 			$grid = new DataGrid('');

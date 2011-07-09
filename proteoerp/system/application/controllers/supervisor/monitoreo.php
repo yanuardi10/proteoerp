@@ -5,7 +5,7 @@ class Monitoreo extends Controller{
 	function Monitoreo(){
 		parent::Controller();
 		$this->config->load('monitoreo');
-		$this->datasis->modulo_id('900',1);
+		$this->datasis->modulo_id('922',1);
 		//$this->ser[]=array('host'=>'http://localhost/phpsysinfo' ,'titu'=>'Servidor 99');
 		//$this->ser[]=array('host'=>'http://192.168.1.143/phpsysinfo','titu'=>'Servidor 11');
 		$this->ser=$this->config->item('m_server');
