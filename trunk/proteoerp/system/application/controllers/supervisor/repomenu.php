@@ -5,7 +5,7 @@ class repomenu extends validaciones {
 	function repomenu(){
 		parent::Controller(); 
 		$this->load->library('rapyd');
-		//$this->datasis->modulo_id(307,1);
+		$this->datasis->modulo_id('90B',1);
 	}
 
 	function index(){

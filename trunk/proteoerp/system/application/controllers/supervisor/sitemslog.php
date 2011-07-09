@@ -3,6 +3,7 @@ class sitemslog extends Controller {
 	function sitemslog(){
 		parent::Controller();
 		$this->load->library('rapyd');
+		$this->datasis->modulo_id('925',1);
 	}
 
 	function index(){
@@ -80,13 +81,13 @@ class sitemslog extends Controller {
 		}
 
 		$data['content'] = $filter->output.$tabla;
-		$data['title']   = heading('Bitacora de Facturación');
+		$data['title']   = heading('Bit&aacute;cora de Facturaci&oacute;n');
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 
 	function detalle($numero=''){
-		$this->rapyd->load("datagrid2");
+		$this->rapyd->load('datagrid2');
 
 		$grid = new DataGrid2('Detalle');
 		$grid->db->select(array('codigoa','desca','cana','preca','iva','tota','detalle','combo','bonifica','costo'));
@@ -94,17 +95,17 @@ class sitemslog extends Controller {
 		$grid->db->where('id',$numero);
 		$grid->per_page=20;
 
-		$grid->column("Codigo","codigoa","align=left");
-		$grid->column("Codigo","codigoa","align=left");
-		$grid->column("Descripcion","desca","align=left");
-		$grid->column("Cantidad","cana","align=center");
-		$grid->column("Precio","preca","align=right");
-		$grid->column("Iva","iva","align=right");
-		$grid->column("Total","tota","align=right");
-		$grid->column("Detalle","detalle","align=right");
-		$grid->column("combo","combo","align=right");
-		$grid->column("Bonifica","bonifica","align=right");
-		$grid->column("Costo","costo","align=right");
+		$grid->column("Codigo"   ,"codigoa" ,"align=left");
+		$grid->column("Codigo"   ,"codigoa" ,"align=left");
+		$grid->column("Descripci&oacute;n"  ,"desca","align=left");
+		$grid->column("Cantidad" ,"cana"    ,"align=center");
+		$grid->column("Precio  " ,"preca"   ,"align=right");
+		$grid->column("Iva"      ,"iva"     ,"align=right");
+		$grid->column("Total"    ,"tota"    ,"align=right");
+		$grid->column("Detalle"  ,"detalle" ,"align=right");
+		$grid->column("combo"    ,"combo"   ,"align=right");
+		$grid->column("Bonifica" ,"bonifica","align=right");
+		$grid->column("Costo"    ,"costo"   ,"align=right");
 		$grid->build();
 		//echo $grid->db->last_query();
 

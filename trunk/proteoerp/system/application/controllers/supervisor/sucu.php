@@ -1,9 +1,10 @@
 <?php
 class sucu extends Controller{
-	
+
 	function sucu(){
 		parent::Controller();
 		$this->load->library('rapyd');
+		$this->datasis->modulo_id('90D',1);
 	}
 
 	function index(){
