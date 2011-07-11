@@ -374,7 +374,7 @@ class Exportar extends Controller {
 				'table'  =>'scli',
 				'where'  =>"modificado>=$fecha",
 				'limpiar'=>false,
-				'dupli'  =>array('nombre','grupo','gr_desc','nit','tipo','dire11','dire12','dire21','dire22','nomfis','riffis','telefono','email','ciudad'),
+				'dupli'  =>array('nombre','grupo','gr_desc','nit','tipo','dire11','dire12','dire21','dire22','nomfis','riffis','telefono','email','ciudad','modificado'),
 				'ignore' =>false);
 
 		$data[]=array('table' => 'grcl',
