@@ -148,6 +148,7 @@ class Sqlinex{
 			$query=mysql_unbuffered_query($mSQL,$this->ci->db->conn_id);
 
 			if ($query!==false){
+				if(isset($data['dupli'])) $data['limpiar']=false;
 				if(!isset($data['limpiar'])) $data['limpiar']=true;
 				if($data['limpiar']){
 					$mSQL="DELETE FROM $data[table]"; if(!empty($data['where'])) $mSQL.=' WHERE '.$data['where'];
@@ -158,6 +159,9 @@ class Sqlinex{
 				while ($row = mysql_fetch_assoc($query)) {
 				$mSQL = $this->ci->db->insert_string($data['table'], $row);
 					if(isset($data['dupli'])){
+						$data['ignore']   = false;
+						$data['limpiar']  = false;
+
 						$ccampo=array();
 						foreach($data['dupli'] as $campos){
 							if(isset($data['condi'])){
