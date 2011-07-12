@@ -56,11 +56,13 @@ function linever(value, record, columnObj, grid, colNo, rowNo){
 
 	      $gridGo = "
 var mygrid=new Sigma.Grid(gridOption);
+mygrid.width  = 550;
+mygrid.height = 400;
 Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 ";
 
-		$SigmaCont = "<center><div id=\"grid1_container\" style=\"width:700px;height:500px;\"></div></center>";
-		$grid->add("inventario/grup/dataedit/create");
+		$SigmaCont = "<center><div id=\"grid1_container\" style=\"width:550px;height:400px;\"></div></center>";
+		$grid->add("inventario/dpto/dataedit/create");
 		$grid->build('datagridSG');
 		//echo $grid->db->last_query();
 
@@ -342,4 +344,5 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		echo $ultimo;
        }
 }
+//Nelly Lee, Joan Glasgow, Tayler Glasgow (child 9yrs) Tate Glasgow (child 7)
 ?>

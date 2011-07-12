@@ -25,14 +25,8 @@ class Marc extends Controller{
 		//$sigmaA     = $grid->sigmaDsConfig();
 		$sigmaA     = $grid->sigmaDsConfig("marc","marca","inventario/marc/");
 		$dsOption   = $sigmaA["dsOption"];
-		$grupver    = "
-function marcver(value, record, columnObj, grid, colNo, rowNo){
-	var url = '';
-	url = '<a href=\"#\" onclick=\"window.open(\'".base_url()."inventario/marc/dataedit/show/'+value+ '\', \'_blank\', \'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'\')\"; heigth=\"600\" >';
-	url = url +value+'</a>';
-	return url;	
-}
-";
+		$grupver    = "";
+		
 		$colsOption = $sigmaA["colsOption"];
 		$gridOption = $sigmaA["gridOption"];
 		$gridGuarda = "
@@ -172,7 +166,6 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 	}
 
 
-
 	function modifica(){
 		$valor = $this->uri->segment($this->uri->total_segments());
 		$campo = $this->uri->segment($this->uri->total_segments()-1);
@@ -191,7 +184,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 	}
 
 
-
+/*
 	function dataedit(){
 		$this->rapyd->load('dataedit');
 		$edit = new DataEdit('Marcas','marc');
@@ -246,4 +239,5 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$marca=$do->get('marca');
 		logusu('marc',"MARCA $marca ELIMINADA");
 	}
+*/
 }
