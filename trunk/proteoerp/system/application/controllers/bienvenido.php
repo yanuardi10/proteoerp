@@ -22,13 +22,19 @@ class Bienvenido extends Controller {
 	function autentificar(){
 		$usr=sha1($_POST['user']);
 		$pws=sha1($_POST['pws']);
+		
+		$esta = $this->datasis->dameval( "SHOW columns FROM usuario WHERE Field='activo'" );
+		if ( empty($esta) ) $this->db->simple_query("ALTER TABLE usuario ADD activo CHAR(1) ");
+		$this->db->simple_query("UPDATE usuario SET activo='S' WHERE activo <> 'N' ");
+		$this->db->simple_query("UPDATE usuario SET activo='S' WHERE activo IS NULL ");
+		
 		if (!preg_match("/^[^'\"]+$/", $usr)>0){
 			$sess_data = array('logged_in'=> FALSE);
 			$this->session->set_userdata($sess_data);
 			redirect($this->session->userdata('estaba'));
 		}
 		
-		$cursor=$this->db->query("SELECT us_nombre FROM usuario WHERE SHA(us_codigo)='$usr' AND SHA(us_clave)='$pws'");
+		$cursor=$this->db->query("SELECT us_nombre FROM usuario WHERE SHA(us_codigo)='$usr' AND SHA(us_clave)='$pws' AND activo='S'");
 		if($cursor->num_rows() > 0){
 			$rr = $cursor->row_array();
 			$sal = each($rr);

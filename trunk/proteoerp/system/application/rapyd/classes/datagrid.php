@@ -143,7 +143,7 @@ class DataGrid extends DataSet{
 
 
     // Crea las variables de Configuracion de sigmagrid
-    function sigmaDsConfig(){
+    function sigmaDsConfig($tabla='', $indice='' ,$url=''){
 	$dsOption   = "var dsOption= {\nfields :[\n";
 	$colsOption = "var colsOption = [\n";
 	
@@ -159,8 +159,47 @@ class DataGrid extends DataSet{
 	
 	$colsOption = substr($colsOption,0,-2);
 	$colsOption .= "\n]\n";
+
+	$gridOption = "
+var gridOption={
+	id : 'grid1',
+	loadURL : '".base_url().$url."controlador',
+	width: 700,
+	height: 500,
+	container : 'grid1_container',
+	replaceContainer: true,
+	dataset : dsOption ,
+	columns : colsOption,
+	allowCustomSkin: true,
+	skin: 'vista',
+	pageSize: ".$this->per_page.",
+	pageSizeList: [60,90, 120],
+	toolbarPosition : 'bottom',
+	toolbarContent: 'nav | pagesize | reload print excel pdf filter state',
+	afterEdit: guardar,
+	clickStartEdit: false,
+	remotePaging: true,
+	remoteSorting: true,
+	remoteFilter: true,
+	autoload: true
+};";
+
+	$gridGuarda = "
+function guardar(value, oldValue, record, col, grid) {
+	var murl='';
+	murl = '".base_url().$url."modifica/'+encodeURIComponent(record['".$indice."'])+'/'+col.id+'/'+encodeURIComponent(value);
+	if ( value != oldValue ) {
+		$.ajax({
+			url: murl,
+			context: document.body
+		});
+	}
+};
+";
+
+
 	
-	return array("dsOption"=>$dsOption, "colsOption"=>$colsOption);
+	return array("dsOption"=>$dsOption, "colsOption"=>$colsOption, "gridOption"=>$gridOption,"gridGuarda"=>$gridGuarda);
 	}
 
 

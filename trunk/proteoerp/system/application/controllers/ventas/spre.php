@@ -146,7 +146,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 			$pageSize = $json->{'pageInfo'}->{'pageSize'};
 			$filter = '';
 
-memowrite($_POST["_gt_json"],"jsonrecibido");
+//memowrite($_POST["_gt_json"],"jsonrecibido");
 			if(isset($json->{'sortInfo'}[0]->{'columnId'})){
 				$sortField = $json->{'sortInfo'}[0]->{'columnId'};
 			} else {
@@ -195,7 +195,7 @@ memowrite($_POST["_gt_json"],"jsonrecibido");
 				}
  
 				$mSQL = "SELECT numero, fecha, cod_cli, nombre, totals, iva, totalg FROM spre WHERE $filter numero>0 ORDER BY ".$sortField." ".$sortOrder." LIMIT ".($pageNo - 1)*$pageSize.", ".$pageSize;
-memowrite($mSQL,"mSQL");
+//memowrite($mSQL,"mSQL");
 				$query = $this->db->query($mSQL);
 				if ($query->num_rows() > 0){
 					$retArray = array();
