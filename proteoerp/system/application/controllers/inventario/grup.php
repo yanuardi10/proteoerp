@@ -75,8 +75,8 @@ class Grup extends validaciones {
 		$grid->column_sigma("Grupo", 		        "grupo",     '',      'width: 50,  frozen: true, renderer: grupver ' );
 		$grid->column_sigma("Descripci&oacute;n",       "nom_grup",  '',      "width: 200, editor: { type: 'text' }" );
 		$grid->column_sigma("Comisi&oacute;n",          "comision",  'float', "width: 80,  align: 'right', editor: { type: 'text' }");
-		$grid->column_sigma("Margen/Venta",             "margen" ,   'float', "width: 80,  align: 'right', editor: { type: 'text' }");
-		$grid->column_sigma("Margen/Compra",            "margenc" ,  'float', "width: 80,  align: 'right', editor: { type: 'text' }");
+		$grid->column_sigma("Mrgn/Venta",             "margen" ,   'float', "width: 80,  align: 'right', editor: { type: 'text' }");
+		$grid->column_sigma("Mrgn/Compra",            "margenc" ,  'float', "width: 80,  align: 'right', editor: { type: 'text' }");
 		$grid->column_sigma("Cuenta Inventario",        "cu_inve",   '',      "align: 'left'");
 		$grid->column_sigma("Cuenta Costo",             "cu_cost",   '',      "align: 'left'");
 		$grid->column_sigma("Cuenta Venta",             "cu_venta",  '',      "align: 'left'");
@@ -98,8 +98,8 @@ function grupver(value, record, columnObj, grid, colNo, rowNo){
 var gridOption={
 	id : 'grid1',
 	loadURL : '".base_url()."inventario/grup/controlador',
-	width: 700,
-	height: 500,
+	width: 550,
+	height: 400,
 	container : 'grid1_container',
 	replaceContainer: true,
 	dataset : dsOption ,
@@ -135,12 +135,11 @@ function guardar(value, oldValue, record, col, grid) {
 var mygrid=new Sigma.Grid(gridOption);
 Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 ";		
-		$SigmaCont = "<center><div id=\"grid1_container\" style=\"width:700px;height:500px;\"></div></center>";
+		$SigmaCont = "<center><div id=\"grid1_container\" style=\"width:550px;height:400px;\"></div></center>";
 		$grid->add("inventario/grup/dataedit/create");
 		$grid->build('datagridSG');
 		//echo $grid->db->last_query();
 
-		//$grid->build();
 
 		$data['style']  = style("redmond/jquery-ui.css");
 		$data['style'] .= style('gt_grid.css');

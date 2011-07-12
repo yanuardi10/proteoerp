@@ -4,59 +4,201 @@ class dpto extends validaciones{
 	function Dpto(){
 		parent::Controller(); 
 		$this->load->library("rapyd");
-	  $this->datasis->modulo_id(309,1);
+		$this->datasis->modulo_id(309,1);
 	}
-    function index(){
-    	$this->db->simple_query("INSERT INTO dpto (depto,tipo,descrip) VALUES ('99','G','INVERSION EN ACTIVOS')ON DUPLICATE KEY UPDATE depto='99', tipo='G',descrip='INVERSION EN ACTIVOS'");
-		$this->db->simple_query("INSERT INTO dpto (depto,tipo,descrip) VALUES ('98','G','GASTOS FINANCIEROS')ON DUPLICATE KEY UPDATE depto='98', tipo='G',descrip='GASTOS FINANCIEROS'");
-		$this->db->simple_query("INSERT INTO dpto (depto,tipo,descrip) VALUES ('97','G','GASTOS DE ADMINISTRACION')ON DUPLICATE KEY UPDATE depto='97', tipo='G',descrip='GASTOS DE ADMINISTRACION'");
-		$this->db->simple_query("INSERT INTO dpto (depto,tipo,descrip) VALUES ('96','G','GASTOS DE VENTA')ON DUPLICATE KEY UPDATE depto='96', tipo='G',descrip='GASTOS DE VENTA'");
-		$this->db->simple_query("INSERT INTO dpto (depto,tipo,descrip) VALUES ('95','G','GASTOS DE COMPRA')ON DUPLICATE KEY UPDATE depto='95', tipo='G',descrip='GASTOS DE COMPRA'");
-    	redirect("inventario/dpto/filteredgrid");
-    }
+
+	function index(){
+		$this->db->simple_query("INSERT IGNORE INTO dpto (depto,tipo,descrip) VALUES ('99','G','INVERSION EN ACTIVOS')ON DUPLICATE KEY UPDATE depto='99', tipo='G',descrip='INVERSION EN ACTIVOS'");
+		$this->db->simple_query("INSERT IGNORE INTO dpto (depto,tipo,descrip) VALUES ('98','G','GASTOS FINANCIEROS')ON DUPLICATE KEY UPDATE depto='98', tipo='G',descrip='GASTOS FINANCIEROS'");
+		$this->db->simple_query("INSERT IGNORE INTO dpto (depto,tipo,descrip) VALUES ('97','G','GASTOS DE ADMINISTRACION')ON DUPLICATE KEY UPDATE depto='97', tipo='G',descrip='GASTOS DE ADMINISTRACION'");
+		$this->db->simple_query("INSERT IGNORE INTO dpto (depto,tipo,descrip) VALUES ('96','G','GASTOS DE VENTA')ON DUPLICATE KEY UPDATE depto='96', tipo='G',descrip='GASTOS DE VENTA'");
+		$this->db->simple_query("INSERT IGNORE INTO dpto (depto,tipo,descrip) VALUES ('95','G','GASTOS DE COMPRA')ON DUPLICATE KEY UPDATE depto='95', tipo='G',descrip='GASTOS DE COMPRA'");
+		redirect("inventario/dpto/filteredgrid");
+	}
  
 	function filteredgrid(){
 		$this->rapyd->load("datafilter","datagrid");
 		$this->rapyd->uri->keep_persistence();
 
-		$filter = new DataFilter("Filtro por Departamento");
-		
-		$filter->db->select("tipo,depto,descrip,cu_venta,cu_inve,cu_devo,cu_cost");
-		$filter->db->from("dpto");
-		$filter->db->where('tipo','I');
-		
-		$filter->depto = new inputField("C&oacute;digo Departamento", "depto");
-		$filter->depto->size=20;
-		
-		$filter->descrip = new inputField("Descripci&oacute;n", "descrip");
-		$filter->descrip->size=20;
-    
-		$filter->buttons("reset","search");
-		$filter->build();
+		// tool bar		
+		$mtool  = "<table background='#554455'><tr>";
+		$mtool .= "<td>&nbsp;</td>";
+		$mtool .= "<td>&nbsp;<a href='".base_url()."inventario/dpto/dataedit/create'>";
+		$mtool .= img(array('src' => 'images/agregar.jpg', 'alt' => 'Agregar Registro', 'title' => 'Agregar Registro','border'=>'0','height'=>'32'));
+		$mtool .= "</a>&nbsp;</td>";
+		$mtool .= "<td>&nbsp;<a href='javascript:void(0);' ";
+		$mtool .= 'onclick="window.open(\''.base_url()."inventario/line', '_blank', 'width=600, height=500, scrollbars=No, status=No, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');".'" heigth="500"'.'>';
+		$mtool .= img(array('src' => 'images/lineas.png', 'alt' => 'Gestion de Lineas', 'title' => 'Gestion de Lineas','border'=>'0','height'=>'34'));
+		$mtool .= "</a>&nbsp;</td>";
+		$mtool .= "<td>&nbsp;<a href='javascript:void(0);' ";
+		$mtool .= 'onclick="window.open(\''.base_url()."inventario/grup', '_blank', 'width=600, height=500, scrollbars=No, status=No, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');".'" heigth="500"'.'>';
+		$mtool .= img(array('src' => 'images/grupo.jpg', 'alt' => 'Gestion de Grupos', 'title' => 'Gestion de Grupos','border'=>'0','height'=>'32'));
+		$mtool .= "</a>&nbsp;</td>";
+		$mtool .= "</tr></table>";
 
 		$uri = anchor('inventario/dpto/dataedit/show/<raencode><#depto#></raencode>','<#depto#>');
 		$uri_2 = anchor('inventario/dpto/dataedit/create/<raencode><#depto#></raencode>','Duplicar');
 
 		$grid = new DataGrid("Lista de Departamentos");
+		$grid->db->select("tipo,depto,descrip,cu_venta,cu_inve,cu_devo,cu_cost");
+		$grid->db->from("dpto");
 		$grid->order_by("depto","asc");
-		$grid->per_page = 20;
+		$grid->per_page = 40;
 
-		$grid->column("C&oacute;digo Departamento"  ,$uri      ,"align='center'");
-		$grid->column("Descripci&oacute;n"                 ,"descrip" ,"align='left'");
-		$grid->column("Cuenta Venta"                ,"cu_venta","align='center'");
-		$grid->column("Cuenta Inventario"           ,"cu_inve" ,"align='center'");
-		$grid->column("Cuenta Costo"                ,"cu_cost" ,"align='center'");
-		$grid->column("Cuenta Devoluci&oacute;n"    ,"cu_devo" ,"align='center'");
-		$grid->column("Duplicar"                    ,$uri_2    ,"align='center'");
+		$grid->column_sigma("C&oacute;digo"            ,'depto',    '', "align:'center', width:50, frozen: true, renderer: ver");
+		$grid->column_sigma("Tipo"                     ,'tipo',     '', "width:80, editor: { type: 'select', options: {'I':'Inventario', 'G':'Gastos'}}, renderer: coltipo");
+		$grid->column_sigma("Descripci&oacute;n"       ,"descrip",  '', "align:'left',   width:200, editor: { type: 'text' }");
+		$grid->column_sigma("Cuenta Venta"             ,"cu_venta", '', "align:'center', width:100");
+		$grid->column_sigma("Cuenta Inventario"        ,"cu_inve",  '', "align:'center', width:100");
+		$grid->column_sigma("Cuenta Costo"             ,"cu_cost",  '', "align:'center', width:100");
+		$grid->column_sigma("Cuenta Devoluci&oacute;n" ,"cu_devo",  '', "align:'center', width:100");
 
+		$sigmaA     = $grid->sigmaDsConfig("dpto","depto","inventario/dpto/");
+		$dsOption   = $sigmaA["dsOption"];
+		$grupver    = "
+function ver(value, record, columnObj, grid, colNo, rowNo){
+       var url = '';
+       url = '<a href=\"#\" onclick=\"window.open(\'".base_url()."inventario/dpto/dataedit/show/'+value+ '\', \'_blank\', \'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'\')\"; heigth=\"600\" >';
+       url = url +value+'</a>';
+       return url;	
+}
+
+function coltipo(value, record, columnObj, grid, colNo, rowNo) {
+	var options = {'I':'Inventario', 'G':'Gastos'};
+	var ret = options[value];
+	if(ret==null){ ret = value; }
+	return ret;
+}
+";
+	      $colsOption = $sigmaA["colsOption"];
+	      $gridOption = $sigmaA["gridOption"];
+	      $gridGuarda = $sigmaA["gridGuarda"];
+
+	      $gridGo = "
+var mygrid=new Sigma.Grid(gridOption);
+mygrid.width  = 550;
+mygrid.height = 400;
+Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
+";
+
+		$SigmaCont = "<center><div id=\"grid1_container\" style=\"width:550px;height:400px;\"></div></center>";
 		$grid->add("inventario/dpto/dataedit/create");
-		$grid->build();
+		$grid->build('datagridSG');
+		//echo $grid->db->last_query();
+
+		$data['style']  = style("redmond/jquery-ui.css");
+		$data['style'] .= style('gt_grid.css');
+
+		$data["script"]  = script("jquery.js");
+		$data['script'] .= script("gt_msg_es.js");
+		$data['script'] .= script("gt_grid_all.js");
+
+		$data['script'] .= "<script type=\"text/javascript\" >\n";
+		$data['script'] .= $dsOption.$grupver."\n";
+		$data['script'] .= $colsOption."\n";
+		$data['script'] .= $gridOption;
+		$data['script'] .= $gridGuarda;
+		$data['script'] .= $gridGo;
+		$data['script'] .= "\n</script>";
+
+		$data['content'] = $mtool.$SigmaCont;  //$grid->output;
 	
-	  $data['content'] = $filter->output.$grid->output;
+		//$data['content'] = $filter->output.$grid->output;
 		$data['title']   = "<h1>Departamentos</h1>";
 		$data["head"]    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);	
 	}
+
+
+	// sigma grid
+	function controlador() {
+		//header('Content-type:text/javascript;charset=UTF-8');
+		if (isset($_POST["_gt_json"]) ) {
+			$json=json_decode(stripslashes($_POST["_gt_json"]));
+			if($json->{'action'} == 'load') {
+				$pageNo   = $json->{'pageInfo'}->{'pageNum'};
+				$pageSize = $json->{'pageInfo'}->{'pageSize'};
+				$filter = '';
+
+				if(isset($json->{'sortInfo'}[0]->{'columnId'})){
+					$sortField = $json->{'sortInfo'}[0]->{'columnId'};
+				} else {
+					$sortField = "tipo DESC, depto";
+				}    
+	 
+				if(isset($json->{'sortInfo'}[0]->{'sortOrder'})){
+					$sortOrder = $json->{'sortInfo'}[0]->{'sortOrder'};
+				} else {
+					$sortOrder = "ASC";
+				}    
+	
+				for ($i = 0; $i < count($json->{'filterInfo'}); $i++) {
+					if($json->{'filterInfo'}[$i]->{'logic'} == "equal"){
+						$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . "='" . $json->{'filterInfo'}[$i]->{'value'} . "' ";
+					}elseif($json->{'filterInfo'}[$i]->{'logic'} == "notEqual"){
+						$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . "!='" . $json->{'filterInfo'}[$i]->{'value'} . "' ";    
+					}elseif($json->{'filterInfo'}[$i]->{'logic'} == "less"){
+						$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . "<" . $json->{'filterInfo'}[$i]->{'value'} . " ";
+					}elseif($json->{'filterInfo'}[$i]->{'logic'} == "lessEqual"){
+						$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . "<=" . $json->{'filterInfo'}[$i]->{'value'} . " ";    
+					}elseif($json->{'filterInfo'}[$i]->{'logic'} == "great"){
+							$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . ">" . $json->{'filterInfo'}[$i]->{'value'} . " ";
+					}elseif($json->{'filterInfo'}[$i]->{'logic'} == "greatEqual"){
+						$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . ">=" . $json->{'filterInfo'}[$i]->{'value'} . " ";        
+					}elseif($json->{'filterInfo'}[$i]->{'logic'} == "like"){
+						$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . " LIKE '%" . $json->{'filterInfo'}[$i]->{'value'} . "%' ";        
+					}elseif($json->{'filterInfo'}[$i]->{'logic'} == "startWith"){
+						$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . " LIKE '" . $json->{'filterInfo'}[$i]->{'value'} . "%' ";        
+					}elseif($json->{'filterInfo'}[$i]->{'logic'} == "endWith"){
+						$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . " LIKE '%" . $json->{'filterInfo'}[$i]->{'value'} . "' ";                
+					}
+					$filter .= " AND ";
+				}
+
+				//to get how many total records.
+				$mSQL = "SELECT count(*) FROM dpto WHERE $filter depto IS NOT NULL";
+				$totalRec = $this->datasis->dameval($mSQL);
+  
+				//make sure pageNo is inbound
+				if($pageNo<1||$pageNo>ceil(($totalRec/$pageSize))){
+					$pageNo = 1;
+				}
+
+				$mSQL = "SELECT depto, tipo, descrip,  cu_inve, cu_cost, cu_venta, cu_devo ";
+				$mSQL .= "FROM dpto WHERE $filter depto IS NOT NULL ORDER BY ".$sortField." ".$sortOrder." LIMIT ".($pageNo - 1)*$pageSize.", ".$pageSize;
+				$query = $this->db->query($mSQL);
+				if ($query->num_rows() > 0){
+					$retArray = array();
+					foreach( $query->result_array() as  $row ) {
+						$retArray[] = $row;
+					}
+					$data = json_encode($retArray);
+					$ret = "{data:" . $data .",\n";
+					$ret .= "pageInfo:{totalRowNum:" . $totalRec . "},\n";
+					$ret .= "recordType : 'object'}";
+				} else {
+					$ret = '{data : []}';
+				}
+				echo $ret;
+
+			}else if($json->{'action'} == 'save'){	}
+		} else {
+			// no hay _gt_json
+			echo '{data : []}';
+		}
+	}
+
+       function modifica(){
+	      $valor = $this->uri->segment($this->uri->total_segments());
+	      $campo = $this->uri->segment($this->uri->total_segments()-1);
+	      $grupo = $this->uri->segment($this->uri->total_segments()-2);
+	      $mSQL = "UPDATE dpto SET ".$campo."='".addslashes($valor)."' WHERE depto='".$grupo."' ";
+	      $this->db->simple_query($mSQL);
+	      echo "$valor $campo $grupo";
+       }
+
+
+
 	
 	function dataedit($status='',$id=''){
 		$this->rapyd->load("dataobject","dataedit");
@@ -139,10 +281,10 @@ class dpto extends validaciones{
 		$edit->descrip->maxlength=30;
 		$edit->descrip->rule ="trim|required|strtoupper";
 		
-		//$edit->tipo = new dropdownField("Tipo","tipo");
-	  //$edit->tipo->style='width:140px;';
-		//$edit->tipo->option("I","Inventario" );
-		//$edit->tipo->option("G","Gasto"  );
+		$edit->tipo = new dropdownField("Tipo","tipo");
+		$edit->tipo->style='width:140px;';
+		$edit->tipo->option("I","Inventario" );
+		$edit->tipo->option("G","Gasto"  );
 		
 		$edit->cu_inve =new inputField("Cuenta Inventario", "cu_inve");
 		$edit->cu_inve->size = 18;

@@ -274,8 +274,14 @@ class sinv extends Controller {
 
 		$mtool .= "<td>&nbsp;<a href='javascript:void(0);' ";
 		$mtool .= 'onclick="window.open(\''.base_url()."inventario/marc', '_blank', 'width=400, height=500, scrollbars=No, status=No, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');".'" heigth="500"'.'>';
-		$mtool .= img(array('src' => 'images/tux1.png', 'alt' => 'Gestionar Marcas', 'title' => 'Marcas','border'=>'0','height'=>'32'));
+		$mtool .= img(array('src' => 'images/tux1.png', 'alt' => 'Gestion de Marcas', 'title' => 'Gestion de Marcas','border'=>'0','height'=>'32'));
 		$mtool .= "</a>&nbsp;</td>";
+
+		$mtool .= "<td>&nbsp;<a href='javascript:void(0);' ";
+		$mtool .= 'onclick="window.open(\''.base_url()."inventario/unidad', '_blank', 'width=400, height=500, scrollbars=No, status=No, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');".'" heigth="500"'.'>';
+		$mtool .= img(array('src' => 'images/unidad.gif', 'alt' => 'Gestion de Unidades', 'title' => 'Gestion de Unidades','border'=>'0','height'=>'32'));
+		$mtool .= "</a>&nbsp;</td>";
+
 
 		$mtool .= "</tr></table>";
 
