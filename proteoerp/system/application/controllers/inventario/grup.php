@@ -6,6 +6,11 @@ class Grup extends validaciones {
 		parent::Controller();
 		$this->load->library('rapyd');
 		$this->datasis->modulo_id(305,1);
+		$esta = $this->datasis->dameval( "SHOW columns FROM grup WHERE Field='status'" );
+		if ( empty($esta) ) $this->db->simple_query("ALTER TABLE grup ADD status CHAR(1) DEFAULT='A' ");
+		$this->db->simple_query("UPDATE grup SET status='A' WHERE status IS NULL ");
+	
+	
 	}
 
 	function index(){
@@ -39,15 +44,6 @@ class Grup extends validaciones {
 		$filter->nombre->size=20;
 		$filter->nombre->group = 'UNO';
 
-		//$filter->comision = new inputField("Comisi&oacute;n","comision");
-		//$filter->comision->size=20;
-		
-		//$filter->margen = new inputField("Margen de Venta","margen");
-		//$filter->margen->size=20;
-		
-		//$filter->margenc = new inputField("Margen de Compra","margenc");
-		//$filter->margenc->size=20;
-
 		$filter->linea = new inputField("L&iacute;nea","b.descrip");
 		$filter->linea->size=20;
 		$filter->linea->group = 'DOS';
@@ -59,36 +55,276 @@ class Grup extends validaciones {
 		$filter->buttons("reset","search");
 		$filter->build('dataformfiltro');
 
+
+		$mtool  = "<table background='#554455'><tr>";
+		$mtool .= "<td>&nbsp;</td>";
+		$mtool .= "<td>&nbsp;<a href='".base_url()."inventario/grup/dataedit/create'>";
+		$mtool .= img(array('src' => 'images/agregar.jpg', 'alt' => 'Agregar Registro', 'title' => 'Agregar Registro','border'=>'0','height'=>'32'));
+		$mtool .= "</a>&nbsp;</td>";
+		$mtool .= "</tr></table>";
+
 		$uri = anchor('inventario/grup/dataedit/show/<raencode><#grupo#></raencode>','<#grupo#>');
 		$uri_2 = anchor('inventario/grup/dataedit/create/<raencode><#grupo#></raencode>','Duplicar');
 
 		$grid = new DataGrid("Lista de Grupos de Inventario");
 		$grid->order_by("grupo","asc");
-		$grid->per_page = 20;
-		$grid->use_function('blanco');
+		$grid->per_page = 60;
 
-		$grid->column("Grupo"                       ,$uri                            ,"align='center'");
-		$grid->column("Descripci&oacute;n"          ,"nom_grup"                      ,"align='left'");
-		//$grid->column("Comisi&oacute;n"             ,"<blanco><#comision#></blanco>" ,"align='right'");
-		//$grid->column("M.de Venta"             ,"<blanco><#margen#></blanco>" ,"align='right'");
-		//$grid->column("M.de Compra"             ,"<blanco><#margenc#></blanco>" ,"align='right'");
-		$grid->column("Departamento"                ,"depto"                         ,"align='left'");
-		$grid->column("Linea"                       ,"linea"                         ,"align='left'");
-		//$grid->column("Cuenta Inventario"           ,"cu_inve"                       ,"align='center'");
-		//$grid->column("Cuenta Costo"                ,"cu_cost"                       ,"align='center'");
-		//$grid->column("Cuenta Venta"                ,"cu_venta"                      ,"align='center'");
-		//$grid->column("Cuenta Devoluci&oacute;n"    ,"cu_devo"                       ,"align='center'");
-		$grid->column("Acciones"                    ,$uri_2                          ,"align='center'");
+		$grid->column_sigma("Depto",           		"depto",     "", "width: 40, frozen: true");
+		$grid->column_sigma("Linea",                    "linea",     '',      "width: 40, frozen: true");
+		$grid->column_sigma("Grupo", 		        "grupo",     '',      'width: 50,  frozen: true, renderer: grupver ' );
+		$grid->column_sigma("Descripci&oacute;n",       "nom_grup",  '',      "width: 200, editor: { type: 'text' }" );
+		$grid->column_sigma("Comisi&oacute;n",          "comision",  'float', "width: 80,  align: 'right', editor: { type: 'text' }");
+		$grid->column_sigma("Margen/Venta",             "margen" ,   'float', "width: 80,  align: 'right', editor: { type: 'text' }");
+		$grid->column_sigma("Margen/Compra",            "margenc" ,  'float', "width: 80,  align: 'right', editor: { type: 'text' }");
+		$grid->column_sigma("Cuenta Inventario",        "cu_inve",   '',      "align: 'left'");
+		$grid->column_sigma("Cuenta Costo",             "cu_cost",   '',      "align: 'left'");
+		$grid->column_sigma("Cuenta Venta",             "cu_venta",  '',      "align: 'left'");
+		$grid->column_sigma("Cuenta Devoluci&oacute;n", "cu_devo",   '',      "align: 'left'");
 
+		$sigmaA     = $grid->sigmaDsConfig();
+		$dsOption   = $sigmaA["dsOption"];
+		$grupver    = "
+function grupver(value, record, columnObj, grid, colNo, rowNo){
+	var url = '';
+	url = '<a href=\"#\" onclick=\"window.open(\'".base_url()."inventario/grup/dataedit/show/'+value+ '\', \'_blank\', \'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'\')\"; heigth=\"600\" >';
+	url = url +value+'</a>';
+	return url;	
+}
+
+";
+		$colsOption = $sigmaA["colsOption"];
+		$gridOption = "
+var gridOption={
+	id : 'grid1',
+	loadURL : '".base_url()."inventario/grup/controlador',
+	width: 700,
+	height: 500,
+	container : 'grid1_container',
+	replaceContainer: true,
+	dataset : dsOption ,
+	columns : colsOption,
+	allowCustomSkin: true,
+	skin: 'vista',
+	pageSize: ".$grid->per_page.",
+	pageSizeList: [30,60,90,120],
+	toolbarPosition : 'bottom',
+	toolbarContent: 'nav | pagesize | reload print excel pdf filter state',
+	afterEdit: guardar,
+	//showGridMenu : true,
+	clickStartEdit: false,
+	remotePaging: true,
+	remoteSorting: true,
+	remoteFilter: true,
+	autoload: true
+};
+
+function guardar(value, oldValue, record, col, grid) {
+	var murl='';
+	murl = '".base_url()."/inventario/grup/grupmodi/'+record['grupo']+'/'+col.id+'/'+encodeURIComponent(value);
+	if ( value != oldValue ) {
+		$.ajax({
+			url: murl,
+			context: document.body,
+			//success: function(m){ alert('Guardado '+m);}
+		});
+
+	}
+};
+
+var mygrid=new Sigma.Grid(gridOption);
+Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
+";		
+		$SigmaCont = "<center><div id=\"grid1_container\" style=\"width:700px;height:500px;\"></div></center>";
 		$grid->add("inventario/grup/dataedit/create");
-		$grid->build();
-		
+		$grid->build('datagridSG');
+		//echo $grid->db->last_query();
 
-		$data['content'] = $grid->output;
-		$data['filtro']  = $filter->output;
+		//$grid->build();
+
+		$data['style']  = style("redmond/jquery-ui.css");
+		$data['style'] .= style('gt_grid.css');
+
+		$data["script"]  = script("jquery.js");
+		$data['script'] .= script("gt_msg_es.js");
+		$data['script'] .= script("gt_grid_all.js");
+		$data['script'] .= "<script type=\"text/javascript\" >\n";
+		$data['script'] .= $dsOption.$grupver."\n";
+		$data['script'] .= $colsOption."\n";
+		$data['script'] .= $gridOption;
+
+		//$data['script'] .= "$(function() { $(\"p\").text(\"Meco\") } );";
+
+		$data['script'] .= "\n</script>";
+
+
+		$data['content'] = $mtool.$SigmaCont;  //$grid->output;
+		
+		//$data['filtro']  = ''; //$filter->output;
 		$data['title']   = "<h1>Grupos de Inventario</h1>";
 		$data["head"]    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
+	}
+
+	// sigma grid
+	function controlador(){
+		//header('Content-type:text/javascript;charset=UTF-8');
+//memowrite($_POST["_gt_json"],"jsonrecibido");
+		if (isset($_POST["_gt_json"]) ) {
+			$json=json_decode(stripslashes($_POST["_gt_json"]));
+			if($json->{'action'} == 'load') {
+				$pageNo   = $json->{'pageInfo'}->{'pageNum'};
+				$pageSize = $json->{'pageInfo'}->{'pageSize'};
+				$filter = '';
+
+				if(isset($json->{'sortInfo'}[0]->{'columnId'})){
+					$sortField = $json->{'sortInfo'}[0]->{'columnId'};
+				} else {
+					$sortField = "grupo";
+				}    
+	 
+				if(isset($json->{'sortInfo'}[0]->{'sortOrder'})){
+					$sortOrder = $json->{'sortInfo'}[0]->{'sortOrder'};
+				} else {
+					$sortOrder = "ASC";
+				}    
+	
+				for ($i = 0; $i < count($json->{'filterInfo'}); $i++) {
+					if($json->{'filterInfo'}[$i]->{'logic'} == "equal"){
+						$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . "='" . $json->{'filterInfo'}[$i]->{'value'} . "' ";
+					}elseif($json->{'filterInfo'}[$i]->{'logic'} == "notEqual"){
+						$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . "!='" . $json->{'filterInfo'}[$i]->{'value'} . "' ";    
+					}elseif($json->{'filterInfo'}[$i]->{'logic'} == "less"){
+						$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . "<" . $json->{'filterInfo'}[$i]->{'value'} . " ";
+					}elseif($json->{'filterInfo'}[$i]->{'logic'} == "lessEqual"){
+						$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . "<=" . $json->{'filterInfo'}[$i]->{'value'} . " ";    
+					}elseif($json->{'filterInfo'}[$i]->{'logic'} == "great"){
+							$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . ">" . $json->{'filterInfo'}[$i]->{'value'} . " ";
+					}elseif($json->{'filterInfo'}[$i]->{'logic'} == "greatEqual"){
+						$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . ">=" . $json->{'filterInfo'}[$i]->{'value'} . " ";        
+					}elseif($json->{'filterInfo'}[$i]->{'logic'} == "like"){
+						$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . " LIKE '%" . $json->{'filterInfo'}[$i]->{'value'} . "%' ";        
+					}elseif($json->{'filterInfo'}[$i]->{'logic'} == "startWith"){
+						$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . " LIKE '" . $json->{'filterInfo'}[$i]->{'value'} . "%' ";        
+					}elseif($json->{'filterInfo'}[$i]->{'logic'} == "endWith"){
+						$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . " LIKE '%" . $json->{'filterInfo'}[$i]->{'value'} . "' ";                
+					}
+					$filter .= " AND ";
+				}
+
+
+				//to get how many total records.
+				$mSQL = "SELECT count(*) FROM grup WHERE $filter grupo IS NOT NULL";
+				$totalRec = $this->datasis->dameval($mSQL);
+ 
+ 
+				//make sure pageNo is inbound
+				if($pageNo<1||$pageNo>ceil(($totalRec/$pageSize))){
+					$pageNo = 1;
+				}
+ 
+				$mSQL = "SELECT grupo, nom_grup, comision, margen, margenc, depto, linea, cu_inve, cu_cost, cu_venta, cu_devo ";
+				$mSQL .= "FROM grup WHERE $filter grupo IS NOT NULL ORDER BY ".$sortField." ".$sortOrder." LIMIT ".($pageNo - 1)*$pageSize.", ".$pageSize;
+//memowrite($mSQL,"mSQL");
+				$query = $this->db->query($mSQL);
+				if ($query->num_rows() > 0){
+					$retArray = array();
+					foreach( $query->result_array() as  $row ) {
+						$retArray[] = $row;
+					}
+					$data = json_encode($retArray);
+					$ret = "{data:" . $data .",\n";
+					$ret .= "pageInfo:{totalRowNum:" . $totalRec . "},\n";
+					$ret .= "recordType : 'object'}";
+				} else {
+					$ret = '{data : []}';
+				}
+				echo $ret;
+
+			}else if($json->{'action'} == 'save'){
+/*				$sql = "";
+				$params = array();
+				$errors = "";
+  
+				//deal with those deleted
+				$deletedRecords = $json->{'deletedRecords'};
+				foreach ($deletedRecords as $value){
+					$params[] = $value->id;
+				}
+				$sql = "delete from dbtable where id in (" . join(",", $params) . ")";
+				if(mysql_query($sql)==FALSE){
+					$errors .= mysql_error();
+				}
+				//deal with those updated
+				$sql = "";
+				$updatedRecords = $json->{'updatedRecords'};
+				foreach ($updatedRecords as $value){
+					$sql = "update `dbtable` set ".
+					//fill out fields to be updated here
+					"where `id`=".$value->id;
+					if(mysql_query($sql)==FALSE){
+						$errors .= mysql_error();
+					}
+				}
+				//deal with those inserted
+				$sql = "";
+				$insertedRecords = $json->{'insertedRecords'};
+				foreach ($insertedRecords as $value){
+					$sql = "insert into dbtable (//fields to be inserted)";
+					if(mysql_query($sql)==FALSE){
+						$errors .= mysql_error();
+					}
+				}
+				$ret = "{success : true,exception:''}";
+				echo $ret;*/
+			}
+		} else {
+			// no hay _gt_json
+			/*
+			$pageNo = 1;
+			$sortField = "numero";
+			$sortOrder = "DESC";
+			$pageSize = 50;//10 rows per page
+
+			//to get how many records totally.
+			$sql = "select count(*) as cnt from spre";
+			$totalRec = $this->datasis->dameval($sql);
+
+			//make sure pageNo is inbound
+			if($pageNo<1||$pageNo>ceil(($totalRec/$pageSize))){
+				$pageNo = 1;
+			}
+
+			//pageno starts with 1 instead of 0
+			$mSQL = "SELECT grupo, nom_grup, comision, margen, margenc, depto, linea, cu_inve, cu_cost, cu_venta, cu_devo";
+			$mSQL .=" FROM grup ORDER BY grupo ASC LIMIT ".($pageNo - 1)*$pageSize.", ".$pageSize;
+
+			$query = $this->db->query($mSQL);
+	
+			if ($query->num_rows() > 0){
+				$retArray = array();
+				foreach( $query->result_array() as  $row ) {
+					$retArray[] = $row;
+				}
+				$data = json_encode($retArray);
+				$ret = "{data:" . $data .",\n";
+				$ret .= "pageInfo:{totalRowNum:" . $totalRec . "},\n";
+				$ret .= "recordType : 'object'}";
+			} else {
+				$ret = '{data : []}';
+			}
+			*/
+			echo '{data : []}';
+		}
+	}
+
+	function grupmodi(){
+		$valor = $this->uri->segment($this->uri->total_segments());
+		$campo = $this->uri->segment($this->uri->total_segments()-1);
+		$grupo = $this->uri->segment($this->uri->total_segments()-2);
+		$mSQL = "UPDATE grup SET ".$campo."='".addslashes($valor)."' WHERE grupo='".$grupo."' ";
+		$this->db->simple_query($mSQL);
+		echo "$valor $campo $grupo";
 	}
 
 	function dataedit($status='',$id=''){
@@ -200,8 +436,8 @@ class Grup extends validaciones {
 		$edit->grupo->append($ultimo);
 
 		$edit->nom_grup =  new inputField("Nombre del Grupo", "nom_grup");
-		$edit->nom_grup->size = 35;
-		$edit->nom_grup->maxlength=30;
+		$edit->nom_grup->size = 40;
+		$edit->nom_grup->maxlength=40;
 		$edit->nom_grup->rule = "trim|strtoupper|required";
 
 		//$edit->tipo = new dropdownField("Tipo","tipo");
@@ -214,6 +450,13 @@ class Grup extends validaciones {
 		$edit->comision->maxlength=10;
 		$edit->comision->css_class='inputnum';
 		$edit->comision->rule='trim|callback_chporcent|numeric|callback_positivo';
+
+		$edit->status = new dropdownField("Status", "status");
+		$edit->status->db_name=("status");
+		$edit->status->option("A","Activo");
+		$edit->status->option("B","Bloqueado");
+		$edit->status ->style='width:120px;';
+
 
 		$edit->margen = new inputField("Margen de Venta", "margen");
 		$edit->margen->size = 18;

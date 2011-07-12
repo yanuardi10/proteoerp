@@ -81,6 +81,12 @@ class Usuarios extends Controller {
 		$edit->us_nombre->rule = 'strtoupper|required';
 		$edit->us_nombre->size = 45;
 
+		$edit->activo = new dropdownField('Activo', 'activo');
+		$edit->activo->rule = 'required';
+		$edit->activo->option('S','Si');
+		$edit->activo->option('N','No');
+		$edit->activo->style='width:80px';
+
 		$edit->almacen = new dropdownField('Almac&eacute;n', 'almacen');
 		$edit->almacen->option('','Ninguno');
 		$edit->almacen->options("SELECT ubica, CONCAT_WS('-',ubica,ubides) AS descrip FROM caub ORDER BY ubica");

@@ -134,19 +134,19 @@ class acdatasis extends Controller {
 		$filter->build();
     
 		if($this->rapyd->uri->is_set("search") AND $filter->is_valid()){
-      $usr=$filter->usuario->newValue;
+			$usr=$filter->usuario->newValue;
 			$mSQL="INSERT IGNORE INTO sida SELECT '$usr',b.codigo,'N'  FROM sida AS a RIGHT JOIN tmenus AS b ON a.modulo=b.codigo AND a.usuario='$usr' WHERE a.modulo IS NULL";
 			$this->db->simple_query($mSQL);
 			$copiar=anchor("supervisor/acdatasis/copiar/$usr/$usuario",'Copiar');
 			
 			$grid = new Datagrid("Resultados");
-		  $grid->use_function('ractivo');
+			$grid->use_function('ractivo');
 			$link=site_url('/supervisor/acdatasis/activar');
 			//$grid->per_page = 15;
-    	
+	
 			$grid->column("M&oacute;dulo","modulo");
 			$grid->column("Nombre","titulo");
-		  $grid->column("Acceso", "<ractivo><#acceso#>|<#codigo#>|</ractivo>",'align="center"');
+			$grid->column("Acceso", "<ractivo><#acceso#>|<#codigo#>|</ractivo>",'align="center"');
 			$grid->build(); 			
 			$tabla=$copiar.$grid->output;              
 			//echo $grid->db->last_query();
@@ -154,17 +154,17 @@ class acdatasis extends Controller {
 			$url=site_url('supervisor/acdatasis/activar');
 			$data['script']='<script type="text/javascript">
 			$(document).ready(function() {
-				$("form :checkbox").click(function () {
-    	       usr=$("#usuario").attr("value");
-    	       $.ajax({type: "POST",
-    	       url: "'.$url.'",
-    	       data: "codigo="+this.name+"&usuario="+usr,
-    	       success: function(msg){
-						  	if (msg==0)
-						    	alert("Ocurrio un problema");
-						  }
-						});
-    	    }).change();
+			$("form :checkbox").click(function () {
+				usr=$("#usuario").attr("value");
+				$.ajax({type: "POST",
+				url: "'.$url.'",
+				data: "codigo="+this.name+"&usuario="+usr,
+				success: function(msg){
+					if (msg==0)
+						alert("Ocurrio un problema");
+					}
+			});
+		}).change();
 			});
 			</script>';
 		}else{
@@ -176,6 +176,7 @@ class acdatasis extends Controller {
 		$data["head"]    = script("jquery.js").$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
+
 	function copiar($usr,$usuario){
 		$mSQL_1 = "DELETE FROM sida WHERE usuario = '$usuario'";
 		$this->db->simple_query($mSQL_1);

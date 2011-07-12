@@ -75,6 +75,12 @@ class sfac extends validaciones {
 		$uri2 .= anchor('formatos/verhtml/FACTURA/<#tipo_doc#>/<#numero#>',img(array('src'=>'images/html_icon.gif','border'=>'0','alt'=>'HTML')));
 		$uri2 .= "&nbsp;";
 		$uri2 .= img(array('src'=>'images/<#nulo#>.gif','border'=>'0','alt'=>'Estado','title'=>'Estado'));
+
+		$uri_3  = "<a href='javascript:void(0);' onclick='javascript:nfiscal(\"<#id#>\")'>";
+		$propiedad = array('src' => 'images/engrana.png', 'alt' => 'Modifica Nro de Control', 'title' => 'Modifica Nro. de Control','border'=>'0','height'=>'12');
+		$uri_3 .= img($propiedad);
+		$uri_3 .= "</a>";
+
 	
 		$grid = new DataGrid();
 		$grid->order_by('fecha','desc');
@@ -91,7 +97,7 @@ class sfac extends validaciones {
 		$grid->column_orderby('Total',    '<nformat><#totalg#></nformat>','totalg','align=\'right\'');
 		$grid->column_orderby('Exento',   '<nformat><#exento#></nformat>','totalg','align=\'right\'');
 		$grid->column_orderby('Tipo',     'referen',  'referen','align=\'left\'');
-		$grid->column_orderby('N.Fiscal', 'nfiscal',  'nfiscal','align=\'left\'');
+		$grid->column_orderby('N.Fiscal',  $uri_3.'<#nfiscal#>', 'nfiscal' );
 		$grid->column_orderby('M.Fiscal', 'maqfiscal','maqfiscal','align=\'left\'');
 		$grid->column_orderby('Vende',    'vd',       'vd');
 		$grid->column_orderby('Cajero',   'cajero',   'cajero');
@@ -101,7 +107,6 @@ class sfac extends validaciones {
 		$grid->column_orderby('Afecta',   'factura',  'factura','align=\'left\'');
 		$grid->column_orderby('I.D.',     'id',       'id',     'align=\'right\'');
 
-		//$grid->add('ventas/sfac/dataedit/create');
 		$grid->build('datagridST');
 		//echo $grid->db->last_query();
 
@@ -139,6 +144,26 @@ class sfac extends validaciones {
 </style>	
 ';
 
+$script ='
+<script type="text/javascript">
+function nfiscal(mid){
+	jPrompt("Numero de Serie","" ,"Cambio de Nro.Fiscal", function(mserie){
+		if( mserie==null){
+			jAlert("Cancelado","Informacion");
+		} else {
+			$.ajax({ url: "'.site_url().'ventas/sfac/nfiscal/"+mid+"/"+mserie,
+				success: function(msg){
+					jAlert("Cambio Finalizado "+msg,"Informacion");
+					location.reload();
+					}
+			});
+		}
+	})
+}
+
+</script>';
+
+
 $sigma = "";
 
 
@@ -148,7 +173,7 @@ $sigma = "";
 		$data['script']  = script('jquery.js');
 		$data["script"] .= script("jquery.alerts.js");
 		$data['script'] .= script('superTables.js');
-		//$data['script'] .= $script;
+		$data['script'] .= $script;
 
 		$data['style']   = $style;
 		$data['style']  .= style('superTables.css');
@@ -160,6 +185,21 @@ $sigma = "";
 		$data['title']   = heading('Facturas');
 		$this->load->view('view_ventanas', $data);
 	}
+
+	//cambio del Nro Fiscal
+	function nfiscal() {
+		$nfiscal   = $this->uri->segment($this->uri->total_segments());
+		$mid = $this->uri->segment($this->uri->total_segments()-1);
+		if (!empty($nfiscal)) {
+			$this->db->simple_query("UPDATE sfac SET nfiscal='$nfiscal' WHERE id='$mid'");
+			echo " con exito ";
+		} else {
+			echo " NO se guardo ";
+		}
+		logusu('SFAC',"Cambia Nro. Fiscal $mid ->  $nfiscal ");
+		
+	}
+
 
 	function dataedit(){
 		$this->rapyd->load('dataobject','datadetails');

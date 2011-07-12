@@ -85,13 +85,6 @@ else:
 					</td>
 				</tr>
 			</table>
-			
-			<?php } else { ?>
-			Agregar: 
-			<a href="javascript:add_depto();" title="Agregar departamentos"><?php echo image('list_plus.png','Agregar Departamentos',array("border"=>"0","height"=>"12"));?>Deptos</a>
-			<a href="javascript:add_linea();" title="Agregar una Linea"><?php echo image('list_plus.png','Agregar Lineas',array("border"=>"0","height"=>"12"));?>Lineas</a>
-			<a href="javascript:add_grupo();" title="Agregar un grupo"><?php echo image('list_plus.png','Agregar Grupos',array("border"=>"0","height"=>"12"));?>Grupos</a>
-			
 			<?php } // show ?>
 		</td>
 		<td align='center' valign='middle'>
@@ -526,9 +519,28 @@ if ($query->num_rows()>0 ) {
 
 </div>
 <div id="tab5" style='background:#EFEFFF'>
+	<table width='100%'><tr><td>
+	<fieldset style='border: 1px outset #8A0808;background: #FFFBE9;'>
+	<legend class="titulofieldset" >Bonos por volumen</legend>
+	<table width='100%'>
+	<tr>
+		<td class="littletableheaderc" width='50'>Desde</td>
+		<td class="littletablerow" align='right'><?=$form->fdesde->output ?></td>
+		<td class="littletableheaderc">Por la compra de </td>
+		<td class="littletablerow" align='right'><?=$form->bonicant->output ?></td>
+	</tr><tr>
+		<td class="littletableheaderc">Hasta</td>
+		<td class="littletablerow" align='right'><?=$form->fhasta->output ?></td>
+		<td class="littletableheaderc">Se lleva adicional </td>
+		<td class="littletablerow" align='right'><?=$form->bonifica->output ?></td>
+	</tr>
+	</table>
+	</fieldset>
+	</td><td>
+
 <?php if($form->_status=='show'){ ?>
 	<fieldset style='border: 1px outset #8A0808;background: #FFFBE9;'>
-	<legend class="titulofieldset" >Promociones</legend>
+	<legend class="titulofieldset" >Descuentos</legend>
 	<table border=0 width='100%'>
 	<tr>
 		<td valign="top"><?php 
@@ -540,6 +552,7 @@ if ($query->num_rows()>0 ) {
 			} else echo "No tiene descuento por grupo";
 			?>
 		</td>
+	</tr><tr>
 		<td valign="top"><?php
 			$margen =  $this->datasis->dameval("SELECT margen FROM sinvpromo WHERE codigo='".addslashes($form->_dataobject->get('codigo'))."'");
 			if ($margen > 0 ) {
@@ -552,6 +565,8 @@ if ($query->num_rows()>0 ) {
 	</tr>
 	</table>
 	</fieldset>
+	</td></tr></table>
+	
 	<br/>
 <?php
 $query = $this->db->query("SELECT suplemen FROM barraspos WHERE codigo='".addslashes($form->_dataobject->get('codigo'))."'");

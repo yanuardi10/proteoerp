@@ -272,6 +272,11 @@ class sinv extends Controller {
 		$mtool .= img(array('src' => 'images/marca.jpg', 'alt' => 'Cambiar Marca', 'title' => 'Cambiar Marca','border'=>'0','height'=>'30'));
 		$mtool .= "</a>&nbsp;</td>";
 
+		$mtool .= "<td>&nbsp;<a href='javascript:void(0);' ";
+		$mtool .= 'onclick="window.open(\''.base_url()."inventario/marc', '_blank', 'width=400, height=500, scrollbars=No, status=No, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');".'" heigth="500"'.'>';
+		$mtool .= img(array('src' => 'images/tux1.png', 'alt' => 'Gestionar Marcas', 'title' => 'Marcas','border'=>'0','height'=>'32'));
+		$mtool .= "</a>&nbsp;</td>";
+
 		$mtool .= "</tr></table>";
 
 		$grid = new DataGrid($mtool);
@@ -1120,7 +1125,7 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->unidad->style='width:100px;';
 		$edit->unidad->option("","");
 		$edit->unidad->options("SELECT unidades, unidades as valor FROM unidad ORDER BY unidades");
-		//$edit->unidad->append($AddUnidad);
+		$edit->unidad->append($AddUnidad);
 
 		$edit->clave = new inputField("Clave", "clave");
 		$edit->clave->size=10;
@@ -1133,13 +1138,13 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->depto->style='width:300px;white-space:nowrap;';
 		$edit->depto->option("","Seleccione un Departamento");
 		$edit->depto->options("SELECT depto, CONCAT(depto,'-',descrip) descrip FROM dpto WHERE tipo='I' ORDER BY depto");
-		//$edit->depto->append($AddDepto);
+		$edit->depto->append($AddDepto);
 
 		$AddLinea='<a href="javascript:add_linea();" title="Haz clic para Agregar una nueva Linea;">'.image('list_plus.png','Agregar',array("border"=>"0")).'</a>';
 		$edit->linea = new dropdownField("L&iacute;nea","linea");
 		$edit->linea->rule ="required";
 		$edit->linea->style='width:300px;';
-		//$edit->linea->append($AddLinea);
+		$edit->linea->append($AddLinea);
 		$depto=$edit->getval('depto');
 		if($depto!==FALSE){
 			$edit->linea->options("SELECT linea, CONCAT(LINEA,'-',descrip) descrip FROM line WHERE depto='$depto' ORDER BY descrip");
@@ -1151,8 +1156,8 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->grupo = new dropdownField("Grupo", "grupo");
 		$edit->grupo->rule="required";
 		$edit->grupo->style='width:300px;';
-
-		//$edit->grupo->append($AddGrupo);
+		$edit->grupo->append($AddGrupo);
+		
 		$linea=$edit->getval('linea');
 		if($linea!==FALSE){
 			$edit->grupo->options("SELECT grupo, CONCAT(grupo,'-',nom_grup) nom_grup FROM grup WHERE linea='$linea' ORDER BY nom_grup");
@@ -1322,10 +1327,6 @@ function sinvborraprv(mproveed, mcodigo){
 			$edit->$objeto->autcomplete=false;
 			$edit->$objeto->rule="required";
 
-			//$objeto="Ebase$i";
-			//$edit->$objeto = new freeField("","","Precio $i");
-			//$edit->$objeto->in="margen$i";
-
 			$objeto="base$i";
 			$edit->$objeto = new inputField("Base $i", $objeto);
 			$edit->$objeto->css_class='inputnum';
@@ -1335,10 +1336,6 @@ function sinvborraprv(mproveed, mcodigo){
 			$edit->$objeto->in="margen$i";
 			$edit->$objeto->onkeyup = "cambiobase('I');";
 			$edit->$objeto->rule="required";
-
-			//$objeto="Eprecio$i";
-			//$edit->$objeto = new freeField("","","Precio + I.V.A. $i");
-			//$edit->$objeto->in="margen$i";
 
 			$objeto="precio$i";
 			$edit->$objeto = new inputField("Precio $i", $objeto);
@@ -1386,6 +1383,25 @@ function sinvborraprv(mproveed, mcodigo){
 		//$edit->fechav->when =array("show");
 		$edit->fechav->size=10;
 
+		$edit->fdesde = new dateField("Desde",'fdesde','d/m/Y');
+		$edit->fdesde->size=10;
+
+		$edit->fhasta = new dateField("Desde",'fhasta','d/m/Y');
+		$edit->fhasta->size=10;
+
+		$edit->bonicant = new inputField("Cant. Bonifica", "bonicant");
+		$edit->bonicant->size=10;
+		$edit->bonicant->maxlength=12;
+		$edit->bonicant->css_class='inputonlynum';
+		$edit->bonicant->rule='numeric|callback_positivo|trim';
+
+		$edit->bonifica = new inputField("Bonifica", "bonifica");
+		$edit->bonifica->size=10;
+		$edit->bonifica->maxlength=12;
+		$edit->bonifica->css_class='inputonlynum';
+		$edit->bonifica->rule='numeric|callback_positivo|trim';
+
+
 		for($i=1;$i<=3;$i++){
 			$objeto="pfecha$i";
 			$edit->$objeto = new dateField("Fecha $i",$objeto,'d/m/Y');
@@ -1429,6 +1445,9 @@ function sinvborraprv(mproveed, mcodigo){
 
 		$edit->buttons("modify", "save", "undo", "delete", "back");
 		$edit->build();
+
+
+
 
 		$style = '
 <style type="text/css">
