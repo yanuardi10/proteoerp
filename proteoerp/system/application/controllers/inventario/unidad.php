@@ -52,11 +52,10 @@ function guardar(value, oldValue, record, col, grid) {
 
 	      $gridGo = "
 var mygrid=new Sigma.Grid(gridOption);
-mygrid.toolbarContent = 'nav | pagesize | reload | add del save | print | filter | state';
 mygrid.saveURL = '".base_url()."inventario/unidad/controlador',
 mygrid.width = 360;
 mygrid.height = 400;
-mygrid.toolbarContent = 'nav | pagesize | reload | add del save | print | filter | state';
+mygrid.toolbarContent = 'nav | pagesize | reload | add del save | print ';
 Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 ";		
 		$SigmaCont = "<center><div id=\"grid1_container\" style=\"width:400px;height:400px;\"></div></center>";

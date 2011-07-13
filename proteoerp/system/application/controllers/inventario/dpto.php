@@ -198,8 +198,6 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
        }
 
 
-
-	
 	function dataedit($status='',$id=''){
 		$this->rapyd->load("dataobject","dataedit");
 
