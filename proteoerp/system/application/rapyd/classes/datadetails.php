@@ -46,6 +46,7 @@ class DataDetails extends DataForm{
 
   var $back_cancel_save = false;
   var $back_cancel_delete = false;
+  var $on_save_redirect=true;
 
 	var $detail_fields=array();
 	var $details_expand=false;
@@ -321,11 +322,13 @@ class DataDetails extends DataForm{
 
           $this->_postprocess_uri .= "/". $this->rapyd->uri->build_clause("show".$this->pk_to_URI($this->_dataobject->pk));
 
-          if ($this->back_save){
-            header("Refresh:0;url=".$this->back_url);
-          } else {
-            redirect("/".$this->_postprocess_uri,'refresh');
-          }
+		  if($this->on_save_redirect){
+			if ($this->back_save){
+		      header("Refresh:0;url=".$this->back_url);
+		   } else {
+		     redirect("/".$this->_postprocess_uri,'refresh');
+		   }
+		  }
 
         }
       break;
@@ -344,11 +347,13 @@ class DataDetails extends DataForm{
 
           $this->_postprocess_uri .= $this->pk_to_URI($this->_dataobject->pk);
 
-          if ($this->back_save){
-            header("Refresh:0;url=".$this->back_url);
-          } else {
-            redirect($this->_postprocess_uri,'refresh');
-          }
+		  if($this->on_save_redirect){
+			if ($this->back_save){
+			  header("Refresh:0;url=".$this->back_url);
+			} else {
+			  redirect($this->_postprocess_uri,'refresh');
+			}
+		  }
 
         }
       break;

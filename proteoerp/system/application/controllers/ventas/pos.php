@@ -70,7 +70,7 @@ class Pos extends Controller {
 		if($mid !== false){
 			$retArray = $retorno = array();
 			$mSQL="SELECT TRIM(descrip) AS descrip, TRIM(codigo) AS codigo, precio1 AS precio, iva,existen
-			FROM sinv WHERE codigo LIKE $qdb OR descrip LIKE  $qdb OR barras LIKE $qdb
+			FROM sinv WHERE (codigo LIKE $qdb OR descrip LIKE  $qdb OR barras LIKE $qdb) AND activo='S'
 			ORDER BY descrip LIMIT 10";
 
 			$query = $this->db->query($mSQL);
@@ -98,7 +98,7 @@ class Pos extends Controller {
 		$data = '{[ ]}';
 		if($mid !== false){
 			$retArray = $retorno = array();
-			$mSQL="SELECT TRIM(nombre) AS nombre, TRIM(rifci) AS rifci
+			$mSQL="SELECT TRIM(nombre) AS nombre, TRIM(rifci) AS rifci, cliente
 				FROM scli WHERE rifci LIKE $qdb
 				ORDER BY rifci LIMIT 10";
 
@@ -108,6 +108,7 @@ class Pos extends Controller {
 					$retArray['value']   = $row['rifci'];
 					$retArray['label']   = '('.$row['rifci'].') '.$row['nombre'];
 					$retArray['nombre']  = $row['nombre'];
+					$retArray['cod_cli'] = $row['cliente'];
 					array_push($retorno, $retArray);
 				}
 				$data = json_encode($retorno);
