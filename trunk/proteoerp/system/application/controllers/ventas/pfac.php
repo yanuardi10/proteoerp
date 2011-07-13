@@ -1,5 +1,6 @@
 <?php require_once(BASEPATH . 'application/controllers/validaciones.php');
 class pfac extends validaciones{
+	var $genesal=true;
 
 	function pfac(){
 		parent :: Controller();
@@ -294,14 +295,99 @@ class pfac extends validaciones{
 		$edit->usuario = new autoUpdateField('usuario', $this->session->userdata('usuario'), $this->session->userdata('usuario'));
 
 		$edit->buttons('modify', 'save', 'undo', 'delete', 'back', 'add_rel');
-		$edit->build();
+		
 
-		$conten['inven']=$jinven;
-		$conten['form'] = & $edit;
-		$data['content'] = $this->load->view('view_pfac', $conten, true);
-		$data['title'] = heading('Pedidos');
-		$data['head'] = script('jquery.js') . script('jquery-ui.js') . script('plugins/jquery.numeric.pack.js') . script('plugins/jquery.meiomask.js') . style('vino/jquery-ui.css') . $this->rapyd->get_head() . phpscript('nformat.js') . script('plugins/jquery.numeric.pack.js') . script('plugins/jquery.floatnumber.js') . phpscript('nformat.js');
-		$this->load->view('view_ventanas', $data);
+		if($this->genesal){
+			$edit->build();
+
+			$conten['inven'] = $jinven;
+			$conten['form']  = & $edit;
+			$data['content'] = $this->load->view('view_pfac', $conten, true);
+			$data['title']   = heading('Pedidos');
+			$data['head']    = script('jquery.js') . script('jquery-ui.js') . script('plugins/jquery.numeric.pack.js') . script('plugins/jquery.meiomask.js') . style('vino/jquery-ui.css') . $this->rapyd->get_head() . phpscript('nformat.js') . script('plugins/jquery.numeric.pack.js') . script('plugins/jquery.floatnumber.js') . phpscript('nformat.js');
+			$this->load->view('view_ventanas', $data);
+		}else{
+			$edit->on_save_redirect=false;
+			$edit->build();
+
+			if($edit->on_success()){
+				echo 'Pedido Guardado';
+			}elseif($edit->on_error()){
+				echo html_entity_decode(preg_replace('/<[^>]*>/', '', $edit->error_string));
+			}
+		}
+	}
+
+	function pos(){
+		$this->rapyd->load('dataobject','datadetails');
+
+		$mSCLId=array(
+		'tabla'   =>'scli',
+		'columnas'=>array(
+			'cliente' =>'C&oacute;digo Cliente',
+			'nombre'=>'Nombre', 
+			'cirepre'=>'Rif/Cedula',
+			'dire11'=>'Direcci&oacute;n',
+			'tipo'=>'Tipo'),
+		'filtro'  =>array('cliente'=>'C&oacute;digo Cliente','nombre'=>'Nombre'),
+		'retornar'=>array('cliente'=>'cod_cli','nombre'=>'nombre','rifci'=>'rifci',
+					'dire11'=>'direc'),
+		'titulo'  =>'Buscar Cliente',
+		'script'  => array('post_modbus_scli()'));
+		$boton =$this->datasis->modbus($mSCLId);
+
+		$query = $this->db->query("SELECT tipo,nombre FROM tarjeta ORDER BY tipo");
+		foreach ($query->result() as $row){
+			$sfpa[$row->tipo]=$row->nombre;
+		}
+
+		$tban['']='Banco';
+		$query = $this->db->query("SELECT cod_banc,nomb_banc FROM tban WHERE cod_banc<>'CAJ' ORDER BY nomb_banc");
+		foreach ($query->result() as $row){
+			$tban[$row->cod_banc]=$row->nomb_banc;
+		}
+
+		$conten=array();
+		$conten['sfpa']  = $sfpa;
+		$conten['tban']  = $tban;
+		$data['content'] = $this->load->view('view_pos_pfac', $conten,true);
+		$data['title']   = '';
+		$data['head']    = style('redmond/jquery-ui-1.8.1.custom.css');
+		$data['head']   .= style('ui.jqgrid.css');
+		$data['head']   .= style('ui.multiselect.css');
+		$data['head']   .= script('jquery.js');
+		$data['head']   .= script('interface.js');
+		$data['head']   .= script('jquery-ui.js');
+		$data['head']   .= script('plugins/jquery.ui.autocomplete.autoSelectOne.js');
+		$data['head']   .= script('jquery.layout.js');
+		$data['head']   .= script('i18n/grid.locale-sp.js');
+		$data['head']   .= script('ui.multiselect.js');
+		$data['head']   .= script('jquery.jqGrid.min.js');
+		$data['head']   .= script('jquery.tablednd.js');
+		$data['head']   .= script('jquery.contextmenu.js');
+		$data['head']   .= script('plugins/jquery.numeric.pack.js');
+		$data['head']   .= script('plugins/jquery.floatnumber.js');
+		$data['head']   .= phpscript('nformat.js');
+
+		$this->load->view('view_ventanas_sola', $data);
+	}
+
+	function creapfac(){
+		foreach($_POST as $ind=>$val){
+			$matches=array();
+			$_POST['fecha']=date('d/m/Y');
+			
+			if(preg_match('/codigoa_(?P<id>\d+)/', $ind, $matches) > 0){
+				$id     = $matches['id'];
+				$precio = $_POST['precio_'.$id];
+				$iva    = $_POST['itiva_'.$id];
+				$_POST['preca_'.$id] = round($precio*100/(100+$iva),2);
+			}
+		}
+		//print_r($_POST);
+		$this->genesal=false;
+		$rt=$this->dataedit();
+		echo $rt;
 	}
 
 	function _pre_insert($do){
@@ -315,15 +401,15 @@ class pfac extends validaciones{
 		$iva = $totals = 0;
 		$cana = $do->count_rel('itpfac');
 		for($i = 0;$i < $cana;$i++){
-			$itcana = $do->get_rel('itpfac', 'cana', $i);
+			$itcana  = $do->get_rel('itpfac', 'cana', $i);
 			$itpreca = $do->get_rel('itpfac', 'preca', $i);
-			$itiva = $do->get_rel('itpfac', 'iva', $i);
-			$ittota = $itpreca * $itcana;
+			$itiva   = $do->get_rel('itpfac', 'iva', $i);
+			$ittota  = $itpreca * $itcana;
 			$do->set_rel('itpfac', 'tota' , $ittota, $i);
 			$do->set_rel('itpfac', 'fecha' , $fecha , $i);
 			$do->set_rel('itpfac', 'vendedor', $vd , $i);
 
-			$iva  += $ittota * ($itiva / 100);
+			$iva    += $ittota * ($itiva / 100);
 			$totals += $ittota;
 			$do->set_rel('itpfac', 'mostrado', $iva + $ittota, $i);
 		}
