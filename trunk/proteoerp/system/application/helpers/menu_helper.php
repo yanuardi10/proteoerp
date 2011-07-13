@@ -13,7 +13,7 @@ function arr_menu($nivel=1,$pertenece=NULL){
 	$modulo=opciones_nivel($nivel);
 
 	if ($CI->session->userdata('logged_in')){
-		$mSQL="SELECT a.modulo, a.titulo, a.mensaje, a.target,a.ejecutar,a.panel,a.ancho,a.alto  FROM intramenu AS a ";
+		$mSQL="SELECT a.modulo, a.titulo, a.mensaje, a.target, a.ejecutar, a.panel, a.ancho, a.alto  FROM intramenu AS a ";
 		$usr=$CI->session->userdata('usuario');
 		if ($CI->datasis->essuper() or $pertenece===0)
 			$mSQL .= "WHERE ";
@@ -31,7 +31,8 @@ function arr_menu($nivel=1,$pertenece=NULL){
 }
 
 function arr2link($arr){
-	$att = array(	'width' => $arr['ancho'],
+	$att = array(
+		'width'      => $arr['ancho'],
 		'heigth'     => $arr['alto'],
 		'scrollbars' => 'Yes',
 		'status'     => 'Yes',

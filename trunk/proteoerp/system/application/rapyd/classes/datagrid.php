@@ -164,6 +164,7 @@ class DataGrid extends DataSet{
 var gridOption={
 	id : 'grid1',
 	loadURL : '".base_url().$url."controlador',
+	saveURL : '".base_url().$url."controlador',
 	width: 700,
 	height: 500,
 	container : 'grid1_container',

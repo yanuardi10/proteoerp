@@ -15,85 +15,217 @@ class Caub extends validaciones {
 
 		$this->load->library("rapyd");
 		define ("THISFILE",   APPPATH."controllers/nomina". $this->uri->segment(2).EXT);
-   }
+	}
  
-    function index(){
-    	$this->datasis->modulo_id(307,1);
-    	$ajus=$this->db->simple_query("INSERT INTO caub (ubica,ubides,gasto,invfis) VALUES ('AJUS','AJUSTES','S','N')ON DUPLICATE KEY UPDATE ubides='AJUSTES', gasto='S',invfis='N'");
-    	$infi=$this->db->simple_query("INSERT INTO caub (ubica,ubides,gasto,invfis) VALUES ('INFI','INVENTARIO FISICO','S','S')ON DUPLICATE KEY UPDATE ubides='INVENTARIO FISICO', gasto='S',invfis='S'");
-    	redirect("inventario/caub/filteredgrid");
+	function index(){
+		$this->datasis->modulo_id(307,1);
+		$ajus=$this->db->simple_query("INSERT IGNORE INTO caub (ubica,ubides,gasto,invfis) VALUES ('AJUS','AJUSTES','S','N')ON DUPLICATE KEY UPDATE ubides='AJUSTES', gasto='S',invfis='N'");
+		$infi=$this->db->simple_query("INSERT IGNORE INTO caub (ubica,ubides,gasto,invfis) VALUES ('INFI','INVENTARIO FISICO','S','S')ON DUPLICATE KEY UPDATE ubides='INVENTARIO FISICO', gasto='S',invfis='S'");
+		redirect("inventario/caub/filteredgrid");
     }
   
 	function filteredgrid(){
 		$this->rapyd->load("datafilter","datagrid");
 		$this->rapyd->uri->keep_persistence();
 
-		$filter = new DataFilter("Filtro por Ubicaci&oacute;n");
+		$mtool  = "<table background='#554455'><tr>";
+		$mtool .= "<td>&nbsp;</td>";
+		$mtool .= "<td>&nbsp;<a href='".base_url()."inventario/caub/dataedit/create'>";
+		$mtool .= img(array('src' => 'images/agregar.jpg', 'alt' => 'Agregar Registro', 'title' => 'Agregar Registro','border'=>'0','height'=>'32'));
+		$mtool .= "</a>&nbsp;</td>";
+		$mtool .= "</tr></table>";
+		$mtool = '';
 
-		$filter->db->select("ubica, ubides,gasto,a.cu_caja AS cu_caja, a.cu_cost AS cu_cost,invfis,b.sucursal AS sucursal,a.sucursal as codigo");
-		$filter->db->from("caub AS a");
-		$filter->db->join("sucu AS b","a.sucursal=b.codigo","LEFT");
+		$sucu = $this->datasis->dameval("SELECT GROUP_CONCAT( CONCAT(\" '\",codigo,\"' : '\", sucursal,\"'\") ) FROM sucu ");
+		//$uri = anchor('inventario/caub/dataedit/show/<#ubica#>','<#ubica#>');
+		//$uri_2 = anchor('inventario/departamentos/dataedit/create/<raencode><#ubica#></raencode>','Duplicar');
 
-		$filter->ubica = new inputField("Ubicaci&oacute;n", "ubica");
-		$filter->ubica->size=20;
+		$grid = new DataGrid("Almacenes");
 		
-		$filter->descrip = new inputField("Descripci&oacute;n", "ubides");
-		$filter->descrip->size=20;
-		
-		//$filter->gasto=new dropdownField("Gasto","gasto");
-		//$filter->gasto->option("","");
-		//$filter->gasto->option("S","Si");
-		//$filter->gasto->option("N","No");
-		//$filter->gasto->style='width:150px;';
+		$grid->db->select("ubica, ubides, gasto, invfis, sucursal");
+		$grid->db->from("caub");
 
-		//$filter->invfis=new dropdownField("Inventario F&iacute;sico","invfis");
-		//$filter->invfis->option("","");
-		//$filter->invfis->option("S","Si");
-		//$filter->invfis->option("N","No");
-		//$filter->invfis->style='width:150px;';
-		
-		$filter->sucursal = new dropdownField("Sucursal","codigo");
-		$filter->sucursal->option("","");
-		$filter->sucursal->options("SELECT codigo, sucursal FROM sucu ORDER BY sucursal");
-		$filter->sucursal->style='width:150px;';
-				
-		$filter->buttons("reset","search");
-		$filter->build('dataformfiltro');
-		
-		function si_no($valor){
-			if($valor=='S'){
-				return 'Si';
-			}elseif($valor=='N'){
-				return 'No';
-			}	
-		}
-
-		$uri = anchor('inventario/caub/dataedit/show/<#ubica#>','<#ubica#>');
-		$uri_2 = anchor('inventario/departamentos/dataedit/create/<raencode><#ubica#></raencode>','Duplicar');
-
-		$grid = new DataGrid("Lista de Almacenes");
-		$grid->order_by("ubica","asc");
+		$grid->order_by("ubica","ASC");
 		$grid->per_page = 20;
 		$grid->use_function('si_no');
 
-		$grid->column("Ubicaci&oacute;n"            ,$uri                          ,"align='center'");
-		$grid->column("Descripci&oacute;n"          ,"ubides"                      ,"align='left'");
-		$grid->column("Gasto"                ,"<si_no><#gasto#></si_no>"    ,"align='center'");
-		$grid->column("Cuenta Almac&eacute;n","cu_cost"                     ,"align='center'");
-		$grid->column("Cuenta Caja"          ,"cu_caja"                     ,"align='center'");
-		$grid->column("Inventario F&iacute;sico"    , "<si_no><#invfis#></si_no>"  ,"align='center'");
-		$grid->column("Sucursal"             ,"sucursal"                    ,"align='left'");
-		$grid->column("Duplicar"             ,$uri_2                        ,"align='center'");
+		$grid->column_sigma("C&oacute;digo",         "ubica",    "", "align:'center', width: 60, editor: { type: 'text'} ");
+		$grid->column_sigma("Descripci&oacute;n",    "ubides",   "", "align:'left',   width:210, editor: { type: 'text'} ");
+		$grid->column_sigma("Gasto",                 "gasto",    "", "align:'center', width: 50, editor: { type: 'select', options: {'N':'No', 'S':'Si'}} ");
+		$grid->column_sigma("Inv/F&iacute;sico",     "invfis",   "", "align:'center', width: 70, editor: { type: 'select', options: {'N':'No', 'S':'Si'}} ");
+		$grid->column_sigma("Sucursal",              "sucursal", "", "align:'left', editor : { type: 'select', options: {".$sucu."} }, renderer:colsucu " );
 								
+		$sigmaA     = $grid->sigmaDsConfig("caub","ubica","inventario/caub/");
+		$dsOption   = $sigmaA["dsOption"];
+		$grupver    = "
+function ver(value, record, columnObj, grid, colNo, rowNo){
+       var url = '';
+       url = '<a href=\"#\" onclick=\"window.open(\'".base_url()."inventario/caub/dataedit/show/'+value+ '\', \'_blank\', \'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'\')\"; heigth=\"600\" >';
+       url = url +value+'</a>';
+       return url;	
+}
+
+function colsucu(value, record, columnObj, grid, colNo, rowNo) {
+	var options = { ".$sucu." };
+	var ret = options[value];
+	if(ret==null){ ret = value; }
+	return ret;
+}
+";
+	      $colsOption = $sigmaA["colsOption"];
+	      $gridOption = $sigmaA["gridOption"];
+	      $gridGuarda = $sigmaA["gridGuarda"];
+
+	      $gridGo = "
+var mygrid=new Sigma.Grid(gridOption);
+mygrid.width  = 530;
+mygrid.height = 250;
+mygrid.toolbarContent = 'nav | reload | add del save | print |';
+//mygrid.defaultRecord = ['','','N','N','00'];
+Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
+";
+
+		$SigmaCont = "<center><div id=\"grid1_container\" style=\"width:540px;height:250px;\"></div></center>";
 		$grid->add("inventario/caub/dataedit/create");
-		$grid->build();
-		
-		$data['content'] = $grid->output;
-		$data['filtro']  = $filter->output;
+		$grid->build('datagridSG');
+		//echo $grid->db->last_query();
+
+		$data['style']  = style("redmond/jquery-ui.css");
+		$data['style'] .= style('gt_grid.css');
+
+		$data["script"]  = script("jquery.js");
+		$data['script'] .= script("gt_msg_es.js");
+		$data['script'] .= script("gt_grid_all.js");
+
+		$data['script'] .= "<script type=\"text/javascript\" >\n";
+		$data['script'] .= $dsOption.$grupver."\n";
+		$data['script'] .= $colsOption."\n";
+		$data['script'] .= $gridOption;
+		$data['script'] .= $gridGuarda;
+		$data['script'] .= $gridGo;
+		$data['script'] .= "\n</script>";
+
+		$data['content'] = $mtool.$SigmaCont;  //$grid->output;
+
 		$data['title']   = "<h1>Almacenes</h1>";
 		$data["head"]    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);	
 	}
+
+	// sigma grid
+	function controlador() {
+		//header('Content-type:text/javascript;charset=UTF-8');
+		if (isset($_POST["_gt_json"]) ) {
+			memowrite($_POST["_gt_json"],"caubjson");
+			$json=json_decode(stripslashes($_POST["_gt_json"]));
+			if($json->{'action'} == 'load') {
+				$pageNo   = $json->{'pageInfo'}->{'pageNum'};
+				$pageSize = $json->{'pageInfo'}->{'pageSize'};
+				$filter = '';
+
+				if(isset($json->{'sortInfo'}[0]->{'columnId'})){
+					$sortField = $json->{'sortInfo'}[0]->{'columnId'};
+				} else {
+					$sortField = "ubica";
+				}    
+	 
+				if(isset($json->{'sortInfo'}[0]->{'sortOrder'})){
+					$sortOrder = $json->{'sortInfo'}[0]->{'sortOrder'};
+				} else {
+					$sortOrder = "ASC";
+				}    
+	
+				for ($i = 0; $i < count($json->{'filterInfo'}); $i++) {
+					if($json->{'filterInfo'}[$i]->{'logic'} == "equal"){
+						$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . "='" . $json->{'filterInfo'}[$i]->{'value'} . "' ";
+					}elseif($json->{'filterInfo'}[$i]->{'logic'} == "notEqual"){
+						$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . "!='" . $json->{'filterInfo'}[$i]->{'value'} . "' ";    
+					}elseif($json->{'filterInfo'}[$i]->{'logic'} == "less"){
+						$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . "<" . $json->{'filterInfo'}[$i]->{'value'} . " ";
+					}elseif($json->{'filterInfo'}[$i]->{'logic'} == "lessEqual"){
+						$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . "<=" . $json->{'filterInfo'}[$i]->{'value'} . " ";    
+					}elseif($json->{'filterInfo'}[$i]->{'logic'} == "great"){
+							$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . ">" . $json->{'filterInfo'}[$i]->{'value'} . " ";
+					}elseif($json->{'filterInfo'}[$i]->{'logic'} == "greatEqual"){
+						$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . ">=" . $json->{'filterInfo'}[$i]->{'value'} . " ";        
+					}elseif($json->{'filterInfo'}[$i]->{'logic'} == "like"){
+						$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . " LIKE '%" . $json->{'filterInfo'}[$i]->{'value'} . "%' ";        
+					}elseif($json->{'filterInfo'}[$i]->{'logic'} == "startWith"){
+						$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . " LIKE '" . $json->{'filterInfo'}[$i]->{'value'} . "%' ";        
+					}elseif($json->{'filterInfo'}[$i]->{'logic'} == "endWith"){
+						$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . " LIKE '%" . $json->{'filterInfo'}[$i]->{'value'} . "' ";                
+					}
+					$filter .= " AND ";
+				}
+
+				//to get how many total records.
+				$mSQL = "SELECT count(*) FROM caub WHERE $filter ubica IS NOT NULL";
+				$totalRec = $this->datasis->dameval($mSQL);
+  
+				//make sure pageNo is inbound
+				if($pageNo<1||$pageNo>ceil(($totalRec/$pageSize))){
+					$pageNo = 1;
+				}
+
+				$mSQL  = "SELECT ubica, ubides, gasto, invfis, sucursal ";
+				$mSQL .= "FROM caub  " ;
+				$mSQL .= "WHERE $filter ubica IS NOT NULL ORDER BY ".$sortField." ".$sortOrder." LIMIT ".($pageNo - 1)*$pageSize.", ".$pageSize;
+				//memowrite($mSQL,"caubsql1");
+				$query = $this->db->query($mSQL);
+				if ($query->num_rows() > 0){
+					$retArray = array();
+					foreach( $query->result_array() as  $row ) {
+						$retArray[] = $row;
+					}
+					$data = json_encode($retArray);
+					$ret = "{data:" . $data .",\n";
+					$ret .= "pageInfo:{totalRowNum:" . $totalRec . "},\n";
+					$ret .= "recordType : 'object'}";
+				} else {
+					$ret = '{data : []}';
+				}
+				echo $ret;
+
+			} else if($json->{'action'} == 'save'){	
+				for ($i = 0; $i < count($json->{'insertedRecords'}); $i++) {
+					$mSQL = "INSERT IGNORE INTO caub (ubica, ubides, gasto, invfis, sucursal ) values ( ";
+					$mSQL .= "'".addslashes($json->{'insertedRecords'}[$i]->{'ubica'})."',";
+					$mSQL .= "'".addslashes($json->{'insertedRecords'}[$i]->{'ubides'})."',";
+					$mSQL .= "'".addslashes($json->{'insertedRecords'}[$i]->{'gasto'})."',";
+					$mSQL .= "'".addslashes($json->{'insertedRecords'}[$i]->{'invfis'})."',";
+					$mSQL .= "'".addslashes($json->{'insertedRecords'}[$i]->{'sucursal'})."' )";
+					memowrite($mSQL,'caubadd');
+					$this->db->simple_query($mSQL);
+				}
+				for ($i = 0; $i < count($json->{'deletedRecords'}); $i++) {
+					$ubica = $json->{'deletedRecords'}[$i]->{'ubica'};
+					$mSQL = "SELECT COUNT(*) FROM costos WHERE ubica='".addslashes($ubica)."'";
+					if ( $this->datasis->dameval($mSQL) == 0  && $ubica != 'INFI' && $ubica != 'AJUS' ) {
+						$mSQL = "DELETE FROM caub WHERE ubica='".addslashes($ubica)."'";
+						$this->db->simple_query($mSQL);
+					}
+				}
+			}
+		} else {
+			// no hay _gt_json
+			echo '{data : []}';
+		}
+	}
+
+       function modifica(){
+	      $valor = $this->uri->segment($this->uri->total_segments());
+	      $campo = $this->uri->segment($this->uri->total_segments()-1);
+	      $grupo = $this->uri->segment($this->uri->total_segments()-2);
+	      $mSQL = "UPDATE caub SET ".$campo."='".addslashes($valor)."' WHERE ubica='".$grupo."' ";
+	      $this->db->simple_query($mSQL);
+	      echo "$valor $campo $grupo";
+       }
+
+
+
+
+
+
 
 	function dataedit($status='',$id='')
  	{
