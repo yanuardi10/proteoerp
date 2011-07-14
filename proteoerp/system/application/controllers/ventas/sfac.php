@@ -640,9 +640,8 @@ function sfacreiva(mcodigo){
 	
 		if (  empty( $anterior ))  {
 
-			$mSQL = "UPDATE sfac SET reiva=$monto, creiva='$numero', freiva='$fecha' WHERE id=$id";
+			$mSQL = "UPDATE sfac SET reiva=round(iva*0.75,2), creiva='$numero', freiva='$fecha' WHERE id=$id";
 			$this->db->simple_query($mSQL);
-
 		
 			if ($referen == 'E') {
 				$saldo = $this->datasis->dameval("SELECT referen  FROM sfac WHERE id=$id");	
@@ -662,10 +661,22 @@ function sfacreiva(mcodigo){
 					//memowrite($mSQL,"sfacreiva1");
 				} elseif ($referen == 'C') {
 					// Busca si esta cancelada
-					$mdevo = 'Este modulo no esta listo';
+					$tiposfac = 'FC';
+					if ( $tipo_doc == 'D') $tiposfac = 'NC';
+					$mSQL = "SELECT monto-abonos saldo FROM smov WHERE numero='$numfac' AND cod_cli='$cod_cli' AND tipo_doc='$tiposfac'";
+					$saldo = $this->datasis->dameval($mSQL);
+			
+					if ( $saldo < $monto ) {  // crea anticipo
+				
+				
+					} else {
+						$mdevo = 'Este modulo no esta listo';
+					}
 				}
 			}
 		} else {
+			
+			
 			$mdevo = "Retencion ya aplicada";
 		}
 		echo $mdevo;

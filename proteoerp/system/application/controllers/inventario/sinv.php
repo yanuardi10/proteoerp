@@ -1966,7 +1966,7 @@ function submitkardex() {
 		}
 		
 		if ( $porcent == 0 ) {
-			$mSQL = "DELETE FROM sinvpromo WHERE WHERE codigo='$htmlcod' AND cliente='$cod_cli'";
+			$mSQL = "DELETE FROM sinvpromo WHERE codigo='$htmlcod' AND cliente='$cod_cli'";
 		} else {
 			$mSQL = "UPDATE sinvpromo SET margen=$porcent, tipo='$tipo' WHERE codigo='$htmlcod' AND cliente='$cod_cli'";
 		}
