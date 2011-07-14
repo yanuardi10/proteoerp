@@ -80,7 +80,6 @@ class sfac extends validaciones {
 		$propiedad = array('src' => 'images/engrana.png', 'alt' => 'Modifica Nro de Control', 'title' => 'Modifica Nro. de Control','border'=>'0','height'=>'12');
 		$uri_3 .= img($propiedad);
 		$uri_3 .= "</a>";
-
 	
 		$grid = new DataGrid();
 		$grid->order_by('fecha','desc');
@@ -134,12 +133,12 @@ class sfac extends validaciones {
 		$style ='
 <style type="text/css">
 .fakeContainer { /* The parent container */
-    margin: 5px;
-    padding: 0px;
-    border: none;
-    width: 640px; /* Required to set */
-    height: 320px; /* Required to set */
-    overflow: hidden; /* Required to set */
+	margin: 5px;
+	padding: 0px;
+	border: none;
+	width: 640px; /* Required to set */
+	height: 320px; /* Required to set */
+	overflow: hidden; /* Required to set */
 }
 </style>	
 ';
@@ -165,6 +164,7 @@ function nfiscal(mid){
 
 
 $sigma = "";
+
 
 
 		$data['content'] = $grid->output;
@@ -224,7 +224,6 @@ $sigma = "";
 			'where'   => '`activo` = "S"',
 		);
 		$btn=$this->datasis->p_modbus($modbus,'<#i#>');
-
 		
 		$mSCLId=array(
 		'tabla'   =>'scli',
@@ -411,16 +410,60 @@ $sigma = "";
 		$edit->buttons(  'delete', 'back','add_rel');
 		$edit->build();
 
+		$style = '
+<style type="text/css">
+div#sfacreiva label { display:block; }
+div#sfacreiva input { display:block; }
+div#sfacreiva input.text { margin-bottom:12px; width:95%; padding: .4em; }
+div#sfacreiva select { display:block; }
+div#sfacreiva select.text { margin-bottom:12px; width:95%; padding: .4em; }
+div#sfacreiva fieldset { padding:0; border:0; margin-top:20px; }
+div#sfacreiva h1 { font-size: 1.2em; margin: .6em 0; }
+.ui-dialog .ui-state-error { padding: .3em; }
+.validateTips { border: 1px solid transparent; padding: 0.3em; }
+</style>
+';
+
+	$mreiva = round($edit->ivat->value*0.75,2);
+	if( $edit->_dataobject->get('reiva') > 0 )  $mreiva = $edit->_dataobject->get('reiva');
+	
+	$fecha = date('d/m/Y');
+	if( $edit->_dataobject->get('freiva') > 0 )  $fecha = $edit->_dataobject->get('freiva');
+	
+	$nro = date('Ym');
+	if( $edit->_dataobject->get('creiva') > 0 )  $nro = $edit->_dataobject->get('creiva');
+	
+	//<p class="validateTips">Registro de Retencion de IVA</p>
+
+		$reiva = '
+<div id="sfacreiva" title="Registro de IVA">
+	<form>
+	<fieldset>
+		<label for="numero">Numero</label>
+		<input type="text" size="20" value="'.$nro.'" name="numero" id="numero" class="text ui-widget-content ui-corner-all" />
+		
+		<label for="fecha">Fecha</label>
+		<input type="text" size="10"  value="'.$fecha.'" name="fecha" id="fecha" class="text ui-widget-content ui-corner-all" />
+		
+		<label for="reiva">Monto</label>
+		<input type="text" name="reiva" id="reiva" value="'.$mreiva.'" align="right" class="text ui-widget-content ui-corner-all" />
+		
+	</fieldset>
+	</form>
+</div>
+';
+
+
 		$conten['form']  =&  $edit;
-		$data['content'] = $this->load->view('view_sfac', $conten,true);
+		$data['content'] = $this->load->view('view_sfac', $conten,true).$reiva;
 
 		if($edit->tipo_doc->value=='F'){$mDoc = "Factura";}
 		elseif( $edit->tipo_doc->value=='D') { $mDoc = "Devolucion";}
 		else { $mDoc = "Anulado";}
 
+		$link40 = base_url()."/ventas/sfac/sfacreiva/".$edit->_dataobject->get('id');
 		$script = "
 <script type=\"text/javascript\" >  
-
 <!-- All the scripts will go here  -->
 
 var dsOption= {
@@ -483,6 +526,44 @@ var gridOption={
 
 var mygrid=new Sigma.Grid(gridOption);
 Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
+
+
+$(document).ready(function() {
+
+	var numero = $( '#numero' ),fecha = $( '#fecha' ),reiva = $( '#reiva' );
+	$( '#sfacreiva' ).dialog({
+		autoOpen: false,
+		height: 300,
+		width: 230,
+		modal: true,
+		buttons: {
+			'Guardar': function() {
+				var bValid = true;
+				//allFields.removeClass( 'ui-state-error' );
+				fecha.val( function(i,v) { return v.replace(/\//g,'-') });
+				if ( bValid ) {
+					$.ajax({
+						url: '".$link40."/'+numero.val()+'/'+fecha.val()+'/'+reiva.val(),
+						success: function(msg){
+							alert('Terminado: '+msg);
+						}
+					});
+					$( this ).dialog( 'close' );
+				}
+			},
+			Cancelar: function() {
+				$( this ).dialog( 'close' );
+			}
+		},
+		close: function() {
+			allFields.val( '' ).removeClass( 'ui-state-error' );
+		}
+	});
+});
+// Descuento por Cliente
+function sfacreiva(mcodigo){
+	$( '#sfacreiva' ).dialog( 'open' );
+};
 </script>  
 ";
 
@@ -490,22 +571,26 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		
 		$data['style']  = style("redmond/jquery-ui.css");
 		$data['style'] .= style('gt_grid.css');
+		$data['style']	.= $style;
 
 		$data['script']  = script('jquery.js');
 		$data['script'] .= script('jquery-ui.js');
+		$data["script"]  .= script("plugins/jquery.blockUI.js");
 		$data['script'] .= script('plugins/jquery.numeric.pack.js');
 		$data['script'] .= phpscript('nformat.js');
 		$data['script'] .= script('plugins/jquery.floatnumber.js');
 		$data['script'] .= script("gt_msg_en.js");
 		$data['script'] .= script("gt_grid_all.js");
 		$data['script'] .= $script;
-
 		
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 
+	//********************************************
+	//
 	// json para llena la tabla de inventario
+	//
 	function sfacsitems() {
 		$numa  = $this->uri->segment($this->uri->total_segments());
 		$tipoa = $this->uri->segment($this->uri->total_segments()-1);
@@ -529,6 +614,61 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 			$ret = '{data : []}';
 		}
 		echo $ret;
+	}
+
+
+	//***************************
+	//
+	// Recibir retencin de IVA
+	//
+	function sfacreiva(){
+		$monto  = $this->uri->segment($this->uri->total_segments());
+		$fecha  = $this->uri->segment($this->uri->total_segments()-1);
+		$numero = $this->uri->segment($this->uri->total_segments()-2);
+		$id     = $this->uri->segment($this->uri->total_segments()-3);
+		$mdevo  = "Exito";
+		
+		// status de la factura
+		$fecha = substr($fecha,6,4).substr($fecha,3,2).substr($fecha,0,2);
+	
+		$tipo_doc = $this->datasis->dameval("SELECT tipo_doc FROM sfac WHERE id=$id");
+		$referen  = $this->datasis->dameval("SELECT referen  FROM sfac WHERE id=$id");
+		$numfac   = $this->datasis->dameval("SELECT numero   FROM sfac WHERE id=$id");
+		$cod_cli  = $this->datasis->dameval("SELECT cod_cli  FROM sfac WHERE id=$id");
+
+		$anterior = $this->datasis->dameval("SELECT creiva FROM sfac WHERE id=$id");
+	
+		if (  empty( $anterior ))  {
+
+			$mSQL = "UPDATE sfac SET reiva=$monto, creiva='$numero', freiva='$fecha' WHERE id=$id";
+			$this->db->simple_query($mSQL);
+
+		
+			if ($referen == 'E') {
+				$saldo = $this->datasis->dameval("SELECT referen  FROM sfac WHERE id=$id");	
+			}
+			if ( $tipo_doc == 'F') {
+				if ($referen == 'E') { 
+					// FACTURA PAGADA AL CONTADO GENERA ANTICIPO
+					$mnumant = $this->datasis->prox_sql("nancli");
+					$mSQL = "INSERT INTO smov  (cod_cli, nombre, tipo_doc, numero, fecha, monto, impuesto, vence, observa1, tipo_ref, num_ref, estampa, hora, transac, usuario )
+					SELECT cod_cli, nombre, 'AN' tipo_doc, '$mnumant' numero, freiva fecha, reiva monto, 0 impuesto, freiva vence,
+						CONCAT('APLICACION DE RETENCION A DOC. ',tipo_doc,numero) observa1, IF(tipo_doc='F','FC', 'NC' ) tipo_ref, numero num_ref,
+						curdate() estampa, curtime() hora, transac, '".addslashes($this->session->userdata('usuario'))."' usuario
+						FROM sfac 
+						WHERE id=$id";
+					$this->db->simple_query($mSQL);
+					$mdevo = "Cambios Guardados, Anticipo Generado";
+					//memowrite($mSQL,"sfacreiva1");
+				} elseif ($referen == 'C') {
+					// Busca si esta cancelada
+					$mdevo = 'Este modulo no esta listo';
+				}
+			}
+		} else {
+			$mdevo = "Retencion ya aplicada";
+		}
+		echo $mdevo;
 	}
 
 	// json para llena la tabla de inventario
@@ -556,8 +696,6 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		}
 		echo $ret;
 	}
-
-
 
 	function _pre_insert($do){
 		return false;

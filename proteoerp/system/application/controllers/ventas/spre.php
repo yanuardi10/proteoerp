@@ -67,9 +67,6 @@ class spre extends validaciones {
 		$grid->order_by('numero','desc');
 		$grid->per_page = 50;
 
-		//$grid->column_detail('N&uacute;mero','numero',"ventas/spre/dataedit/<#numero#>");
-		//$grid->column('N&uacute;mero',$uri);
-	
 		$grid->column_sigma('N&uacute;mero','numero','','width: 60, frozen: true, renderer:sprever');
 		$grid->column_sigma('Fecha'    ,'fecha', 'date', 'width: 70');
 		$grid->column_sigma('Codigo'   ,'cod_cli','','width: 50');

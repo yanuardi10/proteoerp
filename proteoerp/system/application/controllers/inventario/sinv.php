@@ -278,10 +278,9 @@ class sinv extends Controller {
 		$mtool .= "</a>&nbsp;</td>";
 
 		$mtool .= "<td>&nbsp;<a href='javascript:void(0);' ";
-		$mtool .= 'onclick="window.open(\''.base_url()."inventario/unidad', '_blank', 'width=400, height=500, scrollbars=No, status=No, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');".'" heigth="500"'.'>';
+		$mtool .= 'onclick="window.open(\''.base_url()."inventario/unidad', '_blank', 'width=340, height=430, scrollbars=No, status=No, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');".'" >';
 		$mtool .= img(array('src' => 'images/unidad.gif', 'alt' => 'Gestion de Unidades', 'title' => 'Gestion de Unidades','border'=>'0','height'=>'32'));
 		$mtool .= "</a>&nbsp;</td>";
-
 
 		$mtool .= "</tr></table>";
 
@@ -722,6 +721,25 @@ $(document).ready(function() {
 			$("#cod_cli").val(ui.item.codigo);
 		}
 	});
+
+////////////////////////////////////////////////////////////////////////////////
+        $("#modalDiv").dialog({
+                modal: true,
+                autoOpen: false,
+                height: "380",
+                width: "320",
+                draggable: true,
+                resizeable: true,   
+                title: "Unidades"
+            });
+            $("#goToMyPage").click(
+                function() {
+                    url = "/proteoerp/inventario/unidad";
+                    $("#modalDiv").dialog("open");
+                    $("#modalIFrame").attr("src",url);
+                    return false;
+            });           
+////////////////////////////////////////////////////////////////////////////////
 	$( "#maintabcontainer" ).tabs();
 });
 
@@ -1071,8 +1089,6 @@ function sinvborraprv(mproveed, mcodigo){
 		}
 	);
 };
-
-
 </script>
 ';
 
@@ -1321,8 +1337,6 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->redecen->option("D","Decenas" );  
 		$edit->redecen->option("C","Centenas"  );
 		
-		//$edit->redecen->onchange = "redon();";
-
 		for($i=1;$i<=4;$i++){
 			$objeto="margen$i";
 			$edit->$objeto = new inputField("Margen $i", $objeto);
@@ -1905,6 +1919,9 @@ function submitkardex() {
 		
 	}
 
+	//*************************
+	//
+	//
 	// Promociones
 	function sinvpromo() {
 		$mid     = $this->input->post('id');
@@ -1929,7 +1946,8 @@ function submitkardex() {
 		echo "Cambio Exitoso";
 	}
 
-
+	//***************************
+	//
 	// Promociones a clientes
 	function sinvdescu() {
 		$tipo     = $this->uri->segment($this->uri->total_segments());

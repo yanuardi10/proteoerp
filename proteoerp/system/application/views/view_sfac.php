@@ -57,7 +57,22 @@ function del_sitems(id){
 	
 <table align='center' width="99%">
 	<tr>
-		<td align='right'><?php echo $container_tr?></td>
+		<td>
+			<table width='100%'>
+				<tr>
+					<td>&nbsp;</td>
+					<td>&nbsp;
+						<a href='javascript:sfacreiva("<?php echo $form->_dataobject->get('id'); ?>")'>
+						<?php
+							$propiedad = array('src' => 'images/retencion.gif', 'alt' => 'Retencion de IVA', 'title' => 'Retencion de IVA','border'=>'0','height'=>'30');
+							echo img($propiedad);
+						?>
+						</a>
+					</td>
+					<td align='right'><?php echo $container_tr?></td>
+				</tr>
+			</table>
+		</td>
 	</tr>
 	<tr>
 		<td><div class="alert"> <?php if(isset($form->error_string)) echo $form->error_string; ?></div></td>
