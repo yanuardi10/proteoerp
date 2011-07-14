@@ -44,7 +44,7 @@ class Datasis {
 
 
 	function prox_sql($mcontador){
-		$aa=$this->prox_numero($mcontador,'caja');
+		$aa=$this->prox_numero($mcontador);
 		return $aa;
 	}
 

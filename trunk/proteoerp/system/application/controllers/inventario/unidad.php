@@ -20,8 +20,8 @@ class Unidad extends Controller{
 		$grid->order_by("unidades","asc");
 		$grid->per_page = 60;
 		                                  
-		$grid->column_sigma("Unidades", "unidades", "",      "width:200, editor: { type: 'text'} ");
-		$grid->column_sigma('Productos',"produ",    "float", "align: 'right', width:90 ");
+		$grid->column_sigma("Unidades", "unidades", "",      "width:210, editor: { type: 'text'} ");
+		$grid->column_sigma('Productos',"produ",    "float", "align: 'right', width:80 ");
 
 		//$grid->add("inventario/unidad/dataedit/create");
 		//$grid->build();
@@ -53,12 +53,12 @@ function guardar(value, oldValue, record, col, grid) {
 	      $gridGo = "
 var mygrid=new Sigma.Grid(gridOption);
 mygrid.saveURL = '".base_url()."inventario/unidad/controlador',
-mygrid.width = 360;
+mygrid.width = 310;
 mygrid.height = 400;
-mygrid.toolbarContent = 'nav | pagesize | reload | add del save | print ';
+mygrid.toolbarContent = 'nav | reload | add del save | print ';
 Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 ";		
-		$SigmaCont = "<center><div id=\"grid1_container\" style=\"width:400px;height:400px;\"></div></center>";
+		$SigmaCont = "<center><div id=\"grid1_container\" style=\"width:310px;height:400px;\"></div><center>";
 		$grid->add("inventario/marc/dataedit/create");
 		$grid->build('datagridSG');
 
@@ -79,7 +79,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$data['content'] = $mtool.$SigmaCont;  //$grid->output;
 		$data['title']   = "<h1>Unidades</h1>";
 		$data["head"]    = $this->rapyd->get_head();
-		$this->load->view('view_ventanas', $data);	
+		$this->load->view('view_ventanas_simple', $data);	
 	}
 
 	// sigma grid
