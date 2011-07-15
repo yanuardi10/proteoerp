@@ -168,7 +168,6 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 	// sigma grid
 	function controlador(){
 		//header('Content-type:text/javascript;charset=UTF-8');
-//memowrite($_POST["_gt_json"],"jsonrecibido");
 		if (isset($_POST["_gt_json"]) ) {
 			$json=json_decode(stripslashes($_POST["_gt_json"]));
 			if($json->{'action'} == 'load') {
@@ -505,7 +504,73 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 
 		$link=site_url('inventario/grup/get_linea');
 
-		$data['content'] = $edit->output;
+
+		$mtool  = "<table background='#554455'><tr>";
+		$mtool .= "<td>&nbsp;</td>";
+		$mtool .= "<td>&nbsp;<a href='javascript:exento(\"".$edit->grupo->value."\")'>";
+		$mtool .= img(array('src' => 'images/casa.png', 'alt' => 'Exonerar Productos', 'title' => 'Exonerar Productos','border'=>'0','height'=>'32'));
+		$mtool .= "</a>&nbsp;</td>";
+		$mtool .= "</tr></table>";
+
+		$script = '
+<script type="text/javascript">
+function exento(mgrupo){
+	$.prompt("Exonerar Productos del Grupo "+mgrupo, {
+		callback: function(v,m,f){
+			if ( v == 1 ) {
+				$.ajax({
+					url: "'.base_url().'inventario/grup/sinvexento/"+mgrupo+"/E",
+					global: false,
+					async: false,
+					success: function(sino)  { $.prompt( "Marcaje exitoso "); }
+				});
+
+			} else if ( v == 2 ) {
+				$.ajax({
+					url: "'.base_url().'inventario/grup/sinvexento/"+mgrupo+"/N",
+					global: false,
+					async: false,
+					success: function(sino)  { $.prompt( "Finalizado el desmarcaje "); }
+				});
+			};
+		 },
+		buttons:{ Marcar: 1, Desmarcar: 2, Cancelar: 3 }
+	});
+/*
+			if ( v == 1 ) {
+				$.ajax({
+					url: "'.base_url().'inventario/grup/exento/"+mgrupo+"/S",
+					global: false,
+					async: false,
+					success: function(sino)  { .$prompt( "Respuesta:"+sino); }
+				});
+			} else if ( v == 2 ) {
+				$.ajax({
+					url: "'.base_url().'inventario/grup/exento/"+mgrupo+"/N",
+					global: false,
+					async: false,
+					success: function(sino)  { .$prompt( "Respuesta:"+sino); }
+				});
+			};
+
+*/
+
+};
+
+</script>
+';
+
+		$data['content'] = $mtool.$edit->output;
+
+		$data["script"]  = script("jquery.js");
+		$data["script"] .= script("jquery.alerts.js");
+		$data["script"] .= script("jquery-impromptu.js");
+		$data['script'] .= $script;
+
+		$data['style']	 = style("jquery.alerts.css");
+		$data['style']	.= style("impromptu.css");
+
+		
 		$data['title']   = "<h1>Grupos de Inventario</h1>";
 		$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
@@ -570,6 +635,19 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 				ADD COLUMN `margenc` DECIMAL(10,2) NOT NULL DEFAULT '0.00' AFTER `margen`";
 		$this->db->simple_query($mSQL);
 
+	}
+
+	//***************************
+	//
+	// Marca Productos que se pueden vender sin iva
+	//
+	function sinvexento() {
+		$grupo  = $this->uri->segment($this->uri->total_segments()-1);
+		$sino   = $this->uri->segment($this->uri->total_segments());
+		$this->db->simple_query("UPDATE sinv SET exento='".$sino."' WHERE grupo='$grupo'");
+		memowrite("UPDATE sinv SET exento='".$sino."' WHERE grupo='$grupo'","marcagrup");
+		logusu("SINV","Productos marcados por Grupos $grupo ");
+		echo "Productos Marcados '$sino'";
 	}
 }
 ?>
