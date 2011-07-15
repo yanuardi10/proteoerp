@@ -136,13 +136,13 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 					$pageNo = 1;
 				}
  
-				$mSQL = "SELECT unidades, (SELECT count(*) FROM sinv b WHERE b.unidad=a.unidades) produ ";
-				$mSQL .= "FROM unidad a WHERE $filter unidades IS NOT NULL ORDER BY ".$sortField." ".$sortOrder." LIMIT ".($pageNo - 1)*$pageSize.", ".$pageSize;
+				$mSQL = "SELECT a.unidades, count(*) produ ";
+				$mSQL .= "FROM unidad a LEFT JOIN sinv b ON a.unidades=b.unidad WHERE $filter a.unidades IS NOT NULL GROUP BY a.unidades ORDER BY ".$sortField." ".$sortOrder." LIMIT ".($pageNo - 1)*$pageSize.", ".$pageSize;
 				$query = $this->db->query($mSQL);
 				if ($query->num_rows() > 0){
 					$retArray = array();
 					foreach( $query->result_array() as  $row ) {
-						$retArray[] = $row;
+						if ( $row['unidades'] != '' ) $retArray[] = $row;
 					}
 					$data = json_encode($retArray);
 					$ret = "{data:" . $data .",\n";
@@ -152,6 +152,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 					$ret = '{data : []}';
 				}
 				echo $ret;
+				//memowrite($ret.$mSQL.$retArray,'unidades');
 
 			}else if($json->{'action'} == 'save'){
 				
