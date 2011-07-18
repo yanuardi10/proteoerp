@@ -97,9 +97,10 @@ function del_sitems(id){
 				</table>
 				</fieldset>
 				</td><td>
+				<?php $scliid = $this->datasis->dameval("SELECT id FROM scli WHERE cliente='".$form->cliente->value."'");?>
 				<fieldset style='border: 1px solid #9AC8DA;background: #FFFDE9;'>
 				<legend class="subtitulotabla" style='color: #114411;'>Cliente [
-				<a href="#" onclick="window.open('<?php echo base_url()?>ventas/scli/dataedit/show/<?php echo $form->cliente->value ?>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');" heigth="600" >
+				<a href="#" onclick="window.open('<?php echo base_url()?>ventas/scli/dataedit/show/<?php echo $scliid ?>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');" heigth="600" >
 				
 					
 				<?php echo $form->cliente->value ?></a>]</legend>
@@ -154,7 +155,8 @@ function del_sitems(id){
 						<td class="littletablerow">   <?php echo $form->ciudad->output ?>&nbsp;</td>
 						<td class="littletableheader"><?php echo $form->zona->label    ?>&nbsp;</td>
 						<td class="littletablerow">   <?php echo $form->zona->output   ?>&nbsp;</td>
-						</tr></table>
+						</tr>
+						</table>
 						</td>
 					</tr>
 				</table>
@@ -245,6 +247,29 @@ function del_sitems(id){
 		</td>
 
 	</tr>
+
+	<?php if($form->reiva->value > 0 ){ ?>
+	<tr>
+		<td>
+			<fieldset style='border: 1px solid ##8A0808;background: #FFFBE9;'>
+			<legend class="subtitulotabla" style='color: #114411;'>Retencion de IVA</legend>
+			<table width='100%' cellspacing='1' >
+				<tr style='font-size:12px;color:#0B3B0B;background-color: #F7BE81;'>
+					<td align='center' >Comprobante</td>
+					<td align='center' >Monto</td>
+					<td align='center' >Fecha  </td>
+					<td align='center' >Emision</td>
+				</tr><tr>
+					<td class="littletablerow"><?php echo $form->creiva->output ?>&nbsp;</td>
+					<td class="littletablerow" align='right'><?php echo $form->reiva->output   ?>&nbsp;</td>
+					<td class="littletablerow"><?php echo $form->freiva->output    ?>&nbsp;</td>
+					<td class="littletablerow"><?php echo $form->ereiva->output   ?>&nbsp;</td>
+				</tr>
+			</table>
+			</fieldset>
+		</td>
+	</tr>
+	<?php } ?>
 	
 	
 	<?php if($form->_status == 'show'){ ?>
