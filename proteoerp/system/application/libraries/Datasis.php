@@ -5,7 +5,7 @@
  * @author		Andres Hocevar
  * @version		0.1
  * @filesource
- **/
+**/
 
 class Datasis {
 	// TRAE EL PRIMER CAMPO DEL PRIMER REGISTRO DE LA CONSULTA
@@ -51,6 +51,18 @@ class Datasis {
 	function existetabla($tabla){
 		$CI =& get_instance();
 		return $CI->db->table_exists($tabla);
+	}
+
+	function istabla($tabla){
+		$CI =& get_instance();
+		return $CI->db->table_exists($tabla);
+	}
+
+	function iscampo($tabla,$campo){
+		$CI =& get_instance();
+		$aa = $this->dameval("SHOW FIELDS FROM $tabla WHERE Field ='$campo'");
+		if ($aa==$campo) return true ;
+		else return false;
 	}
 
 	function adia(){

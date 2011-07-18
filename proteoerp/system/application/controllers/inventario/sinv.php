@@ -1292,10 +1292,10 @@ function sinvborraprv(mproveed, mcodigo){
 		}
 		$edit->iva->style='width:100px;';
 		
-		$edit->exento = new dropdownField("Puede Exento", "exento");
+		$edit->exento = new dropdownField("Vender Exento", "exento");
 		$edit->exento->style='width:50px;';
 		$edit->exento->option("N","No" );
-		$edit->exento->option("S","Si" );
+		$edit->exento->option("E","Si" );
 		
 
 		$edit->ultimo = new inputField("Ultimo", "ultimo");
@@ -1643,8 +1643,8 @@ function submitkardex() {
 		$id = $this->uri->segment($this->uri->total_segments()-1);
 		$data = $this->datasis->damesesion($id);
 		
-		$from = $data['data1'];
-		$where  = $data['data2'];
+		$from  = $data['data1'];
+		$where = $data['data2'];
 
 		// Respalda los precios anteriores
 		$mN = $this->datasis->prox_sql('nsinvplog');
