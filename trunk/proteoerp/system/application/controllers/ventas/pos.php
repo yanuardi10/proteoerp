@@ -63,21 +63,44 @@ class Pos extends Controller {
 
 	// Busca Productos para autocomplete
 	function buscasinv(){
-		$mid = $this->input->post('q');
-		$qdb=$this->db->escape('%'.$mid.'%');
+		$mid  = $this->input->post('q');
+		$cod  = $this->input->post('codigo');
+		$qdb  = $this->db->escape('%'.$mid.'%');
+		$coddb= $this->db->escape($cod);
+		$tipo = $this->input->post('sclitipo');
+
+		if($tipo=2){
+			$pp='precio2';
+		}elseif($tipo=3){
+			$pp='precio3';
+		}elseif($tipo=4){
+			$pp='precio4';
+		}else{
+			$pp='precio1';
+		}
 
 		$data = '{[ ]}';
 		if($mid !== false){
 			$retArray = $retorno = array();
-			$mSQL="SELECT TRIM(descrip) AS descrip, TRIM(codigo) AS codigo, precio1 AS precio, iva,existen
-			FROM sinv WHERE (codigo LIKE $qdb OR descrip LIKE  $qdb OR barras LIKE $qdb) AND activo='S'
-			ORDER BY descrip LIMIT 10";
+
+			if(preg_match('/\+(?P<cana>\d+)/', $mid, $matches)>0 && $cod!==false){
+				$mSQL="SELECT TRIM(descrip) AS descrip, TRIM(codigo) AS codigo, $pp AS precio, iva,existen
+				FROM sinv WHERE codigo=$coddb LIMIT 1";
+				$cana=$matches['cana'];
+				memowrite($cod );
+			}else{
+				$mSQL="SELECT TRIM(descrip) AS descrip, TRIM(codigo) AS codigo, $pp AS precio, iva,existen
+				FROM sinv WHERE (codigo LIKE $qdb OR descrip LIKE  $qdb OR barras LIKE $qdb) AND activo='S'
+				ORDER BY descrip LIMIT 10";
+				$cana=1;
+			}
 
 			$query = $this->db->query($mSQL);
 			if ($query->num_rows() > 0){
 				foreach( $query->result_array() as  $row ) {
 					$retArray['label']   = '('.$row['codigo'].') '.$row['descrip'].' '.$row['precio'].' Bs. - '.$row['existen'];
 					$retArray['codigo']  = $row['codigo'];
+					$retArray['cana']    = $cana;
 					$retArray['precio']  = $row['precio'];
 					$retArray['descrip'] = $row['descrip'];
 					//$retArray['descrip'] = wordwrap($row['descrip'], 25, '<br />');
@@ -92,13 +115,13 @@ class Pos extends Controller {
 
 	// Busca Clientes para autocomplete
 	function buscascli(){
-		$mid = $this->input->post('q');
-		$qdb=$this->db->escape('%'.$mid.'%');
+		$mid  = $this->input->post('q');
+		$qdb  = $this->db->escape('%'.$mid.'%');
 
 		$data = '{[ ]}';
 		if($mid !== false){
 			$retArray = $retorno = array();
-			$mSQL="SELECT TRIM(nombre) AS nombre, TRIM(rifci) AS rifci, cliente
+			$mSQL="SELECT TRIM(nombre) AS nombre, TRIM(rifci) AS rifci, cliente, tipo
 				FROM scli WHERE rifci LIKE $qdb
 				ORDER BY rifci LIMIT 10";
 
@@ -109,12 +132,14 @@ class Pos extends Controller {
 					$retArray['label']   = '('.$row['rifci'].') '.$row['nombre'];
 					$retArray['nombre']  = $row['nombre'];
 					$retArray['cod_cli'] = $row['cliente'];
+					$retArray['tipo']    = $row['tipo'];
 					array_push($retorno, $retArray);
 				}
 				$data = json_encode($retorno);
 			}
 		}
 		echo $data;
+		return true;
 	}
 
 	//Crea un cliente
