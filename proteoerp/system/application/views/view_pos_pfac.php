@@ -2,20 +2,7 @@
 var idtot=0;
 var idsfpa=1;
 $(document).ready(function() {
-		$('#pfacsubmit').submit(function() {
-		$.ajax({
-			type: "POST",
-			url: "<?php echo site_url('ventas/pfac/creapfac/insert'); ?>",
-			data: $(this).serialize(),
-			success: function(msg){
-				alert(msg);
-				if(msg=='Pedido Guardado'){
-					window.location.reload();
-				}
-			}
-		});
-		return false;
-	});
+	$('#pfacsubmit').submit(function() { return false; });
 	$("mysubmit").button();
 	$('#barras').focus();
 	$('#barras').focus(function() { $(this).val(''); });
@@ -23,13 +10,23 @@ $(document).ready(function() {
 		$(this).val('Introduzca un código de producto');
 	});
 
+	function sinv_data(req){
+		campo=$('input[name^="codigoa_"]').first();
+		tipo =$('#sclitipo').val();
+		if(campo.length==0){
+			return jQuery.param({ q: req.term , tipo_doc: $('input:radio[name=tipo_doc]:checked').val(),sclitipo: tipo });
+		}else{
+			return jQuery.param({ q: req.term , tipo_doc: $('input:radio[name=tipo_doc]:checked').val(),'codigo' : campo.val(), sclitipo: tipo });
+		}
+	}
+
 	$('#barras').autocomplete({
 		source: function( req, add){
 			$.ajax({
 				url:  "<?php echo site_url('ventas/pos/buscasinv'); ?>",
 				type: "POST",
 				dataType: "json",
-				data: "q="+req.term+"&tipo_doc="+$('input:radio[name=tipo_doc]:checked').val(),
+				data: sinv_data(req),
 				success:
 					function(data){
 						var cana=0;
@@ -51,7 +48,7 @@ $(document).ready(function() {
 		select: function( event, ui ) {
 			id=idtot.toString();
 			var crea=true;
-			var arr =$('input[name^="codigo_"]');
+			var arr =$('input[name^="codigoa_"]');
 			jQuery.each(arr, function() {
 				nom=this.name;
 				pos=this.name.lastIndexOf('_');
@@ -59,7 +56,7 @@ $(document).ready(function() {
 					if(ui.item.codigo==this.value){
 						ind = this.name.substring(pos+1);
 						cc  = Number($('#cana_'+ind).val());
-						$('#cana_'+ind).val(cc+1);
+						$('#cana_'+ind).val(cc+Number(ui.item.cana));
 						crea=false;
 						cimporte(Number(ind));
 						totaliza();
@@ -68,12 +65,13 @@ $(document).ready(function() {
 			});
 
 			if(crea){
-				precio=Number(ui.item.precio);
+				precio = Number(ui.item.precio);
+				importe= roundNumber(precio*Number(ui.item.cana),2);
 				html = "<tr id='sitems_"+id+"'>";
 				html+= "<td><input type='hidden' name='codigoa_"+id+"' id='codigo_"+id+"' value='"+ui.item.codigo+"'>"+ui.item.codigo+"</td>";
-				html+= "<td align='right'><input type='text' style='text-align: right;' onkeyup='cimporte(\""+id+"\")' name='cana_"+id+"' id='cana_"+id+"' size=6 class='ui-widget-content ui-corner-all' value='1' autocomplete='off'></td>";
+				html+= "<td align='right'><input type='text' style='text-align: right;' onkeyup='cimporte(\""+id+"\")' name='cana_"+id+"' id='cana_"+id+"' size=6 class='ui-widget-content ui-corner-all' value='"+ui.item.cana+"' autocomplete='off'></td>";
 				html+= "<td align='right'><input type='text' style='text-align: right;' name='precio_"+id+"' id='precio_"+id+"' size=8 class='ui-widget-content ui-corner-all' value='"+ui.item.precio+"' autocomplete='off' ><input type='hidden' name='itiva_"+id+"' id='itiva_"+id+"' value='"+ui.item.iva+"'></td>";
-				html+= "<td align='right'><div id='vimporte_"+id+"'>"+ui.item.precio+"</div><input type='hidden' name='importe_"+id+"' id='importe_"+id+"' value='"+ui.item.precio+"'></td>";
+				html+= "<td align='right'><div id='vimporte_"+id+"'>"+importe.toString()+"</div><input type='hidden' name='importe_"+id+"' id='importe_"+id+"' value='"+importe.toString()+"'></td>";
 				html+= "</tr>";
 				html+= "<tr>";
 				html+= "<td colspan='5' style='font-size:12px'><input type='hidden' name='desca_"+id+"' id='desca_"+id+"' value='"+ui.item.descrip+"'>"+ui.item.descrip+"</td>";
@@ -81,12 +79,26 @@ $(document).ready(function() {
 				$("#_itemul").after(html);
 				$("#precio_"+id).numeric(".");
 				$("#cana_"+id).numeric(".");
-				$("#cana_"+id).focus();
+				//$("#cana_"+id).focus();
 				totaliza();
 				idtot=idtot+1;
 			}
 		},
 		close: function(event, ui) { $('#barras').val(''); }
+	}).keydown( function( event ) {
+		var isOpen = $(this).autocomplete( "widget" ).is( ":visible" );
+		var keyCode = $.ui.keyCode;
+
+		if ( !isOpen && $(this).val()=='' && ( event.keyCode == 107 || event.keyCode == 61)){
+			
+			//alert(event.keyCode);
+			$(this).autocomplete( "disable" );
+			event.stopImmediatePropagation();
+		}
+		if($(this).autocomplete( "option", "disabled")==true && event.keyCode==keyCode.ENTER){
+			$(this).autocomplete( "enable" );
+			$(this).autocomplete( "search")
+		}
 	});
 
 	$('#rifci').autocomplete({
@@ -113,6 +125,7 @@ $(document).ready(function() {
 			$('#nombre').val(ui.item.nombre);
 			$('#rifci').val(ui.item.rifci);
 			$('#cod_cli').val(ui.item.cod_cli);
+			$('#sclitipo').val(ui.item.tipo);
 		}
 	});
 
@@ -122,7 +135,7 @@ $(document).ready(function() {
 		width : 350,
 		modal : true,
 		buttons: {
-			"Crear usuario": function() {
+			"Crear cliente": function() {
 				var bValid = true;
 				$("#sclirifci").removeClass( "ui-state-error");
 				$("#sclinombre").removeClass("ui-state-error");
@@ -132,7 +145,19 @@ $(document).ready(function() {
 				bValid = bValid && checkRegexp( $("#sclirifci") , /((^[VEJG][0-9]+$)|(^[P][A-Z0-9]+$))/i, "Este campo debe tener el siguiente formato V=Venezolano(a), E=Extranjero(a), G=Gobierno, P=Pasaporte o J=Juridico Como primer caracter seguido del numero de documento. Ej: V123456, J5555555, P56H454" );
 
 				if ( bValid ) {
-					alert('Paso');
+					$.ajax({
+						type: "POST",
+						url: "<?php echo site_url('ventas/scli/creascli/insert'); ?>",
+						data: $('#sclisubmit').serialize(),
+						success: function(msg){
+							alert(msg);
+							if(msg=='Cliente Guardado'){
+								$('#rifci').val($("#sclirifci").val());
+								$('#nombre').val($("#sclinombre").val());
+								$( "#dialog-scli" ).dialog( "close" );
+							}
+						}
+					});	
 				}
 			},
 			Cancel: function() {
@@ -158,6 +183,28 @@ function updateTips( t ) {
 	setTimeout(function() {
 		$( ".validateTips" ).removeClass( "ui-state-highlight", 1500 );
 	}, 500 );
+}
+
+function enviasubmit(){
+	$('#todo').fadeTo('slow', 0.5, function() {
+      // Animation complete.
+    });
+	$("mysubmit").attr("disabled","disabled");
+	$.ajax({
+		type: "POST",
+		url: "<?php echo site_url('ventas/pfac/creapfac/insert'); ?>",
+		data: $('#pfacsubmit').serialize(),
+		success: function(msg){
+			$('#todo').fadeTo('slow', 1.0);
+			$("mysubmit").removeAttr("disabled");
+			
+			alert(msg);
+
+			if(msg=='Pedido Guardado'){
+				window.location.reload();
+			}
+		}
+	});
 }
 
 function checkLength( o, n, min, max ) {
@@ -229,7 +276,8 @@ echo form_open('',$attributes);
 					</p>
 			</div>
 		</div>-->
-<table class='ui-widget ui-widget-content:'>
+<div id='todo' style='text-align:center; width:100%'>
+<table class='ui-widget ui-widget-content:' style='margin-left:auto; margin-right:auto;'>
 <tr>
 	<td>
 		<input type='text' name='barras' id='barras' size=30 class='ui-button ui-widget ui-state-focus ui-corner-all ui-button-text-only' autocomplete='off'>
@@ -269,6 +317,7 @@ echo form_open('',$attributes);
 					<td>
 						<input type='text' name='rifci' id='rifci' size=20 class='ui-widget-content ui-corner-all' autocomplete='off'>
 						<input type='hidden' name='cod_cli' id='cod_cli'>
+						<input type='hidden' name='sclitipo' id='sclitipo'>
 					</td>
 					<td>
 						<span id="create-scli" class="ui-icon ui-icon-plusthick"></span>
@@ -280,23 +329,56 @@ echo form_open('',$attributes);
 			</table>
 			</p>
 			<center>
-			<?php echo form_submit('mysubmit', 'Guardar',"class='ui-widget-content ui-corner-all'");?>
+			<input type='button' name='mysubmit' value="guardar" onclick='enviasubmit()' class='ui-widget-content ui-corner-all'>
 			</center>
 		</div>
 	</div>
 	</td>
 </tr>
 </table>
-<?php echo form_close(); ?>
 
+
+<?php echo form_close(); ?>
 <div id="dialog-scli" title="Crear nuevo cliente">
 	<p class="validateTips"></p>
-	<?php echo form_open('ventas/pos/sclicrea/create'); ?>
+	<?php
+	$attr=array('id'=>'sclisubmit');
+	echo form_open('ventas/scli/dataedit/insert',$attr);
+	?>
 	<fieldset>
 		<label for="sclirifci">Rif/CI*</label>
-		<input type="text" name="sclirifci" id="sclirifci"   class="text ui-widget-content ui-corner-all" autocomplete='off' />
+		<input type="text" name="rifci" id="sclirifci"   class="text ui-widget-content ui-corner-all" autocomplete='off' />
 		<label for="sclinombre">Nombre* </label>
-		<input type="text" name="sclinombre" id="sclinombre" class="text ui-widget-content ui-corner-all" autocomplete='off' />
+		<input type="text" name="nombre" id="sclinombre" class="text ui-widget-content ui-corner-all" autocomplete='off' />
+		<label for="sclidire11">Direcci&oacute;n*</label>
+		<input type="text" name="dire11" id="sclidire11"  class="text ui-widget-content ui-corner-all" autocomplete='off' />
+		<label for="zona">Zona*</label>
+		<?php
+		$mSQL='SELECT codigo, CONCAT(codigo," ", nombre) nombre FROM zona ORDER BY nombre';
+		$query = $this->db->query($mSQL);
+
+		$options=array();
+		foreach ($query->result() as $row){
+			$options[$row->codigo]=$row->nombre;
+		}
+		$atts= array( 'class','text ui-widget-content ui-corner-all');
+		echo form_dropdown('zona', $options,'','class=\'text ui-widget-content ui-corner-all\'');
+		?>
+
+		<label for="grupo">Grupo*</label>
+		<?php
+		$mSQL='SELECT grupo, CONCAT(grupo," ",gr_desc) gr_desc FROM grcl ORDER BY gr_desc';
+		$query = $this->db->query($mSQL);
+
+		$options=array();
+		foreach ($query->result() as $row){
+			$options[$row->grupo]=$row->gr_desc;
+		}
+		$atts= array( 'class','text ui-widget-content ui-corner-all');
+		echo form_dropdown('grupo', $options,'','class=\'text ui-widget-content ui-corner-all\'');
+		?>
 	</fieldset>
 	<?php echo form_close(); ?>
+</div>
+
 </div>

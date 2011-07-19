@@ -30,7 +30,7 @@ $(document).ready(function() {
 				url:  "<?php echo site_url('ventas/pos/buscasinv'); ?>",
 				type: "POST",
 				dataType: "json",
-				data: "q="+req.term+"&tipo_doc="+$('input:radio[name=tipo_doc]:checked').val(),
+				data: jQuery.param({ q: req.term , tipo_doc: $('input:radio[name=tipo_doc]:checked').val() }),
 				success:
 					function(data){
 						var cana=0;

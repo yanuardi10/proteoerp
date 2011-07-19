@@ -1,5 +1,6 @@
 <?php require_once(BASEPATH.'application/controllers/validaciones.php');
 class Scli extends validaciones {
+	var $genesal=true;
 
 	function scli(){
 		parent::Controller();
@@ -12,6 +13,7 @@ class Scli extends validaciones {
 	}
 
 	function index(){
+		//echo $this->_numatri();
 		redirect('ventas/scli/filteredgrid');
 	}
 
@@ -315,7 +317,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		$edit->post_process('delete','_post_delete');
 
 		$edit->cliente = new inputField('C&oacute;digo', 'cliente');
-		$edit->cliente->rule = 'trim|strtoupper|required|callback_chexiste';
+		$edit->cliente->rule = 'trim|strtoupper|callback_chexiste';
 		$edit->cliente->mode = 'autohide';
 		$edit->cliente->size = 9;
 		$edit->cliente->maxlength = 5;
@@ -505,39 +507,51 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		$edit->mensaje->maxlength =40;
 
 		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
-		$edit->build();
 
-		$style = '
+
+		if($this->genesal){
+			$edit->build();
+			$style = '
 <style type="text/css">
 .maintabcontainer {width: 780px; margin: 5px auto;}
-</style>
-';
+</style>';
 
-		$conten["form"]  =&  $edit;
-		$data['content'] = $this->load->view('view_scli', $conten,true);
+			$conten["form"]  =&  $edit;
+			$data['content'] = $this->load->view('view_scli', $conten,true);
 
-		$data['content'].= $this->pi18n->fallas();
-		$data['smenu']   = $this->load->view('view_sub_menu', $smenu,true);
-		
-		$data['title']   = heading('('.$edit->cliente->value.') '.substr($edit->nombre->value,0,30));
-		
-		$data['script']   = script('jquery.js');
-		$data["script"]  .= script("jquery-ui.js");
-		$data["script"]  .= script("jquery.alerts.js");
-		$data['script']  .= script('plugins/jquery.numeric.pack.js');
-		$data['script']  .= script('plugins/jquery.floatnumber.js');
-		$data['script']  .= script('plugins/jquery.autocomplete.js');
-		$data["script"]  .= script("plugins/jquery.blockUI.js");
-		//$data["script"]  .= script("sinvmaes.js");
-		$data["script"]  .= $script;
-		
-		$data['style']	 = style("jquery.alerts.css");
-		$data['style']	.= style("redmond/jquery-ui.css");
-		$data['style']  .= style('jquery.autocomplete.css');
-		$data['style']	.= $style;
+			$data['content'].= $this->pi18n->fallas();
+			$data['smenu']   = $this->load->view('view_sub_menu', $smenu,true);
 
-		$data['head']    = $this->rapyd->get_head();
-		$this->load->view('view_ventanas', $data);
+			$data['title']   = heading('('.$edit->cliente->value.') '.substr($edit->nombre->value,0,30));
+
+			$data['script']   = script('jquery.js');
+			$data["script"]  .= script("jquery-ui.js");
+			$data["script"]  .= script("jquery.alerts.js");
+			$data['script']  .= script('plugins/jquery.numeric.pack.js');
+			$data['script']  .= script('plugins/jquery.floatnumber.js');
+			$data['script']  .= script('plugins/jquery.autocomplete.js');
+			$data["script"]  .= script("plugins/jquery.blockUI.js");
+			//$data["script"]  .= script("sinvmaes.js");
+			$data["script"]  .= $script;
+
+			$data['style']	 = style("jquery.alerts.css");
+			$data['style']	.= style("redmond/jquery-ui.css");
+			$data['style']  .= style('jquery.autocomplete.css');
+			$data['style']	.= $style;
+
+			$data['head']    = $this->rapyd->get_head();
+			$this->load->view('view_ventanas', $data);
+		}else{
+			$edit->on_save_redirect=false;
+			$edit->build();
+
+			if($edit->on_success()){
+				$rt= 'Cliente Guardado';
+			}elseif($edit->on_error()){
+				$rt= html_entity_decode(preg_replace('/<[^>]*>/', '', $edit->error_string));
+			}
+			return $rt;
+		}
 	}
 
 	function claveedit(){
@@ -600,6 +614,20 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		$this->load->view('view_ventanas', $data);
 	}
 
+	//Permite crear un clientes desde otras interfaces
+	function creascli(){
+		//print_r($_POST);
+		$rifci=$this->input->post('rifci');
+		if(preg_match('/[VEJG][0-9]{9}$/',$rifci)>0){
+			$_POST['tiva']='C';
+		}else{
+			$_POST['tiva']='N';
+		}
+		$_POST['tipo']='1';
+		$this->genesal=false;
+		$rt=$this->dataedit();
+		echo $rt;
+	}
 
 	// Revisa si existe el codigo
 	function scliexiste(){
@@ -612,13 +640,6 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		}
 		echo $devo;
 	}
-
-	function sinvcodigo(){
-		
-		
-	}
-
-
 
 	function chdfiscal($tiva){
 		$nomfis=$this->input->post('nomfis');
@@ -659,7 +680,12 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		if ( empty( $nomfis ) ) {
 			$do->set('nomfis',trim($do->get('nombre')));
 		}
-		return True;
+
+		$cliente = $do->get('cliente');
+		if(empty($cliente)){
+			$do->set('cliente',$this->_numatri());
+		}
+		return true;
 	}
 
 	function _post_insert($do){
@@ -780,7 +806,48 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		
 	}
 
+	function _numatri(){
+		/*LOCAL mNUMERO := PROX_SQL("ncodcli")
+		FUNCTION NUMATRI(mNUMERO)
+			LOCAL mCONVE   := ''
+			LOCAL mRESIDUO := mNUMERO
+			LOCAL mBASE    := 36
+			DO WHILE mRESIDUO > mBASE-1
+				mTEMPO   := MOD(mRESIDUO,mBASE)
+				mRESIDUO := INT(mRESIDUO/mBASE)
+				IF mTEMPO > 9
+					mCONVE += CHR(mTEMPO+55)
+				ELSE
+					mCONVE += STR(mTEMPO,1)
+				ENDIF
+			ENDDO
+			IF mRESIDUO > 9
+				mCONVE += CHR(mRESIDUO+55)
+			ELSE
+				mCONVE += STR(mRESIDUO,1)
+			ENDIF
+		RETURN mCONVE*/
 
+		$numero = $this->datasis->prox_numero('ncodcli');
+		$residuo= $numero;
+		$mbase  = 36;
+		$conve='';
+		while($residuo > $mbase-1){
+			$mtempo  = $residuo % $mbase;
+			$residuo = intval($residuo/$mbase);
+			if($mtempo >9 ){
+				$conve .= chr($mtempo+55);
+			}else{
+				$conve .= $mtempo;
+			}
+		}
+		if($mtempo >9 ){
+			$conve .= chr($mtempo+55);
+		}else{
+			$conve .= $mtempo;
+		}
+		return $conve;
+	}
 
 	function instalar(){
 		$seniat='http://www.seniat.gov.ve/BuscaRif/BuscaRif.jsp';

@@ -1,25 +1,25 @@
 <?php 
 class Unidad extends Controller{
-	
+	var $genesal=true;
+
 	function unidad(){
 		parent::Controller(); 
 		$this->load->library("rapyd");
-		//$this->datasis->modulo_id('30C',1);		
+		//$this->datasis->modulo_id('30C',1);
 	}
-	
-	function index(){		
+
+	function index(){
 		redirect("inventario/unidad/filteredgrid");
 	}
 
 	function filteredgrid(){
 		$this->rapyd->load("datafilter","datagrid");
-		
 		//$uri = anchor('inventario/unidad/dataedit/show/<raencode><#unidades#></raencode>','<#unidades#>');
 
 		$grid = new DataGrid("Unidades ",'unidad');
 		$grid->order_by("unidades","asc");
 		$grid->per_page = 60;
-		                                  
+
 		$grid->column_sigma("Unidades", "unidades", "",      "width:210, editor: { type: 'text'} ");
 		$grid->column_sigma('Productos',"produ",    "float", "align: 'right', width:80 ");
 
@@ -36,7 +36,7 @@ function ver(value, record, columnObj, grid, colNo, rowNo){
 	var url = '';
 	url = '<a href=\"#\" onclick=\"window.open(\'".base_url()."inventario/unidad/dataedit/show/'+value+ '\', \'_blank\', \'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'\')\"; heigth=\"600\" >';
 	url = url +value+'</a>';
-	return url;	
+	return url;
 }
 ";
 		$colsOption = $sigmaA["colsOption"];
@@ -50,14 +50,14 @@ function guardar(value, oldValue, record, col, grid) {
 };
 ";
 
-	      $gridGo = "
+		 $gridGo = "
 var mygrid=new Sigma.Grid(gridOption);
 mygrid.saveURL = '".base_url()."inventario/unidad/controlador',
 mygrid.width = 310;
 mygrid.height = 400;
 mygrid.toolbarContent = 'nav | reload | add del save | print ';
 Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
-";		
+";
 		$SigmaCont = "<center><div id=\"grid1_container\" style=\"width:310px;height:400px;\"></div><center>";
 		$grid->add("inventario/marc/dataedit/create");
 		$grid->build('datagridSG');
@@ -65,7 +65,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$data['style']  = style("redmond/jquery-ui.css");
 		$data['style'] .= style('gt_grid.css');
 
-		$data["script"]  = script("jquery.js");
+		$data['script']  = script("jquery.js");
 		$data['script'] .= script("gt_msg_es.js");
 		$data['script'] .= script("gt_grid_all.js");
 		$data['script'] .= "<script type=\"text/javascript\" >\n";
@@ -82,6 +82,43 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$this->load->view('view_ventanas_simple', $data);	
 	}
 
+	function dataedit(){
+		$this->rapyd->load("dataedit");
+
+		$edit = new DataEdit("Unidad","unidad");
+		$edit->post_process('insert','_post_insert');
+		$edit->post_process('update','_post_update');
+		$edit->post_process('delete','_post_delete');
+
+		$edit->back_url = site_url("inventario/unidad/filteredgrid");
+
+		$edit->unidades =  new inputField("Unidad",'unidades');
+		$edit->unidades ->size = 15;
+		$edit->unidades ->maxlength=30;
+		$edit->unidades ->rule = "trim|strtoupper|required";
+
+		$edit->buttons("modify", "save", "undo", "delete", "back");
+		$edit->build();
+
+		if($this->genesal){
+			$edit->build();
+
+			$data['content'] = $edit->output;
+			$data['title']   = heading('Unidad');
+			$data['head']    = $this->rapyd->get_head();
+			$this->load->view('view_ventanas', $data);
+		}else{
+			$edit->on_save_redirect=false;
+			$edit->build();
+
+			if($edit->on_success()){
+				echo 'Pedido Guardado';
+			}elseif($edit->on_error()){
+				echo html_entity_decode(preg_replace('/<[^>]*>/', '', $edit->error_string));
+			}
+		}
+	}
+
 	// sigma grid
 	function controlador(){
 		if (isset($_POST["_gt_json"]) ) {
@@ -95,33 +132,33 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 					$sortField = $json->{'sortInfo'}[0]->{'columnId'};
 				} else {
 					$sortField = "unidades";
-				}    
-	 
+				}
+
 				if(isset($json->{'sortInfo'}[0]->{'sortOrder'})){
 					$sortOrder = $json->{'sortInfo'}[0]->{'sortOrder'};
 				} else {
 					$sortOrder = "ASC";
-				}    
-	
+				}
+
 				for ($i = 0; $i < count($json->{'filterInfo'}); $i++) {
 					if($json->{'filterInfo'}[$i]->{'logic'} == "equal"){
 						$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . "='" . $json->{'filterInfo'}[$i]->{'value'} . "' ";
 					}elseif($json->{'filterInfo'}[$i]->{'logic'} == "notEqual"){
-						$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . "!='" . $json->{'filterInfo'}[$i]->{'value'} . "' ";    
+						$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . "!='" . $json->{'filterInfo'}[$i]->{'value'} . "' ";
 					}elseif($json->{'filterInfo'}[$i]->{'logic'} == "less"){
 						$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . "<" . $json->{'filterInfo'}[$i]->{'value'} . " ";
 					}elseif($json->{'filterInfo'}[$i]->{'logic'} == "lessEqual"){
-						$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . "<=" . $json->{'filterInfo'}[$i]->{'value'} . " ";    
+						$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . "<=" . $json->{'filterInfo'}[$i]->{'value'} . " ";
 					}elseif($json->{'filterInfo'}[$i]->{'logic'} == "great"){
 							$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . ">" . $json->{'filterInfo'}[$i]->{'value'} . " ";
 					}elseif($json->{'filterInfo'}[$i]->{'logic'} == "greatEqual"){
-						$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . ">=" . $json->{'filterInfo'}[$i]->{'value'} . " ";        
+						$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . ">=" . $json->{'filterInfo'}[$i]->{'value'} . " ";
 					}elseif($json->{'filterInfo'}[$i]->{'logic'} == "like"){
-						$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . " LIKE '%" . $json->{'filterInfo'}[$i]->{'value'} . "%' ";        
+						$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . " LIKE '%" . $json->{'filterInfo'}[$i]->{'value'} . "%' ";
 					}elseif($json->{'filterInfo'}[$i]->{'logic'} == "startWith"){
-						$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . " LIKE '" . $json->{'filterInfo'}[$i]->{'value'} . "%' ";        
+						$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . " LIKE '" . $json->{'filterInfo'}[$i]->{'value'} . "%' ";
 					}elseif($json->{'filterInfo'}[$i]->{'logic'} == "endWith"){
-						$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . " LIKE '%" . $json->{'filterInfo'}[$i]->{'value'} . "' ";                
+						$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . " LIKE '%" . $json->{'filterInfo'}[$i]->{'value'} . "' ";
 					}
 					$filter .= " AND ";
 				}
@@ -176,6 +213,12 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		}
 	}
 
+	/*function crea(){
+		//print_r($_POST);
+		$this->genesal=false;
+		$rt=$this->dataedit();
+		echo $rt;
+	}*/
 
 	function modifica(){
 		$valor = $this->uri->segment($this->uri->total_segments());
@@ -196,4 +239,3 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 	}
 
 }
-?>
