@@ -240,6 +240,9 @@ $sigma = "";
 		'titulo'  =>'Buscar Cliente',
 		);
 		$boton =$this->datasis->modbus($mSCLId);
+		
+		if ( !$this->datasis->iscampo("sfac","ereiva") )
+			$this->db->simple_query("ALTER TABLE sfac ADD ereiva DATE AFTER freiva ");
 
 		$do = new DataObject('sfac');
 		$do->rel_one_to_many('sitems', 'sitems', array('numero'=>'numa','tipo_doc'=>'tipoa'));
@@ -436,8 +439,6 @@ div#sfacreiva h1 { font-size: 1.2em; margin: .6em 0; }
 		$fecha = date('d/m/Y');
 		if( $edit->_dataobject->get('freiva') > 0 )  $fecha = dbdate_to_human($edit->_dataobject->get('freiva'));
 
-		if ( !$this->datasis->iscampo("sfac","efecha") )
-			$this->db->simple_query("ALTER TABLE sfac ADD ereiva DATE() AFTER freiva");
 
 		$efecha = date('d/m/Y');
 		if( $edit->_dataobject->get('ereiva') > 0 )  $efecha = dbdate_to_human($edit->_dataobject->get('ereiva'));
@@ -526,10 +527,10 @@ var mygrid=new Sigma.Grid(gridOption);
 Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 </script>  
 ";
-		if ($edit->referen='E') {
+		if ( $edit->referen->value == 'E') {
 			$saldo = 0; 
 		} else {
-			$saldo = $this->datasis->dameval("SELECT monto-abonos FROM smov WHERE tipo IN ('FC','NC') AND transac='".$edit->transac.value."'") ;
+			$saldo = $this->datasis->dameval("SELECT monto-abonos FROM smov WHERE tipo_doc IN ('FC','NC') AND transac='".$edit->transac->value."'") ;
 		}
 
 		if ( $edit->reiva->value > 0 ) {
@@ -572,8 +573,9 @@ function sfacreiva(mid){
 		if ( $saldo < $mreiva ) {
 			$scriptreiva .= "pide += '<tr><td>Reintegrar</td><td><input type=\"checkbox\"  value=\"reintegrar\" name=\"reinte\"  id=\"reinte\" style=\"text-align:right\" /></td></tr>';";
 		} else {
-			$scriptreiva .= "pide += '<tr><td colspan=2>Se aplicara una NC a la Factura $saldo<input type=\"checkbox\" value=\"reintegrar\" name=\"reinte\"  id=\"reinte\" style=\"text-align:right;visibility:hidden;\" /></td></tr>';";
+			$scriptreiva .= "pide += '<tr><td colspan=2>Se aplicara una NC a la Factura<input type=\"checkbox\" value=\"reintegrar\" name=\"reinte\"  id=\"reinte\" style=\"text-align:right;visibility:hidden;\" /></td></tr>';";
 		}
+		
 		$scriptreiva .= "
 	pide += '</table>';
 
@@ -836,7 +838,8 @@ function sfacreiva(mid){
 		//memowrite("efecha=$efecha, fecha=$fecha, numero=$numero, id=$id, reinte=$reinte","sfacreiva");
 		
 		// status de la factura
-		$fecha = substr($fecha,6,4).substr($fecha,3,2).substr($fecha,0,2);
+		$fecha  = substr($fecha, 6,4).substr($fecha, 3,2).substr($fecha, 0,2);
+		$efecha = substr($efecha,6,4).substr($efecha,3,2).substr($efecha,0,2);
 	
 		$tipo_doc = $this->datasis->dameval("SELECT tipo_doc FROM sfac WHERE id=$id");
 		$referen  = $this->datasis->dameval("SELECT referen  FROM sfac WHERE id=$id");
@@ -851,8 +854,10 @@ function sfacreiva(mid){
 			if (  $anterior == 0 )  {
 				$mSQL = "UPDATE sfac SET reiva=round(iva*0.75,2), creiva='$numero', freiva='$fecha', ereiva='$efecha' WHERE id=$id";
 				$this->db->simple_query($mSQL);
+				//memowrite($mSQL,"sfacreivaSFAC");
 
 				$transac = $this->datasis->prox_sql("ntransa");
+				$transac = str_pad($transac, 8, "0", STR_PAD_LEFT);
 			
 				if ($referen == 'C') {
 					$saldo =  $this->datasis->dameval("SELECT monto-abonos FROM smov WHERE tipo_doc='FC' AND numero='$numfac'");
@@ -862,12 +867,13 @@ function sfacreiva(mid){
 					if ($referen == 'E') { 
 						// FACTURA PAGADA AL CONTADO GENERA ANTICIPO
 						$mnumant = $this->datasis->prox_sql("nancli");
-						$mSQL = "INSERT INTO smov  (cod_cli, nombre, tipo_doc, numero, fecha, monto, impuesto, vence, observa1, tipo_ref, num_ref, estampa, hora, transac, usuario )
-						SELECT cod_cli, nombre, 'AN' tipo_doc, LPAD('$mnumant',8,'0') numero, freiva fecha, reiva monto, 0 impuesto, freiva vence,
+						$mnumant = str_pad($mnumant, 8, "0", STR_PAD_LEFT);
+						
+						$mSQL = "INSERT INTO smov  (cod_cli, nombre, tipo_doc, numero, fecha, monto, impuesto, vence, observa1, tipo_ref, num_ref, estampa, hora, transac, usuario, nroriva, emiriva )
+						SELECT cod_cli, nombre, 'AN' tipo_doc, '$mnumant' numero, freiva fecha, reiva monto, 0 impuesto, freiva vence,
 							CONCAT('APLICACION DE RETENCION A DOC. ',tipo_doc,numero) observa1, IF(tipo_doc='F','FC', 'DV' ) tipo_ref, numero num_ref,
-							curdate() estampa, curtime() hora, LPAD('$transac',8,'0') transac, '".$usuario."' usuario
-								FROM sfac 
-							WHERE id=$id";
+							curdate() estampa, curtime() hora, '$transac' transac, '".$usuario."' usuario, creiva, ereiva
+						FROM sfac WHERE id=$id";
 						$this->db->simple_query($mSQL);
 						$mdevo = "<h1 style='color:green;'>EXITO</h1>Retencion Guardada, Anticipo Generado por factura pagada al contado";
 					} elseif ($referen == 'C') {
@@ -879,21 +885,22 @@ function sfacreiva(mid){
 	
 						if ( $saldo < $monto ) {  // crea anticipo
 							$mnumant = $this->datasis->prox_sql("nancli");
-							$mSQL = "INSERT INTO smov  (cod_cli, nombre, tipo_doc, numero, fecha, monto, impuesto, vence, observa1, tipo_ref, num_ref, estampa, hora, transac, usuario )
-							SELECT cod_cli, nombre, 'AN' tipo_doc, LPAD('$mnumant',8,'0') numero, freiva fecha, reiva monto, 0 impuesto, freiva vence,
+							$mnumant = str_pad($mnumant, 8, "0", STR_PAD_LEFT);
+							$mSQL = "INSERT INTO smov  (cod_cli, nombre, tipo_doc, numero, fecha, monto, impuesto, vence, observa1, tipo_ref, num_ref, estampa, hora, transac, usuario, nroriva, emiriva )
+							SELECT cod_cli, nombre, 'AN' tipo_doc, '$mnumant' numero, freiva fecha, reiva monto, 0 impuesto, freiva vence,
 								CONCAT('APLICACION DE RETENCION A DOC. ',tipo_doc,numero) observa1, IF(tipo_doc='F','FC', 'DV' ) tipo_ref, numero num_ref,
-								curdate() estampa, curtime() hora, LPAD('$transac',8,'0') transac, '".$usuario."' usuario
-								FROM sfac 
-									WHERE id=$id";
+								curdate() estampa, curtime() hora, '$transac' transac, '".$usuario."' usuario, creiva, ereiva
+							FROM sfac WHERE id=$id";
 							$this->db->simple_query($mSQL);
 							$mdevo = "<h1 style='color:green;'>EXITO</h1>Cambios Guardados, Anticipo Generado por factura ya pagada";
 							memowrite($mSQL,"sfacreivaAN");
 						} else {
 							$mnumant = $this->datasis->prox_sql("ndcli");
+							$mnumant = str_pad($mnumant, 8, "0", STR_PAD_LEFT);
 							$mSQL = "INSERT INTO smov (cod_cli, nombre, tipo_doc, numero, fecha, monto, impuesto, abonos, vence, observa1, tipo_ref, num_ref, estampa, hora, transac, usuario, codigo, descrip, nroriva, emiriva )
-								SELECT cod_cli, nombre, 'NC' tipo_doc, LPAD('$mnumant',8,'0') numero, freiva fecha, reiva monto, 0 impuesto, reiva abonos, freiva vence,
+								SELECT cod_cli, nombre, 'NC' tipo_doc, '$mnumant' numero, freiva fecha, reiva monto, 0 impuesto, reiva abonos, freiva vence,
 								CONCAT('APLICACION DE RETENCION A DOC. ',tipo_doc,numero) observa1, IF(tipo_doc='F','FC', 'DV' ) tipo_ref, numero num_ref,
-								curdate() estampa, curtime() hora, LPAD('$transac',8,'0') transac, '".$usuario."' usuario,
+								curdate() estampa, curtime() hora, '$transac' transac, '".$usuario."' usuario,
 								'NOCON 'codigo, 'NOTA DE CONTABILIDAD' descrip, creiva, ereiva
 								FROM sfac WHERE id=$id";
 							$this->db->simple_query($mSQL);
@@ -909,12 +916,13 @@ function sfacreiva(mid){
 						}
 					}
 					$mnumant = $this->datasis->prox_sql("nancli");
+					$mnumant = str_pad($mnumant, 8, "0", STR_PAD_LEFT);
 					$mSQL = "INSERT INTO smov (cod_cli, nombre, tipo_doc, numero, fecha, monto, impuesto, abonos, vence, observa1, tipo_ref, num_ref, estampa, hora, usuario, transac, codigo, descrip, nroriva, emiriva )
-						SELECT 'REIVA' cod_cli, 'RETENCION DE IVA POR COMPENSAR' nombre, 'ND' tipo_doc, LPAD('$mnumant',8,'0') numero, freiva fecha, 
+						SELECT 'REIVA' cod_cli, 'RETENCION DE IVA POR COMPENSAR' nombre, 'ND' tipo_doc, '$mnumant' numero, freiva fecha, 
 						reiva monto, 0 impuesto, 0 abonos, freiva vence, 'APLICACION DE RETENCION A FACTURA ' observa1, 
 						IF(tipo_doc='F','FC', 'DV' ) tipo_ref, numero num_ref, curdate() estampa, 
-						curtime() hora, '".$usuario."' usuario, LPAD('$transac',8,'0') transac, 'NOCON 'codigo,
-						'NOTA DE CONTABILIDAD' descrip, creiva, eriva
+						curtime() hora, '".$usuario."' usuario, '$transac' transac, 'NOCON 'codigo,
+						'NOTA DE CONTABILIDAD' descrip, creiva, ereiva
 					FROM sfac WHERE id=$id";
 					$this->db->simple_query($mSQL);
 					memowrite($mSQL,"sfacreivaND");
@@ -935,7 +943,7 @@ function sfacreiva(mid){
 
 	//***************************
 	//
-	// Recibir retencin de IVA
+	// Reintegrar retencion de IVA
 	//
 	function sfacreivaef(){
 		$id     = $this->uri->segment($this->uri->total_segments());
@@ -946,78 +954,94 @@ function sfacreiva(mid){
 		$caja   = rawurldecode($this->input->post('caja'));
 		$cheque = rawurldecode($this->input->post('cheque'));
 		$benefi = rawurldecode($this->input->post('benefi'));
-		
+
 		$mdevo  = "Exito";
 	
-		memowrite("efecha=$efecha, fecha=$fecha, numero=$numero, id=$id, caja=$caja, cheque=$cheque, benefi=$benefi ","sfacreiva");
+		memowrite("efecha=$efecha, fecha=$fecha, numero=$numero, id=$id, caja=$caja, cheque=$cheque, benefi=$benefi ","sfacreivaef");
+
 		// status de la factura
 		$fecha  = substr($fecha, 6,4).substr($fecha, 3,2).substr($fecha, 0,2);
 		$efecha = substr($efecha,6,4).substr($efecha,3,2).substr($efecha,0,2);
-	
+
 		$tipo_doc = $this->datasis->dameval("SELECT tipo_doc FROM sfac WHERE id=$id");
 		$referen  = $this->datasis->dameval("SELECT referen  FROM sfac WHERE id=$id");
 		$numfac   = $this->datasis->dameval("SELECT numero   FROM sfac WHERE id=$id");
 		$cod_cli  = $this->datasis->dameval("SELECT cod_cli  FROM sfac WHERE id=$id");
 		$monto    = $this->datasis->dameval("SELECT ROUND(iva*0.75,2)  FROM sfac WHERE id=$id");
-
 		$anterior = $this->datasis->dameval("SELECT reiva FROM sfac WHERE id=$id");
-		$usuario = addslashes($this->session->userdata('usuario'));
 
+		$usuario  = addslashes($this->session->userdata('usuario'));
 		$codbanc = substr($caja,0,2);
+		$tbanco  = $this->datasis->dameval("SELECT tbanco FROM banc WHERE codbanc='$codbanc'");
+		$cheque  = str_pad($cheque, 12, "0", STR_PAD_LEFT);
 
+		$verla = 0;
+		$query   = "SELECT count(*) FROM bmov WHERE tipo_op='CH' AND codbanc='$codbanc' AND numero='$cheque' ";
+		if ( $tbanco != 'CAJ' ) {
+			$verla = $this->datasis->dameval($query);
+		}
 
-		if ( strlen($numero) == 14 ){
-			if (  $anterior == 0 )  {
-				$mSQL = "UPDATE sfac SET reiva=round(iva*0.75,2), creiva='$numero', freiva='$fecha', ereiva='$efecha' WHERE id=$id";
-				$this->db->simple_query($mSQL);
-				$transac = $this->datasis->prox_sql("ntransa");
-				$saldo = 0;
-				if ($referen == 'C') {
-					$saldo =  $this->datasis->dameval("SELECT monto-abonos FROM smov WHERE tipo_doc='FC' AND numero='$numfac'");
-				}
-				if ( $tipo_doc == 'F' && $saldo <= 0 ) {
-					// crea un registro en bmov
-					$mSQL  = "INSERT INTO bmov ( codbanc, moneda, numcuent, banco, saldo, tipo_op, numero,fecha, clipro, codcp, nombre, monto, concepto, benefi, posdata, liable, transac, usuario, estampa, hora, negreso ) ";
-					$mSQL .= "SELECT '$codbanc' codbanc, b.moneda, b.numcuent, ";
-					$mSQL .= "b.banco, b.saldo, IF(b.tbanco='CAJ','ND','CH') tipo_op, $numero numero, ";
-					$mSQL .= "a.freiva, 'C' clipro, a.cod_cli codcp, a.nombre, a.reiva monto, ";
-					$mSQL .= "'REINTEGRO DE RETENCION APLICADA A FC $numfac' concepto, ";
-					$mSQL .= "'$benefi' benefi, a.freiva posdata, 'S' liable, LPAD('$transac',8,'0') transac, ";
-					$mSQL .= "'$usuario' usuario, estampa, hora, LPAD('$negreso',8,'0') negreso ";
-					$mSQL .= "FROM sfac a JOIN banc b ON b.codbanc='$codbanc' ";
-					$mSQL .= "WHERE a.id=$id ";
+		if ( $verla == 0 ) {
+			if ( strlen($numero) == 14 ){
+				if (  $anterior == 0 )  {
+					$mSQL = "UPDATE sfac SET reiva=round(iva*0.75,2), creiva='$numero', freiva='$fecha', ereiva='$efecha' WHERE id=$id";
+					$this->db->simple_query($mSQL);
+					memowrite($mSQL,"sfacreivaSFAC");
+
+					if ( $tbanco == 'CAJ' ) {
+						$m = 1;
+						while ( $m > 0 ) {
+							$cheque = $this->datasis->prox_sql("ncaja$codbanc");
+							$cheque = str_pad($cheque, 12, "0", STR_PAD_LEFT);
+							$m = $this->datasis->dameval("SELECT COUNT(*) FROM bmov WHERE codbanc='$codbanc' AND tipo_op='ND' AND numero='$cheque' ");
+						}
+					}
 					
-					memowrite($mSQL,"sfacreivaCH");
-					$this->db->simple_query($mSQL);
-					$mdevo = "<h1 style='color:green;'>EXITO</h1>Cambios Guardados, Nota de Credito generada y aplicada a la factura";
+					$transac = $this->datasis->prox_sql("ntransa");
+					$transac = str_pad($transac, 8, "0", STR_PAD_LEFT);
+	
+					$negreso = $this->datasis->prox_sql("negreso");
+					$negreso = str_pad($negreso, 8, "0", STR_PAD_LEFT);
 
-					$mnumant = $this->datasis->prox_sql("nancli");
-					$mSQL = "INSERT INTO smov (cod_cli, nombre, tipo_doc, numero, fecha, monto, impuesto, abonos, vence, observa1, tipo_ref, num_ref, estampa, hora, usuario, transac, codigo, descrip, nroriva, emiriva )
-						SELECT 'REIVA' cod_cli, 'RETENCION DE IVA POR COMPENSAR' nombre, 'ND' tipo_doc, LPAD('$mnumant',8,'0') numero, freiva fecha, 
-						reiva monto, 0 impuesto, 0 abonos, freiva vence, 'APLICACION DE RETENCION A FACTURA ' observa1, 
-						IF(tipo_doc='F','FC', 'DV' ) tipo_ref, numero num_ref, curdate() estampa, 
-						curtime() hora, '".$usuario."' usuario, LPAD('$transac',8,'0') transac, 'NOCON 'codigo,
-						'NOTA DE CONTABILIDAD' descrip, creiva, eriva
-					FROM sfac WHERE id=$id";
-					$this->db->simple_query($mSQL);
-					memowrite($mSQL,"sfacreivaND");
-						
+					//$numero = str_pad($numero, 8, "0", STR_PAD_LEFT);
+					$saldo = 0;
+					if ($referen == 'C') {
+						$saldo =  $this->datasis->dameval("SELECT monto-abonos FROM smov WHERE tipo_doc='FC' AND numero='$numfac'");
+					}
+					if ( $tipo_doc == 'F' ) {
+						// crea un registro en bmov
+						$mSQL  = "INSERT INTO bmov ( codbanc, moneda, numcuent, banco, saldo, tipo_op, numero,fecha, clipro, codcp, nombre, monto, concepto, benefi, posdata, liable, transac, usuario, estampa, hora, negreso ) ";
+						$mSQL .= "SELECT '$codbanc' codbanc, b.moneda, b.numcuent, ";
+						$mSQL .= "b.banco, b.saldo, IF(b.tbanco='CAJ','ND','CH') tipo_op, '$cheque' numero, ";
+						$mSQL .= "a.freiva, 'C' clipro, a.cod_cli codcp, a.nombre, a.reiva monto, ";
+						$mSQL .= "'REINTEGRO DE RETENCION APLICADA A FC $numfac' concepto, ";
+						$mSQL .= "'$benefi' benefi, a.freiva posdata, 'S' liable, '$transac' transac, ";
+						$mSQL .= "'$usuario' usuario, curdate() estampa, curtime() hora, '$negreso' negreso ";
+						$mSQL .= "FROM sfac a JOIN banc b ON b.codbanc='$codbanc' ";
+						$mSQL .= "WHERE a.id=$id ";
+						memowrite($mSQL,"sfacreivaCH");
+						$this->db->simple_query($mSQL);
+						$mnumant = $this->datasis->prox_sql("nancli");
+						$mSQL = "INSERT INTO smov (cod_cli, nombre, tipo_doc, numero, fecha, monto, impuesto, abonos, vence, observa1, tipo_ref, num_ref, estampa, hora, usuario, transac, codigo, descrip, nroriva, emiriva )
+							SELECT 'REIVA' cod_cli, 'RETENCION DE IVA POR COMPENSAR' nombre, 'ND' tipo_doc, LPAD('$mnumant',8,'0') numero, freiva fecha, 
+							reiva monto, 0 impuesto, 0 abonos, freiva vence, 'APLICACION DE RETENCION A DOCUMENTO $numfac' observa1, 
+							IF(tipo_doc='F','FC', 'DV' ) tipo_ref, numero num_ref, curdate() estampa, 
+							curtime() hora, '".$usuario."' usuario, '$transac' transac, 'NOCON 'codigo,
+							'NOTA DE CONTABILIDAD' descrip, creiva, ereiva
+						FROM sfac WHERE id=$id";
+						$this->db->simple_query($mSQL);
+						memowrite($mSQL,"sfacreivaND");
+						$mdevo = "<h1 style='color:green;'>EXITO</h1>Cambios Guardados, Nota de Credito generada y cargo en caja generado";
+					} else {
+						//Devoluciones
+					}
 				} else {
-					//Devoluciones
-					
+					$mdevo = "<h1 style='color:red;'>ERROR</h1>Retencion ya aplicada";
 				}
-			} else {
-				$mdevo = "<h1 style='color:red;'>ERROR</h1>Retencion ya aplicada";
-			}
-		} else $mdevo = "<h1 style='color:red;'>ERROR</h1>Longitud del comprobante menor a 14 caracteres, corrijalo y vuelva a intentar";
-
-
-
+			} else $mdevo = "<h1 style='color:red;'>ERROR</h1>Longitud del comprobante menor a 14 caracteres, corrijalo y vuelva a intentar";
+		} else $mdevo = "<h1 style='color:red;'>ERROR</h1>Un cheque con ese numero ya existe ($cheque) ";
 		echo $mdevo;
 	}
-
-
-
 
 	// json para llena la tabla de inventario
 	function sfacsig() {

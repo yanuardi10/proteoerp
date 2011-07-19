@@ -61,10 +61,19 @@ function del_sitems(id){
 			<table width='100%'>
 				<tr>
 					<td>&nbsp;</td>
-					<td>&nbsp;
+					<td width='40' valign='bottom'>&nbsp;
 						<a href='javascript:sfacreiva("<?php echo $form->_dataobject->get('id'); ?>")'>
 						<?php
 							$propiedad = array('src' => 'images/retencion.gif', 'alt' => 'Retencion de IVA', 'title' => 'Retencion de IVA','border'=>'0','height'=>'30');
+							echo img($propiedad);
+						?>
+						</a>
+					</td>
+					<td width='40' valign='bottom'>&nbsp;
+						<a href='javascript:void(0);'
+						onclick="window.open('<?php echo base_url(); ?>formatos/verhtml/FACTURA/<?php echo $form->tipo_doc->value.'/'.$form->numero->value; ?>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');" >
+						<?php
+							$propiedad = array('src' => 'images/reportes.gif', 'alt' => 'Imprimir Documento', 'title' => 'Imprimir Documento','border'=>'0','height'=>'30');
 							echo img($propiedad);
 						?>
 						</a>
@@ -271,7 +280,6 @@ function del_sitems(id){
 	</tr>
 	<?php } ?>
 	
-	
 	<?php if($form->_status == 'show'){ ?>
 	<tr>
 		<td>
@@ -285,8 +293,7 @@ function del_sitems(id){
 					<td align='center' >Hora   </td>
 					<td align='center' >Transacci&oacute;n</td>
 					<td align='center' >Cajero</td>
-				</tr>
-				<tr>
+				</tr><tr>
 					<?php
 						$mSQL="SELECT us_nombre FROM usuario WHERE us_codigo='".trim($form->_dataobject->get('usuario'))."'";
 						$us_nombre = $this->datasis->dameval($mSQL);

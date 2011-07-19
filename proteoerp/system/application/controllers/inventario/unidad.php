@@ -102,7 +102,6 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 
 		if($this->genesal){
 			$edit->build();
-
 			$data['content'] = $edit->output;
 			$data['title']   = heading('Unidad');
 			$data['head']    = $this->rapyd->get_head();
