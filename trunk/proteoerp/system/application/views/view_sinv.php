@@ -81,7 +81,7 @@ else:
 							$propiedad = array('src' => 'images/camara.jpg', 'alt' => 'Imagenes', 'title' => 'Imagenes','border'=>'0','height'=>'30');
 							echo img($propiedad);
 						?>
-					</a>
+						</a>
 					</td>
 				</tr>
 			</table>
