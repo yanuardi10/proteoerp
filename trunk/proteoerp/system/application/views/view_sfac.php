@@ -145,59 +145,58 @@ function del_sitems(id){
 	</tr>
 	<tr>
 		<td align='center'>
+			<fieldset style='border: 1px solid #9AC8DA;background: #FFFBE9;'>
+			<legend class="subtitulotabla" style='color: #114411;'>Totales</legend>
 			<table width='100%'>
-			<tr>
-				<td valign='top' >
-				<fieldset style='border: 1px solid #9AC8DA;background: #FFFBE9;'>
-				<legend class="subtitulotabla" style='color: #114411;'>Observaciones</legend>
-				<table width='100%'>
-					<tr>
-						<td class="littletableheader" >Observaciones</td>
-					</tr><tr>
-						<td class="littletablerow"><?php echo $form->observa->output  ?>&nbsp;</td>
-					</tr><tr>
-						<td class="littletablerow"><?php echo $form->observ1->output  ?>&nbsp;</td>
-					</tr><tr>
-						<td>
-						<table width='100%'><tr>
-						<td class="littletableheader"><?php echo $form->ciudad->label  ?>&nbsp;</td>
-						<td class="littletablerow">   <?php echo $form->ciudad->output ?>&nbsp;</td>
-						<td class="littletableheader"><?php echo $form->zona->label    ?>&nbsp;</td>
-						<td class="littletablerow">   <?php echo $form->zona->output   ?>&nbsp;</td>
-						</tr>
-						</table>
-						</td>
-					</tr>
-				</table>
-				</fieldset>
-				</td>
-				<td valign='top'>
-				<fieldset style='border: 1px solid #9AC8DA;background: #FFFBE9;'>
-				<legend class="subtitulotabla" style='color: #114411;'>Totales</legend>
-				<table width='100%'>
-					<tr>
-						<td class="littletableheader"><strong><?php echo $form->exento->label ?>&nbsp;</strong></td>
-						<td style='font-size: 14px;font-weight: bold'align='right' ><?php echo nformat($form->exento->value)?>&nbsp;</td>
-					</tr><tr>
-						<td class="littletableheader"><strong><?php echo $form->totals->label ?>&nbsp;</strong></td>
-						<td style='font-size: 14px;font-weight: bold'align='right' ><?php echo nformat($form->totals->value)?>&nbsp;</td>
-					</tr><tr>
-						<td class="littletableheader"><strong><?php echo $form->ivat->label ?>&nbsp;</strong></td>
-						<td style='font-size: 14px;font-weight: bold' align='right'>   <?php echo nformat($form->ivat->value)  ?>&nbsp;</td>
-					</tr><tr>
-						<td class="littletableheader"><strong><?php echo $form->totalg->label ?>&nbsp;</strong></td>
-						<td style='font-size: 22px;font-weight: bold' align='right'>   <?php echo nformat($form->totalg->value) ?>&nbsp;</td>
-					</tr>
-				</table>
-				</fieldset>
-			
-				</td></tr>
+				<tr>
+					<td class="littletableheader"><strong><?php echo $form->exento->label ?>&nbsp;</strong></td>
+					<td style='font-size: 14px;font-weight: bold'align='right' ><?php echo nformat($form->exento->value)?>&nbsp;</td>
+					<td class="littletableheader"><strong><?php echo $form->ivat->label ?>&nbsp;</strong></td>
+					<td style='font-size: 14px;font-weight: bold' align='right'>   <?php echo nformat($form->ivat->value)  ?>&nbsp;</td>
+				</tr><tr>
+					<td class="littletableheader"><strong><?php echo $form->totals->label ?>&nbsp;</strong></td>
+					<td style='font-size: 22px;font-weight: bold'align='right' ><?php echo nformat($form->totals->value)?>&nbsp;</td>
+					<td class="littletableheader"><strong><?php echo $form->totalg->label ?>&nbsp;</strong></td>
+					<td style='font-size: 22px;font-weight: bold' align='right'>   <?php echo nformat($form->totalg->value) ?>&nbsp;</td>
+				</tr>
 			</table>
-			
+			</fieldset>
 		</td>
 	</tr>
-	<tr>
-		<td>
+</table>
+
+<div id="maintabcontainer">
+	<ul>
+		<li><a href="#tab1">Observaciones</a></li>
+		<li><a href="#tab2">Forma de Pago</a></li>
+		<li><a href="#tab3">Informacion Adicional</a></li>
+	</ul>
+	<div id="tab1">
+		<fieldset style='border: 1px solid #9AC8DA;background: #FFFBE9;'>
+		<legend class="subtitulotabla" style='color: #114411;'>Observaciones</legend>
+		<table width='100%'>
+			<tr>
+				<td class="littletableheader" >Observaciones</td>
+			</tr><tr>
+				<td class="littletablerow"><?php echo $form->observa->output  ?>&nbsp;</td>
+			</tr><tr>
+				<td class="littletablerow"><?php echo $form->observ1->output  ?>&nbsp;</td>
+			</tr><tr>
+				<td>
+				<table width='100%'>
+				<tr>
+					<td class="littletableheader"><?php echo $form->ciudad->label  ?>&nbsp;</td>
+					<td class="littletablerow">   <?php echo $form->ciudad->output ?>&nbsp;</td>
+					<td class="littletableheader"><?php echo $form->zona->label    ?>&nbsp;</td>
+					<td class="littletablerow">   <?php echo $form->zona->output   ?>&nbsp;</td>
+				</tr>
+				</table>
+				</td>
+			</tr>
+		</table>
+		</fieldset>
+	</div>
+	<div id="tab2">
 		<fieldset style='border: 1px solid #9AC8DA;background: #EFEFFF;'>
 		<legend class="subtitulotabla" style='color: #114411;'>Forma de Pago</legend>
 		<table width='100%'>
@@ -247,68 +246,104 @@ function del_sitems(id){
 			</tr>
 		</table>
 		</fieldset>
-		<?php if( $form->_status != 'show') {?>
-			<input name="btn_add_sfpa" value="Agregar Retenciones " onclick="add_sfpa()" class="button" type="button">
+	</div>
+	<div id="tab3">
+		<?php if($form->reiva->value > 0 ){
+			// Busca la ND
+			$mSQL     = "SELECT cod_cli, '' banco, tipo_doc, numero, fecha, vence, monto, abonos, transac FROM smov WHERE nroriva='".$form->creiva->value."' AND monto=".$form->reiva->value." AND cod_cli='REIVA'";
+			$reivand  = $this->datasis->damerow($mSQL) ;
+			$mSQL     = "SELECT cod_cli, '' banco, tipo_doc, numero, fecha, vence, monto, abonos, transac FROM smov WHERE nroriva='".$form->creiva->value."' AND monto=".$form->reiva->value." AND cod_cli='".$form->cliente->value."' AND transac='".$reivand['transac']."'";
+			$reivanc  = $this->datasis->damerow($mSQL) ;
+			$mSQL     = "SELECT codcp cod_cli, codbanc banco, tipo_op tipo_doc, numero, fecha, fecha vence, monto, 0 abonos, transac FROM bmov WHERE transac='".$reivand['transac']."'";
+			$reivach  = $this->datasis->damerow($mSQL) ;
+			$mSQL     = "SELECT cod_prv cod_cli, '' banco, tipo_doc, numero, fecha, vence, monto, abonos, transac FROM sprm WHERE monto=".$form->reiva->value." AND cod_prv='REINT' AND transac='".$reivand['transac']."'";
+			$reivapr  = $this->datasis->damerow($mSQL) ;
+		?>
+		<fieldset style='border: 1px solid ##8A0808;background: #FFFBE9;'>
+		<legend class="subtitulotabla" style='color: #114411;'>Retencion de IVA Nro. <?php echo $form->creiva->value ?></legend>
+		<table width='100%' cellspacing='1' >
+			<tr style='font-size:12px;color:#0B3B0B;background-color: #F7BE81;'>
+				<td align='center' >Cliente</td>
+				<td align='center' >B/Caja</td>
+				<td align='center' >Tipo</td>
+				<td align='center' >Comprobante</td>
+				<td align='center' >Fecha  </td>
+				<td align='center' >Emision</td>
+				<td align='center' >Monto</td>
+			</tr>
+			<?php if( count($reivand) > 0 ) {
+			echo "\t\t\t\t<tr>";
+			echo "\t\t\t\t\t<td class='littletablerow'>".$reivand['cod_cli']."&nbsp;</td>";
+			echo "\t\t\t\t\t<td class='littletablerow'>".$reivand['banco']."&nbsp;</td>";
+			echo "\t\t\t\t\t<td class='littletablerow'>".$reivand['tipo_doc']."&nbsp;</td>";
+			echo "\t\t\t\t\t<td class='littletablerow'>".$reivand['numero']."&nbsp;</td>";
+			echo "\t\t\t\t\t<td class='littletablerow'>".$reivand['fecha']."&nbsp;</td>";
+			echo "\t\t\t\t\t<td class='littletablerow'>".$reivand['vence']."&nbsp;</td>";
+			echo "\t\t\t\t\t<td class='littletablerow' align='right'>".$reivand['monto']."&nbsp;</td>";
+			echo "\t\t\t\t</tr>";
+			}?>
+			<?php if( count($reivanc) > 0 ) {
+			echo "\t\t\t\t<tr>";
+			echo "\t\t\t\t\t<td class='littletablerow'>".$reivanc['cod_cli']."&nbsp;</td>";
+			echo "\t\t\t\t\t<td class='littletablerow'>".$reivanc['banco']."&nbsp;</td>";
+			echo "\t\t\t\t\t<td class='littletablerow'>".$reivanc['tipo_doc']."&nbsp;</td>";
+			echo "\t\t\t\t\t<td class='littletablerow'>".$reivanc['numero']."&nbsp;</td>";
+			echo "\t\t\t\t\t<td class='littletablerow'>".$reivanc['fecha']."&nbsp;</td>";
+			echo "\t\t\t\t\t<td class='littletablerow'>".$reivanc['vence']."&nbsp;</td>";
+			echo "\t\t\t\t\t<td class='littletablerow' align='right'>".$reivanc['monto']."&nbsp;</td>";
+			echo "\t\t\t\t</tr>";
+			}?>
+			<?php if( count($reivach) > 0 ) {
+			echo "<tr>";
+			echo "\t\t\t\t\t<td class='littletablerow'>".$reivach['cod_cli']."&nbsp;</td>";
+			echo "\t\t\t\t\t<td class='littletablerow'>".$reivach['banco']."&nbsp;</td>";
+			echo "\t\t\t\t\t<td class='littletablerow'>".$reivach['tipo_doc']."&nbsp;</td>";
+			echo "\t\t\t\t\t<td class='littletablerow'>".$reivach['numero']."&nbsp;</td>";
+			echo "\t\t\t\t\t<td class='littletablerow'>".$reivach['fecha']."&nbsp;</td>";
+			echo "\t\t\t\t\t<td class='littletablerow'>".$reivach['vence']."&nbsp;</td>";
+			echo "\t\t\t\t\t<td class='littletablerow' align='right'>".$reivach['monto']."&nbsp;</td>";
+			echo "\t\t\t\t</tr>";
+			}?>
+			<?php if( count($reivapr) > 0 ) {
+			echo "<tr>";
+			echo "\t\t\t\t\t<td class='littletablerow'>".$reivapr['cod_cli']."&nbsp;</td>";
+			echo "\t\t\t\t\t<td class='littletablerow'>".$reivapr['banco']."&nbsp;</td>";
+			echo "\t\t\t\t\t<td class='littletablerow'>".$reivapr['tipo_doc']."&nbsp;</td>";
+			echo "\t\t\t\t\t<td class='littletablerow'>".$reivapr['numero']."&nbsp;</td>";
+			echo "\t\t\t\t\t<td class='littletablerow'>".$reivapr['fecha']."&nbsp;</td>";
+			echo "\t\t\t\t\t<td class='littletablerow'>".$reivapr['vence']."&nbsp;</td>";
+			echo "\t\t\t\t\t<td class='littletablerow' align='right'>".$reivapr['monto']."&nbsp;</td>";
+			echo "\t\t\t\t</tr>";
+			}?>
+		</table>
+		</fieldset>
 		<?php } ?>
-		<?php //echo $form_end     ?>
-		<?php //echo $container_bl ?>
-		<?php //echo $container_br ?>
-		</td>
-
-	</tr>
-
-	<?php if($form->reiva->value > 0 ){ ?>
-	<tr>
-		<td>
-			<fieldset style='border: 1px solid ##8A0808;background: #FFFBE9;'>
-			<legend class="subtitulotabla" style='color: #114411;'>Retencion de IVA</legend>
-			<table width='100%' cellspacing='1' >
-				<tr style='font-size:12px;color:#0B3B0B;background-color: #F7BE81;'>
-					<td align='center' >Comprobante</td>
-					<td align='center' >Monto</td>
-					<td align='center' >Fecha  </td>
-					<td align='center' >Emision</td>
-				</tr><tr>
-					<td class="littletablerow"><?php echo $form->creiva->output ?>&nbsp;</td>
-					<td class="littletablerow" align='right'><?php echo $form->reiva->output   ?>&nbsp;</td>
-					<td class="littletablerow"><?php echo $form->freiva->output    ?>&nbsp;</td>
-					<td class="littletablerow"><?php echo $form->ereiva->output   ?>&nbsp;</td>
-				</tr>
-			</table>
-			</fieldset>
-		</td>
-	</tr>
-	<?php } ?>
-	
-	<?php if($form->_status == 'show'){ ?>
-	<tr>
-		<td>
-			<fieldset style='border: 1px solid ##8A0808;background: #FFFBE9;'>
-			<legend class="subtitulotabla" style='color: #114411;'>Informacion del Registro</legend>
-			<table width='100%' cellspacing='1' >
-				<tr style='font-size:12px;color:#0B3B0B;background-color: #F7BE81;'>
-					<td align='center' >Usuario</td>
-					<td align='center' >Nombre </td>
-					<td align='center' >Fecha  </td>
-					<td align='center' >Hora   </td>
-					<td align='center' >Transacci&oacute;n</td>
-					<td align='center' >Cajero</td>
-				</tr><tr>
-					<?php
-						$mSQL="SELECT us_nombre FROM usuario WHERE us_codigo='".trim($form->_dataobject->get('usuario'))."'";
-						$us_nombre = $this->datasis->dameval($mSQL);
-					?>
-					<td class="littletablerow" align='center'><?php echo $form->_dataobject->get('usuario'); ?>&nbsp;</td>
-					<td class="littletablerow" align='center'><?php echo $us_nombre ?>&nbsp;</td>
-					<td class="littletablerow" align='center'><?php echo $form->_dataobject->get('estampa'); ?>&nbsp;</td>
-					<td class="littletablerow" align='center'><?php echo $form->_dataobject->get('hora'); ?>&nbsp;</td>
-					<td class="littletablerow" align='center'><?php echo $form->_dataobject->get('transac'); ?>&nbsp;</td>
-					<td class="littletablerow" align='center'><?php echo $form->cajero->output   ?>&nbsp;</td>
-				</tr>
-			</table>
-			</fieldset>
-		</td>
-	</tr>
-	<?php } ?>
-</table>
+		
+		<fieldset style='border: 1px solid ##8A0808;background: #FFFBE9;'>
+		<legend class="subtitulotabla" style='color: #114411;'>Informacion del Registro</legend>
+		<table width='98%' cellspacing='1' >
+			<tr style='font-size:12px;color:#0B3B0B;background-color: #F7BE81;'>
+				<td align='center' >Usuario</td>
+				<td align='center' >Nombre </td>
+				<td align='center' >Fecha  </td>
+				<td align='center' >Hora   </td>
+				<td align='center' >Transacci&oacute;n</td>
+				<td align='center' >Cajero</td>
+			</tr><tr>
+				<?php
+					$mSQL="SELECT us_nombre FROM usuario WHERE us_codigo='".trim($form->_dataobject->get('usuario'))."'";
+					$us_nombre = $this->datasis->dameval($mSQL);
+				?>
+				<td class="littletablerow" align='center'><?php echo $form->_dataobject->get('usuario'); ?>&nbsp;</td>
+				<td class="littletablerow" align='center'><?php echo $us_nombre ?>&nbsp;</td>
+				<td class="littletablerow" align='center'><?php echo $form->_dataobject->get('estampa'); ?>&nbsp;</td>
+				<td class="littletablerow" align='center'><?php echo $form->_dataobject->get('hora'); ?>&nbsp;</td>
+				<td class="littletablerow" align='center'><?php echo $form->_dataobject->get('transac'); ?>&nbsp;</td>
+				<td class="littletablerow" align='center'><?php echo $form->cajero->output   ?>&nbsp;</td>
+			</tr>
+		</table>
+		</fieldset>
+	</div>
+</div>
+</div>
 <?php endif; ?>

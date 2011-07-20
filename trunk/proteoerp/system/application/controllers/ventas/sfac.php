@@ -421,6 +421,7 @@ $sigma = "";
 
 		$style = '
 <style type="text/css">
+.maintabcontainer {width: 780px; margin: 5px auto;}
 div#sfacreiva label { display:block; }
 div#sfacreiva input { display:block; }
 div#sfacreiva input.text { margin-bottom:12px; width:95%; padding: .4em; }
@@ -454,7 +455,7 @@ div#sfacreiva h1 { font-size: 1.2em; margin: .6em 0; }
 		elseif( $edit->tipo_doc->value=='D') { $mDoc = "Devolucion";}
 		else { $mDoc = "Anulado";}
 
-		$mBancos = '';
+		$mBancos = '<option>__ Reintegrar en otro momento</option>';
 		$query = $this->db->query("SELECT TRIM(CONCAT(codbanc,' ',banco)) banco FROM banc WHERE activo='S' AND codbanc<>'DF' ORDER BY tbanco='CAJ' DESC, codbanc");
 		foreach($query->result() as $row ){
 			$mBancos .= '<option>'.$row->banco.'</option>';
@@ -463,6 +464,10 @@ div#sfacreiva h1 { font-size: 1.2em; margin: .6em 0; }
 		$link40 = base_url()."/ventas/sfac/sfacreiva/".$edit->_dataobject->get('id');
 		$script = "
 <script type=\"text/javascript\" >  
+$(function() {
+	$( \"#maintabcontainer\" ).tabs();
+});
+
 <!-- All the scripts will go here  -->
 
 var dsOption= {
@@ -509,7 +514,6 @@ var colsOption = [
 	{id: 'udespacha',	header: 'Usuario D',	width :80, align: 'left' },
 	{id: 'bonifica',	header: 'Bonifica',	width :80, align: 'right' },
 	{id: 'url',	header: 'Id',	width :80, align: 'right' }
-	
 ];
 
 var gridOption={
@@ -586,8 +590,6 @@ function sfacreiva(mid){
 	pide1 += '</td></tr>';
 	pide1 += '<tr><td>Cheque</td><td><input type=\"text\" size=\"20\" value=\"\"    name=\"cheque\" id=\"cheque\" /></td></tr>';
 	pide1 += '<tr><td>Beneficiario</td><td><input type=\"text\" size=\"40\" value=\"".$edit->nombre->value."\" name=\"benefi\" id=\"benefi\" /></td></tr>';
-	//pide1 += '<tr><td>Cajero</td><td><input type=\"text\" value=\"\" name=\"cajero\" id=\"cajero\" /></td></tr>';
-	//pide1 += '<tr><td>Clave </td><td><input type=\"password\" value=\"\" name=\"clave\"  id=\"clave\" /></td></tr>';
 	pide1 += '</table>';
 
 	var mfecha  = '';
@@ -805,7 +807,6 @@ function sfacreiva(mid){
 		$mSQL .= "FROM sitems a LEFT JOIN sinv b ON a.codigoa=b.codigo WHERE a.tipoa='$tipoa' AND a.numa='$numa' ";
 		$mSQL .= "ORDER BY a.codigoa";
 		
-
 		$query = $this->db->query($mSQL);
 
 		if ($query->num_rows() > 0){
@@ -972,15 +973,20 @@ function sfacreiva(mid){
 
 		$usuario  = addslashes($this->session->userdata('usuario'));
 		$codbanc = substr($caja,0,2);
-		$tbanco  = $this->datasis->dameval("SELECT tbanco FROM banc WHERE codbanc='$codbanc'");
-		$cheque  = str_pad($cheque, 12, "0", STR_PAD_LEFT);
-
 		$verla = 0;
-		$query   = "SELECT count(*) FROM bmov WHERE tipo_op='CH' AND codbanc='$codbanc' AND numero='$cheque' ";
-		if ( $tbanco != 'CAJ' ) {
-			$verla = $this->datasis->dameval($query);
+		
+		if ($codbanc == '__') {
+			$tbanco  = '';
+			$cheque  = '';
+		} else {
+			$tbanco  = $this->datasis->dameval("SELECT tbanco FROM banc WHERE codbanc='$codbanc'");
+			$cheque  = str_pad($cheque, 12, "0", STR_PAD_LEFT);
+			$query   = "SELECT count(*) FROM bmov WHERE tipo_op='CH' AND codbanc='$codbanc' AND numero='$cheque' ";
+			if ( $tbanco != 'CAJ' ) {
+				$verla = $this->datasis->dameval($query);
+			}
 		}
-
+		
 		if ( $verla == 0 ) {
 			if ( strlen($numero) == 14 ){
 				if (  $anterior == 0 )  {
@@ -988,53 +994,97 @@ function sfacreiva(mid){
 					$this->db->simple_query($mSQL);
 					memowrite($mSQL,"sfacreivaSFAC");
 
-					if ( $tbanco == 'CAJ' ) {
-						$m = 1;
-						while ( $m > 0 ) {
-							$cheque = $this->datasis->prox_sql("ncaja$codbanc");
-							$cheque = str_pad($cheque, 12, "0", STR_PAD_LEFT);
-							$m = $this->datasis->dameval("SELECT COUNT(*) FROM bmov WHERE codbanc='$codbanc' AND tipo_op='ND' AND numero='$cheque' ");
-						}
-					}
-					
 					$transac = $this->datasis->prox_sql("ntransa");
 					$transac = str_pad($transac, 8, "0", STR_PAD_LEFT);
-	
-					$negreso = $this->datasis->prox_sql("negreso");
-					$negreso = str_pad($negreso, 8, "0", STR_PAD_LEFT);
 
-					//$numero = str_pad($numero, 8, "0", STR_PAD_LEFT);
-					$saldo = 0;
-					if ($referen == 'C') {
-						$saldo =  $this->datasis->dameval("SELECT monto-abonos FROM smov WHERE tipo_doc='FC' AND numero='$numfac'");
+					if ( $codbanc == '__' ) {   // manda a cxp
+						if ( $tipo_doc == 'F' ) {
+							// crea un registro en sprm
+							$this->db->simple_query($mSQL);
+							$mnumant = $this->datasis->prox_sql("num_nd");
+							$mnumant = str_pad($mnumant, 8, "0", STR_PAD_LEFT);
+							$mSQL = "INSERT INTO sprm (cod_prv, nombre, tipo_doc, numero, fecha, monto, impuesto, abonos, vence, observa1, tipo_ref, num_ref, estampa, hora, usuario, transac, codigo, descrip )
+								SELECT 'REINT' cod_prv, 'REINTEGRO A CLIENTE' nombre, 'ND' tipo_doc, '$mnumant' numero, freiva fecha, 
+								reiva monto, 0 impuesto, 0 abonos, freiva vence, 'REINTEGRO POR RETENCION A DOCUMENTO $numfac' observa1, 
+									IF(tipo_doc='F','FC', 'DV' ) tipo_ref, numero num_ref, curdate() estampa, 
+								curtime() hora, '".$usuario."' usuario, '$transac' transac, 'NOCON 'codigo,
+								'NOTA DE CONTABILIDAD' descrip
+							FROM sfac WHERE id=$id";
+							$this->db->simple_query($mSQL);
+							memowrite($mSQL,"sfacreivaCXP");
+
+/*
+							$mSQL  = "INSERT INTO bmov ( codbanc, moneda, numcuent, banco, saldo, tipo_op, numero,fecha, clipro, codcp, nombre, monto, concepto, benefi, posdata, liable, transac, usuario, estampa, hora, negreso ) ";
+							$mSQL .= "SELECT '$codbanc' codbanc, b.moneda, b.numcuent, ";
+							$mSQL .= "b.banco, b.saldo, IF(b.tbanco='CAJ','ND','CH') tipo_op, '$cheque' numero, ";
+								$mSQL .= "a.freiva, 'C' clipro, a.cod_cli codcp, a.nombre, a.reiva monto, ";
+							$mSQL .= "'REINTEGRO DE RETENCION APLICADA A FC $numfac' concepto, ";
+							$mSQL .= "'$benefi' benefi, a.freiva posdata, 'S' liable, '$transac' transac, ";
+							$mSQL .= "'$usuario' usuario, curdate() estampa, curtime() hora, '$negreso' negreso ";
+							$mSQL .= "FROM sfac a JOIN banc b ON b.codbanc='$codbanc' ";
+							$mSQL .= "WHERE a.id=$id ";
+							memowrite($mSQL,"sfacreivaCH");
+*/
+							$mdevo = "<h1 style='color:green;'>EXITO</h1>Cambios Guardados, Nota de Credito generada y ND en CxP por Reintero (REINT) ";
+						} else {
+							//Devoluciones
+						}
+
+
+					} else {
+						if ( $tbanco == 'CAJ' ) {
+							$m = 1;
+							while ( $m > 0 ) {
+								$cheque = $this->datasis->prox_sql("ncaja$codbanc");
+								$cheque = str_pad($cheque, 12, "0", STR_PAD_LEFT);
+								$m = $this->datasis->dameval("SELECT COUNT(*) FROM bmov WHERE codbanc='$codbanc' AND tipo_op='ND' AND numero='$cheque' ");
+							}
+						}
+					
+						$negreso = $this->datasis->prox_sql("negreso");
+						$negreso = str_pad($negreso, 8, "0", STR_PAD_LEFT);
+
+						//$numero = str_pad($numero, 8, "0", STR_PAD_LEFT);
+						$saldo = 0;
+						if ($referen == 'C') {
+							$saldo =  $this->datasis->dameval("SELECT monto-abonos FROM smov WHERE tipo_doc='FC' AND numero='$numfac'");
+						}
+						if ( $tipo_doc == 'F' ) {
+							// crea un registro en bmov
+							$mSQL  = "INSERT INTO bmov ( codbanc, moneda, numcuent, banco, saldo, tipo_op, numero,fecha, clipro, codcp, nombre, monto, concepto, benefi, posdata, liable, transac, usuario, estampa, hora, negreso ) ";
+							$mSQL .= "SELECT '$codbanc' codbanc, b.moneda, b.numcuent, ";
+							$mSQL .= "b.banco, b.saldo, IF(b.tbanco='CAJ','ND','CH') tipo_op, '$cheque' numero, ";
+							$mSQL .= "a.freiva, 'C' clipro, a.cod_cli codcp, a.nombre, a.reiva monto, ";
+							$mSQL .= "'REINTEGRO DE RETENCION APLICADA A FC $numfac' concepto, ";
+							$mSQL .= "'$benefi' benefi, a.freiva posdata, 'S' liable, '$transac' transac, ";
+							$mSQL .= "'$usuario' usuario, curdate() estampa, curtime() hora, '$negreso' negreso ";
+							$mSQL .= "FROM sfac a JOIN banc b ON b.codbanc='$codbanc' ";
+							$mSQL .= "WHERE a.id=$id ";
+							memowrite($mSQL,"sfacreivaCH");
+							$this->db->simple_query($mSQL);
+
+							$mdevo = "<h1 style='color:green;'>EXITO</h1>Cambios Guardados, Nota de Credito generada y cargo en caja generado";
+						} else {
+							//Devoluciones
+						}
 					}
 					if ( $tipo_doc == 'F' ) {
-						// crea un registro en bmov
-						$mSQL  = "INSERT INTO bmov ( codbanc, moneda, numcuent, banco, saldo, tipo_op, numero,fecha, clipro, codcp, nombre, monto, concepto, benefi, posdata, liable, transac, usuario, estampa, hora, negreso ) ";
-						$mSQL .= "SELECT '$codbanc' codbanc, b.moneda, b.numcuent, ";
-						$mSQL .= "b.banco, b.saldo, IF(b.tbanco='CAJ','ND','CH') tipo_op, '$cheque' numero, ";
-						$mSQL .= "a.freiva, 'C' clipro, a.cod_cli codcp, a.nombre, a.reiva monto, ";
-						$mSQL .= "'REINTEGRO DE RETENCION APLICADA A FC $numfac' concepto, ";
-						$mSQL .= "'$benefi' benefi, a.freiva posdata, 'S' liable, '$transac' transac, ";
-						$mSQL .= "'$usuario' usuario, curdate() estampa, curtime() hora, '$negreso' negreso ";
-						$mSQL .= "FROM sfac a JOIN banc b ON b.codbanc='$codbanc' ";
-						$mSQL .= "WHERE a.id=$id ";
-						memowrite($mSQL,"sfacreivaCH");
 						$this->db->simple_query($mSQL);
-						$mnumant = $this->datasis->prox_sql("nancli");
+						$mnumant = $this->datasis->prox_sql("ndcli");
+						$mnumant = str_pad($mnumant, 8, "0", STR_PAD_LEFT);
 						$mSQL = "INSERT INTO smov (cod_cli, nombre, tipo_doc, numero, fecha, monto, impuesto, abonos, vence, observa1, tipo_ref, num_ref, estampa, hora, usuario, transac, codigo, descrip, nroriva, emiriva )
-							SELECT 'REIVA' cod_cli, 'RETENCION DE IVA POR COMPENSAR' nombre, 'ND' tipo_doc, LPAD('$mnumant',8,'0') numero, freiva fecha, 
+							SELECT 'REIVA' cod_cli, 'RETENCION DE IVA POR COMPENSAR' nombre, 'ND' tipo_doc, '$mnumant' numero, freiva fecha, 
 							reiva monto, 0 impuesto, 0 abonos, freiva vence, 'APLICACION DE RETENCION A DOCUMENTO $numfac' observa1, 
-							IF(tipo_doc='F','FC', 'DV' ) tipo_ref, numero num_ref, curdate() estampa, 
+								IF(tipo_doc='F','FC', 'DV' ) tipo_ref, numero num_ref, curdate() estampa, 
 							curtime() hora, '".$usuario."' usuario, '$transac' transac, 'NOCON 'codigo,
 							'NOTA DE CONTABILIDAD' descrip, creiva, ereiva
 						FROM sfac WHERE id=$id";
 						$this->db->simple_query($mSQL);
 						memowrite($mSQL,"sfacreivaND");
-						$mdevo = "<h1 style='color:green;'>EXITO</h1>Cambios Guardados, Nota de Credito generada y cargo en caja generado";
 					} else {
 						//Devoluciones
 					}
+					
 				} else {
 					$mdevo = "<h1 style='color:red;'>ERROR</h1>Retencion ya aplicada";
 				}
