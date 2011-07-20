@@ -205,7 +205,6 @@ else:
 		<li><a href="#tab4">Movimientos</a></li>
 		<li><a href="#tab5">Promociones</a></li>
 	</ul>
-	<?php //<div class="tab_container"> ?>
 
 	<div id="tab1" style='background:#EFEFFF'>
 	<table width="100%" border='0'>

@@ -1467,8 +1467,6 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->build();
 
 
-
-
 		$style = '
 <style type="text/css">
 .maintabcontainer {width: 780px; margin: 5px auto;}
