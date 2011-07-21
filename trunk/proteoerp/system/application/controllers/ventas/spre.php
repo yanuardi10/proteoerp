@@ -35,9 +35,9 @@ class spre extends validaciones {
 		'titulo'  =>'Buscar Cliente');
 		$boton=$this->datasis->modbus($scli);
 
-		$filter = new DataFilter('Filtro de Presupuestos');
-		$filter->db->select(array('fecha','numero','cod_cli','nombre','totals','totalg','iva'));
-		$filter->db->from('spre');
+		$filter = new DataFilter('Filtro de Presupuestos','spre');
+		//$filter->db->select(array('fecha','numero','cod_cli','nombre','totals','iva','totalg','vd','id'));
+		//$filter->db->from('spre');
 
 		$filter->fechad = new dateonlyField('Desde', 'fechad','d/m/Y');
 		$filter->fechah = new dateonlyField('Hasta', 'fechah','d/m/Y');
@@ -60,30 +60,41 @@ class spre extends validaciones {
 		$filter->build("dataformfiltro");
 
 
-		$uri = anchor('ventas/spre/dataedit/<#numero#>','<#numero#>');
+		$uri  = anchor('ventas/spre/dataedit/<#numero#>','<#numero#>');
 		$uri2 = anchor_popup('formatos/verhtml/PRESUP/<#numero#>','Ver HTML',$atts);
 
 		$grid = new DataGrid();
-		$grid->order_by('numero','desc');
+		$grid->order_by('id','desc');
 		$grid->per_page = 50;
 
-		$grid->column_sigma('N&uacute;mero','numero','','width: 60, frozen: true, renderer:sprever');
-		$grid->column_sigma('Fecha'    ,'fecha', 'date', 'width: 70');
-		$grid->column_sigma('Codigo'   ,'cod_cli','','width: 50');
-		$grid->column_sigma('Nombre'   ,'nombre','','width: 300');
-		$grid->column_sigma('Sub.Total','totals', 'float',"width: 80, align: 'right'");
-		$grid->column_sigma('IVA'      ,'iva'   , 'float',"width: 80, align: 'right'");
-		$grid->column_sigma('Total'    ,'totalg', 'float',"width: 80, align: 'right'");
+		$grid->column_sigma('Accion',       'accion',  '',      'width: 40, frozen: true, renderer:imprimir');
+		$grid->column_sigma('N&uacute;mero','numero',  '',      'width: 60, frozen: true, renderer:sprever');
+		$grid->column_sigma('Fecha',        'fecha',   'date',  'width: 70');
+		$grid->column_sigma('Codigo',       'cod_cli', '',      'width: 50');
+		$grid->column_sigma('Nombre',       'nombre',  '',      'width: 300');
+		$grid->column_sigma('Sub.Total',    'totals',  'float', "width: 80, align: 'right'");
+		$grid->column_sigma('IVA',          'iva'   ,  'float', "width: 80, align: 'right'");
+		$grid->column_sigma('Total',        'totalg',  'float', "width: 80, align: 'right'");
+		$grid->column_sigma('Vendedor',     'vd',      '',      'width: 50');
+		$grid->column_sigma('Id',           'id',      'float', "width: 80, align: 'right'");
 
 		$sigmaA     = $grid->sigmaDsConfig();
 		$dsOption   = $sigmaA["dsOption"];
 		$sprever    = "
 function sprever(value, record, columnObj, grid, colNo, rowNo){
 	var url = '';
-	url = '<a href=\"#\" onclick=\"window.open(\'".base_url()."ventas/spre/dataedit/'+value+ '\', \'_blank\', \'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'\')\"; heigth=\"600\" >';
+	url = '<a href=\"#\" onclick=\"window.open(\'".base_url()."ventas/spre/dataedit/show/'+grid.getCellValue(9,rowNo)+ '\', \'_blank\', \'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'\')\"; heigth=\"600\" >';
 	url = url +value+'</a>';
 	return url;	
 }
+
+function imprimir(value, record, columnObj, grid, colNo, rowNo){
+	var url = '';
+	url = '<a href=\"#\" onclick=\"window.open(\'".base_url()."formatos/verhtml/PRESUP/'+grid.getCellValue(1,rowNo)+ '\', \'_blank\', \'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'\')\"; heigth=\"600\" >';
+	url = url +'<img src=\'".base_url()."images/html_icon.gif\'/>'+'</a>';
+	return url;	
+}
+
 
 ";
 		$colsOption = $sigmaA["colsOption"];
@@ -191,7 +202,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 					$pageNo = 1;
 				}
  
-				$mSQL = "SELECT numero, fecha, cod_cli, nombre, totals, iva, totalg FROM spre WHERE $filter numero>0 ORDER BY ".$sortField." ".$sortOrder." LIMIT ".($pageNo - 1)*$pageSize.", ".$pageSize;
+				$mSQL = "SELECT numero, fecha, cod_cli, nombre, totals, iva, totalg, vd, id FROM spre WHERE $filter numero>0 ORDER BY ".$sortField." ".$sortOrder." LIMIT ".($pageNo - 1)*$pageSize.", ".$pageSize;
 //memowrite($mSQL,"mSQL");
 				$query = $this->db->query($mSQL);
 				if ($query->num_rows() > 0){
@@ -501,7 +512,18 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$conten['form']  =&  $edit;
 		$data['content'] = $this->load->view('view_spre', $conten,true);
 		$data['title']   = heading('Presupuesto');
-		$data['script']  =script('jquery.js').script('jquery-ui.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css').phpscript('nformat.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js').phpscript('nformat.js');
+
+		$data['style']  = style('vino/jquery-ui.css');
+	
+		$data['script']  = script('jquery.js');
+		$data['script'] .= script('jquery-ui.js');
+		$data['script'] .= script('plugins/jquery.numeric.pack.js');
+		$data['script'] .= script('plugins/jquery.meiomask.js');
+		$data['script'] .= phpscript('nformat.js');
+		$data['script'] .= script('plugins/jquery.numeric.pack.js');
+		$data['script'] .= script('plugins/jquery.floatnumber.js');
+		$data['script'] .= phpscript('nformat.js');
+		
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
