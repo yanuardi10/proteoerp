@@ -30,7 +30,7 @@ $campos=$form->js_escape($scampos);
 if(isset($form->error_string)) echo '<div class="alert">'.$form->error_string.'</div>';
 
 //echo $form_scripts;
-echo $form_begin;
+//echo $form_begin;
 if($form->_status!='show'){ ?>
 
 <script language="javascript" type="text/javascript">
@@ -245,7 +245,7 @@ function del_itspre(id){
 
 <table align='center' width="95%">
 	<tr>
-		<td align=right><?php echo $container_tr?></td>
+		<td align=right><?php //echo $container_tr?></td>
 	</tr>
 	<tr>
 		<td>
@@ -357,7 +357,7 @@ function del_itspre(id){
 				<td class="littletablerow" align='right'><?php echo $form->totalg->output; ?></td>
 			</tr>
 		</table>
-		<?php echo $form_end; ?>
+		<?php //echo $form_end; ?>
 		</td>
 	</tr>
 </table>

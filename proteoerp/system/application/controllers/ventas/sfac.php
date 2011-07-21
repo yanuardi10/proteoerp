@@ -166,8 +166,6 @@ function nfiscal(mid){
 
 $sigma = "";
 
-
-
 		$data['content'] = $grid->output;
 		$data['filtro']  = $filter->output;
 		
@@ -447,6 +445,7 @@ div#sfacreiva h1 { font-size: 1.2em; margin: .6em 0; }
 		$nro = date('Ym');
 		if( $edit->_dataobject->get('creiva') > 0 )  $nro = $edit->_dataobject->get('creiva');
 		$reiva = '';
+
 		$conten['form']  =&  $edit;
 		$data['content']  = $this->load->view('view_sfac', $conten,true);
 		//$data['content'] .= $reiva;
@@ -863,7 +862,7 @@ function sfacreiva(mid){
 				if ($referen == 'C') {
 					$saldo =  $this->datasis->dameval("SELECT monto-abonos FROM smov WHERE tipo_doc='FC' AND numero='$numfac'");
 				}
-				
+
 				if ( $tipo_doc == 'F') {
 					if ($referen == 'E') { 
 						// FACTURA PAGADA AL CONTADO GENERA ANTICIPO
@@ -882,8 +881,7 @@ function sfacreiva(mid){
 						$tiposfac = 'FC';
 						if ( $tipo_doc == 'D') $tiposfac = 'NC';
 						$mSQL = "SELECT monto-abonos saldo FROM smov WHERE numero='$numfac' AND cod_cli='$cod_cli' AND tipo_doc='$tiposfac'";
-							$saldo = $this->datasis->dameval($mSQL);
-	
+						$saldo = $this->datasis->dameval($mSQL);
 						if ( $saldo < $monto ) {  // crea anticipo
 							$mnumant = $this->datasis->prox_sql("nancli");
 							$mnumant = str_pad($mnumant, 8, "0", STR_PAD_LEFT);
