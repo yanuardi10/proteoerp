@@ -225,7 +225,7 @@ class Kardex extends Controller {
 		$grid->order_by('numero','desc');
 		$grid->per_page = 20;
 
-		if($tipo=='3I' or $tipo=='3M'){  //ventas de caja
+		if($tipo=='3I' || $tipo=='3M'){  //ventas de caja
 			$fields = $this->db->field_data('sfac');
 			$ppk=array();
 			$select=array('a.numa','a.tipoa','a.numa','CONCAT("(",b.cod_cli,") ",b.nombre) cliente','a.cana','a.fecha','a.vendedor','a.preca','a.tota','b.tipo_doc');
@@ -271,7 +271,7 @@ class Kardex extends Controller {
 			$grid->db->join('itrece c','c.menu=a.codigo');
 			$grid->db->where('a.fecha' ,$fecha );
 			$grid->db->where('c.codigo',$codigo);
-		}elseif($tipo=='1T' || $tipo='0F' || $tipo='9F'){ //Transferencias
+		}elseif($tipo=='1T' || $tipo=='0F' || $tipo=='9F'){ //Transferencias
 			$fields = $this->db->field_data('stra');
 			$ppk=array();
 			$select=array('b.numero','b.envia','b.recibe','a.cantidad','b.fecha','b.observ1','a.costo');

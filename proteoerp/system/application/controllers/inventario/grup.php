@@ -499,6 +499,12 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$edit->cu_devo->append($bcu_devo);
 		$edit->cu_devo->group='Cuentas contables';
 
+		$edit->status = new dropdownField("Status", "status");
+		$edit->status->db_name=("status");
+		$edit->status->option("A","Activo");
+		$edit->status->option("B","Bloqueado");
+		$edit->status ->style='width:120px;';
+
 		$edit->buttons("modify", "save", "undo", "delete", "back");
 		$edit->build();
 
