@@ -2235,6 +2235,12 @@ function gserserie(mid){
 			$this->db->simple_query($query);
 		}
 
+		$query="UPDATE gitser AS a
+			JOIN gser AS b on a.numero=b.numero and a.fecha = b.fecha and a.proveed = b.proveed
+			SET a.idgser=b.id";
+		$this->db->simple_query($query);
+
+
 		if (!$this->db->table_exists('gserchi')) {
 			$query="CREATE TABLE IF NOT EXISTS `gserchi` (
 				`codbanc` varchar(5) NOT NULL DEFAULT '', 
