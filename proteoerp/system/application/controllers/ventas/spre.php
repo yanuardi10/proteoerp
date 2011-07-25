@@ -291,7 +291,6 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		}
 	}
 
-
 	function dataedit(){
 		$this->rapyd->load('dataobject','datadetails');
 
@@ -506,12 +505,22 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 
 		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
 
+		$edit->condi1 = new inputField('Condiciones', 'condi1');
+		$edit->condi1->size = 25;
+		$edit->condi1->maxlength=25;
+		$edit->condi1->autocomplete=false;
+
+		$edit->condi2 = new inputField('Condiciones', 'condi2');
+		$edit->condi2->size = 25;
+		$edit->condi2->maxlength=25;
+		$edit->condi2->autocomplete=false;
+
 		$edit->buttons('modify', 'save', 'undo', 'delete', 'back','add_rel');
 		$edit->build();
 
 		$conten['form']  =&  $edit;
 		$data['content'] = $this->load->view('view_spre', $conten,true);
-		$data['title']   = heading('Presupuesto');
+		$data['title']   = heading('Presupuesto No.'.$edit->numero->value);
 
 		$data['style']  = style('vino/jquery-ui.css');
 	
