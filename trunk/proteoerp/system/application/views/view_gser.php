@@ -400,6 +400,7 @@ function toggle() {
 		<?php } ?>
 		</td>
 	</tr>
+	<?php if ($form->max_rel_count['gereten']>0); ?>
 	<tr>
 		<td>
 		<fieldset style='border: 2px outset #9AC8DA;background: #EFEFFF;'>
@@ -444,9 +445,8 @@ function toggle() {
 		<?php //echo $container_br ?>
 		</td>
 
-
-
 	</tr>
+	>?php }; ?>
 	<tr>
 		<td align='center'>
 			<table width='100%'><tr><td valign='top'>
