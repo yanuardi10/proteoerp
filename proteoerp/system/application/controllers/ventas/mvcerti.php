@@ -85,12 +85,13 @@ class Mvcerti extends validaciones {
 
 		//$lnum='<a href="javascript:ultimo();" title="Consultar ultimo cruce de cuentas ingresado" onclick="">Consultar ultimo cruce de cuentas</a>';	
 
+/*
 		$edit->id =   new inputField("Registro", "id");
 		$edit->id->mode="autohide";
 		$edit->id->size = 10;
 		$edit->id->maxlength=10;
 		$edit->id->when = array('show', 'modify');
-
+*/
 		$edit->numero =   new inputField("N&uacute;mero", "numero");
 		$edit->numero->size = 42;
 		$edit->numero->maxlength=32;
@@ -155,7 +156,7 @@ class Mvcerti extends validaciones {
 
 	function chexiste($codigo){
 		$codigo=$this->input->post('numero');
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM cruc WHERE numero='$codigo'");
+		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM mvcerti WHERE numero='$codigo'");
 		if ($chek > 0){
 			$this->validation->set_message('chexiste',"El codigo $codigo ya existe");
 			return FALSE;
@@ -164,9 +165,5 @@ class Mvcerti extends validaciones {
 		}	
 	}
 
-	function ucruce(){
-		$consulcruce=$this->datasis->dameval("SELECT numero FROM cruc ORDER BY numero DESC");
-		echo $consulcruce;
-	}
 }
 ?>
