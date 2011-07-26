@@ -24,13 +24,13 @@ $scampos .= $campos['sinvtipo']['field'];
 $scampos .= $campos['ultimo']['field'];
 $scampos .= $campos['pond']['field'];
 $scampos .= $campos['sinvpeso']['field'].'</td>';
-$scampos .= '<td class="littletablerow"><a href=# onclick="del_itspre(<#i#>);return false;">Eliminar</a></td></tr>';
+$scampos .= '<td class="littletablerow"><a href=# onclick="del_itspre(<#i#>);return false;">'.img("images/delete.jpg").'</a></td></tr>';
 $campos=$form->js_escape($scampos);
 
 if(isset($form->error_string)) echo '<div class="alert">'.$form->error_string.'</div>';
 
 echo $form_scripts;
-//echo $form_begin;
+echo $form_begin;
 if($form->_status!='show'){ ?>
 
 <script language="javascript" type="text/javascript">
@@ -242,15 +242,14 @@ function del_itspre(id){
 }
 </script>
 <?php } ?>
-
 <table align='center' width="95%">
 	<tr>
+<?php if ($form->_status=='show') { ?>
 		<td>
 		<a href="#" onclick="window.open('<?php echo base_url() ?>formatos/verhtml/PRESUP/<?php echo $form->numero->value ?>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');" heigth="600" >
 		<img src='<?php echo base_url() ?>images/html_icon.gif'></a>
-			
-			
 		</td>
+<?php } ?>
 		<td align=right><?php echo $container_tr?></td>
 	</tr>
 </table>
@@ -300,6 +299,7 @@ function del_itspre(id){
 	</tr>
 	<tr>
 		<td>
+		<div style='overflow:auto;'>
 		<fieldset style='border: 1px solid #9AC8DA;background: #FAFAFA;height:200px '>
 		<table width='100%'>
 			<tr>
@@ -348,7 +348,7 @@ function del_itspre(id){
 
 				<?php if($form->_status!='show') {?>
 				<td class="littletablerow">
-					<a href='#' onclick='del_itspre(<?=$i ?>);return false;'>Eliminar</a>
+					<a href='#' onclick='del_itspre(<?=$i ?>);return false;'><?php echo img("images/delete.jpg"); ?></a>
 				</td>
 				<?php } ?>
 			</tr>
@@ -359,6 +359,7 @@ function del_itspre(id){
 			</tr>
 		</table>
 		</fieldset>
+		</div>
 		<?php echo $container_bl ?>
 		<?php echo $container_br ?>
 		</td>
@@ -368,24 +369,25 @@ function del_itspre(id){
 		<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
 		<table width='100%'>
 			<tr>
-				<td class="littletableheader" width='100' >           <?php echo $form->condi1->label;    ?></td>
-				<td class="littletablerow"  width='350' align='right'><?php echo $form->condi1->output;   ?></td>
-				<td class="littletableheader">           <?php echo $form->ivat->label;    ?></td>
-				<td class="littletablerow" align='right'><?php echo $form->ivat->output;   ?></td>
-			<tr></tr>	
-				<td class="littletableheader">           &nbsp;</td>
-				<td class="littletablerow" align='right'><?php echo $form->condi2->output;   ?></td>
+				<td class="littletableheader" width='100'><?php echo $form->condi1->label;    ?></td>
+				<td class="littletablerow"    width='350'><?php echo $form->condi1->output;   ?></td>
 				<td class="littletableheader">           <?php echo $form->totals->label;  ?></td>
-				<td class="littletablerow" align='right'><?php echo $form->totals->output; ?></td>
+				<td class="littletablerow" align='right'><strong><?php echo nformat($form->totals->value); ?></strong></td>
+
+			<tr></tr>	
+				<td class="littletableheader">&nbsp;</td>
+				<td class="littletablerow"   ><?php echo $form->condi2->output;   ?></td>
+				<td class="littletableheader"><?php echo $form->ivat->label;    ?></td>
+				<td class="littletablerow" align='right'><strong><?php echo nformat($form->ivat->value); ?></strong></td>
 			<tr></tr>
 				<td>&nbsp;</td><td>&nbsp;</td>
 				<td class="littletableheader">           <?php echo $form->totalg->label;  ?></td>
-				<td class="littletablerow" align='right' style='font-size:18px;font-weight: bold'><?php echo $form->totalg->output; ?></td>
+				<td class="littletablerow" align='right' style='font-size:18px;font-weight: bold'><?php echo nformat($form->totalg->value); ?></td>
 			</tr>
 		</table>
 		</fieldset>
-		<?php //echo $form_end; ?>
 		</td>
 	</tr>
 </table>
+<?php echo $form_end; ?>
 <?php endif; ?>
