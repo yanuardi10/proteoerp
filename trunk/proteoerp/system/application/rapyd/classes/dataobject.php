@@ -574,7 +574,6 @@ class DataObject{
   * @return  boolean
   */
   function is_unique($field, $value){
-
     $this->db->where($field, $value);
     $query = $this->db->get($this->table);
 
@@ -600,11 +599,15 @@ class DataObject{
   * @param   array    of field=>value to be checked
   * @return  boolean
   */
-  function are_unique($field){
 
+  function are_unique($field){
     if (is_array($field) && count($field)>0){
       foreach($field as $fieldname => $value){
-        $this->db->where($fieldname, $value);
+        if($this->flag_pointer){
+          $this->db->where($this->table.'.'.$fieldname, $value);
+        }else{
+          $this->db->where($fieldname, $value);
+        }
       }
     } else {
       return false;
