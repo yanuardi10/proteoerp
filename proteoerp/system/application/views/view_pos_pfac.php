@@ -74,7 +74,7 @@ $(document).ready(function() {
 				html+= "<td align='right'><div id='vimporte_"+id+"'>"+importe.toString()+"</div><input type='hidden' name='importe_"+id+"' id='importe_"+id+"' value='"+importe.toString()+"'></td>";
 				
 				html+= "</tr>";
-				html+= "<tr>";
+				html+= "<tr id='ssitems_"+id+"'>";
 				html+= "<td colspan='5' style='font-size:12px'><input type='hidden' name='desca_"+id+"' id='desca_"+id+"' value='"+ui.item.descrip+"'>"+ui.item.descrip+"</td>";
 				html+= "</tr>";
 				$("#_itemul").after(html);
@@ -229,13 +229,18 @@ function checkRegexp( o, regexp, n ) {
 	}
 }
 
+function eliminasitems(id){
+	$('#sitems_'+id).remove();
+	$('#ssitems_'+id).remove();
+}
+
 function cimporte(id){
 	var precio =Number($('#precio_'+id).val());
 	var cana   =Number($('#cana_'+id).val());
 	var importe=precio*cana;
 
 	if(cana==0){
-		$('#sitems_'+id).remove();
+		eliminasitems(id);
 	}else{
 		$('#importe_'+id).val(roundNumber(importe,2));
 		$('#vimporte_'+id).text(roundNumber(importe,2).toString());
