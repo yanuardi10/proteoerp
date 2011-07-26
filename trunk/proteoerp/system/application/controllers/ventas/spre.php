@@ -36,9 +36,6 @@ class spre extends validaciones {
 		$boton=$this->datasis->modbus($scli);
 
 		$filter = new DataFilter('Filtro de Presupuestos','spre');
-		//$filter->db->select(array('fecha','numero','cod_cli','nombre','totals','iva','totalg','vd','id'));
-		//$filter->db->from('spre');
-
 		$filter->fechad = new dateonlyField('Desde', 'fechad','d/m/Y');
 		$filter->fechah = new dateonlyField('Hasta', 'fechah','d/m/Y');
 		$filter->fechad->clause  =$filter->fechah->clause ='where';
@@ -62,6 +59,21 @@ class spre extends validaciones {
 
 		$uri  = anchor('ventas/spre/dataedit/<#numero#>','<#numero#>');
 		$uri2 = anchor_popup('formatos/verhtml/PRESUP/<#numero#>','Ver HTML',$atts);
+
+		$mtool  = "<table background='#554455'><tr>";
+		$mtool .= "<td>&nbsp;</td>";
+
+		$mtool .= "<td>&nbsp;<a href='".base_url()."ventas/spre/dataedit/create'>";
+		$mtool .= img(array('src' => 'images/agregar.jpg', 'alt' => 'Agregar Registro', 'title' => 'Agregar Registro','border'=>'0','height'=>'32'));
+		$mtool .= "</a>&nbsp;</td>";
+
+		$mtool .= "<td>&nbsp;<a href='javascript:void(0);' ";
+		$mtool .= 'onclick="window.open(\''.base_url()."reportes/index/spre', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');".'" heigth="600" width="900" '.'>';
+		$mtool .= img(array('src' => 'images/reportes.gif', 'alt' => 'Reportes', 'title' => 'Reportes','border'=>'0','height'=>'32'));
+		$mtool .= "</a>&nbsp;</td>";
+
+		$mtool .= "</tr></table>";
+
 
 		$grid = new DataGrid();
 		$grid->order_by('id','desc');
@@ -94,8 +106,6 @@ function imprimir(value, record, columnObj, grid, colNo, rowNo){
 	url = url +'<img src=\'".base_url()."images/html_icon.gif\'/>'+'</a>';
 	return url;	
 }
-
-
 ";
 		$colsOption = $sigmaA["colsOption"];
 		$gridOption = "
@@ -123,11 +133,11 @@ var gridOption={
 
 var mygrid=new Sigma.Grid(gridOption);
 Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );		
-";		
-		$SigmaCont = "<center><div id=\"grid1_container\" style=\"width:700px;height:500px;\"></div></center>";
+";
+
+		$SigmaCont = "<center><div id=\"grid1_container\" style=\"width:750px;height:500px;\"></div></center>";
 		$grid->add('ventas/spre/dataedit/create');
 		$grid->build('datagridSG');
-		//echo $grid->db->last_query();
 
 		$data['style']  = style("redmond/jquery-ui.css");
 		$data['style'] .= style('gt_grid.css');
@@ -135,11 +145,11 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$data["script"]  = script("jquery.js");
 		$data['script'] .= script("gt_msg_es.js");
 		$data['script'] .= script("gt_grid_all.js");
-		//$data['script'] .= $grid->output;
 		$data['script'] .= "<script type=\"text/javascript\" >\n".$dsOption.$sprever."\n".$colsOption."\n".$gridOption."</script>";
 
-		//$data['filtro']  = $filter->output;
-		$data['content'] = $SigmaCont; //$grid->output;
+		$data['content']  = $mtool;
+		$data['content'] .= $SigmaCont;
+		
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = heading('Presupuesto');
 		$this->load->view('view_ventanas', $data);
@@ -506,12 +516,12 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
 
 		$edit->condi1 = new inputField('Condiciones', 'condi1');
-		$edit->condi1->size = 25;
+		$edit->condi1->size = 40;
 		$edit->condi1->maxlength=25;
 		$edit->condi1->autocomplete=false;
 
 		$edit->condi2 = new inputField('Condiciones', 'condi2');
-		$edit->condi2->size = 25;
+		$edit->condi2->size = 40;
 		$edit->condi2->maxlength=25;
 		$edit->condi2->autocomplete=false;
 
