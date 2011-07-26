@@ -9,7 +9,27 @@ class Mvcerti extends validaciones {
 		$this->load->helper('url');
 		$this->load->helper('text');
 		$this->load->library("rapyd");
-		//define ("THISFILE",   APPPATH."controllers/nomina". $this->uri->segment(2).EXT);
+		if (!$this->datasis->istabla('mvcerti')) {
+			$mSQL = "
+				CREATE TABLE mvcerti (
+					id BIGINT(20) NOT NULL AUTO_INCREMENT,
+					cliente CHAR(5) NULL DEFAULT NULL COMMENT 'Codigo del Cliente',
+					numero CHAR(32) NULL DEFAULT NULL COMMENT 'Numero de Certificado',
+					fecha DATE NULL DEFAULT NULL COMMENT 'Fecha del certificado',
+					obra VARCHAR(200) NULL DEFAULT NULL COMMENT 'Nombre de la Obra',
+					status CHAR(1) NULL DEFAULT 'A' COMMENT 'Activo Cerrado',
+					PRIMARY KEY (id),
+					UNIQUE INDEX numero (numero),
+					INDEX cliente (cliente)
+				)
+				COLLATE='latin1_swedish_ci'
+				ENGINE=MyISAM
+				ROW_FORMAT=DEFAULT
+";
+			$this->db->simple_query($mSQL);
+			
+		}
+		
 	}
 	function index(){
 		$this->datasis->modulo_id(506,1);
@@ -43,22 +63,21 @@ class Mvcerti extends validaciones {
 		$grid->column("Status","status");
 		$grid->column("Cliente","cliente");
 		$grid->column("Obra","obra");
-									
+
 		$grid->add("ventas/mvcerti/dataedit/create");
 		$grid->build();
-		
+
 		$data['content'] = $filter->output.$grid->output;
-		$data['title']   = "<h1>Certificados de Mision Vivienda</h1>";
-		$data["head"]    = $this->rapyd->get_head();
-		$this->load->view('view_ventanas', $data);	
+		$data['title']   = heading('Certificados de Mision Vivienda');
+		$data['head']    = $this->rapyd->get_head();
+		$this->load->view('view_ventanas', $data);
 	}
 
-	function dataedit()
- 	{
-		$this->rapyd->load("dataedit","dataobject");	
+	function dataedit(){
+		$this->rapyd->load("dataedit","dataobject");
 		$link=site_url('ventas/mvcerti/');
 		$script ='';
-		
+
 		$mSCLId=array(
 		'tabla'   =>'scli',
 		'columnas'=>array(
@@ -70,41 +89,41 @@ class Mvcerti extends validaciones {
 		'retornar'=>array('cliente'=>'cliente','nombre'=>'nomcli'),
 		'titulo'  =>'Buscar Cliente');
 		$boton3 =$this->datasis->modbus($mSCLId,'mSCLId');
-		
+
 		$do = new DataObject("mvcerti");
 		$do->pointer('scli','scli.cliente = mvcerti.cliente','scli.nombre as nomcli' ,'LEFT');
-		
+
 		$edit = new DataEdit("Certificados Mision Vivienda",$do);
 		$edit->back_url = site_url("ventas/mvcerti/filteredgrid");
 		$edit->script($script, "create");
 		$edit->script($script, "modify");
-		
+
 		$edit->post_process('insert','_post_insert');
 		$edit->post_process('update','_post_update');
 		$edit->post_process('delete','_post_delete');
 
 		//$lnum='<a href="javascript:ultimo();" title="Consultar ultimo cruce de cuentas ingresado" onclick="">Consultar ultimo cruce de cuentas</a>';	
 
-/*
+
 		$edit->id =   new inputField("Registro", "id");
 		$edit->id->mode="autohide";
 		$edit->id->size = 10;
 		$edit->id->maxlength=10;
 		$edit->id->when = array('show', 'modify');
-*/
+
 		$edit->numero =   new inputField("N&uacute;mero", "numero");
 		$edit->numero->size = 42;
 		$edit->numero->maxlength=32;
 		$edit->numero->rule="trim|required|callback_chexiste";
-		
+
 		$edit->fecha =new DateField("Fecha", "fecha");
 		$edit->fecha->size = 12;
-		
+
 		$edit->tipo = new dropdownField("Status", "status");
 		$edit->tipo->option("A","Activo");
 		$edit->tipo->option("C","Cerrador");
 		$edit->tipo->style="width:110px";
-	
+
 		$edit->cliente =  new inputField("Cliente", "cliente");
 		$edit->cliente->db->name="cliente";
 		$edit->cliente->rule="trim";
@@ -121,21 +140,21 @@ class Mvcerti extends validaciones {
 		$edit->obra = new TextareaField("Obra","obra");
 		$edit->obra->cols = 50;
 		$edit->obra->rows = 4;
-		
+
 		$edit->buttons("modify", "save", "undo", "delete", "back");
 		$edit->build();
-		
+
 		$smenu['link']   = barra_menu('506');
-		
+
 		$data['smenu']   = $this->load->view('view_sub_menu', $smenu,true);
 		$data['content'] = $edit->output;
 		$data['title']   = "<h1>Certificados Mision Vivienda</h1>";
-		
-		$data["script"]  = script("jquery.pack.js");
+
+		$data['script']  = script("jquery.pack.js");
 		$data['script'] .= script("plugins/jquery.numeric.pack.js");
 		$data['script'] .= script("plugins/jquery.floatnumber.js");
-		
-		$data["head"]    = $this->rapyd->get_head();
+
+		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -161,8 +180,8 @@ class Mvcerti extends validaciones {
 			$this->validation->set_message('chexiste',"El codigo $codigo ya existe");
 			return FALSE;
 		}else {
-  		return TRUE;
-		}	
+		return TRUE;
+		}
 	}
 
 }
