@@ -1,17 +1,66 @@
 <?php
+
+function promediot($param){
+	if(is_array($param)){
+		$data=$param;
+	}else{
+		$data= func_get_args();
+	}
+	
+	$valor=array_sum($data)-min($data)-max($data);
+	return ceil($valor/(count($data)-2));
+}
+
+function promedio($param){
+	if(is_array($param)){
+		$data=$param;
+	}else{
+		$data= func_get_args();
+	}
+
+	$valor=array_sum($data);
+	return ceil($valor/count($data));
+}
+
+function maximo($param){
+	if(is_array($param)){
+		$data=$param;
+	}else{
+		$data= func_get_args();
+	}
+	return max($data);
+}
+
+function minimo($param){
+	if(is_array($param)){
+		$data=$param;
+	}else{
+		$data= func_get_args();
+	}
+	return min($data);
+}
+
 class Comparativo extends Controller {
 
 	function Comparativo(){
 		parent::Controller();
-		$this->load->library("rapyd");
+		$this->load->library('rapyd');
 	}
 
 	function index(){
-		//$this->datasis->modulo_id(309,1);
-		redirect("inventario/comparativo/filteredgrid");
+		$this->datasis->modulo_id(321,1);
+		redirect('inventario/comparativo/filteredgrid');
 	}
 
 	function filteredgrid(){
+		if($this->input->post('btn_cambio_2')!==false){
+			unset($_POST['btn_cambio_2']);
+			$_POST['btn_submit']='a';
+			$_cambiomin=true;
+		}else{
+			$_cambiomin=false;
+		}
+
 		$this->rapyd->load("datafilter2","datagrid");
 		$mSPRV=array(
 				'tabla'   =>'sprv',
@@ -101,6 +150,7 @@ class Comparativo extends Controller {
 		$filter->fechad->clause  =$filter->fechah->clause='';
 		$filter->fechad->insertValue = date("Y-m-d",mktime(0,0,0,date('m')-12,date('j'),date('Y')));
 		$filter->fechah->insertValue = date("Y-m-d");
+		$filter->fechah->size=$filter->fechad->size=9;
 
 		/*$filter->codigo = new inputField("C&oacute;digo", "codigo");
 		$filter->codigo -> size=25;
@@ -174,25 +224,34 @@ class Comparativo extends Controller {
 			$filter->grupo->option("","Seleccione un Departamento primero");
 		}
 
-		/*$filter->marca = new dropdownField("Marca", "marca");
-		$filter->marca->option("","");
+		$filter->marca = new dropdownField("Marca", "marca");
+		$filter->marca->option('','Todas');
 		$filter->marca->options("SELECT TRIM(marca) AS clave, TRIM(marca) AS valor FROM marc ORDER BY marca");
 		$filter->marca -> style='width:220px;';
-		*/
+
+		$filter->estadistica = new dropdownField('Estad&iacute;stica a usar', 'estadistica');
+		$filter->estadistica->clause='';
+		$filter->estadistica->rule = "required";
+		$filter->estadistica->option('promediot','Promedio truncado');
+		$filter->estadistica->option('promedio' ,'Promedio');
+		$filter->estadistica->option('maximo'   ,'Valor M&aacute;ximo');
+		$filter->estadistica->option('minimo'   ,'Valor M&iacute;nimo');
+		//$filter->estadistica->option('mediana'  ,'Mediana');
+		//$filter->estadistica->option('moda'     ,'Moda');
 
 		$filter->buttons("reset","search");
+
+		//var_dump($this->rapyd->uri->is_set('osp'));
+		if($this->rapyd->uri->is_set('search')){
+			$filter->submit("btn_cambio_2", 'Cambiar todos', "BR");
+		}
 		$filter->build();
 
 		$uri = 'inventario/sinv/dataedit/show/<#codigo#>';
 
-		function minimos($param){
-			$data= func_get_args();
-			$valor=array_sum($data)-min($data)-max($data);
-			return ceil($valor/(count($data)-2));
-		}
-
 		$tabla='';
 		if ($filter->is_valid()){
+			$estadistica=$filter->estadistica->newValue;
 			$udia=days_in_month(substr($filter->fechah->newValue,4),substr($filter->fechah->newValue,0,4));
 			$fechad=$filter->fechad->newValue.'01';
 			$fechah=$filter->fechah->newValue.$udia;
@@ -207,13 +266,13 @@ class Comparativo extends Controller {
 
 			$grid = new DataGrid("Lista de Art&iacute;culos");
 			$grid->order_by("codigo","asc");
-			$grid->use_function('minimos');
+			$grid->use_function($estadistica);
 			$grid->per_page = 15;
 
 			$grid->column("C&oacute;digo",'codigo');
 			$grid->column("Descripci&oacute;n","descrip");
 
-			$columncal=array();
+			$columncal=$ccolumncal=array();
 			for($i=0;$i<=$interval->m+1;$i++){
 				$mk=mktime(0,0,0,$ffechad[1]+$i,1,$ffechad[0]);
 				$udia=days_in_month(date('m',$mk),date('Y',$mk));
@@ -224,11 +283,34 @@ class Comparativo extends Controller {
 				$select="SUM(cana*(fecha BETWEEN '$sqdesde' AND '$sqhasta')) AS '$etiq'";
 				$filter->db->select($select);
 				$grid->column($etiq,"<nformat><#$etiq#></nformat>",'align=right');
-				$columncal[]="<#$etiq#>";
+				$columncal[] ="<#$etiq#>";
+				$ccolumncal[]=$etiq;
 			}
-			$grid->column('Promedio','<b style="color:red"><nformat><minimos>'.implode('|',$columncal).'</minimos></nformat></b>','align=right');
-			$grid->column('Minimo','<nformat><#exmin#></nformat>','align=right');
-			$grid->column('&nbsp;','<a href="javascript:actumin(\'<#id#>\',\'<minimos>'.implode('|',$columncal).'</minimos>\')" >Actualizar</a>','align=right');
+			$grid->column('Promedio'     ,'<b style="color:red"><nformat><'.$estadistica.'>'.implode('|',$columncal).'</'.$estadistica.'></nformat></b>','align=right');
+			$grid->column('M&iacute;nimo','<nformat><#exmin#></nformat>','align=right');
+			$grid->column('&nbsp;'       ,'<a href="javascript:actumin(\'<#id#>\',\'<'.$estadistica.'>'.implode('|',$columncal).'</'.$estadistica.'>\')" >Actualizar</a>','align=right');
+
+			if($_cambiomin){
+				//echo 'Cambios de todos';
+				unset($_POST['btn_cambio_2']);
+				$_POST['btn_submit']='a';
+
+				$sql=$filter->db->_compile_select();
+				$query = $this->db->query($sql);
+
+				if ($query->num_rows() > 0){
+					foreach ($query->result() as $row){
+						$param=array();
+						foreach($ccolumncal AS $obj){
+							$param[]=$row->$obj;
+						}
+						$min=$estadistica($param);
+						$where = 'codigo ='.$this->db->escape($row->codigo);
+						$sSQL = $this->db->update_string('sinv', array('exmin' => $min), $where);
+						$this->db->simple_query($sSQL);
+					}
+				}
+			}
 
 			$grid->build();
 			$tabla=$grid->output;
@@ -243,20 +325,20 @@ class Comparativo extends Controller {
 		}
 		</script>';
 		$data['content'] = $filter->output.$tabla;
-		$data['title']   = '<h1>Comparativo de M&iacute;nimos de Inventario</h1>';
-		$data["head"]    = script('jquery.pack.js').script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").script("sinvmaes2.js").$this->rapyd->get_head();
+		$data['title']   = header('Comparativo de M&iacute;nimos de Inventario');
+		$data['head']    = script('jquery.pack.js').script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").script("sinvmaes2.js").$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 
-		function actumin($id,$exmin){
-			//echo "$id,$exmin";
-			$data['exmin']=$exmin;
-			$mSQL = $this->db->update_string('sinv', $data, 'id='.$this->db->escape($id));
-			if($this->db->simple_query($mSQL)==FALSE){
-				echo 'Error actualzando';
-			}
-			echo 'Listo!!';
+	function actumin($id,$exmin){
+		//echo "$id,$exmin";
+		$data['exmin']=$exmin;
+		$mSQL = $this->db->update_string('sinv', $data, 'id='.$this->db->escape($id));
+		if($this->db->simple_query($mSQL)==FALSE){
+			echo 'Error actualzando';
 		}
+		echo 'Listo!!';
+	}
 
 	function instalar(){
 		/*$mSQL='ALTER TABLE `sinv` DROP PRIMARY KEY';
