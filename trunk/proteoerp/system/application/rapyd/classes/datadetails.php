@@ -118,14 +118,14 @@ class DataDetails extends DataForm{
   */
 	function URI_to_pk($id_str , $do)
 	{
-		  $result=array();
+		$result=array();
 
-		  //check and remove for '/' in first and last position for that explode work fine.
-      $tmp_ar = explode("/",$id_str);
-			$keys = array_keys($do->pk);
-		 	for($i=0;$i <= count($tmp_ar)-1;$i++){
-		 		$result[$keys[$i]]=radecode($tmp_ar[$i]);
-		 	}
+		//check and remove for '/' in first and last position for that explode work fine.
+		$tmp_ar = explode("/",$id_str);
+		$keys = array_keys($do->pk);
+		for($i=0;$i <= count($tmp_ar)-1;$i++){
+			$result[$keys[$i]]=radecode($tmp_ar[$i]);
+		}
 
 		 	return $result;
 	}
@@ -145,265 +145,233 @@ class DataDetails extends DataForm{
 	}
 
 
-  function _sniff_status(){
+	function _sniff_status(){
 
-    $this->_status = "idle";
-
-    $segment_array = $this->uri->segment_array();
-
-    $id_str = $this->segment_id_str($segment_array);
+		$this->_status = "idle";
+		$segment_array = $this->uri->segment_array();
+		$id_str = $this->segment_id_str($segment_array);
 
     //The following var is unsuded?? it seams to be an old test remaining code??
     //$uri_array = $this->rapyd->uri->explode_uri($this->uri->uri_string());
 
     ///// show /////
-    if ($this->rapyd->uri->is_set("show") && (count($this->rapyd->uri->get("show")) == $this->_pkey+1) ){
+		if ($this->rapyd->uri->is_set("show") && (count($this->rapyd->uri->get("show")) == $this->_pkey+1) ){
 
-        $this->_status = "show";
-
-        $this->_process_uri = "";
-
-        $result = $this->_dataobject->load($this->URI_to_pk($id_str,$this->_dataobject));
-
-        if (!$result){
-          $this->_status = "unknow_record";
-        }
+			$this->_status = "show";
+			$this->_process_uri = "";
+			$result = $this->_dataobject->load($this->URI_to_pk($id_str,$this->_dataobject));
+			if (!$result){
+				$this->_status = "unknow_record";
+			}
 
     ///// modify /////
-    } elseif ($this->rapyd->uri->is_set("modify")  && (count($this->rapyd->uri->get("modify")) == $this->_pkey+1)){
+		} elseif ($this->rapyd->uri->is_set("modify")  && (count($this->rapyd->uri->get("modify")) == $this->_pkey+1)){
 
-        $this->_status = "modify";
+			$this->_status = "modify";
+			$this->_process_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "modify", "update");
 
-        $this->_process_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "modify", "update");
-
-        $result = $this->_dataobject->load($this->URI_to_pk($id_str,$this->_dataobject));
-        if (!$result){
-          $this->_status = "unknow_record";
-        }
-
+			$result = $this->_dataobject->load($this->URI_to_pk($id_str,$this->_dataobject));
+			if (!$result){
+			    $this->_status = "unknow_record";
+			}
 
     ///// create /////
-    } elseif ($this->rapyd->uri->is_set("create")){
+		} elseif ($this->rapyd->uri->is_set("create")){
 
-        $this->_status = "create";
-
-        $this->_process_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "create", "insert");
-
+			$this->_status = "create";
+			$this->_process_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "create", "insert");
 
     ///// delete /////
-    } elseif ($this->rapyd->uri->is_set("delete") && (count($this->rapyd->uri->get("delete")) == $this->_pkey+1)){
+		} elseif ($this->rapyd->uri->is_set("delete") && (count($this->rapyd->uri->get("delete")) == $this->_pkey+1)){
 
-        $this->_status = "delete";
+			$this->_status = "delete";
 
-        $this->_process_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "delete", "do_delete");
-        $this->_undo_uri    = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "delete", "show");
+			$this->_process_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "delete", "do_delete");
+			$this->_undo_uri    = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "delete", "show");
 
-        $result = $this->_dataobject->load($this->URI_to_pk($id_str,$this->_dataobject));
-        if (!$result){
-          $this->_status = "unknow_record";
-        }
-    }
-  }
-
-
-  function _sniff_action(){
-
-    $segment_array = $this->uri->segment_array();
-    $id_str = $this->segment_id_str($segment_array);
-
-    ///// insert /////
-    if ($this->rapyd->uri->is_set("insert")){
-
-      $this->_action = "insert";
-      $this->_postprocess_uri =  $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "insert", "show");
-
-    ///// update /////
-    } elseif ($this->rapyd->uri->is_set("update")){
-
-      $this->_action = "update";
-
-      //this uri is completed in the "process" method
-      $this->_postprocess_uri = $this->rapyd->uri->unset_clause($this->rapyd->uri->uri_array, "update");
-
-			//si se elimina no se puede eliminar items de las relaciones
-      $this->_dataobject->make_rel=false;
-      $this->_dataobject->load($this->URI_to_pk($id_str,$this->_dataobject));
-
-    ///// delete /////
-    } elseif ($this->rapyd->uri->is_set("do_delete")){
-
-      $this->_action = "delete";
-      $result = $this->_dataobject->load($this->URI_to_pk($id_str,$this->_dataobject));
-      if (!$result){
-        $this->_status = "unknow_record";
-      }
-
-    }
-  }
-
-
-
-  function is_valid(){
-    $result = parent::is_valid();
-
-    if (!$this->check_pk) return $result;
-
-    if ($this->_action=="update" || $this->_action=="insert"){
-      $pk_check=array();
-      $pk_error = "";
-      $hiddens = array();
-
-      //pk fields mode can setted to "autohide" or "readonly" (so pk integrity violation check isn't needed)
-      foreach ($this->_fields as $field_name => $field_copy){
-        //reference
-        $field =& $this->$field_name;
-        $field->_getValue();
-        if (!$field->apply_rules){
-          $hiddens[$field->db_name] = $field->value;
-        }
-      }
-
-      //We build a pk array from the form value that is submit if its a writing action (update & insert)
-      foreach ($this->_dataobject->pk as $keyfield => $keyvalue){
-        if (isset($this->validation->$keyfield)){
-          $pk_check[$keyfield] = $this->validation->$keyfield;
-        // detect that a pk is hidden, so no integrity check needed
-        } elseif (array_key_exists($keyfield,$hiddens)){
-          $pk_check[$keyfield] = $hiddens[$keyfield];
-        }
-      }
-
-      if (sizeof($pk_check) != $this->_pkey){
-      //If PK is Autoincrement we don't need to check PK integrity, But its supose that for a none AutoIcrement PK the form always contain the right PK fields
-        if (sizeof($this->_dataobject->pk)==1 && sizeof($pk_check)==0)return $result;
-      }
-      // this check the unicity of PK with the new DO function
-
-      $pk_check_unique=array();
-      foreach($pk_check AS $keyfield => $keyvalue){
-      	if(!array_key_exists($keyfield,$hiddens)){
-      		$pk_check_unique[$keyfield]=$keyvalue;
-      	}
-      }
-
-      if(count($pk_check_unique)>0){
-      	if ($result && !$this->_dataobject->are_unique($pk_check_unique)){
-     	   $result = false;
-     	   $pk_error .= RAPYD_MSG_0210."<br />";
-     	 }
-    	}
-
-    }
-    $this->error_string = $pk_error.$this->error_string;
-    return $result;
-  }
-
-
-
-  function process(){
-  	//$this->_details_fields();
-    $result = parent::process();
-
-
-    switch($this->_action){
-
-      case "update":
-        if ($this->on_error()){
-          $this->_status = "modify";
-          $this->_process_uri = $this->rapyd->uri->uri_string();
-          $this->_details_fields();
-          $this->_sniff_fields();
-          $this->_build_buttons();
-          $this->_rel_script();
-          $this->build_form();
-        }
-        if ($this->on_success()){
-
-
-          $this->_postprocess_uri .= "/". $this->rapyd->uri->build_clause("show".$this->pk_to_URI($this->_dataobject->pk));
-
-		  if($this->on_save_redirect){
-			if ($this->back_save){
-		      header("Refresh:0;url=".$this->back_url);
-		   } else {
-		     redirect("/".$this->_postprocess_uri,'refresh');
-		   }
-		  }
-
-        }
-      break;
-
-      case "insert":
-        if ($this->on_error()){
-          $this->_status = "create";
-          $this->_process_uri = $this->rapyd->uri->uri_string();
-          $this->_details_fields();
-          $this->_sniff_fields();
-          $this->_build_buttons();
-          $this->_rel_script();
-          $this->build_form();
-        }
-        if ($this->on_success()){
-
-          $this->_postprocess_uri .= $this->pk_to_URI($this->_dataobject->pk);
-
-		  if($this->on_save_redirect){
-			if ($this->back_save){
-			  header("Refresh:0;url=".$this->back_url);
-			} else {
-			  redirect($this->_postprocess_uri,'refresh');
+			$result = $this->_dataobject->load($this->URI_to_pk($id_str,$this->_dataobject));
+			if (!$result){
+				$this->_status = "unknow_record";
 			}
-		  }
+		}
+	}
 
-        }
-      break;
-
-      case "delete":
-        if ($this->on_error()){
-          $this->_build_buttons();
-          if(empty($this->_dataobject->error_message_ar['pre_del']))
-          	$this->build_message_form(RAPYD_MSG_0206);
-          else
-          	$this->build_message_form($this->_dataobject->error_message_ar['pre_del']);
-        }
-        if ($this->on_success()){
-          $this->_build_buttons();
-
-          if ($this->back_delete){
-            header("Refresh:0;url=".$this->back_url);
-          } else {
-            $this->build_message_form(RAPYD_MSG_0202);
-          }
-        }
-      break;
-
-    }
-
-    switch($this->_status){
-
-      case "show":
-      case "modify":
-      case "create":
-      	//$this->_details_fields();
-        $this->_build_buttons();
-        $this->_rel_script();
-        $this->build_form();
-      break;
-      case "delete":
-      	//$this->_details_fields();
-        $this->_build_buttons();
-        $this->build_message_form(RAPYD_MSG_0209);
-      break;
-      case "unknow_record":
-	      //$this->_details_fields();
-        $this->_build_buttons();
-        $this->build_message_form(RAPYD_MSG_0208);
-      break;
-    }
+	function _sniff_action(){
+		$segment_array = $this->uri->segment_array();
+		$id_str = $this->segment_id_str($segment_array);
+    ///// insert /////
+		if ($this->rapyd->uri->is_set("insert")){
+			$this->_action = "insert";
+			$this->_postprocess_uri =  $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "insert", "show");
+    ///// update /////
+		} elseif ($this->rapyd->uri->is_set("update")){
+			$this->_action = "update";
+			//this uri is completed in the "process" method
+			$this->_postprocess_uri = $this->rapyd->uri->unset_clause($this->rapyd->uri->uri_array, "update");
+			//si se elimina no se puede eliminar items de las relaciones
+			$this->_dataobject->make_rel=false;
+			$this->_dataobject->load($this->URI_to_pk($id_str,$this->_dataobject));
+    ///// delete /////
+		} elseif ($this->rapyd->uri->is_set("do_delete")){
+			$this->_action = "delete";
+			$result = $this->_dataobject->load($this->URI_to_pk($id_str,$this->_dataobject));
+			if (!$result){
+				$this->_status = "unknow_record";
+			}
+		}
+	}
 
 
-  }
 
+	function is_valid(){
+		$result = parent::is_valid();
+
+		if (!$this->check_pk) return $result;
+
+		if ($this->_action=="update" || $this->_action=="insert"){
+			$pk_check=array();
+			$pk_error = "";
+			$hiddens = array();
+
+			//pk fields mode can setted to "autohide" or "readonly" (so pk integrity violation check isn't needed)
+			foreach ($this->_fields as $field_name => $field_copy){
+				//reference
+				$field =& $this->$field_name;
+				$field->_getValue();
+				if (!$field->apply_rules){
+					$hiddens[$field->db_name] = $field->value;
+				}
+			}
+
+			//We build a pk array from the form value that is submit if its a writing action (update & insert)
+			foreach ($this->_dataobject->pk as $keyfield => $keyvalue){
+				if (isset($this->validation->$keyfield)){
+					$pk_check[$keyfield] = $this->validation->$keyfield;
+					// detect that a pk is hidden, so no integrity check needed
+				} elseif (array_key_exists($keyfield,$hiddens)){
+					$pk_check[$keyfield] = $hiddens[$keyfield];
+				}
+			}
+
+			if (sizeof($pk_check) != $this->_pkey){
+			//If PK is Autoincrement we don't need to check PK integrity, But its supose that for a none AutoIcrement PK the form always contain the right PK fields
+				if (sizeof($this->_dataobject->pk)==1 && sizeof($pk_check)==0)return $result;
+			}
+			// this check the unicity of PK with the new DO function
+
+			$pk_check_unique=array();
+			foreach($pk_check AS $keyfield => $keyvalue){
+				if(!array_key_exists($keyfield,$hiddens)){
+					$pk_check_unique[$keyfield]=$keyvalue;
+				}
+			}
+
+			if(count($pk_check_unique)>0){
+				if ($result && !$this->_dataobject->are_unique($pk_check_unique)){
+					$result = false;
+					$pk_error .= RAPYD_MSG_0210."<br />";
+				}
+			}
+
+		}
+		$this->error_string = $pk_error.$this->error_string;
+		return $result;
+	}
+
+
+
+	function process(){
+	//$this->_details_fields();
+		$result = parent::process();
+
+		switch($this->_action){
+
+		case "update":
+			if ($this->on_error()){
+				$this->_status = "modify";
+				$this->_process_uri = $this->rapyd->uri->uri_string();
+				$this->_details_fields();
+				$this->_sniff_fields();
+				$this->_build_buttons();
+				$this->_rel_script();
+				$this->build_form();
+			}
+			if ($this->on_success()){
+				 $this->_postprocess_uri .= "/". $this->rapyd->uri->build_clause("show".$this->pk_to_URI($this->_dataobject->pk));
+				if($this->on_save_redirect){
+					if ($this->back_save){
+					    header("Refresh:0;url=".$this->back_url);
+					} else {
+						redirect("/".$this->_postprocess_uri,'refresh');
+					}
+				}
+			}
+			break;
+
+		case "insert":
+			if ($this->on_error()){
+				$this->_status = "create";
+				$this->_process_uri = $this->rapyd->uri->uri_string();
+				$this->_details_fields();
+				$this->_sniff_fields();
+				$this->_build_buttons();
+				$this->_rel_script();
+				$this->build_form();
+			}
+			if ($this->on_success()){
+				$this->_postprocess_uri .= $this->pk_to_URI($this->_dataobject->pk);
+				if($this->on_save_redirect){
+					if ($this->back_save){
+							header("Refresh:0;url=".$this->back_url);
+						} else {
+							redirect($this->_postprocess_uri,'refresh');
+						}
+					}
+				}
+			break;
+
+		case "delete":
+			if ($this->on_error()){
+				$this->_build_buttons();
+				if(empty($this->_dataobject->error_message_ar['pre_del']))
+					$this->build_message_form(RAPYD_MSG_0206);
+				else
+					$this->build_message_form($this->_dataobject->error_message_ar['pre_del']);
+			}
+			if ($this->on_success()){
+				$this->_build_buttons();
+
+				if ($this->back_delete){
+					header("Refresh:0;url=".$this->back_url);
+				} else {
+					$this->build_message_form(RAPYD_MSG_0202);
+				}
+			}
+			break;
+		}
+
+		switch($this->_status){
+
+		case "show":
+		case "modify":
+		case "create":
+		//$this->_details_fields();
+			$this->_build_buttons();
+			$this->_rel_script();
+			$this->build_form();
+			break;
+		case "delete":
+		//$this->_details_fields();
+			$this->_build_buttons();
+			$this->build_message_form(RAPYD_MSG_0209);
+			break;
+		case "unknow_record":
+		//$this->_details_fields();
+			$this->_build_buttons();
+			$this->build_message_form(RAPYD_MSG_0208);
+		break;
+		}
+	}
 
 
  /**
@@ -414,9 +382,9 @@ class DataDetails extends DataForm{
   * @param    string  $caption  the label of the button (if not set, the default labels will used)
   * @return   void
   */
-  function crud_button($name="",$caption=null){
-    $this->_buttons[$name]=$caption;
-  }
+	function crud_button($name="",$caption=null){
+		$this->_buttons[$name]=$caption;
+	}
 
  /**
   * append a set of default buttons
@@ -425,12 +393,12 @@ class DataDetails extends DataForm{
   * @param    mixed  $names   a list of button names.  For example 'modify','save','undo','backedit','back'
   * @return   void
   */
-  function buttons($names){
-    $buttons = func_get_args();
-    foreach($buttons as $button){
-      $this->crud_button($button);
-    }
-  }
+	function buttons($names){
+		$buttons = func_get_args();
+		foreach($buttons as $button){
+			$this->crud_button($button);
+		}
+	}
 
  /**
   * build the appended buttons
@@ -438,18 +406,17 @@ class DataDetails extends DataForm{
   * @access   private
   * @return   void
   */
-  function _build_buttons(){
-    foreach($this->_buttons as $button=>$caption){
-      $build_button = "_build_".$button."_button";
-      if ($caption == null){
-        $this->$build_button();
-      } else {
-        $this->$build_button($caption);
-      }
-    }
-    $this->_buttons = array();
-
-  }
+	function _build_buttons(){
+		foreach($this->_buttons as $button=>$caption){
+			$build_button = "_build_".$button."_button";
+			if ($caption == null){
+				$this->$build_button();
+			} else {
+				$this->$build_button($caption);
+			}
+		}
+		$this->_buttons = array();
+	}
 
  /**
   * append the default "modify" button, modify is the button that appears in the top-right corner when the status is "show"
@@ -458,16 +425,13 @@ class DataDetails extends DataForm{
   * @param    string $caption  the label of the button (if not set, the default labels will used)
   * @return   void
   */
-  function _build_modify_button($caption=RAPYD_BUTTON_MODIFY)
-  {
-    if ($this->_status == "show"  && $this->rapyd->uri->is_set("show"))
-    {
-      $modify_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "show", "modify");
-
-      $action = "javascript:window.location='" . site_url($modify_uri) . "'";
-      $this->button("btn_modify", $caption, $action, "TR");
-    }
-  }
+	function _build_modify_button($caption=RAPYD_BUTTON_MODIFY) {
+		if ($this->_status == "show"  && $this->rapyd->uri->is_set("show")) {
+			$modify_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "show", "modify");
+			$action = "javascript:window.location='" . site_url($modify_uri) . "'";
+			$this->button("btn_modify", $caption, $action, "TR");
+		}
+	}
 
  /**
   * append the default "delete" button, delete is the button that appears in the top-right corner when the status is "show"
@@ -476,21 +440,16 @@ class DataDetails extends DataForm{
   * @param    string  $caption  the label of the button (if not set, the default labels will used)
   * @return   void
   */
-  function _build_delete_button($caption=RAPYD_BUTTON_DELETE){
-
-    if ($this->_status == "show"  && $this->rapyd->uri->is_set("show"))
-    {
-      $delete_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "show", "delete");
-
-      $action = "javascript:window.location='" . site_url($delete_uri) . "'";
-      $this->button("btn_delete", $caption, $action, "TR");
-
-    } elseif($this->_status == "delete") {
-
-      $action = "javascript:window.location='" . site_url($this->_process_uri) . "'";
-      $this->button("btn_delete", $caption, $action, "BL");
-    }
-  }
+	function _build_delete_button($caption=RAPYD_BUTTON_DELETE){
+		if ($this->_status == "show"  && $this->rapyd->uri->is_set("show")){
+			$delete_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "show", "delete");
+			$action = "javascript:window.location='" . site_url($delete_uri) . "'";
+			$this->button("btn_delete", $caption, $action, "TR");
+		} elseif($this->_status == "delete") {
+			$action = "javascript:window.location='" . site_url($this->_process_uri) . "'";
+			$this->button("btn_delete", $caption, $action, "BL");
+		}
+	}
 
 
  /**
@@ -500,11 +459,11 @@ class DataDetails extends DataForm{
   * @param    string  $caption  the label of the button (if not set, the default labels will used)
   * @return   void
   */
-  function _build_save_button($caption=RAPYD_BUTTON_SAVE){
-    if (($this->_status == "create") || ($this->_status == "modify")){
-      $this->submit("btn_submit", $caption, "TR");   // ANTES bl
-    }
-  }
+	function _build_save_button($caption=RAPYD_BUTTON_SAVE){
+		if (($this->_status == "create") || ($this->_status == "modify")){
+			$this->submit("btn_submit", $caption, "TR");   // ANTES bl
+		}
+	}
 
  /**
   * append the default "delete" button, delete is the button that appears in the top-right corner when the status is "show"
@@ -513,24 +472,22 @@ class DataDetails extends DataForm{
   * @param    string  $caption  the label of the button (if not set, the default labels will used)
   * @return   void
   */
-  function _build_add_rel_button($caption=RAPYD_BUTTON_ADD2){
-
-    if (($this->_status == "create") || ($this->_status == "modify")){
-      foreach($this->_dataobject->_rel_type AS $nrel=>$rel){
-      	if($rel[0]==1){
-      	  $titulo=$this->get_rel_title($nrel);
-      	  if(!empty($titulo)){
-      	    $titulo=trim(str_replace('<#i#>','',$titulo));
-      	    $titulo=trim(str_replace('<#o#>','',$titulo));
-      	    //$titulo=strtolow($titulo);
-          }
-          $caption.=' '.$titulo;
-      	  $this->button("btn_add_$nrel", $caption,  'add_'.$nrel.'()', "BL");
-      	}
-      }
-
-    }
-  }
+	function _build_add_rel_button($caption=RAPYD_BUTTON_ADD2){
+		if (($this->_status == "create") || ($this->_status == "modify")){
+			foreach($this->_dataobject->_rel_type AS $nrel=>$rel){
+				if($rel[0]==1){
+					$titulo=$this->get_rel_title($nrel);
+					if(!empty($titulo)){
+						$titulo=trim(str_replace('<#i#>','',$titulo));
+						$titulo=trim(str_replace('<#o#>','',$titulo));
+						//$titulo=strtolow($titulo);
+					}
+					$caption.=' '.$titulo;
+					$this->button("btn_add_$nrel", $caption,  'add_'.$nrel.'()', "BL");
+				}
+			}
+		}
+	}
 
  /**
   * append the default "undo" button, undo is the button that appears in the top-right corner when the status is "create" or "modify"
@@ -539,47 +496,34 @@ class DataDetails extends DataForm{
   * @param    string  $caption  the label of the button (if not set, the default labels will used)
   * @return   void
   */
-  function _build_undo_button($caption=RAPYD_BUTTON_UNDO){
-
-    if ($this->_status == "create"){
-
-      $action = "javascript:window.location='{$this->back_url}'";
-      $this->button("btn_undo", $caption, $action, "TR");
-
-    } elseif($this->_status == "modify") {
-
-    if (($this->back_cancel_save === FALSE) || ($this->back_cancel === FALSE)){
-
-        //is modify
-        if ($this->rapyd->uri->is_set("modify"))
-        {
-          $undo_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "modify", "show");
-
-        //is modify on error
-        } elseif ($this->rapyd->uri->is_set("update")){
-
-          $undo_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "update", "show");
-        }
-
-        $action = "javascript:window.location='" . site_url($undo_uri) . "'";
-      } else {
-        $action = "javascript:window.location='{$this->back_url}'";
-      }
-
-      $this->button("btn_undo", $caption, $action, "TR");
-
-    } elseif($this->_status == "delete") {
-
-      if(($this->back_cancel_delete === FALSE) || ($this->back_cancel === FALSE)){
-        $undo_uri = site_url($this->_undo_uri);
-        $action = "javascript:window.location='$undo_uri'";
-      } else{
-        $action = "javascript:window.location='{$this->back_url}'";
-      }
-
-      $this->button("btn_undo", $caption, $action, "TR");
-    }
-  }
+	function _build_undo_button($caption=RAPYD_BUTTON_UNDO){
+		if ($this->_status == "create"){
+			 $action = "javascript:window.location='{$this->back_url}'";
+			$this->button("btn_undo", $caption, $action, "TR");
+		} elseif($this->_status == "modify") {
+			if (($this->back_cancel_save === FALSE) || ($this->back_cancel === FALSE)){
+				//is modify
+				if ($this->rapyd->uri->is_set("modify")){
+					$undo_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "modify", "show");
+					//is modify on error
+				} elseif ($this->rapyd->uri->is_set("update")){
+					$undo_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "update", "show");
+				}
+				$action = "javascript:window.location='" . site_url($undo_uri) . "'";
+			} else {
+				$action = "javascript:window.location='{$this->back_url}'";
+			}
+			$this->button("btn_undo", $caption, $action, "TR");
+		} elseif($this->_status == "delete") {
+			if(($this->back_cancel_delete === FALSE) || ($this->back_cancel === FALSE)){
+				$undo_uri = site_url($this->_undo_uri);
+				$action = "javascript:window.location='$undo_uri'";
+			} else{
+				$action = "javascript:window.location='{$this->back_url}'";
+			}
+			$this->button("btn_undo", $caption, $action, "TR");
+		}
+	}
 
  /**
   * append the default "back" button, back is the button that appears in the bottom-left corner when the status is "show"
@@ -588,12 +532,12 @@ class DataDetails extends DataForm{
   * @param    string  $caption  the label of the button (if not set, the default labels will used)
   * @return   void
   */
-  function _build_back_button($caption=RAPYD_BUTTON_BACK){
-    if (($this->_status == "show") || ($this->_status == "unknow_record") || ($this->_action == "delete")){
-      $action = "javascript:window.location='{$this->back_url}'";
-      $this->button("btn_back", $caption, $action, "TR");  //ANTES BL
-    }
-  }
+	function _build_back_button($caption=RAPYD_BUTTON_BACK){
+		if (($this->_status == "show") || ($this->_status == "unknow_record") || ($this->_action == "delete")){
+			$action = "javascript:window.location='{$this->back_url}'";
+			$this->button("btn_back", $caption, $action, "TR");  //ANTES BL
+		}
+	}
 
  /**
   * append the default "backerror" button
@@ -602,12 +546,12 @@ class DataDetails extends DataForm{
   * @param    string  $caption  the label of the button (if not set, the default labels will used)
   * @return   void
   */
-  function _build_backerror_button($caption=RAPYD_BUTTON_BACKERROR){
-    if (($this->_action == "do_delete") && ($this->_on_error)){
-      $action = "javascript:window.history.back()";
-      $this->button("btn_backerror", $caption, $action, "TR");
-    }
-  }
+	function _build_backerror_button($caption=RAPYD_BUTTON_BACKERROR){
+		if (($this->_action == "do_delete") && ($this->_on_error)){
+			$action = "javascript:window.history.back()";
+			$this->button("btn_backerror", $caption, $action, "TR");
+		}
+	}
 
  /**
   * process , main build method, it lunch process() method
@@ -615,39 +559,39 @@ class DataDetails extends DataForm{
   * @access   public
   * @return   void
   */
-  function build(){
+	function build(){
 
     //temp. back compatibility
-    if (site_url("")!="/"){
-      $this->back_uri = ($this->back_uri != "")? $this->back_uri :  trim(str_replace(site_url(""),"",str_replace($this->ci->config->item('url_suffix') ,"",$this->back_url)), "/");
-    } else {
-      $this->back_uri = ($this->back_uri != "")? $this->back_uri : trim($this->back_url, "/");
-    }
+		if (site_url("")!="/"){
+			$this->back_uri = ($this->back_uri != "")? $this->back_uri :  trim(str_replace(site_url(""),"",str_replace($this->ci->config->item('url_suffix') ,"",$this->back_url)), "/");
+		} else {
+			$this->back_uri = ($this->back_uri != "")? $this->back_uri : trim($this->back_url, "/");
+		}
 
-    if (($this->back_uri == "") && isset($this->_buttons["back"])){
-      show_error('you must give a correct "BACK URI": $edit->back_uri');
-    }
+		if (($this->back_uri == "") && isset($this->_buttons["back"])){
+			show_error('you must give a correct "BACK URI": $edit->back_uri');
+		}
 
 		$this->_details_fields();
-    //sniff and build fields
-    $this->_sniff_fields();
+		//sniff and build fields
+		$this->_sniff_fields();
 
-    //sniff and perform action
-    $this->_sniff_action();
+		//sniff and perform action
+		$this->_sniff_action();
 
-    //build back_url
-    $persistence = $this->rapyd->session->get_persistence($this->back_uri, $this->rapyd->uri->gfid);
+		//build back_url
+		$persistence = $this->rapyd->session->get_persistence($this->back_uri, $this->rapyd->uri->gfid);
 
+		if ( isset($persistence["back_post"]) ){
+			$this->back_url = site_url($persistence["back_uri"]);
+		} else {
+			$this->back_url = site_url($this->back_uri);
+		}
 
-    if ( isset($persistence["back_post"]) ){
-      $this->back_url = site_url($persistence["back_uri"]);
-    } else {
-      $this->back_url = site_url($this->back_uri);
-    }
+		$this->_built = true;
+		$this->process();
+	}
 
-    $this->_built = true;
-    $this->process();
-  }
   /**
   * Expande los detalles
   *
@@ -749,31 +693,29 @@ class DataDetails extends DataForm{
 
 	function link_rel_delete($rel,$id){
 		$rt=$this->get_rel_delete($rel);
-
 		$rt=str_replace('<#i#>',$id  ,$rt);
 		$rt=str_replace('<#o#>',$id+1,$rt);
-
 		return $rt;
 	}
 
 	function get_rel_delete($rel){
-    $titulo=$this->get_rel_title($rel);
-    if(empty($titulo)){
-    	$rt='<#o#>';
-    }else{
-    	$rt=$titulo;
-    }
+		$titulo=$this->get_rel_title($rel);
+		if(empty($titulo)){
+			$rt='<#o#>';
+		}else{
+			$rt=$titulo;
+		}
 
 		if($this->_status=="modify" || $this->_status=="create" || $this->rapyd->uri->is_set("update") || $this->rapyd->uri->is_set("insert")){
-      	$rt.=" <a href=\"#\" onclick=\"del_${rel}(<#i#>);return false;\">".RAPYD_BUTTON_DELETE."</a>";
-    }
+			$rt.=" <a href=\"#\" onclick=\"del_${rel}(<#i#>);return false;\">".RAPYD_BUTTON_DELETE."</a>";
+		}
 		return $rt;
 	}
-
 
 	function set_rel_title($id_rel,$title){
 		$this->rel_title[$id_rel]=$title;
 	}
+	
 	function get_rel_title($id_rel){
 		if(isset($this->rel_title[$id_rel]))
 			return $this->rel_title[$id_rel];
@@ -836,7 +778,6 @@ class DataDetails extends DataForm{
 						}
 					}
 				}
-
 			}else{
 				$cant=1;
 			}
@@ -846,27 +787,28 @@ class DataDetails extends DataForm{
 			return $cant;
 		}
 		return $this->_dataobject->count_rel($rel_id);
-  }
+	}
 
-  function details_view($nrel){
+	function details_view($nrel){
 		$campos=$this->template_details($nrel);
 		if($campos!==false){
 			$group=array('group_name' => $this->get_rel_delete($nrel),'group_tr'   => 'id="tr_'.$nrel.'_<#i#>"');
 
 			foreach($campos AS $campo){
-					$group['series'][]=array('is_hidden' => false,
-															'series_name' => $campo['name'],
-															'series_tr' => 'id="tr_'.$campo['name'].'"',
-															'series_td' => 'id="td_'.$campo['name'].'"',
-															'fields' => array(array(
-																					'label'    => $campo['label'],
-																					'field_td' => 'id="td_'.$campo['name'].'"',
-																					'field'    =>$campo['field'],
-																					'type'     =>$campo['type'],
-																					'status'   => 'modify'
-																					),
-																				),
-															);
+					$group['series'][]=array(
+								'is_hidden' => false,
+								'series_name' => $campo['name'],
+								'series_tr' => 'id="tr_'.$campo['name'].'"',
+								'series_td' => 'id="td_'.$campo['name'].'"',
+								'fields' => array(array(
+											'label'    => $campo['label'],
+											'field_td' => 'id="td_'.$campo['name'].'"',
+											'field'    =>$campo['field'],
+											'type'     =>$campo['type'],
+											'status'   => 'modify'
+											),
+										),
+								);
 
 			}
 			$path=RAPYD_PATH.'views/'.$this->ci->rapyd->config->item("theme").'/dataform.php';

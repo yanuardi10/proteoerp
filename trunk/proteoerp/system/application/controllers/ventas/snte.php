@@ -53,7 +53,6 @@ class Snte extends Controller {
 		$filter->factura = new inputField("Factura", "factura");
 		$filter->factura->size = 30;
 
-
 		$filter->cliente = new inputField("Cliente","cod_cli");
 		$filter->cliente->size = 30;
 		$filter->cliente->append($boton);
@@ -61,28 +60,21 @@ class Snte extends Controller {
 		$filter->buttons("reset","search");
 		$filter->build('dataformfiltro');
 
-		$uri2  = anchor('finanzas/gser/mgserdataedit/modify/<#id#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar')));
-		$uri2 .= "&nbsp;";
-		$uri2 .= anchor('formatos/ver/GSER/<#id#>',img(array('src'=>'images/pdf_logo.gif','border'=>'0','alt'=>'PDF')));
-		$uri2 .= "&nbsp;";
-		$uri2 .= anchor('formatos/verhtml/GSER/<#id#>',img(array('src'=>'images/html_icon.gif','border'=>'0','alt'=>'HTML')));
-
-		//$uri = anchor('finanzas/gser/dataedit/show/<#id#>','<#numero#>');
-
 		$uri_3  = "<a href='javascript:void(0);' onclick='javascript:sntefactura(\"<#numero#>\")'>";
 		$propiedad = array('src' => 'images/engrana.png', 'alt' => 'Modifica Nro de Factura', 'title' => 'Modifica Nro. de Factura','border'=>'0','height'=>'12');
 		$uri_3 .= img($propiedad);
 		$uri_3 .= "</a>";
 
 		$uri = anchor('ventas/snte/dataedit/show/<#numero#>','<#numero#>');
-		$uri2 = anchor_popup('formatos/verhtml/SNTE/<#numero#>',img(array('src'=>'images/html_icon.gif','border'=>'0','alt'=>'HTML')));
 
+		$url = "<a href=\"#\" onclick=\"window.open('".base_url()."formatos/verhtml/SNTE/<#numero#>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'')\"; heigth=\"600\" >";
+		$url .="<img src='".base_url()."images/html_icon.gif'/></a>";
 
 		$grid = new DataGrid();
 		$grid->order_by("numero","desc");
 		$grid->per_page = 15;  
 
-		$grid->column_orderby("Vista",$uri2,"align='center'");
+		$grid->column_orderby("Acciones",$url,"align='center'");
 		$grid->column_orderby("N&uacute;mero"	,$uri,'numero');
 		$grid->column_orderby("Fecha"		,"<dbdate_to_human><#fecha#></dbdate_to_human>",'fecha',"align='center'");
 		$grid->column_orderby("Cliente"		,"cod_cli",'cod_cli');
@@ -160,7 +152,7 @@ function sntefactura(mnumero){
 		$data['content'] = $grid->output;
 		$data['filtro']  = $filter->output;
 
-		$data['title']   = heading('Notas de Entrega');
+		$data['title']   = heading('Notas de Entrega ');
 	
 		$data['script']  = $script;
 		$data['script'] .= script('jquery.js');
@@ -307,6 +299,7 @@ function sntefactura(mnumero){
 		$edit->codigo->rel_id   = 'itsnte';
 		$edit->codigo->rule     = 'required';
 		$edit->codigo->append($btn);
+		$edit->codigo->style    = 'width:80%';
 
 		$edit->desca = new inputField('Descripci&oacute;n <#o#>', 'desca_<#i#>');
 		$edit->desca->size=36;
@@ -314,6 +307,7 @@ function sntefactura(mnumero){
 		$edit->desca->maxlength=50;
 		$edit->desca->readonly  = true;
 		$edit->desca->rel_id='itsnte';
+		$edit->desca->style    = 'width:98%';
 
 		$edit->cana = new inputField('Cantidad <#o#>', 'cana_<#i#>');
 		$edit->cana->db_name  = 'cana';
@@ -324,6 +318,7 @@ function sntefactura(mnumero){
 		$edit->cana->rule     = 'required|positive';
 		$edit->cana->autocomplete=false;
 		$edit->cana->onkeyup  ='importe(<#i#>)';
+		$edit->cana->style    = 'width:98%';
 
 		$edit->precio = new inputField('Precio <#o#>', 'precio_<#i#>');
 		$edit->precio->db_name   = 'precio';
@@ -332,12 +327,14 @@ function sntefactura(mnumero){
 		$edit->precio->size      = 10;
 		$edit->precio->rule      = 'required|positive|callback_chpreca[<#i#>]';
 		$edit->precio->readonly  = true;
+		$edit->precio->style    = 'width:98%';
 
 		$edit->importe = new inputField('Importe <#o#>', 'importe_<#i#>');
 		$edit->importe->db_name='importe';
 		$edit->importe->size=10;
 		$edit->importe->css_class='inputnum';
 		$edit->importe->rel_id   ='itsnte';
+		$edit->importe->style    = 'width:98%';
 
 		for($i=1;$i<=4;$i++){
 			$obj='precio'.$i;
@@ -379,10 +376,25 @@ function sntefactura(mnumero){
 		$edit->build();
 
 		$conten['form']  =&  $edit;
+
 		$data['content'] = $this->load->view('view_snte', $conten,true);
-		$data['title']   = heading('Nota de Entrega');
-		$data['head']    = script('jquery.js').script('jquery-ui.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css').$this->rapyd->get_head().phpscript('nformat.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js').phpscript('nformat.js');
+
+		$data['title']   = heading('Nota de Entrega No. '.$edit->numero->value);
+
+		$data['script']  = script('jquery.js');
+		$data['script'] .= script('jquery-ui.js');
+		$data['script'] .= script('plugins/jquery.numeric.pack.js');
+		$data['script'] .= script('plugins/jquery.meiomask.js');
+		$data['script'] .= style('vino/jquery-ui.css');
+		$data['script'] .= phpscript('nformat.js');
+		$data['script'] .= script('plugins/jquery.numeric.pack.js');
+		$data['script'] .= script('plugins/jquery.floatnumber.js');
+		$data['script'] .= phpscript('nformat.js');
+
+		$data['head']    = $this->rapyd->get_head();
+
 		$this->load->view('view_ventanas', $data);
+		
 	}
 
 	function sntefactura(){
