@@ -80,8 +80,23 @@ class sfac extends validaciones {
 		$propiedad = array('src' => 'images/engrana.png', 'alt' => 'Modifica Nro de Control', 'title' => 'Modifica Nro. de Control','border'=>'0','height'=>'12');
 		$uri_3 .= img($propiedad);
 		$uri_3 .= "</a>";
+
+		$mtool  = "<table background='#554455'><tr>";
+		$mtool .= "<td>&nbsp;</td>";
+
+		$mtool .= "<td>&nbsp;<a href='".base_url()."ventas/sfac/dataedit/create'>";
+		$mtool .= img(array('src' => 'images/agregar.jpg', 'alt' => 'Agregar Registro', 'title' => 'Agregar Registro','border'=>'0','height'=>'32'));
+		$mtool .= "</a>&nbsp;</td>";
+
+		$mtool .= "<td>&nbsp;<a href='javascript:void(0);' ";
+		$mtool .= 'onclick="window.open(\''.base_url()."reportes/index/sfac', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');".'" heigth="600" width="900" '.'>';
+		$mtool .= img(array('src' => 'images/reportes.gif', 'alt' => 'Reportes', 'title' => 'Reportes','border'=>'0','height'=>'32'));
+		$mtool .= "</a>&nbsp;</td>";
+
+		$mtool .= "</tr></table>";
+
 	
-		$grid = new DataGrid();
+		$grid = new DataGrid($mtool);
 		$grid->order_by('fecha','desc');
 		$grid->per_page = 50;
 		
@@ -166,7 +181,9 @@ function nfiscal(mid){
 
 $sigma = "";
 
+		//$data['content']  = $mtool;
 		$data['content'] = $grid->output;
+
 		$data['filtro']  = $filter->output;
 		
 		$data['script']  = script('jquery.js');

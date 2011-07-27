@@ -48,36 +48,110 @@ class pfac extends validaciones{
 		$filter->fechah->size = $filter->fechad->size = 10;
 		$filter->fechad->operator = '>=';
 		$filter->fechah->operator = '<=';
+		$filter->fechad->group = "uno";
+		$filter->fechah->group = "uno";
 
 		$filter->numero = new inputField('N&uacute;mero', 'numero');
 		$filter->numero->size = 10;
+		$filter->numero->group = "dos";
 
 		$filter->cliente = new inputField('Cliente', 'cod_cli');
 		$filter->cliente->size = 8;
 		$filter->cliente->append($boton);
+		$filter->cliente->group = "dos";
 
 		$filter->buttons('reset', 'search');
-		$filter->build();
+		$filter->build("dataformfiltro");
+
 
 		$uri = anchor('ventas/pfac/dataedit/show/<#numero#>', '<#numero#>');
 		$uri2 = anchor_popup('formatos/verhtml/PFAC/<#numero#>', 'Ver HTML', $atts);
+		$mtool  = "<table background='#554455'><tr>";
+		$mtool .= "<td>&nbsp;</td>";
 
-		$grid = new DataGrid();
+		$mtool .= "<td>&nbsp;<a href='".base_url()."ventas/pfac/dataedit/create'>";
+		$mtool .= img(array('src' => 'images/agregar.jpg', 'alt' => 'Agregar Registro', 'title' => 'Agregar Registro','border'=>'0','height'=>'32'));
+		$mtool .= "</a>&nbsp;</td>";
+
+		$mtool .= "<td>&nbsp;<a href='javascript:void(0);' ";
+		$mtool .= 'onclick="window.open(\''.base_url()."reportes/index/pfac', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');".'" heigth="600" width="900" '.'>';
+		$mtool .= img(array('src' => 'images/reportes.gif', 'alt' => 'Reportes', 'title' => 'Reportes','border'=>'0','height'=>'32'));
+		$mtool .= "</a>&nbsp;</td>";
+
+		$mtool .= "</tr></table>";
+
+
+		$grid = new DataGrid($mtool);
 		$grid->order_by('numero', 'desc');
-		$grid->per_page = 15;
+		$grid->per_page = 50;
 
+		//$grid->column('Vista'    , $uri2, "align='center'");
 		$grid->column_orderby('N&uacute;mero', $uri,'numero');
 		$grid->column_orderby("Fecha"        , '<dbdate_to_human><#fecha#></dbdate_to_human>','fecha', "align='center'");
+		$grid->column_orderby("Cliente"      , 'cod_cli','cod_cli');
 		$grid->column_orderby("Nombre"       , 'nombre','nombre');
-		$grid->column_orderby('Sub.Total'    , '<nformat><#totals#></nformat>', "align=right");
-		$grid->column_orderby('IVA'          , '<nformat><#iva#></nformat>'   , "align=right");
-		$grid->column_orderby('Total'        , '<nformat><#totalg#></nformat>', "align=right");
-		$grid->column('Vista'    , $uri2, "align='center'");
+		$grid->column_orderby('Sub.Total'    , '<nformat><#totals#></nformat>', "totals", "align=right");
+		$grid->column_orderby('IVA'          , '<nformat><#iva#></nformat>'   , "iva",    "align=right");
+		$grid->column_orderby('Total'        , '<nformat><#totalg#></nformat>', "totalg", "align=right");
+		$grid->column_orderby("Referencia"   , 'referen','referen');
+		$grid->column_orderby("Factura"      , 'factura','factura');
+		$grid->column_orderby("Status"       , 'status', 'status');
 
-		$grid->add('ventas/pfac/dataedit/create');
-		$grid->build();
+		//$grid->add('ventas/pfac/dataedit/create');
+		$grid->build('datagridST');
 
-		$data['content'] = $filter->output . $grid->output;
+// *************************************
+//
+//       Para usar SuperTable
+//
+// *************************************
+		$extras = '
+<script type="text/javascript">
+//<![CDATA[
+(function() {
+	var mySt = new superTable("demoTable", {
+	cssSkin : "sSky",
+	fixedCols : 1,
+	headerRows : 1,
+	onStart : function () {	this.start = new Date();},
+	onFinish : function () {document.getElementById("testDiv").innerHTML += "Finished...<br>" + ((new Date()) - this.start) + "ms.<br>";}
+	});
+})();
+//]]>
+</script>
+';
+		$style ='
+<style type="text/css">
+.fakeContainer { /* The parent container */
+    margin: 5px;
+    padding: 0px;
+    border: none;
+    width: 740px; /* Required to set */
+    height: 320px; /* Required to set */
+    overflow: hidden; /* Required to set */
+}
+</style>	
+		';
+
+
+		$data['content'] = $grid->output;
+		$data['filtro']  = $filter->output;
+
+		$data["script"]  = script("jquery.js");
+		$data["script"]  .= script("jquery-ui.js");
+		$data["script"]  .= script("jquery.alerts.js");
+		$data["script"] .= script("plugins/jquery.numeric.pack.js");
+		$data["script"] .= script("plugins/jquery.floatnumber.js");
+		$data["script"] .= script('superTables.js');
+//		$data['script'] .= $script;
+
+		$data['style']   = $style;
+		$data['style']  .= style('superTables.css');
+		$data['style']	.= style("jquery.alerts.css");
+
+		$data['extras']  = $extras;
+
+		//$data['content'] = $filter->output . $grid->output;
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = heading('Pedidos Clientes');
 		$this->load->view('view_ventanas', $data);
@@ -199,6 +273,12 @@ class pfac extends validaciones{
 		$edit->direc = new inputField('Direcci&oacute;n', 'direc');
 		$edit->direc->size = 40;
 
+		$edit->observa = new inputField('Observaciones', 'observa');
+		$edit->observa->size = 50;
+
+		$edit->observ1 = new inputField('Observaciones', 'observ1');
+		$edit->observ1->size = 50;
+
 		// Para saber que precio se le va a dar al cliente
 		$edit->sclitipo = new hiddenField('', 'sclitipo');
 		$edit->sclitipo->db_name = 'sclitipo';
@@ -303,7 +383,7 @@ class pfac extends validaciones{
 			$conten['inven'] = $jinven;
 			$conten['form']  = & $edit;
 			$data['content'] = $this->load->view('view_pfac', $conten, true);
-			$data['title']   = heading('Pedidos');
+			$data['title']   = heading('Pedidos No. '.$edit->numero->value);
 			$data['head']    = script('jquery.js') . script('jquery-ui.js') . script('plugins/jquery.numeric.pack.js') . script('plugins/jquery.meiomask.js') . style('vino/jquery-ui.css') . $this->rapyd->get_head() . phpscript('nformat.js') . script('plugins/jquery.numeric.pack.js') . script('plugins/jquery.floatnumber.js') . phpscript('nformat.js');
 			$this->load->view('view_ventanas', $data);
 		}else{

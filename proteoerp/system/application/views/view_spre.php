@@ -299,9 +299,8 @@ function del_itspre(id){
 	</tr>
 	<tr>
 		<td>
-		<div style='overflow:auto;'>
-		<fieldset style='border: 1px solid #9AC8DA;background: #FAFAFA;height:200px '>
-		<table width='100%'>
+		<div style='overflow:auto;border: 1px solid #9AC8DA;background: #FAFAFA;height:200px'>
+		<table width='100%' border='0'>
 			<tr>
 				<td bgcolor='#7098D0'><strong>C&oacute;digo</strong></td>
 				<td bgcolor='#7098D0'><strong>Descripci&oacute;n</strong></td>
@@ -341,7 +340,7 @@ function del_itspre(id){
 
 			<tr id='tr_itspre_<?php echo $i; ?>'>
 				<td class="littletablerow" align="left" ><?php echo $form->$it_codigo->output; ?></td>
-				<td class="littletablerow" align="left" ><?php echo $form->$it_desca->output.$form->$it_detalle->output;  ?></td>
+				<td class="littletablerow" align="left" ><?php echo $form->$it_desca->output;  ?></td>
 				<td class="littletablerow" align="right"><?php echo $form->$it_cana->output;   ?></td>
 				<td class="littletablerow" align="right"><?php echo $form->$it_preca->output;  ?></td>
 				<td class="littletablerow" align="right"><?php echo $form->$it_importe->output.$pprecios;?></td>
@@ -358,7 +357,6 @@ function del_itspre(id){
 				<td id='cueca'></td>
 			</tr>
 		</table>
-		</fieldset>
 		</div>
 		<?php echo $container_bl ?>
 		<?php echo $container_br ?>

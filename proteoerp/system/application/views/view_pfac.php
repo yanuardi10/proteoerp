@@ -265,54 +265,72 @@ function del_itpfac(id){
 }
 </script>
 <?php } ?>
-
 <table align='center' width="95%">
 	<tr>
+<?php if ($form->_status=='show') { ?>
+		<td>
+		<a href="#" onclick="window.open('<?php echo base_url() ?>formatos/verhtml/PFAC/<?php echo $form->numero->value ?>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');" heigth="600" >
+		<img src='<?php echo base_url() ?>images/html_icon.gif'></a>
+		</td>
+<?php } ?>
 		<td align=right><?php echo $container_tr?></td>
 	</tr>
+</table>
+<table align='center' width="95%">
 	<tr>
 		<td>
-		<table width="100%" style="margin: 0; width: 100%;">
-			<tr>
-				<th colspan='5' class="littletableheader">Pedidos <b><?php if($form->_status=='show' or $form->_status=='modify' ) echo str_pad($form->numero->output,8,0,0); ?></b></th>
-			</tr>
+		<table width='100%'><tr><td>
+			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
+			<legend class="titulofieldset" style='color: #114411;'>Documento</legend>
+			<table width="100%" style="margin: 0; width: 100%;">
 			<tr>
 				<td class="littletableheader"><?php echo $form->fecha->label;    ?>*&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->fecha->output;   ?>&nbsp;</td>
+			</tr>
+			<tr>
+				<td class="littletableheader"><?php echo $form->vd->label     ?>&nbsp;</td>
+				<td class="littletablerow">   <?php echo $form->vd->output    ?>&nbsp;</td>
+			</tr>
+			<tr>
+				<td class="littletableheader"><?=$form->peso->label  ?>&nbsp;</td>
+				<td class="littletablerow" align="left"><?=$form->peso->output ?>&nbsp;</td>
+			</tr>
+			</table>
+			</fieldset>
+		</td><td>
+			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
+			<legend class="titulofieldset" style='color: #114411;'>Cliente</legend>
+			<table width="100%" style="margin: 0; width: 100%;">
+			<tr>
 				<td class="littletableheader"><?php echo $form->cliente->label;  ?>&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->cliente->output,$form->sclitipo->output; ?>&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->nombre->output;  ?>&nbsp;</td>
 			</tr>
 			<tr>
-				<td class="littletableheader"><?php echo $form->vd->label     ?>&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->vd->output    ?>&nbsp;</td>
 				<td class="littletableheader"><?php echo $form->rifci->label; ?>&nbsp;</td>
 				<td class="littletablerow" colspan='2'><?php echo $form->rifci->output;   ?>&nbsp;</td>
 			</tr>
 			<tr>
-				<td class="littletableheader"><?=$form->peso->label  ?>&nbsp;</td>
-				<td class="littletablerow" align="left"><?=$form->peso->output ?>&nbsp;</td>
 				<td class="littletableheader"><?php echo $form->direc->label  ?>&nbsp;</td>
 				<td class="littletablerow" colspan='2'><?php echo $form->direc->output ?>&nbsp;</td>
 			</tr>
-		</table>
-		<br>
+			</table>
+			</fieldset>
+		</td></tr></table>
 		</td>
 	</tr>
 	<tr>
 		<td>
+		<div style='overflow:auto;border: 1px solid #9AC8DA;background: #FAFAFA;height:200px'>
 		<table width='100%'>
 			<tr>
-				<th colspan='6' class="littletableheader">Lista de Art&iacute;culos</th>
-			</tr>
-			<tr>
-				<td class="littletableheader">C&oacute;digo</td>
-				<td class="littletableheader">Descripci&oacute;n</td>
-				<td class="littletableheader">Cantidad</td>
-				<td class="littletableheader">Precio</td>
-				<td class="littletableheader">Importe</td>
+				<td bgcolor='#7098D0'><strong>C&oacute;digo</strong></td>
+				<td bgcolor='#7098D0'><strong>Descripci&oacute;n</strong></td>
+				<td bgcolor='#7098D0'><strong>Cantidad</strong></td>
+				<td bgcolor='#7098D0'><strong>Precio</strong></td>
+				<td bgcolor='#7098D0'><strong>Importe</strong></td>
 				<?php if($form->_status!='show') {?>
-					<td class="littletableheader">&nbsp;</td>
+					<td  bgcolor='#7098D0'><strong>&nbsp;</strong></td>
 				<?php } ?>
 			</tr>
 
@@ -358,25 +376,34 @@ function del_itpfac(id){
 				<td id='cueca'></td>
 			</tr>
 		</table>
+		</div>
 		<?php echo $container_bl ?>
 		<?php echo $container_br ?>
 		</td>
 	</tr>
 	<tr>
 		<td>
+		<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
 		<table width='100%'>
 			<tr>
-				<th colspan='6' class="littletableheader">Res&uacute;men Financiero</th>
-			</tr>
-			<tr>
-				<td class="littletableheader">           <?php echo $form->ivat->label;    ?></td>
-				<td class="littletablerow" align='right'><?php echo $form->ivat->output;   ?></td>
+				<td class="littletableheader" width='100'><?php echo $form->observa->label;    ?></td>
+				<td class="littletablerow"    width='350'><?php echo $form->observa->output;   ?></td>
 				<td class="littletableheader">           <?php echo $form->totals->label;  ?></td>
-				<td class="littletablerow" align='right'><?php echo $form->totals->output; ?></td>
+				<td class="littletablerow" align='right'><strong><?php echo nformat($form->totals->value); ?></strong></td>
+
+			<tr></tr>	
+				<td class="littletableheader">&nbsp;</td>
+				<td class="littletablerow"   ><?php echo $form->observ1->output;   ?></td>
+				<td class="littletableheader"><?php echo $form->ivat->label;    ?></td>
+				<td class="littletablerow" align='right'><strong><?php echo nformat($form->ivat->value); ?></strong></td>
+			<tr></tr>
+				<td>&nbsp;</td><td>&nbsp;</td>
 				<td class="littletableheader">           <?php echo $form->totalg->label;  ?></td>
-				<td class="littletablerow" align='right'><?php echo $form->totalg->output; ?></td>
+				<td class="littletablerow" align='right' style='font-size:18px;font-weight: bold'><?php echo nformat($form->totalg->value); ?></td>
 			</tr>
 		</table>
+		</fieldset>
+
 		<?php echo $form_end; ?>
 		</td>
 	</tr>

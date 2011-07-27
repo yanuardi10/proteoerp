@@ -424,14 +424,16 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$edit->codigo->readonly = true;
 		$edit->codigo->rel_id   = 'itspre';
 		$edit->codigo->rule     = 'required';
+		$edit->codigo->style    = 'width:80%';
 		$edit->codigo->append($btn);
 
 		$edit->desca = new inputField('Descripci&oacute;n <#o#>', 'desca_<#i#>');
-		$edit->desca->size=36;
+		$edit->desca->size=40;
 		$edit->desca->db_name='desca';
-		$edit->desca->maxlength=50;
+		$edit->desca->maxlength=40;
 		$edit->desca->readonly  = true;
 		$edit->desca->rel_id='itspre';
+		$edit->desca->style    = 'width:100%';
 
 		$edit->cana = new inputField('Cantidad <#o#>', 'cana_<#i#>');
 		$edit->cana->db_name  = 'cana';
@@ -442,20 +444,23 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$edit->cana->rule     = 'required|positive';
 		$edit->cana->autocomplete=false;
 		$edit->cana->onkeyup  ='importe(<#i#>)';
+		$edit->cana->style    = 'width:90%';
 
 		$edit->preca = new inputField('Precio <#o#>', 'preca_<#i#>');
 		$edit->preca->db_name   = 'preca';
 		$edit->preca->css_class = 'inputnum';
 		$edit->preca->rel_id    = 'itspre';
-		$edit->preca->size      = 10;
+		//$edit->preca->size      = 10;
 		$edit->preca->rule      = 'required|positive|callback_chpreca[<#i#>]';
 		$edit->preca->readonly  = true;
+		$edit->preca->style    = 'width:100%';
 
 		$edit->importe = new inputField('Importe <#o#>', 'importe_<#i#>');
 		$edit->importe->db_name='importe';
 		$edit->importe->size=10;
 		$edit->importe->css_class='inputnum';
 		$edit->importe->rel_id   ='itspre';
+		$edit->importe->style    = 'width:90%';
 
 		for($i=1;$i<4;$i++){
 			$obj='precio'.$i;
@@ -525,7 +530,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$edit->condi2->maxlength=25;
 		$edit->condi2->autocomplete=false;
 
-		$edit->buttons('modify', 'save', 'undo', 'delete', 'back','add_rel');
+		$edit->buttons('modify', 'save', 'undo', 'delete', 'add_rel');
 		$edit->build();
 
 		$conten['form']  =&  $edit;

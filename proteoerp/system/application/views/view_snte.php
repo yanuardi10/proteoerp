@@ -22,7 +22,7 @@ for($o=1;$o<5;$o++){
 $scampos .= $campos['itiva']['field'];
 $scampos .= $campos['sinvpeso']['field'];
 $scampos .= $campos['sinvtipo']['field'].'</td>';
-$scampos .= '<td class="littletablerow"><a href=# onclick="del_itsnte(<#i#>);return false;">Eliminar</a></td></tr>';
+$scampos .= '<td class="littletablerow"><a href=# onclick="del_itsnte(<#i#>);return false;">'.img("images/delete.jpg").'</a></td></tr>';
 $campos=$form->js_escape($scampos);
 
 if(isset($form->error_string)) echo '<div class="alert">'.$form->error_string.'</div>';
@@ -192,64 +192,73 @@ function del_itsnte(id){
 </script>
 <?php } ?>
 
-<table align='center' width="95%">
+<table align='center' width="95%" border='0'>
 	<tr>
+<?php if ($form->_status=='show') { ?>
+		<td>
+		<a href="#" onclick="window.open('<?php echo base_url() ?>formatos/verhtml/SNTE/<?php echo $form->numero->value ?>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');" heigth="600" >
+		<img src='<?php echo base_url() ?>images/html_icon.gif'></a>
+		</td>
+<?php } ?>
 		<td align=right><?php echo $container_tr?></td>
 	</tr>
 	<tr>
-		<td>
-		<table width="100%" style="margin: 0; width: 100%;">
-			<tr>
-				<th colspan='5' class="littletableheader">Notas de Entrega <b><?php if($form->_status=='show' or $form->_status=='modify' ) echo str_pad($form->numero->output,8,0,0); ?></b></th>
-			</tr>
-			<tr>
-				<td class="littletableheader"><?php echo $form->fecha->label;    ?>*&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->fecha->output;   ?>&nbsp;</td>
-				<td class="littletableheader"><?php echo $form->cliente->label;  ?>*&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->cliente->output,$form->sclitipo->output,$form->nombre->output; ?>&nbsp;</td>
-				
-			</tr>
-			<tr>
-				<td class="littletableheader"><?php echo $form->vende->label     ?>&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->vende->output    ?>&nbsp;</td>
-				<td class="littletableheader"><?php echo $form->dir_cli->label  ?>&nbsp;</td>
-				<td class="littletablerow"   ><?php echo $form->dir_cli->output ?>&nbsp;</td>
-			</tr>
-			<tr>
-				<td class="littletableheader"><?php echo $form->peso->label;  ?>&nbsp;</td>
-				<td class="littletablerow" align="left"><?php echo $form->peso->output; ?>&nbsp;</td>
-				<td class="littletableheader"><?php echo $form->observa->label;  ?>&nbsp;</td>
-				<td class="littletablerow"   ><?php echo $form->observa->output; ?>&nbsp;</td>
-			</tr>
-			<tr>
-				<td class="littletableheader"><?php echo $form->orden->label;  ?>&nbsp;</td>
-				<td class="littletablerow" align="left"><?php echo $form->orden->output; ?>&nbsp;</td>
-				<td class="littletableheader"><?php echo $form->almacen->label;     ?>&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->almacen->output;    ?>&nbsp;</td>
-			</tr>
-			<tr>
-				<td class="littletableheader"><?php echo $form->factura->label;  ?>&nbsp;</td>
-				<td class="littletablerow" align="left"><?php echo $form->factura->output; ?>&nbsp;</td>
-				<td class="littletableheader">&nbsp;</td>
-				<td class="littletablerow">   &nbsp;</td>
-			</tr>
-		</table><br>
+		<td colspan=2>
+			<table width='100%'><tr><td>	
+				<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
+				<legend class="titulofieldset" style='color: #114411;'>Documento</legend>
+				<table width="100%" style="margin: 0; width: 100%;">
+				<tr>
+					<td class="littletableheader"><?php echo $form->fecha->label;    ?>*&nbsp;</td>
+					<td class="littletablerow">   <?php echo $form->fecha->output;   ?>&nbsp;</td>
+					
+				</tr>
+				<tr>
+					<td class="littletableheader"><?php echo $form->vende->label     ?>&nbsp;</td>
+					<td class="littletablerow">   <?php echo $form->vende->output    ?>&nbsp;</td>
+				</tr>
+				<tr>
+					<td class="littletableheader"><?php echo $form->peso->label;  ?>&nbsp;</td>
+					<td class="littletablerow" align="left"><?php echo $form->peso->output; ?>&nbsp;</td>
+				</tr>
+				</table>
+				</fieldset>
+			</td><td>
+				<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
+				<legend class="titulofieldset" style='color: #114411;'>Cliente</legend>
+				<table width="100%" style="margin: 0; width: 100%;">
+				<tr>
+					<td class="littletableheader"><?php echo $form->cliente->label;  ?>*&nbsp;</td>
+					<td class="littletablerow">   <?php echo $form->cliente->output,$form->sclitipo->output,$form->nombre->output; ?>&nbsp;</td>
+					
+				</tr>
+				<tr>
+					<td class="littletableheader"><?php echo $form->dir_cli->label  ?>&nbsp;</td>
+					<td class="littletablerow"   ><?php echo $form->dir_cli->output ?>&nbsp;</td>
+				</tr>
+				<tr>
+					<td class="littletableheader"><?php echo $form->almacen->label;     ?>&nbsp;</td>
+					<td class="littletablerow">   <?php echo $form->almacen->output;    ?>&nbsp;</td>
+				</tr>
+				</table>
+				</fieldset>
+			</td></tr></table>
 		</td>
 	</tr>
+</table>
+<table align='center' width="95%">
 	<tr>
 		<td>
+		<div style='overflow:auto;border: 1px solid #9AC8DA;background: #FAFAFA;height:200px'>
 		<table width='100%'>
 			<tr>
-				<th colspan='6' class="littletableheader">Lista de Art&iacute;culos</th>
-			</tr>
-			<tr>
-				<td class="littletableheader">C&oacute;digo</td>
-				<td class="littletableheader">Descripci&oacute;n</td>
-				<td class="littletableheader">Cantidad</td>
-				<td class="littletableheader">Precio</td>
-				<td class="littletableheader">Importe</td>
+				<td bgcolor='#7098D0'><strong>C&oacute;digo</strong></td>
+				<td bgcolor='#7098D0'><strong>Descripci&oacute;n</strong></td>
+				<td bgcolor='#7098D0'><strong>Cantidad</strong></td>
+				<td bgcolor='#7098D0'><strong>Precio</strong></td>
+				<td bgcolor='#7098D0'><strong>Importe</strong></td>
 				<?php if($form->_status!='show') {?>
-					<td class="littletableheader">&nbsp;</td>
+					<td bgcolor='#7098D0'><strong>&nbsp;</strong></td>
 				<?php } ?>
 			</tr>
 
@@ -282,7 +291,7 @@ function del_itsnte(id){
 
 				<?php if($form->_status!='show') {?>
 				<td class="littletablerow">
-					<a href='#' onclick='del_itsnte(<?=$i ?>);return false;'>Eliminar</a>
+					<a href='#' onclick='del_itsnte(<?=$i ?>);return false;'><?php echo img("images/delete.jpg");?></a>
 				</td>
 				<?php } ?>
 			</tr>
@@ -292,25 +301,36 @@ function del_itsnte(id){
 				<td id='cueca'></td>
 			</tr>
 		</table>
+		</div>
 		<?php echo $container_bl ?>
 		<?php echo $container_br ?>
 		</td>
 	</tr>
 	<tr>
 		<td>
+		<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
 		<table width='100%'>
 			<tr>
-				<th colspan='6' class="littletableheader">Res&uacute;men Financiero</th>
-			</tr>
-			<tr>
+				<td class="littletableheader" width='100'><?php echo $form->observa->label;  ?>&nbsp;</td>
+				<td class="littletablerow"  width='400' ><?php echo $form->observa->output; ?>&nbsp;</td>
+
 				<td class="littletableheader">           <?php echo $form->impuesto->label;    ?></td>
-				<td class="littletablerow" align='right'><?php echo $form->impuesto->output;   ?></td>
+				<td class="littletablerow" align='right'><strong><?php echo $form->impuesto->output;   ?></strong></td>
+			</tr><tr>
+				<td class="littletableheader"><?php echo $form->orden->label;  ?>&nbsp;</td>
+				<td class="littletablerow" align="left"><?php echo $form->orden->output; ?>&nbsp;</td>
+
 				<td class="littletableheader">           <?php echo $form->stotal->label;  ?></td>
-				<td class="littletablerow" align='right'><?php echo $form->stotal->output; ?></td>
+				<td class="littletablerow" align='right'><strong><?php echo $form->stotal->output; ?></strong></td>
+			</tr><tr>
+				<td class="littletableheader"><?php echo $form->factura->label;  ?>&nbsp;</td>
+				<td class="littletablerow" align="left"><?php echo $form->factura->output; ?>&nbsp;</td>
+
 				<td class="littletableheader">           <?php echo $form->gtotal->label;  ?></td>
-				<td class="littletablerow" align='right'><?php echo $form->gtotal->output; ?></td>
+				<td class="littletablerow" align='right'  style='font-size:18px;font-weight: bold'><?php echo nformat($form->gtotal->value); ?></td>
 			</tr>
 		</table>
+		</fieldset>
 		<?php echo $form_end; ?>
 		</td>
 	</tr>
