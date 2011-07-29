@@ -888,7 +888,7 @@ function sfacreiva(mid){
 						
 						$mSQL = "INSERT INTO smov  (cod_cli, nombre, tipo_doc, numero, fecha, monto, impuesto, vence, observa1, tipo_ref, num_ref, estampa, hora, transac, usuario, nroriva, emiriva )
 						SELECT cod_cli, nombre, 'AN' tipo_doc, '$mnumant' numero, freiva fecha, reiva monto, 0 impuesto, freiva vence,
-							CONCAT('APLICACION DE RETENCION A DOC. ',tipo_doc,numero) observa1, IF(tipo_doc='F','FC', 'DV' ) tipo_ref, numero num_ref,
+							CONCAT('RET/IVA DE ',cod_cli,' A DOC. ',tipo_doc,numero) observa1, IF(tipo_doc='F','FC', 'DV' ) tipo_ref, numero num_ref,
 							curdate() estampa, curtime() hora, '$transac' transac, '".$usuario."' usuario, creiva, ereiva
 						FROM sfac WHERE id=$id";
 						$this->db->simple_query($mSQL);
@@ -911,7 +911,7 @@ function sfacreiva(mid){
 							$mdevo = "<h1 style='color:green;'>EXITO</h1>Cambios Guardados, Anticipo Generado por factura ya pagada";
 							memowrite($mSQL,"sfacreivaAN");
 						} else {
-							$mnumant = $this->datasis->prox_sql("ndcli");
+							$mnumant = $this->datasis->prox_sql("nccli");
 							$mnumant = str_pad($mnumant, 8, "0", STR_PAD_LEFT);
 							$mSQL = "INSERT INTO smov (cod_cli, nombre, tipo_doc, numero, fecha, monto, impuesto, abonos, vence, observa1, tipo_ref, num_ref, estampa, hora, transac, usuario, codigo, descrip, nroriva, emiriva )
 								SELECT cod_cli, nombre, 'NC' tipo_doc, '$mnumant' numero, freiva fecha, reiva monto, 0 impuesto, reiva abonos, freiva vence,
@@ -920,22 +920,21 @@ function sfacreiva(mid){
 								'NOCON 'codigo, 'NOTA DE CONTABILIDAD' descrip, creiva, ereiva
 								FROM sfac WHERE id=$id";
 							$this->db->simple_query($mSQL);
-							//memowrite($mSQL,"sfacreivaNC");
 							
 							// ABONA A LA FACTURA
 							$mSQL = "UPDATE smov SET abonos=abonos+$monto WHERE numero='$numfac' AND cod_cli='$cod_cli' AND tipo_doc='$tiposfac'";
 								$this->db->simple_query($mSQL);
 							
-							//Crea la relacin en ccli
+							//Crea la relacion en ccli
 	
 							$mdevo = "<h1 style='color:green;'>EXITO</h1>Cambios Guardados, Nota de Credito generada y aplicada a la factura";
 						}
 					}
-					$mnumant = $this->datasis->prox_sql("nancli");
+					$mnumant = $this->datasis->prox_sql("ndcli");
 					$mnumant = str_pad($mnumant, 8, "0", STR_PAD_LEFT);
 					$mSQL = "INSERT INTO smov (cod_cli, nombre, tipo_doc, numero, fecha, monto, impuesto, abonos, vence, observa1, tipo_ref, num_ref, estampa, hora, usuario, transac, codigo, descrip, nroriva, emiriva )
-						SELECT 'REIVA' cod_cli, 'RETENCION DE IVA POR COMPENSAR' nombre, 'ND' tipo_doc, '$mnumant' numero, freiva fecha, 
-						reiva monto, 0 impuesto, 0 abonos, freiva vence, 'APLICACION DE RETENCION A FACTURA ' observa1, 
+						SELECT 'REIVA' cod_cli, 'RETENCION DE I.V.A. POR COMPENSAR' nombre, 'ND' tipo_doc, '$mnumant' numero, freiva fecha, 
+						reiva monto, 0 impuesto, 0 abonos, freiva vence, CONCAT('RET/IVA DE ',cod_cli,' A ',tipo_doc,numero) observa1, 
 						IF(tipo_doc='F','FC', 'DV' ) tipo_ref, numero num_ref, curdate() estampa, 
 						curtime() hora, '".$usuario."' usuario, '$transac' transac, 'NOCON 'codigo,
 						'NOTA DE CONTABILIDAD' descrip, creiva, ereiva
@@ -944,8 +943,22 @@ function sfacreiva(mid){
 					memowrite($mSQL,"sfacreivaND");
 						
 				} else {
-					//Devoluciones
 					
+					
+					
+					
+					//Devoluciones debe crear un NC si esta en el periodo
+					$mnumant = $this->datasis->prox_sql("nccli");
+					$mnumant = str_pad($mnumant, 8, "0", STR_PAD_LEFT);
+					$mSQL = "INSERT INTO smov (cod_cli, nombre, tipo_doc, numero, fecha, monto, impuesto, abonos, vence, observa1, tipo_ref, num_ref, estampa, hora, usuario, transac, codigo, descrip, nroriva, emiriva )
+						SELECT 'REIVA' cod_cli, 'RETENCION DE I.V.A. POR COMPENSAR' nombre, 'NC' tipo_doc, '$mnumant' numero, freiva fecha, 
+						reiva monto, 0 impuesto, 0 abonos, freiva vence, CONCAT('RET/IVA DE ',cod_cli,' A ',tipo_doc,numero) observa1, 
+						IF(tipo_doc='F','FC', 'DV' ) tipo_ref, numero num_ref, curdate() estampa, 
+						curtime() hora, '".$usuario."' usuario, '$transac' transac, 'NOCON 'codigo,
+						'NOTA DE CONTABILIDAD' descrip, creiva, ereiva
+					FROM sfac WHERE id=$id";
+					$this->db->simple_query($mSQL);
+					memowrite($mSQL,"sfacreivaND");
 				}
 			} else {
 				$mdevo = "<h1 style='color:red;'>ERROR</h1>Retencion ya aplicada";
