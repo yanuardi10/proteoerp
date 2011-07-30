@@ -96,7 +96,6 @@ class Pos extends Controller {
 				WHERE (a.codigo LIKE $qdb OR a.descrip LIKE  $qdb OR a.barras LIKE $qdb OR b.suplemen=$qba) AND a.activo='S'
 				ORDER BY a.descrip LIMIT 10";
 				$cana=1;
-				memowrite($mSQL);
 			}
 
 			$query = $this->db->query($mSQL);
