@@ -68,7 +68,8 @@ $(document).ready(function() {
 				precio = Number(ui.item.precio);
 				importe= roundNumber(precio*Number(ui.item.cana),2);
 				html = "<tr id='sitems_"+id+"'>";
-				html+= "<td><input type='hidden' name='codigoa_"+id+"' id='codigo_"+id+"' value='"+ui.item.codigo+"'>"+ui.item.codigo+"</td>";
+				html+= "<td><span title='Eliminar' id='sitems_del_"+id+"' class='ui-icon ui-icon-circle-close' onclick='eliminasitems(\""+id+"\")'></span></td>";
+				html+= "<td><input type='hidden' name='codigoa_"+id+"' id='codigo_"+id+"' value='"+ui.item.codigo+"'><span style='font-size:10px'>"+ui.item.codigo+"</span></td>";
 				html+= "<td align='right'><input type='text' style='text-align: right;' onkeyup='cimporte(\""+id+"\")' name='cana_"+id+"' id='cana_"+id+"' size=6 class='ui-widget-content ui-corner-all' value='"+ui.item.cana+"' autocomplete='off'></td>";
 				html+= "<td align='right'><input type='text' style='text-align: right;' name='precio_"+id+"' id='precio_"+id+"' size=8 class='ui-widget-content ui-corner-all' value='"+ui.item.precio+"' autocomplete='off' ><input type='hidden' name='itiva_"+id+"' id='itiva_"+id+"' value='"+ui.item.iva+"'></td>";
 				html+= "<td align='right'><div id='vimporte_"+id+"'>"+importe.toString()+"</div><input type='hidden' name='importe_"+id+"' id='importe_"+id+"' value='"+importe.toString()+"'></td>";
@@ -80,6 +81,10 @@ $(document).ready(function() {
 				$("#_itemul").after(html);
 				$("#precio_"+id).numeric(".");
 				$("#cana_"+id).numeric(".");
+				//$('#sitems_del_'+id).hover(
+				//	function() { $(this).addClass('ui-state-hover');    }, 
+				//	function() { $(this).removeClass('ui-state-hover'); }
+				//);				
 				//$("#cana_"+id).focus();
 				totaliza();
 				idtot=idtot+1;
@@ -306,13 +311,13 @@ echo form_open('',$attributes);
 			<p>
 				<table class=" ui-widget-content ui-corner-all" width='100%'>
 					<tr class=" ui-widget-content ui-widget-header ui-corner-top" id='_itemul'>
-						<th>C&oacute;digo</th>
+						<th colspan='2'>C&oacute;digo</th>
 						<th>Cantidad</th>
 						<th>Precio</th>
 						<th>Importe</th>
 					</tr>
 					<tr>
-						<td colspan='2'></td>
+						<td colspan='3'></td>
 						<td align='right' >Total:</td>
 						<td align='right' ><b id='total'>0.00</b><input type='hidden' name='ftotal' id='ftotal' value=0></td>
 					</tr>
@@ -331,7 +336,7 @@ echo form_open('',$attributes);
 						<input type='hidden' name='sclitipo' id='sclitipo'>
 					</td>
 					<td>
-						<span id="create-scli" class="ui-icon ui-icon-plusthick"></span>
+						<span id="create-scli" title='Agregar clientes' class="ui-icon ui-icon-plusthick"></span>
 					</td>
 				</tr>
 				<tr>
