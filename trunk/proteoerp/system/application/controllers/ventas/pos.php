@@ -66,6 +66,7 @@ class Pos extends Controller {
 		$mid  = $this->input->post('q');
 		$cod  = $this->input->post('codigo');
 		$qdb  = $this->db->escape('%'.$mid.'%');
+		$qba  = $this->db->escape($mid);
 		$coddb= $this->db->escape($cod);
 		$tipo = $this->input->post('sclitipo');
 
@@ -84,15 +85,18 @@ class Pos extends Controller {
 			$retArray = $retorno = array();
 
 			if(preg_match('/\+(?P<cana>\d+)/', $mid, $matches)>0 && $cod!==false){
-				$mSQL="SELECT TRIM(descrip) AS descrip, TRIM(codigo) AS codigo, $pp AS precio, iva,existen
-				FROM sinv WHERE codigo=$coddb LIMIT 1";
+				$mSQL="SELECT TRIM(a.descrip) AS descrip, TRIM(a.codigo) AS codigo, a.$pp AS precio, a.iva,a.existen
+				FROM sinv AS  a
+				WHERE a.codigo=$coddb LIMIT 1";
 				$cana=$matches['cana'];
-				memowrite($cod );
 			}else{
-				$mSQL="SELECT TRIM(descrip) AS descrip, TRIM(codigo) AS codigo, $pp AS precio, iva,existen
-				FROM sinv WHERE (codigo LIKE $qdb OR descrip LIKE  $qdb OR barras LIKE $qdb) AND activo='S'
-				ORDER BY descrip LIMIT 10";
+				$mSQL="SELECT DISTINCT TRIM(a.descrip) AS descrip, TRIM(a.codigo) AS codigo, a.$pp AS precio, a.iva,a.existen
+				FROM sinv AS a
+				LEFT JOIN barraspos AS b ON a.codigo=b.codigo
+				WHERE (a.codigo LIKE $qdb OR a.descrip LIKE  $qdb OR a.barras LIKE $qdb OR b.suplemen=$qba) AND a.activo='S'
+				ORDER BY a.descrip LIMIT 10";
 				$cana=1;
+				memowrite($mSQL);
 			}
 
 			$query = $this->db->query($mSQL);

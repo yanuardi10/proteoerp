@@ -1,5 +1,8 @@
 <?php
 
+//*********************
+// Estadisticas a usar
+//*********************
 function promediot($param){
 	if(is_array($param)){
 		$data=$param;
@@ -39,6 +42,24 @@ function minimo($param){
 	}
 	return min($data);
 }
+
+function mediana($param){
+	if(is_array($param)){
+		$data=$param;
+	}else{
+		$data= func_get_args();
+	}
+	sort($data);
+	$cana = count($data);
+	$ind  = $cana/2;
+	if($cana % 2 == 0){
+		$rt=($data[$ind]+$data[$ind-1])/2;
+	}else{
+		$rt=$data[floor($ind)];
+	}
+	return $rt;
+}
+//Fin de las estadisticas
 
 class Comparativo extends Controller {
 
@@ -139,6 +160,8 @@ class Comparativo extends Controller {
 		//$filter->db->join('line AS c' ,'c.linea=b.linea');
 		//$filter->db->join('dpto AS d' ,'c.depto=d.depto');
 		$filter->db->join('sinv AS s' ,'a.codigo=s.codigo');
+		$filter->db->where('s.activo','S');
+		$filter->db->where('s.tipo','Articulo');
 		$filter->db->groupby('a.descrip');
 
 		$filter->fechad = new dateonlyField("Desde", "fechad",'m/Y');
@@ -159,24 +182,8 @@ class Comparativo extends Controller {
 		$filter->descrip->db_name='CONCAT_WS(" ",a.descrip,a.descrip2)';
 		$filter->descrip -> size=25;
 
-		$filter->tipo = new dropdownField("Tipo", "tipo");
-		$filter->tipo->db_name=("a.tipo");
-		$filter->tipo->option("","Todos");
-		$filter->tipo->option("Articulo","Art&iacute;culo");
-		$filter->tipo->option("Servicio","Servicio");
-		$filter->tipo->option("Descartar","Descartar");
-		$filter->tipo->option("Consumo","Consumo");
-		$filter->tipo->option("Fraccion","Fracci&oacute;n");
-		$filter->tipo ->style='width:220px;';
-
 		$filter->clave = new inputField("Clave", "clave");
 		$filter->clave -> size=25;
-
-		$filter->activo = new dropdownField("Activo", "activo");
-		$filter->activo->option("","");
-		$filter->activo->option("S","Si");
-		$filter->activo->option("N","No");
-		$filter->activo ->style='width:220px;';
 
 		$filter->proveed = new inputField("Proveedor", "proveed");
 		$filter->proveed->append($bSPRV);
@@ -216,7 +223,6 @@ class Comparativo extends Controller {
 		$filter->grupo = new dropdownField("Grupo", "grupo");
 		$filter->grupo->db_name='a.grupo';
 		$filter->grupo->option("","Seleccione una L&iacute;nea primero");
-		//$filter->grupo->in="grupo2";
 		$linea=$filter->getval('linea2');
 		if($linea!==FALSE){
 			$filter->grupo->options("SELECT grupo, nom_grup FROM grup WHERE linea='$linea' ORDER BY nom_grup");
@@ -231,19 +237,26 @@ class Comparativo extends Controller {
 
 		$filter->estadistica = new dropdownField('Estad&iacute;stica a usar', 'estadistica');
 		$filter->estadistica->clause='';
-		$filter->estadistica->rule = "required";
+		$filter->estadistica->rule = 'required';
 		$filter->estadistica->option('promediot','Promedio truncado');
 		$filter->estadistica->option('promedio' ,'Promedio');
+		$filter->estadistica->option('mediana'  ,'Mediana' );
 		$filter->estadistica->option('maximo'   ,'Valor M&aacute;ximo');
 		$filter->estadistica->option('minimo'   ,'Valor M&iacute;nimo');
-		//$filter->estadistica->option('mediana'  ,'Mediana');
 		//$filter->estadistica->option('moda'     ,'Moda');
+		$filter->estadistica->group='Configuraci&oacute;n';
 
-		$filter->buttons("reset","search");
+		/*$filter->frecuencia = new dropdownField('Frecuencia', 'frecuencia');
+		$filter->frecuencia->clause= '';
+		$filter->frecuencia->rule  = 'required';
+		$filter->frecuencia->option('mensual' ,'Mensual');
+		$filter->frecuencia->option('semanal' ,'Semanal');
+		$filter->frecuencia->group='Configuraci&oacute;n';*/
 
-		//var_dump($this->rapyd->uri->is_set('osp'));
+		$filter->buttons('reset','search');
+
 		if($this->rapyd->uri->is_set('search')){
-			$filter->submit("btn_cambio_2", 'Cambiar todos', "BR");
+			$filter->submit('btn_cambio_2', 'Actualizar todos', "BR");
 		}
 		$filter->build();
 
@@ -269,8 +282,8 @@ class Comparativo extends Controller {
 			$grid->use_function($estadistica);
 			$grid->per_page = 15;
 
-			$grid->column("C&oacute;digo",'codigo');
-			$grid->column("Descripci&oacute;n","descrip");
+			$grid->column('C&oacute;digo'     ,'codigo' );
+			$grid->column('Descripci&oacute;n','descrip');
 
 			$columncal=$ccolumncal=array();
 			for($i=0;$i<=$interval->m+1;$i++){
