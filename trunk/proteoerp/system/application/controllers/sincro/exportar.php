@@ -282,7 +282,12 @@ class Exportar extends Controller {
 				'table'  =>'sfpa',
 				'where'  =>"fecha >= $fecha");
 		$data[]=array('table' => 'smov',
+				'ignore' =>true,
 				'where' => "estampa >= $fecha");
+		$data[]=array('table' => 'costos',
+				'ignore' =>true,
+				'limpiar'=>false,
+				'where' => "fecha >= $fecha");
 
 		$nombre='ve_'.$fecha.'_'.$this->sucu;
 		if(!array_key_exists('HTTP_USER_AGENT', $_SERVER)) $_SERVER['HTTP_USER_AGENT']='curl';
