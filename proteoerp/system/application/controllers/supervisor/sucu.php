@@ -30,7 +30,7 @@ class sucu extends Controller{
 		$grid = new DataGrid("Lista de Sucursales");
 		$grid->order_by("codigo","asc");
 		$grid->per_page=15;
-		
+
 		$grid->column("Sucursal",$uri);
 		$grid->column("Nombre","sucursal");
 		$grid->column("URL","url");
@@ -72,7 +72,7 @@ class sucu extends Controller{
 		$edit->prefijo->maxlength = 3;
 		$edit->prefijo->rule='required';
 		$edit->prefijo->append('Prefijo de las transacciones en la sucursal');
-	
+
 		$edit->proteo = new inputField('Direcctorio Proteo','proteo');
 		$edit->proteo->maxlength =50;
 
@@ -84,12 +84,13 @@ class sucu extends Controller{
 
 		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
 		$edit->build();
-		
-		$data['content'] = $edit->output; 		
+
+		$data['content'] = $edit->output;
 		$data['title']   = heading('Sucursal');
 		$data['head']    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
+
 	function instalar(){
 		$mSQL="ALTER TABLE `sucu` ADD `url` VARCHAR(200) NULL";
 		$this->db->simple_query($mSQL);
@@ -98,6 +99,8 @@ class sucu extends Controller{
 		$mSQL="ALTER TABLE `sucu` ADD `proteo` VARCHAR(50) NULL";
 		$this->db->simple_query($mSQL);
 		$mSQL="ALTER TABLE `sucu` ADD PRIMARY KEY (`codigo`)";
+		$this->db->simple_query($mSQL);
+		$mSQL="ALTER TABLE `sucu`  ADD COLUMN `db_nombre` VARCHAR(50) NULL DEFAULT NULL AFTER `proteo`";
 		$this->db->simple_query($mSQL);
 	}
 }
