@@ -384,7 +384,18 @@ class pfac extends validaciones{
 			$conten['form']  = & $edit;
 			$data['content'] = $this->load->view('view_pfac', $conten, true);
 			$data['title']   = heading('Pedidos No. '.$edit->numero->value);
-			$data['head']    = script('jquery.js') . script('jquery-ui.js') . script('plugins/jquery.numeric.pack.js') . script('plugins/jquery.meiomask.js') . style('vino/jquery-ui.css') . $this->rapyd->get_head() . phpscript('nformat.js') . script('plugins/jquery.numeric.pack.js') . script('plugins/jquery.floatnumber.js') . phpscript('nformat.js');
+			$data['head']    = script('jquery.js');
+			$data['head']   .= script('jquery-ui.js');
+			$data['head']   .= script('plugins/jquery.numeric.pack.js');
+			$data['head']   .= script('plugins/jquery.meiomask.js');
+			//$data['head']   .= style('vino/jquery-ui.css');
+			$data['head']   .= style('redmond/jquery-ui-1.8.1.custom.css');
+			$data['head']   .= $this->rapyd->get_head();
+			$data['head']   .= phpscript('nformat.js');
+			$data['head']   .= script('plugins/jquery.numeric.pack.js');
+			$data['head']   .= script('plugins/jquery.floatnumber.js');
+			$data['head']   .= phpscript('nformat.js');
+
 			$this->load->view('view_ventanas', $data);
 		}else{
 			$edit->on_save_redirect=false;

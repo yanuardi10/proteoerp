@@ -42,7 +42,9 @@ $(function(){
 	for(var i=0;i < <?php echo $form->max_rel_count['itspre']; ?>;i++){
 		cdropdown(i);
 		cdescrip(i);
+		autocod(i.toString());
 	}
+
 });
 
 function importe(id){
@@ -66,7 +68,7 @@ function totalizar(){
 	var cana   =0;
 	var arr=$('input[name^="importe_"]');
 	jQuery.each(arr, function() {
-		nom=this.name
+		nom=this.name;
 		pos=this.name.lastIndexOf('_');
 		if(pos>0){
 			ind     = this.name.substring(pos+1);
@@ -94,6 +96,7 @@ function add_itspre(){
 	htm = htm.replace(/<#o#>/g,con);
 	$("#__UTPL__").before(htm);
 	$("#cana_"+can).numeric(".");
+	autocod(can);
 	itspre_cont=itspre_cont+1;
 }
 
@@ -156,7 +159,7 @@ function cdropdown(nind){
 	var ban=0;
 	var ii=0;
 	var id='';
-	
+
 	if(preca==null || preca.length==0) ban=1;
 	for(ii=1;ii<5;ii++){
 		id =ii.toString();
@@ -233,6 +236,52 @@ function cdescrip(nind){
 		ddeca.setAttribute("value"    ,desca);
 		$("#desca_"+ind).replaceWith(ddeca);
 	}
+}
+
+function autocod(id){
+	$('#codigo_'+id).autocomplete({
+		source: function( req, add){
+			$.ajax({
+				url:  "<?php echo site_url('ventas/spre/buscasinv'); ?>",
+				type: "POST",
+				dataType: "json",
+				data: "q="+req.term,
+				success:
+					function(data){
+						var sugiere = [];
+						$.each(data,
+							function(i, val){
+								sugiere.push( val );
+							}
+						);
+						add(sugiere);
+					},
+			})
+		},
+		minLength: 2,
+		select: function( event, ui ) {
+			//id='0';
+			$('#codigo_'+id).val(ui.item.codigo);
+			$('#desca_'+id).val(ui.item.descrip);
+			$('#precio1_'+id).val(ui.item.base1);
+			$('#precio2_'+id).val(ui.item.base2);
+			$('#precio3_'+id).val(ui.item.base3);
+			$('#precio4_'+id).val(ui.item.base4);
+			$('#itiva_'+id).val(ui.item.iva);
+			$('#sinvtipo_'+id).val(ui.item.tipo);
+			$('#sinvpeso_'+id).val(ui.item.peso);
+			$('#pond_'+id).val(ui.item.pond);
+			$('#ultimo_'+id).val(ui.item.ultimo);
+
+			var arr  = $('#preca_'+ind);
+			var tipo = Number($("#sclitipo").val()); if(tipo>0) tipo=tipo-1;
+			cdropdown(id);
+			cdescrip(id);
+			jQuery.each(arr, function() { this.selectedIndex=tipo; });
+			importe(id);
+			totalizar();
+		}
+	});
 }
 
 function del_itspre(id){

@@ -421,7 +421,6 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$edit->codigo = new inputField('C&oacute;digo <#o#>', 'codigo_<#i#>');
 		$edit->codigo->size     = 12;
 		$edit->codigo->db_name  = 'codigo';
-		$edit->codigo->readonly = true;
 		$edit->codigo->rel_id   = 'itspre';
 		$edit->codigo->rule     = 'required';
 		$edit->codigo->style    = 'width:80%';
@@ -537,19 +536,62 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$data['content'] = $this->load->view('view_spre', $conten,true);
 		$data['title']   = heading('Presupuesto No.'.$edit->numero->value);
 
-		$data['style']  = style('vino/jquery-ui.css');
-	
+		//$data['style']  = style('vino/jquery-ui.css');
+		$data['style']  = style('redmond/jquery-ui-1.8.1.custom.css');
+
 		$data['script']  = script('jquery.js');
 		$data['script'] .= script('jquery-ui.js');
 		$data['script'] .= script('plugins/jquery.numeric.pack.js');
-		$data['script'] .= script('plugins/jquery.meiomask.js');
-		$data['script'] .= phpscript('nformat.js');
 		$data['script'] .= script('plugins/jquery.numeric.pack.js');
 		$data['script'] .= script('plugins/jquery.floatnumber.js');
+		//$data['script'] .= script('plugins/jquery.autocomplete.js');
 		$data['script'] .= phpscript('nformat.js');
-		
+
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
+	}
+
+	// Busca Productos para autocomplete
+	function buscasinv(){
+		$mid  = $this->input->post('q');
+		$qdb  = $this->db->escape('%'.$mid.'%');
+		$qba  = $this->db->escape($mid);
+
+		$data = '{[ ]}';
+		if($mid !== false){
+			$retArray = $retorno = array();
+
+			$mSQL="SELECT DISTINCT TRIM(a.descrip) AS descrip, TRIM(a.codigo) AS codigo, a.precio1,precio2,precio3,precio4, a.iva,a.existen,a.tipo
+				,a.peso, a.ultimo, a.pond FROM sinv AS a
+				LEFT JOIN barraspos AS b ON a.codigo=b.codigo
+				WHERE (a.codigo LIKE $qdb OR a.descrip LIKE  $qdb OR a.barras LIKE $qdb OR b.suplemen=$qba) AND a.activo='S'
+				ORDER BY a.descrip LIMIT 10";
+			$cana=1;
+
+			$query = $this->db->query($mSQL);
+			if ($query->num_rows() > 0){
+				foreach( $query->result_array() as  $row ) {
+					$retArray['label']   = '('.$row['codigo'].') '.$row['descrip'].' '.$row['precio1'].' Bs. - '.$row['existen'];
+					$retArray['value']   = $row['codigo'];
+					$retArray['codigo']  = $row['codigo'];
+					$retArray['cana']    = $cana;
+					$retArray['tipo']    = $row['tipo'];
+					$retArray['peso']    = $row['peso'];
+					$retArray['ultimo']  = $row['ultimo'];
+					$retArray['pond']    = $row['pond'];
+					$retArray['base1']   = $row['precio1']*100/(100+$row['iva']);
+					$retArray['base2']   = $row['precio2']*100/(100+$row['iva']);
+					$retArray['base3']   = $row['precio3']*100/(100+$row['iva']);
+					$retArray['base4']   = $row['precio4']*100/(100+$row['iva']);
+					$retArray['descrip'] = $row['descrip'];
+					//$retArray['descrip'] = wordwrap($row['descrip'], 25, '<br />');
+					$retArray['iva']     = $row['iva'];
+					array_push($retorno, $retArray);
+				}
+				$data = json_encode($retorno);
+	        }
+		}
+		echo $data;
 	}
 
 	function _pre_insert($do){
