@@ -414,7 +414,11 @@ function cambgrupo(){
 				async: false,
 				success: function(sino) {
 				jAlert(sino,"Informacion");
-				location.reload();
+				jConfirm("Recargar Tabla y perder los checks?", "Actualizar", function(r){
+					if(r) {
+						location.reload();
+					}
+					});
 				},
 				error: function(h,t,e)  { jAlert("Error..codigo="+yurl+" ",e) } 
 			});
