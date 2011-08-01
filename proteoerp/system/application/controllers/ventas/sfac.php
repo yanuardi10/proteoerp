@@ -863,6 +863,7 @@ function sfacreiva(mid){
 		$numfac   = $this->datasis->dameval("SELECT numero   FROM sfac WHERE id=$id");
 		$cod_cli  = $this->datasis->dameval("SELECT cod_cli  FROM sfac WHERE id=$id");
 		$monto    = $this->datasis->dameval("SELECT ROUND(iva*0.75,2)  FROM sfac WHERE id=$id");
+		$factura  = $this->datasis->dameval("SELECT factura  FROM sfac WHERE id=$id");
 
 		$anterior = $this->datasis->dameval("SELECT reiva FROM sfac WHERE id=$id");
 		$usuario = addslashes($this->session->userdata('usuario'));
@@ -943,9 +944,74 @@ function sfacreiva(mid){
 					memowrite($mSQL,"sfacreivaND");
 						
 				} else {
+					// DEVOLUCIONES GENERA ND
+					$mnumant = $this->datasis->prox_sql("ndcli");
+					$mnumant = str_pad($mnumant, 8, "0", STR_PAD_LEFT);
+					
+					$mSQL = "INSERT INTO smov  (cod_cli, nombre, tipo_doc, numero, fecha, monto, impuesto, vence, observa1, tipo_ref, num_ref, estampa, hora, transac, usuario, nroriva, emiriva )
+					SELECT cod_cli, nombre, 'ND' tipo_doc, '$mnumant' numero, freiva fecha, reiva monto, 0 impuesto, freiva vence,
+						CONCAT('RET/IVA DE ',cod_cli,' A DOC. ',tipo_doc,numero) observa1, IF(tipo_doc='F','FC', 'DV' ) tipo_ref, numero num_ref,
+						curdate() estampa, curtime() hora, '$transac' transac, '".$usuario."' usuario, creiva, ereiva
+					FROM sfac WHERE id=$id";
+					$this->db->simple_query($mSQL);
+					$mdevo = "<h1 style='color:green;'>EXITO</h1>Retencion Guardada, Anticipo Generado por factura pagada al contado";
+
+
+					// Debe abonar la ND si existe un AN
 					
 					
 					
+					/*
+					if ($referen == 'E') { 
+						// DEVOLUCIONES PAGADA AL CONTADO GENERA
+						$mnumant = $this->datasis->prox_sql("ndcli");
+						$mnumant = str_pad($mnumant, 8, "0", STR_PAD_LEFT);
+						
+						$mSQL = "INSERT INTO smov  (cod_cli, nombre, tipo_doc, numero, fecha, monto, impuesto, vence, observa1, tipo_ref, num_ref, estampa, hora, transac, usuario, nroriva, emiriva )
+						SELECT cod_cli, nombre, 'ND' tipo_doc, '$mnumant' numero, freiva fecha, reiva monto, 0 impuesto, freiva vence,
+							CONCAT('RET/IVA DE ',cod_cli,' A DOC. ',tipo_doc,numero) observa1, IF(tipo_doc='F','FC', 'DV' ) tipo_ref, numero num_ref,
+							curdate() estampa, curtime() hora, '$transac' transac, '".$usuario."' usuario, creiva, ereiva
+						FROM sfac WHERE id=$id";
+						$this->db->simple_query($mSQL);
+						$mdevo = "<h1 style='color:green;'>EXITO</h1>Retencion Guardada, Anticipo Generado por factura pagada al contado";
+					} elseif ($referen == 'C') {
+						// B
+						$tiposfac = 'FC';
+						if ( $tipo_doc == 'D') $tiposfac = 'NC';
+						$mSQL = "SELECT monto-abonos saldo FROM smov WHERE numero='$numfac' AND cod_cli='$cod_cli' AND tipo_doc='$tiposfac'";
+						$saldo = $this->datasis->dameval($mSQL);
+						if ( $saldo < $monto ) {  // crea anticipo
+							$mnumant = $this->datasis->prox_sql("nancli");
+							$mnumant = str_pad($mnumant, 8, "0", STR_PAD_LEFT);
+							$mSQL = "INSERT INTO smov  (cod_cli, nombre, tipo_doc, numero, fecha, monto, impuesto, vence, observa1, tipo_ref, num_ref, estampa, hora, transac, usuario, nroriva, emiriva )
+							SELECT cod_cli, nombre, 'AN' tipo_doc, '$mnumant' numero, freiva fecha, reiva monto, 0 impuesto, freiva vence,
+								CONCAT('APLICACION DE RETENCION A DOC. ',tipo_doc,numero) observa1, IF(tipo_doc='F','FC', 'DV' ) tipo_ref, numero num_ref,
+								curdate() estampa, curtime() hora, '$transac' transac, '".$usuario."' usuario, creiva, ereiva
+							FROM sfac WHERE id=$id";
+							$this->db->simple_query($mSQL);
+							$mdevo = "<h1 style='color:green;'>EXITO</h1>Cambios Guardados, Anticipo Generado por factura ya pagada";
+							memowrite($mSQL,"sfacreivaAN");
+						} else {
+							$mnumant = $this->datasis->prox_sql("nccli");
+							$mnumant = str_pad($mnumant, 8, "0", STR_PAD_LEFT);
+							$mSQL = "INSERT INTO smov (cod_cli, nombre, tipo_doc, numero, fecha, monto, impuesto, abonos, vence, observa1, tipo_ref, num_ref, estampa, hora, transac, usuario, codigo, descrip, nroriva, emiriva )
+								SELECT cod_cli, nombre, 'NC' tipo_doc, '$mnumant' numero, freiva fecha, reiva monto, 0 impuesto, reiva abonos, freiva vence,
+								CONCAT('APLICACION DE RETENCION A DOC. ',tipo_doc,numero) observa1, IF(tipo_doc='F','FC', 'DV' ) tipo_ref, numero num_ref,
+								curdate() estampa, curtime() hora, '$transac' transac, '".$usuario."' usuario,
+								'NOCON 'codigo, 'NOTA DE CONTABILIDAD' descrip, creiva, ereiva
+								FROM sfac WHERE id=$id";
+							$this->db->simple_query($mSQL);
+							
+							// ABONA A LA FACTURA
+							$mSQL = "UPDATE smov SET abonos=abonos+$monto WHERE numero='$numfac' AND cod_cli='$cod_cli' AND tipo_doc='$tiposfac'";
+								$this->db->simple_query($mSQL);
+							
+							//Crea la relacion en ccli
+	
+							$mdevo = "<h1 style='color:green;'>EXITO</h1>Cambios Guardados, Nota de Credito generada y aplicada a la factura";
+						}
+					}
+					*/
 					
 					//Devoluciones debe crear un NC si esta en el periodo
 					$mnumant = $this->datasis->prox_sql("nccli");
@@ -959,6 +1025,7 @@ function sfacreiva(mid){
 					FROM sfac WHERE id=$id";
 					$this->db->simple_query($mSQL);
 					memowrite($mSQL,"sfacreivaND");
+					
 				}
 			} else {
 				$mdevo = "<h1 style='color:red;'>ERROR</h1>Retencion ya aplicada";
