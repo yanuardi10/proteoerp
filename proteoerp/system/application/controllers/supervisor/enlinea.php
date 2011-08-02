@@ -60,7 +60,12 @@ class Enlinea extends Controller{
         function ventana(){
             $this->rapyd->load("datagrid");
             
-            $sql="SELECT nombre descrip,valor FROM valores LIMIT 5";
+            $sql="
+            SELECT 'fecha Ultimo Kardex' descrip,max(fecha) valor FROM costos
+            UNION ALL 
+            SELECT CONCAT_WS(' ','Vendido hasta el momento del ',MAX(fecha)) descrip, SUM(totals*IF(tipo_doc='D',-1,1)) AS valor FROM sfac WHERE fecha >=MAX(fecha)  AND tipo_doc<>'X' AND MID(numero,1,1)<>'_'
+            ";
+            
             $sql=$this->db->query($sql);
             $arr=$sql->result_array($sql);
             
