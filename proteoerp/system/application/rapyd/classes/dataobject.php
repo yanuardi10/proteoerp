@@ -493,7 +493,7 @@ class DataObject{
 						foreach($this->_rel_fields[$rel] AS $iind){ // $iind[0] encab $iind[1] detalle
 							$indiceit=$iind[1];
 							$indice =$iind[0];
-							$pk_rel[$indiceit]=$this->pk[$indice];
+							$pk_rel[$indiceit]= (array_key_exists($indice,$this->pk)) ? $this->pk[$indice] : $this->get($indice);
 						}
 						$this->db->where($pk_rel);
 						if($this->_rel_type[$rel][0]==0){   //uno a uno

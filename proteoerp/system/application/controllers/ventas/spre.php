@@ -502,17 +502,17 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		//fin de campos para detalle
 		//**************************
 
-		$edit->ivat = new inputField('Impuesto', 'iva');
+		$edit->ivat = new hiddenField('Impuesto', 'iva');
 		$edit->ivat->css_class ='inputnum';
 		$edit->ivat->readonly  =true;
 		$edit->ivat->size      = 10;
 
-		$edit->totals = new inputField('Sub-Total', 'totals');
+		$edit->totals = new hiddenField('Sub-Total', 'totals');
 		$edit->totals->css_class ='inputnum';
 		$edit->totals->readonly  =true;
 		$edit->totals->size      = 10;
 
-		$edit->totalg = new inputField('Monto Total', 'totalg');
+		$edit->totalg = new hiddenField('Monto Total', 'totalg');
 		$edit->totalg->css_class ='inputnum';
 		$edit->totalg->readonly  =true;
 		$edit->totalg->size      = 10;
@@ -653,6 +653,8 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$do->set('totals' ,round($totals ,2));
 		$do->set('totalg' ,round($totalg ,2));
 		$do->set('iva'    ,round($iva    ,2));
+		
+		return true;
 	}
 
 	function _post_insert($do){
