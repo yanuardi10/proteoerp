@@ -12,6 +12,7 @@ class Rpcserver extends Controller {
 		$config['functions']['cea']      = array('function' => 'Rpcserver.ComprasEmpresasAsociadas');
 		$config['functions']['consiea']  = array('function' => 'Rpcserver.ConsignacionesEmpresasAsociadas');
 		$config['functions']['montven']  = array('function' => 'Rpcserver.MontosVentas');
+		$config['functions']['ventanainf']  = array('function' => 'Rpcserver.ventanainf');
 
 		$this->xmlrpcs->initialize($config);
 		$this->xmlrpcs->serve();
@@ -227,5 +228,12 @@ class Rpcserver extends Controller {
 
 		$response = array($sinv,'struct');
 		return $this->xmlrpc->send_response($response);*/
+	}
+	
+	function ventanainf(){
+		
+		$data[]=array('ender','ochoa');
+		$response = array($data,'struct');
+		return $this->xmlrpc->send_response($response);	
 	}
 }
