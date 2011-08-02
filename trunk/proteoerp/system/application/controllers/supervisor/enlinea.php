@@ -63,7 +63,7 @@ class Enlinea extends Controller{
             $sql="
             SELECT 'fecha Ultimo Kardex' descrip,max(fecha) valor FROM costos
             UNION ALL 
-            SELECT CONCAT_WS(' ','Vendido hasta el momento del ',MAX(fecha)) descrip, SUM(totals*IF(tipo_doc='D',-1,1)) AS valor FROM sfac WHERE fecha >=MAX(fecha)  AND tipo_doc<>'X' AND MID(numero,1,1)<>'_'
+            SELECT CONCAT_WS(' ','Vendido hasta el momento del ',(SELECT MAX( fecha) FROM sfac)) descrip, SUM(totals*IF(tipo_doc='D',-1,1)) AS valor FROM sfac WHERE fecha=(SELECT MAX( fecha) FROM sfac) AND tipo_doc<>'X' AND MID(numero,1,1)<>'_' 
             ";
             
             $sql=$this->db->query($sql);
