@@ -378,15 +378,15 @@ class pfac extends validaciones{
 			$conten['form']  = & $edit;
 			$data['content'] = $this->load->view('view_pfac', $conten, true);
 			$data['title']   = heading('Pedidos No. '.$edit->numero->value);
+
 			$data['head']    = script('jquery.js');
 			$data['head']   .= script('jquery-ui.js');
 			$data['head']   .= script('plugins/jquery.numeric.pack.js');
-			$data['head']   .= style('redmond/jquery-ui-1.8.1.custom.css');
-			$data['head']   .= $this->rapyd->get_head();
-			$data['head']   .= phpscript('nformat.js');
-			$data['head']   .= script('plugins/jquery.numeric.pack.js');
 			$data['head']   .= script('plugins/jquery.floatnumber.js');
 			$data['head']   .= phpscript('nformat.js');
+			$data['head']   .= style('redmond/jquery-ui-1.8.1.custom.css');
+			$data['head']   .= $this->rapyd->get_head();
+
 
 			$this->load->view('view_ventanas', $data);
 		}else{
