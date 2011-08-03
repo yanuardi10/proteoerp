@@ -24,12 +24,12 @@ $scampos .= $campos['sinvtipo']['field'];
 $scampos .= $campos['itpvp']['field'];
 $scampos .= $campos['itcosto']['field'];
 $scampos .= $campos['sinvpeso']['field'].'</td>';
-$scampos .= '<td class="littletablerow"><a href=# onclick="del_itpfac(<#i#>);return false;">Eliminar</a></td></tr>';
+$scampos .= '<td class="littletablerow"><a href=# onclick="del_itpfac(<#i#>);return false;">'.img("images/delete.jpg").'</a></td></tr>';
 $campos=$form->js_escape($scampos);
 
 if(isset($form->error_string)) echo '<div class="alert">'.$form->error_string.'</div>';
 
-//echo $form_scripts;
+echo $form_scripts;
 echo $form_begin;
 if($form->_status!='show'){ ?>
 
@@ -419,7 +419,7 @@ function autocod(id){
 
 				<?php if($form->_status!='show') {?>
 				<td class="littletablerow">
-					<a href='#' onclick='del_itpfac(<?=$i ?>);return false;'>Eliminar</a>
+					<a href='#' onclick='del_itpfac(<?=$i ?>);return false;'><?php echo img("images/delete.jpg") ?></a>
 				</td>
 				<?php } ?>
 			</tr>

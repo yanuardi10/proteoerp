@@ -116,9 +116,10 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 	function controlador() {
 		//header('Content-type:text/javascript;charset=UTF-8');
 		if (isset($_POST["_gt_json"]) ) {
-			memowrite($_POST["_gt_json"],"caubjson");
+			//memowrite($_POST["_gt_json"],"caubjson");
 			$json=json_decode(stripslashes($_POST["_gt_json"]));
 			if($json->{'action'} == 'load') {
+				
 				$pageNo   = $json->{'pageInfo'}->{'pageNum'};
 				$pageSize = $json->{'pageInfo'}->{'pageSize'};
 				$filter = '';
@@ -198,6 +199,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 					$this->db->simple_query($mSQL);
 				}
 				for ($i = 0; $i < count($json->{'deletedRecords'}); $i++) {
+					//memowrite($_POST["_gt_json"],"caubjsondel");
 					$ubica = $json->{'deletedRecords'}[$i]->{'ubica'};
 					$mSQL = "SELECT COUNT(*) FROM costos WHERE ubica='".addslashes($ubica)."'";
 					if ( $this->datasis->dameval($mSQL) == 0  && $ubica != 'INFI' && $ubica != 'AJUS' ) {
@@ -208,6 +210,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 			}
 		} else {
 			// no hay _gt_json
+			memowrite($_POST["_gt_json"],"caubjsonelse");
 			echo '{data : []}';
 		}
 	}

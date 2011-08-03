@@ -118,15 +118,9 @@ else:
 </table>
 <table width= '100%' style='border: 1px dotted #8A0808;background: #FFFBE9;'>
 	<tr>
-		<td class="littletableheaderc">Cuenta Contable</td>
-		<td class="littletablerow"    ><?=$form->cuenta->output; ?>
-		<?php
-		if ( $form->_status == 'show' ) {
-			$mSQL = "SELECT descrip FROM cpla WHERE codigo='".trim($form->cuenta->output)."'";
-			echo $this->datasis->dameval($mSQL);
-		}
-		?>
-		</td>
+		<td width='150' class="littletableheaderc">Margen al Mayor</td>
+		<td class="littletablerow"    ><?=$form->mmargen->output; ?></td>
+		<td width='40'>&nbsp;&nbsp;</td>
 		<td class="littletableheaderc">Cliente Asociado</td>
 		<td class="littletablerow"><?=$form->socio->output ?></td>
 <?php if (!empty($form->socio->value)) { ?>
@@ -135,10 +129,6 @@ else:
 	</tr>
 </table>
 </fieldset>
-
-
-
-
 
 
 <div id="maintabcontainer">
@@ -227,6 +217,18 @@ else:
 		<td class="littletablerow"><?=$form->cobrador->output ?></td>
 		<td class="littletableheaderc">Comision %</td>
 		<td class="littletablerow"><?=$form->porcobr->output ?></td>
+	</tr>				
+	<tr>
+
+		<td class="littletableheaderc">Cuenta Contable</td>
+		<td class="littletablerow"    ><?=$form->cuenta->output; ?>
+		<?php
+		if ( $form->_status == 'show' ) {
+			$mSQL = "SELECT descrip FROM cpla WHERE codigo='".trim($form->cuenta->output)."'";
+			echo $this->datasis->dameval($mSQL);
+		}
+		?>
+		</td>
 	</tr>				
 	</table>
 	</fieldset>

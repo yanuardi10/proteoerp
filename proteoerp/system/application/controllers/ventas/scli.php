@@ -9,7 +9,9 @@ class Scli extends validaciones {
 		//$this->load->library("menues");
 		$this->datasis->modulo_id(131,1);
 		$this->load->database();
-		$this->instalar();
+		if ( !$this->datasis->iscampo('scli','mmargen') ) $this->db->simple_query("ALTER TABLE scli ADD mmargen DECIMAL(7,2) DEFAULT 0 COMMENT 'Margen al Mayor'");
+
+		//$this->instalar();
 	}
 
 	function index(){
@@ -324,13 +326,22 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 
 		$edit->nombre = new inputField('Nombre', 'nombre');
 		$edit->nombre->rule = 'trim|strtoupper|required';
-		$edit->nombre->size = 50;
+		$edit->nombre->size = 55;
 		$edit->nombre->maxlength = 45;
+		$edit->nombre->style = 'width:100%;';
+
+		$edit->nomfis = new textareaField('Nombre F&iacute;scal', 'nomfis');
+		$edit->nomfis->rule = 'trim';
+		$edit->nomfis->cols = 53;
+		$edit->nomfis->rows =  2;
+		$edit->nomfis->maxlength =200;
+		$edit->nomfis->style = 'width:100%;';
 
 		$edit->contacto = new inputField('Contacto', 'contacto');
 		$edit->contacto->rule = 'trim';
-		$edit->contacto->size = 50;
+		$edit->contacto->size = 55;
 		$edit->contacto->maxlength = 40;
+		$edit->contacto->style = 'width:100%;';
 
 		$edit->grupo = new dropdownField('Grupo', 'grupo');
 		$edit->grupo->option('','Seleccione un grupo');
@@ -353,12 +364,14 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		$edit->$obj->rule = 'trim';
 		$edit->$obj->size      = 45;
 		$edit->$obj->maxlength = 40;
+		$edit->$obj->style = 'width:95%;';
 
 		$obj  ="dire12";
 		$edit->$obj = new inputField('',$obj);
 		$edit->$obj->rule = 'trim';
 		$edit->$obj->size      = 45;
 		$edit->$obj->maxlength = 40;
+		$edit->$obj->style = 'width:95%;';
 
 		$obj="ciudad1";
 		$edit->$obj = new dropdownField('Ciudad',$obj);
@@ -373,12 +386,14 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		$edit->$obj->rule = 'trim';
 		$edit->$obj->size      = 45;
 		$edit->$obj->maxlength = 40;
+		$edit->$obj->style = 'width:95%;';
 
 		$obj  ="dire22";
 		$edit->$obj = new inputField('',$obj);
 		$edit->$obj->rule = 'trim';
 		$edit->$obj->size      = 45;
 		$edit->$obj->maxlength = 40;
+		$edit->$obj->style = 'width:95%;';
 
 		$obj="ciudad2";
 		$edit->$obj = new dropdownField('Ciudad',$obj);
@@ -412,11 +427,6 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 
 		//$edit->tiva->rule='required|callback_chdfiscal';
 
-		$edit->nomfis = new textareaField('Nombre F&iacute;scal', 'nomfis');
-		$edit->nomfis->rule = 'trim';
-		$edit->nomfis->cols = 48;
-		$edit->nomfis->rows =  2;
-		$edit->nomfis->maxlength =200;
 
 		$lriffis='<a href="javascript:consulrif(\'riffis\');" title="Consultar RIF en el SENIAT" onclick=""> SENIAT</a>';
 		$edit->riffis = new inputField('RIF F&iacute;scal', 'riffis');
@@ -505,6 +515,11 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		$edit->mensaje->rule = 'trim';
 		$edit->mensaje->size = 50;
 		$edit->mensaje->maxlength =40;
+
+		$edit->mmargen = new inputField("Margen al Mayor",'mmargen');
+		$edit->mmargen->css_class='inputnum';
+		$edit->mmargen->size=10;
+		$edit->mmargen->maxlength=10;
 
 		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
 
