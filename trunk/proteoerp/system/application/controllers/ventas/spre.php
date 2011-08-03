@@ -79,7 +79,7 @@ class spre extends validaciones {
 		$grid->order_by('id','desc');
 		$grid->per_page = 50;
 
-		$grid->column_sigma('Accion',       'accion',  '',      'width: 40, frozen: true, renderer:imprimir');
+		$grid->column_sigma('Accion',       'accion',  '',      'width: 50, frozen: true, renderer:imprimir');
 		$grid->column_sigma('N&uacute;mero','numero',  '',      'width: 60, frozen: true, renderer:sprever');
 		$grid->column_sigma('Fecha',        'fecha',   'date',  'width: 70');
 		$grid->column_sigma('Codigo',       'cod_cli', '',      'width: 50');
@@ -102,8 +102,11 @@ function sprever(value, record, columnObj, grid, colNo, rowNo){
 
 function imprimir(value, record, columnObj, grid, colNo, rowNo){
 	var url = '';
-	url = '<a href=\"#\" onclick=\"window.open(\'".base_url()."formatos/verhtml/PRESUP/'+grid.getCellValue(1,rowNo)+ '\', \'_blank\', \'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'\')\"; heigth=\"600\" >';
+	url = '&nbsp;<a href=\"#\" onclick=\"window.open(\'".base_url()."formatos/verhtml/PRESUP/'+grid.getCellValue(1,rowNo)+ '\', \'_blank\', \'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'\')\"; heigth=\"600\" >';
 	url = url +'<img src=\'".base_url()."images/html_icon.gif\'/>'+'</a>';
+	url = url+'&nbsp;<a href=\"#\" onclick=\"window.open(\'".base_url()."formatos/ver/PRESUP/'+grid.getCellValue(1,rowNo)+ '\', \'_blank\', \'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'\')\"; heigth=\"600\" >';
+	url = url +'<img src=\'".base_url()."images/pdf_logo.gif\'/>'+'&nbsp;</a>';
+
 	return url;	
 }
 ";

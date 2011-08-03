@@ -6,18 +6,15 @@ class sinv extends Controller {
 		$this->load->library('rapyd');
 		$esta = $this->datasis->dameval( "SHOW columns FROM sinv WHERE Field='alto'" );
 		if ( empty($esta) ) $this->db->simple_query("ALTER TABLE sinv ADD alto DECIMAL(10,2) ");
-		
 		$esta = $this->datasis->dameval( "SHOW columns FROM sinv WHERE Field='ancho'" );
 		if ( empty($esta) ) $this->db->simple_query("ALTER TABLE sinv ADD ancho DECIMAL(10,2) ");
-		
 		$esta = $this->datasis->dameval( "SHOW columns FROM sinv WHERE Field='largo'" );
 		if ( empty($esta) ) $this->db->simple_query("ALTER TABLE sinv ADD largo DECIMAL(10,2) ");
-		
 		$esta = $this->datasis->dameval( "SHOW columns FROM sinv WHERE Field='forma'" );
 		if ( empty($esta) ) $this->db->simple_query("ALTER TABLE sinv ADD forma VARCHAR(50) ");
-		
 		$esta = $this->datasis->dameval( "SHOW columns FROM sinv WHERE Field='exento'" );
 		if ( empty($esta) ) $this->db->simple_query("ALTER TABLE sinv ADD exento CHAR(1) DEFAULT 'N' ");
+		if ( !$this->datasis->iscampo('sinv','mmargen') ) $this->db->simple_query("ALTER TABLE sinv ADD mmargen DECIMAL(7,2) DEFAULT 0 COMMENT 'Margen al Mayor'");
 	}
 
 	function index(){
@@ -117,7 +114,7 @@ class sinv extends Controller {
 
 		$filter = new DataFilter2('Filtro por Producto');
 
-		$filter->db->select("a.existen AS existen,a.marca marca,a.tipo AS tipo,id,codigo,a.descrip,precio1,precio2,precio3,precio4,b.nom_grup AS nom_grup,b.grupo AS grupoid,c.descrip AS nom_linea,c.linea AS linea,d.descrip AS nom_depto,d.depto AS depto, activo ");
+		$filter->db->select("a.existen AS existen,a.marca marca,a.tipo AS tipo,id,codigo,a.descrip,precio1,precio2,precio3,precio4,b.nom_grup AS nom_grup,b.grupo AS grupoid,c.descrip AS nom_linea,c.linea AS linea,d.descrip AS nom_depto,d.depto AS depto, activo, mmargen ");
 		$filter->db->from('sinv AS a');
 		$filter->db->join('grup AS b','a.grupo=b.grupo','LEFT');
 		$filter->db->join('line AS c','b.linea=c.linea', 'LEFT');
@@ -314,6 +311,7 @@ class sinv extends Controller {
 		$grid->column_orderby("Depto","nom_depto","nom_depto");
 		$grid->column_orderby("Precio 3","<nformat><#precio3#></nformat>","precio3",'align=right');
 		$grid->column_orderby("Marca","marca","marca");
+		$grid->column_orderby("Mayor%","mmargen","mmargen");
 
 		//$grid->add('inventario/sinv/dataedit/create');
 		$grid->build('datagridST');
@@ -1466,6 +1464,11 @@ function sinvborraprv(mproveed, mcodigo){
 		$codigo=$edit->_dataobject->get("codigo");
 		$edit->almacenes = new containerField('almacenes',$this->_detalle($codigo));
 		$edit->almacenes->when = array("show","modify");
+		
+		$edit->mmargen = new inputField("Margen al Mayor",'mmargen');
+		$edit->mmargen->css_class='inputnum';
+		$edit->mmargen->size=10;
+		$edit->mmargen->maxlength=10;
 
 		$edit->buttons("modify", "save", "undo", "delete", "back");
 		$edit->build();

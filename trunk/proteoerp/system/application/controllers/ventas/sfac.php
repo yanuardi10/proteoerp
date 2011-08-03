@@ -944,7 +944,7 @@ function sfacreiva(mid){
 					memowrite($mSQL,"sfacreivaND");
 						
 				} else {
-					// DEVOLUCIONES GENERA ND
+					// DEVOLUCIONES GENERA ND AL CLIENTE
 					$mnumant = $this->datasis->prox_sql("ndcli");
 					$mnumant = str_pad($mnumant, 8, "0", STR_PAD_LEFT);
 					
@@ -958,9 +958,6 @@ function sfacreiva(mid){
 
 
 					// Debe abonar la ND si existe un AN
-					
-					
-					
 					/*
 					if ($referen == 'E') { 
 						// DEVOLUCIONES PAGADA AL CONTADO GENERA
