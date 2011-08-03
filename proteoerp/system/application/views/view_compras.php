@@ -10,10 +10,11 @@ else:
 $campos=$form->template_details('itscst');
 $scampos  ='<tr id="tr_itscst_<#i#>">';
 $scampos .='<td class="littletablerow" align="left" >'.$campos['codigo']['field'].'</td>';
-$scampos .='<td class="littletablerow" align="left" >'.$campos['descrip']['field'].'</td>';
+$scampos .='<td class="littletablerow" align="left" ><b id="it_descrip_val_<#i#>"></b>'.$campos['descrip']['field'].'</td>';
 $scampos .='<td class="littletablerow" align="right">'.$campos['cantidad']['field'].'</td>';
 $scampos .='<td class="littletablerow" align="right">'.$campos['costo']['field']. '</td>';
-$scampos .='<td class="littletablerow" align="right">'.$campos['importe']['field'].'</td>';
+$scampos .='<td class="littletablerow" align="right"><b id="it_importe_val_<#i#>">'.nformat(0).'</b>'.$campos['importe']['field'];
+$scampos .= $campos['sinvpeso']['field'].$campos['iva']['field'].'</td>';
 $scampos .='<td class="littletablerow"><a href=# onclick="del_itscst(<#i#>);return false;">'.img("images/delete.jpg").'</a></td></tr>';
 $campos=$form->js_escape($scampos);
 
@@ -29,7 +30,6 @@ $(function(){
 	$(".inputnum").numeric(".");
 	totalizar();
 	for(var i=0;i < <?php echo $form->max_rel_count['itscst']; ?>;i++){
-		cdropdown(i);
 		autocod(i.toString());
 	}
 });
@@ -37,9 +37,10 @@ $(function(){
 function importe(id){
 	var ind     = id.toString();
 	var cana    = Number($("#cantidad_"+ind).val());
-	var precio  = Number($("#precio_"+ind).val());
+	var precio  = Number($("#costo_"+ind).val());
 	var importe = roundNumber(cana*precio,2);
 	$("#importe_"+ind).val(importe);
+	$("#it_importe_val_"+ind).text(nformat(importe,2));
 	totalizar();
 }
 
@@ -59,7 +60,7 @@ function totalizar(){
 		if(pos>0){
 			ind     = this.name.substring(pos+1);
 			cana    = Number($("#cantidad_"+ind).val());
-			itiva   = Number($("#itiva_"+ind).val());
+			itiva   = Number($("#iva_"+ind).val());
 			importe = Number(this.value);
 			itpeso  = Number($("#sinvpeso_"+ind).val());
 
@@ -69,13 +70,14 @@ function totalizar(){
 		}
 	});
 	$("#peso").val(roundNumber(peso,2));
-	$("#gtotal").val(roundNumber(totals+iva,2));
-	$("#stotal").val(roundNumber(totals,2));
-	$("#impuesto").val(roundNumber(iva,2));
-	
-	$("#gtotal_val").text(nformat(totals+iva,2));
-	$("#stotal_val").text(nformat(totals,2));
-	$("#impuesto_val").text(nformat(iva,2));
+	$("#montonet").val(roundNumber(totals+iva,2));
+	$("#montotot").val(roundNumber(totals,2));
+	$("#montoiva").val(roundNumber(iva,2));
+
+	$("#peso_val").text(nformat(peso,2));
+	$("#montonet_val").text(nformat(totals+iva,2));
+	$("#montotot_val").text(nformat(totals,2));
+	$("#montoiva_val").text(nformat(iva,2));
 }
 
 function add_itscst(){
@@ -87,56 +89,25 @@ function add_itscst(){
 	$("#__INPL__").after(htm);
 	$("#cantidad_"+can).numeric(".");
 	$("#costo_"+can).numeric(".");
-	cdropdown(itscst_cont);
 	autocod(can);
 	$('#codigo_'+can).focus();
 
 	itscst_cont=itscst_cont+1;
 }
 
-function post_precioselec(ind,obj){
-	if(obj.value=='o'){
-		otro = prompt('Precio nuevo','');
-		otro = Number(otro);
-		if(otro>0){
-			var opt=document.createElement("option");
-			opt.text = nformat(otro,2);
-			opt.value= otro;
-			obj.add(opt,null);
-			obj.selectedIndex=obj.length-1;
-		}
-	}
-	importe(ind);
-}
-
-function post_modbus_scli(){
-	var tipo  =Number($("#sclitipo").val()); if(tipo>0) tipo=tipo-1;
-	//var cambio=confirm('?Deseas cambiar los precios por los que tenga asginado el cliente?');
-
-	var arr=$('select[name^="precio_"]');
-	jQuery.each(arr, function() {
-		nom=this.name;
-		pos=this.name.lastIndexOf('_');
-		if(pos>0){
-			ind = this.name.substring(pos+1);
-			id  = Number(ind);
-			this.selectedIndex=tipo;
-			importe(id);
-		}
-	});
-	totalizar();
-}
-
 function post_modbus_sinv(nind){
 	ind=nind.toString();
-	var tipo =Number($("#sclitipo").val()); if(tipo>0) tipo=tipo-1;
-	$("#precio_"+ind).empty();
-	var arr=$('#precio_'+ind);
-	cdropdown(nind);
-	cdescrip(nind);
-	jQuery.each(arr, function() { this.selectedIndex=tipo; });
+	var cana=Number($("#cantidad_"+ind).val());
+	if(cana<=0) $("#cantidad_"+ind).val(1);
+	$('#cantidad_'+ind).focus();
+	$('#cantidad_'+ind).select();
+	$('#it_descrip_val_'+ind).text($('#descrip_'+ind).val());
 	importe(nind);
 	totalizar();
+}
+
+function post_modbus_sprv(){
+	$('#nombre_val').text($('#nombre').val());
 }
 
 
@@ -170,25 +141,16 @@ function autocod(id){
 		minLength: 2,
 		select: function( event, ui ) {
 			//id='0';
+			var cana=Number($("#cantidad_"+ind).val());
 			$('#codigo_'+id).val(ui.item.codigo);
 			$('#desca_'+id).val(ui.item.descrip);
-			$('#precio1_'+id).val(ui.item.base1);
-			$('#precio2_'+id).val(ui.item.base2);
-			$('#precio3_'+id).val(ui.item.base3);
-			$('#precio4_'+id).val(ui.item.base4);
-			$('#itiva_'+id).val(ui.item.iva);
-			$('#sinvtipo_'+id).val(ui.item.tipo);
+			$('#iva_'+id).val(ui.item.iva);
 			$('#sinvpeso_'+id).val(ui.item.peso);
-			$('#itcosto_'+id).val(ui.item.pond);
-			$('#itpvp_'+id).val(ui.item.ultimo);
-			$('#cana_'+id).val('1');
-			$('#cana_'+id).focus();
-			$('#cana_'+id).select();
+			$('#costo_'+id).val(ui.item.pond);
+			if(cana<=0) $("#cantidad_"+ind).val(1);
+			$('#cantidad_'+id).focus();
+			$('#cantidad_'+id).select();
 
-			var arr  = $('#preca_'+ind);
-			var tipo = Number($("#sclitipo").val()); if(tipo>0) tipo=tipo-1;
-			cdropdown(id);
-			jQuery.each(arr, function() { this.selectedIndex=tipo; });
 			importe(id);
 			totalizar();
 		}
@@ -214,14 +176,14 @@ function autocod(id){
 					<fieldset  style='border: 1px outset #FEB404;background: #FFFCE8;'>
 						<table>
 							<tr>
-								<td class="littletablerowth"><?=$form->fecha->label  ?></td>
-								<td class="littletablerow">  <?=$form->fecha->output ?></td>
+								<td class="littletablerowth"><?php echo $form->fecha->label  ?></td>
+								<td class="littletablerow">  <?php echo $form->fecha->output ?></td>
 							</tr><tr>
-								<td class="littletablerowth"><?=$form->numero->label  ?></td>
-								<td class="littletablerow">  <?=$form->numero->output ?></td>
+								<td class="littletablerowth"><?php echo $form->numero->label  ?></td>
+								<td class="littletablerow">  <?php echo $form->numero->output ?></td>
 							</tr><tr>
-								<td class="littletablerowth"><?=$form->tipo->label  ?></td>
-								<td class="littletablerow">  <?=$form->tipo->output ?></td>
+								<td class="littletablerowth"><?php echo $form->tipo->label  ?></td>
+								<td class="littletablerow">  <?php echo $form->tipo->output ?></td>
 							</tr>
 						</table>
 					</fieldset>
@@ -229,14 +191,14 @@ function autocod(id){
 					<fieldset  style='border: 1px outset #FEB404;background: #FFFCE8;'>
 						<table>
 							<tr>
-								<td class="littletablerowth"><?=$form->orden->label  ?></td>
-								<td class="littletablerow">  <?=$form->orden->output ?></td>
+								<td class="littletablerowth"><?php echo $form->orden->label  ?></td>
+								<td class="littletablerow">  <?php echo $form->orden->output ?></td>
 							</tr><tr>
-								<td class="littletablerowth"><?=$form->cfis->label  ?></td>
-								<td class="littletablerow">  <?=$form->cfis->output ?></td>
+								<td class="littletablerowth"><?php echo $form->cfis->label  ?>*</td>
+								<td class="littletablerow">  <?php echo $form->cfis->output ?></td>
 							</tr><tr>
-								<td class="littletablerowth"><?=$form->almacen->label  ?></td>
-								<td class="littletablerow">  <?=$form->almacen->output ?></td>
+								<td class="littletablerowth"><?php echo $form->almacen->label  ?>*</td>
+								<td class="littletablerow">  <?php echo $form->almacen->output ?></td>
 							</tr>
 						</table>
 					</fieldset>
@@ -244,17 +206,14 @@ function autocod(id){
 					<fieldset  style='border: 1px outset #FEB404;background: #FFFCE8;'>
 						<table>
 							<tr>
-								<td class="littletablerowth">          <?=$form->proveed->label  ?></td>
-								<td colspan="3" class="littletablerow"><?=$form->proveed->output ?></td>
+								<td class="littletablerowth"><?php echo $form->proveed->label  ?>*</td>
+								<td class="littletablerow">  <?php echo $form->proveed->output ?><b id='nombre_val'><?php echo $form->nombre->value ?></b><?php echo $form->nombre->output ?></td>
 							</tr><tr>
-								<td class="littletablerowth"><?=$form->nombre->label ?></td>
-								<td colspan="3" class="littletablerow"><?=$form->nombre->output ?></td>
+								<td class="littletablerowth"><?php echo $form->vence->label ?></td>
+								<td class="littletablerow">  <?php echo $form->vence->output ?></td>
 							</tr><tr>
-								<td class="littletablerowth"><?=$form->vence->label ?></td>
-								<td width="99" class="littletablerow"><?=$form->vence->output ?></td>
-								<td width="44" class="littletablerow"><span class="littletablerowth">
-								<? echo $form->peso->label ?></span></td>
-								<td width="99" class="littletablerow" align='right'><?=$form->peso->output ?></td>
+								<td class="littletablerowth"><? echo $form->peso->label ?></td>
+								<td class="littletablerow" align='right'><b id='peso_val'><?php echo $form->peso->value ?></b><?php echo $form->peso->output ?></td>
 							</tr>
 						</table>
 					</fieldset>
@@ -284,20 +243,24 @@ function autocod(id){
 				$it_cana    = "cantidad_$i";
 				$it_precio  = "costo_$i";
 				$it_importe = "importe_$i";
-				//$it_iva     = "itiva_$i";
+				$it_peso    = "sinvpeso_$i";
+				$it_iva     = "iva_$i";
 				//$it_tipo    = "sinvtipo_$i";
-				//$it_peso    = "sinvpeso_$i";
 			?>
 
 			<tr id='tr_itsnte_<?php echo $i; ?>'>
 				<td class="littletablerow" align="left" ><?php echo $form->$it_codigo->output; ?></td>
-				<td class="littletablerow" align="left" ><?php echo $form->$it_desca->output;  ?></td>
+				<td class="littletablerow" align="left" ><b id='it_descrip_val_<?php echo $i; ?>'><?php echo $form->$it_desca->value; ?></b>
+				<?php echo $form->$it_desca->output;  ?>
+				</td>
 				<td class="littletablerow" align="right"><?php echo $form->$it_cana->output;   ?></td>
 				<td class="littletablerow" align="right"><?php echo $form->$it_precio->output; ?></td>
-				<td class="littletablerow" align="right"><?php echo $form->$it_importe->output;?></td>
+				<td class="littletablerow" align="right"><b id='it_importe_val_<?php echo $i; ?>'><?php echo nformat($form->$it_importe->value);?></b><?php echo $form->$it_importe->output; ?>
+				<?php echo $form->$it_peso->output.$form->$it_iva->output; ?>
+				</td>
 				<?php if($form->_status!='show') {?>
 				<td class="littletablerow">
-					<a href='#' onclick='del_itscst(<?=$i ?>);return false;'><?php echo img("images/delete.jpg");?></a>
+					<a href='#' onclick='del_itscst(<?php echo $i ?>);return false;'><?php echo img("images/delete.jpg");?></a>
 				</td>
 				<?php } ?>
 			</tr>
@@ -309,32 +272,33 @@ function autocod(id){
 		<br>
 
 <table  width="100%" style="margin:0;width:100%;" > 
-	  <tr>                                                           
-	  	<td colspan=10 class="littletableheader">Totales</td>      
-	 </tr>                                                          
-	 <tr>
-	  <td width="131" class="littletablerowth"><?=$form->rislr->label ?> </td>
-		<td width="122" class="littletablerow" align='right'><?=$form->rislr->output    ?></td>
-		<td width="125" class="littletablerowth">            <?=$form->anticipo->label  ?></td>
-		<td width="125" class="littletablerow" align='right'><?=$form->anticipo->output ?></td>
-		<td width="111" class="littletablerowth" >           <?=$form->montotot->label  ?></td>
-		<td width="139" class="littletablerow" align='right'><?=$form->montotot->output ?></td>
-	</tr><tr>
-		<td class="littletablerowth">            <?=$form->montoiva->label ?></td>
-		<td class="littletablerow" align='right'><?=$form->montoiva->output ?></td>
-		<td class="littletablerowth">            <?=$form->inicial->label ?></td>
-		<td class="littletablerow" align='right'><?=$form->inicial->output ?></td>
-		<td class="littletablerowth">            <?=$form->montoiva->label ?></td>
-		<td class="littletablerow" align='right'><?=$form->montoiva->output ?></td>
-      </tr>
-      <tr>
-    <td class="littletablerowth" >               <?=$form->monto->label ?></td>
-		<td class="littletablerow" align='right'><?=$form->monto->output ?></td>
-    <td class="littletablerowth">                <?=$form->credito->label ?></td>
-		<td class="littletablerow" align='right'><?=$form->credito->output ?></td>
-		<td class="littletablerowth">            <?=$form->montonet->label ?></td>
-		<td class="littletablerow" align='right'><?=$form->montonet->output ?></td>
-      </tr>
+	<tr>                                                           
+		<td colspan=10 class="littletableheader">Totales</td>      
+	</tr>                                                          
+	<tr> 
+		<td width="131" class="littletablerowth" align='right'><?php echo $form->rislr->label     ?></td>
+		<td width="122" class="littletablerow"   align='right'><?php echo $form->rislr->output    ?></td>
+		<td width="125" class="littletablerowth" align='right'><?php echo $form->anticipo->label  ?></td>
+		<td width="125" class="littletablerow"   align='right'><?php echo $form->anticipo->output ?></td>
+		<td width="111" class="littletablerowth" align='right'><?php echo $form->montotot->label  ?></td>
+		<td width="139" class="littletablerow"   align='right'><b id='montotot_val'><?php echo $form->montotot->value ?></b><?php echo $form->montotot->output ?></td>
+	</tr>
+	<tr>
+		<td class="littletablerowth" align='right'><?php echo $form->riva->label   ?></td>
+		<td class="littletablerow"   align='right'><?php echo $form->riva->output  ?></td>
+		<td class="littletablerowth" align='right'><?php echo $form->inicial->label   ?></td>
+		<td class="littletablerow"   align='right'><?php echo $form->inicial->output  ?></td>
+		<td class="littletablerowth" align='right'><?php echo $form->montoiva->label  ?></td>
+		<td class="littletablerow"   align='right'><b id='montoiva_val'><?php echo nformat($form->montoiva->value); ?><b><?php echo $form->montoiva->output ?></td>
+	</tr>
+	<tr>
+		<td class="littletablerowth" align='right'><?php echo $form->monto->label    ?></td>
+		<td class="littletablerow"   align='right'><?php echo $form->monto->output   ?></td>
+		<td class="littletablerowth" align='right'><?php echo $form->credito->label  ?></td>
+		<td class="littletablerow"   align='right'><?php echo $form->credito->output ?></td>
+		<td class="littletablerowth" align='right'><?php echo $form->montonet->label ?></td>
+		<td class="littletablerow"   align='right'><b id='montonet_val' style='font-size:18px;font-weight: bold' ><?php echo nformat($form->montonet->value); ?></b><?php echo $form->montonet->output ?></td>
+	</tr>
 </table>
 
 <?php echo $form_end?>
