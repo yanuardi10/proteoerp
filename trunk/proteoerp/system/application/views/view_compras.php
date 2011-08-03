@@ -144,6 +144,7 @@ function autocod(id){
 			var cana=Number($("#cantidad_"+ind).val());
 			$('#codigo_'+id).val(ui.item.codigo);
 			$('#desca_'+id).val(ui.item.descrip);
+			$('#it_descrip_val_'+id).text(ui.item.descrip);
 			$('#iva_'+id).val(ui.item.iva);
 			$('#sinvpeso_'+id).val(ui.item.peso);
 			$('#costo_'+id).val(ui.item.pond);
