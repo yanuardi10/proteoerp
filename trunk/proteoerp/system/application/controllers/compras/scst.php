@@ -103,7 +103,7 @@ class Scst extends Controller {
 		$grid->column_orderby('Usuario','usuario','usuario');
 //		$grid->column('Vista',$uri2,'align=\'center\'');
 
-		//$grid->add("compras/agregar");
+		$grid->add("compras/scst/dataedit/create");
 		$grid->build('datagridST');
 
 //************ SUPER TABLE ************* 
@@ -185,12 +185,12 @@ function scstserie(mcontrol){
 			'tabla'   =>'sinv',
 			'columnas'=>array(
 				'codigo' =>'C&oacute;digo',
-				'descrip'=>'descrip'),
-			'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'descrip'),
-			//'retornar'=>array('codigo'=>'codigo<#i#>','precio1'=>'precio1<#i#>','precio2'=>'precio2<#i#>','precio3'=>'precio3<#i#>','precio4'=>'precio4<#i#>','iva'=>'iva<#i#>','pond'=>'costo<#i#>'),
-			'retornar'=>array('codigo'=>'codigo<#i#>'),
+				'descrip'=>'Descripci&oacute;n'),
+			'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'Descripci&oacute;n'),
+			'retornar'=>array('codigo'=>'codigo_<#i#>','descrip'=>'descrip_<#i#>','pond'=>'costo_<#i#>','iva'=>'iva_<#i#>','peso'=>'sinvpeso_<#i#>'),
 			'p_uri'=>array(4=>'<#i#>'),
-			'titulo'  =>'Buscar Articulo');
+			'script'  => array('post_modbus_sinv(<#i#>)'),
+			'titulo'  =>'Buscar Art&iacute;culo');
 
 		$sprvbus=array(
 			'tabla'   =>'sprv',
@@ -200,6 +200,7 @@ function scstserie(mcontrol){
 				'rif'=>'RIF'),
 			'filtro'  =>array('proveed'=>'C&oacute;digo Proveedor','nombre'=>'Nombre'),
 			'retornar'=>array('proveed'=>'proveed', 'nombre'=>'nombre'),
+			'script'  => array('post_modbus_sprv()'),
 			'titulo'  =>'Buscar Proveedor');
 
 		$do = new DataObject('scst');
@@ -208,12 +209,13 @@ function scstserie(mcontrol){
 		$do->rel_pointer('itscst','sinv','itscst.codigo=sinv.codigo','sinv.descrip AS sinvdescrip, sinv.base1 AS sinvprecio1, sinv.base2 AS sinvprecio2, sinv.base3 AS sinvprecio3, sinv.base4 AS sinvprecio4, sinv.iva AS sinviva, sinv.peso AS sinvpeso,sinv.tipo AS sinvtipo');
 
 		$edit = new DataDetails('Compras',$do);
+		$edit->set_rel_title('itscst','Producto <#o#>');
 
-		$edit->post_process('insert','_guarda_detalle');
-		$edit->post_process('update','_actualiza_detalle');
-		$edit->post_process('delete','_borra_detalle');
-		$edit->pre_process( 'delete','_pre_del');
-		$edit->pre_process( 'insert','_pre_insert');
+		$edit->pre_process('insert' ,'_pre_insert');
+		$edit->pre_process('update' ,'_pre_update');
+		$edit->post_process('insert','_post_insert');
+		$edit->post_process('update','_post_update');
+		$edit->post_process('delete','_post_delete');
 
 		$edit->back_url = $this->back_dataedit;
 
@@ -228,21 +230,25 @@ function scstserie(mcontrol){
 
 		$edit->numero = new inputField('N&uacute;mero', 'numero');
 		$edit->numero->size = 15;
+		$edit->numero->autocomplete=false;
 		$edit->numero->rule = 'required';
 		$edit->numero->mode = 'autohide';
 		$edit->numero->maxlength=8;
 
 		$edit->proveed = new inputField('Proveedor', 'proveed');
-		$edit->proveed->size = 10;
-		$edit->proveed->maxlength=5;
+		$edit->proveed->size     = 10;
+		$edit->proveed->maxlength= 5;
+		$edit->proveed->rule     = 'required';
 		$edit->proveed->append($this->datasis->modbus($sprvbus));
 
-		$edit->nombre = new inputField('Nombre', 'nombre');
+		$edit->nombre = new hiddenField('Nombre', 'nombre');
 		$edit->nombre->size = 50;
 		$edit->nombre->maxlength=40;
 
-		$edit->cfis = new inputField('Cod.fiscal', 'nfiscal');
+		$edit->cfis = new inputField('N&uacute;mero f&iacute;scal', 'nfiscal');
 		$edit->cfis->size = 15;
+		$edit->cfis->autocomplete=false;
+		$edit->cfis->rule = 'required';
 		$edit->cfis->maxlength=8;
 
 		$edit->almacen = new  dropdownField ('Almac&eacute;n', 'almacen');
@@ -251,13 +257,13 @@ function scstserie(mcontrol){
 		$edit->almacen->style='width:145px;';
 
 		$edit->tipo = new dropdownField('Tipo', 'tipo_doc');
-		$edit->tipo->option('FC','FC');
-		$edit->tipo->option('NC','NC');
-		$edit->tipo->option('NE','NE');
+		$edit->tipo->option('FC','Factura a Cr&eacute;dito');
+		$edit->tipo->option('NC','Nota de Cr&eacute;dito');
+		$edit->tipo->option('NE','Nota de Entrega');
 		$edit->tipo->rule = 'required';
 		$edit->tipo->style='width:140px;';
 
-		$edit->peso  = new inputField2('Peso', 'peso');
+		$edit->peso  = new hiddenField('Peso', 'peso');
 		$edit->peso->size = 20;
 		$edit->peso->css_class='inputnum';
 
@@ -267,34 +273,39 @@ function scstserie(mcontrol){
 		$edit->credito  = new inputField('Cr&eacute;dito', 'credito');
 		$edit->credito->size = 20;
 		$edit->credito->css_class='inputnum';
+		$edit->credito->when=array('show');
 
-		$edit->montotot  = new inputField('Subtotal', 'montotot');
+		$edit->montotot  = new hiddenField('Subtotal', 'montotot');
 		$edit->montotot->size = 20;
 		$edit->montotot->css_class='inputnum';
 
-		$edit->montoiva  = new inputField('IVA', 'montoiva');
+		$edit->montoiva  = new hiddenField('IVA', 'montoiva');
 		$edit->montoiva->size = 20;
 		$edit->montoiva->css_class='inputnum';
 
-		$edit->montonet  = new inputField('Total', 'montonet');
+		$edit->montonet  = new hiddenField('Total', 'montonet');
 		$edit->montonet->size = 20;
 		$edit->montonet->css_class='inputnum';
 
 		$edit->anticipo  = new inputField('Anticipo', 'anticipo');
 		$edit->anticipo->size = 20;
 		$edit->anticipo->css_class='inputnum';
+		$edit->anticipo->when=array('show');
 
 		$edit->inicial  = new inputField('Contado', 'inicial');
 		$edit->inicial->size = 20;
 		$edit->inicial->css_class='inputnum';
+		$edit->inicial->when=array('show');
 
-		$edit->rislr  = new inputField('R.ISLR', 'reten');
+		$edit->rislr  = new inputField('Retenci&oacute;n ISLR', 'reten');
 		$edit->rislr->size = 20;
 		$edit->rislr->css_class='inputnum';
+		$edit->rislr->when=array('show');
 
-		$edit->riva  = new inputField('R.IVA', 'reteiva');
+		$edit->riva  = new inputField('Retenci&oacute;n IVA', 'reteiva');
 		$edit->riva->size = 20;
 		$edit->riva->css_class='inputnum';
+		$edit->riva->when=array('show');
 
 		$edit->monto  = new inputField('Monto US $', 'mdolar');
 		$edit->monto->size = 20;
@@ -305,45 +316,60 @@ function scstserie(mcontrol){
 		$edit->codigo->size=10;
 		$edit->codigo->db_name='codigo';
 		$edit->codigo->append($this->datasis->p_modbus($modbus,'<#i#>'));
+		$edit->codigo->autocomplete=false;
 		$edit->codigo->db_name  = 'codigo';
+		$edit->codigo->rule     = 'required|callback_chcodigoa';
 		$edit->codigo->rel_id   = 'itscst';
 
-		$edit->descrip = new inputField('Descripci&oacute;n', 'descrip_<#i#>');
+		$edit->descrip = new hiddenField('Descripci&oacute;n', 'descrip_<#i#>');
 		$edit->descrip->size=30;
 		$edit->descrip->db_name='descrip';
 		$edit->descrip->maxlength=12;
 		$edit->descrip->rel_id  ='itscst';
 
-		$edit->cantidad = new inputField('Cantidad', 'cantidad<#i#>');
+		$edit->cantidad = new inputField('Cantidad', 'cantidad_<#i#>');
 		$edit->cantidad->size=10;
 		$edit->cantidad->db_name='cantidad';
 		$edit->cantidad->maxlength=60;
+		$edit->cantidad->autocomplete=false;
+		$edit->cantidad->onkeyup  ='importe(<#i#>)';
 		$edit->cantidad->css_class='inputnum';
+		$edit->cantidad->rule     = 'require|numeric';
 		$edit->cantidad->rel_id   = 'itscst';
 
 		$edit->costo = new inputField('Costo', 'costo_<#i#>');
 		$edit->costo->css_class='inputnum';
-		$edit->costo->onchange='totalizar()';
+		$edit->costo->rule   = 'require|numeric';
+		$edit->costo->onkeyup='importe(<#i#>)';
 		$edit->costo->size=20;
+		$edit->costo->autocomplete=false;
 		$edit->costo->db_name='costo';
 		$edit->costo->rel_id ='itscst';
 
-		$edit->importe = new inputField2('Importe', 'importe_<#i#>');
+		$edit->importe = new hiddenField('Importe', 'importe_<#i#>');
 		$edit->importe->db_name='importe';
-		$edit->importe->css_class='inputnum';
-		$edit->importe->readonly=true;
-		$edit->importe->size=20;
 		$edit->importe->rel_id='itscst';
+
+		$edit->sinvpeso = new hiddenField('', 'sinvpeso_<#i#>');
+		$edit->sinvpeso->db_name = 'sinvpeso';
+		$edit->sinvpeso->rel_id  = 'itscst';
+		$edit->sinvpeso->pointer = true;
+
+		$edit->iva = new hiddenField('Impuesto', 'iva_<#i#>');
+		$edit->iva->db_name = 'iva';
+		$edit->iva->rel_id='itscst';
 		//fin de campos para detalle
+
+		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
 
 		$accion="javascript:window.location='".site_url('compras/scst/actualizar/'.$edit->_dataobject->pk['control'])."'";
 		$edit->button_status('btn_actuali','Actualizar',$accion,'TR','show');
 		$edit->buttons('save', 'undo', 'back','add_rel');
 		$edit->build();
 
-		$smenu['link'] =  barra_menu('201');
-		$data['smenu'] =  $this->load->view('view_sub_menu', $smenu,true);
-		$conten['form']=& $edit;
+		$smenu['link']  =  barra_menu('201');
+		$data['smenu']  =  $this->load->view('view_sub_menu', $smenu,true);
+		$conten['form'] =& $edit;
 
 		$data['script']  = script('jquery.js');
 		$data['script'] .= script('jquery-ui.js');
@@ -355,9 +381,17 @@ function scstserie(mcontrol){
 		$data['head']   .= style('redmond/jquery-ui-1.8.1.custom.css');
 
 		$data['content'] = $this->load->view('view_compras', $conten,true);
-		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = heading('Compras');
 		$this->load->view('view_ventanas', $data);
+	}
+
+	function chcodigoa($codigo){
+		$cana=$this->datasis->dameval('SELECT COUNT(*) FROM sinv WHERE activo=\'S\' AND codigo='.$this->db->escape($codigo));
+		if(empty($cana) || $cana==0){
+			$this->validation->set_message('chcodigoa', 'El campo %s contiene un codigo no v&aacute;lido o inactivo');
+			return false;
+		}
+		return true;
 	}
 
 	function dpto() {
@@ -387,7 +421,6 @@ function scstserie(mcontrol){
 		$this->load->view('view_detalle', $data);
 	}
 
-
 	function scstserie(){
 		$serie   = $this->uri->segment($this->uri->total_segments());
 		$control = $this->uri->segment($this->uri->total_segments()-1);
@@ -398,35 +431,6 @@ function scstserie(mcontrol){
 			echo " NO se guardo ";
 		}
 		logusu('SCST',"Cambia Nro. Serie $control ->  $serie ");
-	}
-
-	function _guarda_detalle($do) {
-		$cant=$this->input->post('cant_0');
-		$i=$o=0;
-		while($o<$cant){
-			if (isset($_POST["codigo$i"])){
-				if($this->input->post("codigo$i")){
-
-					$sql = "INSERT INTO itscst (fecha,numero,proveed,depo,codigo,descrip) VALUES(?,?,?,?,?,?)";
-
-					//$haber=($this->input->post("monto$i") < 0)? $this->input->post("monto$i")*(-1) : 0;
-
-					$llena=array(
-							0=>$do->get('fecha'),
-							1=>$do->get('numero'),
-							2=>$do->get('proveed'),
-							3=>$do->get('depo'),
-							4=>$this->input->post("codigo$i"),
-							5=>$this->input->post("descrip$i"),
-							6=>$this->input->post("codigo$i"),
-
-							);
-					$this->db->query($sql,$llena);
-				}
-				$o++;
-			}
-			$i++;
-		}
 	}
 
 	function autocomplete($campo,$cod=FALSE){
@@ -646,17 +650,6 @@ function scstserie(mcontrol){
 		}
 	}
 
-	function _actualiza_detalle($do){
-		$this->_borra_detalle($do);
-		$this->_guarda_detalle($do);
-	}
-
-	function _borra_detalle($do){
-		$control=$do->get('control');
-		$sql = "DELETE FROM itscst WHERE control='$control'";
-		$this->db->query($sql);
-	}
-
 	function _pre_del($do){
 		$codigo=$do->get('comprob');
 		$chek =   $this->datasis->dameval("SELECT COUNT(*) FROM cpla WHERE codigo LIKE '$codigo.%'");
@@ -667,20 +660,56 @@ function scstserie(mcontrol){
 			return False;
 		}
 		return True;
+	}	
+	function _pre_insert($do){
+		$control = $this->datasis->fprox_numero('nscst');
+		$transac= $this->datasis->fprox_numero('ntransa');
+		$fecha  = $do->get('fecha');
+		$usuario= $do->get('usuario');
+		$estampa= date('Ymd');
+		$hora   = date("H:i:s");
+
+		$iva=$stotal=0;
+		$cana=$do->count_rel('itscst');
+		for($i=0;$i<$cana;$i++){
+			$itcana    = $do->get_rel('itscst','cana'   ,$i);
+			$itprecio  = $do->get_rel('itscst','precio' ,$i);
+			$itiva     = $do->get_rel('itscst','iva'    ,$i);
+			$itimporte = $itprecio*$itcana;
+			$iiva      = $itimporte*($itiva/100);
+
+			$do->set_rel('itscst','importe' ,$itimporte,$i);
+			$do->set_rel('itscst','control' ,$control  ,$i);
+
+			$iva    += $iiva ;
+			$stotal += $itimporte;
+		}
+		$gtotal=$stotal+$iva;
+		$do->set('control' ,$control);
+		$do->set('estampa' ,$estampa);
+		$do->set('hora'    ,$hora);
+		$do->set('transac' ,$transac);
+		$do->set('montotot',round($stotal,2));
+		$do->set('montonet',round($gtotal,2));
+		$do->set('montoiva',round($iva   ,2));
+		//$do->set('estampa', 'CURDATE()', FALSE);
+		//$do->set('hora'   , 'CURRENT_TIME()', FALSE);
+
+		return true;
 	}
 
-	function _pre_insert($do){
-		$sql    = 'INSERT INTO ntransa (usuario,fecha) VALUES ("'.$this->session->userdata('usuario').'",NOW())';
-		$query  =$this->db->query($sql);
-		$transac=$this->db->insert_id();
+	function _post_insert($do){
+		$codigo  = $do->get('numero');
+		$control = $do->get('control');
+		logusu('snte',"Compra $codigo control $control CREADA");
+	}
 
-		$sql    = 'INSERT INTO nscst (usuario,fecha) VALUES ("'.$this->session->userdata('usuario').'",NOW())';
-		$query  =$this->db->query($sql);
-		$control =str_pad($this->db->insert_id(),8, "0", STR_PAD_LEFT);
-		$do->set('control', $control);
-		$do->set('transac', $transac);
-		$do->set('estampa', 'CURDATE()', FALSE);
-		$do->set('hora'   , 'CURRENT_TIME()', FALSE);
-		$do->set('usuario', $this->session->userdata('usuario'));
+	function _pre_update($do){
+		return false;
+	}
+
+	function _post_delete($do){
+		$codigo=$do->get('numero');
+		logusu('scst',"Compra $codigo ELIMINADA");
 	}
 }
