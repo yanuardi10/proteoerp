@@ -143,7 +143,7 @@ function autocod(id){
 			//id='0';
 			var cana=Number($("#cantidad_"+ind).val());
 			$('#codigo_'+id).val(ui.item.codigo);
-			$('#desca_'+id).val(ui.item.descrip);
+			$('#descrip_'+id).val(ui.item.descrip);
 			$('#it_descrip_val_'+id).text(ui.item.descrip);
 			$('#iva_'+id).val(ui.item.iva);
 			$('#sinvpeso_'+id).val(ui.item.peso);
@@ -151,8 +151,9 @@ function autocod(id){
 			if(cana<=0) $("#cantidad_"+ind).val(1);
 			$('#cantidad_'+id).focus();
 			$('#cantidad_'+id).select();
+			//post_modbus_sinv(parseInt(id));
 
-			importe(id);
+			importe(parseInt(id));
 			totalizar();
 		}
 	});
@@ -180,8 +181,8 @@ function autocod(id){
 								<td class="littletablerowth"><?php echo $form->fecha->label  ?></td>
 								<td class="littletablerow">  <?php echo $form->fecha->output ?></td>
 							</tr><tr>
-								<td class="littletablerowth"><?php echo $form->numero->label  ?></td>
-								<td class="littletablerow">  <?php echo $form->numero->output ?></td>
+								<td class="littletablerowth"><?php echo $form->serie->label  ?></td>
+								<td class="littletablerow">  <?php echo $form->serie->output ?></td>
 							</tr><tr>
 								<td class="littletablerowth"><?php echo $form->tipo->label  ?></td>
 								<td class="littletablerow">  <?php echo $form->tipo->output ?></td>
