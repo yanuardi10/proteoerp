@@ -23,15 +23,24 @@ class Buscar extends Controller
 	var $join=array();
 	//Parametros para agupar
 	var $groupby='';
+	//parametro que define el grupo de base de datos a usar
+	var $dbgroup='';
+	
+	
 
 	function Buscar(){
 		parent::Controller();
 		$this->load->library('rapyd');
 	}
-
+	
 	function index(){
+		
 		$this->rapyd->load('datafilter2','datagrid');
 		$this->_db2prop();
+		if(!empty($this->dbgroup)){
+			$this->rapyd->set_connection($this->dbgroup);
+			$this->rapyd->load_db();	
+		}
 
 		$join=false;
 		//extrae las varibles provenientes de las uris
@@ -218,6 +227,7 @@ class Buscar extends Controller
 		$this->filtro  =$modbus['filtro'];
 		$this->retornar=$modbus['retornar'];
 		$this->titulo  =$modbus['titulo'];
+		
 	}
 
 	function _db2prop(){
@@ -237,6 +247,7 @@ class Buscar extends Controller
 			if (isset($modbus['script']))  $this->script =$modbus['script'];
 			if (isset($modbus['join']))    $this->join   =$modbus['join'];
 			if (isset($modbus['groupby'])) $this->groupby =$modbus['groupby'];
+			if (isset($modbus['dbgroup'])) $this->dbgroup =$modbus['dbgroup'];
 		}
 		//echo '<pre>';print_r($this->session->userdata);echo '</pre>';
 	}
