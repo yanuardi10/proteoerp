@@ -223,7 +223,6 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
  
 				$mSQL = "SELECT grupo, nom_grup, comision, margen, margenc, depto, linea, cu_inve, cu_cost, cu_venta, cu_devo ";
 				$mSQL .= "FROM grup WHERE $filter grupo IS NOT NULL ORDER BY ".$sortField." ".$sortOrder." LIMIT ".($pageNo - 1)*$pageSize.", ".$pageSize;
-//memowrite($mSQL,"mSQL");
 				$query = $this->db->query($mSQL);
 				if ($query->num_rows() > 0){
 					$retArray = array();
