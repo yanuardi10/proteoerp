@@ -32,7 +32,7 @@ class Enlinea extends Controller{
                     return 'No Disponible';
                 else{
                     $ima="http://".$url."/".$proteoerp."/supervisor/enlinea/ventana";
-                    return "<iframe src='$ima' width='500px' height='200px'/></iframe>";
+                    return "<iframe src='$ima' width='500px' height='80px'/></iframe>";
                 }
             }
     
@@ -50,38 +50,22 @@ class Enlinea extends Controller{
             
             //$out .= '<div class=\'box col1\'><h3>'.htmlentities($panel).'</h3>';
     
-            $conten['grid' ]  =$grid->output;
-            $data['content'] = $this->load->view('view_enlinea', $conten,true);
+            $data['content'] = $grid->output;
             $data['title']   = heading('Informacion de Sucursales');
             $data["head"]    = $this->rapyd->get_head();
             $this->load->view('view_ventanas', $data);
         }
         
         function ventana(){
-            $this->rapyd->load("datagrid");
+            $ukardex=$this->datasis->dameval("SELECT max(fecha) valor FROM costos");
+            $vendido=$this->datasis->dameval("SELECT SUM(totals*IF(tipo_doc='D',-1,1)) AS valor FROM sfac WHERE fecha=(SELECT MAX( fecha) FROM sfac) AND tipo_doc<>'X' AND MID(numero,1,1)<>'_' ");
+            $fsfac  =$this->datasis->dameval("SELECT MAX( fecha) FROM sfac");
             
-            $sql="
-            SELECT 'fecha Ultimo Kardex' descrip,max(fecha) valor FROM costos
-            UNION ALL 
-            SELECT CONCAT_WS(' ','Vendido hasta el momento del ',(SELECT MAX( fecha) FROM sfac)) descrip, SUM(totals*IF(tipo_doc='D',-1,1)) AS valor FROM sfac WHERE fecha=(SELECT MAX( fecha) FROM sfac) AND tipo_doc<>'X' AND MID(numero,1,1)<>'_' 
-            ";
-            
-            $sql=$this->db->query($sql);
-            $arr=$sql->result_array($sql);
-            
-            $grid = new DataGrid("",$arr);
-            
-            $grid->order_by("codigo","desc");
-            $grid->per_page=15;
-            $grid->use_function('linea','ver');
-    
-            $grid->column("Descripci&oacute;n" ,'descrip'   );
-            $grid->column("Valor"              ,'valor'     );
-
-            $grid->build();
-            
-            $data['content'] =$grid->output;
-            $data["head"]    = $this->rapyd->get_head();
+            $conten['vendido' ]  =$vendido;
+            $conten['ukardex' ]  =$ukardex;
+            $conten['fsfac' ]    =$fsfac;
+            $data['content']     = $this->load->view('view_enlinea', $conten,true);
+            $data["head"]        = $this->rapyd->get_head();
             $this->load->view('view_ventanas_sola', $data);
         }
         
