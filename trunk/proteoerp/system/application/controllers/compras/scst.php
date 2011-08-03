@@ -228,16 +228,18 @@ function scstserie(mcontrol){
 		$edit->vence->insertValue = date('Y-m-d');
 		$edit->vence->size = 10;
 
-		$edit->numero = new inputField('N&uacute;mero', 'numero');
-		$edit->numero->size = 15;
-		$edit->numero->autocomplete=false;
-		$edit->numero->rule = 'required';
-		$edit->numero->mode = 'autohide';
-		$edit->numero->maxlength=8;
+		$edit->serie = new inputField('N&uacute;mero', 'serie');
+		$edit->serie->size = 15;
+		$edit->serie->autocomplete=false;
+		$edit->serie->rule = 'required';
+		$edit->serie->mode = 'autohide';
+		$edit->serie->maxlength=12;
 
 		$edit->proveed = new inputField('Proveedor', 'proveed');
 		$edit->proveed->size     = 10;
 		$edit->proveed->maxlength= 5;
+		$edit->proveed->autocomplete=false;
+		$edit->proveed->readonly=true;
 		$edit->proveed->rule     = 'required';
 		$edit->proveed->append($this->datasis->modbus($sprvbus));
 
@@ -251,7 +253,7 @@ function scstserie(mcontrol){
 		$edit->cfis->rule = 'required';
 		$edit->cfis->maxlength=8;
 
-		$edit->almacen = new  dropdownField ('Almac&eacute;n', 'almacen');
+		$edit->almacen = new  dropdownField ('Almac&eacute;n', 'depo');
 		$edit->almacen->options('SELECT ubica, CONCAT(ubica,\' \',ubides) nombre FROM caub ORDER BY ubica');
 		$edit->almacen->rule = 'required';
 		$edit->almacen->style='width:145px;';
@@ -663,28 +665,41 @@ function scstserie(mcontrol){
 	}	
 	function _pre_insert($do){
 		$control = $this->datasis->fprox_numero('nscst');
-		$transac= $this->datasis->fprox_numero('ntransa');
-		$fecha  = $do->get('fecha');
-		$usuario= $do->get('usuario');
-		$estampa= date('Ymd');
-		$hora   = date("H:i:s");
+		$transac = $this->datasis->fprox_numero('ntransa');
+		$fecha   = $do->get('fecha');
+		$numero  = substr($do->get('serie'),-8);
+		$usuario = $do->get('usuario');
+		$proveed = $do->get('proveed');
+		$depo    = $do->get('depo');
+		$estampa = date('Ymd');
+		$hora    = date("H:i:s");
 
 		$iva=$stotal=0;
 		$cana=$do->count_rel('itscst');
 		for($i=0;$i<$cana;$i++){
-			$itcana    = $do->get_rel('itscst','cana'   ,$i);
-			$itprecio  = $do->get_rel('itscst','precio' ,$i);
-			$itiva     = $do->get_rel('itscst','iva'    ,$i);
+			$itcana    = $do->get_rel('itscst','cantidad',$i);
+			$itprecio  = $do->get_rel('itscst','costo'   ,$i);
+			$itiva     = $do->get_rel('itscst','iva'     ,$i);
 			$itimporte = $itprecio*$itcana;
 			$iiva      = $itimporte*($itiva/100);
 
 			$do->set_rel('itscst','importe' ,$itimporte,$i);
+			$do->set_rel('itscst','montoiva',$iiva     ,$i);
+			$do->set_rel('itscst','fecha'   ,$fecha    ,$i);
+			$do->set_rel('itscst','numero'  ,$numero   ,$i);
+			$do->set_rel('itscst','proveed' ,$proveed  ,$i);
+			$do->set_rel('itscst','depo'    ,$depo     ,$i);
 			$do->set_rel('itscst','control' ,$control  ,$i);
+			$do->set_rel('itscst','transac' ,$transac  ,$i);
+			$do->set_rel('itscst','usuario' ,$usuario  ,$i);
+			$do->set_rel('itscst','hora'    ,$hora     ,$i);
+			$do->set_rel('itscst','estampa' ,$estampa  ,$i);
 
 			$iva    += $iiva ;
 			$stotal += $itimporte;
 		}
 		$gtotal=$stotal+$iva;
+		$do->set('numero'  ,$numero);
 		$do->set('control' ,$control);
 		$do->set('estampa' ,$estampa);
 		$do->set('hora'    ,$hora);
