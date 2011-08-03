@@ -4,10 +4,11 @@ class Mantenimiento extends Controller{
 	function Mantenimiento(){
 		parent::Controller();
 		$this->load->library('rapyd');
-		$this->datasis->modulo_id('900',1);
+		//$this->datasis->modulo_id('900',1);
 	}
 
 	function index(){
+		$this->datasis->modulo_id('900',1);
 		$list = array();
 		$list[]=anchor('supervisor/mantenimiento/bprefac','Borrar PreFacturas menores o iguales al d&iacute;a de ayer');
 		$list[]=anchor('supervisor/mantenimiento/puertosdir','Descargar PUERTOS.DIR');
@@ -35,6 +36,7 @@ class Mantenimiento extends Controller{
 	}
 
 	function reparatabla(){
+		$this->datasis->modulo_id('900',1);
 		$this->load->dbutil();
 		$tables = $this->db->list_tables();
 		foreach ($tables as $table){
@@ -44,6 +46,7 @@ class Mantenimiento extends Controller{
 	}
 
 	function bprefac(){
+		$this->datasis->modulo_id('900',1);
 		$mSQL="DELETE FROM sitems WHERE MID(numa,1,1)='_' AND fecha<CURDATE()";
 		$this->db->simple_query($mSQL);
 		$mSQL="DELETE FROM sfac WHERE MID(numero,1,1)='_' AND fecha<CURDATE()";
@@ -52,12 +55,14 @@ class Mantenimiento extends Controller{
 	}
 
 	function bmodbus(){
+		$this->datasis->modulo_id('900',1);
 		$mSQL="TRUNCATE modbus";
 		$this->db->simple_query($mSQL);
 		redirect('supervisor/mantenimiento');
 	}
 
 	function centinelas(){
+		$this->datasis->modulo_id('900',1);
 		$this->load->helper('directory');
 		$this->load->library('table');
 		$tmpl = array('row_start' => '<tr valign="top">');
@@ -102,6 +107,7 @@ class Mantenimiento extends Controller{
 	}
 
 	function vercentinela($file=NULL){
+		$this->datasis->modulo_id('900',1);
 		if(empty($file)) return FALSE;
 		$this->load->helper('file');
 		$string = read_file("./system/logs/$file");
@@ -110,6 +116,7 @@ class Mantenimiento extends Controller{
 	}
 
 	function borracentinela($file=NULL){
+		$this->datasis->modulo_id('900',1);
 		if(!empty($file)){
 			$this->load->helper('file');
 			unlink("./system/logs/$file");
@@ -119,6 +126,7 @@ class Mantenimiento extends Controller{
 	function almainconsis(){
 
 		$this->rapyd->load("datafilter","datagrid");
+		$this->datasis->modulo_id('900',1);
 
 		$filter = new DataFilter("Clientes inconsistentes");
 
@@ -175,6 +183,7 @@ class Mantenimiento extends Controller{
 	}
 
 	function cambioalma(){
+		$this->datasis->modulo_id('900',1);
 		$this->rapyd->load("dataedit");
 		$edit = new DataEdit("Realizar cambio de almacen","sfac");
 		$edit->back_url = site_url("supervisor/mantenimiento/almainconsis");
@@ -217,6 +226,7 @@ class Mantenimiento extends Controller{
 	function clinconsis(){
 		$this->rapyd->load("datafilter","datagrid");
 		$this->rapyd->uri->keep_persistence();
+		$this->datasis->modulo_id('900',1);
 
 		$scli=array(
 		'tabla'   =>'scli',
@@ -330,6 +340,7 @@ class Mantenimiento extends Controller{
 	}
 
 	function clinconsismasivo(){
+		$this->datasis->modulo_id('900',1);
 		$mSQL="SELECT
 			`a`.`fecha`, 
 			`a`.`tipo_doc`, 
@@ -354,6 +365,7 @@ class Mantenimiento extends Controller{
 	}
 
 	function ajustesaldo(){
+		$this->datasis->modulo_id('900',1);
 		$pk  = unserialize(htmlspecialchars_decode($this->input->post('pk')));
 		//print_r($pk);
 		if(count($pk)!=5){
@@ -399,6 +411,7 @@ class Mantenimiento extends Controller{
 
 
 	function itclinconsis($cliente='',$numero='',$tipo_doc){
+		$this->datasis->modulo_id('900',1);
 		$this->rapyd->load("datagrid2");
 		$this->rapyd->uri->keep_persistence();
 
@@ -430,6 +443,7 @@ class Mantenimiento extends Controller{
 	}
 
 	function contadores(){
+		$this->datasis->modulo_id('900',1);
 		if(!$this->datasis->essuper()) show_404();
 
 		$this->rapyd->load("dataform");
@@ -499,6 +513,7 @@ class Mantenimiento extends Controller{
 	}
 
 	function tablas(){
+		$this->datasis->modulo_id('900',1);
 		$this->rapyd->load("dataform","datatable");
 		$tables = $this->db->list_tables();
 		//print("<pre>");
@@ -555,6 +570,7 @@ class Mantenimiento extends Controller{
 
 
 	function sntealma(){
+		$this->datasis->modulo_id('900',1);
 		$this->rapyd->load("datafilter","datagrid");
 
 		$filter = new DataFilter("Cambio de almac&eacute;n en notas de entrega",'snte');
@@ -601,6 +617,7 @@ class Mantenimiento extends Controller{
 	}
 
 	function sntecambioalma(){
+		$this->datasis->modulo_id('900',1);
 		$this->rapyd->load('dataedit');
 		$edit = new DataEdit('Realizar cambio de almac&eacute;n','snte');
 		$edit->back_url = site_url('supervisor/mantenimiento/sntealma');
@@ -677,6 +694,7 @@ class Mantenimiento extends Controller{
 	}
 
 	function respaldo(){
+		$this->datasis->modulo_id('900',1);
 		if(!$this->datasis->essuper()) show_404();
 		$this->load->library('zip');
 		$host= $this->db->hostname;
