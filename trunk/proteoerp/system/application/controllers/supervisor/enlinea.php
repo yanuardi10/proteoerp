@@ -11,6 +11,7 @@ class Enlinea extends Controller{
         }
         
         function pasillo(){
+            $this->datasis->modulo_id(926,1);
             $this->rapyd->load("datagrid");
 
             $uri = anchor_popup('http://<#url#>/<#proteo#>','<#sucursal#>');
