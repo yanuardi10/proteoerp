@@ -384,10 +384,6 @@ function sntefactura(mnumero){
 		$data['script']  = script('jquery.js');
 		$data['script'] .= script('jquery-ui.js');
 		$data['script'] .= script('plugins/jquery.numeric.pack.js');
-		$data['script'] .= script('plugins/jquery.meiomask.js');
-		$data['script'] .= style('vino/jquery-ui.css');
-		$data['script'] .= phpscript('nformat.js');
-		$data['script'] .= script('plugins/jquery.numeric.pack.js');
 		$data['script'] .= script('plugins/jquery.floatnumber.js');
 		$data['script'] .= phpscript('nformat.js');
 
