@@ -295,7 +295,7 @@ function sntefactura(mnumero){
 		$edit->codigo = new inputField('C&oacute;digo <#o#>', 'codigo_<#i#>');
 		$edit->codigo->size     = 12;
 		$edit->codigo->db_name  = 'codigo';
-		$edit->codigo->readonly = true;
+		//$edit->codigo->readonly = true;
 		$edit->codigo->rel_id   = 'itsnte';
 		$edit->codigo->rule     = 'required';
 		$edit->codigo->append($btn);
@@ -358,15 +358,15 @@ function sntefactura(mnumero){
 		$edit->sinvtipo->pointer   = true;
 		//fin de campos para detalle
 
-		$edit->impuesto  = new inputField('Impuesto', 'impuesto');
+		$edit->impuesto  = new hiddenField('Impuesto', 'impuesto');
 		$edit->impuesto->size = 20;
 		$edit->impuesto->css_class='inputnum';
 
-		$edit->stotal  = new inputField('Sub.Total', 'stotal');
+		$edit->stotal  = new hiddenField('Sub.Total', 'stotal');
 		$edit->stotal->size = 20;
 		$edit->stotal->css_class='inputnum';
 
-		$edit->gtotal  = new inputField('Total', 'gtotal');
+		$edit->gtotal  = new hiddenField('Total', 'gtotal');
 		$edit->gtotal->size = 20;
 		$edit->gtotal->css_class='inputnum';
 
@@ -392,6 +392,7 @@ function sntefactura(mnumero){
 		$data['script'] .= phpscript('nformat.js');
 
 		$data['head']    = $this->rapyd->get_head();
+		$data['head']   .= style('redmond/jquery-ui-1.8.1.custom.css');
 
 		$this->load->view('view_ventanas', $data);
 		

@@ -47,12 +47,8 @@ $(function(){
 	totalizar();
 	for(var i=0;i < <?php echo $form->max_rel_count['itpfac']; ?>;i++){
 		cdropdown(i);
+		autocod(i.toString());
 	}
-
-	//alert(invent._TPC01[0]);
-	/*if(typeof invent._TP0C01 == "undefined"){
-		alert('no existo');
-	}*/
 });
 
 function OnEnter(e,ind){
@@ -133,7 +129,7 @@ function totalizar(){
 	var itiva  =0;
 	var itpeso =0;
 	var totals =0;
-	var tota=0;
+	var tota   =0;
 	var peso   =0;
 	var cana   =0;
 	var arr=$('input[name^="tota_"]');
@@ -156,6 +152,10 @@ function totalizar(){
 	$("#totalg").val(roundNumber(totals+iva,2));
 	$("#totals").val(roundNumber(totals,2));
 	$("#iva").val(roundNumber(iva,2));
+
+	$("#totalg_val").text(nformat(totals+iva,2));
+	$("#totals_val").text(nformat(totals,2));
+	$("#ivat_val").text(nformat(iva,2));
 }
 
 function add_itpfac(){
@@ -164,8 +164,10 @@ function add_itpfac(){
 	con = (itpfac_cont+1).toString();
 	htm = htm.replace(/<#i#>/g,can);
 	htm = htm.replace(/<#o#>/g,con);
-	$("#__UTPL__").before(htm);
+	$("#__INPL__").after(htm);
 	$("#cana_"+can).numeric(".");
+	autocod(can);
+	$('#codigoa_'+can).focus();
 	itpfac_cont=itpfac_cont+1;
 }
 
@@ -263,6 +265,56 @@ function del_itpfac(id){
 	$('#tr_itpfac_'+id).remove();
 	totalizar();
 }
+
+//Agrega el autocomplete
+function autocod(id){
+	$('#codigoa_'+id).autocomplete({
+		source: function( req, add){
+			$.ajax({
+				url:  "<?php echo site_url('ventas/spre/buscasinv'); ?>",
+				type: "POST",
+				dataType: "json",
+				data: "q="+req.term,
+				success:
+					function(data){
+						var sugiere = [];
+						$.each(data,
+							function(i, val){
+								sugiere.push( val );
+							}
+						);
+						add(sugiere);
+					},
+			})
+		},
+		minLength: 2,
+		select: function( event, ui ) {
+			//id='0';
+			$('#codigoa_'+id).val(ui.item.codigo);
+			$('#desca_'+id).val(ui.item.descrip);
+			$('#precio1_'+id).val(ui.item.base1);
+			$('#precio2_'+id).val(ui.item.base2);
+			$('#precio3_'+id).val(ui.item.base3);
+			$('#precio4_'+id).val(ui.item.base4);
+			$('#itiva_'+id).val(ui.item.iva);
+			$('#sinvtipo_'+id).val(ui.item.tipo);
+			$('#sinvpeso_'+id).val(ui.item.peso);
+			$('#itcosto_'+id).val(ui.item.pond);
+			$('#itpvp_'+id).val(ui.item.ultimo);
+			$('#cana_'+id).val('1');
+			$('#cana_'+id).focus();
+			$('#cana_'+id).select();
+
+			var arr  = $('#preca_'+ind);
+			var tipo = Number($("#sclitipo").val()); if(tipo>0) tipo=tipo-1;
+			cdropdown(id);
+			//cdescrip(id);
+			jQuery.each(arr, function() { this.selectedIndex=tipo; });
+			importe(id);
+			totalizar();
+		}
+	});
+}
 </script>
 <?php } ?>
 <table align='center' width="95%">
@@ -323,7 +375,7 @@ function del_itpfac(id){
 		<td>
 		<div style='overflow:auto;border: 1px solid #9AC8DA;background: #FAFAFA;height:200px'>
 		<table width='100%'>
-			<tr>
+			<tr id='__INPL__'>
 				<td bgcolor='#7098D0'><strong>C&oacute;digo</strong></td>
 				<td bgcolor='#7098D0'><strong>Descripci&oacute;n</strong></td>
 				<td bgcolor='#7098D0'><strong>Cantidad</strong></td>
@@ -389,17 +441,17 @@ function del_itpfac(id){
 				<td class="littletableheader" width='100'><?php echo $form->observa->label;    ?></td>
 				<td class="littletablerow"    width='350'><?php echo $form->observa->output;   ?></td>
 				<td class="littletableheader">           <?php echo $form->totals->label;  ?></td>
-				<td class="littletablerow" align='right'><strong><?php echo nformat($form->totals->value); ?></strong></td>
+				<td class="littletablerow" align='right'><b id='totals_val'><?php echo nformat($form->totals->value); ?></b><?php echo $form->totals->output; ?></td>
 
 			<tr></tr>	
 				<td class="littletableheader">&nbsp;</td>
 				<td class="littletablerow"   ><?php echo $form->observ1->output;   ?></td>
 				<td class="littletableheader"><?php echo $form->ivat->label;    ?></td>
-				<td class="littletablerow" align='right'><strong><?php echo nformat($form->ivat->value); ?></strong></td>
+				<td class="littletablerow" align='right'><b id='ivat_val'><?php echo nformat($form->ivat->value); ?></b><?php echo $form->ivat->output; ?></td>
 			<tr></tr>
 				<td>&nbsp;</td><td>&nbsp;</td>
 				<td class="littletableheader">           <?php echo $form->totalg->label;  ?></td>
-				<td class="littletablerow" align='right' style='font-size:18px;font-weight: bold'><?php echo nformat($form->totalg->value); ?></td>
+				<td class="littletablerow" align='right' style='font-size:18px;font-weight: bold'><b id='totalg_val'><?php echo nformat($form->totalg->value); ?></b><?php echo $form->totalg->output; ?></td>
 			</tr>
 		</table>
 		</fieldset>

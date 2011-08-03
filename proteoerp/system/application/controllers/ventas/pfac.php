@@ -61,8 +61,7 @@ class pfac extends validaciones{
 		$filter->cliente->group = "dos";
 
 		$filter->buttons('reset', 'search');
-		$filter->build("dataformfiltro");
-
+		$filter->build('dataformfiltro');
 
 		$uri = anchor('ventas/pfac/dataedit/show/<#numero#>', '<#numero#>');
 		$uri2 = anchor_popup('formatos/verhtml/PFAC/<#numero#>', 'Ver HTML', $atts);
@@ -130,20 +129,17 @@ class pfac extends validaciones{
     height: 320px; /* Required to set */
     overflow: hidden; /* Required to set */
 }
-</style>	
-		';
-
+</style>';
 
 		$data['content'] = $grid->output;
 		$data['filtro']  = $filter->output;
 
-		$data["script"]  = script("jquery.js");
-		$data["script"]  .= script("jquery-ui.js");
-		$data["script"]  .= script("jquery.alerts.js");
-		$data["script"] .= script("plugins/jquery.numeric.pack.js");
-		$data["script"] .= script("plugins/jquery.floatnumber.js");
-		$data["script"] .= script('superTables.js');
-//		$data['script'] .= $script;
+		$data['script']  = script('jquery.js');
+		$data['script'] .= script('jquery-ui.js');
+		$data['script'] .= script('jquery.alerts.js');
+		$data['script'] .= script('plugins/jquery.numeric.pack.js');
+		$data['script'] .= script('plugins/jquery.floatnumber.js');
+		$data['script'] .= script('superTables.js');
 
 		$data['style']   = $style;
 		$data['style']  .= style('superTables.css');
@@ -151,7 +147,6 @@ class pfac extends validaciones{
 
 		$data['extras']  = $extras;
 
-		//$data['content'] = $filter->output . $grid->output;
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = heading('Pedidos Clientes');
 		$this->load->view('view_ventanas', $data);
@@ -357,17 +352,17 @@ class pfac extends validaciones{
 		$edit->sinvtipo->pointer = true;
 		// fin de campos para detalle
 
-		$edit->ivat = new inputField('Impuesto', 'iva');
+		$edit->ivat = new hiddenField('Impuesto', 'iva');
 		$edit->ivat->css_class = 'inputnum';
 		$edit->ivat->readonly = true;
 		$edit->ivat->size = 10;
 
-		$edit->totals = new inputField('Sub-Total', 'totals');
+		$edit->totals = new hiddenField('Sub-Total', 'totals');
 		$edit->totals->css_class = 'inputnum';
 		$edit->totals->readonly = true;
 		$edit->totals->size = 10;
 
-		$edit->totalg = new inputField('Monto Total', 'totalg');
+		$edit->totalg = new hiddenField('Monto Total', 'totalg');
 		$edit->totalg->css_class = 'inputnum';
 		$edit->totalg->readonly = true;
 		$edit->totalg->size = 10;
@@ -375,7 +370,6 @@ class pfac extends validaciones{
 		$edit->usuario = new autoUpdateField('usuario', $this->session->userdata('usuario'), $this->session->userdata('usuario'));
 
 		$edit->buttons('modify', 'save', 'undo', 'delete', 'back', 'add_rel');
-		
 
 		if($this->genesal){
 			$edit->build();
@@ -387,8 +381,6 @@ class pfac extends validaciones{
 			$data['head']    = script('jquery.js');
 			$data['head']   .= script('jquery-ui.js');
 			$data['head']   .= script('plugins/jquery.numeric.pack.js');
-			$data['head']   .= script('plugins/jquery.meiomask.js');
-			//$data['head']   .= style('vino/jquery-ui.css');
 			$data['head']   .= style('redmond/jquery-ui-1.8.1.custom.css');
 			$data['head']   .= $this->rapyd->get_head();
 			$data['head']   .= phpscript('nformat.js');

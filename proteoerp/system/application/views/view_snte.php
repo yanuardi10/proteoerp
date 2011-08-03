@@ -39,13 +39,14 @@ $(function(){
 	totalizar();
 	for(var i=0;i < <?php echo $form->max_rel_count['itsnte']; ?>;i++){
 		cdropdown(i);
+		autocod(i.toString());
 	}
 });
 
 function importe(id){
 	var ind     = id.toString();
 	var cana    = Number($("#cana_"+ind).val());
-	var precio   = Number($("#precio_"+ind).val());
+	var precio  = Number($("#precio_"+ind).val());
 	var importe = roundNumber(cana*precio,2);
 	$("#importe_"+ind).val(importe);
 
@@ -82,6 +83,10 @@ function totalizar(){
 	$("#stotal").val(roundNumber(totals,2));
 	$("#impuesto").val(roundNumber(iva,2));
 	
+	$("#gtotal_val").text(nformat(totals+iva,2));
+	$("#stotal_val").text(nformat(totals,2));
+	$("#impuesto_val").text(nformat(iva,2));
+	
 }
 
 function add_itsnte(){
@@ -90,8 +95,12 @@ function add_itsnte(){
 	con = (itsnte_cont+1).toString();
 	htm = htm.replace(/<#i#>/g,can);
 	htm = htm.replace(/<#o#>/g,con);
-	$("#__UTPL__").before(htm);
+	$("#__INPL__").after(htm);
 	$("#cana_"+can).numeric(".");
+	cdropdown(itsnte_cont);
+	autocod(can);
+	$('#codigo_'+can).focus();
+	
 	itsnte_cont=itsnte_cont+1;
 }
 
@@ -189,6 +198,56 @@ function del_itsnte(id){
 	$('#tr_itsnte_'+id).remove();
 	totalizar();
 }
+
+//Agrega el autocomplete
+function autocod(id){
+	$('#codigo_'+id).autocomplete({
+		source: function( req, add){
+			$.ajax({
+				url:  "<?php echo site_url('ventas/spre/buscasinv'); ?>",
+				type: "POST",
+				dataType: "json",
+				data: "q="+req.term,
+				success:
+					function(data){
+						var sugiere = [];
+						$.each(data,
+							function(i, val){
+								sugiere.push( val );
+							}
+						);
+						add(sugiere);
+					},
+			})
+		},
+		minLength: 2,
+		select: function( event, ui ) {
+			//id='0';
+			$('#codigo_'+id).val(ui.item.codigo);
+			$('#desca_'+id).val(ui.item.descrip);
+			$('#precio1_'+id).val(ui.item.base1);
+			$('#precio2_'+id).val(ui.item.base2);
+			$('#precio3_'+id).val(ui.item.base3);
+			$('#precio4_'+id).val(ui.item.base4);
+			$('#itiva_'+id).val(ui.item.iva);
+			$('#sinvtipo_'+id).val(ui.item.tipo);
+			$('#sinvpeso_'+id).val(ui.item.peso);
+			$('#itcosto_'+id).val(ui.item.pond);
+			$('#itpvp_'+id).val(ui.item.ultimo);
+			$('#cana_'+id).val('1');
+			$('#cana_'+id).focus();
+			$('#cana_'+id).select();
+
+			var arr  = $('#preca_'+ind);
+			var tipo = Number($("#sclitipo").val()); if(tipo>0) tipo=tipo-1;
+			cdropdown(id);
+			//cdescrip(id);
+			jQuery.each(arr, function() { this.selectedIndex=tipo; });
+			importe(id);
+			totalizar();
+		}
+	});
+}
 </script>
 <?php } ?>
 
@@ -251,7 +310,7 @@ function del_itsnte(id){
 		<td>
 		<div style='overflow:auto;border: 1px solid #9AC8DA;background: #FAFAFA;height:200px'>
 		<table width='100%'>
-			<tr>
+			<tr id='__INPL__'>
 				<td bgcolor='#7098D0'><strong>C&oacute;digo</strong></td>
 				<td bgcolor='#7098D0'><strong>Descripci&oacute;n</strong></td>
 				<td bgcolor='#7098D0'><strong>Cantidad</strong></td>
@@ -315,19 +374,19 @@ function del_itsnte(id){
 				<td class="littletablerow"  width='400' ><?php echo $form->observa->output; ?>&nbsp;</td>
 
 				<td class="littletableheader">           <?php echo $form->impuesto->label;    ?></td>
-				<td class="littletablerow" align='right'><strong><?php echo $form->impuesto->output;   ?></strong></td>
+				<td class="littletablerow" align='right'><b id='impuesto_val'><?php echo nformat($form->impuesto->value); ?></b><?php echo $form->impuesto->output; ?></td>
 			</tr><tr>
 				<td class="littletableheader"><?php echo $form->orden->label;  ?>&nbsp;</td>
 				<td class="littletablerow" align="left"><?php echo $form->orden->output; ?>&nbsp;</td>
 
 				<td class="littletableheader">           <?php echo $form->stotal->label;  ?></td>
-				<td class="littletablerow" align='right'><strong><?php echo $form->stotal->output; ?></strong></td>
+				<td class="littletablerow" align='right'><b id='stotal_val'><?php echo nformat($form->stotal->value); ?></b><?php echo $form->stotal->output; ?></td>
 			</tr><tr>
 				<td class="littletableheader"><?php echo $form->factura->label;  ?>&nbsp;</td>
 				<td class="littletablerow" align="left"><?php echo $form->factura->output; ?>&nbsp;</td>
 
 				<td class="littletableheader">           <?php echo $form->gtotal->label;  ?></td>
-				<td class="littletablerow" align='right'  style='font-size:18px;font-weight: bold'><?php echo nformat($form->gtotal->value); ?></td>
+				<td class="littletablerow" align='right'  style='font-size:18px;font-weight: bold'><b id='gtotal_val'><?php echo nformat($form->gtotal->value); ?></b> <?php echo $form->gtotal->output; ?> </td>
 			</tr>
 		</table>
 		</fieldset>

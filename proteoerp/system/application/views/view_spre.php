@@ -101,6 +101,7 @@ function add_itspre(){
 	$("#__INPL__").after(htm);
 	$("#cana_"+can).numeric(".");
 	autocod(can);
+	$('#codigo_'+can).focus();
 	itspre_cont=itspre_cont+1;
 }
 
@@ -242,6 +243,7 @@ function cdescrip(nind){
 	}
 }
 
+//Agrega el autocomplete
 function autocod(id){
 	$('#codigo_'+id).autocomplete({
 		source: function( req, add){

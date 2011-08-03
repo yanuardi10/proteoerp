@@ -73,7 +73,7 @@ $(document).ready(function() {
 				html+= "<td align='right'><input type='text' style='text-align: right;' onkeyup='cimporte(\""+id+"\")' name='cana_"+id+"' id='cana_"+id+"' size=6 class='ui-widget-content ui-corner-all' value='"+ui.item.cana+"' autocomplete='off'></td>";
 				html+= "<td align='right'><input type='text' style='text-align: right;' name='precio_"+id+"' id='precio_"+id+"' size=8 class='ui-widget-content ui-corner-all' value='"+ui.item.precio+"' autocomplete='off' ><input type='hidden' name='itiva_"+id+"' id='itiva_"+id+"' value='"+ui.item.iva+"'></td>";
 				html+= "<td align='right'><div id='vimporte_"+id+"'>"+importe.toString()+"</div><input type='hidden' name='importe_"+id+"' id='importe_"+id+"' value='"+importe.toString()+"'></td>";
-				
+
 				html+= "</tr>";
 				html+= "<tr id='ssitems_"+id+"'>";
 				html+= "<td colspan='5' style='font-size:12px'><input type='hidden' name='desca_"+id+"' id='desca_"+id+"' value='"+ui.item.descrip+"'>"+ui.item.descrip+"</td>";

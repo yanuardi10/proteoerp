@@ -18,7 +18,7 @@ class Cpla extends Controller {
 
 		$filter->descrip = new inputField("Descripci&oacute;n", "descrip");
 
-		$filter->buttons("reset","search");
+		$filter->buttons('reset','search');
 		$filter->build();
 
 		$uri = anchor('contabilidad/cpla/dataedit/show/<#codigo#>','<#codigo#>');
@@ -27,12 +27,12 @@ class Cpla extends Controller {
 		$grid->order_by("codigo","asc");
 		$grid->per_page = 15;
 
-		$grid->column("C&oacute;digo",$uri);
+		$grid->column("C&oacute;digo"     ,$uri);
 		$grid->column("Descripci&oacute;n","descrip");
-		$grid->column("Usa Departamento","departa","align='center'");
-		$grid->column("Cuenta Monetaria","moneta" ,"align='center'");
+		$grid->column("Usa Departamento"  ,"departa","align='center'");
+		$grid->column("Cuenta Monetaria"  ,"moneta" ,"align='center'");
 
-		$grid->add("contabilidad/cpla/dataedit/create");
+		$grid->add('contabilidad/cpla/dataedit/create');
 		$grid->build();
 
 		$data['content'] =$filter->output.$grid->output;
@@ -42,41 +42,41 @@ class Cpla extends Controller {
 	}
 
 	function dataedit(){
-		$this->rapyd->load("dataedit");
+		$this->rapyd->load('dataedit');
 
-		$edit = new DataEdit("Plan de cuenta","cpla");
-		$edit->back_url = "contabilidad/cpla";
+		$edit = new DataEdit('Plan de cuenta','cpla');
+		$edit->back_url = 'contabilidad/cpla';
 		$edit->pre_process('delete','_pre_del');
 		$edit->post_process('insert','_post_insert');
 		$edit->post_process('update','_post_update');
 		$edit->post_process('delete','_post_delete');
 
-		$edit->codigo = new inputField("C&oacute;digo", "codigo");
-		$edit->codigo->rule= "trim|required|callback_chcodigo";
-		$edit->codigo->mode="autohide";
+		$edit->codigo = new inputField('C&oacute;digo', 'codigo');
+		$edit->codigo->rule= 'trim|required|callback_chcodigo';
+		$edit->codigo->mode= 'autohide';
 		$edit->codigo->size=20;
 		$edit->codigo->maxlength =15 ;
 
-		$edit->descrip = new inputField("Descripci&oacute;n", "descrip");
-		$edit->descrip->rule= "strtoupper|required";
+		$edit->descrip = new inputField('Descripci&oacute;n', 'descrip');
+		$edit->descrip->rule= 'required';
 		$edit->descrip->size=45;
 		$edit->descrip->maxlength =35;
 
-		$edit->departa = new dropdownField("Usa departamento", "departa");
+		$edit->departa = new dropdownField('Usa departamento', 'departa');
 		$edit->departa->option("N","No");
 		$edit->departa->option("S","Si");
 		$edit->departa->style='width:80px';
 
-		$edit->moneta = new dropdownField("Cuenta Monetaria", "moneta");
+		$edit->moneta = new dropdownField('Cuenta Monetaria','moneta');
 		$edit->moneta->option("N","No");
 		$edit->moneta->option("S","Si");
 		$edit->moneta->style='width:80px';
 
-		$edit->buttons("modify", "save", "undo", "delete", "back");
+		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
 		$edit->build();
 
 		$data['content'] = $edit->output;
-		$data["head"]    = $this->rapyd->get_head();
+		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = '<h1>Plan de Cuentas</h1>';
 		$this->load->view('view_ventanas', $data);
 	}
