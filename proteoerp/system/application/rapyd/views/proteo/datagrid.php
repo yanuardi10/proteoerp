@@ -1,12 +1,14 @@
 <table style="margin:0;width:100%;border-collapse:collapse;padding:0;">
   <tr>
     <td>
+      <?php if($title || $container_tr){?>
       <table style="margin:0;width:100%;border-collapse:collapse;padding:0;">
         <tr>
           <td class="mainheader"><?php echo $title?></td>
           <td class="mainheader" align="right"><?php echo $container_tr;?></td>
         </tr>
       </table>
+      <?php }?> 
 
       <div class="mainbackground" style="padding:2px;clear:both;">
       <table width="100%" cellpadding="1">
@@ -49,13 +51,18 @@
 <?php endif;//table-rows?>
       </table>
       </div>
+      <?php if($pager){?>        
       <div class="mainbackground"><div class="pagenav"><?php echo $pager;?></div></div>
+      <?php }?>
+      <?php if($container_bl || $container_br){?>        
       <div class="mainfooter">
         <div>
           <div style="float:left"><?php echo $container_bl?></div>
           <div style="float:right"><?php echo $container_br?></div>
         </div><div style="clear:both;"></div>
       </div>
+      <?php }?>
+      
 
     </td>
   </tr>
