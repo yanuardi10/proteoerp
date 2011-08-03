@@ -7,7 +7,7 @@ class Enlinea extends Controller{
 	}
 
 	function index(){
-            
+            redirect('supervisor/enlinea/pasillo');
         }
         
         function pasillo(){
@@ -32,7 +32,7 @@ class Enlinea extends Controller{
                     return 'No Disponible';
                 else{
                     $ima="http://".$url."/".$proteoerp."/supervisor/enlinea/ventana";
-                    return "<iframe src='$ima' width='500px' height='80px'/></iframe>";
+                    return "<iframe src='$ima' width='500px' height='60px'/></iframe>";
                 }
             }
     
@@ -45,11 +45,8 @@ class Enlinea extends Controller{
             $grid->column("Sucursal"    ,$uri                                       );
             $grid->column("En Linea"    ,'<linea><#url#>|<#proteo#></linea>'        );
             
-            
             $grid->build();
-            
-            //$out .= '<div class=\'box col1\'><h3>'.htmlentities($panel).'</h3>';
-    
+         
             $data['content'] = $grid->output;
             $data['title']   = heading('Informacion de Sucursales');
             $data["head"]    = $this->rapyd->get_head();
@@ -67,14 +64,6 @@ class Enlinea extends Controller{
             $data['content']     = $this->load->view('view_enlinea', $conten,true);
             $data["head"]        = $this->rapyd->get_head();
             $this->load->view('view_ventanas_sola', $data);
-        }
-        
-        function senal(){
-            echo base_url().'images/N.gif';
-        }
-        
-        function prueba(){
-            
         }
 }
 ?>
