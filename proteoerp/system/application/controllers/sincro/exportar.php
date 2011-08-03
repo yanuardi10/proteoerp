@@ -286,8 +286,9 @@ class Exportar extends Controller {
 				'where' => "estampa >= $fecha");
 		$data[]=array('table' => 'costos',
 				'ignore' =>true,
-				'limpiar'=>false,
-				'where' => "fecha >= $fecha");
+				'limpiar'=>false);
+		$data[]=array('table' => 'sinv',
+				'limpiar'=>true);
 
 		$nombre='ve_'.$fecha.'_'.$this->sucu;
 		if(!array_key_exists('HTTP_USER_AGENT', $_SERVER)) $_SERVER['HTTP_USER_AGENT']='curl';
