@@ -4,6 +4,7 @@ class Desarrollo extends Controller{
 
 function Desarrollo(){
 		parent::Controller();
+		
 	}
 
 	function index(){
