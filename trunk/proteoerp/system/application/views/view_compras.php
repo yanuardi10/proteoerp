@@ -13,7 +13,7 @@ $scampos .='<td class="littletablerow" align="left" >'.$campos['codigo']['field'
 $scampos .='<td class="littletablerow" align="left" ><b id="it_descrip_val_<#i#>"></b>'.$campos['descrip']['field'].'</td>';
 $scampos .='<td class="littletablerow" align="right">'.$campos['cantidad']['field'].'</td>';
 $scampos .='<td class="littletablerow" align="right">'.$campos['costo']['field']. '</td>';
-$scampos .='<td class="littletablerow" align="right"><b id="it_importe_val_<#i#>">'.nformat(0).'</b>'.$campos['importe']['field'];
+$scampos .='<td class="littletablerow" align="right">'.$campos['importe']['field'];
 $scampos .= $campos['sinvpeso']['field'].$campos['iva']['field'].'</td>';
 $scampos .='<td class="littletablerow"><a href=# onclick="del_itscst(<#i#>);return false;">'.img("images/delete.jpg").'</a></td></tr>';
 $campos=$form->js_escape($scampos);
@@ -38,8 +38,18 @@ function importe(id){
 	var ind     = id.toString();
 	var cana    = Number($("#cantidad_"+ind).val());
 	var precio  = Number($("#costo_"+ind).val());
-	var importe = roundNumber(cana*precio,2);
-	$("#importe_"+ind).val(importe);
+	var iimporte= roundNumber(cana*precio,2);
+	$("#importe_"+ind).val(iimporte);
+	//$("#it_importe_val_"+ind).text(nformat(iimporte,2));
+	totalizar();
+}
+
+function costo(id){ 
+	var ind     = id.toString();
+	var cana    = Number($("#cantidad_"+ind).val());
+	var importe = Number($("#importe_"+ind).val());
+	var precio  = roundNumber(importe/cana,2);
+	$("#costo_"+ind).val(precio);
 	$("#it_importe_val_"+ind).text(nformat(importe,2));
 	totalizar();
 }
@@ -106,6 +116,28 @@ function post_modbus_sinv(nind){
 	totalizar();
 }
 
+function cmontotot(){
+	totals  = 0;
+	importe = $("#montotot").val();
+
+	var arr=$('input[name^="importe_"]');
+	jQuery.each(arr, function() {
+		totals  = totals+Number(this.value);
+	});
+
+	jQuery.each(arr, function() {
+		nom=this.name
+		pos=this.name.lastIndexOf('_');
+		if(pos>0){
+			id  = Number(this.name.substring(pos+1));
+			val = Number(this.value);
+			part= val/totals;
+			$(this).val(roundNumber(importe*part,2));
+			costo(id);
+		}
+	});	
+}
+
 function post_modbus_sprv(){
 	$('#nombre_val').text($('#nombre').val());
 }
@@ -164,7 +196,7 @@ function autocod(id){
 <table width='100%' align='center'>
 	<tr>
 		<td align=right>
-			<?php echo $container_tr?>
+			<?php echo $container_tr; ?>
 		</td>
 	</tr>
 	<tr>
@@ -257,7 +289,7 @@ function autocod(id){
 				</td>
 				<td class="littletablerow" align="right"><?php echo $form->$it_cana->output;   ?></td>
 				<td class="littletablerow" align="right"><?php echo $form->$it_precio->output; ?></td>
-				<td class="littletablerow" align="right"><b id='it_importe_val_<?php echo $i; ?>'><?php echo nformat($form->$it_importe->value);?></b><?php echo $form->$it_importe->output; ?>
+				<td class="littletablerow" align="right"><?php echo $form->$it_importe->output; ?>
 				<?php echo $form->$it_peso->output.$form->$it_iva->output; ?>
 				</td>
 				<?php if($form->_status!='show') {?>
@@ -283,7 +315,7 @@ function autocod(id){
 		<td width="125" class="littletablerowth" align='right'><?php echo $form->anticipo->label  ?></td>
 		<td width="125" class="littletablerow"   align='right'><?php echo $form->anticipo->output ?></td>
 		<td width="111" class="littletablerowth" align='right'><?php echo $form->montotot->label  ?></td>
-		<td width="139" class="littletablerow"   align='right'><b id='montotot_val'><?php echo $form->montotot->value ?></b><?php echo $form->montotot->output ?></td>
+		<td width="139" class="littletablerow"   align='right'><?php echo $form->montotot->output; ?></td>
 	</tr>
 	<tr>
 		<td class="littletablerowth" align='right'><?php echo $form->riva->label   ?></td>
@@ -294,8 +326,8 @@ function autocod(id){
 		<td class="littletablerow"   align='right'><b id='montoiva_val'><?php echo nformat($form->montoiva->value); ?><b><?php echo $form->montoiva->output ?></td>
 	</tr>
 	<tr>
-		<td class="littletablerowth" align='right'><?php echo $form->monto->label    ?></td>
-		<td class="littletablerow"   align='right'><?php echo $form->monto->output   ?></td>
+		<td class="littletablerowth" align='right'><?php echo $form->mdolar->label    ?></td>
+		<td class="littletablerow"   align='right'><?php echo $form->mdolar->output   ?></td>
 		<td class="littletablerowth" align='right'><?php echo $form->credito->label  ?></td>
 		<td class="littletablerow"   align='right'><?php echo $form->credito->output ?></td>
 		<td class="littletablerowth" align='right'><?php echo $form->montonet->label ?></td>

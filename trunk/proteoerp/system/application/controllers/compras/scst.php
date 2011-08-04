@@ -191,7 +191,7 @@ function scstserie(mcontrol){
 			'p_uri'=>array(4=>'<#i#>'),
 			'script'  => array('post_modbus_sinv(<#i#>)'),
 			'titulo'  =>'Buscar Art&iacute;culo',
-			'where'   =>'activo="S"');
+			'where'   =>'activo = "S"');
 
 		$sprvbus=array(
 			'tabla'   =>'sprv',
@@ -252,7 +252,7 @@ function scstserie(mcontrol){
 		$edit->cfis->size = 15;
 		$edit->cfis->autocomplete=false;
 		$edit->cfis->rule = 'required';
-		$edit->cfis->maxlength=8;
+		$edit->cfis->maxlength=12;
 
 		$edit->almacen = new  dropdownField ('Almac&eacute;n', 'depo');
 		$edit->almacen->options('SELECT ubica, CONCAT(ubica,\' \',ubides) nombre FROM caub ORDER BY ubica');
@@ -278,8 +278,9 @@ function scstserie(mcontrol){
 		$edit->credito->css_class='inputnum';
 		$edit->credito->when=array('show');
 
-		$edit->montotot  = new hiddenField('Subtotal', 'montotot');
-		$edit->montotot->size = 20;
+		$edit->montotot  = new inputField('Subtotal', 'montotot');
+		$edit->montotot->onchange='cmontotot()';
+		$edit->montotot->size = 15;
 		$edit->montotot->css_class='inputnum';
 
 		$edit->montoiva  = new hiddenField('IVA', 'montoiva');
@@ -287,8 +288,8 @@ function scstserie(mcontrol){
 		$edit->montoiva->css_class='inputnum';
 
 		$edit->montonet  = new hiddenField('Total', 'montonet');
-		$edit->montonet->size = 20;
-		$edit->montonet->css_class='inputnum';
+		//$edit->montonet->size = 20;
+		//$edit->montonet->css_class='inputnum';
 
 		$edit->anticipo  = new inputField('Anticipo', 'anticipo');
 		$edit->anticipo->size = 20;
@@ -310,9 +311,9 @@ function scstserie(mcontrol){
 		$edit->riva->css_class='inputnum';
 		$edit->riva->when=array('show');
 
-		$edit->monto  = new inputField('Monto US $', 'mdolar');
-		$edit->monto->size = 20;
-		$edit->monto->css_class='inputnum';
+		$edit->mdolar  = new inputField('Monto US $', 'mdolar');
+		$edit->mdolar->size = 20;
+		$edit->mdolar->css_class='inputnum';
 
 		//Campos para el detalle
 		$edit->codigo = new inputField('C&oacute;digo', 'codigo_<#i#>');
@@ -344,14 +345,18 @@ function scstserie(mcontrol){
 		$edit->costo->css_class='inputnum';
 		$edit->costo->rule   = 'require|numeric';
 		$edit->costo->onkeyup='importe(<#i#>)';
-		$edit->costo->size=20;
+		$edit->costo->size=12;
 		$edit->costo->autocomplete=false;
 		$edit->costo->db_name='costo';
 		$edit->costo->rel_id ='itscst';
 
-		$edit->importe = new hiddenField('Importe', 'importe_<#i#>');
+		$edit->importe = new inputField('Importe', 'importe_<#i#>');
 		$edit->importe->db_name='importe';
+		$edit->importe->size=15;
 		$edit->importe->rel_id='itscst';
+		$edit->importe->autocomplete=false;
+		$edit->importe->onkeyup='costo(<#i#>)';
+		$edit->importe->css_class='inputnum';
 
 		$edit->sinvpeso = new hiddenField('', 'sinvpeso_<#i#>');
 		$edit->sinvpeso->db_name = 'sinvpeso';
@@ -365,8 +370,16 @@ function scstserie(mcontrol){
 
 		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
 
-		$accion="javascript:window.location='".site_url('compras/scst/actualizar/'.$edit->_dataobject->pk['control'])."'";
-		$edit->button_status('btn_actuali','Actualizar',$accion,'TR','show');
+		$recep=strtotime($edit->get_from_dataobjetct('recep'));
+		$fecha=strtotime($edit->get_from_dataobjetct('fecha'));
+
+		if($recep < $fecha){
+			$accion="javascript:window.location='".site_url('compras/scst/actualizar/'.$edit->_dataobject->pk['control'])."'";
+			$accio2="javascript:window.location='".site_url('compras/scst/precios/'.$edit->_dataobject->pk['control'])."'";
+
+			$edit->button_status('btn_actuali','Actualizar'     ,$accion,'TL','show');
+			$edit->button_status('btn_precio' ,'Asignar precios',$accio2,'TL','show');
+		}
 		$edit->buttons('save', 'undo', 'back','add_rel');
 		$edit->build();
 
@@ -548,7 +561,7 @@ function scstserie(mcontrol){
 							$ban=$this->db->simple_query($mSQL);
 							if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
     
-							if($cprecio){
+							if(!$cprecio){
 								$mSQL='UPDATE sinv SET 
 									base1=ROUND(precio1*10000/(100+iva))/100, 
 									base2=ROUND(precio2*10000/(100+iva))/100, 
