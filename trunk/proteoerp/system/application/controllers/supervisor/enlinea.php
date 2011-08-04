@@ -65,5 +65,6 @@ class Enlinea extends Controller{
 		$data["head"]        = $this->rapyd->get_head();
 		$this->load->view('view_ventanas_sola', $data);
 	}
+	
 }
 ?>
