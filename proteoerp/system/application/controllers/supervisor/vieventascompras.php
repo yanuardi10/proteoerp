@@ -14,10 +14,7 @@ class vieventascompras extends Controller {
 	}
 	function filteredgrid($barras='',$farmacia=''){
 		$this->rapyd->load('datafilter','datagrid');
-                
-                $this->rapyd->set_connection('consolidado');
-		$this->rapyd->load_db();
-                
+                                
                 $modbus=array(
 			'tabla'   =>'sinv',
 			'columnas'=>array(
@@ -34,78 +31,81 @@ class vieventascompras extends Controller {
                         'dbgroup'=>'consolidado');
 
 		$boton=$this->datasis->modbus($modbus);
-                
-		$filter = new DataFilter($this->titp, 'vieventascompras');
+		$barrase=$this->db->escape($barras);   
+		
+		$sql="
+		SELECT fecha,fe,fa,descrip,venta,compras,saldo,semanal FROM (
+		select '' fe,farmacia fa,fecha,farmacia,descrip,venta,compras,saldo,(venta/4)  semanal
+		from  vieventascompras 
+		where barras=$barrase AND farmacia is not null
+		UNION ALL
+		select '','',fecha,farmacia,'TOTALES',SUM(venta),SUM(compras),SUM(saldo),(venta/4)  semanal 
+		from  vieventascompras 
+		where barras=$barrase AND farmacia is not null
+		GROUP BY fecha with rollup
+		UNION ALL
+		select CONCAT(MID(fecha,1,4),'-',MID(fecha,5,5)) fe,'',fecha,farmacia,'','','','','' 
+		from  vieventascompras 
+		where barras=$barrase AND farmacia is not null
+		GROUP BY fecha 
+		)todo
+		ORDER BY fecha is null,fecha ,fe='',descrip='TOTALES',farmacia
+		";
+		
+		$atts = array(
+			'width'      => '800',
+			'height'     => '600',
+			'scrollbars' => 'yes',
+			'status'     => 'yes',
+			'resizable'  => 'yes',
+			'screenx'    => '0',
+			'screeny'    => '0'
+		      );
+		
+		$descrip=$this->datasis->dameval("SELECT descrip FROM sinv WHERE barras=$barrase LIMIT 10 ");
+		$uri = anchor_popup($this->url."kardex/$barras/<#fa#>/<#fecha#>",'<#fa#>',$atts);
+		
+		$sql=$this->db->query($sql);
+		$sql=$sql->result_array();
+		
+		function negrita($descrip,$fecha=NULL){
+			if($descrip=='TOTALES' && !(strlen($fecha)>0))
+			return "<span style='font-size:1.5em'><strong>TOTAL GENERAL</strong></span>";
+			elseif($descrip=='TOTALES')
+			return "<span style='font-size:1.2em'><strong>TOTALES</strong></span>";
+			else
+			return $descrip;
+		}
+		
+		function negrita2($descrip,$monto){
+			if($descrip=='TOTALES')
+			return "<span style='font-size:1.2em'><strong>".nformat($monto)."</strong></span>";
+			elseif(strlen($monto)>0)
+			return nformat($monto);
+			else return '';
+		}
 
-                if(strlen($barras)>0)
-                $filter->db->where('barras',$barras);
-                
-                if(strlen($farmacia)>0)
-                $filter->db->where('farmacia',$farmacia);
+		$grid = new DataGrid(anchor($this->url.'viewinventario','Ir al Inventario por sucursales'),$sql);
+		$grid->db->_escape_char='';
+		$grid->db->_protect_identifiers=false;
+		$grid->use_function('negrita','negrita2');
 
-		$filter->barras = new inputField('Barras','barras');
-		$filter->barras->size      =17;
-		$filter->barras->maxlength =15;
-                $filter->barras->append($boton);
-                //$filter->barras->insertValue=$barras;
-
-                $filter->fechad = new dateonlyField("Desde", "fechad",'d/m/Y');
-                $filter->fechad->clause ="where";
-                $filter->fechad->db_name ="fecha";
-                $filter->fechad->operator=">=";
-                $filter->fechad->group = "Fecha";
-                $filter->fechad->dbformat='Y-m-d';
-
-                $filter->fechah = new dateonlyField("Hasta", "fechah",'d/m/Y');
-                $filter->fechah->clause="where";
-                $filter->fechah->db_name="fecha";
-                $filter->fechah->operator="<=";
-                $filter->fechah->group = "Fecha";
-                $filter->fechah->dbformat='Y-m-d';
-
-		$filter->farmacia = new inputField('Farmacia','farmacia');
-		$filter->farmacia->size      =4;
-		$filter->farmacia->maxlength =2;
-
-		$filter->descrip = new inputField('Descripci&oacute;n','descrip');
-		$filter->descrip->size      =47;
-		$filter->descrip->maxlength =45;
-
-		$filter->venta = new inputField('Venta','venta');
-		$filter->venta->css_class ='inputnum';
-		$filter->venta->size      =40;
-		$filter->venta->maxlength =38;
-
-		$filter->compras = new inputField('Compra','compras');
-		$filter->compras->css_class ='inputnum';
-		$filter->compras->size      =40;
-		$filter->compras->maxlength =38;
-
-		$filter->buttons('reset', 'search');
-		$filter->build();
-
-		$uri = anchor($this->url.'kardex/<#barras#>/<#farmacia#>','<#barras#>');
-		$urif= anchor($this->url."filteredgrid/$barras/<#farmacia#>",'<#farmacia#>');
-
-		$grid = new DataGrid(anchor($this->url.'viewinventario','Ir al Inventario por sucursales'));
-		$grid->order_by('venta','desc');
-		$grid->per_page = 40;
-
-		$grid->column_orderby('Barras'            ,$uri                                          ,'barras'  ,'align="left"');
-		$grid->column_orderby('Ano/Mes'           ,"fecha"                                       ,'fecha'   ,'align="right"');
-		$grid->column_orderby('Farmacia'          ,$urif                                         ,'farmacia','align="left"');
-		$grid->column_orderby('Descripci&oacute;n',"descrip"                                     ,'descrip' ,'align="left"');
-		$grid->column_orderby('Ventas'            ,"<nformat><#venta#></nformat>"                ,'venta'   ,'align="right"');
-		$grid->column_orderby('Compras'           ,"<nformat><#compras#></nformat>"              ,'compras' ,'align="right"');
-		$grid->column_orderby('Saldo'             ,"<nformat><#saldo#></nformat>"                ,'saldo'   ,'align="right"');
+		//$grid->column_orderby('Barras'            ,$uri                                           ,'align="left"'  );
+		$grid->column('A&ntilde;o/Mes'    ,"fe"                                             ,'align="center"');
+		$grid->column('Farmacia'          ,$uri                                             ,'align="left"'  );
+		$grid->column('Descripci&oacute;n',"<negrita><#descrip#>|<#fecha#></negrita>"                 ,'align="left"'  );
+		$grid->column('Mensual'           ,"<negrita2><#descrip#>|<#venta#></negrita2>"     ,'align="right"' );
+		$grid->column('Semanal'           ,"<negrita2><#descrip#>|<#semanal#></negrita2>"   ,'align="right"' );
+		$grid->column('Compras'           ,"<negrita2><#descrip#>|<#compras#></negrita2>"   ,'align="right"' );
+		$grid->column('Saldo'             ,"<negrita2><#descrip#>|<#saldo#></negrita2>"     ,'align="right"' );
 
 		$grid->build();
 //echo $grid->db->last_query();
 
-		$data['filtro']  = $filter->output;
+		//$data['filtro']  = $filter->output;
 		$data['content'] = $grid->output;
 		$data['head']    = $this->rapyd->get_head().script('jquery.js');
-		$data['title']   = heading($this->tits);
+		$data['title']   = heading($descrip);
 		$this->load->view('view_ventanas', $data);
 
 	}
@@ -129,9 +129,6 @@ class vieventascompras extends Controller {
                         'dbgroup'=>'consolidado');
 
 		$boton=$this->datasis->modbus($modbus);
-
-                $this->rapyd->set_connection('consolidado');
-		$this->rapyd->load_db();
 
 		$filter = new DataFilter($this->titp, 'viewinventario');
 
@@ -159,7 +156,17 @@ class vieventascompras extends Controller {
 		$filter->buttons('reset', 'search');
 		$filter->build();
 
-		$uri = anchor($this->url.'filteredgrid/<#barras#>/','<#barras#>');
+		$atts = array(
+			'width'      => '800',
+			'height'     => '600',
+			'scrollbars' => 'yes',
+			'status'     => 'yes',
+			'resizable'  => 'yes',
+			'screenx'    => '0',
+			'screeny'    => '0'
+		      );
+
+		$uri = anchor_popup($this->url.'filteredgrid/<#barras#>/','<#barras#>',$atts);
 
 		$grid = new DataGrid('');
 		$grid->order_by('barras');
@@ -189,9 +196,24 @@ class vieventascompras extends Controller {
 
 	}
 	
-	function kardex($barras,$farmacia){
-	
-	
+	function kardex($barras,$farmacia,$fecha){
+		
+		$f=array(
+		 'FARMIA'        => 'FA',
+		 'BOTICA'        => 'BO',
+		 'DEL CARMEN'    => 'EC',
+		 'ERMITA'        => 'ER',
+		 'ESTACION'      => 'ES',
+		 'GALENICA'      => 'GA',
+		 'GEMA'          => 'GE',
+		 'SAN SEBASTIAN' => 'SS'
+		);
+		
+		$barrase  =$this->db->escape($barras);
+		$farmaciae=$this->db->escape($farmacia);
+		$codigo=$this->datasis->dameval("SELECT codigo FROM costos WHERE barras=$barrase AND farmacia=(case $farmaciae when 'FARMIA' then 'FA' when 'BOTICA' then 'BO' when 'DEL CARMEN' then 'EC' when 'ERMITA' then 'ER' when 'ESTACION' then 'ES' when 'GALENICA' then 'GA' when 'GEMA' then 'GE' when 'SAN SEBASTIAN' then 'SS' else 'INDEFINIDA' end)");
+		
+		redirect('inventario/kardex/filteredgrid/'.raencode($codigo).'/'.$fecha.'/'.$f[$farmacia]);
 	}
 }
 ?>
