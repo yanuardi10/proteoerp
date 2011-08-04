@@ -7,12 +7,12 @@ class vieventascompras extends Controller {
 	function vieventascompras(){
 		parent::Controller();
 		$this->load->library("rapyd");
-		$this->datasis->modulo_id(927,1);
+		$this->datasis->modulo_id('20D',1);
 	}
 	function index(){
-		redirect($this->url."filteredgrid");
+		redirect($this->url."viewinventario");
 	}
-	function filteredgrid($barras=''){
+	function filteredgrid($barras='',$farmacia=''){
 		$this->rapyd->load('datafilter','datagrid');
                 
                 $this->rapyd->set_connection('consolidado');
@@ -36,8 +36,12 @@ class vieventascompras extends Controller {
 		$boton=$this->datasis->modbus($modbus);
                 
 		$filter = new DataFilter($this->titp, 'vieventascompras');
-                if(!empty($barras))
+
+                if(strlen($barras)>0)
                 $filter->db->where('barras',$barras);
+                
+                if(strlen($farmacia)>0)
+                $filter->db->where('farmacia',$farmacia);
 
 		$filter->barras = new inputField('Barras','barras');
 		$filter->barras->size      =17;
@@ -51,8 +55,7 @@ class vieventascompras extends Controller {
                 $filter->fechad->operator=">=";
                 $filter->fechad->group = "Fecha";
                 $filter->fechad->dbformat='Y-m-d';
-                
-                
+
                 $filter->fechah = new dateonlyField("Hasta", "fechah",'d/m/Y');
                 $filter->fechah->clause="where";
                 $filter->fechah->db_name="fecha";
@@ -81,21 +84,23 @@ class vieventascompras extends Controller {
 		$filter->buttons('reset', 'search');
 		$filter->build();
 
-		$uri = anchor($this->url.'filterbarras<#barras#>','<#barras#>');
+		$uri = anchor($this->url.'kardex/<#barras#>/<#farmacia#>','<#barras#>');
+		$urif= anchor($this->url."filteredgrid/$barras/<#farmacia#>",'<#farmacia#>');
 
 		$grid = new DataGrid(anchor($this->url.'viewinventario','Ir al Inventario por sucursales'));
 		$grid->order_by('venta','desc');
 		$grid->per_page = 40;
 
-		$grid->column_orderby('Barras'            ,"barras"                                      ,'barras'  ,'align="left"');
-		$grid->column_orderby('Fecha'             ,"<dbdate_to_human><#fecha#></dbdate_to_human>",'fecha'   ,'align="right"');
-		$grid->column_orderby('Farmacia'          ,"farmacia"                                    ,'farmacia','align="left"');
+		$grid->column_orderby('Barras'            ,$uri                                          ,'barras'  ,'align="left"');
+		$grid->column_orderby('Ano/Mes'           ,"fecha"                                       ,'fecha'   ,'align="right"');
+		$grid->column_orderby('Farmacia'          ,$urif                                         ,'farmacia','align="left"');
 		$grid->column_orderby('Descripci&oacute;n',"descrip"                                     ,'descrip' ,'align="left"');
 		$grid->column_orderby('Ventas'            ,"<nformat><#venta#></nformat>"                ,'venta'   ,'align="right"');
-		$grid->column_orderby('compras'           ,"<nformat><#compras#></nformat>"              ,'compras' ,'align="right"');
+		$grid->column_orderby('Compras'           ,"<nformat><#compras#></nformat>"              ,'compras' ,'align="right"');
+		$grid->column_orderby('Saldo'             ,"<nformat><#saldo#></nformat>"                ,'saldo'   ,'align="right"');
 
-		$grid->add($this->url.'dataedit/create');
 		$grid->build();
+//echo $grid->db->last_query();
 
 		$data['filtro']  = $filter->output;
 		$data['content'] = $grid->output;
@@ -107,6 +112,23 @@ class vieventascompras extends Controller {
         
         function viewinventario(){
 		$this->rapyd->load('datafilter','datagrid');
+		
+		$modbus=array(
+			'tabla'   =>'sinv',
+			'columnas'=>array(
+				'codigo' =>'C&oacute;digo',
+                                'barras' =>'Barras',
+				'descrip'=>'Descripci&oacute;n',
+				'precio1'=>'Precio 1',
+				'precio2'=>'Precio 2',
+				'precio3'=>'Precio 3',
+				'precio4'=>'Precio 4'),
+			'filtro'  =>array('codigo'=>'C&oacute;digo','barras' =>'Barras','descrip'=>'Descripci&oacute;n'),
+			'retornar'=>array('barras'=>'barras'),
+			'titulo'  =>'Buscar en inventario',
+                        'dbgroup'=>'consolidado');
+
+		$boton=$this->datasis->modbus($modbus);
 
                 $this->rapyd->set_connection('consolidado');
 		$this->rapyd->load_db();
@@ -116,6 +138,7 @@ class vieventascompras extends Controller {
 		$filter->barras = new inputField('Barras','barras');
 		$filter->barras->size      =17;
 		$filter->barras->maxlength =15;
+		$filter->barras->append($boton);
 
 		$filter->descrip = new inputField('Descripci&oacute;n','descrip');
 		$filter->descrip->size      =47;
@@ -156,7 +179,6 @@ class vieventascompras extends Controller {
 		$grid->column_orderby('Gema'              ,"<nformat><#gema#></nformat>"     ,'gema'      ,'align="right"');
 		$grid->column_orderby('Sebastian'         ,"<nformat><#sebastian#></nformat>",'sebastian' ,'align="right"');
 
-		$grid->add($this->url.'dataedit/create');
 		$grid->build();
 
 		$data['filtro']  = $filter->output;
@@ -165,6 +187,11 @@ class vieventascompras extends Controller {
 		$data['title']   = $this->titp;
 		$this->load->view('view_ventanas', $data);
 
+	}
+	
+	function kardex($barras,$farmacia){
+	
+	
 	}
 }
 ?>
