@@ -190,7 +190,8 @@ function scstserie(mcontrol){
 			'retornar'=>array('codigo'=>'codigo_<#i#>','descrip'=>'descrip_<#i#>','pond'=>'costo_<#i#>','iva'=>'iva_<#i#>','peso'=>'sinvpeso_<#i#>'),
 			'p_uri'=>array(4=>'<#i#>'),
 			'script'  => array('post_modbus_sinv(<#i#>)'),
-			'titulo'  =>'Buscar Art&iacute;culo');
+			'titulo'  =>'Buscar Art&iacute;culo',
+			'where'   =>'activo="S"');
 
 		$sprvbus=array(
 			'tabla'   =>'sprv',
@@ -198,8 +199,8 @@ function scstserie(mcontrol){
 				'proveed' =>'C&oacute;digo Proveedor',
 				'nombre'=>'Nombre',
 				'rif'=>'RIF'),
-			'filtro'  =>array('proveed'=>'C&oacute;digo Proveedor','nombre'=>'Nombre'),
-			'retornar'=>array('proveed'=>'proveed', 'nombre'=>'nombre'),
+			'filtro'  => array('proveed'=>'C&oacute;digo Proveedor','nombre'=>'Nombre'),
+			'retornar'=> array('proveed'=>'proveed', 'nombre'=>'nombre'),
 			'script'  => array('post_modbus_sprv()'),
 			'titulo'  =>'Buscar Proveedor');
 
@@ -677,14 +678,44 @@ function scstserie(mcontrol){
 		$iva=$stotal=0;
 		$cana=$do->count_rel('itscst');
 		for($i=0;$i<$cana;$i++){
+			$itcodigo  = $do->get_rel('itscst','codigo'  ,$i);
 			$itcana    = $do->get_rel('itscst','cantidad',$i);
 			$itprecio  = $do->get_rel('itscst','costo'   ,$i);
 			$itiva     = $do->get_rel('itscst','iva'     ,$i);
 			$itimporte = $itprecio*$itcana;
 			$iiva      = $itimporte*($itiva/100);
+			
+			$mSQL='SELECT ultimo,existen,pond,standard,formcal,margen1,margen2,margen3,margen4 FROM sinv WHERE codigo='.$this->db->escape($itcodigo);
+			$query = $this->db->query($mSQL);
+			if ($query->num_rows() > 0){
+				$row = $query->row();
+
+
+				$costo_pond=(($row->pond*$row->existen)+($itcana*$itprecio))/($itcana+$row->existen);
+				$costo_ulti=$itprecio;
+				switch($row->formcal){
+				case 'P':
+					$costo=$costo_pond;
+					break;
+				case 'U':
+					$costo=$costo_ulti;
+					break;
+				case 'S':
+					$costo=$row->standard;
+					break;
+				default:
+					$costo=($costo_pond>$costo_ulti) ? $costo_pond : $costo_ulti;
+				}
+			}
+			for($o=1;$o<5;$o++){
+				$obj='margen'.$o;
+				$pp=(($costo*100)/(100-$row->$obj))*(1+($itiva/100));
+				$do->set_rel('itscst','precio'.$o ,$pp,$i);
+			}
 
 			$do->set_rel('itscst','importe' ,$itimporte,$i);
 			$do->set_rel('itscst','montoiva',$iiva     ,$i);
+			$do->set_rel('itscst','ultimo'  ,$row->ultimo,$i);
 			$do->set_rel('itscst','fecha'   ,$fecha    ,$i);
 			$do->set_rel('itscst','numero'  ,$numero   ,$i);
 			$do->set_rel('itscst','proveed' ,$proveed  ,$i);
