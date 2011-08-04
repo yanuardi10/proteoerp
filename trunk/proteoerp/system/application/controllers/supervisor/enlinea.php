@@ -40,10 +40,10 @@ class Enlinea extends Controller{
 		$grid->per_page=15;
 		$grid->use_function('linea','ver');
 
-		$grid->column("Sucursal"    ,$uri                                       );
-		$grid->column("En Linea"    ,'<linea><#url#>|<#proteo#></linea>'        );
+		$grid->column("Sucursal", $uri                                );
+		$grid->column("En Linea", '<linea><#url#>|<#proteo#></linea>' );
 
-		$grid->column("Actualizar Proteo"    ,'<a href="http://<#url#>/<#proteo#>/supervisor/mantenimiento/actualizaproteo" />Actualizar</a>');
+		$grid->column("Actualizar Proteo" ,'<a href="http://<#url#>/<#proteo#>/supervisor/mantenimiento/actualizaproteo" />Actualizar</a>');
 
 		$grid->build();
 

@@ -62,10 +62,15 @@ class gser extends Controller {
 		$uri = anchor('finanzas/gser/dataedit/show/<#id#>','<#numero#>');
 
 		$uri_3  = "<a href='javascript:void(0);' onclick='javascript:gserserie(\"<#id#>\")'>";
-		
 		$propiedad = array('src' => 'images/engrana.png', 'alt' => 'Modifica Nro de Serie', 'title' => 'Modifica Nro. de Serie','border'=>'0','height'=>'12');
 		$uri_3 .= img($propiedad);
 		$uri_3 .= "</a>";
+
+		$uri_4  = "<a href='javascript:void(0);' onclick='javascript:gserfiscal(\"<#id#>\")'>";
+		$propiedad = array('src' => 'images/engrana.png', 'alt' => 'Modifica Control Fiscal', 'title' => 'Modifica Control Fiscal','border'=>'0','height'=>'12');
+		$uri_4 .= img($propiedad);
+		$uri_4 .= "</a>";
+
 
 		$grid = new DataGrid();
 		$grid->order_by('fecha','desc');
@@ -83,13 +88,14 @@ class gser extends Controller {
 		$grid->column_orderby('Ret.IVA'   ,'reteiva'  ,'reteiva' ,'align=\'right\'');
 		$grid->column_orderby('Ret.ISLR'   ,'reten'  ,'reten' ,'align=\'right\'');
 		$grid->column_orderby('Total Neto' ,'<nformat><#totneto#></nformat>' ,'totneto','align=\'right\'');
+		$grid->column_orderby('Ctrl. Fiscal',$uri_4.'<#nfiscal#>','nfiscal');
 
 		$grid->column_orderby('Vence' ,'<dbdate_to_human><#vence#></dbdate_to_human>','vence','align=\'center\'');
 		$grid->column_orderby('Prov.' ,'proveed','proveed','align=\'center\'');
 
 		$grid->column_orderby('Banco'  , 'codb1'  ,'codb1' );
 		$grid->column('Tipo'   , 'tipo1'  ,'tipo11' );
-		$grid->column_orderby('Numero' , 'cheque1'  ,'cheque1' );
+		$grid->column_orderby('Cheque' , 'cheque1'  ,'cheque1' );
 	
 		
 
@@ -115,9 +121,7 @@ class gser extends Controller {
 		}
 	});
 })();
-
 //]]>
-
 </script>
 ';
 
@@ -137,13 +141,26 @@ class gser extends Controller {
 $script ='
 <script type="text/javascript">
 function gserserie(mid){
-	//var mserie=Prompt("Numero de Serie");
-	//jAlert("Cancelado","Informacion");
 	jPrompt("Numero de Serie","" ,"Cambio de Serie", function(mserie){
 		if( mserie==null){
 			jAlert("Cancelado","Informacion");
 		} else {
 			$.ajax({ url: "'.site_url().'finanzas/gser/gserserie/"+mid+"/"+mserie,
+				success: function(msg){
+					jAlert("Cambio Finalizado "+msg,"Informacion");
+					location.reload();
+					}
+			});
+		}
+	})
+}
+
+function gserfiscal(mid){
+	jPrompt("Numero de Control Fiscal","" ,"Cambio de Serie", function(mserie){
+		if( mserie==null){
+			jAlert("Cancelado","Informacion");
+		} else {
+			$.ajax({ url: "'.site_url().'finanzas/gser/gserfiscal/"+mid+"/"+mserie,
 				success: function(msg){
 					jAlert("Cambio Finalizado "+msg,"Informacion");
 					location.reload();
@@ -179,6 +196,18 @@ function gserserie(mid){
 		$id = $this->uri->segment($this->uri->total_segments()-1);
 		if (!empty($serie)) {
 			$this->db->simple_query("UPDATE gser SET serie='$serie' WHERE id='$id'");
+			echo " con exito ";
+		} else {
+			echo " NO se guardo ";
+		}
+		logusu('GSER',"Cambia Nro. Serie $id ->  $serie ");
+	}
+
+	function gserfiscal(){
+		$serie   = $this->uri->segment($this->uri->total_segments());
+		$id = $this->uri->segment($this->uri->total_segments()-1);
+		if (!empty($serie)) {
+			$this->db->simple_query("UPDATE gser SET nfiscal='$serie' WHERE id='$id'");
 			echo " con exito ";
 		} else {
 			echo " NO se guardo ";

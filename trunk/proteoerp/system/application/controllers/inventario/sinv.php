@@ -412,7 +412,7 @@ function cambgrupo(){
 				async: false,
 				success: function(sino) {
 				jAlert(sino,"Informacion");
-				jConfirm("Recargar Tabla y perder los checks?", "Actualizar", function(r){
+				jConfirm( "Actualizar","Recargar Tabla y perder los checks?" , function(r){
 					if(r) {
 						location.reload();
 					}
