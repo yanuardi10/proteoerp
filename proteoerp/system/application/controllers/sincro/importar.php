@@ -1,5 +1,6 @@
 <?php
 class Importar extends Controller {
+	var $timeout=900;
 
 	function Importar(){
 		parent::Controller();
@@ -223,7 +224,7 @@ class Importar extends Controller {
 	}
 
 	function vendambul($sucu=null){
-		set_time_limit(600);
+		set_time_limit($this->timeout);
 		if(empty($sucu)) $sucu='01';
 		$ssucu=$this->db->escape($sucu);
 
@@ -409,33 +410,33 @@ class Importar extends Controller {
 //**************************
 
 	function _scli($sucu,$fecha=null){
-		set_time_limit(600);
+		set_time_limit($this->timeout);
 		$rt=$this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/scli/'.$fecha,'scli');
 		return $rt;
 	}
 
 	function _sprv($sucu,$fecha=null){
-		set_time_limit(600);
+		set_time_limit($this->timeout);
 		$rt=$this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/sprv/'.$fecha,'sprv');
 		return $rt;
 	}
 
 	function _datacenter($sucu,$fecha=null){
-		set_time_limit(600);
+		set_time_limit($this->timeout);
 		$rt=$this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/datacenter/'.$fecha,'datacenter');
 		return $rt;
 	}
 
 	//Clientes con limite de credito 0
 	function _sclilimit($sucu,$fecha=null){
-		set_time_limit(600);
+		set_time_limit($this->timeout);
 		$rt=$this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/sclilimit/'.$fecha,'scli');
 		return $rt;
 	}
 
 
 	function _sinvprec($sucu,$fecha=null){
-		set_time_limit(600);
+		set_time_limit($this->timeout);
 		$rt='';
 		$rt.= $this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/sinvprec/'.$fecha,'sinvpre');
 		if ($this->db->table_exists('sinvcontrol'))
@@ -444,61 +445,61 @@ class Importar extends Controller {
 	}
 
 	function _sinv($sucu,$fecha=null){
-		set_time_limit(600);
+		set_time_limit($this->timeout);
 		$rt=$this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/sinv','sinv');
 		return $rt;
 	}
 
 	function _smov($sucu,$fecha=null){
-		set_time_limit(600);
+		set_time_limit($this->timeout);
 		$rt=$this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/smov/'.$fecha,'smov');
 		return $rt;
 	}
 
 	function _fiscalz($sucu,$fecha=null){
-		set_time_limit(600);
+		set_time_limit($this->timeout);
 		$rt=$this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/fiscalz/'.$fecha,'fiscalz');
 		return $rt;
 	}
 
 	function _transa($sucu,$fecha=null){
-		set_time_limit(600);
+		set_time_limit($this->timeout);
 		$rt=$this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/transacciones/'.$fecha,'transacciones');
 		return $rt;
 	}
 
 	function _supertransa($sucu,$fecha=null){
-		set_time_limit(600);
+		set_time_limit($this->timeout);
 		$rt=$this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/supertransa/'.$fecha,'supertransa');
 		return $rt;
 	}
 
 	function _maes($sucu,$fecha=null){
-		set_time_limit(600);
+		set_time_limit($this->timeout);
 		$rt=$this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/maes/'.$fecha,'maes');
 		return $rt;
 	}
 
 	function _rcaj($sucu,$fecha=null){
-		set_time_limit(600);
+		set_time_limit($this->timeout);
 		$rt=$this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/rcaj/'.$fecha,'rcaj');
 		return $rt;
 	}
 
 	function _tranalma($sucu,$fecha=null,$alma=null){
-		set_time_limit(600);
+		set_time_limit($this->timeout);
 		$rt=$this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/tranalma/'.$fecha.'/'.$alma,'maesalma');
 		return $rt;
 	}
 
 	function _maesalma($sucu,$fecha=null,$alma=null){
-		set_time_limit(600);
+		set_time_limit($this->timeout);
 		$rt=$this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/maesalma/'.$fecha.'/'.$alma,'maesalma');
 		return $rt;
 	}
 
 	function _ubicalma($sucu,$fecha=null,$alma=null){
-		set_time_limit(600);
+		set_time_limit($this->timeout);
 		$rt=$this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/ubicalma/'.$fecha.'/'.$alma,'maesalma');
 		return $rt;
 	}
@@ -525,7 +526,7 @@ class Importar extends Controller {
 		$ssucu = $this->db->escape($sucu);
 		$cc    = $this->datasis->dameval("SELECT COUNT(*) FROM sucu WHERE codigo=$ssucu");
 		if($cc==0) return "Surursal no existe ($sucu)";
-		set_time_limit(600);
+		set_time_limit($this->timeout);
 		$this->load->library('Sqlinex');
 		$sucu  = $this->db->escape($sucu);
 
@@ -588,7 +589,7 @@ class Importar extends Controller {
 	}
 
 	function __cargazip($nombre=null){
-		set_time_limit(600);
+		set_time_limit($this->timeout);
 		if(empty($nombre)) return 'Nombre vacio';
 
 		//$dir = $this->dir.'/';
