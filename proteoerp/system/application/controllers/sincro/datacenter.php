@@ -36,7 +36,7 @@ class Datacenter extends Controller {
 		if($psucu!='*') $where='AND codigo ='.$this->db->escape($psucu); else $where='';
 
 		$sucu  = $this->sucu;
-		$query = $this->db->query("SELECT * FROM sucu WHERE codigo<>$sucu $where");
+		$query = $this->db->query("SELECT * FROM sucumon WHERE codigo<>$sucu $where");
 
 		if ($query->num_rows() > 0){
 			$result=$query->result();
