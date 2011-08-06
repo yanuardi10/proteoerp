@@ -156,7 +156,6 @@ function scstserie(mcontrol){
 }
 </script>';
 
-
 		$data['style']   = $style;
 		$data['style']  .= style('superTables.css');
 		$data['style']	.= style("jquery.alerts.css");
@@ -178,8 +177,8 @@ function scstserie(mcontrol){
 	}
 
 	function dataedit(){
- 		//$this->rapyd->load('dataedit','datadetalle','fields','datagrid');
 		$this->rapyd->load('dataobject','datadetails');
+		$this->rapyd->uri->keep_persistence();
 
  		$modbus=array(
 			'tabla'   =>'sinv',
@@ -237,7 +236,7 @@ function scstserie(mcontrol){
 		$edit->serie->maxlength=12;
 
 		$edit->proveed = new inputField('Proveedor', 'proveed');
-		$edit->proveed->size     = 10;
+		$edit->proveed->size     = 7;
 		$edit->proveed->maxlength= 5;
 		$edit->proveed->autocomplete=false;
 		$edit->proveed->readonly=true;
@@ -271,6 +270,7 @@ function scstserie(mcontrol){
 		$edit->peso->css_class='inputnum';
 
 		$edit->orden  = new inputField('Orden', 'orden');
+		$edit->orden->when=array('show');
 		$edit->orden->size = 15;
 
 		$edit->credito  = new inputField('Cr&eacute;dito', 'credito');
@@ -314,6 +314,60 @@ function scstserie(mcontrol){
 		$edit->mdolar  = new inputField('Monto US $', 'mdolar');
 		$edit->mdolar->size = 20;
 		$edit->mdolar->css_class='inputnum';
+
+		$edit->observa1 = new textareaField('Observaci&oacute;n', 'observa1');
+		$edit->observa1->cols=90;
+		$edit->observa1->rows=3;
+
+		$edit->observa2 = new textareaField('Observaci&oacute;n', 'observa2');
+		$edit->observa2->when=array('show');
+		$edit->observa2->rows=3;
+
+		$edit->observa3 = new textareaField('Observaci&oacute;n', 'observa3');
+		$edit->observa3->when=array('show');
+		$edit->observa3->rows=3;
+
+		//Para CXP
+		/*$edit->cexento  = new inputField('Excento', 'cexento');
+		$edit->cexento->size = 20;
+		$edit->cexento->css_class='inputnum';
+
+		$edit->cgenera  = new inputField('Base imponible tasa General', 'cgenera');
+		$edit->cgenera->size = 20;
+		$edit->cgenera->css_class='inputnum';
+
+		$edit->civagen  = new inputField('Monto alicuota tasa General', 'civagen');
+		$edit->civagen->size = 10;
+		$edit->civagen->css_class='inputnum';
+
+		$edit->creduci  = new inputField('Base imponible tasa Reducida', 'creduci');
+		$edit->creduci->size = 20;
+		$edit->creduci->css_class='inputnum';
+
+		$edit->civared  = new inputField('Monto alicuota tasa Reducida', 'civared');
+		$edit->civared->size = 10;
+		$edit->civared->css_class='inputnum';
+
+		$edit->cadicio  = new inputField('Base imponible tasa Adicional', 'cadicio');
+		$edit->cadicio->size = 20;
+		$edit->cadicio->css_class='inputnum';
+
+		$edit->civaadi  = new inputField('Monto alicuota tasa Adicional', 'civaadi');
+		$edit->civaadi->size = 10;
+		$edit->civaadi->css_class='inputnum';
+
+		$edit->cstotal  = new hiddenField('Sub-total', 'cstotal');
+		$edit->cstotal->size = 20;
+		$edit->cstotal->css_class='inputnum';
+
+		$edit->cimpuesto  = new hiddenField('Total Impuesto', 'cimpuesto');
+		$edit->cimpuesto->size = 10;
+		$edit->cimpuesto->css_class='inputnum';
+
+		$edit->ctotal  = new hiddenField('Total', 'ctotal');
+		$edit->ctotal ->size = 20;
+		$edit->ctotal ->css_class='inputnum';*/
+		//Fin de CxP
 
 		//Campos para el detalle
 		$edit->codigo = new inputField('C&oacute;digo', 'codigo_<#i#>');
@@ -374,11 +428,14 @@ function scstserie(mcontrol){
 		$fecha=strtotime($edit->get_from_dataobjetct('fecha'));
 
 		if($recep < $fecha){
-			$accion="javascript:window.location='".site_url('compras/scst/actualizar/'.$edit->_dataobject->pk['control'])."'";
-			$accio2="javascript:window.location='".site_url('compras/scst/precios/'.$edit->_dataobject->pk['control'])."'";
+			$control=$this->rapyd->uri->get_edited_id();
+			$accion="javascript:window.location='".site_url('compras/scst/actualizar/'.$control)."'";
+			$accio2="javascript:window.location='".site_url('compras/scst/precios/'.$control)."'";
+			$accio3="javascript:window.location='".site_url('compras/scst/montoscxp/modify/'.$control)."'";
 
-			$edit->button_status('btn_actuali','Actualizar'     ,$accion,'TL','show');
-			$edit->button_status('btn_precio' ,'Asignar precios',$accio2,'TL','show');
+			$edit->button_status('btn_actuali','Actualizar'     ,$accion,'TR','show');
+			$edit->button_status('btn_precio' ,'Asignar precios',$accio2,'TR','show');
+			$edit->button_status('btn_cxp'    ,'Ajuste CxP'     ,$accio3,'TR','show');
 		}
 		$edit->buttons('save', 'undo', 'back','add_rel');
 		$edit->build();
@@ -386,6 +443,9 @@ function scstserie(mcontrol){
 		$smenu['link']  =  barra_menu('201');
 		$data['smenu']  =  $this->load->view('view_sub_menu', $smenu,true);
 		$conten['form'] =& $edit;
+		
+		$ffecha=$edit->get_from_dataobjetct('fecha');
+		$conten['alicuota']=$this->datasis->ivaplica(($ffecha==false)? null : $ffecha);
 
 		$data['script']  = script('jquery.js');
 		$data['script'] .= script('jquery-ui.js');
@@ -398,6 +458,95 @@ function scstserie(mcontrol){
 
 		$data['content'] = $this->load->view('view_compras', $conten,true);
 		$data['title']   = heading('Compras');
+
+		$this->load->view('view_ventanas', $data);
+	}
+
+	function montoscxp(){
+		$this->rapyd->load('dataedit');
+		$this->rapyd->uri->keep_persistence();
+		$control=$this->rapyd->uri->get_edited_id();
+
+		//$ffecha=$edit->get_from_dataobjetct('fecha');
+		$ffecha=false;
+		$alicuota=$this->datasis->ivaplica(($ffecha==false)? null : $ffecha);
+
+		$edit = new DataEdit('Compras','scst');
+		$edit->back_url = 'compras/scst/dataedit/show/'.$control;
+		/*$edit->back_save   = true;
+		$edit->back_cancel = true;
+		$edit->back_cancel_save=true;*/
+		//$edit->post_process('update' ,'_post_cxp_update');
+
+		//Para CXP
+		$edit->cexento = new inputField('Excento', 'cexento');
+		$edit->cexento->size = 15;
+		$edit->cexento->onkeyup='ctotales()';
+		$edit->cexento->css_class='inputnum';
+
+		$edit->cgenera = new inputField('Base imponible tasa General', 'cgenera');
+		$edit->cgenera->size = 15;
+		$edit->cgenera->onkeyup='cal_iva('.$alicuota['tasa'].',\'civagen\',this.value)';
+		$edit->cgenera->css_class='inputnum';
+
+		$edit->civagen = new inputField('Monto alicuota tasa General', 'civagen');
+		$edit->civagen->size = 10;
+		$edit->civagen->onkeyup='cal_base('.$alicuota['tasa'].',\'cgenera\',this.value)';
+		$edit->civagen->css_class='inputnum';
+
+		$edit->creduci = new inputField('Base imponible tasa Reducida', 'creduci');
+		$edit->creduci->size = 15;
+		$edit->creduci->onkeyup='cal_iva('.$alicuota['redutasa'].',\'civared\',this.value)';
+		$edit->creduci->css_class='inputnum';
+
+		$edit->civared = new inputField('Monto alicuota tasa Reducida', 'civared');
+		$edit->civared->size = 10;
+		$edit->civared->onkeyup='cal_base('.$alicuota['redutasa'].',\'creduci\',this.value)';
+		$edit->civared->css_class='inputnum';
+
+		$edit->cadicio = new inputField('Base imponible tasa Adicional', 'cadicio');
+		$edit->cadicio->size = 15;
+		$edit->cadicio->onkeyup='cal_iva('.$alicuota['sobretasa'].',\'civaadi\',this.value)';
+		$edit->cadicio->css_class='inputnum';
+
+		$edit->civaadi = new inputField('Monto alicuota tasa Adicional', 'civaadi');
+		$edit->civaadi->size = 10;
+		$edit->civaadi->onkeyup='cal_base('.$alicuota['sobretasa'].',\'cadicio\',this.value)';
+		$edit->civaadi->css_class='inputnum';
+
+		$edit->cstotal = new hiddenField('Sub-total', 'cstotal');
+		$edit->cstotal->size = 20;
+		$edit->cstotal->css_class='inputnum';
+
+		$edit->cimpuesto = new hiddenField('Total Impuesto', 'cimpuesto');
+		$edit->cimpuesto->size = 10;
+		$edit->cimpuesto->css_class='inputnum';
+
+		$edit->ctotal  = new hiddenField('Total', 'ctotal');
+		$edit->ctotal ->size = 20;
+		$edit->ctotal ->css_class='inputnum';
+		//Fin de CxP
+
+		$edit->buttons('save', 'undo','modify', 'back');
+		$edit->build();
+
+		$conten['form'] =& $edit;
+
+		//$ffecha=$edit->get_from_dataobjetct('fecha');
+		$ffecha=false;
+		$conten['alicuota'] = $alicuota;
+
+		$data['script']  = script('jquery.js');
+		$data['script'] .= script('jquery-ui.js');
+		$data['script'] .= script('plugins/jquery.numeric.pack.js');
+		$data['script'] .= script('plugins/jquery.floatnumber.js');
+		$data['script'] .= phpscript('nformat.js');
+
+		$data['head']    = $this->rapyd->get_head();
+		$data['head']   .= style('redmond/jquery-ui-1.8.1.custom.css');
+		$data['content'] = $this->load->view('view_compras_cmontos', $conten,true);
+		$data['title']   = heading('Compras');
+
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -676,7 +825,8 @@ function scstserie(mcontrol){
 			return False;
 		}
 		return True;
-	}	
+	}
+
 	function _pre_insert($do){
 		$control = $this->datasis->fprox_numero('nscst');
 		$transac = $this->datasis->fprox_numero('ntransa');
@@ -687,8 +837,10 @@ function scstserie(mcontrol){
 		$depo    = $do->get('depo');
 		$estampa = date('Ymd');
 		$hora    = date("H:i:s");
+		$alicuota=$this->datasis->ivaplica($fecha);
 
 		$iva=$stotal=0;
+		$cgenera=$civagen=$creduci=$civared=$cadicio=$civaadi=$cexento=0;
 		$cana=$do->count_rel('itscst');
 		for($i=0;$i<$cana;$i++){
 			$itcodigo  = $do->get_rel('itscst','codigo'  ,$i);
@@ -702,7 +854,6 @@ function scstserie(mcontrol){
 			$query = $this->db->query($mSQL);
 			if ($query->num_rows() > 0){
 				$row = $query->row();
-
 
 				$costo_pond=(($row->pond*$row->existen)+($itcana*$itprecio))/($itcana+$row->existen);
 				$costo_ulti=$itprecio;
@@ -739,7 +890,20 @@ function scstserie(mcontrol){
 			$do->set_rel('itscst','hora'    ,$hora     ,$i);
 			$do->set_rel('itscst','estampa' ,$estampa  ,$i);
 
-			$iva    += $iiva ;
+			if($itiva-$alicuota['tasa']==0){
+				$cgenera += $itimporte;
+				$civagen += $iiva;
+			}elseif($itiva-$alicuota['redutasa']==0){
+				$creduci += $itimporte;
+				$civared += $iiva;
+			}elseif($itiva-$alicuota['sobretasa']==0){
+				$cadicio += $itimporte;
+				$civaadi += $iiva;
+			}else{
+				$cexento += $itimporte;
+			}
+
+			$iva    += $iiva;
 			$stotal += $itimporte;
 		}
 		$gtotal=$stotal+$iva;
@@ -751,8 +915,43 @@ function scstserie(mcontrol){
 		$do->set('montotot',round($stotal,2));
 		$do->set('montonet',round($gtotal,2));
 		$do->set('montoiva',round($iva   ,2));
+
+		$do->set('cgenera'  , round($cgenera,2));
+		$do->set('civagen'  , round($civagen,2));
+		$do->set('creduci'  , round($creduci,2));
+		$do->set('civared'  , round($civared,2));
+		$do->set('cadicio'  , round($cadicio,2));
+		$do->set('civaadi'  , round($civaadi,2));
+		$do->set('cexento'  , round($cexento,2));
+		$do->set('ctotal'   , round($gtotal ,2));
+		$do->set('cstotal'  , round($stotal ,2));
+		$do->set('cimpuesto', round($iva    ,2));
+
+		//Para la retencion de iva si aplica
+		$contribu= $this->datasis->traevalor('CONTRIBUYENTE');
+		$rif     = $this->datasis->traevalor('RIF');
+		if($contribu=='ESPECIAL' && strtoupper($rif[0])!='V'){
+			$por_rete=$this->datasis->dameval('SELECT reteiva FROM sprv WHERE proveed='.$this->db->escape($proveed));
+			if($por_rete!=100){
+				$por_rete=0.75;
+			}else{
+				$por_rete=$por_rete/100;
+			}
+			$do->set('reteiva', round($iva*$por_rete,2));
+		}
+		//fin de la retencion
+
 		//$do->set('estampa', 'CURDATE()', FALSE);
 		//$do->set('hora'   , 'CURRENT_TIME()', FALSE);
+
+		//Para picar la observacion en varios campos
+		$obs=$do->get('observa1');
+		$ff = strlen($obs);
+		for($i=0; $i<$ff; $i=$i+60){
+			$ind=($i % 60)+1;
+			$do->set('observa'.$ind,substr($obs,$i,60));
+			if($i>180) break;
+		}
 
 		return true;
 	}
@@ -762,6 +961,12 @@ function scstserie(mcontrol){
 		$control = $do->get('control');
 		logusu('snte',"Compra $codigo control $control CREADA");
 	}
+
+	function _post_cxp_update($do){
+		exit();
+		return false;
+	}
+
 
 	function _pre_update($do){
 		return false;
