@@ -24,7 +24,10 @@ echo $form_begin;
 if($form->_status!='show'){ ?>
 
 <script language="javascript" type="text/javascript">
-var itscst_cont=<?php echo $form->max_rel_count['itscst']; ?>;
+var itscst_cont =<?php echo $form->max_rel_count['itscst']; ?>;
+var tasa_general=<?php echo $alicuota['tasa'];     ?>;
+var tasa_reducid=<?php echo $alicuota['redutasa']; ?>;
+var tasa_adicion=<?php echo $alicuota['sobretasa'];?>;
 
 $(function(){
 	$(".inputnum").numeric(".");
@@ -55,14 +58,23 @@ function costo(id){
 }
 
 function totalizar(){
-	var iva    =0;
-	var totalg =0;
-	var itiva  =0;
-	var itpeso =0;
-	var totals =0;
-	var importe=0;
-	var peso   =0;
-	var cana   =0;
+	var iva      =0;
+	var totalg   =0;
+	var itiva    =0;
+	var itpeso   =0;
+	var totals   =0;
+	var importe  =0;
+	var peso     =0;
+
+	var cana     =0;
+	var cexento  =0;
+	var cgenera  =0;
+	var civagen  =0;
+	var creduci  =0;
+	var civared  =0;
+	var cadicio  =0;
+	var civaadi  =0;
+
 	var arr=$('input[name^="importe_"]');
 	jQuery.each(arr, function() {
 		nom=this.name
@@ -77,6 +89,19 @@ function totalizar(){
 			peso    = peso+(itpeso*cana);
 			iva     = iva+importe*(itiva/100);
 			totals  = totals+importe;
+
+			if(itiva-tasa_general==0){
+				cgenera = cgenera+importe;
+				civagen = civagen+iva;
+			}else if(itiva-tasa_reducid==0){
+				creduci = creduci+importe;
+				civared = civared+iva;
+			}else if(itiva-tasa_adicion==0){
+				cadicio = cadicio+importe;
+				civaadi = civaadi+iva;
+			}else{
+				cexento = cexento+importe;
+			}
 		}
 	});
 	$("#peso").val(roundNumber(peso,2));
@@ -84,10 +109,41 @@ function totalizar(){
 	$("#montotot").val(roundNumber(totals,2));
 	$("#montoiva").val(roundNumber(iva,2));
 
+	/*$("#cexento").val(roundNumber(cexento,2));
+	$("#cgenera").val(roundNumber(cgenera,2));
+	$("#civagen").val(roundNumber(civagen,2));
+	$("#creduci").val(roundNumber(creduci,2));
+	$("#civared").val(roundNumber(civared,2));
+	$("#cadicio").val(roundNumber(cadicio,2));
+	$("#civaadi").val(roundNumber(civaadi,2));
+	ctotales();*/
+
 	$("#peso_val").text(nformat(peso,2));
 	$("#montonet_val").text(nformat(totals+iva,2));
 	$("#montotot_val").text(nformat(totals,2));
 	$("#montoiva_val").text(nformat(iva,2));
+}
+
+//Calcula los montos que van a CxP
+function ctotales(){
+	var base=0;
+	var impu=0;
+	base += Number($("#cexento").val());
+	base += Number($("#cgenera").val());
+	base += Number($("#creduci").val());
+	base += Number($("#cadicio").val());
+
+	impu += Number($("#civaadi").val());
+	impu += Number($("#civagen").val());
+	impu += Number($("#civared").val());
+
+	$("#cstotal").val(roundNumber(base,2));
+	$("#ctotal").val(roundNumber(base+impu,2));
+	$("#cimpuesto").val(roundNumber(impu,2));
+
+	$("#cimpuesto_val").text(nformat(impu,2));
+	$("#ctotal_val").text(nformat(base+impu,2));
+	$("#cstotal_val").text(nformat(base,2));
 }
 
 function add_itscst(){
@@ -310,33 +366,42 @@ function autocod(id){
 		<td colspan=10 class="littletableheader">Totales</td>      
 	</tr>                                                          
 	<tr> 
-		<td width="131" class="littletablerowth" align='right'><?php echo $form->rislr->label     ?></td>
-		<td width="122" class="littletablerow"   align='right'><?php echo $form->rislr->output    ?></td>
-		<td width="125" class="littletablerowth" align='right'><?php echo $form->anticipo->label  ?></td>
-		<td width="125" class="littletablerow"   align='right'><?php echo $form->anticipo->output ?></td>
-		<td width="111" class="littletablerowth" align='right'><?php echo $form->montotot->label  ?></td>
+		<td width="131" class="littletablerowth" align='right'><?php echo $form->rislr->label;     ?></td>
+		<td width="122" class="littletablerow"   align='right'><?php echo $form->rislr->output;    ?></td>
+		<td width="125" class="littletablerowth" align='right'><?php echo $form->anticipo->label;  ?></td>
+		<td width="125" class="littletablerow"   align='right'><?php echo $form->anticipo->output; ?></td>
+		<td width="111" class="littletablerowth" align='right'><?php echo $form->montotot->label;  ?></td>
 		<td width="139" class="littletablerow"   align='right'><?php echo $form->montotot->output; ?></td>
 	</tr>
 	<tr>
-		<td class="littletablerowth" align='right'><?php echo $form->riva->label   ?></td>
-		<td class="littletablerow"   align='right'><?php echo $form->riva->output  ?></td>
-		<td class="littletablerowth" align='right'><?php echo $form->inicial->label   ?></td>
-		<td class="littletablerow"   align='right'><?php echo $form->inicial->output  ?></td>
-		<td class="littletablerowth" align='right'><?php echo $form->montoiva->label  ?></td>
-		<td class="littletablerow"   align='right'><b id='montoiva_val'><?php echo nformat($form->montoiva->value); ?><b><?php echo $form->montoiva->output ?></td>
+		<td class="littletablerowth" align='right'><?php echo $form->riva->label;     ?></td>
+		<td class="littletablerow"   align='right'><?php echo $form->riva->output;    ?></td>
+		<td class="littletablerowth" align='right'><?php echo $form->inicial->label;  ?></td>
+		<td class="littletablerow"   align='right'><?php echo $form->inicial->output; ?></td>
+		<td class="littletablerowth" align='right'><?php echo $form->montoiva->label; ?></td>
+		<td class="littletablerow"   align='right'><b id='montoiva_val'><?php echo nformat($form->montoiva->value); ?><b><?php echo $form->montoiva->output; ?></td>
 	</tr>
 	<tr>
-		<td class="littletablerowth" align='right'><?php echo $form->mdolar->label    ?></td>
-		<td class="littletablerow"   align='right'><?php echo $form->mdolar->output   ?></td>
-		<td class="littletablerowth" align='right'><?php echo $form->credito->label  ?></td>
-		<td class="littletablerow"   align='right'><?php echo $form->credito->output ?></td>
-		<td class="littletablerowth" align='right'><?php echo $form->montonet->label ?></td>
-		<td class="littletablerow"   align='right'><b id='montonet_val' style='font-size:18px;font-weight: bold' ><?php echo nformat($form->montonet->value); ?></b><?php echo $form->montonet->output ?></td>
+		<td class="littletablerowth" align='right'><?php echo $form->mdolar->label;   ?></td>
+		<td class="littletablerow"   align='right'><?php echo $form->mdolar->output;  ?></td>
+		<td class="littletablerowth" align='right'><?php echo $form->credito->label;  ?></td>
+		<td class="littletablerow"   align='right'><?php echo $form->credito->output; ?></td>
+		<td class="littletablerowth" align='right'><?php echo $form->montonet->label; ?></td>
+		<td class="littletablerow"   align='right'><b id='montonet_val' style='font-size:18px;font-weight: bold' ><?php echo nformat($form->montonet->value); ?></b><?php echo $form->montonet->output; ?></td>
+	</tr>
+	<tr>                                                           
+		<td colspan=10 class="littletableheader"><?php echo $form->observa1->label;    ?></td>
+	</tr>
+	<tr>
+		<td colspan=10 >
+			<?php echo $form->observa1->output;   ?><?php echo $form->observa2->output;   ?><?php echo $form->observa3->output;   ?>
+		</td>
 	</tr>
 </table>
 
-<?php echo $form_end?>
 	  <td>
 	<tr>
 <table>
+	
+<?php echo $form_end?>
 <?php endif; ?>
