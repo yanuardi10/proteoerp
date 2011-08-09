@@ -462,6 +462,100 @@ function scstserie(mcontrol){
 		$this->load->view('view_ventanas', $data);
 	}
 
+	function cprecios($control){
+		$this->rapyd->uri->keep_persistence();
+		$this->rapyd->load('datagrid','fields');
+
+		$ggrid =form_open('/nomina/prenom/montos/search/osp');
+		$ggrid.=form_hidden('concepto', 'alguno');
+		
+		function costo($formcal,$pond,$ultimo,$standard,$existen,$itcana){
+			$costo_pond=(($pond*$existen)+($itcana*$ultimo))/($itcana+$existen);
+
+			$CI =& get_instance();
+			return $CI->_costos($formcal,$costo_pond,$ultimo,$standard);
+		}
+
+		function margen($formcal,$pond,$ultimo,$standard,$existen,$itcana,$precio,$iva){
+			$costo=costo($formcal,$pond,$ultimo,$standard,$existen,$itcana);
+			return round(100-(($costo*100)/($precio/(1+($iva/100)))),2);
+		}
+
+		$grid = new DataGrid('Precios de art&iacute;culos');
+		$grid->use_function('costo','margen');
+		$select=array('b.codigo','b.descrip','b.formcal','a.costo','b.ultimo','b.pond','b.standard','b.id',
+					  'b.precio1 AS scstp1','b.precio2 AS scstp2','b.precio3 AS scstp3','b.precio4 AS scstp4',
+					  'a.precio1 AS sinvp1','a.precio2 AS sinvp2','a.precio3 AS sinvp3','a.precio4 AS sinvp4',
+					  'b.ultimo','b.pond','b.standard','b.formcal','a.cantidad','b.existen','b.iva'
+					  );
+		$grid->db->select($select);
+		$grid->db->from('itscst AS a');
+		$grid->db->join('sinv AS b','a.codigo=b.codigo');
+		$grid->db->where('control' , $control);
+
+		$grid->column('C&oacute;digo'     , 'codigo' );
+		$grid->column('Descripci&oacute;n', 'descrip');
+		$grid->column('costo' , '<costo><#formcal#>|<#pond#>|<#ultimo#>|<#standard#>|<#existen#>|<#cantidad#></costo>','align=\'rigth\'');
+		$grid->column('margen', '<margen><#formcal#>|<#pond#>|<#ultimo#>|<#standard#>|<#existen#>|<#cantidad#>|<#scstp1#>|<#iva#></margen>','align=\'rigth\'');
+
+		$itt=array('sinvp1','sinvp2','sinvp3','sinvp4');
+		foreach ($itt as $id=>$val){
+			$grid->column('Precio '.($id+1).' actual', $val,'align=\'right\'');
+		}
+
+		$itt=array('scstp1','scstp2','scstp3','scstp4');
+		foreach ($itt as $val){
+			$ind = $val;
+
+			$campo = new inputField('Campo', $ind);
+			$campo->grid_name=$ind.'[<#id#>]';
+			$campo->status   ='modify';
+			$campo->size     =8;
+			$campo->css_class='inputnum';
+
+			$grid->column($ind , $campo,'align=\'center\'');
+		}
+
+		$itt=array('margen1','margen2','margen3','margen4');
+		foreach ($itt as $id=>$val){
+			$ind = $val;
+
+			$campo = new inputField('Campo', $ind);
+			$campo->grid_name=$ind.'[<#id#>]';
+			$campo->pattern  ='<margen><#formcal#>|<#pond#>|<#ultimo#>|<#standard#>|<#existen#>|<#cantidad#>|<#scstp'.($id+1).'#>|<#iva#></margen>';
+			$campo->status   ='modify';
+			$campo->size     =5;
+			$campo->css_class='inputnum';
+
+			$grid->column($ind , $campo,'align=\'center\'');
+		}
+		$grid->submit('pros', 'Guardar','BR');
+		$grid->build();
+
+		$ggrid.=$grid->output;
+		$ggrid.=form_close();
+
+		$script='<script language="javascript" type="text/javascript">
+		$(function(){
+			$(\'input[name^="margen"]\').keyup(function() {
+				alert($(this).val());
+			});
+
+			$(\'input[name^="scstp"]\').keyup(function() {
+				alert($(this).val());
+			});
+			
+		});
+		
+		</script>';
+
+		$data['content'] = $ggrid;
+		$data['title']   = heading('Cambio de precios');
+		$data['script']  = $script;
+		$data['head']    = $this->rapyd->get_head().script('jquery.pack.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js');
+		$this->load->view('view_ventanas', $data);
+	}
+
 	function montoscxp(){
 		$this->rapyd->load('dataedit');
 		$this->rapyd->uri->keep_persistence();
@@ -857,19 +951,9 @@ function scstserie(mcontrol){
 
 				$costo_pond=(($row->pond*$row->existen)+($itcana*$itprecio))/($itcana+$row->existen);
 				$costo_ulti=$itprecio;
-				switch($row->formcal){
-				case 'P':
-					$costo=$costo_pond;
-					break;
-				case 'U':
-					$costo=$costo_ulti;
-					break;
-				case 'S':
-					$costo=$row->standard;
-					break;
-				default:
-					$costo=($costo_pond>$costo_ulti) ? $costo_pond : $costo_ulti;
-				}
+
+				$costo=$this->_costos($row->formcal,$costo_pond,$costo_ulti,$row->standard);
+
 			}
 			for($o=1;$o<5;$o++){
 				$obj='margen'.$o;
@@ -954,6 +1038,23 @@ function scstserie(mcontrol){
 		}
 
 		return true;
+	}
+
+	function _costos($formcal,$costo_pond,$costo_ulti,$costo_stan){
+		switch($formcal){
+			case 'P':
+				$costo=$costo_pond;
+				break;
+			case 'U':
+				$costo=$costo_ulti;
+				break;
+			case 'S':
+				$costo=$costo_stan;
+				break;
+			default:
+				$costo=($costo_pond>$costo_ulti) ? $costo_pond : $costo_ulti;
+		}
+		return $costo;
 	}
 
 	function _post_insert($do){

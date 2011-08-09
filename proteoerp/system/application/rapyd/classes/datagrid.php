@@ -452,31 +452,56 @@ class DataGridColumn{
 	$dataRow["dg_row_id"] = $this->_row_id;
 	switch($this->patternType){
 		case "fieldObject":
-			if(isset($dataRow[$this->field->db_name])){
+			//Esta modificacion permite mandar funciones en el valor de los campos
+			if(isset($this->field->pattern)){
+				$this->_parsePattern($this->field->pattern);
+				$vvalue = $this->field->pattern;
+				foreach ($this->fieldList as $fieldName){
+					if (isset($dataRow[$fieldName])){
+						$vvalue = str_replace("<#$fieldName#>",$dataRow[$fieldName],$vvalue);
+					}
+				}
+				$this->fieldList = array();
+				$vvalue= replaceFunctions($vvalue);
+				$this->field->value = $vvalue;
+
+				if(isset($this->field->grid_name)){
+					$this->_parsePattern($this->field->grid_name);
+					$nname = $this->field->grid_name;
+					foreach ($this->fieldList as $fieldName){
+						if (isset($dataRow[$fieldName])){
+							$nname = str_replace("<#$fieldName#>",$dataRow[$fieldName],$nname);
+						}
+					}
+					$this->field->name = $nname;
+					$this->fieldList = array();
+				}
+
+			}elseif(isset($dataRow[$this->field->db_name])){
 				if($dataRow[$this->field->db_name]!='__TOET__'){
 					$this->field->value = $dataRow[$this->field->db_name];
-					
+
 					if(isset($this->field->grid_name)){
 						$this->_parsePattern($this->field->grid_name);
 						$nname = $this->field->grid_name;
 						foreach ($this->fieldList as $fieldName){
-							if (isset($dataRow[$fieldName]))
+							if (isset($dataRow[$fieldName])){
 								$nname = str_replace("<#$fieldName#>",$dataRow[$fieldName],$nname);
 							}
-							$this->field->name = $nname;
-							$this->fieldList = array();
 						}
-					
-					}else{
-						$this->field->value = "";
+						$this->field->name = $nname;
+						$this->fieldList = array();
 					}
+					
+				}else{
+					$this->field->value = "";
+				}
 			} else {
 				$this->field->value = "";
 			}
 			break;
 		case "pattern":
 			foreach ($this->fieldList as $fieldName){
-				//echo $this->rpattern.' --- '.$dataRow[$fieldName]."\n";
 				if($dataRow[$fieldName]=='__TOET__'){
 					$this->rpattern = '';
 				}else{
@@ -520,6 +545,7 @@ class DataGridColumn{
 		case "fieldObject":
 			$this->field->requestRefill = false;
 			//$this->field->status = "show";
+			//$this->field->name = replaceFunctions($this->field->name);
 			$this->field->build();
 			return $this->field->output;
 			break;
