@@ -495,9 +495,9 @@ function scstserie(mcontrol){
 		$ggrid =form_open('/compras/scst/cprecios/'.$control);
 		
 		function costo($formcal,$pond,$ultimo,$standard,$existen,$itcana){
-			$costo_pond=(($pond*$existen)+($itcana*$ultimo))/($itcana+$existen);
-
 			$CI =& get_instance();
+			$costo_pond=$CI->_pond($existen,$itcana,$pond,$ultimo);
+			//$costo_pond=(($pond*$existen)+($itcana*$ultimo))/($itcana+$existen);
 			return $CI->_costos($formcal,$costo_pond,$ultimo,$standard);
 		}
 
@@ -781,14 +781,16 @@ function scstserie(mcontrol){
 
 		$form = new DataForm("compras/scst/actualizar/$control/process");
 
-		$form->cprecio = new  dropdownField ('Actualizar precios', 'cprecio');
+		$form->cprecio = new  dropdownField ('Cambiar precios', 'cprecio');
+		//$form->cprecio->option('D','Dejar el precio mayor');
 		$form->cprecio->option('S','Si');
 		$form->cprecio->option('N','No');
-		$form->cprecio->rule = 'required';
+		$form->cprecio->style = 'width:100px;';
+		$form->cprecio->rule  = 'required';
 
-		$form->fecha = new dateonlyField('Fecha de recepci&oacute;n de la mercanc&iacute;a', 'fecha','d/m/Y');
+		$form->fecha = new dateonlyField('Fecha de recepci&oacute;n de la compra', 'fecha','d/m/Y');
 		$form->fecha->insertValue = date('Y-m-d');
-		$form->fecha->rule='required';
+		$form->fecha->rule='required|callback_chddate';
 		$form->fecha->size=10;
 
 		$form->submit('btnsubmit','Actualizar');
@@ -818,10 +820,9 @@ function scstserie(mcontrol){
 		$this->load->view('view_ventanas', $data);
 	}
 
-	function _actualizar($control,$cprecio,$actualiza=null){
+	function _actualizar($control,$cprecio,$actuali=null){
 		$error =0;
 		$pasa=$this->datasis->dameval('SELECT COUNT(*) FROM scst WHERE actuali>=fecha AND control='.$this->db->escape($control));
-		if(empty($actualiza)) $actualiza=date('Ymd');
 
 		if($pasa==0){
 			$SQL='SELECT transac,depo,proveed,fecha,vence, nombre,tipo_doc,nfiscal,fafecta,reteiva,
@@ -836,7 +837,7 @@ function scstserie(mcontrol){
 				$fecha   = str_replace('-','',$row['fecha']);
 				$vence   = $row['vence'];
 				$reteiva = $row['reteiva'];
-				$actuali = date('Ymd');
+				if(empty($actuali)) $actuali=date('Ymd');
 
 				$itdata=array();
 				$sql='SELECT a.codigo,a.cantidad,a.importe,a.importe/a.cantidad AS costo,
@@ -846,11 +847,19 @@ function scstserie(mcontrol){
 				if($qquery->num_rows()>0){
 					foreach ($qquery->result() as $itrow){
 
-						//$costo=
+						$pond     = $this->_pond($itrow->existen,$itrow->cantidad,$itrow->pond,$itrow->costo);
+						$costo    = $this->_costos($itrow->formcal,$pond,$itrow->costo,$itrow->standard);
+						$dbcodigo = $this->db->escape($itrow->codigo);
 						//Actualiza el inventario
 						$mSQL='UPDATE sinv SET 
-							pond=(existen*IF(formcal="P",pond,IF(formcal="U",ultimo,GREATEST(pond,ultimo)))+'.$itrow->importe.')/(existen+'.$itrow->cantidad.'),
-							existen=existen+'.$itrow->cantidad.' WHERE codigo='.$this->db->escape($itrow->codigo);
+							pond='.$pond.',
+							ultimo='.$itrow->costo.',
+							prov3=prov2, prepro3=prepro2, pfecha3=pfecha2, prov2=prov1, prepro2=prepro1, pfecha2=pfecha1,
+							prov1='.$this->db->escape($proveed).',
+							prepro1='.$itrow->costo.',
+							pfecha1='.$this->db->escape($fecha).',
+							existen=existen+'.$itrow->cantidad.'
+							WHERE codigo='.$dbcodigo;
 						$ban=$this->db->simple_query($mSQL);
 						if(!$ban){ memowrite($mSQL,'scst'); $error++; }
 
@@ -858,39 +867,34 @@ function scstserie(mcontrol){
 						$ban=$this->db->simple_query($mSQL);
 						if(!$ban){ memowrite($mSQL,'scst'); $error++; }
 
-						if($itrow->precio1>0 and $itrow->precio2>0 and $itrow->precio3>0 and $itrow->precio4>0){
-							$mSQL='UPDATE sinv SET 
-								prov3=prov2, prepro3=prepro2, pfecha3=pfecha2, prov2=prov1, prepro2=prepro1, pfecha2=pfecha1,
-								prov1='.$this->db->escape($proveed).',
-								prepro1='.$itrow->costo.',
-								pfecha1='.$this->db->escape($fecha).',
-								ultimo='.$itrow->costo.',
+						if($itrow->precio1>0 && $itrow->precio2>0 && $itrow->precio3>0 && $itrow->precio4>0){
+							//Cambio de precios
+							if(!$cprecio){
+								$mSQL='UPDATE sinv SET 
 								precio1='.$this->db->escape($itrow->precio1).',
 								precio2='.$this->db->escape($itrow->precio2).',
 								precio3='.$this->db->escape($itrow->precio3).',
 								precio4='.$this->db->escape($itrow->precio4).'
-								WHERE codigo='.$this->db->escape($itrow->codigo);
-							$ban=$this->db->simple_query($mSQL);
-							if(!$ban){ memowrite($mSQL,'scst'); $error++; }
-    
-							//Cambio de precios
-							if(!$cprecio){
-								$mSQL='UPDATE sinv SET 
-									base1=ROUND(precio1*10000/(100+iva))/100, 
-									base2=ROUND(precio2*10000/(100+iva))/100, 
-									base3=ROUND(precio3*10000/(100+iva))/100, 
-									base4=ROUND(precio4*10000/(100+iva))/100, 
-									margen1=ROUND(10000-(IF(formcal="P",pond,IF(formcal="U",ultimo,GREATEST(pond,ultimo)))*10000/base1))/100,
-									margen2=ROUND(10000-(IF(formcal="P",pond,IF(formcal="U",ultimo,GREATEST(pond,ultimo)))*10000/base2))/100,
-									margen3=ROUND(10000-(IF(formcal="P",pond,IF(formcal="U",ultimo,GREATEST(pond,ultimo)))*10000/base3))/100,
-									margen4=ROUND(10000-(IF(formcal="P",pond,IF(formcal="U",ultimo,GREATEST(pond,ultimo)))*10000/base4))/100,
-									activo="S"
-								WHERE codigo='.$this->db->escape($itrow->codigo);
+								WHERE codigo='.$dbcodigo;
 								$ban=$this->db->simple_query($mSQL);
 								if(!$ban){ memowrite($mSQL,'scst'); $error++; }
-							}
-							//Fin del cambio de precios
+							}//Fin del cambio de precios
 						}
+
+						//Actualiza los margenes y bases
+						$mSQL='UPDATE sinv SET 
+							base1=ROUND(precio1*10000/(100+iva))/100, 
+							base2=ROUND(precio2*10000/(100+iva))/100, 
+							base3=ROUND(precio3*10000/(100+iva))/100, 
+							base4=ROUND(precio4*10000/(100+iva))/100, 
+							margen1=ROUND(10000-('.$costo.'*10000/base1))/100,
+							margen2=ROUND(10000-('.$costo.'*10000/base2))/100,
+							margen3=ROUND(10000-('.$costo.'*10000/base3))/100,
+							margen4=ROUND(10000-('.$costo.'*10000/base4))/100,
+							activo="S"
+						WHERE codigo='.$dbcodigo;
+						$ban=$this->db->simple_query($mSQL);
+						if(!$ban){ memowrite($mSQL,'scst'); $error++; }
 						//Fin de la actualizacion de inventario
 					}
 				}
@@ -898,7 +902,7 @@ function scstserie(mcontrol){
 				//Carga la CxP
 				$mSQL='DELETE FROM sprm WHERE transac='.$this->db->escape($transac);
 				$ban=$this->db->simple_query($mSQL);
-				if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
+				if(!$ban){ memowrite($mSQL,'scst'); $error++; }
 
 				$sprm=array();
 				$causado = $this->datasis->fprox_numero('ncausado');
@@ -924,7 +928,7 @@ function scstserie(mcontrol){
 
 				$mSQL=$this->db->insert_string('sprm', $sprm);
 				$ban =$this->db->simple_query($mSQL);
-				if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
+				if(!$ban){ memowrite($mSQL,'scst'); $error++; }
 				//Fin de la carga de la CxP
 
 				//Inicio de la retencion
@@ -1014,7 +1018,7 @@ function scstserie(mcontrol){
 			$itiva     = $do->get_rel('itscst','iva'     ,$i);
 			$itimporte = $itprecio*$itcana;
 			$iiva      = $itimporte*($itiva/100);
-			
+
 			$mSQL='SELECT ultimo,existen,pond,standard,formcal,margen1,margen2,margen3,margen4 FROM sinv WHERE codigo='.$this->db->escape($itcodigo);
 			$query = $this->db->query($mSQL);
 			if ($query->num_rows() > 0){
@@ -1107,8 +1111,24 @@ function scstserie(mcontrol){
 			$do->set('observa'.$ind,substr($obs,$i,60));
 			if($i>180) break;
 		}
-
 		return true;
+	}
+
+	//Chequea que el dia no sea superior a hoy
+	function chddate($fecha){
+		$d1 = DateTime::createFromFormat(RAPYD_DATE_FORMAT, $fecha);
+		$d2 = new DateTime();
+
+		if($d2>=$d1){
+			return true;
+		}else{
+			$this->validation->set_message('chddate', 'No se puede recepcionar una compra con fecha superior al d&iacute;a de hoy.');
+			return false;
+		}
+	}
+
+	function _pond($existen,$itcana,$pond,$ultimo){
+		return (($pond*$existen)+($itcana*$ultimo))/($itcana+$existen);
 	}
 
 	function _costos($formcal,$costo_pond,$costo_ulti,$costo_stan){
