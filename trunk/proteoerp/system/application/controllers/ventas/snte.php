@@ -162,8 +162,6 @@ function sntefactura(mnumero){
 		$data['head']    = $this->rapyd->get_head();
 
 		$this->load->view('view_ventanas', $data);
-
-
 	}
 
 	function dataedit(){
@@ -417,7 +415,6 @@ function sntefactura(mnumero){
 			}
 		}
 	}
-
 
 	function _pre_insert($do){
 		$numero = $this->datasis->fprox_numero('nsnte');
