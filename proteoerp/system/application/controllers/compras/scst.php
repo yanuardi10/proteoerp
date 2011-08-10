@@ -430,7 +430,7 @@ function scstserie(mcontrol){
 		if($recep < $fecha){
 			$control=$this->rapyd->uri->get_edited_id();
 			$accion="javascript:window.location='".site_url('compras/scst/actualizar/'.$control)."'";
-			$accio2="javascript:window.location='".site_url('compras/scst/precios/'.$control)."'";
+			$accio2="javascript:window.location='".site_url('compras/scst/cprecios/'.$control)."'";
 			$accio3="javascript:window.location='".site_url('compras/scst/montoscxp/modify/'.$control)."'";
 
 			$edit->button_status('btn_actuali','Actualizar'     ,$accion,'TR','show');
@@ -466,8 +466,33 @@ function scstserie(mcontrol){
 		$this->rapyd->uri->keep_persistence();
 		$this->rapyd->load('datagrid','fields');
 
-		$ggrid =form_open('/nomina/prenom/montos/search/osp');
-		$ggrid.=form_hidden('concepto', 'alguno');
+		if($this->input->post('pros') !== false){
+			$precio1=$this->input->post('scstp_1');
+			$precio2=$this->input->post('scstp_2');
+			$precio3=$this->input->post('scstp_3');
+			$precio4=$this->input->post('scstp_4');
+
+			$error='';
+			foreach(array_keys($precio1) as $ind){
+				if($precio1[$ind]>=$precio2[$ind] && $precio2[$ind]>=$precio3[$ind] && $precio3[$ind]>=$precio4[$ind]){
+					$data=array(
+						'precio1'=>$precio1[$ind],
+						'precio2'=>$precio2[$ind],
+						'precio3'=>$precio3[$ind],
+						'precio4'=>$precio4[$ind]
+					);
+
+					$where = 'id = '.$this->db->escape($ind);
+					$mSQL = $this->db->update_string('itscst',$data,$where);
+					$ban=$this->db->simple_query($mSQL);
+				}else{
+					$error='Los precios deben cumplir esta regla (precio 1 >= precio 2 >= precio 3 >= precio 4)';
+				}
+			}
+		}
+
+
+		$ggrid =form_open('/compras/scst/cprecios/'.$control);
 		
 		function costo($formcal,$pond,$ultimo,$standard,$existen,$itcana){
 			$costo_pond=(($pond*$existen)+($itcana*$ultimo))/($itcana+$existen);
@@ -481,11 +506,20 @@ function scstserie(mcontrol){
 			return round(100-(($costo*100)/($precio/(1+($iva/100)))),2);
 		}
 
+		function tcosto($id,$iva,$formcal,$pond,$ultimo,$standard,$existen,$itcana){
+			$costo=costo($formcal,$pond,$ultimo,$standard,$existen,$itcana);
+			$rt = nformat($costo);
+			
+			$rt.= '<input type="hidden" id="costo['.$id.']" name="costo['.$id.']" value="'.$costo.'" />';
+			$rt.= '<input type="hidden" id="iva['.$id.']" name="iva['.$id.']" value="'.$iva.'" />';
+			return $rt;
+		}
+
 		$grid = new DataGrid('Precios de art&iacute;culos');
-		$grid->use_function('costo','margen');
-		$select=array('b.codigo','b.descrip','b.formcal','a.costo','b.ultimo','b.pond','b.standard','b.id',
-					  'b.precio1 AS scstp1','b.precio2 AS scstp2','b.precio3 AS scstp3','b.precio4 AS scstp4',
-					  'a.precio1 AS sinvp1','a.precio2 AS sinvp2','a.precio3 AS sinvp3','a.precio4 AS sinvp4',
+		$grid->use_function('costo','margen','tcosto');
+		$select=array('b.codigo','b.descrip','b.formcal','a.costo','b.ultimo','b.pond','b.standard','a.id',
+					  'a.precio1 AS scstp_1','a.precio2 AS scstp_2','a.precio3 AS scstp_3','a.precio4 AS scstp_4',
+					  'b.precio1 AS sinvp1' ,'b.precio2 AS sinvp2' ,'b.precio3 AS sinvp3' ,'b.precio4 AS sinvp4',
 					  'b.ultimo','b.pond','b.standard','b.formcal','a.cantidad','b.existen','b.iva'
 					  );
 		$grid->db->select($select);
@@ -495,15 +529,14 @@ function scstserie(mcontrol){
 
 		$grid->column('C&oacute;digo'     , 'codigo' );
 		$grid->column('Descripci&oacute;n', 'descrip');
-		$grid->column('costo' , '<costo><#formcal#>|<#pond#>|<#ultimo#>|<#standard#>|<#existen#>|<#cantidad#></costo>','align=\'rigth\'');
-		$grid->column('margen', '<margen><#formcal#>|<#pond#>|<#ultimo#>|<#standard#>|<#existen#>|<#cantidad#>|<#scstp1#>|<#iva#></margen>','align=\'rigth\'');
 
+		$grid->column('costo' , '<tcosto><#id#>|<#iva#>|<#formcal#>|<#pond#>|<#ultimo#>|<#standard#>|<#existen#>|<#cantidad#></tcosto>','align=\'rigth\'');
 		$itt=array('sinvp1','sinvp2','sinvp3','sinvp4');
 		foreach ($itt as $id=>$val){
 			$grid->column('Precio '.($id+1).' actual', $val,'align=\'right\'');
 		}
 
-		$itt=array('scstp1','scstp2','scstp3','scstp4');
+		$itt=array('scstp_1','scstp_2','scstp_3','scstp_4');
 		foreach ($itt as $val){
 			$ind = $val;
 
@@ -511,24 +544,30 @@ function scstserie(mcontrol){
 			$campo->grid_name=$ind.'[<#id#>]';
 			$campo->status   ='modify';
 			$campo->size     =8;
+			$campo->autocomplete=false;
 			$campo->css_class='inputnum';
 
 			$grid->column($ind , $campo,'align=\'center\'');
 		}
 
-		$itt=array('margen1','margen2','margen3','margen4');
+		$itt=array('margen_1','margen_2','margen_3','margen_4');
 		foreach ($itt as $id=>$val){
 			$ind = $val;
 
 			$campo = new inputField('Campo', $ind);
 			$campo->grid_name=$ind.'[<#id#>]';
-			$campo->pattern  ='<margen><#formcal#>|<#pond#>|<#ultimo#>|<#standard#>|<#existen#>|<#cantidad#>|<#scstp'.($id+1).'#>|<#iva#></margen>';
+			$campo->pattern  ='<margen><#formcal#>|<#pond#>|<#ultimo#>|<#standard#>|<#existen#>|<#cantidad#>|<#scstp_'.($id+1).'#>|<#iva#></margen>';
 			$campo->status   ='modify';
 			$campo->size     =5;
+			$campo->autocomplete=false;
 			$campo->css_class='inputnum';
 
 			$grid->column($ind , $campo,'align=\'center\'');
 		}
+
+		$action = "javascript:window.location='".site_url('compras/scst/dataedit/show/'.$control)."'";
+		$grid->button('btn_regresa', 'Regresar', $action, 'TR');
+
 		$grid->submit('pros', 'Guardar','BR');
 		$grid->build();
 
@@ -537,21 +576,49 @@ function scstserie(mcontrol){
 
 		$script='<script language="javascript" type="text/javascript">
 		$(function(){
-			$(\'input[name^="margen"]\').keyup(function() {
-				alert($(this).val());
+
+			$(\'input[name^="margen_"]\').keyup(function() {
+				nom=this.name;
+				pos0=this.name.lastIndexOf("_");
+				pos1=this.name.lastIndexOf("[");
+				pos2=this.name.lastIndexOf("]");
+				if(pos0>0 && pos1>0 && pos2>0){
+					idp = this.name.substring(pos0+1,pos1);
+					ind = this.name.substring(pos1+1,pos2);
+
+					costo  = Number($("#costo\\\["+ind+"\\\]").val());
+					iva    = Number($("#iva\\\["+ind+"\\\]").val());
+					margen = Number($(this).val());
+
+					precio = roundNumber((costo*100/(100-margen))*(1+(iva/100)),2);
+					$("#scstp_"+idp+"\\\["+ind+"\\\]").val(precio);
+				}
 			});
 
-			$(\'input[name^="scstp"]\').keyup(function() {
-				alert($(this).val());
+			$(\'input[name^="scstp_"]\').keyup(function() {
+				nom=this.name;
+				pos0=this.name.lastIndexOf("_");
+				pos1=this.name.lastIndexOf("[");
+				pos2=this.name.lastIndexOf("]");
+				if(pos0>0 && pos1>0 && pos2>0){
+					idp = this.name.substring(pos0+1,pos1);
+					ind = this.name.substring(pos1+1,pos2);
+
+					precio = Number($(this).val());
+					costo  = Number($("#costo\\\["+ind+"\\\]").val());
+					iva    = Number($("#iva\\\["+ind+"\\\]").val());
+
+					margen=roundNumber(100-((costo*100)/(precio/(1+(iva/100)))),2);
+					$("#margen_"+idp+"\\\["+ind+"\\\]").val(margen);
+				}
 			});
-			
 		});
-		
 		</script>';
 
 		$data['content'] = $ggrid;
 		$data['title']   = heading('Cambio de precios');
 		$data['script']  = $script;
+		$data['script'] .= phpscript('nformat.js');
 		$data['head']    = $this->rapyd->get_head().script('jquery.pack.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js');
 		$this->load->view('view_ventanas', $data);
 	}
@@ -719,10 +786,10 @@ function scstserie(mcontrol){
 		$form->cprecio->option('N','No');
 		$form->cprecio->rule = 'required';
 
-		/*$form->fecha = new dateonlyField('Fecha de llegada de la mercancia', 'fecha','d/m/Y');
+		$form->fecha = new dateonlyField('Fecha de recepci&oacute;n de la mercanc&iacute;a', 'fecha','d/m/Y');
 		$form->fecha->insertValue = date('Y-m-d');
 		$form->fecha->rule='required';
-		$form->fecha->size=10;*/
+		$form->fecha->size=10;
 
 		$form->submit('btnsubmit','Actualizar');
 		$accion="javascript:window.location='".site_url('compras/scst/dataedit/show/'.$control)."'";
@@ -730,11 +797,11 @@ function scstserie(mcontrol){
 		$form->build_form();
 
 		if ($form->on_success()){
-			$cprecio  = $form->cprecio->newValue;
-			//$actualiza= $form->fecha->newValue;
-			$cambio = ($cprecio=='S') ? true : false;
+			$cprecio   = $form->cprecio->newValue;
+			$actualiza = $form->fecha->newValue;
+			$cambio    = ($cprecio=='S') ? true : false;
 			
-			$rt=$this->_actualizar($control,$cambio);
+			$rt=$this->_actualizar($control,$cambio,$actualiza);
 			if($rt===false){
 				$data['content']  = $this->error_string.br();
 			}else{
@@ -751,9 +818,10 @@ function scstserie(mcontrol){
 		$this->load->view('view_ventanas', $data);
 	}
 
-	function _actualizar($control,$cprecio){
+	function _actualizar($control,$cprecio,$actualiza=null){
 		$error =0;
 		$pasa=$this->datasis->dameval('SELECT COUNT(*) FROM scst WHERE actuali>=fecha AND control='.$this->db->escape($control));
+		if(empty($actualiza)) $actualiza=date('Ymd');
 
 		if($pasa==0){
 			$SQL='SELECT transac,depo,proveed,fecha,vence, nombre,tipo_doc,nfiscal,fafecta,reteiva,
@@ -772,12 +840,13 @@ function scstserie(mcontrol){
 
 				$itdata=array();
 				$sql='SELECT a.codigo,a.cantidad,a.importe,a.importe/a.cantidad AS costo,
-					a.precio1,a.precio2,a.precio3,a.precio4
+					a.precio1,a.precio2,a.precio3,a.precio4,b.formcal,b.ultimo,b.standard,b.pond,b.existen
 					FROM itscst AS a JOIN sinv AS b ON a.codigo=b.codigo WHERE a.control=?';
 				$qquery=$this->db->query($sql,array($control));
 				if($qquery->num_rows()>0){
 					foreach ($qquery->result() as $itrow){
 
+						//$costo=
 						//Actualiza el inventario
 						$mSQL='UPDATE sinv SET 
 							pond=(existen*IF(formcal="P",pond,IF(formcal="U",ultimo,GREATEST(pond,ultimo)))+'.$itrow->importe.')/(existen+'.$itrow->cantidad.'),
@@ -802,8 +871,9 @@ function scstserie(mcontrol){
 								precio4='.$this->db->escape($itrow->precio4).'
 								WHERE codigo='.$this->db->escape($itrow->codigo);
 							$ban=$this->db->simple_query($mSQL);
-							if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
+							if(!$ban){ memowrite($mSQL,'scst'); $error++; }
     
+							//Cambio de precios
 							if(!$cprecio){
 								$mSQL='UPDATE sinv SET 
 									base1=ROUND(precio1*10000/(100+iva))/100, 
@@ -817,8 +887,9 @@ function scstserie(mcontrol){
 									activo="S"
 								WHERE codigo='.$this->db->escape($itrow->codigo);
 								$ban=$this->db->simple_query($mSQL);
-								if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
+								if(!$ban){ memowrite($mSQL,'scst'); $error++; }
 							}
+							//Fin del cambio de precios
 						}
 						//Fin de la actualizacion de inventario
 					}
