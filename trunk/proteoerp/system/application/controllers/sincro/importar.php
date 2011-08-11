@@ -1,11 +1,11 @@
 <?php
 class Importar extends Controller {
-	var $timeout=900;
 
 	function Importar(){
 		parent::Controller();
 		$this->geneticket=true;
 		$this->noborra=false;
+		$this->timeout=900;
 		$this->load->helper('string');
 		$this->load->library('rapyd');
 		$this->load->library('encrypt');
@@ -424,6 +424,18 @@ class Importar extends Controller {
 	function _datacenter($sucu,$fecha=null){
 		set_time_limit($this->timeout);
 		$rt=$this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/datacenter/'.$fecha,'datacenter');
+		return $rt;
+	}
+
+	function _datacentersinv($sucu,$fecha=null){
+		set_time_limit($this->timeout);
+		$rt=$this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/datacentersinv/'.$fecha,'datacenter');
+		return $rt;
+	}
+
+	function _datacentercostos($sucu,$fecha=null){
+		set_time_limit($this->timeout);
+		$rt=$this->__traerzip($sucu,'sincro/exportar/uri/'.$this->clave.'/datacentercostos/'.$fecha,'datacenter');
 		return $rt;
 	}
 
