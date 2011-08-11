@@ -296,21 +296,28 @@ class Exportar extends Controller {
 		$this->sqlinex->exportunbufferzip($data,$nombre,$this->sucu);
 	}
 
-	function _pdatacenter($fecha,$opt=null){
+	function _datacentersinv($fecha,$opt=null){
 		set_time_limit(600);
 		$this->load->library('sqlinex');
 
-		if($opt[0]=='costos'){
-			$data[]=array('table' => 'costos',
-				'ignore' =>false,
-				'limpiar'=>true);
-		}else{
-			$data[]=array('table' => 'sinv',
+		$data[]=array('table' => 'sinv',
 				'select' =>'codigo,grupo,descrip,descrip2,unidad,ubica,tipo,clave,comision,enlace,prov1,prepro1,pfecha1,prov2,prepro2,pfecha2,prov3,prepro3,pfecha3,pond,ultimo,pvp_s,pvp_bs,pvpprc,contbs,contprc,mayobs,mayoprc,exmin,exord,exdes,existen,fechav,fechac,iva,fracci,codbar,barras,exmax,margen1,margen2,margen3,margen4,base1,base2,base3,base4,precio1,precio2,precio3,precio4,serial,tdecimal,activo,dolar,redecen,formcal,fordeci,garantia,costotal,fechac2,peso,pondcal,alterno,aumento,modelo,marca,clase,oferta,fdesde,fhasta,derivado,cantderi,linea,depto,id,gasto,bonifica,bonicant,standard,descufijo',
 				'limpiar'=>true);
-		}
 
-		$nombre='ve_'.$fecha.'_'.$this->sucu;
+		$nombre='sinv_'.$fecha.'_'.$this->sucu;
+		if(!array_key_exists('HTTP_USER_AGENT', $_SERVER)) $_SERVER['HTTP_USER_AGENT']='curl';
+		$this->sqlinex->exportunbufferzip($data,$nombre,$this->sucu);
+	}
+
+	function _datacentercostos($fecha,$opt=null){
+		set_time_limit(600);
+		$this->load->library('sqlinex');
+
+		$data[]=array('table' => 'costos',
+				'ignore' =>false,
+				'limpiar'=>true);
+
+		$nombre='costos_'.$fecha.'_'.$this->sucu;
 		if(!array_key_exists('HTTP_USER_AGENT', $_SERVER)) $_SERVER['HTTP_USER_AGENT']='curl';
 		$this->sqlinex->exportunbufferzip($data,$nombre,$this->sucu);
 	}
