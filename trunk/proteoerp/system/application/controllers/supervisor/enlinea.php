@@ -30,7 +30,7 @@ class Enlinea extends Controller{
 				return 'No Disponible';
 			else{
 				$ima="http://".$url."/".$proteoerp."/supervisor/enlinea/ventana";
-			return "<iframe src='$ima' width='500px' height='100px'/></iframe>";
+			return "<iframe src='$ima' width='500px' height='110px'/></iframe>";
 			}
 		}
 
@@ -56,8 +56,8 @@ class Enlinea extends Controller{
 	function ventana(){
 		$ukardex=$this->datasis->dameval("SELECT max(fecha) valor FROM costos");
 		$ventas =$this->datasis->damerow("SELECT SUM(totals*IF(tipo_doc='D',-1,1)) AS valor,
-						 (SUM(totals*IF(tipo_doc='D',-1,1))*(referen='E')) efectivo,
-						 (SUM(totals*IF(tipo_doc='D',-1,1))*(referen='C')) credito FROM sfac WHERE fecha=(SELECT MAX( fecha) FROM sfac) AND tipo_doc<>'X' AND MID(numero,1,1)<>'_' ");
+						 (SUM(totals*IF(tipo_doc='D',-1,1)*(referen='E'))) efectivo,
+						 (SUM(totals*IF(tipo_doc='D',-1,1)*(referen='C'))) credito FROM sfac WHERE fecha=(SELECT MAX( fecha) FROM sfac) AND tipo_doc<>'X' AND MID(numero,1,1)<>'_' ");
 		
 		
 		$fsfac  =$this->datasis->dameval("SELECT MAX( fecha) FROM sfac");
