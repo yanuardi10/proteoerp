@@ -2,6 +2,8 @@
 require_once(APPPATH.'/controllers/sincro/importar.php');
 class Datacenter extends Controller {
 
+	var $timeout=900;
+
 	function Datacenter(){
 		parent::Controller();
 		$this->geneticket=true;
