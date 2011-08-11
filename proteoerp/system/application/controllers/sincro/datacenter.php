@@ -27,9 +27,6 @@ class Datacenter extends Controller {
 	}
 
 
-//**************************
-// Correr desde Shell
-//**************************
 	function _traedatacenter($psucu='*',$metodo,$fecha=null){
 		$obj='_'.str_replace('_','',$metodo);
 		if(empty($fecha)) $fecha = date('Ymd');
