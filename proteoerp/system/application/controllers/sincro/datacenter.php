@@ -2,7 +2,8 @@
 require_once(APPPATH.'/controllers/sincro/importar.php');
 class Datacenter extends Controller {
 
-	var $timeout=900;
+	var $timeout =900;
+	var $noborra=false;
 
 	function Datacenter(){
 		parent::Controller();
@@ -24,6 +25,11 @@ class Datacenter extends Controller {
 	function index($fecha=null){
 		$this->noborra=false;
 		$this->_traedatacenter('*','datacenter',$fecha);
+	}
+
+	function traer($sucu,$metodo){
+		$metodo='datacenter'.$metodo;
+		$this->_traedatacenter($sucu,$metodo);
 	}
 
 
@@ -54,7 +60,7 @@ class Datacenter extends Controller {
 				$config['dbcollat'] = 'latin1_swedish_ci';
 				$this->db=$this->load->database($config,true);
 
-				echo 'Sucursal '.$row->sucursal.' en '.$this->db->database.' '.dbdate_to_human($fecha).':';
+				echo 'Sucursal '.$row->sucursal.' en '.$this->db->database.' '.dbdate_to_human($fecha).': '.$metodo;
 				$rt=importar::$obj($row->codigo,$fecha);
 				echo " $rt \n";
 			}
