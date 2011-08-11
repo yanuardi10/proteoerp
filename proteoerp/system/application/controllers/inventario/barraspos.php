@@ -171,7 +171,7 @@ class barraspos extends Controller {
 
 		$data['content'] = $grid->output;
 		$data['filtro']  = $filter->output;
-		$data['title']   = '<h1>Codigos de Baraas Adicionales</h1>';
+		$data['title']   = heading('C&oacute;digos de Baras Adicionales');
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
@@ -199,30 +199,30 @@ class barraspos extends Controller {
 		$bSPRV=$this->datasis->modbus($mSPRV);
 
 
-		$edit = new DataEdit("barras de Inventario", "barraspos");
-		$edit->back_url = site_url("inventario/barraspos/filteredgrid/");
+		$edit = new DataEdit('Barras de Art&iacute;culos de Inventario', 'barraspos');
+		$edit->back_url = site_url('inventario/barraspos/filteredgrid/');
 
-		$edit->codigo = new inputField("C&oacute;digo", "codigo");
-		$edit->codigo->size       =  15;
-		$edit->codigo->maxlength  =  15;
-		//		$edit->observ1->rule     ="trim";
-		$edit->codigo->rule 			= "required|trim|callback_chexiste";
+		$edit->codigo = new inputField('C&oacute;digo', 'codigo');
+		$edit->codigo->size      =  15;
+		$edit->codigo->maxlength =  15;
+		//$edit->observ1->rule     ="trim";
+		$edit->codigo->rule      = 'required|trim|callback_chexiste';
 		$edit->codigo->append($bSPRV);
 
 
-		$edit->barras = new inputField("Barras", "suplemen");
-		$edit->barras->css_class ='inputnum';
-		$edit->barras->size      =  15;
-		$edit->barras->maxlength =  15;
-		$edit->barras->rule      =  "required|trim";
+		$edit->barras = new inputField('Barras', 'suplemen');
+		$edit->barras->css_class = 'inputnum';
+		$edit->barras->size      = 15;
+		$edit->barras->maxlength = 15;
+		$edit->barras->rule      = 'required|trim';
 
-		$edit->buttons("modify", "save", "undo","delete" ,"back");
+		$edit->buttons('modify', 'save', 'undo','delete' ,'back');
 		$edit->build();
 
 		$data['content'] = $edit->output;
-		$data['title']   = "<h1>Adicionar codigo de barras</h1>";
+		$data['title']   = heading('Adicionar c&oacute;digo de barras');
 
-		$data["head"]    = script('jquery.js').script('jquery-ui.js').script("plugins/jquery.numeric.pack.js").script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css').$this->rapyd->get_head().$script;
+		$data['head']    = script('jquery.js').script('jquery-ui.js').script("plugins/jquery.numeric.pack.js").script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css').$this->rapyd->get_head().$script;
 		$this->load->view('view_ventanas', $data);
 	}
 
