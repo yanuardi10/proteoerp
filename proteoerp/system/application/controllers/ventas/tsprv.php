@@ -45,7 +45,7 @@ class tsprv extends Controller {
 		$data['filtro']  = $filter->output;
 		$data['content'] = $grid->output;
 		$data['head']    = $this->rapyd->get_head().script('jquery.js');
-		$data['title']   = $this->titp;
+		$data['title']   = heading($this->titp);
 		$this->load->view('view_ventanas', $data);
 
 	}
@@ -60,20 +60,20 @@ class tsprv extends Controller {
 		$edit->post_process('update','_post_update');
 		$edit->post_process('delete','_post_delete');
 
-		$edit->codigo = new inputField('codigo','codigo');
+		$edit->codigo = new inputField('Codigo','codigo');
 		$edit->codigo->rule='max_length[5]|trim|unique';
 		$edit->codigo->size =7;
 		$edit->codigo->maxlength =5;
 
-		$edit->nombre = new textareaField('nombre','nombre');
+		$edit->nombre = new textareaField('Nombre','nombre');
 		$edit->nombre->cols = 70;
 		$edit->nombre->rows = 4;
 
-		$edit->buttons('add','modify', 'save', 'undo', 'delete', 'back');
+		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
 		$edit->build();
 		$data['content'] = $edit->output;
 		$data['head']    = $this->rapyd->get_head();
-		$data['title']   = $this->tits;
+		$data['title']   =heading( $this->tits);
 		$this->load->view('view_ventanas', $data);
 
 	}
