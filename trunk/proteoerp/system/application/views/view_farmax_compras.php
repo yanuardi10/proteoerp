@@ -9,7 +9,19 @@ else:
 
 if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</div>';
 echo $form_scripts;
-echo $form_begin; ?>
+echo $form_begin; 
+
+$atts = array(
+  'width'      => '800',
+  'height'     => '600',
+  'scrollbars' => 'yes',
+  'status'     => 'yes',
+  'resizable'  => 'yes',
+  'screenx'    => '0',
+  'screeny'    => '0'
+);
+
+?>
 <table align='center'>
 	<tr>
 		<td align=right>
@@ -24,8 +36,8 @@ echo $form_begin; ?>
 					<td width="100" class="littletablerowth"><?php echo $form->fecha->label     ?></td>
 					<td width="100" class="littletablerow">  <?php echo $form->fecha->output    ?></td>
 					<td width="100" class="littletablerowth"><?php echo $form->pcontrol->label  ?></td>
-					<td width="100" class="littletablerow">  <?php echo $form->pcontrol->output ?></td>
-					<td width="119" class="littletablerowth"><?php echo $form->proveedor->label ?></td>
+					<td width="100" class="littletablerow">  <?php echo (strlen($form->pcontrol->value)) ? anchor_popup('compras/scst/dataedit/show/'.$form->pcontrol->value,$form->pcontrol->value, $atts) : 'No cargado'; ?></td>
+					<td width="119" class="littletablerowth"><?php echo $form->proveedor->label  ?></td>
 					<td             class="littletablerow">  <?php echo $form->proveedor->output?></td>
 				</tr><tr>
 					<td class="littletablerowth"><?php echo $form->numero->label  ?></td>
