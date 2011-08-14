@@ -12,6 +12,7 @@ class notifica extends controller {
 		$this->load->library('rapyd');
 		$this->error='';
 		$this->adjuntos=null;
+		$this->msj='';
 	}
 
 	function index(){
