@@ -532,7 +532,7 @@ class compras{
 			c.rif,
 			if(b.fecha<'$mFECHAF','04', '01') AS registro,
 			'N' AS nacional,
-			b.montotot-(b.tasa/$iivag+b.sobretasa/$iivaa+b.reducida/$iivar) exento,
+			0 exento,
 			ROUND(b.tasa/$iivag,2)      AS general,
 			ROUND(b.tasa,2)             AS geneimpu,
 			ROUND(b.sobretasa/$iivaa,2) AS adicional,
