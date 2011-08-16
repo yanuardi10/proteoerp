@@ -1024,6 +1024,7 @@ class Ordi extends Controller {
 				$fecha   = $row['fecha'];
 				$proveed = $row['proveed'];
 
+				$row['recep']    = $actualiza;
 				$row['tipo_doc'] = 'FC';
 				$row['serie']    = $serie;
 				$row['depo']     = $depo;
