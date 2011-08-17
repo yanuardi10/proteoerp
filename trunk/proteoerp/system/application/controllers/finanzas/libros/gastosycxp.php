@@ -23,7 +23,7 @@ class gastosycxp{
 		$fciva=$this->datasis->dameval("SELECT MAX(fecha) FROM civa");
 		$fciva = str_replace('-', '', $fciva);
 		// Procesando Gastos
-		$mSQL = "INSERT INTO siva  
+		$mSQL = "INSERT INTO siva 
 			(id, libro, tipo, fuente, sucursal, fecha, numero, numhasta,  caja, nfiscal,  nhfiscal, 
 			referen, planilla, clipro, nombre, contribu, rif, registro,
 			nacional, exento, general, geneimpu, 
