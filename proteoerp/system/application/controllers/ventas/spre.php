@@ -611,7 +611,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 			$itiva     = $do->get_rel('itspre','iva',$i);
 			$itimporte = $itpreca*$itcana;
 			$do->set_rel('itspre','importe' ,$itimporte,$i);
-			$do->set_rel('itspre','totaorg' ,$itimporte,$i);
+			$do->set_rel('itspre','totaorg' ,$itimporte*(1+($itiva/100)),$i);
 			$do->set_rel('itspre','fecha'   ,$fecha  ,$i);
 			$do->set_rel('itspre','vendedor',$vd     ,$i);
 
@@ -668,10 +668,11 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 	function chpreca($preca,$ind){
 		$codigo  = $this->input->post('codigo_'.$ind);
 		$precio4 = $this->datasis->dameval('SELECT base4 FROM sinv WHERE codigo='.$this->db->escape($codigo));
+		$preca   = round($preca,2);
 		if($precio4<0) $precio4=0;
 
 		if($preca<$precio4){
-			$this->validation->set_message('chpreca', 'El art&iacute;culo '.$codigo.' debe contener un precio de al menos '.nformat($precio4));
+			$this->validation->set_message('chpreca', 'El art&iacute;culo '.$codigo.' debe contener un precio de al menos '.nformat($precio4).'' .$preca);
 			return false;
 		}else{
 			return true;
