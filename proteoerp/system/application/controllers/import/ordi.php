@@ -647,7 +647,7 @@ class Ordi extends Controller {
 		foreach($iva AS $nom=>$val){
 			$edit->tasa->option($val,nformat($val).'%');
 		}
-		$edit->tasa->rule  = 'unique|required|numeric';
+		$edit->tasa->rule  = 'required|numeric';
 		$edit->tasa->style = 'width:100px';
 		$edit->tasa->mode  = 'autohide';
 
@@ -990,6 +990,7 @@ class Ordi extends Controller {
 		if ($form->on_success()){
 			$almacen  = $form->almacen->newValue;
 			$actualiza= $form->fecha->newValue;
+			$this->_calcula($control);
 			$rt=$this->_cargarordi($control,$almacen,$actualiza);
 			if($rt===false){
 				$data['content']  = $this->error_string.br();
