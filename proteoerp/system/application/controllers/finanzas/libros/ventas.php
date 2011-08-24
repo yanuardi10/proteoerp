@@ -500,7 +500,7 @@ class ventas{
 		$this->db->simple_query($mSQL);
 
 		$mSQL  = "SELECT 
-				a.fecha,IF(a.tipo='NC',referen,'')referen,
+				a.fecha,IF(a.tipo='NC',referen,'') AS referen,
 				a.numero, a.serial , '' inicial, '' final,
 				a.nfiscal,
 				a.rif,
@@ -518,7 +518,7 @@ class ventas{
 				a.adicimpu*IF(a.tipo='NC',-1,1)  adicimpu,
 				a.reducida*IF(a.tipo='NC',-1,1)  reducida,
 				a.reduimpu*IF(a.tipo='NC',-1,1)  reduimpu,
-				a.contribu, a.registro, a.comprobante, a.fecharece 
+				a.contribu, a.registro, a.comprobante, a.fecharece ,a.afecta
 			FROM siva a LEFT JOIN scli b ON a.clipro=b.cliente
 			WHERE a.fechal BETWEEN $fdesde AND $fhasta AND a.libro='V' AND a.tipo<>'FA' AND a.contribu='CO' 
 			UNION
@@ -541,7 +541,7 @@ class ventas{
 				sum(a.adicimpu*IF(a.tipo='NC',-1,1))  adicimpu,
 				sum(a.reducida*IF(a.tipo='NC',-1,1))  reducida,
 				sum(a.reduimpu*IF(a.tipo='NC',-1,1))  reduimpu,
-				'NO' contribu, a.registro, ' ' comprobante, null fecharece
+				'NO' contribu, a.registro, ' ' comprobante, null fecharece, a.afecta
 			FROM siva a LEFT JOIN scli b ON a.clipro=b.cliente
 			WHERE a.fechal BETWEEN $fdesde AND $fhasta AND a.libro='V' AND a.tipo<>'FA' AND a.contribu='NO' AND a.tipo IN ('FE','FC','NC')
 			GROUP BY a.fecha, a.tipo, a.registro $group
@@ -560,6 +560,7 @@ class ventas{
 		$ws->set_column('H:H',11);
 		$ws->set_column('I:S',20);
 		$ws->set_column('V:V',11);
+		$ws->set_column('W:W',11);
 
 		// FORMATOS
 		$h      =& $wb->addformat(array( "bold" => 1, "size" => 16, "merge" => 1));
@@ -703,8 +704,8 @@ class ventas{
 		$ws->write_string( $mm+2, $mcel, "", $titulo );
 		$mcel++;
 
-		$ws->write_string( $mm,   $mcel, "", $titulo );
-		$ws->write_string( $mm+1, $mcel, "Afecta", $titulo );
+		$ws->write_string( $mm,   $mcel, "Documento", $titulo );
+		$ws->write_string( $mm+1, $mcel, "Afectado", $titulo );
 		$ws->write_string( $mm+2, $mcel, "", $titulo );
 		$mcel++;
 
@@ -769,7 +770,10 @@ class ventas{
 
 				$ws->write_number( $mm,18, $row->reiva, $numero );		    // IVA RETENIDO
 				$ws->write_string( $mm,19, $row->comprobante, $cuerpo );	// NRO COMPROBANTE
-				$ws->write_string( $mm,22, $row->referen, $numero ); //N� FACT AFECTA
+				if($row->tipo=='CR')
+					$ws->write_string( $mm,22, $row->afecta , $numero ); //NRO FACT AFECTA
+				else
+					$ws->write_string( $mm,22, $row->referen, $numero ); //NRO FACT AFECTA
 				$fecharece = '';
 				if ( !empty($row->fecharece) )
 					$fecharece = substr($row->fecharece,8,2)."/".substr($row->fecharece,5,2)."/".substr($row->fecharece,0,4);

@@ -40,32 +40,32 @@ class ingresos{
 
 			$stotal = $row->monto - $row->impuesto;
 			$mSQL = "INSERT INTO siva SET 
-				libro = 'V',
-				tipo = '".$row->tipo_doc."',
-				fuente = 'MC',
+				libro    = 'V',
+				tipo     = '".$row->tipo_doc."',
+				fuente   = 'MC',
 				sucursal = '00',
-				fecha = '".$row->fecha."',
-				numero = '".$row->numero."',
-				clipro = '".$row->cod_cli."',
-				nombre =".$this->db->escape($row->nombre).",
-				contribu='CO',
-				rif = '".$row->rifci."', 
+				fecha    = '".$row->fecha."',
+				numero   = '".$row->numero."',
+				clipro   = '".$row->cod_cli."',
+				nombre   =".$this->db->escape($row->nombre).",
+				contribu ='CO',
+				rif      = '".$row->rifci."', 
 				registro = '$registro',
 				nacional ='S',
-				referen = '$referen',
-				general = $row->montasa,
+				referen  = '$referen',
+				general  = $row->montasa,
 				geneimpu = $row->tasa, 
 				reducida = $row->monredu, 
 				reduimpu = $row->reducida,
-				adicional = $row->monadic,
+				adicional= $row->monadic,
 				adicimpu = $row->sobretasa,
-				exento = $row->exento, 
+				exento   = $row->exento, 
 				impuesto = $row->impuesto, 
-				gtotal = $row->monto, 
-				stotal = $stotal,
-				reiva = ".$row->reteiva.",
-				fechal = ".$mes."01,
-				fafecta ='".$row->fafecta."'";
+				gtotal   = $row->monto, 
+				stotal   = $stotal,
+				reiva    = ".$row->reteiva.",
+				fechal   = ".$mes."01,
+				fafecta  ='".$row->fafecta."'";
 			$flag=$this->db->simple_query($mSQL);
 			if(!$flag) memowrite($mSQL,'genesmov');
 		}
@@ -112,14 +112,13 @@ class ingresos{
 					sucursal = '99', 
 					fecha = '".$row->emiriva."',
 					numero ='$row->nroriva',
-					clipro = ".$this->db->escape($row->cod_cli).", 
-					nombre = ".$this->db->escape($row->nombre).",  
+					clipro = ".$this->db->escape($row->cod_cli).",
+					nombre = ".$this->db->escape($row->nombre).",
 					contribu = 'CO', 
-					rif = '".$row->rifci."',
+					rif = ".$this->db->escape($row->rifci).",
 					registro = '01',
 					nacional ='S',
 					referen ='',
-					fafecta ='',
 					exento = 0, 
 					general = 0, 
 					geneimpu = 0, 
@@ -133,7 +132,9 @@ class ingresos{
 					reiva = '".$row->reteiva."', 
 					comprobante = '',
 					fecharece = '".$row->recriva."',
-					fechal = ".$mes."01 ";
+					fechal  = ".$mes."01, 
+					fafecta = ".$this->db->escape($row->fafecta).",
+					afecta  = ".$this->db->escape($row->afecta);
 
 			$flag=$this->db->simple_query($mSQL);
 			if(!$flag) memowrite($mSQL,'genesmov');
