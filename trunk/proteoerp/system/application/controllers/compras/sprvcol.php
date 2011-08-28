@@ -69,7 +69,7 @@ class Sprvcol extends validaciones {
 		$grid->column('Acciones',$uri2,'align=\'center\'');
 		$grid->column_orderby('C&oacute;digo',$uri,'codigo');
 		$grid->column_orderby('Nombre','nombre','nombre');
-		$grid->column_orderby('R.I.F.','rif','rif');
+		$grid->column_orderby('DI/RUT.','rif','rif');
 		$grid->column_orderby('Telefonos','telefono','telefono');
 		$grid->column_orderby('Contacto','contacto','contacto');
 		$grid->column_orderby('% Ret.','reteiva','reteiva','align=\'right\'');
@@ -231,6 +231,7 @@ function cg_docui(valor){
 }
 
 function v_rut(numero){
+	numero=numero.replace(/\D/g, "");
 	var n;
 	var o=0;
 	var acum=0;
@@ -338,19 +339,25 @@ function v_rut(numero){
 
 		$edit->tipo = new dropdownField("Persona", "tipo");
 		$edit->tipo->option("","Seleccionar");
-		$arr_tipo=$this->pi18n->arr_msj('tipoarr','1=Jur&iacute;dico Domiciliado,2=Residente,3=Jur&iacute;dico No Domiciliado,4=No Residente,5=Excluido del Libro de Compras,0=Inactivo');
-		$edit->tipo->options($arr_tipo);
+		$edit->tipo->option('1','Jur&iacute;dico');
+		$edit->tipo->option('2','Natural');
+		$edit->tipo->option('5','Otros');
+		$edit->tipo->option('0','Inactivo');
 		$edit->tipo->style = "width:190px";
 		$edit->tipo->rule = "required";
 		$edit->tipo->group = "Datos del Proveedor";
 
-		$arr_tiva=$this->pi18n->arr_msj('tivaarr','C=Contribuyente,N=Normal');
-		//print_r($arr_tiva);
-		$edit->tiva  = new dropdownField("Tipo", "tiva");
-		$edit->tiva->options($arr_tiva);
+
+		$edit->tiva  = new dropdownField("Tipo F&iacute;scal", "tiva");
+		$edit->tiva->option('','Seleccionar');
+		$edit->tiva->option('S','Regimen Simplificado');
+		$edit->tiva->option('C','Regimen Com&uacute;n');
+		$edit->tiva->option('G','Gran contribuyente');
+		$edit->tiva->option('A','Autoretenedor');
+		$edit->tiva->option('O','Otros');
 		$edit->tiva->style='width:190px;';
 
-		$edit->origen  = new dropdownField("Origen", "origen");
+		$edit->origen  = new dropdownField("Or&iacute;gen", "origen");
 		$edit->origen->options(array('N'=>'Nacional','I'=>'Internacional','O'=>'Otro'));
 		$edit->origen->style='width:190px;';
 

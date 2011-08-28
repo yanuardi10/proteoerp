@@ -1,22 +1,18 @@
 <?php
 //retenciones
- class Rete extends Controller {
-	
-	var $data_type = null;
-	var $data = null;
-	 
-	function rete (){
+ class Retecol extends Controller {
+
+	function retecol(){
 		parent::Controller(); 
 		//required helpers for samples
 		$this->load->helper('url');
 		$this->load->helper('text');
 		//rapyd library
 		$this->load->library("rapyd");
-		define ("THISFILE",   APPPATH."controllers/nomina". $this->uri->segment(2).EXT);
    }
    function index(){
     	$this->datasis->modulo_id(515,1);
-    	redirect("finanzas/rete/filteredgrid");
+    	redirect("finanzas/retecol/filteredgrid");
     }
  	function filteredgrid(){
 		$this->rapyd->load("datafilter","datagrid");
@@ -29,20 +25,21 @@
 		$filter->buttons("reset","search");
 		$filter->build();
 
-		$uri = anchor('finanzas/rete/dataedit/show/<#codigo#>','<#codigo#>');
+		$uri = anchor('finanzas/retecol/dataedit/show/<#codigo#>','<#codigo#>');
 
 		$grid = new DataGrid("Lista de Retenciones");
 		$grid->order_by("codigo","asc");
 		$grid->per_page = 20;
 
-		$grid->column("C&oacute;digo",$uri);
-		$grid->column("Pago de","activida");
-		$grid->column("Base Imponible","base1");
-		$grid->column("Porcentaje de Retenci&oacute;n","tari1");
-		$grid->column("Para pagos mayores a","pama1");
-		$grid->column("Tipo","tipo");
-				  	  						
-		$grid->add("finanzas/rete/dataedit/create");
+		$grid->column_orderby("C&oacute;digo" ,$uri,'codigo');
+		$grid->column_orderby("Pago de"       ,"activida",'actividad');
+		$grid->column_orderby("Base Imponible","base1",'base1');
+		$grid->column_orderby("Porcentaje de Retenci&oacute;n","tari1",'tari1');
+		$grid->column_orderby("Para pagos mayores a","pama1",'pama1');
+		$grid->column_orderby('Tipo'   ,'tipo'  ,'tipo' );
+		$grid->column_orderby('Renta'  ,'renta' ,'renta');
+
+		$grid->add('finanzas/retecol/dataedit/create');
 		$grid->build();
 		
 		$data['content'] = $filter->output.$grid->output;
@@ -61,7 +58,7 @@
 		';
 
 		$edit = new DataEdit("Retenciones", "rete");		
-		$edit->back_url = site_url("finanzas/rete/filteredgrid");
+		$edit->back_url = site_url("finanzas/retecol/filteredgrid");
 		$edit->script($script, "create");
 		$edit->script($script, "modify");
 
@@ -81,11 +78,14 @@
 		$edit->activida->rule= "strtoupper|required";
 		
 		$edit->tipo =  new dropdownField("Tipo", "tipo");
-		$edit->tipo->option("JD","JD");
-		$edit->tipo->option("JN","JN");
-		$edit->tipo->option("NN","NN");
-		$edit->tipo->option("NR","NR");
-		$edit->tipo->style='width:60px';
+		$edit->tipo->option("JD","Juridico");
+		$edit->tipo->option("NR","Natural");
+		$edit->tipo->style='width:160px';
+		
+		$edit->tipocol =  new dropdownField("Renta", "tipocol");
+		$edit->tipocol->option('D','Declarante');
+		$edit->tipocol->option('N','No declarante');
+		$edit->tipocol->style='width:160px';
 		
 		$edit->base1 = new inputField("Base Imponible", "base1");
 		$edit->base1->size =13;
@@ -103,8 +103,19 @@
 		$edit->pama1->size =13;
 		$edit->pama1->maxlength=13;
 		$edit->pama1->css_class='inputnum';
-		$edit->pama1->rule='numeric';				    
-		
+		$edit->pama1->rule='numeric';
+
+	  $edit->la1 = new containerField('alert','Unidades Tributarias');
+	  $edit->la1->in='pama1';
+
+		$edit->ut = new inputField("Unidades Tributarias", 'ut');
+		$edit->ut->size =13;
+		$edit->ut->maxlength=13;
+		$edit->ut->css_class='inputnum';
+		$edit->ut->rule='numeric';
+		$edit->ut->in  ='pama1';
+
+
 		$edit->buttons("modify", "save", "undo", "delete", "back");
 		$edit->build();
  
@@ -112,7 +123,7 @@
 		$smenu['link']=barra_menu('515');
 		$data['smenu'] = $this->load->view('view_sub_menu', $smenu,true);
 		$data['content'] = $edit->output;           
-    $data['title']   = "<h1>Retenciones</h1>";        
+   $data['title']   = "<h1>Retenciones</h1>";        
     $data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
     $this->load->view('view_ventanas', $data);  
  	}
@@ -122,19 +133,16 @@
 		$nombre=$do->get('activida');
 		logusu('rete',"RETENCION $codigo $nombre CREADO");
 	}
-
 	function _post_update($do){
 		$codigo=$do->get('codigo');
 		$nombre=$do->get('activida');
 		logusu('rete',"RETENCION $codigo $nombre MODIFICADO");
 	}
-
 	function _post_delete($do){
 		$codigo=$do->get('codigo');
 		$nombre=$do->get('activida');
 		logusu('rete',"RETENCION $codigo $nombre  ELIMINADO ");
 	}
-
 	function chexiste($codigo){
 		$codigo=$this->input->post('codigo');
 		//echo 'aquiii'.$fecha;
@@ -147,12 +155,6 @@
   		return TRUE;
 		}	
 	}
-
-	function instalar(){
-	  if (!$this->db->field_exists('ut','rete')) {
-		 $mSQL="ALTER TABLE rete CHANGE COLUMN tipocol tipocol CHAR(2) NULL DEFAULT '0.0' COLLATE 'utf8_unicode_ci' AFTER cuenta, ADD COLUMN ut DECIMAL(12,2) NULL DEFAULT NULL AFTER tipocol";
-	  	  $this->db->simple_query($mSQL);
-	  }
-	}
+	
 }
 ?>

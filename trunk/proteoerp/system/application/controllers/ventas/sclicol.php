@@ -223,6 +223,7 @@ function anomfis(){
 }
 
 function v_rut(numero){
+	numero=numero.replace(/\D/g, "");
 	var n;
 	var o=0;
 	var acum=0;
@@ -480,10 +481,14 @@ function cg_docui(valor){
 		$edit->socio->maxlength =5;
 		$edit->socio->append($boton);
 
-		$arr_tiva=$this->pi18n->arr_msj('tivaarr','C=Contribuyente,N=No Contribuyente,E=Especial,R=Regimen Exento,O=Otro');
 		$edit->tiva = new dropdownField('Tipo F&iacute;scal', 'tiva');
 		$edit->tiva->option('','Seleccionar');
-		$edit->tiva->options($arr_tiva);
+		$edit->tiva->option('S','Regimen Simplificado');
+		$edit->tiva->option('C','Regimen Com&uacute;n');
+		$edit->tiva->option('G','Gran contribuyente');
+		$edit->tiva->option('A','Autoretenedor');
+		$edit->tiva->option('O','Otros');
+		//$edit->tiva->options($arr_tiva);
 		$edit->tiva->style = 'width:160px';
 		$edit->tiva->insertValue = 'N';
 
@@ -980,6 +985,10 @@ function cg_docui(valor){
 		}
 		if (!$this->db->field_exists('docui','scli')) {
 			$mSQL="ALTER TABLE `scli` ADD COLUMN `docui` CHAR(1) NULL AFTER `crc`";
+			$this->db->simple_query($mSQL);
+		}
+		if (!$this->db->field_exists('tipocol','rete')) {
+			$mSQL="ALTER TABLE rete ADD COLUMN tipocol CHAR(1) NULL DEFAULT NULL AFTER cuenta;";
 			$this->db->simple_query($mSQL);
 		}
 	}

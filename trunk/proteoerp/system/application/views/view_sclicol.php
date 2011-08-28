@@ -67,33 +67,33 @@ else:
 				<?php if($form->_status!='show'){ ?>
 				<tr>
 					<td class="littletableheaderc"><?php echo $form->nombre1->label; ?></td>
-					<td colspan='3' class="littletablerow"><?php echo $form->nombre1->output;   ?></td>
+					<td colspan='5' class="littletablerow"><?php echo $form->nombre1->output;   ?></td>
 				</tr>
 
 				<tr id='tr_nombre2'>
 					<td class="littletableheaderc"><?php echo $form->nombre2->label;   ?></td>
-					<td colspan='3' class="littletablerow"><?php echo $form->nombre2->output;   ?></td>
+					<td colspan='5' class="littletablerow"><?php echo $form->nombre2->output;   ?></td>
 				</tr>
 
 				<tr id='tr_apellido1'>
 					<td class="littletableheaderc"><?php echo $form->apellido1->label; ?></td>
-					<td colspan='3' class="littletablerow"><?php echo $form->apellido1->output; ?></td>
+					<td colspan='5' class="littletablerow"><?php echo $form->apellido1->output; ?></td>
 				</tr>
 
 				<tr id='tr_apellido2'>
 					<td class="littletableheaderc"><?php echo $form->apellido2->label; ?></td>
-					<td colspan='3' class="littletablerow"><?php echo $form->apellido2->output; ?></td>
+					<td colspan='5' class="littletablerow"><?php echo $form->apellido2->output; ?></td>
 				</tr>
 				<?php }else{ ?>
 				<tr id='tr_nombre'>
 					<td class="littletableheaderc"><?php echo $form->nombre->label; ?></td>
-					<td colspan='3' class="littletablerow"><?php echo $form->nombre->output; ?></td>
+					<td colspan='5' class="littletablerow"><?php echo $form->nombre->output; ?></td>
 				</tr>
 				<?php } ?>
 
 				<tr>
 					<td class="littletableheaderc"><?=$form->contacto->label  ?></td>
-					<td colspan='3' class="littletablerow"><?=$form->contacto->output ?></td>
+					<td colspan='5' class="littletablerow"><?=$form->contacto->output ?></td>
 				</tr>
 
 			</table>
