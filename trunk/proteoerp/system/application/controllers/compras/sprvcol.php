@@ -257,7 +257,9 @@ function v_rut(numero){
 		$edit->script($script, 'modify');
 		$edit->back_url = site_url('compras/sprvcol/filteredgrid');
 
-		$edit->pre_process('delete','_pre_del');
+		$edit->pre_process( 'delete','_pre_del');
+		$edit->pre_process( 'insert','_pre_inserup');
+		$edit->pre_process( 'update','_pre_inserup');
 		$edit->post_process('insert','_post_insert');
 		$edit->post_process('update','_post_update');
 		$edit->post_process('delete','_post_delete');
@@ -550,12 +552,7 @@ function v_rut(numero){
 		}
 	}
 
-	function _pre_insert($do){
-		$nombre = $do->get('nombre1').' ';
-		$nombre.= $do->get('nombre2').' ';
-		$nombre.= $do->get('apellido1').' ';
-		$nombre.= $do->get('apellido2');
-		$do->set('nombre',trim($nombre));
+	function _pre_inserup($do){
 
 		$docui = $do->get('docui');
 		if($docui=='R'){
@@ -564,15 +561,13 @@ function v_rut(numero){
 			$do->set('apellido2','');
 		}
 
-		$rif=$do->get('rif');
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM sprv WHERE rif='$rif'");
-		if($chek > 0){
-			//$nombre=$this->datasis->dameval("SELECT nombre FROM sprv WHERE rif='$rif'");
-			$do->error_message_ar['pre_insert'] = $do->error_message_ar['insert']='bobo';
-			return FALSE;
-		}else {
+		$nombre = $do->get('nombre1').' ';
+		$nombre.= $do->get('nombre2').' ';
+		$nombre.= $do->get('apellido1').' ';
+		$nombre.= $do->get('apellido2');
+		$do->set('nombre',trim($nombre));
+
 		return TRUE;
-		}
 	}
 
 	function update(){
@@ -630,8 +625,6 @@ function v_rut(numero){
 		$this->load->view('view_ventanas', $data);
 		
 	}
-
-
 
 	function instalar(){
 
