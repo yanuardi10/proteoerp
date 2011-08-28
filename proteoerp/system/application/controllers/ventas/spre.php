@@ -92,6 +92,7 @@ class spre extends validaciones {
 
 		$sigmaA     = $grid->sigmaDsConfig();
 		$dsOption   = $sigmaA["dsOption"];
+
 		$sprever    = "
 function sprever(value, record, columnObj, grid, colNo, rowNo){
 	var url = '';
@@ -111,6 +112,7 @@ function imprimir(value, record, columnObj, grid, colNo, rowNo){
 }
 ";
 		$colsOption = $sigmaA["colsOption"];
+
 		$gridOption = "
 var gridOption={
 	id : 'grid1',
@@ -129,7 +131,7 @@ var gridOption={
 	toolbarContent: 'nav | pagesize | reload print excel pdf filter state',
 	//showGridMenu : true,
 	remotePaging: true,
-	remoteSorting: true,
+	remoteSort: true,
 	remoteFilter: true,
 	autoload: true
 };
@@ -138,12 +140,15 @@ var mygrid=new Sigma.Grid(gridOption);
 Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );		
 ";
 
+
+
 		$SigmaCont = "<center><div id=\"grid1_container\" style=\"width:750px;height:500px;\"></div></center>";
 		$grid->add('ventas/spre/dataedit/create');
 		$grid->build('datagridSG');
 
 		$data['style']  = style("redmond/jquery-ui.css");
 		$data['style'] .= style('gt_grid.css');
+		$data['style'] .= style('skin/vista/skinstyle.css');
 
 		$data["script"]  = script("jquery.js");
 		$data['script'] .= script("gt_msg_es.js");
@@ -168,6 +173,8 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 			$filter = '';
 
 //memowrite($_POST["_gt_json"],"jsonrecibido");
+   
+
 			if(isset($json->{'sortInfo'}[0]->{'columnId'})){
 				$sortField = $json->{'sortInfo'}[0]->{'columnId'};
 			} else {
@@ -221,7 +228,11 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 				if ($query->num_rows() > 0){
 					$retArray = array();
 					foreach( $query->result_array() as  $row ) {
-						$retArray[] = $row;
+						$meco = array();
+						foreach( $row as $idd=>$campo ) {
+							$meco[$idd] = utf8_encode($campo);
+						}
+						$retArray[] = $meco;
 					}
 					$data = json_encode($retArray);
 					$ret = "{data:" . $data .",\n";
@@ -230,6 +241,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 				} else {
 					$ret = '{data : []}';
 				}
+//memowrite(serialize($ret),"jsonretret");
 				echo $ret;
 
 			}else if($json->{'action'} == 'save'){
@@ -291,7 +303,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 			if ($query->num_rows() > 0){
 				$retArray = array();
 				foreach( $query->result_array() as  $row ) {
-					$retArray[] = $row;
+					$retArray[] = utf8_encode($row);
 				}
 				$data = json_encode($retArray);
 				$ret = "{data:" . $data .",\n";

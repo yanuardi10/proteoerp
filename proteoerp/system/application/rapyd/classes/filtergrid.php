@@ -190,6 +190,7 @@ class filterGrid {
 		if(!$sidx) $sidx =1;// if we not pass at first time index use the first column for the index or what you want
 		$mSQL=$this->db->_compile_select($this->db->_count_string . $this->db->_protect_identifiers('numrows'));
 		$query = $this->db->query($mSQL);
+
 		if ($query->num_rows() > 0){
 			$row = $query->row();
 			$count=$row->numrows;
@@ -219,10 +220,11 @@ class filterGrid {
 		$this->db->limit($limit,$start);
 		$query = $this->db->get();
 
+		$campos = $this->db->field_data();
 		foreach ($query->result() as $row){
 			$s .= "<row id='". $row->$id."'>";
 			foreach($campos AS $campo){
-				$s .= "<cell>".xml_convert($row->$campo)."</cell>";
+				$s .= "<cell>".xml_convert($row->$campo->name)."</cell>";
 			}
 			$s .= "</row>";
 		}

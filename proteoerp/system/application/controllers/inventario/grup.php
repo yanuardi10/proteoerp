@@ -143,6 +143,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 
 		$data['style']  = style("redmond/jquery-ui.css");
 		$data['style'] .= style('gt_grid.css');
+		$data['style'] .= style('skin/vista/skinstyle.css');
 
 		$data["script"]  = script("jquery.js");
 		$data['script'] .= script("gt_msg_es.js");
