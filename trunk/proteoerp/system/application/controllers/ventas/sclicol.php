@@ -332,8 +332,8 @@ function cg_docui(valor){
 
 		$edit = new DataEdit('Clientes', 'scli');
 		$edit->back_url = site_url('ventas/sclicol/filteredgrid');
-//		$edit->script($script, 'create');
-//		$edit->script($script, 'modify');
+		//$edit->script($script, 'create');
+		//$edit->script($script, 'modify');
 
 		$edit->pre_process('delete','_pre_del');
 		$edit->pre_process('insert','_pre_ins');
@@ -379,7 +379,7 @@ function cg_docui(valor){
 		$edit->nombre1->style = 'width:100%;';
 
 		$edit->nombre2 = new inputField('Segundo Nombre', 'nombre2');
-		$edit->nombre2->rule = 'trim|strtoupper|callback_chnomb|condi_required';
+		$edit->nombre2->rule = 'trim|strtoupper';
 		$edit->nombre2->size = 55;
 		$edit->nombre2->maxlength = 45;
 		$edit->nombre2->style = 'width:100%;';
@@ -391,17 +391,10 @@ function cg_docui(valor){
 		$edit->apellido1->style = 'width:100%;';
 
 		$edit->apellido2 = new inputField('Segundo Apellido', 'apellido2');
-		$edit->apellido2->rule = 'trim|strtoupper|callback_chnomb|condi_required';
+		$edit->apellido2->rule = 'trim|strtoupper';
 		$edit->apellido2->size  = 55;
 		$edit->apellido2->maxlength = 45;
 		$edit->apellido2->style = 'width:100%;';
-
-		$edit->nomfis = new textareaField('Nombre F&iacute;scal', 'nomfis');
-		$edit->nomfis->rule = 'trim';
-		$edit->nomfis->cols = 53;
-		$edit->nomfis->rows =  2;
-		$edit->nomfis->maxlength =200;
-		$edit->nomfis->style = 'width:100%;';
 
 		$edit->contacto = new inputField('Contacto', 'contacto');
 		$edit->contacto->rule = 'trim';
@@ -949,7 +942,7 @@ function cg_docui(valor){
 	function chnomb($val){
 		$docui=$this->input->post('docui');
 		if($docui!='R' && empty($val)){
-			$this->validation->set_message('chexiste',"El campo %s es obligatorio en este caso");
+			$this->validation->set_message('chnomb',"El campo %s es obligatorio en este caso");
 			return FALSE;
 		}else{
 			return TRUE;
