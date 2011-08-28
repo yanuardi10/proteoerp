@@ -556,7 +556,14 @@ function v_rut(numero){
 		$nombre.= $do->get('apellido1').' ';
 		$nombre.= $do->get('apellido2');
 		$do->set('nombre',trim($nombre));
-		
+
+		$docui = $do->get('docui');
+		if($docui=='R'){
+			$do->set('nombre2','');
+			$do->set('apellido1','');
+			$do->set('apellido2','');
+		}
+
 		$rif=$do->get('rif');
 		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM sprv WHERE rif='$rif'");
 		if($chek > 0){
