@@ -164,10 +164,10 @@ class Sclicol extends validaciones {
 		$smenu['link']=barra_menu('131');
 		$consulrif=trim($this->datasis->traevalor('CONSULRIF'));
 		$lcuenta=site_url('contabilidad/cpla/autocomplete/codigo');
-		$lsocio =site_url('ventas/scli/autocomplete/cliente');
+		$lsocio =site_url('ventas/sclicol/autocomplete/cliente');
 
-		$link20=site_url('inventario/scli/scliexiste');
-		$link21=site_url('inventario/scli/sclicodigo');
+		$link20=site_url('inventario/sclicol/scliexiste');
+		$link21=site_url('inventario/sclicol/sclicodigo');
 
 
 		$script ='
@@ -768,15 +768,18 @@ function cg_docui(valor){
 		if(empty($cliente)){
 			$do->set('cliente',$this->_numatri());
 		}
-		$pais=$this->datasis->traevalor('PAIS');
-		if($pais=='COLOMBIA'){
 
-			$nombre = $do->get('nombre1').' ';
-			$nombre.= $do->get('nombre2').' ';
-			$nombre.= $do->get('apellido1').' ';
-			$nombre.= $do->get('apellido2');
-			$do->set('nombre',trim($nombre));
+		$nombre = $do->get('nombre1').' ';
+		$nombre.= $do->get('nombre2').' ';
+		$nombre.= $do->get('apellido1').' ';
+		$nombre.= $do->get('apellido2');
+		$do->set('nombre',trim($nombre));
 
+		$docui = $do->get('docui');
+		if($docui=='R'){
+			$do->set('nombre2','');
+			$do->set('apellido1','');
+			$do->set('apellido2','');
 		}
 
 		return true;

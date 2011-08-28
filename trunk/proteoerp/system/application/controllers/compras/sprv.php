@@ -8,7 +8,11 @@ class Sprv extends validaciones {
 	}
 
 	function index(){
-		redirect('compras/sprv/filteredgrid');
+		if($this->pi18n=='COLOMBIA'){
+			redirect('compras/sprvcol/filteredgrid');
+		}else{ 
+			redirect('compras/sprv/filteredgrid');
+		}
 	}
 
 	function filteredgrid(){
