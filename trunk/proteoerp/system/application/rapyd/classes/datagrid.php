@@ -26,10 +26,42 @@ require_once("dataset.php");
  */
 class DataGrid extends DataSet{
 
-    var $cid         = "dg";
-    var $systemError = "";
-    var $rapyd;
-    var $_title = null;
+	var $cid         = "dg";
+	var $systemError = "";
+	var $rapyd;
+	var $_title = null;
+
+	/*
+	Variables Sigma Grid
+	*/
+
+	var $sq_id = 'grid1';
+	var $sg_loadURL   = '".base_url()."controlador';
+	var $sg_width     = 700;
+	var $sg_height    = 500;
+	var $sg_container = 'grid1_container';
+	var $sg_replaceContainer = true;
+
+	/*
+	var dataset : dsOption ,
+	columns : colsOption,
+	allowCustomSkin: true,
+	skin: 'vista',
+	pageSize: ".$this->per_page.",
+	pageSizeList: [60,90, 120],
+	toolbarPosition : 'bottom',
+	toolbarContent: 'nav | pagesize | reload print excel pdf filter state',
+	afterEdit: guardar,
+	clickStartEdit: false,
+	remotePaging: true,
+	remoteSorting: true,
+	remoteFilter: true,
+	autoload: true
+	*/
+
+
+
+
   
     /**
     * PHP4 constructor.
@@ -164,7 +196,6 @@ class DataGrid extends DataSet{
 var gridOption={
 	id : 'grid1',
 	loadURL : '".base_url().$url."controlador',
-	saveURL : '".base_url().$url."controlador',
 	width: 700,
 	height: 500,
 	container : 'grid1_container',
@@ -198,8 +229,10 @@ function guardar(value, oldValue, record, col, grid) {
 };
 ";
 
+	$SigmaDiv = "<div id=\"grid1_container\" style=\"width:750px;height:500px;\"></div>";
 
-	
+
+
 	return array("dsOption"=>$dsOption, "colsOption"=>$colsOption, "gridOption"=>$gridOption,"gridGuarda"=>$gridGuarda);
 	}
 

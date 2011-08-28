@@ -6,6 +6,15 @@ class casi extends Controller {
 	function casi(){
 		parent::Controller();
 		$this->load->library('rapyd');
+		$this->load->library('datajqgrid');
+		$this->load->database();
+		if ( !$this->db->field_exists('id','casi')) {
+			echo "cambio";
+			$mSQL='ALTER TABLE `casi` DROP PRIMARY KEY, ADD UNIQUE `comprob` (`comprob`)';
+			$this->db->simple_query($mSQL);
+			$mSQL='ALTER TABLE casi ADD id INT AUTO_INCREMENT PRIMARY KEY';
+			$this->db->simple_query($mSQL);
+		}
 	}
 
 	function index() {
@@ -49,10 +58,10 @@ class casi extends Controller {
 		$filter->vdes->clause='';
 
 		$filter->buttons("reset","search");
-		$filter->build();
+		$filter->build("dataformfiltro");
 
 		$uri = anchor('contabilidad/casi/dataedit/show/<#comprob#>','<#comprob#>');
-
+/*
 		$grid = new DataGrid();
 		$vdes = $this->input->post('vdes');
 		if($vdes) $grid->db->where('(debe-haber) <>',0);
@@ -67,9 +76,149 @@ class casi extends Controller {
 		$grid->column_orderby('Total' ,'<nformat><#total#></nformat>','total',"align='right'");
 
 		$grid->add('contabilidad/casi/dataedit/create');
-		$grid->build();
+		//$grid->build();
+*/
 
-		$data['content'] = $filter->output.$grid->output;
+
+	$grid  = $this->datajqgrid;
+
+	$grid->addField('comprob');
+	$grid->label('Numero');
+	$grid->params(array('width' => 100,'editable' => 'false'));
+
+	$grid->addField('fecha');
+	$grid->label('Fecha');
+	$grid->params(array('width' => 100,'editable' => 'false','align' => "'center'",));
+
+	$grid->addField('descrip');
+	$grid->label('Descripcion');
+	$grid->params(array('width' => 300,'editable' => 'true','edittype' => "'textarea'", 'editrules' => '{required:true}'));
+
+	$grid->addField('debe');
+	$grid->label('Debe');
+	$grid->params(array('width' => 150,'editable' => 'false','align' => "'right'"));
+
+	$grid->addField('Haber');
+	$grid->label('haber');
+	$grid->params(array('width' => 150,'editable' => 'false','align' => "'right'"));
+
+	$grid->addField('total');
+	$grid->label('Saldo');
+	$grid->params(array('width' => 100,'editable' => 'false','align' => "'right'"));
+
+	$url = base_url().'contabilidad/casi/grid';
+
+	#GET url
+	$grid->setUrlget(site_url($url));
+
+	#Set url
+	$grid->setUrlput(site_url($url));
+
+	#show paginator
+	$grid->showpager(true);
+	#titulo de la tabla
+	$grid->setTitle('Asientos');
+
+	#show/hide navigations buttonss
+	$grid->setAdd(true);
+	$grid->setEdit(true);
+	$grid->setDelete(true);
+	$grid->setSearch(true);
+
+	$param = $grid->deploy();
+
+	$script = "
+<script type=\"text/javascript\">
+$(function(){
+$(\"#newapi".$param['gridname']."\").jqGrid({
+	url:'$url',
+	datatype: 'xml',
+	height: 355,
+	mtype: 'POST',
+".$param['colMod'].",
+	pager: '#pnewapi".$param['gridname']."',
+	rowNum:40,
+	rowList:[40,80,120],
+	sortname: 'comprob',
+	width: 700,
+	shrinkToFit: false,
+	sortorder: 'DESC',
+	viewrecords: true,
+	caption: 'Asientos'
+
+});
+jQuery(\"#newapi".$param['gridname']."\").jqGrid('navGrid','#pnewapi".$param['gridname']."',{del:false,add:false,edit:false},{},{},{},{multipleSearch:true});
+});
+</script>
+
+";
+
+
+		$script1 = "
+<script type=\"text/javascript\">
+	var base_url = '".base_url()."';
+	var site_url = '".site_url()."';
+        var url = '';
+
+        $(document).ready(function() {
+            dtgLoadButton();
+
+           var grid = jQuery(\"#newapi".$param['gridname']."\").jqGrid({
+                    ajaxGridOptions : {type:\"POST\"},
+                       jsonReader : {
+                      root:\"data\",
+                      repeatitems: false
+                      
+                   },
+                    ondblClickRow: function(id){
+                      var gridwidth = jQuery(\"#newapi".$param['gridname']."\").width();
+                      gridwidth = gridwidth/2;
+                      grid.editGridRow(id, {closeAfterEdit:true,mtype:'POST'});
+                       return;
+                      },
+                    rowList:[10,20,30],
+                    viewrecords: true
+                   ".$param['table']."
+               })
+               ".$param['pager'].";
+        });
+</script>
+";
+
+
+		$extras  = "\n<table id='newapi".$param['gridname']."'></table>\n";
+		$extras .= "<div id='pnewapi".$param['gridname']."'></div><hr>\n";
+
+		//$extras  = "\n<table id='rejilla'></table>\n";
+		//$extras .= "<div id='pager'></div>\n";
+
+
+
+		$data['content'] = $extras;; //$grid->output;
+		$data['filtro']  = $filter->output;
+
+		//$data['extras'] = $extras;
+
+		//$data["style"]   = style("jquery-ui-1.8.2.custom.css");
+		$data["style"]   = style("themes/redmond/jquery-ui-1.8.2.custom.css");
+		$data["style"]  .= style("themes/ui.jqgrid.css");
+		$data["style"]  .= style("themes/ui.multiselect.css");
+//		$data["style"]  .= style("datagrid.css");
+
+		$data['script']  = script('jquery.js');
+		$data['script'] .= script('jquery.layout.js');
+		
+		$data["script"] .= script("i18n/grid.locale-sp.js");
+		$data["script"] .= script("jquery-ui-custom.min.js");
+		$data["script"] .= script("ui.multiselect.js");
+		
+		$data["script"] .= script("jquery.jqGrid.min.js");
+		$data["script"] .= script("jquery.tablednd.js");
+		$data["script"] .= script("jquery.contextmenu.js");
+//		$data["script"] .= script("datagrid.js");
+		
+		$data["script"] .= $script;
+		
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = heading('Asientos');
 		$this->load->view('view_ventanas', $data);
@@ -239,6 +388,78 @@ class casi extends Controller {
 		$data['head']    = script('jquery.js').script('jquery-ui.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css').$this->rapyd->get_head().phpscript('nformat.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js').phpscript('nformat.js');
 		$this->load->view('view_ventanas', $data);
 	}
+
+	function grid(){
+		
+		$page  = 1;//$this->input->post('page');
+		$limit = 50;//$this->input->post('rows'); // get how many rows we want to have into the grid - rowNum parameter in the grid 
+		$sidx  = 1; //$this->input->post('sidx'); // get index row - i.e. user click to sort. At first time sortname parameter -after that the index from colModel 
+		$sord  = 'DESC';//$this->input->post('sord');
+		$tabla = "casi";
+
+		$this->db->from($tabla);
+
+		if(!$sidx) $sidx =1;// if we not pass at first time index use the first column for the index or what you want
+
+		$mSQL=$this->db->_compile_select($this->db->_count_string . $this->db->_protect_identifiers('numrows'));
+
+		$query = $this->db->query($mSQL);
+
+		if ($query->num_rows() > 0){
+			$row = $query->row();
+			$count= $row->numrows;
+		}else{
+			$count=0;
+		}
+ 
+		if( $count > 0 && $limit > 0) { 
+			$total_pages = ceil($count/$limit); 
+		} else {
+			$total_pages = 0; 
+		}
+
+		if ($page > $total_pages) $page=$total_pages;
+		$start = $limit*$page - $limit;
+		if($start <0) $start = 0;
+		$sidx = 'comprob';
+
+		$this->load->helper('xml');
+		header("Content-type: text/xml;charset=".$this->config->item('charset'));
+		$s = "<?xml version='1.0' encoding='".$this->config->item('charset')."'?>";
+		$s .=  "<rows>";
+		$s .= "<page>".$page."</page>";
+		$s .= "<total>".$total_pages."</total>";
+		$s .= "<records>".$count."</records>";
+
+		$this->db->orderby($sidx,$sord);
+		$this->db->limit($limit,$start);
+		$query = $this->db->get();
+//echo $this->db->last_query();
+		$campos = $this->db->field_data('casi');
+//print_r($campos);
+		foreach ($query->result() as $row){
+			$s .= "<row id='". $row->id."'>";
+			$s .= "<cell>".xml_convert($row->comprob)."</cell>";
+			$s .= "<cell>".xml_convert($row->fecha)."</cell>";
+			$s .= "<cell>".xml_convert($row->descrip)."</cell>";
+			$s .= "<cell>".xml_convert($row->debe)."</cell>";
+			$s .= "<cell>".xml_convert($row->haber)."</cell>";
+			$s .= "<cell>".xml_convert($row->total)."</cell>";
+/*
+			foreach($campos AS $campo){
+				$a = $campo->name;
+				$s .= "<cell>".xml_convert($row->$a)."</cell>";
+			}
+*/
+			$s .= "</row>";
+		}
+		$s .= "</rows>"; 
+		echo $s;
+	}
+
+
+
+
 	
 	function chrepetidos($cod){
 		if(array_search($cod, $this->chrepetidos)===false){
@@ -607,4 +828,28 @@ class casi extends Controller {
 		$codigo=$do->get('comprob');
 		logusu('casi',"Asiento $codigo ELIMINADO");
 	}
+
+function getData()
+{
+	memowrite("datajqgridget","datajqgrid");
+
+	$this->load->library('datajqgrid');
+	$grid             = $this->datajqgrid;
+	$response         = $grid->getData('casi', array(array('table' => 'casi')),array(),false);
+	$rs = $grid->jsonresult( $response);
+	echo $rs;
+}
+
+
+ #Put information
+
+function setData()
+{
+    $this->load->library('datajqgrid');
+    $grid             = $this->datajqgrid;
+    $response         = $grid->operations('casi','id');
+
+}
+
+
 }

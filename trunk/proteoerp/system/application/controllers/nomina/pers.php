@@ -9,8 +9,19 @@ class pers extends validaciones {
 
 	function index(){
 		$this->datasis->modulo_id(707,1);
-		redirect("nomina/pers/filteredgrid");
+		redirect("nomina/pers/extgrid");
 	}
+
+	function extgrid(){
+		$this->datasis->modulo_id(707,1);
+		$script = $this->persextjs();
+		$data["script"] = $script;
+		$data['title']  = heading('Personal');
+		$data['head']   = $this->rapyd->get_head();
+		//$data['content'] = '';
+		$this->load->view('extjs/pers',$data);
+	}
+
 
 	function filteredgrid(){
 		$this->rapyd->load("datafilter","datagrid");
@@ -565,7 +576,8 @@ script;
 		}
 		$depa->build(); 
 		echo $depa->output;
-		}
+	}
+	
 	function _pre_del($do) {
 		$codigo=$do->get('codigo');
 		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM nomina WHERE codigo='$codigo'");
@@ -577,21 +589,25 @@ script;
 		}
 		return True;
 	}
+	
 	function _post_insert($do){
 		$codigo=$do->get('codigo');
 		$nombre=$do->get('nombre');
 		logusu('pers',"PERSONAL $codigo NOMBRE  $nombre CREADO");
 	}
+	
 	function _post_update($do){
 		$codigo=$do->get('codigo');
 		$nombre=$do->get('nombre');
 		logusu('pers',"PERSONAL $codigo NOMBRE  $nombre  MODIFICADO");
 	}
+	
 	function _post_delete($do){
 		$codigo=$do->get('codigo');
 		$nombre=$do->get('nombre');
 		logusu('pers',"PERSONAL $codigo NOMBRE  $nombre  ELIMINADO ");
 	}
+	
 	function chexiste($codigo){
 		$codigo=$this->input->post('codigo');
 		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM pers WHERE codigo='$codigo'");
@@ -602,7 +618,8 @@ script;
 		}else {
 			return TRUE;
 		}	
-	} 
+	}
+	
 	function instalar(){
 		$mSQL1="ALTER TABLE `pers` ADD `email` VARCHAR(50) NULL";
 		$this->db->simple_query($mSQL1);
@@ -621,5 +638,443 @@ script;
 		$mSQL9="ALTER TABLE pers`datasis` ADD COLUMN `turno` CHAR(2) NULL,ADD COLUMN `horame` VARCHAR(10),ADD COLUMN `horams` VARCHAR(10),ADD COLUMN `horate` VARCHAR(10),ADD COLUMN `horats` VARCHAR(10)";
 		$this->db->simple_query($mSQL9);
 	}
+
+	function grid(){
+		$start   = isset($_REQUEST['start']) ? $_REQUEST['start']   :  0;
+		$limit   = isset($_REQUEST['limit']) ? $_REQUEST['limit']   : 30;
+		$sort    = isset($_REQUEST['sort'])  ? $_REQUEST['sort']    : 'codigo';
+		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter'] : null;
+
+		$where = "";
+
+		//Buscar posicion 0 Cero
+		if (isset($_REQUEST['filter'])){
+			$filter = json_decode($_REQUEST['filter'], true);
+			if (is_array($filter)) {
+				//Dummy Where. 
+				$where = "codigo IS NOT NULL ";
+				$qs = "";
+				for ($i=0;$i<count($filter);$i++){
+					switch($filter[$i]['type']){
+					case 'string' : $qs .= " AND ".$filter[$i]['field']." LIKE '%".$filter[$i]['value']."%'"; 
+						Break;
+					case 'list' :
+						if (strstr($filter[$i]['value'],',')){
+							$fi = explode(',',$filter[$i]['value']);
+							for ($q=0;$q<count($fi);$q++){
+								$fi[$q] = "'".$fi[$q]."'";
+							}
+							$filter[$i]['value'] = implode(',',$fi);
+								$qs .= " AND ".$filter[$i]['field']." IN (".$filter[$i]['value'].")";
+						}else{
+							$qs .= " AND ".$filter[$i]['field']." = '".$filter[$i]['value']."'";
+						}
+						Break;
+					case 'boolean' : $qs .= " AND ".$filter[$i]['field']." = ".($filter[$i]['value']); 
+						Break;
+					case 'numeric' :
+						switch ($filter[$i]['comparison']) {
+							case 'ne' : $qs .= " AND ".$filter[$i]['field']." != ".$filter[$i]['value']; 
+								Break;
+							case 'eq' : $qs .= " AND ".$filter[$i]['field']." = ".$filter[$i]['value']; 
+								Break;
+							case 'lt' : $qs .= " AND ".$filter[$i]['field']." < ".$filter[$i]['value']; 
+								Break;
+							case 'gt' : $qs .= " AND ".$filter[$i]['field']." > ".$filter[$i]['value']; 
+								Break;
+						}
+						Break;
+					case 'date' :
+						switch ($filter[$i]['comparison']) {
+							case 'ne' : $qs .= " AND ".$filter[$i]['field']." != '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
+								Break;
+							case 'eq' : $qs .= " AND ".$filter[$i]['field']." = '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
+								Break;
+							case 'lt' : $qs .= " AND ".$filter[$i]['field']." < '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
+								Break;
+							case 'gt' : $qs .= " AND ".$filter[$i]['field']." > '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
+								Break;
+						}
+						Break;
+					}
+				}
+				$where .= $qs;
+			}
+		}
+		
+		$this->db->select('codigo,nacional,cedula,nombre,apellido,contrato,ingreso,sueldo,nacimi');
+		$this->db->from('pers');
+
+		if (strlen($where)>1){
+			$this->db->where($where);
+		}
+
+		if( $sort == 'codigo' ) {
+			$this->db->order_by( $sort, 'asc' );
+		} else {
+			$sort = json_decode($sort, true);
+			$this->db->order_by($sort[0]['property'],$sort[0]['direction']);
+		}
+
+
+		$this->db->limit($limit, $start);
+
+		$query = $this->db->get();
+		$results = $this->db->count_all('pers');
+
+		//$arr = array();
+		//foreach ($query->result() as $obj)
+		//{
+		//	$arr[] = $obj;
+		//}
+
+		$arr = array();
+		foreach ($query->result_array() as $row)
+		{
+			$meco = array();
+			foreach( $row as $idd=>$campo ) {
+				$meco[$idd] = utf8_encode($campo);
+			}
+			$arr[] = $meco;
+		}
+		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
+	}
+	
+
+	function crear() {
+		echo json_encode("crear");
+	}
+		
+	function modificar(){
+		echo json_encode("Modificar");
+	}
+
+	function eliminar(){
+		echo json_encode("Eliminar");
+	}
+
+	function persextjs(){
+
+		$encabeza='<table width="100%" bgcolor="#2067B5"><tr><td align="left" width="100px"><img src="'.base_url().'assets/default/css/templete_01.jpg" width="120"></td><td align="center"><h1 style="font-size: 20px; color: rgb(255, 255, 255);" onclick="history.back()">TRABAJADORES</h1></td><td align="right" width="100px"><img src="'.base_url().'assets/default/images/cerrar.png" alt="Cerrar Ventana" title="Cerrar Ventana" onclick="parent.window.close()" width="25"></td></tr></table>';
+
+		$script = "
+<script type=\"text/javascript\">
+var BASE_URL   = '".base_url()."';
+var BASE_PATH  = '".base_url()."';
+var BASE_ICONS = '".base_url()."assets/icons/';
+var BASE_UX    = '".base_url()."js/ext/ux';
+
+Ext.Loader.setConfig({ enabled: true });
+Ext.Loader.setPath('Ext.ux', BASE_UX);
+
+Ext.require([
+	'Ext.grid.*',
+	'Ext.ux.grid.FiltersFeature',
+	'Ext.data.*',
+	'Ext.util.*',
+	'Ext.state.*',
+	'Ext.form.*',
+	'Ext.window.MessageBox',
+	'Ext.tip.*',
+	'Ext.ux.CheckColumn',
+	'Ext.toolbar.Paging'
+]);
+
+// Main 
+Ext.onReady(function(){
+	var registro;
+
+	var urlApp = '".base_url()."';
+
+	// Define our data model
+	var Empleados = Ext.regModel('Empleados', {
+		fields: ['codigo','nacional','cedula','nombre','apellido','contrato','ingreso','sueldo','nacimi'],
+		validations: [
+			{ type: 'length', field: 'codigo',   min: 1 },
+			{ type: 'length', field: 'nacional', min: 1 }, 
+			{ type: 'length', field: 'cedula',   min: 6 }, 
+			{ type: 'length', field: 'nombre',   min: 3 }
+		],
+		proxy: new Ext.data.HttpProxy({
+			method : 'POST',
+			noCache: false,
+			api: {
+				read   : urlApp + 'nomina/pers/grid',
+				create : urlApp + 'nomina/pers/crear',
+				update : urlApp + 'nomina/pers/modificar' ,
+				destroy: urlApp + 'nomina/pers/eliminar'
+				},
+			reader: {
+				type: 'json',
+				successProperty: 'success',
+				root: 'data',
+				messageProperty: 'message',
+				totalProperty: 'results',
+				id: 'codigo'
+				},
+			writer: {
+				type: 'json',
+				root: 'data',
+				writeAllFields: true,
+				id: 'codigo'
+				},
+			listeners: {
+				exception: function( proxy, response, operation) {
+					Ext.MessageBox.show({
+						title: 'EXCEPCION REMOTA',
+						msg: operation.getError(),
+						icon: Ext.MessageBox.ERROR,
+						buttons: Ext.Msg.OK
+					})
+				}
+			}
+		})
+	});
+
+	//Data Store
+	var storePers = Ext.create('Ext.data.Store', {
+		model: 'Empleados',
+		pageSize: 30,
+		remoteSort: true,
+		autoLoad: false,
+		autoSync: true,
+		method: 'POST',
+		id: 'codigo'
+	});
+
+	//Column Model
+	var colPers = 
+		[
+			{ header: 'Codigo',     width:  60, sortable: true, dataIndex: 'codigo',   field:  { type: 'textfield' }, filter: { type: 'string'  } }, 
+			{ header: 'Nac',        width:  60, sortable: true, dataIndex: 'nacional', field:  { type: 'textfield' }, filter: { type: 'string'  } }, 
+			{ header: 'Cedula',     width:  80, sortable: true, dataIndex: 'cedula',   field:  { type: 'textfield' }, filter: { type: 'string'  } }, 
+			{ header: 'Nombre',     width: 150, sortable: true, dataIndex: 'nombre',   field:  { type: 'textfield' }, filter: { type: 'string'  } }, //editor: 'textfield' }, 
+			{ header: 'Apellidos',  width: 150, sortable: true, dataIndex: 'apellido', field:  { type: 'textfield' }, filter: { type: 'string'  } }, 
+			{ header: 'Contrato',   width:  60, sortable: true, dataIndex: 'contrato', field:  { type: 'textfield' }, filter: { type: 'string'  } }, 
+			{ header: 'Ingreso',    width:  70, sortable: true, dataIndex: 'ingreso',  field:  { type: 'date'      }, filter: { type: 'date'    } }, 
+			{ header: 'Sueldo',     width:  60, sortable: true, dataIndex: 'sueldo',   field:  { type: 'numeroc'   }, filter: { type: 'numeric' } }, //align: 'right' }, 
+			{ header: 'Nacimiento', width:  70, sortable: true, dataIndex: 'nacimi',   field:  { type: 'date'      }, filter: { type: 'date'    } }  
+		];
+
+	var win;
+
+	function showContactForm() {
+		if (!win) {
+			// Create Form
+			var writeForm = Ext.define('Pers.Form', {
+				extend: 'Ext.form.Panel',
+				alias:  'widget.writerform',
+				requires: ['Ext.form.field.Text'],
+				initComponent: function(){
+					Ext.apply(this, {
+						iconCls: 'icon-user',
+						frame: true, 
+						title: 'Trabajadores', 
+						defaultType: 'textfield', 
+						bodyPadding: 25, 
+						fieldDefaults: { 
+							anchor: '100%', 
+    							labelAlign: 'right' 
+						}, 
+					items: [ 
+							{ fieldLabel: 'Codigo',   name: 'codigo',   allowBlank: false }, 
+							{ fieldLabel: 'Nacional', name: 'nacional', allowBlank: false }, 
+							{ fieldLabel: 'Cedula',   name: 'cedula',   allowBlank: false }, 
+							{ fieldLabel: 'Nombre',   name: 'nombre',   allowBlank: false }, //vtype: 'email' }, 
+							{ fieldLabel: 'Apellido', name: 'apellido', allowBlank: false }, //xtype: 'datefield' }, 
+							{ fieldLabel: 'Contrato', name: 'contrato', allowBlank: false }, //xtype: 'datefield' }, 
+							{ fieldLabel: 'Ingreso',  name: 'ingreso',  allowBlank: false, xtype: 'datefield' }, 
+							{ fieldLabel: 'Sueldo',   name: 'sueldo',   allowBlank: false }, 
+							{ fieldLabel: 'Nacio',    name: 'nacimi',   allowBlank: false, xtype: 'datefield' }, 
+						], 
+					dockedItems: [
+						{ xtype: 'toolbar', dock: 'bottom', ui: 'footer', 
+							items: ['->', 
+								{ iconCls: 'icon-reset', itemId: 'close', text: 'Close', scope: this, handler: this.onClose },
+								{ iconCls: 'icon-save',  itemId: 'save',  text: 'Save',  disabled: false, scope: this, handler: this.onSave }
+							]
+						}]
+					});
+					this.callParent();
+				},
+				setActiveRecord: function(record){
+					this.activeRecord = record;
+				},
+				onSave: function(){
+					var form = this.getForm();
+					//alert('meco 1');
+					if (!registro){
+						if (form.isValid()) {
+							storePers.insert(0, form.getValues());
+						}
+					} else {
+						var active = win.activeRecord;
+						if (!active) {
+							return;
+						}
+						if (form.isValid()) {
+						alert('Update '+active);
+							form.updateRecord(active);
+						}
+					}
+					form.reset();
+					this.onReset();
+				},
+
+				onReset: function(){
+					this.setActiveRecord(null);
+					storePers.load();
+					//Hide Windows 
+					win.hide();
+				},
+				
+				onClose: function(){
+					var form = this.getForm();
+					form.reset();
+					this.onReset();
+				}
+			});
+
+			win = Ext.widget('window', {
+				title: '',
+				losable: false,
+				closeAction: 'destroy',
+				width: 550,
+				height: 400,
+				minHeight: 300,
+				resizable: false,
+				modal: true,
+				items: [writeForm],
+				listeners: {
+					beforeshow: function() {
+						var form = this.down('writerform').getForm();
+						this.activeRecord = registro;
+						if (registro) {
+							form.loadRecord(registro);
+						}
+					}
+				}
+			});
+		}
+		win.show();
+	}
+
+	//Filters
+	var filters = {
+		ftype: 'filters',
+		// encode and local configuration options defined previously for easier reuse
+		encode: 'json', // json encode the filter query
+		local: false
+	};    
+
+	// Create Grid 
+	Ext.define('PersGrid', {
+		extend: 'Ext.grid.Panel',
+		alias: 'widget.writergrid',
+		store: storePers,
+		//selType: 'cellmodel',
+		//plugins: [Ext.create('Ext.grid.plugin.CellEditing', { clicksToEdit: 2 } )],
+		initComponent: function(){
+			Ext.apply(this, {
+				iconCls: 'icon-grid',
+				frame: true,
+				dockedItems: [{
+					xtype: 'toolbar',
+					items: [
+						{iconCls: 'icon-add',    text: 'Agregar',                                     scope: this, handler: this.onAddClick   },
+						{iconCls: 'icon-update', text: 'Modificar', disabled: true, itemId: 'update', scope: this, handler: this.onUpdateClick},
+						{iconCls: 'icon-delete', text: 'Eliminar',  disabled: true, itemId: 'delete', scope: this, handler: this.onDeleteClick }
+					]
+				}],
+				columns: colPers,
+				// paging bar on the bottom
+				bbar: Ext.create('Ext.PagingToolbar', {
+					store: storePers,
+					displayInfo: true,
+					displayMsg: 'Pag No. {0} - Registros {1} de {2}',
+					emptyMsg: \"No se encontraron Registros.\"
+				})
+			});
+			this.callParent();
+			this.getSelectionModel().on('selectionchange', this.onSelectChange, this);
+		},
+		features: [filters],
+		onSelectChange: function(selModel, selections){
+			this.down('#delete').setDisabled(selections.length === 0);
+			this.down('#update').setDisabled(selections.length === 0);
+			},
+		
+		onUpdateClick: function(){
+			var selection = this.getView().getSelectionModel().getSelection()[0];
+				if (selection) {
+					registro = selection;
+				showContactForm();
+			}
+		},
+		onDeleteClick: function() {
+			var selection = this.getView().getSelectionModel().getSelection()[0];
+			Ext.MessageBox.show({
+				title: 'Confirme', 
+				msg: 'Esta seguro?', 
+				buttons: Ext.MessageBox.YESNO, 
+				fn: function(btn){ 
+					if (btn == 'yes') { 
+						if (selection) {
+							storePers.remove(selection);
+						}
+						storePers.load();
+					} 
+				}, 
+				icon: Ext.MessageBox.QUESTION 
+			});  
+		},
+		
+		onAddClick: function(){
+			registro = null;
+			showContactForm();
+			storePers.load();
+		}
+	});
+
+	//Main Container
+	var main = Ext.create('Ext.container.Container', {
+		padding: '0 0 0 0',
+		width: '100%',
+		height: 400,
+		renderTo: document.body,
+		layout: {
+			type: 'vbox',
+			align: 'center'
+		},
+		items: [
+			{
+				xtype: 'panel',
+				preventHeader: true,
+				collapsible : true,
+				html: '".$encabeza."',
+				title: 'Busqueda Avanzada',
+				width: '97%',
+				flex: 1
+			},
+			{
+				itemId: 'grid',
+				xtype: 'writergrid',
+				title: 'Trabajadores',
+				width: '97%',
+				align: 'center',
+				flex: 9,
+				store: storePers
+			}]
+	});
+	Ext.EventManager.onWindowResize(main.doLayout, main);
+	storePers.load({ params: { start:0, limit: 30}});
+
+});
+
+</script>
+";
+		return $script;	
+	}
 }
+
 ?>

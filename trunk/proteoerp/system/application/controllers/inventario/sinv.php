@@ -118,7 +118,7 @@ class sinv extends Controller {
 		$filter->db->from('sinv AS a');
 		$filter->db->join('grup AS b','a.grupo=b.grupo','LEFT');
 		$filter->db->join('line AS c','b.linea=c.linea', 'LEFT');
-		$filter->db->join('dpto  d','c.depto=d.depto','LECT');
+		$filter->db->join('dpto  d','c.depto=d.depto','LEFT');
 		//$filter->db->join('sinvfoto  e','e.codigo=a.codigo','LEFT');
 		$filter->script($DepoScript);
 
