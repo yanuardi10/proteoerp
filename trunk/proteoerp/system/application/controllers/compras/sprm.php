@@ -1,7 +1,7 @@
 <?php require_once(BASEPATH.'application/controllers/validaciones.php');
 
 class Sprm extends validaciones {
-	
+
 	function sprm(){
 		parent::Controller(); 
 		$this->load->library("rapyd");
