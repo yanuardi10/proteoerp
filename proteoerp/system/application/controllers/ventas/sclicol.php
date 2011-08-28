@@ -769,18 +769,18 @@ function cg_docui(valor){
 			$do->set('cliente',$this->_numatri());
 		}
 
-		$nombre = $do->get('nombre1').' ';
-		$nombre.= $do->get('nombre2').' ';
-		$nombre.= $do->get('apellido1').' ';
-		$nombre.= $do->get('apellido2');
-		$do->set('nombre',trim($nombre));
-
 		$docui = $do->get('docui');
 		if($docui=='R'){
 			$do->set('nombre2','');
 			$do->set('apellido1','');
 			$do->set('apellido2','');
 		}
+
+		$nombre = $do->get('nombre1').' ';
+		$nombre.= $do->get('nombre2').' ';
+		$nombre.= $do->get('apellido1').' ';
+		$nombre.= $do->get('apellido2');
+		$do->set('nombre',trim($nombre));
 
 		return true;
 	}
