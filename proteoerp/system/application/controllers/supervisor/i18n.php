@@ -26,7 +26,7 @@ $this->pi18n->msj('rifci','RIF o C.I.');
 		$filter->buttons('reset','search');
 		$filter->build();
 
-		$uri = anchor('supervisor/i18n/dataedit/show/<#id#>','<#id#>');
+		$uri = anchor('supervisor/i18n/dataedit/modify/<#id#>','<#id#>');
 
 		$grid = new DataGrid('Internacionalizaci&oacute;n');
 		$grid->order_by('id','asc');
@@ -67,7 +67,7 @@ $this->pi18n->msj('rifci','RIF o C.I.');
 		$edit->pais->rule ='trim|strtoupper|required';
 
 		$edit->campo = new inputField('Campo', 'campo');
-		$edit->campo->rule='callback_positivo|numeric';
+		$edit->campo->rule='required';
 
 		$edit->mensaje = new textareaField('Mensaje', 'mensaje');
 		$edit->mensaje->rule='required';

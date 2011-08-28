@@ -80,7 +80,7 @@ class pi18n{
 	function fallas(){
 		
 		if(count($this->fallas)>0){
-			$rt ='<h3>Faltas en los mensajes de la iterface</h3>';
+			$rt ='<h3>Faltas en los mensajes de la interface</h3>';
 			$rt.='Es posible que algunos de los mensajes no este ajustados su pa&iacute;s, puede cambiar esto haciendo click en los enlaces siguientes'.br();
 			$rt.=implode(br(),$this->fallas).br();
 			return $rt;
