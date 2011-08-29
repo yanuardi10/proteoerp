@@ -2028,35 +2028,34 @@ function gserfiscal(mid){
 		$campo= ($tiposprv=='1') ? 'retej': 'reten';
 		$rete=0;
 		$cana=$do->count_rel('gitser');
-		echo $campo.br();
 		for($i=0;$i<$cana;$i++){
 			$codigo=$do->get_rel('gitser','codigo',$i);
 			$precio=$do->get_rel('gitser','precio',$i);
-			$mmsql="SELECT a.codigo, a.descrip, b.base1,b.tari1,b.activida,b.pama1                                                                         
+			$mmsql="SELECT b.codigo ,a.descrip, b.base1,b.tari1,b.activida,b.pama1                                                                         
 				FROM mgas AS a                                                                                                                           
 				LEFT JOIN rete AS b ON a.$campo=b.codigo                                                                                                  
 			WHERE a.codigo=".$this->db->escape($codigo)." LIMIT 1";
-			echo $mmsql;
+
 			$fila=$this->datasis->damerow($mmsql);
 			if(!empty($fila['pama1'])){
 				if($precio>=$fila['base1']){
-					$itbase= $precio*(100/$fila['base1']);
+					$itbase= $precio*($fila['base1']/100);
 					$itret = $itbase*($fila['tari1']/100);
 					$rete += $itret;
 
 					$data['idd']        =$id ;
 					$data['origen']     ='';
 					$data['numero']     =$numero;
-					$data['codigorete'] =$codigo;
+					$data['codigorete'] =$fila['codigo'];
 					$data['actividad']  =$fila['activida'];
 					$data['base']       =$itbase;
-					$data['porcen']     =$fila['pama1'];
+					$data['porcen']     =$fila['tari1'];
 					$data['monto']      =$itret;
 				
 					$str = $this->db->insert_string('gereten', $data);
 					$ban=$this->db->simple_query($str);
 					if(!$ban) memowrite($str,'gsercol');
-					
+
 					//echo $str;
 				}
 			}
@@ -2279,6 +2278,29 @@ function gserfiscal(mid){
 	function _post_delete($do){
 		$codigo=$do->get('numero');
 		logusu('gser',"Gasto $codigo ELIMINADO");
+	}
+
+	function automgas(){
+		$mid   = $this->db->escape('%'.$this->input->post('q').'%');
+		$mSQL  = "SELECT a.codigo, a.descrip
+			FROM mgas AS a
+		WHERE a.codigo LIKE ${mid} OR a.descrip LIKE ${mid} ORDER BY a.descrip LIMIT 10";
+
+		$data = '{[ ]}';
+		$query = $this->db->query($mSQL);
+		$retArray = array();
+		$retorno = array();
+		if ($query->num_rows() > 0){
+			foreach( $query->result_array() as  $row ) {
+				$retArray['value']  = $row['codigo'];
+				$retArray['label']  = trim($row['codigo']).' - '.trim($row['descrip']);
+				$retArray['codigo'] = trim($row['codigo']);
+				$retArray['descrip']= trim($row['descrip']);
+				array_push($retorno, $retArray);
+			}
+			$data = json_encode($retorno);
+		}
+		echo $data;
 	}
 
 	function instalar(){
