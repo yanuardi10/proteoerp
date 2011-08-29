@@ -16,4 +16,7 @@ class Common extends controller {
 		return $this->datasis->damerow($sql);
 	}
 
+	//Para el autocomplete
+	function _automgas(){
+	}
 }

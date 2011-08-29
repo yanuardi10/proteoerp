@@ -14,7 +14,11 @@ $campos='<tr id="tr_gitser_<#i#>"><td class="littletablerow">'.join('</td><td>',
 $campos.=' <td class="littletablerow"><a href=\'#\' onclick="del_gitser(<#i#>);return false;">Eliminar</a></td></tr>';
 $campos=$form->js_escape($campos);
 
-foreach($form->detail_fields['gereten'] AS $ind=>$data){ if(!empty($data['field'])) $ggereten[]=$data['field']; }
+foreach($form->detail_fields['gereten'] AS $ind=>$data){
+	if(!empty($data['field'])){
+		$ggereten[]=$data['field'];
+	}
+}
 $cgereten='<tr id="tr_gereten_<#i#>"><td class="littletablerow">'.join('</td><td>',$ggereten).'</td>';
 $cgereten.=' <td class="littletablerow"><a href=\'#\' onclick="del_gereten(<#i#>);return false;">Eliminar</a></td></tr>';
 $cgereten=$form->js_escape($cgereten);
@@ -272,6 +276,56 @@ function del_gitser(id){
 	$(obj).remove();
 	totalizar();
 }
+
+//Agrega el autocomplete
+function autocod(id){
+	$('#codigo_'+id).autocomplete({
+		source: function( req, add){
+			$.ajax({
+				url:  "<?php echo site_url('finanzas/gser/codigo'); ?>",
+				type: "POST",
+				dataType: "json",
+				data: "q="+req.term,
+				success:
+					function(data){
+						var sugiere = [];
+						$.each(data,
+							function(i, val){
+								sugiere.push( val );
+							}
+						);
+						add(sugiere);
+					},
+			})
+		},
+		minLength: 2,
+		select: function( event, ui ) {
+			//id='0';
+			$('#codigo_'+id).val(ui.item.codigo);
+			$('#desca_'+id).val(ui.item.descrip);
+			$('#precio1_'+id).val(ui.item.base1);
+			$('#precio2_'+id).val(ui.item.base2);
+			$('#precio3_'+id).val(ui.item.base3);
+			$('#precio4_'+id).val(ui.item.base4);
+			$('#itiva_'+id).val(ui.item.iva);
+			$('#sinvtipo_'+id).val(ui.item.tipo);
+			$('#sinvpeso_'+id).val(ui.item.peso);
+			$('#pond_'+id).val(ui.item.pond);
+			$('#ultimo_'+id).val(ui.item.ultimo);
+			$('#cana_'+id).val('1');
+			$('#cana_'+id).focus();
+			$('#cana_'+id).select();
+
+			var arr  = $('#preca_'+ind);
+			var tipo = Number($("#sclitipo").val()); if(tipo>0) tipo=tipo-1;
+			cdropdown(id);
+			cdescrip(id);
+			jQuery.each(arr, function() { this.selectedIndex=tipo; });
+			importe(id);
+			totalizar();
+		}
+	});
+}
 </script>
 <?php } else { ?>
 <script language="javascript" type="text/javascript">
@@ -446,7 +500,7 @@ function toggle() {
 		</td>
 
 	</tr>
-	>?php }; ?>
+
 	<tr>
 		<td align='center'>
 			<table width='100%'><tr><td valign='top'>

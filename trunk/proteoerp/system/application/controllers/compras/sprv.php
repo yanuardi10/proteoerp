@@ -4,11 +4,12 @@ class Sprv extends validaciones {
 	function sprv(){
 		parent::Controller();
 		$this->load->library('rapyd');
+		$this->load->library('pi18n');
 		$this->datasis->modulo_id(206,1);
 	}
 
 	function index(){
-		if($this->pi18n=='COLOMBIA'){
+		if($this->pi18n->pais=='COLOMBIA'){
 			redirect('compras/sprvcol/filteredgrid');
 		}else{ 
 			redirect('compras/sprv/filteredgrid');
