@@ -15,7 +15,7 @@ class Scli extends validaciones {
 	}
 
 	function index(){
-		if($this->pi18n=='COLOMBIA'){
+		if($this->pi18n->pais=='COLOMBIA'){
 			redirect('ventas/sclicol/filteredgrid');
 		}else{
 			redirect('ventas/scli/filteredgrid');

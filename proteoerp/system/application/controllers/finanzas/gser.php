@@ -5,12 +5,17 @@ class gser extends Controller {
 		parent::Controller();
 		$this->load->library('rapyd');
 		$this->mcred='_CR';
+		$this->load->library('pi18n');
 		$this->datasis->modulo_id('518',1);
 		$this->instalar();
 	}
 
 	function index() {
-		redirect('finanzas/gser/filteredgrid');
+		if($this->pi18n->pais=='COLOMBIA'){
+			redirect('finanzas/gsercol/filteredgrid');
+		}else{ 
+			redirect('finanzas/gser/filteredgrid');
+		}
 	}
 
 	function filteredgrid(){
@@ -20,16 +25,16 @@ class gser extends Controller {
 		$filter = new DataFilter('Filtro de Gastos','gser');
 
 		$filter->fechad = new dateonlyField('Desde', 'fechad','d/m/Y');
-		$filter->fechad->clause  =$filter->fechah->clause ='where';
 		$filter->fechad->db_name ='fecha';
 		$filter->fechad->operator='>=';
 		$filter->fechad->group = 'UNO';
 
 		$filter->fechah = new dateonlyField('Hasta', 'fechah','d/m/Y');
 		$filter->fechah->db_name='fecha';
-		$filter->fechah->size=$filter->fechad->size=10;
 		$filter->fechah->operator='<=';
 		$filter->fechah->group = 'UNO';
+		$filter->fechad->clause = $filter->fechah->clause ='where';
+		$filter->fechah->size   = $filter->fechad->size=10;
 
 		$filter->tipo_doc = new inputField('Tipo', 'tipo_doc');
 		$filter->tipo_doc->db_name = 'tipo_doc';
@@ -1655,7 +1660,7 @@ function gserfiscal(mid){
 		$data['content'] =  $this->load->view('view_gser', $conten,true);
 		$data['smenu']   =  $this->load->view('view_sub_menu', $smenu,true);
 		$data['title']   =  heading('Registro de Gastos o Nota de D&eacute;bito');
-		$data['head']    = 	script('jquery-ui.js').
+		$data['head']    = 	script('jquery.js').script('jquery-ui.js').
 					script("plugins/jquery.numeric.pack.js").
 					script('plugins/jquery.meiomask.js').
 					style('vino/jquery-ui.css').

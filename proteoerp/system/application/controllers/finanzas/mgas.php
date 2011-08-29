@@ -5,13 +5,18 @@ class Mgas extends validaciones {
 
 	function mgas(){
 		parent::Controller(); 
-		$this->load->library("rapyd");
+		$this->load->library('rapyd');
+		$this->load->library('pi18n');
 		gser::instalar();
 	}
 
 	function index(){
 		$this->datasis->modulo_id(501,1);
-		redirect("finanzas/mgas/filteredgrid");
+		if($this->pi18n->pais=='COLOMBIA'){
+			redirect('finanzas/mgascol/filteredgrid');
+		}else{
+			redirect('finanzas/mgas/filteredgrid');
+		}
 	}
 
 	function filteredgrid(){

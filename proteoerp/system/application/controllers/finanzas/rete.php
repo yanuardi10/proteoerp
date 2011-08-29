@@ -7,22 +7,19 @@
    
    function rete (){
 	  parent::Controller(); 
-	  //required helpers for samples
-	  $this->load->helper('url');
-	  $this->load->helper('text');
 	  $this->load->library('pi18n');
-	  //rapyd library
 	  $this->load->library("rapyd");
-	  define ("THISFILE",   APPPATH."controllers/nomina". $this->uri->segment(2).EXT);
+   }
    
    function index(){
 	  $this->datasis->modulo_id(515,1);
-	  if($this->pi18n=='COLOMBIA'){
+	  if($this->pi18n->pais=='COLOMBIA'){
 		 redirect('finanzas/retecol/filteredgrid');
 	  }else{ 
 		 redirect("finanzas/rete/filteredgrid");
 	  }
    }
+
    function filteredgrid(){
 	  $this->rapyd->load("datafilter","datagrid");
 	  $this->rapyd->uri->keep_persistence();
@@ -158,6 +155,6 @@
 		 $mSQL="ALTER TABLE rete CHANGE COLUMN tipocol tipocol CHAR(2) NULL DEFAULT '0.0' COLLATE 'utf8_unicode_ci' AFTER cuenta, ADD COLUMN ut DECIMAL(12,2) NULL DEFAULT NULL AFTER tipocol";
 		 $this->db->simple_query($mSQL);
 	  }
-	  }
    }
+}
 ?>
