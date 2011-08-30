@@ -11,11 +11,11 @@ class Mgascol extends validaciones {
 
 	function index(){
 		$this->datasis->modulo_id(501,1);
-		redirect("finanzas/mgascol/filteredgrid");
+		redirect('finanzas/mgascol/filteredgrid');
 	}
 
 	function filteredgrid(){
-		$this->rapyd->load("datafilter","datagrid");
+		$this->rapyd->load('datafilter','datagrid');
 		$this->rapyd->uri->keep_persistence();
 
 		$modbus=array(
@@ -30,9 +30,9 @@ class Mgascol extends validaciones {
 
 		$boton=$this->datasis->modbus($modbus);
 
-		$filter = new DataFilter("Filtro Maestro de Gastos", 'mgas');
+		$filter = new DataFilter('Filtro Maestro de Gastos', 'mgas');
 
-		$filter->codigo = new inputField("C&oacute;digo", "codigo");
+		$filter->codigo = new inputField('C&oacute;digo', 'codigo');
 		$filter->codigo->size=10;
 		$filter->codigo->group = 'UNO';
 
@@ -41,10 +41,10 @@ class Mgascol extends validaciones {
 		$filter->cuenta->like_side='after';
 		$filter->cuenta->group = 'UNO';
 
-		$filter->descrip = new inputField("Descripci&oacute;n", "descrip");
+		$filter->descrip = new inputField('Descripci&oacute;n', 'descrip');
 		$filter->descrip->size=20;
 		$filter->descrip->group = 'DOS';
-		
+
 		$filter->grupo = new inputField("Grupo", "grupo");
 		$filter->grupo->size=10;
 		$filter->grupo->append($boton);
@@ -64,19 +64,21 @@ class Mgascol extends validaciones {
 		$grid->column_orderby("Descripci&oacute;n","descrip",'descrip');
 		$grid->column_orderby("Grupo","grupo",'grupo');
 		$grid->column_orderby('Nombre del Grupo','nom_grup','nom_grup');
+		$grid->column_orderby('Ret.Per.Nat','reten','reten');
+		$grid->column_orderby('Ret.Per.Jur','reten','retej');
 
-		$grid->add("finanzas/mgascol/dataedit/create");
+		$grid->add('finanzas/mgascol/dataedit/create');
 		$grid->build();
 
-		$data['filtro'] = $filter->output;
+		$data['filtro']  = $filter->output;
 		$data['content'] = $grid->output;
-		$data['title']   = "<h1>Maestro de Gastos</h1>";
+		$data['title']   = '<h1>Maestro de Gastos</h1>';
 		$data["head"]    = $this->rapyd->get_head();
-		$this->load->view('view_ventanas', $data);	
+		$this->load->view('view_ventanas', $data);
 	}
 
 	function dataedit(){
-		$this->rapyd->load("dataedit");
+		$this->rapyd->load('dataedit');
 		$link=site_url('finanzas/mgas/ultimo');
 
 		$script ='
@@ -118,9 +120,9 @@ class Mgascol extends validaciones {
 				'screenx'   =>'5',
 				'screeny'   =>'5');
 
-		$edit = new DataEdit("Maestro de Gastos", "mgas");
-		$edit->script($script, "create");
-		$edit->script($script, "modify");
+		$edit = new DataEdit('Maestro de Gastos', 'mgas');
+		$edit->script($script, 'create');
+		$edit->script($script, 'modify');
 		$edit->back_url = site_url("finanzas/mgascol/filteredgrid");
 
 		$ultimo='<a href="javascript:ultimo();" title="Consultar ultimo codigo ingresado" onclick="">Consultar ultimo codigo</a>';
@@ -201,10 +203,10 @@ class Mgascol extends validaciones {
 		$edit->fraccion->group = 'Existencias';
 		$edit->fraccion->size = 5;
 
-		$edit->rica= new dropdownField("Impuesto Ind.Com.", "rica");
+		$edit->rica= new dropdownField('Impuesto Ind.Com.', 'rica');
 		$edit->rica->option('','Ninguno');
 		$edit->rica->options('SELECT codigo, CONCAT(codigo," - ",aplica) aplica FROM rica order by aplica');
-		$edit->rica->style ="width:250px;";
+		$edit->rica->style ='width:250px;';
 		//$edit->grupo->onchange ="grupo();";
 
 		$edit->reten= new dropdownField("Retenci&oacute;n Persona Natural.", "reten");
@@ -228,7 +230,7 @@ class Mgascol extends validaciones {
 		$conten["form"]  =&  $edit;
 		$data['content'] = $this->load->view('view_mgascol', $conten,true);
 		$data["head"]    =script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
-		
+
 		//$data["head"]    =script("tabber.js").script("prototype.js").script("sinvmaes.js").script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
 		$data['title']   = '<h1>Maestro de Gasto</h1>';
 		$this->load->view('view_ventanas', $data);

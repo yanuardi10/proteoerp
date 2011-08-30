@@ -9,9 +9,8 @@ else:
 
 $tipo_rete=$this->datasis->traevalor('CONTRIBUYENTE');
 
-//$fields=$form->detail_fields['gitser'];
 foreach($form->detail_fields['gitser'] AS $ind=>$data) $campos[]=$data['field'];
-$campos ='<tr id="tr_gitser_<#i#>"><td class="littletablerow">'.join('</td><td>',$campos).'</td>';
+$campos='<tr id="tr_gitser_<#i#>"><td class="littletablerow">'.join('</td><td>',$campos).'</td>';
 $campos.=' <td class="littletablerow"><a href=\'#\' onclick="del_gitser(<#i#>);return false;">Eliminar</a></td></tr>';
 $campos=$form->js_escape($campos);
 
@@ -184,6 +183,7 @@ function add_gitser(){
 	$("#__UTPL__").before(htm);
 	$("#departa_"+can).val(departa);
 	$("#sucursal_"+can).val(sucursal);
+	autocod(gitser_cont);
 	gitser_cont=gitser_cont+1;
 }
 
@@ -300,20 +300,11 @@ function autocod(id){
 					},
 			})
 		},
-		minLength: 2,
+		minLength: 1,
 		select: function( event, ui ) {
 			//id='0';
 			$('#codigo_'+id).val(ui.item.codigo);
 			$('#descrip_'+id).val(ui.item.descrip);
-
-
-			/*var arr  = $('#preca_'+ind);
-			var tipo = Number($("#sclitipo").val()); if(tipo>0) tipo=tipo-1;
-			cdropdown(id);
-			cdescrip(id);
-			jQuery.each(arr, function() { this.selectedIndex=tipo; });
-			importe(id);
-			totalizar();*/
 		}
 	});
 }
@@ -324,9 +315,9 @@ function toggle() {
 	var ele = document.getElementById("asociados");
 	var text = document.getElementById("mostrasocio");
 	if(ele.style.display == "block") {
-    		ele.style.display = "none";
+		ele.style.display = "none";
 		text.innerHTML = "Mostrar Complementos ";
-  	}
+	}
 	else {
 		ele.style.display = "block";
 		text.innerHTML = "Ocultar Complementos";
@@ -402,20 +393,22 @@ function toggle() {
 				$obj7 ="departa_$i";
 				$obj8 ="sucursal_$i";
 				$obj11="tasaiva_$i";
-				$obj12="retebase1_$i";
-				$obj13="retetari1_$i";
-				$obj14="retepama1_$i";
-				$obj15="reteactivida_$i";
+
+				if($form->_status=='show'){
+					$ivaval=nformat(round($form->$obj4->value/$form->$obj3->value,2)*100,2);
+				}else{
+					$ivaval=$form->$obj11->output;
+				}
 			?>
 			<tr id='tr_gitser_<?=$i ?>'>
 				<td class="littletablerow" nowrap><?php echo $form->$obj1->output ?></td>
 				<td class="littletablerow">       <?php echo $form->$obj2->output ?></td>
 				<td class="littletablerow" align="right"><?php echo $form->$obj3->output  ?></td>
-				<td class="littletablerow" align="right"><?php echo $form->$obj11->output ?></td>
+				<td class="littletablerow" align="right"><?php echo $ivaval ?></td>
 				<td class="littletablerow" align="right"><?php echo $form->$obj4->output  ?></td>
 				<td class="littletablerow" align="right"><?php echo $form->$obj5->output  ?></td>
 				<td class="littletablerow"><?php echo $form->$obj7->output  ?></td>
-				<td class="littletablerow"><?php echo $form->$obj8->output.$form->$obj12->output.$form->$obj13->output.$form->$obj14->output.$form->$obj15->output  ?></td>
+				<td class="littletablerow"><?php echo $form->$obj8->output  ?></td>
 				
 				<?php if($form->_status!='show') {?>
 					<td class="littletablerow"><a href='#' onclick='del_gitser(<?php echo $i; ?>);return false;'>Eliminar</a></td>
@@ -449,6 +442,9 @@ function toggle() {
 		<?php } ?>
 		</td>
 	</tr>
+
+	<?php if($form->_status!='create'){ ?>
+
 	<?php if ($form->max_rel_count['gereten']>0); ?>
 	<tr>
 		<td>
@@ -489,6 +485,9 @@ function toggle() {
 		<?php if( $form->_status != 'show') {?>
 			<input name="btn_add_gereten" value="Agregar Retenciones " onclick="add_gereten()" class="button" type="button">
 		<?php } ?>
+
+		<?php } ?>
+
 		<?php echo $form_end     ?>
 		<?php //echo $container_bl ?>
 		<?php //echo $container_br ?>
@@ -547,7 +546,8 @@ function toggle() {
 			</td></tr></table>
 		</td>
 	</tr>
-
+	
+	
 	<?php if($form->_status == 'show'){ ?>
 	<tr>
 		<td>
