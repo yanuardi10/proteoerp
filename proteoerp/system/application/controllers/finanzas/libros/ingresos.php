@@ -88,17 +88,20 @@ class ingresos{
 
 		// RETENCIONES DE IVA
 		$mSQL = "SELECT b.fecha, a.numero, c.nombre, c.rifci, a.cod_cli,
-					a.numero AS afecta, a.fecha AS fafecta, sum(a.reteiva) reteiva, a.transac, a.nroriva, a.emiriva, if(a.recriva IS NULL, a.estampa, a.recriva) recriva 
-				FROM itccli AS a JOIN smov AS b ON a.transac=b.transac 
-					LEFT JOIN scli AS c ON a.cod_cli=c.cliente 
+					a.numero AS afecta, a.fecha AS fafecta, (a.reteiva) reteiva, a.transac, a.nroriva, a.emiriva, 
+					if(a.recriva IS NULL, a.estampa, a.recriva) recriva, d.nfiscal
+				FROM itccli AS a 
+				JOIN smov AS b ON a.transac=b.transac 
+				LEFT JOIN scli AS c ON a.cod_cli=c.cliente 
+				JOIN sfac AS d ON a.numero=d.numero AND d.tipo_doc='F'
 				WHERE  b.fecha<=$fhasta AND b.cod_cli='REIVA' 
 					AND a.reteiva>0 AND b.monto>b.abonos 
 					AND b.fecha BETWEEN $fdesde AND $fhasta
-				GROUP BY a.nroriva,a.cod_cli
 				UNION 
 				SELECT b.fecha, a.numero, 'OJO LLENE DATOS', 'OJO', '',
-					'' AS afecta, 0 AS fafecta, b.monto-b.abonos, a.transac, a.numero, a.fecha, a.fecha 
+					'' AS afecta, 0 AS fafecta, b.monto-b.abonos, a.transac, a.numero, a.fecha, a.fecha,d.nfiscal
 				FROM smov AS b JOIN prmo AS a ON a.transac=b.transac 
+				JOIN sfac AS d ON a.numero=d.numero AND d.tipo_doc='F'
 				WHERE b.fecha BETWEEN $fdesde AND $fhasta AND b.cod_cli='REIVA' 
 				AND b.monto>b.abonos";
 		$query = $this->db->query($mSQL);
@@ -133,6 +136,7 @@ class ingresos{
 					comprobante = '',
 					fecharece = '".$row->recriva."',
 					fechal  = ".$mes."01, 
+					nfiscal = ".$this->db->escape($row->nfiscal).",
 					fafecta = ".$this->db->escape($row->fafecta).",
 					afecta  = ".$this->db->escape($row->afecta);
 
