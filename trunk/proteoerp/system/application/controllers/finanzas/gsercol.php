@@ -8,6 +8,28 @@ class gsercol extends Controller {
 		$this->load->library('pi18n');
 		$this->datasis->modulo_id('518',1);
 		$this->instalar();
+		
+		//[vendedor][comprador]
+		$this->contribu['SIMPLE']['SIMPLE']='';
+		$this->contribu['SIMPLE']['COMUN'] ='';
+		$this->contribu['SIMPLE']['GRAN']  ='';
+		$this->contribu['SIMPLE']['AUTO']  ='';
+
+		$this->contribu['COMUN']['SIMPLE'] ='SIMPLE,ICA,FUENTE';
+		$this->contribu['COMUN']['COMUN']  ='FUENTE';
+		$this->contribu['COMUN']['GRAN']   ='FUENTE';
+		$this->contribu['COMUN']['AUTO']   ='';
+
+		$this->contribu['GRAN']['SIMPLE']  ='SIMPLE,ICA,FUENTE';
+		$this->contribu['GRAN']['COMUN']   ='FUENTE,IVA';
+		$this->contribu['GRAN']['GRAN']    ='FUENTE';
+		$this->contribu['GRAN']['AUTO']    ='';
+
+		$this->contribu['AUTO']['SIMPLE']  ='SIMPLE,ICA,FUENTE';
+		$this->contribu['AUTO']['COMUN']   ='FUENTE,IVA,ICA';
+		$this->contribu['AUTO']['GRAN']    ='FUENTE';
+		$this->contribu['AUTO']['AUTO']    ='';
+		
 	}
 
 	function index() {
@@ -1840,7 +1862,10 @@ function gserfiscal(mid){
 		$numero  = $do->get('numero');
 		$nfiscal = $do->get('nfiscal');
 		$tipo_doc= $do->get('tipo_doc');
-		$monto1  = (empty($do->get('monto1'))) ? 0 : $do->get('monto1');
+		$monto1  = $do->get('monto1');
+		if(empty($monto1)){
+			$monto1  = 0;
+		}
 		//$cheque1= $do->get('cheque1');
 		$_tipo=common::_traetipo($codb1);
 
@@ -1923,59 +1948,82 @@ function gserfiscal(mid){
 			$do->set_rel('gitser','iva'    ,$iva        ,$i);
 			$do->set_rel('gitser','importe',$importe,$i);
 
+			$contribu= $this->datasis->traevalor('CONTRIBUYENTE');
+			$tivasprv= $this->datasis->dameval('SELECT tiva FROM sprv WHERE proveed='.$this->db->escape($proveed));
+
+			switch ($tivasprv) {
+				case 'S':
+					$comp='SIMPLE';
+					break;
+				case 'C':
+					$comp='COMUN';
+					break;
+				case 'G':
+					$comp='GRAN';
+					break;
+				case 'A':
+					$comp='AUTO';
+					break;
+			}
+
+
+			$reteica=$retemonto=0;
 			if($retener){
 				//Retenciones ICA
-				$mmsql="SELECT b.codigo ,a.descrip, b.aplica,b.tasa,b.activi
-					FROM mgas AS a
-					LEFT JOIN rica AS b ON a.rica=b.codigo
-				WHERE a.codigo=".$this->db->escape($codigo)." LIMIT 1";
+				if(substr_count($this->contribu[$contribu][$comp],'ICA')>0){
+					$mmsql="SELECT b.codigo ,a.descrip, b.aplica,b.tasa,b.activi
+						FROM mgas AS a
+						LEFT JOIN rica AS b ON a.rica=b.codigo
+					WHERE a.codigo=".$this->db->escape($codigo)." LIMIT 1";
 
-				$fila=$this->datasis->damerow($mmsql);
-				if(!empty($fila['codigo'])){
-					$itrica = round($precio*($fila['tasa']/1000),2);
-					if($itrica>0){
-						$rica += $itrica;
-						$do->set_rel('gitser','reteica',$itrica,$i);
+					$fila=$this->datasis->damerow($mmsql);
+					if(!empty($fila['codigo'])){
+						$itrica = round($precio*($fila['tasa']/1000),2);
+						if($itrica>0){
+							$rica += $itrica;
+							$do->set_rel('gitser','reteica',$itrica,$i);
+							$reteica+=$itrica;
+						}
 					}
 				}
 				//Fin retenciones ICA
 
 				//Retenciones De la Fuente (Se calcula automatico)
-				$retemonto=0;
-				$tiposprv=$this->datasis->dameval('SELECT tipo FROM sprv WHERE proveed='.$this->db->escape($proveed));
-				$campo= ($tiposprv=='1') ? 'retej': 'reten';
-				$mmsql="SELECT b.codigo ,a.descrip, b.base1,b.tari1,b.activida,b.pama1
-					FROM mgas AS a
-					LEFT JOIN rete AS b ON a.$campo=b.codigo
-				WHERE a.codigo=".$this->db->escape($codigo)." LIMIT 1";
+				if(substr_count($this->contribu[$contribu][$comp],'FUENTE')>0){
+					$tiposprv=$this->datasis->dameval('SELECT tipo FROM sprv WHERE proveed='.$this->db->escape($proveed));
+					$campo= ($tiposprv=='1') ? 'retej': 'reten';
+					$mmsql="SELECT b.codigo ,a.descrip, b.base1,b.tari1,b.activida,b.pama1
+						FROM mgas AS a
+						LEFT JOIN rete AS b ON a.$campo=b.codigo
+					WHERE a.codigo=".$this->db->escape($codigo)." LIMIT 1";
 
-				$fila=$this->datasis->damerow($mmsql);
-				if(!empty($fila['pama1'])){
-					if($precio>=$fila['base1']){
-						$itbase= $precio*($fila['base1']/100);
-						$itret = $itbase*($fila['tari1']/100);
-						if($itret>0){
-							$retemonto += $itret;
+					$fila=$this->datasis->damerow($mmsql);
+					if(!empty($fila['pama1'])){
+						if($precio>=$fila['base1']){
+							$itbase= $precio*($fila['base1']/100);
+							$itret = $itbase*($fila['tari1']/100);
+							if($itret>0){
+								$retemonto += $itret;
 
-							$do->set_rel('gereten','numero'    ,$numero          ,$i);
-							$do->set_rel('gereten','origen'    ,'GSER'           ,$i);
-							$do->set_rel('gereten','codigorete',$fila['codigo']  ,$i);
-							$do->set_rel('gereten','actividad' ,$fila['activida'],$i);
-							$do->set_rel('gereten','base'      ,$itbase          ,$i);
-							$do->set_rel('gereten','porcen'    ,$fila['tari1']   ,$i);
-							$do->set_rel('gereten','monto'     ,$itret           ,$i);
-
+								$do->set_rel('gereten','numero'    ,$numero          ,$i);
+								$do->set_rel('gereten','origen'    ,'GSER'           ,$i);
+								$do->set_rel('gereten','codigorete',$fila['codigo']  ,$i);
+								$do->set_rel('gereten','actividad' ,$fila['activida'],$i);
+								$do->set_rel('gereten','base'      ,$itbase          ,$i);
+								$do->set_rel('gereten','porcen'    ,$fila['tari1']   ,$i);
+								$do->set_rel('gereten','monto'     ,$itret           ,$i);
+							}
 						}
-					}
+					}	
 				}
-				$do->set('reten',$retemonto);
 				//Fin retenciones De la Fuente
 			}
 		}
+		$do->set('reten'  ,$retemonto);
+		$do->set('reteica',$reteica);
 
 		//Calcula la retencion del iva
-		$contribu= $this->datasis->traevalor('CONTRIBUYENTE'); //Puede ser COMUN o GRAN
-		if($contribu=='GRAN'){
+		if(substr_count($this->contribu[$contribu][$comp],'IVA')>0){
 			$prete=$this->datasis->dameval('SELECT reteiva FROM sprv WHERE proveed='.$this->db->escape($proveed));
 			if(empty($prete)) $prete=50;
 			$reteiva=$ivat*$prete/100;
@@ -1986,13 +2034,17 @@ function gserfiscal(mid){
 		//Fin del calculo de la retencion de iva
 
 		//Para las retenciones falsas de IVA solo tiva=S
-		$ivas=$this->datasis->ivaplica();
-		$tivasprv= $this->datasis->dameval('SELECT tiva FROM sprv WHERE proveed='.$this->db->escape($proveed));
-		$rivaprv = $this->datasis->dameval('SELECT reteiva FROM sprv WHERE proveed='.$this->db->escape($proveed));
-		if(empty($rivaprv)) $rivaprv=50;
-		if($tivasprv=='S'){
-			$retesimple=($subt*$ivas['tasa']/100)/(100/$rivaprv);
-			$do->set('retesimple', $retesimple);
+		if(substr_count($this->contribu[$contribu][$comp],'SIMPLE')>0){
+			$ivas=$this->datasis->ivaplica();
+			$tivasprv= $this->datasis->dameval('SELECT tiva FROM sprv WHERE proveed='.$this->db->escape($proveed));
+			$rivaprv = $this->datasis->dameval('SELECT reteiva FROM sprv WHERE proveed='.$this->db->escape($proveed));
+			if(empty($rivaprv)) $rivaprv=50;
+			if($tivasprv=='S'){
+				$retesimple=($subt*$ivas['tasa']/100)/(100/$rivaprv);
+				$do->set('retesimple', $retesimple);
+			}
+		}else{
+			$do->set('retesimple', 0);
 		}
 		//Fin de las retenciones falsas
 

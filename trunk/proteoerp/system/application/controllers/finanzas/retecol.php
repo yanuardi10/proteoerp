@@ -150,7 +150,16 @@
 
 	function chexiste($codigo){
 		$codigo=$this->input->post('codigo');
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM rete WHERE codigo='$codigo'");
+		 if (!$this->db->field_exists('ut','rete')) {
+			$mSQL="ALTER TABLE rete CHANGE COLUMN tipocol tipocol CHAR(2) NULL DEFAULT '0.0' COLLATE 'utf8_unicode_ci' AFTER cuenta, ADD COLUMN ut DECIMAL(12,2) NULL DEFAULT NULL AFTER tipocol";
+			$this->db->simple_query($mSQL);
+		 }
+
+		 if (!$this->db->field_exists('tipocol','rete')) {
+			$mSQL="ALTER TABLE rete ADD COLUMN tipocol CHAR(1) NULL DEFAULT NULL AFTER cuenta";
+			$chek=$this->datasis->dameval("SELECT COUNT(*) FROM rete WHERE codigo='$codigo'");
+		 }
+
 		if ($chek > 0){
 			$activida=$this->datasis->dameval("SELECT activida FROM rete WHERE codigo='$codigo'");
 			$this->validation->set_message('chexiste',"La retencion $codigo ya existe para la actividad $activida");
