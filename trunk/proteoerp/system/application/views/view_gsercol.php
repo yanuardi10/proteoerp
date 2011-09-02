@@ -93,11 +93,14 @@ function islr(){
 
 //Calcula la retencion del iva
 function reteiva(){
+	<?php if($tipo_rete=='GRAN'){ ?>
 	totiva=Number($("#totiva").val());
 	preten=Number($("#sprvreteiva").val());
 	preten=totiva*(preten/100);
-
 	$("#reteiva").val(roundNumber(preten,2));
+	<?php }else{?>
+	$("#reteiva").val(roundNumber(0,2));
+	<?php } ?>
 }
 
 function importe(i){
@@ -106,7 +109,7 @@ function importe(i){
 	iva    = Number($("#tasaiva_"+ind).val());
 	miva   = precio*iva/100;
 	$("#iva_"+ind).val(miva);
-	$("#importe_"+ind).val(precio+miva);
+	$("#importe_"+ind).val(roundNumber(precio+miva,2));
 	totalizar();
 }
 
@@ -469,16 +472,20 @@ function toggle() {
 			?>
 			<tr id='tr_gereten_<?php echo $i; ?>'>
 				<td class="littletablerow" nowrap><?php echo $form->$it_codigorete->output ?></td>
-				<td class="littletablerow"><?php echo $form->$it_base->output      ?></td>
-				<td class="littletablerow"><?php echo $form->$it_porcen->output    ?></td>
-				<td class="littletablerow"><?php echo $form->$it_monto->output     ?></td>
+				<td class="littletablerow" align="right"><?php echo $form->$it_base->output      ?></td>
+				<td class="littletablerow" align="right"><?php echo $form->$it_porcen->output    ?></td>
+				<td class="littletablerow" align="right"><?php echo $form->$it_monto->output     ?></td>
 				<?php if($form->_status!='show') {?>
 					<td class="littletablerow"><a href='#' onclick='del_gereten(<?php echo $i; ?>);return false;'>Eliminar</a></td>
 				<?php }
 			}?>
 			</tr>
 			<tr id='__UTPL__gereten'>
-				<td colspan='9' class="littletableheaderdet">&nbsp;</td>
+				<td colspan='3' class="littletableheaderdet">&nbsp;</td>
+				<td class="littletableheaderdet"  align="right">&nbsp;<?php echo $form->reten->output  ?></td>
+				<?php if($form->_status!='show') {?>
+				<td class="littletableheaderdet">&nbsp;</td>
+				<?php } ?>
 			</tr>
 		</table>
 		</fieldset>
@@ -524,22 +531,38 @@ function toggle() {
 			<legend class="titulofieldset" style='color: #114411;'>Totales</legend>
 			<table width='100%'>
 				<tr>
-					<td class="littletableheader"><?php echo $form->totpre->label    ?>&nbsp;</td>
-					<td class="littletablerow" align='right'>   <?php echo $form->totpre->output   ?>&nbsp;</td>
-					<td class="littletableheader"><?php echo $form->totbruto->label  ?>&nbsp;</td>
-					<td class="littletablerow" align='right'>   <?php echo $form->totbruto->output ?>&nbsp;</td>
+					<td class="littletableheader">           <?php echo $form->reteica->label  ?>&nbsp;</td>
+					<td class="littletablerow" align='right'><?php echo $form->reteica->output ?>&nbsp;</td>
+					<td class="littletableheader">           <?php echo $form->totpre->label   ?>&nbsp;</td>
+					<td class="littletablerow" align='right'><?php echo $form->totpre->output  ?>&nbsp;</td>
 				</tr>
 				<tr>
-					<td class="littletableheader"><?php echo $form->totiva->label   ?>&nbsp;</td>
-					<td class="littletablerow" align='right'>   <?php echo $form->totiva->output  ?>&nbsp;</td>
-					<td class="littletableheader"><?php echo $form->reteiva->label  ?>&nbsp;</td>
-					<td class="littletablerow" align='right'>   <?php echo $form->reteiva->output ?>&nbsp;</td>
+					<td class="littletableheader">           &nbsp;</td>
+					<td class="littletablerow" align='right'>&nbsp;</td>
+					<td class="littletableheader">           <?php echo $form->totbruto->label  ?>&nbsp;</td>
+					<td class="littletablerow" align='right'><?php echo $form->totbruto->output ?>&nbsp;</td>
 				</tr>
 				<tr>
-					<td class="littletableheader"><?php echo $form->credito->label  ?>&nbsp;</td>
-					<td class="littletablerow" align='right'>   <?php echo $form->credito->output ?>&nbsp;</td>
-					<td class="littletableheader"><?php echo $form->totneto->label  ?>&nbsp;</td>
-					<td class="littletablerow" align='right'>   <?php echo $form->totneto->output ?>&nbsp;</td>
+					<td class="littletableheader">           <?php echo $form->totiva->label   ?>&nbsp;</td>
+					<td class="littletablerow" align='right'><?php echo $form->totiva->output  ?>&nbsp;</td>
+					<td class="littletableheader">           <?php echo $form->reteiva->label  ?>&nbsp;</td>
+					<td class="littletablerow" align='right'><?php
+						if($form->_status=='show'){
+							if($form->retesimple->value>0){
+								echo '<b style=\'color:red;\'>'.$form->retesimple->value.'</b>';
+							}else{
+								echo $form->reteiva->output;
+							}
+						}else{
+							echo $form->reteiva->output;
+						}
+					?>&nbsp;</td>
+				</tr>
+				<tr>
+					<td class="littletableheader">           <?php echo $form->credito->label  ?>&nbsp;</td>
+					<td class="littletablerow" align='right'><?php echo $form->credito->output ?>&nbsp;</td>
+					<td class="littletableheader">           <?php echo $form->totneto->label  ?>&nbsp;</td>
+					<td class="littletablerow" align='right'><?php echo $form->totneto->output ?>&nbsp;</td>
 				</tr>
 			</table>
 			</fieldset>
