@@ -465,6 +465,10 @@ class Invfis extends Controller {
 			LEFT JOIN itsinv b ON a.codigo=b.codigo AND b.alma=${dbalma}";
 			$ban=$this->db->simple_query($mSQL);
 			if(!$ban){ $error.='Error llenando la tabla parcial '; memowrite($mSQL,'INVFIS'); }
+			
+			$mSQL="UPDATE sitems SET despacha='S' WHERE tipoa='D'";
+			$ban=$this->db->simple_query($mSQL);
+			if(!$ban){ $error.='Error colocando las devoluciones como despachados '; memowrite($mSQL,'INVFIS'); }
 
 			$mSQL="CREATE TEMPORARY TABLE `tem${tabla}` SELECT c.codigoa,SUM(IF(c.tipoa='D',-1,1)*c.cana) AS cana 
 			FROM sitems AS c
