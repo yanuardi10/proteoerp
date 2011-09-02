@@ -96,7 +96,7 @@ class ingresos{
 				JOIN sfac AS d ON a.numero=d.numero AND d.tipo_doc='F'
 				WHERE  b.fecha<=$fhasta AND b.cod_cli='REIVA' 
 					AND a.reteiva>0 AND b.monto>b.abonos 
-					AND b.fecha BETWEEN $fdesde AND $fhasta
+					AND b.fecha BETWEEN $fdesde AND $fhasta AND a.nroriva IS NOT NULL
 				UNION 
 				SELECT b.fecha, a.numero, 'OJO LLENE DATOS', 'OJO', '',
 					'' AS afecta, 0 AS fafecta, b.monto-b.abonos, a.transac, a.numero, a.fecha, a.fecha,d.nfiscal
