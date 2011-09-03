@@ -1556,6 +1556,13 @@ function gserfiscal(mid){
 		$edit->reteiva->css_class='inputnum';
 		//$edit->reteiva->onkeyup="reteiva()";
 
+		$edit->reteica = new inputField("Ret. ICA","reteica");
+		$edit->reteica->size = 10;
+		$edit->reteica->maxlength=10;
+		//$edit->reteica->rule = 'callback_chreteiva';
+		$edit->reteica->css_class='inputnum';
+		$edit->reteica->when=array('show');
+
 		$edit->totneto = new inputField("Neto","totneto");
 		$edit->totneto->size = 10;
 		$edit->totneto->maxlength=10;
@@ -1964,6 +1971,8 @@ function gserfiscal(mid){
 				case 'A':
 					$comp='AUTO';
 					break;
+				default:
+					$comp='COMUN';
 			}
 
 
