@@ -88,9 +88,10 @@ class objField {
   // configurations
   var $config = array("optionSerializeSeparator" => "|");
   var $output = "";
-	var $pointer=false; //indica si es un apuntador
-  
+  var $pointer=false; //indica si es un apuntador
+
   var $ind=-1; //indice al cual pertenece en caso de una relacion 1:n
+  var $showformat=null; //Puede ser numeric;4
 
  /**
   * PHP4 constructor.
@@ -410,8 +411,11 @@ class objField {
 
     switch ($this->status){
       case "show":
-  
-        $output = $this->value;
+       if(substr_count($this->showformat,'decimal')>0){
+          $output = nformat($this->value);
+        }else{
+          $output = $this->value;
+        }
         break;
         
       default:
