@@ -1475,25 +1475,30 @@ function gserfiscal(mid){
 		$edit->totpre->size = 10;
 		$edit->totpre->css_class='inputnum';
 		$edit->totpre->readonly = true;
+		$edit->totpre->showformat ='decimal'; 
 
 		$edit->totbruto= new inputField("Total", "totbruto");
 		$edit->totbruto->size = 10;
 		$edit->totbruto->css_class='inputnum';
 		$edit->totbruto->onkeyup="valida(0)";
+		$edit->totbruto->showformat ='decimal'; 
 
 		$edit->totiva = new inputField("Total IVA", "totiva");
 		$edit->totiva->css_class ='inputnum';
 		$edit->totiva->size      = 10;
+		$edit->totiva->showformat ='decimal'; 
 
 		$edit->reteica = new inputField('Ret. ICA', 'reteica');
 		$edit->reteica->css_class = 'inputnum';
 		$edit->reteica->when      = array('show');
 		$edit->reteica->size      = 10;
+		$edit->reteica->showformat ='decimal'; 
 
 		$edit->retesimple = new inputField('Ret', 'retesimple');
 		$edit->retesimple->css_class = 'inputnum';
 		$edit->retesimple->when      = array('show');
 		$edit->retesimple->size      = 10;
+		$edit->retesimple->showformat ='decimal'; 
 
 		$edit->codb1 = new dropdownField('Caja/Banco','codb1');
 		$edit->codb1->option('','');
@@ -1524,9 +1529,11 @@ function gserfiscal(mid){
 		$edit->monto1->onkeyup="contado()";
 		$edit->monto1->rule = 'condi_required|callback_chmontocontado|positive';
 		$edit->monto1->autocomplete=false;
+		$edit->monto1->showformat ='decimal'; 
 
 		$edit->credito= new inputField("Cr&eacute;dito", "credito");
 		$edit->credito->size = 10;
+		$edit->credito->showformat ='decimal'; 
 		$edit->credito->css_class='inputnum';
 		$edit->credito->onkeyup="ccredito()";
 		$edit->credito->autocomplete=false;
@@ -1547,6 +1554,7 @@ function gserfiscal(mid){
 		$edit->reten->maxlength=10;
 		$edit->reten->css_class='inputnum';
 		$edit->reten->when=array('show');
+		$edit->reten->showformat ='decimal'; 
 		//$edit->reten->onkeyup="valida(0)";
 
 		$edit->reteiva = new inputField("Ret.de IVA","reteiva");
@@ -1554,6 +1562,7 @@ function gserfiscal(mid){
 		$edit->reteiva->maxlength=10;
 		$edit->reteiva->rule = 'callback_chreteiva';
 		$edit->reteiva->css_class='inputnum';
+		$edit->reteiva->showformat ='decimal'; 
 		//$edit->reteiva->onkeyup="reteiva()";
 
 		$edit->reteica = new inputField("Ret. ICA","reteica");
@@ -1568,6 +1577,7 @@ function gserfiscal(mid){
 		$edit->totneto->maxlength=10;
 		$edit->totneto->css_class='inputnum';
 		$edit->totneto->readonly=true;
+		$edit->totneto->showformat ='decimal'; 
 
 		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
 		$edit->estampa = new autoUpdateField('estampa' ,date('Ymd'), date('Ymd'));
@@ -1598,6 +1608,7 @@ function gserfiscal(mid){
 		$edit->precio->rel_id='gitser';
 		$edit->precio->autocomplete=false;
 		$edit->precio->onkeyup="importe(<#i#>)";
+		$edit->precio->showformat ='decimal'; 
 
 		$ivas=$this->datasis->ivaplica();
 		$edit->tasaiva =  new dropdownField("IVA <#o#>", "tasaiva_<#i#>");
@@ -1618,6 +1629,7 @@ function gserfiscal(mid){
 		$edit->iva->size=8;
 		$edit->iva->rule='positive|callback_chretiva';
 		$edit->iva->onkeyup="valida(<#i#>)";
+		$edit->iva->showformat ='decimal'; 
 
 		$edit->importe = new inputField("importe <#o#>", "importe_<#i#>");
 		$edit->importe->db_name='importe';
@@ -1625,6 +1637,7 @@ function gserfiscal(mid){
 		$edit->importe->rel_id   ='gitser';
 		$edit->importe->size=10;
 		$edit->importe->onkeyup="valida(<#i#>)";
+		$edit->importe->showformat ='decimal'; 
 
 		$edit->departa =  new dropdownField("Departamento <#o#>", "departa_<#i#>");
 		$edit->departa->option('','Seleccionar');
@@ -1650,8 +1663,8 @@ function gserfiscal(mid){
 		//*****************************
 		//Campos para el detalle reten
 		//****************************
-		$edit->itorigen = new autoUpdateField('origen','SCST','SCST');
-		$edit->itorigen->rel_id ='gereten';
+		//$edit->itorigen = new autoUpdateField('origen','SCST','SCST');
+		//$edit->itorigen->rel_id ='gereten';
 
 		$edit->codigorete = new dropdownField('','codigorete_<#i#>');
 		$edit->codigorete->option('','Seleccionar');  
@@ -1670,6 +1683,7 @@ function gserfiscal(mid){
 		$edit->base->rel_id    ='gereten';
 		$edit->base->maxlength =10;
 		$edit->base->onkeyup   ='importerete(<#i#>)';
+		$edit->base->showformat ='decimal'; 
 
 		$edit->porcen = new inputField('porcen','porcen_<#i#>');
 		$edit->porcen->db_name='porcen';
@@ -1679,6 +1693,7 @@ function gserfiscal(mid){
 		$edit->porcen->rel_id    ='gereten';
 		$edit->porcen->readonly  = true;
 		$edit->porcen->maxlength =5;
+		$edit->porcen->showformat ='decimal'; 
 
 		$edit->monto = new inputField('monto','monto_<#i#>');
 		$edit->monto->db_name='monto';
@@ -1688,6 +1703,7 @@ function gserfiscal(mid){
 		$edit->monto->size =12;
 		$edit->monto->readonly  = true;
 		$edit->monto->maxlength =8;
+		$edit->monto->showformat ='decimal'; 
 		//*****************************
 		//Fin de campos para detalle
 		//*****************************
@@ -1986,7 +2002,8 @@ function gserfiscal(mid){
 					WHERE a.codigo=".$this->db->escape($codigo)." LIMIT 1";
 
 					$fila=$this->datasis->damerow($mmsql);
-					if(!empty($fila['codigo'])){
+
+					if(!empty($fila['tasa'])){
 						$itrica = round($precio*($fila['tasa']/1000),2);
 						if($itrica>0){
 							$rica += $itrica;
