@@ -47,8 +47,12 @@ class inputField extends objField{
           $output = RAPYD_FIELD_SYMBOL_NULL;
         } elseif ($this->value == ""){
           $output = "";
-        } else {  
-          $output = nl2br(htmlspecialchars($this->value));
+        } else { //echo $this->showformat;
+          if(substr_count($this->showformat,'decimal')>0){
+            $output = nformat($this->value);
+          }else{
+            $output =  nl2br(htmlspecialchars($this->value));
+          }
         }
         break;
 
