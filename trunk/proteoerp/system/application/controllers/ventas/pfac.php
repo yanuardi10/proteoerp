@@ -643,6 +643,35 @@ class pfac extends validaciones{
 		return true;
 	}
 
+	// Busca Clientes para autocomplete
+	function buscascli(){
+		$mid  = $this->input->post('q');
+		$qdb  = $this->db->escape('%'.$mid.'%');
+
+		$data = '{[ ]}';
+		if($mid !== false){
+			$retArray = $retorno = array();
+			$mSQL="SELECT TRIM(nombre) AS nombre, TRIM(rifci) AS rifci, cliente, tipo
+				FROM scli WHERE rifci LIKE ${qdb} OR rifci LIKE ${qdb}
+				ORDER BY rifci LIMIT 10";
+
+			$query = $this->db->query($mSQL);
+			if ($query->num_rows() > 0){
+				foreach( $query->result_array() as  $row ) {
+					$retArray['value']   = $row['rifci'];
+					$retArray['label']   = '('.$row['rifci'].') '.$row['nombre'];
+					$retArray['nombre']  = $row['nombre'];
+					$retArray['cod_cli'] = $row['cliente'];
+					$retArray['tipo']    = $row['tipo'];
+					array_push($retorno, $retArray);
+				}
+				$data = json_encode($retorno);
+			}
+		}
+		echo $data;
+		return true;
+	}
+
 	function chcodigoa($codigo){
 		$cana=$this->datasis->dameval('SELECT COUNT(*) FROM sinv WHERE activo=\'S\' AND codigo='.$this->db->escape($codigo));
 		if(empty($cana) || $cana==0){

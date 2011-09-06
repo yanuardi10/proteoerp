@@ -390,6 +390,5 @@ class Mgascol extends validaciones {
 			$mSQL="ALTER TABLE mgas ADD COLUMN reten VARCHAR(4) NULL DEFAULT NULL AFTER rica, ADD COLUMN retej VARCHAR(4) NULL DEFAULT NULL AFTER reten";
 			$this->db->simple_query($mSQL);
 		}
-		
 	}
 }

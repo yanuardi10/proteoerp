@@ -33,25 +33,25 @@
 		$grid->order_by("codigo","asc");
 		$grid->per_page = 20;
 
-		$grid->column_orderby("C&oacute;digo" ,$uri,'codigo');
-		$grid->column_orderby("Pago de"       ,"activida",'actividad');
-		$grid->column_orderby("Base Imponible","base1",'base1');
-		$grid->column_orderby("Porcentaje de Retenci&oacute;n","tari1",'tari1');
-		$grid->column_orderby("Para pagos mayores a","pama1",'pama1');
-		$grid->column_orderby('Tipo'   ,'tipo'  ,'tipo' );
-		$grid->column_orderby('Renta'  ,'renta' ,'renta');
+		$grid->column_orderby('C&oacute;digo' ,$uri        ,'codigo');
+		$grid->column_orderby('Pago de'       ,'activida'  ,'actividad');
+		$grid->column_orderby('Base Imponible','base1'     ,'base1');
+		$grid->column_orderby('Porcentaje de Retenci&oacute;n','tari1','tari1');
+		$grid->column_orderby('Para pagos mayores a','pama1','pama1');
+		$grid->column_orderby('Tipo'   ,'tipo'      ,'tipo' );
+		$grid->column_orderby('Renta'  ,'tipocol'   ,'tipocol');
 
 		$grid->add('finanzas/retecol/dataedit/create');
 		$grid->build();
 
 		$data['content'] = $filter->output.$grid->output;
-		$data['title']   = "<h1>Retenciones</h1>";
+		$data['title']   = heading('Retenciones');
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 
 	function dataedit(){
-		$this->rapyd->load("dataedit");
+		$this->rapyd->load('dataedit');
 
 		$script ='
 		$(function() {
