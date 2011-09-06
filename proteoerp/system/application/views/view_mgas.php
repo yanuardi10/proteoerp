@@ -28,23 +28,23 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 			</tr>
 			<tr>
 				<td class="littletableheaderc"><?=$form->descrip->label ?></td>
-				<td  class="littletablerow"><?=$form->descrip->output ?></td>
+				<td  class="littletablerow">   <?=$form->descrip->output ?></td>
 			</tr>	
 			<tr>
 				<td class="littletableheaderc"><?=$form->tipo->label ?></td>
-				<td  class="littletablerow"><?=$form->tipo->output?></td>
+				<td  class="littletablerow">   <?=$form->tipo->output?></td>
 			</tr>
 			<tr>
 				<td class="littletableheaderc"><?=$form->grupo->label    ?></td>
-				<td  class="littletablerow"><?=$form->grupo->output?></td>
+				<td  class="littletablerow">   <?=$form->grupo->output?></td>
 			</tr>
 			<tr>
 				<td class="littletableheaderc"><?=$form->medida->label  ?></td>
-				<td class="littletablerow"><?=$form->medida->output ?></td>
+				<td class="littletablerow">    <?=$form->medida->output ?></td>
 			</tr>
 			<tr>
 				<td class="littletableheaderc"><?=$form->cuenta->label ?></td>
-				<td  class="littletablerow" ><?=$form->cuenta->output." "; ?>
+				<td  class="littletablerow" >  <?=$form->cuenta->output." "; ?>
 				<?php
 					if ( $form->_status == 'show' ) {
 						$mSQL = "SELECT descrip FROM cpla WHERE codigo='".trim($form->cuenta->output)."'";
@@ -85,15 +85,15 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 			<table style="height: 100%;width: 100%">
 				<tr>
 					<td class="littletableheaderc"><?=$form->fraxuni->label  ?></td>
-					<td class="littletablerow"><?=$form->fraxuni->output ?></td>
+					<td class="littletablerow">    <?=$form->fraxuni->output ?></td>
 				</tr>
 				<tr>
-					<td width="160" class="littletableheaderc"> <?=$form->minimo->label ?> </td>
-					<td class="littletablerow"> <?=$form->minimo->output ?> </td>
+					<td width="160" class="littletableheaderc"><?=$form->minimo->label ?> </td>
+					<td class="littletablerow">                <?=$form->minimo->output ?> </td>
 				</tr>
 				<tr>
 					<td class="littletableheaderc"><?=$form->maximo->label  ?></td>
-					<td class="littletablerow"><?=$form->maximo->output ?></td>
+					<td class="littletablerow">    <?=$form->maximo->output ?></td>
 				</tr>
 			</table>
 			</fieldset>
@@ -106,28 +106,28 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 			<table style="height: 100%;width: 100%" >
 				<tr>
 					<td class="littletableheaderc"><?=$form->unidades->label  ?></td>
-					<td class="littletablerow"><?=$form->unidades->output ?></td>
-					<td class="littletableheaderc"> <?=$form->fraccion->label ?> </td>
-					<td class="littletablerow"> <?=$form->fraccion->output ?> </td>
+					<td class="littletablerow">    <?=$form->unidades->output ?></td>
+					<td class="littletableheaderc"><?=$form->fraccion->label  ?></td>
+					<td class="littletablerow">    <?=$form->fraccion->output ?></td>
 				</tr>
 			</table>
 		</td>
 	</tr>
-        <?php if ( $this->datasis->traevalor('PAIS') == 'COLOMBIA' ) { ?>
+
 	<tr>
 		<td colspan='2'>
 			<fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
-			<legend class="titulofieldset" style='color: #114411;' >Retencion</legend>
+			<legend class="titulofieldset" style='color: #114411;'>Retenci&oacute;n a aplicar</legend>
 			<table style="height: 100%;width: 100%" >
 				<tr>
-					<td class="littletableheaderc"><?=$form->rica->label   ?></td>
-					<td class="littletablerow"><?=$form->rica->output  ?></td>
+					<td class="littletableheaderc"><?php echo $form->reten->label ; ?></td>
+					<td class="littletablerow">    <?php echo $form->reten->output; ?></td>
+					<td class="littletableheaderc"><?php echo $form->retej->label ; ?></td>
+					<td class="littletablerow">    <?php echo $form->retej->output; ?></td>
 				</tr>
 			</table>
-			</fieldset>
 		</td>
 	</tr>
-	<?php }; ?>
 	<tr>
 		<td valign="top" colspan='2'><?=$form->almacenes->output ?>	</td>
 	</tr>
