@@ -1362,7 +1362,7 @@ function gserfiscal(mid){
 			$this->db->simple_query($query);
 
 
-		$modbus=array(
+		/*$modbus=array(
 			'tabla'   => 'mgas',
 			'columnas'=> array(
 			'codigo'  => 'C&oacute;digo',
@@ -1372,7 +1372,7 @@ function gserfiscal(mid){
 			'p_uri'   => array(4=>'<#i#>'),
 			'titulo'  => 'Buscar Articulo',
 			'script'  => array('lleva(<#i#>)'));
-		$btn=$this->datasis->p_modbus($modbus,'<#i#>');
+		$btn=$this->datasis->p_modbus($modbus,'<#i#>');*/
 
 		$mSPRV=array(
 			'tabla'   =>'sprv',
@@ -1589,7 +1589,7 @@ function gserfiscal(mid){
 		$edit->codigo = new inputField("C&oacute;digo <#o#>", "codigo_<#i#>");
 		$edit->codigo->size=5;
 		$edit->codigo->db_name='codigo';
-		$edit->codigo->append($btn);
+		//$edit->codigo->append($btn);
 		$edit->codigo->rule="required";
 		//$edit->codigo->readonly=true;
 		$edit->codigo->rel_id='gitser';
@@ -1829,8 +1829,6 @@ function gserfiscal(mid){
 		$this->load->view('view_ventanas', $data);
 	}
 
-
-
 	function _pre_mgserupdate($do){
 		$serie   = $do->get('serie');
 		$nnumero = substr($serie,-8);
@@ -1947,15 +1945,38 @@ function gserfiscal(mid){
 				$rete_cana_vacio++;
 			}
 		}
-		if($rete_cana_vacio==$rete_cana) $do->unset_rel('gereten'); //si no hay retencion elimina la relacion
 		$do->set('reten',$retemonto);*/
 		//Fin de las retenciones exepto iva
+		//if($rete_cana_vacio==$rete_cana) $do->unset_rel('gereten'); //si no hay retencion elimina la relacion
 
 		$ivat=$subt=$total=$rica=0;
 		$tasa=$reducida=$sobretasa=$montasa=$monredu=$monadic=$exento=0;
 		$con=$this->db->query("SELECT tasa,redutasa,sobretasa FROM civa ORDER BY fecha desc LIMIT 1");
 		$t=$con->row('tasa');$rt=$con->row('redutasa');$st=$con->row('sobretasa');
 		$cana=$do->count_rel("gitser");
+
+		$tivasprv= $this->datasis->dameval('SELECT tiva FROM sprv WHERE proveed='.$this->db->escape($proveed));
+		$rivaprv = $this->datasis->dameval('SELECT reteiva FROM sprv WHERE proveed='.$this->db->escape($proveed));
+		$tiposprv= $this->datasis->dameval('SELECT tipo FROM sprv WHERE proveed='.$this->db->escape($proveed));
+		$contribu= $this->datasis->traevalor('CONTRIBUYENTE');
+		$campo= ($tiposprv=='1') ? 'retej': 'reten';
+
+		switch ($tivasprv) {
+			case 'S':
+				$comp='SIMPLE';
+				break;
+			case 'C':
+				$comp='COMUN';
+				break;
+			case 'G':
+				$comp='GRAN';
+				break;
+			case 'A':
+				$comp='AUTO';
+				break;
+			default:
+				$comp='COMUN';
+		}
 
 		for($i=0;$i<$cana;$i++){
 			$codigo = $do->get_rel('gitser','codigo',$i);
@@ -1970,26 +1991,6 @@ function gserfiscal(mid){
 
 			$do->set_rel('gitser','iva'    ,$iva        ,$i);
 			$do->set_rel('gitser','importe',$importe,$i);
-
-			$contribu= $this->datasis->traevalor('CONTRIBUYENTE');
-			$tivasprv= $this->datasis->dameval('SELECT tiva FROM sprv WHERE proveed='.$this->db->escape($proveed));
-
-			switch ($tivasprv) {
-				case 'S':
-					$comp='SIMPLE';
-					break;
-				case 'C':
-					$comp='COMUN';
-					break;
-				case 'G':
-					$comp='GRAN';
-					break;
-				case 'A':
-					$comp='AUTO';
-					break;
-				default:
-					$comp='COMUN';
-			}
 
 
 			$reteica=$retemonto=0;
@@ -2016,8 +2017,6 @@ function gserfiscal(mid){
 
 				//Retenciones De la Fuente (Se calcula automatico)
 				if(substr_count($this->contribu[$contribu][$comp],'FUENTE')>0){
-					$tiposprv=$this->datasis->dameval('SELECT tipo FROM sprv WHERE proveed='.$this->db->escape($proveed));
-					$campo= ($tiposprv=='1') ? 'retej': 'reten';
 					$mmsql="SELECT b.codigo ,a.descrip, b.base1,b.tari1,b.activida,b.pama1
 						FROM mgas AS a
 						LEFT JOIN rete AS b ON a.$campo=b.codigo
@@ -2062,20 +2061,18 @@ function gserfiscal(mid){
 		//Para las retenciones falsas de IVA solo tiva=S
 		if(substr_count($this->contribu[$contribu][$comp],'SIMPLE')>0){
 			$ivas=$this->datasis->ivaplica();
-			$tivasprv= $this->datasis->dameval('SELECT tiva FROM sprv WHERE proveed='.$this->db->escape($proveed));
-			$rivaprv = $this->datasis->dameval('SELECT reteiva FROM sprv WHERE proveed='.$this->db->escape($proveed));
 			if(empty($rivaprv)) $rivaprv=50;
 			if($tivasprv=='S'){
 				$retesimple=($subt*$ivas['tasa']/100)/(100/$rivaprv);
 				$do->set('retesimple', $retesimple);
 			}
 		}else{
-			$do->set('retesimple', 0);
-		}
+			$retesimple=0;
+		}$do->set('retesimple', $retesimple);
 		//Fin de las retenciones falsas
 
 		//Chequea que el monto retenido no sea mayor a la base del gasto
-		if($retemonto+$reteiva+$rica>$subt){
+		if($retemonto+$reteiva+$rica+$retesimple>$subt){
 			$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='Opps!! no se puede cargar un gasto cuyas retenciones sean mayores a la base del mismo.';
 			return false;
 		}
@@ -2143,7 +2140,7 @@ function gserfiscal(mid){
 		}
 		$do->set('negreso' ,$negreso );
 		$do->set('ncausado',$ncausado);
-
+exit();
 		return true;
 	}
 
@@ -2465,23 +2462,52 @@ function gserfiscal(mid){
 
 	function automgas(){
 		$mid   = $this->db->escape('%'.$this->input->post('q').'%');
-		$mSQL  = "SELECT a.codigo, a.descrip
-			FROM mgas AS a
-		WHERE a.codigo LIKE ${mid} OR a.descrip LIKE ${mid} ORDER BY a.descrip LIMIT 10";
-
+		$proveed  = $this->input->post('sprv');
 		$data = '{[ ]}';
-		$query = $this->db->query($mSQL);
-		$retArray = array();
-		$retorno = array();
-		if ($query->num_rows() > 0){
-			foreach( $query->result_array() as  $row ) {
-				$retArray['value']  = $row['codigo'];
-				$retArray['label']  = trim($row['codigo']).' - '.trim($row['descrip']);
-				$retArray['codigo'] = trim($row['codigo']);
-				$retArray['descrip']= trim($row['descrip']);
-				array_push($retorno, $retArray);
+		if(!empty($proveed)){
+			$contribu= $this->datasis->traevalor('CONTRIBUYENTE');
+			$tivasprv= $this->datasis->dameval('SELECT tiva FROM sprv WHERE proveed='.$this->db->escape($proveed));
+
+			$tiposprv=$this->datasis->dameval('SELECT tipo FROM sprv WHERE proveed='.$this->db->escape($proveed));
+			$campo= ($tiposprv=='1') ? 'retej': 'reten';
+
+			switch ($tivasprv) {
+				case 'S':
+					$comp='SIMPLE';
+					break;
+				case 'C':
+					$comp='COMUN';
+					break;
+				case 'G':
+					$comp='GRAN';
+					break;
+				case 'A':
+					$comp='AUTO';
+					break;
+				default:
+					$comp='COMUN';
 			}
-			$data = json_encode($retorno);
+			
+			$mSQL  = "SELECT a.codigo, a.descrip, b.codigo AS retecodigo, b.tari1
+				FROM mgas AS a
+				LEFT JOIN rete AS b ON a.${campo}=b.codigo
+			WHERE a.codigo LIKE ${mid} OR a.descrip LIKE ${mid} ORDER BY a.descrip LIMIT 10";
+
+			$query = $this->db->query($mSQL);
+			$retArray = array();
+			$retorno = array();
+			if ($query->num_rows() > 0){
+				foreach( $query->result_array() as  $row ) {
+					$retArray['value']      = $row['codigo'];
+					$retArray['label']      = trim($row['codigo']).' - '.trim($row['descrip']);
+					$retArray['codigo']     = trim($row['codigo']);
+					$retArray['descrip']    = trim($row['descrip']);
+					$retArray['tari1']      = $row['tari1'];
+					$retArray['retecodigo'] = trim($row['retecodigo']);
+					array_push($retorno, $retArray);
+				}
+				$data = json_encode($retorno);
+			}
 		}
 		echo $data;
 	}

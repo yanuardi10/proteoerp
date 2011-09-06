@@ -439,6 +439,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$edit->codigo->rel_id   = 'itspre';
 		$edit->codigo->rule     = 'required';
 		$edit->codigo->style    = 'width:80%';
+		$edit->codigo->autocomplete=false;
 		$edit->codigo->append($btn);
 
 		$edit->desca = new inputField('Descripci&oacute;n <#o#>', 'desca_<#i#>');
@@ -564,6 +565,35 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
+	}
+
+	// Busca Clientes para autocomplete
+	function buscascli($tipo='rifci'){
+		$mid  = $this->input->post('q');
+		$qdb  = $this->db->escape('%'.$mid.'%');
+
+		$data = '{[ ]}';
+		if($mid !== false){
+			$retArray = $retorno = array();
+			$mSQL="SELECT TRIM(nombre) AS nombre, TRIM(rifci) AS rifci, cliente, tipo
+				FROM scli WHERE rifci LIKE ${qdb} OR cliente LIKE ${qdb}
+				ORDER BY rifci LIMIT 10";
+
+			$query = $this->db->query($mSQL);
+			if ($query->num_rows() > 0){
+				foreach( $query->result_array() as  $row ) {
+					$retArray['value']   = $row[$tipo];
+					$retArray['label']   = '('.$row['rifci'].') '.$row['nombre'];
+					$retArray['nombre']  = $row['nombre'];
+					$retArray['cod_cli'] = $row['cliente'];
+					$retArray['tipo']    = $row['tipo'];
+					array_push($retorno, $retArray);
+				}
+				$data = json_encode($retorno);
+			}
+		}
+		echo $data;
+		return true;
 	}
 
 	// Busca Productos para autocomplete

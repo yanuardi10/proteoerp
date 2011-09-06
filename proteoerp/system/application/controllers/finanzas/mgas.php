@@ -8,6 +8,7 @@ class Mgas extends validaciones {
 		$this->load->library('rapyd');
 		$this->load->library('pi18n');
 		gser::instalar();
+		$this->instalar();
 	}
 
 	function index(){
@@ -75,7 +76,7 @@ class Mgas extends validaciones {
 
 		$data['filtro'] = $filter->output;
 		$data['content'] = $grid->output;
-		$data['title']   = "<h1>Maestro de Gastos</h1>";
+		$data['title']   = heading('Maestro de Gastos');
 		$data["head"]    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);	
 	}
@@ -164,7 +165,7 @@ class Mgas extends validaciones {
 		$edit->cuenta->append($lcuent);
 		$edit->cuenta->readonly=true;
 
-		$edit->iva       = new inputField("Iva", "iva");
+		$edit->iva = new inputField("Iva", "iva");
 		$edit->iva->css_class='inputnum';
 		$edit->iva->size =12;
 		$edit->iva->maxlength =5;
@@ -206,54 +207,16 @@ class Mgas extends validaciones {
 		$edit->fraccion->group = 'Existencias';
 		$edit->fraccion->size = 5;
 
-		$edit->rica= new dropdownField("Impuesto Ind.Com.", "rica");
-		$edit->rica->options('SELECT codigo, CONCAT(codigo," - ",aplica) aplica FROM rica order by aplica');
-		$edit->rica->style ="width:350px;";
-		//$edit->grupo->onchange ="grupo();";
+		$edit->reten= new dropdownField("Retenci&oacute;n Persona Natural.", "reten");
+		$edit->reten->option('','Ninguno');
+		$edit->reten->options('SELECT codigo, CONCAT(codigo," - ",activida) val FROM rete WHERE tipo="NR" ORDER BY codigo');
+		$edit->reten->style ="width:250px;";
 
-/*
-		$edit->tasa1     = new inputField("Tasa1", "tasa1");
-		$edit->tasa1->size = 5;
+		$edit->retej= new dropdownField("Retenci&oacute;n Persona Jur&iacute;dica.", "retej");
+		$edit->retej->option('','Ninguno');
+		$edit->retej->options('SELECT codigo, CONCAT(codigo," - ",activida) val FROM rete WHERE tipo="JD" ORDER BY codigo');
+		$edit->retej->style ="width:250px;";
 
-		$edit->base1     = new inputField("Base1", "base1");
-		$edit->base1->size = 12;
-
-		$edit->desde1    = new inputField("Desde1", "desde1");
-		$edit->desde1->size = 12;
-
-		$edit->tasa2     = new inputField("Tasa2", "tasa2");
-		$edit->tasa2->size = 5;
-
-		$edit->base2     = new inputField("Base2", "base2");
-		$edit->base2->size = 12;
-
-		$edit->desde2    = new inputField("Desde2", "desde2");
-		$edit->desde2->size = 12;
-
-		$edit->tasa3     = new inputField("Tasa3", "tasa3");
-		$edit->tasa3->size = 5;
-
-		$edit->base3     = new inputField("Base3", "base3");
-		$edit->base3->size = 12;
-
-		$edit->desde3    = new inputField("Desde3", "desde3");
-		$edit->desde3->size = 12;
-
-		$edit->tasa4     = new inputField("Tasa4", "tasa4");
-		$edit->tasa4->size = 5;
-
-		$edit->base4     = new inputField("Base4", "base4");
-		$edit->base4->size = 12;
-
-		$edit->desde4    = new inputField("Desde4", "desde4");
-		$edit->desde4->size = 12;
-
-		$edit->amorti    = new inputField("Amort/Dep","amorti");
-		$edit->amorti->size =15;
-
-		$edit->dacumu    = new inputField("D.Acum","dacumu");
-		$edit->dacumu->size =15;
-*/
 		$codigo=$edit->_dataobject->get("codigo");
 		$edit->almacenes = new containerField('almacenes',$this->_detalle($codigo));
 		$edit->almacenes->when = array("show","modify");
@@ -397,8 +360,15 @@ class Mgas extends validaciones {
 		$this->load->view('view_ventanas', $data);
 		
 	}
-/*
-	function sinvgrupos(){
+
+	function instalar(){
+		if (!$this->db->field_exists('reten','mgas')) {
+			$mSQL="ALTER TABLE mgas ADD COLUMN reten VARCHAR(4) NULL DEFAULT NULL AFTER rica, ADD COLUMN retej VARCHAR(4) NULL DEFAULT NULL AFTER reten";
+			$this->db->simple_query($mSQL);
+		}
+	}
+
+	/*function sinvgrupos(){
 		$this->rapyd->load("fields");  
 		$where = "";  
 		$line=$this->input->post('line');
