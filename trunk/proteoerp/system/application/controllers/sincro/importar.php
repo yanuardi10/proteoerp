@@ -11,6 +11,7 @@ class Importar extends Controller {
 		$this->load->library('encrypt');
 		$this->sucu = $this->datasis->traevalor('NROSUCU');
 		$this->clave=sha1($this->config->item('encryption_key'));
+		$this->depura=false;
 
 		$this->dir=reduce_double_slashes($this->config->item('uploads_dir').'/traspasos');
 		//$this->dir='./uploads/traspasos/';
@@ -552,7 +553,9 @@ class Importar extends Controller {
 			$url=$row->url;
 			$url=$row->url.'/'.$row->proteo.'/'.$dir_url;
 			$url=reduce_double_slashes($url);
-			$ch = curl_init('http://'.$url);
+			$c_url='http://'.$url;
+			$ch = curl_init($c_url);
+			if($this->depura) echo "$c_url \n";
 			$tmpfname = tempnam($dir, 'cargagen');
 
 			$fp = fopen($tmpfname, 'w');
