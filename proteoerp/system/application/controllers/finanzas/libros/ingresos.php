@@ -95,7 +95,7 @@ class ingresos{
 				LEFT JOIN scli AS c ON a.cod_cli=c.cliente 
 				JOIN sfac AS d ON a.numero=d.numero AND d.tipo_doc='F'
 				WHERE  b.fecha<=$fhasta AND b.cod_cli='REIVA' 
-					AND a.reteiva>0 AND b.monto>b.abonos 
+					AND a.reteiva>0 
 					AND b.fecha BETWEEN $fdesde AND $fhasta AND a.nroriva IS NOT NULL
 				UNION 
 				SELECT b.fecha, a.numero, IF(LENGTH(TRIM(e.nomfis))>0,e.nomfis,e.nombre) AS nombre, e.rifci, a.clipro,
@@ -103,8 +103,7 @@ class ingresos{
 				FROM smov AS b JOIN prmo AS a ON a.transac=b.transac 
 				JOIN sfac AS d ON a.factura=d.numero AND d.tipo_doc='F'
 				JOIN scli AS e ON d.cod_cli=e.cliente
-				WHERE b.fecha BETWEEN $fdesde AND $fhasta AND b.cod_cli='REIVA' 
-				AND b.monto>b.abonos";
+				WHERE b.fecha BETWEEN $fdesde AND $fhasta AND b.cod_cli='REIVA'";
 		$query = $this->db->query($mSQL);
 
 		foreach ( $query->result() as $row ){
