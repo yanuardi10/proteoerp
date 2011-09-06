@@ -62,9 +62,9 @@ class Libros extends Controller {
 				return false;
 			});
 
-			//$("#preloader").load(function() {
+			$("#preloader").ready(function() {
 				$("#preloader").hide();
-			//});
+			});
 		});
 
 		function geneDoc(){

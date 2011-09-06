@@ -87,7 +87,7 @@ class ingresos{
 		}*/
 
 		// RETENCIONES DE IVA
-		$mSQL = "SELECT b.fecha, a.numero, c.nombre, c.rifci, a.cod_cli,
+		$mSQL = "SELECT b.fecha, a.numero, c.nombre, c.rifci, COALESCE(c.cliente,a.cod_cli) AS cod_cli ,
 					a.numero AS afecta, a.fecha AS fafecta, (a.reteiva) reteiva, a.transac, a.nroriva, a.emiriva, 
 					if(a.recriva IS NULL, a.estampa, a.recriva) recriva, d.nfiscal
 				FROM itccli AS a 
