@@ -290,7 +290,7 @@ function autocod(id){
 				url:  "<?php echo site_url('finanzas/gsercol/automgas'); ?>",
 				type: "POST",
 				dataType: "json",
-				data: "q="+req.term,
+				data: "q="+encodeURIComponent(req.term)+"&sprv="+encodeURIComponent($("#proveed").val()),
 				success:
 					function(data){
 						var sugiere = [];
@@ -446,7 +446,9 @@ function toggle() {
 		</td>
 	</tr>
 
-	<?php if($form->_status!='create'){ ?>
+	<?php
+		if($form->_status!='create'){
+	?>
 
 	<?php if ($form->max_rel_count['gereten']>0); ?>
 	<tr>
@@ -569,8 +571,7 @@ function toggle() {
 			</td></tr></table>
 		</td>
 	</tr>
-	
-	
+
 	<?php if($form->_status == 'show'){ ?>
 	<tr>
 		<td>

@@ -65,6 +65,7 @@ $(document).ready(function() {
 	codb1=$('#codb1').val();
 	desactivacampo(codb1);
 	cdropdowncodigorete(0);
+	autocod(0);
 });
 
 function valida(i){
@@ -92,11 +93,14 @@ function islr(){
 
 //Calcula la retencion del iva
 function reteiva(){
+	<?php if($tipo_rete=='GRAN'){ ?>
 	totiva=Number($("#totiva").val());
 	preten=Number($("#sprvreteiva").val());
 	preten=totiva*(preten/100);
-
 	$("#reteiva").val(roundNumber(preten,2));
+	<?php }else{?>
+	$("#reteiva").val(roundNumber(0,2));
+	<?php } ?>
 }
 
 function importe(i){
@@ -105,7 +109,7 @@ function importe(i){
 	iva    = Number($("#tasaiva_"+ind).val());
 	miva   = precio*iva/100;
 	$("#iva_"+ind).val(miva);
-	$("#importe_"+ind).val(precio+miva);
+	$("#importe_"+ind).val(roundNumber(precio+miva,2));
 	totalizar();
 }
 
@@ -182,6 +186,7 @@ function add_gitser(){
 	$("#__UTPL__").before(htm);
 	$("#departa_"+can).val(departa);
 	$("#sucursal_"+can).val(sucursal);
+	autocod(gitser_cont);
 	gitser_cont=gitser_cont+1;
 }
 
@@ -282,10 +287,10 @@ function autocod(id){
 	$('#codigo_'+id).autocomplete({
 		source: function( req, add){
 			$.ajax({
-				url:  "<?php echo site_url('finanzas/gser/codigo'); ?>",
+				url:  "<?php echo site_url('finanzas/gsercol/automgas'); ?>",
 				type: "POST",
 				dataType: "json",
-				data: "q="+req.term,
+				data: "q="+encodeURIComponent(req.term)+"&sprv="+encodeURIComponent($("#proveed").val()),
 				success:
 					function(data){
 						var sugiere = [];
@@ -298,31 +303,11 @@ function autocod(id){
 					},
 			})
 		},
-		minLength: 2,
+		minLength: 1,
 		select: function( event, ui ) {
 			//id='0';
 			$('#codigo_'+id).val(ui.item.codigo);
-			$('#desca_'+id).val(ui.item.descrip);
-			$('#precio1_'+id).val(ui.item.base1);
-			$('#precio2_'+id).val(ui.item.base2);
-			$('#precio3_'+id).val(ui.item.base3);
-			$('#precio4_'+id).val(ui.item.base4);
-			$('#itiva_'+id).val(ui.item.iva);
-			$('#sinvtipo_'+id).val(ui.item.tipo);
-			$('#sinvpeso_'+id).val(ui.item.peso);
-			$('#pond_'+id).val(ui.item.pond);
-			$('#ultimo_'+id).val(ui.item.ultimo);
-			$('#cana_'+id).val('1');
-			$('#cana_'+id).focus();
-			$('#cana_'+id).select();
-
-			var arr  = $('#preca_'+ind);
-			var tipo = Number($("#sclitipo").val()); if(tipo>0) tipo=tipo-1;
-			cdropdown(id);
-			cdescrip(id);
-			jQuery.each(arr, function() { this.selectedIndex=tipo; });
-			importe(id);
-			totalizar();
+			$('#descrip_'+id).val(ui.item.descrip);
 		}
 	});
 }
@@ -333,9 +318,9 @@ function toggle() {
 	var ele = document.getElementById("asociados");
 	var text = document.getElementById("mostrasocio");
 	if(ele.style.display == "block") {
-    		ele.style.display = "none";
+		ele.style.display = "none";
 		text.innerHTML = "Mostrar Complementos ";
-  	}
+	}
 	else {
 		ele.style.display = "block";
 		text.innerHTML = "Ocultar Complementos";
@@ -411,12 +396,18 @@ function toggle() {
 				$obj7 ="departa_$i";
 				$obj8 ="sucursal_$i";
 				$obj11="tasaiva_$i";
+
+				if($form->_status=='show'){
+					$ivaval=nformat(round($form->$obj4->value/$form->$obj3->value,2)*100,2);
+				}else{
+					$ivaval=$form->$obj11->output;
+				}
 			?>
 			<tr id='tr_gitser_<?=$i ?>'>
 				<td class="littletablerow" nowrap><?php echo $form->$obj1->output ?></td>
 				<td class="littletablerow">       <?php echo $form->$obj2->output ?></td>
 				<td class="littletablerow" align="right"><?php echo $form->$obj3->output  ?></td>
-				<td class="littletablerow" align="right"><?php echo $form->$obj11->output ?></td>
+				<td class="littletablerow" align="right"><?php echo $ivaval ?></td>
 				<td class="littletablerow" align="right"><?php echo $form->$obj4->output  ?></td>
 				<td class="littletablerow" align="right"><?php echo $form->$obj5->output  ?></td>
 				<td class="littletablerow"><?php echo $form->$obj7->output  ?></td>
@@ -454,6 +445,11 @@ function toggle() {
 		<?php } ?>
 		</td>
 	</tr>
+
+	<?php
+		if($form->_status!='create'){
+	?>
+
 	<?php if ($form->max_rel_count['gereten']>0); ?>
 	<tr>
 		<td>
@@ -478,22 +474,29 @@ function toggle() {
 			?>
 			<tr id='tr_gereten_<?php echo $i; ?>'>
 				<td class="littletablerow" nowrap><?php echo $form->$it_codigorete->output ?></td>
-				<td class="littletablerow"><?php echo $form->$it_base->output      ?></td>
-				<td class="littletablerow"><?php echo $form->$it_porcen->output    ?></td>
-				<td class="littletablerow"><?php echo $form->$it_monto->output     ?></td>
+				<td class="littletablerow" align="right"><?php echo $form->$it_base->output      ?></td>
+				<td class="littletablerow" align="right"><?php echo $form->$it_porcen->output    ?></td>
+				<td class="littletablerow" align="right"><?php echo $form->$it_monto->output     ?></td>
 				<?php if($form->_status!='show') {?>
 					<td class="littletablerow"><a href='#' onclick='del_gereten(<?php echo $i; ?>);return false;'>Eliminar</a></td>
 				<?php }
 			}?>
 			</tr>
 			<tr id='__UTPL__gereten'>
-				<td colspan='9' class="littletableheaderdet">&nbsp;</td>
+				<td colspan='3' class="littletableheaderdet">&nbsp;</td>
+				<td class="littletableheaderdet"  align="right">&nbsp;<?php echo $form->reten->output  ?></td>
+				<?php if($form->_status!='show') {?>
+				<td class="littletableheaderdet">&nbsp;</td>
+				<?php } ?>
 			</tr>
 		</table>
 		</fieldset>
 		<?php if( $form->_status != 'show') {?>
 			<input name="btn_add_gereten" value="Agregar Retenciones " onclick="add_gereten()" class="button" type="button">
 		<?php } ?>
+
+		<?php } ?>
+
 		<?php echo $form_end     ?>
 		<?php //echo $container_bl ?>
 		<?php //echo $container_br ?>
@@ -530,30 +533,45 @@ function toggle() {
 			<legend class="titulofieldset" style='color: #114411;'>Totales</legend>
 			<table width='100%'>
 				<tr>
-					<td class="littletableheader"><?php echo $form->totpre->label    ?>&nbsp;</td>
-					<td class="littletablerow" align='right'>   <?php echo $form->totpre->output   ?>&nbsp;</td>
-					<td class="littletableheader"><?php echo $form->totbruto->label  ?>&nbsp;</td>
-					<td class="littletablerow" align='right'>   <?php echo $form->totbruto->output ?>&nbsp;</td>
+					<td class="littletableheader">           &nbsp;</td>
+					<td class="littletablerow" align='right'>&nbsp;</td>
+					<td class="littletableheader">           <?php echo $form->totpre->label   ?>&nbsp;</td>
+					<td class="littletablerow" align='right'><?php echo $form->totpre->output  ?>&nbsp;</td>
 				</tr>
 				<tr>
-					<td class="littletableheader"><?php echo $form->totiva->label   ?>&nbsp;</td>
-					<td class="littletablerow" align='right'>   <?php echo $form->totiva->output  ?>&nbsp;</td>
-					<td class="littletableheader"><?php echo $form->reteiva->label  ?>&nbsp;</td>
-					<td class="littletablerow" align='right'>   <?php echo $form->reteiva->output ?>&nbsp;</td>
+					<td class="littletableheader">           &nbsp;</td>
+					<td class="littletablerow" align='right'>&nbsp;</td>
+					<td class="littletableheader">           <?php echo $form->totbruto->label  ?>&nbsp;</td>
+					<td class="littletablerow" align='right'><?php echo $form->totbruto->output ?>&nbsp;</td>
 				</tr>
 				<tr>
-					<td class="littletableheader"><?php echo $form->credito->label  ?>&nbsp;</td>
-					<td class="littletablerow" align='right'>   <?php echo $form->credito->output ?>&nbsp;</td>
-					<td class="littletableheader"><?php echo $form->totneto->label  ?>&nbsp;</td>
-					<td class="littletablerow" align='right'>   <?php echo $form->totneto->output ?>&nbsp;</td>
+					<td class="littletableheader">           <?php echo $form->totiva->label   ?>&nbsp;</td>
+					<td class="littletablerow" align='right'><?php echo $form->totiva->output  ?>&nbsp;</td>
+					<td class="littletableheader">           <?php echo $form->reteiva->label  ?>&nbsp;</td>
+					<td class="littletablerow" align='right'><?php
+						if($form->_status=='show'){
+							if($form->retesimple->value>0){
+								echo '<b style=\'color:red;\'>'.$form->retesimple->value.'</b>';
+							}else{
+								echo $form->reteiva->output;
+							}
+						}else{
+							echo $form->reteiva->output;
+						}
+					?>&nbsp;</td>
+				</tr>
+				<tr>
+					<td class="littletableheader">           <?php echo $form->credito->label  ?>&nbsp;</td>
+					<td class="littletablerow" align='right'><?php echo $form->credito->output ?>&nbsp;</td>
+					<td class="littletableheader">           <?php echo $form->totneto->label  ?>&nbsp;</td>
+					<td class="littletablerow" align='right'><?php echo $form->totneto->output ?>&nbsp;</td>
 				</tr>
 			</table>
 			</fieldset>
 			</td></tr></table>
 		</td>
 	</tr>
-	
-	
+
 	<?php if($form->_status == 'show'){ ?>
 	<tr>
 		<td>
@@ -658,10 +676,10 @@ function toggle() {
 				<tr>
 
 					<td class="littletablerow" align='center'><?php echo $row->numero ?>&nbsp;</td>
-					<td class="littletablerow" align='left'><?php echo $row->cod_prv ?>&nbsp;</td>
-					<td class="littletablerow" align='right'><?php echo nformat($row->debe) ?>&nbsp;</td>
-					<td class="littletablerow" align='right'><?php echo nformat($row->haber) ?>&nbsp;</td>
-					<td class="littletablerow" align='right'><?php echo nformat($row->saldo) ?>&nbsp;</td>
+					<td class="littletablerow" align='left'>  <?php echo $row->cod_prv ?>&nbsp;</td>
+					<td class="littletablerow" align='right'> <?php echo nformat($row->debe) ?>&nbsp;</td>
+					<td class="littletablerow" align='right'> <?php echo nformat($row->haber) ?>&nbsp;</td>
+					<td class="littletablerow" align='right'> <?php echo nformat($row->saldo) ?>&nbsp;</td>
 				</tr>
 						<?php }; ?>
 			</fieldset>

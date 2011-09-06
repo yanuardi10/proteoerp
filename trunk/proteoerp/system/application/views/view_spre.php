@@ -45,6 +45,62 @@ $(function(){
 		autocod(i.toString());
 	}
 
+	$('#rifci').autocomplete({
+		source: function( req, add){
+			$.ajax({
+				url:  "<?php echo site_url('ventas/spre/buscascli/rifci'); ?>",
+				type: "POST",
+				dataType: "json",
+				data: "q="+req.term,
+				success:
+					function(data){
+						var sugiere = [];
+						$.each(data,
+							function(i, val){
+								sugiere.push( val );
+							}
+						);
+						add(sugiere);
+					},
+			})
+		},
+		minLength: 2,
+		select: function( event, ui ) {
+			$('#nombre').val(ui.item.nombre);
+			$('#rifci').val(ui.item.rifci);
+			$('#cod_cli').val(ui.item.cod_cli);
+			$('#sclitipo').val(ui.item.tipo);
+		}
+	});
+
+	$('#cod_cli').autocomplete({
+		source: function( req, add){
+			$.ajax({
+				url:  "<?php echo site_url('ventas/spre/buscascli/cliente'); ?>",
+				type: "POST",
+				dataType: "json",
+				data: "q="+req.term,
+				success:
+					function(data){
+						var sugiere = [];
+						$.each(data,
+							function(i, val){
+								sugiere.push( val );
+							}
+						);
+						add(sugiere);
+					},
+			})
+		},
+		minLength: 2,
+		select: function( event, ui ) {
+			$('#nombre').val(ui.item.nombre);
+			$('#rifci').val(ui.item.rifci);
+			$('#cod_cli').val(ui.item.cod_cli);
+			$('#sclitipo').val(ui.item.tipo);
+		}
+	});
+
 });
 
 function importe(id){
@@ -398,7 +454,7 @@ function del_itspre(id){
 
 			<tr id='tr_itspre_<?php echo $i; ?>'>
 				<td class="littletablerow" align="left" ><?php echo $form->$it_codigo->output; ?></td>
-				<td class="littletablerow" align="left" ><?php echo $form->$it_desca->output;  ?></td>
+				<td class="littletablerow" align="left" ><?php echo $form->$it_desca->output.$form->$it_detalle->output;  ?></td>
 				<td class="littletablerow" align="right"><?php echo $form->$it_cana->output;   ?></td>
 				<td class="littletablerow" align="right"><?php echo $form->$it_preca->output;  ?></td>
 				<td class="littletablerow" align="right"><?php echo $form->$it_importe->output.$pprecios;?></td>
