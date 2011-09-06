@@ -2140,7 +2140,6 @@ function gserfiscal(mid){
 		}
 		$do->set('negreso' ,$negreso );
 		$do->set('ncausado',$ncausado);
-exit();
 		return true;
 	}
 
