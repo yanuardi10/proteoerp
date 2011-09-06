@@ -98,10 +98,11 @@ class ingresos{
 					AND a.reteiva>0 AND b.monto>b.abonos 
 					AND b.fecha BETWEEN $fdesde AND $fhasta AND a.nroriva IS NOT NULL
 				UNION 
-				SELECT b.fecha, a.numero, 'OJO LLENE DATOS', 'OJO', '',
-					'' AS afecta, 0 AS fafecta, b.monto-b.abonos, a.transac, a.numero, a.fecha, a.fecha,d.nfiscal
+				SELECT b.fecha, a.numero, IF(LENGTH(TRIM(e.nomfis))>0,e.nomfis,e.nombre) AS nombre, e.rifci, a.clipro,
+					a.factura AS afecta, d.fecha AS fafecta, b.monto-b.abonos, a.transac, a.retencion, a.fecha, a.fecha, d.nfiscal
 				FROM smov AS b JOIN prmo AS a ON a.transac=b.transac 
-				JOIN sfac AS d ON a.numero=d.numero AND d.tipo_doc='F'
+				JOIN sfac AS d ON a.factura=d.numero AND d.tipo_doc='F'
+				JOIN scli AS e ON d.cod_cli=e.cliente
 				WHERE b.fecha BETWEEN $fdesde AND $fhasta AND b.cod_cli='REIVA' 
 				AND b.monto>b.abonos";
 		$query = $this->db->query($mSQL);

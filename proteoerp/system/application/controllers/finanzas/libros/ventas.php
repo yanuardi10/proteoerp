@@ -555,7 +555,9 @@ class ventas{
 		$ws =& $wb->addworksheet($mes);
 
 		// ANCHO DE LAS COLUMNAS
-		$ws->set_column('A:F',11);
+		$ws->set_column('A:C',11);
+		$ws->set_column('D:D',15);
+		$ws->set_column('E:F',11);
 		$ws->set_column('G:G',37);
 		$ws->set_column('H:H',11);
 		$ws->set_column('I:S',20);

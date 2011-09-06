@@ -61,7 +61,10 @@ class Libros extends Controller {
 				geneDoc();
 				return false;
 			});
-			$("#preloader").hide();
+
+			//$("#preloader").load(function() {
+				$("#preloader").hide();
+			//});
 		});
 
 		function geneDoc(){
