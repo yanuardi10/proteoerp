@@ -652,7 +652,7 @@ class pfac extends validaciones{
 		if($mid !== false){
 			$retArray = $retorno = array();
 			$mSQL="SELECT TRIM(nombre) AS nombre, TRIM(rifci) AS rifci, cliente, tipo
-				FROM scli WHERE rifci LIKE ${qdb} OR rifci LIKE ${qdb}
+				FROM scli WHERE cliente LIKE ${qdb} OR rifci LIKE ${qdb}
 				ORDER BY rifci LIMIT 10";
 
 			$query = $this->db->query($mSQL);
