@@ -453,27 +453,55 @@ class rivc extends Controller {
 
 	function instalar(){
 		if (!$this->db->table_exists('rivc')) {
-			$mSQL="CREATE TABLE `rivc` (  `id` int(6) NOT NULL AUTO_INCREMENT,  `nrocomp` char(8) NOT NULL DEFAULT '',  `emision` date DEFAULT NULL,  `periodo` char(8) DEFAULT NULL,  `fecha` date DEFAULT NULL,  `clipro` char(5) DEFAULT NULL,  `nombre` char(40) DEFAULT NULL,  `rif` char(14) DEFAULT NULL,  `exento` decimal(15,2) DEFAULT NULL,  `tasa` decimal(5,2) DEFAULT NULL,  `general` decimal(15,2) DEFAULT NULL,  `geneimpu` decimal(15,2) DEFAULT NULL,  `tasaadic` decimal(5,2) DEFAULT NULL,  `adicional` decimal(15,2) DEFAULT NULL,  `adicimpu` decimal(15,2) DEFAULT NULL,
-			 `tasaredu` decimal(5,2) DEFAULT NULL,
-			 `reducida` decimal(15,2) DEFAULT NULL,
-			 `reduimpu` decimal(15,2) DEFAULT NULL,
-			 `stotal` decimal(15,2) DEFAULT NULL,
-			 `impuesto` decimal(15,2) DEFAULT NULL,
-			 `gtotal` decimal(15,2) DEFAULT NULL,
-			 `reiva` decimal(15,2) DEFAULT NULL,
-			 `estampa` date DEFAULT NULL,
-			 `hora` char(8) DEFAULT NULL,
-			 `usuario` char(12) DEFAULT NULL,
-			 `modificado` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-			 PRIMARY KEY (`id`),
-			 UNIQUE KEY `nrocomp_clipro` (`nrocomp`,`clipro`),
-			 KEY `modificado` (`modificado`)
+			$mSQL="CREATE TABLE `rivc` (
+			`id` int(6) NOT NULL AUTO_INCREMENT,
+			`nrocomp` char(8) NOT NULL DEFAULT '',
+			`emision` date DEFAULT NULL,
+			`periodo` char(8) DEFAULT NULL,
+			`fecha` date DEFAULT NULL,
+			`cod_cli` char(5) DEFAULT NULL,
+			`nombre` char(40) DEFAULT NULL,
+			`rif` char(14) DEFAULT NULL,
+			`exento` decimal(15,2) DEFAULT NULL,
+			`tasa` decimal(5,2) DEFAULT NULL,
+			`general` decimal(15,2) DEFAULT NULL,
+			`geneimpu` decimal(15,2) DEFAULT NULL,
+			`tasaadic` decimal(5,2) DEFAULT NULL,
+			`adicional` decimal(15,2) DEFAULT NULL,
+			`adicimpu` decimal(15,2) DEFAULT NULL,
+			`tasaredu` decimal(5,2) DEFAULT NULL,
+			`reducida` decimal(15,2) DEFAULT NULL,
+			`reduimpu` decimal(15,2) DEFAULT NULL,
+			`stotal` decimal(15,2) DEFAULT NULL,
+			`impuesto` decimal(15,2) DEFAULT NULL,
+			`gtotal` decimal(15,2) DEFAULT NULL,
+			`reiva` decimal(15,2) DEFAULT NULL,
+			`estampa` date DEFAULT NULL,
+			`hora` char(8) DEFAULT NULL,
+			`usuario` char(12) DEFAULT NULL,
+			`modificado` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+			PRIMARY KEY (`id`),
+			UNIQUE KEY `nrocomp_clipro` (`nrocomp`,`cod_cli`),
+			KEY `modificado` (`modificado`)
 			) ENGINE=MyISAM DEFAULT CHARSET=latin1 ROW_FORMAT=FIXED";
 			$this->db->simple_query($mSQL);
 		}
 
 		if (!$this->db->table_exists('itrivc')) {
-			$mSQL="CREATE TABLE `itrivc` (  `id` int(6) NOT NULL AUTO_INCREMENT,  `idrivc` int(6) DEFAULT NULL,  `tipo_doc` char(2) DEFAULT NULL,  `fecha` date DEFAULT NULL,  `numero` char(12) DEFAULT NULL,  `nfiscal` char(12) DEFAULT NULL,  `afecta` char(8) DEFAULT NULL,  `exento` decimal(15,2) DEFAULT NULL,  `tasa` decimal(5,2) DEFAULT NULL,  `general` decimal(15,2) DEFAULT NULL,  `geneimpu` decimal(15,2) DEFAULT NULL,  `tasaadic` decimal(5,2) DEFAULT NULL,  `adicional` decimal(15,2) DEFAULT NULL,  `adicimpu` decimal(15,2) DEFAULT NULL,
+			$mSQL="CREATE TABLE `itrivc` (
+			`id` int(6) NOT NULL AUTO_INCREMENT,
+			`idrivc` int(6) DEFAULT NULL,
+			`tipo_doc` char(2) DEFAULT NULL,
+			`fecha` date DEFAULT NULL,
+			`numero` varchar(8) DEFAULT NULL,
+			`nfiscal` char(12) DEFAULT NULL,
+			`exento` decimal(15,2) DEFAULT NULL,
+			`tasa` decimal(5,2) DEFAULT NULL,
+			`general` decimal(15,2) DEFAULT NULL,
+			`geneimpu` decimal(15,2) DEFAULT NULL,
+			`tasaadic` decimal(5,2) DEFAULT NULL,
+			`adicional` decimal(15,2) DEFAULT NULL,
+			`adicimpu` decimal(15,2) DEFAULT NULL,
 			`tasaredu` decimal(5,2) DEFAULT NULL,
 			`reducida` decimal(15,2) DEFAULT NULL,
 			`reduimpu` decimal(15,2) DEFAULT NULL,
@@ -489,6 +517,7 @@ class rivc extends Controller {
 			`modificado` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 			PRIMARY KEY (`id`),
 			UNIQUE KEY `rivatra` (`transac`),
+			UNIQUE KEY `tipo_doc_numero` (`tipo_doc`,`numero`),
 			KEY `Numero` (`numero`),
 			KEY `modificado` (`modificado`)
 			) ENGINE=MyISAM DEFAULT CHARSET=latin1 ROW_FORMAT=FIXED";
