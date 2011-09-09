@@ -99,7 +99,7 @@ class ingresos{
 					AND b.fecha BETWEEN $fdesde AND $fhasta AND a.nroriva IS NOT NULL
 				UNION 
 				SELECT b.fecha, a.numero, IF(LENGTH(TRIM(e.nomfis))>0,e.nomfis,e.nombre) AS nombre, e.rifci, a.clipro,
-					a.factura AS afecta, d.fecha AS fafecta, b.monto-b.abonos, a.transac, a.retencion, a.fecha, a.fecha, d.nfiscal
+					a.factura AS afecta, d.fecha AS fafecta, b.monto, a.transac, a.retencion, a.fecha, a.fecha, d.nfiscal
 				FROM smov AS b JOIN prmo AS a ON a.transac=b.transac 
 				JOIN sfac AS d ON a.factura=d.numero AND d.tipo_doc='F'
 				JOIN scli AS e ON d.cod_cli=e.cliente
