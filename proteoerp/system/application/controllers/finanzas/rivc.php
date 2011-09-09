@@ -89,6 +89,11 @@ class rivc extends Controller {
 		$edit->post_process('update','_post_update');
 		$edit->post_process('delete','_post_delete');
 
+		$edit->pre_process('insert','_pre_insert');
+		$edit->pre_process('update','_pre_update');
+		$edit->pre_process('delete','_pre_delete');
+
+
 		$edit->nrocomp = new inputField('Comprobante','nrocomp');
 		$edit->nrocomp->rule='max_length[8]|required';
 		$edit->nrocomp->size =10;
@@ -382,12 +387,20 @@ class rivc extends Controller {
 		
 		$rete=0.75;
 		$data = '{[ ]}';
+		if(empty($scli)){
+			$retArray[0]['label']   = 'Debe seleccionar un cliente primero';
+			$retArray[0]['value']   = '';
+			$data = json_encode($retArray);
+			echo $data;
+			return;
+		}
 		if($mid !== false){
 			$retArray = $retorno = array();
 
 			$mSQL="SELECT a.tipo_doc, a.numero, a.totalg, a.iva, a.iva*$rete AS reiva
 				FROM sfac AS a
-				WHERE a.cod_cli=$sclidb AND a.numero LIKE $qdb
+				LEFT JOIN itrivc AS b ON a.tipo_doc=b.tipo_doc AND a.numero=b.numero
+				WHERE a.cod_cli=$sclidb AND a.numero LIKE $qdb AND b.numero IS NULL
 				ORDER BY numero LIMIT 10";
 
 			$query = $this->db->query($mSQL);
@@ -403,7 +416,11 @@ class rivc extends Controller {
 					array_push($retorno, $retArray);
 				}
 				$data = json_encode($retorno);
-	        }
+	        }else{
+				$retArray[0]['label']   = 'No se consiguieron facturas para aplicar';
+				$retArray[0]['value']   = '';
+				$data = json_encode($retArray);
+			}
 		}
 		echo $data;
 	}
@@ -436,6 +453,35 @@ class rivc extends Controller {
 		return true;
 	}
 
+	function _pre_insert($do){
+		$transac = $this->datasis->fprox_numero('ntransa');
+		$do->set('transac', $transac);
+		$estampa = $do->get('estampa');
+		$hora    = $do->get('hora');
+		$usuario = $do->get('usuario');
+
+		$rel='itrivc';
+		$cana = $do->count_rel($rel);
+		for($i = 0;$i < $cana;$i++){
+			//$itcana  = $do->get_rel($rel, 'cana', $i);
+
+			$do->set_rel($rel, 'estampa', $estampa, $i);
+			$do->set_rel($rel, 'hora'   , $hora   , $i);
+			$do->set_rel($rel, 'usuario', $usuario, $i);
+			$do->set_rel($rel, 'transac', $transac, $i);
+		}
+		
+		return true;
+	}
+
+	function _pre_update($do){
+		return true;
+	}
+
+	function _pre_delete($do){
+		return true;
+	}
+
 	function _post_insert($do){
 		$primary =implode(',',$do->pk);
 		logusu($do->table,"Creo $this->tits $primary ");
@@ -454,35 +500,36 @@ class rivc extends Controller {
 	function instalar(){
 		if (!$this->db->table_exists('rivc')) {
 			$mSQL="CREATE TABLE `rivc` (
-			`id` int(6) NOT NULL AUTO_INCREMENT,
-			`nrocomp` char(8) NOT NULL DEFAULT '',
-			`emision` date DEFAULT NULL,
-			`periodo` char(8) DEFAULT NULL,
-			`fecha` date DEFAULT NULL,
-			`cod_cli` char(5) DEFAULT NULL,
-			`nombre` char(40) DEFAULT NULL,
-			`rif` char(14) DEFAULT NULL,
-			`exento` decimal(15,2) DEFAULT NULL,
-			`tasa` decimal(5,2) DEFAULT NULL,
-			`general` decimal(15,2) DEFAULT NULL,
-			`geneimpu` decimal(15,2) DEFAULT NULL,
-			`tasaadic` decimal(5,2) DEFAULT NULL,
-			`adicional` decimal(15,2) DEFAULT NULL,
-			`adicimpu` decimal(15,2) DEFAULT NULL,
-			`tasaredu` decimal(5,2) DEFAULT NULL,
-			`reducida` decimal(15,2) DEFAULT NULL,
-			`reduimpu` decimal(15,2) DEFAULT NULL,
-			`stotal` decimal(15,2) DEFAULT NULL,
-			`impuesto` decimal(15,2) DEFAULT NULL,
-			`gtotal` decimal(15,2) DEFAULT NULL,
-			`reiva` decimal(15,2) DEFAULT NULL,
-			`estampa` date DEFAULT NULL,
-			`hora` char(8) DEFAULT NULL,
-			`usuario` char(12) DEFAULT NULL,
-			`modificado` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-			PRIMARY KEY (`id`),
-			UNIQUE KEY `nrocomp_clipro` (`nrocomp`,`cod_cli`),
-			KEY `modificado` (`modificado`)
+			  `id` int(6) NOT NULL AUTO_INCREMENT,
+			  `nrocomp` char(8) NOT NULL DEFAULT '',
+			  `emision` date DEFAULT NULL,
+			  `periodo` char(8) DEFAULT NULL,
+			  `fecha` date DEFAULT NULL,
+			  `cod_cli` char(5) DEFAULT NULL,
+ 			  `nombre` char(40) DEFAULT NULL,
+ 			  `rif` char(14) DEFAULT NULL,
+			  `exento` decimal(15,2) DEFAULT NULL,
+			  `tasa` decimal(5,2) DEFAULT NULL,
+			  `general` decimal(15,2) DEFAULT NULL,
+			  `geneimpu` decimal(15,2) DEFAULT NULL,
+ 			  `tasaadic` decimal(5,2) DEFAULT NULL,
+			  `adicional` decimal(15,2) DEFAULT NULL,
+			  `adicimpu` decimal(15,2) DEFAULT NULL,
+			  `tasaredu` decimal(5,2) DEFAULT NULL,
+			  `reducida` decimal(15,2) DEFAULT NULL,
+			  `reduimpu` decimal(15,2) DEFAULT NULL,
+			  `stotal` decimal(15,2) DEFAULT NULL,
+			  `impuesto` decimal(15,2) DEFAULT NULL,
+			  `gtotal` decimal(15,2) DEFAULT NULL,
+			  `reiva` decimal(15,2) DEFAULT NULL,
+			  `estampa` date DEFAULT NULL,
+			  `hora` char(8) DEFAULT NULL,
+			  `usuario` char(12) DEFAULT NULL,
+			  `modificado` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+			  `transac` varchar(8) DEFAULT NULL,
+			  PRIMARY KEY (`id`),
+			  UNIQUE KEY `nrocomp_clipro` (`nrocomp`,`cod_cli`),
+			  KEY `modificado` (`modificado`)
 			) ENGINE=MyISAM DEFAULT CHARSET=latin1 ROW_FORMAT=FIXED";
 			$this->db->simple_query($mSQL);
 		}
