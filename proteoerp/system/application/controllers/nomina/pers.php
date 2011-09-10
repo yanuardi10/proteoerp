@@ -783,12 +783,23 @@ script;
 		$dialib   = $data['data']['dialib'];
 		$niveled  = $data['data']['niveled'];
 		$sso      = $data['data']['sso'];
+	
+		$campos = $data['data'];
+		unset($campos['nomcont']);
+		unset($campos['codigo']);
 		
+		//quita la hora de las fechas
+		$campos['nacimi']  = substr($campos['nacimi'], 0,10);
+		$campos['ingreso'] = substr($campos['ingreso'],0,10);
+		$campos['retiro']  = substr($campos['retiro'], 0,10);
+		$campos['vence']   = substr($campos['vence'],  0,10);
+		$campos['vari5']   = substr($campos['vari5'],  0,10);
 		
-		
-		
-		
-		echo "{ success: false, message: ".$data['data']['codigo']."}";
+		//print_r($campos);
+		$mSQL = $this->db->update_string("pers", $campos,"codigo='".$data['data']['codigo']."'" );
+		$this->db->simple_query($mSQL);
+		//echo "{ success: false, message: ".$data['data']['codigo']."}";
+		echo $mSQL;
 
 		/*if ( isset($_REQUEST['data']) ) {
 			$data = json_decode($_REQUEST['data'], true);
@@ -915,7 +926,7 @@ var urlApp = '".base_url()."';
 
 // Define our data model
 var Empleados = Ext.regModel('Empleados', {
-	fields: ['codigo','nacional','cedula','nombre','apellido','civil','sexo', 'carnet', 'status', 'tipo' ,'contrato','ingreso','retiro','vence', 'direc1', 'direc2', 'direc3', 'telefono','sueldo','nacimi','vari1','vari2','vari3','vari4','vari5','vari6','divi','depto', 'sucursal','cargo','dialab','dialib','niveled','sso','nomcont'],
+	fields: ['codigo','nacional','cedula','nombre','apellido','civil','sexo', 'carnet', 'status', 'tipo' ,'contrato','ingreso','retiro','vence', 'direc1', 'direc2', 'direc3', 'telefono','sueldo','nacimi','vari1','vari2','vari3','vari4','vari5','vari6','divi','depto', 'sucursal','cargo','dialab','dialib','niveled','sso', 'profes','nomcont'],
 
 /*		validations: [
 			{ type: 'length', field: 'codigo',   min: 1 },
