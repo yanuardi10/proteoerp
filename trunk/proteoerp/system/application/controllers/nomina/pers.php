@@ -748,9 +748,48 @@ script;
 	function modificar(){
 		$js= file_get_contents('php://input');
 		$data= json_decode($js,true);
-		print_r($data);
-		print_r($_POST);
 		
+		$codigo   = $data['data']['codigo'];
+		$nacional = $data['data']['nacional'];
+		$cedula   = $data['data']['cedula'];
+		$nombre   = $data['data']['nombre'];
+		$apellido = $data['data']['apellido'];
+		$civil    = $data['data']['civil'];
+		$sexo     = $data['data']['sexo'];
+		$carnet   = $data['data']['carnet'];
+		$status   = $data['data']['status'];
+		$tipo     = $data['data']['tipo'];
+		$contrato = $data['data']['contrato'];
+		$ingreso  = $data['data']['ingreso'];
+		$retiro   = $data['data']['retiro'];
+		$vence    = $data['data']['vence'];
+		$direc1   = $data['data']['direc1'];
+		$direc2   = $data['data']['direc2'];
+		$direc3   = $data['data']['direc2'];
+		$telefono = $data['data']['telefono'];
+		$sueldo   = $data['data']['sueldo'];
+		$nacimi   = $data['data']['nacimi'];
+		$vari1    = $data['data']['vari1'];
+		$vari2    = $data['data']['vari2'];
+		$vari3    = $data['data']['vari3'];
+		$vari4    = $data['data']['vari4'];
+		$vari5    = $data['data']['vari5'];
+		$vari6    = $data['data']['vari6'];
+		$divi     = $data['data']['divi'];
+		$depto    = $data['data']['depto'];
+		$sucursal = $data['data']['sucursal'];
+		$cargo    = $data['data']['cargo'];
+		$dialab   = $data['data']['dialab'];
+		$dialib   = $data['data']['dialib'];
+		$niveled  = $data['data']['niveled'];
+		$sso      = $data['data']['sso'];
+		
+		
+		
+		
+		
+		echo "{ success: false, message: ".$data['data']['codigo']."}";
+
 		/*if ( isset($_REQUEST['data']) ) {
 			$data = json_decode($_REQUEST['data'], true);
 			echo "data=".$data["codigo"] ;
@@ -758,7 +797,6 @@ script;
 			
 			//echo json_encode("Modificar");
 		} else print_r($http_response_header);*/
-		
 	}
 
 	function eliminar(){
@@ -768,8 +806,9 @@ script;
 	function persextjs(){
 
 		$encabeza='<table width="100%" bgcolor="#2067B5"><tr><td align="left" width="100px"><img src="'.base_url().'assets/default/css/templete_01.jpg" width="120"></td><td align="center"><h1 style="font-size: 20px; color: rgb(255, 255, 255);" onclick="history.back()">TRABAJADORES</h1></td><td align="right" width="100px"><img src="'.base_url().'assets/default/images/cerrar.png" alt="Cerrar Ventana" title="Cerrar Ventana" onclick="parent.window.close()" width="25"></td></tr></table>';
+
 		$contratos='';
-		$query = $this->db->query("SELECT codigo, nombre, tipo FROM noco WHERE tipo<>'O' ORDER BY codigo");
+		$query = $this->db->query("SELECT codigo, CONCAT(codigo,' ',nombre) nombre, tipo FROM noco WHERE tipo<>'O' ORDER BY codigo");
 		$coma = '';
 		if ($query->num_rows() > 0){
 			foreach ($query->result() as $row){
@@ -777,7 +816,74 @@ script;
 				$coma = ', ';
 			}
 		}
+		$query->free_result();
 		
+		$divi='';
+		$query = $this->db->query("SELECT division, CONCAT(division,' ',descrip) descrip FROM divi ORDER BY division");
+		$coma = '';
+		if ($query->num_rows() > 0){
+			foreach ($query->result() as $row){
+				$divi .= $coma."['".$row->division."','".$row->descrip."']";
+				$coma = ', ';
+			}
+		}
+		$query->free_result();
+
+		$depto='';
+		$query = $this->db->query("SELECT departa, CONCAT(departa,' ',depadesc) descrip FROM depa ORDER BY departa");
+		$coma = '';
+		if ($query->num_rows() > 0){
+			foreach ($query->result() as $row){
+				$depto .= $coma."['".$row->departa."','".$row->descrip."']";
+				$coma = ', ';
+			}
+		}
+		$query->free_result();
+		
+		$cargo='';
+		$query = $this->db->query("SELECT cargo, CONCAT(cargo,' ',descrip) descrip FROM carg ORDER BY cargo");
+		$coma = '';
+		if ($query->num_rows() > 0){
+			foreach ($query->result() as $row){
+				$cargo .= $coma."['".$row->cargo."','".$row->descrip."']";
+				$coma = ', ';
+			}
+		}
+		$query->free_result();
+
+		$sucu='';
+		$query = $this->db->query("SELECT codigo, CONCAT(codigo,' ',sucursal) descrip FROM sucu ORDER BY codigo");
+		$coma = '';
+		if ($query->num_rows() > 0){
+			foreach ($query->result() as $row){
+				$sucu .= $coma."['".$row->codigo."','".$row->descrip."']";
+				$coma = ', ';
+			}
+		}
+		$query->free_result();
+
+		$profes='';
+		$query = $this->db->query("SELECT codigo, profesion FROM prof ORDER BY profesion");
+		$coma = '';
+		if ($query->num_rows() > 0){
+			foreach ($query->result() as $row){
+				$profes .= $coma."['".$row->codigo."','".$row->profesion."']";
+				$coma = ', ';
+			}
+		}
+		$query->free_result();
+
+		$niveled='';
+		$query = $this->db->query("SELECT codigo, nivel FROM nedu ORDER BY codigo ");
+		$coma = '';
+		if ($query->num_rows() > 0){
+			foreach ($query->result() as $row){
+				$niveled .= $coma."['".$row->codigo."','".$row->nivel."']";
+				$coma = ', ';
+			}
+		}
+		$query->free_result();
+
 		
 
 		$script = "
@@ -809,7 +915,7 @@ var urlApp = '".base_url()."';
 
 // Define our data model
 var Empleados = Ext.regModel('Empleados', {
-	fields: ['codigo','nacional','cedula','nombre','apellido','civil','sexo', 'carnet', 'status', 'tipo' ,'contrato','ingreso','retiro','vence', 'direc1', 'direc2', 'direc3', 'telefono','sueldo','nacimi','vari1','vari2','vari3','vari4','vari5','vari6','nomcont'],
+	fields: ['codigo','nacional','cedula','nombre','apellido','civil','sexo', 'carnet', 'status', 'tipo' ,'contrato','ingreso','retiro','vence', 'direc1', 'direc2', 'direc3', 'telefono','sueldo','nacimi','vari1','vari2','vari3','vari4','vari5','vari6','divi','depto', 'sucursal','cargo','dialab','dialib','niveled','sso','nomcont'],
 
 /*		validations: [
 			{ type: 'length', field: 'codigo',   min: 1 },
@@ -840,20 +946,43 @@ var Empleados = Ext.regModel('Empleados', {
 			type: 'json',
 			root: 'data',
 			writeAllFields: true,
-			id: 'codigo'
+			id: 'codigo',
+			callback: function( op, suc, res ) {
+				Ext.Msg.Alert('que paso');
+				}
 			},
+		//success: proxyAfter,
 		listeners: {
 			exception: function( proxy, response, operation) {
-				Ext.MessageBox.show({
-					title: 'EXCEPCION REMOTA',
-					msg: operation.getError(),
-					icon: Ext.MessageBox.ERROR,
-					buttons: Ext.Msg.OK
-				})
+				var json = Ext.decode(responce.responseTxt);
+				if (json) {
+					Ext.MessageBox.show({
+						title: 'ERROR EN EL SERVIDOR',
+						msg: json.message,
+						icon: Ext.MessageBox.ERROR,
+						buttons: Ext.Msg.OK
+					});
+			
+				} else {
+					Ext.MessageBox.show({
+						title: 'EXCEPCION REMOTA',
+						msg: operation.getError(),
+						icon: Ext.MessageBox.ERROR,
+						buttons: Ext.Msg.OK
+					});
+				}
 			}
 		}
 	})
 });
+
+var proxyAfter = function(proxy, response, operation) {
+		Ext.Msg.Alert('meco'+operation);
+	if(response.responseText) {
+		Ext.Msg.Alert('meco'+operation);
+	}
+	
+};
 
 //Data Store
 var storePers = Ext.create('Ext.data.Store', {
@@ -907,6 +1036,7 @@ var win;
 
 // Main 
 Ext.onReady(function(){
+var meco=0;
 	function showContactForm() {
 		if (!win) {
 			// Create Form
@@ -925,20 +1055,19 @@ Ext.onReady(function(){
 							//anchor: '100%',
     							labelAlign: 'right' 
 						}, 
-						items: [
-							{
+						items: [{
 								layout: 'column',
 								frame: false,
 								border: false,
 								labelAlign: 'right',
 								items: [
-									{ xtype: 'textfield',   fieldLabel: 'Codigo',    labelWidth:60, name: 'codigo',   allowBlank: false, columnWidth : 0.25   },
+									{ xtype: 'textfield',   fieldLabel: 'Codigo',    labelWidth:60, name: 'codigo',   allowBlank: false, columnWidth : 0.25, id: 'codigo' },
 									{ xtype: 'combo',       fieldLabel: 'Contrato',  labelWidth:60, name: 'contrato', store: [".$contratos."], columnWidth : 0.50 },
-									{ xtype: 'combo',       fieldLabel: 'Status.',   labelWidth:60, name: 'status', store: [['A','Activo'],['V','Vacaciones'],['R','Retirado'],['P', 'Permiso'],['I','Inactivo']], columnWidth: 0.25 },
+									{ xtype: 'combo',       fieldLabel: 'Status.',   labelWidth:60, name: 'status',   store: [['A','Activo'],['V','Vacaciones'],['R','Retirado'],['P', 'Permiso'],['I','Inactivo']], columnWidth: 0.25 },
 									{ xtype: 'combo',       fieldLabel: 'Nacional.', labelWidth:60, name: 'nacional', store: [['V','Venezolano'],['E','Extranjero'],['P', 'Pasaporte']], columnWidth: 0.25 },
 									{ xtype: 'textfield',   fieldLabel: 'Cedula',    labelWidth:60, name: 'cedula',   allowBlank: false, columnWidth: 0.25  },
-									{ xtype: 'combo',       fieldLabel: 'Edo.Civil',   labelWidth:60, name: 'civil',    store: [['S','Soltero'],['C','Casado'],['D', 'Divorciado'],['V', 'Viudo']], columnWidth: 0.25 },
-									{ xtype: 'combo',       fieldLabel: 'Sexo',      labelWidth:60, name: 'sexo',    store: [['F','Femenino'],['M','Masculino'],['O', 'Otro']], columnWidth: 0.25 },
+									{ xtype: 'combo',       fieldLabel: 'Edo.Civil', labelWidth:60, name: 'civil',    store: [['S','Soltero'],['C','Casado'],['D', 'Divorciado'],['V', 'Viudo']], columnWidth: 0.25 },
+									{ xtype: 'combo',       fieldLabel: 'Sexo',      labelWidth:60, name: 'sexo',     store: [['F','Femenino'],['M','Masculino'],['O', 'Otro']], columnWidth: 0.25 },
 									{ xtype: 'textfield',   fieldLabel: 'Nombre',    labelWidth:60, name: 'nombre',   allowBlank: false, columnWidth: 0.50 },
 									{ xtype: 'textfield',   fieldLabel: 'Apellido',  labelWidth:60, name: 'apellido', allowBlank: false, columnWidth: 0.50 }
 								]
@@ -948,49 +1077,101 @@ Ext.onReady(function(){
 								xtype:'tabpanel',
 								activeItem: 0,
 								border: false,
-								anchor: '100% 100%',
+								//anchor: '100% 100%',
 								deferredRender: false,
+								Height: 200,
 								// tabs
-								defaults:{ labelWidth: 80, defaultType: 'textfield', bodyStyle: 'padding:5px', hideMode: 'offsets' },
-								items:[
-									{
-										title: 'Valores',
+								defaults: {bodyStyle:'padding:5px',hideMode:'offsets'},
+								items:[{
+									title: 'Valores',
+									autoScroll:true,
+									defaults:{anchor:'-20'},
+									items: [{
+										defaults: {xtype:'fieldset', columnWidth : 0.49  },
 										layout: 'column',
-										autoScroll:true,
-										defaults:{anchor:'-20'},
-										items:[
-											{ xtype: 'textfield',   fieldLabel: 'No. de Carnet',    labelWidth:100, name: 'carnet',  allowBlank: false },
-											{ xtype: 'textfield',   fieldLabel: 'Fecha de Ingreso', labelWidth:160, name: 'ingreso', allowBlank: false, xtype: 'datefield' }, 
-											{ xtype: 'numberfield', fieldLabel: 'Sueldo',           labelWidth:100, name: 'sueldo',  decimalPrecision: 2, fieldStyle: 'text-align: right' }, 
-											{ xtype: 'textfield',   fieldLabel: 'Fecha Nacimiento', labelWidth:160, name: 'nacimi',  allowBlank: false, xtype: 'datefield' },
-										]
+										border: false,
+										autoHeight:true,
+										style:'padding:4px',
+										items: [{
+											title:'Datos',
+											columnWidth : 0.50, 
+											//layout: 'fit',
+											//defaults:{anchor:'-20'},
+											items: [
+												{ xtype: 'textfield',   fieldLabel: 'Dias Laborables',  labelWidth:120, name: 'dialab',  allowBlank: true, width:230 },
+												{ xtype: 'textfield',   fieldLabel: 'Dias Libres',      labelWidth:120, name: 'dialib',  allowBlank: true, width:230 },
+												{ xtype: 'numberfield', fieldLabel: 'Sueldo ',          labelWidth:120, name: 'sueldo',  hideTrigger: true, decimalPrecision: 2, fieldStyle: 'text-align: right', width:230 },
+											]
+										},{
+											title:'Fechas',
+											//defaults:{anchor:'-20'},
+											items: [
+												{ xtype: 'datefield', fieldLabel: 'Fecha de Ingreso',      labelWidth:120, name: 'ingreso', width:230 },
+												{ xtype: 'datefield', fieldLabel: 'Fecha Vencimiento',  labelWidth:120, name: 'vence',   width:230  },
+												{ xtype: 'datefield', fieldLabel: 'Fecha de Retiro',       labelWidth:120, name: 'retiro',  width:230  },
+											]
+										},{
+											title:'Ubicacion',
+											columnWidth : 0.99, 
+											//defaults:{anchor:'-20'},
+											layout: 'column',
+											items: [
+												{ xtype: 'combo', fieldLabel: 'Division',     labelWidth: 90, name: 'divi',     width:310, store: [".$divi."] },
+												{ xtype: 'combo', fieldLabel: 'Sucursal',     labelWidth: 60, name: 'sucursal', width:250, store: [".$sucu."] },
+												{ xtype: 'combo', fieldLabel: 'Departamento', labelWidth: 90, name: 'depto',    width:310, store: [".$depto."] },
+												{ xtype: 'combo', fieldLabel: 'Cargo',        labelWidth: 60, name: 'cargo',    width:250, store: [".$cargo."] },
+											]
+										}]
+									}]
+								},{
+									title: 'Direccion',
+									autoScroll:true,
+									defaults:{anchor:'-20'},
+									items:[{
+										defaults: {xtype:'fieldset', columnWidth : 0.49  },
+										layout: 'column',
+										border: false,
+										autoHeight:true,
+										style:'padding:4px',
+										items: [{
+											title:'Direccion',
+											columnWidth : 0.50, 
+											//layout: 'fit',
+											//defaults:{anchor:'-20'},
+											items: [
+												{ xtype: 'textfield', fieldLabel: 'Direccion', labelWidth:60, name: 'direc1',   allowBlank: true, width: 280 },
+												{ xtype: 'textfield', fieldLabel: '      ',    labelWidth:60, name: 'direc2',   allowBlank: true, width: 280 },
+												{ xtype: 'textfield', fieldLabel: '      ',    labelWidth:60, name: 'direc3',   allowBlank: true, width: 280 },
+												{ xtype: 'textfield', fieldLabel: 'Telefono',  labelWidth:60, name: 'telefono', allowBlank: true, width: 280 },
+											]
+										},{
+											title:'Otros',
+											columnWidth : 0.49, 
+											//defaults:{anchor:'-20'},
+											layout: 'column',
+											items: [
+												{ xtype: 'textfield', fieldLabel: 'Numero de Carnet',  labelWidth:110, name: 'carnet',  allowBlank: true, width:260 },
+												{ xtype: 'textfield', fieldLabel: 'Nro Seguro Social', labelWidth:110, name: 'sso',  allowBlank: true, width:260 },
+												{ xtype: 'datefield', fieldLabel: 'Fecha Nacimiento',  labelWidth:110, name: 'nacimi',  width:260 },
+												{ xtype: 'combo',     fieldLabel: 'Nivel Instruccion', labelWidth:110, name: 'niveled',  width:260, store: [".$niveled."] },
+											]
+										}]
 									},
-									{
-										title: 'Direccion',
-										//layout: 'column',
-										autoScroll:true,
-										defaults:{anchor:'-20'},
-										items:[
-											{ xtype: 'textfield', fieldLabel: 'Direccion', labelWidth:80, name: 'direc1',   allowBlank: true, width: 300 },
-											{ xtype: 'textfield', fieldLabel: '      ',    labelWidth:80, name: 'direc2',   allowBlank: true, width: 300 },
-											{ xtype: 'textfield', fieldLabel: '      ',    labelWidth:80, name: 'direc3',   allowBlank: true, width: 300 },
-											{ xtype: 'textfield', fieldLabel: 'Telefono',  labelWidth:80, name: 'telefono', allowBlank: true, width: 300 },
-										]
-									},
-									{ title: 'Variables',
-										autoScroll:true,
-										defaults:{anchor:'-20'},
-										items:[
-											{ xtype: 'textfield',   fieldLabel: '".$this->datasis->traevalor('NOMVARI1')."',    labelWidth:100, name: 'vari1', allowBlank: true, width: 200 },
-											{ xtype: 'textfield',   fieldLabel: '".$this->datasis->traevalor('NOMVARI2')."',    labelWidth:100, name: 'vari2', allowBlank: true, width: 200 },
-											{ xtype: 'textfield',   fieldLabel: '".$this->datasis->traevalor('NOMVARI3')."',    labelWidth:100, name: 'vari3', allowBlank: true, width: 200 },
-											{ xtype: 'textfield',   fieldLabel: '".$this->datasis->traevalor('NOMVARI4')."',    labelWidth:100, name: 'vari4', allowBlank: true, width: 200 },
-											{ xtype: 'datefield',   fieldLabel: '".$this->datasis->traevalor('NOMVARI5')."',    labelWidth:100, name: 'vari5', width: 200 },
-											{ xtype: 'textfield',   fieldLabel: '".$this->datasis->traevalor('NOMVARI6')."',    labelWidth:100, name: 'vari6', allowBlank: true, width: 200 },
-										]
-									
-									},
-								]
+										{ xtype: 'combo',     fieldLabel: 'Profesion u Ocupacion', labelWidth: 150, name: 'profes',  width:350, store: [".$profes."] },
+									]
+								},{
+									title: 'Variables',
+									autoScroll:true,
+									defaults:{anchor:'-20'},
+									items:[
+										{ xtype: 'textfield',   fieldLabel: '".$this->datasis->traevalor('NOMVARI1')."', labelWidth:100, name: 'vari1', allowBlank: true, width: 200 },
+										{ xtype: 'textfield',   fieldLabel: '".$this->datasis->traevalor('NOMVARI2')."', labelWidth:100, name: 'vari2', allowBlank: true, width: 200 },
+										{ xtype: 'textfield',   fieldLabel: '".$this->datasis->traevalor('NOMVARI3')."', labelWidth:100, name: 'vari3', allowBlank: true, width: 200 },
+										{ xtype: 'textfield',   fieldLabel: '".$this->datasis->traevalor('NOMVARI4')."', labelWidth:100, name: 'vari4', allowBlank: true, width: 200 },
+										{ xtype: 'datefield',   fieldLabel: '".$this->datasis->traevalor('NOMVARI5')."', labelWidth:100, name: 'vari5', width: 200 },
+										{ xtype: 'textfield',   fieldLabel: '".$this->datasis->traevalor('NOMVARI6')."', labelWidth:100, name: 'vari6', allowBlank: true, width: 200 },
+									]
+								}]
 							}
 						], 
 						dockedItems: [
@@ -1008,18 +1189,24 @@ Ext.onReady(function(){
 				},
 				onSave: function(){
 					var form = this.getForm();
-					if (!registro){
+					if (!registro) {
 						if (form.isValid()) {
 							storePers.insert(0, form.getValues());
+						} else {
+							Ext.Msg.alert('Forma Invalida','Algunos campos no pudieron ser validados<br>los mismos se indican con un cuadro rojo<br> corrijalos y vuelva a intentar');
+							return;
 						}
 					} else {
 						var active = win.activeRecord;
 						if (!active) {
+							Ext.Msg.Alert('Registro Inactivo ');
 							return;
 						}
 						if (form.isValid()) {
-						alert('Update '+active);
 							form.updateRecord(active);
+						} else {
+							Ext.Msg.alert('Forma Invalida','Algunos campos no pudieron ser validados<br>los mismos se indican con un cuadro rojo<br> corrijalos y vuelva a intentar');
+							return;
 						}
 					}
 					form.reset();
@@ -1046,7 +1233,7 @@ Ext.onReady(function(){
 				closeAction: 'destroy',
 				width: 650,
 				height: 500,
-				minHeight: 300,
+				//minHeight: 300,
 				resizable: false,
 				modal: true,
 				items: [writeForm],
@@ -1056,9 +1243,14 @@ Ext.onReady(function(){
 						this.activeRecord = registro;
 						if (registro) {
 							form.loadRecord(registro);
+							form.findField('codigo').readOnly = true;
+						} else {
+							form.findField('codigo').readOnly = false;
 						}
 					}
-				}
+				},
+				afterRequest: proxyAfter
+				
 			});
 		}
 		win.show();
