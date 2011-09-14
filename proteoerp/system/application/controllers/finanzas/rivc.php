@@ -1,4 +1,4 @@
-<?php
+<?php require_once(APPPATH.'/controllers/finanzas/gser.php');
 class rivc extends Controller {
 	var $titp='Retenciones de Clientes';
 	var $tits='Retenciones de Clientes';
@@ -70,7 +70,7 @@ class rivc extends Controller {
 		$data['filtro']  = $filter->output;
 		$data['content'] = $grid->output;
 		$data['head']    = $this->rapyd->get_head().script('jquery.js');
-		$data['title']   = $this->titp;
+		$data['title']   = heading($this->titp);
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -375,7 +375,7 @@ class rivc extends Controller {
 		$data['head']   .= script('plugins/jquery.floatnumber.js');
 		$data['head']   .= phpscript('nformat.js');
 		$data['head']   .= style('redmond/jquery-ui-1.8.1.custom.css');
-		$data['title']   = $this->tits;
+		$data['title']   = heading($this->tits);
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -463,14 +463,36 @@ class rivc extends Controller {
 		$rel='itrivc';
 		$cana = $do->count_rel($rel);
 		for($i = 0;$i < $cana;$i++){
-			//$itcana  = $do->get_rel($rel, 'cana', $i);
+			$dbitnumero   = $this->db->escape($do->get_rel($rel, 'numero'  , $i));
+			$dbittipo_doc = $this->db->escape($do->get_rel($rel, 'tipo_doc', $i));
+
+			$sql="SELECT exento,tasa,reducida,sobretasa,montasa,monredu,monadic FROM sfac WHERE numero=$dbitnumero AND tipo_doc=$dbittipo_doc";
+			$query = $this->db->query($sql);
+			if ($query->num_rows() > 0){
+				$row = $query->row();
+
+				$do->set_rel($rel, 'exento'   , $row->exento , $i);
+
+				$do->set_rel($rel, 'tasa'     , ($row->montasa>0)? round($row->tasa *100/$row->montasa,2) : 0, $i);
+				$do->set_rel($rel, 'general'  , $row->montasa, $i);
+				$do->set_rel($rel, 'geneimpu' , $row->tasa   , $i);
+
+				$do->set_rel($rel, 'tasaadic' , ($row->monadic>0)? round($row->sobretasa*100/$row->monadic,2) : 0, $i);
+				$do->set_rel($rel, 'adicional', $row->monadic  , $i);
+				$do->set_rel($rel, 'adicimpu' , $row->sobretasa, $i);
+
+				$do->set_rel($rel, 'tasaredu' , ($row->monredu>0)? round($row->reducida*100/ $row->monredu,2) : 0, $i);
+				$do->set_rel($rel, 'reducida' , $row->monredu , $i);
+				$do->set_rel($rel, 'reduimpu' , $row->reducida, $i);
+
+			}
 
 			$do->set_rel($rel, 'estampa', $estampa, $i);
 			$do->set_rel($rel, 'hora'   , $hora   , $i);
 			$do->set_rel($rel, 'usuario', $usuario, $i);
 			$do->set_rel($rel, 'transac', $transac, $i);
 		}
-		
+
 		return true;
 	}
 
@@ -484,6 +506,202 @@ class rivc extends Controller {
 
 	function _post_insert($do){
 		$primary =implode(',',$do->pk);
+
+		$transac = $do->get('ntransa');
+		$estampa = $do->get('estampa');
+		$hora    = $do->get('hora');
+		$usuario = $do->get('usuario');
+		$cod_cli = $do->get('cod_cli');
+		$nombre  = $do->get('nombre');
+		$estampa = $do->get('estampa');
+		$usuario = $do->get('usuario');
+		$hora    = $do->get('hora');
+
+		//$reinte  = $this->uri->segment($this->uri->total_segments());
+		$efecha  = $do->get('emision');
+		$fecha   = $do->get('fecha');
+		$numero  = $do->get('numero');
+
+
+		$rel='itrivc';
+		$cana = $do->count_rel($rel);
+		for($i = 0;$i < $cana;$i++){
+			$ittipo_doc  = $do->get_rel($rel, 'tipo_doc', $i);
+			$itnumero    = $do->get_rel($rel, 'numero'  , $i);
+			$itmonto     = $do->get_rel($rel, 'reiva'  , $i);
+
+			$dbitnumero   = $this->db->escape($itnumero);
+			$dbittipo_doc = $this->db->escape($ittipo_doc);
+
+			$sql="SELECT referen,reiva,factura,cod_cli,nombre FROM sfac WHERE numero=$dbitnumero AND tipo_doc=$dbittipo_doc";
+			$query = $this->db->query($sql);
+			if ($query->num_rows() > 0){
+				$row = $query->row();
+
+				$anterior    = $row['reiva'];
+				$itreferen   = $row['referen'];
+				$itfactura   = $row['factura'];
+			}
+
+			if($anterior == 0) {
+				$mSQL = "UPDATE sfac SET reiva=$itmonto, creiva='$numero', freiva='$fecha', ereiva='$efecha' WHERE numero=$dbitnumero AND tipo_doc=$dbittipo_doc";
+				$ban=$this->db->simple_query($mSQL);
+				if($ban==false){ memowrite($mSQL,'RIVC'); }
+			}
+
+			//Chequea si es credito y si tiene saldo
+			if($itreferen=='C'){
+				$saldo =  $this->datasis->dameval("SELECT monto-abonos FROM smov WHERE tipo_doc='FC' AND numero='$itnumero'");
+			}else{
+				$saldo = 0;
+			}
+
+			//Si es una factura
+			if($ittipo_doc == 'F'){
+				//Si el saldo es 0  o menor que el monto retenido genera un anticipo
+				if($saldo==0 || $itmonto>$saldo){
+					$mnumant = $this->datasis->fprox_sql('nancli');
+
+					$data=array();
+					$data['cod_cli']    = $cod_cli;
+					$data['nombre']     = $nombre;
+					$data['tipo_doc']   = 'AN';
+					$data['numero']     = $mnumant;
+					$data['fecha']      = $fecha;
+					$data['monto']      = $itmonto;
+					$data['impuesto']   = 0;
+					$data['vence']      = $fecha;
+					$data['tipo_ref']   = ($ittipo_doc='F')? 'FC' : 'DV';
+					$data['num_ref']    = $itnumero;
+					$data['observa1']   = 'RET/IVA DE '.$cod_cli.' A DOC. '.$ittipo_doc.$itnumero;
+					$data['usuario']    = $usuario;
+					$data['estampa']    = $estampa;
+					$data['hora']       = $hora;
+					$data['transac']    = $transac;
+					$data['nroriva']    = $numero;
+					$data['emiriva']    = $efecha;
+
+					$mSQL = $this->db->insert_string('smov', $data); 
+					$ban=$this->db->simple_query($mSQL);
+					if($ban==false){ memowrite($mSQL,'RIVC'); }
+				}else{
+				//Si tiene saldo
+					//Chequea que el monto de la retencion sea menor al saldo en caso tal crea una NC
+					$mnumnc = $this->datasis->fprox_sql('nccli');
+					$data=array();
+					$data['cod_cli']    = $cod_cli;
+					$data['nombre']     = $nombre;
+					$data['tipo_doc']   = 'NC';
+					$data['numero']     = $mnumnc;
+					$data['fecha']      = $fecha;
+					$data['monto']      = $itmonto;
+					$data['impuesto']   = 0;
+					$data['abonos']     = $itmonto;
+					$data['vence']      = $fecha;
+					$data['tipo_ref']   = ($ittipo_doc='F')? 'FC' : 'DV';
+					$data['num_ref']    = $itnumero;
+					$data['observa1']   = 'APLICACION DE RETENCION A DOC. '.$ittipo_doc.$itnumero;
+					$data['estampa']    = $estampa;
+					$data['hora']       = $hora;
+					$data['transac']    = $transac;
+					$data['usuario']    = $usuario;
+					$data['codigo']     = 'NOCON';
+					$data['descrip']    = 'NOTA DE CONTABILIDAD';
+					$data['nroriva']    = $numero;
+					$data['emiriva']    = $efecha;
+
+					$mSQL = $this->db->insert_string('smov', $data); 
+					$ban=$this->db->simple_query($mSQL);
+					if($ban==false){ memowrite($mSQL,'RIVC'); }
+
+					// Abona la factura
+					$tiposfac = ($ittipo_doc=='D')? $tiposfac = 'NC':'FC';
+					$mSQL = "UPDATE smov SET abonos=abonos+$itmonto WHERE numero='$itnumero' AND cod_cli='$cod_cli' AND tipo_doc='$tiposfac'";
+					$ban=$this->db->simple_query($mSQL);
+					if($ban==false){ memowrite($mSQL,'RIVC'); }
+				}
+
+				$mnumnd = $this->datasis->fprox_sql('ndcli');
+				$data=array();
+				$data['cod_cli']    = 'REIVA';
+				$data['nombre']     = 'RETENCION DE I.V.A. POR COMPENSAR';
+				$data['tipo_doc']   = 'ND';
+				$data['numero']     = $mnumnd;
+				$data['fecha']      = $fecha;
+				$data['monto']      = $itmonto;
+				$data['impuesto']   = 0;
+				$data['abonos']     = 0;
+				$data['vence']      = $fecha;
+				$data['tipo_ref']   = ($ittipo_doc='F')? 'FC' : 'DV';
+				$data['num_ref']    = $itnumero;
+				$data['observa1']   = 'RET/IVA DE '.$cod_cli.' A '.$ittipo_doc.$itnumero;
+				$data['estampa']    = $estampa;
+				$data['hora']       = $hora;
+				$data['transac']    = $transac;
+				$data['usuario']    = $usuario;
+				$data['codigo']     = 'NOCON';
+				$data['descrip']    = 'NOTA DE CONTABILIDAD';
+				$data['nroriva']    = $numero;
+				$data['emiriva']    = $efecha;
+				$ban=$this->db->simple_query($mSQL);
+				if($ban==false){ memowrite($mSQL,'RIVC'); }
+			}else{
+			//Si es una devolucion
+				// Devoluciones genera un ND al cliente
+				$mnumnd = $this->datasis->fprox_sql('ndcli');
+				$data=array();
+				$data['cod_cli']    = $cod_cli;
+				$data['nombre']     = $nombre;
+				$data['tipo_doc']   = 'ND';
+				$data['numero']     = $mnumnd;
+				$data['fecha']      = $fecha;
+				$data['monto']      = $itmonto;
+				$data['impuesto']   = 0;
+				$data['vence']      = $fecha;
+				$data['tipo_ref']   = ($ittipo_doc='F')? 'FC' : 'DV';
+				$data['num_ref']    = $itnumero;
+				$data['observa1']   = 'RET/IVA DE '.$cod_cli.' A '.$ittipo_doc.$itnumero;
+				$data['estampa']    = $estampa;
+				$data['hora']       = $hora;
+				$data['transac']    = $transac;
+				$data['usuario']    = $usuario;
+				$data['nroriva']    = $numero;
+				$data['emiriva']    = $efecha;
+
+				$mSQL = $this->db->insert_string('smov', $data); 
+				$ban=$this->db->simple_query($mSQL);
+				if($ban==false){ memowrite($mSQL,'RIVC'); }
+
+				//Devoluciones debe crear un NC si esta en el periodo
+				$mnumnc = $this->datasis->fprox_sql("nccli");
+				$data=array();
+				$data['cod_cli']    = 'REIVA';
+				$data['nombre']     = 'RETENCION DE I.V.A. POR COMPENSAR';
+				$data['tipo_doc']   = 'NC';
+				$data['numero']     = $mnumnc;
+				$data['fecha']      = $fecha;
+				$data['monto']      = $itmonto;
+				$data['impuesto']   = 0;
+				$data['abonos']     = 0;
+				$data['vence']      = $fecha;
+				$data['tipo_ref']   = ($ittipo_doc='F')? 'FC' : 'DV';
+				$data['num_ref']    = $itnumero;
+				$data['observa1']   = 'RET/IVA DE '.$cod_cli.' A '.$ittipo_doc.$itnumero;
+				$data['estampa']    = $estampa;
+				$data['hora']       = $hora;
+				$data['transac']    = $transac;
+				$data['usuario']    = $usuario;
+				$data['codigo']     = 'NOCON';
+				$data['descrip']    = 'NOTA DE CONTABILIDAD';
+				$data['nroriva']    = $numero;
+				$data['emiriva']    = $efecha;
+
+				$mSQL = $this->db->insert_string('smov', $data); 
+				$ban=$this->db->simple_query($mSQL);
+				if($ban==false){ memowrite($mSQL,'RIVC'); }
+			}
+		}
+
 		logusu($do->table,"Creo $this->tits $primary ");
 	}
 

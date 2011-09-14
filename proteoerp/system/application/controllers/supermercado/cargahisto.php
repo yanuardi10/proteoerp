@@ -45,7 +45,6 @@ class Cargahisto extends Controller {
 		if ($form->on_success()){
 			$fecha=$form->fecha->newValue;
 			$encab=false;
-
 			if(!empty($form->hf->upload_data['full_path'])){
 				if(substr($form->hf->upload_data['file_name'],0,2)=='hf'){
 					$encab=true;
@@ -53,6 +52,7 @@ class Cargahisto extends Controller {
 					unlink($form->hf->upload_data['full_path']);
 				}else{
 					$form->error='Encabezado primero';
+					$form->build_form();
 				}
 			}
 
@@ -68,7 +68,7 @@ class Cargahisto extends Controller {
 		}
 
 		$data['content'] = $form->output;
-		$data['title']   = heading('Traer ventas de cajas');
+		$data['title']   = heading('Cargar ventas de los hist&oacute;ricos de cajas');
 		$data['script']  = script('jquery-1.2.6.js');
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
@@ -92,12 +92,19 @@ class Cargahisto extends Controller {
 
 		if(!empty($tabla)){
 			$db = dbase_open($fdbf, 0);
+			$cc=$error=0;
 			if ($db) {
 				$cajero='';
 				$record_numbers = dbase_numrecords($db);
 				for ($i = 1; $i <= $record_numbers; $i++) {
 					$row = dbase_get_record_with_names($db, $i);
 					if($row['FECHA']==$fecha){
+						if($cc==0){
+							$mSQL="DELETE FROM $tabla WHERE fecha='$fecha' AND caja=".$this->db->escape(trim($row['CAJA']));
+							$ban=$this->db->simple_query($mSQL);
+							if(!$ban){ memowrite($mSQL,'cargahisto'); $error++; }
+						}
+
 						$data=array();
 						if($tabla=='vieite'){
 							if(empty($cajero)) $cajero=$this->cajero;
@@ -141,10 +148,11 @@ class Cargahisto extends Controller {
 							$data['cajero']     =$cajero;
 							$data['caja']       =trim($row['CAJA']);
 						}
-						$sql=$this->db->insert_string($tabla, $data);
-						$mSQL=str_replace('INSERT','INSERT IGNORE',$sql);
+
+						$mSQL=$this->db->insert_string($tabla, $data);
 						$ban=$this->db->simple_query($mSQL);
 						if(!$ban){ memowrite($mSQL,'cargahisto'); $error++; }
+						$cc++;
 					}
 				}
 			}
