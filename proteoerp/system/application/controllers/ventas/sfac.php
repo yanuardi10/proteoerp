@@ -42,7 +42,7 @@ class sfac extends validaciones {
 		$filter->fechad = new dateonlyField('Desde', 'fechad','d/m/Y');
 		$filter->fechad->clause  = 'where';
 		$filter->fechad->db_name = 'fecha';
-		$filter->fechad->insertValue = date('Y-m-d');
+		//$filter->fechad->insertValue = date('Y-m-d');
 		$filter->fechad->size=10;
 		$filter->fechad->operator='>=';
 		$filter->fechad->group = '1';
@@ -50,10 +50,19 @@ class sfac extends validaciones {
 		$filter->fechah = new dateonlyField('Hasta', 'fechah','d/m/Y');
 		$filter->fechah->clause = 'where';
 		$filter->fechah->db_name='fecha';
-		$filter->fechah->insertValue = date('Y-m-d');
+		//$filter->fechah->insertValue = date('Y-m-d');
 		$filter->fechah->size=10;
 		$filter->fechah->operator='<=';
 		$filter->fechah->group = '1';
+
+		$filter->referen = new  dropdownField ('Condici&oacute;n', 'referen');
+		$filter->referen->option('' ,'Todos');
+		$filter->referen->option('E','Contado');
+		$filter->referen->option('C','Cr&eacute;dito');
+		$filter->referen->style='width:150px;';
+		$filter->referen->operator='=';
+		$filter->referen->clause  = 'where';
+		$filter->referen->group = '1';
 
 		$filter->numero = new inputField('N&uacute;mero', 'numero');
 		$filter->numero->size = 20;

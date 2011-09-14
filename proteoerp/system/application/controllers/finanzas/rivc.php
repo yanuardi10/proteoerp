@@ -48,7 +48,7 @@ class rivc extends Controller {
 		$filter->buttons('reset', 'search');
 		$filter->build();
 
-		$uri = anchor($this->url.'dataedit/show/<raencode><#nrocomp#></raencode>','<#nrocomp#>');
+		$uri = anchor($this->url.'dataedit/show/<#id#>','<#nrocomp#>');
 
 		$grid = new DataGrid('');
 		$grid->order_by('nrocomp','desc');
@@ -57,9 +57,9 @@ class rivc extends Controller {
 		$grid->column_orderby('Comprobante'   ,$uri,'nrocomp','align="left"');
 		$grid->column_orderby('Emisi&oacute;n','<dbdate_to_human><#emision#></dbdate_to_human>','emision','align="center"');
 		$grid->column_orderby('fecha'         ,'<dbdate_to_human><#fecha#></dbdate_to_human>'  ,'fecha','align="center"');
-		$grid->column_orderby('Cliente'       ,'clipro','clipro','align="left"');
-		$grid->column_orderby('Nombre'        ,'nombre','nombre','align="left"');
-		$grid->column_orderby('RIF'           ,'rif'   ,'rif'   ,'align="left"');
+		$grid->column_orderby('Cliente'       ,'cod_cli','cod_cli','align="left"');
+		$grid->column_orderby('Nombre'        ,'nombre' ,'nombre','align="left"');
+		$grid->column_orderby('RIF'           ,'rif'    ,'rif'   ,'align="left"');
 		$grid->column_orderby('Impuesto'      ,'<nformat><#impuesto#></nformat>','impuesto','align="right"');
 		$grid->column_orderby('Total'         ,'<nformat><#gtotal#></nformat>'  ,'gtotal','align="right"');
 		$grid->column_orderby('Monto Ret.'    ,'<nformat><#reiva#></nformat>'   ,'reiva','align="right"');
@@ -106,9 +106,10 @@ class rivc extends Controller {
 		$edit->emision->maxlength =8;
 
 		$edit->periodo = new inputField('Per&iacute;odo','periodo');
-		$edit->periodo->rule='max_length[8]';
-		$edit->periodo->size =10;
-		$edit->periodo->maxlength =8;
+		$edit->periodo->rule='max_length[6]|required';
+		$edit->periodo->size =6;
+		$edit->periodo->insertValue=date('Ym');
+		$edit->periodo->maxlength =6;
 
 		$edit->fecha = new dateField('Fecha de Recepci&oacute;n','fecha');
 		$edit->fecha->rule='chfecha|required';
@@ -116,18 +117,17 @@ class rivc extends Controller {
 		$edit->fecha->size =10;
 		$edit->fecha->maxlength =8;
 
-		$edit->cod_cli = new hiddenField('Cliente','cod_cli');
+		$edit->cod_cli = new inputField('Cliente','cod_cli');
 		$edit->cod_cli->rule='max_length[5]|required';
-		$edit->cod_cli->size =7;
-		$edit->cod_cli->maxlength =5;
-		$edit->cod_cli->readonly=true;
+		$edit->cod_cli->size =10;
+		//$edit->cod_cli->maxlength =5;
 
 		$edit->nombre = new hiddenField('Nombre','nombre');
 		$edit->nombre->rule='max_length[40]';
 		$edit->nombre->size =42;
 		$edit->nombre->maxlength =40;
 
-		$edit->rif = new inputField('RIF','rif');
+		$edit->rif = new hiddenField('RIF','rif');
 		$edit->rif->rule='max_length[14]';
 		$edit->rif->size =16;
 		$edit->rif->maxlength =14;
@@ -238,7 +238,7 @@ class rivc extends Controller {
 
 		$edit->it_numero = new inputField('numero','numero_<#i#>');
 		$edit->it_numero->db_name='numero';
-		$edit->it_numero->rule='max_length[12]|required';
+		$edit->it_numero->rule='max_length[12]|required|callback_chrepetidos|callback_chfac';
 		$edit->it_numero->size =14;
 		$edit->it_numero->maxlength =12;
 		$edit->it_numero->rel_id ='itrivc';
@@ -362,7 +362,7 @@ class rivc extends Controller {
 		//Fin del Detalle
 		//****************************
 
-		$edit->buttons('modify', 'save', 'undo', 'delete', 'back','add_rel');
+		$edit->buttons('save', 'undo', 'back','add_rel');
 		$edit->build();
 
 		//$data['content'] = $edit->output;
@@ -377,6 +377,31 @@ class rivc extends Controller {
 		$data['head']   .= style('redmond/jquery-ui-1.8.1.custom.css');
 		$data['title']   = heading($this->tits);
 		$this->load->view('view_ventanas', $data);
+	}
+
+	function chrepetidos($numero){
+		if(!isset($this->ch_repetido)) $this->ch_repetido=array();
+
+		if(array_search($numero,$this->ch_repetido)===false){
+			$this->ch_repetido[]=$numero;
+			return true;
+		}else{
+			$this->validation->set_message('chrepetidos', 'La factura '.$numero.' esta repetida');
+			return false;
+		}
+	}
+
+	function chfac($numero){
+		$cod_cli=$this->input->post('cod_cli');
+		$mSQL='SELECT COUNT(*) FROM sfac WHERE numero='.$this->db->escape($numero).' AND cod_cli='.$this->db->escape($cod_cli);
+		$cana=$this->datasis->dameval($mSQL);
+
+		if($cana==1){
+			return true;
+		}else{
+			$this->validation->set_message('chfac', 'La factura '.$numero.' no pertenece al cliente '.$cod_cli);
+			return false;
+		}
 	}
 
 	function buscasfac(){
@@ -400,7 +425,7 @@ class rivc extends Controller {
 			$mSQL="SELECT a.tipo_doc, a.numero, a.totalg, a.iva, a.iva*$rete AS reiva
 				FROM sfac AS a
 				LEFT JOIN itrivc AS b ON a.tipo_doc=b.tipo_doc AND a.numero=b.numero
-				WHERE a.cod_cli=$sclidb AND a.numero LIKE $qdb AND b.numero IS NULL
+				WHERE a.cod_cli=$sclidb AND a.numero LIKE $qdb AND b.numero IS NULL AND a.tipo_doc <> 'X'
 				ORDER BY numero LIMIT 10";
 
 			$query = $this->db->query($mSQL);
@@ -430,21 +455,24 @@ class rivc extends Controller {
 		$qdb  = $this->db->escape('%'.$mid.'%');
 
 		$data = '{[ ]}';
-		if($mid !== false){
+		if($mid !== false){ 
 			$retArray = $retorno = array();
 			$mSQL="SELECT TRIM(nombre) AS nombre, TRIM(rifci) AS rifci, cliente, tipo
-				FROM scli WHERE cliente LIKE ${qdb} OR rifci LIKE ${qdb}
+				FROM scli WHERE cliente LIKE ${qdb} OR rifci LIKE ${qdb} OR nombre LIKE ${qdb}
 				ORDER BY rifci LIMIT 10";
 
 			$query = $this->db->query($mSQL);
 			if ($query->num_rows() > 0){
 				foreach( $query->result_array() as  $row ) {
-					$retArray['value']   = $row['rifci'];
-					$retArray['label']   = '('.$row['rifci'].') '.$row['nombre'];
-					$retArray['nombre']  = $row['nombre'];
+					$retArray['value']   = $row['cliente'];
+					$retArray['label']   = '('.$row['rifci'].') '.utf8_encode($row['nombre']);
+					$retArray['rifci']   = $row['rifci'];
+					$retArray['nombre']  = utf8_encode($row['nombre']);
 					$retArray['cod_cli'] = $row['cliente'];
 					$retArray['tipo']    = $row['tipo'];
+
 					array_push($retorno, $retArray);
+
 				}
 				$data = json_encode($retorno);
 			}
@@ -507,7 +535,7 @@ class rivc extends Controller {
 	function _post_insert($do){
 		$primary =implode(',',$do->pk);
 
-		$transac = $do->get('ntransa');
+		$transac = $do->get('transac');
 		$estampa = $do->get('estampa');
 		$hora    = $do->get('hora');
 		$usuario = $do->get('usuario');
@@ -521,6 +549,10 @@ class rivc extends Controller {
 		$efecha  = $do->get('emision');
 		$fecha   = $do->get('fecha');
 		$numero  = $do->get('numero');
+
+		$mSQL = "DELETE FROM smov WHERE transac='$transac'";
+		$ban=$this->db->simple_query($mSQL);
+		if($ban==false){ memowrite($mSQL,'RIVC'); }
 
 
 		$rel='itrivc';
@@ -538,9 +570,9 @@ class rivc extends Controller {
 			if ($query->num_rows() > 0){
 				$row = $query->row();
 
-				$anterior    = $row['reiva'];
-				$itreferen   = $row['referen'];
-				$itfactura   = $row['factura'];
+				$anterior    = $row->reiva;
+				$itreferen   = $row->referen;
+				$itfactura   = $row->factura;
 			}
 
 			if($anterior == 0) {
@@ -560,7 +592,7 @@ class rivc extends Controller {
 			if($ittipo_doc == 'F'){
 				//Si el saldo es 0  o menor que el monto retenido genera un anticipo
 				if($saldo==0 || $itmonto>$saldo){
-					$mnumant = $this->datasis->fprox_sql('nancli');
+					$mnumant = $this->datasis->fprox_numero('nancli');
 
 					$data=array();
 					$data['cod_cli']    = $cod_cli;
@@ -587,7 +619,7 @@ class rivc extends Controller {
 				}else{
 				//Si tiene saldo
 					//Chequea que el monto de la retencion sea menor al saldo en caso tal crea una NC
-					$mnumnc = $this->datasis->fprox_sql('nccli');
+					$mnumnc = $this->datasis->fprox_numero('nccli');
 					$data=array();
 					$data['cod_cli']    = $cod_cli;
 					$data['nombre']     = $nombre;
@@ -610,7 +642,7 @@ class rivc extends Controller {
 					$data['nroriva']    = $numero;
 					$data['emiriva']    = $efecha;
 
-					$mSQL = $this->db->insert_string('smov', $data); 
+					$mSQL = $this->db->insert_string('smov', $data);
 					$ban=$this->db->simple_query($mSQL);
 					if($ban==false){ memowrite($mSQL,'RIVC'); }
 
@@ -621,7 +653,7 @@ class rivc extends Controller {
 					if($ban==false){ memowrite($mSQL,'RIVC'); }
 				}
 
-				$mnumnd = $this->datasis->fprox_sql('ndcli');
+				$mnumnd = $this->datasis->fprox_numero('ndcli');
 				$data=array();
 				$data['cod_cli']    = 'REIVA';
 				$data['nombre']     = 'RETENCION DE I.V.A. POR COMPENSAR';
@@ -643,12 +675,14 @@ class rivc extends Controller {
 				$data['descrip']    = 'NOTA DE CONTABILIDAD';
 				$data['nroriva']    = $numero;
 				$data['emiriva']    = $efecha;
+
+				$mSQL = $this->db->insert_string('smov', $data);
 				$ban=$this->db->simple_query($mSQL);
 				if($ban==false){ memowrite($mSQL,'RIVC'); }
 			}else{
 			//Si es una devolucion
 				// Devoluciones genera un ND al cliente
-				$mnumnd = $this->datasis->fprox_sql('ndcli');
+				$mnumnd = $this->datasis->fprox_numero('ndcli');
 				$data=array();
 				$data['cod_cli']    = $cod_cli;
 				$data['nombre']     = $nombre;
@@ -673,7 +707,7 @@ class rivc extends Controller {
 				if($ban==false){ memowrite($mSQL,'RIVC'); }
 
 				//Devoluciones debe crear un NC si esta en el periodo
-				$mnumnc = $this->datasis->fprox_sql("nccli");
+				$mnumnc = $this->datasis->fprox_numero("nccli");
 				$data=array();
 				$data['cod_cli']    = 'REIVA';
 				$data['nombre']     = 'RETENCION DE I.V.A. POR COMPENSAR';
@@ -718,36 +752,36 @@ class rivc extends Controller {
 	function instalar(){
 		if (!$this->db->table_exists('rivc')) {
 			$mSQL="CREATE TABLE `rivc` (
-			  `id` int(6) NOT NULL AUTO_INCREMENT,
-			  `nrocomp` char(8) NOT NULL DEFAULT '',
-			  `emision` date DEFAULT NULL,
-			  `periodo` char(8) DEFAULT NULL,
-			  `fecha` date DEFAULT NULL,
-			  `cod_cli` char(5) DEFAULT NULL,
- 			  `nombre` char(40) DEFAULT NULL,
- 			  `rif` char(14) DEFAULT NULL,
-			  `exento` decimal(15,2) DEFAULT NULL,
-			  `tasa` decimal(5,2) DEFAULT NULL,
-			  `general` decimal(15,2) DEFAULT NULL,
-			  `geneimpu` decimal(15,2) DEFAULT NULL,
- 			  `tasaadic` decimal(5,2) DEFAULT NULL,
-			  `adicional` decimal(15,2) DEFAULT NULL,
-			  `adicimpu` decimal(15,2) DEFAULT NULL,
-			  `tasaredu` decimal(5,2) DEFAULT NULL,
-			  `reducida` decimal(15,2) DEFAULT NULL,
-			  `reduimpu` decimal(15,2) DEFAULT NULL,
-			  `stotal` decimal(15,2) DEFAULT NULL,
-			  `impuesto` decimal(15,2) DEFAULT NULL,
-			  `gtotal` decimal(15,2) DEFAULT NULL,
-			  `reiva` decimal(15,2) DEFAULT NULL,
-			  `estampa` date DEFAULT NULL,
-			  `hora` char(8) DEFAULT NULL,
-			  `usuario` char(12) DEFAULT NULL,
-			  `modificado` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-			  `transac` varchar(8) DEFAULT NULL,
-			  PRIMARY KEY (`id`),
-			  UNIQUE KEY `nrocomp_clipro` (`nrocomp`,`cod_cli`),
-			  KEY `modificado` (`modificado`)
+			`id` int(6) NOT NULL AUTO_INCREMENT,
+			`nrocomp` char(8) NOT NULL DEFAULT '',
+			`emision` date DEFAULT NULL,
+			`periodo` char(8) DEFAULT NULL,
+			`fecha` date DEFAULT NULL,
+			`cod_cli` char(5) DEFAULT NULL,
+			`nombre` char(40) DEFAULT NULL,
+			`rif` char(14) DEFAULT NULL,
+			`exento` decimal(15,2) DEFAULT NULL,
+			`tasa` decimal(5,2) DEFAULT NULL,
+			`general` decimal(15,2) DEFAULT NULL,
+			`geneimpu` decimal(15,2) DEFAULT NULL,
+			`tasaadic` decimal(5,2) DEFAULT NULL,
+			`adicional` decimal(15,2) DEFAULT NULL,
+			`adicimpu` decimal(15,2) DEFAULT NULL,
+			`tasaredu` decimal(5,2) DEFAULT NULL,
+			`reducida` decimal(15,2) DEFAULT NULL,
+			`reduimpu` decimal(15,2) DEFAULT NULL,
+			`stotal` decimal(15,2) DEFAULT NULL,
+			`impuesto` decimal(15,2) DEFAULT NULL,
+			`gtotal` decimal(15,2) DEFAULT NULL,
+			`reiva` decimal(15,2) DEFAULT NULL,
+			`estampa` date DEFAULT NULL,
+			`hora` char(8) DEFAULT NULL,
+			`usuario` char(12) DEFAULT NULL,
+			`modificado` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+			`transac` varchar(8) DEFAULT NULL,
+			PRIMARY KEY (`id`),
+			UNIQUE KEY `nrocomp_clipro` (`nrocomp`,`cod_cli`),
+			KEY `modificado` (`modificado`)
 			) ENGINE=MyISAM DEFAULT CHARSET=latin1 ROW_FORMAT=FIXED";
 			$this->db->simple_query($mSQL);
 		}
@@ -781,10 +815,10 @@ class rivc extends Controller {
 			`ffactura` date DEFAULT '0000-00-00',
 			`modificado` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 			PRIMARY KEY (`id`),
-			UNIQUE KEY `rivatra` (`transac`),
 			UNIQUE KEY `tipo_doc_numero` (`tipo_doc`,`numero`),
 			KEY `Numero` (`numero`),
-			KEY `modificado` (`modificado`)
+			KEY `modificado` (`modificado`),
+			KEY `rivatra` (`transac`)
 			) ENGINE=MyISAM DEFAULT CHARSET=latin1 ROW_FORMAT=FIXED";
 			$this->db->simple_query($mSQL);
 		}
