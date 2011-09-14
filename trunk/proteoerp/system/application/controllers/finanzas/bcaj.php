@@ -104,7 +104,7 @@ class Bcaj extends Controller {
 
 		//Poner los campos que faltan
 
-		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
+		$edit->buttons('modify', 'save', 'undo', 'back');
 		$edit->build();
 
 		$data['content'] = $edit->output;
