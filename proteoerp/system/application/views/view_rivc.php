@@ -9,10 +9,10 @@ else:
 
 $campos=$form->template_details('itrivc');
 $scampos  ='<tr id="tr_itrivc_<#i#>">';
-$scampos .='<td class="littletablerow" align="left" >'.$campos['it_tipo_doc']['field'].'</td>';
+$scampos .='<td class="littletablerow" align="left" ><b id="tipo_doc_val_<#i#>"></b>'.$campos['it_tipo_doc']['field'].'</td>';
 $scampos .='<td class="littletablerow" align="left" >'.$campos['it_numero']['field'].'</td>';
-$scampos .='<td class="littletablerow" align="right">'.$campos['it_gtotal']['field'].'</td>';
-$scampos .='<td class="littletablerow" align="right">'.$campos['it_impuesto']['field'].'</td>';
+$scampos .='<td class="littletablerow" align="right"><b id="gtotal_val_<#i#>"></b>'.$campos['it_gtotal']['field'].'</td>';
+$scampos .='<td class="littletablerow" align="right"><b id="impuesto_val_<#i#>"></b>'.$campos['it_impuesto']['field'].'</td>';
 $scampos .='<td class="littletablerow" align="right">'.$campos['it_reiva']['field'].'</td>';
 $scampos .= '<td class="littletablerow"><a href=# onclick="del_itrivc(<#i#>);return false;">'.img("images/delete.jpg").'</a></td></tr>';
 $campos=$form->js_escape($scampos);
@@ -32,7 +32,7 @@ $(function(){
 		autocod(i.toString());
 	}
 	
-	$('#rif').autocomplete({
+	$('#cod_cli').autocomplete({
 		source: function( req, add){
 			$.ajax({
 				url:  "<?php echo site_url('finanzas/rivc/buscascli'); ?>",
@@ -56,8 +56,8 @@ $(function(){
 			$('#nombre').val(ui.item.nombre);
 			$('#nombre_val').text(ui.item.nombre);
 			$('#rif').val(ui.item.rifci);
-			$('#cod_cli').val(ui.item.cod_cli);
-			$('#cod_cli_val').text(ui.item.cod_cli);
+			$('#rif_val').text(ui.item.rifci);
+			//$('#cod_cli').val(ui.item.cod_cli);
 		}
 	});
 
@@ -178,7 +178,7 @@ function autocod(id){
 						<table>
 							<tr>
 								<td class="littletablerowth"><?php echo $form->nrocomp->label  ?>*</td>
-								<td class="littletablerow">  <?php echo $form->nrocomp->output ?></td>
+								<td class="littletablerow">  <?php echo $form->periodo->output.$form->nrocomp->output ?></td>
 							</tr><tr>
 								<td class="littletablerowth"><?php echo $form->emision->label  ?>*</td>
 								<td class="littletablerow">  <?php echo $form->emision->output ?></td>
@@ -193,10 +193,10 @@ function autocod(id){
 						<table>
 							<tr>
 								<td class="littletablerowth"><?php echo $form->cod_cli->label  ?>*</td>
-								<td class="littletablerow">  <b id='cod_cli_val'><?php echo $form->cod_cli->value; ?></b><?php echo $form->cod_cli->output ?></td>
+								<td class="littletablerow">  <?php echo $form->cod_cli->output ?></td>
 							</tr><tr>
 								<td class="littletablerowth"><?php echo $form->rif->label  ?>*</td>
-								<td class="littletablerow">  <?php echo $form->rif->output ?></td>
+								<td class="littletablerow">  <b id='rif_val'><?php echo $form->rif->value; ?></b><?php echo $form->rif->output ?></td>
 							</tr><tr>
 								<td class="littletablerowth"><?php echo $form->nombre->label  ?></td>
 								<td class="littletablerow">  <b id='nombre_val'><?php echo $form->nombre->value ?></b><?php echo $form->nombre->output ?></td>
@@ -276,6 +276,39 @@ function autocod(id){
 	  <td>
 	<tr>
 <table>
-	
 <?php echo $form_end?>
+
+<?php if($form->_status=='show'){ ?>
+<br>
+<table  width="100%" style="margin:0;width:100%;" > 
+	<tr>
+		<td colspan=10 class="littletableheader">Documentos relacionados</td>
+	</tr>
+	<!-- <tr>
+		<th class="littletablerowth" >Cliente</th>
+		<th class="littletablerowth" >Tipo</th>
+		<th class="littletablerowth" >Numero</th>
+		<th class="littletablerowth" >Concepto</th>
+		<th class="littletablerowth" align='right'>Monto</th>
+	</tr> -->
+	<?php
+	$transac=$form->get_from_dataobjetct('transac');
+	$mSQL='SELECT cod_cli, nombre,tipo_doc, numero, monto, observa1 FROM smov WHERE transac='.$this->db->escape($transac);
+	$query = $this->db->query($mSQL);
+	if ($query->num_rows() > 0){
+		foreach ($query->result() as $row){
+	?>
+	<tr>
+		<td class="littletablerowth" ><?php echo $row->cod_cli.' '.$row->nombre;    ?></td>
+		<td class="littletablerowth" align='center'><?php echo $row->tipo_doc; ?></td>
+		<td class="littletablerow"   ><?php echo $row->numero;   ?></td>
+		<td class="littletablerowth" ><?php echo $row->observa1; ?></td>
+		<td class="littletablerow"   align='right'><?php echo nformat($row->monto);?></td>
+	</tr>
+	<?php
+		}
+	}?>
+</table>
+<?php  } ?>
+
 <?php endif; ?>

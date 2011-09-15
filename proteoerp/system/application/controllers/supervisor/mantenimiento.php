@@ -688,7 +688,16 @@ class Mantenimiento extends Controller{
 			}
 		}
 
-		$data['title']   = '<h1>Actualizacion de ProteoERP desde el svn</h1>';
+		$host= $this->db->hostname;
+		$db  = $this->db->database;
+		$pwd = $this->db->password;
+		$usr = $this->db->username;
+		$file= tempnam('/tmp',$db.'.sql');
+
+		/*$cmd="mysql -u $usr -p $pwd -h $host -D $db < intramenu.sql";
+		$sal=exec($cmd);*/
+
+		$data['title']   = heading('Actualizaci&oacute;n de ProteoERP desde el svn');
 		$data['head']    = '';
 		$this->load->view('view_ventanas', $data);
 	}
