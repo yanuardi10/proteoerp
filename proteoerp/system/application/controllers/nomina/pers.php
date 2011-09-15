@@ -742,53 +742,45 @@ script;
 	}
 
 	function crear() {
-		echo json_encode("crear");
+		$js= file_get_contents('php://input');
+		$data= json_decode($js,true);
+		$campos = $data['data'];
+		$codigo = $data['data']['codigo'];
+		$nombre = trim($data['data']['nombre']).' '.$data['data']['apellido'];;
+
+		unset($campos['nomcont']);
+		unset($campos['id']);
+		
+		//Evita la hora de las fechas
+		$campos['nacimi']  = substr($campos['nacimi'], 0,10);
+		$campos['ingreso'] = substr($campos['ingreso'],0,10);
+		$campos['retiro']  = substr($campos['retiro'], 0,10);
+		$campos['vence']   = substr($campos['vence'],  0,10);
+		$campos['vari5']   = substr($campos['vari5'],  0,10);
+		
+		$mHay = $this->datasis->dameval("SELECT count(*) FROM pers WHERE codigo='".$data['data']['codigo']."'");
+		if  ( $mHay > 0 ){
+			echo "{ success: false, message: 'Ya existe ese codigo'}";
+		} else {
+			$mSQL = $this->db->insert_string("pers", $campos );
+			$this->db->simple_query($mSQL);
+			logusu('pers',"PERSONAL $codigo NOMBRE  $nombre CREADO");
+			echo "{ success: true, message: ".$data['data']['codigo']."}";
+		}
 	}
 
 	function modificar(){
 		$js= file_get_contents('php://input');
 		$data= json_decode($js,true);
-		
-		$codigo   = $data['data']['codigo'];
-		$nacional = $data['data']['nacional'];
-		$cedula   = $data['data']['cedula'];
-		$nombre   = $data['data']['nombre'];
-		$apellido = $data['data']['apellido'];
-		$civil    = $data['data']['civil'];
-		$sexo     = $data['data']['sexo'];
-		$carnet   = $data['data']['carnet'];
-		$status   = $data['data']['status'];
-		$tipo     = $data['data']['tipo'];
-		$contrato = $data['data']['contrato'];
-		$ingreso  = $data['data']['ingreso'];
-		$retiro   = $data['data']['retiro'];
-		$vence    = $data['data']['vence'];
-		$direc1   = $data['data']['direc1'];
-		$direc2   = $data['data']['direc2'];
-		$direc3   = $data['data']['direc2'];
-		$telefono = $data['data']['telefono'];
-		$sueldo   = $data['data']['sueldo'];
-		$nacimi   = $data['data']['nacimi'];
-		$vari1    = $data['data']['vari1'];
-		$vari2    = $data['data']['vari2'];
-		$vari3    = $data['data']['vari3'];
-		$vari4    = $data['data']['vari4'];
-		$vari5    = $data['data']['vari5'];
-		$vari6    = $data['data']['vari6'];
-		$divi     = $data['data']['divi'];
-		$depto    = $data['data']['depto'];
-		$sucursal = $data['data']['sucursal'];
-		$cargo    = $data['data']['cargo'];
-		$dialab   = $data['data']['dialab'];
-		$dialib   = $data['data']['dialib'];
-		$niveled  = $data['data']['niveled'];
-		$sso      = $data['data']['sso'];
-	
 		$campos = $data['data'];
+
+		$codigo = $data['data']['codigo'];
+		$nombre = trim($data['data']['nombre']).' '.$data['data']['apellido'];;
+
 		unset($campos['nomcont']);
 		unset($campos['codigo']);
 		
-		//quita la hora de las fechas
+		//Evita la hora de las fechas
 		$campos['nacimi']  = substr($campos['nacimi'], 0,10);
 		$campos['ingreso'] = substr($campos['ingreso'],0,10);
 		$campos['retiro']  = substr($campos['retiro'], 0,10);
@@ -796,22 +788,32 @@ script;
 		$campos['vari5']   = substr($campos['vari5'],  0,10);
 		
 		//print_r($campos);
-		$mSQL = $this->db->update_string("pers", $campos,"codigo='".$data['data']['codigo']."'" );
+		$mSQL = $this->db->update_string("pers", $campos,"id='".$data['data']['id']."'" );
 		$this->db->simple_query($mSQL);
-		//echo "{ success: false, message: ".$data['data']['codigo']."}";
-		echo $mSQL;
-
-		/*if ( isset($_REQUEST['data']) ) {
-			$data = json_decode($_REQUEST['data'], true);
-			echo "data=".$data["codigo"] ;
-			
-			
-			//echo json_encode("Modificar");
-		} else print_r($http_response_header);*/
+		logusu('pers',"PERSONAL $codigo NOMBRE  $nombre MODIFICADO");
+		echo "{ success: true, message: 'Trabajador Modificado'}";
 	}
 
 	function eliminar(){
-		echo json_encode("Eliminar");
+		$js= file_get_contents('php://input');
+		$data= json_decode($js,true);
+		$campos = $data['data'];
+
+		$codigo = $data['data']['codigo'];
+		$nombre = trim($data['data']['nombre']).' '.$data['data']['apellido'];;
+
+		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM nomina WHERE codigo='$codigo'");
+		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM asig   WHERE codigo='$codigo'");
+
+		if ($chek > 0){
+			echo "{ success: false, message: ''Trabajador con Movimiento no puede ser Borrado'}";
+		} else {
+			$this->db->simple_query("DELETE FROM pers WHERE codigo='$codigo'");
+			logusu('pers',"PERSONAL $codigo NOMBRE  $nombre CREADO");
+			echo "{ success: true, message: ''Trabajador Eliminado'}";
+		}
+
+
 	}
 
 	function persextjs(){
@@ -895,8 +897,6 @@ script;
 		}
 		$query->free_result();
 
-		
-
 		$script = "
 <script type=\"text/javascript\">
 var BASE_URL   = '".base_url()."';
@@ -920,14 +920,12 @@ Ext.require([
 	'Ext.toolbar.Paging'
 ]);
 
-
 var registro;
 var urlApp = '".base_url()."';
 
 // Define our data model
 var Empleados = Ext.regModel('Empleados', {
-	fields: ['codigo','nacional','cedula','nombre','apellido','civil','sexo', 'carnet', 'status', 'tipo' ,'contrato','ingreso','retiro','vence', 'direc1', 'direc2', 'direc3', 'telefono','sueldo','nacimi','vari1','vari2','vari3','vari4','vari5','vari6','divi','depto', 'sucursal','cargo','dialab','dialib','niveled','sso', 'profes','nomcont'],
-
+	fields: ['id','codigo','nacional','cedula','nombre','apellido','civil','sexo', 'carnet', 'status', 'tipo' ,'contrato','ingreso','retiro','vence', 'direc1', 'direc2', 'direc3', 'telefono','sueldo','nacimi','vari1','vari2','vari3','vari4','vari5','vari6','divi','depto', 'sucursal','cargo','dialab','dialib','niveled','sso', 'profes','nomcont'],
 /*		validations: [
 			{ type: 'length', field: 'codigo',   min: 1 },
 			{ type: 'length', field: 'nacional', min: 1 }, 
@@ -935,65 +933,46 @@ var Empleados = Ext.regModel('Empleados', {
 			{ type: 'length', field: 'nombre',   min: 3 }
 		],
 */
-	idProperty: 'codigo',
-	proxy: new Ext.data.HttpProxy({
-		method : 'POST',
+	//idProperty: 'codigo',
+	proxy: {
+		type: 'ajax',
 		noCache: false,
 		api: {
 			read   : urlApp + 'nomina/pers/grid',
 			create : urlApp + 'nomina/pers/crear',
 			update : urlApp + 'nomina/pers/modificar' ,
-			destroy: urlApp + 'nomina/pers/eliminar'
+			destroy: urlApp + 'nomina/pers/eliminar',
+			method: 'POST'
 			},
 		reader: {
 			type: 'json',
 			successProperty: 'success',
 			root: 'data',
 			messageProperty: 'message',
-			totalProperty: 'results',
-			id: 'codigo'
+			totalProperty: 'results'
+			//id: 'codigo'
 			},
 		writer: {
 			type: 'json',
 			root: 'data',
 			writeAllFields: true,
-			id: 'codigo',
-			callback: function( op, suc, res ) {
+			//id: 'codigo',
+			callback: function( op, suc ) {
 				Ext.Msg.Alert('que paso');
 				}
 			},
-		//success: proxyAfter,
 		listeners: {
 			exception: function( proxy, response, operation) {
-				var json = Ext.decode(responce.responseTxt);
-				if (json) {
-					Ext.MessageBox.show({
-						title: 'ERROR EN EL SERVIDOR',
-						msg: json.message,
-						icon: Ext.MessageBox.ERROR,
-						buttons: Ext.Msg.OK
-					});
-			
-				} else {
-					Ext.MessageBox.show({
-						title: 'EXCEPCION REMOTA',
-						msg: operation.getError(),
-						icon: Ext.MessageBox.ERROR,
-						buttons: Ext.Msg.OK
-					});
-				}
+				Ext.MessageBox.show({
+					title: 'EXCEPCION REMOTA',
+					msg: operation.getError(),
+					icon: Ext.MessageBox.ERROR,
+					buttons: Ext.Msg.OK
+				});
 			}
 		}
-	})
-});
-
-var proxyAfter = function(proxy, response, operation) {
-		Ext.Msg.Alert('meco'+operation);
-	if(response.responseText) {
-		Ext.Msg.Alert('meco'+operation);
 	}
-	
-};
+});
 
 //Data Store
 var storePers = Ext.create('Ext.data.Store', {
@@ -1004,21 +983,31 @@ var storePers = Ext.create('Ext.data.Store', {
 	autoSync: true,
 	groupField: 'nomcont',
 	method: 'POST',
-	idProperty: 'codigo'
+	listeners: {
+		write: function(mr,re, op) {
+			Ext.Msg.alert('Aviso','Registro Guardado '+re.success)
+		}
+	}
 });
+
 
 //Column Model
 var colPers = 
 	[
 		{ header: 'Codigo',     width:  60, sortable: true, dataIndex: 'codigo',   field:  { type: 'textfield' }, filter: { type: 'string'  } }, 
+		{ header: 'Status',     width:  60, sortable: true, dataIndex: 'status',   field:  { type: 'textfield' }, filter: { type: 'string'  } }, 
 		{ header: 'Nac',        width:  60, sortable: true, dataIndex: 'nacional', field:  { type: 'textfield' }, filter: { type: 'string'  } }, 
 		{ header: 'Cedula',     width:  80, sortable: true, dataIndex: 'cedula',   field:  { type: 'textfield' }, filter: { type: 'string'  } }, 
 		{ header: 'Nombre',     width: 150, sortable: true, dataIndex: 'nombre',   field:  { type: 'textfield' }, filter: { type: 'string'  } }, //editor: 'textfield' }, 
 		{ header: 'Apellidos',  width: 150, sortable: true, dataIndex: 'apellido', field:  { type: 'textfield' }, filter: { type: 'string'  } }, 
 		{ header: 'Contrato',   width:  60, sortable: true, dataIndex: 'contrato', field:  { type: 'textfield' }, filter: { type: 'string'  } }, 
-		{ header: 'Ingreso',    width:  70, sortable: true, dataIndex: 'ingreso',  field:  { type: 'date'      }, filter: { type: 'date'    } }, 
-		{ header: 'Sueldo',     width: 120, sortable: true, dataIndex: 'sueldo',   field:  { type: 'numeroc'   }, filter: { type: 'numeric' }, align: 'right' }, 
-		{ header: 'Nacimiento', width:  70, sortable: true, dataIndex: 'nacimi',   field:  { type: 'date'      }, filter: { type: 'date'    } }  
+		{ header: 'Ingreso',    width:  70, sortable: true, dataIndex: 'ingreso',  field:  { type: 'date'      }, filter: { type: 'date'    }, renderer: Ext.util.Format.dateRenderer('d/m/Y') }, 
+		{ header: 'Sueldo',     width: 120, sortable: true, dataIndex: 'sueldo',   field:  { type: 'numeroc'   }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00') }, 
+		{ header: 'Nacimiento', width:  70, sortable: true, dataIndex: 'nacimi',   field:  { type: 'date'      }, filter: { type: 'date'    } }, 
+		{ header: 'Telefono',   width: 100, sortable: true, dataIndex: 'telefono', field:  { type: 'textfield' }, filter: { type: 'string'  } },
+		{ header: '".$this->datasis->traevalor('NOMVARI1')."',     width: 60, sortable: true, dataIndex: 'vari1',   field:  { type: 'numeric'   }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0.00') }, 
+		{ header: '".$this->datasis->traevalor('NOMVARI2')."',     width: 60, sortable: true, dataIndex: 'vari2',   field:  { type: 'numeric'   }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0.00') }, 
+		{ header: '".$this->datasis->traevalor('NOMVARI3')."',     width: 60, sortable: true, dataIndex: 'vari3',   field:  { type: 'numeric'   }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0.00') }
 	];
 
 var ci = {
@@ -1047,13 +1036,16 @@ var win;
 
 // Main 
 Ext.onReady(function(){
-var meco=0;
 	function showContactForm() {
 		if (!win) {
 			// Create Form
 			var writeForm = Ext.define('Pers.Form', {
 				extend: 'Ext.form.Panel',
 				alias:  'widget.writerform',
+				result: function(res){
+					alert('Meco');
+				},
+
 				requires: ['Ext.form.field.Text'],
 				initComponent: function(){
 					Ext.apply(this, {
@@ -1111,15 +1103,15 @@ var meco=0;
 											items: [
 												{ xtype: 'textfield',   fieldLabel: 'Dias Laborables',  labelWidth:120, name: 'dialab',  allowBlank: true, width:230 },
 												{ xtype: 'textfield',   fieldLabel: 'Dias Libres',      labelWidth:120, name: 'dialib',  allowBlank: true, width:230 },
-												{ xtype: 'numberfield', fieldLabel: 'Sueldo ',          labelWidth:120, name: 'sueldo',  hideTrigger: true, decimalPrecision: 2, fieldStyle: 'text-align: right', width:230 },
+												{ xtype: 'numberfield', fieldLabel: 'Sueldo ',          labelWidth:120, name: 'sueldo',  hideTrigger: true, fieldStyle: 'text-align: right', width:230,renderer : Ext.util.Format.numberRenderer('0,000.00') },
 											]
 										},{
 											title:'Fechas',
 											//defaults:{anchor:'-20'},
 											items: [
-												{ xtype: 'datefield', fieldLabel: 'Fecha de Ingreso',      labelWidth:120, name: 'ingreso', width:230 },
-												{ xtype: 'datefield', fieldLabel: 'Fecha Vencimiento',  labelWidth:120, name: 'vence',   width:230  },
-												{ xtype: 'datefield', fieldLabel: 'Fecha de Retiro',       labelWidth:120, name: 'retiro',  width:230  },
+												{ xtype: 'datefield', fieldLabel: 'Fecha de Ingreso',   labelWidth:120, name: 'ingreso', width:230, format: 'd/m/Y', submitFormat: 'Y-m-d' },
+												{ xtype: 'datefield', fieldLabel: 'Fecha Vencimiento',  labelWidth:120, name: 'vence',   width:230, format: 'd/m/Y', submitFormat: 'Y-m-d' },
+												{ xtype: 'datefield', fieldLabel: 'Fecha de Retiro',    labelWidth:120, name: 'retiro',  width:230, format: 'd/m/Y', submitFormat: 'Y-m-d' },
 											]
 										},{
 											title:'Ubicacion',
@@ -1163,7 +1155,7 @@ var meco=0;
 											items: [
 												{ xtype: 'textfield', fieldLabel: 'Numero de Carnet',  labelWidth:110, name: 'carnet',  allowBlank: true, width:260 },
 												{ xtype: 'textfield', fieldLabel: 'Nro Seguro Social', labelWidth:110, name: 'sso',  allowBlank: true, width:260 },
-												{ xtype: 'datefield', fieldLabel: 'Fecha Nacimiento',  labelWidth:110, name: 'nacimi',  width:260 },
+												{ xtype: 'datefield', fieldLabel: 'Fecha Nacimiento',  labelWidth:110, name: 'nacimi',  width:260, format: 'd/m/Y', submitFormat: 'Y-m-d' },
 												{ xtype: 'combo',     fieldLabel: 'Nivel Instruccion', labelWidth:110, name: 'niveled',  width:260, store: [".$niveled."] },
 											]
 										}]
@@ -1179,7 +1171,7 @@ var meco=0;
 										{ xtype: 'textfield',   fieldLabel: '".$this->datasis->traevalor('NOMVARI2')."', labelWidth:100, name: 'vari2', allowBlank: true, width: 200 },
 										{ xtype: 'textfield',   fieldLabel: '".$this->datasis->traevalor('NOMVARI3')."', labelWidth:100, name: 'vari3', allowBlank: true, width: 200 },
 										{ xtype: 'textfield',   fieldLabel: '".$this->datasis->traevalor('NOMVARI4')."', labelWidth:100, name: 'vari4', allowBlank: true, width: 200 },
-										{ xtype: 'datefield',   fieldLabel: '".$this->datasis->traevalor('NOMVARI5')."', labelWidth:100, name: 'vari5', width: 200 },
+										{ xtype: 'datefield',   fieldLabel: '".$this->datasis->traevalor('NOMVARI5')."', labelWidth:100, name: 'vari5', width: 200, format: 'd/m/Y', submitFormat: 'Y-m-d' },
 										{ xtype: 'textfield',   fieldLabel: '".$this->datasis->traevalor('NOMVARI6')."', labelWidth:100, name: 'vari6', allowBlank: true, width: 200 },
 									]
 								}]
@@ -1223,14 +1215,12 @@ var meco=0;
 					form.reset();
 					this.onReset();
 				},
-
 				onReset: function(){
 					this.setActiveRecord(null);
 					storePers.load();
 					//Hide Windows 
 					win.hide();
 				},
-				
 				onClose: function(){
 					var form = this.getForm();
 					form.reset();
@@ -1252,16 +1242,15 @@ var meco=0;
 					beforeshow: function() {
 						var form = this.down('writerform').getForm();
 						this.activeRecord = registro;
+						
 						if (registro) {
 							form.loadRecord(registro);
-							form.findField('codigo').readOnly = true;
+							//form.findField('codigo').readOnly = true;
 						} else {
-							form.findField('codigo').readOnly = false;
+							//form.findField('codigo').readOnly = false;
 						}
 					}
-				},
-				afterRequest: proxyAfter
-				
+				}
 			});
 		}
 		win.show();
