@@ -481,7 +481,7 @@ class pers extends validaciones {
 		$edit->sueldo->maxlength=15;
 		$edit->sueldo->rule="trim|numeric";
 		$edit->sueldo->css_class='inputnum';
-			
+	
 		$edit->tipocuent = new dropdownField("Tipo Cuenta", "tipoe");
 		$edit->tipocuent->option("","");
 		$edit->tipocuent->options(array("A"=> "Ahorro","C"=>"Corriente"));
@@ -902,7 +902,7 @@ script;
 var BASE_URL   = '".base_url()."';
 var BASE_PATH  = '".base_url()."';
 var BASE_ICONS = '".base_url()."assets/icons/';
-var BASE_UX    = '".base_url()."js/ext/ux';
+var BASE_UX    = '".base_url()."assets/js/ext/ux';
 
 Ext.Loader.setConfig({ enabled: true });
 Ext.Loader.setPath('Ext.ux', BASE_UX);
