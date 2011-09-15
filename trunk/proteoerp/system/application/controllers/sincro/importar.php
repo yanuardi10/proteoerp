@@ -676,7 +676,7 @@ class Importar extends Controller {
 		} else {
 			if($this->noborra==false)
 				unlink($dir.$nombre);
-			return 'Error con el archivo zip';
+			return 'Error con el archivo zip ('.$res.')';
 		}
 		return '';
 	}
