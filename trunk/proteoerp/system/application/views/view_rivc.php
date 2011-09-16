@@ -11,6 +11,7 @@ $campos=$form->template_details('itrivc');
 $scampos  ='<tr id="tr_itrivc_<#i#>">';
 $scampos .='<td class="littletablerow" align="left" ><b id="tipo_doc_val_<#i#>"></b>'.$campos['it_tipo_doc']['field'].'</td>';
 $scampos .='<td class="littletablerow" align="left" >'.$campos['it_numero']['field'].'</td>';
+$scampos .='<td class="littletablerow" align="left" ><b id="fecha_val_<#i#>"></b>'.$campos['it_fecha']['field'].'</td>';
 $scampos .='<td class="littletablerow" align="right"><b id="gtotal_val_<#i#>"></b>'.$campos['it_gtotal']['field'].'</td>';
 $scampos .='<td class="littletablerow" align="right"><b id="impuesto_val_<#i#>"></b>'.$campos['it_impuesto']['field'].'</td>';
 $scampos .='<td class="littletablerow" align="right">'.$campos['it_reiva']['field'].'</td>';
@@ -77,9 +78,16 @@ function totalizar(){
 		pos=this.name.lastIndexOf('_');
 		if(pos>0){
 			ind       = this.name.substring(pos+1);
-			itreiva   = Number(this.value);
-			itimpuesto= Number($("#impuesto_"+ind).val());
-			itgtotal  = Number($("#gtotal_"+ind).val());
+			ittipo_doc= $("#tipo_doc_"+ind).val();
+
+			itreiva   = Number(Math.abs(this.value));
+			itimpuesto= Number(Math.abs($("#impuesto_"+ind).val()));
+			itgtotal  = Number(Math.abs($("#gtotal_"+ind).val()));
+			if(ittipo_doc=='D'){
+				itreiva   = (-1)*itreiva;
+				itimpuesto= (-1)*itimpuesto;
+				itgtotal  = (-1)*itgtotal;
+			}
 
 			impuesto=impuesto+itimpuesto;
 			reiva   =reiva+itreiva;
@@ -153,6 +161,9 @@ function autocod(id){
 
 			$('#reiva_'+id).val(ui.item.reiva);
 
+			//$('#fecha_val_'+id).text(ui.item.fecha);
+			$('#fecha_'+id).val(ui.item.fecha);
+
 			totalizar();
 		}
 	});
@@ -215,6 +226,7 @@ function autocod(id){
 			<tr id='__INPL__'>
 				<th bgcolor='#7098D0'>Tipo    </th>
 				<th bgcolor='#7098D0'>N&uacute;mero</th>
+				<th bgcolor='#7098D0'>Fecha</th>
 				<th bgcolor='#7098D0'>Monto Factura</th>
 				<th bgcolor='#7098D0'>Impuesto</th>
 				<th bgcolor='#7098D0'>Monto retenido</th>
@@ -229,6 +241,7 @@ function autocod(id){
 				$it_gtotal   = "it_gtotal_$i";
 				$it_impuesto = "it_impuesto_$i";
 				$it_reiva    = "it_reiva_$i";
+				$it_fecha    = "it_fecha_$i";
 			?>
 
 			<tr id='tr_itrivc_<?php echo $i; ?>'>
@@ -237,6 +250,9 @@ function autocod(id){
 				<?php echo $form->$it_tipo_doc->output; ?>
 				</td>
 				<td class="littletablerow" align="left" ><?php echo $form->$it_numero->output;   ?></td>
+				<td class="littletablerow" >
+				<?php echo $form->$it_fecha->output;   ?>
+				</td>
 				<td class="littletablerow" align="right">
 				<b id='gtotal_val_<?php echo $i ?>'><?php echo $form->$it_gtotal->value; ?></b>
 				<?php echo $form->$it_gtotal->output;   ?>
