@@ -114,21 +114,21 @@ class rivc extends Controller {
 		$edit->fecha = new dateField('Fecha de Recepci&oacute;n','fecha');
 		$edit->fecha->rule='chfecha|required';
 		$edit->fecha->insertValue = date('Y-m-d');
-		$edit->fecha->size =10;
+		$edit->fecha->size =9;
 		$edit->fecha->maxlength =8;
 
 		$edit->cod_cli = new inputField('Cliente','cod_cli');
-		$edit->cod_cli->rule='max_length[5]|required';
+		$edit->cod_cli->rule='max_length[5]|required|strtoupper';
 		$edit->cod_cli->size =10;
 		//$edit->cod_cli->maxlength =5;
 
 		$edit->nombre = new hiddenField('Nombre','nombre');
-		$edit->nombre->rule='max_length[40]';
+		$edit->nombre->rule='max_length[200]';
 		$edit->nombre->size =42;
-		$edit->nombre->maxlength =40;
+		$edit->nombre->maxlength =200;
 
 		$edit->rif = new hiddenField('RIF','rif');
-		$edit->rif->rule='max_length[14]';
+		$edit->rif->rule='max_length[14]|strtoupper';
 		$edit->rif->size =16;
 		$edit->rif->maxlength =14;
 		$edit->rif->autocomplete = false;
@@ -236,6 +236,13 @@ class rivc extends Controller {
 		$edit->it_tipo_doc->maxlength =1;
 		$edit->it_tipo_doc->rel_id ='itrivc';
 
+		$edit->it_fecha = new dateonlyField('fecha','fecha_<#i#>');
+		$edit->it_fecha->db_name='fecha';
+		$edit->it_fecha->rule='required';
+		$edit->it_fecha->size =11;
+		$edit->it_fecha->maxlength =10;
+		$edit->it_fecha->rel_id ='itrivc';
+
 		$edit->it_numero = new inputField('numero','numero_<#i#>');
 		$edit->it_numero->db_name='numero';
 		$edit->it_numero->rule='max_length[12]|required|callback_chrepetidos|callback_chfac';
@@ -244,7 +251,7 @@ class rivc extends Controller {
 		$edit->it_numero->rel_id ='itrivc';
 		$edit->it_numero->autocomplete = false;
 
-		$edit->it_exento = new inputField('exento','exento_<#i#>');
+		/*$edit->it_exento = new inputField('exento','exento_<#i#>');
 		$edit->it_exento->db_name='exento';
 		$edit->it_exento->rule='max_length[15]|numeric';
 		$edit->it_exento->css_class='inputnum';
@@ -322,7 +329,7 @@ class rivc extends Controller {
 		$edit->it_reduimpu->css_class='inputnum';
 		$edit->it_reduimpu->size =17;
 		$edit->it_reduimpu->maxlength =15;
-		$edit->it_reduimpu->rel_id ='itrivc';
+		$edit->it_reduimpu->rel_id ='itrivc';*/
 
 		$edit->it_stotal = new inputField('stotal','stotal_<#i#>');
 		$edit->it_stotal->db_name='stotal';
@@ -422,7 +429,7 @@ class rivc extends Controller {
 		if($mid !== false){
 			$retArray = $retorno = array();
 
-			$mSQL="SELECT a.tipo_doc, a.numero, a.totalg, a.iva, a.iva*$rete AS reiva
+			$mSQL="SELECT a.tipo_doc, a.numero, a.totalg, a.fecha,a.iva, a.iva*$rete AS reiva
 				FROM sfac AS a
 				LEFT JOIN itrivc AS b ON a.tipo_doc=b.tipo_doc AND a.numero=b.numero
 				WHERE a.cod_cli=$sclidb AND a.numero LIKE $qdb AND b.numero IS NULL AND a.tipo_doc <> 'X'
@@ -434,10 +441,12 @@ class rivc extends Controller {
 					$retArray['label']   = $row['tipo_doc'].'-'.$row['numero'].' '.$row['totalg'].' Bs.';
 					$retArray['value']   = $row['numero'];
 					$retArray['gtotal']  = $row['totalg'];
-					$retArray['reiva']   = round($row['reiva'],2);
+					$retArray['reiva']   = (($row['tipo_doc']=='D')? -1: 1)*round($row['reiva'],2);
+					//$retArray['reiva']   = round($row['reiva'],2);
 					$retArray['impuesto']= $row['iva'];
+					$retArray['fecha']   = dbdate_to_human($row['fecha']);
 					$retArray['tipo_doc']= $row['tipo_doc'];
-					
+
 					array_push($retorno, $retArray);
 				}
 				$data = json_encode($retorno);
@@ -487,14 +496,18 @@ class rivc extends Controller {
 		$estampa = $do->get('estampa');
 		$hora    = $do->get('hora');
 		$usuario = $do->get('usuario');
+		$exento=$general=$geneimpu=$adicional=$adicimpu=$reducida=$reduimpu=$stotal=$impuesto=$gtotal=$reiva=0;
+
 
 		$rel='itrivc';
 		$cana = $do->count_rel($rel);
 		for($i = 0;$i < $cana;$i++){
+			$ittipo_doc   = $do->get_rel($rel, 'tipo_doc', $i);
+			$itreiva      = abs($do->get_rel($rel, 'reiva', $i));
 			$dbitnumero   = $this->db->escape($do->get_rel($rel, 'numero'  , $i));
-			$dbittipo_doc = $this->db->escape($do->get_rel($rel, 'tipo_doc', $i));
+			$dbittipo_doc = $this->db->escape($ittipo_doc);
 
-			$sql="SELECT exento,tasa,reducida,sobretasa,montasa,monredu,monadic FROM sfac WHERE numero=$dbitnumero AND tipo_doc=$dbittipo_doc";
+			$sql="SELECT exento,tasa,reducida,sobretasa,montasa,monredu,monadic,nfiscal,totals,totalg,iva FROM sfac WHERE numero=$dbitnumero AND tipo_doc=$dbittipo_doc";
 			$query = $this->db->query($sql);
 			if ($query->num_rows() > 0){
 				$row = $query->row();
@@ -513,6 +526,26 @@ class rivc extends Controller {
 				$do->set_rel($rel, 'reducida' , $row->monredu , $i);
 				$do->set_rel($rel, 'reduimpu' , $row->reducida, $i);
 
+				$do->set_rel($rel, 'nfiscal' , $row->nfiscal, $i);
+				$do->set_rel($rel, 'reiva'    , $itreiva     , $i);
+
+				$exento   =$exento+$row->exento;
+
+				$general  =$general+$row->montasa;
+				$geneimpu =$geneimpu+$row->tasa;
+
+				$adicional=$adicional+$row->monadic;
+				$adicimpu =$adicimpu+$row->sobretasa;
+
+				$reducida =$reducida+$row->monredu;
+				$reduimpu =$reduimpu+$row->reducida;
+
+				//Totales del encabezado
+				$fac=($ittipo_doc=='D')? -1:1; //Para restar las devoluciones
+				$stotal   =$stotal+($fac*$row->totals);
+				$impuesto =$impuesto+($fac*$row->iva);
+				$gtotal   =$gtotal+($fac*$row->totalg);
+				$reiva    =$reiva+($fac*$itreiva);
 			}
 
 			$do->set_rel($rel, 'estampa', $estampa, $i);
@@ -520,6 +553,18 @@ class rivc extends Controller {
 			$do->set_rel($rel, 'usuario', $usuario, $i);
 			$do->set_rel($rel, 'transac', $transac, $i);
 		}
+
+		$do->set('exento'   ,$exento);
+		$do->set('general'  ,$general);
+		$do->set('geneimpu' ,$geneimpu);
+		$do->set('adicional',$adicional);
+		$do->set('adicimpu' ,$adicimpu);
+		$do->set('reducida' ,$reducida);
+		$do->set('reduimpu' ,$reduimpu);
+		$do->set('stotal'   ,$stotal);
+		$do->set('impuesto' ,$impuesto);
+		$do->set('gtotal'   ,$gtotal);
+		$do->set('reiva'    ,$reiva);
 
 		return true;
 	}
@@ -752,37 +797,37 @@ class rivc extends Controller {
 	function instalar(){
 		if (!$this->db->table_exists('rivc')) {
 			$mSQL="CREATE TABLE `rivc` (
-			`id` int(6) NOT NULL AUTO_INCREMENT,
-			`nrocomp` char(8) NOT NULL DEFAULT '',
-			`emision` date DEFAULT NULL,
-			`periodo` char(8) DEFAULT NULL,
-			`fecha` date DEFAULT NULL,
-			`cod_cli` char(5) DEFAULT NULL,
-			`nombre` char(40) DEFAULT NULL,
-			`rif` char(14) DEFAULT NULL,
-			`exento` decimal(15,2) DEFAULT NULL,
-			`tasa` decimal(5,2) DEFAULT NULL,
-			`general` decimal(15,2) DEFAULT NULL,
-			`geneimpu` decimal(15,2) DEFAULT NULL,
-			`tasaadic` decimal(5,2) DEFAULT NULL,
-			`adicional` decimal(15,2) DEFAULT NULL,
-			`adicimpu` decimal(15,2) DEFAULT NULL,
-			`tasaredu` decimal(5,2) DEFAULT NULL,
-			`reducida` decimal(15,2) DEFAULT NULL,
-			`reduimpu` decimal(15,2) DEFAULT NULL,
-			`stotal` decimal(15,2) DEFAULT NULL,
-			`impuesto` decimal(15,2) DEFAULT NULL,
-			`gtotal` decimal(15,2) DEFAULT NULL,
-			`reiva` decimal(15,2) DEFAULT NULL,
-			`estampa` date DEFAULT NULL,
-			`hora` char(8) DEFAULT NULL,
-			`usuario` char(12) DEFAULT NULL,
-			`modificado` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-			`transac` varchar(8) DEFAULT NULL,
-			PRIMARY KEY (`id`),
-			UNIQUE KEY `nrocomp_clipro` (`nrocomp`,`cod_cli`),
-			KEY `modificado` (`modificado`)
-			) ENGINE=MyISAM DEFAULT CHARSET=latin1 ROW_FORMAT=FIXED";
+				`id` int(6) NOT NULL AUTO_INCREMENT,
+				`nrocomp` varchar(8) NOT NULL DEFAULT '',
+				`emision` date DEFAULT NULL,
+				`periodo` char(8) DEFAULT NULL,
+				`fecha` date DEFAULT NULL,
+				`cod_cli` varchar(5) DEFAULT NULL,
+				`nombre` varchar(200) DEFAULT NULL,
+				`rif` varchar(14) DEFAULT NULL,
+				`exento` decimal(15,2) DEFAULT NULL,
+				`tasa` decimal(5,2) DEFAULT NULL,
+				`general` decimal(15,2) DEFAULT NULL,
+				`geneimpu` decimal(15,2) DEFAULT NULL,
+				`tasaadic` decimal(5,2) DEFAULT NULL,
+				`adicional` decimal(15,2) DEFAULT NULL,
+				`adicimpu` decimal(15,2) DEFAULT NULL,
+				`tasaredu` decimal(5,2) DEFAULT NULL,
+				`reducida` decimal(15,2) DEFAULT NULL,
+				`reduimpu` decimal(15,2) DEFAULT NULL,
+				`stotal` decimal(15,2) DEFAULT NULL,
+				`impuesto` decimal(15,2) DEFAULT NULL,
+				`gtotal` decimal(15,2) DEFAULT NULL,
+				`reiva` decimal(15,2) DEFAULT NULL,
+				`estampa` date DEFAULT NULL,
+				`hora` char(8) DEFAULT NULL,
+				`usuario` varchar(12) DEFAULT NULL,
+				`modificado` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+				`transac` varchar(8) DEFAULT NULL,
+				PRIMARY KEY (`id`),
+				UNIQUE KEY `nrocomp_clipro` (`nrocomp`,`cod_cli`),
+				KEY `modificado` (`modificado`)
+			) ENGINE=MyISAM AUTO_INCREMENT=5 DEFAULT CHARSET=latin1 ROW_FORMAT=FIXED";
 			$this->db->simple_query($mSQL);
 		}
 
