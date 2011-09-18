@@ -15,7 +15,7 @@ $scampos .='<td class="littletablerow" align="left" ><b id="fecha_val_<#i#>"></b
 $scampos .='<td class="littletablerow" align="right"><b id="gtotal_val_<#i#>"></b>'.$campos['it_gtotal']['field'].'</td>';
 $scampos .='<td class="littletablerow" align="right"><b id="impuesto_val_<#i#>"></b>'.$campos['it_impuesto']['field'].'</td>';
 $scampos .='<td class="littletablerow" align="right">'.$campos['it_reiva']['field'].'</td>';
-$scampos .= '<td class="littletablerow"><a href=# onclick="del_itrivc(<#i#>);return false;">'.img("images/delete.jpg").'</a></td></tr>';
+$scampos .='<td class="littletablerow"><a href=# onclick="del_itrivc(<#i#>);return false;">'.img("images/delete.jpg").'</a></td></tr>';
 $campos=$form->js_escape($scampos);
 
 if(isset($form->error_string)) echo '<div class="alert">'.$form->error_string.'</div>';
@@ -172,6 +172,15 @@ function autocod(id){
 <?php } ?>
 
 <table width='100%' align='center'>
+
+	<?php if($form->_status=='show'){ ?>
+	<tr>
+		<td valign="bottom">
+			<a href="javascript:void(0);" onclick="window.open('/proteoerp/formatos/verhtml/RIVC/<?php echo $form->get_from_dataobjetct('id'); ?>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');">
+			<img src="/proteoerp/images/reportes.gif" alt="Imprimir Documento" title="Imprimir Documento" border="0" height="30">						</a>
+		</td>
+	</tr>
+	<?php } ?>
 	<tr>
 		<td align=right>
 			<?php echo $container_tr; ?>
