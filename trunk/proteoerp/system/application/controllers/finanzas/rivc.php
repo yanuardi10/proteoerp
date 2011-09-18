@@ -133,6 +133,10 @@ class rivc extends Controller {
 		$edit->rif->maxlength =14;
 		$edit->rif->autocomplete = false;
 
+		/*$edit->reintegro = new radiogroupField('Operaci&oacute;n', 'reintegro', array('R'=>'Reintegrar','A'=>'Crear anticipo','P'=>'Crear CxP'));
+		$edit->reintegro->insertValue='A';
+		$edit->reintegro->rule='required';*/
+
 		$edit->exento = new inputField('Monto Exento','exento');
 		$edit->exento->rule='max_length[15]|numeric';
 		$edit->exento->css_class='inputnum';
@@ -220,6 +224,7 @@ class rivc extends Controller {
 		$edit->estampa = new autoUpdateField('estampa' ,date('Ymd'), date('Ymd'));
 		$edit->hora    = new autoUpdateField('hora',date('H:i:s'), date('H:i:s'));
 		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
+		$edit->origen  = new autoUpdateField('origen' ,'R','R');
 
 		$edit->modificado = new inputField('modificado','modificado');
 		$edit->modificado->rule='max_length[8]';
