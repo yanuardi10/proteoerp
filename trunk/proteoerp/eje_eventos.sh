@@ -3,4 +3,4 @@
 # Ejemplo para ejecutar los eventos programados
 
 cd /srv/www/htdocs/proteoerp
-php index.php sincro notifica ejecutor
+php -q index.php sincro notifica ejecutor

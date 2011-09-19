@@ -74,6 +74,41 @@ class rivc extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
+	function reintegrar($id){
+		$this->rapyd->load('dataform');
+
+		$form = new DataForm('finanzas/rivc/reintegrar/'.$id.'/process');
+		$form->title(' ');
+		//$form->script($script);
+
+
+		$form->cargo = new dropdownField('Con cargo a','cargo');
+		$form->cargo->option('','Seleccionar');
+		$form->cargo->options("SELECT codbanc, CONCAT_WS('-',codbanc,banco) AS label FROM banc WHERE activo='S' ORDER BY codbanc");
+		$form->cargo->onchange='desactivacampo(this.value)';
+		$form->cargo->rule='max_length[5]|required';
+
+		$form->cheque = new inputField('N&uacute;mero de cheque', 'cheque');
+		$form->cheque->rule='condi_required|callback_chobligaban';
+		$form->cheque->append('Aplica  solo si el cargo es a un banco');
+
+		$form->benefi = new inputField('Beneficiario', 'benefi');
+		//$form->benefi->insertValue=$nombre;
+		$form->benefi->rule='condi_required|callback_chobligaban';
+		$form->benefi->append('Aplica  solo si el cargo es a un banco');
+
+		$action = "javascript:window.location='".site_url('finanzas/rivc/dataedit/show/'.$id)."'";
+		$form->button('btn_regresa', 'Regresar', $action, 'TR');
+
+		$form->submit('btnsubmit','Procesar');
+		$form->build_form();
+
+		$data['content'] = $form->output;
+		$data['head']    = $this->rapyd->get_head().script('jquery.js');
+		$data['title']   = heading($this->titp);
+		$this->load->view('view_ventanas', $data);
+	}
+
 	function dataedit(){
 		$this->rapyd->load('datadetails','dataobject');
 
@@ -92,7 +127,6 @@ class rivc extends Controller {
 		$edit->pre_process('insert','_pre_insert');
 		$edit->pre_process('update','_pre_update');
 		$edit->pre_process('delete','_pre_delete');
-
 
 		$edit->nrocomp = new inputField('Comprobante','nrocomp');
 		$edit->nrocomp->rule='max_length[8]|required';
@@ -343,6 +377,7 @@ class rivc extends Controller {
 		$edit->it_stotal->size =17;
 		$edit->it_stotal->maxlength =15;
 		$edit->it_stotal->rel_id ='itrivc';
+		$edit->it_stotal->showformat ='decimal';
 
 		$edit->it_impuesto = new hiddenField('impuesto','impuesto_<#i#>');
 		$edit->it_impuesto->db_name='impuesto';
@@ -350,6 +385,7 @@ class rivc extends Controller {
 		$edit->it_impuesto->css_class='inputnum';
 		$edit->it_impuesto->size =17;
 		$edit->it_impuesto->maxlength =15;
+		$edit->it_impuesto->showformat ='decimal';
 		$edit->it_impuesto->rel_id ='itrivc';
 
 		$edit->it_gtotal = new hiddenField('gtotal','gtotal_<#i#>');
@@ -359,6 +395,7 @@ class rivc extends Controller {
 		$edit->it_gtotal->size =17;
 		$edit->it_gtotal->maxlength =15;
 		$edit->it_gtotal->rel_id ='itrivc';
+		$edit->it_gtotal->showformat ='decimal';
 		$edit->it_gtotal->autocomplete = false;
 
 		$edit->it_reiva = new inputField('reiva','reiva_<#i#>');
@@ -370,9 +407,14 @@ class rivc extends Controller {
 		$edit->it_reiva->rel_id ='itrivc';
 		$edit->it_reiva->onkeyup ='totalizar()';
 		$edit->it_reiva->autocomplete = false;
+		$edit->it_reiva->showformat ='decimal';
 		//****************************
 		//Fin del Detalle
 		//****************************
+		if($edit->_status=='show'){
+			$action = "javascript:window.location='".site_url('finanzas/rivc/reintegrar/'.$edit->get_from_dataobjetct('id'))."'";
+			$edit->button('btn_reintegrar', 'Reintegrar', $action, 'TR');
+		}
 
 		$edit->buttons('save', 'undo', 'back','add_rel');
 		$edit->build();
@@ -653,7 +695,7 @@ class rivc extends Controller {
 					$data['monto']      = $itmonto;
 					$data['impuesto']   = 0;
 					$data['vence']      = $fecha;
-					$data['tipo_ref']   = ($ittipo_doc='F')? 'FC' : 'DV';
+					$data['tipo_ref']   = ($ittipo_doc=='F')? 'FC' : 'DV';
 					$data['num_ref']    = $itnumero;
 					$data['observa1']   = 'RET/IVA DE '.$cod_cli.' A DOC. '.$ittipo_doc.$itnumero;
 					$data['usuario']    = $usuario;
@@ -680,7 +722,7 @@ class rivc extends Controller {
 					$data['impuesto']   = 0;
 					$data['abonos']     = $itmonto;
 					$data['vence']      = $fecha;
-					$data['tipo_ref']   = ($ittipo_doc='F')? 'FC' : 'DV';
+					$data['tipo_ref']   = ($ittipo_doc=='F')? 'FC' : 'DV';
 					$data['num_ref']    = $itnumero;
 					$data['observa1']   = 'APLICACION DE RETENCION A DOC. '.$ittipo_doc.$itnumero;
 					$data['estampa']    = $estampa;
@@ -714,9 +756,9 @@ class rivc extends Controller {
 				$data['impuesto']   = 0;
 				$data['abonos']     = 0;
 				$data['vence']      = $fecha;
-				$data['tipo_ref']   = ($ittipo_doc='F')? 'FC' : 'DV';
+				$data['tipo_ref']   = ($ittipo_doc=='F')? 'FC' : 'DV';
 				$data['num_ref']    = $itnumero;
-				$data['observa1']   = 'RET/IVA DE '.$cod_cli.' A '.$ittipo_doc.$itnumero;
+				$data['observa1']   = 'RET/IVA DE '.$cod_cli.' A DOC. '.$ittipo_doc.$itnumero;
 				$data['estampa']    = $estampa;
 				$data['hora']       = $hora;
 				$data['transac']    = $transac;
@@ -742,9 +784,9 @@ class rivc extends Controller {
 				$data['monto']      = $itmonto;
 				$data['impuesto']   = 0;
 				$data['vence']      = $fecha;
-				$data['tipo_ref']   = ($ittipo_doc='F')? 'FC' : 'DV';
+				$data['tipo_ref']   = ($ittipo_doc=='F')? 'FC' : 'DV';
 				$data['num_ref']    = $itnumero;
-				$data['observa1']   = 'RET/IVA DE '.$cod_cli.' A '.$ittipo_doc.$itnumero;
+				$data['observa1']   = 'RET/IVA DE '.$cod_cli.' A DOC. '.$ittipo_doc.$itnumero;
 				$data['estampa']    = $estampa;
 				$data['hora']       = $hora;
 				$data['transac']    = $transac;
@@ -768,9 +810,9 @@ class rivc extends Controller {
 				$data['impuesto']   = 0;
 				$data['abonos']     = 0;
 				$data['vence']      = $fecha;
-				$data['tipo_ref']   = ($ittipo_doc='F')? 'FC' : 'DV';
+				$data['tipo_ref']   = ($ittipo_doc=='F')? 'FC' : 'DV';
 				$data['num_ref']    = $itnumero;
-				$data['observa1']   = 'RET/IVA DE '.$cod_cli.' A '.$ittipo_doc.$itnumero;
+				$data['observa1']   = 'RET/IVA DE '.$cod_cli.' A DOC.'.$ittipo_doc.$itnumero;
 				$data['estampa']    = $estampa;
 				$data['hora']       = $hora;
 				$data['transac']    = $transac;
@@ -802,37 +844,38 @@ class rivc extends Controller {
 	function instalar(){
 		if (!$this->db->table_exists('rivc')) {
 			$mSQL="CREATE TABLE `rivc` (
-				`id` int(6) NOT NULL AUTO_INCREMENT,
-				`nrocomp` varchar(8) NOT NULL DEFAULT '',
-				`emision` date DEFAULT NULL,
-				`periodo` char(8) DEFAULT NULL,
-				`fecha` date DEFAULT NULL,
-				`cod_cli` varchar(5) DEFAULT NULL,
-				`nombre` varchar(200) DEFAULT NULL,
-				`rif` varchar(14) DEFAULT NULL,
-				`exento` decimal(15,2) DEFAULT NULL,
-				`tasa` decimal(5,2) DEFAULT NULL,
-				`general` decimal(15,2) DEFAULT NULL,
-				`geneimpu` decimal(15,2) DEFAULT NULL,
-				`tasaadic` decimal(5,2) DEFAULT NULL,
-				`adicional` decimal(15,2) DEFAULT NULL,
-				`adicimpu` decimal(15,2) DEFAULT NULL,
-				`tasaredu` decimal(5,2) DEFAULT NULL,
-				`reducida` decimal(15,2) DEFAULT NULL,
-				`reduimpu` decimal(15,2) DEFAULT NULL,
-				`stotal` decimal(15,2) DEFAULT NULL,
-				`impuesto` decimal(15,2) DEFAULT NULL,
-				`gtotal` decimal(15,2) DEFAULT NULL,
-				`reiva` decimal(15,2) DEFAULT NULL,
-				`estampa` date DEFAULT NULL,
-				`hora` char(8) DEFAULT NULL,
-				`usuario` varchar(12) DEFAULT NULL,
-				`modificado` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-				`transac` varchar(8) DEFAULT NULL,
-				PRIMARY KEY (`id`),
-				UNIQUE KEY `nrocomp_clipro` (`nrocomp`,`cod_cli`),
-				KEY `modificado` (`modificado`)
-			) ENGINE=MyISAM AUTO_INCREMENT=5 DEFAULT CHARSET=latin1 ROW_FORMAT=FIXED";
+			`id` int(6) NOT NULL AUTO_INCREMENT,
+			`nrocomp` varchar(8) NOT NULL DEFAULT '',
+			`emision` date DEFAULT NULL,
+			`periodo` char(8) DEFAULT NULL,
+			`fecha` date DEFAULT NULL,
+			`cod_cli` varchar(5) DEFAULT NULL,
+			`nombre` varchar(200) DEFAULT NULL,
+			`rif` varchar(14) DEFAULT NULL,
+			`exento` decimal(15,2) DEFAULT NULL,
+			`tasa` decimal(5,2) DEFAULT NULL,
+			`general` decimal(15,2) DEFAULT NULL,
+			`geneimpu` decimal(15,2) DEFAULT NULL,
+			`tasaadic` decimal(5,2) DEFAULT NULL,
+			`adicional` decimal(15,2) DEFAULT NULL,
+			`adicimpu` decimal(15,2) DEFAULT NULL,
+			`tasaredu` decimal(5,2) DEFAULT NULL,
+			`reducida` decimal(15,2) DEFAULT NULL,
+			`reduimpu` decimal(15,2) DEFAULT NULL,
+			`stotal` decimal(15,2) DEFAULT NULL,
+			`impuesto` decimal(15,2) DEFAULT NULL,
+			`gtotal` decimal(15,2) DEFAULT NULL,
+			`reiva` decimal(15,2) DEFAULT NULL,
+			`estampa` date DEFAULT NULL,
+			`hora` char(8) DEFAULT NULL,
+			`usuario` varchar(12) DEFAULT NULL,
+			`modificado` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+			`transac` varchar(8) DEFAULT NULL,
+			`origen` char(1) DEFAULT NULL,
+			PRIMARY KEY (`id`),
+			UNIQUE KEY `nrocomp_clipro` (`nrocomp`,`cod_cli`),
+			KEY `modificado` (`modificado`)
+			) ENGINE=MyISAM DEFAULT CHARSET=latin1 ROW_FORMAT=FIXED";
 			$this->db->simple_query($mSQL);
 		}
 
