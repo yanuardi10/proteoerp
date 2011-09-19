@@ -309,16 +309,9 @@ function autocod(id){
 	<tr>
 		<td colspan=10 class="littletableheader">Documentos relacionados</td>
 	</tr>
-	<!-- <tr>
-		<th class="littletablerowth" >Cliente</th>
-		<th class="littletablerowth" >Tipo</th>
-		<th class="littletablerowth" >Numero</th>
-		<th class="littletablerowth" >Concepto</th>
-		<th class="littletablerowth" align='right'>Monto</th>
-	</tr> -->
 	<?php
 	$transac=$form->get_from_dataobjetct('transac');
-	$mSQL='SELECT cod_cli, nombre,tipo_doc, numero, monto, observa1 FROM smov WHERE transac='.$this->db->escape($transac);
+	$mSQL='SELECT cod_cli, nombre,tipo_doc, numero, monto, observa1 FROM smov WHERE transac='.$this->db->escape($transac).' ORDER BY num_ref,cod_cli';
 	$query = $this->db->query($mSQL);
 	if ($query->num_rows() > 0){
 		foreach ($query->result() as $row){
