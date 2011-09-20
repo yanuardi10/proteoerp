@@ -100,6 +100,7 @@ class Recep extends Controller {
 		$this->rapyd->load('dataobject','datadetails');
 
 		$do = new DataObject("recep");
+		
 		$do->rel_one_to_many('seri', 'seri', array('recep'=>'recep'));
 
 		$edit = new DataDetails($this->tits, $do);
@@ -116,21 +117,23 @@ class Recep extends Controller {
 		$edit->recep->mode ="autohide";
 		$edit->recep->when=array('show','modify');
 
+		$edit->cod_prov  = new inputField("Proveedor", "cod_prov");
+
 		$edit->fecha = new  dateonlyField("Fecha",  "fecha");
 		$edit->fecha->insertValue = date('Y-m-d');
 		$edit->fecha->size        =12;
 		$edit->fecha->rule        = 'required';
 
 		$edit->observa = new textAreaField("Observaci&oacute;n", 'observa');
-		$edit->observa->cols = 100;
-		$edit->observa->rows = 3;
+		$edit->observa->cols = 80;
+		$edit->observa->rows = 1;
 /*
 		$edit->status = new dropdownField("Status", "status");
 		$edit->status->style="width:110px";
 		$edit->status->option("C1","Cuadrado");
 		$edit->status->option("C2","Pendiente");
 */
-		$edit->itbarras = new inputField("(<#o#>) Barras", "barras_<#i#>");
+		$edit->itbarras = new inputField("(<#o#>) Barras", "it_barras_<#i#>");
 		$edit->itbarras->rule         ='trim|required';
 		$edit->itbarras->size         =20;
 		$edit->itbarras->db_name      ='barras';
@@ -138,21 +141,21 @@ class Recep extends Controller {
 		$edit->itbarras->autocomplete =false;
 //		$edit->itbarras->append($button);
 
-                $edit->itcodigo = new inputField("(<#o#>) Codigo", "codigo_<#i#>");
+                $edit->itcodigo = new inputField("(<#o#>) Codigo", "it_codigo_<#i#>");
 		$edit->itcodigo->rule         ='trim|required';
 		$edit->itcodigo->size         =10;
 		$edit->itcodigo->db_name      ='codigo';
 		$edit->itcodigo->rel_id       ='seri';
 		$edit->itcodigo->autocomplete =false;
 
-		$edit->itdescrip = new inputField("(<#o#>) Descrip", "descrip_<#i#>");
-		$edit->itdescrip->rule         ='trim|required';
-		$edit->itdescrip->size         =40;
-		$edit->itdescrip->db_name      ='descrip';
-		$edit->itdescrip->rel_id       ='seri';
-		$edit->itdescrip->autocomplete =false;
+		$edit->itdescri = new inputField("(<#o#>) Descrip", "it_descri_<#i#>");
+		$edit->itdescri->rule         ='trim|required';
+		$edit->itdescri->size         =40;
+		$edit->itdescri->db_name      ='descrip';
+		$edit->itdescri->rel_id       ='seri';
+		$edit->itdescri->autocomplete =false;
                 
-                $edit->itserial = new inputField("(<#o#>) Serial", "serial_<#i#>");
+                $edit->itserial = new inputField("(<#o#>) Serial", "it_serial_<#i#>");
 		$edit->itserial->rule         ='trim|required';
 		$edit->itserial->size         =20;
 		$edit->itserial->db_name      ='serial';
@@ -171,14 +174,13 @@ class Recep extends Controller {
 			$edit->buttons("save");
 		}
 
-		$edit->buttons("modify","save","undo","back","add_rel","add");
+		$edit->buttons("modify","save","undo","back","add_rel");
 		$edit->build();
 
-		$smenu['link']   = barra_menu('198');
+		$smenu['link']   = barra_menu('999');
 		$data['smenu']   = $this->load->view('view_sub_menu', $smenu,true);
-		$conten['orden']   = $orden;
 		$conten["form"]  =&  $edit;
-		$data['content'] = $this->load->view('view_casi', $conten,true);
+		$data['content'] = $this->load->view('recep', $conten,true);
 		//$data['content'] = $edit->output;
 		$data['title']   = "$this->tits";
 		$data["head"]    = $this->rapyd->get_head().script('jquery.js').script('jquery-ui.js').script("plugins/jquery.numeric.pack.js").script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css');
@@ -240,7 +242,9 @@ class Recep extends Controller {
             `estampa` TIMESTAMP NULL
             ) COLLATE='latin1_swedish_ci' ENGINE=MyISAM ROW_FORMAT=DEFAULT";
             $this->db->simple_query($query);
-            
+	    
+            $query="ALTER TABLE `recep`  ADD PRIMARY KEY (`recep`)";
+            $this->db->simple_query($query);
         }
 }
 ?>

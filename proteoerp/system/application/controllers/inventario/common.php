@@ -322,4 +322,22 @@ class Common extends controller {
 		}
 		return $query;
 	}
+	
+	function get_codigo(){
+		$barras =$this->input->post('barras');
+		$barrase=$this->db->escape($barras);
+		echo $this->datasis->dameval("SELECT codigo FROM sinv WHERE barras=$barrase LIMIT 1");
+	}
+	
+	function get_descrip(){
+		$barras =$this->input->post('barras');
+		$barrase=$this->db->escape($barras);
+		echo $this->datasis->dameval("SELECT descrip FROM sinv WHERE barras=$barrase LIMIT 1");
+	}
+	
+	function get_cant(){
+		$barras =$this->input->post('barras');
+		$barrase=$this->db->escape($barras);
+		echo $this->datasis->dameval("SELECT count(*) FROM sinv WHERE barras=$barrase ");
+	}
 }
