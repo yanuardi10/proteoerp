@@ -160,8 +160,9 @@ class rivc extends Controller {
 			$transac  = $this->datasis->fprox_numero('ntransa');
 			$negreso  = $this->datasis->fprox_numero('negreso');
 			$codbanc  = $form->cargo->newValue;
+			$cod_cli  = $this->datasis->dameval("SELECT cod_cli FROM rivc WHERE id=".$this->db->escape($id));
 			$ttransac = $this->datasis->dameval("SELECT transac FROM rivc WHERE id=".$this->db->escape($id));
-			$totneto  = $this->datasis->dameval("SELECT SUM(monto*IF('ND',-1,1)) AS monto FROM smov WHERE transac='$ttransac' AND tipo_doc IN ('AN','ND')");
+			$totneto  = $this->datasis->dameval("SELECT SUM(monto*IF('ND',-1,1)) AS monto FROM smov WHERE transac='$ttransac' AND tipo_doc IN ('AN','ND') AND cod_cli=".$this->db->escape($cod_cli));
 	
 			$tipo1  = ($ttipo=='CAJ') ? 'D': 'C';
 			$negreso= $this->datasis->fprox_numero('negreso');
@@ -424,86 +425,6 @@ class rivc extends Controller {
 		$edit->it_numero->maxlength =12;
 		$edit->it_numero->rel_id ='itrivc';
 		$edit->it_numero->autocomplete = false;
-
-		/*$edit->it_exento = new inputField('exento','exento_<#i#>');
-		$edit->it_exento->db_name='exento';
-		$edit->it_exento->rule='max_length[15]|numeric';
-		$edit->it_exento->css_class='inputnum';
-		$edit->it_exento->size =17;
-		$edit->it_exento->maxlength =15;
-		$edit->it_excento->rel_id ='itrivc';
-
-		$edit->it_tasa = new inputField('tasa','tasa_<#i#>');
-		$edit->it_tasa->db_name='tasa';
-		$edit->it_tasa->rule='max_length[5]|numeric';
-		$edit->it_tasa->css_class='inputnum';
-		$edit->it_tasa->size =7;
-		$edit->it_tasa->maxlength =5;
-		$edit->it_tasa->rel_id ='itrivc';
-
-		$edit->it_general = new inputField('general','general_<#i#>');
-		$edit->it_general->db_name='general';
-		$edit->it_general->rule='max_length[15]|numeric';
-		$edit->it_general->css_class='inputnum';
-		$edit->it_general->size =17;
-		$edit->it_general->maxlength =15;
-		$edit->it_general->rel_id ='itrivc';
-
-		$edit->it_geneimpu = new inputField('geneimpu','geneimpu_<#i#>');
-		$edit->it_geneimpu->db_name='geneimpu';
-		$edit->it_geneimpu->rule='max_length[15]|numeric';
-		$edit->it_geneimpu->css_class='inputnum';
-		$edit->it_geneimpu->size =17;
-		$edit->it_geneimpu->maxlength =15;
-		$edit->it_geneimpu->rel_id ='itrivc';
-
-		$edit->it_tasaadic = new inputField('tasaadic','tasaadic_<#i#>');
-		$edit->it_tasaadic->db_name='tasaadic';
-		$edit->it_tasaadic->rule='max_length[5]|numeric';
-		$edit->it_tasaadic->css_class='inputnum';
-		$edit->it_tasaadic->size =7;
-		$edit->it_tasaadic->maxlength =5;
-		$edit->it_tasaasic->rel_id ='itrivc';
-
-		$edit->it_adicional = new inputField('adicional','adicional_<#i#>');
-		$edit->it_adicional->db_name='adicional';
-		$edit->it_adicional->rule='max_length[15]|numeric';
-		$edit->it_adicional->css_class='inputnum';
-		$edit->it_adicional->size =17;
-		$edit->it_adicional->maxlength =15;
-		$edit->it_adicional->rel_id ='itrivc';
-
-		$edit->it_adicimpu = new inputField('adicimpu','adicimpu_<#i#>');
-		$edit->it_adicimpu->db_name='adicimpu';
-		$edit->it_adicimpu->rule='max_length[15]|numeric';
-		$edit->it_adicimpu->css_class='inputnum';
-		$edit->it_adicimpu->size =17;
-		$edit->it_adicimpu->maxlength =15;
-		$edit->it_adicimpu->rel_id ='itrivc';
-
-		$edit->it_tasaredu = new inputField('tasaredu','tasaredu_<#i#>');
-		$edit->it_tasaredu->db_name='tasaredu';
-		$edit->it_tasaredu->rule='max_length[5]|numeric';
-		$edit->it_tasaredu->css_class='inputnum';
-		$edit->it_tasaredu->size =7;
-		$edit->it_tasaredu->maxlength =5;
-		$edit->it_tasaredu->rel_id ='itrivc';
-
-		$edit->it_reducida = new inputField('reducida','reducida_<#i#>');
-		$edit->it_reducida->db_name='reducida';
-		$edit->it_reducida->rule='max_length[15]|numeric';
-		$edit->it_reducida->css_class='inputnum';
-		$edit->it_reducida->size =17;
-		$edit->it_reducida->maxlength =15;
-		$edit->it_reducida->rel_id ='itrivc';
-
-		$edit->it_reduimpu = new inputField('reduimpu','reduimpu_<#i#>');
-		$edit->it_reduimpu->db_name='reduimpu';
-		$edit->it_reduimpu->rule='max_length[15]|numeric';
-		$edit->it_reduimpu->css_class='inputnum';
-		$edit->it_reduimpu->size =17;
-		$edit->it_reduimpu->maxlength =15;
-		$edit->it_reduimpu->rel_id ='itrivc';*/
 
 		$edit->it_stotal = new inputField('stotal','stotal_<#i#>');
 		$edit->it_stotal->db_name='stotal';
