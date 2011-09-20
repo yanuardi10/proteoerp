@@ -151,7 +151,62 @@ class rivc extends Controller {
 		$form->build_form();
 
 		if ($form->on_success()){
-			
+			$error    = 0;
+			$numeroch = str_pad($form->cheque->newValue, 12, '0', STR_PAD_LEFT);
+			$datacar  = common::_traebandata($form->cargo->newValue);
+			$sp_fecha = date('Ymd');
+			$ttipo    = $datacar['tbanco'];
+			$moneda   = $datacar['moneda'];
+			$transac  = $this->datasis->fprox_numero('ntransa');
+			$negreso  = $this->datasis->fprox_numero('negreso');
+			$codbanc  = $form->cargo->newValue;
+			$ttransac = $this->datasis->dameval("SELECT transac FROM rivc WHERE id=".$this->db->escape($id));
+			$totneto  = $this->datasis->dameval("SELECT SUM(monto*IF('ND',-1,1)) AS monto FROM smov WHERE transac='$ttransac' AND tipo_doc IN ('AN','ND')");
+	
+			$tipo1  = ($ttipo=='CAJ') ? 'D': 'C';
+			$negreso= $this->datasis->fprox_numero('negreso');
+			$credito= 0;
+			$causado='';
+
+			$data=array();
+			$data['codbanc']    = $codbanc;
+			$data['moneda']     = $moneda;
+			$data['numcuent']   = $datacar['numcuent'];
+			$data['banco']      = $datacar['banco'];
+			$data['saldo']      = $datacar['saldo'];
+			$data['tipo_op']    = ($ttipo=='CAJ') ? 'ND': 'CH';
+			$data['numero']     = $numeroch;
+			$data['fecha']      = date('Y-m-d');
+			$data['clipro']     = 'P';
+			$data['codcp']      = 'REIVA';
+			$data['nombre']     = 'RETENCION DE IVA';
+			$data['monto']      = $totneto;
+			$data['concepto']   = 'PAGO DE RETENCIONES DE IVA '.$codbanc;
+			$data['benefi']     = $form->benefi->newValue;
+			$data['posdata']    = '';
+			$data['abanco']     = '';
+			$data['liable']     = ($ttipo=='CAJ') ? 'S': 'N';;
+			$data['transac']    = $transac;
+			$data['usuario']    = $this->session->userdata('usuario');
+			$data['estampa']    = date('Y-m-d');
+			$data['hora']       = date('H:i:s');
+			$data['anulado']    = 'N';
+			$data['susti']      = '';
+			$data['negreso']    = $negreso;
+
+			$sql=$this->db->insert_string('bmov', $data);
+			$ban=$this->db->simple_query($sql);
+			if($ban==false){ memowrite($sql,'rivc'); $error++;}
+
+			$sql='CALL sp_actusal('.$this->db->escape($codbanc).",'$sp_fecha',-$totneto)";
+			$ban=$this->db->simple_query($sql);
+			if($ban==false){ memowrite($sql,'rivc'); $error++; }
+
+			$sql='UPDATE smov SET abonado=monto WHERE tipo_doc IN (\'AN\',\'ND\') transac='.$this->db->escape($ttransac);
+			$ban=$this->db->simple_query($sql);
+			if($ban==false){ memowrite($sql,'rivc'); $error++; }
+
+			redirect('finanzas/rivc/dataedit/show/'.$id);
 		}
 
 		$data['content'] = $form->output;
