@@ -5,8 +5,23 @@ class Noco extends Controller {
 		parent::Controller();
 		$this->load->library("rapyd");
 	}
+
+	function index(){
+		//$this->datasis->modulo_id(707,1);
+		redirect("nomina/noco/extgrid");
+	}
+
+	function extgrid(){
+		//$this->datasis->modulo_id(707,1);
+		$script = $this->nocoextjs();
+		$data["script"] = $script;
+		$data['title']  = heading('Personal');
+		//$data['head']   = $this->rapyd->get_head();
+		//$data['content'] = '';
+		$this->load->view('extjs/pers',$data);
+	}
 	
-	function index() {		
+	function filtergrid() {		
 		$this->rapyd->load("datagrid","datafilter");
 		
 		$filter = new DataFilter("Filtro de Contrato de Nomina",'noco');
@@ -207,7 +222,329 @@ class Noco extends Controller {
 	function instala(){
 		$sql="ALTER TABLE `noco`  ADD PRIMARY KEY (`codigo`)";
 		$this->db->query($sql);	
-		
 	}
+
+	function manoco(){
+		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']   :  0;
+		$limit   = isset($_REQUEST['limit'])  ? $_REQUEST['limit']   : 50;
+		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']    : 'contrato';
+		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
+		$id      = isset($_REQUEST['id'])     ? $_REQUEST['id']      : 1;
+
+		$query = $this->db->query("SELECT * FROM noco ");
+
+		$results = $this->db->count_all('noco');
+		$arr = array();
+		foreach ($query->result_array() as $row)
+		{
+			$meco = array();
+			foreach( $row as $idd=>$campo ) {
+				$meco[$idd] = utf8_encode($campo);
+			}
+			// Genera el Detalle
+			$detalle = $this->db->query("SELECT * FROM itnoco WHERE codigo='".$row['codigo']."'");
+			$darr = array();
+			foreach ($detalle->result_array() as $drow)
+			{
+				$dmeco = array();
+				foreach( $drow as $didd=>$dcampo ) {
+					$dmeco[$didd] = utf8_encode($dcampo);
+				}
+				$darr[] = $dmeco;
+			}
+			$meco['detalle'] = $darr;
+			$arr[] = $meco;
+		}
+		echo '{success:true, message:"Loaded data" ,results:'. $results.', maestro:'.json_encode($arr).'}';
+	}
+
+	function itnoco(){
+		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']   :  0;
+		$limit   = isset($_REQUEST['limit'])  ? $_REQUEST['limit']   : 50;
+		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']    : 'contrato';
+		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
+
+		$this->db->select('*');
+		$this->db->from('itnoco');
+		$this->db->order_by( 'codigo' );
+		$query = $this->db->get();
+		$results = $this->db->count_all('itnoco');
+
+		$arr = array();
+		foreach ($query->result_array() as $row)
+		{
+			$meco = array();
+			foreach( $row as $idd=>$campo ) {
+				$meco[$idd] = utf8_encode($campo);
+			}
+			$arr[] = $meco;
+		}
+		echo '{success:true, message:"Loaded data" ,results:'. $results.', detalle:'.json_encode($arr).'}';
+	}
+
+
+	function nocoextjs(){
+
+		$encabeza='<table width="100%" bgcolor="#2067B5"><tr><td align="left" width="100px"><img src="'.base_url().'assets/default/css/templete_01.jpg" width="120"></td><td align="center"><h1 style="font-size: 20px; color: rgb(255, 255, 255);" onclick="history.back()">CONTRATOS DE NOMINA</h1></td><td align="right" width="100px"><img src="'.base_url().'assets/default/images/cerrar.png" alt="Cerrar Ventana" title="Cerrar Ventana" onclick="parent.window.close()" width="25"></td></tr></table>';
+
+		$mSQL = "SELECT codigo, CONCAT(codigo,' ',nombre) nombre, tipo FROM noco WHERE tipo<>'O' ORDER BY codigo";
+		$contratos = $this->datasis->llenacombo($mSQL);
+		
+
+
+		$script = "
+<script type=\"text/javascript\">
+var BASE_URL   = '".base_url()."';
+var BASE_PATH  = '".base_url()."';
+var BASE_ICONS = '".base_url()."assets/icons/';
+var BASE_UX    = '".base_url()."assets/js/ext/ux';
+
+Ext.Loader.setConfig({ enabled: true });
+Ext.Loader.setPath('Ext.ux', BASE_UX);
+
+Ext.require([
+	'Ext.grid.*',
+	'Ext.ux.grid.FiltersFeature',
+	'Ext.data.*',
+	'Ext.util.*',
+	'Ext.state.*',
+	'Ext.form.*',
+	'Ext.window.MessageBox',
+	'Ext.tip.*',
+	'Ext.ux.CheckColumn',
+	'Ext.toolbar.Paging'
+]);
+
+var registro;
+var urlApp = '".base_url()."';
+
+Ext.define('Noco', {
+    extend: 'Ext.data.Model',
+    fields: ['id', 'codigo','tipo','nombre','observa1','observa2'],
+    proxy: {
+        type: 'rest',
+        url : urlApp + 'nomina/noco/manoco',
+        reader: {
+            type: 'json',
+            root: 'maestro'
+        }
+    },
+    hasMany: { model: 'ItNoco', name: 'itnoco' }
+});
+
+Ext.define('ItNoco', {
+    extend: 'Ext.data.Model',
+    fields: ['id', 'codigo', 'concepto', 'descrip','tipo','grupo'],
+    proxy: {
+        type: 'rest',
+        url : urlApp + 'nomina/noco/itnoco',
+        reader: {
+            type: 'json',
+            root: 'detalle'
+        }
+    },
+    belongsTo: 'Noco'
+});
+
+//Column Model
+var NocoCol = 
+	[
+		{ header: 'Codigo',   width:  60, sortable: true, dataIndex: 'codigo',   field:  { type: 'textfield' }, filter: { type: 'string'  } }, 
+		{ header: 'Tipo',     width:  60, sortable: true, dataIndex: 'tipo',     field:  { type: 'textfield' }, filter: { type: 'string'  } }, 
+		{ header: 'Nombre',   width: 250, sortable: true, dataIndex: 'nombre', field:  { type: 'textfield' }, filter: { type: 'string'  } }, 
+		{ header: 'Observa1', width: 250, sortable: true, dataIndex: 'observa1', field:  { type: 'textfield' }, filter: { type: 'string'  } }
+	];
+
+
+//Column Model
+var ItNocoCol = 
+	[
+		{ header: 'Codigo',   width:  60, sortable: true, dataIndex: 'codigo',   field:  { type: 'textfield' }, filter: { type: 'string'  } }, 
+		{ header: 'Concepto', width:  60, sortable: true, dataIndex: 'concepto', field:  { type: 'textfield' }, filter: { type: 'string'  } }, 
+		{ header: 'Descripcion',   width: 250, sortable: true, dataIndex: 'descrip', field:  { type: 'textfield' }, filter: { type: 'string'  } }, 
+		{ header: 'tipo', width:  60, sortable: true, dataIndex: 'tipo', field:  { type: 'textfield' }, filter: { type: 'string'  } },
+		{ header: 'Grupo', width:  60, sortable: true, dataIndex: 'grupo', field:  { type: 'textfield' }, filter: { type: 'string'  } }
+	];
+
+
+
+//Data Store
+var storeNoco = Ext.create('Ext.data.Store', {
+	model: 'Noco'
+	//pageSize: 50,
+	//remoteSort: true,
+	//autoLoad: true,
+	//autoSync: true,
+	//groupField: 'nomcont',
+	//method: 'POST',
+	//listeners: { write: function(mr,re, op) { Ext.Msg.alert('Aviso','Registro Guardado '+re.success) }}
+});
+
+var storeItNoco = Ext.create('Ext.data.Store', {
+	model: 'ItNoco'
+	//pageSize: 50,
+	//remoteSort: true,
+	//autoLoad: true,
+	//autoSync: true,
+	//groupField: 'nomcont',
+	//method: 'POST',
+	//listeners: { write: function(mr,re, op) { Ext.Msg.alert('Aviso','Registro Guardado '+re.success) }}
+});
+
+
+//Ext.require('Ext.data.Store');
+Ext.onReady(function() {
+
+/*
+	// Loads Contrato with ID 1 and related posts and comments using contrato's Proxy
+	Noco.load(1, {
+		success: function(contrato) {
+			console.log('Contrato: ' + contrato.get('codigo'));
+
+			// loop through conceptos and print out the comments
+			contrato.posts().each(function(post) {
+				console.log('Conceptos: ' + post.get('codigo'));
+				post.detalle().each(function(detalle) {
+					console.log(detalle.get('nombre'));
+				});
+
+				// get the user reference from the post's belongsTo association
+					//post.getUser(function(user) {
+					console.log('Just got the user reference from the post: ' + user.get('name'))
+				});
+	
+				// try to change the post's user
+				//post.setUser(100, {
+				//	callback: function(product, operation) {
+				//		if (operation.wasSuccessful()) {
+				//			console.log('Post\'s user was updated');
+				//		} else {
+					//			console.log('Post\'s user could not be updated');
+				//		}
+				//	}
+				//});
+
+			});
+
+			// create a new post
+			user.posts().add({
+				title: 'Ext JS 4.0 MVC Architecture',
+				body: 'It\'s a great Idea to structure your Ext JS Applications using the built in MVC Architecture...'
+			});
+			// save the new post
+			user.posts().sync();
+
+		}
+	});
+
+*/
+
+	//colocamos cualquier cosa
+
+	// Create Grid 
+	Ext.define('NocoGrid', {
+		extend: 'Ext.grid.Panel',
+		alias: 'widget.wnoco',
+		store: storeNoco,
+		initComponent: function(){
+			Ext.apply(this, {
+				iconCls: 'icon-grid',
+				frame: true,
+				columns: NocoCol,
+				// paging bar on the bottom
+				bbar: Ext.create('Ext.PagingToolbar', {
+					store: storeNoco,
+					displayInfo: true,
+					displayMsg: 'Pag No. {0} - Registros {1} de {2}',
+					emptyMsg: \"No se encontraron Registros.\"
+				})
+			});
+			this.callParent();
+			this.getSelectionModel().on('selectionchange', this.onSelectChange, this);
+		}
+	});
+
+
+	// Create Grid 
+	Ext.define('ItNocoGrid', {
+		extend: 'Ext.grid.Panel',
+		alias: 'widget.witnoco',
+		store: storeItNoco,
+		initComponent: function(){
+			Ext.apply(this, {
+				iconCls: 'icon-grid',
+				frame: true,
+				columns: ItNocoCol,
+				// paging bar on the bottom
+				bbar: Ext.create('Ext.PagingToolbar', {
+					store: storeNoco,
+					displayInfo: true,
+					displayMsg: 'Pag No. {0} - Registros {1} de {2}',
+					emptyMsg: \"No se encontraron Registros.\"
+				})
+			});
+			this.callParent();
+			this.getSelectionModel().on('selectionchange', this.onSelectChange, this);
+		}
+	});
+
+
+	//Main Container
+	var main = Ext.create('Ext.container.Container', {
+		padding: '0 0 0 0',
+		width: '100%',
+		height: 700,
+		renderTo: document.body,
+		layout: {
+			type: 'vbox',
+			align: 'center'
+		},
+		items: [
+			{
+				xtype: 'panel',
+				preventHeader: true,
+				collapsible : true,
+				html: '".$encabeza."',
+				title: 'Busqueda Avanzada',
+				width: '98%',
+				layout: 'fit',
+				viewConfig: { forceFit: true },
+				flex: 1
+			}
+			,{
+				itemId: 'grid',
+				xtype: 'wnoco',
+				title: 'Contratos',
+				width: '98%',
+				align: 'center',
+				flex: 5,
+				store: storeNoco
+			}
+			,{
+				itemId: 'grid',
+				xtype: 'witnoco',
+				title: 'Detale',
+				width: '98%',
+				align: 'center',
+				flex: 5,
+				store: storeItNoco
+			}
+			]
+	});
+	Ext.EventManager.onWindowResize(main.doLayout, main);
+	storeNoco.load({ params: { id:1}});
+
+
+});
+";
+
+
+
+$script .="
+</script>
+";
+		return $script;	
+	}
+
 }
 ?>
