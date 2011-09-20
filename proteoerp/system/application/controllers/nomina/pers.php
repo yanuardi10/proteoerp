@@ -645,6 +645,7 @@ script;
 		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']    : 'contrato';
 		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
 
+
 		$where = "";
 
 		//Buscar posicion 0 Cero
@@ -715,14 +716,10 @@ script;
 
 		$this->db->order_by( 'contrato', 'asc' );
 
-		//if( $sort == 'contrato' ) {
-		//	$this->db->order_by( $sort, 'asc' );
-		//} else {
-			$sort = json_decode($sort, true);
-			for ($i=0;$i<count($sort);$i++) {
-				$this->db->order_by($sort[$i]['property'],$sort[$i]['direction']);
-			}
-		//}
+		$sort = json_decode($sort, true);
+		for ($i=0;$i<count($sort);$i++) {
+			$this->db->order_by($sort[$i]['property'],$sort[$i]['direction']);
+		}
 
 		$this->db->limit($limit, $start);
 
@@ -781,11 +778,11 @@ script;
 		unset($campos['codigo']);
 		
 		//Evita la hora de las fechas
-		$campos['nacimi']  = substr($campos['nacimi'], 0,10);
-		$campos['ingreso'] = substr($campos['ingreso'],0,10);
-		$campos['retiro']  = substr($campos['retiro'], 0,10);
-		$campos['vence']   = substr($campos['vence'],  0,10);
-		$campos['vari5']   = substr($campos['vari5'],  0,10);
+		//$campos['nacimi']  = substr($campos['nacimi'], 0,10);
+		//$campos['ingreso'] = substr($campos['ingreso'],0,10);
+		//$campos['retiro']  = substr($campos['retiro'], 0,10);
+		//$campos['vence']   = substr($campos['vence'],  0,10);
+		//$campos['vari5']   = substr($campos['vari5'],  0,10);
 		
 		//print_r($campos);
 		$mSQL = $this->db->update_string("pers", $campos,"id='".$data['data']['id']."'" );
@@ -812,90 +809,32 @@ script;
 			logusu('pers',"PERSONAL $codigo NOMBRE  $nombre CREADO");
 			echo "{ success: true, message: ''Trabajador Eliminado'}";
 		}
-
-
 	}
 
 	function persextjs(){
 
 		$encabeza='<table width="100%" bgcolor="#2067B5"><tr><td align="left" width="100px"><img src="'.base_url().'assets/default/css/templete_01.jpg" width="120"></td><td align="center"><h1 style="font-size: 20px; color: rgb(255, 255, 255);" onclick="history.back()">TRABAJADORES</h1></td><td align="right" width="100px"><img src="'.base_url().'assets/default/images/cerrar.png" alt="Cerrar Ventana" title="Cerrar Ventana" onclick="parent.window.close()" width="25"></td></tr></table>';
 
-		$contratos='';
-		$query = $this->db->query("SELECT codigo, CONCAT(codigo,' ',nombre) nombre, tipo FROM noco WHERE tipo<>'O' ORDER BY codigo");
-		$coma = '';
-		if ($query->num_rows() > 0){
-			foreach ($query->result() as $row){
-				$contratos .= $coma."['".$row->codigo."','".$row->nombre."']";
-				$coma = ', ';
-			}
-		}
-		$query->free_result();
+		$mSQL = "SELECT codigo, CONCAT(codigo,' ',nombre) nombre, tipo FROM noco WHERE tipo<>'O' ORDER BY codigo";
+		$contratos = $this->datasis->llenacombo($mSQL);
 		
-		$divi='';
-		$query = $this->db->query("SELECT division, CONCAT(division,' ',descrip) descrip FROM divi ORDER BY division");
-		$coma = '';
-		if ($query->num_rows() > 0){
-			foreach ($query->result() as $row){
-				$divi .= $coma."['".$row->division."','".$row->descrip."']";
-				$coma = ', ';
-			}
-		}
-		$query->free_result();
+		$mSQL = "SELECT division, CONCAT(division,' ',descrip) descrip FROM divi ORDER BY division";
+		$divi= $this->datasis->llenacombo($mSQL);
 
-		$depto='';
-		$query = $this->db->query("SELECT departa, CONCAT(departa,' ',depadesc) descrip FROM depa ORDER BY departa");
-		$coma = '';
-		if ($query->num_rows() > 0){
-			foreach ($query->result() as $row){
-				$depto .= $coma."['".$row->departa."','".$row->descrip."']";
-				$coma = ', ';
-			}
-		}
-		$query->free_result();
+		$mSQL = "SELECT departa, CONCAT(departa,' ',depadesc) descrip FROM depa ORDER BY departa";
+		$depto= $this->datasis->llenacombo($mSQL);
+
+		$mSQL = "SELECT cargo, CONCAT(cargo,' ',descrip) descrip FROM carg ORDER BY cargo";
+		$cargo= $this->datasis->llenacombo($mSQL);;
 		
-		$cargo='';
-		$query = $this->db->query("SELECT cargo, CONCAT(cargo,' ',descrip) descrip FROM carg ORDER BY cargo");
-		$coma = '';
-		if ($query->num_rows() > 0){
-			foreach ($query->result() as $row){
-				$cargo .= $coma."['".$row->cargo."','".$row->descrip."']";
-				$coma = ', ';
-			}
-		}
-		$query->free_result();
+		$mSQL = "SELECT codigo, CONCAT(codigo,' ',sucursal) descrip FROM sucu ORDER BY codigo";
+		$sucu = $this->datasis->llenacombo($mSQL);
 
-		$sucu='';
-		$query = $this->db->query("SELECT codigo, CONCAT(codigo,' ',sucursal) descrip FROM sucu ORDER BY codigo");
-		$coma = '';
-		if ($query->num_rows() > 0){
-			foreach ($query->result() as $row){
-				$sucu .= $coma."['".$row->codigo."','".$row->descrip."']";
-				$coma = ', ';
-			}
-		}
-		$query->free_result();
+		$mSQL   = "SELECT codigo, profesion FROM prof ORDER BY profesion";
+		$profes = $this->datasis->llenacombo($mSQL);
 
-		$profes='';
-		$query = $this->db->query("SELECT codigo, profesion FROM prof ORDER BY profesion");
-		$coma = '';
-		if ($query->num_rows() > 0){
-			foreach ($query->result() as $row){
-				$profes .= $coma."['".$row->codigo."','".$row->profesion."']";
-				$coma = ', ';
-			}
-		}
-		$query->free_result();
-
-		$niveled='';
-		$query = $this->db->query("SELECT codigo, nivel FROM nedu ORDER BY codigo ");
-		$coma = '';
-		if ($query->num_rows() > 0){
-			foreach ($query->result() as $row){
-				$niveled .= $coma."['".$row->codigo."','".$row->nivel."']";
-				$coma = ', ';
-			}
-		}
-		$query->free_result();
+		$mSQL = "SELECT codigo, nivel FROM nedu ORDER BY codigo ";
+		$niveled = $this->datasis->llenacombo($mSQL);
 
 		$script = "
 <script type=\"text/javascript\">
@@ -926,14 +865,12 @@ var urlApp = '".base_url()."';
 // Define our data model
 var Empleados = Ext.regModel('Empleados', {
 	fields: ['id','codigo','nacional','cedula','nombre','apellido','civil','sexo', 'carnet', 'status', 'tipo' ,'contrato','ingreso','retiro','vence', 'direc1', 'direc2', 'direc3', 'telefono','sueldo','nacimi','vari1','vari2','vari3','vari4','vari5','vari6','divi','depto', 'sucursal','cargo','dialab','dialib','niveled','sso', 'profes','nomcont'],
-/*		validations: [
+		validations: [
 			{ type: 'length', field: 'codigo',   min: 1 },
 			{ type: 'length', field: 'nacional', min: 1 }, 
 			{ type: 'length', field: 'cedula',   min: 6 }, 
 			{ type: 'length', field: 'nombre',   min: 3 }
 		],
-*/
-	//idProperty: 'codigo',
 	proxy: {
 		type: 'ajax',
 		noCache: false,
@@ -1045,7 +982,6 @@ Ext.onReady(function(){
 				result: function(res){
 					alert('Meco');
 				},
-
 				requires: ['Ext.form.field.Text'],
 				initComponent: function(){
 					Ext.apply(this, {
@@ -1233,8 +1169,7 @@ Ext.onReady(function(){
 				losable: false,
 				closeAction: 'destroy',
 				width: 650,
-				height: 500,
-				//minHeight: 300,
+				height: 470,
 				resizable: false,
 				modal: true,
 				items: [writeForm],

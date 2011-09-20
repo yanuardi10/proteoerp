@@ -377,7 +377,6 @@ class Datasis {
 	// GUARDA DATOS DE SESION EN MYSQL
 	function damesesion($id){
 		$CI =& get_instance();
-
 		$mSQL = "CREATE TABLE IF NOT EXISTS data_sesion (
 			id INT(11) NULL AUTO_INCREMENT,
 			sesionid VARCHAR(40) NULL,
@@ -385,17 +384,31 @@ class Datasis {
 			fecha TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 			PRIMARY KEY (id), UNIQUE INDEX sesion (sesionid)
 			)DEFAULT CHARSET 'latin1' ENGINE=MyISAM ";
-			
+
 		$CI->db->simple_query($mSQL);
-		
+
 		//$id = $CI->session->userdata('session_id');
 		$mSQL = "SELECT data1, data2, data3, data4 FROM data_sesion WHERE id='$id'";
 		$query = $CI->db->query($mSQL);
 		return $query->row_array();
-	
-		
 	}
 
-
-
+	function llenacombo($mSQL){
+		$CI =& get_instance();
+		$query = $CI->db->query($mSQL);
+		$coma = '';
+		$opciones = '';
+		if ($query->num_rows() > 0){
+			$colu = array();
+			foreach( $query->list_fields() as $campo ) {
+				$colu[] = $campo;
+			}
+			foreach ($query->result_array() as $row){
+				$opciones .= $coma."['".$row[$colu[0]]."','".$row[$colu[1]]."']"; 
+				$coma = ', ';
+			}
+		}
+		$query->free_result();
+		return $opciones;
+	}
 }

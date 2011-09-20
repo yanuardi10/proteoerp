@@ -205,7 +205,6 @@ else:
 		<li><a href="#tab4">Movimientos</a></li>
 		<li><a href="#tab5">Promociones</a></li>
 	</ul>
-
 	<div id="tab1" style='background:#EFEFFF'>
 	<table width="100%" border='0'>
 	<tr>
@@ -230,6 +229,7 @@ else:
 				<tr>
 					<td class='littletableheaderc'><?=$form->peso->label ?></td>
 					<td class="littletablerow"><?=$form->peso->output   ?></td>
+					<td class="littletablerow"><?php echo $this->datasis->traevalor('SINVPESO') ?></td>
 				</tr>
 				<tr>
 					<td class='littletableheaderc'><?=$form->unidad->label ?></td>
@@ -245,15 +245,18 @@ else:
 			<table border='0' width='100%' style='border-collapse;border: 1px dotted'>
 				<tr>
 					<td width='50' class='littletableheaderc'><?=$form->alto->label ?></td>
-					<td class="littletablerow"><?=$form->alto->output   ?></td>
+					<td class="littletablerow"><?=$form->alto->output?></td>
+					<td class="littletablerow" align='left'><?php echo $this->datasis->traevalor('SINVDIMENCIONES') ?></td>
 				</tr>
 				<tr>
 					<td class='littletableheaderc'><?=$form->ancho->label ?></td>
 					<td class="littletablerow"><?=$form->ancho->output   ?></td>
+					<td class="littletablerow"><?php echo $this->datasis->traevalor('SINVDIMENCIONES') ?></td>
 				</tr>
 				<tr>
 					<td class='littletableheaderc'><?=$form->largo->label ?></td>
 					<td class="littletablerow"><?=$form->largo->output   ?></td>
+					<td class="littletablerow"><?php echo $this->datasis->traevalor('SINVDIMENCIONES') ?></td>
 				</tr>
 			</table>
 		</td>
