@@ -62,7 +62,7 @@ class Recep extends Controller {
 		$filter->buttons("reset","search");
 
 		$filter->build();
-		$uri = anchor($this->url.'dataedit/show/<#numero#>','<#numero#>');
+		$uri = anchor($this->url.'dataedit/show/<#recep#>','<#recep#>');
 
 		function sta($status){
 			switch($status){
@@ -90,7 +90,7 @@ class Recep extends Controller {
 		$data['filtro']  = $filter->output;
 		$data['content'] = $grid->output;
 		$data['script']  = script("jquery.js")."\n";
-		$data['title']   = "$this->titp";
+		$data['title']   = heading($this->titp);
 		$data["head"]    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
@@ -99,8 +99,21 @@ class Recep extends Controller {
 		
 		$this->rapyd->load('dataobject','datadetails');
 
+		$mSPRV=array(
+			'tabla'   =>'sprv',
+			'columnas'=>array(
+			'proveed' =>'C&oacute;digo',
+			'rif'     =>'RIF',
+			'nombre'  =>'Nombre',
+			'contacto'=>'Contacto'),
+			'filtro'  =>array('proveed'=>'C&oacute;digo','nombre'=>'Nombre','rif'=>'RIF'),
+			'retornar'=>array('proveed'=>'cod_prov'),
+			//'script'  =>array('cal_lislr()','cal_total()'),
+			'titulo'  =>'Buscar Beneficiario');
+			
+		$bSPRV=$this->datasis->p_modbus($mSPRV,"proveed");
+
 		$do = new DataObject("recep");
-		
 		$do->rel_one_to_many('seri', 'seri', array('recep'=>'recep'));
 
 		$edit = new DataDetails($this->tits, $do);
@@ -118,6 +131,9 @@ class Recep extends Controller {
 		$edit->recep->when=array('show','modify');
 
 		$edit->cod_prov  = new inputField("Proveedor", "cod_prov");
+		$edit->cod_prov->append($bSPRV);
+		$edit->cod_prov->size=5;
+		$edit->cod_prov->readonly=true;
 
 		$edit->fecha = new  dateonlyField("Fecha",  "fecha");
 		$edit->fecha->insertValue = date('Y-m-d');
@@ -182,20 +198,37 @@ class Recep extends Controller {
 		$conten["form"]  =&  $edit;
 		$data['content'] = $this->load->view('recep', $conten,true);
 		//$data['content'] = $edit->output;
-		$data['title']   = "$this->tits";
+		$data['title']   = heading($this->tits.' Nro. '.$edit->recep->value);
 		$data["head"]    = $this->rapyd->get_head().script('jquery.js').script('jquery-ui.js').script("plugins/jquery.numeric.pack.js").script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css');
 		$this->load->view('view_ventanas', $data);
 	}
 
         function _valida($do){
-            $error  ='';
-            
-            if(!empty($error)){
-                $do->error_message_ar['pre_ins']="<div class='alert'>".$error."</div>";
-                $do->error_message_ar['pre_upd']="<div class='alert'>".$error."</div>";
-                return false;
-            }else{
-            }
+		$error  ='';
+		$recep  =$do->get('recep');
+		if(empty($recep)){
+			$ntransac = $this->datasis->fprox_numero('nrecep');
+			$do->set('recep',$ntransac);
+			$do->pk    =array('recep'=>$ntransac);
+		}
+		
+		for($i=0;$i < $do->count_rel('seri');$i++){
+			$codigo=$this->db->escape($do->get_rel('seri','codigo',$i));
+			$barras=$this->db->escape($do->get_rel('seri','barras',$i));
+			
+			$sinv=$this->datasis->damerow("SELECT descrip,modelo,marca,clave,unidad FROM sinv WHERE codigo=$codigo AND barras=$barras");
+			if(count($sinv)>0){
+			}else{
+				$error.="El Codigo $codigo y barras $barras no existe.";
+			}
+		}
+		
+		if(!empty($error)){
+			$do->error_message_ar['pre_ins']="<div class='alert'>".$error."</div>";
+			$do->error_message_ar['pre_upd']="<div class='alert'>".$error."</div>";
+			return false;
+		}else{
+		}
         }
 
 	function reversar($numero){

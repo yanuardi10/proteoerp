@@ -340,4 +340,12 @@ class Common extends controller {
 		$barrase=$this->db->escape($barras);
 		echo $this->datasis->dameval("SELECT count(*) FROM sinv WHERE barras=$barrase ");
 	}
+	
+	function get_sinv(){
+		$barras =$this->input->post('barras');
+		$barrase=$this->db->escape('7798134499458');
+		$table=$this->db->query("SELECT codigo,descrip FROM sinv WHERE barras=$barrase ");
+		$table=$table->result_array();
+		echo json_encode($table);
+	}
 }
