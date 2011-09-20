@@ -6,8 +6,10 @@ if(!defined('K_TCPDF_EXTERNAL_CONFIG')) {
 }
 	
 # include TCPDF
-//require(APPPATH.'config/tcpdf'.EXT);
-require_once('tcpdf/tcpdf.php');
+require(APPPATH.'config/tcpdf'.EXT);
+
+require_once($tcpdf['base_directory'].'/tcpdf.php');
+//require_once('tcpdf/tcpdf.php');
 
 
 
@@ -19,7 +21,8 @@ require_once('tcpdf/tcpdf.php');
  * @version 1.0
  * @package tcpdf_ci
  ***********************************************************/
-class pdf extends TCPDF {	
+class pdf extends TCPDF {
+	
 	
 	/**
 	 * TCPDF system constants that map to settings in our config file
@@ -35,6 +38,7 @@ class pdf extends TCPDF {
 		'K_PATH_IMAGES'	=> 'image_directory',
 		'K_BLANK_IMAGE' => 'blank_image',
 		'K_SMALL_RATIO'	=> 'small_font_ratio',
+		'K_CELL_HEIGHT_RATIO' =>'k_cell_height_ratio'
 	);
 	
 	
@@ -76,6 +80,7 @@ class pdf extends TCPDF {
 			$this->_config['unicode'], 
 			$this->_config['encoding'], 
 			$this->_config['enable_disk_cache']
+			
 		);
 		
 		
