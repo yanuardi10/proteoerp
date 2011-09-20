@@ -176,8 +176,8 @@ function autocod(id){
 	<?php if($form->_status=='show'){ ?>
 	<tr>
 		<td valign="bottom">
-			<a href="javascript:void(0);" onclick="window.open('/proteoerp/formatos/verhtml/RIVC/<?php echo $form->get_from_dataobjetct('id'); ?>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');">
-			<img src="/proteoerp/images/reportes.gif" alt="Imprimir Documento" title="Imprimir Documento" border="0" height="30">						</a>
+			<a href="javascript:void(0);" onclick="window.open('/<?php echo base_url(); ?>/formatos/ver/RIVC/<?php echo $form->get_from_dataobjetct('id'); ?>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');">
+			<img src="/<?php echo base_url(); ?>f/images/reportes.gif" alt="Imprimir Documento" title="Imprimir Documento" border="0" height="30"></a>
 		</td>
 	</tr>
 	<?php } ?>
