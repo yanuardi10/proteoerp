@@ -1,4 +1,6 @@
-<?php require_once(APPPATH.'/controllers/finanzas/gser.php');
+<?php
+include('common.php');
+//require_once(APPPATH.'/controllers/finanzas/gser.php');
 class rivc extends Controller {
 	var $titp='Retenciones de Clientes';
 	var $tits='Retenciones de Clientes';
@@ -75,25 +77,70 @@ class rivc extends Controller {
 	}
 
 	function reintegrar($id){
+		$nombre=$this->datasis->dameval('SELECT nombre FROM rivc WHERE id='.$this->db->escape($id));
+
+		$sql='SELECT TRIM(a.codbanc) AS codbanc,tbanco FROM banc AS a';
+		$query = $this->db->query($sql);
+		$comis=array();
+		if ($query->num_rows() > 0){
+			foreach ($query->result() as $row){
+				$ind='_'.$row->codbanc;
+				$comis[$ind]['tbanco']  =$row->tbanco;
+			}
+		}
+		$json_comis=json_encode($comis);
+
+		$script='var comis = '.$json_comis.';
+		
+		$(document).ready(function() {
+			ccargo=$("#cargo").val();
+			desactivacampo(ccargo);
+		});
+
+		function desactivacampo(codb1){
+			if(codb1.length>0){
+				eval("tbanco=comis._"+codb1+".tbanco;"  );
+				if(tbanco=="CAJ"){
+					$("#cheque").attr("disabled","disabled");
+					$("#benefi").attr("disabled","disabled");
+				}else{
+					$("#cheque").removeAttr("disabled");
+					$("#benefi").removeAttr("disabled");
+				}
+			}else{
+				$("#cheque").attr("disabled","disabled");
+				$("#benefi").attr("disabled","disabled");
+			}
+		}';
+
 		$this->rapyd->load('dataform');
 
 		$form = new DataForm('finanzas/rivc/reintegrar/'.$id.'/process');
 		$form->title(' ');
-		//$form->script($script);
+		$form->script($script);
 
+		$form->cajero = new dropdownField('Cajero','cajero');
+		$form->cajero->option('','Seleccionar');
+		$form->cajero->options("SELECT cajero, CONCAT_WS('-',cajero,nombre) AS label FROM scaj ORDER BY cajero");
+		$form->cajero->rule='max_length[5]|required|callback_chcajero';
+
+		$form->clave = new inputField('Clave', 'clave');
+		$form->clave->rule='required|callback_chclave';
+		$form->clave->size=5;
+		$form->clave->type='password';
 
 		$form->cargo = new dropdownField('Con cargo a','cargo');
 		$form->cargo->option('','Seleccionar');
 		$form->cargo->options("SELECT codbanc, CONCAT_WS('-',codbanc,banco) AS label FROM banc WHERE activo='S' ORDER BY codbanc");
 		$form->cargo->onchange='desactivacampo(this.value)';
-		$form->cargo->rule='max_length[5]|required';
+		$form->cargo->rule='max_length[5]|required|callback_chcaja';
 
 		$form->cheque = new inputField('N&uacute;mero de cheque', 'cheque');
 		$form->cheque->rule='condi_required|callback_chobligaban';
 		$form->cheque->append('Aplica  solo si el cargo es a un banco');
 
 		$form->benefi = new inputField('Beneficiario', 'benefi');
-		//$form->benefi->insertValue=$nombre;
+		$form->benefi->insertValue=$nombre;
 		$form->benefi->rule='condi_required|callback_chobligaban';
 		$form->benefi->append('Aplica  solo si el cargo es a un banco');
 
@@ -103,10 +150,43 @@ class rivc extends Controller {
 		$form->submit('btnsubmit','Procesar');
 		$form->build_form();
 
+		if ($form->on_success()){
+			
+		}
+
 		$data['content'] = $form->output;
 		$data['head']    = $this->rapyd->get_head().script('jquery.js');
 		$data['title']   = heading($this->titp);
 		$this->load->view('view_ventanas', $data);
+	}
+
+	function chcaja($caja){
+		$tipo  = common::_traetipo($caja);
+		$status='';
+		
+	}
+
+	function chobligaban($val){
+		$ban=$this->input->post('cargo');
+		$tipo=common::_traetipo($ban);
+		if($tipo!='CAJ'){
+			if(empty($val)){
+				$this->validation->set_message('chobligaban', 'El campo %s es obligatorio cuando el cargo es a un banco');
+				return false;
+			}
+		}
+		return true;
+	}
+
+	function chclave($clave){
+		$dbclave = $this->db->escape($clave);
+		$dbcajero= $this->db->escape($this->input->post('cajero'));
+		$ch    = $this->datasis->dameval("SELECT COUNT(*) FROM scaj WHERE cajero=$dbcajero AND clave=$dbclave");
+		if($ch>0){
+			return true;
+		}
+		$this->validation->set_message('chclave', 'Clave o cajeo inv&aacute;lido');
+		return false;
 	}
 
 	function dataedit(){
