@@ -25,6 +25,7 @@ class Datasis {
 			$row = $query->row_array();
 		return $row;
 	}
+	
 
 	// Tae valor de la table VALORES
 	function traevalor($nombre){

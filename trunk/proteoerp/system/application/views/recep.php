@@ -35,7 +35,9 @@ if($form->_status!='show'){
             
             if(campo=='it_barras'){
                 $.post("<?=site_url('inventario/common/get_cant')?>",{ barras:valor },function(data){
+			
                     if(data==1){
+			
                         $.post("<?=site_url('inventario/common/get_codigo') ?>",{ barras:valor },function(data){
                             $("#it_codigo_"+i).val(data);
                         });
@@ -53,9 +55,7 @@ if($form->_status!='show'){
                             a=codigo.length;
                         }
                         
-                        
                         if(a>0){
-                            
                             barras=$("#it_barras_"+ii).val();
                             descri=$("#it_descri_"+ii).val();
                             
@@ -131,6 +131,7 @@ if($form->_status!='show'){
             
                 $("input[name^='it_']").focus(function(){
                     apuntador=this.name;
+		    
                 });
                 
                 $("#it_barras_"+can).focus();
@@ -167,10 +168,6 @@ if($form->_status!='show'){
 	<tr>
 		<td>
 			<table width="100%"  style="margin:0;width:100%;">
-			  <tr>
-			    <td colspan=6 class="bigtableheader">Recepci&oacute;n Nro. <?=$form->recep->output ?></td>
-			    
-			  </tr>
 			   <tr>
                                 <td class="littletablerowth"><?=$form->cod_prov->label  ?>*&nbsp;</td>
                                 <td class="littletablerow"  ><?=$form->cod_prov->output ?>&nbsp; </td>
@@ -183,12 +180,12 @@ if($form->_status!='show'){
 			  </tr>
 
 	    	</table >
-		<table class="table_detalle">
+		<table class="table_detalle" width="100%">
                     <tr>
-                        <th class="littletableheaderb"              >Barras            </th>
-                        <th class="littletableheaderb"              >C&oacute;digo     </th>
-                        <th class="littletableheaderb"              >Descripci&oacute;n</th>
-                        <th class="littletableheaderb"              >Serial            </th>
+                        <th bgcolor='#7098D0'>Barras            </th>
+                        <th bgcolor='#7098D0'>C&oacute;digo     </th>
+                        <th bgcolor='#7098D0'>Descripci&oacute;n</th>
+                        <th bgcolor='#7098D0'>Serial            </th>
                         <?php if($form->_status!='show') {?>
                         <th class="littletableheaderb">&nbsp;</td>
                         <?php } ?>
@@ -200,7 +197,7 @@ if($form->_status!='show'){
                             $obj2="itdescri_$i";
                             $obj3="itserial_$i";
                             ?>
-                            <tr id='tr_itcasi_<?=$i ?>'>
+                            <tr id='tr_seri_<?=$i ?>'>
                                 <td class="littletablerow"><?=$form->$obj0->output ?></td>
                                 <td class="littletablerow"><?=$form->$obj1->output ?></td>
                                 <td class="littletablerow"><?=$form->$obj2->output ?></td>
