@@ -68,6 +68,13 @@ class Recep extends Controller {
 				case "C1":return "Pendiente";break;
 			}
 		}
+		
+		function tipo($tipo){
+			switch($tipo){
+				case "E":return "Entrega";break;
+				case "R":return "Recepci&oacute;n";break;
+			}
+		}
 
 		$grid = new DataGrid("");
 		$grid->order_by("a.recep","desc");
@@ -77,7 +84,8 @@ class Recep extends Controller {
 
 		$grid->column_orderby("Numero Recepcion" ,$uri                                            ,"numero");
 		$grid->column_orderby("Fecha"            ,"<dbdate_to_human><#fecha#></dbdate_to_human>"  ,"fecha"    ,"align='center'"      );
-		$grid->column_orderby("Cod. Proveedor"   ,"cod_prov"                                      ,"cod_prov" ,"align='center'"      );
+		$grid->column_orderby("Tipo"             ,"<tipo><#tipo#></tipo>"                         ,"tipo"     ,"align='center'"      );
+		$grid->column_orderby("Cod. Proveedor / Cliente"   ,"clipro"                                          ,"cod_prov" ,"align='center'"      );
 		$grid->column_orderby("Observacion"      ,"observa"                                       ,"observa"  ,"align='left'  NOWRAP");
 		
 		$grid->add($this->url."dataedit/create");
@@ -223,12 +231,36 @@ class Recep extends Controller {
 		$error  ='';
 		$recep  =$do->get('recep');
 		$tipo   =$do->get('tipo');
+		$refe   =$do->get('refe');
+		$origen =$do->get('origen');
+		
 		if(empty($recep)){
 			$ntransac = $this->datasis->fprox_numero('nrecep');
 			$do->set('recep',$ntransac);
 			$do->pk    =array('recep'=>$ntransac);
 		}
 		
+		
+		
+		/*INICIO VALIDA ORIGEN=SFAC Y ENTREGADO*/
+		$sface=array();
+		if($origen=='sfac' && $tipo=='E'){
+			$query="
+			SELECT codigo,SUM(cant) cant FROM (
+				SELECT codigoa codigo,desca descrip, cana cant
+				FROM sitems a WHERE numa=$refe
+				UNION ALL 
+				SELECT b.codigo,b.descrip,-1*b.cant 
+				FROM seri b 
+				JOIN recep c ON b.recep=c.recep
+				WHERE c.refe=$refe AND c.origen='sfac' AND c.recep<>'$recep'
+			)t 
+			GROUP BY codigo
+			";
+			$sface=$this->datasis->consularray($query);
+		}
+		/*FIN VALIDA ORIGEN=SFAC Y ENTREGADO*/
+			
 		$se=array();$sinv=0;
 		for($i=0;$i < $do->count_rel('seri');$i++){
 			$codigo=$do->get_rel('seri','codigo',$i);
@@ -287,8 +319,18 @@ class Recep extends Controller {
 				$error.="El Codigo $codigo y barras $barras no existe.</br>";
 			}
 			
-			
+			/*INICIO VALIDA ORIGEN=SFAC Y ENTREGADO*/
+			if($origen=='sfac' && $tipo=='E'){
+				if(array_key_exists($codigo,$sface)){
+					if($cant>$sface[$codigo])
+					$error.="ERROR. la cantidad a despachar del producto $codigo es mayor a la disponible ".nformat($sface[$codigo])." por despachar ";
+				}else{
+					$error.="ERROR. el producto ($codigo) $descrip no pertenece  la factura $refe</br>";
+				}
+			}
+			/*FIN VALIDA ORIGEN=SFAC Y ENTREGADO*/
 		}
+		
 		
 		if(!empty($error)){
 			$do->error_message_ar['pre_ins']="<div class='alert'>".$error."</div>";
@@ -309,18 +351,30 @@ class Recep extends Controller {
 		$clipro =$do->get('clipro');
 		$origen =$do->get('origen');
 		$recep  =$do->get('recep');
-		
+		$tipo   =$do->get('tipo');
 		$refee   =$this->db->escape($refe);
 		$fechae  =$this->db->escape($fecha);
 		$cliproe =$this->db->escape($clipro);
-		if($origen=='sfac'){
+		
+		/*CREA SNOT E ITSNOT CUANDO ES ENTREGA DE FACTURA*/
+		if($origen=='sfac' && $tipo=='E'){
+			$sfac  =$this->datasis->damerow("SELECT fecha,almacen,nombre FROM sfac WHERE numero=$refee AND tipo_doc='F'");
 			if(empty($refe2)){
 				$refe2 = $this->datasis->fprox_numero('nsnot');
-				$sfac  =$this->datasis->damerow("SELECT fecha,almacen,nombre FROM sfac WHERE numero=$refee AND tipo_doc='F'");
 				$query="INSERT INTO snot (`precio`,`numero`,`fecha`,`factura`,`cod_cli`,`fechafa`,`nombre`,`almaorg`,`almades`)
 				VALUES (0,'$refe2',$fechae,$refee,$cliproe,'".$sfac['fecha']."','".$sfac['nombre']."','".$sfac['almacen']."','".$sfac['almacen']."')";
 				$this->db->query($query);
-				
+			}else{
+				$query="UPDATE snot  SET
+				fecha=$fechae,
+				factura=$refee,
+				cod_cli=$cliproe,
+				fechafa='".$sfac['fecha']."',
+				nombre='".$sfac['nombre']."',
+				almaorg='".$sfac['almacen']."',
+				almades='".$sfac['almacen']."'
+				";
+				$this->db->query($query);
 			}
 			$this->db->query("DELETE FROM itsnot WHERE numero='$refe2'");
 			$query="
@@ -335,10 +389,7 @@ class Recep extends Controller {
 			$this->db->query($query);
 			
 		}
-		
-		
-		
-		
+		/*fin CREA SNOT */
 	}
 
         function _post_insert($do){
@@ -397,5 +448,11 @@ class Recep extends Controller {
 		$query="ALTER TABLE `recep` ADD COLUMN `origen2` VARCHAR(20) NULL DEFAULT NULL AFTER `refe2`";
 		$this->db->simple_query($query);
         }
+	
+	function prueba(){
+		$query=$this->db->query("call sp_sfacdif(20110901)");
+		$a=$query->result_array();
+		print_r($a);
+	}
 }
 ?>
