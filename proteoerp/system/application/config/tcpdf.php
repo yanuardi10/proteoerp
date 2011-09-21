@@ -248,5 +248,6 @@
 	$tcpdf['cell_height_ratio'] = 1.25;
 	$tcpdf['cell_padding'] = 0;
 	
-	
+	 $tcpdf['K_CELL_HEIGHT_RATIO'] =1.25;
+	 $tcpdf['k_cell_height_ratio'] =1.25;
 	

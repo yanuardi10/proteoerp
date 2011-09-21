@@ -1,8 +1,7 @@
 <?php
 class Recep extends Controller {
-
-	var $titp   = 'Recepciones de Mercancia';
-	var $tits   = 'Recepcion';
+	var $titp   = 'Movimientos de Mercancia';
+	var $tits   = 'Movimientos';
 	var $url    = 'inventario/recep/';
 
 	function Recep(){
@@ -23,7 +22,6 @@ class Recep extends Controller {
 
 		//$filter->db->select(array("b.cuenta","a.comprob","a.fecha","a.origen","a.debe","a.haber","a.status","a.descrip","a.total"));
 		$filter->db->from("recep a");
-		$filter->db->join("seri b" ,"a.recep=b.recep");
 
 		$filter->recep = new inputField("Numero", "recep");
 		$filter->recep->size  =10;
@@ -100,16 +98,22 @@ class Recep extends Controller {
 		$this->rapyd->load('dataobject','datadetails');
 
 		$mSPRV=array(
-			'tabla'   =>'sprv',
+			'tabla'   =>'view_clipro',
 			'columnas'=>array(
-			'proveed' =>'C&oacute;digo',
-			'rif'     =>'RIF',
-			'nombre'  =>'Nombre',
-			'contacto'=>'Contacto'),
-			'filtro'  =>array('proveed'=>'C&oacute;digo','nombre'=>'Nombre','rif'=>'RIF'),
-			'retornar'=>array('proveed'=>'cod_prov'),
+			'codigo' =>'C&oacute;digo',
+			'tipo'    =>'Tipo',
+			'rif'     =>'RIF/CI',
+			'nombre'  =>'Nombre'
+			),
+			'filtro'  =>array(
+			'tipo'    =>'Tipo',
+			'codigo' =>'C&oacute;digo',
+			'rif'     =>'RIF/CI',
+			'nombre'  =>'Nombre'
+			),
+			'retornar'=>array('codigo'=>'clipro'),
 			//'script'  =>array('cal_lislr()','cal_total()'),
-			'titulo'  =>'Buscar Beneficiario');
+			'titulo'  =>'Buscar Proveedor / Cliente');
 			
 		$bSPRV=$this->datasis->p_modbus($mSPRV,"proveed");
 
@@ -130,10 +134,19 @@ class Recep extends Controller {
 		$edit->recep->mode ="autohide";
 		$edit->recep->when=array('show','modify');
 
-		$edit->cod_prov  = new inputField("Proveedor", "cod_prov");
-		$edit->cod_prov->append($bSPRV);
-		$edit->cod_prov->size=5;
-		$edit->cod_prov->readonly=true;
+		$edit->clipro  = new inputField("Cliente/Proveedor", "clipro");
+		$edit->clipro->append($bSPRV);
+		$edit->clipro->size=5;
+		$edit->clipro->readonly=true;
+		
+		$edit->tipo = new dropdownField('Tipo','tipo');
+		$edit->tipo->option("E","Entrega");
+		$edit->tipo->option("R","Recepci&oacute;n");
+		
+		$edit->refe  = new inputField("Refencia", "refe");
+		$edit->refe->size=10;
+		$edit->refe->readonly=true;
+		$edit->refe->maxleght=8;
 
 		$edit->fecha = new  dateonlyField("Fecha",  "fecha");
 		$edit->fecha->insertValue = date('Y-m-d');
@@ -172,28 +185,26 @@ class Recep extends Controller {
 		$edit->itdescri->autocomplete =false;
                 
                 $edit->itserial = new inputField("(<#o#>) Serial", "it_serial_<#i#>");
-		$edit->itserial->rule         ='trim|required';
+		$edit->itserial->rule         ='trim';
 		$edit->itserial->size         =20;
 		$edit->itserial->db_name      ='serial';
 		$edit->itserial->rel_id       ='seri';
 		$edit->itserial->autocomplete =false;
+		
+		$edit->itcant = new inputField("(<#o#>) Cantidad", "it_cant_<#i#>");
+		$edit->itcant->rule         = 'trim|numeric|required';
+		$edit->itcant->size         = 10;
+		$edit->itcant->db_name      = 'cant';
+		$edit->itcant->rel_id       = 'seri';
+		$edit->itcant->autocomplete = false;
+		$edit->itcant->insertValue=1;
 
 		$status=$edit->get_from_dataobjetct('status');
-		if($status=='C1'){
-			$action = "javascript:window.location='" .site_url($this->url.'/actualizar/'.$edit->rapyd->uri->get_edited_id()). "'";
-			$edit->button_status("btn_status",'Cerrar Asiento',$action,"TR","show");
-			$edit->buttons("modify","delete","save");
-		}elseif($status=='C2'){
-			$action = "javascript:window.location='" .site_url($this->url.'/reversar/'.$edit->rapyd->uri->get_edited_id()). "'";
-			$edit->button_status("btn_rever",'Reversar',$action,"TR","show");
-		}else{
-			$edit->buttons("save");
-		}
-
-		$edit->buttons("modify","save","undo","back","add_rel");
+		
+		$edit->buttons("delete","modify","save","undo","back","add_rel");
 		$edit->build();
 
-		$smenu['link']   = barra_menu('999');
+		$smenu['link']   = barra_menu('322');
 		$data['smenu']   = $this->load->view('view_sub_menu', $smenu,true);
 		$conten["form"]  =&  $edit;
 		$data['content'] = $this->load->view('recep', $conten,true);
@@ -202,25 +213,70 @@ class Recep extends Controller {
 		$data["head"]    = $this->rapyd->get_head().script('jquery.js').script('jquery-ui.js').script("plugins/jquery.numeric.pack.js").script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css');
 		$this->load->view('view_ventanas', $data);
 	}
+	
 
         function _valida($do){
 		$error  ='';
 		$recep  =$do->get('recep');
+		$tipo   =$do->get('tipo');
 		if(empty($recep)){
 			$ntransac = $this->datasis->fprox_numero('nrecep');
 			$do->set('recep',$ntransac);
 			$do->pk    =array('recep'=>$ntransac);
 		}
 		
+		$se=array();$sinv=0;
 		for($i=0;$i < $do->count_rel('seri');$i++){
-			$codigo=$this->db->escape($do->get_rel('seri','codigo',$i));
-			$barras=$this->db->escape($do->get_rel('seri','barras',$i));
+			$codigo=$do->get_rel('seri','codigo',$i);
+			$barras=$do->get_rel('seri','barras',$i);
+			$serial=$do->get_rel('seri','serial',$i);
+			$cant  =$do->get_rel('seri','cant',$i);
+			$codigoe=$this->db->escape($codigo);
+			$barrase=$this->db->escape($barras);
+			$seriale=$this->db->escape($serial);
 			
-			$sinv=$this->datasis->damerow("SELECT descrip,modelo,marca,clave,unidad FROM sinv WHERE codigo=$codigo AND barras=$barras");
-			if(count($sinv)>0){
-			}else{
-				$error.="El Codigo $codigo y barras $barras no existe.";
+			$where='';
+			
+			if(!empty($recep)){
+				$recepe=$this->db->escape($recep);
+				$where=" AND a.recep<>$recepe ";
 			}
+			
+			if(!($cant>0))
+			$error.=" La cantidad debe ser positiva para el codigo $codigo y barras $barras</br>";
+			
+			echo $t=$this->datasis->dameval("SELECT a.tipo FROM recep a JOIN seri b ON a.recep=b.recep WHERE codigo=$codigoe AND serial=$seriale $where ORDER BY a.fecha desc LIMIT 1");
+			
+			if($tipo=='R' ){
+				if(!empty($t) || $t!='E')
+				$error.="No se puede recibir debido a que esta recibido</br>";
+			}elseif($tipo=='E' && $t!='R'){
+				$error.="No se puede entegar debido a que fue entregado o no ha sido recibido</br>";
+			}else{
+				$error.="ERROR. el tipo no es Entregar, ni Recibir</br>";
+			}
+			
+			if(empty($error))
+			$sinv=$this->datasis->damerow("SELECT descrip,modelo,marca,clave,unidad,serial FROM sinv WHERE codigo=$codigoe AND barras=$barrase");
+			
+			if(count($sinv)>0){
+				if($sinv['serial']=='S' && empty($serial)){
+					$error.="El serial es obligatorio para el codigo $codigo y barras $barras</br>";
+				}else{
+					if(strlen($serial)>0)
+					$do->set_rel('seri','cant',1,$i);
+					
+					if(in_array($codigo.$barras.$serial.$cant,$se)){
+						$error.="El Serial $serial ya existe para el codigo $codigo y barras $barras</br>";
+					}else{
+						$se[]=$codigo.$barras.$serial;
+					}
+				}
+			}else{
+				$error.="El Codigo $codigo y barras $barras no existe.</br>";
+			}
+			
+			
 		}
 		
 		if(!empty($error)){
@@ -230,13 +286,6 @@ class Recep extends Controller {
 		}else{
 		}
         }
-
-	function reversar($numero){
-	}
-
-	function actualizar($numero){
-	
-	}
 
         function _post_insert($do){
             $numero = $do->get('recep');
@@ -255,29 +304,42 @@ class Recep extends Controller {
 
 
         function instalar(){
-            $query="ALTER TABLE `seri` ADD COLUMN `recep` CHAR(8) NOT NULL";
-            $this->db->simple_query($query);
-            $query="ALTER TABLE `seri` ADD COLUMN `frecep` DATE NOT NULL";
-            $this->db->simple_query($query);
-            $query="ALTER TABLE `seri`  ADD COLUMN `barras` VARCHAR(50) NOT NULL";
-            $this->db->simple_query($query);
-            
-            $query="CREATE TABLE `recep` (
-            `recep` CHAR(8) NULL,
-            `fecha` DATE NULL,
-            `cod_prov` VARCHAR(5) NULL,
-            `numero` CHAR(8) NULL,
-            `Column 5` CHAR(8) NULL,
-            `tipo_doc` CHAR(2) NULL,
-            `observa` TEXT NULL,
-            `status` CHAR(2) NULL,
-            `user` VARCHAR(50) NULL,
-            `estampa` TIMESTAMP NULL
-            ) COLLATE='latin1_swedish_ci' ENGINE=MyISAM ROW_FORMAT=DEFAULT";
-            $this->db->simple_query($query);
-	    
-            $query="ALTER TABLE `recep`  ADD PRIMARY KEY (`recep`)";
-            $this->db->simple_query($query);
+		$query="ALTER TABLE `seri` ADD COLUMN `recep` CHAR(8) NOT NULL";
+		$this->db->simple_query($query);
+		
+		$query="ALTER TABLE `seri` ADD COLUMN `frecep` DATE NOT NULL";
+		$this->db->simple_query($query);
+		
+		$query="ALTER TABLE `seri`  ADD COLUMN `barras` VARCHAR(50) NOT NULL";
+		$this->db->simple_query($query);
+		
+		$query="CREATE TABLE `recep` (
+		`recep` CHAR(8) NULL,
+		`fecha` DATE NULL,
+		`cod_prov` VARCHAR(5) NULL,
+		`numero` CHAR(8) NULL,
+		`Column 5` CHAR(8) NULL,
+		`tipo_doc` CHAR(2) NULL,
+		`observa` TEXT NULL,
+		`status` CHAR(2) NULL,
+		`user` VARCHAR(50) NULL,
+		`estampa` TIMESTAMP NULL
+		) COLLATE='latin1_swedish_ci' ENGINE=MyISAM ROW_FORMAT=DEFAULT";
+		$this->db->simple_query($query);
+		
+		$query="ALTER TABLE `recep`  ADD PRIMARY KEY (`recep`)";
+		$this->db->simple_query($query);
+		
+		$query="ALTER TABLE `seri`  ADD COLUMN `cant` DECIMAL(19,2) NOT NULL DEFAULT '1'";
+		$this->db->simple_query($query);
+		
+		$query="ALTER TABLE `recep`  CHANGE COLUMN `numero` `refe` CHAR(8) NULL DEFAULT NULL";
+		$this->db->simple_query($query);
+		
+		$query="ALTER TABLE `recep`  CHANGE COLUMN `tipo_doc` `tipo` CHAR(2) NULL DEFAULT NULL";
+		$this->db->simple_query($query);
+		$query="ALTER TABLE `recep`  CHANGE COLUMN `cod_prov` `clipro` VARCHAR(5) NULL DEFAULT NULL";
+		$this->db->simple_query($query);
         }
 }
 ?>

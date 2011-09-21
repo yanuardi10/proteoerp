@@ -6,10 +6,13 @@ class pfac extends validaciones{
 		parent :: Controller();
 		$this->load->library('rapyd');
 		$this->datasis->modulo_id(120,1);
+		$this->instalar();
 	}
 
 	function index(){
 		redirect('ventas/pfac/filteredgrid');
+		
+		
 	}
 
 	function filteredgrid(){
@@ -178,6 +181,7 @@ class pfac extends validaciones{
 				'peso'    => 'sinvpeso_<#i#>',
 				'precio1' => 'itpvp_<#i#>',
 				'pond'    => 'itcosto_<#i#>',
+				'mmargen' => 'mmargen_<#i#>',
 			),
 			'p_uri' => array(4 => '<#i#>'),
 			'titulo' => 'Buscar Articulo',
@@ -196,7 +200,7 @@ class pfac extends validaciones{
 				'tipo' => 'Tipo'),
 			'filtro'   => array('cliente' => 'C&oacute;digo Cliente', 'nombre' => 'Nombre'),
 			'retornar' => array('cliente' => 'cod_cli', 'nombre' => 'nombre', 'rifci' => 'rifci',
-				'dire11' => 'direc', 'tipo' => 'sclitipo'),
+				'dire11' => 'direc', 'tipo' => 'sclitipo','mmargen'=>'mmargen'),
 			'titulo' => 'Buscar Cliente',
 			'script' => array('post_modbus_scli()'));
 		$boton = $this->datasis->modbus($mSCLId);
@@ -214,7 +218,7 @@ class pfac extends validaciones{
 		$do = new DataObject('pfac');
 		$do->rel_one_to_many('itpfac', 'itpfac', array('numero' => 'numa'));
 		$do->pointer('scli' , 'scli.cliente=pfac.cod_cli', 'tipo AS sclitipo', 'left');
-		$do->rel_pointer('itpfac', 'sinv', 'itpfac.codigoa=sinv.codigo', 'sinv.descrip AS sinvdescrip, sinv.base1 AS sinvprecio1, sinv.base2 AS sinvprecio2, sinv.base3 AS sinvprecio3, sinv.base4 AS sinvprecio4, sinv.iva AS sinviva, sinv.peso AS sinvpeso,sinv.tipo AS sinvtipo,sinv.precio1 As sinvprecio1,sinv.pond AS sinvpond');
+		$do->rel_pointer('itpfac', 'sinv', 'itpfac.codigoa=sinv.codigo', 'sinv.descrip AS sinvdescrip, sinv.base1 AS sinvprecio1, sinv.base2 AS sinvprecio2, sinv.base3 AS sinvprecio3, sinv.base4 AS sinvprecio4, sinv.iva AS sinviva, sinv.peso AS sinvpeso,sinv.tipo AS sinvtipo,sinv.precio1 As sinvprecio1,sinv.pond AS sinvpond,sinv.mmargen as sinvmmargen');
 
 		$edit = new DataDetails('Pedidos', $do);
 		$edit->back_url = site_url('ventas/pfac/filteredgrid');
@@ -237,6 +241,8 @@ class pfac extends validaciones{
 		$edit->vd->options('SELECT vendedor, CONCAT(vendedor,\' \',nombre) nombre FROM vend ORDER BY vendedor');
 		$edit->vd->style = 'width:200px;';
 		$edit->vd->size = 5;
+
+		$edit->mmargen = new inputField('mmargen', 'mmargen');
 
 		$edit->numero = new inputField('N&uacute;mero', 'numero');
 		$edit->numero->size = 10;
@@ -306,6 +312,7 @@ class pfac extends validaciones{
 		$edit->cana->rule = 'required|positive';
 		$edit->cana->autocomplete = false;
 		$edit->cana->onkeyup = 'importe(<#i#>)';
+		$edit->cana->insertValue=1;
 
 		$edit->preca = new inputField('Precio <#o#>', 'preca_<#i#>');
 		$edit->preca->db_name = 'preca';
@@ -314,6 +321,12 @@ class pfac extends validaciones{
 		$edit->preca->size = 10;
 		$edit->preca->rule = 'required|positive|callback_chpreca[<#i#>]';
 		$edit->preca->readonly = true;
+		
+		$edit->dxapli = new inputField('Precio <#o#>', 'dxapli_<#i#>');
+		$edit->dxapli->db_name = 'dxapli';
+		$edit->dxapli->rel_id = 'itpfac';
+		$edit->dxapli->size = 10;
+		$edit->dxapli->rule = 'trim';
 
 		$edit->tota = new inputField('importe <#o#>', 'tota_<#i#>');
 		$edit->tota->db_name = 'tota';
@@ -350,6 +363,11 @@ class pfac extends validaciones{
 		$edit->sinvtipo->db_name = 'sinvtipo';
 		$edit->sinvtipo->rel_id = 'itpfac';
 		$edit->sinvtipo->pointer = true;
+		
+		$edit->itmmargen = new hiddenField('', 'mmargen_<#i#>');
+		$edit->itmmargen->db_name = 'sinvmmargen';
+		$edit->itmmargen->rel_id = 'itpfac';
+		$edit->itmmargen->pointer = true;
 		// fin de campos para detalle
 
 		$edit->ivat = new hiddenField('Impuesto', 'iva');
@@ -734,5 +752,11 @@ class pfac extends validaciones{
 	function _post_delete($do){
 		$codigo = $do->get('numero');
 		logusu('pfac', "Pedido $codigo ELIMINADO");
+	}
+	
+	function instalar(){
+		if (!$this->db->field_exists('dxapli','itpfac'))
+		$this->db->query("ALTER TABLE `itpfac`  ADD COLUMN `dxapli` VARCHAR(20) NOT NULL COMMENT 'descuento por aplicar'");
+		
 	}
 }
