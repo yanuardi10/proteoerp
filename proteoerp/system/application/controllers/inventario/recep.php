@@ -145,8 +145,12 @@ class Recep extends Controller {
 		
 		$edit->refe  = new inputField("Refencia", "refe");
 		$edit->refe->size=10;
-		$edit->refe->readonly=true;
 		$edit->refe->maxleght=8;
+		
+		$edit->origen = new dropdownField("Objeto", "origen");
+		$edit->origen->style="width:110px";
+		$edit->origen->option("","");
+		$edit->origen->option("sfac","Factura");
 
 		$edit->fecha = new  dateonlyField("Fecha",  "fecha");
 		$edit->fecha->insertValue = date('Y-m-d');
@@ -250,7 +254,8 @@ class Recep extends Controller {
 			if($tipo=='R'){
 				if($t=='E' && empty($t))
 				$error.="No se puede recibir debido a que esta recibido</br>";
-			}elseif($tipo=='E' && $t!='R'){
+			}elseif($tipo=='E' ){
+				if($t!='R')
 				$error.="No se puede entegar debido a que fue entregado o no ha sido recibido</br>";
 			}else{
 				$error.="ERROR. el tipo no es Entregar, ni Recibir</br>";
@@ -290,18 +295,63 @@ class Recep extends Controller {
 			$do->error_message_ar['pre_upd']="<div class='alert'>".$error."</div>";
 			return false;
 		}else{
+			$do->set('estampa', 'CURDATE()', FALSE);
+			$do->set('user', $this->session->userdata('usuario'));
+			//GUARDA EN SNOT E ITSNOT
+			
 		}
         }
 
+	function crea_snot($do){
+		$refe2  =$do->get('refe2');
+		$refe   =$do->get('refe');
+		$fecha  =$do->get('fecha');
+		$clipro =$do->get('clipro');
+		$origen =$do->get('origen');
+		$recep  =$do->get('recep');
+		
+		$refee   =$this->db->escape($refe);
+		$fechae  =$this->db->escape($fecha);
+		$cliproe =$this->db->escape($clipro);
+		if($origen=='sfac'){
+			if(empty($refe2)){
+				$refe2 = $this->datasis->fprox_numero('nsnot');
+				$sfac  =$this->datasis->damerow("SELECT fecha,almacen,nombre FROM sfac WHERE numero=$refee AND tipo_doc='F'");
+				$query="INSERT INTO snot (`precio`,`numero`,`fecha`,`factura`,`cod_cli`,`fechafa`,`nombre`,`almaorg`,`almades`)
+				VALUES (0,'$refe2',$fechae,$refee,$cliproe,'".$sfac['fecha']."','".$sfac['nombre']."','".$sfac['almacen']."','".$sfac['almacen']."')";
+				$this->db->query($query);
+				
+			}
+			$this->db->query("DELETE FROM itsnot WHERE numero='$refe2'");
+			$query="
+			INSERT INTO itsnot (`numero`,`codigo`,`descrip`,`cant`,`saldo`,`entrega`,`factura`)
+			SELECT '$refe2' numero,codigo,a.descrip,b.cana cant,(b.cana-SUM(a.cant)) saldo,SUM(a.cant) entrega,$refee 
+			FROM recep c
+			JOIN seri a ON a.recep=c.recep
+			JOIN sitems b ON a.codigo=b.codigoa AND c.refe=b.numa 
+			WHERE c.recep='$recep' AND b.tipoa='F' AND b.numa=$refee
+			GROUP BY codigo
+			";
+			$this->db->query($query);
+			
+		}
+		
+		
+		
+		
+	}
+
         function _post_insert($do){
-            $numero = $do->get('recep');
-            logusu('recep',"Creo recepcion  $numero");
-            //redirect($this->url."actualizar/$numero");
+		$this->crea_snot($do);
+		$numero = $do->get('recep');
+		logusu('recep',"Creo recepcion  $numero");
+		//redirect($this->url."actualizar/$numero");
         }
         
         function _post_update($do){
-            $numero = $do->get('recep');
-            logusu('casi'," Modifico recepcion $numero");
+		$this->crea_snot($do);
+		$numero = $do->get('recep');
+		logusu('casi'," Modifico recepcion $numero");
         }
         function _post_delete($do){
             $numero = $do->get('recep');
@@ -332,19 +382,19 @@ class Recep extends Controller {
 		`estampa` TIMESTAMP NULL
 		) COLLATE='latin1_swedish_ci' ENGINE=MyISAM ROW_FORMAT=DEFAULT";
 		$this->db->simple_query($query);
-		
 		$query="ALTER TABLE `recep`  ADD PRIMARY KEY (`recep`)";
 		$this->db->simple_query($query);
-		
 		$query="ALTER TABLE `seri`  ADD COLUMN `cant` DECIMAL(19,2) NOT NULL DEFAULT '1'";
 		$this->db->simple_query($query);
-		
 		$query="ALTER TABLE `recep`  CHANGE COLUMN `numero` `refe` CHAR(8) NULL DEFAULT NULL";
 		$this->db->simple_query($query);
-		
 		$query="ALTER TABLE `recep`  CHANGE COLUMN `tipo_doc` `tipo` CHAR(2) NULL DEFAULT NULL";
 		$this->db->simple_query($query);
 		$query="ALTER TABLE `recep`  CHANGE COLUMN `cod_prov` `clipro` VARCHAR(5) NULL DEFAULT NULL";
+		$this->db->simple_query($query);
+		$query="ALTER TABLE `recep` ADD COLUMN `refe2` VARCHAR(20) NULL DEFAULT NULL AFTER `origen`";
+		$this->db->simple_query($query);
+		$query="ALTER TABLE `recep` ADD COLUMN `origen2` VARCHAR(20) NULL DEFAULT NULL AFTER `refe2`";
 		$this->db->simple_query($query);
         }
 }
