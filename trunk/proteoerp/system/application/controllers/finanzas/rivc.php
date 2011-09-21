@@ -76,6 +76,85 @@ class rivc extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
+	function convcxp($id){
+		$error    = 0;
+
+		$estampa  = date('Y-m-d');
+		$hora     = date('H:i:s');
+		$sp_fecha = date('Ymd');
+		$transac  = $this->datasis->fprox_numero('ntransa');
+		$negreso  = $this->datasis->fprox_numero('negreso');
+		$cod_cli  = $this->datasis->dameval("SELECT cod_cli FROM rivc WHERE id=".$this->db->escape($id));
+		$itnumero = $this->datasis->dameval("SELECT nrocomp FROM rivc WHERE id=".$this->db->escape($id));
+		$nombre   = $this->datasis->dameval("SELECT nombre FROM scli WHERE cliente=".$this->db->escape($cod_cli));
+		$ttransac = $this->datasis->dameval("SELECT transac FROM rivc WHERE id=".$this->db->escape($id));
+		$totneto  = $this->datasis->dameval("SELECT SUM(monto*IF('ND',-1,1)) AS monto FROM smov WHERE transac='$ttransac' AND tipo_doc IN ('AN','ND') AND cod_cli=".$this->db->escape($cod_cli));
+		$usuario  = $this->session->userdata('usuario');
+		$fecha    = date('Y-m-d');
+
+		//Crea la ND al cliente con el monto de los anticipos
+		$mnumnd = $this->datasis->fprox_numero('ndcli');
+		$data=array();
+		$data['cod_cli']    = $cod_cli;
+		$data['nombre']     = $nombre;
+		$data['tipo_doc']   = 'ND';
+		$data['numero']     = $mnumnd;
+		$data['fecha']      = $estampa;
+		$data['monto']      = $totneto;
+		$data['impuesto']   = 0;
+		$data['abonos']     = 0;
+		$data['vence']      = $fecha;
+		$data['tipo_ref']   = 'RT';
+		$data['num_ref']    = $itnumero;
+		$data['observa1']   = 'NOTA DEBITO A '.$cod_cli.' POR RET. '.$itnumero;
+		$data['estampa']    = $estampa;
+		$data['hora']       = $hora;
+		$data['transac']    = $transac;
+		$data['usuario']    = $usuario;
+		$data['codigo']     = 'NOCON';
+		$data['descrip']    = 'NOTA DE CONTABILIDAD';
+
+		$mSQL = $this->db->insert_string('smov', $data);
+		$ban=$this->db->simple_query($mSQL);
+		if($ban==false){ memowrite($mSQL,'RIVC'); }
+
+
+		//Crea la cuenta por pagar
+		$causado = $this->datasis->fprox_numero('ncausado');
+		$error   = 0;
+
+		$mnsprm = $this->datasis->fprox_numero('nsprm');
+		$data=array();
+		$data['cod_prv']    = 'REINT';
+		$data['nombre']     = 'REINTEGROS CLIENTES';
+		$data['tipo_doc']   = 'AB';
+		$data['numero']     = $mnsprm ;
+		$data['fecha']      = $fecha;
+		$data['monto']      = $totneto;
+		$data['impuesto']   = 0;
+		$data['abonos']     = $totneto;
+		$data['vence']      = $fecha;
+		$data['observa1']   = 'ABONO NRO. '.$mnsprm.' PROVEEDOR REINT';
+		$data['transac']    = $transac;
+		$data['estampa']    = $estampa;
+		$data['hora']       = $hora;
+		$data['usuario']    = $usuario;
+		$data['reteiva']    = 0;
+		$data['montasa']    = 0;
+		$data['monredu']    = 0;
+		$data['monadic']    = 0;
+		$data['tasa']       = 0;
+		$data['reducida']   = 0;
+		$data['sobretasa']  = 0;
+		$data['exento']     = 0;
+		$data['causado']    = $causado;
+
+		$sql=$this->db->insert_string('sprm', $data);
+		$ban=$this->db->simple_query($sql);
+		if($ban==false){ memowrite($sql,'gser'); $error++;}
+		redirect('finanzas/rivc/dataedit/show/'.$id);
+	}
+
 	function reintegrar($id){
 		$nombre=$this->datasis->dameval('SELECT nombre FROM rivc WHERE id='.$this->db->escape($id));
 
@@ -470,6 +549,9 @@ class rivc extends Controller {
 		if($edit->_status=='show'){
 			$action = "javascript:window.location='".site_url('finanzas/rivc/reintegrar/'.$edit->get_from_dataobjetct('id'))."'";
 			$edit->button('btn_reintegrar', 'Reintegrar', $action, 'TR');
+
+			$action = "javascript:window.location='".site_url('finanzas/rivc/convcxp/'.$edit->get_from_dataobjetct('id'))."'";
+			$edit->button('btn_convcxp', 'Convertir a CxP', $action, 'TR');
 		}
 
 		$edit->buttons('save', 'undo', 'back','add_rel');
