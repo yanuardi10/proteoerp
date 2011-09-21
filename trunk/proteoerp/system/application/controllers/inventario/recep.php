@@ -245,15 +245,21 @@ class Recep extends Controller {
 			if(!($cant>0))
 			$error.=" La cantidad debe ser positiva para el codigo $codigo y barras $barras</br>";
 			
-			echo $t=$this->datasis->dameval("SELECT a.tipo FROM recep a JOIN seri b ON a.recep=b.recep WHERE codigo=$codigoe AND serial=$seriale $where ORDER BY a.fecha desc LIMIT 1");
+			$t=$this->datasis->dameval("SELECT a.tipo FROM recep a JOIN seri b ON a.recep=b.recep WHERE codigo=$codigoe AND serial=$seriale $where ORDER BY a.fecha desc LIMIT 1");
 			
-			if($tipo=='R' ){
-				if(!empty($t) || $t!='E')
+			if($tipo=='R'){
+				if($t=='E' && empty($t))
 				$error.="No se puede recibir debido a que esta recibido</br>";
 			}elseif($tipo=='E' && $t!='R'){
 				$error.="No se puede entegar debido a que fue entregado o no ha sido recibido</br>";
 			}else{
 				$error.="ERROR. el tipo no es Entregar, ni Recibir</br>";
+			}
+			
+			if(empty($error) && $tipo=='E'){
+				$t=$this->datasis->dameval("SELECT SUM(IF(tipo='R',b.cant,-1*b.cant)) FROM recep a JOIN seri b ON a.recep=b.recep WHERE codigo=$codigoe AND serial=$seriale $where ORDER BY a.fecha desc LIMIT 1");
+				if($cant>$t)
+				$error.="La cantidad a entregar es mayor a la existente</br>";
 			}
 			
 			if(empty($error))
