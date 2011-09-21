@@ -424,10 +424,11 @@ function scstserie(mcontrol){
 
 		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
 
-		$recep=strtotime($edit->get_from_dataobjetct('recep'));
-		$fecha=strtotime($edit->get_from_dataobjetct('fecha'));
+		$recep =strtotime($edit->get_from_dataobjetct('recep'));
+		$fecha =strtotime($edit->get_from_dataobjetct('fecha'));
+		$actuali=strtotime($edit->get_from_dataobjetct('actuali'));
 
-		if($recep < $fecha){
+		if($actuali < $fecha){
 			$control=$this->rapyd->uri->get_edited_id();
 			$accion="javascript:window.location='".site_url('compras/scst/actualizar/'.$control)."'";
 			$accio2="javascript:window.location='".site_url('compras/scst/cprecios/'.$control)."'";
@@ -799,6 +800,7 @@ function scstserie(mcontrol){
 		$form->build_form();
 
 		if ($form->on_success()){
+			
 			$cprecio   = $form->cprecio->newValue;
 			$actualiza = $form->fecha->newValue;
 			$cambio    = ($cprecio=='S') ? true : false;
@@ -829,6 +831,7 @@ function scstserie(mcontrol){
 			cexento,cgenera,civagen,creduci,civared,cadicio,civaadi,cstotal,ctotal,cimpuesto,numero
 			FROM scst WHERE control=?';
 			$query=$this->db->query($SQL,array($control));
+			
 			if($query->num_rows()==1){
 				$row     = $query->row_array();
 				$transac = $row['transac'];
@@ -1118,8 +1121,15 @@ function scstserie(mcontrol){
 	function chddate($fecha){
 		$d1 = DateTime::createFromFormat(RAPYD_DATE_FORMAT, $fecha);
 		$d2 = new DateTime();
+		
+		$control= $this->uri->segment(4);
+		$controle=$this->db->escape($control);
 
-		if($d2>=$d1){
+		$f=$this->datasis->dameval("SELECT fecha FROM scst WHERE control=$controle");
+		
+		$d3 = DateTime::createFromFormat(RAPYD_DATE_FORMAT, dbdate_to_human($f));
+		
+		if($d2>=$d1 && $d1>=$d3){
 			return true;
 		}else{
 			$this->validation->set_message('chddate', 'No se puede recepcionar una compra con fecha superior al d&iacute;a de hoy.');
