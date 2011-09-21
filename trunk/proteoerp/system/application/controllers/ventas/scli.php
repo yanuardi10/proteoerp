@@ -468,7 +468,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		$edit->telefon2->maxlength =25;
 
 		$edit->tipo = new dropdownField('Tipo ', 'tipo');
-		$edit->tipo->options(array('1'=> 'Precio 1','2'=>'Precio 2', '3'=>'Precio 3','4'=>'Precio 4','0'=>'Inactivo'));
+		$edit->tipo->options(array('1'=> 'Precio 1','2'=>'Precio 2', '3'=>'Precio 3','4'=>'Precio 4','5'=>'Mayor','0'=>'Inactivo'));
 		$edit->tipo->style = 'width:90px';
 
 		$edit->formap = new inputField('D&iacute;as', 'formap');

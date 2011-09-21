@@ -13,7 +13,7 @@ $scampos  ='<tr id="tr_itpfac_<#i#>">';
 $scampos .='<td class="littletablerow" align="left" >'.$campos['codigoa']['field'].'</td>';
 $scampos .='<td class="littletablerow" align="left" >'.$campos['desca']['field'].'</td>';
 $scampos .='<td class="littletablerow" align="right">'.$campos['cana']['field'].  '</td>';
-$scampos .='<td class="littletablerow" align="right">'.$campos['preca']['field']. '</td>';
+$scampos .='<td class="littletablerow" align="right">'.$campos['preca']['field'].$campos['dxapli']['field']. '</td>';
 $scampos .='<td class="littletablerow" align="right">'.$campos['tota']['field'];
 for($o=1;$o<5;$o++){
 	$it_obj   = "precio${o}";
@@ -23,7 +23,8 @@ $scampos .= $campos['itiva']['field'];
 $scampos .= $campos['sinvtipo']['field'];
 $scampos .= $campos['itpvp']['field'];
 $scampos .= $campos['itcosto']['field'];
-$scampos .= $campos['sinvpeso']['field'].'</td>';
+$scampos .= $campos['sinvpeso']['field'];
+$scampos .= $campos['itmmargen']['field'].'</td>';
 $scampos .= '<td class="littletablerow"><a href=# onclick="del_itpfac(<#i#>);return false;">'.img("images/delete.jpg").'</a></td></tr>';
 $campos=$form->js_escape($scampos);
 
@@ -42,6 +43,7 @@ $(function(){
 	$(document).keydown(function(e){
 		if (e.which == 13) return false;
 	});
+	$("#mmargen").hide();
 
 	$(".inputnum").numeric(".");
 	totalizar();
@@ -133,6 +135,8 @@ function totalizar(){
 	var peso   =0;
 	var cana   =0;
 	var arr=$('input[name^="tota_"]');
+	sclitipo=$("#sclitipo").val();
+	
 	jQuery.each(arr, function() {
 		nom=this.name
 		pos=this.name.lastIndexOf('_');
@@ -146,6 +150,14 @@ function totalizar(){
 			peso    = peso+(itpeso*cana);
 			iva     = iva+tota*(itiva/100);
 			totals  = totals+tota;
+			
+			if(sclitipo=='5')
+			$("#dxapli_"+ind).show();
+			else{
+				$("#dxapli_"+ind).hide();
+				$("#dxapli_"+ind).val('');
+			}
+			
 		}
 	});
 	$("#peso").val(roundNumber(peso,2));
@@ -206,12 +218,33 @@ function post_modbus_scli(){
 
 function post_modbus_sinv(nind){
 	ind=nind.toString();
-	var tipo =Number($("#sclitipo").val()); if(tipo>0) tipo=tipo-1;
+	var tipo =Number($("#sclitipo").val()); if(tipo>0 && tipo<5) tipo=tipo-1;
 	$("#preca_"+ind).empty();
 	var arr=$('#preca_'+ind);
+	
 	cdropdown(nind);
 	
+	if(tipo!=5)
 	jQuery.each(arr, function() { this.selectedIndex=tipo; });
+	else{
+		
+		sclimmargen=parseFloat($("#mmargen").val());
+		sinvmmargen=parseFloat($("#mmargen_"+ind).val());
+		precio1=parseFloat($("#precio1_"+ind).val());
+		r=((precio1*(100-sclimmargen)*(100-sinvmmargen))/(100*100));
+		valor=Math.round(r*100)/100;
+		
+		var pprecio  = document.createElement("input");
+		pprecio.setAttribute("id"    , "preca_"+ind);
+		pprecio.setAttribute("name"  , "preca_"+ind);
+		pprecio.setAttribute("size"  , "10");
+		pprecio.setAttribute("value" , valor);
+		pprecio.setAttribute("readonly" , "true");
+		pprecio.setAttribute("align"    , "right");
+		pprecio.setAttribute("class"    , "inputnum");
+		$("#preca_"+ind).replaceWith(pprecio);
+	}
+	$("#cana_"+ind).focus();
 	importe(nind);
 	totalizar();
 }
@@ -232,6 +265,7 @@ function cdropdown(nind){
 	var id='';
 	
 	if(preca==null || preca.length==0) ban=1;
+	
 	for(ii=1;ii<5;ii++){
 		id =ii.toString();
 		val=$("#precio"+id+"_"+ind).val();
@@ -397,6 +431,8 @@ function autocod(id){
 				$it_tipo     = "sinvtipo_$i";
 				$it_costo    = "itcosto_$i";
 				$it_pvp      = "itpvp_$i";
+				$it_mmargen  = "itmmargen_$i";
+				$it_dxapli   = "dxapli_$i";
 
 				$pprecios='';
 				for($o=1;$o<5;$o++){
@@ -408,13 +444,14 @@ function autocod(id){
 				$pprecios .= $form->$it_tipo->output;
 				$pprecios .= $form->$it_costo->output;
 				$pprecios .= $form->$it_pvp->output;
+				$pprecios .= $form->$it_mmargen->output;
 			?>
 
 			<tr id='tr_itpfac_<?php echo $i; ?>'>
 				<td class="littletablerow" align="left" nowrap><?php echo $form->$it_codigoa->output; ?></td>
 				<td class="littletablerow" align="left" ><?php echo $form->$it_desca->output;  ?></td>
 				<td class="littletablerow" align="right"><?php echo $form->$it_cana->output;   ?></td>
-				<td class="littletablerow" align="right"><?php echo $form->$it_preca->output;  ?></td>
+				<td class="littletablerow" align="right"><?php echo $form->$it_preca->output.$form->$it_dxapli->output;  ?></td>
 				<td class="littletablerow" align="right"><?php echo $form->$it_tota->output.$pprecios;?></td>
 
 				<?php if($form->_status!='show') {?>
@@ -455,7 +492,7 @@ function autocod(id){
 			</tr>
 		</table>
 		</fieldset>
-
+		<?php echo $form->mmargen->output;  ?>
 		<?php echo $form_end; ?>
 		</td>
 	</tr>

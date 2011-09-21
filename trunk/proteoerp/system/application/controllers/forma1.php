@@ -48,7 +48,7 @@ class Forma1 extends Controller{
 		if (count($this->parametros)>0){
 			$_arch_nombre=implode('-',$this->parametros);
 			$_fnombre=array_shift($this->parametros);
-			$repo=$this->datasis->dameval("SELECT forma1 FROM formatos WHERE nombre='$_fnombre'");
+			$repo=$this->datasis->dameval("SELECT tcpdf2 FROM formatos WHERE nombre='$_fnombre'");
 
 			if(!$repo){
 				echo "Formato No Existe";

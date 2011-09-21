@@ -130,8 +130,7 @@ if($form->_status!='show'){
 		seri_cont=seri_cont+1;
             
                 $("input[name^='it_']").focus(function(){
-                    apuntador=this.name;
-		    
+                    apuntador=this.name;    
                 });
                 
                 $("#it_barras_"+can).focus();
@@ -168,11 +167,17 @@ if($form->_status!='show'){
 	<tr>
 		<td>
 			<table width="100%"  style="margin:0;width:100%;">
+			<tr>
+				<td class="littletablerowth"><?=$form->tipo->label   ?>*&nbsp;</td>
+				<td class="littletablerow"  ><?=$form->tipo->output  ?>&nbsp; </td>
+				<td class="littletablerowth"><?=$form->fecha->label  ?>*&nbsp;</td>
+				<td class="littletablerow"  ><?=$form->fecha->output ?>&nbsp;</td>
+			</tr>
 			   <tr>
-                                <td class="littletablerowth"><?=$form->cod_prov->label  ?>*&nbsp;</td>
-                                <td class="littletablerow"  ><?=$form->cod_prov->output ?>&nbsp; </td>
-                                <td class="littletablerowth"><?=$form->fecha->label  ?>*&nbsp;</td>
-                                <td class="littletablerow"  ><?=$form->fecha->output ?>&nbsp; </td>
+                                <td class="littletablerowth"><?=$form->clipro->label  ?>*&nbsp;</td>
+                                <td class="littletablerow"  ><?=$form->clipro->output ?>&nbsp; </td>
+                                <td class="littletablerowth">&nbsp;</td>
+                                <td class="littletablerow"  >&nbsp;</td>
 			    </tr>
 			  <tr>
 			    <td class="littletablerowth">         <?=$form->observa->label ?>&nbsp;</td>
@@ -186,6 +191,7 @@ if($form->_status!='show'){
                         <th bgcolor='#7098D0'>C&oacute;digo     </th>
                         <th bgcolor='#7098D0'>Descripci&oacute;n</th>
                         <th bgcolor='#7098D0'>Serial            </th>
+			<th bgcolor='#7098D0'>Cantidad          </th>
                         <?php if($form->_status!='show') {?>
                         <th class="littletableheaderb">&nbsp;</td>
                         <?php } ?>
@@ -196,12 +202,14 @@ if($form->_status!='show'){
                             $obj1="itcodigo_$i";
                             $obj2="itdescri_$i";
                             $obj3="itserial_$i";
+			    $obj4="itcant_$i";
                             ?>
                             <tr id='tr_seri_<?=$i ?>'>
-                                <td class="littletablerow"><?=$form->$obj0->output ?></td>
-                                <td class="littletablerow"><?=$form->$obj1->output ?></td>
-                                <td class="littletablerow"><?=$form->$obj2->output ?></td>
-                                <td class="littletablerow"><?=$form->$obj3->output ?></td>
+                                <td class="littletablerow"              ><?=$form->$obj0->output ?></td>
+                                <td class="littletablerow"              ><?=$form->$obj1->output ?></td>
+                                <td class="littletablerow"              ><?=$form->$obj2->output ?></td>
+                                <td class="littletablerow"              ><?=$form->$obj3->output ?></td>
+				<td class="littletablerow" align="right"><?=$form->$obj4->output ?></td>
                                 <?php if($form->_status!='show') {?>
                                 <td class="littletablerow"><a href=# onclick='del_seri(<?=$i ?>);return false;'><?=image('process-stop32.png','#',array("border"=>0))?></a></td>
                                 <?php } ?>
@@ -209,7 +217,7 @@ if($form->_status!='show'){
 			  <?php
                           } ?>
 			  <tr id='__UTPL__'>
-			    <td class="littletablefooterb" align='right' colspan="4">&nbsp;</td>
+			    <td class="littletablefooterb" align='right' colspan="5">&nbsp;</td>
 			    <?php if($form->_status!='show') {?>
 			    <td class="littletablefooterb">&nbsp;</td>
 			    <?php } ?>
@@ -222,5 +230,3 @@ if($form->_status!='show'){
 	<tr>
 <table>
 <?php endif; ?>
-
-
