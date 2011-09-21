@@ -173,6 +173,12 @@ if($form->_status!='show'){
 				<td class="littletablerowth"><?=$form->fecha->label  ?>*&nbsp;</td>
 				<td class="littletablerow"  ><?=$form->fecha->output ?>&nbsp;</td>
 			</tr>
+			<tr>
+				<td class="littletablerowth"><?=$form->refe->label   ?>&nbsp;</td>
+				<td class="littletablerow"  ><?=$form->refe->output  ?>&nbsp; </td>
+				<td class="littletablerowth"><?=$form->origen->label  ?>&nbsp;</td>
+				<td class="littletablerow"  ><?=$form->origen->output ?>&nbsp;</td>
+			</tr>
 			   <tr>
                                 <td class="littletablerowth"><?=$form->clipro->label  ?>*&nbsp;</td>
                                 <td class="littletablerow"  ><?=$form->clipro->output ?>&nbsp; </td>
