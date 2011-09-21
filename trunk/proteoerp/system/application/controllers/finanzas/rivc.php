@@ -86,11 +86,12 @@ class rivc extends Controller {
 		$negreso  = $this->datasis->fprox_numero('negreso');
 		$cod_cli  = $this->datasis->dameval("SELECT cod_cli FROM rivc WHERE id=".$this->db->escape($id));
 		$itnumero = $this->datasis->dameval("SELECT nrocomp FROM rivc WHERE id=".$this->db->escape($id));
-		$nombre   = $this->datasis->dameval("SELECT nombre FROM scli WHERE cliente=".$this->db->escape($cod_cli));
-		$ttransac = $this->datasis->dameval("SELECT transac FROM rivc WHERE id=".$this->db->escape($id));
+		$fecha    = $this->datasis->dameval("SELECT fecha   FROM rivc WHERE id=".$this->db->escape($id));
+		$nombre   = $this->datasis->dameval("SELECT nombre  FROM scli WHERE cliente=".$this->db->escape($cod_cli));
 		$totneto  = $this->datasis->dameval("SELECT SUM(monto*IF('ND',-1,1)) AS monto FROM smov WHERE transac='$ttransac' AND tipo_doc IN ('AN','ND') AND cod_cli=".$this->db->escape($cod_cli));
 		$usuario  = $this->session->userdata('usuario');
-		$fecha    = date('Y-m-d');
+
+		//$ttransac = $this->datasis->dameval("SELECT transac FROM rivc WHERE id=".$this->db->escape($id));
 
 		//Crea la ND al cliente con el monto de los anticipos
 		$mnumnd = $this->datasis->fprox_numero('ndcli');
@@ -123,18 +124,20 @@ class rivc extends Controller {
 		$causado = $this->datasis->fprox_numero('ncausado');
 		$error   = 0;
 
-		$mnsprm = $this->datasis->fprox_numero('nsprm');
+		$mnsprm = $this->datasis->fprox_numero('num_nd');
 		$data=array();
 		$data['cod_prv']    = 'REINT';
 		$data['nombre']     = 'REINTEGROS CLIENTES';
-		$data['tipo_doc']   = 'AB';
+		$data['tipo_doc']   = 'ND';
 		$data['numero']     = $mnsprm ;
 		$data['fecha']      = $fecha;
 		$data['monto']      = $totneto;
 		$data['impuesto']   = 0;
-		$data['abonos']     = $totneto;
+		$data['abonos']     = 0;
 		$data['vence']      = $fecha;
-		$data['observa1']   = 'ABONO NRO. '.$mnsprm.' PROVEEDOR REINT';
+		$data['observa1']   = 'REINTEGRO POR RETENCION A RETENCION '.$itnumero;
+		$data['tipo_ref']   = 'RT';
+		$data['num_ref']    = $itnumero;
 		$data['transac']    = $transac;
 		$data['estampa']    = $estampa;
 		$data['hora']       = $hora;
@@ -148,6 +151,8 @@ class rivc extends Controller {
 		$data['sobretasa']  = 0;
 		$data['exento']     = 0;
 		$data['causado']    = $causado;
+		$data['codigo']     = 'NOCON';
+		$data['descrip']    = 'NOTA DE CONTABILIDAD';
 
 		$sql=$this->db->insert_string('sprm', $data);
 		$ban=$this->db->simple_query($sql);
