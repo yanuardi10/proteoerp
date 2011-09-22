@@ -1,5 +1,4 @@
 <?php
-
 $container_bl=join("&nbsp;", $form->_button_container["BL"]);
 $container_br=join("&nbsp;", $form->_button_container["BR"]);
 $container_tr=join("&nbsp;", $form->_button_container["TR"]);
@@ -24,7 +23,11 @@ $scampos .= $campos['sinvtipo']['field'];
 $scampos .= $campos['itpvp']['field'];
 $scampos .= $campos['itcosto']['field'];
 $scampos .= $campos['sinvpeso']['field'];
-$scampos .= $campos['itmmargen']['field'].'</td>';
+$scampos .= $campos['itmmargen']['field'];
+$scampos .= $campos['itformcal']['field'];
+$scampos .= $campos['itultimo']['field'];
+$scampos .= $campos['itpond']['field'].'</td>';
+$scampos .= $campos['itpm']['field'].'</td>';
 $scampos .= '<td class="littletablerow"><a href=# onclick="del_itpfac(<#i#>);return false;">'.img("images/delete.jpg").'</a></td></tr>';
 $campos=$form->js_escape($scampos);
 
@@ -227,11 +230,34 @@ function post_modbus_sinv(nind){
 	if(tipo!=5)
 	jQuery.each(arr, function() { this.selectedIndex=tipo; });
 	else{
-		
 		sclimmargen=parseFloat($("#mmargen").val());
 		sinvmmargen=parseFloat($("#mmargen_"+ind).val());
-		precio1=parseFloat($("#precio1_"+ind).val());
-		r=((precio1*(100-sclimmargen)*(100-sinvmmargen))/(100*100));
+		sinvformcal=$("#formcal_"+ind).val();
+		sinvpond=parseFloat($("#pond_"+ind).val());
+		sinvultimo=parseFloat($("#ultimo_"+ind).val());
+		sinvpm=parseFloat($("#pm_"+ind).val());
+		alert(sinvformcal);
+		alert(sinvpond);
+		alert(sinvultimo);
+		alert(sinvpm);
+		if(sinvformcal=='U'){
+			p=sinvultimo+(sinvultimo*sinvpm/100);
+		}
+		
+		if(sinvformcal=='P'){
+			p=sinvultimo+(sinvultimo*sinvpm/100);
+		}
+		
+		if(sinvformcal=='M'){
+			if(sinvultimo>sinvpond){
+				p=sinvultimo+(sinvultimo*sinvpm/100);
+			}else{
+				p=sinvultimo+(sinvultimo*sinvpm/100);
+			}
+		}
+		p=Math.round(p*100)/100;
+
+		r=((p*(100-sclimmargen)*(100-sinvmmargen))/(100*100));
 		valor=Math.round(r*100)/100;
 		
 		var pprecio  = document.createElement("input");
@@ -433,6 +459,10 @@ function autocod(id){
 				$it_pvp      = "itpvp_$i";
 				$it_mmargen  = "itmmargen_$i";
 				$it_dxapli   = "dxapli_$i";
+				$it_pond     = "itpond_$i";
+				$it_ultimo   = "itultimo_$i";
+				$it_formcal  = "itformcal_$i";
+				$it_pm       = "itpm_$i";
 
 				$pprecios='';
 				for($o=1;$o<5;$o++){
@@ -445,6 +475,11 @@ function autocod(id){
 				$pprecios .= $form->$it_costo->output;
 				$pprecios .= $form->$it_pvp->output;
 				$pprecios .= $form->$it_mmargen->output;
+				$pprecios .= $form->$it_pond->output;
+				$pprecios .= $form->$it_ultimo->output;
+				$pprecios .= $form->$it_formcal->output;
+				$pprecios .= $form->$it_pm->output;
+
 			?>
 
 			<tr id='tr_itpfac_<?php echo $i; ?>'>

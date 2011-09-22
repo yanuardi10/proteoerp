@@ -84,6 +84,7 @@ class Recep extends Controller {
 
 		$grid->column_orderby("Numero Recepcion" ,$uri                                            ,"numero");
 		$grid->column_orderby("Fecha"            ,"<dbdate_to_human><#fecha#></dbdate_to_human>"  ,"fecha"    ,"align='center'"      );
+		$grid->column_orderby("Origen"           ,"origen"                                        ,"origen"   ,"align='center'"      );
 		$grid->column_orderby("Tipo"             ,"<tipo><#tipo#></tipo>"                         ,"tipo"     ,"align='center'"      );
 		$grid->column_orderby("Cod. Proveedor / Cliente"   ,"clipro"                                          ,"cod_prov" ,"align='center'"      );
 		$grid->column_orderby("Observacion"      ,"observa"                                       ,"observa"  ,"align='left'  NOWRAP");
@@ -157,7 +158,7 @@ class Recep extends Controller {
 		
 		$edit->origen = new dropdownField("Objeto", "origen");
 		$edit->origen->style="width:110px";
-		$edit->origen->option("","");
+		$edit->origen->option("scst","Compra");
 		$edit->origen->option("sfac","Factura");
 
 		$edit->fecha = new  dateonlyField("Fecha",  "fecha");
@@ -233,6 +234,7 @@ class Recep extends Controller {
 		$tipo   =$do->get('tipo');
 		$refe   =$do->get('refe');
 		$origen =$do->get('origen');
+		$refee  =$this->db->escape($refe);
 		
 		if(empty($recep)){
 			$ntransac = $this->datasis->fprox_numero('nrecep');
@@ -240,33 +242,91 @@ class Recep extends Controller {
 			$do->pk    =array('recep'=>$ntransac);
 		}
 		
+		//se trae cliente y proveedor depende del numero
+		if($origen=='scst'){
+			$clipro=$this->datasis->dameval("SELECT cod_cli FROM scst WHERE control=$refee");
+		}elseif($origen=='sfac'){
+			$clipro=$this->datasis->dameval("SELECT cod_prov FROM sfac  WHERE numero=$refee AND tipo_doc='F'");
+		}
+		$do->set('clipro',$clipro);
 		
-		
-		/*INICIO VALIDA ORIGEN=SFAC Y ENTREGADO*/
+		/*INICIO VALIDA ORIGEN=SFAC Y ENTREGADO
+		se trae las cantidad disponibles a despachar por factura
+		*/
 		$sface=array();
 		if($origen=='sfac' && $tipo=='E'){
 			$query="
 			SELECT codigo,SUM(cant) cant FROM (
 				SELECT codigoa codigo,desca descrip, cana cant
-				FROM sitems a WHERE numa=$refe
+				FROM sitems a WHERE numa=$refee
 				UNION ALL 
 				SELECT b.codigo,b.descrip,-1*b.cant 
 				FROM seri b 
 				JOIN recep c ON b.recep=c.recep
-				WHERE c.refe=$refe AND c.origen='sfac' AND c.recep<>'$recep'
+				WHERE c.refe=$refee AND c.origen='sfac' AND c.recep<>'$recep'
 			)t 
 			GROUP BY codigo
 			";
 			$sface=$this->datasis->consularray($query);
 		}
 		/*FIN VALIDA ORIGEN=SFAC Y ENTREGADO*/
+		
+		/*INICIO VALIDA ORIGEN=SFAC Y DEVUELVE
+		se trae todos los item de la factura con las cantidades entregadas
+		*/
+		$sfac=array();$sfacs=array();
+		if($origen=='sfac' && $tipo=='R'){
+			$query="
+			SELECT codigo,SUM(cant) cant FROM (
+			SELECT codigoa codigo,desca descrip, 0 cant
+			FROM sitems a WHERE numa=$refee
+			UNION ALL 
+			SELECT b.codigo,b.descrip,b.cant 
+			FROM seri b 
+			JOIN recep c ON b.recep=c.recep
+			WHERE c.refe=$refee AND c.origen='sfac' AND c.recep<>'$recep'
+			)t 
+			GROUP BY codigo";
+			$sfac=$this->datasis->consularray($query);
 			
+			$query="
+			SELECT b.codigo,b.serial
+			FROM seri b 
+			JOIN recep c ON b.recep=c.recep
+			WHERE c.refe=$refee AND c.origen='sfac' AND c.recep<>'$recep'";
+			$sfacs=$this->datasis->consularray($query);
+		}
+		/*FIN VALIDA ORIGEN=SFAC Y DEVUELVE*/
+		
+		/*INICIO VALIDA ORIGEN=SCST Y DEVUELVE
+		se trae todos los Las cantidades recibidas*/
+		$scst=array();$scsts=array();
+		if($origen=='scst' && $tipo=='E'){
+			$query="
+			SELECT b.codigo,SUM(b.cant) cant 
+			FROM seri b 
+			JOIN recep c ON b.recep=c.recep
+			WHERE c.refe=$refee AND c.origen='scst' AND c.recep<>'$recep'
+			GROUP BY codigo";
+			$scst=$this->datasis->consularray($query);
+			
+			//se trae los seriales recibidos para la recepcion 
+			$query="
+			SELECT b.codigo,b.serial
+			FROM seri b 
+			JOIN recep c ON b.recep=c.recep
+			WHERE c.refe=$refee AND c.origen='scst' AND c.recep<>'$recep'";
+			$scst=$this->datasis->consularray($query);
+		}
+		/*FIN VALIDA ORIGEN=Scst Y DEVUELVE*/
+		
 		$se=array();$sinv=0;
 		for($i=0;$i < $do->count_rel('seri');$i++){
-			$codigo=$do->get_rel('seri','codigo',$i);
-			$barras=$do->get_rel('seri','barras',$i);
-			$serial=$do->get_rel('seri','serial',$i);
-			$cant  =$do->get_rel('seri','cant',$i);
+			$codigo =$do->get_rel('seri','codigo',$i);
+			$barras =$do->get_rel('seri','barras',$i);
+			$serial =$do->get_rel('seri','serial',$i);
+			$descrip=$do->get_rel('seri','descrip',$i);
+			$cant   =$do->get_rel('seri','cant',$i);
 			$codigoe=$this->db->escape($codigo);
 			$barrase=$this->db->escape($barras);
 			$seriale=$this->db->escape($serial);
@@ -281,7 +341,7 @@ class Recep extends Controller {
 			if(!($cant>0))
 			$error.=" La cantidad debe ser positiva para el codigo $codigo y barras $barras</br>";
 			
-			$t=$this->datasis->dameval("SELECT a.tipo FROM recep a JOIN seri b ON a.recep=b.recep WHERE codigo=$codigoe AND serial=$seriale $where ORDER BY a.fecha desc LIMIT 1");
+			$t=$this->datasis->dameval("SELECT a.tipo FROM recep a JOIN seri b ON a.recep=b.recep WHERE codigo=$codigoe AND serial=$seriale $where ORDER BY a.fecha,a.recep desc LIMIT 1");
 			
 			if($tipo=='R'){
 				if($t=='E' && empty($t))
@@ -320,8 +380,11 @@ class Recep extends Controller {
 			}
 			
 			/*INICIO VALIDA ORIGEN=SFAC Y ENTREGADO*/
+			
 			if($origen=='sfac' && $tipo=='E'){
+				echo "aqui";
 				if(array_key_exists($codigo,$sface)){
+					
 					if($cant>$sface[$codigo])
 					$error.="ERROR. la cantidad a despachar del producto $codigo es mayor a la disponible ".nformat($sface[$codigo])." por despachar ";
 				}else{
@@ -329,8 +392,44 @@ class Recep extends Controller {
 				}
 			}
 			/*FIN VALIDA ORIGEN=SFAC Y ENTREGADO*/
+			
+			/*INICIO VALIDA ORIGEN=SFAC Y DEVUELVE
+			chequea que cada codigo ingresado pertenzca a la factura a devolver*/
+			
+			if($origen=='sfac' && $tipo=='R'){
+			//print_r($sfac);
+				if(array_key_exists($codigo,$sfac)){
+					if($cant>$sfac[$codigo])
+					$error.="ERROR. la cantidad a devolver del producto $codigo es mayor a la entregada para la factura $refee ".nformat($sface[$codigo])." por despachar ";
+				}else{
+					$error.="ERROR. el producto ($codigo) $descrip no pertenece  la factura $refe</br>";
+				}
+				//chequea que el serial ingresado pertenezca a la factura a devolver
+				if(!(in_array($serial,$sfacs))){
+					$error.="ERROR. el producto ($codigo) $descrip  serial $serial no pertenece  la factura $refe</br>";
+				}
+			}
+			
+			/*FIN VALIDA ORIGEN=SFAC Y DEVUELVE*/
+			
+			/*INICIO VALIDA ORIGEN=SCST Y DEVUELVE
+			chequea que cada codigo ingresado pertenzca a la factura a devolver*/
+			if($origen=='scst' && $tipo=='E'){
+				if(array_key_exists($codigo,$scst)){
+					if($cant>$scst[$codigo])
+					$error.="ERROR. la cantidad a devolver del producto $codigo es mayor a la recibida para la factura $refee ".nformat($scst[$codigo])." ";
+				}else{
+					$error.="ERROR. el producto ($codigo) $descrip no pertenece a la recepcion de la factura $refe</br>";
+				}
+				
+				//chequea que el serial ingresado pertenezca a la factura a devolver
+				if(!(in_array($serial,$scst))){
+					$error.="ERROR. el producto ($codigo) $descrip  serial $serial no pertenece  la factura $refe recibida</br>";
+				}
+			}
+			
+			/*FIN VALIDA ORIGEN=SCST Y DEVUELVE*/
 		}
-		
 		
 		if(!empty($error)){
 			$do->error_message_ar['pre_ins']="<div class='alert'>".$error."</div>";

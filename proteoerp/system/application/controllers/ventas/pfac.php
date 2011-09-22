@@ -181,7 +181,11 @@ class pfac extends validaciones{
 				'peso'    => 'sinvpeso_<#i#>',
 				'precio1' => 'itpvp_<#i#>',
 				'pond'    => 'itcosto_<#i#>',
+				'pond'    => 'pond_<#i#>',
 				'mmargen' => 'mmargen_<#i#>',
+				'formcal' => 'formcal_<#i#>',
+				'ultimo'  => 'ultimo_<#i#>',
+				'pm'      => 'pm_<#i#>',
 			),
 			'p_uri' => array(4 => '<#i#>'),
 			'titulo' => 'Buscar Articulo',
@@ -218,7 +222,7 @@ class pfac extends validaciones{
 		$do = new DataObject('pfac');
 		$do->rel_one_to_many('itpfac', 'itpfac', array('numero' => 'numa'));
 		$do->pointer('scli' , 'scli.cliente=pfac.cod_cli', 'tipo AS sclitipo', 'left');
-		$do->rel_pointer('itpfac', 'sinv', 'itpfac.codigoa=sinv.codigo', 'sinv.descrip AS sinvdescrip, sinv.base1 AS sinvprecio1, sinv.base2 AS sinvprecio2, sinv.base3 AS sinvprecio3, sinv.base4 AS sinvprecio4, sinv.iva AS sinviva, sinv.peso AS sinvpeso,sinv.tipo AS sinvtipo,sinv.precio1 As sinvprecio1,sinv.pond AS sinvpond,sinv.mmargen as sinvmmargen');
+		$do->rel_pointer('itpfac', 'sinv', 'itpfac.codigoa=sinv.codigo', 'sinv.descrip AS sinvdescrip, sinv.base1 AS sinvprecio1, sinv.base2 AS sinvprecio2, sinv.base3 AS sinvprecio3, sinv.base4 AS sinvprecio4, sinv.iva AS sinviva, sinv.peso AS sinvpeso,sinv.tipo AS sinvtipo,sinv.precio1 As sinvprecio1,sinv.pond AS sinvpond,sinv.mmargen as sinvmmargen,sinv.ultimo sinvultimo,sinv.formcal sinvformcal,sinv.pm sinvpm');
 
 		$edit = new DataDetails('Pedidos', $do);
 		$edit->back_url = site_url('ventas/pfac/filteredgrid');
@@ -261,6 +265,7 @@ class pfac extends validaciones{
 		$edit->cliente->rule = 'required';
 		$edit->cliente->maxlength = 5;
 		$edit->cliente->append($boton);
+		$edit->cliente->autocomplete=false;
 
 		$edit->nombre = new inputField('Nombre', 'nombre');
 		$edit->nombre->size = 30;
@@ -325,7 +330,7 @@ class pfac extends validaciones{
 		$edit->dxapli = new inputField('Precio <#o#>', 'dxapli_<#i#>');
 		$edit->dxapli->db_name = 'dxapli';
 		$edit->dxapli->rel_id = 'itpfac';
-		$edit->dxapli->size = 10;
+		$edit->dxapli->size = 5;
 		$edit->dxapli->rule = 'trim';
 
 		$edit->tota = new inputField('importe <#o#>', 'tota_<#i#>');
@@ -368,6 +373,26 @@ class pfac extends validaciones{
 		$edit->itmmargen->db_name = 'sinvmmargen';
 		$edit->itmmargen->rel_id = 'itpfac';
 		$edit->itmmargen->pointer = true;
+		
+		$edit->itpond = new hiddenField('', 'pond_<#i#>');
+		$edit->itpond->db_name = 'sinvpond';
+		$edit->itpond->rel_id  = 'itpfac';
+		$edit->itpond->pointer = true;
+		
+		$edit->itultimo = new hiddenField('', 'ultimo_<#i#>');
+		$edit->itultimo->db_name = 'sinvultimo';
+		$edit->itultimo->rel_id  = 'itpfac';
+		$edit->itultimo->pointer = true;
+		
+		$edit->itformcal = new hiddenField('', 'formcal_<#i#>');
+		$edit->itformcal->db_name = 'sinvformcal';
+		$edit->itformcal->rel_id  = 'itpfac';
+		$edit->itformcal->pointer = true;
+		
+		$edit->itpm = new hiddenField('', 'pm_<#i#>');
+		$edit->itpm->db_name = 'sinvpm';
+		$edit->itpm->rel_id  = 'itpfac';
+		$edit->itpm->pointer = true;
 		// fin de campos para detalle
 
 		$edit->ivat = new hiddenField('Impuesto', 'iva');
