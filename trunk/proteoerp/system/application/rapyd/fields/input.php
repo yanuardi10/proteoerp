@@ -58,13 +58,17 @@ class inputField extends objField{
 
       case "create":
       case "modify":
-      
+	if($this->type=='inputhidden')
+	$t='hidden';
+	else
+	$t=$this->type;
+	
         $value = ($this->type == "password")? "": $this->value;
 
         $attributes = array(
           'name'        => $this->name,
           'id'          => $this->name,
-          'type'        => $this->type,
+          'type'        => $t,
           'value'       => $value,
           'maxlength'   => $this->maxlength,
           'title'       => $this->title,
@@ -74,11 +78,16 @@ class inputField extends objField{
           'class'       => $this->css_class,
           'style'       => $this->style
           );
-		if(isset($this->onkeyup)) $attributes['onkeyup']     =$this->onkeyup;
-		if($this->readonly)       $attributes['readonly']    ='readonly';
-		if(!$this->autocomplete)  $attributes['autocomplete']='off';
-        $output = form_input($attributes) . $this->extra_output;
-        break;
+	if(isset($this->onkeyup)) $attributes['onkeyup']     =$this->onkeyup;
+	if($this->readonly)       $attributes['readonly']    ='readonly';
+	if(!$this->autocomplete)  $attributes['autocomplete']='off';
+        
+	$output = form_input($attributes) . $this->extra_output;
+	
+	if($this->type=='inputhidden')
+	$output.="<span id='".$this->name."_val'  >$this->value</span>";
+        
+	break;
 
       case "hidden":
         $attributes = array(
