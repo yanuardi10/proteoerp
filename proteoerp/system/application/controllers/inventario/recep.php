@@ -156,6 +156,10 @@ class Recep extends Controller {
 		$edit->refe->size=10;
 		$edit->refe->maxleght=8;
 		
+		$edit->refe2  = new inputField("Factura de Compra", "refe2");
+		$edit->refe2->size=10;
+		$edit->refe2->maxleght=8;
+		
 		$edit->origen = new dropdownField("Objeto", "origen");
 		$edit->origen->style="width:110px";
 		$edit->origen->option("scst","Compra");
@@ -243,12 +247,12 @@ class Recep extends Controller {
 		}
 		
 		//se trae cliente y proveedor depende del numero
-		if($origen=='scst'){
-			$clipro=$this->datasis->dameval("SELECT cod_cli FROM scst WHERE control=$refee");
-		}elseif($origen=='sfac'){
-			$clipro=$this->datasis->dameval("SELECT cod_prov FROM sfac  WHERE numero=$refee AND tipo_doc='F'");
-		}
-		$do->set('clipro',$clipro);
+		//if($origen=='scst'){
+		//	$clipro=$this->datasis->dameval("SELECT proveed FROM scst WHERE control=$refee");
+		//}elseif($origen=='sfac'){
+		//	$clipro=$this->datasis->dameval("SELECT cod_cli FROM sfac  WHERE numero=$refee AND tipo_doc='F'");
+		//}
+		//$do->set('clipro',$clipro);
 		
 		/*INICIO VALIDA ORIGEN=SFAC Y ENTREGADO
 		se trae las cantidad disponibles a despachar por factura

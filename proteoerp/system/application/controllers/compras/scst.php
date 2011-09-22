@@ -221,7 +221,7 @@ function scstserie(mcontrol){
 
 		$edit->fecha = new DateonlyField('Fecha', 'fecha','d/m/Y');
 		$edit->fecha->insertValue = date('Y-m-d');
-		$edit->fecha->mode='autohide';
+		//$edit->fecha->mode='autohide';
 		$edit->fecha->size = 10;
 
 		$edit->vence = new DateonlyField('Vence', 'vence','d/m/Y');
@@ -437,6 +437,7 @@ function scstserie(mcontrol){
 			$edit->button_status('btn_actuali','Actualizar'     ,$accion,'TR','show');
 			$edit->button_status('btn_precio' ,'Asignar precios',$accio2,'TR','show');
 			$edit->button_status('btn_cxp'    ,'Ajuste CxP'     ,$accio3,'TR','show');
+			$edit->buttons('modify');
 		} else {
 			$control=$this->rapyd->uri->get_edited_id();
 			$accion="javascript:window.location='".site_url('compras/scst/reversar/'.$control)."'";
@@ -815,7 +816,7 @@ function scstserie(mcontrol){
 			}else{
 				$data['content']  = 'Compra actualizada'.br();
 			}
-
+			
 			$data['content'] .= anchor('compras/scst/dataedit/show/'.$control,'Regresar');
 		}else{
 			$data['content'] = $form->output;
@@ -1173,6 +1174,33 @@ function scstserie(mcontrol){
 		echo anchor('compras/scst/dataedit/show/'.$control,'Regresar');
 	}
 
+	function creadseri($cod_prov,$factura){
+		$cod_prove=$this->db->escape($cod_prov);
+		$facturae =$this->db->escape($factura);
+		$control=$this->datasis->fprox_numero('nscst');
+		$transac=$this->datasis->fprox_numero('ntransac');
+		
+		$query="
+		INSERT INTO itscst (`numero`,`proveed`,`codigo`,`descrip`,`cantidad`,`control`,`iva`,`costo`,`importe`)
+		SELECT refe2,clipro,b.codigo,b.descrip,SUM(b.cant) cant,$control,c.iva,0,0
+		FROM recep a 
+		JOIN seri b ON a.recep=b.recep
+		JOIN sinv c ON b.codigo=c.codigo
+		WHERE origen='scst' AND a.refe2=$facturae AND clipro=$cod_prove 
+		GROUP BY b.codigo
+		";
+		
+		$this->db->query($query);
+		
+		$query="
+		INSERT INTO scst (`numero`,`proveed`,`control`,`transac`,`serie`)
+		VALUES ($facturae,$cod_prove,$control,$transac,$facturae)
+		";
+		$this->db->query($query);
+		redirect("compras/scst/dataedit/modify/".(1*$control));
+		
+	}
+	
 
 	function _pre_del($do){
 		$codigo=$do->get('comprob');
@@ -1187,8 +1215,13 @@ function scstserie(mcontrol){
 	}
 
 	function _pre_insert($do){
-		$control = $this->datasis->fprox_numero('nscst');
-		$transac = $this->datasis->fprox_numero('ntransa');
+		$control=$do->get('control');
+		$transac=$do->get('transac');
+		if(empty($control)){
+			$control = $this->datasis->fprox_numero('nscst');
+			$transac = $this->datasis->fprox_numero('ntransa');
+		}
+		
 		$fecha   = $do->get('fecha');
 		$numero  = substr($do->get('serie'),-8);
 		$usuario = $do->get('usuario');
@@ -1206,6 +1239,7 @@ function scstserie(mcontrol){
 			$itcana    = $do->get_rel('itscst','cantidad',$i);
 			$itprecio  = $do->get_rel('itscst','costo'   ,$i);
 			$itiva     = $do->get_rel('itscst','iva'     ,$i);
+
 			$itimporte = $itprecio*$itcana;
 			$iiva      = $itimporte*($itiva/100);
 
@@ -1305,6 +1339,11 @@ function scstserie(mcontrol){
 	}
 
 	//Chequea que el dia no sea superior a hoy
+	
+	function _post_update($do){
+		
+	}
+	
 	function chddate($fecha){
 		$d1 = DateTime::createFromFormat(RAPYD_DATE_FORMAT, $fecha);
 		$d2 = new DateTime();
@@ -1358,7 +1397,9 @@ function scstserie(mcontrol){
 
 
 	function _pre_update($do){
-		return false;
+		$this->_pre_insert($do);
+		
+		//return false;
 	}
 
 	function _post_delete($do){
