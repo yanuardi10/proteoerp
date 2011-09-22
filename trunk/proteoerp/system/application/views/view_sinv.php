@@ -364,6 +364,12 @@ else:
 					<td class="littletablerow" align='right'><?=$form->precio4->output ?></td>
 				</tr>
 				<tr>
+					<td class="littletablerow" align='right'><?=$form->pm->label  ?>%</td>
+					<td class="littletablerow" align='right'><?=$form->pm->output ?></td>
+					<td class="littletableheaderc">&nbsp;</td>
+					<td class="littletableheaderc">&nbsp;</td>
+				</tr>
+				<tr>
 					<td class="littletablerow" align='right'><?=$form->mmargen->label   ?>%</td>
 					<td class="littletablerow" align='right'><?=$form->mmargen->output ?></td>
 					<td class="littletableheaderc">&nbsp;</td>
