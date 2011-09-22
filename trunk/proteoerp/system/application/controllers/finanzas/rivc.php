@@ -9,7 +9,7 @@ class rivc extends Controller {
 	function rivc(){
 		parent::Controller();
 		$this->load->library('rapyd');
-		$this->datasis->modulo_id('511',1);
+//		$this->datasis->modulo_id('511',1);
 		$this->instalar();
 	}
 
