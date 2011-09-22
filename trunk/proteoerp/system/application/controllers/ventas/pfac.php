@@ -451,8 +451,6 @@ class pfac extends validaciones{
 			$edit->buttons('save', 'undo', 'delete', 'back', 'add_rel');
 		}
 
-		
-
 		if($this->genesal){
 			$edit->build();
 
