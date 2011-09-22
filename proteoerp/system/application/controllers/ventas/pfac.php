@@ -12,6 +12,11 @@ class pfac extends validaciones{
 	function index(){
 		redirect('ventas/pfac/filteredgrid');
 		
+		if(!$this->db->field_exists('fenvia','pfac'))
+		$this->db->query("ALTER TABLE `pfac`  ADD COLUMN `fenvia` DATE NULL DEFAULT '0000-00-00' COMMENT 'fecha en que el vendedor termino el pedido'");
+		
+		if(!$this->db->field_exists('faplica','pfac'))
+		$this->db->query("ALTER TABLE `pfac`  ADD COLUMN `faplica` DATE NULL DEFAULT '0000-00-00' COMMENT 'fecha en que se aplicaron los descuentos'");
 		
 	}
 
@@ -222,7 +227,7 @@ class pfac extends validaciones{
 		$do = new DataObject('pfac');
 		$do->rel_one_to_many('itpfac', 'itpfac', array('numero' => 'numa'));
 		$do->pointer('scli' , 'scli.cliente=pfac.cod_cli', 'tipo AS sclitipo', 'left');
-		$do->rel_pointer('itpfac', 'sinv', 'itpfac.codigoa=sinv.codigo', 'sinv.descrip AS sinvdescrip, sinv.base1 AS sinvprecio1, sinv.base2 AS sinvprecio2, sinv.base3 AS sinvprecio3, sinv.base4 AS sinvprecio4, sinv.iva AS sinviva, sinv.peso AS sinvpeso,sinv.tipo AS sinvtipo,sinv.precio1 As sinvprecio1,sinv.pond AS sinvpond,sinv.mmargen as sinvmmargen,sinv.ultimo sinvultimo,sinv.formcal sinvformcal,sinv.pm sinvpm');
+		$do->rel_pointer('itpfac', 'sinv', 'itpfac.codigoa=sinv.codigo', 'sinv.descrip AS sinvdescrip, sinv.base1 AS sinvprecio1, sinv.base2 AS sinvprecio2, sinv.base3 AS sinvprecio3, sinv.base4 AS sinvprecio4, sinv.iva AS sinviva, sinv.peso AS sinvpeso,sinv.tipo AS sinvtipo,sinv.precio1 As sinvprecio1,sinv.pond AS sinvpond,sinv.mmargen as sinvmmargen,sinv.ultimo sinvultimo,sinv.formcal sinvformcal,sinv.pm sinvpm,itpfac.preca precat');
 
 		$edit = new DataDetails('Pedidos', $do);
 		$edit->back_url = site_url('ventas/pfac/filteredgrid');
@@ -234,6 +239,10 @@ class pfac extends validaciones{
 		$edit->post_process('insert', '_post_insert');
 		$edit->post_process('update', '_post_update');
 		$edit->post_process('delete', '_post_delete');
+		
+		$fenvia  =strtotime($edit->get_from_dataobjetct('fenvia'));
+		$faplica =strtotime($edit->get_from_dataobjetct('faplica'));
+		$hoy     =strtotime(date('Y-m-d'));
 
 		$edit->fecha = new DateonlyField('Fecha', 'fecha', 'd/m/Y');
 		$edit->fecha->insertValue = date('Y-m-d');
@@ -264,6 +273,7 @@ class pfac extends validaciones{
 		$edit->cliente->size = 6;
 		$edit->cliente->rule = 'required';
 		$edit->cliente->maxlength = 5;
+		if(!($faplica < $fenvia))
 		$edit->cliente->append($boton);
 		$edit->cliente->autocomplete=false;
 
@@ -278,6 +288,7 @@ class pfac extends validaciones{
 
 		$edit->direc = new inputField('Direcci&oacute;n', 'direc');
 		$edit->direc->size = 40;
+		
 
 		$edit->observa = new inputField('Observaciones', 'observa');
 		$edit->observa->size = 50;
@@ -299,6 +310,7 @@ class pfac extends validaciones{
 		$edit->codigoa->rel_id = 'itpfac';
 		$edit->codigoa->rule = 'required|callback_chcodigoa';
 		$edit->codigoa->onkeyup = 'OnEnter(event,<#i#>)';
+		if(!($faplica < $fenvia))
 		$edit->codigoa->append($btn);
 
 		$edit->desca = new inputField('Descripci&oacute;n <#o#>', 'desca_<#i#>');
@@ -313,7 +325,7 @@ class pfac extends validaciones{
 		$edit->cana->css_class = 'inputnum';
 		$edit->cana->rel_id = 'itpfac';
 		$edit->cana->maxlength = 10;
-		$edit->cana->size = 6;
+		$edit->cana->size = 5;
 		$edit->cana->rule = 'required|positive';
 		$edit->cana->autocomplete = false;
 		$edit->cana->onkeyup = 'importe(<#i#>)';
@@ -330,12 +342,13 @@ class pfac extends validaciones{
 		$edit->dxapli = new inputField('Precio <#o#>', 'dxapli_<#i#>');
 		$edit->dxapli->db_name = 'dxapli';
 		$edit->dxapli->rel_id = 'itpfac';
-		$edit->dxapli->size = 5;
+		$edit->dxapli->size = 1;
 		$edit->dxapli->rule = 'trim';
+		$edit->dxapli->onchange="cal_dxapli(<#i#>)";
 
 		$edit->tota = new inputField('importe <#o#>', 'tota_<#i#>');
 		$edit->tota->db_name = 'tota';
-		$edit->tota->size = 10;
+		$edit->tota->size = 8;
 		$edit->tota->css_class = 'inputnum';
 		$edit->tota->rel_id = 'itpfac';
 		
@@ -393,6 +406,11 @@ class pfac extends validaciones{
 		$edit->itpm->db_name = 'sinvpm';
 		$edit->itpm->rel_id  = 'itpfac';
 		$edit->itpm->pointer = true;
+		
+		$edit->precat = new hiddenField('', 'precat_<#i#>');
+		$edit->precat->db_name = 'precat';
+		$edit->precat->rel_id  = 'itpfac';
+		$edit->precat->pointer = true;
 		// fin de campos para detalle
 
 		$edit->ivat = new hiddenField('Impuesto', 'iva');
@@ -411,14 +429,38 @@ class pfac extends validaciones{
 		$edit->totalg->size = 10;
 
 		$edit->usuario = new autoUpdateField('usuario', $this->session->userdata('usuario'), $this->session->userdata('usuario'));
+		
+		
+		$control=$this->rapyd->uri->get_edited_id();
 
-		$edit->buttons('modify', 'save', 'undo', 'delete', 'back', 'add_rel');
+		if($fenvia < $hoy){
+			$edit->buttons('modify', 'save', 'undo', 'delete', 'back','add_rel');
+			
+			$accion="javascript:window.location='".site_url('ventas/pfac/enviar/'.$control)."'";
+			$edit->button_status('btn_envia'  ,'Enviar Pedido'         ,$accion,'TR','show');
+		}elseif($faplica < $fenvia){
+			$hide=array('vd','peso','cliente','nombre','rifci','direc','observa','observ1','codigoa','desca','cana');
+			foreach($hide as $value)
+				$edit->$value->type="inputhidden";
+			
+			$accion="javascript:window.location='".site_url('ventas/pfac/dataedit/modify/'.$control)."'";
+			$edit->button_status('btn_envia'  ,'Aplicar Descuentos'         ,$accion,'TR','show');
+			
+			$edit->buttons( 'save', 'undo', 'delete', 'back');
+		}else{
+			$edit->buttons('save', 'undo', 'delete', 'back', 'add_rel');
+		}
+
+		
 
 		if($this->genesal){
 			$edit->build();
 
-			$conten['inven'] = $jinven;
-			$conten['form']  = & $edit;
+			$conten['inven']   = $jinven;
+			$conten['form']    = & $edit;
+			$conten['hoy']     = $hoy;
+			$conten['fenvia']  = $fenvia;
+			$conten['faplica'] = $faplica;
 			$data['content'] = $this->load->view('view_pfac', $conten, true);
 			$data['title']   = heading('Pedidos No. '.$edit->numero->value);
 
@@ -429,7 +471,6 @@ class pfac extends validaciones{
 			$data['head']   .= phpscript('nformat.js');
 			$data['head']   .= style('redmond/jquery-ui-1.8.1.custom.css');
 			$data['head']   .= $this->rapyd->get_head();
-
 
 			$this->load->view('view_ventanas', $data);
 		}else{
@@ -623,6 +664,8 @@ class pfac extends validaciones{
 		echo $rt;
 	}
 
+	
+
 	function _pre_insert($do){
 		$numero = $this->datasis->fprox_numero('npfac');
 		$do->set('numero', $numero);
@@ -655,16 +698,36 @@ class pfac extends validaciones{
 	}
 	
 	function _pre_update($do){
+		$error='';
 		$codigo = $do->get('numero');
 		$fecha  = $do->get('fecha');
 		$vd     = $do->get('vd');
+		$fenvia = $do->get('fenvia');
+		$faplica= $do->get('faplica');
 
 		$iva = $totals = 0;
 		$cana = $do->count_rel('itpfac');
 		for($i = 0;$i < $cana;$i++){
-			$itcana  = $do->get_rel('itpfac', 'cana' , $i);
-			$itpreca = $do->get_rel('itpfac', 'preca', $i);
-			$itiva   = $do->get_rel('itpfac', 'iva'  , $i);
+			$codigoa = $do->get_rel('itpfac', 'codigoa', $i);
+			$itcana  = $do->get_rel('itpfac', 'cana'   , $i);
+			$itpreca = $do->get_rel('itpfac', 'preca'  , $i);
+			$itiva   = $do->get_rel('itpfac', 'iva'    , $i);
+			
+			if(($faplica < $fenvia)){
+				$itdxapli = $do->get_rel('itpfac', 'dxapli', $i);
+				$itprecat = $this->input->post("precat_$i");
+				if(!$itdxapli)
+				$itdxapli=' ';
+				
+				$itpreca  = $this->cal_dxapli($itprecat,$itdxapli);
+				if(1*$itpreca>0){
+					$do->set_rel('itpfac', 'preca'  , $itpreca, $i);
+					$do->set('faplica',date('Y-m-d'));
+				}else{
+					$error.="Error. El descuento por aplicar es incorrecto para el codigo $codigoa</br>";
+				}
+			}
+			
 			$ittota  = $itpreca * $itcana;
 			$do->set_rel('itpfac', 'tota'    , $ittota, $i);
 			$do->set_rel('itpfac', 'fecha'   , $fecha , $i);
@@ -683,6 +746,12 @@ class pfac extends validaciones{
 		$mSQL='UPDATE sinv JOIN itpfac ON sinv.codigo=itpfac.codigoa SET sinv.exdes=sinv.exdes-itpfac.cana WHERE itpfac.numa='.$this->db->escape($codigo);
 		$ban=$this->db->simple_query($mSQL);
 		if($ban==false){ memowrite($mSQL,'pfac'); }
+		
+		if(!empty($error)){
+			$do->error_message_ar['pre_ins']=$error;
+			$do->error_message_ar['pre_upd']=$error;
+			return false;
+		}
 		return true;
 	}
 
@@ -752,6 +821,17 @@ class pfac extends validaciones{
 		}
 	}
 	
+	
+	function enviar($numero){
+		$numeroe=$this->db->escape($numero);
+		$this->db->query("UPDATE pfac SET fenvia=CURDATE() WHERE numero=$numeroe");
+		redirect("ventas/pfac/dataedit/show/$numero");
+	}
+	
+	function aplicar($numero){
+		
+	}
+	
 	function _post_update($do){
 		$cana = $do->count_rel('itpfac');
 		for($i = 0;$i < $cana;$i++){
@@ -764,6 +844,40 @@ class pfac extends validaciones{
 		}
 		$codigo = $do->get('numero');
 		logusu('pfac', "Pedido $codigo MODIFICADO");
+	}
+	
+	function cal_dxapli($preca=null,$dxapli=null){
+		$p=null;
+		if(!($preca && $dxapli)){
+			$preca =$this->input->post('preca');
+			$dxapli=$this->input->post('dxapli');
+			$p=true;
+		}
+		
+		$desc  =explode('+',$dxapli);
+		$error='';
+		
+		$precio=$preca;
+		foreach($desc as $value){
+			if(strlen(trim($value))>0){
+				
+				if( $value>0)
+				$precio=$precio-($precio*$value/100);
+				else
+				$error='_||_';
+			}
+		}
+		
+		if($p){
+			if(empty($error) && 1*$precio>0)
+				echo round($precio);
+			else
+				echo '_||_';
+		}else{
+			if(empty($error) && 1*$precio>0)
+			return $precio;
+		}
+		
 	}
 	
 	function _pre_delete($do){

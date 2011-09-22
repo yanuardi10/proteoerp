@@ -26,7 +26,8 @@ $scampos .= $campos['sinvpeso']['field'];
 $scampos .= $campos['itmmargen']['field'];
 $scampos .= $campos['itformcal']['field'];
 $scampos .= $campos['itultimo']['field'];
-$scampos .= $campos['itpond']['field'].'</td>';
+$scampos .= $campos['itpond']['field'];
+$scampos .= $campos['precat']['field'];
 $scampos .= $campos['itpm']['field'].'</td>';
 $scampos .= '<td class="littletablerow"><a href=# onclick="del_itpfac(<#i#>);return false;">'.img("images/delete.jpg").'</a></td></tr>';
 $campos=$form->js_escape($scampos);
@@ -51,10 +52,36 @@ $(function(){
 	$(".inputnum").numeric(".");
 	totalizar();
 	for(var i=0;i < <?php echo $form->max_rel_count['itpfac']; ?>;i++){
+		<? if(!($faplica < $fenvia)){ ?>
 		cdropdown(i);
+		<? }?>
 		autocod(i.toString());
 	}
 });
+
+function cal_dxapli(nind){
+	ind=nind.toString();
+	cana2=parseFloat($("#cana_"+ind).val());
+	preca2=parseFloat($("#precat_"+ind).val());
+	dxapli2=parseFloat($("#dxapli_"+ind).val());
+	
+	$.post("<?=site_url('ventas/pfac/cal_dxapli')?>",{ preca:preca2,dxapli:dxapli2 },function(data){
+		if(data=='_||_'){
+			alert("El descuento a aplicar debe contener solo numeros y '+'. ejemplo:2+2");
+			$("#preca_"+ind).val(preca2);
+			$("#dxapli_"+ind).val('');
+			$("#dxapli_"+ind).focus();
+		}else{
+			data=parseFloat(data);
+			imp=cana2*data;
+			imp=Math.round(imp*100)/100;
+			$("#preca_"+ind).val(data);
+			$("#tota_"+ind).val(imp);
+			
+		}
+		
+	})
+}
 
 function OnEnter(e,ind){
 	var keynum;
@@ -154,8 +181,9 @@ function totalizar(){
 			iva     = iva+tota*(itiva/100);
 			totals  = totals+tota;
 			
-			if(sclitipo=='5')
-			$("#dxapli_"+ind).show();
+			if(sclitipo=='5'){
+				$("#dxapli_"+ind).show();
+			}
 			else{
 				$("#dxapli_"+ind).hide();
 				$("#dxapli_"+ind).val('');
@@ -236,10 +264,6 @@ function post_modbus_sinv(nind){
 		sinvpond=parseFloat($("#pond_"+ind).val());
 		sinvultimo=parseFloat($("#ultimo_"+ind).val());
 		sinvpm=parseFloat($("#pm_"+ind).val());
-		alert(sinvformcal);
-		alert(sinvpond);
-		alert(sinvultimo);
-		alert(sinvpm);
 		if(sinvformcal=='U'){
 			p=sinvultimo+(sinvultimo*sinvpm/100);
 		}
@@ -441,7 +465,7 @@ function autocod(id){
 				<td bgcolor='#7098D0'><strong>Cantidad</strong></td>
 				<td bgcolor='#7098D0'><strong>Precio</strong></td>
 				<td bgcolor='#7098D0'><strong>Importe</strong></td>
-				<?php if($form->_status!='show') {?>
+				<?php if($form->_status!='show'  && !($faplica < $fenvia)) {?>
 					<td  bgcolor='#7098D0'><strong>&nbsp;</strong></td>
 				<?php } ?>
 			</tr>
@@ -463,6 +487,7 @@ function autocod(id){
 				$it_ultimo   = "itultimo_$i";
 				$it_formcal  = "itformcal_$i";
 				$it_pm       = "itpm_$i";
+				$it_precat   = "precat_$i";
 
 				$pprecios='';
 				for($o=1;$o<5;$o++){
@@ -479,6 +504,7 @@ function autocod(id){
 				$pprecios .= $form->$it_ultimo->output;
 				$pprecios .= $form->$it_formcal->output;
 				$pprecios .= $form->$it_pm->output;
+				$pprecios .= $form->$it_precat->output;
 
 			?>
 
@@ -489,7 +515,7 @@ function autocod(id){
 				<td class="littletablerow" align="right"><?php echo $form->$it_preca->output.$form->$it_dxapli->output;  ?></td>
 				<td class="littletablerow" align="right"><?php echo $form->$it_tota->output.$pprecios;?></td>
 
-				<?php if($form->_status!='show') {?>
+				<?php if($form->_status!='show' && !($faplica < $fenvia)) {?>
 				<td class="littletablerow">
 					<a href='#' onclick='del_itpfac(<?=$i ?>);return false;'><?php echo img("images/delete.jpg") ?></a>
 				</td>

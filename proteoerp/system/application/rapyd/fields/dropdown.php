@@ -70,11 +70,11 @@ class dropdownField extends objField{
           $output = $this->description;
         }
         break;
-        
       case "create":
       case "modify":
+	
         $onchange = "";
-				$style = "";
+	$style = "";
 				
         if ($this->onchange!=""){
           $onchange = ' onchange="'.$this->onchange.'"';
@@ -86,7 +86,27 @@ class dropdownField extends objField{
           
         }
          $class = ' class="select"';
-         $output = form_dropdown($this->name, $this->options, $this->value, $id.$onchange.$style.$class). $this->extra_output;
+	 
+	if($this->type=='inputhidden'){
+	  
+	  $attributes = array(
+          'name'        => $this->name,
+          'id'          => $this->name,
+          'type'        => 'hidden',
+          'value'       => $this->value,
+          'style'       => $this->style
+          );
+	
+	  $output = form_input($attributes) ;
+	
+	  if($this->type=='inputhidden')
+	  $output.="<span id='".$this->name."_val'  >$this->description</span>";
+	}else{
+	  $output = form_dropdown($this->name, $this->options, $this->value, $id.$onchange.$style.$class). $this->extra_output;
+	}
+	
+	 
+         
 
         break;
         
