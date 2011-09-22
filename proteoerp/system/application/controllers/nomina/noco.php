@@ -231,7 +231,7 @@ class Noco extends Controller {
 		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
 		$id      = isset($_REQUEST['id'])     ? $_REQUEST['id']      : 1;
 
-		$query = $this->db->query("SELECT * FROM noco ");
+		$query = $this->db->query("SELECT id, CONCAT(RPAD(codigo,6,' '),nombre,' (',tipo,')') nombre FROM noco ORDER BY codigo");
 
 		$results = $this->db->count_all('noco');
 		$arr = array();
@@ -242,7 +242,7 @@ class Noco extends Controller {
 				$meco[$idd] = utf8_encode($campo);
 			}
 			// Genera el Detalle
-			$detalle = $this->db->query("SELECT * FROM itnoco WHERE codigo='".$row['codigo']."'");
+			$detalle = $this->db->query("SELECT * FROM itnoco WHERE codigo='".SUBSTR($row['nombre'],0,5)."'");
 			$darr = array();
 			foreach ($detalle->result_array() as $drow)
 			{
@@ -250,12 +250,13 @@ class Noco extends Controller {
 				foreach( $drow as $didd=>$dcampo ) {
 					$dmeco[$didd] = utf8_encode($dcampo);
 				}
+				$dmeco['leaf'] = true;
 				$darr[] = $dmeco;
 			}
-			$meco['detalle'] = $darr;
+			$meco['children'] = $darr;
 			$arr[] = $meco;
 		}
-		echo '{success:true, message:"Loaded data" ,results:'. $results.', maestro:'.json_encode($arr).'}';
+		echo '{success:true, message:"Loaded data" ,results:'. $results.', children:'.json_encode($arr).'}';
 	}
 
 	function itnoco(){
@@ -290,8 +291,6 @@ class Noco extends Controller {
 		$mSQL = "SELECT codigo, CONCAT(codigo,' ',nombre) nombre, tipo FROM noco WHERE tipo<>'O' ORDER BY codigo";
 		$contratos = $this->datasis->llenacombo($mSQL);
 		
-
-
 		$script = "
 <script type=\"text/javascript\">
 var BASE_URL   = '".base_url()."';
@@ -307,6 +306,7 @@ Ext.require([
 	'Ext.ux.grid.FiltersFeature',
 	'Ext.data.*',
 	'Ext.util.*',
+	'Ext.tree.*',
 	'Ext.state.*',
 	'Ext.form.*',
 	'Ext.window.MessageBox',
@@ -366,29 +366,13 @@ var ItNocoCol =
 		{ header: 'Grupo', width:  60, sortable: true, dataIndex: 'grupo', field:  { type: 'textfield' }, filter: { type: 'string'  } }
 	];
 
-
-
 //Data Store
 var storeNoco = Ext.create('Ext.data.Store', {
 	model: 'Noco'
-	//pageSize: 50,
-	//remoteSort: true,
-	//autoLoad: true,
-	//autoSync: true,
-	//groupField: 'nomcont',
-	//method: 'POST',
-	//listeners: { write: function(mr,re, op) { Ext.Msg.alert('Aviso','Registro Guardado '+re.success) }}
 });
 
 var storeItNoco = Ext.create('Ext.data.Store', {
 	model: 'ItNoco'
-	//pageSize: 50,
-	//remoteSort: true,
-	//autoLoad: true,
-	//autoSync: true,
-	//groupField: 'nomcont',
-	//method: 'POST',
-	//listeners: { write: function(mr,re, op) { Ext.Msg.alert('Aviso','Registro Guardado '+re.success) }}
 });
 
 
@@ -440,7 +424,6 @@ Ext.onReady(function() {
 */
 
 	//colocamos cualquier cosa
-
 	// Create Grid 
 	Ext.define('NocoGrid', {
 		extend: 'Ext.grid.Panel',
@@ -464,7 +447,6 @@ Ext.onReady(function() {
 		}
 	});
 
-
 	// Create Grid 
 	Ext.define('ItNocoGrid', {
 		extend: 'Ext.grid.Panel',
@@ -487,13 +469,24 @@ Ext.onReady(function() {
 			this.getSelectionModel().on('selectionchange', this.onSelectChange, this);
 		}
 	});
+/*
 
+	Ext.create('Ext.tree.Panel', {
+		title: 'Simple Tree',
+		alias: 'widget.wnoco',
+		//width: 200,
+		//height: 150,
+		store: storeNoco,
+		rootVisible: false
+		//renderTo: Ext.getBody()
+	});
+*/
 
 	//Main Container
 	var main = Ext.create('Ext.container.Container', {
 		padding: '0 0 0 0',
 		width: '100%',
-		height: 700,
+		height: 600,
 		renderTo: document.body,
 		layout: {
 			type: 'vbox',
@@ -510,9 +503,19 @@ Ext.onReady(function() {
 				layout: 'fit',
 				viewConfig: { forceFit: true },
 				flex: 1
-			}
+			}/*
 			,{
-				itemId: 'grid',
+				itemId: 'grid1',
+				xtype: 'wnoco',
+				title: 'Contratos',
+				width: '98%',
+				align: 'center',
+				flex: 9
+				//store: storeNoco
+			}*/
+/*
+			,{
+				itemId: 'grid1',
 				xtype: 'wnoco',
 				title: 'Contratos',
 				width: '98%',
@@ -521,14 +524,15 @@ Ext.onReady(function() {
 				store: storeNoco
 			}
 			,{
-				itemId: 'grid',
+				itemId: 'grid2',
 				xtype: 'witnoco',
-				title: 'Detale',
+				title: 'Conceptos',
 				width: '98%',
 				align: 'center',
-				flex: 5,
+				flex: 7,
 				store: storeItNoco
 			}
+*/
 			]
 	});
 	Ext.EventManager.onWindowResize(main.doLayout, main);

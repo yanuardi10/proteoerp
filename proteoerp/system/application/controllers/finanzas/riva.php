@@ -7,7 +7,7 @@ class riva extends Controller {
 	function riva(){
 		parent::Controller();
 		$this->load->library('rapyd');
-		$this->datasis->modulo_id('523',1);
+//		$this->datasis->modulo_id('523',1);
 	}
 
 	function index(){
