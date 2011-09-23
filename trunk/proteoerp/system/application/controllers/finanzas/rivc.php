@@ -87,11 +87,11 @@ class rivc extends Controller {
 		$cod_cli  = $this->datasis->dameval("SELECT cod_cli FROM rivc WHERE id=".$this->db->escape($id));
 		$itnumero = $this->datasis->dameval("SELECT nrocomp FROM rivc WHERE id=".$this->db->escape($id));
 		$fecha    = $this->datasis->dameval("SELECT fecha   FROM rivc WHERE id=".$this->db->escape($id));
+		$ttransac = $this->datasis->dameval("SELECT transac FROM rivc WHERE id=".$this->db->escape($id));
 		$nombre   = $this->datasis->dameval("SELECT nombre  FROM scli WHERE cliente=".$this->db->escape($cod_cli));
 		$totneto  = $this->datasis->dameval("SELECT SUM(monto*IF('ND',-1,1)) AS monto FROM smov WHERE transac='$ttransac' AND tipo_doc IN ('AN','ND') AND cod_cli=".$this->db->escape($cod_cli));
 		$usuario  = $this->session->userdata('usuario');
 
-		//$ttransac = $this->datasis->dameval("SELECT transac FROM rivc WHERE id=".$this->db->escape($id));
 
 		//Crea la ND al cliente con el monto de los anticipos
 		$mnumnd = $this->datasis->fprox_numero('ndcli');
@@ -118,7 +118,6 @@ class rivc extends Controller {
 		$mSQL = $this->db->insert_string('smov', $data);
 		$ban=$this->db->simple_query($mSQL);
 		if($ban==false){ memowrite($mSQL,'RIVC'); }
-
 
 		//Crea la cuenta por pagar
 		$causado = $this->datasis->fprox_numero('ncausado');
@@ -156,7 +155,12 @@ class rivc extends Controller {
 
 		$sql=$this->db->insert_string('sprm', $data);
 		$ban=$this->db->simple_query($sql);
-		if($ban==false){ memowrite($sql,'gser'); $error++;}
+		if($ban==false){ memowrite($sql,'RIVC'); $error++;}
+
+		$sql='UPDATE smov SET abonos=monto WHERE tipo_doc IN (\'AN\',\'ND\') AND transac='.$this->db->escape($ttransac);
+		$ban=$this->db->simple_query($sql);
+		if($ban==false){ memowrite($sql,'rivc'); $error++; }
+
 		redirect('finanzas/rivc/dataedit/show/'.$id);
 	}
 
@@ -287,7 +291,7 @@ class rivc extends Controller {
 			$ban=$this->db->simple_query($sql);
 			if($ban==false){ memowrite($sql,'rivc'); $error++; }
 
-			$sql='UPDATE smov SET abonado=monto WHERE tipo_doc IN (\'AN\',\'ND\') transac='.$this->db->escape($ttransac);
+			$sql='UPDATE smov SET abonos=monto WHERE tipo_doc IN (\'AN\',\'ND\') AND transac='.$this->db->escape($ttransac);
 			$ban=$this->db->simple_query($sql);
 			if($ban==false){ memowrite($sql,'rivc'); $error++; }
 
@@ -777,13 +781,14 @@ class rivc extends Controller {
 		$cod_cli = $do->get('cod_cli');
 		$nombre  = $do->get('nombre');
 		$estampa = $do->get('estampa');
+		$periodo = $do->get('periodo');
 		$usuario = $do->get('usuario');
 		$hora    = $do->get('hora');
 
 		//$reinte  = $this->uri->segment($this->uri->total_segments());
 		$efecha  = $do->get('emision');
 		$fecha   = $do->get('fecha');
-		$numero  = $do->get('numero');
+		$numero  = $do->get('nrocomp');
 
 		$mSQL = "DELETE FROM smov WHERE transac='$transac'";
 		$ban=$this->db->simple_query($mSQL);
@@ -811,7 +816,7 @@ class rivc extends Controller {
 			}
 
 			if($anterior == 0) {
-				$mSQL = "UPDATE sfac SET reiva=$itmonto, creiva='$numero', freiva='$fecha', ereiva='$efecha' WHERE numero=$dbitnumero AND tipo_doc=$dbittipo_doc";
+				$mSQL = "UPDATE sfac SET reiva=${itmonto}, creiva='${periodo}${numero}', freiva='${fecha}', ereiva='${efecha}' WHERE numero=${dbitnumero} AND tipo_doc=${dbittipo_doc}";
 				$ban=$this->db->simple_query($mSQL);
 				if($ban==false){ memowrite($mSQL,'RIVC'); }
 			}
