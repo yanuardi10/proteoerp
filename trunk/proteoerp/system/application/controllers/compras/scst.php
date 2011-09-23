@@ -8,7 +8,9 @@ class Scst extends Controller {
 		$this->back_dataedit='compras/scst/datafilter';
 	}
 
-	function index() {
+	function index(){
+		$this->db->query("DELETE FROM itscst WHERE control=(SELECT control FROM  scst a WHERE LENGTH(a.transac)=0 or a.transac is null)");
+		$this->db->query("DELETE FROM scst a WHERE LENGTH(a.transac)=0 or a.transac is null");
 		redirect('compras/scst/datafilter');
 	}
 
@@ -221,12 +223,16 @@ function scstserie(mcontrol){
 
 		$edit->fecha = new DateonlyField('Fecha', 'fecha','d/m/Y');
 		$edit->fecha->insertValue = date('Y-m-d');
-		//$edit->fecha->mode='autohide';
 		$edit->fecha->size = 10;
+		$edit->fecha->rule ='required';
+		$transac=$edit->get_from_dataobjetct('transac');
+		if(!empty($transac))
+		$edit->fecha->mode='autohide';
 
 		$edit->vence = new DateonlyField('Vence', 'vence','d/m/Y');
 		$edit->vence->insertValue = date('Y-m-d');
 		$edit->vence->size = 10;
+		$edit->vence->rule ='required';
 
 		$edit->serie = new inputField('N&uacute;mero', 'serie');
 		$edit->serie->size = 15;
@@ -804,8 +810,7 @@ function scstserie(mcontrol){
 		$form->button('btn_regre','Regresar',$accion,'BR','show');
 		$form->build_form();
 
-		if ($form->on_success()){
-			
+		if($form->on_success()){
 			$cprecio   = $form->cprecio->newValue;
 			$actualiza = $form->fecha->newValue;
 			$cambio    = ($cprecio=='S') ? true : false;
@@ -816,7 +821,6 @@ function scstserie(mcontrol){
 			}else{
 				$data['content']  = 'Compra actualizada'.br();
 			}
-			
 			$data['content'] .= anchor('compras/scst/dataedit/show/'.$control,'Regresar');
 		}else{
 			$data['content'] = $form->output;
@@ -1177,12 +1181,15 @@ function scstserie(mcontrol){
 	function creadseri($cod_prov,$factura){
 		$cod_prove=$this->db->escape($cod_prov);
 		$facturae =$this->db->escape($factura);
-		$control=$this->datasis->fprox_numero('nscst');
-		$transac=$this->datasis->fprox_numero('ntransac');
+		$control=$this->datasis->fprox_numero('ntemp');
+		$control=substr($control,1,7).'_';
+		$controle=$this->db->escape($control);
+		
+		//$transac=$this->datasis->fprox_numero('ntransac');
 		
 		$query="
 		INSERT INTO itscst (`numero`,`proveed`,`codigo`,`descrip`,`cantidad`,`control`,`iva`,`costo`,`importe`)
-		SELECT refe2,clipro,b.codigo,b.descrip,SUM(b.cant) cant,$control,c.iva,0,0
+		SELECT refe2,clipro,b.codigo,b.descrip,SUM(b.cant) cant,$controle,c.iva,c.ultimo,SUM(b.cant)*c.ultimo
 		FROM recep a 
 		JOIN seri b ON a.recep=b.recep
 		JOIN sinv c ON b.codigo=c.codigo
@@ -1193,15 +1200,14 @@ function scstserie(mcontrol){
 		$this->db->query($query);
 		
 		$query="
-		INSERT INTO scst (`numero`,`proveed`,`control`,`transac`,`serie`)
-		VALUES ($facturae,$cod_prove,$control,$transac,$facturae)
+		INSERT INTO scst (`numero`,`proveed`,`control`,`serie`)
+		VALUES ($facturae,$cod_prove,$controle,$facturae)
 		";
 		$this->db->query($query);
-		redirect("compras/scst/dataedit/modify/".(1*$control));
+		redirect("compras/scst/dataedit/modify/$control");
 		
 	}
 	
-
 	function _pre_del($do){
 		$codigo=$do->get('comprob');
 		$chek =   $this->datasis->dameval("SELECT COUNT(*) FROM cpla WHERE codigo LIKE '$codigo.%'");
@@ -1217,10 +1223,10 @@ function scstserie(mcontrol){
 	function _pre_insert($do){
 		$control=$do->get('control');
 		$transac=$do->get('transac');
-		if(empty($control)){
+		if(substr($control,7,1)=='_')
 			$control = $this->datasis->fprox_numero('nscst');
-			$transac = $this->datasis->fprox_numero('ntransa');
-		}
+		if(empty($transac))
+			$transac = $this->datasis->fprox_numero('ntransac');
 		
 		$fecha   = $do->get('fecha');
 		$numero  = substr($do->get('serie'),-8);

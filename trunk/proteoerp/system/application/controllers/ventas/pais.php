@@ -58,12 +58,12 @@ class pais extends Controller {
 		$edit->nombre->maxlength=30;
 		  
 		$edit->buttons("modify", "save", "undo", "delete", "back");
-  	$edit->build();
+		$edit->build();
 		
 		$data['content'] = $edit->output;           
-    $data['title']   = "<h1>Pais</h1>";        
-    $data["head"]    = $this->rapyd->get_head();
-    $this->load->view('view_ventanas', $data);  
+		$data['title']   = "<h1>Pais</h1>";        
+		$data["head"]    = $this->rapyd->get_head();
+		$this->load->view('view_ventanas', $data);  
 	}
 }
 ?>
