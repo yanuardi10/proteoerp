@@ -1299,7 +1299,6 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->exento->style='width:50px;';
 		$edit->exento->option("N","No" );
 		$edit->exento->option("E","Si" );
-		
 
 		$edit->ultimo = new inputField("Ultimo", "ultimo");
 		$edit->ultimo->css_class='inputnum';

@@ -1,6 +1,6 @@
 <?php require_once(BASEPATH.'application/controllers/validaciones.php');
 class sfac extends validaciones {
-
+	
 	function sfac(){
 		parent::Controller();
 		$this->load->library('rapyd');
@@ -184,7 +184,6 @@ function nfiscal(mid){
 		}
 	})
 }
-
 </script>';
 
 
@@ -440,23 +439,23 @@ $sigma = "";
 
 		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
 
-		$edit->buttons(  'delete', 'back','add_rel');
+		$edit->buttons('delete', 'back','add_rel');
 		$edit->build();
 
 		$style = '
-<style type="text/css">
-.maintabcontainer {width: 780px; margin: 5px auto;}
-div#sfacreiva label { display:block; }
-div#sfacreiva input { display:block; }
-div#sfacreiva input.text { margin-bottom:12px; width:95%; padding: .4em; }
-div#sfacreiva select { display:block; }
-div#sfacreiva select.text { margin-bottom:12px; width:95%; padding: .4em; }
-div#sfacreiva fieldset { padding:0; border:0; margin-top:20px; }
-div#sfacreiva h1 { font-size: 1.2em; margin: .6em 0; }
-.ui-dialog .ui-state-error { padding: .3em; }
-.validateTips { border: 1px solid transparent; padding: 0.3em; }
-</style>
-';
+			<style type="text/css">
+			.maintabcontainer {width: 780px; margin: 5px auto;}
+			div#sfacreiva label { display:block; }
+			div#sfacreiva input { display:block; }
+			div#sfacreiva input.text { margin-bottom:12px; width:95%; padding: .4em; }
+			div#sfacreiva select { display:block; }
+			div#sfacreiva select.text { margin-bottom:12px; width:95%; padding: .4em; }
+			div#sfacreiva fieldset { padding:0; border:0; margin-top:20px; }
+			div#sfacreiva h1 { font-size: 1.2em; margin: .6em 0; }
+			.ui-dialog .ui-state-error { padding: .3em; }
+			.validateTips { border: 1px solid transparent; padding: 0.3em; }
+			</style>
+			';
 
 		$mreiva = round($edit->ivat->value*0.75,2);
 		if( $edit->_dataobject->get('reiva') > 0 )  $mreiva = $edit->_dataobject->get('reiva');
@@ -1244,6 +1243,92 @@ function sfacreiva(mid){
 		}else{
 			return true;
 		}
+	}
+	
+	function creadpfacf($numero){
+		$this->rapyd->load('dataform');
+		
+		$form = new DataForm("ventas/sfac/creadpfac/$numero");
+		$form->title('Sellecione el Almacen');
+		
+		$form->alma = new dropdownField("Almacen", 'alma');
+		$form->alma->options("SELECT ubica,ubides FROM caub WHERE invfis='N' AND gasto='N'");
+		
+		$form->submit("btnsubmit","Facturar");
+		$form->build_form();
+		
+		$data['content'] = $form->output;           
+		$data['title']   = heading("Convertir Pedido en Factura");
+		$data["head"]    = $this->rapyd->get_head();
+		$this->load->view('view_ventanas', $data);  
+	}
+	
+	function creadpfac($numero){
+		$alma    =$this->input->post('alma');
+		$numeroe =$this->db->escape($numero);
+		$user    =$this->session->userdata('usuario');
+		$nsfac   =$this->datasis->fprox_numero('nsfac');
+		$transac =$this->datasis->fprox_numero('transac');
+		$almae   =$this->db->escape($alma);
+		
+		/*CREA ENCABEZADO DE LA FACTURA SFAC*/
+		$query="
+		INSERT INTO sfac (`tipo_doc`,`numero`,`fecha`,`vence`,`vd`,`cod_cli`,`rifci`,`nombre`,`direc`,`dire1`,`referen`,`iva`,`inicial`,`totals`,`totalg`,`observa`,`observ1`,`cajero`,`almacen`,`peso`,`pedido`,`usuario`,`estampa`,`hora`,`transac`,`zona`,`ciudad`,`comision`,`exento`,`tasa`,`reducida`,`sobretasa`,`montasa`,`monredu`,`monadic`)
+		SELECT 'F','$nsfac',a.fecha,DATE_ADD(a.fecha, INTERVAL (SELECT b.formap FROM scli b WHERE b.cliente=a.cod_cli) DAY) vence,
+		a.vd,a.cod_cli,a.rifci,a.nombre,a.direc,a.dire1,'C' referen,a.iva,0 inicial,a.totals,a.totalg,a.observa,a.observ1,
+		a.cajero,$almae,a.peso,a.numero,'$user',now() estampa,CURTIME() hora,'$transac',a.zona,a.ciudad,0,SUM(d.tota)*(d.iva=0) exento,
+		ROUND(SUM(d.tota*(SELECT tasa FROM civa e ORDER BY fecha desc LIMIT 1)/100)*(d.iva=(SELECT tasa FROM civa e ORDER BY fecha desc LIMIT 1))) tasa,
+		ROUND(SUM(d.tota*(SELECT redutasa FROM civa e ORDER BY fecha desc LIMIT 1)/100)*(d.iva=(SELECT redutasa FROM civa e ORDER BY fecha desc LIMIT 1))) redutasa,
+		ROUND(SUM(d.tota*(SELECT sobretasa FROM civa e ORDER BY fecha desc LIMIT 1)/100)*(d.iva=(SELECT sobretasa FROM civa e ORDER BY fecha desc LIMIT 1))) sobretasa,
+		ROUND(SUM(d.tota)*(d.iva=(SELECT tasa FROM civa e ORDER BY fecha desc LIMIT 1))) montasa,
+		ROUND(SUM(d.tota)*(d.iva=(SELECT redutasa FROM civa e ORDER BY fecha desc LIMIT 1))) monredu,
+		ROUND(SUM(d.tota)*(d.iva=(SELECT sobretasa FROM civa e ORDER BY fecha desc LIMIT 1))) monadic
+		FROM pfac a
+		JOIN itpfac d ON a.numero=d.numa
+		WHERE a.numero=$numeroe
+		";
+		
+		$this->db->query($query);
+		$id_sfac=$this->db->insert_id();
+		
+		/*CREA ENCABEZADO DE LA FACTURA SFAC*/
+		$query="
+		INSERT INTO sitems (`tipoa`,`numa`,`codigoa`,`desca`,`cana`,`preca`,`tota`,`iva`,`fecha`,`vendedor`,`costo`,`pvp`,`cajero`,`mostrado`,`usuario`,`estampa`,`hora`,`transac`,`precio4`,`id_sfac`) 
+		SELECT 'F','$nsfac',d.codigoa,d.desca,d.cana,d.preca,d.tota,d.iva,CURDATE(),d.vendedor,d.costo,d.pvp,
+		d.cajero,d.mostrado,'$user' usuario,NOW() estampa,CURTIME(),'$transac',c.precio4,$id_sfac idsfac
+		FROM pfac a
+		JOIN itpfac d ON a.numero=d.numa
+		JOIN sinv c ON d.codigoa=c.codigo
+		WHERE a.numero=$numeroe
+		";
+		
+		$this->db->query($query);
+		
+		$query="
+		INSERT IGNORE INTO smov ( cod_cli, nombre, dire1, dire2, tipo_doc, numero, fecha, monto, impuesto, abonos, vence, observa1, estampa, usuario, hora, transac, tasa, montasa, reducida, monredu, sobretasa, monadic, exento )
+		SELECT cod_cli, nombre, direc, dire1, tipo_doc, numero, fecha, totalg, iva,   0 abonos, vence, 
+		if(tipo_doc='D', 'DEVOLUCION EN VENTAS', 'FACTURA DE CREDITO' ) observa1, estampa, usuario, hora, transac, tasa, montasa, reducida, monredu, sobretasa, monadic, exento 
+		FROM sfac WHERE transac='$transac' and referen='C' 
+		LIMIT 1
+		";
+		
+		$this->db->query($query);
+		
+		$query="	
+		SELECT a.codigoa,b.almacen,-1*a.cana cana
+		FROM sitems a 
+		JOIN sfac b ON a.id_sfac=b.id
+		JOIN caub c ON b.almacen=c.ubica
+		WHERE b.transac='$transac'
+		";
+		
+		$query=$this->db->query($query);
+		foreach($query->result as $row)
+		$this->datasis->sinvcarga($row->codigoa,$row->almacen,$row->cana);
+		
+		
+		
+		redirect("ventas/sfac/dataedit/show/$id_sfac");
 	}
 
 	function _post_update($do){

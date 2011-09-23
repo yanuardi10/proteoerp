@@ -32,6 +32,16 @@ class pfac extends validaciones{
 			'screenx'    => '0',
 			'screeny'    => '0'
 		);
+		
+		$atts2 = array(
+			'width'      => '480',
+			'height'     => '240',
+			'scrollbars' => 'yes',
+			'status'     => 'yes',
+			'resizable'  => 'yes',
+			'screenx'    => '980',
+			'screeny'    => '760'
+		);
 
 		$scli = array(
 			'tabla' => 'scli',
@@ -73,6 +83,8 @@ class pfac extends validaciones{
 
 		$uri = anchor('ventas/pfac/dataedit/show/<#numero#>', '<#numero#>');
 		$uri2 = anchor_popup('formatos/verhtml/PFAC/<#numero#>', 'Ver HTML', $atts);
+		$uri3 = anchor_popup('ventas/sfac/creadpfacf/<#numero#>', 'Facturar', $atts2);
+		
 		$mtool  = "<table background='#554455'><tr>";
 		$mtool .= "<td>&nbsp;</td>";
 
@@ -93,7 +105,8 @@ class pfac extends validaciones{
 		$grid->per_page = 50;
 
 		//$grid->column('Vista'    , $uri2, "align='center'");
-		$grid->column_orderby('N&uacute;mero', $uri,'numero');
+		$grid->column_orderby('N&uacute;mero', $uri ,'numero');
+		$grid->column_orderby('Facturar'     , $uri3,'numero');
 		$grid->column_orderby("Fecha"        , '<dbdate_to_human><#fecha#></dbdate_to_human>','fecha', "align='center'");
 		$grid->column_orderby("Cliente"      , 'cod_cli','cod_cli');
 		$grid->column_orderby("Nombre"       , 'nombre','nombre');
@@ -667,8 +680,8 @@ class pfac extends validaciones{
 	function _pre_insert($do){
 		$numero = $this->datasis->fprox_numero('npfac');
 		$do->set('numero', $numero);
-		$transac = $this->datasis->fprox_numero('ntransa');
-		$do->set('transac', $transac);
+		//$transac = $this->datasis->fprox_numero('ntransa');
+		//$do->set('transac', $transac);
 		$fecha = $do->get('fecha');
 		$vd = $do->get('vd');
 
