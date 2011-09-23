@@ -307,14 +307,22 @@ function autocod(id){
 <br>
 <table  width="100%" style="margin:0;width:100%;" > 
 	<tr>
-		<td colspan=10 class="littletableheader">Documentos relacionados</td>
+		<td colspan=10 class="littletableheader">Movimientos relacionados</td>
 	</tr>
 	<?php
 	$transac=$form->get_from_dataobjetct('transac');
-	$mSQL='SELECT cod_cli, nombre,tipo_doc, numero, monto, observa1 FROM smov WHERE transac='.$this->db->escape($transac).' ORDER BY num_ref,cod_cli';
-	$query = $this->db->query($mSQL);
-	if ($query->num_rows() > 0){
-		foreach ($query->result() as $row){
+	$numero =$form->get_from_dataobjetct('nrocomp');
+	$cod_cli=$form->get_from_dataobjetct('cod_cli');
+	$sql[]='SELECT cod_cli, nombre,tipo_doc, numero, monto, observa1 FROM smov WHERE transac='.$this->db->escape($transac).' ORDER BY num_ref,cod_cli';
+	$sql[]='SELECT cod_cli, nombre,tipo_doc, numero, monto, observa1 FROM smov WHERE tipo_ref=\'RT\'  AND num_ref='.$this->db->escape($numero).' AND cod_cli='.$this->db->escape($cod_cli).' ORDER BY num_ref,cod_cli';
+	$sql[]='SELECT cod_prv AS cod_cli, nombre,tipo_doc, numero, monto, observa1 FROM sprm WHERE tipo_ref=\'RT\'  AND num_ref='.$this->db->escape($numero).' AND cod_prv=\'REINT\' ORDER BY num_ref,cod_prv';
+	//$sql[]='SELECT cod_prv AS cod_cli, nombre,tipo_doc, numero, monto, observa1 FROM bmov WHERE tipo_ref=\'RT\'  AND num_ref='.$this->db->escape($numero).' AND cod_prv=\'REINT\' ORDER BY num_ref,cod_prv';
+	
+	foreach($sql as $mSQL){
+		//$mSQL='SELECT cod_cli, nombre,tipo_doc, numero, monto, observa1 FROM smov WHERE transac='.$this->db->escape($transac).' ORDER BY num_ref,cod_cli';
+		$query = $this->db->query($mSQL);
+		if ($query->num_rows() > 0){
+			foreach ($query->result() as $row){
 	?>
 	<tr>
 		<td class="littletablerowth" ><?php echo $row->cod_cli.' '.$row->nombre;    ?></td>
@@ -324,8 +332,10 @@ function autocod(id){
 		<td class="littletablerow"   align='right'><?php echo nformat($row->monto);?></td>
 	</tr>
 	<?php
+			}
 		}
 	}?>
+
 </table>
 <?php  } ?>
 

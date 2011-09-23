@@ -83,7 +83,7 @@ class rivc extends Controller {
 		$hora     = date('H:i:s');
 		$sp_fecha = date('Ymd');
 		$transac  = $this->datasis->fprox_numero('ntransa');
-		$negreso  = $this->datasis->fprox_numero('negreso');
+		//$negreso  = $this->datasis->fprox_numero('negreso');
 		$cod_cli  = $this->datasis->dameval("SELECT cod_cli FROM rivc WHERE id=".$this->db->escape($id));
 		$itnumero = $this->datasis->dameval("SELECT nrocomp FROM rivc WHERE id=".$this->db->escape($id));
 		$fecha    = $this->datasis->dameval("SELECT fecha   FROM rivc WHERE id=".$this->db->escape($id));
@@ -242,15 +242,49 @@ class rivc extends Controller {
 			$error    = 0;
 			$numeroch = str_pad($form->cheque->newValue, 12, '0', STR_PAD_LEFT);
 			$datacar  = common::_traebandata($form->cargo->newValue);
+			$estampa  = date('Y-m-d');
+			$hora     = date('H:i:s');
 			$sp_fecha = date('Ymd');
 			$ttipo    = $datacar['tbanco'];
 			$moneda   = $datacar['moneda'];
 			$transac  = $this->datasis->fprox_numero('ntransa');
-			$negreso  = $this->datasis->fprox_numero('negreso');
 			$codbanc  = $form->cargo->newValue;
 			$cod_cli  = $this->datasis->dameval("SELECT cod_cli FROM rivc WHERE id=".$this->db->escape($id));
 			$ttransac = $this->datasis->dameval("SELECT transac FROM rivc WHERE id=".$this->db->escape($id));
 			$totneto  = $this->datasis->dameval("SELECT SUM(monto*IF('ND',-1,1)) AS monto FROM smov WHERE transac='$ttransac' AND tipo_doc IN ('AN','ND') AND cod_cli=".$this->db->escape($cod_cli));
+			$itnumero = $this->datasis->dameval("SELECT nrocomp FROM rivc WHERE id=".$this->db->escape($id));
+			//$fecha    = $this->datasis->dameval("SELECT fecha   FROM rivc WHERE id=".$this->db->escape($id));
+			$nombre   = $this->datasis->dameval("SELECT nombre  FROM scli WHERE cliente=".$this->db->escape($cod_cli));
+			$usuario  = $this->session->userdata('usuario');
+
+			//Crea la ND al cliente con el monto de los anticipos
+			$mnumnd = $this->datasis->fprox_numero('ndcli');
+			$data=array();
+			$data['cod_cli']    = $cod_cli;
+			$data['nombre']     = $nombre;
+			$data['tipo_doc']   = 'ND';
+			$data['numero']     = $mnumnd;
+			$data['fecha']      = $estampa;
+			$data['monto']      = $totneto;
+			$data['impuesto']   = 0;
+			$data['abonos']     = 0;
+			$data['vence']      = $fecha;
+			$data['tipo_ref']   = 'RT';
+			$data['num_ref']    = $itnumero;
+			$data['observa1']   = 'NOTA DEBITO A '.$cod_cli.' POR RET. '.$itnumero;
+			$data['estampa']    = $estampa;
+			$data['hora']       = $hora;
+			$data['transac']    = $transac;
+			$data['usuario']    = $usuario;
+			$data['codigo']     = 'NOCON';
+			$data['descrip']    = 'NOTA DE CONTABILIDAD';
+
+			$mSQL = $this->db->insert_string('smov', $data);
+			$ban=$this->db->simple_query($mSQL);
+			if($ban==false){ memowrite($mSQL,'RIVC'); }
+	
+	
+	
 	
 			$tipo1  = ($ttipo=='CAJ') ? 'D': 'C';
 			$negreso= $this->datasis->fprox_numero('negreso');
@@ -276,9 +310,9 @@ class rivc extends Controller {
 			$data['abanco']     = '';
 			$data['liable']     = ($ttipo=='CAJ') ? 'S': 'N';;
 			$data['transac']    = $transac;
-			$data['usuario']    = $this->session->userdata('usuario');
-			$data['estampa']    = date('Y-m-d');
-			$data['hora']       = date('H:i:s');
+			$data['usuario']    = $usuario;
+			$data['estampa']    = $estampa;
+			$data['hora']       = $hora;
 			$data['anulado']    = 'N';
 			$data['susti']      = '';
 			$data['negreso']    = $negreso;
@@ -289,7 +323,7 @@ class rivc extends Controller {
 
 			$sql='CALL sp_actusal('.$this->db->escape($codbanc).",'$sp_fecha',-$totneto)";
 			$ban=$this->db->simple_query($sql);
-			if($ban==false){ memowrite($sql,'rivc'); $error++; }
+			//if($ban==false){ memowrite($sql,'rivc'); $error++; }
 
 			$sql='UPDATE smov SET abonos=monto WHERE tipo_doc IN (\'AN\',\'ND\') AND transac='.$this->db->escape($ttransac);
 			$ban=$this->db->simple_query($sql);
