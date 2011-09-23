@@ -199,6 +199,7 @@ class Invfis extends Controller {
 		$filter->db->join('dpto AS d','c.depto=d.depto');
 		$filter->db->where('activo','S');
 		$filter->db->where('actualizado IS NULL','',false);
+		$filter->db->order_by("d.depto,c.linea,b.grupo,a.descrip");
 		$filter->script($script);
 
 		$filter->codigo = new inputField('C&oacute;digo', 'codigo');
@@ -323,6 +324,9 @@ class Invfis extends Controller {
 		$action = "javascript:window.location='".site_url($this->url)."'";
 		$grid->button('btn_regresa', 'Regresar', $action, 'TR');
 
+		$grid->column_orderby('Dpto'              ,'depto'                                                 ,'d.depto'  ,'align=center');
+		$grid->column_orderby('Linea'             ,'linea'                                                 ,'c.linea'  ,'align=center');
+		$grid->column_orderby('Grupo'             ,'grupoid'                                               ,'b.grupo'  ,'align=center');
 		$grid->column_orderby('Codigo'            ,'<pinta><#modificado#>|<#codigo#>|<#idfis#>|a</pinta>'  ,'codigo'  ,'align=center');
 		$grid->column_orderby('Descripci&oacute;n','<pinta><#modificado#>|<#descrip#>|<#idfis#>|b</pinta>' ,'descrip' );
 		$grid->column_orderby('P.Desp,'           ,'<pinta><#modificado#>|<#despacha#>|<#idfis#>|d</pinta>','despacha','align=right');
