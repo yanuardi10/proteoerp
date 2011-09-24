@@ -167,7 +167,7 @@ class rivc extends Controller {
 	function reintegrar($id){
 		$nombre=$this->datasis->dameval('SELECT nombre FROM rivc WHERE id='.$this->db->escape($id));
 
-		$sql='SELECT TRIM(a.codbanc) AS codbanc,tbanco FROM banc AS a';
+		$sql='SELECT TRIM(a.codbanc) AS codbanc,tbanco FROM banc AS a WHERE tbanco="CAJ"';
 		$query = $this->db->query($sql);
 		$comis=array();
 		if ($query->num_rows() > 0){
@@ -223,6 +223,7 @@ class rivc extends Controller {
 		$form->cargo->onchange='desactivacampo(this.value)';
 		$form->cargo->rule='max_length[5]|required|callback_chcaja';
 
+/*
 		$form->cheque = new inputField('N&uacute;mero de cheque', 'cheque');
 		$form->cheque->rule='condi_required|callback_chobligaban';
 		$form->cheque->append('Aplica  solo si el cargo es a un banco');
@@ -231,7 +232,7 @@ class rivc extends Controller {
 		$form->benefi->insertValue=$nombre;
 		$form->benefi->rule='condi_required|callback_chobligaban';
 		$form->benefi->append('Aplica  solo si el cargo es a un banco');
-
+*/
 		$action = "javascript:window.location='".site_url('finanzas/rivc/dataedit/show/'.$id)."'";
 		$form->button('btn_regresa', 'Regresar', $action, 'TR');
 
@@ -240,7 +241,9 @@ class rivc extends Controller {
 
 		if ($form->on_success()){
 			$error    = 0;
-			$numeroch = str_pad($form->cheque->newValue, 12, '0', STR_PAD_LEFT);
+			//$numeroch = str_pad($form->cheque->newValue, 12, '0', STR_PAD_LEFT);
+			$codbanc  = $form->cargo->newValue;
+			$numeroch = $this->datasis->fprox_numero('ncaja'.$codbanc);
 			$datacar  = common::_traebandata($form->cargo->newValue);
 			$estampa  = date('Y-m-d');
 			$hora     = date('H:i:s');
@@ -248,7 +251,7 @@ class rivc extends Controller {
 			$ttipo    = $datacar['tbanco'];
 			$moneda   = $datacar['moneda'];
 			$transac  = $this->datasis->fprox_numero('ntransa');
-			$codbanc  = $form->cargo->newValue;
+
 			$cod_cli  = $this->datasis->dameval("SELECT cod_cli FROM rivc WHERE id=".$this->db->escape($id));
 			$ttransac = $this->datasis->dameval("SELECT transac FROM rivc WHERE id=".$this->db->escape($id));
 			$totneto  = $this->datasis->dameval("SELECT SUM(monto*IF('ND',-1,1)) AS monto FROM smov WHERE transac='$ttransac' AND tipo_doc IN ('AN','ND') AND cod_cli=".$this->db->escape($cod_cli));
@@ -256,6 +259,7 @@ class rivc extends Controller {
 			//$fecha    = $this->datasis->dameval("SELECT fecha   FROM rivc WHERE id=".$this->db->escape($id));
 			$nombre   = $this->datasis->dameval("SELECT nombre  FROM scli WHERE cliente=".$this->db->escape($cod_cli));
 			$usuario  = $this->session->userdata('usuario');
+
 
 			//Crea la ND al cliente con el monto de los anticipos
 			$mnumnd = $this->datasis->fprox_numero('ndcli');
@@ -283,9 +287,18 @@ class rivc extends Controller {
 			$ban=$this->db->simple_query($mSQL);
 			if($ban==false){ memowrite($mSQL,'RIVC'); }
 	
-	
-	
-	
+			
+			$data=array();
+			$data['codbanc']    = $form->cargo->newValue;
+			$data['tipo_op']    = 'D';
+			$data['numche']     = $numeroch;
+			
+			$where=array('id'=>$id);
+
+			$mSQL = $this->db->update_string('rivc', $data,$where);
+			$ban=$this->db->simple_query($mSQL);
+			if($ban==false){ memowrite($mSQL,'RIVC'); }
+
 			$tipo1  = ($ttipo=='CAJ') ? 'D': 'C';
 			$negreso= $this->datasis->fprox_numero('negreso');
 			$credito= 0;
@@ -589,12 +602,27 @@ class rivc extends Controller {
 		//****************************
 		//Fin del Detalle
 		//****************************
+		
+		//cheque qu pueda aparecer el boton
+		
+		$ide=$this->db->escape($edit->get_from_dataobjetct('id'));
+		$query="
+		SELECT SUM(monto-abonos) abonos
+		FROM  rivc a
+		JOIN itrivc b  ON a.id=b.idrivc
+		JOIN smov c ON b.transac=c.transac
+		WHERE a.id=$ide AND c.tipo_doc='AN'
+		";
+		$xabonar=$this->datasis->dameval($query);
+		
 		if($edit->_status=='show'){
-			$action = "javascript:window.location='".site_url('finanzas/rivc/reintegrar/'.$edit->get_from_dataobjetct('id'))."'";
-			$edit->button('btn_reintegrar', 'Reintegrar', $action, 'TR');
-
-			$action = "javascript:window.location='".site_url('finanzas/rivc/convcxp/'.$edit->get_from_dataobjetct('id'))."'";
-			$edit->button('btn_convcxp', 'Convertir a CxP', $action, 'TR');
+			if($xabonar>0){
+				$action = "javascript:window.location='".site_url('finanzas/rivc/reintegrar/'.$edit->get_from_dataobjetct('id'))."'";
+				$edit->button('btn_reintegrar', 'Reintegrar', $action, 'TR');
+	
+				$action = "javascript:window.location='".site_url('finanzas/rivc/convcxp/'.$edit->get_from_dataobjetct('id'))."'";
+				$edit->button('btn_convcxp', 'Convertir a CxP', $action, 'TR');
+			}
 		}
 
 		$edit->buttons('save', 'undo', 'back','add_rel');
@@ -660,7 +688,7 @@ class rivc extends Controller {
 			$mSQL="SELECT a.tipo_doc, a.numero, a.totalg, a.fecha,a.iva, a.iva*$rete AS reiva
 				FROM sfac AS a
 				LEFT JOIN itrivc AS b ON a.tipo_doc=b.tipo_doc AND a.numero=b.numero
-				WHERE a.cod_cli=$sclidb AND a.numero LIKE $qdb AND b.numero IS NULL AND a.tipo_doc <> 'X'
+				WHERE a.cod_cli=$sclidb AND CONCAT(a.tipo_doc,'-',a.numero) LIKE $qdb AND b.numero IS NULL AND a.tipo_doc <> 'X'
 				ORDER BY numero LIMIT 10";
 
 			$query = $this->db->query($mSQL);

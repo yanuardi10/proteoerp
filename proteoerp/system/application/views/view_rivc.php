@@ -27,6 +27,24 @@ if($form->_status!='show'){ ?>
 var itrivc_cont =<?php echo $form->max_rel_count['itrivc']; ?>;
 
 $(function(){
+	
+	com=false;
+	$(document).keydown(function(e){
+		if (18 == e.which) {
+			com=true;
+			return false;
+		}
+		if (com && (e.which == 61 || e.which == 107)) {
+			add_itrivc();  
+			com=false;
+			return false;
+		}else if (com && e.which != 16 && e.which == 17){
+			com=false;
+		}
+		return true;
+	});
+	
+	
 	$(".inputnum").numeric(".");
 	totalizar();
 	for(var i=0;i < <?php echo $form->max_rel_count['itrivc']; ?>;i++){
