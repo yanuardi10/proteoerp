@@ -16,6 +16,12 @@ class Common extends controller {
 		return $this->datasis->damerow($sql);
 	}
 
+	function _traedatausr(){
+		$usr=$this->session->userdata('usuario');
+		$sql='SELECT vendedor,cajero,sucursal,almacen FROM usuario WHERE us_codigo='.$this->db->escape($usr);
+		return $this->datasis->damerow($sql);
+	}
+
 	//Para el autocomplete
 	function _automgas(){
 	}

@@ -165,7 +165,8 @@ class rivc extends Controller {
 	}
 
 	function reintegrar($id){
-		$nombre=$this->datasis->dameval('SELECT nombre FROM rivc WHERE id='.$this->db->escape($id));
+		$nombre =$this->datasis->dameval('SELECT nombre FROM rivc WHERE id='.$this->db->escape($id));
+		$usrdata=common::_traedatausr();
 
 		$sql='SELECT TRIM(a.codbanc) AS codbanc,tbanco FROM banc AS a WHERE tbanco="CAJ"';
 		$query = $this->db->query($sql);
@@ -209,6 +210,7 @@ class rivc extends Controller {
 
 		$form->cajero = new dropdownField('Cajero','cajero');
 		$form->cajero->option('','Seleccionar');
+		$form->cajero->insertValue=$usrdata['cajero'];
 		$form->cajero->options("SELECT cajero, CONCAT_WS('-',cajero,nombre) AS label FROM scaj ORDER BY cajero");
 		$form->cajero->rule='max_length[5]|required|callback_chcajero';
 
@@ -219,7 +221,7 @@ class rivc extends Controller {
 
 		$form->cargo = new dropdownField('Con cargo a','cargo');
 		$form->cargo->option('','Seleccionar');
-		$form->cargo->options("SELECT codbanc, CONCAT_WS('-',codbanc,banco) AS label FROM banc WHERE activo='S' ORDER BY codbanc");
+		$form->cargo->options("SELECT codbanc, CONCAT_WS('-',codbanc,banco) AS label FROM banc WHERE activo='S' AND tbanco='CAJ' ORDER BY codbanc");
 		$form->cargo->onchange='desactivacampo(this.value)';
 		$form->cargo->rule='max_length[5]|required|callback_chcaja';
 
@@ -400,7 +402,7 @@ class rivc extends Controller {
 		$edit->pre_process('delete','_pre_delete');
 
 		$edit->nrocomp = new inputField('Comprobante','nrocomp');
-		$edit->nrocomp->rule='max_length[8]|required';
+		$edit->nrocomp->rule='max_length[8]|callback_chdupli|required';
 		$edit->nrocomp->size =10;
 		$edit->nrocomp->maxlength =8;
 		$edit->nrocomp->autocomplete = false;
@@ -713,6 +715,17 @@ class rivc extends Controller {
 			}
 		}
 		echo $data;
+	}
+
+	function chdupli($numero){
+		$scli=$this->input->post('cod_cli');
+		$mSQL='SELECT COUNT(*) FROM rivc WHERE nrocomp='.$this->db->escape($numero).' AND cod_cli='.$this->db->escape($scli);
+		$cana=$this->datasis->dameval($mSQL);
+		if($cana >0 ){
+			$this->validation->set_message('chdupli', 'Ya existe un registro guardado con el mismo numero de comprobante y al mismo cliente.');
+			return false;
+		}
+		return true;
 	}
 
 	function buscascli(){
