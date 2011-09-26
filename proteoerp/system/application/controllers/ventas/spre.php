@@ -730,4 +730,241 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$codigo=$do->get('numero');
 		logusu('spre',"PRESUPUESTO $codigo ELIMINADO");
 	}
+
+
+
+	//*************************************
+	//
+	//           ANULAR FACTURA
+	//
+	//
+	//*************************************
+	function sfacanu( $tipo_doc, $numero ){
+		//LOCAL i, mRAPIDA := .F., mLLAMA := .F., mDESCU := .T.
+		//LOCAL mMIENT   := {0,0,0}
+		//LOCAL mALMACEN := '0001'
+		//LOCAL mTRANSAC := ''
+		//LOCAL mPEDIDO, mTIPO
+		
+		$query=$this->db->query("SELECT * FROM sfac WHERE tipo_doc='$tipo_doc' AND numero'$numero'");
+		$sfac     = $query->row_array();
+
+		$referen =  $this->datasis->dameval();
+
+
+		// SI YA SE BORRO PUES NI MODO
+		if ($tipo_doc  == 'X'){
+			echo 'Ya fue Borrada';
+			return;
+			/*
+			if XREFEREN = 'C'
+				IF SINO("Recuperar Anulacion?",2) = 1
+					mSQL := "UPDATE sfac SET tipo_doc='F' WHERE tipo_doc='"+XTIPO_DOC+"' AND numero='"+XNUMERO+"'"
+					EJECUTASQL(mSQL)
+					mSQL := "UPDATE sitems SET tipoa='F' WHERE tipoa='"+XTIPO_DOC+"' AND numa='"+XNUMERO+"'"
+					EJECUTASQL(mSQL)
+					XTIPO_DOC='F'
+					CMNJ('FACTURA RECUPERADA')
+				ENDIF
+			ENDIF*/
+		}
+
+
+		// PENDIENTE LA BORRA SIN PELIGRO
+		if ( $referen == 'P' and SUBSTR($numero,0,1)=='P' ) {
+			$mSQL = "DELETE FROM sfac WHERE numero='$numero' AND tipo_doc='$tipo_doc' ";
+			$this->db->simple_query($mSQL);
+			$mSQL = "DELETE FROM sitems WHERE numa='$numero' AND tipoa='$tipo_doc' ";
+			$this->db->simple_query($mSQL);
+			$mSQL = "UPDATE seri SET venta='', fechav=0 WHERE venta='$numero";
+			$this->db->simple_query($mSQL);
+			echo "Documento Anulado";
+			logusu("FACTURA ANULADA "+XTIPO_DOC+" "+XNUMERO);
+			return;
+		}
+
+		if ( $tipo_doc != 'D' AND $tipo_doc != 'F') {
+			echo "Documento no Anulable";
+			return;
+		}
+
+		// REVISAR SI TIENE ABONOS
+		$mPEDIDO = ("pedido");
+/*
+IF XFECHA <> DATE()
+   IF XREFEREN = 'C'
+      mSQL := "SELECT COUNT(*) FROM smov WHERE cod_cli='"+XCOD_CLI+"' "
+      mSQL += "AND tipo_doc='FC' AND numero='"+XNUMERO+"' "
+      IF DAMEVAL(mSQL,,'N') >  0 //XINICIAL
+         mSQL := "SELECT abonos FROM smov WHERE cod_cli='"+XCOD_CLI+"' "
+         mSQL += "AND tipo_doc='FC' AND numero='"+XNUMERO+"' "
+         IF DAMEVAL(mSQL,,'N') <> XINICIAL
+            CMNJ("Esta factura ya tiene Pagos; Anule el Pago primero!!")
+            RETURN .T.
+         ENDIF
+      ENDIF
+
+      IF MONTH(XFECHA) <> MONTH(DATE())
+         CMNJ("Factura de mes anterior si prosigue puede alterar los libros fiscales")
+      ELSE
+         CMNJ("Factura de fecha anterior;asegurese de saber lo que hace")
+      ENDIF
+   ELSE
+      CMNJ("No se pueden anular facturas de contado de ; dias anteriores")
+      RETURN .T.
+   ENDIF
+ELSE
+   IF XREFEREN = 'C'
+      mSQL := "SELECT COUNT(*) FROM smov WHERE cod_cli='"+XCOD_CLI+"' "
+      mSQL += "AND tipo_doc='FC' AND numero='"+XNUMERO+"' "
+      IF DAMEVAL(mSQL,,'N') > 0
+         mSQL := "SELECT abonos FROM smov WHERE cod_cli='"+XCOD_CLI+"' "
+         mSQL += "AND tipo_doc='FC' AND numero='"+XNUMERO+"' "
+         IF DAMEVAL(mSQL,,'N') <> XINICIAL
+            CMNJ("Esta factura ya tiene Pagos; Anule el Pago primero!!")
+            RETURN .T.
+         ENDIF
+      ENDIF
+   ENDIF
+ENDIF
+
+// REVISAR INVENTARIO FISICO
+mSQL := "SELECT count(*) FROM costos AS a JOIN sitems AS b "
+mSQL += "ON a.codigo=b.codigoa WHERE a.fecha>"+DTOS(XFECHA)
+mSQL += " and b.numa='"+XNUMERO+"' AND a.origen='0F' "
+IF DAMEVAL(mSQL,,'N') > 0
+   CMNJ("Tiene productos inventariados recientement; debe hacer una devolucion.")
+   RETURN .T.
+ENDIF
+
+IF SINO("Seguro que desea Anularla",1) = 1
+   mSQL := "SELECT almacen,transac, factura FROM sfac WHERE tipo_doc='"+XTIPO_DOC+"' "
+   mSQL += "AND numero='"+XNUMERO+"' "
+   mREG := DAMEREG(mSQL,8)
+   mTRANSAC := mREG[2]
+   mALMACEN := mREG[1]
+   mFACTURA := mREG[3]
+
+   IF EMPTY(mTRANSAC)
+      CMNJ("Movimiento sin transaccion")
+      RETURN .T.
+   ENDIF
+
+   IF XTIPO_DOC = 'F'
+      mSQL := "UPDATE sfac SET tipo_doc='X'  WHERE transac='"+mTRANSAC+"' "
+      mSQL += " AND numero='"+XNUMERO+"' AND tipo_doc='"+XTIPO_DOC+"' "
+      EJECUTASQL(mSQL)
+
+      mSQL := "UPDATE seri SET venta='', fechav=0 WHERE venta='"+XNUMERO+"'"
+      EJECUTASQL(mSQL)
+
+      // BUSCA A VER SI TIENE NOTA DE ENTREGA
+      mSQL   := "SELECT COUNT(*) FROM snte WHERE factura='"+XNUMERO+"' "
+      mDESCU := IF(DAMEVAL(mSQL,,'N')=0,.T.,.F.)
+
+      mSQL := "UPDATE snte SET factura='', fechafac=0 "
+      mSQL += "WHERE factura='"+XNUMERO+"' "
+      EJECUTASQL(mSQL)
+
+      SFACCARGAD()
+      mSQL := "UPDATE sitems SET tipoa='X' WHERE numa='"+XNUMERO+"' AND tipoa='"+XTIPO_DOC+"'"
+      EJECUTASQL(mSQL)
+      // DESCUENTA INVENTARIO
+      IF mDESCU
+         FOR i := 1 TO LEN(mm_DETA)
+            mTIPO := DAMEVAL("SELECT MID(tipo,1,1) FROM sinv WHERE codigo='"+mm_DETA[i,1]+"'")
+            SINVCARGA(mm_DETA[i,1], mALMACEN ,mm_DETA[i,3])
+            IF mTIPO = 'L'
+               SINVLOTCARGA( mm_DETA[i,1], mALMACEN, mm_DETA[i,8], mm_DETA[i,3] )
+            ENDIF
+         NEXT
+      ENDIF
+
+      mSQL := "DELETE FROM sfpa WHERE transac='"+mTRANSAC+"'"
+      EJECUTASQL(mSQL)
+
+      // QUITA DE CXC
+      mSQL := "DELETE FROM smov WHERE transac='"+mTRANSAC+"' "
+      EJECUTASQL(mSQL)
+      
+      // LIBERA LOS SERIALES
+      mSQL := "UPDATE seri SET venta='' WHERE venta='"+XNUMERO+"' "
+      EJECUTASQL(mSQL)
+
+      // Regresa Pedido
+      IF !EMPTY(mPEDIDO)
+         mSQL := "UPDATE itpfac SET entregado=entregado-? WHERE numa=? AND codigoa=? "
+         FOR i := 1 TO LEN(mm_DETA)
+            EJECUTASQL(mSQL,{ mm_DETA[i,3], mPEDIDO, mm_DETA[i,1] })
+         NEXT
+         mSQL := "UPDATE itpfac SET entregado=0 WHERE numa=? AND entregado<0 "
+         EJECUTASQL(mSQL,{ mPEDIDO })
+         mSQL := "SELECT sum(entregado) FROM itpfac WHERE numa='"+mPEDIDO+"' GROUP BY numa "
+         mCAN := DAMEVAL(mSQL,,'N')
+         IF mCAN  = 0
+            mSQL := "UPDATE pfac SET status='P' WHERE numero='"+mPEDIDO+"' "
+         ELSE
+            mSQL := "UPDATE pfac SET status='B' WHERE numero='"+mPEDIDO+"' "
+         ENDIF
+         EJECUTASQL(mSQL)
+         EJECUTASQL("UPDATE sfac SET pedido='' WHERE tipo_doc='X' AND numero='"+XNUMERO+"' ")
+      ENDIF
+
+   // ANULA DEVOLUCIONES
+   ELSEIF XTIPO_DOC = 'D'
+      mSQL := "UPDATE sfac SET tipo_doc='X', numero='D"+SUBSTR(XNUMERO,2,7)+"' "
+      mSQL += "WHERE transac='"+mTRANSAC+"' "
+      EJECUTASQL(mSQL)
+      mDESCU := .T.
+      
+      // DEVUELVE LOS SERIALES
+      mREG := DAMEREG("SELECT factura, fecha FROM sfac WHERE transac='"+mTRANSAC+"' ")
+      mSQL := "UPDATE seri SET venta=?, fechav=? WHERE devolu='"+XNUMERO+"'"
+      EJECUTASQL(mSQL, mREG )
+
+      SFACCARGAD()
+      mSQL := "UPDATE sitems SET tipoa='X', numa='D"+SUBSTR(XNUMERO,2,7)+"' " 
+      mSQL += "WHERE numa='"+XNUMERO+"' AND tipoa='"+XTIPO_DOC+"'"
+      EJECUTASQL(mSQL)
+      // DESCUENTA INVENTARIO
+      FOR i := 1 TO LEN(mm_DETA)
+         mTIPO := DAMEVAL("SELECT MID(tipo,1,1) FROM sinv WHERE codigo='"+mm_DETA[i,1]+"'")
+         SINVCARGA(mm_DETA[i,1], mALMACEN ,-mm_DETA[i,3])
+         IF mTIPO = 'L'
+            SINVLOTCARGA( mm_DETA[i,1], mALMACEN, mm_DETA[i,8], -mm_DETA[i,3] )
+         ENDIF
+      NEXT
+
+      mSQL := "UPDATE sitems SET tipoa='X' WHERE numa='"+XNUMERO+"' AND tipoa='"+XTIPO_DOC+"'"
+      EJECUTASQL(mSQL)
+
+      // GUARDA FORMA DE PAGO
+      mSQL := "DELETE FROM sfpa WHERE transac='"+mTRANSAC+"'"
+      EJECUTASQL(mSQL)
+
+      // GUARDA EN CXC
+      IF XREFEREN = 'C'
+         mSQL := "DELETE FROM smov WHERE transac='"+mTRANSAC+"'"
+         EJECUTASQL(mSQL)
+
+         // REVERSA ABONADO
+         mSQL := "UPDATE smov SET abonos=abonos-"+ALLTRIM(STR(XTOTALG))
+         mSQL += " WHERE cod_cli='"+XCOD_CLI+"' AND tipo_doc='FC' AND "
+         mSQL += "numero='"+mFACTURA+"' "
+         EJECUTASQL(mSQL)
+      ENDIF
+   ENDIF
+
+   CMNJ("Documento Anulado")
+   LOGUSU("FACTURA ANULADA "+XTIPO_DOC+" "+XNUMERO+' PEDIDO '+mPEDIDO)
+   XTIPO_DOC := 'X'
+   oCursor:FieldPut('tipo_doc',XTIPO_DOC)
+   oCursor:Refresh()
+
+ENDIF
+RETURN("")
+*/
+	}
+
+
 }
