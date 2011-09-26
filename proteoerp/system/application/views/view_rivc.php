@@ -331,13 +331,18 @@ function autocod(id){
 	$transac=$form->get_from_dataobjetct('transac');
 	$numero =$form->get_from_dataobjetct('nrocomp');
 	$cod_cli=$form->get_from_dataobjetct('cod_cli');
+	$numche =$form->get_from_dataobjetct('numche');
+
 	$sql[]='SELECT cod_cli, nombre,tipo_doc, numero, monto, observa1 FROM smov WHERE transac='.$this->db->escape($transac).' ORDER BY num_ref,cod_cli';
 	$sql[]='SELECT cod_cli, nombre,tipo_doc, numero, monto, observa1 FROM smov WHERE tipo_ref=\'RT\'  AND num_ref='.$this->db->escape($numero).' AND cod_cli='.$this->db->escape($cod_cli).' ORDER BY num_ref,cod_cli';
 	$sql[]='SELECT cod_prv AS cod_cli, nombre,tipo_doc, numero, monto, observa1 FROM sprm WHERE tipo_ref=\'RT\'  AND num_ref='.$this->db->escape($numero).' AND cod_prv=\'REINT\' ORDER BY num_ref,cod_prv';
-	//$sql[]='SELECT cod_prv AS cod_cli, nombre,tipo_doc, numero, monto, observa1 FROM bmov WHERE tipo_ref=\'RT\'  AND num_ref='.$this->db->escape($numero).' AND cod_prv=\'REINT\' ORDER BY num_ref,cod_prv';
+	if(!empty($numche)){
+		$tipo_op=$form->get_from_dataobjetct('tipo_op');
+		$codbanc=$form->get_from_dataobjetct('codbanc');
+		$sql[]='SELECT codbanc AS cod_cli,banco AS nombre, tipo_op AS tipo_doc, numero, monto, concepto AS observa1 FROM bmov WHERE tipo_op='.$this->db->escape($tipo_op).'  AND numero='.$this->db->escape($numche).' AND codbanc='.$this->db->escape($codbanc);
+	}
 	
 	foreach($sql as $mSQL){
-		//$mSQL='SELECT cod_cli, nombre,tipo_doc, numero, monto, observa1 FROM smov WHERE transac='.$this->db->escape($transac).' ORDER BY num_ref,cod_cli';
 		$query = $this->db->query($mSQL);
 		if ($query->num_rows() > 0){
 			foreach ($query->result() as $row){

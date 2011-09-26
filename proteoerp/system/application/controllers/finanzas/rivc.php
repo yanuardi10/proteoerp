@@ -256,12 +256,12 @@ class rivc extends Controller {
 
 			$cod_cli  = $this->datasis->dameval("SELECT cod_cli FROM rivc WHERE id=".$this->db->escape($id));
 			$ttransac = $this->datasis->dameval("SELECT transac FROM rivc WHERE id=".$this->db->escape($id));
+			$comprob  = $this->datasis->dameval("SELECT CONCAT(periodo,nrocomp) AS val FROM rivc WHERE id=".$this->db->escape($id));
 			$totneto  = $this->datasis->dameval("SELECT SUM(monto*IF('ND',-1,1)) AS monto FROM smov WHERE transac='$ttransac' AND tipo_doc IN ('AN','ND') AND cod_cli=".$this->db->escape($cod_cli));
 			$itnumero = $this->datasis->dameval("SELECT nrocomp FROM rivc WHERE id=".$this->db->escape($id));
 			//$fecha    = $this->datasis->dameval("SELECT fecha   FROM rivc WHERE id=".$this->db->escape($id));
 			$nombre   = $this->datasis->dameval("SELECT nombre  FROM scli WHERE cliente=".$this->db->escape($cod_cli));
 			$usuario  = $this->session->userdata('usuario');
-
 
 			//Crea la ND al cliente con el monto de los anticipos
 			$mnumnd = $this->datasis->fprox_numero('ndcli');
@@ -277,7 +277,7 @@ class rivc extends Controller {
 			$data['vence']      = $fecha;
 			$data['tipo_ref']   = 'RT';
 			$data['num_ref']    = $itnumero;
-			$data['observa1']   = 'NOTA DEBITO A '.$cod_cli.' POR RET. '.$itnumero;
+			$data['observa1']   = 'REINTEGRO POR CAJA '.$codbanc.' NUMERO '.$numeroch;
 			$data['estampa']    = $estampa;
 			$data['hora']       = $hora;
 			$data['transac']    = $transac;
@@ -304,7 +304,8 @@ class rivc extends Controller {
 			$tipo1  = ($ttipo=='CAJ') ? 'D': 'C';
 			$negreso= $this->datasis->fprox_numero('negreso');
 			$credito= 0;
-			$causado='';
+			$causado= '';
+			$tipo_op= ($ttipo=='CAJ') ? 'ND': 'CH';
 
 			$data=array();
 			$data['codbanc']    = $codbanc;
@@ -312,14 +313,14 @@ class rivc extends Controller {
 			$data['numcuent']   = $datacar['numcuent'];
 			$data['banco']      = $datacar['banco'];
 			$data['saldo']      = $datacar['saldo'];
-			$data['tipo_op']    = ($ttipo=='CAJ') ? 'ND': 'CH';
+			$data['tipo_op']    = $tipo_op;
 			$data['numero']     = $numeroch;
 			$data['fecha']      = date('Y-m-d');
 			$data['clipro']     = 'P';
 			$data['codcp']      = 'REIVA';
 			$data['nombre']     = 'RETENCION DE IVA';
 			$data['monto']      = $totneto;
-			$data['concepto']   = 'PAGO DE RETENCIONES DE IVA '.$codbanc;
+			$data['concepto']   = 'REINTEGRO DE RETENCION DE IVA '.$comprob;
 			$data['benefi']     = $form->benefi->newValue;
 			$data['posdata']    = '';
 			$data['abanco']     = '';
@@ -341,6 +342,17 @@ class rivc extends Controller {
 			//if($ban==false){ memowrite($sql,'rivc'); $error++; }
 
 			$sql='UPDATE smov SET abonos=monto WHERE tipo_doc IN (\'AN\',\'ND\') AND transac='.$this->db->escape($ttransac);
+			$ban=$this->db->simple_query($sql);
+			if($ban==false){ memowrite($sql,'rivc'); $error++; }
+
+			$data = array('name' => $name, 'email' => $email, 'url' => $url);
+
+			$ddata=array(
+					'codbanc' => $codbanc,
+					'tipo_op' => $tipo_op,
+					'numche'  => $numeroch
+					);
+			$sql = $this->db->update_string('rivc', $ddata,'id='.$this->db->escape($id));
 			$ban=$this->db->simple_query($sql);
 			if($ban==false){ memowrite($sql,'rivc'); $error++; }
 
@@ -852,7 +864,6 @@ class rivc extends Controller {
 		$transac = $do->get('transac');
 		$estampa = $do->get('estampa');
 		$hora    = $do->get('hora');
-		$usuario = $do->get('usuario');
 		$cod_cli = $do->get('cod_cli');
 		$nombre  = $do->get('nombre');
 		$estampa = $do->get('estampa');
@@ -1095,6 +1106,10 @@ class rivc extends Controller {
 			`modificado` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 			`transac` varchar(8) DEFAULT NULL,
 			`origen` char(1) DEFAULT NULL,
+			`codbanc` char(2) DEFAULT NULL,
+			`tipo_op` char(2) DEFAULT NULL,
+			`numche` varchar(12) DEFAULT NULL,
+			`sprmreinte` varchar(8) DEFAULT NULL,
 			PRIMARY KEY (`id`),
 			UNIQUE KEY `nrocomp_clipro` (`nrocomp`,`cod_cli`),
 			KEY `modificado` (`modificado`)
