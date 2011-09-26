@@ -274,7 +274,7 @@ class rivc extends Controller {
 			$data['monto']      = $totneto;
 			$data['impuesto']   = 0;
 			$data['abonos']     = 0;
-			$data['vence']      = $fecha;
+			$data['vence']      = $estampa;
 			$data['tipo_ref']   = 'RT';
 			$data['num_ref']    = $itnumero;
 			$data['observa1']   = 'REINTEGRO POR CAJA '.$codbanc.' NUMERO '.$numeroch;
@@ -287,19 +287,51 @@ class rivc extends Controller {
 
 			$mSQL = $this->db->insert_string('smov', $data);
 			$ban=$this->db->simple_query($mSQL);
-			if($ban==false){ memowrite($mSQL,'RIVC'); }
-	
-			
+			if($ban==false){ memowrite($mSQL,'rivc'); }
+
+			$mSQL='SELECT cod_cli,nombre,dire1,dire2,tipo_doc,numero,fecha,monto,impuesto,abonos,vence,tipo_ref,num_ref,observa1,observa2,servicio,banco,tipo_op,fecha_op,num_op,ppago,reten,codigo,descrip,control,usuario,estampa,hora,transac,origen,cambio,mora,reteiva,vendedor,nfiscal,montasa,monredu,monadic,tasa,reducida,sobretasa,exento,fecdoc,nroriva,emiriva,codcp,depto,maqfiscal,ningreso,ncredito FROM smov WHERE tipo_doc IN (\'AN\',\'ND\') AND transac='.$this->db->escape($ttransac);
+			$query = $this->db->query($mSQL);
+			if ($query->num_rows() > 0){
+				foreach ($query->result() as $rrow){
+					//Relaciona la ND con los anticipos y notas de debito
+					$data=array();
+					$data['numccli']    = $rrow->numero;
+					$data['tipoccli']   = $rrow->tipo_doc;
+					$data['cod_cli']    = $rrow->cod_cli;
+					$data['tipo_doc']   = 'ND';
+					$data['numero']     = $mnumnd;;
+					$data['fecha']      = $estampa;
+					$data['monto']      = $rrow->monto;
+					$data['abono']      = $rrow->monto;
+					$data['ppago']      = 0;
+					$data['reten']      = 0;
+					$data['cambio']     = 0;
+					$data['mora']       = 0;
+					$data['transac']    = $transac;
+					$data['estampa']    = $estampa;
+					$data['hora']       = $hora;
+					$data['usuario']    = $usuario;
+					$data['reteiva']    = 0;
+					$data['nroriva']    = '';
+					$data['emiriva']    = '';
+					$data['recriva']    = '';
+		
+					$mSQL = $this->db->insert_string('itccli', $data);
+					$ban=$this->db->simple_query($mSQL);
+					if($ban==false){ memowrite($mSQL,'rivc');}
+				}
+			}//Fin de relacion 
+
 			$data=array();
 			$data['codbanc']    = $form->cargo->newValue;
 			$data['tipo_op']    = 'D';
 			$data['numche']     = $numeroch;
-			
+
 			$where=array('id'=>$id);
 
 			$mSQL = $this->db->update_string('rivc', $data,$where);
 			$ban=$this->db->simple_query($mSQL);
-			if($ban==false){ memowrite($mSQL,'RIVC'); }
+			if($ban==false){ memowrite($mSQL,'rivc'); }
 
 			$tipo1  = ($ttipo=='CAJ') ? 'D': 'C';
 			$negreso= $this->datasis->fprox_numero('negreso');
