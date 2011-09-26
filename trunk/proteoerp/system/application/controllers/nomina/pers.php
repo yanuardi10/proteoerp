@@ -10,6 +10,8 @@ class pers extends validaciones {
 	function index(){
 		$this->datasis->modulo_id(707,1);
 		redirect("nomina/pers/extgrid");
+		$mSQL = "CREATE TABLE IF NOT EXISTS `nedu` (`codigo` VARCHAR(4) NOT NULL DEFAULT '',`nivel` VARCHAR(40) NULL DEFAULT NULL, PRIMARY KEY (`codigo`))";
+		$this->db->simple_query($mSQL);
 	}
 
 	function extgrid(){
@@ -21,7 +23,6 @@ class pers extends validaciones {
 		//$data['content'] = '';
 		$this->load->view('extjs/pers',$data);
 	}
-
 
 	function filteredgrid(){
 		$this->rapyd->load("datafilter","datagrid");

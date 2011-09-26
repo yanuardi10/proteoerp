@@ -9,8 +9,8 @@ class Scst extends Controller {
 	}
 
 	function index(){
-		$this->db->query("DELETE FROM itscst WHERE control=(SELECT control FROM  scst a WHERE LENGTH(a.transac)=0 or a.transac is null)");
-		$this->db->query("DELETE FROM scst a WHERE LENGTH(a.transac)=0 or a.transac is null");
+		$this->db->simple_query("DELETE FROM itscst WHERE control IN (SELECT control FROM scst a WHERE LENGTH(a.transac)=0 or a.transac is null)");
+		$this->db->simple_query("DELETE FROM scst a WHERE LENGTH(a.transac)=0 or a.transac is null");
 		redirect('compras/scst/datafilter');
 	}
 
@@ -1223,10 +1223,10 @@ function scstserie(mcontrol){
 	function _pre_insert($do){
 		$control=$do->get('control');
 		$transac=$do->get('transac');
-		if(substr($control,7,1)=='_')
-			$control = $this->datasis->fprox_numero('nscst');
-		if(empty($transac))
-			$transac = $this->datasis->fprox_numero('ntransac');
+		
+		if(substr($control,7,1)=='_') $control = $this->datasis->fprox_numero('nscst');
+		if(empty($control)) $control = $this->datasis->fprox_numero('nscst');
+		if(empty($transac)) $transac = $this->datasis->fprox_numero('ntransac');
 		
 		$fecha   = $do->get('fecha');
 		$numero  = substr($do->get('serie'),-8);

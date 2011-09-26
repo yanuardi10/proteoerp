@@ -482,6 +482,11 @@ Ext.onReady(function() {
 	});
 */
 
+	Ext.create('Ext.tree.Panel', {
+		title: 'Simple Tree',
+		store: storeNoco
+	});
+
 	//Main Container
 	var main = Ext.create('Ext.container.Container', {
 		padding: '0 0 0 0',
@@ -503,16 +508,16 @@ Ext.onReady(function() {
 				layout: 'fit',
 				viewConfig: { forceFit: true },
 				flex: 1
-			}/*
+			}
 			,{
 				itemId: 'grid1',
 				xtype: 'wnoco',
 				title: 'Contratos',
 				width: '98%',
 				align: 'center',
-				flex: 9
-				//store: storeNoco
-			}*/
+				flex: 9,
+				store: storeNoco
+			}
 /*
 			,{
 				itemId: 'grid1',
