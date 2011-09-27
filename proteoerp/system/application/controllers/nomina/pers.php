@@ -1046,7 +1046,7 @@ Ext.onReady(function(){
 											title:'Fechas',
 											//defaults:{anchor:'-20'},
 											items: [
-												{ xtype: 'datefield', fieldLabel: 'Fecha de Ingreso',   labelWidth:120, name: 'ingreso', width:230, format: 'd/m/Y', submitFormat: 'Y-m-d' },
+												{ xtype: 'datefield', fieldLabel: 'Fecha de Ingreso',   labelWidth:120, name: 'ingreso', width:230, format: 'd/m/Y', submitFormat: 'Y-m-d', value: new Date() },
 												{ xtype: 'datefield', fieldLabel: 'Fecha Vencimiento',  labelWidth:120, name: 'vence',   width:230, format: 'd/m/Y', submitFormat: 'Y-m-d' },
 												{ xtype: 'datefield', fieldLabel: 'Fecha de Retiro',    labelWidth:120, name: 'retiro',  width:230, format: 'd/m/Y', submitFormat: 'Y-m-d' },
 											]

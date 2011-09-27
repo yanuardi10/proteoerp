@@ -25,7 +25,13 @@ class Datasis {
 			$row = $query->row_array();
 		return $row;
 	}
-	
+
+
+	function damereg($mSQL,$data=array()){
+		return $this->damerow($mSQL, $data );
+	}
+
+
 
 	// Tae valor de la table VALORES
 	function traevalor($nombre){

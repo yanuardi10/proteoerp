@@ -469,8 +469,8 @@ Ext.onReady(function() {
 			this.getSelectionModel().on('selectionchange', this.onSelectChange, this);
 		}
 	});
-/*
 
+/*
 	Ext.create('Ext.tree.Panel', {
 		title: 'Simple Tree',
 		alias: 'widget.wnoco',
@@ -482,10 +482,6 @@ Ext.onReady(function() {
 	});
 */
 
-	Ext.create('Ext.tree.Panel', {
-		title: 'Simple Tree',
-		store: storeNoco
-	});
 
 	//Main Container
 	var main = Ext.create('Ext.container.Container', {
