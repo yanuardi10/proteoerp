@@ -397,6 +397,21 @@ class rivc extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
+	function reversar($id){
+		$dbid=$this->db->escape($id);
+		$mSQL="SELECT SUM(monto-abonos) abonos
+		FROM  rivc a
+		JOIN itrivc b  ON a.id=b.idrivc
+		JOIN smov c ON b.transac=c.transac
+		WHERE a.id=$dbid AND c.tipo_doc='AN'";
+		$xabono=$this->datasis->dameval($mSQL);
+
+		if($xabono > 0 ){
+			
+		}
+
+	}
+
 	function chcaja($caja){
 		$tipo  = common::_traetipo($caja);
 		$status='';
@@ -648,26 +663,27 @@ class rivc extends Controller {
 		//****************************
 		//Fin del Detalle
 		//****************************
-		
-		//cheque qu pueda aparecer el boton
-		
-		$ide=$this->db->escape($edit->get_from_dataobjetct('id'));
-		$query="
-		SELECT SUM(monto-abonos) abonos
-		FROM  rivc a
-		JOIN itrivc b  ON a.id=b.idrivc
-		JOIN smov c ON b.transac=c.transac
-		WHERE a.id=$ide AND c.tipo_doc='AN'
-		";
-		$xabonar=$this->datasis->dameval($query);
-		
-		if($edit->_status=='show'){
+
+		if($edit->_status=='show' || $edit->_status=='delete'){
+			//chequea que pueda aparecer el boton
+			$ide=$this->db->escape($edit->get_from_dataobjetct('id'));
+			$query="SELECT SUM(monto-abonos) abonos
+			FROM  rivc a
+			JOIN itrivc b  ON a.id=b.idrivc
+			JOIN smov c ON b.transac=c.transac
+			WHERE a.id=$ide AND c.tipo_doc='AN'";
+			$xabonar=$this->datasis->dameval($query);
+
 			if($xabonar>0){
-				$action = "javascript:window.location='".site_url('finanzas/rivc/reintegrar/'.$edit->get_from_dataobjetct('id'))."'";
-				$edit->button('btn_reintegrar', 'Reintegrar', $action, 'TR');
-	
-				$action = "javascript:window.location='".site_url('finanzas/rivc/convcxp/'.$edit->get_from_dataobjetct('id'))."'";
-				$edit->button('btn_convcxp', 'Convertir a CxP', $action, 'TR');
+				if($edit->_status!='delete'){
+					$action = "javascript:window.location='".site_url('finanzas/rivc/reintegrar/'.$edit->get_from_dataobjetct('id'))."'";
+					$edit->button('btn_reintegrar', 'Reintegrar', $action, 'TR');
+
+					$action = "javascript:window.location='".site_url('finanzas/rivc/convcxp/'.$edit->get_from_dataobjetct('id'))."'";
+					$edit->button('btn_convcxp', 'Convertir a CxP', $action, 'TR');
+				}
+
+				$edit->buttons('delete');
 			}
 		}
 
@@ -887,7 +903,50 @@ class rivc extends Controller {
 	}
 
 	function _pre_delete($do){
-		return true;
+		$id=$do->get('id');
+		$cod_cli   = $do->get('cod_cli');
+		$transac   = $do->get('transac');
+		$dbcod_cli = $this->db->escape($cod_cli ); 
+		$dbid      = $this->db->escape($id);
+		$dbtransac = $this->db->escape($transac);
+
+		$mSQL="SELECT SUM(monto-abonos) abonos
+		FROM  rivc a
+		JOIN itrivc b  ON a.id=b.idrivc
+		JOIN smov c ON b.transac=c.transac
+		WHERE a.id=$dbid AND c.tipo_doc='AN'";
+		$xabono=$this->datasis->dameval($mSQL);
+
+		if($xabono > 0 ){
+			$rel='itrivc';
+			$cana = $do->count_rel($rel);
+			for($i = 0;$i < $cana;$i++){
+				$ittipo_doc  = $do->get_rel($rel, 'tipo_doc', $i);
+				$itnumero    = $do->get_rel($rel, 'numero'  , $i);
+				$itmonto     = $do->get_rel($rel, 'reiva'   , $i);
+
+				$dbitnumero  =$this->db->escape($itnumero);
+				$dbittipo_doc=$this->db->escape($ittipo_doc);
+
+				$mSQL = "UPDATE sfac SET reiva=0, creiva=NULL, freiva=NULL, ereiva=NULL WHERE numero=${dbitnumero} AND tipo_doc=${dbittipo_doc}";
+				$ban=$this->db->simple_query($mSQL);
+				if($ban==false){ memowrite($mSQL,'RIVC'); }
+
+				// Desabona la factura
+				$tiposfac = ($ittipo_doc=='D')? $tiposfac = 'NC':'FC';
+				$mSQL = "UPDATE smov SET abonos=abonos-$itmonto WHERE numero=${dbitnumero}  AND cod_cli=${dbcod_cli} AND tipo_doc='${tiposfac}'";
+				$ban=$this->db->simple_query($mSQL);
+				if($ban==false){ memowrite($mSQL,'rivc'); }
+				
+				//Eliminas los movimientos relacionados
+				$mSQL="DELETE FROM smov WHERE transac=${dbtransac}";
+				$ban=$this->db->simple_query($mSQL);
+				if($ban==false){ memowrite($mSQL,'rivc'); }
+			}
+
+			return true;
+		}
+		return false;
 	}
 
 	function _post_insert($do){
@@ -1008,7 +1067,7 @@ class rivc extends Controller {
 					$tiposfac = ($ittipo_doc=='D')? $tiposfac = 'NC':'FC';
 					$mSQL = "UPDATE smov SET abonos=abonos+$itmonto WHERE numero='$itnumero' AND cod_cli='$cod_cli' AND tipo_doc='$tiposfac'";
 					$ban=$this->db->simple_query($mSQL);
-					if($ban==false){ memowrite($mSQL,'RIVC'); }
+					if($ban==false){ memowrite($mSQL,'rivc'); }
 				}
 
 				$mnumnd = $this->datasis->fprox_numero('ndcli');
@@ -1103,8 +1162,11 @@ class rivc extends Controller {
 	}
 
 	function _post_delete($do){
+		$periodo = $do->get('periodo');
+		$nrocomp = $do->get('nrocomp');
+
 		$primary =implode(',',$do->pk);
-		logusu($do->table,"Elimino $this->tits $primary ");
+		logusu($do->table,"Elimino $this->tits $primary  ${periodo }${nrocomp}");
 	}
 
 	function instalar(){
