@@ -119,6 +119,39 @@ class rivc extends Controller {
 		$ban=$this->db->simple_query($mSQL);
 		if($ban==false){ memowrite($mSQL,'RIVC'); }
 
+		$mSQL='SELECT cod_cli,nombre,dire1,dire2,tipo_doc,numero,fecha,monto,impuesto,abonos,vence,tipo_ref,num_ref,observa1,observa2,servicio,banco,tipo_op,fecha_op,num_op,ppago,reten,codigo,descrip,control,usuario,estampa,hora,transac,origen,cambio,mora,reteiva,vendedor,nfiscal,montasa,monredu,monadic,tasa,reducida,sobretasa,exento,fecdoc,nroriva,emiriva,codcp,depto,maqfiscal,ningreso,ncredito FROM smov WHERE tipo_doc IN (\'AN\',\'ND\') AND transac='.$this->db->escape($ttransac);
+		$query = $this->db->query($mSQL);
+		if ($query->num_rows() > 0){
+			foreach ($query->result() as $rrow){
+				//Relaciona la ND con los anticipos y notas de debito
+				$data=array();
+				$data['numccli']    = $rrow->numero;
+				$data['tipoccli']   = $rrow->tipo_doc;
+				$data['cod_cli']    = $rrow->cod_cli;
+				$data['tipo_doc']   = 'ND';
+				$data['numero']     = $mnumnd;;
+				$data['fecha']      = $estampa;
+				$data['monto']      = $rrow->monto;
+				$data['abono']      = $rrow->monto;
+				$data['ppago']      = 0;
+				$data['reten']      = 0;
+				$data['cambio']     = 0;
+				$data['mora']       = 0;
+				$data['transac']    = $transac;
+				$data['estampa']    = $estampa;
+				$data['hora']       = $hora;
+				$data['usuario']    = $usuario;
+				$data['reteiva']    = 0;
+				$data['nroriva']    = '';
+				$data['emiriva']    = '';
+				$data['recriva']    = '';
+	
+				$mSQL = $this->db->insert_string('itccli', $data);
+				$ban=$this->db->simple_query($mSQL);
+				if($ban==false){ memowrite($mSQL,'rivc');}
+			}
+		} 
+
 		//Crea la cuenta por pagar
 		$causado = $this->datasis->fprox_numero('ncausado');
 		$error   = 0;
@@ -156,6 +189,39 @@ class rivc extends Controller {
 		$sql=$this->db->insert_string('sprm', $data);
 		$ban=$this->db->simple_query($sql);
 		if($ban==false){ memowrite($sql,'RIVC'); $error++;}
+
+		$mSQL='SELECT cod_cli,nombre,dire1,dire2,tipo_doc,numero,fecha,monto,impuesto,abonos,vence,tipo_ref,num_ref,observa1,observa2,servicio,banco,tipo_op,fecha_op,num_op,ppago,reten,codigo,descrip,control,usuario,estampa,hora,transac,origen,cambio,mora,reteiva,vendedor,nfiscal,montasa,monredu,monadic,tasa,reducida,sobretasa,exento,fecdoc,nroriva,emiriva,codcp,depto,maqfiscal,ningreso,ncredito FROM smov WHERE tipo_doc IN (\'AN\',\'ND\') AND transac='.$this->db->escape($ttransac);
+		$query = $this->db->query($mSQL);
+		if ($query->num_rows() > 0){
+			foreach ($query->result() as $rrow){
+				//Relaciona la ND con los anticipos y notas de debito
+				$data=array();
+				$data['numccli']    = $rrow->numero;
+				$data['tipoccli']   = $rrow->tipo_doc;
+				$data['cod_cli']    = $rrow->cod_cli;
+				$data['tipo_doc']   = 'ND';
+				$data['numero']     = $mnumnd;;
+				$data['fecha']      = $estampa;
+				$data['monto']      = $rrow->monto;
+				$data['abono']      = $rrow->monto;
+				$data['ppago']      = 0;
+				$data['reten']      = 0;
+				$data['cambio']     = 0;
+				$data['mora']       = 0;
+				$data['transac']    = $transac;
+				$data['estampa']    = $estampa;
+				$data['hora']       = $hora;
+				$data['usuario']    = $usuario;
+				$data['reteiva']    = 0;
+				$data['nroriva']    = '';
+				$data['emiriva']    = '';
+				$data['recriva']    = '';
+	
+				$mSQL = $this->db->insert_string('itccli', $data);
+				$ban=$this->db->simple_query($mSQL);
+				if($ban==false){ memowrite($mSQL,'rivc');}
+			}
+		} 
 
 		$sql='UPDATE smov SET abonos=monto WHERE tipo_doc IN (\'AN\',\'ND\') AND transac='.$this->db->escape($ttransac);
 		$ban=$this->db->simple_query($sql);
@@ -395,21 +461,6 @@ class rivc extends Controller {
 		$data['head']    = $this->rapyd->get_head().script('jquery.js');
 		$data['title']   = heading($this->titp);
 		$this->load->view('view_ventanas', $data);
-	}
-
-	function reversar($id){
-		$dbid=$this->db->escape($id);
-		$mSQL="SELECT SUM(monto-abonos) abonos
-		FROM  rivc a
-		JOIN itrivc b  ON a.id=b.idrivc
-		JOIN smov c ON b.transac=c.transac
-		WHERE a.id=$dbid AND c.tipo_doc='AN'";
-		$xabono=$this->datasis->dameval($mSQL);
-
-		if($xabono > 0 ){
-			
-		}
-
 	}
 
 	function chcaja($caja){
