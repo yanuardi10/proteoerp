@@ -597,7 +597,7 @@ class Libros extends Controller {
 		$mSQL="ALTER TABLE `siva` ADD `hora` TIME DEFAULT '0' NULL";
 		$this->db->simple_query($mSQL);
 
-		$mSQL="ALTER TABLE `siva` CHANGE `clipro` `clipro` VARCHAR(12) NULL";
+		$mSQL="ALTER TABLE `siva` CHANGE `numero` `numero` VARCHAR(12) NULL";
 		$this->db->simple_query($mSQL);
 
 		$mSQL="ALTER TABLE `siva` ADD `serial` CHAR(12) NULL";
