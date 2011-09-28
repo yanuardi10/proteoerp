@@ -103,7 +103,7 @@ class rivc extends Controller {
 		$data['fecha']      = $estampa;
 		$data['monto']      = $totneto;
 		$data['impuesto']   = 0;
-		$data['abonos']     = 0;
+		$data['abonos']     = $totneto;
 		$data['vence']      = $fecha;
 		$data['tipo_ref']   = 'RT';
 		$data['num_ref']    = $itnumero;
@@ -145,7 +145,7 @@ class rivc extends Controller {
 				$data['nroriva']    = '';
 				$data['emiriva']    = '';
 				$data['recriva']    = '';
-	
+
 				$mSQL = $this->db->insert_string('itccli', $data);
 				$ban=$this->db->simple_query($mSQL);
 				if($ban==false){ memowrite($mSQL,'rivc');}
@@ -216,7 +216,7 @@ class rivc extends Controller {
 				$data['nroriva']    = '';
 				$data['emiriva']    = '';
 				$data['recriva']    = '';
-	
+
 				$mSQL = $this->db->insert_string('itccli', $data);
 				$ban=$this->db->simple_query($mSQL);
 				if($ban==false){ memowrite($mSQL,'rivc');}
@@ -339,7 +339,7 @@ class rivc extends Controller {
 			$data['fecha']      = $estampa;
 			$data['monto']      = $totneto;
 			$data['impuesto']   = 0;
-			$data['abonos']     = 0;
+			$data['abonos']     = $totneto;
 			$data['vence']      = $estampa;
 			$data['tipo_ref']   = 'RT';
 			$data['num_ref']    = $itnumero;
@@ -381,7 +381,7 @@ class rivc extends Controller {
 					$data['nroriva']    = '';
 					$data['emiriva']    = '';
 					$data['recriva']    = '';
-		
+
 					$mSQL = $this->db->insert_string('itccli', $data);
 					$ban=$this->db->simple_query($mSQL);
 					if($ban==false){ memowrite($mSQL,'rivc');}
@@ -414,9 +414,9 @@ class rivc extends Controller {
 			$data['tipo_op']    = $tipo_op;
 			$data['numero']     = $numeroch;
 			$data['fecha']      = date('Y-m-d');
-			$data['clipro']     = 'P';
-			$data['codcp']      = 'REIVA';
-			$data['nombre']     = 'RETENCION DE IVA';
+			$data['clipro']     = 'C';
+			$data['codcp']      = $cod_cli;
+			$data['nombre']     = $nombre;
 			$data['monto']      = $totneto;
 			$data['concepto']   = 'REINTEGRO DE RETENCION DE IVA '.$comprob;
 			$data['benefi']     = $form->benefi->newValue;
@@ -1113,6 +1113,32 @@ class rivc extends Controller {
 					$mSQL = $this->db->insert_string('smov', $data);
 					$ban=$this->db->simple_query($mSQL);
 					if($ban==false){ memowrite($mSQL,'RIVC'); }
+
+					$data=array();
+					$data['numccli']    = $itnumero;
+					$data['tipoccli']   = ($ittipo_doc=='F')? 'FC' : 'DV';;
+					$data['cod_cli']    = $cod_cli;
+					$data['tipo_doc']   = 'NC';
+					$data['numero']     = $mnumnc;;
+					$data['fecha']      = $estampa;
+					$data['monto']      = $itmonto;
+					$data['abono']      = $itmonto;
+					$data['ppago']      = 0;
+					$data['reten']      = 0;
+					$data['cambio']     = 0;
+					$data['mora']       = 0;
+					$data['transac']    = $transac;
+					$data['estampa']    = $estampa;
+					$data['hora']       = $hora;
+					$data['usuario']    = $usuario;
+					$data['reteiva']    = 0;
+					$data['nroriva']    = '';
+					$data['emiriva']    = '';
+					$data['recriva']    = '';
+
+					$mSQL = $this->db->insert_string('itccli', $data);
+					$ban=$this->db->simple_query($mSQL);
+					if($ban==false){ memowrite($mSQL,'rivc');}
 
 					// Abona la factura
 					$tiposfac = ($ittipo_doc=='D')? $tiposfac = 'NC':'FC';
