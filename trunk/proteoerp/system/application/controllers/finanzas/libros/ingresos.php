@@ -94,7 +94,7 @@ class ingresos{
 				JOIN smov AS b ON a.transac=b.transac 
 				LEFT JOIN scli AS c ON a.cod_cli=c.cliente 
 				JOIN sfac AS d ON a.numero=d.numero AND d.tipo_doc='F'
-				WHERE  b.fecha<=$fhasta AND b.cod_cli='REIVA' 
+				WHERE b.cod_cli='REIVA' 
 					AND a.reteiva>0 
 					AND b.fecha BETWEEN $fdesde AND $fhasta AND a.nroriva IS NOT NULL
 				UNION 
@@ -107,7 +107,6 @@ class ingresos{
 		$query = $this->db->query($mSQL);
 
 		foreach ( $query->result() as $row ){
-			$mSQL = "SELECT monto-abonos FROM smov WHERE cod_cli='REIVA' AND transac='$row->transac'";
 			$mSQL = "INSERT INTO siva SET 
 					libro = 'V',
 					tipo  = 'CR',
