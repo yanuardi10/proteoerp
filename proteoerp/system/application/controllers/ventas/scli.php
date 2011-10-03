@@ -426,7 +426,6 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 
 		//$edit->tiva->rule='required|callback_chdfiscal';
 
-
 		$lriffis='<a href="javascript:consulrif(\'riffis\');" title="Consultar RIF en el SENIAT" onclick=""> SENIAT</a>';
 		$edit->riffis = new inputField('RIF F&iacute;scal', 'riffis');
 		$edit->riffis->size = 13;
