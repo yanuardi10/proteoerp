@@ -772,10 +772,19 @@ class ventas{
 
 				$ws->write_number( $mm,18, $row->reiva, $numero );		    // IVA RETENIDO
 				$ws->write_string( $mm,19, $row->comprobante, $cuerpo );	// NRO COMPROBANTE
-				if($row->tipo=='CR')
-					$ws->write_string( $mm,22, $row->afecta , $numero ); //NRO FACT AFECTA
-				else
-					$ws->write_string( $mm,22, $row->referen, $numero ); //NRO FACT AFECTA
+				if($row->tipo=='CR'){
+					if($fiscal)
+						$afecta=$this->datasis->dameval("SELECT nfiscal FROM sfac WHERE tipo_doc='F' AND numero=".$this->db->escape($row->afecta));
+					else
+						$afecta=$row->afecta;
+					$ws->write_string( $mm,22, $afecta , $numero ); //NRO FACT AFECTA
+				}else{
+					if($fiscal)
+						$afecta=$this->datasis->dameval("SELECT nfiscal FROM sfac WHERE tipo_doc='F' AND numero=".$this->db->escape($row->referen));
+					else
+						$afecta=$row->referen;
+					$ws->write_string( $mm,22, $afecta, $numero ); //NRO FACT AFECTA
+				}
 				$fecharece = '';
 				if ( !empty($row->fecharece) )
 					$fecharece = substr($row->fecharece,8,2)."/".substr($row->fecharece,5,2)."/".substr($row->fecharece,0,4);
