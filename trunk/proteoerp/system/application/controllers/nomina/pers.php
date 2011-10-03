@@ -9,9 +9,9 @@ class pers extends validaciones {
 
 	function index(){
 		$this->datasis->modulo_id(707,1);
-		redirect("nomina/pers/extgrid");
 		$mSQL = "CREATE TABLE IF NOT EXISTS `nedu` (`codigo` VARCHAR(4) NOT NULL DEFAULT '',`nivel` VARCHAR(40) NULL DEFAULT NULL, PRIMARY KEY (`codigo`))";
 		$this->db->simple_query($mSQL);
+		redirect("nomina/pers/extgrid");
 	}
 
 	function extgrid(){
@@ -866,12 +866,12 @@ var urlApp = '".base_url()."';
 // Define our data model
 var Empleados = Ext.regModel('Empleados', {
 	fields: ['id','codigo','nacional','cedula','nombre','apellido','civil','sexo', 'carnet', 'status', 'tipo' ,'contrato','ingreso','retiro','vence', 'direc1', 'direc2', 'direc3', 'telefono','sueldo','nacimi','vari1','vari2','vari3','vari4','vari5','vari6','divi','depto', 'sucursal','cargo','dialab','dialib','niveled','sso', 'profes','nomcont'],
-		validations: [
-			{ type: 'length', field: 'codigo',   min: 1 },
-			{ type: 'length', field: 'nacional', min: 1 }, 
-			{ type: 'length', field: 'cedula',   min: 6 }, 
-			{ type: 'length', field: 'nombre',   min: 3 }
-		],
+	validations: [
+		{ type: 'length', field: 'codigo',   min: 1 },
+		{ type: 'length', field: 'nacional', min: 1 }, 
+		{ type: 'length', field: 'cedula',   min: 6 }, 
+		{ type: 'length', field: 'nombre',   min: 3 }
+	],
 	proxy: {
 		type: 'ajax',
 		noCache: false,
@@ -888,13 +888,11 @@ var Empleados = Ext.regModel('Empleados', {
 			root: 'data',
 			messageProperty: 'message',
 			totalProperty: 'results'
-			//id: 'codigo'
 			},
 		writer: {
 			type: 'json',
 			root: 'data',
 			writeAllFields: true,
-			//id: 'codigo',
 			callback: function( op, suc ) {
 				Ext.Msg.Alert('que paso');
 				}
@@ -981,7 +979,7 @@ Ext.onReady(function(){
 				extend: 'Ext.form.Panel',
 				alias:  'widget.writerform',
 				result: function(res){
-					alert('Meco');
+					alert('Resultado');
 				},
 				requires: ['Ext.form.field.Text'],
 				initComponent: function(){
@@ -1117,7 +1115,7 @@ Ext.onReady(function(){
 						dockedItems: [
 							{ xtype: 'toolbar', dock: 'bottom', ui: 'footer', 
 							items: ['->', 
-								{ iconCls: 'icon-reset', itemId: 'close', text: 'Cerrar', scope: this, handler: this.onClose },
+								{ iconCls: 'icon-reset', itemId: 'close', text: 'Cerrar',  scope: this, handler: this.onClose },
 								{ iconCls: 'icon-save',  itemId: 'save',  text: 'Guardar',  disabled: false, scope: this, handler: this.onSave }
 							]
 						}]
