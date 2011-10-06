@@ -203,7 +203,7 @@ class Libros extends Controller {
 		$this->_telefono('ventassuper');
 		ventassuper::wlvexcelpdv($mes,'Q1');
 	}
-	
+
 	//libro de ventas con punto de ventas Segunda quincena
 	function wlvexcelpdvq2($mes=null){
 		if(!$this->_checkfecha($mes)) show_error('Parametro inv&aacute;lido');
@@ -236,6 +236,20 @@ class Libros extends Controller {
 		if(!$this->_checkfecha($mes)) show_error('Parametro inv&aacute;lido');
 		$this->_telefono('ventassuper');
 		ventassuper::wlvexcelpdvfiscal2($mes,$modalidad);
+	}
+
+	//Libro de ventas personalizado
+	function wlvpersonal($mes=null) {
+		if(!$this->_checkfecha($mes)) show_error('Parametro inv&aacute;lido');
+		$this->_telefono('personal');
+		personal::wlv($mes);
+	}
+
+	//Libro de ventas personalizado
+	function wlcpersonal($mes=null) {
+		if(!$this->_checkfecha($mes)) show_error('Parametro inv&aacute;lido');
+		$this->_telefono('personal');
+		personal::wlc($mes);
 	}
 
 	function prorrata($mes=null) {
@@ -621,7 +635,9 @@ class Libros extends Controller {
 		$data[]=array('metodo'=>'wlvexcelfiscal'     ,'activo'=>'S','tipo'=>'D' ,'nombre' => 'Libro de Ventas Agrupadas Fiscal');
 		$data[]=array('metodo'=>'wlvcierrez'         ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas basado en cierre Z');
 		$data[]=array('metodo'=>'wlvexcelsucu'       ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas por Sucursal');
+		$data[]=array('metodo'=>'wlvpersonal'        ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas Personalizado'   );
 		$data[]=array('metodo'=>'wlcexcel'           ,'activo'=>'S','tipo'=>'D' ,'nombre' => 'Libro de Compras'         );
+		$data[]=array('metodo'=>'wlcpersonal'        ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Compras Personalizado'   );
 		$data[]=array('metodo'=>'wlcsexcel'          ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Compras Supermercado');
 		$data[]=array('metodo'=>'wlvexcele'          ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas  ESPECIAL');
 		$data[]=array('metodo'=>'wlcexcele'          ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Compras ESPECIAL');
