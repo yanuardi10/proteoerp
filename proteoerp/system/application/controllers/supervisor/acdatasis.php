@@ -35,7 +35,7 @@ class acdatasis extends Controller {
 	
 		$filter = new DataFilter("Filtro de Busqueda");
 		$filter->db->select(array("b.modulo",'b.codigo',"a.usuario","a.usuario as value","a.acceso","b.titulo","b.ejecutar")); 
-		$filter->db->from("sida AS a");   
+		$filter->db->from("sida AS a");
 		$filter->db->join("tmenus AS b","a.modulo=b.codigo");
 		$filter->db->orderby("b.modulo");
 		
@@ -59,7 +59,7 @@ class acdatasis extends Controller {
      
       $usr=$filter->usuario->newValue;  
 			$mSQL="INSERT IGNORE INTO sida SELECT '$usr',b.codigo,'N'  FROM sida AS a RIGHT JOIN tmenus AS b ON a.modulo=b.codigo AND a.usuario='$usr' WHERE a.modulo IS NULL";
-			$this->db->simple_query($mSQL);
+			$this->db->query($mSQL);
 			$copiar=anchor("supervisor/acdatasis/copia/$usr/",'Copiar Acceso de otro Usuario');
 			
 			$grid = new Datagrid("Resultados");
