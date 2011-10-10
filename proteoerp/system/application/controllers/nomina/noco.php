@@ -367,6 +367,7 @@ class Noco extends Controller {
 	function eliminarnoco(){
 		$js= file_get_contents('php://input');
 		$data= json_decode($js,true);
+		//print_r($data);
 		$campos = $data;
 		$codigo = $data['codigo'];
 		$pers   = $this->datasis->dameval("SELECT COUNT(*) FROM pers   WHERE contrato='$codigo'");
@@ -382,6 +383,7 @@ class Noco extends Controller {
 		} else {
 			echo "{ success: false, message: 'Contrato con Movimiento!!'}";
 		}
+		//echo "{ success: false, message: 'Contrato con Movimiento!!'}";
 	}
 
 
@@ -489,8 +491,15 @@ var ConcCol =
 		{ header: 'Grupo',         width:  60, sortable: true, dataIndex: 'grupo',    field:  { type: 'textfield' }, filter: { type: 'string'  } }
 	];
 
-
 Ext.onReady(function(){
+	// Un poco de hackeo para asinar los textos...
+	if (Ext.MessageBox) {
+		var mb = Ext.MessageBox;
+		mb.bottomTb.items.each(function(b) {
+		b.setText(mb.buttonText[b.itemId]);
+		});
+	}  
+
 	/////////////////////////////////////////////////
 	// Define los data model
 	// Contratos
@@ -605,12 +614,41 @@ Ext.onReady(function(){
 				text: 'Eliminar',
 				iconCls: 'icon-delete',
 				handler: function() {
+/*
 					var sm = gridNoco.getSelectionModel();
 					rowEditing.cancelEdit();
+					Ext.Ajax.request({
+						scope: this,
+						url: '".base_url()."nomina/noco/eliminarnoco',
+						params: { codigo: codigoactual },
+						success: function () {
+							//storeNoco.on('load', function () {
+							//	gridNoco.getView().refresh();
+							//}, this);
+							//storeNoco.load();
+							if ( storeNoco.getCount() > 0) {
+								sm.select(0);
+							};
+							alert('exito');
+							storeNoco.remove(sm.getSelection());
+						},
+						failure: function () {
+							Ext.MessageBox.show({
+								title: deleteFailedTitle,
+								msg: deleteFailedMessage,
+								buttons: Ext.MessageBox.OK
+							});
+						}
+					});
+				},
+*/
+					var sm = gridNoco.getSelectionModel();
+					rowEditing.cancelEdit();
+
 					storeNoco.remove(sm.getSelection());
-					if (storeNoco.getCount() > 0) {
+					if ( storeNoco.getCount() > 0) {
 						sm.select(0);
-					}
+					};
 				},
 				disabled: true
 			}
@@ -618,10 +656,12 @@ Ext.onReady(function(){
 		plugins: [rowEditing],
 			listeners: {
 				'selectionchange': function(view, records) {
-					storeItNoco.load({ params: { codigo: records[0].data.codigo }});
-					storeConc.load({ params: { codigo: records[0].data.codigo }});
-					gridNoco.down('#eliminar').setDisabled(!records.length);
-					codigoactual = records[0].data.codigo;
+					if ( records[0] ){
+						storeItNoco.load({ params: { codigo: records[0].data.codigo }});
+						storeConc.load({ params: { codigo: records[0].data.codigo }});
+						gridNoco.down('#eliminar').setDisabled(!records.length);
+						codigoactual = records[0].data.codigo;
+					}
 				}
 			}
 	});
@@ -672,6 +712,9 @@ Ext.onReady(function(){
 	var boton = Ext.create('Ext.Button',
 		{
 		text: 'Guardar',
+		autoWidth: false,
+		width: 85,
+		scale: 'large',
 		handler: function() {
 			var resultado = [];
 			resultado.push(codigoactual);
@@ -684,7 +727,7 @@ Ext.onReady(function(){
 					params: Ext.encode(resultado) 
 				});				
 			}
-			alert('resultado '+resultado);
+			//alert('resultado '+resultado);
 		}
 	});
 
@@ -732,8 +775,12 @@ Ext.onReady(function(){
 						//id:'areaConc',
 						region: 'center',
 						//html: 'Pasa'
+						//layout: fit,
 						xtype: 'panel',
-						items: [ boton ]
+						items: [
+							{ html: '<p>Arrastre los conceptos de las grillas y luego presione el boton guardar</p>'},
+							boton
+						]
 					},
 					{
 						//title: 'Detalle ',
@@ -761,11 +808,12 @@ Ext.onReady(function(){
 			}
 		]
 	});
+
 	storeNoco.load();
 	storeItNoco.load();
 	storeConc.load();
-});
 
+});
 </script>
 ";
 		return $script;	
