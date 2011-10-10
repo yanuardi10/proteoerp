@@ -91,7 +91,7 @@ class Reportes extends Controller
 			$grid1->db->select("a.titulo, a.mensaje, a.nombre");
 			$grid1->db->from("intrarepo a" );
 			$grid1->db->join("tmenus    b","CONCAT(a.modulo,'LIS')=b.modulo AND b.ejecutar LIKE CONCAT('%',a.nombre,'%') ","left");
-			$grid1->db->where("b.codigo IS NULL");
+			//$grid1->db->where("b.codigo IS NULL");
 			$grid1->db->where("a.modulo",$repo );
 			$grid->db->where("a.activo","S");
 			$grid1->db->orderby("a.titulo");
