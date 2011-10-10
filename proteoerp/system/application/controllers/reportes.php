@@ -70,8 +70,8 @@ class Reportes extends Controller
 			$grid->db->from("tmenus    a" );
 			$grid->db->join("sida      b","a.codigo=b.modulo");
 			$grid->db->join("reportes  d","REPLACE(MID(a.ejecutar,10,30),"."'".'")'."','')=d.nombre");
-//			$grid->db->where('b.acceso','S');
-			//$grid->db->where('b.usuario',$this->session->userdata('usuario') );
+			$grid->db->where('b.acceso','S');
+			$grid->db->where('b.usuario',$this->session->userdata('usuario') );
 			$grid->db->like("a.ejecutar","REPOSQL", "after");
 			$grid->db->where('a.modulo',$repo."LIS");
 			$grid->db->orderby("a.secu");
