@@ -34,7 +34,7 @@ class acdatasis extends Controller {
 		}
 	
 		$filter = new DataFilter("Filtro de Busqueda");
-		$filter->db->select(array("b.modulo",'b.codigo',"a.usuario","a.usuario as value","a.acceso","b.titulo")); 
+		$filter->db->select(array("b.modulo",'b.codigo',"a.usuario","a.usuario as value","a.acceso","b.titulo","b.ejecutar")); 
 		$filter->db->from("sida AS a");   
 		$filter->db->join("tmenus AS b","a.modulo=b.codigo");
 		$filter->db->orderby("b.modulo");
@@ -70,6 +70,7 @@ class acdatasis extends Controller {
 			$grid->column("M&oacute;dulo","modulo");
 			$grid->column("Nombre","titulo");
 		  $grid->column("Acceso", "<ractivo><#acceso#>|<#codigo#>|</ractivo>",'align="center"');
+		  $grid->column("Ejecutar","ejecutar");
 			$grid->build(); 			
 			$tabla=$copiar.$grid->output;
 			//echo $grid->db->last_query();
