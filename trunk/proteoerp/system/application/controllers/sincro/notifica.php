@@ -533,7 +533,7 @@ class notifica extends controller {
 		`nombre` varchar(100) NOT NULL,
 		`comenta` varchar(100) NOT NULL COMMENT 'Comentario del evento',
 		`fechahora` datetime NOT NULL,
-		`activador` tinytext NOT NULL COMMENT 'Funcion a evaluar, si devuelve verdadero se dispara',
+		`activador` text NOT NULL COMMENT 'Funcion a evaluar, si devuelve verdadero se dispara',
 		`concurrencia` char(1) NOT NULL COMMENT 'S semanal, D diario, H cada hora,',
 		`para` tinytext NOT NULL COMMENT 'a quienes se les notifica',
 		`accion` text NOT NULL,
