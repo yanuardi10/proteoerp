@@ -82,8 +82,8 @@ class Analisis extends Controller {
 		$grid->db->where("f.tipo_doc <>",'X');
 		$grid->db->groupby('EXTRACT(YEAR_MONTH FROM f.fecha)');
 		$grid->build();
-		echo  $grid->db->last_query();
-     
+		//echo  $grid->db->last_query();
+
 		$data['content'] = $filter->output.'<div style="overflow: auto; width: 100%;">'.$grid->output.'</div>';
 		$data['title']   = "<h1>An&aacute;lisis de ventas</h1>";
 		$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();

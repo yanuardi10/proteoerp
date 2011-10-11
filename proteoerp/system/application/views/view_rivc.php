@@ -238,6 +238,9 @@ function autocod(id){
 							</tr><tr>
 								<td class="littletablerowth"><?php echo $form->nombre->label  ?></td>
 								<td class="littletablerow">  <b id='nombre_val'><?php echo $form->nombre->value ?></b><?php echo $form->nombre->output ?></td>
+							</tr><tr>
+								<td class="littletablerowth"><?php echo $form->reintegro->label  ?></td>
+								<td class="littletablerow">  <?php echo $form->reintegro->output ?></td>
 							</tr>
 						</table>
 					</fieldset>
