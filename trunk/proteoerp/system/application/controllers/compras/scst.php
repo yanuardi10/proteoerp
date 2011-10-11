@@ -54,6 +54,13 @@ class Scst extends Controller {
 		$filter->fechah->group='Fecha Emisi&oacute;n';
 		$filter->fechad->group='Fecha Emisi&oacute;n';
 
+		$filter->tipo = new dropdownField('Tipo Doc.', 'tipo_doc');
+		$filter->tipo->option('','Todos');
+		$filter->tipo->option('FC','Factura a Cr&eacute;dito');
+		$filter->tipo->option('NC','Nota de Cr&eacute;dito');
+		$filter->tipo->option('NE','Nota de Entrega');
+		$filter->tipo->style='width:140px;';
+
 		$filter->numero = new inputField('Factura', 'numero');
 		$filter->numero->size=20;
 
@@ -65,7 +72,7 @@ class Scst extends Controller {
 		$filter->buttons('reset','search');
 		$filter->build('dataformfiltro');
 
-		$uri  = anchor('compras/scst/dataedit/show/<#control#>','<#numero#>');
+		$uri  = anchor('compras/scst/dataedit/show/<#control#>','<#tipo_doc#><#numero#>');
 		$uri2 = anchor_popup('formatos/verhtml/COMPRA/<#control#>','Ver HTML',$atts);
 		$uri3 = anchor_popup('compras/scst/dataedit/show/<#control#>','<#serie#>',$atts);
 
@@ -103,9 +110,9 @@ class Scst extends Controller {
 		$grid->column_orderby('Ret.IVA' ,'<nformat><#reteiva#></nformat>','reteiva','align=\'right\'');
 		$grid->column_orderby('Control','control','control');
 		$grid->column_orderby('Usuario','usuario','usuario');
-//		$grid->column('Vista',$uri2,'align=\'center\'');
+		//$grid->column('Vista',$uri2,'align=\'center\'');
 
-		$grid->add("compras/scst/dataedit/create");
+		$grid->add('compras/scst/dataedit/create');
 		$grid->build('datagridST');
 
 //************ SUPER TABLE ************* 
@@ -122,8 +129,7 @@ class Scst extends Controller {
 	});
 })();
 //]]>
-</script>
-';
+</script>';
 		$style ='
 <style type="text/css">
 .fakeContainer { /* The parent container */
@@ -134,8 +140,7 @@ class Scst extends Controller {
     height: 320px; /* Required to set */
     overflow: hidden; /* Required to set */
 }
-</style>	
-';
+</style>';
 //****************************************
 
 $script ='
@@ -160,15 +165,14 @@ function scstserie(mcontrol){
 
 		$data['style']   = $style;
 		$data['style']  .= style('superTables.css');
-		$data['style']	.= style("jquery.alerts.css");
+		$data['style']  .= style('jquery.alerts.css');
 
-		$data['extras']  = $extras;		
+		$data['extras']  = $extras;
 
 		$data['script']  = script('jquery.js');
-		$data["script"] .= script("jquery.alerts.js");
-		$data["script"] .= script('superTables.js');
-		$data["script"] .= $script;
-		
+		$data['script'] .= script('jquery.alerts.js');
+		$data['script'] .= script('superTables.js');
+		$data['script'] .= $script;
 
 		$data['content'] = $grid->output;
 		$data['filtro']  = $filter->output;
