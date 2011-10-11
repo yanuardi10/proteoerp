@@ -550,9 +550,9 @@ class rivc extends Controller {
 		$edit->rif->maxlength =14;
 		$edit->rif->autocomplete = false;
 
-		/*$edit->reintegro = new radiogroupField('Operaci&oacute;n', 'reintegro', array('R'=>'Reintegrar','A'=>'Crear anticipo','P'=>'Crear CxP'));
+		$edit->reintegro = new radiogroupField('Operaci&oacute;n', 'reintegro', array('R'=>'Reintegrar','A'=>'Crear anticipo','P'=>'Crear CxP'));
 		$edit->reintegro->insertValue='A';
-		$edit->reintegro->rule='required';*/
+		$edit->reintegro->rule='required';
 
 		$edit->exento = new inputField('Monto Exento','exento');
 		$edit->exento->rule='max_length[15]|numeric';
@@ -1285,6 +1285,11 @@ class rivc extends Controller {
 			UNIQUE KEY `nrocomp_clipro` (`nrocomp`,`cod_cli`),
 			KEY `modificado` (`modificado`)
 			) ENGINE=MyISAM DEFAULT CHARSET=latin1 ROW_FORMAT=FIXED";
+			$this->db->simple_query($mSQL);
+		}
+
+		if (!$this->db->field_exists('operacion', 'rivc')){
+			$mSQL="ALTER TABLE rivc ADD COLUMN operacion CHAR(1) NOT NULL AFTER sprmreinte";
 			$this->db->simple_query($mSQL);
 		}
 
