@@ -812,6 +812,12 @@ script;
 		}
 	}
 
+//****************************************************************8
+//
+//
+//
+//****************************************************************8
+
 	function persextjs(){
 
 		$encabeza='<table width="100%" bgcolor="#2067B5"><tr><td align="left" width="100px"><img src="'.base_url().'assets/default/css/templete_01.jpg" width="120"></td><td align="center"><h1 style="font-size: 20px; color: rgb(255, 255, 255);" onclick="history.back()">TRABAJADORES</h1></td><td align="right" width="100px"><img src="'.base_url().'assets/default/images/cerrar.png" alt="Cerrar Ventana" title="Cerrar Ventana" onclick="parent.window.close()" width="25"></td></tr></table>';
@@ -1203,8 +1209,6 @@ Ext.onReady(function(){
 		extend: 'Ext.grid.Panel',
 		alias: 'widget.writergrid',
 		store: storePers,
-		//selType: 'cellmodel',
-		//plugins: [Ext.create('Ext.grid.plugin.CellEditing', { clicksToEdit: 2 } )],
 		initComponent: function(){
 			Ext.apply(this, {
 				iconCls: 'icon-grid',
@@ -1259,7 +1263,6 @@ Ext.onReady(function(){
 				icon: Ext.MessageBox.QUESTION 
 			});  
 		},
-	
 		onAddClick: function(){
 			registro = null;
 			showContactForm();
@@ -1267,6 +1270,9 @@ Ext.onReady(function(){
 		}
 	});
 
+
+
+/*
 	//Main Container
 	var main = Ext.create('Ext.container.Container', {
 		padding: '0 0 0 0',
@@ -1300,8 +1306,44 @@ Ext.onReady(function(){
 			}]
 	});
 	Ext.EventManager.onWindowResize(main.doLayout, main);
-	storePers.load({ params: { start:0, limit: 30}});
+	*/
 
+
+	Ext.create('Ext.Viewport', {
+		layout: {type: 'border',padding: 5},
+		defaults: { split: true	},
+		items: [
+			{
+				region: 'north',
+				preventHeader: true,
+				height: 40,
+				minHeight: 40,
+				html: '".$encabeza."'
+			},{
+				region: 'center',
+				itemId: 'grid',
+				xtype: 'writergrid',
+				title: 'Trabajadores',
+				width: '98%',
+				align: 'center',
+				//flex: 9,
+				//store: storePers
+
+
+
+				//layout: 'border',
+				//border: false,
+				//items: PersGrid
+				//html: 'meco'
+			}
+		]
+	});
+
+
+
+
+
+	storePers.load({ params: { start:0, limit: 30}});
 });
 
 </script>

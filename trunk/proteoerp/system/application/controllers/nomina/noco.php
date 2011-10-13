@@ -615,7 +615,6 @@ Ext.onReady(function(){
 				iconCls: 'icon-delete',
 				handler: function() {
 /*
-					var sm = gridNoco.getSelectionModel();
 					rowEditing.cancelEdit();
 					Ext.Ajax.request({
 						scope: this,

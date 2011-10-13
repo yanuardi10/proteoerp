@@ -70,11 +70,11 @@ class Depa extends Controller {
 		$depto=array(
 	  'tabla'   =>'dept',
 	  'columnas'=>array(
-		'codigo' =>'C&oacute;digo de Enlase',
+		'codigo' =>'C&oacute;digo de Enlace',
 		'departam' =>'Descripcion'),
-	  'filtro'  =>array('division'=>'C&oacute;digo de Enlase','departam'=>'Descripcion'),
-	  'retornar'=>array('codigo'=>'enlase'),
-	  'titulo'  =>'Buscar Enlase');
+	  'filtro'  =>array('division'=>'C&oacute;digo de Enlace','departam'=>'Descripcion'),
+	  'retornar'=>array('codigo'=>'enlace'),
+	  'titulo'  =>'Buscar Enlace');
 		
 		$boton1=$this->datasis->modbus($depto);
 	
@@ -101,10 +101,10 @@ class Depa extends Controller {
 		$edit->depadesc->size =35;
 		$edit->depadesc->rule="strtoupper|required";
 		
-		$edit->enlase =  new inputField("Enlase","enlase");
-		$edit->enlase->maxlength=3;
-		$edit->enlase->size=5;
-		$edit->enlase->append($boton1);	
+		$edit->enlace =  new inputField("Enlace","enlace");
+		$edit->enlace->maxlength=3;
+		$edit->enlace->size=5;
+		$edit->enlace->append($boton1);	
 		
 		$edit->buttons("modify", "save", "undo", "delete", "back");
 		$edit->build();
