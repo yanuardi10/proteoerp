@@ -239,8 +239,8 @@ function autocod(id){
 								<td class="littletablerowth"><?php echo $form->nombre->label  ?></td>
 								<td class="littletablerow">  <b id='nombre_val'><?php echo $form->nombre->value ?></b><?php echo $form->nombre->output ?></td>
 							</tr><tr>
-								<td class="littletablerowth"><?php echo $form->reintegro->label  ?></td>
-								<td class="littletablerow">  <?php echo $form->reintegro->output ?></td>
+								<td class="littletablerowth"><?php echo $form->operacion->label  ?></td>
+								<td class="littletablerow">  <?php echo $form->operacion->output ?></td>
 							</tr>
 						</table>
 					</fieldset>
@@ -308,12 +308,19 @@ function autocod(id){
 <table  width="100%" style="margin:0;width:100%;" > 
 	<tr>
 		<td colspan=10 class="littletableheader">Totales</td>      
-	</tr>
-	<tr>
+	</tr><tr>
+		<td class="littletablerowth" align='left' ><?php echo $form->codbanc->label;   ?></td>
+		<td class="littletablerow"   align='left' ><?php echo $form->codbanc->output;  ?></td>
 		<td class="littletablerowth" align='right'><?php echo $form->gtotal->label;    ?></td>
 		<td class="littletablerow"   align='right'><b id='gtotal_val'><?php echo nformat($form->gtotal->value);     ?></b><?php echo $form->gtotal->output;   ?></td>
+	</tr><tr>
+		<td class="littletablerowth" align='left' ><?php echo $form->cajero->label;    ?></td>
+		<td class="littletablerow"   align='left' ><?php echo $form->cajero->output;   ?></td>
 		<td class="littletablerowth" align='right'><?php echo $form->impuesto->label;  ?></td>
 		<td class="littletablerow"   align='right'><b id='impuesto_val'><?php echo nformat($form->impuesto->value); ?></b><?php echo $form->impuesto->output; ?></td>
+	</tr><tr>
+		<td class="littletablerowth" align='left' ><?php echo $form->clave->label; ?></td>
+		<td class="littletablerow"   align='left' ><?php echo $form->clave->output;?></td>
 		<td class="littletablerowth" align='right'><?php echo $form->reiva->label; ?></td>
 		<td class="littletablerow"   align='right'><b id='reiva_val'><?php echo nformat($form->reiva->value);       ?></b><?php echo $form->reiva->output;    ?></td>
 	</tr>
