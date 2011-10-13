@@ -187,8 +187,11 @@ function post_modbus_scli(){
 		if(pos>0){
 			ind = this.name.substring(pos+1);
 			id  = Number(ind);
-			this.selectedIndex=tipo;
-			importe(id);
+			tipo=$('#sinvtipo_'+ind).val();
+			if(tipo!='Servicio'){
+				this.selectedIndex=tipo;
+				importe(id);
+			}
 		}
 	});
 	totalizar();
@@ -454,7 +457,13 @@ function del_itspre(id){
 
 			<tr id='tr_itspre_<?php echo $i; ?>'>
 				<td class="littletablerow" align="left" ><?php echo $form->$it_codigo->output; ?></td>
-				<td class="littletablerow" align="left" ><?php echo $form->$it_desca->output.$form->$it_detalle->output;  ?></td>
+				<td class="littletablerow" align="left" ><?php
+					if($form->_status=='show' && strlen($form->$it_detalle->value)>0){
+						echo $form->$it_detalle->value;
+					}else{
+						echo $form->$it_desca->output.$form->$it_detalle->output;
+					}
+				?></td>
 				<td class="littletablerow" align="right"><?php echo $form->$it_cana->output;   ?></td>
 				<td class="littletablerow" align="right"><?php echo $form->$it_preca->output;  ?></td>
 				<td class="littletablerow" align="right"><?php echo $form->$it_importe->output.$pprecios;?></td>

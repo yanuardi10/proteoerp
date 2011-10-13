@@ -13,6 +13,7 @@ class notifica extends controller {
 		$this->error='';
 		$this->adjuntos=null;
 		$this->msj='';
+		$this->instalar();
 	}
 
 	function index(){
@@ -181,7 +182,7 @@ class notifica extends controller {
 			$mSQL='SELECT *,UNIX_TIMESTAMP(`disparo`) AS utime FROM eventos WHERE activo="S"';
 			$query = $this->db->query($mSQL);
 			$time=time();
-			$not=0;
+			$not  =0;
 
 			if ($query->num_rows() > 0){
 				foreach ($query->result() as $__row){
@@ -203,10 +204,10 @@ class notifica extends controller {
 					}
 
 					if($time-$__row->utime>=$tt){
+						$error=0;
 						$pte=explode(' ',$__row->fechahora);
 						$pte=explode(':',$pte[1]);
 						$updfecha=$this->db->escape(date('Y-m-d H:i:s',mktime($pte[0], $pte[1], $pte[2])));
-						$this->db->simple_query("UPDATE eventos SET disparo=$updfecha WHERE id=".$__row->id);
 
 						$activa=$this->meval($__row->activador);
 						if($activa){
@@ -220,23 +221,36 @@ class notifica extends controller {
 									$rt=$this->_enviar($telef[0],$telef[1],$msj);
 									if(!$rt){
 										echo "Error enviando mensaje al telefono $telef[0]-$telef[1] \n";
+										$error++;
 									}
 								}
 							}
 
 							preg_match_all("/(?<para>[\w-\.]+@([\w-]+\.)+[\w-]{2,4})/" ,$__row->para,$matches);
 							$correos  = $matches['para'];
+
 							$titulo=$this->datasis->traevalor('TITULO1');
 							if(count($correos)>0){
 								foreach($correos AS $correo){
 									$rt=$this->_mail($correo,'Notificacion ProteoERP::'.$titulo,$msj);
 									if(!$rt){
 										echo $this->error."Error enviando correo $correo \n";
+										$error++;
 									}
 								}
 							}
-							$not++;
+
+							if($error==0){
+								$not++;
+								if(!empty($__row->postaccion)){
+									$prt=$this->meval($__row->postaccion);
+								}
+							}
 							//echo $msj.' '.strlen($msj);
+						}
+
+						if($error==0){
+							$this->db->simple_query("UPDATE eventos SET disparo=$updfecha WHERE id=".$__row->id);
 						}
 					}
 				}
@@ -290,7 +304,7 @@ class notifica extends controller {
 
 		$edit->activador = new textareaField('Funcion activadora','activador');
 		$edit->activador->cols = 70;
-		$edit->activador->rows = 4;
+		$edit->activador->rows = 6;
 
 		$edit->para = new textareaField('Destinatarios','para');
 		$edit->para->cols = 70;
@@ -301,10 +315,14 @@ class notifica extends controller {
 		$edit->accion->cols = 70;
 		$edit->accion->rows = 8;
 
+		$edit->postaccion = new textareaField('Post- Acci&oacute;n','postaccion');
+		$edit->postaccion->cols = 70;
+		$edit->postaccion->rows = 5;
+
 		$edit->disparo = new dateField('Fecha de la &uacute;ltima ejecuci&oacute;n','disparo','d/m/Y H:i:s');
 		$edit->disparo->rule = 'chfecha|max_length[19]';
 		$edit->disparo->size = 20;
-		$edit->disparo->insertValue=date("Y-m-d H:i:s");
+		$edit->disparo->insertValue=date('Y-m-d H:i:s');
 		$edit->disparo->calendar  = false;
 		$edit->disparo->maxlength = 19;
 		$edit->disparo->autocomplete=false;
@@ -435,7 +453,7 @@ class notifica extends controller {
 	}
 
 	function _mail($to,$subject,$body){
-		if(!@require_once 'Mail.php'){
+		if(!@include_once 'Mail.php'){
 			$this->error='Problemas al cargar la clase Mail, probablemente sea necesario instalarla desde PEAR, comuniquese con soporte t&eacute;cnico';
 			return false;
 		}
@@ -493,7 +511,6 @@ class notifica extends controller {
 		}
 	}
 
-
 	function _traermonventas($id=null){
 		if(is_null($id)) return null; else $id=$this->db->escape($id);
 
@@ -526,24 +543,30 @@ class notifica extends controller {
 		return null;
 	}
 
-
 	function instalar(){
-		$mSQL="CREATE TABLE `eventos` (
-		`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-		`nombre` varchar(100) NOT NULL,
-		`comenta` varchar(100) NOT NULL COMMENT 'Comentario del evento',
-		`fechahora` datetime NOT NULL,
-		`activador` text NOT NULL COMMENT 'Funcion a evaluar, si devuelve verdadero se dispara',
-		`concurrencia` char(1) NOT NULL COMMENT 'S semanal, D diario, H cada hora,',
-		`para` tinytext NOT NULL COMMENT 'a quienes se les notifica',
-		`accion` text NOT NULL,
-		`disparo` datetime NOT NULL,
-		`activo` char(1) NOT NULL DEFAULT 'N',
-		`usuario` varbinary(10) NOT NULL,
-		`estampa` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-		PRIMARY KEY (`id`),
-		UNIQUE KEY `nombre` (`nombre`)
-		) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=latin1 COMMENT='Tabla que guarda las acciones por eventos'";
-		$this->db->simple_query($mSQL);
+		if (!$this->db->table_exists('eventos')) {
+			$mSQL="CREATE TABLE `eventos` (
+			`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+			`nombre` varchar(100) NOT NULL,
+			`comenta` varchar(100) NOT NULL COMMENT 'Comentario del evento',
+			`fechahora` datetime NOT NULL,
+			`activador` text NOT NULL COMMENT 'Funcion a evaluar, si devuelve verdadero se dispara',
+			`concurrencia` char(1) NOT NULL COMMENT 'S semanal, D diario, H cada hora,',
+			`para` tinytext NOT NULL COMMENT 'a quienes se les notifica',
+			`accion` text NOT NULL,
+			`disparo` datetime NOT NULL,
+			`activo` char(1) NOT NULL DEFAULT 'N',
+			`usuario` varbinary(10) NOT NULL,
+			`estampa` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (`id`),
+			UNIQUE KEY `nombre` (`nombre`)
+			) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=latin1 COMMENT='Tabla que guarda las acciones por eventos'";
+			$this->db->simple_query($mSQL);
+		}
+
+		if(!$this->db->field_exists('postaccion', 'eventos')){
+			$mSQL="ALTER TABLE eventos ADD COLUMN postaccion TEXT NOT NULL AFTER accion";
+			$this->db->simple_query($mSQL);
+		}
 	}
 }
