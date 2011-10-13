@@ -437,7 +437,7 @@ class rivc extends Controller {
 
 			$sql='CALL sp_actusal('.$this->db->escape($codbanc).",'$sp_fecha',-$totneto)";
 			$ban=$this->db->simple_query($sql);
-			//if($ban==false){ memowrite($sql,'rivc'); $error++; }
+			if($ban==false){ memowrite($sql,'rivc'); $error++; }
 
 			$sql='UPDATE smov SET abonos=monto WHERE tipo_doc IN (\'AN\',\'ND\') AND transac='.$this->db->escape($ttransac);
 			$ban=$this->db->simple_query($sql);
@@ -685,7 +685,7 @@ class rivc extends Controller {
 
 		$edit->it_numero = new inputField('numero','numero_<#i#>');
 		$edit->it_numero->db_name='numero';
-		$edit->it_numero->rule='max_length[12]|required|callback_chrepetidos|callback_chfac';
+		$edit->it_numero->rule='max_length[12]|required|callback_chrepetidos|callback_chfac[<#i#>]';
 		$edit->it_numero->size =14;
 		$edit->it_numero->maxlength =12;
 		$edit->it_numero->rel_id ='itrivc';
@@ -804,17 +804,34 @@ class rivc extends Controller {
 		}
 	}
 
-	function chfac($numero){
-		$cod_cli=$this->input->post('cod_cli');
-		$mSQL='SELECT COUNT(*) FROM sfac WHERE numero='.$this->db->escape($numero).' AND cod_cli='.$this->db->escape($cod_cli);
+	function chfac($numero,$ind){
+		$cod_cli = $this->input->post('cod_cli');
+		$tipo_doc= $this->input->post('tipo_doc_'.$ind);
+		$fecha   = $this->input->post('fecha');
+		$ww=' WHERE numero='.$this->db->escape($numero).' AND cod_cli='.$this->db->escape($cod_cli).' AND tipo_doc='.$this->db->escape($tipo_doc);
+		$mSQL='SELECT COUNT(*) FROM sfac '.$ww;
 		$cana=$this->datasis->dameval($mSQL);
 
-		if($cana==1){
-			return true;
-		}else{
-			$this->validation->set_message('chfac', 'La factura '.$numero.' no pertenece al cliente '.$cod_cli);
+		if($cana!=1){
+			$this->validation->set_message('chfac', 'El documento '.$numero.' no pertenece al cliente '.$cod_cli);
 			return false;
 		}
+
+		if($tipo_doc=='D'){
+			$mSQL  = 'SELECT fecha FROM sfac '.$ww;
+			$ffech = $this->datasis->dameval($mSQL);
+			$ar_dfech = explode('-',$ffech);
+			$ar_rfech = explode('/',$fecha);
+
+			$d_dfech=(ceil($ar_dfech[2]/15)>2)? 2 : 1;
+			$d_rfech=(ceil($ar_rfech[0]/15)>2)? 2 : 1;
+
+			if($ar_dfech[0]!=$ar_rfech[2] || $ar_dfech[1]!=$ar_rfech[1] || $d_dfech!=$d_rfech){
+				$this->validation->set_message('chfac', 'El documento '.$numero.' esta fuera de per&iacute;odo');
+				return false;
+			}
+		}
+		return true;
 	}
 
 	function buscasfac(){
@@ -915,6 +932,8 @@ class rivc extends Controller {
 		$usuario = $do->get('usuario');
 		$exento=$general=$geneimpu=$adicional=$adicimpu=$reducida=$reduimpu=$stotal=$impuesto=$gtotal=$reiva=0;
 
+		//Borra la clave ya que solo se usa para comprobar
+		$do->rm_get('clave');
 
 		$rel='itrivc';
 		$cana = $do->count_rel($rel);
@@ -1025,7 +1044,7 @@ class rivc extends Controller {
 				$mSQL = "UPDATE smov SET abonos=abonos-$itmonto WHERE numero=${dbitnumero}  AND cod_cli=${dbcod_cli} AND tipo_doc='${tiposfac}'";
 				$ban=$this->db->simple_query($mSQL);
 				if($ban==false){ memowrite($mSQL,'rivc'); }
-				
+
 				//Eliminas los movimientos relacionados
 				$mSQL="DELETE FROM smov WHERE transac=${dbtransac}";
 				$ban=$this->db->simple_query($mSQL);
@@ -1039,6 +1058,7 @@ class rivc extends Controller {
 
 	function _post_insert($do){
 		$primary =implode(',',$do->pk);
+		$error   = 0;
 
 		$transac   = $do->get('transac');
 		$estampa   = $do->get('estampa');
@@ -1123,57 +1143,9 @@ class rivc extends Controller {
 						$mSQL = $this->db->insert_string('smov', $data); 
 						$ban=$this->db->simple_query($mSQL);
 						if($ban==false){ memowrite($mSQL,'RIVC'); }
-					}elseif($operacion=='R'){ //Genera un reintegro en efectivo (necesita caja y cajero)
-						
-
-						$mSQL = $this->db->insert_string('smov', $data); 
-						$ban=$this->db->simple_query($mSQL);
-						if($ban==false){ memowrite($mSQL,'RIVC'); }
-					}elseif($operacion=='P'){ //Lo manda a cuenta por pagar
-						$causado = $this->datasis->fprox_numero('ncausado');
-						$error   = 0;
-
-						$mnsprm = $this->datasis->fprox_numero('num_nd');
-						$data=array();
-						$data['cod_prv']    = 'REINT';
-						$data['nombre']     = 'REINTEGROS CLIENTES';
-						$data['tipo_doc']   = 'ND';
-						$data['numero']     = $mnsprm;
-						$data['fecha']      = $fecha;
-						$data['monto']      = $totneto;
-						$data['impuesto']   = 0;
-						$data['abonos']     = 0;
-						$data['vence']      = $fecha;
-						$data['observa1']   = 'REINTEGRO POR RETENCION A RETENCION '.$itnumero;
-						$data['tipo_ref']   = 'RT';
-						$data['num_ref']    = $itnumero;
-						$data['transac']    = $transac;
-						$data['estampa']    = $estampa;
-						$data['hora']       = $hora;
-						$data['usuario']    = $usuario;
-						$data['reteiva']    = 0;
-						$data['montasa']    = 0;
-						$data['monredu']    = 0;
-						$data['monadic']    = 0;
-						$data['tasa']       = 0;
-						$data['reducida']   = 0;
-						$data['sobretasa']  = 0;
-						$data['exento']     = 0;
-						$data['causado']    = $causado;
-						$data['codigo']     = 'NOCON';
-						$data['descrip']    = 'NOTA DE CONTABILIDAD';
-
-						$sql=$this->db->insert_string('sprm', $data);
-						$ban=$this->db->simple_query($sql);
-						if($ban==false){ memowrite($sql,'RIVC'); $error++;}
-
-						$sql='UPDATE rivc SET sprmreinte='.$this->db->escape($mnsprm).' WHERE id='.$this->db->escape($id);
-						$ban=$this->db->simple_query($sql);
-						if($ban==false){ memowrite($sql,'RIVC'); $error++;}
 					}
 				}else{
-				//Si tiene saldo
-					//Chequea que el monto de la retencion sea menor al saldo en caso tal crea una NC
+					//Como tiene saldo suficiente crea una NC y la aplica a la fc
 					$mnumnc = $this->datasis->fprox_numero('nccli');
 					$data=array();
 					$data['cod_cli']    = $cod_cli;
@@ -1201,6 +1173,7 @@ class rivc extends Controller {
 					$ban=$this->db->simple_query($mSQL);
 					if($ban==false){ memowrite($mSQL,'RIVC'); }
 
+					//Aplica la nc a la fc
 					$data=array();
 					$data['numccli']    = $itnumero;
 					$data['tipoccli']   = ($ittipo_doc=='F')? 'FC' : 'DV';;
@@ -1314,6 +1287,102 @@ class rivc extends Controller {
 				$mSQL = $this->db->insert_string('smov', $data); 
 				$ban=$this->db->simple_query($mSQL);
 				if($ban==false){ memowrite($mSQL,'RIVC'); }
+			}
+		}
+		
+		//Chequea si es un reintegro para crear un solo egreso de caja
+		$totneto  = $do->get('reiva');
+		if($totneto>0){
+			if($operacion=='R'){
+				$codbanc  = $do->get('codbanc');
+				$numeroch = $this->datasis->fprox_numero('ncaja'.$codbanc);
+				$datacar  = common::_traebandata($codbanc);
+				$sp_fecha = date('Ymd');
+				$ttipo    = $datacar['tbanco'];
+				$moneda   = $datacar['moneda'];
+
+				$tipo1  = ($ttipo=='CAJ') ? 'D': 'C';
+				$negreso= $this->datasis->fprox_numero('negreso');
+				$credito= 0;
+				$causado= '';
+				$tipo_op= ($ttipo=='CAJ') ? 'ND': 'CH';
+
+				$data=array();
+				$data['codbanc']    = $codbanc;
+				$data['moneda']     = $moneda;
+				$data['numcuent']   = $datacar['numcuent'];
+				$data['banco']      = $datacar['banco'];
+				$data['saldo']      = $datacar['saldo'];
+				$data['tipo_op']    = $tipo_op;
+				$data['numero']     = $numeroch;
+				$data['fecha']      = date('Y-m-d');
+				$data['clipro']     = 'C';
+				$data['codcp']      = $cod_cli;
+				$data['nombre']     = $nombre;
+				$data['monto']      = $totneto;
+				$data['concepto']   = 'REINTEGRO DE RETENCION DE IVA '.$comprob;
+				$data['benefi']     = $form->benefi->newValue;
+				$data['posdata']    = '';
+				$data['abanco']     = '';
+				$data['liable']     = ($ttipo=='CAJ') ? 'S': 'N';;
+				$data['transac']    = $transac;
+				$data['usuario']    = $usuario;
+				$data['estampa']    = $estampa;
+				$data['hora']       = $hora;
+				$data['anulado']    = 'N';
+				$data['susti']      = '';
+				$data['negreso']    = $negreso;
+
+				$sql=$this->db->insert_string('bmov', $data);
+				$ban=$this->db->simple_query($sql);
+				if($ban==false){ memowrite($sql,'rivc'); $error++;}
+
+				$sql='CALL sp_actusal('.$this->db->escape($codbanc).",'$sp_fecha',-$totneto)";
+				$ban=$this->db->simple_query($sql);
+				if($ban==false){ memowrite($sql,'rivc'); $error++; }
+
+			}elseif($operacion=='P'){ //Lo manda a cuenta por pagar
+
+				$totneto  = $do->get('reiva');
+				$causado = $this->datasis->fprox_numero('ncausado');
+
+				$mnsprm = $this->datasis->fprox_numero('num_nd');
+				$data=array();
+				$data['cod_prv']    = 'REINT';
+				$data['nombre']     = 'REINTEGROS CLIENTES';
+				$data['tipo_doc']   = 'ND';
+				$data['numero']     = $mnsprm;
+				$data['fecha']      = $fecha;
+				$data['monto']      = $totneto;
+				$data['impuesto']   = 0;
+				$data['abonos']     = 0;
+				$data['vence']      = $fecha;
+				$data['observa1']   = 'REINTEGRO POR RETENCION A RETENCION '.$numero;
+				$data['tipo_ref']   = 'RT';
+				$data['num_ref']    = $numero;
+				$data['transac']    = $transac;
+				$data['estampa']    = $estampa;
+				$data['hora']       = $hora;
+				$data['usuario']    = $usuario;
+				$data['reteiva']    = 0;
+				$data['montasa']    = 0;
+				$data['monredu']    = 0;
+				$data['monadic']    = 0;
+				$data['tasa']       = 0;
+				$data['reducida']   = 0;
+				$data['sobretasa']  = 0;
+				$data['exento']     = 0;
+				$data['causado']    = $causado;
+				$data['codigo']     = 'NOCON';
+				$data['descrip']    = 'NOTA DE CONTABILIDAD';
+
+				$sql=$this->db->insert_string('sprm', $data);
+				$ban=$this->db->simple_query($sql);
+				if($ban==false){ memowrite($sql,'rivc'); $error++;}
+
+				$sql='UPDATE rivc SET sprmreinte='.$this->db->escape($mnsprm).' WHERE id='.$this->db->escape($id);
+				$ban=$this->db->simple_query($sql);
+				if($ban==false){ memowrite($sql,'rivc'); $error++;}
 			}
 		}
 
