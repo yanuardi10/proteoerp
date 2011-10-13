@@ -22,6 +22,22 @@ class Common extends controller {
 		return $this->datasis->damerow($sql);
 	}
 
+	function _scajstatus($cajero){
+		$dbcajero=$this->db->escape($cajero);
+		$mSQL = 'SELECT fechac,status FROM scaj WHERE cajero='.$dbcajero;
+		$row  = $this->datasis->damerow($mSQL);
+		$factu= date('Y-m-d');
+		if($row['fechac']==$factu && $row['status']=='C'){
+			return 'C';
+		}else{
+			$fechaa=$this->db->escape(date('Y-m-d'));
+			$horaa =$this->db->escape(date('H:m:s'));
+			$sql='UPDATE scaj SET status=\'A\', fechaa='.$fechaa.', horaa='.$horaa.' WHERE cajero='.$dbcajero;
+			//$ban=$this->db->simple_query($sql);
+			return 'A';
+		}
+	}
+
 	//Para el autocomplete
 	function _automgas(){
 	}
