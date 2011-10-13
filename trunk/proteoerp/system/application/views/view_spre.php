@@ -459,7 +459,7 @@ function del_itspre(id){
 				<td class="littletablerow" align="left" ><?php echo $form->$it_codigo->output; ?></td>
 				<td class="littletablerow" align="left" ><?php
 					if($form->_status=='show' && strlen($form->$it_detalle->value)>0){
-						echo $form->$it_detalle->value;
+						echo  '<pre>'.htmlspecialchars($form->$it_detalle->value).'</pre>';
 					}else{
 						echo $form->$it_desca->output.$form->$it_detalle->output;
 					}
