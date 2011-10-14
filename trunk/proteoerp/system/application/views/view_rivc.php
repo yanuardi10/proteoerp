@@ -211,7 +211,7 @@ function autocod(id){
 					<td colspan=11 class="littletableheader">Encabezado</td>
 				</tr>
 				<tr>
-					<td width='370' >
+					<td>
 					<fieldset  style='border: 1px outset #FEB404;background: #FFFCE8;'>
 						<table>
 							<tr>
@@ -241,18 +241,6 @@ function autocod(id){
 							</tr><tr>
 								<td class="littletablerowth"><?php echo $form->operacion->label  ?></td>
 								<td class="littletablerow">  <?php echo $form->operacion->output ?></td>
-							</tr>
-						</table>
-					</fieldset>
-					</td>
-				</tr>
-				<tr>
-					<td colspan=2>
-					<fieldset  style='border: 1px outset #FEB404;background: #FFFCE8;'>
-						<table>
-							<tr>
-								<td class="littletablerowth"><?php echo $form->reintegro->label  ?>*</td>
-								<td class="littletablerow">  <?php echo $form->reintegro->output ?></td>
 							</tr>
 						</table>
 					</fieldset>
