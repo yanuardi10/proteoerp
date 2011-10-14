@@ -13,7 +13,7 @@ class Libros extends Controller {
 		$this->load->helper('fecha');
 
 		for($i=1;$i<=12;$i++) $mmes[ str_pad($i, 2, "0", STR_PAD_LEFT)]=mesLetra($i);
-		for($i=date('Y'); $i>=date('Y')-4;$i--) $anhos[$i]=$i;
+		for($i=date('Y'); $i>=date('Y')-6;$i--) $anhos[$i]=$i;
 
 		$descarga=$genera=array();
 		$query = $this->db->query("SELECT * FROM libros WHERE activo='S'");
