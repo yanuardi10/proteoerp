@@ -53,15 +53,15 @@ class ingresos{
 				registro = '$registro',
 				nacional ='S',
 				referen  = '$referen',
-				general  = $row->montasa,
-				geneimpu = $row->tasa, 
-				reducida = $row->monredu, 
-				reduimpu = $row->reducida,
-				adicional= $row->monadic,
-				adicimpu = $row->sobretasa,
-				exento   = $row->exento, 
-				impuesto = $row->impuesto, 
-				gtotal   = $row->monto, 
+				general  = ".(empty($row->montasa))? 0 : $row->montasa.",
+				geneimpu = ".(empty($row->tasa))? 0 :$row->tasa.", 
+				reducida = ".(empty($row->monredu))? 0 :$row->monredu.", 
+				reduimpu = ".(empty($row->reducida))? 0 :$row->reducida.",
+				adicional= ".(empty($row->monadic))? 0 :$row->monadic.",
+				adicimpu = ".(empty($row->sobretasa))? 0 :$row->sobretasa.",
+				exento   = ".(empty($row->exento))? 0 :$row->exento.", 
+				impuesto = ".(empty($row->impuesto))? 0 :$row->impuesto.", 
+				gtotal   = ".(empty($row->monto))? 0 :$row->monto.", 
 				stotal   = $stotal,
 				reiva    = ".$row->reteiva.",
 				fechal   = ".$mes."01,
@@ -79,7 +79,7 @@ class ingresos{
 					AND a.reteiva>0 AND b.monto>b.abonos 
 					AND EXTRACT(YEAR_MONTH FROM a.fecha)=EXTRACT(YEAR_MONTH FROM b.fecha) ";
 
-		$query = $this->db->query($mSQL);
+		$querE b.fecha BETWEEN $fdesde AND $fhasta AND b.cod_cli='REIVA'
 		foreach ( $query->result() as $row ){
 			$mSQL = "UPDATE siva SET reiva=$row->reteiva, comprobante=$row->nroriva WHERE tipo='FC' AND numero='$row->numero' AND libro='V' AND EXTRACT(YEAR_MONTH FROM fechal)=$mes ";
 			$flag=$this->db->simple_query($mSQL);    
@@ -97,12 +97,20 @@ class ingresos{
 				WHERE b.cod_cli='REIVA' 
 					AND a.reteiva>0 
 					AND b.fecha BETWEEN $fdesde AND $fhasta AND a.nroriva IS NOT NULL
-				UNION 
+				UNION ALL
 				SELECT b.fecha, a.numero, IF(LENGTH(TRIM(e.nomfis))>0,e.nomfis,e.nombre) AS nombre, e.rifci, a.clipro,
 					a.factura AS afecta, d.fecha AS fafecta, b.monto, a.transac, a.retencion, a.fecha, a.fecha, d.nfiscal
 				FROM smov AS b JOIN prmo AS a ON a.transac=b.transac 
-				JOIN sfac AS d ON a.factura=d.numero AND d.tipo_doc='F'
-				JOIN scli AS e ON d.cod_cli=e.cliente
+				LEFT JOIN sfac AS d ON a.factura=d.numero AND d.tipo_doc='F'
+				LEFT JOIN scli AS e ON d.cod_cli=e.cliente
+				WHERE b.fecha BETWEEN $fdesde AND $fhasta AND b.cod_cli='REIVA'
+				UNION ALL
+				SELECT b.fecha, '000000000000' AS numero, IF(LENGTH(TRIM(f.nomfis))>0,f.nomfis,f.nombre) AS nombre, f.rifci AS rifci, a.proveed AS clipro,
+					MID(d.onumero,3,8) AS afecta, d.ofecha AS fafecta, d.monto, a.transac, '00000000000000' AS retencion, a.fecha, a.fecha, e.nfiscal AS nfiscal
+				FROM smov AS b JOIN cruc AS a ON a.transac=b.transac 
+				JOIN itcruc AS d ON a.numero=d.numero
+				JOIN sfac AS e ON MID(d.onumero,3,8)=e.numero AND e.tipo_doc=MID(d.onumero,1,1)
+				JOIN scli AS f ON e.cod_cli=f.cliente
 				WHERE b.fecha BETWEEN $fdesde AND $fhasta AND b.cod_cli='REIVA'";
 		$query = $this->db->query($mSQL);
 
@@ -168,12 +176,12 @@ class ingresos{
 						fuente = 'FA', 
 						sucursal = '00', 
 						fecha = '$row->fecha', 
-						numero  = 'mREG->numero',  
+						numero  = 'mREG->numero',
 						referen = 'mREG->numero',
-						clipro  = 'mREG->cod_cli',  
-						nombre = '$nombre',  
+						clipro  = 'mREG->cod_cli',
+						nombre = '$nombre',
 						contribu, 'CO', 
-						rif = '$rif',  
+						rif = '$rif', 
 						registro = '01',
 						nacional = 'S',
 						exento = 0,  
@@ -189,7 +197,7 @@ class ingresos{
 						stotal = 0, 
 						reiva = ".$row->monto.",
 						fechal = ".$mes."01 ";
-			$flag=$this->db->simple_query($mSQL);    
+			$flag=$this->db->simple_query($mSQL);
 			if(!$flag) memowrite($mSQL,'genesmov');
 		}
 	}
