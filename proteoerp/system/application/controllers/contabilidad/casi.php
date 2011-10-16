@@ -6,7 +6,6 @@ class casi extends Controller {
 	function casi(){
 		parent::Controller();
 		$this->load->library('rapyd');
-		$this->load->library('datajqgrid');
 		$this->load->database();
 		if ( !$this->db->field_exists('id','casi')) {
 			echo "cambio";
@@ -22,21 +21,19 @@ class casi extends Controller {
 	}
 
 	function filteredgrid(){
-		$this->rapyd->load("datagrid","datafilter");
+		$this->rapyd->load('datagrid','datafilter');
 
-		$filter = new DataFilter("Filtro de Asientos");
+		$filter = new DataFilter('Filtro de Asientos');
 		$filter->db->select=array("comprob","fecha","descrip","origen","debe","haber","total");
 		$filter->db->from('casi');
 
-		$filter->fechad = new dateonlyField("Desde", "fechad",'d/m/Y');
-		$filter->fechah = new dateonlyField("Hasta", "fechah",'d/m/Y');
-		$filter->fechad->clause  =$filter->fechah->clause="where";
-		$filter->fechad->db_name =$filter->fechah->db_name="fecha";
-		$filter->fechad->insertValue = date("Y-m-d"); 
-		$filter->fechah->insertValue = date("Y-m-d"); 
+		$filter->fechad = new dateonlyField('Desde', 'fechad','d/m/Y');
+		$filter->fechah = new dateonlyField('Hasta', 'fechah','d/m/Y');
+		$filter->fechad->clause  =$filter->fechah->clause ='where';
+		$filter->fechad->db_name =$filter->fechah->db_name='fecha';
 		$filter->fechah->size=$filter->fechad->size=10;
-		$filter->fechad->operator=">="; 
-		$filter->fechah->operator="<=";
+		$filter->fechad->operator='>=';
+		$filter->fechah->operator='<=';
 
 		$filter->comprob = new inputField("N&uacute;mero"     , "comprob");
 		$filter->comprob->size=15;
@@ -57,15 +54,15 @@ class casi extends Controller {
 		$filter->vdes->insertValue='N';
 		$filter->vdes->clause='';
 
-		$filter->buttons("reset","search");
-		$filter->build("dataformfiltro");
+		$filter->buttons('reset','search');
+		$filter->build('dataformfiltro');
 
 		$uri = anchor('contabilidad/casi/dataedit/show/<#comprob#>','<#comprob#>');
-/*
+
 		$grid = new DataGrid();
 		$vdes = $this->input->post('vdes');
 		if($vdes) $grid->db->where('(debe-haber) <>',0);
-		$grid->order_by("comprob","asc");
+		$grid->order_by('comprob','asc');
 		$grid->per_page = 15;
 		$grid->column_orderby('N&uacute;mero',$uri,'comprob');
 		$grid->column_orderby('Fecha','<dbdate_to_human><#fecha#></dbdate_to_human>','fecha',"align='center'");
@@ -74,151 +71,32 @@ class casi extends Controller {
 		$grid->column_orderby('Debe'  ,'<nformat><#debe#></nformat>' ,'debe' ,"align='right'");
 		$grid->column_orderby('Haber' ,'<nformat><#haber#></nformat>','haber',"align='right'");
 		$grid->column_orderby('Total' ,'<nformat><#total#></nformat>','total',"align='right'");
-
 		$grid->add('contabilidad/casi/dataedit/create');
-		//$grid->build();
-*/
+		$grid->build();
 
-
-	$grid  = $this->datajqgrid;
-
-	$grid->addField('comprob');
-	$grid->label('Numero');
-	$grid->params(array('width' => 100,'editable' => 'false'));
-
-	$grid->addField('fecha');
-	$grid->label('Fecha');
-	$grid->params(array('width' => 100,'editable' => 'false','align' => "'center'",));
-
-	$grid->addField('descrip');
-	$grid->label('Descripcion');
-	$grid->params(array('width' => 300,'editable' => 'true','edittype' => "'textarea'", 'editrules' => '{required:true}'));
-
-	$grid->addField('debe');
-	$grid->label('Debe');
-	$grid->params(array('width' => 150,'editable' => 'false','align' => "'right'"));
-
-	$grid->addField('Haber');
-	$grid->label('haber');
-	$grid->params(array('width' => 150,'editable' => 'false','align' => "'right'"));
-
-	$grid->addField('total');
-	$grid->label('Saldo');
-	$grid->params(array('width' => 100,'editable' => 'false','align' => "'right'"));
-
-	$url = base_url().'contabilidad/casi/grid';
-
-	#GET url
-	$grid->setUrlget(site_url($url));
-
-	#Set url
-	$grid->setUrlput(site_url($url));
-
-	#show paginator
-	$grid->showpager(true);
-	#titulo de la tabla
-	$grid->setTitle('Asientos');
-
-	#show/hide navigations buttonss
-	$grid->setAdd(true);
-	$grid->setEdit(true);
-	$grid->setDelete(true);
-	$grid->setSearch(true);
-
-	$param = $grid->deploy();
-
-	$script = "
-<script type=\"text/javascript\">
-$(function(){
-$(\"#newapi".$param['gridname']."\").jqGrid({
-	url:'$url',
-	datatype: 'xml',
-	height: 355,
-	mtype: 'POST',
-".$param['colMod'].",
-	pager: '#pnewapi".$param['gridname']."',
-	rowNum:40,
-	rowList:[40,80,120],
-	sortname: 'comprob',
-	width: 700,
-	shrinkToFit: false,
-	sortorder: 'DESC',
-	viewrecords: true,
-	caption: 'Asientos'
-
-});
-jQuery(\"#newapi".$param['gridname']."\").jqGrid('navGrid','#pnewapi".$param['gridname']."',{del:false,add:false,edit:false},{},{},{},{multipleSearch:true});
-});
-</script>
-
-";
-
-
-		$script1 = "
-<script type=\"text/javascript\">
-	var base_url = '".base_url()."';
-	var site_url = '".site_url()."';
-        var url = '';
-
-        $(document).ready(function() {
-            dtgLoadButton();
-
-           var grid = jQuery(\"#newapi".$param['gridname']."\").jqGrid({
-                    ajaxGridOptions : {type:\"POST\"},
-                       jsonReader : {
-                      root:\"data\",
-                      repeatitems: false
-                      
-                   },
-                    ondblClickRow: function(id){
-                      var gridwidth = jQuery(\"#newapi".$param['gridname']."\").width();
-                      gridwidth = gridwidth/2;
-                      grid.editGridRow(id, {closeAfterEdit:true,mtype:'POST'});
-                       return;
-                      },
-                    rowList:[10,20,30],
-                    viewrecords: true
-                   ".$param['table']."
-               })
-               ".$param['pager'].";
-        });
-</script>
-";
-
-
-		$extras  = "\n<table id='newapi".$param['gridname']."'></table>\n";
-		$extras .= "<div id='pnewapi".$param['gridname']."'></div><hr>\n";
-
-		//$extras  = "\n<table id='rejilla'></table>\n";
-		//$extras .= "<div id='pager'></div>\n";
-
-
-
-		$data['content'] = $extras;; //$grid->output;
+		$data['content'] = $grid->output;
 		$data['filtro']  = $filter->output;
 
 		//$data['extras'] = $extras;
 
-		//$data["style"]   = style("jquery-ui-1.8.2.custom.css");
-		$data["style"]   = style("themes/redmond/jquery-ui-1.8.2.custom.css");
-		$data["style"]  .= style("themes/ui.jqgrid.css");
-		$data["style"]  .= style("themes/ui.multiselect.css");
-//		$data["style"]  .= style("datagrid.css");
+		//$data["style"]   = style('jquery-ui-1.8.2.custom.css');
+		$data['style']   = style('themes/redmond/jquery-ui-1.8.2.custom.css');
+		$data['style']  .= style('themes/ui.jqgrid.css');
+		$data['style']  .= style('themes/ui.multiselect.css');
+		//$data["style"]  .= style('datagrid.css');
 
 		$data['script']  = script('jquery.js');
 		$data['script'] .= script('jquery.layout.js');
-		
-		$data["script"] .= script("i18n/grid.locale-sp.js");
-		$data["script"] .= script("jquery-ui-custom.min.js");
-		$data["script"] .= script("ui.multiselect.js");
-		
-		$data["script"] .= script("jquery.jqGrid.min.js");
-		$data["script"] .= script("jquery.tablednd.js");
-		$data["script"] .= script("jquery.contextmenu.js");
-//		$data["script"] .= script("datagrid.js");
-		
-		$data["script"] .= $script;
-		
+
+		$data['script'] .= script('i18n/grid.locale-sp.js');
+		$data['script'] .= script('jquery-ui-custom.min.js');
+		$data['script'] .= script('ui.multiselect.js');
+
+		$data['script'] .= script('jquery.jqGrid.min.js');
+		$data['script'] .= script('jquery.tablednd.js');
+		$data['script'] .= script('jquery.contextmenu.js');
+		//$data["script"] .= script("datagrid.js");
+
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = heading('Asientos');
 		$this->load->view('view_ventanas', $data);
