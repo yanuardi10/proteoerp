@@ -314,13 +314,13 @@ function autocod(id){
 		<td class="littletablerowth" align='right'><?php echo $form->gtotal->label;    ?></td>
 		<td class="littletablerow"   align='right'><b id='gtotal_val'><?php echo nformat($form->gtotal->value);     ?></b><?php echo $form->gtotal->output;   ?></td>
 	</tr><tr>
-		<td class="littletablerowth" align='left' ><?php echo $form->cajero->label;    ?></td>
-		<td class="littletablerow"   align='left' ><?php echo $form->cajero->output;   ?></td>
+		<td class="littletablerowth" align='left' ></td>
+		<td class="littletablerow"   align='left' ></td>
 		<td class="littletablerowth" align='right'><?php echo $form->impuesto->label;  ?></td>
 		<td class="littletablerow"   align='right'><b id='impuesto_val'><?php echo nformat($form->impuesto->value); ?></b><?php echo $form->impuesto->output; ?></td>
 	</tr><tr>
-		<td class="littletablerowth" align='left' ><?php echo $form->clave->label; ?></td>
-		<td class="littletablerow"   align='left' ><?php echo $form->clave->output;?></td>
+		<td class="littletablerowth" align='left' ></td>
+		<td class="littletablerow"   align='left' ></td>
 		<td class="littletablerowth" align='right'><?php echo $form->reiva->label; ?></td>
 		<td class="littletablerow"   align='right'><b id='reiva_val'><?php echo nformat($form->reiva->value);       ?></b><?php echo $form->reiva->output;    ?></td>
 	</tr>
@@ -347,8 +347,7 @@ function autocod(id){
 	//$sql[]='SELECT cod_cli, nombre,tipo_doc, numero, monto, observa1 FROM smov WHERE tipo_ref=\'CR\'  AND num_ref='.$this->db->escape($numero).' AND cod_cli='.$this->db->escape($cod_cli).' ORDER BY num_ref,cod_cli';
 	$sql[]='SELECT cod_prv AS cod_cli, nombre,tipo_doc, numero, monto, observa1 FROM sprm WHERE tipo_ref=\'CR\'  AND num_ref='.$this->db->escape($numero).' AND cod_prv=\'REINT\' ORDER BY num_ref,cod_prv';
 	if(!empty($codbanc)){
-		$tipo_op=$form->get_from_dataobjetct('tipo_op');
-		$sql[]='SELECT codbanc AS cod_cli,banco AS nombre, tipo_op AS tipo_doc, numero, monto, concepto AS observa1 FROM bmov WHERE tipo_op='.$this->db->escape($tipo_op).' AND codbanc='.$this->db->escape($codbanc).' AND transac='.$this->db->escape($transac);
+		$sql[]='SELECT codbanc AS cod_cli,banco AS nombre, tipo_op AS tipo_doc, numero, monto, concepto AS observa1 FROM bmov WHERE codbanc='.$this->db->escape($codbanc).' AND transac='.$this->db->escape($transac);
 	}
 
 	foreach($sql as $mSQL){

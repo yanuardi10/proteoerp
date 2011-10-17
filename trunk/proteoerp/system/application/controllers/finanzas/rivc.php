@@ -750,7 +750,7 @@ class rivc extends Controller {
 		//Fin del Detalle
 		//****************************
 
-		$edit->cajero = new dropdownField('Cajero','cajero');
+		/*$edit->cajero = new dropdownField('Cajero','cajero');
 		$edit->cajero->option('','Seleccionar');
 		$edit->cajero->insertValue=$usrdata['cajero'];
 		$edit->cajero->options("SELECT cajero, CONCAT_WS('-',cajero,nombre) AS label FROM scaj ORDER BY cajero");
@@ -761,7 +761,7 @@ class rivc extends Controller {
 		$edit->clave->rule='condi_required|callback_chclave';
 		$edit->clave->size=5;
 		$edit->clave->when=array('create');
-		$edit->clave->type='password';
+		$edit->clave->type='password';*/
 
 		$edit->codbanc = new dropdownField('Caja','codbanc');
 		$edit->codbanc->option('','Seleccionar');
@@ -978,6 +978,8 @@ class rivc extends Controller {
 			$do->rm_get('codbanc');
 			$do->rm_get('numche');
 			$do->rm_get('cajero');
+		}else{
+			$do->set('tipo_op','ND');
 		}
 
 		$rel='itrivc';
