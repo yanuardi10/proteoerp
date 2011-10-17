@@ -766,7 +766,6 @@ class rivc extends Controller {
 		$edit->codbanc = new dropdownField('Caja','codbanc');
 		$edit->codbanc->option('','Seleccionar');
 		$edit->codbanc->options("SELECT codbanc, CONCAT_WS('-',codbanc,banco) AS label FROM banc WHERE activo='S' AND tbanco='CAJ' ORDER BY codbanc");
-		$edit->codbanc->onchange='desactivacampo(this.value)';
 		$edit->codbanc->rule='max_length[5]|condi_required|callback_chcaja';
 		$edit->codbanc->style='width:200px;';
 
@@ -925,21 +924,23 @@ class rivc extends Controller {
 				FROM scli WHERE cliente=${qmid} LIMIT 1";
 			$query = $this->db->query($mSQL);
 			if ($query->num_rows() == 1){
-					$row = $query->row();
+				$row = $query->row_array();
 
-					$retArray['value']   = $row['cliente'];
-					$retArray['label']   = '('.$row['rifci'].') '.utf8_encode($row['nombre']);
-					$retArray['rifci']   = $row['rifci'];
-					$retArray['nombre']  = utf8_encode($row['nombre']);
-					$retArray['cod_cli'] = $row['cliente'];
-					$retArray['tipo']    = $row['tipo'];
+				$retArray['value']   = $row['cliente'];
+				$retArray['label']   = '('.$row['rifci'].') '.utf8_encode($row['nombre']);
+				$retArray['rifci']   = $row['rifci'];
+				$retArray['nombre']  = utf8_encode($row['nombre']);
+				$retArray['cod_cli'] = $row['cliente'];
+				$retArray['tipo']    = $row['tipo'];
 
-					array_push($retorno, $retArray);
+				array_push($retorno, $retArray);
+				$ww=" AND cliente<>${qmid}";
+			}else{
+				$ww='';
 			}
 
-
 			$mSQL="SELECT TRIM(nombre) AS nombre, TRIM(rifci) AS rifci, cliente, tipo
-				FROM scli WHERE cliente LIKE ${qdb} OR rifci LIKE ${qdb} OR nombre LIKE ${qdb}
+				FROM scli WHERE (cliente LIKE ${qdb} OR rifci LIKE ${qdb} OR nombre LIKE ${qdb}) $ww
 				ORDER BY rifci LIMIT 10";
 
 			$query = $this->db->query($mSQL);
@@ -954,8 +955,9 @@ class rivc extends Controller {
 
 					array_push($retorno, $retArray);
 				}
-				$data = json_encode($retorno);
 			}
+			if(count($data)>0)
+				$data = json_encode($retorno);
 		}
 		echo $data;
 		return true;
