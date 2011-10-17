@@ -334,196 +334,188 @@ class sinv extends Controller {
 		$link3  =site_url("inventario/sinv/auprec/$id"); 
 		$link4  =site_url("inventario/sinv/sinvcamgrup/"); 
 		$link5  =site_url("inventario/sinv/sinvcammarca/"); 
-		
+
 		$script = '
-<script type="text/javascript">
-function isNumeric(value) {
-  if (value == null || !value.toString().match(/^[-]?\d*\.?\d*$/)) return false;
-  return true;
-};
+		<script type="text/javascript">
+		function isNumeric(value) {
+		  if (value == null || !value.toString().match(/^[-]?\d*\.?\d*$/)) return false;
+		  return true;
+		};
 
-function redondear(){
-	var mayor=prompt("Redondear precios Mayores a");
-	if( mayor==null){
-		alert("Cancelado");
-	} else {
-		if( isNumeric(mayor) ){
-			$.ajax({ url: "'.$link1.'/"+mayor,
-			complete: function(){ alert(("Redondeo Finalizado")) }
-			});
-		} else {
-			alert("Entrada no numerica");
-		}
-	}
-};
-
-function recalcular(mtipo){
-	var seguro = true;
-	if(mtipo == "P"){
-		seguro = confirm("Recalcular margenes dejando fijos los precios ");
-	} else {
-		seguro = confirm("Recalcular margenes, dejando fijos los precios ");
-	}
-	if( seguro){
-		$.ajax({ url: "'.$link2.'/"+mtipo,
-			complete: function(){ alert(("Recalculo Finalizado")) }
-		})
-	}
-};
-
-function auprec(){
-	var porcen=prompt("Porcentaje de Aumento?");
-	if( porcen ==null){
-		alert("Cancelado");
-	} else {
-		if( isNumeric(porcen) ){
-			$.ajax({ url: "'.$link3.'/"+porcen,
-			complete: function(){ alert(("Aumento Finalizado")) }
-			});
-		} else {
-			alert("Entrada no numerica");
-		}
-	}
-};
-
-function cambgrupo(){
-	var yurl = "";
-	var n = $("input:checked").length;
-	var a = "";
-	var mbusca = "'.addslashes($bGRUP).'";
-	
-	$("input:checked").each( function() { a += this.id+","; });
-	
-	if( n==0) {
-		jAlert("No hay productos Seleccionados","Informacion");
-	}else{
-	jPrompt("Selecciono "+n+" Productos<br>Introduzca el Grupo "+mbusca,"" ,"Cambiar de Grupo", function(mgrupo){
-		if( mgrupo==null ){
-			jAlert("Cancelado por el usuario","Informacion");
-		} else if( mgrupo=="" ) {
-			jAlert("Cancelado,  Grupo vacio","Informacion");
-		} else {
-			yurl = encodeURIComponent(mgrupo);
-			$.ajax({
-				url: "'.$link4.'",
-				global: false,
-				type: "POST",
-				data: ({ grupo : encodeURIComponent(mgrupo), productos : a }),
-				dataType: "text",
-				async: false,
-				success: function(sino) {
-				jAlert(sino,"Informacion");
-				jConfirm( "Actualizar","Recargar Tabla y perder los checks?" , function(r){
-					if(r) {
-						location.reload();
-					}
+		function redondear(){
+			var mayor=prompt("Redondear precios Mayores a");
+			if( mayor==null){
+				alert("Cancelado");
+			} else {
+				if( isNumeric(mayor) ){
+					$.ajax({ url: "'.$link1.'/"+mayor,
+					complete: function(){ alert(("Redondeo Finalizado")) }
 					});
-				},
-				error: function(h,t,e)  { jAlert("Error..codigo="+yurl+" ",e) } 
+				} else {
+					alert("Entrada no numerica");
+				}
+			}
+		};
+
+		function recalcular(mtipo){
+			var seguro = true;
+			if(mtipo == "P"){
+				seguro = confirm("Recalcular margenes dejando fijos los precios ");
+			} else {
+				seguro = confirm("Recalcular margenes, dejando fijos los precios ");
+			}
+			if( seguro){
+				$.ajax({ url: "'.$link2.'/"+mtipo,
+					complete: function(){ alert(("Recalculo Finalizado")) }
+				})
+			}
+		};
+
+		function auprec(){
+			var porcen=prompt("Porcentaje de Aumento?");
+			if( porcen ==null){
+				alert("Cancelado");
+			} else {
+				if( isNumeric(porcen) ){
+					$.ajax({ url: "'.$link3.'/"+porcen,
+					complete: function(){ alert(("Aumento Finalizado")) }
+					});
+				} else {
+					alert("Entrada no numerica");
+				}
+			}
+		};
+
+		function cambgrupo(){
+			var yurl = "";
+			var n = $("input:checked").length;
+			var a = "";
+			var mbusca = "'.addslashes($bGRUP).'";
+
+			$("input:checked").each( function() { a += this.id+","; });
+
+			if( n==0) {
+				jAlert("No hay productos Seleccionados","Informacion");
+			}else{
+			jPrompt("Selecciono "+n+" Productos<br>Introduzca el Grupo "+mbusca,"" ,"Cambiar de Grupo", function(mgrupo){
+				if( mgrupo==null ){
+					jAlert("Cancelado por el usuario","Informacion");
+				} else if( mgrupo=="" ) {
+					jAlert("Cancelado,  Grupo vacio","Informacion");
+				} else {
+					yurl = encodeURIComponent(mgrupo);
+					$.ajax({
+						url: "'.$link4.'",
+						global: false,
+						type: "POST",
+						data: ({ grupo : encodeURIComponent(mgrupo), productos : a }),
+						dataType: "text",
+						async: false,
+						success: function(sino) {
+						jAlert(sino,"Informacion");
+						jConfirm( "Actualizar","Recargar Tabla y perder los checks?" , function(r){
+							if(r) {
+								location.reload();
+							}
+							});
+						},
+						error: function(h,t,e)  { jAlert("Error..codigo="+yurl+" ",e) } 
+					});
+				}
+			})
+			}
+		};
+
+
+		function cambmarca(){
+			var yurl = "";
+			var n = $("input:checked").length;
+			var a = "";
+			var mbusca = "'.addslashes($bMARC).'";
+
+			$("input:checked").each( function() { a += this.id+","; });
+
+			if( n==0) {
+				jAlert("No hay productos Seleccionados","Informacion");
+			}else{
+			jPrompt("Selecciono "+n+" Productos<br>Introduzca la Marca "+mbusca,"" ,"Cambiar Marca", function(mmarca){
+				if( mmarca==null ){
+					jAlert("Cancelado por el usuario","Informacion");
+				} else if( mmarca=="" ) {
+					jAlert("Cancelado, Marca vacia","Informacion");
+				} else {
+					yurl = encodeURIComponent(mmarca);
+					$.ajax({
+						url: "'.$link5.'",
+						global: false,
+						type: "POST",
+						data: ({ marca : encodeURIComponent(mmarca), productos : a }),
+						dataType: "text",
+						async: false,
+						success: function(sino) {
+						jAlert(sino,"Informacion");
+						location.reload();
+						},
+						error: function(h,t,e)  { jAlert("Error..codigo="+yurl+" ",e) } 
+					});
+				}
+			})
+			}
+		};
+		</script>';
+
+		// *************************************
+		//
+		//       Para usar SuperTable
+		//
+		// *************************************
+		$extras = '<script type="text/javascript">
+		//<![CDATA[
+		(function() {
+			var mySt = new superTable("demoTable", {
+			cssSkin : "sSky",
+			fixedCols : 1,
+			headerRows : 1,
+			onStart : function () {	this.start = new Date();},
+			onFinish : function () {document.getElementById("testDiv").innerHTML += "Finished...<br>" + ((new Date()) - this.start) + "ms.<br>";}
 			});
+		})();
+		//]]>
+		</script>';
+
+		$style ='<style type="text/css">
+		.fakeContainer { /* The parent container */
+		    margin: 5px;
+		    padding: 0px;
+		    border: none;
+		    width: 740px; /* Required to set */
+		    height: 320px; /* Required to set */
+		    overflow: hidden; /* Required to set */
 		}
-	})
-	}
-};
-
-
-function cambmarca(){
-	var yurl = "";
-	var n = $("input:checked").length;
-	var a = "";
-	var mbusca = "'.addslashes($bMARC).'";
-	
-	$("input:checked").each( function() { a += this.id+","; });
-	
-	if( n==0) {
-		jAlert("No hay productos Seleccionados","Informacion");
-	}else{
-	jPrompt("Selecciono "+n+" Productos<br>Introduzca la Marca "+mbusca,"" ,"Cambiar Marca", function(mmarca){
-		if( mmarca==null ){
-			jAlert("Cancelado por el usuario","Informacion");
-		} else if( mmarca=="" ) {
-			jAlert("Cancelado, Marca vacia","Informacion");
-		} else {
-			yurl = encodeURIComponent(mmarca);
-			$.ajax({
-				url: "'.$link5.'",
-				global: false,
-				type: "POST",
-				data: ({ marca : encodeURIComponent(mmarca), productos : a }),
-				dataType: "text",
-				async: false,
-				success: function(sino) {
-				jAlert(sino,"Informacion");
-				location.reload();
-				},
-				error: function(h,t,e)  { jAlert("Error..codigo="+yurl+" ",e) } 
-			});
-		}
-	})
-	}
-};
-
-
-</script>
-';
-
-// *************************************
-//
-//       Para usar SuperTable
-//
-// *************************************
-		$extras = '
-<script type="text/javascript">
-//<![CDATA[
-(function() {
-	var mySt = new superTable("demoTable", {
-	cssSkin : "sSky",
-	fixedCols : 1,
-	headerRows : 1,
-	onStart : function () {	this.start = new Date();},
-	onFinish : function () {document.getElementById("testDiv").innerHTML += "Finished...<br>" + ((new Date()) - this.start) + "ms.<br>";}
-	});
-})();
-//]]>
-</script>
-';
-		$style ='
-<style type="text/css">
-.fakeContainer { /* The parent container */
-    margin: 5px;
-    padding: 0px;
-    border: none;
-    width: 740px; /* Required to set */
-    height: 320px; /* Required to set */
-    overflow: hidden; /* Required to set */
-}
-</style>	
-		';
-
+		</style>';
 
 		$data['content'] = $grid->output;
 		$data['filtro']  = $filter->output;
 
-		$data["script"]  = script("jquery.js");
-		$data["script"]  .= script("jquery-ui.js");
-		$data["script"]  .= script("jquery.alerts.js");
-		$data["script"] .= script("plugins/jquery.numeric.pack.js");
-		$data["script"] .= script("plugins/jquery.floatnumber.js");
-		$data["script"] .= script('superTables.js');
+		$data['script']  = script('jquery.js');
+		$data['script'] .= script('jquery-ui.js');
+		$data['script'] .= script('jquery.alerts.js');
+		$data['script'] .= script('plugins/jquery.numeric.pack.js');
+		$data['script'] .= script('plugins/jquery.floatnumber.js');
+		$data['script'] .= script('superTables.js');
 		$data['script'] .= $script;
 
 		$data['style']   = $style;
 		$data['style']  .= style('superTables.css');
-		$data['style']	.= style("jquery.alerts.css");
+		$data['style']  .= style('jquery.alerts.css');
 
 		$data['extras']  = $extras;
 		$data['title']   = heading('Maestro de Inventario ');
 
-		$data["head"]   = $this->rapyd->get_head();
+		$data['head']   = $this->rapyd->get_head();
 
 		$this->load->view('view_ventanas', $data);
 	}
-
 
 	// *********************************************************************************************************
 	//
@@ -561,171 +553,168 @@ function cambmarca(){
 		$link40=site_url('inventario/sinv/sinvdescu/'.$id);
 		$link41=site_url('inventario/sinv/sinvcliente/');
 
-		$script='
-<script type="text/javascript">
-function isNumeric(value) {
-  if (value == null || !value.toString().match(/^[-]?\d*\.?\d*$/)) return false;
-  return true;
-};
+		$script='<script type="text/javascript">
+		function isNumeric(value) {
+		  if (value == null || !value.toString().match(/^[-]?\d*\.?\d*$/)) return false;
+		  return true;
+		};
 
-$(document).ready(function() {
+		$(document).ready(function() {
+			$("#depto").change(function(){dpto_change(); });
+			$("#linea").change(function(){ $.post("'.$link14.'",{ linea:$(this).val() },function(data){$("#grupo").html(data);}) });
 
-	$("#depto").change(function(){dpto_change(); });
-	$("#linea").change(function(){ $.post("'.$link14.'",{ linea:$(this).val() },function(data){$("#grupo").html(data);}) });
+			$("#tdecimal").change(function(){
+				var clase;
+				if($(this).attr("value")=="S") clase="inputnum"; else clase="inputonlynum";	
+				$("#exmin").unbind();$("#exmin").removeClass(); $("#exmin").addClass(clase);
+				$("#exmax").unbind();$("#exmax").removeClass(); $("#exmax").addClass(clase);
+				$("#exord").unbind();$("#exord").removeClass(); $("#exord").addClass(clase);
+				$("#exdes").unbind();$("#exdes").removeClass(); $("#exdes").addClass(clase);
+				$(".inputnum").numeric(".");
+				$(".inputonlynum").numeric("0");
+			});
+			requeridos(true);
 
-	$("#tdecimal").change(function(){
-		var clase;
-		if($(this).attr("value")=="S") clase="inputnum"; else clase="inputonlynum";	
-		$("#exmin").unbind();$("#exmin").removeClass(); $("#exmin").addClass(clase);
-		$("#exmax").unbind();$("#exmax").removeClass(); $("#exmax").addClass(clase);
-		$("#exord").unbind();$("#exord").removeClass(); $("#exord").addClass(clase);
-		$("#exdes").unbind();$("#exdes").removeClass(); $("#exdes").addClass(clase);
-		$(".inputnum").numeric(".");
-		$(".inputonlynum").numeric("0");
-	});
-	requeridos(true);
+			$( "#dialog:ui-dialog" ).dialog( "destroy" );
 
-	$( "#dialog:ui-dialog" ).dialog( "destroy" );
+			var proveedor = $( "#proveedor" ),
+				cod_prv = $( "#cod_prv" ),
+				codigo = $( "#codigo" ),
+				cod_cli = $( "#cod_cli" ),
+				descuento = $( "#descuento" ),
+				tipo = $( "#tipo" ),
+				allFields = $( [] ).add( proveedor ).add( codigo ).add( cod_prv ),
+				tips = $( ".validateTips" );
 
-	var proveedor = $( "#proveedor" ),
-		cod_prv = $( "#cod_prv" ),
-		codigo = $( "#codigo" ),
-		cod_cli = $( "#cod_cli" ),
-		descuento = $( "#descuento" ),
-		tipo = $( "#tipo" ),
-		allFields = $( [] ).add( proveedor ).add( codigo ).add( cod_prv ),
-		tips = $( ".validateTips" );
+			$( "#sinvprv" ).dialog({
+				autoOpen: false,
+				height: 300,
+				width: 350,
+				modal: true,
+				buttons: {
+					"Guardar Codigo": function() {
+						var bValid = true;
+						allFields.removeClass( "ui-state-error" );
 
-	$( "#sinvprv" ).dialog({
-		autoOpen: false,
-		height: 300,
-		width: 350,
-		modal: true,
-		buttons: {
-			"Guardar Codigo": function() {
-				var bValid = true;
-				allFields.removeClass( "ui-state-error" );
+						bValid = bValid && checkLength( proveedor, "proveedor", 3, 50 );
+						bValid = bValid && checkLength( cod_prv, "cod_prv", 1, 5 );
+						bValid = bValid && checkLength( codigo, "codigo", 6, 15 );
 
-				bValid = bValid && checkLength( proveedor, "proveedor", 3, 50 );
-				bValid = bValid && checkLength( cod_prv, "cod_prv", 1, 5 );
-				bValid = bValid && checkLength( codigo, "codigo", 6, 15 );
+						//bValid = bValid && checkRegexp( proveedor, /^[a-z]([0-9a-z_])+$/i, "Username may consist of a-z, 0-9, underscores, begin with a letter." );
+						// From jquery.validate.js (by joern), contributed by Scott Gonzalez: http://projects.scottsplayground.com/email_address_validation/
+						//bValid = bValid ;
+						if ( bValid ) {
+							/*
+							$( "#users tbody" ).append( "<tr>" +
+								"<td>" + cod_prv.val() + "</"+"td>" + 
+								"<td>" + proveedor.val() + "</"+"td>" + 
+								"<td>" + codigo.val() + "</"+"td>" + 
+							"</"+"tr>" );
+							*/
+							$.ajax({
+								  url: "'.$link29.'/"+cod_prv.val()+"/"+codigo.val(),
+								  //context: document.body,
+								  success: function(msg){
+								    alert("Terminado: "+msg);
+								  }
+							});
 
-				//bValid = bValid && checkRegexp( proveedor, /^[a-z]([0-9a-z_])+$/i, "Username may consist of a-z, 0-9, underscores, begin with a letter." );
-				// From jquery.validate.js (by joern), contributed by Scott Gonzalez: http://projects.scottsplayground.com/email_address_validation/
-				//bValid = bValid ;
-				if ( bValid ) {
-					/*
-					$( "#users tbody" ).append( "<tr>" +
-						"<td>" + cod_prv.val() + "</"+"td>" + 
-						"<td>" + proveedor.val() + "</"+"td>" + 
-						"<td>" + codigo.val() + "</"+"td>" + 
-					"</"+"tr>" );
-					*/
-					$.ajax({
-						  url: "'.$link29.'/"+cod_prv.val()+"/"+codigo.val(),
-						  //context: document.body,
-						  success: function(msg){
-						    alert("Terminado: "+msg);
-						  }
-					});					
-					
-					
-					$( this ).dialog( "close" );
-				}
-			},
-			Cancelar: function() {
-				$( this ).dialog( "close" );
-			}
-		},
-		close: function() {
-			allFields.val( "" ).removeClass( "ui-state-error" );
-		}
-	});
-	$( "#sinvdescu" ).dialog({
-		autoOpen: false,
-		height: 350,
-		width: 350,
-		modal: true,
-		buttons: {
-			"Guardar Descuento": function() {
-				var bValid = true;
-				allFields.removeClass( "ui-state-error" );
-
-				//bValid = bValid && checkLength( cliente,   "cliente",   3, 50 );
-				//bValid = bValid && checkLength( cod_cli,   "cod_cli",   1,  5 );
-				//bValid = bValid && checkLength( descuento, "descuento", 1, 15 );
-				//bValid = bValid && checkLength( tipo, "tipo", 1, 1 );
-				if ( bValid ) {
-					$.ajax({
-						url: "'.$link40.'/"+cod_cli.val()+"/"+descuento.val()+"/"+tipo.val(),
-						success: function(msg){
-							alert("Terminado: "+msg);
+							$( this ).dialog( "close" );
 						}
-					});
-					$( this ).dialog( "close" );
+					},
+					Cancelar: function() {
+						$( this ).dialog( "close" );
+					}
+				},
+				close: function() {
+					allFields.val( "" ).removeClass( "ui-state-error" );
 				}
-			},
-			Cancelar: function() {
-				$( this ).dialog( "close" );
-			}
-		},
-		close: function() {
-			allFields.val( "" ).removeClass( "ui-state-error" );
-		}
-	});
+			});
+			$( "#sinvdescu" ).dialog({
+				autoOpen: false,
+				height: 350,
+				width: 350,
+				modal: true,
+				buttons: {
+					"Guardar Descuento": function() {
+						var bValid = true;
+						allFields.removeClass( "ui-state-error" );
 
-	$( "#proveedor" ).autocomplete({
-		source: function( req, add){
-			$.ajax({
-				url: "'.$link28.'",
-				type: "POST",
-				dataType: "json",
-				data: "tecla="+req.term,
-				success:
-					function(data) {
-						var sugiere = [];
-						$.each(data,
-							function(i, val){
-								sugiere.push( val );
-							}
-						);
-						add(sugiere);
+						//bValid = bValid && checkLength( cliente,   "cliente",   3, 50 );
+						//bValid = bValid && checkLength( cod_cli,   "cod_cli",   1,  5 );
+						//bValid = bValid && checkLength( descuento, "descuento", 1, 15 );
+						//bValid = bValid && checkLength( tipo, "tipo", 1, 1 );
+						if ( bValid ) {
+							$.ajax({
+								url: "'.$link40.'/"+cod_cli.val()+"/"+descuento.val()+"/"+tipo.val(),
+								success: function(msg){
+									alert("Terminado: "+msg);
+								}
+							});
+							$( this ).dialog( "close" );
+						}
 					},
-			})
-		},
-		minLength: 3,
-		select: function(evento, ui){
-			//$("#proveedor").val(ui.item.value.substr(0,ui.item.value.length-6));
-			//$("#cod_prv").val(ui.item.value.substr(ui.item.value.length-6, 5));
-			$("#cod_prv").val(ui.item.codigo);
-		}
-	});
-	$( "#cliente" ).autocomplete({
-		source: function( req, add){
-			$.ajax({
-				url: "'.$link41.'",
-				type: "POST",
-				dataType: "json",
-				data: "tecla="+req.term,
-				success:
-					function(data) {
-						var sugiere = [];
-						$.each(data,
-							function(i, val){
-								sugiere.push( val );
-							}
-						);
-						add(sugiere);
-					},
-			})
-		},
-		minLength: 3,
-		select: function(evento, ui){
-			$("#cod_cli").val(ui.item.codigo);
-		}
-	});
+					Cancelar: function() {
+						$( this ).dialog( "close" );
+					}
+				},
+				close: function() {
+					allFields.val( "" ).removeClass( "ui-state-error" );
+				}
+			});
 
-////////////////////////////////////////////////////////////////////////////////
+			$( "#proveedor" ).autocomplete({
+				source: function( req, add){
+					$.ajax({
+						url: "'.$link28.'",
+						type: "POST",
+						dataType: "json",
+						data: "tecla="+req.term,
+						success:
+							function(data) {
+								var sugiere = [];
+								$.each(data,
+									function(i, val){
+										sugiere.push( val );
+									}
+								);
+								add(sugiere);
+							},
+					})
+				},
+				minLength: 3,
+				select: function(evento, ui){
+					//$("#proveedor").val(ui.item.value.substr(0,ui.item.value.length-6));
+					//$("#cod_prv").val(ui.item.value.substr(ui.item.value.length-6, 5));
+					$("#cod_prv").val(ui.item.codigo);
+				}
+			});
+			$( "#cliente" ).autocomplete({
+				source: function( req, add){
+					$.ajax({
+						url: "'.$link41.'",
+						type: "POST",
+						dataType: "json",
+						data: "tecla="+req.term,
+						success:
+							function(data) {
+								var sugiere = [];
+								$.each(data,
+									function(i, val){
+										sugiere.push( val );
+									}
+								);
+								add(sugiere);
+							},
+					})
+				},
+				minLength: 3,
+				select: function(evento, ui){
+					$("#cod_cli").val(ui.item.codigo);
+				}
+			});
+
+		////////////////////////////////////////////////////////////////////////////////
         $("#modalDiv").dialog({
                 modal: true,
                 autoOpen: false,
@@ -835,7 +824,7 @@ function add_unidad(){
 			data: "valor="+unidad,
 			success: function(msg){
 				if(msg=="s.i"){
-					unidad=unidad.substr(0,8);					
+					unidad=unidad.substr(0,8);
 					$.post("'.$link6.'",{ x:"" },function(data){$("#unidad").html(data);$("#unidad").val(unidad);})
 				}
 				else{
@@ -878,7 +867,7 @@ function add_linea(){
 		}else{
 		linea=prompt("Introduza el nombre de la LINEA a agregar al DEPARTAMENTO seleccionado");
 		if(linea==null){
-		}else{			
+		}else{
 			$.ajax({
 			 type: "POST",
 			 processData:false,
@@ -990,7 +979,7 @@ function sinvcodigocambia( mtipo, mviejo, mcodigo ) {
 		error: function(h,t,e) {jAlert("Error..","Finalizado con Error" )
 		}
 	});
-	
+
 	if( mtipo=="N" ) {
 		location.reload(true);
 	} else {
@@ -1019,6 +1008,7 @@ function sinvbarras(mcodigo){
 		}
 	})
 };
+
 function sinvpromo(mcodigo){
 	jPrompt("Descuento Promocional","" ,"Descuento", function(margen){
 		if( margen==null ){
@@ -1092,50 +1082,53 @@ function sinvborraprv(mproveed, mcodigo){
 		}
 	);
 };
-</script>
-';
+</script>';
 
-		$do = new DataObject("sinv");
-		if($status=="create" && !empty($id)){
+		$do = new DataObject('sinv');
+		if($status=='create' && !empty($id)){
 			$do->load($id);
 			$do->set('codigo', '');
 		}
 
-		$edit = new DataEdit("Maestro de Inventario", $do);
+		$edit = new DataEdit('Maestro de Inventario', $do);
 		$edit->pre_process('insert','_pre_inserup');
 		$edit->pre_process('update','_pre_inserup');
 		$edit->pre_process('delete','_pre_del');
+		$edit->post_process('insert','_post_insert');
+		$edit->post_process('update','_post_update');
+		$edit->post_process('delete','_post_delete');
 
-		$edit->script($script,"create");
-		$edit->script($script,"modify");
-		$edit->back_url = site_url("inventario/sinv/filteredgrid");
+
+		$edit->script($script,'create');
+		$edit->script($script,'modify');
+		$edit->back_url = site_url('inventario/sinv/filteredgrid');
 
 		$ultimo='<a href="javascript:ultimo();" title="Consultar ultimo c&oacute;digo ingresado"> Consultar ultimo c&oacute;digo</a>';
 		$sugerir='<a href="javascript:sugerir();" title="Sugerir un C&oacute;digo aleatorio">Sugerir C&oacute;digo </a>';
 
-		$edit->codigo = new inputField("C&oacute;digo", "codigo");
+		$edit->codigo = new inputField('C&oacute;digo', 'codigo');
 		$edit->codigo->size=15;
 		$edit->codigo->maxlength=15;
-		$edit->codigo->rule = "trim|required|strtoupper|callback_chexiste";
-		$edit->codigo->mode="autohide";
+		$edit->codigo->rule = 'trim|required|strtoupper|callback_chexiste';
+		$edit->codigo->mode = 'autohide';
 		$edit->codigo->append($sugerir);
 		$edit->codigo->append($ultimo);
 
-		$edit->alterno = new inputField("C&oacute;digo Alterno", "alterno");
-		$edit->alterno->size=15;  
+		$edit->alterno = new inputField('C&oacute;digo Alterno', 'alterno');
+		$edit->alterno->size=15;
 		$edit->alterno->maxlength=15;
-		$edit->alterno->rule = "trim|strtoupper|unique";
-		
+		$edit->alterno->rule = 'trim|strtoupper|unique';
+
 		$edit->enlace  = new inputField("C&oacute;digo Caja", "enlace");
 		$edit->enlace ->size=15;
 		$edit->enlace->maxlength=15;
 		$edit->enlace->rule = "trim|strtoupper";
-				
+
 		$edit->barras = new inputField("C&oacute;digo Barras", "barras");
 		$edit->barras->size=15;
 		$edit->barras->maxlength=15;
 		$edit->barras->rule = "trim";
-		
+
 		$edit->tipo = new dropdownField("Tipo", "tipo");
 		$edit->tipo->style='width:100px;';
 		$edit->tipo->option("Articulo","Art&iacute;culo" );
@@ -1144,18 +1137,18 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->tipo->option("Consumo","Consumo");
 		$edit->tipo->option("Fraccion","Fracci&oacute;n");
 		$edit->tipo->option("Lote","Lote");
-		
+
 		$AddUnidad='<a href="javascript:add_unidad();" title="Haz clic para Agregar una unidad nueva">'.image('list_plus.png','Agregar',array("border"=>"0")).'</a>';
 		$edit->unidad = new dropdownField("Unidad","unidad");
 		$edit->unidad->style='width:100px;';
-		$edit->unidad->option("","");
+		$edit->unidad->option('','Seleccionar');
 		$edit->unidad->options("SELECT unidades, unidades as valor FROM unidad ORDER BY unidades");
 		$edit->unidad->append($AddUnidad);
 
 		$edit->clave = new inputField("Clave", "clave");
 		$edit->clave->size=10;
 		$edit->clave->maxlength=8;
-		$edit->clave->rule = "trim|strtoupper";
+		$edit->clave->rule = 'trim|strtoupper';
 
 		$AddDepto='<a href="javascript:add_depto();" title="Haz clic para Agregar un nuevo Departamento">'.image('list_plus.png','Agregar',array("border"=>"0")).'</a>';
 		$edit->depto = new dropdownField("Departamento", "depto");
@@ -1182,7 +1175,7 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->grupo->rule="required";
 		$edit->grupo->style='width:300px;';
 		$edit->grupo->append($AddGrupo);
-		
+
 		$linea=$edit->getval('linea');
 		if($linea!==FALSE){
 			$edit->grupo->options("SELECT grupo, CONCAT(grupo,'-',nom_grup) nom_grup FROM grup WHERE linea='$linea' ORDER BY nom_grup");
@@ -1241,7 +1234,6 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->peso->css_class='inputnum';
 		$edit->peso->rule='numeric|callback_positivo|trim';
 
-
 		$edit->alto = new inputField("Alto", "alto");
 		$edit->alto->size=10;
 		$edit->alto->maxlength=12;
@@ -1259,8 +1251,6 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->largo->maxlength=12;
 		$edit->largo->css_class='inputnum';
 		$edit->largo->rule='numeric|callback_positivo|trim';
-
-
 
 		$edit->garantia = new inputField("Garantia", "garantia");
 		$edit->garantia->size=5;
@@ -1294,7 +1284,7 @@ function sinvborraprv(mproveed, mcodigo){
 			$edit->iva->option($ivamonto,nformat($ivamonto));
 		}
 		$edit->iva->style='width:100px;';
-		
+
 		$edit->exento = new dropdownField("Vender Exento", "exento");
 		$edit->exento->style='width:50px;';
 		$edit->exento->option("N","No" );
@@ -1338,7 +1328,7 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->redecen->option("F","Sin Decimales");
 		$edit->redecen->option("D","Decenas" );  
 		$edit->redecen->option("C","Centenas"  );
-		
+
 		for($i=1;$i<=4;$i++){
 			$objeto="margen$i";
 			$edit->$objeto = new inputField("Margen $i", $objeto);
@@ -1423,7 +1413,6 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->bonifica->css_class='inputonlynum';
 		$edit->bonifica->rule='numeric|callback_positivo|trim';
 
-
 		for($i=1;$i<=3;$i++){
 			$objeto="pfecha$i";
 			$edit->$objeto = new dateField("Fecha $i",$objeto,'d/m/Y');
@@ -1464,12 +1453,12 @@ function sinvborraprv(mproveed, mcodigo){
 		$codigo=$edit->_dataobject->get("codigo");
 		$edit->almacenes = new containerField('almacenes',$this->_detalle($codigo));
 		$edit->almacenes->when = array("show","modify");
-		
+
 		$edit->mmargen = new inputField("Descuento  al Mayor",'mmargen');
 		$edit->mmargen->css_class='inputnum';
 		$edit->mmargen->size=10;
 		$edit->mmargen->maxlength=10;
-		
+
 		$edit->pm = new inputField("Margen al Mayor",'pm');
 		$edit->pm->css_class='inputnum';
 		$edit->pm->size=10;
@@ -1478,113 +1467,109 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->buttons("modify", "save", "undo", "delete", "back");
 		$edit->build();
 
+		$style = '<style type="text/css">
+		.maintabcontainer {width: 780px; margin: 5px auto;}
+		div#sinvprv label { display:block; }
+		div#sinvprv input { display:block; }
+		div#sinvprv input.text { margin-bottom:12px; width:95%; padding: .4em; }
+		div#sinvprv fieldset { padding:0; border:0; margin-top:20px; }
+		div#sinvprv h1 { font-size: 1.2em; margin: .6em 0; }
+		div#sinvdescu label { display:block; }
+		div#sinvdescu input { display:block; }
+		div#sinvdescu input.text { margin-bottom:12px; width:95%; padding: .4em; }
+		div#sinvdescu select { display:block; }
+		div#sinvdescu select.text { margin-bottom:12px; width:95%; padding: .4em; }
+		div#sinvdescu fieldset { padding:0; border:0; margin-top:20px; }
+		div#sinvdescu h1 { font-size: 1.2em; margin: .6em 0; }
+		.ui-dialog .ui-state-error { padding: .3em; }
+		.validateTips { border: 1px solid transparent; padding: 0.3em; }
+		</style>';
 
-		$style = '
-<style type="text/css">
-.maintabcontainer {width: 780px; margin: 5px auto;}
-div#sinvprv label { display:block; }
-div#sinvprv input { display:block; }
-div#sinvprv input.text { margin-bottom:12px; width:95%; padding: .4em; }
-div#sinvprv fieldset { padding:0; border:0; margin-top:20px; }
-div#sinvprv h1 { font-size: 1.2em; margin: .6em 0; }
-div#sinvdescu label { display:block; }
-div#sinvdescu input { display:block; }
-div#sinvdescu input.text { margin-bottom:12px; width:95%; padding: .4em; }
-div#sinvdescu select { display:block; }
-div#sinvdescu select.text { margin-bottom:12px; width:95%; padding: .4em; }
-div#sinvdescu fieldset { padding:0; border:0; margin-top:20px; }
-div#sinvdescu h1 { font-size: 1.2em; margin: .6em 0; }
-.ui-dialog .ui-state-error { padding: .3em; }
-.validateTips { border: 1px solid transparent; padding: 0.3em; }
-</style>
-';
 		$mcodigo = $edit->codigo->value;
 		$mfdesde = $this->datasis->dameval("SELECT ADDDATE(MAX(fecha),-30) FROM costos WHERE codigo='".addslashes($mcodigo)."'");
 		$mfhasta  = $this->datasis->dameval("SELECT MAX(fecha) FROM costos WHERE codigo='".addslashes($mcodigo)."'");
 
-		$extras = '
-<div style="display: none">
-	<form action="'.base_url().'/inventario/kardex/filteredgrid/search/osp" method="post" id="kardex" name="kardex" target="kpopup">
-		<input type="text" name="codigo" value="'.$mcodigo.'" />
-		<input type="text" name="ubica"  value="" />
-		<input type="text" name="fecha"  value="'.dbdate_to_human($mfdesde).'" />
-		<input type="text" name="fechah" value="'.dbdate_to_human($mfhasta).'" />
-		<input type="submit" />
-	</form>
-</div>
-<div id="sinvprv" title="Agregar codigo de Proveedor">
-	<p class="validateTips">Codigo del proveedor para este producto</p>
-	<form>
-	<fieldset>
-		<label for="proveedor">Proveedor</label>
-		<table cellspacing="0" cellpadding="0" width="100%">
-			<tr>
-				<td>
-					<input type="text" size="80" name="proveedor" id="proveedor" class="text ui-widget-content ui-corner-all" />
-				</td>
-				<td>
-					<input type="text" readonly="readonly" size="8" name="cod_prv" id="cod_prv" class="text ui-widget-content ui-corner-all" />
-				</td>
-			</tr>
-		</table>
-		<label for="codigo">Codigo</label>
-		<input type="text" name="codigo" id="codigo" value="" class="text ui-widget-content ui-corner-all" />
-	</fieldset>
-	</form>
-</div>
-<div id="sinvdescu" title="Agregar Descuento">
-	<p class="validateTips">Descuento para este producto</p>
-	<form>
-	<fieldset>
-		<label for="cliente">Cliente</label>
-		<table cellspacing="0" cellpadding="0" width="100%">
-			<tr>
-				<td>
-					<input type="text" size="80" name="cliente" id="cliente" class="text ui-widget-content ui-corner-all" />
-				</td>
-				<td>
-					<input type="text" readonly="readonly" size="8" name="cod_cli" id="cod_cli" class="text ui-widget-content ui-corner-all" />
-				</td>
-			</tr>
-		</table>
-		<label for="descuento">Porcentaje %</label>
-		<input type="text" name="descuento" id="descuento" value="" class="text ui-widget-content ui-corner-all" />
-		<label for="descuento">Aplicacion del Porcentaje</label>
-		<select name="tipo" id="tipo" value="D" class="text ui-widget-content ui-corner-all" >
-			<option value="D">Descuento: Precio1 - Porcentaje</option>
-			<option value="A">Aumento: Costo + Porcentaje</option>
-		</select>
-	</fieldset>
-	</form>
-</div>
-<script type="text/javascript">
-function submitkardex() {
-	window.open("", "kpopup", "width=800,height=600,resizeable,scrollbars");
-	document.kardex.submit();
-}
-</script>
-';
+		$extras = '<div style="display: none">
+			<form action="'.base_url().'/inventario/kardex/filteredgrid/search/osp" method="post" id="kardex" name="kardex" target="kpopup">
+				<input type="text" name="codigo" value="'.$mcodigo.'" />
+				<input type="text" name="ubica"  value="" />
+				<input type="text" name="fecha"  value="'.dbdate_to_human($mfdesde).'" />
+				<input type="text" name="fechah" value="'.dbdate_to_human($mfhasta).'" />
+				<input type="submit" />
+			</form>
+		</div>
+		<div id="sinvprv" title="Agregar codigo de Proveedor">
+			<p class="validateTips">Codigo del proveedor para este producto</p>
+			<form>
+			<fieldset>
+				<label for="proveedor">Proveedor</label>
+				<table cellspacing="0" cellpadding="0" width="100%">
+					<tr>
+						<td>
+							<input type="text" size="80" name="proveedor" id="proveedor" class="text ui-widget-content ui-corner-all" />
+						</td>
+						<td>
+							<input type="text" readonly="readonly" size="8" name="cod_prv" id="cod_prv" class="text ui-widget-content ui-corner-all" />
+						</td>
+					</tr>
+				</table>
+				<label for="codigo">Codigo</label>
+				<input type="text" name="codigo" id="codigo" value="" class="text ui-widget-content ui-corner-all" />
+			</fieldset>
+			</form>
+		</div>
+		<div id="sinvdescu" title="Agregar Descuento">
+			<p class="validateTips">Descuento para este producto</p>
+			<form>
+			<fieldset>
+				<label for="cliente">Cliente</label>
+				<table cellspacing="0" cellpadding="0" width="100%">
+					<tr>
+						<td>
+							<input type="text" size="80" name="cliente" id="cliente" class="text ui-widget-content ui-corner-all" />
+						</td>
+						<td>
+							<input type="text" readonly="readonly" size="8" name="cod_cli" id="cod_cli" class="text ui-widget-content ui-corner-all" />
+						</td>
+					</tr>
+				</table>
+				<label for="descuento">Porcentaje %</label>
+				<input type="text" name="descuento" id="descuento" value="" class="text ui-widget-content ui-corner-all" />
+				<label for="descuento">Aplicacion del Porcentaje</label>
+				<select name="tipo" id="tipo" value="D" class="text ui-widget-content ui-corner-all" >
+					<option value="D">Descuento: Precio1 - Porcentaje</option>
+					<option value="A">Aumento: Costo + Porcentaje</option>
+				</select>
+			</fieldset>
+			</form>
+		</div>
+		<script type="text/javascript">
+		function submitkardex() {
+			window.open("", "kpopup", "width=800,height=600,resizeable,scrollbars");
+			document.kardex.submit();
+		}
+		</script>';
 
 		$smenu['link']   = barra_menu('301');
 
-		$conten["form"]  =&  $edit;
+		$conten['form']  =&  $edit;
 		$data['content'] = $this->load->view('view_sinv', $conten,true);
 
-		$data["script"]   = script("jquery.js");
-		$data["script"]  .= script("jquery-ui.js");
-		$data["script"]  .= script("jquery.alerts.js");
-		$data["script"]  .= script("plugins/jquery.blockUI.js");
-		$data["script"]  .= script("plugins/jquery.numeric.pack.js");
-		$data["script"]  .= script("plugins/jquery.floatnumber.js");
-		$data["script"]  .= script("sinvmaes.js");
-		$data["script"]  .= $script;
+		$data['script']  = script('jquery.js');
+		$data['script'] .= script('jquery-ui.js');
+		$data['script'] .= script('jquery.alerts.js');
+		$data['script'] .= script('plugins/jquery.blockUI.js');
+		$data['script'] .= script('plugins/jquery.numeric.pack.js');
+		$data['script'] .= script('plugins/jquery.floatnumber.js');
+		$data['script'] .= script('sinvmaes.js');
+		$data['script'] .= $script;
 
-		$data['style']	 = style("jquery.alerts.css");
-		$data['style']	.= style("redmond/jquery-ui.css");
-		$data['style']	.= $style;
-		
+		$data['style']   = style('jquery.alerts.css');
+		$data['style']  .= style('redmond/jquery-ui.css');
+		$data['style']  .= $style;
+
 		$data['extras']  = $extras;
-		$data["head"]   = $this->rapyd->get_head();
+		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = heading( substr($edit->descrip->value,0,30) );
 		$this->load->view('view_ventanas', $data);
 	}
@@ -1652,7 +1637,7 @@ function submitkardex() {
 		$porcent = $this->uri->segment($this->uri->total_segments());
 		$id = $this->uri->segment($this->uri->total_segments()-1);
 		$data = $this->datasis->damesesion($id);
-		
+
 		$from  = $data['data1'];
 		$where = $data['data2'];
 
@@ -1683,9 +1668,8 @@ function submitkardex() {
 	function sinvcamgrup() {
 		$productos  = $this->input->post('productos');
 		$mgrupo     = rawurldecode($this->input->post('grupo'));
-		
-		if ( $this->datasis->dameval("SELECT COUNT(*) FROM grup WHERE grupo='$mgrupo'") == 0 )
-		{
+
+		if($this->datasis->dameval("SELECT COUNT(*) FROM grup WHERE grupo='$mgrupo'") == 0 ){
 			echo "Grupo no existe $mgrupo";
 		} else {
 			//Busca el Depto y Linea del grupo
@@ -1707,9 +1691,8 @@ function submitkardex() {
 	function sinvcammarca() {
 		$productos  = $this->input->post('productos');
 		$mmarca     = rawurldecode($this->input->post('marca'));
-		
-		if ( $this->datasis->dameval("SELECT COUNT(*) FROM marc WHERE TRIM(marca)='".addslashes($mmarca)."'") == 0 )
-		{
+
+		if($this->datasis->dameval("SELECT COUNT(*) FROM marc WHERE TRIM(marca)='".addslashes($mmarca)."'") == 0 ){
 			echo "Marca no existe $mmarca";
 		} else {
 			//Busca el Depto y Linea del grupo
@@ -1721,7 +1704,6 @@ function submitkardex() {
 		}
 	}
 
-		
 	//*****************************
 	//
 	//  Cambia el Codigo
@@ -1738,7 +1720,7 @@ function submitkardex() {
 		echo $devo;
 	}
 
-	// Cambia el codigo	
+	// Cambia el codigo
 	function sinvcodigo() {
 		$mexiste  = $this->input->post('tipo');
 		$mcodigo  = rawurldecode($this->input->post('codigo'));
@@ -1746,8 +1728,8 @@ function submitkardex() {
 
 		$mviejo  = $this->datasis->dameval("SELECT codigo FROM sinv WHERE id=$mviejoid ");
 		//echo "$mexiste  $mcodigo  $mviejo ";
-		
-		if ( $mexiste=='S' ) {
+
+		if($mexiste=='S'){
 			$mSQL = "DELETE FROM sinv WHERE codigo='".addslashes($mviejo)."'";
 			$this->db->simple_query($mSQL);
 		} else {
@@ -1765,14 +1747,14 @@ function submitkardex() {
 						WHERE codigo='".addslashes($mcodigo)."' AND alma='".addslashes($row->alma)."'";
 					$this->db->simple_query($mSQL);
 					$mexisten += $row->existen;
-				}				
+				}
 			}
 			//Actualiza sinv
 			$mSQL = "UPDATE sinv SET existen=exiten+".$mexisten." WHERE codigo='".addslashes($mcodigo)."'";
 			// Borra los items
 			$mSQL = "DELETE FROM itsinv WHERE codigo='".addslashes($mviejo)."'";
 			$this->db->simple_query($mSQL);
-		} else { 
+		}else{
 			$mSQL = "UPDATE itsinv SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."' ";
 			$this->db->simple_query($mSQL);
 		}
@@ -1835,7 +1817,7 @@ function submitkardex() {
 		$mcodigo  = $this->datasis->dameval("SELECT codigo FROM sinv WHERE id=$mid");
 		$htmlcod  = addslashes($mcodigo);
 		//echo "SELECT codigo FROM sinv WHERE id=$mid";
-		
+
 		//Busca si ya esta
 		$check = $this->datasis->dameval("SELECT COUNT(*) FROM sinv WHERE codigo='$mbarras' OR barras='$mbarras' OR alterno='$mbarras' ");
 		if ($check > 0 ) {
@@ -1866,7 +1848,7 @@ function submitkardex() {
 	function sinvborraprv() {
 		$codigo   = $this->input->post('codigo');
 		$proveed  = $this->input->post('proveed');
-		
+
 		$mSQL = "DELETE FROM sinvprov WHERE codigop='$codigo' AND proveed='$proveed'";
 		$this->db->simple_query($mSQL);
 		logusu("SINV","Eliminado Codigo de proveedor $codigo => $proveed");
@@ -1917,7 +1899,6 @@ function submitkardex() {
 		echo $data;
 	}
 
-	
 	// Agrega el codigo del producto segun el Proveedor
 	function sinvsprv(){
 		$codigo  = $this->uri->segment($this->uri->total_segments());
@@ -1926,26 +1907,25 @@ function submitkardex() {
 		$mSQL = "REPLACE INTO sinvprov SELECT '$cod_prv' proveed, '$codigo' codigop, codigo FROM sinv WHERE id=$id ";
 		$this->db->simple_query($mSQL);
 		echo " codigo=$codigo guardado al prv $cod_prv " ;
-		
 	}
 
 	//*************************
 	//
-	//
 	// Promociones
+	//
 	function sinvpromo() {
 		$mid     = $this->input->post('id');
 		$margen  = $this->input->post('margen');
 		$mcodigo = $this->datasis->dameval("SELECT codigo FROM sinv WHERE id=$mid");
 		$htmlcod = addslashes($mcodigo);
-		
+
 		//Busca si ya esta
 		$check = $this->datasis->dameval("SELECT count(*) FROM sinvpromo WHERE codigo='".$htmlcod."'");
 
 		if ($check == 0 ) {
 			$this->db->simple_query("INSERT INTO sinvpromo SET codigo='"+$htmlcod+"'");
 		}
-		
+
 		if ( $margen == 0 ) {
 			$mSQL = "DELETE FROM sinvpromo WHERE WHERE codigo='$htmlcod' ";
 		} else {
@@ -1964,17 +1944,17 @@ function submitkardex() {
 		$porcent  = $this->uri->segment($this->uri->total_segments()-1);
 		$cod_cli  = $this->uri->segment($this->uri->total_segments()-2);
 		$id       = $this->uri->segment($this->uri->total_segments()-3);
-		
+
 		$codigo   = $this->datasis->dameval("SELECT codigo FROM sinv WHERE id=$id");
 		$htmlcod = addslashes($codigo);
-		
+
 		//Busca si ya esta
 		$check = $this->datasis->dameval("SELECT count(*) FROM sinvpromo a JOIN sinv b ON a.codigo=b.codigo WHERE b.id=$id AND cliente='".$cod_cli."'");
 
 		if ($check == 0 ) {
 			$this->db->simple_query("INSERT INTO sinvpromo SET codigo='".$htmlcod."', cliente='$cod_cli'");
 		}
-		
+
 		if ( $porcent == 0 ) {
 			$mSQL = "DELETE FROM sinvpromo WHERE codigo='$htmlcod' AND cliente='$cod_cli'";
 		} else {
@@ -1982,21 +1962,20 @@ function submitkardex() {
 		}
 		$this->db->simple_query($mSQL);
 		logusu("SINV","Promocion cliente $cod_cli codigo ".$htmlcod."-->".$porcent);
-		
+
 		echo "Descuento Guardado ";
 	}
 
-
 	function cprecios(){
 		$this->rapyd->uri->keep_persistence();
-		
+
 		$cpre=$this->input->post('pros');
 		if($cpre!==false){
 			$msj=$this->_cprecios();
 		}else{
 			$msj='';
 		}
-		
+
 		$this->rapyd->load("datafilter2","datagrid");
 		$mSPRV=array(
 				'tabla'   =>'sprv',
@@ -2252,10 +2231,14 @@ function submitkardex() {
 				$mSQL="UPDATE `sinv` SET ${campos} WHERE id=${dbid}";
 				$ban=$this->db->simple_query($mSQL);
 				if($ban==false){ memowrite($mSQL,'sinv'); $error++; }
+
+				$cod=$this->datasis->dameval('SELECT codigo FROM sinv WHERE id='.$dbid);
+				logusu('sinv',"Cambio de precios a $cod $p1; $p2; $p3; $p4");
 			}else{
 				$codigo=$this->datasis->dameval("SELECT codigo FROM sinv WHERE id=${dbid}");
 				$msj.='En el art&iacute;culo '.TRIM($codigo).' no se actualizo porque los precios deben tener valores mayores que el costo y en forma decrecientes (Precio 1 >= Precio 2 >= Precio 3 >= Precio 4).'.br();
 			}
+			
 		}
 		if($error>0) $msj.='Hubo alg&uacute;n error, se gener&oacute; un centinela';
 		return $msj;
@@ -2320,25 +2303,23 @@ function submitkardex() {
 			$grid->db->where('codigo',$codigo);
 
 			//$link=anchor('/inventario/caub/dataedit/show/<#alma#>','<#alma#>');
-			
 			$link  = "<a href=\"javascript:void(0);\" onclick=\"window.open('".base_url();
 			$link .= "inventario/caub', '_blank', 'width=800,height=600,scrollbars=Yes,status=Yes,resizable=Yes,screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');\" heigth=\"600\"><#alma#></a>";
-			
+
 			$grid->column('Almac&eacute;n' ,$link, "style='font-size:12px;font-weight:bold;'");
 			$grid->column('Nombre'         ,'nombre',"style='font-size: 10px'");
 			$grid->column('Cantidad'       ,'existen','align="right" '."style='font-size: 10px'");
-		
+
 			$grid->build('datagridsimple');
-			
+
 			if($grid->recordCount>0) $salida=$grid->output;
 			$salida = html_entity_decode($salida);
 			$estilo="
-<style type='text/css'>
-.simplerow  { color: #153D51;border-bottom: 1px solid #ECECEC; font-family: Lucida Grande, Verdana, Geneva, Sans-serif;	font-size: 12px; font-weight: bold;}
-.simplehead { background: #382408; border-bottom: 1px solid #ECECEC;color: #EEFFEE;font-family: Lucida Grande, Verdana, Geneva, Sans-serif; font-size: 12px;padding-left:5px;}
-.simpletabla { width:100%;colspacing:0px; colpadding:0px}
-</style>
-";
+			<style type='text/css'>
+			.simplerow  { color: #153D51;border-bottom: 1px solid #ECECEC; font-family: Lucida Grande, Verdana, Geneva, Sans-serif;	font-size: 12px; font-weight: bold;}
+			.simplehead { background: #382408; border-bottom: 1px solid #ECECEC;color: #EEFFEE;font-family: Lucida Grande, Verdana, Geneva, Sans-serif; font-size: 12px;padding-left:5px;}
+			.simpletabla { width:100%;colspacing:0px; colpadding:0px}
+			</style>";
 		}
 		return $estilo.$salida;
 	}
@@ -2359,7 +2340,7 @@ function submitkardex() {
 		}
 		return true;
 	}
-	
+
 	// Trae la descripcion de una Barra
 	function barratonombre(){
 		if($this->input->post('barra')){
@@ -2392,7 +2373,7 @@ function submitkardex() {
 		$mSQL .= "AND a.fecha >= CONCAT(MID(SUBDATE(curdate(),365),1,8),'01') ";
 		$mSQL .= "GROUP BY MID( a.fecha ,1,7)  WITH ROLLUP LIMIT 24";
 		$mGrid1 = '';
-			
+
 		$mSQL  = 'SELECT a.usuario, a.fecha, MID(a.hora,1,5) hora, MID(REPLACE(a.comenta,"ARTICULO DE INVENTARIO",""),1,30) comenta, a.modulo ';
 		$mSQL .= 'FROM logusu a WHERE a.comenta LIKE "%'.addslashes($mCodigo).'%" ';
 		$mSQL .= "ORDER BY a.fecha DESC LIMIT 30";
@@ -2432,95 +2413,90 @@ function submitkardex() {
 			</table>
 			</div>";
 		} else {
-			
 			$mGrid2 = "NO SE ENCONTRO MOVIMIENTO";
 		}
 
 		$descrip = $this->datasis->dameval("SELECT descrip FROM sinv WHERE id=".$claves['id']." ");
 
-/*mes, cventa, mventa, mpvp, ccompra, mcompra,util, margen, promedio*/
-
+		/*mes, cventa, mventa, mpvp, ccompra, mcompra,util, margen, promedio*/
 		$script = "
-<script type=\"text/javascript\" >  
+		<script type=\"text/javascript\" >
 
-<!-- All the scripts will go here  --> 
-var dsOption= {
-	fields :[
-		{name : 'mes'},
-		{name : 'cventa',   type: 'float' },
-		{name : 'mventa',   type: 'float' },
-		{name : 'mpvp' ,    type: 'float' },
-		{name : 'ccompra',  type: 'float' },
-		{name : 'mcompra',  type: 'float' },
-		{name : 'util',     type: 'float' },
-		{name : 'margen',   type: 'float' },
-		{name : 'promedio', type: 'float' }    
-	],
-	recordType : 'object'
-} 
+		<!-- All the scripts will go here  --> 
+		var dsOption= {
+			fields :[
+				{name : 'mes'},
+				{name : 'cventa',   type: 'float' },
+				{name : 'mventa',   type: 'float' },
+				{name : 'mpvp' ,    type: 'float' },
+				{name : 'ccompra',  type: 'float' },
+				{name : 'mcompra',  type: 'float' },
+				{name : 'util',     type: 'float' },
+				{name : 'margen',   type: 'float' },
+				{name : 'promedio', type: 'float' }
+			],
+			recordType : 'object'
+		}
 
-var colsOption = [
-	{id: 'mes',      header: 'Mes',          width :60, frozen: true   },
-	{id: 'cventa' ,  header: 'Cant. Venta',  width :80, align: 'right' },
-	{id: 'mventa' ,  header: 'Costo Venta',  width :80, align: 'right' },
-	{id: 'mpvp' ,    header: 'Precio Venta', width :80, align: 'right' },
-	{id: 'ccompra' , header: 'Cant Compra',  width :80, align: 'right' },
-	{id: 'mcompra' , header: 'Monto Compra', width :80, align: 'right' },
-	{id: 'util' ,    header: 'Utilidad',     width :80, align: 'right' },
-	{id: 'margen' ,  header: 'Margen %',     width :80, align: 'right' },
-	{id: 'promedio', header: 'Costo Prom.',  width :80, align: 'right' }
-];
+		var colsOption = [
+			{id: 'mes',      header: 'Mes',          width :60, frozen: true   },
+			{id: 'cventa' ,  header: 'Cant. Venta',  width :80, align: 'right' },
+			{id: 'mventa' ,  header: 'Costo Venta',  width :80, align: 'right' },
+			{id: 'mpvp' ,    header: 'Precio Venta', width :80, align: 'right' },
+			{id: 'ccompra' , header: 'Cant Compra',  width :80, align: 'right' },
+			{id: 'mcompra' , header: 'Monto Compra', width :80, align: 'right' },
+			{id: 'util' ,    header: 'Utilidad',     width :80, align: 'right' },
+			{id: 'margen' ,  header: 'Margen %',     width :80, align: 'right' },
+			{id: 'promedio', header: 'Costo Prom.',  width :80, align: 'right' }
+		];
 
-var gridOption={
-	id : 'grid1',
-	loadURL : '/proteoerp/inventario/sinv/consulta_ventas/".$id."',
-	container : 'grid1_container', 
-	dataset : dsOption ,
-	columns : colsOption,
-	allowCustomSkin: true,
-	skin: 'vista',
-	toolbarContent: 'pdf'	
-};
- 
+		var gridOption={
+			id : 'grid1',
+			loadURL : '/proteoerp/inventario/sinv/consulta_ventas/".$id."',
+			container : 'grid1_container', 
+			dataset : dsOption ,
+			columns : colsOption,
+			allowCustomSkin: true,
+			skin: 'vista',
+			toolbarContent: 'pdf'
+		};
 
-var dsOption1= {
-	fields :[
-		{name : 'fecha'   },
-		{name : 'usuario' },
-		{name : 'hora'    },
-		{name : 'modulo'  },
-		{name : 'comenta' }
-	],
-	recordType : 'object'
-} 
+		var dsOption1= {
+			fields :[
+				{name : 'fecha'   },
+				{name : 'usuario' },
+				{name : 'hora'    },
+				{name : 'modulo'  },
+				{name : 'comenta' }
+			],
+			recordType : 'object'
+		}
 
-var colsOption1 = [
-	{id: 'fecha',   header: 'Fecha',      width :70, frozen: true },
-	{id: 'usuario', header: 'Usuario',    width :60 },
-	{id: 'hora' ,   header: 'Hora',       width :60 },
-	{id: 'modulo' , header: 'Modulo',     width :60 },
-	{id: 'comenta', header: 'Comentario', width :200 }
-];
+		var colsOption1 = [
+			{id: 'fecha',   header: 'Fecha',      width :70, frozen: true },
+			{id: 'usuario', header: 'Usuario',    width :60 },
+			{id: 'hora' ,   header: 'Hora',       width :60 },
+			{id: 'modulo' , header: 'Modulo',     width :60 },
+			{id: 'comenta', header: 'Comentario', width :200 }
+		];
 
-var gridOption1={
-	id : 'grid2',
-	loadURL : '/proteoerp/inventario/sinv/consulta_logusu/".$id."',
-	container : 'grid2_container', 
-	dataset : dsOption1 ,
-	columns : colsOption1,
-	toolbarContent: 'pdf',
-	allowCustomSkin: true,
-	skin: 'vista'
-};
- 
-var mygrid=new Sigma.Grid(gridOption);
-Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
+		var gridOption1={
+			id : 'grid2',
+			loadURL : '/proteoerp/inventario/sinv/consulta_logusu/".$id."',
+			container : 'grid2_container', 
+			dataset : dsOption1 ,
+			columns : colsOption1,
+			toolbarContent: 'pdf',
+			allowCustomSkin: true,
+			skin: 'vista'
+		};
 
-var mygrid1=new Sigma.Grid(gridOption1);
-Sigma.Util.onLoad( Sigma.Grid.render(mygrid1) );
+		var mygrid=new Sigma.Grid(gridOption);
+		Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 
-</script>  
-";
+		var mygrid1=new Sigma.Grid(gridOption1);
+		Sigma.Util.onLoad( Sigma.Grid.render(mygrid1) );
+		</script>";
 
 		$style = '';
 
@@ -2547,9 +2523,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid1) );
 				open_flash_chart_object( 250,180, site_url("inventario/sinv/compras/$id"))."
 				</td>
 			</tr>
-		</table>
-		  
-";
+		</table>";
 
 		$data['title']    = '<h1>Consulta de Articulo de Inventario</h1>';
 
@@ -2558,14 +2532,14 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid1) );
 		$data['script']  .= script("gt_msg_en.js");
 		$data['script']  .= script("gt_grid_all.js");
 		$data['script']  .= $script;
-		
+
 		$data['style']    = style('gt_grid.css');
 		$data["subtitle"] = "
 			<div align='center' style='border: 2px outset #EFEFEF;background: #EFEFEF;font-size:18px'>
 				<a href='javascript:javascript:history.go(-1)'>(".addslashes($mCodigo).") ".$descrip."</a>
 			</div>";
 
-		$data["head"]  = $this->rapyd->get_head();
+		$data['head']  = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -2577,22 +2551,21 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid1) );
 		$mSQL .= "FROM sitems a WHERE a.codigoa='".addslashes($mCodigo)."' ";
 		$mSQL .= "AND a.fecha >= CONCAT(MID(SUBDATE(curdate(),365),1,8),'01') ";
 		$mSQL .= "GROUP BY MID( a.fecha ,1,7)  WITH ROLLUP LIMIT 60";
-		
+
 		$mSQL  = "
-SELECT 
-	MID(a.fecha,1,7) mes, 
-	sum(a.cantidad*(a.origen='3I')) cventa, 
-	ROUND(sum(a.promedio*a.cantidad*(a.origen='3I')),2) mventa, 
-	ROUND(sum(a.venta*(a.origen='3I')),2) mpvp, 
-	sum(a.cantidad*(a.origen='2C')) ccompra, 
-	sum(a.monto*(a.origen='2C')) mcompra,
-	ROUND(sum((a.venta-a.cantidad*a.promedio)*(a.origen='3I')),2) util, 
-	100- ROUND( sum(a.cantidad*a.promedio*(a.origen='3I'))*100/SUM(a.venta), 2) margen, 
-	round(avg(promedio),2) promedio
-FROM costos a WHERE a.codigo='".addslashes($mCodigo)."' AND a.origen IN ('3I','2C')
-	AND a.fecha >= CONCAT(MID(SUBDATE(curdate(),365),1,8),'01') 
-GROUP BY MID( a.fecha ,1,7)  WITH ROLLUP LIMIT 24
-";
+		SELECT 
+			MID(a.fecha,1,7) mes, 
+			sum(a.cantidad*(a.origen='3I')) cventa, 
+			ROUND(sum(a.promedio*a.cantidad*(a.origen='3I')),2) mventa, 
+			ROUND(sum(a.venta*(a.origen='3I')),2) mpvp, 
+			sum(a.cantidad*(a.origen='2C')) ccompra, 
+			sum(a.monto*(a.origen='2C')) mcompra,
+			ROUND(sum((a.venta-a.cantidad*a.promedio)*(a.origen='3I')),2) util, 
+			100- ROUND( sum(a.cantidad*a.promedio*(a.origen='3I'))*100/SUM(a.venta), 2) margen, 
+			round(avg(promedio),2) promedio
+		FROM costos a WHERE a.codigo='".addslashes($mCodigo)."' AND a.origen IN ('3I','2C')
+			AND a.fecha >= CONCAT(MID(SUBDATE(curdate(),365),1,8),'01') 
+		GROUP BY MID( a.fecha ,1,7)  WITH ROLLUP LIMIT 24";
 
 		$query = $this->db->query($mSQL);
 
@@ -2610,6 +2583,30 @@ GROUP BY MID( a.fecha ,1,7)  WITH ROLLUP LIMIT 24
 		echo $ret;
 	}
 
+	function _post_insert($do){
+		$codigo=$do->get('codigo');
+
+		$precio1=$do->get('precio1');
+		$precio2=$do->get('precio2');
+		$precio3=$do->get('precio3');
+		$precio4=$do->get('precio4');
+		logusu('sinv',"Creo  $codigo precios: $precio1,$precio2,$precio3, $precio4");
+	}
+
+	function _post_update($do){
+		$codigo=$do->get('codigo');
+
+		$precio1=$do->get('precio1');
+		$precio2=$do->get('precio2');
+		$precio3=$do->get('precio3');
+		$precio4=$do->get('precio4');
+		logusu('sinv',"Modifico $codigo precios: $precio1,$precio2,$precio3, $precio4");
+	}
+
+	function _post_delete($do){
+		$codigo=$do->get('codigo');
+		logusu('sinv',"Elimino $codigo");
+	}
 
 	function consulta_logusu() {
 		$id = $this->uri->segment($this->uri->total_segments());
@@ -2635,12 +2632,11 @@ GROUP BY MID( a.fecha ,1,7)  WITH ROLLUP LIMIT 24
 		echo $ret;
 	}
 
-
 	function ventas($id=''){
 		if (empty($id)) return;
 		$this->load->library('Graph');
-		
-		$codigo = $this->datasis->dameval("SELECT codigo FROM sinv WHERE id=$id");                           	                            
+
+		$codigo = $this->datasis->dameval("SELECT codigo FROM sinv WHERE id=$id");
 		$mSQL = "SELECT	a.tipoa,MID(a.fecha,1,7) mes,
 			sum(a.cana*(a.tipoa='F')) cventa,
 			sum(a.cana*(a.tipoa='D')) cdevol,
@@ -2651,7 +2647,7 @@ GROUP BY MID( a.fecha ,1,7)  WITH ROLLUP LIMIT 24
 		FROM sitems a 
 		WHERE a.codigoa='$codigo' AND a.tipoa IN ('F','D') AND a.fecha >= CONCAT(MID(SUBDATE(curdate(),365),1,8),'01')
 		GROUP BY MID( a.fecha, 1,7 )  LIMIT 7";
-		
+
 		$maxval = 0;
 		$query = $this->db->query($mSQL);
 		$data_1=$data_2=$meses=array(); 
@@ -2661,42 +2657,42 @@ GROUP BY MID( a.fecha ,1,7)  WITH ROLLUP LIMIT 24
 			$data_1[]  = $row->cana;
 		}
 		$om=1;while($maxval/$om>100) $om=$om*10;
-		
+
 		$bar_1 = new bar(75, '#0053A4');
-		
+
 		$bar_1->key('Venta',10);
-		
+
 		for($i=0;$i<count($data_1);$i++ ){
 			$bar_1->add_data_tip($data_1[$i]/$om, graph::esc( number_format($data_1[$i],2,',','.')));
 			$bar_1->links[]= site_url("/ventas/clientes/mensuales/$codigo/".$meses[$i]);
-		} 			 
+		}
 		$g = new graph();
 		$g->set_is_decimal_separator_comma(1);
 		if($maxval > 0 ) {
 			$g->title( 'Ventas por Mes ','{font-size: 16px; color:#0F3054}' ); 
 			$g->data_sets[] = $bar_1;
-		
+
 			$g->set_x_labels($meses);
 			$g->set_x_label_style( 10, '#000000', 2, 1 );
 			$g->set_x_axis_steps( 10 );
-			$g->set_x_legend( 'Meses ', 14,'#004381' );        
-		
+			$g->set_x_legend( 'Meses ', 14,'#004381' );
+
 			$g->bg_colour = '#FFFFFF';
 			$g->set_tool_tip( '#key#<br>Mes: #x_label# <br>Cantidad: #tip#' );
 			$g->set_y_max(ceil($maxval/$om));
 			$g->y_label_steps(5);
 			$g->set_y_legend('Ventas x '.number_format($om,0,'','.'), 16, '#004381' );
-		} else                                                                                           
+		} else
 			$g->title( 'No existen ventas en el a&ntilde;o seleccionado','{font-size:18px; color: #d01f3c}');
-		$g->bg_colour='#FFFFFF';                                                                 
+		$g->bg_colour='#FFFFFF';
 		echo utf8_encode($g->render());
 	}
 
 	function compras($id=''){
 		if (empty($id)) return; 
 		$this->load->library('Graph');
-		                           	                            
-		$codigo = $this->datasis->dameval("SELECT codigo FROM sinv WHERE id=$id");                           	                            
+
+		$codigo = $this->datasis->dameval("SELECT codigo FROM sinv WHERE id=$id");
 		$mSQL = "SELECT	MID(a.fecha,1,7) mes,
 			sum(a.cantidad*(b.tipo_doc='FC')) cventa,
 			sum(a.cantidad*(b.tipo_doc='NC')) cdevol,
@@ -2708,7 +2704,7 @@ GROUP BY MID( a.fecha ,1,7)  WITH ROLLUP LIMIT 24
 		WHERE a.codigo='$codigo' AND b.tipo_doc IN ('FC','NC') AND b.fecha >= CONCAT(MID(SUBDATE(curdate(),365),1,8),'01')
 				AND  a.fecha <= b.actuali 
 		GROUP BY MID( b.fecha, 1,7 ) LIMIT 7  ";
-		
+
 		$maxval = 0;
 		$query = $this->db->query($mSQL);
 		$data_1=$data_2=$meses=array(); 
@@ -2718,34 +2714,34 @@ GROUP BY MID( a.fecha ,1,7)  WITH ROLLUP LIMIT 24
 			$data_1[]  = $row->cana;
 		}
 		$om=1;while($maxval/$om>100) $om=$om*10;
-		
+
 		$bar_1 = new bar(75, '#9053A4');
-		
+
 		$bar_1->key('Compra',10);
-		
+
 		for($i=0;$i<count($data_1);$i++ ){
 			$bar_1->add_data_tip($data_1[$i]/$om, graph::esc( number_format($data_1[$i],2,',','.')));
 			$bar_1->links[]= site_url("/ventas/clientes/mensuales/$codigo/".$meses[$i]);
-		} 			 
+		}
 		$g = new graph();
 		$g->set_is_decimal_separator_comma(1);
 		if($maxval > 0 ) {
 			$g->title( 'Compras por Mes ','{font-size: 16px; color:#0F3054}' ); 
 			$g->data_sets[] = $bar_1;
-		
+
 			$g->set_x_labels($meses);
 			$g->set_x_label_style( 10, '#000000', 2, 1 );
 			$g->set_x_axis_steps( 10 );
-			$g->set_x_legend( 'Meses ', 14,'#004381' );        
-		
+			$g->set_x_legend( 'Meses ', 14,'#004381' );
+
 			$g->bg_colour = '#FFFFFF';
 			$g->set_tool_tip( '#key#<br>Mes: #x_label# <br>Cantidad: #tip#' );
 			$g->set_y_max(ceil($maxval/$om));
 			$g->y_label_steps(5);
 			$g->set_y_legend('Compras x '.number_format($om,0,'','.'), 16, '#004381' );
-		} else                                                                                           
+		} else
 			$g->title( 'No existen ventas en el a&ntilde;o seleccionado','{font-size:18px; color: #d01f3c}');
-		$g->bg_colour='#FFFFFF';                                                                 
+		$g->bg_colour='#FFFFFF';
 		echo utf8_encode($g->render());
 	}
 
@@ -2771,6 +2767,5 @@ GROUP BY MID( a.fecha ,1,7)  WITH ROLLUP LIMIT 24
 		PRIMARY KEY  (`combo`,`codigo`)
 		) ENGINE=MyISAM DEFAULT CHARSET=latin1";
 		$this->db->simple_query($mSQL);
-		
 	}
 }
