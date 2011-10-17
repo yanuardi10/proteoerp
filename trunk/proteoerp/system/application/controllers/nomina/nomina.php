@@ -657,8 +657,6 @@ Ext.onReady(function(){
 ";
 		return $script;	
 
-
-
 	}
 
 

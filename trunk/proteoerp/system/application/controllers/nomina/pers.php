@@ -19,8 +19,6 @@ class pers extends validaciones {
 		$script = $this->persextjs();
 		$data["script"] = $script;
 		$data['title']  = heading('Personal');
-		//$data['head']   = $this->rapyd->get_head();
-		//$data['content'] = '';
 		$this->load->view('extjs/pers',$data);
 	}
 
@@ -804,11 +802,11 @@ script;
 		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM asig   WHERE codigo='$codigo'");
 
 		if ($chek > 0){
-			echo "{ success: false, message: ''Trabajador con Movimiento no puede ser Borrado'}";
+			echo "{ success: false, message: 'Trabajador con Movimiento no puede ser Borrado'}";
 		} else {
 			$this->db->simple_query("DELETE FROM pers WHERE codigo='$codigo'");
-			logusu('pers',"PERSONAL $codigo NOMBRE  $nombre CREADO");
-			echo "{ success: true, message: ''Trabajador Eliminado'}";
+			logusu('pers',"PERSONAL $codigo NOMBRE  $nombre ELIMINADO");
+			echo "{ success: true, message: 'Trabajador Eliminado'}";
 		}
 	}
 
@@ -817,7 +815,6 @@ script;
 //
 //
 //****************************************************************8
-
 	function persextjs(){
 
 		$encabeza='<table width="100%" bgcolor="#2067B5"><tr><td align="left" width="100px"><img src="'.base_url().'assets/default/css/templete_01.jpg" width="120"></td><td align="center"><h1 style="font-size: 20px; color: rgb(255, 255, 255);" onclick="history.back()">TRABAJADORES</h1></td><td align="right" width="100px"><img src="'.base_url().'assets/default/images/cerrar.png" alt="Cerrar Ventana" title="Cerrar Ventana" onclick="parent.window.close()" width="25"></td></tr></table>';
@@ -1182,12 +1179,12 @@ Ext.onReady(function(){
 					beforeshow: function() {
 						var form = this.down('writerform').getForm();
 						this.activeRecord = registro;
-						
+
 						if (registro) {
 							form.loadRecord(registro);
-							//form.findField('codigo').readOnly = true;
+							form.findField('codigo').setReadOnly(true);
 						} else {
-							//form.findField('codigo').readOnly = false;
+							form.findField('codigo').setReadOnly(false);
 						}
 					}
 				}
@@ -1328,8 +1325,6 @@ Ext.onReady(function(){
 				align: 'center',
 				//flex: 9,
 				//store: storePers
-
-
 
 				//layout: 'border',
 				//border: false,
