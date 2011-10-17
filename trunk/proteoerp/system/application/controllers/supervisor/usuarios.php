@@ -96,7 +96,7 @@ class Usuarios extends Controller {
 		$edit->vendedor->options("SELECT vendedor, CONCAT(vendedor,'-',nombre) AS nom FROM vend WHERE tipo IN ('V','A') ORDER BY vendedor");
 
 		$edit->cajero = new dropdownField('Cajero', 'cajero');
-		$edit->cajero->option('','Todos');
+		$edit->cajero->option('','Ninguno');
 		$edit->cajero->options("SELECT cajero,CONCAT_WS('-',cajero, nombre) AS descri FROM scaj ORDER BY nombre");
 
 		$edit->supervisor = new dropdownField('Es Supervisor', 'supervisor');
