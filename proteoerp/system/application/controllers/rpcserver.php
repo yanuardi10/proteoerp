@@ -192,11 +192,12 @@ class Rpcserver extends Controller {
 			if($this->secu->cliente($usr,$pwd)){
 				$mSQL="SELECT numero FROM scon WHERE clipro=? AND asociado = ? AND origen='R' LIMIT 1";
 				$query = $this->db->query($mSQL,array($usr,$asoc));
+
 				if ($query->num_rows() > 0){
 					$row = $query->row_array(); 
-					$numero=$row['numero'];
+					$numero=array($row['numero']);
 				}else{
-					$numero='';
+					$numero=array();
 				}
 			}else{
 				return $this->xmlrpc->send_error_message('100', 'Acceso Negado');
