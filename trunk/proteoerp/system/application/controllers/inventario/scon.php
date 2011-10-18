@@ -61,6 +61,7 @@ class scon extends Controller {
 		$uri2 = anchor_popup('formatos/verhtml/PSINV/<#id#>','Ver HTML',$atts);
 
 		function asoc($id,$origen,$asociado,$clipro,$numero){
+			$asociado=trim($asociado);
 			if($origen=='L'){
 				$atts = array(
 					'width'      => '400',
