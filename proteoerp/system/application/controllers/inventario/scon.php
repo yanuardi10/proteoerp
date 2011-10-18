@@ -5,7 +5,7 @@ class scon extends Controller {
 		parent::Controller(); 
 		$this->load->library('rapyd');
 		$this->datasis->modulo_id('320',1);
-		$this->back_dataedit='inventario/scon';
+		$this->back_dataedit='inventario/scon/index';
 	}
 
 	function index() {
@@ -71,6 +71,9 @@ class scon extends Controller {
 					'screenx'   => "'+((screen.availWidth/2)-200)+'",
 					'screeny'   => "'+((screen.availHeight/2)-150)+'"
 				);
+				if(empty($asociado)){
+					$asociado='Ninguno';
+				}
 				$acti =anchor_popup('/inventario/scon/traeasoc/'.raencode($id).'/'.raencode($clipro).'/'.raencode($numero) ,$asociado,$atts);
 			}else{
 				$acti=$asociado;
@@ -266,8 +269,6 @@ class scon extends Controller {
 		$edit = new DataDetails('Inventario a consignaci&oacute;n', $do);
 		$edit->back_url = site_url('inventario/scon/filteredgrid');
 		$edit->set_rel_title('itscon','Producto <#o#>');
-
-
 
 		$edit->back_url = $this->back_dataedit;
 
@@ -520,8 +521,14 @@ class scon extends Controller {
 
 	function traeasoc($id,$scli,$numero){
 		$num=$this->_traerasociado($scli,$numero);
-		if(empty($num)){
+		if($num===false){
 			echo '<center>No se encontro n&uacute;mero asociado</center>';
+		}
+		elseif(empty($num)){
+			echo '<center>No se encontro n&uacute;mero asociado, probablemente no fue cargado en la sucursal</center>';
+			$dbid  =$this->db->escape($id);
+			$sql = $this->db->update_string('scon',array('asociado' => $num),"id = $dbid");
+			$this->db->simple_query($sql);
 		}else{
 			$dbid  =$this->db->escape($id);
 			$sql = $this->db->update_string('scon',array('asociado' => $num),"id = $dbid");
@@ -535,7 +542,7 @@ class scon extends Controller {
 
 		$sql="SELECT b.proveed,b.grupo,b.puerto,b.proteo,b.url,b.usuario,b.clave,b.tipo,b.depo,b.margen1,b.margen2,b.margen3,b.margen4,b.margen5 FROM sprv AS a JOIN b2b_config AS b ON a.proveed=b.proveed WHERE a.cliente=${dbscli}";
 		$config=$this->datasis->damerow($sql);
-		if(count($config)==0) return null;
+		if(count($config)==0) return false;
 
 		$er=0;
 		$this->load->helper('url');
@@ -554,7 +561,7 @@ class scon extends Controller {
 
 		if (!$this->xmlrpc->send_request()){
 			memowrite($this->xmlrpc->display_error(),'scon');
-			return null;
+			return false;
 		}else{
 			$res=$this->xmlrpc->display_response();
 			if(isset($res[0]))
