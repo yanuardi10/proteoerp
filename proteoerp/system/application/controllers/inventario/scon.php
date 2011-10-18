@@ -17,8 +17,8 @@ class scon extends Controller {
 			'scrollbars' => 'yes',
 			'status'     => 'yes',
 			'resizable'  => 'yes',
-			'screenx'    => '0',
-			'screeny'    => '0'
+			'screenx'   => "'+((screen.availWidth/2)-400)+'",
+			'screeny'   => "'+((screen.availHeight/2)-300)+'"
 		);
 
 		$scli=array(
@@ -32,6 +32,7 @@ class scon extends Controller {
 		'titulo'  =>'Buscar Cliente');
 
 		$boton=$this->datasis->modbus($scli);
+
 
 		$filter = new DataFilter('Filtro de consignaciones','scon');
 
@@ -56,14 +57,34 @@ class scon extends Controller {
 		$filter->buttons('reset','search');
 		$filter->build();
 
-		$uri = anchor('inventario/scon/dataedit/<#tipo#>/show/<#id#>','<#numero#>');
+		$uri  = anchor('inventario/scon/dataedit/<#tipo#>/show/<#id#>','<#numero#>');
 		$uri2 = anchor_popup('formatos/verhtml/PSINV/<#id#>','Ver HTML',$atts);
 
+		function asoc($id,$origen,$asociado,$clipro,$numero){
+			if($origen=='L'){
+				$atts = array(
+					'width'      => '400',
+					'height'     => '300',
+					'scrollbars' => 'yes',
+					'status'     => 'yes',
+					'resizable'  => 'yes',
+					'screenx'   => "'+((screen.availWidth/2)-200)+'",
+					'screeny'   => "'+((screen.availHeight/2)-150)+'"
+				);
+				$acti =anchor_popup('/inventario/scon/traeasoc/'.raencode($id).'/'.raencode($clipro).'/'.raencode($numero) ,$asociado,$atts);
+			}else{
+				$acti=$asociado;
+			}
+			return $acti;
+		}
+
 		$grid = new DataGrid();
+		$grid->use_function('asoc');
 		$grid->order_by('numero','desc');
-		$grid->per_page = 15;  
+		$grid->per_page = 15;
 
 		$grid->column_orderby('N&uacute;mero' ,$uri,'numero');
+		$grid->column_orderby('Asociado'      ,'<asoc><#id#>|<#origen#>|<#asociado#>|<#clipro#>|<#numero#></asoc>','asociado');
 		$grid->column_orderby('Fecha'         ,'<dbdate_to_human><#fecha#></dbdate_to_human>','fecha','align=\'center\'');
 		$grid->column_orderby('Nombre'        ,'nombre','nombre');
 		$grid->column_orderby('Mov.'          ,'tipod','tipod');
@@ -246,20 +267,7 @@ class scon extends Controller {
 		$edit->back_url = site_url('inventario/scon/filteredgrid');
 		$edit->set_rel_title('itscon','Producto <#o#>');
 
-		if($edit->_status=='show'){
-			$scli  =$edit->get_from_dataobjetct('clipro');
-			$numero=$edit->get_from_dataobjetct('numero');
-			$dbid  =$this->db->escape($edit->get_from_dataobjetct('id'));
 
-			$asoc=$edit->get_from_dataobjetct('asociado');
-			if(empty($asoc)){
-				$nasoc=$this->_traerasociado($scli,$numero);
-				if(!empty($nasoc)){
-					$sql = $this->db->update_string('scon',array('asociado' => $nasoc),"id = $dbid");
-					$this->db->simple_query($sql);
-				}
-			}
-		}
 
 		$edit->back_url = $this->back_dataedit;
 
@@ -507,6 +515,18 @@ class scon extends Controller {
 			return false;
 		}else{
 			return true;
+		}
+	}
+
+	function traeasoc($id,$scli,$numero){
+		$num=$this->_traerasociado($scli,$numero);
+		if(empty($num)){
+			echo '<center>No se encontro n&uacute;mero asociado</center>';
+		}else{
+			$dbid  =$this->db->escape($id);
+			$sql = $this->db->update_string('scon',array('asociado' => $num),"id = $dbid");
+			$this->db->simple_query($sql);
+			echo '<center>El N&uacute;mero Asociado es:'.$num.'</center>';
 		}
 	}
 
