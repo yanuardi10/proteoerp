@@ -55,8 +55,8 @@ $(function(){
 				<td class="littletablerow"   ><?php echo $form->observ1->output;?>&nbsp;</td>
 			</tr>
 			<tr>
-				<td class="littletableheader">          <?php echo $form->peso->label;  ?>&nbsp;</td>
-				<td class="littletablerow" align="left"><?php echo $form->peso->output; ?>&nbsp;</td>
+				<td class="littletableheader">          <?php echo $form->tipod->label;  ?>&nbsp;</td>
+				<td class="littletablerow" align="left"><?php echo $form->tipod->output; ?>&nbsp;</td>
 				<td class="littletableheader"><?php echo $form->almacen->label;     ?>&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->almacen->output;    ?>&nbsp;</td>
 			</tr>

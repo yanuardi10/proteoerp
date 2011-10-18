@@ -562,11 +562,17 @@ class b2b extends validaciones {
 		$edit->asociado->size = 10;
 
 		$edit->direc1 = new inputField('Direcci&oacute;n', 'direc1');
-		$edit->direc1->mode='autohide';
+		$edit->direc1->mode= 'autohide';
 		$edit->direc1->size = 37;
 
 		$edit->observ1 = new inputField('Observaci&oacute;n', 'observ1');
 		$edit->observ1->size = 37;
+
+		$edit->tipod = new dropdownField('Tipo de movimiento', 'tipod');
+		$edit->tipod->option('E','Entregado');
+		$edit->tipod->option('R','Recibido');
+		$edit->tipod->mode = 'autohide';
+		$edit->tipod->style='width:160px';
 
 		//Campos para el detalle
 		$edit->codigo = new inputField('C&oacute;digo <#o#>', 'codigo_<#i#>');
