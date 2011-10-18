@@ -66,6 +66,7 @@ class scon extends Controller {
 		$grid->column_orderby('N&uacute;mero' ,$uri,'numero');
 		$grid->column_orderby('Fecha'         ,'<dbdate_to_human><#fecha#></dbdate_to_human>','fecha','align=\'center\'');
 		$grid->column_orderby('Nombre'        ,'nombre','nombre');
+		$grid->column_orderby('Mov.'          ,'tipod','tipod');
 		$grid->column_orderby('Sub.Total'     ,'<nformat><#stotal#></nformat>'  ,'stotal','align=\'right\'');
 		$grid->column_orderby('IVA'           ,'<nformat><#impuesto#></nformat>','iva'   ,'align=\'right\'');
 		$grid->column_orderby('Total'         ,'<nformat><#gtotal#></nformat>'  ,'gtotal','align=\'right\'');
