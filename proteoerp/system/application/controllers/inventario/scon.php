@@ -253,8 +253,10 @@ class scon extends Controller {
 			$asoc=$edit->get_from_dataobjetct('asociado');
 			if(empty($asoc)){
 				$nasoc=$this->_traerasociado($scli,$numero);
-				$sql = $this->db->update_string('scon',array('asociado' => $nasoc),"id = $dbid");
-				$this->db->simple_query($sql);
+				if(!empty($nasoc)){
+					$sql = $this->db->update_string('scon',array('asociado' => $nasoc),"id = $dbid");
+					$this->db->simple_query($sql);
+				}
 			}
 		}
 
