@@ -245,6 +245,19 @@ class scon extends Controller {
 		$edit->back_url = site_url('inventario/scon/filteredgrid');
 		$edit->set_rel_title('itscon','Producto <#o#>');
 
+		if($edit->_status=='show'){
+			$scli  =$edit->get_from_dataobjetct('clipro');
+			$numero=$edit->get_from_dataobjetct('numero');
+			$dbid  =$this->db->escape($edit->get_from_dataobjetct('id'));
+
+			$asoc=$edit->get_from_dataobjetct('asociado');
+			if(empty($asoc)){
+				$nasoc=$this->_traerasociado($scli,$numero);
+				$sql = $this->db->update_string('scon',array('asociado' => $nasoc),"id = $dbid");
+				$this->db->simple_query($sql);
+			}
+		}
+
 		$edit->back_url = $this->back_dataedit;
 
 		$edit->pre_process('insert' ,'_pre_insert');
@@ -492,6 +505,41 @@ class scon extends Controller {
 		}else{
 			return true;
 		}
+	}
+
+	function _traerasociado($scli,$numero){
+		$dbscli=$this->db->escape($scli);
+
+		$sql="SELECT b.proveed,b.grupo,b.puerto,b.proteo,b.url,b.usuario,b.clave,b.tipo,b.depo,b.margen1,b.margen2,b.margen3,b.margen4,b.margen5 FROM sprv AS a JOIN b2b_config AS b ON a.proveed=b.proveed WHERE a.cliente=${dbscli}";
+		$config=$this->datasis->damerow($sql);
+		if(count($config)==0) return null;
+
+		$er=0;
+		$this->load->helper('url');
+		$server_url = reduce_double_slashes($config['url'].'/'.$config['proteo'].'/'.'rpcserver');
+
+		$this->load->library('xmlrpc');
+		$this->xmlrpc->xmlrpc_defencoding=$this->config->item('charset');
+		//$this->xmlrpc->set_debug(TRUE);
+		$puerto= (empty($config['puerto'])) ? 80 : $config['puerto'];
+
+		$this->xmlrpc->server($server_url , $puerto);
+		$this->xmlrpc->method('consinu');
+
+		$request = array($numero,$config['proveed'],$config['usuario'],md5($config['clave']));
+		$this->xmlrpc->request($request);
+
+		if (!$this->xmlrpc->send_request()){
+			memowrite($this->xmlrpc->display_error(),'scon');
+			return null;
+		}else{
+			$res=$this->xmlrpc->display_response();
+			if(isset($res[0]))
+				return $res[0];
+			else
+				return null;
+		}
+		return null;
 	}
 
 	function _pre_update($do){
