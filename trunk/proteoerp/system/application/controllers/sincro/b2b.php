@@ -1202,7 +1202,7 @@ class b2b extends validaciones {
 					$data['numero']   = $arr['numero'];
 					$data['fecha']    = $arr['fecha'];
 					$data['tipo']     = $tipo;
-					$data['tipod']    = 'R';
+					$data['tipod']    = ($arr['tipod']=='E')? 'R':'E';
 					$data['status']   = 'T';
 					$data['clipro']   = $proveed;
 					$data['direc1']   = $pdirec1;
@@ -1215,7 +1215,7 @@ class b2b extends validaciones {
 					$data['gtotal']   = $arr['gtotal'];
 					$data['peso']     = $arr['peso'];
 					$mSQL=$this->db->insert_string('b2b_scon',$data);
-	
+
 					$rt=$this->db->simple_query($mSQL);
 					if(!$rt){
 						memowrite($mSQL,'B2B');
@@ -1361,7 +1361,7 @@ class b2b extends validaciones {
 			$cana=$this->datasis->dameval('SELECT COUNT(*) FROM b2b_itscon AS a LEFT JOIN sinv AS b ON a.codigolocal=b.codigo WHERE b.codigo IS NULL AND a.id_scon='.$this->db->escape($id));
 			if($cana>0){ return 1; }
 
-			$query=$this->db->query('SELECT numero,fecha,status,direc1,clipro,tipo,almacen,nombre,asociado,observ1,stotal,impuesto,gtotal,tipo,peso,pid FROM b2b_scon WHERE id = ?',$id);
+			$query=$this->db->query('SELECT numero,fecha,status,direc1,clipro,tipo,almacen,nombre,asociado,observ1,stotal,impuesto,gtotal,tipod,peso,pid FROM b2b_scon WHERE id = ?',$id);
 			if ($query->num_rows() > 0){
 				$row = $query->row();
 
@@ -1371,22 +1371,24 @@ class b2b extends validaciones {
 					$numero = $this->datasis->fprox_numero('nsconc');
 				}
 				$almacen=$row->almacen;
+				$tipod  =$row->tipod;
 
-				$data['numero']     =$numero;
-				$data['fecha']      =$row->fecha;
-				$data['clipro']     =$row->clipro;
-				$data['almacen']    =$row->almacen;
-				$data['nombre']     =$row->nombre;
-				$data['direc1']     =$row->direc1;
-				$data['asociado']   =$row->asociado;
-				$data['observ1']    =$row->observ1;
-				$data['stotal']     =$row->stotal;
-				$data['impuesto']   =$row->impuesto;
-				$data['gtotal']     =$row->gtotal;
-				$data['peso']       =$row->peso;
-				$data['tipod']      ='R';
-				$data['tipo']       =$row->tipo;
-				$data['status']     ='C'; //Cerrado
+				$data['numero']   =$numero;
+				$data['fecha']    =$row->fecha;
+				$data['clipro']   =$row->clipro;
+				$data['almacen']  =$row->almacen;
+				$data['nombre']   =$row->nombre;
+				$data['direc1']   =$row->direc1;
+				$data['asociado'] =$row->asociado;
+				$data['observ1']  =$row->observ1;
+				$data['stotal']   =$row->stotal;
+				$data['impuesto'] =$row->impuesto;
+				$data['gtotal']   =$row->gtotal;
+				$data['peso']     =$row->peso;
+				$data['tipod']    =$row->tipod;
+				$data['tipo']     =$row->tipo;
+				$data['origen']   ='R'; //Remoto
+				$data['status']   ='C'; //Cerrado
 
 				$mSQL=$this->db->insert_string('scon',$data);
 				$rt=$this->db->simple_query($mSQL);
@@ -1446,9 +1448,8 @@ class b2b extends validaciones {
 						$er++;
 					}
 
-
 					//Actualiza las cantidades en inventario
-					$fact=1;
+					$fact=($tipod=='R')? 1:-1;
 					$mSQL='UPDATE sinv JOIN itscon ON sinv.codigo=itscon.codigo SET sinv.existen=sinv.existen+('.$fact.')*(itscon.cana) WHERE itscon.id_scon='.$this->db->escape($id_scon);
 					$ban=$this->db->simple_query($mSQL);
 					if($ban==false){ memowrite($mSQL,'B2B'); }
@@ -1585,166 +1586,213 @@ class b2b extends validaciones {
 	}
 
 	function instalar(){
-		$mSQL="CREATE TABLE IF NOT EXISTS `b2b_config` (
-		  `id` int(10) NOT NULL AUTO_INCREMENT,
-		  `proveed` char(5)   NOT NULL COMMENT 'Codigo del proveedor',
-		  `url` varchar(100)  NOT NULL,
-		  `puerto` int(5) NOT NULL DEFAULT '80',
-		  `proteo` varchar(20) NOT NULL DEFAULT 'proteoerp',
-		  `usuario` varchar(100) NOT NULL COMMENT 'Codigo de cliente en el proveedor',
-		  `clave` varchar(100) NOT NULL,
-		  `tipo` char(1) DEFAULT NULL COMMENT 'I para inventario G para gasto',
-		  `depo` varchar(4) DEFAULT NULL COMMENT 'Almacen',
-		  `margen1` decimal(6,2) DEFAULT NULL COMMENT 'Margen para el precio1',
-		  `margen2` decimal(6,2) DEFAULT NULL COMMENT 'Margen para el precio 2',
-		  `margen3` decimal(6,2) DEFAULT NULL COMMENT 'Margen para el precio3',
-		  `margen4` decimal(6,2) DEFAULT NULL COMMENT 'Margen para el precio4',
-		  `margen5` decimal(6,2) DEFAULT NULL COMMENT 'Margen para el precio5 (solo supermercado)',
-		  `grupo` varchar(5) DEFAULT NULL COMMENT 'Grupo por defecto',
-		  PRIMARY KEY (`id`)
-		) ENGINE=MyISAM AUTO_INCREMENT=1 COMMENT='Configuracion para los b2b'";
-		var_dump($this->db->simple_query($mSQL));
+		if (!$this->db->table_exists('b2b_config')) {
+			$mSQL="CREATE TABLE IF NOT EXISTS `b2b_config` (
+			  `id` int(10) NOT NULL AUTO_INCREMENT,
+			  `proveed` char(5)   NOT NULL COMMENT 'Codigo del proveedor',
+			  `url` varchar(100)  NOT NULL,
+			  `puerto` int(5) NOT NULL DEFAULT '80',
+			  `proteo` varchar(20) NOT NULL DEFAULT 'proteoerp',
+			  `usuario` varchar(100) NOT NULL COMMENT 'Codigo de cliente en el proveedor',
+			  `clave` varchar(100) NOT NULL,
+			  `tipo` char(1) DEFAULT NULL COMMENT 'I para inventario G para gasto',
+			  `depo` varchar(4) DEFAULT NULL COMMENT 'Almacen',
+			  `margen1` decimal(6,2) DEFAULT NULL COMMENT 'Margen para el precio1',
+			  `margen2` decimal(6,2) DEFAULT NULL COMMENT 'Margen para el precio 2',
+			  `margen3` decimal(6,2) DEFAULT NULL COMMENT 'Margen para el precio3',
+			  `margen4` decimal(6,2) DEFAULT NULL COMMENT 'Margen para el precio4',
+			  `margen5` decimal(6,2) DEFAULT NULL COMMENT 'Margen para el precio5 (solo supermercado)',
+			  `grupo` varchar(5) DEFAULT NULL COMMENT 'Grupo por defecto',
+			  PRIMARY KEY (`id`)
+			) ENGINE=MyISAM AUTO_INCREMENT=1 COMMENT='Configuracion para los b2b'";
+			var_dump($this->db->simple_query($mSQL));
+		}
 
-		$mSQL="CREATE TABLE IF NOT EXISTS `b2b_scst` (
-		  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-		  `fecha` date DEFAULT NULL,
-		  `numero` varchar(8) DEFAULT NULL,
-		  `proveed` varchar(5) DEFAULT NULL,
-		  `nombre` varchar(30) DEFAULT NULL,
-		  `depo` varchar(4) DEFAULT NULL,
-		  `montotot` decimal(17,2) DEFAULT NULL,
-		  `montoiva` decimal(17,2) DEFAULT NULL,
-		  `montonet` decimal(17,2) DEFAULT NULL,
-		  `vence` date DEFAULT NULL,
-		  `tipo_doc` char(2) DEFAULT NULL,
-		  `control` varchar(8) NOT NULL DEFAULT '',
-		  `peso` decimal(12,2) DEFAULT NULL,
-		  `estampa` date DEFAULT NULL,
-		  `hora` varchar(8) DEFAULT NULL,
-		  `usuario` varchar(12) DEFAULT NULL,
-		  `nfiscal` varchar(12) DEFAULT NULL,
-		  `exento` decimal(17,2) NOT NULL DEFAULT '0.00',
-		  `sobretasa` decimal(17,2) NOT NULL DEFAULT '0.00',
-		  `reducida` decimal(17,2) NOT NULL DEFAULT '0.00',
-		  `tasa` decimal(17,2) NOT NULL DEFAULT '0.00',
-		  `montasa` decimal(17,2) DEFAULT NULL,
-		  `monredu` decimal(17,2) DEFAULT NULL,
-		  `monadic` decimal(17,2) DEFAULT NULL,
-		  `serie` char(12) DEFAULT NULL,
-		  `pcontrol` char(8) DEFAULT NULL,
-		  PRIMARY KEY (`id`),
-		  UNIQUE KEY `proveednum` (`proveed`,`numero`),
-		  KEY `proveedor` (`proveed`)
-		) ENGINE=MyISAM AUTO_INCREMENT=1";
-		var_dump($this->db->simple_query($mSQL));
+		if (!$this->db->table_exists('b2b_scst')) {
+			$mSQL="CREATE TABLE IF NOT EXISTS `b2b_scst` (
+			  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+			  `fecha` date DEFAULT NULL,
+			  `numero` varchar(8) DEFAULT NULL,
+			  `proveed` varchar(5) DEFAULT NULL,
+			  `nombre` varchar(30) DEFAULT NULL,
+			  `depo` varchar(4) DEFAULT NULL,
+			  `montotot` decimal(17,2) DEFAULT NULL,
+			  `montoiva` decimal(17,2) DEFAULT NULL,
+			  `montonet` decimal(17,2) DEFAULT NULL,
+			  `vence` date DEFAULT NULL,
+			  `tipo_doc` char(2) DEFAULT NULL,
+			  `control` varchar(8) NOT NULL DEFAULT '',
+			  `peso` decimal(12,2) DEFAULT NULL,
+			  `estampa` date DEFAULT NULL,
+			  `hora` varchar(8) DEFAULT NULL,
+			  `usuario` varchar(12) DEFAULT NULL,
+			  `nfiscal` varchar(12) DEFAULT NULL,
+			  `exento` decimal(17,2) NOT NULL DEFAULT '0.00',
+			  `sobretasa` decimal(17,2) NOT NULL DEFAULT '0.00',
+			  `reducida` decimal(17,2) NOT NULL DEFAULT '0.00',
+			  `tasa` decimal(17,2) NOT NULL DEFAULT '0.00',
+			  `montasa` decimal(17,2) DEFAULT NULL,
+			  `monredu` decimal(17,2) DEFAULT NULL,
+			  `monadic` decimal(17,2) DEFAULT NULL,
+			  `serie` char(12) DEFAULT NULL,
+			  `pcontrol` char(8) DEFAULT NULL,
+			  PRIMARY KEY (`id`),
+			  UNIQUE KEY `proveednum` (`proveed`,`numero`),
+			  KEY `proveedor` (`proveed`)
+			) ENGINE=MyISAM AUTO_INCREMENT=1";
+			var_dump($this->db->simple_query($mSQL));
+		}
 
-		$mSQL="CREATE TABLE IF NOT EXISTS `b2b_itscst` (
-		  `id_scst` int(11) DEFAULT NULL,
-		  `fecha` date DEFAULT NULL,
-		  `numero` varchar(8) DEFAULT NULL,
-		  `proveed` varchar(5) DEFAULT NULL,
-		  `depo` varchar(4) DEFAULT NULL,
-		  `codigo` varchar(15) DEFAULT NULL,
-		  `descrip` varchar(45) DEFAULT NULL,
-		  `cantidad` decimal(10,3) DEFAULT NULL,
-		  `devcant` decimal(10,3) DEFAULT NULL,
-		  `devfrac` int(4) DEFAULT NULL,
-		  `costo` decimal(17,2) DEFAULT NULL,
-		  `importe` decimal(17,2) DEFAULT NULL,
-		  `iva` decimal(5,2) DEFAULT NULL,
-		  `montoiva` decimal(17,2) DEFAULT NULL,
-		  `garantia` int(3) DEFAULT NULL,
-		  `ultimo` decimal(17,2) DEFAULT NULL,
-		  `precio1` decimal(15,2) DEFAULT NULL,
-		  `precio2` decimal(15,2) DEFAULT NULL,
-		  `precio3` decimal(15,2) DEFAULT NULL,
-		  `precio4` decimal(15,2) DEFAULT NULL,
-		  `estampa` date DEFAULT NULL,
-		  `hora` varchar(8) DEFAULT NULL,
-		  `usuario` varchar(12) DEFAULT NULL,
-		  `licor` decimal(10,2) DEFAULT '0.00',
-		  `barras` varchar(15) DEFAULT NULL,
-		  `codigolocal` varchar(15) DEFAULT NULL,
-		  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-		  PRIMARY KEY (`id`),
-		  KEY `id_scst` (`id_scst`),
-		  KEY `fecha` (`fecha`),
-		  KEY `codigo` (`codigo`),
-		  KEY `proveedor` (`proveed`),
-		  KEY `numero` (`numero`)
-		) ENGINE=MyISAM AUTO_INCREMENT=1";
-		var_dump($this->db->simple_query($mSQL));
+		if (!$this->db->table_exists('b2b_itscst')) {
+			$mSQL="CREATE TABLE IF NOT EXISTS `b2b_itscst` (
+			  `id_scst` int(11) DEFAULT NULL,
+			  `fecha` date DEFAULT NULL,
+			  `numero` varchar(8) DEFAULT NULL,
+			  `proveed` varchar(5) DEFAULT NULL,
+			  `depo` varchar(4) DEFAULT NULL,
+			  `codigo` varchar(15) DEFAULT NULL,
+			  `descrip` varchar(45) DEFAULT NULL,
+			  `cantidad` decimal(10,3) DEFAULT NULL,
+			  `devcant` decimal(10,3) DEFAULT NULL,
+			  `devfrac` int(4) DEFAULT NULL,
+			  `costo` decimal(17,2) DEFAULT NULL,
+			  `importe` decimal(17,2) DEFAULT NULL,
+			  `iva` decimal(5,2) DEFAULT NULL,
+			  `montoiva` decimal(17,2) DEFAULT NULL,
+			  `garantia` int(3) DEFAULT NULL,
+			  `ultimo` decimal(17,2) DEFAULT NULL,
+			  `precio1` decimal(15,2) DEFAULT NULL,
+			  `precio2` decimal(15,2) DEFAULT NULL,
+			  `precio3` decimal(15,2) DEFAULT NULL,
+			  `precio4` decimal(15,2) DEFAULT NULL,
+			  `estampa` date DEFAULT NULL,
+			  `hora` varchar(8) DEFAULT NULL,
+			  `usuario` varchar(12) DEFAULT NULL,
+			  `licor` decimal(10,2) DEFAULT '0.00',
+			  `barras` varchar(15) DEFAULT NULL,
+			  `codigolocal` varchar(15) DEFAULT NULL,
+			  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+			  PRIMARY KEY (`id`),
+			  KEY `id_scst` (`id_scst`),
+			  KEY `fecha` (`fecha`),
+			  KEY `codigo` (`codigo`),
+			  KEY `proveedor` (`proveed`),
+			  KEY `numero` (`numero`)
+			) ENGINE=MyISAM AUTO_INCREMENT=1";
+			var_dump($this->db->simple_query($mSQL));
+		}
 
-		$mSQL="ALTER TABLE `b2b_scst`  ADD COLUMN `reteiva` DECIMAL(17,2) NULL DEFAULT '0.00' AFTER `reducida`;";
-		var_dump($this->db->simple_query($mSQL));
-		$mSQL="ALTER TABLE `b2b_scst`  ADD COLUMN  `cexento` decimal(17,2) DEFAULT NULL AFTER `reducida`";
-		var_dump($this->db->simple_query($mSQL));
-		$mSQL="ALTER TABLE `b2b_scst`  ADD COLUMN   `cgenera` decimal(17,2) DEFAULT NULL AFTER `reducida`";
-		var_dump($this->db->simple_query($mSQL));
-		$mSQL="ALTER TABLE `b2b_scst`  ADD COLUMN   `civagen` decimal(17,2) DEFAULT NULL AFTER `reducida`";
-		var_dump($this->db->simple_query($mSQL));
-		$mSQL="ALTER TABLE `b2b_scst`  ADD COLUMN   `creduci` decimal(17,2) DEFAULT NULL AFTER `reducida`";
-		var_dump($this->db->simple_query($mSQL));
-		$mSQL="ALTER TABLE `b2b_scst`  ADD COLUMN   `civared` decimal(17,2) DEFAULT NULL AFTER `reducida`";
-		var_dump($this->db->simple_query($mSQL));
-		$mSQL="ALTER TABLE `b2b_scst`  ADD COLUMN   `cadicio` decimal(17,2) DEFAULT NULL AFTER `reducida`";
-		var_dump($this->db->simple_query($mSQL));
-		$mSQL="ALTER TABLE `b2b_scst`  ADD COLUMN   `civaadi` decimal(17,2) DEFAULT NULL AFTER `reducida`";
-		var_dump($this->db->simple_query($mSQL));
-		$mSQL="ALTER TABLE `b2b_scst`  ADD COLUMN   `cstotal` decimal(17,2) DEFAULT NULL AFTER `reducida`";
-		var_dump($this->db->simple_query($mSQL));
-		$mSQL="ALTER TABLE `b2b_scst`  ADD COLUMN   `ctotal` decimal(17,2) DEFAULT NULL AFTER `reducida`";
-		var_dump($this->db->simple_query($mSQL));
-		$mSQL="ALTER TABLE `b2b_scst`  ADD COLUMN   `cimpuesto` decimal(17,2) DEFAULT NULL AFTER `reducida`";
-		var_dump($this->db->simple_query($mSQL));
-		
-		$mSQL="CREATE TABLE IF NOT EXISTS `b2b_scon` (
-			`numero` CHAR(8) NULL DEFAULT NULL,
-			`fecha` DATE NULL DEFAULT NULL,
-			`tipo` CHAR(1) NULL DEFAULT NULL,
-			`tipod` CHAR(1) NULL DEFAULT NULL,
-			`status` CHAR(1) NULL DEFAULT 'T',
-			`asociado` CHAR(8) NULL DEFAULT NULL,
-			`clipro` CHAR(5) NULL DEFAULT NULL,
-			`almacen` CHAR(4) NULL DEFAULT NULL,
-			`nombre` CHAR(40) NULL DEFAULT NULL,
-			`direc1` CHAR(40) NULL DEFAULT NULL,
-			`direc2` CHAR(40) NULL DEFAULT NULL,
-			`observ1` CHAR(33) NULL DEFAULT NULL,
-			`observ2` CHAR(33) NULL DEFAULT NULL,
-			`stotal` DECIMAL(12,2) NULL DEFAULT NULL,
-			`impuesto` DECIMAL(12,2) NULL DEFAULT NULL,
-			`gtotal` DECIMAL(12,2) NULL DEFAULT NULL,
-			`peso` DECIMAL(10,3) NULL DEFAULT NULL,
-			`pid` INT(15) NULL DEFAULT NULL,
-			`id` INT(15) UNSIGNED NOT NULL AUTO_INCREMENT,
-			PRIMARY KEY (`id`),
-			UNIQUE INDEX `numero` (`numero`, `tipo`)
-		)
-		COLLATE='latin1_swedish_ci'
-		ENGINE=MyISAM
-		ROW_FORMAT=DEFAULT";
-		var_dump($this->db->simple_query($mSQL));
+		if(!$this->datasis->iscampo('scon','origen')){
+			$mSQL="ALTER TABLE scon ADD COLUMN origen CHAR(1) NOT NULL DEFAULT 'L' COMMENT 'L= Local, R=Remoto' AFTER peso;";
+			var_dump($this->db->simple_query($mSQL));
+		}
 
-		$mSQL="CREATE TABLE IF NOT EXISTS `b2b_itscon` (
-			`numero` CHAR(8) NULL DEFAULT NULL,
-			`codigo` VARCHAR(15) NULL DEFAULT NULL,
-			`codigolocal` VARCHAR(15) NULL DEFAULT NULL,
-			`desca` VARCHAR(40) NULL DEFAULT NULL,
-			`cana` DECIMAL(5,0) NULL DEFAULT NULL,
-			`recibido` DECIMAL(5,0) NULL DEFAULT NULL,
-			`precio` DECIMAL(12,2) NULL DEFAULT NULL,
-			`importe` DECIMAL(12,2) NULL DEFAULT NULL,
-			`iva` DECIMAL(8,2) NULL DEFAULT NULL,
-			`id_scon` INT(15) UNSIGNED NOT NULL,
-			`id` INT(15) UNSIGNED NOT NULL AUTO_INCREMENT,
-			PRIMARY KEY (`id`),
-			INDEX `id_scon` (`id_scon`),
-			INDEX `numero_codigo` (`numero`, `codigo`)
-		)
-		COLLATE='latin1_swedish_ci'
-		ENGINE=MyISAM
-		ROW_FORMAT=DEFAULT";
-		var_dump($this->db->simple_query($mSQL));
+		if(!$this->datasis->iscampo('b2b_scst','reteiva')){
+			$mSQL="ALTER TABLE `b2b_scst`  ADD COLUMN `reteiva` DECIMAL(17,2) NULL DEFAULT '0.00' AFTER `reducida`;";
+			var_dump($this->db->simple_query($mSQL));
+		}
+
+		if(!$this->datasis->iscampo('b2b_scst','cexento')){
+			$mSQL="ALTER TABLE `b2b_scst`  ADD COLUMN  `cexento` decimal(17,2) DEFAULT NULL AFTER `reducida`";
+			var_dump($this->db->simple_query($mSQL));
+		}
+
+		if(!$this->datasis->iscampo('b2b_scst','cgenera')){
+			$mSQL="ALTER TABLE `b2b_scst`  ADD COLUMN   `cgenera` decimal(17,2) DEFAULT NULL AFTER `reducida`";
+			var_dump($this->db->simple_query($mSQL));
+		}
+
+		if(!$this->datasis->iscampo('b2b_scst','civagen')){
+			$mSQL="ALTER TABLE `b2b_scst`  ADD COLUMN   `civagen` decimal(17,2) DEFAULT NULL AFTER `reducida`";
+			var_dump($this->db->simple_query($mSQL));
+		}
+
+		if(!$this->datasis->iscampo('b2b_scst','creduci')){
+			$mSQL="ALTER TABLE `b2b_scst`  ADD COLUMN   `creduci` decimal(17,2) DEFAULT NULL AFTER `reducida`";
+			var_dump($this->db->simple_query($mSQL));
+		}
+
+		if(!$this->datasis->iscampo('b2b_scst','civared')){
+			$mSQL="ALTER TABLE `b2b_scst`  ADD COLUMN   `civared` decimal(17,2) DEFAULT NULL AFTER `reducida`";
+			var_dump($this->db->simple_query($mSQL));
+		}
+
+		if(!$this->datasis->iscampo('b2b_scst','cadicio')){
+			$mSQL="ALTER TABLE `b2b_scst`  ADD COLUMN   `cadicio` decimal(17,2) DEFAULT NULL AFTER `reducida`";
+			var_dump($this->db->simple_query($mSQL));
+		}
+
+		if(!$this->datasis->iscampo('b2b_scst','civaadi')){
+			$mSQL="ALTER TABLE `b2b_scst`  ADD COLUMN   `civaadi` decimal(17,2) DEFAULT NULL AFTER `reducida`";
+			var_dump($this->db->simple_query($mSQL));
+		}
+
+		if(!$this->datasis->iscampo('b2b_scst','cstotal')){
+			$mSQL="ALTER TABLE `b2b_scst`  ADD COLUMN   `cstotal` decimal(17,2) DEFAULT NULL AFTER `reducida`";
+			var_dump($this->db->simple_query($mSQL));
+		}
+
+		if(!$this->datasis->iscampo('b2b_scst','ctotal')){
+			$mSQL="ALTER TABLE `b2b_scst`  ADD COLUMN   `ctotal` decimal(17,2) DEFAULT NULL AFTER `reducida`";
+			var_dump($this->db->simple_query($mSQL));
+		}
+
+		if(!$this->datasis->iscampo('b2b_scst','cimpuesto')){
+			$mSQL="ALTER TABLE `b2b_scst`  ADD COLUMN   `cimpuesto` decimal(17,2) DEFAULT NULL AFTER `reducida`";
+			var_dump($this->db->simple_query($mSQL));
+		}
+
+		if (!$this->db->table_exists('b2b_scon')) {
+			$mSQL="CREATE TABLE IF NOT EXISTS `b2b_scon` (
+				`numero` CHAR(8) NULL DEFAULT NULL,
+				`fecha` DATE NULL DEFAULT NULL,
+				`tipo` CHAR(1) NULL DEFAULT NULL,
+				`tipod` CHAR(1) NULL DEFAULT NULL,
+				`status` CHAR(1) NULL DEFAULT 'T',
+				`asociado` CHAR(8) NULL DEFAULT NULL,
+				`clipro` CHAR(5) NULL DEFAULT NULL,
+				`almacen` CHAR(4) NULL DEFAULT NULL,
+				`nombre` CHAR(40) NULL DEFAULT NULL,
+				`direc1` CHAR(40) NULL DEFAULT NULL,
+				`direc2` CHAR(40) NULL DEFAULT NULL,
+				`observ1` CHAR(33) NULL DEFAULT NULL,
+				`observ2` CHAR(33) NULL DEFAULT NULL,
+				`stotal` DECIMAL(12,2) NULL DEFAULT NULL,
+				`impuesto` DECIMAL(12,2) NULL DEFAULT NULL,
+				`gtotal` DECIMAL(12,2) NULL DEFAULT NULL,
+				`peso` DECIMAL(10,3) NULL DEFAULT NULL,
+				`pid` INT(15) NULL DEFAULT NULL,
+				`id` INT(15) UNSIGNED NOT NULL AUTO_INCREMENT,
+				PRIMARY KEY (`id`),
+				UNIQUE INDEX `numero` (`numero`, `tipo`)
+			)
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM
+			ROW_FORMAT=DEFAULT";
+			var_dump($this->db->simple_query($mSQL));
+		}
+
+		if (!$this->db->table_exists('b2b_itscon')) {
+			$mSQL="CREATE TABLE IF NOT EXISTS `b2b_itscon` (
+				`numero` CHAR(8) NULL DEFAULT NULL,
+				`codigo` VARCHAR(15) NULL DEFAULT NULL,
+				`codigolocal` VARCHAR(15) NULL DEFAULT NULL,
+				`desca` VARCHAR(40) NULL DEFAULT NULL,
+				`cana` DECIMAL(5,0) NULL DEFAULT NULL,
+				`recibido` DECIMAL(5,0) NULL DEFAULT NULL,
+				`precio` DECIMAL(12,2) NULL DEFAULT NULL,
+				`importe` DECIMAL(12,2) NULL DEFAULT NULL,
+				`iva` DECIMAL(8,2) NULL DEFAULT NULL,
+				`id_scon` INT(15) UNSIGNED NOT NULL,
+				`id` INT(15) UNSIGNED NOT NULL AUTO_INCREMENT,
+				PRIMARY KEY (`id`),
+				INDEX `id_scon` (`id_scon`),
+				INDEX `numero_codigo` (`numero`, `codigo`)
+			)
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM
+			ROW_FORMAT=DEFAULT";
+			var_dump($this->db->simple_query($mSQL));
+		}
 	}
 }
