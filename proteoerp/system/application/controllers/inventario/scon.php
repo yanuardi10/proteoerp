@@ -499,51 +499,59 @@ class scon extends Controller {
 	}
 
 	function instalar(){
-		$mSQL="CREATE TABLE IF NOT EXISTS `scon` (
-			`numero` CHAR(8) NULL DEFAULT NULL,
-			`fecha` DATE NULL DEFAULT NULL,
-			`tipo` CHAR(1) NULL DEFAULT NULL,
-			`tipod` CHAR(1) NULL DEFAULT NULL,
-			`status` CHAR(1) NULL DEFAULT 'T',
-			`asociado` CHAR(8) NULL DEFAULT NULL,
-			`clipro` CHAR(5) NULL DEFAULT NULL,
-			`almacen` CHAR(4) NULL DEFAULT NULL,
-			`nombre` CHAR(40) NULL DEFAULT NULL,
-			`direc1` CHAR(40) NULL DEFAULT NULL,
-			`direc2` CHAR(40) NULL DEFAULT NULL,
-			`observ1` CHAR(33) NULL DEFAULT NULL,
-			`observ2` CHAR(33) NULL DEFAULT NULL,
-			`stotal` DECIMAL(12,2) NULL DEFAULT NULL,
-			`impuesto` DECIMAL(12,2) NULL DEFAULT NULL,
-			`gtotal` DECIMAL(12,2) NULL DEFAULT NULL,
-			`peso` DECIMAL(10,3) NULL DEFAULT NULL,
-			`id` INT(15) UNSIGNED NOT NULL AUTO_INCREMENT,
-			PRIMARY KEY (`id`),
-			UNIQUE INDEX `numero` (`numero`, `tipo`)
-		)
-		COLLATE='latin1_swedish_ci'
-		ENGINE=MyISAM
-		ROW_FORMAT=DEFAULT";
-		var_dump($this->db->simple_query($mSQL));
+		if (!$this->db->table_exists('scon')) {
+			$mSQL="CREATE TABLE IF NOT EXISTS `scon` (
+				`numero` CHAR(8) NULL DEFAULT NULL,
+				`fecha` DATE NULL DEFAULT NULL,
+				`tipo` CHAR(1) NULL DEFAULT NULL,
+				`tipod` CHAR(1) NULL DEFAULT NULL,
+				`status` CHAR(1) NULL DEFAULT 'T',
+				`asociado` CHAR(8) NULL DEFAULT NULL,
+				`clipro` CHAR(5) NULL DEFAULT NULL,
+				`almacen` CHAR(4) NULL DEFAULT NULL,
+				`nombre` CHAR(40) NULL DEFAULT NULL,
+				`direc1` CHAR(40) NULL DEFAULT NULL,
+				`direc2` CHAR(40) NULL DEFAULT NULL,
+				`observ1` CHAR(33) NULL DEFAULT NULL,
+				`observ2` CHAR(33) NULL DEFAULT NULL,
+				`stotal` DECIMAL(12,2) NULL DEFAULT NULL,
+				`impuesto` DECIMAL(12,2) NULL DEFAULT NULL,
+				`gtotal` DECIMAL(12,2) NULL DEFAULT NULL,
+				`peso` DECIMAL(10,3) NULL DEFAULT NULL,
+				`id` INT(15) UNSIGNED NOT NULL AUTO_INCREMENT,
+				PRIMARY KEY (`id`),
+				UNIQUE INDEX `numero` (`numero`, `tipo`)
+			)
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM
+			ROW_FORMAT=DEFAULT";
+			var_dump($this->db->simple_query($mSQL));
+		}
 
-		$mSQL="CREATE TABLE IF NOT EXISTS `itscon` (
-			`numero` CHAR(8) NULL DEFAULT NULL,
-			`codigo` VARCHAR(15) NULL DEFAULT NULL,
-			`desca` VARCHAR(40) NULL DEFAULT NULL,
-			`cana` DECIMAL(5,0) NULL DEFAULT NULL,
-			`recibido` DECIMAL(5,0) NULL DEFAULT NULL,
-			`precio` DECIMAL(12,2) NULL DEFAULT NULL,
-			`importe` DECIMAL(12,2) NULL DEFAULT NULL,
-			`iva` DECIMAL(8,2) NULL DEFAULT NULL,
-			`id_scon` INT(15) UNSIGNED NOT NULL,
-			`id` INT(15) UNSIGNED NOT NULL AUTO_INCREMENT,
-			PRIMARY KEY (`id`),
-			INDEX `id_scon` (`id_scon`)
-		)
-		COLLATE='latin1_swedish_ci'
-		ENGINE=MyISAM
-		ROW_FORMAT=DEFAULT";
-		var_dump($this->db->simple_query($mSQL));
+		if (!$this->db->table_exists('itscon')) {
+			$mSQL="CREATE TABLE IF NOT EXISTS `itscon` (
+				`numero` CHAR(8) NULL DEFAULT NULL,
+				`codigo` VARCHAR(15) NULL DEFAULT NULL,
+				`desca` VARCHAR(40) NULL DEFAULT NULL,
+				`cana` DECIMAL(5,0) NULL DEFAULT NULL,
+				`recibido` DECIMAL(5,0) NULL DEFAULT NULL,
+				`precio` DECIMAL(12,2) NULL DEFAULT NULL,
+				`importe` DECIMAL(12,2) NULL DEFAULT NULL,
+				`iva` DECIMAL(8,2) NULL DEFAULT NULL,
+				`id_scon` INT(15) UNSIGNED NOT NULL,
+				`id` INT(15) UNSIGNED NOT NULL AUTO_INCREMENT,
+				PRIMARY KEY (`id`),
+				INDEX `id_scon` (`id_scon`)
+			)
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM
+			ROW_FORMAT=DEFAULT";
+			var_dump($this->db->simple_query($mSQL));
+		}
 
+		if(!$this->datasis->iscampo('scon','origen')){
+			$mSQL="ALTER TABLE scon ADD COLUMN origen CHAR(1) NOT NULL DEFAULT 'L' AFTER peso";
+			var_dump($this->db->simple_query($mSQL));
+		}
 	}
 }

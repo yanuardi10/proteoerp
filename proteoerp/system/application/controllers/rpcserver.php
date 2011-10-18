@@ -11,6 +11,7 @@ class Rpcserver extends Controller {
 		$config['functions']['ttiket']   = array('function' => 'Rpcserver.traer_tiket');
 		$config['functions']['cea']      = array('function' => 'Rpcserver.ComprasEmpresasAsociadas');
 		$config['functions']['consiea']  = array('function' => 'Rpcserver.ConsignacionesEmpresasAsociadas');
+		$config['functions']['consinu']  = array('function' => 'Rpcserver.NumConsignacionesEmpresasAsociadas');
 		$config['functions']['montven']  = array('function' => 'Rpcserver.MontosVentas');
 		$config['functions']['ventanainf']  = array('function' => 'Rpcserver.ventanainf');
 
@@ -28,22 +29,21 @@ class Rpcserver extends Controller {
 			$row = $query->row();
 			$response = array(
 					array(
-							0 => $row->precio1,
-							1 => $row->precio2,
-							2 => $row->precio3,
-							3 => $row->precio4,
-							4 => $row->precio5,
-							5 => $row->descrip,
-							6 => $row->barras),
+						0 => $row->precio1,
+						1 => $row->precio2,
+						2 => $row->precio3,
+						3 => $row->precio4,
+						4 => $row->precio5,
+						5 => $row->descrip,
+						6 => $row->barras),
 					'struct');
 		}else{
 			$response = array(
-					array(),
-					'struct');
+				array(),
+				'struct');
 		}
 		return $this->xmlrpc->send_response($response);
 	}
-
 
 	function traer_tiket($request){
 		$parameters = $request->output_parameters();
@@ -96,7 +96,7 @@ class Rpcserver extends Controller {
 						$row[$ind]=base64_encode($val);
 					}
 					$pivot['scst']=$row;
-    
+
 					//Prepara los articulos
 					$it=array();
 					$mmSQL="SELECT TRIM(a.codigoa) AS codigoa,TRIM(a.desca) AS desca,SUM(a.cana) AS cana ,a.preca,SUM(a.tota) AS tota,a.iva,b.barras,b.precio1,b.precio1 AS precio2,b.precio1 AS precio3,b.precio1 AS precio4,b.unidad, b.tipo, b.tdecimal
@@ -110,7 +110,6 @@ class Rpcserver extends Controller {
 						$it[]=$rrow;
 					}
 					$pivot['itscst']=$it;
-    
 					$compras[]=serialize($pivot);
 				}
 			}
@@ -131,13 +130,13 @@ class Rpcserver extends Controller {
 		$pwd    =$parameters['3'];
 		$cant   =5;
 
-		if($this->db->table_exists('psinv') && $this->db->table_exists('itpsinv')){
+		if($this->db->table_exists('scon') && $this->db->table_exists('itscon')){
 			$consignacion=array();
 			if($this->secu->cliente($usr,$pwd)){
-				$mSQL="SELECT numero,fecha,status,observ1,stotal,impuesto,gtotal,peso,id
+				$mSQL="SELECT numero,fecha,status,observ1,stotal,impuesto,gtotal,peso,tipod,id
 					FROM scon
 					WHERE clipro=? AND numero > ?
-					AND tipo='C' AND tipod='E' LIMIT $cant";
+					AND tipo='C' AND origen='L' LIMIT $cant";
 				$query = $this->db->query($mSQL,array($usr,$ult_ref));
 				//memowrite($this->db->last_query(),'B2Ba');
 				if ($query->num_rows() > 0){ 
@@ -149,7 +148,7 @@ class Rpcserver extends Controller {
 							$row[$ind]=base64_encode($val);
 						}
 						$pivot['scon']=$row;
-		
+
 						//Prepara los articulos
 						$it=array();
 						$mmSQL="SELECT a.numero,TRIM(a.codigo) AS codigo,TRIM(a.desca) AS desca,SUM(a.cana) AS cana ,
@@ -166,7 +165,7 @@ class Rpcserver extends Controller {
 							$it[]=$rrow;
 						}
 						$pivot['itscon']=$it;
-		
+
 						$consignacion[]=serialize($pivot);
 					}
 				}
@@ -178,6 +177,34 @@ class Rpcserver extends Controller {
 		}
 
 		$response = array($consignacion,'struct');
+		return $this->xmlrpc->send_response($response);
+	}
+
+	function NumConsignacionesEmpresasAsociadas($request){
+		$parameters = $request->output_parameters();
+
+		$asoc   =$parameters['0'];
+		$cod_cli=$parameters['1'];
+		$usr    =$parameters['2'];
+		$pwd    =$parameters['3'];
+
+		if($this->db->table_exists('scon')){
+			if($this->secu->cliente($usr,$pwd)){
+				$mSQL="SELECT numero FROM scon WHERE clipro=? AND asociado = ? AND origen='R' LIMIT 1";
+				$query = $this->db->query($mSQL,array($usr,$asoc));
+				if ($query->num_rows() > 0){
+					$row = $query->row_array(); 
+					$numero=$row['numero'];
+				}else{
+					$numero='';
+				}
+			}else{
+				return $this->xmlrpc->send_error_message('100', 'Acceso Negado');
+			}
+		}else{
+			return $this->xmlrpc->send_error_message('101', 'Servicio no esta disponible');
+		}
+		$response = array($numero, 'array');
 		return $this->xmlrpc->send_response($response);
 	}
 
@@ -229,9 +256,8 @@ class Rpcserver extends Controller {
 		$response = array($sinv,'struct');
 		return $this->xmlrpc->send_response($response);*/
 	}
-	
+
 	function ventanainf(){
-		
 		$data[]=array('ender','ochoa');
 		$response = array($data,'struct');
 		return $this->xmlrpc->send_response($response);	

@@ -4,7 +4,8 @@ class sfac extends validaciones {
 	function sfac(){
 		parent::Controller();
 		$this->load->library('rapyd');
-		$this->datasis->modulo_id(103,1);
+		//$this->datasis->modulo_id(103,1);
+		$this->instalar();
 	}
 
 	function index() {
@@ -263,9 +264,6 @@ $sigma = "";
 		'titulo'  =>'Buscar Cliente',
 		);
 		$boton =$this->datasis->modbus($mSCLId);
-		
-		if ( !$this->datasis->iscampo("sfac","ereiva") )
-			$this->db->simple_query("ALTER TABLE sfac ADD ereiva DATE AFTER freiva ");
 
 		$do = new DataObject('sfac');
 		$do->rel_one_to_many('sitems', 'sitems', array('numero'=>'numa','tipo_doc'=>'tipoa'));
@@ -1339,5 +1337,12 @@ function sfacreiva(mid){
 	function _post_delete($do){
 		$codigo=$do->get('numero');
 		logusu('sfac',"Factura $codigo ELIMINADO");
+	}
+
+	function instalar(){
+		if(!$this->datasis->iscampo('sfac','ereiva')){
+			$mSQL="ALTER TABLE sfac ADD ereiva DATE AFTER freiva";
+			$this->db->simple_query($mSQL);
+		}
 	}
 }
