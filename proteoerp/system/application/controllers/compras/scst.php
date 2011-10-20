@@ -115,53 +115,53 @@ class Scst extends Controller {
 		$grid->add('compras/scst/dataedit/create');
 		$grid->build('datagridST');
 
-//************ SUPER TABLE ************* 
+		//************ SUPER TABLE *************
 		$extras = '
-<script type="text/javascript">
-//<![CDATA[
-(function() {
-	var mySt = new superTable("demoTable", {
-	cssSkin : "sSky",
-	fixedCols : 1,
-	headerRows : 1,
-	onStart : function () {	this.start = new Date();},
-	onFinish : function () {document.getElementById("testDiv").innerHTML += "Finished...<br>" + ((new Date()) - this.start) + "ms.<br>";}
-	});
-})();
-//]]>
-</script>';
-		$style ='
-<style type="text/css">
-.fakeContainer { /* The parent container */
-    margin: 5px;
-    padding: 0px;
-    border: none;
-    width: 740px; /* Required to set */
-    height: 320px; /* Required to set */
-    overflow: hidden; /* Required to set */
-}
-</style>';
-//****************************************
-
-$script ='
-<script type="text/javascript">
-function scstserie(mcontrol){
-	//var mserie=Prompt("Numero de Serie");
-	//jAlert("Cancelado","Informacion");
-	jPrompt("Numero de Serie","" ,"Cambio de Serie", function(mserie){
-		if( mserie==null){
-			jAlert("Cancelado","Informacion");
-		} else {
-			$.ajax({ url: "'.site_url().'compras/scst/scstserie/"+mcontrol+"/"+mserie,
-				success: function(msg){
-					jAlert("Cambio Finalizado "+msg,"Informacion");
-					location.reload();
-					}
+		<script type="text/javascript">
+		//<![CDATA[
+		(function() {
+			var mySt = new superTable("demoTable", {
+			cssSkin : "sSky",
+			fixedCols : 1,
+			headerRows : 1,
+			onStart : function () {	this.start = new Date();},
+			onFinish : function () {document.getElementById("testDiv").innerHTML += "Finished...<br>" + ((new Date()) - this.start) + "ms.<br>";}
 			});
+		})();
+		//]]>
+		</script>';
+
+		$style ='
+		<style type="text/css">
+		.fakeContainer { /* The parent container */
+		    margin: 5px;
+		    padding: 0px;
+		    border: none;
+		    width: 740px; /* Required to set */
+		    height: 320px; /* Required to set */
+		    overflow: hidden; /* Required to set */
 		}
-	})
-}
-</script>';
+		</style>';
+		//****************************************
+
+		$script ='<script type="text/javascript">
+		function scstserie(mcontrol){
+			//var mserie=Prompt("Numero de Serie");
+			//jAlert("Cancelado","Informacion");
+			jPrompt("Numero de Serie","" ,"Cambio de Serie", function(mserie){
+				if( mserie==null){
+					jAlert("Cancelado","Informacion");
+				} else {
+					$.ajax({ url: "'.site_url().'compras/scst/scstserie/"+mcontrol+"/"+mserie,
+						success: function(msg){
+							jAlert("Cambio Finalizado "+msg,"Informacion");
+							location.reload();
+							}
+					});
+				}
+			})
+		}
+		</script>';
 
 		$data['style']   = $style;
 		$data['style']  .= style('superTables.css');
@@ -186,7 +186,7 @@ function scstserie(mcontrol){
 		$this->rapyd->load('dataobject','datadetails');
 		$this->rapyd->uri->keep_persistence();
 
- 		$modbus=array(
+		$modbus=array(
 			'tabla'   =>'sinv',
 			'columnas'=>array(
 				'codigo' =>'C&oacute;digo',
@@ -219,6 +219,7 @@ function scstserie(mcontrol){
 
 		$edit->pre_process('insert' ,'_pre_insert');
 		$edit->pre_process('update' ,'_pre_update');
+		$edit->pre_process('delete' ,'_pre_delete');
 		$edit->post_process('insert','_post_insert');
 		$edit->post_process('update','_post_update');
 		$edit->post_process('delete','_post_delete');
@@ -453,7 +454,7 @@ function scstserie(mcontrol){
 			$accion="javascript:window.location='".site_url('compras/scst/reversar/'.$control)."'";
 			$edit->button_status('btn_reversar','Reversar'     ,$accion,'TR','show');
 		}
-		$edit->buttons('save', 'undo', 'back','add_rel');
+		$edit->buttons('save', 'undo','delete' ,'back','add_rel');
 		$edit->build();
 
 		$smenu['link']  =  barra_menu('201');
@@ -1008,11 +1009,11 @@ function scstserie(mcontrol){
 
 		$mSQL = "SELECT * FROM scst WHERE control=$control";
 		$query=$this->db->query($mSQL);
-			
+
 		if($query->num_rows()==0){
 			return;
 		}
-		
+
 		$scst     = $query->row_array();
 		$mTRANSAC = $scst["transac"];
 		// Si esta actualizada
@@ -1188,9 +1189,9 @@ function scstserie(mcontrol){
 		$control=$this->datasis->fprox_numero('ntemp');
 		$control=substr($control,1,7).'_';
 		$controle=$this->db->escape($control);
-		
+
 		//$transac=$this->datasis->fprox_numero('ntransac');
-		
+
 		$query="
 		INSERT INTO itscst (`numero`,`proveed`,`codigo`,`descrip`,`cantidad`,`control`,`iva`,`costo`,`importe`)
 		SELECT refe2,clipro,b.codigo,b.descrip,SUM(b.cant) cant,$controle,c.iva,c.ultimo,SUM(b.cant)*c.ultimo
@@ -1198,30 +1199,27 @@ function scstserie(mcontrol){
 		JOIN seri b ON a.recep=b.recep
 		JOIN sinv c ON b.codigo=c.codigo
 		WHERE origen='scst' AND a.refe2=$facturae AND clipro=$cod_prove 
-		GROUP BY b.codigo
-		";
-		
+		GROUP BY b.codigo";
+
 		$this->db->query($query);
-		
+
 		$query="
 		INSERT INTO scst (`numero`,`proveed`,`control`,`serie`)
-		VALUES ($facturae,$cod_prove,$controle,$facturae)
-		";
+		VALUES ($facturae,$cod_prove,$controle,$facturae)";
 		$this->db->query($query);
 		redirect("compras/scst/dataedit/modify/$control");
-		
 	}
-	
-	function _pre_del($do){
-		$codigo=$do->get('comprob');
-		$chek =   $this->datasis->dameval("SELECT COUNT(*) FROM cpla WHERE codigo LIKE '$codigo.%'");
-		$chek +=  $this->datasis->dameval("SELECT COUNT(*) FROM itcasi WHERE cuenta='$codigo'");
 
-		if ($chek > 0){
-			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='Plan de Cuenta tiene derivados o movimientos';
-			return False;
+	function _pre_delete($do){
+		$recep  =strtotime($do->get('recep'));
+		$fecha  =strtotime($do->get('fecha'));
+		$actuali=strtotime($do->get('actuali'));
+
+		if ($actuali >= $fecha){
+			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='No se puede eliminar una factura cargada, debe reversarla primero';
+			return false;
 		}
-		return True;
+		return true;
 	}
 
 	function _pre_insert($do){
@@ -1353,18 +1351,18 @@ function scstserie(mcontrol){
 	function _post_update($do){
 		
 	}
-	
+
 	function chddate($fecha){
 		$d1 = DateTime::createFromFormat(RAPYD_DATE_FORMAT, $fecha);
 		$d2 = new DateTime();
-		
+
 		$control= $this->uri->segment(4);
 		$controle=$this->db->escape($control);
 
 		$f=$this->datasis->dameval("SELECT fecha FROM scst WHERE control=$controle");
-		
+
 		$d3 = DateTime::createFromFormat(RAPYD_DATE_FORMAT, dbdate_to_human($f));
-		
+
 		if($d2>=$d1 && $d1>=$d3){
 			return true;
 		}else{

@@ -129,7 +129,6 @@ class sfac extends validaciones {
 		$grid->column_orderby('Hora',     'hora',     'hora',   'align=\'center\'');
 		$grid->column_orderby('Transac',  'transac',  'transac','align=\'left\'');
 		$grid->column_orderby('Afecta',   'factura',  'factura','align=\'left\'');
-
 		$grid->column_orderby('I.D.',     'id',       'id',     'align=\'right\'');
 
 		$grid->build('datagridST');
