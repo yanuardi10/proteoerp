@@ -185,12 +185,12 @@ class Scst extends Controller {
 			$rt=similar_text($st1,$st2,$por);
 
 			$atts = array(
-				'width'     => '400',
+				'width'     => '550',
 				'height'    => '300',
 				'scrollbars'=> 'no',
 				'status'    => 'no',
 				'resizable' => 'no',
-				'screenx'   => "'+((screen.availWidth/2)-200)+'",
+				'screenx'   => "'+((screen.availWidth/2)-275)+'",
 				'screeny'   => "'+((screen.availHeight/2)-150)+'"
 			);
 
@@ -427,7 +427,6 @@ class Scst extends Controller {
 						$str = str_replace('INSERT','INSERT IGNORE',$str);
 						$this->db->simple_query($str);
 					}
-        
 				}
 			}
 		}
@@ -639,114 +638,121 @@ class Scst extends Controller {
 				$query=$farmaxDB->query("SELECT * FROM scst WHERE control=$control");
 
 				if ($query->num_rows()==1){
-					$lcontrol=$this->datasis->fprox_numero('nscst');
-					$transac =$this->datasis->fprox_numero('ntransa');
-					$contribu=$this->datasis->traevalor('CONTRIBUYENTE');
-					$rif     =$this->datasis->traevalor('RIF');
-					$estampa =date('Ymd');
-					$hora    =date('H:i:s');
 
 					$row=$query->row_array();
-					$numero=$row['numero'];
-					$proveed=$row['proveed'];
-					$row['serie']   =$numero;
-					$row['numero']  =substr($numero,-8);
-					$row['control'] =$lcontrol;
-					$row['transac'] =$transac;
-					$row['nfiscal'] =$nfiscal;
-					$row['credito'] =$row['montonet'];
-					$row['anticipo']=0;
-					$row['inicial'] =0;
-					$row['estampa'] =$estampa;
-					$row['hora']    =$hora;
-					$row['usuario'] =$this->session->userdata('usuario');
-					$row['depo']    =$almacen;
-					$cd             =strtotime($row['fecha']);
-					$row['vence']   =date('Y-m-d', mktime(0,0,0,date('m',$cd),date('d',$cd)+$dias,date('Y',$cd)));
+					$pcontrol=$row['pcontrol'];
+					if($this->_btn_cargar($pcontrol)){
 
-					$mmsql="SELECT iva,SUM(montoiva) AS monto,SUM(importe) AS base FROM itscst WHERE control=$control GROUP BY iva";
-					$m_iva=$farmaxDB->query($mmsql);
-					$ivas=$this->datasis->ivaplica($row['fecha']);
-					$tasa=$redutasa=$sobretasa=$exento=$basetasa=$baseredu=$baseadicio=0;
+						$lcontrol=$this->datasis->fprox_numero('nscst');
+						$transac =$this->datasis->fprox_numero('ntransa');
+						$contribu=$this->datasis->traevalor('CONTRIBUYENTE');
+						$rif     =$this->datasis->traevalor('RIF');
+						$estampa =date('Ymd');
+						$hora    =date('H:i:s');
 
-					foreach ($m_iva->result_array() as $ivarow){
-						if($ivarow['iva']==$ivas['redutasa']){
-							$redutasa  +=$ivarow['monto'];
-							$baseredu  +=$ivarow['base'];
-						}elseif($ivarow['iva']==$ivas['tasa']){
-							$tasa      +=$ivarow['monto'];
-							$basetasa  +=$ivarow['base'];
-						}elseif($ivarow['iva']==$ivas['sobretasa']){
-							$sobretasa +=$ivarow['monto'];
-							$baseadicio+=$ivarow['base'];
-						}elseif($ivarow['iva']==0){
-							$exento    +=$ivarow['base'];
+						$numero=$row['numero'];
+						$proveed=$row['proveed'];
+						$row['serie']   =$numero;
+						$row['numero']  =substr($numero,-8);
+						$row['control'] =$lcontrol;
+						$row['transac'] =$transac;
+						$row['nfiscal'] =$nfiscal;
+						$row['credito'] =$row['montonet'];
+						$row['anticipo']=0;
+						$row['inicial'] =0;
+						$row['estampa'] =$estampa;
+						$row['hora']    =$hora;
+						$row['usuario'] =$this->session->userdata('usuario');
+						$row['depo']    =$almacen;
+						$cd             =strtotime($row['fecha']);
+						$row['vence']   =date('Y-m-d', mktime(0,0,0,date('m',$cd),date('d',$cd)+$dias,date('Y',$cd)));
+
+						$mmsql="SELECT iva,SUM(montoiva) AS monto,SUM(importe) AS base FROM itscst WHERE control=$control GROUP BY iva";
+						$m_iva=$farmaxDB->query($mmsql);
+						$ivas=$this->datasis->ivaplica($row['fecha']);
+						$tasa=$redutasa=$sobretasa=$exento=$basetasa=$baseredu=$baseadicio=0;
+
+						foreach ($m_iva->result_array() as $ivarow){
+							if($ivarow['iva']==$ivas['redutasa']){
+								$redutasa  +=$ivarow['monto'];
+								$baseredu  +=$ivarow['base'];
+							}elseif($ivarow['iva']==$ivas['tasa']){
+								$tasa      +=$ivarow['monto'];
+								$basetasa  +=$ivarow['base'];
+							}elseif($ivarow['iva']==$ivas['sobretasa']){
+								$sobretasa +=$ivarow['monto'];
+								$baseadicio+=$ivarow['base'];
+							}elseif($ivarow['iva']==0){
+								$exento    +=$ivarow['base'];
+							}
 						}
-					}
-					$row['reducida'] =$redutasa;
-					$row['tasa']     =$tasa;
-					$row['sobretasa']=$sobretasa;
-					$row['monredu']  =$redutasa;
-					$row['montasa']  =$tasa;
-					$row['monadic']  =$sobretasa;
+						$row['reducida'] =$redutasa;
+						$row['tasa']     =$tasa;
+						$row['sobretasa']=$sobretasa;
+						$row['monredu']  =$redutasa;
+						$row['montasa']  =$tasa;
+						$row['monadic']  =$sobretasa;
 
-					$row['ctotal']   =$row['montonet'];
-					$row['cstotal']  =$row['montotot'];
-					$row['cexento']  =$exento;
-					$row['cimpuesto']=$redutasa+$tasa+$sobretasa;
-					$row['cgenera']  =$basetasa;
-					$row['civagen']  =$tasa;
-					$row['cadicio']  =$baseadicio;
-					$row['civaadi']  =$sobretasa;
-					$row['creduci']  =$baseredu;
-					$row['civared']  =$redutasa;
+						$row['ctotal']   =$row['montonet'];
+						$row['cstotal']  =$row['montotot'];
+						$row['cexento']  =$exento;
+						$row['cimpuesto']=$redutasa+$tasa+$sobretasa;
+						$row['cgenera']  =$basetasa;
+						$row['civagen']  =$tasa;
+						$row['cadicio']  =$baseadicio;
+						$row['civaadi']  =$sobretasa;
+						$row['creduci']  =$baseredu;
+						$row['civared']  =$redutasa;
 
-					unset($row['pcontrol']);
-					if($contribu=='ESPECIAL' and strtoupper($rif[0])!='V'){
-						$por_rete=$this->datasis->dameval('SELECT reteiva FROM sprv WHERE proveed='.$this->db->escape($row['proveed']));
-						if($por_rete!=100){
-							$por_rete=0.75;
-						}else{
-							$por_rete=$por_rete/100;
+						unset($row['pcontrol']);
+						if($contribu=='ESPECIAL' and strtoupper($rif[0])!='V'){
+							$por_rete=$this->datasis->dameval('SELECT reteiva FROM sprv WHERE proveed='.$this->db->escape($row['proveed']));
+							if($por_rete!=100){
+								$por_rete=0.75;
+							}else{
+								$por_rete=$por_rete/100;
+							}
+							$row['reteiva']=round($row['montoiva']*$por_rete,2);
 						}
-						$row['reteiva']=round($row['montoiva']*$por_rete,2);
+
+						$mSQL[]=$this->db->insert_string('scst', $row);
+
+						$itquery = $farmaxDB->query("SELECT * FROM itscst WHERE control=$control");
+						//echo "SELECT * FROM itscst WHERE control=$control";
+						foreach ($itquery->result_array() as $itrow){
+							$codigo=$this->datasis->dameval('SELECT abarras FROM farmaxasig WHERE barras='.$this->db->escape($itrow['codigo']).' AND proveed='.$this->db->escape($proveed));
+							$itrow['codigo']  = $codigo;
+							$itrow['control'] = $lcontrol;
+							$itrow['usuario'] = $this->session->userdata('usuario');
+							$itrow['estampa'] = $estampa;
+							$itrow['hora']    = $hora;
+
+							unset($itrow['id']);
+							$mSQL[]=$this->db->insert_string('itscst', $itrow);
+						}
+
+						foreach($mSQL AS $sql){
+							$rt=$this->db->simple_query($sql);
+							if(!$rt){ memowrite($sql,'scstfarma');}
+						}
+						$sql="UPDATE scst SET pcontrol='${lcontrol}' WHERE control=$control";
+						$rt=$farmaxDB->simple_query($sql);
+						if(!$rt) memowrite($sql,'farmaejec');
+
+						/*$mSQL="UPDATE 
+						  ${localdb}.itscst AS a
+						  JOIN ${localdb}.farmaxasig AS b ON a.codigo=b.barras AND a.proveed=b.proveed
+						  SET a.codigo=b.abarras
+						WHERE a.control='$lcontrol'";
+						$rt=$this->db->simple_query($mSQL);
+						if(!$rt){ memowrite('farmaejec1',$sql);}*/
+
+						$retorna='Compra guardada con el control '.anchor("compras/scst/dataedit/show/$lcontrol",$lcontrol);
+					}else{
+						$retorna='Al parecer la factura fue ya pasada';
 					}
-
-					$mSQL[]=$this->db->insert_string('scst', $row);
-
-					$itquery = $farmaxDB->query("SELECT * FROM itscst WHERE control=$control");
-					//echo "SELECT * FROM itscst WHERE control=$control";
-					foreach ($itquery->result_array() as $itrow){
-						$codigo=$this->datasis->dameval('SELECT abarras FROM farmaxasig WHERE barras='.$this->db->escape($itrow['codigo']).' AND proveed='.$this->db->escape($proveed));
-						$itrow['codigo']  = $codigo;
-						$itrow['control'] = $lcontrol;
-						$itrow['usuario'] = $this->session->userdata('usuario');
-						$itrow['estampa'] = $estampa;
-						$itrow['hora']    = $hora;
-
-						unset($itrow['id']);
-						$mSQL[]=$this->db->insert_string('itscst', $itrow);
-					}
-
-					foreach($mSQL AS $sql){
-						$rt=$this->db->simple_query($sql);
-						if(!$rt){ memowrite($sql,'scstfarma');}
-					}
-					$sql="UPDATE scst SET pcontrol='${lcontrol}' WHERE control=$control";
-					$rt=$farmaxDB->simple_query($sql);
-					if(!$rt) memowrite($sql,'farmaejec');
-
-					/*$mSQL="UPDATE 
-					  ${localdb}.itscst AS a
-					  JOIN ${localdb}.farmaxasig AS b ON a.codigo=b.barras AND a.proveed=b.proveed
-					  SET a.codigo=b.abarras
-					WHERE a.control='$lcontrol'";
-					$rt=$this->db->simple_query($mSQL);
-					if(!$rt){ memowrite('farmaejec1',$sql);}*/
-
-					$retorna='Compra guardada con el control '.anchor("compras/scst/dataedit/show/$lcontrol",$lcontrol);
 				}else{
-					$retorna='Al parecer la factura fue ya pasada';
+					$retorna='Control no existe';
 				}
 			}else{
 				$retorna='No se puede pasar porque hay productos que no existen en inventario';
