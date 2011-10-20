@@ -715,6 +715,7 @@ class Scst extends Controller {
 					$mSQL[]=$this->db->insert_string('scst', $row);
 
 					$itquery = $farmaxDB->query("SELECT * FROM itscst WHERE control=$control");
+					//echo "SELECT * FROM itscst WHERE control=$control";
 					foreach ($itquery->result_array() as $itrow){
 						$codigo=$this->datasis->dameval('SELECT abarras FROM farmaxasig WHERE barras='.$this->db->escape($itrow['codigo']).' AND proveed='.$this->db->escape($proveed));
 						$itrow['codigo']  = $codigo;
@@ -726,13 +727,14 @@ class Scst extends Controller {
 						unset($itrow['id']);
 						$mSQL[]=$this->db->insert_string('itscst', $itrow);
 					}
+
 					foreach($mSQL AS $sql){
 						$rt=$this->db->simple_query($sql);
-						if(!$rt){ memowrite('scstfarma',$sql);}
+						if(!$rt){ memowrite($sql,'scstfarma');}
 					}
 					$sql="UPDATE scst SET pcontrol='${lcontrol}' WHERE control=$control";
 					$rt=$farmaxDB->simple_query($sql);
-					if(!$rt) memowrite('farmaejec',$sql);
+					if(!$rt) memowrite($sql,'farmaejec');
 
 					/*$mSQL="UPDATE 
 					  ${localdb}.itscst AS a
