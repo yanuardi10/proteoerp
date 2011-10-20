@@ -635,7 +635,8 @@ class Scst extends Controller {
 		if($query->num_rows()>0){
 			$row=$query->row_array();
 			if($row['cana']==0){
-				$query=$farmaxDB->query("SELECT * FROM scst WHERE control=$control AND pcontrol IS NULL");
+				//$query=$farmaxDB->query("SELECT * FROM scst WHERE control=$control AND pcontrol IS NULL");
+				$query=$farmaxDB->query("SELECT * FROM scst WHERE control=$control");
 
 				if ($query->num_rows()==1){
 					$lcontrol=$this->datasis->fprox_numero('nscst');
