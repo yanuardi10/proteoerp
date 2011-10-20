@@ -101,15 +101,15 @@ class Scst extends Controller {
 				$rt =form_button('create' ,'Crear','onclick="pcrear('.$id.');"');
 				$rt.=form_button('asignar','Asig.','onclick="pasig('.$id.');"');
 			}else{
-					$attr = array(
-						'width'      => '800',
-						'height'     => '600',
-						'scrollbars' => 'yes',
-						'status'     => 'yes',
-						'resizable'  => 'yes',
-						'screenx'    => "'+((screen.availWidth/2)-400)+'",
-						'screeny'    => "'+((screen.availHeight/2)-300)+'"
-					);
+				$attr = array(
+					'width'      => '800',
+					'height'     => '600',
+					'scrollbars' => 'yes',
+					'status'     => 'yes',
+					'resizable'  => 'yes',
+					'screenx'    => "'+((screen.availWidth/2)-400)+'",
+					'screeny'    => "'+((screen.availHeight/2)-300)+'"
+				);
 
 				$llink=anchor_popup('inventario/consultas/preciosgeneral/'.raencode($cen), $cen, $attr);
 				$rt=$llink;
@@ -262,7 +262,9 @@ class Scst extends Controller {
 		$edit->detalle=new freeField('detalle', 'detalle',$detalle->output);
 		$accion="javascript:window.location='".site_url('farmacia/scst/cargar'.$edit->pk_URI())."'";
 		$pcontrol=$edit->_dataobject->get('pcontrol');
-		if(is_null($pcontrol)) $edit->button_status('btn_cargar','Cargar',$accion,'TR','show');
+		if($this->_btn_cargar($pcontrol)){
+			$edit->button_status('btn_cargar','Cargar',$accion,'TR','show');
+		}
 		$edit->buttons('save','undo','back');
 
 		$edit->script($script,'show');
@@ -284,6 +286,16 @@ class Scst extends Controller {
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = '<h1>Compras Descargadas</h1>';
 		$this->load->view('view_ventanas', $data);
+	}
+
+	function _btn_cargar($pcontrol){
+		if(is_null($pcontrol)){
+			return true;
+		}else{
+			$dbpcontrol=$this->db->escape($pcontrol);
+			$cana=$this->datasis->dameval('SELECT * FROM scst WHERE control='.$dbpcontrol);
+			if($cana==0) return true; else return false;
+		}
 	}
 
 	function reasignaprecio(){
