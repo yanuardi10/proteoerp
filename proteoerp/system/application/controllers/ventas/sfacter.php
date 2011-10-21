@@ -277,23 +277,24 @@ class sfacter extends validaciones {
 		$edit->sprv = new inputField('Proveedor','sprv');
 		$edit->sprv->size = 6;
 		$edit->sprv->maxlength=5;
+		$edit->sprv->rule='required';
 		//$edit->sprv->append($boton);
 
-		$edit->sprvnombre = new inputField('Nombre', 'sprvnombre');
+		$edit->sprvnombre = new hiddenField('Nombre', 'sprvnombre');
 		$edit->sprvnombre->db_name     = 'sprvnombre';
 		$edit->sprvnombre->pointer     = true;
 		$edit->sprvnombre->maxlength   = 40;
 		$edit->sprvnombre->size        = 25;
 		$edit->sprvnombre->readonly =true;
 
-		$edit->sprvrif = new inputField('RIF', 'sprvrif');
+		$edit->sprvrif = new hiddenField('RIF', 'sprvrif');
 		$edit->sprvrif->db_name     = 'sprvrif';
 		$edit->sprvrif->pointer     = true;
 		$edit->sprvrif->autocomplete=false;
 		$edit->sprvrif->size = 15;
 		$edit->sprvrif->readonly =true;
 
-		$edit->sprvdirec= new inputField('Direcci&oacute;n', 'sprvdirec');
+		$edit->sprvdirec= new hiddenField('Direcci&oacute;n', 'sprvdirec');
 		$edit->sprvdirec->db_name     = 'sprvdirec';
 		$edit->sprvdirec->pointer     = true;
 		$edit->sprvdirec->size        = 40;
@@ -310,6 +311,7 @@ class sfacter extends validaciones {
 		$edit->tipo_doc->option('D','Devoluci&oacute;n');
 		$edit->tipo_doc->style='width:200px;';
 		$edit->tipo_doc->size = 5;
+		$edit->cliente->rule='required';
 
 		$edit->vd = new  dropdownField ('Vendedor', 'vd');
 		$edit->vd->options('SELECT vendedor, CONCAT(vendedor,\' \',nombre) nombre FROM vend ORDER BY vendedor');
@@ -332,21 +334,22 @@ class sfacter extends validaciones {
 		$edit->cliente->size = 6;
 		$edit->cliente->maxlength=5;
 		$edit->cliente->autocomplete=false;
+		$edit->cliente->rule='required';
 		//$edit->cliente->append($boton);
 
-		$edit->nombre = new inputField('Nombre', 'nombre');
+		$edit->nombre = new hiddenField('Nombre', 'nombre');
 		$edit->nombre->size = 25;
 		$edit->nombre->maxlength=40;
 		$edit->nombre->readonly =true;
 		$edit->nombre->autocomplete=false;
 		$edit->nombre->rule= 'required';
 
-		$edit->rifci   = new inputField('RIF/CI','rifci');
+		$edit->rifci   = new hiddenField('RIF/CI','rifci');
 		$edit->rifci->autocomplete=false;
 		$edit->rifci->readonly =true;
 		$edit->rifci->size = 15;
 
-		$edit->direc = new inputField('Direcci&oacute;n','direc');
+		$edit->direc = new hiddenField('Direcci&oacute;n','direc');
 		$edit->direc->readonly =true;
 		$edit->direc->size = 40;
 
@@ -491,7 +494,7 @@ class sfacter extends validaciones {
 		$edit->estampa = new autoUpdateField('estampa' ,date('Ymd'), date('Ymd'));
 		$edit->hora    = new autoUpdateField('hora',date('H:i:s'), date('H:i:s'));
 
-		$edit->buttons('delete','save', 'back','add_rel');
+		$edit->buttons('save', 'back','add_rel');
 		$edit->build();
 
 		//$data['script'] .= $script;
@@ -634,7 +637,7 @@ class sfacter extends validaciones {
 	}
 
 	function _pre_delete($do){
-		return true;
+		return false;
 	}
 
 	function _post_insert($do){

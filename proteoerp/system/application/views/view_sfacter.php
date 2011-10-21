@@ -93,9 +93,16 @@ $(function(){
 		minLength: 2,
 		select: function( event, ui ) {
 			$('#nombre').val(ui.item.nombre);
+			$('#nombre_val').text(ui.item.nombre);
+
 			$('#rifci').val(ui.item.rifci);
+			$('#rifci_val').text(ui.item.rifci);
+
 			$('#cod_cli').val(ui.item.cod_cli);
 			$('#sclitipo').val(ui.item.tipo);
+
+			$('#direc').val(ui.item.direc);
+			$('#direc_val').text(ui.item.direc);
 		}
 	});
 
@@ -121,8 +128,13 @@ $(function(){
 		minLength: 2,
 		select: function( event, ui ) {
 			$('#sprvnombre').val(ui.item.nombre);
+			$('#sprvnombre_val').text(ui.item.nombre);
+
 			$('#sprvrif').val(ui.item.rif);
+			$('#sprvrif_val').text(ui.item.rif);
+
 			$('#sprvdirec').val(ui.item.direc);
+			$('#sprvdirec_val').text(ui.item.direc);
 		}
 	});
 
@@ -424,15 +436,15 @@ function del_itspre(id){
 			<tr>
 				<td class="littletableheader"><?php echo $form->cliente->label;  ?>&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->cliente->output,$form->sclitipo->output; ?>&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->nombre->output;  ?>&nbsp;</td>
+				<td class="littletablerow">   <b id='nombre_val'><?php echo $form->nombre->value; ?></b><?php echo $form->nombre->output;  ?>&nbsp;</td>
 			</tr>
 			<tr>
 				<td class="littletableheader"><?php echo $form->rifci->label; ?>&nbsp;</td>
-				<td class="littletablerow" colspan='2'><?php echo $form->rifci->output;   ?>&nbsp;</td>
+				<td class="littletablerow" colspan='2'><b id='rifci_val'><?php echo $form->rifci->value; ?></b><?php echo $form->rifci->output;   ?>&nbsp;</td>
 			</tr>
 			<tr>
 				<td class="littletableheader"><?php echo $form->direc->label  ?>&nbsp;</td>
-				<td class="littletablerow" colspan='2'><?php echo $form->direc->output ?>&nbsp;</td>
+				<td class="littletablerow" colspan='2'><b id='direc_val'><?php echo $form->direc->value; ?></b><?php echo $form->direc->output ?>&nbsp;</td>
 			</tr>
 			</table>
 			</fieldset>
@@ -443,15 +455,15 @@ function del_itspre(id){
 			<tr>
 				<td class="littletableheader"><?php echo $form->sprv->label;  ?>&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->sprv->output; ?>&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->sprvnombre->output;  ?>&nbsp;</td>
+				<td class="littletablerow">   <b id='sprvnombre_val'><?php echo $form->sprvnombre->value; ?></b><?php echo $form->sprvnombre->output;  ?>&nbsp;</td>
 			</tr>
 			<tr>
 				<td class="littletableheader"><?php echo $form->sprvrif->label; ?>&nbsp;</td>
-				<td class="littletablerow" colspan='2'><?php echo $form->sprvrif->output;   ?>&nbsp;</td>
+				<td class="littletablerow" colspan='2'><b id='sprvrif_val'><?php echo $form->sprvrif->value; ?></b><?php echo $form->sprvrif->output;   ?>&nbsp;</td>
 			</tr>
 			<tr>
 				<td class="littletableheader"><?php echo $form->sprvdirec->label  ?>&nbsp;</td>
-				<td class="littletablerow" colspan='2'><?php echo $form->sprvdirec->output ?>&nbsp;</td>
+				<td class="littletablerow" colspan='2'><b id='sprvdirec_val'><?php echo $form->sprvdirec->value; ?></b><?php echo $form->sprvdirec->output ?>&nbsp;</td>
 			</tr>
 			</table>
 			</fieldset>
