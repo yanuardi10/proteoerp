@@ -365,6 +365,10 @@ $sigma = "";
 		$edit->tota->css_class='inputnum';
 		$edit->tota->rel_id   ='sitems';
 
+		$edit->pond = new hiddenField('', "pond_<#i#>");
+		$edit->pond->db_name='pond';
+		$edit->pond->rel_id   ='sitems';
+
 		//**************************
 		//fin de campos para detalle,inicio detalle2 sfpa
 		//**************************
@@ -460,7 +464,6 @@ $sigma = "";
 		$fecha = date('d/m/Y');
 		if( $edit->_dataobject->get('freiva') > 0 )  $fecha = dbdate_to_human($edit->_dataobject->get('freiva'));
 
-
 		$efecha = date('d/m/Y');
 		if( $edit->_dataobject->get('ereiva') > 0 )  $efecha = dbdate_to_human($edit->_dataobject->get('ereiva'));
 	
@@ -481,77 +484,75 @@ $sigma = "";
 		foreach($query->result() as $row ){
 			$mBancos .= '<option>'.$row->banco.'</option>';
 		}
-		
+
 		$link40 = base_url()."/ventas/sfac/sfacreiva/".$edit->_dataobject->get('id');
-		$script = "
-<script type=\"text/javascript\" >  
-$(function() {
-	$( \"#maintabcontainer\" ).tabs();
-});
+		$script = "<script type=\"text/javascript\" >  
+		$(function() {
+			$( \"#maintabcontainer\" ).tabs();
+		});
 
-<!-- All the scripts will go here  -->
+		<!-- All the scripts will go here  -->
 
-var dsOption= {
-	fields :[
-		{name : 'codigoa'},
-		{name : 'desca'  },
-		{name : 'cana',		type: 'float' },
-		{name : 'preca',	type: 'float' },
-		{name : 'tota',		type: 'float' },
-		{name : 'iva',		type: 'float' },
-		{name : 'pvp',		type: 'float' },
-		{name : 'descuento',	type: 'float' },
-		{name : 'precio4',	type: 'float' },
-		{name : 'detalle' },
-		{name : 'fdespacha',	type: 'date'  },
-		{name : 'udespacha' },
-		{name : 'bonifica',	type: 'integer' },
-		{name : 'url' }
+		var dsOption= {
+			fields :[
+				{name : 'codigoa'},
+				{name : 'desca'  },
+				{name : 'cana',		type: 'float' },
+				{name : 'preca',	type: 'float' },
+				{name : 'tota',		type: 'float' },
+				{name : 'iva',		type: 'float' },
+				{name : 'pvp',		type: 'float' },
+				{name : 'descuento',	type: 'float' },
+				{name : 'precio4',	type: 'float' },
+				{name : 'detalle' },
+				{name : 'fdespacha',	type: 'date'  },
+				{name : 'udespacha' },
+				{name : 'bonifica',	type: 'integer' },
+				{name : 'url' }
+			],
+			recordType : 'object'
+		} 
 
-	],
-	recordType : 'object'
-} 
+		function codigoaurl( value, record, columnObj, grid, colNo, rowNo ) {
+			var no=  value;
+			var url= '';
+			url = '<a href=\"#\" onclick=\"window.open(\'".base_url()."inventario/sinv/dataedit/show/'+grid.getCellValue(13,rowNo)+ '\', \'_blank\', \'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'\')\"; heigth=\"600\" >';
+			url = url +no+'</a>';
+			return url;
+		}
 
-function codigoaurl( value, record, columnObj, grid, colNo, rowNo ) {
-	var no=  value;
-	var url= '';
-	url = '<a href=\"#\" onclick=\"window.open(\'".base_url()."inventario/sinv/dataedit/show/'+grid.getCellValue(13,rowNo)+ '\', \'_blank\', \'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'\')\"; heigth=\"600\" >';
-	url = url +no+'</a>';
-	return url;
-}
+		var colsOption = [
+			{id: 'codigoa',		header: 'Codigo',	width :100, frozen: true, renderer:codigoaurl },
+			{id: 'desca',		header: 'Descripcion',	width :340, align: 'left' },
+			{id: 'cana',		header: 'Cant',		width :60, align: 'right' },
+			{id: 'preca',		header: 'Precio',	width :90, align: 'right' },
+			{id: 'tota',		header: 'Total',	width :90, align: 'right' },
+			{id: 'iva',		header: 'IVA',		width :50, align: 'right' },
+			{id: 'pvp',		header: 'PVP',		width :80, align: 'right' },
+			{id: 'descuento',	header: 'Desc%',	width :80, align: 'right' },
+			{id: 'precio4',		header: 'Control',	width :80, align: 'right' },
+			{id: 'detalle',		header: 'Detalle',	width :80, align: 'right' },
+			{id: 'fdespacha',	header: 'Despacha',	width :80, align: 'center' },
+			{id: 'udespacha',	header: 'Usuario D',	width :80, align: 'left' },
+			{id: 'bonifica',	header: 'Bonifica',	width :80, align: 'right' },
+			{id: 'url',	header: 'Id',	width :80, align: 'right' }
+		];
 
-var colsOption = [
-	{id: 'codigoa',		header: 'Codigo',	width :100, frozen: true, renderer:codigoaurl },
-	{id: 'desca',		header: 'Descripcion',	width :340, align: 'left' },
-	{id: 'cana',		header: 'Cant',		width :60, align: 'right' },
-	{id: 'preca',		header: 'Precio',	width :90, align: 'right' },
-	{id: 'tota',		header: 'Total',	width :90, align: 'right' },
-	{id: 'iva',		header: 'IVA',		width :50, align: 'right' },
-	{id: 'pvp',		header: 'PVP',		width :80, align: 'right' },
-	{id: 'descuento',	header: 'Desc%',	width :80, align: 'right' },
-	{id: 'precio4',		header: 'Control',	width :80, align: 'right' },
-	{id: 'detalle',		header: 'Detalle',	width :80, align: 'right' },
-	{id: 'fdespacha',	header: 'Despacha',	width :80, align: 'center' },
-	{id: 'udespacha',	header: 'Usuario D',	width :80, align: 'left' },
-	{id: 'bonifica',	header: 'Bonifica',	width :80, align: 'right' },
-	{id: 'url',	header: 'Id',	width :80, align: 'right' }
-];
+		var gridOption={
+			id : 'grid1',
+			loadURL : '".base_url()."ventas/sfac/sfacsitems/".$edit->_dataobject->get("tipo_doc")."/".$edit->numero->value."',
+			container : 'grid1_container', 
+			dataset : dsOption ,
+			columns : colsOption,
+			allowCustomSkin: true,
+			skin: 'vista',
+			toolbarContent: 'pdf'	
+		};
 
-var gridOption={
-	id : 'grid1',
-	loadURL : '".base_url()."ventas/sfac/sfacsitems/".$edit->_dataobject->get("tipo_doc")."/".$edit->numero->value."',
-	container : 'grid1_container', 
-	dataset : dsOption ,
-	columns : colsOption,
-	allowCustomSkin: true,
-	skin: 'vista',
-	toolbarContent: 'pdf'	
-};
+		var mygrid=new Sigma.Grid(gridOption);
+		Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
+		</script> ";
 
-var mygrid=new Sigma.Grid(gridOption);
-Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
-</script>  
-";
 		if ( $edit->referen->value == 'E') {
 			$saldo = 0; 
 		} else {
@@ -560,27 +561,24 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 
 		if ( $edit->reiva->value > 0 ) {
 
-		$scriptreiva = "
-<script type=\"text/javascript\" >  
-// Retencin de IVA
-function sfacreiva(mid){
-	var pide = '';
-	pide += '<h3>RETENCION DE IVA YA APLICADA</h3>';
-	pide += '<table>';
-	pide += '<tr><td>Comprobante </td><td><input type=\"text\" readonly size=\"20\" value=\"".$nro."\"    name=\"numero\" id=\"numero\" /></td></tr>';
-	pide += '<tr><td>Recepcion   </td><td>';
-	pide += '<input type=\"text\" size=\"10\" readonly value=\"".$fecha."\"  name=\"fecha\"  id=\"fecha\" /></td></tr>';
-	pide += '<tr><td>Emision</td><td><input type=\"text\" size=\"10\" readonly value=\"".$efecha."\" name=\"efecha\" id=\"efecha\" /></td></tr>';
-	pide += '<tr><td>Monto </td><td><input readonly type=\"text\" size=\"10\" value=\"".$mreiva."\" name=\"reiva\"  id=\"reiva\" style=\"text-align:right\" /></td></tr>';
-	pide += '</table>';
-	$.prompt(pide, {prefix:'cleanblue'} );
-};
-</script>  
-";
-		
+		$scriptreiva = "<script type=\"text/javascript\" >  
+		// Retencin de IVA
+		function sfacreiva(mid){
+			var pide = '';
+			pide += '<h3>RETENCION DE IVA YA APLICADA</h3>';
+			pide += '<table>';
+			pide += '<tr><td>Comprobante </td><td><input type=\"text\" readonly size=\"20\" value=\"".$nro."\"    name=\"numero\" id=\"numero\" /></td></tr>';
+			pide += '<tr><td>Recepcion   </td><td>';
+			pide += '<input type=\"text\" size=\"10\" readonly value=\"".$fecha."\"  name=\"fecha\"  id=\"fecha\" /></td></tr>';
+			pide += '<tr><td>Emision</td><td><input type=\"text\" size=\"10\" readonly value=\"".$efecha."\" name=\"efecha\" id=\"efecha\" /></td></tr>';
+			pide += '<tr><td>Monto </td><td><input readonly type=\"text\" size=\"10\" value=\"".$mreiva."\" name=\"reiva\"  id=\"reiva\" style=\"text-align:right\" /></td></tr>';
+			pide += '</table>';
+			$.prompt(pide, {prefix:'cleanblue'} );
+		};
+		</script>";
+
 		} else {
-		$scriptreiva = "
-<script type=\"text/javascript\" >
+		$scriptreiva = "<script type=\"text/javascript\" >
 // Retencin de IVA
 function sfacreiva(mid){
 	var pide = '';
@@ -602,199 +600,146 @@ function sfacreiva(mid){
 		}
 		
 		$scriptreiva .= "
-	pide += '</table>';
+			pide += '</table>';
 
-	pide1 = '<h3>REINTEGRO DE RETENCION EN EFECTIVO</h3>';
-	pide1 += '<table>';
-	pide1 += '<tr><td>Caja/Banco</td><td>';
-	pide1 += '<select name=\"caja\" id=\"caja\">".$mBancos."</select>';
-	pide1 += '</td></tr>';
-	pide1 += '<tr><td>Cheque</td><td><input type=\"text\" size=\"20\" value=\"\"    name=\"cheque\" id=\"cheque\" /></td></tr>';
-	pide1 += '<tr><td>Beneficiario</td><td><input type=\"text\" size=\"40\" value=\"".$edit->nombre->value."\" name=\"benefi\" id=\"benefi\" /></td></tr>';
-	pide1 += '</table>';
+			pide1 = '<h3>REINTEGRO DE RETENCION EN EFECTIVO</h3>';
+			pide1 += '<table>';
+			pide1 += '<tr><td>Caja/Banco</td><td>';
+			pide1 += '<select name=\"caja\" id=\"caja\">".$mBancos."</select>';
+			pide1 += '</td></tr>';
+			pide1 += '<tr><td>Cheque</td><td><input type=\"text\" size=\"20\" value=\"\"    name=\"cheque\" id=\"cheque\" /></td></tr>';
+			pide1 += '<tr><td>Beneficiario</td><td><input type=\"text\" size=\"40\" value=\"".$edit->nombre->value."\" name=\"benefi\" id=\"benefi\" /></td></tr>';
+			pide1 += '</table>';
 
-	var mfecha  = '';
-	var mefecha = '';
-	var mnumero = '';
-	var mmonto  = '';
-	var mbanco  = '';
-	var mcaja   = '';
-	var mcheque = '';
-	var mbenefi = '';
+			var mfecha  = '';
+			var mefecha = '';
+			var mnumero = '';
+			var mmonto  = '';
+			var mbanco  = '';
+			var mcaja   = '';
+			var mcheque = '';
+			var mbenefi = '';
 
-	var temp = {
-			state0: {
-				html:pide,
-				buttons: { Cancelar: 0,  Siguiente: 2 },
-				focus: 1,
-				submit:function(v,m,f){
-					mfecha = f.fecha;
-					mfecha = mfecha.replace(/\//g,'-');
-					mefecha = f.efecha;
-					mefecha = mefecha.replace(/\//g,'-');
-					mnumero = f.numero;
-					mmonto = f.reiva;
-					if( v == 0 ){
-						return true;
-					} else if ( v == 2) {
-						if ( f.reinte == 'reintegrar' )
-							$.prompt.goToState('state1');//go forward
-						else {
-							var mtemp = '';
-							mtemp += '<table>';
-							mtemp += '<tr><td>Comprobante </td><td>'+mnumero+'</td></tr>';
-							mtemp += '<tr><td>Recepcion </td><td>'+mfecha+'</td></tr>';
-							mtemp += '<tr><td>Emision   </td><td>'+mefecha+'</td></tr>';
-							mtemp += '<tr><td>Monto     </td><td>'+mmonto+'</td></tr>';
-							mtemp +='</table>';
-						
-							$.prompt(mtemp, {
-								buttons: {Guardar: true, Salir: false},
-								callback: function(v,m,f) {
-									if ( v ) {
+			var temp = {
+					state0: {
+						html:pide,
+						buttons: { Cancelar: 0,  Siguiente: 2 },
+						focus: 1,
+						submit:function(v,m,f){
+							mfecha = f.fecha;
+							mfecha = mfecha.replace(/\//g,'-');
+							mefecha = f.efecha;
+							mefecha = mefecha.replace(/\//g,'-');
+							mnumero = f.numero;
+							mmonto = f.reiva;
+							if( v == 0 ){
+								return true;
+							} else if ( v == 2) {
+								if ( f.reinte == 'reintegrar' )
+									$.prompt.goToState('state1');//go forward
+								else {
+									var mtemp = '';
+									mtemp += '<table>';
+									mtemp += '<tr><td>Comprobante </td><td>'+mnumero+'</td></tr>';
+									mtemp += '<tr><td>Recepcion </td><td>'+mfecha+'</td></tr>';
+									mtemp += '<tr><td>Emision   </td><td>'+mefecha+'</td></tr>';
+									mtemp += '<tr><td>Monto     </td><td>'+mmonto+'</td></tr>';
+									mtemp +='</table>';
+
+									$.prompt(mtemp, {
+										buttons: {Guardar: true, Salir: false},
+										callback: function(v,m,f) {
+											if ( v ) {
+												$.ajax({
+													url: '".base_url()."ventas/sfac/sfacreiva/'+mid+'/'+mnumero+'/'+mfecha+'/'+mefecha+'/'+mmonto,
+													global: false,
+													async: false,
+													success: function(sino) {
+														$.prompt(sino);
+													}
+												});
+											} else {
+												$.prompt.close();
+											}}
+									});
+									return true;
+								}
+							}
+							return false; 
+						}
+					},
+					state1: {
+						html: pide1,
+						buttons: { Volver: -1, Salir: 0, Guardar: 1 },
+						focus: 2,
+						submit:function(v,m,f){ 
+							mcaja   = f.caja;
+							mcheque = f.cheque;
+							mbenefi = f.benefi;
+							if(v==0)
+								$.prompt.close()
+							else if(v==1) {
+								var mtempo = '';
+								mtempo += '<table>';
+								mtempo += '<tr><td>Comprobante </td><td>'+mnumero+'</td></tr>';
+								mtempo += '<tr><td>Recepcion </td><td>'+mfecha+'</td></tr>';
+								mtempo += '<tr><td>Emision   </td><td>'+mefecha+'</td></tr>';
+								mtempo += '<tr><td>Monto     </td><td>'+mmonto+'</td></tr>';
+								mtempo += '<tr><td>Caja     </td><td>'+mcaja+'</td></tr>';
+								mtempo += '<tr><td>Cheque     </td><td>'+mcheque+'</td></tr>';
+								mtempo += '<tr><td>Beneficiario</td><td>'+mbenefi+'</td></tr>';
+								mtempo +='</table>';
+
+								$.prompt(mtempo, {
+									buttons: {Guardar: 1, Salir: 0},
+									callback: function(v,m,f) {
+									if ( v == 1 ) {
 										$.ajax({
-											url: '".base_url()."ventas/sfac/sfacreiva/'+mid+'/'+mnumero+'/'+mfecha+'/'+mefecha+'/'+mmonto,
+											url: '".base_url()."ventas/sfac/sfacreivaef/'+mid,
 											global: false,
+											type: 'POST',
+											data: ({ numero : encodeURIComponent(mnumero),
+												fecha  : encodeURIComponent(mfecha),
+												efecha : encodeURIComponent(mefecha),
+												caja   : encodeURIComponent(mcaja),
+												cheque : encodeURIComponent(mcheque),
+												benefi : encodeURIComponent(mbenefi),
+												}),
+											dataType: 'text',
 											async: false,
 											success: function(sino) {
 												$.prompt(sino);
 											}
 										});
-									} else {
-										$.prompt.close();
 									}}
-							});
-							return true;
+								});
+								return true;
+
+							} else if(v=-1)
+								$.prompt.goToState('state0');//go back
+							return false; 
+						}
+					},
+					state2: {
+						html:'Desea Guardar los Cambios.....',
+						buttons: { Volver: true, Guardar: false },
+						submit:function(v,m,f){ 
+							if(!v){
+								$.prompt('fecha='+mfecha);
+								return true;
+								}
+							else $.prompt.goToState('state0');//go back
+							return false; 
 						}
 					}
-					return false; 
-				}
-			},
-			state1: {
-				html: pide1,
-				buttons: { Volver: -1, Salir: 0, Guardar: 1 },
-				focus: 2,
-				submit:function(v,m,f){ 
-					mcaja   = f.caja;
-					mcheque = f.cheque;
-					mbenefi = f.benefi;
-					if(v==0)
-						$.prompt.close()
-					else if(v==1) {
-						var mtempo = '';
-						mtempo += '<table>';
-						mtempo += '<tr><td>Comprobante </td><td>'+mnumero+'</td></tr>';
-						mtempo += '<tr><td>Recepcion </td><td>'+mfecha+'</td></tr>';
-						mtempo += '<tr><td>Emision   </td><td>'+mefecha+'</td></tr>';
-						mtempo += '<tr><td>Monto     </td><td>'+mmonto+'</td></tr>';
-						mtempo += '<tr><td>Caja     </td><td>'+mcaja+'</td></tr>';
-						mtempo += '<tr><td>Cheque     </td><td>'+mcheque+'</td></tr>';
-						mtempo += '<tr><td>Beneficiario</td><td>'+mbenefi+'</td></tr>';
-						mtempo +='</table>';
-
-						$.prompt(mtempo, {
-							buttons: {Guardar: 1, Salir: 0},
-							callback: function(v,m,f) {
-							if ( v == 1 ) {
-								$.ajax({
-									url: '".base_url()."ventas/sfac/sfacreivaef/'+mid,
-									global: false,
-									type: 'POST',
-									data: ({ numero : encodeURIComponent(mnumero),
-										 fecha  : encodeURIComponent(mfecha),
-										 efecha : encodeURIComponent(mefecha),
-										 caja   : encodeURIComponent(mcaja),
-										 cheque : encodeURIComponent(mcheque),
-										 benefi : encodeURIComponent(mbenefi),
-										 }),
-									dataType: 'text',
-									async: false,
-									success: function(sino) {
-										$.prompt(sino);
-									}
-								});
-							}}
-						});
-						return true;
-
-					} else if(v=-1)
-						$.prompt.goToState('state0');//go back
-					return false; 
-				}
-			},
-			state2: {
-				html:'Desea Guardar los Cambios.....',
-				buttons: { Volver: true, Guardar: false },
-				submit:function(v,m,f){ 
-					if(!v){
-						$.prompt('fecha='+mfecha);
-						return true;
-						}
-					else $.prompt.goToState('state0');//go back
-					return false; 
-				}
-			}
-	};
-	$.prompt(temp);
-
-/*
-
-							calback: function(v,m,f){
-							if ( v ) {
-								$.promp('Guarda');
-							} else {
-								$.prompt.close();
-							};
-
-
-								$.ajax({
-									url: '".base_url()."ventas/sfac/sfacreiva/'+mnumero+'/'+mfecha+'/'+mefecha,
-									global: false,
-									async: false,
-									success: function(sino) {
-										alert(sino)';
-									}
-								});
-
-
-	$.prompt({ state0: {
-			html: pide,
-			buttons: { Guardar: true, Cancelar: false },
-			submit: function(v,m,f){
-				if ( v ) {
-					mfecha = f.fecha;
-					mfecha = mfecha.replace(/\//g,'-');
-					mefecha = f.efecha;
-					mefecha = mefecha.replace(/\//g,'-');
-					//$.ajax({ url: '".base_url()."ventas/sfac/sfacreiva/'+mid+'/'+f.numero+'/'+mfecha+'/'+mefecha+'/'+f.reinte, global: false, async: false, success: function(sino) { $.prompt( '<h1>'+sino)+'</h1>';} });
-					$.prompt.goToState('state1');
-				} else { $.prompt.close(); };
-				return false;
-			}
-		},
-		state1: {
-			html: pide1,
-			buttons: { Regresar: -1, Guardar: 1. Salir: 0},
-			submit: function(v,m,f){
-				if (v==0)
-					$.prompt.close()
-				else if (v=-1)
-					$.prompt.goToState('state0');
-				else if (v==1)
-					$.prompt.goToState('state0');
-				return false;
-				}
-			}
+			};
+			$.prompt(temp);
 		};
-	);
-*/
-};
-</script>  
-";
+		</script>";
 		}
 
 		$data['title']   = heading($mDoc." Nro. ".$edit->numero->value);
-		
+
 		$data['style']   = style("redmond/jquery-ui.css");
 		$data['style']  .= style('gt_grid.css');
 		$data['style']	.= style("impromptu.css");
@@ -811,7 +756,7 @@ function sfacreiva(mid){
 		$data['script'] .= script("gt_grid_all.js");
 		$data['script'] .= $script;
 		$data['script'] .= $scriptreiva;
-		
+
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
@@ -827,7 +772,7 @@ function sfacreiva(mid){
 		$mSQL  = 'SELECT a.codigoa, a.desca, a.cana, a.preca, a.tota, a.iva, IF(a.pvp < a.preca, a.preca, a.pvp)  pvp, ROUND(100-a.preca*100/IF(a.pvp<a.preca,a.preca, a.pvp),2) descuento, ROUND(100-ROUND(a.precio4*100/(100+a.iva),2)*100/a.preca,2) precio4, a.detalle, a.fdespacha, a.udespacha, a.bonifica, b.id url ';
 		$mSQL .= "FROM sitems a LEFT JOIN sinv b ON a.codigoa=b.codigo WHERE a.tipoa='$tipoa' AND a.numa='$numa' ";
 		$mSQL .= "ORDER BY a.codigoa";
-		
+
 		$query = $this->db->query($mSQL);
 
 		if ($query->num_rows() > 0){
@@ -844,7 +789,6 @@ function sfacreiva(mid){
 		echo $ret;
 	}
 
-
 	//***************************
 	//
 	// Recibir retencin de IVA
@@ -856,9 +800,9 @@ function sfacreiva(mid){
 		$numero = $this->uri->segment($this->uri->total_segments()-3);
 		$id     = $this->uri->segment($this->uri->total_segments()-4);
 		$mdevo  = "Exito";
-		
+
 		//memowrite("efecha=$efecha, fecha=$fecha, numero=$numero, id=$id, reinte=$reinte","sfacreiva");
-		
+
 		// status de la factura
 		$fecha  = substr($fecha, 6,4).substr($fecha, 3,2).substr($fecha, 0,2);
 		$efecha = substr($efecha,6,4).substr($efecha,3,2).substr($efecha,0,2);
@@ -881,7 +825,7 @@ function sfacreiva(mid){
 
 				$transac = $this->datasis->prox_sql("ntransa");
 				$transac = str_pad($transac, 8, "0", STR_PAD_LEFT);
-			
+
 				if ($referen == 'C') {
 					$saldo =  $this->datasis->dameval("SELECT monto-abonos FROM smov WHERE tipo_doc='FC' AND numero='$numfac'");
 				}
@@ -929,10 +873,9 @@ function sfacreiva(mid){
 							
 							// ABONA A LA FACTURA
 							$mSQL = "UPDATE smov SET abonos=abonos+$monto WHERE numero='$numfac' AND cod_cli='$cod_cli' AND tipo_doc='$tiposfac'";
-								$this->db->simple_query($mSQL);
-							
-							//Crea la relacion en ccli
-	
+							$this->db->simple_query($mSQL);
+
+							//Crea la relacion en ccli	
 							$mdevo = "<h1 style='color:green;'>EXITO</h1>Cambios Guardados, Nota de Credito generada y aplicada a la factura";
 						}
 					}
@@ -947,12 +890,11 @@ function sfacreiva(mid){
 					FROM sfac WHERE id=$id";
 					$this->db->simple_query($mSQL);
 					memowrite($mSQL,"sfacreivaND");
-						
 				} else {
 					// DEVOLUCIONES GENERA ND AL CLIENTE
 					$mnumant = $this->datasis->prox_sql("ndcli");
 					$mnumant = str_pad($mnumant, 8, "0", STR_PAD_LEFT);
-					
+
 					$mSQL = "INSERT INTO smov  (cod_cli, nombre, tipo_doc, numero, fecha, monto, impuesto, vence, observa1, tipo_ref, num_ref, estampa, hora, transac, usuario, nroriva, emiriva )
 					SELECT cod_cli, nombre, 'ND' tipo_doc, '$mnumant' numero, freiva fecha, reiva monto, 0 impuesto, freiva vence,
 						CONCAT('RET/IVA DE ',cod_cli,' A DOC. ',tipo_doc,numero) observa1, IF(tipo_doc='F','FC', 'DV' ) tipo_ref, numero num_ref,
@@ -960,7 +902,6 @@ function sfacreiva(mid){
 					FROM sfac WHERE id=$id";
 					$this->db->simple_query($mSQL);
 					$mdevo = "<h1 style='color:green;'>EXITO</h1>Retencion Guardada, Anticipo Generado por factura pagada al contado";
-
 
 					// Debe abonar la ND si existe un AN
 					/*
@@ -1012,9 +953,8 @@ function sfacreiva(mid){
 	
 							$mdevo = "<h1 style='color:green;'>EXITO</h1>Cambios Guardados, Nota de Credito generada y aplicada a la factura";
 						}
-					}
-					*/
-					
+					}*/
+
 					//Devoluciones debe crear un NC si esta en el periodo
 					$mnumant = $this->datasis->prox_sql("nccli");
 					$mnumant = str_pad($mnumant, 8, "0", STR_PAD_LEFT);
@@ -1029,15 +969,13 @@ function sfacreiva(mid){
 					memowrite($mSQL,"sfacreivaND");
 					
 				}
-			} else {
+			}else{
 				$mdevo = "<h1 style='color:red;'>ERROR</h1>Retencion ya aplicada";
 			}
-		} else $mdevo = "<h1 style='color:red;'>ERROR</h1>Longitud del comprobante menor a 14 caracteres, corrijalo y vuelva a intentar";
-
+		}else
+			$mdevo = "<h1 style='color:red;'>ERROR</h1>Longitud del comprobante menor a 14 caracteres, corrijalo y vuelva a intentar";
 		echo $mdevo;
 	}
-
-
 
 	//***************************
 	//
@@ -1071,7 +1009,7 @@ function sfacreiva(mid){
 		$usuario  = addslashes($this->session->userdata('usuario'));
 		$codbanc = substr($caja,0,2);
 		$verla = 0;
-		
+
 		if ($codbanc == '__') {
 			$tbanco  = '';
 			$cheque  = '';
@@ -1083,7 +1021,7 @@ function sfacreiva(mid){
 				$verla = $this->datasis->dameval($query);
 			}
 		}
-		
+
 		if ( $verla == 0 ) {
 			if ( strlen($numero) == 14 ){
 				if (  $anterior == 0 )  {
@@ -1114,7 +1052,7 @@ function sfacreiva(mid){
 							$mSQL  = "INSERT INTO bmov ( codbanc, moneda, numcuent, banco, saldo, tipo_op, numero,fecha, clipro, codcp, nombre, monto, concepto, benefi, posdata, liable, transac, usuario, estampa, hora, negreso ) ";
 							$mSQL .= "SELECT '$codbanc' codbanc, b.moneda, b.numcuent, ";
 							$mSQL .= "b.banco, b.saldo, IF(b.tbanco='CAJ','ND','CH') tipo_op, '$cheque' numero, ";
-								$mSQL .= "a.freiva, 'C' clipro, a.cod_cli codcp, a.nombre, a.reiva monto, ";
+							$mSQL .= "a.freiva, 'C' clipro, a.cod_cli codcp, a.nombre, a.reiva monto, ";
 							$mSQL .= "'REINTEGRO DE RETENCION APLICADA A FC $numfac' concepto, ";
 							$mSQL .= "'$benefi' benefi, a.freiva posdata, 'S' liable, '$transac' transac, ";
 							$mSQL .= "'$usuario' usuario, curdate() estampa, curtime() hora, '$negreso' negreso ";

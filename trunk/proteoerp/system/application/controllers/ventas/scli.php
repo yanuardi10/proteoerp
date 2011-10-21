@@ -737,7 +737,6 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 	function autocomplete($campo,$cod=FALSE){
 		if($cod!==false){
 			$cod=$this->db->escape_like_str($cod);
-			$qformato=$this->datasis->formato_cpla();
 			$data['cliente']="SELECT cliente AS c1 ,nombre AS c2 FROM scli WHERE cliente LIKE '$cod%' ORDER BY cliente LIMIT 10";
 			if(isset($data[$campo])){
 				$query=$this->db->query($data[$campo]);
