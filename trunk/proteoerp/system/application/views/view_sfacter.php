@@ -434,7 +434,7 @@ function del_itspre(id){
 			<legend class="titulofieldset" style='color: #114411;'>Cliente</legend>
 			<table width="100%" style="margin: 0; width: 100%;">
 			<tr>
-				<td class="littletableheader"><?php echo $form->cliente->label;  ?>&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->cliente->label;  ?>*&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->cliente->output,$form->sclitipo->output; ?>&nbsp;</td>
 				<td class="littletablerow">   <b id='nombre_val'><?php echo $form->nombre->value; ?></b><?php echo $form->nombre->output;  ?>&nbsp;</td>
 			</tr>
@@ -453,7 +453,7 @@ function del_itspre(id){
 			<legend class="titulofieldset" style='color: #114411;'>Proveedor</legend>
 			<table width="100%" style="margin: 0; width: 100%;">
 			<tr>
-				<td class="littletableheader"><?php echo $form->sprv->label;  ?>&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->sprv->label;  ?>*&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->sprv->output; ?>&nbsp;</td>
 				<td class="littletablerow">   <b id='sprvnombre_val'><?php echo $form->sprvnombre->value; ?></b><?php echo $form->sprvnombre->output;  ?>&nbsp;</td>
 			</tr>

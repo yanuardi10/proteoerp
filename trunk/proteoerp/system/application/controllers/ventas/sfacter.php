@@ -629,6 +629,31 @@ class sfacter extends validaciones {
 		$do->set('numero',$numero);
 		$do->set('transac',$transac);
 
+		$fecha =$do->get('fecha');
+		$vd    =$do->get('vendedor');
+
+		$iva=$totals=0;
+		$cana=$do->count_rel('sitems');
+		for($i=0;$i<$cana;$i++){
+			$itcana    = $do->get_rel('sitems','cana',$i);
+			$itpreca   = $do->get_rel('sitems','preca',$i);
+			$itiva     = $do->get_rel('sitems','iva',$i);
+			$itimporte = $itpreca*$itcana;
+			$do->set_rel('sitems','tota'    ,$itimporte,$i);
+			$do->set_rel('sitems','mostrado',$itimporte*(1+($itiva/100)),$i);
+			$do->set_rel('sitems','fecha'   ,$fecha  ,$i);
+			$do->set_rel('sitems','vendedor',$vd     ,$i);
+
+			$iva    +=$itimporte*($itiva/100);
+			$totals +=$itimporte;
+		}
+		$totalg = $totals+$iva;
+
+		$do->set('inicial',0 );
+		$do->set('totals' ,round($totals ,2));
+		$do->set('totalg' ,round($totalg ,2));
+		$do->set('iva'    ,round($iva    ,2));
+
 		return true;
 	}
 
