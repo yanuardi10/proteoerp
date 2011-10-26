@@ -8,9 +8,19 @@ class spre extends validaciones {
 	}
 
 	function index() {
-		redirect('ventas/spre/filteredgrid');
+		//redirect('ventas/spre/filteredgrid');
+		redirect("ventas/spre/extgrid");
 	}
 
+	function extgrid(){
+		$this->datasis->modulo_id(707,1);
+		$script = $this->spreextjs();
+		$data["script"] = $script;
+		$data['title']  = heading('Presupuestos');
+		$this->load->view('extjs/pers',$data);
+	}
+
+/*
 	function filteredgrid(){
 		$this->rapyd->load('datagrid','datafilter');
 
@@ -56,7 +66,6 @@ class spre extends validaciones {
 		$filter->buttons('reset','search');
 		$filter->build("dataformfiltro");
 
-
 		$uri  = anchor('ventas/spre/dataedit/<#numero#>','<#numero#>');
 		$uri2 = anchor_popup('formatos/verhtml/PRESUP/<#numero#>','Ver HTML',$atts);
 
@@ -73,7 +82,6 @@ class spre extends validaciones {
 		$mtool .= "</a>&nbsp;</td>";
 
 		$mtool .= "</tr></table>";
-
 
 		$grid = new DataGrid();
 		$grid->order_by('id','desc');
@@ -172,9 +180,6 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 			$pageSize = $json->{'pageInfo'}->{'pageSize'};
 			$filter = '';
 
-//memowrite($_POST["_gt_json"],"jsonrecibido");
-   
-
 			if(isset($json->{'sortInfo'}[0]->{'columnId'})){
 				$sortField = $json->{'sortInfo'}[0]->{'columnId'};
 			} else {
@@ -223,7 +228,6 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 				}
  
 				$mSQL = "SELECT numero, fecha, cod_cli, nombre, totals, iva, totalg, vd, id FROM spre WHERE $filter numero>0 ORDER BY ".$sortField." ".$sortOrder." LIMIT ".($pageNo - 1)*$pageSize.", ".$pageSize;
-//memowrite($mSQL,"mSQL");
 				$query = $this->db->query($mSQL);
 				if ($query->num_rows() > 0){
 					$retArray = array();
@@ -241,11 +245,11 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 				} else {
 					$ret = '{data : []}';
 				}
-//memowrite(serialize($ret),"jsonretret");
+
 				echo $ret;
 
 			}else if($json->{'action'} == 'save'){
-/*				$sql = "";
+				$sql = "";
 				$params = array();
 				$errors = "";
   
@@ -279,7 +283,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 					}
 				}
 				$ret = "{success : true,exception:''}";
-				echo $ret;*/
+				echo $ret;
 			}
 		} else {
 			$pageNo = 1;
@@ -315,7 +319,11 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 			echo $ret;
 		}
 	}
+*/
 
+	//**********************************************************************************************************
+	//
+	//**********************************************************************************************************
 	function dataedit(){
 		$this->rapyd->load('dataobject','datadetails');
 
@@ -438,7 +446,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$edit->codigo->db_name  = 'codigo';
 		$edit->codigo->rel_id   = 'itspre';
 		$edit->codigo->rule     = 'required';
-		$edit->codigo->style    = 'width:80%';
+		$edit->codigo->style    = 'width:80%;';
 		$edit->codigo->autocomplete=false;
 		$edit->codigo->append($btn);
 
@@ -448,7 +456,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$edit->desca->maxlength=40;
 		$edit->desca->readonly  = true;
 		$edit->desca->rel_id='itspre';
-		$edit->desca->style    = 'width:100%';
+		$edit->desca->style    = 'width:99%';
 
 		$edit->cana = new inputField('Cantidad <#o#>', 'cana_<#i#>');
 		$edit->cana->db_name  = 'cana';
@@ -459,7 +467,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$edit->cana->rule     = 'required|positive';
 		$edit->cana->autocomplete=false;
 		$edit->cana->onkeyup  ='importe(<#i#>)';
-		$edit->cana->style    = 'width:90%';
+		$edit->cana->style    = 'width:98%';
 
 		$edit->preca = new inputField('Precio <#o#>', 'preca_<#i#>');
 		$edit->preca->db_name   = 'preca';
@@ -468,14 +476,14 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		//$edit->preca->size      = 10;
 		$edit->preca->rule      = 'required|positive|callback_chpreca[<#i#>]';
 		$edit->preca->readonly  = true;
-		$edit->preca->style    = 'width:100%';
+		$edit->preca->style    = 'width:98%';
 
 		$edit->importe = new inputField('Importe <#o#>', 'importe_<#i#>');
 		$edit->importe->db_name='importe';
 		$edit->importe->size=10;
 		$edit->importe->css_class='inputnum';
 		$edit->importe->rel_id   ='itspre';
-		$edit->importe->style    = 'width:90%';
+		$edit->importe->style    = 'width:98%';
 
 		for($i=1;$i<4;$i++){
 			$obj='precio'.$i;
@@ -558,7 +566,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$data['script']  = script('jquery.js');
 		$data['script'] .= script('jquery-ui.js');
 		$data['script'] .= script('plugins/jquery.numeric.pack.js');
-		$data['script'] .= script('plugins/jquery.numeric.pack.js');
+		//$data['script'] .= script('plugins/jquery.numeric.pack.js');
 		$data['script'] .= script('plugins/jquery.floatnumber.js');
 		//$data['script'] .= script('plugins/jquery.autocomplete.js');
 		$data['script'] .= phpscript('nformat.js');
@@ -790,180 +798,493 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 
 		// REVISAR SI TIENE ABONOS
 		$mPEDIDO = ("pedido");
+	}
+
+
+	function grid(){
+		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']   :  0;
+		$limit   = isset($_REQUEST['limit'])  ? $_REQUEST['limit']   : 50;
+		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']    : '';
+		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
+
+
+		$where = "";
+
+		//Buscar posicion 0 Cero
+		if (isset($_REQUEST['filter'])){
+			$filter = json_decode($_REQUEST['filter'], true);
+			if (is_array($filter)) {
+				//Dummy Where. 
+				$where = "numero IS NOT NULL ";
+				$qs = "";
+				for ($i=0;$i<count($filter);$i++){
+					switch($filter[$i]['type']){
+					case 'string' : $qs .= " AND ".$filter[$i]['field']." LIKE '%".$filter[$i]['value']."%'"; 
+						Break;
+					case 'list' :
+						if (strstr($filter[$i]['value'],',')){
+							$fi = explode(',',$filter[$i]['value']);
+							for ($q=0;$q<count($fi);$q++){
+								$fi[$q] = "'".$fi[$q]."'";
+							}
+							$filter[$i]['value'] = implode(',',$fi);
+								$qs .= " AND ".$filter[$i]['field']." IN (".$filter[$i]['value'].")";
+						}else{
+							$qs .= " AND ".$filter[$i]['field']." = '".$filter[$i]['value']."'";
+						}
+						Break;
+					case 'boolean' : $qs .= " AND ".$filter[$i]['field']." = ".($filter[$i]['value']); 
+						Break;
+					case 'numeric' :
+						switch ($filter[$i]['comparison']) {
+							case 'ne' : $qs .= " AND ".$filter[$i]['field']." != ".$filter[$i]['value']; 
+								Break;
+							case 'eq' : $qs .= " AND ".$filter[$i]['field']." = ".$filter[$i]['value']; 
+								Break;
+							case 'lt' : $qs .= " AND ".$filter[$i]['field']." < ".$filter[$i]['value']; 
+								Break;
+							case 'gt' : $qs .= " AND ".$filter[$i]['field']." > ".$filter[$i]['value']; 
+								Break;
+						}
+						Break;
+					case 'date' :
+						switch ($filter[$i]['comparison']) {
+							case 'ne' : $qs .= " AND ".$filter[$i]['field']." != '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
+								Break;
+							case 'eq' : $qs .= " AND ".$filter[$i]['field']." = '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
+								Break;
+							case 'lt' : $qs .= " AND ".$filter[$i]['field']." < '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
+								Break;
+							case 'gt' : $qs .= " AND ".$filter[$i]['field']." > '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
+								Break;
+						}
+						Break;
+					}
+				}
+				$where .= $qs;
+			}
+		}
+		
+		$this->db->_protect_identifiers=false;
+		$this->db->select('*');
+		$this->db->from('spre');
+
+		if (strlen($where)>1){
+			$this->db->where($where);
+		}
+
+		if ( $sort == '') $this->db->order_by( 'numero', 'desc' );
+
+		$sort = json_decode($sort, true);
+		for ($i=0;$i<count($sort);$i++) {
+			$this->db->order_by($sort[$i]['property'],$sort[$i]['direction']);
+		}
+
+		$this->db->limit($limit, $start);
+
+		$query = $this->db->get();
+		$results = $query->num_rows();
+
+		$arr = array();
+		foreach ($query->result_array() as $row)
+		{
+			$meco = array();
+			foreach( $row as $idd=>$campo ) {
+				$meco[$idd] = utf8_encode($campo);
+			}
+			$arr[] = $meco;
+		}
+		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
+	}
+
+	function griditspre(){
+		$numero   = isset($_REQUEST['numero'])  ? $_REQUEST['numero']   :  0;
+		if ($numero == 0 ) $numero = $this->datasis->dameval("SELECT MAX(numero) FROM spre")  ;
+
+		$mSQL = "SELECT codigo, desca, cana, preca, importe, iva, round(precio4*100/(100+iva),2) precio4 FROM itspre WHERE numero='$numero' ORDER BY codigo";
+		$query = $this->db->query($mSQL);
+		$results =  0; //$this->datasis->dameval("SELECT COUNT(*) FROM spre");
+		$arr = array();
+		foreach ($query->result_array() as $row)
+		{
+			$meco = array();
+			foreach( $row as $idd=>$campo ) {
+				$meco[$idd] = utf8_encode($campo);
+			}
+			$arr[] = $meco;
+		}
+		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
+	}
+
+
+	function spreextjs() {
+
+		$encabeza='<table width="100%" bgcolor="#2067B5"><tr><td align="left" width="100px"><img src="'.base_url().'assets/default/css/templete_01.jpg" width="120"></td><td align="center"><h1 style="font-size: 20px; color: rgb(255, 255, 255);" onclick="history.back()">PRESUPUESTOS A CLIENTES</h1></td><td align="right" width="100px"><img src="'.base_url().'assets/default/images/cerrar.png" alt="Cerrar Ventana" title="Cerrar Ventana" onclick="parent.window.close()" width="25"></td></tr></table>';
+		$listados= $this->datasis->listados('spre');
+		
+		$otros=$this->datasis->otros('spre', 'spre');
+		//$otros = '';
+
+		$script = "
+<script type=\"text/javascript\">		
+var BASE_URL   = '".base_url()."';
+var BASE_PATH  = '".base_url()."';
+var BASE_ICONS = '".base_url()."assets/icons/';
+var BASE_UX    = '".base_url()."assets/js/ext/ux';
+var modulo = 'spre'
+
+
+
+Ext.Loader.setConfig({ enabled: true });
+Ext.Loader.setPath('Ext.ux', BASE_UX);
+
+var urlApp = '".base_url()."';
+
+Ext.require([
+	'Ext.grid.*',
+	'Ext.ux.grid.FiltersFeature',
+	'Ext.data.*',
+	'Ext.util.*',
+	'Ext.state.*',
+	'Ext.form.*',
+	'Ext.window.MessageBox',
+	'Ext.tip.*',
+	'Ext.ux.CheckColumn',
+	'Ext.toolbar.Paging'
+]);
+
+var mxs = ((screen.availWidth/2)-400);
+var mys = ((screen.availHeight/2)-300);
+
 /*
-IF XFECHA <> DATE()
-   IF XREFEREN = 'C'
-      mSQL := "SELECT COUNT(*) FROM smov WHERE cod_cli='"+XCOD_CLI+"' "
-      mSQL += "AND tipo_doc='FC' AND numero='"+XNUMERO+"' "
-      IF DAMEVAL(mSQL,,'N') >  0 //XINICIAL
-         mSQL := "SELECT abonos FROM smov WHERE cod_cli='"+XCOD_CLI+"' "
-         mSQL += "AND tipo_doc='FC' AND numero='"+XNUMERO+"' "
-         IF DAMEVAL(mSQL,,'N') <> XINICIAL
-            CMNJ("Esta factura ya tiene Pagos; Anule el Pago primero!!")
-            RETURN .T.
-         ENDIF
-      ENDIF
-
-      IF MONTH(XFECHA) <> MONTH(DATE())
-         CMNJ("Factura de mes anterior si prosigue puede alterar los libros fiscales")
-      ELSE
-         CMNJ("Factura de fecha anterior;asegurese de saber lo que hace")
-      ENDIF
-   ELSE
-      CMNJ("No se pueden anular facturas de contado de ; dias anteriores")
-      RETURN .T.
-   ENDIF
-ELSE
-   IF XREFEREN = 'C'
-      mSQL := "SELECT COUNT(*) FROM smov WHERE cod_cli='"+XCOD_CLI+"' "
-      mSQL += "AND tipo_doc='FC' AND numero='"+XNUMERO+"' "
-      IF DAMEVAL(mSQL,,'N') > 0
-         mSQL := "SELECT abonos FROM smov WHERE cod_cli='"+XCOD_CLI+"' "
-         mSQL += "AND tipo_doc='FC' AND numero='"+XNUMERO+"' "
-         IF DAMEVAL(mSQL,,'N') <> XINICIAL
-            CMNJ("Esta factura ya tiene Pagos; Anule el Pago primero!!")
-            RETURN .T.
-         ENDIF
-      ENDIF
-   ENDIF
-ENDIF
-
-// REVISAR INVENTARIO FISICO
-mSQL := "SELECT count(*) FROM costos AS a JOIN sitems AS b "
-mSQL += "ON a.codigo=b.codigoa WHERE a.fecha>"+DTOS(XFECHA)
-mSQL += " and b.numa='"+XNUMERO+"' AND a.origen='0F' "
-IF DAMEVAL(mSQL,,'N') > 0
-   CMNJ("Tiene productos inventariados recientement; debe hacer una devolucion.")
-   RETURN .T.
-ENDIF
-
-IF SINO("Seguro que desea Anularla",1) = 1
-   mSQL := "SELECT almacen,transac, factura FROM sfac WHERE tipo_doc='"+XTIPO_DOC+"' "
-   mSQL += "AND numero='"+XNUMERO+"' "
-   mREG := DAMEREG(mSQL,8)
-   mTRANSAC := mREG[2]
-   mALMACEN := mREG[1]
-   mFACTURA := mREG[3]
-
-   IF EMPTY(mTRANSAC)
-      CMNJ("Movimiento sin transaccion")
-      RETURN .T.
-   ENDIF
-
-   IF XTIPO_DOC = 'F'
-      mSQL := "UPDATE sfac SET tipo_doc='X'  WHERE transac='"+mTRANSAC+"' "
-      mSQL += " AND numero='"+XNUMERO+"' AND tipo_doc='"+XTIPO_DOC+"' "
-      EJECUTASQL(mSQL)
-
-      mSQL := "UPDATE seri SET venta='', fechav=0 WHERE venta='"+XNUMERO+"'"
-      EJECUTASQL(mSQL)
-
-      // BUSCA A VER SI TIENE NOTA DE ENTREGA
-      mSQL   := "SELECT COUNT(*) FROM snte WHERE factura='"+XNUMERO+"' "
-      mDESCU := IF(DAMEVAL(mSQL,,'N')=0,.T.,.F.)
-
-      mSQL := "UPDATE snte SET factura='', fechafac=0 "
-      mSQL += "WHERE factura='"+XNUMERO+"' "
-      EJECUTASQL(mSQL)
-
-      SFACCARGAD()
-      mSQL := "UPDATE sitems SET tipoa='X' WHERE numa='"+XNUMERO+"' AND tipoa='"+XTIPO_DOC+"'"
-      EJECUTASQL(mSQL)
-      // DESCUENTA INVENTARIO
-      IF mDESCU
-         FOR i := 1 TO LEN(mm_DETA)
-            mTIPO := DAMEVAL("SELECT MID(tipo,1,1) FROM sinv WHERE codigo='"+mm_DETA[i,1]+"'")
-            SINVCARGA(mm_DETA[i,1], mALMACEN ,mm_DETA[i,3])
-            IF mTIPO = 'L'
-               SINVLOTCARGA( mm_DETA[i,1], mALMACEN, mm_DETA[i,8], mm_DETA[i,3] )
-            ENDIF
-         NEXT
-      ENDIF
-
-      mSQL := "DELETE FROM sfpa WHERE transac='"+mTRANSAC+"'"
-      EJECUTASQL(mSQL)
-
-      // QUITA DE CXC
-      mSQL := "DELETE FROM smov WHERE transac='"+mTRANSAC+"' "
-      EJECUTASQL(mSQL)
-      
-      // LIBERA LOS SERIALES
-      mSQL := "UPDATE seri SET venta='' WHERE venta='"+XNUMERO+"' "
-      EJECUTASQL(mSQL)
-
-      // Regresa Pedido
-      IF !EMPTY(mPEDIDO)
-         mSQL := "UPDATE itpfac SET entregado=entregado-? WHERE numa=? AND codigoa=? "
-         FOR i := 1 TO LEN(mm_DETA)
-            EJECUTASQL(mSQL,{ mm_DETA[i,3], mPEDIDO, mm_DETA[i,1] })
-         NEXT
-         mSQL := "UPDATE itpfac SET entregado=0 WHERE numa=? AND entregado<0 "
-         EJECUTASQL(mSQL,{ mPEDIDO })
-         mSQL := "SELECT sum(entregado) FROM itpfac WHERE numa='"+mPEDIDO+"' GROUP BY numa "
-         mCAN := DAMEVAL(mSQL,,'N')
-         IF mCAN  = 0
-            mSQL := "UPDATE pfac SET status='P' WHERE numero='"+mPEDIDO+"' "
-         ELSE
-            mSQL := "UPDATE pfac SET status='B' WHERE numero='"+mPEDIDO+"' "
-         ENDIF
-         EJECUTASQL(mSQL)
-         EJECUTASQL("UPDATE sfac SET pedido='' WHERE tipo_doc='X' AND numero='"+XNUMERO+"' ")
-      ENDIF
-
-   // ANULA DEVOLUCIONES
-   ELSEIF XTIPO_DOC = 'D'
-      mSQL := "UPDATE sfac SET tipo_doc='X', numero='D"+SUBSTR(XNUMERO,2,7)+"' "
-      mSQL += "WHERE transac='"+mTRANSAC+"' "
-      EJECUTASQL(mSQL)
-      mDESCU := .T.
-      
-      // DEVUELVE LOS SERIALES
-      mREG := DAMEREG("SELECT factura, fecha FROM sfac WHERE transac='"+mTRANSAC+"' ")
-      mSQL := "UPDATE seri SET venta=?, fechav=? WHERE devolu='"+XNUMERO+"'"
-      EJECUTASQL(mSQL, mREG )
-
-      SFACCARGAD()
-      mSQL := "UPDATE sitems SET tipoa='X', numa='D"+SUBSTR(XNUMERO,2,7)+"' " 
-      mSQL += "WHERE numa='"+XNUMERO+"' AND tipoa='"+XTIPO_DOC+"'"
-      EJECUTASQL(mSQL)
-      // DESCUENTA INVENTARIO
-      FOR i := 1 TO LEN(mm_DETA)
-         mTIPO := DAMEVAL("SELECT MID(tipo,1,1) FROM sinv WHERE codigo='"+mm_DETA[i,1]+"'")
-         SINVCARGA(mm_DETA[i,1], mALMACEN ,-mm_DETA[i,3])
-         IF mTIPO = 'L'
-            SINVLOTCARGA( mm_DETA[i,1], mALMACEN, mm_DETA[i,8], -mm_DETA[i,3] )
-         ENDIF
-      NEXT
-
-      mSQL := "UPDATE sitems SET tipoa='X' WHERE numa='"+XNUMERO+"' AND tipoa='"+XTIPO_DOC+"'"
-      EJECUTASQL(mSQL)
-
-      // GUARDA FORMA DE PAGO
-      mSQL := "DELETE FROM sfpa WHERE transac='"+mTRANSAC+"'"
-      EJECUTASQL(mSQL)
-
-      // GUARDA EN CXC
-      IF XREFEREN = 'C'
-         mSQL := "DELETE FROM smov WHERE transac='"+mTRANSAC+"'"
-         EJECUTASQL(mSQL)
-
-         // REVERSA ABONADO
-         mSQL := "UPDATE smov SET abonos=abonos-"+ALLTRIM(STR(XTOTALG))
-         mSQL += " WHERE cod_cli='"+XCOD_CLI+"' AND tipo_doc='FC' AND "
-         mSQL += "numero='"+mFACTURA+"' "
-         EJECUTASQL(mSQL)
-      ENDIF
-   ENDIF
-
-   CMNJ("Documento Anulado")
-   LOGUSU("FACTURA ANULADA "+XTIPO_DOC+" "+XNUMERO+' PEDIDO '+mPEDIDO)
-   XTIPO_DOC := 'X'
-   oCursor:FieldPut('tipo_doc',XTIPO_DOC)
-   oCursor:Refresh()
-
-ENDIF
-RETURN("")
+//coloca link al numero de presupuesto
+function rpresupuesto(value, p, record) {
+return Ext.String.format(
+		'<a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'ventas/spre/dataedit/show/{2}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">{0}</a>',
+		value,
+		record.data.nombre,
+		record.getId(),
+		record.data.id
+        );
+};
 */
+
+//Column Model Presupuestos
+var SpreCol = 
+	[
+		{ header: 'Numero',     width:  60, sortable: true,  dataIndex: 'numero',  field: { type: 'textfield' }, filter: { type: 'string' }}, 
+		{ header: 'Fecha',      width:  70, sortable: false, dataIndex: 'fecha',   field: { type: 'date'      }, filter: { type: 'date'   }}, 
+		{ header: 'Cliente',    width:  50, sortable: true,  dataIndex: 'cod_cli', field: { type: 'textfield' }, filter: { type: 'string' }}, 
+		{ header: 'Nombre',     width: 200, sortable: true,  dataIndex: 'nombre',  field: { type: 'textfield' }, filter: { type: 'string' }}, 
+		{ header: 'SubTotal',   width: 100, sortable: true,  dataIndex: 'totals',  field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
+		{ header: 'IVA',        width:  80, sortable: true,  dataIndex: 'iva',     field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
+		{ header: 'Total',      width: 100, sortable: true,  dataIndex: 'totalg',  field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
+		{ header: 'Peso',       width:  60, sortable: true,  dataIndex: 'peso',    field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
+		{ header: 'Condiciones',width: 160, sortable: true,  dataIndex: 'condi1',  field: { type: 'textfield' }, filter: { type: 'string' }}, 
+		{ header: 'Vende',      width:  40, sortable: true,  dataIndex: 'vd',      field: { type: 'textfield' }, filter: { type: 'string' }}, 
+		{ header: 'Usuario',    width:  60, sortable: true,  dataIndex: 'usuario', field: { type: 'textfield' }, filter: { type: 'string' }}
+/*
+		field: { xtype: 'combobox', triggerAction: 'all', valueField:'abre', displayField:'todo', store: tipos, listClass: 'x-combo-list-small'},	filter: { type: 'string' }, editor: { allowBlank: false }}, 
+*/
+	];
+
+//Column Model Detalle de NOCO
+var ItSpreCol = 
+	[
+		{ header: 'Codigo',      width:  90, sortable: true, dataIndex: 'codigo', field: { type: 'textfield' }, filter: { type: 'string' }}, 
+		{ header: 'Descripcion', width: 250, sortable: true, dataIndex: 'desca',  field: { type: 'textfield' }, filter: { type: 'string' }}, 
+		{ header: 'Cant',        width:  60, sortable: true, dataIndex: 'cana',   field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
+		{ header: 'Precio',      width: 100, sortable: true, dataIndex: 'preca',  field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
+		{ header: 'Importe',     width: 100, sortable: true, dataIndex: 'importe',field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'IVA',         width:  60, sortable: true, dataIndex: 'iva',    field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Precio 4',    width:  60, sortable: true, dataIndex: 'precio4',field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}
+	];
+
+var nomina = '';
+
+// application main entry point
+Ext.onReady(function() {
+	Ext.QuickTips.init();
+	/////////////////////////////////////////////////
+	// Define los data model
+	// Presupuestos
+	Ext.define('Spre', {
+		extend: 'Ext.data.Model',
+		fields: ['id', 'numero', 'fecha', 'vd', 'cod_cli', 'nombre',  'totals',	'iva', 'totalg', 'peso', 'totals', 'usuario'],
+		proxy: {
+			type: 'ajax',
+			noCache: false,
+			api: {
+				read   : urlApp + 'ventas/spre/grid',
+				method: 'POST'
+			},
+			reader: {
+				type: 'json',
+				root: 'data',
+				successProperty: 'success',
+				messageProperty: 'message',
+				totalProperty: 'results'
+			}
+		}
+	});	
+
+	//////////////////////////////////////////////////////////
+	// create the Data Store
+	var storeSpre = Ext.create('Ext.data.Store', {
+		model: 'Spre',
+		pageSize: 50,
+		remoteSort: true,
+		autoLoad: false,
+		autoSync: true,
+		method: 'POST'
+	});
+
+	//Filters
+	var filters = {
+		ftype: 'filters',
+		// encode and local configuration options defined previously for easier reuse
+		encode: 'json', // json encode the filter query
+		local: false
+	};    
+
+
+	//////////////////////////////////////////////////////////////////
+	// create the grid and specify what field you want
+	// to use for the editor at each column.
+	var gridSpre = Ext.create('Ext.grid.Panel', {
+		width: '100%',
+		height: '100%',
+		store: storeSpre,
+		title: 'Presupuestos',
+		iconCls: 'icon-grid',
+		frame: true,
+		columns: SpreCol,
+		dockedItems: [{
+			xtype: 'toolbar',
+			items: [
+				{
+					iconCls: 'icon-add',
+					text: 'Agregar',
+					scope: this,
+					handler: function(){
+						window.open(urlApp+'ventas/spre/dataedit/create', '_blank', 'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys);
+					}
+				},
+				{
+					iconCls: 'icon-update',
+					text: 'Modificar',
+					disabled: true,
+					itemId: 'update',
+					scope: this,
+					handler: function(selModel, selections){
+						var selection = gridSpre.getView().getSelectionModel().getSelection()[0];
+						gridSpre.down('#delete').setDisabled(selections.length === 0);
+						window.open(urlApp+'ventas/spre/dataedit/modify/'+selection.data.id, '_blank', 'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys);
+					}
+				},
+				{
+					iconCls: 'icon-delete',
+					text: 'Eliminar',
+					disabled: true,
+					itemId: 'delete',
+					scope: this,
+					handler: function() {
+						var selection = gridSpre.getView().getSelectionModel().getSelection()[0];
+						Ext.MessageBox.show({
+							title: 'Confirme', 
+							msg: 'Seguro que quiere eliminar el presupuesto Nro. '+selection.data.numero, 
+							buttons: Ext.MessageBox.YESNO, 
+							fn: function(btn){ 
+								if (btn == 'yes') { 
+									if (selection) {
+										//storeSpre.remove(selection);
+									}
+									storeSpre.load();
+								} 
+							}, 
+							icon: Ext.MessageBox.QUESTION 
+						});  
+					}
+				}
+			]
+		}],
+		features: [filters],
+		// paging bar on the bottom
+		bbar: Ext.create('Ext.PagingToolbar', {
+			store: storeSpre,
+			displayInfo: false,
+			displayMsg: 'Pag No. {0} - Reg. {1} de {2}',
+			emptyMsg: 'No se encontraron Registros.'
+		}),
+	});
+
+
+".$listados."
+
+".$otros."
+
+	/////////////////////////////////////////////////
+	// Define los data model
+	// Contratos
+	Ext.define('ItSpre', {
+		extend: 'Ext.data.Model',
+		fields: ['codigo', 'desca', 'cana', 'preca', 'importe', 'iva', 'precio4' ],
+		proxy: {
+			type: 'ajax',
+			noCache: false,
+			api: {
+				read   : urlApp + 'ventas/spre/griditspre',
+				method: 'POST'
+			},
+			reader: {
+				type: 'json',
+				root: 'data',
+				successProperty: 'success',
+				messageProperty: 'message',
+				totalProperty: 'results'
+			}
+		}
+	});
+
+	//////////////////////////////////////////////////////////
+	// create the Data Store
+	var storeItSpre = Ext.create('Ext.data.Store', {
+		model: 'ItSpre',
+		autoLoad: false,
+		autoSync: true,
+		method: 'POST'
+	});
+
+
+	//////////////////////////////////////////////////////////////////
+	// create the grid and specify what field you want
+	// to use for the editor at each column.
+	var gridItSpre = Ext.create('Ext.grid.Panel', {
+		width: '100%',
+		height: '100%',
+		store: storeItSpre,
+		title: 'Articulos',
+		iconCls: 'icon-grid',
+		frame: true,
+		columns: ItSpreCol
+	});
+
+	// define a template to use for the detail view
+	var spreTplMarkup = [
+		'<table width=\'100%\' bgcolor=\"#F3F781\">',
+		'<tr><td colspan=3 align=\'center\'><p style=\'font-size:14px;font-weight:bold\'>IMPRIMIR PRESUPUESTO</p></td></tr><tr>',
+		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/verhtml/PRESUP/{numero}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/html_icon.gif', 'alt' => 'Formato HTML', 'title' => 'Formato HTML','border'=>'0'))."</a></td>',
+		'<td align=\'center\'>{numero}</td>',
+		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/ver/PRESUP/{numero}\',     \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',   'title' => 'Formato PDF', 'border'=>'0'))."</a></td></tr>',
+		'<tr><td colspan=3 align=\'center\' >--</td></tr>',		
+		'</table>'
+	];
+	var spreTpl = Ext.create('Ext.Template', spreTplMarkup);
+
+	// Al cambiar seleccion de Nomina
+	gridSpre.getSelectionModel().on('selectionchange', function(sm, selectedRecord) {
+		if (selectedRecord.length) {
+			gridSpre.down('#delete').setDisabled(selectedRecord.length === 0);
+			gridSpre.down('#update').setDisabled(selectedRecord.length === 0);
+			numero = selectedRecord[0].data.numero;
+			gridItSpre.setTitle(numero+' '+selectedRecord[0].data.nombre);
+			storeItSpre.load({ params: { numero: numero }});
+			var meco1 = Ext.getCmp('imprimir');
+			meco1.setTitle('Imprimir Presupuesto');
+			spreTpl.overwrite(meco1.body, selectedRecord[0].data);
+		}
+	});
+
+	var viewport = new Ext.Viewport({
+		id:'simplevp',
+		layout:'border',
+		border:false,
+		items:[{
+			region: 'north',
+			preventHeader: true,
+			height: 40,
+			minHeight: 40,
+			html: '".$encabeza."'
+		},{
+			region:'west',
+			width:200,
+			border:false,
+			autoScroll:true,
+			title:'Lista de Opciones',
+			collapsible:true,
+			split:true,
+			collapseMode:'mini',
+			layoutConfig:{animate:true},
+			layout: 'accordion',
+			items: [
+				{
+					title:'Imprimir',
+					defaults:{border:false},
+					layout: 'fit',
+					items:[{
+						name: 'imprimir',
+						id: 'imprimir',
+						preventHeader: true,
+						border:false,
+						html: 'Para imprimir seleccione un Presupuesto '
+					}]
+				},
+				{
+					title:'Listados',
+					border:false,
+					layout: 'fit',
+					items: gridListado
+
+				},
+				{
+					title:'Otras Funciones',
+					border:false,
+					layout: 'fit',
+					items: gridOtros
+				}
+			]
+		},{
+			region:'south',
+			id: 'sur',
+			height:50,
+			html:'Sur',
+			border:false,
+			title:'Sur',
+			collapsible:true
+		},
+		{
+			cls: 'irm-column irm-center-column irm-master-detail',
+			region: 'center',
+			title:  'center-title',
+			layout: 'border',
+			preventHeader: true,
+			border: false,
+			items: [{
+				itemId: 'viewport-center-master',
+				cls: 'irm-master',
+				region: 'center',
+				items: gridSpre
+			},{
+				itemId: 'viewport-center-detail',
+				preventHeader: true,
+				region: 'south',
+				height: '40%',
+				split: true,
+				//collapsible: true,
+				title: 'center-detail-title',
+				margins: '0 0 0 0',
+				items: gridItSpre
+			}]	
+		}]
+	});
+	storeSpre.load();
+	storeItSpre.load();
+});
+
+</script>
+";
+		return $script;	
+		
 	}
 
 

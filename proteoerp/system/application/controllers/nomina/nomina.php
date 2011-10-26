@@ -514,7 +514,7 @@ Ext.onReady(function(){
 		store: storeNomi,
 		title: 'Nominas Guardadas',
 		iconCls: 'icon-grid',
-		frame: true,
+		frame: false,
 		columns: NomiCol,
 		dockedItems: [{
 			xtype: 'toolbar',
@@ -605,7 +605,6 @@ Ext.onReady(function(){
 						'itemId': 'viewport-center-master',
 						'cls': 'irm-master',
 						'region': 'center',
-						//'html': 'center-master-text'
 						items: gridTraba
 					},
 					{
@@ -617,33 +616,14 @@ Ext.onReady(function(){
 						'collapsible': true,
 						'title': 'center-detail-title',
 						'margins': '0 0 0 0',
-						//'html': 'center-detail-text'
 						items: gridConc
 					}
 				]
 			}
-			/*{
-				'region': 'east',
-				'collapsible': true,
-				'width': 100,
-				'title': 'right-title',
-				'layout': { 'type': 'vbox', 'align': 'stretch' },
-				'split': true,
-				'items': [{
-					'xtype': 'component',
-					'html': 'column-right-text'
-				}]    
-			},
-			{    
-				'region': 'south',
-				'height': 30,
-				'layout': { 'type': 'border', 'padding': 5 },
-				'items': [{
-					'region': 'center',
-					'html': 'footer',
-					'height': 50
-				}]         
-			} */                 
+			/*
+			{'region': 'east','collapsible': true,'width': 100,'title': 'right-title','layout': { 'type': 'vbox', 'align': 'stretch' },'split': true,'items': [{'xtype': 'component','html': 'column-right-text'}] },
+			{ 'region': 'south','height': 30,	'layout': { 'type': 'border', 'padding': 5 },'items': [{'region': 'center','html': 'footer',	'height': 50}]}
+			*/                 
 		]
 	};
           

@@ -32,7 +32,6 @@ class Datasis {
 	}
 
 
-
 	// Tae valor de la table VALORES
 	function traevalor($nombre){
 		$CI =& get_instance();
@@ -528,5 +527,200 @@ class Datasis {
 			}
 		}
 	}
+	
+	//*******************************
+	//
+	//      Manda los Reportes
+	//
+	//*******************************
+	function listados($modulo){
+		$CI =& get_instance();
+
+		$mSQL="UPDATE tmenus SET ejecutar=REPLACE(ejecutar,"."'".'( "'."','".'("'."') WHERE modulo LIKE '%LIS'";
+		$CI->db->simple_query($mSQL);
+
+		$mSQL="UPDATE tmenus SET ejecutar=REPLACE(ejecutar,"."'".'" )'."','".'")'."') WHERE modulo LIKE '%LIS'";
+		$CI->db->simple_query($mSQL);
+
+		$listados = '';
+		//$listados = '<table width="100%">';
+		
+		if($modulo){
+			$modulo=strtoupper($modulo);
+			
+			//$grid = new DataTable();
+			$CI->db->_escape_char='';
+			$CI->db->_protect_identifiers=false;
+			
+			$CI->db->select("a.secu, a.titulo, a.mensaje, REPLACE(MID(a.ejecutar,10,30),"."'".'")'."','')  nombre"); 
+			$CI->db->from("tmenus    a" );
+			$CI->db->join("sida      b","a.codigo=b.modulo");
+			$CI->db->join("reportes  d","REPLACE(MID(a.ejecutar,10,30),"."'".'")'."','')=d.nombre");
+			$CI->db->where('b.acceso','S');
+			$CI->db->where('b.usuario',$CI->session->userdata('usuario') );
+			$CI->db->like("a.ejecutar","REPOSQL", "after");
+			$CI->db->where('a.modulo',$modulo."LIS");
+			$CI->db->orderby("a.secu");
+			
+			$query = $CI->db->get();
+			//echo $CI->db->last_query();
+
+			if ($query->num_rows() > 0) {
+				foreach ($query->result_array() as $row)
+				{
+					$listados .= "[ '".$row['secu']."', '".$row['titulo']."', '".$row['nombre']."' ],";
+				}
+			} else {
+				//$listados .= "<tr><td>No se encontraron listados</td><tr>";
+				$listados .= "['-','No tiene listados','' ]";
+			}
+			
+			$query->free_result();
+
+			//$CI->db->_escape_char='';
+			$CI->db->_protect_identifiers=false;
+			
+			$CI->db->select("a.titulo, a.mensaje, a.nombre");
+			$CI->db->from("intrarepo a" );
+			$CI->db->join("tmenus    b","CONCAT(a.modulo,'LIS')=b.modulo AND b.ejecutar LIKE CONCAT('%',a.nombre,'%') ","left");
+			$CI->db->where("b.codigo IS NULL");
+			$CI->db->where("a.modulo",$modulo );
+			$CI->db->where("a.activo","S");
+			$CI->db->orderby("a.titulo");
+			if ($query->num_rows() > 0) {
+				foreach ($query->result_array() as $row)
+				{
+					$listados .= "[ '*', '".$row['titulo']."', '".$row['nombre']."' ],";
+				}
+			} else {
+				$listados .= "[ '-', 'No hay listados Proteo', '' ]";
+			}
+			$query->free_result();
+
+			$reposcript = "
+	var storeListado = Ext.create('Ext.data.ArrayStore', {
+		autoDestroy: true,
+		storeId: 'listadoStore',
+		idIndex: 0,
+		fields: [ 'numero', 'nombre', 'reporte' ],
+		data: [".$listados."]
+	});
+
+	function renderRepo(value, p, record) {
+		var mreto='';
+		if ( record.data.numero == '-' ){
+			mreto = '<div style=\'background-color:#BCEFBC;text-weight:bold;align:center;\'>{0}</div>';
+		} else {
+			mreto = '<a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'reportes/ver/{1}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">{0}</a>';
+		}
+		return Ext.String.format(
+		mreto,
+		//'<a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'reportes/ver/{1}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">{0}</a>',
+		value,
+		record.data.reporte
+		);
+	}
+
+	var gridListado = Ext.create('Ext.grid.Panel', {
+		title: 'Listados',
+		store: storeListado,
+		width: '199',
+		columns: [
+			{ header: 'Nro.',   dataIndex: 'numero', width:  30 },
+			{ header: 'Nombre de los Reportes', dataIndex: 'nombre', width: 169, renderer: renderRepo },
+			{ header: 'Rep.',   dataIndex: 'reporte', hidden:  true }
+		]
+	});
+";
+	
+		}
+
+		return $reposcript;
+		
+	}
+
+
+	//*******************************
+	//
+	//      Manda los Reportes
+	//
+	//*******************************
+	function otros($modulo, $url,$param = ''){
+		$CI =& get_instance();
+
+		$mSQL="UPDATE tmenus SET ejecutar=REPLACE(ejecutar,"."'".'( "'."','".'("'."') WHERE modulo LIKE '%OTR'";
+		$CI->db->simple_query($mSQL);
+
+		$mSQL="UPDATE tmenus SET ejecutar=REPLACE(ejecutar,"."'".'" )'."','".'")'."') WHERE modulo LIKE '%OTR'";
+		$CI->db->simple_query($mSQL);
+
+		$Otros = '';
+
+		if($modulo){
+			$modulo=strtoupper($modulo);
+			
+			$CI->db->_escape_char='';
+			$CI->db->_protect_identifiers=false;
+			
+			$mSQL  = "SELECT a.secu, a.titulo, a.mensaje, a.ejecutar "; 
+			$mSQL .= "FROM tmenus a JOIN sida b ON a.codigo=b.modulo ";
+			$mSQL .= "WHERE b.acceso='S' AND b.usuario='".$CI->session->userdata('usuario')."' ";
+			$mSQL .= "AND a.modulo='".$modulo."OTR' ORDER BY a.secu";
+			$query = $CI->db->query($mSQL);
+
+			if ($query->num_rows() > 0) {
+				foreach ($query->result_array() as $row)
+				{
+					$Otros .= "[ '".$row['secu']."', '".$row['titulo']."', '".$row['ejecutar']."' ],";
+				}
+			} else {
+				$Otros .= "['-','No tiene Funciones','' ]";
+			}
+			$query->free_result();
+
+
+			$otroscript = "
+	var storeOtros = Ext.create('Ext.data.ArrayStore', {
+		autoDestroy: true,
+		storeId: 'OtrosStore',
+		idIndex: 0,
+		fields: [ 'numero', 'nombre', 'ejecutar' ],
+		data: [".$Otros."]
+	});
+
+	function renderOtro(value, p, record) {
+		var mreto='';
+		if ( record.data.numero == '-' ){
+			mreto = '{0}';
+		} else {
+			mreto = '<a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'".$url."/{1}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">{0}</a>';
+		}
+		return Ext.String.format(
+		mreto,
+		value,
+		record.data.reporte
+		);
+	}
+
+	var gridOtros = Ext.create('Ext.grid.Panel', {
+		title: 'Otras Funciones',
+		store: storeOtros,
+		width: '199',
+		columns: [
+			{ header: 'Nro.',   dataIndex: 'numero', width:  30 },
+			{ header: 'Funcion que Ejecuta', dataIndex: 'nombre', width: 169, renderer: renderOtro },
+			{ header: 'Otro',   dataIndex: 'ejecutar', hidden:  true }
+		]
+	});
+";
+
+
+		
+		}
+
+		return $otroscript;
+		
+	}
+
 
 }

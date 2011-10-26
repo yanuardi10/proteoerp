@@ -220,8 +220,12 @@ class Noco extends Controller {
 		logusu('noco',"Contrato de Nomina $codigo ELIMINADO");
 	}
 	function instala(){
-		$sql="ALTER TABLE `noco`  ADD PRIMARY KEY (`codigo`)";
+		
+		$sql="ALTER TABLE `noco`   ADD COLUMN 'id' INT(11) UNSIGNED NULL AUTO_INCREMENT AFTER observa2, DROP PRIMARY KEY, ADD UNIQUE INDEX codigo (codigo), ADD PRIMARY KEY (`id`)";
 		$this->db->query($sql);	
+		$sql="ALTER TABLE `itnoco` ADD COLUMN 'id' INT(11) UNSIGNED NULL AUTO_INCREMENT AFTER grupo, DROP PRIMARY KEY, ADD UNIQUE INDEX codigo (codigo, concepto), ADD PRIMARY KEY (`id`)";
+		$this->db->query($sql);	
+
 	}
 
 	function manoco(){
@@ -280,8 +284,8 @@ class Noco extends Controller {
 
 
 	function itnoco(){
-		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']    : 'contrato';
-		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
+		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']   : 'contrato';
+		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter'] : null;
 		$codigo = isset($_REQUEST['codigo']) ? $_REQUEST['codigo']  : null;
 
 		if ($codigo == null ) $codigo=$this->datasis->dameval("SELECT codigo FROM noco ORDER BY codigo LIMIT 1");
@@ -458,7 +462,7 @@ var tipos = new Ext.data.SimpleStore({
     data : [ ['Q','Quincenal'],['S','Semanal'],['B','Bisemanal'],['M','Mensual'],['O','Otros'] ]
 });
 
-//Column Model
+//Column Model Contratos de Nomina
 var NocoCol = 
 	[
 		{ header: 'id', dataIndex: 'id', width: 40, hidden: false }, 
@@ -471,7 +475,7 @@ var NocoCol =
 	];
 
 
-//Column Model
+//Column Model Detalle de NOCO
 var ItNocoCol = 
 	[
 		{ header: 'id', dataIndex: 'id', width: 40, hidden: false }, 
@@ -481,7 +485,7 @@ var ItNocoCol =
 		{ header: 'Grupo',       width:  60, sortable: true, dataIndex: 'grupo',    field: { type: 'textfield' }, filter: { type: 'string' }}
 	];
 
-//Column Model
+//Column Model Conceptos
 var ConcCol = 
 	[
 		{ header: 'id', dataIndex: 'id', width: 40, hidden: false }, 
