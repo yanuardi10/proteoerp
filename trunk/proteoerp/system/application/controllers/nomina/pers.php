@@ -933,20 +933,20 @@ var storePers = Ext.create('Ext.data.Store', {
 //Column Model
 var colPers = 
 	[
-		{ header: 'Codigo',     width:  60, sortable: true, dataIndex: 'codigo',   field:  { type: 'textfield' }, filter: { type: 'string'  } }, 
-		{ header: 'Status',     width:  60, sortable: true, dataIndex: 'status',   field:  { type: 'textfield' }, filter: { type: 'string'  } }, 
-		{ header: 'Nac',        width:  60, sortable: true, dataIndex: 'nacional', field:  { type: 'textfield' }, filter: { type: 'string'  } }, 
-		{ header: 'Cedula',     width:  80, sortable: true, dataIndex: 'cedula',   field:  { type: 'textfield' }, filter: { type: 'string'  } }, 
-		{ header: 'Nombre',     width: 150, sortable: true, dataIndex: 'nombre',   field:  { type: 'textfield' }, filter: { type: 'string'  } }, //editor: 'textfield' }, 
-		{ header: 'Apellidos',  width: 150, sortable: true, dataIndex: 'apellido', field:  { type: 'textfield' }, filter: { type: 'string'  } }, 
-		{ header: 'Contrato',   width:  60, sortable: true, dataIndex: 'contrato', field:  { type: 'textfield' }, filter: { type: 'string'  } }, 
+		{ header: 'Codigo',     width:  60, sortable: true, dataIndex: 'codigo',   field:  { type: 'textfield' }, filter: { type: 'string'  }}, 
+		{ header: 'Status',     width:  60, sortable: true, dataIndex: 'status',   field:  { type: 'textfield' }, filter: { type: 'string'  }}, 
+		{ header: 'Nac',        width:  60, sortable: true, dataIndex: 'nacional', field:  { type: 'textfield' }, filter: { type: 'string'  }}, 
+		{ header: 'Cedula',     width:  80, sortable: true, dataIndex: 'cedula',   field:  { type: 'textfield' }, filter: { type: 'string'  }}, 
+		{ header: 'Nombre',     width: 150, sortable: true, dataIndex: 'nombre',   field:  { type: 'textfield' }, filter: { type: 'string'  }}, //editor: 'textfield' }, 
+		{ header: 'Apellidos',  width: 150, sortable: true, dataIndex: 'apellido', field:  { type: 'textfield' }, filter: { type: 'string'  }}, 
+		{ header: 'Contrato',   width:  60, sortable: true, dataIndex: 'contrato', field:  { type: 'textfield' }, filter: { type: 'string'  }}, 
 		{ header: 'Ingreso',    width:  70, sortable: true, dataIndex: 'ingreso',  field:  { type: 'date'      }, filter: { type: 'date'    }, renderer: Ext.util.Format.dateRenderer('d/m/Y') }, 
 		{ header: 'Sueldo',     width: 120, sortable: true, dataIndex: 'sueldo',   field:  { type: 'numeroc'   }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00') }, 
-		{ header: 'Nacimiento', width:  70, sortable: true, dataIndex: 'nacimi',   field:  { type: 'date'      }, filter: { type: 'date'    } }, 
-		{ header: 'Telefono',   width: 100, sortable: true, dataIndex: 'telefono', field:  { type: 'textfield' }, filter: { type: 'string'  } },
-		{ header: '".$this->datasis->traevalor('NOMVARI1')."',     width: 60, sortable: true, dataIndex: 'vari1',   field:  { type: 'numeric'   }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0.00') }, 
-		{ header: '".$this->datasis->traevalor('NOMVARI2')."',     width: 60, sortable: true, dataIndex: 'vari2',   field:  { type: 'numeric'   }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0.00') }, 
-		{ header: '".$this->datasis->traevalor('NOMVARI3')."',     width: 60, sortable: true, dataIndex: 'vari3',   field:  { type: 'numeric'   }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0.00') }
+		{ header: 'Nacimiento', width:  70, sortable: true, dataIndex: 'nacimi',   field:  { type: 'date'      }, filter: { type: 'date'    }}, 
+		{ header: 'Telefono',   width: 100, sortable: true, dataIndex: 'telefono', field:  { type: 'textfield' }, filter: { type: 'string'  }},
+		{ header: '".$this->datasis->traevalor('NOMVARI1')."',     width: 60, sortable: true, dataIndex: 'vari1',   field:  { type: 'numeric' }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0.00') }, 
+		{ header: '".$this->datasis->traevalor('NOMVARI2')."',     width: 60, sortable: true, dataIndex: 'vari2',   field:  { type: 'numeric' }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0.00') }, 
+		{ header: '".$this->datasis->traevalor('NOMVARI3')."',     width: 60, sortable: true, dataIndex: 'vari3',   field:  { type: 'numeric' }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0.00') }
 	];
 
 var ci = {
@@ -1266,45 +1266,6 @@ Ext.onReady(function(){
 			storePers.load();
 		}
 	});
-
-
-
-/*
-	//Main Container
-	var main = Ext.create('Ext.container.Container', {
-		padding: '0 0 0 0',
-		width: '100%',
-		height: 500,
-		renderTo: document.body,
-		layout: {
-			type: 'vbox',
-			align: 'center'
-		},
-		items: [
-			{
-				xtype: 'panel',
-				preventHeader: true,
-				collapsible : true,
-				html: '".$encabeza."',
-				title: 'Busqueda Avanzada',
-				width: '98%',
-				layout: 'fit',
-				viewConfig: { forceFit: true },
-				flex: 1
-			},
-			{
-				itemId: 'grid',
-				xtype: 'writergrid',
-				title: 'Trabajadores',
-				width: '98%',
-				align: 'center',
-				flex: 9,
-				store: storePers
-			}]
-	});
-	Ext.EventManager.onWindowResize(main.doLayout, main);
-	*/
-
 
 	Ext.create('Ext.Viewport', {
 		layout: {type: 'border',padding: 5},

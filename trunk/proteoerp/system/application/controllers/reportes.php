@@ -38,14 +38,13 @@ class Reportes extends Controller
 			$this->db->_escape_char='';
 			$this->db->_protect_identifiers=false;
 			eval($mc);
-		}else{
+		} else {
 			echo 'Reporte '.$repo.' no definido para ProteoERP <br>';
 			echo '<a href='.site_url("/reportes/enlistar/$esta").'>Regresar</a>';
 		}
 	}
 
 	function enlistar(){
-		//$this->session->_flashdata_sweep();
 		//echo '<pre>';print_r($this->session->userdata);echo '</pre>';
 		$repo =$this->uri->segment(3);
 		$this->rapyd->load("datatable");
@@ -53,11 +52,9 @@ class Reportes extends Controller
 
 		$mSQL="UPDATE tmenus SET ejecutar=REPLACE(ejecutar,"."'".'( "'."','".'("'."') WHERE modulo LIKE '%LIS'";
 		$this->db->simple_query($mSQL);
-		//echo $mSQL;
 
 		$mSQL="UPDATE tmenus SET ejecutar=REPLACE(ejecutar,"."'".'" )'."','".'")'."') WHERE modulo LIKE '%LIS'";
 		$this->db->simple_query($mSQL);
-		//echo $mSQL;
 		
 		if($repo){
 			$repo=strtoupper($repo);
@@ -102,8 +99,6 @@ class Reportes extends Controller
 			</div><div style="color:#112211; font-weight:normal; font-size:12px;padding:4px;border-left: 1px solid;">
 			<htmlspecialchars><#mensaje#></htmlspecialchars></div>'; 
 			$grid1->build();
-			//echo $grid1->db->last_query();
-			
 		}
 		$data['forma'] = '';
 		if($repo AND $grid->recordCount>0) {
@@ -116,13 +111,11 @@ class Reportes extends Controller
 		if($repo AND $grid1->recordCount>0) {
 			$data['forma'] .= '<div style="color:#111911; font-weight:bold; font-size:10px;background-color:#F1FFF1">PROTEO</div>';
 			$data['forma'] .=$grid1->output; 
-		} else {
-			//$data['forma'] .= '<p class="mainheader">No hay reportes disponibles por PROTEO.</p>';
 		};
-		
+
 		$meco = $this->datasis->dameval("SELECT titulo FROM intramenu a WHERE a.panel='REPORTES' AND a.ejecutar LIKE '%$repo' ");
-		$data['head']="";     //$this->rapyd->get_head();
-		$data['titulo'] = ''; //"<center><h2>$meco</h2></center>";
+		$data['head']="";
+		$data['titulo'] = '';
 		$data['repo']=$repo;
 		$this->load->view('view_reportes', $data);
 		
@@ -147,26 +140,26 @@ class Reportes extends Controller
 		}elseif (!empty($_POST["depto"])){
 			$departamento=$_POST["depto"];
 		}
-		
+
 		$this->rapyd->load("fields");  
 		$where = "";  
 		$sql = "SELECT linea, CONCAT_WS('-',linea,descrip) FROM line $where";
 		$linea = new dropdownField("Subcategoria", "linea");  
-		
+
 		if (!empty($departamento)){  
-		  $where = "WHERE depto = ".$this->db->escape($departamento);
-		  $sql = "SELECT linea,CONCAT_WS('-',linea,descrip) FROM line $where";
-		  $linea->option("","");  
+			$where = "WHERE depto = ".$this->db->escape($departamento);
+			$sql = "SELECT linea,CONCAT_WS('-',linea,descrip) FROM line $where";
+			$linea->option("","");  
 			$linea->options($sql); 
 		}else{
-			 $linea->option("","Seleccione Un Departamento"); 
+			$linea->option("","Seleccione Un Departamento"); 
 		} 
 		$linea->status   = "modify";
 		$linea->onchange = "get_grupo();";
 		$linea->build();
 		echo $linea->output;
 	}
-	
+
 	function sinvgrupos(){
 		$this->rapyd->load("fields");  
 		$where = "WHERE ";
@@ -204,7 +197,6 @@ class Reportes extends Controller
 		//$linea->onchange = "get_grupo();";
 		$modelo->build();
 		echo $modelo->output;
-		 
 	}
 
 	function instalar(){
@@ -214,8 +206,6 @@ class Reportes extends Controller
 		$this->db->simple_query($mSQL);
 		$mSQL="UPDATE tmenus SET ejecutar=REPLACE(ejecutar,"."'".'" )'."','".'")'."') ";
 		$this->db->simple_query($mSQL);
-
-		
 	}
 }
 ?>
