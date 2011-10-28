@@ -1,14 +1,9 @@
-<?php
-if (!defined('BASEPATH')) {
-    exit('No direct script access allowed');
-}
+<?php if (!defined('BASEPATH')) exit('No direct script access allowed');
 
-class MY_Validation extends CI_Validation
-{
+class MY_Validation extends CI_Validation{
 
 	var $_dataobject;
 
-	
 
 	/**
 	 * Unique
@@ -17,11 +12,9 @@ class MY_Validation extends CI_Validation
 	 * @param	string
 	 * @return	bool
 	 */
-	function unique($str)
-	{
-    return ( $this->_dataobject->is_unique($this->_current_field, $str) );
+	function unique($str){
+		return ( $this->_dataobject->is_unique($this->_current_field, $str) );
 	}
-	
 
 	/**
 	 * captcha
@@ -30,24 +23,54 @@ class MY_Validation extends CI_Validation
 	 * @param	string
 	 * @return	bool
 	 */
-	function captcha($str)
-	{
-    return ( strtolower($_SESSION["captcha"]) == strtolower($str) );
+	function captcha($str){
+		return ( strtolower($_SESSION["captcha"]) == strtolower($str) );
 	}
-
 
 	function valid_email($email){
 		$email=trim($email);
 		if(strlen($email)>0)
 			return parent::valid_email($email);
 		else
-			return TRUE;
-		
+			return true;
+	}
+
+	function existescli($scli){
+		$dbscli= $this->CI->db->escape($scli);
+		$mSQL  = "SELECT COUNT(*) AS cana FROM scli WHERE cliente=$dbscli";
+		$this->set_message('existescli', 'El cliente propuesto en el campo %s no existe');
+
+		$query = $this->CI->db->query($mSQL);
+		if ($query->num_rows() > 0){
+			$row = $query->row();
+			if( $row->cana>0) return true; else return false;
+		}else{
+			return false;
+		}
+	}
+
+	function existesprv($sprv){
+		$dbsprv= $this->CI->db->escape($sprv);
+		$mSQL  = "SELECT COUNT(*) AS cana FROM sprv WHERE proveed=$dbsprv";
+		$this->set_message('existesprv', 'El proveedor propuesto en el campo %s no existe');
+
+		$query = $this->CI->db->query($mSQL);
+		if ($query->num_rows() > 0){
+			$row = $query->row();
+			if( $row->cana>0) return true; else return false;
+		}else{
+			return false;
+		}
 	}
 
 	function positive($val){
 		$this->set_message('positive', 'El campo %s debe contener un valor positivo');
 		return ($val>=0)? true : false;
+	}
+
+	function nocero($val){
+		$this->set_message('nocero', 'El campo %s debe contener un valor distinto a cero');
+		return ($val!=0)? true : false;
 	}
 
 	function mayorcero($val){
@@ -58,9 +81,9 @@ class MY_Validation extends CI_Validation
 	function mac($mac){
 		$pattern='/[0-9AaBbCcDdEeFf]{2}(:[0-9AaBbCcDdEeFf]{2}){5}/';
 		if(preg_match($pattern,$mac)>0){
-			return TRUE;
+			return true;
 		}else{
-			return FALSE;
+			return false;
 		}
 	}
 
@@ -110,7 +133,6 @@ class MY_Validation extends CI_Validation
 		return true;
 	}
 
-
 	/**
 	 * Corre las validaciones
 	 *
@@ -118,35 +140,30 @@ class MY_Validation extends CI_Validation
 	 * campos requeridos condicionales.
 	 * @access	public
 	 * @return	bool
-	 */		
-	function run()
-	{
+	 */
+	function run(){
 		// Do we even have any data to process?  Mm?
-		if (count($_POST) == 0 OR count($this->_rules) == 0)
-		{
+		if (count($_POST) == 0 OR count($this->_rules) == 0){
 			return FALSE;
 		}
-	
+
 		// Load the language file containing error messages
 		$this->CI->lang->load('validation');
-							
+
 		// Cycle through the rules and test for errors
-		foreach ($this->_rules as $field => $rules)
-		{
+		foreach ($this->_rules as $field => $rules){
 			//Explode out the rules!
 			$ex = explode('|', $rules);
 
 			// Is the field required?  If not, if the field is blank  we'll move on to the next test
-			if ( ! in_array('required', $ex, TRUE))
-			{
-				if ( ! isset($_POST[$field]) OR $_POST[$field] == '')
-				{
+			if ( ! in_array('required', $ex, TRUE)){
+				if ( ! isset($_POST[$field]) OR $_POST[$field] == ''){
 					$clave=array_search('condi_required',$ex);
 					if($clave !== false ) unset($ex[$clave]); else continue;
 					//if( ! in_array('condi_required', $ex, TRUE)) continue;
 				}
 			}
-			
+
 			/*
 			 * Are we dealing with an "isset" rule?
 			 *
@@ -156,22 +173,16 @@ class MY_Validation extends CI_Validation
 			 * test for it here since there's not reason to go
 			 * further
 			 */
-			if ( ! isset($_POST[$field]))
-			{			
-				if (in_array('isset', $ex, TRUE) OR in_array('required', $ex))
-				{
-					if ( ! isset($this->_error_messages['isset']))
-					{
-						if (FALSE === ($line = $this->CI->lang->line('isset')))
-						{
+			if ( ! isset($_POST[$field])){
+				if (in_array('isset', $ex, TRUE) OR in_array('required', $ex)){
+					if ( ! isset($this->_error_messages['isset'])){
+						if (FALSE === ($line = $this->CI->lang->line('isset'))){
 							$line = 'The field was not set';
 						}
-					}
-					else
-					{
+					}else{
 						$line = $this->_error_messages['isset'];
 					}
-					
+
 					// Build the error message
 					$mfield = ( ! isset($this->_fields[$field])) ? $field : $this->_fields[$field];
 					$message = sprintf($line, $mfield);
@@ -181,10 +192,9 @@ class MY_Validation extends CI_Validation
 					$this->$error = $this->_error_prefix.$message.$this->_error_suffix;
 					$this->_error_array[] = $message;
 				}
-						
 				continue;
 			}
-	
+
 			/*
 			 * Set the current field
 			 *
@@ -196,46 +206,37 @@ class MY_Validation extends CI_Validation
 			$this->_current_field = $field;
 
 			// Cycle through the rules!
-			foreach ($ex As $rule)
-			{
-				// Is the rule a callback?			
+			foreach ($ex As $rule){
+				// Is the rule a callback?
 				$callback = FALSE;
-				if (substr($rule, 0, 9) == 'callback_')
-				{
+				if (substr($rule, 0, 9) == 'callback_'){
 					$rule = substr($rule, 9);
 					$callback = TRUE;
 				}
-				
+
 				// Strip the parameter (if exists) from the rule
 				// Rules can contain a parameter: max_length[5]
 				$param = FALSE;
-				if (preg_match("/(.*?)\[(.*?)\]/", $rule, $match))
-				{
+				if (preg_match("/(.*?)\[(.*?)\]/", $rule, $match)){
 					$rule	= $match[1];
 					$param	= $match[2];
 				}
-				
+
 				// Call the function that corresponds to the rule
-				if ($callback === TRUE)
-				{
+				if ($callback === TRUE){
 					if ( ! method_exists($this->CI, $rule))
-					{ 		
+					{
 						continue;
 					}
-					
-					$result = $this->CI->$rule($_POST[$field], $param);	
-					
+
+					$result = $this->CI->$rule($_POST[$field], $param);
+
 					// If the field isn't required and we just processed a callback we'll move on...
-					if ( ! in_array('required', $ex, TRUE) AND $result !== FALSE)
-					{
+					if ( ! in_array('required', $ex, TRUE) AND $result !== FALSE){
 						continue 2;
 					}
-					
-				}
-				else
-				{				
-					if ( ! method_exists($this, $rule))
-					{
+				}else{
+					if ( ! method_exists($this, $rule)){
 						/*
 						 * Run the native PHP function if called for
 						 *
@@ -243,50 +244,42 @@ class MY_Validation extends CI_Validation
 						 * if a native PHP function does. Users can use
 						 * any native PHP function call that has one param.
 						 */
-						if (function_exists($rule))
-						{
+						if (function_exists($rule)){
 							$_POST[$field] = $rule($_POST[$field]);
 							$this->$field = $_POST[$field];
 						}
-											
+
 						continue;
 					}
-					
 					$result = $this->$rule($_POST[$field], $param);
 				}
-								
+
 				// Did the rule test negatively?  If so, grab the error.
-				if ($result === FALSE)
-				{
-					if ( ! isset($this->_error_messages[$rule]))
-					{
-						if (FALSE === ($line = $this->CI->lang->line($rule)))
-						{
+				if ($result === FALSE){
+					if ( ! isset($this->_error_messages[$rule])){
+						if (FALSE === ($line = $this->CI->lang->line($rule))){
 							$line = 'Unable to access an error message corresponding to your field name.';
-						}						
-					}
-					else
-					{
+						}
+					}else{
 						$line = $this->_error_messages[$rule];
-					}				
+					}
 
 					// Build the error message
 					$mfield = ( ! isset($this->_fields[$field])) ? $field : $this->_fields[$field];
 					$mparam = ( ! isset($this->_fields[$param])) ? $param : $this->_fields[$param];
 					$message = sprintf($line, $mfield, $mparam);
-					
+
 					// Set the error variable.  Example: $this->username_error
 					$error = $field.'_error';
 					$this->$error = $this->_error_prefix.$message.$this->_error_suffix;
 
 					// Add the error to the error array
-					$this->_error_array[] = $message;				
+					$this->_error_array[] = $message;
 					continue 2;
-				}				
+				}
 			}
-			
 		}
-		
+
 		$total_errors = count($this->_error_array);
 
 		/*
@@ -295,29 +288,23 @@ class MY_Validation extends CI_Validation
 		 * If any prepping functions were called the $_POST data
 		 * might now be different then the corresponding class
 		 * variables so we'll set them anew.
-		 */	
-		if ($total_errors > 0)
-		{
+		 */
+		if ($total_errors > 0){
 			$this->_safe_form_data = TRUE;
 		}
-		
+
 		$this->set_fields();
 
 		// Did we end up with any errors?
-		if ($total_errors == 0)
-		{
+		if ($total_errors == 0){
 			return TRUE;
 		}
-		
+
 		// Generate the error string
-		foreach ($this->_error_array as $val)
-		{
+		foreach ($this->_error_array as $val){
 			$this->error_string .= $this->_error_prefix.$val.$this->_error_suffix."\n";
 		}
 
 		return FALSE;
 	}
-
 }
-
-?>

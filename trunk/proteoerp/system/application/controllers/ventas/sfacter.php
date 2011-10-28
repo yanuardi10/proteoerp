@@ -274,7 +274,7 @@ class sfacter extends validaciones {
 		$edit->sclitipo->pointer     = true;
 		$edit->sclitipo->insertValue = 1;
 
-		$edit->sprv = new inputField('Proveedor','sprv');
+		$edit->sprv = new inputField('C&oacute;digo','sprv');
 		$edit->sprv->size = 6;
 		$edit->sprv->maxlength=5;
 		$edit->sprv->rule='required';
@@ -697,7 +697,7 @@ class sfacter extends validaciones {
 		$data['vence']      = $fecha;
 		$data['tipo_ref']   = 'ND';
 		$data['num_ref']    = $ref_numero;
-		$data['observa1']   = 'FACTURA DE CREDITO';
+		$data['observa1']   = 'FACTURA A TERCERO';
 		$data['estampa']    = $estampa;
 		$data['hora']       = $hora;
 		$data['transac']    = $transac;
@@ -723,8 +723,8 @@ class sfacter extends validaciones {
 		$data['impuesto']   = 0;
 		$data['abonos']     = 0;
 		$data['vence']      = $fecha;
-		$data['observa1']   = 'FACTURA A CREDITO ';
-		$data['observa2']   = 'DEL CLIENTE '.$cod_cli;
+		$data['observa1']   = 'FACTURA A TERCERO ';
+		$data['observa2']   = ' CLIENTE '.$cod_cli;
 		$data['tipo_ref']   = '';
 		$data['num_ref']    = $ref_numero;
 		$data['transac']    = $transac;
