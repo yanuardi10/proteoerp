@@ -1,6 +1,6 @@
-<?php
+<?php if ( ! defined('BASEPATH')) exit('No direct script access allowed'); 
 include('common.php');
-//require_once(APPPATH.'/controllers/finanzas/gser.php');
+
 class rivc extends Controller {
 	var $titp='Retenciones de Clientes';
 	var $tits='Retenciones de Clientes';
@@ -73,13 +73,14 @@ class rivc extends Controller {
 		$grid->per_page = 40;
 
 		$grid->column_orderby('Comprobante'   ,$uri,'nrocomp','align="left"');
+		$grid->column_orderby('Anulado'       ,'anulado','anulado','align="center"');
 		$grid->column_orderby('Emisi&oacute;n','<dbdate_to_human><#emision#></dbdate_to_human>','emision','align="center"');
 		$grid->column_orderby('fecha'         ,'<dbdate_to_human><#fecha#></dbdate_to_human>'  ,'fecha','align="center"');
 		$grid->column_orderby('Cliente'       ,'cod_cli','cod_cli','align="left"');
 		$grid->column_orderby('Nombre'        ,'nombre' ,'nombre','align="left"');
 		$grid->column_orderby('RIF'           ,'rif'    ,'rif'   ,'align="left"');
 		$grid->column_orderby('Impuesto'      ,'<nformat><#impuesto#></nformat>','impuesto','align="right"');
-		$grid->column_orderby('Total'         ,'<nformat><#gtotal#></nformat>'  ,'gtotal','align="right"');
+		//$grid->column_orderby('Total'         ,'<nformat><#gtotal#></nformat>'  ,'gtotal','align="right"');
 		$grid->column_orderby('Monto Ret.'    ,'<nformat><#reiva#></nformat>'   ,'reiva','align="right"');
 
 		$grid->add($this->url.'dataedit/create');
@@ -90,440 +91,6 @@ class rivc extends Controller {
 		$data['head']    = $this->rapyd->get_head().script('jquery.js');
 		$data['title']   = heading($this->titp);
 		$this->load->view('view_ventanas', $data);
-	}
-
-	function convcxp($id){
-		$error    = 0;
-
-		$estampa  = date('Y-m-d');
-		$hora     = date('H:i:s');
-		$sp_fecha = date('Ymd');
-		$transac  = $this->datasis->fprox_numero('ntransa');
-		//$negreso  = $this->datasis->fprox_numero('negreso');
-		$cod_cli  = $this->datasis->dameval("SELECT cod_cli FROM rivc WHERE id=".$this->db->escape($id));
-		$itnumero = $this->datasis->dameval("SELECT nrocomp FROM rivc WHERE id=".$this->db->escape($id));
-		$fecha    = $this->datasis->dameval("SELECT fecha   FROM rivc WHERE id=".$this->db->escape($id));
-		$ttransac = $this->datasis->dameval("SELECT transac FROM rivc WHERE id=".$this->db->escape($id));
-		$nombre   = $this->datasis->dameval("SELECT nombre  FROM scli WHERE cliente=".$this->db->escape($cod_cli));
-		$totneto  = $this->datasis->dameval("SELECT SUM(monto*IF('ND',-1,1)) AS monto FROM smov WHERE transac='$ttransac' AND tipo_doc IN ('AN','ND') AND cod_cli=".$this->db->escape($cod_cli));
-		$usuario  = $this->session->userdata('usuario');
-
-		//Crea la ND al cliente con el monto de los anticipos
-		$mnumnd = $this->datasis->fprox_numero('ndcli');
-		$data=array();
-		$data['cod_cli']    = $cod_cli;
-		$data['nombre']     = $nombre;
-		$data['tipo_doc']   = 'ND';
-		$data['numero']     = $mnumnd;
-		$data['fecha']      = $estampa;
-		$data['monto']      = $totneto;
-		$data['impuesto']   = 0;
-		$data['abonos']     = $totneto;
-		$data['vence']      = $fecha;
-		$data['tipo_ref']   = 'RT';
-		$data['num_ref']    = $itnumero;
-		$data['observa1']   = 'NOTA DEBITO A '.$cod_cli.' POR RET. '.$itnumero;
-		$data['estampa']    = $estampa;
-		$data['hora']       = $hora;
-		$data['transac']    = $transac;
-		$data['usuario']    = $usuario;
-		$data['codigo']     = 'NOCON';
-		$data['descrip']    = 'NOTA DE CONTABILIDAD';
-
-		$mSQL = $this->db->insert_string('smov', $data);
-		$ban=$this->db->simple_query($mSQL);
-		if($ban==false){ memowrite($mSQL,'RIVC'); }
-
-		$mSQL='SELECT cod_cli,nombre,dire1,dire2,tipo_doc,numero,fecha,monto,impuesto,abonos,vence,tipo_ref,num_ref,observa1,observa2,servicio,banco,tipo_op,fecha_op,num_op,ppago,reten,codigo,descrip,control,usuario,estampa,hora,transac,origen,cambio,mora,reteiva,vendedor,nfiscal,montasa,monredu,monadic,tasa,reducida,sobretasa,exento,fecdoc,nroriva,emiriva,codcp,depto,maqfiscal,ningreso,ncredito FROM smov WHERE tipo_doc IN (\'AN\',\'ND\') AND transac='.$this->db->escape($ttransac);
-		$query = $this->db->query($mSQL);
-		if ($query->num_rows() > 0){
-			foreach ($query->result() as $rrow){
-				//Relaciona la ND con los anticipos y notas de debito
-				$data=array();
-				$data['numccli']    = $rrow->numero;
-				$data['tipoccli']   = $rrow->tipo_doc;
-				$data['cod_cli']    = $rrow->cod_cli;
-				$data['tipo_doc']   = 'ND';
-				$data['numero']     = $mnumnd;;
-				$data['fecha']      = $estampa;
-				$data['monto']      = $rrow->monto;
-				$data['abono']      = $rrow->monto;
-				$data['ppago']      = 0;
-				$data['reten']      = 0;
-				$data['cambio']     = 0;
-				$data['mora']       = 0;
-				$data['transac']    = $transac;
-				$data['estampa']    = $estampa;
-				$data['hora']       = $hora;
-				$data['usuario']    = $usuario;
-				$data['reteiva']    = 0;
-				$data['nroriva']    = '';
-				$data['emiriva']    = '';
-				$data['recriva']    = '';
-
-				$mSQL = $this->db->insert_string('itccli', $data);
-				$ban=$this->db->simple_query($mSQL);
-				if($ban==false){ memowrite($mSQL,'rivc');}
-			}
-		} 
-
-		//Crea la cuenta por pagar
-		$causado = $this->datasis->fprox_numero('ncausado');
-		$error   = 0;
-
-		$mnsprm = $this->datasis->fprox_numero('num_nd');
-		$data=array();
-		$data['cod_prv']    = 'REINT';
-		$data['nombre']     = 'REINTEGROS CLIENTES';
-		$data['tipo_doc']   = 'ND';
-		$data['numero']     = $mnsprm ;
-		$data['fecha']      = $fecha;
-		$data['monto']      = $totneto;
-		$data['impuesto']   = 0;
-		$data['abonos']     = 0;
-		$data['vence']      = $fecha;
-		$data['observa1']   = 'REINTEGRO POR RETENCION A RETENCION '.$itnumero;
-		$data['tipo_ref']   = 'RT';
-		$data['num_ref']    = $itnumero;
-		$data['transac']    = $transac;
-		$data['estampa']    = $estampa;
-		$data['hora']       = $hora;
-		$data['usuario']    = $usuario;
-		$data['reteiva']    = 0;
-		$data['montasa']    = 0;
-		$data['monredu']    = 0;
-		$data['monadic']    = 0;
-		$data['tasa']       = 0;
-		$data['reducida']   = 0;
-		$data['sobretasa']  = 0;
-		$data['exento']     = 0;
-		$data['causado']    = $causado;
-		$data['codigo']     = 'NOCON';
-		$data['descrip']    = 'NOTA DE CONTABILIDAD';
-
-		$sql=$this->db->insert_string('sprm', $data);
-		$ban=$this->db->simple_query($sql);
-		if($ban==false){ memowrite($sql,'RIVC'); $error++;}
-
-		$mSQL='SELECT cod_cli,nombre,dire1,dire2,tipo_doc,numero,fecha,monto,impuesto,abonos,vence,tipo_ref,num_ref,observa1,observa2,servicio,banco,tipo_op,fecha_op,num_op,ppago,reten,codigo,descrip,control,usuario,estampa,hora,transac,origen,cambio,mora,reteiva,vendedor,nfiscal,montasa,monredu,monadic,tasa,reducida,sobretasa,exento,fecdoc,nroriva,emiriva,codcp,depto,maqfiscal,ningreso,ncredito FROM smov WHERE tipo_doc IN (\'AN\',\'ND\') AND transac='.$this->db->escape($ttransac);
-		$query = $this->db->query($mSQL);
-		if ($query->num_rows() > 0){
-			foreach ($query->result() as $rrow){
-				//Relaciona la ND con los anticipos y notas de debito
-				$data=array();
-				$data['numccli']    = $rrow->numero;
-				$data['tipoccli']   = $rrow->tipo_doc;
-				$data['cod_cli']    = $rrow->cod_cli;
-				$data['tipo_doc']   = 'ND';
-				$data['numero']     = $mnumnd;;
-				$data['fecha']      = $estampa;
-				$data['monto']      = $rrow->monto;
-				$data['abono']      = $rrow->monto;
-				$data['ppago']      = 0;
-				$data['reten']      = 0;
-				$data['cambio']     = 0;
-				$data['mora']       = 0;
-				$data['transac']    = $transac;
-				$data['estampa']    = $estampa;
-				$data['hora']       = $hora;
-				$data['usuario']    = $usuario;
-				$data['reteiva']    = 0;
-				$data['nroriva']    = '';
-				$data['emiriva']    = '';
-				$data['recriva']    = '';
-
-				$mSQL = $this->db->insert_string('itccli', $data);
-				$ban=$this->db->simple_query($mSQL);
-				if($ban==false){ memowrite($mSQL,'rivc');}
-			}
-		} 
-
-		$sql='UPDATE smov SET abonos=monto WHERE tipo_doc IN (\'AN\',\'ND\') AND transac='.$this->db->escape($ttransac);
-		$ban=$this->db->simple_query($sql);
-		if($ban==false){ memowrite($sql,'rivc'); $error++; }
-
-		redirect('finanzas/rivc/dataedit/show/'.$id);
-	}
-
-	function reintegrar($id){
-		$nombre =$this->datasis->dameval('SELECT nombre FROM rivc WHERE id='.$this->db->escape($id));
-		$usrdata=common::_traedatausr();
-
-		$sql='SELECT TRIM(a.codbanc) AS codbanc,tbanco FROM banc AS a WHERE tbanco="CAJ"';
-		$query = $this->db->query($sql);
-		$comis=array();
-		if ($query->num_rows() > 0){
-			foreach ($query->result() as $row){
-				$ind='_'.$row->codbanc;
-				$comis[$ind]['tbanco']  =$row->tbanco;
-			}
-		}
-		$json_comis=json_encode($comis);
-
-		$script='var comis = '.$json_comis.';
-		
-		$(document).ready(function() {
-			ccargo=$("#cargo").val();
-			desactivacampo(ccargo);
-		});
-
-		function desactivacampo(codb1){
-			if(codb1.length>0){
-				eval("tbanco=comis._"+codb1+".tbanco;"  );
-				if(tbanco=="CAJ"){
-					$("#cheque").attr("disabled","disabled");
-					$("#benefi").attr("disabled","disabled");
-				}else{
-					$("#cheque").removeAttr("disabled");
-					$("#benefi").removeAttr("disabled");
-				}
-			}else{
-				$("#cheque").attr("disabled","disabled");
-				$("#benefi").attr("disabled","disabled");
-			}
-		}';
-
-		$this->rapyd->load('dataform');
-
-		$form = new DataForm('finanzas/rivc/reintegrar/'.$id.'/process');
-		$form->title(' ');
-		$form->script($script);
-
-		$form->cajero = new dropdownField('Cajero','cajero');
-		$form->cajero->option('','Seleccionar');
-		$form->cajero->insertValue=$usrdata['cajero'];
-		$form->cajero->options("SELECT cajero, CONCAT_WS('-',cajero,nombre) AS label FROM scaj ORDER BY cajero");
-		$form->cajero->rule='max_length[5]|required|callback_chcajero';
-
-		$form->clave = new inputField('Clave', 'clave');
-		$form->clave->rule='required|callback_chclave';
-		$form->clave->size=5;
-		$form->clave->type='password';
-
-		$form->cargo = new dropdownField('Con cargo a','cargo');
-		$form->cargo->option('','Seleccionar');
-		$form->cargo->options("SELECT codbanc, CONCAT_WS('-',codbanc,banco) AS label FROM banc WHERE activo='S' AND tbanco='CAJ' ORDER BY codbanc");
-		$form->cargo->onchange='desactivacampo(this.value)';
-		$form->cargo->rule='max_length[5]|required|callback_chcaja';
-
-/*
-		$form->cheque = new inputField('N&uacute;mero de cheque', 'cheque');
-		$form->cheque->rule='condi_required|callback_chobligaban';
-		$form->cheque->append('Aplica  solo si el cargo es a un banco');
-
-		$form->benefi = new inputField('Beneficiario', 'benefi');
-		$form->benefi->insertValue=$nombre;
-		$form->benefi->rule='condi_required|callback_chobligaban';
-		$form->benefi->append('Aplica  solo si el cargo es a un banco');
-*/
-
-		$action = "javascript:window.location='".site_url('finanzas/rivc/dataedit/show/'.$id)."'";
-		$form->button('btn_regresa', 'Regresar', $action, 'TR');
-
-		$form->submit('btnsubmit','Procesar');
-		$form->build_form();
-
-		if ($form->on_success()){
-			$error    = 0;
-			//$numeroch = str_pad($form->cheque->newValue, 12, '0', STR_PAD_LEFT);
-			$codbanc  = $form->cargo->newValue;
-			$numeroch = $this->datasis->fprox_numero('ncaja'.$codbanc);
-			$datacar  = common::_traebandata($form->cargo->newValue);
-			$estampa  = date('Y-m-d');
-			$hora     = date('H:i:s');
-			$sp_fecha = date('Ymd');
-			$ttipo    = $datacar['tbanco'];
-			$moneda   = $datacar['moneda'];
-			$transac  = $this->datasis->fprox_numero('ntransa');
-
-			$cod_cli  = $this->datasis->dameval("SELECT cod_cli FROM rivc WHERE id=".$this->db->escape($id));
-			$ttransac = $this->datasis->dameval("SELECT transac FROM rivc WHERE id=".$this->db->escape($id));
-			$comprob  = $this->datasis->dameval("SELECT CONCAT(periodo,nrocomp) AS val FROM rivc WHERE id=".$this->db->escape($id));
-			$totneto  = $this->datasis->dameval("SELECT SUM(monto*IF('ND',-1,1)) AS monto FROM smov WHERE transac='$ttransac' AND tipo_doc IN ('AN','ND') AND cod_cli=".$this->db->escape($cod_cli));
-			$itnumero = $this->datasis->dameval("SELECT nrocomp FROM rivc WHERE id=".$this->db->escape($id));
-			//$fecha    = $this->datasis->dameval("SELECT fecha   FROM rivc WHERE id=".$this->db->escape($id));
-			$nombre   = $this->datasis->dameval("SELECT nombre  FROM scli WHERE cliente=".$this->db->escape($cod_cli));
-			$usuario  = $this->session->userdata('usuario');
-
-			//Crea la ND al cliente con el monto de los anticipos
-			$mnumnd = $this->datasis->fprox_numero('ndcli');
-			$data=array();
-			$data['cod_cli']    = $cod_cli;
-			$data['nombre']     = $nombre;
-			$data['tipo_doc']   = 'ND';
-			$data['numero']     = $mnumnd;
-			$data['fecha']      = $estampa;
-			$data['monto']      = $totneto;
-			$data['impuesto']   = 0;
-			$data['abonos']     = $totneto;
-			$data['vence']      = $estampa;
-			$data['tipo_ref']   = 'RT';
-			$data['num_ref']    = $itnumero;
-			$data['observa1']   = 'REINTEGRO POR CAJA '.$codbanc.' NUMERO '.$numeroch;
-			$data['estampa']    = $estampa;
-			$data['hora']       = $hora;
-			$data['transac']    = $transac;
-			$data['usuario']    = $usuario;
-			$data['codigo']     = 'NOCON';
-			$data['descrip']    = 'NOTA DE CONTABILIDAD';
-
-			$mSQL = $this->db->insert_string('smov', $data);
-			$ban=$this->db->simple_query($mSQL);
-			if($ban==false){ memowrite($mSQL,'rivc'); }
-
-			$mSQL='SELECT cod_cli,nombre,dire1,dire2,tipo_doc,numero,fecha,monto,impuesto,abonos,vence,tipo_ref,num_ref,observa1,observa2,servicio,banco,tipo_op,fecha_op,num_op,ppago,reten,codigo,descrip,control,usuario,estampa,hora,transac,origen,cambio,mora,reteiva,vendedor,nfiscal,montasa,monredu,monadic,tasa,reducida,sobretasa,exento,fecdoc,nroriva,emiriva,codcp,depto,maqfiscal,ningreso,ncredito FROM smov WHERE tipo_doc IN (\'AN\',\'ND\') AND transac='.$this->db->escape($ttransac);
-			$query = $this->db->query($mSQL);
-			if ($query->num_rows() > 0){
-				foreach ($query->result() as $rrow){
-					//Relaciona la ND con los anticipos y notas de debito
-					$data=array();
-					$data['numccli']    = $rrow->numero;
-					$data['tipoccli']   = $rrow->tipo_doc;
-					$data['cod_cli']    = $rrow->cod_cli;
-					$data['tipo_doc']   = 'ND';
-					$data['numero']     = $mnumnd;;
-					$data['fecha']      = $estampa;
-					$data['monto']      = $rrow->monto;
-					$data['abono']      = $rrow->monto;
-					$data['ppago']      = 0;
-					$data['reten']      = 0;
-					$data['cambio']     = 0;
-					$data['mora']       = 0;
-					$data['transac']    = $transac;
-					$data['estampa']    = $estampa;
-					$data['hora']       = $hora;
-					$data['usuario']    = $usuario;
-					$data['reteiva']    = 0;
-					$data['nroriva']    = '';
-					$data['emiriva']    = '';
-					$data['recriva']    = '';
-
-					$mSQL = $this->db->insert_string('itccli', $data);
-					$ban=$this->db->simple_query($mSQL);
-					if($ban==false){ memowrite($mSQL,'rivc');}
-				}
-			}//Fin de relacion 
-
-			$data=array();
-			$data['codbanc']    = $form->cargo->newValue;
-			$data['tipo_op']    = 'D';
-			$data['numche']     = $numeroch;
-
-			$where=array('id'=>$id);
-
-			$mSQL = $this->db->update_string('rivc', $data,$where);
-			$ban=$this->db->simple_query($mSQL);
-			if($ban==false){ memowrite($mSQL,'rivc'); }
-
-			$tipo1  = ($ttipo=='CAJ') ? 'D': 'C';
-			$negreso= $this->datasis->fprox_numero('negreso');
-			$credito= 0;
-			$causado= '';
-			$tipo_op= ($ttipo=='CAJ') ? 'ND': 'CH';
-
-			$data=array();
-			$data['codbanc']    = $codbanc;
-			$data['moneda']     = $moneda;
-			$data['numcuent']   = $datacar['numcuent'];
-			$data['banco']      = $datacar['banco'];
-			$data['saldo']      = $datacar['saldo'];
-			$data['tipo_op']    = $tipo_op;
-			$data['numero']     = $numeroch;
-			$data['fecha']      = date('Y-m-d');
-			$data['clipro']     = 'C';
-			$data['codcp']      = $cod_cli;
-			$data['nombre']     = $nombre;
-			$data['monto']      = $totneto;
-			$data['concepto']   = 'REINTEGRO DE RETENCION DE IVA '.$comprob;
-			$data['benefi']     = $form->benefi->newValue;
-			$data['posdata']    = '';
-			$data['abanco']     = '';
-			$data['liable']     = ($ttipo=='CAJ') ? 'S': 'N';;
-			$data['transac']    = $transac;
-			$data['usuario']    = $usuario;
-			$data['estampa']    = $estampa;
-			$data['hora']       = $hora;
-			$data['anulado']    = 'N';
-			$data['susti']      = '';
-			$data['negreso']    = $negreso;
-
-			$sql=$this->db->insert_string('bmov', $data);
-			$ban=$this->db->simple_query($sql);
-			if($ban==false){ memowrite($sql,'rivc'); $error++;}
-
-			$sql='CALL sp_actusal('.$this->db->escape($codbanc).",'$sp_fecha',-$totneto)";
-			$ban=$this->db->simple_query($sql);
-			if($ban==false){ memowrite($sql,'rivc'); $error++; }
-
-			$sql='UPDATE smov SET abonos=monto WHERE tipo_doc IN (\'AN\',\'ND\') AND transac='.$this->db->escape($ttransac);
-			$ban=$this->db->simple_query($sql);
-			if($ban==false){ memowrite($sql,'rivc'); $error++; }
-
-			$data = array('name' => $name, 'email' => $email, 'url' => $url);
-
-			$ddata=array(
-					'codbanc' => $codbanc,
-					'tipo_op' => $tipo_op,
-					'numche'  => $numeroch
-					);
-			$sql = $this->db->update_string('rivc', $ddata,'id='.$this->db->escape($id));
-			$ban=$this->db->simple_query($sql);
-			if($ban==false){ memowrite($sql,'rivc'); $error++; }
-
-			redirect('finanzas/rivc/dataedit/show/'.$id);
-		}
-
-		$data['content'] = $form->output;
-		$data['head']    = $this->rapyd->get_head().script('jquery.js');
-		$data['title']   = heading($this->titp);
-		$this->load->view('view_ventanas', $data);
-	}
-
-	function chcajero($cajero){
-		$op=$this->input->post('operacion');
-		if($op=='R' && empty($cajero)){
-			$this->validation->set_message('chcajero', 'El campo %s es obligatorio cuando la operaci&oacute;n es reintegro');
-			return false;
-		}
-		return true;
-	}
-
-	function chcaja($caja){
-		$op=$this->input->post('operacion');
-		if($op=='R' && empty($caja)){
-			$this->validation->set_message('chcajero', 'El campo %s es obligatorio cuando la operaci&oacute;n es reintegro');
-			return false;
-		}
-		return true;
-	}
-
-	function chobligaban($val){
-		$ban=$this->input->post('cargo');
-		$tipo=common::_traetipo($ban);
-		if($tipo!='CAJ'){
-			if(empty($val)){
-				$this->validation->set_message('chobligaban', 'El campo %s es obligatorio cuando el cargo es a un banco');
-				return false;
-			}
-		}
-		return true;
-	}
-
-	function chclave($clave){
-		$cajero  = $this->input->post('cajero');
-		$dbclave = $this->db->escape($clave);
-		$dbcajero= $this->db->escape($cajero);
-		$op=$this->input->post('operacion');
-
-		if(empty($cajero) || $op!='R'){
-			return true;
-		}
-		$ch    = $this->datasis->dameval("SELECT COUNT(*) FROM scaj WHERE cajero=$dbcajero AND clave=$dbclave");
-		if($ch>0){
-			return true;
-		}
-		$this->validation->set_message('chclave', 'Clave o cajeo inv&aacute;lido');
-		return false;
 	}
 
 	function dataedit(){
@@ -547,7 +114,7 @@ class rivc extends Controller {
 		$edit->pre_process('delete','_pre_delete');
 
 		$edit->nrocomp = new inputField('Comprobante','nrocomp');
-		$edit->nrocomp->rule='max_length[8]|callback_chdupli|required';
+		$edit->nrocomp->rule='max_length[8]|required';
 		$edit->nrocomp->size =10;
 		$edit->nrocomp->maxlength =8;
 		$edit->nrocomp->autocomplete = false;
@@ -570,7 +137,7 @@ class rivc extends Controller {
 		$edit->fecha->maxlength =8;
 
 		$edit->cod_cli = new inputField('Cliente','cod_cli');
-		$edit->cod_cli->rule='max_length[5]|required|strtoupper';
+		$edit->cod_cli->rule='max_length[5]|required|strtoupper|existescli';
 		$edit->cod_cli->size =10;
 		//$edit->cod_cli->maxlength =5;
 
@@ -738,7 +305,7 @@ class rivc extends Controller {
 
 		$edit->it_reiva = new inputField('reiva','reiva_<#i#>');
 		$edit->it_reiva->db_name='reiva';
-		$edit->it_reiva->rule='max_length[15]|mayorcero|numeric';
+		$edit->it_reiva->rule='max_length[15]|nocero|numeric';
 		$edit->it_reiva->css_class='inputnum';
 		$edit->it_reiva->size =17;
 		$edit->it_reiva->maxlength =15;
@@ -749,19 +316,6 @@ class rivc extends Controller {
 		//****************************
 		//Fin del Detalle
 		//****************************
-
-		/*$edit->cajero = new dropdownField('Cajero','cajero');
-		$edit->cajero->option('','Seleccionar');
-		$edit->cajero->insertValue=$usrdata['cajero'];
-		$edit->cajero->options("SELECT cajero, CONCAT_WS('-',cajero,nombre) AS label FROM scaj ORDER BY cajero");
-		$edit->cajero->rule='max_length[5]|condi_required|callback_chcajero';
-		$edit->cajero->style='width:200px;';
-
-		$edit->clave = new inputField('Clave', 'clave');
-		$edit->clave->rule='condi_required|callback_chclave';
-		$edit->clave->size=5;
-		$edit->clave->when=array('create');
-		$edit->clave->type='password';*/
 
 		$edit->codbanc = new dropdownField('Caja','codbanc');
 		$edit->codbanc->option('','Seleccionar');
@@ -792,11 +346,11 @@ class rivc extends Controller {
 			}
 		}*/
 
+		//$edit->buttons('save', 'undo','delete', 'back','add_rel');
 		$edit->buttons('save', 'undo', 'back','add_rel');
 		$edit->build();
 
-		//$data['content'] = $edit->output;
-		$conten['form'] =& $edit;
+		$conten['form']  =& $edit;
 		$data['content'] = $this->load->view('view_rivc', $conten,true);
 		$data['head']    = $this->rapyd->get_head();
 		$data['head']   .= script('jquery.js');
@@ -809,6 +363,9 @@ class rivc extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
+	//*****************************
+	// Metodos de chequeo
+	//*****************************
 	function chrepetidos($numero){
 		if(!isset($this->ch_repetido)) $this->ch_repetido=array();
 
@@ -819,6 +376,15 @@ class rivc extends Controller {
 			$this->validation->set_message('chrepetidos', 'La factura '.$numero.' esta repetida');
 			return false;
 		}
+	}
+
+	function chcajero($cajero){
+		$op=$this->input->post('operacion');
+		if($op=='R' && empty($cajero)){
+			$this->validation->set_message('chcajero', 'El campo %s es obligatorio cuando la operaci&oacute;n es reintegro');
+			return false;
+		}
+		return true;
 	}
 
 	function chfac($numero,$ind){
@@ -851,6 +417,58 @@ class rivc extends Controller {
 		return true;
 	}
 
+	function chcaja($caja){
+		$op=$this->input->post('operacion');
+		if($op=='R' && empty($caja)){
+			$this->validation->set_message('chcajero', 'El campo %s es obligatorio cuando la operaci&oacute;n es reintegro');
+			return false;
+		}
+		return true;
+	}
+
+	function chobligaban($val){
+		$ban=$this->input->post('cargo');
+		$tipo=common::_traetipo($ban);
+		if($tipo!='CAJ'){
+			if(empty($val)){
+				$this->validation->set_message('chobligaban', 'El campo %s es obligatorio cuando el cargo es a un banco');
+				return false;
+			}
+		}
+		return true;
+	}
+
+	function chclave($clave){
+		$cajero  = $this->input->post('cajero');
+		$dbclave = $this->db->escape($clave);
+		$dbcajero= $this->db->escape($cajero);
+		$op=$this->input->post('operacion');
+
+		if(empty($cajero) || $op!='R'){
+			return true;
+		}
+		$ch    = $this->datasis->dameval("SELECT COUNT(*) FROM scaj WHERE cajero=$dbcajero AND clave=$dbclave");
+		if($ch>0){
+			return true;
+		}
+		$this->validation->set_message('chclave', 'Clave o cajeo inv&aacute;lido');
+		return false;
+	}
+
+	function chdupli($numero){
+		$scli=$this->input->post('cod_cli');
+		$mSQL='SELECT COUNT(*) FROM rivc WHERE nrocomp='.$this->db->escape($numero).' AND cod_cli='.$this->db->escape($scli);
+		$cana=$this->datasis->dameval($mSQL);
+		if($cana >0 ){
+			$this->validation->set_message('chdupli', 'Ya existe un registro guardado con el mismo numero de comprobante y al mismo cliente.');
+			return false;
+		}
+		return true;
+	}
+
+	//*****************************
+	//Metodos para autocomplete
+	//*****************************
 	function buscasfac(){
 		$mid   = $this->input->post('q');
 		$scli  = $this->input->post('scli');
@@ -890,24 +508,13 @@ class rivc extends Controller {
 					array_push($retorno, $retArray);
 				}
 				$data = json_encode($retorno);
-	        }else{
+			}else{
 				$retArray[0]['label']   = 'No se consiguieron facturas para aplicar';
 				$retArray[0]['value']   = '';
 				$data = json_encode($retArray);
 			}
 		}
 		echo $data;
-	}
-
-	function chdupli($numero){
-		$scli=$this->input->post('cod_cli');
-		$mSQL='SELECT COUNT(*) FROM rivc WHERE nrocomp='.$this->db->escape($numero).' AND cod_cli='.$this->db->escape($scli);
-		$cana=$this->datasis->dameval($mSQL);
-		if($cana >0 ){
-			$this->validation->set_message('chdupli', 'Ya existe un registro guardado con el mismo numero de comprobante y al mismo cliente.');
-			return false;
-		}
-		return true;
 	}
 
 	function buscascli(){
@@ -963,6 +570,9 @@ class rivc extends Controller {
 		return true;
 	}
 
+	//*****************************
+	//    Prey-Pos procesos
+	//*****************************
 	function _pre_insert($do){
 		$transac = $this->datasis->fprox_numero('ntransa');
 		$do->set('transac', $transac);
@@ -1055,52 +665,101 @@ class rivc extends Controller {
 	}
 
 	function _pre_update($do){
-		return true;
+		return false;
 	}
 
 	function _pre_delete($do){
-		$id=$do->get('id');
-		$cod_cli   = $do->get('cod_cli');
+		$id        = $do->get('id');
 		$transac   = $do->get('transac');
-		$dbcod_cli = $this->db->escape($cod_cli ); 
-		$dbid      = $this->db->escape($id);
-		$dbtransac = $this->db->escape($transac);
+		$sprmreinte= $do->get('sprmreinte');
+		$error=0;
 
-		$mSQL="SELECT SUM(monto-abonos) abonos
-		FROM  rivc a
-		JOIN itrivc b  ON a.id=b.idrivc
-		JOIN smov c ON b.transac=c.transac
-		WHERE a.id=$dbid AND c.tipo_doc='AN'";
-		$xabono=$this->datasis->dameval($mSQL);
+		$dbtransac= $this->db->escape($transac);
+		$mSQL="SELECT a.cod_cli,a.nombre,a.tipo_doc,a.numero,a.fecha,a.monto,a.impuesto,a.abonos,a.vence,a.tipo_ref,a.num_ref,a.fecdoc,a.nroriva,a.ningreso FROM smov AS a WHERE transac=$dbtransac";
+		$query = $this->db->query($mSQL);
 
-		if($xabono > 0 ){
-			$rel='itrivc';
-			$cana = $do->count_rel($rel);
-			for($i = 0;$i < $cana;$i++){
-				$ittipo_doc  = $do->get_rel($rel, 'tipo_doc', $i);
-				$itnumero    = $do->get_rel($rel, 'numero'  , $i);
-				$itmonto     = $do->get_rel($rel, 'reiva'   , $i);
+		$sqls=array();
+		//Reversa los cruces, anticipos y notas de debito
+		foreach ($query->result() as $row){
+			$dbcod_cli = $this->db->escape($row->cod_cli);
+			$dbtipo_doc= $this->db->escape($row->tipo_doc);
+			$dbnumero  = $this->db->escape($row->numero);
+			$dbfecha   = $this->db->escape($row->fecha);
+			$ww = "cod_cli=$dbcod_cli AND tipo_doc=$dbtipo_doc AND numero=$dbnumero AND fecha=$dbfecha AND transac=$dbtransac";
 
-				$dbitnumero  =$this->db->escape($itnumero);
-				$dbittipo_doc=$this->db->escape($ittipo_doc);
+			if($row->tipo_doc=='NC'){
+				$mmSQL="SELECT numccli,tipoccli,monto FROM itccli WHERE numero=$dbnumero AND  fecha=$dbfecha AND tipo_doc='NC' AND cod_cli=$dbcod_cli AND tipoccli='FC'";
+				$qquery = $this->db->query($mmSQL);
 
-				$mSQL = "UPDATE sfac SET reiva=0, creiva=NULL, freiva=NULL, ereiva=NULL WHERE numero=${dbitnumero} AND tipo_doc=${dbittipo_doc}";
-				$ban=$this->db->simple_query($mSQL);
-				if($ban==false){ memowrite($mSQL,'RIVC'); }
+				if ($qquery->num_rows() > 0){
+					foreach ($qquery->result() as $rrow){
+						$dbitnumero   = $this->db->escape($rrow->numccli);
+						$dbittipo_doc = $this->db->escape($rrow->tipoccli);
+						$itmonto      = $rrow->monto;
+						$tiposfac     = 'FC';
 
-				// Desabona la factura
-				$tiposfac = ($ittipo_doc=='D')? $tiposfac = 'NC':'FC';
-				$mSQL = "UPDATE smov SET abonos=abonos-$itmonto WHERE numero=${dbitnumero}  AND cod_cli=${dbcod_cli} AND tipo_doc='${tiposfac}'";
-				$ban=$this->db->simple_query($mSQL);
-				if($ban==false){ memowrite($mSQL,'rivc'); }
-
-				//Eliminas los movimientos relacionados
-				$mSQL="DELETE FROM smov WHERE transac=${dbtransac}";
-				$ban=$this->db->simple_query($mSQL);
-				if($ban==false){ memowrite($mSQL,'rivc'); }
+						$sqls[] = "UPDATE sfac SET reiva=0, creiva=NULL, freiva=NULL, ereiva=NULL WHERE numero=${dbitnumero} AND tipo_doc=${dbittipo_doc} AND transac=${dbtransac}";
+						$sqls[] = "UPDATE smov SET abonos=abonos-$itmonto WHERE numero=${dbitnumero}  AND cod_cli=${dbcod_cli} AND tipo_doc='${tiposfac}' AND transac=${dbtransac}";
+					}
+				}
+			}elseif($row->tipo_doc=='AN'){
+				//Chequea que los anticipos no se hallan aplicado
+				if($row->abonos>0){
+					$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='Algunos de los movimientos asociados han sido aplicados, debe reversarlos antes de proceder';
+					return false;
+				}
+			}elseif($row->tipo_doc=='ND'){
+				//Chequea que las notas de debito no esten aplicadas
+				if($row->abonos>0){
+					$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='Algunos de los movimientos asociados han sido aplicados, debe reversarlos antes de proceder';
+					return false;
+				}
 			}
+			$sqls[]="DELETE FROM smov WHERE $ww";
+		}
 
-			return true;
+		//Reversa la cuenta por pagar (Si la hubo)
+		if(!empty($sprmreinte)){
+			$dbsprmreinte=$this->db->escape($sprmreinte);
+			//Chequea que no este abonado
+			$abonos=$this->datasis->dameval("SELECT abonos FROM sprm WHERE numero=${dbsprmreinte} AND transac=$dbtransac");
+			if($abonos>0){
+				$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='Algunos de los movimientos asociados han sido aplicados, debe reversarlos antes de proceder';
+				return false;
+			}
+			$sqls[]="DELETE FROM sprm WHERE numero=${dbsprmreinte} AND transac=$dbtransac";
+		}
+
+		//Reversa el reintegro (Si lo hubo)
+		$mmSQL="SELECT codbanc,monto FROM bmov WHERE transac=$dbtransac AND clipro='C'";
+		$qquery = $this->db->query($mmSQL);
+
+		if ($qquery->num_rows() > 0){
+			foreach ($qquery->result() as $rrow){
+				$codbanc    = $rrow->codbanc;
+				$sp_fecha   = date('Ymd');
+				$monto      = $rrow->monto;
+
+				$dbcodbanc  = $this->db->escape($codbanc);
+				$sqls[]="DELETE FROM bmov WHERE transac=$dbtransac AND clipro='C'";
+				$sqls[]="CALL sp_actusal($dbcodbanc,'$sp_fecha',$monto)";
+			}
+		}
+		$sqls[]="UPDATE rivc SET anulado='S' WHERE id=".$this->db->escape($id);
+
+		foreach($sqls as $sql){
+			//echo "$sql \n";
+			$ban=$this->db->simple_query($sql);
+			if($ban==false){
+				$error++;
+				memowrite($sql,'rivc');
+			}
+		}
+
+		if($error>0){
+			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='Hubo problemas en la trasaccion, se generar&acute;n centinelas';
+		}else{
+			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='Retencion anulada';
 		}
 		return false;
 	}
@@ -1160,7 +819,7 @@ class rivc extends Controller {
 			if($anterior == 0) {
 				$mSQL = "UPDATE sfac SET reiva=${itmonto}, creiva='${periodo}${numero}', freiva='${fecha}', ereiva='${efecha}' WHERE numero=${dbitnumero} AND tipo_doc=${dbittipo_doc}";
 				$ban=$this->db->simple_query($mSQL);
-				if($ban==false){ memowrite($mSQL,'RIVC'); }
+				if($ban==false){ memowrite($mSQL,'rivc'); }
 			}
 
 			//Chequea si es credito y si tiene saldo
@@ -1205,7 +864,7 @@ class rivc extends Controller {
 
 					$mSQL = $this->db->insert_string('smov', $data);
 					$ban=$this->db->simple_query($mSQL);
-					if($ban==false){ memowrite($mSQL,'RIVC'); }
+					if($ban==false){ memowrite($mSQL,'rivc'); }
 
 					//Aplica la nc a la fc
 					$data=array();
@@ -1214,7 +873,7 @@ class rivc extends Controller {
 					$data['cod_cli']    = $cod_cli;
 					$data['tipo_doc']   = 'NC';
 					$data['numero']     = $mnumnc;
-					$data['fecha']      = $estampa;
+					$data['fecha']      = $fecha;
 					$data['monto']      = $itmonto;
 					$data['abono']      = $itmonto;
 					$data['ppago']      = 0;
@@ -1450,7 +1109,6 @@ class rivc extends Controller {
 		}
 
 		logusu($do->table,"Creo $this->tits $primary ");
-//exit();
 		return true;
 	}
 
@@ -1464,7 +1122,7 @@ class rivc extends Controller {
 		$nrocomp = $do->get('nrocomp');
 
 		$primary =implode(',',$do->pk);
-		logusu($do->table,"Elimino $this->tits $primary  ${periodo }${nrocomp}");
+		logusu($do->table,"Anulo $this->tits $primary  ${periodo }${nrocomp}");
 	}
 
 	function instalar(){
@@ -1503,7 +1161,6 @@ class rivc extends Controller {
 			`numche` varchar(12) DEFAULT NULL,
 			`sprmreinte` varchar(8) DEFAULT NULL,
 			PRIMARY KEY (`id`),
-			UNIQUE KEY `nrocomp_clipro` (`nrocomp`,`cod_cli`),
 			KEY `modificado` (`modificado`)
 			) ENGINE=MyISAM DEFAULT CHARSET=latin1 ROW_FORMAT=FIXED";
 			$this->db->simple_query($mSQL);
@@ -1511,6 +1168,11 @@ class rivc extends Controller {
 
 		if (!$this->db->field_exists('operacion', 'rivc')){
 			$mSQL="ALTER TABLE rivc ADD COLUMN operacion CHAR(1) NOT NULL AFTER sprmreinte";
+			$this->db->simple_query($mSQL);
+		}
+
+		if (!$this->db->field_exists('anulado', 'rivc')){
+			$mSQL="ALTER TABLE `rivc`  ADD COLUMN `anulado` CHAR(1) NULL DEFAULT 'N' AFTER `operacion`";
 			$this->db->simple_query($mSQL);
 		}
 

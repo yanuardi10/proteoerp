@@ -450,7 +450,7 @@ function del_itspre(id){
 			</fieldset>
 		</td><td>
 			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
-			<legend class="titulofieldset" style='color: #114411;'>Proveedor</legend>
+			<legend class="titulofieldset" style='color: #114411;'>Tercero</legend>
 			<table width="100%" style="margin: 0; width: 100%;">
 			<tr>
 				<td class="littletableheader"><?php echo $form->sprv->label;  ?>*&nbsp;</td>

@@ -21,6 +21,7 @@ $campos=$form->js_escape($scampos);
 if(isset($form->error_string)) echo '<div class="alert">'.$form->error_string.'</div>';
 
 echo $form_begin;
+$anulado='N';
 if($form->_status!='show'){ ?>
 
 <script language="javascript" type="text/javascript">
@@ -187,7 +188,7 @@ function autocod(id){
 	});
 }
 </script>
-<?php } ?>
+<?php }else $anulado=$form->get_from_dataobjetct('anulado'); ?>
 
 <table width='100%' align='center'>
 
@@ -208,7 +209,7 @@ function autocod(id){
 		<td>
 			<table width="100%"  style="margin:0;width:100%;" cellspacing='2' cellpadding='2'>
 				<tr>
-					<td colspan=11 class="littletableheader">Encabezado</td>
+					<td colspan=11 class="littletableheader"><?php echo ($anulado=='S')? '<b style=\'color:red;\'>Documento Anulado<b>' : 'Encabezado'; ?></td>
 				</tr>
 				<tr>
 					<td>
