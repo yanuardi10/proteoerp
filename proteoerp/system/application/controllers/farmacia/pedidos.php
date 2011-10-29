@@ -40,6 +40,7 @@ class Pedidos extends Controller {
 		$filter->fecha->db_name ='a.fecha';
 		$filter->fecha->size    =10;
 		$filter->fecha->operator='=';
+		$filter->fecha->rule='required';
 		$filter->fecha->insertValue=date('Y-m-d');
 
 		$filter->buttons('reset','search');
@@ -78,7 +79,13 @@ class Pedidos extends Controller {
 		$grid->column_orderby('Pedido','pedir','cana','align=\'right\'');
 
 		$grid->build();
-		//echo $grid->db->last_query();
+
+		if($grid->recordCount>0){
+			$tabla=$grid->output.form_submit('mysubmit', 'Mandar pedido a FarmaSIS');
+			//echo $grid->db->last_query();
+		}else{
+			$tabla='';
+		}
 
 		$script ='<script type="text/javascript">
 		$(document).ready(function() {
@@ -93,7 +100,7 @@ class Pedidos extends Controller {
 		});</script>';
 
 		$data['content'] = $filter->output;
-		$data['content'].= form_open('farmacia/pedidos/guardapedido',array('id'=>'apedir')).$grid->output.form_submit('mysubmit', 'Mandar pedido a FarmaSIS').form_close();
+		$data['content'].= form_open('farmacia/pedidos/guardapedido',array('id'=>'apedir')).$tabla.form_close();
 		$data['script']  = $script;
 		$data['head']    = script('jquery-1.2.6.pack.js');
 		$data['head']   .= script('plugins/jquery.checkboxes.pack.js');
