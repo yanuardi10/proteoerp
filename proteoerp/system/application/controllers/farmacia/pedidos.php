@@ -26,7 +26,7 @@ class Pedidos extends Controller {
 			);*/
 
 		$filter = new DataFilter('Productos vendidos en el d&iacute;a');
-		$filter->db->select(array('a.codigoa','b.barras','a.desca', 'SUM(a.cana) AS venta','d.exmax - d.existen AS pedir','d.exmin','d.exmax','d.existen'));
+		$filter->db->select(array('a.codigoa','b.barras','a.desca', 'SUM(a.cana) AS venta','d.exmax - IF(d.existen<0,0,d.existen) AS pedir','d.exmin','d.exmax','d.existen'));
 		$filter->db->from('sitems AS a');
 		$filter->db->join('farmaxasig AS b','a.codigoa=b.abarras');
 		$filter->db->join('sinv AS d','a.codigoa=d.codigo');
@@ -56,19 +56,24 @@ class Pedidos extends Controller {
 			return form_checkbox($data);
 		}
 
+		function pinta($cana){
+			$ncana=nformat($cana);
+			return ($cana<0)? "<b style='color:red'>$ncana</b>": $ncana;
+		}
+
 		$seltod='Seleccionar <a id="todos" href=# >Todos</a> <a id="nada" href=# >Ninguno</a> <a id="alter" href=# >Invertir</a>';
 
 		$grid = new DataGrid($seltod);
-		$grid->use_function('descheck');
+		$grid->use_function('descheck','pinta');
 		$grid->order_by('desca','asc');
 		$grid->per_page = 300;
 
 		//$grid->column_orderby('C&oacute;digo','codigoa','control');
 		$grid->column('Pedir' ,'<descheck><#barras#>|<#pedir#></descheck>');
-		$grid->column_orderby('Barras en proveedor'  ,'barras','barras');
+		$grid->column_orderby('Barras'  ,'barras','barras');
 		$grid->column_orderby('Descripci&oacute;n'   ,'desca','desca');
 		$grid->column_orderby('Venta','<nformat><#venta#></nformat>','venta','align=\'right\'');
-		$grid->column_orderby('Existencia','<nformat><#existen#></nformat>','existen','align=\'right\'');
+		$grid->column_orderby('Existencia','<pinta><#existen#></pinta>','existen','align=\'right\'');
 		$grid->column('Rango' ,'<nformat><#exmin#></nformat>-<nformat><#exmax#></nformat>' ,'align=\'center\'');
 		$grid->column_orderby('Pedido','pedir','cana','align=\'right\'');
 
