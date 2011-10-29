@@ -75,10 +75,10 @@ class sitemslog extends Controller {
 			$grid->column_orderby('Usuario'    ,'usuario' ,'usuario'  );
 			$grid->build();
 			$tabla=$grid->output;
-			//echo $grid->db->last_query();
-			$sq=base64_encode($this->encrypt->encode($grid->db->last_query()));
+
+			$sq=preg_replace('/LIMIT +[0-9]+[, ]*[0-9]*/', '', $grid->db->last_query());
+			$sq=base64_encode($this->encrypt->encode($sq));
 			$tabla .= anchor('xlsauto/repo64/'.$sq,'Descargar a Excell');
-			//echo $grid->db->last_query();
 		}else{
 			$tabla='';
 		}
