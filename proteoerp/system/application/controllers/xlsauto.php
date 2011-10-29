@@ -30,7 +30,12 @@ class xlsauto extends Controller{
 	}
 
 	function repo64($mSQL=null){
-		if(empty($mSQL)) $mSQL=$this->input->get_post('mSQL');
+		if(empty($mSQL)){
+			$mSQL=$this->input->get_post('mSQL');
+		}else{
+			$mSQL = str_replace("-porce-","%", $mSQL);
+			$mSQL = urldecode($mSQL);
+		}
 		if($mSQL===false) return false;
 
 		$this->load->library('encrypt');
