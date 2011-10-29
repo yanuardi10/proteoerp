@@ -76,8 +76,8 @@ class sitemslog extends Controller {
 			$grid->build();
 			$tabla=$grid->output;
 
-			$sq=preg_replace('/LIMIT +[0-9]+[, ]*[0-9]*/', '', $grid->db->last_query());
-			$sq=base64_encode($this->encrypt->encode($sq));
+			$sq = preg_replace('/LIMIT +[0-9]+[, ]*[0-9]*/', '', $grid->db->last_query());
+			$sq = raencode(base64_encode($this->encrypt->encode($sq)));
 			$tabla .= anchor('xlsauto/repo64/'.$sq,'Descargar a Excell');
 		}else{
 			$tabla='';
