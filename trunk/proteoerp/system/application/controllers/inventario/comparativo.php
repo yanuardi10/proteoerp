@@ -1,15 +1,15 @@
 <?php
 
-//*********************
-// Estadisticas a usar
-//*********************
+//**********************************
+// Estadisticas a usar para minimos
+//**********************************
 function promediot($param){
 	if(is_array($param)){
 		$data=$param;
 	}else{
 		$data= func_get_args();
 	}
-	
+
 	$valor=array_sum($data)-min($data)-max($data);
 	return ceil($valor/(count($data)-2));
 }
@@ -59,7 +59,18 @@ function mediana($param){
 	}
 	return $rt;
 }
+
+//**********************************
+// Estadisticas a usar para maximos
+//**********************************
+function max_dupli($min){
+	return $min*2;
+}
 //Fin de las estadisticas
+
+function divisor($divide,$divisor=1){
+	return ceil($divide/$divisor);
+}
 
 class Comparativo extends Controller {
 
@@ -246,12 +257,18 @@ class Comparativo extends Controller {
 		//$filter->estadistica->option('moda'     ,'Moda');
 		$filter->estadistica->group='Configuraci&oacute;n';
 
-		/*$filter->frecuencia = new dropdownField('Frecuencia', 'frecuencia');
+		$filter->maximos = new dropdownField('C&aacute;lculo de m&aacute;ximos', 'maximos');
+		$filter->maximos->clause='';
+		$filter->maximos->option('','No alterar');
+		$filter->maximos->option('max_dupli','Doble del m&iacute;nimo');
+		$filter->maximos->group='Configuraci&oacute;n';
+
+		$filter->frecuencia = new dropdownField('Frecuencia', 'frecuencia');
 		$filter->frecuencia->clause= '';
 		$filter->frecuencia->rule  = 'required';
-		$filter->frecuencia->option('mensual' ,'Mensual');
-		$filter->frecuencia->option('semanal' ,'Semanal');
-		$filter->frecuencia->group='Configuraci&oacute;n';*/
+		$filter->frecuencia->option('1' ,'Mensual');
+		$filter->frecuencia->option('4' ,'Semanal');
+		$filter->frecuencia->group='Configuraci&oacute;n';
 
 		$filter->buttons('reset','search');
 
@@ -265,6 +282,8 @@ class Comparativo extends Controller {
 		$tabla='';
 		if ($filter->is_valid()){
 			$estadistica=$filter->estadistica->newValue;
+			$maximos    =$filter->maximos->newValue;
+			$frecuencia =$filter->frecuencia->newValue;
 			$udia=days_in_month(substr($filter->fechah->newValue,4),substr($filter->fechah->newValue,0,4));
 			$fechad=$filter->fechad->newValue.'01';
 			$fechah=$filter->fechah->newValue.$udia;
@@ -277,9 +296,9 @@ class Comparativo extends Controller {
 
 			$ffechad=explode('-',$fechad);
 
-			$grid = new DataGrid("Lista de Art&iacute;culos");
-			$grid->order_by("codigo","asc");
-			$grid->use_function($estadistica);
+			$grid = new DataGrid('Lista de Art&iacute;culos');
+			$grid->order_by('codigo','asc');
+			$grid->use_function('divisor',$estadistica);
 			$grid->per_page = 15;
 
 			$grid->column('C&oacute;digo'     ,'codigo' );
@@ -299,9 +318,9 @@ class Comparativo extends Controller {
 				$columncal[] ="<#$etiq#>";
 				$ccolumncal[]=$etiq;
 			}
-			$grid->column('Promedio'     ,'<b style="color:red"><nformat><'.$estadistica.'>'.implode('|',$columncal).'</'.$estadistica.'></nformat></b>','align=right');
+			$grid->column('Promedio'     ,'<b style="color:red"><nformat><divisor><'.$estadistica.'>'.implode('|',$columncal).'</'.$estadistica.'>|'.$frecuencia.'</divisor></nformat></b>','align=right');
 			$grid->column('M&iacute;nimo','<nformat><#exmin#></nformat>','align=right');
-			$grid->column('&nbsp;'       ,'<a href="javascript:actumin(\'<#id#>\',\'<'.$estadistica.'>'.implode('|',$columncal).'</'.$estadistica.'>\')" >Actualizar</a>','align=right');
+			$grid->column('&nbsp;'       ,'<a href="javascript:actumin(\'<#id#>\',\'<divisor><'.$estadistica.'>'.implode('|',$columncal).'</'.$estadistica.'>|'.$frecuencia.'</divisor>\')" >Actualizar</a>','align=right');
 
 			if($_cambiomin){
 				//echo 'Cambios de todos';
@@ -319,7 +338,11 @@ class Comparativo extends Controller {
 						}
 						$min=$estadistica($param);
 						$where = 'codigo ='.$this->db->escape($row->codigo);
-						$sSQL = $this->db->update_string('sinv', array('exmin' => $min), $where);
+						$data=array('exmin' => $min);
+						if(!empty($maximos)){
+							$data['exmax'] = $maximos($min);
+						}
+						$sSQL = $this->db->update_string('sinv', $data, $where);
 						$this->db->simple_query($sSQL);
 					}
 				}
