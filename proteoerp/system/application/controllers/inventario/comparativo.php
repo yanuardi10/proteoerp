@@ -73,6 +73,7 @@ function divisor($divide,$divisor=1){
 }
 
 class Comparativo extends Controller {
+	var $id='321';
 
 	function Comparativo(){
 		parent::Controller();
@@ -80,11 +81,11 @@ class Comparativo extends Controller {
 	}
 
 	function index(){
-		$this->datasis->modulo_id(321,1);
 		redirect('inventario/comparativo/filteredgrid');
 	}
 
 	function filteredgrid(){
+		$this->datasis->modulo_id($this->id,1);
 		if($this->input->post('btn_cambio_2')!==false){
 			unset($_POST['btn_cambio_2']);
 			$_POST['btn_submit']='a';
@@ -155,10 +156,8 @@ class Comparativo extends Controller {
 			else{
 				$("#nom_grupo").attr("disabled","");
 			}
-		}
-		';
+		}';
 
-		//filter
 		$filter = new DataFilter2("Filtro por Producto");
 		$filter->script($script);
 
@@ -186,50 +185,20 @@ class Comparativo extends Controller {
 		$filter->fechah->insertValue = date("Y-m-d");
 		$filter->fechah->size=$filter->fechad->size=9;
 
-		/*$filter->codigo = new inputField("C&oacute;digo", "codigo");
-		$filter->codigo -> size=25;
-
-		$filter->descrip = new inputField("Descripci&oacute;n", "descrip");
-		$filter->descrip->db_name='CONCAT_WS(" ",a.descrip,a.descrip2)';
-		$filter->descrip -> size=25;
-
-		$filter->clave = new inputField("Clave", "clave");
-		$filter->clave -> size=25;
-
-		$filter->proveed = new inputField("Proveedor", "proveed");
-		$filter->proveed->append($bSPRV);
-		$filter->proveed->clause ="in";
-		$filter->proveed->db_name='( a.prov1, a.prov2, a.prov3 )';
-		$filter->proveed -> size=25;*/
-
-		/*$filter->depto2 = new inputField("Departamento", "nom_depto");
-		$filter->depto2->db_name="d.descrip";
-		$filter->depto2 -> size=10;*/
-
 		$filter->depto = new dropdownField("Departamento","depto");
 		$filter->depto->db_name="a.depto";
 		$filter->depto->option("","Seleccione un Departamento");
 		$filter->depto->options("SELECT depto, descrip FROM dpto WHERE tipo='I' ORDER BY depto");
-		//$filter->depto->in="depto2";
-
-		/*$filter->linea = new inputField("Linea", "nom_linea");
-		$filter->linea->db_name="c.descrip";
-		$filter->linea -> size=10;*/
 
 		$filter->linea2 = new dropdownField("L&iacute;nea","linea");
 		$filter->linea2->db_name="a.linea";
 		$filter->linea2->option("","Seleccione un Departamento primero");
-		//$filter->linea2->in="linea";
 		$depto=$filter->getval('depto');
 		if($depto!==FALSE){
 			$filter->linea2->options("SELECT linea, descrip FROM line WHERE depto='$depto' ORDER BY descrip");
 		}else{
 			$filter->linea2->option("","Seleccione un Departamento primero");
 		}
-
-		/*$filter->grupo2 = new inputField("Grupo", "nom_grupo");
-		$filter->grupo2->db_name="b.nom_grup";
-		$filter->grupo2 -> size=10;*/
 
 		$filter->grupo = new dropdownField("Grupo", "grupo");
 		$filter->grupo->db_name='a.grupo';
@@ -367,7 +336,6 @@ class Comparativo extends Controller {
 	}
 
 	function actumin($id,$exmin){
-		//echo "$id,$exmin";
 		$data['exmin']=$exmin;
 		$mSQL = $this->db->update_string('sinv', $data, 'id='.$this->db->escape($id));
 		if($this->db->simple_query($mSQL)==FALSE){
