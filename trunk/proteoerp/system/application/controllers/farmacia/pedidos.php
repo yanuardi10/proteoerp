@@ -75,7 +75,7 @@ class Pedidos extends Controller {
 		$grid->column_orderby('Descripci&oacute;n'   ,'desca','desca');
 		$grid->column_orderby('Venta','<nformat><#venta#></nformat>','venta','align=\'right\'');
 		$grid->column_orderby('Existencia','<pinta><#existen#></pinta>','existen','align=\'right\'');
-		$grid->column('Rango' ,'<nformat><#exmin#></nformat>-<nformat><#exmax#></nformat>' ,'align=\'center\'');
+		$grid->column('Rango' ,'[<nformat><#exmin#></nformat>-<nformat><#exmax#></nformat>]' ,'align=\'center\'');
 		$grid->column_orderby('Pedido','pedir','cana','align=\'right\'');
 
 		$grid->build();
@@ -133,7 +133,7 @@ class Pedidos extends Controller {
 		}
 
 		if($error==0){
-			$msj='El pedido ha sido guardado bajo el n&uacute;mero <b>'.$num.'</b> Dirijase al FarmaSIS para completar el proceso';
+			$msj='El pedido ha sido guardado bajo el n&uacute;mero <b>'.$num.'</b> Dirijase al '.anchor($this->_farmaurl(),'FarmaSIS').' para completar el proceso'.br();
 		}else{
 			$msj='Hubo un error guardando el pedido, se generar&oacute;n centinelas';
 		}
@@ -141,5 +141,12 @@ class Pedidos extends Controller {
 		$data['content'] = $msj;
 		$data['title']   = heading('Enviar pedido a la drogueria');
 		$this->load->view('view_ventanas', $data);
+	}
+
+	function _farmaurl($opt='farmax'){
+		$uri='drogueria/pedidos';
+		$url=reduce_double_slashes($_SERVER['HTTP_HOST'].'/'.$opt.'/'.$uri);
+		$url=prep_url($url);
+		return $url;
 	}
 }
