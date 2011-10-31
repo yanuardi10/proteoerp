@@ -400,11 +400,13 @@ class Rcaj extends validaciones {
 					$this->db->simple_query($mSQL);
 				}
 			}
+			logusu('rcaj',"Pre-cerro cajero $cajero de $fecha");
 			if($redir){
 				redirect('ventas/rcaj/filteredgrid/search');
 			}else{
 				redirect('ventas/rcaj/precierre');
 			}
+			
 		}
 
 		$attr=array(
@@ -698,6 +700,7 @@ class Rcaj extends validaciones {
 					$ban=$this->db->simple_query($mSQL);
 					if($ban==false) memowrite($mSQL,'rcaj');
 				}
+				logusu('rcaj',"Cerro cajero $cajero de $fecha");
 
 				redirect('ventas/rcaj/filteredgrid/search');
 			}
