@@ -572,7 +572,7 @@ class Datasis {
 				}
 			} else {
 				//$listados .= "<tr><td>No se encontraron listados</td><tr>";
-				$listados .= "['-','No tiene listados','' ]";
+				$listados .= "['-','No tiene listados','' ],";
 			}
 			
 			$query->free_result();

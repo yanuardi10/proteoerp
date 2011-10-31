@@ -988,7 +988,7 @@ var SpreCol =
 */
 	];
 
-//Column Model Detalle de NOCO
+//Column Model Detalle de Presupuesto
 var ItSpreCol = 
 	[
 		{ header: 'Codigo',      width:  90, sortable: true, dataIndex: 'codigo', field: { type: 'textfield' }, filter: { type: 'string' }}, 
@@ -1118,10 +1118,12 @@ Ext.onReady(function() {
 		}),
 	});
 
-
+//////************ MENU DE ADICIONALES /////////////////
 ".$listados."
 
 ".$otros."
+//////************ FIN DE ADICIONALES /////////////////
+
 
 	/////////////////////////////////////////////////
 	// Define los data model
