@@ -631,7 +631,7 @@ class sfacter extends validaciones {
 
 		$fecha =$do->get('fecha');
 		$vd    =$do->get('vendedor');
-		$tipoa =$do->get('tipo');
+		$tipoa =$do->get('tipo_doc');
 
 		$iva=$totals=0;
 		$cana=$do->count_rel('sitems');
