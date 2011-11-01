@@ -840,6 +840,9 @@ script;
 		$mSQL = "SELECT codigo, nivel FROM nedu ORDER BY codigo ";
 		$niveled = $this->datasis->llenacombo($mSQL);
 
+		$listados= $this->datasis->listados('pers');
+		$otros=$this->datasis->otros('pers', 'pers');
+
 		$script = "
 <script type=\"text/javascript\">
 var BASE_URL   = '".base_url()."';
@@ -862,6 +865,11 @@ Ext.require([
 	'Ext.ux.CheckColumn',
 	'Ext.toolbar.Paging'
 ]);
+
+
+var mxs = ((screen.availWidth/2)-400);
+var mys = ((screen.availHeight/2)-300);
+
 
 var registro;
 var urlApp = '".base_url()."';
@@ -1267,6 +1275,13 @@ Ext.onReady(function(){
 		}
 	});
 
+//////************ MENU DE ADICIONALES /////////////////
+".$listados."
+
+".$otros."
+//////************ FIN DE ADICIONALES /////////////////
+
+
 	Ext.create('Ext.Viewport', {
 		layout: {type: 'border',padding: 5},
 		defaults: { split: true	},
@@ -1278,25 +1293,39 @@ Ext.onReady(function(){
 				minHeight: 40,
 				html: '".$encabeza."'
 			},{
+				region:'west',
+				width:200,
+				border:false,
+				autoScroll:true,
+				title:'Lista de Opciones',
+				collapsible:true,
+				split:true,
+				collapseMode:'mini',
+				layoutConfig:{animate:true},
+				layout: 'accordion',
+				items: [
+					{
+						title:'Listados',
+						border:false,
+						layout: 'fit',
+						items: gridListado
+					},{
+						title:'Otras Funciones',
+						border:false,
+						layout: 'fit',
+						items: gridOtros
+					}
+				]
+			},{
 				region: 'center',
 				itemId: 'grid',
 				xtype: 'writergrid',
 				title: 'Trabajadores',
 				width: '98%',
 				align: 'center',
-				//flex: 9,
-				//store: storePers
-
-				//layout: 'border',
-				//border: false,
-				//items: PersGrid
-				//html: 'meco'
 			}
 		]
 	});
-
-
-
 
 
 	storePers.load({ params: { start:0, limit: 30}});

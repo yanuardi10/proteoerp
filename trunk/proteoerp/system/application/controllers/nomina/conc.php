@@ -565,29 +565,10 @@ script;
 	function concextjs(){
 
 		$encabeza='<table width="100%" bgcolor="#2067B5"><tr><td align="left" width="100px"><img src="'.base_url().'assets/default/css/templete_01.jpg" width="120"></td><td align="center"><h1 style="font-size: 20px; color: rgb(255, 255, 255);" onclick="history.back()">CONCEPTOS DE NOMINA</h1></td><td align="right" width="100px"><img src="'.base_url().'assets/default/images/cerrar.png" alt="Cerrar Ventana" title="Cerrar Ventana" onclick="parent.window.close()" width="25"></td></tr></table>';
+		$listados= $this->datasis->listados('conc');
+		$otros=$this->datasis->otros('spre', 'conc');
 
-/*
-		$mSQL = "SELECT codigo, CONCAT(codigo,' ',nombre) nombre, tipo FROM noco WHERE tipo<>'O' ORDER BY codigo";
-		$contratos = $this->datasis->llenacombo($mSQL);
-		
-		$mSQL = "SELECT division, CONCAT(division,' ',descrip) descrip FROM divi ORDER BY division";
-		$divi= $this->datasis->llenacombo($mSQL);
 
-		$mSQL = "SELECT departa, CONCAT(departa,' ',depadesc) descrip FROM depa ORDER BY departa";
-		$depto= $this->datasis->llenacombo($mSQL);
-
-		$mSQL = "SELECT cargo, CONCAT(cargo,' ',descrip) descrip FROM carg ORDER BY cargo";
-		$cargo= $this->datasis->llenacombo($mSQL);;
-		
-		$mSQL = "SELECT codigo, CONCAT(codigo,' ',sucursal) descrip FROM sucu ORDER BY codigo";
-		$sucu = $this->datasis->llenacombo($mSQL);
-
-		$mSQL   = "SELECT codigo, profesion FROM prof ORDER BY profesion";
-		$profes = $this->datasis->llenacombo($mSQL);
-
-		$mSQL = "SELECT codigo, nivel FROM nedu ORDER BY codigo ";
-		$niveled = $this->datasis->llenacombo($mSQL);
-*/
 		$script = "
 <script type=\"text/javascript\">
 var BASE_URL   = '".base_url()."';
@@ -619,6 +600,9 @@ var mtipoa ;
 
 var mctade ;
 var mctaac ;
+
+var mxs = ((screen.availWidth/2)-400);
+var mys = ((screen.availHeight/2)-300);
 
 //coloca un boton verde cuando la va para la liquidacion
 function rliquida(val) {
@@ -1074,6 +1058,12 @@ Ext.onReady(function(){
 		}
 	});
 
+//////************ MENU DE ADICIONALES /////////////////
+".$listados."
+
+".$otros."
+//////************ FIN DE ADICIONALES /////////////////
+
 	Ext.create('Ext.Viewport', {
 		layout: {type: 'border',padding: 5},
 		defaults: { split: true	},
@@ -1084,6 +1074,30 @@ Ext.onReady(function(){
 				height: 40,
 				minHeight: 40,
 				html: '".$encabeza."'
+			},{
+				region:'west',
+				width:200,
+				border:false,
+				autoScroll:true,
+				title:'Lista de Opciones',
+				collapsible:true,
+				split:true,
+				collapseMode:'mini',
+				layoutConfig:{animate:true},
+				layout: 'accordion',
+				items: [
+					{
+						title:'Listados',
+						border:false,
+						layout: 'fit',
+						items: gridListado
+					},{
+						title:'Otras Funciones',
+						border:false,
+						layout: 'fit',
+						items: gridOtros
+					}
+				]
 			},{
 				region: 'center',
 				itemId: 'grid',

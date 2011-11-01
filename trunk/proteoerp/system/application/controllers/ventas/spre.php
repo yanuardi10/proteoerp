@@ -926,9 +926,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 
 		$encabeza='<table width="100%" bgcolor="#2067B5"><tr><td align="left" width="100px"><img src="'.base_url().'assets/default/css/templete_01.jpg" width="120"></td><td align="center"><h1 style="font-size: 20px; color: rgb(255, 255, 255);" onclick="history.back()">PRESUPUESTOS A CLIENTES</h1></td><td align="right" width="100px"><img src="'.base_url().'assets/default/images/cerrar.png" alt="Cerrar Ventana" title="Cerrar Ventana" onclick="parent.window.close()" width="25"></td></tr></table>';
 		$listados= $this->datasis->listados('spre');
-		
 		$otros=$this->datasis->otros('spre', 'spre');
-		//$otros = '';
 
 		$script = "
 <script type=\"text/javascript\">		
@@ -959,19 +957,6 @@ Ext.require([
 var mxs = ((screen.availWidth/2)-400);
 var mys = ((screen.availHeight/2)-300);
 
-/*
-//coloca link al numero de presupuesto
-function rpresupuesto(value, p, record) {
-return Ext.String.format(
-		'<a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'ventas/spre/dataedit/show/{2}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">{0}</a>',
-		value,
-		record.data.nombre,
-		record.getId(),
-		record.data.id
-        );
-};
-*/
-
 //Column Model Presupuestos
 var SpreCol = 
 	[
@@ -986,9 +971,6 @@ var SpreCol =
 		{ header: 'Condiciones',width: 160, sortable: true,  dataIndex: 'condi1',  field: { type: 'textfield' }, filter: { type: 'string' }}, 
 		{ header: 'Vende',      width:  40, sortable: true,  dataIndex: 'vd',      field: { type: 'textfield' }, filter: { type: 'string' }}, 
 		{ header: 'Usuario',    width:  60, sortable: true,  dataIndex: 'usuario', field: { type: 'textfield' }, filter: { type: 'string' }}
-/*
-		field: { xtype: 'combobox', triggerAction: 'all', valueField:'abre', displayField:'todo', store: tipos, listClass: 'x-combo-list-small'}, filter: { type: 'string' }, editor: { allowBlank: false }}, 
-*/
 	];
 
 //Column Model Detalle de Presupuesto
@@ -1268,15 +1250,6 @@ Ext.onReady(function() {
 				}
 			]
 		},{
-			region:'south',
-			id: 'sur',
-			height:50,
-			html:'Sur',
-			border:false,
-			title:'Sur',
-			collapsible:true
-		},
-		{
 			cls: 'irm-column irm-center-column irm-master-detail',
 			region: 'center',
 			title:  'center-title',

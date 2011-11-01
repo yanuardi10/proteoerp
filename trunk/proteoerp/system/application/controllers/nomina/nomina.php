@@ -311,6 +311,9 @@ class Nomina extends Controller {
 	function nomiextjs(){
 		$encabeza='<table width="100%" bgcolor="#2067B5"><tr><td align="left" width="100px"><img src="'.base_url().'assets/default/css/templete_01.jpg" width="120"></td><td align="center"><h1 style="font-size: 20px; color: rgb(255, 255, 255);" onclick="history.back()">NOMINAS GUARDADAS</h1></td><td align="right" width="100px"><img src="'.base_url().'assets/default/images/cerrar.png" alt="Cerrar Ventana" title="Cerrar Ventana" onclick="parent.window.close()" width="25"></td></tr></table>';
 
+		$listados= $this->datasis->listados('nomi');
+		$otros=$this->datasis->otros('nomi', 'nomi');
+
 		$script1 = '';
 		$script = "
 <script type=\"text/javascript\">
@@ -340,6 +343,9 @@ Ext.require([
 	'Ext.dd.*'
 ]);
 
+var mxs = ((screen.availWidth/2)-400);
+var mys = ((screen.availHeight/2)-300);
+
 var tipos = new Ext.data.SimpleStore({
     fields: ['abre', 'todo'],
     data : [ ['Q','Quincenal'],['S','Semanal'],['B','Bisemanal'],['M','Mensual'],['O','Otros'] ]
@@ -351,9 +357,9 @@ var NomiCol =
 		{ header: 'Numero',       width:  60, sortable: true,  dataIndex: 'numero',   field: { type: 'textfield' }, filter: { type: 'string' }}, 
 		{ header: 'Fecha',        width:  70, sortable: true,  dataIndex: 'fecha',    field: { type: 'datefield' }, filter: { type: 'string' }}, 
 		{ header: 'Contrato',     width:  50, sortable: true,  dataIndex: 'contrato', field: { type: 'textfield' }, filter: { type: 'string' }}, 
-		{ header: 'Nombre',       width:  50, sortable: true,  dataIndex: 'noconom',  field: { type: 'textfield' }, filter: { type: 'string' },hidden: true}, 
 		{ header: 'Asignaciones', width:  80, sortable: true,  dataIndex: 'asigna',   field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Deducciones',  width:  80, sortable: true,  dataIndex: 'deduc',    field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}
+		{ header: 'Deducciones',  width:  80, sortable: true,  dataIndex: 'deduc',    field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Nombre',       width: 250, sortable: true,  dataIndex: 'noconom',  field: { type: 'textfield' }, filter: { type: 'string' }}
 	];
 
 //Column Model
@@ -361,18 +367,18 @@ var TrabaCol =
 	[
 		{ header: 'Codigo',       width:  50, sortable: true,  dataIndex: 'codigo',   field: { type: 'textfield' }, filter: { type: 'string' }}, 
 		{ header: 'Nombre',       width: 170, sortable: true,  dataIndex: 'nombre',   field: { type: 'textfield' }, filter: { type: 'string' }}, 
-		{ header: 'Asignaciones', width:  80, sortable: true,  dataIndex: 'asigna',   field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Deducciones',  width:  60, sortable: true,  dataIndex: 'deduc',    field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Asignacion', width:  80, sortable: true,  dataIndex: 'asigna',   field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Deduccion',  width:  60, sortable: true,  dataIndex: 'deduc',    field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
 		{ header: 'Saldo',        width:  80, sortable: true,  dataIndex: 'saldo',    field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}
 	];
 
 //Column Model
 var ConcCol = 
 	[
-		{ header: 'Concepto',     width:  60, sortable: true,  dataIndex: 'concepto', field: { type: 'textfield' }, filter: { type: 'string' }}, 
+		{ header: 'Conc.',        width:  40, sortable: true,  dataIndex: 'concepto', field: { type: 'textfield' }, filter: { type: 'string' }}, 
 		{ header: 'Descripcion',  width: 150, sortable: true,  dataIndex: 'descrip',  field: { type: 'textfield' }, filter: { type: 'string' }}, 
-		{ header: 'Asignaciones', width:  80, sortable: true,  dataIndex: 'asigna',   field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Deducciones',  width:  60, sortable: true,  dataIndex: 'deduc',    field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}
+		{ header: 'Asignacion', width:  80, sortable: true,  dataIndex: 'asigna',   field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Deduccion',  width:  60, sortable: true,  dataIndex: 'deduc',    field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}
 	];
 ";
 
@@ -571,7 +577,104 @@ Ext.onReady(function(){
 		}
 	});
 
-	var oVP = null,
+
+//////************ MENU DE ADICIONALES /////////////////
+".$listados."
+
+".$otros."
+//////************ FIN DE ADICIONALES /////////////////
+
+
+//	var oVP = null,
+
+	var viewport = new Ext.Viewport({
+		id:'simplevp',
+		layout:'border',
+		border:false,
+		items:[{
+			region: 'north',
+			preventHeader: true,
+			height: 40,
+			minHeight: 40,
+			html: '".$encabeza."'
+		},{
+			region:'west',
+			width:190,
+			border:false,
+			autoScroll:true,
+			title:'Lista de Opciones',
+			collapsible:true,
+			split:true,
+			collapseMode:'mini',
+			layoutConfig:{animate:true},
+			layout: 'accordion',
+			items: [/*
+				{
+					title:'Imprimir',
+					defaults:{border:false},
+					layout: 'fit',
+					items:[{
+						name: 'imprimir',
+						id: 'imprimir',
+						preventHeader: true,
+						border:false,
+						html: 'Para imprimir seleccione un Nomina '
+					}]
+				},*/
+				{
+					title:'Listados',
+					border:false,
+					layout: 'fit',
+					items: gridListado
+
+				},
+				{
+					title:'Otras Funciones',
+					border:false,
+					layout: 'fit',
+					items: gridOtros
+				}
+			]
+		},
+		/*{region:'south',id: 'sur',height:50,html:'Sur',border:false,title:'Sur',collapsible:true},*/
+		{
+			region:'east',
+			id: 'este',
+			width:340,
+			items: gridConc,
+			border:false,
+			preventHeader: true,
+			collapsible:true
+		},
+		{
+			cls: 'irm-column irm-center-column irm-master-detail',
+			region: 'center',
+			title:  'center-title',
+			layout: 'border',
+			preventHeader: true,
+			border: false,
+			items: [{
+				itemId: 'viewport-center-master',
+				cls: 'irm-master',
+				region: 'center',
+				items: gridNomi
+			},{
+				itemId: 'viewport-center-detail',
+				preventHeader: true,
+				region: 'south',
+				height: '40%',
+				split: true,
+				//collapsible: true,
+				title: 'center-detail-title',
+				margins: '0 0 0 0',
+				items: gridTraba
+			}]	
+		}]
+	});
+
+
+
+/*
 	oViewportConfig = { 
 		'cls': 'irm-mc',
 		'layout': { 'type': 'border', 'padding': 5 },
@@ -620,14 +723,12 @@ Ext.onReady(function(){
 					}
 				]
 			}
-			/*
-			{'region': 'east','collapsible': true,'width': 100,'title': 'right-title','layout': { 'type': 'vbox', 'align': 'stretch' },'split': true,'items': [{'xtype': 'component','html': 'column-right-text'}] },
-			{ 'region': 'south','height': 30,	'layout': { 'type': 'border', 'padding': 5 },'items': [{'region': 'center','html': 'footer',	'height': 50}]}
-			*/                 
 		]
 	};
-          
 	oVP = Ext.create( 'Ext.Viewport', oViewportConfig );
+*/
+
+          
 	storeNomi.load();
 	storeTraba.load();
 	storeConc.load();

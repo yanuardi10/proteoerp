@@ -428,6 +428,8 @@ class Noco extends Controller {
 
 		$mSQL = "SELECT codigo, CONCAT(codigo,' ',nombre) nombre, tipo FROM noco WHERE tipo<>'O' ORDER BY codigo";
 		$contratos = $this->datasis->llenacombo($mSQL);
+		$listados= $this->datasis->listados('noco');
+		$otros=$this->datasis->otros('noco', 'noco');
 		
 		$script = "
 <script type=\"text/javascript\">
@@ -457,6 +459,10 @@ Ext.require([
 	'Ext.dd.*'
 ]);
 
+var mxs = ((screen.availWidth/2)-400);
+var mys = ((screen.availHeight/2)-300);
+
+
 var tipos = new Ext.data.SimpleStore({
     fields: ['abre', 'todo'],
     data : [ ['Q','Quincenal'],['S','Semanal'],['B','Bisemanal'],['M','Mensual'],['O','Otros'] ]
@@ -467,7 +473,7 @@ var NocoCol =
 	[
 		{ header: 'id', dataIndex: 'id', width: 40, hidden: false }, 
 		{ header: 'Codigo',   width:  60, sortable: true,  dataIndex: 'codigo', field: { type: 'textfield' }, filter: { type: 'string' }, editor: { allowBlank: false }}, 
-		{ header: 'Tipo',     width:  80, sortable: false, dataIndex: 'tipo',
+		{ header: 'Tipo',     width:  40, sortable: false, dataIndex: 'tipo',
 		field: { xtype: 'combobox', triggerAction: 'all', valueField:'abre', displayField:'todo', store: tipos, listClass: 'x-combo-list-small'},	filter: { type: 'string' }, editor: { allowBlank: false }}, 
 		{ header: 'Nombre',   width: 250, sortable: true,  dataIndex: 'nombre',   field: { type: 'textfield' }, filter: { type: 'string' }, editor: { allowBlank: true }}, 
 		{ header: 'Observa1', width: 250, sortable: true,  dataIndex: 'observa1', field: { type: 'textfield' }, filter: { type: 'string' }, editor: { allowBlank: true }},
@@ -734,6 +740,12 @@ Ext.onReady(function(){
 		}
 	});
 
+//////************ MENU DE ADICIONALES /////////////////
+".$listados."
+
+".$otros."
+//////************ FIN DE ADICIONALES /////////////////
+
 	Ext.create('Ext.Viewport', {
 		layout: {type: 'border',padding: 5},
 		defaults: { split: true	},
@@ -747,6 +759,41 @@ Ext.onReady(function(){
 				height: 40,
 				minHeight: 40,
 				html: '".$encabeza."'
+			},{
+				region:'west',
+				width:200,
+				border:false,
+				autoScroll:true,
+				title:'Lista de Opciones',
+				collapsible:true,
+				split:true,
+				collapseMode:'mini',
+				layoutConfig:{animate:true},
+				layout: 'accordion',
+				items: [
+					{
+						title:'Imprimir',
+						defaults:{border:false},
+						layout: 'fit',
+						items:[{
+							name: 'imprimir',
+							id: 'imprimir',
+							preventHeader: true,
+							border:false,
+							html: 'Para imprimir seleccione el Contrato '
+						}]
+					},{
+						title:'Listados',
+						border:false,
+						layout: 'fit',
+						items: gridListado
+					},{
+						title:'Otras Funciones',
+						border:false,
+						layout: 'fit',
+						items: gridOtros
+					}
+				]
 			},{
 				region: 'center',
 				layout: 'border',
@@ -764,21 +811,13 @@ Ext.onReady(function(){
 				]
 			},{
 				region: 'south',
-				//collapsible: true,
-				//split: true,
 				preventHeader: true,
 				height: 300,
-				//minHeight: 120,
-				//title: 'Conceptos asignados y asignables',
 				layout: {type: 'border', padding: 5},
 				items: [
 					{
-						//title: 'Pasa',
 						preventHeader: true,
-						//id:'areaConc',
 						region: 'center',
-						//html: 'Pasa'
-						//layout: fit,
 						xtype: 'panel',
 						items: [
 							{ html: '<p>Arrastre los conceptos de las grillas y luego presione el boton guardar</p>'},
@@ -786,13 +825,10 @@ Ext.onReady(function(){
 						]
 					},
 					{
-						//title: 'Detalle ',
 						preventHeader: true,
 						id:'areaConc',
 						width: '450%',
 						region: 'east',
-						//minWidth: 350,
-						//html: 'South Central'
 						split: true,
 						xtype: 'panel',
 						items: gridConc

@@ -418,11 +418,11 @@ class Datasis {
 		return $opciones;
 	}
 
-	//************************************************
+	//****************************************************
 	//
 	//  CARGA CANTIDAD ACTUALIZANDO MAESTRO Y DETALLE
 	//
-	//*************************************************
+	//****************************************************
 	function sinvcarga( $mCODIGO, $mALMA, $mCANTIDAD){
 		$CI =& get_instance();
 		if (empty($mALMA)) $mALMA = $this->traevalor('ALMACEN');
@@ -584,6 +584,9 @@ class Datasis {
 			$CI->db->where("a.modulo",$modulo );
 			$CI->db->where("a.activo","S");
 			$CI->db->orderby("a.titulo");
+			$query = $CI->db->get();
+
+			
 			if ($query->num_rows() > 0) {
 				foreach ($query->result_array() as $row)
 				{
@@ -612,7 +615,6 @@ class Datasis {
 		}
 		return Ext.String.format(
 		mreto,
-		//'<a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'reportes/ver/{1}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">{0}</a>',
 		value,
 		record.data.reporte
 		);
@@ -629,6 +631,9 @@ class Datasis {
 		]
 	});
 ";
+
+		//'<a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'reportes/ver/{1}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">{0}</a>',
+
 	
 		}
 
@@ -668,7 +673,7 @@ class Datasis {
 			if ($query->num_rows() > 0) {
 				foreach ($query->result_array() as $row)
 				{
-					$Otros .= "[ '".$row['secu']."', '".$row['titulo']."', '".$row['ejecutar']."' ],";
+					$Otros .= "[ '".$row['secu']."', '".trim($row['titulo'])."', '".trim($row['ejecutar'])."' ],";
 				}
 			} else {
 				$Otros .= "['-','No tiene Funciones','' ]";
@@ -680,6 +685,7 @@ class Datasis {
 	var storeOtros = Ext.create('Ext.data.ArrayStore', {
 		autoDestroy: true,
 		storeId: 'OtrosStore',
+		autoload: true,
 		idIndex: 0,
 		fields: [ 'numero', 'nombre', 'ejecutar' ],
 		data: [".$Otros."]
