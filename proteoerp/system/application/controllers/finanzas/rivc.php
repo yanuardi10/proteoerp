@@ -794,6 +794,11 @@ class rivc extends Controller {
 		if($error>0){
 			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='Hubo problemas en la trasaccion, se generar&acute;n centinelas';
 		}else{
+			$periodo = $do->get('periodo');
+			$nrocomp = $do->get('nrocomp');
+
+			$primary =implode(',',$do->pk);
+			logusu($do->table,"Anulo $this->tits $primary  ${periodo }${nrocomp}");
 			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='Retencion anulada';
 		}
 		return false;
