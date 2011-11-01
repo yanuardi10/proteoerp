@@ -19,6 +19,7 @@ class rivc extends Controller {
 
 	function filteredgrid(){
 		$this->rapyd->load('datafilter','datagrid');
+		$this->rapyd->uri->keep_persistence();
 
 		$scli=array(
 			'tabla'   =>'scli',
@@ -94,6 +95,7 @@ class rivc extends Controller {
 	}
 
 	function dataedit(){
+		$this->rapyd->uri->keep_persistence();
 		$this->rapyd->load('datadetails','dataobject');
 		$usrdata=common::_traedatausr();
 
@@ -798,7 +800,7 @@ class rivc extends Controller {
 			$nrocomp = $do->get('nrocomp');
 
 			$primary =implode(',',$do->pk);
-			logusu($do->table,"Anulo $this->tits $primary  ${periodo }${nrocomp}");
+			logusu($do->table,"Anulo Retencion de cliente id: $primary  ${periodo }${nrocomp}");
 			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='Retencion anulada';
 		}
 		return false;
