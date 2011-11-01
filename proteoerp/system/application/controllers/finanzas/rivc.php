@@ -585,7 +585,7 @@ class rivc extends Controller {
 	}
 
 	//*****************************
-	//    Prey-Pos procesos
+	//    Pre y Pos procesos
 	//*****************************
 	function _pre_insert($do){
 		$transac = $this->datasis->fprox_numero('ntransa');
@@ -692,6 +692,16 @@ class rivc extends Controller {
 		$mSQL="SELECT a.cod_cli,a.nombre,a.tipo_doc,a.numero,a.fecha,a.monto,a.impuesto,a.abonos,a.vence,a.tipo_ref,a.num_ref,a.fecdoc,a.nroriva,a.ningreso FROM smov AS a WHERE transac=$dbtransac";
 		$query = $this->db->query($mSQL);
 
+		$rel='itrivc';
+		$restodat=array();
+		$cana = $do->count_rel($rel);
+		for($i = 0;$i < $cana;$i++){
+			$ittipo_doc = $do->get_rel($rel, 'tipo_doc', $i);
+			$itnumero   = $do->get_rel($rel, 'numero', $i);
+			$itfecha    = $do->get_rel($rel, 'fecha', $i);
+			$restodat[$ittipo_doc.$itnumero]=$itfecha;
+		}
+
 		$sqls=array();
 		//Reversa los cruces, anticipos y notas de debito
 		foreach ($query->result() as $row){
@@ -707,13 +717,22 @@ class rivc extends Controller {
 
 				if ($qquery->num_rows() > 0){
 					foreach ($qquery->result() as $rrow){
-						$dbitnumero   = $this->db->escape($rrow->numccli);
-						$dbittipo_doc = $this->db->escape($rrow->tipoccli);
+						$numero       = $rrow->numccli;
+						$tipo_doc     = $rrow->tipoccli;
+						$dbitnumero   = $this->db->escape($numero);
+						$dbittipo_doc = $this->db->escape($tipo_doc);
 						$itmonto      = $rrow->monto;
 						$tiposfac     = 'FC';
+						$iind         = substr($tipo_doc,0,1).$numero;
+						if(isset($restodat[$iind])){
+							$fecha        = $restodat[$iind];
+							$dbfecha = $this->db->escape($fecha);
 
-						$sqls[] = "UPDATE sfac SET reiva=0, creiva=NULL, freiva=NULL, ereiva=NULL WHERE numero=${dbitnumero} AND tipo_doc=${dbittipo_doc} AND transac=${dbtransac}";
-						$sqls[] = "UPDATE smov SET abonos=abonos-$itmonto WHERE numero=${dbitnumero}  AND cod_cli=${dbcod_cli} AND tipo_doc='${tiposfac}' AND transac=${dbtransac}";
+							$sqls[] = "UPDATE sfac SET reiva=0, creiva=NULL, freiva=NULL, ereiva=NULL WHERE numero=${dbitnumero} AND tipo_doc=${dbittipo_doc}";
+							$sqls[] = "UPDATE smov SET abonos=abonos-$itmonto WHERE numero=${dbitnumero}  AND cod_cli=${dbcod_cli} AND tipo_doc='${tiposfac}' AND fecha=${dbfecha}";
+						}else{
+							$error++;
+						}
 					}
 				}
 			}elseif($row->tipo_doc=='AN'){
@@ -761,12 +780,14 @@ class rivc extends Controller {
 		}
 		$sqls[]="UPDATE rivc SET anulado='S' WHERE id=".$this->db->escape($id);
 
-		foreach($sqls as $sql){
-			//echo "$sql \n";
-			$ban=$this->db->simple_query($sql);
-			if($ban==false){
-				$error++;
-				memowrite($sql,'rivc');
+		if($error==0){
+			foreach($sqls as $sql){
+				//echo "$sql \n".br();
+				$ban=$this->db->simple_query($sql);
+				if($ban==false){
+					$error++;
+					memowrite($sql,'rivc');
+				}
 			}
 		}
 
