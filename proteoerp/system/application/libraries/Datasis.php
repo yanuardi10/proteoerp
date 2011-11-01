@@ -543,12 +543,10 @@ class Datasis {
 		$CI->db->simple_query($mSQL);
 
 		$listados = '';
-		//$listados = '<table width="100%">';
 		
 		if($modulo){
 			$modulo=strtoupper($modulo);
 			
-			//$grid = new DataTable();
 			$CI->db->_escape_char='';
 			$CI->db->_protect_identifiers=false;
 			
@@ -563,7 +561,6 @@ class Datasis {
 			$CI->db->orderby("a.secu");
 			
 			$query = $CI->db->get();
-			//echo $CI->db->last_query();
 
 			if ($query->num_rows() > 0) {
 				foreach ($query->result_array() as $row)
