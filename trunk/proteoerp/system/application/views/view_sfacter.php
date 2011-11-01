@@ -401,7 +401,7 @@ function del_itspre(id){
 	<tr>
 <?php if ($form->_status=='show') { ?>
 		<td>
-		<a href="#" onclick="window.open('<?php echo base_url() ?>formatos/verhtml/PRESUP/<?php echo $form->numero->value ?>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');" heigth="600" >
+		<a href="#" onclick="window.open('<?php echo base_url() ?>formatos/verhtml/FACTURATER/<?php echo $form->numero->value.'/'.$form->tipo_doc->value ?>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');" heigth="600" >
 		<img src='<?php echo base_url() ?>images/html_icon.gif'></a>
 		</td>
 <?php } ?>
