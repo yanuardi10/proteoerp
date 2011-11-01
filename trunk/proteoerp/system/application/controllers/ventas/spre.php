@@ -901,7 +901,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$numero   = isset($_REQUEST['numero'])  ? $_REQUEST['numero']   :  0;
 		if ($numero == 0 ) $numero = $this->datasis->dameval("SELECT MAX(numero) FROM spre")  ;
 
-		$mSQL = "SELECT codigo, desca, cana, preca, importe, iva, round(precio4*100/(100+iva),2) precio4 FROM itspre WHERE numero='$numero' ORDER BY codigo";
+		$mSQL = "SELECT a.codigo, a.desca, a.cana, a.preca, a.importe, a.iva, round(a.precio4*100/(100+a.iva),2) precio4, b.id codid FROM itspre a JOIN sinv b ON a.codigo=b.codigo WHERE a.numero='$numero' ORDER BY a.codigo";
 		$query = $this->db->query($mSQL);
 		$results =  0; //$this->datasis->dameval("SELECT COUNT(*) FROM spre");
 		$arr = array();
@@ -916,6 +916,11 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
 	}
 
+	function sclibu(){
+		$numero = $this->uri->segment(4);
+		$id = $this->datasis->dameval("SELECT b.id FROM spre a JOIN scli b ON a.cod_cli=b.cliente WHERE numero='$numero'");
+		redirect('ventas/scli/dataedit/show/'.$id);
+	}
 
 	function spreextjs() {
 
@@ -932,8 +937,6 @@ var BASE_PATH  = '".base_url()."';
 var BASE_ICONS = '".base_url()."assets/icons/';
 var BASE_UX    = '".base_url()."assets/js/ext/ux';
 var modulo = 'spre'
-
-
 
 Ext.Loader.setConfig({ enabled: true });
 Ext.Loader.setPath('Ext.ux', BASE_UX);
@@ -974,7 +977,7 @@ var SpreCol =
 	[
 		{ header: 'Numero',     width:  60, sortable: true,  dataIndex: 'numero',  field: { type: 'textfield' }, filter: { type: 'string' }}, 
 		{ header: 'Fecha',      width:  70, sortable: false, dataIndex: 'fecha',   field: { type: 'date'      }, filter: { type: 'date'   }}, 
-		{ header: 'Cliente',    width:  50, sortable: true,  dataIndex: 'cod_cli', field: { type: 'textfield' }, filter: { type: 'string' }}, 
+		{ header: 'Cliente',    width:  50, sortable: true,  dataIndex: 'cod_cli', field: { type: 'textfield' }, filter: { type: 'string' }, renderer: renderScli }, 
 		{ header: 'Nombre',     width: 200, sortable: true,  dataIndex: 'nombre',  field: { type: 'textfield' }, filter: { type: 'string' }}, 
 		{ header: 'SubTotal',   width: 100, sortable: true,  dataIndex: 'totals',  field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
 		{ header: 'IVA',        width:  80, sortable: true,  dataIndex: 'iva',     field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
@@ -984,14 +987,15 @@ var SpreCol =
 		{ header: 'Vende',      width:  40, sortable: true,  dataIndex: 'vd',      field: { type: 'textfield' }, filter: { type: 'string' }}, 
 		{ header: 'Usuario',    width:  60, sortable: true,  dataIndex: 'usuario', field: { type: 'textfield' }, filter: { type: 'string' }}
 /*
-		field: { xtype: 'combobox', triggerAction: 'all', valueField:'abre', displayField:'todo', store: tipos, listClass: 'x-combo-list-small'},	filter: { type: 'string' }, editor: { allowBlank: false }}, 
+		field: { xtype: 'combobox', triggerAction: 'all', valueField:'abre', displayField:'todo', store: tipos, listClass: 'x-combo-list-small'}, filter: { type: 'string' }, editor: { allowBlank: false }}, 
 */
 	];
 
 //Column Model Detalle de Presupuesto
 var ItSpreCol = 
 	[
-		{ header: 'Codigo',      width:  90, sortable: true, dataIndex: 'codigo', field: { type: 'textfield' }, filter: { type: 'string' }}, 
+		{ header: 'Codigo',      width:  90, sortable: true, dataIndex: 'codigo', field: { type: 'textfield' }, filter: { type: 'string' }, renderer: renderSinv }, 
+		{ header: 'codid',       dataIndex: 'codid',  hidden: true}, 
 		{ header: 'Descripcion', width: 250, sortable: true, dataIndex: 'desca',  field: { type: 'textfield' }, filter: { type: 'string' }}, 
 		{ header: 'Cant',        width:  60, sortable: true, dataIndex: 'cana',   field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
 		{ header: 'Precio',      width: 100, sortable: true, dataIndex: 'preca',  field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
@@ -1000,7 +1004,25 @@ var ItSpreCol =
 		{ header: 'Precio 4',    width:  60, sortable: true, dataIndex: 'precio4',field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}
 	];
 
-var nomina = '';
+
+function renderScli(value, p, record) {
+	var mreto='';
+	if ( record.data.cod_cli == '' ){
+		mreto = '{0}';
+	} else {
+		mreto = '<a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'ventas/spre/sclibu/{1}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">{0}</a>';
+	}
+	return Ext.String.format(mreto,	value, record.data.numero );
+}
+
+
+function renderSinv(value, p, record) {
+	var mreto='';
+	mreto = '<a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'inventario/sinv/dataedit/show/{1}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">{0}</a>';
+	return Ext.String.format(mreto,	value, record.data.codid );
+}
+
+
 
 // application main entry point
 Ext.onReady(function() {
@@ -1130,7 +1152,7 @@ Ext.onReady(function() {
 	// Contratos
 	Ext.define('ItSpre', {
 		extend: 'Ext.data.Model',
-		fields: ['codigo', 'desca', 'cana', 'preca', 'importe', 'iva', 'precio4' ],
+		fields: ['codigo', 'codid', 'desca', 'cana', 'preca', 'importe', 'iva', 'precio4' ],
 		proxy: {
 			type: 'ajax',
 			noCache: false,
