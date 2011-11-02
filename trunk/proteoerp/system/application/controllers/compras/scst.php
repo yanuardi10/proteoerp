@@ -22,8 +22,11 @@ class Scst extends Controller {
 		$data['title']  = heading('Compras de Productos');
 		$this->load->view('extjs/ventana',$data);
 	}
+
 	
 	function datafilter(){
+		//redirect('compras/scst/extgrid');
+/*		
 		$this->rapyd->load('datagrid','datafilter');
 		$this->rapyd->uri->keep_persistence();
 
@@ -142,13 +145,13 @@ class Scst extends Controller {
 
 		$style ='
 		<style type="text/css">
-		.fakeContainer { /* The parent container */
+		.fakeContainer { 
 		    margin: 5px;
 		    padding: 0px;
 		    border: none;
-		    width: 740px; /* Required to set */
-		    height: 320px; /* Required to set */
-		    overflow: hidden; /* Required to set */
+		    width: 740px;  
+		    height: 320px; 
+		    overflow: hidden; 
 		}
 		</style>';
 		//****************************************
@@ -189,6 +192,7 @@ class Scst extends Controller {
 
 		$data['title']   =heading('Compras');
 		$this->load->view('view_ventanas', $data);
+		 */
 	}
 
 	function dataedit(){
@@ -1546,6 +1550,41 @@ class Scst extends Controller {
 		redirect('compras/sprv/dataedit/show/'.$id);
 	}
 
+	function tabla() {
+		$control   = isset($_REQUEST['control'])  ? $_REQUEST['control']   :  0;
+		$transac = $this->datasis->dameval("SELECT transac FROM scst WHERE control='$control'");
+		$mSQL = "SELECT cod_prv, MID(nombre,1,25) nombre, tipo_doc, numero, monto, abonos FROM sprm WHERE transac='$transac' ORDER BY cod_prv ";
+		$query = $this->db->query($mSQL);
+		$codprv = 'XXXXXXXXXXXXXXXX';
+		$salida = '';
+		$saldo = 0;
+		if ( $query->num_rows() > 0 ){
+			$salida = "<br><table width='100%' border=1>";
+			$salida .= "<tr bgcolor='#e7e3e7'><td>Tp</td><td align='center'>Numero</td><td align='center'>Monto</td></tr>";
+			
+			foreach ($query->result_array() as $row)
+			{
+				if ( $codprv != $row['cod_prv']){
+					$codprv = $row['cod_prv'];
+					$salida .= "<tr bgcolor='#c7d3c7'>";
+					$salida .= "<td colspan=4>".trim($row['nombre']). "</td>";
+					$salida .= "</tr>";	
+				}
+				if ( $row['tipo_doc'] == 'FC' ) {
+					$saldo = $row['monto']-$row['abonos'];
+				}
+				$salida .= "<tr>";
+				$salida .= "<td>".$row['tipo_doc']."</td>";
+				$salida .= "<td>".$row['numero'].  "</td>";
+				$salida .= "<td align='right'>".nformat($row['monto']).   "</td>";
+				$salida .= "</tr>";
+			}
+			$salida .= "<tr bgcolor='#d7c3c7'><td colspan='4' align='center'>Saldo : ".nformat($saldo). "</td></tr>";
+			$salida .= "</table>";
+		}
+		echo $salida;
+	}
+
 	function scstextjs() {
 
 		$encabeza='<table width="100%" bgcolor="#2067B5"><tr><td align="left" width="100px"><img src="'.base_url().'assets/default/css/templete_01.jpg" width="120"></td><td align="center"><h1 style="font-size: 20px; color: rgb(255, 255, 255);" onclick="history.back()">COMPRAS DE PRODUCTOS</h1></td><td align="right" width="100px"><img src="'.base_url().'assets/default/images/cerrar.png" alt="Cerrar Ventana" title="Cerrar Ventana" onclick="parent.window.close()" width="25"></td></tr></table>';
@@ -1618,7 +1657,6 @@ var ItScstCol =
 		{ header: 'Precio 4',    width:  60, sortable: true, dataIndex: 'precio4',  field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}
 	];
 
-
 function renderSprv(value, p, record) {
 	var mreto='';
 	if ( record.data.proveed == '' ){
@@ -1675,11 +1713,9 @@ Ext.onReady(function() {
 	//Filters
 	var filters = {
 		ftype: 'filters',
-		// encode and local configuration options defined previously for easier reuse
 		encode: 'json', // json encode the filter query
 		local: false
 	};    
-
 
 	//////////////////////////////////////////////////////////////////
 	// create the grid and specify what field you want
@@ -1714,8 +1750,7 @@ Ext.onReady(function() {
 						gridScst.down('#delete').setDisabled(selections.length === 0);
 						window.open(urlApp+'compras/scst/dataedit/modify/'+selection.data.control, '_blank', 'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys);
 					}
-				},
-				{
+				},{
 					iconCls: 'icon-delete',
 					text: 'Eliminar',
 					disabled: true,
@@ -1757,7 +1792,6 @@ Ext.onReady(function() {
 ".$otros."
 //////************ FIN DE ADICIONALES /////////////////
 
-
 	/////////////////////////////////////////////////
 	// Define los data model
 	// Compras
@@ -1790,7 +1824,6 @@ Ext.onReady(function() {
 		method: 'POST'
 	});
 
-
 	//////////////////////////////////////////////////////////////////
 	// create the grid and specify what field you want
 	// to use for the editor at each column.
@@ -1804,7 +1837,6 @@ Ext.onReady(function() {
 		columns: ItScstCol
 	});
 
-	// define a template to use for the detail view
 	var scstTplMarkup = [
 		'<table width=\'100%\' bgcolor=\"#F3F781\">',
 		'<tr><td colspan=3 align=\'center\'><p style=\'font-size:14px;font-weight:bold\'>IMPRIMIR COMPRA</p></td></tr><tr>',
@@ -1812,12 +1844,13 @@ Ext.onReady(function() {
 		'<td align=\'center\'>{numero}</td>',
 		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/ver/COMPRA/{control}\',     \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',   'title' => 'Formato PDF', 'border'=>'0'))."</a></td></tr>',
 		'<tr><td colspan=3 align=\'center\' >--</td></tr>',		
-		'</table>'
+		'</table>','nanai'
 	];
-	var scstTpl = Ext.create('Ext.Template', scstTplMarkup);
+	// define a template to use for the detail view
 
 	// Al cambiar seleccion
 	gridScst.getSelectionModel().on('selectionchange', function(sm, selectedRecord) {
+		//var vaina ;
 		if (selectedRecord.length) {
 			gridScst.down('#delete').setDisabled(selectedRecord.length === 0);
 			gridScst.down('#update').setDisabled(selectedRecord.length === 0);
@@ -1825,8 +1858,21 @@ Ext.onReady(function() {
 			gridItScst.setTitle(control+' '+selectedRecord[0].data.nombre);
 			storeItScst.load({ params: { control: control }});
 			var meco1 = Ext.getCmp('imprimir');
-			meco1.setTitle('Imprimir Compra');
-			scstTpl.overwrite(meco1.body, selectedRecord[0].data);
+			Ext.Ajax.request({
+				url: urlApp +'compras/scst/tabla',
+				params: { control: selectedRecord[0].data.control },
+				success: function(response) {
+					var vaina = response.responseText;
+					//alert(vaina);
+					scstTplMarkup.pop();
+					scstTplMarkup.push(vaina);
+	var scstTpl = Ext.create('Ext.Template', scstTplMarkup );
+
+					//scstTpl.set();
+					meco1.setTitle('Imprimir Compra');
+					scstTpl.overwrite(meco1.body, selectedRecord[0].data );
+				}
+			});
 		}
 	});
 
@@ -1853,23 +1899,25 @@ Ext.onReady(function() {
 			layout: 'accordion',
 			items: [
 				{
-					title:'Imprimir',
-					defaults:{border:false},
+					//title:'Imprimir',
+					//defaults:{border:false},
+					//preventHeader: true,
 					layout: 'fit',
-					items:[{
-						name: 'imprimir',
-						id: 'imprimir',
-						preventHeader: true,
-						border:false,
-						html: 'Para imprimir seleccione una Compra '
-					}]
+					items:[
+						{
+							name: 'imprimir',
+							id: 'imprimir',
+							//preventHeader: true,
+							border:false,
+							html: 'Para imprimir seleccione una Compra '
+						}
+					]
 				},
 				{
 					title:'Listados',
 					border:false,
 					layout: 'fit',
 					items: gridListado
-
 				},
 				{
 					title:'Otras Funciones',
@@ -1892,14 +1940,23 @@ Ext.onReady(function() {
 				items: gridScst
 			},{
 				itemId: 'viewport-center-detail',
-				preventHeader: true,
+				//xtype: 'tabpanel',
+				activeTab: 0,
 				region: 'south',
 				height: '40%',
 				split: true,
-				//collapsible: true,
-				title: 'center-detail-title',
 				margins: '0 0 0 0',
+				//items: [{
+				
+				preventHeader: true,
+				//collapsible: true,
+				//title: 'detalle',
 				items: gridItScst
+				//},{
+				//title: 'otros',
+				//html: 'tab2'
+					
+				//}]
 			}]	
 		}]
 	});
