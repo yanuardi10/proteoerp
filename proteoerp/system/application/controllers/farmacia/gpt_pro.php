@@ -7,7 +7,7 @@ class gpt_pro extends Controller {
 	function gpt_pro(){
 		parent::Controller();
 		$this->load->library('rapyd');
-		//$this->datasis->modulo_id(216,1);
+		$this->datasis->modulo_id('20F',1);
 		$this->instalar();
 	}
 
