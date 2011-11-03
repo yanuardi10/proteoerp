@@ -171,8 +171,8 @@ class gpt_pro extends Controller {
 
 		$grid->column('C&oacute;digo'       ,'codigo' ,'align="left"');
 		$grid->column('Descripci&oacute;n'  ,'descrip','align="left"');
-		$grid->column('&Uacute;ltima compra','<dbdate_to_human><#fechac#></dbdate_to_human>','align="left"');
-		$grid->column('Existencia'          ,'<nformat>existen</nformat>','align="right"');
+		$grid->column('&Uacute;ltima compra','<dbdate_to_human><#fechac#></dbdate_to_human>','align="center"');
+		$grid->column('Existencia'          ,'<nformat><#existen#></nformat>','align="right"');
 		$grid->build();
 
 		$edit->buttons('back');
