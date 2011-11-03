@@ -169,9 +169,10 @@ class gpt_pro extends Controller {
 		$grid->order_by('descrip');
 		$grid->per_page = 40;
 
-		$grid->column('C&oacute;digo'     ,'codigo' ,'align="left"');
-		$grid->column('Descripci&oacute;n','descrip','align="left"');
-		$grid->column('Existencia'        ,'existen','align="left"');
+		$grid->column('C&oacute;digo'       ,'codigo' ,'align="left"');
+		$grid->column('Descripci&oacute;n'  ,'descrip','align="left"');
+		$grid->column('&Uacute;ltima compra','<dbdate_to_human><#fechac#></dbdate_to_human>','align="left"');
+		$grid->column('Existencia'          ,'<nformat>existen</nformat>','align="right"');
 		$grid->build();
 
 		$edit->buttons('back');
