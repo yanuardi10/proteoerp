@@ -12,8 +12,16 @@ class Sprv extends validaciones {
 		if($this->pi18n->pais=='COLOMBIA'){
 			redirect('compras/sprvcol/filteredgrid');
 		}else{ 
-			redirect('compras/sprv/filteredgrid');
+			redirect('compras/sprv/extgrid');
 		}
+	}
+
+	function extgrid(){
+		$this->datasis->modulo_id(206,1);
+		$script = $this->sprvextjs();
+		$data["script"] = $script;
+		$data['title']  = heading('Proveedores');
+		$this->load->view('extjs/ventana',$data);
 	}
 
 	function filteredgrid(){
@@ -522,6 +530,709 @@ class Sprv extends validaciones {
 			</div>";
 		$this->load->view('view_ventanas', $data);
 		
+	}
+
+
+	function grid(){
+		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']   :  0;
+		$limit   = isset($_REQUEST['limit'])  ? $_REQUEST['limit']   : 50;
+		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']    : 'grupo';
+		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
+
+		$where = "";
+
+		//Buscar posicion 0 Cero
+		if (isset($_REQUEST['filter'])){
+			$filter = json_decode($_REQUEST['filter'], true);
+			if (is_array($filter)) {
+				//Dummy Where. 
+				$where = "sprv.codigo IS NOT NULL ";
+				$qs = "";
+				for ($i=0;$i<count($filter);$i++){
+					switch($filter[$i]['type']){
+					case 'string' : $qs .= " AND sprv.".$filter[$i]['field']." LIKE '%".$filter[$i]['value']."%'"; 
+						Break;
+					case 'list' :
+						if (strstr($filter[$i]['value'],',')){
+							$fi = explode(',',$filter[$i]['value']);
+							for ($q=0;$q<count($fi);$q++){
+								$fi[$q] = "'".$fi[$q]."'";
+							}
+							$filter[$i]['value'] = implode(',',$fi);
+								$qs .= " AND sprv.".$filter[$i]['field']." IN (".$filter[$i]['value'].")";
+						}else{
+							$qs .= " AND sprv.".$filter[$i]['field']." = '".$filter[$i]['value']."'";
+						}
+						Break;
+					case 'boolean' : $qs .= " AND sprv.".$filter[$i]['field']." = ".($filter[$i]['value']); 
+						Break;
+					case 'numeric' :
+						switch ($filter[$i]['comparison']) {
+							case 'ne' : $qs .= " AND sprv.".$filter[$i]['field']." != ".$filter[$i]['value']; 
+								Break;
+							case 'eq' : $qs .= " AND sprv.".$filter[$i]['field']." = ".$filter[$i]['value']; 
+								Break;
+							case 'lt' : $qs .= " AND sprv.".$filter[$i]['field']." < ".$filter[$i]['value']; 
+								Break;
+							case 'gt' : $qs .= " AND sprv.".$filter[$i]['field']." > ".$filter[$i]['value']; 
+								Break;
+						}
+						Break;
+					case 'date' :
+						switch ($filter[$i]['comparison']) {
+							case 'ne' : $qs .= " AND sprv.".$filter[$i]['field']." != '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
+								Break;
+							case 'eq' : $qs .= " AND sprv.".$filter[$i]['field']." = '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
+								Break;
+							case 'lt' : $qs .= " AND sprv.".$filter[$i]['field']." < '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
+								Break;
+							case 'gt' : $qs .= " AND sprv.".$filter[$i]['field']." > '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
+								Break;
+						}
+						Break;
+					}
+				}
+				$where .= $qs;
+			}
+		}
+		
+		$this->db->_protect_identifiers=false;
+		$this->db->select('sprv.*, CONCAT("(",sprv.grupo,") ",grpr.gr_desc) nomgrup');
+
+		$this->db->from('sprv');
+		$this->db->join('grpr', 'sprv.grupo=grpr.grupo');
+
+		if (strlen($where)>1){
+			$this->db->where($where);
+		}
+
+		$this->db->order_by( 'grupo', 'asc' );
+
+		$sort = json_decode($sort, true);
+		for ($i=0;$i<count($sort);$i++) {
+			$this->db->order_by($sort[$i]['property'],$sort[$i]['direction']);
+		}
+
+		$this->db->limit($limit, $start);
+
+		$query = $this->db->get();
+		$results = $this->db->count_all('sprv');
+
+		$arr = array();
+		foreach ($query->result_array() as $row)
+		{
+			$meco = array();
+			foreach( $row as $idd=>$campo ) {
+				$meco[$idd] = utf8_encode($campo);
+			}
+			$arr[] = $meco;
+		}
+		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
+	}
+
+	function crear() {
+		$js= file_get_contents('php://input');
+		$data= json_decode($js,true);
+		$campos = $data['data'];
+		$proveed = $data['data']['proveed'];
+
+		unset($campos['nomgrup']);
+		unset($campos['id']);
+		
+		$mHay = $this->datasis->dameval("SELECT count(*) FROM sprv WHERE codigo='".$proveed."'");
+		if  ( $mHay > 0 ){
+			echo "{ success: false, message: 'Ya existe ese codigo'}";
+		} else {
+			$mSQL = $this->db->insert_string("sprv", $campos );
+			$this->db->simple_query($mSQL);
+			logusu('sprv',"PROVEEDOR $proveed $nombre CREADO");
+			echo "{ success: true, message: ".$data['data']['proveed']."}";
+		}
+	}
+
+	function modificar(){
+		$js= file_get_contents('php://input');
+		$data= json_decode($js,true);
+		$campos = $data['data'];
+		$codigo = $campos['proveed'];
+		unset($campos['nomgrup']);
+		unset($campos['proveed']);
+		unset($campos['id']);
+		//print_r($campos);
+		$mSQL = $this->db->update_string("sprv", $campos,"id='".$data['data']['id']."'" );
+		$this->db->simple_query($mSQL);
+		logusu('sprv',"PROVEEDOR ".$data['data']['proveed']." MODIFICADO");
+		echo "{ success: true, message: 'Proveedor Modificado $mSQL'}";
+	}
+
+	function eliminar(){
+		$js= file_get_contents('php://input');
+		$data= json_decode($js,true);
+		$campos = $data['data'];
+
+		$proveed = $data['data']['proveed'];
+		
+		// VERIFICAR SI PUEDE
+		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM sprm WHERE cod_prv='$proveed'");
+		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM scst WHERE proveed='$proveed'");
+		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM gser WHERE proveed='$proveed'");
+		$chek += $this->datasis->dameval("SELECT count(*) FROM ordc WHERE proveed='$proveed'");
+		$chek += $this->datasis->dameval("SELECT count(*) FROM bmov WHERE clipro='P' AND codcp='$proveed'");
+		$chek += $this->datasis->dameval("SELECT count(*) FROM ords WHERE proveed='$proveed'");
+		//$chek += $this->datasis->dameval("SELECT count(*) FROM obco WHERE proveed='$proveed'");
+
+		if ($chek > 0){
+			echo "{ success: false, message: 'Proveedor con Movimiento no puede ser Borrado'}";
+		} else {
+			$this->db->simple_query("DELETE FROM sprv WHERE proveed='$proveed'");
+			logusu('sprv',"PROVEEDOR $proveed ELIMINADO");
+			echo "{ success: true, message: 'Proveedor Eliminado'}";
+		}
+	}
+
+
+
+//****************************************************************8
+//
+//
+//
+//****************************************************************8
+	function sprvextjs(){
+
+		$encabeza='<table width="100%" bgcolor="#2067B5"><tr><td align="left" width="100px"><img src="'.base_url().'assets/default/css/templete_01.jpg" width="120"></td><td align="center"><h1 style="font-size: 20px; color: rgb(255, 255, 255);" onclick="history.back()">PROVEEDORES</h1></td><td align="right" width="100px"><img src="'.base_url().'assets/default/images/cerrar.png" alt="Cerrar Ventana" title="Cerrar Ventana" onclick="parent.window.close()" width="25"></td></tr></table>';
+
+		$mSQL = "SELECT cod_banc, CONCAT(cod_banc,' ',nomb_banc) nombre FROM tban ORDER BY cod_banc ";
+		$bancos = $this->datasis->llenacombo($mSQL);
+
+		$mSQL = "SELECT grupo, CONCAT(grupo,' ',gr_desc) descrip FROM grpr ORDER BY grupo ";
+		$grupo = $this->datasis->llenacombo($mSQL);
+
+		$consulrif=$this->datasis->traevalor('CONSULRIF');
+
+		$listados= $this->datasis->listados('sprv');
+		$otros=$this->datasis->otros('sprv', 'sprv');
+
+		$script = "
+<script type=\"text/javascript\">
+var BASE_URL   = '".base_url()."';
+var BASE_PATH  = '".base_url()."';
+var BASE_ICONS = '".base_url()."assets/icons/';
+var BASE_UX    = '".base_url()."assets/js/ext/ux';
+
+Ext.Loader.setConfig({ enabled: true });
+Ext.Loader.setPath('Ext.ux', BASE_UX);
+
+Ext.require([
+	'Ext.grid.*',
+	'Ext.ux.grid.FiltersFeature',
+	'Ext.data.*',
+	'Ext.util.*',
+	'Ext.state.*',
+	'Ext.form.*',
+	'Ext.window.MessageBox',
+	'Ext.tip.*',
+	'Ext.ux.CheckColumn',
+	'Ext.toolbar.Paging'
+]);
+
+var mxs = ((screen.availWidth/2)-400);
+var mys = ((screen.availHeight/2)-300);
+
+var registro;
+var urlApp = '".base_url()."';
+var mcliente = '';
+var mcuenta  = '';
+
+// Define our data model
+var Proveedores = Ext.regModel('Proveedores', {
+	fields: ['id','proveed','tipo','nombre','rif','grupo','nomgrup','telefono','contacto', 'direc1', 'direc2', 'direc3','cliente', 'observa', 'nit', 'codigo','tiva', 'email', 'url', 'banco1', 'cuenta1', 'banco2', 'cuenta2', 'nomfis', 'reteiva' ],
+	/*validations: [
+		{ type: 'length', field: 'codigo',   min: 1 },
+		{ type: 'length', field: 'nacional', min: 1 }, 
+		{ type: 'length', field: 'cedula',   min: 6 }, 
+		{ type: 'length', field: 'nombre',   min: 3 }
+	],*/
+	proxy: {
+		type: 'ajax',
+		noCache: false,
+		api: {
+			read   : urlApp + 'compras/sprv/grid',
+			create : urlApp + 'compras/sprv/crear',
+			update : urlApp + 'compras/sprv/modificar' ,
+			destroy: urlApp + 'compras/sprv/eliminar',
+			method: 'POST'
+			},
+		reader: {
+			type: 'json',
+			successProperty: 'success',
+			root: 'data',
+			messageProperty: 'message',
+			totalProperty: 'results'
+			},
+		writer: {
+			type: 'json',
+			root: 'data',
+			writeAllFields: true,
+			callback: function( op, suc ) {
+				Ext.Msg.Alert('que paso');
+				}
+			},
+		listeners: {
+			exception: function( proxy, response, operation) {
+				Ext.MessageBox.show({
+					title: 'EXCEPCION REMOTA',
+					msg: operation.getError(),
+					icon: Ext.MessageBox.ERROR,
+					buttons: Ext.Msg.OK
+				});
+			}
+		}
+	}
+});
+
+//Data Store
+var storeSprv = Ext.create('Ext.data.Store', {
+	model: 'Proveedores',
+	pageSize: 50,
+	remoteSort: true,
+	autoLoad: false,
+	autoSync: true,
+	groupField: 'nomgrup',
+	method: 'POST',
+	listeners: {
+		write: function(mr,re, op) {
+			Ext.Msg.alert('Aviso','Registro Guardado ')
+		}
+	}
+});
+
+//Column Model
+var colSprv = [
+		{ header: 'Codigo',        width:  60, sortable: true, dataIndex: 'proveed',  field:  { type: 'textfield' }, filter: { type: 'string'  }}, 
+		{ header: 'Tipo',          width:  60, sortable: true, dataIndex: 'tipo',     field:  { type: 'textfield' }, filter: { type: 'string'  }}, 
+		{ header: 'Nombre',        width: 220, sortable: true, dataIndex: 'nombre',   field:  { type: 'textfield' }, filter: { type: 'string'  }}, 
+		{ header: 'R.I.F.',        width:  80, sortable: true, dataIndex: 'rif',      field:  { type: 'textfield' }, filter: { type: 'string'  }}, 
+		{ header: 'Grupo',         width:  50, sortable: true, dataIndex: 'grupo',    field:  { type: 'textfield' }, filter: { type: 'string'  }}, 
+		{ header: 'Telefono',      width:  90, sortable: true, dataIndex: 'telefono', field:  { type: 'textfield' }, filter: { type: 'string'  }}, 
+		{ header: 'Contacto',      width: 120, sortable: true, dataIndex: 'contacto', field:  { type: 'textfield' }, filter: { type: 'string'  }}, 
+		{ header: 'Cliente',       width:  60, sortable: true, dataIndex: 'cliente',  field:  { type: 'textfield' }, filter: { type: 'string'  }}, 
+		{ header: 'Ret%',          width:  50, sortable: true, dataIndex: 'reteiva',  field:  { type: 'numeroc'   }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('00.00') }, 
+		{ header: 'Origen',        width:  40, sortable: true, dataIndex: 'tiva',     field:  { type: 'textfield' }, filter: { type: 'string'  }},
+		{ header: 'Direccion',     width: 150, sortable: true, dataIndex: 'direc1',   field:  { type: 'textfield' }, filter: { type: 'string'  }},
+		{ header: 'Email',         width: 150, sortable: true, dataIndex: 'email',    field:  { type: 'textfield' }, filter: { type: 'string'  }},
+		{ header: 'Url',           width: 150, sortable: true, dataIndex: 'url',      field:  { type: 'textfield' }, filter: { type: 'string'  }},
+		{ header: 'Nombre Fiscal', width: 220, sortable: true, dataIndex: 'nomfis',   field:  { type: 'textfield' }, filter: { type: 'string'  }}
+	];
+
+var scliStore = new Ext.data.Store({
+	fields: [ 'item', 'valor'],
+	autoLoad: false,
+	autoSync: false,
+	pageSize: 50,
+	pruneModifiedRecords: true,
+	totalProperty: 'results',
+	proxy: {
+		type: 'ajax',
+		url : urlApp + 'ventas/scli/sclibusca',
+		extraParams: {  'cliente': mcliente, 'origen': 'store' },
+		reader: {
+			type: 'json',
+			totalProperty: 'results',
+			root: 'data'
+		}
+	},
+	method: 'POST'
+});
+
+var cplaStore = new Ext.data.Store({
+	fields: [ 'item', 'valor'],
+	autoLoad: false,
+	autoSync: false,
+	pageSize: 50,
+	pruneModifiedRecords: true,
+	totalProperty: 'results',
+	proxy: {
+		type: 'ajax',
+		url : urlApp + 'contabilidad/cpla/cplabusca',
+		extraParams: {  'cuenta': mcuenta, 'origen': 'store' },
+		reader: {
+			type: 'json',
+			totalProperty: 'results',
+			root: 'data'
+		}
+	},
+	method: 'POST'
+});
+
+/*
+var ci = {
+	layout: 'column',
+	defaults: {columnWidth:0.5, layout: 'form', border: false, xtype: 'panel'},
+	items: [{
+		defaults: { anchor: '100%' },
+			items: [{
+				xtype: 'textfield',
+				fieldLabel: 'Nacional',
+				name: 'nacional',
+				allowBlank: false
+			}]
+		},{
+		defaults: { anchor: '100%' },
+			items: [{
+				xtype: 'textfield',
+				fieldLabel: 'Cedula',
+				name: 'cedula',
+				allowBlank: false
+			}]
+		}]
+	};
+*/
+
+
+
+var win;
+// Main 
+Ext.onReady(function(){
+	function showContactForm() {
+		if (!win) {
+			// Create Form
+			var writeForm = Ext.define('Sprv.Form', {
+				extend: 'Ext.form.Panel',
+				alias:  'widget.writerform',
+				result: function(res){
+					alert('Resultado');
+				},
+				requires: ['Ext.form.field.Text'],
+				initComponent: function(){
+					Ext.apply(this, {
+						iconCls: 'icon-user',
+						frame: true, 
+						title: 'Proveedores', 
+						bodyPadding: 3,
+						fieldDefaults: { 
+							//anchor: '100%',
+    							labelAlign: 'right' 
+						}, 
+						items: [{
+								layout: 'column',
+								frame: false,
+								border: false,
+								labelAlign: 'right',
+								defaults: {xtype:'fieldset'  },
+								style:'padding:4px',
+								items: [
+									{ xtype: 'textfield', fieldLabel: 'Codigo',   labelWidth:60, name: 'proveed',  allowBlank: false, columnWidth : 0.20, id: 'proveed' },
+									{ xtype: 'textfield', fieldLabel: 'RIF',      labelWidth:40, name: 'rif',      allowBlank: false, columnWidth : 0.25 },
+									//{ itemId: 'seniat', text: 'SENIAT', scope: this, handler: this.onSeniat, columnWidth : 0.10 },
+									{ xtype: 'combo',     fieldLabel: 'Grupo',    labelWidth:80, name: 'grupo',    store: [".$grupo."], columnWidth: 0.50 },
+									{ xtype: 'textfield', fieldLabel: 'Nombre',   labelWidth:60, name: 'nombre',   allowBlank: false, columnWidth : 0.60 },
+									{ xtype: 'combo',     fieldLabel: 'Origen',   labelWidth:65, name: 'tiva',     store: [['N','Nacional'],['I','Internacional'],['O','Otro']], columnWidth: 0.35 },
+									{ xtype: 'textfield', fieldLabel: 'Contacto', labelWidth:60, name: 'contacto', allowBlank: true, columnWidth : 0.60 },
+									{ xtype: 'combo',     fieldLabel: 'Tipo',     labelWidth:65, name: 'tipo',     store: [['1','1-Jur. Domiciliado'],['2','2-Residente'],['3','3-J. no Domiciliado'],['4','4-No Residente'], ['5','5-Excluido de Libros'], ['0','0-Inactivo']], columnWidth: 0.35 }
+								]
+							},{
+								layout: 'column',
+								frame: false,
+								border: false,
+								labelAlign: 'right',
+								defaults: {xtype:'fieldset'  },
+								style:'padding:4px',
+								items: [
+									{ xtype: 'textfield',   fieldLabel: 'Nombre Fiscal', labelWidth:120, name: 'nomfis', allowBlank: true, columnWidth : 0.90 },
+								]
+							},{
+								layout: 'column',
+								frame: false,
+								border: false,
+								labelAlign: 'right',
+								defaults: {xtype:'fieldset'  },
+								style:'padding:4px',
+								items: [
+									{ xtype: 'textfield',   fieldLabel: 'Direccion', labelWidth:60, name: 'direc1',   allowBlank: true, columnWidth : 0.75 },
+									{ xtype: 'numberfield', fieldLabel: 'Retencion', labelWidth:80, name: 'reteiva',  hideTrigger: true, fieldStyle: 'text-align: right', width:130,renderer : Ext.util.Format.numberRenderer('00.00') },
+									{ xtype: 'textfield',   fieldLabel: '.',         labelWidth:60, name: 'direc2',   allowBlank: true, columnWidth : 0.75 },
+									{ xtype: 'textfield',   fieldLabel: '.',         labelWidth:60, name: 'direc3',   allowBlank: true, columnWidth : 0.75 },
+									{ xtype: 'combo',       fieldLabel: 'Banco 1',   labelWidth:60, name: 'banco1',   store: [".$bancos."], columnWidth: 0.45 },
+									{ xtype: 'textfield',   fieldLabel: 'Telefono',  labelWidth:60, name: 'telefono', allowBlank: true, columnWidth : 0.75 },
+									{ xtype: 'textfield',   fieldLabel: 'Cuenta 1',  labelWidth:60, name: 'cuenta1',  allowBlank: true, columnWidth : 0.45 },
+									{ xtype: 'textfield',   fieldLabel: 'Email',     labelWidth:60, name: 'email',    allowBlank: true, columnWidth : 0.75 },
+									{ xtype: 'combo',       fieldLabel: 'Banco 2',   labelWidth:60, name: 'banco2',   store: [".$bancos."], columnWidth: 0.45 },
+									{ xtype: 'textfield',   fieldLabel: 'Url',       labelWidth:60, name: 'url',      allowBlank: true, columnWidth : 0.75 },
+									{ xtype: 'textfield',   fieldLabel: 'Cuenta 2',  labelWidth:60, name: 'cuenta2',  allowBlank: true, columnWidth : 0.45 },
+								]
+							},{
+								layout: 'column',
+								frame: false,
+								border: false,
+								labelAlign: 'right',
+								defaults: {xtype:'fieldset'  },
+								style:'padding:4px',
+								items: [
+									{
+										xtype: 'combo',
+										fieldLabel: 'Codigo como Cliente',
+										labelWidth:140,
+										name: 'cliente',
+										id:   'cliente',
+										mode: 'remote',
+										hideTrigger: true,
+										typeAhead: true,
+										forceSelection: true,										valueField: 'item',
+										displayField: 'valor',
+										store: scliStore,
+										columnWidth: 0.80
+									},{
+										xtype: 'combo',
+										fieldLabel: 'Cuenta Contable',
+										labelWidth:140,
+										name: 'cuenta',
+										id:   'cuenta',
+										mode: 'remote',
+										hideTrigger: true,
+										typeAhead: true,
+										forceSelection: true,										valueField: 'item',
+										displayField: 'valor',
+										store: cplaStore,
+										columnWidth: 0.80
+									}
+
+								]
+							}
+						], 
+						dockedItems: [
+							{ xtype: 'toolbar', dock: 'bottom', ui: 'footer', 
+							items: ['->', 
+								{ itemId: 'seniat', text: 'SENIAT',   scope: this, handler: this.onSeniat },
+								{ iconCls: 'icon-reset', itemId: 'close', text: 'Cerrar',   scope: this, handler: this.onClose },
+								{ iconCls: 'icon-save',  itemId: 'save',  text: 'Guardar',  disabled: false, scope: this, handler: this.onSave }
+							]
+						}]
+					});
+					this.callParent();
+				},
+				setActiveRecord: function(record){
+					this.activeRecord = record;
+				},
+				onSave: function(){
+					var form = this.getForm();
+					if (!registro) {
+						if (form.isValid()) {
+							storeSprv.insert(0, form.getValues());
+							alert('meco 5');
+						} else {
+							Ext.Msg.alert('Forma Invalida','Algunos campos no pudieron ser validados<br>los mismos se indican con un cuadro rojo<br> corrijalos y vuelva a intentar');
+							return;
+						}
+					} else {
+						var active = win.activeRecord;
+						if (!active) {
+							Ext.Msg.Alert('Registro Inactivo ');
+							return;
+						}
+						if (form.isValid()) {
+							form.updateRecord(active);
+						} else {
+							Ext.Msg.alert('Forma Invalida','Algunos campos no pudieron ser validados<br>los mismos se indican con un cuadro rojo<br> corrijalos y vuelva a intentar');
+							return;
+						}
+					}
+					form.reset();
+					this.onReset();
+				},
+				onReset: function(){
+					this.setActiveRecord(null);
+					storeSprv.load();
+					//Hide Windows 
+					win.hide();
+				},
+				onClose: function(){
+					var form = this.getForm();
+					form.reset();
+					this.onReset();
+				},
+				onSeniat: function(){
+					var form = this.getForm();
+					//alert('RIF '+form.findField('rif').value);
+					var vrif = form.findField('rif').value;
+					if(vrif.length==0){
+						alert('Debe introducir primero un RIF');
+					}else{
+						vrif = vrif.toUpperCase();
+						//$('#rif').val(vrif);
+						window.open(\"".$consulrif."\"+\"?p_rif=\"+vrif,\"CONSULRIF\",\"height=350,width=410\");
+				}
+
+
+				}
+			
+			});
+
+			win = Ext.widget('window', {
+				title: '',
+				losable: false,
+				closeAction: 'destroy',
+				width: 650,
+				height: 470,
+				resizable: false,
+				modal: true,
+				items: [writeForm],
+				listeners: {
+					beforeshow: function() {
+						var form = this.down('writerform').getForm();
+						this.activeRecord = registro;
+						
+						if (registro) {
+							mcliente = registro.data.cliente;
+							mcuenta  = registro.data.cuenta;
+							cplaStore.proxy.extraParams.cuenta   = mcuenta ;
+							scliStore.proxy.extraParams.cliente = mcliente ;
+							cplaStore.load({ params: { 'cliente': registro.data.cliente, 'origen': 'beforeform' } });
+							scliStore.load({ params: { 'cuenta':  registro.data.cuenta,  'origen': 'beforeform' } });
+							form.loadRecord(registro);
+							form.findField('proveed').setReadOnly(true);
+						} else {
+							form.findField('proveed').setReadOnly(false);
+							mcliente = '';
+							mcuenta  = '';
+						}
+					}
+				}
+			});
+		}
+		win.show();
+	}
+
+	//Filters
+	var filters = {
+		ftype: 'filters',
+		// encode and local configuration options defined previously for easier reuse
+		encode: 'json', 
+		local: false
+	};    
+
+	// Create Grid 
+	Ext.define('SprvGrid', {
+		extend: 'Ext.grid.Panel',
+		alias: 'widget.writergrid',
+		store: storeSprv,
+		initComponent: function(){
+			Ext.apply(this, {
+				iconCls: 'icon-grid',
+				frame: true,
+				dockedItems: [{
+					xtype: 'toolbar',
+					items: [
+						{iconCls: 'icon-add',    text: 'Agregar',                                     scope: this, handler: this.onAddClick   },
+						{iconCls: 'icon-update', text: 'Modificar', disabled: true, itemId: 'update', scope: this, handler: this.onUpdateClick},
+						{iconCls: 'icon-delete', text: 'Eliminar',  disabled: true, itemId: 'delete', scope: this, handler: this.onDeleteClick }
+					]
+				}],
+				columns: colSprv,
+				// paging bar on the bottom
+				bbar: Ext.create('Ext.PagingToolbar', {
+					store: storeSprv,
+					displayInfo: true,
+					displayMsg: 'Pag No. {0} - Registros {1} de {2}',
+					emptyMsg: \"No se encontraron Registros.\"
+				})
+			});
+			this.callParent();
+			this.getSelectionModel().on('selectionchange', this.onSelectChange, this);
+		},
+		features: [{ ftype: 'grouping', groupHeaderTpl: '{name} ' }, filters],
+		onSelectChange: function(selModel, selections){
+			this.down('#delete').setDisabled(selections.length === 0);
+			this.down('#update').setDisabled(selections.length === 0);
+			},
+		
+		onUpdateClick: function(){
+			var selection = this.getView().getSelectionModel().getSelection()[0];
+				if (selection) {
+					registro = selection;
+					showContactForm();
+				}
+			},
+		onDeleteClick: function() {
+			var selection = this.getView().getSelectionModel().getSelection()[0];
+			Ext.MessageBox.show({
+				title: 'Confirme', 
+				msg: 'Esta seguro?', 
+				buttons: Ext.MessageBox.YESNO, 
+				fn: function(btn){ 
+					if (btn == 'yes') { 
+						if (selection) {
+							storeSprv.remove(selection);
+						}
+						storeSprv.load();
+					} 
+				}, 
+				icon: Ext.MessageBox.QUESTION 
+			});  
+		},
+		onAddClick: function(){
+			registro = null;
+			showContactForm();
+			storeSprv.load();
+		}
+	});
+
+//////************ MENU DE ADICIONALES /////////////////
+".$listados."
+
+".$otros."
+//////************ FIN DE ADICIONALES /////////////////
+
+
+	Ext.create('Ext.Viewport', {
+		layout: {type: 'border',padding: 5},
+		defaults: { split: true	},
+		items: [
+			{
+				region: 'north',
+				preventHeader: true,
+				height: 40,
+				minHeight: 40,
+				html: '".$encabeza."'
+			},{
+				region:'west',
+				width:200,
+				border:false,
+				autoScroll:true,
+				title:'Lista de Opciones',
+				collapsible:true,
+				split:true,
+				collapseMode:'mini',
+				layoutConfig:{animate:true},
+				layout: 'accordion',
+				items: [
+					{
+						title:'Listados',
+						border:false,
+						layout: 'fit',
+						items: gridListado
+					},{
+						title:'Otras Funciones',
+						border:false,
+						layout: 'fit',
+						items: gridOtros
+					}
+				]
+			},{
+				region: 'center',
+				itemId: 'grid',
+				xtype: 'writergrid',
+				title: 'Proveedores',
+				width: '98%',
+				align: 'center',
+			}
+		]
+	});
+	storeSprv.load({ params: { start:0, limit: 30}});
+});
+
+</script>
+";
+		return $script;	
 	}
 
 

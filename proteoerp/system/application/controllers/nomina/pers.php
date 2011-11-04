@@ -9,8 +9,6 @@ class pers extends validaciones {
 
 	function index(){
 		$this->datasis->modulo_id(707,1);
-		$mSQL = "CREATE TABLE IF NOT EXISTS `nedu` (`codigo` VARCHAR(4) NOT NULL DEFAULT '',`nivel` VARCHAR(40) NULL DEFAULT NULL, PRIMARY KEY (`codigo`))";
-		$this->db->simple_query($mSQL);
 		redirect("nomina/pers/extgrid");
 	}
 
@@ -620,23 +618,57 @@ script;
 	}
 	
 	function instalar(){
-		$mSQL1="ALTER TABLE `pers` ADD `email` VARCHAR(50) NULL";
-		$this->db->simple_query($mSQL1);
-		$mSQL3="ALTER TABLE `pers` ADD`tipoe` VARCHAR(10)";
-		$this->db->simple_query($mSQL3);
-		$mSQL4="ALTER TABLE `pers` ADD `escritura` VARCHAR(25),ADD `rif` VARCHAR(15)";
-		$this->db->simple_query($mSQL4);
-		$mSQL5="ALTER TABLE `pers` ADD `observa` TEXT ";
-		$this->db->simple_query($mSQL5);
-		$mSQL6="CREATE TABLE tipot(codigo int(10) unsigned NOT NULL AUTO_INCREMENT,	`tipo` varchar(50) DEFAULT NULL,PRIMARY KEY (`codigo`) )";
- 		$this->db->simple_query($mSQL6);	 
-		$mSQL7="CREATE TABLE `posicion`(`codigo` varchar(10) NOT NULL,`posicion` varchar(30) DEFAULT NULL,PRIMARY KEY (`codigo`))";
-		$this->db->simple_query($mSQL7);
-		$mSQL8="CREATE TABLE `tipoe` (`codigo` varchar(10) NOT NULL DEFAULT '', `tipo` varchar(50) DEFAULT NULL, PRIMARY KEY (`codigo`))"; 
-		$this->db->simple_query($mSQL8);
-		$mSQL9="ALTER TABLE pers`datasis` ADD COLUMN `turno` CHAR(2) NULL,ADD COLUMN `horame` VARCHAR(10),ADD COLUMN `horams` VARCHAR(10),ADD COLUMN `horate` VARCHAR(10),ADD COLUMN `horats` VARCHAR(10)";
-		$this->db->simple_query($mSQL9);
+		if ( !$this->datasis->iscampo('pers','email') )
+			$this->db->simple_query("ALTER TABLE pers ADD COLUMN `email` VARCHAR(50) NULL");
+
+		if ( !$this->datasis->iscampo('pers','tipoe') )
+			$this->db->simple_query("ALTER TABLE pers ADD COLUMN `tipoe` VARCHAR(10)");
+
+		if ( !$this->datasis->iscampo('pers','escritura') )
+			$this->db->simple_query("ALTER TABLE pers ADD COLUMN `escritura` VARCHAR(25)");
+
+		if ( !$this->datasis->iscampo('pers','rif') )
+			$this->db->simple_query("ALTER TABLE pers ADD COLUMN `rif` VARCHAR(15)");
+		
+		if ( !$this->datasis->iscampo('pers','observa') )
+			$this->db->simple_query("ALTER TABLE pers ADD COLUMN `observa` TEXT ");
+
+		if ( !$this->datasis->iscampo('pers','turno') )
+			$this->db->simple_query("ALTER TABLE pers ADD COLUMN `turno` CHAR(2) NULL");
+			
+		if ( !$this->datasis->iscampo('pers','horame') )
+			$this->db->simple_query("ALTER TABLE pers ADD COLUMN `horame` VARCHAR(10)");
+
+		if ( !$this->datasis->iscampo('pers','horams') )
+			$this->db->simple_query("ALTER TABLE pers ADD COLUMN `horams` VARCHAR(10)");
+
+		if ( !$this->datasis->iscampo('pers','horate') )
+			$this->db->simple_query("ALTER TABLE pers ADD COLUMN `horate` VARCHAR(10)");
+
+		if ( !$this->datasis->iscampo('pers','horats') )
+			$this->db->simple_query("ALTER TABLE pers ADD COLUMN `horats` VARCHAR(10)");
+
+		if ( !$this->datasis->iscampo('pers','modificado') )
+			$this->db->simple_query("ALTER TABLE pers ADD COLUMN `modificado` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP AFTER vence");
+
+		if ( !$this->datasis->iscampo('pers','id') )
+			$this->db->simple_query("ALTER TABLE pers ADD COLUMN `id` INT(11) NULL AUTO_INCREMENT AFTER modificado, DROP PRIMARY KEY, ADD PRIMARY (id), ADD UNIQUE INDEX codigo (codigo)");
+
+		if ( !$this->datasis->istabla('tipot') )
+			$this->db->simple_query("CREATE TABLE tipot (codigo int(10) unsigned NOT NULL AUTO_INCREMENT,tipo varchar(50) DEFAULT NULL,PRIMARY KEY (codigo) )");
+			
+		if ( !$this->datasis->istabla('posicion') )
+			$this->db->simple_query("CREATE TABLE `posicion`(`codigo` varchar(10) NOT NULL,`posicion` varchar(30) DEFAULT NULL,PRIMARY KEY (`codigo`))");
+			
+		if ( !$this->datasis->istabla('posicion') )
+			$this->db->simple_query("CREATE TABLE tipoe (codigo varchar(10) NOT NULL DEFAULT '', tipo varchar(50) DEFAULT NULL, PRIMARY KEY (codigo))"); 
+
+		if ( !$this->datasis->istabla('nedu') ){
+			$this->db->simple_query("CREATE TABLE IF NOT EXISTS nedu (codigo varchar(4) NOT NULL, nivel varchar(40) DEFAULT NULL, PRIMARY KEY (`codigo`)) ENGINE=MyISAM DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC");
+			$this->db->simple_query("INSERT INTO nedu (codigo, nivel) VALUES ('00', 'Sin Educacion Formal'),('01', 'Primaria'),('02', 'Secundaria'),('03', 'Tecnico'),	('04', 'T.S.U.'),('05', 'Universitario'),('06', 'Post Universitario'),('07', 'Doctor'),('08', 'Guru')");
+		}
 	}
+	
 
 	function grid(){
 		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']   :  0;
@@ -937,7 +969,6 @@ var storePers = Ext.create('Ext.data.Store', {
 	}
 });
 
-
 //Column Model
 var colPers = 
 	[
@@ -999,9 +1030,7 @@ Ext.onReady(function(){
 						frame: true, 
 						title: 'Ficha del Trabajador', 
 						bodyPadding: 3,
-						//layout: 'fit',
 						fieldDefaults: { 
-							//anchor: '100%',
     							labelAlign: 'right' 
 						}, 
 						items: [{
@@ -1020,16 +1049,12 @@ Ext.onReady(function(){
 									{ xtype: 'textfield',   fieldLabel: 'Nombre',    labelWidth:60, name: 'nombre',   allowBlank: false, columnWidth: 0.50 },
 									{ xtype: 'textfield',   fieldLabel: 'Apellido',  labelWidth:60, name: 'apellido', allowBlank: false, columnWidth: 0.50 }
 								]
-							},
-							// tabpanel
-							{
+							},{
 								xtype:'tabpanel',
 								activeItem: 0,
 								border: false,
-								//anchor: '100% 100%',
 								deferredRender: false,
 								Height: 200,
-								// tabs
 								defaults: {bodyStyle:'padding:5px',hideMode:'offsets'},
 								items:[{
 									title: 'Valores',
@@ -1053,7 +1078,6 @@ Ext.onReady(function(){
 											]
 										},{
 											title:'Fechas',
-											//defaults:{anchor:'-20'},
 											items: [
 												{ xtype: 'datefield', fieldLabel: 'Fecha de Ingreso',   labelWidth:120, name: 'ingreso', width:230, format: 'd/m/Y', submitFormat: 'Y-m-d', value: new Date() },
 												{ xtype: 'datefield', fieldLabel: 'Fecha Vencimiento',  labelWidth:120, name: 'vence',   width:230, format: 'd/m/Y', submitFormat: 'Y-m-d' },
@@ -1062,7 +1086,6 @@ Ext.onReady(function(){
 										},{
 											title:'Ubicacion',
 											columnWidth : 0.99, 
-											//defaults:{anchor:'-20'},
 											layout: 'column',
 											items: [
 												{ xtype: 'combo', fieldLabel: 'Division',     labelWidth: 90, name: 'divi',     width:310, store: [".$divi."] },
@@ -1085,18 +1108,15 @@ Ext.onReady(function(){
 										items: [{
 											title:'Direccion',
 											columnWidth : 0.50, 
-											//layout: 'fit',
-											//defaults:{anchor:'-20'},
 											items: [
-												{ xtype: 'textfield', fieldLabel: 'Direccion', labelWidth:60, name: 'direc1',   allowBlank: true, width: 280 },
-												{ xtype: 'textfield', fieldLabel: '      ',    labelWidth:60, name: 'direc2',   allowBlank: true, width: 280 },
-												{ xtype: 'textfield', fieldLabel: '      ',    labelWidth:60, name: 'direc3',   allowBlank: true, width: 280 },
-												{ xtype: 'textfield', fieldLabel: 'Telefono',  labelWidth:60, name: 'telefono', allowBlank: true, width: 280 },
+												{ xtype: 'textfield', fieldLabel: 'Direccion', labelWidth:60, name: 'direc1',   allowBlank: true, width: 270 },
+												{ xtype: 'textfield', fieldLabel: '      ',    labelWidth:60, name: 'direc2',   allowBlank: true, width: 270 },
+												{ xtype: 'textfield', fieldLabel: '      ',    labelWidth:60, name: 'direc3',   allowBlank: true, width: 270 },
+												{ xtype: 'textfield', fieldLabel: 'Telefono',  labelWidth:60, name: 'telefono', allowBlank: true, width: 270 },
 											]
 										},{
 											title:'Otros',
 											columnWidth : 0.49, 
-											//defaults:{anchor:'-20'},
 											layout: 'column',
 											items: [
 												{ xtype: 'textfield', fieldLabel: 'Numero de Carnet',  labelWidth:110, name: 'carnet',  allowBlank: true, width:260 },
@@ -1178,7 +1198,7 @@ Ext.onReady(function(){
 				title: '',
 				losable: false,
 				closeAction: 'destroy',
-				width: 650,
+				width: 660,
 				height: 470,
 				resizable: false,
 				modal: true,
@@ -1205,7 +1225,7 @@ Ext.onReady(function(){
 	var filters = {
 		ftype: 'filters',
 		// encode and local configuration options defined previously for easier reuse
-		encode: 'json', // json encode the filter query
+		encode: 'json', 
 		local: false
 	};    
 
@@ -1326,8 +1346,6 @@ Ext.onReady(function(){
 			}
 		]
 	});
-
-
 	storePers.load({ params: { start:0, limit: 30}});
 });
 
