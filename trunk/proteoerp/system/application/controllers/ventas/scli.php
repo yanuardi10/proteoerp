@@ -885,4 +885,41 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		}
 		
 	}
+
+
+	function sclibusca() {
+		$start    = isset($_REQUEST['start'])   ? $_REQUEST['start']  :  0;
+		$limit    = isset($_REQUEST['limit'])   ? $_REQUEST['limit']  : 25;
+		$cliente  = isset($_REQUEST['cliente']) ? $_REQUEST['cliente']: '';
+		$semilla  = isset($_REQUEST['query'])   ? $_REQUEST['query']  : '';
+
+		$mSQL = '';
+	
+		$mSQL = "SELECT cliente item, CONCAT(cliente, ' ', nombre) valor FROM scli WHERE tipo<>'0' ";
+		if ( strlen($semilla)>0 ){
+			$mSQL .= " AND ( cliente LIKE '$semilla%' OR nombre LIKE '%$semilla%' OR  rifci LIKE '%$semilla%') ";
+		} else {
+			if ( strlen($cliente)>0 ) $mSQL .= " AND (cliente LIKE '$cliente%' OR nombre LIKE '%$cliente%' OR  rifci LIKE '%$cliente%') ";
+		}
+		$mSQL .= "ORDER BY nombre ";
+		$results = $this->db->count_all('scli');
+
+		if ( empty($mSQL)) {
+			echo '{success:true, message:"mSQL vacio, Loaded data", results: 0, data:'.json_encode(array()).'}';
+		} else {
+			$mSQL .= " limit $start, $limit ";
+			$query = $this->db->query($mSQL);
+			$arr = array();
+			foreach ($query->result_array() as $row)
+			{
+				$meco = array();
+				foreach( $row as $idd=>$campo ) {
+					$meco[$idd] = utf8_encode($campo);
+				}
+				$arr[] = $meco;
+			}
+			echo '{success:true, message:"'.$mSQL.'", results:'. $results.', data:'.json_encode($arr).'}';
+		}
+	}
+
 }
