@@ -82,7 +82,7 @@ class ingresos{
 		$querE b.fecha BETWEEN $fdesde AND $fhasta AND b.cod_cli='REIVA'
 		foreach ( $query->result() as $row ){
 			$mSQL = "UPDATE siva SET reiva=$row->reteiva, comprobante=$row->nroriva WHERE tipo='FC' AND numero='$row->numero' AND libro='V' AND EXTRACT(YEAR_MONTH FROM fechal)=$mes ";
-			$flag=$this->db->simple_query($mSQL);    
+			$flag=$this->db->simple_query($mSQL);
 			if(!$flag) memowrite($mSQL,'genesmov');
 		}*/
 
@@ -114,48 +114,100 @@ class ingresos{
 				WHERE b.fecha BETWEEN $fdesde AND $fhasta AND b.cod_cli='REIVA'";
 		$query = $this->db->query($mSQL);
 
+		$data=array();
 		foreach ( $query->result() as $row ){
-			$mSQL = "INSERT INTO siva SET 
-					libro = 'V',
-					tipo  = 'CR',
-					fuente =  'MC',
-					sucursal = '99', 
-					fecha = '".$row->emiriva."',
-					numero ='$row->nroriva',
-					clipro = ".$this->db->escape($row->cod_cli).",
-					nombre = ".$this->db->escape($row->nombre).",
-					contribu = 'CO', 
-					rif = ".$this->db->escape($row->rifci).",
-					registro = '01',
-					nacional ='S',
-					referen ='',
-					exento = 0, 
-					general = 0, 
-					geneimpu = 0, 
-					reducida =  0, 
-					reduimpu = 0, 
-					adicional = 0, 
-					adicimpu =  0, 
-					impuesto = 0, 
-					gtotal = 0, 
-					stotal = 0, 
-					reiva = '".$row->reteiva."', 
-					comprobante = '',
-					fecharece = '".$row->recriva."',
-					fechal  = ".$mes."01, 
-					nfiscal = ".$this->db->escape($row->nfiscal).",
-					fafecta = ".$this->db->escape($row->fafecta).",
-					afecta  = ".$this->db->escape($row->afecta);
+			$data['libro']      ='V';
+			$data['tipo']       ='CR';
+			$data['fuente']     ='MC';
+			$data['sucursal']   ='99';
+			$data['fecha']      =$row->emiriva;
+			$data['numero']     =$row->nroriva;
+			$data['clipro']     =$row->cod_cli;
+			$data['nombre']     =$row->nombre;
+			$data['contribu']   ='CO';
+			$data['rif']        =$row->rifci;
+			$data['registro']   ='01';
+			$data['nacional']   ='S';
+			$data['referen']    ='';
+			$data['exento']     =0;
+			$data['general']    =0;
+			$data['geneimpu']   =0;
+			$data['reducida']   =0;
+			$data['reduimpu']   =0;
+			$data['adicional']  =0;
+			$data['adicimpu']   =0;
+			$data['impuesto']   =0;
+			$data['gtotal']     =0;
+			$data['stotal']     =0;
+			$data['reiva']      =$row->reteiva;
+			$data['comprobante']='';
+			$data['fecharece']  =$row->recriva;
+			$data['fechal']     =$mes.'01';
+			$data['nfiscal']    =$row->nfiscal;
+			$data['fafecta']    =$row->fafecta;
+			$data['afecta']     =$row->afecta;
+
+			$mSQL = $this->db->insert_string('siva', $data);
 
 			$flag=$this->db->simple_query($mSQL);
 			if(!$flag) memowrite($mSQL,'genesmov');
 		}
 
+		//Retenciones de rivc
+		$data=array();
+		$mSQL="SELECT a.fecha, CONCAT(a.periodo,a.nrocomp) AS nroriva, c.nombre, c.rifci, a.cod_cli,
+				b.numero AS afecta, b.fecha AS fafecta, b.reiva AS reteiva, a.transac, a.emision,
+				a.fecha AS recriva, '' AS nfiscal
+			FROM rivc AS a 
+			JOIN itrivc AS b ON a.id=b.idrivc 
+			LEFT JOIN scli AS c ON a.cod_cli=c.cliente 
+			WHERE a.anulado='N' AND b.reiva>0 
+				AND a.fecha BETWEEN $fdesde AND $fhasta";
+		$query = $this->db->query($mSQL);
+
+		foreach ( $query->result() as $row ){
+
+			$data['libro']      ='V';
+			$data['tipo']       ='CR';
+			$data['fuente']     ='MC';
+			$data['sucursal']   ='99';
+			$data['fecha']      =$row->emiriva;
+			$data['numero']     =$row->nroriva;
+			$data['clipro']     =$row->cod_cli;
+			$data['nombre']     =$row->nombre;
+			$data['contribu']   ='CO';
+			$data['rif']        =$row->rifci;
+			$data['registro']   ='01';
+			$data['nacional']   ='S';
+			$data['referen']    ='';
+			$data['exento']     =0;
+			$data['general']    =0;
+			$data['geneimpu']   =0;
+			$data['reducida']   =0;
+			$data['reduimpu']   =0;
+			$data['adicional']  =0;
+			$data['adicimpu']   =0;
+			$data['impuesto']   =0;
+			$data['gtotal']     =0;
+			$data['stotal']     =0;
+			$data['reiva']      =$row->reteiva;
+			$data['comprobante']='';
+			$data['fecharece']  =$row->recriva;
+			$data['fechal']     =$mes.'01';
+			$data['nfiscal']    =$row->nfiscal;
+			$data['fafecta']    =$row->fafecta;
+			$data['afecta']     =$row->afecta;
+
+			$mSQL = $this->db->insert_string('siva', $data);
+			$flag=$this->db->simple_query($mSQL);
+			if(!$flag) memowrite($mSQL,'genesmov');
+		}
+
 		//RETENCIONES ANTERIORES PENDIENTES
-		$mSQL = "SELECT * FROM smov WHERE fecha<".$mes."01 AND cod_cli='REIVA' 
+		/*$mSQL = "SELECT * FROM smov WHERE fecha<".$mes."01 AND cod_cli='REIVA' 
 				 AND control IS NULL AND monto>abonos AND (tipo_ref<>'PR' OR tipo_ref IS NULL) ";
 		$query = $this->db->query($mSQL);
-		
+
 		foreach ( $query->result() as $row ){
 			$mSQL = "SELECT COUNT(*) FROM sfpa WHERE tipo_doc='FE' AND tipo='RI' 
 					AND fecha='".$row->fecha."' AND '$row->observa1' LIKE CONCAT('%',numero,'%')";
@@ -164,42 +216,42 @@ class ingresos{
 					FROM sfpa 
 					WHERE tipo_doc='FE' AND tipo='RI' AND fecha='".$row->fecha."' AND 
 					'".$row->observa1."' LIKE CONCAT('%',numero,'%')";
-			
+
 			$query1 = $this->db->query($mSQL);
 			$mREG   = $query1->result();
 			$transac = $mREG->transac;
 			$nombre = dameval("select nombre from sfac where transac='$transac'");
 			$rif    = dameval("select rifci  from sfac where transac='$transac'");
 			$mSQL = "INSERT INTO siva SET 
-						libro = 'V', 
-						tipo = 'RI',
-						fuente = 'FA', 
-						sucursal = '00', 
-						fecha = '$row->fecha', 
-						numero  = 'mREG->numero',
-						referen = 'mREG->numero',
-						clipro  = 'mREG->cod_cli',
-						nombre = '$nombre',
-						contribu, 'CO', 
-						rif = '$rif', 
+						libro    = 'V',
+						tipo     = 'RI',
+						fuente   = 'FA',
+						sucursal = '00',
+						fecha    = '$row->fecha',
+						numero   = '$row->numero',
+						referen  = '$row->numero',
+						clipro   = '$row->cod_cli',
+						nombre   = '$nombre',
+						contribu = 'CO',
+						rif      = '$rif',
 						registro = '01',
 						nacional = 'S',
-						exento = 0,  
+						exento   = 0,
 						fafecta  = '$row->fecha',
-						general = 0, 
-						geneimpu = 0, 
-						reducida = 0, 
-						reduimpu = 0, 
-						adicional = 0, 
+						general  = 0,
+						geneimpu = 0,
+						reducida = 0,
+						reduimpu = 0,
+						adicional= 0,
 						adicimpu = 0,
-						impuesto = 0, 
-						gtotal = 0, 
-						stotal = 0, 
-						reiva = ".$row->monto.",
-						fechal = ".$mes."01 ";
+						impuesto = 0,
+						gtotal   = 0,
+						stotal   = 0,
+						reiva    = ".$row->monto.",
+						fechal   = ".$mes."01 ";
 			$flag=$this->db->simple_query($mSQL);
 			if(!$flag) memowrite($mSQL,'genesmov');
-		}
+		}*/
 	}
 
 	function geneotin($mes) {
