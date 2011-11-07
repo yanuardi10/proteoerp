@@ -1623,21 +1623,21 @@ var mys = ((screen.availHeight/2)-300);
 //Column Model Presupuestos
 var ScstCol = 
 	[
-		{ header: 'Tipo',             width:  40, sortable: true,  dataIndex: 'tipo_doc', field: { type: 'textfield' }, filter: { type: 'string' }}, 
-		{ header: 'Numero',           width:  60, sortable: true,  dataIndex: 'numero',   field: { type: 'textfield' }, filter: { type: 'string' }}, 
-		{ header: 'Fecha',            width:  70, sortable: false, dataIndex: 'fecha',    field: { type: 'date'      }, filter: { type: 'date'   }}, 
-		{ header: 'Recibida',         width:  70, sortable: false, dataIndex: 'recep',    field: { type: 'date'      }, filter: { type: 'date'   }}, 
-		{ header: 'Prov.',            width:  50, sortable: true,  dataIndex: 'proveed',  field: { type: 'textfield' }, filter: { type: 'string' }, renderer: renderSprv }, 
-		{ header: 'Nombre Proveedor', width: 200, sortable: true,  dataIndex: 'nombre',   field: { type: 'textfield' }, filter: { type: 'string' }}, 
-		{ header: 'SubTotal',         width: 100, sortable: true,  dataIndex: 'montotot', field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
-		{ header: 'IVA',              width:  80, sortable: true,  dataIndex: 'montoiva', field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
-		{ header: 'Total',            width: 100, sortable: true,  dataIndex: 'montonet', field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
-		{ header: 'Almacen',          width:  60, sortable: true,  dataIndex: 'depo',     field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
-		{ header: 'Observacion',      width: 160, sortable: true,  dataIndex: 'observa1', field: { type: 'textfield' }, filter: { type: 'string' }}, 
-		{ header: 'Control',          width:  60, sortable: true,  dataIndex: 'control',  field: { type: 'textfield' }, filter: { type: 'string' }}, 
-		{ header: 'Estampa',          width:  70, sortable: false, dataIndex: 'fecha',    field: { type: 'date'      }, filter: { type: 'date'   }}, 
-		{ header: 'Hora',             width:  60, sortable: true,  dataIndex: 'hora',     field: { type: 'textfield' }, filter: { type: 'string' }}, 
-		{ header: 'Usuario',          width:  60, sortable: true,  dataIndex: 'usuario',  field: { type: 'textfield' }, filter: { type: 'string' }}
+		{ header: 'Tipo',             width:  40, sortable: true,  dataIndex: 'tipo_doc', field: { type: 'textfield'  }, filter: { type: 'string' }}, 
+		{ header: 'Numero',           width:  60, sortable: true,  dataIndex: 'numero',   field: { type: 'textfield'  }, filter: { type: 'string' }}, 
+		{ header: 'Fecha',            width:  70, sortable: false, dataIndex: 'fecha',    field: { type: 'date'       }, filter: { type: 'date'   }}, 
+		{ header: 'Recibida',         width:  70, sortable: false, dataIndex: 'recep',    field: { type: 'date'       }, filter: { type: 'date'   }}, 
+		{ header: 'Prov.',            width:  50, sortable: true,  dataIndex: 'proveed',  field: { type: 'textfield'  }, filter: { type: 'string' }, renderer: renderSprv }, 
+		{ header: 'Nombre Proveedor', width: 200, sortable: true,  dataIndex: 'nombre',   field: { type: 'textfield'  }, filter: { type: 'string' }}, 
+		{ header: 'SubTotal',         width: 100, sortable: true,  dataIndex: 'montotot', field: { type: 'numberfield'}, filter: { type: 'number' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
+		{ header: 'IVA',              width:  80, sortable: true,  dataIndex: 'montoiva', field: { type: 'numberfield'}, filter: { type: 'number' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
+		{ header: 'Total',            width: 100, sortable: true,  dataIndex: 'montonet', field: { type: 'numberfield'}, filter: { type: 'number' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
+		{ header: 'Almacen',          width:  60, sortable: true,  dataIndex: 'depo',     field: { type: 'textfield'  }, filter: { type: 'number' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
+		{ header: 'Observacion',      width: 160, sortable: true,  dataIndex: 'observa1', field: { type: 'textfield'  }, filter: { type: 'string' }}, 
+		{ header: 'Control',          width:  60, sortable: true,  dataIndex: 'control',  field: { type: 'textfield'  }, filter: { type: 'string' }}, 
+		{ header: 'Estampa',          width:  70, sortable: false, dataIndex: 'estampa',  field: { type: 'date'       }, filter: { type: 'date'   }}, 
+		{ header: 'Hora',             width:  60, sortable: true,  dataIndex: 'hora',     field: { type: 'textfield'  }, filter: { type: 'string' }}, 
+		{ header: 'Usuario',          width:  60, sortable: true,  dataIndex: 'usuario',  field: { type: 'textfield'  }, filter: { type: 'string' }}
 	];
 
 //Column Model Detalle de Presupuesto
@@ -1846,11 +1846,9 @@ Ext.onReady(function() {
 		'<tr><td colspan=3 align=\'center\' >--</td></tr>',		
 		'</table>','nanai'
 	];
-	// define a template to use for the detail view
 
 	// Al cambiar seleccion
 	gridScst.getSelectionModel().on('selectionchange', function(sm, selectedRecord) {
-		//var vaina ;
 		if (selectedRecord.length) {
 			gridScst.down('#delete').setDisabled(selectedRecord.length === 0);
 			gridScst.down('#update').setDisabled(selectedRecord.length === 0);
@@ -1863,12 +1861,9 @@ Ext.onReady(function() {
 				params: { control: selectedRecord[0].data.control },
 				success: function(response) {
 					var vaina = response.responseText;
-					//alert(vaina);
 					scstTplMarkup.pop();
 					scstTplMarkup.push(vaina);
-	var scstTpl = Ext.create('Ext.Template', scstTplMarkup );
-
-					//scstTpl.set();
+					var scstTpl = Ext.create('Ext.Template', scstTplMarkup );
 					meco1.setTitle('Imprimir Compra');
 					scstTpl.overwrite(meco1.body, selectedRecord[0].data );
 				}
@@ -1899,9 +1894,6 @@ Ext.onReady(function() {
 			layout: 'accordion',
 			items: [
 				{
-					//title:'Imprimir',
-					//defaults:{border:false},
-					//preventHeader: true,
 					layout: 'fit',
 					items:[
 						{
@@ -1940,23 +1932,13 @@ Ext.onReady(function() {
 				items: gridScst
 			},{
 				itemId: 'viewport-center-detail',
-				//xtype: 'tabpanel',
 				activeTab: 0,
 				region: 'south',
 				height: '40%',
 				split: true,
 				margins: '0 0 0 0',
-				//items: [{
-				
 				preventHeader: true,
-				//collapsible: true,
-				//title: 'detalle',
 				items: gridItScst
-				//},{
-				//title: 'otros',
-				//html: 'tab2'
-					
-				//}]
 			}]	
 		}]
 	});

@@ -636,10 +636,10 @@ var colConc =
 // Define our data model
 var Conceptos = Ext.regModel('Conceptos', {
 	fields: ['id', 'concepto', 'tipo', 'descrip', 'aplica', 'grupo', 'encab1', 'encab2', 'formula', 'tipod', 'ctade', 'tipoa', 'ctaac', 'liquida'],
-//	validations: [
-//		{ type: 'length', field: 'codigo',   min: 1 },
-//		{ type: 'length', field: 'descrip',  min: 1 }
-//	],
+	validations: [
+		{ type: 'length', field: 'concepto',  min: 1 },
+		{ type: 'length', field: 'descrip',   min: 1 }
+	],
 	proxy: {
 		type: 'ajax',
 		noCache: false,
@@ -687,7 +687,7 @@ var storeConc = Ext.create('Ext.data.Store', {
 	method: 'POST',
 	listeners: {
 		write: function(mr,re, op) {
-			Ext.Msg.alert('Aviso','Registro Guardado '+re.success)
+			Ext.Msg.alert('Aviso','Registro Guardado ')
 		}
 	}
 });
@@ -731,43 +731,16 @@ var ctaacStore = new Ext.data.JsonStore({
 	method: 'POST'
 });
 
-/*
-var ci = {
-	layout: 'column',
-	defaults: {columnWidth:0.5, layout: 'form', border: false, xtype: 'panel'},
-	items: [{
-		defaults: { anchor: '100%' },
-			items: [{
-				xtype: 'textfield',
-				fieldLabel: 'Nacional',
-				name: 'nacional',
-				allowBlank: false
-			}]
-		},{
-		defaults: { anchor: '100%' },
-			items: [{
-				xtype: 'textfield',
-				fieldLabel: 'Cedula',
-				name: 'cedula',
-				allowBlank: false
-			}]
-		}]
-	};
-*/	
-
 var win;
 // Main 
 Ext.onReady(function(){
-
 	function showContactForm() {
 		if (!win) {
 			// Create Form
 			var writeForm = Ext.define('Conc.Form', {
 				extend: 'Ext.form.Panel',
 				alias:  'widget.writerform',
-				result: function(res){
-					alert('Resultado');
-				},
+				result: function(res){	alert('Resultado');},
 				requires: ['Ext.form.field.Text'],
 				initComponent: function(){
 					Ext.apply(this, {
@@ -775,10 +748,7 @@ Ext.onReady(function(){
 						frame: true, 
 						title: 'Concepto', 
 						bodyPadding: 3,
-						fieldDefaults: { 
-							//anchor: '100%',
-    							labelAlign: 'right' 
-						}, 
+						fieldDefaults: { labelAlign: 'right' }, 
 						items: [{
 								layout: 'column',
 								frame: false,
@@ -788,7 +758,7 @@ Ext.onReady(function(){
 								style:'padding:4px',
 								items: [
 									{ xtype: 'textfield',   fieldLabel: 'Codigo',      labelWidth:50, name: 'concepto', allowBlank: false, columnWidth : 0.18, id: 'concepto' },
-									{ xtype: 'combo',       fieldLabel: 'Tipo.',       labelWidth:40, name: 'tipo',   store: [['A','Asignaciones'],['D','Deducciones'],['O','Otro']], columnWidth: 0.22 },
+									{ xtype: 'combo',       fieldLabel: 'Tipo.',       labelWidth:40, name: 'tipo',     store: [['A','Asignaciones'],['D','Deducciones'],['O','Otro']], columnWidth: 0.22 },
 									{ xtype: 'textfield',   fieldLabel: 'Descripcion', labelWidth:70, name: 'descrip',  allowBlank: false, columnWidth : 0.60, id: 'descrip' },
 									{ xtype: 'textfield',   fieldLabel: 'Aplica',      labelWidth:50, name: 'aplica',   allowBlank: false, columnWidth: 0.18  },
 									{ xtype: 'textfield',   fieldLabel: 'Grupo',       labelWidth:40, name: 'grupo',    allowBlank: true, columnWidth: 0.22  },

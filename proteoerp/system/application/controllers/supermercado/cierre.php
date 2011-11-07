@@ -15,13 +15,13 @@ class Cierre extends Controller {
 		$this->rapyd->load("datagrid");
 		$this->rapyd->load("datafilter");
 		$atts = array(
-              'width'      => '800',
-              'height'     => '600',
-              'scrollbars' => 'yes',
-              'status'     => 'yes',
-              'resizable'  => 'yes',
-              'screenx'    => '0',
-              'screeny'    => '0');
+			'width'      => '800',
+			'height'     => '600',
+			'scrollbars' => 'yes',
+			'status'     => 'yes',
+			'resizable'  => 'yes',
+			'screenx'    => '0',
+			'screeny'    => '0');
 		$titulo  = anchor_popup('supermercado/lresumen', ' Ver Resumen de caja',$atts)." <---> ";
 		$titulo .= anchor_popup('supermercado/lresumen/indext',' Ver Resumen de todas las cajas',$atts);
 
@@ -42,10 +42,10 @@ class Cierre extends Controller {
 			$atts=array('align'=>'LEFT','border'=>'0');
 			$fecha=str_replace('-','',$fecha);
 			$atRI = array(
-              'width'     => '800','height' => '600',
-              'scrollbars'=> 'yes','status' => 'yes',
-              'resizable' => 'yes','screenx'=> '0',
-              'screeny'   => '0');
+				'width'     => '800','height' => '600',
+				'scrollbars'=> 'yes','status' => 'yes',
+				'resizable' => 'yes','screenx'=> '0',
+				'screeny'   => '0');
 			if (!empty($cerrado))
 				return image('caja_cerrada.gif',"Caja Cerrada: $caja",$atts)."<h3>Caja: $caja</h3><br><center>".anchor_popup("/supermercado/cierre/doccierre/$cerrado",'Ver Cuadre',$atRI).' '.anchor_popup("/supermercado/cierre/ventasdia/$fecha/$caja",'Detalle de Ventas',$atRI).'</center>';
 			else

@@ -1020,9 +1020,7 @@ Ext.onReady(function(){
 			var writeForm = Ext.define('Pers.Form', {
 				extend: 'Ext.form.Panel',
 				alias:  'widget.writerform',
-				result: function(res){
-					alert('Resultado');
-				},
+				result: function(res){alert('Resultado');},
 				requires: ['Ext.form.field.Text'],
 				initComponent: function(){
 					Ext.apply(this, {
@@ -1207,7 +1205,6 @@ Ext.onReady(function(){
 					beforeshow: function() {
 						var form = this.down('writerform').getForm();
 						this.activeRecord = registro;
-
 						if (registro) {
 							form.loadRecord(registro);
 							form.findField('codigo').setReadOnly(true);
