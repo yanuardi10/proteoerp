@@ -192,8 +192,8 @@ class Dimensiones extends Controller {
 		$mSQL='DROP TABLE IF EXISTS dim_producto CASCADE';
 		echo $this->olap->query($mSQL);
 		$db=$this->olap->database;
-		
-		$mSQL="CREATE TABLE dim_producto
+		$table='dim_producto';
+		$mSQL="CREATE TABLE $table
 		SELECT 
 			a.id,
 			b.id AS fk_her_grupo,

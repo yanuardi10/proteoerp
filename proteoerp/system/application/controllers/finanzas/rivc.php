@@ -1147,8 +1147,12 @@ class rivc extends Controller {
 				if($ban==false){ memowrite($sql,'rivc'); $error++;}
 			}
 		}
+		$periodo = $do->get('periodo');
+		$nrocomp = $do->get('nrocomp');
 
-		logusu($do->table,"Creo $this->tits $primary ");
+		$primary =implode(',',$do->pk);
+
+		logusu($do->table,"Creo $this->tits ID $primary ${periodo }${nrocomp}");
 		return true;
 	}
 

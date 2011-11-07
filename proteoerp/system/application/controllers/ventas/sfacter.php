@@ -15,7 +15,7 @@ class sfacter extends validaciones {
 	}
 
 	function index(){
-		redirect($this->url."filteredgrid");
+		redirect($this->url.'filteredgrid');
 	}
 
 	function filteredgrid(){
@@ -277,7 +277,7 @@ class sfacter extends validaciones {
 		$edit->sprv = new inputField('C&oacute;digo','sprv');
 		$edit->sprv->size = 6;
 		$edit->sprv->maxlength=5;
-		$edit->sprv->rule='required';
+		//$edit->sprv->rule='required';
 		//$edit->sprv->append($boton);
 
 		$edit->sprvnombre = new hiddenField('Nombre', 'sprvnombre');
@@ -502,7 +502,7 @@ class sfacter extends validaciones {
 
 		$conten['form']  =&  $edit;
 
-		$data['style']   = style("redmond/jquery-ui.css");
+		$data['style']   = style('redmond/jquery-ui.css');
 		$data['style']  .= style('gt_grid.css');
 		$data['style']	.= style("impromptu.css");
 
@@ -697,7 +697,7 @@ class sfacter extends validaciones {
 		$data['vence']      = $fecha;
 		$data['tipo_ref']   = 'ND';
 		$data['num_ref']    = $ref_numero;
-		$data['observa1']   = 'FACTURA A TERCERO';
+		$data['observa1']   = (!empty($sprv))? 'FACTURA A TERCERO' : 'FACTURA A CREDITO';
 		$data['estampa']    = $estampa;
 		$data['hora']       = $hora;
 		$data['transac']    = $transac;
@@ -710,42 +710,44 @@ class sfacter extends validaciones {
 		if($ban==false){ memowrite($sql,'sfacter'); $error++;}
 
 		//Inserta en sprm
-		$causado  = $this->datasis->fprox_numero('ncausado');
-		$sprvnobre=$this->datasis->dameval('SELECT nombre FROM sprv WHERE proveed='.$this->db->escape($sprv));
+		if(!empty($sprv)){
+			$causado  = $this->datasis->fprox_numero('ncausado');
+			$sprvnobre=$this->datasis->dameval('SELECT nombre FROM sprv WHERE proveed='.$this->db->escape($sprv));
 
-		$data=array();
-		$data['cod_prv']    = $sprv;
-		$data['nombre']     = $sprvnobre;
-		$data['tipo_doc']   = 'FC';
-		$data['numero']     = $numero;
-		$data['fecha']      = $fecha;
-		$data['monto']      = $totneto;
-		$data['impuesto']   = 0;
-		$data['abonos']     = 0;
-		$data['vence']      = $fecha;
-		$data['observa1']   = 'FACTURA A TERCERO ';
-		$data['observa2']   = ' CLIENTE '.$cod_cli;
-		$data['tipo_ref']   = '';
-		$data['num_ref']    = $ref_numero;
-		$data['transac']    = $transac;
-		$data['estampa']    = $estampa;
-		$data['hora']       = $hora;
-		$data['usuario']    = $usuario;
-		$data['reteiva']    = 0;
-		$data['montasa']    = 0;
-		$data['monredu']    = 0;
-		$data['monadic']    = 0;
-		$data['tasa']       = 0;
-		$data['reducida']   = 0;
-		$data['sobretasa']  = 0;
-		$data['exento']     = 0;
-		$data['causado']    = $causado;
-		$data['codigo']     = 'NOCON';
-		$data['descrip']    = 'NOTA DE CONTABILIDAD';
+			$data=array();
+			$data['cod_prv']    = $sprv;
+			$data['nombre']     = $sprvnobre;
+			$data['tipo_doc']   = 'FC';
+			$data['numero']     = $numero;
+			$data['fecha']      = $fecha;
+			$data['monto']      = $totneto;
+			$data['impuesto']   = 0;
+			$data['abonos']     = 0;
+			$data['vence']      = $fecha;
+			$data['observa1']   = 'FACTURA A TERCERO ';
+			$data['observa2']   = ' CLIENTE '.$cod_cli;
+			$data['tipo_ref']   = '';
+			$data['num_ref']    = $ref_numero;
+			$data['transac']    = $transac;
+			$data['estampa']    = $estampa;
+			$data['hora']       = $hora;
+			$data['usuario']    = $usuario;
+			$data['reteiva']    = 0;
+			$data['montasa']    = 0;
+			$data['monredu']    = 0;
+			$data['monadic']    = 0;
+			$data['tasa']       = 0;
+			$data['reducida']   = 0;
+			$data['sobretasa']  = 0;
+			$data['exento']     = 0;
+			$data['causado']    = $causado;
+			$data['codigo']     = 'NOCON';
+			$data['descrip']    = 'NOTA DE CONTABILIDAD';
 
-		$sql=$this->db->insert_string('sprm', $data);
-		$ban=$this->db->simple_query($sql);
-		if($ban==false){ memowrite($sql,'sfacter'); $error++;}
+			$sql=$this->db->insert_string('sprm', $data);
+			$ban=$this->db->simple_query($sql);
+			if($ban==false){ memowrite($sql,'sfacter'); $error++;}
+		}
 
 		$primary =implode(',',$do->pk);
 		logusu($do->table,"Creo $this->tits $primary ");
@@ -760,7 +762,6 @@ class sfacter extends validaciones {
 		$primary =implode(',',$do->pk);
 		logusu($do->table,"Elimino $this->tits $primary ");
 	}
-
 
 
 	function instalar(){
