@@ -428,6 +428,7 @@ class Noco extends Controller {
 
 		$mSQL = "SELECT codigo, CONCAT(codigo,' ',nombre) nombre, tipo FROM noco WHERE tipo<>'O' ORDER BY codigo";
 		$contratos = $this->datasis->llenacombo($mSQL);
+
 		$listados= $this->datasis->listados('noco');
 		$otros=$this->datasis->otros('noco', 'noco');
 		
@@ -461,7 +462,6 @@ Ext.require([
 
 var mxs = ((screen.availWidth/2)-400);
 var mys = ((screen.availHeight/2)-300);
-
 
 var tipos = new Ext.data.SimpleStore({
     fields: ['abre', 'todo'],

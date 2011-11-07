@@ -662,7 +662,7 @@ class Sprv extends validaciones {
 		$mSQL = $this->db->update_string("sprv", $campos,"id='".$data['data']['id']."'" );
 		$this->db->simple_query($mSQL);
 		logusu('sprv',"PROVEEDOR ".$data['data']['proveed']." MODIFICADO");
-		echo "{ success: true, message: 'Proveedor Modificado $mSQL'}";
+		echo "{ success: true, message: 'Proveedor Modificado '}";
 	}
 
 	function eliminar(){
@@ -746,12 +746,11 @@ var mcuenta  = '';
 // Define our data model
 var Proveedores = Ext.regModel('Proveedores', {
 	fields: ['id','proveed','tipo','nombre','rif','grupo','nomgrup','telefono','contacto', 'direc1', 'direc2', 'direc3','cliente', 'observa', 'nit', 'codigo','tiva', 'email', 'url', 'banco1', 'cuenta1', 'banco2', 'cuenta2', 'nomfis', 'reteiva' ],
-	/*validations: [
-		{ type: 'length', field: 'codigo',   min: 1 },
-		{ type: 'length', field: 'nacional', min: 1 }, 
-		{ type: 'length', field: 'cedula',   min: 6 }, 
+	validations: [
+		{ type: 'length', field: 'proveed',  min: 1 },
+		{ type: 'length', field: 'rif',      min: 12 }, 
 		{ type: 'length', field: 'nombre',   min: 3 }
-	],*/
+	],
 	proxy: {
 		type: 'ajax',
 		noCache: false,
@@ -864,31 +863,6 @@ var cplaStore = new Ext.data.Store({
 	method: 'POST'
 });
 
-/*
-var ci = {
-	layout: 'column',
-	defaults: {columnWidth:0.5, layout: 'form', border: false, xtype: 'panel'},
-	items: [{
-		defaults: { anchor: '100%' },
-			items: [{
-				xtype: 'textfield',
-				fieldLabel: 'Nacional',
-				name: 'nacional',
-				allowBlank: false
-			}]
-		},{
-		defaults: { anchor: '100%' },
-			items: [{
-				xtype: 'textfield',
-				fieldLabel: 'Cedula',
-				name: 'cedula',
-				allowBlank: false
-			}]
-		}]
-	};
-*/
-
-
 
 var win;
 // Main 
@@ -923,7 +897,6 @@ Ext.onReady(function(){
 								items: [
 									{ xtype: 'textfield', fieldLabel: 'Codigo',   labelWidth:60, name: 'proveed',  allowBlank: false, columnWidth : 0.20, id: 'proveed' },
 									{ xtype: 'textfield', fieldLabel: 'RIF',      labelWidth:40, name: 'rif',      allowBlank: false, columnWidth : 0.25 },
-									//{ itemId: 'seniat', text: 'SENIAT', scope: this, handler: this.onSeniat, columnWidth : 0.10 },
 									{ xtype: 'combo',     fieldLabel: 'Grupo',    labelWidth:80, name: 'grupo',    store: [".$grupo."], columnWidth: 0.50 },
 									{ xtype: 'textfield', fieldLabel: 'Nombre',   labelWidth:60, name: 'nombre',   allowBlank: false, columnWidth : 0.60 },
 									{ xtype: 'combo',     fieldLabel: 'Origen',   labelWidth:65, name: 'tiva',     store: [['N','Nacional'],['I','Internacional'],['O','Otro']], columnWidth: 0.35 },
@@ -995,7 +968,6 @@ Ext.onReady(function(){
 										store: cplaStore,
 										columnWidth: 0.80
 									}
-
 								]
 							}
 						], 
@@ -1235,44 +1207,41 @@ Ext.onReady(function(){
 		return $script;	
 	}
 
-
-
 	function instalar(){
 
-		$mSQL='ALTER TABLE `sprv` DROP PRIMARY KEY';
-		$this->db->simple_query($mSQL);
-		$mSQL='ALTER TABLE `sprv` ADD id INT AUTO_INCREMENT PRIMARY KEY';
-		$this->db->simple_query($mSQL);
-		//$mSQL='ALTER TABLE `sprv` ADD UNIQUE `id` (`id`)';
-		//$this->db->simple_query($mSQL);
-		$mSQL='ALTER TABLE `sprv` ADD PRIMARY KEY `id` (`id`)';
-		$this->db->simple_query($mSQL);
-		$mSQL='ALTER TABLE `sprv` ADD `copre` VARCHAR(11) DEFAULT NULL NULL AFTER `cuenta` ';
-		$this->db->simple_query($mSQL);
-		$mSQL='ALTER TABLE `sprv` ADD `ocompra` CHAR(1) DEFAULT NULL NULL AFTER `copre` ';
-		$this->db->simple_query($mSQL);
-		$mSQL='ALTER TABLE `sprv` ADD `dcredito` DECIMAL(3,0) DEFAULT "0" NULL AFTER `ocompra` ';
-		$this->db->simple_query($mSQL);
-		$mSQL='ALTER TABLE `sprv` ADD `despacho` DECIMAL(3,0) DEFAULT NULL NULL AFTER `dcredito` ';
-		$this->db->simple_query($mSQL);
-		$mSQL='ALTER TABLE `sprv` ADD `visita` VARCHAR(9) DEFAULT NULL NULL AFTER `despacho` ';
-		$this->db->simple_query($mSQL);
-		$mSQL='ALTER TABLE `sprv` ADD `cate` VARCHAR(20) NULL AFTER `visita` ';
-		$this->db->simple_query($mSQL);
-		$mSQL='ALTER TABLE `sprv` ADD `reteiva` DECIMAL(7,2) DEFAULT "0.00" NULL AFTER `cate` ';
-		$this->db->simple_query($mSQL);
-		$mSQL='ALTER TABLE `sprv` ADD `ncorto` VARCHAR(20) DEFAULT NULL NULL AFTER `nombre` ';
-		$this->db->simple_query($mSQL);
-		$mSQL='ALTER TABLE `sprv` CHANGE `direc1` `direc1` VARCHAR(105) DEFAULT NULL NULL  ';
-		$this->db->simple_query($mSQL);
-		$mSQL='ALTER TABLE `sprv` CHANGE `direc2` `direc2` VARCHAR(105) DEFAULT NULL NULL  ';
-		$this->db->simple_query($mSQL);
-		$mSQL='ALTER TABLE `sprv` CHANGE `direc3` `direc3` VARCHAR(105) DEFAULT NULL NULL  ';
-		$this->db->simple_query($mSQL);
-		$mSQL='ALTER TABLE `sprv` CHANGE `nombre` `nombre` VARCHAR(60) DEFAULT NULL NULL  ';
-		$this->db->simple_query($mSQL);
-		$mSQL='ALTER TABLE `sprv` CHANGE `nomfis` `nomfis` VARCHAR(200) DEFAULT NULL NULL  ';
-		$this->db->simple_query($mSQL);
+		if (!$this->datasis->iscampo('sprv','id')) {
+			$this->db->simple_query('ALTER TABLE `sprv` DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE `sprv` ADD id INT AUTO_INCREMENT PRIMARY KEY');
+		}
+		if (!$this->datasis->iscampo('sprv','copre')) 
+			$this->db->simple_query('ALTER TABLE sprv ADD copre VARCHAR(11) DEFAULT NULL NULL AFTER cuenta ');
+		
+		if (!$this->datasis->iscampo('sprv','ocompra')) 
+			$this->db->simple_query('ALTER TABLE sprv ADD ocompra CHAR(1) DEFAULT NULL NULL AFTER copre ');
+		
+		if (!$this->datasis->iscampo('sprv','dcredito')) 
+			$this->db->simple_query('ALTER TABLE sprv ADD dcredito DECIMAL(3,0) DEFAULT "0" NULL AFTER ocompra ');
+			
+		if (!$this->datasis->iscampo('sprv','despacho')) 
+			$this->db->simple_query('ALTER TABLE sprv ADD despacho DECIMAL(3,0) DEFAULT NULL NULL AFTER dcredito ');
+
+		if (!$this->datasis->iscampo('sprv','visita')) 
+			$this->db->simple_query('ALTER TABLE sprv ADD visita VARCHAR(9) DEFAULT NULL NULL AFTER despacho ');
+
+		if (!$this->datasis->iscampo('sprv','cate')) 
+			$this->db->simple_query('ALTER TABLE sprv ADD cate VARCHAR(20) NULL AFTER visita ');
+
+		if (!$this->datasis->iscampo('sprv','reteiva')) 
+			$this->db->simple_query('ALTER TABLE sprv ADD reteiva DECIMAL(7,2) DEFAULT "0.00" NULL AFTER cate ');
+
+		if (!$this->datasis->iscampo('sprv','ncorto')) 
+			$this->db->simple_query('ALTER TABLE sprv ADD ncorto VARCHAR(20) DEFAULT NULL NULL AFTER nombre ');
+
+		$this->db->simple_query('ALTER TABLE sprv CHANGE direc1 direc1 VARCHAR(105) DEFAULT NULL NULL');
+		$this->db->simple_query('ALTER TABLE sprv CHANGE direc2 direc2 VARCHAR(105) DEFAULT NULL NULL ');
+		$this->db->simple_query('ALTER TABLE sprv CHANGE direc3 direc3 VARCHAR(105) DEFAULT NULL NULL ');
+		$this->db->simple_query('ALTER TABLE sprv CHANGE nombre nombre VARCHAR(60) DEFAULT NULL NULL ');
+		$this->db->simple_query('ALTER TABLE sprv CHANGE nomfis nomfis VARCHAR(200) DEFAULT NULL NULL  ');
 	}
 }
 ?>

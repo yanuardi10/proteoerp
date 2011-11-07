@@ -314,7 +314,6 @@ class Nomina extends Controller {
 		$listados= $this->datasis->listados('nomi');
 		$otros=$this->datasis->otros('nomi', 'nomi');
 
-		$script1 = '';
 		$script = "
 <script type=\"text/javascript\">
 var BASE_URL   = '".base_url()."';
