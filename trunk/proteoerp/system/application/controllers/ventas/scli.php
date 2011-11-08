@@ -893,7 +893,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		$cliente  = isset($_REQUEST['cliente']) ? $_REQUEST['cliente']: '';
 		$semilla  = isset($_REQUEST['query'])   ? $_REQUEST['query']  : '';
 
-		$mSQL = '';
+		$semilla = trim($semilla);
 	
 		$mSQL = "SELECT cliente item, CONCAT(cliente, ' ', nombre) valor FROM scli WHERE tipo<>'0' ";
 		if ( strlen($semilla)>0 ){

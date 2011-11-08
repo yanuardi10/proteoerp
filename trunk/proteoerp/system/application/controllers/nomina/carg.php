@@ -5,12 +5,23 @@ class Carg extends Controller {
 	function carg(){
 		parent::Controller(); 
 		$this->load->library("rapyd");
-  }
+	}
 
-   function index(){
-  	$this->datasis->modulo_id(701,1);
-  	redirect("nomina/carg/filteredgrid");
-  }
+	function index(){
+		if ( !$this->datasis->iscampo('carg','id') ) {
+			$this->db->simple_query('ALTER TABLE carg DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE carg ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ');
+			$this->db->simple_query('ALTER TABLE carg ADD UNIQUE INDEX cargo (cargo)');
+		}
+		$this->datasis->modulo_id(701,1);
+		redirect("nomina/carg/extgrid");
+	}
+
+	function extgrid(){
+		$this->datasis->modulo_id(701,1);
+		$this->cargextjs();
+	}
+
 
 	function filteredgrid(){
 		$this->rapyd->load("datafilter2","datagrid");
@@ -186,5 +197,239 @@ class Carg extends Controller {
 		}
   	return TRUE;
 	}
+	
+	function grid(){
+		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']   :  0;
+		$limit   = isset($_REQUEST['limit'])  ? $_REQUEST['limit']   : 50;
+		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']    : '[{"property":"cargo","direction":"ASC"}]';
+		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
+
+		$where = "";
+
+		$this->db->_protect_identifiers=false;
+		$this->db->select('*');
+		$this->db->from('carg');
+
+		//Buscar posicion 0 Cero
+		if (isset($_REQUEST['filter'])){
+			$filter = json_decode($_REQUEST['filter'], true);
+			if (is_array($filter)) {
+				//$where = " rif != '' ";
+				$qs = "";
+				for ($i=0;$i<count($filter);$i++){
+					switch($filter[$i]['type']){
+					case 'string' : $qs .= " ".$filter[$i]['field']." LIKE '%".$filter[$i]['value']."%'"; 
+						Break;
+					case 'list' :
+						if (strstr($filter[$i]['value'],',')){
+							$fi = explode(',',$filter[$i]['value']);
+							for ($q=0;$q<count($fi);$q++){
+								$fi[$q] = "'".$fi[$q]."'";
+							}
+							$filter[$i]['value'] = implode(',',$fi);
+								$qs .= " AND ".$filter[$i]['field']." IN (".$filter[$i]['value'].")";
+						}else{
+							$qs .= " AND ".$filter[$i]['field']." = '".$filter[$i]['value']."'";
+						}
+						Break;
+					case 'boolean' : $qs .= " AND ".$filter[$i]['field']." = ".($filter[$i]['value']); 
+						Break;
+					case 'numeric' :
+						switch ($filter[$i]['comparison']) {
+							case 'ne' : $qs .= " AND ".$filter[$i]['field']." != ".$filter[$i]['value']; 
+								Break;
+							case 'eq' : $qs .= " AND ".$filter[$i]['field']." = ".$filter[$i]['value']; 
+								Break;
+							case 'lt' : $qs .= " AND ".$filter[$i]['field']." < ".$filter[$i]['value']; 
+								Break;
+							case 'gt' : $qs .= " AND ".$filter[$i]['field']." > ".$filter[$i]['value']; 
+								Break;
+						}
+						Break;
+					case 'date' :
+						switch ($filter[$i]['comparison']) {
+							case 'ne' : $qs .= " AND ".$filter[$i]['field']." != '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
+								Break;
+							case 'eq' : $qs .= " AND ".$filter[$i]['field']." = '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
+								Break;
+							case 'lt' : $qs .= " AND ".$filter[$i]['field']." < '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
+								Break;
+							case 'gt' : $qs .= " AND ".$filter[$i]['field']." > '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
+								Break;
+						}
+						Break;
+					}
+				}
+				$where .= $qs;
+				$this->db->where($where,null, false);
+				
+			}
+		}
+		
+		$sort = json_decode($sort, true);
+		for ($i=0;$i<count($sort);$i++) {
+			$this->db->order_by($sort[$i]['property'],$sort[$i]['direction']);
+		}
+
+		$this->db->limit($limit, $start);
+		$query = $this->db->get();
+
+		$results = $this->db->count_all('carg');
+		$arr = array();
+		foreach ($query->result_array() as $row)
+		{
+			$meco = array();
+			foreach( $row as $idd=>$campo ) {
+				$meco[$idd] = utf8_encode($campo);
+			}
+			$arr[] = $meco;
+		}
+		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
+	}
+
+	function crear() {
+		$js= file_get_contents('php://input');
+		$data= json_decode($js,true);
+		$campos = $data['data'];
+		$cargo = $data['data']['cargo'];
+		unset($campos['id']);
+		$mHay = $this->datasis->dameval("SELECT count(*) FROM carg WHERE cargo='".$cargo."'");
+		if  ( $mHay > 0 ){
+			echo "{ success: false, message: 'Ya existe ese proveedor'}";
+		} else {
+			$mSQL = $this->db->insert_string("carg", $campos );
+			$this->db->simple_query($mSQL);
+			logusu('provoca',"CARGO DE NOMINA $cargo CREADO");
+			echo "{ success: true, message: ".$data['data']['cargo']."}";
+		}
+	}
+
+	function modificar(){
+		$js= file_get_contents('php://input');
+		$data= json_decode($js,true);
+		$campos = $data['data'];
+		$cargo = $campos['cargo'];
+		unset($campos['cargo']);
+		unset($campos['id']);
+
+		$mSQL = $this->db->update_string("carg", $campos,"id='".$data['data']['id']."'" );
+		$this->db->simple_query($mSQL);
+		logusu('carg',"CARGO DE NOMINA ".$data['data']['cargo']." MODIFICADO");
+		echo "{ success: true, message: 'Proveedor ocacional Modificado '}";
+	}
+
+	function eliminar(){
+		$js= file_get_contents('php://input');
+		$data= json_decode($js,true);
+		$campos = $data['data'];
+
+		$cargo = $data['data']['cargo'];
+		
+		// VERIFICAR SI PUEDE
+		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM pers WHERE cargo='$cargo'");
+
+		if ($chek > 0){
+			echo "{ success: false, message: 'Cargo asignado a personal, no puede ser Borrado'}";
+		} else {
+			$this->db->simple_query("DELETE FROM carg WHERE cargo='$cargo'");
+			logusu('carg',"CARGO DE NOMINA $cargo ELIMINADO");
+			echo "{ success: true, message: 'Cargo de nomina Eliminado'}";
+		}
+	}
+
+
+
+//****************************************************************
+//
+//
+//
+//****************************************************************
+
+	function cargextjs(){
+		$encabeza='CARGOS DE NOMINA';
+		$listados= $this->datasis->listados('carg');
+		$otros=$this->datasis->otros('carg', 'carg');
+
+		$urlajax = 'nomina/carg/';
+		$variables = "";
+		
+		$funciones = "";
+		
+		$valida = "
+		{ type: 'length', field: 'cargo',   min:  1 },
+		{ type: 'length', field: 'descrip', min:  1 }
+		";
+		
+
+		$columnas = "
+		{ header: 'Cargo',        width:  50, sortable: true, dataIndex: 'cargo',   field: { type: 'textfield' }, filter: { type: 'string' }}, 
+		{ header: 'Descripcion.', width: 300, sortable: true, dataIndex: 'descrip', field: { type: 'textfield' }, filter: { type: 'string' }}, 
+		{ header: 'Sueldo',       width: 120, sortable: true, dataIndex: 'sueldo',  field: { type: 'numeroc'   }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00') }, 
+	";
+
+		$campos = "'id', 'cargo', 'descrip', 'sueldo'";
+		
+		$camposforma = "
+			\t\t\t\t{
+			\t\t\t\tframe: false,
+			\t\t\t\tborder: false,
+			\t\t\t\tlabelAlign: 'right',
+			\t\t\t\tdefaults: { xtype:'fieldset', labelWidth:70 },
+			\t\t\t\tstyle:'padding:4px',
+			\t\t\t\titems:[	
+			\t\t\t\t	{ xtype: 'textfield',   fieldLabel: 'Cargo',       name: 'cargo',   allowBlank: false, width: 200 },
+			\t\t\t\t	{ xtype: 'textfield',   fieldLabel: 'Descripcion', name: 'descrip', allowBlank: false, width: 400 },
+			\t\t\t\t	{ xtype: 'numberfield', fieldLabel: 'Sueldo ',     name: 'sueldo',  hideTrigger: true, fieldStyle: 'text-align: right', width:230,renderer : Ext.util.Format.numberRenderer('0,000.00') },
+			\t\t\t\t]}
+		";
+
+
+
+		$titulow = 'Cargos de Nomina';
+
+		$dockedItems = "
+				\t\t\t\t{ iconCls: 'icon-reset', itemId: 'close', text: 'Cerrar',   scope: this, handler: this.onClose },
+				\t\t\t\t{ iconCls: 'icon-save',  itemId: 'save',  text: 'Guardar',  disabled: false, scope: this, handler: this.onSave }
+		";
+
+		$winwidget = "
+				closable: false,
+				closeAction: 'destroy',
+				width: 450,
+				height: 250,
+				resizable: false,
+				modal: true,
+				items: [writeForm],
+				listeners: {
+					beforeshow: function() {
+						var form = this.down('writerform').getForm();
+						this.activeRecord = registro;
+						if (registro) {
+							form.loadRecord(registro);
+						}
+					}
+				}
+";
+
+		$data['listados']    = $listados;
+		$data['otros']       = $otros;
+		$data['encabeza']    = $encabeza;
+		$data['urlajax']     = $urlajax;
+		$data['variables']   = $variables;
+		$data['funciones']   = $funciones;
+		$data['valida']      = $valida;
+		$data['columnas']    = $columnas;
+		$data['campos']      = $campos;
+		$data['camposforma'] = $camposforma;
+		$data['titulow']     = $titulow;
+		$data['dockedItems'] = $dockedItems;
+		$data['winwidget']   = $winwidget;
+		
+		$data['title']  = heading('Cargos de Nomina');
+		$this->load->view('extjs/extjsven',$data);
+		
+	}
+
+
 }
 ?>

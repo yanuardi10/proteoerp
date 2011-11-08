@@ -166,7 +166,7 @@ class Cpla extends Controller {
 		$cuenta   = isset($_REQUEST['cuenta']) ? $_REQUEST['cuenta'] : '';
 		$semilla  = isset($_REQUEST['query'])  ? $_REQUEST['query']  : '';
 
-
+		$semilla = trim($semilla);
 		$long = $this->datasis->dameval('SELECT LENGTH(TRIM(formato)) FROM cemp LIMIT 1');
 		$mSQL = '';
 	
