@@ -21,10 +21,7 @@ class Grpr extends validaciones {
 
 	function extgrid(){
 		$this->datasis->modulo_id(206,1);
-		$script = $this->grprextjs();
-		$data["script"] = $script;
-		$data['title']  = heading('Grupo de Proveedores');
-		$this->load->view('extjs/ventana',$data);
+		$this->grprextjs();
 	}
 
 	function filteredgrid(){
@@ -288,7 +285,7 @@ class Grpr extends validaciones {
 		$mSQL = $this->db->update_string("grpr", $campos,"id='".$data['data']['id']."'" );
 		$this->db->simple_query($mSQL);
 		logusu('grpr',"GRUPO DE PROVEEDORES $grupo ID ".$data['data']['id']." MODIFICADO");
-		echo "{ success: true, message: 'Grupo Modificado  -> '".$data['data']['grupo']."'}";
+		echo "{ success: true, message: 'Grupo Modificado  -> ".$data['data']['grupo']."'}";
 	}
 
 	function eliminar(){
@@ -312,7 +309,6 @@ class Grpr extends validaciones {
 	}
 
 
-
 //0414 376 0149 juan picapiedras
 
 //****************************************************************8
@@ -321,7 +317,137 @@ class Grpr extends validaciones {
 //
 //****************************************************************8
 	function grprextjs(){
+		$encabeza='GRUPOS DE PROVEEDORES';
+		$listados= $this->datasis->listados('grpr');
+		$otros=$this->datasis->otros('grpr', 'grpr');
 
+		$urlajax = 'compras/grpr/';
+		$variables = "var mcuenta = ''";
+		$funciones = "";
+		$valida = "
+		{ type: 'length', field: 'grupo',   min: 1 },
+		{ type: 'length', field: 'gr_desc', min: 1 }
+		";
+		
+		$columnas = "
+		{ header: 'id',          width:  30, sortable: true, dataIndex: 'id' }, 
+		{ header: 'Grupo',       width:  50, sortable: true, dataIndex: 'grupo',   field: { type: 'textfield' }, filter: { type: 'string' } }, 
+		{ header: 'Descripcion', width: 200, sortable: true, dataIndex: 'gr_desc', field: { type: 'textfield' }, filter: { type: 'string' } }, 
+		{ header: 'Cuenta',      width:  90, sortable: true, dataIndex: 'cuenta',  field: { type: 'textfield' }, filter: { type: 'string' } }
+	";
+
+		$campos = "'id', 'grupo', 'gr_desc', 'cuenta'";
+		
+		$camposforma = "
+							{
+							frame: false,
+							border: false,
+							labelAlign: 'right',
+							defaults: { xtype:'fieldset', labelWidth:70 },
+							style:'padding:4px',
+							items: [
+									{ xtype: 'textfield',   fieldLabel: 'Grupo',       name: 'grupo',   allowBlank: false, width: 120, id: 'grupo' },
+									{ xtype: 'textfield',   fieldLabel: 'Descripcion', name: 'gr_desc', allowBlank: false, width: 400, },
+								]
+							},{
+								frame: false,
+								border: false,
+								labelAlign: 'right',
+								defaults: {xtype:'fieldset'  },
+								style:'padding:4px',
+								items: [{
+										xtype: 'combo',
+										fieldLabel: 'Cuenta Contable',
+										labelWidth:100,
+										name: 'cuenta',
+										id:   'cuenta',
+										mode: 'remote',
+										hideTrigger: true,
+										typeAhead: true,
+										forceSelection: true,										valueField: 'item',
+										displayField: 'valor',
+										store: cplaStore,
+										width: 400
+									}
+								]
+							}
+		";
+
+		$titulow = 'Grupo de Proveedores';
+
+		$dockedItems = "
+				\t\t\t\t{ iconCls: 'icon-reset', itemId: 'close', text: 'Cerrar',   scope: this, handler: this.onClose },
+				\t\t\t\t{ iconCls: 'icon-save',  itemId: 'save',  text: 'Guardar',  disabled: false, scope: this, handler: this.onSave }
+		";
+
+		$winwidget = "
+				closable: false,
+				closeAction: 'destroy',
+				width: 450,
+				height: 210,
+				resizable: false,
+				modal: true,
+				items: [writeForm],
+				listeners: {
+					beforeshow: function() {
+						var form = this.down('writerform').getForm();
+						this.activeRecord = registro;
+						
+						if (registro) {
+							mcuenta  = registro.data.cuenta;
+							cplaStore.proxy.extraParams.cuenta   = mcuenta ;
+							cplaStore.load({ params: { 'cuenta': registro.data.cuenta, 'origen': 'beforeform' } });
+							form.loadRecord(registro);
+						} else {
+							mcuenta  = '';
+						}
+					}
+				}
+";
+
+		$stores = "
+var cplaStore = new Ext.data.Store({
+	fields: [ 'item', 'valor'],
+	autoLoad: false,
+	autoSync: false,
+	pageSize: 50,
+	pruneModifiedRecords: true,
+	totalProperty: 'results',
+	proxy: {
+		type: 'ajax',
+		url : urlApp + 'contabilidad/cpla/cplabusca',
+		extraParams: {  'cuenta': mcuenta, 'origen': 'store' },
+		reader: {
+			type: 'json',
+			totalProperty: 'results',
+			root: 'data'
+		}
+	},
+	method: 'POST'
+});
+		";
+
+		$data['listados']    = $listados;
+		$data['otros']       = $otros;
+		$data['encabeza']    = $encabeza;
+		$data['urlajax']     = $urlajax;
+		$data['variables']   = $variables;
+		$data['funciones']   = $funciones;
+		$data['valida']      = $valida;
+		$data['columnas']    = $columnas;
+		$data['campos']      = $campos;
+		$data['stores']      = $stores;
+		$data['camposforma'] = $camposforma;
+		$data['titulow']     = $titulow;
+		$data['dockedItems'] = $dockedItems;
+		$data['winwidget']   = $winwidget;
+		
+		$data['title']  = heading('Aranceles');
+		$this->load->view('extjs/extjsven',$data);
+		
+	}
+
+function meco(){
 		$encabeza='<table width="100%" bgcolor="#2067B5"><tr><td align="left" width="100px"><img src="'.base_url().'assets/default/css/templete_01.jpg" width="120"></td><td align="center"><h1 style="font-size: 20px; color: rgb(255, 255, 255);" onclick="history.back()">GRUPOS DE PROVEEDORES</h1></td><td align="right" width="100px"><img src="'.base_url().'assets/default/images/cerrar.png" alt="Cerrar Ventana" title="Cerrar Ventana" onclick="parent.window.close()" width="25"></td></tr></table>';
 		$listados= $this->datasis->listados('grpr');
 		$otros=$this->datasis->otros('spre', 'grpr');
@@ -465,7 +591,8 @@ Ext.onReady(function(){
 						title: 'Grupos', 
 						bodyPadding: 3,
 						fieldDefaults: { labelAlign: 'right' }, 
-						items: [{
+						items: [
+							{
 							frame: false,
 							border: false,
 							labelAlign: 'right',
@@ -549,8 +676,7 @@ Ext.onReady(function(){
 			});
 
 			win = Ext.widget('window', {
-				title: '',
-				losable: false,
+				closable: false,
 				closeAction: 'destroy',
 				width: 450,
 				height: 210,
@@ -616,7 +742,6 @@ Ext.onReady(function(){
 			this.callParent();
 			this.getSelectionModel().on('selectionchange', this.onSelectChange, this);
 		},
-		//features: [{ ftype: 'grouping', groupHeaderTpl: '{name} ' }, filters],
 		onSelectChange: function(selModel, selections){
 			this.down('#delete').setDisabled(selections.length === 0);
 			this.down('#update').setDisabled(selections.length === 0);
