@@ -103,17 +103,17 @@ class edres extends Controller {
 		$edit->pre_process('delete','_pre_delete');
 
 		$edit->numero = new inputField('N&uacute;mero','numero');
-		$edit->numero->rule='max_length[8]';
+		$edit->numero->rule='max_length[8]|required';
 		$edit->numero->size =10;
 		$edit->numero->maxlength =8;
 
 		$edit->fecha = new dateField('Fecha','fecha');
-		$edit->fecha->rule='chfecha';
+		$edit->fecha->rule='required|chfecha';
 		$edit->fecha->size =10;
 		$edit->fecha->maxlength =8;
 
 		$edit->cliente = new inputField('Cliente','cliente');
-		$edit->cliente->rule='max_length[5]|existescli';
+		$edit->cliente->rule='max_length[5]|existescli|required';
 		$edit->cliente->size =7;
 		$edit->cliente->maxlength =5;
 		$edit->cliente->append($boton);
@@ -146,32 +146,33 @@ class edres extends Controller {
 
 			$obj1='formap'.$i;
 			$edit->$obj1 =  new dropdownField('Pago '.$i, $obj1);
-			$edit->$obj1->option('','Seleccionar');
+			$edit->$obj1->option('','Ninguno-');
 			$edit->$obj1->option('CH','Cheque'       );
 			$edit->$obj1->option('DE','Deposito'     );
 			$edit->$obj1->option('NC','Transferencia');
 			$edit->$obj1->group=$group;
 			$edit->$obj1->style='width:140px';
 			$edit->$obj1->rule ='max_length[2]';
+			if($i==1) $edit->$obj1->rule='required';
 
 			$obj2='banco'.$i;
 			$edit->$obj2 =  new dropdownField('Banco '.$i, $obj2);
 			$edit->$obj2->option('','Seleccionar banco');
 			$edit->$obj2->options($bancos);
 			$edit->$obj2->group=$group;
-			$edit->$obj2->rule='max_length[2]';
+			$edit->$obj2->rule='max_length[2]|condi_required|callback_chpago['.$i.']';
 			$edit->$obj2->in=$obj1;
 
 			$obj3='nummp'.$i;
 			$edit->$obj3 = new inputField('N&uacute;mero referencia',$obj3);
-			$edit->$obj3->rule='max_length[3]';
+			$edit->$obj3->rule='max_length[3]|condi_required|callback_chpago['.$i.']';
 			$edit->$obj3->size =5;
 			$edit->$obj3->maxlength =3;
 			$edit->$obj3->group=$group;
 
 			$obj4='monto'.$i;
 			$edit->$obj4 = new inputField('Monto',$obj4);
-			$edit->$obj4->rule='max_length[17]|numeric';
+			$edit->$obj4->rule='condi_required|callback_chpago['.$i.']';
 			$edit->$obj4->css_class='inputnum';
 			$edit->$obj4->size =19;
 			$edit->$obj4->maxlength =17;
@@ -194,7 +195,15 @@ class edres extends Controller {
 		$data['script'] .= $script;
 		$data['title']   = heading($this->tits);
 		$this->load->view('view_ventanas', $data);
+	}
 
+	function chpago($val,$ind){
+		$p=$this->input->post('formap'.$ind);
+		if(!empty($p) && empty($val)){
+			$this->validation->set_message('chpago', 'El campo %s es obligatorio cuando selecciona un medio de pago');
+			return false;
+		}
+		return true;
 	}
 
 	function _pre_insert($do){
