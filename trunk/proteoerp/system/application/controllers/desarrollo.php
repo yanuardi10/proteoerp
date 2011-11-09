@@ -91,7 +91,7 @@ class Desarrollo extends Controller{
 		$crud ="\n\t".'function dataedit(){'."\n";
 		$crud.="\t\t".'$this->rapyd->load(\'dataedit\');'."\n\n";
 		$crud.="\t\t".'$edit = new DataEdit($this->tits, \''.$tabla.'\');'."\n\n";
-		$crud.="\t\t".'$edit->back_url = site_url($this->url."filteredgrid");'."\n\n";
+		$crud.="\t\t".'$edit->back_url = site_url($this->url.\'filteredgrid\');'."\n\n";
 
 		$crud.="\t\t".'$edit->post_process(\'insert\',\'_post_insert\');'."\n";
 		$crud.="\t\t".'$edit->post_process(\'update\',\'_post_update\');'."\n";
@@ -113,6 +113,8 @@ class Desarrollo extends Controller{
 				$crud.="\t\t".'$edit->estampa = new autoUpdateField(\'estampa\' ,date(\'Ymd\'), date(\'Ymd\'));'."\n\n";
 			}elseif($field->Field=='hora'){
 				$crud.="\t\t".'$edit->hora    = new autoUpdateField(\'hora\',date(\'H:i:s\'), date(\'H:i:s\'));'."\n\n";
+			}elseif($field->Field=='id'){
+				continue;
 			}else{
 				preg_match('/(?P<tipo>\w+)(\((?P<length>[0-9\,]+)\)){0,1}/', $field->Type, $matches);
 				if(isset($matches['length'])){
@@ -131,9 +133,12 @@ class Desarrollo extends Controller{
 
 				$crud.="\t\t".'$edit->'.$field->Field.' = new '.$input."Field('".ucfirst($field->Field)."','$field->Field');\n";
 
-				if(preg_match("/decimal|integer/i",$field->Type)){
+				if(preg_match("/decimal/i",$field->Type)){
 					$crud.="\t\t".'$edit->'.$field->Field."->rule='max_length[".$def[0]."]|numeric';\n";
 					$crud.="\t\t".'$edit->'.$field->Field."->css_class='inputnum';\n";
+				}elseif(preg_match("/integer|int/i",$field->Type)){
+					$crud.="\t\t".'$edit->'.$field->Field."->rule='max_length[".$def[0]."]|integer';\n";
+					$crud.="\t\t".'$edit->'.$field->Field."->css_class='inputonlynum';\n";
 				}elseif(preg_match("/date/i",$field->Type)){
 					$crud.="\t\t".'$edit->'.$field->Field."->rule='chfecha';\n";
 				}else{
@@ -156,7 +161,7 @@ class Desarrollo extends Controller{
 
 		$crud.="\t\t".'$data[\'content\'] = $edit->output;'."\n";
 		$crud.="\t\t".'$data[\'head\']    = $this->rapyd->get_head();'."\n";
-		$crud.="\t\t".'$data[\'title\']   = $this->tits;'."\n";
+		$crud.="\t\t".'$data[\'title\']   = heading($this->tits);'."\n";
 		$crud.="\t\t".'$this->load->view(\'view_ventanas\', $data);'."\n\n";
 		$crud.="\t".'}'."\n";
 
@@ -184,6 +189,10 @@ class Desarrollo extends Controller{
 		foreach ($query->result() as $field){
 				if($field->Key=='PRI')$key[]=$field->Field;
 
+				if($field->Field=='id'){
+					continue;
+				}
+
 				preg_match('/(?P<tipo>\w+)(\((?P<length>[0-9\,]+)\)){0,1}/', $field->Type, $matches);
 				if(isset($matches['length'])){
 					$def=explode(',',$matches['length']);
@@ -199,7 +208,7 @@ class Desarrollo extends Controller{
 					$input='input';
 				}
 
-				$crud.="\t\t".'$filter->'.$field->Field.' = new '.$input."Field('$field->Field','$field->Field');\n";
+				$crud.="\t\t".'$filter->'.$field->Field.' = new '.$input."Field('".ucfirst($field->Field)."','$field->Field');\n";
 
 				if(preg_match("/decimal|integer/i",$field->Type)){
 					$crud.="\t\t".'$filter->'.$field->Field."->rule      ='max_length[".$def[0]."]|numeric';\n";
@@ -211,7 +220,9 @@ class Desarrollo extends Controller{
 				}
 
 				if(strrpos($field->Type,'text')===false){
-					$crud.="\t\t".'$filter->'.$field->Field.'->size      ='.($def[0]+2).";\n";
+					if($def[0]<80){
+						$crud.="\t\t".'$filter->'.$field->Field.'->size      ='.($def[0]+2).";\n";
+					}
 					$crud.="\t\t".'$filter->'.$field->Field.'->maxlength ='.($def[0]).";\n";
 				}else{
 					$crud.="\t\t".'$filter->'.$field->Field."->cols = 70;\n";
@@ -242,7 +253,7 @@ class Desarrollo extends Controller{
 		foreach ($query->result() as $field){
 			if($field->Key=='PRI') $key[]=$field->Field;
 
-			$crud.="\t\t".'$grid->column_orderby(\''.$field->Field.'\',';
+			$crud.="\t\t".'$grid->column_orderby(\''.ucfirst($field->Field).'\',';
 			if($c==0){
 				$crud.='$uri';
 				$c++;
@@ -270,7 +281,7 @@ class Desarrollo extends Controller{
 		$crud.="\t\t".'$data[\'filtro\']  = $filter->output;'."\n";
 		$crud.="\t\t".'$data[\'content\'] = $grid->output;'."\n";
 		$crud.="\t\t".'$data[\'head\']    = $this->rapyd->get_head().script(\'jquery.js\');'."\n";
-		$crud.="\t\t".'$data[\'title\']   = $this->titp;'."\n";
+		$crud.="\t\t".'$data[\'title\']   = heading($this->titp);'."\n";
 		$crud.="\t\t".'$this->load->view(\'view_ventanas\', $data);'."\n\n";
 		$crud.="\t".'}'."\n";
 
@@ -374,7 +385,7 @@ class Desarrollo extends Controller{
 		$crud.="\t\t".'$this->instalar();'."\n";
 		$crud.="\t".'}'."\n\n";
 		$crud.="\t".'function index(){'."\n";
-		$crud.="\t\t".'redirect($this->url."filteredgrid");'."\n";
+		$crud.="\t\t".'redirect($this->url.\'filteredgrid\');'."\n";
 		$crud.="\t".'}'."\n\n";
 
 		if($s){
