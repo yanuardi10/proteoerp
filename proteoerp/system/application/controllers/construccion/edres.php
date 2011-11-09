@@ -86,7 +86,7 @@ class edres extends Controller {
 			'nombre'=>'Nombre',
 			'contacto'=>'Contacto'),
 		'filtro'  =>array('cliente'=>'C&oacute;digo Cliente','nombre'=>'Nombre'),
-		'retornar'=>array('cliente'=>'promotora'),
+		'retornar'=>array('cliente'=>'cliente'),
 		'titulo'  =>'Buscar Cliente');
 
 		$boton=$this->datasis->modbus($scli);
@@ -125,7 +125,7 @@ class edres extends Controller {
 
 		$edit->inmueble = new dropdownField('Inmueble','inmueble');
 		$edit->inmueble->option('','Seleccionar');
-		$edit->inmueble->options('SELECT id,TRIM(descripcion) AS nombre FROM `edinmue` ORDER BY descripcion');
+		$edit->inmueble->options('SELECT id,TRIM(descripcion) AS nombre FROM `edinmue` WHERE status=\'D\' ORDER BY descripcion');
 		$edit->inmueble->rule='max_length[11]';
 
 		$edit->reserva = new inputField('Reservaci&oacute;n','reserva');
@@ -179,6 +179,10 @@ class edres extends Controller {
 			$edit->$obj4->group=$group;
 		}
 
+		$edit->notas = new textareaField('Notas','notas');
+		$edit->notas->cols = 70;
+		$edit->notas->rows = 4;
+
 		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
 		$edit->build();
 
@@ -207,6 +211,12 @@ class edres extends Controller {
 	}
 
 	function _pre_insert($do){
+		$inmueble=$do->get('inmueble');
+		$dbinmueble=$this->db->escape($inmueble);
+		$mSQL="UPDATE edinmue SET status='R' WHERE id=${dbinmueble}";
+		$ban=$this->db->simple_query($mSQL);
+		if($ban==false){ memowrite($mSQL,'edres'); }
+
 		return true;
 	}
 
@@ -257,6 +267,11 @@ class edres extends Controller {
 			  `monto3` decimal(17,2) DEFAULT '0.00',
 			  PRIMARY KEY (`id`)
 			) ENGINE=MyISAM DEFAULT CHARSET=latin1 COMMENT='Reserva de Inmuebles'";
+			$this->db->simple_query($mSQL);
+		}
+
+		if (!$this->db->field_exists('notas', 'edres')){
+			$mSQL="ALTER TABLE `edres`  ADD COLUMN `notas` TEXT NULL DEFAULT NULL AFTER `monto3`";
 			$this->db->simple_query($mSQL);
 		}
 	}
