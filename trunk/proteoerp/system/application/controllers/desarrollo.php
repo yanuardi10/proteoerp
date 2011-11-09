@@ -157,10 +157,19 @@ class Desarrollo extends Controller{
 		}
 
 		$crud.="\t\t".'$edit->buttons(\'modify\', \'save\', \'undo\', \'delete\', \'back\');'."\n";
-		$crud.="\t\t".'$edit->build();'."\n";
+		$crud.="\t\t".'$edit->build();'."\n\n";
+
+		$crud.="\t\t".'$script= \'<script type="text/javascript" > '."\n";
+		$crud.="\t\t".'$(function() {'."\n";
+		$crud.="\t\t\t".'$(".inputnum").numeric(".");'."\n";
+		$crud.="\t\t\t".'$(".inputonlynum").numeric();'."\n";
+		$crud.="\t\t".'});'."\n";
+		$crud.="\t\t".'</script>\';'."\n\n";
 
 		$crud.="\t\t".'$data[\'content\'] = $edit->output;'."\n";
 		$crud.="\t\t".'$data[\'head\']    = $this->rapyd->get_head();'."\n";
+		$crud.="\t\t".'$data[\'script\']  = script(\'jquery.js\').script(\'plugins/jquery.numeric.pack.js\').script(\'plugins/jquery.floatnumber.js\');'."\n";
+		$crud.="\t\t".'$data[\'script\'] .= $script;'."\n";
 		$crud.="\t\t".'$data[\'title\']   = heading($this->tits);'."\n";
 		$crud.="\t\t".'$this->load->view(\'view_ventanas\', $data);'."\n\n";
 		$crud.="\t".'}'."\n";
@@ -240,8 +249,8 @@ class Desarrollo extends Controller{
 			$a.='<raencode><#'.$val.'#></raencode>';
 			$b.='<#'.$val.'#>';
 		}
-		$a=htmlentities($a);
-		$b=htmlentities($b);
+		//$a=htmlentities($a);
+		//$b=htmlentities($b);
 		$crud.="\t\t".'$uri = anchor($this->url.\'dataedit/show/'.$a.'\',\''.$b.'\');'."\n\n";
 
 		$crud.="\t\t".'$grid = new DataGrid(\'\');'."\n";
@@ -261,10 +270,10 @@ class Desarrollo extends Controller{
 			}else{
 				$crud.='\'';
 				if(strrpos($field->Type,'date')!==false){
-					$crud.=htmlentities('<dbdate_to_human><#'.$field->Field.'#></dbdate_to_human>');
+					$crud.='<dbdate_to_human><#'.$field->Field.'#></dbdate_to_human>';
 					$crud.='\',\''.$field->Field.'\',\'align="center"\');'."\n";
 				}elseif(strrpos($field->Type,'double')!==false || strrpos($field->Type,'int')!==false || strrpos($field->Type,'decimal')!==false){
-					$crud.=htmlentities('<nformat><#'.$field->Field.'#></nformat>');
+					$crud.='<nformat><#'.$field->Field.'#></nformat>';
 					$crud.='\',\''.$field->Field.'\',\'align="right"\');'."\n";
 				}else{
 					$crud.=$field->Field;
@@ -373,7 +382,7 @@ class Desarrollo extends Controller{
 		if (empty($tabla) OR (!$this->db->table_exists($tabla))) show_error('Tabla no existe o faltan parametros');
 
 		$crud="\n";
-		$crud.=htmlentities('<?php'."\n");
+		$crud.='<?php'."\n";
 		$crud.="class $tabla extends Controller {"."\n";
 		$crud.="\t".'var $titp=\'Titulo Principal\';'."\n";
 		$crud.="\t".'var $tits=\'Sub-titulo\';'."\n";
@@ -403,7 +412,7 @@ class Desarrollo extends Controller{
 
 		$crud="\n";
 		$crud.='}'."\n";
-		$crud.=htmlentities('?>');
+		$crud.='?>';
 
 		if($s){
 			$data['content'] ='<pre>'.$crud.'</pre>';
@@ -424,6 +433,8 @@ class Desarrollo extends Controller{
 		$crud.=$this->genepost($tabla    ,false);
 		$crud.=$this->geneinstalar($tabla,false);
 		$crud.=$this->genefoot($tabla    ,false);
+
+		$crud=htmlentities($crud);
 
 		if($s){
 			$data['content'] ='<pre>'.$crud.'</pre>';
