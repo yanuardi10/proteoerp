@@ -62,8 +62,7 @@ class eduso extends Controller {
 		$edit->pre_process('delete','_pre_delete');
 
 		$edit->uso = new inputField('Uso','uso');
-		$edit->uso->rule='max_length[80]';
-		$edit->uso->size =82;
+		$edit->uso->rule='max_length[80]|required';
 		$edit->uso->maxlength =80;
 
 		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');

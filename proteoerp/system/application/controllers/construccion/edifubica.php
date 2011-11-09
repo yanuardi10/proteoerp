@@ -18,7 +18,11 @@ class edifubica extends Controller {
 	function filteredgrid(){
 		$this->rapyd->load('datafilter','datagrid');
 
-		$filter = new DataFilter($this->titp, 'edifubica');
+		$filter = new DataFilter($this->titp);
+		$sel=array('a.id','a.descripcion','b.nombre');
+		$filter->db->select($sel);
+		$filter->db->from('edifubica AS a ');
+		$filter->db->join('edif AS b','a.id_edif=b.id');
 
 		$filter->descripcion = new inputField('Descripci&oacute;n','descripcion');
 		$filter->descripcion->rule      ='max_length[50]';
@@ -35,7 +39,7 @@ class edifubica extends Controller {
 		$grid->per_page = 40;
 
 		$grid->column_orderby('Id',$uri,'id','align="left"');
-		$grid->column_orderby('Id_edif','<nformat><#id_edif#></nformat>','id_edif','align="right"');
+		$grid->column_orderby('Edificaci&oacute;n','nombre','nombre');
 		$grid->column_orderby('Descripcion','descripcion','descripcion','align="left"');
 
 		$grid->add($this->url.'dataedit/create');
@@ -63,12 +67,12 @@ class edifubica extends Controller {
 		$edit->pre_process('update','_pre_update');
 		$edit->pre_process('delete','_pre_delete');
 
-		$edit->id_edif = new inputField('Id_edif','id_edif');
+		$edit->id_edif = new dropdownField('Edificaci&oacute;n','id_edif');
+		$edit->id_edif->option('','Seleccionar');
+		$edit->id_edif->options('SELECT id,TRIM(nombre) AS nombre FROM edif ORDER BY nombre');
 		$edit->id_edif->rule='max_length[11]';
-		$edit->id_edif->size =13;
-		$edit->id_edif->maxlength =11;
 
-		$edit->descripcion = new inputField('Descripcion','descripcion');
+		$edit->descripcion = new inputField('Descripci&oacute;n','descripcion');
 		$edit->descripcion->rule='max_length[50]';
 		$edit->descripcion->size =52;
 		$edit->descripcion->maxlength =50;

@@ -1,4 +1,5 @@
 <?php
+include('ediftipo.php');
 class edif extends Controller {
 	var $titp='Edificaciones';
 	var $tits='Edificaciones';
@@ -18,6 +19,7 @@ class edif extends Controller {
 	function filteredgrid(){
 		$this->rapyd->load('datafilter','datagrid');
 		$this->load->helper('text');
+
 
 		$filter = new DataFilter($this->titp, 'edif');
 
@@ -71,6 +73,19 @@ class edif extends Controller {
 	function dataedit(){
 		$this->rapyd->load('dataedit');
 
+		$scli=array(
+		'tabla'   =>'scli',
+		'columnas'=>array(
+			'cliente' =>'C&oacute;digo Cliente',
+			'nombre'=>'Nombre',
+			'contacto'=>'Contacto'),
+		'filtro'  =>array('cliente'=>'C&oacute;digo Cliente','nombre'=>'Nombre'),
+		'retornar'=>array('cliente'=>'promotora'),
+		'titulo'  =>'Buscar Cliente');
+
+		$boton=$this->datasis->modbus($scli);
+
+
 		$edit = new DataEdit($this->tits, 'edif');
 
 		$edit->back_url = site_url($this->url.'filteredgrid');
@@ -92,12 +107,12 @@ class edif extends Controller {
 		$edit->tipo->rule='max_length[10]|required';
 
 		$edit->direccion = new textareaField('Direcci&oacute;n','direccion');
-		$edit->direccion->rule='max_length[8]';
+		//$edit->direccion->rule='max_length[255]';
 		$edit->direccion->cols = 70;
 		$edit->direccion->rows = 4;
 
 		$edit->descripcion = new textareaField('Descripci&oacute;n','descripcion');
-		$edit->descripcion->rule='max_length[8]';
+		//$edit->descripcion->rule='max_length[512]';
 		$edit->descripcion->cols = 70;
 		$edit->descripcion->rows = 4;
 
@@ -105,6 +120,7 @@ class edif extends Controller {
 		$edit->promotora->rule='max_length[5]';
 		$edit->promotora->size =7;
 		$edit->promotora->maxlength =5;
+		$edit->promotora->append($boton);
 
 		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
 		$edit->build();
@@ -143,6 +159,7 @@ class edif extends Controller {
 	}
 
 	function instalar(){
+		ediftipo::instalar();
 		if (!$this->db->table_exists('edif')) {
 			$mSQL="CREATE TABLE `edif` (
 				  `id` INT(11) NOT NULL AUTO_INCREMENT,
