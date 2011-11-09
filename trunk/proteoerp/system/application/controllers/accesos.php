@@ -2,6 +2,7 @@
 class Accesos extends Controller{
 	function Accesos(){
 		parent::Controller();
+		$this->instalar();
 	}
 
 	function index(){
@@ -52,7 +53,7 @@ class Accesos extends Controller{
 			(SELECT a.modulo,a.titulo, IFNULL(b.acceso,'N') AS acceso ,a.panel 
 			FROM intramenu AS a
 			LEFT JOIN intrasida AS b ON a.modulo=b.modulo AND b.usuario=".$this->db->escape($acceso)."
-			WHERE MID(a.modulo,1,1)!=0) AS aa
+			WHERE MID(a.modulo,1,1)!='0') AS aa
 			JOIN intramenu AS bb ON MID(aa.modulo,1,3)=bb.modulo
 			ORDER BY MID(aa.modulo,1,1), IF(LENGTH(aa.modulo)=1,0,1),bb.panel,MID(aa.modulo,2,2), MID(aa.modulo,2)";
 
@@ -113,9 +114,12 @@ class Accesos extends Controller{
 		$data['content'] = anchor('/accesos','Regresar');
 		$this->load->view('view_ventanas', $data);
 	}
-	
+
 	function instalar(){
-		$mSQL="ALTER TABLE `intrasida`  CHANGE COLUMN `modulo` `modulo` VARCHAR(11) NOT NULL DEFAULT '0' AFTER `usuario`";
-		$this->db->simple_query($mSQL);
+		$fields = $this->db->field_data('intrasida','modulo');
+		if($fields[1]->type!='string'){
+			$mSQL="ALTER TABLE `intrasida`  CHANGE COLUMN `modulo` `modulo` VARCHAR(11) NOT NULL DEFAULT '0' AFTER `usuario`";
+			$this->db->simple_query($mSQL);
+		}
 	}
 }
