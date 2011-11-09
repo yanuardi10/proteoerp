@@ -1,7 +1,7 @@
 <?php
 class edinmue extends Controller {
-	var $titp='Facilidades';
-	var $tits='Facilidades';
+	var $titp='Inmuebles';
+	var $tits='Inmuebles';
 	var $url ='construccion/edinmue/';
 
 	function edinmue(){
@@ -29,16 +29,15 @@ class edinmue extends Controller {
 		$filter->descripcion->rule      ='max_length[100]';
 		$filter->descripcion->maxlength =100;
 
-		$filter->edificacion = new inputField('Edificaci&oacute;n','edificacion');
-		$filter->edificacion->rule      ='max_length[11]';
-		$filter->edificacion->size      =13;
-		$filter->edificacion->maxlength =11;
+		$filter->edificacion = new dropdownField('Edificaci&oacute;n','edificacion');
+		$filter->edificacion->option('','Seleccionar');
+		$filter->edificacion->options('SELECT id,TRIM(nombre) AS nombre FROM edif ORDER BY nombre');
 
 		$filter->uso = new dropdownField('Uso','uso');
 		$filter->uso->option('','Todos');
 		$filter->uso->options('SELECT id,uso FROM `eduso` ORDER BY uso');
 
-		$filter->ubicacion = new inputField('Ubicacion','ubicacion');
+		$filter->ubicacion = new inputField('Ubicaci&oacute;n','ubicacion');
 		$filter->ubicacion->rule      ='max_length[11]';
 		$filter->ubicacion->size      =13;
 		$filter->ubicacion->maxlength =11;
@@ -96,10 +95,10 @@ class edinmue extends Controller {
 		$edit->descripcion->rule='max_length[100]';
 		$edit->descripcion->maxlength =100;
 
-		$edit->edificacion = new inputField('Edificaci&oacute;n','edificacion');
+		$edit->edificacion = new dropdownField('Edificaci&oacute;n','edificacion');
+		$edit->edificacion->option('','Seleccionar');
+		$edit->edificacion->options('SELECT id,TRIM(nombre) AS nombre FROM edif ORDER BY nombre');
 		$edit->edificacion->rule='max_length[11]';
-		$edit->edificacion->size =13;
-		$edit->edificacion->maxlength =11;
 
 		$edit->uso = new dropdownField('Uso','uso');
 		$edit->uso->option('','Seleccionar');
@@ -111,41 +110,51 @@ class edinmue extends Controller {
 		$edit->usoalter->options('SELECT id,uso FROM `eduso` ORDER BY uso');
 		$edit->usoalter->rule='max_length[11]|required';
 
-		$edit->ubicacion = new inputField('Ubicacion','ubicacion');
+		$edit->ubicacion = new dropdownField('Ubicaci&oacute;n','ubicacion');
+		$edit->ubicacion->option('','Seleccionar');
+		$edit->ubicacion->options('SELECT id,descripcion FROM `edifubica` ORDER BY descripcion');
 		$edit->ubicacion->rule='max_length[11]|integer';
-		$edit->ubicacion->size =13;
-		$edit->ubicacion->maxlength =11;
 
 		$edit->caracteristicas = new textareaField('Caracter&iacute;sticas','caracteristicas');
-		$edit->caracteristicas->rule='max_length[8]';
+		//$edit->caracteristicas->rule='max_length[8]';
 		$edit->caracteristicas->cols = 70;
 		$edit->caracteristicas->rows = 4;
 
 		$edit->area = new inputField('&Aacute;rea','area');
 		$edit->area->rule='max_length[15]|numeric';
 		$edit->area->css_class='inputnum';
-		$edit->area->size =17;
-		$edit->area->maxlength =15;
+		$edit->area->size =10;
+		//$edit->area->maxlength =15;
 
 		$edit->estaciona = new inputField('Estacionamiento','estaciona');
 		$edit->estaciona->rule='max_length[10]|integer';
-		$edit->estaciona->size =12;
+		$edit->estaciona->size =10;
+		$edit->estaciona->css_class='inputonlynum';
 		$edit->estaciona->maxlength =10;
 
 		$edit->deposito = new inputField('Deposito','deposito');
 		$edit->deposito->rule='max_length[11]|integer';
-		$edit->deposito->size =13;
+		$edit->deposito->size =10;
 		$edit->deposito->maxlength =11;
+		$edit->deposito->css_class='inputonlynum';
 
 		$edit->preciomt2 = new inputField('Precio x mt2','preciomt2');
 		$edit->preciomt2->rule='max_length[15]|numeric';
 		$edit->preciomt2->css_class='inputnum';
-		$edit->preciomt2->size =17;
+		$edit->preciomt2->size =10;
 		$edit->preciomt2->maxlength =15;
+
+		$script ='<script type="text/javascript" >
+		$(function() {
+			$(".inputnum").numeric(".");
+			$(".inputonlynum").numeric();
+		});
+		</script>';
 
 		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
 		$edit->build();
 		$data['content'] = $edit->output;
+		$data['script']  = script('jquery.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js').$script;
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = heading($this->tits);
 		$this->load->view('view_ventanas', $data);
@@ -197,7 +206,7 @@ class edinmue extends Controller {
 			  PRIMARY KEY (`id`),
 			  UNIQUE INDEX `codigo` (`codigo`)
 			)
-			COMMENT='Facilidades '
+			COMMENT='Inmuebles'
 			COLLATE='latin1_swedish_ci'
 			ENGINE=MyISAM
 			ROW_FORMAT=DEFAULT";
