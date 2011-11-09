@@ -1350,6 +1350,45 @@ Ext.onReady(function(){
 ";
 		return $script;	
 	}
+	
+	
+	function persbusca() {
+		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']  :  0;
+		$limit   = isset($_REQUEST['limit'])  ? $_REQUEST['limit']  : 25;
+		$codigo  = isset($_REQUEST['codigo']) ? $_REQUEST['codigo'] : '';
+		$semilla = isset($_REQUEST['query'])  ? $_REQUEST['query']  : '';
+
+		$semilla = trim($semilla);
+	
+		$mSQL = "SELECT codigo item, CONCAT(codigo, ' ', TRIM(nombre),' ',TRIM(apellido)) valor FROM pers WHERE codigo IS NOT NULL ";
+		if ( strlen($semilla)>0 ){
+			$mSQL .= " AND ( codigo LIKE '$semilla%' OR nombre LIKE '%$semilla%' OR  apellido LIKE '%$semilla%') ";
+		} else {
+			if ( strlen($codigo)>0 ) $mSQL .= " AND (codigo LIKE '$codigo%' OR nombre LIKE '%$codigo%' OR  apellido LIKE '%$codigo%') ";
+		}
+		$mSQL .= "ORDER BY nombre ";
+		$results = $this->db->count_all('pers');
+
+		if ( empty($mSQL)) {
+			echo '{success:true, message:"mSQL vacio, Loaded data", results: 0, data:'.json_encode(array()).'}';
+		} else {
+			$mSQL .= " limit $start, $limit ";
+			$query = $this->db->query($mSQL);
+			$arr = array();
+			foreach ($query->result_array() as $row)
+			{
+				$meco = array();
+				foreach( $row as $idd=>$campo ) {
+					$meco[$idd] = utf8_encode($campo);
+				}
+				$arr[] = $meco;
+			}
+			echo '{success:true, message:"'.$mSQL.'", results:'. $results.', data:'.json_encode($arr).'}';
+		}
+	}
+
+
+	
 }
 
 ?>
