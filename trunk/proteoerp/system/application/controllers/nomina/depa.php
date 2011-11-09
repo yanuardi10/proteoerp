@@ -8,8 +8,14 @@ class Depa extends Controller {
 	}
  
 	function index(){
+		if ( !$this->datasis->iscampo('depa','id') ) {
+			$this->db->simple_query('ALTER TABLE depa DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE depa ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ');
+			$this->db->simple_query('ALTER TABLE depa ADD UNIQUE INDEX dividepa (division, departa)');
+		}
 		$this->datasis->modulo_id(706,1);
-		redirect("nomina/depa/filteredgrid");
+		//redirect("nomina/depa/extgrid");
+		$this->depaextjs();
 	}
 
 	function filteredgrid(){
@@ -152,5 +158,251 @@ class Depa extends Controller {
   		return TRUE;
 		}	
 	}
+
+
+	function grid(){
+		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']   :  0;
+		$limit   = isset($_REQUEST['limit'])  ? $_REQUEST['limit']   : 50;
+		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']    : '[{"property":"division","direction":"ASC"}]';
+		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
+
+		$where = "";
+
+		$this->db->_protect_identifiers=false;
+		$this->db->select('*');
+		$this->db->from('depa');
+
+		//Buscar posicion 0 Cero
+		if (isset($_REQUEST['filter'])){
+			$filter = json_decode($_REQUEST['filter'], true);
+			if (is_array($filter)) {
+				$qs = "";
+				for ($i=0;$i<count($filter);$i++){
+					switch($filter[$i]['type']){
+					case 'string' : $qs .= " ".$filter[$i]['field']." LIKE '%".$filter[$i]['value']."%'"; 
+						Break;
+					case 'list' :
+						if (strstr($filter[$i]['value'],',')){
+							$fi = explode(',',$filter[$i]['value']);
+							for ($q=0;$q<count($fi);$q++){
+								$fi[$q] = "'".$fi[$q]."'";
+							}
+							$filter[$i]['value'] = implode(',',$fi);
+								$qs .= " AND ".$filter[$i]['field']." IN (".$filter[$i]['value'].")";
+						}else{
+							$qs .= " AND ".$filter[$i]['field']." = '".$filter[$i]['value']."'";
+						}
+						Break;
+					case 'boolean' : $qs .= " AND ".$filter[$i]['field']." = ".($filter[$i]['value']); 
+						Break;
+					case 'numeric' :
+						switch ($filter[$i]['comparison']) {
+							case 'ne' : $qs .= " AND ".$filter[$i]['field']." != ".$filter[$i]['value']; 
+								Break;
+							case 'eq' : $qs .= " AND ".$filter[$i]['field']." = ".$filter[$i]['value']; 
+								Break;
+							case 'lt' : $qs .= " AND ".$filter[$i]['field']." < ".$filter[$i]['value']; 
+								Break;
+							case 'gt' : $qs .= " AND ".$filter[$i]['field']." > ".$filter[$i]['value']; 
+								Break;
+						}
+						Break;
+					case 'date' :
+						switch ($filter[$i]['comparison']) {
+							case 'ne' : $qs .= " AND ".$filter[$i]['field']." != '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
+								Break;
+							case 'eq' : $qs .= " AND ".$filter[$i]['field']." = '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
+								Break;
+							case 'lt' : $qs .= " AND ".$filter[$i]['field']." < '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
+								Break;
+							case 'gt' : $qs .= " AND ".$filter[$i]['field']." > '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
+								Break;
+						}
+						Break;
+					}
+				}
+				$where .= $qs;
+				$this->db->where($where,null, false);
+				
+			}
+		}
+		
+		$sort = json_decode($sort, true);
+		for ($i=0;$i<count($sort);$i++) {
+			$this->db->order_by($sort[$i]['property'],$sort[$i]['direction']);
+		}
+
+		$this->db->limit($limit, $start);
+		$query = $this->db->get();
+
+		$results = $this->db->count_all('depa');
+		$arr = array();
+		foreach ($query->result_array() as $row)
+		{
+			$meco = array();
+			foreach( $row as $idd=>$campo ) {
+				$meco[$idd] = utf8_encode($campo);
+			}
+			$arr[] = $meco;
+		}
+		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
+	}
+
+	function crear() {
+		$js= file_get_contents('php://input');
+		$data= json_decode($js,true);
+		$campos = $data['data'];
+		$departa  = $data['data']['departa'];
+		
+		unset($campos['id']);
+		$mHay = $this->datasis->dameval("SELECT count(*) FROM depa WHERE departa='".$departa."'");
+		if  ( $mHay > 0 ){
+			echo "{ success: false, message: 'Ya existe ese departamento $departa'}";
+		} else {
+			$mSQL = $this->db->insert_string("depa", $campos );
+			$this->db->simple_query($mSQL);
+			logusu('divi',"DEPARTAMENTO DE NOMINA $division CREADO");
+			echo "{ success: true, message: ".$data['data']['departa']."}";
+		}
+	}
+
+	function modificar(){
+		$js= file_get_contents('php://input');
+		$data= json_decode($js,true);
+		$campos = $data['data'];
+		$departa  = $campos['departa'];
+		$division = $campos['division'];
+		unset($campos['departa']);
+		unset($campos['id']);
+		$campos['descrip'] = $this->datasis->dameval("SELECT descrip FROM divi WHERE division='$division'");
+
+		$mSQL = $this->db->update_string("depa", $campos,"id='".$data['data']['id']."'" );
+		$this->db->simple_query($mSQL);
+		logusu('divi',"DEPARTAMENTO DE NOMINA ".$data['data']['departa']." MODIFICADO");
+		echo "{ success: true, message: 'Departamento de nomina Modificado '}";
+	}
+
+	function eliminar(){
+		$js= file_get_contents('php://input');
+		$data= json_decode($js,true);
+		$campos= $data['data'];
+
+		$departa = $data['data']['departa'];
+		
+		// VERIFICAR SI PUEDE
+		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM pers WHERE depto='$departa'");
+
+		if ($chek > 0){
+			echo "{ success: false, message: 'Departamento de nomina, no puede ser Borrado'}";
+		} else {
+			$this->db->simple_query("DELETE FROM depa WHERE departa='$departa'");
+			logusu('depa',"DIVISION DE NOMINA $departa ELIMINADO");
+			echo "{ success: true, message: 'Departamento de nomina Eliminado'}";
+		}
+	}
+
+
+
+//****************************************************************
+//
+//
+//
+//****************************************************************
+
+	function depaextjs(){
+		$encabeza='DEPARTAMENTO DE NOMINA';
+		$listados= $this->datasis->listados('depa');
+		$otros=$this->datasis->otros('depa', 'depa');
+
+		$mSQL = "SELECT division, CONCAT(division,' ',descrip) descrip FROM divi ORDER BY division ";
+		$divi = $this->datasis->llenacombo($mSQL);
+
+		$mSQL = "SELECT depto, CONCAT(depto,' ',descrip) descrip FROM dpto WHERE tipo='G' ORDER BY depto ";
+		$dpto = $this->datasis->llenacombo($mSQL);
+		
+		$urlajax = 'nomina/depa/';
+		$variables = "";
+
+		$funciones = "";
+		
+		$valida = "
+		{ type: 'length', field: 'division', min:  1 },
+		{ type: 'length', field: 'depadesc', min:  1 },
+		{ type: 'length', field: 'departa',  min:  1 }
+		";
+		
+
+		$columnas = "
+		{ header: 'Departamento', width:  60, sortable: true, dataIndex: 'departa',  field: { type: 'textfield' }, filter: { type: 'string' }}, 
+		{ header: 'Descripcion',  width: 220, sortable: true, dataIndex: 'depadesc', field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Division',     width:  50, sortable: true, dataIndex: 'division', field: { type: 'textfield' }, filter: { type: 'string' }}, 
+		{ header: 'Descripcion.', width: 220, sortable: true, dataIndex: 'descrip',  field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Enlace',       width:  50, sortable: true, dataIndex: 'enlace',   field: { type: 'textfield' }, filter: { type: 'string' }}
+	";
+
+		$campos = "'id', 'departa','depadesc','division', 'descrip', 'enlace'";
+		
+		$camposforma = "
+			\t\t\t\t{
+			\t\t\t\tframe: false,
+			\t\t\t\tborder: false,
+			\t\t\t\tlabelAlign: 'right',
+			\t\t\t\tdefaults: { xtype:'fieldset', labelWidth:80 },
+			\t\t\t\tstyle:'padding:4px',
+			\t\t\t\titems:[	
+			\t\t\t\t	{ xtype: 'textfield', fieldLabel: 'Departamento', name: 'departa',  allowBlank: false,  width: 150 },
+			\t\t\t\t	{ xtype: 'textfield', fieldLabel: 'Descripcion',  name: 'depadesc', allowBlank: false,  width: 400 },
+			\t\t\t\t	{ xtype: 'combo',     fieldLabel: 'Division',     name: 'division', store: [".$divi."], width: 400 },
+			\t\t\t\t	{ xtype: 'combo',     fieldLabel: 'Enlace',       name: 'enlace',   store: [".$dpto."], width: 400 }
+			\t\t\t\t]}
+		";
+
+
+		$titulow = 'Departamentos de Nomina';
+
+		$dockedItems = "
+				\t\t\t\t{ iconCls: 'icon-reset', itemId: 'close', text: 'Cerrar',   scope: this, handler: this.onClose },
+				\t\t\t\t{ iconCls: 'icon-save',  itemId: 'save',  text: 'Guardar',  disabled: false, scope: this, handler: this.onSave }
+		";
+
+		$winwidget = "
+				closable: false,
+				closeAction: 'destroy',
+				width: 450,
+				height: 250,
+				resizable: false,
+				modal: true,
+				items: [writeForm],
+				listeners: {
+					beforeshow: function() {
+						var form = this.down('writerform').getForm();
+						this.activeRecord = registro;
+						if (registro) {
+							form.loadRecord(registro);
+						}
+					}
+				}
+";
+
+		$data['listados']    = $listados;
+		$data['otros']       = $otros;
+		$data['encabeza']    = $encabeza;
+		$data['urlajax']     = $urlajax;
+		$data['variables']   = $variables;
+		$data['funciones']   = $funciones;
+		$data['valida']      = $valida;
+		$data['columnas']    = $columnas;
+		$data['campos']      = $campos;
+		$data['camposforma'] = $camposforma;
+		$data['titulow']     = $titulow;
+		$data['dockedItems'] = $dockedItems;
+		$data['winwidget']   = $winwidget;
+		
+		$data['title']  = heading('Departamentos de Nomina');
+		$this->load->view('extjs/extjsven',$data);
+		
+	}
+
+
 }
 ?>

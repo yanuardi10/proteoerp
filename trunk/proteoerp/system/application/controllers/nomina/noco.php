@@ -245,22 +245,6 @@ class Noco extends Controller {
 			foreach( $row as $idd=>$campo ) {
 				$meco[$idd] = utf8_encode($campo);
 			}
-			
-			// Genera el Detalle
-			/*
-			$detalle = $this->db->query("SELECT * FROM itnoco WHERE codigo='".SUBSTR($row['nombre'],0,5)."'");
-			$darr = array();
-			foreach ($detalle->result_array() as $drow)
-			{
-				$dmeco = array();
-				foreach( $drow as $didd=>$dcampo ) {
-					$dmeco[$didd] = utf8_encode($dcampo);
-				}
-				$dmeco['leaf'] = true;
-				$darr[] = $dmeco;
-			}
-			$meco['detalle'] = $darr;
-			*/
 			$arr[] = $meco;
 		}
 		echo '{success:true, message:"Loaded data" ,results:'. $results.', maestro:'.json_encode($arr).'}';

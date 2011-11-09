@@ -616,7 +616,6 @@ function rliquida(val) {
 //Column Model
 var colConc = 
 	[
-		//{ header: 'id',          width:  30, sortable: true, dataIndex: 'id' }, 
 		{ header: 'Codigo',      width:  50, sortable: true, dataIndex: 'concepto', field: { type: 'textfield' }, filter: { type: 'string' } }, 
 		{ header: 'Tipo',        width:  30, sortable: true, dataIndex: 'tipo',     field: { type: 'textfield' }, filter: { type: 'string' } }, 
 		{ header: 'Descripcion', width: 200, sortable: true, dataIndex: 'descrip',  field: { type: 'textfield' }, filter: { type: 'string' } }, 
