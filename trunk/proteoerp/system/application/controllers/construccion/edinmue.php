@@ -50,9 +50,16 @@ class edinmue extends Controller {
 		$filter->uso->option('','Todos');
 		$filter->uso->options('SELECT id,uso FROM `eduso` ORDER BY uso');
 
-		$edit->ubicacion = new dropdownField('Ubicaci&oacute;n','ubicacion');
-		$edit->ubicacion->option('','Seleccionar');
-		$edit->ubicacion->options('SELECT id,descripcion FROM `edifubica` ORDER BY descripcion');
+		$filter->ubicacion = new dropdownField('Ubicaci&oacute;n','ubicacion');
+		$filter->ubicacion->option('','Seleccionar');
+		$filter->ubicacion->options('SELECT id,descripcion FROM `edifubica` ORDER BY descripcion');
+
+		$filter->status = new dropdownField('Estatus','status');
+		$filter->status->option('D','Disponible');
+		$filter->status->option('A','Alquilado');
+		$filter->status->option('D','Vendido');
+		$filter->status->option('R','Reservado');
+		$filter->status->option('O','Otro');
 
 		$filter->buttons('reset', 'search');
 		$filter->build();
@@ -112,6 +119,14 @@ class edinmue extends Controller {
 		$edit->objeto->option('A','Alquiler');
 		$edit->objeto->option('V','Venta');
 		$edit->objeto->rule='max_length[1]|required';
+
+		$edit->status = new dropdownField('Estatus','status');
+		$edit->status->option('D','Disponible');
+		$edit->status->option('A','Alquilado');
+		$edit->status->option('D','Vendido');
+		$edit->status->option('R','Reservado');
+		$edit->status->option('O','Otro');
+		$edit->status->rule='max_length[11]';
 
 		$edit->edificacion = new dropdownField('Edificaci&oacute;n','edificacion');
 		$edit->edificacion->option('','Seleccionar');
@@ -252,7 +267,7 @@ class edinmue extends Controller {
 		}
 
 		if (!$this->db->field_exists('preciomt2e', 'edinmue')) {
-			$mSQL="ALTER TABLE `edinmue`  CHANGE COLUMN `preciomt2` `preciomt2e` DECIMAL(15,2) NOT NULL AFTER `deposito`,  ADD COLUMN `preciomt2c` DECIMAL(15,2) NOT NULL AFTER `preciomt2e`,  ADD COLUMN `preciomt2a` DECIMAL(15,2) NOT NULL AFTER `preciomt2c`";
+			$mSQL="ALTER TABLE `edinmue`  CHANGE COLUMN `preciomt2` `preciomt2e` DECIMAL(15,2) NULL AFTER `deposito`,  ADD COLUMN `preciomt2c` DECIMAL(15,2) NULL AFTER `preciomt2e`,  ADD COLUMN `preciomt2a` DECIMAL(15,2) NULL AFTER `preciomt2c`";
 			$this->db->simple_query($mSQL);
 		}
 
@@ -260,6 +275,12 @@ class edinmue extends Controller {
 			$mSQL="ALTER TABLE `edinmue`  ADD COLUMN `objeto` CHAR(1) NOT NULL AFTER `preciomt2a`";
 			$this->db->simple_query($mSQL);
 		}
+
+		if (!$this->db->field_exists('status', 'edinmue')) {
+			$mSQL="ALTER TABLE `edinmue`  ADD COLUMN `status` CHAR(1) NOT NULL COMMENT 'Alquilado, Vendido, Reservado,Disponible, Otro' AFTER `objeto`;";
+			$this->db->simple_query($mSQL);
+		}
+
 	}
 
 }
