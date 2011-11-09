@@ -18,12 +18,25 @@ class edinmue extends Controller {
 	function filteredgrid(){
 		$this->rapyd->load('datafilter','datagrid');
 
-		$filter = new DataFilter($this->titp, 'edinmue');
+		$filter = new DataFilter($this->titp);
+		$sel=array('a.id','a.codigo','a.descripcion','a.edificacion','c.uso','d.uso AS usoalter','e.descripcion AS ubicacion','a.caracteristicas','a.area','a.estaciona','a.deposito','b.nombre');
+
+		$filter->db->select($sel);
+		$filter->db->from('edinmue AS a');
+		$filter->db->join('edif  AS b','a.edificacion=b.id');
+		$filter->db->join('eduso AS c','a.uso=c.id');
+		$filter->db->join('eduso AS d','a.usoalter=d.id','left');
+		$filter->db->join('edifubica AS e','a.ubicacion=e.id AND a.edificacion=e.id_edif');
 
 		$filter->codigo = new inputField('C&oacute;digo','codigo');
 		$filter->codigo->rule      ='max_length[15]';
 		$filter->codigo->size      =17;
 		$filter->codigo->maxlength =15;
+
+		$filter->objeto = new dropdownField('Objeto','objeto');
+		$filter->objeto->option('','Todos');
+		$filter->objeto->option('A','Alquiler');
+		$filter->objeto->option('V','Venta');
 
 		$filter->descripcion = new inputField('Descripci&oacute;n','descripcion');
 		$filter->descripcion->rule      ='max_length[100]';
@@ -37,10 +50,9 @@ class edinmue extends Controller {
 		$filter->uso->option('','Todos');
 		$filter->uso->options('SELECT id,uso FROM `eduso` ORDER BY uso');
 
-		$filter->ubicacion = new inputField('Ubicaci&oacute;n','ubicacion');
-		$filter->ubicacion->rule      ='max_length[11]';
-		$filter->ubicacion->size      =13;
-		$filter->ubicacion->maxlength =11;
+		$edit->ubicacion = new dropdownField('Ubicaci&oacute;n','ubicacion');
+		$edit->ubicacion->option('','Seleccionar');
+		$edit->ubicacion->options('SELECT id,descripcion FROM `edifubica` ORDER BY descripcion');
 
 		$filter->buttons('reset', 'search');
 		$filter->build();
@@ -54,12 +66,12 @@ class edinmue extends Controller {
 		$grid->column_orderby('Id',$uri,'id','align="left"');
 		$grid->column_orderby('C&oacute;digo','codigo','codigo','align="left"');
 		$grid->column_orderby('Descripci&oacute;n','descripcion','descripcion','align="left"');
-		$grid->column_orderby('Edificaci&oacute;n','<nformat><#edificacion#></nformat>','edificacion','align="right"');
-		$grid->column_orderby('Uso','<nformat><#uso#></nformat>','uso','align="right"');
-		$grid->column_orderby('Uso alterno','<nformat><#usoalter#></nformat>','usoalter','align="right"');
-		$grid->column_orderby('Ubicaci&oacute;n','<nformat><#ubicacion#></nformat>','ubicacion','align="right"');
-		$grid->column_orderby('&Aacute;rea','<nformat><#area#></nformat>','area','align="right"');
-		$grid->column_orderby('Estacionamiento','<nformat><#estaciona#></nformat>','estaciona','align="right"');
+		$grid->column_orderby('Edificaci&oacute;n','nombre','nombre');
+		$grid->column_orderby('Uso','uso','uso');
+		$grid->column_orderby('Uso alterno','usoalter','usoalter');
+		$grid->column_orderby('Ubicaci&oacute;n','ubicacion','ubicacion');
+		$grid->column_orderby('&Aacute;rea'     ,'<nformat><#area#></nformat>'     ,'area'     ,'align="right"');
+		$grid->column_orderby('Estacionamiento' ,'<nformat><#estaciona#></nformat>','estaciona','align="right"');
 
 		$grid->add($this->url.'dataedit/create');
 		$grid->build();
@@ -82,9 +94,9 @@ class edinmue extends Controller {
 		$edit->post_process('insert','_post_insert');
 		$edit->post_process('update','_post_update');
 		$edit->post_process('delete','_post_delete');
-		$edit->pre_process('insert','_pre_insert');
-		$edit->pre_process('update','_pre_update');
-		$edit->pre_process('delete','_pre_delete');
+		$edit->pre_process( 'insert','_pre_insert');
+		$edit->pre_process( 'update','_pre_update');
+		$edit->pre_process( 'delete','_pre_delete');
 
 		$edit->codigo = new inputField('C&oacute;digo','codigo');
 		$edit->codigo->rule='max_length[15]|unique';
@@ -94,6 +106,12 @@ class edinmue extends Controller {
 		$edit->descripcion = new inputField('Descripci&oacute;n','descripcion');
 		$edit->descripcion->rule='max_length[100]';
 		$edit->descripcion->maxlength =100;
+
+		$edit->objeto = new dropdownField('Objeto','objeto');
+		$edit->objeto->option('','Seleccionar');
+		$edit->objeto->option('A','Alquiler');
+		$edit->objeto->option('V','Venta');
+		$edit->objeto->rule='max_length[1]|required';
 
 		$edit->edificacion = new dropdownField('Edificaci&oacute;n','edificacion');
 		$edit->edificacion->option('','Seleccionar');
@@ -108,12 +126,20 @@ class edinmue extends Controller {
 		$edit->usoalter = new dropdownField('Uso Alternativo','usoalter');
 		$edit->usoalter->option('','Seleccionar');
 		$edit->usoalter->options('SELECT id,uso FROM `eduso` ORDER BY uso');
-		$edit->usoalter->rule='max_length[11]|required';
+		$edit->usoalter->rule='max_length[11]';
 
 		$edit->ubicacion = new dropdownField('Ubicaci&oacute;n','ubicacion');
-		$edit->ubicacion->option('','Seleccionar');
-		$edit->ubicacion->options('SELECT id,descripcion FROM `edifubica` ORDER BY descripcion');
 		$edit->ubicacion->rule='max_length[11]|integer';
+		$ubic=$edit->getval('ubicacion');
+		if($ubic!==false){
+			$dbubic=$this->db->escape($ubic);
+			$edit->ubicacion->option('','Seleccionar');
+			$edit->ubicacion->options("SELECT id,descripcion FROM `edifubica` WHERE id_edif=$dbubic ORDER BY descripcion");
+		}else{
+			$edit->ubicacion->option('','Seleccione una edificacion');
+			$edit->ubicacion->options("SELECT id,descripcion FROM `edifubica` WHERE id_edif=$dbubic ORDER BY descripcion");
+			//Falta implementacion en javascrip
+		}
 
 		$edit->caracteristicas = new textareaField('Caracter&iacute;sticas','caracteristicas');
 		//$edit->caracteristicas->rule='max_length[8]';
@@ -132,17 +158,29 @@ class edinmue extends Controller {
 		$edit->estaciona->css_class='inputonlynum';
 		$edit->estaciona->maxlength =10;
 
-		$edit->deposito = new inputField('Deposito','deposito');
+		$edit->deposito = new inputField('Dep&oacute;sito','deposito');
 		$edit->deposito->rule='max_length[11]|integer';
 		$edit->deposito->size =10;
 		$edit->deposito->maxlength =11;
 		$edit->deposito->css_class='inputonlynum';
 
-		$edit->preciomt2 = new inputField('Precio x mt2','preciomt2');
-		$edit->preciomt2->rule='max_length[15]|numeric';
-		$edit->preciomt2->css_class='inputnum';
-		$edit->preciomt2->size =10;
-		$edit->preciomt2->maxlength =15;
+		$edit->preciomt2e = new inputField('Precio x mt2 (Contado)','preciomt2e');
+		$edit->preciomt2e->rule='max_length[15]|numeric';
+		$edit->preciomt2e->css_class='inputnum';
+		$edit->preciomt2e->size =10;
+		$edit->preciomt2e->maxlength =15;
+
+		$edit->preciomt2c = new inputField('Precio x mt2 (Cr&eacute;dito)','preciomt2c');
+		$edit->preciomt2c->rule='max_length[15]|numeric';
+		$edit->preciomt2c->css_class='inputnum';
+		$edit->preciomt2c->size =10;
+		$edit->preciomt2c->maxlength =15;
+
+		$edit->preciomt2a = new inputField('Precio x mt2 (Alquiler)','preciomt2');
+		$edit->preciomt2a->rule='max_length[15]|numeric';
+		$edit->preciomt2a->css_class='inputnum';
+		$edit->preciomt2a->size =10;
+		$edit->preciomt2a->maxlength =15;
 
 		$script ='<script type="text/javascript" >
 		$(function() {
@@ -210,6 +248,16 @@ class edinmue extends Controller {
 			COLLATE='latin1_swedish_ci'
 			ENGINE=MyISAM
 			ROW_FORMAT=DEFAULT";
+			$this->db->simple_query($mSQL);
+		}
+
+		if (!$this->db->field_exists('preciomt2e', 'edinmue')) {
+			$mSQL="ALTER TABLE `edinmue`  CHANGE COLUMN `preciomt2` `preciomt2e` DECIMAL(15,2) NOT NULL AFTER `deposito`,  ADD COLUMN `preciomt2c` DECIMAL(15,2) NOT NULL AFTER `preciomt2e`,  ADD COLUMN `preciomt2a` DECIMAL(15,2) NOT NULL AFTER `preciomt2c`";
+			$this->db->simple_query($mSQL);
+		}
+
+		if (!$this->db->field_exists('objeto', 'edinmue')) {
+			$mSQL="ALTER TABLE `edinmue`  ADD COLUMN `objeto` CHAR(1) NOT NULL AFTER `preciomt2a`";
 			$this->db->simple_query($mSQL);
 		}
 	}

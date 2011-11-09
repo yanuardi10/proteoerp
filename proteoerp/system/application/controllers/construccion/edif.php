@@ -20,7 +20,6 @@ class edif extends Controller {
 		$this->rapyd->load('datafilter','datagrid');
 		$this->load->helper('text');
 
-
 		$filter = new DataFilter($this->titp, 'edif');
 
 		$filter->nombre = new inputField('Nombre','nombre');
@@ -85,7 +84,6 @@ class edif extends Controller {
 
 		$boton=$this->datasis->modbus($scli);
 
-
 		$edit = new DataEdit($this->tits, 'edif');
 
 		$edit->back_url = site_url($this->url.'filteredgrid');
@@ -117,7 +115,7 @@ class edif extends Controller {
 		$edit->descripcion->rows = 4;
 
 		$edit->promotora = new inputField('Promotora','promotora');
-		$edit->promotora->rule='max_length[5]';
+		$edit->promotora->rule='max_length[5]|existescli';
 		$edit->promotora->size =7;
 		$edit->promotora->maxlength =5;
 		$edit->promotora->append($boton);
