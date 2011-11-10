@@ -1,75 +1,79 @@
 <?php
-//asignacion
-class Asig extends Controller {
+class ausu extends Controller {
 	
-function asig(){
+	function ausu(){
 		parent::Controller(); 
 		$this->load->library("rapyd");
 	}
-		
+
 	function index(){
 		if ( !$this->datasis->iscampo('asig','id') ) {
-			$this->db->simple_query('ALTER TABLE asig DROP PRIMARY KEY');
-			$this->db->simple_query('ALTER TABLE asig ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ');
-			$this->db->simple_query('ALTER TABLE asig ADD UNIQUE INDEX codigo (codigo, concepto, fecha)');
+			$this->db->simple_query('ALTER TABLE ausu DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE ausu ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ');
+			$this->db->simple_query('ALTER TABLE ausu ADD UNIQUE INDEX codigo (codigo, concepto, fecha)');
 		}
-		$this->datasis->modulo_id(702,1);
-		$this->asigextjs();
+		$this->datasis->modulo_id(703,1);
+		$this->ausuextjs();
 	}
 
 	function filteredgrid(){
 		$this->rapyd->load("datafilter2","datagrid");
 		$this->rapyd->uri->keep_persistence();
 
-		$filter = new DataFilter2("Filtro de Asignaciones", 'asig');
+		$pers=array(
+		'tabla'   =>'pers',
+		'columnas'=>array(
+		'codigo'  =>'Codigo',
+		'cedula'  =>'Cedula',
+		'nombre'  =>'Nombre',
+		'apellido' =>'Apellido'),
+		'filtro'  =>array('codigo'=>'C&oacute;digo','cedula'=>'Cedula'),
+		'retornar'=>array('codigo'=>'codigo'),
+		'titulo'  =>'Buscar Personal');
+					  
+		$boton=$this->datasis->modbus($pers);
+
+
+		$filter = new DataFilter2("Filtro por C&oacute;digo", 'ausu');
 		
-		$filter->fecha = new DateField("Fecha", "fecha");
-		$filter->fecha->size = 12;
+		$filter->codigo = new inputField("Codigo","codigo");
+		$filter->codigo->size=15;
+		$filter->codigo->append($boton);
+		$filter->codigo->clause = "likerigth";
 		
-		$filter->codigo = new inputField("Codigo de Trabajador","codigo");
-		$filter->codigo->size=10;
-		
-		$filter->descrip = new inputField("Descripci&oacute;n de Concepto","descrip");
-		$filter->descrip->size=25;
+		$filter->fecha = new DateonlyField("Fecha","fecha");
+		$filter->fecha->size=12;
 		
 		$filter->buttons("reset","search");
 		$filter->build();
 
-		$uri = anchor('nomina/asig/dataedit/show/<#codigo#>','<#codigo#>');
-		
-		function sta($status){
-			switch($status){
-				case "A":return "Asignaci&oacute;n";break;
-				case "O":return "Otros";break;
-				case "D":return "Devoluciones";break;
-			}
-		}
-		
-		$grid = new DataGrid("Lista de Asignaciones");
-		$grid->order_by("codigo","asc");
-		$grid->per_page = 10;
-		$grid->use_function('sta');
+		$uri = anchor('nomina/aumentosueldo/dataedit/show/<#codigo#>/<raencode><#fecha#></raencode>','<#codigo#>');
 
-		$grid->column("C&oacute;digo",$uri);
-		$grid->column("Nombre","nombre");
-		$grid->column("Concepto","concepto");
-		$grid->column("Descripci&oacute;n","descrip");
-		$grid->column("Monto"      ,"<nformat><#monto#></nformat>","align='right'");
-		$grid->column("Fecha"      ,"<dbdate_to_human><#fecha#></dbdate_to_human>"         ,"align='center'");
-				
-		$grid->add("nomina/asig/dataedit/create");
+		$grid = new DataGrid("Lista de Aumentos de Sueldo");
+		$grid->order_by("codigo","asc");
+		$grid->per_page = 20;
+
+		$grid->column("C&oacute;digo"  ,$uri);
+		$grid->column("Nombre"         ,"nombre");
+		$grid->column("Fecha"          ,"<dbdate_to_human><#fecha#></dbdate_to_human>"           ,"align='center'");
+		$grid->column("Sueldo anterior","<number_format><#sueldoa#>|2|,|.</number_format>"       ,"align='right'");
+		$grid->column("Sueldo nuevo"   ,"<number_format><#sueldo#>|2|,|.</number_format>"        ,"align='right'");
+		$grid->column("Observaciones"  ,"observ1");
+		$grid->column("..","oberv2");
+			
+		$grid->add("nomina/aumentosueldo/dataedit/create");
 		$grid->build();
 		
 		$data['content'] = $filter->output.$grid->output;
-		$data['title']   = "<h1>Asignaciones</h1>";
+		$data['title']   = "<h1>Aumentos de Sueldo</h1>";
 		$data["head"]    = $this->rapyd->get_head();
-		$this->load->view('view_ventanas', $data);	
+		$this->load->view('view_ventanas', $data);
 
 	}
+
 	function dataedit()
  	{
 		$this->rapyd->load("dataedit");
-		$edit = new DataEdit("Asignaciones", "asig");
 		
 		$script ='
 		$(function() {
@@ -88,126 +92,146 @@ function asig(){
 			'retornar'=>array('codigo'=>'codigo','nombre'=>'nombre'),     
 			'titulo'  =>'Buscar Personal');                         
 					                           
-		$boton=$this->datasis->modbus($pers); 
+		$boton=$this->datasis->modbus($pers);                         
 		
-		$edit->back_url = site_url("nomina/asig/filteredgrid");
+		$edit = new DataEdit("Aumentos de Sueldo", "ausu");
+		$edit->back_url = site_url("nomina/aumentosueldo/filteredgrid");
 		$edit->script($script, "create");
 		$edit->script($script, "modify");
 		
 		$edit->post_process('insert','_post_insert');
 		$edit->post_process('update','_post_update');
 		$edit->post_process('delete','_post_delete');
-		
-		$edit->codigo =  new inputField("C&oacute;digo","codigo");
-		$edit->codigo->mode="autohide";
-		$edit->codigo->maxlength=15;
-		$edit->codigo->size =20;
-		$edit->codigo->rule ="trim|required";
+	  		
+		$edit->codigo =   new inputField("Codigo","codigo");
+		$edit->codigo->size = 15;
 		$edit->codigo->append($boton);
 		$edit->codigo->mode="autohide";
+		$edit->codigo->maxlength=15;
+		$edit->codigo->rule="required|callback_chexiste";
+		$edit->codigo->group="Trabajador";
 		
 		$edit->nombre =  new inputField("Nombre", "nombre");
-		$edit->nombre->rule ="trim|strtoupper|required";
-		$edit->nombre->maxlength=30;
 		$edit->nombre->size =40;
-				
-		$edit->concepto = new dropdownField("Concepto", "concepto");
-	  $edit->concepto->options("SELECT concepto, descrip FROM conc ORDER BY CONCEPTO");
-		$edit->concepto->style ="width:300px;";
+		$edit->nombre->maxlength=30;
+		$edit->nombre->group="Trabajador";		
 		
-		$edit->tipo = new dropdownField("Tipo", "tipo");
-		$edit->tipo->style ="width:100px;";
-		$edit->tipo->options(array("A"=> "Asignaci&oacute;n","O"=>"Otros","D"=> "Deducci&oacute;n"));
-		
-		$edit->descrip =   new inputField("Descripci&oacute;n", "descrip");
-		$edit->descrip->size =45;
-		$edit->descrip->maxlength=35;
-		$edit->descrip->rule ="strtoupper";
-		
-		$edit->formula =   new inputField("F&oacute;rmula", "formula");
-		$edit->formula->size =80;
-		$edit->formula->maxlength=150;
-		
-		$edit->monto = new inputField("Monto", "monto");
-		$edit->monto->size = 13;
-		$edit->monto->css_class='inputnum';
-		$edit->monto->rule='callback_positivo';
-		
-		$edit->fecha = new DateField("Fecha", "fecha");
+		$edit->fecha = new dateField("Apartir de la nomina", "fecha","d/m/Y");
+		$edit->fecha->mode="autohide";
 		$edit->fecha->size = 12;
+		$edit->fecha->dbformat    = 'Ymd';
+		$edit->fecha->rule ="required|callback_fpositiva";
 		
-		$edit->cuota =  new inputField("Cuotas", "cuota");
-		$edit->cuota->size = 13;
-		$edit->cuota->maxlength=11;
-		$edit->cuota->css_class='inputnum';
-		$edit->cuota->rule='integer';
-				
-		$edit->cuotat = new inputField("Total de cuotas", "cuotat");
-		$edit->cuotat->size =13;
-		$edit->cuotat->maxlength=11;
-		$edit->cuotat->css_class='inputnum';
-		$edit->cuotat->rule='integer';
+		$edit->sueldoa =   new inputField("Sueldo anterior", "sueldoa");
+		$edit->sueldoa->size = 14;
+		$edit->sueldoa->css_class='inputnum';
+		$edit->sueldoa->rule='callback_positivoa';
+		$edit->sueldoa->maxlength=11;
+		
+		$edit->sueldo =   new inputField("Sueldo nuevo", "sueldo");
+		$edit->sueldo->size = 14;
+		$edit->sueldo->css_class='inputnum';
+		$edit->sueldo->rule='callback_positivo';
+		$edit->sueldo->maxlength=11;
+		
+		$edit->observ1 =   new inputField("Observaciones", "observ1");
+		$edit->observ1->size = 51;
+		$edit->observ1->maxlength=46;
+		
+		$edit->oberv2 = new inputField("", "oberv2");
+		$edit->oberv2->size =51;
+		$edit->oberv2->maxlength=46;
 		
 		$edit->buttons("modify", "save", "undo", "delete", "back");
 		$edit->build();
- 
+
 		$data['content'] = $edit->output;           
-    $data['title']   = "<h1>Asignaci&oacute;n</h1>";        
-   	$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
+    $data['title']   = "<h1>Aumentos de Sueldo</h1>";        
+    $data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
     $this->load->view('view_ventanas', $data);  
 	}
 	function _post_insert($do){
 		$codigo=$do->get('codigo');
 		$nombre=$do->get('nombre');
-		logusu('asig',"ASIGNACION $codigo NOMBRE  $nombre CREADO");
+		$fecha=$do->get('fecha');
+		logusu('ausu',"AUMENTO DE SUELDO A $codigo NOMBRE  $nombre FECHA $fecha CREADO");
 	}
 	function _post_update($do){
 		$codigo=$do->get('codigo');
 		$nombre=$do->get('nombre');
-		logusu('asig',"ASIGNACION $codigo NOMBRE  $nombre  MODIFICADO");
+		$fecha=$do->get('fecha');
+		logusu('ausu',"AUMENTO DE SUELDO A $codigo NOMBRE  $nombre FECHA $fecha MODIFICADO");
 	}
 	function _post_delete($do){
 		$codigo=$do->get('codigo');
 		$nombre=$do->get('nombre');
-		logusu('asig',"ASIGNACION $codigo NOMBRE  $nombre  ELIMINADO ");
+		$fecha=$do->get('fecha');
+		logusu('ausu',"AUMENTO DE SUELDO A $codigo NOMBRE  $nombre FECHA $fecha ELIMINADO ");
 	}
-	//function chexiste($codigo){
-	//	$codigo=$this->input->post('codigo');
-	//	$chek=$this->datasis->dameval("SELECT COUNT(*) FROM asig WHERE codigo='$codigo'");
-	//	if ($chek > 0){
-	//		$nombre=$this->datasis->dameval("SELECT descrip FROM asig WHERE codigo='$codigo'");
-	//		$this->validation->set_message('chexiste',"El codigo $codigo ya existe para la asignacion $nombre");
-	//		return FALSE;
-	//	}else {
-//		return TRUE;
-	//	}	
-	//}
+	function chexiste($fecha){
+		$fecha=$this->input->post('fecha');
+		$codigo=$this->input->post('codigo');
 		
+		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM ausu WHERE codigo='$codigo' AND fecha='$fecha'");
+		if ($chek > 0){
+			$nombre=$this->datasis->dameval("SELECT nombre FROM ausu WHERE codigo='$codigo'");
+			$this->validation->set_message('chexiste',"El aumento para $codigo $nombre fecha $fecha ya existe");
+			return FALSE;
+		}else {
+  		return TRUE;
+		}	
+	}
+	
 	function positivo($valor){
 		if ($valor <= 0){
-			$this->validation->set_message('positivo',"El campo Monto debe ser positivo");
+			$this->validation->set_message('positivo',"El campo Sueldo Nuevo debe ser positivo");
 			return FALSE;
 		}
   	return TRUE;
 	}
 	
+	function positivoa($valor){
+		if ($valor <= 0){
+			$this->validation->set_message('positivoa',"El campo Sueldo Anterior debe ser positivo");
+			return FALSE;
+		}
+  	return TRUE;
+	}
+	
+	function fpositiva($valor){
+		if ($valor < date('Ymd')){
+			$this->validation->set_message('fpositiva',"El campo Apartir de la nomina, Debe ser una nomina futura");
+			return FALSE;
+		}
+  	return TRUE;
+	}
+	
+	function _post($do){
+	
+		$codigo=$do->get('codigo');
+		$fecha =$do->get('fecha');
+		redirect('nomina/aumentosueldo/dataedit/show/'.$codigo.'/'.raencode($fecha));
+		echo 'nomina/aumentosueldo/dataedit/show/'.$codigo.'/'.raencode($fecha);
+		exit;
+	}
+	
 	function instalar(){
-		$mSQL="ALTER TABLE asig ADD PRIMARY KEY (codigo);";
+		$mSQL="ALTER TABLE ausu ADD PRIMARY KEY (codigo,fecha);";
 		$this->db->simple_query($mSQL);	
 	}
-
-
+	
+	
 	function grid(){
 		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']   :  0;
 		$limit   = isset($_REQUEST['limit'])  ? $_REQUEST['limit']   : 50;
-		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']    : '[{"property":"codigo","direction":"ASC"}]';
+		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']    : '[{"property":"fecha","direction":"ASC"}]';
 		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
 
 		$where = "";
 
 		$this->db->_protect_identifiers=false;
 		$this->db->select('*');
-		$this->db->from('asig');
+		$this->db->from('ausu');
 
 		//Buscar posicion 0 Cero
 		if (isset($_REQUEST['filter'])){
@@ -272,7 +296,7 @@ function asig(){
 		$this->db->limit($limit, $start);
 		$query = $this->db->get();
 
-		$results = $this->db->count_all('asig');
+		$results = $this->db->count_all('ausu');
 		$arr = array();
 		foreach ($query->result_array() as $row)
 		{
@@ -290,20 +314,18 @@ function asig(){
 		$data= json_decode($js,true);
 		$campos = $data['data'];
 		$codigo   = $data['data']['codigo'];
-		$concepto = $data['data']['concepto'];
 		$fecha    = $data['data']['fecha'];
 		
 		$campos['nombre']  = $this->datasis->dameval("SELECT CONCAT(TRIM(nombre),' ',TRIM(apellido)) nombre FROM pers WHERE codigo='$codigo'");
-		$campos['descrip'] = $this->datasis->dameval("SELECT descrip FROM conc WHERE concepto='$concepto'");
 		
 		unset($campos['id']);
-		$mHay = $this->datasis->dameval("SELECT count(*) FROM asig WHERE codigo='$codigo' AND concepto='$concepto' AND fecha='$fecha'");
+		$mHay = $this->datasis->dameval("SELECT count(*) FROM ausu WHERE codigo='$codigo' AND fecha='$fecha' ");
 		if  ( $mHay > 0 ){
-			echo "{ success: false, message: 'Ya existe una asignacion para ese trabajador $codigo'}";
+			echo "{ success: false, message: 'Ya existe un registro igual para ese trabajador $codigo fecha $fecha'}";
 		} else {
-			$mSQL = $this->db->insert_string("asig", $campos );
+			$mSQL = $this->db->insert_string("ausu", $campos );
 			$this->db->simple_query($mSQL);
-			logusu('divi',"ASIGNACION DE NOMINA $codigo CREADO");
+			logusu('ausu',"AUMENTO DE SUELDO $codigo/$fecha CREADO");
 			echo "{ success: true, message: ".$data['data']['codigo']."}";
 		}
 	}
@@ -497,6 +519,6 @@ var persStore = new Ext.data.Store({
 		$this->load->view('extjs/extjsven',$data);
 	}
 
-
+	
 }
 ?>
