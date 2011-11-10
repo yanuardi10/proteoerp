@@ -370,17 +370,17 @@ class Carg extends Controller {
 		$campos = "'id', 'cargo', 'descrip', 'sueldo'";
 		
 		$camposforma = "
-			\t\t\t\t{
-			\t\t\t\tframe: false,
-			\t\t\t\tborder: false,
-			\t\t\t\tlabelAlign: 'right',
-			\t\t\t\tdefaults: { xtype:'fieldset', labelWidth:70 },
-			\t\t\t\tstyle:'padding:4px',
-			\t\t\t\titems:[	
-			\t\t\t\t	{ xtype: 'textfield',   fieldLabel: 'Cargo',       name: 'cargo',   allowBlank: false, width: 200 },
-			\t\t\t\t	{ xtype: 'textfield',   fieldLabel: 'Descripcion', name: 'descrip', allowBlank: false, width: 400 },
-			\t\t\t\t	{ xtype: 'numberfield', fieldLabel: 'Sueldo ',     name: 'sueldo',  hideTrigger: true, fieldStyle: 'text-align: right', width:230,renderer : Ext.util.Format.numberRenderer('0,000.00') },
-			\t\t\t\t]}
+			{
+			frame: false,
+			tborder: false,
+			labelAlign: 'right',
+			defaults: { xtype:'fieldset', labelWidth:70 },
+			style:'padding:4px',
+			items:[	
+				{ xtype: 'textfield',   fieldLabel: 'Cargo',       name: 'cargo',   allowBlank: false, width: 200 },
+				{ xtype: 'textfield',   fieldLabel: 'Descripcion', name: 'descrip', allowBlank: false, width: 400 },
+				{ xtype: 'numberfield', fieldLabel: 'Sueldo ',     name: 'sueldo',  hideTrigger: true, fieldStyle: 'text-align: right', width:230,renderer : Ext.util.Format.numberRenderer('0,000.00') },
+			]}
 		";
 
 

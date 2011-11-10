@@ -11,22 +11,22 @@ class Scst extends Controller {
 	function index(){
 		$this->db->simple_query("DELETE FROM itscst WHERE control IN (SELECT control FROM scst a WHERE LENGTH(a.transac)=0 or a.transac is null)");
 		$this->db->simple_query("DELETE FROM scst a WHERE LENGTH(a.transac)=0 or a.transac is null");
-		//redirect('compras/scst/datafilter');
-		redirect('compras/scst/extgrid');
+		redirect('compras/scst/datafilter');
+		//redirect('compras/scst/extgrid');
 	}
 	
 	function extgrid(){
 		$this->datasis->modulo_id(201,1);
-		$script = $this->scstextjs();
+		//$script = $this->scstextjs();
 		$data["script"] = $script;
 		$data['title']  = heading('Compras de Productos');
-		$this->load->view('extjs/ventana',$data);
+		//$this->load->view('extjs/ventana',$data);
 	}
 
 	
 	function datafilter(){
 		//redirect('compras/scst/extgrid');
-/*		
+		
 		$this->rapyd->load('datagrid','datafilter');
 		$this->rapyd->uri->keep_persistence();
 
@@ -192,7 +192,7 @@ class Scst extends Controller {
 
 		$data['title']   =heading('Compras');
 		$this->load->view('view_ventanas', $data);
-		 */
+
 	}
 
 	function dataedit(){
@@ -1620,11 +1620,14 @@ Ext.require([
 var mxs = ((screen.availWidth/2) -400);
 var mys = ((screen.availHeight/2)-300);
 
+//var editor = Ext.create('Ext.grid.plugin.CellEditing', {clicksToEdit: 2});
+
 //Column Model Presupuestos
 var ScstCol = 
 	[
 		{ header: 'Tipo',             width:  40, sortable: true,  dataIndex: 'tipo_doc', field: { type: 'textfield'  }, filter: { type: 'string' }}, 
 		{ header: 'Numero',           width:  60, sortable: true,  dataIndex: 'numero',   field: { type: 'textfield'  }, filter: { type: 'string' }}, 
+		{ header: 'Serie',            width:  90, sortable: true,  dataIndex: 'serie',    field: { type: 'textfield'  }, filter: { type: 'string' }, editor: 'textfield' }, 
 		{ header: 'Fecha',            width:  70, sortable: false, dataIndex: 'fecha',    field: { type: 'date'       }, filter: { type: 'date'   }}, 
 		{ header: 'Recibida',         width:  70, sortable: false, dataIndex: 'recep',    field: { type: 'date'       }, filter: { type: 'date'   }}, 
 		{ header: 'Prov.',            width:  50, sortable: true,  dataIndex: 'proveed',  field: { type: 'textfield'  }, filter: { type: 'string' }, renderer: renderSprv }, 
@@ -1678,15 +1681,15 @@ Ext.onReady(function() {
 	Ext.QuickTips.init();
 	/////////////////////////////////////////////////
 	// Define los data model
-	// Presupuestos
 	Ext.define('Scst', {
 		extend: 'Ext.data.Model',
-		fields: ['id', 'tipo_doc', 'numero', 'fecha', 'recep', 'proveed', 'nombre',  'montotot', 'montoiva', 'montonet', 'depo', 'observa1', 'control', 'estampa', 'hora', 'usuario'],
+		fields: ['id', 'tipo_doc', 'numero', 'serie', 'fecha', 'recep', 'proveed', 'nombre',  'montotot', 'montoiva', 'montonet', 'depo', 'observa1', 'control', 'estampa', 'hora', 'usuario'],
 		proxy: {
 			type: 'ajax',
 			noCache: false,
 			api: {
 				read   : urlApp + 'compras/scst/grid',
+				update : urlApp + 'compras/scst/modificar',
 				method: 'POST'
 			},
 			reader: {
@@ -1777,6 +1780,7 @@ Ext.onReady(function() {
 			]
 		}],
 		features: [filters],
+		plugins: [Ext.create('Ext.grid.plugin.CellEditing', { clicksToEdit: 2 })],
 		// paging bar on the bottom
 		bbar: Ext.create('Ext.PagingToolbar', {
 			store: storeScst,
@@ -1858,7 +1862,7 @@ Ext.onReady(function() {
 			var meco1 = Ext.getCmp('imprimir');
 			Ext.Ajax.request({
 				url: urlApp +'compras/scst/tabla',
-				params: { control: selectedRecord[0].data.control },
+				params: { control: selectedRecord[0].data.control, serie: selectedRecord[0].data.serie },
 				success: function(response) {
 					var vaina = response.responseText;
 					scstTplMarkup.pop();
