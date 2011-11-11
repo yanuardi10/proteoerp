@@ -546,7 +546,7 @@ class Sprv extends validaciones {
 			$filter = json_decode($_REQUEST['filter'], true);
 			if (is_array($filter)) {
 				//Dummy Where. 
-				$where = "sprv.codigo IS NOT NULL ";
+				$where = "sprv.proveed IS NOT NULL ";
 				$qs = "";
 				for ($i=0;$i<count($filter);$i++){
 					switch($filter[$i]['type']){
@@ -616,6 +616,8 @@ class Sprv extends validaciones {
 		$this->db->limit($limit, $start);
 
 		$query = $this->db->get();
+		$mSQL = '';
+		if ( $filters ) $mSQL = $this->db->last_query();
 		$results = $this->db->count_all('sprv');
 
 		$arr = array();
@@ -627,7 +629,7 @@ class Sprv extends validaciones {
 			}
 			$arr[] = $meco;
 		}
-		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
+		echo '{success:true, message:"Loaded data " ,results:'. $results.', data:'.json_encode($arr).'}';
 	}
 
 	function crear() {
