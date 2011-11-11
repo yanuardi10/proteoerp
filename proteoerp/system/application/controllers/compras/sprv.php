@@ -536,7 +536,7 @@ class Sprv extends validaciones {
 	function grid(){
 		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']   :  0;
 		$limit   = isset($_REQUEST['limit'])  ? $_REQUEST['limit']   : 50;
-		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']    : 'grupo';
+		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']    : 'nombre';
 		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
 
 		$where = "";
@@ -606,7 +606,7 @@ class Sprv extends validaciones {
 			$this->db->where($where);
 		}
 
-		$this->db->order_by( 'grupo', 'asc' );
+		$this->db->order_by( 'nombre', 'asc' );
 
 		$sort = json_decode($sort, true);
 		for ($i=0;$i<count($sort);$i++) {
