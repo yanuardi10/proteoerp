@@ -890,7 +890,7 @@ var cplaStore = new Ext.data.Store({
 				}
 ";
 
-		$filtros = "\tvar filters = {	ftype: 'filters',encode: 'json', local: false }; ";
+		$filtros = "var filters = { ftype: 'filters', encode: 'json', local: false }; ";
 		
 		$winmethod = "
 				onSeniat: function(){
@@ -904,6 +904,8 @@ var cplaStore = new Ext.data.Store({
 					}
 				}
 ";
+
+		$features = "features: [{ ftype: 'grouping', groupHeaderTpl: '{name} ' }, filters],";
 
 
 		$data['listados']    = $listados;
@@ -919,6 +921,7 @@ var cplaStore = new Ext.data.Store({
 		$data['camposforma'] = $camposforma;
 		$data['titulow']     = $titulow;
 		$data['dockedItems'] = $dockedItems;
+		$data['features']    = $features;
 		$data['winwidget']   = $winwidget;
 		$data['filtros']     = $filtros;
 		$data['winmethod']   = $winmethod;
