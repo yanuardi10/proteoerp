@@ -1,7 +1,7 @@
 <?php
 class gpt_pro extends Controller {
-	var $titp='Gu&iacute;a de productos farmaceuticos';
-	var $tits='Gu&iacute;a de especialidades farmaceuticas';
+	var $tits='Gu&iacute;a de productos farmaceuticos';
+	var $titp='Gu&iacute;a de especialidades farmaceuticas';
 	var $url ='farmacia/gpt_pro/';
 
 	function gpt_pro(){
@@ -48,12 +48,13 @@ class gpt_pro extends Controller {
 		$filter->submit->in='parr';
 		$filter->build_form();
 
-		$uri = anchor($this->url.'dataedit/show/<raencode><#id_pro#></raencode>','<#nom_pro#>');
+		$uri = anchor($this->url.'dataedit/show/<raencode><#id_pro#></raencode>','<#nom_pro#>','target="framedetrepo"');
+		//$uri = anchor($this->url.'dataedit/show/<raencode><#id_pro#></raencode>','<#nom_pro#>');
 
 		$grid = new DataGrid('Especialidades farmaceuticas','gpt_pro');
 		if ($filter->on_success()){
 			$dbparr=$this->db->escape($filter->parr->newValue);
-			$filter->db->where('MATCH(nom_pro,pres_pro,lab_pro,gen_pro) AGAINST ('.$dbparr.')');
+			$filter->db->where('MATCH(nom_pro,pres_pro,lab_pro,gen_pro,mono_pro) AGAINST ('.$dbparr.')');
 		}
 		$grid->order_by('nom_pro');
 		$grid->per_page = 40;
@@ -66,21 +67,25 @@ class gpt_pro extends Controller {
 
 		$grid->build();
 
-		//$data['filtro']  = $filter->output;
 		$data['content'] = $filter->output.$grid->output;
-		$data['head']    = $this->rapyd->get_head().script('jquery.js');
+		//$data['content'].= $acti->output;
+		$data['content'].= '<IFRAME src="'.site_url('farmacia/gpt_pro/dummy').'" width="100%" height="300" scrolling="auto" frameborder="0" name="framedetrepo">iframe no son soportados</IFRAME>';
+		$data['head']    = $this->rapyd->get_head().script('jquery.js').script('jquery.highlight.js');
 		$data['title']   = heading($this->titp);
 		$this->load->view('view_ventanas', $data);
+	}
 
+	function dummy(){
+		return true;
 	}
 
 	function dataedit(){
 		$this->rapyd->uri->keep_persistence();
 		$this->rapyd->load('dataedit','datagrid');
 
-		$edit = new DataEdit($this->tits, 'gpt_pro');
+		$edit = new DataEdit('Detalle del producto', 'gpt_pro');
 
-		$edit->back_url = site_url($this->url.'filteredgrid');
+		$edit->back_url = site_url($this->url.'filteredgrid/process');
 
 		$edit->post_process('insert','_post_insert');
 		$edit->post_process('update','_post_update');
@@ -143,20 +148,18 @@ class gpt_pro extends Controller {
 		$memo=$edit->getval('mono_pro');
 		$memo=htmlentities($memo);
 		$memo=str_replace("\n",br(),$memo);
-		$memo=highlight_phrase($memo,'Composici&oacute;n' ,'</p><p><b>','</b>');
-		$memo=highlight_phrase($memo,'Advertencias' ,'</p><p><b>','</b>');
-		$memo=highlight_phrase($memo,'Reacciones Adversas' ,'</p><p><b>','</b>');
-		$memo=highlight_phrase($memo,'Interacciones' ,'</p><p><b>','</b>');
-		$memo=highlight_phrase($memo,'Precauciones' ,'</p><p><b>','</b>');
-		//$memo=highlight_phrase($memo,'' ,'</p><p><b>','</b>');
-		//$memo=highlight_phrase($memo,'' ,'</p><p><b>','</b>');
-		//$memo=highlight_phrase($memo,'' ,'</p><p><b>','</b>');
-		$memo=highlight_phrase($memo,'Composicion' ,'</p><p><b>','</b>');
-		$memo=highlight_phrase($memo,'Indicaciones'       ,'</p><p><b>','</b>');
-		$memo=highlight_phrase($memo,'Posolog&iacute;a'   ,'</p><p><b>','</b>');
-		$memo=highlight_phrase($memo,'Posologia'   ,'</p><p><b>','</b>');
-		$memo=highlight_phrase($memo,'Presentaci&oacute;n','</p><p><b>','</b>');
-		$memo=highlight_phrase($memo,'Presentacion','</p><p><b>','</b>');
+		$memo=highlight_phrase($memo,'Composici&oacute;n:'  ,'</p><p><b>','</b>');
+		$memo=highlight_phrase($memo,'Advertencias:'        ,'</p><p><b>','</b>');
+		$memo=highlight_phrase($memo,'Reacciones Adversas:' ,'</p><p><b>','</b>');
+		$memo=highlight_phrase($memo,'Interacciones:'       ,'</p><p><b>','</b>');
+		$memo=highlight_phrase($memo,'Precauciones:'        ,'</p><p><b>','</b>');
+		$memo=highlight_phrase($memo,'Composicion:'         ,'</p><p><b>','</b>');
+		$memo=highlight_phrase($memo,'Contra indicaciones:' ,'</p><p><b>','</b>');
+		$memo=highlight_phrase($memo,'Indicaciones:'        ,'</p><p><b>','</b>');
+		$memo=highlight_phrase($memo,'Posolog&iacute;a:'    ,'</p><p><b>','</b>');
+		$memo=highlight_phrase($memo,'Posologia:'           ,'</p><p><b>','</b>');
+		$memo=highlight_phrase($memo,'Presentaci&oacute;n:' ,'</p><p><b>','</b>');
+		$memo=highlight_phrase($memo,'Presentacion:'        ,'</p><p><b>','</b>');
 		$edit->container = new containerField('alert','<p>'.$memo.'</p>');
 
 		//$memo=$edit->getval('mono_pro');
@@ -173,16 +176,18 @@ class gpt_pro extends Controller {
 		$grid->column('Descripci&oacute;n'  ,'descrip','align="left"');
 		$grid->column('&Uacute;ltima compra','<dbdate_to_human><#fechac#></dbdate_to_human>','align="center"');
 		$grid->column('Existencia'          ,'<nformat><#existen#></nformat>','align="right"');
+		$grid->column('Precio'              ,'<nformat><#precio1#></nformat>','align="right"');
 		$grid->build();
 
-		$edit->buttons('back');
+		//$edit->buttons('back');
 		$edit->build();
 		$data['content'] = $edit->output;
 		if($grid->recordCount>0)
 			$data['content'] .= $grid->output;
 		$data['head']    = $this->rapyd->get_head();
-		$data['title']   = heading($this->tits);
-		$this->load->view('view_ventanas', $data);
+		//$data['title']   = heading($this->tits);
+		$data['title']   = '';
+		$this->load->view('view_ventanas_sola', $data);
 	}
 
 	function cargamdb(){
@@ -259,5 +264,8 @@ class gpt_pro extends Controller {
 			ROW_FORMAT=DEFAULT";
 			$this->db->simple_query($mSQL);
 		}
+
+		//$mSQL="ALTER TABLE `gpt_pro`  DROP INDEX `nom_pro_pres_pro_lab_pro_gen_pro`,  ADD FULLTEXT INDEX `nom_pro_pres_pro_lab_pro_gen_pro_mono_pro` (`nom_pro`, `pres_pro`, `lab_pro`, `gen_pro`, `mono_pro`)";
+		//$this->db->simple_query($mSQL);
 	}
 }
