@@ -67,7 +67,7 @@ class Pedidos extends Controller {
 		$grid = new DataGrid($seltod);
 		$grid->use_function('descheck','pinta');
 		$grid->order_by('desca','asc');
-		$grid->per_page = 300;
+		$grid->per_page = 400;
 
 		//$grid->column_orderby('C&oacute;digo','codigoa','control');
 		$grid->column('Pedir' ,'<descheck><#barras#>|<#pedir#></descheck>');
