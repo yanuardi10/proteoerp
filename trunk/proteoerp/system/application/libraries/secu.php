@@ -16,6 +16,10 @@ class secu{
 		return FALSE;
 	}
 
+	function usuario(){
+		return $this->ci->session->userdata('usuario');
+	}
+
 	function essuper(){
 		if ($this->es_logeado()){
 			$usuario = $this->db->escape($this->ci->session->userdata('usuario'));
