@@ -1408,7 +1408,7 @@ class Scst extends Controller {
 	function _post_insert($do){
 		$codigo  = $do->get('numero');
 		$control = $do->get('control');
-		logusu('snte',"Compra $codigo control $control CREADA");
+		logusu('scst',"Compra $codigo control $control CREADA");
 	}
 
 	function _post_cxp_update($do){
