@@ -171,7 +171,7 @@ class ingresos{
 			$data['tipo']       ='CR';
 			$data['fuente']     ='MC';
 			$data['sucursal']   ='99';
-			$data['fecha']      =$row->emiriva;
+			$data['fecha']      =$row->emision;
 			$data['numero']     =$row->nroriva;
 			$data['clipro']     =$row->cod_cli;
 			$data['nombre']     =$row->nombre;
