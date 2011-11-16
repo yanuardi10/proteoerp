@@ -135,7 +135,7 @@ class rivc extends Controller {
 		$edit->fecha = new dateField('Fecha de Recepci&oacute;n','fecha');
 		$edit->fecha->rule='chfecha|required';
 		$edit->fecha->insertValue = date('Y-m-d');
-		$edit->fecha->size =9;
+		$edit->fecha->size =10;
 		$edit->fecha->maxlength =8;
 
 		$edit->cod_cli = new inputField('Cliente','cod_cli');
