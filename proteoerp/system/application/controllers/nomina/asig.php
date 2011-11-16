@@ -375,7 +375,7 @@ function asig(){
 		$columnas = "
 		{ header: 'Codigo',      width:  60, sortable: true, dataIndex: 'codigo',   field: { type: 'textfield' }, filter: { type: 'string' }}, 
 		{ header: 'Nombre',      width: 220, sortable: true, dataIndex: 'nombre',   field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Concepto',    width:  50, sortable: true, dataIndex: 'concepto', field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Concepto',    width:  70, sortable: true, dataIndex: 'concepto', field: { type: 'textfield' }, filter: { type: 'string' }},
 		{ header: 'Tipo',        width:  50, sortable: true, dataIndex: 'tipo',     field: { type: 'textfield' }, filter: { type: 'string' }},
 		{ header: 'Descripcion', width: 220, sortable: true, dataIndex: 'descrip',  field: { type: 'textfield' }, filter: { type: 'string' }},
 		{ header: 'Formula',     width: 220, sortable: true, dataIndex: 'formula',  field: { type: 'textfield' }, filter: { type: 'string' }},
@@ -420,7 +420,7 @@ function asig(){
 
 		$stores = "
 var persStore = new Ext.data.Store({
-	fields: [ 'item', 'valor'],
+	fields: [ 'item', 'valor', 'sueldo'],
 	autoLoad: false,
 	autoSync: false,
 	pageSize: 50,
@@ -443,8 +443,8 @@ var persStore = new Ext.data.Store({
 		$titulow = 'Asignaciones de Nomina';
 
 		$dockedItems = "
-				\t\t\t\t{ iconCls: 'icon-reset', itemId: 'close', text: 'Cerrar',   scope: this, handler: this.onClose },
-				\t\t\t\t{ iconCls: 'icon-save',  itemId: 'save',  text: 'Guardar',  disabled: false, scope: this, handler: this.onSave }
+				{ iconCls: 'icon-reset', itemId: 'close', text: 'Cerrar',   scope: this, handler: this.onClose },
+				{ iconCls: 'icon-save',  itemId: 'save',  text: 'Guardar',  disabled: false, scope: this, handler: this.onSave }
 		";
 
 		$winwidget = "
@@ -474,6 +474,8 @@ var persStore = new Ext.data.Store({
 					}
 				}
 ";
+		$features= "features: [ { ftype: 'filters', encode: 'json', local: false } ],";
+
 
 		$data['encabeza']    = $encabeza;
 		$data['listados']    = $listados;
@@ -491,6 +493,7 @@ var persStore = new Ext.data.Store({
 		$data['dockedItems'] = $dockedItems;
 		$data['winwidget']   = $winwidget;
 		$data['filtros']     = $filtros;
+		$data['features']    = $features;
 		//$data['winmethod']   = $winmethod;
 		
 		$data['title']  = heading('Departamentos de Nomina');

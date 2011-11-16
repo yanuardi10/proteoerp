@@ -5,12 +5,17 @@ class Pres extends Controller {
 	function pres(){
 		parent::Controller(); 
 		$this->load->library("rapyd");
-
-}
-    function index(){
-    $this->datasis->modulo_id(710,1);
-   	redirect("nomina/pres/filteredgrid");
-    }
+	}
+	
+	function index(){
+		if ( !$this->datasis->iscampo('pres','id') ) {
+			$this->db->simple_query('ALTER TABLE pres DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE pres ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ');
+			$this->db->simple_query('ALTER TABLE pres ADD UNIQUE INDEX cliente (cod_cli, tipo_doc, numero )');
+		}
+		$this->datasis->modulo_id(710,1);
+		$this->presextjs();
+	}
  
 	function filteredgrid(){
 		$this->rapyd->load("datafilter","datagrid");
@@ -34,8 +39,6 @@ class Pres extends Controller {
 		$grid->column("Fecha","<dbdate_to_human><#fecha#></dbdate_to_human>","align='center'");
 		$grid->column("Tipo","tipo_doc");
 		$grid->column("Monto","monto");
-//		$grid->column("Observaciones","observ1");
-//		$grid->column(".","oberv2");
 				
 		$grid->add("nomina/pres/dataedit/create");
 		$grid->build();
@@ -45,6 +48,7 @@ class Pres extends Controller {
 		$data["head"]    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
+	
 	function dataedit()	{
 		$this->rapyd->load("dataedit");
  		$edit = new DataEdit("Adelanto de Prestamos", "pres");
@@ -98,7 +102,7 @@ class Pres extends Controller {
 		$edit->tipo = new dropdownField("Tipo", "tipo_doc");  
 		$edit->tipo->option("ND","ND");
 		$edit->tipo->option("NC","NC");
-	  $edit->tipo->style='width:60px';
+		$edit->tipo->style='width:60px';
 		$edit->tipo->mode="autohide";
 		$edit->tipo->rule="required";
 		
@@ -112,16 +116,16 @@ class Pres extends Controller {
 		$edit->fecha->size = 12;
 		
 		$edit->codigo =  new inputField("C&oacute;digo", "codigo");
-	  $edit->codigo->size = 15;
-	  $edit->codigo->maxlength=15;
-	  $edit->codigo->append($boton1);
-	  $edit->codigo->rule="required";
+		$edit->codigo->size = 15;
+		$edit->codigo->maxlength=15;
+		$edit->codigo->append($boton1);
+		$edit->codigo->rule="required";
 		$edit->codigo->group="Trabajador";
 		
 		$edit->nombre = new inputField("Nombre","nombre");
-	  $edit->nombre->size =45;
-	  $edit->nombre->maxlength=35;
-	  $edit->nombre->group="Trabajador";
+		$edit->nombre->size =45;
+		$edit->nombre->maxlength=35;
+		$edit->nombre->group="Trabajador";
 	  	
 		$edit->monto = new inputField("Saldo","monto");
 		$edit->monto->size =17;
@@ -131,22 +135,22 @@ class Pres extends Controller {
 		$edit->monto->group="Datos de Prestamo";
 
 		$edit->nroctas = new inputField("Nº Cuota","nroctas");
-	  $edit->nroctas->size =4;
-	  $edit->nroctas->maxlength=2;
-	  $edit->nroctas->css_class='inputnum';
+		$edit->nroctas->size =4;
+		$edit->nroctas->maxlength=2;
+		$edit->nroctas->css_class='inputnum';
 		$edit->nroctas->rule='integer';
 		$edit->nroctas->group="Datos de Prestamo";
 
 		$edit->cuota = new inputField("Cuota","cuota");
-	  $edit->cuota->size = 17;
-	  $edit->cuota->maxlength=14;
-	  $edit->cuota->css_class='inputnum';
+		$edit->cuota->size = 17;
+		$edit->cuota->maxlength=14;
+		$edit->cuota->css_class='inputnum';
 		$edit->cuota->rule='numeric';
 		$edit->cuota->group="Datos de Prestamo";
 	  	  
 		$edit->apartir = new DateonlyField("Cobrar A partir de:","apartir");
-    $edit->apartir->size = 12;
-    $edit->apartir->group="Datos de Prestamo";
+		$edit->apartir->size = 12;
+		$edit->apartir->group="Datos de Prestamo";
     
 		$edit->cadano = new inputField("Frecuencia","cadano");
 		$edit->cadano->size =2;
@@ -170,9 +174,9 @@ class Pres extends Controller {
 		$edit->build();
 
 		$data['content'] = $edit->output;           
-    $data['title']   = "<h1>Adelanto Prestamos</h1>";        
-    $data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
-    $this->load->view('view_ventanas', $data);
+		$data['title']   = "<h1>Adelanto Prestamos</h1>";        
+		$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
+		$this->load->view('view_ventanas', $data);
 	}
 	function _post_insert($do){
 		$codigo=$do->get('numero');

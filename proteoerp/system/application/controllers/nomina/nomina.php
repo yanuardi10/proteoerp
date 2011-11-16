@@ -354,34 +354,32 @@ var tipos = new Ext.data.SimpleStore({
 var NomiCol = 
 	[
 		{ header: 'Numero',       width:  60, sortable: true,  dataIndex: 'numero',   field: { type: 'textfield' }, filter: { type: 'string' }}, 
-		{ header: 'Fecha',        width:  70, sortable: true,  dataIndex: 'fecha',    field: { type: 'datefield' }, filter: { type: 'string' }}, 
-		{ header: 'Contrato',     width:  50, sortable: true,  dataIndex: 'contrato', field: { type: 'textfield' }, filter: { type: 'string' }}, 
-		{ header: 'Asignaciones', width:  80, sortable: true,  dataIndex: 'asigna',   field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Deducciones',  width:  80, sortable: true,  dataIndex: 'deduc',    field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Fecha',        width:  70, sortable: true,  dataIndex: 'fecha',    field: { type: 'datefield' }, filter: { type: 'date' }}, 
+		{ header: 'Contrato',     width:  70, sortable: true,  dataIndex: 'contrato', field: { type: 'textfield' }, filter: { type: 'string' }}, 
+		{ header: 'Asignaciones', width:  80, sortable: true,  dataIndex: 'asigna',   field: { type: 'textfield' }, filter: { type: 'number' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Deducciones',  width:  80, sortable: true,  dataIndex: 'deduc',    field: { type: 'textfield' }, filter: { type: 'number' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
 		{ header: 'Nombre',       width: 250, sortable: true,  dataIndex: 'noconom',  field: { type: 'textfield' }, filter: { type: 'string' }}
 	];
 
 //Column Model
 var TrabaCol = 
 	[
-		{ header: 'Codigo',       width:  50, sortable: true,  dataIndex: 'codigo',   field: { type: 'textfield' }, filter: { type: 'string' }}, 
-		{ header: 'Nombre',       width: 170, sortable: true,  dataIndex: 'nombre',   field: { type: 'textfield' }, filter: { type: 'string' }}, 
+		{ header: 'Codigo',     width:  50, sortable: true,  dataIndex: 'codigo',   field: { type: 'textfield' }, filter: { type: 'string' }}, 
+		{ header: 'Nombre',     width: 170, sortable: true,  dataIndex: 'nombre',   field: { type: 'textfield' }, filter: { type: 'string' }}, 
 		{ header: 'Asignacion', width:  80, sortable: true,  dataIndex: 'asigna',   field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
 		{ header: 'Deduccion',  width:  60, sortable: true,  dataIndex: 'deduc',    field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Saldo',        width:  80, sortable: true,  dataIndex: 'saldo',    field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}
+		{ header: 'Saldo',      width:  80, sortable: true,  dataIndex: 'saldo',    field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}
 	];
 
 //Column Model
 var ConcCol = 
 	[
-		{ header: 'Conc.',        width:  40, sortable: true,  dataIndex: 'concepto', field: { type: 'textfield' }, filter: { type: 'string' }}, 
-		{ header: 'Descripcion',  width: 150, sortable: true,  dataIndex: 'descrip',  field: { type: 'textfield' }, filter: { type: 'string' }}, 
-		{ header: 'Asignacion', width:  80, sortable: true,  dataIndex: 'asigna',   field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Deduccion',  width:  60, sortable: true,  dataIndex: 'deduc',    field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}
+		{ header: 'Conc.',       width:  40, sortable: true,  dataIndex: 'concepto', field: { type: 'textfield' }, filter: { type: 'string' }}, 
+		{ header: 'Descripcion', width: 150, sortable: true,  dataIndex: 'descrip',  field: { type: 'textfield' }, filter: { type: 'string' }}, 
+		{ header: 'Asignacion',  width:  80, sortable: true,  dataIndex: 'asigna',   field: { type: 'textfield' }, filter: { type: 'number' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Deduccion',   width:  60, sortable: true,  dataIndex: 'deduc',    field: { type: 'textfield' }, filter: { type: 'number' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}
 	];
-";
 
-$script .= "
 var nomina = '';
 Ext.onReady(function(){
 	/////////////////////////////////////////////////
@@ -416,7 +414,6 @@ Ext.onReady(function(){
 		method: 'POST'
 	});
 
-
 	/////////////////////////////////////////////////
 	// Define los data model
 	// Contratos
@@ -448,7 +445,6 @@ Ext.onReady(function(){
 		autoSync: true,
 		method: 'POST'
 	});
-
 
 	//////////////////////////////////////////////////////////////////
 	// create the grid and specify what field you want
@@ -509,7 +505,6 @@ Ext.onReady(function(){
 		columns: ConcCol
 	});
 
-
 	//////////////////////////////////////////////////////////////////
 	// create the grid and specify what field you want
 	// to use for the editor at each column.
@@ -521,12 +516,10 @@ Ext.onReady(function(){
 		iconCls: 'icon-grid',
 		frame: false,
 		columns: NomiCol,
+		features: [ { ftype: 'filters', encode: 'json', local: false } ],
 		dockedItems: [{
 			xtype: 'toolbar',
-			items: [
-				{iconCls: 'icon-delete', text: 'Eliminar',  disabled: true, itemId: 'delete', scope: this,
-				handler: this.onDeleteClick }
-			]
+			items: [{iconCls: 'icon-delete', text: 'Eliminar',  disabled: true, itemId: 'delete', scope: this, handler: this.onDeleteClick } ]
 		}],
 		// paging bar on the bottom
 		bbar: Ext.create('Ext.PagingToolbar', {
@@ -535,9 +528,7 @@ Ext.onReady(function(){
 			displayMsg: 'Pag No. {0} - Reg. {1} de {2}',
 			emptyMsg: 'No se encontraron Registros.'
 		}),
-		onSelectChange: function(selModel, selections){
-			down('#delete').setDisabled(selections.length === 0);
-		},
+		onSelectChange: function(selModel, selections){	down('#delete').setDisabled(selections.length === 0); },
 		onDeleteClick: function() {
 			var selection = this.getView().getSelectionModel().getSelection()[0];
 			Ext.MessageBox.show({

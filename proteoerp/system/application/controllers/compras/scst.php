@@ -11,18 +11,10 @@ class Scst extends Controller {
 	function index(){
 		$this->db->simple_query("DELETE FROM itscst WHERE control IN (SELECT control FROM scst a WHERE LENGTH(a.transac)=0 or a.transac is null)");
 		$this->db->simple_query("DELETE FROM scst a WHERE LENGTH(a.transac)=0 or a.transac is null");
-		redirect('compras/scst/datafilter');
-		//redirect('compras/scst/extgrid');
+		//redirect('compras/scst/datafilter');
+		redirect('compras/scst/extgrid');
 	}
 	
-	function extgrid(){
-		$this->datasis->modulo_id(201,1);
-		//$script = $this->scstextjs();
-		$data["script"] = $script;
-		$data['title']  = heading('Compras de Productos');
-		//$this->load->view('extjs/ventana',$data);
-	}
-
 	
 	function datafilter(){
 		//redirect('compras/scst/extgrid');
@@ -1429,6 +1421,30 @@ class Scst extends Controller {
 	}
 
 
+	function extgrid(){
+		$js= file_get_contents('php://input');
+		if ( ! empty($js) ){
+			$data= json_decode($js,true);
+			// Modifica los campos mandados
+			foreach ($data as $registro ){
+				$mSQL  = "UPDATE scst SET serie='".$registro['serie']."' ";
+				$mSQL .= "WHERE control='".$registro['control']."'";
+				$this->db->simple_query($mSQL);
+			}
+			echo '{success:true, message:"Registros Actualizados" }';
+
+		} else {
+			$this->datasis->modulo_id(201,1);
+			$script = $this->scstextjs();
+			$data["script"] = $script;
+			$data['title']  = heading('Compras de Productos');
+			$this->load->view('extjs/ventana',$data);
+		}
+	}
+
+
+
+
 	function grid(){
 		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']   :  0;
 		$limit   = isset($_REQUEST['limit'])  ? $_REQUEST['limit']   : 50;
@@ -1586,7 +1602,6 @@ class Scst extends Controller {
 	}
 
 	function scstextjs() {
-
 		$encabeza='<table width="100%" bgcolor="#2067B5"><tr><td align="left" width="100px"><img src="'.base_url().'assets/default/css/templete_01.jpg" width="120"></td><td align="center"><h1 style="font-size: 20px; color: rgb(255, 255, 255);" onclick="history.back()">COMPRAS DE PRODUCTOS</h1></td><td align="right" width="100px"><img src="'.base_url().'assets/default/images/cerrar.png" alt="Cerrar Ventana" title="Cerrar Ventana" onclick="parent.window.close()" width="25"></td></tr></table>';
 		$listados= $this->datasis->listados('scst');
 		$otros=$this->datasis->otros('scst', 'scst');
@@ -1625,22 +1640,22 @@ var mys = ((screen.availHeight/2)-300);
 //Column Model Presupuestos
 var ScstCol = 
 	[
-		{ header: 'Tipo',             width:  40, sortable: true,  dataIndex: 'tipo_doc', field: { type: 'textfield'  }, filter: { type: 'string' }}, 
-		{ header: 'Numero',           width:  60, sortable: true,  dataIndex: 'numero',   field: { type: 'textfield'  }, filter: { type: 'string' }}, 
-		{ header: 'Serie',            width:  90, sortable: true,  dataIndex: 'serie',    field: { type: 'textfield'  }, filter: { type: 'string' }, editor: 'textfield' }, 
-		{ header: 'Fecha',            width:  70, sortable: false, dataIndex: 'fecha',    field: { type: 'date'       }, filter: { type: 'date'   }}, 
-		{ header: 'Recibida',         width:  70, sortable: false, dataIndex: 'recep',    field: { type: 'date'       }, filter: { type: 'date'   }}, 
-		{ header: 'Prov.',            width:  50, sortable: true,  dataIndex: 'proveed',  field: { type: 'textfield'  }, filter: { type: 'string' }, renderer: renderSprv }, 
-		{ header: 'Nombre Proveedor', width: 200, sortable: true,  dataIndex: 'nombre',   field: { type: 'textfield'  }, filter: { type: 'string' }}, 
-		{ header: 'SubTotal',         width: 100, sortable: true,  dataIndex: 'montotot', field: { type: 'numberfield'}, filter: { type: 'number' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
-		{ header: 'IVA',              width:  80, sortable: true,  dataIndex: 'montoiva', field: { type: 'numberfield'}, filter: { type: 'number' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
-		{ header: 'Total',            width: 100, sortable: true,  dataIndex: 'montonet', field: { type: 'numberfield'}, filter: { type: 'number' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
-		{ header: 'Almacen',          width:  60, sortable: true,  dataIndex: 'depo',     field: { type: 'textfield'  }, filter: { type: 'number' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
-		{ header: 'Observacion',      width: 160, sortable: true,  dataIndex: 'observa1', field: { type: 'textfield'  }, filter: { type: 'string' }}, 
-		{ header: 'Control',          width:  60, sortable: true,  dataIndex: 'control',  field: { type: 'textfield'  }, filter: { type: 'string' }}, 
-		{ header: 'Estampa',          width:  70, sortable: false, dataIndex: 'estampa',  field: { type: 'date'       }, filter: { type: 'date'   }}, 
-		{ header: 'Hora',             width:  60, sortable: true,  dataIndex: 'hora',     field: { type: 'textfield'  }, filter: { type: 'string' }}, 
-		{ header: 'Usuario',          width:  60, sortable: true,  dataIndex: 'usuario',  field: { type: 'textfield'  }, filter: { type: 'string' }}
+		{ header: 'Tipo',             width:  40, sortable: true,  dataIndex: 'tipo_doc', field: { type: 'textfield'  }, filter: { type: 'string'  }}, 
+		{ header: 'Numero',           width:  60, sortable: true,  dataIndex: 'numero',   field: { type: 'textfield'  }, filter: { type: 'string'  }}, 
+		{ header: 'Serie',            width: 100, sortable: true,  dataIndex: 'serie',    field: { type: 'textfield'  }, filter: { type: 'string'  }, editor: 'textfield' }, 
+		{ header: 'Fecha',            width:  70, sortable: false, dataIndex: 'fecha',    field: { type: 'date'       }, filter: { type: 'date'    }}, 
+		{ header: 'Recibida',         width:  70, sortable: false, dataIndex: 'recep',    field: { type: 'date'       }, filter: { type: 'date'    }}, 
+		{ header: 'Prov.',            width:  50, sortable: true,  dataIndex: 'proveed',  field: { type: 'textfield'  }, filter: { type: 'string'  }, renderer: renderSprv }, 
+		{ header: 'Nombre Proveedor', width: 200, sortable: true,  dataIndex: 'nombre',   field: { type: 'textfield'  }, filter: { type: 'string'  }}, 
+		{ header: 'SubTotal',         width: 100, sortable: true,  dataIndex: 'montotot', field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
+		{ header: 'IVA',              width:  80, sortable: true,  dataIndex: 'montoiva', field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
+		{ header: 'Total',            width: 100, sortable: true,  dataIndex: 'montonet', field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
+		{ header: 'Almacen',          width:  60, sortable: true,  dataIndex: 'depo',     field: { type: 'textfield'  }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
+		{ header: 'Observacion',      width: 160, sortable: true,  dataIndex: 'observa1', field: { type: 'textfield'  }, filter: { type: 'string'  }}, 
+		{ header: 'Control',          width:  60, sortable: true,  dataIndex: 'control',  field: { type: 'textfield'  }, filter: { type: 'string'  }}, 
+		{ header: 'Estampa',          width:  70, sortable: false, dataIndex: 'estampa',  field: { type: 'date'       }, filter: { type: 'date'    }}, 
+		{ header: 'Hora',             width:  60, sortable: true,  dataIndex: 'hora',     field: { type: 'textfield'  }, filter: { type: 'string'  }}, 
+		{ header: 'Usuario',          width:  60, sortable: true,  dataIndex: 'usuario',  field: { type: 'textfield'  }, filter: { type: 'string'  }}
 	];
 
 //Column Model Detalle de Presupuesto
@@ -1714,11 +1729,7 @@ Ext.onReady(function() {
 	});
 
 	//Filters
-	var filters = {
-		ftype: 'filters',
-		encode: 'json', // json encode the filter query
-		local: false
-	};    
+	//var filters = { ftype: 'filters', encode: 'json', local: false };    
 
 	//////////////////////////////////////////////////////////////////
 	// create the grid and specify what field you want
@@ -1779,7 +1790,7 @@ Ext.onReady(function() {
 				}
 			]
 		}],
-		features: [filters],
+		features: [ { ftype: 'filters', encode: 'json', local: false } ],
 		plugins: [Ext.create('Ext.grid.plugin.CellEditing', { clicksToEdit: 2 })],
 		// paging bar on the bottom
 		bbar: Ext.create('Ext.PagingToolbar', {
@@ -1838,6 +1849,7 @@ Ext.onReady(function() {
 		title: 'Articulos',
 		iconCls: 'icon-grid',
 		frame: true,
+		features: [ { ftype: 'filters', encode: 'json', local: false } ],
 		columns: ItScstCol
 	});
 
@@ -1952,7 +1964,7 @@ Ext.onReady(function() {
 
 </script>
 ";
-		return $script;	
+		return $script;
 		
 	}
 

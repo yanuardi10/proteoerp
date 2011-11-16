@@ -7,10 +7,10 @@ class ausu extends Controller {
 	}
 
 	function index(){
-		if ( !$this->datasis->iscampo('asig','id') ) {
+		if ( !$this->datasis->iscampo('ausu','id') ) {
 			$this->db->simple_query('ALTER TABLE ausu DROP PRIMARY KEY');
 			$this->db->simple_query('ALTER TABLE ausu ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ');
-			$this->db->simple_query('ALTER TABLE ausu ADD UNIQUE INDEX codigo (codigo, concepto, fecha)');
+			$this->db->simple_query('ALTER TABLE ausu ADD UNIQUE INDEX codigo (codigo, fecha)');
 		}
 		$this->datasis->modulo_id(703,1);
 		$this->ausuextjs();
@@ -376,40 +376,32 @@ class ausu extends Controller {
 //
 //
 //****************************************************************
-	function asigextjs(){
-		$encabeza='ASIGNACIONES DE NOMINA';
-		$listados= $this->datasis->listados('asig');
-		$otros=$this->datasis->otros('depa', 'asig');
+	function ausuextjs(){
+		$encabeza='AUMENTO DE SUELDOS';
+		$listados= $this->datasis->listados('ausu');
+		$otros=$this->datasis->otros('ausu', 'ausu');
 
-		$mSQL = "SELECT concepto, CONCAT(concepto,' ',descrip) descrip FROM conc ORDER BY concepto ";
-		$conc = $this->datasis->llenacombo($mSQL);
-
-		$urlajax = 'nomina/asig/';
-		$variables = "var mcliente = '', mcodigo='';";
+		$urlajax = 'nomina/ausu/';
+		$variables = "var mcodigo = '';";
 
 		$funciones = "";
 		
 		$valida = "
-		{ type: 'length', field: 'codigo',   min:  1 },
-		{ type: 'length', field: 'concepto', min:  1 }
+		{ type: 'length', field: 'codigo', min:  1 }
+		//{ type: 'length', field: 'nombre', min:  1 }
 		";
 
 		$columnas = "
 		{ header: 'Codigo',      width:  60, sortable: true, dataIndex: 'codigo',   field: { type: 'textfield' }, filter: { type: 'string' }}, 
 		{ header: 'Nombre',      width: 220, sortable: true, dataIndex: 'nombre',   field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Concepto',    width:  50, sortable: true, dataIndex: 'concepto', field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Tipo',        width:  50, sortable: true, dataIndex: 'tipo',     field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Descripcion', width: 220, sortable: true, dataIndex: 'descrip',  field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Formula',     width: 220, sortable: true, dataIndex: 'formula',  field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Monto',       width: 120, sortable: true, dataIndex: 'monto',    field: { type: 'numeroc'   }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00') },
-		{ header: 'Cuotas',      width: 120, sortable: true, dataIndex: 'cuotat',   field: { type: 'numeroc'   }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00') },
-		{ header: 'valor',       width: 120, sortable: true, dataIndex: 'valor',    field: { type: 'numeroc'   }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00') },
 		{ header: 'Fecha',       width:  70, sortable: true, dataIndex: 'fecha',    field: { type: 'date'      }, filter: { type: 'date'   }},
-		{ header: 'Pagadas ',    width: 120, sortable: true, dataIndex: 'cuota',    field: { type: 'numeroc'   }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00') }
+		{ header: 'Anterior',    width: 120, sortable: true, dataIndex: 'sueldoa',  field: { type: 'numeroc'   }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00') },
+		{ header: 'Nuevo',       width: 120, sortable: true, dataIndex: 'sueldo',   field: { type: 'numeroc'   }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00') },
+		{ header: 'Observacion', width: 220, sortable: true, dataIndex: 'observ1',  field: { type: 'textfield' }, filter: { type: 'string' }},
 	";
 
-		$campos = "'id', 'codigo', 'nombre', 'concepto','tipo', 'descrip', 'formula','monto','cuotat','valor','fecha','cuota'";
-		$filtros = "\tvar filters = {	ftype: 'filters',encode: 'json', local: false }; ";
+		$campos = "'id', 'codigo', 'nombre', 'fecha','sueldoa', 'sueldo', 'observ1'";
+		$filtros = "var filters = {	ftype: 'filters',encode: 'json', local: false }; ";
 		
 		$camposforma = "
 				{
@@ -419,22 +411,49 @@ class ausu extends Controller {
 						defaults: { xtype:'fieldset', labelWidth:70 },
 						style:'padding:4px',
 						items:[	
-								{ xtype: 'combo',         fieldLabel: 'Trabajador', name: 'codigo',   mode: 'remote', hideTrigger: true, typeAhead: true, forceSelection: true, valueField: 'item', displayField: 'valor', store: persStore, width: 400, id: 'codigo'},
-								{ xtype: 'combo',         fieldLabel: 'Concepto',   name: 'concepto', store: [".$conc."], width: 400 },
-								{ xtype: 'textareafield', fieldLabel: 'Formula',    name: 'formula',  allowBlank: false,   width: 400 }
+							{
+								xtype: 'combo',
+								fieldLabel: 'Trabajador',
+								name: 'codigo',
+								mode: 'remote',
+								hideTrigger: true,
+								typeAhead: true,
+								forceSelection: true,
+								valueField: 'item',
+								displayField: 'valor',
+								store: persStore,
+								width: 400,
+								id: 'codigo',
+								listeners: { select: function(combo, record, index){
+									var sele   = combo.getValue();
+									var i = 0;
+									var msueldo = 0;
+									for ( i=0; i < combo.store.count();i=i+1 ){
+										//alert(combo.store.getAt(i).get('item')+' = '+sele);
+										if ( combo.store.getAt(i).get('item') == sele ){
+											msueldo=combo.store.getAt(i).get('sueldo');
+										}
+									}
+									//alert('pers '+msueldo);
+									Ext.getCmp('sueldoa').setValue(msueldo);
+									Ext.getCmp('sueldo').setValue(msueldo);
+									
+									
+								}}
+							},
+							{ xtype: 'numberfield', fieldLabel: 'Sueldo',     name: 'sueldoa',  hideTrigger: true, fieldStyle: 'text-align: right', columnWidth:0.45, renderer : Ext.util.Format.numberRenderer('0,000.00'), id: 'sueldoa', readOnly: true }
 						]
 				},{
 						layout: 'column',
 						frame: false,
 						border: false,
 						labelAlign: 'right',
-						defaults: {xtype:'fieldset'  },
+						defaults: {xtype:'fieldset', labelWidth: 80  },
 						style:'padding:4px',
 						items: [
-								{ xtype: 'datefield',   fieldLabel: 'Fecha Inicio',   name: 'fecha',  labelWidth: 90, format: 'd/m/Y', submitFormat: 'Y-m-d', value: new Date(),columnWidth:0.45 },
-								{ xtype: 'numberfield', fieldLabel: 'Total Cuotas',   name: 'cuotat', labelWidth:110, hideTrigger: true, fieldStyle: 'text-align: right', columnWidth:0.45, renderer : Ext.util.Format.numberRenderer('0,000.00') },
-								{ xtype: 'numberfield', fieldLabel: 'Monto',          name: 'monto',  labelWidth: 90, hideTrigger: true, fieldStyle: 'text-align: right', columnWidth:0.45, renderer : Ext.util.Format.numberRenderer('0,000.00') },
-								{ xtype: 'numberfield', fieldLabel: 'Cuotas Pagadas', name: 'cuota',  labelWidth:110, hideTrigger: true, fieldStyle: 'text-align: right', columnWidth:0.45, renderer : Ext.util.Format.numberRenderer('0,000.00') }
+							{ xtype: 'datefield',   fieldLabel: 'Fecha',       name: 'fecha',    width:200, format: 'd/m/Y', submitFormat: 'Y-m-d' },
+							{ xtype: 'numberfield', fieldLabel: 'Sueldo',      name: 'sueldo',   width:200, hideTrigger: true, fieldStyle: 'text-align: right',  renderer : Ext.util.Format.numberRenderer('0,000.00'), id: 'sueldo' },
+							{ xtype: 'textfield',   fieldLabel: 'Observacion', name: 'observ1',  width:400, allowBlank: true   }
 						]
 				}
 		";
@@ -442,9 +461,10 @@ class ausu extends Controller {
 
 		$stores = "
 var persStore = new Ext.data.Store({
-	fields: [ 'item', 'valor'],
+	fields: [ 'item', 'valor', 'sueldo'],
 	autoLoad: false,
 	autoSync: false,
+	name: 'Pers',
 	pageSize: 50,
 	pruneModifiedRecords: true,
 	totalProperty: 'results',
@@ -465,15 +485,15 @@ var persStore = new Ext.data.Store({
 		$titulow = 'Asignaciones de Nomina';
 
 		$dockedItems = "
-				\t\t\t\t{ iconCls: 'icon-reset', itemId: 'close', text: 'Cerrar',   scope: this, handler: this.onClose },
-				\t\t\t\t{ iconCls: 'icon-save',  itemId: 'save',  text: 'Guardar',  disabled: false, scope: this, handler: this.onSave }
+				{ iconCls: 'icon-reset', itemId: 'close', text: 'Cerrar',   scope: this, handler: this.onClose },
+				{ iconCls: 'icon-save',  itemId: 'save',  text: 'Guardar',  disabled: false, scope: this, handler: this.onSave }
 		";
 
 		$winwidget = "
 				closable: false,
 				closeAction: 'destroy',
 				width: 450,
-				height: 320,
+				height: 260,
 				resizable: false,
 				modal: true,
 				items: [writeForm],
@@ -487,21 +507,17 @@ var persStore = new Ext.data.Store({
 							persStore.load({ params: { 'codigo':  registro.data.cliente, 'origen': 'beforeform' } });
 							form.loadRecord(registro);
 							form.findField('codigo').setReadOnly(true);
-							form.findField('concepto').setReadOnly(true);
 						} else {
 							form.findField('codigo').setReadOnly(false);
-							form.findField('concepto').setReadOnly(false);
 							mcodigo  = '';
-						}						
+						}
 					}
 				}
 ";
-
 		$data['encabeza']    = $encabeza;
 		$data['listados']    = $listados;
 		$data['otros']       = $otros;
 		$data['urlajax']     = $urlajax;
-
 		$data['variables']   = $variables;
 		$data['funciones']   = $funciones;
 		$data['valida']      = $valida;
@@ -518,7 +534,5 @@ var persStore = new Ext.data.Store({
 		$data['title']  = heading('Departamentos de Nomina');
 		$this->load->view('extjs/extjsven',$data);
 	}
-
-	
 }
 ?>

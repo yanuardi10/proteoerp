@@ -10,11 +10,11 @@ class Conc extends validaciones{
 
 	function index(){
 		$this->datasis->modulo_id(704,1);
-		//redirect("nomina/conc/filteredgrid");
-		redirect("nomina/conc/extgrid");
-	}
-
-	function extgrid(){
+		if ( !$this->datasis->iscampo('conc','id') ) {
+			$this->db->simple_query('ALTER TABLE conc DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE conc ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ');
+			$this->db->simple_query('ALTER TABLE conc ADD UNIQUE INDEX concepto (concepto)');
+		}
 		$script = $this->concextjs();
 		$data["script"] = $script;
 		$data['title']  = heading('Nomina');
@@ -566,7 +566,7 @@ script;
 
 		$encabeza='<table width="100%" bgcolor="#2067B5"><tr><td align="left" width="100px"><img src="'.base_url().'assets/default/css/templete_01.jpg" width="120"></td><td align="center"><h1 style="font-size: 20px; color: rgb(255, 255, 255);" onclick="history.back()">CONCEPTOS DE NOMINA</h1></td><td align="right" width="100px"><img src="'.base_url().'assets/default/images/cerrar.png" alt="Cerrar Ventana" title="Cerrar Ventana" onclick="parent.window.close()" width="25"></td></tr></table>';
 		$listados= $this->datasis->listados('conc');
-		$otros=$this->datasis->otros('spre', 'conc');
+		$otros=$this->datasis->otros('conc', 'conc');
 
 
 		$script = "
@@ -952,14 +952,7 @@ Ext.onReady(function(){
 	}
 
 	//Filters
-	/*
-	var filters = {
-		ftype: 'filters',
-		// encode and local configuration options defined previously for easier reuse
-		encode: 'json', // json encode the filter query
-		local: false
-	};
-	*/
+	var filters = { ftype: 'filters', encode: 'json', local: false };
 
 	// Create Grid 
 	Ext.define('ConcGrid', {
@@ -990,7 +983,7 @@ Ext.onReady(function(){
 			this.callParent();
 			this.getSelectionModel().on('selectionchange', this.onSelectChange, this);
 		},
-		//features: [{ ftype: 'grouping', groupHeaderTpl: '{name} ' }, filters],
+		features: [filters],
 		onSelectChange: function(selModel, selections){
 			this.down('#delete').setDisabled(selections.length === 0);
 			this.down('#update').setDisabled(selections.length === 0);
