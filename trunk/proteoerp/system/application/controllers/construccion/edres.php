@@ -1,4 +1,4 @@
-<?php
+<?php require_once(BASEPATH.'application/controllers/formams.php');
 class edres extends Controller {
 	var $titp='Reservaciones';
 	var $tits='Reservaciones';
@@ -125,7 +125,14 @@ class edres extends Controller {
 
 		$edit->inmueble = new dropdownField('Inmueble','inmueble');
 		$edit->inmueble->option('','Seleccionar');
-		$edit->inmueble->options('SELECT id,TRIM(descripcion) AS nombre FROM `edinmue` WHERE status=\'D\' ORDER BY descripcion');
+		$edif=$edit->getval('edificacion');
+		if($edif!==false){
+			$dbedif=$this->db->escape($edif);
+			$edit->inmueble->option('','Seleccionar');
+			$edit->inmueble->options("SELECT id,TRIM(descripcion) AS nombre FROM `edinmue` WHERE status='D' AND edificacion=$dbedif ORDER BY descripcion");
+		}else{
+			$edit->inmueble->option('','Seleccione una edificacion');
+		}
 		$edit->inmueble->rule='max_length[11]';
 
 		$edit->reserva = new inputField('Reservaci&oacute;n','reserva');
@@ -146,7 +153,7 @@ class edres extends Controller {
 
 			$obj1='formap'.$i;
 			$edit->$obj1 =  new dropdownField('Pago '.$i, $obj1);
-			$edit->$obj1->option('','Ninguno-');
+			$edit->$obj1->option('','Ninguno'        );
 			$edit->$obj1->option('CH','Cheque'       );
 			$edit->$obj1->option('DE','Deposito'     );
 			$edit->$obj1->option('NC','Transferencia');
@@ -160,14 +167,14 @@ class edres extends Controller {
 			$edit->$obj2->option('','Seleccionar banco');
 			$edit->$obj2->options($bancos);
 			$edit->$obj2->group=$group;
-			$edit->$obj2->rule='max_length[2]|condi_required|callback_chpago['.$i.']';
+			$edit->$obj2->rule='max_length[3]|condi_required|callback_chpago['.$i.']';
 			$edit->$obj2->in=$obj1;
 
 			$obj3='nummp'.$i;
 			$edit->$obj3 = new inputField('N&uacute;mero referencia',$obj3);
-			$edit->$obj3->rule='max_length[3]|condi_required|callback_chpago['.$i.']';
-			$edit->$obj3->size =5;
-			$edit->$obj3->maxlength =3;
+			$edit->$obj3->rule='max_length[20]|condi_required|callback_chpago['.$i.']';
+			$edit->$obj3->size =20;
+			$edit->$obj3->maxlength =20;
 			$edit->$obj3->group=$group;
 
 			$obj4='monto'.$i;
@@ -186,11 +193,17 @@ class edres extends Controller {
 		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
 		$edit->build();
 
+		$link1=site_url('construccion/common/get_inmue');
 		$script= '<script type="text/javascript" > 
 		$(function() {
+			$("#edificacion").change(function(){ edif_change(); });
 			$(".inputnum").numeric(".");
 			$(".inputonlynum").numeric();
 		});
+
+		function edif_change(){
+			$.post("'.$link1.'",{ edif:$("#edificacion").val() }, function(data){ $("#inmueble").html(data);})
+		}
 		</script>';
 
 		$data['content'] = $edit->output;
@@ -208,6 +221,48 @@ class edres extends Controller {
 			return false;
 		}
 		return true;
+	}
+
+	function formato($id){
+		$this->load->plugin('numletra');
+		$sel=array('a.numero','a.reserva','a.fecha','b.nombre','b.rifci',
+			'CONCAT(b.dire11,b.dire12) AS direc','b.telefono','c.codigo AS inmueble',
+			'd.descripcion AS ubicacion','e.uso');
+		$this->db->select($sel);
+		$this->db->from('edres AS a');
+		$this->db->join('scli AS b','a.cliente=b.cliente');
+		$this->db->join('edinmue AS c','c.id=a.inmueble');
+		$this->db->join('edifubica AS d','d.id=c.ubicacion');
+		$this->db->join('eduso AS e','e.id=c.uso');
+		$this->db->where('a.id',$id);
+
+		$query = $this->db->get();
+		//echo $this->db->last_query();
+		if ($query->num_rows() > 0){
+			foreach ($query->result() as $row){
+
+				$data=array();
+				$data['numero']    =$row->numero;
+				$data['fecha']     =dbdate_to_human($row->fecha);
+				$data['monto']     =nformat($row->reserva);
+				$data['montolet']  =strtoupper(numletra($row->reserva));
+				$data['nom_scli']  =$row->nombre;
+				$data['rif_scli']  =$row->rifci;
+				$data['direc_scli']=$row->direc;
+				$data['telef_scli']=$row->telefono;
+				$data['inmueble']  =$row->inmueble;
+				$data['ubicacion'] =$row->ubicacion;
+				$data['uso']       =$row->uso;
+				$data['formap1']   ='';
+				$data['banco1']    ='';
+				$data['nummp1']    ='';
+				$data['fecha1']    ='00/00/0000';
+
+				formams::_msxml('reservacion',$data);
+
+			}
+		}
+
 	}
 
 	function _pre_insert($do){
@@ -255,7 +310,7 @@ class edres extends Controller {
 			  `reserva` decimal(17,2) DEFAULT '0.00',
 			  `formap1` char(2) DEFAULT '0',
 			  `banco1` char(3) DEFAULT '0',
-			  `nummp1` char(3) DEFAULT '0',
+			  `nummp1` varchar(20) DEFAULT '0',
 			  `monto1` decimal(17,2) DEFAULT '0.00',
 			  `formap2` char(2) DEFAULT '0',
 			  `banco2` char(3) DEFAULT '0',

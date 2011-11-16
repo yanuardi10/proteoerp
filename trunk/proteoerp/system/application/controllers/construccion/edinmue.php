@@ -77,8 +77,8 @@ class edinmue extends Controller {
 		$grid->column_orderby('Uso','uso','uso');
 		$grid->column_orderby('Uso alterno','usoalter','usoalter');
 		$grid->column_orderby('Ubicaci&oacute;n','ubicacion','ubicacion');
-		$grid->column_orderby('&Aacute;rea'     ,'<nformat><#area#></nformat>'     ,'area'     ,'align="right"');
-		$grid->column_orderby('Estacionamiento' ,'<nformat><#estaciona#></nformat>','estaciona','align="right"');
+		$grid->column_orderby('&Aacute;rea'     ,'<nformat><#area#></nformat>','area','align="right"');
+		$grid->column_orderby('Estacionamiento' ,'estaciona','estaciona','align="right"');
 
 		$grid->add($this->url.'dataedit/create');
 		$grid->build();
@@ -123,7 +123,7 @@ class edinmue extends Controller {
 		$edit->status = new dropdownField('Estatus','status');
 		$edit->status->option('D','Disponible');
 		$edit->status->option('A','Alquilado');
-		$edit->status->option('D','Vendido');
+		$edit->status->option('V','Vendido');
 		$edit->status->option('R','Reservado');
 		$edit->status->option('O','Otro');
 		$edit->status->rule='max_length[11]';
@@ -132,6 +132,17 @@ class edinmue extends Controller {
 		$edit->edificacion->option('','Seleccionar');
 		$edit->edificacion->options('SELECT id,TRIM(nombre) AS nombre FROM edif ORDER BY nombre');
 		$edit->edificacion->rule='max_length[11]';
+
+		$edit->ubicacion = new dropdownField('Ubicaci&oacute;n','ubicacion');
+		$edit->ubicacion->rule='max_length[11]|integer';
+		$edif=$edit->getval('edificacion');
+		if($edif!==false){
+			$dbedif=$this->db->escape($edif);
+			$edit->ubicacion->option('','Seleccionar');
+			$edit->ubicacion->options("SELECT id,descripcion FROM `edifubica` WHERE id_edif=$dbedif ORDER BY descripcion");
+		}else{
+			$edit->ubicacion->option('','Seleccione una edificacion');
+		}
 
 		$edit->uso = new dropdownField('Uso','uso');
 		$edit->uso->option('','Seleccionar');
@@ -143,25 +154,12 @@ class edinmue extends Controller {
 		$edit->usoalter->options('SELECT id,uso FROM `eduso` ORDER BY uso');
 		$edit->usoalter->rule='max_length[11]';
 
-		$edit->ubicacion = new dropdownField('Ubicaci&oacute;n','ubicacion');
-		$edit->ubicacion->rule='max_length[11]|integer';
-		$ubic=$edit->getval('ubicacion');
-		if($ubic!==false){
-			$dbubic=$this->db->escape($ubic);
-			$edit->ubicacion->option('','Seleccionar');
-			$edit->ubicacion->options("SELECT id,descripcion FROM `edifubica` WHERE id_edif=$dbubic ORDER BY descripcion");
-		}else{
-			$edit->ubicacion->option('','Seleccione una edificacion');
-			$edit->ubicacion->options("SELECT id,descripcion FROM `edifubica` WHERE id_edif=$dbubic ORDER BY descripcion");
-			//Falta implementacion en javascrip
-		}
-
 		$edit->caracteristicas = new textareaField('Caracter&iacute;sticas','caracteristicas');
 		//$edit->caracteristicas->rule='max_length[8]';
 		$edit->caracteristicas->cols = 70;
 		$edit->caracteristicas->rows = 4;
 
-		$edit->area = new inputField('&Aacute;rea','area');
+		$edit->area = new inputField('&Aacute;rea Mt2','area');
 		$edit->area->rule='max_length[15]|numeric';
 		$edit->area->css_class='inputnum';
 		$edit->area->size =10;
@@ -197,11 +195,18 @@ class edinmue extends Controller {
 		$edit->preciomt2a->size =10;
 		$edit->preciomt2a->maxlength =15;
 
+		$link1=site_url('construccion/common/get_ubic');
 		$script ='<script type="text/javascript" >
 		$(function() {
+			$("#edificacion").change(function(){ edif_change(); });
 			$(".inputnum").numeric(".");
 			$(".inputonlynum").numeric();
 		});
+
+		function edif_change(){
+			$.post("'.$link1.'",{ edif:$("#edificacion").val() }, function(data){ $("#ubicacion").html(data);})
+		}
+
 		</script>';
 
 		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
@@ -211,7 +216,6 @@ class edinmue extends Controller {
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = heading($this->tits);
 		$this->load->view('view_ventanas', $data);
-
 	}
 
 	function _pre_insert($do){
