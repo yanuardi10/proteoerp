@@ -24,6 +24,7 @@ class ejecutasql extends Controller {
 
 		$filter = new DataFilter($this->titp, 'ejecutasql');
 		$filter->db->where('usuario',$this->secu->usuario());
+		$filter->db->or_where('tipo','A');
 
 		$filter->tipo = new dropdownField('Tipo','tipo');
 		$filter->tipo->option('','Todos');
