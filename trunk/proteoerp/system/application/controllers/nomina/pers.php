@@ -1218,14 +1218,6 @@ Ext.onReady(function(){
 		win.show();
 	}
 
-	//Filters
-	var filters = {
-		ftype: 'filters',
-		// encode and local configuration options defined previously for easier reuse
-		encode: 'json', 
-		local: false
-	};    
-
 	// Create Grid 
 	Ext.define('PersGrid', {
 		extend: 'Ext.grid.Panel',
@@ -1255,7 +1247,7 @@ Ext.onReady(function(){
 			this.callParent();
 			this.getSelectionModel().on('selectionchange', this.onSelectChange, this);
 		},
-		features: [{ ftype: 'grouping', groupHeaderTpl: '{name} ' }, filters],
+		features: [{ ftype: 'grouping', groupHeaderTpl: '{name}' },{ ftype: 'filters', encode: 'json', local: false }],
 		onSelectChange: function(selModel, selections){
 			this.down('#delete').setDisabled(selections.length === 0);
 			this.down('#update').setDisabled(selections.length === 0);
@@ -1354,13 +1346,13 @@ Ext.onReady(function(){
 	
 	function persbusca() {
 		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']  :  0;
-		$limit   = isset($_REQUEST['limit'])  ? $_REQUEST['limit']  : 25;
+		$limit   = isset($_REQUEST['limit'])  ? $_REQUEST['limit']  : 15;
 		$codigo  = isset($_REQUEST['codigo']) ? $_REQUEST['codigo'] : '';
 		$semilla = isset($_REQUEST['query'])  ? $_REQUEST['query']  : '';
 
 		$semilla = trim($semilla);
 	
-		$mSQL = "SELECT codigo item, CONCAT(codigo, ' ', TRIM(nombre),' ',TRIM(apellido)) valor FROM pers WHERE codigo IS NOT NULL ";
+		$mSQL = "SELECT codigo item, CONCAT(codigo, ' ', TRIM(nombre),' ',TRIM(apellido)) valor, sueldo FROM pers WHERE codigo IS NOT NULL ";
 		if ( strlen($semilla)>0 ){
 			$mSQL .= " AND ( codigo LIKE '$semilla%' OR nombre LIKE '%$semilla%' OR  apellido LIKE '%$semilla%') ";
 		} else {
@@ -1383,12 +1375,9 @@ Ext.onReady(function(){
 				}
 				$arr[] = $meco;
 			}
-			echo '{success:true, message:"'.$mSQL.'", results:'. $results.', data:'.json_encode($arr).'}';
+			echo '{success:true, message:"Todo bien", results:'. $results.', data:'.json_encode($arr).'}';
 		}
 	}
-
-
-	
 }
 
 ?>

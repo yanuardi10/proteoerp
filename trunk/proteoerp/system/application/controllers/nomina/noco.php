@@ -250,6 +250,7 @@ class Noco extends Controller {
 		echo '{success:true, message:"Loaded data" ,results:'. $results.', maestro:'.json_encode($arr).'}';
 	}
 
+/*
 	function manoco1(){
 		$query = $this->db->query("SELECT nombre name, 'meco@gmail.com' email, ingreso start, sueldo salary, true active FROM pers ORDER BY nombre");
 		$results = $this->db->count_all('pers');
@@ -264,8 +265,7 @@ class Noco extends Controller {
 		}
 		echo '{success:true, message:"Loaded data" ,results:'. $results.', maestro:'.json_encode($arr).'}';
 	}
-
-
+*/
 
 	function itnoco(){
 		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']   : 'contrato';
@@ -289,7 +289,6 @@ class Noco extends Controller {
 		}
 		echo '{success:true, message:"Loaded data" ,results:'. $results.', detalle:'.json_encode($arr).'}';
 	}
-
 
 	function conc(){
 		$codigo = isset($_REQUEST['codigo']) ? $_REQUEST['codigo']  : null;
@@ -585,6 +584,7 @@ Ext.onReady(function(){
 		height: '100%',
 		title: 'Contratos Laborales',
 		frame: true,
+		features: [ { ftype: 'filters', encode: 'json', local: false } ],
 		tbar: [
 			{
 				text: 'Agregar',
@@ -592,14 +592,7 @@ Ext.onReady(function(){
 				handler : function() {
 					rowEditing.cancelEdit();
 					// Create a model instance
-					var r = Ext.create('Noco', {
-						id: 0,
-						codigo: '',
-						tipo: 'Q',
-						nombre: '',
-						observa1: '',
-						observa2: ''
-					});
+					var r = Ext.create('Noco', {id: 0, codigo: '', tipo: 'Q', nombre: '', observa1: '', observa2: '' });
 					storeNoco.insert(0, r);
 					rowEditing.startEdit(0, 0);
 				}
@@ -608,36 +601,8 @@ Ext.onReady(function(){
 				text: 'Eliminar',
 				iconCls: 'icon-delete',
 				handler: function() {
-/*
-					rowEditing.cancelEdit();
-					Ext.Ajax.request({
-						scope: this,
-						url: '".base_url()."nomina/noco/eliminarnoco',
-						params: { codigo: codigoactual },
-						success: function () {
-							//storeNoco.on('load', function () {
-							//	gridNoco.getView().refresh();
-							//}, this);
-							//storeNoco.load();
-							if ( storeNoco.getCount() > 0) {
-								sm.select(0);
-							};
-							alert('exito');
-							storeNoco.remove(sm.getSelection());
-						},
-						failure: function () {
-							Ext.MessageBox.show({
-								title: deleteFailedTitle,
-								msg: deleteFailedMessage,
-								buttons: Ext.MessageBox.OK
-							});
-						}
-					});
-				},
-*/
 					var sm = gridNoco.getSelectionModel();
 					rowEditing.cancelEdit();
-
 					storeNoco.remove(sm.getSelection());
 					if ( storeNoco.getCount() > 0) {
 						sm.select(0);
@@ -658,6 +623,8 @@ Ext.onReady(function(){
 				}
 			}
 	});
+
+
 
 	// Create Grid 
 	var gridItNoco = Ext.create('Ext.grid.Panel', {

@@ -332,6 +332,9 @@ class Divi extends Controller {
 				}
 ";
 
+		$features= "features: [ { ftype: 'filters', encode: 'json', local: false } ],";
+
+
 		$data['listados']    = $listados;
 		$data['otros']       = $otros;
 		$data['encabeza']    = $encabeza;
@@ -345,6 +348,7 @@ class Divi extends Controller {
 		$data['titulow']     = $titulow;
 		$data['dockedItems'] = $dockedItems;
 		$data['winwidget']   = $winwidget;
+		$data['features']    = $features;
 		
 		$data['title']  = heading('Division de Nomina');
 		$this->load->view('extjs/extjsven',$data);

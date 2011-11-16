@@ -865,12 +865,12 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		$seniat='http://www.seniat.gov.ve/BuscaRif/BuscaRif.jsp';
 		$mSQL="REPLACE INTO valores (nombre,valor,descrip) VALUES ('CONSULRIF','$seniat','Pagina de consulta de rif del seniat') ON DUPLICATE KEY UPDATE valor='$seniat'";
 		$this->db->simple_query($mSQL);
-		
+
 		if (!$this->db->field_exists('modifi','scli')) {
 			$mSQL='ALTER TABLE `scli` ADD `modifi` TIMESTAMP DEFAULT CURRENT_TIMESTAMP NULL AFTER `mensaje`';
 			$this->db->simple_query($mSQL);
 		}
-		
+
 		if (!$this->db->field_exists('id','scli')) {
 			$mSQL='ALTER TABLE `scli` DROP PRIMARY KEY, ADD UNIQUE `cliente` (`cliente`)';
 			$this->db->simple_query($mSQL);
@@ -883,7 +883,6 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 			$mSQL='ALTER TABLE `scli`  CHANGE COLUMN `clave` `clave` VARCHAR(50) NULL DEFAULT NULL AFTER `tiva`';
 			$this->db->simple_query($mSQL);
 		}
-		
 	}
 
 

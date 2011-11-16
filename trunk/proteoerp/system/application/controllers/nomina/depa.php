@@ -343,26 +343,26 @@ class Depa extends Controller {
 		$campos = "'id', 'departa','depadesc','division', 'descrip', 'enlace'";
 		
 		$camposforma = "
-			\t\t\t\t{
-			\t\t\t\tframe: false,
-			\t\t\t\tborder: false,
-			\t\t\t\tlabelAlign: 'right',
-			\t\t\t\tdefaults: { xtype:'fieldset', labelWidth:80 },
-			\t\t\t\tstyle:'padding:4px',
-			\t\t\t\titems:[	
-			\t\t\t\t	{ xtype: 'textfield', fieldLabel: 'Departamento', name: 'departa',  allowBlank: false,  width: 150 },
-			\t\t\t\t	{ xtype: 'textfield', fieldLabel: 'Descripcion',  name: 'depadesc', allowBlank: false,  width: 400 },
-			\t\t\t\t	{ xtype: 'combo',     fieldLabel: 'Division',     name: 'division', store: [".$divi."], width: 400 },
-			\t\t\t\t	{ xtype: 'combo',     fieldLabel: 'Enlace',       name: 'enlace',   store: [".$dpto."], width: 400 }
-			\t\t\t\t]}
+			{
+			frame: false,
+			border: false,
+			labelAlign: 'right',
+			defaults: { xtype:'fieldset', labelWidth:80 },
+			style:'padding:4px',
+			items:[	
+				{ xtype: 'textfield', fieldLabel: 'Departamento', name: 'departa',  allowBlank: false,  width: 150 },
+				{ xtype: 'textfield', fieldLabel: 'Descripcion',  name: 'depadesc', allowBlank: false,  width: 400 },
+				{ xtype: 'combo',     fieldLabel: 'Division',     name: 'division', store: [".$divi."], width: 400 },
+				{ xtype: 'combo',     fieldLabel: 'Enlace',       name: 'enlace',   store: [".$dpto."], width: 400 }
+			]}
 		";
 
 
 		$titulow = 'Departamentos de Nomina';
 
 		$dockedItems = "
-				\t\t\t\t{ iconCls: 'icon-reset', itemId: 'close', text: 'Cerrar',   scope: this, handler: this.onClose },
-				\t\t\t\t{ iconCls: 'icon-save',  itemId: 'save',  text: 'Guardar',  disabled: false, scope: this, handler: this.onSave }
+				{ iconCls: 'icon-reset', itemId: 'close', text: 'Cerrar',   scope: this, handler: this.onClose },
+				{ iconCls: 'icon-save',  itemId: 'save',  text: 'Guardar',  disabled: false, scope: this, handler: this.onSave }
 		";
 
 		$winwidget = "
@@ -384,6 +384,8 @@ class Depa extends Controller {
 				}
 ";
 
+		$features= "features: [ { ftype: 'filters', encode: 'json', local: false } ],";
+
 		$data['listados']    = $listados;
 		$data['otros']       = $otros;
 		$data['encabeza']    = $encabeza;
@@ -397,12 +399,12 @@ class Depa extends Controller {
 		$data['titulow']     = $titulow;
 		$data['dockedItems'] = $dockedItems;
 		$data['winwidget']   = $winwidget;
+		$data['features']    = $features;
 		
 		$data['title']  = heading('Departamentos de Nomina');
 		$this->load->view('extjs/extjsven',$data);
 		
 	}
-
 
 }
 ?>

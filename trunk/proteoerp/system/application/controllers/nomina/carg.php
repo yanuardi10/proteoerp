@@ -14,14 +14,9 @@ class Carg extends Controller {
 			$this->db->simple_query('ALTER TABLE carg ADD UNIQUE INDEX cargo (cargo)');
 		}
 		$this->datasis->modulo_id(701,1);
-		redirect("nomina/carg/extgrid");
-	}
-
-	function extgrid(){
-		$this->datasis->modulo_id(701,1);
 		$this->cargextjs();
+		//redirect("nomina/carg/extgrid");
 	}
-
 
 	function filteredgrid(){
 		$this->rapyd->load("datafilter2","datagrid");
@@ -299,7 +294,7 @@ class Carg extends Controller {
 		} else {
 			$mSQL = $this->db->insert_string("carg", $campos );
 			$this->db->simple_query($mSQL);
-			logusu('provoca',"CARGO DE NOMINA $cargo CREADO");
+			logusu('carg',"CARGO DE NOMINA $cargo CREADO");
 			echo "{ success: true, message: ".$data['data']['cargo']."}";
 		}
 	}
@@ -411,6 +406,9 @@ class Carg extends Controller {
 				}
 ";
 
+		$features= "features: [ { ftype: 'filters', encode: 'json', local: false } ],";
+
+
 		$data['listados']    = $listados;
 		$data['otros']       = $otros;
 		$data['encabeza']    = $encabeza;
@@ -424,6 +422,8 @@ class Carg extends Controller {
 		$data['titulow']     = $titulow;
 		$data['dockedItems'] = $dockedItems;
 		$data['winwidget']   = $winwidget;
+		$data['features']    = $features;
+
 		
 		$data['title']  = heading('Cargos de Nomina');
 		$this->load->view('extjs/extjsven',$data);
