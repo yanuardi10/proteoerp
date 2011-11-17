@@ -15,7 +15,6 @@ class Recep extends Controller {
 	}
 
 	function filteredgrid(){
-		//$this->datasis->modulo_id(101,1);
 		$this->rapyd->load('datafilter2','datagrid');
 
 		$filter = new DataFilter2('');
@@ -130,8 +129,8 @@ class Recep extends Controller {
 		$edit->back_url = site_url($this->url.'filteredgrid');
 		$edit->set_rel_title('itcasi','Rubro <#o#>');
 
-		$edit->pre_process('insert'  ,'_valida');
-		$edit->pre_process('update'  ,'_valida');
+		$edit->pre_process( 'insert','_valida');
+		$edit->pre_process( 'update','_valida');
 		$edit->post_process('insert','_post_insert');
 		$edit->post_process('update','_post_update');
 		$edit->post_process('delete','_post_delete');
@@ -148,6 +147,7 @@ class Recep extends Controller {
 		$edit->tipo = new dropdownField('Tipo','tipo');
 		$edit->tipo->option('E','Entrega');
 		$edit->tipo->option('R','Recepci&oacute;n');
+		$edit->tipo->style='width:110px';
 
 		$edit->refe  = new inputField('Refencia', 'refe');
 		$edit->refe->size=10;
@@ -437,16 +437,16 @@ class Recep extends Controller {
 	}
 
 	function crea_snot($do){
-		$refe2  =$do->get('refe2');
-		$refe   =$do->get('refe');
-		$fecha  =$do->get('fecha');
-		$clipro =$do->get('clipro');
-		$origen =$do->get('origen');
-		$recep  =$do->get('recep');
-		$tipo   =$do->get('tipo');
-		$refee   =$this->db->escape($refe);
-		$fechae  =$this->db->escape($fecha);
-		$cliproe =$this->db->escape($clipro);
+		$refe2   = $do->get('refe2');
+		$refe    = $do->get('refe');
+		$fecha   = $do->get('fecha');
+		$clipro  = $do->get('clipro');
+		$origen  = $do->get('origen');
+		$recep   = $do->get('recep');
+		$tipo    = $do->get('tipo');
+		$refee   = $this->db->escape($refe);
+		$fechae  = $this->db->escape($fecha);
+		$cliproe = $this->db->escape($clipro);
 
 		/*CREA SNOT E ITSNOT CUANDO ES ENTREGA DE FACTURA*/
 		if($origen=='sfac' && $tipo=='E'){
@@ -510,19 +510,22 @@ class Recep extends Controller {
 		$query="ALTER TABLE `seri`  ADD COLUMN `barras` VARCHAR(50) NOT NULL";
 		$this->db->simple_query($query);
 
-		$query="CREATE TABLE `recep` (
-		    `recep` CHAR(8) NULL,
-		    `fecha` DATE NULL,
-		    `cod_prov` VARCHAR(5) NULL,
-		    `numero` CHAR(8) NULL,
-		    `Column 5` CHAR(8) NULL,
-		    `tipo_doc` CHAR(2) NULL,
-		    `observa` TEXT NULL,
-		    `status` CHAR(2) NULL,
-		    `user` VARCHAR(50) NULL,
-		    `estampa` TIMESTAMP NULL
-		) COLLATE='latin1_swedish_ci' ENGINE=MyISAM ROW_FORMAT=DEFAULT";
-		$this->db->simple_query($query);
+		if (!$this->db->table_exists('recep')) {
+			$mSQL="CREATE TABLE `recep` (
+			    `recep` char(8) NOT NULL DEFAULT '',
+			    `fecha` date DEFAULT NULL,
+			    `clipro` varchar(5) DEFAULT NULL,
+			    `refe` char(8) DEFAULT NULL,
+			    `tipo` char(2) DEFAULT NULL,
+			    `observa` text,
+			    `status` char(2) DEFAULT NULL,
+			    `user` varchar(50) DEFAULT NULL,
+			    `estampa` timestamp NULL DEFAULT NULL,
+			    PRIMARY KEY (`recep`)
+			) ENGINE=MyISAM DEFAULT CHARSET=latin1";
+			$this->db->simple_query($mSQL);
+		}
+
 		$query="ALTER TABLE `recep`  ADD PRIMARY KEY (`recep`)";
 		$this->db->simple_query($query);
 		$query="ALTER TABLE `seri`  ADD COLUMN `cant` DECIMAL(19,2) NOT NULL DEFAULT '1'";
@@ -537,11 +540,5 @@ class Recep extends Controller {
 		$this->db->simple_query($query);
 		$query="ALTER TABLE `recep` ADD COLUMN `origen2` VARCHAR(20) NULL DEFAULT NULL AFTER `refe2`";
 		$this->db->simple_query($query);
-	}
-
-	function prueba(){
-		$query=$this->db->query("call sp_sfacdif(20110901)");
-		$a=$query->result_array();
-		print_r($a);
 	}
 }

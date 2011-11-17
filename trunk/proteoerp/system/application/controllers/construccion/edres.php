@@ -170,7 +170,6 @@ class edres extends Controller {
 			$edit->$obj1->rule ='max_length[2]';
 			if($i==1) $edit->$obj1->rule='required';
 
-
 			$obj2='banco'.$i;
 			$edit->$obj2 =  new dropdownField('Banco '.$i, $obj2);
 			$edit->$obj2->option('','Seleccionar banco');
@@ -319,11 +318,10 @@ class edres extends Controller {
 				formams::_msxml('reservacion',$data);
 			}
 		}
-
 	}
 
 	function _pre_insert($do){
-		$numero = $this->datasis->fprox_numero('nedres');
+		$numero = $this->datasis->fprox_numero('nancli');
 		$inmueble=$do->get('inmueble');
 		$dbinmueble=$this->db->escape($inmueble);
 		$mSQL="UPDATE edinmue SET status='R' WHERE id=${dbinmueble}";
@@ -343,6 +341,40 @@ class edres extends Controller {
 	}
 
 	function _post_insert($do){
+		$mnumant = $do->get('numero');
+		$cod_cli = $do->get('cliente');
+		$fecha   = $do->get('fecha');
+		$monto   = $do->get('reserva');
+		$usuario = $this->secu->usuario();
+		$estampa = date('Y-m-d');
+		$hora    = date('H:i:s');
+		$inmueble= $do->get('inmueble');
+
+		$dbcod_cli=$this->db->escape($cod_cli);
+		$nombre =$this->datasis->dameval("SELECT nombre FROM scli WHERE cliente=$dbcod_cli");
+
+		/*$data=array();
+		$data['cod_cli']    = $cod_cli;
+		$data['nombre']     = $nombre;
+		$data['tipo_doc']   = 'AN';
+		$data['numero']     = $mnumant;
+		$data['fecha']      = $fecha;
+		$data['monto']      = $monto;
+		$data['impuesto']   = 0;
+		$data['vence']      = $fecha;
+		$data['tipo_ref']   = 'RS';
+		$data['num_ref']    = $mnumant;
+		$data['observa1']   = 'RESERVACION DE INMUEBLE ';
+		$data['usuario']    = $usuario;
+		$data['estampa']    = $estampa;
+		$data['hora']       = $hora;
+		$data['transac']    = $transac;
+		$data['fecdoc']     = $fecha;
+
+		$mSQL = $this->db->insert_string('smov', $data);
+		$ban=$this->db->simple_query($mSQL);
+		if($ban==false){ memowrite($mSQL,'edres'); }*/
+		
 		$primary =implode(',',$do->pk);
 		logusu($do->table,"Creo $this->tits $primary ");
 	}
@@ -391,6 +423,12 @@ class edres extends Controller {
 
 		if (!$this->db->field_exists('pfecha1', 'edres')){
 			$mSQL="ALTER TABLE `edres`  ADD COLUMN `pfecha1` DATE NULL AFTER `monto1`,  ADD COLUMN `pfecha2` DATE NULL AFTER `monto2`,  ADD COLUMN `pfecha3` DATE NULL AFTER `monto3`";
+			$this->db->simple_query($mSQL);
+		}
+
+		if (!$this->db->field_exists('transac', 'edres')){
+			$mSQL="";
+			$this->db->simple_query($mSQL);
 		}
 	}
 }
