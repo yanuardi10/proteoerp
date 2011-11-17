@@ -52,14 +52,13 @@ class edres extends Controller {
 		$filter->buttons('reset', 'search');
 		$filter->build();
 
-		$uri = anchor($this->url.'dataedit/show/<raencode><#id#></raencode>','<#id#>');
+		$uri = anchor($this->url.'dataedit/show/<raencode><#id#></raencode>','<#numero#>');
 
 		$grid = new DataGrid('');
 		$grid->order_by('id');
 		$grid->per_page = 40;
 
-		$grid->column_orderby('Id',$uri,'id','align="left"');
-		$grid->column_orderby('N&uacute;mero','numero','numero','align="left"');
+		$grid->column_orderby('N&uacute;mero',$uri,'numero','align="left"');
 		$grid->column_orderby('Fecha'   ,'<dbdate_to_human><#fecha#></dbdate_to_human>','fecha','align="center"');
 		$grid->column_orderby('Cliente' ,'cliente','cliente','align="left"');
 		$grid->column_orderby('Edificaci&oacute;n','<nformat><#edificacion#></nformat>','edificacion','align="right"');
@@ -82,8 +81,8 @@ class edres extends Controller {
 		$scli=array(
 		'tabla'   =>'scli',
 		'columnas'=>array(
-			'cliente' =>'C&oacute;digo Cliente',
-			'nombre'=>'Nombre',
+			'cliente'=>'C&oacute;digo Cliente',
+			'nombre' =>'Nombre',
 			'contacto'=>'Contacto'),
 		'filtro'  =>array('cliente'=>'C&oacute;digo Cliente','nombre'=>'Nombre'),
 		'retornar'=>array('cliente'=>'cliente'),
@@ -92,6 +91,12 @@ class edres extends Controller {
 		$boton=$this->datasis->modbus($scli);
 
 		$edit = new DataEdit($this->tits, 'edres');
+
+		$id=$edit->getval('id');
+		if($id!==false){
+			$action = "javascript:window.location='" . site_url($this->url.'formato/'.$id) . "'";
+			$edit->button('btn_formato', 'Descargar formato', $action);
+		}
 
 		$edit->back_url = site_url($this->url.'filteredgrid');
 
@@ -103,12 +108,15 @@ class edres extends Controller {
 		$edit->pre_process('delete','_pre_delete');
 
 		$edit->numero = new inputField('N&uacute;mero','numero');
-		$edit->numero->rule='max_length[8]|required';
+		$edit->numero->rule='max_length[8]|required|unique';
 		$edit->numero->size =10;
+		$edit->numero->mode ='autohide';
 		$edit->numero->maxlength =8;
+		$edit->numero->when=array('show','modify');
 
 		$edit->fecha = new dateField('Fecha','fecha');
 		$edit->fecha->rule='required|chfecha';
+		$edit->fecha->insertValue=date('Y-m-d');
 		$edit->fecha->size =10;
 		$edit->fecha->maxlength =8;
 
@@ -135,8 +143,8 @@ class edres extends Controller {
 		}
 		$edit->inmueble->rule='max_length[11]';
 
-		$edit->reserva = new inputField('Reservaci&oacute;n','reserva');
-		$edit->reserva->rule='max_length[17]|numeric';
+		$edit->reserva = new inputField('Monto de la Reservaci&oacute;n','reserva');
+		$edit->reserva->rule='max_length[17]|numeric|callback_chmonto|required';
 		$edit->reserva->css_class='inputnum';
 		$edit->reserva->size =19;
 		$edit->reserva->maxlength =17;
@@ -162,6 +170,7 @@ class edres extends Controller {
 			$edit->$obj1->rule ='max_length[2]';
 			if($i==1) $edit->$obj1->rule='required';
 
+
 			$obj2='banco'.$i;
 			$edit->$obj2 =  new dropdownField('Banco '.$i, $obj2);
 			$edit->$obj2->option('','Seleccionar banco');
@@ -169,6 +178,13 @@ class edres extends Controller {
 			$edit->$obj2->group=$group;
 			$edit->$obj2->rule='max_length[3]|condi_required|callback_chpago['.$i.']';
 			$edit->$obj2->in=$obj1;
+
+			$obj4='pfecha'.$i;
+			$edit->$obj4 =  new dateonlyField('Fecha ', $obj4);
+			$edit->$obj4->group=$group;
+			$edit->$obj4->rule='condi_required|callback_chpago['.$i.']';
+			$edit->$obj4->size=10;
+			//$edit->$obj4->in=$obj1;
 
 			$obj3='nummp'.$i;
 			$edit->$obj3 = new inputField('N&uacute;mero referencia',$obj3);
@@ -223,9 +239,25 @@ class edres extends Controller {
 		return true;
 	}
 
+	function chmonto($dtotal){
+		$this->validation->set_message('chmonto', 'El %s debe coincidir con la suma de los pagos');
+		$total=0;
+		for($i=1;$i<4;$i++){
+			$monto=$this->input->post('monto'.$i);
+			if(!empty($monto)){
+				$total+=$monto;
+			}
+		}
+		$diff=round($dtotal-$total,2);
+		return ($diff==0)? true: false;
+	}
+
 	function formato($id){
 		$this->load->plugin('numletra');
 		$sel=array('a.numero','a.reserva','a.fecha','b.nombre','b.rifci',
+			'a.formap1','a.banco1','a.nummp1','a.pfecha1',
+			'a.formap2','a.banco2','a.nummp2','a.pfecha2',
+			'a.formap3','a.banco3','a.nummp3','a.pfecha3',
 			'CONCAT(b.dire11,b.dire12) AS direc','b.telefono','c.codigo AS inmueble',
 			'd.descripcion AS ubicacion','e.uso');
 		$this->db->select($sel);
@@ -253,24 +285,51 @@ class edres extends Controller {
 				$data['inmueble']  =$row->inmueble;
 				$data['ubicacion'] =$row->ubicacion;
 				$data['uso']       =$row->uso;
-				$data['formap1']   ='';
-				$data['banco1']    ='';
-				$data['nummp1']    ='';
-				$data['fecha1']    ='00/00/0000';
+				$data['fpagos']    ='';
+
+				for($i=1;$i<4;$i++){
+					$pago   = 'pago'.$i;
+					$formap = 'formap'.$i;
+					$pfecha = 'pfecha'.$i;
+					$banco  = 'banco'.$i;
+					$nummp  = 'nummp'.$i;
+					$banco  = 'banco'.$i;
+
+					$data[$pago]='';
+					if(!empty($row->$formap)){
+						if($row->$formap=='CH'){
+							$data[$pago] .= 'Cheque';
+						}elseif($row->$formap=='DE'){
+							$data[$pago] .= 'Depósito';
+						}elseif($row->$formap=='NC'){
+							$data[$pago] .= 'Transferencia';
+						}
+						$dbcodbanc=$this->db->escape($row->$banco);
+						$nombanc=$this->datasis->dameval("SELECT nomb_banc FROM tban WHERE cod_banc=$dbcodbanc");
+
+						$data[$pago] .= ' del Banco ';
+						$data[$pago] .= ucwords($nombanc);
+						$data[$pago] .= ', Número '.$row->$nummp;
+						$data[$pago] .= ' de fecha '.dbdate_to_human($row->$pfecha).'.';
+					}else{
+						$data[$pago] = '';
+					}
+				}
 
 				formams::_msxml('reservacion',$data);
-
 			}
 		}
 
 	}
 
 	function _pre_insert($do){
+		$numero = $this->datasis->fprox_numero('nedres');
 		$inmueble=$do->get('inmueble');
 		$dbinmueble=$this->db->escape($inmueble);
 		$mSQL="UPDATE edinmue SET status='R' WHERE id=${dbinmueble}";
 		$ban=$this->db->simple_query($mSQL);
 		if($ban==false){ memowrite($mSQL,'edres'); }
+		$do->set('numero',$numero);
 
 		return true;
 	}
@@ -328,6 +387,10 @@ class edres extends Controller {
 		if (!$this->db->field_exists('notas', 'edres')){
 			$mSQL="ALTER TABLE `edres`  ADD COLUMN `notas` TEXT NULL DEFAULT NULL AFTER `monto3`";
 			$this->db->simple_query($mSQL);
+		}
+
+		if (!$this->db->field_exists('pfecha1', 'edres')){
+			$mSQL="ALTER TABLE `edres`  ADD COLUMN `pfecha1` DATE NULL AFTER `monto1`,  ADD COLUMN `pfecha2` DATE NULL AFTER `monto2`,  ADD COLUMN `pfecha3` DATE NULL AFTER `monto3`";
 		}
 	}
 }
