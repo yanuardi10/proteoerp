@@ -202,9 +202,15 @@ $(function() {
 		autoFill:true
 	});
 	//$(":input").enter2tab();
-	$( "#maintabcontainer" ).tabs();
-});
+	$("#maintabcontainer").tabs();
 
+	$("#rifci").focusout(function() {
+		rif=$(this).val();
+		if(!chrif(rif)){
+			alert("Al parecer el Rif colocado no es correcto, por favor verifique con el SENIAT.");
+		}
+	});
+});
 function formato(row) {
 	return row[0] + "-" + row[1];
 }
@@ -224,7 +230,7 @@ function anomfis(){
 
 function consulrif(campo){
 	vrif=$("#"+campo).val();
-	if(rif.length==0){
+	if(vrif.length==0){
 		alert("Debe introducir primero un RIF");
 	}else{
 		vrif=vrif.toUpperCase();
@@ -235,7 +241,7 @@ function consulrif(campo){
 
 function chrif(rif){
 	rif.toUpperCase();
-	var patt=/[EJPGV][0-9]{9} +/g;
+	var patt=/[EJPGV][0-9]{9} */g;
 	if(patt.test(rif)){
 		var factor= new Array(4,3,2,7,6,5,4,3,2);
 		var v=0;
