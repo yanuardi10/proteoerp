@@ -13,7 +13,14 @@ class Vend extends validaciones {
 		$this->load->library("rapyd");
 	}
 	function index(){
-		redirect("ventas/vend/filteredgrid");
+		if ( !$this->datasis->iscampo('vend','id') ) {
+			$this->db->simple_query('ALTER TABLE vend DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE vend ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ');
+			$this->db->simple_query('ALTER TABLE vend ADD UNIQUE INDEX vendedor (vendedor)');
+		}
+		//$this->datasis->modulo_id(206,1);
+		$this->vendextjs();
+		//redirect("ventas/vend/filteredgrid");
 	}
 
 	function filteredgrid(){
@@ -178,5 +185,234 @@ class Vend extends validaciones {
   		return TRUE;
 		}	
 	}
+
+	function grid(){
+		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']   :  0;
+		$limit   = isset($_REQUEST['limit'])  ? $_REQUEST['limit']   : 50;
+		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']    : '[{"property":"vendedor","direction":"ASC"}]';
+		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
+
+		$where = $this->datasis->extjsfiltro($filters);
+		
+		$this->db->_protect_identifiers=false;
+		$this->db->select('*');
+		$this->db->from('vend');
+		if (strlen($where)>1) $this->db->where($where, NULL, FALSE); 
+		
+		$sort = json_decode($sort, true);
+		for ( $i=0; $i<count($sort); $i++ ) {
+			$this->db->order_by($sort[$i]['property'],$sort[$i]['direction']);
+		}
+
+		$this->db->limit($limit, $start);
+		$query = $this->db->get();
+		$results = $this->db->count_all('vend');
+
+		$arr = $this->datasis->codificautf8($query->result_array());
+		echo '{success:true, message:"Loaded data", results:'. $results.', data:'.json_encode($arr).'}';
+	}
+
+
+	function crear(){
+		$js= file_get_contents('php://input');
+		$data= json_decode($js,true);
+		$campos   = $data['data'];
+		$vendedor = $campos['vendedor'];
+
+		if ( !empty($vendedor) ) {
+			unset($campos['id']);
+			// Revisa si existe ya ese contrato
+			if ($this->datasis->dameval("SELECT COUNT(*) FROM vend WHERE vendedor='$vendedor'") == 0)
+			{
+				$mSQL = $this->db->insert_string("vend", $campos );
+				$this->db->simple_query($mSQL);
+				logusu('vend',"VENDEDOR $vendedor CREADO");
+				echo "{ success: true, message: 'Vendedor Agregado'}";
+			} else {
+				echo "{ success: false, message: 'Ya existe un vendedor con ese Codigo!!'}";
+			}
+			
+		} else {
+			echo "{ success: false, message: 'Ya existe un vendedor con ese Codigo!!'}";
+		}
+	}
+
+	function modificar(){
+		$js= file_get_contents('php://input');
+		$data= json_decode($js,true);
+		$campos = $data['data'];
+
+		$vendedor = $campos['vendedor'];
+		unset($campos['vendedor']);
+		unset($campos['id']);
+
+		$mSQL = $this->db->update_string("vend", $campos,"id='".$data['data']['id']."'" );
+		$this->db->simple_query($mSQL);
+		logusu('vend',"VENDEDOR $vendedor ID ".$data['data']['id']." MODIFICADO");
+		echo "{ success: true, message: 'Vendedor Modificado -> ".$data['data']['vendedor']."'}";
+	}
+
+	function eliminar(){
+		$js= file_get_contents('php://input');
+		$data= json_decode($js,true);
+		$campos = $data['data'];
+
+		$vendedor = $campos['vendedor'];
+		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM scli WHERE vendedor='$vendedor' OR cobrador='$vendedor'");
+
+		if ($chek > 0){
+			echo "{ success: false, message: 'Vendedor no puede ser Borrado'}";
+		} else {
+			$this->db->simple_query("DELETE FROM vend WHERE vendedor='$vendedor'");
+			logusu('vend',"VENDEDOR $vendedor ELIMINADO");
+			echo "{ success: true, message: 'Vendedor Eliminado'}";
+		}
+	}
+
+
+//0414 376 0149 juan picapiedras
+
+//****************************************************************8
+//
+//
+//
+//****************************************************************8
+	function vendextjs(){
+		$encabeza='VENDEDORES';
+		$listados= $this->datasis->listados('vend');
+		$otros=$this->datasis->otros('vend', 'vend');
+
+		$mSQL = "SELECT ubica, CONCAT(ubica,' ',ubides) descrip FROM caub ORDER BY ubica";
+		$alma = $this->datasis->llenacombo($mSQL);
+
+		$urlajax = 'ventas/vend/';
+		$variables = "";
+
+		$funciones = "
+function tipos(val){
+	if ( val == 'V'){
+		return 'Vendedor';
+	} else if ( val == 'C'){
+		return  'Cobrador';
+	} else if ( val == 'A'){
+		return  'Vende/Cobra';
+	}
+}
+";
+
+		$valida = "
+		{ type: 'length', field: 'vendedor', min: 1 },
+		{ type: 'length', field: 'nombre',   min: 1 }
+		";
+		
+		$columnas = "
+		{ header: 'Codigo',      width:  50, sortable: true, dataIndex: 'vendedor', field: { type: 'textfield' }, filter: { type: 'string' } }, 
+		{ header: 'Nombre',      width: 180, sortable: true, dataIndex: 'nombre',   field: { type: 'textfield' }, filter: { type: 'string' } }, 
+		{ header: 'Tipo',        width:  90, sortable: true, dataIndex: 'tipo',     field: { type: 'textfield' }, filter: { type: 'string' }, renderer: tipos },
+		{ header: 'Telefono',    width: 160, sortable: true, dataIndex: 'telefono', field: { type: 'textfield' }, filter: { type: 'string' } }, 
+		{ header: 'Alamcen',     width:  80, sortable: true, dataIndex: 'almacen',  field: { type: 'textfield' }, filter: { type: 'string' } }, 
+		{ header: 'Direccion',   width: 300, sortable: true, dataIndex: 'direc1',   field: { type: 'textfield' }, filter: { type: 'string' } }, 
+		{ header: 'Com. Ventas', width:  90, sortable: true, dataIndex: 'comive',   field: { type: 'numeric'   }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00') },
+		{ header: 'Com. Cobros', width:  90, sortable: true, dataIndex: 'comicob',  field: { type: 'numeric'   }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00') }
+	";
+
+		$campos = "'id', 'vendedor', 'clave', 'nombre', 'direc1', 'direc2', 'telefono', 'comive', 'comicob', 'recargo', 'tipo', 'almacen'";
+		
+		$camposforma = "
+							{
+							frame: false,
+							border: false,
+							labelAlign: 'right',
+							defaults: { xtype:'fieldset', labelWidth:70 },
+							style:'padding:4px',
+							layout: 'column',
+							items: [
+									{ xtype: 'textfield',  fieldLabel: 'Codigo',    name: 'vendedor', allowBlank: false,  width: 120, id: 'codigo' },
+									{ xtype: 'combo',      fieldLabel: 'Tipo',      name: 'tipo',   store: [['V','Vendedor'],['C','Cobrador'],['A','Vende/Cobra']], width: 280, labelWidth:170 },
+									{ xtype: 'textfield',  fieldLabel: 'Nombre',    name: 'nombre',   allowBlank: false,  width: 400, },
+									{ xtype: 'textfield',  fieldLabel: 'Direccion', name: 'direc1',   allowBlank: true,  width: 400, },
+									{ xtype: 'textfield',  fieldLabel: '.',         name: 'direc2',   allowBlank: true,  width: 400, },
+									{ xtype: 'textfield',  fieldLabel: 'Telefono',  name: 'telefono', allowBlank: true,  width: 180, },
+									{ xtype: 'combo',      fieldLabel: 'Almacen',   name: 'almacen',  store: [".$alma."], width : 220 },
+								]
+							},{
+							frame: false,
+							border: false,
+							labelAlign: 'right',
+							defaults: { xtype:'fieldset', labelWidth:70 },
+							style:'padding:4px',
+							layout: 'column',
+							items: [
+									{ xtype: 'numberfield', fieldLabel: 'Comision Ventas', name: 'comive',  width:180, hideTrigger: true, fieldStyle: 'text-align: right',  renderer : Ext.util.Format.numberRenderer('0,000.00'), labelWidth:100 },
+									{ xtype: 'numberfield', fieldLabel: 'Comision Cobros', name: 'comicob', width:200, hideTrigger: true, fieldStyle: 'text-align: right',  renderer : Ext.util.Format.numberRenderer('0,000.00'), labelWidth:110 },
+									{ xtype: 'numberfield', fieldLabel: 'Recargo',         name: 'recargo', width:180, hideTrigger: true, fieldStyle: 'text-align: right',  renderer : Ext.util.Format.numberRenderer('0,000.00'), labelWidth:100 },
+								]
+							},{
+							frame: false,
+							border: false,
+							labelAlign: 'right',
+							defaults: { xtype:'fieldset', labelWidth:70 },
+							style:'padding:4px',
+							layout: 'column',
+							items: [
+									{ xtype: 'textfield', fieldLabel: 'Clave', name: 'clave', allowBlank: true, width: 250, inputType: 'password' },
+							]
+							}
+		";
+
+		$titulow = 'Vendedores';
+
+		$dockedItems = "
+				{ iconCls: 'icon-reset', itemId: 'close', text: 'Cerrar',   scope: this, handler: this.onClose },
+				{ iconCls: 'icon-save',  itemId: 'save',  text: 'Guardar',  disabled: false, scope: this, handler: this.onSave }
+		";
+
+		$winwidget = "
+				closable: false,
+				closeAction: 'destroy',
+				width: 450,
+				height: 350,
+				resizable: false,
+				modal: true,
+				items: [writeForm],
+				listeners: {
+					beforeshow: function() {
+						var form = this.down('writerform').getForm();
+						this.activeRecord = registro;
+						
+						if (registro) {
+							form.loadRecord(registro);
+						} 
+					}
+				}
+";
+
+		$stores = "";
+
+		$features = "features: [ filters],";
+		$filtros = "var filters = { ftype: 'filters', encode: 'json', local: false }; ";
+
+		$data['listados']    = $listados;
+		$data['otros']       = $otros;
+		$data['encabeza']    = $encabeza;
+		$data['urlajax']     = $urlajax;
+		$data['variables']   = $variables;
+		$data['funciones']   = $funciones;
+		$data['valida']      = $valida;
+		$data['columnas']    = $columnas;
+		$data['campos']      = $campos;
+		$data['stores']      = $stores;
+		$data['camposforma'] = $camposforma;
+		$data['titulow']     = $titulow;
+		$data['dockedItems'] = $dockedItems;
+		$data['winwidget']   = $winwidget;
+		$data['features']    = $features;
+		$data['filtros']     = $filtros;
+		
+		$data['title']  = heading('Vendedores');
+		$this->load->view('extjs/extjsven',$data);
+		
+	}
+
 }
 ?>

@@ -1400,7 +1400,7 @@ class Scst extends Controller {
 	function _post_insert($do){
 		$codigo  = $do->get('numero');
 		$control = $do->get('control');
-		logusu('scst',"Compra $codigo control $control CREADA");
+		logusu('snte',"Compra $codigo control $control CREADA");
 	}
 
 	function _post_cxp_update($do){
@@ -1529,15 +1529,7 @@ class Scst extends Controller {
 		$query = $this->db->get();
 		$results = $query->num_rows();
 
-		$arr = array();
-		foreach ($query->result_array() as $row)
-		{
-			$meco = array();
-			foreach( $row as $idd=>$campo ) {
-				$meco[$idd] = utf8_encode($campo);
-			}
-			$arr[] = $meco;
-		}
+		$arr = $this->datasis->codificautf8($query->result_array());
 		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
 	}
 
@@ -1548,15 +1540,7 @@ class Scst extends Controller {
 		$mSQL = "SELECT a.codigo, a.descrip, a.cantidad, a.costo, a.importe, a.iva, a.ultimo, a.precio1, a.precio2, a.precio3, a.precio4, b.id codid FROM itscst a JOIN sinv b ON a.codigo=b.codigo WHERE a.control='$control' ORDER BY a.codigo";
 		$query = $this->db->query($mSQL);
 		$results =  0; 
-		$arr = array();
-		foreach ($query->result_array() as $row)
-		{
-			$meco = array();
-			foreach( $row as $idd=>$campo ) {
-				$meco[$idd] = utf8_encode($campo);
-			}
-			$arr[] = $meco;
-		}
+		$arr = $this->datasis->codificautf8($query->result_array());
 		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
 	}
 
@@ -1965,7 +1949,5 @@ Ext.onReady(function() {
 </script>
 ";
 		return $script;
-		
 	}
-
 }

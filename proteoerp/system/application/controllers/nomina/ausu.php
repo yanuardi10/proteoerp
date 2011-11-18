@@ -227,66 +227,12 @@ class ausu extends Controller {
 		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']    : '[{"property":"fecha","direction":"ASC"}]';
 		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
 
-		$where = "";
+		$where = $this->datasis->extjsfiltro($filters);
 
 		$this->db->_protect_identifiers=false;
 		$this->db->select('*');
 		$this->db->from('ausu');
-
-		//Buscar posicion 0 Cero
-		if (isset($_REQUEST['filter'])){
-			$filter = json_decode($_REQUEST['filter'], true);
-			if (is_array($filter)) {
-				$qs = "";
-				for ($i=0;$i<count($filter);$i++){
-					switch($filter[$i]['type']){
-					case 'string' : $qs .= " ".$filter[$i]['field']." LIKE '%".$filter[$i]['value']."%'"; 
-						Break;
-					case 'list' :
-						if (strstr($filter[$i]['value'],',')){
-							$fi = explode(',',$filter[$i]['value']);
-							for ($q=0;$q<count($fi);$q++){
-								$fi[$q] = "'".$fi[$q]."'";
-							}
-							$filter[$i]['value'] = implode(',',$fi);
-								$qs .= " AND ".$filter[$i]['field']." IN (".$filter[$i]['value'].")";
-						}else{
-							$qs .= " AND ".$filter[$i]['field']." = '".$filter[$i]['value']."'";
-						}
-						Break;
-					case 'boolean' : $qs .= " AND ".$filter[$i]['field']." = ".($filter[$i]['value']); 
-						Break;
-					case 'numeric' :
-						switch ($filter[$i]['comparison']) {
-							case 'ne' : $qs .= " AND ".$filter[$i]['field']." != ".$filter[$i]['value']; 
-								Break;
-							case 'eq' : $qs .= " AND ".$filter[$i]['field']." = ".$filter[$i]['value']; 
-								Break;
-							case 'lt' : $qs .= " AND ".$filter[$i]['field']." < ".$filter[$i]['value']; 
-								Break;
-							case 'gt' : $qs .= " AND ".$filter[$i]['field']." > ".$filter[$i]['value']; 
-								Break;
-						}
-						Break;
-					case 'date' :
-						switch ($filter[$i]['comparison']) {
-							case 'ne' : $qs .= " AND ".$filter[$i]['field']." != '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
-								Break;
-							case 'eq' : $qs .= " AND ".$filter[$i]['field']." = '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
-								Break;
-							case 'lt' : $qs .= " AND ".$filter[$i]['field']." < '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
-								Break;
-							case 'gt' : $qs .= " AND ".$filter[$i]['field']." > '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
-								Break;
-						}
-						Break;
-					}
-				}
-				$where .= $qs;
-				$this->db->where($where,null, false);
-				
-			}
-		}
+		if (strlen($where)>1) $this->db->where($where, NULL, FALSE); 
 		
 		$sort = json_decode($sort, true);
 		for ($i=0;$i<count($sort);$i++) {
@@ -297,15 +243,7 @@ class ausu extends Controller {
 		$query = $this->db->get();
 
 		$results = $this->db->count_all('ausu');
-		$arr = array();
-		foreach ($query->result_array() as $row)
-		{
-			$meco = array();
-			foreach( $row as $idd=>$campo ) {
-				$meco[$idd] = utf8_encode($campo);
-			}
-			$arr[] = $meco;
-		}
+		$arr = $this->datasis->codificautf8($query->result_array());
 		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
 	}
 
@@ -334,20 +272,19 @@ class ausu extends Controller {
 		$js= file_get_contents('php://input');
 		$data= json_decode($js,true);
 		$campos = $data['data'];
-		$codigo   = $campos['codigo'];
-		$concepto = $campos['concepto'];
+		$codigo = $campos['codigo'];
+		$fecha  = $campos['fecha'];
 
 		$campos['nombre']  = $this->datasis->dameval("SELECT CONCAT(TRIM(nombre),' ',TRIM(apellido)) nombre FROM pers WHERE codigo='$codigo'");
-		$campos['descrip'] = $this->datasis->dameval("SELECT descrip FROM conc WHERE concepto='$concepto'");
 
 		unset($campos['codigo']);
-		unset($campos['concepto']);
+		unset($campos['fecha']);
 		unset($campos['id']);
 
-		$mSQL = $this->db->update_string("asig", $campos,"id='".$data['data']['id']."'" );
+		$mSQL = $this->db->update_string("ausu", $campos,"id='".$data['data']['id']."'" );
 		$this->db->simple_query($mSQL);
-		logusu('asig',"ASIGNACIONES DE NOMINA ".$data['data']['id']." MODIFICADO");
-		echo "{ success: true, message: 'Departamento de nomina Modificado '}";
+		logusu('ausu',"DESCUENTO DE PRESTAMOS POR NOMINA ".$data['data']['id']." MODIFICADO");
+		echo "{ success: true, message: 'Prestamo de nomina Modificado '}";
 	}
 
 	function eliminar(){
@@ -355,17 +292,15 @@ class ausu extends Controller {
 		$data= json_decode($js,true);
 		$campos= $data['data'];
 
-		$departa = $data['data']['departa'];
-		
 		// VERIFICAR SI PUEDE
-		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM pers WHERE depto='$departa'");
+		$chek =  0; //$this->datasis->dameval("SELECT COUNT(*) FROM pers WHERE depto='$departa'");
 
 		if ($chek > 0){
-			echo "{ success: false, message: 'Departamento de nomina, no puede ser Borrado'}";
+			echo "{ success: false, message: 'Prestamo de nomina, no puede ser Borrado'}";
 		} else {
-			$this->db->simple_query("DELETE FROM depa WHERE departa='$departa'");
-			logusu('depa',"DIVISION DE NOMINA $departa ELIMINADO");
-			echo "{ success: true, message: 'Departamento de nomina Eliminado'}";
+			$this->db->simple_query("UPDATE FROM ausu SET tipo_doc='X' WHERE departa=".$data['data']['id']."");
+			logusu('ausu',"PRESTAMO POR NOMINA ".$data['data']['id']." ELIMINADO");
+			echo "{ success: true, message: 'Prestamo de nomina Eliminado'}";
 		}
 	}
 
@@ -401,7 +336,7 @@ class ausu extends Controller {
 	";
 
 		$campos = "'id', 'codigo', 'nombre', 'fecha','sueldoa', 'sueldo', 'observ1'";
-		$filtros = "var filters = {	ftype: 'filters',encode: 'json', local: false }; ";
+		$filtros = "var filters = { ftype: 'filters',encode: 'json', local: false }; ";
 		
 		$camposforma = "
 				{
@@ -514,6 +449,8 @@ var persStore = new Ext.data.Store({
 					}
 				}
 ";
+		$features = "features: [ filters],";
+
 		$data['encabeza']    = $encabeza;
 		$data['listados']    = $listados;
 		$data['otros']       = $otros;
@@ -528,8 +465,8 @@ var persStore = new Ext.data.Store({
 		$data['titulow']     = $titulow;
 		$data['dockedItems'] = $dockedItems;
 		$data['winwidget']   = $winwidget;
+		$data['features']    = $features;
 		$data['filtros']     = $filtros;
-		//$data['winmethod']   = $winmethod;
 		
 		$data['title']  = heading('Departamentos de Nomina');
 		$this->load->view('extjs/extjsven',$data);

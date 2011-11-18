@@ -23,16 +23,8 @@ class Grcl extends validaciones {
 			$this->db->simple_query('ALTER TABLE grcl ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ');
 			$this->db->simple_query('ALTER TABLE grcl ADD UNIQUE INDEX grupo (grupo)');
 		}
-		//redirect("ventas/grcl/filteredgrid");
-		redirect('ventas/grcl/extgrid');
-	}
-	
-	function extgrid(){
 		$this->datasis->modulo_id(206,1);
 		$this->grclextjs();
-		//$data["script"] = $script;
-		//$data['title']  = heading('Grupo de Clientes');
-		//$this->load->view('extjs/ventana',$data);
 	}
 
 	function test($id,$const)
@@ -170,76 +162,17 @@ class Grcl extends validaciones {
 	function grid(){
 		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']   :  0;
 		$limit   = isset($_REQUEST['limit'])  ? $_REQUEST['limit']   : 50;
-		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']    : 'grupo';
+		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']    : '[{"property":"grupo","direction":"ASC"}]';
 		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
-		
-		$where = "grupo IS NOT NULL ";
 
-		//Buscar posicion 0 Cero
-		if (isset($_REQUEST['filter'])){
-			$filter = json_decode($_REQUEST['filter'], true);
-			if (is_array($filter)) {
-				//Dummy Where. 
-				$where = "grupo IS NOT NULL ";
-				$qs = "";
-				for ($i=0;$i<count($filter);$i++){
-					switch($filter[$i]['type']){
-					case 'string' : $qs .= " AND ".$filter[$i]['field']." LIKE '%".$filter[$i]['value']."%'"; 
-						Break;
-					case 'list' :
-						if (strstr($filter[$i]['value'],',')){
-							$fi = explode(',',$filter[$i]['value']);
-							for ($q=0;$q<count($fi);$q++){
-								$fi[$q] = "'".$fi[$q]."'";
-							}
-							$filter[$i]['value'] = implode(',',$fi);
-								$qs .= " AND ".$filter[$i]['field']." IN (".$filter[$i]['value'].")";
-						}else{
-							$qs .= " AND ".$filter[$i]['field']." = '".$filter[$i]['value']."'";
-						}
-						Break;
-					case 'boolean' : $qs .= " AND ".$filter[$i]['field']." = ".($filter[$i]['value']); 
-						Break;
-					case 'numeric' :
-						switch ($filter[$i]['comparison']) {
-							case 'ne' : $qs .= " AND ".$filter[$i]['field']." != ".$filter[$i]['value']; 
-								Break;
-							case 'eq' : $qs .= " AND ".$filter[$i]['field']." = ".$filter[$i]['value']; 
-								Break;
-							case 'lt' : $qs .= " AND ".$filter[$i]['field']." < ".$filter[$i]['value']; 
-								Break;
-							case 'gt' : $qs .= " AND ".$filter[$i]['field']." > ".$filter[$i]['value']; 
-								Break;
-						}
-						Break;
-					case 'date' :
-						switch ($filter[$i]['comparison']) {
-							case 'ne' : $qs .= " AND ".$filter[$i]['field']." != '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
-								Break;
-							case 'eq' : $qs .= " AND ".$filter[$i]['field']." = '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
-								Break;
-							case 'lt' : $qs .= " AND ".$filter[$i]['field']." < '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
-								Break;
-							case 'gt' : $qs .= " AND ".$filter[$i]['field']." > '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
-								Break;
-						}
-						Break;
-					}
-				}
-				$where .= $qs;
-			}
-		}
+		$where = $this->datasis->extjsfiltro($filters);
 		
 		$this->db->_protect_identifiers=false;
 		$this->db->select('*');
 		$this->db->from('grcl');
-
-		if (strlen($where)>1){
-			$this->db->where($where, NULL, FALSE);
-		}
+		if (strlen($where)>1) $this->db->where($where, NULL, FALSE); 
 		
 		$sort = json_decode($sort, true);
-
 		if ( count($sort) == 0 ) $this->db->order_by( 'grupo', 'asc' );
 		
 		for ( $i=0; $i<count($sort); $i++ ) {
@@ -251,15 +184,7 @@ class Grcl extends validaciones {
 		$query = $this->db->get();
 		$results = $this->db->count_all('grcl');
 
-		$arr = array();
-		foreach ($query->result_array() as $row)
-		{
-			$meco = array();
-			foreach( $row as $idd=>$campo ) {
-				$meco[$idd] = utf8_encode($campo);
-			}
-			$arr[] = $meco;
-		}
+		$arr = $this->datasis->codificautf8($query->result_array());
 		echo '{success:true, message:"Loaded data", results:'. $results.', data:'.json_encode($arr).'}';
 	}
 
@@ -400,8 +325,8 @@ function clase(val){
 		$titulow = 'Grupo de Proveedores';
 
 		$dockedItems = "
-				\t\t\t\t{ iconCls: 'icon-reset', itemId: 'close', text: 'Cerrar',   scope: this, handler: this.onClose },
-				\t\t\t\t{ iconCls: 'icon-save',  itemId: 'save',  text: 'Guardar',  disabled: false, scope: this, handler: this.onSave }
+				{ iconCls: 'icon-reset', itemId: 'close', text: 'Cerrar',   scope: this, handler: this.onClose },
+				{ iconCls: 'icon-save',  itemId: 'save',  text: 'Guardar',  disabled: false, scope: this, handler: this.onSave }
 		";
 
 		$winwidget = "
@@ -451,6 +376,9 @@ var cplaStore = new Ext.data.Store({
 });
 		";
 
+		$features = "features: [ filters],";
+		$filtros = "var filters = { ftype: 'filters', encode: 'json', local: false }; ";
+
 		$data['listados']    = $listados;
 		$data['otros']       = $otros;
 		$data['encabeza']    = $encabeza;
@@ -465,8 +393,10 @@ var cplaStore = new Ext.data.Store({
 		$data['titulow']     = $titulow;
 		$data['dockedItems'] = $dockedItems;
 		$data['winwidget']   = $winwidget;
+		$data['features']    = $features;
+		$data['filtros']     = $filtros;
 		
-		$data['title']  = heading('Aranceles');
+		$data['title']  = heading('Grupo de Clientes');
 		$this->load->view('extjs/extjsven',$data);
 		
 	}

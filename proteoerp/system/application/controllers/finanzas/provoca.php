@@ -16,11 +16,6 @@ class Provoca extends validaciones {
 			$this->db->simple_query('ALTER TABLE provoca ADD UNIQUE INDEX rif (rif)');
 		}
 		$this->db->simple_query('UPDATE provoca SET rif=TRIM(rif)');
-		redirect('finanzas/provoca/extgrid');
-	}
-
-	
-	function extgrid(){
 		$this->datasis->modulo_id(206,1);
 		$this->provocaextjs();
 
@@ -123,7 +118,7 @@ class Provoca extends validaciones {
 		}
 		
 		';
-		$edit = new DataEdit("Proveedor ocacional", "provoca");
+		$edit = new DataEdit("Proveedor ocasional", "provoca");
 		$edit->back_url = site_url("finanzas/provoca/filteredgrid");
 		$edit->script($script, 'create');
 		$edit->script($script, 'modify');
@@ -202,68 +197,13 @@ class Provoca extends validaciones {
 		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']    : '[{"property":"nombre","direction":"ASC"}]';
 		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
 
-		$where = "";
+		$where = $this->datasis->extjsfiltro($filters);
 
 		$this->db->_protect_identifiers=false;
 		$this->db->select('*');
 		$this->db->from('provoca');
-
-		//Buscar posicion 0 Cero
-		if (isset($_REQUEST['filter'])){
-			$filter = json_decode($_REQUEST['filter'], true);
-			if (is_array($filter)) {
-				//$where = " rif != '' ";
-				$qs = "";
-				for ($i=0;$i<count($filter);$i++){
-					switch($filter[$i]['type']){
-					case 'string' : $qs .= " ".$filter[$i]['field']." LIKE '%".$filter[$i]['value']."%'"; 
-						Break;
-					case 'list' :
-						if (strstr($filter[$i]['value'],',')){
-							$fi = explode(',',$filter[$i]['value']);
-							for ($q=0;$q<count($fi);$q++){
-								$fi[$q] = "'".$fi[$q]."'";
-							}
-							$filter[$i]['value'] = implode(',',$fi);
-								$qs .= " AND ".$filter[$i]['field']." IN (".$filter[$i]['value'].")";
-						}else{
-							$qs .= " AND ".$filter[$i]['field']." = '".$filter[$i]['value']."'";
-						}
-						Break;
-					case 'boolean' : $qs .= " AND ".$filter[$i]['field']." = ".($filter[$i]['value']); 
-						Break;
-					case 'numeric' :
-						switch ($filter[$i]['comparison']) {
-							case 'ne' : $qs .= " AND ".$filter[$i]['field']." != ".$filter[$i]['value']; 
-								Break;
-							case 'eq' : $qs .= " AND ".$filter[$i]['field']." = ".$filter[$i]['value']; 
-								Break;
-							case 'lt' : $qs .= " AND ".$filter[$i]['field']." < ".$filter[$i]['value']; 
-								Break;
-							case 'gt' : $qs .= " AND ".$filter[$i]['field']." > ".$filter[$i]['value']; 
-								Break;
-						}
-						Break;
-					case 'date' :
-						switch ($filter[$i]['comparison']) {
-							case 'ne' : $qs .= " AND ".$filter[$i]['field']." != '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
-								Break;
-							case 'eq' : $qs .= " AND ".$filter[$i]['field']." = '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
-								Break;
-							case 'lt' : $qs .= " AND ".$filter[$i]['field']." < '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
-								Break;
-							case 'gt' : $qs .= " AND ".$filter[$i]['field']." > '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
-								Break;
-						}
-						Break;
-					}
-				}
-				$where .= $qs;
-				$this->db->where($where,null, false);
-				
-			}
-		}
-		
+		if (strlen($where)>1) $this->db->where($where, NULL, FALSE); 
+	
 		$sort = json_decode($sort, true);
 		for ($i=0;$i<count($sort);$i++) {
 			$this->db->order_by($sort[$i]['property'],$sort[$i]['direction']);
@@ -273,15 +213,7 @@ class Provoca extends validaciones {
 		$query = $this->db->get();
 
 		$results = $this->db->count_all('provoca');
-		$arr = array();
-		foreach ($query->result_array() as $row)
-		{
-			$meco = array();
-			foreach( $row as $idd=>$campo ) {
-				$meco[$idd] = utf8_encode($campo);
-			}
-			$arr[] = $meco;
-		}
+		$arr = $this->datasis->codificautf8($query->result_array());
 		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
 	}
 
@@ -297,7 +229,7 @@ class Provoca extends validaciones {
 		} else {
 			$mSQL = $this->db->insert_string("sprv", $campos );
 			$this->db->simple_query($mSQL);
-			logusu('provoca',"PROVEEDOR OCACIONAL $rif CREADO");
+			logusu('provoca',"PROVEEDOR OCASIONAL $rif CREADO");
 			echo "{ success: true, message: ".$data['data']['rif']."}";
 		}
 	}
@@ -312,8 +244,8 @@ class Provoca extends validaciones {
 
 		$mSQL = $this->db->update_string("provoca", $campos,"id='".$data['data']['id']."'" );
 		$this->db->simple_query($mSQL);
-		logusu('provoca',"PROVEEDOR OCACIONAL ".$data['data']['rif']." MODIFICADO");
-		echo "{ success: true, message: 'Proveedor ocacional Modificado '}";
+		logusu('provoca',"PROVEEDOR OCASIONAL ".$data['data']['rif']." MODIFICADO");
+		echo "{ success: true, message: 'Proveedor ocasional Modificado '}";
 	}
 
 	function eliminar(){
@@ -330,7 +262,7 @@ class Provoca extends validaciones {
 			echo "{ success: false, message: 'Proveedor con Movimiento no puede ser Borrado'}";
 		} else {
 			$this->db->simple_query("DELETE FROM provoca WHERE rif='$rif'");
-			logusu('provoca',"PROVEEDOR OCACIONAL $rif ELIMINADO");
+			logusu('provoca',"PROVEEDOR OCASIONAL $rif ELIMINADO");
 			echo "{ success: true, message: 'Proveedor Eliminado'}";
 		}
 	}
@@ -368,24 +300,24 @@ class Provoca extends validaciones {
 		$campos = "'id', 'rif', 'nombre', 'fecha'";
 		
 		$camposforma = "
-			\t\t\t\t{
-			\t\t\t\tframe: false,
-			\t\t\t\tborder: false,
-			\t\t\t\tlabelAlign: 'right',
-			\t\t\t\tdefaults: { xtype:'fieldset', labelWidth:70 },
-			\t\t\t\tstyle:'padding:4px',
-			\t\t\t\titems:[	
-			\t\t\t\t	{ xtype: 'textfield', fieldLabel: 'RIF',    name: 'rif',    allowBlank: false, width: 200 },
-			\t\t\t\t	{ xtype: 'textfield', fieldLabel: 'Nombre', name: 'nombre', allowBlank: false, width: 400 },
-			\t\t\t\t	{ xtype: 'datefield', fieldLabel: 'Fecha',  name: 'fecha',  format: 'd/m/Y', submitFormat: 'Y-m-d', value: new Date(), }
-			\t\t\t\t]}
+			{
+			frame: false,
+			border: false,
+			labelAlign: 'right',
+			tdefaults: { xtype:'fieldset', labelWidth:70 },
+			style:'padding:4px',
+			items:[	
+				{ xtype: 'textfield', fieldLabel: 'RIF',    name: 'rif',    allowBlank: false, width: 200 },
+				{ xtype: 'textfield', fieldLabel: 'Nombre', name: 'nombre', allowBlank: false, width: 400 },
+				{ xtype: 'datefield', fieldLabel: 'Fecha',  name: 'fecha',  format: 'd/m/Y', submitFormat: 'Y-m-d', value: new Date(), }
+			]}
 		";
 
-		$titulow = 'Aranceles';
+		$titulow = 'Proveedores Ocasionales';
 
 		$dockedItems = "
-				\t\t\t\t{ iconCls: 'icon-reset', itemId: 'close', text: 'Cerrar',   scope: this, handler: this.onClose },
-				\t\t\t\t{ iconCls: 'icon-save',  itemId: 'save',  text: 'Guardar',  disabled: false, scope: this, handler: this.onSave }
+				{ iconCls: 'icon-reset', itemId: 'close', text: 'Cerrar',   scope: this, handler: this.onClose },
+				{ iconCls: 'icon-save',  itemId: 'save',  text: 'Guardar',  disabled: false, scope: this, handler: this.onSave }
 		";
 
 		$winwidget = "
@@ -407,6 +339,9 @@ class Provoca extends validaciones {
 				}
 ";
 
+		$features = "features: [ filters],";
+		$filtros = "var filters = { ftype: 'filters', encode: 'json', local: false }; ";
+
 		$data['listados']    = $listados;
 		$data['otros']       = $otros;
 		$data['encabeza']    = $encabeza;
@@ -420,8 +355,10 @@ class Provoca extends validaciones {
 		$data['titulow']     = $titulow;
 		$data['dockedItems'] = $dockedItems;
 		$data['winwidget']   = $winwidget;
+		$data['features']    = $features;
+		$data['filtros']     = $filtros;
 		
-		$data['title']  = heading('Aranceles');
+		$data['title']  = heading('Proveedores Ocacionales');
 		$this->load->view('extjs/extjsven',$data);
 		
 	}

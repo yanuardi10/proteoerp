@@ -165,79 +165,18 @@ class Nomina extends Controller {
 	function grid() {
 		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']   :  0;
 		$limit   = isset($_REQUEST['limit'])  ? $_REQUEST['limit']   : 50;
-		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']    : 'fecha';
+		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']    : '[{"property":"fecha","direction":"DESC"}]';
 		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
 		
-		$mSQL = "SELECT a.numero, a.fecha, a.contrato, sum(a.valor*(a.valor>0)) asigna, ABS(sum(a.valor*(a.valor<0))) deduc, b.nombre noconom FROM nomina a JOIN conc b ON a.contrato=b.codigo GROUP BY a.numero ORDER BY a.fecha DESC";
+		$where = $this->datasis->extjsfiltro($filters);
 
-		$where = "";
-
-		//Buscar posicion 0 Cero
-		if (isset($_REQUEST['filter'])){
-			$filter = json_decode($_REQUEST['filter'], true);
-			if (is_array($filter)) {
-				//Dummy Where. 
-				$where = "a.codigo IS NOT NULL ";
-				$qs = "";
-				for ($i=0;$i<count($filter);$i++){
-					switch($filter[$i]['type']){
-					case 'string' : $qs .= " AND a.".$filter[$i]['field']." LIKE '%".$filter[$i]['value']."%'"; 
-						Break;
-					case 'list' :
-						if (strstr($filter[$i]['value'],',')){
-							$fi = explode(',',$filter[$i]['value']);
-							for ($q=0;$q<count($fi);$q++){
-								$fi[$q] = "'".$fi[$q]."'";
-							}
-							$filter[$i]['value'] = implode(',',$fi);
-								$qs .= " AND a.".$filter[$i]['field']." IN (".$filter[$i]['value'].")";
-						}else{
-							$qs .= " AND a.".$filter[$i]['field']." = '".$filter[$i]['value']."'";
-						}
-						Break;
-					case 'boolean' : $qs .= " AND a.".$filter[$i]['field']." = ".($filter[$i]['value']); 
-						Break;
-					case 'numeric' :
-						switch ($filter[$i]['comparison']) {
-							case 'ne' : $qs .= " AND a.".$filter[$i]['field']." != ".$filter[$i]['value']; 
-								Break;
-							case 'eq' : $qs .= " AND a.".$filter[$i]['field']." = ".$filter[$i]['value']; 
-								Break;
-							case 'lt' : $qs .= " AND a.".$filter[$i]['field']." < ".$filter[$i]['value']; 
-								Break;
-							case 'gt' : $qs .= " AND a.".$filter[$i]['field']." > ".$filter[$i]['value']; 
-								Break;
-						}
-						Break;
-					case 'date' :
-						switch ($filter[$i]['comparison']) {
-							case 'ne' : $qs .= " AND a.".$filter[$i]['field']." != '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
-								Break;
-							case 'eq' : $qs .= " AND a.".$filter[$i]['field']." = '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
-								Break;
-							case 'lt' : $qs .= " AND a.".$filter[$i]['field']." < '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
-								Break;
-							case 'gt' : $qs .= " AND a.".$filter[$i]['field']." > '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
-								Break;
-						}
-						Break;
-					}
-				}
-				$where .= $qs;
-			}
-		}
-		
 		$this->db->_protect_identifiers=false;
 		$this->db->select('a.numero, a.fecha, a.contrato, sum(a.valor*(a.valor>0)) asigna, ABS(sum(a.valor*(a.valor<0))) deduc, b.nombre noconom');
 
 		$this->db->from('nomina a');
 		$this->db->join('noco b', 'a.contrato=b.codigo');
 		$this->db->groupby('a.numero');
-
-		if (strlen($where)>1){
-			$this->db->where($where);
-		}
-		$this->db->order_by( 'a.fecha', 'desc' );
+		if (strlen($where)>1){$this->db->where($where);	}
 
 		$sort = json_decode($sort, true);
 		for ($i=0;$i<count($sort);$i++) {
@@ -245,19 +184,9 @@ class Nomina extends Controller {
 		}
 
 		$this->db->limit($limit, $start);
-
 		$query = $this->db->get();
 		$results =  $this->datasis->dameval("SELECT COUNT(*) FROM (SELECT numero FROM nomina GROUP BY numero) aaa");
-
-		$arr = array();
-		foreach ($query->result_array() as $row)
-		{
-			$meco = array();
-			foreach( $row as $idd=>$campo ) {
-				$meco[$idd] = utf8_encode($campo);
-			}
-			$arr[] = $meco;
-		}
+		$arr = $this->datasis->codificautf8($query->result_array());
 		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
 	}
 
@@ -267,37 +196,19 @@ class Nomina extends Controller {
 		$mSQL = "SELECT codigo, nombre, sum(valor*(valor>0)*(MID(concepto,1,1)<>9)) asigna,  sum(valor*(valor<0)*(MID(concepto,1,1)<>9)) deduc, sum(valor*(MID(concepto,1,1)<>9)) saldo FROM nomina WHERE numero='$nomina' GROUP BY codigo";
 		$query = $this->db->query($mSQL);
 		$results =  $this->datasis->dameval("SELECT COUNT(*) FROM (SELECT codigo FROM nomina WHERE numero='$nomina' GROUP BY codigo) aaa");
-		$arr = array();
-		foreach ($query->result_array() as $row)
-		{
-			$meco = array();
-			foreach( $row as $idd=>$campo ) {
-				$meco[$idd] = utf8_encode($campo);
-			}
-			$arr[] = $meco;
-		}
+		$arr = $this->datasis->codificautf8($query->result_array());
 		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
 	}
 
 	function gridconc(){
 		$nomina   = isset($_REQUEST['nomina'])  ? $_REQUEST['nomina']   :  0;
 		$codigo   = isset($_REQUEST['codigo'])  ? $_REQUEST['codigo']   :  0;
-		
 		if ($nomina == 0 ) $nomina = $this->datasis->dameval("SELECT MAX(numero) FROM nomina")  ;
 		if ($codigo == 0 ) $codigo = $this->datasis->dameval("SELECT MIN(codigo) FROM nomina WHERE numero='$nomina'")  ;
-		
 		$mSQL = "SELECT concepto, descrip, valor*(valor>0) asigna, valor*(valor<0) deduc FROM nomina WHERE numero='$nomina' AND trim(codigo)='$codigo' ORDER BY concepto ";
 		$query = $this->db->query($mSQL);
 		$results =  $this->datasis->dameval("SELECT COUNT(*) FROM (SELECT codigo FROM nomina WHERE numero='$nomina' AND codigo='$codigo' GROUP BY concepto) aaa");
-		$arr = array();
-		foreach ($query->result_array() as $row)
-		{
-			$meco = array();
-			foreach( $row as $idd=>$campo ) {
-				$meco[$idd] = utf8_encode($campo);
-			}
-			$arr[] = $meco;
-		}
+		$arr = $this->datasis->codificautf8($query->result_array());
 		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
 	}
 
@@ -356,8 +267,8 @@ var NomiCol =
 		{ header: 'Numero',       width:  60, sortable: true,  dataIndex: 'numero',   field: { type: 'textfield' }, filter: { type: 'string' }}, 
 		{ header: 'Fecha',        width:  70, sortable: true,  dataIndex: 'fecha',    field: { type: 'datefield' }, filter: { type: 'date' }}, 
 		{ header: 'Contrato',     width:  70, sortable: true,  dataIndex: 'contrato', field: { type: 'textfield' }, filter: { type: 'string' }}, 
-		{ header: 'Asignaciones', width:  80, sortable: true,  dataIndex: 'asigna',   field: { type: 'textfield' }, filter: { type: 'number' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Deducciones',  width:  80, sortable: true,  dataIndex: 'deduc',    field: { type: 'textfield' }, filter: { type: 'number' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Asignaciones', width:  80, sortable: true,  dataIndex: 'asigna',   field: { type: 'textfield' }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Deducciones',  width:  80, sortable: true,  dataIndex: 'deduc',    field: { type: 'textfield' }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
 		{ header: 'Nombre',       width: 250, sortable: true,  dataIndex: 'noconom',  field: { type: 'textfield' }, filter: { type: 'string' }}
 	];
 
@@ -376,8 +287,8 @@ var ConcCol =
 	[
 		{ header: 'Conc.',       width:  40, sortable: true,  dataIndex: 'concepto', field: { type: 'textfield' }, filter: { type: 'string' }}, 
 		{ header: 'Descripcion', width: 150, sortable: true,  dataIndex: 'descrip',  field: { type: 'textfield' }, filter: { type: 'string' }}, 
-		{ header: 'Asignacion',  width:  80, sortable: true,  dataIndex: 'asigna',   field: { type: 'textfield' }, filter: { type: 'number' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Deduccion',   width:  60, sortable: true,  dataIndex: 'deduc',    field: { type: 'textfield' }, filter: { type: 'number' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}
+		{ header: 'Asignacion',  width:  80, sortable: true,  dataIndex: 'asigna',   field: { type: 'textfield' }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Deduccion',   width:  60, sortable: true,  dataIndex: 'deduc',    field: { type: 'textfield' }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}
 	];
 
 var nomina = '';

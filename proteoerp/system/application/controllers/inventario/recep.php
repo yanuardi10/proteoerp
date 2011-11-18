@@ -623,7 +623,6 @@ class Recep extends Controller {
 			GROUP BY codigo";
 			$this->db->query($query);
 		}
-		/*fin CREA SNOT */
 	}
 
 	function _post_insert($do){
