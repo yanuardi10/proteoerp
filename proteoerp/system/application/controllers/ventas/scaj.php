@@ -9,7 +9,15 @@ class Scaj extends validaciones {
 	
 	function index(){
 		$this->db->simple_query('UPDATE scaj SET cajero=TRIM(cajero)');
-		redirect("ventas/scaj/filteredgrid");
+		//redirect("ventas/scaj/filteredgrid");
+		if ( !$this->datasis->iscampo('scaj','id') ) {
+			$this->db->simple_query('ALTER TABLE scaj DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE scaj ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ');
+			$this->db->simple_query('ALTER TABLE scaj ADD UNIQUE INDEX cajero (cajero)');
+		}
+		//$this->datasis->modulo_id(206,1);
+		$this->scajextjs();
+
 	}
 	
 	function filteredgrid(){
@@ -296,5 +304,253 @@ class Scaj extends validaciones {
 			) ENGINE=MyISAM DEFAULT CHARSET=latin1";
 		$this->db->simple_query($mSQL);
 	}
+	
+	function grid(){
+		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']   :  0;
+		$limit   = isset($_REQUEST['limit'])  ? $_REQUEST['limit']   : 50;
+		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']    : '[{"property":"cajero","direction":"ASC"}]';
+		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
+
+		$where = $this->datasis->extjsfiltro($filters);
+		
+		$this->db->_protect_identifiers=false;
+		$this->db->select('*');
+		$this->db->from('scaj');
+		if (strlen($where)>1) $this->db->where($where, NULL, FALSE); 
+		
+		$sort = json_decode($sort, true);
+		for ( $i=0; $i<count($sort); $i++ ) {
+			$this->db->order_by($sort[$i]['property'],$sort[$i]['direction']);
+		}
+
+		$this->db->limit($limit, $start);
+		$query = $this->db->get();
+		$results = $this->db->count_all('scaj');
+
+		$arr = $this->datasis->codificautf8($query->result_array());
+		echo '{success:true, message:"Loaded data", results:'. $results.', data:'.json_encode($arr).'}';
+	}
+
+
+	function crear(){
+		$js= file_get_contents('php://input');
+		$data= json_decode($js,true);
+		$campos   = $data['data'];
+		$cajero = $campos['cajero'];
+
+		if ( !empty($cajero) ) {
+			unset($campos['id']);
+			// Revisa si existe ya ese contrato
+			if ($this->datasis->dameval("SELECT COUNT(*) FROM scaj WHERE cajero='$cajero'") == 0)
+			{
+				$mSQL = $this->db->insert_string("scaj", $campos );
+				$this->db->simple_query($mSQL);
+				logusu('scaj',"CAJERO $cajero CREADO");
+				echo "{ success: true, message: 'Cajero Agregado'}";
+			} else {
+				echo "{ success: false, message: 'Ya existe un cajero con ese Codigo!!'}";
+			}
+			
+		} else {
+			echo "{ success: false, message: 'Ya existe un cajero con ese Codigo!!'}";
+		}
+	}
+
+	function modificar(){
+		$js= file_get_contents('php://input');
+		$data= json_decode($js,true);
+		$campos = $data['data'];
+
+		$cajero = $campos['cajero'];
+		unset($campos['cajero']);
+		unset($campos['id']);
+
+		$mSQL = $this->db->update_string("scaj", $campos,"id='".$data['data']['id']."'" );
+		$this->db->simple_query($mSQL);
+		logusu('scaj',"CAJERO $cajero ID ".$data['data']['id']." MODIFICADO");
+		echo "{ success: true, message: 'Cajero Modificado -> ".$data['data']['cajero']."'}";
+	}
+
+	function eliminar(){
+		$js= file_get_contents('php://input');
+		$data= json_decode($js,true);
+		$campos = $data['data'];
+
+		$cajero = $campos['cajero'];
+		$chek  =  $this->datasis->dameval("SELECT COUNT(*) FROM sfac WHERE cajero='$cajero'");
+		$chek +=  $this->datasis->dameval("SELECT COUNT(*) FROM sfpa WHERE cobrador='$cajero'");
+
+		if ($chek > 0){
+			echo "{ success: false, message: 'Cajero no puede ser Borrado'}";
+		} else {
+			$this->db->simple_query("DELETE FROM scaj WHERE cajero='$cajero'");
+			logusu('scaj',"CAJERO $cajero ELIMINADO");
+			echo "{ success: true, message: 'Cajero Eliminado'}";
+		}
+	}
+
+
+//0414 376 0149 juan picapiedras
+
+//****************************************************************8
+//
+//
+//
+//****************************************************************8
+	function scajextjs(){
+		$encabeza='CAJEROS';
+		$listados= $this->datasis->listados('scaj');
+		$otros=$this->datasis->otros('scaj', 'scaj');
+
+		$mSQL = "SELECT ubica, CONCAT(ubica,' ',ubides) descrip FROM caub WHERE gasto='N' ORDER BY ubica";
+		$alma = $this->datasis->llenacombo($mSQL);
+
+		$mSQL  = "SELECT codbanc, CONCAT(codbanc,' ',banco) banco FROM banc WHERE tbanco='CAJ' ORDER BY codbanc";
+		$cajas = $this->datasis->llenacombo($mSQL);
+
+		$mSQL  = "SELECT vendedor, CONCAT(vendedor,' ',nombre) nombre FROM vend ORDER BY vendedor";
+		$vende = $this->datasis->llenacombo($mSQL);
+
+		$urlajax = 'ventas/scaj/';
+		$variables = "";
+
+		$funciones = "
+function estado(val){
+	if ( val == 'A'){ return 'Abierto';}
+	else if ( val == 'C'){return  'Cerrado';}
+}
+";
+
+		$valida = "
+		{ type: 'length', field: 'cajero', min: 1 },
+		{ type: 'length', field: 'nombre', min: 1 }
+		";
+		
+		$columnas = "
+		{ header: 'Codigo',    width:  50, sortable: true, dataIndex: 'cajero',   field: { type: 'textfield' }, filter: { type: 'string'  } }, 
+		{ header: 'Nombre',    width: 180, sortable: true, dataIndex: 'nombre',   field: { type: 'textfield' }, filter: { type: 'string'  } }, 
+		{ header: 'Status',    width:  70, sortable: true, dataIndex: 'status',   field: { type: 'textfield' }, filter: { type: 'string'  }, renderer: estado },
+		{ header: 'Vendedor',  width:  60, sortable: true, dataIndex: 'vendedor', field: { type: 'textfield' }, filter: { type: 'string'  } }, 
+		{ header: 'Caja',      width:  40, sortable: true, dataIndex: 'caja',     field: { type: 'textfield' }, filter: { type: 'string'  } }, 
+		{ header: 'Apertura',  width:  80, sortable: true, dataIndex: 'fechaa',   field: { type: 'datefield' }, filter: { type: 'date'    } }, 
+		{ header: 'Hora',      width:  50, sortable: true, dataIndex: 'horaa',    field: { type: 'textfield' }, filter: { type: 'string'  } }, 
+		{ header: 'Cierre',    width:  80, sortable: true, dataIndex: 'fechaa',   field: { type: 'datefield' }, filter: { type: 'date'    } }, 
+		{ header: 'Hora',      width:  50, sortable: true, dataIndex: 'horac',    field: { type: 'textfield' }, filter: { type: 'string'  } }, 
+		{ header: 'Fondo',     width:  90, sortable: true, dataIndex: 'apertura', field: { type: 'numeric'   }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00') },
+		{ header: 'Alamcen',   width:  60, sortable: true, dataIndex: 'almacen',  field: { type: 'testfield' }, filter: { type: 'string'  } }, 
+		{ header: 'Carpeta',   width: 200, sortable: true, dataIndex: 'directo',  field: { type: 'textfield' }, filter: { type: 'string'  } }, 
+	";
+
+		$campos = "'id', 'cajero', 'nombre', 'clave', 'fechaa', 'horaa', 'apertura', 'fechac', 'horac', 'cierre', 'status', 'directo', 'mesai', 'mesaf', 'horai', 'horaf', 'caja', 'almacen', 'vendedor'";
+		
+		$camposforma = "
+							{
+							xtype:'fieldset',
+							//title: 'REGISTRO',
+							frame: false,
+							border: false,
+							labelAlign: 'right',
+							defaults: { labelWidth:70 },
+							style:'padding:4px',
+							layout: 'column',
+							items: [
+									{ xtype: 'textfield', fieldLabel: 'Codigo',  name: 'cajero',  allowBlank: false,  width: 120, id: 'codigo' },
+									{ xtype: 'combo',     fieldLabel: 'Status',  name: 'status',                      width: 130,  store: [['A','Abierto'],['C','Cerrado']], labelWidth:50},
+									{ xtype: 'textfield', fieldLabel: 'Clave',   name: 'clave', allowBlank: true, width: 150, inputType: 'password', labelWidth:50 },
+									{ xtype: 'textfield', fieldLabel: 'Nombre',  name: 'nombre',  allowBlank: false,  width: 400 },
+									{ xtype: 'combo',     fieldLabel: 'Caja',    name: 'caja',    store: [".$cajas."], width: 400 },
+									{ xtype: 'combo',     fieldLabel: 'Almacen', name: 'almacen', store: [".$alma."], width: 300 },
+									{ xtype: 'combo',     fieldLabel: 'Vendedor', name: 'vendedor', store: [".$vende."], width: 400 },
+									{ xtype: 'textfield', fieldLabel: 'Carpeta', name: 'directo', allowBlank: true,   width: 400 }
+								]
+							},{
+							xtype:'fieldset',
+							title: 'APERTURA/CIERRE',
+							frame: false,
+							border: false,
+							labelAlign: 'right',
+							defaults: { labelWidth:60 },
+							style:'padding:4px',
+							layout: 'column',
+							items: [
+								{ xtype: 'datefield',   fieldLabel: 'Apertura', name: 'fechaa',   width:160, labelWidth:60, format: 'd/m/Y', submitFormat: 'Y-m-d' },
+								{ xtype: 'textfield',   fieldLabel: 'Hora',     name: 'horaa',    width:100, labelWidth:40 },
+								{ xtype: 'numberfield', fieldLabel: 'Monto',    name: 'apertura', width:140, labelWidth:50, hideTrigger: true, fieldStyle: 'text-align: right',  renderer : Ext.util.Format.numberRenderer('0,000.00') },
+								{ xtype: 'datefield',   fieldLabel: 'Cierre',   name: 'fechac',   width:160, labelWidth:60, format: 'd/m/Y', submitFormat: 'Y-m-d' },
+								{ xtype: 'textfield',   fieldLabel: 'Hora',     name: 'horac',    width:100, labelWidth:40 },
+								{ xtype: 'numberfield', fieldLabel: 'Monto',    name: 'cierre',   width:140, labelWidth:50, hideTrigger: true, fieldStyle: 'text-align: right',  renderer : Ext.util.Format.numberRenderer('0,000.00') },
+							]
+							},{
+							xtype:'fieldset',
+							title: 'RESTAURANTE',
+							frame: false,
+							border: false,
+							labelAlign: 'right',
+							defaults: { xtype: 'textfield', allowBlank: true },
+							style:'padding:4px',
+							layout: 'column',
+							items: [
+								{ fieldLabel: 'Mesas Validas', name: 'mesai',  width:200, labelWidth:120 },
+								{ fieldLabel: 'Hasta',           name: 'mesaf',  width:140, labelWidth: 70 },
+								{ fieldLabel: 'Hora Feliz',      name: 'horai',  width:200, labelWidth:120 },
+								{ fieldLabel: 'Hasta',           name: 'horaf',  width:140, labelWidth: 70 },
+							]
+							}
+		";
+
+		$titulow = 'Cajeros';
+
+		$dockedItems = "
+				{ iconCls: 'icon-reset', itemId: 'close', text: 'Cerrar',   scope: this, handler: this.onClose },
+				{ iconCls: 'icon-save',  itemId: 'save',  text: 'Guardar',  disabled: false, scope: this, handler: this.onSave }
+		";
+
+		$winwidget = "
+				closable: false,
+				closeAction: 'destroy',
+				width: 450,
+				height: 460,
+				resizable: false,
+				modal: true,
+				items: [writeForm],
+				listeners: {
+					beforeshow: function() {
+						var form = this.down('writerform').getForm();
+						this.activeRecord = registro;
+						
+						if (registro) {
+							form.loadRecord(registro);
+						} 
+					}
+				}
+";
+
+		$stores = "";
+
+		$features = "features: [ filters],";
+		$filtros = "var filters = { ftype: 'filters', encode: 'json', local: false }; ";
+
+		$data['listados']    = $listados;
+		$data['otros']       = $otros;
+		$data['encabeza']    = $encabeza;
+		$data['urlajax']     = $urlajax;
+		$data['variables']   = $variables;
+		$data['funciones']   = $funciones;
+		$data['valida']      = $valida;
+		$data['columnas']    = $columnas;
+		$data['campos']      = $campos;
+		$data['stores']      = $stores;
+		$data['camposforma'] = $camposforma;
+		$data['titulow']     = $titulow;
+		$data['dockedItems'] = $dockedItems;
+		$data['winwidget']   = $winwidget;
+		$data['features']    = $features;
+		$data['filtros']     = $filtros;
+		
+		$data['title']  = heading('Cajeros');
+		$this->load->view('extjs/extjsven',$data);
+		
+	}
+	
 }
 ?>

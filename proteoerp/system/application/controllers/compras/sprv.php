@@ -19,9 +19,6 @@ class Sprv extends validaciones {
 	function extgrid(){
 		$this->datasis->modulo_id(206,1);
 		$script = $this->sprvextjs();
-		//$data["script"] = $script;
-		//$data['title']  = heading('Proveedores');
-		//$this->load->view('extjs/ventana',$data);
 	}
 
 	function filteredgrid(){
