@@ -154,53 +154,55 @@ class ingresos{
 		}
 
 		//Retenciones de rivc
-		$data=array();
-		$mSQL="SELECT a.fecha, CONCAT(a.periodo,a.nrocomp) AS nroriva, c.nombre, c.rifci, a.cod_cli,
-				b.numero AS afecta, b.fecha AS fafecta, b.reiva AS reteiva, a.transac, a.emision,
-				a.fecha AS recriva, '' AS nfiscal
-			FROM rivc AS a 
-			JOIN itrivc AS b ON a.id=b.idrivc 
-			LEFT JOIN scli AS c ON a.cod_cli=c.cliente 
-			WHERE a.anulado='N' AND b.reiva>0 
-				AND a.fecha BETWEEN $fdesde AND $fhasta";
-		$query = $this->db->query($mSQL);
+		if($this->db->table_exists('rivc')){
+			$data=array();
+			$mSQL="SELECT a.fecha, CONCAT(a.periodo,a.nrocomp) AS nroriva, c.nombre, c.rifci, a.cod_cli,
+					b.numero AS afecta, b.fecha AS fafecta, b.reiva AS reteiva, a.transac, a.emision,
+					a.fecha AS recriva, '' AS nfiscal
+				FROM rivc AS a 
+				JOIN itrivc AS b ON a.id=b.idrivc 
+				LEFT JOIN scli AS c ON a.cod_cli=c.cliente 
+				WHERE a.anulado='N' AND b.reiva>0 
+					AND a.fecha BETWEEN $fdesde AND $fhasta";
+			$query = $this->db->query($mSQL);
 
-		foreach ( $query->result() as $row ){
+			foreach ( $query->result() as $row ){
 
-			$data['libro']      ='V';
-			$data['tipo']       ='CR';
-			$data['fuente']     ='MC';
-			$data['sucursal']   ='99';
-			$data['fecha']      =$row->emision;
-			$data['numero']     =$row->nroriva;
-			$data['clipro']     =$row->cod_cli;
-			$data['nombre']     =$row->nombre;
-			$data['contribu']   ='CO';
-			$data['rif']        =$row->rifci;
-			$data['registro']   ='01';
-			$data['nacional']   ='S';
-			$data['referen']    ='';
-			$data['exento']     =0;
-			$data['general']    =0;
-			$data['geneimpu']   =0;
-			$data['reducida']   =0;
-			$data['reduimpu']   =0;
-			$data['adicional']  =0;
-			$data['adicimpu']   =0;
-			$data['impuesto']   =0;
-			$data['gtotal']     =0;
-			$data['stotal']     =0;
-			$data['reiva']      =$row->reteiva;
-			$data['comprobante']='';
-			$data['fecharece']  =$row->recriva;
-			$data['fechal']     =$mes.'01';
-			$data['nfiscal']    =$row->nfiscal;
-			$data['fafecta']    =$row->fafecta;
-			$data['afecta']     =$row->afecta;
+				$data['libro']      ='V';
+				$data['tipo']       ='CR';
+				$data['fuente']     ='MC';
+				$data['sucursal']   ='99';
+				$data['fecha']      =$row->emision;
+				$data['numero']     =$row->nroriva;
+				$data['clipro']     =$row->cod_cli;
+				$data['nombre']     =$row->nombre;
+				$data['contribu']   ='CO';
+				$data['rif']        =$row->rifci;
+				$data['registro']   ='01';
+				$data['nacional']   ='S';
+				$data['referen']    ='';
+				$data['exento']     =0;
+				$data['general']    =0;
+				$data['geneimpu']   =0;
+				$data['reducida']   =0;
+				$data['reduimpu']   =0;
+				$data['adicional']  =0;
+				$data['adicimpu']   =0;
+				$data['impuesto']   =0;
+				$data['gtotal']     =0;
+				$data['stotal']     =0;
+				$data['reiva']      =$row->reteiva;
+				$data['comprobante']='';
+				$data['fecharece']  =$row->recriva;
+				$data['fechal']     =$mes.'01';
+				$data['nfiscal']    =$row->nfiscal;
+				$data['fafecta']    =$row->fafecta;
+				$data['afecta']     =$row->afecta;
 
-			$mSQL = $this->db->insert_string('siva', $data);
-			$flag=$this->db->simple_query($mSQL);
-			if(!$flag) memowrite($mSQL,'genesmov');
+				$mSQL = $this->db->insert_string('siva', $data);
+				$flag=$this->db->simple_query($mSQL);
+				if(!$flag) memowrite($mSQL,'genesmov');
+			}
 		}
 
 		//RETENCIONES ANTERIORES PENDIENTES

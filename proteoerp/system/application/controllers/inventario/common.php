@@ -322,7 +322,71 @@ class Common extends controller {
 		}
 		return $query;
 	}
-	
+
+	//Para buscar compra o factura en el autocomplete
+	function buscasfacscst(){
+		$mid   = $this->input->post('q');
+		$qdb   = $this->db->escape('%'.$mid.'%');
+
+		$data = '{[ ]}';
+		if($mid !== false){
+			$retArray = $retorno = array();
+
+			$mSQL="SELECT
+					IF(a.tipo_doc='FC','R','E') AS tipo,
+					a.tipo_doc AS tipo_ref,
+					a.numero,
+					proveed AS clipro,
+					a.nombre,
+					'C' AS operacion,
+					a.fecha,
+					'scst' AS origen
+				FROM  scst AS a
+				WHERE CONCAT(a.tipo_doc,'-',a.numero) LIKE $qdb
+				UNION ALL
+				SELECT
+					IF(b.tipo_doc='F','E','R') AS tipo,
+					b.tipo_doc AS tipo_ref,
+					b.numero,
+					b.cod_cli AS clipro,
+					b.nombre,
+					'V' AS operacion,
+					b.fecha,
+					'sfac' AS origen
+				FROM sfac AS b
+				WHERE CONCAT(b.tipo_doc,'-',b.numero) LIKE $qdb AND b.tipo_doc<>'X'";
+
+			$mSQL="SELECT * FROM ($mSQL) AS aa ORDER BY aa.fecha desc LIMIT 10";
+
+			$query = $this->db->query($mSQL);
+			if ($query->num_rows() > 0){
+				foreach( $query->result_array() as  $row ) {
+					$retArray['label']    = $row['tipo_ref'].$row['numero'].'-'.utf8_encode($row['nombre']);
+					$retArray['value']    = $row['numero'];
+					$retArray['tipo']     = $row['tipo'];
+					$retArray['origen']   = $row['origen'];
+					$retArray['clipro']   = $row['clipro'];
+					$retArray['tipo_ref'] = $row['tipo_ref'];
+					$retArray['nombre']   = utf8_encode($row['nombre']);
+
+					array_push($retorno, $retArray);
+				}
+				$data = json_encode($retorno);
+			}else{
+				$retArray[0]['label']   = 'No se consiguieron facturas';
+				$retArray[0]['value']   = '';
+				$retArray[0]['tipo']    = '';
+				$retArray[0]['origen']  = '';
+				$retArray[0]['nombre']  = '';
+				$retArray[0]['clipro']  = '';
+				$retArray[0]['tipo_ref']= '';
+				$data = json_encode($retArray);
+			}
+		}
+		echo $data;
+	}
+
+
 	function get_codigo(){
 		$barras =$this->input->post('barras');
 		$barrase=$this->db->escape($barras);

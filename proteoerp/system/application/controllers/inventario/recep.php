@@ -7,7 +7,9 @@ class Recep extends Controller {
 	function Recep(){
 		parent::Controller();
 		$this->load->library('rapyd');
+		$this->serial_repetidos=array();
 		//$this->datasis->modulo_id(135,1);
+		$this->instalar();
 	}
 
 	function index(){
@@ -61,13 +63,6 @@ class Recep extends Controller {
 		$filter->build();
 		$uri = anchor($this->url.'dataedit/show/<#recep#>','<#recep#>');
 
-		function sta($status){
-			switch($status){
-				case 'C2':return 'Cuadrado' ;break;
-				case 'C1':return 'Pendiente';break;
-			}
-		}
-
 		function tipo($tipo){
 			switch($tipo){
 				case 'E':return 'Entrega';break;
@@ -79,7 +74,6 @@ class Recep extends Controller {
 		$grid->order_by('a.recep','desc');
 		$grid->per_page = 20;
 		$grid->use_function('substr','str_pad');
-		$grid->use_function('sta');
 
 		$grid->column_orderby('Numero Recepci&oacute;n',$uri,'numero');
 		$grid->column_orderby('Fecha'                  ,'<dbdate_to_human><#fecha#></dbdate_to_human>'  ,'fecha'    ,'align=\'center\''      );
@@ -92,7 +86,6 @@ class Recep extends Controller {
 		$grid->build();
 		//echo $grid->db->last_query();
 
-		//$data['content'] = $filter->output.$grid->output;
 		$data['filtro']  = $filter->output;
 		$data['content'] = $grid->output;
 		$data['script']  = script('jquery.js');
@@ -104,7 +97,7 @@ class Recep extends Controller {
 	function dataedit(){
 		$this->rapyd->load('dataobject','datadetails');
 
-		$mSPRV=array(
+		/*$mSPRV=array(
 			'tabla'   =>'view_clipro',
 			'columnas'=>array(
 			    'codigo' =>'C&oacute;digo',
@@ -116,11 +109,22 @@ class Recep extends Controller {
 			    'codigo' =>'C&oacute;digo',
 			    'rif'     =>'RIF/CI',
 			    'nombre'  =>'Nombre'),
-			'retornar'=>array('codigo'=>'clipro'),
-			//'script'  =>array('cal_lislr()','cal_total()'),
+			'retornar'=>array('codigo'=>'clipro','nombre'=>'nombre'),
+			'script'  =>array('human_traslate()'),
 			'titulo'  =>'Buscar Proveedor / Cliente');
+		$bSPRV=$this->datasis->p_modbus($mSPRV,'proveed');*/
 
-		$bSPRV=$this->datasis->p_modbus($mSPRV,'proveed');
+		$sprvbus=array(
+			'tabla'   =>'sprv',
+			'columnas'=>array(
+				'proveed' =>'C&oacute;digo Proveedor',
+				'nombre'=>'Nombre',
+				'rif'=>'RIF'),
+			'filtro'  => array('proveed'=>'C&oacute;digo Proveedor','nombre'=>'Nombre'),
+			'retornar'=> array('proveed'=>'clipro', 'nombre'=>'nombre'),
+			'script'  => array('_post_modbus()'),
+			'titulo'  =>'Buscar Proveedor');
+		$bSPRV=$this->datasis->p_modbus($sprvbus,'proveed');
 
 		$do = new DataObject('recep');
 		$do->rel_one_to_many('seri', 'seri', array('recep'=>'recep'));
@@ -129,104 +133,266 @@ class Recep extends Controller {
 		$edit->back_url = site_url($this->url.'filteredgrid');
 		$edit->set_rel_title('itcasi','Rubro <#o#>');
 
-		$edit->pre_process( 'insert','_valida');
-		$edit->pre_process( 'update','_valida');
+		$edit->pre_process( 'insert','_pre_insert' );
+		$edit->pre_process( 'update','_pre_update' );
+		$edit->pre_process( 'delete','_pre_delete' );
 		$edit->post_process('insert','_post_insert');
 		$edit->post_process('update','_post_update');
 		$edit->post_process('delete','_post_delete');
 
-		$edit->recep  = new inputField('Numero', 'recep');
+		$edit->recep = new inputField('N&uacute;mero', 'recep');
 		$edit->recep->mode ='autohide';
 		$edit->recep->when=array('show','modify');
 
-		$edit->clipro  = new inputField('Cliente/Proveedor', 'clipro');
-		$edit->clipro->append($bSPRV);
+		$edit->clipro = new inputField('Cliente/Proveedor', 'clipro');
 		$edit->clipro->size=5;
+		$edit->clipro->rule='callback_chclipro|required';
+		$edit->clipro->type='inputhidden';
 		$edit->clipro->readonly=true;
+		$edit->clipro->append($bSPRV);
 
-		$edit->tipo = new dropdownField('Tipo','tipo');
-		$edit->tipo->option('E','Entrega');
-		$edit->tipo->option('R','Recepci&oacute;n');
-		$edit->tipo->style='width:110px';
+		$edit->nombre = new inputField('Nombre', 'nombre');
+		$edit->nombre->type ='inputhidden';
 
-		$edit->refe  = new inputField('Refencia', 'refe');
+		$tipo=array('E'=>'Entrega','R'=>utf8_encode('Recepción'));
+		if($edit->_status=='show'){
+			$edit->tipo = new dropdownField('Tipo','tipo');
+			$edit->tipo->option('E','Entrega');
+			$edit->tipo->option('R','Recepci&oacute;n');
+		}else{
+			$edit->tipo = new inputField('Tipo','tipo');
+			$edit->tipo->rule = 'enum[R,E]';
+			$edit->tipo->type ='inputhidden';
+			$edit->tipo->insertValue='R';
+		}
+
+		$origen=array('scst'=>'Compra','sfac'=>'Factura');
+		if($edit->_status=='show'){
+			$edit->origen = new dropdownField('Or&iacute;gen', 'origen');
+			$edit->origen->options($origen);
+		}else{
+			$edit->origen = new inputField('Or&iacute;gen', 'origen');
+			$edit->origen->rule = 'enum[sfac,scst]';
+			$edit->origen->insertValue='scst';
+			$edit->origen->type ='inputhidden';
+		}
+
+		$tipo_ref=array('F'=>'F','FC'=>'F','NC'=>'D','D'=>'D');
+		$edit->tipo_refe = new inputField('Tipo de referencia', 'tipo_refe');
+		$edit->tipo_refe->rule = 'enum[FC,NC,F,D]';
+		$edit->tipo_refe->type ='inputhidden';
+
+		$edit->refe = new inputField('Referencia', 'refe');
+		$edit->refe->rule='max_length[8]';
 		$edit->refe->size=10;
-		$edit->refe->maxleght=8;
-
-		$edit->refe2  = new inputField('Factura de Compra', 'refe2');
-		$edit->refe2->size=10;
-		$edit->refe2->maxleght=8;
-
-		$edit->origen = new dropdownField('Objeto', 'origen');
-		$edit->origen->style='width:110px';
-		$edit->origen->option('scst','Compra');
-		$edit->origen->option('sfac','Factura');
+		$edit->refe->maxlength=8;
+		$edit->refe->append('N&uacute;mero de referencia cuando es ventas o n&uacute;mero de compra');
 
 		$edit->fecha = new  dateonlyField('Fecha','fecha');
 		$edit->fecha->insertValue = date('Y-m-d');
-		$edit->fecha->size        =12;
-		$edit->fecha->rule        = 'required';
+		$edit->fecha->rule= 'required|chfecha';
+		$edit->fecha->size= 10;
 
 		$edit->observa = new textAreaField('Observaci&oacute;n', 'observa');
-		$edit->observa->cols = 80;
+		$edit->observa->cols = 60;
 		$edit->observa->rows = 1;
+		$edit->observa->style = 'width:100%;';
 
-		/*$edit->status = new dropdownField("Status", "status");
-		$edit->status->style="width:110px";
-		$edit->status->option("C1","Cuadrado");
-		$edit->status->option("C2","Pendiente");*/
-
+		//******************************
+		//     Inicio del detalle
+		//******************************
 		$edit->itbarras = new inputField('(<#o#>) Barras', 'it_barras_<#i#>');
-		$edit->itbarras->rule         ='trim|required';
+		$edit->itbarras->rule         ='trim|required|callback_chbarras[<#i#>]|strtoupper';
 		$edit->itbarras->size         =20;
 		$edit->itbarras->db_name      ='barras';
 		$edit->itbarras->rel_id       ='seri';
 		$edit->itbarras->autocomplete =false;
-		//$edit->itbarras->append($button);
 
-		$edit->itcodigo = new inputField('(<#o#>) Codigo', 'it_codigo_<#i#>');
+		$edit->itcodigo = new inputField('(<#o#>) C&oacute;digo', 'it_codigo_<#i#>');
 		$edit->itcodigo->rule         ='trim|required';
 		$edit->itcodigo->size         =10;
 		$edit->itcodigo->db_name      ='codigo';
 		$edit->itcodigo->rel_id       ='seri';
 		$edit->itcodigo->autocomplete =false;
+		$edit->itcodigo->type         ='inputhidden';
 
-		$edit->itdescri = new inputField('(<#o#>) Descrip', 'it_descri_<#i#>');
+		$edit->itdescri = new inputField('(<#o#>) Descripci&oacute;n', 'it_descri_<#i#>');
 		$edit->itdescri->rule         ='trim|required';
 		$edit->itdescri->size         =40;
 		$edit->itdescri->db_name      ='descrip';
 		$edit->itdescri->rel_id       ='seri';
 		$edit->itdescri->autocomplete =false;
+		$edit->itdescri->type         ='inputhidden';
 
 		$edit->itserial = new inputField('(<#o#>) Serial', 'it_serial_<#i#>');
-		$edit->itserial->rule         ='trim';
+		$edit->itserial->rule         ='trim|callback_chrepetido[<#i#>]|required';
 		$edit->itserial->size         =20;
 		$edit->itserial->db_name      ='serial';
 		$edit->itserial->rel_id       ='seri';
 		$edit->itserial->autocomplete =false;
 
 		$edit->itcant = new inputField('(<#o#>) Cantidad', 'it_cant_<#i#>');
-		$edit->itcant->rule         = 'trim|numeric|required';
+		$edit->itcant->rule         = 'trim|numeric|required|positive';
 		$edit->itcant->size         = 10;
 		$edit->itcant->db_name      = 'cant';
 		$edit->itcant->rel_id       = 'seri';
 		$edit->itcant->autocomplete = false;
-		$edit->itcant->insertValue=1;
+		$edit->itcant->css_class    = 'inputnum';
+		$edit->itcant->insertValue  = 1;
+		//******************************
+		//      Fin del detalle
+		//******************************
 
 		$status=$edit->get_from_dataobjetct('status');
-		$edit->buttons('delete','modify','save','undo','back','add_rel');
+		$edit->buttons('modify','save','undo','back','add_rel');
 		$edit->build();
 
-		$smenu['link']   = barra_menu('322');
-		$data['smenu']   = $this->load->view('view_sub_menu', $smenu,true);
-		$conten['form']  =&  $edit;
+		$smenu['link']       = barra_menu('322');
+		$data['smenu']       = $this->load->view('view_sub_menu', $smenu,true);
+		$conten['jtipo']     = json_encode($tipo);
+		$conten['jorigen']   = json_encode($origen);
+		$conten['jtipos_ref']= json_encode($tipo_ref);
+		$conten['form']     =& $edit;
+
 		$data['content'] = $this->load->view('recep', $conten,true);
 		$data['title']   = heading($this->tits.' Nro. '.$edit->recep->value);
-		$data['head']    = $this->rapyd->get_head().script('jquery.js').script('jquery-ui.js').script("plugins/jquery.numeric.pack.js").script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css');
+		$data['head']    = $this->rapyd->get_head(); //style('vino/jquery-ui.css');
+		$data['head']   .= script('jquery.js');
+		$data['head']   .= script('jquery-ui.js');
+		$data['head']   .= script('plugins/jquery.numeric.pack.js');
+		$data['head']   .= script('plugins/jquery.floatnumber.js');
+		$data['head']   .= script('plugins/jquery.meiomask.js');
+		$data['head']   .= phpscript('nformat.js');
+		$data['head']   .= style('redmond/jquery-ui-1.8.1.custom.css');
 		$this->load->view('view_ventanas', $data);
 	}
 
+	//*****************************
+	// Chequea que los productos
+	//   esten en el documento
+	//*****************************
+	function chbarras($barras,$i){
+		$cod_ind='it_codigo_'.$i;
+		$can_ind='it_cant_'.$i;
+
+		$codigo   = $this->input->post($cod_ind);
+		$cana     = $this->input->post($can_ind);
+		$tipo_ref = $this->input->post('tipo_refe');
+		$refe     = $this->input->post('refe');
+		$origen   = $this->input->post('origen');
+		$clipro   = $this->input->post('clipro');
+
+		if(empty($refe)) return true;
+
+		if(!isset($this->it_detalle)){
+			$this->it_detalle=array();
+			if($origen=='scst'){
+				$this->db->select(array('b.codigo','SUM(b.cantidad) AS cana'));
+				$this->db->from('scst AS a');
+				$this->db->join('itscst AS b','a.control=b.control');
+				$this->db->where('a.proveed' ,$clipro);
+				$this->db->where('a.tipo_doc',$tipo_ref);
+				$this->db->where('a.numero'  ,$refe);
+				$this->db->group_by('b.codigo');
+				$query = $this->db->get();
+			}elseif($origen=='sfac'){
+				$this->db->select(array('b.codigoa AS codigo','SUM(b.cana) AS cana'));
+				$this->db->from('sfac AS a');
+				$this->db->join('sitems AS b','a.numero=b.numa AND a.tipo_doc=b.tipoa');
+				$this->db->where('a.cod_cli' ,$clipro);
+				$this->db->where('a.tipo_doc',$tipo_ref);
+				$this->db->where('a.numero'  ,$refe);
+				$this->db->group_by('b.codigoa');
+				$query = $this->db->get();
+			}else{
+				$query=false;
+			}
+			if ($query !== false){
+				foreach ($query->result() as $row){
+					$this->it_detalle[$row->codigo]=$row->cana;
+				}
+			}
+		}
+		if(isset($this->it_detalle[$codigo]) && $this->it_detalle[$codigo]>=$cana){
+			$this->it_detalle[$codigo]-=$cana;
+			return true;
+		}else{
+			$this->it_detalle[$codigo]=0;
+			$this->validation->set_message('chbarras', 'El art&iacute;culo en \'%s\' no esta contenido en el documento al que referencia');
+			return false;
+		}
+	}
+
+	//*****************************
+	// Chequea que los proveedor
+	//  o cliente sea correcto
+	//*****************************
+	function chclipro($clipro){
+		$origen    = $this->input->post('origen');
+		$tipo_ref  = $this->input->post('tipo_refe');
+		$refe      = $this->input->post('refe');
+		if(empty($refe)) return true;
+
+		$dbclipro  = $this->db->escape($clipro);
+		$dbtipo_ref= $this->db->escape($tipo_ref);
+		$dbrefe    = $this->db->escape($refe);
+
+		$rt=0;
+		if($origen=='scst'){
+			$mSQL="SELECT COUNT(*) FROM scst WHERE proveed=$dbclipro AND numero=$dbrefe AND tipo_doc=$dbtipo_ref";
+			$rt=$this->datasis->dameval("SELECT COUNT(*) FROM scst WHERE proveed=$dbclipro AND numero=$dbrefe AND tipo_doc=$dbtipo_ref");
+		}elseif($origen=='sfac'){
+			$rt=$this->datasis->dameval("SELECT COUNT(*) FROM sfac WHERE cod_cli=$dbclipro AND numero=$dbrefe AND tipo_doc=$dbtipo_ref");
+		}
+
+		$this->validation->set_message('chclipro', 'El cliente o proveedor propuesto no es el mismo del documento referenciado');
+		return ($rt>0)? true : false;
+	}
+
+	//*****************************
+	// Chequea que no exista un
+	//     serial repetido
+	//*****************************
+	function chrepetido($serial,$i){
+		$this->validation->set_message('chrepetido', 'Hay un serial repetido para el mismo producto');
+		$cod_ind='it_codigo_'.$i;
+		$codigo = $this->input->post($cod_ind);
+
+		if(isset($this->serial_repetidos[$codigo])){
+			if(in_array($serial,$this->serial_repetidos[$codigo])){
+				return false;
+			}else{
+				$this->serial_repetidos[$codigo][]=$serial;
+				return true;
+			}
+		}else{
+			$this->serial_repetidos[$codigo][]=$serial;
+			return true;
+		}
+	}
+
+	function _pre_update($do){
+		unset($this->serial_repetidos); //Para ahorrar memoria
+		unset($this->it_detalle);       //Para ahorrar memoria
+
+		return true;
+	}
+
+	function _pre_insert($do){
+		unset($this->serial_repetidos); //Para ahorrar memoria
+		unset($this->it_detalle);       //Para ahorrar memoria
+
+		$nrecep= $this->datasis->fprox_numero('nrecep');
+		$do->set('recep',$nrecep);
+		return true;
+	}
+
+	function _pre_delete($do){
+		return false;
+	}
+
 	function _valida($do){
+		return false;
 		$error  ='';
 		$recep  =$do->get('recep');
 		$tipo   =$do->get('tipo');
@@ -382,16 +548,16 @@ class Recep extends Controller {
 				if(array_key_exists($codigo,$sface)){
 
 					if($cant>$sface[$codigo])
-					$error.="ERROR. la cantidad a despachar del producto $codigo es mayor a la disponible ".nformat($sface[$codigo])." por despachar ";
+						$error.="ERROR. la cantidad a despachar del producto $codigo es mayor a la disponible ".nformat($sface[$codigo])." por despachar ";
 				}else{
 					$error.="ERROR. el producto ($codigo) $descrip no pertenece  la factura $refe</br>";
 				}
 			}
 			/*FIN VALIDA ORIGEN=SFAC Y ENTREGADO*/
-			
+
 			/*INICIO VALIDA ORIGEN=SFAC Y DEVUELVE
 			chequea que cada codigo ingresado pertenzca a la factura a devolver*/
-			
+
 			if($origen=='sfac' && $tipo=='R'){
 			//print_r($sfac);
 				if(array_key_exists($codigo,$sfac)){
@@ -492,53 +658,64 @@ class Recep extends Controller {
 	function _post_update($do){
 		$this->crea_snot($do);
 		$numero = $do->get('recep');
-		logusu('casi'," Modifico recepcion $numero");
+		logusu('recep'," Modifico recepcion $numero");
 	}
 
 	function _post_delete($do){
 		$numero = $do->get('recep');
-		logusu('casi'," Elimino recepcion $numero");
+		logusu('recep'," Elimino recepcion $numero");
 	}
 
 	function instalar(){
-		$query="ALTER TABLE `seri` ADD COLUMN `recep` CHAR(8) NOT NULL";
-		$this->db->simple_query($query);
-
-		$query="ALTER TABLE `seri` ADD COLUMN `frecep` DATE NOT NULL";
-		$this->db->simple_query($query);
-
-		$query="ALTER TABLE `seri`  ADD COLUMN `barras` VARCHAR(50) NOT NULL";
-		$this->db->simple_query($query);
-
 		if (!$this->db->table_exists('recep')) {
-			$mSQL="CREATE TABLE `recep` (
-			    `recep` char(8) NOT NULL DEFAULT '',
-			    `fecha` date DEFAULT NULL,
-			    `clipro` varchar(5) DEFAULT NULL,
-			    `refe` char(8) DEFAULT NULL,
-			    `tipo` char(2) DEFAULT NULL,
-			    `observa` text,
-			    `status` char(2) DEFAULT NULL,
-			    `user` varchar(50) DEFAULT NULL,
-			    `estampa` timestamp NULL DEFAULT NULL,
-			    PRIMARY KEY (`recep`)
-			) ENGINE=MyISAM DEFAULT CHARSET=latin1";
+			$mSQL = "CREATE TABLE `recep` (
+				`recep` CHAR(8) NOT NULL DEFAULT '',
+				`fecha` DATE NULL DEFAULT NULL,
+				`clipro` VARCHAR(5) NULL DEFAULT NULL,
+				`nombre` VARCHAR(100) NULL DEFAULT NULL,
+				`refe` CHAR(8) NULL DEFAULT NULL,
+				`tipo_refe` CHAR(2) NULL DEFAULT NULL,
+				`tipo` CHAR(2) NULL DEFAULT NULL,
+				`observa` TEXT NULL,
+				`status` CHAR(2) NULL DEFAULT NULL,
+				`user` VARCHAR(50) NULL DEFAULT NULL,
+				`estampa` TIMESTAMP NULL DEFAULT NULL,
+				`origen` VARCHAR(20) NULL DEFAULT NULL,
+				PRIMARY KEY (`recep`)
+			)
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM
+			ROW_FORMAT=DEFAULT";
 			$this->db->simple_query($mSQL);
 		}
 
-		$query="ALTER TABLE `recep`  ADD PRIMARY KEY (`recep`)";
-		$this->db->simple_query($query);
-		$query="ALTER TABLE `seri`  ADD COLUMN `cant` DECIMAL(19,2) NOT NULL DEFAULT '1'";
-		$this->db->simple_query($query);
-		$query="ALTER TABLE `recep`  CHANGE COLUMN `numero` `refe` CHAR(8) NULL DEFAULT NULL";
-		$this->db->simple_query($query);
-		$query="ALTER TABLE `recep`  CHANGE COLUMN `tipo_doc` `tipo` CHAR(2) NULL DEFAULT NULL";
-		$this->db->simple_query($query);
-		$query="ALTER TABLE `recep`  CHANGE COLUMN `cod_prov` `clipro` VARCHAR(5) NULL DEFAULT NULL";
-		$this->db->simple_query($query);
-		$query="ALTER TABLE `recep` ADD COLUMN `refe2` VARCHAR(20) NULL DEFAULT NULL AFTER `origen`";
-		$this->db->simple_query($query);
-		$query="ALTER TABLE `recep` ADD COLUMN `origen2` VARCHAR(20) NULL DEFAULT NULL AFTER `refe2`";
-		$this->db->simple_query($query);
+		if (!$this->db->table_exists('view_clipro')) {
+			$user=$this->db->username;
+			$host=$this->db->hostname;
+
+			$mSQL = "CREATE ALGORITHM = UNDEFINED DEFINER= `$user`@`$host` VIEW view_clipro AS
+			SELECT 'Proveedor' tipo, b.proveed codigo, b.nombre, b.rif, concat_ws(' ', b.direc1, b.direc2, b.direc3) direc FROM `sprv` b
+			UNION ALL
+			SELECT 'Cliente' Cliente, a.cliente, a.nombre, a.rifci, concat_ws(' ',a.dire11, a.dire12, a.dire21, a.dire22) direc FROM `scli` a";
+			$this->db->simple_query($mSQL);
+		}
+
+		$fields = $this->db->list_fields('seri');
+		if(!in_array('cant',$fields)){
+			$query="ALTER TABLE `seri`  ADD COLUMN `cant` DECIMAL(19,2) NOT NULL DEFAULT '1'";
+			$this->db->simple_query($query);
+		}
+		if(!in_array('recep',$fields)){
+			$query="ALTER TABLE `seri` ADD COLUMN `recep` CHAR(8) NOT NULL";
+			$this->db->simple_query($query);
+		}
+		if(!in_array('frecep',$fields)){
+			$query="ALTER TABLE `seri` ADD COLUMN `frecep` DATE NOT NULL";
+			$this->db->simple_query($query);
+		}
+		if(!in_array('barras',$fields)){
+			$query="ALTER TABLE `seri`  ADD COLUMN `barras` VARCHAR(50) NOT NULL";
+			$this->db->simple_query($query);
+		}
 	}
 }
