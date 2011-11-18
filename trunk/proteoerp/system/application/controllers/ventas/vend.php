@@ -7,7 +7,6 @@ class Vend extends validaciones {
 
 	function Vend(){
 		parent::Controller(); 
-
 		$this->load->helper('url');
 		$this->load->helper('text');
 		$this->load->library("rapyd");
@@ -282,7 +281,7 @@ class Vend extends validaciones {
 		$listados= $this->datasis->listados('vend');
 		$otros=$this->datasis->otros('vend', 'vend');
 
-		$mSQL = "SELECT ubica, CONCAT(ubica,' ',ubides) descrip FROM caub ORDER BY ubica";
+		$mSQL = "SELECT ubica, CONCAT(ubica,' ',ubides) descrip FROM caub WHERE gasto='N' ORDER BY ubica";
 		$alma = $this->datasis->llenacombo($mSQL);
 
 		$urlajax = 'ventas/vend/';
