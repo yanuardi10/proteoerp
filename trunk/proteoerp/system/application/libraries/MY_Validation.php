@@ -63,6 +63,12 @@ class MY_Validation extends CI_Validation{
 		}
 	}
 
+	function enum($val,$posibles){
+		$this->set_message('enum', 'El campo %s contiene un valor inv&aacute;lido');
+		$posi=explode(',',$posibles);
+		return in_array($val,$posi);
+	}
+
 	function positive($val){
 		$this->set_message('positive', 'El campo %s debe contener un valor positivo');
 		return ($val>=0)? true : false;
