@@ -8,8 +8,14 @@ class Tban extends Controller {
 	}
 
 	function index() {
+		if ( !$this->datasis->iscampo('tban','id') ) {
+			$this->db->simple_query('ALTER TABLE tban DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE tban ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ');
+			$this->db->simple_query('ALTER TABLE tban ADD UNIQUE INDEX cod_banc (cod_banc)');
+		}
 		$this->datasis->modulo_id(512,1);
-		redirect("finanzas/tban/filteredgrid");
+		//redirect("finanzas/tban/filteredgrid");
+		$this->tbanextjs();
 	}
 
 	function filteredgrid() {
@@ -153,5 +159,215 @@ class Tban extends Controller {
 		return TRUE;
 		}
 	}
+
+	function grid(){
+		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']   :  0;
+		$limit   = isset($_REQUEST['limit'])  ? $_REQUEST['limit']   : 50;
+		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']    : '[{"property":"cod_banc","direction":"ASC"}]';
+		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
+		
+		$where = $this->datasis->extjsfiltro($filters);
+	
+		$this->db->_protect_identifiers=false;
+		$this->db->select('*');
+		$this->db->from('tban');
+		if (strlen($where)>1) $this->db->where($where, NULL, FALSE); 
+
+		if (strlen($where)>1) $this->db->where($where, NULL, FALSE);
+		$sort = json_decode($sort, true);
+		if ( count($sort) == 0 ) $this->db->order_by( 'cod_banc', 'asc' );
+		
+		for ( $i=0; $i<count($sort); $i++ ) {
+			$this->db->order_by($sort[$i]['property'],$sort[$i]['direction']);
+		}
+
+		$this->db->limit($limit, $start);
+		$query = $this->db->get();
+		$results = $this->db->count_all('tban');
+
+		$arr = $this->datasis->codificautf8($query->result_array());
+		echo '{success:true, message:"Loaded data", results:'. $results.', data:'.json_encode($arr).'}';
+	}
+
+
+	function crear(){
+		$js= file_get_contents('php://input');
+		$data= json_decode($js,true);
+		$campos   = $data['data'];
+		$cod_banc = $campos['cod_banc'];
+
+		if ( !empty($grupo) ) {
+			unset($campos['id']);
+			// Revisa si existe ya ese contrato
+			if ($this->datasis->dameval("SELECT COUNT(*) FROM tban WHERE cod_banc='$cod_banc'") == 0)
+			{
+				$mSQL = $this->db->insert_string("tban", $campos );
+				$this->db->simple_query($mSQL);
+				logusu('tban',"TABLA DE BANCO $cod_banc CREADO");
+				echo "{ success: true, message: 'Grupo Agregado'}";
+			} else {
+				echo "{ success: false, message: 'Ya existe un banco con ese Codigo!!'}";
+			}
+			
+		} else {
+			echo "{ success: false, message: 'Ya existe un banco con ese Codigo!!'}";
+		}
+	}
+
+	function modificar(){
+		$js= file_get_contents('php://input');
+		$data= json_decode($js,true);
+		$campos = $data['data'];
+
+		$cod_banc = $campos['cod_banc'];
+		unset($campos['cod_banc']);
+		unset($campos['id']);
+
+		$mSQL = $this->db->update_string("grcl", $campos,"id='".$data['data']['id']."'" );
+		$this->db->simple_query($mSQL);
+		logusu('tban',"TABLA DE BANCOS $cod_banc ID ".$data['data']['id']." MODIFICADO");
+		echo "{ success: true, message: 'Grupo Modificado -> ".$data['data']['grupo']."'}";
+	}
+
+	function eliminar(){
+		$js= file_get_contents('php://input');
+		$data= json_decode($js,true);
+		$campos = $data['data'];
+
+		$grupo = $campos['grupo'];
+		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM scli WHERE grupo='$grupo'");
+
+		if ($chek > 0){
+			echo "{ success: false, message: 'Grupo de Cliente no puede ser Borrado'}";
+		} else {
+			$this->db->simple_query("DELETE FROM grcl WHERE grupo='$grupo'");
+			logusu('grcl',"GRUPO $grupo ELIMINADO");
+			echo "{ success: true, message: 'Grupo de cliente Eliminado'}";
+		}
+	}
+
+
+//0414 376 0149 juan picapiedras
+
+//****************************************************************8
+//
+//
+//
+//****************************************************************8
+	function tbanextjs(){
+		$encabeza='TABLA DE BANCOS';
+		$listados= $this->datasis->listados('tban');
+		$otros=$this->datasis->otros('tban', 'tban');
+
+		$urlajax = 'finanzas/tban/';
+		$variables = "var mcuenta = ''";
+		$funciones = "";
+		$valida = "
+		{ type: 'length', field: 'cod_banc',  min: 1 },
+		{ type: 'length', field: 'nomb_banc', min: 1 }
+		";
+		
+		//{ header: 'id',          width:  30, sortable: true, dataIndex: 'id' }, 
+		$columnas = "
+		{ header: 'Codigo',      width:  50, sortable: true, dataIndex: 'cod_banc',  field: { type: 'textfield' }, filter: { type: 'string' } }, 
+		{ header: 'Nombre',      width: 200, sortable: true, dataIndex: 'nomb_banc', field: { type: 'textfield' }, filter: { type: 'string' } }, 
+		{ header: 'Tipo',        width:  40, sortable: true, dataIndex: 'tipotra',   field: { type: 'textfield' }, filter: { type: 'string' } },
+		{ header: 'Deposito',    width:  60, sortable: true, dataIndex: 'formaca',   field: { type: 'textfield' }, filter: { type: 'string' } },
+		{ header: 'Debito',      width:  80, sortable: true, dataIndex: 'debito',    field: { type: 'numeroc'   }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00') },
+		{ header: 'Comision TD', width:  80, sortable: true, dataIndex: 'comitd',    field: { type: 'numeroc'   }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00') },
+		{ header: 'Comision TC', width:  80, sortable: true, dataIndex: 'comitc',    field: { type: 'numeroc'   }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00') },
+		{ header: 'I.S.L.R',     width:  80, sortable: true, dataIndex: 'impuesto',  field: { type: 'numeroc'   }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00') },
+		{ header: 'Url',         width: 150, sortable: true, dataIndex: 'url',       field: { type: 'textfield' }, filter: { type: 'string' } }
+	";
+
+		$campos = "'id', 'cod_banc', 'nomb_banc', 'url', 'debito', 'comitc', 'comitd', 'impuesto', 'tipotra', 'formaca'";
+
+		$camposforma = "
+							{
+							frame: false,
+							border: false,
+							labelAlign: 'right',
+							defaults: { xtype:'fieldset', labelWidth:70 },
+							style:'padding:4px',
+							items: [
+									{ xtype: 'textfield', fieldLabel: 'Codigo', name: 'cod-banc',   allowBlank: false, width: 120, id: 'cod_banc' },
+									{ xtype: 'textfield', fieldLabel: 'Nombre', name: 'nomb_banc', allowBlank: false, width: 400, },
+									{ xtype: 'combo',     fieldLabel: 'Tipo',   name: 'tipotra',   store: [['NC','Nota Credito'],['DE','Deposito']], width: 180 }
+								]
+							},{
+								frame: false,
+								border: false,
+								labelAlign: 'right',
+								defaults: {xtype:'fieldset'  },
+								style:'padding:4px',
+								layout: 'column',
+								items: [
+									{ xtype: 'numberfield', fieldLabel: 'Debito Bancario',  name: 'debito',   width:160, hideTrigger: true, fieldStyle: 'text-align: right',  renderer : Ext.util.Format.numberRenderer('0,000.00'), labelWidth: 100  },
+									{ xtype: 'numberfield', fieldLabel: 'Comision TD', name: 'comitd',   width:180, hideTrigger: true, fieldStyle: 'text-align: right',  renderer : Ext.util.Format.numberRenderer('0,000.00'), labelWidth: 120  },
+									{ xtype: 'numberfield', fieldLabel: 'I.S.L.R',     name: 'impuesto', width:160, hideTrigger: true, fieldStyle: 'text-align: right',  renderer : Ext.util.Format.numberRenderer('0,000.00'), labelWidth: 100  },
+									{ xtype: 'numberfield', fieldLabel: 'Comision TC', name: 'comitc',   width:180, hideTrigger: true, fieldStyle: 'text-align: right',  renderer : Ext.util.Format.numberRenderer('0,000.00'), labelWidth: 120  },
+								]
+							}
+		";
+
+		$titulow = 'Yabla de Bancos';
+
+		$dockedItems = "
+				{ iconCls: 'icon-reset', itemId: 'close', text: 'Cerrar',   scope: this, handler: this.onClose },
+				{ iconCls: 'icon-save',  itemId: 'save',  text: 'Guardar',  disabled: false, scope: this, handler: this.onSave }
+		";
+
+		$winwidget = "
+				closable: false,
+				closeAction: 'destroy',
+				width: 450,
+				height: 280,
+				resizable: false,
+				modal: true,
+				items: [writeForm],
+				listeners: {
+					beforeshow: function() {
+						var form = this.down('writerform').getForm();
+						this.activeRecord = registro;
+						
+						if (registro) {
+							form.loadRecord(registro);
+						} else {
+							mcuenta  = '';
+						}
+					}
+				}
+";
+
+		$stores = "";
+
+		$features = "features: [ filters],";
+		$filtros = "var filters = { ftype: 'filters', encode: 'json', local: false }; ";
+
+
+		$data['listados']    = $listados;
+		$data['otros']       = $otros;
+		$data['encabeza']    = $encabeza;
+		$data['urlajax']     = $urlajax;
+		$data['variables']   = $variables;
+		$data['funciones']   = $funciones;
+		$data['valida']      = $valida;
+		$data['columnas']    = $columnas;
+		$data['campos']      = $campos;
+		$data['stores']      = $stores;
+		$data['camposforma'] = $camposforma;
+		$data['titulow']     = $titulow;
+		$data['dockedItems'] = $dockedItems;
+		$data['winwidget']   = $winwidget;
+		$data['features']    = $features;
+		$data['filtros']     = $filtros;
+		
+		$data['title']  = heading('Tabla de Bancos');
+		$this->load->view('extjs/extjsven',$data);
+		
+	}
+
+
+
 }
 ?>
