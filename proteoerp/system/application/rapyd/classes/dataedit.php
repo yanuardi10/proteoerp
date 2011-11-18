@@ -341,6 +341,22 @@ class DataEdit extends DataForm {
 		}
 	}
 	/**
+	 * append the default "create" button, modify is the button that appears in the top-right corner when the status is "show"
+	 *
+	 * @access   public
+	 * @param    string $caption  the label of the button (if not set, the default labels will used)
+	 * @return   void
+	 */
+	function _build_add_button($caption = RAPYD_BUTTON_ADD) {
+		if ($this->_status == 'show' && $this->rapyd->uri->is_set('show')) {
+			//$add_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, 'show', 'create');
+			$add_uri = $this->rapyd->uri->unset_clause($this->rapyd->uri->uri_array, 'show');
+			$add_uri .='/'.$this->rapyd->uri->build_clause('create');
+			$action = "javascript:window.location='".site_url($add_uri)."'";
+			$this->button("btn_add", $caption, $action, "TR");
+		}
+	}
+	/**
 	 * append the default "delete" button, delete is the button that appears in the top-right corner when the status is "show"
 	 *
 	 * @access   public

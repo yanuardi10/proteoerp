@@ -1,14 +1,14 @@
 <?php
 class Recep extends Controller {
-	var $titp   = 'Movimientos de Mercancia';
-	var $tits   = 'Movimientos';
+	var $titp   = 'Registro de Seriales';
+	var $tits   = 'Registro de Seriales';
 	var $url    = 'inventario/recep/';
 
 	function Recep(){
 		parent::Controller();
 		$this->load->library('rapyd');
 		$this->serial_repetidos=array();
-		//$this->datasis->modulo_id(135,1);
+		$this->datasis->modulo_id(135,1);
 		$this->instalar();
 	}
 
@@ -24,39 +24,17 @@ class Recep extends Controller {
 		//$filter->db->select(array("b.cuenta","a.comprob","a.fecha","a.origen","a.debe","a.haber","a.status","a.descrip","a.total"));
 		$filter->db->from('recep a');
 
-		$filter->recep = new inputField('Numero', 'recep');
+		$filter->recep = new inputField('N&uacute;mero de referencia', 'recep');
 		$filter->recep->size  =10;
 		$filter->recep->db_name='a.recep';
 
-		/*$filter->fechad = new dateonlyField("Desde", "fechad",'d/m/Y');
+		$filter->fechad = new dateonlyField("Desde", "fechad",'d/m/Y');
 		$filter->fechah = new dateonlyField("Hasta", "fechah",'d/m/Y');
 		$filter->fechad->clause  =$filter->fechah->clause ="where";
 		$filter->fechad->db_name =$filter->fechah->db_name="a.fecha";
 		$filter->fechah->size=$filter->fechad->size=10;
 		$filter->fechad->operator=">=";
 		$filter->fechah->operator="<=";
-
-		//$filter->fecha = new dateonlyField("Fecha", "fecha");
-		//$filter->fecha->size=12;
-
-		$filter->descrip = new inputField("Descripci&oacute;n", "descrip");
-		$filter->descrip->db_name="a.descrip";
-
-		$filter->descripd = new inputField("Concepto Detalle", "descripd");
-		$filter->descripd->db_name="b.concepto";
-
-		$filter->cuenta = new inputField("Cuenta", "cuenta");
-		$filter->cuenta->db_name="b.cuenta";
-
-		$filter->status = new dropdownField("Status", "status");
-		$filter->status->db_name="a.status";
-		$filter->status->option('','Todos');
-		$filter->status->option('A',"Actualizado");
-		$filter->status->option('D','Diferido');
-
-		$filter->vdes = new checkboxField("Ver solo asientos descuadrados","vdes",'S','N');
-		$filter->vdes->insertValue='N';
-		$filter->vdes->clause='';*/
 
 		$filter->buttons('reset','search');
 
@@ -244,7 +222,7 @@ class Recep extends Controller {
 		//******************************
 
 		$status=$edit->get_from_dataobjetct('status');
-		$edit->buttons('modify','save','undo','back','add_rel');
+		$edit->buttons('modify','save','undo','back','add_rel','add');
 		$edit->build();
 
 		$smenu['link']       = barra_menu('322');
