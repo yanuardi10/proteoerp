@@ -12,13 +12,13 @@ class Fotos extends Controller {
 	}
 
 	function index(){
-		
 		redirect('inventario/fotos/filteredgrid/index');
 	}
 
 	function filteredgrid(){
 		$this->datasis->modulo_id(310,1);
 		$this->rapyd->load("datafilter2","datagrid");
+		$this->rapyd->uri->keep_persistence();
 
 		//rapydlib("prototype");
 		$ajax_onchange = '
@@ -169,6 +169,7 @@ class Fotos extends Controller {
 
 	function dataedit($id=NULL){
 		$this->datasis->modulo_id(310,1);
+		$this->rapyd->uri->keep_persistence();
 		if($id!=NULL OR $id!='create' OR $id!='show')
 			$codigo=$this->datasis->dameval("SELECT codigo FROM sinv WHERE id=$id");
 
@@ -188,12 +189,12 @@ class Fotos extends Controller {
 		$edit->pre_process( 'insert','_pre_insert');
 		$edit->pre_process( 'update','_pre_modifi');
 		$edit->post_process('delete','_post_delete');
-		$edit->back_url = site_url('inventario/fotos/filteredgrid/index');
+		$edit->back_url = site_url('inventario/fotos/filteredgrid/filteredgrid');
 
 		$edit->codigo = new inputField('C&oacute;digo','codigo');
 		$edit->codigo->size=30;
 		$edit->codigo->rule = 'required';
-		$edit->codigo->append($bSINV.'Seleccione todos los codigos asociados a la foto separados por punto y coma (;)');
+		$edit->codigo->append($bSINV.'Seleccione todos los c&oacute;digos asociados a la foto separados por punto y coma (;)');
 		$edit->codigo->insertValue = $codigo;
 
 		//echo $edit->codigo->value;
@@ -205,10 +206,10 @@ class Fotos extends Controller {
 		$edit->foto->append('Solo imagenes JPG');
 		$edit->foto->file_name = url_title($codigo).'_.jpg';
 
-		$edit->principal = new dropdownField("Es foto principal","principal");
-		$edit->principal->option("N","No");
-		$edit->principal->option("S","Si");
-		$edit->principal->style = "width:50px";
+		$edit->principal = new dropdownField('Es foto principal','principal');
+		$edit->principal->option('N','No');
+		$edit->principal->option('S','Si');
+		$edit->principal->style = 'width:50px';
 		$edit->principal->rule='required|callback_principal';
 
 		$edit->evaluacion = new textareaField("Comentario", "comentario");
@@ -242,13 +243,27 @@ class Fotos extends Controller {
 					codigo.value=add;
 			}
 		</script>';
-		$data['content'] = form_input($fhidden).$edit->output;
+		$dbcodigo= $this->db->escape($codigo);
+		$descrip = $this->datasis->dameval("SELECT descrip FROM sinv WHERE codigo=$dbcodigo");
+		$gs=$this->googlesearch($descrip);
+		if(count($gs)>0){
+			$imgs='<p style="text-align:center"><b>Imagenes proporcionadas por Google</b>'.br();
+			foreach($gs as $g){
+				$imgs.='<a href="'.$g['url'].'" target="_blank">'.img($g['tbUrl'],true).'</a>';
+			}
+			$imgs.='</p>';
+		}else{
+			$imgs='';
+		}
+
+		$data['content'] = form_input($fhidden).$edit->output.$imgs;
 		$data['head']    = $this->rapyd->get_head();
-		$data['title']   = '<h1>Carga de Fotos</h1>';
+		$data['title']   = heading('Carga de Fotos');
 		$this->load->view('view_ventanas', $data);
 	}
 
 	function asocfotos($id=''){
+		$this->rapyd->config->set_item('theme','clean');
 		$this->rapyd->load('datagrid');
 		$dbid=$this->db->escape($id);
 
@@ -286,24 +301,50 @@ class Fotos extends Controller {
 		$this->load->view('view_ventanas_sola', $data);
 	}
 
+	function googlesearch($q){
+		$url = "https://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=".urlencode($q);
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_REFERER, 'www.proteoerp.org');
+		$body = curl_exec($ch);
+		curl_close($ch);
+
+		$json = json_decode($body);
+		$results=$json->responseData->results;
+
+		$rt=array();
+		if(count($results)>0){
+			foreach($results as $id=>$result){
+				$rt[$id]['url']    = $result->url;
+				$rt[$id]['tbUrl']  = $result->tbUrl;
+				$rt[$id]['titulo'] = $result->titleNoFormatting;
+				$rt[$id]['ancho']  = $result->width;
+		        $rt[$id]['alto']   = $result->height;
+			}
+		}
+		return $rt;
+	}
+
 	function verfotos($sinv_id){
-		$this->rapyd->load("datatable");
+		$this->rapyd->config->set_item('theme','clean');
+		$this->rapyd->load('datatable');
 
 		$table = new DataTable(null);
 		$table->cell_attributes = 'style="vertical-align:middle; text-align: center;"';
-		
+
 		$table->db->select(array('nombre','id'));
-		$table->db->from("sinvfot");
+		$table->db->from('sinvfot');
 		$table->db->where('sinv_id',$sinv_id);
 
 		$table->per_row = 4;
 		$table->per_page = 16;
-		$table->cell_template = "<a href='".site_url("/inventario/fotos/dataedit/$sinv_id/show/<#id#>")."' target='_parent' ><img src='".$this->upload_path."/<#nombre#>'  width=150 border=0></a>";
+		$table->cell_template = "<a href='".site_url("/inventario/fotos/dataedit/$sinv_id/show/<#id#>")."' target='_parent' ><img src='".site_url('inventario/fotos/mostrar/<#nombre#>')."'  width=150 border=0></a>";
 		$table->build();
 
 		$data['content'] = $table->output;
-		$data['title']   = "";
-		$data["head"]   = style("ventanas.css").style("estilos.css").$this->rapyd->get_head();
+		$data['title']   = '';
+		$data['head']    = style("ventanas.css").style("estilos.css").$this->rapyd->get_head();
 		$this->load->view('view_ventanas_sola', $data);
 	}
 
@@ -436,7 +477,12 @@ class Fotos extends Controller {
 		}
 	}
 
-	function thumnail($id){
+	//********************************
+	// Sede una imagen miniatura del
+	// producto
+	// id = id de sinv
+	//********************************
+	function thumbnail($id){
 		$dbid=$this->db->escape($id);
 		$nombre=$this->datasis->dameval("SELECT nombre FROM sinvfot WHERE sinv_id=$dbid ORDER BY principal DESC LIMIT 1");
 		if(!empty($nombre)) $this->_creathum($nombre);
@@ -470,6 +516,10 @@ class Fotos extends Controller {
 		}
 	}
 
+	//********************************
+	// Sede la imagen del producto
+	// id = id de sinv
+	//********************************
 	function obtener($id){
 		$nombre=$this->datasis->dameval("SELECT nombre FROM sinvfot WHERE sinv_id='$id' limit 1");
 		$this->mostrar($nombre);

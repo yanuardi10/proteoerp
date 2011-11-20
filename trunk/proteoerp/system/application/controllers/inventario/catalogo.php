@@ -87,7 +87,7 @@ class Catalogo extends Controller {
 
 		$edit->contenido = new editorField("Contenido", "contenido");
 		$edit->contenido->rule = "required";
-		$edit->contenido->rows = 20;
+		$edit->contenido->rows = 10;
 		$edit->contenido->upload_path  = $this->upload_path;
 		$edit->contenido->cols=90;
 		//$edit->contenido->when = array("create","modify");

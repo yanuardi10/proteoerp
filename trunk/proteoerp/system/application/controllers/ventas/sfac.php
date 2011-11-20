@@ -325,9 +325,9 @@ $sigma = "";
 		$edit->direc = new inputField('Direcci&oacute;n','direc');
 		$edit->direc->size = 40;
 
-		//**************************
+		//************************************************
 		//  Campos para el detalle 1 sitems
-		//**************************
+		//************************************************
 		$edit->codigoa = new inputField('C&oacute;digo <#o#>', 'codigoa_<#i#>');
 		$edit->codigoa->size     = 12;
 		$edit->codigoa->db_name  = 'codigoa';
@@ -369,9 +369,9 @@ $sigma = "";
 		$edit->pond->db_name='pond';
 		$edit->pond->rel_id   ='sitems';
 
-		//**************************
-		//fin de campos para detalle,inicio detalle2 sfpa
-		//**************************
+		//************************************************
+		//Fin de campos para detalle,inicio detalle2 sfpa
+		//************************************************
 		$edit->tipo = new inputField('Tipo <#o#>', 'tipo_<#i#>');
 		$edit->tipo->size     = 12;
 		$edit->tipo->db_name  = 'tipo';
@@ -402,9 +402,9 @@ $sigma = "";
 		$edit->banco->readonly  = true;
 		$edit->banco->rel_id='sfpa';
 		
-		//**************************
+		//************************************************
 		//Fin detalle 2
-		//**************************
+		//************************************************
 
 		$edit->ivat = new inputField('I.V.A', 'iva');
 		$edit->ivat->css_class ='inputnum';
@@ -472,7 +472,11 @@ $sigma = "";
 		$reiva = '';
 
 		$conten['form']  =&  $edit;
-		$data['content']  = $this->load->view('view_sfac', $conten,true);
+		if($edit->_status=='show'){
+			$data['content']  = $this->load->view('view_sfac', $conten,true);
+		}else{
+			$data['content']  = $this->load->view('view_sfac_add', $conten,true);
+		}
 		//$data['content'] .= $reiva;
 
 		if($edit->tipo_doc->value=='F'){$mDoc = "Factura";}

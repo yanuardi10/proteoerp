@@ -43,10 +43,15 @@
 				</tr>
 				<tr>
 					<td style="font-size:18pt;" align='left'><b>Existencia:</b> <?=$existen ?></td>
-					<td style="font-size:14pt;" align='left><b>Iva:</b> <?=$iva ?></td>
+					<td style="font-size:14pt;" align='left'><b>Iva:</b> <?=$iva ?></td>
 				</tr>
 			</table>
 		</td>
 	</tr>
+	<?php
+	if(isset($img)){
+		echo "<tr><td align='center'>$img</td></tr>";
+	}
+	?>
 <table>
 </p>
