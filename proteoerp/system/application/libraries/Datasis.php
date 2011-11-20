@@ -410,7 +410,7 @@ class Datasis {
 				$colu[] = $campo;
 			}
 			foreach ($query->result_array() as $row){
-				$opciones .= $coma."['".$row[$colu[0]]."','".$row[$colu[1]]."']"; 
+				$opciones .= $coma."['".trim($row[$colu[0]])."','".trim($row[$colu[1]])."']"; 
 				$coma = ', ';
 			}
 		}
@@ -638,7 +638,7 @@ class Datasis {
 		}
 
 		return $reposcript;
-		
+
 	}
 
 
@@ -647,8 +647,12 @@ class Datasis {
 	//      Manda los Reportes
 	//
 	//*******************************
-	function otros($modulo, $url,$param = ''){
+	function otros($modulo, $url, $param = ''){
 		$CI =& get_instance();
+
+		if ( ! $this->iscampo('tmenus','proteo') ) {
+			$CI->db->simple_query('ALTER TABLE tmenus ADD COLUMN proteo TEXT NULL');
+		} 
 
 		$mSQL="UPDATE tmenus SET ejecutar=REPLACE(ejecutar,"."'".'( "'."','".'("'."') WHERE modulo LIKE '%OTR'";
 		$CI->db->simple_query($mSQL);
@@ -657,14 +661,16 @@ class Datasis {
 		$CI->db->simple_query($mSQL);
 
 		$Otros = '';
+		$Otros1 = '';
 
 		if($modulo){
 			$modulo=strtoupper($modulo);
+			$Otros1 = '<table>';
 			
 			$CI->db->_escape_char='';
 			$CI->db->_protect_identifiers=false;
 			
-			$mSQL  = "SELECT a.secu, a.titulo, a.mensaje, a.ejecutar "; 
+			$mSQL  = "SELECT a.secu, a.titulo, a.mensaje, a.proteo "; 
 			$mSQL .= "FROM tmenus a JOIN sida b ON a.codigo=b.modulo ";
 			$mSQL .= "WHERE b.acceso='S' AND b.usuario='".$CI->session->userdata('usuario')."' ";
 			$mSQL .= "AND a.modulo='".$modulo."OTR' ORDER BY a.secu";
@@ -673,12 +679,24 @@ class Datasis {
 			if ($query->num_rows() > 0) {
 				foreach ($query->result_array() as $row)
 				{
-					$Otros .= "[ '".$row['secu']."', '".trim($row['titulo'])."', '".trim($row['ejecutar'])."' ],";
+					$Otros .= "[ '".$row['secu']."', '".trim($row['titulo'])."', '".trim($row['proteo'])."' ],";
+					if ( $row['proteo'] != 'N/A'){
+						$Otros1 .= "<tr><td>";
+						if ( empty($row['proteo'])) {
+							$Otros1 .= trim($row['titulo']);
+						} else {
+							$Otros1 .= trim($row['proteo']);
+						}
+						$Otros1 .="</td></tr>";
+					}
 				}
 			} else {
 				$Otros .= "['-','No tiene Funciones','' ]";
+				$Otros1 .= "<tr><td>No hay Opciones</td></tr>";
 			}
 			$query->free_result();
+			$Otros1 .= "</table>";
+			
 
 
 			$otroscript = "
@@ -687,7 +705,7 @@ class Datasis {
 		storeId: 'OtrosStore',
 		autoload: true,
 		idIndex: 0,
-		fields: [ 'numero', 'nombre', 'ejecutar' ],
+		fields: [ 'numero', 'nombre', 'proteo' ],
 		data: [".$Otros."]
 	});
 
@@ -696,12 +714,13 @@ class Datasis {
 		if ( record.data.numero == '-' ){
 			mreto = '{0}';
 		} else {
-			mreto = '<a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'".$url."/{1}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">{0}</a>';
+			//mreto = '<a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'".$url."/{1}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">{0}</a>';
+			mreto = '{1}';
 		}
 		return Ext.String.format(
 		mreto,
 		value,
-		record.data.reporte
+		record.data.proteo
 		);
 	}
 
@@ -710,18 +729,17 @@ class Datasis {
 		store: storeOtros,
 		width: '199',
 		columns: [
-			{ header: 'Nro.',   dataIndex: 'numero', width:  30 },
-			{ header: 'Funcion que Ejecuta', dataIndex: 'nombre', width: 169, renderer: renderOtro },
+			//{ header: 'Nro.',   dataIndex: 'numero', width:  30 },
+			{ header: 'Funcion que Ejecuta', dataIndex: 'nombre', width: 196, renderer: renderOtro },
 			{ header: 'Otro',   dataIndex: 'ejecutar', hidden:  true }
 		]
 	});
 ";
-
-
 		
 		}
 
-		return $otroscript;
+		//return $otroscript;
+		return $Otros1;
 		
 	}
 

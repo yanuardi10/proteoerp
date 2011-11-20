@@ -223,7 +223,7 @@ class Nomina extends Controller {
 		$encabeza='<table width="100%" bgcolor="#2067B5"><tr><td align="left" width="100px"><img src="'.base_url().'assets/default/css/templete_01.jpg" width="120"></td><td align="center"><h1 style="font-size: 20px; color: rgb(255, 255, 255);" onclick="history.back()">NOMINAS GUARDADAS</h1></td><td align="right" width="100px"><img src="'.base_url().'assets/default/images/cerrar.png" alt="Cerrar Ventana" title="Cerrar Ventana" onclick="parent.window.close()" width="25"></td></tr></table>';
 
 		$listados= $this->datasis->listados('nomi');
-		$otros=$this->datasis->otros('nomi', 'nomi');
+		$otros=$this->datasis->otros('nomi', 'nomina/nomina');
 
 		$script = "
 <script type=\"text/javascript\">
@@ -482,154 +482,9 @@ Ext.onReady(function(){
 //////************ MENU DE ADICIONALES /////////////////
 ".$listados."
 
-".$otros."
 //////************ FIN DE ADICIONALES /////////////////
 
-
-//	var oVP = null,
-
-	var viewport = new Ext.Viewport({
-		id:'simplevp',
-		layout:'border',
-		border:false,
-		items:[{
-			region: 'north',
-			preventHeader: true,
-			height: 40,
-			minHeight: 40,
-			html: '".$encabeza."'
-		},{
-			region:'west',
-			width:190,
-			border:false,
-			autoScroll:true,
-			title:'Lista de Opciones',
-			collapsible:true,
-			split:true,
-			collapseMode:'mini',
-			layoutConfig:{animate:true},
-			layout: 'accordion',
-			items: [/*
-				{
-					title:'Imprimir',
-					defaults:{border:false},
-					layout: 'fit',
-					items:[{
-						name: 'imprimir',
-						id: 'imprimir',
-						preventHeader: true,
-						border:false,
-						html: 'Para imprimir seleccione un Nomina '
-					}]
-				},*/
-				{
-					title:'Listados',
-					border:false,
-					layout: 'fit',
-					items: gridListado
-
-				},
-				{
-					title:'Otras Funciones',
-					border:false,
-					layout: 'fit',
-					items: gridOtros
-				}
-			]
-		},
-		/*{region:'south',id: 'sur',height:50,html:'Sur',border:false,title:'Sur',collapsible:true},*/
-		{
-			region:'east',
-			id: 'este',
-			width:340,
-			items: gridConc,
-			border:false,
-			preventHeader: true,
-			collapsible:true
-		},
-		{
-			cls: 'irm-column irm-center-column irm-master-detail',
-			region: 'center',
-			title:  'center-title',
-			layout: 'border',
-			preventHeader: true,
-			border: false,
-			items: [{
-				itemId: 'viewport-center-master',
-				cls: 'irm-master',
-				region: 'center',
-				items: gridNomi
-			},{
-				itemId: 'viewport-center-detail',
-				preventHeader: true,
-				region: 'south',
-				height: '40%',
-				split: true,
-				//collapsible: true,
-				title: 'center-detail-title',
-				margins: '0 0 0 0',
-				items: gridTraba
-			}]	
-		}]
-	});
-
-
-
-/*
-	oViewportConfig = { 
-		'cls': 'irm-mc',
-		'layout': { 'type': 'border', 'padding': 5 },
-		'items': [
-			{
-				'region': 'north',
-				'html': '$encabeza',
-				'height': 40
-			},
-			{ 
-				'cls': 'irm-left-column irm-mc-nav',
-				// Can't use 'itemId' here because it does not work with the 'ViewPort'.
-				'region': 'west',
-				'preventHeader': true,
-				'collapsible': true,
-				'split': true,
-				'title': 'column-left-title',
-				'width': 370,
-				'layout': { 'type': 'vbox', 'align': 'stretch' },
-				items: gridNomi
-			},
-			{
-				'cls': 'irm-column irm-center-column irm-master-detail',
-				'region': 'center',
-				'title':  'center-title',
-				'layout': 'border',
-				'preventHeader': true,
-				'border': false,
-				'items': [ 
-					{
-						'itemId': 'viewport-center-master',
-						'cls': 'irm-master',
-						'region': 'center',
-						items: gridTraba
-					},
-					{
-						'itemId': 'viewport-center-detail',
-						'preventHeader': true,
-						'region': 'south',
-						'height': '40%',
-						'split': true,
-						'collapsible': true,
-						'title': 'center-detail-title',
-						'margins': '0 0 0 0',
-						items: gridConc
-					}
-				]
-			}
-		]
-	};
-	oVP = Ext.create( 'Ext.Viewport', oViewportConfig );
-*/
-
-          
+	var viewport = new Ext.Viewport({id:'simplevp', layout:'border', border:false, items:[{region: 'north',preventHeader: true,height: 40,minHeight: 40,html: '".$encabeza."'},{region:'west',width:190,border:false,autoScroll:true,title:'Lista de Opciones',	collapsible:true,split:true,collapseMode:'mini',layoutConfig:{animate:true},layout: 'accordion',items: [{title:'Listados',border:false,layout: 'fit',items: gridListado},{title:'Otras Funciones',border:false,layout: 'fit',html: '".$otros."'}]},{region:'east',	id: 'este',width:340,items: gridConc,border:false,preventHeader: true,collapsible:true	},{cls: 'irm-column irm-center-column irm-master-detail', region: 'center', title:  'center-title', layout: 'border', preventHeader: true, border: false, items: [{itemId: 'viewport-center-master',cls: 'irm-master',region: 'center',items: gridNomi},{itemId: 'viewport-center-detail',preventHeader: true,region: 'south',height: '40%',split: true, title: 'center-detail-title',margins: '0 0 0 0',items: gridTraba}]}]});
 	storeNomi.load();
 	storeTraba.load();
 	storeConc.load();

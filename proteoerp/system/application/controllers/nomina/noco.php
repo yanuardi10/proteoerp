@@ -16,8 +16,6 @@ class Noco extends Controller {
 		$script = $this->nocoextjs();
 		$data["script"] = $script;
 		$data['title']  = heading('Personal');
-		//$data['head']   = $this->rapyd->get_head();
-		//$data['content'] = '';
 		$this->load->view('extjs/pers',$data);
 	}
 	
@@ -400,6 +398,20 @@ class Noco extends Controller {
 		echo "{ success: true, message: 'Contrato Modificado' }";
 	}
 
+	function copitab(){
+		$desde = isset($_REQUEST['desde'])  ? $_REQUEST['desde']  : '';
+		$hasta = isset($_REQUEST['hasta'])  ? $_REQUEST['hasta']  :  '';
+		if ( $desde == '' or $hasta == '' ){
+			echo "{ success: false, msg: 'Faltan contratos'}";
+		} else if( $desde == $hasta  ){
+			echo "{ success: false, msg: 'Contratos Iguales'}";
+		} else {
+			$query = "INSERT INTO notabu (contrato, ano, mes, dia, preaviso, vacacion, bonovaca, antiguedad, utilidades, prima) SELECT '$hasta' contrato, ano, mes, dia, preaviso, vacacion, bonovaca, antiguedad, utilidades, prima FROM notabu WHERE contrato='$desde'";
+			$this->db->query($query);
+			echo "{ success: true, msg: 'Tabla de Utilidades generada para $hasta'}";
+		}
+	}
+
 
 //****************************************************************8
 //
@@ -413,7 +425,9 @@ class Noco extends Controller {
 		$contratos = $this->datasis->llenacombo($mSQL);
 
 		$listados= $this->datasis->listados('noco');
-		$otros=$this->datasis->otros('noco', 'noco');
+		$otros=$this->datasis->otros('noco', 'nomina/noco');
+
+		$urlajax = 'nomina/noco/';
 		
 		$script = "
 <script type=\"text/javascript\">
@@ -565,6 +579,12 @@ Ext.onReady(function(){
 		method: 'POST'
 	});
 
+	var storeCont = Ext.create('Ext.data.ArrayStore', {
+		fields: [{type: 'string', name: 'codigo'},{type: 'string', name: 'nombre'}],
+		data: [".$contratos."]
+	});
+
+
 	var storeConc = Ext.create('Ext.data.Store', {
 		model: 'conc'
 	});
@@ -623,8 +643,6 @@ Ext.onReady(function(){
 				}
 			}
 	});
-
-
 
 	// Create Grid 
 	var gridItNoco = Ext.create('Ext.grid.Panel', {
@@ -694,7 +712,59 @@ Ext.onReady(function(){
 //////************ MENU DE ADICIONALES /////////////////
 ".$listados."
 
-".$otros."
+	var mtabulador = Ext.create('Ext.form.Panel', {
+		title: 'Copiar Tabulador',
+		closable: true,
+		alias:  'widget.mtabulador',
+		height: 190,
+		width: 360,
+		floating: true,
+		layout: 'anchor',
+		frame: true, 
+		modal: true,
+		url: '".base_url().$urlajax."copitab',
+		items:[{
+			html: '<p style=\'background-color:#DFE9F6;text-align:center;\'>Copia el tabulador desde Otro Contrato<br></p>'
+			},{
+			xtype:'fieldset',
+			columnWidth: 0.5,
+			title: '',
+			collapsible: false,
+			defaults: { labelWidth:70, labelAlign: 'top' },
+			layout: 'column',
+			items :[
+				{ xtype: 'combo', fieldLabel: 'Copiar desde el Contrato', name: 'desde', width:320, displayField: 'nombre', valueField: 'codigo', store: storeCont, id: 'cdesde' },
+				{ xtype: 'combo', fieldLabel: 'Hasta el Contrato',        name: 'hasta', width:320, displayField: 'nombre', valueField: 'codigo', store: storeCont, id: 'chasta' }
+			]
+		}],
+		buttons:[
+			{text: 'Cerrar',
+			iconCls: 'icon-cross',
+			handler: function(){
+				var mcontrato1 = Ext.getCmp('contrato1');
+				mtabulador.hide();
+			}
+			},
+			{text: 'Aplicar',
+			iconCls: 'icon-accept',
+			handler: function(){
+				var form = this.up('form').getForm();
+				form.submit({
+					success: function(form, action){
+						Ext.Msg.alert('Exito',action.result.msg);
+						mtabulador.hide();
+					},
+					failure: function(form, action){
+						Ext.Msg.alert('Error',action.result.msg);
+					}
+				})
+			}
+			},
+			
+		],
+	});
+
+
 //////************ FIN DE ADICIONALES /////////////////
 
 	Ext.create('Ext.Viewport', {
@@ -742,7 +812,7 @@ Ext.onReady(function(){
 						title:'Otras Funciones',
 						border:false,
 						layout: 'fit',
-						items: gridOtros
+						html: '".$otros."'
 					}
 				]
 			},{
@@ -789,7 +859,6 @@ Ext.onReady(function(){
 						region: 'west',
 						id:'areaItNoco',
 						width: '450%',
-						//minWidth: 350,
 						split: true,
 						xtype: 'panel',
 						items: gridItNoco
@@ -802,6 +871,7 @@ Ext.onReady(function(){
 	storeNoco.load();
 	storeItNoco.load();
 	storeConc.load();
+	Ext.get('tabulador').on('click', function(e){ mtabulador.show();});
 
 });
 </script>

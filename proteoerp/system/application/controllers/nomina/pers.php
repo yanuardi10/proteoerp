@@ -9,15 +9,7 @@ class pers extends validaciones {
 
 	function index(){
 		$this->datasis->modulo_id(707,1);
-		redirect("nomina/pers/extgrid");
-	}
-
-	function extgrid(){
-		$this->datasis->modulo_id(707,1);
-		$script = $this->persextjs();
-		$data["script"] = $script;
-		$data['title']  = heading('Personal');
-		$this->load->view('extjs/pers',$data);
+		$this->persextjs();
 	}
 
 	function filteredgrid(){
@@ -676,66 +668,9 @@ script;
 		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']    : 'contrato';
 		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
 
+		$where = $this->datasis->extjsfiltro($filters,'pers');
 
-		$where = "";
-
-		//Buscar posicion 0 Cero
-		if (isset($_REQUEST['filter'])){
-			$filter = json_decode($_REQUEST['filter'], true);
-			if (is_array($filter)) {
-				//Dummy Where. 
-				$where = "pers.codigo IS NOT NULL ";
-				$qs = "";
-				for ($i=0;$i<count($filter);$i++){
-					switch($filter[$i]['type']){
-					case 'string' : $qs .= " AND pers.".$filter[$i]['field']." LIKE '%".$filter[$i]['value']."%'"; 
-						Break;
-					case 'list' :
-						if (strstr($filter[$i]['value'],',')){
-							$fi = explode(',',$filter[$i]['value']);
-							for ($q=0;$q<count($fi);$q++){
-								$fi[$q] = "'".$fi[$q]."'";
-							}
-							$filter[$i]['value'] = implode(',',$fi);
-								$qs .= " AND pers.".$filter[$i]['field']." IN (".$filter[$i]['value'].")";
-						}else{
-							$qs .= " AND pers.".$filter[$i]['field']." = '".$filter[$i]['value']."'";
-						}
-						Break;
-					case 'boolean' : $qs .= " AND pers.".$filter[$i]['field']." = ".($filter[$i]['value']); 
-						Break;
-					case 'numeric' :
-						switch ($filter[$i]['comparison']) {
-							case 'ne' : $qs .= " AND pers.".$filter[$i]['field']." != ".$filter[$i]['value']; 
-								Break;
-							case 'eq' : $qs .= " AND pers.".$filter[$i]['field']." = ".$filter[$i]['value']; 
-								Break;
-							case 'lt' : $qs .= " AND pers.".$filter[$i]['field']." < ".$filter[$i]['value']; 
-								Break;
-							case 'gt' : $qs .= " AND pers.".$filter[$i]['field']." > ".$filter[$i]['value']; 
-								Break;
-						}
-						Break;
-					case 'date' :
-						switch ($filter[$i]['comparison']) {
-							case 'ne' : $qs .= " AND pers.".$filter[$i]['field']." != '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
-								Break;
-							case 'eq' : $qs .= " AND pers.".$filter[$i]['field']." = '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
-								Break;
-							case 'lt' : $qs .= " AND pers.".$filter[$i]['field']." < '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
-								Break;
-							case 'gt' : $qs .= " AND pers.".$filter[$i]['field']." > '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
-								Break;
-						}
-						Break;
-					}
-				}
-				$where .= $qs;
-			}
-		}
-		
 		$this->db->_protect_identifiers=false;
-		//$this->db->select('pers.codigo, pers.nacional, pers.cedula, pers.nombre, pers.apellido, pers.civil, pers.sexo, pers.carnet, pers.status, pers.tipo, pers.contrato, pers.ingreso, pers.sueldo, pers.retiro, pers.vence, pers.direc1, pers.direc2, pers.direc3, pers.telefono, pers.nacimi, vari1, vari2, vari3, vari4, vari5, vari6, CONCAT("(",pers.contrato,") ",noco.nombre) nomcont');
 		$this->db->select('pers.*, CONCAT("(",pers.contrato,") ",noco.nombre) nomcont');
 
 		$this->db->from('pers');
@@ -849,8 +784,6 @@ script;
 //****************************************************************8
 	function persextjs(){
 
-		$encabeza='<table width="100%" bgcolor="#2067B5"><tr><td align="left" width="100px"><img src="'.base_url().'assets/default/css/templete_01.jpg" width="120"></td><td align="center"><h1 style="font-size: 20px; color: rgb(255, 255, 255);" onclick="history.back()">TRABAJADORES</h1></td><td align="right" width="100px"><img src="'.base_url().'assets/default/images/cerrar.png" alt="Cerrar Ventana" title="Cerrar Ventana" onclick="parent.window.close()" width="25"></td></tr></table>';
-
 		$mSQL = "SELECT codigo, CONCAT(codigo,' ',nombre) nombre, tipo FROM noco WHERE tipo<>'O' ORDER BY codigo";
 		$contratos = $this->datasis->llenacombo($mSQL);
 		
@@ -872,106 +805,31 @@ script;
 		$mSQL = "SELECT codigo, nivel FROM nedu ORDER BY codigo ";
 		$niveled = $this->datasis->llenacombo($mSQL);
 
+		$encabeza='PERSONAL TRABAJADOR';
 		$listados= $this->datasis->listados('pers');
-		$otros=$this->datasis->otros('pers', 'pers');
+		$otros=$this->datasis->otros('pers', 'nomina/pers');
 
-		$script = "
-<script type=\"text/javascript\">
-var BASE_URL   = '".base_url()."';
-var BASE_PATH  = '".base_url()."';
-var BASE_ICONS = '".base_url()."assets/icons/';
-var BASE_UX    = '".base_url()."assets/js/ext/ux';
+		$urlajax = 'nomina/pers/';
+		$variables = "
+var ci = {
+	layout: 'column',
+	defaults: {columnWidth:0.5, layout: 'form', border: false, xtype: 'panel'},
+	items: [
+		{items: [{xtype: 'textfield', fieldLabel: 'Nacional', name: 'nacional',allowBlank: false, anchor: '100%'}]},
+		{items: [{xtype: 'textfield', fieldLabel: 'Cedula',   name: 'cedula',  allowBlank: false, anchor: '100%'}]}
+	]};
+";
 
-Ext.Loader.setConfig({ enabled: true });
-Ext.Loader.setPath('Ext.ux', BASE_UX);
+		$funciones = "";
 
-Ext.require([
-	'Ext.grid.*',
-	'Ext.ux.grid.FiltersFeature',
-	'Ext.data.*',
-	'Ext.util.*',
-	'Ext.state.*',
-	'Ext.form.*',
-	'Ext.window.MessageBox',
-	'Ext.tip.*',
-	'Ext.ux.CheckColumn',
-	'Ext.toolbar.Paging'
-]);
-
-
-var mxs = ((screen.availWidth/2)-400);
-var mys = ((screen.availHeight/2)-300);
-
-
-var registro;
-var urlApp = '".base_url()."';
-
-// Define our data model
-var Empleados = Ext.regModel('Empleados', {
-	fields: ['id','codigo','nacional','cedula','nombre','apellido','civil','sexo', 'carnet', 'status', 'tipo' ,'contrato','ingreso','retiro','vence', 'direc1', 'direc2', 'direc3', 'telefono','sueldo','nacimi','vari1','vari2','vari3','vari4','vari5','vari6','divi','depto', 'sucursal','cargo','dialab','dialib','niveled','sso', 'profes','nomcont'],
-	validations: [
+		$valida = "
 		{ type: 'length', field: 'codigo',   min: 1 },
 		{ type: 'length', field: 'nacional', min: 1 }, 
 		{ type: 'length', field: 'cedula',   min: 6 }, 
 		{ type: 'length', field: 'nombre',   min: 3 }
-	],
-	proxy: {
-		type: 'ajax',
-		noCache: false,
-		api: {
-			read   : urlApp + 'nomina/pers/grid',
-			create : urlApp + 'nomina/pers/crear',
-			update : urlApp + 'nomina/pers/modificar' ,
-			destroy: urlApp + 'nomina/pers/eliminar',
-			method: 'POST'
-			},
-		reader: {
-			type: 'json',
-			successProperty: 'success',
-			root: 'data',
-			messageProperty: 'message',
-			totalProperty: 'results'
-			},
-		writer: {
-			type: 'json',
-			root: 'data',
-			writeAllFields: true,
-			callback: function( op, suc ) {
-				Ext.Msg.Alert('que paso');
-				}
-			},
-		listeners: {
-			exception: function( proxy, response, operation) {
-				Ext.MessageBox.show({
-					title: 'EXCEPCION REMOTA',
-					msg: operation.getError(),
-					icon: Ext.MessageBox.ERROR,
-					buttons: Ext.Msg.OK
-				});
-			}
-		}
-	}
-});
-
-//Data Store
-var storePers = Ext.create('Ext.data.Store', {
-	model: 'Empleados',
-	pageSize: 50,
-	remoteSort: true,
-	autoLoad: false,
-	autoSync: true,
-	groupField: 'nomcont',
-	method: 'POST',
-	listeners: {
-		write: function(mr,re, op) {
-			Ext.Msg.alert('Aviso','Registro Guardado '+re.success)
-		}
-	}
-});
-
-//Column Model
-var colPers = 
-	[
+		";
+		
+		$columnas = "
 		{ header: 'Codigo',     width:  60, sortable: true, dataIndex: 'codigo',   field:  { type: 'textfield' }, filter: { type: 'string'  }}, 
 		{ header: 'Status',     width:  60, sortable: true, dataIndex: 'status',   field:  { type: 'textfield' }, filter: { type: 'string'  }}, 
 		{ header: 'Nac',        width:  60, sortable: true, dataIndex: 'nacional', field:  { type: 'textfield' }, filter: { type: 'string'  }}, 
@@ -986,52 +844,12 @@ var colPers =
 		{ header: '".$this->datasis->traevalor('NOMVARI1')."',     width: 60, sortable: true, dataIndex: 'vari1',   field:  { type: 'numeric' }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0.00') }, 
 		{ header: '".$this->datasis->traevalor('NOMVARI2')."',     width: 60, sortable: true, dataIndex: 'vari2',   field:  { type: 'numeric' }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0.00') }, 
 		{ header: '".$this->datasis->traevalor('NOMVARI3')."',     width: 60, sortable: true, dataIndex: 'vari3',   field:  { type: 'numeric' }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0.00') }
-	];
+	";
 
-var ci = {
-	layout: 'column',
-	defaults: {columnWidth:0.5, layout: 'form', border: false, xtype: 'panel'},
-	items: [{
-		defaults: { anchor: '100%' },
-			items: [{
-				xtype: 'textfield',
-				fieldLabel: 'Nacional',
-				name: 'nacional',
-				allowBlank: false
-			}]
-		},{
-		defaults: { anchor: '100%' },
-			items: [{
-				xtype: 'textfield',
-				fieldLabel: 'Cedula',
-				name: 'cedula',
-				allowBlank: false
-			}]
-		}]
-	};
-	
-var win;
+		$campos = "'id','codigo','nacional','cedula','nombre','apellido','civil','sexo', 'carnet', 'status', 'tipo' ,'contrato','ingreso','retiro','vence', 'direc1', 'direc2', 'direc3', 'telefono','sueldo','nacimi','vari1','vari2','vari3','vari4','vari5','vari6','divi','depto', 'sucursal','cargo','dialab','dialib','niveled','sso', 'profes','nomcont'";
 
-// Main 
-Ext.onReady(function(){
-	function showContactForm() {
-		if (!win) {
-			// Create Form
-			var writeForm = Ext.define('Pers.Form', {
-				extend: 'Ext.form.Panel',
-				alias:  'widget.writerform',
-				result: function(res){alert('Resultado');},
-				requires: ['Ext.form.field.Text'],
-				initComponent: function(){
-					Ext.apply(this, {
-						iconCls: 'icon-user',
-						frame: true, 
-						title: 'Ficha del Trabajador', 
-						bodyPadding: 3,
-						fieldDefaults: { 
-    							labelAlign: 'right' 
-						}, 
-						items: [{
+		$camposforma = "
+							{
 								layout: 'column',
 								frame: false,
 								border: false,
@@ -1140,61 +958,12 @@ Ext.onReady(function(){
 									]
 								}]
 							}
-						], 
-						dockedItems: [
-							{ xtype: 'toolbar', dock: 'bottom', ui: 'footer', 
-							items: ['->', 
-								{ iconCls: 'icon-reset', itemId: 'close', text: 'Cerrar',  scope: this, handler: this.onClose },
-								{ iconCls: 'icon-save',  itemId: 'save',  text: 'Guardar',  disabled: false, scope: this, handler: this.onSave }
-							]
-						}]
-					});
-					this.callParent();
-				},
-				setActiveRecord: function(record){
-					this.activeRecord = record;
-				},
-				onSave: function(){
-					var form = this.getForm();
-					if (!registro) {
-						if (form.isValid()) {
-							storePers.insert(0, form.getValues());
-						} else {
-							Ext.Msg.alert('Forma Invalida','Algunos campos no pudieron ser validados<br>los mismos se indican con un cuadro rojo<br> corrijalos y vuelva a intentar');
-							return;
-						}
-					} else {
-						var active = win.activeRecord;
-						if (!active) {
-							Ext.Msg.Alert('Registro Inactivo ');
-							return;
-						}
-						if (form.isValid()) {
-							form.updateRecord(active);
-						} else {
-							Ext.Msg.alert('Forma Invalida','Algunos campos no pudieron ser validados<br>los mismos se indican con un cuadro rojo<br> corrijalos y vuelva a intentar');
-							return;
-						}
-					}
-					form.reset();
-					this.onReset();
-				},
-				onReset: function(){
-					this.setActiveRecord(null);
-					storePers.load();
-					//Hide Windows 
-					win.hide();
-				},
-				onClose: function(){
-					var form = this.getForm();
-					form.reset();
-					this.onReset();
-				}
-			});
+		";
 
-			win = Ext.widget('window', {
-				title: '',
-				losable: false,
+		$titulow = 'Personal Trabajador';
+
+		$winwidget = "
+				closable: false,
 				closeAction: 'destroy',
 				width: 660,
 				height: 470,
@@ -1213,137 +982,36 @@ Ext.onReady(function(){
 						}
 					}
 				}
-			});
-		}
-		win.show();
-	}
 
-	// Create Grid 
-	Ext.define('PersGrid', {
-		extend: 'Ext.grid.Panel',
-		alias: 'widget.writergrid',
-		store: storePers,
-		initComponent: function(){
-			Ext.apply(this, {
-				iconCls: 'icon-grid',
-				frame: true,
-				dockedItems: [{
-					xtype: 'toolbar',
-					items: [
-						{iconCls: 'icon-add',    text: 'Agregar',                                     scope: this, handler: this.onAddClick   },
-						{iconCls: 'icon-update', text: 'Modificar', disabled: true, itemId: 'update', scope: this, handler: this.onUpdateClick},
-						{iconCls: 'icon-delete', text: 'Eliminar',  disabled: true, itemId: 'delete', scope: this, handler: this.onDeleteClick }
-					]
-				}],
-				columns: colPers,
-				// paging bar on the bottom
-				bbar: Ext.create('Ext.PagingToolbar', {
-					store: storePers,
-					displayInfo: true,
-					displayMsg: 'Pag No. {0} - Registros {1} de {2}',
-					emptyMsg: \"No se encontraron Registros.\"
-				})
-			});
-			this.callParent();
-			this.getSelectionModel().on('selectionchange', this.onSelectChange, this);
-		},
-		features: [{ ftype: 'grouping', groupHeaderTpl: '{name}' },{ ftype: 'filters', encode: 'json', local: false }],
-		onSelectChange: function(selModel, selections){
-			this.down('#delete').setDisabled(selections.length === 0);
-			this.down('#update').setDisabled(selections.length === 0);
-			},
-		
-		onUpdateClick: function(){
-			var selection = this.getView().getSelectionModel().getSelection()[0];
-				if (selection) {
-					registro = selection;
-					showContactForm();
-				}
-			},
-		onDeleteClick: function() {
-			var selection = this.getView().getSelectionModel().getSelection()[0];
-			Ext.MessageBox.show({
-				title: 'Confirme', 
-				msg: 'Esta seguro?', 
-				buttons: Ext.MessageBox.YESNO, 
-				fn: function(btn){ 
-					if (btn == 'yes') { 
-						if (selection) {
-							storePers.remove(selection);
-						}
-						storePers.load();
-					} 
-				}, 
-				icon: Ext.MessageBox.QUESTION 
-			});  
-		},
-		onAddClick: function(){
-			registro = null;
-			showContactForm();
-			storePers.load();
-		}
-	});
-
-//////************ MENU DE ADICIONALES /////////////////
-".$listados."
-
-".$otros."
-//////************ FIN DE ADICIONALES /////////////////
-
-
-	Ext.create('Ext.Viewport', {
-		layout: {type: 'border',padding: 5},
-		defaults: { split: true	},
-		items: [
-			{
-				region: 'north',
-				preventHeader: true,
-				height: 40,
-				minHeight: 40,
-				html: '".$encabeza."'
-			},{
-				region:'west',
-				width:200,
-				border:false,
-				autoScroll:true,
-				title:'Lista de Opciones',
-				collapsible:true,
-				split:true,
-				collapseMode:'mini',
-				layoutConfig:{animate:true},
-				layout: 'accordion',
-				items: [
-					{
-						title:'Listados',
-						border:false,
-						layout: 'fit',
-						items: gridListado
-					},{
-						title:'Otras Funciones',
-						border:false,
-						layout: 'fit',
-						items: gridOtros
-					}
-				]
-			},{
-				region: 'center',
-				itemId: 'grid',
-				xtype: 'writergrid',
-				title: 'Trabajadores',
-				width: '98%',
-				align: 'center',
-			}
-		]
-	});
-	storePers.load({ params: { start:0, limit: 30}});
-});
-
-</script>
 ";
-		return $script;	
+
+		$stores = "";
+
+		$features = "features: [{ ftype: 'grouping', groupHeaderTpl: '{name}' },{ ftype: 'filters', encode: 'json', local: false }],";
+		$agrupar = "		remoteSort: true,
+		groupField: 'nomcont',";
+
+		$data['listados']    = $listados;
+		$data['otros']       = $otros;
+		$data['encabeza']    = $encabeza;
+		$data['urlajax']     = $urlajax;
+		$data['variables']   = $variables;
+		$data['funciones']   = $funciones;
+		$data['valida']      = $valida;
+		$data['columnas']    = $columnas;
+		$data['campos']      = $campos;
+		$data['stores']      = $stores;
+		$data['camposforma'] = $camposforma;
+		$data['titulow']     = $titulow;
+		$data['winwidget']   = $winwidget;
+		$data['features']    = $features;
+		$data['agrupar']     = $agrupar;
+
+		$data['title']  = heading('Personal/Trabajadores');
+		$this->load->view('extjs/extjsven',$data);
 	}
 	
-	
+	//Busca Trabajadores
 	function persbusca() {
 		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']  :  0;
 		$limit   = isset($_REQUEST['limit'])  ? $_REQUEST['limit']  : 15;

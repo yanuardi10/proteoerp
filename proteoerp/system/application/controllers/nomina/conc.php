@@ -15,10 +15,7 @@ class Conc extends validaciones{
 			$this->db->simple_query('ALTER TABLE conc ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ');
 			$this->db->simple_query('ALTER TABLE conc ADD UNIQUE INDEX concepto (concepto)');
 		}
-		$script = $this->concextjs();
-		$data["script"] = $script;
-		$data['title']  = heading('Nomina');
-		$this->load->view('extjs/pers',$data);
+		$this->concextjs();
 	}
 
 	function filteredgrid(){
@@ -495,46 +492,23 @@ script;
 //****************************************************************8
 	function concextjs(){
 
-		$encabeza='<table width="100%" bgcolor="#2067B5"><tr><td align="left" width="100px"><img src="'.base_url().'assets/default/css/templete_01.jpg" width="120"></td><td align="center"><h1 style="font-size: 20px; color: rgb(255, 255, 255);" onclick="history.back()">CONCEPTOS DE NOMINA</h1></td><td align="right" width="100px"><img src="'.base_url().'assets/default/images/cerrar.png" alt="Cerrar Ventana" title="Cerrar Ventana" onclick="parent.window.close()" width="25"></td></tr></table>';
+
 		$listados= $this->datasis->listados('conc');
 		$otros=$this->datasis->otros('conc', 'conc');
 
+		$encabeza='CONCEPTOS DE NOMINA';
+		$listados= $this->datasis->listados('conc');
+		$otros=$this->datasis->otros('conc', 'nomina/conc');
 
-		$script = "
-<script type=\"text/javascript\">
-var BASE_URL   = '".base_url()."';
-var BASE_PATH  = '".base_url()."';
-var BASE_ICONS = '".base_url()."assets/icons/';
-var BASE_UX    = '".base_url()."assets/js/ext/ux';
-
-Ext.Loader.setConfig({ enabled: true });
-Ext.Loader.setPath('Ext.ux', BASE_UX);
-
-Ext.require([
-	'Ext.grid.*',
-	'Ext.ux.grid.FiltersFeature',
-	'Ext.data.*',
-	'Ext.util.*',
-	'Ext.state.*',
-	'Ext.form.*',
-	'Ext.window.MessageBox',
-	'Ext.tip.*',
-	'Ext.ux.CheckColumn',
-	'Ext.toolbar.Paging'
-]);
-
-var registro;
-var urlApp = '".base_url()."';
-
+		$urlajax = 'nomina/conc/';
+		$variables = "
 var mtipod ;
 var mtipoa ;
-
 var mctade ;
 var mctaac ;
+";
 
-var mxs = ((screen.availWidth/2)-400);
-var mys = ((screen.availHeight/2)-300);
-
+		$funciones = "
 //coloca un boton verde cuando la va para la liquidacion
 function rliquida(val) {
 	if ( val == 'true' ){
@@ -543,10 +517,13 @@ function rliquida(val) {
 		return  '<img src=\"'+urlApp+'images/N.gif\">';
 	}
 };
-
-//Column Model
-var colConc = 
-	[
+";
+		$valida = "
+		{ type: 'length', field: 'concepto',  min: 1 },
+		{ type: 'length', field: 'descrip',   min: 1 }
+";
+		
+		$columnas = "
 		{ header: 'Codigo',      width:  50, sortable: true, dataIndex: 'concepto', field: { type: 'textfield' }, filter: { type: 'string' } }, 
 		{ header: 'Tipo',        width:  30, sortable: true, dataIndex: 'tipo',     field: { type: 'textfield' }, filter: { type: 'string' } }, 
 		{ header: 'Descripcion', width: 200, sortable: true, dataIndex: 'descrip',  field: { type: 'textfield' }, filter: { type: 'string' } }, 
@@ -560,126 +537,12 @@ var colConc =
 		{ header: 'TipoHB',      width:  70, sortable: true, dataIndex: 'tipoa',    field: { type: 'textfield' }, filter: { type: 'string' } }, 
 		{ header: 'CuentaHB',    width:  70, sortable: true, dataIndex: 'ctaac',    field: { type: 'textfield' }, filter: { type: 'string' } }, 
 		{ header: 'Liquida',     width:  60, sortable: true, dataIndex: 'liquida',  field: { type: 'textfield' }, filter: { type: 'string' }, renderer: rliquida }
-	];
+	";
 
+		$campos = "'id', 'concepto', 'tipo', 'descrip', 'aplica', 'grupo', 'encab1', 'encab2', 'formula', 'tipod', 'ctade', 'tipoa', 'ctaac', 'liquida'";
 
-// Define our data model
-var Conceptos = Ext.regModel('Conceptos', {
-	fields: ['id', 'concepto', 'tipo', 'descrip', 'aplica', 'grupo', 'encab1', 'encab2', 'formula', 'tipod', 'ctade', 'tipoa', 'ctaac', 'liquida'],
-	validations: [
-		{ type: 'length', field: 'concepto',  min: 1 },
-		{ type: 'length', field: 'descrip',   min: 1 }
-	],
-	proxy: {
-		type: 'ajax',
-		noCache: false,
-		api: {
-			read   : urlApp + 'nomina/conc/grid',
-			create : urlApp + 'nomina/conc/crear',
-			update : urlApp + 'nomina/conc/modificar' ,
-			destroy: urlApp + 'nomina/conc/eliminar',
-			method: 'POST'
-		},
-		reader: {
-			type: 'json',
-			successProperty: 'success',
-			root: 'data',
-			messageProperty: 'message',
-			totalProperty: 'results'
-		},
-		writer: {
-			type: 'json',
-			root: 'data',
-			writeAllFields: true,
-			callback: function( op, suc ) {
-				Ext.Msg.Alert('CallBack 1');
-			}
-		},
-		listeners: {
-			exception: function( proxy, response, operation) {
-				Ext.MessageBox.show({
-					title: 'EXCEPCION REMOTA',
-					msg: operation.getError(),
-					icon: Ext.MessageBox.ERROR,
-					buttons: Ext.Msg.OK
-				});
-			}
-		}
-	}
-});
-
-//Data Store
-var storeConc = Ext.create('Ext.data.Store', {
-	model: 'Conceptos',
-	pageSize: 50,
-	autoLoad: false,
-	autoSync: true,
-	method: 'POST',
-	listeners: {
-		write: function(mr,re, op) {
-			Ext.Msg.alert('Aviso','Registro Guardado ')
-		}
-	}
-});
-
-var ctadeStore = new Ext.data.Store({
-	fields: [ 'item', 'valor'],
-	autoLoad: false,
-	autoSync: false,
-	pageSize: 50,
-	pruneModifiedRecords: true,
-	totalProperty: 'results',
-	proxy: {
-		type: 'ajax',
-		url : urlApp + 'nomina/conc/conccta',
-		extraParams: { 'tipo': mtipod, 'cuenta': mctade, 'origen': 'store' },
-		reader: {
-			type: 'json',
-			totalProperty: 'results',
-			root: 'data'
-		}
-	},
-	method: 'POST'
-});
-     
-var ctaacStore = new Ext.data.JsonStore({
-	fields: [ 'item', 'valor'],
-	autoLoad: false,
-	pageSize: 50,
-	autoSync: false,
-	pruneModifiedRecords: true,
-	proxy: {
-		type: 'ajax',
-		url : urlApp + 'nomina/conc/conccta',
-		extraParams: { 'tipo': mtipoa, 'cuenta': mctaac, 'origen': 'store' },
-		reader: {
-			type: 'json',
-			totalProperty: 'results',
-			root: 'data'
-		}
-	},
-	method: 'POST'
-});
-
-var win;
-// Main 
-Ext.onReady(function(){
-	function showContactForm() {
-		if (!win) {
-			// Create Form
-			var writeForm = Ext.define('Conc.Form', {
-				extend: 'Ext.form.Panel',
-				alias:  'widget.writerform',
-				result: function(res){	alert('Resultado');},
-				requires: ['Ext.form.field.Text'],
-				initComponent: function(){
-					Ext.apply(this, {
-						iconCls: 'icon-user',
-						frame: true, 
-						title: 'Concepto', 
-						bodyPadding: 3,
-						fieldDefaults: { labelAlign: 'right' }, 
-						items: [{
+		$camposforma = "
+							{
 								layout: 'column',
 								frame: false,
 								border: false,
@@ -788,62 +651,12 @@ Ext.onReady(function(){
 									}
 								]
 							}
-						], 
-						dockedItems: [
-							{ xtype: 'toolbar', dock: 'bottom', ui: 'footer', 
-							items: ['->', 
-								{ iconCls: 'icon-reset', itemId: 'close', text: 'Cerrar',   scope: this, handler: this.onClose },
-								{ iconCls: 'icon-save',  itemId: 'save',  text: 'Guardar',  disabled: false, scope: this, handler: this.onSave }
-							]
-						}]
-					});
-					this.callParent();
-				},
-				setActiveRecord: function(record){
-					this.activeRecord = record;
-				},
-				onSave: function(){
-					var form = this.getForm();
-					if (!registro) {
-						if (form.isValid()) {
-							storeConc.insert(0, form.getValues());
-							alert('meco 5');
-						} else {
-							Ext.Msg.alert('Forma Invalida','Algunos campos no pudieron ser validados<br>los mismos se indican con un cuadro rojo<br> corrijalos y vuelva a intentar');
-							return;
-						}
-					} else {
-						var active = win.activeRecord;
-						if (!active) {
-							Ext.Msg.Alert('Registro Inactivo ');
-							return;
-						}
-						if (form.isValid()) {
-							form.updateRecord(active);
-						} else {
-							Ext.Msg.alert('Forma Invalida','Algunos campos no pudieron ser validados<br>los mismos se indican con un cuadro rojo<br> corrijalos y vuelva a intentar');
-							return;
-						}
-					}
-					form.reset();
-					this.onReset();
-				},
-				onReset: function(){
-					this.setActiveRecord(null);
-					storeConc.load();
-					//Hide Windows 
-					win.hide();
-				},
-				onClose: function(){
-					var form = this.getForm();
-					form.reset();
-					this.onReset();
-				}
-			});
+		";
 
-			win = Ext.widget('window', {
-				title: '',
-				losable: false,
+		$titulow = 'Conceptos de Nomina';
+
+		$winwidget = "
+				closable: false,
 				closeAction: 'destroy',
 				width: 650,
 				height: 370,
@@ -877,143 +690,63 @@ Ext.onReady(function(){
 						}
 					}
 				}
-			});
-		}
-		win.show();
-	}
-
-	//Filters
-	var filters = { ftype: 'filters', encode: 'json', local: false };
-
-	// Create Grid 
-	Ext.define('ConcGrid', {
-		extend: 'Ext.grid.Panel',
-		alias: 'widget.writergrid',
-		store: storeConc,
-		initComponent: function(){
-			Ext.apply(this, {
-				iconCls: 'icon-grid',
-				frame: true,
-				dockedItems: [{
-					xtype: 'toolbar',
-					items: [
-						{iconCls: 'icon-add',    text: 'Agregar',                                     scope: this, handler: this.onAddClick   },
-						{iconCls: 'icon-update', text: 'Modificar', disabled: true, itemId: 'update', scope: this, handler: this.onUpdateClick},
-						{iconCls: 'icon-delete', text: 'Eliminar',  disabled: true, itemId: 'delete', scope: this, handler: this.onDeleteClick }
-					]
-				}],
-				columns: colConc,
-				// paging bar on the bottom
-				bbar: Ext.create('Ext.PagingToolbar', {
-					store: storeConc,
-					displayInfo: true,
-					displayMsg: 'Pag No. {0} - Registros {1} de {2}',
-					emptyMsg: \"No se encontraron Registros.\"
-				})
-			});
-			this.callParent();
-			this.getSelectionModel().on('selectionchange', this.onSelectChange, this);
-		},
-		features: [filters],
-		onSelectChange: function(selModel, selections){
-			this.down('#delete').setDisabled(selections.length === 0);
-			this.down('#update').setDisabled(selections.length === 0);
-			},
-		
-		onUpdateClick: function(){
-			var selection = this.getView().getSelectionModel().getSelection()[0];
-				if (selection) {
-					registro = selection;
-					showContactForm();
-				}
-			},
-		onDeleteClick: function() {
-			var selection = this.getView().getSelectionModel().getSelection()[0];
-			Ext.MessageBox.show({
-				title: 'Confirme', 
-				msg: 'Esta seguro?', 
-				buttons: Ext.MessageBox.YESNO, 
-				fn: function(btn){ 
-					if (btn == 'yes') { 
-						if (selection) {
-							storeConc.remove(selection);
-						}
-						storeConc.load();
-					} 
-				}, 
-				icon: Ext.MessageBox.QUESTION 
-			});  
-		},
-		onAddClick: function(){
-			registro = null;
-			showContactForm();
-			storeConc.load();
-		}
-	});
-
-//////************ MENU DE ADICIONALES /////////////////
-".$listados."
-
-".$otros."
-//////************ FIN DE ADICIONALES /////////////////
-
-	Ext.create('Ext.Viewport', {
-		layout: {type: 'border',padding: 5},
-		defaults: { split: true	},
-		items: [
-			{
-				region: 'north',
-				preventHeader: true,
-				height: 40,
-				minHeight: 40,
-				html: '".$encabeza."'
-			},{
-				region:'west',
-				width:200,
-				border:false,
-				autoScroll:true,
-				title:'Lista de Opciones',
-				collapsible:true,
-				split:true,
-				collapseMode:'mini',
-				layoutConfig:{animate:true},
-				layout: 'accordion',
-				items: [
-					{
-						title:'Listados',
-						border:false,
-						layout: 'fit',
-						items: gridListado
-					},{
-						title:'Otras Funciones',
-						border:false,
-						layout: 'fit',
-						items: gridOtros
-					}
-				]
-			},{
-				region: 'center',
-				itemId: 'grid',
-				xtype: 'writergrid',
-				title: 'Conceptos',
-				width: '98%',
-				align: 'center'
-			}
-		]
-	});
-
-	storeConc.load({ params: { start:0, limit: 30}});
-});
-
-</script>
 ";
-		return $script;	
+
+		$stores = "
+var ctadeStore = new Ext.data.Store({
+	fields: [ 'item', 'valor'],
+	autoLoad: false,
+	autoSync: false,
+	pageSize: 50,
+	pruneModifiedRecords: true,
+	totalProperty: 'results',
+	proxy: {
+		type: 'ajax',
+		url : urlApp + 'nomina/conc/conccta',
+		extraParams: { 'tipo': mtipod, 'cuenta': mctade, 'origen': 'store' },
+		reader: {type: 'json',totalProperty: 'results',root: 'data'}
+	},
+	method: 'POST'
+});
+     
+var ctaacStore = new Ext.data.JsonStore({
+	fields: [ 'item', 'valor'],
+	autoLoad: false,
+	pageSize: 50,
+	autoSync: false,
+	pruneModifiedRecords: true,
+	proxy: {
+		type: 'ajax',
+		url : urlApp + 'nomina/conc/conccta',
+		extraParams: { 'tipo': mtipoa, 'cuenta': mctaac, 'origen': 'store' },
+		reader: {type: 'json',totalProperty: 'results',	root: 'data'}
+	},
+	method: 'POST'
+});
+";
+
+		$features = "features: [{ ftype: 'grouping', groupHeaderTpl: '{name}' },{ ftype: 'filters', encode: 'json', local: false }],";
+		$agrupar = "";
+
+		$data['listados']    = $listados;
+		$data['otros']       = $otros;
+		$data['encabeza']    = $encabeza;
+		$data['urlajax']     = $urlajax;
+		$data['variables']   = $variables;
+		$data['funciones']   = $funciones;
+		$data['valida']      = $valida;
+		$data['columnas']    = $columnas;
+		$data['campos']      = $campos;
+		$data['stores']      = $stores;
+		$data['camposforma'] = $camposforma;
+		$data['titulow']     = $titulow;
+		$data['winwidget']   = $winwidget;
+		$data['features']    = $features;
+
+		$data['title']  = heading('Conceptos de Nomina');
+		$this->load->view('extjs/extjsven',$data);
+
 	}
-
-
-
-
-
 
 }
 ?>
