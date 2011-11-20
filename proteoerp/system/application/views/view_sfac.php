@@ -16,14 +16,10 @@ if($form->_status!='show'){
 var sitems_cont =<?php echo $form->max_rel_count['sitems']; ?>;
 var sfpa_cont=<?php echo $form->max_rel_count['sfpa'];?>;
 
-
-
 $(document).ready(function() {
 	$(".inputnum").numeric(".");
 	
 });
-
-
 
 function add_sitems(){
 	var htm = <?php echo $campos; ?>;

@@ -96,7 +96,7 @@ class Consultas extends Controller {
 		//$maes= ($this->db->table_exists('maes')) ? $this->datasis->dameval('SELECT COUNT(*) FROM maes'): 0;
 
 		if($this->tipo=='maes'){
-			$mSQL_p = 'SELECT precio1, precio2, precio3, precio4,codigo, referen, barras, descrip, corta, codigo, marca,  dvolum1, dvolum2, existen, mempaq, dempaq,unidad,iva FROM maes';
+			$mSQL_p = 'SELECT precio1, precio2, precio3, precio4,codigo, referen, barras, descrip, corta, codigo, marca,  dvolum1, dvolum2, existen, mempaq, dempaq,unidad,iva, 0 AS id FROM maes';
 			$bbus   = array('codigo','barras','referen');
 			$suple  = 'codigo';
 			$aplica = 'maes';
@@ -166,8 +166,11 @@ class Consultas extends Controller {
 				$data['modelo']    = $row->modelo;
 				$data['iva2']      = nformat($row->base1*($row->iva/100));
 			}
-
-			//$data['img']       = site_url('inventario/fotos/obtener/'.$row->id);
+			
+			$fotos=$this->datasis->dameval('SELECT COUNT(*) FROM sinvfot WHERE sinv_id='.$row->id);
+			if($fotos>0){
+				$data['img']       = img('inventario/fotos/thumbnail/'.$row->id);
+			}
 			return $data;
 		}
 		return false;
