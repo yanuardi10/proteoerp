@@ -33,6 +33,9 @@
 	.icon-add      { background-image: url('<?php echo base_url(); ?>assets/icons/fam/add.png') !important;}
 	.icon-delete   { background-image: url('<?php echo base_url(); ?>assets/icons/fam/delete.png') !important;}
 	.icon-update   { background-image: url('<?php echo base_url(); ?>assets/icons/fam/user_gray.png') !important;}
+	.icon-cross   { background-image: url('<?php echo base_url(); ?>assets/icons/fam/cross.gif') !important;}
+	.icon-accept  { background-image: url('<?php echo base_url(); ?>assets/icons/fam/accept.png') !important;}
+
 </style>
 
 </head>

@@ -9,15 +9,12 @@ class Scaj extends validaciones {
 	
 	function index(){
 		$this->db->simple_query('UPDATE scaj SET cajero=TRIM(cajero)');
-		//redirect("ventas/scaj/filteredgrid");
 		if ( !$this->datasis->iscampo('scaj','id') ) {
 			$this->db->simple_query('ALTER TABLE scaj DROP PRIMARY KEY');
 			$this->db->simple_query('ALTER TABLE scaj ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ');
 			$this->db->simple_query('ALTER TABLE scaj ADD UNIQUE INDEX cajero (cajero)');
 		}
-		//$this->datasis->modulo_id(206,1);
 		$this->scajextjs();
-
 	}
 	
 	function filteredgrid(){

@@ -16,7 +16,13 @@
 <script type="text/javascript" src="<?php echo base_url(); ?>assets/js/ext/bootstrap.js"></script>
 
 <?php
-   $encabeza = '<table width="100%" bgcolor="#2067B5"><tr><td align="left" width="100px"><img src="'.base_url().'assets/default/css/templete_01.jpg" width="120"></td><td align="center"><h1 style="font-size: 20px; color: rgb(255, 255, 255);" onclick="history.back()">'.$encabeza.'</h1></td><td align="right" width="100px"><img src="'.base_url().'assets/default/images/cerrar.png" alt="Cerrar Ventana" title="Cerrar Ventana" onclick="parent.window.close()" width="25"></td></tr></table>';
+	$encabeza = '<table width="100%" bgcolor="#2067B5"><tr><td align="left" width="100px"><img src="'.base_url().'assets/default/css/templete_01.jpg" width="120"></td><td align="center"><h1 style="font-size: 20px; color: rgb(255, 255, 255);" onclick="history.back()">'.$encabeza.'</h1></td><td align="right" width="100px"><img src="'.base_url().'assets/default/images/cerrar.png" alt="Cerrar Ventana" title="Cerrar Ventana" onclick="parent.window.close()" width="25"></td></tr></table>';
+	if (!isset($dockedItems)){
+		$dockedItems = "
+				{ iconCls: 'icon-reset', itemId: 'close', text: 'Cerrar',   scope: this, handler: this.onClose },
+				{ iconCls: 'icon-save',  itemId: 'save',  text: 'Guardar',  disabled: false, scope: this, handler: this.onSave }
+		";
+	}
 ?>
 
 <script type="text/javascript">
@@ -105,6 +111,7 @@ var storeData = Ext.create('Ext.data.Store', {
 	pageSize: 50,
 	autoLoad: false,
 	autoSync: true,
+	<?php if (isset($agrupar)) echo $agrupar; ?>
 	method: 'POST',
 	listeners: {
 		write: function(mr,re, op) {
@@ -124,7 +131,7 @@ Ext.onReady(function(){
 			var writeForm = Ext.define('Entra.Form', {
 				extend: 'Ext.form.Panel',
 				alias:  'widget.writerform',
-				result: function(res){	alert('Resultado');},
+				result: function(res){ alert('Resultado');},
 				requires: ['Ext.form.field.Text'],
 				initComponent: function(){
 					Ext.apply(this, {
@@ -258,7 +265,7 @@ Ext.onReady(function(){
 //////************ MENU DE ADICIONALES /////////////////
 <?php echo $listados ?>
 
-<?php echo $otros ?>
+
 //////************ FIN DE ADICIONALES /////////////////
 
 	Ext.create('Ext.Viewport', {
@@ -283,6 +290,7 @@ Ext.onReady(function(){
 				layoutConfig:{animate:true},
 				layout: 'accordion',
 				items: [
+					<?php if (isset($acordioni)) echo $acordioni; ?>
 					{
 						title:'Listados',
 						border:false,
@@ -292,8 +300,9 @@ Ext.onReady(function(){
 						title:'Otras Funciones',
 						border:false,
 						layout: 'fit',
-						items: gridOtros
+						html: '<?php echo $otros ?>'
 					}
+					<?php if (isset($acordionf)) echo $acordionf; ?>
 				]
 			},{
 				region: 'center',
@@ -306,14 +315,14 @@ Ext.onReady(function(){
 		]
 	});
 
+<?php if (isset($final)) echo $final; ?>
+
+
 	storeData.load({ params: { start:0, limit: 30}});
+
 });
 
 </script>
-
-
-
-
 
 <style type="text/css">
 #divgrid1 {
@@ -331,6 +340,8 @@ Ext.onReady(function(){
 	.icon-add      { background-image: url('<?php echo base_url(); ?>assets/icons/fam/add.png') !important;}
 	.icon-delete   { background-image: url('<?php echo base_url(); ?>assets/icons/fam/delete.png') !important;}
 	.icon-update   { background-image: url('<?php echo base_url(); ?>assets/icons/fam/user_gray.png') !important;}
+	.icon-accept   { background-image: url('<?php echo base_url(); ?>assets/icons/fam/accept.png') !important;}
+	.icon-cross    { background-image: url('<?php echo base_url(); ?>assets/icons/fam/cross.gif') !important;}
 </style>
 
 </head>
