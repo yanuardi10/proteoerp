@@ -489,6 +489,8 @@ class rivc extends Controller {
 		if(empty($scli)){
 			$retArray[0]['label']   = 'Debe seleccionar un cliente primero';
 			$retArray[0]['value']   = '';
+			$retArray[0]['cod_cli'] = '';
+			$retArray[0]['nombre']  = '';
 			$data = json_encode($retArray);
 			echo $data;
 			return;
@@ -527,6 +529,8 @@ class rivc extends Controller {
 			}else{
 				$retArray[0]['label']   = 'No se consiguieron facturas para aplicar';
 				$retArray[0]['value']   = '';
+				$retArray[0]['cod_cli'] = '';
+				$retArray[0]['nombre']  = '';
 				$data = json_encode($retArray);
 			}
 		}
