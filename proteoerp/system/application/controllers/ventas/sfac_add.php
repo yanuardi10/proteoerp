@@ -284,12 +284,17 @@ class sfac_add extends validaciones {
 		$edit->tipo_doc->option('D','Devoluci&oacute;n');
 		$edit->tipo_doc->style='width:200px;';
 		$edit->tipo_doc->size = 5;
-		$edit->cliente->rule='required';
+		$edit->tipo_doc->rule='required';
 
 		$edit->vd = new  dropdownField ('Vendedor', 'vd');
 		$edit->vd->options('SELECT vendedor, CONCAT(vendedor,\' \',nombre) nombre FROM vend ORDER BY vendedor');
 		$edit->vd->style='width:200px;';
-		$edit->vd->size = 5;
+
+		$edit->almacen= new dropdownField ('Almac&eacute;n', 'almacen');
+		$edit->almacen->options('SELECT ubica,ubides FROM caub ORDER BY ubides');
+		$edit->almacen->rule='required';
+		$edit->almacen->insertValue=$this->datasis->traevalor('ALMACEN');
+		$edit->almacen->style='width:200px;';
 
 		$edit->numero = new inputField('N&uacute;mero', 'numero');
 		$edit->numero->size = 10;
@@ -297,6 +302,11 @@ class sfac_add extends validaciones {
 		$edit->numero->maxlength=8;
 		$edit->numero->apply_rules=false; //necesario cuando el campo es clave y no se pide al usuario
 		$edit->numero->when=array('show','modify');
+
+		$edit->factura = new inputField('Factura', 'factura');
+		$edit->factura->size = 10;
+		$edit->factura->mode='autohide';
+		$edit->factura->maxlength=8;
 
 		$edit->peso = new inputField('Peso', 'peso');
 		$edit->peso->css_class = 'inputnum';
@@ -307,7 +317,7 @@ class sfac_add extends validaciones {
 		$edit->cliente->size = 6;
 		$edit->cliente->maxlength=5;
 		$edit->cliente->autocomplete=false;
-		$edit->cliente->rule='required';
+		$edit->cliente->rule='required|existescli';
 		//$edit->cliente->append($boton);
 
 		$edit->nombre = new hiddenField('Nombre', 'nombre');
@@ -325,6 +335,11 @@ class sfac_add extends validaciones {
 		$edit->direc = new hiddenField('Direcci&oacute;n','direc');
 		$edit->direc->readonly =true;
 		$edit->direc->size = 40;
+
+		$edit->cajero= new dropdownField('Cajero', 'cajero');
+		$edit->cajero->options('SELECT cajero,nombre FROM scaj ORDER BY nombre');
+		$edit->cajero->rule ='required|cajerostatus';
+		$edit->cajero->style='width:200px;';
 
 		//***********************************
 		//  Campos para el detalle 1 sitems
@@ -366,6 +381,7 @@ class sfac_add extends validaciones {
 
 		$edit->tota = new inputField('Importe <#o#>', 'tota_<#i#>');
 		$edit->tota->db_name='tota';
+		$edit->tota->type      ='inputhidden';
 		$edit->tota->size=10;
 		$edit->tota->css_class='inputnum';
 		$edit->tota->rel_id   ='sitems';
@@ -404,13 +420,14 @@ class sfac_add extends validaciones {
 		$edit->tipo->options('SELECT tipo, nombre FROM tarjeta WHERE activo=\'S\' ORDER BY nombre');
 		$edit->tipo->db_name  = 'tipo';
 		$edit->tipo->rel_id   = 'sfpa';
-		$edit->tipo->rule     = 'required';
+		$edit->tipo->insertValue='EF';
+		//$edit->tipo->rule     = 'required';
 
-		$edit->numref = new inputField('Numero <#o#>', 'numero_<#i#>');
+		$edit->numref = new inputField('Numero <#o#>', 'num_ref_<#i#>');
 		$edit->numref->size     = 12;
-		$edit->numref->db_name  = 'numref';
+		$edit->numref->db_name  = 'num_ref';
 		$edit->numref->rel_id   = 'sfpa';
-		$edit->numref->rule     = 'required';
+		//$edit->numref->rule     = 'required';
 
 		$edit->banco = new dropdownField('Banco <#o#>', 'banco_<#i#>');
 		$edit->banco->option('','Ninguno');
@@ -423,11 +440,10 @@ class sfac_add extends validaciones {
 		$edit->monto->css_class = 'inputnum';
 		$edit->monto->rel_id    = 'sfpa';
 		$edit->monto->size      = 10;
-		$edit->monto->rule      = 'required|positive';
-		$edit->monto->readonly  = true;
-		//**************************
-		//Fin detalle 2
-		//**************************
+		$edit->monto->rule      = 'required|mayorcero';
+		//************************************************
+		// Fin detalle 2 (sfpa)
+		//************************************************
 
 		$edit->ivat = new hiddenField('I.V.A', 'iva');
 		$edit->ivat->css_class ='inputnum';
@@ -451,7 +467,6 @@ class sfac_add extends validaciones {
 		$edit->ciudad    = new inputField('Ciudad', 'ciudad');
 		$edit->exento    = new inputField('Exento', 'exento');
 		$edit->maqfiscal = new inputField('Mq.Fiscal', 'maqfiscal');
-		$edit->cajero    = new inputField('Cajero', 'cajero');
 		$edit->referen   = new inputField('Referencia', 'referen');
 		$edit->transac   = new inputField('Transaccion', 'transac');
 		$edit->vence     = new inputField('Vence', 'vence');
@@ -461,15 +476,12 @@ class sfac_add extends validaciones {
 		$edit->freiva    = new inputField('Fecha', 'freiva');
 		$edit->ereiva    = new inputField('Emision', 'ereiva');
 
-		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
-		$edit->estampa = new autoUpdateField('estampa' ,date('Ymd'), date('Ymd'));
-		$edit->hora    = new autoUpdateField('hora',date('H:i:s'), date('H:i:s'));
+		$edit->usuario   = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
+		$edit->estampa   = new autoUpdateField('estampa' ,date('Ymd'), date('Ymd'));
+		$edit->hora      = new autoUpdateField('hora',date('H:i:s'), date('H:i:s'));
 
 		$edit->buttons('save', 'back','add_rel');
 		$edit->build();
-
-		//$data['script'] .= $script;
-		//$data['script'] .= $scriptreiva;
 
 		$conten['form']  =&  $edit;
 
@@ -492,117 +504,57 @@ class sfac_add extends validaciones {
 		$this->load->view('view_ventanas', $data);
 	}
 
-	// Busca Clientes para autocomplete
-	function buscasprv(){
-		$mid  = $this->input->post('q');
-		$qdb  = $this->db->escape('%'.$mid.'%');
-		$qmid = $this->db->escape($mid);
-
-		$data = '{[ ]}';
-		if($mid !== false){
-			$retArray = $retorno = array();
-			
-			//Cheque si existe el codigo
-			$mSQL="SELECT TRIM(nombre) AS nombre, TRIM(rif) AS rif, proveed,  direc1 AS direc
-				FROM sprv WHERE proveed=${qmid} LIMIT 1";
-			$query = $this->db->query($mSQL);
-			if ($query->num_rows() == 1){
-				$row = $query->row_array();
-				$retArray['value']   = $row['proveed'];
-				$retArray['label']   = '('.$row['rif'].') '.utf8_encode($row['nombre']);
-				$retArray['rif']     = $row['rif'];
-				$retArray['nombre']  = utf8_encode($row['nombre']);
-				$retArray['proveed'] = $row['proveed'];
-				$retArray['direc']   = utf8_encode($row['direc']);
-				array_push($retorno, $retArray);
-				$ww=" AND proveed<>${qmid}";
-			}else{
-				$ww='';
-			}
-			
-			$mSQL="SELECT TRIM(nombre) AS nombre, TRIM(rif) AS rif, proveed, direc1 AS direc
-				FROM sprv WHERE rif LIKE ${qdb} OR nombre LIKE ${qdb} ${ww}
-				ORDER BY rif LIMIT 10";
-			$query = $this->db->query($mSQL);
-			if ($query->num_rows() > 0){
-				foreach( $query->result_array() as  $row ) {
-					$retArray['value']   = $row['proveed'];
-					$retArray['label']   = '('.$row['rif'].') '.utf8_encode($row['nombre']);
-					$retArray['rif']     = $row['rif'];
-					$retArray['nombre']  = utf8_encode($row['nombre']);
-					$retArray['proveed'] = $row['proveed'];
-					$retArray['direc']   = utf8_encode($row['direc']);
-					array_push($retorno, $retArray);
-				}
-				$data = json_encode($retorno);
-			}
-		}
-		echo $data;
-		return true;
-	}
-
-	function buscascli(){
-		$mid  = $this->input->post('q');
-		$qmid = $this->db->escape($mid);
-		$qdb  = $this->db->escape('%'.$mid.'%');
-
-		$data = '{[ ]}';
-		if($mid !== false){
-			$retArray = $retorno = array();
-
-			//Cheque si existe el codigo
-			$mSQL="SELECT TRIM(nombre) AS nombre, TRIM(rifci) AS rifci, cliente, tipo, dire11 AS direc
-				FROM scli WHERE cliente=${qmid} LIMIT 1";
-			$query = $this->db->query($mSQL);
-			if ($query->num_rows() == 1){
-				$row = $query->row_array();
-
-				$retArray['value']   = $row['cliente'];
-				$retArray['label']   = '('.$row['rifci'].') '.utf8_encode($row['nombre']);
-				$retArray['rifci']   = $row['rifci'];
-				$retArray['nombre']  = utf8_encode($row['nombre']);
-				$retArray['cod_cli'] = $row['cliente'];
-				$retArray['tipo']    = $row['tipo'];
-				$retArray['direc']   = utf8_encode($row['direc']);
-				array_push($retorno, $retArray);
-				$ww=" AND cliente<>${qmid}";
-			}else{
-				$ww='';
-			}
-
-			$mSQL="SELECT TRIM(nombre) AS nombre, TRIM(rifci) AS rifci, cliente, tipo , dire11 AS direc
-				FROM scli WHERE (cliente LIKE ${qdb} OR rifci LIKE ${qdb} OR nombre LIKE ${qdb}) $ww
-				ORDER BY rifci LIMIT 10";
-
-			$query = $this->db->query($mSQL);
-			if ($query->num_rows() > 0){
-				foreach( $query->result_array() as  $row ) {
-					$retArray['value']   = $row['cliente'];
-					$retArray['label']   = '('.$row['rifci'].') '.utf8_encode($row['nombre']);
-					$retArray['rifci']   = $row['rifci'];
-					$retArray['nombre']  = utf8_encode($row['nombre']);
-					$retArray['cod_cli'] = $row['cliente'];
-					$retArray['tipo']    = $row['tipo'];
-					$retArray['direc']   = utf8_encode($row['direc']);
-					array_push($retorno, $retArray);
-				}
-			}
-			if(count($data)>0)
-				$data = json_encode($retorno);
-		}
-		echo $data;
-		return true;
-	}
-
 	function _pre_insert($do){
+		$cliente= $do->get('cod_cli');
+
+		//Validaciones del pago
+		//Totaliza los pagos
+		$sfpa=$credito=0;
+		$cana=$do->count_rel('sfpa');
+		for($i=0;$i<$cana;$i++){
+			$sfpa_tipo = $do->get_rel('sfpa','tipo',$i);
+			$sfpa_monto= $do->get_rel('sfpa','monto',$i);
+			$sfpa+=$sfpa_monto;
+			if(empty($sfpa_tipo)) $credito+=$sfpa_monto;
+		}
+		$sfpa=round($sfpa,2);
+
+		//Totaliza la factura
+		$totalg=0;
+		$cana=$do->count_rel('sitems');
+		for($i=0;$i<$cana;$i++){
+			$itcana    = $do->get_rel('sitems','cana',$i);
+			$itpreca   = $do->get_rel('sitems','preca',$i);
+			$itiva     = $do->get_rel('sitems','iva',$i);
+			$itimporte = $itpreca*$itcana;
+
+			$totalg    +=$itimporte*(1+($itiva/100));
+		}
+		$totalg = round($totalg,2);
+		if($sfpa-$totalg!=0){
+			$do->error_message_ar['pre_ins']='El monto del pago no coincide con el monto de la factura';
+			//$do->error_message_ar['pre_upd']='';
+			return false;
+		}
+
+		//Validacion del limite de credito del cliente
+		
+		//Fin de las validaciones
+
 		$numero  = $this->datasis->fprox_numero('nsfac');
 		$transac = $this->datasis->fprox_numero('ntransa');
 		$do->set('numero',$numero);
 		$do->set('transac',$transac);
+		$do->set('referen',($credito>0)? 'C': 'E');
 
-		$fecha =$do->get('fecha');
-		$vd    =$do->get('vendedor');
-		$tipoa =$do->get('tipo_doc');
+		$fecha  = $do->get('fecha');
+		$vd     = $do->get('vendedor');
+		$tipoa  = $do->get('tipo_doc');
+		$cajero = $do->get('cajero');
+		$almacen= $do->get('almacen');
+		$estampa= $do->get('estampa');
+		$usuario= $do->get('usuario');
+		$hora   = $do->get('hora');
 
 		$iva=$totals=0;
 		$cana=$do->count_rel('sitems');
@@ -622,10 +574,29 @@ class sfac_add extends validaciones {
 			$do->set_rel('sitems','transac' ,$transac,$i);
 			$do->set_rel('sitems','fecha'   ,$fecha  ,$i);
 			$do->set_rel('sitems','vendedor',$vd     ,$i);
+			$do->set_rel('sitems','usuario' ,$usuario,$i);
+			$do->set_rel('sitems','estampa' ,$estampa,$i);
+			$do->set_rel('sitems','hora'    ,$hora   ,$i);
 		}
 		$totalg = $totals+$iva;
 
-		$do->set('inicial',0 );
+		$cana=$do->count_rel('sfpa');
+		for($i=0;$i<$cana;$i++){
+			$do->set_rel('sfpa','tipo_doc',($tipoa='F')? 'FC':'DE',$i);
+			$do->set_rel('sfpa','transac' ,$transac,$i);
+			$do->set_rel('sfpa','vendedor',$vd     ,$i);
+			$do->set_rel('sfpa','cod_cli' ,$cliente,$i);
+			$do->set_rel('sfpa','fecha'   ,$fecha  ,$i);
+			$do->set_rel('sfpa','cobro'   ,$fecha  ,$i);
+			$do->set_rel('sfpa','cobrador',$cajero ,$i);
+			$do->set_rel('sfpa','numero'  ,$numero ,$i);
+			$do->set_rel('sfpa','almacen' ,$almacen,$i);
+			$do->set_rel('sfpa','usuario' ,$usuario,$i);
+			$do->set_rel('sfpa','estampa' ,$estampa,$i);
+			$do->set_rel('sfpa','hora'    ,$hora   ,$i);
+		}
+
+		$do->set('inicial',($credito>0)? $totalg-$credito : 0);
 		$do->set('totals' ,round($totals ,2));
 		$do->set('totalg' ,round($totalg ,2));
 		$do->set('iva'    ,round($iva    ,2));
@@ -634,7 +605,7 @@ class sfac_add extends validaciones {
 	}
 
 	function _pre_update($do){
-		return true;
+		return false;
 	}
 
 	function _pre_delete($do){
@@ -642,86 +613,72 @@ class sfac_add extends validaciones {
 	}
 
 	function _post_insert($do){
-		$numero =$do->get('numero');
-		$fecha  =$do->get('fecha');
-		$totneto=$do->get('totalg');
-		$hora   =$do->get('hora');
-		$usuario=$do->get('usuario');
-		$transac=$do->get('transac');
-		$nombre =$do->get('nombre');
-		$cod_cli=$do->get('cod_cli');
-		$estampa=$do->get('estampa');
-		$sprv   =$do->get('sprv');
-		$ref_numero='00000000';
-		$error  = 0;
+		$referen=$do->get('referen');
+		if($referen=='C'){
+			$numero =$do->get('numero');
+			$fecha  =$do->get('fecha');
+			$totneto=$do->get('totalg');
+			$hora   =$do->get('hora');
+			$usuario=$do->get('usuario');
+			$transac=$do->get('transac');
+			$nombre =$do->get('nombre');
+			$cod_cli=$do->get('cod_cli');
+			$estampa=$do->get('estampa');
+			$anticipo=$do->get('anticipo');
+			$tipo_doc=$do->get('tipo_doc');
+			$ref_numero='00000000';
+			$error  = 0;
 
-		//Inserta en smov
-		$data=array();
-		$data['cod_cli']    = $cod_cli;
-		$data['nombre']     = $nombre;
-		$data['tipo_doc']   = 'FC';
-		$data['numero']     = $numero;
-		$data['fecha']      = $estampa;
-		$data['monto']      = $totneto;
-		$data['impuesto']   = 0;
-		$data['abonos']     = 0;
-		$data['vence']      = $fecha;
-		$data['tipo_ref']   = 'ND';
-		$data['num_ref']    = $ref_numero;
-		$data['observa1']   = (!empty($sprv))? 'FACTURA A TERCERO' : 'FACTURA A CREDITO';
-		$data['estampa']    = $estampa;
-		$data['hora']       = $hora;
-		$data['transac']    = $transac;
-		$data['usuario']    = $usuario;
-		$data['codigo']     = 'NOCON';
-		$data['descrip']    = 'NOTA DE CONTABILIDAD';
-
-		$sql= $this->db->insert_string('smov', $data);
-		$ban=$this->db->simple_query($sql);
-		if($ban==false){ memowrite($sql,'sfacter'); $error++;}
-
-		//Inserta en sprm
-		if(!empty($sprv)){
-			$causado  = $this->datasis->fprox_numero('ncausado');
-			$sprvnobre=$this->datasis->dameval('SELECT nombre FROM sprv WHERE proveed='.$this->db->escape($sprv));
-
+			//Inserta en smov
 			$data=array();
-			$data['cod_prv']    = $sprv;
-			$data['nombre']     = $sprvnobre;
+			$data['cod_cli']    = $cod_cli;
+			$data['nombre']     = $nombre;
 			$data['tipo_doc']   = 'FC';
 			$data['numero']     = $numero;
-			$data['fecha']      = $fecha;
+			$data['fecha']      = $estampa;
 			$data['monto']      = $totneto;
 			$data['impuesto']   = 0;
-			$data['abonos']     = 0;
+			$data['abonos']     = $anticipo;
 			$data['vence']      = $fecha;
-			$data['observa1']   = 'FACTURA A TERCERO ';
-			$data['observa2']   = ' CLIENTE '.$cod_cli;
-			$data['tipo_ref']   = '';
+			$data['tipo_ref']   = 'ND';
 			$data['num_ref']    = $ref_numero;
-			$data['transac']    = $transac;
+			$data['observa1']   = 'FACTURA A CREDITO';
 			$data['estampa']    = $estampa;
 			$data['hora']       = $hora;
+			$data['transac']    = $transac;
 			$data['usuario']    = $usuario;
-			$data['reteiva']    = 0;
-			$data['montasa']    = 0;
-			$data['monredu']    = 0;
-			$data['monadic']    = 0;
-			$data['tasa']       = 0;
-			$data['reducida']   = 0;
-			$data['sobretasa']  = 0;
-			$data['exento']     = 0;
-			$data['causado']    = $causado;
 			$data['codigo']     = 'NOCON';
 			$data['descrip']    = 'NOTA DE CONTABILIDAD';
 
-			$sql=$this->db->insert_string('sprm', $data);
+			$sql= $this->db->insert_string('smov', $data);
+			$ban=$this->db->simple_query($sql);
+			if($ban==false){ memowrite($sql,'sfacter'); $error++;}
+
+			$primary =implode(',',$do->pk);
+			logusu($do->table,"Creo $this->tits ${tipo_doc}${numero} ");
+		}
+
+		//Descuento del inventario
+		$almacen=$do->get('almacen');
+		$dbalma = $this->db->escape($almacen);
+		$cana=$do->count_rel('sitems');
+		for($i=0;$i<$cana;$i++){
+			$itcana    = $do->get_rel('sitems','cana',$i);
+			$itcodigoa = $do->get_rel('sitems','codigoa',$i);
+			$dbcodigoa = $this->db->escape($itcodigoa);
+
+			//$sql="INSERT IGNORE INTO itsinv (alma,codigo,existen) VALUES ($dbalma,$dbcodigoa,-$itcana)";
+			//$ban=$this->db->simple_query($sql);
+			//if($ban==false){ memowrite($sql,'sfacter'); $error++;}
+
+			$sql="UPDATE itsinv SET existen=existen-$itcana WHERE alma=$dbalma AND codigo=$dbcodigoa";
+			$ban=$this->db->simple_query($sql);
+			if($ban==false){ memowrite($sql,'sfacter'); $error++;}
+
+			$sql="UPDATE sinv SET existen=existen-$itcana WHERE codigo=$dbcodigoa";
 			$ban=$this->db->simple_query($sql);
 			if($ban==false){ memowrite($sql,'sfacter'); $error++;}
 		}
-
-		$primary =implode(',',$do->pk);
-		logusu($do->table,"Creo $this->tits $primary ");
 	}
 
 	function _post_update($do){

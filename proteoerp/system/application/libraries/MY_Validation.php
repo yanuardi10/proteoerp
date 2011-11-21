@@ -63,6 +63,23 @@ class MY_Validation extends CI_Validation{
 		}
 	}
 
+	function cajerostatus($scaj){
+		$dbscaj=$this->CI->db->escape($scaj);
+		$this->set_message('cajerostatus', 'El cajero ya fue cerrado para esta fecha');
+		$mSQL  = "SELECT fechac,status FROM scaj WHERE cajero=$dbscaj";
+
+		$query = $this->CI->db->query($mSQL);
+		if ($query->num_rows() > 0){
+			$row = $query->row();
+			if( $row->status=='C')
+				return false; 
+			else
+				return true;
+		}else{
+			return false;
+		}
+	}
+
 	function enum($val,$posibles){
 		$this->set_message('enum', 'El campo %s contiene un valor inv&aacute;lido');
 		$posi=explode(',',$posibles);

@@ -9,7 +9,7 @@ if ($form->_status=='delete' || $form->_action=='delete' || $form->_status=='unk
 else:
 
 $campos=$form->template_details('sitems');
-$scampos  ='<tr id="tr_itspre_<#i#>">';
+$scampos  ='<tr id="tr_sitems_<#i#>">';
 $scampos .='<td class="littletablerow" align="left" >'.$campos['codigoa']['field'].'</td>';
 $scampos .='<td class="littletablerow" align="left" >'.$campos['desca']['field'].$campos['detalle']['field'].'</td>';
 $scampos .='<td class="littletablerow" align="right">'.$campos['cana']['field'].  '</td>';
@@ -22,12 +22,20 @@ for($o=1;$o<5;$o++){
 $scampos .= $campos['itiva']['field'];
 $scampos .= $campos['sinvtipo']['field'];
 $scampos .= $campos['sinvpeso']['field'].'</td>';
-$scampos .= '<td class="littletablerow"><a href=# onclick="del_itspre(<#i#>);return false;">'.img("images/delete.jpg").'</a></td></tr>';
+$scampos .= '<td class="littletablerow"><a href=# onclick="del_sitems(<#i#>);return false;">'.img("images/delete.jpg").'</a></td></tr>';
 $campos=$form->js_escape($scampos);
+
+$sfpa_campos=$form->template_details('sfpa');
+$sfpa_scampos  ='<tr id="tr_sfpa_<#i#>">';
+$sfpa_scampos .='<td class="littletablerow" align="left" >'.$sfpa_campos['tipo']['field'].  '</td>';
+$sfpa_scampos .='<td class="littletablerow" align="left" >'.$sfpa_campos['numref']['field'].'</td>';
+$sfpa_scampos .='<td class="littletablerow" align="left" >'.$sfpa_campos['banco']['field']. '</td>';
+$sfpa_scampos .='<td class="littletablerow" align="right">'.$sfpa_campos['monto']['field']. '</td>';
+$sfpa_scampos .='<td class="littletablerow"><a href=# onclick="del_sfpa(<#i#>);return false;">'.img("images/delete.jpg").'</a></td></tr>';
+$sfpa_campos=$form->js_escape($sfpa_scampos);
 
 if(isset($form->error_string)) echo '<div class="alert">'.$form->error_string.'</div>';
 
-//echo $form_scripts;
 echo $form_begin;
 if($form->_status!='show'){ ?>
 
@@ -44,38 +52,10 @@ $(function(){
 		autocod(i.toString());
 	}
 
-	$('#rifci').autocomplete({
-		source: function( req, add){
-			$.ajax({
-				url:  "<?php echo site_url('ventas/spre/buscascli/rifci'); ?>",
-				type: "POST",
-				dataType: "json",
-				data: "q="+req.term,
-				success:
-					function(data){
-						var sugiere = [];
-						$.each(data,
-							function(i, val){
-								sugiere.push( val );
-							}
-						);
-						add(sugiere);
-					},
-			})
-		},
-		minLength: 2,
-		select: function( event, ui ) {
-			$('#nombre').val(ui.item.nombre);
-			$('#rifci').val(ui.item.rifci);
-			$('#cod_cli').val(ui.item.cod_cli);
-			$('#sclitipo').val(ui.item.tipo);
-		}
-	});
-
 	$('#cod_cli').autocomplete({
 		source: function( req, add){
 			$.ajax({
-				url:  "<?php echo site_url('ventas/sfacter/buscascli'); ?>",
+				url:  "<?php echo site_url('ajax/buscascli'); ?>",
 				type: "POST",
 				dataType: "json",
 				data: "q="+req.term,
@@ -106,39 +86,6 @@ $(function(){
 			$('#direc_val').text(ui.item.direc);
 		}
 	});
-
-	$('#sprv').autocomplete({
-		source: function( req, add){
-			$.ajax({
-				url:  "<?php echo site_url('ventas/sfacter/buscasprv'); ?>",
-				type: "POST",
-				dataType: "json",
-				data: "q="+req.term,
-				success:
-					function(data){
-						var sugiere = [];
-						$.each(data,
-							function(i, val){
-								sugiere.push( val );
-							}
-						);
-						add(sugiere);
-					},
-			})
-		},
-		minLength: 2,
-		select: function( event, ui ) {
-			$('#sprvnombre').val(ui.item.nombre);
-			$('#sprvnombre_val').text(ui.item.nombre);
-
-			$('#sprvrif').val(ui.item.rif);
-			$('#sprvrif_val').text(ui.item.rif);
-
-			$('#sprvdirec').val(ui.item.direc);
-			$('#sprvdirec_val').text(ui.item.direc);
-		}
-	});
-
 });
 
 function importe(id){
@@ -147,8 +94,26 @@ function importe(id){
 	var preca   = Number($("#preca_"+ind).val());
 	var importe = roundNumber(cana*preca,2);
 	$("#tota_"+ind).val(importe);
+	$("#tota_"+ind+"_val").text(nformat(importe,2));
 
 	totalizar();
+}
+
+//Totaliza el monto por pagar
+function apagar(){
+	var pago=0;
+	jQuery.each($('input[id^="monto_"]'), function() {
+		pago+=Number($(this).val());
+	});
+	return pago;
+}
+
+//Determina lo que falta por pagar
+function faltante(){
+	totalg=Number($("#totalg").val());
+	paga  = apagar();
+	resto = totalg-paga;
+	return resto;
 }
 
 function totalizar(){
@@ -176,15 +141,20 @@ function totalizar(){
 			totals  = totals+importe;
 		}
 	});
+	totalg=totals+iva;
 	$("#peso").val(roundNumber(peso,2));
 	$("#totalg").val(roundNumber(totals+iva,2));
 	$("#totals").val(roundNumber(totals,2));
 	$("#iva").val(roundNumber(iva,2));
-	$("#totalg_val").text(nformat(totals+iva,2));
+	$("#totalg_val").text(nformat(totalg,2));
 	$("#totals_val").text(nformat(totals,2));
 	$("#ivat_val").text(nformat(iva,2));
-	autocod(0);
-	
+
+	resto=faltante();
+	utmo =$('input[id^="monto_"]').first();
+	hay  =Number(utmo.val());
+
+	utmo.val(roundNumber(hay+resto,2));
 }
 
 function add_sitems(){
@@ -198,6 +168,18 @@ function add_sitems(){
 	autocod(can);
 	$('#codigo_'+can).focus();
 	sitems_cont=sitems_cont+1;
+}
+
+function add_sfpa(){
+	var htm = <?php echo $sfpa_campos; ?>;
+	can = sfpa_cont.toString();
+	con = (sfpa_cont+1).toString();
+	htm = htm.replace(/<#i#>/g,can);
+	htm = htm.replace(/<#o#>/g,con);
+	$("#__ITPL__sfpa").after(htm);
+	falta =faltante();
+	$("#monto_"+can).val(falta);
+	sfpa_cont=sfpa_cont+1;
 }
 
 function post_precioselec(ind,obj){
@@ -346,7 +328,7 @@ function autocod(id){
 	$('#codigoa_'+id).autocomplete({
 		source: function( req, add){
 			$.ajax({
-				url:  "<?php echo site_url('ventas/spre/buscasinv'); ?>",
+				url:  "<?php echo site_url('ajax/buscasinv'); ?>",
 				type: "POST",
 				dataType: "json",
 				data: "q="+req.term,
@@ -391,10 +373,19 @@ function autocod(id){
 	});
 }
 
-function del_itspre(id){
+function del_sitems(id){
 	id = id.toString();
-	$('#tr_itspre_'+id).remove();
+	$('#tr_sitems_'+id).remove();
 	totalizar();
+}
+function del_sfpa(id){
+	id = id.toString();
+	$('#tr_sfpa_'+id).remove();
+	totalizar();
+	var arr = $('input[id^="monto_"]');
+	if(arr.length<=0){
+		add_sfpa();
+	}
 }
 </script>
 <?php } ?>
@@ -419,14 +410,20 @@ function del_itspre(id){
 			<tr>
 				<td class="littletableheader"><?php echo $form->fecha->label;    ?>*&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->fecha->output;   ?>&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->cajero->label     ?>*&nbsp;</td>
+				<td class="littletablerow">   <?php echo $form->cajero->output    ?>&nbsp;</td>
 			</tr>
 			<tr>
-				<td class="littletableheader"><?php echo $form->vd->label     ?>&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->vd->output    ?>&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->vd->label      ?>&nbsp;</td>
+				<td class="littletablerow">   <?php echo $form->vd->output     ?>&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->almacen->label ?>*&nbsp;</td>
+				<td class="littletablerow">   <?php echo $form->almacen->output?>&nbsp;</td>
 			</tr>
 			<tr>
-				<td class="littletableheader"><?=$form->tipo_doc->label  ?>&nbsp;</td>
-				<td class="littletablerow" align="left"><?=$form->tipo_doc->output ?>&nbsp;</td>
+				<td class="littletableheader">          <?php echo $form->tipo_doc->label  ?>&nbsp;</td>
+				<td class="littletablerow" align="left"><?php echo $form->tipo_doc->output ?>&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->factura->label  ?>&nbsp;</td>
+				<td class="littletablerow"   ><?php echo $form->factura->output ?>&nbsp;</td>
 			</tr>
 			</table>
 			</fieldset>
@@ -458,13 +455,13 @@ function del_itspre(id){
 		<div style='overflow:auto;border: 1px solid #9AC8DA;background: #FAFAFA;height:200px'>
 		<table width='100%' border='0'>
 			<tr id='__INPL__'>
-				<td bgcolor='#7098D0'><strong>C&oacute;digo</strong></td>
-				<td bgcolor='#7098D0'><strong>Descripci&oacute;n</strong></td>
-				<td bgcolor='#7098D0'><strong>Cantidad</strong></td>
-				<td bgcolor='#7098D0'><strong>Precio</strong></td>
-				<td bgcolor='#7098D0'><strong>Importe</strong></td>
+				<td class="littletableheaderdet"><strong>C&oacute;digo</strong></td>
+				<td class="littletableheaderdet"><strong>Descripci&oacute;n</strong></td>
+				<td class="littletableheaderdet"><strong>Cantidad</strong></td>
+				<td class="littletableheaderdet"><strong>Precio</strong></td>
+				<td class="littletableheaderdet"><strong>Importe</strong></td>
 				<?php if($form->_status!='show') {?>
-					<td class="littletableheader">&nbsp;</td>
+					<td bgcolor='#7098D0'>&nbsp;</td>
 				<?php } ?>
 			</tr>
 
@@ -491,7 +488,7 @@ function del_itspre(id){
 				$pprecios .= $form->$it_tipo->output;
 			?>
 
-			<tr id='tr_itspre_<?php echo $i; ?>'>
+			<tr id='tr_sitems_<?php echo $i; ?>'>
 				<td class="littletablerow" align="left" ><?php echo $form->$it_codigo->output; ?></td>
 				<td class="littletablerow" align="left" ><?php
 					if($form->_status=='show' && strlen($form->$it_detalle->value)>0){
@@ -506,7 +503,7 @@ function del_itspre(id){
 
 				<?php if($form->_status!='show') {?>
 				<td class="littletablerow">
-					<a href='#' onclick='del_itspre(<?=$i ?>);return false;'><?php echo img("images/delete.jpg"); ?></a>
+					<a href='#' onclick='del_sitems(<?php echo $i ?>);return false;'><?php echo img("images/delete.jpg"); ?></a>
 				</td>
 				<?php } ?>
 			</tr>
@@ -527,6 +524,9 @@ function del_itspre(id){
 				<td class="littletableheaderdet">N&uacute;mero</td>
 				<td class="littletableheaderdet">Banco</td>
 				<td class="littletableheaderdet">Monto</td>
+				<?php if($form->_status!='show') {?>
+					<td class="littletableheaderdet"></td>
+				<?php } ?>
 			</tr>
 			<?php 
 
@@ -541,6 +541,9 @@ function del_itspre(id){
 				<td class="littletablerow">       <?php echo $form->$numref->output ?></td>
 				<td class="littletablerow">       <?php echo $form->$banco->output ?></td>
 				<td class="littletablerow" align="right"><?php echo $form->$monto->output ?></td>
+				<?php if($form->_status!='show') {?>
+					<td class="littletablerow"><a href=# onclick="del_sfpa(<?php echo $i; ?>);return false;"><?php echo img("images/delete.jpg"); ?></a></td></tr>
+				<?php } ?>
 			<?php } ?>
 			</tr>
 			<tr id='__UTPL__sfpa'>

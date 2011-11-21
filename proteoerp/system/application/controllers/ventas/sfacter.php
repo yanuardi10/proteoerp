@@ -216,42 +216,6 @@ class sfacter extends validaciones {
 	function dataedit(){
 		$this->rapyd->load('dataobject','datadetails');
 
-		$modbus=array(
-			'tabla'   =>'sinv',
-			'columnas'=>array(
-				'codigo'  =>'C&oacute;digo',
-				'descrip' =>'Descripci&oacute;n',
-				'precio1' =>'Precio 1',
-				'precio2' =>'Precio 2',
-				'precio3' =>'Precio 3',
-				'existen' =>'Existencia',
-				),
-			'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'Descripci&oacute;n'),
-			'retornar'=>array(
-				'codigo' =>'codigoa_<#i#>',
-				'descrip'=>'desca_<#i#>',
-				),
-			'p_uri'   => array(4=>'<#i#>'),
-			'titulo'  => 'Buscar Art&iacute;culo',
-			'where'   => '`activo` = "S"',
-		);
-		$btn=$this->datasis->p_modbus($modbus,'<#i#>');
-
-		$mSCLId=array(
-		'tabla'   =>'scli',
-		'columnas'=>array(
-			'cliente' =>'C&oacute;digo Cliente',
-			'nombre'=>'Nombre', 
-			'cirepre'=>'Rif/Cedula',
-			'dire11'=>'Direcci&oacute;n',
-			'tipo'=>'Tipo'),
-		'filtro'  =>array('cliente'=>'C&oacute;digo Cliente','nombre'=>'Nombre'),
-		'retornar'=>array('cliente'=>'cod_cli','nombre'=>'nombre','rifci'=>'rifci',
-						  'dire11'=>'direc','tipo'=>'sclitipo'),
-		'titulo'  =>'Buscar Cliente',
-		);
-		$boton =$this->datasis->modbus($mSCLId);
-
 		$do = new DataObject('sfac');
 		$do->rel_one_to_many('sitems', 'sitems', array('id'=>'id_sfac'));
 		//$do->rel_one_to_many('sfpa'  , 'sfpa'  , array('numero','transac'));
@@ -277,7 +241,7 @@ class sfacter extends validaciones {
 		$edit->sprv = new inputField('C&oacute;digo','sprv');
 		$edit->sprv->size = 6;
 		$edit->sprv->maxlength=5;
-		//$edit->sprv->rule='required';
+		$edit->sprv->rule='existesprv';
 		//$edit->sprv->append($boton);
 
 		$edit->sprvnombre = new hiddenField('Nombre', 'sprvnombre');
@@ -334,7 +298,7 @@ class sfacter extends validaciones {
 		$edit->cliente->size = 6;
 		$edit->cliente->maxlength=5;
 		$edit->cliente->autocomplete=false;
-		$edit->cliente->rule='required';
+		$edit->cliente->rule='required|existescli';
 		//$edit->cliente->append($boton);
 
 		$edit->nombre = new hiddenField('Nombre', 'nombre');
@@ -519,108 +483,6 @@ class sfacter extends validaciones {
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = heading($this->titp);
 		$this->load->view('view_ventanas', $data);
-	}
-
-	// Busca Clientes para autocomplete
-	function buscasprv(){
-		$mid  = $this->input->post('q');
-		$qdb  = $this->db->escape('%'.$mid.'%');
-		$qmid = $this->db->escape($mid);
-
-		$data = '{[ ]}';
-		if($mid !== false){
-			$retArray = $retorno = array();
-			
-			//Cheque si existe el codigo
-			$mSQL="SELECT TRIM(nombre) AS nombre, TRIM(rif) AS rif, proveed,  direc1 AS direc
-				FROM sprv WHERE proveed=${qmid} LIMIT 1";
-			$query = $this->db->query($mSQL);
-			if ($query->num_rows() == 1){
-				$row = $query->row_array();
-				$retArray['value']   = $row['proveed'];
-				$retArray['label']   = '('.$row['rif'].') '.utf8_encode($row['nombre']);
-				$retArray['rif']     = $row['rif'];
-				$retArray['nombre']  = utf8_encode($row['nombre']);
-				$retArray['proveed'] = $row['proveed'];
-				$retArray['direc']   = utf8_encode($row['direc']);
-				array_push($retorno, $retArray);
-				$ww=" AND proveed<>${qmid}";
-			}else{
-				$ww='';
-			}
-			
-			$mSQL="SELECT TRIM(nombre) AS nombre, TRIM(rif) AS rif, proveed, direc1 AS direc
-				FROM sprv WHERE rif LIKE ${qdb} OR nombre LIKE ${qdb} ${ww}
-				ORDER BY rif LIMIT 10";
-			$query = $this->db->query($mSQL);
-			if ($query->num_rows() > 0){
-				foreach( $query->result_array() as  $row ) {
-					$retArray['value']   = $row['proveed'];
-					$retArray['label']   = '('.$row['rif'].') '.utf8_encode($row['nombre']);
-					$retArray['rif']     = $row['rif'];
-					$retArray['nombre']  = utf8_encode($row['nombre']);
-					$retArray['proveed'] = $row['proveed'];
-					$retArray['direc']   = utf8_encode($row['direc']);
-					array_push($retorno, $retArray);
-				}
-				$data = json_encode($retorno);
-			}
-		}
-		echo $data;
-		return true;
-	}
-
-	function buscascli(){
-		$mid  = $this->input->post('q');
-		$qmid = $this->db->escape($mid);
-		$qdb  = $this->db->escape('%'.$mid.'%');
-
-		$data = '{[ ]}';
-		if($mid !== false){
-			$retArray = $retorno = array();
-
-			//Cheque si existe el codigo
-			$mSQL="SELECT TRIM(nombre) AS nombre, TRIM(rifci) AS rifci, cliente, tipo, dire11 AS direc
-				FROM scli WHERE cliente=${qmid} LIMIT 1";
-			$query = $this->db->query($mSQL);
-			if ($query->num_rows() == 1){
-				$row = $query->row_array();
-
-				$retArray['value']   = $row['cliente'];
-				$retArray['label']   = '('.$row['rifci'].') '.utf8_encode($row['nombre']);
-				$retArray['rifci']   = $row['rifci'];
-				$retArray['nombre']  = utf8_encode($row['nombre']);
-				$retArray['cod_cli'] = $row['cliente'];
-				$retArray['tipo']    = $row['tipo'];
-				$retArray['direc']   = utf8_encode($row['direc']);
-				array_push($retorno, $retArray);
-				$ww=" AND cliente<>${qmid}";
-			}else{
-				$ww='';
-			}
-
-			$mSQL="SELECT TRIM(nombre) AS nombre, TRIM(rifci) AS rifci, cliente, tipo , dire11 AS direc
-				FROM scli WHERE (cliente LIKE ${qdb} OR rifci LIKE ${qdb} OR nombre LIKE ${qdb}) $ww
-				ORDER BY rifci LIMIT 10";
-
-			$query = $this->db->query($mSQL);
-			if ($query->num_rows() > 0){
-				foreach( $query->result_array() as  $row ) {
-					$retArray['value']   = $row['cliente'];
-					$retArray['label']   = '('.$row['rifci'].') '.utf8_encode($row['nombre']);
-					$retArray['rifci']   = $row['rifci'];
-					$retArray['nombre']  = utf8_encode($row['nombre']);
-					$retArray['cod_cli'] = $row['cliente'];
-					$retArray['tipo']    = $row['tipo'];
-					$retArray['direc']   = utf8_encode($row['direc']);
-					array_push($retorno, $retArray);
-				}
-			}
-			if(count($data)>0)
-				$data = json_encode($retorno);
-		}
-		echo $data;
-		return true;
 	}
 
 	function _pre_insert($do){

@@ -43,38 +43,10 @@ $(function(){
 		autocod(i.toString());
 	}
 
-	$('#rifci').autocomplete({
-		source: function( req, add){
-			$.ajax({
-				url:  "<?php echo site_url('ventas/spre/buscascli/rifci'); ?>",
-				type: "POST",
-				dataType: "json",
-				data: "q="+req.term,
-				success:
-					function(data){
-						var sugiere = [];
-						$.each(data,
-							function(i, val){
-								sugiere.push( val );
-							}
-						);
-						add(sugiere);
-					},
-			})
-		},
-		minLength: 2,
-		select: function( event, ui ) {
-			$('#nombre').val(ui.item.nombre);
-			$('#rifci').val(ui.item.rifci);
-			$('#cod_cli').val(ui.item.cod_cli);
-			$('#sclitipo').val(ui.item.tipo);
-		}
-	});
-
 	$('#cod_cli').autocomplete({
 		source: function( req, add){
 			$.ajax({
-				url:  "<?php echo site_url('ventas/sfacter/buscascli'); ?>",
+				url:  "<?php echo site_url('ajax/buscascli'); ?>",
 				type: "POST",
 				dataType: "json",
 				data: "q="+req.term,
@@ -109,7 +81,7 @@ $(function(){
 	$('#sprv').autocomplete({
 		source: function( req, add){
 			$.ajax({
-				url:  "<?php echo site_url('ventas/sfacter/buscasprv'); ?>",
+				url:  "<?php echo site_url('ajax/buscasprv'); ?>",
 				type: "POST",
 				dataType: "json",
 				data: "q="+req.term,
@@ -183,7 +155,6 @@ function totalizar(){
 	$("#totals_val").text(nformat(totals,2));
 	$("#ivat_val").text(nformat(iva,2));
 	autocod(0);
-	
 }
 
 function add_sitems(){
