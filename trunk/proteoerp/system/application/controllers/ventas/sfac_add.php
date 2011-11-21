@@ -307,6 +307,7 @@ class sfac_add extends validaciones {
 		$edit->factura->size = 10;
 		$edit->factura->mode='autohide';
 		$edit->factura->maxlength=8;
+		$edit->factura->rule='condi_required|callback_chfactura';
 
 		$edit->peso = new inputField('Peso', 'peso');
 		$edit->peso->css_class = 'inputnum';
@@ -502,6 +503,15 @@ class sfac_add extends validaciones {
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = heading($this->titp);
 		$this->load->view('view_ventanas', $data);
+	}
+
+	function chfactura($factura){
+		$tipo_doc=$this->input->post('tipo_doc');
+		$this->validation->set_message('chfactura', 'El campo %s debe contener un numero de factura v&aacute;lido');
+		if($tipo_doc=='D' && empty($factura)){
+			return false;
+		}
+		return true;
 	}
 
 	function _pre_insert($do){

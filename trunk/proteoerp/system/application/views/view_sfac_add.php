@@ -86,7 +86,77 @@ $(function(){
 			$('#direc_val').text(ui.item.direc);
 		}
 	});
+
+	$('#factura').autocomplete({
+		source: function( req, add){
+			$.ajax({
+				url:  "<?php echo site_url('ajax/buscasfacdev'); ?>",
+				type: "POST",
+				dataType: "json",
+				data: "q="+req.term,
+				success:
+					function(data){
+						var sugiere = [];
+						$.each(data,
+							function(i, val){
+								sugiere.push( val );
+							}
+						);
+						add(sugiere);
+					},
+			})
+		},
+		minLength: 2,
+		select: function( event, ui ) {
+			$('#nombre').val(ui.item.nombre);
+			$('#nombre_val').text(ui.item.nombre);
+
+			$('#rifci').val(ui.item.rifci);
+			$('#rifci_val').text(ui.item.rifci);
+
+			$('#cod_cli').val(ui.item.cod_cli);
+			$('#sclitipo').val(ui.item.tipo);
+
+			$('#direc').val(ui.item.direc);
+			$('#direc_val').text(ui.item.direc);
+
+			$.ajax({
+				url: "<?php echo site_url('ajax/buscasinvdev'); ?>",
+				dataType: 'json',
+				type: 'POST',
+				data: "q="+ui.item.value,
+				success: function(data){
+						$("#tipo_doc").val('D');
+						truncate();
+						$.each(data,
+							function(id, val){
+								add_sitems();
+								$('#codigoa_'+id).val(val.codigo);
+								$('#desca_'+id).val(val.descrip);
+								$('#precio1_'+id).val(val.base1);
+								$('#precio2_'+id).val(val.base2);
+								$('#precio3_'+id).val(val.base3);
+								$('#precio4_'+id).val(val.base4);
+								$('#itiva_'+id).val(val.iva);
+								$('#sinvtipo_'+id).val(val.tipo);
+								$('#sinvpeso_'+id).val(val.peso);
+								$('#pond_'+id).val(val.pond);
+								$('#ultimo_'+id).val(val.ultimo);
+								$('#cana_'+id).val(val.cana);
+								post_modbus_sinv(id);
+							}
+						);
+					},
+			});
+		}
+	});
 });
+
+function truncate(){
+	$('tr[id^="tr_sitems_"]').remove();
+	$('tr[id^="tr_sfpa_"]').remove();
+	sitems_cont=sfpa_cont=0;
+}
 
 function importe(id){
 	var ind     = id.toString();
@@ -377,6 +447,10 @@ function del_sitems(id){
 	id = id.toString();
 	$('#tr_sitems_'+id).remove();
 	totalizar();
+	var arr = $('input[id^="codigoa_"]');
+	if(arr.length<=0){
+		add_sitems();
+	}
 }
 function del_sfpa(id){
 	id = id.toString();
