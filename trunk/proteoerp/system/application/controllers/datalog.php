@@ -6,7 +6,8 @@ class Datalog extends Controller {
 	}
 
 	function index($mclave){
-		$comando = $this->datasis->dameval("SELECT ejecuta FROM enlacedp WHERE clave='$mclave' ");
+		$dbmclave=$this->db->escape($mclave);
+		$comando = $this->datasis->dameval("SELECT ejecuta FROM enlacedp WHERE clave=$dbmclave ");
 		echo $comando;
 	}
 
@@ -22,9 +23,4 @@ class Datalog extends Controller {
 			redirect($row->ejecuta);
 		}
 	}
-
-
 }
-
-
-?>
