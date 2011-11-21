@@ -120,14 +120,14 @@ $(function(){
 			$('#direc').val(ui.item.direc);
 			$('#direc_val').text(ui.item.direc);
 
+			truncate();
+			$("#tipo_doc").val('D');
 			$.ajax({
 				url: "<?php echo site_url('ajax/buscasinvdev'); ?>",
 				dataType: 'json',
 				type: 'POST',
 				data: "q="+ui.item.value,
 				success: function(data){
-						$("#tipo_doc").val('D');
-						truncate();
 						$.each(data,
 							function(id, val){
 								add_sitems();
@@ -146,6 +146,29 @@ $(function(){
 								post_modbus_sinv(id);
 							}
 						);
+					},
+			});
+
+			$.ajax({
+				url: "<?php echo site_url('ajax/buscasfpadev'); ?>",
+				dataType: 'json',
+				type: 'POST',
+				data: "q="+ui.item.value,
+				success: function(data){
+						$.each(data,
+							function(id, val){
+								add_sfpa();
+								$('#tipo_'+id).val(val.tipo);
+								$('#num_ref_'+id).val(val.num_ref);
+								$('#banco_'+id).val(val.banco);
+								$('#monto_'+id).val(val.monto);
+							}
+						);
+						falta=faltante();
+						if(falta>0){
+							can=add_sfpa();
+							$('#tipo_'+can).val('');
+						}
 					},
 			});
 		}
@@ -238,6 +261,7 @@ function add_sitems(){
 	autocod(can);
 	$('#codigo_'+can).focus();
 	sitems_cont=sitems_cont+1;
+	return can;
 }
 
 function add_sfpa(){
@@ -250,6 +274,7 @@ function add_sfpa(){
 	falta =faltante();
 	$("#monto_"+can).val(falta);
 	sfpa_cont=sfpa_cont+1;
+	return can;
 }
 
 function post_precioselec(ind,obj){
