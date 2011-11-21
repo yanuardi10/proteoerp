@@ -70,6 +70,9 @@ class ejecutasql extends Controller {
 	}
 
 	function  ejecutar($id=nul){
+		if(!$this->secu->es_logeado()){
+			show_error('Debe loguearse para usar este modulo');
+		}
 		$url='supervisor/ejecutasql/filteredgrid';
 		$this->rapyd->uri->keep_persistence();
 		$persistence = $this->rapyd->session->get_persistence($url, $this->rapyd->uri->gfid);
