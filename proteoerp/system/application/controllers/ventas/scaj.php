@@ -397,7 +397,7 @@ class Scaj extends validaciones {
 	function scajextjs(){
 		$encabeza='CAJEROS';
 		$listados= $this->datasis->listados('scaj');
-		$otros=$this->datasis->otros('scaj', 'scaj');
+		$otros=$this->datasis->otros('scaj', 'ventas/scaj');
 
 		$mSQL = "SELECT ubica, CONCAT(ubica,' ',ubides) descrip FROM caub WHERE gasto='N' ORDER BY ubica";
 		$alma = $this->datasis->llenacombo($mSQL);
@@ -443,7 +443,6 @@ function estado(val){
 		$camposforma = "
 							{
 							xtype:'fieldset',
-							//title: 'REGISTRO',
 							frame: false,
 							border: false,
 							labelAlign: 'right',

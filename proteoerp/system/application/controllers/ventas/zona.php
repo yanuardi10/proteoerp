@@ -171,8 +171,8 @@ class Zona extends Controller {
 			{
 				$mSQL = $this->db->insert_string("zona", $campos );
 				$this->db->simple_query($mSQL);
-				logusu('grcl',"ZONA $codigo CREADO");
-				echo "{ success: true, message: 'Zoan Agregada'}";
+				logusu('zona',"ZONA $codigo CREADO");
+				echo "{ success: true, message: 'Zona Agregada'}";
 			} else {
 				echo "{ success: false, message: 'Ya existe una zona con ese Codigo!!'}";
 			}
@@ -194,7 +194,7 @@ class Zona extends Controller {
 		$mSQL = $this->db->update_string("zona", $campos,"id='".$data['data']['id']."'" );
 		$this->db->simple_query($mSQL);
 		logusu('zona',"ZONA $codigo ID ".$data['data']['id']." MODIFICADO");
-		echo "{ success: true, message: 'Zoan Modificada -> ".$data['data']['codigo']."'}";
+		echo "{ success: true, message: 'Zona Modificada -> ".$data['data']['codigo']."'}";
 	}
 
 	function eliminar(){
@@ -225,7 +225,7 @@ class Zona extends Controller {
 	function zonaextjs(){
 		$encabeza='ZONAS';
 		$listados= $this->datasis->listados('zona');
-		$otros=$this->datasis->otros('zona', 'zona');
+		$otros=$this->datasis->otros('zona', 'ventas/zona');
 
 		$urlajax = 'ventas/zona/';
 		$variables = "";
@@ -259,11 +259,6 @@ class Zona extends Controller {
 		";
 
 		$titulow = 'Zonas';
-
-		$dockedItems = "
-				{ iconCls: 'icon-reset', itemId: 'close', text: 'Cerrar',   scope: this, handler: this.onClose },
-				{ iconCls: 'icon-save',  itemId: 'save',  text: 'Guardar',  disabled: false, scope: this, handler: this.onSave }
-		";
 
 		$winwidget = "
 				closable: false,
@@ -302,7 +297,6 @@ class Zona extends Controller {
 		$data['stores']      = $stores;
 		$data['camposforma'] = $camposforma;
 		$data['titulow']     = $titulow;
-		$data['dockedItems'] = $dockedItems;
 		$data['winwidget']   = $winwidget;
 		$data['features']    = $features;
 		$data['filtros']     = $filtros;

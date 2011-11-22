@@ -593,7 +593,7 @@ class Datasis {
 					$listados .= "[ '*', '".$row['titulo']."', '".$row['nombre']."' ],";
 				}
 			} else {
-				$listados .= "[ '-', 'No hay listados Proteo', '' ]";
+				//$listados .= "[ '-', 'No hay listados Proteo', '' ]";
 			}
 			$query->free_result();
 

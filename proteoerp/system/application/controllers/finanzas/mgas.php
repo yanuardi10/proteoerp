@@ -7,16 +7,23 @@ class Mgas extends validaciones {
 		parent::Controller(); 
 		$this->load->library('rapyd');
 		$this->load->library('pi18n');
-		gser::instalar();
-		$this->instalar();
+		//gser::instalar();
+		//$this->instalar();
 	}
 
 	function index(){
+		if ( !$this->datasis->iscampo('mgas','id') ) {
+			$this->db->simple_query('ALTER TABLE mgas DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE mgas ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ');
+			$this->db->simple_query('ALTER TABLE mgas ADD UNIQUE INDEX codigo (codigo)');
+		}
+
 		$this->datasis->modulo_id(501,1);
 		if($this->pi18n->pais=='COLOMBIA'){
 			redirect('finanzas/mgascol/filteredgrid');
 		}else{
-			redirect('finanzas/mgas/filteredgrid');
+			//redirect('finanzas/mgas/filteredgrid');
+			$this->mgasextjs();
 		}
 	}
 
@@ -388,4 +395,299 @@ class Mgas extends validaciones {
 		$grupo->build();
 		echo $grupo->output; 
 	}*/
+
+
+	function grid(){
+		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']   :  0;
+		$limit   = isset($_REQUEST['limit'])  ? $_REQUEST['limit']   : 50;
+		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']    : '[{"property":"grupo","direction":"ASC"},{"property":"descrip","direction":"ASC"}]';
+		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
+
+		$where = $this->datasis->extjsfiltro($filters);
+		
+		$this->db->_protect_identifiers=false;
+		$this->db->select('*, CONCAt(grupo, " ", nom_grup ) nomgrup');
+		$this->db->from('mgas');
+		if (strlen($where)>1) $this->db->where($where, NULL, FALSE); 
+		
+		$sort = json_decode($sort, true);
+		for ( $i=0; $i<count($sort); $i++ ) {
+			$this->db->order_by($sort[$i]['property'],$sort[$i]['direction']);
+		}
+
+		$this->db->limit($limit, $start);
+		$query = $this->db->get();
+		$results = $this->db->count_all('mgas');
+
+		$arr = $this->datasis->codificautf8($query->result_array());
+		echo '{success:true, message:"Loaded data", results:'. $results.', data:'.json_encode($arr).'}';
+	}
+
+	function crear(){
+		$js= file_get_contents('php://input');
+		$data= json_decode($js,true);
+		$campos   = $data['data'];
+		$codigo = $campos['codigo'];
+
+		$campos['nom_grup'] = $this->datasis->dameval("SELECT nom_grup FROM grga WHERE grupo='".$campos['grupo']."'");
+
+		if ( !empty($codigo) ) {
+			unset($campos['id']);
+			unset($campos['nomgrup']);
+			// Revisa si existe ya ese contrato
+			if ($this->datasis->dameval("SELECT COUNT(*) FROM mgas WHERE codigo='$codigo'") == 0)
+			{
+				$mSQL = $this->db->insert_string("mgas", $campos );
+				$this->db->simple_query($mSQL);
+				logusu('mgas',"GASTO $codigo CREADO");
+				echo "{ success: true, message: 'Gasto Agregada'}";
+			} else {
+				echo "{ success: false, message: 'Ya existe una gasto con ese codigo!!'}";
+			}
+			
+		} else {
+			echo "{ success: false, message: 'Falta el campo codigo!!'}";
+		}
+	}
+
+	function modificar(){
+		$js= file_get_contents('php://input');
+		$data= json_decode($js,true);
+		$campos = $data['data'];
+		$codigo = $campos['codigo'];
+		
+		unset($campos['codigo']);
+		unset($campos['id']);
+		unset($campos['nomgrup']);
+		
+		$campos['nom_grup'] = $this->datasis->dameval("SELECT nom_grup FROM grga WHERE grupo='".$campos['grupo']."'");
+
+		$mSQL = $this->db->update_string("mgas", $campos,"id=".$data['data']['id'] );
+		$this->db->simple_query($mSQL);
+		logusu('mgas',"mgas $codigo ID ".$data['data']['id']." MODIFICADO");
+		echo "{ success: true, message: 'mgas Modificada -> ".$data['data']['codigo']."'}";
+	}
+
+	function eliminar(){
+		$js= file_get_contents('php://input');
+		$data= json_decode($js,true);
+		$campos = $data['data'];
+
+		$codigo = $campos['codigo'];
+
+		// VER SI PUEDE BORRAR GITSER
+		$chek =  $this->datasis->dameval("SELECT count(*) FROM gitser WHERE codigo='$codigo'");
+		// VER SI PUEDE BORRAR ORDENES DE SERVICIO
+		$chek +=  $this->datasis->dameval("SELECT count(*) FROM itords WHERE codigo='$codigo'");
+		// VER SI PUEDE BORRAR NOMINAS
+		$chek +=  $this->datasis->dameval("SELECT count(*) FROM conc WHERE ctade='$codigo' AND tipod='G' ");
+		// VER SI PUEDE BORRAR NOMINAS
+		$chek +=  $this->datasis->dameval("SELECT count(*) FROM conc WHERE ctaac='$codigo' AND tipoa='G' ");
+
+		if ($chek > 0){
+			echo "{ success: false, message: 'Gasto no puede ser Borrada'}";
+		} else {
+			$this->db->simple_query("DELETE FROM mgas WHERE codigo='$codigo'");
+			logusu('mgas',"GASTO $codigo ELIMINADO");
+			echo "{ success: true, message: 'Gasto Eliminado'}";
+		}
+	}
+
+
+//0414 376 0149 juan picapiedras
+
+//****************************************************************
+//
+//
+//
+//****************************************************************
+	function mgasextjs(){
+		$encabeza='MAESTRO DE GASTOS';
+		$listados= $this->datasis->listados('mgas');
+		$otros=$this->datasis->otros('mgas', 'finanzas/mgas');
+
+		$mSQL = "SELECT grupo, CONCAT(grupo,' ',nom_grup) descrip FROM grga ORDER BY grupo";
+		$grupo = $this->datasis->llenacombo($mSQL);
+
+		$mSQL = 'SELECT codigo, CONCAT(codigo," - ",activida) val FROM rete WHERE tipo="NR" ORDER BY codigo';
+		$reten = $this->datasis->llenacombo($mSQL);
+
+		$mSQL = 'SELECT codigo, CONCAT(codigo," - ",activida) val FROM rete WHERE tipo="JD" ORDER BY codigo';
+		$retej = $this->datasis->llenacombo($mSQL);
+
+
+		$urlajax = 'finanzas/mgas/';
+		$variables = "var mcuenta='';";
+		
+		$funciones = "
+function rtipo(val){
+	if ( val == 'G') {
+		return 'Gasto';
+	} else if ( val == 'I') {
+		return  'Inventario';
+	} else if ( val == 'S') {
+		return  'Suministro';
+	} else if ( val == 'A') {
+		return  'Activo';
+	}
+}";
+		
+		$valida = "
+		{ type: 'length', field: 'codigo',   min: 1 },
+		{ type: 'length', field: 'descrip',  min: 1 }
+		";
+		
+		$columnas = "
+		{ header: 'Codigo',      width:  70, sortable: true, dataIndex: 'codigo',   field: { type: 'textfield' }, filter: { type: 'string' }}, 
+		{ header: 'Tipo',        width:  60, sortable: true, dataIndex: 'tipo',     field: { type: 'textfield' }, filter: { type: 'string' }, renderer: rtipo },
+		{ header: 'Descripcion', width: 200, sortable: true, dataIndex: 'descrip',  field: { type: 'textfield' }, filter: { type: 'string' }}, 
+		{ header: 'Grupo',       width:  40, sortable: true, dataIndex: 'grupo',    field: { type: 'textfield' }, filter: { type: 'string' }}, 
+		{ header: 'Cuenta',      width:  70, sortable: true, dataIndex: 'cuenta',   field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Reten/Nat',   width:  70, sortable: true, dataIndex: 'reten',   field: { type: 'textfield' }, filter: { type: 'string' }}, 
+		{ header: 'Reten/Jur',   width:  70, sortable: true, dataIndex: 'retej',   field: { type: 'textfield' }, filter: { type: 'string' }}, 
+		
+		//{ header: 'Impuesto',    width:  70, sortable: true, dataIndex: 'impuesto', field: { type: 'numeric'   }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00') },
+		";
+
+		$agrupar = "		remoteSort: true,
+		groupField: 'nomgrup',";
+
+
+		$campos = "'id', 'codigo','tipo','descrip','grupo','nom_grup','iva','medida','fraxuni','minimo','maximo','ultimo','promedio','unidades','fraccion','cuenta','tasa1','base1','desde1','tasa2','base2','desde2','tasa3','base3','desde3','tasa4','base4','desde4','amorti','dacumu','rica','reten','retej','nomgrup'";
+		
+		$camposforma = "
+							{
+							xtype:'fieldset',
+							frame: false,
+							border: false,
+							labelAlign: 'right',
+							defaults: { xtype:'fieldset', labelWidth:70 },
+							style:'padding:4px',
+							layout: 'column',
+							items: [
+									{ xtype: 'textfield',     fieldLabel: 'Codigo',      name: 'codigo',  width:140, allowBlank: false, id: 'codigo' },
+									{ xtype: 'combo',         fieldLabel: 'Tipo',        name: 'tipo',    width:260, store: [['G','Gasto'],['I','Inventario'],['S','Suministro'],['A','Activo Fijo']], labelWidth:160},
+									{ xtype: 'textfield',     fieldLabel: 'Descripcion', name: 'descrip', width:400, allowBlank: false },
+									{ xtype: 'combo',         fieldLabel: 'Grupo',       name: 'grupo',   width:400, store: [".$grupo."] },
+									{ xtype: 'combo',         fieldLabel: 'C.Contable',  name: 'cuenta',  width:400, store: cplaStore, id: 'cuenta', mode: 'remote', hideTrigger: true, typeAhead: true, forceSelection: true, valueField: 'item', displayField: 'valor'},
+								]
+							},{
+							xtype:'fieldset',
+							title: 'Retenciones',
+							frame: false,
+							border: false,
+							labelAlign: 'right',
+							defaults: { xtype:'fieldset', labelWidth:70 },
+							style:'padding:4px',
+							layout: 'column',
+							items: [
+									{ xtype: 'combo', fieldLabel: 'Persona Natural',  name: 'reten',  width:400, store: [".$reten."]},
+									{ xtype: 'combo', fieldLabel: 'Persona Juridica', name: 'retej',  width:400, store: [".$retej."] },
+								]
+							}
+		";
+
+		$titulow = 'Maestro de Gastos';
+
+		$winwidget = "
+				closable: false,
+				closeAction: 'destroy',
+				width: 450,
+				height: 350,
+				resizable: false,
+				modal: true,
+				items: [writeForm],
+				listeners: {
+					beforeshow: function() {
+						var form = this.down('writerform').getForm();
+						this.activeRecord = registro;
+						if (registro) {
+							mcuenta  = registro.data.cuenta;
+							cplaStore.proxy.extraParams.cuenta  = mcuenta  ;
+							cplaStore.load({ params: { 'proveed': registro.data.cliente,  'origen': 'beforeform' } });
+
+							form.loadRecord(registro);
+							form.findField('codigo').setReadOnly(true);
+						} else {
+							mcuenta  = '';
+							form.findField('codigo').setReadOnly(false);
+						}
+					}
+				}
+";
+
+		$stores = "
+var cplaStore = new Ext.data.Store({
+	fields: [ 'item', 'valor'],
+	autoLoad: false,
+	autoSync: false,
+	pageSize: 50,
+	pruneModifiedRecords: true,
+	totalProperty: 'results',
+	proxy: {
+		type: 'ajax',
+		url : urlApp + 'contabilidad/cpla/cplabusca',
+		extraParams: {  'cuenta': mcuenta, 'origen': 'store' },
+		reader: {type: 'json',totalProperty: 'results',root: 'data'}
+	},
+	method: 'POST'
+});
+		
+		";
+
+		$features = "features: [{ ftype: 'grouping', groupHeaderTpl: '{name}' },{ ftype: 'filters', encode: 'json', local: false }],";
+
+		$data['listados']    = $listados;
+		$data['otros']       = $otros;
+		$data['encabeza']    = $encabeza;
+		$data['urlajax']     = $urlajax;
+		$data['variables']   = $variables;
+		$data['funciones']   = $funciones;
+		$data['valida']      = $valida;
+		$data['columnas']    = $columnas;
+		$data['campos']      = $campos;
+		$data['stores']      = $stores;
+		$data['camposforma'] = $camposforma;
+		$data['titulow']     = $titulow;
+		$data['winwidget']   = $winwidget;
+		$data['features']    = $features;
+		//$data['filtros']     = $filtros;
+		$data['agrupar']     = $agrupar;
+
+		$data['title']  = heading('Maestro de Gastos');
+		$this->load->view('extjs/extjsven',$data);
+		
+	}
+
+
+
+	
+	function mgasbusca() {
+		$start    = isset($_REQUEST['start'])  ? $_REQUEST['start']  :  0;
+		$limit    = isset($_REQUEST['limit'])  ? $_REQUEST['limit']  : 25;
+		$codigo   = isset($_REQUEST['codigo']) ? $_REQUEST['codigo']  : '';
+		$tipo     = isset($_REQUEST['tipo'])   ? $_REQUEST['tipo']  : 'G';
+		$semilla  = isset($_REQUEST['query'])  ? $_REQUEST['query']  : '';
+
+		$semilla = trim($semilla);
+	
+		$mSQL = "SELECT codigo item, CONCAT(codigo, ' ', descrip) valor FROM mgas WHERE tipo='$tipo' ";
+		if ( strlen($semilla)>0 ){
+			$mSQL .= " AND ( codigo LIKE '$semilla%' OR descrip LIKE '%$semilla%' ) ";
+		} else {
+			if ( strlen($codigo)>0 ) $mSQL .= " AND codigo = '$codigo' ";
+		}
+		$mSQL .= "ORDER BY descrip ";
+		$results = $this->db->count_all('mgas');
+
+		if ( empty($mSQL)) {
+			echo '{success:true, message:"mSQL vacio, Loaded data", results: 0, data:'.json_encode(array()).'}';
+		} else {
+			$mSQL .= " limit $start, $limit ";
+			$query = $this->db->query($mSQL);
+			$arr = $this->datasis->codificautf8($query->result_array());
+			echo '{success:true, message:"maestro de gastos", results:'. $results.', data:'.json_encode($arr).'}';
+		}
+	}
+
 }

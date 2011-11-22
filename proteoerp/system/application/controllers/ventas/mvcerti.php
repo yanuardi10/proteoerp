@@ -33,7 +33,8 @@ class Mvcerti extends validaciones {
 	}
 	function index(){
 		$this->datasis->modulo_id(506,1);
-		redirect("ventas/mvcerti/filteredgrid");
+		//redirect("ventas/mvcerti/filteredgrid");
+		$this->mvcertiextjs();
 	}
 	
 	function filteredgrid(){
@@ -182,6 +183,238 @@ class Mvcerti extends validaciones {
 		}else {
 		return TRUE;
 		}
+	}
+
+	function grid(){
+		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']   :  0;
+		$limit   = isset($_REQUEST['limit'])  ? $_REQUEST['limit']   : 50;
+		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']    : '[{"property":"cliente","direction":"ASC"}]';
+		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
+
+		$where = $this->datasis->extjsfiltro($filters,'mvcerti');
+		
+		$this->db->_protect_identifiers=false;
+		$this->db->select('mvcerti.*, scli.nombre');
+		$this->db->from('mvcerti');
+		$this->db->join('scli','mvcerti.cliente=scli.cliente');
+		
+		if (strlen($where)>1) $this->db->where($where, NULL, FALSE); 
+		
+		$sort = json_decode($sort, true);
+		for ( $i=0; $i<count($sort); $i++ ) {
+			$this->db->order_by($sort[$i]['property'],$sort[$i]['direction']);
+		}
+
+		$this->db->limit($limit, $start);
+		$query = $this->db->get();
+		$results = $this->db->count_all('mvcerti');
+
+		$arr = $this->datasis->codificautf8($query->result_array());
+		echo '{success:true, message:"Loaded data", results:'. $results.', data:'.json_encode($arr).'}';
+	}
+
+
+	function crear(){
+		$js= file_get_contents('php://input');
+		$data= json_decode($js,true);
+		$campos   = $data['data'];
+		$cliente = $campos['cliente'];
+		$numero  = $campos['numero'];
+
+		unset($campos['id']);
+		unset($campos['nombre']);
+
+		if ( !empty($cliente) and !empty($numero)  ) {
+			unset($campos['id']);
+			// Revisa si existe ya ese contrato
+			if ($this->datasis->dameval("SELECT COUNT(*) FROM mvcerti WHERE cliente='$cliente' AND numero='$numero'") == 0)
+			{
+				$mSQL = $this->db->insert_string("mvcerti", $campos );
+				$this->db->simple_query($mSQL);
+				logusu('mvcerti',"CERTIFICADO MV $cliente numero $numero CREADO");
+				echo "{ success: true, message: 'Certificaso Agregado".$mSQL."'}";
+			} else {
+				echo "{ success: false, message: 'Ya existe un certificado con ese numero!!'}";
+			}
+			
+		} else {
+			echo "{ success: false, message: 'Falta Cliente o Certificado!!'}";
+		}
+	}
+
+	function modificar(){
+		$js= file_get_contents('php://input');
+		$data= json_decode($js,true);
+		$campos = $data['data'];
+
+		$cliente = $campos['cliente'];
+		$numero  = $campos['numero'];
+
+		unset($campos['id']);
+		unset($campos['nombre']);
+		unset($campos['cliente']);
+
+		//Cambia el Certificado en las facturas
+		$mcertifi = $this->datasis->dameval("SELECT numero FROM mvcerti WHERE id=".$data['data']['id']);
+
+		$mSQL = $this->db->update_string("mvcerti", $campos,"id=".$data['data']['id'] );
+		$this->db->simple_query($mSQL);
+
+		// Solo si cambioel certificado
+		if ( $numero <> $mcertifi) {		
+			$mSQL = "UPDATE sfac SET certificado='".$numero."' WHERE certificado='".$mcertifi."' AND cod_cli='".$cliente."'";
+			$this->db->simple_query($mSQL);
+		}
+		
+		logusu('mvcerti',"CAJERO $cajero ID ".$data['data']['id']." MODIFICADO");
+		echo "{ success: true, message: 'Cajero Modificado -> ".$data['data']['cajero']."'}";
+	}
+
+	function eliminar(){
+		$js= file_get_contents('php://input');
+		$data= json_decode($js,true);
+		$campos = $data['data'];
+
+		$cliente = $campos['cliente'];
+		$numero  = $campos['numero'];
+
+		$chek  =  $this->datasis->dameval("SELECT COUNT(*) FROM sfac WHERE certificado='$numero' AND cod_cli='$cliente'");
+
+		if ($chek > 0){
+			echo "{ success: false, message: 'Certificado no puede ser Borrado'}";
+		} else {
+			$this->db->simple_query("DELETE FROM mvcerti WHERE id=".$data['data']['id']);
+			logusu('mvcerti',"CERTIFICADO $cliente/$numero ELIMINADO");
+			echo "{ success: true, message: 'Certificado Eliminado'}";
+		}
+	}
+
+
+//0414 376 0149 juan picapiedras
+
+//****************************************************************8
+//
+//
+//
+//****************************************************************8
+	function mvcertiextjs(){
+		$encabeza='CERTIFICADOS DE EXONERACION DE IVA';
+		$listados= $this->datasis->listados('mvcerti');
+		$otros=$this->datasis->otros('mvcerti', 'ventas/mvcerti');
+/*
+		$mSQL = "SELECT ubica, CONCAT(ubica,' ',ubides) descrip FROM caub WHERE gasto='N' ORDER BY ubica";
+		$alma = $this->datasis->llenacombo($mSQL);
+
+		$mSQL  = "SELECT codbanc, CONCAT(codbanc,' ',banco) banco FROM banc WHERE tbanco='CAJ' ORDER BY codbanc";
+		$cajas = $this->datasis->llenacombo($mSQL);
+
+		$mSQL  = "SELECT vendedor, CONCAT(vendedor,' ',nombre) nombre FROM vend ORDER BY vendedor";
+		$vende = $this->datasis->llenacombo($mSQL);
+*/
+
+		$urlajax = 'ventas/mvcerti/';
+		$variables = "var mcliente='';";
+
+		$funciones = "function estado(val){if ( val == 'A'){ return 'Activo';} else if ( val == 'C'){return  'Cerrado';}}";
+
+		$valida = "
+		{ type: 'length', field: 'cliente', min: 1 }
+		//{ type: 'length', field: 'numero',  min: 32 }
+		";
+		
+		$columnas = "
+		{ header: 'Cliente',     width:  50, sortable: true, dataIndex: 'cliente', field: { type: 'textfield' }, filter: { type: 'string' }}, 
+		{ header: 'Nombre',      width: 210, sortable: true, dataIndex: 'nombre',  field: { type: 'textfield' }, filter: { type: 'string' }}, 
+		{ header: 'Status',      width:  60, sortable: true, dataIndex: 'status',  field: { type: 'textfield' }, filter: { type: 'string' }, renderer: estado },
+		{ header: 'Fecha',       width:  70, sortable: true, dataIndex: 'fecha',   field: { type: 'datefield' }, filter: { type: 'date'   }}, 
+		{ header: 'Certificado', width: 210, sortable: true, dataIndex: 'numero',  field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Obra',        width: 400, sortable: true, dataIndex: 'obra',    field: { type: 'textfield' }, filter: { type: 'string' }}, 
+	";
+
+		$campos = "'id','cliente','numero','fecha','obra','status', 'nombre'";
+		
+		$camposforma = "
+							{
+							xtype:'fieldset',
+							frame: false,
+							border: false,
+							labelAlign: 'right',
+							defaults: { labelWidth:70 },
+							style:'padding:4px',
+							layout: 'column',
+							items: [
+									{ xtype: 'combo',         fieldLabel: 'Cliente', name: 'cliente', labelWidth: 50,  width: 400,   id: 'cliente',mode: 'remote',hideTrigger: true, typeAhead: true, forceSelection: true,valueField: 'item', displayField: 'valor',store: scliStore},
+									{ xtype: 'datefield',     fieldLabel: 'Fecha',   name: 'fecha',   labelWidth: 50,  width: 150,  format: 'd/m/Y', submitFormat: 'Y-m-d' },
+									{ xtype: 'combo',         fieldLabel: 'Status',  name: 'status',  labelWidth:150,  width: 250,  store: [['A','Activo'],['C','Cerrado']]},
+									{ xtype: 'textfield',     fieldLabel: 'Numero',  name: 'numero',  labelWidth: 50,  width: 300,   allowBlank: false },
+									{ xtype: 'textareafield', fieldLabel: 'Obra',    name: 'obra',    labelWidth: 50,  width: 400,  allowBlank: true }
+								]
+							}
+		";
+
+		$titulow = 'Cajeros';
+
+		$winwidget = "
+				closable: false,
+				closeAction: 'destroy',
+				width: 450,
+				height: 300,
+				resizable: false,
+				modal: true,
+				items: [writeForm],
+				listeners: {
+					beforeshow: function() {
+						var form = this.down('writerform').getForm();
+						this.activeRecord = registro;
+						
+						if (registro) {
+							mcliente = registro.data.cliente;
+							scliStore.proxy.extraParams.cliente = mcliente ;
+							scliStore.load({ params: { 'cuenta':  registro.data.cliente, 'origen': 'beforeform' } });
+							form.loadRecord(registro);
+						} else {
+							mcliente = '';
+						}
+					}
+				}
+";
+
+		$stores = "
+var scliStore = new Ext.data.Store({
+	fields: [ 'item', 'valor'],
+	autoLoad: false, autoSync: false, pageSize: 30, pruneModifiedRecords: true, totalProperty: 'results',
+	proxy: {
+		type: 'ajax',
+		url : urlApp + 'ventas/scli/sclibusca',
+		extraParams: {  'cliente': mcliente, 'origen': 'store' },
+		reader: { type: 'json', totalProperty: 'results', root: 'data' }
+	},
+	method: 'POST'
+});
+";
+
+		$features = "features: [ filters],";
+		$filtros = "var filters = { ftype: 'filters', encode: 'json', local: false }; ";
+
+		$data['listados']    = $listados;
+		$data['otros']       = $otros;
+		$data['encabeza']    = $encabeza;
+		$data['urlajax']     = $urlajax;
+		$data['variables']   = $variables;
+		$data['funciones']   = $funciones;
+		$data['valida']      = $valida;
+		$data['columnas']    = $columnas;
+		$data['campos']      = $campos;
+		$data['stores']      = $stores;
+		$data['camposforma'] = $camposforma;
+		$data['titulow']     = $titulow;
+		//$data['dockedItems'] = $dockedItems;
+		$data['winwidget']   = $winwidget;
+		$data['features']    = $features;
+		$data['filtros']     = $filtros;
+		
+		$data['title']  = heading('Cajeros');
+		$this->load->view('extjs/extjsven',$data);
 	}
 
 }
