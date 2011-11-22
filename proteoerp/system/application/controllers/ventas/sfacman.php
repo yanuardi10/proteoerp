@@ -1,16 +1,16 @@
 <?php
 require_once(BASEPATH.'application/controllers/validaciones.php');
 //require_once(BASEPATH.'application/controllers/ventas/sfac');
-class sfacter extends validaciones {
+class sfacman extends validaciones {
 
-	var $titp='Facturaci&oacute;n por cuenta de Terceros';
+	var $titp='Facturaci&oacute;n por Mandatarios';
 	var $tits='Facturaci&oacute;n';
-	var $url ='ventas/sfacter/';
+	var $url ='ventas/sfacman/';
 
-	function sfacter(){
+	function sfacman(){
 		parent::Controller();
 		$this->load->library('rapyd');
-		$this->datasis->modulo_id('13D',1);
+		$this->datasis->modulo_id('13E',1);
 		$this->instalar();
 	}
 
@@ -81,10 +81,10 @@ class sfacter extends validaciones {
 		$filter->cliente->group = '2';
 
 		$filter->buttons('reset','search');
-		$filter->build("dataformfiltro");
+		$filter->build('dataformfiltro');
 
-		$uri = anchor('ventas/sfacter/dataedit/show/<#id#>','<#tipo_doc#><#numero#>');
-		$uri2  = anchor('ventas/sfacter/dataedit/show/<#id#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar')));
+		$uri = anchor($this->url.'dataedit/show/<#id#>','<#tipo_doc#><#numero#>');
+		$uri2  = anchor($this->url.'dataedit/show/<#id#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar')));
 		$uri2 .= "&nbsp;";
 		$uri2 .= anchor('formatos/ver2/FACTURA/<#tipo_doc#>/<#numero#>',img(array('src'=>'images/pdf_logo.gif','border'=>'0','alt'=>'PDF')));
 		$uri2 .= "&nbsp;";
@@ -100,7 +100,7 @@ class sfacter extends validaciones {
 		$mtool  = "<table background='#554455'><tr>";
 		$mtool .= "<td>&nbsp;</td>";
 
-		$mtool .= "<td>&nbsp;<a href='".base_url()."ventas/sfacter/dataedit/create'>";
+		$mtool .= "<td>&nbsp;<a href='".base_url().$this->url."dataedit/create'>";
 		$mtool .= img(array('src' => 'images/agregar.jpg', 'alt' => 'Agregar Registro', 'title' => 'Agregar Registro','border'=>'0','height'=>'32'));
 		$mtool .= "</a>&nbsp;</td>";
 
@@ -197,20 +197,19 @@ class sfacter extends validaciones {
 		$data['filtro']  = $filter->output;
 		
 		$data['script']  = script('jquery.js');
-		$data["script"] .= script("jquery.alerts.js");
+		$data['script'] .= script('jquery.alerts.js');
 		$data['script'] .= script('superTables.js');
 		$data['script'] .= $script;
 
 		$data['style']   = $style;
 		$data['style']  .= style('superTables.css');
-		$data['style']	.= style("jquery.alerts.css");
+		$data['style']  .= style('jquery.alerts.css');
 
 		$data['extras']  = $extras;
 
-		$data["head"]    = $this->rapyd->get_head();
+		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = heading($this->titp);
 		$this->load->view('view_ventanas', $data);
-
 	}
 
 	function dataedit(){
@@ -218,13 +217,12 @@ class sfacter extends validaciones {
 
 		$do = new DataObject('sfac');
 		$do->rel_one_to_many('sitems', 'sitems', array('id'=>'id_sfac'));
-		//$do->rel_one_to_many('sfpa'  , 'sfpa'  , array('numero','transac'));
-		$do->pointer('scli' ,'scli.cliente=sfac.cod_cli','scli.tipo AS sclitipo','left');
-		$do->pointer('sprv' ,'sprv.proveed=sfac.sprv','sprv.nombre AS sprvnombre, sprv.rif AS sprvrif, sprv.direc1 AS sprvdirec','left');
+		$do->pointer('scli'  ,'scli.cliente=sfac.cod_cli','scli.tipo AS sclitipo','left');
+		$do->pointer('scli AS manda' ,'manda.cliente=sfac.mandatario','manda.nombre AS mandanombre, manda.rifci AS mandarif, manda.dire11 AS mandadirec','left');
 		$do->rel_pointer('sitems','sinv','sitems.codigoa=sinv.codigo','sinv.descrip AS sinvdescrip, sinv.base1 AS sinvprecio1, sinv.base2 AS sinvprecio2, sinv.base3 AS sinvprecio3, sinv.base4 AS sinvprecio4, sinv.iva AS sinviva, sinv.peso AS sinvpeso,sinv.tipo AS sinvtipo');
 
 		$edit = new DataDetails('Facturas', $do);
-		$edit->back_url = site_url('ventas/sfacter/filteredgrid');
+		$edit->back_url = site_url($this->url.'filteredgrid');
 		$edit->set_rel_title('sitems','Producto <#o#>');
 
 		$edit->pre_process( 'insert','_pre_insert' );
@@ -238,31 +236,33 @@ class sfacter extends validaciones {
 		$edit->sclitipo->pointer     = true;
 		$edit->sclitipo->insertValue = 1;
 
-		$edit->sprv = new inputField('C&oacute;digo','sprv');
-		$edit->sprv->size = 6;
-		$edit->sprv->maxlength=5;
-		$edit->sprv->rule='existesprv';
-		//$edit->sprv->append($boton);
+		$edit->mandatario = new inputField('C&oacute;digo','mandatario');
+		$edit->mandatario->size = 6;
+		$edit->mandatario->maxlength=5;
+		$edit->mandatario->rule='existescli';
 
-		$edit->sprvnombre = new hiddenField('Nombre', 'sprvnombre');
-		$edit->sprvnombre->db_name     = 'sprvnombre';
-		$edit->sprvnombre->pointer     = true;
-		$edit->sprvnombre->maxlength   = 40;
-		$edit->sprvnombre->size        = 25;
-		$edit->sprvnombre->readonly =true;
+		$edit->mandanombre = new inputField('Nombre', 'mandanombre');
+		$edit->mandanombre->db_name     = 'mandanombre';
+		$edit->mandanombre->pointer     = true;
+		$edit->mandanombre->type        = 'inputhidden';
+		$edit->mandanombre->maxlength   = 40;
+		$edit->mandanombre->size        = 25;
+		$edit->mandanombre->readonly =true;
 
-		$edit->sprvrif = new hiddenField('RIF', 'sprvrif');
-		$edit->sprvrif->db_name     = 'sprvrif';
-		$edit->sprvrif->pointer     = true;
-		$edit->sprvrif->autocomplete=false;
-		$edit->sprvrif->size = 15;
-		$edit->sprvrif->readonly =true;
+		$edit->mandarif = new inputField('RIF', 'mandarif');
+		$edit->mandarif->db_name     = 'mandarif';
+		$edit->mandarif->pointer     = true;
+		$edit->mandarif->type        = 'inputhidden';
+		$edit->mandarif->autocomplete= false;
+		$edit->mandarif->size        = 15;
+		$edit->mandarif->readonly    = true;
 
-		$edit->sprvdirec= new hiddenField('Direcci&oacute;n', 'sprvdirec');
-		$edit->sprvdirec->db_name     = 'sprvdirec';
-		$edit->sprvdirec->pointer     = true;
-		$edit->sprvdirec->size        = 40;
-		$edit->sprvdirec->readonly =true;
+		$edit->mandadirec= new inputField('Direcci&oacute;n', 'mandadirec');
+		$edit->mandadirec->type        = 'inputhidden';
+		$edit->mandadirec->db_name     = 'mandadirec';
+		$edit->mandadirec->pointer     = true;
+		$edit->mandadirec->size        = 40;
+		$edit->mandadirec->readonly    = true;
 
 		$edit->fecha = new DateonlyField('Fecha', 'fecha','d/m/Y');
 		$edit->fecha->insertValue = date('Y-m-d');
@@ -271,8 +271,7 @@ class sfacter extends validaciones {
 		$edit->fecha->size = 10;
 
 		$edit->tipo_doc = new  dropdownField ('Documento', 'tipo_doc');
-		$edit->tipo_doc->option('F','Factura');
-		$edit->tipo_doc->option('D','Devoluci&oacute;n');
+		$edit->tipo_doc->option('T','Factura de tercero');
 		$edit->tipo_doc->style='width:200px;';
 		$edit->tipo_doc->size = 5;
 		$edit->cliente->rule='required';
@@ -284,10 +283,13 @@ class sfacter extends validaciones {
 
 		$edit->numero = new inputField('N&uacute;mero', 'numero');
 		$edit->numero->size = 10;
-		$edit->numero->mode='autohide';
 		$edit->numero->maxlength=8;
-		$edit->numero->apply_rules=false; //necesario cuando el campo es clave y no se pide al usuario
-		$edit->numero->when=array('show','modify');
+		$edit->numero->rule='required';
+
+		$edit->nfiscal = new inputField('No.Fiscal', 'nfiscal');
+		$edit->nfiscal->size = 6;
+		$edit->nfiscal->maxlength=20;
+		$edit->nfiscal->rule='required';
 
 		$edit->peso = new inputField('Peso', 'peso');
 		$edit->peso->css_class = 'inputnum';
@@ -299,7 +301,6 @@ class sfacter extends validaciones {
 		$edit->cliente->maxlength=5;
 		$edit->cliente->autocomplete=false;
 		$edit->cliente->rule='required|existescli';
-		//$edit->cliente->append($boton);
 
 		$edit->nombre = new hiddenField('Nombre', 'nombre');
 		$edit->nombre->size = 25;
@@ -387,41 +388,6 @@ class sfacter extends validaciones {
 		$edit->sinvtipo->rel_id    = 'sitems';
 		$edit->sinvtipo->pointer   = true;
 
-		//************************************************
-		//fin de campos para detalle,inicio detalle2 sfpa
-		//************************************************
-		//$edit->tipo = new inputField('Tipo <#o#>', 'tipo_<#i#>');
-		//$edit->tipo->size     = 12;
-		//$edit->tipo->db_name  = 'tipo';
-		//$edit->tipo->readonly = true;
-		//$edit->tipo->rel_id   = 'sfpa';
-		//$edit->tipo->rule     = 'required';
-
-		//$edit->numref = new inputField('Numero <#o#>', 'numero_<#i#>');
-		//$edit->numref->size     = 12;
-		//$edit->numref->db_name  = 'numref';
-		//$edit->numref->readonly = true;
-		//$edit->numref->rel_id   = 'sfpa';
-		//$edit->numref->rule     = 'required';
-
-		//$edit->monto = new inputField('Monto <#o#>', 'monto_<#i#>');
-		//$edit->monto->db_name   = 'monto';
-		//$edit->monto->css_class = 'inputnum';
-		//$edit->monto->rel_id    = 'sfpa';
-		//$edit->monto->size      = 10;
-		//$edit->monto->rule      = 'required|positive';
-		//$edit->monto->readonly  = true;
-
-		//$edit->banco = new inputField('Banco <#o#>', 'banco_<#i#>');
-		//$edit->banco->size=36;
-		//$edit->banco->db_name='banco';
-		//$edit->banco->maxlength=50;
-		//$edit->banco->readonly  = true;
-		//$edit->banco->rel_id='sfpa';
-		//**************************
-		//Fin detalle 2
-		//**************************
-
 		$edit->ivat = new hiddenField('I.V.A', 'iva');
 		$edit->ivat->css_class ='inputnum';
 		$edit->ivat->readonly  =true;
@@ -438,7 +404,6 @@ class sfacter extends validaciones {
 		$edit->totalg->size      = 10;
 
 		$edit->observa   = new inputField('Observacion', 'observa');
-		$edit->nfiscal   = new inputField('No.Fiscal', 'nfiscal');
 		$edit->observ1   = new inputField('Observacion', 'observ1');
 		$edit->zona      = new inputField('Zona', 'zona');
 		$edit->ciudad    = new inputField('Ciudad', 'ciudad');
@@ -461,39 +426,35 @@ class sfacter extends validaciones {
 		$edit->buttons('save', 'back','add_rel');
 		$edit->build();
 
-		//$data['script'] .= $script;
-		//$data['script'] .= $scriptreiva;
-
 		$conten['form']  =&  $edit;
 
 		$data['style']   = style('redmond/jquery-ui.css');
 		$data['style']  .= style('gt_grid.css');
-		$data['style']	.= style("impromptu.css");
+		$data['style']  .= style('impromptu.css');
 
 		$data['script']  = script('jquery.js');
 		$data['script'] .= script('jquery-ui.js');
-		$data["script"] .= script("jquery-impromptu.js");
-		$data["script"] .= script("plugins/jquery.blockUI.js");
+		$data['script'] .= script('jquery-impromptu.js');
+		$data['script'] .= script('plugins/jquery.blockUI.js');
 		$data['script'] .= script('plugins/jquery.numeric.pack.js');
 		$data['script'] .= phpscript('nformat.js');
 		$data['script'] .= script('plugins/jquery.floatnumber.js');
-		$data['script'] .= script("gt_msg_en.js");
-		$data['script'] .= script("gt_grid_all.js");
-		$data['content'] = $this->load->view('view_sfacter', $conten,true);
+		$data['script'] .= script('gt_msg_en.js');
+		$data['script'] .= script('gt_grid_all.js');
+		$data['content'] = $this->load->view('view_sfacman', $conten,true);
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = heading($this->titp);
 		$this->load->view('view_ventanas', $data);
 	}
 
 	function _pre_insert($do){
-		$numero  = $this->datasis->fprox_numero('nsfac');
 		$transac = $this->datasis->fprox_numero('ntransa');
-		$do->set('numero',$numero);
 		$do->set('transac',$transac);
 
 		$fecha =$do->get('fecha');
 		$vd    =$do->get('vendedor');
 		$tipoa =$do->get('tipo_doc');
+		$numero=$do->get('numero');
 
 		$iva=$totals=0;
 		$cana=$do->count_rel('sitems');
@@ -539,27 +500,26 @@ class sfacter extends validaciones {
 		$hora   =$do->get('hora');
 		$usuario=$do->get('usuario');
 		$transac=$do->get('transac');
-		$nombre =$do->get('nombre');
+		$manda  =$do->get('mandatario');
+		$nombre =$this->datasis->dameval('SELECT nombre FROM scli WHERE cliente='.$this->db->escape($manda));
 		$cod_cli=$do->get('cod_cli');
 		$estampa=$do->get('estampa');
-		$sprv   =$do->get('sprv');
-		$ref_numero='00000000';
 		$error  = 0;
 
 		//Inserta en smov
 		$data=array();
-		$data['cod_cli']    = $cod_cli;
+		$data['cod_cli']    = $manda;
 		$data['nombre']     = $nombre;
-		$data['tipo_doc']   = 'FC';
+		$data['tipo_doc']   = 'FT';
 		$data['numero']     = $numero;
 		$data['fecha']      = $estampa;
 		$data['monto']      = $totneto;
 		$data['impuesto']   = 0;
 		$data['abonos']     = 0;
 		$data['vence']      = $fecha;
-		$data['tipo_ref']   = 'ND';
-		$data['num_ref']    = $ref_numero;
-		$data['observa1']   = (!empty($sprv))? 'FACTURA A TERCERO' : 'FACTURA A CREDITO';
+		$data['tipo_ref']   = '';
+		$data['num_ref']    = '';
+		$data['observa1']   = 'FACTURA POR TERCERO A CLIENTE '.$cod_cli;
 		$data['estampa']    = $estampa;
 		$data['hora']       = $hora;
 		$data['transac']    = $transac;
@@ -625,10 +585,9 @@ class sfacter extends validaciones {
 		logusu($do->table,"Elimino $this->tits $primary ");
 	}
 
-
 	function instalar(){
-		if(!$this->datasis->iscampo('sfac','sprv')){
-			$mSQL="ALTER TABLE sfac ADD COLUMN sprv VARCHAR(5) NULL DEFAULT NULL COMMENT ''";
+		if(!$this->datasis->iscampo('sfac','mandatario')){
+			$mSQL="ALTER TABLE sfac ADD COLUMN mandatario VARCHAR(5) NULL DEFAULT NULL COMMENT ''";
 			$ban=$this->db->simple_query($mSQL);
 		}
 	}
