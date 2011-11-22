@@ -196,7 +196,7 @@ class Tban extends Controller {
 		$campos   = $data['data'];
 		$cod_banc = $campos['cod_banc'];
 
-		if ( !empty($grupo) ) {
+		if ( !empty($cod_banc) ) {
 			unset($campos['id']);
 			// Revisa si existe ya ese contrato
 			if ($this->datasis->dameval("SELECT COUNT(*) FROM tban WHERE cod_banc='$cod_banc'") == 0)
@@ -204,13 +204,13 @@ class Tban extends Controller {
 				$mSQL = $this->db->insert_string("tban", $campos );
 				$this->db->simple_query($mSQL);
 				logusu('tban',"TABLA DE BANCO $cod_banc CREADO");
-				echo "{ success: true, message: 'Grupo Agregado'}";
+				echo "{ success: true, message: 'Tabla de Banco Agregado'}";
 			} else {
-				echo "{ success: false, message: 'Ya existe un banco con ese Codigo!!'}";
+				echo "{ success: false, message: 'Ya existe un banco con ese Codigo ($cod_banc)!!'}";
 			}
 			
 		} else {
-			echo "{ success: false, message: 'Ya existe un banco con ese Codigo!!'}";
+			echo "{ success: false, message: 'Codigo vacio ($cod_banc)!!'}";
 		}
 	}
 
@@ -223,10 +223,10 @@ class Tban extends Controller {
 		unset($campos['cod_banc']);
 		unset($campos['id']);
 
-		$mSQL = $this->db->update_string("grcl", $campos,"id='".$data['data']['id']."'" );
+		$mSQL = $this->db->update_string("tban", $campos,"id='".$data['data']['id']."'" );
 		$this->db->simple_query($mSQL);
 		logusu('tban',"TABLA DE BANCOS $cod_banc ID ".$data['data']['id']." MODIFICADO");
-		echo "{ success: true, message: 'Grupo Modificado -> ".$data['data']['grupo']."'}";
+		echo "{ success: true, message: 'Tabla de Banco Modificado -> ".$data['data']['cod_banc']."'}";
 	}
 
 	function eliminar(){
@@ -234,15 +234,15 @@ class Tban extends Controller {
 		$data= json_decode($js,true);
 		$campos = $data['data'];
 
-		$grupo = $campos['grupo'];
-		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM scli WHERE grupo='$grupo'");
+		$cod_banc = $campos['cod_banc'];
+		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM banc WHERE tbanco='$cod_banc'");
 
 		if ($chek > 0){
-			echo "{ success: false, message: 'Grupo de Cliente no puede ser Borrado'}";
+			echo "{ success: false, message: 'Tabla de Banco no puede ser Borrado'}";
 		} else {
-			$this->db->simple_query("DELETE FROM grcl WHERE grupo='$grupo'");
-			logusu('grcl',"GRUPO $grupo ELIMINADO");
-			echo "{ success: true, message: 'Grupo de cliente Eliminado'}";
+			$this->db->simple_query("DELETE FROM tban WHERE cod_banc='$cod_banc'");
+			logusu('tban',"TABLA DE BANCO $cod_banc ELIMINADO");
+			echo "{ success: true, message: 'Tabla de banco Eliminado'}";
 		}
 	}
 
@@ -257,15 +257,12 @@ class Tban extends Controller {
 	function tbanextjs(){
 		$encabeza='TABLA DE BANCOS';
 		$listados= $this->datasis->listados('tban');
-		$otros=$this->datasis->otros('tban', 'tban');
+		$otros=$this->datasis->otros('tban', 'finanzas/tban');
 
 		$urlajax = 'finanzas/tban/';
 		$variables = "var mcuenta = ''";
 		$funciones = "";
-		$valida = "
-		{ type: 'length', field: 'cod_banc',  min: 1 },
-		{ type: 'length', field: 'nomb_banc', min: 1 }
-		";
+		$valida = "";
 		
 		//{ header: 'id',          width:  30, sortable: true, dataIndex: 'id' }, 
 		$columnas = "
@@ -290,7 +287,7 @@ class Tban extends Controller {
 							defaults: { xtype:'fieldset', labelWidth:70 },
 							style:'padding:4px',
 							items: [
-									{ xtype: 'textfield', fieldLabel: 'Codigo', name: 'cod-banc',   allowBlank: false, width: 120, id: 'cod_banc' },
+									{ xtype: 'textfield', fieldLabel: 'Codigo', name: 'cod_banc',  allowBlank: false, width: 120, id: 'cod_banc' },
 									{ xtype: 'textfield', fieldLabel: 'Nombre', name: 'nomb_banc', allowBlank: false, width: 400, },
 									{ xtype: 'combo',     fieldLabel: 'Tipo',   name: 'tipotra',   store: [['NC','Nota Credito'],['DE','Deposito']], width: 180 }
 								]
@@ -303,14 +300,14 @@ class Tban extends Controller {
 								layout: 'column',
 								items: [
 									{ xtype: 'numberfield', fieldLabel: 'Debito Bancario',  name: 'debito',   width:160, hideTrigger: true, fieldStyle: 'text-align: right',  renderer : Ext.util.Format.numberRenderer('0,000.00'), labelWidth: 100  },
-									{ xtype: 'numberfield', fieldLabel: 'Comision TD', name: 'comitd',   width:180, hideTrigger: true, fieldStyle: 'text-align: right',  renderer : Ext.util.Format.numberRenderer('0,000.00'), labelWidth: 120  },
-									{ xtype: 'numberfield', fieldLabel: 'I.S.L.R',     name: 'impuesto', width:160, hideTrigger: true, fieldStyle: 'text-align: right',  renderer : Ext.util.Format.numberRenderer('0,000.00'), labelWidth: 100  },
-									{ xtype: 'numberfield', fieldLabel: 'Comision TC', name: 'comitc',   width:180, hideTrigger: true, fieldStyle: 'text-align: right',  renderer : Ext.util.Format.numberRenderer('0,000.00'), labelWidth: 120  },
+									{ xtype: 'numberfield', fieldLabel: 'Comision TD',      name: 'comitd',   width:180, hideTrigger: true, fieldStyle: 'text-align: right',  renderer : Ext.util.Format.numberRenderer('0,000.00'), labelWidth: 120  },
+									{ xtype: 'numberfield', fieldLabel: 'I.S.L.R',          name: 'impuesto', width:160, hideTrigger: true, fieldStyle: 'text-align: right',  renderer : Ext.util.Format.numberRenderer('0,000.00'), labelWidth: 100  },
+									{ xtype: 'numberfield', fieldLabel: 'Comision TC',      name: 'comitc',   width:180, hideTrigger: true, fieldStyle: 'text-align: right',  renderer : Ext.util.Format.numberRenderer('0,000.00'), labelWidth: 120  },
 								]
 							}
 		";
 
-		$titulow = 'Yabla de Bancos';
+		$titulow = 'Tabla de Bancos';
 
 		$dockedItems = "
 				{ iconCls: 'icon-reset', itemId: 'close', text: 'Cerrar',   scope: this, handler: this.onClose },
@@ -331,8 +328,10 @@ class Tban extends Controller {
 						this.activeRecord = registro;
 						
 						if (registro) {
+							form.findField('cod_banc').setReadOnly(true);
 							form.loadRecord(registro);
 						} else {
+							form.findField('cod_banc').setReadOnly(false);
 							mcuenta  = '';
 						}
 					}
@@ -357,7 +356,7 @@ class Tban extends Controller {
 		$data['stores']      = $stores;
 		$data['camposforma'] = $camposforma;
 		$data['titulow']     = $titulow;
-		$data['dockedItems'] = $dockedItems;
+		//$data['dockedItems'] = $dockedItems;
 		$data['winwidget']   = $winwidget;
 		$data['features']    = $features;
 		$data['filtros']     = $filtros;

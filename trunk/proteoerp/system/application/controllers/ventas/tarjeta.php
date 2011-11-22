@@ -7,7 +7,12 @@ class Tarjeta extends validaciones {
 	}
 
 	function index(){
-		redirect("ventas/tarjeta/filteredgrid");
+		if ( !$this->datasis->iscampo('tarjeta','id') ) {
+			$this->db->simple_query('ALTER TABLE tarjeta DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE tarjeta ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ');
+			$this->db->simple_query('ALTER TABLE tarjeta ADD UNIQUE INDEX tipo (tipo)');
+		}
+		$this->tarjetaextjs();
 	}
 
 	function filteredgrid(){
@@ -150,6 +155,193 @@ class Tarjeta extends validaciones {
 			ADD COLUMN `activo` 
 			CHAR(1) NULL DEFAULT NULL AFTER `mensaje`";
 		$this->db->query($mSQL);
+	}
+
+
+	function grid(){
+		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']   :  0;
+		$limit   = isset($_REQUEST['limit'])  ? $_REQUEST['limit']   : 50;
+		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']    : '[{"property":"tipo","direction":"ASC"}]';
+		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
+
+		$where = $this->datasis->extjsfiltro($filters);
+		
+		$this->db->_protect_identifiers=false;
+		$this->db->select('*');
+		$this->db->from('tarjeta');
+		if (strlen($where)>1) $this->db->where($where, NULL, FALSE); 
+		
+		$sort = json_decode($sort, true);
+		for ( $i=0; $i<count($sort); $i++ ) {
+			$this->db->order_by($sort[$i]['property'],$sort[$i]['direction']);
+		}
+
+		$this->db->limit($limit, $start);
+		$query = $this->db->get();
+		$results = $this->db->count_all('tarjeta');
+
+		$arr = $this->datasis->codificautf8($query->result_array());
+		echo '{success:true, message:"Loaded data", results:'. $results.', data:'.json_encode($arr).'}';
+	}
+
+	function crear(){
+		$js= file_get_contents('php://input');
+		$data= json_decode($js,true);
+		$campos   = $data['data'];
+		$tipo = $campos['tipo'];
+
+		if ( !empty($tipo) ) {
+			unset($campos['id']);
+			// Revisa si existe ya ese contrato
+			if ($this->datasis->dameval("SELECT COUNT(*) FROM tarjeta WHERE tipo='$tipo'") == 0)
+			{
+				$mSQL = $this->db->insert_string("tarjeta", $campos );
+				$this->db->simple_query($mSQL);
+				logusu('tarjeta',"TARJETA $tipo CREADO");
+				echo "{ success: true, message: 'Tarjeta Agregada'}";
+			} else {
+				echo "{ success: false, message: 'Ya existe una tarjeta con ese Tipo!!'}";
+			}
+			
+		} else {
+			echo "{ success: false, message: 'Falta el campo tipo!!'}";
+		}
+	}
+
+	function modificar(){
+		$js= file_get_contents('php://input');
+		$data= json_decode($js,true);
+		$campos = $data['data'];
+
+		$tipo = $campos['tipo'];
+		unset($campos['tipo']);
+		unset($campos['id']);
+
+		$mSQL = $this->db->update_string("tarjeta", $campos,"id=".$data['data']['id'] );
+		$this->db->simple_query($mSQL);
+		logusu('tarjeta',"tarjeta $tipo ID ".$data['data']['id']." MODIFICADO");
+		echo "{ success: true, message: 'Tarjeta Modificada -> ".$data['data']['tipo']."'}";
+	}
+
+	function eliminar(){
+		$js= file_get_contents('php://input');
+		$data= json_decode($js,true);
+		$campos = $data['data'];
+
+		$tipo = $campos['tipo'];
+		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM sfpa WHERE tipo='$tipo'");
+
+		if ($chek > 0){
+			echo "{ success: false, message: 'tarjeta no puede ser Borrada'}";
+		} else {
+			$this->db->simple_query("DELETE FROM tarjeta WHERE tipo='$tipo'");
+			logusu('tarjeta',"TARJETA $tipo ELIMINADO");
+			echo "{ success: true, message: 'Tarjeta Eliminada'}";
+		}
+	}
+
+
+//0414 376 0149 juan picapiedras
+
+//****************************************************************8
+//
+//
+//
+//****************************************************************8
+	function tarjetaextjs(){
+		$encabeza='FORMAS DE PAGO';
+		$listados= $this->datasis->listados('tarjeta');
+		$otros=$this->datasis->otros('tarjeta', 'ventas/tarjeta');
+
+		$urlajax = 'ventas/tarjeta/';
+		$variables = "";
+		
+		$funciones = "function estado(val){if ( val == 'S'){ return 'Activo';} else {return  'Inactivo';}}";
+		
+		$valida = "
+		{ type: 'length', field: 'tipo',   min: 1 },
+		{ type: 'length', field: 'nombre', min: 1 }
+		";
+		
+		$columnas = "
+		{ header: 'Tipo',     width:  50, sortable: true, dataIndex: 'tipo',     field: { type: 'textfield' }, filter: { type: 'string' }}, 
+		{ header: 'Status',   width:  80, sortable: true, dataIndex: 'activo',   field: { type: 'textfield' }, filter: { type: 'string'  }, renderer: estado },
+		{ header: 'Nombre',   width: 120, sortable: true, dataIndex: 'nombre',   field: { type: 'textfield' }, filter: { type: 'string' }}, 
+		{ header: 'Mensaje',  width: 180, sortable: true, dataIndex: 'mensaje',  field: { type: 'textfield' }, filter: { type: 'string' }}, 
+		{ header: 'Comison',  width:  70, sortable: true, dataIndex: 'comision', field: { type: 'numeric'   }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00') },
+		{ header: 'Impuesto', width:  70, sortable: true, dataIndex: 'impuesto', field: { type: 'numeric'   }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00') },
+	";
+
+		$campos = "'id', 'tipo','nombre','comision','impuesto','mensaje','activo'";
+		
+		$camposforma = "
+							{
+							xtype:'fieldset',
+							frame: false,
+							border: false,
+							labelAlign: 'right',
+							defaults: { xtype:'fieldset', labelWidth:70 },
+							style:'padding:4px',
+							layout: 'column',
+							items: [
+									{ xtype: 'textfield',     fieldLabel: 'Tipo',     name: 'tipo',     width:110, allowBlank: false, id: 'tipo' },
+									{ xtype: 'combo',         fieldLabel: 'Status',   name: 'activo',   width:210,  store: [['S','Activo'],['N','Inactivo']], labelWidth:110},
+									{ xtype: 'textfield',     fieldLabel: 'Nombre',   name: 'nombre',   width:320, allowBlank: false },
+									{ xtype: 'numberfield',   fieldLabel: 'Comision', name: 'comision', width:120, hideTrigger: true, fieldStyle: 'text-align: right',  renderer : Ext.util.Format.numberRenderer('0,000.00') },
+									{ xtype: 'numberfield',   fieldLabel: 'Impuesto', name: 'impuesto', width:200, hideTrigger: true, fieldStyle: 'text-align: right',  renderer : Ext.util.Format.numberRenderer('0,000.00'), labelWidth: 130  },
+									{ xtype: 'textareafield', fieldLabel: 'Mensaje',  name: 'mensaje',  width:320, allowBlank: true },
+								]
+							}
+		";
+
+		$titulow = 'Formas de Pago';
+
+		$winwidget = "
+				closable: false,
+				closeAction: 'destroy',
+				width: 380,
+				height: 300,
+				resizable: false,
+				modal: true,
+				items: [writeForm],
+				listeners: {
+					beforeshow: function() {
+						var form = this.down('writerform').getForm();
+						this.activeRecord = registro;
+						if (registro) {
+							form.loadRecord(registro);
+							form.findField('tipo').setReadOnly(true);
+						} else {
+							form.findField('tipo').setReadOnly(false);
+						}
+					}
+				}
+";
+
+		$stores = "";
+
+		$features = "features: [ filters],";
+		$filtros = "var filters = { ftype: 'filters', encode: 'json', local: false }; ";
+
+		$data['listados']    = $listados;
+		$data['otros']       = $otros;
+		$data['encabeza']    = $encabeza;
+		$data['urlajax']     = $urlajax;
+		$data['variables']   = $variables;
+		$data['funciones']   = $funciones;
+		$data['valida']      = $valida;
+		$data['columnas']    = $columnas;
+		$data['campos']      = $campos;
+		$data['stores']      = $stores;
+		$data['camposforma'] = $camposforma;
+		$data['titulow']     = $titulow;
+		$data['winwidget']   = $winwidget;
+		$data['features']    = $features;
+		$data['filtros']     = $filtros;
+		
+		$data['title']  = heading('tarjetas');
+		$this->load->view('extjs/extjsven',$data);
+		
 	}
 }
 ?>

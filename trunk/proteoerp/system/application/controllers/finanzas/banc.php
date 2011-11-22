@@ -3,15 +3,17 @@ class Banc extends Validaciones {
 
 	function banc() {
 		parent::Controller();
-		//$this->load->helper('form');
-		//$this->load->helper('url');
-		//$this->load->helper('text');
 		$this->load->library('rapyd');
 	}
 
 	function index(){
+		if ( !$this->datasis->iscampo('banc','id') ) {
+			$this->db->simple_query('ALTER TABLE banc DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE banc ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ');
+			$this->db->simple_query('ALTER TABLE banc ADD UNIQUE INDEX codbanc (codbanc)');
+		}
 		$this->datasis->modulo_id(512,1);
-		redirect('finanzas/banc/filteredgrid');
+		$this->bancextjs();
 	}
 
 	function filteredgrid() {
@@ -453,5 +455,388 @@ class Banc extends Validaciones {
 		
 	}
 
+
+	function grid(){
+		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']   :  0;
+		$limit   = isset($_REQUEST['limit'])  ? $_REQUEST['limit']   : 50;
+		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']    : '[{"property":"codbanc","direction":"ASC"}]';
+		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
+
+		$where = $this->datasis->extjsfiltro($filters);
+		
+		$this->db->_protect_identifiers=false;
+		$this->db->select('*, format(saldo,2) saldof');
+		$this->db->from('banc');
+		if (strlen($where)>1) $this->db->where($where, NULL, FALSE); 
+		
+		$sort = json_decode($sort, true);
+		for ( $i=0; $i<count($sort); $i++ ) {
+			$this->db->order_by($sort[$i]['property'],$sort[$i]['direction']);
+		}
+
+		$this->db->limit($limit, $start);
+		$query = $this->db->get();
+		$results = $this->db->count_all('banc');
+
+		$arr = $this->datasis->codificautf8($query->result_array());
+		echo '{success:true, message:"Loaded data", results:'. $results.', data:'.json_encode($arr).'}';
+	}
+
+
+	function crear(){
+		$js= file_get_contents('php://input');
+		$data= json_decode($js,true);
+		$campos  = $data['data'];
+		$codbanc = $campos['codbanc'];
+		unset($campos['saldof']);
+
+		if ( !empty($codbanc) ) {
+			unset($campos['id']);
+			// Revisa si existe ya ese contrato
+			if ($this->datasis->dameval("SELECT COUNT(*) FROM banc WHERE codbanc='$codbanc'") == 0)
+			{
+				$mSQL = $this->db->insert_string("banc", $campos );
+				$this->db->simple_query($mSQL);
+				logusu('banc',"BANCO $codbanc CREADO");
+				echo "{ success: true, message: 'Banco Agregada'}";
+			} else {
+				echo "{ success: false, message: 'Ya existe una banco con ese Codigo!!'}";
+			}
+			
+		} else {
+			echo "{ success: false, message: 'Falta codigo de banco!!'}";
+		}
+	}
+
+	function modificar(){
+		$js= file_get_contents('php://input');
+		$data= json_decode($js,true);
+		$campos = $data['data'];
+
+		$codbanc = $campos['codbanc'];
+		unset($campos['codbanc']);
+		unset($campos['id']);
+		unset($campos['saldof']);
+
+		$mSQL = $this->db->update_string("banc", $campos,"id='".$data['data']['id']."'" );
+		$this->db->simple_query($mSQL);
+		logusu('banc',"banc $codigo ID ".$data['data']['id']." MODIFICADO");
+		echo "{ success: true, message: 'Banco Modificado -> ".$data['data']['codbanc']."'}";
+	}
+
+	function eliminar(){
+		$js= file_get_contents('php://input');
+		$data= json_decode($js,true);
+		$campos = $data['data'];
+
+		$codbanc = $campos['codbanc'];
+		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM bmov WHERE codbanc='$codbanc'");
+
+		if ($chek > 0){
+			echo "{ success: false, message: 'banc no puede ser Borrada'}";
+		} else {
+			$this->db->simple_query("DELETE FROM banc WHERE codbanc='$codbanc'");
+			logusu('banc',"BANCO $codbanc ELIMINADO");
+			echo "{ success: true, message: 'banc Eliminada'}";
+		}
+	}
+
+//
+//0414 376 0149 juan picapiedras
+//
+//****************************************************************
+//
+//
+//
+//****************************************************************
+	function bancextjs(){
+		$encabeza='BANCOS Y CAJAS';
+		$listados= $this->datasis->listados('banc');
+		$otros=$this->datasis->otros('banc', 'finanzas/banc');
+
+		$mSQL = "SELECT cod_banc, CONCAT(cod_banc,' ',nomb_banc) banco FROM tban ORDER BY cod_banc";
+		$tban = $this->datasis->llenacombo($mSQL);
+
+		$mSQL = "SELECT codigo, CONCAT(codigo,' ',sucursal) sucursal FROM sucu ORDER BY codigo";
+		$sucu = $this->datasis->llenacombo($mSQL);
+
+		$mSQL = "SELECT moneda, CONCAT(moneda,' ',descrip) descrip FROM mone ORDER BY moneda";
+		$mone = $this->datasis->llenacombo($mSQL);
+
+		$mSQL = "SELECT moneda, CONCAT(moneda,' ',descrip) descrip FROM mone ORDER BY moneda";
+		$mone = $this->datasis->llenacombo($mSQL);
+
+		$mSQL = "SELECT depto, CONCAT(depto,' ',descrip) descrip FROM dpto ORDER BY depto";
+		$dpto = $this->datasis->llenacombo($mSQL);
+
+		$urlajax = 'finanzas/banc/';
+		$variables = "
+var mcodprv='';
+var mcuenta ='';
+var mgastcom='';
+var mgastidb='';
+";
+
+		$funciones = "
+function fsaldo(val) {
+	if (val > 0) {
+		return '<span style=\"color:green;\">' + Ext.util.Format.number(val,'0,000.00') + '</span>';
+	} else if (val < 0) {
+		return '<span style=\"color:red;\">' + Ext.util.Format.number(val,'0,000.00') + '</span>';
+	}
+	return val;
+};
+
+function factivo(val) {
+	if (val == 'S') {
+		return '".img(array('src'=>'images/S.gif','border'=>'0','alt'=>'Activo','height'=>'12','title'=>'Activo'))."';
+	} else  {
+		return '".img(array('src'=>'images/N.gif','border'=>'0','alt'=>'Activo','height'=>'12','title'=>'Activo'))."';
+
+	}
+	return val;
+};
+
+	";
+
+
+		$valida = "
+		{ type: 'length', field: 'codbanc', min: 1 }
+		";
+		
+		$columnas = "
+		{ header: '',                 width: 25, sortable: true, dataIndex: 'activo',   field: { type: 'textfield' }, filter: { type: 'string' }, renderer: factivo }, 
+		{ header: 'Codigo',           width: 50, sortable: true, dataIndex: 'codbanc',  field: { type: 'textfield' }, filter: { type: 'string' } }, 
+		{ header: 'Banco',            width: 40, sortable: true, dataIndex: 'tbanco',   field: { type: 'textfield' }, filter: { type: 'string' } }, 
+		{ header: 'Nombre del Banco', width:150, sortable: true, dataIndex: 'banco',    field: { type: 'textfield' }, filter: { type: 'string' } }, 
+		{ header: 'Nro. Cuenta',      width:150, sortable: true, dataIndex: 'numcuent', field: { type: 'textfield' }, filter: { type: 'string' } }, 
+		{ header: '',                 width: 25, sortable: true, dataIndex: 'moneda',   field: { type: 'textfield' }, filter: { type: 'string' } }, 
+		{ header: 'Saldo',            width:120, sortable: true, dataIndex: 'saldo',    field: { type: 'numeric'   }, filter: { type: 'numeric'}, align: 'right',renderer : fsaldo  },
+		{ header: 'Telefono',         width:180, sortable: true, dataIndex: 'telefono', field: { type: 'textfield' }, filter: { type: 'string' } }, 
+		{ header: 'Funcionario',      width:190, sortable: true, dataIndex: 'nombre',   field: { type: 'textfield' }, filter: { type: 'string' } }, 
+		{ header: 'Contable',         width: 80, sortable: true, dataIndex: 'cuenta',   field: { type: 'textfield' }, filter: { type: 'string' } }, 
+		{ header: 'Cargo IDB',        width: 70, sortable: true, dataIndex: 'gastoidb', field: { type: 'textfield' }, filter: { type: 'string' } }, 
+		{ header: 'Comision',         width: 70, sortable: true, dataIndex: 'gastocom', field: { type: 'textfield' }, filter: { type: 'string' } }, 
+		{ header: 'Proveedor',        width: 70, sortable: true, dataIndex: 'codprv',   field: { type: 'textfield' }, filter: { type: 'string' } }, 
+	";
+
+		$campos = "'id','codbanc','numcuent','tbanco','banco','dire1','dire2','telefono','nombre','proxch','dbporcen','dbcta','dbgas','moneda','saldo','cuenta','impucu','comicu','comipr','gastoidb','gastocom','codprv','depto','sucur','activo','tipocta', 'saldof'";
+		
+		$camposforma = "
+						{
+						frame: true,
+						border: false,
+						labelAlign: 'right',
+						defaults: { xtype:'fieldset', labelWidth:70 },
+						style:'padding:10px',
+						layout: 'hbox',
+						items: [
+							{
+							frame: false,
+							width: 400,
+							border: false,
+							labelAlign: 'right',
+							defaults: { xtype:'fieldset', labelWidth:70 },
+							style:'padding:4px',
+							layout: 'column',
+							items: [
+									{ xtype: 'textfield', fieldLabel: 'Codigo',     name: 'codbanc',  width:100, allowBlank: false, maxLength: 2, enforceMaxLength: true, id: 'codbanc' },
+									{ xtype: 'combo',     fieldLabel: 'Sucursal',   name: 'sucur',    width:280, store: [".$sucu."], labelWidth:90},
+									{ xtype: 'combo',     fieldLabel: 'Banco',      name: 'tbanco',   width:380, store: [".$tban."] },
+									{ xtype: 'textfield', fieldLabel: 'Nombre',     name: 'banco',    width:380, allowBlank: false },
+									{ xtype: 'textfield', fieldLabel: 'No.Cuenta',  name: 'numcuent', width:380, allowBlank: false },
+								]
+							},{
+							frame: false,
+							width: 300,
+							border: false,
+							labelAlign: 'right',
+							defaults: { labelWidth:110, },
+							style:'padding:4px',
+							layout: 'column',
+							items: [
+									{ xtype: 'combo',     fieldLabel: 'Estatus',        name: 'activo',   width:280, store: [['S','Activo'],['N','Inactivo']] },
+									{ xtype: 'combo',     fieldLabel: 'Moneda',         name: 'moneda',   width:280, store: [".$mone."]},
+									{ xtype: 'combo',     fieldLabel: 'Cuenta Tipo',    name: 'tipocta',  width:280, store: [['K','Caja'],['C','Corriente'],['A','Ahorro'],['P','Plazo']]},
+									{ xtype: 'textfield', fieldLabel: 'Proximo Cheque', name: 'proxch',   width:280, allowBlank: true },
+								]
+							}
+						]},{
+						frame: true,
+						border: false,
+						labelAlign: 'right',
+						defaults: { xtype:'fieldset', labelWidth:70 },
+						style:'padding:2px',
+						layout: 'hbox',
+						items: [
+							{
+							xtype:'fieldset',
+							frame: false,
+							border: false,
+							labelAlign: 'right',
+							defaults: { xtype:'fieldset', labelWidth:60, labelAlign: 'right' },
+							style:'padding:4px',
+							layout: 'column',
+							items: [
+								{ xtype: 'textfield', fieldLabel: 'Contacto',  name: 'nombre',   width:350, allowBlank: true },
+								{ xtype: 'textfield', fieldLabel: 'Direccion', name: 'dire1',    width:350, allowBlank: true },
+								{ xtype: 'textfield', fieldLabel: 'Telefono',  name: 'telefono', width:350, allowBlank: true },
+								{ xtype: 'textfield', fieldLabel: '.',         name: 'dire2',    width:350, allowBlank: true },
+							]}
+						]},{
+							xtype:'fieldset',
+							frame: false,
+							border: false,
+							labelAlign: 'right',
+							defaults: { xtype:'fieldset', labelWidth:70, width: 350 },
+							style:'padding:4px',
+							layout: 'column',
+							items: [
+								{ xtype: 'combo', fieldLabel: 'Proveedor',  name: 'codprv',   store: sprvStore, mode: 'remote', hideTrigger: true, typeAhead: true, forceSelection: true, valueField: 'item',displayField: 'valor', id: 'codprv'},
+								{ xtype: 'combo', fieldLabel: 'Depto.',     name: 'depto',    store: [".$dpto."]},
+								{ xtype: 'combo', fieldLabel: 'Comisones',  name: 'gastocom', store: comiStore, mode: 'remote', hideTrigger: true, typeAhead: true, forceSelection: true, valueField: 'item',displayField: 'valor', id: 'gastocom'},
+								{ xtype: 'combo', fieldLabel: 'I.D.B.',     name: 'gastoidb', store: gidbStore, mode: 'remote', hideTrigger: true, typeAhead: true, forceSelection: true, valueField: 'item',displayField: 'valor', id: 'gastoidb' },
+								{ xtype: 'combo', fieldLabel: 'C.Contable', name: 'cuenta',   store: cplaStore, id: 'cuenta', mode: 'remote', hideTrigger: true, typeAhead: true, forceSelection: true, valueField: 'item', displayField: 'valor'},
+								{ xtype: 'displayfield', fieldLabel: 'Saldo Actual',  name: 'saldof',  id: 'sueldof',labelWidth:150, fieldStyle: 'color: blue;font-size:18px; text-weight: bold;', labelStyle: 'font-size:18px; text-weight: bold;' }
+							]
+						}
+		";
+
+		$titulow = 'Bancos y cajas';
+
+		$winwidget = "
+				closable: false,
+				closeAction: 'destroy',
+				width: 750,
+				height: 450,
+				resizable: false,
+				modal: true,
+				items: [writeForm],
+				listeners: {
+					beforeshow: function() {
+						var form = this.down('writerform').getForm();
+						this.activeRecord = registro;
+						
+						if (registro) {
+							mcodprv = registro.data.codprv;
+							mcuenta  = registro.data.cuenta;
+							mgastcom = registro.data.gastocom;
+							mgastidb = registro.data.gastoidb;
+							
+							cplaStore.proxy.extraParams.cuenta  = mcuenta  ;
+							sprvStore.proxy.extraParams.proveed = mcodprv  ;
+							comiStore.proxy.extraParams.codigo  = mgastcom ;
+							gidbStore.proxy.extraParams.codigo  = mgastidb ;
+		
+							cplaStore.load({ params: { 'cuenta':  registro.data.cuenta,   'origen': 'beforeform' } });
+							sprvStore.load({ params: { 'proveed': registro.data.codprv,  'origen': 'beforeform' } });
+							comiStore.load({ params: { 'codigo':  registro.data.gastocom, 'origen': 'beforeform' } });
+							gidbStore.load({ params: { 'codigo':  registro.data.gastoidb, 'origen': 'beforeform' } });
+
+							form.loadRecord(registro);
+							form.findField('codbanc').setReadOnly(true);
+						} else {
+							mcodprv  = '';
+							mcuenta  = '';
+							mgastcom = '';
+							mgastidb = '';
+							form.findField('codbanc').setReadOnly(false);
+						}
+					}
+				}
+";
+
+		$stores = "
+var sprvStore = new Ext.data.Store({
+	fields: [ 'item', 'valor'],
+	autoLoad: false,
+	autoSync: false,
+	pageSize: 50,
+	pruneModifiedRecords: true,
+	totalProperty: 'results',
+	proxy: {
+		type: 'ajax',
+		url : urlApp + 'compras/sprv/sprvbusca',
+		extraParams: { 'cuenta': mcodprv, 'origen': 'store' },
+		reader: {type: 'json',totalProperty: 'results',root: 'data'}
+	},
+	method: 'POST'
+});
+
+var cplaStore = new Ext.data.Store({
+	fields: [ 'item', 'valor'],
+	autoLoad: false,
+	autoSync: false,
+	pageSize: 50,
+	pruneModifiedRecords: true,
+	totalProperty: 'results',
+	proxy: {
+		type: 'ajax',
+		url : urlApp + 'contabilidad/cpla/cplabusca',
+		extraParams: {  'cuenta': mcuenta, 'origen': 'store' },
+		reader: {type: 'json',totalProperty: 'results',root: 'data'}
+	},
+	method: 'POST'
+});
+
+
+var comiStore = new Ext.data.Store({
+	fields: [ 'item', 'valor'],
+	autoLoad: false,
+	autoSync: false,
+	pageSize: 50,
+	pruneModifiedRecords: true,
+	totalProperty: 'results',
+	proxy: {
+		type: 'ajax',
+		url : urlApp + 'finanzas/mgas/mgasbusca',
+		extraParams: {  'codigo': mgastcom, 'origen': 'store' },
+		reader: {type: 'json',totalProperty: 'results',root: 'data'}
+	},
+	method: 'POST'
+});
+
+var gidbStore = new Ext.data.Store({
+	fields: [ 'item', 'valor'],
+	autoLoad: false,
+	autoSync: false,
+	pageSize: 50,
+	pruneModifiedRecords: true,
+	totalProperty: 'results',
+	proxy: {
+		type: 'ajax',
+		url : urlApp + 'finanzas/mgas/mgasbusca',
+		extraParams: {  'codigo': mgastidb, 'origen': 'store' },
+		reader: {type: 'json',totalProperty: 'results',root: 'data'}
+	},
+	method: 'POST'
+});
+
+
+		";
+
+		$features = "features: [ filters],";
+		$filtros = "var filters = { ftype: 'filters', encode: 'json', local: false }; ";
+
+		$data['listados']    = $listados;
+		$data['otros']       = $otros;
+		$data['encabeza']    = $encabeza;
+		$data['urlajax']     = $urlajax;
+		$data['variables']   = $variables;
+		$data['funciones']   = $funciones;
+		$data['valida']      = $valida;
+		$data['columnas']    = $columnas;
+		$data['campos']      = $campos;
+		$data['stores']      = $stores;
+		$data['camposforma'] = $camposforma;
+		$data['titulow']     = $titulow;
+		$data['winwidget']   = $winwidget;
+		$data['features']    = $features;
+		$data['filtros']     = $filtros;
+
+		$data['title']  = heading('Bancos y Cajas');
+		$this->load->view('extjs/extjsven',$data);
+		
+	}
 
 }

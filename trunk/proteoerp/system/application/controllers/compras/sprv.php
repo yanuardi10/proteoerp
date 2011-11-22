@@ -784,9 +784,9 @@ var cplaStore = new Ext.data.Store({
 		$titulow = 'Proveedores';
 
 		$dockedItems = "
-				\t\t\t\t{ itemId: 'seniat', text: 'SENIAT',   scope: this, handler: this.onSeniat },
-				\t\t\t\t{ iconCls: 'icon-reset', itemId: 'close', text: 'Cerrar',   scope: this, handler: this.onClose },
-				\t\t\t\t{ iconCls: 'icon-save',  itemId: 'save',  text: 'Guardar',  disabled: false, scope: this, handler: this.onSave }
+				{ itemId: 'seniat', text: 'SENIAT',   scope: this, handler: this.onSeniat },
+				{ iconCls: 'icon-reset', itemId: 'close', text: 'Cerrar',   scope: this, handler: this.onClose },
+				{ iconCls: 'icon-save',  itemId: 'save',  text: 'Guardar',  disabled: false, scope: this, handler: this.onSave }
 		";
 
 		$winwidget = "
@@ -1417,7 +1417,7 @@ Ext.onReady(function(){
 		if ( strlen($semilla)>0 ){
 			$mSQL .= " AND ( proveed LIKE '$semilla%' OR nombre LIKE '%$semilla%' OR  rif LIKE '%$semilla%') ";
 		} else {
-			if ( strlen($proveed)>0 ) $mSQL .= " AND (proveed LIKE '$proveed%' OR nombre LIKE '%$proveed%' OR  rifci LIKE '%$proveed%') ";
+			if ( strlen($proveed)>0 ) $mSQL .= " AND (proveed LIKE '$proveed%' OR nombre LIKE '%$proveed%' OR  rif LIKE '%$proveed%') ";
 		}
 		$mSQL .= "ORDER BY nombre ";
 		$results = $this->db->count_all('scli');

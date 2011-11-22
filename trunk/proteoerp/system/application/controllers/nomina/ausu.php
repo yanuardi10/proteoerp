@@ -364,7 +364,6 @@ class ausu extends Controller {
 									var i = 0;
 									var msueldo = 0;
 									for ( i=0; i < combo.store.count();i=i+1 ){
-										//alert(combo.store.getAt(i).get('item')+' = '+sele);
 										if ( combo.store.getAt(i).get('item') == sele ){
 											msueldo=combo.store.getAt(i).get('sueldo');
 										}

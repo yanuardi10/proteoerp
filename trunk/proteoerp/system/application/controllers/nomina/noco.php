@@ -375,14 +375,10 @@ class Noco extends Controller {
 	function modifitnoco(){
 		$js= file_get_contents('php://input');
 		$data= json_decode($js,true);
-		//$meco = json_encode(array('AAAA','010U','018','017'));
 
 		$codigo = $data[0];
-		//echo json_last_error();
-		//print_r($data);
 		
 		// Borramos todo lo que tenga
-		
 		$mSQL = "DELETE FROM itnoco WHERE codigo='$codigo'";
 		$this->db->simple_query($mSQL);
 		$meco = "INSERT INTO itnoco (codigo, concepto, descrip, tipo, grupo) ";
@@ -394,7 +390,6 @@ class Noco extends Controller {
 		}
 		$meco .= " 'XXXXXXXX' )";
 		$this->db->simple_query($meco);
-		//logusu('noco',"CONTRATOS $codigo NOMBRE  $nombre MODIFICADO");
 		echo "{ success: true, message: 'Contrato Modificado' }";
 	}
 

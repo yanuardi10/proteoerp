@@ -1246,7 +1246,7 @@ Ext.onReady(function() {
 					title:'Otras Funciones',
 					border:false,
 					layout: 'fit',
-					items: gridOtros
+					html: '".$otros."'
 				}
 			]
 		},{
