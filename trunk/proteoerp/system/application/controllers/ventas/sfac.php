@@ -94,7 +94,7 @@ class sfac extends validaciones {
 		$mtool  = "<table background='#554455'><tr>";
 		$mtool .= "<td>&nbsp;</td>";
 
-		$mtool .= "<td>&nbsp;<a href='".base_url()."ventas/sfac/dataedit/create'>";
+		$mtool .= "<td>&nbsp;<a href='".base_url()."ventas/sfac_add/dataedit/create'>";
 		$mtool .= img(array('src' => 'images/agregar.jpg', 'alt' => 'Agregar Registro', 'title' => 'Agregar Registro','border'=>'0','height'=>'32'));
 		$mtool .= "</a>&nbsp;</td>";
 
