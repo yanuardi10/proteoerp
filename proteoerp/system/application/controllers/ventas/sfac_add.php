@@ -548,7 +548,20 @@ class sfac_add extends validaciones {
 		}
 
 		//Validacion del limite de credito del cliente
-		
+		if($credito>0){
+			$dbcliente=$this->db->escape($cliente);
+			$limite   =$this->datasis->dameval("SELECT limite FROM scli WHERE cliente=$dbcliente");
+			$mSQL="SELECT SUM(monto*(tipo_doc IN ('FC','GI','ND'))) AS debe, SUM(monto*(tipo_doc IN ('NC','AB','AN'))) AS haber FROM smov WHERE cod_cli=$dbcliente";
+			$query = $this->db->query($mSQL);
+			if ($query->num_rows() > 0){
+				$row = $query->row();
+				$saldo=$row->debe-$row->haber;
+			}
+			if($credito > ($limite-$saldo)){
+				$do->error_message_ar['pre_ins']='El cliente no tiene suficiente cr&eacute;dito';
+				return false;
+			}
+		}
 		//Fin de las validaciones
 
 		$numero  = $this->datasis->fprox_numero('nsfac');
@@ -556,6 +569,7 @@ class sfac_add extends validaciones {
 		$do->set('numero',$numero);
 		$do->set('transac',$transac);
 		$do->set('referen',($credito>0)? 'C': 'E');
+		$do->get('inicial',($credito>0)? $credito: 0);
 
 		$fecha  = $do->get('fecha');
 		$vd     = $do->get('vendedor');
@@ -592,18 +606,24 @@ class sfac_add extends validaciones {
 
 		$cana=$do->count_rel('sfpa');
 		for($i=0;$i<$cana;$i++){
-			$do->set_rel('sfpa','tipo_doc',($tipoa='F')? 'FC':'DE',$i);
-			$do->set_rel('sfpa','transac' ,$transac,$i);
-			$do->set_rel('sfpa','vendedor',$vd     ,$i);
-			$do->set_rel('sfpa','cod_cli' ,$cliente,$i);
-			$do->set_rel('sfpa','fecha'   ,$fecha  ,$i);
-			$do->set_rel('sfpa','cobro'   ,$fecha  ,$i);
-			$do->set_rel('sfpa','cobrador',$cajero ,$i);
-			$do->set_rel('sfpa','numero'  ,$numero ,$i);
-			$do->set_rel('sfpa','almacen' ,$almacen,$i);
-			$do->set_rel('sfpa','usuario' ,$usuario,$i);
-			$do->set_rel('sfpa','estampa' ,$estampa,$i);
-			$do->set_rel('sfpa','hora'    ,$hora   ,$i);
+			$sfpa_monto= $do->get_rel('sfpa','monto',$i);
+			if($tipoa=='D'){
+				$sfpa_monto *= -1;
+			}
+
+			$do->set_rel('sfpa','tipo_doc',($tipoa=='F')? 'FC':'DE',$i);
+			$do->set_rel('sfpa','transac' ,$transac   ,$i);
+			$do->set_rel('sfpa','vendedor',$vd        ,$i);
+			$do->set_rel('sfpa','cod_cli' ,$cliente   ,$i);
+			$do->set_rel('sfpa','fecha'   ,$fecha     ,$i);
+			$do->set_rel('sfpa','cobro'   ,$fecha     ,$i);
+			$do->set_rel('sfpa','cobrador',$cajero    ,$i);
+			$do->set_rel('sfpa','numero'  ,$numero    ,$i);
+			$do->set_rel('sfpa','almacen' ,$almacen   ,$i);
+			$do->set_rel('sfpa','usuario' ,$usuario   ,$i);
+			$do->set_rel('sfpa','estampa' ,$estampa   ,$i);
+			$do->set_rel('sfpa','hora'    ,$hora      ,$i);
+			$do->set_rel('sfpa','monto'   ,$sfpa_monto,$i);
 		}
 
 		$do->set('inicial',($credito>0)? $totalg-$credito : 0);
@@ -623,49 +643,126 @@ class sfac_add extends validaciones {
 	}
 
 	function _post_insert($do){
-		$referen=$do->get('referen');
+		$numero  = $do->get('numero');
+		$fecha   = $do->get('fecha');
+		$totneto = $do->get('totalg');
+		$hora    = $do->get('hora');
+		$usuario = $do->get('usuario');
+		$transac = $do->get('transac');
+		$nombre  = $do->get('nombre');
+		$cod_cli = $do->get('cod_cli');
+		$estampa = $do->get('estampa');
+		$anticipo= $do->get('inicial');
+		$referen = $do->get('referen');
+		$tipo_doc= $do->get('tipo_doc');
+
 		if($referen=='C'){
-			$numero =$do->get('numero');
-			$fecha  =$do->get('fecha');
-			$totneto=$do->get('totalg');
-			$hora   =$do->get('hora');
-			$usuario=$do->get('usuario');
-			$transac=$do->get('transac');
-			$nombre =$do->get('nombre');
-			$cod_cli=$do->get('cod_cli');
-			$estampa=$do->get('estampa');
-			$anticipo=$do->get('anticipo');
-			$tipo_doc=$do->get('tipo_doc');
-			$ref_numero='00000000';
-			$error  = 0;
+			$error   = 0;
 
-			//Inserta en smov
-			$data=array();
-			$data['cod_cli']    = $cod_cli;
-			$data['nombre']     = $nombre;
-			$data['tipo_doc']   = 'FC';
-			$data['numero']     = $numero;
-			$data['fecha']      = $estampa;
-			$data['monto']      = $totneto;
-			$data['impuesto']   = 0;
-			$data['abonos']     = $anticipo;
-			$data['vence']      = $fecha;
-			$data['tipo_ref']   = 'ND';
-			$data['num_ref']    = $ref_numero;
-			$data['observa1']   = 'FACTURA A CREDITO';
-			$data['estampa']    = $estampa;
-			$data['hora']       = $hora;
-			$data['transac']    = $transac;
-			$data['usuario']    = $usuario;
-			$data['codigo']     = 'NOCON';
-			$data['descrip']    = 'NOTA DE CONTABILIDAD';
+			if($tipo_doc=='F'){
+				//Inserta en smov
+				$data=array();
+				$data['cod_cli']    = $cod_cli;
+				$data['nombre']     = $nombre;
+				$data['tipo_doc']   = 'FC';
+				$data['numero']     = $numero;
+				$data['fecha']      = $estampa;
+				$data['monto']      = $totneto;
+				$data['impuesto']   = 0;
+				$data['abonos']     = $anticipo;
+				$data['vence']      = $fecha;
+				$data['tipo_ref']   = '';
+				$data['num_ref']    = '';
+				$data['observa1']   = 'FACTURA DE CREDITO';
+				$data['estampa']    = $estampa;
+				$data['hora']       = $hora;
+				$data['transac']    = $transac;
+				$data['usuario']    = $usuario;
+				$data['codigo']     = 'NOCON';
+				$data['descrip']    = 'NOTA DE CONTABILIDAD';
 
-			$sql= $this->db->insert_string('smov', $data);
-			$ban=$this->db->simple_query($sql);
-			if($ban==false){ memowrite($sql,'sfacter'); $error++;}
+				$sql= $this->db->insert_string('smov', $data);
+				$ban=$this->db->simple_query($sql);
+				if($ban==false){ memowrite($sql,'sfac'); $error++;}
 
-			$primary =implode(',',$do->pk);
-			logusu($do->table,"Creo $this->tits ${tipo_doc}${numero} ");
+				//Chequea si debe crear un anticipo
+				if($anticipo>0){
+					$mnumab = $this->datasis->fprox_numero('nabcli');
+
+					$data=array();
+					$data['cod_cli']    = $cod_cli;
+					$data['nombre']     = $nombre;
+					$data['tipo_doc']   = 'AB';
+					$data['numero']     = $mnumab;
+					$data['fecha']      = $fecha;
+					$data['monto']      = $anticipo;
+					$data['impuesto']   = 0;
+					$data['vence']      = $fecha;
+					$data['tipo_ref']   = 'FC';
+					$data['num_ref']    = $numero;
+					$data['observa1']   = 'ABONO POR INCIAL de FACTURA '.$numero;
+					$data['usuario']    = $usuario;
+					$data['estampa']    = $estampa;
+					$data['hora']       = $hora;
+					$data['transac']    = $transac;
+					$data['fecdoc']     = $fecha;
+
+					$mSQL = $this->db->insert_string('smov', $data);
+					$ban=$this->db->simple_query($mSQL);
+					if($ban==false){ memowrite($mSQL,'sfac'); }
+
+					//Aplica la AB a la FC
+					$data=array();
+					$data['numccli']    = $mnumab; //numero abono
+					$data['tipoccli']   = 'AB';
+					$data['cod_cli']    = $cod_cli;
+					$data['tipo_doc']   = ($tipo_doc=='F')? 'FC' : 'DV';
+					$data['numero']     = $numero;
+					$data['fecha']      = $fecha;
+					$data['monto']      = $totneto;
+					$data['abono']      = $anticipo;
+					$data['ppago']      = 0;
+					$data['reten']      = 0;
+					$data['cambio']     = 0;
+					$data['mora']       = 0;
+					$data['transac']    = $transac;
+					$data['estampa']    = $estampa;
+					$data['hora']       = $hora;
+					$data['usuario']    = $usuario;
+					$data['reteiva']    = 0;
+					$data['nroriva']    = '';
+					$data['emiriva']    = '';
+					$data['recriva']    = '';
+
+					$mSQL = $this->db->insert_string('itccli', $data);
+					$ban=$this->db->simple_query($mSQL);
+					if($ban==false){ memowrite($mSQL,'sfac');}
+				}
+			}else{
+				$data=array();
+				$data['cod_cli']    = $cod_cli;
+				$data['nombre']     = $nombre;
+				$data['tipo_doc']   = 'NC';
+				$data['numero']     = $numero;
+				$data['fecha']      = $estampa;
+				$data['monto']      = $totneto;
+				$data['impuesto']   = 0;
+				$data['abonos']     = $anticipo;
+				$data['vence']      = $fecha;
+				$data['tipo_ref']   = '';
+				$data['num_ref']    = '';
+				$data['observa1']   = 'FACTURA DE CREDITO';
+				$data['estampa']    = $estampa;
+				$data['hora']       = $hora;
+				$data['transac']    = $transac;
+				$data['usuario']    = $usuario;
+				$data['codigo']     = 'NOCON';
+				$data['descrip']    = 'NOTA DE CONTABILIDAD';
+
+				$sql= $this->db->insert_string('smov', $data);
+				$ban=$this->db->simple_query($sql);
+				if($ban==false){ memowrite($sql,'sfac'); $error++;}
+			}
 		}
 
 		//Descuento del inventario
@@ -677,18 +774,22 @@ class sfac_add extends validaciones {
 			$itcodigoa = $do->get_rel('sitems','codigoa',$i);
 			$dbcodigoa = $this->db->escape($itcodigoa);
 
-			//$sql="INSERT IGNORE INTO itsinv (alma,codigo,existen) VALUES ($dbalma,$dbcodigoa,-$itcana)";
-			//$ban=$this->db->simple_query($sql);
-			//if($ban==false){ memowrite($sql,'sfacter'); $error++;}
-
-			$sql="UPDATE itsinv SET existen=existen-$itcana WHERE alma=$dbalma AND codigo=$dbcodigoa";
+			$factor=($tipo_doc=='F')? -1:1;
+			$sql="INSERT IGNORE INTO itsinv (alma,codigo,existen) VALUES ($dbalma,$dbcodigoa,$factor*$itcana)";
 			$ban=$this->db->simple_query($sql);
-			if($ban==false){ memowrite($sql,'sfacter'); $error++;}
+			if($ban==false){ memowrite($sql,'sfac'); $error++;}
 
-			$sql="UPDATE sinv SET existen=existen-$itcana WHERE codigo=$dbcodigoa";
+			$sql="UPDATE itsinv SET existen=existen+$factor*$itcana WHERE codigo=$dbcodigoa AND alma=$dbalma";
 			$ban=$this->db->simple_query($sql);
-			if($ban==false){ memowrite($sql,'sfacter'); $error++;}
+			if($ban==false){ memowrite($sql,'sfac'); $error++;}
+
+			$sql="UPDATE sinv   SET existen=existen+$factor*$itcana WHERE codigo=$dbcodigoa";
+			$ban=$this->db->simple_query($sql);
+			if($ban==false){ memowrite($sql,'sfac'); $error++;}
 		}
+
+		$primary =implode(',',$do->pk);
+		logusu($do->table,"Creo $this->tits ${tipo_doc}${numero}");
 	}
 
 	function _post_update($do){
@@ -697,15 +798,14 @@ class sfac_add extends validaciones {
 	}
 
 	function _post_delete($do){
+		$numero   = $do->get('numero');
+		$tipo_doc = $do->get('tipo_doc');
+		
 		$primary =implode(',',$do->pk);
-		logusu($do->table,"Elimino $this->tits $primary ");
+		logusu($do->table,"Anulo ${tipo_doc}${numero} $this->tits $primary ");
 	}
 
-
 	function instalar(){
-		if(!$this->datasis->iscampo('sfac','sprv')){
-			$mSQL="ALTER TABLE sfac ADD COLUMN sprv VARCHAR(5) NULL DEFAULT NULL COMMENT ''";
-			$ban=$this->db->simple_query($mSQL);
-		}
+		
 	}
 }
