@@ -428,13 +428,14 @@ class sfac_add extends validaciones {
 		$edit->numref->size     = 12;
 		$edit->numref->db_name  = 'num_ref';
 		$edit->numref->rel_id   = 'sfpa';
-		//$edit->numref->rule     = 'required';
+		//$edit->numref->rule     = 'condi_required|callback_chtipo[<#i#>]';
 
 		$edit->banco = new dropdownField('Banco <#o#>', 'banco_<#i#>');
 		$edit->banco->option('','Ninguno');
 		$edit->banco->options('SELECT cod_banc,nomb_banc  FROM tban ORDER BY nomb_banc');
 		$edit->banco->db_name='banco';
 		$edit->banco->rel_id='sfpa';
+		$edit->banco->rule     = 'condi_required|callback_chtipo[<#i#>]';
 
 		$edit->monto = new inputField('Monto <#o#>', 'monto_<#i#>');
 		$edit->monto->db_name   = 'monto';
@@ -481,19 +482,19 @@ class sfac_add extends validaciones {
 		$edit->estampa   = new autoUpdateField('estampa' ,date('Ymd'), date('Ymd'));
 		$edit->hora      = new autoUpdateField('hora',date('H:i:s'), date('H:i:s'));
 
-		$edit->buttons('save', 'back','add_rel');
+		$edit->buttons('save', 'back','add_rel','add');
 		$edit->build();
 
 		$conten['form']  =&  $edit;
 
 		$data['style']   = style('redmond/jquery-ui.css');
 		$data['style']  .= style('gt_grid.css');
-		$data['style']	.= style("impromptu.css");
+		$data['style']  .= style('impromptu.css');
 
 		$data['script']  = script('jquery.js');
 		$data['script'] .= script('jquery-ui.js');
-		$data["script"] .= script("jquery-impromptu.js");
-		$data["script"] .= script("plugins/jquery.blockUI.js");
+		$data['script'] .= script("jquery-impromptu.js");
+		$data['script'] .= script("plugins/jquery.blockUI.js");
 		$data['script'] .= script('plugins/jquery.numeric.pack.js');
 		$data['script'] .= phpscript('nformat.js');
 		$data['script'] .= script('plugins/jquery.floatnumber.js');
@@ -503,6 +504,17 @@ class sfac_add extends validaciones {
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = heading($this->titp);
 		$this->load->view('view_ventanas', $data);
+	}
+
+	function chtipo($val,$i){
+		$tipo=$this->input->post('tipo_'.$i);
+		if(empty($tipo)) return true;
+		$this->validation->set_message('chtipo', 'El campo %s es obligatorio');
+
+		if(empty($val) && ($tipo!='EF'))
+			return false;
+		else 
+			return true;
 	}
 
 	function chfactura($factura){
@@ -542,7 +554,7 @@ class sfac_add extends validaciones {
 		}
 		$totalg = round($totalg,2);
 		if(abs($sfpa-$totalg)>0.01){
-			$do->error_message_ar['pre_ins']='El monto del pago no coincide con el monto de la factura';
+			$do->error_message_ar['pre_ins']='El monto del pago no coincide con el monto de la factura ';
 			//$do->error_message_ar['pre_upd']='';
 			return false;
 		}
