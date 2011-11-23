@@ -38,7 +38,7 @@ class Accesos extends validaciones{
 		$filter->codigo->db_name='cacc.codigo';
 		$filter->codigo->size = 15; 
 
-		$filter->cedula = new inputField("Cedula","cedula");
+		$filter->cedula = new inputField("C&eacute;dula","cedula");
 		$filter->cedula->db_name='pers.cedula';
 		$filter->cedula->size = 15;
 
@@ -80,18 +80,20 @@ class Accesos extends validaciones{
 		$filter->horah->size     = 3;
 		$filter->horah->maxlength= 4;
 		$filter->horah->in       = "horad";
-		$filter->horah->append("Inserte la hora en formato HH  MM (18 00)");
+		$filter->horah->append('Inserte la hora en formato HH  MM (18 00)');
 
-		$filter->buttons("reset","search");
+		$filter->buttons('reset','search');
 		$filter->build();
 
-		$ima=$this->_direccion.'/<#archivo#>';
+		//$ima=$this->_direccion.'/<#archivo#>';
+		$ima=base_url().'uploads/fnomina/<#archivo#>';
 
 		$furi = site_url('/nomina/accesos/foto/<#archivo#>');
 		$uri  = anchor('nomina/accesos/dataedit/show/<#codigo#>/<#fecha#>/<#hora#>','<#codigo#>');
 		$grid = new DataGrid('Lista de Control de Accesos');
 
-		$select=array("cacc.codigo","fecha","cacc.hora","cacc.cedula","CONCAT(cacc.codigo,DATE_FORMAT(fecha,'-%Y%m%d'),DATE_FORMAT(cacc.hora,'%H%i%s'),'.jpg') AS archivo",
+		$select=array("cacc.codigo","fecha","cacc.hora","cacc.cedula",
+		"CONCAT(TRIM(cacc.codigo),DATE_FORMAT(fecha,'-%Y%m%d'),DATE_FORMAT(cacc.hora,'%H%i%s'),'.jpg') AS archivo",
 		"CONCAT_WS('-',pers.nacional,pers.cedula) AS ci, nombre, apellido");
 		$grid->db->select($select);
 		$grid->db->from('cacc');
@@ -101,19 +103,19 @@ class Accesos extends validaciones{
 		$grid->db->orderby('hora','asc');
 
 		$grid->per_page = 7;
-		$grid->column("C&oacute;digo",$uri);
-		$grid->column("C&eacute;dula","cedula");
-		$grid->column("Nombres","nombre");
-		$grid->column("Apellidos","apellido");
-		$grid->column("Fecha","<dbdate_to_human><#fecha#></dbdate_to_human>",'align="center"');
-		$grid->column("Hora",'hora','align="center"');
-		$grid->column("Foto",anchor_popup($ima,"<img src='$ima' width='100' border='0'/>",$atts),'align="center"');
-		$grid->add("nomina/accesos/dataedit/create");
+		$grid->column_orderby('C&oacute;digo',$uri      ,'codigo'  );
+		$grid->column_orderby('C&eacute;dula','cedula'  ,'cedula'  );
+		$grid->column_orderby('Nombres'      ,'nombre'  ,'nombre'  );
+		$grid->column_orderby('Apellidos'    ,'apellido','apellido');
+		$grid->column_orderby('Fecha','<dbdate_to_human><#fecha#></dbdate_to_human>','fecha','align="center"');
+		$grid->column_orderby('Hora','hora','align="center"');
+		$grid->column('Foto',anchor_popup('uploads/fnomina/<#archivo#>',"<img src='$ima' width='100' border='0'/>",$atts),'align="center"');
+		$grid->add('nomina/accesos/dataedit/create');
 		$grid->build();
 
 		//echo $grid->db->last_query();
 		$data['content'] = $filter->output.$grid->output;
-		$data['title']   = "<h1>Control de Accesos</h1>";
+		$data['title']   = heading('Control de Accesos');
 		$data['head']    = $this->rapyd->get_head().script('jquery.js').script("plugins/jquery.numeric.pack.js").script("plugins/jquery.json.min.js");
 		$this->load->view('view_ventanas', $data);
 	}
@@ -148,9 +150,9 @@ class Accesos extends validaciones{
 		$edit->codigo->maxlength =15;
 		$edit->codigo->size =15;
 		$edit->codigo->append($boton);
-		$edit->codigo->rule = "required|callback_chexiste";
+		$edit->codigo->rule = 'required|callback_chexiste';
 
-		$edit->nacional = new dropdownField("Nacionalidad", "nacional");
+		$edit->nacional = new dropdownField('Nacionalidad', 'nacional');
 		$edit->nacional->style = "width:110px;";
 		$edit->nacional->option("V","Venezolano");
 		$edit->nacional->option("E","Extranjero");
@@ -171,12 +173,18 @@ class Accesos extends validaciones{
 		$edit->build();
 
 		$data['content'] = $edit->output;
-		$data['title']   = "<h1>Control de Accesos</h1>";
+		$data['title']   = heading('Control de Accesos');
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
 
 	function cerberus(){
+		$this->load->library('path');
+		$path=new Path();                                                                                                            
+		$path->setPath($this->config->item('uploads_dir'));                                                                          
+		$path->append('/fnomina');                                                                                          
+		$upload_path ='../'.$path->getPath().'/'; 
+	
 		$query = $this->db->query('SELECT id,sid,ip,usr,pwd FROM cerberus WHERE activo="S"');
 		foreach ($query->result() as $row){
 			$id =$row->sid;
@@ -186,19 +194,23 @@ class Accesos extends validaciones{
 
 			$link = mysql_connect($ip,$usr,$pwd) or die('Maquina fuera de linea');
 			mysql_select_db('datasis') or die('Base de datos no seleccionable');
-			$mSQL="SELECT codigo, nacional, cedula,fecha,hora,foto FROM cer_cacc WHERE id>$id ORDER BY id";
+			$mSQL="SELECT id,codigo, nacional, cedula,fecha,hora,foto FROM cer_cacc WHERE id>$id ORDER BY id";
 			$result   = mysql_query($mSQL,$link);
 			$num_rows = mysql_num_rows($result);
 			if ($num_rows > 0){
 				while ($data = mysql_fetch_assoc($result)) {
-					unset( $data['foto']);
+					$fnombre=$data['codigo'].'-'.preg_replace('/[^0-9]+/','', $data['fecha'].$data['hora']).'.jpg';
+					//echo $fnombre.br(); 
+					file_put_contents($upload_path.$fnombre,$data['foto']);
+					$sid=$data['id'];
+					unset($data['foto']);
+					unset($data['id']);
 					$sql = $this->db->insert_string('cacc', $data);
 					$ban=$this->db->simple_query($sql);
 					if(!$ban){ memowrite($sql,'accesos'); }
-					$sid=$data['id'];
 				}
 				$data=array('sid'=>$sid);
-				$sql = $this->db->update_string('cerberus', $data);
+				$sql = $this->db->update_string('cerberus', $data,'id='.$row->id);
 				$ban=$this->db->simple_query($sql);
 				if(!$ban){ memowrite($sql,'accesos'); }
 			}
@@ -277,17 +289,19 @@ class Accesos extends validaciones{
 			$this->db->simple_query($query);
 		}
 		
-		if ($this->db->table_exists('cerberus')){
+		if (!$this->db->table_exists('cerberus')){
 			$mSQL="CREATE TABLE `cerberus` (
-				`ids` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-				`ip` VARCHAR(32) NOT NULL,
-				`usr` VARCHAR(32) NOT NULL,
-				`pwd` VARCHAR(32) NOT NULL,
-				`sid` INT(11) UNSIGNED NOT NULL DEFAULT '0',
-				PRIMARY KEY (`ids`)
+			`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+			`ids` INT(10) UNSIGNED NOT NULL DEFAULT '0',
+			`ip` VARCHAR(32) NOT NULL COLLATE 'utf8_unicode_ci',
+			`usr` VARCHAR(32) NOT NULL COLLATE 'utf8_unicode_ci',
+			`pwd` VARCHAR(32) NOT NULL COLLATE 'utf8_unicode_ci',
+			`sid` INT(11) UNSIGNED NOT NULL DEFAULT '0',
+			`activo` CHAR(1) NOT NULL DEFAULT 'S',
+			PRIMARY KEY (`id`)
 			)
-			COLLATE='latin1_swedish_ci'
-			ENGINE=MyISAM";
+			ENGINE=MyISAM
+			ROW_FORMAT=DEFAULT";
 			$this->db->simple_query($mSQL);
 		}
 	}
