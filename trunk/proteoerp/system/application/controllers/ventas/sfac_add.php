@@ -541,7 +541,7 @@ class sfac_add extends validaciones {
 			$totalg    +=$itimporte*(1+($itiva/100));
 		}
 		$totalg = round($totalg,2);
-		if($sfpa-$totalg!=0){
+		if(abs($sfpa-$totalg)>0.01){
 			$do->error_message_ar['pre_ins']='El monto del pago no coincide con el monto de la factura';
 			//$do->error_message_ar['pre_upd']='';
 			return false;
@@ -739,27 +739,92 @@ class sfac_add extends validaciones {
 					if($ban==false){ memowrite($mSQL,'sfac');}
 				}
 			}else{
+				$factura   = $do->get('factura');
+				$dbfactura = $factura
+				$saldo     = $this->datasis->dameval("SELECT monto-abonos FROM smov WHERE tipo_doc='FC' AND numero=$dbfactura");
+
+				$xaplica  = $saldo-$totneto;
+
+				//Si se le debe hace un anticipo
+				if($xaplica<0){
+					$mnumant = $this->datasis->fprox_numero('nancli');
+
+					$data=array();
+					$data['cod_cli']    = $cod_cli;
+					$data['nombre']     = $nombre;
+					$data['tipo_doc']   = 'AN';
+					$data['numero']     = $mnumant;
+					$data['fecha']      = $estampa;
+					$data['monto']      = abs($xaplica);
+					$data['impuesto']   = 0;
+					$data['abonos']     = 0;
+					$data['vence']      = $fecha;
+					$data['tipo_ref']   = 'NC';
+					$data['num_ref']    = $numero;
+					$data['observa1']   = 'POR DEVOLUCION DE FACTURA '.$factura;
+					$data['estampa']    = $estampa;
+					$data['hora']       = $hora;
+					$data['transac']    = $transac;
+					$data['usuario']    = $usuario;
+					$data['codigo']     = 'NOCON';
+					$data['descrip']    = 'NOTA DE CONTABILIDAD';
+
+					$mSQL = $this->db->insert_string('smov', $data);
+					$ban=$this->db->simple_query($mSQL);
+					if($ban==false){ memowrite($mSQL,'sfac');}
+				}
+
+				$mnumnc = $this->datasis->fprox_numero('nccli');
 				$data=array();
+				$data['numccli']    = $mnumnc;
+				$data['tipoccli']   = 'NC';
 				$data['cod_cli']    = $cod_cli;
-				$data['nombre']     = $nombre;
-				$data['tipo_doc']   = 'NC';
+				$data['tipo_doc']   = ($tipo_doc=='F')? 'FC' : 'DV';
 				$data['numero']     = $numero;
-				$data['fecha']      = $estampa;
-				$data['monto']      = $totneto;
-				$data['impuesto']   = 0;
-				$data['abonos']     = $anticipo;
-				$data['vence']      = $fecha;
-				$data['tipo_ref']   = '';
-				$data['num_ref']    = '';
-				$data['observa1']   = 'FACTURA DE CREDITO';
+				$data['fecha']      = $fecha;
+				$data['monto']      = $saldo;
+				$data['abono']      = 0;
+				$data['ppago']      = 0;
+				$data['reten']      = 0;
+				$data['cambio']     = 0;
+				$data['mora']       = 0;
+				$data['transac']    = $transac;
 				$data['estampa']    = $estampa;
 				$data['hora']       = $hora;
-				$data['transac']    = $transac;
 				$data['usuario']    = $usuario;
-				$data['codigo']     = 'NOCON';
-				$data['descrip']    = 'NOTA DE CONTABILIDAD';
+				$data['reteiva']    = 0;
+				$data['nroriva']    = '';
+				$data['emiriva']    = '';
+				$data['recriva']    = '';
 
-				$sql= $this->db->insert_string('smov', $data);
+				$mSQL = $this->db->insert_string('smov', $data);
+				$ban=$this->db->simple_query($mSQL);
+				if($ban==false){ memowrite($mSQL,'sfac');}
+
+				//Aplica la NC a la FC
+				$data=array();
+				$data['numccli']    = $mnumnc; //numero abono
+				$data['tipoccli']   = 'NC';
+				$data['cod_cli']    = $cod_cli;
+				$data['tipo_doc']   = 'FC';
+				$data['numero']     = $factura;
+				$data['fecha']      = $fecha;
+				$data['monto']      = $saldo;
+				$data['abono']      = $saldo;
+				$data['ppago']      = 0;
+				$data['reten']      = 0;
+				$data['cambio']     = 0;
+				$data['mora']       = 0;
+				$data['transac']    = $transac;
+				$data['estampa']    = $estampa;
+				$data['hora']       = $hora;
+				$data['usuario']    = $usuario;
+				$data['reteiva']    = 0;
+				$data['nroriva']    = '';
+				$data['emiriva']    = '';
+				$data['recriva']    = '';
+
+				$sql= $this->db->insert_string('itccli', $data);
 				$ban=$this->db->simple_query($sql);
 				if($ban==false){ memowrite($sql,'sfac'); $error++;}
 			}
