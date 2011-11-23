@@ -6,6 +6,7 @@ class Accesos extends validaciones{
 		parent::Controller(); 
 		$this->load->library('rapyd');
 		$this->db->simple_query('UPDATE pers SET codigo=TRIM(codigo)');
+		$this->instalar();
 	}
 
 	function index(){
@@ -175,6 +176,35 @@ class Accesos extends validaciones{
 		$this->load->view('view_ventanas', $data);
 	}
 
+	function cerberus(){
+		$query = $this->db->query('SELECT id,sid,ip,usr,pwd FROM cerberus WHERE activo="S"');
+		foreach ($query->result() as $row){
+			$id =$row->sid;
+			$ip =$row->ip;
+			$usr=$row->usr;
+			$pwd=$row->pwd;
+
+			$link = mysql_connect($ip,$usr,$pwd) or die('Maquina fuera de linea');
+			mysql_select_db('datasis') or die('Base de datos no seleccionable');
+			$mSQL="SELECT codigo, nacional, cedula,fecha,hora,foto FROM cer_cacc WHERE id>$id ORDER BY id";
+			$result   = mysql_query($mSQL,$link);
+			$num_rows = mysql_num_rows($result);
+			if ($num_rows > 0){
+				while ($data = mysql_fetch_assoc($result)) {
+					unset( $data['foto']);
+					$sql = $this->db->insert_string('cacc', $data);
+					$ban=$this->db->simple_query($sql);
+					if(!$ban){ memowrite($sql,'accesos'); }
+					$sid=$data['id'];
+				}
+				$data=array('sid'=>$sid);
+				$sql = $this->db->update_string('cerberus', $data);
+				$ban=$this->db->simple_query($sql);
+				if(!$ban){ memowrite($sql,'accesos'); }
+			}
+		}
+	}
+
 	function foto(){
 		//$archivo=$this->uri->segment(4);
 		//if (isset($archivo) and file_exists("/usr/samba/fnomina/$archivo")){
@@ -245,6 +275,20 @@ class Accesos extends validaciones{
 		if (!$this->db->field_exists('manual', 'cacc')){
 			$query="ALTER TABLE `cacc`  ADD COLUMN `manual` CHAR(1) NOT NULL DEFAULT 'N' AFTER `hora`";
 			$this->db->simple_query($query);
+		}
+		
+		if ($this->db->table_exists('cerberus')){
+			$mSQL="CREATE TABLE `cerberus` (
+				`ids` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+				`ip` VARCHAR(32) NOT NULL,
+				`usr` VARCHAR(32) NOT NULL,
+				`pwd` VARCHAR(32) NOT NULL,
+				`sid` INT(11) UNSIGNED NOT NULL DEFAULT '0',
+				PRIMARY KEY (`ids`)
+			)
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM";
+			$this->db->simple_query($mSQL);
 		}
 	}
 }
