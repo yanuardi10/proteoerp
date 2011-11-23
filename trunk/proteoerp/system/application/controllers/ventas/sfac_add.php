@@ -740,7 +740,7 @@ class sfac_add extends validaciones {
 				}
 			}else{
 				$factura   = $do->get('factura');
-				$dbfactura = $factura
+				$dbfactura = $factura;
 				$saldo     = $this->datasis->dameval("SELECT monto-abonos FROM smov WHERE tipo_doc='FC' AND numero=$dbfactura");
 
 				$xaplica  = $saldo-$totneto;
@@ -776,26 +776,24 @@ class sfac_add extends validaciones {
 
 				$mnumnc = $this->datasis->fprox_numero('nccli');
 				$data=array();
-				$data['numccli']    = $mnumnc;
-				$data['tipoccli']   = 'NC';
 				$data['cod_cli']    = $cod_cli;
-				$data['tipo_doc']   = ($tipo_doc=='F')? 'FC' : 'DV';
-				$data['numero']     = $numero;
+				$data['nombre']     = $nombre;
+				$data['tipo_doc']   = 'NC';
+				$data['numero']     = $mnumnc;
 				$data['fecha']      = $fecha;
 				$data['monto']      = $saldo;
-				$data['abono']      = 0;
-				$data['ppago']      = 0;
-				$data['reten']      = 0;
-				$data['cambio']     = 0;
-				$data['mora']       = 0;
-				$data['transac']    = $transac;
+				$data['impuesto']   = 0;
+				$data['abonos']     = 0;
+				$data['vence']      = $fecha;
+				$data['tipo_ref']   = 'DV';
+				$data['num_ref']    = $numero;
+				$data['observa1']   = 'POR DEVOLUCION DE '.$numero;
 				$data['estampa']    = $estampa;
 				$data['hora']       = $hora;
+				$data['transac']    = $transac;
 				$data['usuario']    = $usuario;
-				$data['reteiva']    = 0;
-				$data['nroriva']    = '';
-				$data['emiriva']    = '';
-				$data['recriva']    = '';
+				$data['codigo']     = 'NOCON';
+				$data['descrip']    = 'NOTA DE CONTABILIDAD';
 
 				$mSQL = $this->db->insert_string('smov', $data);
 				$ban=$this->db->simple_query($mSQL);
