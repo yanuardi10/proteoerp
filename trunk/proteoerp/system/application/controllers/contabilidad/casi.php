@@ -982,8 +982,7 @@ function renderSinv(value, p, record) {
 					handler: function(){
 						window.open(urlApp+'contabilidad/casi/dataedit/create', '_blank', 'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys);
 					}
-				},
-				{
+				},{
 					iconCls: 'icon-update',
 					text: 'Modificar',
 					disabled: true,
