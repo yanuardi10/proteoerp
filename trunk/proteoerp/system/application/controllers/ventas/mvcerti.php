@@ -371,8 +371,10 @@ class Mvcerti extends validaciones {
 							mcliente = registro.data.cliente;
 							scliStore.proxy.extraParams.cliente = mcliente ;
 							scliStore.load({ params: { 'cuenta':  registro.data.cliente, 'origen': 'beforeform' } });
+							form.findField('cliente').setReadOnly(true);
 							form.loadRecord(registro);
 						} else {
+							form.findField('cliente').setReadOnly(false);
 							mcliente = '';
 						}
 					}

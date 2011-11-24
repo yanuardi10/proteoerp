@@ -20,7 +20,7 @@ class spre extends validaciones {
 		$this->load->view('extjs/pers',$data);
 	}
 
-/*
+
 	function filteredgrid(){
 		$this->rapyd->load('datagrid','datafilter');
 
@@ -319,7 +319,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 			echo $ret;
 		}
 	}
-*/
+	
 
 	//**********************************************************************************************************
 	//

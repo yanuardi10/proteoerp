@@ -816,4 +816,23 @@ class Datasis {
 		return $arr;
 	}
 
+	function extjscampos($tabla){
+		$CI =& get_instance();
+		$query = $CI->db->query("DESCRIBE $tabla");
+		$i = 0;
+		$campos = '';
+		if ($query->num_rows() > 0){
+			foreach ($query->result() as $row){
+				if ( $i == 0 ) {
+					$campos = "'".$row->Field."'";
+					$i = 1;
+				} else {
+					$campos .= ",'".$row->Field."'";
+				}
+				
+			}
+		}
+		return $campos;
+	}
+
 }
