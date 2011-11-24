@@ -173,6 +173,13 @@ $(function(){
 			});
 		}
 	});
+	
+	$('input[name^="cana_"]').keypress(function(e) {
+		if(e.keyCode == 13) {
+		    add_sitems();
+			return false;
+		}
+	});
 });
 
 function truncate(){
@@ -258,8 +265,14 @@ function add_sitems(){
 	htm = htm.replace(/<#o#>/g,con);
 	$("#__INPL__").after(htm);
 	$("#cana_"+can).numeric(".");
+	$("#cana_"+can).keypress(function(e) {
+		if(e.keyCode == 13) {
+		    add_sitems();
+			return false;
+		}
+	});
 	autocod(can);
-	$('#codigo_'+can).focus();
+	$('#codigoa_'+can).focus();
 	sitems_cont=sitems_cont+1;
 	return can;
 }
@@ -502,63 +515,59 @@ function del_sfpa(id){
 <table align='center' width="100%">
 	<tr>
 		<td>
-		<table width='100%'><tr><td>
-			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
+		<table width='100%'>
+		<tr><td style="width:50%">
+			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9; min-height:105px;'>
 			<legend class="titulofieldset" style='color: #114411;'>Documento</legend>
-			<table width="100%" style="margin: 0; width: 100%;">
+			<table style="margin: 0;">
 			<tr>
-				<td class="littletableheader"><?php echo $form->fecha->label;    ?>*&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->fecha->output;   ?>&nbsp;</td>
-				<td class="littletableheader"><?php echo $form->cajero->label     ?>*&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->cajero->output    ?>&nbsp;</td>
-			</tr>
-			<tr>
-				<td class="littletableheader"><?php echo $form->vd->label      ?>&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->vd->output     ?>&nbsp;</td>
-				<td class="littletableheader"><?php echo $form->almacen->label ?>*&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->almacen->output?>&nbsp;</td>
-			</tr>
-			<tr>
-				<td class="littletableheader">          <?php echo $form->tipo_doc->label  ?>&nbsp;</td>
-				<td class="littletablerow" align="left"><?php echo $form->tipo_doc->output ?>&nbsp;</td>
-				<td class="littletableheader"><?php echo $form->factura->label  ?>&nbsp;</td>
-				<td class="littletablerow"   ><?php echo $form->factura->output ?>&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->fecha->label;     ?>*&nbsp;</td>
+				<td class="littletablerow">   <?php echo $form->fecha->output;    ?>&nbsp; </td>
+				<td class="littletableheader"><?php echo $form->cajero->label;    ?>*&nbsp;</td>
+				<td class="littletablerow">   <?php echo $form->cajero->output;   ?>&nbsp; </td>
+			</tr><tr>
+				<td class="littletableheader"><?php echo $form->vd->label;        ?>&nbsp; </td>
+				<td class="littletablerow">   <?php echo $form->vd->output;       ?>&nbsp; </td>
+				<td class="littletableheader"><?php echo $form->almacen->label;   ?>*&nbsp;</td>
+				<td class="littletablerow">   <?php echo $form->almacen->output;  ?>&nbsp; </td>
+			</tr><tr>
+				<td class="littletableheader"><?php echo $form->tipo_doc->label;  ?>&nbsp;</td>
+				<td class="littletablerow"   ><?php echo $form->tipo_doc->output; ?>&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->factura->label;   ?>&nbsp;</td>
+				<td class="littletablerow"   ><?php echo $form->factura->output;  ?>&nbsp;</td>
 			</tr>
 			</table>
 			</fieldset>
-		</td><td>
-			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
+		</td><td style="width:50%">
+			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9; min-height:105px;'>
 			<legend class="titulofieldset" style='color: #114411;'>Cliente</legend>
-			<table width="100%" style="margin: 0; width: 100%;">
+			<table style="margin: 0;">
 			<tr>
 				<td class="littletableheader"><?php echo $form->cliente->label;  ?>*&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->cliente->output,$form->sclitipo->output; ?>&nbsp;</td>
 				<td class="littletablerow">   <b id='nombre_val'><?php echo $form->nombre->value; ?></b><?php echo $form->nombre->output;  ?>&nbsp;</td>
-			</tr>
-			<tr>
+			</tr><tr>
 				<td class="littletableheader"><?php echo $form->rifci->label; ?>&nbsp;</td>
 				<td class="littletablerow" colspan='2'><b id='rifci_val'><?php echo $form->rifci->value; ?></b><?php echo $form->rifci->output;   ?>&nbsp;</td>
-			</tr>
-			<tr>
+			</tr><tr>
 				<td class="littletableheader"><?php echo $form->direc->label  ?>&nbsp;</td>
 				<td class="littletablerow" colspan='2'><b id='direc_val'><?php echo $form->direc->value; ?></b><?php echo $form->direc->output ?>&nbsp;</td>
 			</tr>
 			</table>
 			</fieldset>
-		</td><tr></table>
-		<br>
+		</td></tr>
+		</table>
 		</td>
-	</tr>
-	<tr>
+	</tr><tr>
 		<td>
 		<div style='overflow:auto;border: 1px solid #9AC8DA;background: #FAFAFA;height:200px'>
 		<table width='100%' border='0'>
 			<tr id='__INPL__'>
-				<td class="littletableheaderdet"><strong>C&oacute;digo</strong></td>
-				<td class="littletableheaderdet"><strong>Descripci&oacute;n</strong></td>
-				<td class="littletableheaderdet"><strong>Cantidad</strong></td>
-				<td class="littletableheaderdet"><strong>Precio</strong></td>
-				<td class="littletableheaderdet"><strong>Importe</strong></td>
+				<td class="littletableheaderdet"><b>C&oacute;digo</b></td>
+				<td class="littletableheaderdet"><b>Descripci&oacute;n</b></td>
+				<td class="littletableheaderdet"><b>Cantidad</b></td>
+				<td class="littletableheaderdet"><b>Precio</b></td>
+				<td class="littletableheaderdet"><b>Importe</b></td>
 				<?php if($form->_status!='show') {?>
 					<td bgcolor='#7098D0'>&nbsp;</td>
 				<?php } ?>
@@ -607,7 +616,6 @@ function del_sfpa(id){
 				<?php } ?>
 			</tr>
 			<?php } ?>
-
 			<tr id='__UTPL__'>
 				<td id='cueca'></td>
 			</tr>
@@ -643,13 +651,12 @@ function del_sfpa(id){
 				<?php if($form->_status!='show') {?>
 					<td class="littletablerow"><a href=# onclick="del_sfpa(<?php echo $i; ?>);return false;"><?php echo img("images/delete.jpg"); ?></a></td></tr>
 				<?php } ?>
-			<?php } ?>
 			</tr>
+			<?php } ?>
 			<tr id='__UTPL__sfpa'>
 				<td colspan='9' class="littletableheaderdet">&nbsp;</td>
 			</tr>
 		</table>
-
 	</tr><tr>
 		<td>
 		<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
@@ -659,7 +666,6 @@ function del_sfpa(id){
 				<td class="littletablerow"    width='350'></td>
 				<td class="littletableheader">           <?php echo $form->totals->label;  ?></td>
 				<td class="littletablerow" align='right'><b id='totals_val'><?php echo nformat($form->totals->value); ?></b><?php echo $form->totals->output; ?></td>
-
 			<tr></tr>	
 				<td class="littletableheader">&nbsp;</td>
 				<td class="littletablerow"   ></td>

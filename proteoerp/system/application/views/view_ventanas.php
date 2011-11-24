@@ -7,7 +7,7 @@
 <?php if (isset($style))  echo $style; ?>
 <?php if (isset($filtro)) { ?>
 <style type="text/css">
-#cajafiltro {width: 100%;display: block;padding: 5px;border-bottom: 1px solid #2067B5;background-color: #D7DEF0;}	
+#cajafiltro {width: 100%;display: block;padding: 5px;border-bottom: 1px solid #2067B5;background-color: #D7DEF0;}
 #mostrafiltro {display: block;width: 100%;padding: 5px;border-bottom: 1px solid #2067B5;background-color: #F5F5F5;background:url(<?=base_url();?>images/huellaazul.gif);}
 </style>
 <?php }; ?>
