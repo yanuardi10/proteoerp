@@ -409,7 +409,7 @@ class rivc extends Controller {
 			return false;
 		}
 
-		if($tipo_doc=='D'){
+		/*if($tipo_doc=='D'){
 			$mSQL  = 'SELECT fecha FROM sfac '.$ww;
 			$ffech = $this->datasis->dameval($mSQL);
 			$ar_dfech = explode('-',$ffech);
@@ -422,7 +422,7 @@ class rivc extends Controller {
 				$this->validation->set_message('chfac', 'El documento '.$numero.' esta fuera de per&iacute;odo');
 				return false;
 			}
-		}
+		}*/
 		return true;
 	}
 
