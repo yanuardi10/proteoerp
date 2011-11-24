@@ -317,8 +317,8 @@ Ext.onReady(function(){
 
 <?php if (isset($final)) echo $final; ?>
 
-
 	storeData.load({ params: { start:0, limit: 30}});
+
 
 });
 

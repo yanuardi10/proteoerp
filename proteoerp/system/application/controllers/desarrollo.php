@@ -445,5 +445,61 @@ class Desarrollo extends Controller{
 			return $crud;
 		}
 	}
+
+
+	// Genera las columnas para Extjs
+	function extjs(){
+		$db =$this->uri->segment(3);
+		if($db===false){
+			exit('Debe especificar en la uri la tabla');
+		}
+		$query = $this->db->query("DESCRIBE $db");
+		$i = 0;
+		if ($query->num_rows() > 0){
+			$fields  = '';
+			$columna = '';
+			$campos  = '';
+			foreach ($query->result() as $row){
+				if ($i == 0 ){
+					$str="'".$row->Field."'";
+					$i = 1;
+				} else {
+					$str=",'".$row->Field."'";
+				}
+				$fields .= $str;
+
+				$str = "{ header: ".str_pad("'".$row->Field."'",20).",  width: 60, sortable: true,  dataIndex: ".str_pad("'".$row->Field."'",20).", field: ";
+
+				if ( $row->Type == 'date' or $row->Type == 'timestamp' ) {
+					$str .= "{ type: 'date'       }, filter: { type: 'date'    }";
+				} elseif ( $row->Type == 'date' or $row->Type == 'timestamp' ) {
+					$str = "{ type: 'date'       }, filter: { type: 'date'    }";
+				} elseif ( substr($row->Type,0,7) == 'decimal' or substr($row->Type,0,3) == 'int'  ) {
+					$str .= "{ type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')";
+				} else {
+					$str .= "{ type: 'textfield'  }, filter: { type: 'string'  }";
+				}
+				$columna .= $str."},<br>";
+
+
+				$str = "{ fieldLabel: ".$row->Field.",  name: ".$row->Field.", width:100, labelWidth:60, ";
+
+				if ( $row->Type == 'date' or $row->Type == 'timestamp' ) {
+					$str .= "{ type: 'date'       }, filter: { type: 'date'    }";
+				} elseif ( $row->Type == 'date' or $row->Type == 'timestamp' ) {
+					$str = "xtype: 'datefield', format: 'd/m/Y', submitFormat: 'Y-m-d' ";
+				} elseif ( substr($row->Type,0,7) == 'decimal' or substr($row->Type,0,3) == 'int'  ) {
+					$str .= "xtype: 'numberfield', , hideTrigger: true, fieldStyle: 'text-align: right',  renderer : Ext.util.Format.numberRenderer('0,000.00')";
+				} else {
+					$str .= "xtype: 'textfield' ";
+				}
+				$campos .= $str."},<br>";
+
+			}
+			echo "$fields<br>";
+			echo "<br>$columna";
+			echo "<br>$campos";
+		}
+	}
 }
 ?>

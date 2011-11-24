@@ -17,7 +17,15 @@ class casi extends Controller {
 	}
 
 	function index() {
-		redirect('contabilidad/casi/filteredgrid');
+		//redirect('contabilidad/casi/filteredgrid');
+		if ( !$this->datasis->iscampo('itcasi','idcasi') ) {
+			$mSQL='ALTER TABLE itcasi ADD idcasi INT(11) ';
+			$this->db->simple_query($mSQL);
+			$this->db->simple_query('ALTER TABLE itcasi ADD INDEX idcasi (idcasi)');
+			$mSQL = "UPDATE itcasi a JOIN casi b ON a.comprob=b.comprob SET a.idcasi=b.id";
+			$this->db->simple_query($mSQL);
+		}
+		$this->casiextjs();
 	}
 
 	function filteredgrid(){
@@ -267,7 +275,7 @@ class casi extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
-	function grid(){
+	function grid1(){
 		
 		$page  = 1;//$this->input->post('page');
 		$limit = 50;//$this->input->post('rows'); // get how many rows we want to have into the grid - rowNum parameter in the grid 
@@ -337,8 +345,6 @@ class casi extends Controller {
 
 
 
-
-	
 	function chrepetidos($cod){
 		if(array_search($cod, $this->chrepetidos)===false){
 			$this->chrepetidos[]=$cod;
@@ -707,27 +713,361 @@ class casi extends Controller {
 		logusu('casi',"Asiento $codigo ELIMINADO");
 	}
 
-function getData()
-{
-	memowrite("datajqgridget","datajqgrid");
+	function getData()
+	{
+		memowrite("datajqgridget","datajqgrid");
 
-	$this->load->library('datajqgrid');
-	$grid             = $this->datajqgrid;
-	$response         = $grid->getData('casi', array(array('table' => 'casi')),array(),false);
-	$rs = $grid->jsonresult( $response);
-	echo $rs;
+		$this->load->library('datajqgrid');
+		$grid             = $this->datajqgrid;
+		$response         = $grid->getData('casi', array(array('table' => 'casi')),array(),false);
+		$rs = $grid->jsonresult( $response);
+		echo $rs;
+	}
+
+
+	 #Put information
+
+	function setData()
+	{
+	    $this->load->library('datajqgrid');
+	    $grid             = $this->datajqgrid;
+	    $response         = $grid->operations('casi','id');
+	}
+	
+	function grid(){
+		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']   :  0;
+		$limit   = isset($_REQUEST['limit'])  ? $_REQUEST['limit']   : 50;
+		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']    : '[{"property":"fecha","direction":"DESC"},{"property":"comprob","direction":"DESC"}]';
+		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
+
+		$where = $this->datasis->extjsfiltro($filters,'casi');
+		$this->db->_protect_identifiers=false;
+		$this->db->select('*');
+		$this->db->from('casi');
+
+		if (strlen($where)>1){
+			$this->db->where($where);
+		}
+
+		$sort = json_decode($sort, true);
+		for ($i=0;$i<count($sort);$i++) {
+			$this->db->order_by($sort[$i]['property'],$sort[$i]['direction']);
+		}
+
+		$this->db->limit($limit, $start);
+
+		$query = $this->db->get();
+		$results = $query->num_rows();
+
+		$arr = $this->datasis->codificautf8($query->result_array());
+		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
+	}
+
+	function griditcasi(){
+		$comprob   = isset($_REQUEST['comprob'])  ? $_REQUEST['comprob']   :  '';
+		if ($comprob == '' ) $comprob = $this->datasis->dameval("SELECT MAX(comprob) FROM casi") ;
+
+		$mSQL = "SELECT * FROM itcasi a WHERE a.comprob='$comprob' ORDER BY a.cuenta";
+		$query = $this->db->query($mSQL);
+		$results =  0; 
+		$arr = $this->datasis->codificautf8($query->result_array());
+		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
+	}
+
+	function sprvbu(){
+		$control = $this->uri->segment(4);
+		$id = $this->datasis->dameval("SELECT b.id FROM casi a JOIN sprv b ON a.proveed=b.proveed WHERE control='$control'");
+		redirect('compras/sprv/dataedit/show/'.$id);
+	}
+
+	function tabla() {
+		$control   = isset($_REQUEST['control'])  ? $_REQUEST['control']   :  0;
+		$transac = $this->datasis->dameval("SELECT transac FROM casi WHERE control='$control'");
+		$mSQL = "SELECT cod_prv, MID(nombre,1,25) nombre, tipo_doc, numero, monto, abonos FROM sprm WHERE transac='$transac' ORDER BY cod_prv ";
+		$query = $this->db->query($mSQL);
+		$codprv = 'XXXXXXXXXXXXXXXX';
+		$salida = '';
+		$saldo = 0;
+		if ( $query->num_rows() > 0 ){
+			$salida = "<br><table width='100%' border=1>";
+			$salida .= "<tr bgcolor='#e7e3e7'><td>Tp</td><td align='center'>Numero</td><td align='center'>Monto</td></tr>";
+			
+			foreach ($query->result_array() as $row)
+			{
+				if ( $codprv != $row['cod_prv']){
+					$codprv = $row['cod_prv'];
+					$salida .= "<tr bgcolor='#c7d3c7'>";
+					$salida .= "<td colspan=4>".trim($row['nombre']). "</td>";
+					$salida .= "</tr>";	
+				}
+				if ( $row['tipo_doc'] == 'FC' ) {
+					$saldo = $row['monto']-$row['abonos'];
+				}
+				$salida .= "<tr>";
+				$salida .= "<td>".$row['tipo_doc']."</td>";
+				$salida .= "<td>".$row['numero'].  "</td>";
+				$salida .= "<td align='right'>".nformat($row['monto']).   "</td>";
+				$salida .= "</tr>";
+			}
+			$salida .= "<tr bgcolor='#d7c3c7'><td colspan='4' align='center'>Saldo : ".nformat($saldo). "</td></tr>";
+			$salida .= "</table>";
+		}
+		echo $salida;
+	}
+
+	function casiextjs() {
+		$encabeza='ASIENTOS CONTABLES';
+		$listados= $this->datasis->listados('casi');
+		$otros=$this->datasis->otros('casi', 'contabilidad/casi');
+
+		$urlajax = 'contabilidad/casi/';
+
+		$columnas = "
+		{ header: 'Comprobante',  width: 80, sortable: true, dataIndex: 'comprob' , field: { type: 'textfield'  }, filter: { type: 'string' }},
+		{ header: 'Fecha',        width: 70, sortable: true, dataIndex: 'fecha' ,   field: { type: 'date'       }, filter: { type: 'date'   }},
+		{ header: 'Descripcion',  width:250, sortable: true, dataIndex: 'descrip' , field: { type: 'textfield'  }, filter: { type: 'string' }},
+		{ header: 'Debe',         width: 80, sortable: true, dataIndex: 'debe' ,    field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Haber',        width: 80, sortable: true, dataIndex: 'haber' ,   field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Total',        width: 60, sortable: true, dataIndex: 'total' ,   field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Status',       width: 40, sortable: true, dataIndex: 'status' ,  field: { type: 'textfield'  }, filter: { type: 'string' }},
+		{ header: 'Tipo',         width: 60, sortable: true, dataIndex: 'tipo' ,    field: { type: 'textfield'  }, filter: { type: 'string' }},
+		{ header: 'Origen',       width: 60, sortable: true, dataIndex: 'origen' ,  field: { type: 'textfield'  }, filter: { type: 'string' }},
+		{ header: 'Transac',      width: 60, sortable: true, dataIndex: 'transac' , field: { type: 'textfield'  }, filter: { type: 'string' }},
+		{ header: 'Usuario',      width: 60, sortable: true, dataIndex: 'usuario' , field: { type: 'textfield'  }, filter: { type: 'string' }},
+		{ header: 'Estampa',      width: 60, sortable: true, dataIndex: 'estampa' , field: { type: 'date'       }, filter: { type: 'date'   }},
+		{ header: 'Hora',         width: 60, sortable: true, dataIndex: 'hora' ,    field: { type: 'textfield'  }, filter: { type: 'string' }},
+		{ header: 'id',           width: 80, sortable: true, dataIndex: 'id' ,      field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0000')},
+		";
+
+		$coldeta = "
+	var Deta1Col = [
+		{ header: 'Comprobante',  width: 80, sortable: true, dataIndex: 'comprob' , field: { type: 'textfield'  }, filter: { type: 'string' }},
+		{ header: 'cuenta',   width: 90, sortable: true, dataIndex: 'cuenta',  field: { type: 'textfield'  }, filter: { type: 'string' }},
+		{ header: 'referen',  width: 90, sortable: true, dataIndex: 'referen', field: { type: 'textfield'  }, filter: { type: 'string' }},
+		{ header: 'concepto', width:190, sortable: true, dataIndex: 'concepto',field: { type: 'textfield'  }, filter: { type: 'string' }},
+		{ header: 'debe',     width: 80, sortable: true, dataIndex: 'debe',    field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'haber',    width: 80, sortable: true, dataIndex: 'haber',   field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'origen',   width: 60, sortable: true, dataIndex: 'origen',  field: { type: 'textfield'  }, filter: { type: 'string' }},
+		{ header: 'ccosto',   width: 60, sortable: true, dataIndex: 'ccosto',  field: { type: 'textfield'  }, filter: { type: 'string' }},
+		{ header: 'sucursal', width: 60, sortable: true, dataIndex: 'sucursal',field: { type: 'textfield'  }, filter: { type: 'string' }},
+	]";
+
+		$variables='';
+		
+		$valida="		{ type: 'length', field: 'cliente',  min:  1 }";
+		
+
+		$funciones = "
+function renderSprv(value, p, record) {
+	var mreto='';
+	if ( record.data.proveed == '' ){
+		mreto = '{0}';
+	} else {
+		mreto = '<a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'compras/casi/sprvbu/{1}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">{0}</a>';
+	}
+	return Ext.String.format(mreto,	value, record.data.control );
 }
 
-
- #Put information
-
-function setData()
-{
-    $this->load->library('datajqgrid');
-    $grid             = $this->datajqgrid;
-    $response         = $grid->operations('casi','id');
-
+function renderSinv(value, p, record) {
+	var mreto='';
+	mreto = '<a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'inventario/sinv/dataedit/show/{1}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">{0}</a>';
+	return Ext.String.format(mreto,	value, record.data.codid );
 }
+	";
 
+		$campos = $this->datasis->extjscampos('casi');
+
+		$stores = "
+	Ext.define('Itcasi', {
+		extend: 'Ext.data.Model',
+		fields: [".$this->datasis->extjscampos('itcasi')."],
+		proxy: {
+			type: 'ajax',
+			noCache: false,
+			api: {
+				read   : urlAjax + 'griditcasi',
+				method: 'POST'
+			},
+			reader: {
+				type: 'json',
+				root: 'data',
+				successProperty: 'success',
+				messageProperty: 'message',
+				totalProperty: 'results'
+			}
+		}
+	});
+
+	//////////////////////////////////////////////////////////
+	// create the Data Store
+	var storeItCasi = Ext.create('Ext.data.Store', {
+		model: 'Itcasi',
+		autoLoad: false,
+		autoSync: true,
+		method: 'POST'
+	});
+	
+	//////////////////////////////////////////////////////////
+	//
+	var gridDeta1 = Ext.create('Ext.grid.Panel', {
+		width:   '100%',
+		height:  '100%',
+		store:   storeItCasi,
+		title:   'Articulos',
+		iconCls: 'icon-grid',
+		frame:   true,
+		features: [ { ftype: 'filters', encode: 'json', local: false } ],
+		columns: Deta1Col
+	});
+
+	var casiTplMarkup = [
+		'<table width=\'100%\' bgcolor=\"#F3F781\">',
+		'<tr><td colspan=3 align=\'center\'><p style=\'font-size:14px;font-weight:bold\'>IMPRIMIR COMPRA</p></td></tr><tr>',
+		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/verhtml/COMPRA/{control}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/html_icon.gif', 'alt' => 'Formato HTML', 'title' => 'Formato HTML','border'=>'0'))."</a></td>',
+		'<td align=\'center\'>{numero}</td>',
+		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/ver/COMPRA/{control}\',     \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',   'title' => 'Formato PDF', 'border'=>'0'))."</a></td></tr>',
+		'<tr><td colspan=3 align=\'center\' >--</td></tr>',		
+		'</table>','nanai'
+	];
+
+	// Al cambiar seleccion
+	gridMaest.getSelectionModel().on('selectionchange', function(sm, selectedRecord) {
+		if (selectedRecord.length) {
+			gridMaest.down('#delete').setDisabled(selectedRecord.length === 0);
+			gridMaest.down('#update').setDisabled(selectedRecord.length === 0);
+			comprob = selectedRecord[0].data.comprob;
+			gridDeta1.setTitle(comprob+' '+selectedRecord[0].data.descrip);
+			storeItCasi.load({ params: { comprob: comprob }});
+			var meco1 = Ext.getCmp('imprimir');
+			/*
+			Ext.Ajax.request({
+				url: urlAjax +'tabla',
+				params: { control: selectedRecord[0].data.control, serie: selectedRecord[0].data.serie },
+				success: function(response) {
+					var vaina = response.responseText;
+					casiTplMarkup.pop();
+					casiTplMarkup.push(vaina);
+					var casiTpl = Ext.create('Ext.Template', casiTplMarkup );
+					meco1.setTitle('Imprimir Compra');
+					casiTpl.overwrite(meco1.body, selectedRecord[0].data );
+				}
+			});*/
+		}
+	});
+
+
+";
+
+		$acordioni = "{
+					layout: 'fit',
+					items:[
+						{
+							name: 'imprimir',
+							id: 'imprimir',
+							border:false,
+							html: 'Para imprimir seleccione una Compra '
+						}
+					]
+				},
+";
+
+
+		$dockedItems = "{
+			xtype: 'toolbar',
+			items: [
+				{
+					iconCls: 'icon-add',
+					text: 'Agregar',
+					scope: this,
+					handler: function(){
+						window.open(urlApp+'contabilidad/casi/dataedit/create', '_blank', 'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys);
+					}
+				},
+				{
+					iconCls: 'icon-update',
+					text: 'Modificar',
+					disabled: true,
+					itemId: 'update',
+					scope: this,
+					handler: function(selModel, selections){
+						var selection = gridMaest.getView().getSelectionModel().getSelection()[0];
+						gridMaest.down('#delete').setDisabled(selections.length === 0);
+						window.open(urlApp+'contabilidad/casi/dataedit/modify/'+selection.data.id, '_blank', 'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys);
+					}
+				},{
+					iconCls: 'icon-delete',
+					text: 'Eliminar',
+					disabled: true,
+					itemId: 'delete',
+					scope: this,
+					handler: function() {
+						var selection = gridMaest.getView().getSelectionModel().getSelection()[0];
+						Ext.MessageBox.show({
+							title: 'Confirme', 
+							msg: 'Seguro que quiere eliminar la compra Nro. '+selection.data.numero, 
+							buttons: Ext.MessageBox.YESNO, 
+							fn: function(btn){ 
+								if (btn == 'yes') { 
+									if (selection) {
+										//storeMaest.remove(selection);
+									}
+									storeMaest.load();
+								} 
+							}, 
+							icon: Ext.MessageBox.QUESTION 
+						});  
+					}
+				}
+			]
+		}		
+		";
+
+
+
+		$grid2 = ",{
+				itemId: 'viewport-center-detail',
+				activeTab: 0,
+				region: 'south',
+				height: '40%',
+				split: true,
+				margins: '0 0 0 0',
+				preventHeader: true,
+				items: gridDeta1
+			}";
+
+
+		$titulow = 'Asientos';
+		
+		$filtros = "";
+		$features = "
+		features: [ { ftype: 'filters', encode: 'json', local: false } ],
+		plugins: [Ext.create('Ext.grid.plugin.CellEditing', { clicksToEdit: 2 })],
+";
+
+		$final = "storeItCasi.load();";
+
+		$data['listados']    = $listados;
+		$data['otros']       = $otros;
+		$data['encabeza']    = $encabeza;
+		$data['urlajax']     = $urlajax;
+		$data['variables']   = $variables;
+		$data['funciones']   = $funciones;
+		$data['valida']      = $valida;
+		$data['stores']      = $stores;
+		$data['columnas']    = $columnas;
+		$data['campos']      = $campos;
+		$data['titulow']     = $titulow;
+		$data['dockedItems'] = $dockedItems;
+		$data['features']    = $features;
+		$data['filtros']     = $filtros;
+		$data['grid2']       = $grid2;
+		$data['coldeta']     = $coldeta;
+		$data['acordioni']   = $acordioni;
+		$data['final']       = $final;
+		
+		$data['title']  = heading('Asientos');
+		$this->load->view('extjs/extjsvenmd',$data);
+
+	}
 
 }

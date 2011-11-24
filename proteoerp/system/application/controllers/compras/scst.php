@@ -9,10 +9,12 @@ class Scst extends Controller {
 	}
 
 	function index(){
-		$this->db->simple_query("DELETE FROM itscst WHERE control IN (SELECT control FROM scst a WHERE LENGTH(a.transac)=0 or a.transac is null)");
-		$this->db->simple_query("DELETE FROM scst a WHERE LENGTH(a.transac)=0 or a.transac is null");
+		//$this->db->simple_query("DELETE FROM itscst WHERE control IN (SELECT control FROM scst a WHERE LENGTH(a.transac)=0 or a.transac is null)");
+		//$this->db->simple_query("DELETE FROM scst a WHERE LENGTH(a.transac)=0 or a.transac is null");
 		//redirect('compras/scst/datafilter');
 		redirect('compras/scst/extgrid');
+		//$this->scstextjs();
+
 	}
 	
 	
@@ -1435,15 +1437,13 @@ class Scst extends Controller {
 
 		} else {
 			$this->datasis->modulo_id(201,1);
-			$script = $this->scstextjs();
-			$data["script"] = $script;
-			$data['title']  = heading('Compras de Productos');
-			$this->load->view('extjs/ventana',$data);
+			//$script =
+			$this->scstextjs();
+			//$data["script"] = $script;
+			//$data['title']  = heading('Compras de Productos');
+			//$this->load->view('extjs/ventana',$data);
 		}
 	}
-
-
-
 
 	function grid(){
 		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']   :  0;
@@ -1451,64 +1451,7 @@ class Scst extends Controller {
 		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']    : '';
 		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
 
-
-		$where = "";
-
-		//Buscar posicion 0 Cero
-		if (isset($_REQUEST['filter'])){
-			$filter = json_decode($_REQUEST['filter'], true);
-			if (is_array($filter)) {
-				//Dummy Where. 
-				$where = "numero IS NOT NULL ";
-				$qs = "";
-				for ($i=0;$i<count($filter);$i++){
-					switch($filter[$i]['type']){
-					case 'string' : $qs .= " AND ".$filter[$i]['field']." LIKE '%".$filter[$i]['value']."%'"; 
-						Break;
-					case 'list' :
-						if (strstr($filter[$i]['value'],',')){
-							$fi = explode(',',$filter[$i]['value']);
-							for ($q=0;$q<count($fi);$q++){
-								$fi[$q] = "'".$fi[$q]."'";
-							}
-							$filter[$i]['value'] = implode(',',$fi);
-								$qs .= " AND ".$filter[$i]['field']." IN (".$filter[$i]['value'].")";
-						}else{
-							$qs .= " AND ".$filter[$i]['field']." = '".$filter[$i]['value']."'";
-						}
-						Break;
-					case 'boolean' : $qs .= " AND ".$filter[$i]['field']." = ".($filter[$i]['value']); 
-						Break;
-					case 'numeric' :
-						switch ($filter[$i]['comparison']) {
-							case 'ne' : $qs .= " AND ".$filter[$i]['field']." != ".$filter[$i]['value']; 
-								Break;
-							case 'eq' : $qs .= " AND ".$filter[$i]['field']." = ".$filter[$i]['value']; 
-								Break;
-							case 'lt' : $qs .= " AND ".$filter[$i]['field']." < ".$filter[$i]['value']; 
-								Break;
-							case 'gt' : $qs .= " AND ".$filter[$i]['field']." > ".$filter[$i]['value']; 
-								Break;
-						}
-						Break;
-					case 'date' :
-						switch ($filter[$i]['comparison']) {
-							case 'ne' : $qs .= " AND ".$filter[$i]['field']." != '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
-								Break;
-							case 'eq' : $qs .= " AND ".$filter[$i]['field']." = '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
-								Break;
-							case 'lt' : $qs .= " AND ".$filter[$i]['field']." < '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
-								Break;
-							case 'gt' : $qs .= " AND ".$filter[$i]['field']." > '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
-								Break;
-						}
-						Break;
-					}
-				}
-				$where .= $qs;
-			}
-		}
-		
+		$where = $this->datasis->extjsfiltro($filters,'scst');
 		$this->db->_protect_identifiers=false;
 		$this->db->select('*');
 		$this->db->from('scst');
@@ -1586,44 +1529,13 @@ class Scst extends Controller {
 	}
 
 	function scstextjs() {
-		$encabeza='<table width="100%" bgcolor="#2067B5"><tr><td align="left" width="100px"><img src="'.base_url().'assets/default/css/templete_01.jpg" width="120"></td><td align="center"><h1 style="font-size: 20px; color: rgb(255, 255, 255);" onclick="history.back()">COMPRAS DE PRODUCTOS</h1></td><td align="right" width="100px"><img src="'.base_url().'assets/default/images/cerrar.png" alt="Cerrar Ventana" title="Cerrar Ventana" onclick="parent.window.close()" width="25"></td></tr></table>';
+		$encabeza='COMPRAS DE PRODUCTOS';
 		$listados= $this->datasis->listados('scst');
-		$otros=$this->datasis->otros('scst', 'scst');
+		$otros=$this->datasis->otros('scst', 'compras/scst');
 
-		$script = "
-<script type=\"text/javascript\">		
-var BASE_URL   = '".base_url()."';
-var BASE_PATH  = '".base_url()."';
-var BASE_ICONS = '".base_url()."assets/icons/';
-var BASE_UX    = '".base_url()."assets/js/ext/ux';
-var modulo = 'scst'
+		$urlajax = 'compras/scst/';
 
-Ext.Loader.setConfig({ enabled: true });
-Ext.Loader.setPath('Ext.ux', BASE_UX);
-
-var urlApp = '".base_url()."';
-
-Ext.require([
-	'Ext.grid.*',
-	'Ext.ux.grid.FiltersFeature',
-	'Ext.data.*',
-	'Ext.util.*',
-	'Ext.state.*',
-	'Ext.form.*',
-	'Ext.window.MessageBox',
-	'Ext.tip.*',
-	'Ext.ux.CheckColumn',
-	'Ext.toolbar.Paging'
-]);
-
-var mxs = ((screen.availWidth/2) -400);
-var mys = ((screen.availHeight/2)-300);
-
-//var editor = Ext.create('Ext.grid.plugin.CellEditing', {clicksToEdit: 2});
-
-//Column Model Presupuestos
-var ScstCol = 
-	[
+		$columnas = "
 		{ header: 'Tipo',             width:  40, sortable: true,  dataIndex: 'tipo_doc', field: { type: 'textfield'  }, filter: { type: 'string'  }}, 
 		{ header: 'Numero',           width:  60, sortable: true,  dataIndex: 'numero',   field: { type: 'textfield'  }, filter: { type: 'string'  }}, 
 		{ header: 'Serie',            width: 100, sortable: true,  dataIndex: 'serie',    field: { type: 'textfield'  }, filter: { type: 'string'  }, editor: 'textfield' }, 
@@ -1640,11 +1552,10 @@ var ScstCol =
 		{ header: 'Estampa',          width:  70, sortable: false, dataIndex: 'estampa',  field: { type: 'date'       }, filter: { type: 'date'    }}, 
 		{ header: 'Hora',             width:  60, sortable: true,  dataIndex: 'hora',     field: { type: 'textfield'  }, filter: { type: 'string'  }}, 
 		{ header: 'Usuario',          width:  60, sortable: true,  dataIndex: 'usuario',  field: { type: 'textfield'  }, filter: { type: 'string'  }}
-	];
+		";
 
-//Column Model Detalle de Presupuesto
-var ItScstCol = 
-	[
+		$coldeta = "
+	var Deta1Col = [
 		{ header: 'Codigo',      width:  90, sortable: true, dataIndex: 'codigo',   field: { type: 'textfield' }, filter: { type: 'string' }, renderer: renderSinv }, 
 		{ header: 'codid',       dataIndex: 'codid',  hidden: true}, 
 		{ header: 'Descripcion', width: 250, sortable: true, dataIndex: 'descrip',  field: { type: 'textfield' }, filter: { type: 'string' }}, 
@@ -1657,8 +1568,14 @@ var ItScstCol =
 		{ header: 'Precio 2',    width:  60, sortable: true, dataIndex: 'precio2',  field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
 		{ header: 'Precio 3',    width:  60, sortable: true, dataIndex: 'precio3',  field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
 		{ header: 'Precio 4',    width:  60, sortable: true, dataIndex: 'precio4',  field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}
-	];
+	]";
 
+		$variables='';
+		
+		$valida="		{ type: 'length', field: 'cliente',  min:  1 }";
+		
+
+		$funciones = "
 function renderSprv(value, p, record) {
 	var mreto='';
 	if ( record.data.proveed == '' ){
@@ -1674,6 +1591,224 @@ function renderSinv(value, p, record) {
 	mreto = '<a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'inventario/sinv/dataedit/show/{1}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">{0}</a>';
 	return Ext.String.format(mreto,	value, record.data.codid );
 }
+	";
+
+		$campos = $this->datasis->extjscampos('scst');
+
+		$stores = "
+	Ext.define('ItScst', {
+		extend: 'Ext.data.Model',
+		fields: ['codigo', 'codid', 'descrip', 'cantidad', 'costo', 'importe', 'iva', 'ultimo','precio1', 'precio2','precio3', 'precio4' ],
+		proxy: {
+			type: 'ajax',
+			noCache: false,
+			api: {
+				read   : urlApp + 'compras/scst/griditscst',
+				method: 'POST'
+			},
+			reader: {
+				type: 'json',
+				root: 'data',
+				successProperty: 'success',
+				messageProperty: 'message',
+				totalProperty: 'results'
+			}
+		}
+	});
+
+	//////////////////////////////////////////////////////////
+	// create the Data Store
+	var storeItScst = Ext.create('Ext.data.Store', {
+		model: 'ItScst',
+		autoLoad: false,
+		autoSync: true,
+		method: 'POST'
+	});
+	
+	//////////////////////////////////////////////////////////
+	//
+	var gridDeta1 = Ext.create('Ext.grid.Panel', {
+		width:   '100%',
+		height:  '100%',
+		store:   storeItScst,
+		title:   'Articulos',
+		iconCls: 'icon-grid',
+		frame:   true,
+		features: [ { ftype: 'filters', encode: 'json', local: false } ],
+		columns: Deta1Col
+	});
+
+	var scstTplMarkup = [
+		'<table width=\'100%\' bgcolor=\"#F3F781\">',
+		'<tr><td colspan=3 align=\'center\'><p style=\'font-size:14px;font-weight:bold\'>IMPRIMIR COMPRA</p></td></tr><tr>',
+		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/verhtml/COMPRA/{control}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/html_icon.gif', 'alt' => 'Formato HTML', 'title' => 'Formato HTML','border'=>'0'))."</a></td>',
+		'<td align=\'center\'>{numero}</td>',
+		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/ver/COMPRA/{control}\',     \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',   'title' => 'Formato PDF', 'border'=>'0'))."</a></td></tr>',
+		'<tr><td colspan=3 align=\'center\' >--</td></tr>',		
+		'</table>','nanai'
+	];
+
+	// Al cambiar seleccion
+	gridMaest.getSelectionModel().on('selectionchange', function(sm, selectedRecord) {
+		if (selectedRecord.length) {
+			gridMaest.down('#delete').setDisabled(selectedRecord.length === 0);
+			gridMaest.down('#update').setDisabled(selectedRecord.length === 0);
+			control = selectedRecord[0].data.control;
+			gridDeta1.setTitle(control+' '+selectedRecord[0].data.nombre);
+			storeItScst.load({ params: { control: control }});
+			var meco1 = Ext.getCmp('imprimir');
+			Ext.Ajax.request({
+				url: urlApp +'compras/scst/tabla',
+				params: { control: selectedRecord[0].data.control, serie: selectedRecord[0].data.serie },
+				success: function(response) {
+					var vaina = response.responseText;
+					scstTplMarkup.pop();
+					scstTplMarkup.push(vaina);
+					var scstTpl = Ext.create('Ext.Template', scstTplMarkup );
+					meco1.setTitle('Imprimir Compra');
+					scstTpl.overwrite(meco1.body, selectedRecord[0].data );
+				}
+			});
+		}
+	});
+
+
+";
+
+		$acordioni = "{
+					layout: 'fit',
+					items:[
+						{
+							name: 'imprimir',
+							id: 'imprimir',
+							border:false,
+							html: 'Para imprimir seleccione una Compra '
+						}
+					]
+				},
+";
+
+
+		$dockedItems = "{
+			xtype: 'toolbar',
+			items: [
+				{
+					iconCls: 'icon-add',
+					text: 'Agregar',
+					scope: this,
+					handler: function(){
+						window.open(urlApp+'compras/scst/dataedit/create', '_blank', 'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys);
+					}
+				},
+				{
+					iconCls: 'icon-update',
+					text: 'Modificar',
+					disabled: true,
+					itemId: 'update',
+					scope: this,
+					handler: function(selModel, selections){
+						var selection = gridMaest.getView().getSelectionModel().getSelection()[0];
+						gridMaest.down('#delete').setDisabled(selections.length === 0);
+						window.open(urlApp+'compras/scst/dataedit/modify/'+selection.data.control, '_blank', 'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys);
+					}
+				},{
+					iconCls: 'icon-delete',
+					text: 'Eliminar',
+					disabled: true,
+					itemId: 'delete',
+					scope: this,
+					handler: function() {
+						var selection = gridMaest.getView().getSelectionModel().getSelection()[0];
+						Ext.MessageBox.show({
+							title: 'Confirme', 
+							msg: 'Seguro que quiere eliminar la compra Nro. '+selection.data.numero, 
+							buttons: Ext.MessageBox.YESNO, 
+							fn: function(btn){ 
+								if (btn == 'yes') { 
+									if (selection) {
+										//storeMaest.remove(selection);
+									}
+									storeMaest.load();
+								} 
+							}, 
+							icon: Ext.MessageBox.QUESTION 
+						});  
+					}
+				}
+			]
+		}		
+		";
+
+
+
+		$grid2 = ",{
+				itemId: 'viewport-center-detail',
+				activeTab: 0,
+				region: 'south',
+				height: '40%',
+				split: true,
+				margins: '0 0 0 0',
+				preventHeader: true,
+				items: gridDeta1
+			}";
+
+
+		$titulow = 'Compras';
+		
+		$filtros = "";
+		$features = "
+		features: [ { ftype: 'filters', encode: 'json', local: false } ],
+		plugins: [Ext.create('Ext.grid.plugin.CellEditing', { clicksToEdit: 2 })],
+";
+
+		$final = "storeItScst.load();";
+
+		$data['listados']    = $listados;
+		$data['otros']       = $otros;
+		$data['encabeza']    = $encabeza;
+		$data['urlajax']     = $urlajax;
+		$data['variables']   = $variables;
+		$data['funciones']   = $funciones;
+		$data['valida']      = $valida;
+		$data['stores']      = $stores;
+		$data['columnas']    = $columnas;
+		$data['campos']      = $campos;
+		$data['titulow']     = $titulow;
+		$data['dockedItems'] = $dockedItems;
+		$data['features']    = $features;
+		$data['filtros']     = $filtros;
+		$data['grid2']       = $grid2;
+		$data['coldeta']     = $coldeta;
+		$data['acordioni']   = $acordioni;
+		$data['final']       = $final;
+		
+		$data['title']  = heading('Compras');
+		$this->load->view('extjs/extjsvenmd',$data);
+
+
+/*
+		$script = "
+<script type=\"text/javascript\">		
+var BASE_URL   = '".base_url()."';var BASE_PATH  = '".base_url()."';var BASE_ICONS = '".base_url()."assets/icons/';var BASE_UX    = '".base_url()."assets/js/ext/ux';var modulo = 'scst'
+Ext.Loader.setConfig({ enabled: true });Ext.Loader.setPath('Ext.ux', BASE_UX);
+var urlApp = '".base_url()."';
+Ext.require(['Ext.grid.*','Ext.ux.grid.FiltersFeature','Ext.data.*','Ext.util.*','Ext.state.*','Ext.form.*','Ext.window.MessageBox','Ext.tip.*','Ext.ux.CheckColumn','Ext.toolbar.Paging']);
+var mxs = ((screen.availWidth/2) -400);var mys = ((screen.availHeight/2)-300);
+
+//Column Model Compras
+var ScstCol = [{ header: 'Tipo', width:  40, sortable: true,  dataIndex: 'tipo_doc', field: { type: 'textfield'  }, filter: { type: 'string'  }}, { header: 'Numero',           width:  60, sortable: true,  dataIndex: 'numero',   field: { type: 'textfield'  }, filter: { type: 'string'  }}, { header: 'Serie',            width: 100, sortable: true,  dataIndex: 'serie',    field: { type: 'textfield'  }, filter: { type: 'string'  }, editor: 'textfield' }, { header: 'Fecha',            width:  70, sortable: false, dataIndex: 'fecha',    field: { type: 'date'       }, filter: { type: 'date'    }}, { header: 'Recibida',         width:  70, sortable: false, dataIndex: 'recep',    field: { type: 'date'       }, filter: { type: 'date'    }}, { header: 'Prov.',            width:  50, sortable: true,  dataIndex: 'proveed',  field: { type: 'textfield'  }, filter: { type: 'string'  }, renderer: renderSprv }, { header: 'Nombre Proveedor', width: 200, sortable: true,  dataIndex: 'nombre',   field: { type: 'textfield'  }, filter: { type: 'string'  }}, { header: 'SubTotal',         width: 100, sortable: true,  dataIndex: 'montotot', field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, { header: 'IVA',              width:  80, sortable: true,  dataIndex: 'montoiva', field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, { header: 'Total',            width: 100, sortable: true,  dataIndex: 'montonet', field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, { header: 'Almacen',          width:  60, sortable: true,  dataIndex: 'depo',     field: { type: 'textfield'  }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, { header: 'Observacion',      width: 160, sortable: true,  dataIndex: 'observa1', field: { type: 'textfield'  }, filter: { type: 'string'  }}, { header: 'Control',          width:  60, sortable: true,  dataIndex: 'control',  field: { type: 'textfield'  }, filter: { type: 'string'  }}, { header: 'Estampa',          width:  70, sortable: false, dataIndex: 'estampa',  field: { type: 'date'       }, filter: { type: 'date'    }}, { header: 'Hora',             width:  60, sortable: true,  dataIndex: 'hora',     field: { type: 'textfield'  }, filter: { type: 'string'  }}, { header: 'Usuario',          width:  60, sortable: true,  dataIndex: 'usuario', field: { type: 'textfield'  }, filter: { type: 'string' }}];
+
+//Column Model Detalle de Presupuesto
+var ItScstCol = [{ header: 'Codigo',      width:  90, sortable: true, dataIndex: 'codigo',   field: { type: 'textfield' }, filter: { type: 'string' }, renderer: renderSinv }, { header: 'codid',       dataIndex: 'codid',  hidden: true}, { header: 'Descripcion', width: 250, sortable: true, dataIndex: 'descrip',  field: { type: 'textfield' }, filter: { type: 'string' }}, { header: 'Cant',        width:  60, sortable: true, dataIndex: 'cantidad', field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, { header: 'Precio',      width:  80, sortable: true, dataIndex: 'costo',    field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, { header: 'Importe',     width: 100, sortable: true, dataIndex: 'importe',  field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},{ header: 'IVA',         width:  60, sortable: true, dataIndex: 'iva',      field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},{ header: 'Ultimo',      width:  60, sortable: true, dataIndex: 'ultimo',   field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},{ header: 'Precio 1',    width:  60, sortable: true, dataIndex: 'precio1',  field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},{ header: 'Precio 2',    width:  60, sortable: true, dataIndex: 'precio2',  field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},{ header: 'Precio 3',    width:  60, sortable: true, dataIndex: 'precio3',  field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},{ header: 'Precio 4',    width:  60, sortable: true, dataIndex: 'precio4',  field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}];
+
+function renderSprv(value, p, record) {
+	var mreto='';
+	if ( record.data.proveed == '' ){
+		mreto = '{0}';
+	} else {
+		mreto = '<a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'compras/scst/sprvbu/{1}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">{0}</a>';
+	}
+	return Ext.String.format(mreto,	value, record.data.control );}function renderSinv(value, p, record) {var mreto='';mreto = '<a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'inventario/sinv/dataedit/show/{1}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">{0}</a>';return Ext.String.format(mreto,	value, record.data.codid );}
 
 // application main entry point
 Ext.onReady(function() {
@@ -1712,8 +1847,6 @@ Ext.onReady(function() {
 		method: 'POST'
 	});
 
-	//Filters
-	//var filters = { ftype: 'filters', encode: 'json', local: false };    
 
 	//////////////////////////////////////////////////////////////////
 	// create the grid and specify what field you want
@@ -1793,48 +1926,16 @@ Ext.onReady(function() {
 	/////////////////////////////////////////////////
 	// Define los data model
 	// Compras
-	Ext.define('ItScst', {
-		extend: 'Ext.data.Model',
-		fields: ['codigo', 'codid', 'descrip', 'cantidad', 'costo', 'importe', 'iva', 'ultimo','precio1', 'precio2','precio3', 'precio4' ],
-		proxy: {
-			type: 'ajax',
-			noCache: false,
-			api: {
-				read   : urlApp + 'compras/scst/griditscst',
-				method: 'POST'
-			},
-			reader: {
-				type: 'json',
-				root: 'data',
-				successProperty: 'success',
-				messageProperty: 'message',
-				totalProperty: 'results'
-			}
-		}
-	});
+	Ext.define('ItScst', {extend: 'Ext.data.Model',fields: ['codigo', 'codid', 'descrip', 'cantidad', 'costo', 'importe', 'iva', 'ultimo','precio1', 'precio2','precio3', 'precio4' ],proxy: {type: 'ajax',noCache: false,api: {read   : urlApp + 'compras/scst/griditscst',method: 'POST'},reader: {type: 'json',root: 'data',successProperty: 'success',messageProperty: 'message',totalProperty: 'results'}}});
 
 	//////////////////////////////////////////////////////////
 	// create the Data Store
-	var storeItScst = Ext.create('Ext.data.Store', {
-		model: 'ItScst',
-		autoLoad: false,
-		autoSync: true,
-		method: 'POST'
-	});
+	var storeItScst = Ext.create('Ext.data.Store', {model: 'ItScst', autoLoad: false, autoSync: true,method: 'POST'});
 
 	//////////////////////////////////////////////////////////////////
 	// create the grid and specify what field you want
 	// to use for the editor at each column.
-	var gridItScst = Ext.create('Ext.grid.Panel', {
-		width: '100%',
-		height: '100%',
-		store: storeItScst,
-		title: 'Articulos',
-		iconCls: 'icon-grid',
-		frame: true,
-		features: [ { ftype: 'filters', encode: 'json', local: false } ],
-		columns: ItScstCol
-	});
+	var gridItScst = Ext.create('Ext.grid.Panel', {width: '100%',height: '100%',store: storeItScst,title: 'Articulos',iconCls: 'icon-grid',frame: true,features: [ { ftype: 'filters', encode: 'json', local: false } ],columns: ItScstCol});
 
 	var scstTplMarkup = [
 		'<table width=\'100%\' bgcolor=\"#F3F781\">',
@@ -1947,6 +2048,7 @@ Ext.onReady(function() {
 
 </script>
 ";
-		return $script;
+*/
+		//return $script;
 	}
 }
