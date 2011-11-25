@@ -205,7 +205,7 @@ class edres extends Controller {
 		$edit->notas->cols = 70;
 		$edit->notas->rows = 4;
 
-		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
+		$edit->buttons('modify', 'save', 'undo', 'delete', 'back','add');
 		$edit->build();
 
 		$link1=site_url('construccion/common/get_inmue');

@@ -43,4 +43,20 @@ class common extends Controller {
 			}
 		}
 	}
+
+	//Trae los datos del inmueble
+	function get_dinmue(){
+		$inmue=$this->input->post('inmueble');
+		if($inmue!==false){
+			$dbinmue=$this->db->escape($inmue);
+			$mSQL='SELECT area,preciomt2e,preciomt2c,preciomt2a FROM edinmue WHERE id='.$dbinmue;
+			$query = $this->db->query($mSQL);
+			if ($query->num_rows() > 0){
+				$row = $query->row();
+				$data=json_encode($row);
+				echo $data;
+			}
+			
+		}
+	}
 }

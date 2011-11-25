@@ -16,19 +16,16 @@ $scampos .='<td class="littletablerow" align="right">'.$campos['itdebe']['field'
 $scampos .='<td class="littletablerow" align="right">'.$campos['ithaber']['field']. '</td>';
 $scampos .='<td class="littletablerow" align="right">'.$campos['itccosto']['field'].'</td>';
 $scampos .='<td class="littletablerow" align="right">'.$campos['itsucursal']['field'];
-//$scampos .= $campos['itccosto']['field'];
-//$scampos .= $campos['itsucursal']['field'];
 $scampos .= $campos['cpladeparta']['field'];
 $scampos .= $campos['cplaccosto']['field'].'</td>';
-$scampos .= '<td class="littletablerow"><a href=# onclick="del_itcasi(<#i#>);return false;">Eliminar</a></td></tr>';
+$scampos .= '<td class="littletablerow"><a href=# onclick="del_itcasi(<#i#>);return false;">'.img("images/delete.jpg").'</a></td></tr>';
 $jscampos=$form->js_escape($scampos);
 $jscosto =$form->js_escape($campos['itccosto']['field']);
 $jssucus =$form->js_escape($campos['itsucursal']['field']);
 
 if(isset($form->error_string)) echo '<div class="alert">'.$form->error_string.'</div>';
 
-//echo $form_scripts;
-echo $form_begin;
+echo (isset($form_begin))? $form_begin:'';
 if($form->_status!='show'){ ?>
 
 <script language="javascript" type='text/javascript'>
@@ -37,8 +34,7 @@ var itcasi_cont=<?php echo $form->max_rel_count['itcasi']; ?>;
 $(function(){
 	$(".inputnum").numeric(".");
 	totaliza();
-	
-	
+
 	var arr=$('input[name^="cpladeparta_"]');
 	jQuery.each(arr, function() {
 		var departa=this.value;
@@ -52,10 +48,43 @@ $(function(){
 				$("#itccosto_"+ind).append($('<option></option>').val('').html('No aplica'));
 				$("#itsucursal_"+ind).append($('<option></option>').val('').html('No aplica'));
 			}
+			autocod(ind);
 		}
 	});
 	
 });
+
+//Agrega el autocomplete
+function autocod(id){
+	$('#cuenta_'+id).autocomplete({
+		source: function( req, add){
+			$.ajax({
+				url:  "<?php echo site_url('ajax/buscacpla'); ?>",
+				type: "POST",
+				dataType: "json",
+				data: "q="+req.term,
+				success:
+					function(data){
+						var sugiere = [];
+						$.each(data,
+							function(i, val){
+								sugiere.push( val );
+							}
+						);
+						add(sugiere);
+					},
+			})
+		},
+		minLength: 2,
+		select: function( event, ui ) {
+			$('#cuenta_'+id).val(ui.item.codigo);
+			$('#concepto_'+id).val(ui.item.descrip);
+			$('#cpladeparta_'+id).val(ui.item.departa);
+			$('#cplacosto_'+id).val(ui.item.ccosto);
+			post_modbus(Number(id));
+		}
+	});
+}
 
 function validaDebe(i){
 	var debe = Number($("#itdebe_"+i).val());
@@ -82,6 +111,7 @@ function add_itcasi(){
 	$("#ithaber_"+can).numeric(".");
 	post_modbus(itcasi_cont);
 	itcasi_cont=itcasi_cont+1;
+	autocod(can);
 }
 
 function totaliza(){
@@ -101,9 +131,14 @@ function totaliza(){
 			//post_modbus(Number(ind));
 		}
 	});
+	total=debe-haber;
 	$("#debe").val(roundNumber(debe,2));
 	$("#haber").val(roundNumber(haber,2));
-	$("#total").val(roundNumber(debe-haber,2));
+	$("#total").val(roundNumber(total,2));
+
+	$("#debe_val").text(nformat(debe,2));
+	$("#haber_val").text(nformat(haber,2));
+	$("#total_val").text(nformat(total,2));
 }
 
 function del_itcasi(id){
@@ -114,6 +149,8 @@ function del_itcasi(id){
 
 function post_modbus(nind){
 	var ind=nind.toString();
+	var concepto=$('#concepto_'+ind).val();
+	$('#concepto_'+ind+'_val').text(concepto);
 	var departa=$("#cpladeparta_"+ind).val();
 	if(departa=='S'){
 		var jscosto=<?php echo $jscosto; ?>;
@@ -127,7 +164,6 @@ function post_modbus(nind){
 		$("#itsucursal_"+ind).append($('<option></option>').val('').html('No aplica'));
 	}
 }
-
 </script>
 <?php } ?>
 
@@ -139,19 +175,19 @@ function post_modbus(nind){
 		<td>
 		<table width="100%" style="margin: 0; width: 100%;">
 			<tr>
-				<th colspan='5' class="littletableheader">Asientos <b><?php if($form->_status=='show' or $form->_status=='modify' ) echo str_pad($form->comprob->output,8,0,0); ?></b></th>
+				<th colspan='5' class="littletableheader">Asientos</th>
 			</tr>
 			<tr>
-				<td class="littletableheader"><?php echo $form->fecha->label;   ?>*&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->fecha->output;  ?>&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->comprob->label; ?>*&nbsp;</td>
+				<td class="littletablerow">   <?php echo $form->comprob->output;?>&nbsp;</td>
 				<td class="littletableheader"><?php echo $form->status->label   ?>*&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->status->output  ?>&nbsp;</td>
 			</tr>
 			<tr>
+				<td class="littletableheader"><?php echo $form->fecha->label;   ?>*&nbsp;</td>
+				<td class="littletablerow">   <?php echo $form->fecha->output;  ?>&nbsp;</td>
 				<td class="littletableheader"><?php echo $form->descrip->label;  ?>&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->descrip->output; ?>&nbsp;</td>
-				<td class="littletableheader">&nbsp;</td>
-				<td class="littletablerow">   &nbsp;</td>
 			</tr>
 		</table><br>
 		</td>
@@ -160,7 +196,7 @@ function post_modbus(nind){
 		<td>
 		<table width='100%'>
 			<tr>
-				<th colspan='8' class="littletableheader">Lista de Asientos</th>
+				<th colspan='8' class="littletableheader">Lista de cuentas</th>
 			</tr>
 			<tr>
 				<td class="littletableheader">Cuenta</td>
@@ -200,7 +236,7 @@ function post_modbus(nind){
 				<td class="littletablerow" align="right"><?php echo $form->$it_sucursal->output; echo $pprecios; ?></td>
 				<?php if($form->_status!='show') {?>
 				<td class="littletablerow">
-					<a href='#' onclick='del_itcasi(<?php echo $i ?>);return false;'>Eliminar</a>
+					<a href='#' onclick='del_itcasi(<?php echo $i ?>);return false;'><?php echo img("images/delete.jpg"); ?></a>
 				</td>
 				<?php } ?>
 			</tr>
@@ -229,7 +265,7 @@ function post_modbus(nind){
 				<td class="littletablerow" align='right'><?php echo $form->total->output; ?></td>
 			</tr>
 		</table>
-		<?php echo $form_end; ?>
+		<?php echo (isset($form_end))? $form_end:''; ?>
 		</td>
 	</tr>
 </table>

@@ -264,4 +264,41 @@ class Ajax extends Controller {
 		}
 		echo $data;
 	}
+
+	function buscacpla(){
+		$mid   = $this->input->post('q');
+		$qdb   = $this->db->escape($mid.'%');
+
+		$data = '{[ ]}';
+		if($mid !== false){
+			$qformato=$this->datasis->formato_cpla();
+			$retArray = $retorno = array();
+
+			$mSQL="SELECT codigo, descrip, departa, ccosto
+			FROM cpla WHERE codigo LIKE $qdb AND codigo LIKE \"$qformato\"";
+
+			$query = $this->db->query($mSQL);
+			if ($query->num_rows() > 0){
+				foreach( $query->result_array() as  $row ) {
+					$retArray['label']    = $row['codigo'].'-'.utf8_encode($row['descrip']);
+					$retArray['value']    = $row['codigo'];
+					$retArray['descrip']  = utf8_encode($row['descrip']);
+					$retArray['departa']  = $row['departa'];
+					$retArray['ccosto']   = $row['ccosto'];
+
+					array_push($retorno, $retArray);
+				}
+				$data = json_encode($retorno);
+			}else{
+				$retArray[0]['label']    = 'No se consiguieron cuentas';
+				$retArray[0]['value']    = '';
+				$retArray[0]['descrip']  = '';
+				$retArray[0]['departa']  = '';
+				$retArray[0]['ccosto']   = '';
+
+				$data = json_encode($retArray);
+			}
+		}
+		echo $data;
+	}
 }

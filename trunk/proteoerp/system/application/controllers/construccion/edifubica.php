@@ -77,7 +77,7 @@ class edifubica extends Controller {
 		$edit->descripcion->size =52;
 		$edit->descripcion->maxlength =50;
 
-		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
+		$edit->buttons('modify', 'save', 'undo', 'delete', 'back','add');
 		$edit->build();
 		$data['content'] = $edit->output;
 		$data['head']    = $this->rapyd->get_head();
