@@ -120,7 +120,7 @@ class edif extends Controller {
 		$edit->promotora->maxlength =5;
 		$edit->promotora->append($boton);
 
-		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
+		$edit->buttons('modify', 'save', 'undo', 'delete', 'back','add');
 		$edit->build();
 		$data['content'] = $edit->output;
 		$data['head']    = $this->rapyd->get_head();

@@ -36,6 +36,7 @@ define('RAPYD_BUTTON_CONFIRM_DELETE',  'Eliminar');
 define('RAPYD_BUTTON_SAVE',            'Guardar');
 define('RAPYD_BUTTON_UNDO',            'Cancelar');
 define('RAPYD_BUTTON_BACK',            'Ir atr&aacute;s');
+define('RAPYD_BUTTON_EXIT',            'Salir');
 define('RAPYD_BUTTON_BACKEDIT',        'Mostrar');
 define('RAPYD_BUTTON_BACKERROR',       'Atr&aacute;s');
 

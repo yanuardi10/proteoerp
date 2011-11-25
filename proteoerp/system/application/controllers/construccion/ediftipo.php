@@ -67,7 +67,7 @@ class ediftipo extends Controller {
 		$edit->descrip->size =52;
 		$edit->descrip->maxlength =50;
 
-		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
+		$edit->buttons('modify', 'save', 'undo', 'delete', 'back','add');
 		$edit->build();
 		$data['content'] = $edit->output;
 		$data['head']    = $this->rapyd->get_head();

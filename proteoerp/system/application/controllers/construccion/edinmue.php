@@ -209,7 +209,7 @@ class edinmue extends Controller {
 
 		</script>';
 
-		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
+		$edit->buttons('modify', 'save', 'undo', 'delete', 'back','add');
 		$edit->build();
 		$data['content'] = $edit->output;
 		$data['script']  = script('jquery.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js').$script;

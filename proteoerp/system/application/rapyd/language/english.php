@@ -30,6 +30,7 @@ define('RAPYD_BUTTON_DELETE',          'Delete');
 define('RAPYD_BUTTON_CONFIRM_DELETE',  'Delete');
 define('RAPYD_BUTTON_SAVE',            'Save');
 define('RAPYD_BUTTON_UNDO',            'Cancel');
+define('RAPYD_BUTTON_EXIT',            'Exit');
 define('RAPYD_BUTTON_BACK',            'Back to the list');
 define('RAPYD_BUTTON_BACKEDIT',        'Show');
 define('RAPYD_BUTTON_BACKERROR',       'Back');

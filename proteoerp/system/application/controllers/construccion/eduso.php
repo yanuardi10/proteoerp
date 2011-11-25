@@ -65,7 +65,7 @@ class eduso extends Controller {
 		$edit->uso->rule='max_length[80]|required';
 		$edit->uso->maxlength =80;
 
-		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
+		$edit->buttons('modify', 'save', 'undo', 'delete', 'back','add');
 		$edit->build();
 		$data['content'] = $edit->output;
 		$data['head']    = $this->rapyd->get_head();

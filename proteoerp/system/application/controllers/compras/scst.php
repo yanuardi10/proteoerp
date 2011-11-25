@@ -442,8 +442,8 @@ class Scst extends Controller {
 
 		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
 
-		$recep =strtotime($edit->get_from_dataobjetct('recep'));
-		$fecha =strtotime($edit->get_from_dataobjetct('fecha'));
+		$recep  =strtotime($edit->get_from_dataobjetct('recep'));
+		$fecha  =strtotime($edit->get_from_dataobjetct('fecha'));
 		$actuali=strtotime($edit->get_from_dataobjetct('actuali'));
 
 		if($actuali < $fecha){
@@ -461,7 +461,7 @@ class Scst extends Controller {
 			$accion="javascript:window.location='".site_url('compras/scst/reversar/'.$control)."'";
 			$edit->button_status('btn_reversar','Reversar'     ,$accion,'TR','show');
 		}
-		$edit->buttons('save', 'undo','delete' ,'back','add_rel');
+		$edit->buttons('save', 'delete','modify', 'exit','add_rel','add');
 		$edit->build();
 
 		$smenu['link']  =  barra_menu('201');

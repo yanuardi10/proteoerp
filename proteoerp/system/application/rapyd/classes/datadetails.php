@@ -383,6 +383,12 @@ class DataDetails extends DataForm{
 		}
 	}
 
+	function _build_exit_button($caption = RAPYD_BUTTON_EXIT) {
+		$action = "javascript:window.close()";
+		$this->button("btn_exit", $caption, $action, "TR");
+	}
+
+
  /**
   * append a default button
   *
