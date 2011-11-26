@@ -49,7 +49,7 @@ class common extends Controller {
 		$inmue=$this->input->post('inmueble');
 		if($inmue!==false){
 			$dbinmue=$this->db->escape($inmue);
-			$mSQL='SELECT area,preciomt2e,preciomt2c,preciomt2a FROM edinmue WHERE id='.$dbinmue;
+			$mSQL='SELECT area,GREATEST(IFNULL(preciomt2e,0),IFNULL(preciomt2c,0),IFNULL(preciomt2a,0)) AS preciomt2 FROM edinmue WHERE id='.$dbinmue;
 			$query = $this->db->query($mSQL);
 			if ($query->num_rows() > 0){
 				$row = $query->row();
