@@ -747,30 +747,37 @@ class casi extends Controller {
 	    $response         = $grid->operations('casi','id');
 	}
 	
+	// Postea la tabla principal a Extjs
 	function grid(){
 		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']   :  0;
-		$limit   = isset($_REQUEST['limit'])  ? $_REQUEST['limit']   : 50;
+		$limit   = isset($_REQUEST['limit'])  ? $_REQUEST['limit']   : 30;
 		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']    : '[{"property":"fecha","direction":"DESC"},{"property":"comprob","direction":"DESC"}]';
 		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
 
 		$where = $this->datasis->extjsfiltro($filters,'casi');
+
 		$this->db->_protect_identifiers=false;
+		
 		$this->db->select('*');
 		$this->db->from('casi');
-
 		if (strlen($where)>1){
 			$this->db->where($where);
 		}
 
+		$sql = $this->db->_compile_select($this->db->_count_string . $this->db->_protect_identifiers('numrows'));
+		$results = $this->datasis->dameval($sql);
+		
 		$sort = json_decode($sort, true);
 		for ($i=0;$i<count($sort);$i++) {
 			$this->db->order_by($sort[$i]['property'],$sort[$i]['direction']);
 		}
 
-		$this->db->limit($limit, $start);
 
+
+		$this->db->limit($limit, $start);
 		$query = $this->db->get();
-		$results = $query->num_rows();
+
+
 
 		$arr = $this->datasis->codificautf8($query->result_array());
 		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
@@ -794,7 +801,7 @@ class casi extends Controller {
 	}
 
 	function tabla() {
-		$control   = isset($_REQUEST['control'])  ? $_REQUEST['control']   :  0;
+		$comprob   = isset($_REQUEST['control'])  ? $_REQUEST['control']   :  0;
 		$transac = $this->datasis->dameval("SELECT transac FROM casi WHERE control='$control'");
 		$mSQL = "SELECT cod_prv, MID(nombre,1,25) nombre, tipo_doc, numero, monto, abonos FROM sprm WHERE transac='$transac' ORDER BY cod_prv ";
 		$query = $this->db->query($mSQL);
@@ -854,7 +861,6 @@ class casi extends Controller {
 
 		$coldeta = "
 	var Deta1Col = [
-		{ header: 'Comprobante',  width: 80, sortable: true, dataIndex: 'comprob' , field: { type: 'textfield'  }, filter: { type: 'string' }},
 		{ header: 'cuenta',   width: 90, sortable: true, dataIndex: 'cuenta',  field: { type: 'textfield'  }, filter: { type: 'string' }},
 		{ header: 'referen',  width: 90, sortable: true, dataIndex: 'referen', field: { type: 'textfield'  }, filter: { type: 'string' }},
 		{ header: 'concepto', width:190, sortable: true, dataIndex: 'concepto',field: { type: 'textfield'  }, filter: { type: 'string' }},
@@ -935,12 +941,12 @@ function renderSinv(value, p, record) {
 
 	var casiTplMarkup = [
 		'<table width=\'100%\' bgcolor=\"#F3F781\">',
-		'<tr><td colspan=3 align=\'center\'><p style=\'font-size:14px;font-weight:bold\'>IMPRIMIR COMPRA</p></td></tr><tr>',
-		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/verhtml/COMPRA/{control}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/html_icon.gif', 'alt' => 'Formato HTML', 'title' => 'Formato HTML','border'=>'0'))."</a></td>',
-		'<td align=\'center\'>{numero}</td>',
-		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/ver/COMPRA/{control}\',     \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',   'title' => 'Formato PDF', 'border'=>'0'))."</a></td></tr>',
+		'<tr><td colspan=3 align=\'center\'><p style=\'font-size:14px;font-weight:bold\'>IMPRIMIR ASIENTO</p></td></tr><tr>',
+		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/verhtml/COMPRA/{comprob}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/html_icon.gif', 'alt' => 'Formato HTML', 'title' => 'Formato HTML','border'=>'0'))."</a></td>',
+		'<td align=\'center\'>{comprob}</td>',
+		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/ver/COMPRA/{comprob}\',     \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',   'title' => 'Formato PDF', 'border'=>'0'))."</a></td></tr>',
 		'<tr><td colspan=3 align=\'center\' >--</td></tr>',		
-		'</table>','nanai'
+		'</table>'
 	];
 
 	// Al cambiar seleccion
@@ -952,16 +958,20 @@ function renderSinv(value, p, record) {
 			gridDeta1.setTitle(comprob+' '+selectedRecord[0].data.descrip);
 			storeItCasi.load({ params: { comprob: comprob }});
 			var meco1 = Ext.getCmp('imprimir');
-			/*
-			Ext.Ajax.request({
+			
+			var casiTpl = Ext.create('Ext.Template', casiTplMarkup );
+			meco1.setTitle('Imprimir Asiento');
+			casiTpl.overwrite(meco1.body, selectedRecord[0].data );
+
+			/*Ext.Ajax.request({
 				url: urlAjax +'tabla',
-				params: { control: selectedRecord[0].data.control, serie: selectedRecord[0].data.serie },
+				params: { comprob: selectedRecord[0].data.comprob, id: selectedRecord[0].data.id },
 				success: function(response) {
 					var vaina = response.responseText;
 					casiTplMarkup.pop();
 					casiTplMarkup.push(vaina);
 					var casiTpl = Ext.create('Ext.Template', casiTplMarkup );
-					meco1.setTitle('Imprimir Compra');
+					meco1.setTitle('Imprimir Asiento');
 					casiTpl.overwrite(meco1.body, selectedRecord[0].data );
 				}
 			});*/
@@ -1034,8 +1044,6 @@ function renderSinv(value, p, record) {
 		}		
 		";
 
-
-
 		$grid2 = ",{
 				itemId: 'viewport-center-detail',
 				activeTab: 0,
@@ -1081,5 +1089,11 @@ function renderSinv(value, p, record) {
 		$this->load->view('extjs/extjsvenmd',$data);
 
 	}
+/*
+diles que te envien nun taxi al 5140967
+que tu eres el papa de andrea la hija de cira y que la lleven a la direccion
+cira elena rodriguez nava: unidad vecinal casa 12 detras del hospital
+
+*/
 
 }
