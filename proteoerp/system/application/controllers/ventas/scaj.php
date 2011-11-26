@@ -309,12 +309,12 @@ class Scaj extends validaciones {
 		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
 
 		$where = $this->datasis->extjsfiltro($filters);
-		
+
 		$this->db->_protect_identifiers=false;
 		$this->db->select('*');
 		$this->db->from('scaj');
 		if (strlen($where)>1) $this->db->where($where, NULL, FALSE); 
-		
+
 		$sort = json_decode($sort, true);
 		for ( $i=0; $i<count($sort); $i++ ) {
 			$this->db->order_by($sort[$i]['property'],$sort[$i]['direction']);

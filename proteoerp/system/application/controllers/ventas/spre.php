@@ -8,16 +8,8 @@ class spre extends validaciones {
 	}
 
 	function index() {
-		//redirect('ventas/spre/filteredgrid');
-		redirect("ventas/spre/extgrid");
-	}
-
-	function extgrid(){
-		$this->datasis->modulo_id(707,1);
-		$script = $this->spreextjs();
-		$data["script"] = $script;
-		$data['title']  = heading('Presupuestos');
-		$this->load->view('extjs/pers',$data);
+		$this->datasis->modulo_id(104,1);
+		$this->spreextjs();
 	}
 
 
@@ -807,64 +799,8 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']    : '';
 		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
 
-
-		$where = "";
-
-		//Buscar posicion 0 Cero
-		if (isset($_REQUEST['filter'])){
-			$filter = json_decode($_REQUEST['filter'], true);
-			if (is_array($filter)) {
-				//Dummy Where. 
-				$where = "numero IS NOT NULL ";
-				$qs = "";
-				for ($i=0;$i<count($filter);$i++){
-					switch($filter[$i]['type']){
-					case 'string' : $qs .= " AND ".$filter[$i]['field']." LIKE '%".$filter[$i]['value']."%'"; 
-						Break;
-					case 'list' :
-						if (strstr($filter[$i]['value'],',')){
-							$fi = explode(',',$filter[$i]['value']);
-							for ($q=0;$q<count($fi);$q++){
-								$fi[$q] = "'".$fi[$q]."'";
-							}
-							$filter[$i]['value'] = implode(',',$fi);
-								$qs .= " AND ".$filter[$i]['field']." IN (".$filter[$i]['value'].")";
-						}else{
-							$qs .= " AND ".$filter[$i]['field']." = '".$filter[$i]['value']."'";
-						}
-						Break;
-					case 'boolean' : $qs .= " AND ".$filter[$i]['field']." = ".($filter[$i]['value']); 
-						Break;
-					case 'numeric' :
-						switch ($filter[$i]['comparison']) {
-							case 'ne' : $qs .= " AND ".$filter[$i]['field']." != ".$filter[$i]['value']; 
-								Break;
-							case 'eq' : $qs .= " AND ".$filter[$i]['field']." = ".$filter[$i]['value']; 
-								Break;
-							case 'lt' : $qs .= " AND ".$filter[$i]['field']." < ".$filter[$i]['value']; 
-								Break;
-							case 'gt' : $qs .= " AND ".$filter[$i]['field']." > ".$filter[$i]['value']; 
-								Break;
-						}
-						Break;
-					case 'date' :
-						switch ($filter[$i]['comparison']) {
-							case 'ne' : $qs .= " AND ".$filter[$i]['field']." != '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
-								Break;
-							case 'eq' : $qs .= " AND ".$filter[$i]['field']." = '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
-								Break;
-							case 'lt' : $qs .= " AND ".$filter[$i]['field']." < '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
-								Break;
-							case 'gt' : $qs .= " AND ".$filter[$i]['field']." > '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
-								Break;
-						}
-						Break;
-					}
-				}
-				$where .= $qs;
-			}
-		}
-		
+		$where = $this->datasis->extjsfiltro($filters,'spre');
+	
 		$this->db->_protect_identifiers=false;
 		$this->db->select('*');
 		$this->db->from('spre');
@@ -879,23 +815,68 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		for ($i=0;$i<count($sort);$i++) {
 			$this->db->order_by($sort[$i]['property'],$sort[$i]['direction']);
 		}
-
+		$sql = $this->db->_compile_select($this->db->_count_string . $this->db->_protect_identifiers('numrows'));
+		$results = $this->datasis->dameval($sql);
 		$this->db->limit($limit, $start);
-
 		$query = $this->db->get();
-		$results = $query->num_rows();
+		$arr = $this->datasis->codificautf8($query->result_array());
 
-		$arr = array();
-		foreach ($query->result_array() as $row)
-		{
-			$meco = array();
-			foreach( $row as $idd=>$campo ) {
-				$meco[$idd] = utf8_encode($campo);
-			}
-			$arr[] = $meco;
-		}
 		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
 	}
+
+
+	function tabla() {
+		$id   = isset($_REQUEST['id'])  ? $_REQUEST['id']   :  0;
+		$cliente = $this->datasis->dameval("SELECT cod_cli FROM spre WHERE id='$id'");
+		$mSQL = "SELECT cod_cli, MID(nombre,1,25) nombre, tipo_doc, numero, monto, abonos FROM smov WHERE cod_cli='$cliente' AND abonos<>monto AND tipo_doc<>'AB' ORDER BY fecha ";
+		$query = $this->db->query($mSQL);
+		$salida = '';
+		$saldo = 0;
+		if ( $query->num_rows() > 0 ){
+			$salida = "<br><table width='100%' border=1>";
+			$salida .= "<tr bgcolor='#e7e3e7'><td colspan=3>Movimiento en Cuentas X Cobrar</td></tr>";
+			$salida .= "<tr bgcolor='#e7e3e7'><td>Tp</td><td align='center'>Numero</td><td align='center'>Monto</td></tr>";
+			
+			foreach ($query->result_array() as $row)
+			{
+				$salida .= "<tr>";
+				$salida .= "<td>".$row['tipo_doc']."</td>";
+				$salida .= "<td>".$row['numero'].  "</td>";
+				$salida .= "<td align='right'>".nformat($row['monto']-$row['abonos']).   "</td>";
+				$salida .= "</tr>";
+				if ( $row['tipo_doc'] == 'FC' or $row['tipo_doc'] == 'ND' or $row['tipo_doc'] == 'GI' )
+					$saldo += $row['monto']-$row['abonos'];
+				else
+					$saldo -= $row['monto']-$row['abonos'];
+			}
+			$salida .= "<tr bgcolor='#d7c3c7'><td colspan='4' align='center'>Saldo : ".nformat($saldo). "</td></tr>";
+			$salida .= "</table>";
+		}
+		$query->free_result();
+
+
+/*
+		// Revisa formas de pago sfpa
+		$mSQL = "SELECT codbanc, numero, monto FROM bmov WHERE transac='$transac' ";
+		$query = $this->db->query($mSQL);
+		if ( $query->num_rows() > 0 ){
+			$salida .= "<br><table width='100%' border=1>";
+			$salida .= "<tr bgcolor='#e7e3e7'><td colspan=3>Movimiento en Caja o Banco</td></tr>";
+			$salida .= "<tr bgcolor='#e7e3e7'><td>Bco</td><td align='center'>Numero</td><td align='center'>Monto</td></tr>";
+			foreach ($query->result_array() as $row)
+			{
+				$salida .= "<tr>";
+				$salida .= "<td>".$row['codbanc']."</td>";
+				$salida .= "<td>".$row['numero'].  "</td>";
+				$salida .= "<td align='right'>".nformat($row['monto']).   "</td>";
+				$salida .= "</tr>";
+			}
+			$salida .= "</table>";
+		}
+*/
+		echo $salida;
+	}
+
 
 	function griditspre(){
 		$numero   = isset($_REQUEST['numero'])  ? $_REQUEST['numero']   :  0;
@@ -923,10 +904,262 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 	}
 
 	function spreextjs() {
+		$encabeza='PRESUPUESTOS';
+		$modulo  = 'spre';
+		$urlajax = 'ventas/spre/';
 
-		$encabeza='<table width="100%" bgcolor="#2067B5"><tr><td align="left" width="100px"><img src="'.base_url().'assets/default/css/templete_01.jpg" width="120"></td><td align="center"><h1 style="font-size: 20px; color: rgb(255, 255, 255);" onclick="history.back()">PRESUPUESTOS A CLIENTES</h1></td><td align="right" width="100px"><img src="'.base_url().'assets/default/images/cerrar.png" alt="Cerrar Ventana" title="Cerrar Ventana" onclick="parent.window.close()" width="25"></td></tr></table>';
-		$listados= $this->datasis->listados('spre');
-		$otros=$this->datasis->otros('spre', 'spre');
+		$listados= $this->datasis->listados($modulo);
+		$otros=$this->datasis->otros($modulo, $urlajax);
+
+
+		$columnas = "
+		{ header: 'Numero',     width:  60, sortable: true,  dataIndex: 'numero',  field: { type: 'textfield' }, filter: { type: 'string' }}, 
+		{ header: 'Fecha',      width:  70, sortable: true,  dataIndex: 'fecha',   field: { type: 'date'      }, filter: { type: 'date'   }}, 
+		{ header: 'Cliente',    width:  50, sortable: true,  dataIndex: 'cod_cli', field: { type: 'textfield' }, filter: { type: 'string' }, renderer: renderScli }, 
+		{ header: 'Nombre',     width: 200, sortable: true,  dataIndex: 'nombre',  field: { type: 'textfield' }, filter: { type: 'string' }}, 
+		{ header: 'SubTotal',   width: 100, sortable: true,  dataIndex: 'totals',  field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
+		{ header: 'IVA',        width:  80, sortable: true,  dataIndex: 'iva',     field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
+		{ header: 'Total',      width: 100, sortable: true,  dataIndex: 'totalg',  field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
+		{ header: 'Vendedor',   width:  60, sortable: true,  dataIndex: 'vd',      field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Peso',       width:  60, sortable: true,  dataIndex: 'peso',    field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
+		{ header: 'Condiciones',width: 160, sortable: true,  dataIndex: 'condi1',  field: { type: 'textfield' }, filter: { type: 'string' }}, 
+		{ header: 'Usuario',    width:  60, sortable: true,  dataIndex: 'usuario', field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Rif/CI',     width:  90, sortable: true,  dataIndex: 'rifci' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Direc',      width: 200, sortable: true,  dataIndex: 'direc' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Dire1',      width: 200, sortable: true,  dataIndex: 'dire1' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Condi2',     width: 200, sortable: true,  dataIndex: 'condi2' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Modificado', width:  70, sortable: true,  dataIndex: 'modificado' , field: { type: 'date' }, filter: { type: 'date' }},
+		{ header: 'Id',         width:  60, sortable: true,  dataIndex: 'id' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},";
+
+		$coldeta = "
+	var Deta1Col = [
+		{ header: 'Codigo',      width:  90, sortable: true, dataIndex: 'codigo', field: { type: 'textfield' }, filter: { type: 'string' }, renderer: renderSinv }, 
+		{ header: 'codid',       dataIndex: 'codid',  hidden: true}, 
+		{ header: 'Descripcion', width: 250, sortable: true, dataIndex: 'desca',  field: { type: 'textfield' }, filter: { type: 'string' }}, 
+		{ header: 'Cant',        width:  60, sortable: true, dataIndex: 'cana',   field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
+		{ header: 'Precio',      width: 100, sortable: true, dataIndex: 'preca',  field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
+		{ header: 'Importe',     width: 100, sortable: true, dataIndex: 'importe',field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'IVA',         width:  60, sortable: true, dataIndex: 'iva',    field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Precio 4',    width:  60, sortable: true, dataIndex: 'precio4',field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+]";
+
+		$variables='';
+		$valida="		{ type: 'length', field: 'numero',  min:  1 }";
+		
+
+		$funciones = "
+function renderScli(value, p, record) {
+	var mreto='';
+	if ( record.data.cod_cli == '' ){
+		mreto = '{0}';
+	} else {
+		mreto = '<a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlAjax+'sclibu/{1}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">{0}</a>';
+	}
+	return Ext.String.format(mreto,	value, record.data.numero );
+}
+
+
+function renderSinv(value, p, record) {
+	var mreto='';
+	mreto = '<a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'inventario/sinv/dataedit/show/{1}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">{0}</a>';
+	return Ext.String.format(mreto,	value, record.data.codid );
+}
+
+	";
+
+		$campos = $this->datasis->extjscampos($modulo);
+
+		$stores = "
+	Ext.define('It".$modulo."', {
+		extend: 'Ext.data.Model',
+		fields: [".$this->datasis->extjscampos('it'.$modulo)."],
+		proxy: {
+			type: 'ajax',
+			noCache: false,
+			api: {
+				read   : urlAjax + '/gridit".$modulo."',
+				method: 'POST'
+			},
+			reader: {
+				type: 'json',
+				root: 'data',
+				successProperty: 'success',
+				messageProperty: 'message',
+				totalProperty: 'results'
+			}
+		}
+	});
+
+	//////////////////////////////////////////////////////////
+	// create the Data Store
+	var storeIt".$modulo." = Ext.create('Ext.data.Store', {
+		model: 'It".$modulo."',
+		autoLoad: false,
+		autoSync: true,
+		method: 'POST'
+	});
+	
+	//////////////////////////////////////////////////////////
+	//
+	var gridDeta1 = Ext.create('Ext.grid.Panel', {
+		width:   '100%',
+		height:  '100%',
+		store:   storeIt".$modulo.",
+		title:   'Detalle del Presupuesto',
+		iconCls: 'icon-grid',
+		frame:   true,
+		features: [ { ftype: 'filters', encode: 'json', local: false } ],
+		columns: Deta1Col
+	});
+
+	var ".$modulo."TplMarkup = [
+		'<table width=\'100%\' bgcolor=\"#F3F781\">',
+		'<tr><td colspan=3 align=\'center\'><p style=\'font-size:14px;font-weight:bold\'>IMPRIMIR PRESUPUESTO</p></td></tr><tr>',
+		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/verhtml/PRESUP/{numero}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/html_icon.gif', 'alt' => 'Formato HTML', 'title' => 'Formato HTML','border'=>'0'))."</a></td>',
+		'<td align=\'center\'>{numero}</td>',
+		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/ver/PRESUP/{numero}\',     \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',   'title' => 'Formato PDF', 'border'=>'0'))."</a></td></tr>',
+		'<tr><td colspan=3 align=\'center\' >--</td></tr>',		
+		'</table>','nanai'
+	];
+
+	// Al cambiar seleccion
+	gridMaest.getSelectionModel().on('selectionchange', function(sm, selectedRecord) {
+		if (selectedRecord.length) {
+			gridMaest.down('#delete').setDisabled(selectedRecord.length === 0);
+			gridMaest.down('#update').setDisabled(selectedRecord.length === 0);
+			numero = selectedRecord[0].data.numero;
+			gridDeta1.setTitle(selectedRecord[0].data.numero+' '+selectedRecord[0].data.nombre);
+			storeIt".$modulo.".load({ params: { numero: numero }});
+			var meco1 = Ext.getCmp('imprimir');
+			Ext.Ajax.request({
+				url: urlAjax +'tabla',
+				params: { numero: numero, id: selectedRecord[0].data.id },
+				success: function(response) {
+					var vaina = response.responseText;
+					".$modulo."TplMarkup.pop();
+					".$modulo."TplMarkup.push(vaina);
+					var ".$modulo."Tpl = Ext.create('Ext.Template', ".$modulo."TplMarkup );
+					meco1.setTitle('Imprimir Compra');
+					".$modulo."Tpl.overwrite(meco1.body, selectedRecord[0].data );
+				}
+			});
+		}
+	});
+";
+
+		$acordioni = "{
+					layout: 'fit',
+					items:[
+						{
+							name: 'imprimir',
+							id: 'imprimir',
+							border:false,
+							html: 'Para imprimir seleccione una Compra '
+						}
+					]
+				},
+";
+
+
+		$dockedItems = "{
+			xtype: 'toolbar',
+			items: [
+				{
+					iconCls: 'icon-add',
+					text: 'Agregar',
+					scope: this,
+					handler: function(){
+						window.open(urlAjax+'dataedit/create', '_blank', 'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys);
+					}
+				},
+				{
+					iconCls: 'icon-update',
+					text: 'Modificar',
+					disabled: true,
+					itemId: 'update',
+					scope: this,
+					handler: function(selModel, selections){
+						var selection = gridMaest.getView().getSelectionModel().getSelection()[0];
+						gridMaest.down('#delete').setDisabled(selections.length === 0);
+						window.open(urlAjax+'dataedit/modify/'+selection.data.id, '_blank', 'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys);
+					}
+				},{
+					iconCls: 'icon-delete',
+					text: 'Eliminar',
+					disabled: true,
+					itemId: 'delete',
+					scope: this,
+					handler: function() {
+						var selection = gridMaest.getView().getSelectionModel().getSelection()[0];
+						Ext.MessageBox.show({
+							title: 'Confirme', 
+							msg: 'Seguro que quiere eliminar la compra Nro. '+selection.data.numero, 
+							buttons: Ext.MessageBox.YESNO, 
+							fn: function(btn){ 
+								if (btn == 'yes') { 
+									if (selection) {
+										//storeMaest.remove(selection);
+									}
+									storeMaest.load();
+								} 
+							}, 
+							icon: Ext.MessageBox.QUESTION 
+						});  
+					}
+				}
+			]
+		}		
+		";
+
+
+		$grid2 = ",{
+				itemId: 'viewport-center-detail',
+				activeTab: 0,
+				region: 'south',
+				height: '40%',
+				split: true,
+				margins: '0 0 0 0',
+				preventHeader: true,
+				items: gridDeta1
+			}";
+
+
+		$titulow = 'Compras';
+		
+		$filtros = "";
+		$features = "
+		features: [ { ftype: 'filters', encode: 'json', local: false } ],
+		plugins: [Ext.create('Ext.grid.plugin.CellEditing', { clicksToEdit: 2 })],
+";
+
+		$final = "storeIt".$modulo.".load();";
+
+		$data['listados']    = $listados;
+		$data['otros']       = $otros;
+		$data['encabeza']    = $encabeza;
+		$data['urlajax']     = $urlajax;
+		$data['variables']   = $variables;
+		$data['funciones']   = $funciones;
+		$data['valida']      = $valida;
+		$data['stores']      = $stores;
+		$data['columnas']    = $columnas;
+		$data['campos']      = $campos;
+		$data['titulow']     = $titulow;
+		$data['dockedItems'] = $dockedItems;
+		$data['features']    = $features;
+		$data['filtros']     = $filtros;
+		$data['grid2']       = $grid2;
+		$data['coldeta']     = $coldeta;
+		$data['acordioni']   = $acordioni;
+		$data['final']       = $final;
+		
+		$data['title']  = heading('Presupuestos');
+		$this->load->view('extjs/extjsvenmd',$data);
+
+
+
+
+
 
 		$script = "
 <script type=\"text/javascript\">		
@@ -1123,9 +1356,9 @@ Ext.onReady(function() {
 	});
 
 //////************ MENU DE ADICIONALES /////////////////
-".$listados."
+listados
 
-".$otros."
+otros
 //////************ FIN DE ADICIONALES /////////////////
 
 
@@ -1280,7 +1513,6 @@ Ext.onReady(function() {
 
 </script>
 ";
-		return $script;	
 		
 	}
 

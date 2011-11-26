@@ -10,13 +10,20 @@ class pfac extends validaciones{
 	}
 
 	function index(){
-		redirect('ventas/pfac/filteredgrid');
-		
+		//redirect('ventas/pfac/filteredgrid');
 		if(!$this->db->field_exists('fenvia','pfac'))
 		$this->db->query("ALTER TABLE `pfac`  ADD COLUMN `fenvia` DATE NULL DEFAULT '0000-00-00' COMMENT 'fecha en que el vendedor termino el pedido'");
 		
 		if(!$this->db->field_exists('faplica','pfac'))
 		$this->db->query("ALTER TABLE `pfac`  ADD COLUMN `faplica` DATE NULL DEFAULT '0000-00-00' COMMENT 'fecha en que se aplicaron los descuentos'");
+
+		if ( !$this->datasis->iscampo('pfac','id') ) {
+			$this->db->simple_query('ALTER TABLE pfac DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE pfac ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ');
+			$this->db->simple_query('ALTER TABLE pfac ADD UNIQUE INDEX numero (numero)');
+		}
+		$this->pfacextjs();
+
 		
 	}
 
@@ -909,4 +916,390 @@ class pfac extends validaciones{
 		$this->db->query("ALTER TABLE `itpfac`  ADD COLUMN `dxapli` VARCHAR(20) NOT NULL COMMENT 'descuento por aplicar'");
 		
 	}
+
+	function grid(){
+		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']   :  0;
+		$limit   = isset($_REQUEST['limit'])  ? $_REQUEST['limit']   : 50;
+		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']    : '';
+		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
+
+		$where = $this->datasis->extjsfiltro($filters,'pfac');
+	
+		$this->db->_protect_identifiers=false;
+		$this->db->select('*');
+		$this->db->from('pfac');
+
+		if (strlen($where)>1){
+			$this->db->where($where);
+		}
+
+		if ( $sort == '') $this->db->order_by( 'numero', 'desc' );
+
+		$sort = json_decode($sort, true);
+		for ($i=0;$i<count($sort);$i++) {
+			$this->db->order_by($sort[$i]['property'],$sort[$i]['direction']);
+		}
+		$sql = $this->db->_compile_select($this->db->_count_string . $this->db->_protect_identifiers('numrows'));
+		$results = $this->datasis->dameval($sql);
+		$this->db->limit($limit, $start);
+		$query = $this->db->get();
+		$arr = $this->datasis->codificautf8($query->result_array());
+
+		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
+	}
+
+
+	function tabla() {
+		$id   = isset($_REQUEST['id'])  ? $_REQUEST['id']   :  0;
+		$cliente = $this->datasis->dameval("SELECT cod_cli FROM pfac WHERE id='$id'");
+		$mSQL = "SELECT cod_cli, MID(nombre,1,25) nombre, tipo_doc, numero, monto, abonos FROM smov WHERE cod_cli='$cliente' AND abonos<>monto AND tipo_doc<>'AB' ORDER BY fecha ";
+		$query = $this->db->query($mSQL);
+		$salida = '';
+		$saldo = 0;
+		if ( $query->num_rows() > 0 ){
+			$salida = "<br><table width='100%' border=1>";
+			$salida .= "<tr bgcolor='#e7e3e7'><td colspan=3>Movimiento en Cuentas X Cobrar</td></tr>";
+			$salida .= "<tr bgcolor='#e7e3e7'><td>Tp</td><td align='center'>Numero</td><td align='center'>Monto</td></tr>";
+			
+			foreach ($query->result_array() as $row)
+			{
+				$salida .= "<tr>";
+				$salida .= "<td>".$row['tipo_doc']."</td>";
+				$salida .= "<td>".$row['numero'].  "</td>";
+				$salida .= "<td align='right'>".nformat($row['monto']-$row['abonos']).   "</td>";
+				$salida .= "</tr>";
+				if ( $row['tipo_doc'] == 'FC' or $row['tipo_doc'] == 'ND' or $row['tipo_doc'] == 'GI' )
+					$saldo += $row['monto']-$row['abonos'];
+				else
+					$saldo -= $row['monto']-$row['abonos'];
+			}
+			$salida .= "<tr bgcolor='#d7c3c7'><td colspan='4' align='center'>Saldo : ".nformat($saldo). "</td></tr>";
+			$salida .= "</table>";
+		}
+		$query->free_result();
+
+
+/*
+		// Revisa formas de pago sfpa
+		$mSQL = "SELECT codbanc, numero, monto FROM bmov WHERE transac='$transac' ";
+		$query = $this->db->query($mSQL);
+		if ( $query->num_rows() > 0 ){
+			$salida .= "<br><table width='100%' border=1>";
+			$salida .= "<tr bgcolor='#e7e3e7'><td colspan=3>Movimiento en Caja o Banco</td></tr>";
+			$salida .= "<tr bgcolor='#e7e3e7'><td>Bco</td><td align='center'>Numero</td><td align='center'>Monto</td></tr>";
+			foreach ($query->result_array() as $row)
+			{
+				$salida .= "<tr>";
+				$salida .= "<td>".$row['codbanc']."</td>";
+				$salida .= "<td>".$row['numero'].  "</td>";
+				$salida .= "<td align='right'>".nformat($row['monto']).   "</td>";
+				$salida .= "</tr>";
+			}
+			$salida .= "</table>";
+		}
+*/
+		echo $salida;
+	}
+
+	function griditpfac(){
+		$numero   = isset($_REQUEST['numero'])  ? $_REQUEST['numero']   :  0;
+		if ($numero == 0 ) $numero = $this->datasis->dameval("SELECT MAX(numero) FROM pfac")  ;
+
+		$mSQL = "SELECT * FROM itpfac a JOIN sinv b ON a.codigoa=b.codigo WHERE a.numa='$numero' ORDER BY a.codigoa";
+		$query = $this->db->query($mSQL);
+		$results =  0; 
+		$arr = array();
+		foreach ($query->result_array() as $row)
+		{
+			$meco = array();
+			foreach( $row as $idd=>$campo ) {
+				$meco[$idd] = utf8_encode($campo);
+			}
+			$arr[] = $meco;
+		}
+		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
+	}
+
+	function sclibu(){
+		$numero = $this->uri->segment(4);
+		$id = $this->datasis->dameval("SELECT b.id FROM pfac a JOIN scli b ON a.cod_cli=b.cliente WHERE numero='$numero'");
+		redirect('ventas/scli/dataedit/show/'.$id);
+	}
+
+	function pfacextjs() {
+		$encabeza='PEDIDO DE CLIENTES';
+
+		$modulo = 'pfac';
+		$urlajax = 'ventas/pfac/';
+		
+		$listados= $this->datasis->listados($modulo);
+		$otros=$this->datasis->otros($modulo, $urlajax);
+
+
+		$columnas = "
+		{ header: 'Numero',      width: 60, sortable: true, dataIndex: 'numero' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Fecha',       width: 70, sortable: true, dataIndex: 'fecha' , field: { type: 'date' }, filter: { type: 'date' }},
+		{ header: 'Vende',       width: 40, sortable: true, dataIndex: 'vd' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Cliente',     width: 60, sortable: true, dataIndex: 'cod_cli' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'RIF/CI',      width: 90, sortable: true, dataIndex: 'rifci' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Nombre',      width:200, sortable: true, dataIndex: 'nombre' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Base',        width: 90, sortable: true, dataIndex: 'totals' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'IVA',         width: 90, sortable: true, dataIndex: 'iva' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Total',       width: 90, sortable: true, dataIndex: 'totalg' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Ref.',        width: 70, sortable: true, dataIndex: 'referen' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Status',      width: 60, sortable: true, dataIndex: 'status' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Observa',     width: 60, sortable: true, dataIndex: 'observa' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Observ1',     width: 60, sortable: true, dataIndex: 'observ1' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Cajero',      width: 60, sortable: true, dataIndex: 'cajero' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Peso',        width: 60, sortable: true, dataIndex: 'peso' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Factura',     width: 60, sortable: true, dataIndex: 'factura' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Usuario',     width: 60, sortable: true, dataIndex: 'usuario' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Estampa',     width: 60, sortable: true, dataIndex: 'estampa' , field: { type: 'date' }, filter: { type: 'date' }},
+		{ header: 'Hora',        width: 60, sortable: true, dataIndex: 'hora' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Transac',     width: 60, sortable: true, dataIndex: 'transac' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Zona',        width: 60, sortable: true, dataIndex: 'zona' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Ciudad',      width: 60, sortable: true, dataIndex: 'ciudad' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Presup',      width: 60, sortable: true, dataIndex: 'presup' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Anticipo',    width: 60, sortable: true, dataIndex: 'anticipo' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Entregar',    width: 60, sortable: true, dataIndex: 'entregar' , field: { type: 'date' }, filter: { type: 'date' }},
+		{ header: 'Numant',      width: 60, sortable: true, dataIndex: 'numant' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Ftoma',       width: 60, sortable: true, dataIndex: 'ftoma' , field: { type: 'date' }, filter: { type: 'date' }},
+		{ header: 'Modificado',  width: 60, sortable: true, dataIndex: 'modificado' , field: { type: 'date' }, filter: { type: 'date' }},
+		{ header: 'Direccion 1', width: 60, sortable: true, dataIndex: 'direc' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Direccion 2', width: 60, sortable: true, dataIndex: 'dire1' , field: { type: 'textfield' }, filter: { type: 'string' }},
+";
+
+		$coldeta = "
+	var Deta1Col = [
+		{ header: 'Codigo',       width:100, sortable: true, dataIndex: 'codigoa' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Descripcion',  width:250, sortable: true, dataIndex: 'desca' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Cantidad',     width: 70, sortable: true, dataIndex: 'cana' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Precio',       width: 80, sortable: true, dataIndex: 'preca' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Total',        width: 80, sortable: true, dataIndex: 'tota' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'IVA',          width: 60, sortable: true, dataIndex: 'iva' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Entregado',    width: 60, sortable: true, dataIndex: 'entregado' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'PVP',          width: 60, sortable: true, dataIndex: 'pvp' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Comision',     width: 60, sortable: true, dataIndex: 'comision' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'id',           width: 60, sortable: true, dataIndex: 'id' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'modificado',   width: 60, sortable: true, dataIndex: 'modificado' , field: { type: 'date' }, filter: { type: 'date' }},
+		{ header: 'dxapli',       width: 60, sortable: true, dataIndex: 'dxapli' , field: { type: 'textfield' }, filter: { type: 'string' }}
+	]";
+
+
+		$variables='';
+		
+		$valida="		{ type: 'length', field: 'numero',  min:  1 }";
+		
+
+		$funciones = "
+function renderScli(value, p, record) {
+	var mreto='';
+	if ( record.data.cod_cli == '' ){
+		mreto = '{0}';
+	} else {
+		mreto = '<a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlAjax+'sclibu/{1}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">{0}</a>';
+	}
+	return Ext.String.format(mreto,	value, record.data.numero );
+}
+
+
+function renderSinv(value, p, record) {
+	var mreto='';
+	mreto = '<a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'inventario/sinv/dataedit/show/{1}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">{0}</a>';
+	return Ext.String.format(mreto,	value, record.data.codid );
+}
+
+	";
+
+		$campos = $this->datasis->extjscampos($modulo);
+
+		$stores = "
+	Ext.define('It".$modulo."', {
+		extend: 'Ext.data.Model',
+		fields: [".$this->datasis->extjscampos("it".$modulo)."],
+		proxy: {
+			type: 'ajax',
+			noCache: false,
+			api: {
+				read   : urlAjax + 'gridit".$modulo."',
+				method: 'POST'
+			},
+			reader: {
+				type: 'json',
+				root: 'data',
+				successProperty: 'success',
+				messageProperty: 'message',
+				totalProperty: 'results'
+			}
+		}
+	});
+
+	//////////////////////////////////////////////////////////
+	// create the Data Store
+	var storeIt".$modulo." = Ext.create('Ext.data.Store', {
+		model: 'It".$modulo."',
+		autoLoad: false,
+		autoSync: true,
+		method: 'POST'
+	});
+	
+	//////////////////////////////////////////////////////////
+	//
+	var gridDeta1 = Ext.create('Ext.grid.Panel', {
+		width:   '100%',
+		height:  '100%',
+		store:   storeIt".$modulo.",
+		title:   'Detalle de la NE',
+		iconCls: 'icon-grid',
+		frame:   true,
+		features: [ { ftype: 'filters', encode: 'json', local: false } ],
+		columns: Deta1Col
+	});
+
+	var ".$modulo."TplMarkup = [
+		'<table width=\'100%\' bgcolor=\"#F3F781\">',
+		'<tr><td colspan=3 align=\'center\'><p style=\'font-size:14px;font-weight:bold\'>IMPRIMIR DESPACHO</p></td></tr><tr>',
+		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/verhtml/PRESUP/{numero}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/html_icon.gif', 'alt' => 'Formato HTML', 'title' => 'Formato HTML','border'=>'0'))."</a></td>',
+		'<td align=\'center\'>{numero}</td>',
+		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/ver/PRESUP/{numero}\',     \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',   'title' => 'Formato PDF', 'border'=>'0'))."</a></td></tr>',
+		'<tr><td colspan=3 align=\'center\' >--</td></tr>',		
+		'</table>','nanai'
+	];
+
+	// Al cambiar seleccion
+	gridMaest.getSelectionModel().on('selectionchange', function(sm, selectedRecord) {
+		if (selectedRecord.length) {
+			gridMaest.down('#delete').setDisabled(selectedRecord.length === 0);
+			gridMaest.down('#update').setDisabled(selectedRecord.length === 0);
+			numero = selectedRecord[0].data.numero;
+			gridDeta1.setTitle(selectedRecord[0].data.numero+' '+selectedRecord[0].data.nombre);
+			storeIt".$modulo.".load({ params: { numero: numero }});
+			var meco1 = Ext.getCmp('imprimir');
+			Ext.Ajax.request({
+				url: urlAjax +'tabla',
+				params: { numero: numero, id: selectedRecord[0].data.id },
+				success: function(response) {
+					var vaina = response.responseText;
+					".$modulo."TplMarkup.pop();
+					".$modulo."TplMarkup.push(vaina);
+					var ".$modulo."Tpl = Ext.create('Ext.Template', ".$modulo."TplMarkup );
+					meco1.setTitle('Imprimir Compra');
+					".$modulo."Tpl.overwrite(meco1.body, selectedRecord[0].data );
+				}
+			});
+		}
+	});
+";
+
+		$acordioni = "{
+					layout: 'fit',
+					items:[
+						{
+							name: 'imprimir',
+							id: 'imprimir',
+							border:false,
+							html: 'Para imprimir seleccione una Compra '
+						}
+					]
+				},
+";
+
+
+		$dockedItems = "{
+			xtype: 'toolbar',
+			items: [
+				{
+					iconCls: 'icon-add',
+					text: 'Agregar',
+					scope: this,
+					handler: function(){
+						window.open(urlAjax+'dataedit/create', '_blank', 'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys);
+					}
+				},
+				{
+					iconCls: 'icon-update',
+					text: 'Modificar',
+					disabled: true,
+					itemId: 'update',
+					scope: this,
+					handler: function(selModel, selections){
+						var selection = gridMaest.getView().getSelectionModel().getSelection()[0];
+						gridMaest.down('#delete').setDisabled(selections.length === 0);
+						window.open(urlAjax+'dataedit/modify/'+selection.data.id, '_blank', 'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys);
+					}
+				},{
+					iconCls: 'icon-delete',
+					text: 'Eliminar',
+					disabled: true,
+					itemId: 'delete',
+					scope: this,
+					handler: function() {
+						var selection = gridMaest.getView().getSelectionModel().getSelection()[0];
+						Ext.MessageBox.show({
+							title: 'Confirme', 
+							msg: 'Seguro que quiere eliminar la compra Nro. '+selection.data.numero, 
+							buttons: Ext.MessageBox.YESNO, 
+							fn: function(btn){ 
+								if (btn == 'yes') { 
+									if (selection) {
+										//storeMaest.remove(selection);
+									}
+									storeMaest.load();
+								} 
+							}, 
+							icon: Ext.MessageBox.QUESTION 
+						});  
+					}
+				}
+			]
+		}		
+		";
+
+		$grid2 = ",{
+				itemId: 'viewport-center-detail',
+				activeTab: 0,
+				region: 'south',
+				height: '40%',
+				split: true,
+				margins: '0 0 0 0',
+				preventHeader: true,
+				items: gridDeta1
+			}";
+
+
+		$titulow = 'Compras';
+		
+		$filtros = "";
+		$features = "
+		features: [ { ftype: 'filters', encode: 'json', local: false } ],
+		plugins: [Ext.create('Ext.grid.plugin.CellEditing', { clicksToEdit: 2 })],
+";
+
+		$final = "storeIt".$modulo.".load();";
+
+		$data['listados']    = $listados;
+		$data['otros']       = $otros;
+		$data['encabeza']    = $encabeza;
+		$data['urlajax']     = $urlajax;
+		$data['variables']   = $variables;
+		$data['funciones']   = $funciones;
+		$data['valida']      = $valida;
+		$data['stores']      = $stores;
+		$data['columnas']    = $columnas;
+		$data['campos']      = $campos;
+		$data['titulow']     = $titulow;
+		$data['dockedItems'] = $dockedItems;
+		$data['features']    = $features;
+		$data['filtros']     = $filtros;
+		$data['grid2']       = $grid2;
+		$data['coldeta']     = $coldeta;
+		$data['acordioni']   = $acordioni;
+		$data['final']       = $final;
+		
+		$data['title']  = heading('Pedido de Clientes');
+		$this->load->view('extjs/extjsvenmd',$data);
+		
+	}
+
+
 }

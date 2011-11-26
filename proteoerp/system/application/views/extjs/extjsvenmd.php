@@ -92,7 +92,7 @@ Ext.onReady(function() {
 	// create the Data Store
 	var storeMaest = Ext.create('Ext.data.Store', {
 		model: 'MaestMod',
-		pageSize: 50,
+		pageSize: 30,
 		remoteSort: true,
 		autoLoad: false,
 		autoSync: true,
@@ -160,7 +160,7 @@ Ext.onReady(function() {
 					title:'Otras Funciones',
 					border:false,
 					layout: 'fit',
-					html: '".$otros."'
+					html: '<?php echo $otros ?>'
 				}
 				<?php if (isset($acordionf)) echo $acordionf; ?>
 
