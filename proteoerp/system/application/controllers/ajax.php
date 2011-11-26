@@ -301,4 +301,54 @@ class Ajax extends Controller {
 		}
 		echo $data;
 	}
+
+	//Autocomplete para buscar las reservaciones
+	function buscares(){
+		$mid   = $this->input->post('q');
+		$qdb   = $this->db->escape('%'.$mid.'%');
+		$scli  = $this->input->post('scli');
+
+		$data = '{[ ]}';
+		if($mid !== false){
+			$qformato=$this->datasis->formato_cpla();
+			$retArray = $retorno = array();
+			if(!empty($scli)) $ww='AND cliente='.$this->db->escape($scli); else $ww='';
+
+			$mSQL="SELECT a.id,a.numero,a.fecha,a.cliente,a.edificacion,a.inmueble,a.reserva,b.nombre,b.rifci, b.tipo AS sclitipo,dire11 AS direc
+			FROM edres AS a
+			JOIN scli AS b ON a.cliente=b.cliente WHERE numero LIKE $qdb  $ww";
+
+			$query = $this->db->query($mSQL);
+			if ($query->num_rows() > 0){
+				foreach( $query->result_array() as  $row ) {
+					$retArray['label']    = $row['numero'].'-'.utf8_encode($row['nombre']);
+					$retArray['value']    = $row['numero'];
+					$retArray['nombre']   = utf8_encode($row['nombre']);
+					$retArray['edifi']    = $row['edificacion'];
+					$retArray['inmue']    = $row['inmueble'];
+					$retArray['rifci']    = $row['rifci'];
+					$retArray['cliente']  = $row['cliente'];
+					$retArray['sclitipo'] = $row['sclitipo'];
+					$retArray['direc']    = $row['direc'];
+
+					array_push($retorno, $retArray);
+				}
+				$data = json_encode($retorno);
+			}else{
+				$retArray['label']    = 'No se consiguieron reservaciones';
+				$retArray['value']    = '';
+				$retArray['nombre']   = '';
+				$retArray['edifi']    = '';
+				$retArray['inmue']    = '';
+				$retArray['rifci']    = '';
+				$retArray['cliente']  = '';
+				$retArray['sclitipo'] = '';
+				$retArray['direc']    = '';
+
+				$data = json_encode($retArray);
+			}
+		}
+		echo $data;
+		
+	}
 }

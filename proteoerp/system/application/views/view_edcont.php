@@ -24,7 +24,7 @@ if($form->_status!='show'){ ?>
 var itedcont_cont=<?php echo $form->max_rel_count['itedcont'];?>;
 
 $(function(){
-	$("#edificacion").change(function(){ edif_change(); });
+	$("#edificacion").change(function(){ edif_change(''); });
 	$("#inmueble").change(function(){ inmu_change(this.value); });
 	$("#mt2,#precioxmt2").keypress(function(){ totalizar(); cmontos(); });
 	$('#inicial').keyup(function(){ pagofinal(); });
@@ -61,14 +61,55 @@ $(function(){
 			$('#nombre').val(ui.item.nombre);
 			$('#nombre_val').text(ui.item.nombre);
 
+			$('#cliente').val(ui.item.cliente);
+
 			$('#rifci').val(ui.item.rifci);
 			$('#rifci_val').text(ui.item.rifci);
 
-			$('#cod_cli').val(ui.item.cod_cli);
 			$('#sclitipo').val(ui.item.tipo);
 
 			$('#direc').val(ui.item.direc);
 			$('#direc_val').text(ui.item.direc);
+		}
+	});
+
+	$('#numero_edres').autocomplete({
+		source: function( req, add){
+			$.ajax({
+				url:  "<?php echo site_url('ajax/buscares'); ?>",
+				type: "POST",
+				dataType: "json",
+				data: "q="+req.term,
+				success:
+					function(data){
+						var sugiere = [];
+						$.each(data,
+							function(i, val){
+								sugiere.push( val );
+							}
+						);
+						add(sugiere);
+					},
+			})
+		},
+		minLength: 2,
+		select: function( event, ui ) {
+			$('#nombre').val(ui.item.nombre);
+			$('#nombre_val').text(ui.item.nombre);
+
+			$('#rifci').val(ui.item.rifci);
+			$('#rifci_val').text(ui.item.rifci);
+
+			$('#cliente').val(ui.item.cliente);
+			$('#sclitipo').val(ui.item.tipo);
+
+			$('#direc').val(ui.item.direc);
+			$('#direc_val').text(ui.item.direc);
+
+			$('#edificacion').val(ui.item.edifi);
+			edif_change(ui.item.inmue);
+			
+			//$('#inmueble').val(ui.item.inmue);
 		}
 	});
 });
@@ -108,8 +149,15 @@ function inmu_change(val){
 	});
 }
 
-function edif_change(){
-	$.post("<?php echo site_url('construccion/common/get_inmue'); ?>",{ edif:$("#edificacion").val() }, function(data){ $("#inmueble").html(data);})
+function edif_change(par){
+	$.post("<?php echo site_url('construccion/common/get_inmue'); ?>",{ edif:$("#edificacion").val() },
+		function(data){
+			$("#inmueble").html(data);
+			if(par.length>0){
+				$("#inmueble").val(par);
+				inmu_change(par);
+			}
+		})
 }
 
 function truncate(){
@@ -261,6 +309,9 @@ function del_itedcont(id){
 			</tr><tr>
 				<td class="littletableheader">         <?php echo $form->direc->label  ?>&nbsp;</td>
 				<td class="littletablerow" colspan='2'><?php echo $form->direc->output ?>&nbsp;</td>
+			</tr><tr>
+				<td class="littletableheader">         <?php echo $form->numero_edres->label;    ?>&nbsp;</td>
+				<td class="littletablerow" colspan='2'><?php echo $form->numero_edres->output;   ?>&nbsp; </td>
 			</tr>
 			</table>
 			</fieldset>
