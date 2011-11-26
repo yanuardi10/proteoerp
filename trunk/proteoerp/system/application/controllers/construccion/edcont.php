@@ -89,6 +89,7 @@ class edcont extends Controller {
 
 		$do = new DataObject('edcont');
 		$do->pointer('scli' ,'scli.cliente=edcont.cliente','scli.tipo AS sclitipo, scli.nombre AS nombre, dire11 AS direc, scli.rifci AS rifci','left');
+		//$do->pointer('edres' ,'edres.id=edcont.id_edres','scli.tipo AS sclitipo, scli.nombre AS edresnumero','left');
 		$do->rel_one_to_many('itedcont', 'itedcont', array('id'=>'id_edcont'));
 
 		$edit = new DataDetails($this->tits, $do);
@@ -107,6 +108,16 @@ class edcont extends Controller {
 		$edit->id_edres->css_class='inputonlynum';
 		$edit->id_edres->size =13;
 		$edit->id_edres->maxlength =11;
+
+		$edit->numero = new inputField('N&uacute;mero','numero');
+		$edit->numero->rule='max_length[8]';
+		$edit->numero->size =10;
+		$edit->numero->maxlength =8;
+
+		$edit->numero_edres = new inputField('Reservaci&oacute;n','numero_edres');
+		$edit->numero_edres->rule='max_length[8]|required';
+		$edit->numero_edres->size =10;
+		$edit->numero_edres->maxlength =8;
 
 		$edit->numero = new inputField('Numero','numero');
 		$edit->numero->rule='max_length[8]';
@@ -177,38 +188,38 @@ class edcont extends Controller {
 		$edit->reserva->maxlength =17;
 
 		$edit->precioxmt2 = new inputField('Precioxmt2','precioxmt2');
-		$edit->precioxmt2->rule='max_length[17]|numeric';
+		$edit->precioxmt2->rule='max_length[17]|numeric|mayorcero';
 		$edit->precioxmt2->css_class='inputnum';
 		$edit->precioxmt2->size =10;
 		$edit->precioxmt2->maxlength =17;
 
 		$edit->mt2 = new inputField('&Aacute;rea Mt2','mt2');
-		$edit->mt2->rule='max_length[17]|numeric';
+		$edit->mt2->rule='max_length[17]|numeric|mayorcero';
 		$edit->mt2->css_class='inputnum';
 		$edit->mt2->size =10;
 		$edit->mt2->maxlength =17;
 
 		$edit->inicial = new inputField('Inicial','inicial');
-		$edit->inicial->rule='max_length[17]|numeric';
+		$edit->inicial->rule='max_length[17]|numeric|mayorcero';
 		$edit->inicial->css_class='inputnum';
 		$edit->inicial->size =19;
 		$edit->inicial->maxlength =17;
 
 		$edit->financiable = new inputField('Monto financiable','financiable');
-		$edit->financiable->rule='max_length[17]|numeric';
+		$edit->financiable->rule='max_length[17]|numeric|mayorcero';
 		$edit->financiable->css_class='inputnum';
 		$edit->financiable->size =19;
 		$edit->financiable->maxlength =17;
 
 		$edit->firma = new inputField('Pago final (firma)','firma');
-		$edit->firma->rule='max_length[17]|numeric';
+		$edit->firma->rule='max_length[17]|numeric|mayorcero';
 		$edit->firma->css_class='inputnum';
 		$edit->firma->size =19;
 		$edit->firma->type ='inputhidden';
 		$edit->firma->maxlength =17;
 
 		$edit->monto = new inputField('Monto total','monto');
-		$edit->monto->rule='max_length[17]|numeric';
+		$edit->monto->rule='max_length[17]|numeric|mayorcero';
 		$edit->monto->css_class='inputnum';
 		$edit->monto->size =19;
 		$edit->monto->type ='inputhidden';
