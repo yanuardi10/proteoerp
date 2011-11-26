@@ -180,11 +180,11 @@ class Accesos extends validaciones{
 
 	function cerberus(){
 		$this->load->library('path');
-		$path=new Path();                                                                                                            
-		$path->setPath($this->config->item('uploads_dir'));                                                                          
-		$path->append('/fnomina');                                                                                          
+		$path=new Path();
+		$path->setPath($this->config->item('uploads_dir'));
+		$path->append('/fnomina');
 		$upload_path ='../'.$path->getPath().'/'; 
-	
+
 		$query = $this->db->query('SELECT id,sid,ip,usr,pwd FROM cerberus WHERE activo="S"');
 		foreach ($query->result() as $row){
 			$id =$row->sid;
@@ -215,6 +215,27 @@ class Accesos extends validaciones{
 				if(!$ban){ memowrite($sql,'accesos'); }
 			}
 		}
+	}
+
+	function lbarras(){
+		$sal='';
+		$attr = array('style'=> 'margin:7px');
+		$query = $this->db->query('SELECT TRIM(carnet) AS carnet, CONCAT_WS(TRIM(nombre),TRIM(apellido)) AS nombre FROM pers WHERE status="A" AND LENGTH(TRIM(carnet))>0');
+		foreach ($query->result() as $row){
+			$attr['src']='nomina/accesos/barras/'.$row->carnet;
+			$attr['alt']=$row->nombre;
+			$sal .= ' '.img($attr);
+		}
+		$data['content'] = $sal;
+		$data['title']   = heading('Listado de barras del personal');
+		$data['head']    = $this->rapyd->get_head();
+		$this->load->view('view_ventanas_sola', $data);
+	}
+
+	function barras($carnet){
+		error_reporting(0);
+		require_once 'Image/Barcode.php';
+		Image_Barcode::draw($carnet, 'code128', 'png');
 	}
 
 	function foto(){
@@ -280,7 +301,7 @@ class Accesos extends validaciones{
 			return false;
 		}else {
 			return true;
-		}	
+		}
 	}
 
 	function instalar(){
@@ -288,7 +309,7 @@ class Accesos extends validaciones{
 			$query="ALTER TABLE `cacc`  ADD COLUMN `manual` CHAR(1) NOT NULL DEFAULT 'N' AFTER `hora`";
 			$this->db->simple_query($query);
 		}
-		
+
 		if (!$this->db->table_exists('cerberus')){
 			$mSQL="CREATE TABLE `cerberus` (
 			`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
