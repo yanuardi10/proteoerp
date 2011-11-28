@@ -33,10 +33,12 @@ class Datasis {
 
 
 	// Tae valor de la table VALORES
-	function traevalor($nombre){
+	function traevalor($nombre,$descrip=''){
 		$CI =& get_instance();
-		$CI->db->query("INSERT IGNORE INTO valores SET nombre='$nombre'");
-		$qq = $CI->db->query("SELECT valor FROM valores WHERE nombre='$nombre'");
+		$dbnombre=$CI->db->escape($nombre);
+		$dbdescri=$CI->db->escape($descrip);
+		$CI->db->query("INSERT IGNORE INTO valores SET nombre=$dbnombre, descrip=$dbdescri");
+		$qq = $CI->db->query("SELECT valor FROM valores WHERE nombre=$dbnombre");
 		$rr = $qq->row_array();
 		$aa = each($rr);
 		return $aa[1];
