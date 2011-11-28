@@ -200,6 +200,7 @@ class Scst extends Controller {
 
 		//Campos para el detalle
 		$this->_autoasignar($numero);
+		$this->_autopreciostandar($numero);
 		$tabla=$this->db->database;
 		$detalle = new DataGrid('');
 		$detalle->use_function('similar');
@@ -393,6 +394,51 @@ class Scst extends Controller {
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   ='<h1>Reasignar C&oacute;digo</h1>';
 		$this->load->view('view_ventanas', $data);
+	}
+
+	function _autopreciostandar($control){
+		$esstd=$this->datasis->traevalor('SCSTSD','S Para usar el precio standard en la carga de compras a droguerias');
+		if($esstd!=='S') return;
+		if(!empty($control)){
+			$dbcontrol=$this->db->escape($control);
+
+			$dbfarmax = $this->load->database('farmax', TRUE);
+			$query = $dbfarmax->query('SELECT proveed FROM scst WHERE control='.$dbcontrol);
+			if ($query->num_rows() > 0){
+				$row = $query->row_array();
+				$proveed=$row['proveed'];
+			}
+			$dbproveed=$this->db->escape($proveed);
+
+			$tabla    = $dbfarmax->database;
+
+			$mSQL="SELECT COALESCE( b.codigo , c.abarras) AS sinv, a.cstandard, COALESCE(e.margen,f.margen) AS margen, a.id
+			FROM ($tabla.`itscst`  AS a) 
+			LEFT JOIN `sinv`       AS b ON `a`.`codigo`=`b`.`codigo` 
+			LEFT JOIN `farmaxasig` AS c ON `a`.`codigo`=`c`.`barras` AND c.proveed=$dbproveed 
+			LEFT JOIN `sinv`       AS d ON `d`.`codigo`=`c`.`abarras` 
+			LEFT JOIN `grup`       AS e ON b.grupo=e.grupo
+			LEFT JOIN `grup`       AS f ON d.grupo=f.grupo
+			WHERE `a`.`control` = $dbcontrol";
+
+			$query = $this->db->query($mSQL);
+			if ($query->num_rows() > 0){
+				foreach ($query->result() as $row){
+					if(empty($row->sinv) || empty($row->cstandard)) continue;
+
+					$data = array();
+					$data['precio1']=round(($row->cstandard*100)/(100-$row->margen),2);
+					$data['precio2']=$row->cstandard;
+					$data['precio3']=$row->cstandard;
+					$data['precio4']=$row->cstandard;
+					$where = 'id = '.$row->id;
+					$sql = $dbfarmax->update_string('itscst', $data, $where);
+					$dbfarmax->simple_query($sql);
+					//echo $sql.br();
+				}
+			}
+		
+		}
 	}
 
 	function _autoasignar($control=null){
