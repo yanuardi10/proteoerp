@@ -212,6 +212,7 @@ class notifica extends controller {
 						$activa=$this->meval($__row->activador);
 						if($activa){
 							$msj=$this->meval($__row->accion);
+							if(empty($msj)) continue;
 
 							preg_match_all("/(?<para>[0-9]{4}\-[0-9]{7})/" ,$__row->para,$matches);
 							$telefonos= $matches['para'];
