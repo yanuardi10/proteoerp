@@ -198,12 +198,40 @@ class Scst extends Controller {
 			return $llink;
 		}
 
+		//Indica si el producto tiene una oferta
+		function ofertas($sinv){
+			if(empty($sinv)) return '';
+			$CI =& get_instance();
+			$mSQL='SELECT id,margen FROM sinvpromo WHERE codigo='.$CI->db->escape($sinv);
+			$query = $CI->db->query($mSQL);
+			$atts = array(
+				'width'      => '800',
+				'height'     => '600',
+				'scrollbars' => 'yes',
+				'status'     => 'yes',
+				'resizable'  => 'yes',
+				'screenx'    => '0',
+				'screeny'    => '0',
+				'title'      => 'Agregar oferta'
+			);
+
+			if ($query->num_rows() > 0){
+				$row = $query->row();
+				$val=nformat($row->margen).'%';
+
+				return anchor_popup('inventario/sinvpromo/dataeditexpress/'.raencode($sinv).'/show/'.$row->id,$val, $atts);
+			}else{
+				$val='+';
+				return anchor_popup('inventario/sinvpromo/dataeditexpress/'.raencode($sinv).'/create/',$val, $atts);
+			}
+		}
+
 		//Campos para el detalle
 		$this->_autoasignar($numero);
 		$this->_autopreciostandar($numero);
 		$tabla=$this->db->database;
 		$detalle = new DataGrid('');
-		$detalle->use_function('similar');
+		$detalle->use_function('similar','ofertas');
 		$select=array('a.*','a.codigo AS barras','COALESCE(b.descrip, d.descrip) AS sinvdesc','a.costo AS pond','COALESCE( b.codigo , c.abarras) AS sinv','c.id AS farmaid');
 		$detalle->db->select($select);
 		$detalle->db->from('itscst AS a');
@@ -219,6 +247,7 @@ class Scst extends Controller {
 		$detalle->column('Costo'              ,'<nformat><#ultimo#></nformat>'  ,'align=\'right\'');
 		$detalle->column('Importe'            ,'<nformat><#importe#></nformat>' ,'align=\'right\'');
 		$detalle->column('C&oacute;digo local','<exissinv><#sinv#>|<#dg_row_id#></exissinv>',"bgcolor='#D7F7D7' align='center'");
+		$detalle->column('Oferta'             ,'<ofertas><#sinv#></ofertas>' ,'align=\'right\'');
 		$detalle->build();
 		//echo $detalle->db->last_query();
 

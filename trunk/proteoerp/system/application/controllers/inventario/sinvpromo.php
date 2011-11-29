@@ -226,7 +226,7 @@ class sinvpromo extends validaciones {
 		$script='
 		<script language="javascript" type="text/javascript">
 		$(function(){
-				$(".inputnum").numeric(".");
+			$(".inputnum").numeric(".");
 		});
 		</script>';
 
@@ -258,6 +258,61 @@ class sinvpromo extends validaciones {
 		$edit->fechah->insertValue = date('Y-m-d');*/
 
 		$edit->buttons('modify', 'save','undo','delete' ,'back');
+		$edit->build();
+
+		$data['content'] = $edit->output;
+		$data['head']    = script('jquery.js').script('jquery-ui.js').script("plugins/jquery.numeric.pack.js").script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css').$this->rapyd->get_head().$script;
+		$data['title']   = '<h1>C&oacute;digo Barras de Inventario</h1>';
+		$this->load->view('view_ventanas', $data);
+	}
+
+	function cierraventana(){
+		$script='
+		<script language="javascript" type="text/javascript">
+		$(function(){
+			$(window).unload(function() { window.opener.location.reload(); });
+			window.close();
+		});
+		</script>';
+
+		$data['content'] = '<center>Operaci&oacute;n Exitosa</center>';
+		$data['head']    = script('jquery.js').$script;
+		$data['title']   = '';
+		$this->load->view('view_ventanas', $data);
+	}
+
+
+	function dataeditexpress($codigo){
+		$this->rapyd->load('dataedit');
+
+		$script='
+		<script language="javascript" type="text/javascript">
+		$(function(){
+			$(".inputnum").numeric(".");
+		});
+		</script>';
+
+		$edit = new DataEdit('Art&iacute;culo en Promoci&oacute;n', 'sinvpromo');
+		$edit->back_save   = true;
+		$edit->back_cancel = true;
+		$edit->back_cancel_save   = true;
+		$edit->back_cancel_delete = true;
+		$edit->back_url = site_url('inventario/sinvpromo/cierraventana');
+
+		$descrip=$this->datasis->dameval('SELECT descrip FROM sinv WHERE codigo='.$this->db->escape($codigo));
+		$edit->free = new freeField('Descripci&oacute;n','libre',$descrip);
+
+		$edit->codigo = new hiddenField('', 'codigo');
+		$edit->codigo->rule       = 'required|existesinv|unique';
+		$edit->codigo->insertValue= $codigo;
+
+		$edit->margen = new inputField('Porcentaje de descuento', 'margen');
+		$edit->margen->size      = 15;
+		$edit->margen->maxlength = 15;
+		$edit->margen->css_class = 'inputnum';
+		$edit->margen->rule      = 'required|callback_chporcent';
+
+		$edit->buttons('modify', 'save','undo','delete');
 		$edit->build();
 
 		$data['content'] = $edit->output;
