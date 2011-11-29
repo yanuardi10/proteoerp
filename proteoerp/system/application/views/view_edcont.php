@@ -10,6 +10,7 @@ else:
 $campos=$form->template_details('itedcont');
 $scampos  ='<tr id="tr_itedcont_<#i#>">';
 $scampos .='<td class="littletablerow" align="center"><b id=\'giro_num_<#i#>\'></b></td>';
+$scampos .='<td class="littletablerow" align="left" >'.$campos['it_especial']['field'].'</td>';
 $scampos .='<td class="littletablerow" align="left" >'.$campos['it_vencimiento']['field'].'</td>';
 $scampos .='<td class="littletablerow" align="right" >'.$campos['it_monto']['field'].'</td>';
 $scampos .='<td class="littletablerow"><a href=# onclick="del_itedcont(<#i#>);return false;">'.img("images/delete.jpg").'</a></td></tr>';
@@ -26,10 +27,10 @@ var itedcont_cont=<?php echo $form->max_rel_count['itedcont'];?>;
 $(function(){
 	$("#edificacion").change(function(){ edif_change(''); });
 	$("#inmueble").change(function(){ inmu_change(this.value); });
-	$("#mt2,#precioxmt2").keypress(function(){ totalizar(); cmontos(); });
+	$("#mt2,#precioxmt2").keyup(function(){ totalizar(); cmontos(); });
 	$('#inicial').keyup(function(){ pagofinal(); });
 	$('#financiable').keyup(function(){ pagofinal(); distrib(); });
-	$('input[id^="it_monto"]').keyup(function(){ totagiro(); });
+	$('input[id^="it_monto"]').keyup(function(){ distrib(); });
 
 	$(".inputnum").numeric(".");
 	totalizar();
@@ -112,6 +113,8 @@ $(function(){
 			//$('#inmueble').val(ui.item.inmue);
 		}
 	});
+	distrib();
+	fechgiro();
 });
 
 function enumeragiro(){
@@ -128,7 +131,7 @@ function pagofinal(){
 	inici=Number($('#inicial').val());
 	finan=Number($('#financiable').val());
 
-	firma=monto-inici-finan
+	firma=monto-inici-finan;
 	$('#firma').val(roundNumber(firma,2));
 	$('#firma_val').text(nformat(firma,2));
 }
@@ -176,8 +179,10 @@ function faltante(){
 function totalizar(){
 	mts    = Number($('#mt2').val());
 	precio = Number($('#precioxmt2').val());
-	$('#monto').val(roundNumber(mts*precio,2));
-	$('#monto_val').text(nformat(mts*precio,2));
+	monto  = roundNumber(mts*precio,2);
+	//alert(monto);
+	$('#monto').val(monto);
+	$('#monto_val').text(nformat(monto,2));
 }
 
 //Calcula los montos iniciales,financiables y finales
@@ -196,26 +201,62 @@ function cmontos(){
 
 //Distribuye el monto financiable entre los giros
 function distrib(){
-	var arr=$('input[id^="it_vencimiento_"]');
+	var arr  =$('input[id^="it_vencimiento_"]');
 	var finan=Number($('#financiable').val());
 	var giros=$('input[id^="it_monto"]');
-	cgiro=giros.length;
-	giros.val(roundNumber(finan/cgiro,2));
+	var desgiro=0;
+	var cgiro=0
 
-	inicio=arr.first().val();
+	jQuery.each(giros, function(){
+		nom=this.name;
+		pos=this.name.lastIndexOf('_');
+		if(pos>0){
+			ind     = this.name.substring(pos+1);
+			especial= $('#it_especial_'+ind).val();
 
+			if(especial=='S'){
+				desgiro += Number($(this).val());
+			}else{
+				cgiro += 1;
+			}
+		}
+	});
+	var mmonto=roundNumber((finan-desgiro)/cgiro,2);
+	//giros.val(roundNumber((finan-desgiro)/cgiro,2));
+
+	jQuery.each(giros, function(){
+		nom=this.name;
+		pos=this.name.lastIndexOf('_');
+		if(pos>0){
+			ind     = this.name.substring(pos+1);
+			especial= $('#it_especial_'+ind).val();
+			if(especial=='N'){
+				$(this).val(mmonto);
+			}
+		}
+	});
+}
+
+//Para el calculo de las fechas de los giros
+function fechgiro(){
+	//inicio=arr.first().val();
+	var arr  =$('input[id^="it_vencimiento_"]');
+	inicio=$('#fecha').val(); //toma como fecha inicial la fecha del contrato
 	year =Number(inicio.slice(-4));
 	month=Number(inicio.slice(3,5))-1;
 	day  =Number(inicio.slice(0,2));
-
-	var i=0;
+	var i=1;
+	f = new Date();
 	jQuery.each(arr, function(){
-		f = new Date(year, month+i, day);
-		//d=f.getDay();
-		//m=f.getMonth();
-		//a=f.getFullYear();
-		//$(this).val(d.toString()+'/'+m.toString()+'/'+a.toString());
-		$(this).val(f.toLocaleDateString());
+		g=month+"/"+day+"/"+year;
+
+		f.setFullYear(year,month+i,day);
+		d=f.getDate();
+		m=f.getMonth()+1;
+		a=f.getFullYear();
+		ffetch=pad(d.toString(),2,'0',1)+'/'+pad(m.toString(),2,'0',1)+'/'+a.toString();
+
+		$(this).val(ffetch);
 		i+=1;
 	});
 }
@@ -242,8 +283,9 @@ function add_itedcont(){
 	$("#__UTPL__").before(htm);
 	itedcont_cont += 1;
 	distrib();
+	fechgiro();
 	enumeragiro();
-	$('#it_monto_'+can).keyup(function(){ totagiro(); });
+	$('#it_monto_'+can).keyup(function(){ distrib(); });
 	$('#it_monto_'+can).numeric(".");
 	return can;
 }
@@ -324,6 +366,7 @@ function del_itedcont(id){
 		<table width='100%' border='0'>
 			<tr id='__INPL__'>
 				<td class="littletableheaderdet"><b>Giros</b></td>
+				<td class="littletableheaderdet"><b>Cuota especial</b></td>
 				<td class="littletableheaderdet"><b>Vencimiento</b></td>
 				<td class="littletableheaderdet"><b>Monto</b></td>
 				<?php if($form->_status!='show') {?>
@@ -333,11 +376,13 @@ function del_itedcont(id){
 
 			<?php for($i=0;$i<$form->max_rel_count['itedcont'];$i++) {
 				$it_vencimiento  = "it_vencimiento_$i";
+				$it_especial     = "it_especial_$i";
 				$it_monton       = "it_monto_$i";
 			?>
 
 			<tr id='tr_itedcont_<?php echo $i; ?>'>
 				<td class="littletablerow" align="center"><b id='giro_num_<?php echo $i; ?>'><?php echo $i+1; ?></b></td>
+				<td class="littletablerow" align="left"  ><?php echo $form->$it_especial->output; ?></td>
 				<td class="littletablerow" align="left"  ><?php echo $form->$it_vencimiento->output; ?></td>
 				<td class="littletablerow" align="right" ><?php echo $form->$it_monton->output;   ?></td>
 
