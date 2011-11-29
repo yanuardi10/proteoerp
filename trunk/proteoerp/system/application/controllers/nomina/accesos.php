@@ -1,4 +1,5 @@
 <?php require_once(BASEPATH.'application/controllers/validaciones.php');
+// pear install Image_Barcode
 class Accesos extends validaciones{
 	var $_direccion;
 

@@ -543,7 +543,45 @@ class notifica extends controller {
 		return null;
 	}
 
+	function _get_cacatua($nombre=null){
+		if(empty($nombre)) return false;
+
+		$this->db->select(array('indices'));
+		$this->db->from('cacatua');
+		$this->db->where('nombre',$nombre);
+
+		$query = $this->db->get();
+		if ($query->num_rows() > 0){
+			$row = $query->row();
+			$rt=unserialize($row->indices);
+			return $rt;
+		}
+		return false;
+	}
+
+	function _set_cacatua($nombre,$indices){
+		if(empty($nombre) || empty($indices)) return false;
+		$dbind=$this->db->escape(serialize($indices));
+		$dbnom=$this->db->escape($nombre);
+
+		$mSQL="REPLACE INTO cacatua (nombre,indices) VALUES ($dbnom , $dbind)";
+		$rt=$this->db->simple_query($mSQL);
+		return !$rt;
+	}
+
 	function instalar(){
+		if (!$this->db->table_exists('cacatua')) {
+			$mSQL="CREATE TABLE `cacatua` (
+			`nombre` VARCHAR(50) NULL,
+			`indices` VARCHAR(100) NULL,
+			`fecha` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+			PRIMARY KEY (`nombre`)
+			)
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM;";
+			$this->db->simple_query($mSQL);
+		}
+
 		if (!$this->db->table_exists('eventos')) {
 			$mSQL="CREATE TABLE `eventos` (
 			`id` int(10) unsigned NOT NULL AUTO_INCREMENT,

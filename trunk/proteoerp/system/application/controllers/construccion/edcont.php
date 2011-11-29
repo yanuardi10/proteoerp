@@ -20,10 +20,9 @@ class edcont extends Controller {
 
 		$filter = new DataFilter($this->titp, 'edcont');
 
-		$filter->id_edres = new inputField('Reservaci&oacute;n','id_edres');
-		$filter->id_edres->rule      ='max_length[11]';
-		$filter->id_edres->size      =13;
-		$filter->id_edres->maxlength =11;
+		$filter->numero_edres = new inputField('Reservaci&oacute;n','numero_edres');
+		$filter->numero_edres->size      =13;
+		$filter->numero_edres->maxlength =11;
 
 		$filter->numero = new inputField('N&uacute;mero','numero');
 		$filter->numero->rule      ='max_length[8]';
@@ -65,14 +64,13 @@ class edcont extends Controller {
 		$grid->per_page = 40;
 
 		$grid->column_orderby('Id',$uri,'id','align="left"');
-		$grid->column_orderby('Id_edres','id_edres','id_edres','align="right"');
-		$grid->column_orderby('Numero','numero','numero','align="left"');
+		$grid->column_orderby('Reservaci&oacute;n','numero_edres','numero_edres','align="right"');
+		$grid->column_orderby('N&uacute;mero','numero','numero','align="left"');
 		$grid->column_orderby('Fecha','<dbdate_to_human><#fecha#></dbdate_to_human>','fecha','align="center"');
 		$grid->column_orderby('Cliente','cliente','cliente','align="left"');
 		$grid->column_orderby('Inicial','<nformat><#inicial#></nformat>','inicial','align="right"');
 		$grid->column_orderby('Financiable','<nformat><#financiable#></nformat>','financiable','align="right"');
 		$grid->column_orderby('Monto','<nformat><#monto#></nformat>','monto','align="right"');
-		$grid->column_orderby('Notas','notas','notas','align="left"');
 
 		$grid->add($this->url.'dataedit/create');
 		$grid->build();
@@ -115,7 +113,7 @@ class edcont extends Controller {
 		$edit->numero->maxlength =8;
 
 		$edit->numero_edres = new inputField('Reservaci&oacute;n','numero_edres');
-		$edit->numero_edres->rule='max_length[8]|required';
+		$edit->numero_edres->rule='max_length[8]';
 		$edit->numero_edres->size =10;
 		$edit->numero_edres->maxlength =8;
 
@@ -192,24 +190,28 @@ class edcont extends Controller {
 		$edit->precioxmt2->css_class='inputnum';
 		$edit->precioxmt2->size =10;
 		$edit->precioxmt2->maxlength =17;
+		$edit->precioxmt2->showformat ='decimal';
 
 		$edit->mt2 = new inputField('&Aacute;rea Mt2','mt2');
 		$edit->mt2->rule='max_length[17]|numeric|mayorcero';
 		$edit->mt2->css_class='inputnum';
 		$edit->mt2->size =10;
 		$edit->mt2->maxlength =17;
+		$edit->mt2->showformat ='decimal';
 
 		$edit->inicial = new inputField('Inicial','inicial');
 		$edit->inicial->rule='max_length[17]|numeric|mayorcero';
 		$edit->inicial->css_class='inputnum';
 		$edit->inicial->size =19;
 		$edit->inicial->maxlength =17;
+		$edit->inicial->showformat ='decimal';
 
 		$edit->financiable = new inputField('Monto financiable','financiable');
 		$edit->financiable->rule='max_length[17]|numeric|mayorcero';
 		$edit->financiable->css_class='inputnum';
 		$edit->financiable->size =19;
 		$edit->financiable->maxlength =17;
+		$edit->financiable->showformat ='decimal';
 
 		$edit->firma = new inputField('Pago final (firma)','firma');
 		$edit->firma->rule='max_length[17]|numeric|mayorcero';
@@ -217,6 +219,7 @@ class edcont extends Controller {
 		$edit->firma->size =19;
 		$edit->firma->type ='inputhidden';
 		$edit->firma->maxlength =17;
+		$edit->firma->showformat ='decimal';
 
 		$edit->monto = new inputField('Monto total','monto');
 		$edit->monto->rule='max_length[17]|numeric|mayorcero';
@@ -224,6 +227,7 @@ class edcont extends Controller {
 		$edit->monto->size =19;
 		$edit->monto->type ='inputhidden';
 		$edit->monto->maxlength =17;
+		$edit->monto->showformat ='decimal';
 
 		$edit->notas = new textareaField('Notas','notas');
 		$edit->notas->rule='max_length[8]';
@@ -241,14 +245,24 @@ class edcont extends Controller {
 		$edit->it_vencimiento->rel_id  ='itedcont';
 		$edit->it_vencimiento->maxlength =8;
 
+		$edit->it_especial = new dropdownField('Especial <#o#>','it_especial_<#i#>');
+		$edit->it_especial->rule    = 'max_length[1]';
+		$edit->it_especial->db_name = 'especial';
+		$edit->it_especial->rel_id  = 'itedcont';
+		$edit->it_especial->style='width:80px;';
+		$edit->it_especial->option('N','No');
+		$edit->it_especial->option('S','Si');
+
 		$edit->it_monto = new inputField('Monto <#o#>','it_monto_<#i#>');
-		$edit->it_monto->rule='max_length[10]|numeric';
+		$edit->it_monto->rule='max_length[10]|numeric|enum[S,N]';
 		$edit->it_monto->db_name   ='monto';
 		$edit->it_monto->rel_id    ='itedcont';
-		$edit->it_monto->on_keyup  = 'totagiro()';
+		//$edit->it_monto->on_keyup  = 'totagiro()';
+		//$edit->it_monto->on_keyup  ='distrib()';
 		$edit->it_monto->css_class ='inputnum';
 		$edit->it_monto->size      =12;
 		$edit->it_monto->maxlength =10;
+		$edit->it_monto->showformat ='decimal';
 		//******************************
 		// Fin del detalle
 		//******************************
@@ -315,24 +329,38 @@ class edcont extends Controller {
 	function instalar(){
 		if (!$this->db->table_exists('edcont')) {
 			$mSQL="CREATE TABLE `edcont` (
-			  `id` int(11) NOT NULL AUTO_INCREMENT,
-			  `id_edres` int(11) DEFAULT '0',
-			  `numero` char(8) DEFAULT NULL,
-			  `fecha` date DEFAULT NULL,
-			  `cliente` char(5) DEFAULT NULL,
-			  `edificacion` int(11) DEFAULT '0',
-			  `inmueble` int(11) DEFAULT '0',
-			  `inicial` decimal(17,2) DEFAULT '0.00',
-			  `financiable` decimal(17,2) DEFAULT '0.00',
-			  `firma` decimal(17,2) DEFAULT '0.00',
-			  `precioxmt2` decimal(17,2) DEFAULT '0.00',
-			  `mt2` decimal(17,2) DEFAULT '0.00',
-			  `monto` decimal(17,2) DEFAULT '0.00',
-			  `notas` text,
-			  PRIMARY KEY (`id`)
-			) ENGINE=MyISAM AUTO_INCREMENT=6 DEFAULT CHARSET=latin1 COMMENT='Reserva de Inmuebles'";
+				`id` int(11) NOT NULL AUTO_INCREMENT,
+				`id_edres` int(11) DEFAULT '0',
+				`numero_edres` char(8) DEFAULT NULL,
+				`numero` char(8) DEFAULT NULL,
+				`fecha` date DEFAULT NULL,
+				`cliente` char(5) DEFAULT NULL,
+				`edificacion` int(11) DEFAULT '0',
+				`inmueble` int(11) DEFAULT '0',
+				`inicial` decimal(17,2) DEFAULT '0.00',
+				`financiable` decimal(17,2) DEFAULT '0.00',
+				`firma` decimal(17,2) DEFAULT '0.00',
+				`precioxmt2` decimal(17,2) DEFAULT '0.00',
+				`mt2` decimal(17,2) DEFAULT '0.00',
+				`monto` decimal(17,2) DEFAULT '0.00',
+				`notas` text,
+				PRIMARY KEY (`id`)
+			) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=latin1 COMMENT='Reserva de Inmuebles'";
 			$this->db->simple_query($mSQL);
 		}
+
+		if (!$this->db->table_exists('itedcont')) {
+			$mSQL="CREATE TABLE `itedcont` (
+			  `id` int(11) NOT NULL AUTO_INCREMENT,
+			  `id_edcont` int(11) NOT NULL,
+			  `vencimiento` date NOT NULL,
+			  `monto` decimal(10,2) NOT NULL,
+			  PRIMARY KEY (`id`),
+			 KEY `id_edcont` (`id_edcont`)
+			) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=latin1";
+			$this->db->simple_query($mSQL);
+		}
+		
 	}
 
 }

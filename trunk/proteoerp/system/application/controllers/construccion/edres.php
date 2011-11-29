@@ -321,13 +321,16 @@ class edres extends Controller {
 	}
 
 	function _pre_insert($do){
-		$numero = $this->datasis->fprox_numero('nancli');
-		$inmueble=$do->get('inmueble');
-		$dbinmueble=$this->db->escape($inmueble);
+		$transac   = $this->datasis->fprox_numero('ntransa');
+		$numero    = $this->datasis->fprox_numero('nedres');
+		$inmueble  = $do->get('inmueble');
+		$dbinmueble= $this->db->escape($inmueble);
+
 		$mSQL="UPDATE edinmue SET status='R' WHERE id=${dbinmueble}";
 		$ban=$this->db->simple_query($mSQL);
 		if($ban==false){ memowrite($mSQL,'edres'); }
 		$do->set('numero',$numero);
+		$do->set('transac',$transac);
 
 		return true;
 	}
@@ -341,10 +344,12 @@ class edres extends Controller {
 	}
 
 	function _post_insert($do){
-		$mnumant = $do->get('numero');
+		$mnumant = $this->datasis->fprox_numero('nancli');
+		$numero  = $do->get('numero');
 		$cod_cli = $do->get('cliente');
 		$fecha   = $do->get('fecha');
 		$monto   = $do->get('reserva');
+		$transac = $do->get('transac');
 		$usuario = $this->secu->usuario();
 		$estampa = date('Y-m-d');
 		$hora    = date('H:i:s');
@@ -353,7 +358,7 @@ class edres extends Controller {
 		$dbcod_cli=$this->db->escape($cod_cli);
 		$nombre =$this->datasis->dameval("SELECT nombre FROM scli WHERE cliente=$dbcod_cli");
 
-		/*$data=array();
+		$data=array();
 		$data['cod_cli']    = $cod_cli;
 		$data['nombre']     = $nombre;
 		$data['tipo_doc']   = 'AN';
@@ -363,8 +368,8 @@ class edres extends Controller {
 		$data['impuesto']   = 0;
 		$data['vence']      = $fecha;
 		$data['tipo_ref']   = 'RS';
-		$data['num_ref']    = $mnumant;
-		$data['observa1']   = 'RESERVACION DE INMUEBLE ';
+		$data['num_ref']    = $numero;
+		$data['observa1']   = 'RESERVACION NRO. '.$numero;
 		$data['usuario']    = $usuario;
 		$data['estampa']    = $estampa;
 		$data['hora']       = $hora;
@@ -373,7 +378,7 @@ class edres extends Controller {
 
 		$mSQL = $this->db->insert_string('smov', $data);
 		$ban=$this->db->simple_query($mSQL);
-		if($ban==false){ memowrite($mSQL,'edres'); }*/
+		if($ban==false){ memowrite($mSQL,'edres'); }
 		
 		$primary =implode(',',$do->pk);
 		logusu($do->table,"Creo $this->tits $primary ");
