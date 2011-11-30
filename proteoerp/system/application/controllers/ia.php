@@ -2,7 +2,7 @@
 class ia extends Controller {
 	var $titp='Centro de IA';
 	var $tits='Modelos de Neuronas';
-	var $url ='IA/';
+	var $url ='ia/';
 
 	function ia(){
 		parent::Controller();
@@ -21,20 +21,10 @@ class ia extends Controller {
 
 		$filter = new DataFilter($this->titp, 'IA');
 
-		$filter->id = new inputField('id','id');
-		$filter->id->rule      ='max_length[10]';
-		$filter->id->size      =12;
-		$filter->id->maxlength =10;
-
 		$filter->nombre = new inputField('nombre','nombre');
 		$filter->nombre->rule      ='max_length[100]';
 		$filter->nombre->size      =102;
 		$filter->nombre->maxlength =100;
-
-		$filter->w = new inputField('w','w');
-		$filter->w->rule      ='max_length[8]';
-		$filter->w->size      =10;
-		$filter->w->maxlength =8;
 
 		$filter->buttons('reset', 'search');
 		$filter->build();
@@ -45,9 +35,10 @@ class ia extends Controller {
 		$grid->order_by('id');
 		$grid->per_page = 40;
 
-		$grid->column_orderby('id',$uri,'id','align="left"');
-		$grid->column_orderby('nombre','nombre','nombre','align="left"');
-		$grid->column_orderby('w','w','w','align="left"');
+		$grid->column_orderby('Id',$uri,'id','align="left"');
+		$grid->column_orderby('Nombre','nombre','nombre','align="left"');
+		$grid->column_orderby('Pos','pos','pos','align="left"');
+		$grid->column_orderby('Peso','w','w','align="left"');
 
 		$grid->add($this->url.'dataedit/create');
 		$grid->build();
