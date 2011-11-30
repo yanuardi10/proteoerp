@@ -98,8 +98,8 @@ class Scst extends Controller {
 		function exissinv($cen,$id=0){
 			if(empty($cen)){
 				$id--;
-				$rt =form_button('create' ,'Crear','onclick="pcrear('.$id.');"');
-				$rt.=form_button('asignar','Asig.','onclick="pasig('.$id.');"');
+				$rt =form_button('create' ,'Crear','onclick="pcrear('.$id.');" title="Crear como nuevo producto"');
+				$rt.=form_button('asignar','Asig.','onclick="pasig('.$id.');" title="Asociar con un producto ya existente"');
 			}else{
 				$attr = array(
 					'width'      => '800',
@@ -107,6 +107,7 @@ class Scst extends Controller {
 					'scrollbars' => 'yes',
 					'status'     => 'yes',
 					'resizable'  => 'yes',
+					'title'      => 'Consultar precio actual',
 					'screenx'    => "'+((screen.availWidth/2)-400)+'",
 					'screeny'    => "'+((screen.availHeight/2)-300)+'"
 				);
@@ -173,6 +174,7 @@ class Scst extends Controller {
 			'scrollbars'=> 'no',
 			'status'    => 'no',
 			'resizable' => 'no',
+			'title'     => 'Cambiar PVP',
 			'screenx'   => "'+((screen.availWidth/2)-175)+'",
 			'screeny'   => "'+((screen.availHeight/2)-175)+'"
 		);
@@ -190,16 +192,17 @@ class Scst extends Controller {
 				'scrollbars'=> 'no',
 				'status'    => 'no',
 				'resizable' => 'no',
+				'title'     => 'Cambiar Asociaci&oacute;n',
 				'screenx'   => "'+((screen.availWidth/2)-275)+'",
 				'screeny'   => "'+((screen.availHeight/2)-150)+'"
 			);
 
-			$llink=anchor_popup('farmacia/scst/asignardataedit/modify/'.$id, nformat($por).'%' , $atts);
+			$llink=anchor_popup('farmacia/scst/asignardataedit/scst/modify/'.$id, nformat($por).'%' , $atts);
 			return $llink;
 		}
 
 		//Indica si el producto tiene una oferta
-		function ofertas($sinv){
+		function ofertas($sinv,$margen,$pvp){
 			if(empty($sinv)) return '';
 			$CI =& get_instance();
 			$mSQL='SELECT id,margen FROM sinvpromo WHERE codigo='.$CI->db->escape($sinv);
@@ -216,14 +219,17 @@ class Scst extends Controller {
 			);
 
 			if ($query->num_rows() > 0){
+				$m   = $row->margen/100;
 				$row = $query->row();
-				$val=nformat($row->margen).'%';
-
-				return anchor_popup('inventario/sinvpromo/dataeditexpress/'.raencode($sinv).'/show/'.$row->id,$val, $atts);
+				$val = nformat($row->margen).'%';
+				$link= anchor_popup('inventario/sinvpromo/dataeditexpress/'.raencode($sinv).'/show/'.$row->id,$val, $atts); 
 			}else{
-				$val='+';
-				return anchor_popup('inventario/sinvpromo/dataeditexpress/'.raencode($sinv).'/create/',$val, $atts);
+				$m   = $margen/100;
+				$val = nformat($margen).'%';
+				$link= anchor_popup('inventario/sinvpromo/dataeditexpress/'.raencode($sinv).'/create/',$val, $atts);
 			}
+
+			return nformat($pvp*(1-$m)).' '.$link;
 		}
 
 		//Campos para el detalle
@@ -232,13 +238,15 @@ class Scst extends Controller {
 		$tabla=$this->db->database;
 		$detalle = new DataGrid('');
 		$detalle->use_function('similar','ofertas');
-		$select=array('a.*','a.codigo AS barras','COALESCE(b.descrip, d.descrip) AS sinvdesc','a.costo AS pond','COALESCE( b.codigo , c.abarras) AS sinv','c.id AS farmaid');
+		$select=array('a.*','a.codigo AS barras','COALESCE(b.descrip, d.descrip) AS sinvdesc','a.costo AS pond','COALESCE( b.codigo , c.abarras) AS sinv','c.id AS farmaid','e.margen');
 		$detalle->db->select($select);
 		$detalle->db->from('itscst AS a');
 		$detalle->db->where('a.control',$numero);
 		$detalle->db->join($tabla.'.sinv AS b','a.codigo=b.codigo','LEFT');
 		$detalle->db->join($tabla.'.farmaxasig AS c',"a.codigo=c.barras AND c.proveed=$proveed",'LEFT');
 		$detalle->db->join($tabla.'.sinv AS d','d.codigo=c.abarras','LEFT');
+		$detalle->db->join($tabla.'.grup AS e','e.grupo=COALESCE(b.grupo,d.grupo)','LEFT');
+		$detalle->db->order_by('a.id');
 		$detalle->use_function('exissinv');
 		$detalle->column('Barras'             ,'<#codigo#>' );
 		$detalle->column('Semejanza% -Descripci&oacute;n' ,'<similar><#descrip#>|<#sinvdesc#>|<#farmaid#></similar> - <#descrip#>');
@@ -247,7 +255,7 @@ class Scst extends Controller {
 		$detalle->column('Costo'              ,'<nformat><#ultimo#></nformat>'  ,'align=\'right\'');
 		$detalle->column('Importe'            ,'<nformat><#importe#></nformat>' ,'align=\'right\'');
 		$detalle->column('C&oacute;digo local','<exissinv><#sinv#>|<#dg_row_id#></exissinv>',"bgcolor='#D7F7D7' align='center'");
-		$detalle->column('Oferta'             ,'<ofertas><#sinv#></ofertas>' ,'align=\'right\'');
+		$detalle->column('Desc.'              ,'<ofertas><#sinv#>|<#margen#>|<#precio1#></ofertas>' ,'align=\'right\'');
 		$detalle->build();
 		//echo $detalle->db->last_query();
 
@@ -260,7 +268,7 @@ class Scst extends Controller {
 
 		function pasig(id){
 			var pasar=["barras","proveed","descrip"];
-			var url  = "'.site_url('farmacia/scst/asignardataedit/create').'";
+			var url  = "'.site_url('farmacia/scst/asignardataedit/scst/create').'";
 			form_virtual(pasar,id,url);
 		}
 
@@ -332,7 +340,14 @@ class Scst extends Controller {
 		$this->rapyd->set_connection('farmax');
 		$this->rapyd->load('dataedit');
 		$edit = new DataEdit('Cambios de precios','itscst');
+		$edit->back_save   = true;
+		$edit->back_cancel = true;
+		$edit->back_cancel_save   = true;
+		$edit->back_cancel_delete = true;
+		$edit->back_url = site_url('ajax/reccierraventana');
+
 		$edit->pre_process( 'update','_pre_update');
+
 		$edit->descrip  = new inputField('Descripci&oacute;n', 'descrip');
 		$edit->descrip->mode = 'autohide';
 
@@ -346,7 +361,7 @@ class Scst extends Controller {
 
 		$edit->buttons('modify','save');
 		$edit->build();
-		$this->rapyd->jquery[]='$(window).unload(function() { window.opener.location.reload(); });';
+		//$this->rapyd->jquery[]='$(window).unload(function() { window.opener.location.reload(); });';
 		$data['content'] =$edit->output;
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   ='';
@@ -507,7 +522,7 @@ class Scst extends Controller {
 		}
 	}
 
-	function asignardataedit(){
+	function asignardataedit($origen){
 		$this->rapyd->uri->keep_persistence();
 		$this->rapyd->load('dataedit','datagrid');
 
@@ -528,7 +543,15 @@ class Scst extends Controller {
 
 		$js='function pasacod(val,desc) { $("#abarras").val(val); $("#sinvdescrip").val(desc); }';
 		$edit = new DataEdit('Reasignaciones de c&oacute;digo',$do);
-		$edit->back_url = 'farmacia/scst/asignarfiltro';
+		if($origen='scst'){
+			$edit->back_save   = true;
+			$edit->back_cancel = true;
+			$edit->back_cancel_save   = true;
+			$edit->back_cancel_delete = true;
+			$edit->back_url = site_url('ajax/reccierraventana');
+		}else{
+			$edit->back_url = 'farmacia/scst/asignarfiltro';
+		}
 
 		$edit->proveedor = new inputField('Proveedor','proveed');
 		$edit->proveedor->rule = 'trim|callback_sprvexits|required';
@@ -563,7 +586,7 @@ class Scst extends Controller {
 		$describus=$this->input->post('descrip');
 		if($describus!==false){
 			//print_r($patrones);
-			$grid = new DataGrid('Productos similares a <b>'.$describus.'</b>');
+			$grid = new DataGrid('Sugerencia de productos similares a <b>'.$describus.'</b>');
 			$grid->per_page = 10;
 			$grid->db->select(array('codigo','descrip','precio1'));
 			$grid->db->from('sinv');
@@ -586,7 +609,7 @@ class Scst extends Controller {
 
 			$grid->column('C&oacute;digo'     ,$url);
 			$grid->column('Descripci&oacute;n','descrip');
-			$grid->column('Precio 1'          ,'<nformat>precio1</nformat>' ,"align='right'");
+			$grid->column('PVP'          ,'<nformat><#precio1#></nformat>' ,"align='right'");
 
 			$grid->build();
 			//echo $grid->db->last_query();
