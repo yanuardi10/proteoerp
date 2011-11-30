@@ -2,13 +2,13 @@
 class sinv extends Controller {
 
 	function sinv(){
-		parent::Controller(); 
-		$this->load->library("rapyd");
+		parent::Controller();
+		$this->load->library('rapyd');
 	}
 
 	function index(){
 		//$this->datasis->modulo_id(309,1);
-		redirect("farmacia/sinv/filteredgrid");
+		redirect('farmacia/sinv/filteredgrid');
 	}
 
 	function filteredgrid(){
@@ -337,7 +337,7 @@ class sinv extends Controller {
 			}else{
 				linea=prompt("Introduza el nombre de la LINEA a agregar al DEPARTAMENTO seleccionado");
 				if(linea==null){
-				}else{			
+				}else{
 					$.ajax({
 					 type: "POST",
 					 processData:false,
@@ -391,28 +391,27 @@ class sinv extends Controller {
 			}
 		}';
 
-		$do = new DataObject("sinv");
-		if($status=="create" && !empty($id)){
+		$do = new DataObject('sinv');
+		if($status=='create' && !empty($id)){
 			$do->load($id);
 			$do->set('codigo', '');
 		}
 
-		//print_r($_POST);
+		$edit = new DataEdit2('Maestro de Inventario', $do);
+		$edit->back_save   = true;
+		$edit->back_cancel = true;
+		$edit->back_cancel_save   = true;
+		$edit->back_cancel_delete = true;
+		$edit->back_url = site_url('ajax/reccierraventana');
 
-		$edit = new DataEdit2("Maestro de Inventario", $do);
-		$edit->script($script,"create");
-		$edit->script($script,"modify");
-		$edit->back_url = site_url("inventario/sinv/filteredgrid");
+		$edit->script($script,'create');
+		$edit->script($script,'modify');
 
-		//$ultimo='<a href="javascript:ultimo();" title="Consultar ultimo c&oacute;digo ingresado"> Consultar ultimo c&oacute;digo</a>';
-		//$sugerir='<a href="javascript:sugerir();" title="Sugerir un C&oacute;digo aleatorio">Sugerir C&oacute;digo </a>';
 		$edit->codigo = new inputField("C&oacute;digo", "codigo");
 		$edit->codigo->size=20;
 		$edit->codigo->maxlength=15;
 		$edit->codigo->rule = "trim|required|strtoupper|callback_chexiste";
 		$edit->codigo->mode="autohide";
-		//$edit->codigo->append($sugerir);
-		//$edit->codigo->append($ultimo);
 
 		$edit->alterno = new inputField("C&oacute;digo Alterno", "alterno");
 		$edit->alterno->size=20;  
@@ -481,12 +480,6 @@ class sinv extends Controller {
 			$edit->grupo->option("","Seleccione un Departamento primero");
 		}
 
-		$edit->comision  = new inputField("Comisi&oacute;n", "comision");
-		$edit->comision ->size=10;
-		$edit->comision->maxlength=5;
-		$edit->comision->css_class='inputnum';
-		$edit->comision->rule='numeric|callback_positivo|trim';
-
 		$edit->fracci  = new inputField("Unidad por Caja", "fracci");
 		$edit->fracci ->size=10;
 		$edit->fracci->maxlength=4;
@@ -525,18 +518,6 @@ class sinv extends Controller {
 		$edit->descrip2->size=50;
 		$edit->descrip2->maxlength=45;
 		$edit->descrip2->rule = "trim|strtoupper";
-
-		/*$edit->peso = new inputField("Peso Kg.", "peso");
-		$edit->peso->size=10;
-		$edit->peso->maxlength=12;
-		$edit->peso->css_class='inputnum';
-		$edit->peso->rule='numeric|callback_positivo|trim';*/
-
-		$edit->garantia = new inputField("Dias de Garantia", "garantia");
-		$edit->garantia->size=5;
-		$edit->garantia->maxlength=3;
-		$edit->garantia->css_class='inputonlynum';
-		$edit->garantia->rule='numeric|callback_positivo|trim';
 
 		$AddMarca='<a href="javascript:add_marca();" title="Haz clic para Agregar una marca nueva">Agregar Marca</a>';
 		$edit->marca = new dropdownField('Marca', 'marca');

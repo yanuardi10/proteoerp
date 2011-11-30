@@ -349,6 +349,21 @@ class Ajax extends Controller {
 			}
 		}
 		echo $data;
-		
+	}
+
+	//Para cerrar la ventana luego de una operacion exitosa
+	function reccierraventana(){
+		$script='
+		<script language="javascript" type="text/javascript">
+		$(function(){
+			$(window).unload(function() { window.opener.location.reload(); });
+			window.close();
+		});
+		</script>';
+
+		$data['content'] = '<center>Operaci&oacute;n Exitosa</center>';
+		$data['head']    = script('jquery.js').$script;
+		$data['title']   = '';
+		$this->load->view('view_ventanas', $data);
 	}
 }
