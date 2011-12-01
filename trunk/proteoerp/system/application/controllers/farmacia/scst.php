@@ -692,9 +692,13 @@ class Scst extends Controller {
 		$form->almacen->options("SELECT ubica,CONCAT_WS('-',ubica,ubides) AS val FROM caub WHERE gasto='N' and invfis='N' ORDER BY ubides");
 		$form->almacen->rule = 'required';
 
+		$proveed=$this->_traesprv($control);
+		$dias=$this->datasis->dameval('SELECT b.dcredito FROM sprv AS b WHERE b.proveed='.$this->db->escape($proveed));
+
 		$form->dias = new inputField('D&iacute;as de cr&eacute;dito', 'dias','d/m/Y');
-		$form->dias->insertValue = 21;
+		$form->dias->insertValue = ($dias>0)? $dias :  21;
 		$form->dias->rule = 'required|integer';
+		$form->dias->css_class= 'inputnum';
 		$form->dias->size = 5;
 
 		$form->submit('btnsubmit','Guardar');
@@ -710,9 +714,26 @@ class Scst extends Controller {
 			$data['content'] = $form->output;
 		}
 
-		$data['head']    = $this->rapyd->get_head();
+		$script= '<script type="text/javascript" >
+		$(function() {
+		    $(".inputnum").numeric(".");
+		});
+		</script>';
+
+		$data['script']  = $script;
+		$data['head']    = $this->rapyd->get_head().script('jquery.js').script('plugins/jquery.numeric.pack.js');
 		$data['title']   = '<h1>Cargar compra '.$control.'</h1>';
 		$this->load->view('view_ventanas', $data);
+	}
+
+	function _traesprv($control){
+		$farmaxDB=$this->load->database('farmax',TRUE);
+		$query = $farmaxDB->query("SELECT proveed FROM scst WHERE control=".$this->db->escape($control));
+		if ($query->num_rows() > 0){
+			$row = $query->row_array();
+			return $row['proveed'];
+		}
+		return '';
 	}
 
 	function _cargar($control,$nfiscal,$almacen,$dias){

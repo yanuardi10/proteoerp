@@ -40,7 +40,8 @@ class Consultas extends Controller {
 				'columnas'=>array(
 					'codigo' =>'C&oacute;digo',
 					'barras' =>'C&oacute;digo barras',
-					'descrip'=>'Descripci&oacute;n'),
+					'descrip'=>'Descripci&oacute;n',
+					'existen'=>'Existencia'),
 				'filtro'  =>array('descrip'=>'Descripci&oacute;n'),
 				'retornar'=>array('codigo' =>'codigo'),
 				'where'   =>'activo = "S"',

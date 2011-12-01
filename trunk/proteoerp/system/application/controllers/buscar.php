@@ -25,21 +25,19 @@ class Buscar extends Controller
 	var $groupby='';
 	//parametro que define el grupo de base de datos a usar
 	var $dbgroup='';
-	
-	
 
 	function Buscar(){
 		parent::Controller();
 		$this->load->library('rapyd');
 	}
-	
+
 	function index(){
-		
+
 		$this->rapyd->load('datafilter2','datagrid');
 		$this->_db2prop();
 		if(!empty($this->dbgroup)){
 			$this->rapyd->set_connection($this->dbgroup);
-			$this->rapyd->load_db();	
+			$this->rapyd->load_db();
 		}
 
 		$join=false;
@@ -166,10 +164,10 @@ class Buscar extends Controller
 			if ($i==0){
 				$grid->order_by($this->tabla.'.'.$campo);
 				$grid->column_orderby($titulo,"<a href=\"$link\"><#$campo#></a>", $this->tabla.'.'.$campo);
-			}elseif ($i==1)
+			}else
 				$grid->column_orderby($titulo,$campo,$this->tabla.'.'.$campo);
-			else
-				$grid->column($titulo,$campo);
+			//else
+			//	$grid->column($titulo,$campo);
 			$i++;
 		} $grid->build();
 		//echo $grid->db->last_query();

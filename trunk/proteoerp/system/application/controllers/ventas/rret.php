@@ -58,8 +58,10 @@ class Rret extends validaciones {
 
 		$form = new DataForm('ventas/rret/crear/process');
 
+		$cajero=$this->secu->getcajero();
 		$form->cajero = new dropdownField('Cajero a realizar retiro', 'cajero');
 		$form->cajero->rule='required';
+		$form->cajero->insertValue=$cajero;
 		$form->cajero->option('','Seleccionar');
 		$form->cajero->options('SELECT cajero,CONCAT_WS("-",cajero,nombre) FROM scaj ORDER BY cajero');
 
