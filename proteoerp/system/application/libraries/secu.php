@@ -2,7 +2,12 @@
 class secu{
 	var $ci;
 	var $db;
-	var $dbindex='default';
+	var $dbindex = 'default';
+	var $cajero  = '';
+	var $vendedor= '';
+	var $almacen = '';
+	var $sucursal= '';
+	var $_datac  = false;
 
 	function secu(){
 		$this->ci =& get_instance();
@@ -18,6 +23,47 @@ class secu{
 
 	function usuario(){
 		return $this->ci->session->userdata('usuario');
+	}
+
+	function _getdata(){
+		if($this->es_logeado() && $this->_datac==false){
+			$sel=array('cajero','vendedor','almacen','sucursal');
+			$this->db->select($sel);
+			$this->db->from('usuario');
+			$this->db->where('us_codigo',$this->usuario());
+			$this->db->limit(1);
+			$query = $this->db->get();
+
+			if ($query->num_rows() > 0){
+				$row = $query->row_array();
+
+				$this->cajero  = $row['cajero']  ;
+				$this->vendedor= $row['vendedor'];
+				$this->almacen = $row['almacen'] ;
+				$this->sucursal= $row['sucursal'];
+			}
+			$this->_datac=true;
+		}
+	}
+
+	function getcajero(){
+		$this->_getdata();
+		return $this->cajero;
+	}
+
+	function getvendedor(){
+		$this->_getdata();
+		return $this->vendedor;
+	}
+
+	function getalmacen(){
+		$this->_getdata();
+		return $this->almacen;
+	}
+
+	function getsucursal(){
+		$this->_getdata();
+		return $this->sucursal;
 	}
 
 	function essuper(){

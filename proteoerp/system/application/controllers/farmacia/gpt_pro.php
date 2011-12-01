@@ -70,7 +70,7 @@ class gpt_pro extends Controller {
 		$data['filtro'] = $filter->output.$grid->output;
 		$data['content'] = '<script type="text/javascript"> $(function(){ $("#cajafiltro").show(); }); </script>';
 		//$data['content'].= $acti->output;
-		$data['content'].= '<IFRAME src="'.site_url('farmacia/gpt_pro/dummy').'" width="100%" height="300" scrolling="auto" frameborder="0" name="framedetrepo">iframe no son soportados</IFRAME>';
+		$data['content'].= '<IFRAME src="'.site_url('farmacia/gpt_pro/dummy').'" width="100%" height="500" scrolling="auto" frameborder="0" name="framedetrepo">iframe no son soportados</IFRAME>';
 		$data['head']    = $this->rapyd->get_head().script('jquery.js').script('jquery.highlight.js');
 		$data['title']   = heading($this->titp);
 		$this->load->view('view_ventanas', $data);
