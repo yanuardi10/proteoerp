@@ -219,8 +219,8 @@ class Scst extends Controller {
 			);
 
 			if ($query->num_rows() > 0){
-				$m   = $row->margen/100;
 				$row = $query->row();
+				$m   = $row->margen/100;
 				$val = nformat($row->margen).'%';
 				$link= anchor_popup('inventario/sinvpromo/dataeditexpress/'.raencode($sinv).'/show/'.$row->id,$val, $atts); 
 			}else{
