@@ -185,6 +185,7 @@ class Rret extends validaciones {
 				$("#c"+obj).val(roundNumber(mul*valor,2));
 				gtotal();
 			});';
+		$this->rapyd->jquery[]='$("input[name^=\'cOT\']").calculator();';
 		$this->rapyd->jquery[]='function gtotal(){
 			TEFE=TOTR=0;
 			$(\'input[name^="cEFE"]\').each(function(i,e){
@@ -248,8 +249,12 @@ class Rret extends validaciones {
 		$cont['c_otrp']  = $c_otrp;
 		$cont['regresa'] = form_button($attr,'Regresar');
 		$data['content'] = $this->load->view('view_rret',$cont, true);
-		$data['title']   = '<h1>Retiro para el cajero '.$cajero.'</h1>';
-		$data['head']    = $this->rapyd->get_head().phpscript('nformat.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js');
+		$data['title']   = heading('Retiro para el cajero '.$cajero);
+		$data['head']    = $this->rapyd->get_head().phpscript('nformat.js').style('jquery.calculator.css');
+		$data['head']   .= script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js');
+		$data['head']   .= script('plugins/jquery.calculator.min.js');
+		$data['head']   .= script('plugins/jquery.calculator-es.js');
+
 		$this->load->view('view_ventanas', $data);
 	}
 
