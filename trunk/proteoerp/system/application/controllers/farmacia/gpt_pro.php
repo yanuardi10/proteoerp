@@ -48,7 +48,7 @@ class gpt_pro extends Controller {
 		$filter->submit->in='parr';
 		$filter->build_form();
 
-		$uri = anchor($this->url.'dataedit/show/<raencode><#id_pro#></raencode>','<#nom_pro#>','target="framedetrepo"');
+		$uri = anchor($this->url.'dataedit/show/<raencode><#id_pro#></raencode>','<#nom_pro#>','target="framedetrepo" onclick="$(\'#cajafiltro\').hide();"');
 		//$uri = anchor($this->url.'dataedit/show/<raencode><#id_pro#></raencode>','<#nom_pro#>');
 
 		$grid = new DataGrid('Especialidades farmaceuticas','gpt_pro');
@@ -57,17 +57,18 @@ class gpt_pro extends Controller {
 			$filter->db->where('MATCH(nom_pro,pres_pro,lab_pro,gen_pro,mono_pro) AGAINST ('.$dbparr.')');
 		}
 		$grid->order_by('nom_pro');
-		$grid->per_page = 40;
+		$grid->per_page = 15;
 
 		$grid->column_orderby('Nombre',$uri,'nom_pro','align="left"');
 		$grid->column_orderby('Presentaci&oacute;n','pres_pro','pres_pro','align="left"');
 		$grid->column_orderby('Laboratorio','lab_pro','lab_pro','align="left"');
-		$grid->column_orderby('Cod. Pro','cod_pro','cod_pro','align="left"');
-		$grid->column_orderby('Gen. Pro','gen_pro','gen_pro','align="left"');
+		//$grid->column_orderby('Cod. Pro','cod_pro','cod_pro','align="left"');
+		//$grid->column_orderby('Gen. Pro','gen_pro','gen_pro','align="left"');
 
 		$grid->build();
 
-		$data['content'] = $filter->output.$grid->output;
+		$data['filtro'] = $filter->output.$grid->output;
+		$data['content'] = '<script type="text/javascript"> $(function(){ $("#cajafiltro").show(); }); </script>';
 		//$data['content'].= $acti->output;
 		$data['content'].= '<IFRAME src="'.site_url('farmacia/gpt_pro/dummy').'" width="100%" height="300" scrolling="auto" frameborder="0" name="framedetrepo">iframe no son soportados</IFRAME>';
 		$data['head']    = $this->rapyd->get_head().script('jquery.js').script('jquery.highlight.js');
@@ -119,7 +120,7 @@ class gpt_pro extends Controller {
 		$edit->n5_pro->size =18;
 		$edit->n5_pro->maxlength =16;*/
 
-		$edit->nom_pro = new inputField('Nombre','nom_pro');
+		/*$edit->nom_pro = new inputField('Nombre','nom_pro');
 		$edit->nom_pro->rule='max_length[200]';
 		$edit->nom_pro->maxlength =200;
 
@@ -137,7 +138,7 @@ class gpt_pro extends Controller {
 
 		$edit->gen_pro = new inputField('Gen&eacute;ricos','gen_pro');
 		$edit->gen_pro->rule='max_length[300]';
-		$edit->gen_pro->maxlength =300;
+		$edit->gen_pro->maxlength =300;*/
 
 		//$edit->mono_pro = new textareaField(' ','mono_pro');
 		//$edit->mono_pro = new htmlField(' ','mono_pro');
@@ -146,9 +147,9 @@ class gpt_pro extends Controller {
 		//$edit->mono_pro->cols = 70;
 		//$edit->mono_pro->rows = 4;
 		$memo=$edit->getval('mono_pro');
-		$memo=htmlentities($memo);
-		$memo=str_replace("\n",br(),$memo);
-		$memo=highlight_phrase($memo,'Composici&oacute;n:'  ,'</p><p><b>','</b>');
+		//$memo=htmlentities($memo);
+		$memo=str_replace('<br/>','</p><p>',$memo);
+		/*$memo=highlight_phrase($memo,'Composici&oacute;n:'  ,'</p><p><b>','</b>');
 		$memo=highlight_phrase($memo,'Advertencias:'        ,'</p><p><b>','</b>');
 		$memo=highlight_phrase($memo,'Reacciones Adversas:' ,'</p><p><b>','</b>');
 		$memo=highlight_phrase($memo,'Interacciones:'       ,'</p><p><b>','</b>');
@@ -159,7 +160,7 @@ class gpt_pro extends Controller {
 		$memo=highlight_phrase($memo,'Posolog&iacute;a:'    ,'</p><p><b>','</b>');
 		$memo=highlight_phrase($memo,'Posologia:'           ,'</p><p><b>','</b>');
 		$memo=highlight_phrase($memo,'Presentaci&oacute;n:' ,'</p><p><b>','</b>');
-		$memo=highlight_phrase($memo,'Presentacion:'        ,'</p><p><b>','</b>');
+		$memo=highlight_phrase($memo,'Presentacion:'        ,'</p><p><b>','</b>');*/
 		$edit->container = new containerField('alert','<p>'.$memo.'</p>');
 
 		//$memo=$edit->getval('mono_pro');
@@ -221,6 +222,27 @@ class gpt_pro extends Controller {
 			}
 		}
 	}
+
+	function cargatxt(){
+		$path=reduce_double_slashes(FCPATH.'/uploads/traspasos');
+		$sistab='gpt_pro';
+		$this->db->simple_query("TRUNCATE $sistab");
+		$dirlocal = $path.'/data.txt';
+
+		$arch = fopen($dirlocal, 'r');
+		while (!feof($arch)){
+			$lline = chop(fgets($arch));
+			$data  = unserialize($lline);
+
+			if(is_array($data)){
+				$sql = $this->db->insert_string($sistab , $data);
+				$ban=$this->db->simple_query($sql);
+				if(!$ban) echo $sql."/n";
+			}
+		}
+		fclose($arch);
+	}
+
 
 	function _pre_insert($do){
 		return false;
