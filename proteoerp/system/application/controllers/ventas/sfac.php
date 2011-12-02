@@ -1324,7 +1324,9 @@ function sfacreiva(mid){
 	function tabla() {
 		$id   = isset($_REQUEST['id'])  ? $_REQUEST['id']   :  0;
 		$cliente = $this->datasis->dameval("SELECT cod_cli FROM sfac WHERE id='$id'");
-		$mSQL = "SELECT cod_cli, MID(nombre,1,25) nombre, tipo_doc, numero, monto, abonos FROM smov WHERE cod_cli='$cliente' AND abonos<>monto AND tipo_doc<>'AB' ORDER BY fecha ";
+		$transac = $this->datasis->dameval("SELECT transac FROM sfac WHERE id='$id'");
+
+		$mSQL = "SELECT cod_cli, MID(nombre,1,25) nombre, tipo_doc, numero, monto, abonos FROM smov WHERE cod_cli='$cliente' AND abonos<>monto AND tipo_doc<>'AB' ORDER BY fecha DESC ";
 		$query = $this->db->query($mSQL);
 		$salida = '';
 		$saldo = 0;
@@ -1332,26 +1334,51 @@ function sfacreiva(mid){
 			$salida = "<br><table width='100%' border=1>";
 			$salida .= "<tr bgcolor='#e7e3e7'><td colspan=3>Movimiento en Cuentas X Cobrar</td></tr>";
 			$salida .= "<tr bgcolor='#e7e3e7'><td>Tp</td><td align='center'>Numero</td><td align='center'>Monto</td></tr>";
-			
+			$i = 1;
 			foreach ($query->result_array() as $row)
 			{
-				$salida .= "<tr>";
-				$salida .= "<td>".$row['tipo_doc']."</td>";
-				$salida .= "<td>".$row['numero'].  "</td>";
-				$salida .= "<td align='right'>".nformat($row['monto']-$row['abonos']).   "</td>";
-				$salida .= "</tr>";
+				if ( $i < 6 ) {
+					$salida .= "<tr>";
+					$salida .= "<td>".$row['tipo_doc']."</td>";
+					$salida .= "<td>".$row['numero'].  "</td>";
+					$salida .= "<td align='right'>".nformat($row['monto']-$row['abonos']).   "</td>";
+					$salida .= "</tr>";
+				}
+				if ( $i == 6 ) {
+					$salida .= "<tr>";
+					$salida .= "<td colspan=3>Mas......</td>";
+					$salida .= "</tr>";
+				}
 				if ( $row['tipo_doc'] == 'FC' or $row['tipo_doc'] == 'ND' or $row['tipo_doc'] == 'GI' )
 					$saldo += $row['monto']-$row['abonos'];
 				else
 					$saldo -= $row['monto']-$row['abonos'];
+				$i ++;
 			}
 			$salida .= "<tr bgcolor='#d7c3c7'><td colspan='4' align='center'>Saldo : ".nformat($saldo). "</td></tr>";
 			$salida .= "</table>";
 		}
 		$query->free_result();
 
+		// Revisa formas de pago sfpa
+		$mSQL = "SELECT tipo, numero, monto FROM sfpa WHERE transac='$transac' AND monto<>0";
+		$query = $this->db->query($mSQL);
+		if ( $query->num_rows() > 0 ){
+			$salida .= "<br><table width='100%' border=1>";
+			$salida .= "<tr bgcolor='#e7e3e7'><td colspan=3>Forma de Pago</td></tr>";
+			$salida .= "<tr bgcolor='#e7e3e7'><td>Tipo</td><td align='center'>Numero</td><td align='center'>Monto</td></tr>";
+			foreach ($query->result_array() as $row)
+			{
+				$salida .= "<tr>";
+				$salida .= "<td>".$row['tipo']."</td>";
+				$salida .= "<td>".$row['numero'].  "</td>";
+				$salida .= "<td align='right'>".nformat($row['monto']).   "</td>";
+				$salida .= "</tr>";
+			}
+			
+			$salida .= "</table>";
+		}
 
-/*
 		// Revisa formas de pago sfpa
 		$mSQL = "SELECT codbanc, numero, monto FROM bmov WHERE transac='$transac' ";
 		$query = $this->db->query($mSQL);
@@ -1369,26 +1396,16 @@ function sfacreiva(mid){
 			}
 			$salida .= "</table>";
 		}
-*/
 		echo $salida;
 	}
 
 	function gridsitems(){
 		$numero   = isset($_REQUEST['numero'])  ? $_REQUEST['numero']   :  0;
 		if ($numero == 0 ) $numero = $this->datasis->dameval("SELECT MAX(numero) FROM sfac")  ;
-
 		$mSQL = "SELECT * FROM sitems a JOIN sinv b ON a.codigoa=b.codigo WHERE a.numa='$numero' ORDER BY a.codigoa";
 		$query = $this->db->query($mSQL);
-		$results =  0; 
-		$arr = array();
-		foreach ($query->result_array() as $row)
-		{
-			$meco = array();
-			foreach( $row as $idd=>$campo ) {
-				$meco[$idd] = utf8_encode($campo);
-			}
-			$arr[] = $meco;
-		}
+		$results = $query->num_rows(); 
+		$arr = $this->datasis->codificautf8($query->result_array());
 		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
 	}
 
@@ -1403,7 +1420,6 @@ function sfacreiva(mid){
 
 		$modulo = 'sfac';
 		$urlajax = 'ventas/sfac/';
-		
 		$listados= $this->datasis->listados($modulo);
 		$otros=$this->datasis->otros($modulo, $urlajax);
 
@@ -1411,14 +1427,14 @@ function sfacreiva(mid){
 		{ header: 'Tipo',     width: 30, sortable: true, dataIndex: 'tipo_doc' , field: { type: 'textfield' }, filter: { type: 'string' }},
 		{ header: 'Numero',   width: 60, sortable: true, dataIndex: 'numero' , field: { type: 'textfield' }, filter: { type: 'string' }},
 		{ header: 'Fecha',    width: 70, sortable: true, dataIndex: 'fecha' , field: { type: 'date' }, filter: { type: 'date' }},
-		{ header: 'Vence',    width: 60, sortable: true, dataIndex: 'vence' , field: { type: 'date' }, filter: { type: 'date' }},
 		{ header: 'Cliente',  width: 60, sortable: true, dataIndex: 'cod_cli' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'RIF/CI',   width: 60, sortable: true, dataIndex: 'rifci' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'RIF/CI',   width: 90, sortable: true, dataIndex: 'rifci' , field: { type: 'textfield' }, filter: { type: 'string' }},
 		{ header: 'Nombre',   width:200, sortable: true, dataIndex: 'nombre' , field: { type: 'textfield' }, filter: { type: 'string' }},
 		{ header: 'Base',     width: 80, sortable: true, dataIndex: 'totals' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
 		{ header: 'IVA',      width: 80, sortable: true, dataIndex: 'iva' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
 		{ header: 'Total',    width: 80, sortable: true, dataIndex: 'totalg' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
 		{ header: 'Inicial',  width: 80, sortable: true, dataIndex: 'inicial' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Vence',    width: 70, sortable: true, dataIndex: 'vence' , field: { type: 'date' }, filter: { type: 'date' }},
 		{ header: 'Orden',    width: 60, sortable: true, dataIndex: 'orden' , field: { type: 'textfield' }, filter: { type: 'string' }},
 		{ header: 'Referen',  width: 60, sortable: true, dataIndex: 'referen' , field: { type: 'textfield' }, filter: { type: 'string' }},
 		{ header: 'Vende',    width: 60, sortable: true, dataIndex: 'vd' , field: { type: 'textfield' }, filter: { type: 'string' }},
@@ -1468,43 +1484,41 @@ function sfacreiva(mid){
 		{ header: 'creiva' , width: 60, sortable: true, dataIndex: 'creiva' , field: { type: 'textfield' }, filter: { type: 'string' }},
 		{ header: 'freiva' , width: 60, sortable: true, dataIndex: 'freiva' , field: { type: 'date' }, filter: { type: 'date' }},
 		{ header: 'ereiva' , width: 60, sortable: true, dataIndex: 'ereiva' , field: { type: 'date' }, filter: { type: 'date' }},
-		{ header: 'vexenta' , width: 60, sortable: true, dataIndex: 'vexenta' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'id' , width: 60, sortable: true, dataIndex: 'id' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'certificado' , width: 60, sortable: true, dataIndex: 'certificado' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'sprv' , width: 60, sortable: true, dataIndex: 'sprv' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'maestra' , width: 60, sortable: true, dataIndex: 'maestra' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Exenta' , width: 60, sortable: true, dataIndex: 'vexenta' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Certificado' , width: 60, sortable: true, dataIndex: 'certificado' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Proveed' , width: 60, sortable: true, dataIndex: 'sprv' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Maestra' , width: 60, sortable: true, dataIndex: 'maestra' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'id' , width: 60, sortable: true, dataIndex: 'id' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0000')},
 ";
 
 		$coldeta = "
 	var Deta1Col = [
-		{ header: 'Codigo', width: 60, sortable: true, dataIndex: 'codigoa' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Descripcion' , width:250, sortable: true, dataIndex: 'desca' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Cantidad' , width: 60, sortable: true, dataIndex: 'cana' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Precio' , width: 80, sortable: true, dataIndex: 'preca' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Importe' , width: 80, sortable: true, dataIndex: 'tota' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'IVA' , width: 50, sortable: true, dataIndex: 'iva' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'costo' , width: 60, sortable: true, dataIndex: 'costo' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'pos' , width: 60, sortable: true, dataIndex: 'pos' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'pvp' , width: 60, sortable: true, dataIndex: 'pvp' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'comision' , width: 60, sortable: true, dataIndex: 'comision' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'cajero' , width: 60, sortable: true, dataIndex: 'cajero' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'mostrado' , width: 60, sortable: true, dataIndex: 'mostrado' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'usuario' , width: 60, sortable: true, dataIndex: 'usuario' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'estampa' , width: 60, sortable: true, dataIndex: 'estampa' , field: { type: 'date' }, filter: { type: 'date' }},
-		{ header: 'hora' , width: 60, sortable: true, dataIndex: 'hora' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'transac' , width: 60, sortable: true, dataIndex: 'transac' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'despacha' , width: 60, sortable: true, dataIndex: 'despacha' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'flote' , width: 60, sortable: true, dataIndex: 'flote' , field: { type: 'date' }, filter: { type: 'date' }},
-		{ header: 'precio4' , width: 60, sortable: true, dataIndex: 'precio4' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'detalle' , width: 60, sortable: true, dataIndex: 'detalle' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'fdespacha' , width: 60, sortable: true, dataIndex: 'fdespacha' , field: { type: 'date' }, filter: { type: 'date' }},
-		{ header: 'udespacha' , width: 60, sortable: true, dataIndex: 'udespacha' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'combo' , width: 60, sortable: true, dataIndex: 'combo' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'descuento' , width: 60, sortable: true, dataIndex: 'descuento' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'bonifica' , width: 60, sortable: true, dataIndex: 'bonifica' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'modificado' , width: 60, sortable: true, dataIndex: 'modificado' , field: { type: 'date' }, filter: { type: 'date' }},
-		{ header: 'id' , width: 60, sortable: true, dataIndex: 'id' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'id_sfac' , width: 60, sortable: true, dataIndex: 'id_sfac' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Codigo',      width: 90, sortable: true, dataIndex: 'codigoa' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Descripcion', width:250, sortable: true, dataIndex: 'desca' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Cantidad',    width: 60, sortable: true, dataIndex: 'cana' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Precio',      width: 80, sortable: true, dataIndex: 'preca' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Importe',     width: 80, sortable: true, dataIndex: 'tota' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'IVA',         width: 50, sortable: true, dataIndex: 'iva' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Costo',       width: 80, sortable: true, dataIndex: 'costo' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'PVP',         width: 80, sortable: true, dataIndex: 'pvp' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Comision',    width: 80, sortable: true, dataIndex: 'comision' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Cajero',      width: 60, sortable: true, dataIndex: 'cajero' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Usuario',     width: 80, sortable: true, dataIndex: 'usuario' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Estampa',     width: 70, sortable: true, dataIndex: 'estampa' , field: { type: 'date' }, filter: { type: 'date' }},
+		{ header: 'Hora',        width: 60, sortable: true, dataIndex: 'hora' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Transac',     width: 80, sortable: true, dataIndex: 'transac' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Despacha',    width: 60, sortable: true, dataIndex: 'despacha' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Flote',       width: 80, sortable: true, dataIndex: 'flote' , field: { type: 'date' }, filter: { type: 'date' }},
+		{ header: 'Precio4',     width: 80, sortable: true, dataIndex: 'precio4' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Detalle',     width: 80, sortable: true, dataIndex: 'detalle' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Fdespacha',   width: 60, sortable: true, dataIndex: 'fdespacha' , field: { type: 'date' }, filter: { type: 'date' }},
+		{ header: 'Udespacha',   width: 60, sortable: true, dataIndex: 'udespacha' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Combo',       width: 60, sortable: true, dataIndex: 'combo' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Descuento',   width: 60, sortable: true, dataIndex: 'descuento' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Bonifica',    width: 60, sortable: true, dataIndex: 'bonifica' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Modificado',  width: 60, sortable: true, dataIndex: 'modificado' , field: { type: 'date' }, filter: { type: 'date' }},
+		{ header: 'id',          width: 60, sortable: true, dataIndex: 'id' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'id_sfac',     width: 60, sortable: true, dataIndex: 'id_sfac' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
 	]";
 
 
@@ -1580,10 +1594,10 @@ function renderSinv(value, p, record) {
 
 	var ".$modulo."TplMarkup = [
 		'<table width=\'100%\' bgcolor=\"#F3F781\">',
-		'<tr><td colspan=3 align=\'center\'><p style=\'font-size:14px;font-weight:bold\'>IMPRIMIR DESPACHO</p></td></tr><tr>',
-		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/verhtml/PRESUP/{numero}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/html_icon.gif', 'alt' => 'Formato HTML', 'title' => 'Formato HTML','border'=>'0'))."</a></td>',
+		'<tr><td colspan=3 align=\'center\'><p style=\'font-size:14px;font-weight:bold\'>IMPRIMIR FACTURA</p></td></tr><tr>',
+		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/verhtml/FACTURA/{numero}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/html_icon.gif', 'alt' => 'Formato HTML', 'title' => 'Formato HTML','border'=>'0'))."</a></td>',
 		'<td align=\'center\'>{numero}</td>',
-		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/ver/PRESUP/{numero}\',     \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',   'title' => 'Formato PDF', 'border'=>'0'))."</a></td></tr>',
+		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/ver/FACTURA/{numero}\',     \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',   'title' => 'Formato PDF', 'border'=>'0'))."</a></td></tr>',
 		'<tr><td colspan=3 align=\'center\' >--</td></tr>',		
 		'</table>','nanai'
 	];
@@ -1635,7 +1649,7 @@ function renderSinv(value, p, record) {
 					text: 'Agregar',
 					scope: this,
 					handler: function(){
-						window.open(urlAjax+'dataedit/create', '_blank', 'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys);
+						window.open(urlApp+'ventas/sfac_add/dataedit/create', '_blank', 'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys);
 					}
 				},
 				{
@@ -1647,7 +1661,7 @@ function renderSinv(value, p, record) {
 					handler: function(selModel, selections){
 						var selection = gridMaest.getView().getSelectionModel().getSelection()[0];
 						gridMaest.down('#delete').setDisabled(selections.length === 0);
-						window.open(urlAjax+'dataedit/modify/'+selection.data.id, '_blank', 'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys);
+						window.open(urlApp+'ventas/sfac_add/dataedit/modify/'+selection.data.id, '_blank', 'width=900,height=730,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys);
 					}
 				},{
 					iconCls: 'icon-delete',
