@@ -122,4 +122,116 @@ class Accesos extends Controller{
 			$this->db->simple_query($mSQL);
 		}
 	}
+
+	function usuarios(){
+		$mSQL = "SELECT * FROM usuario ORDER BY us_nombre";
+		$query = $this->db->query($mSQL);
+		$results = $query->num_rows(); 
+		$arr = $this->datasis->codificautf8($query->result_array());
+		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
+	}
+
+
+	function accextjs(){
+
+		$encabeza = '<table width="100%" bgcolor="#2067B5"><tr><td align="left" width="100px"><img src="'.base_url().'assets/default/css/templete_01.jpg" width="120"></td><td align="center"><h1 style="font-size: 20px; color: rgb(255, 255, 255);" onclick="history.back()">ACCESO DE USUARIOS</h1></td><td align="right" width="100px"><img src="'.base_url().'assets/default/images/cerrar.png" alt="Cerrar Ventana" title="Cerrar Ventana" onclick="parent.window.close()" width="25"></td></tr></table>';
+		$modulo = 'usuario';
+		$urlajax = 'accesos/';
+
+		$script = "
+Ext.define('usuarioMod', {
+	extend: 'Ext.data.Model',
+	fields: [".$this->datasis->extjscampos("usuario")."],
+	proxy: {type: 'ajax',noCache: false,
+		api: {	read   : urlApp+'accesos/usuarios',method: 'POST'},
+		reader: {type: 'json',root: 'data',successProperty: 'success',messageProperty: 'message',totalProperty: 'results'}}
+});
+
+//////////////////////////////////////////////////////////
+//
+var usuarioCol = [
+	{ header: 'Codigo',   width: 80, sortable: true, dataIndex: 'us_codigo',  field: { type: 'textfield' }, filter: { type: 'string' }},
+	{ header: 'Nombre',   width:140, sortable: true, dataIndex: 'us_nombre',  field: { type: 'textfield' }, filter: { type: 'string' }},
+	{ header: 'Sup.',     width: 30, sortable: true, dataIndex: 'supervisor', field: { type: 'textfield' }, filter: { type: 'string' }},
+	{ header: 'Vende',    width: 40, sortable: true, dataIndex: 'vendedor',   field: { type: 'textfield' }, filter: { type: 'string' }},
+	{ header: 'Cajero',   width: 40, sortable: true, dataIndex: 'cajero',     field: { type: 'textfield' }, filter: { type: 'string' }},
+	{ header: 'Almacen',  width: 40, sortable: true, dataIndex: 'almacen',    field: { type: 'textfield' }, filter: { type: 'string' }},
+	{ header: 'Sucursal', width: 40, sortable: true, dataIndex: 'sucursal',   field: { type: 'textfield' }, filter: { type: 'string' }},
+	{ header: 'Activo',   width: 30, sortable: true, dataIndex: 'activo',     field: { type: 'textfield' }, filter: { type: 'string' }},
+];
+
+
+// create the Data Store
+var usuarioStore = Ext.create('Ext.data.Store', {
+	model: 'usuarioMod',
+	autoLoad: false,
+	autoSync: true,
+	method: 'POST'
+});
+
+
+
+Ext.onReady(function() {
+
+	//
+	var usuarioGrid = Ext.create('Ext.grid.Panel', {
+		width:   '100%',
+		height:  '100%',
+		store:   usuarioStore,
+		title:   'Usuarios',
+		iconCls: 'icon-grid',
+		frame:   true,
+		features: [ { ftype: 'filters', encode: 'json', local: false } ],
+		columns: usuarioCol
+	});
+
+
+	Ext.create('Ext.container.Viewport', {
+		layout: 'border',
+		items: [
+			{
+				region: 'north',
+				html: '".$encabeza."',
+				autoHeight: true,
+				border: false,
+				margins: '0 0 5 0'
+			},
+			{
+				region: 'west',
+				collapsible: true,
+				title: 'Usuarios',
+				width: 300,
+				items: usuarioGrid
+
+			},
+			{
+				region: 'south',
+				title: 'South Panel',
+				collapsible: true,
+				html: 'Information goes here',
+				split: true,
+				height: 100,
+				minHeight: 100
+			},
+			{
+				region: 'center',
+				title:'Listados',
+				border:false,
+				layout: 'fit',
+				html: '<h1>aaa</h1>'
+			}
+		]
+	});
+	usuarioStore.load();
+
+});
+
+	";
+		$data['encabeza']    = "ACCESOS";
+		$data['script']  = $script;
+		$data['title']  = heading('Accesos');
+		$this->load->view('extjs/ventana',$data);
+		
+	}
+
 }
