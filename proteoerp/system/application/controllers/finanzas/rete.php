@@ -16,6 +16,7 @@
       $this->db->simple_query('ALTER TABLE rete DROP PRIMARY KEY');
       $this->db->simple_query('ALTER TABLE rete ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ');
       $this->db->simple_query('ALTER TABLE rete ADD UNIQUE INDEX codigo (codigo)');
+      $this->db->simple_query('ALTER TABLE rete ADD COLUMN concepto VARCHAR(5) NULL ');
     }
 
     $this->datasis->modulo_id(515,1);
@@ -113,7 +114,11 @@
 	  $edit->pama1->size =13;
 	  $edit->pama1->maxlength=13;
 	  $edit->pama1->css_class='inputnum';
-	  $edit->pama1->rule='numeric';				    
+	  $edit->pama1->rule='numeric';
+	  
+	  $edit->concepto = new inputField("Código Concepto", "concepto");
+	  $edit->concepto->size =5;
+	  $edit->concepto->maxlength=5;
 	  
 	  $edit->buttons("modify", "save", "undo", "delete", "back");
 	  $edit->build();
@@ -266,7 +271,7 @@
 		$urlajax = 'finanzas/rete/';
 		$variables = "var mcuenta='';";
 
-	      $tipos="['JD', 'Juridico Domiciliado'],['JN','Juridico No Domiciliado'],['NR','Natural Residente'],['NN','Natural No Res.']";
+		$tipos="['JD', 'Juridico Domiciliado'],['JN','Juridico No Domiciliado'],['NR','Natural Residente'],['NN','Natural No Res.']";
 
 
 		$funciones = "";
@@ -282,10 +287,11 @@
 		{ header: 'Base Imp.',  width:  50, sortable: true, dataIndex: 'base1',    field: { type: 'numeric'   }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00') },
 		{ header: 'Ret.%',      width:  50, sortable: true, dataIndex: 'tari1',    field: { type: 'numeric'   }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00') },
 		{ header: 'Exencion',   width:  70, sortable: true, dataIndex: 'pama1',    field: { type: 'numeric'   }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00') },
-		{ header: 'Cuenta',     width:  80, sortable: true, dataIndex: 'cuenta',   field: { type: 'textfield' }, filter: { type: 'string'  } },
+		{ header: 'Cuenta',     width:  80, sortable: true, dataIndex: 'cuenta',   field: { type: 'textfield' }, filter: { type: 'string'  }},
+		{ header: 'Concepto',   width:  80, sortable: true, dataIndex: 'concepto', field: { type: 'textfield' }, filter: { type: 'string'  }},
 	";
 
-		$campos = "'id', 'codigo','activida','base1','tari1','pama1','tipo','cuenta', 'persona'";
+		$campos = "'id', 'codigo','activida','base1','tari1','pama1','tipo','cuenta', 'persona','concepto'";
 		
 		$camposforma = "
 							{
@@ -301,6 +307,7 @@
 									{ xtype: 'combo',       fieldLabel: 'Tipo',       name: 'tipo',     width:270, store: [".$tipos."], labelWidth:70},
 									{ xtype: 'textfield',   fieldLabel: 'Actividad',  name: 'activida', width:400, allowBlank: false },
 									{ xtype: 'combo',       fieldLabel: 'C.Contable', name: 'cuenta',   width:400, store: cplaStore, id: 'cuenta', mode: 'remote', hideTrigger: true, typeAhead: true, forceSelection: true, valueField: 'item', displayField: 'valor'},
+									{ xtype: 'textfield',   fieldLabel: 'Concepto',   name: 'concepto', width:100, allowBlank: true },
 								]
 							},{
 							xtype:'fieldset',
