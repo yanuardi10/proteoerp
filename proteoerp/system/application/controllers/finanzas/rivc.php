@@ -361,6 +361,7 @@ class rivc extends Controller {
 		$data['head']   .= script('plugins/jquery.floatnumber.js');
 		$data['head']   .= phpscript('nformat.js');
 		$data['head']   .= style('redmond/jquery-ui-1.8.1.custom.css');
+		$data['head']   .= script('plugins/jquery.ui.autocomplete.autoSelectOne.js');
 		$data['title']   = heading($this->tits);
 		$this->load->view('view_ventanas', $data);
 	}
@@ -599,7 +600,15 @@ class rivc extends Controller {
 		$estampa = $do->get('estampa');
 		$hora    = $do->get('hora');
 		$usuario = $do->get('usuario');
+		$cod_cli = $do->get('cod_cli');
 		$op      = $do->get('operacion');
+		//Actualiza los datos del cliente
+		$rrow=$this->datasis->damerow('SELECT nombre,rifci FROM scli WHERE cliente='.$this->db->escape($cod_cli));
+		if($rrow!=false){
+			$do->set('nombre',$rrow['nombre']);
+			$do->set('rif'   ,$rrow['rifci']);
+		}
+
 		$exento=$general=$geneimpu=$adicional=$adicimpu=$reducida=$reduimpu=$stotal=$impuesto=$gtotal=$reiva=0;
 
 		//Borra la clave ya que solo se usa para comprobar

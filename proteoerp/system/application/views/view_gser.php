@@ -287,7 +287,7 @@ function autocod(id){
 	$('#codigo_'+id).autocomplete({
 		source: function( req, add){
 			$.ajax({
-				url:  "<?php echo site_url('finanzas/gsercol/automgas'); ?>",
+				url:  "<?php echo site_url('finanzas/gser/automgas'); ?>",
 				type: "POST",
 				dataType: "json",
 				data: "q="+encodeURIComponent(req.term)+"&sprv="+encodeURIComponent($("#proveed").val()),
