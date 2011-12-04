@@ -769,7 +769,12 @@ class Rcaj extends validaciones {
 			$ban =$this->db->simple_query($mSQL);
 			if($ban==false) memowrite($mSQL,'rcaj');
 			$er +=$ban;
+			$mSQL='UPDATE rret SET cierre=NULL WHERE numero='.$dbnumero;
+			$ban =$this->db->simple_query($mSQL);
+			if($ban==false) memowrite($mSQL,'rcaj');
+			$er +=$ban;
 		}
+
 		return ($er>0) ? false: true;
 	}
 
