@@ -53,7 +53,7 @@ $atts = array(
 				<tr>
 					<td colspan=3 class="littletableheader">Totales</td>
 				</tr><tr>
-					<td width="500" class="littletablerow">&nbsp;</td>
+					<td width="500" class="littletablerow">Cantidad de reglones: <b><?php echo $carti; ?></b></td>
 					<td width="111" class="littletablerowth"><?php echo $form->subt->label ?> </td>
 					<td width="139" class="littletablerow" align='right'><?php echo $form->subt->output ?> </td>
 				</tr><tr>
