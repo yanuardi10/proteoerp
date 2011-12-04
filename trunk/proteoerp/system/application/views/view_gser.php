@@ -66,6 +66,33 @@ $(document).ready(function() {
 	desactivacampo(codb1);
 	cdropdowncodigorete(0);
 	autocod(0);
+	
+	$('#proveed').autocomplete({
+		source: function( req, add){
+			$.ajax({
+				url:  "<?php echo site_url('ajax/buscasprv'); ?>",
+				type: "POST",
+				dataType: "json",
+				data: "q="+req.term,
+				success:
+					function(data){
+						var sugiere = [];
+						$.each(data,
+							function(i, val){
+								sugiere.push( val );
+							}
+						);
+						add(sugiere);
+					},
+			})
+		},
+		minLength: 2,
+		select: function( event, ui ) {
+			$('#nombre').val(ui.item.nombre);
+			$('#nombre_val').text(ui.item.nombre);
+
+		}
+	});
 });
 
 function valida(i){
@@ -287,7 +314,7 @@ function autocod(id){
 	$('#codigo_'+id).autocomplete({
 		source: function( req, add){
 			$.ajax({
-				url:  "<?php echo site_url('finanzas/gser/automgas'); ?>",
+				url:  "<?php echo site_url('ajax/automgas'); ?>",
 				type: "POST",
 				dataType: "json",
 				data: "q="+encodeURIComponent(req.term)+"&sprv="+encodeURIComponent($("#proveed").val()),
