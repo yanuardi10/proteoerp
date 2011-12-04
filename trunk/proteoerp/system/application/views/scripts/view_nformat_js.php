@@ -11,8 +11,12 @@ function nformat(num,n){
 	var fact=1;
 	miles='<?php echo $miles; ?>';
 	centimos='<?php echo $centimos; ?>';
-	num = num.toString().replace(/$|\,/g,'');
-	if(isNaN(num)) num = "0";
+
+	if(isNaN(num) || num==undefined) 
+		num = "0";
+	else
+		num = num.toString().replace(/$|\,/g,'');
+
 	for(i=0;i < n;i++){ fact=10*fact; }
 	sign  = (num == (num = Math.abs(num)));
 	num   = Math.floor(num*fact+0.50000000001);
