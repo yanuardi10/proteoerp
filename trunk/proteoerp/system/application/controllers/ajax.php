@@ -351,6 +351,36 @@ class Ajax extends Controller {
 		echo $data;
 	}
 
+	//Autocomplete para mgas
+	function automgas(){
+		$mid   = $this->db->escape('%'.$this->input->post('q').'%');
+		//$proveed  = $this->input->post('sprv');
+		$data = '{[ ]}';
+		if(true){
+
+			$mSQL  = "SELECT a.codigo, a.descrip
+				FROM mgas AS a
+			WHERE a.codigo LIKE ${mid} OR a.descrip LIKE ${mid} ORDER BY a.descrip LIMIT 10";
+
+			$query = $this->db->query($mSQL);
+			$retArray = array();
+			$retorno = array();
+			if ($query->num_rows() > 0){
+				foreach( $query->result_array() as  $row ) {
+					$retArray['value']      = $row['codigo'];
+					$retArray['label']      = trim($row['codigo']).' - '.trim($row['descrip']);
+					$retArray['codigo']     = trim($row['codigo']);
+					$retArray['descrip']    = trim($row['descrip']);
+					//$retArray['tari1']      = $row['tari1'];
+					//$retArray['retecodigo'] = trim($row['retecodigo']);
+					array_push($retorno, $retArray);
+				}
+				$data = json_encode($retorno);
+			}
+		}
+		echo $data;
+	}
+
 	//Para cerrar la ventana luego de una operacion exitosa
 	function reccierraventana(){
 		$script='

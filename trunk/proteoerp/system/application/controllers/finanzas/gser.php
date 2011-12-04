@@ -1871,7 +1871,7 @@ function gserfiscal(mid){
 		//$cheque1= $do->get('cheque1');
 		$_tipo=common::_traetipo($codb1);
 
-		$retener=true; //Activa o desactiva las retenciones
+		$retener=false; //Activa o desactiva las retenciones
 
 		$do->set('serie',$numero);
 		$nnumero = substr($numero,-8);
@@ -1938,7 +1938,7 @@ function gserfiscal(mid){
 
 		$contribu= $this->datasis->traevalor('CONTRIBUYENTE');
 		$tiposprv= $this->datasis->dameval('SELECT tipo FROM sprv WHERE proveed='.$this->db->escape($proveed));
-		$campo   = ($tiposprv=='1') ? 'retej': 'reten';
+		$campo   = 'reten';
 
 		for($i=0;$i<$cana;$i++){
 			$codigo = $do->get_rel('gitser','codigo',$i);
