@@ -258,6 +258,7 @@ class Scst extends Controller {
 		$detalle->column('Desc.'              ,'<ofertas><#sinv#>|<#margen#>|<#precio1#></ofertas>' ,'align=\'right\'');
 		$detalle->build();
 		//echo $detalle->db->last_query();
+		$c_articulos=$detalle->recordCount;
 
 		$script='
 		function pcrear(id){
@@ -320,6 +321,7 @@ class Scst extends Controller {
 		});';
 
 		$conten['form']  =&  $edit;
+		$conten['carti'] = $c_articulos;
 		$data['content'] = $this->load->view('view_farmax_compras', $conten,true); 
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = '<h1>Compras Descargadas</h1>';
