@@ -11,7 +11,7 @@
 <table align='center'>
 	<tr>
 		<td valign='top'>
-			<table class="ui-widget ui-widget-content ui-corner-all">
+			<p><table class="ui-widget ui-widget-content ui-corner-all">
 				<tr>
 					<th colspan=3 class="ui-widget-header">Efectivo</th>
 				</tr>
@@ -30,7 +30,7 @@
 					$obj=next($form->_fields);
 				}
 				?>
-			</table>
+			</table></p>
 		</td>
 		<td valign='top'>
 			<p><table class="ui-widget ui-widget-content ui-corner-all" style="width:350px;">
