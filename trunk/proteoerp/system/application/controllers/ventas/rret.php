@@ -41,6 +41,7 @@ class Rret extends validaciones {
 
 		$grid->column_orderby('Fecha' ,'<dbdate_to_human><#fecha#></dbdate_to_human>','fecha','align="center"');
 		$grid->column_orderby('Cajero','cajero','cajero','align="left"');
+		$grid->column_orderby('Cierre','<sinulo><#cierre#>|No Aplicado</sinulo>','cajero','align="left"');
 		$grid->column_orderby('Tipo'  ,'tipo'  ,'tipo'  ,'align="left"');
 		$grid->column_orderby('Monto' ,'<nformat><#monto#></nformat>','monto','align="right"');
 

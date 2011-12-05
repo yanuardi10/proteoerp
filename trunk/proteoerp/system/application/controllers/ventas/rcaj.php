@@ -249,7 +249,7 @@ class Rcaj extends validaciones {
 			$form->$obj->type='inputhidden';
 		}
 		$form->$obj->type='';
-		
+
 		$form->$obj->readonly=false;
 		//$form->$obj->rule='required';
 		$form->$obj->insertValue='';
