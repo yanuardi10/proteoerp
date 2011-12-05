@@ -22,7 +22,7 @@ class Ajax extends Controller {
 			$retArray = $retorno = array();
 			
 			//Cheque si existe el codigo
-			$mSQL="SELECT TRIM(nombre) AS nombre, TRIM(rif) AS rif, proveed,  direc1 AS direc
+			$mSQL="SELECT TRIM(nombre) AS nombre, TRIM(rif) AS rif, proveed, direc1 AS direc, reteiva
 				FROM sprv WHERE proveed=${qmid} LIMIT 1";
 			$query = $this->db->query($mSQL);
 			if ($query->num_rows() == 1){
@@ -33,13 +33,14 @@ class Ajax extends Controller {
 				$retArray['nombre']  = utf8_encode($row['nombre']);
 				$retArray['proveed'] = $row['proveed'];
 				$retArray['direc']   = utf8_encode($row['direc']);
+				$retArray['reteiva'] = $row['reteiva'];
 				array_push($retorno, $retArray);
 				$ww=" AND proveed<>${qmid}";
 			}else{
 				$ww='';
 			}
 			
-			$mSQL="SELECT TRIM(nombre) AS nombre, TRIM(rif) AS rif, proveed, direc1 AS direc
+			$mSQL="SELECT TRIM(nombre) AS nombre, TRIM(rif) AS rif, proveed, direc1 AS direc, reteiva
 				FROM sprv WHERE rif LIKE ${qdb} OR nombre LIKE ${qdb} ${ww}
 				ORDER BY rif LIMIT 10";
 			$query = $this->db->query($mSQL);
@@ -51,6 +52,7 @@ class Ajax extends Controller {
 					$retArray['nombre']  = utf8_encode($row['nombre']);
 					$retArray['proveed'] = $row['proveed'];
 					$retArray['direc']   = utf8_encode($row['direc']);
+					$retArray['reteiva'] = $row['reteiva'];
 					array_push($retorno, $retArray);
 				}
 				$data = json_encode($retorno);

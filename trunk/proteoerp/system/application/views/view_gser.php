@@ -105,6 +105,45 @@ $(document).ready(function() {
 	});
 });
 
+function calcularete(){
+	codigos=$('input[name^="codigo_"]');
+	precios=$('input[name^="precio_"]');
+	proveed=$('#proveed');
+	parr=$.param(codigos)+'&'+$.param(precios)+'&'+$.param(proveed);
+	
+	$.ajax({
+		type: "POST",
+		url: "<?php echo site_url('finanzas/gser/calcularete'); ?>",
+		dataType: 'json',
+		//context: document.body,
+		data: parr,
+		success: function(cont){
+			truncate_gereten();
+			i=0;
+			jQuery.each(cont, function() {
+				//alert(this.codigo);
+				add_gereten();
+				si=i.toString()
+
+				$('#codigorete_'+si).val(this.codigo);
+				$('#base_'+si).val(this.base);
+				$('#porcen_'+si).val(this.porcen);
+				$('#monto_'+si).val(this.monto);
+				totalizar();
+
+				i+=1;
+			});
+
+			//alert(cont);
+		}
+	});
+}
+
+function truncate_gereten(){
+	$('tr[id^="tr_gereten_"]').remove();
+	gereten_cont=0;
+}
+
 function valida(i){
 	alert("Este monto no puede ser modificado manualmente");
 	totalizar(i);
@@ -130,7 +169,7 @@ function islr(){
 
 //Calcula la retencion del iva
 function reteiva(){
-	<?php if($tipo_rete=='GRAN'){ ?>
+	<?php if($tipo_rete=='ESPECIAL'){ ?>
 	totiva=Number($("#totiva").val());
 	preten=Number($("#sprvreteiva").val());
 	preten=totiva*(preten/100);
@@ -345,6 +384,7 @@ function autocod(id){
 			//id='0';
 			$('#codigo_'+id).val(ui.item.codigo);
 			$('#descrip_'+id).val(ui.item.descrip);
+			$('#precio_'+id).focus();
 		}
 	});
 }
@@ -526,6 +566,7 @@ function toggle() {
 		</fieldset>
 		<?php if( $form->_status != 'show') {?>
 			<input name="btn_add_gereten" value="Agregar Retenciones " onclick="add_gereten()" class="button" type="button">
+			<input name="btn_creten"      value="Calcular retenciones" onclick="calcularete()" class="button" type="button">
 		<?php } ?>
 
 		<?php echo $form_end     ?>

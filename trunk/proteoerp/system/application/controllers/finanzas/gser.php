@@ -823,7 +823,7 @@ function gserfiscal(mid){
 		if($monto==0.00 || $monto==$totiva || round($totiva*0.75,2)==$monto){
 			return true;
 		}else{
-			$this->validation->set_message('chreteiva', 'El campo %s tiene que ser 0, 75 o 100\% del monto del iva');
+			$this->validation->set_message('chreteiva', 'El campo %s tiene que ser 0, 75 o 100% del monto del iva');
 			return false;
 		}
 	}
@@ -1449,7 +1449,7 @@ function gserfiscal(mid){
 
 		$edit->sprvreteiva = new hiddenField('','sprvreteiva');
 		$edit->sprvreteiva->db_name = 'sprvreteiva';
-		$edit->sprvreteiva->insertValue=($tipo_rete=='ESPECIAL' && strtoupper($rif[0])!='V') ? '50':'0';
+		$edit->sprvreteiva->insertValue=($tipo_rete=='ESPECIAL' && strtoupper($rif[0])!='V') ? '75':'0';
 		$edit->sprvreteiva->pointer = true;
 
 		$edit->totpre  = new inputField("Sub.Total", "totpre");
@@ -1661,6 +1661,7 @@ function gserfiscal(mid){
 		$edit->base->rule='max_length[10]|numeric|positive';
 		$edit->base->css_class='inputnum';
 		$edit->base->size =12;
+		$edit->base->autocomplete=false;
 		$edit->base->rel_id    ='gereten';
 		$edit->base->maxlength =10;
 		$edit->base->onkeyup   ='importerete(<#i#>)';
@@ -1689,7 +1690,12 @@ function gserfiscal(mid){
 		//Fin de campos para detalle
 		//*****************************
 
-		$edit->buttons('save', 'undo', 'delete', 'back','add_rel');
+		/*if($edit->_status=='create'){
+			$accion="javascript:calcularete()";
+			$edit->button_status('btn_crete','Calcular retenciones',$accion,'TR','show');
+		}*/
+
+		$edit->buttons('save', 'undo', 'delete', 'back','add_rel','add');
 		$edit->build();
 		//echo $edit->_dataobject->db->last_query();
 		$smenu['link']   = barra_menu('518');
@@ -1697,14 +1703,85 @@ function gserfiscal(mid){
 		$data['content'] =  $this->load->view('view_gser', $conten,true);
 		$data['smenu']   =  $this->load->view('view_sub_menu', $smenu,true);
 		$data['title']   =  heading('Registro de Gastos o Nota de D&eacute;bito');
-		$data['head']    = 	script('jquery.js').script('jquery-ui.js').
-					script('plugins/jquery.numeric.pack.js').
-					script('plugins/jquery.meiomask.js').
-					style('redmond/jquery-ui-1.8.1.custom.css').
-					$this->rapyd->get_head().
-					phpscript('nformat.js').
-					script('plugins/jquery.floatnumber.js');
+		$data['head']    = 	script('jquery.js').script('jquery-ui.js');
+		$data['head']   .=	script('plugins/jquery.numeric.pack.js');
+		$data['head']   .=	script('plugins/jquery.meiomask.js');
+		$data['head']   .=	style('redmond/jquery-ui-1.8.1.custom.css');
+		$data['head']   .=	$this->rapyd->get_head();
+		$data['head']   .=	phpscript('nformat.js');
+		$data['head']   .=	script('plugins/jquery.floatnumber.js');
+		$data['head']   .=	script('plugins/jquery.ui.autocomplete.autoSelectOne.js');
 		$this->load->view('view_ventanas', $data);
+	}
+
+
+	//Calcula las retenciones para enviarlas por ajax
+	function calcularete(){
+		$post    = $_POST;
+		$proveed = $post['proveed'];
+
+		if(empty($proveed)){
+			return;
+		}
+
+		$contribu= $this->datasis->traevalor('CONTRIBUYENTE');
+		if($contribu<>'ESPECIAL'){
+			return;
+		}
+
+		$data=array();
+		foreach($post as $ind=>$val){
+			$subject = "abcdef";
+			$pattern = '/^def/';
+			if(preg_match('/^codigo_(?P<id>\d+)+/',$ind, $match)>0){
+				$id=$match['id'];
+				$pivot=array('codigo'=>$post['codigo_'.$id] , 'monto'=>$post['precio_'.$id]);
+				$data[]=$pivot;
+			}
+		}
+
+		$tiposprv= $this->datasis->dameval('SELECT tipo FROM sprv WHERE proveed='.$this->db->escape($proveed));
+		$campo   = ($tiposprv=='1')? 'retej' : 'reten';
+
+		$greten=$pgreten=array();
+		foreach($data as $cgas){
+			$codigo = $cgas['codigo'];
+			$precio = $cgas['monto'];
+			$mmsql="SELECT b.codigo ,a.descrip, b.base1,b.tari1,b.activida,b.pama1
+						FROM mgas AS a
+						LEFT JOIN rete AS b ON a.$campo=b.codigo
+					WHERE a.codigo=".$this->db->escape($codigo)." LIMIT 1";
+
+			$fila=$this->datasis->damerow($mmsql);
+			if(!empty($fila['pama1'])){
+				if($precio>=$fila['base1']){
+					$itbase= $precio*($fila['base1']/100);
+					$itret = $itbase*($fila['tari1']/100);
+					if($itret>0){
+						$gind=$fila['codigo'];
+						if(isset($pgreten[$gind])){
+							$pgreten[$gind][0]+= $itbase;
+							$pgreten[$gind][2]+= $itret;
+						}else{
+							$pgreten[$gind]= array($itbase,$fila['tari1'],$itbase*$fila['tari1']/100);
+						}
+			
+					}
+				}
+			}
+		}
+		$pivot=array();
+		if(count($pgreten)>0){
+			foreach($pgreten as $ind=>$vals){
+				$pivot['codigo']= $ind;
+				$pivot['base']  = round($vals[0],2);
+				$pivot['porcen']= round($vals[1],2);
+				$pivot['monto'] = round($vals[2],2);
+				$greten[]=$pivot;
+			}
+			
+		}
+		echo json_encode($greten);
 	}
 
 	function mgserdataedit(){
@@ -1871,8 +1948,6 @@ function gserfiscal(mid){
 		//$cheque1= $do->get('cheque1');
 		$_tipo=common::_traetipo($codb1);
 
-		$retener=false; //Activa o desactiva las retenciones
-
 		$do->set('serie',$numero);
 		$nnumero = substr($numero,-8);
 		$do->set('numero',$nnumero);
@@ -1889,11 +1964,6 @@ function gserfiscal(mid){
 			$nn=$this->datasis->banprox($codb1);
 			$do->set('cheque1',$nn);
 		}
-		
-		/*if(empty($numero)){
-			$numero=$this->datasis->fprox_numero('ngser');
-			$do->set('numero',$numero);
-		}*/
 
 		$mSQL='SELECT COUNT(*) FROM gser WHERE proveed='.$this->db->escape($proveed).' AND numero='.$this->db->escape($numero).' AND fecha='.$this->db->escape($fecha).' AND tipo_doc='.$this->db->escape($tipo_doc);
 		$ca=$this->datasis->dameval($mSQL);
@@ -1903,45 +1973,33 @@ function gserfiscal(mid){
 		}
 
 		//Totalizamos la retenciones (exepto la de iva)
-		/*$retemonto=$rete_cana_vacio=0;
+		$retemonto=$rete_cana_vacio=0;
 		$rete_cana=$do->count_rel('gereten');
 		for($i=0;$i<$rete_cana;$i++){
 			$codigorete = $do->get_rel('gereten','codigorete',$i);
 			if(!empty($codigorete)){
-				$importe    = $do->get_rel('gereten','base'      ,$i);
-				$rete=$this->datasis->damerow('SELECT base1,tari1,pama1,activida FROM rete WHERE codigo='.$this->db->escape($codigorete));
+				$importe = $do->get_rel('gereten','base'  ,$i);
+				$monto   = $do->get_rel('gereten','monto' ,$i);
 
-				if($codigorete[0]=='1'){
-					$monto=($importe*$rete['base1']*$rete['tari1'])/10000;
-				}elseif($importe>$rete['pama1']){
-					$monto=(($importe-$rete['pama1'])*$rete['base1'])/10000;
-				}else{
-					$monto=0;
-				}
-				$do->set_rel('gereten','monto'    ,$monto           ,$i);
-				$do->set_rel('gereten','porcen'   ,$rete['tari1']   ,$i);
+				//$do->set_rel('gereten','monto'    ,$monto           ,$i);
+				//$do->set_rel('gereten','porcen'   ,$rete['tari1']   ,$i);
 				$retemonto += $monto;
 			}else{
 				$rete_cana_vacio++;
 			}
 		}
-		$do->set('reten',$retemonto);*/
-		
+		$do->set('reten',$retemonto);
+		if($rete_cana_vacio==$rete_cana) $do->unset_rel('gereten'); //si no hay retencion elimina la relacion
 		//Fin de las retenciones exepto iva
-		//if($rete_cana_vacio==$rete_cana) $do->unset_rel('gereten'); //si no hay retencion elimina la relacion
 
 		$ivat=$subt=$total=0;
 		$tasa=$reducida=$sobretasa=$montasa=$monredu=$monadic=$exento=0;
 		$con=$this->db->query("SELECT tasa,redutasa,sobretasa FROM civa ORDER BY fecha desc LIMIT 1");
 		$t=$con->row('tasa');$rt=$con->row('redutasa');$st=$con->row('sobretasa');
-		$cana=$do->count_rel("gitser");
-
-		$contribu= $this->datasis->traevalor('CONTRIBUYENTE');
-		$tiposprv= $this->datasis->dameval('SELECT tipo FROM sprv WHERE proveed='.$this->db->escape($proveed));
-		$campo   = 'reten';
+		$cana=$do->count_rel('gitser');
 
 		for($i=0;$i<$cana;$i++){
-			$codigo = $do->get_rel('gitser','codigo',$i);
+			$codigo = $do->get_rel('gitser','codigo' ,$i);
 			$auxt   = $do->get_rel('gitser','tasaiva',$i);
 			$precio = $do->get_rel('gitser','precio' ,$i);
 			$iva    = $precio*($auxt/100);
@@ -1955,42 +2013,15 @@ function gserfiscal(mid){
 			$do->set_rel('gitser','importe',$importe,$i);
 
 			$reteica=$retemonto=0;
-			if($retener){
-				//Retenciones ISLR (Se calcula automatico)
-				if($contribu=='ESPECIAL'){
-					$mmsql="SELECT b.codigo ,a.descrip, b.base1,b.tari1,b.activida,b.pama1
-						FROM mgas AS a
-						LEFT JOIN rete AS b ON a.$campo=b.codigo
-					WHERE a.codigo=".$this->db->escape($codigo)." LIMIT 1";
-
-					$fila=$this->datasis->damerow($mmsql);
-					if(!empty($fila['pama1'])){
-						if($precio>=$fila['base1']){
-							$itbase= $precio*($fila['base1']/100);
-							$itret = $itbase*($fila['tari1']/100);
-							if($itret>0){
-								$retemonto += $itret;
-
-								$do->set_rel('gereten','numero'    ,$numero          ,$i);
-								$do->set_rel('gereten','origen'    ,'GSER'           ,$i);
-								$do->set_rel('gereten','codigorete',$fila['codigo']  ,$i);
-								$do->set_rel('gereten','actividad' ,$fila['activida'],$i);
-								$do->set_rel('gereten','base'      ,$itbase          ,$i);
-								$do->set_rel('gereten','porcen'    ,$fila['tari1']   ,$i);
-								$do->set_rel('gereten','monto'     ,$itret           ,$i);
-							}
-						}
-					}	
-				}
-				//Fin retenciones De la Fuente
-			}
 		}
 		$do->set('reten'  ,$retemonto);
 
-		//Calcula la retencion del iva
-		if($contribu=='ESPECIAL'){
+		//Calcula la retencion del iva si aplica
+		$rif      = $this->datasis->traevalor('RIF');
+		$contribu = $this->datasis->traevalor('CONTRIBUYENTE');
+		if($contribu=='ESPECIAL' && $rif!='V'){
 			$prete=$this->datasis->dameval('SELECT reteiva FROM sprv WHERE proveed='.$this->db->escape($proveed));
-			if(empty($prete)) $prete=50;
+			if(empty($prete)) $prete=75;
 			$reteiva=$ivat*$prete/100;
 		}else{
 			$reteiva=0;
@@ -2070,170 +2101,6 @@ function gserfiscal(mid){
 		return true;
 	}
 
-	/*function _pre_insert($do){
-		$fecha  = $do->get('fecha');
-		$usuario= $do->get('usuario');
-		$proveed= $do->get('proveed');
-		$ffecha = $do->get('ffactura');
-		$codb1  = $do->get('codb1');
-		$tipo1  = $do->get('tipo1');
-		$monto1 = $do->get('monto1');
-		$benefi = $do->get('benefi');
-		$nombre = $do->get('nombre');
-		$numero = $do->get('numero');
-		$nfiscal= $do->get('nfiscal');
-		$tipo_doc=$do->get('tipo_doc');
-		//$cheque1= $do->get('cheque1');
-		$_tipo=common::_traetipo($codb1);
-
-		if(empty($benefi) && $tipo1=='C'){
-			$do->set('benefi',$nombre);
-		}
-
-		if(empty($nfiscal)){
-			$do->set('nfiscal',$numero);
-		}
-
-		if($_tipo=='CAJ'){
-			$nn=$this->datasis->banprox($codb1);
-			$do->set('cheque1',$nn);
-		}
-		
-
-		$mSQL='SELECT COUNT(*) FROM gser WHERE proveed='.$this->db->escape($proveed).' AND numero='.$this->db->escape($numero).' AND fecha='.$this->db->escape($fecha).' AND tipo_doc='.$this->db->escape($tipo_doc);
-		$ca=$this->datasis->dameval($mSQL);
-		if($ca>0){
-			$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='Al parecer ya esta registrado un gasto con la misma fecha de recepci&oacute;n, n&uacute;mero y proveedor.';
-			return false;
-		}
-
-		//Totalizamos la retenciones (exepto la de iva)
-		$retemonto=$rete_cana_vacio=0;
-		$rete_cana=$do->count_rel('gereten');
-		for($i=0;$i<$rete_cana;$i++){
-			$codigorete = $do->get_rel('gereten','codigorete',$i);
-			if(!empty($codigorete)){
-				$importe    = $do->get_rel('gereten','base'      ,$i);
-				$rete=$this->datasis->damerow('SELECT base1,tari1,pama1,activida FROM rete WHERE codigo='.$this->db->escape($codigorete));
-			
-				if($codigorete[0]=='1'){
-					$monto=($importe*$rete['base1']*$rete['tari1'])/10000;
-				}elseif($importe>$rete['pama1']){
-					$monto=(($importe-$rete['pama1'])*$rete['base1'])/10000;
-				}else{
-					$monto=0;
-				}
-				$do->set_rel('gereten','monto'    ,$monto           ,$i);
-				$do->set_rel('gereten','porcen'   ,$rete['tari1']   ,$i);
-				$retemonto += $monto;
-			}else{
-				$rete_cana_vacio++;
-			}
-		}
-		if($rete_cana_vacio==$rete_cana) $do->unset_rel('gereten'); //si no hay retencion elimina la relacion
-		$do->set('reten',$retemonto);
-
-		$ivat=$subt=$total=0;
-		$tasa=$reducida=$sobretasa=$montasa=$monredu=$monadic=$exento=0;
-		$con=$this->db->query("SELECT tasa,redutasa,sobretasa FROM civa ORDER BY fecha desc LIMIT 1");
-		$t=$con->row('tasa');$rt=$con->row('redutasa');$st=$con->row('sobretasa');
-		$cana=$do->count_rel("gitser");
-
-		for($i=0;$i<$cana;$i++){
-			$auxt   = $do->get_rel('gitser','tasaiva',$i);
-			$precio = $do->get_rel('gitser','precio' ,$i);
-			$iva    = $precio*($auxt/100);
-
-			$total+=$iva+$precio;
-			$ivat +=$iva;
-			$subt +=$precio;
-
-			$do->set_rel('gitser','iva'    ,$iva  ,$i);
-			$do->set_rel('gitser','importe',$total,$i);
-		}
-
-		//Calcula la retencion del iva
-		$contribu= $this->datasis->traevalor('CONTRIBUYENTE');
-		$rif     = $this->datasis->traevalor('RIF');
-		if($contribu=='ESPECIAL' && strtoupper($rif[0])!='V'){
-			$prete=$this->datasis->dameval('SELECT reteiva FROM sprv WHERE proveed='.$this->db->escape($proveed));
-			if(empty($prete)) $prete=75;
-			$reteiva=$ivat*$prete/100;
-		}else{
-			$reteiva=0;
-		}
-		$do->get('reteiva', $reteiva);
-
-		//Chequea que el monto retenido no sea mayor a la base del gasto
-		if($retemonto+$reteiva>$subt){
-			$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='Opps!! no se puede cargar un gasto cuyas retenciones sean mayores a la base del mismo.';
-			return false;
-		}
-
-		//Calcula los totales
-		$do->set('totpre'  ,$subt );
-		$do->set('totbruto',$total);
-		$do->set('totiva'  ,$ivat );
-		$do->set('totneto' ,$total-$retemonto-$reteiva);
-
-		//Calcula la tasa particulares
-		$trans=$this->datasis->fprox_numero('ntransa');
-		$do->set('transac',$trans);
-		for($i=0;$i<$cana;$i++){
-			$auxt   = $do->get_rel('gitser','tasaiva',$i);
-			$precio = $do->get_rel('gitser','precio' ,$i);
-			$iva    = $do->get_rel('gitser','iva'    ,$i);
-			if($auxt-$t==0) {
-				$tasa   +=$iva;
-				$montasa+=$precio;
-				$do->set_rel('gitser','tasa'     ,$iva   ,$i);
-				$do->set_rel('gitser','montasa'  ,$precio,$i);
-			}elseif($auxt-$rt==0) {
-				$reducida+=$iva;
-				$monredu +=$precio;
-				$do->set_rel('gitser','reducida' ,$iva   ,$i);
-				$do->set_rel('gitser','monredu'  ,$precio,$i);
-			}elseif($auxt-$st==0) {
-				$sobretasa+=$iva;
-				$monadic  +=$precio;
-				$do->set_rel('gitser','sobretasa',$iva   ,$i);
-				$do->set_rel('gitser','monadic'  ,$precio,$i);
-			}else{
-				$exento+=$precio;
-				$do->set_rel('gitser','exento'   ,$precio,$i);
-			}
-
-			$do->set_rel('gitser','fecha'   ,$fecha  ,$i);
-			$do->set_rel('gitser','numero'  ,$numero ,$i);
-			$do->set_rel('gitser','transac' ,$trans  ,$i);
-			$do->set_rel('gitser','usuario' ,$usuario,$i);
-			$do->set_rel('gitser','proveed' ,$proveed,$i);
-			$do->set_rel('gitser','fechafac',$ffecha ,$i);
-
-			$do->rel_rm_field('gitser','tasaiva',$i);//elimina el campo comodin
-		}
-
-		$do->set('tasa'     ,$tasa     );
-		$do->set('montasa'  ,$montasa  );
-		$do->set('reducida' ,$reducida );
-		$do->set('monredu'  ,$monredu  );
-		$do->set('sobretasa',$sobretasa);
-		$do->set('monadic'  ,$monadic  );
-		$do->set('exento'   ,$exento   );
-
-		if ($monto1>0){
-			$negreso  = $this->datasis->fprox_numero('negreso');
-			$ncausado = "";
-		}else{
-			$ncausado = $this->datasis->fprox_numero('ncausado');
-			$negreso  = "";
-		}
-		$do->set('negreso' ,$negreso );
-		$do->set('ncausado',$ncausado);
-
-		return true;
-	}*/
-
 	function _post_insert($do){
 		$codbanc  = $do->get('codb1');
 		$codprv   = $do->get('proveed');
@@ -2275,6 +2142,7 @@ function gserfiscal(mid){
 			$this->_gserrete($fecha,$tipo,$fechafac,$numero,$nfiscal,$afecta,$codprv,$montasa,$monredu,$monadic,$tasa,$reducida,$sobretasa,$exento,$reiva,$transac);
 		}
 		logusu('gser',"Gasto $numero CREADO");
+		return true;
 	}
 
 	function _pre_update($do){
@@ -2327,7 +2195,7 @@ function gserfiscal(mid){
 		}
 		$do->set('negreso',$negreso);
 		$do->set('ncausado',$ncausado);
-		//		echo $this->datasis->traevalor('pais');
+
 		if ($this->datasis->traevalor('pais') == 'COLOMBIA'){
 			if($this->datasis->dameval("SELECT tiva FROM sprv WHERE proveed='".$do->get('proveed')."'")=='S'){
 				foreach($datos['gitser'] as $rel){
@@ -3007,9 +2875,5 @@ function renderSinv(value, p, record) {
 		
 		$data['title']  = heading('Gastos');
 		$this->load->view('extjs/extjsvenmd',$data);
-
-
 	}
-
-
 }
