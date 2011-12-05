@@ -193,6 +193,7 @@ class Rcaj extends validaciones {
 				if($o==1){
 					$form->$obj->in=$sobj;
 					$form->$obj->readonly=true;
+					$form->$obj->type='inputhidden';
 				}else{
 					$form->$obj->css_class='cefectivo';
 				}
@@ -245,7 +246,9 @@ class Rcaj extends validaciones {
 			$form->$obj->readonly=true;
 			$form->$obj->size=10;
 			$form->$obj->autocomplete=false;
+			$form->$obj->type='inputhidden';
 		}
+		$form->$obj->type='';
 		
 		$form->$obj->readonly=false;
 		//$form->$obj->rule='required';
@@ -267,7 +270,9 @@ class Rcaj extends validaciones {
 				obj=this.name;
 				mul=eval("denomi."+obj);
 				valor=$(this).val();
-				$("#c"+obj).val(roundNumber(mul*valor,2));
+				val=mul*valor;
+				$("#c"+obj).val(roundNumber(val,2));
+				$("#c"+obj+"_val").text(nformat(val,2));
 				gtotal();
 			});';
 		$this->rapyd->jquery[]='function gtotal(){
@@ -285,7 +290,12 @@ class Rcaj extends validaciones {
 			$("#TEFE").val(roundNumber(TEFE,2));
 			$("#TOTR").val(roundNumber(TOTR,2));
 			$("#TGLOB").val(roundNumber(TOTR+TEFE,2));
+			
+			$("#TEFE_val").text(nformat(TEFE,2));
+			$("#TOTR_val").text(nformat(TOTR,2));
+			$("#TGLOB_val").text(nformat(TOTR+TEFE,2));
 		}';
+		$this->rapyd->jquery[]='$("input[name^=\'cOT\']").calculator();';
 
 		//hace el precierre
 		if ($form->on_success()){
@@ -422,6 +432,9 @@ class Rcaj extends validaciones {
 		$data['content'] = $this->load->view('view_rcaj',$cont, true);
 		$data['title']   = '<h1>Recepci&oacute;n de cajero '.$cajero.' Fecha '.dbdate_to_human($fecha).'</h1>';
 		$data['head']    = $this->rapyd->get_head().phpscript('nformat.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js');
+		$data['head']   .= style('jquery.calculator.css');
+		$data['head']   .= script('plugins/jquery.calculator.min.js');
+		$data['head']   .= script('plugins/jquery.calculator-es.js');
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -441,11 +454,11 @@ class Rcaj extends validaciones {
 
 		$form = new DataForm("ventas/rcaj/forcierre/$numero/process");
 
-		$form->titulos = new freeField("","","Recibido &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+		/*$form->titulos = new freeField("","","Recibido &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
 		$form->titulos1 = new freeField("","","Sistema &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
 		$form->titulos1->in='titulos';
 		$form->titulos2 = new freeField("","","Diferencia");
-		$form->titulos2->in='titulos';
+		$form->titulos2->in='titulos';*/
 
 		$attr=array(
 			'class'  => 'ui-state-default ui-corner-all',
@@ -474,7 +487,10 @@ class Rcaj extends validaciones {
 					$form->$obj->rule='numeric';
 					$form->$obj->autocomplete=false;
 					if($o==0) $sobj=$obj; else $form->$obj->in=$sobj;
-					if($o!=0) $form->$obj->readonly=true;
+					if($o!=0) {
+						$form->$obj->readonly=true;
+						$form->$obj->type='inputhidden';
+					}
 				}
 			}
 
@@ -488,15 +504,18 @@ class Rcaj extends validaciones {
 				$form->$obj->autocomplete=false;
 				if($o==0) $sobj=$obj; else $form->$obj->in=$sobj;
 				$form->$obj->readonly=true;
+				$form->$obj->type='inputhidden';
 			}
 		}
 
+		$form->button('btn_reg', 'Regresar',"javascript:window.location='".site_url('ventas/rcaj/filteredgrid/search')."'", 'BL');
 		$form->submit('btnsubmit','Cerrar cajero');
 		$form->build_form();
 
 		$this->rapyd->jquery[]='$(":input").numeric(".");';
 		$this->rapyd->jquery[]='$(\'input[name^="recibido"]\').bind("keyup",function() { gtotal(); });';
-		$this->rapyd->jquery[]='$("#df1").submit(function() { return confirm("Estas seguro de realizar el Pre-Cierre?"); })';
+		$this->rapyd->jquery[]='$(\'input[name^="recibido"]\').bind("mouseleave",function() { gtotal(); });';
+		$this->rapyd->jquery[]='$("#df1").submit(function() { return confirm("Estas seguro de realizar el Cierre?"); })';
 		$this->rapyd->jquery[]='function gtotal(){
 			TRECI=TSIS=TDIFE=0;
 			$(\'input[name^="recibido"]\').each(function(i,e){
@@ -508,18 +527,24 @@ class Rcaj extends validaciones {
 					sistema    =parseFloat($("#sistema"+tipo).val());
 					diferencia=recibido-sistema;
 					$("#diferencia"+tipo).val(roundNumber(diferencia,2));
+					$("#diferencia"+tipo+"_val").text(nformat(diferencia,2));
 				}
 				if($(this).val().length>0) TRECI = TRECI+parseFloat($(this).val());
 			});
 
 			$(\'input[name^="diferencia"]\').each(function(i,e){
-				if($(this).val().length>0)
-					TDIFE = TDIFE+parseFloat($(this).val());
+				if($(this).val().length>0){
+					pval=parseFloat($(this).val());
+					TDIFE = TDIFE+pval;
+				}
 			});
 
 			$("#trecibido").val(roundNumber(TRECI,2));
 			$("#tdiferencia").val(roundNumber(TDIFE,2));
+			$("#trecibido_val").text(nformat(TRECI,2));
+			$("#tdiferencia_val").text(nformat(TDIFE,2));
 		}';
+		$this->rapyd->jquery[]='gtotal();';
 
 		//Cierre de caja
 		if ($form->on_success()){
@@ -712,7 +737,15 @@ class Rcaj extends validaciones {
 			'value'  => 'Regresar'
 		);
 
-		$data['content'] = $form->output;
+		$credito=$this->datasis->dameval("SELECT SUM((a.totalg-a.inicial)*IF(a.tipo_doc='D',-1,1)) AS credito
+		FROM sfac AS a
+		JOIN rcaj AS b ON a.fecha=b.fecha AND b.cajero=a.cajero
+		WHERE a.referen='C' AND b.numero=${dbnumero}");
+
+		$cont['credito'] = (empty($credito))? 0 : $credito;
+		$cont['form']    = &$form;
+		$data['content'] = $this->load->view('view_rcajcierre',$cont, true);
+		//$data['content'] = $form->output;
 		$data['title']   = heading('Recepci&oacute;n de cajas');
 		$data['head']    = $this->rapyd->get_head().script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js').phpscript('nformat.js');
 		$this->load->view('view_ventanas', $data);

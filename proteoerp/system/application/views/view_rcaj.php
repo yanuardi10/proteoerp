@@ -20,7 +20,7 @@
 				for($i=1;$i<=$c_efe;$i++){
 					echo ($i % 2!=0) ? '<tr>' : '';
 					echo ($i % 2!=0) ? '<td>'.$obj->label.'</td>' : '';
-					echo '<td>'.$obj->output.'</td>';
+					echo '<td align="right">'.$obj->output.'</td>';
 					echo ($i % 2==0) ? '</tr>' : '';
 					$obj=next($form->_fields);
 				}
@@ -53,7 +53,7 @@
 				for($i=0;$i< $c_otrp;$i++){
 					echo '<tr>';
 					echo '<td>'.$obj->label. '</td>';
-					echo '<td>'.$obj->output.'</td>';
+					echo '<td align="right">'.$obj->output.'</td>';
 					echo '</tr>';
 					$obj=next($form->_fields);
 				}
@@ -69,7 +69,7 @@
 				for($i=0;$i<4;$i++){
 					echo '<tr>';
 					echo '<td>'.$obj->label.'</td>';
-					echo '<td>'.$obj->output.'</td>';
+					echo '<td align="right">'.$obj->output.'</td>';
 					echo '</tr>';
 					$obj=next($form->_fields);
 				}?>

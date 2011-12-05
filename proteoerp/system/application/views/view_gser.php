@@ -9,18 +9,28 @@ else:
 
 $tipo_rete=$this->datasis->traevalor('CONTRIBUYENTE');
 
-foreach($form->detail_fields['gitser'] AS $ind=>$data) $campos[]=$data['field'];
-$campos='<tr id="tr_gitser_<#i#>"><td class="littletablerow">'.join('</td><td>',$campos).'</td>';
-$campos.=' <td class="littletablerow"><a href=\'#\' onclick="del_gitser(<#i#>);return false;">Eliminar</a></td></tr>';
+$ccampos=$form->detail_fields['gitser'];
+$campos='<tr id="tr_gitser_<#i#>">';
+$campos.=' <td class="littletablerow">'.$ccampos['codigo']['field'].'</td>';
+$campos.=' <td class="littletablerow">'.$ccampos['descrip']['field'].'</td>';
+$campos.=' <td class="littletablerow" align="right">'.$ccampos['precio']['field'].'</td>';
+$campos.=' <td class="littletablerow" align="right">'.$ccampos['tasaiva']['field'].'</td>';
+$campos.=' <td class="littletablerow" align="right">'.$ccampos['iva']['field'].'</td>';
+$campos.=' <td class="littletablerow" align="right">'.$ccampos['importe']['field'].'</td>';
+$campos.=' <td class="littletablerow">'.$ccampos['departa']['field'].'</td>';
+$campos.=' <td class="littletablerow">'.$ccampos['sucursal']['field'].'</td>';
+$campos.=' <td class="littletablerow" align="center"><a href=\'#\' onclick="del_gitser(<#i#>);return false;">'.img("images/delete.jpg").'</a></td></tr>';
 $campos=$form->js_escape($campos);
+
 
 foreach($form->detail_fields['gereten'] AS $ind=>$data){
 	if(!empty($data['field'])){
 		$ggereten[]=$data['field'];
 	}
 }
-$cgereten='<tr id="tr_gereten_<#i#>"><td class="littletablerow">'.join('</td><td>',$ggereten).'</td>';
-$cgereten.=' <td class="littletablerow"><a href=\'#\' onclick="del_gereten(<#i#>);return false;">Eliminar</a></td></tr>';
+
+$cgereten =' <tr id="tr_gereten_<#i#>"><td class="littletablerow">'.join('</td><td align="right">',$ggereten).'</td>';
+$cgereten.=' <td class="littletablerow" align="center"><a href=\'#\' onclick="del_gereten(<#i#>);return false;">'.img("images/delete.jpg").'</a></td></tr>';
 $cgereten=$form->js_escape($cgereten);
 
 $rete=array();
@@ -411,7 +421,7 @@ function toggle() {
 				<td class="littletableheaderdet">Depto.</td>
 				<td class="littletableheaderdet">Sucursal</td>
 				<?php if($form->_status!='show') {?>
-					<td class="littletableheaderdet">Acci&oacute;n&nbsp;</td>
+					<td class="littletableheaderdet">&nbsp;</td>
 				<?php } ?>
 			</tr>
 			<?php for($i=0; $i < $form->max_rel_count['gitser']; $i++) {
@@ -441,7 +451,7 @@ function toggle() {
 				<td class="littletablerow"><?php echo $form->$obj8->output  ?></td>
 				
 				<?php if($form->_status!='show') {?>
-					<td class="littletablerow"><a href='#' onclick='del_gitser(<?php echo $i; ?>);return false;'>Eliminar</a></td>
+					<td class="littletablerow" align="center"><a href='#' onclick='del_gitser(<?php echo $i; ?>);return false;'><?php echo img("images/delete.jpg"); ?></a></td>
 				<?php } ?>
 			</tr>
 			<?php if( $form->_status == 'show') {?>
@@ -473,10 +483,6 @@ function toggle() {
 		</td>
 	</tr>
 
-	<?php
-		if($form->_status!='create'){
-	?>
-
 	<?php if ($form->max_rel_count['gereten']>0); ?>
 	<tr>
 		<td>
@@ -489,7 +495,7 @@ function toggle() {
 				<td class="littletableheaderdet" align="right">Porcentaje</td>
 				<td class="littletableheaderdet" align="right">Monto</td>
 				<?php if($form->_status!='show') {?>
-					<td class="littletableheaderdet">Acci&oacute;n&nbsp;</td>
+					<td class="littletableheaderdet">&nbsp;</td>
 				<?php } ?>
 			</tr>
 			<?php for($i=0; $i < $form->max_rel_count['gereten']; $i++) {
@@ -505,7 +511,7 @@ function toggle() {
 				<td class="littletablerow" align="right"><?php echo $form->$it_porcen->output    ?></td>
 				<td class="littletablerow" align="right"><?php echo $form->$it_monto->output     ?></td>
 				<?php if($form->_status!='show') {?>
-					<td class="littletablerow"><a href='#' onclick='del_gereten(<?php echo $i; ?>);return false;'>Eliminar</a></td>
+					<td class="littletablerow" align="center"><a href='#' onclick='del_gereten(<?php echo $i; ?>);return false;'><?php echo img("images/delete.jpg"); ?></a></td>
 				<?php }
 			}?>
 			</tr>
@@ -520,8 +526,6 @@ function toggle() {
 		</fieldset>
 		<?php if( $form->_status != 'show') {?>
 			<input name="btn_add_gereten" value="Agregar Retenciones " onclick="add_gereten()" class="button" type="button">
-		<?php } ?>
-
 		<?php } ?>
 
 		<?php echo $form_end     ?>
