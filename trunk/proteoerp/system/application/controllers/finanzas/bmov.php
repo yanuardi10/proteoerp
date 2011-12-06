@@ -34,7 +34,7 @@ class Bmov extends Controller {
 
 		$uri = anchor('finanzas/bmov/dataedit/show/<#codbanc#>/<#tipo_op#>/<#numero#>','<#numero#>');
 		$grid = new DataGrid('Lista');
-		$grid->order_by('numero','desc');
+		$grid->order_by('fecha','desc');
 		$grid->per_page = 15;
 
 		$grid->column_orderby('N&uacute;mero',$uri ,'numero');
