@@ -74,9 +74,7 @@ $(document).ready(function() {
 	totalizar();
 	codb1=$('#codb1').val();
 	desactivacampo(codb1);
-	cdropdowncodigorete(0);
 	autocod(0);
-	
 	$('#proveed').autocomplete({
 		source: function( req, add){
 			$.ajax({
@@ -105,36 +103,40 @@ $(document).ready(function() {
 	});
 });
 
+function post_sprv_modbus(){
+	nombre=$('#nombre').val();
+	$('#nombre_val').text(nombre);
+	totalizar();
+}
+
 function calcularete(){
 	codigos=$('input[name^="codigo_"]');
 	precios=$('input[name^="precio_"]');
 	proveed=$('#proveed');
 	parr=$.param(codigos)+'&'+$.param(precios)+'&'+$.param(proveed);
-	
+
 	$.ajax({
 		type: "POST",
 		url: "<?php echo site_url('finanzas/gser/calcularete'); ?>",
 		dataType: 'json',
-		//context: document.body,
 		data: parr,
 		success: function(cont){
 			truncate_gereten();
 			i=0;
 			jQuery.each(cont, function() {
-				//alert(this.codigo);
 				add_gereten();
 				si=i.toString()
 
 				$('#codigorete_'+si).val(this.codigo);
 				$('#base_'+si).val(this.base);
 				$('#porcen_'+si).val(this.porcen);
+				$('#porcen_'+si+'_val').text(nformat(this.porcen,2));
 				$('#monto_'+si).val(this.monto);
+				$('#monto_'+si+'_val').text(nformat(this.monto,2));
 				totalizar();
 
 				i+=1;
 			});
-
-			//alert(cont);
 		}
 	});
 }
@@ -149,33 +151,33 @@ function valida(i){
 	totalizar(i);
 }
 
+//Para que el proximo registro tenga el mismo departamento
 function gdeparta(val){
 	departa=val;
 }
 
+//Para que el proximo registro tenga la misma sucursal
 function gsucursal(val){
 	sucursal=val;
-}
-
-function lleva(i){
-	pr=$("#proveed").val();
-	$("#proveed_"+i.toString()).val(pr);
-}
-
-function islr(){
-	totneto=roundNumber(numberval($("#totbruto").val())-numberval($("#reteiva").val()),2);
-	$("#totneto").val(totneto);
 }
 
 //Calcula la retencion del iva
 function reteiva(){
 	<?php if($tipo_rete=='ESPECIAL'){ ?>
-	totiva=Number($("#totiva").val());
-	preten=Number($("#sprvreteiva").val());
-	preten=totiva*(preten/100);
-	$("#reteiva").val(roundNumber(preten,2));
+		reteval= Number($("#reteiva").val());
+		totiva = Number($("#totiva").val());
+		preten = Number($("#sprvreteiva").val());
+		if(totiva!=0 && reteval-totiva==0){
+			$("#sprvreteiva").val(100);
+			riva=totiva;
+		}else{
+			riva = roundNumber(totiva*(preten/100),2);
+			$("#reteiva").val(riva);
+		}
+		return riva;
 	<?php }else{?>
-	$("#reteiva").val(roundNumber(0,2));
+		$("#reteiva").val(0.0);
+		return 0.0;
 	<?php } ?>
 }
 
@@ -184,8 +186,11 @@ function importe(i){
 	precio = Number($("#precio_"+ind).val());
 	iva    = Number($("#tasaiva_"+ind).val());
 	miva   = precio*iva/100;
+	impor  = precio+miva;
 	$("#iva_"+ind).val(miva);
-	$("#importe_"+ind).val(roundNumber(precio+miva,2));
+	$("#importe_"+ind).val(roundNumber(impor,2));
+	$("#iva_"+ind+"_val").text(nformat(miva,2));
+	$("#importe_"+ind+"_val").text(nformat(impor,2));
 	totalizar();
 }
 
@@ -194,26 +199,30 @@ function totalizar(){
 
 	arr=$('input[name^="importe_"]');
 	jQuery.each(arr, function() {
-			nom=this.name
-			pos=this.name.lastIndexOf('_');
-			if(pos>0){
-				ind = this.name.substring(pos+1);
-				tp1=Number($("#precio_"+ind).val());
-				ite=Number(this.value);
+		nom=this.name
+		pos=this.name.lastIndexOf('_');
+		if(pos>0){
+			ind = this.name.substring(pos+1);
+			tp1=Number($("#precio_"+ind).val());
+			ite=Number(this.value);
 
-				tp=tp+tp1;
-				tb=tb+ite;
-			}
+			tp=tp+tp1;
+			tb=tb+ite;
+		}
 	});
 
 	$("#totpre").val(roundNumber(tp,2));
+	$("#totpre_val").text(nformat(tp,2));
 	$("#totbruto").val(roundNumber(tb,2));
+	$("#totbruto_val").text(nformat(tb,2));
 	totiva=roundNumber(tb-tp,2);
 	$("#totiva").val(totiva);
+	$("#totiva_val").text(nformat(totiva,2));
 	var reten=totalrete();
-	totneto=roundNumber(tb-Number($("#reteiva").val())-reten,2);
+	var riva =reteiva();
+	totneto=roundNumber(tb-riva-reten,2);
 	$("#totneto").val(totneto);
-	reteiva();
+	$("#totneto_val").text(nformat(totneto));
 	monto1=Number($("#monto1").val());
 	$("#credito").val(roundNumber(totneto-monto1,2));
 }
@@ -266,34 +275,6 @@ function add_gitser(){
 	gitser_cont=gitser_cont+1;
 }
 
-//Hace el dropdown para las retenciones
-function cdropdowncodigorete(nind){
-	/*var ind=nind.toString();
-	var codigorete  = $("#codigorete_"+ind).val();
-	var ccodigorete = document.createElement("select");
-
-	ccodigorete.setAttribute("id"      , "codigorete_"+ind);
-	ccodigorete.setAttribute("name"    , "codigorete_"+ind);
-	ccodigorete.setAttribute("class"   , "select");
-	ccodigorete.setAttribute("style"   , "width: 350px");
-	ccodigorete.setAttribute("onchange" , "post_codigoreteselec("+ind+",this.value)");
-
-	var opt=document.createElement("option");
-	opt.text ='Seleccionar';
-	opt.value='';
-	ccodigorete.add(opt,null);
-
-	$.each(rete, function(key, arreglo) {
-		val=$("#codigorete_"+ind).val();
-		opt=document.createElement("option");
-		opt.text =arreglo[0];
-		opt.value=key.substring(1);
-		ccodigorete.add(opt,null);
-	});
-
-	$("#codigorete_"+ind).replaceWith(ccodigorete);*/
-}
-
 function importerete(nind){
 	var ind=nind.toString();
 	var codigo  = $("#codigorete_"+ind).val();
@@ -313,6 +294,7 @@ function importerete(nind){
 			monto=0;
 
 		$("#monto_"+ind).val(roundNumber(monto,2));
+		$("#monto_"+ind+'_val').text(nformat(monto,2));
 	}
 	totalizar();
 }
@@ -323,6 +305,8 @@ function totalrete(){
 	jQuery.each(arr, function() {
 		monto=monto+Number(this.value);
 	});
+	$("#reten").val(monto);
+	$("#reten_val").text(nformat(monto,2));
 	return monto;
 }
 
@@ -331,6 +315,7 @@ function post_codigoreteselec(nind,cod){
 	var porcen=eval('rete._'+cod+'[2]');
 	var base1 =eval('rete._'+cod+'[1]');
 	$("#porcen_"+ind).val(porcen);
+	$("#porcen_"+ind+"_val").text(nformat(porcen,2));
 	importerete(nind);
 }
 
@@ -607,8 +592,8 @@ function toggle() {
 				<tr>
 					<td class="littletableheader">           &nbsp;</td>
 					<td class="littletablerow" align='right'>&nbsp;</td>
-					<td class="littletableheader">           <?php echo $form->totpre->label   ?>&nbsp;</td>
-					<td class="littletablerow" align='right'><?php echo $form->totpre->output  ?>&nbsp;</td>
+					<td class="littletableheader">           <?php echo $form->totpre->label  ?>&nbsp;</td>
+					<td class="littletablerow" align='right'><?php echo $form->totpre->output ?>&nbsp;</td>
 				</tr>
 				<tr>
 					<td class="littletableheader">           &nbsp;</td>
