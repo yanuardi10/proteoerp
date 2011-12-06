@@ -1321,6 +1321,23 @@ function sfacreiva(mid){
 	}
 
 
+	function modificar(){
+		$js= file_get_contents('php://input');
+		$campos = json_decode($js,true);
+		//$campos = $data['data'];
+		$id        = $campos['id'];
+		$nfiscal   = $campos['nfiscal'];
+		$maqfiscal = $campos['maqfiscal'];
+
+		//print_r($campos);
+		$mSQL = $this->db->update_string("sfac", array('nfiscal'=>$campos['nfiscal'],'maqfiscal'=>$campos['maqfiscal']),"id='$id'" );
+		$this->db->simple_query($mSQL);
+		logusu('sfac',"FACTURACION ".$campos['id']." MODIFICADO");
+		echo "{ success: true, message: 'Factura Modificado '}";
+		
+	}
+
+
 	function tabla() {
 		$id   = isset($_REQUEST['id'])  ? $_REQUEST['id']   :  0;
 		$cliente = $this->datasis->dameval("SELECT cod_cli FROM sfac WHERE id='$id'");
@@ -1424,42 +1441,43 @@ function sfacreiva(mid){
 		$otros=$this->datasis->otros($modulo, $urlajax);
 
 		$columnas = "
-		{ header: 'Tipo',     width: 30, sortable: true, dataIndex: 'tipo_doc' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Numero',   width: 60, sortable: true, dataIndex: 'numero' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Fecha',    width: 70, sortable: true, dataIndex: 'fecha' , field: { type: 'date' }, filter: { type: 'date' }},
-		{ header: 'Cliente',  width: 60, sortable: true, dataIndex: 'cod_cli' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'RIF/CI',   width: 90, sortable: true, dataIndex: 'rifci' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Nombre',   width:200, sortable: true, dataIndex: 'nombre' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Base',     width: 80, sortable: true, dataIndex: 'totals' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'IVA',      width: 80, sortable: true, dataIndex: 'iva' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Total',    width: 80, sortable: true, dataIndex: 'totalg' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Inicial',  width: 80, sortable: true, dataIndex: 'inicial' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Vence',    width: 70, sortable: true, dataIndex: 'vence' , field: { type: 'date' }, filter: { type: 'date' }},
-		{ header: 'Orden',    width: 60, sortable: true, dataIndex: 'orden' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Referen',  width: 60, sortable: true, dataIndex: 'referen' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Vende',    width: 60, sortable: true, dataIndex: 'vd' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Direc',    width: 60, sortable: true, dataIndex: 'direc' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Dire1',    width: 60, sortable: true, dataIndex: 'dire1' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Status',   width: 60, sortable: true, dataIndex: 'status' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'observa',  width: 60, sortable: true, dataIndex: 'observa' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'observ1',  width: 60, sortable: true, dataIndex: 'observ1' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'devolu',   width: 60, sortable: true, dataIndex: 'devolu' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'cajero',   width: 60, sortable: true, dataIndex: 'cajero' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'almacen',  width: 60, sortable: true, dataIndex: 'almacen' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'peso' , width: 60, sortable: true, dataIndex: 'peso' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'factura' , width: 60, sortable: true, dataIndex: 'factura' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'pedido' , width: 60, sortable: true, dataIndex: 'pedido' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'usuario' , width: 60, sortable: true, dataIndex: 'usuario' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'estampa' , width: 60, sortable: true, dataIndex: 'estampa' , field: { type: 'date' }, filter: { type: 'date' }},
-		{ header: 'hora' , width: 60, sortable: true, dataIndex: 'hora' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'transac' , width: 60, sortable: true, dataIndex: 'transac' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'nfiscal' , width: 60, sortable: true, dataIndex: 'nfiscal' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'zona' , width: 60, sortable: true, dataIndex: 'zona' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'ciudad' , width: 60, sortable: true, dataIndex: 'ciudad' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'comision' , width: 60, sortable: true, dataIndex: 'comision' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'pagada' , width: 60, sortable: true, dataIndex: 'pagada' , field: { type: 'date' }, filter: { type: 'date' }},
-		{ header: 'sepago' , width: 60, sortable: true, dataIndex: 'sepago' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'dias' , width: 60, sortable: true, dataIndex: 'dias' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Tipo',       width: 30, sortable: true, dataIndex: 'tipo_doc' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Numero',     width: 60, sortable: true, dataIndex: 'numero' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'N.Fiscal',   width: 70, sortable: true, dataIndex: 'nfiscal' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Fecha',      width: 70, sortable: true, dataIndex: 'fecha' , field: { type: 'date' }, filter: { type: 'date' }},
+		{ header: 'Cliente',    width: 60, sortable: true, dataIndex: 'cod_cli' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'RIF/CI',     width: 90, sortable: true, dataIndex: 'rifci' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Nombre',     width:200, sortable: true, dataIndex: 'nombre' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Base',       width: 80, sortable: true, dataIndex: 'totals' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'IVA',        width: 80, sortable: true, dataIndex: 'iva' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Total',      width: 80, sortable: true, dataIndex: 'totalg' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Inicial',    width: 80, sortable: true, dataIndex: 'inicial' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Vence',      width: 70, sortable: true, dataIndex: 'vence' , field: { type: 'date' }, filter: { type: 'date' }},
+		{ header: 'Maq/Fiscal', width: 90, sortable: true, dataIndex: 'maqfiscal' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Orden',      width: 60, sortable: true, dataIndex: 'orden' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Referen',    width: 60, sortable: true, dataIndex: 'referen' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Vende',      width: 60, sortable: true, dataIndex: 'vd' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Direc',      width: 60, sortable: true, dataIndex: 'direc' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Dire1',      width: 60, sortable: true, dataIndex: 'dire1' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Status',     width: 60, sortable: true, dataIndex: 'status' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'observa',    width: 60, sortable: true, dataIndex: 'observa' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'observ1',    width: 60, sortable: true, dataIndex: 'observ1' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'devolu',     width: 60, sortable: true, dataIndex: 'devolu' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'cajero',     width: 60, sortable: true, dataIndex: 'cajero' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'almacen',    width: 60, sortable: true, dataIndex: 'almacen' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'peso',       width: 60, sortable: true, dataIndex: 'peso' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'factura',    width: 60, sortable: true, dataIndex: 'factura' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'pedido',     width: 60, sortable: true, dataIndex: 'pedido' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'usuario',    width: 60, sortable: true, dataIndex: 'usuario' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'estampa',    width: 60, sortable: true, dataIndex: 'estampa' , field: { type: 'date' }, filter: { type: 'date' }},
+		{ header: 'hora',       width: 60, sortable: true, dataIndex: 'hora' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'transac',    width: 60, sortable: true, dataIndex: 'transac' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'zona',       width: 60, sortable: true, dataIndex: 'zona' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'ciudad',     width: 60, sortable: true, dataIndex: 'ciudad' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'comision',   width: 60, sortable: true, dataIndex: 'comision' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'pagada',     width: 60, sortable: true, dataIndex: 'pagada' , field: { type: 'date' }, filter: { type: 'date' }},
+		{ header: 'sepago',     width: 60, sortable: true, dataIndex: 'sepago' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'dias',       width: 60, sortable: true, dataIndex: 'dias' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
 		{ header: 'fpago' , width: 60, sortable: true, dataIndex: 'fpago' , field: { type: 'date' }, filter: { type: 'date' }},
 		{ header: 'comical' , width: 60, sortable: true, dataIndex: 'comical' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
 		{ header: 'exento' , width: 60, sortable: true, dataIndex: 'exento' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
@@ -1475,7 +1493,6 @@ function sfacreiva(mid){
 		{ header: 'fdespacha' , width: 60, sortable: true, dataIndex: 'fdespacha' , field: { type: 'date' }, filter: { type: 'date' }},
 		{ header: 'udespacha' , width: 60, sortable: true, dataIndex: 'udespacha' , field: { type: 'textfield' }, filter: { type: 'string' }},
 		{ header: 'numarma' , width: 60, sortable: true, dataIndex: 'numarma' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'maqfiscal' , width: 60, sortable: true, dataIndex: 'maqfiscal' , field: { type: 'textfield' }, filter: { type: 'string' }},
 		{ header: 'dmaqfiscal' , width: 60, sortable: true, dataIndex: 'dmaqfiscal' , field: { type: 'textfield' }, filter: { type: 'string' }},
 		{ header: 'nromanual' , width: 60, sortable: true, dataIndex: 'nromanual' , field: { type: 'textfield' }, filter: { type: 'string' }},
 		{ header: 'fmanual' , width: 60, sortable: true, dataIndex: 'fmanual' , field: { type: 'date' }, filter: { type: 'date' }},
@@ -1736,5 +1753,4 @@ function renderSinv(value, p, record) {
 		$this->load->view('extjs/extjsvenmd',$data);
 		
 	}
-
 }
