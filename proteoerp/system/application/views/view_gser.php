@@ -650,7 +650,7 @@ function toggle() {
 					?>
 					<td class="littletablerow" align='center'><?php echo $form->_dataobject->get('usuario'); ?>&nbsp;</td>
 					<td class="littletablerow" align='center'><?php echo $us_nombre ?>&nbsp;</td>
-					<td class="littletablerow" align='center'><?php echo $form->_dataobject->get('estampa'); ?>&nbsp;</td>
+					<td class="littletablerow" align='center'><?php echo dbdate_to_human($form->_dataobject->get('estampa')); ?>&nbsp;</td>
 					<td class="littletablerow" align='center'><?php echo $form->_dataobject->get('hora'); ?>&nbsp;</td>
 					<td class="littletablerow" align='center'><?php echo $form->_dataobject->get('transac'); ?>&nbsp;</td>
 				</tr>
@@ -675,7 +675,7 @@ function toggle() {
 				<tr style='font-size:12px;color:#FFEEFF;background-color: #393B0B;'>
 					<td align='center'>Periodo &nbsp;</td>
 					<td align='center'>Numero &nbsp;</td>
-					<td align='center'>Emision &nbsp;</td>
+					<td align='center'>Emisi&oacute;n &nbsp;</td>
 					<td align='center'>Impuesto &nbsp;</td>
 					<td align='center'>Monto &nbsp;</td>
 					<td align='center'>% &nbsp;</td>
@@ -716,7 +716,7 @@ function toggle() {
 				<?php }; ?>
 
 			<?php
-				$mSQL = "SELECT CONCAT(tipo_doc, numero) numero, CONCAT(cod_prv,' ',nombre) cod_prv, monto*(tipo_doc IN ('FC','ND','GI')) debe, monto*(tipo_doc NOT IN ('FC','ND','GI')) haber , monto-abonos saldo FROM sprm WHERE transac=? ";
+				$mSQL = "SELECT CONCAT(tipo_doc, numero) numero, CONCAT(cod_prv,'-',nombre) cod_prv, monto*(tipo_doc IN ('FC','ND','GI')) debe, monto*(tipo_doc NOT IN ('FC','ND','GI')) haber , monto-abonos saldo FROM sprm WHERE transac=? ";
 				$query = $this->db->query($mSQL, array(trim($form->_dataobject->get('transac'))) );
 				if ( $query->num_rows() > 0 ) { ?>
 			<fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
