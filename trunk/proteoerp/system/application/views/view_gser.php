@@ -406,26 +406,26 @@ function toggle() {
 			<tr>
 				<td class="littletableheader"><?php echo $form->tipo_doc->label  ?>*&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->tipo_doc->output ?>&nbsp; </td>
-				<td class="littletableheader"><?php echo $form->ffactura->label  ?>*&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->ffactura->output ?>&nbsp; </td>
 				<td class="littletableheader"><?php echo $form->proveed->label   ?>*&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->proveed->output.$form->sprvtipo->output.$form->sprvreteiva->output  ?>&nbsp; </td>
+				<td class="littletableheader"><?php echo $form->ffactura->label  ?>*&nbsp;</td>
+				<td class="littletablerow">   <?php echo $form->ffactura->output ?>&nbsp; </td>
 			</tr>
 			<tr>
 				<td class="littletableheader"><?php echo $form->numero->label  ?>*</td>
 				<td class="littletablerow">   <?php echo $form->numero->output ?>&nbsp;</td>
-				<td class="littletableheader"><?php echo $form->fecha->label   ?>*&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->fecha->output  ?>&nbsp; </td>
 				<td class="littletableheader"><?php echo $form->nombre->label  ?>*&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->nombre->output ?>&nbsp; </td>
+				<td class="littletableheader"><?php echo $form->fecha->label   ?>*&nbsp;</td>
+				<td class="littletablerow">   <?php echo $form->fecha->output  ?>&nbsp; </td>
 			</tr>
 			<tr>
 				<td class="littletableheader"><?php echo $form->nfiscal->label  ?>&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->nfiscal->output ?>&nbsp;</td>
-				<td class="littletableheader"><?php echo $form->vence->label    ?>&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->vence->output   ?>&nbsp;</td>
 				<td class="littletableheader"><?php echo $form->compra->label   ?>&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->compra->output  ?>&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->vence->label    ?>&nbsp;</td>
+				<td class="littletablerow">   <?php echo $form->vence->output   ?>&nbsp;</td>
 			</tr>
 		</table>
 		</fieldset>
