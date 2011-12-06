@@ -1386,7 +1386,7 @@ function gserfiscal(mid){
 			),
 			'filtro'  => array('proveed'=>'C&oacute;digo','nombre'=>'Nombre'),
 			'retornar'=> array('proveed'=>'proveed','nombre'=>'nombre','tipo'=>'sprvtipo','reteiva'=>'sprvreteiva'),
-			'script'  => array('totalizar()'),
+			'script'  => array('post_sprv_modbus()'),
 			'titulo'  =>'Buscar Proveedor');
 		$bSPRV=$this->datasis->modbus($mSPRV);
 
@@ -1464,6 +1464,7 @@ function gserfiscal(mid){
 		$edit->nombre = new inputField("Nombre", "nombre");
 		$edit->nombre->size = 30;
 		$edit->nombre->maxlength=40;
+		$edit->nombre->type='inputhidden';
 		$edit->nombre->rule= "required";
 
 		$edit->sprvtipo = new hiddenField('','sprvtipo');
@@ -1479,18 +1480,20 @@ function gserfiscal(mid){
 		$edit->totpre->size = 10;
 		$edit->totpre->css_class='inputnum';
 		$edit->totpre->readonly = true;
-		$edit->totpre->showformat ='decimal'; 
+		$edit->totpre->showformat ='decimal';
+		$edit->totpre->type='inputhidden';
 
 		$edit->totbruto= new inputField("Total", "totbruto");
 		$edit->totbruto->size = 10;
 		$edit->totbruto->css_class='inputnum';
-		$edit->totbruto->onkeyup="valida(0)";
-		$edit->totbruto->showformat ='decimal'; 
+		$edit->totbruto->showformat ='decimal';
+		$edit->totbruto->type='inputhidden';
 
 		$edit->totiva = new inputField("Total IVA", "totiva");
 		$edit->totiva->css_class ='inputnum';
 		$edit->totiva->size      = 10;
-		$edit->totiva->showformat ='decimal'; 
+		$edit->totiva->showformat ='decimal';
+		$edit->totiva->type='inputhidden';
 
 		$edit->reteica = new inputField('Ret. ICA', 'reteica');
 		$edit->reteica->css_class = 'inputnum';
@@ -1542,19 +1545,22 @@ function gserfiscal(mid){
 		$edit->credito->onkeyup="ccredito()";
 		$edit->credito->autocomplete=false;
 
-		$edit->reten = new inputField("Monto de la retenci&oacute;n","reten");
+		$edit->reten = new inputField("Ret. ISLR","reten");
 		$edit->reten->size = 10;
 		$edit->reten->maxlength=10;
 		$edit->reten->css_class='inputnum';
-		$edit->reten->when=array('show');
-		$edit->reten->showformat ='decimal'; 
+		//$edit->reten->when=array('show');
+		$edit->reten->showformat ='decimal';
+		$edit->reten->type='inputhidden';
 
 		$edit->reteiva = new inputField("Ret.de IVA","reteiva");
 		$edit->reteiva->size = 10;
 		$edit->reteiva->maxlength=10;
 		$edit->reteiva->rule = 'callback_chreteiva';
+		$edit->reteiva->onchange="totalizar()";
 		$edit->reteiva->css_class='inputnum';
-		$edit->reteiva->showformat ='decimal'; 
+		$edit->reteiva->showformat ='decimal';
+		$edit->reteiva->autocomplete=false;
 		//$edit->reteiva->onkeyup="reteiva()";
 
 		$edit->reteica = new inputField("Ret. ICA","reteica");
@@ -1569,7 +1575,8 @@ function gserfiscal(mid){
 		$edit->totneto->maxlength=10;
 		$edit->totneto->css_class='inputnum';
 		$edit->totneto->readonly=true;
-		$edit->totneto->showformat ='decimal'; 
+		$edit->totneto->showformat ='decimal';
+		$edit->totneto->type='inputhidden';
 
 		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
 		$edit->estampa = new autoUpdateField('estampa' ,date('Ymd'), date('Ymd'));
@@ -1621,7 +1628,8 @@ function gserfiscal(mid){
 		$edit->iva->size=8;
 		$edit->iva->rule='positive|callback_chretiva';
 		$edit->iva->onkeyup="valida(<#i#>)";
-		$edit->iva->showformat ='decimal'; 
+		$edit->iva->showformat ='decimal';
+		$edit->iva->type='inputhidden';
 
 		$edit->importe = new inputField("importe <#o#>", "importe_<#i#>");
 		$edit->importe->db_name='importe';
@@ -1629,7 +1637,8 @@ function gserfiscal(mid){
 		$edit->importe->rel_id   ='gitser';
 		$edit->importe->size=10;
 		$edit->importe->onkeyup="valida(<#i#>)";
-		$edit->importe->showformat ='decimal'; 
+		$edit->importe->showformat ='decimal';
+		$edit->importe->type='inputhidden';
 
 		$edit->departa =  new dropdownField("Departamento <#o#>", "departa_<#i#>");
 		$edit->departa->option('','Seleccionar');
@@ -1685,7 +1694,8 @@ function gserfiscal(mid){
 		$edit->porcen->rel_id    ='gereten';
 		$edit->porcen->readonly  = true;
 		$edit->porcen->maxlength =5;
-		$edit->porcen->showformat ='decimal'; 
+		$edit->porcen->showformat ='decimal';
+		$edit->porcen->type='inputhidden';
 
 		$edit->monto = new inputField('monto','monto_<#i#>');
 		$edit->monto->db_name='monto';
@@ -1695,7 +1705,8 @@ function gserfiscal(mid){
 		$edit->monto->size =12;
 		$edit->monto->readonly  = true;
 		$edit->monto->maxlength =8;
-		$edit->monto->showformat ='decimal'; 
+		$edit->monto->showformat ='decimal';
+		$edit->monto->type='inputhidden';
 		//*****************************
 		//Fin de campos para detalle
 		//*****************************
