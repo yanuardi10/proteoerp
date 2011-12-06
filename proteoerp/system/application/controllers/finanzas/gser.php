@@ -1311,7 +1311,7 @@ function gserfiscal(mid){
 			$this->db->where('codbanc', $row->codbanc);
 			$this->db->where('tipo_op', $row->tipo_op);
 			$this->db->where('numero' , $row->numero);
-			$this->db->update('smov', $data); 
+			$this->db->update('bmov', $data); 
 
 			$cargo   =$row->codbanc;
 			$totneto =$row->monto;
@@ -1319,7 +1319,7 @@ function gserfiscal(mid){
 
 			$sql='CALL sp_actusal('.$this->db->escape($cargo).",'$sp_fecha',$totneto)";
 			$ban=$this->db->simple_query($sql);
-			if($ban==false){ memowrite($sql,'gser'); $error++; }
+			if($ban==false){ memowrite($sql,'gser');}
 		}
 	}
 
@@ -1419,9 +1419,11 @@ function gserfiscal(mid){
 		$edit->tipo_doc->style="width:100px";
 		$edit->tipo_doc->option('FC',"Factura");
 		$edit->tipo_doc->option('ND',"Nota Debito");
-		//$edit->tipo_doc->option('AD',"Amortizaci&oacute;n");
-		//$edit->tipo_doc->option('GA',"Gasto");
-		//$edit->tipo_doc->option('GA',"Gasto de N&oacute;mina");
+		if($edit->_status=='show'){
+			$edit->tipo_doc->option('XX',"Anulado");
+			$edit->tipo_doc->option('AD',"Amortizaci&oacute;n");
+			$edit->tipo_doc->option('GA',"Gasto de N&oacute;mina");
+		}
 
 		$edit->ffactura = new DateonlyField("Fecha Documento", "ffactura","d/m/Y");
 		$edit->ffactura->insertValue = date("Y-m-d");
@@ -1983,9 +1985,11 @@ function gserfiscal(mid){
 			$nn=$this->datasis->banprox($codb1);
 			$do->set('cheque1',$nn);
 		}else{
-			$cheque=$do->get('cheque1');
-			$cheque=str_pad($cheque, 12, '0', STR_PAD_LEFT);
-			$do->set('cheque1',$cheque);
+			if(!empty($codb1)){
+				$cheque=$do->get('cheque1');
+				$cheque=str_pad($cheque, 12, '0', STR_PAD_LEFT);
+				$do->set('cheque1',$cheque);
+			}
 		}
 
 		$mSQL='SELECT COUNT(*) FROM gser WHERE proveed='.$this->db->escape($proveed).' AND numero='.$this->db->escape($numero).' AND fecha='.$this->db->escape($fecha).' AND tipo_doc='.$this->db->escape($tipo_doc);
@@ -2402,28 +2406,43 @@ function gserfiscal(mid){
 	function _pre_delete($do){
 		$transac  = $do->get('transac');		
 		$tipo_doc = $do->get('tipo_doc');
+		$cod_prv  = $do->get('proveed');
 
 		if($tipo_doc=='XX'){
 			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='El gasto ya fue anulado.';
 			return false;
 		}
 
-		$this->db->select(array('tipo_doc','monto','abonos'));
+		$this->db->select(array('cod_prv','tipo_doc','monto','abonos'));
 		$this->db->from('sprm');
 		$this->db->where('transac',$transac);
 		$query = $this->db->get();
 
+		$verif=true;
+		$abs=$fcs=0;
 		if ($query->num_rows() > 0){
 			foreach ($query->result() as $row){
-				
+				if($row->tipo_doc=='NC' || $row->tipo_doc=='AB'){
+					$abs+=$row->monto;
+				}
+				if($row->tipo_doc=='ND' && $row->abonos!=0 && $row->cod_prv!=$cod_prv){
+					$verif=false;
+					break;
+				}
+				if($row->tipo_doc==$tipo_doc && $row->cod_prv==$cod_prv){
+					$fcs=$row->abonos;
+				}
+			}
+			if(round($fcs-$abs,2)!=0.00){
+				$verif=false;
 			}
 		}
 
-		if(false){
+		if(!$verif){
 			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='No se puede anular el gasto por tener abonos, eliminelos antes de continuar.';
 			return false;
 		}
-		
+
 		$this->db->delete('sprm', array('transac' => $transac));
 		$this->_rm_gserrete($transac);
 		$this->_rm_bmovgser($transac);
@@ -2609,12 +2628,12 @@ function gserfiscal(mid){
 		
 		if (!$this->db->table_exists('gereten')) {
 			$query="CREATE TABLE `gereten` (
-				`id` INT(10) NOT NULL DEFAULT '0',
+				`id` INT(10) NOT NULL AUTO_INCREMENT,
 				`idd` INT(11) NULL DEFAULT NULL,
-				`origen` CHAR(4) NULL DEFAULT NULL COLLATE 'utf8_unicode_ci',
-				`numero` VARCHAR(25) NULL DEFAULT NULL COLLATE 'utf8_unicode_ci',
-				`codigorete` VARCHAR(4) NULL DEFAULT NULL COLLATE 'utf8_unicode_ci',
-				`actividad` VARCHAR(45) NULL DEFAULT NULL COLLATE 'utf8_unicode_ci',
+				`origen` CHAR(4) NULL DEFAULT NULL COLLATE 'latin1_swedish_ci',
+				`numero` VARCHAR(25) NULL DEFAULT NULL COLLATE 'latin1_swedish_ci',
+				`codigorete` VARCHAR(4) NULL DEFAULT NULL COLLATE 'latin1_swedish_ci',
+				`actividad` VARCHAR(45) NULL DEFAULT NULL COLLATE 'latin1_swedish_ci',
 				`base` DECIMAL(10,2) NULL DEFAULT NULL,
 				`porcen` DECIMAL(5,2) NULL DEFAULT NULL,
 				`monto` DECIMAL(10,2) NULL DEFAULT NULL,
@@ -2622,7 +2641,7 @@ function gserfiscal(mid){
 			)
 			COLLATE='latin1_swedish_ci'
 			ENGINE=MyISAM
-			ROW_FORMAT=DEFAULT";
+			AUTO_INCREMENT=1;";
 			$this->db->simple_query($query);
 		}
 		
