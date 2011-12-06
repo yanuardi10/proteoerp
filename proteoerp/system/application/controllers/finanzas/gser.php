@@ -1152,7 +1152,7 @@ function gserfiscal(mid){
 	//Crea la retencion
 	function _gserrete($fecha,$tipo,$fechafac,$numero,$nfiscal,$afecta,$clipro,$montasa,$monredu,$monadic,$tasa,$reducida,$sobretasa,$exento,$reiva,$transac){
 		$nrocomp=$this->datasis->fprox_numero('niva');
-		$sp_fecha = str_replace('-','',$fecha);
+		$sp_fecha= str_replace('-','',$fecha);
 		$row     = $this->datasis->damerow('SELECT nombre,rif FROM sprv WHERE proveed='.$this->db->escape($clipro));
 		$totpre  = $montasa+$monredu+$monadic+$exento;
 		$totiva  = $tasa+$reducida+$sobretasa;
@@ -1198,6 +1198,10 @@ function gserfiscal(mid){
 		return ($error==0)? true : false;
 	}
 
+	function _rm_gserrete($transac){
+		$this->db->delete('riva', array('transac' => $transac));
+	}
+
 	//Crea la cuenta por pagar en caso de que el gasto sea a credito
 	function _gsersprm($codbanc,$codprv,$numero,$fecha,$montasa,$monredu,$monadic,$tasa,$reducida,$sobretasa,$exento,$causado,$transac,$abono=0){
 		$nombre  = $this->datasis->dameval('SELECT nombre FROM sprv WHERE proveed='.$this->db->escape($codprv));
@@ -1238,8 +1242,13 @@ function gserfiscal(mid){
 		return ($error==0)? true : false;
 	}
 
+	//Reversa la transaccion en sprm
+	function _rm_gsersprm($transac){
+		$this->db->delete('sprm', array('transac' => $transac)); 
+	}
+
 	//genera el movimiento de banco cuando el pago es al contado
-	function _bmovgser($codbanc,$codprv,$cargo,$negreso,$cheque,$fecha,$totneto,$benefi,$transac){
+	function _bmovgser($codbanc,$codprv,$cargo,$negreso,$cheque,$fecha,$totneto,$benefi,$transac,$msj=''){
 		$nombre  = $this->datasis->dameval('SELECT nombre FROM sprv WHERE proveed='.$this->db->escape($codprv));
 		$datacar = common::_traebandata($cargo);
 		$sp_fecha = str_replace('-','',$fecha);
@@ -1260,7 +1269,7 @@ function gserfiscal(mid){
 		$data['codcp']      = $codprv;
 		$data['nombre']     = $nombre;
 		$data['monto']      = $totneto;
-		$data['concepto']   = '';
+		$data['concepto']   = $msj;
 		$data['benefi']     = $benefi;
 		$data['posdata']    = '';
 		$data['abanco']     = '';
@@ -1285,6 +1294,33 @@ function gserfiscal(mid){
 		if($ban==false){ memowrite($sql,'gser'); $error++; }
 
 		return ($error==0)? true : false;
+	}
+
+	function _rm_bmovgser($transac){
+		$sel=array('codbanc','tipo_op','numero','monto');
+		$this->db->select($sel);
+		$this->db->from('bmov');
+		$this->db->where('transac',$transac);
+
+		$query = $this->db->get();
+		foreach ($query->result() as $row){
+			$data = array(
+               'anulado' => 'S',
+            );
+
+			$this->db->where('codbanc', $row->codbanc);
+			$this->db->where('tipo_op', $row->tipo_op);
+			$this->db->where('numero' , $row->numero);
+			$this->db->update('smov', $data); 
+
+			$cargo   =$row->codbanc;
+			$totneto =$row->monto;
+			$sp_fecha=date('Ymd');
+
+			$sql='CALL sp_actusal('.$this->db->escape($cargo).",'$sp_fecha',$totneto)";
+			$ban=$this->db->simple_query($sql);
+			if($ban==false){ memowrite($sql,'gser'); $error++; }
+		}
 	}
 
 	function ajaxsprv(){
@@ -1334,26 +1370,12 @@ function gserfiscal(mid){
 		}
 		$values=array_slice($url_pk,-$coun);
 		$claves=array_combine (array_reverse($pk) ,$values );
-		//print_r($claves);
 		
 		$query="UPDATE gitser AS a
 			JOIN gser AS b on a.numero=b.numero and a.fecha = b.fecha and a.proveed = b.proveed
 			SET a.idgser=b.id
 			WHERE a.id=".$claves['id']." ";
-			$this->db->simple_query($query);
-
-
-		/*$modbus=array(
-			'tabla'   => 'mgas',
-			'columnas'=> array(
-			'codigo'  => 'C&oacute;digo',
-			'descrip' => 'descrip'),
-			'filtro'  => array('codigo' =>'C&oacute;digo','descrip'=>'descrip'),
-			'retornar'=> array('codigo'=>'codigo_<#i#>','descrip'=>'descrip_<#i#>'),
-			'p_uri'   => array(4=>'<#i#>'),
-			'titulo'  => 'Buscar Articulo',
-			'script'  => array('lleva(<#i#>)'));
-		$btn=$this->datasis->p_modbus($modbus,'<#i#>');*/
+		$this->db->simple_query($query);
 
 		$mSPRV=array(
 			'tabla'   =>'sprv',
@@ -1388,6 +1410,7 @@ function gserfiscal(mid){
 
 		$edit->pre_process( 'insert','_pre_insert' );
 		$edit->pre_process( 'update','_pre_update' );
+		$edit->pre_process( 'delete','_pre_delete' );
 		$edit->post_process('insert','_post_insert');
 		$edit->post_process('update','_post_update');
 		$edit->post_process('delete','_post_delete');
@@ -1396,8 +1419,8 @@ function gserfiscal(mid){
 		$edit->tipo_doc->style="width:100px";
 		$edit->tipo_doc->option('FC',"Factura");
 		$edit->tipo_doc->option('ND',"Nota Debito");
-		$edit->tipo_doc->option('AD',"Amortizaci&oacute;n");
-		$edit->tipo_doc->option('GA',"Gasto");
+		//$edit->tipo_doc->option('AD',"Amortizaci&oacute;n");
+		//$edit->tipo_doc->option('GA',"Gasto");
 		//$edit->tipo_doc->option('GA',"Gasto de N&oacute;mina");
 
 		$edit->ffactura = new DateonlyField("Fecha Documento", "ffactura","d/m/Y");
@@ -1519,24 +1542,12 @@ function gserfiscal(mid){
 		$edit->credito->onkeyup="ccredito()";
 		$edit->credito->autocomplete=false;
 
-		/*$edit->creten = new inputField("C&oacute;digo de la retencion","creten");
-		$edit->creten->size = 10;
-		$edit->creten->maxlength=10;
-		$edit->creten->append($bRETE);*/
-
-		/*$edit->breten = new inputField("Base de la retenci&oacute;n","breten");
-		$edit->breten->size = 10;
-		$edit->breten->maxlength=10;
-		$edit->breten->css_class='inputnum';
-		$edit->breten->onkeyup="valida(0)";*/
-
 		$edit->reten = new inputField("Monto de la retenci&oacute;n","reten");
 		$edit->reten->size = 10;
 		$edit->reten->maxlength=10;
 		$edit->reten->css_class='inputnum';
 		$edit->reten->when=array('show');
 		$edit->reten->showformat ='decimal'; 
-		//$edit->reten->onkeyup="valida(0)";
 
 		$edit->reteiva = new inputField("Ret.de IVA","reteiva");
 		$edit->reteiva->size = 10;
@@ -1630,7 +1641,6 @@ function gserfiscal(mid){
 		$edit->departa->onchange="gdeparta(this.value)";
 
 		$edit->sucursal =  new dropdownField("Sucursal <#o#>", "sucursal_<#i#>");
-		//$edit->sucursal->option('','Seleccionar');
 		$edit->sucursal->options("SELECT codigo,CONCAT(codigo,'-', sucursal) AS sucursal FROM sucu ORDER BY codigo");
 		$edit->sucursal->db_name='sucursal';
 		$edit->sucursal->rule='required';
@@ -1697,7 +1707,7 @@ function gserfiscal(mid){
 
 		$edit->buttons('save', 'undo', 'delete', 'back','add_rel','add');
 		$edit->build();
-		//echo $edit->_dataobject->db->last_query();
+
 		$smenu['link']   = barra_menu('518');
 		$conten['form']  =& $edit;
 		$data['content'] =  $this->load->view('view_gser', $conten,true);
@@ -1935,7 +1945,6 @@ function gserfiscal(mid){
 		$ffecha  = $do->get('ffactura');
 		$codb1   = $do->get('codb1');
 		$tipo1   = $do->get('tipo1');
-		$monto1  = $do->get('monto1');
 		$benefi  = $do->get('benefi');
 		$nombre  = $do->get('nombre');
 		$numero  = $do->get('numero');
@@ -1963,6 +1972,10 @@ function gserfiscal(mid){
 		if($_tipo=='CAJ'){
 			$nn=$this->datasis->banprox($codb1);
 			$do->set('cheque1',$nn);
+		}else{
+			$cheque=$do->get('cheque1');
+			$cheque=str_pad($cheque, 12, '0', STR_PAD_LEFT);
+			$do->set('cheque1',$cheque);
 		}
 
 		$mSQL='SELECT COUNT(*) FROM gser WHERE proveed='.$this->db->escape($proveed).' AND numero='.$this->db->escape($numero).' AND fecha='.$this->db->escape($fecha).' AND tipo_doc='.$this->db->escape($tipo_doc);
@@ -2011,10 +2024,7 @@ function gserfiscal(mid){
 
 			$do->set_rel('gitser','iva'    ,$iva        ,$i);
 			$do->set_rel('gitser','importe',$importe,$i);
-
-			$reteica=$retemonto=0;
 		}
-		$do->set('reten'  ,$retemonto);
 
 		//Calcula la retencion del iva si aplica
 		$rif      = $this->datasis->traevalor('RIF');
@@ -2119,167 +2129,297 @@ function gserfiscal(mid){
 		$transac  = $do->get('transac');
 		$cheque   = $do->get('cheque1');
 		$monto1   = $do->get('monto1');
+		$tipo1    = $do->get('tipo1');
+		$codb1    = $do->get('codb1');
 		$reiva    = $do->get('reteiva');
+		$reten    = $do->get('reten');
 		$nfiscal  = $do->get('nfiscal');
 		$tipo     = $do->get('tipo_doc');
 		$afecta   = $do->get('afecta');
+		$estampa  = $do->get('estampa');
+		$usuario  = $do->get('usuario');
+		$hora     = $do->get('hora');
+		$nombre   = $do->get('nombre');
+		$totiva   = $do->get('totiva');
 
-		//$totneto  = $do->get('totneto');
-		$totneto=round($montasa+$monredu+$monadic+$tasa+$reducida+$sobretasa+$exento,2);
-		$totcred=round($totneto-$monto1,2);
+		$totbruto = $do->get('totbruto');
+		$totneto  = $do->get('totneto');
+		$totcred  = round($totneto-$monto1,2);
 
-		if($monto1 > 0.00){ //monto al contado
-			$benefi=$do->get('benefi');
-			$this->_bmovgser($codbanc,$codprv,$codbanc,$negreso,$cheque,$fecha,$monto1,$benefi,$transac);	
+		//Crea el abono
+		if($monto1>0){
+			$absprm  = $this->datasis->fprox_numero('num_nd');
+			$control = $this->datasis->fprox_numero('nsprm');
+
+			$data=array();
+			$data['cod_prv']    = $codprv;
+			$data['nombre']     = $nombre;
+			$data['tipo_doc']   = 'AB';
+			$data['numero']     = $absprm;
+			$data['fecha']      = $fecha ;
+			$data['monto']      = $monto1;
+			$data['impuesto']   = 0 ;
+			$data['abonos']     = $monto1;
+			$data['vence']      = $fecha;
+			$data['observa1']   = 'ABONA A '.$tipo.$numero;
+			$data['transac']    = $transac;
+			$data['estampa']    = $estampa;
+			$data['hora']       = $hora;
+			$data['usuario']    = $usuario;
+			$data['banco']      = $codb1;
+			$data['tipo_op']    = ($tipo1=='C')? 'CH' :'DE';
+			$data['numche']     = $cheque;
+			$data['reteiva']    = 0;
+			$data['montasa']    = 0;
+			$data['monredu']    = 0;
+			$data['monadic']    = 0;
+			$data['tasa']       = 0;
+			$data['reducida']   = 0;
+			$data['sobretasa']  = 0;
+			$data['exento']     = 0;
+			$data['control']    = $control;
+
+			$sql=$this->db->insert_string('sprm', $data);
+			$ban=$this->db->simple_query($sql);
+			if($ban==false){ memowrite($sql,'gser');}
 		}
+		//Fin de la creacion del abono
 
-		if($totcred > 0.00){ //monto a credito
-			$this->_gsersprm($codbanc,$codprv,$numero,$fecha,$montasa,$monredu,$monadic,$tasa,$reducida,$sobretasa,$exento,$causado,$transac,$monto1);
+		//Crea el movimiento para la retencion ISLR
+		if($reten>0){
+			$mnsprm  = $this->datasis->fprox_numero('num_nd');
+			$control = $this->datasis->fprox_numero('nsprm');
+
+			$data=array();
+			$data['cod_prv']    = 'RETEN';
+			$data['nombre']     = 'RETENCIONES POR ENTERAR';
+			$data['tipo_doc']   = 'ND';
+			$data['numero']     = $mnsprm;
+			$data['fecha']      = $fecha;
+			$data['monto']      = $reten;
+			$data['impuesto']   = 0;
+			$data['abonos']     = 0;
+			$data['vence']      = $fecha;
+			$data['tipo_ref']   = $tipo;
+			$data['num_ref']    = $numero;
+			$data['observa1']   = 'RET/I.S.L.R. CAUSADA EN';
+			$data['observa2']   = 'FACTURA # '.$numero.' DE FECHA '.$fechafac;
+			$data['transac']    = $transac;
+			$data['estampa']    = $estampa;
+			$data['hora']       = $hora;
+			$data['usuario']    = $usuario;
+			$data['reteiva']    = 0;
+			$data['montasa']    = 0;
+			$data['monredu']    = 0;
+			$data['monadic']    = 0;
+			$data['tasa']       = 0;
+			$data['reducida']   = 0;
+			$data['sobretasa']  = 0;
+			$data['exento']     = 0;
+			$data['control']    = $control;
+			$data['codigo']     = 'NOCON';
+			$data['descrip']    = 'NOTA DE CONTABILIDAD';
+
+			$sql=$this->db->insert_string('sprm', $data);
+			$ban=$this->db->simple_query($sql);
+			if($ban==false){ memowrite($sql,'gser');}
 		}
+		//Fin de la retencion ISLR
 
-		//Guarda la retencion
+		//Crea el movimiento para la retencion de IVA
 		if($reiva>0){
+			$mnsprm  = $this->datasis->fprox_numero('num_nd');
+			$control = $this->datasis->fprox_numero('nsprm');
+
+			$data=array();
+			$data['cod_prv']    = 'REIVA';
+			$data['nombre']     = 'RETENCIONES POR ENTERAR';
+			$data['tipo_doc']   = 'ND';
+			$data['numero']     = $mnsprm;
+			$data['fecha']      = $fecha;
+			$data['monto']      = $reiva;
+			$data['impuesto']   = 0;
+			$data['abonos']     = 0;
+			$data['vence']      = $fecha;
+			$data['tipo_ref']   = $tipo;
+			$data['num_ref']    = $numero;
+			$data['observa1']   = 'RET/IVA CAUSADA EN';
+			$data['observa2']   = 'FACTURA # '.$numero.' DE FECHA '.$fechafac;
+			$data['transac']    = $transac;
+			$data['estampa']    = $estampa;
+			$data['hora']       = $hora;
+			$data['usuario']    = $usuario;
+			$data['reteiva']    = 0;
+			$data['montasa']    = 0;
+			$data['monredu']    = 0;
+			$data['monadic']    = 0;
+			$data['tasa']       = 0;
+			$data['reducida']   = 0;
+			$data['sobretasa']  = 0;
+			$data['exento']     = 0;
+			$data['control']    = $control;
+			$data['codigo']     = 'NOCON';
+			$data['descrip']    = 'NOTA DE CONTABILIDAD';
+
+			$sql=$this->db->insert_string('sprm', $data);
+			$ban=$this->db->simple_query($sql);
+			if($ban==false){ memowrite($sql,'gser'); }
 			$this->_gserrete($fecha,$tipo,$fechafac,$numero,$nfiscal,$afecta,$codprv,$montasa,$monredu,$monadic,$tasa,$reducida,$sobretasa,$exento,$reiva,$transac);
 		}
+		//Fin de la retencion de IVA
+
+		//Crea el movimiento en banco del monto al contado
+		if($monto1 > 0.00){
+			$benefi=$do->get('benefi');
+			$msj = "EGRESO AL CONTADO SEGUN FACTURA $numero";
+			$this->_bmovgser($codbanc,$codprv,$codbanc,$negreso,$cheque,$fecha,$monto1,$benefi,$transac,$msj);	
+		}
+		//Fin del movimiento en el banco
+		
+		//Crea la cuenta por pagar si es necesario
+		if($totcred > 0.00){
+			$causado = $this->datasis->fprox_numero('ncausado');
+			$control = $this->datasis->fprox_numero('nsprm');
+
+			$data=array();
+			$data['cod_prv']    = $codprv;
+			$data['nombre']     = $nombre;
+			$data['tipo_doc']   = $tipo;
+			$data['numero']     = $numero ;
+			$data['fecha']      = $fecha ;
+			$data['monto']      = $totbruto;
+			$data['impuesto']   = $totiva ;
+			$data['abonos']     = $monto1+$reten+$reiva;
+			$data['vence']      = $fecha;
+			$data['observa1']   = '';
+			$data['transac']    = $transac;
+			$data['estampa']    = $estampa;
+			$data['hora']       = $hora;
+			$data['usuario']    = $usuario;
+			$data['reteiva']    = $reiva;
+			$data['montasa']    = $montasa;
+			$data['monredu']    = $monredu;
+			$data['monadic']    = $monadic;
+			$data['tasa']       = $tasa;
+			$data['reducida']   = $reducida;
+			$data['sobretasa']  = $sobretasa;
+			$data['exento']     = $exento;
+			$data['causado']    = $causado;
+			$data['control']    = $control;
+
+			$sql=$this->db->insert_string('sprm', $data);
+			$ban=$this->db->simple_query($sql);
+			if($ban==false){ memowrite($sql,'gser');}
+			
+			//Si tiene retencion de IVA
+			if($reiva>0){
+				$ncsprm = $this->datasis->fprox_numero('num_nc');
+				$data=array();
+				$data['cod_prv']    = $codprv;
+				$data['nombre']     = $nombre;
+				$data['tipo_doc']   = 'NC';
+				$data['numero']     = $ncsprm ;
+				$data['fecha']      = $fecha ;
+				$data['monto']      = $reiva;
+				$data['impuesto']   = 0;
+				$data['tipo_ref']   = $tipo;
+				$data['num_ref']    = $numero;
+				$data['abonos']     = $reiva;
+				$data['vence']      = $fecha;
+				$data['observa1']   = 'RET/IVA CAUSADA EN';
+				$data['observa2']   = 'FACTURA # '.$numero.' DE FECHA '.$fechafac;
+				$data['transac']    = $transac;
+				$data['estampa']    = $estampa;
+				$data['hora']       = $hora;
+				$data['usuario']    = $usuario;
+				$data['reteiva']    = 0;
+				$data['montasa']    = 0;
+				$data['monredu']    = 0;
+				$data['monadic']    = 0;
+				$data['tasa']       = 0;
+				$data['reducida']   = 0;
+				$data['sobretasa']  = 0;
+				$data['exento']     = 0;
+				$data['control']    = $control;
+
+				$sql=$this->db->insert_string('sprm', $data);
+				$ban=$this->db->simple_query($sql);
+				if($ban==false){ memowrite($sql,'gser');}				
+			}
+			
+			//Si tiene ISLR
+			if($reten>0){
+				$ncsprm = $this->datasis->fprox_numero('num_nc');
+				$data=array();
+				$data['cod_prv']    = $codprv;
+				$data['nombre']     = $nombre;
+				$data['tipo_doc']   = 'NC';
+				$data['numero']     = $ncsprm ;
+				$data['fecha']      = $fecha ;
+				$data['monto']      = $reten;
+				$data['impuesto']   = 0;
+				$data['tipo_ref']   = $tipo;
+				$data['num_ref']    = $numero;
+				$data['abonos']     = $reten;
+				$data['vence']      = $fecha;
+				$data['observa1']   = 'RET/I.S.L.R. CAUSADA EN';
+				$data['observa2']   = 'FACTURA # '.$numero.' DE FECHA '.$fechafac;
+				$data['transac']    = $transac;
+				$data['estampa']    = $estampa;
+				$data['hora']       = $hora;
+				$data['usuario']    = $usuario;
+				$data['reteiva']    = 0;
+				$data['montasa']    = 0;
+				$data['monredu']    = 0;
+				$data['monadic']    = 0;
+				$data['tasa']       = 0;
+				$data['reducida']   = 0;
+				$data['sobretasa']  = 0;
+				$data['exento']     = 0;
+				$data['control']    = $control;
+
+				$sql=$this->db->insert_string('sprm', $data);
+				$ban=$this->db->simple_query($sql);
+				if($ban==false){ memowrite($sql,'gser');}
+			}
+		}
+		//Fin de la cuenta por pagar
+
 		logusu('gser',"Gasto $numero CREADO");
 		return true;
 	}
 
-	function _pre_update($do){
-		//print("<pre>");
-		//echo $do->get_rel('itspre','preca',2);
-		$datos=$do->get_all();
-		$ivat=0;$subt=0;$total=0;
-		$cana=$do->count_rel("gitser");
-		$tasa=0;$reducida=0;$sobretasa=0;$montasa=0;$monredu=0;$monadic=0;$exento=0;
-		$con=$this->db->query("select tasa,redutasa,sobretasa from civa order by fecha desc limit 1");
-		$t=$con->row('tasa');$rt=$con->row('redutasa');$st=$con->row('sobretasa');
-
-		for($i=0;$i<$cana;$i++){
-			$do->set_rel('gitser','fecha',$do->get('fecha'),$i);
-			$do->set_rel('gitser','numero',$do->get('numero'),$i);
-
+	function _pre_delete($do){
+		$transac  = $do->get('transac');
+		
+		if(false){
+			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='No se puede anular el gasto por tener abonos, eliminelos antes de continuar.';
+			return false;
 		}
-		foreach($datos['gitser'] as $rel){
-			$auxt=$rel['tasaiva'];
-			if($auxt==$t) {
-				$tasa+=$rel['iva'];
-				$montasa+=$rel['precio'];
-			}elseif($auxt==$rt) {
-				$reducida+=$rel['iva'];
-				$monredu+=$rel['precio'];
-			}elseif($auxt==$st) {
-				$sobretasa+=$rel['iva'];
-				$monadic+=$rel['precio'];
-			}else{
-				$exento+=$rel['precio'];
-			}
-			$p=$rel['precio'];
-			$i=$rel['iva'];
-			$total+=$i+$p;
-			$subt+=$p;
-		}
-		$ivat=$total-$subt;
-		$do->set('tasa',$tasa);$do->set('montasa',$montasa);
-		$do->set('reducida',$reducida);$do->set('monredu',$monredu);
-		$do->set('sobretasa',$sobretasa);$do->set('monadic',$monadic);
-		$do->set('exento',$exento);
+		
+		$this->db->delete('sprm', array('transac' => $transac));
+		$this->_rm_gserrete($transac);
+		$this->_rm_bmovgser($transac);
 
-
-		if ($do->get('monto1') != 0){
-			$negreso  = $this->datasis->fprox_numero("negreso");
-			$ncausado = "";
-		}else{
-			$ncausado = $this->datasis->fprox_numero("ncausado");
-			$negreso  = "";
-		}
-		$do->set('negreso',$negreso);
-		$do->set('ncausado',$ncausado);
-
-		if ($this->datasis->traevalor('pais') == 'COLOMBIA'){
-			if($this->datasis->dameval("SELECT tiva FROM sprv WHERE proveed='".$do->get('proveed')."'")=='S'){
-				foreach($datos['gitser'] as $rel){
-					$mIVA  = $rel['iva'];
-					$mRIVA = $this->datasis->dameval("SELECT reteiva FROM sprv WHERE proveed='".$do->get('proveed')."' ");
-					if ($mRIVA == 0)$mRIVA = 50;
-					$mRETEIVA = ROUND($do->get('precio')*($mIVA/100)*($mRIVA/100),0);
-				}
-				$do->set("RETESIMPLE",  $mRETEIVA);
-				$retesumple = $mRETEIVA;
-			}
-		}
-		$serie=$do->get('serie');
-		if(empty($serie))
-		$XSERIE = $do->get('numero');
-		$do->set('serie',$XSERIE);
-		$XORDEN=$do->get('orden');
-		if ($do->get('tipo_doc') == 'ND')$XORDEN = '        ';
-
-		if($do->get('credito')>0){
-			$ncontrol=$this->datasis->fprox_numero('nsprm');
-			$abonos=$do->get("monto1")+$do->get("anticipo");
-
-
-			$IMPUESTO=$ivat;
-			$VENCE=$do->get('vence');
-			$ABONOS =$abonos+$do->get('reten')+$do->get('reteiva');
-			if($this->datasis->traevalor('pais') == 'COLOMBIA')$ABONOS+=$do->get('reteica');
-			$NFISCAL=$do->get('nfiscal');
-
-			$sql="REPLACE INTO sprm (transac,
-			numero,cod_prv,nombre,tipo_doc,fecha ,
-			monto,impuesto,vence,abonos,tipo_ref,num_ref,
-			nfiscal, control,reteiva,montasa,monredu,monadic,
-			tasa,reducida, sobretasa,exento)
-			values('".$do->get('transac')."','".$do->get('numero')."','".$do->get('proveed')."','".$do->get('nombre')."','".$do->get('tipo_doc')."',
-			'".$do->get('fecha')."',".$total.",".$ivat.",'".$do->get('vence')."',
-			".$ABONOS.",'','','".$do->get('nfiscal')."','".$ncontrol."',
-			".$do->get('reteiva').",".$montasa.",".$monredu.",".$monadic.",
-			".$tasa.",".$reducida.",".$sobretasa.",".$exento.")
-			";
-			$this->db->query($sql);
-
-			if(empty($XORDEN)){
-				$mANTICIPO = $do->get('anticipo');
-
-
-				//Luego buscar anticipos
-				$mSQL = "SELECT * FROM sprm WHERE cod_prv='".$do->get('proveed')."' ";
-
-				$mSQL .= "AND tipo_doc='AN' AND num_ref='".$XORDEN."' ";
-
-				$mSQL .= "AND tipo_ref='OS' ";
-				$banticipo=$this->db->query($mSQL);
-				//echo "aqui".$mSQL."/fin";
-				//exit;
-				$resultado=$banticipo->num_rows();
-
-				foreach($banticipo->result() as $registro){
-					$mTEMPO=$mANTICIPO;
-					$mANTICIPO -=$registro['monto']-$registro['abonos'];
-					$mMONTO=$registro['monto'];
-					$mABONOS=$registro['abonos'];
-					if($mANTICIPO >= 0){
-						$mSQLant="UPDATE sprm SET abonos=".$mMONTO." WHERE tipo_doc='".$registro['tipo_doc']."' AND numero=".$registro['numero']." AND cod_prv='".$do->get('proveed')."'";
-						$this->db->query($mSQLant);
-					}else{
-						$mANTICIPO = 0;
-						$mSQLant="UPDATE sprm SET abonos=".$mTEMPO." WHERE tipo_doc='".$registro['tipo_doc']."' AND numero=".$registro['numero']." AND cod_prv='".$do->get('proveed')."'";
-						$this->db->query($mSQLant);
-					}
-					if($mANTICIPO == 0) break;
-					$campos=array('numppro','tipoppro','cod_prv','numero','tipo_doc','fecha','monto','abono','breten','creten','reten','reteiva','ppago','cambio','mora','transac');
-					$valores=array($registro['numero'],$registro['tipo_doc'],$do->get('proveed'),$do->get('numero'),$do->get('tipo_doc'),$do->get('fecha'),$mMONTO,$mABONOS,0,'',0,0,0,0,0);
-					$mSQL = "INSERT INTO itppro SET(".$campos.")VALUES(".$valores.") ";
-					echo $msql;
-				}
-
-			}
-		}
-		return true;
+		$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='Gasto Anulado.';
+		return false;
 	}
 
-	//chequea que exista un monto cuando se seleccion un banco/caja
+	function _pre_update($do){
+		return false;
+	}
+
+	function _post_update($do){
+		$codigo=$do->get('numero');
+		logusu('gser',"Gasto $codigo Modificado");
+	}
+
+	function _post_delete($do){
+		$codigo=$do->get('numero');
+		logusu('gser',"Gasto $codigo ELIMINADO");
+	}
+
+	//Chequea que exista un monto cuando se seleccion un banco/caja
 	function chmontocontado($val){
 		$codb1=$this->input->post('codb1');
 		if(!empty($codb1)){
@@ -2346,17 +2486,6 @@ function gserfiscal(mid){
 			$this->validation->set_message('chsobretasa', "Si la base adicional es mayor que cero debe generar impuesto");
 			return false;
 		}
-	}
-
-	function _post_update($do){
-		$codigo=$do->get('numero');
-		logusu('gser',"Gasto $codigo Modificado");
-
-	}
-
-	function _post_delete($do){
-		$codigo=$do->get('numero');
-		logusu('gser',"Gasto $codigo ELIMINADO");
 	}
 
 	function instalar(){
@@ -2788,7 +2917,7 @@ function renderSinv(value, p, record) {
 					text: 'Agregar',
 					scope: this,
 					handler: function(){
-						window.open(urlApp+'finanzas/gser/dataedit/create', '_blank', 'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys);
+						window.open(urlApp+'finanzas/gser/dataedit/create', '_blank', 'width=970,height=700,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys);
 					}
 				},
 				{
