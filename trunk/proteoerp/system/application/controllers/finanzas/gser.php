@@ -1590,7 +1590,6 @@ function gserfiscal(mid){
 		$edit->codigo->db_name='codigo';
 		//$edit->codigo->append($btn);
 		$edit->codigo->rule="required";
-		//$edit->codigo->readonly=true;
 		$edit->codigo->rel_id='gitser';
 
 		$edit->descrip = new inputField("Descripci&oacute;n <#o#>", "descrip_<#i#>");
@@ -1663,8 +1662,8 @@ function gserfiscal(mid){
 		//*****************************
 		//Campos para el detalle reten
 		//****************************
-		//$edit->itorigen = new autoUpdateField('origen','SCST','SCST');
-		//$edit->itorigen->rel_id ='gereten';
+		$edit->itorigen = new autoUpdateField('origen','GSER','GSER');
+		$edit->itorigen->rel_id ='gereten';
 
 		$edit->codigorete = new dropdownField('','codigorete_<#i#>');
 		$edit->codigorete->option('','Seleccionar');  
@@ -2401,8 +2400,25 @@ function gserfiscal(mid){
 	}
 
 	function _pre_delete($do){
-		$transac  = $do->get('transac');
-		
+		$transac  = $do->get('transac');		
+		$tipo_doc = $do->get('tipo_doc');
+
+		if($tipo_doc=='XX'){
+			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='El gasto ya fue anulado.';
+			return false;
+		}
+
+		$this->db->select(array('tipo_doc','monto','abonos'));
+		$this->db->from('sprm');
+		$this->db->where('transac',$transac);
+		$query = $this->db->get();
+
+		if ($query->num_rows() > 0){
+			foreach ($query->result() as $row){
+				
+			}
+		}
+
 		if(false){
 			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='No se puede anular el gasto por tener abonos, eliminelos antes de continuar.';
 			return false;
@@ -2411,6 +2427,9 @@ function gserfiscal(mid){
 		$this->db->delete('sprm', array('transac' => $transac));
 		$this->_rm_gserrete($transac);
 		$this->_rm_bmovgser($transac);
+
+		$this->db->where('transac', $transac);
+		$this->db->update('gser', array('tipo_doc'=>'XX'));
 
 		$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='Gasto Anulado.';
 		return false;
