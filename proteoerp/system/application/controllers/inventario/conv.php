@@ -227,11 +227,11 @@ class conv extends Controller {
 
 			if ($ent!=0 && $sal!=0){
 				$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='No puede tener entradas y salidas en el rubro .'.$i+1;
-				return false;	
+				return false;
 			}
 			if ($ent==0 && $sal==0){
 				$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='Debe tener entradas o salidas en el rubro .'.$i+1;
-				return false;	
+				return false;
 			}
 			if($ent != 0){
 				$entradas+=$ent;
@@ -251,11 +251,11 @@ class conv extends Controller {
 		}
 		if ($entradas == 0){
 			$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='Debe ingresar al menos una entrada.';
-			return false;	
+			return false;
 		}
 		if ($salidas == 0){
 			$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='Debe ingresar al menos una salida.';
-			return false;	
+			return false;
 		}
 
 		$numero =$this->datasis->fprox_numero('nconv');
@@ -282,10 +282,11 @@ class conv extends Controller {
 		$do->set('transac',$transac);
 
 		for($i=0;$i<$cana;$i++){
+			//$do->set_rel('itconv','numero'  ,$estampa,$i);
 			$do->set_rel('itconv','estampa' ,$estampa,$i);
 			$do->set_rel('itconv','hora'    ,$hora   ,$i);
 			$do->set_rel('itconv','transac' ,$transac,$i);
-			$do->set_rel('itconv','usuario' ,$usuario,$i);;
+			$do->set_rel('itconv','usuario' ,$usuario,$i);
 		}
 		return true;
 	}
