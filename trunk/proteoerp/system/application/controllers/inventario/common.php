@@ -412,4 +412,21 @@ class Common extends controller {
 		$table=$table->result_array();
 		echo json_encode($table);
 	}
+
+	function _costos($formcal,$costo_pond,$costo_ulti,$costo_stan){
+		switch($formcal){
+			case 'P':
+				$costo=$costo_pond;
+				break;
+			case 'U':
+				$costo=$costo_ulti;
+				break;
+			case 'S':
+				$costo=$costo_stan;
+				break;
+			default:
+				$costo=($costo_pond>$costo_ulti) ? $costo_pond : $costo_ulti;
+		}
+		return $costo;
+	}
 }

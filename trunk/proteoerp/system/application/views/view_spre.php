@@ -24,7 +24,7 @@ $scampos .= $campos['sinvtipo']['field'];
 $scampos .= $campos['ultimo']['field'];
 $scampos .= $campos['pond']['field'];
 $scampos .= $campos['sinvpeso']['field'].'</td>';
-$scampos .= '<td class="littletablerow"><a href=# onclick="del_itspre(<#i#>);return false;">'.img("images/delete.jpg").'</a></td></tr>';
+$scampos .= '<td class="littletablerow"  align="center"><a href=# onclick="del_itspre(<#i#>);return false;">'.img("images/delete.jpg").'</a></td></tr>';
 $campos=$form->js_escape($scampos);
 
 if(isset($form->error_string)) echo '<div class="alert">'.$form->error_string.'</div>';
@@ -109,6 +109,7 @@ function importe(id){
 	var preca   = Number($("#preca_"+ind).val());
 	var importe = roundNumber(cana*preca,2);
 	$("#importe_"+ind).val(importe);
+	$("#importe_"+ind+"_val").text(nformat(importe));
 
 	totalizar();
 }
@@ -139,6 +140,7 @@ function totalizar(){
 		}
 	});
 	$("#peso").val(roundNumber(peso,2));
+	$("#peso_val").text(nformat(peso,2));
 	$("#totalg").val(roundNumber(totals+iva,2));
 	$("#totals").val(roundNumber(totals,2));
 	$("#iva").val(roundNumber(iva,2));
@@ -325,7 +327,6 @@ function autocod(id){
 		},
 		minLength: 2,
 		select: function( event, ui ) {
-			//id='0';
 			$('#codigo_'+id).val(ui.item.codigo);
 			$('#desca_'+id).val(ui.item.descrip);
 			$('#precio1_'+id).val(ui.item.base1);
@@ -341,7 +342,7 @@ function autocod(id){
 			$('#cana_'+id).focus();
 			$('#cana_'+id).select();
 
-			var arr  = $('#preca_'+ind);
+			var arr  = $('#preca_'+id);
 			var tipo = Number($("#sclitipo").val()); if(tipo>0) tipo=tipo-1;
 			cdropdown(id);
 			cdescrip(id);
@@ -419,13 +420,13 @@ function del_itspre(id){
 		<div style='overflow:auto;border: 1px solid #9AC8DA;background: #FAFAFA;height:200px'>
 		<table width='100%' border='0'>
 			<tr id='__INPL__'>
-				<td bgcolor='#7098D0'><strong>C&oacute;digo</strong></td>
-				<td bgcolor='#7098D0'><strong>Descripci&oacute;n</strong></td>
-				<td bgcolor='#7098D0'><strong>Cantidad</strong></td>
-				<td bgcolor='#7098D0'><strong>Precio</strong></td>
-				<td bgcolor='#7098D0'><strong>Importe</strong></td>
+				<th bgcolor='#7098D0'><strong>C&oacute;digo</strong></th>
+				<th bgcolor='#7098D0'><strong>Descripci&oacute;n</strong></th>
+				<th bgcolor='#7098D0'><strong>Cantidad</strong></th>
+				<th bgcolor='#7098D0'><strong>Precio</strong></th>
+				<th bgcolor='#7098D0'><strong>Importe</strong></th>
 				<?php if($form->_status!='show') {?>
-					<td class="littletableheader">&nbsp;</td>
+					<th bgcolor='#7098D0'>&nbsp;</th>
 				<?php } ?>
 			</tr>
 
@@ -469,7 +470,7 @@ function del_itspre(id){
 				<td class="littletablerow" align="right"><?php echo $form->$it_importe->output.$pprecios;?></td>
 
 				<?php if($form->_status!='show') {?>
-				<td class="littletablerow">
+				<td class="littletablerow" align='center'>
 					<a href='#' onclick='del_itspre(<?=$i ?>);return false;'><?php echo img("images/delete.jpg"); ?></a>
 				</td>
 				<?php } ?>

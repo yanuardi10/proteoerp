@@ -128,17 +128,17 @@ class conv extends Controller {
 		$edit->codigo = new inputField('C&oacute;digo <#o#>', 'codigo_<#i#>');
 		$edit->codigo->size     = 12;
 		$edit->codigo->db_name  = 'codigo';
-		$edit->codigo->readonly = true;
 		$edit->codigo->rel_id   = 'itconv';
-		$edit->codigo->rule     = 'required|callback_chrepetidos';
+		$edit->codigo->rule     = 'required|callback_chrepetidos|callback_chpeso[<#i#>]';
 		$edit->codigo->append($btn);
 
 		$edit->descrip = new inputField('Descripci&oacute;n <#o#>', 'descrip_<#i#>');
 		$edit->descrip->size=36;
 		$edit->descrip->db_name='descrip';
 		$edit->descrip->maxlength=50;
-		$edit->descrip->readonly  = true;
+		//$edit->descrip->readonly  = true;
 		$edit->descrip->rel_id='itconv';
+		$edit->descrip->type='inputhidden';
 
 		$edit->entrada = new inputField('Entrada <#o#>', 'entrada_<#i#>');
 		$edit->entrada->db_name  = 'entrada';
@@ -169,16 +169,37 @@ class conv extends Controller {
 
 		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
 
-		$edit->buttons('save', 'undo', 'back','add_rel');
+		$edit->buttons('save', 'undo', 'back','add_rel','add');
 		$edit->build();
 
-		$conten['form']  =&  $edit;
-		$data['content'] = $this->load->view('view_conv', $conten,true);
-		$data['title']   = heading('Conversiones de inventario');
-		$data['head']    = script('jquery.js').script('jquery-ui.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css').$this->rapyd->get_head().phpscript('nformat.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js').phpscript('nformat.js');
+		$conten['form']  =& $edit;
+		$data['script']   = script('jquery.js');
+		$data['script']  .= script('jquery-ui.js');
+		$data['script']  .= script('plugins/jquery.numeric.pack.js');
+		$data['script']  .= script('plugins/jquery.floatnumber.js');
+		$data['script']  .= script('plugins/jquery.meiomask.js');
+		$data['script']  .= phpscript('nformat.js');
+		$data['style']    = style('redmond/jquery-ui-1.8.1.custom.css');
+		$data['content']  = $this->load->view('view_conv', $conten,true);
+		$data['title']    = heading('Conversiones de inventario');
+		$data['head']     = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
-	
+
+	function chpeso($codigo,$id){
+		$salida=$this->input->post('salida_'.$id);
+		$this->validation->set_message('chpeso', 'El art&iacute;culo '.$codigo.' no tiene peso, se necesita para el c&aacute;lculo del costo');
+		if($salida>0){
+			$dbcodigo=$this->db->escape($codigo);
+			$peso=$this->datasis->dameval('SELECT peso FROM sinv WHERE codigo='.$dbcodigo);
+			if($peso>0){
+				return true;
+			}
+			return false;
+		}
+		return true;
+	}
+
 	function chrepetidos($cod){
 		if(array_search($cod, $this->chrepetidos)===false){
 			$this->chrepetidos[]=$cod;
@@ -192,11 +213,18 @@ class conv extends Controller {
 	function _pre_insert($do){
 		$cana=$do->count_rel('itconv');
 		$monto=$entradas=$salidas=0;
+		$this->costo_entrada= 0;
+		$this->peso_salida  = 0;
+		$this->pesos        = array();
+		
 		//Hasta aca en costo trae el valor del ultimo de sinv, se opera para cambiarlo a:
 		//costo=costo*(entrada o salida segun se el caso)
 		for($i=0;$i<$cana;$i++){
 			$ent=$do->get_rel('itconv','entrada',$i);
 			$sal=$do->get_rel('itconv','salida' ,$i);
+			$costo =$do->get_rel('itconv','costo' ,$i);
+			$codigo=$do->get_rel('itconv','codigo' ,$i);
+
 			if ($ent!=0 && $sal!=0){
 				$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='No puede tener entradas y salidas en el rubro .'.$i+1;
 				return false;	
@@ -207,10 +235,16 @@ class conv extends Controller {
 			}
 			if($ent != 0){
 				$entradas+=$ent;
+				$this->costo_entrada+=$ent*$costo;
 				$monto=round($ent*$do->get_rel('itconv','costo',$i),2);
 			}
 			if($sal != 0){
 				$salidas+=$sal;
+				$dbcodigo=$this->db->escape($codigo);
+				$peso    =$this->datasis->dameval('SELECT peso FROM sinv WHERE codigo='.$dbcodigo);
+				$this->pesos[$codigo] = $peso;
+
+				$this->peso_salida+=$sal*$peso;
 				$monto=round($sal*$do->get_rel('itconv','costo',$i),2);
 			}
 			$do->set_rel('itconv','costo'   ,$monto  ,$i);
@@ -223,13 +257,13 @@ class conv extends Controller {
 			$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='Debe ingresar al menos una salida.';
 			return false;	
 		}
-		
+
 		$numero =$this->datasis->fprox_numero('nconv');
 		$transac=$this->datasis->fprox_numero('ntransa');
 		$usuario=$do->get('usuario');
 		$estampa=date('Ymd');
 		$hora   =date("H:i:s");
-		
+
 		$obs1=$obs2=$observa="";
 		if(strlen($do->get("observ1")) >80 ) $observa=substr($do->get("observ1"),0,80);
 		else $observa=$do->get("observ1");
@@ -239,14 +273,14 @@ class conv extends Controller {
 		}else{
 			$obs1=$observa;
 		}
-		
+
 		$do->set('observ1',$obs1);
 		$do->set('observ2',$obs2);
 		$do->set('estampa',$estampa);
 		$do->set('hora'   ,$hora);
 		$do->set('numero' ,$numero);
 		$do->set('transac',$transac);
-		
+
 		for($i=0;$i<$cana;$i++){
 			$do->set_rel('itconv','estampa' ,$estampa,$i);
 			$do->set_rel('itconv','hora'    ,$hora   ,$i);
@@ -261,8 +295,50 @@ class conv extends Controller {
 	}
 
 	function _post_insert($do){
+		$alma   = $do->get('almacen');
+		$codigo = $do->get('numero');
+		$cana   = $do->count_rel('itconv');
+		for($i=0;$i<$cana;$i++){
+			$codigo = $do->get_rel('itconv','codigo' ,$i);
+			$ent    = $do->get_rel('itconv','entrada',$i);
+			$sal    = $do->get_rel('itconv','salida' ,$i);
+
+			$monto   = $sal-$ent;
+			$dbcodigo= $this->db->escape($codigo);
+			$dbalma  = $this->db->escape($alma);
+
+			$mSQL="INSERT INTO itsinv (codigo,alma,existen) VALUES ($dbcodigo,$dbalma,$monto) ON DUPLICATE KEY UPDATE existen=existen+($monto)";
+			$ban=$this->db->simple_query($mSQL);
+			if(!$ban){ memowrite($mSQL,'conv');}
+
+			if($monto>0){
+				$peso=$this->pesos[$codigo]*$monto;
+				$participa=$peso/$this->peso_salida;
+				$ncosto   =round($this->costo_entrada*$participa/$monto,2);
+
+				$mycosto="IF(formcal='P',pond,IF(formcal='U',$ncosto,IF(formcal='S',standard,GREATEST(pond,ultimo))))";
+				$mSQL='UPDATE sinv SET
+							ultimo ='.$ncosto.',
+							base1  =ROUND(precio1*10000/(100+iva))/100, 
+							base2  =ROUND(precio2*10000/(100+iva))/100, 
+							base3  =ROUND(precio3*10000/(100+iva))/100, 
+							base4  =ROUND(precio4*10000/(100+iva))/100, 
+							margen1=ROUND(10000-(('.$mycosto.')*10000/base1))/100,
+							margen2=ROUND(10000-(('.$mycosto.')*10000/base2))/100,
+							margen3=ROUND(10000-(('.$mycosto.')*10000/base3))/100,
+							margen4=ROUND(10000-(('.$mycosto.')*10000/base4))/100,
+							existen=existen+('.$monto.')
+					WHERE codigo='.$dbcodigo;
+					$ban=$this->db->simple_query($mSQL);
+					if(!$ban){ memowrite($mSQL,'conv');}
+			}else{
+				$mSQL="UPDATE sinv SET existen=existen+($monto) WHERE codigo=$dbcodigo";
+				$ban=$this->db->simple_query($mSQL);
+				if(!$ban){ memowrite($mSQL,'conv');}
+			}
+		}
+
 		//trafrac ittrafrac
-		$codigo=$do->get('numero');
 		logusu('conv',"Conversion $codigo CREADO");
 	}
 
@@ -274,5 +350,4 @@ class conv extends Controller {
 		$mSQL = "ALTER TABLE conv ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ";;
 		$this->db->simple_query($mSQL);
 	}
-
 }

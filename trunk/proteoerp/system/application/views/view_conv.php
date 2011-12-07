@@ -15,7 +15,7 @@ $scampos .='<td class="littletablerow" align="left" >'.$campos['descrip']['field
 $scampos .='<td class="littletablerow" align="right">'.$campos['entrada']['field'].  '</td>';
 $scampos .='<td class="littletablerow" align="right">'.$campos['salida']['field'];
 $scampos .= $campos['costo']['field'].'</td>';
-$scampos .= '<td class="littletablerow"><a href=# onclick="del_itconv(<#i#>);return false;">Eliminar</a></td></tr>';
+$scampos .= '<td class="littletablerow"><a href=# onclick="del_itconv(<#i#>);return false;">'.img("images/delete.jpg").'</a></td></tr>';
 $campos=$form->js_escape($scampos);
 
 if(isset($form->error_string)) echo '<div class="alert">'.$form->error_string.'</div>';
@@ -29,12 +29,47 @@ var itconv_cont=<?php echo $form->max_rel_count['itconv']; ?>;
 
 $(function(){
 	$(".inputnum").numeric(".");
+	for(var i=0;i < <?php echo $form->max_rel_count['itconv']; ?>;i++){
+		autocod(i.toString());
+	};
 });
+
+//Agrega el autocomplete
+function autocod(id){
+	$('#codigo_'+id).autocomplete({
+		source: function( req, add){
+			$.ajax({
+				url:  "<?php echo site_url('ajax/buscasinv'); ?>",
+				type: "POST",
+				dataType: "json",
+				data: "q="+req.term,
+				success:
+					function(data){
+						var sugiere = [];
+						$.each(data,
+							function(i, val){
+								sugiere.push( val );
+							}
+						);
+						add(sugiere);
+					},
+			})
+		},
+		minLength: 2,
+		select: function( event, ui ) {
+			$('#codigo_'+id).val(ui.item.codigo);
+			$('#descrip_'+id).val(ui.item.descrip);
+			$('#descrip_'+id+'_val').text(ui.item.descrip);
+			$("#costo_"+id).val(ui.item.ultimo);
+			$('#entrada_'+id).focus();
+		}
+	});
+}
 
 function validaEnt(i){
 	var entrada = Number($("#entrada_"+i).val());
 	if(entrada>0)
-		 $("#salida_"+i).val('0');
+		$("#salida_"+i).val('0');
 	$("#entrada_"+i).val(entrada);
 }
 
@@ -54,12 +89,16 @@ function add_itconv(){
 	$("#__UTPL__").before(htm);
 	$("#entrada_"+can).numeric(".");
 	$("#salida_"+can).numeric(".");
-	$("#costo_"+can).numeric(".");
+	//$("#costo_"+can).numeric(".");
+	autocod(can);
 	itconv_cont=itconv_cont+1;
 }
 
 function post_modbus_sinv(nind){
-	ind=nind.toString();
+	id=nind.toString();
+	descrip=$('#descrip_'+id).val();
+	$('#descrip_'+id+'_val').text(descrip);
+	$('#entrada_'+id).focus();
 }
 
 function del_itconv(id){
@@ -88,6 +127,8 @@ function del_itconv(id){
 			<tr>
 				<td class="littletableheader"><?php echo $form->observa1->label;  ?>&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->observa1->output; ?>&nbsp;</td>
+				<td class="littletableheader">&nbsp;</td>
+				<td class="littletablerow">   &nbsp;</td>
 			</tr>
 		</table><br>
 		</td>
@@ -126,7 +167,7 @@ function del_itconv(id){
 
 				<?php if($form->_status!='show') {?>
 				<td class="littletablerow">
-					<a href='#' onclick='del_itconv(<?=$i ?>);return false;'>Eliminar</a>
+					<a href='#' onclick='del_itconv(<?=$i ?>);return false;'><?php echo img("images/delete.jpg"); ?></a>
 				</td>
 				<?php } ?>
 			</tr>

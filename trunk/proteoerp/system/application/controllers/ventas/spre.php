@@ -389,9 +389,11 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$edit->fecha->mode = 'autohide';
 		$edit->fecha->size = 10;
 
+		$vend=$this->secu->getvendedor();
 		$edit->vd = new  dropdownField ('Vendedor', 'vd');
 		$edit->vd->options('SELECT vendedor, CONCAT(vendedor,\' \',nombre) nombre FROM vend ORDER BY vendedor');
 		$edit->vd->style='width:200px;';
+		$edit->vd->insertValue=$vend;
 		$edit->vd->size = 5;
 
 		$edit->numero = new inputField('N&uacute;mero', 'numero');
@@ -405,6 +407,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$edit->peso->css_class = 'inputnum';
 		$edit->peso->readonly  = true;
 		$edit->peso->size      = 10;
+		$edit->peso->type      = 'inputhidden';
 
 		$edit->cliente = new inputField('Cliente','cod_cli');
 		$edit->cliente->size = 6;
@@ -440,7 +443,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$edit->codigo->rule     = 'required';
 		$edit->codigo->style    = 'width:80%;';
 		$edit->codigo->autocomplete=false;
-		$edit->codigo->append($btn);
+		//$edit->codigo->append($btn);
 
 		$edit->desca = new inputField('Descripci&oacute;n <#o#>', 'desca_<#i#>');
 		$edit->desca->size=40;
@@ -465,17 +468,18 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$edit->preca->db_name   = 'preca';
 		$edit->preca->css_class = 'inputnum';
 		$edit->preca->rel_id    = 'itspre';
-		//$edit->preca->size      = 10;
+		$edit->preca->size      = 10;
 		$edit->preca->rule      = 'required|positive|callback_chpreca[<#i#>]';
 		$edit->preca->readonly  = true;
-		$edit->preca->style    = 'width:98%';
+		//$edit->preca->style    = 'width:98%';
 
 		$edit->importe = new inputField('Importe <#o#>', 'importe_<#i#>');
-		$edit->importe->db_name='importe';
-		$edit->importe->size=10;
-		$edit->importe->css_class='inputnum';
-		$edit->importe->rel_id   ='itspre';
+		$edit->importe->db_name  = 'importe';
+		$edit->importe->size     = 10;
+		$edit->importe->css_class= 'inputnum';
+		$edit->importe->rel_id   = 'itspre';
 		$edit->importe->style    = 'width:98%';
+		$edit->importe->type     = 'inputhidden';
 
 		for($i=1;$i<4;$i++){
 			$obj='precio'.$i;
@@ -545,7 +549,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$edit->condi2->maxlength=25;
 		$edit->condi2->autocomplete=false;
 
-		$edit->buttons('modify', 'save', 'undo', 'delete', 'add_rel');
+		$edit->buttons('modify', 'save', 'undo', 'delete', 'add_rel','add');
 		$edit->build();
 
 		$conten['form']  =&  $edit;
@@ -558,9 +562,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$data['script']  = script('jquery.js');
 		$data['script'] .= script('jquery-ui.js');
 		$data['script'] .= script('plugins/jquery.numeric.pack.js');
-		//$data['script'] .= script('plugins/jquery.numeric.pack.js');
 		$data['script'] .= script('plugins/jquery.floatnumber.js');
-		//$data['script'] .= script('plugins/jquery.autocomplete.js');
 		$data['script'] .= phpscript('nformat.js');
 
 		$data['head']    = $this->rapyd->get_head();
