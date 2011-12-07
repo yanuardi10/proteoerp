@@ -1297,6 +1297,7 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->ultimo->autcomplete=false;
 		$edit->ultimo->onkeyup = "requeridos();";
 		$edit->ultimo->rule="required";
+		$edit->ultimo->value=0;
 
 		$edit->pond = new inputField("Promedio", "pond");
 		$edit->pond->css_class='inputnum';
@@ -1305,12 +1306,14 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->pond->autcomplete=false;
 		$edit->pond->onkeyup = "requeridos();";
 		$edit->pond->rule="required";
+		$edit->pond->value=0;
 
 		$edit->standard = new inputField("Standard", "standard");
 		$edit->standard->css_class='inputnum';
 		$edit->standard->autcomplete=false;
 		$edit->standard->size=10;
 		$edit->standard->maxlength=13;
+		$edit->standard->value=0;
 
 		$edit->formcal = new dropdownField("Base C&aacute;lculo", "formcal");
 		$edit->formcal->style='width:110px;';

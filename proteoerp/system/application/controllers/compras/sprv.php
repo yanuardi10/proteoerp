@@ -569,7 +569,7 @@ class Sprv extends validaciones {
 		if  ( $mHay > 0 ){
 			echo "{ success: false, message: 'Ya existe ese codigo'}";
 		} else {
-			$mSQL = $this->db->insert_string("sprv", $campos );
+			echo $mSQL = $this->db->insert_string("sprv", $campos );
 			$this->db->simple_query($mSQL);
 			logusu('sprv',"PROVEEDOR $proveed $nombre CREADO");
 			echo "{ success: true, message: ".$data['data']['proveed']."}";
