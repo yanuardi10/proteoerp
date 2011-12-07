@@ -185,12 +185,13 @@ class Grpr extends validaciones {
 		$campos = $data['data'];
 		$grupo  = $campos['grupo'];
 
-		if ( !empty($concepto) ) {
+
+		if ( !empty($grupo) ) {
 			unset($campos['id']);
 			// Revisa si existe ya ese contrato
 			if ($this->datasis->dameval("SELECT COUNT(*) FROM grpr WHERE grupo='$grupo'") == 0)
 			{
-				$mSQL = $this->db->insert_string("grupo", $campos );
+				$mSQL = $this->db->insert_string("grpr", $campos );
 				$this->db->simple_query($mSQL);
 				logusu('grpr',"GRUPO DE PROVEEDOR $grupo CREADO");
 				echo "{ success: true, message: 'Grupo Agregado'}";
@@ -199,7 +200,7 @@ class Grpr extends validaciones {
 			}
 			
 		} else {
-			echo "{ success: false, message: 'Ya existe un contrato con ese Codigo!!'}";
+			echo "{ success: false, message: 'Ya existe un Grupo de Proveedor con ese Codigo!!'}";
 		}
 	}
 
