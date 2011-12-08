@@ -94,19 +94,19 @@ class gastos extends Controller {
 		$qformato='%';
 		for($i=1;$i<substr_count($formato, '.')+1;$i++) $qformato.='.%';
 		$this->qformato=$qformato;
-		
-		 	$modbus=array(
-			'tabla'   =>'sinv',
-			'columnas'=>array(
-				'codigo' =>'C&oacute;digo',
-				'descrip'=>'descrip'),
-			'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'descrip'),
-			'retornar'=>array('codigo'=>'codigo<#i#>','precio1'=>'precio1<#i#>','precio2'=>'precio2<#i#>','precio3'=>'precio3<#i#>','precio4'=>'precio4<#i#>','iva'=>'iva<#i#>','pond'=>'costo<#i#>'),
-			'p_uri'=>array(4=>'<#i#>'),
-			'titulo'  =>'Buscar Articulo');
+
+		$modbus=array(
+		'tabla'   =>'sinv',
+		'columnas'=>array(
+			'codigo' =>'C&oacute;digo',
+			'descrip'=>'descrip'),
+		'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'descrip'),
+		'retornar'=>array('codigo'=>'codigo<#i#>','precio1'=>'precio1<#i#>','precio2'=>'precio2<#i#>','precio3'=>'precio3<#i#>','precio4'=>'precio4<#i#>','iva'=>'iva<#i#>','pond'=>'costo<#i#>'),
+		'p_uri'=>array(4=>'<#i#>'),
+		'titulo'  =>'Buscar Articulo');
 
 		//Script necesario para totalizar los detalles
-		$fdepar = new dropdownField("ccosto", "ccosto");    
+		$fdepar = new dropdownField("ccosto", "ccosto");
 		$fdepar->options("SELECT depto,descrip FROM dpto WHERE tipo='G' ORDER BY descrip");
 		$fdepar->status='create';
 		$fdepar->build();
@@ -144,11 +144,10 @@ class gastos extends Controller {
 				departamen.focus();
 				//new Insertion.Before(\'departa\'+i.toString(), \''.$dpto.'\')
 			}
-		}
-		';
- 		
+		}';
+
 		$edit = new DataEdit("Egresos","gser");
-		
+
 /*		
 		$edit->_dataobject->db->set('transac', 'MANUAL');
 		$edit->_dataobject->db->set('origen' , 'MANUAL');
@@ -161,18 +160,17 @@ class gastos extends Controller {
 		$edit->post_process("delete","_borra_detalle");
 		$edit->pre_process('delete','_pre_del');
 */
-		
 		$edit->back_url = "finanzas/gastos";
-		
+
 		$edit->fecha = new DateonlyField("Fecha", "fecha","d/m/Y");
 		$edit->fecha->insertValue = date("Y-m-d");
 		$edit->fecha->mode="autohide";
 		$edit->fecha->size = 10;
-		
+
 		$edit->vencimiento = new DateonlyField("Vencimiento", "vence","d/m/Y");
 		$edit->vencimiento->insertValue = date("Y-m-d");
 		$edit->vencimiento->size = 10;
-			
+
 		$edit->numero = new inputField("N&uacute;mero", "numero");
 		$edit->numero->size = 10;
 		$edit->numero->rule= "required";
@@ -183,9 +181,9 @@ class gastos extends Controller {
 		$edit->numero1->size = 20;
 		$edit->numero1->rule= "required";
 		$edit->numero1->maxlength=20;
-		
+
 		$edit->codigo = new inputField("C&oacute;digo", "proveed");
-		$edit->codigo->size = 10;        
+		$edit->codigo->size = 10;
 		$edit->codigo->maxlength=5;
 		
 		$edit->nombre = new inputField("Nombre", "nombre");

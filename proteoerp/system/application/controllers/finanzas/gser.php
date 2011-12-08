@@ -141,7 +141,7 @@ class gser extends Controller {
     height: 320px; /* Required to set */
     overflow: hidden; /* Required to set */
 }
-</style>	
+</style>
 		';
 
 $script ='
@@ -1725,29 +1725,29 @@ function gserfiscal(mid){
 		$data['content'] =  $this->load->view('view_gser', $conten,true);
 		$data['smenu']   =  $this->load->view('view_sub_menu', $smenu,true);
 		$data['title']   =  heading('Registro de Gastos o Nota de D&eacute;bito');
-		$data['head']    = 	script('jquery.js').script('jquery-ui.js');
-		$data['head']   .=	script('plugins/jquery.numeric.pack.js');
-		$data['head']   .=	script('plugins/jquery.meiomask.js');
-		$data['head']   .=	style('redmond/jquery-ui-1.8.1.custom.css');
-		$data['head']   .=	$this->rapyd->get_head();
-		$data['head']   .=	phpscript('nformat.js');
-		$data['head']   .=	script('plugins/jquery.floatnumber.js');
-		$data['head']   .=	script('plugins/jquery.ui.autocomplete.autoSelectOne.js');
+		$data['head']    =  script('jquery.js').script('jquery-ui.js');
+		$data['head']   .=  script('plugins/jquery.numeric.pack.js');
+		$data['head']   .=  script('plugins/jquery.meiomask.js');
+		$data['head']   .=  style('redmond/jquery-ui-1.8.1.custom.css');
+		$data['head']   .=  $this->rapyd->get_head();
+		$data['head']   .=  phpscript('nformat.js');
+		$data['head']   .=  script('plugins/jquery.floatnumber.js');
+		$data['head']   .=  script('plugins/jquery.ui.autocomplete.autoSelectOne.js');
 		$this->load->view('view_ventanas', $data);
 	}
-
 
 	//Calcula las retenciones para enviarlas por ajax
 	function calcularete(){
 		$post    = $_POST;
-		$proveed = $post['proveed'];
 
-		if(empty($proveed)){
+		if(!isset($post['proveed'])){
 			return;
 		}
+		$proveed = $post['proveed'];
 
 		$contribu= $this->datasis->traevalor('CONTRIBUYENTE');
 		if($contribu<>'ESPECIAL'){
+			//echo 'No es contribu';
 			return;
 		}
 
