@@ -98,7 +98,7 @@ $(document).ready(function() {
 		select: function( event, ui ) {
 			$('#nombre').val(ui.item.nombre);
 			$('#nombre_val').text(ui.item.nombre);
-
+			$('#proveed').val(ui.item.proveed);
 		}
 	});
 });
@@ -123,6 +123,10 @@ function calcularete(){
 		success: function(cont){
 			truncate_gereten();
 			i=0;
+			if(!cont){
+				alert('Retenciones no Aplican');
+				return false;
+			}
 			jQuery.each(cont, function() {
 				add_gereten();
 				si=i.toString()
