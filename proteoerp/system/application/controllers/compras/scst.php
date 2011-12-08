@@ -257,7 +257,6 @@ class Scst extends Controller {
 		$edit->proveed->size     = 7;
 		$edit->proveed->maxlength= 5;
 		$edit->proveed->autocomplete=false;
-		$edit->proveed->readonly=true;
 		$edit->proveed->rule     = 'required';
 		$edit->proveed->append($this->datasis->modbus($sprvbus));
 
@@ -297,7 +296,7 @@ class Scst extends Controller {
 		$edit->credito->when=array('show');
 
 		$edit->montotot  = new inputField('Subtotal', 'montotot');
-		$edit->montotot->onchange='cmontotot()';
+		$edit->montotot->onkeyup='cmontotot()';
 		$edit->montotot->size = 15;
 		$edit->montotot->css_class='inputnum';
 
@@ -475,11 +474,10 @@ class Scst extends Controller {
 		$data['script'] .= script('jquery-ui.js');
 		$data['script'] .= script('plugins/jquery.numeric.pack.js');
 		$data['script'] .= script('plugins/jquery.floatnumber.js');
+		$data['script'] .= script('plugins/jquery.ui.autocomplete.autoSelectOne.js');
 		$data['script'] .= phpscript('nformat.js');
-
 		$data['head']    = $this->rapyd->get_head();
 		$data['head']   .= style('redmond/jquery-ui-1.8.1.custom.css');
-
 		$data['content'] = $this->load->view('view_compras', $conten,true);
 		$data['title']   = heading('Compras');
 

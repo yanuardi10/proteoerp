@@ -35,6 +35,33 @@ $(function(){
 	for(var i=0;i < <?php echo $form->max_rel_count['itscst']; ?>;i++){
 		autocod(i.toString());
 	}
+
+	$('#proveed').autocomplete({
+		source: function( req, add){
+			$.ajax({
+				url:  "<?php echo site_url('ajax/buscasprv'); ?>",
+				type: "POST",
+				dataType: "json",
+				data: "q="+req.term,
+				success:
+					function(data){
+						var sugiere = [];
+						$.each(data,
+							function(i, val){
+								sugiere.push( val );
+							}
+						);
+						add(sugiere);
+					},
+			})
+		},
+		minLength: 2,
+		select: function( event, ui ) {
+			$('#nombre').val(ui.item.nombre);
+			$('#nombre_val').text(ui.item.nombre);
+			$('#proveed').val(ui.item.proveed);
+		}
+	});
 });
 
 function importe(id){
@@ -198,7 +225,6 @@ function post_modbus_sprv(){
 	$('#nombre_val').text($('#nombre').val());
 }
 
-
 function del_itscst(id){
 	id = id.toString();
 	$('#tr_itscst_'+id).remove();
@@ -338,7 +364,7 @@ function autocod(id){
 				//$it_tipo    = "sinvtipo_$i";
 			?>
 
-			<tr id='tr_itsnte_<?php echo $i; ?>'>
+			<tr id='tr_itscst_<?php echo $i; ?>'>
 				<td class="littletablerow" align="left" ><?php echo $form->$it_codigo->output; ?></td>
 				<td class="littletablerow" align="left" ><b id='it_descrip_val_<?php echo $i; ?>'><?php echo $form->$it_desca->value; ?></b>
 				<?php echo $form->$it_desca->output;  ?>

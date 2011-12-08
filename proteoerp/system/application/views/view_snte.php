@@ -238,7 +238,7 @@ function autocod(id){
 			$('#cana_'+id).focus();
 			$('#cana_'+id).select();
 
-			var arr  = $('#preca_'+ind);
+			var arr  = $('#preca_'+id);
 			var tipo = Number($("#sclitipo").val()); if(tipo>0) tipo=tipo-1;
 			cdropdown(id);
 			//cdescrip(id);

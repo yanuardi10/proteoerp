@@ -455,7 +455,7 @@ function autocod(id){
 		minLength: 2,
 		select: function( event, ui ) {
 			//id='0';
-			$('#codigo_'+id).val(ui.item.codigo);
+			$('#codigoa_'+id).val(ui.item.codigo);
 			$('#desca_'+id).val(ui.item.descrip);
 			$('#precio1_'+id).val(ui.item.base1);
 			$('#precio2_'+id).val(ui.item.base2);
@@ -470,7 +470,7 @@ function autocod(id){
 			$('#cana_'+id).focus();
 			$('#cana_'+id).select();
 
-			var arr  = $('#preca_'+ind);
+			var arr  = $('#preca_'+id);
 			var tipo = Number($("#sclitipo").val()); if(tipo>0) tipo=tipo-1;
 			cdropdown(id);
 			cdescrip(id);
@@ -518,7 +518,7 @@ function del_sfpa(id){
 		<table width='100%'>
 		<tr><td style="width:50%">
 			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9; min-height:105px;'>
-			<legend class="titulofieldset" style='color: #114411;'>Documento</legend>
+			<legend class="titulofieldset" style='color: #114411;'>Documento <?php echo $form->numero->value;   ?></legend>
 			<table style="margin: 0;">
 			<tr>
 				<td class="littletableheader"><?php echo $form->fecha->label;     ?>*&nbsp;</td>

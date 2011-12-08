@@ -64,7 +64,7 @@ function cal_dxapli(nind){
 	cana2=parseFloat($("#cana_"+ind).val());
 	preca2=parseFloat($("#precat_"+ind).val());
 	dxapli2=parseFloat($("#dxapli_"+ind).val());
-	
+
 	$.post("<?=site_url('ventas/pfac/cal_dxapli')?>",{ preca:preca2,dxapli:dxapli2 },function(data){
 		if(data=='_||_'){
 			alert("El descuento a aplicar debe contener solo numeros y '+'. ejemplo:2+2");
@@ -252,9 +252,9 @@ function post_modbus_sinv(nind){
 	var tipo =Number($("#sclitipo").val()); if(tipo>0 && tipo<5) tipo=tipo-1;
 	$("#preca_"+ind).empty();
 	var arr=$('#preca_'+ind);
-	
+
 	cdropdown(nind);
-	
+
 	if(tipo!=5)
 	jQuery.each(arr, function() { this.selectedIndex=tipo; });
 	else{
@@ -313,9 +313,9 @@ function cdropdown(nind){
 	var ban=0;
 	var ii=0;
 	var id='';
-	
+
 	if(preca==null || preca.length==0) ban=1;
-	
+
 	for(ii=1;ii<5;ii++){
 		id =ii.toString();
 		val=$("#precio"+id+"_"+ind).val();
@@ -389,7 +389,7 @@ function autocod(id){
 			$('#cana_'+id).focus();
 			$('#cana_'+id).select();
 
-			var arr  = $('#preca_'+ind);
+			var arr  = $('#preca_'+id);
 			var tipo = Number($("#sclitipo").val()); if(tipo>0) tipo=tipo-1;
 			cdropdown(id);
 			//cdescrip(id);
