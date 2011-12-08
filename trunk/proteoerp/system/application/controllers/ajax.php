@@ -216,7 +216,7 @@ class Ajax extends Controller {
 			$mSQL="SELECT a.numero, a.totalg, a.cod_cli, a.nombre,b.rifci, TRIM(b.nombre) AS nombre, TRIM(b.rifci) AS rifci, b.tipo, b.dire11 AS direc
 				FROM  sfac AS a
 				JOIN scli AS b ON a.cod_cli=b.cliente
-				WHERE a.numero LIKE $qdb AND a.tipo_doc='F'
+				WHERE a.numero LIKE $qdb AND a.tipo_doc='F' AND MID(a.numero,1,1)<>'_'
 				ORDER BY numero DESC LIMIT 10";
 
 			$query = $this->db->query($mSQL);

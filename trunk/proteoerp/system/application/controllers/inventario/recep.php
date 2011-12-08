@@ -265,7 +265,7 @@ class Recep extends Controller {
 		if(!isset($this->it_detalle)){
 			$this->it_detalle=array();
 			if($origen=='scst'){
-				$this->db->select(array('b.codigo','SUM(b.cantidad) AS cana'));
+				$this->db->select(array('TRIM(b.codigo) AS codigo','SUM(b.cantidad) AS cana'));
 				$this->db->from('scst AS a');
 				$this->db->join('itscst AS b','a.control=b.control');
 				$this->db->where('a.proveed' ,$clipro);
@@ -273,8 +273,9 @@ class Recep extends Controller {
 				$this->db->where('a.numero'  ,$refe);
 				$this->db->group_by('b.codigo');
 				$query = $this->db->get();
+				$doc='compra';
 			}elseif($origen=='sfac'){
-				$this->db->select(array('b.codigoa AS codigo','SUM(b.cana) AS cana'));
+				$this->db->select(array('TRIM(b.codigoa) AS codigo','SUM(b.cana) AS cana'));
 				$this->db->from('sfac AS a');
 				$this->db->join('sitems AS b','a.numero=b.numa AND a.tipo_doc=b.tipoa');
 				$this->db->where('a.cod_cli' ,$clipro);
@@ -282,6 +283,7 @@ class Recep extends Controller {
 				$this->db->where('a.numero'  ,$refe);
 				$this->db->group_by('b.codigoa');
 				$query = $this->db->get();
+				$doc='venta';
 			}else{
 				$query=false;
 			}
@@ -296,7 +298,7 @@ class Recep extends Controller {
 			return true;
 		}else{
 			$this->it_detalle[$codigo]=0;
-			$this->validation->set_message('chbarras', 'El art&iacute;culo en \'%s\' no esta contenido en el documento al que referencia');
+			$this->validation->set_message('chbarras', 'El art&iacute;culo en \'%s\' no esta contenido en el documento o se exedio la cantidad facturada');
 			return false;
 		}
 	}

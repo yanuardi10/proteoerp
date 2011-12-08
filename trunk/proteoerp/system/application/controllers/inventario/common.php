@@ -354,7 +354,7 @@ class Common extends controller {
 					b.fecha,
 					'sfac' AS origen
 				FROM sfac AS b
-				WHERE CONCAT(b.tipo_doc,'-',b.numero) LIKE $qdb AND b.tipo_doc<>'X'";
+				WHERE CONCAT(b.tipo_doc,'-',b.numero) LIKE $qdb AND b.tipo_doc<>'X' AND MID(b.numero,1,1)<>'_'";
 
 			$mSQL="SELECT * FROM ($mSQL) AS aa ORDER BY aa.fecha desc LIMIT 10";
 
@@ -386,25 +386,36 @@ class Common extends controller {
 		echo $data;
 	}
 
-
 	function get_codigo(){
 		$barras =$this->input->post('barras');
 		$barrase=$this->db->escape($barras);
-		echo $this->datasis->dameval("SELECT codigo FROM sinv WHERE barras=$barrase LIMIT 1");
+		$codigo =$this->datasis->dameval("SELECT codigo FROM sinv WHERE barras=$barrase LIMIT 1");
+		if(empty($codigo)){
+			$codigo =$this->datasis->dameval("SELECT codigo FROM sinv WHERE codigo=$barrase LIMIT 1");
+		}
+		echo $codigo;
 	}
-	
+
 	function get_descrip(){
 		$barras =$this->input->post('barras');
 		$barrase=$this->db->escape($barras);
-		echo $this->datasis->dameval("SELECT descrip FROM sinv WHERE barras=$barrase LIMIT 1");
+		$descrip=$this->datasis->dameval("SELECT descrip FROM sinv WHERE barras=$barrase LIMIT 1");
+		if(empty($descrip)){
+			$descrip =$this->datasis->dameval("SELECT descrip FROM sinv WHERE codigo=$barrase LIMIT 1");
+		}
+		echo $descrip;
 	}
-	
+
 	function get_cant(){
 		$barras =$this->input->post('barras');
 		$barrase=$this->db->escape($barras);
-		echo $this->datasis->dameval("SELECT count(*) FROM sinv WHERE barras=$barrase ");
+		$cana = $this->datasis->dameval("SELECT count(*) FROM sinv WHERE barras=$barrase ");
+		if($cana=0 || empty($cana)){
+			$cana = $this->datasis->dameval("SELECT count(*) FROM sinv WHERE codigo=$barrase ");
+		}
+		echo (empty($cana))? 0 : $cana;
 	}
-	
+
 	function get_sinv(){
 		$barras =$this->input->post('barras');
 		$barrase=$this->db->escape('7798134499458');

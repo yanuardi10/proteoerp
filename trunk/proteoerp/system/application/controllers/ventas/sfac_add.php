@@ -496,6 +496,7 @@ class sfac_add extends validaciones {
 		$data['script'] .= script("jquery-impromptu.js");
 		$data['script'] .= script("plugins/jquery.blockUI.js");
 		$data['script'] .= script('plugins/jquery.numeric.pack.js');
+		$data['script'] .= script('plugins/jquery.ui.autocomplete.autoSelectOne.js');
 		$data['script'] .= phpscript('nformat.js');
 		$data['script'] .= script('plugins/jquery.floatnumber.js');
 		$data['script'] .= script("gt_msg_en.js");
