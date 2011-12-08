@@ -360,9 +360,11 @@ class Ajax extends Controller {
 			$retArray = $retorno = array();
 			if(!empty($scli)) $ww='AND cliente='.$this->db->escape($scli); else $ww='';
 
-			$mSQL="SELECT a.id,a.numero,a.fecha,a.cliente,a.edificacion,a.inmueble,a.reserva,b.nombre,b.rifci, b.tipo AS sclitipo,dire11 AS direc
+			$mSQL="SELECT a.id,a.numero,a.fecha,a.cliente,a.edificacion,a.inmueble,a.reserva,b.nombre,b.rifci, b.tipo AS sclitipo,dire11 AS direc,c.uso
 			FROM edres AS a
-			JOIN scli AS b ON a.cliente=b.cliente WHERE numero LIKE $qdb  $ww";
+			JOIN scli AS b ON a.cliente=b.cliente
+			JOIN edinmue AS c ON a.inmueble=c.id
+			WHERE numero LIKE $qdb  $ww";
 
 			$query = $this->db->query($mSQL);
 			if ($query->num_rows() > 0){
@@ -376,6 +378,7 @@ class Ajax extends Controller {
 					$retArray['cliente']  = $row['cliente'];
 					$retArray['sclitipo'] = $row['sclitipo'];
 					$retArray['direc']    = $row['direc'];
+					$retArray['uso']      = $row['uso'];
 
 					array_push($retorno, $retArray);
 				}
@@ -390,6 +393,7 @@ class Ajax extends Controller {
 				$retArray['cliente']  = '';
 				$retArray['sclitipo'] = '';
 				$retArray['direc']    = '';
+				$retArray['uso']      = '';
 
 				$data = json_encode($retArray);
 			}

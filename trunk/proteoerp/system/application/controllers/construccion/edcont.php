@@ -1,4 +1,4 @@
-<?php
+<?php require_once(BASEPATH.'application/controllers/formams.php');
 class edcont extends Controller {
 	var $titp='Contratos';
 	var $tits='Contratos';
@@ -50,7 +50,7 @@ class edcont extends Controller {
 		$filter->inmueble->maxlength =11;
 
 		$filter->notas = new textareaField('Notas','notas');
-		$filter->notas->rule      ='max_length[8]';
+		$filter->notas->rule = 'max_length[8]';
 		$filter->notas->cols = 70;
 		$filter->notas->rows = 4;
 
@@ -92,6 +92,12 @@ class edcont extends Controller {
 
 		$edit = new DataDetails($this->tits, $do);
 
+		$id=$edit->get_from_dataobjetct('id');
+		if($id!==false){
+			$action = "javascript:window.location='" . site_url($this->url.'formato/'.$id) . "'";
+			$edit->button('btn_formato', 'Descargar formato', $action);
+		}
+
 		$edit->back_url = site_url($this->url.'filteredgrid');
 
 		$edit->post_process('insert','_post_insert');
@@ -117,10 +123,11 @@ class edcont extends Controller {
 		$edit->numero_edres->size =10;
 		$edit->numero_edres->maxlength =8;
 
-		$edit->numero = new inputField('Numero','numero');
-		$edit->numero->rule='max_length[8]';
+		$edit->numero = new inputField('N&uacute;mero','numero');
 		$edit->numero->size =10;
 		$edit->numero->maxlength =8;
+		$edit->numero->apply_rules=false; //necesario cuando el campo es clave y no se pide al usuario
+		$edit->numero->when=array('show','modify');
 
 		$edit->fecha = new dateField('Fecha','fecha');
 		$edit->fecha->rule='chfecha';
@@ -199,6 +206,11 @@ class edcont extends Controller {
 		$edit->mt2->maxlength =17;
 		$edit->mt2->showformat ='decimal';
 
+		$edit->uso = new dropdownField('Uso','uso');
+		$edit->uso->option('','Seleccionar');
+		$edit->uso->options('SELECT id,uso FROM `eduso` ORDER BY uso');
+		$edit->uso->style='width:180px;';
+
 		$edit->inicial = new inputField('Inicial','inicial');
 		$edit->inicial->rule='max_length[17]|numeric|mayorcero';
 		$edit->inicial->css_class='inputnum';
@@ -246,7 +258,7 @@ class edcont extends Controller {
 		$edit->it_vencimiento->maxlength =8;
 
 		$edit->it_especial = new dropdownField('Especial <#o#>','it_especial_<#i#>');
-		$edit->it_especial->rule    = 'max_length[1]';
+		$edit->it_especial->rule    = 'max_length[1]|enum[S,N]';
 		$edit->it_especial->db_name = 'especial';
 		$edit->it_especial->rel_id  = 'itedcont';
 		$edit->it_especial->style='width:80px;';
@@ -254,7 +266,7 @@ class edcont extends Controller {
 		$edit->it_especial->option('S','Si');
 
 		$edit->it_monto = new inputField('Monto <#o#>','it_monto_<#i#>');
-		$edit->it_monto->rule='max_length[10]|numeric|enum[S,N]';
+		$edit->it_monto->rule='max_length[10]|numeric';
 		$edit->it_monto->db_name   ='monto';
 		$edit->it_monto->rel_id    ='itedcont';
 		//$edit->it_monto->on_keyup  = 'totagiro()';
@@ -299,7 +311,48 @@ class edcont extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
+	function formato($id){
+		$this->load->plugin('numletra');
+		$sel=array('*');
+		$this->db->select($sel);
+		$this->db->from('edcont AS a');
+		$this->db->join('scli AS b'     ,'a.cliente=b.cliente');
+		$this->db->join('edinmue AS c'  ,'c.id=a.inmueble');
+		$this->db->join('eduso AS e'    ,'e.id=c.uso');
+		$this->db->where('a.id',$id);
+
+		$query = $this->db->get();
+		echo $this->db->last_query();
+		exit();
+		if ($query->num_rows() > 0){
+			foreach ($query->result() as $row){
+				$data=array();
+
+				$empresa=true;
+				if(!$empresa){
+					$data['opcionante'] ="el ciudadano: PEDRO ARTURO PEREZ GOMEZ, venezolano, mayor de edad,  titular de la Cédula de Identidad No. V-6.643.841,  Médico, domiciliado en la ciudad de Ejido, Estado Mérida y hábil;";
+				}else{
+					$data['opcionante'] ="TECNO ASCENSORES, C.A., Sociedad Mercantil domiciliada en la ciudad de Maracaibo, Estado Zulia, debidamente inscrita por ante el Registro Mercantil Cuarto de la Circunscripción Judicial del Estado Zulia, en fecha 18 de Abril de 2006, bajo el No. 04, Tomo 31-A; con Registro de Información Fiscal No. J-31355284-9, debidamente representada en este acto por el(los) ciudadano(s): KAZUKI GUILLERMO TSUCHIYA MARTINEZ, venezolano, mayor de edad, titular de la Cédula de Identidad, No. V-16.781.467, Comerciante, domiciliado en la ciudad de Maracaibo, Estado Zulia, y hábil, en su carácter de Vice Presidente y ARIAS LEE FERNANDO, venezolano, mayor de edad, titular de la Cédula de Identidad, No. V-12.365.897, Comerciante, domiciliado en la ciudad de Maracaibo, Estado Zulia, y hábil, en su carácter de Director-Gerente;";
+				}
+
+				$data['numero']    =$row->numero;
+				$data['fecha']     =dbdate_to_human($row->fecha);
+				$data['monto']     =nformat($row->monto);
+				$data['montolet']  =strtoupper(numletra($row->monto));
+				$data['mt2']       =$row->mt2;
+				$data['mt2let']    =strtoupper(numletra($row->mt2));
+				$data['uso']       =$row->uso;
+				$data['fpagos']    ='';
+
+
+				formams::_msxml('contrato',$data);
+			}
+		}
+	}
+
 	function _pre_insert($do){
+		$numero =$this->datasis->fprox_numero('nedcont');
+		$do->set('numero' ,$numero);
 		return true;
 	}
 
@@ -346,6 +399,11 @@ class edcont extends Controller {
 				`notas` text,
 				PRIMARY KEY (`id`)
 			) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=latin1 COMMENT='Reserva de Inmuebles'";
+			$this->db->simple_query($mSQL);
+		}
+
+		if(!$this->db->field_exists('uso', 'edcont')){
+			$mSQL="ALTER TABLE `edcont` ADD COLUMN `uso` INT(11) NOT NULL AFTER `notas`";
 			$this->db->simple_query($mSQL);
 		}
 

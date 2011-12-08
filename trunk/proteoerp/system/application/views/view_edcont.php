@@ -10,10 +10,10 @@ else:
 $campos=$form->template_details('itedcont');
 $scampos  ='<tr id="tr_itedcont_<#i#>">';
 $scampos .='<td class="littletablerow" align="center"><b id=\'giro_num_<#i#>\'></b></td>';
-$scampos .='<td class="littletablerow" align="left" >'.$campos['it_especial']['field'].'</td>';
-$scampos .='<td class="littletablerow" align="left" >'.$campos['it_vencimiento']['field'].'</td>';
+$scampos .='<td class="littletablerow" align="left"  >'.$campos['it_especial']['field'].'</td>';
+$scampos .='<td class="littletablerow" align="left"  >'.$campos['it_vencimiento']['field'].'</td>';
 $scampos .='<td class="littletablerow" align="right" >'.$campos['it_monto']['field'].'</td>';
-$scampos .='<td class="littletablerow"><a href=# onclick="del_itedcont(<#i#>);return false;">'.img("images/delete.jpg").'</a></td></tr>';
+$scampos .='<td class="littletablerow" align="center"><a href=# onclick="del_itedcont(<#i#>);return false;">'.img("images/delete.jpg").'</a></td></tr>';
 $campos=$form->js_escape($scampos);
 
 if(isset($form->error_string)) echo '<div class="alert">'.$form->error_string.'</div>';
@@ -109,7 +109,8 @@ $(function(){
 
 			$('#edificacion').val(ui.item.edifi);
 			edif_change(ui.item.inmue);
-			
+
+			$('#uso').val(ui.item.uso);
 			//$('#inmueble').val(ui.item.inmue);
 		}
 	});
@@ -304,7 +305,7 @@ function del_itedcont(id){
 <?php } ?>
 <table align='center' width="95%">
 	<tr>
-		<td align=right><?php echo $container_tr?></td>
+		<td align=right><?php echo $container_br.$container_bl.$container_tr?></td>
 	</tr>
 </table>
 <table align='center' width="100%">
@@ -313,13 +314,13 @@ function del_itedcont(id){
 		<table width='100%'>
 		<tr><td style="width:50%">
 			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9; min-height:105px;'>
-			<legend class="titulofieldset" style='color: #114411;'>Documento</legend>
+			<legend class="titulofieldset" style='color: #114411;'>Documento <?php echo $form->numero->output; ?></legend>
 			<table style="margin: 0;">
 			<tr>
-				<td class="littletableheader"><?php echo $form->fecha->label;     ?>*&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->fecha->output;    ?>&nbsp; </td>
-				<td class="littletableheader"><?php echo $form->numero->label;    ?>*&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->numero->output;   ?>&nbsp; </td>
+				<td class="littletableheader"><?php echo $form->uso->label;    ?>*&nbsp; </td>
+				<td class="littletablerow">   <?php echo $form->uso->output;   ?>&nbsp; </td>
+				<td class="littletableheader"><?php echo $form->fecha->label;  ?>*&nbsp;</td>
+				<td class="littletablerow">   <?php echo $form->fecha->output; ?>&nbsp; </td>
 			</tr><tr>
 				<td class="littletableheader"><?php echo $form->edificacion->label;   ?>*&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->edificacion->output;  ?>&nbsp; </td>
@@ -387,7 +388,7 @@ function del_itedcont(id){
 				<td class="littletablerow" align="right" ><?php echo $form->$it_monton->output;   ?></td>
 
 				<?php if($form->_status!='show') {?>
-				<td class="littletablerow">
+				<td class="littletablerow" align='center'>
 					<a href='#' onclick='del_itedcont(<?php echo $i ?>);return false;'><?php echo img("images/delete.jpg"); ?></a>
 				</td>
 				<?php } ?>
