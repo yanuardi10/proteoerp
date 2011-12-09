@@ -88,7 +88,7 @@ class pfac extends validaciones{
 		$filter->buttons('reset', 'search');
 		$filter->build('dataformfiltro');
 
-		$uri = anchor('ventas/pfac/dataedit/show/<#numero#>', '<#numero#>');
+		$uri = anchor('ventas/pfac/dataedit/show/<#id#>', '<#numero#>');
 		$uri2 = anchor_popup('formatos/verhtml/PFAC/<#numero#>', 'Ver HTML', $atts);
 		$uri3 = anchor_popup('ventas/sfac/creadpfacf/<#numero#>', 'Facturar', $atts2);
 
@@ -463,7 +463,7 @@ class pfac extends validaciones{
 		}elseif($faplica < $fenvia){
 			$hide=array('vd','peso','cliente','nombre','rifci','direc','observa','observ1','codigoa','desca','cana');
 			foreach($hide as $value)
-				$edit->$value->type="inputhidden";
+			$edit->$value->type="inputhidden";
 
 			$accion="javascript:window.location='".site_url('ventas/pfac/dataedit/modify/'.$control)."'";
 			$edit->button_status('btn_envia'  ,'Aplicar Descuentos'         ,$accion,'TR','show');
@@ -843,10 +843,10 @@ class pfac extends validaciones{
 	}
 
 
-	function enviar($numero){
-		$numeroe=$this->db->escape($numero);
-		$this->db->query("UPDATE pfac SET fenvia=CURDATE() WHERE numero=$numeroe");
-		redirect("ventas/pfac/dataedit/show/$numero");
+	function enviar($id){
+		$ide=$this->db->escape($id);
+		$this->db->query("UPDATE pfac SET fenvia=CURDATE() WHERE id=$ide");
+		redirect("ventas/pfac/dataedit/show/$id");
 	}
 
 	function aplicar($numero){
