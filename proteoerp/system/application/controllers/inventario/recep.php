@@ -22,7 +22,7 @@ class Recep extends Controller {
 		$filter = new DataFilter2('');
 
 		//$filter->db->select(array("b.cuenta","a.comprob","a.fecha","a.origen","a.debe","a.haber","a.status","a.descrip","a.total"));
-		$filter->db->from('recep a');
+		$filter->db->from('recep AS a');
 
 		$filter->recep = new inputField('N&uacute;mero de referencia', 'recep');
 		$filter->recep->size  =10;
@@ -48,17 +48,25 @@ class Recep extends Controller {
 			}
 		}
 
+		function origen($origen){
+			switch($origen){
+				case 'scst':return 'Compra';break;
+				case 'sfac':return 'Facturaci&oacute;n';break;
+				default: return $origen;
+			}
+		}
+
 		$grid = new DataGrid('');
 		$grid->order_by('a.recep','desc');
 		$grid->per_page = 20;
-		$grid->use_function('substr','str_pad');
+		$grid->use_function('substr','str_pad','origen','tipo');
 
-		$grid->column_orderby('Numero Recepci&oacute;n',$uri,'numero');
-		$grid->column_orderby('Fecha'                  ,'<dbdate_to_human><#fecha#></dbdate_to_human>'  ,'fecha'    ,'align=\'center\''      );
-		$grid->column_orderby('Or&iacute;gen'          ,'origen'                                        ,'origen'   ,'align=\'center\''      );
-		$grid->column_orderby('Tipo'                   ,'<tipo><#tipo#></tipo>'                         ,'tipo'     ,'align=\'center\''      );
-		$grid->column_orderby('Cod.Proveedor/Cliente'  ,'clipro'                                        ,'cod_prov' ,'align=\'center\''      );
-		$grid->column_orderby('Observacion'            ,'observa'                                       ,'observa'  ,'align=\'left\'  NOWRAP');
+		$grid->column_orderby('N&uacute;mero Recepci&oacute;n',$uri,'numero');
+		$grid->column_orderby('Fecha'                  ,'<dbdate_to_human><#fecha#></dbdate_to_human>','fecha'    ,'align=\'center\''      );
+		$grid->column_orderby('Or&iacute;gen'          ,'<origen><#origen#></origen>'                 ,'origen'   ,'align=\'center\''      );
+		$grid->column_orderby('Tipo'                   ,'<tipo><#tipo#></tipo>'                       ,'tipo'     ,'align=\'center\''      );
+		$grid->column_orderby('Cod.Proveedor/Cliente'  ,'clipro'                                      ,'cod_prov' ,'align=\'center\''      );
+		$grid->column_orderby('Observacion'            ,'observa'                                     ,'observa'  ,'align=\'left\'  NOWRAP');
 
 		$grid->add($this->url.'dataedit/create');
 		$grid->build();
@@ -203,7 +211,7 @@ class Recep extends Controller {
 		$edit->itdescri->type         ='inputhidden';
 
 		$edit->itserial = new inputField('(<#o#>) Serial', 'it_serial_<#i#>');
-		$edit->itserial->rule         ='trim|callback_chrepetido[<#i#>]|required';
+		$edit->itserial->rule         ='trim|callback_chrepetido[<#i#>]|callback_chserial[<#i#>]|required';
 		$edit->itserial->size         =20;
 		$edit->itserial->db_name      ='serial';
 		$edit->itserial->rel_id       ='seri';
@@ -301,6 +309,23 @@ class Recep extends Controller {
 			$this->validation->set_message('chbarras', 'El art&iacute;culo en \'%s\' no esta contenido en el documento o se exedio la cantidad facturada');
 			return false;
 		}
+	}
+
+	//*****************************
+	// Chequea que los seriales de
+	//  salida hayan entrado
+	//*****************************
+	function chserial($serial,$i){
+		$origen   = $this->input->post('origen');
+		$dbserial = $this->db->escape($serial);
+		if($origen=='sfac'){
+			$this->validation->set_message('chserial', "El serial $serial no esta registrado al sistema, debe ingresarlo primero para hacer la salida");
+			$cana=$this->datasis->dameval("SELECT COUNT(*) FROM seri WHERE serial=${dbserial}");
+			if($cana==0 || empty($cana)){
+				return false;
+			}
+		}
+		return true;
 	}
 
 	//*****************************

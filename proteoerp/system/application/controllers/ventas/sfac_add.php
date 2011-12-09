@@ -367,6 +367,7 @@ class sfac_add extends validaciones {
 		$edit->cana->rule     = 'required|positive';
 		$edit->cana->autocomplete=false;
 		$edit->cana->onkeyup  ='importe(<#i#>)';
+		$edit->cana->showformat ='decimal'; 
 
 		$edit->preca = new inputField('Precio <#o#>', 'preca_<#i#>');
 		$edit->preca->db_name   = 'preca';
@@ -375,6 +376,7 @@ class sfac_add extends validaciones {
 		$edit->preca->size      = 10;
 		$edit->preca->rule      = 'required|positive';
 		$edit->preca->readonly  = true;
+		$edit->preca->showformat ='decimal'; 
 
 		$edit->detalle = new hiddenField('', 'detalle_<#i#>');
 		$edit->detalle->db_name  = 'detalle';
@@ -386,6 +388,7 @@ class sfac_add extends validaciones {
 		$edit->tota->size=10;
 		$edit->tota->css_class='inputnum';
 		$edit->tota->rel_id   ='sitems';
+		$edit->tota->showformat ='decimal'; 
 
 		for($i=1;$i<4;$i++){
 			$obj='precio'.$i;
@@ -443,6 +446,7 @@ class sfac_add extends validaciones {
 		$edit->monto->rel_id    = 'sfpa';
 		$edit->monto->size      = 10;
 		$edit->monto->rule      = 'required|mayorcero';
+		$edit->monto->showformat ='decimal'; 
 		//************************************************
 		// Fin detalle 2 (sfpa)
 		//************************************************

@@ -45,38 +45,10 @@ $(function(){
 		autocod(i.toString());
 	}
 
-	$('#rifci').autocomplete({
-		source: function( req, add){
-			$.ajax({
-				url:  "<?php echo site_url('ventas/spre/buscascli/rifci'); ?>",
-				type: "POST",
-				dataType: "json",
-				data: "q="+req.term,
-				success:
-					function(data){
-						var sugiere = [];
-						$.each(data,
-							function(i, val){
-								sugiere.push( val );
-							}
-						);
-						add(sugiere);
-					},
-			})
-		},
-		minLength: 2,
-		select: function( event, ui ) {
-			$('#nombre').val(ui.item.nombre);
-			$('#rifci').val(ui.item.rifci);
-			$('#cod_cli').val(ui.item.cod_cli);
-			$('#sclitipo').val(ui.item.tipo);
-		}
-	});
-
 	$('#cod_cli').autocomplete({
 		source: function( req, add){
 			$.ajax({
-				url:  "<?php echo site_url('ventas/spre/buscascli/cliente'); ?>",
+				url:  "<?php echo site_url('ajax/buscascli'); ?>",
 				type: "POST",
 				dataType: "json",
 				data: "q="+req.term,
@@ -98,9 +70,16 @@ $(function(){
 			$('#rifci').val(ui.item.rifci);
 			$('#cod_cli').val(ui.item.cod_cli);
 			$('#sclitipo').val(ui.item.tipo);
+			$('#direc').val(ui.item.direc);
 		}
 	});
 
+	$('input[name^="cana_"]').keypress(function(e) {
+		if(e.keyCode == 13) {
+		    add_itspre();
+			return false;
+		}
+	});
 });
 
 function importe(id){
@@ -158,6 +137,12 @@ function add_itspre(){
 	htm = htm.replace(/<#o#>/g,con);
 	$("#__INPL__").after(htm);
 	$("#cana_"+can).numeric(".");
+	$("#cana_"+can).keypress(function(e) {
+		if(e.keyCode == 13) {
+		    add_itspre();
+			return false;
+		}
+	});
 	autocod(can);
 	$('#codigo_'+can).focus();
 	itspre_cont=itspre_cont+1;

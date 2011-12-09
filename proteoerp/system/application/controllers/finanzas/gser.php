@@ -1745,12 +1745,6 @@ function gserfiscal(mid){
 		}
 		$proveed = $post['proveed'];
 
-		$contribu= $this->datasis->traevalor('CONTRIBUYENTE');
-		if($contribu<>'ESPECIAL'){
-			//echo 'No es contribu';
-			return;
-		}
-
 		$data=array();
 		foreach($post as $ind=>$val){
 			$subject = "abcdef";
