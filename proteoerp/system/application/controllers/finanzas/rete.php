@@ -307,7 +307,7 @@
 									{ xtype: 'combo',       fieldLabel: 'Tipo',       name: 'tipo',     width:270, store: [".$tipos."], labelWidth:70},
 									{ xtype: 'textfield',   fieldLabel: 'Actividad',  name: 'activida', width:400, allowBlank: false },
 									{ xtype: 'combo',       fieldLabel: 'C.Contable', name: 'cuenta',   width:400, store: cplaStore, id: 'cuenta', mode: 'remote', hideTrigger: true, typeAhead: true, forceSelection: true, valueField: 'item', displayField: 'valor'},
-									{ xtype: 'textfield',   fieldLabel: 'Concepto',   name: 'concepto', width:100, allowBlank: true },
+									{ xtype: 'textfield',   fieldLabel: 'Concepto',   name: 'concepto', width:120, allowBlank: true },
 								]
 							},{
 							xtype:'fieldset',
