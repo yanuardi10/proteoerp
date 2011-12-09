@@ -185,6 +185,32 @@ class Mvcerti extends validaciones {
 		}
 	}
 
+	function traepdf($certificado){
+		$this->load->helper('pdf2text');
+
+		$host='http://www.minvih.gob.ve/constancia/index.php/consulta';
+		$data=array('ConsultaForm[codigo]'=>$certificado);
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $host);
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_POST, true);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
+		curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.3) Gecko/20070309 Firefox/2.0.0.3');
+		$output = curl_exec($ch);
+		$error  = curl_errno($ch);
+		$derror = curl_error($ch);
+		curl_close($ch);
+		if(stripos($output,'errores de ingreso')===false){
+			$tt=fluj2text($output);
+			$desde=stripos($tt,'Se hace constar');
+			echo substr($tt,$desde);
+		}else{
+			echo 'Certificado no encontrado';
+		}
+	}
+
 	function grid(){
 		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']   :  0;
 		$limit   = isset($_REQUEST['limit'])  ? $_REQUEST['limit']   : 50;

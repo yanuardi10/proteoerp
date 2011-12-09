@@ -29,7 +29,7 @@ $scampos .= $campos['itultimo']['field'];
 $scampos .= $campos['itpond']['field'];
 $scampos .= $campos['precat']['field'];
 $scampos .= $campos['itpm']['field'].'</td>';
-$scampos .= '<td class="littletablerow"><a href=# onclick="del_itpfac(<#i#>);return false;">'.img("images/delete.jpg").'</a></td></tr>';
+$scampos .= '<td class="littletablerow"  align="center"><a href=# onclick="del_itpfac(<#i#>);return false;">'.img("images/delete.jpg").'</a></td></tr>';
 $campos=$form->js_escape($scampos);
 
 if(isset($form->error_string)) echo '<div class="alert">'.$form->error_string.'</div>';
@@ -44,9 +44,9 @@ invent = (<?php echo $inven; ?>);
 //jinven = eval('('+invent+')');
 
 $(function(){
-	$(document).keydown(function(e){
+	/*$(document).keydown(function(e){
 		if (e.which == 13) return false;
-	});
+	});*/
 	$("#mmargen").hide();
 
 	$(".inputnum").numeric(".");
@@ -57,6 +57,47 @@ $(function(){
 		<? }?>
 		autocod(i.toString());
 	}
+
+	$('#cod_cli').autocomplete({
+		source: function( req, add){
+			$.ajax({
+				url:  "<?php echo site_url('ajax/buscascli'); ?>",
+				type: "POST",
+				dataType: "json",
+				data: "q="+req.term,
+				success:
+					function(data){
+						var sugiere = [];
+						$.each(data,
+							function(i, val){
+								sugiere.push( val );
+							}
+						);
+						add(sugiere);
+					},
+			})
+		},
+		minLength: 2,
+		select: function( event, ui ) {
+			$('#nombre').val(ui.item.nombre);
+			$('#nombre_val').text(ui.item.nombre);
+
+			$('#rifci').val(ui.item.rifci);
+			$('#rifci_val').text(ui.item.rifci);
+
+			$('#cod_cli').val(ui.item.cod_cli);
+			$('#sclitipo').val(ui.item.tipo);
+
+			$('#direc').val(ui.item.direc);
+			$('#direc_val').text(ui.item.direc);
+		}
+	});
+	$('input[name^="cana_"]').keypress(function(e) {
+		if(e.keyCode == 13) {
+		    add_itpfac();
+			return false;
+		}
+	});
 });
 
 function cal_dxapli(nind){
@@ -77,29 +118,10 @@ function cal_dxapli(nind){
 			imp=Math.round(imp*100)/100;
 			$("#preca_"+ind).val(data);
 			$("#tota_"+ind).val(imp);
-			
+
 		}
-		
+
 	})
-}
-
-function OnEnter(e,ind){
-	var keynum;
-	var keychar;
-	var numcheck;
-
-	if(window.event){ //IE
-		keynum = e.keyCode;
-	}else if(e.which){ //Netscape/Firefox/Opera
-		keynum = e.which;
-	}
-	if(keynum==13){
-		dacodigo(ind);
-		return false;
-	}
-
-	//keychar = String.fromCharCode(keynum);
-	return true;
 }
 
 function dacodigo(nind){
@@ -151,6 +173,7 @@ function importe(id){
 	var preca   = Number($("#preca_"+ind).val());
 	var tota = roundNumber(cana*preca,2);
 	$("#tota_"+ind).val(tota);
+	$("#tota_"+ind+'_val').text(nformat(tota,2));
 
 	totalizar();
 }
@@ -166,7 +189,7 @@ function totalizar(){
 	var cana   =0;
 	var arr=$('input[name^="tota_"]');
 	sclitipo=$("#sclitipo").val();
-	
+
 	jQuery.each(arr, function() {
 		nom=this.name
 		pos=this.name.lastIndexOf('_');
@@ -180,7 +203,7 @@ function totalizar(){
 			peso    = peso+(itpeso*cana);
 			iva     = iva+tota*(itiva/100);
 			totals  = totals+tota;
-			
+
 			if(sclitipo=='5'){
 				$("#dxapli_"+ind).show();
 			}
@@ -188,10 +211,11 @@ function totalizar(){
 				$("#dxapli_"+ind).hide();
 				$("#dxapli_"+ind).val('');
 			}
-			
+
 		}
 	});
 	$("#peso").val(roundNumber(peso,2));
+	$("#peso_val").text(nformat(peso,2));
 	$("#totalg").val(roundNumber(totals+iva,2));
 	$("#totals").val(roundNumber(totals,2));
 	$("#iva").val(roundNumber(iva,2));
@@ -211,6 +235,12 @@ function add_itpfac(){
 	$("#cana_"+can).numeric(".");
 	autocod(can);
 	$('#codigoa_'+can).focus();
+	$("#cana_"+can).keypress(function(e) {
+		if(e.keyCode == 13) {
+		    add_itpfac();
+			return false;
+		}
+	});
 	itpfac_cont=itpfac_cont+1;
 }
 
@@ -245,6 +275,13 @@ function post_modbus_scli(){
 		}
 	});
 	totalizar();
+
+	nombre = $('#nombre').val();
+	direc  = $('#direc').val();
+	rifci  = $('#rifci').val();
+	$('#nombre_val').text(nombre);
+	$('#rifci_val').text(rifci);
+	$('#direc_val').text(direc);
 }
 
 function post_modbus_sinv(nind){
@@ -255,9 +292,9 @@ function post_modbus_sinv(nind){
 
 	cdropdown(nind);
 
-	if(tipo!=5)
-	jQuery.each(arr, function() { this.selectedIndex=tipo; });
-	else{
+	if(tipo!=5){
+		jQuery.each(arr, function() { this.selectedIndex=tipo; });
+	}else{
 		sclimmargen=parseFloat($("#mmargen").val());
 		sinvmmargen=parseFloat($("#mmargen_"+ind).val());
 		sinvformcal=$("#formcal_"+ind).val();
@@ -267,11 +304,11 @@ function post_modbus_sinv(nind){
 		if(sinvformcal=='U'){
 			p=sinvultimo+(sinvultimo*sinvpm/100);
 		}
-		
+
 		if(sinvformcal=='P'){
 			p=sinvultimo+(sinvultimo*sinvpm/100);
 		}
-		
+
 		if(sinvformcal=='M'){
 			if(sinvultimo>sinvpond){
 				p=sinvultimo+(sinvultimo*sinvpm/100);
@@ -283,7 +320,7 @@ function post_modbus_sinv(nind){
 
 		r=((p*(100-sclimmargen)*(100-sinvmmargen))/(100*100));
 		valor=Math.round(r*100)/100;
-		
+
 		var pprecio  = document.createElement("input");
 		pprecio.setAttribute("id"    , "preca_"+ind);
 		pprecio.setAttribute("name"  , "preca_"+ind);
@@ -294,7 +331,9 @@ function post_modbus_sinv(nind){
 		pprecio.setAttribute("class"    , "inputnum");
 		$("#preca_"+ind).replaceWith(pprecio);
 	}
-	$("#cana_"+ind).focus();
+	$("#cana_"+ind).text();
+	descrip=$("#desca_"+ind).val();
+	$("#desca_"+ind+'_val').text(descrip);
 	importe(nind);
 	totalizar();
 }
@@ -373,7 +412,6 @@ function autocod(id){
 		},
 		minLength: 2,
 		select: function( event, ui ) {
-			//id='0';
 			$('#codigoa_'+id).val(ui.item.codigo);
 			$('#desca_'+id).val(ui.item.descrip);
 			$('#precio1_'+id).val(ui.item.base1);
@@ -392,6 +430,7 @@ function autocod(id){
 			var arr  = $('#preca_'+id);
 			var tipo = Number($("#sclitipo").val()); if(tipo>0) tipo=tipo-1;
 			cdropdown(id);
+			post_modbus_sinv(id);
 			//cdescrip(id);
 			jQuery.each(arr, function() { this.selectedIndex=tipo; });
 			importe(id);
@@ -466,7 +505,7 @@ function autocod(id){
 				<td bgcolor='#7098D0'><strong>Precio</strong></td>
 				<td bgcolor='#7098D0'><strong>Importe</strong></td>
 				<?php if($form->_status!='show'  && !($faplica < $fenvia)) {?>
-					<td  bgcolor='#7098D0'><strong>&nbsp;</strong></td>
+					<td  bgcolor='#7098D0' align='center'><strong>&nbsp;</strong></td>
 				<?php } ?>
 			</tr>
 
@@ -516,7 +555,7 @@ function autocod(id){
 				<td class="littletablerow" align="right"><?php echo $form->$it_tota->output.$pprecios;?></td>
 
 				<?php if($form->_status!='show' && !($faplica < $fenvia)) {?>
-				<td class="littletablerow">
+				<td class="littletablerow" align="center">
 					<a href='#' onclick='del_itpfac(<?=$i ?>);return false;'><?php echo img("images/delete.jpg") ?></a>
 				</td>
 				<?php } ?>
@@ -541,7 +580,7 @@ function autocod(id){
 				<td class="littletableheader">           <?php echo $form->totals->label;  ?></td>
 				<td class="littletablerow" align='right'><b id='totals_val'><?php echo nformat($form->totals->value); ?></b><?php echo $form->totals->output; ?></td>
 
-			<tr></tr>	
+			<tr></tr>
 				<td class="littletableheader">&nbsp;</td>
 				<td class="littletablerow"   ><?php echo $form->observ1->output;   ?></td>
 				<td class="littletableheader"><?php echo $form->ivat->label;    ?></td>

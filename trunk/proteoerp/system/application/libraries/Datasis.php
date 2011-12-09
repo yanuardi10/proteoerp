@@ -99,7 +99,7 @@ class Datasis {
 	function agregacol($tabla,$columna,$tipo){
 		$CI =& get_instance();
 		$existe  = $CI->db->query("DESCRIBE $tabla $columna");
-		if ( $existe->num_rows() == 0  ) 
+		if ( $existe->num_rows() == 0  )
 			$CI->db->query("ALTER TABLE $tabla ADD COLUMN $columna $tipo");
 	}
 
@@ -233,7 +233,7 @@ class Datasis {
 			$idt=$CI->db->insert_id();
 		}
 
-		return("<a href='javascript:void(0);'onclick=\"vent=window.open('".site_url("buscar/index/$idt/$puri")."','ventbuscar$id','width=$width,height=$height,scrollbars=Yes,	status=Yes,resizable=Yes,screenx=5,screeny=5');vent.focus();document.body.setAttribute('onUnload','vent.close();');\">".image('system-search.png',$modbus['titulo'],array('border'=>'0','height'=>'16px')).'</a>');
+		return("<a href='javascript:void(0);'onclick=\"vent=window.open('".site_url("buscar/index/$idt/$puri")."','ventbuscar$id','width=$width,height=$height,scrollbars=Yes,	status=Yes,resizable=Yes,screenx=5,screeny=5');vent.focus();document.body.setAttribute('onUnload','vent.close();');\">".image('system-search.png',$modbus['titulo'],array('border'=>'0')).'</a>');
 	}
 
 	function p_modbus($modbus,$puri='',$width=800,$height=600){
@@ -271,7 +271,7 @@ class Datasis {
 			'onUnload',
 			'if(typeof(vent)==\'object\') vent.close();'
 		);
-		
+
 	\"
 >".image('system-search.png',$modbus['titulo'],array('border'=>'0')).'</a>');
 		//return("<a href='javascript:void(0);' onclick=\"vent=window.open('".site_url("buscar/index/$idt/$puri")."','ventbuscar$id','width=$width,height=$height,scrollbars=Yes,status=Yes,resizable=Yes,screenx=5,screeny=5'); vent.focus();\">".image('system-search.png',$modbus['titulo'],array('border'=>'0')).'</a>');
@@ -369,17 +369,17 @@ class Datasis {
 			PRIMARY KEY (id), UNIQUE INDEX sesion (sesionid)
 			)DEFAULT CHARSET 'latin1' ENGINE=MyISAM ";
 		$CI->db->simple_query($mSQL);
-		
+
 		$id = $CI->session->userdata('session_id');
-		
+
 		$mSQL = $CI->db->insert_string("data_sesion", array("sesionid"=>$id));
 		$CI->db->simple_query($mSQL);
 
 		$mSQL = $CI->db->update_string('data_sesion', $datos, "sesionid='$id'");
 		$CI->db->simple_query($mSQL);
 		return $this->dameval("SELECT id FROM data_sesion WHERE sesionid='$id'");
-		
-		
+
+
 	}
 
 	// GUARDA DATOS DE SESION EN MYSQL
@@ -412,7 +412,7 @@ class Datasis {
 				$colu[] = $campo;
 			}
 			foreach ($query->result_array() as $row){
-				$opciones .= $coma."['".trim($row[$colu[0]])."','".trim($row[$colu[1]])."']"; 
+				$opciones .= $coma."['".trim($row[$colu[0]])."','".trim($row[$colu[1]])."']";
 				$coma = ', ';
 			}
 		}
@@ -437,7 +437,7 @@ class Datasis {
 		};
 
 		$codigoesc = $CI->db->escape($mCODIGO);
-		
+
 		// VERIFICA SI EL ARTICULO ES SERVICIO
 		$mSQL = "SELECT SUBSTRING(tipo,1,1) tipo, enlace, fracci, derivado FROM sinv WHERE codigo=".$codigoesc." ";
 		$query     = $CI->db->query($mSQL);
@@ -480,7 +480,7 @@ class Datasis {
 					} else {
 						$mNECE = round(abs($mEXISTEN)*abs($mFRACCI),0);
 					}
-	
+
 					// SUMA AL DETALLE
 					$mSQL = "UPDATE itsinv SET existen=existen+$mCANTIDAD WHERE codigo=".$codigoesc." AND alma='$mALMA'";
 					//CMNJ(STR(mNECE)+STR(mEXISTEN)+STR(mFRACCI))
@@ -529,7 +529,7 @@ class Datasis {
 			}
 		}
 	}
-	
+
 	//*******************************
 	//
 	//      Manda los Reportes
@@ -545,14 +545,14 @@ class Datasis {
 		$CI->db->simple_query($mSQL);
 
 		$listados = '';
-		
+
 		if($modulo){
 			$modulo=strtoupper($modulo);
-			
+
 			$CI->db->_escape_char='';
 			$CI->db->_protect_identifiers=false;
-			
-			$CI->db->select("a.secu, a.titulo, a.mensaje, REPLACE(MID(a.ejecutar,10,30),"."'".'")'."','')  nombre"); 
+
+			$CI->db->select("a.secu, a.titulo, a.mensaje, REPLACE(MID(a.ejecutar,10,30),"."'".'")'."','')  nombre");
 			$CI->db->from("tmenus    a" );
 			$CI->db->join("sida      b","a.codigo=b.modulo");
 			$CI->db->join("reportes  d","REPLACE(MID(a.ejecutar,10,30),"."'".'")'."','')=d.nombre");
@@ -561,7 +561,7 @@ class Datasis {
 			$CI->db->like("a.ejecutar","REPOSQL", "after");
 			$CI->db->where('a.modulo',$modulo."LIS");
 			$CI->db->orderby("a.secu");
-			
+
 			$query = $CI->db->get();
 
 			if ($query->num_rows() > 0) {
@@ -573,12 +573,12 @@ class Datasis {
 				//$listados .= "<tr><td>No se encontraron listados</td><tr>";
 				$listados .= "['-','No tiene listados','' ],";
 			}
-			
+
 			$query->free_result();
 
 			//$CI->db->_escape_char='';
 			$CI->db->_protect_identifiers=false;
-			
+
 			$CI->db->select("a.titulo, a.mensaje, a.nombre");
 			$CI->db->from("intrarepo a" );
 			$CI->db->join("tmenus    b","CONCAT(a.modulo,'LIS')=b.modulo AND b.ejecutar LIKE CONCAT('%',a.nombre,'%') ","left");
@@ -588,7 +588,7 @@ class Datasis {
 			$CI->db->orderby("a.titulo");
 			$query = $CI->db->get();
 
-			
+
 			if ($query->num_rows() > 0) {
 				foreach ($query->result_array() as $row)
 				{
@@ -636,7 +636,7 @@ class Datasis {
 
 		//'<a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'reportes/ver/{1}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">{0}</a>',
 
-	
+
 		}
 
 		return $reposcript;
@@ -654,7 +654,7 @@ class Datasis {
 
 		if ( ! $this->iscampo('tmenus','proteo') ) {
 			$CI->db->simple_query('ALTER TABLE tmenus ADD COLUMN proteo TEXT NULL');
-		} 
+		}
 
 		$mSQL="UPDATE tmenus SET ejecutar=REPLACE(ejecutar,"."'".'( "'."','".'("'."') WHERE modulo LIKE '%OTR'";
 		$CI->db->simple_query($mSQL);
@@ -668,11 +668,11 @@ class Datasis {
 		if($modulo){
 			$modulo=strtoupper($modulo);
 			$Otros1 = '<table>';
-			
+
 			$CI->db->_escape_char='';
 			$CI->db->_protect_identifiers=false;
-			
-			$mSQL  = "SELECT a.secu, a.titulo, a.mensaje, a.proteo "; 
+
+			$mSQL  = "SELECT a.secu, a.titulo, a.mensaje, a.proteo ";
 			$mSQL .= "FROM tmenus a JOIN sida b ON a.codigo=b.modulo ";
 			$mSQL .= "WHERE b.acceso='S' AND b.usuario='".$CI->session->userdata('usuario')."' ";
 			$mSQL .= "AND a.modulo='".$modulo."OTR' ORDER BY a.secu";
@@ -698,7 +698,7 @@ class Datasis {
 			}
 			$query->free_result();
 			$Otros1 .= "</table>";
-			
+
 
 
 			$otroscript = "
@@ -737,12 +737,12 @@ class Datasis {
 		]
 	});
 ";
-		
+
 		}
 
 		//return $otroscript;
 		return $Otros1;
-		
+
 	}
 
 
@@ -753,11 +753,11 @@ class Datasis {
 		$filter = json_decode($filtros, true);
 		if (is_array($filter)) {
 			$where = "";
-			//Dummy Where. 
+			//Dummy Where.
 			$qs = "";
 			for ($i=0;$i<count($filter);$i++){
 				switch($filter[$i]['type']){
-				case 'string' : $qs .= " AND  $tabla".$filter[$i]['field']." LIKE '%".$filter[$i]['value']."%'"; 
+				case 'string' : $qs .= " AND  $tabla".$filter[$i]['field']." LIKE '%".$filter[$i]['value']."%'";
 					Break;
 				case 'list' :
 					if (strstr($filter[$i]['value'],',')){
@@ -771,29 +771,29 @@ class Datasis {
 						$qs .= " AND $tabla".$filter[$i]['field']." = '".$filter[$i]['value']."'";
 					}
 					Break;
-				case 'boolean' : $qs .= " AND $tabla".$filter[$i]['field']." = ".($filter[$i]['value']); 
+				case 'boolean' : $qs .= " AND $tabla".$filter[$i]['field']." = ".($filter[$i]['value']);
 					Break;
 				case 'numeric' :
 					switch ($filter[$i]['comparison']) {
-						case 'ne' : $qs .= " AND $tabla".$filter[$i]['field']." != ".$filter[$i]['value']; 
+						case 'ne' : $qs .= " AND $tabla".$filter[$i]['field']." != ".$filter[$i]['value'];
 							Break;
-						case 'eq' : $qs .= " AND $tabla".$filter[$i]['field']." = ".$filter[$i]['value']; 
+						case 'eq' : $qs .= " AND $tabla".$filter[$i]['field']." = ".$filter[$i]['value'];
 							Break;
-						case 'lt' : $qs .= " AND $tabla".$filter[$i]['field']." < ".$filter[$i]['value']; 
+						case 'lt' : $qs .= " AND $tabla".$filter[$i]['field']." < ".$filter[$i]['value'];
 							Break;
-						case 'gt' : $qs .= " AND $tabla".$filter[$i]['field']." > ".$filter[$i]['value']; 
+						case 'gt' : $qs .= " AND $tabla".$filter[$i]['field']." > ".$filter[$i]['value'];
 							Break;
 					}
 					Break;
 				case 'date' :
 					switch ($filter[$i]['comparison']) {
-						case 'ne' : $qs .= " AND $tabla".$filter[$i]['field']." != '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
+						case 'ne' : $qs .= " AND $tabla".$filter[$i]['field']." != '".date('Y-m-d',strtotime($filter[$i]['value']))."'";
 							Break;
-						case 'eq' : $qs .= " AND $tabla".$filter[$i]['field']." = '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
+						case 'eq' : $qs .= " AND $tabla".$filter[$i]['field']." = '".date('Y-m-d',strtotime($filter[$i]['value']))."'";
 							Break;
-						case 'lt' : $qs .= " AND $tabla".$filter[$i]['field']." < '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
+						case 'lt' : $qs .= " AND $tabla".$filter[$i]['field']." < '".date('Y-m-d',strtotime($filter[$i]['value']))."'";
 							Break;
-						case 'gt' : $qs .= " AND $tabla".$filter[$i]['field']." > '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
+						case 'gt' : $qs .= " AND $tabla".$filter[$i]['field']." > '".date('Y-m-d',strtotime($filter[$i]['value']))."'";
 							Break;
 					}
 					Break;
@@ -802,7 +802,7 @@ class Datasis {
 			$where .= $qs;
 		}
 		return LTRIM(substr($where,4,1000));
-	
+
 	}
 
 	function codificautf8($query){
@@ -831,7 +831,7 @@ class Datasis {
 				} else {
 					$campos .= ",'".$row->Field."'";
 				}
-				
+
 			}
 		}
 		return $campos;

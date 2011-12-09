@@ -563,6 +563,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$data['script'] .= script('jquery-ui.js');
 		$data['script'] .= script('plugins/jquery.numeric.pack.js');
 		$data['script'] .= script('plugins/jquery.floatnumber.js');
+		$data['script'] .= script('plugins/jquery.ui.autocomplete.autoSelectOne.js');
 		$data['script'] .= phpscript('nformat.js');
 
 		$data['head']    = $this->rapyd->get_head();

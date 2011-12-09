@@ -428,6 +428,7 @@ class Scst extends Controller {
 		$edit->importe->autocomplete=false;
 		$edit->importe->onkeyup='costo(<#i#>)';
 		$edit->importe->css_class='inputnum';
+		//$edit->importe->type='inputhidden';
 
 		$edit->sinvpeso = new hiddenField('', 'sinvpeso_<#i#>');
 		$edit->sinvpeso->db_name = 'sinvpeso';

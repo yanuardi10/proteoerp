@@ -36,6 +36,13 @@ $(function(){
 		autocod(i.toString());
 	}
 
+	$('input[name^="cantidad_"]').keypress(function(e) {
+		if(e.keyCode == 13) {
+		    add_itscst();
+			return false;
+		}
+	});
+
 	$('#proveed').autocomplete({
 		source: function( req, add){
 			$.ajax({
@@ -181,6 +188,12 @@ function add_itscst(){
 	htm = htm.replace(/<#o#>/g,con);
 	$("#__INPL__").after(htm);
 	$("#cantidad_"+can).numeric(".");
+	$("#cantidad_"+can).keypress(function(e) {
+		if(e.keyCode == 13) {
+		    add_itscst();
+			return false;
+		}
+	});
 	$("#costo_"+can).numeric(".");
 	autocod(can);
 	$('#codigo_'+can).focus();

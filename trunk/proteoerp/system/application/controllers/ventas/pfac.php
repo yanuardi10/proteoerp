@@ -13,7 +13,7 @@ class pfac extends validaciones{
 		//redirect('ventas/pfac/filteredgrid');
 		if(!$this->db->field_exists('fenvia','pfac'))
 		$this->db->query("ALTER TABLE `pfac`  ADD COLUMN `fenvia` DATE NULL DEFAULT '0000-00-00' COMMENT 'fecha en que el vendedor termino el pedido'");
-		
+
 		if(!$this->db->field_exists('faplica','pfac'))
 		$this->db->query("ALTER TABLE `pfac`  ADD COLUMN `faplica` DATE NULL DEFAULT '0000-00-00' COMMENT 'fecha en que se aplicaron los descuentos'");
 
@@ -24,7 +24,7 @@ class pfac extends validaciones{
 		}
 		$this->pfacextjs();
 
-		
+
 	}
 
 	function filteredgrid(){
@@ -39,7 +39,7 @@ class pfac extends validaciones{
 			'screenx'    => '0',
 			'screeny'    => '0'
 		);
-		
+
 		$atts2 = array(
 			'width'      => '480',
 			'height'     => '240',
@@ -91,7 +91,7 @@ class pfac extends validaciones{
 		$uri = anchor('ventas/pfac/dataedit/show/<#numero#>', '<#numero#>');
 		$uri2 = anchor_popup('formatos/verhtml/PFAC/<#numero#>', 'Ver HTML', $atts);
 		$uri3 = anchor_popup('ventas/sfac/creadpfacf/<#numero#>', 'Facturar', $atts2);
-		
+
 		$mtool  = "<table background='#554455'><tr>";
 		$mtool .= "<td>&nbsp;</td>";
 
@@ -246,7 +246,7 @@ class pfac extends validaciones{
 
 		$do = new DataObject('pfac');
 		$do->rel_one_to_many('itpfac', 'itpfac', array('numero' => 'numa'));
-		$do->pointer('scli' , 'scli.cliente=pfac.cod_cli', 'tipo AS sclitipo', 'left');
+		$do->pointer('scli' , 'scli.cliente=pfac.cod_cli', 'scli.tipo AS sclitipo', 'left');
 		$do->rel_pointer('itpfac', 'sinv', 'itpfac.codigoa=sinv.codigo', 'sinv.descrip AS sinvdescrip, sinv.base1 AS sinvprecio1, sinv.base2 AS sinvprecio2, sinv.base3 AS sinvprecio3, sinv.base4 AS sinvprecio4, sinv.iva AS sinviva, sinv.peso AS sinvpeso,sinv.tipo AS sinvtipo,sinv.precio1 As sinvprecio1,sinv.pond AS sinvpond,sinv.mmargen as sinvmmargen,sinv.ultimo sinvultimo,sinv.formcal sinvformcal,sinv.pm sinvpm,itpfac.preca precat');
 
 		$edit = new DataDetails('Pedidos', $do);
@@ -259,7 +259,7 @@ class pfac extends validaciones{
 		$edit->post_process('insert', '_post_insert');
 		$edit->post_process('update', '_post_update');
 		$edit->post_process('delete', '_post_delete');
-		
+
 		$fenvia  =strtotime($edit->get_from_dataobjetct('fenvia'));
 		$faplica =strtotime($edit->get_from_dataobjetct('faplica'));
 		$hoy     =strtotime(date('Y-m-d'));
@@ -288,27 +288,29 @@ class pfac extends validaciones{
 		$edit->peso->css_class = 'inputnum';
 		$edit->peso->readonly = true;
 		$edit->peso->size = 10;
+		$edit->peso->type ='inputhidden';
 
 		$edit->cliente = new inputField('Cliente', 'cod_cli');
 		$edit->cliente->size = 6;
 		$edit->cliente->rule = 'required';
 		$edit->cliente->maxlength = 5;
-		if(!($faplica < $fenvia))
-		$edit->cliente->append($boton);
+		if(!($faplica < $fenvia)) $edit->cliente->append($boton);
 		$edit->cliente->autocomplete=false;
 
 		$edit->nombre = new inputField('Nombre', 'nombre');
 		$edit->nombre->size = 30;
 		$edit->nombre->maxlength = 40;
 		$edit->nombre->rule = 'required';
+		$edit->nombre->type ='inputhidden';
 
 		$edit->rifci = new inputField('RIF/CI', 'rifci');
 		$edit->rifci->autocomplete = false;
 		$edit->rifci->size = 15;
+		$edit->rifci->type ='inputhidden';
 
 		$edit->direc = new inputField('Direcci&oacute;n', 'direc');
 		$edit->direc->size = 40;
-		
+		$edit->direc->type ='inputhidden';
 
 		$edit->observa = new inputField('Observaciones', 'observa');
 		$edit->observa->size = 50;
@@ -326,7 +328,6 @@ class pfac extends validaciones{
 		$edit->codigoa = new inputField('C&oacute;digo <#o#>', 'codigoa_<#i#>');
 		$edit->codigoa->size = 12;
 		$edit->codigoa->db_name = 'codigoa';
-		//$edit->codigoa->readonly = true;
 		$edit->codigoa->rel_id = 'itpfac';
 		$edit->codigoa->rule = 'required|callback_chcodigoa';
 		$edit->codigoa->onkeyup = 'OnEnter(event,<#i#>)';
@@ -339,6 +340,7 @@ class pfac extends validaciones{
 		$edit->desca->maxlength = 50;
 		$edit->desca->readonly = true;
 		$edit->desca->rel_id = 'itpfac';
+		$edit->desca->type='inputhidden';
 
 		$edit->cana = new inputField('Cantidad <#o#>', 'cana_<#i#>');
 		$edit->cana->db_name = 'cana';
@@ -349,7 +351,7 @@ class pfac extends validaciones{
 		$edit->cana->rule = 'required|positive';
 		$edit->cana->autocomplete = false;
 		$edit->cana->onkeyup = 'importe(<#i#>)';
-		$edit->cana->insertValue=1;
+		//$edit->cana->insertValue=1;
 
 		$edit->preca = new inputField('Precio <#o#>', 'preca_<#i#>');
 		$edit->preca->db_name = 'preca';
@@ -358,7 +360,7 @@ class pfac extends validaciones{
 		$edit->preca->size = 10;
 		$edit->preca->rule = 'required|positive|callback_chpreca[<#i#>]';
 		$edit->preca->readonly = true;
-		
+
 		$edit->dxapli = new inputField('Precio <#o#>', 'dxapli_<#i#>');
 		$edit->dxapli->db_name = 'dxapli';
 		$edit->dxapli->rel_id = 'itpfac';
@@ -371,7 +373,8 @@ class pfac extends validaciones{
 		$edit->tota->size = 8;
 		$edit->tota->css_class = 'inputnum';
 		$edit->tota->rel_id = 'itpfac';
-		
+		$edit->tota->type='inputhidden';
+
 		for($i = 1;$i <= 4;$i++){
 			$obj = 'precio' . $i;
 			$edit->$obj = new hiddenField('Precio <#o#>', $obj . '_<#i#>');
@@ -401,32 +404,32 @@ class pfac extends validaciones{
 		$edit->sinvtipo->db_name = 'sinvtipo';
 		$edit->sinvtipo->rel_id = 'itpfac';
 		$edit->sinvtipo->pointer = true;
-		
+
 		$edit->itmmargen = new hiddenField('', 'mmargen_<#i#>');
 		$edit->itmmargen->db_name = 'sinvmmargen';
 		$edit->itmmargen->rel_id = 'itpfac';
 		$edit->itmmargen->pointer = true;
-		
+
 		$edit->itpond = new hiddenField('', 'pond_<#i#>');
 		$edit->itpond->db_name = 'sinvpond';
 		$edit->itpond->rel_id  = 'itpfac';
 		$edit->itpond->pointer = true;
-		
+
 		$edit->itultimo = new hiddenField('', 'ultimo_<#i#>');
 		$edit->itultimo->db_name = 'sinvultimo';
 		$edit->itultimo->rel_id  = 'itpfac';
 		$edit->itultimo->pointer = true;
-		
+
 		$edit->itformcal = new hiddenField('', 'formcal_<#i#>');
 		$edit->itformcal->db_name = 'sinvformcal';
 		$edit->itformcal->rel_id  = 'itpfac';
 		$edit->itformcal->pointer = true;
-		
+
 		$edit->itpm = new hiddenField('', 'pm_<#i#>');
 		$edit->itpm->db_name = 'sinvpm';
 		$edit->itpm->rel_id  = 'itpfac';
 		$edit->itpm->pointer = true;
-		
+
 		$edit->precat = new hiddenField('', 'precat_<#i#>');
 		$edit->precat->db_name = 'precat';
 		$edit->precat->rel_id  = 'itpfac';
@@ -449,23 +452,22 @@ class pfac extends validaciones{
 		$edit->totalg->size = 10;
 
 		$edit->usuario = new autoUpdateField('usuario', $this->session->userdata('usuario'), $this->session->userdata('usuario'));
-		
-		
+
 		$control=$this->rapyd->uri->get_edited_id();
 
 		if($fenvia < $hoy){
 			$edit->buttons('modify', 'save', 'undo', 'delete', 'back','add_rel');
-			
+
 			$accion="javascript:window.location='".site_url('ventas/pfac/enviar/'.$control)."'";
 			$edit->button_status('btn_envia'  ,'Enviar Pedido'         ,$accion,'TR','show');
 		}elseif($faplica < $fenvia){
 			$hide=array('vd','peso','cliente','nombre','rifci','direc','observa','observ1','codigoa','desca','cana');
 			foreach($hide as $value)
 				$edit->$value->type="inputhidden";
-			
+
 			$accion="javascript:window.location='".site_url('ventas/pfac/dataedit/modify/'.$control)."'";
 			$edit->button_status('btn_envia'  ,'Aplicar Descuentos'         ,$accion,'TR','show');
-			
+
 			$edit->buttons( 'save', 'undo', 'delete', 'back');
 		}else{
 			$edit->buttons('save', 'undo', 'delete', 'back', 'add_rel');
@@ -482,13 +484,14 @@ class pfac extends validaciones{
 			$data['content'] = $this->load->view('view_pfac', $conten, true);
 			$data['title']   = heading('Pedidos No. '.$edit->numero->value);
 
-			$data['head']    = script('jquery.js');
-			$data['head']   .= script('jquery-ui.js');
-			$data['head']   .= script('plugins/jquery.numeric.pack.js');
-			$data['head']   .= script('plugins/jquery.floatnumber.js');
-			$data['head']   .= phpscript('nformat.js');
-			$data['head']   .= style('redmond/jquery-ui-1.8.1.custom.css');
-			$data['head']   .= $this->rapyd->get_head();
+			$data['style']  = style('redmond/jquery-ui.css');
+			$data['head']   = script('jquery.js');
+			$data['head']  .= script('jquery-ui.js');
+			$data['head']  .= script('plugins/jquery.numeric.pack.js');
+			$data['head']  .= script('plugins/jquery.floatnumber.js');
+			$data['head']  .= script('plugins/jquery.ui.autocomplete.autoSelectOne.js');
+			$data['head']  .= phpscript('nformat.js');
+			$data['head']  .= $this->rapyd->get_head();
 
 			$this->load->view('view_ventanas', $data);
 		}else{
@@ -510,7 +513,7 @@ class pfac extends validaciones{
 		'tabla'   =>'scli',
 		'columnas'=>array(
 			'cliente' =>'C&oacute;digo Cliente',
-			'nombre'=>'Nombre', 
+			'nombre'=>'Nombre',
 			'cirepre'=>'Rif/Cedula',
 			'dire11'=>'Direcci&oacute;n',
 			'tipo'=>'Tipo'),
@@ -564,7 +567,7 @@ class pfac extends validaciones{
 		'tabla'   =>'scli',
 		'columnas'=>array(
 			'cliente' =>'C&oacute;digo Cliente',
-			'nombre'=>'Nombre', 
+			'nombre'=>'Nombre',
 			'cirepre'=>'Rif/Cedula',
 			'dire11'=>'Direcci&oacute;n',
 			'tipo'=>'Tipo'),
@@ -618,7 +621,7 @@ class pfac extends validaciones{
 		$cod  = $this->input->post('codigo');
 		$scli = $this->input->post('cod_cli');
 		if(strlen($scli)==0){ echo $data; return; }
-		
+
 		$sql='SELECT mmargen FROM scli WHERE cliente='.$this->db->escape($scli);
 		$scli_margen=$this->datasis->dameval($sql);
 		$scli_margen=$scli_margen/100;
@@ -668,7 +671,7 @@ class pfac extends validaciones{
 		foreach($_POST as $ind=>$val){
 			$matches=array();
 			$_POST['fecha']=date('d/m/Y');
-			
+
 			if(preg_match('/codigoa_(?P<id>\d+)/', $ind, $matches) > 0){
 				$id     = $matches['id'];
 				$precio = $_POST['precio_'.$id];
@@ -682,7 +685,7 @@ class pfac extends validaciones{
 		echo $rt;
 	}
 
-	
+
 
 	function _pre_insert($do){
 		$numero = $this->datasis->fprox_numero('npfac');
@@ -714,7 +717,7 @@ class pfac extends validaciones{
 		$do->set('iva'    , round($iva    , 2));
 		return true;
 	}
-	
+
 	function _pre_update($do){
 		$error='';
 		$codigo = $do->get('numero');
@@ -730,13 +733,13 @@ class pfac extends validaciones{
 			$itcana  = $do->get_rel('itpfac', 'cana'   , $i);
 			$itpreca = $do->get_rel('itpfac', 'preca'  , $i);
 			$itiva   = $do->get_rel('itpfac', 'iva'    , $i);
-			
+
 			if(($faplica < $fenvia)){
 				$itdxapli = $do->get_rel('itpfac', 'dxapli', $i);
 				$itprecat = $this->input->post("precat_$i");
 				if(!$itdxapli)
 				$itdxapli=' ';
-				
+
 				$itpreca  = $this->cal_dxapli($itprecat,$itdxapli);
 				if(1*$itpreca>0){
 					$do->set_rel('itpfac', 'preca'  , $itpreca, $i);
@@ -745,7 +748,7 @@ class pfac extends validaciones{
 					$error.="Error. El descuento por aplicar es incorrecto para el codigo $codigoa</br>";
 				}
 			}
-			
+
 			$ittota  = $itpreca * $itcana;
 			$do->set_rel('itpfac', 'tota'    , $ittota, $i);
 			$do->set_rel('itpfac', 'fecha'   , $fecha , $i);
@@ -764,7 +767,7 @@ class pfac extends validaciones{
 		$mSQL='UPDATE sinv JOIN itpfac ON sinv.codigo=itpfac.codigoa SET sinv.exdes=sinv.exdes-itpfac.cana WHERE itpfac.numa='.$this->db->escape($codigo);
 		$ban=$this->db->simple_query($mSQL);
 		if($ban==false){ memowrite($mSQL,'pfac'); }
-		
+
 		if(!empty($error)){
 			$do->error_message_ar['pre_ins']=$error;
 			$do->error_message_ar['pre_upd']=$error;
@@ -838,18 +841,18 @@ class pfac extends validaciones{
 			return true;
 		}
 	}
-	
-	
+
+
 	function enviar($numero){
 		$numeroe=$this->db->escape($numero);
 		$this->db->query("UPDATE pfac SET fenvia=CURDATE() WHERE numero=$numeroe");
 		redirect("ventas/pfac/dataedit/show/$numero");
 	}
-	
+
 	function aplicar($numero){
-		
+
 	}
-	
+
 	function _post_update($do){
 		$cana = $do->count_rel('itpfac');
 		for($i = 0;$i < $cana;$i++){
@@ -863,7 +866,7 @@ class pfac extends validaciones{
 		$codigo = $do->get('numero');
 		logusu('pfac', "Pedido $codigo MODIFICADO");
 	}
-	
+
 	function cal_dxapli($preca=null,$dxapli=null){
 		$p=null;
 		if(!($preca && $dxapli)){
@@ -871,21 +874,21 @@ class pfac extends validaciones{
 			$dxapli=$this->input->post('dxapli');
 			$p=true;
 		}
-		
+
 		$desc  =explode('+',$dxapli);
 		$error='';
-		
+
 		$precio=$preca;
 		foreach($desc as $value){
 			if(strlen(trim($value))>0){
-				
+
 				if( $value>0)
 				$precio=$precio-($precio*$value/100);
 				else
 				$error='_||_';
 			}
 		}
-		
+
 		if($p){
 			if(empty($error) && 1*$precio>0)
 				echo round($precio);
@@ -895,9 +898,9 @@ class pfac extends validaciones{
 			if(empty($error) && 1*$precio>0)
 			return $precio;
 		}
-		
+
 	}
-	
+
 	function _pre_delete($do){
 		$codigo = $do->get('numero');
 		$mSQL='UPDATE sinv JOIN itpfac ON sinv.codigo=itpfac.codigoa SET sinv.exdes=sinv.exdes-itpfac.cana WHERE itpfac.numa='.$this->db->escape($codigo);
@@ -905,16 +908,16 @@ class pfac extends validaciones{
 		if($ban==false){ memowrite($mSQL,'pfac'); }
 		return true;
 	}
-	
+
 	function _post_delete($do){
 		$codigo = $do->get('numero');
 		logusu('pfac', "Pedido $codigo ELIMINADO");
 	}
-	
+
 	function instalar(){
 		if (!$this->db->field_exists('dxapli','itpfac'))
 		$this->db->query("ALTER TABLE `itpfac`  ADD COLUMN `dxapli` VARCHAR(20) NOT NULL COMMENT 'descuento por aplicar'");
-		
+
 	}
 
 	function grid(){
@@ -924,7 +927,7 @@ class pfac extends validaciones{
 		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
 
 		$where = $this->datasis->extjsfiltro($filters,'pfac');
-	
+
 		$this->db->_protect_identifiers=false;
 		$this->db->select('*');
 		$this->db->from('pfac');
@@ -948,7 +951,6 @@ class pfac extends validaciones{
 		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
 	}
 
-
 	function tabla() {
 		$id   = isset($_REQUEST['id'])  ? $_REQUEST['id']   :  0;
 		$cliente = $this->datasis->dameval("SELECT cod_cli FROM pfac WHERE id='$id'");
@@ -960,7 +962,7 @@ class pfac extends validaciones{
 			$salida = "<br><table width='100%' border=1>";
 			$salida .= "<tr bgcolor='#e7e3e7'><td colspan=3>Movimiento en Cuentas X Cobrar</td></tr>";
 			$salida .= "<tr bgcolor='#e7e3e7'><td>Tp</td><td align='center'>Numero</td><td align='center'>Monto</td></tr>";
-			
+
 			foreach ($query->result_array() as $row)
 			{
 				$salida .= "<tr>";
@@ -1007,7 +1009,7 @@ class pfac extends validaciones{
 
 		$mSQL = "SELECT * FROM itpfac a JOIN sinv b ON a.codigoa=b.codigo WHERE a.numa='$numero' ORDER BY a.codigoa";
 		$query = $this->db->query($mSQL);
-		$results =  0; 
+		$results =  0;
 		$arr = array();
 		foreach ($query->result_array() as $row)
 		{
@@ -1031,7 +1033,7 @@ class pfac extends validaciones{
 
 		$modulo = 'pfac';
 		$urlajax = 'ventas/pfac/';
-		
+
 		$listados= $this->datasis->listados($modulo);
 		$otros=$this->datasis->otros($modulo, $urlajax);
 
@@ -1087,9 +1089,9 @@ class pfac extends validaciones{
 
 
 		$variables='';
-		
+
 		$valida="		{ type: 'length', field: 'numero',  min:  1 }";
-		
+
 
 		$funciones = "
 function renderScli(value, p, record) {
@@ -1142,7 +1144,7 @@ function renderSinv(value, p, record) {
 		autoSync: true,
 		method: 'POST'
 	});
-	
+
 	//////////////////////////////////////////////////////////
 	//
 	var gridDeta1 = Ext.create('Ext.grid.Panel', {
@@ -1162,7 +1164,7 @@ function renderSinv(value, p, record) {
 		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/verhtml/PRESUP/{numero}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/html_icon.gif', 'alt' => 'Formato HTML', 'title' => 'Formato HTML','border'=>'0'))."</a></td>',
 		'<td align=\'center\'>{numero}</td>',
 		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/ver/PRESUP/{numero}\',     \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',   'title' => 'Formato PDF', 'border'=>'0'))."</a></td></tr>',
-		'<tr><td colspan=3 align=\'center\' >--</td></tr>',		
+		'<tr><td colspan=3 align=\'center\' >--</td></tr>',
 		'</table>','nanai'
 	];
 
@@ -1236,23 +1238,23 @@ function renderSinv(value, p, record) {
 					handler: function() {
 						var selection = gridMaest.getView().getSelectionModel().getSelection()[0];
 						Ext.MessageBox.show({
-							title: 'Confirme', 
-							msg: 'Seguro que quiere eliminar la compra Nro. '+selection.data.numero, 
-							buttons: Ext.MessageBox.YESNO, 
-							fn: function(btn){ 
-								if (btn == 'yes') { 
+							title: 'Confirme',
+							msg: 'Seguro que quiere eliminar la compra Nro. '+selection.data.numero,
+							buttons: Ext.MessageBox.YESNO,
+							fn: function(btn){
+								if (btn == 'yes') {
 									if (selection) {
 										//storeMaest.remove(selection);
 									}
 									storeMaest.load();
-								} 
-							}, 
-							icon: Ext.MessageBox.QUESTION 
-						});  
+								}
+							},
+							icon: Ext.MessageBox.QUESTION
+						});
 					}
 				}
 			]
-		}		
+		}
 		";
 
 		$grid2 = ",{
@@ -1268,7 +1270,7 @@ function renderSinv(value, p, record) {
 
 
 		$titulow = 'Compras';
-		
+
 		$filtros = "";
 		$features = "
 		features: [ { ftype: 'filters', encode: 'json', local: false } ],
@@ -1295,10 +1297,10 @@ function renderSinv(value, p, record) {
 		$data['coldeta']     = $coldeta;
 		$data['acordioni']   = $acordioni;
 		$data['final']       = $final;
-		
+
 		$data['title']  = heading('Pedido de Clientes');
 		$this->load->view('extjs/extjsvenmd',$data);
-		
+
 	}
 
 

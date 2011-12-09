@@ -518,7 +518,7 @@ function del_sfpa(id){
 		<table width='100%'>
 		<tr><td style="width:50%">
 			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9; min-height:105px;'>
-			<legend class="titulofieldset" style='color: #114411;'>Documento <?php echo $form->numero->value;   ?></legend>
+			<legend class="titulofieldset" style='color: #114411;'>Documento <?php echo $form->numero->value; ?></legend>
 			<table style="margin: 0;">
 			<tr>
 				<td class="littletableheader"><?php echo $form->fecha->label;     ?>*&nbsp;</td>
