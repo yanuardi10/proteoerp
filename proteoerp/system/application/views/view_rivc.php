@@ -28,7 +28,7 @@ if($form->_status!='show'){ ?>
 var itrivc_cont =<?php echo $form->max_rel_count['itrivc']; ?>;
 
 $(function(){
-	
+
 	com=false;
 	$(document).keydown(function(e){
 		if (18 == e.which) {
@@ -36,7 +36,7 @@ $(function(){
 			return false;
 		}
 		if (com && (e.which == 61 || e.which == 107)) {
-			add_itrivc();  
+			add_itrivc();
 			com=false;
 			return false;
 		}else if (com && e.which != 16 && e.which == 17){
@@ -44,14 +44,14 @@ $(function(){
 		}
 		return true;
 	});
-	
-	
+
+
 	$(".inputnum").numeric(".");
 	totalizar();
 	for(var i=0;i < <?php echo $form->max_rel_count['itrivc']; ?>;i++){
 		autocod(i.toString());
 	}
-	
+
 	$('#cod_cli').autocomplete({
 		source: function( req, add){
 			$.ajax({
@@ -113,7 +113,7 @@ function totalizar(){
 			gtotal  =gtotal+itgtotal;
 		}
 	});
-	
+
 	$("#reiva").val(roundNumber(reiva,2));
 	$("#impuesto").val(roundNumber(impuesto,2));
 	$("#gtotal").val(roundNumber(gtotal,2));
@@ -170,7 +170,7 @@ function autocod(id){
 			$('#tipo_doc_'+id).val(ui.item.tipo_doc);
 			$('#tipo_doc_val_'+id).text(ui.item.tipo_doc);
 
-			$('#numero_'+id).val(ui.item.numero);
+			$('#numero_'+id).val(ui.item.value);
 
 			$('#gtotal_'+id).val(ui.item.gtotal);
 			$('#gtotal_val_'+id).text(nformat(ui.item.gtotal,2));
@@ -306,9 +306,9 @@ function autocod(id){
 		<?php echo $container_br ?>
 		<br>
 
-<table  width="100%" style="margin:0;width:100%;" > 
+<table  width="100%" style="margin:0;width:100%;" >
 	<tr>
-		<td colspan=10 class="littletableheader">Totales</td>      
+		<td colspan=10 class="littletableheader">Totales</td>
 	</tr><tr>
 		<td class="littletablerowth" align='left' ><?php echo $form->codbanc->label;   ?></td>
 		<td class="littletablerow"   align='left' ><?php echo $form->codbanc->output;  ?></td>
@@ -334,7 +334,7 @@ function autocod(id){
 
 <?php if($form->_status=='show'){ ?>
 <br>
-<table  width="100%" style="margin:0;width:100%;" > 
+<table  width="100%" style="margin:0;width:100%;" >
 	<tr>
 		<td colspan=10 class="littletableheader">Movimientos relacionados</td>
 	</tr>
