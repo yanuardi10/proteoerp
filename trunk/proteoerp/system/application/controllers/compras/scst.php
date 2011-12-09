@@ -771,10 +771,12 @@ class Scst extends Controller {
 	}
 
 	function scstserie(){
-		$serie   = $this->uri->segment($this->uri->total_segments());
-		$control = $this->uri->segment($this->uri->total_segments()-1);
+		$serie      = $this->uri->segment($this->uri->total_segments());
+		$control    = $this->uri->segment($this->uri->total_segments()-1);
+		$dbserie    = $this->db->escape($serie);
+		$dbconstrol = $this->db->escape($control);
 		if (!empty($serie)) {
-			$this->db->simple_query("UPDATE scst SET serie='$serie' WHERE control='$control'");
+			$this->db->simple_query("UPDATE scst SET serie=$dbserie WHERE control=$dbcontrol");
 			echo " con exito ";
 		} else {
 			echo " NO se guardo ";
