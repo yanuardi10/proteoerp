@@ -352,11 +352,11 @@ script;
 	}
 
 	function conccta() {
-		$start    = isset($_REQUEST['start'])  ? $_REQUEST['start']  :  0;
-		$limit    = isset($_REQUEST['limit'])  ? $_REQUEST['limit']  : 25;
-		$tipo     = isset($_REQUEST['tipo'])   ? $_REQUEST['tipo']   : 'P';
-		$cuenta   = isset($_REQUEST['cuenta']) ? $_REQUEST['cuenta'] : '';
-		$semilla  = isset($_REQUEST['query'])  ? $_REQUEST['query']  : '';
+		$start    = isset($_REQUEST['start'])  ? $_REQUEST['start'] :   0;
+		$limit    = isset($_REQUEST['limit'])  ? $_REQUEST['limit'] :  25;
+		$tipo     = isset($_REQUEST['tipo'])   ? $_REQUEST['tipo']  : 'P';
+		$cuenta   = isset($_REQUEST['cuenta']) ? $_REQUEST['cuenta']:  '';
+		$semilla  = isset($_REQUEST['query'])  ? $_REQUEST['query'] :  '';
 
 		$mSQL = '';
 	

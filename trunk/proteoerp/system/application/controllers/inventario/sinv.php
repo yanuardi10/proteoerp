@@ -1150,6 +1150,11 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->clave->maxlength=8;
 		$edit->clave->rule = 'trim|strtoupper';
 
+		$edit->ubica = new inputField("Ubicacion", "ubica");
+		$edit->ubica->size=10;
+		$edit->ubica->maxlength=8;
+		$edit->ubica->rule = 'trim|strtoupper';
+
 		$AddDepto='<a href="javascript:add_depto();" title="Haz clic para Agregar un nuevo Departamento">'.image('list_plus.png','Agregar',array("border"=>"0")).'</a>';
 		$edit->depto = new dropdownField("Departamento", "depto");
 		$edit->depto->rule ="required";

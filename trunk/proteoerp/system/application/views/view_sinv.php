@@ -408,6 +408,10 @@ else:
 					<td class="littletableheaderc"><?=$form->exdes->label  ?></td>
 					<td class="littletablerow" align='right'><?=$form->exdes->output ?></td>
 				</tr>
+				<tr>
+					<td class="littletableheaderc"><?=$form->ubica->label ?></td>
+					<td class="littletablerow" align='right'><?=$form->ubica->output   ?></td>
+				</tr>
 			</table>
 			</fieldset>
 		</td>

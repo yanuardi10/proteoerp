@@ -811,6 +811,7 @@ script;
 
 		$urlajax = 'nomina/pers/';
 		$variables = "
+var mcliente = '';
 var ci = {
 	layout: 'column',
 	defaults: {columnWidth:0.5, layout: 'form', border: false, xtype: 'panel'},
@@ -885,8 +886,6 @@ var ci = {
 										items: [{
 											title:'Datos',
 											columnWidth : 0.50, 
-											//layout: 'fit',
-											//defaults:{anchor:'-20'},
 											items: [
 												{ xtype: 'textfield',   fieldLabel: 'Dias Laborables',  labelWidth:120, name: 'dialab',  allowBlank: true, width:230 },
 												{ xtype: 'textfield',   fieldLabel: 'Dias Libres',      labelWidth:120, name: 'dialib',  allowBlank: true, width:230 },
@@ -915,6 +914,7 @@ var ci = {
 									title: 'Direccion',
 									autoScroll:true,
 									defaults:{anchor:'-20'},
+									layout: 'column',
 									items:[{
 										defaults: {xtype:'fieldset', columnWidth : 0.49  },
 										layout: 'column',
@@ -942,7 +942,21 @@ var ci = {
 											]
 										}]
 									},
-										{ xtype: 'combo',     fieldLabel: 'Profesion u Ocupacion', labelWidth: 150, name: 'profes',  width:350, store: [".$profes."] },
+										{ xtype: 'combo',     fieldLabel: 'Profesion', labelWidth: 60, name: 'profes',  width:250, store: [".$profes."] },
+										{
+											xtype: 'combo',
+											fieldLabel: 'Enlace',
+											labelWidth:70,
+											name: 'enlace',
+											id:   'enlace',
+											mode: 'remote',
+											hideTrigger: true,
+											typeAhead: true,
+											forceSelection: true,										valueField: 'item',
+											displayField: 'valor',
+											store: scliStore,
+											width: 350
+										}
 									]
 								},{
 									title: 'Variables',
@@ -975,16 +989,33 @@ var ci = {
 						var form = this.down('writerform').getForm();
 						this.activeRecord = registro;
 						if (registro) {
+							mcliente = registro.data.cliente;
+							scliStore.proxy.extraParams.cliente = mcliente ;
+							scliStore.load({ params: { 'cuenta':  registro.data.cuenta,  'origen': 'beforeform' } });
 							form.loadRecord(registro);
 							form.findField('codigo').setReadOnly(true);
 						} else {
+							mcliente = '';
 							form.findField('codigo').setReadOnly(false);
 						}
 					}
 				}
 ";
 
-		$stores = "";
+		$stores = "
+var scliStore = new Ext.data.Store({
+	fields: [ 'item', 'valor'],
+	autoLoad: false, autoSync: false, pageSize: 30, pruneModifiedRecords: true, totalProperty: 'results',
+	proxy: {
+		type: 'ajax',
+		url : urlApp + 'ventas/scli/sclibusca',
+		extraParams: {  'cliente': mcliente, 'origen': 'store' },
+		reader: { type: 'json', totalProperty: 'results', root: 'data' }
+	},
+	method: 'POST'
+});
+
+	";
 
 		$features = "features: [{ ftype: 'grouping', groupHeaderTpl: '{name}' },{ ftype: 'filters', encode: 'json', local: false }],";
 		$agrupar = "		remoteSort: true,
