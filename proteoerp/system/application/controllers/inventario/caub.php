@@ -21,7 +21,8 @@ class Caub extends validaciones {
 		$this->datasis->modulo_id(307,1);
 		$ajus=$this->db->simple_query("INSERT IGNORE INTO caub (ubica,ubides,gasto,invfis) VALUES ('AJUS','AJUSTES','S','N')ON DUPLICATE KEY UPDATE ubides='AJUSTES', gasto='S',invfis='N'");
 		$infi=$this->db->simple_query("INSERT IGNORE INTO caub (ubica,ubides,gasto,invfis) VALUES ('INFI','INVENTARIO FISICO','S','S')ON DUPLICATE KEY UPDATE ubides='INVENTARIO FISICO', gasto='S',invfis='S'");
-		redirect("inventario/caub/filteredgrid");
+		$this->db->simple_query("ALTER TABLE `caub`  ADD COLUMN `id` INT NOT NULL AUTO_INCREMENT FIRST,  DROP PRIMARY KEY,  ADD PRIMARY KEY ( `id`)");
+		redirect("inventario/caub/caubextjs");
     }
   
 	function filteredgrid(){
@@ -393,6 +394,248 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 	function sugerir(){
 		$ultimo=$this->datasis->dameval("SELECT LPAD(hexa,2,0) FROM serie LEFT JOIN caub ON LPAD(ubica,2,0)=LPAD(hexa,2,0) WHERE valor<255 AND ubica IS NULL LIMIT 1");
 		echo $ultimo;
+	}
+	
+	/*
+	 * INICIO EXTJS
+	 * 
+	 * */
+	 
+	 function grid(){
+		$this->tabla='caub';
+		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']   :  0;
+		$limit   = isset($_REQUEST['limit'])  ? $_REQUEST['limit']   : 50;
+		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']    : '[{"property":"ubides","direction":"ASC"},{"property":"ubides","direction":"ASC"}]';
+		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
+
+		$where = $this->datasis->extjsfiltro($filters);
+		
+		$this->db->_protect_identifiers=false;
+		$this->db->select(array("id","ubica","ubides","IF(invfis='S','SI',IF(invfis='N','NO',invfis)) invfis","IF(gasto='S','SI',IF(gasto='N','NO',gasto)) gasto","sucursal","cu_cost","cu_caja"));
+		$this->db->from($this->tabla);
+		if (strlen($where)>1) $this->db->where($where, NULL, FALSE); 
+		
+		$sort = json_decode($sort, true);
+		for ( $i=0; $i<count($sort); $i++ ) {
+			$this->db->order_by($sort[$i]['property'],$sort[$i]['direction']);
+		}
+
+		$this->db->limit($limit, $start);
+		$query = $this->db->get();
+		$results = $this->db->count_all($this->tabla);
+
+		$arr = $this->datasis->codificautf8($query->result_array());
+		echo '{success:true, message:"Loaded data", results:'. $results.', data:'.json_encode($arr).'}';
+	}
+
+	function crear(){
+		$js= file_get_contents('php://input');
+		$data= json_decode($js,true);
+		$campos = $data['data'];
+		$codigo = $campos['ubica'];
+
+		if ( !empty($codigo) ) {
+			unset($campos['id']);
+			// Revisa si existe ya ese contrato
+			if ($this->datasis->dameval("SELECT COUNT(*) FROM caub WHERE ubica='$codigo'") == 0)
+			{
+				$mSQL = $this->db->insert_string("caub", $campos );
+				$this->db->query($mSQL);
+				$id=$this->db->insert_id();
+				logusu('caub',"ALMACEN $codigo CREADO id $id");
+				echo "{ success: true, message: 'Almacen Agregado'}";
+			} else {
+				echo "{ success: false, message: 'Ya existe una almacen con ese codigo!!'}";
+			}
+			
+		} else {
+			echo "{ success: false, message: 'Falta el campo codigo!!'}";
+		}
+	}
+
+	function modificar(){
+		$js= file_get_contents('php://input');
+		$data= json_decode($js,true);
+		$campos = $data['data'];
+
+		$codigo = $campos['ubica'];
+		unset($campos['ubica']);
+		unset($campos['id']);
+
+		$mSQL = $this->db->update_string("caub", $campos,"id=".$data['data']['id'] );
+		$this->db->simple_query($mSQL);
+		logusu('caub',"ALMACEN $codigo ID ".$data['data']['id']." MODIFICADO");
+		echo "{ success: true, message: 'Almacen Modificado -> ".$data['data']['ubica']."'}";
+	}
+
+	function eliminar(){
+		$js= file_get_contents('php://input');
+		$data= json_decode($js,true);
+		$campos = $data['data'];
+
+		$codigo = $campos['ubica'];
+		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM itsinv WHERE alma='$codigo' AND existen>0");
+
+		if ($chek > 0){
+			echo "{ success: false, message: 'El almacen no fuede ser eliminado'}";
+		} else {
+			$this->db->simple_query("DELETE FROM caub WHERE ubica='$codigo'");
+			logusu('caub',"Almacen $codigo ELIMINADO");
+			echo "{ success: true, message: 'Almacen Eliminado'}";
+		}
+	}
+	 
+	 function caubextjs(){
+		$encabeza='ALMACENES';
+		$listados= $this->datasis->listados('caub');
+		//$otros=$this->datasis->otros('rete', 'finanzas/rete');
+		$otros='';
+
+		$titulow='ALMACENES';
+		$urlajax = 'inventario/caub/';
+		$variables = "
+		var mcuenta='';
+		var msucursal='';
+		";
+
+		$sn="['S', 'SI'],['N','NO']";
+
+		$funciones = "";
+		
+		$valida = "
+		{ type: 'length', field: 'ubica',   min: 1 },
+		{ type: 'length', field: 'ubides', min: 1 }
+		";
+		
+		$columnas = "
+		{ header: 'C&oacute;digo'  ,width:  50, sortable: true, dataIndex: 'ubica'   ,field: { type: 'textfield' }, filter: { type: 'string' }}, 
+		{ header: 'Nombre'         ,width: 200, sortable: true, dataIndex: 'ubides'  ,field: { type: 'textfield' }, filter: { type: 'string' }}, 
+		{ header: 'Gasto'          ,width:  80, sortable: true, dataIndex: 'gasto'   ,field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Inv. Fisico'    ,width:  80, sortable: true, dataIndex: 'invfis'  ,field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Sucursal'       ,width: 100, sortable: true, dataIndex: 'sucursal',field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Cuenta Almacen' ,width:  90, sortable: true, dataIndex: 'cu_cost',field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Cuenta Caja'    ,width:  90, sortable: true, dataIndex: 'cu_caja' ,field: { type: 'textfield' }, filter: { type: 'string' }},
+		";
+
+		$campos = "'id', 'ubica','ubides','gasto','invfis','sucursal','sucursal','cu_cost', 'cu_caja'";
+		
+		$camposforma = "
+							{
+							xtype:'fieldset',
+							frame: false,
+							border: false,
+							labelAlign: 'right',
+							defaults: { xtype:'fieldset', labelWidth:70 },
+							style:'padding:4px',
+							layout: 'column',
+							items: [
+									{ xtype: 'textfield'  ,fieldLabel: 'C&oacute;digo'           ,name: 'ubica'   ,width:110, allowBlank: false ,id: 'ubica'                      },
+									{ xtype: 'textfield'  ,fieldLabel: 'Nombre'           ,name: 'ubides'  ,width:270, allowBlank: false                                   },
+									{ xtype: 'combo'      ,fieldLabel: 'Gasto'            ,name: 'gasto'   ,width:300, allowBlank: false ,store: [".$sn."]                 },
+									{ xtype: 'combo'      ,fieldLabel: 'Inv F&itilde;sico'       ,name: 'invfis'  ,width:300, allowBlank: false ,store: [".$sn."]                 },
+									{ xtype: 'combo'      ,fieldLabel: 'Sucursal'         ,name: 'sucursal',width:300, allowBlank: true  ,store: sucuStore, id: 'sucursal', mode: 'remote', hideTrigger: true, typeAhead: true, forceSelection: true, valueField: 'item', displayField: 'valor'},
+								]
+							},{
+							xtype:'fieldset',
+							title: 'Cuentas Contables',
+							frame: false,
+							border: false,
+							labelAlign: 'right',
+							defaults: { xtype:'fieldset', labelWidth:170 },
+							style:'padding:4px',
+							layout: 'column',
+							items: [
+									{ xtype: 'combo'      ,fieldLabel: 'Cuenta Almacen'   ,name: 'cu_cost',width:400, allowBlank: true  ,store: cplaStore, id: 'cu_cost', mode: 'remote', hideTrigger: true, typeAhead: true, forceSelection: true, valueField: 'item', displayField: 'valor'},
+									{ xtype: 'combo'      ,fieldLabel: 'Cuenta Caja'      ,name: 'cu_caja' ,width:400, allowBlank: true  ,store: cplaStore, id: 'cu_caja', mode: 'remote', hideTrigger: true, typeAhead: true, forceSelection: true, valueField: 'item', displayField: 'valor'},
+								]
+							}
+		";
+
+		$winwidget = "
+				closable: false,
+				closeAction: 'destroy',
+				width: 450,
+				height: 340,
+				resizable: false,
+				modal: true,
+				items: [writeForm],
+				listeners: {
+					beforeshow: function() {
+						var form = this.down('writerform').getForm();
+						this.activeRecord = registro;
+						if (registro) {
+							mcuenta  = registro.data.cuenta;
+							cplaStore.proxy.extraParams.cuenta  = mcuenta  ;
+							cplaStore.load({ params: { 'cuenta': registro.data.cuenta,  'origen': 'beforeform' } });
+							msucursal  = registro.data.sucursal;
+							sucuStore.proxy.extraParams.sucursal  = msucursal  ;
+							sucuStore.load({ params: { 'sucursal': registro.data.sucursal,  'origen': 'beforeform' } });
+							form.loadRecord(registro);
+							form.findField('ubica').setReadOnly(true);
+						} else {
+							form.findField('ubica').setReadOnly(false);
+						}
+					}
+				}
+";
+
+		$stores = "
+		var cplaStore = new Ext.data.Store({
+			fields: [ 'item', 'valor'],
+			autoLoad: false,
+			autoSync: false,
+			pageSize: 50,
+			pruneModifiedRecords: true,
+			totalProperty: 'results',
+			proxy: {
+				type: 'ajax',
+				url : urlApp + 'contabilidad/cpla/cplabusca',
+				extraParams: {  'cuenta': mcuenta, 'origen': 'store' },
+				reader: {type: 'json',totalProperty: 'results',root: 'data'}
+			},
+			method: 'POST'
+		});
+		
+		var sucuStore = new Ext.data.Store({
+			fields: [ 'item', 'valor'],
+			autoLoad: false,
+			autoSync: false,
+			pageSize: 50,
+			pruneModifiedRecords: true,
+			totalProperty: 'results',
+			proxy: {
+				type: 'ajax',
+				url : urlApp + 'supervisor/sucu/sucubusca',
+				extraParams: {  'cuenta': msucursal, 'origen': 'store' },
+				reader: {type: 'json',totalProperty: 'results',root: 'data'}
+			},
+			method: 'POST'
+		});
+		";
+
+		$features = "features: [{ ftype: 'filters', encode: 'json', local: false }],";
+
+		$agrupar = "remoteSort: true,";
+
+		$data['listados']    = $listados;
+		$data['otros']       = $otros;
+		$data['encabeza']    = $encabeza;
+		$data['urlajax']     = $urlajax;
+		$data['variables']   = $variables;
+		$data['funciones']   = $funciones;
+		$data['valida']      = $valida;
+		$data['columnas']    = $columnas;
+		$data['campos']      = $campos;
+		$data['stores']      = $stores;
+		$data['camposforma'] = $camposforma;
+		$data['titulow']     = $titulow;
+		$data['winwidget']   = $winwidget;
+		$data['features']    = $features;
+		$data['agrupar']     = $agrupar;
+		
+		$data['title']  = heading($encabeza);
+		$this->load->view('extjs/extjsven',$data);
+
 	}
 }
 ?>
