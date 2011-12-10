@@ -91,6 +91,43 @@ class sucu extends Controller{
 		$this->load->view('view_ventanas', $data);
 	}
 
+	function sucubusca() {
+		$start    = isset($_REQUEST['start'])  ? $_REQUEST['start']  :  0;
+		$limit    = isset($_REQUEST['limit'])  ? $_REQUEST['limit']  : 25;
+		$sucursal = isset($_REQUEST['sucursal']) ? $_REQUEST['sucursal'] : '';
+		$semilla  = isset($_REQUEST['query'])  ? $_REQUEST['query']  : '';
+
+		$semilla = trim($semilla);
+		
+		$mSQL = '';
+	
+		$mSQL = "SELECT codigo item, sucursal valor FROM sucu ";
+		if ( strlen($semilla)>0 ){
+			$mSQL .= " AND ( codigo LIKE '$semilla%' OR sucu LIKE '%$semilla%' ) ";
+		} else {
+			if ( strlen($sucursal)>0 ) $mSQL .= " AND ( codigo LIKE '$sucursal%' OR descrip LIKE '%$suursal%' ) ";
+		}
+		$mSQL .= "ORDER BY sucursal ";
+		$results = $this->db->count_all('sucu');
+
+		if ( empty($mSQL)) {
+			echo '{success:true, message:"mSQL vacio, Loaded data", results: 0, data:'.json_encode(array()).'}';
+		} else {
+			$mSQL .= " limit $start, $limit ";
+			$query = $this->db->query($mSQL);
+			$arr = array();
+			foreach ($query->result_array() as $row)
+			{
+				$meco = array();
+				foreach( $row as $idd=>$campo ) {
+					$meco[$idd] = utf8_encode($campo);
+				}
+				$arr[] = $meco;
+			}
+			echo '{success:true, message:"'.$mSQL.'", results:'. $results.', data:'.json_encode($arr).'}';
+		}
+	}
+
 	function instalar(){
 		$mSQL="ALTER TABLE `sucu` ADD `url` VARCHAR(200) NULL";
 		$this->db->simple_query($mSQL);

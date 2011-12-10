@@ -88,7 +88,7 @@ class Cpla extends Controller {
 			$carr=explode('.',$codigo);
 			$max =count($carr);
 			$mmac=count($farr);
-			if($mmac>=$max){
+			if($mmac>=$max ){
 				for($i=0;$i<$max;$i++){
 					if(strlen($farr[$i])!=strlen($carr[$i])){
 						$this->validation->set_message('chcodigo',"El c&oacute;digo dado no coincide con el formato: $formato");
@@ -167,7 +167,10 @@ class Cpla extends Controller {
 		$semilla  = isset($_REQUEST['query'])  ? $_REQUEST['query']  : '';
 
 		$semilla = trim($semilla);
+		
 		$long = $this->datasis->dameval('SELECT LENGTH(TRIM(formato)) FROM cemp LIMIT 1');
+		if($long===NULL)
+		$long=0;
 		$mSQL = '';
 	
 		$mSQL = "SELECT codigo item, CONCAT(codigo, ' ', descrip) valor FROM cpla WHERE LENGTH(TRIM(codigo))=$long ";
