@@ -39,30 +39,35 @@ class rivc extends Controller {
 		$filter->cliente->append($boton);
 		//$filter->cliente->group = '2';
 
+		$filter->periodo = new inputField('Comprobante','periodo');
+		$filter->periodo->rule      ='max_length[8]';
+		$filter->periodo->size      =4;
+		$filter->periodo->maxlength =4;
+
 		$filter->nrocomp = new inputField('Comprobante','nrocomp');
 		$filter->nrocomp->rule      ='max_length[8]';
 		$filter->nrocomp->size      =10;
 		$filter->nrocomp->maxlength =8;
+		$filter->nrocomp->in='periodo';
 
-		$filter->emision = new dateField('Fecha Emisi&oacute;n','emision');
+		$filter->emision = new dateField('Emisi&oacute;n','emision');
 		$filter->emision->rule      ='chfecha';
 		$filter->emision->size      =10;
 		$filter->emision->maxlength =8;
+		$filter->emision->group = 'Fecha';
 
-		$filter->periodo = new inputField('Per&iacute;odo','periodo');
-		$filter->periodo->rule      ='max_length[8]';
-		$filter->periodo->size      =10;
-		$filter->periodo->maxlength =8;
-
-		$filter->fecha = new dateField('Fecha de Recepci&oacute;n','fecha');
+		$filter->fecha = new dateField('Recepci&oacute;n','fecha');
 		$filter->fecha->rule      ='chfecha';
 		$filter->fecha->size      =10;
 		$filter->fecha->maxlength =8;
+		$filter->fecha->group = 'Fecha';
 
 		$filter->rif = new inputField('RIF','rif');
 		$filter->rif->rule      ='max_length[14]';
 		$filter->rif->size      =16;
 		$filter->rif->maxlength =14;
+
+		$filter->operacion = new radiogroupField('Operaci&oacute;n', 'operacion', array(''=>'Todos','R'=>'Reintegro','A'=>'Anticipo','P'=>'CxP'));
 
 		$filter->buttons('reset', 'search');
 		$filter->build();
@@ -73,14 +78,14 @@ class rivc extends Controller {
 		$grid->order_by('id','desc');
 		$grid->per_page = 40;
 
-		$grid->column_orderby('Comprobante'   ,$uri,'nrocomp','align="left"');
-		$grid->column_orderby('Anulado'       ,'anulado','anulado','align="center"');
-		$grid->column_orderby('Emisi&oacute;n','<dbdate_to_human><#emision#></dbdate_to_human>','emision','align="center"');
-		$grid->column_orderby('fecha'         ,'<dbdate_to_human><#fecha#></dbdate_to_human>'  ,'fecha','align="center"');
-		$grid->column_orderby('Cliente'       ,'cod_cli','cod_cli','align="left"');
-		$grid->column_orderby('Nombre'        ,'nombre' ,'nombre','align="left"');
-		$grid->column_orderby('RIF'           ,'rif'    ,'rif'   ,'align="left"');
-		$grid->column_orderby('Impuesto'      ,'<nformat><#impuesto#></nformat>','impuesto','align="right"');
+		$grid->column_orderby('Comprobante'     ,$uri,'nrocomp','align="left"');
+		$grid->column_orderby('Anulado'         ,'anulado','anulado','align="center"');
+		$grid->column_orderby('Emisi&oacute;n'  ,'<dbdate_to_human><#emision#></dbdate_to_human>','emision','align="center"');
+		$grid->column_orderby('Recepci&oacute;n','<dbdate_to_human><#fecha#></dbdate_to_human>'  ,'fecha','align="center"');
+		$grid->column_orderby('Cliente'         ,'cod_cli','cod_cli','align="left"');
+		$grid->column_orderby('Nombre'          ,'nombre' ,'nombre','align="left"');
+		$grid->column_orderby('RIF'             ,'rif'    ,'rif'   ,'align="left"');
+		$grid->column_orderby('Impuesto'        ,'<nformat><#impuesto#></nformat>','impuesto','align="right"');
 		//$grid->column_orderby('Total'         ,'<nformat><#gtotal#></nformat>'  ,'gtotal','align="right"');
 		$grid->column_orderby('Monto Ret.'    ,'<nformat><#reiva#></nformat>'   ,'reiva','align="right"');
 
