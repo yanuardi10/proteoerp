@@ -194,7 +194,7 @@ function post_modbus_scli(){
 		if(pos>0){
 			ind = this.name.substring(pos+1);
 			id  = Number(ind);
-			tipo=$('#sinvtipo_'+ind).val();
+			tipo=$('#sinvtipo_'+id).val();
 			if(tipo!='Servicio'){
 				this.selectedIndex=tipo;
 				importe(id);
@@ -381,30 +381,29 @@ function del_itspre(id){
 	<tr>
 		<td>
 		<table width='100%'><tr><td>
-			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
+			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9; min-height:105px;'>
 			<legend class="titulofieldset" style='color: #114411;'>Documento</legend>
 			<table width="100%" style="margin: 0; width: 100%;">
 			<tr>
 				<td class="littletableheader"><?php echo $form->numero->label  ?>*&nbsp;</td>
-				<td class="littletablerow" align="left"><?=$form->numero->output ?>&nbsp;<?php echo $form->nfiscal->output; ?></td>
+				<td class="littletablerow" align="left"><?php echo $form->numero->output; ?>&nbsp;</td>
+			</tr>
+			<tr>
+				<td class="littletableheader"><?php echo $form->nfiscal->label; ?></td>
+				<td class="littletablerow"><?php echo $form->nfiscal->output; ?></td>
 			</tr>
 			<tr>
 				<td class="littletableheader"><?php echo $form->fecha->label;    ?>*&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->fecha->output;   ?>&nbsp;</td>
 			</tr>
 			<tr>
-				<td class="littletableheader"><?php echo $form->vd->label     ?>&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->vd->output    ?>&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->vence->label     ?>&nbsp;</td>
+				<td class="littletablerow">   <?php echo $form->vence->output    ?>&nbsp;</td>
 			</tr>
-			<tr>
-				<td class="littletableheader"><?=$form->tipo_doc->label  ?>&nbsp;</td>
-				<td class="littletablerow" align="left"><?=$form->tipo_doc->output ?>&nbsp;</td>
-			</tr>
-
 			</table>
 			</fieldset>
 		</td><td>
-			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
+			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9; min-height:105px;'>
 			<legend class="titulofieldset" style='color: #114411;'>Cliente</legend>
 			<table width="100%" style="margin: 0; width: 100%;">
 			<tr>
@@ -420,10 +419,14 @@ function del_itspre(id){
 				<td class="littletableheader"><?php echo $form->direc->label  ?>&nbsp;</td>
 				<td class="littletablerow" colspan='2'><b id='direc_val'><?php echo $form->direc->value; ?></b><?php echo $form->direc->output ?>&nbsp;</td>
 			</tr>
+			<tr>
+				<td class="littletableheader"><?php echo $form->vd->label     ?>&nbsp;</td>
+				<td class="littletablerow">   <?php echo $form->vd->output    ?>&nbsp;</td>
+			</tr>
 			</table>
 			</fieldset>
 		</td><td>
-			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
+			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9; min-height:105px;'>
 			<legend class="titulofieldset" style='color: #114411;'>Mandatario</legend>
 			<table width="100%" style="margin: 0; width: 100%;">
 			<tr>
@@ -520,7 +523,7 @@ function del_itspre(id){
 				<td class="littletableheader">           <?php echo $form->totals->label;  ?></td>
 				<td class="littletablerow" align='right'><b id='totals_val'><?php echo nformat($form->totals->value); ?></b><?php echo $form->totals->output; ?></td>
 
-			<tr></tr>	
+			<tr></tr>
 				<td class="littletableheader">&nbsp;</td>
 				<td class="littletablerow"   ></td>
 				<td class="littletableheader"><?php echo $form->ivat->label;    ?></td>
@@ -536,4 +539,36 @@ function del_itspre(id){
 	</tr>
 </table>
 <?php echo $form_end; ?>
+
+<?php if($form->_status=='show'){ ?>
+<br>
+<table  width="100%" style="margin:0;width:100%;" >
+	<tr>
+		<td colspan=10 class="littletableheader">Movimientos relacionados</td>
+	</tr>
+	<?php
+	$transac=$form->get_from_dataobjetct('transac');
+
+	$sql[]='SELECT cod_cli, nombre,tipo_doc, numero, monto, observa1 FROM smov WHERE transac='.$this->db->escape($transac).' ORDER BY num_ref,cod_cli';
+
+	foreach($sql as $mSQL){
+		$query = $this->db->query($mSQL);
+		if ($query->num_rows() > 0){
+			foreach ($query->result() as $row){
+	?>
+	<tr>
+		<td class="littletablerowth" ><?php echo $row->cod_cli.' '.$row->nombre;    ?></td>
+		<td class="littletablerowth" align='center'><?php echo $row->tipo_doc; ?></td>
+		<td class="littletablerow"   ><?php echo $row->numero;   ?></td>
+		<td class="littletablerowth" ><?php echo $row->observa1; ?></td>
+		<td class="littletablerow"   align='right'><?php echo nformat($row->monto);?></td>
+	</tr>
+	<?php
+			}
+		}
+	}?>
+
+</table>
+<?php  } ?>
+
 <?php endif; ?>

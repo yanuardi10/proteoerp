@@ -1,4 +1,4 @@
-<?php if ( ! defined('BASEPATH')) exit('No direct script access allowed'); 
+<?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 include('common.php');
 
 class rivc extends Controller {
@@ -271,7 +271,7 @@ class rivc extends Controller {
 
 		$edit->it_numero = new inputField('numero','numero_<#i#>');
 		$edit->it_numero->db_name='numero';
-		$edit->it_numero->rule='max_length[12]|required|callback_chrepetidos|callback_chfac[<#i#>]';
+		$edit->it_numero->rule='max_length[12]|required|callback_chrepetidos|callback_chfac[<#i#>]|callback_chriva[<#i#>]';
 		$edit->it_numero->size =14;
 		$edit->it_numero->maxlength =12;
 		$edit->it_numero->rel_id ='itrivc';
@@ -385,6 +385,26 @@ class rivc extends Controller {
 		$op=$this->input->post('operacion');
 		if($op=='R' && empty($cajero)){
 			$this->validation->set_message('chcajero', 'El campo %s es obligatorio cuando la operaci&oacute;n es reintegro');
+			return false;
+		}
+		return true;
+	}
+
+	//Chequea que no se repita la retencion cuando se hace por DataSIS
+	function chriva($numero,$ind){
+		$cod_cli = $this->input->post('cod_cli');
+		$tipo_doc= $this->input->post('tipo_doc_'.$ind);
+		$fecha   = $this->input->post('fecha');
+		$tipo_doc=($tipo_doc=='F')? 'FC':'NC';
+
+		$this->db->where('numero'  , $numero  );
+		$this->db->where('tipo_doc', $tipo_doc);
+		$this->db->where('nroriva >', 0);
+		$this->db->from('itccli');
+		$cana=$this->db->count_all_results();
+
+		if($cana>0){
+			$this->validation->set_message('chriva', 'El documento '.$numero.' ya le fue aplicada una retenci&oacute;n de iva');
 			return false;
 		}
 		return true;
@@ -506,7 +526,7 @@ class rivc extends Controller {
 				ORDER BY numero DESC LIMIT 10";*/
 
 			$mSQL="SELECT a.tipo_doc, a.numero, a.totalg, a.fecha,a.iva, a.iva*$rete AS reiva
-				FROM  rivc AS c 
+				FROM  rivc AS c
 				JOIN itrivc AS b ON c.id=b.idrivc AND c.anulado='N'
 				RIGHT JOIN sfac AS a ON a.tipo_doc=b.tipo_doc AND a.numero=b.numero
 				WHERE a.cod_cli=$sclidb AND CONCAT(a.tipo_doc,'-',a.numero) LIKE $qdb AND b.numero IS NULL AND a.tipo_doc <> 'X' AND a.iva>0
@@ -887,7 +907,7 @@ class rivc extends Controller {
 
 			//Si es una factura
 			if($ittipo_doc == 'F'){
-				//Si el saldo es 0  o menor que el monto retenido 
+				//Si el saldo es 0  o menor que el monto retenido
 				if($saldo==0 || $itmonto>$saldo){
 					$sobrante+=$itmonto;
 				}else{
@@ -1003,7 +1023,7 @@ class rivc extends Controller {
 				$data['nroriva']    = $comprob;
 				$data['emiriva']    = $efecha;
 
-				$mSQL = $this->db->insert_string('smov', $data); 
+				$mSQL = $this->db->insert_string('smov', $data);
 				$ban=$this->db->simple_query($mSQL);
 				if($ban==false){ memowrite($mSQL,'rivc'); }
 
@@ -1031,7 +1051,7 @@ class rivc extends Controller {
 				$data['nroriva']    = $comprob;
 				$data['emiriva']    = $efecha;
 
-				$mSQL = $this->db->insert_string('smov', $data); 
+				$mSQL = $this->db->insert_string('smov', $data);
 				$ban=$this->db->simple_query($mSQL);
 				if($ban==false){ memowrite($mSQL,'RIVC'); }
 			}

@@ -118,6 +118,13 @@ class edcont extends Controller {
 		$edit->numero->size =10;
 		$edit->numero->maxlength =8;
 
+		$edit->status = new dropdownField('Estatus','status');
+		$edit->status->option('P','Pendiente');
+		$edit->status->option('A','Aprobado');
+		$edit->status->style='width:180px;';
+		$edit->status->rule='max_length[1]';
+		$edit->status->when=array('show');
+
 		$edit->numero_edres = new inputField('Reservaci&oacute;n','numero_edres');
 		$edit->numero_edres->rule='max_length[8]';
 		$edit->numero_edres->size =10;
@@ -282,7 +289,7 @@ class edcont extends Controller {
 		$edit->buttons('modify', 'save', 'undo', 'delete', 'back', 'add','add_rel');
 		$edit->build();
 
-		$script= '<script type="text/javascript" > 
+		$script= '<script type="text/javascript" >
 		$(function() {
 			$(".inputnum").numeric(".");
 			$(".inputonlynum").numeric();
@@ -295,7 +302,7 @@ class edcont extends Controller {
 		$data['script'] .= $script;
 		$data['title']   = heading($this->tits);
 		$this->load->view('view_ventanas', $data);*/
-		
+
 		$conten['form']     =& $edit;
 
 		$data['content'] = $this->load->view('view_edcont', $conten,true);
@@ -353,6 +360,7 @@ class edcont extends Controller {
 	function _pre_insert($do){
 		$numero =$this->datasis->fprox_numero('nedcont');
 		$do->set('numero' ,$numero);
+		$do->set('status' ,'P');
 		return true;
 	}
 
@@ -407,6 +415,11 @@ class edcont extends Controller {
 			$this->db->simple_query($mSQL);
 		}
 
+		if(!$this->db->field_exists('uso', 'edcont')){
+			$mSQL="ALTER TABLE `edcont` ADD COLUMN `status` CHAR(1) NOT NULL DEFAULT 'P' AFTER `numero`;";
+			$this->db->simple_query($mSQL);
+		}
+
 		if (!$this->db->table_exists('itedcont')) {
 			$mSQL="CREATE TABLE `itedcont` (
 			  `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -418,7 +431,7 @@ class edcont extends Controller {
 			) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=latin1";
 			$this->db->simple_query($mSQL);
 		}
-		
+
 	}
 
 }

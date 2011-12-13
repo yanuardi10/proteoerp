@@ -194,7 +194,7 @@ class sfac_add extends validaciones {
 		$data['content'] = $grid->output;
 
 		$data['filtro']  = $filter->output;
-		
+
 		$data['script']  = script('jquery.js');
 		$data["script"] .= script("jquery.alerts.js");
 		$data['script'] .= script('superTables.js');
@@ -240,7 +240,7 @@ class sfac_add extends validaciones {
 		'tabla'   =>'scli',
 		'columnas'=>array(
 			'cliente' =>'C&oacute;digo Cliente',
-			'nombre'=>'Nombre', 
+			'nombre'=>'Nombre',
 			'cirepre'=>'Rif/Cedula',
 			'dire11'=>'Direcci&oacute;n',
 			'tipo'=>'Tipo'),
@@ -367,7 +367,7 @@ class sfac_add extends validaciones {
 		$edit->cana->rule     = 'required|positive';
 		$edit->cana->autocomplete=false;
 		$edit->cana->onkeyup  ='importe(<#i#>)';
-		$edit->cana->showformat ='decimal'; 
+		$edit->cana->showformat ='decimal';
 
 		$edit->preca = new inputField('Precio <#o#>', 'preca_<#i#>');
 		$edit->preca->db_name   = 'preca';
@@ -376,7 +376,7 @@ class sfac_add extends validaciones {
 		$edit->preca->size      = 10;
 		$edit->preca->rule      = 'required|positive';
 		$edit->preca->readonly  = true;
-		$edit->preca->showformat ='decimal'; 
+		$edit->preca->showformat ='decimal';
 
 		$edit->detalle = new hiddenField('', 'detalle_<#i#>');
 		$edit->detalle->db_name  = 'detalle';
@@ -388,7 +388,7 @@ class sfac_add extends validaciones {
 		$edit->tota->size=10;
 		$edit->tota->css_class='inputnum';
 		$edit->tota->rel_id   ='sitems';
-		$edit->tota->showformat ='decimal'; 
+		$edit->tota->showformat ='decimal';
 
 		for($i=1;$i<4;$i++){
 			$obj='precio'.$i;
@@ -446,7 +446,7 @@ class sfac_add extends validaciones {
 		$edit->monto->rel_id    = 'sfpa';
 		$edit->monto->size      = 10;
 		$edit->monto->rule      = 'required|mayorcero';
-		$edit->monto->showformat ='decimal'; 
+		$edit->monto->showformat ='decimal';
 		//************************************************
 		// Fin detalle 2 (sfpa)
 		//************************************************
@@ -518,7 +518,7 @@ class sfac_add extends validaciones {
 
 		if(empty($val) && ($tipo!='EF'))
 			return false;
-		else 
+		else
 			return true;
 	}
 
@@ -533,6 +533,8 @@ class sfac_add extends validaciones {
 
 	function _pre_insert($do){
 		$cliente= $do->get('cod_cli');
+		$con=$this->db->query("SELECT tasa,redutasa,sobretasa FROM civa ORDER BY fecha desc LIMIT 1");
+		$t=$con->row('tasa');$rt=$con->row('redutasa');$st=$con->row('sobretasa');
 
 		//Validaciones del pago
 		//Totaliza los pagos
@@ -548,21 +550,43 @@ class sfac_add extends validaciones {
 
 		//Totaliza la factura
 		$totalg=0;
+		$tasa=$montasa=$reducida=$monredu=$sobretasa=$monadic=$exento=0;
 		$cana=$do->count_rel('sitems');
 		for($i=0;$i<$cana;$i++){
-			$itcana    = $do->get_rel('sitems','cana',$i);
+			$itcana    = $do->get_rel('sitems','cana' ,$i);
 			$itpreca   = $do->get_rel('sitems','preca',$i);
-			$itiva     = $do->get_rel('sitems','iva',$i);
+			$itiva     = $do->get_rel('sitems','iva'  ,$i);
 			$itimporte = $itpreca*$itcana;
+			$iva       = $itimporte*($itiva/100);
+
+			if($itiva-$t==0) {
+				$tasa   +=$iva;
+				$montasa+=$itimporte;
+			}elseif($itiva-$rt==0) {
+				$reducida+=$iva;
+				$monredu +=$itimporte;
+			}elseif($itiva-$st==0) {
+				$sobretasa+=$iva;
+				$monadic  +=$itimporte;
+			}else{
+				$exento+=$itimporte;
+			}
 
 			$totalg    +=$itimporte*(1+($itiva/100));
 		}
 		$totalg = round($totalg,2);
 		if(abs($sfpa-$totalg)>0.01){
 			$do->error_message_ar['pre_ins']='El monto del pago no coincide con el monto de la factura ';
-			//$do->error_message_ar['pre_upd']='';
 			return false;
 		}
+
+		$do->set('exento'   ,$exento   );
+		$do->set('tasa'     ,$tasa     );
+		$do->set('reducida' ,$reducida );
+		$do->set('sobretasa',$sobretasa);
+		$do->set('montasa'  ,$montasa  );
+		$do->set('monredu'  ,$monredu  );
+		$do->set('monadic'  ,$monadic  );
 
 		//Validacion del limite de credito del cliente
 		if($credito>0){
@@ -586,7 +610,6 @@ class sfac_add extends validaciones {
 		$do->set('numero',$numero);
 		$do->set('transac',$transac);
 		$do->set('referen',($credito>0)? 'C': 'E');
-		$do->get('inicial',($credito>0)? $credito: 0);
 
 		$fecha  = $do->get('fecha');
 		$vd     = $do->get('vendedor');
@@ -672,6 +695,7 @@ class sfac_add extends validaciones {
 		$anticipo= $do->get('inicial');
 		$referen = $do->get('referen');
 		$tipo_doc= $do->get('tipo_doc');
+		$iva     = $do->get('iva');
 
 		if($referen=='C'){
 			$error   = 0;
@@ -685,7 +709,7 @@ class sfac_add extends validaciones {
 				$data['numero']     = $numero;
 				$data['fecha']      = $estampa;
 				$data['monto']      = $totneto;
-				$data['impuesto']   = 0;
+				$data['impuesto']   = $iva;
 				$data['abonos']     = $anticipo;
 				$data['vence']      = $fecha;
 				$data['tipo_ref']   = '';
@@ -703,7 +727,7 @@ class sfac_add extends validaciones {
 				if($ban==false){ memowrite($sql,'sfac'); $error++;}
 
 				//Chequea si debe crear un anticipo
-				if($anticipo>0){
+				if($anticipo>0.00){
 					$mnumab = $this->datasis->fprox_numero('nabcli');
 
 					$data=array();
@@ -717,7 +741,7 @@ class sfac_add extends validaciones {
 					$data['vence']      = $fecha;
 					$data['tipo_ref']   = 'FC';
 					$data['num_ref']    = $numero;
-					$data['observa1']   = 'ABONO POR INCIAL de FACTURA '.$numero;
+					$data['observa1']   = 'ABONO POR INCIAL DE FACTURA '.$numero;
 					$data['usuario']    = $usuario;
 					$data['estampa']    = $estampa;
 					$data['hora']       = $hora;
@@ -799,7 +823,7 @@ class sfac_add extends validaciones {
 				$data['numero']     = $mnumnc;
 				$data['fecha']      = $fecha;
 				$data['monto']      = $saldo;
-				$data['impuesto']   = 0;
+				$data['impuesto']   = $iva;
 				$data['abonos']     = 0;
 				$data['vence']      = $fecha;
 				$data['tipo_ref']   = 'DV';
@@ -880,12 +904,12 @@ class sfac_add extends validaciones {
 	function _post_delete($do){
 		$numero   = $do->get('numero');
 		$tipo_doc = $do->get('tipo_doc');
-		
+
 		$primary =implode(',',$do->pk);
 		logusu($do->table,"Anulo ${tipo_doc}${numero} $this->tits $primary ");
 	}
 
 	function instalar(){
-		
+
 	}
 }
