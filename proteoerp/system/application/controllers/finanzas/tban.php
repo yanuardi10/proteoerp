@@ -159,6 +159,11 @@ class Tban extends Controller {
 		return TRUE;
 		}
 	}
+	
+	function instalar(){
+		$query="ALTER TABLE `tban`  ADD COLUMN `formacheque` VARCHAR(50) NULL DEFAULT 'CHEQUE'	";
+		$this->db->simple_query($query);
+	}
 
 	function grid(){
 		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']   :  0;
