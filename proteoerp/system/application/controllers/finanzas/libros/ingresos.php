@@ -158,7 +158,7 @@ class ingresos{
 			$data=array();
 			$mSQL="SELECT a.fecha, CONCAT(a.periodo,a.nrocomp) AS nroriva, c.nombre, c.rifci, a.cod_cli,
 					b.numero AS afecta, b.fecha AS fafecta, b.reiva AS reteiva, a.transac, a.emision,
-					a.fecha AS recriva, '' AS nfiscal
+					a.fecha AS recriva, '' AS nfiscal, b.tipo_doc
 				FROM rivc AS a 
 				JOIN itrivc AS b ON a.id=b.idrivc 
 				LEFT JOIN scli AS c ON a.cod_cli=c.cliente 
@@ -167,6 +167,7 @@ class ingresos{
 			$query = $this->db->query($mSQL);
 
 			foreach ( $query->result() as $row ){
+				$factor=($row->tipo_doc=='F')? 1:-1;
 
 				$data['libro']      ='V';
 				$data['tipo']       ='CR';
@@ -191,7 +192,7 @@ class ingresos{
 				$data['impuesto']   =0;
 				$data['gtotal']     =0;
 				$data['stotal']     =0;
-				$data['reiva']      =$row->reteiva;
+				$data['reiva']      =$factor*$row->reteiva;
 				$data['comprobante']='';
 				$data['fecharece']  =$row->recriva;
 				$data['fechal']     =$mes.'01';
