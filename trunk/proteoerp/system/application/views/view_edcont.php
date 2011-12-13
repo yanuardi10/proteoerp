@@ -272,7 +272,7 @@ function totagiro(){
 	});
 	$('#financiable').val(roundNumber(mgiros,2));
 	pagofinal();
-	
+
 }
 
 function add_itedcont(){
@@ -305,7 +305,7 @@ function del_itedcont(id){
 <?php } ?>
 <table align='center' width="95%">
 	<tr>
-		<td align=right><?php echo $container_br.$container_bl.$container_tr?></td>
+		<td align=right><?php echo $container_tr?></td>
 	</tr>
 </table>
 <table align='center' width="100%">
@@ -314,21 +314,21 @@ function del_itedcont(id){
 		<table width='100%'>
 		<tr><td style="width:50%">
 			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9; min-height:105px;'>
-			<legend class="titulofieldset" style='color: #114411;'>Documento <?php echo $form->numero->output; ?></legend>
+			<legend class="titulofieldset" style='color: #114411;'>Documento <?php echo $form->status->output; ?> <?php echo $form->numero->output; ?></legend>
 			<table style="margin: 0;">
 			<tr>
-				<td class="littletableheader"><?php echo $form->uso->label;    ?>*&nbsp; </td>
-				<td class="littletablerow">   <?php echo $form->uso->output;   ?>&nbsp; </td>
+				<td class="littletableheader"><?php echo $form->edificacion->label;   ?>*&nbsp;</td>
+				<td class="littletablerow">   <?php echo $form->edificacion->output;  ?>&nbsp; </td>
 				<td class="littletableheader"><?php echo $form->fecha->label;  ?>*&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->fecha->output; ?>&nbsp; </td>
 			</tr><tr>
-				<td class="littletableheader"><?php echo $form->edificacion->label;   ?>*&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->edificacion->output;  ?>&nbsp; </td>
+				<td class="littletableheader"><?php echo $form->inmueble->label;  ?>&nbsp;</td>
+				<td class="littletablerow"   ><?php echo $form->inmueble->output; ?>&nbsp;</td>
 				<td class="littletableheader"><?php echo $form->mt2->label;    ?>*&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->mt2->output;   ?>&nbsp; </td>
 			</tr><tr>
-				<td class="littletableheader"><?php echo $form->inmueble->label;  ?>&nbsp;</td>
-				<td class="littletablerow"   ><?php echo $form->inmueble->output; ?>&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->uso->label;    ?>*&nbsp; </td>
+				<td class="littletablerow">   <?php echo $form->uso->output;   ?>&nbsp; </td>
 				<td class="littletableheader"><?php echo $form->precioxmt2->label;   ?>&nbsp;</td>
 				<td class="littletablerow"   ><?php echo $form->precioxmt2->output;  ?>&nbsp;</td>
 			</tr>

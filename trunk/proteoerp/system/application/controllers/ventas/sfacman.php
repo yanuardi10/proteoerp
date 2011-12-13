@@ -44,6 +44,7 @@ class sfacman extends validaciones {
 
 		$filter = new DataFilter('Filtro de Facturas');
 		$filter->db->select(array('fecha','numero','cod_cli','nombre','totals','totalg','iva','tipo_doc','exento', 'IF(referen="C","Credito",IF(referen="E","Contado","Pendiente")) referen','IF(tipo_doc="X","N","S") nulo','almacen','vd','usuario', 'hora', 'estampa','nfiscal','cajero', 'transac','maqfiscal', 'factura' ,'id'));
+		$filter->db->where('tipo_doc','T');
 		$filter->db->from('sfac');
 
 		$filter->fechad = new dateonlyField('Desde', 'fechad','d/m/Y');
@@ -169,7 +170,7 @@ class sfacman extends validaciones {
 			overflow: hidden; /* Required to set */
 		}
 		</style>';
-		
+
 		$script ='
 		<script type="text/javascript">
 		function nfiscal(mid){
@@ -195,7 +196,7 @@ class sfacman extends validaciones {
 		$data['content'] = $grid->output;
 
 		$data['filtro']  = $filter->output;
-		
+
 		$data['script']  = script('jquery.js');
 		$data['script'] .= script('jquery.alerts.js');
 		$data['script'] .= script('superTables.js');
@@ -270,11 +271,11 @@ class sfacman extends validaciones {
 		$edit->fecha->mode = 'autohide';
 		$edit->fecha->size = 10;
 
-		$edit->tipo_doc = new  dropdownField ('Documento', 'tipo_doc');
-		$edit->tipo_doc->option('T','Factura de tercero');
-		$edit->tipo_doc->style='width:200px;';
-		$edit->tipo_doc->size = 5;
-		$edit->cliente->rule='required';
+		$edit->vence = new DateonlyField('Vence', 'vence','d/m/Y');
+		$edit->vence->insertValue = date('Y-m-d');
+		$edit->vence->rule = 'required';
+		$edit->vence->mode = 'autohide';
+		$edit->vence->size = 10;
 
 		$edit->vd = new  dropdownField ('Vendedor', 'vd');
 		$edit->vd->options('SELECT vendedor, CONCAT(vendedor,\' \',nombre) nombre FROM vend ORDER BY vendedor');
@@ -287,7 +288,7 @@ class sfacman extends validaciones {
 		$edit->numero->rule='required';
 
 		$edit->nfiscal = new inputField('No.Fiscal', 'nfiscal');
-		$edit->nfiscal->size = 6;
+		$edit->nfiscal->size = 10;
 		$edit->nfiscal->maxlength=20;
 		$edit->nfiscal->rule='required';
 
@@ -411,19 +412,18 @@ class sfacman extends validaciones {
 		$edit->maqfiscal = new inputField('Mq.Fiscal', 'maqfiscal');
 		$edit->cajero    = new inputField('Cajero', 'cajero');
 		$edit->referen   = new inputField('Referencia', 'referen');
-		$edit->transac   = new inputField('Transaccion', 'transac');
-		$edit->vence     = new inputField('Vence', 'vence');
 
 		$edit->reiva     = new inputField('Retencion de IVA', 'reiva');
 		$edit->creiva    = new inputField('Comprobante', 'creiva');
 		$edit->freiva    = new inputField('Fecha', 'freiva');
 		$edit->ereiva    = new inputField('Emision', 'ereiva');
 
-		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
-		$edit->estampa = new autoUpdateField('estampa' ,date('Ymd'), date('Ymd'));
-		$edit->hora    = new autoUpdateField('hora',date('H:i:s'), date('H:i:s'));
+		$edit->usuario  = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
+		$edit->estampa  = new autoUpdateField('estampa' ,date('Ymd'), date('Ymd'));
+		$edit->hora     = new autoUpdateField('hora',date('H:i:s'), date('H:i:s'));
+		$edit->tipo_doc = new autoUpdateField('tipo_doc','T', 'T');
 
-		$edit->buttons('save', 'back','add_rel');
+		$edit->buttons('save', 'back','add_rel','add');
 		$edit->build();
 
 		$conten['form']  =&  $edit;
@@ -457,6 +457,7 @@ class sfacman extends validaciones {
 		$numero=$do->get('numero');
 
 		$iva=$totals=0;
+		$tasa=$montasa=$reducida=$monredu=$sobretasa=$monadic=$exento=0;
 		$cana=$do->count_rel('sitems');
 		for($i=0;$i<$cana;$i++){
 			$itcana    = $do->get_rel('sitems','cana',$i);
@@ -466,8 +467,22 @@ class sfacman extends validaciones {
 			$do->set_rel('sitems','tota'    ,$itimporte,$i);
 			$do->set_rel('sitems','mostrado',$itimporte*(1+($itiva/100)),$i);
 
-			$iva    +=$itimporte*($itiva/100);
-			$totals +=$itimporte;
+			$iiva    = $itimporte*($itiva/100);
+			$iva    += $iiva;
+			$totals += $itimporte;
+
+			if($itiva-$t==0) {
+				$tasa   +=$iva;
+				$montasa+=$itimporte;
+			}elseif($itiva-$rt==0) {
+				$reducida+=$iva;
+				$monredu +=$itimporte;
+			}elseif($itiva-$st==0) {
+				$sobretasa+=$iva;
+				$monadic  +=$itimporte;
+			}else{
+				$exento+=$itimporte;
+			}
 
 			$do->set_rel('sitems','numa'    ,$numero ,$i);
 			$do->set_rel('sitems','tipoa'   ,$tipoa  ,$i);
@@ -476,6 +491,14 @@ class sfacman extends validaciones {
 			$do->set_rel('sitems','vendedor',$vd     ,$i);
 		}
 		$totalg = $totals+$iva;
+
+		$do->set('exento'   ,$exento   );
+		$do->set('tasa'     ,$tasa     );
+		$do->set('reducida' ,$reducida );
+		$do->set('sobretasa',$sobretasa);
+		$do->set('montasa'  ,$montasa  );
+		$do->set('monredu'  ,$monredu  );
+		$do->set('monadic'  ,$monadic  );
 
 		$do->set('inicial',0 );
 		$do->set('totals' ,round($totals ,2));
@@ -494,32 +517,34 @@ class sfacman extends validaciones {
 	}
 
 	function _post_insert($do){
-		$numero =$do->get('numero');
-		$fecha  =$do->get('fecha');
-		$totneto=$do->get('totalg');
-		$hora   =$do->get('hora');
-		$usuario=$do->get('usuario');
-		$transac=$do->get('transac');
-		$manda  =$do->get('mandatario');
-		$nombre =$this->datasis->dameval('SELECT nombre FROM scli WHERE cliente='.$this->db->escape($manda));
-		$cod_cli=$do->get('cod_cli');
-		$estampa=$do->get('estampa');
-		$error  = 0;
+		$numero  =$do->get('numero');
+		$fecha   =$do->get('fecha');
+		$totneto =$do->get('totalg');
+		$impuesto=$do->get('iva');
+		$hora    =$do->get('hora');
+		$usuario =$do->get('usuario');
+		$transac =$do->get('transac');
+		$manda   =$do->get('mandatario');
+		$nombre  =$this->datasis->dameval('SELECT nombre FROM scli WHERE cliente='.$this->db->escape($manda));
+		$cod_cli =$do->get('cod_cli');
+		$estampa =$do->get('estampa');
+		$error   = 0;
 
 		//Inserta en smov
+		$mnumnc = $this->datasis->fprox_numero('nccli');
 		$data=array();
 		$data['cod_cli']    = $manda;
 		$data['nombre']     = $nombre;
-		$data['tipo_doc']   = 'FT';
-		$data['numero']     = $numero;
+		$data['tipo_doc']   = 'ND';
+		$data['numero']     = $mnumnc;
 		$data['fecha']      = $estampa;
 		$data['monto']      = $totneto;
-		$data['impuesto']   = 0;
+		$data['impuesto']   = $impuesto;
 		$data['abonos']     = 0;
 		$data['vence']      = $fecha;
-		$data['tipo_ref']   = '';
-		$data['num_ref']    = '';
-		$data['observa1']   = 'FACTURA POR TERCERO A CLIENTE '.$cod_cli;
+		$data['tipo_ref']   = 'FT';
+		$data['num_ref']    = $numero;
+		$data['observa1']   = 'FACTURA POR TERCERO A '.$cod_cli.' FC'.$numero;
 		$data['estampa']    = $estampa;
 		$data['hora']       = $hora;
 		$data['transac']    = $transac;
@@ -530,46 +555,6 @@ class sfacman extends validaciones {
 		$sql= $this->db->insert_string('smov', $data);
 		$ban=$this->db->simple_query($sql);
 		if($ban==false){ memowrite($sql,'sfacter'); $error++;}
-
-		//Inserta en sprm
-		if(!empty($sprv)){
-			$causado  = $this->datasis->fprox_numero('ncausado');
-			$sprvnobre=$this->datasis->dameval('SELECT nombre FROM sprv WHERE proveed='.$this->db->escape($sprv));
-
-			$data=array();
-			$data['cod_prv']    = $sprv;
-			$data['nombre']     = $sprvnobre;
-			$data['tipo_doc']   = 'FC';
-			$data['numero']     = $numero;
-			$data['fecha']      = $fecha;
-			$data['monto']      = $totneto;
-			$data['impuesto']   = 0;
-			$data['abonos']     = 0;
-			$data['vence']      = $fecha;
-			$data['observa1']   = 'FACTURA A TERCERO ';
-			$data['observa2']   = ' CLIENTE '.$cod_cli;
-			$data['tipo_ref']   = '';
-			$data['num_ref']    = $ref_numero;
-			$data['transac']    = $transac;
-			$data['estampa']    = $estampa;
-			$data['hora']       = $hora;
-			$data['usuario']    = $usuario;
-			$data['reteiva']    = 0;
-			$data['montasa']    = 0;
-			$data['monredu']    = 0;
-			$data['monadic']    = 0;
-			$data['tasa']       = 0;
-			$data['reducida']   = 0;
-			$data['sobretasa']  = 0;
-			$data['exento']     = 0;
-			$data['causado']    = $causado;
-			$data['codigo']     = 'NOCON';
-			$data['descrip']    = 'NOTA DE CONTABILIDAD';
-
-			$sql=$this->db->insert_string('sprm', $data);
-			$ban=$this->db->simple_query($sql);
-			if($ban==false){ memowrite($sql,'sfacter'); $error++;}
-		}
 
 		$primary =implode(',',$do->pk);
 		logusu($do->table,"Creo $this->tits $primary ");

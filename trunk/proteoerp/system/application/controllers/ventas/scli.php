@@ -86,7 +86,7 @@ class Scli extends validaciones {
 		$grid->build('datagridST');
 
 
-//************ SUPER TABLE ************* 
+//************ SUPER TABLE *************
 		$extras = '
 <script type="text/javascript">
 //<![CDATA[
@@ -112,14 +112,14 @@ class Scli extends validaciones {
     height: 320px; /* Required to set */
     overflow: hidden; /* Required to set */
 }
-</style>	
+</style>
 ';
 //****************************************
 
 		$data['style']   = $style;
 		$data['style']  .= style('superTables.css');
 
-		$data['extras']  = $extras;		
+		$data['extras']  = $extras;
 
 		$data['content'] = $grid->output;
 		$data['content'].= $this->pi18n->fallas();
@@ -307,7 +307,7 @@ function fusionar(mviejo){
 						)
 					}
 				},
-				error: function(h,t,e) { jAlert("Error..codigo="+yurl+" ",e) } 
+				error: function(h,t,e) { jAlert("Error..codigo="+yurl+" ",e) }
 			});
 		}
 	})
@@ -329,7 +329,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		error: function(h,t,e) {jAlert("Error..","Finalizado con Error" )
 		}
 	});
-	
+
 	if( mtipo=="N" ) {
 		location.reload(true);
 	} else {
@@ -785,7 +785,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		}
 	}
 
-	function consulta(){  
+	function consulta(){
 		$this->load->helper('openflash');
 		$this->rapyd->load("datagrid");
 		$fields = $this->db->field_data('scli');
@@ -801,7 +801,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		$claves=array_combine (array_reverse($pk) ,$values );
 
 		$mCodigo = $this->datasis->dameval("SELECT cliente FROM scli WHERE id=".$claves['id']."");
-		
+
 		$grid = new DataGrid('Ventas por Mes');
 		$grid->db->_protect_identifiers=false;
 		$grid->db->select( array('a.tipo_doc','a.fecha', 'a.numero', 'a.monto', 'a.abonos', 'a.monto-a.abonos saldo' ) );
@@ -810,7 +810,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		$grid->db->where('a.monto <> a.abonos');
 		$grid->db->where('a.tipo_doc IN ("FC","ND","GI") ' );
 		$grid->db->orderby('a.fecha');
-			
+
 		$grid->column("Fecha"   ,"fecha" );
 		$grid->column("Tipo", "tipo_doc",'align="CENTER"');
 		$grid->column("Numero",  "numero",'align="LEFT"');
@@ -840,7 +840,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 				open_flash_chart_object( 300,200, site_url("inventario/sinv/compras/".raencode($mCodigo)))."
 				</td>
 			</tr>
-			
+
 		</table>";
 		*/
 		$data['content'] = $grid->output;
@@ -851,7 +851,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 				<a href='javascript:javascript:history.go(-1)'>(".$mCodigo.") ".$nombre."</a>
 			</div>";
 		$this->load->view('view_ventanas', $data);
-		
+
 	}
 
 	function _numatri(){
@@ -920,7 +920,11 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		if(empty($cliente)){
 			$cliente = $this->_numatri();
 		}
-	
+
+		//print_r($campos);
+		echo "{ success: false, message: 'No quiero que insertes'}";
+		return false;
+
 		$mHay = $this->datasis->dameval("SELECT count(*) FROM scli WHERE cliente='".$cliente."'");
 		if  ( $mHay > 0 ){
 			echo "{ success: false, message: 'Ya existe ese codigo'}";
@@ -953,7 +957,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		$campos = $data['data'];
 
 		$cliente = $data['data']['cliente'];
-		
+
 		// VERIFICAR SI PUEDE
 		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM smov WHERE cod_cli='$cliente'");
 		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM sfac WHERE cod_cli='$cliente'");
@@ -1006,7 +1010,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		$tiva = "['C','Contribuyente'],['N','No Contribuyente'],['E','Especial'],['R','Regimen Exento'],['O','Otro']";
 
 		$tipo = "['1','PVP'],['2','Desc 2'],['3','Desc 3'],['4','Desc 4'],['5','Mayor'],['0','Inactivo']";
-		
+
 		$consulrif=$this->datasis->traevalor('CONSULRIF');
 
 		$urlajax = 'ventas/scli/';
@@ -1044,25 +1048,25 @@ function ftipo(val){
 }
 
 		";
-		
+
 		$valida = "
 		{ type: 'length', field: 'cliente',  min:  1 },
-		{ type: 'length', field: 'rifci',    min: 10 }, 
+		{ type: 'length', field: 'rifci',    min: 10 },
 		{ type: 'length', field: 'nombre',   min:  3 }
 		";
-		
+
 		$columnas = "
-		{ header: 'Codigo',        width:  60, sortable: true, dataIndex: 'cliente',  field:  { type: 'textfield' }, filter: { type: 'string'  }}, 
-		{ header: 'Nombre',        width: 250, sortable: true, dataIndex: 'nombre',   field:  { type: 'textfield' }, filter: { type: 'string'  }}, 
-		{ header: 'R.I.F.',        width:  90, sortable: true, dataIndex: 'rifci',    field:  { type: 'textfield' }, filter: { type: 'string'  }}, 
-		{ header: 'Tipo Iva',      width:  80, sortable: true, dataIndex: 'tiva',     field:  { type: 'textfield' }, filter: { type: 'string'  }, renderer: ftiva }, 
-		{ header: 'Grupo',         width:  50, sortable: true, dataIndex: 'grupo',    field:  { type: 'textfield' }, filter: { type: 'string'  }}, 
-		{ header: 'Precio',        width:  60, sortable: true, dataIndex: 'tipo',     field:  { type: 'textfield' }, filter: { type: 'string'  }, renderer: ftipo }, 
-		{ header: 'Telefono',      width:  90, sortable: true, dataIndex: 'telefono', field:  { type: 'textfield' }, filter: { type: 'string'  }}, 
-		{ header: 'Fax',           width:  90, sortable: true, dataIndex: 'telefon2', field:  { type: 'textfield' }, filter: { type: 'string'  }}, 
-		{ header: 'Contacto',      width: 120, sortable: true, dataIndex: 'contacto', field:  { type: 'textfield' }, filter: { type: 'string'  }}, 
-		{ header: 'Asociado',      width:  60, sortable: true, dataIndex: 'socio',    field:  { type: 'textfield' }, filter: { type: 'string'  }}, 
-		{ header: 'Limite',        width:  70, sortable: true, dataIndex: 'limite',   field:  { type: 'numeroc'   }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('00.00') }, 
+		{ header: 'Codigo',        width:  60, sortable: true, dataIndex: 'cliente',  field:  { type: 'textfield' }, filter: { type: 'string'  }},
+		{ header: 'Nombre',        width: 250, sortable: true, dataIndex: 'nombre',   field:  { type: 'textfield' }, filter: { type: 'string'  }},
+		{ header: 'R.I.F.',        width:  90, sortable: true, dataIndex: 'rifci',    field:  { type: 'textfield' }, filter: { type: 'string'  }},
+		{ header: 'Tipo Iva',      width:  80, sortable: true, dataIndex: 'tiva',     field:  { type: 'textfield' }, filter: { type: 'string'  }, renderer: ftiva },
+		{ header: 'Grupo',         width:  50, sortable: true, dataIndex: 'grupo',    field:  { type: 'textfield' }, filter: { type: 'string'  }},
+		{ header: 'Precio',        width:  60, sortable: true, dataIndex: 'tipo',     field:  { type: 'textfield' }, filter: { type: 'string'  }, renderer: ftipo },
+		{ header: 'Telefono',      width:  90, sortable: true, dataIndex: 'telefono', field:  { type: 'textfield' }, filter: { type: 'string'  }},
+		{ header: 'Fax',           width:  90, sortable: true, dataIndex: 'telefon2', field:  { type: 'textfield' }, filter: { type: 'string'  }},
+		{ header: 'Contacto',      width: 120, sortable: true, dataIndex: 'contacto', field:  { type: 'textfield' }, filter: { type: 'string'  }},
+		{ header: 'Asociado',      width:  60, sortable: true, dataIndex: 'socio',    field:  { type: 'textfield' }, filter: { type: 'string'  }},
+		{ header: 'Limite',        width:  70, sortable: true, dataIndex: 'limite',   field:  { type: 'numeroc'   }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('00.00') },
 		{ header: 'Zona',          width:  40, sortable: true, dataIndex: 'zona',     field:  { type: 'textfield' }, filter: { type: 'string'  }},
 		{ header: 'Direccion',     width: 150, sortable: true, dataIndex: 'dire11',   field:  { type: 'textfield' }, filter: { type: 'string'  }},
 		{ header: 'Ciudad',        width:  70, sortable: true, dataIndex: 'ciudad1',  field:  { type: 'textfield' }, filter: { type: 'string'  }},
@@ -1131,7 +1135,7 @@ var cplaStore = new Ext.data.Store({
 										defaults: {xtype:'fieldset', columnWidth : 0.49  },
 										items: [{
 											title:'Direccion Principal',
-											columnWidth : 0.50, 
+											columnWidth : 0.50,
 											layout: 'column',
 											defaults:{labelWidth:60,  allowBlank: true, columnWidth : 0.99 },
 											items: [
@@ -1141,7 +1145,7 @@ var cplaStore = new Ext.data.Store({
 											]
 										},{
 											title:'Direccion de Envio',
-											columnWidth : 0.50, 
+											columnWidth : 0.50,
 											layout: 'column',
 											defaults:{labelWidth:60,  allowBlank: true, columnWidth : 0.99 },
 											items: [
@@ -1276,7 +1280,7 @@ var cplaStore = new Ext.data.Store({
 					beforeshow: function() {
 						var form = this.down('writerform').getForm();
 						this.activeRecord = registro;
-						
+
 						if (registro) {
 							msocio   = registro.data.socio;
 							mcuenta  = registro.data.cuenta;
@@ -1296,7 +1300,7 @@ var cplaStore = new Ext.data.Store({
 ";
 
 		$filtros = "var filters = { ftype: 'filters', encode: 'json', local: false }; ";
-		
+
 		$winmethod = "
 				onSeniat: function(){
 					var form = this.getForm();
@@ -1330,7 +1334,7 @@ var cplaStore = new Ext.data.Store({
 		$data['winwidget']   = $winwidget;
 		$data['filtros']     = $filtros;
 		$data['winmethod']   = $winmethod;
-		
+
 		$data['title']  = heading('Clientes');
 		$this->load->view('extjs/extjsven',$data);
 	}
@@ -1369,7 +1373,7 @@ var cplaStore = new Ext.data.Store({
 		$semilla  = isset($_REQUEST['query'])   ? $_REQUEST['query']  : '';
 
 		$semilla = trim($semilla);
-	
+
 		$mSQL = "SELECT cliente item, CONCAT(cliente, ' ', nombre) valor FROM scli WHERE tipo<>'0' ";
 		if ( strlen($semilla)>0 ){
 			$mSQL .= " AND ( cliente LIKE '$semilla%' OR nombre LIKE '%$semilla%' OR  rifci LIKE '%$semilla%') ";

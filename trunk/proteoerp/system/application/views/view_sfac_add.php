@@ -173,7 +173,7 @@ $(function(){
 			});
 		}
 	});
-	
+
 	$('input[name^="cana_"]').keypress(function(e) {
 		if(e.keyCode == 13) {
 		    add_sitems();
@@ -521,20 +521,20 @@ function del_sfpa(id){
 			<legend class="titulofieldset" style='color: #114411;'>Documento <?php echo $form->numero->value; ?></legend>
 			<table style="margin: 0;">
 			<tr>
-				<td class="littletableheader"><?php echo $form->fecha->label;     ?>*&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->fecha->output;    ?>&nbsp; </td>
-				<td class="littletableheader"><?php echo $form->cajero->label;    ?>*&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->cajero->output;   ?>&nbsp; </td>
+				<td class="littletableheader"><?php echo $form->fecha->label;     ?>*</td>
+				<td class="littletablerow">   <?php echo $form->fecha->output;    ?></td>
+				<td class="littletableheader"><?php echo $form->cajero->label;    ?>*</td>
+				<td class="littletablerow">   <?php echo $form->cajero->output;   ?></td>
 			</tr><tr>
-				<td class="littletableheader"><?php echo $form->vd->label;        ?>&nbsp; </td>
-				<td class="littletablerow">   <?php echo $form->vd->output;       ?>&nbsp; </td>
-				<td class="littletableheader"><?php echo $form->almacen->label;   ?>*&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->almacen->output;  ?>&nbsp; </td>
+				<td class="littletableheader"><?php echo $form->vd->label;        ?></td>
+				<td class="littletablerow">   <?php echo $form->vd->output;       ?></td>
+				<td class="littletableheader"><?php echo $form->almacen->label;   ?>*</td>
+				<td class="littletablerow">   <?php echo $form->almacen->output;  ?></td>
 			</tr><tr>
-				<td class="littletableheader"><?php echo $form->tipo_doc->label;  ?>&nbsp;</td>
-				<td class="littletablerow"   ><?php echo $form->tipo_doc->output; ?>&nbsp;</td>
-				<td class="littletableheader"><?php echo $form->factura->label;   ?>&nbsp;</td>
-				<td class="littletablerow"   ><?php echo $form->factura->output;  ?>&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->tipo_doc->label;  ?></td>
+				<td class="littletablerow"   ><?php echo $form->tipo_doc->output; ?></td>
+				<td class="littletableheader"><?php echo $form->factura->label;   ?></td>
+				<td class="littletablerow"   ><?php echo $form->factura->output;  ?></td>
 			</tr>
 			</table>
 			</fieldset>
@@ -635,7 +635,7 @@ function del_sfpa(id){
 					<td class="littletableheaderdet"></td>
 				<?php } ?>
 			</tr>
-			<?php 
+			<?php
 
 			for($i=0; $i < $form->max_rel_count['sfpa']; $i++) {
 				$tipo   = "tipo_$i";
@@ -666,7 +666,7 @@ function del_sfpa(id){
 				<td class="littletablerow"    width='350'></td>
 				<td class="littletableheader">           <?php echo $form->totals->label;  ?></td>
 				<td class="littletablerow" align='right'><b id='totals_val'><?php echo nformat($form->totals->value); ?></b><?php echo $form->totals->output; ?></td>
-			<tr></tr>	
+			<tr></tr>
 				<td class="littletableheader">&nbsp;</td>
 				<td class="littletablerow"   ></td>
 				<td class="littletableheader"><?php echo $form->ivat->label;    ?></td>
@@ -682,4 +682,36 @@ function del_sfpa(id){
 	</tr>
 </table>
 <?php echo $form_end; ?>
+
+<?php if($form->_status=='show'){ ?>
+<br>
+<table  width="100%" style="margin:0;width:100%;" >
+	<tr>
+		<td colspan=10 class="littletableheader">Movimientos relacionados</td>
+	</tr>
+	<?php
+	$transac=$form->get_from_dataobjetct('transac');
+
+	$sql[]='SELECT cod_cli, nombre,tipo_doc, numero, monto, observa1 FROM smov WHERE transac='.$this->db->escape($transac).' ORDER BY num_ref,cod_cli';
+
+	foreach($sql as $mSQL){
+		$query = $this->db->query($mSQL);
+		if ($query->num_rows() > 0){
+			foreach ($query->result() as $row){
+	?>
+	<tr>
+		<td class="littletablerowth" ><?php echo $row->cod_cli.' '.$row->nombre;    ?></td>
+		<td class="littletablerowth" align='center'><?php echo $row->tipo_doc; ?></td>
+		<td class="littletablerow"   ><?php echo $row->numero;   ?></td>
+		<td class="littletablerowth" ><?php echo $row->observa1; ?></td>
+		<td class="littletablerow"   align='right'><?php echo nformat($row->monto);?></td>
+	</tr>
+	<?php
+			}
+		}
+	}?>
+
+</table>
+<?php  } ?>
+
 <?php endif; ?>

@@ -45,6 +45,7 @@ class sfacter extends validaciones {
 		$filter = new DataFilter('Filtro de Facturas');
 		$filter->db->select(array('fecha','numero','cod_cli','nombre','totals','totalg','iva','tipo_doc','exento', 'IF(referen="C","Credito",IF(referen="E","Contado","Pendiente")) referen','IF(tipo_doc="X","N","S") nulo','almacen','vd','usuario', 'hora', 'estampa','nfiscal','cajero', 'transac','maqfiscal', 'factura' ,'id'));
 		$filter->db->from('sfac');
+		$filter->db->where('sprv IS NOT NULL');
 
 		$filter->fechad = new dateonlyField('Desde', 'fechad','d/m/Y');
 		$filter->fechad->clause  = 'where';
@@ -169,7 +170,7 @@ class sfacter extends validaciones {
 			overflow: hidden; /* Required to set */
 		}
 		</style>';
-		
+
 		$script ='
 		<script type="text/javascript">
 		function nfiscal(mid){
@@ -195,7 +196,7 @@ class sfacter extends validaciones {
 		$data['content'] = $grid->output;
 
 		$data['filtro']  = $filter->output;
-		
+
 		$data['script']  = script('jquery.js');
 		$data["script"] .= script("jquery.alerts.js");
 		$data['script'] .= script('superTables.js');
@@ -270,9 +271,15 @@ class sfacter extends validaciones {
 		$edit->fecha->mode = 'autohide';
 		$edit->fecha->size = 10;
 
+		$edit->vence = new DateonlyField('Vencimiento', 'vence','d/m/Y');
+		$edit->vence->insertValue = date('Y-m-d');
+		$edit->vence->rule = 'required';
+		$edit->vence->mode = 'autohide';
+		$edit->vence->size = 10;
+
 		$edit->tipo_doc = new  dropdownField ('Documento', 'tipo_doc');
 		$edit->tipo_doc->option('F','Factura');
-		$edit->tipo_doc->option('D','Devoluci&oacute;n');
+		//$edit->tipo_doc->option('D','Devoluci&oacute;n');
 		$edit->tipo_doc->style='width:200px;';
 		$edit->tipo_doc->size = 5;
 		$edit->cliente->rule='required';
@@ -446,9 +453,6 @@ class sfacter extends validaciones {
 		$edit->maqfiscal = new inputField('Mq.Fiscal', 'maqfiscal');
 		$edit->cajero    = new inputField('Cajero', 'cajero');
 		$edit->referen   = new inputField('Referencia', 'referen');
-		$edit->transac   = new inputField('Transaccion', 'transac');
-		$edit->vence     = new inputField('Vence', 'vence');
-
 		$edit->reiva     = new inputField('Retencion de IVA', 'reiva');
 		$edit->creiva    = new inputField('Comprobante', 'creiva');
 		$edit->freiva    = new inputField('Fecha', 'freiva');
@@ -458,7 +462,7 @@ class sfacter extends validaciones {
 		$edit->estampa = new autoUpdateField('estampa' ,date('Ymd'), date('Ymd'));
 		$edit->hora    = new autoUpdateField('hora',date('H:i:s'), date('H:i:s'));
 
-		$edit->buttons('save', 'back','add_rel');
+		$edit->buttons('save', 'back','add_rel','add');
 		$edit->build();
 
 		//$data['script'] .= $script;
@@ -490,12 +494,15 @@ class sfacter extends validaciones {
 		$transac = $this->datasis->fprox_numero('ntransa');
 		$do->set('numero',$numero);
 		$do->set('transac',$transac);
+		$con=$this->db->query("SELECT tasa,redutasa,sobretasa FROM civa ORDER BY fecha desc LIMIT 1");
+		$t=$con->row('tasa');$rt=$con->row('redutasa');$st=$con->row('sobretasa');
 
 		$fecha =$do->get('fecha');
 		$vd    =$do->get('vendedor');
 		$tipoa =$do->get('tipo_doc');
 
 		$iva=$totals=0;
+		$tasa=$montasa=$reducida=$monredu=$sobretasa=$monadic=$exento=0;
 		$cana=$do->count_rel('sitems');
 		for($i=0;$i<$cana;$i++){
 			$itcana    = $do->get_rel('sitems','cana',$i);
@@ -505,8 +512,22 @@ class sfacter extends validaciones {
 			$do->set_rel('sitems','tota'    ,$itimporte,$i);
 			$do->set_rel('sitems','mostrado',$itimporte*(1+($itiva/100)),$i);
 
-			$iva    +=$itimporte*($itiva/100);
+			$iiva    =$itimporte*($itiva/100);
+			$iva    +=$iiva;
 			$totals +=$itimporte;
+
+			if($itiva-$t==0) {
+				$tasa   +=$iiva;
+				$montasa+=$itimporte;
+			}elseif($itiva-$rt==0) {
+				$reducida+=$iiva;
+				$monredu +=$itimporte;
+			}elseif($itiva-$st==0) {
+				$sobretasa+=$iiva;
+				$monadic  +=$itimporte;
+			}else{
+				$exento+=$itimporte;
+			}
 
 			$do->set_rel('sitems','numa'    ,$numero ,$i);
 			$do->set_rel('sitems','tipoa'   ,$tipoa  ,$i);
@@ -515,6 +536,14 @@ class sfacter extends validaciones {
 			$do->set_rel('sitems','vendedor',$vd     ,$i);
 		}
 		$totalg = $totals+$iva;
+
+		$do->set('exento'   ,$exento   );
+		$do->set('tasa'     ,$tasa     );
+		$do->set('reducida' ,$reducida );
+		$do->set('sobretasa',$sobretasa);
+		$do->set('montasa'  ,$montasa  );
+		$do->set('monredu'  ,$monredu  );
+		$do->set('monadic'  ,$monadic  );
 
 		$do->set('inicial',0 );
 		$do->set('totals' ,round($totals ,2));
@@ -543,6 +572,7 @@ class sfacter extends validaciones {
 		$cod_cli=$do->get('cod_cli');
 		$estampa=$do->get('estampa');
 		$sprv   =$do->get('sprv');
+		$iva    =$do->get('iva');
 		$ref_numero='00000000';
 		$error  = 0;
 
@@ -554,12 +584,12 @@ class sfacter extends validaciones {
 		$data['numero']     = $numero;
 		$data['fecha']      = $estampa;
 		$data['monto']      = $totneto;
-		$data['impuesto']   = 0;
+		$data['impuesto']   = $iva;
 		$data['abonos']     = 0;
 		$data['vence']      = $fecha;
-		$data['tipo_ref']   = 'ND';
-		$data['num_ref']    = $ref_numero;
-		$data['observa1']   = (!empty($sprv))? 'FACTURA A TERCERO' : 'FACTURA A CREDITO';
+		$data['tipo_ref']   = 'FT';
+		$data['num_ref']    = $sprv;
+		$data['observa1']   = (!empty($sprv))? 'FACTURA P.CTA DE TERCERO '.$sprv : 'FACTURA A CREDITO';
 		$data['estampa']    = $estampa;
 		$data['hora']       = $hora;
 		$data['transac']    = $transac;
@@ -574,22 +604,23 @@ class sfacter extends validaciones {
 		//Inserta en sprm
 		if(!empty($sprv)){
 			$causado  = $this->datasis->fprox_numero('ncausado');
-			$sprvnobre=$this->datasis->dameval('SELECT nombre FROM sprv WHERE proveed='.$this->db->escape($sprv));
+			$sprvnobre= $this->datasis->dameval('SELECT nombre FROM sprv WHERE proveed='.$this->db->escape($sprv));
+			$mnumnc   = $this->datasis->fprox_numero('ndcli');
 
 			$data=array();
 			$data['cod_prv']    = $sprv;
 			$data['nombre']     = $sprvnobre;
-			$data['tipo_doc']   = 'FC';
-			$data['numero']     = $numero;
+			$data['tipo_doc']   = 'ND';
+			$data['numero']     = $mnumnc;
 			$data['fecha']      = $fecha;
 			$data['monto']      = $totneto;
 			$data['impuesto']   = 0;
 			$data['abonos']     = 0;
 			$data['vence']      = $fecha;
-			$data['observa1']   = 'FACTURA A TERCERO ';
-			$data['observa2']   = ' CLIENTE '.$cod_cli;
-			$data['tipo_ref']   = '';
-			$data['num_ref']    = $ref_numero;
+			$data['observa1']   = 'FACTURA P.CTA DE TERCERO '.$cod_cli;
+			$data['observa2']   = '';
+			$data['tipo_ref']   = 'FT';
+			$data['num_ref']    = $numero;
 			$data['transac']    = $transac;
 			$data['estampa']    = $estampa;
 			$data['hora']       = $hora;

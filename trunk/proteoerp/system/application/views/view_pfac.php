@@ -477,7 +477,7 @@ function autocod(id){
 			<legend class="titulofieldset" style='color: #114411;'>Cliente</legend>
 			<table width="100%" style="margin: 0; width: 100%;">
 			<tr>
-				<td class="littletableheader"><?php echo $form->cliente->label;  ?>&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->cliente->label;  ?>*&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->cliente->output,$form->sclitipo->output; ?>&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->nombre->output;  ?>&nbsp;</td>
 			</tr>
