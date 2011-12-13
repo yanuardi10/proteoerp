@@ -332,21 +332,24 @@ function autocod(id){
 <table>
 <?php echo $form_end?>
 
-<?php if($form->_status=='show'){ ?>
+<?php if($form->_status=='show'){ 
+$transac=$form->get_from_dataobjetct('transac');
+?>
 <br>
 <table  width="100%" style="margin:0;width:100%;" >
 	<tr>
-		<td colspan=10 class="littletableheader">Movimientos relacionados</td>
+		<td colspan=10 class="littletableheader">Movimientos relacionados: Asiento <?php echo $transac; ?></td>
 	</tr>
 	<?php
-	$transac=$form->get_from_dataobjetct('transac');
-	$numero =$form->get_from_dataobjetct('nrocomp');
-	$cod_cli=$form->get_from_dataobjetct('cod_cli');
-	$codbanc =$form->get_from_dataobjetct('codbanc');
 
-	$sql[]='SELECT cod_cli, nombre,tipo_doc, numero, monto, observa1 FROM smov WHERE transac='.$this->db->escape($transac).' ORDER BY num_ref,cod_cli';
+	$numero   =$form->get_from_dataobjetct('nrocomp');
+	$cod_cli  =$form->get_from_dataobjetct('cod_cli');
+	$codbanc  =$form->get_from_dataobjetct('codbanc');
+	$dbtransac=$this->db->escape($transac);
+
+	$sql[]='SELECT cod_cli, nombre,tipo_doc, numero, monto, observa1 FROM smov WHERE transac='.$dbtransac.' ORDER BY num_ref,cod_cli';
 	//$sql[]='SELECT cod_cli, nombre,tipo_doc, numero, monto, observa1 FROM smov WHERE tipo_ref=\'CR\'  AND num_ref='.$this->db->escape($numero).' AND cod_cli='.$this->db->escape($cod_cli).' ORDER BY num_ref,cod_cli';
-	$sql[]='SELECT cod_prv AS cod_cli, nombre,tipo_doc, numero, monto, observa1 FROM sprm WHERE tipo_ref=\'CR\'  AND num_ref='.$this->db->escape($numero).' AND cod_prv=\'REINT\' ORDER BY num_ref,cod_prv';
+	$sql[]='SELECT cod_prv AS cod_cli, nombre,tipo_doc, numero, monto, observa1 FROM sprm WHERE transac='.$dbtransac.' ORDER BY num_ref,cod_prv';
 	if(!empty($codbanc)){
 		$sql[]='SELECT codbanc AS cod_cli,banco AS nombre, tipo_op AS tipo_doc, numero, monto, concepto AS observa1 FROM bmov WHERE codbanc='.$this->db->escape($codbanc).' AND transac='.$this->db->escape($transac);
 	}
