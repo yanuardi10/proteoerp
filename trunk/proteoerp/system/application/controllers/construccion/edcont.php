@@ -95,7 +95,7 @@ class edcont extends Controller {
 
 		$id=$edit->get_from_dataobjetct('id');
 		if($id!==false){
-			$action = "javascript:window.location='".site_url($this->url.'formato/'.$id)."'";
+			$action = "javascript:window.location='".site_url($this->url.'formato/'.$id.'/contrato.xml')."'";
 			$edit->button('btn_formato', 'Descargar formato', $action,'TR');
 		}
 
@@ -331,7 +331,7 @@ class edcont extends Controller {
 
 	function letracambio($id,$numero='1'){
 
-		$sel=array('a.*','b.numero','b.fecha','c.nombre'
+		$sel=array('a.*','b.numero','b.fecha'
 		,'CONCAT_WS(" ",TRIM(c.dire11),TRIM(c.dire12)) AS direc'
 		,'c.telefono','TRIM(c.nombre) AS nombre');
 		$this->db->select($sel);
@@ -366,36 +366,70 @@ class edcont extends Controller {
 
 	function formato($id){
 		$this->load->plugin('numletra');
-		$sel=array('*');
+		$this->load->helper('date');
+		$this->load->helper('fecha');
+
+		$sel=array('a.id','a.id_edres','a.numero_edres','a.numero','a.status','a.fecha'
+		,'a.cliente','a.edificacion','a.inmueble','a.inicial'
+		,'a.financiable','a.firma','a.precioxmt2','a.mt2','a.monto','a.notas','e.uso'
+		,'CONCAT_WS(" ",TRIM(b.dire11),TRIM(b.dire12)) AS direc','b.ciudad','b.rifci'
+		,'b.telefono','TRIM(b.nombre) AS nombre'
+		,'c.codigo AS lcodigo','f.descripcion AS ubica'
+		);
 		$this->db->select($sel);
 		$this->db->from('edcont AS a');
 		$this->db->join('scli AS b'     ,'a.cliente=b.cliente');
 		$this->db->join('edinmue AS c'  ,'c.id=a.inmueble');
-		$this->db->join('eduso AS e'    ,'e.id=c.uso');
+		$this->db->join('eduso AS e'    ,'e.id=a.uso');
+		$this->db->join('edifubica AS f','c.ubicacion=f.id');
 		$this->db->where('a.id',$id);
 
 		$query = $this->db->get();
-		echo $this->db->last_query();
-		exit();
+
 		if ($query->num_rows() > 0){
 			foreach ($query->result() as $row){
-				$data=array();
+				$this->db->where('id_edcont',$id);
+				$this->db->from('itedcont');
+				$cuotas=$this->db->count_all_results();
 
+				$estado='';
+				$data=array();
 				$empresa=true;
 				if(!$empresa){
-					$data['opcionante'] ="el ciudadano: PEDRO ARTURO PEREZ GOMEZ, venezolano, mayor de edad,  titular de la Cédula de Identidad No. V-6.643.841,  Médico, domiciliado en la ciudad de Ejido, Estado Mérida y hábil;";
+					$data['opcionante'] ="el ciudadano: ".utf8_encode($row->nombre).", venezolano, mayor de edad,  titular de la Cédula de Identidad No. ".$row->rifci.",  Médico, domiciliado en la ciudad de ".utf8_encode($row->ciudad).", Estado ".$estado." y hábil;";
 				}else{
-					$data['opcionante'] ="TECNO ASCENSORES, C.A., Sociedad Mercantil domiciliada en la ciudad de Maracaibo, Estado Zulia, debidamente inscrita por ante el Registro Mercantil Cuarto de la Circunscripción Judicial del Estado Zulia, en fecha 18 de Abril de 2006, bajo el No. 04, Tomo 31-A; con Registro de Información Fiscal No. J-31355284-9, debidamente representada en este acto por el(los) ciudadano(s): KAZUKI GUILLERMO TSUCHIYA MARTINEZ, venezolano, mayor de edad, titular de la Cédula de Identidad, No. V-16.781.467, Comerciante, domiciliado en la ciudad de Maracaibo, Estado Zulia, y hábil, en su carácter de Vice Presidente y ARIAS LEE FERNANDO, venezolano, mayor de edad, titular de la Cédula de Identidad, No. V-12.365.897, Comerciante, domiciliado en la ciudad de Maracaibo, Estado Zulia, y hábil, en su carácter de Director-Gerente;";
+					$data['opcionante'] =utf8_encode($row->nombre)." domiciliada en la ciudad de ".utf8_encode($row->ciudad).", Estado ".$estado.", debidamente inscrita por ante el Registro Mercantil Cuarto de la Circunscripción Judicial del Estado Zulia, en fecha 18 de Abril de 2006, bajo el No. 04, Tomo 31-A; con Registro de Información Fiscal No. ".$row->rifci;
 				}
+				$data['opcionante']='opcionante';
+				$timespan=mysql_to_unix($row->fecha);
 
-				$data['numero']    =$row->numero;
-				$data['fecha']     =dbdate_to_human($row->fecha);
-				$data['monto']     =nformat($row->monto);
-				$data['montolet']  =strtoupper(numletra($row->monto));
-				$data['mt2']       =$row->mt2;
-				$data['mt2let']    =strtoupper(numletra($row->mt2));
-				$data['uso']       =$row->uso;
-				$data['fpagos']    ='';
+				$data['dialet']         = date('d',$timespan);
+				$data['meslet']         = mesletra(date('m',$timespan));
+				$data['anio']           = date('Y',$timespan);
+				$data['lcodigo']        = $row->lcodigo;
+				$data['ubicacion']      = $row->ubica;
+				$data['preciomt2let']   = strtoupper(numletra($row->precioxmt2));
+				$data['preciomt2']      = nformat($row->precioxmt2);
+				$data['financiable']    = nformat($row->financiable);;
+				$data['financiablelet'] = strtoupper(numletra($row->inicial+$row->financiable));;
+				$data['cuotas']         = $cuotas;
+				$data['cuotaslet']      = strtoupper(numletra($cuotas));
+				$data['moncuotaslet']   = '';
+				$data['moncuotas']      = '';
+				$data['venceprimera']   = '';
+				$data['inifinanlet']    = strtoupper(numletra($row->inicial));
+				$data['inifinan']       = nformat($row->inicial+$row->financiable);
+				$data['iniciallet']     = strtoupper(numletra($row->inicial+$row->financiable));
+				$data['inicial']        = nformat($row->inicial);
+				$data['firmalet']       = strtoupper(numletra($row->firma));
+				$data['firma']          = nformat($row->firma);
+				$data['numero']         = $row->numero;
+				$data['fecha']          = dbdate_to_human($row->fecha);
+				$data['monto']          = nformat($row->monto);
+				$data['montolet']       = strtoupper(numletra($row->monto));
+				$data['area']           = $row->mt2;
+				$data['arealet']        = strtoupper(numletra($row->mt2));
+				$data['uso']            = $row->uso;
 
 				formams::_msxml('contrato',$data);
 			}
