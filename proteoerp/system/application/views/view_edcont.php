@@ -384,7 +384,7 @@ function del_itedcont(id){
 			?>
 
 			<tr id='tr_itedcont_<?php echo $i; ?>'>
-				<td class="littletablerow" align="center"><b id='giro_num_<?php echo $i; ?>'><?php $o=$i+1; echo $i+1; if($form->_status=='show'){ echo anchor("construccion/edcont/letracambio/$it_id/$o", 'Letra'); } ?></b></td>
+				<td class="littletablerow" align="center"><b id='giro_num_<?php echo $i; ?>'><?php $o=$i+1.' '; echo $i+1; if($form->_status=='show'){ echo anchor("construccion/edcont/letracambio/$it_id/$o/letra.xml", 'Letra'); } ?></b></td>
 				<td class="littletablerow" align="left"  ><?php echo $form->$it_especial->output; ?></td>
 				<td class="littletablerow" align="left"  ><?php echo $form->$it_vencimiento->output; ?></td>
 				<td class="littletablerow" align="right" ><?php echo $form->$it_monton->output;   ?></td>
