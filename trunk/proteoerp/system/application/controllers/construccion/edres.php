@@ -209,7 +209,7 @@ class edres extends Controller {
 		$edit->build();
 
 		$link1=site_url('construccion/common/get_inmue');
-		$script= '<script type="text/javascript" > 
+		$script= '<script type="text/javascript" >
 		$(function() {
 			$("#edificacion").change(function(){ edif_change(); });
 			$(".inputnum").numeric(".");
@@ -379,7 +379,7 @@ class edres extends Controller {
 		$mSQL = $this->db->insert_string('smov', $data);
 		$ban=$this->db->simple_query($mSQL);
 		if($ban==false){ memowrite($mSQL,'edres'); }
-		
+
 		$primary =implode(',',$do->pk);
 		logusu($do->table,"Creo $this->tits $primary ");
 	}
@@ -432,7 +432,7 @@ class edres extends Controller {
 		}
 
 		if (!$this->db->field_exists('transac', 'edres')){
-			$mSQL="";
+			$mSQL="ALTER TABLE `edres` ADD COLUMN `transac` VARCHAR(8) NULL AFTER `notas`";
 			$this->db->simple_query($mSQL);
 		}
 	}

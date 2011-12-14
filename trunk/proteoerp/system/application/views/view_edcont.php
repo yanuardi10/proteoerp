@@ -317,17 +317,17 @@ function del_itedcont(id){
 			<legend class="titulofieldset" style='color: #114411;'>Documento <?php echo $form->status->output; ?> <?php echo $form->numero->output; ?></legend>
 			<table style="margin: 0;">
 			<tr>
-				<td class="littletableheader"><?php echo $form->edificacion->label;   ?>*&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->edificacion->label;   ?>*</td>
 				<td class="littletablerow">   <?php echo $form->edificacion->output;  ?>&nbsp; </td>
 				<td class="littletableheader"><?php echo $form->fecha->label;  ?>*&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->fecha->output; ?>&nbsp; </td>
 			</tr><tr>
-				<td class="littletableheader"><?php echo $form->inmueble->label;  ?>&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->inmueble->label;  ?>*</td>
 				<td class="littletablerow"   ><?php echo $form->inmueble->output; ?>&nbsp;</td>
-				<td class="littletableheader"><?php echo $form->mt2->label;    ?>*&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->mt2->label;    ?>*</td>
 				<td class="littletablerow">   <?php echo $form->mt2->output;   ?>&nbsp; </td>
 			</tr><tr>
-				<td class="littletableheader"><?php echo $form->uso->label;    ?>*&nbsp; </td>
+				<td class="littletableheader"><?php echo $form->uso->label;    ?>*</td>
 				<td class="littletablerow">   <?php echo $form->uso->output;   ?>&nbsp; </td>
 				<td class="littletableheader"><?php echo $form->precioxmt2->label;   ?>&nbsp;</td>
 				<td class="littletablerow"   ><?php echo $form->precioxmt2->output;  ?>&nbsp;</td>

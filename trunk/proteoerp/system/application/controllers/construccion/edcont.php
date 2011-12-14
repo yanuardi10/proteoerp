@@ -150,7 +150,7 @@ class edcont extends Controller {
 		$edit->fecha->maxlength =8;
 
 		$edit->cliente = new inputField('Cliente','cliente');
-		$edit->cliente->rule='max_length[5]';
+		$edit->cliente->rule='max_length[5]|required';
 		$edit->cliente->size =7;
 		$edit->cliente->maxlength =5;
 
@@ -185,7 +185,7 @@ class edcont extends Controller {
 		$edit->edificacion->option('','Seleccionar');
 		$edit->edificacion->options('SELECT id,TRIM(nombre) AS nombre FROM `edif` ORDER BY nombre');
 		$edit->edificacion->style='width:180px;';
-		$edit->edificacion->rule='max_length[11]';
+		$edit->edificacion->rule='max_length[11]|required';
 
 		$edit->inmueble = new dropdownField('Inmueble','inmueble');
 		$edit->inmueble->option('','Seleccionar');
@@ -198,7 +198,7 @@ class edcont extends Controller {
 			$edit->inmueble->option('','Seleccione una edificacion');
 		}
 		$edit->inmueble->style='width:180px;';
-		$edit->inmueble->rule='max_length[11]';
+		$edit->inmueble->rule='max_length[11]|required';
 
 		$edit->reserva = new inputField('Reserva','reserva');
 		$edit->reserva->rule='max_length[17]|numeric';
@@ -207,14 +207,14 @@ class edcont extends Controller {
 		$edit->reserva->maxlength =17;
 
 		$edit->precioxmt2 = new inputField('Precioxmt2','precioxmt2');
-		$edit->precioxmt2->rule='max_length[17]|numeric|mayorcero';
+		$edit->precioxmt2->rule='max_length[17]|numeric|mayorcero|required';
 		$edit->precioxmt2->css_class='inputnum';
 		$edit->precioxmt2->size =10;
 		$edit->precioxmt2->maxlength =17;
 		$edit->precioxmt2->showformat ='decimal';
 
 		$edit->mt2 = new inputField('&Aacute;rea Mt2','mt2');
-		$edit->mt2->rule='max_length[17]|numeric|mayorcero';
+		$edit->mt2->rule='max_length[17]|numeric|mayorcero|required';
 		$edit->mt2->css_class='inputnum';
 		$edit->mt2->size =10;
 		$edit->mt2->maxlength =17;
@@ -224,6 +224,7 @@ class edcont extends Controller {
 		$edit->uso->option('','Seleccionar');
 		$edit->uso->options('SELECT id,uso FROM `eduso` ORDER BY uso');
 		$edit->uso->style='width:180px;';
+		$edit->uso->rule='required';
 
 		$edit->inicial = new inputField('Inicial','inicial');
 		$edit->inicial->rule='max_length[17]|numeric|mayorcero';
@@ -264,7 +265,7 @@ class edcont extends Controller {
 		// Inicio del detalle
 		//*******************************
 		$edit->it_vencimiento = new dateField('Vencimiento <#o#>','it_vencimiento_<#i#>');
-		$edit->it_vencimiento->rule='chfecha';
+		$edit->it_vencimiento->rule='chfecha|required';
 		$edit->it_vencimiento->size =10;
 		$edit->it_vencimiento->insertValue =date('Y-m-d');
 		$edit->it_vencimiento->db_name ='vencimiento';
@@ -280,7 +281,7 @@ class edcont extends Controller {
 		$edit->it_especial->option('S','Si');
 
 		$edit->it_monto = new inputField('Monto <#o#>','it_monto_<#i#>');
-		$edit->it_monto->rule='max_length[10]|numeric';
+		$edit->it_monto->rule='max_length[10]|numeric|mayorcero|required';
 		$edit->it_monto->db_name   ='monto';
 		$edit->it_monto->rel_id    ='itedcont';
 		//$edit->it_monto->on_keyup  = 'totagiro()';
@@ -293,7 +294,10 @@ class edcont extends Controller {
 		// Fin del detalle
 		//******************************
 
-		$edit->buttons('modify', 'save', 'undo', 'delete', 'back', 'add','add_rel');
+		if($status != 'A'){
+			$edit->buttons('modify', 'save', 'undo', 'delete','add_rel');
+		}
+		$edit->buttons('back', 'add');
 		$edit->build();
 
 		$script= '<script type="text/javascript" >
@@ -398,18 +402,19 @@ class edcont extends Controller {
 		}
 	}
 
-	function actualiza($id){
+	function actualizar($id){
+		$url=$this->url.'dataedit/show/'.$id;
+		$this->rapyd->uri->keep_persistence();
+		$persistence = $this->rapyd->session->get_persistence($url, $this->rapyd->uri->gfid);
+		$back= (isset($persistence['back_uri'])) ?$persistence['back_uri'] : $url;
+
 		$sel=array('a.*','b.nombre','c.descripcion AS local');
+		$this->db->select($sel);
 		$this->db->where('a.id',$id);
 		$this->db->from('edcont AS a');
 		$this->db->join('scli AS b','a.cliente=b.cliente');
 		$this->db->join('edinmue AS c'  ,'c.id=a.inmueble');
 		$query = $this->db->get();
-
-		$sel=array('a.*');
-		$this->db->where('a.id_edcont',$id);
-		$this->db->from('itedcont AS a');
-		$itquery = $this->db->get();
 
 		if ($query->num_rows() > 0){
 			$estampa=date('Y-m-d');
@@ -470,7 +475,13 @@ class edcont extends Controller {
 			$ban=$this->db->simple_query($mSQL);
 			if($ban==false){ memowrite($mSQL,'edcont'); }
 
-			foreach ($itquery->result_array() as $itrow){
+			$sel=array('a.*');
+			$this->db->select($sel);
+			$this->db->where('a.id_edcont',$id);
+			$this->db->from('itedcont AS a');
+			$itquery = $this->db->get();
+
+			foreach ($itquery->result() as $rrow){
 				$mnumnd = $this->datasis->fprox_numero('ngicli');
 				$data=array();
 				$data['cod_cli']    = $row->cliente;
@@ -496,7 +507,10 @@ class edcont extends Controller {
 				$ban=$this->db->simple_query($mSQL);
 				if($ban==false){ memowrite($mSQL,'edcont'); }
 			}
+			$this->db->where('id', $id);
+			$this->db->update('edcont',array('status' => 'A'));
 		}
+		redirect($back);
 	}
 
 	function _pre_insert($do){
@@ -557,9 +571,13 @@ class edcont extends Controller {
 			$this->db->simple_query($mSQL);
 		}
 
-		if(!$this->db->field_exists('uso', 'edcont')){
-			$mSQL="ALTER TABLE `edcont` ADD COLUMN `status` CHAR(1) NOT NULL DEFAULT 'P' AFTER `numero`;";
+		if(!$this->db->field_exists('status', 'edcont')){
+			$mSQL="ALTER TABLE `edcont` ADD COLUMN `status` CHAR(1) NOT NULL DEFAULT 'P' AFTER `numero`";
 			$this->db->simple_query($mSQL);
+		}
+
+		if(!$this->db->field_exists('especial', 'itedcont')){
+			$mSQL= "ALTER TABLE `itedcont` ADD COLUMN `especial` CHAR(1) NOT NULL DEFAULT 'N' AFTER `id_edcont`";
 		}
 
 		if (!$this->db->table_exists('itedcont')) {
