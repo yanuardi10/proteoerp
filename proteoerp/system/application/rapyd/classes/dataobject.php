@@ -319,6 +319,9 @@ class DataObject{
 					$_one_to_many["on"] = str_replace("<#pk#>", $pk_name, $_one_to_many["on"]);
 					$this->db->join($_one_to_many["table"], $_one_to_many["on"]);
 					$this->db->where($where);
+					if(isset($_one_to_many["order"])){
+						$this->db->orderby($_one_to_many['order']);
+					}
 
 					//inicio pointer
 					if(isset($this->flag_rel_pointer[$_one_to_many["id"]])){
@@ -909,6 +912,12 @@ class DataObject{
     $arr["cascade"] = $cascade;
     $this->_rel_type[$id]=array(1,0);
     $this->_one_to_many[$id] = $arr;
+  }
+
+  function order_rel_one_to_many($id,$order){
+    if(isset($this->_one_to_many[$id])){
+      $this->_one_to_many[$id]['order']=$order;
+    }
   }
 
 
