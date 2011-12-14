@@ -89,13 +89,20 @@ class edcont extends Controller {
 		$do->pointer('scli' ,'scli.cliente=edcont.cliente','scli.tipo AS sclitipo, scli.nombre AS nombre, dire11 AS direc, scli.rifci AS rifci','left');
 		//$do->pointer('edres' ,'edres.id=edcont.id_edres','scli.tipo AS sclitipo, scli.nombre AS edresnumero','left');
 		$do->rel_one_to_many('itedcont', 'itedcont', array('id'=>'id_edcont'));
+		$do->order_rel_one_to_many('itedcont','id');
 
 		$edit = new DataDetails($this->tits, $do);
 
 		$id=$edit->get_from_dataobjetct('id');
 		if($id!==false){
-			$action = "javascript:window.location='" . site_url($this->url.'formato/'.$id) . "'";
-			$edit->button('btn_formato', 'Descargar formato', $action);
+			$action = "javascript:window.location='".site_url($this->url.'formato/'.$id)."'";
+			$edit->button('btn_formato', 'Descargar formato', $action,'TR');
+		}
+
+		$status=$edit->get_from_dataobjetct('status');
+		if($status == 'P'){
+			$action = "javascript:window.location='".site_url($this->url.'actualizar/'.$id)."'";
+			$edit->button('btn_actuali', 'Actualizar', $action,'TR');
 		}
 
 		$edit->back_url = site_url($this->url.'filteredgrid');
@@ -318,6 +325,41 @@ class edcont extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
+	function letracambio($id,$numero='1'){
+
+		$sel=array('a.*','b.numero','b.fecha','c.nombre'
+		,'CONCAT_WS(" ",TRIM(c.dire11),TRIM(c.dire12)) AS direc'
+		,'c.telefono','TRIM(c.nombre) AS nombre');
+		$this->db->select($sel);
+		$this->db->where('a.id',$id);
+		$this->db->from('itedcont AS a');
+		$this->db->join('edcont AS b','a.id_edcont=b.id');
+		$this->db->join('scli AS c','c.cliente=b.cliente');
+		$query = $this->db->get();
+
+		if ($query->num_rows() > 0){
+			$row    = $query->row();
+			$this->load->plugin('numletra');
+			$this->db->where('id_edcont',$row->id_edcont);
+			$this->db->from('itedcont');
+			$cana=$this->db->count_all_results();
+
+			$data['ncontrato'] = $row->numero;
+			$data['fecha']     = dbdate_to_human($row->fecha);
+			$data['fcontrato'] = dbdate_to_human($row->fecha);
+			$data['monto']     = nformat($row->monto);
+			$data['montolet']  = strtoupper(numletra($row->monto));
+			$data['vence']     = dbdate_to_human($row->vencimiento);
+			$data['numero']    = $numero;
+			$data['cana']      = $cana;
+			$data['direc']     = $row->direc;
+			$data['nombre']    = $row->nombre;
+			$data['telf']      = $row->telefono;
+
+			formams::_msxml('letra',$data);
+		}
+	}
+
 	function formato($id){
 		$this->load->plugin('numletra');
 		$sel=array('*');
@@ -351,8 +393,108 @@ class edcont extends Controller {
 				$data['uso']       =$row->uso;
 				$data['fpagos']    ='';
 
-
 				formams::_msxml('contrato',$data);
+			}
+		}
+	}
+
+	function actualiza($id){
+		$sel=array('a.*','b.nombre','c.descripcion AS local');
+		$this->db->where('a.id',$id);
+		$this->db->from('edcont AS a');
+		$this->db->join('scli AS b','a.cliente=b.cliente');
+		$this->db->join('edinmue AS c'  ,'c.id=a.inmueble');
+		$query = $this->db->get();
+
+		$sel=array('a.*');
+		$this->db->where('a.id_edcont',$id);
+		$this->db->from('itedcont AS a');
+		$itquery = $this->db->get();
+
+		if ($query->num_rows() > 0){
+			$estampa=date('Y-m-d');
+			$hora   =date('H:i:s');
+			$transac=$this->datasis->fprox_numero('transac');
+			$usuario=$this->secu->usuario();
+			$vence  ='';
+			$row    = $query->row();
+
+			$mnumnd = $this->datasis->fprox_numero('ndcli');
+			$data=array();
+			$data['cod_cli']    = $row->cliente;
+			$data['nombre']     = $row->nombre;
+			$data['tipo_doc']   = 'ND';
+			$data['numero']     = $mnumnd;
+			$data['fecha']      = $row->fecha;
+			$data['monto']      = $row->monto;
+			$data['impuesto']   = 0;
+			$data['abonos']     = 0;
+			$data['vence']      = $vence;
+			$data['tipo_ref']   = 'PV';
+			$data['num_ref']    = $row->numero;
+			$data['observa1']   = 'PREVENTA '.$row->local;
+			$data['estampa']    = $estampa;
+			$data['hora']       = $hora;
+			$data['transac']    = $transac;
+			$data['usuario']    = $usuario;
+			$data['codigo']     = 'NOCON';
+			$data['descrip']    = 'NOTA DE CONTABILIDAD';
+
+			$mSQL = $this->db->insert_string('smov', $data);
+			$ban=$this->db->simple_query($mSQL);
+			if($ban==false){ memowrite($mSQL,'edcont'); }
+
+			$transac2=$this->datasis->fprox_numero('transac');
+			$mnumnd = $this->datasis->fprox_numero('nccli');
+			$data=array();
+			$data['cod_cli']    = $row->cliente;
+			$data['nombre']     = $row->nombre;
+			$data['tipo_doc']   = 'NC';
+			$data['numero']     = $mnumnd;
+			$data['fecha']      = $row->fecha;
+			$data['monto']      = $row->financiable;
+			$data['impuesto']   = 0;
+			$data['abonos']     = 0;
+			$data['vence']      = $vence;
+			$data['tipo_ref']   = 'PV';
+			$data['num_ref']    = $row->numero;
+			$data['observa1']   = 'PREVENTA '.$row->local;
+			$data['estampa']    = $estampa;
+			$data['hora']       = $hora;
+			$data['transac']    = $transac2;
+			$data['usuario']    = $usuario;
+			$data['codigo']     = 'NOCON';
+			$data['descrip']    = 'NOTA DE CONTABILIDAD';
+
+			$mSQL = $this->db->insert_string('smov', $data);
+			$ban=$this->db->simple_query($mSQL);
+			if($ban==false){ memowrite($mSQL,'edcont'); }
+
+			foreach ($itquery->result_array() as $itrow){
+				$mnumnd = $this->datasis->fprox_numero('ngicli');
+				$data=array();
+				$data['cod_cli']    = $row->cliente;
+				$data['nombre']     = $row->nombre;
+				$data['tipo_doc']   = 'GI';
+				$data['numero']     = $mnumnd;
+				$data['fecha']      = $row->fecha;
+				$data['monto']      = $rrow->monto;
+				$data['impuesto']   = 0;
+				$data['abonos']     = 0;
+				$data['vence']      = $rrow->vencimiento;
+				$data['tipo_ref']   = 'PV';
+				$data['num_ref']    = $row->numero;
+				$data['observa1']   = 'PREVENTA '.$row->local;
+				$data['estampa']    = $estampa;
+				$data['hora']       = $hora;
+				$data['transac']    = $transac2;
+				$data['usuario']    = $usuario;
+				$data['codigo']     = 'NOCON';
+				$data['descrip']    = 'NOTA DE CONTABILIDAD';
+
+				$mSQL = $this->db->insert_string('smov', $data);
+				$ban=$this->db->simple_query($mSQL);
+				if($ban==false){ memowrite($mSQL,'edcont'); }
 			}
 		}
 	}

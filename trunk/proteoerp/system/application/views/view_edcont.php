@@ -379,10 +379,12 @@ function del_itedcont(id){
 				$it_vencimiento  = "it_vencimiento_$i";
 				$it_especial     = "it_especial_$i";
 				$it_monton       = "it_monto_$i";
+				if($form->_status=='show')
+					$it_id = $form->_dataobject->get_rel('itedcont','id',$i);
 			?>
 
 			<tr id='tr_itedcont_<?php echo $i; ?>'>
-				<td class="littletablerow" align="center"><b id='giro_num_<?php echo $i; ?>'><?php echo $i+1; ?></b></td>
+				<td class="littletablerow" align="center"><b id='giro_num_<?php echo $i; ?>'><?php $o=$i+1; echo $i+1; if($form->_status=='show'){ echo anchor("construccion/edcont/letracambio/$it_id/$o", 'Letra'); } ?></b></td>
 				<td class="littletablerow" align="left"  ><?php echo $form->$it_especial->output; ?></td>
 				<td class="littletablerow" align="left"  ><?php echo $form->$it_vencimiento->output; ?></td>
 				<td class="littletablerow" align="right" ><?php echo $form->$it_monton->output;   ?></td>
@@ -395,7 +397,7 @@ function del_itedcont(id){
 			</tr>
 			<?php } ?>
 			<tr id='__UTPL__'>
-				<td id='cueca'></td>
+				<td></td>
 			</tr>
 		</table>
 		<!-- </div>-->
