@@ -9,7 +9,7 @@ class common extends Controller {
 	}
 
 	function index(){
-		
+
 	}
 
 	function get_ubic(){
@@ -34,7 +34,7 @@ class common extends Controller {
 
 		if($edif!==false){
 			$dbedif=$this->db->escape($edif);
-			$mSQL=$this->db->query("SELECT id,TRIM(descripcion) AS nombre FROM `edinmue` WHERE status='D' AND edificacion=$dbedif ORDER BY descripcion");
+			$mSQL=$this->db->query("SELECT id,CONCAT(TRIM(descripcion),' ',codigo) AS nombre FROM `edinmue` WHERE status='D' AND edificacion=$dbedif ORDER BY descripcion");
 
 			if($mSQL){
 				foreach($mSQL->result() AS $fila ){
@@ -56,7 +56,7 @@ class common extends Controller {
 				$data=json_encode($row);
 				echo $data;
 			}
-			
+
 		}
 	}
 }
