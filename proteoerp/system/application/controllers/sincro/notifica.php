@@ -13,6 +13,7 @@ class notifica extends controller {
 		$this->error='';
 		$this->adjuntos=null;
 		$this->msj='';
+		$this->tipo='txt';
 		$this->instalar();
 	}
 
@@ -471,7 +472,11 @@ class notifica extends controller {
 
 		if(is_array($this->adjuntos)){
 			$message = new Mail_mime();
-			$message->setTXTBody($body);
+			if($this->tipo=='html'){
+				$message->setHTMLBody($body);
+			}else{
+				$message->setTXTBody($body);
+			}
 
 			foreach($this->adjuntos AS $adj){
 				$message->addAttachment($adj);
