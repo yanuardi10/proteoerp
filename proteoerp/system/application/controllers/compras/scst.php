@@ -1423,14 +1423,14 @@ class Scst extends Controller {
 		logusu('scst',"Compra $codigo ELIMINADA");
 	}
 
-
 	function extgrid(){
 		$js= file_get_contents('php://input');
 		if ( ! empty($js) ){
 			$data= json_decode($js,true);
+
 			// Modifica los campos mandados
 			foreach ($data as $registro ){
-				$mSQL  = "UPDATE scst SET serie='".$registro['serie']."' ";
+				$mSQL  = "UPDATE scst SET serie=".$this->db->escape($registro['serie'])." ";
 				$mSQL .= "WHERE control='".$registro['control']."'";
 				$this->db->simple_query($mSQL);
 			}
@@ -1441,6 +1441,21 @@ class Scst extends Controller {
 			$this->scstextjs();
 		}
 	}
+
+	function modificar(){
+		$js= file_get_contents('php://input');
+		if ( ! empty($js) ){
+			$data= json_decode($js,true);
+			// Modifica los campos mandados
+			//foreach ($data as $registro ){
+				$mSQL  = "UPDATE scst SET serie=".$this->db->escape($data['serie'])." ";
+				$mSQL .= "WHERE control='".$data['control']."'";
+				$this->db->simple_query($mSQL);
+			//}
+			echo '{success:true, message:"Registros Actualizados" }';
+		}
+	}
+
 
 
 	function grid(){
