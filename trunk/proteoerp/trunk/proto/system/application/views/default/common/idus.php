@@ -1,0 +1,1 @@
+<div id="form_usr"><?=$idus?></div>

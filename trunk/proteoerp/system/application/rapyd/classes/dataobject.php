@@ -57,6 +57,8 @@ class DataObject{
 	var $flag_rel_pointer = array();
 	var $_pointer_data    = array();
 	var $_rel_pointer_data= array();
+	var $_order_by        = array();
+    var $field_order      = array();
 /*
 	$_pointer_data=array('id_rel'=>array('0' => array('campo1'=>'valor1','campo2'=>'valor2'),
 	                                     '1' => array('campo1'=>'valor1','campo2'=>'valor2'))
@@ -321,6 +323,12 @@ class DataObject{
 					$this->db->where($where);
 					if(isset($_one_to_many["order"])){
 						$this->db->orderby($_one_to_many['order']);
+					}
+
+					if(isset($this->_order_by[$_one_to_many["id"]])){
+					    if(count($this->_order_by[$_one_to_many["id"]])>0)
+					    foreach($this->_order_by[$_one_to_many["id"]] AS $field=>$order)
+					      $this->db->order_by($field,$order);
 					}
 
 					//inicio pointer
@@ -1042,5 +1050,13 @@ class DataObject{
       return false;
     }
   }
+  
+	function order_by($relid,$field,$order='asc'){
+	$this->_order_by[$relid][$field]=$order;
+	}
+    
+	function set_field_order($pk='',$field=''){
+		$this->field_order[$pk]=$field;
+	}
 }
 ?>

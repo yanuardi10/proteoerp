@@ -917,6 +917,7 @@ class pfac extends validaciones{
 	function instalar(){
 		if (!$this->db->field_exists('dxapli','itpfac'))
 		$this->db->query("ALTER TABLE `itpfac`  ADD COLUMN `dxapli` VARCHAR(20) NOT NULL COMMENT 'descuento por aplicar'");
+		$this->db->query("ALTER TABLE `itpfac`  CHANGE COLUMN `dxapli` `dxapli` VARCHAR(20) NULL COMMENT 'descuento por aplicar'");
 
 	}
 
