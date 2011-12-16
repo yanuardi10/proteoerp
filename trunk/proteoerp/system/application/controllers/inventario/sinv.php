@@ -18,6 +18,9 @@ class sinv extends Controller {
 		
 		if(!$this->db->field_exists('pm','sinv'))
 		$this->db->query("ALTER TABLE `sinv`  ADD COLUMN `pm` DECIMAL(19,2) NOT NULL DEFAULT '0.00' COMMENT 'porcentaje mayor'");
+		if(!$this->db->field_exists('pmb','sinv'))
+		$this->db->query("ALTER TABLE `sinv`  ADD COLUMN `pmb` DECIMAL(19,2) NOT NULL DEFAULT '0.00' COMMENT 'porcentaje mayor'");
+
 	}
 
 	function index(){
@@ -1462,15 +1465,23 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->almacenes = new containerField('almacenes',$this->_detalle($codigo));
 		$edit->almacenes->when = array("show","modify");
 
-		$edit->mmargen = new inputField("Descuento  al Mayor",'mmargen');
+
+		$edit->mmargen = new inputField("Margen al Mayor",'mmargen');
 		$edit->mmargen->css_class='inputnum';
 		$edit->mmargen->size=10;
 		$edit->mmargen->maxlength=10;
 
-		$edit->pm = new inputField("Margen al Mayor",'pm');
+		$edit->pm = new inputField("Descuento al Mayor A",'pm');
 		$edit->pm->css_class='inputnum';
 		$edit->pm->size=10;
 		$edit->pm->maxlength=10;
+
+		$edit->pmb = new inputField("Descuento al Mayor B",'pmb');
+		$edit->pmb->css_class='inputnum';
+		$edit->pmb->size=10;
+		$edit->pmb->maxlength=10;
+
+
 
 		$edit->buttons("modify", "save", "undo", "delete", "back");
 		$edit->build();

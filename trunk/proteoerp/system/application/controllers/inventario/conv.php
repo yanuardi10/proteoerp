@@ -17,7 +17,6 @@ class conv extends Controller {
 		}
 		$this->datasis->modulo_id(201,1);
 		$this->convextjs();
-		//redirect('inventario/conv/datafilter');
 	}
 
 	function filteredgrid(){
