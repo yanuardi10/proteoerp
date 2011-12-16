@@ -72,7 +72,7 @@ if($form->_status!='show'){ ?>
 	</tr>
 	<tr>
 		<td>
-		<table width='100%'>
+		<table width='100%' <?=($form->_status!='show'?' border="0" cellpadding="0" cellspacing="0"':'')?>>
 			<tr id='__INPL__'>
 				<td bgcolor='#7098D0'><strong>C&oacute;digo</strong></td>
 				<td bgcolor='#7098D0'><strong>Descripci&oacute;n</strong></td>
@@ -80,8 +80,11 @@ if($form->_status!='show'){ ?>
 				<td bgcolor='#7098D0'><strong>Cantidad</strong></td>
 				<td bgcolor='#7098D0'><strong>Precio</strong></td>
 			</tr>
-
-			<?php for($i=0;$i<$form->max_rel_count['itpfac'];$i++) {
+			
+			
+			<?php 
+			$pmarcat='';
+			for($i=0;$i<$form->max_rel_count['itpfac'];$i++) {
 				$it_codigoa  = "codigoa_$i";
 				$it_desca    = "desca_$i";
 				$it_cana     = "cana_$i";
@@ -100,32 +103,45 @@ if($form->_status!='show'){ ?>
 				$it_pm       = "itpm_$i";
 				$it_precat   = "precat_$i";
 				$it_pexisten = "pexisten_$i";
+				$it_pmarca   = "pmarca_$i";
 			?>
-			<tr id='tr_itpfac_<?php echo $i; ?>'>
+			<?php
+				$pmarca=$form->_dataobject->get_rel_pointer('itpfac','pmarca',$i);
+				if($pmarcat!=$pmarca){
+					$pmarcat=$pmarca;
+			 ?>
+				<tr style="background:#DD3333; font-weight:bold">
+				<td class="littletablerow"  align="left"  colspan="5"><?php echo $pmarca; ?></td>
+				</tr>
+				<?php 
+				}?>
+			 
+
+			<tr id='tr_itpfac_<?php echo $i; ?>' <?=($i%2 == 0 ?'style="background:#FFFFFF;"':'style="background:#DDDDDD;"')?>>
 				<td class="littletablerow" align="left" nowrap><?php echo $form->$it_codigoa->output; ?></td>
 				<td class="littletablerow" align="left" ><?php echo $form->$it_desca->output;  ?></td>
 				<td class="littletablerow" align="right"><?php echo $form->$it_pexisten->output;   ?></td>
 				<td class="littletablerow" align="right"><?php echo $form->$it_cana->output;   ?></td>
 				<td class="littletablerow" align="right">
 				<?php 
-				if ($form->_status=='show') { 
-						echo $form->$it_preca->output;  
+				if ($form->_status=='show'){
+						echo nformat($form->_dataobject->get_rel('itpfac','preca',$i));
 					}else{
 						$codigoa=$form->_dataobject->get_rel('itpfac','codigoa',$i);
 						$row=$this->datasis->damerow("SELECT precio1,precio2,precio3,precio4 FROM sinv WHERE codigo='$codigoa'");
 						$options = array(
 						$row['precio1']=> $row['precio1'],
-						$row['precio2']=> $row['precio2'],
-						$row['precio3']=> $row['precio3'],
-						$row['precio4']=> $row['precio4'],
+						$row['precio2']=> $row['precio2']
 						);
-						echo form_dropdown('preca_'.$i, $options);
+						echo form_dropdown('preca_'.$i, $options,array($row['precio1']=> $row['precio1']),'style="height:30px;width:80px;font-size:16"');
 					}
 				?>
+				&nbsp;
 				</td>
 
 			</tr>
-			<?php } ?>
+			<?php 
+			} ?>
 			<tr id='__UTPL__'>
 				<td id='cueca'></td>
 			</tr>

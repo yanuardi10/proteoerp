@@ -127,9 +127,10 @@ class pfaclite extends validaciones{
 		$do = new DataObject('pfac');
 		$do->rel_one_to_many('itpfac', 'itpfac', array('numero' => 'numa'));
 		$do->pointer('scli' , 'scli.cliente=pfac.cod_cli', 'scli.tipo AS sclitipo', 'left');
-		$do->rel_pointer('itpfac', 'sinv', 'itpfac.codigoa=sinv.codigo', 'sinv.descrip AS sinvdescrip, sinv.base1 AS sinvprecio1, sinv.base2 AS sinvprecio2, sinv.base3 AS sinvprecio3, sinv.base4 AS sinvprecio4, sinv.iva AS sinviva, sinv.peso AS sinvpeso,sinv.tipo AS sinvtipo,sinv.precio1 As sinvprecio1,sinv.pond AS sinvpond,sinv.mmargen as sinvmmargen,sinv.ultimo sinvultimo,sinv.formcal sinvformcal,sinv.pm sinvpm,itpfac.preca precat,sinv.existen pexisten');
-		//$do->load('_0000003');
-		//echo $this->db->last_query();
+		$do->rel_pointer('itpfac', 'sinv', 'itpfac.codigoa=sinv.codigo', 'sinv.descrip AS sinvdescrip, sinv.base1 AS sinvprecio1, sinv.base2 AS sinvprecio2, sinv.base3 AS sinvprecio3, sinv.base4 AS sinvprecio4, sinv.iva AS sinviva, sinv.peso AS sinvpeso,sinv.tipo AS sinvtipo,sinv.precio1 As sinvprecio1,sinv.pond AS sinvpond,sinv.mmargen as sinvmmargen,sinv.ultimo sinvultimo,sinv.formcal sinvformcal,sinv.pm sinvpm,sinv.existen pexisten,sinv.marca pmarca');
+		$do->order_by('itpfac','sinv.marca',' ');
+		$do->order_by('itpfac','sinv.descrip',' ');
+		
 
 		$edit = new DataDetails('Pedidos', $do);
 		$edit->back_url = site_url('ventas/pfaclite/filteredgrid');
@@ -148,7 +149,7 @@ class pfaclite extends validaciones{
 
 		$edit->fecha = new inputField('Fecha', 'fecha');
 		$edit->fecha->insertValue = date('Y-m-d');
-		$edit->fecha->rule = 'required';
+		//$edit->fecha->rule = 'required';
 		$edit->fecha->mode = 'autohide';
 		$edit->fecha->size = 10;
 
@@ -169,12 +170,6 @@ class pfaclite extends validaciones{
 		$edit->cliente = new dropdownField('CLIENTE', 'cod_cli');
 		$edit->cliente->options("SELECT cliente, nombre FROM scli WHERE vendedor='$vd'");
 		
-		$edit->nombre = new inputField('Nombre', 'nombre');
-		$edit->nombre->size = 30;
-		$edit->nombre->maxlength = 40;
-		$edit->nombre->rule = 'required';
-		$edit->nombre->type ='inputhidden';
-
 		$edit->rifci = new inputField('RIF/CI', 'rifci');
 		$edit->rifci->autocomplete = false;
 		$edit->rifci->size = 15;
@@ -201,8 +196,8 @@ class pfaclite extends validaciones{
 		$edit->codigoa->size = 12;
 		$edit->codigoa->db_name = 'codigoa';
 		$edit->codigoa->rel_id = 'itpfac';
-		$edit->codigoa->rule = 'required|callback_chcodigoa';
-		$edit->codigoa->onkeyup = 'OnEnter(event,<#i#>)';
+		$edit->codigoa->rule = 'callback_chcodigoa';
+		//$edit->codigoa->onkeyup = 'OnEnter(event,<#i#>)';
 		$edit->codigoa->type='inputhidden';
 
 		$edit->desca = new inputField('Descripci&oacute;n <#o#>', 'desca_<#i#>');
@@ -225,18 +220,20 @@ class pfaclite extends validaciones{
 		$edit->cana->css_class = 'inputnum';
 		$edit->cana->rel_id = 'itpfac';
 		$edit->cana->maxlength = 10;
-		$edit->cana->size = 5;
-		$edit->cana->rule = 'required|positive';
+		$edit->cana->size = 3;
+		//$edit->cana->rule = 'required|positive';
 		$edit->cana->autocomplete = false;
-		$edit->cana->onkeyup = 'importe(<#i#>)';
+		//$edit->cana->onkeyup = 'importe(<#i#>)';
 		//$edit->cana->insertValue=1;
+		$edit->cana->style ="height:30px;font-size:16";
 
 		$edit->preca = new dropdownField('Precio <#o#>', 'preca_<#i#>');
-		$edit->preca->db_name = 'preca';
+		$edit->preca->db_name   = 'preca';
 		$edit->preca->css_class = 'inputnum';
-		$edit->preca->rel_id = 'itpfac';
-		$edit->preca->size = 10;
-		$edit->preca->rule = 'required|positive|callback_chpreca[<#i#>]';
+		$edit->preca->rel_id    = 'itpfac';
+		$edit->preca->size      = 10;
+		$edit->preca->rule      = 'positive|callback_chpreca[<#i#>]';
+		$edit->cana->style      ="height:30px;font-size:16";
 //		$edit->preca->readonly = true;
 		
 		for($i = 1;$i <= 4;$i++){
@@ -245,8 +242,6 @@ class pfaclite extends validaciones{
 			$edit->$obj->db_name = 'sinv' . $obj;
 			$edit->$obj->rel_id = 'itpfac';
 			$edit->$obj->pointer = true;
-			
-			
 		}
 		
 		$edit->dxapli = new inputField('Precio <#o#>', 'dxapli_<#i#>');
@@ -314,6 +309,11 @@ class pfaclite extends validaciones{
 		$edit->precat->db_name = 'precat';
 		$edit->precat->rel_id  = 'itpfac';
 		$edit->precat->pointer = true;
+		
+		$edit->pmarca = new inputField('', 'pmarca_<#i#>');
+		$edit->pmarca->db_name = 'pmarca';
+		$edit->pmarca->rel_id  = 'itpfac';
+		$edit->pmarca->pointer = true;
 		// fin de campos para detalle
 
 		$edit->ivat = new hiddenField('Impuesto', 'iva');
