@@ -1,4 +1,0 @@
-RewriteEngine on
-RewriteBase /proteoerp/
-RewriteCond $1 !^(index\.php|images|phpfreechat|system|assets|uploads|user_guide|rapyd_guide|robots\.txt)
-RewriteRule ^(.*)$ index.php/$1  [QSA,L]
