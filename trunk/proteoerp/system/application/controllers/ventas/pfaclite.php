@@ -227,14 +227,13 @@ class pfaclite extends validaciones{
 		$edit->cana->autocomplete = false;
 		//$edit->cana->onkeyup = 'importe(<#i#>)';
 		//$edit->cana->insertValue=1;
-		$edit->cana->style ="height:100%;font-size:14";
+		$edit->cana->style ="height:25px;font-size:14";
 
 		$edit->preca = new dropdownField('Precio <#o#>', 'preca_<#i#>');
 		$edit->preca->db_name   = 'preca';
 		$edit->preca->css_class = 'inputnum';
 		$edit->preca->rel_id    = 'itpfac';
 		$edit->preca->rule      = 'positive|callback_chpreca[<#i#>]';
-		$edit->preca->style      ="height:100%;align:right;font-size:14";
 //		$edit->preca->readonly = true;
 		
 		for($i = 1;$i <= 4;$i++){
@@ -362,17 +361,18 @@ class pfaclite extends validaciones{
 			$conten['hoy']     = $hoy;
 			$conten['fenvia']  = $fenvia;
 			$conten['faplica'] = $faplica;
-			$data['content'] = $this->load->view('view_pfaclite', $conten, true);
-			$data['title']   = heading('Pedidos No. '.$edit->numero->value);
+			$conten['title']   = heading('Pedidos No. '.$edit->numero->value);
+			$this->load->view('view_pfaclite', $conten);
+			
 
 			//$data['head']   = script('jquery.js');
 			//$data['head']  .= script('jquery-ui.js');
 			//$data['head']  .= script('plugins/jquery.numeric.pack.js');
 			//$data['head']  .= script('plugins/jquery.floatnumber.js');
 			//$data['head']  .= phpscript('nformat.js');
-			$data['head']   = $this->rapyd->get_head();
+			//$data['head']   = $this->rapyd->get_head();
 
-			$this->load->view('view_ventanas_sola', $data);
+			//$this->load->view('view_ventanas_sola', $data);
 		}else{
 			$edit->on_save_redirect=false;
 			$edit->build();
