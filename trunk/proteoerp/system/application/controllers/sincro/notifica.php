@@ -464,39 +464,24 @@ class notifica extends controller {
 			return false;
 		}
 
+		$message = new Mail_mime();
+
 		$from = $this->config->item('mail_smtp_from');
 		$host = $this->config->item('mail_smtp_host');
 		$port = $this->config->item('mail_smtp_port');
 		$user = $this->config->item('mail_smtp_usr');
 		$pass = $this->config->item('mail_smtp_pwd');
 
-		if(is_array($this->adjuntos)){
-			$message = new Mail_mime();
-			if($this->tipo=='html'){
-				$message->setHTMLBody($body);
-			}else{
-				$message->setTXTBody($body);
-			}
+		$extraheaders =  array (
+			'From'    => $from,
+			'To'      => $to,
+			'Subject' => $subject
+		);
 
+		if(is_array($this->adjuntos)){
 			foreach($this->adjuntos AS $adj){
 				$message->addAttachment($adj);
 			}
-
-			$body = $message->get(); 
-			$extraheaders =  array (
-				'From'    => $from,
-				'To'      => $to,
-				'Subject' => $subject
-			);
-			$headers = $message->headers($extraheaders);
-
-		}else{
-			$headers = array (
-				'From'    => $from,
-				'To'      => $to,
-				'Subject' => $subject
-			);
-			$body.="\n\nEsta es una cuenta de correo no monitoreada. Por favor no responda o reenvíe mensajes a esta cuenta.";
 		}
 
 		$parr=array (
@@ -507,8 +492,23 @@ class notifica extends controller {
 			'password' => $pass
 		);
 
+		if($this->tipo=='html'){
+			$hbody = '<html><head><title></title>';
+			$hbody.= '<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />';
+			$hbody.= '</head>';
+			$hbody.= '<body>';
+			$hbody.= $body;
+			$hbody.= '</body></html>';
+			$message->setHTMLBody($hbody);
+		}else{
+			$message->setTXTBody($body);
+		}
+		$message->setTXTBody("\n\nEsta es una cuenta de correo no monitoreada. Por favor no responda o reenvíe mensajes a esta cuenta.");
+		$sbody = $message->get();
+		$headers = $message->headers($extraheaders);
+
 		$smtp = Mail::factory('smtp',$parr);
-		$mail = $smtp->send($to, $headers, $body);
+		$mail = $smtp->send($to, $headers, $sbody);
 		if (PEAR::isError($mail)) {
 			$this->error=$mail->getMessage();
 			return false;
