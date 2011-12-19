@@ -922,12 +922,12 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		}
 
 		//print_r($campos);
-		echo "{ success: false, message: 'No quiero que insertes'}";
-		return false;
+		//echo "{ success: false, message: 'No quiero que insertes', errors: {'cliente': 'horroroso amigo'}}";
+		//return false;
 
 		$mHay = $this->datasis->dameval("SELECT count(*) FROM scli WHERE cliente='".$cliente."'");
 		if  ( $mHay > 0 ){
-			echo "{ success: false, message: 'Ya existe ese codigo'}";
+			echo "{ success: false, message: 'Ya existe un cliente con ese codigo'}";
 		} else {
 			$mSQL = $this->db->insert_string("scli", $campos );
 			$this->db->simple_query($mSQL);
@@ -964,11 +964,9 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM spre WHERE cod_cli='$cliente'");
 		$chek += $this->datasis->dameval("SELECT count(*) FROM pfac WHERE cod_cli='$cliente'");
 		$chek += $this->datasis->dameval("SELECT count(*) FROM bmov WHERE clipro='C' AND codcp='$cliente'");
-		//$chek += $this->datasis->dameval("SELECT count(*) FROM ords WHERE cliente='$cliente'");
-		//$chek += $this->datasis->dameval("SELECT count(*) FROM obco WHERE cliente='$cliente'");
 
 		if ($chek > 0){
-			echo "{ success: false, message: 'Proveedor con Movimiento no puede ser Borrado'}";
+			echo "{ success: false, message: 'Cliente con Movimiento no puede ser Borrado'}";
 		} else {
 			$this->db->simple_query("DELETE FROM scli WHERE cliente='$cliente'");
 			logusu('scli',"CLIENTE $cliente ELIMINADO");
@@ -1049,11 +1047,11 @@ function ftipo(val){
 
 		";
 
-		$valida = "
-		{ type: 'length', field: 'cliente',  min:  1 },
-		{ type: 'length', field: 'rifci',    min: 10 },
-		{ type: 'length', field: 'nombre',   min:  3 }
-		";
+		$valida = "";
+		//{ type: 'length', field: 'cliente',  min:  1 },
+		//{ type: 'length', field: 'rifci',    min: 10 },
+		//{ type: 'length', field: 'nombre',   min:  3 }
+		//";
 
 		$columnas = "
 		{ header: 'Codigo',        width:  60, sortable: true, dataIndex: 'cliente',  field:  { type: 'textfield' }, filter: { type: 'string'  }},
@@ -1114,14 +1112,14 @@ var cplaStore = new Ext.data.Store({
 								defaults: {  },
 								style:'padding:4px',
 								items: [
-									{ xtype: 'textfield',  fieldLabel: 'Codigo',        labelWidth: 50, name: 'cliente',  allowBlank: false,   columnWidth: 0.20, id: 'cliente' },
-									{ xtype: 'textfield',  fieldLabel: 'RIF/CI',        labelWidth:100, name: 'rifci',    allowBlank: false,   columnWidth: 0.40 },
-									{ xtype: 'combo',      fieldLabel: 'Grupo',         labelWidth: 60, name: 'grupo',    store: [".$grupo."], columnWidth: 0.40 },
-									{ xtype: 'textfield',  fieldLabel: 'Nombre',        labelWidth: 50, name: 'nombre',   allowBlank: false,   columnWidth: 0.60 },
-									{ xtype: 'combo',      fieldLabel: 'Tipo',          labelWidth: 60, name: 'tiva',     store: [".$tiva."],  columnWidth: 0.30 },
-									{ xtype: 'textfield',  fieldLabel: 'Contacto',      labelWidth: 50, name: 'contacto', allowBlank: true,    columnWidth: 0.60 },
-									{ xtype: 'combo',      fieldLabel: 'Precio',        labelWidth: 60, name: 'tipo',     store: [".$tipo."],  columnWidth: 0.30 },
-									{ xtype: 'textfield', fieldLabel: 'Nombre Fiscal', labelWidth: 90, name: 'nomfis', allowBlank: true, columnWidth : 0.98 },
+									{ xtype: 'textfield', fieldLabel: 'Codigo',        labelWidth: 50, name: 'cliente',  allowBlank: false,   columnWidth: 0.20, id: 'cliente', maxLength: 5, enforceMaxLength: true },
+									{ xtype: 'textfield', fieldLabel: 'RIF/CI',        labelWidth:100, name: 'rifci',    allowBlank: false,   columnWidth: 0.40, regex: /((^[VEJG][0-9])|(^[P][A-Z0-9]))/, regexText: 'Debe colocar una letra JVGE y 10 digitos' },
+									{ xtype: 'combo',     fieldLabel: 'Grupo',         labelWidth: 60, name: 'grupo',    store: [".$grupo."], columnWidth: 0.40 },
+									{ xtype: 'textfield', fieldLabel: 'Nombre',        labelWidth: 50, name: 'nombre',   allowBlank: false,   columnWidth: 0.60 },
+									{ xtype: 'combo',     fieldLabel: 'Tipo',          labelWidth: 60, name: 'tiva',     store: [".$tiva."],  columnWidth: 0.30 },
+									{ xtype: 'textfield', fieldLabel: 'Contacto',      labelWidth: 50, name: 'contacto', allowBlank: true,    columnWidth: 0.60 },
+									{ xtype: 'combo',     fieldLabel: 'Precio',        labelWidth: 60, name: 'tipo',     store: [".$tipo."],  columnWidth: 0.30 },
+									{ xtype: 'textfield', fieldLabel: 'Nombre Fiscal', labelWidth: 90, name: 'nomfis',   allowBlank: true,    columnWidth : 0.98 },
 								]
 							},{
 								xtype:'tabpanel',

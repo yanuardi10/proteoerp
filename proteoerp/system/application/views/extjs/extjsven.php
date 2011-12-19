@@ -89,7 +89,7 @@ var ex_Modelo = Ext.regModel('ex_Modelo', {
 			root: 'data',
 			writeAllFields: true,
 			callback: function( op, suc ) {
-				Ext.Msg.Alert('CallBack 1');
+				Ext.Msg.Alert('ParaBolas 1','Noooooooo');
 			}
 		},
 		listeners: {
@@ -100,6 +100,11 @@ var ex_Modelo = Ext.regModel('ex_Modelo', {
 					icon: Ext.MessageBox.ERROR,
 					buttons: Ext.Msg.OK
 				});
+			} else {
+				if (win) {
+					win.form.reset();
+					win.this.onReset();
+				}
 			}
 		}
 	}
@@ -156,6 +161,7 @@ Ext.onReady(function(){
 					if (!registro) {
 						if (form.isValid()) {
 							storeData.insert(0, form.getValues());
+							return;
 						} else {
 							Ext.Msg.alert('Forma Invalida','Algunos campos no pudieron ser validados<br>los mismos se indican con un cuadro rojo<br> corrijalos y vuelva a intentar');
 							return;
@@ -168,13 +174,14 @@ Ext.onReady(function(){
 						}
 						if (form.isValid()) {
 							form.updateRecord(active);
+							return;
 						} else {
 							Ext.Msg.alert('Forma Invalida','Algunos campos no pudieron ser validados<br>los mismos se indican con un cuadro rojo<br> corrijalos y vuelva a intentar');
 							return;
 						}
 					}
-					form.reset();
-					this.onReset();
+					//form.reset();
+					//this.onReset();
 				},
 				onReset: function(){
 					this.setActiveRecord(null);
