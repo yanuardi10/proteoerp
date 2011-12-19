@@ -11,9 +11,9 @@ else:
 
 $campos=$form->template_details('itpfac');
 $scampos  ='<tr id="tr_itpfac_<#i#>">';
-$scampos .='<td class="littletablerow" align="left" >'.$campos['codigoa']['field'].'</td>';
-$scampos .='<td class="littletablerow" align="left" >'.$campos['desca']['field'].'</td>';
-$scampos .='<td class="littletablerow" align="left" >'.$campos['pexisten']['field'].'</td>';
+$scampos .='<td class="littletablerow" >'.$campos['codigoa']['field'].'</td>';
+$scampos .='<td class="littletablerow" >'.$campos['pdesca']['field'].'</td>';
+$scampos .='<td class="littletablerow" >'.$campos['pexisten']['field'].'</td>';
 $scampos .='<td class="littletablerow" align="right">'.$campos['cana']['field'].  '</td>';
 $scampos .='<td class="littletablerow" align="right">'.$campos['preca']['field'].$campos['dxapli']['field']. '</td>';
 $scampos .='<td class="littletablerow" align="right">'.$campos['tota']['field'];
@@ -37,7 +37,7 @@ $campos=$form->js_escape($scampos);
 
 if(isset($form->error_string)) echo '<div class="alert">'.$form->error_string.'</div>';
 
-echo $form_scripts;
+
 echo $form_begin;
 if($form->_status!='show'){ ?>
 
@@ -46,12 +46,8 @@ if($form->_status!='show'){ ?>
 <?php } ?>
 <table align='center' width="95%">
 	<tr>
-<?php if ($form->_status=='show') { ?>
-		<td>
-		<a href="#" onclick="window.open('<?php echo base_url() ?>formatos/verhtml/PFAC/<?php echo $form->numero->value ?>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');" heigth="600" >
-		<img src='<?php echo base_url() ?>images/html_icon.gif'></a>
+		<td>&nbsp;
 		</td>
-<?php } ?>
 		<td align=right><?php echo $container_tr?></td>
 	</tr>
 </table>
@@ -76,8 +72,8 @@ if($form->_status!='show'){ ?>
 			<tr id='__INPL__'>
 				<td bgcolor='#7098D0'><strong>C&oacute;digo</strong></td>
 				<td bgcolor='#7098D0'><strong>Descripci&oacute;n</strong></td>
-				<td bgcolor='#7098D0'><strong>Existencia</strong></td>
-				<td bgcolor='#7098D0'><strong>Cantidad</strong></td>
+				<td bgcolor='#7098D0'><strong>Exis</strong></td>
+				<td bgcolor='#7098D0'><strong>Cant</strong></td>
 				<td bgcolor='#7098D0'><strong>Precio</strong></td>
 			</tr>
 			
@@ -106,23 +102,25 @@ if($form->_status!='show'){ ?>
 				$it_pmarca   = "pmarca_$i";
 			?>
 			<?php
-				$pmarca=$form->_dataobject->get_rel_pointer('itpfac','pmarca',$i);
+				$pmarca  =$form->_dataobject->get_rel_pointer('itpfac','pmarca'  ,$i);
+				$pexisten=$form->_dataobject->get_rel_pointer('itpfac','pexisten',$i);
+				$pdesca  =$form->_dataobject->get_rel_pointer('itpfac','pdesca'  ,$i);
 				if($pmarcat!=$pmarca){
 					$pmarcat=$pmarca;
 			 ?>
-				<tr style="background:#DD3333; font-weight:bold">
-				<td class="littletablerow"  align="left"  colspan="5"><?php echo $pmarca; ?></td>
+				<tr style="background:#DD3333; font-weight:bold;color:#FFFFFF">
+				<td colspan="5"><?php echo $pmarca; ?></td>
 				</tr>
 				<?php 
 				}?>
 			 
 
 			<tr id='tr_itpfac_<?php echo $i; ?>' <?=($i%2 == 0 ?'style="background:#FFFFFF;"':'style="background:#DDDDDD;"')?>>
-				<td class="littletablerow" align="left" nowrap><?php echo $form->$it_codigoa->output; ?></td>
-				<td class="littletablerow" align="left" ><?php echo $form->$it_desca->output;  ?></td>
-				<td class="littletablerow" align="right"><?php echo $form->$it_pexisten->output;   ?></td>
-				<td class="littletablerow" align="right"><?php echo $form->$it_cana->output;   ?></td>
-				<td class="littletablerow" align="right">
+				<td   ><?php echo $form->$it_codigoa->output; ?></td>
+				<td   ><?php echo $pdesca  ?></td>
+				<td  align="right"><?php echo nformat($pexisten)   ?></td>
+				<td  align="right"><?php echo $form->$it_cana->output;   ?></td>
+				<td  align="right">
 				<?php 
 				if ($form->_status=='show'){
 						echo nformat($form->_dataobject->get_rel('itpfac','preca',$i));
@@ -133,7 +131,7 @@ if($form->_status!='show'){ ?>
 						$row['precio1']=> $row['precio1'],
 						$row['precio2']=> $row['precio2']
 						);
-						echo form_dropdown('preca_'.$i, $options,array($row['precio1']=> $row['precio1']),'style="height:30px;width:80px;font-size:16"');
+						echo form_dropdown('preca_'.$i, $options,array($row['precio1']=> $row['precio1']),'style="height:100%;width:60px"');
 					}
 				?>
 				&nbsp;
@@ -152,7 +150,7 @@ if($form->_status!='show'){ ?>
 	<tr>
 		<td>
 		
-		<table width='100%'  background='#FFFDE9'>
+		<table width='100%' style='backgroud-color:#FFFDE9' >
 			<tr>
 				<td class="littletablerow"    width='350'><?php echo $form->observa->label;   ?></td>
 				<td class="littletableheader">           <?php echo $form->totals->label;  ?></td>

@@ -127,7 +127,7 @@ class pfaclite extends validaciones{
 		$do = new DataObject('pfac');
 		$do->rel_one_to_many('itpfac', 'itpfac', array('numero' => 'numa'));
 		$do->pointer('scli' , 'scli.cliente=pfac.cod_cli', 'scli.tipo AS sclitipo', 'left');
-		$do->rel_pointer('itpfac', 'sinv', 'itpfac.codigoa=sinv.codigo', 'sinv.descrip AS sinvdescrip, sinv.base1 AS sinvprecio1, sinv.base2 AS sinvprecio2, sinv.base3 AS sinvprecio3, sinv.base4 AS sinvprecio4, sinv.iva AS sinviva, sinv.peso AS sinvpeso,sinv.tipo AS sinvtipo,sinv.precio1 As sinvprecio1,sinv.pond AS sinvpond,sinv.mmargen as sinvmmargen,sinv.ultimo sinvultimo,sinv.formcal sinvformcal,sinv.pm sinvpm,sinv.existen pexisten,sinv.marca pmarca');
+		$do->rel_pointer('itpfac', 'sinv', 'itpfac.codigoa=sinv.codigo', 'sinv.descrip AS sinvdescrip, sinv.base1 AS sinvprecio1, sinv.base2 AS sinvprecio2, sinv.base3 AS sinvprecio3, sinv.base4 AS sinvprecio4, sinv.iva AS sinviva, sinv.peso AS sinvpeso,sinv.tipo AS sinvtipo,sinv.precio1 As sinvprecio1,sinv.pond AS sinvpond,sinv.mmargen as sinvmmargen,sinv.ultimo sinvultimo,sinv.formcal sinvformcal,sinv.pm sinvpm,sinv.existen pexisten,sinv.marca pmarca,sinv.descrip pdesca');
 		$do->order_by('itpfac','sinv.marca',' ');
 		$do->order_by('itpfac','sinv.descrip',' ');
 		
@@ -200,13 +200,15 @@ class pfaclite extends validaciones{
 		//$edit->codigoa->onkeyup = 'OnEnter(event,<#i#>)';
 		$edit->codigoa->type='inputhidden';
 
-		$edit->desca = new inputField('Descripci&oacute;n <#o#>', 'desca_<#i#>');
-		$edit->desca->size = 32;
-		$edit->desca->db_name = 'desca';
-		$edit->desca->maxlength = 50;
-		$edit->desca->readonly = true;
-		$edit->desca->rel_id = 'itpfac';
-		$edit->desca->type='inputhidden';
+		$edit->pdesca = new inputField('Descripci&oacute;n <#o#>', 'pdesca_<#i#>');
+		$edit->pdesca->size = 32;
+		$edit->pdesca->db_name = 'pdesca';
+		$edit->pdesca->maxlength = 50;
+		$edit->pdesca->readonly = true;
+		$edit->pdesca->rel_id = 'itpfac';
+		$edit->pdesca->type='inputhidden';
+		$edit->pdesca->pointer=true;
+		
 		
 		$edit->pexisten = new inputField('Existencia <#o#>', 'pexisten_<#i#>');
 		$edit->pexisten->size    = 10;
@@ -220,20 +222,19 @@ class pfaclite extends validaciones{
 		$edit->cana->css_class = 'inputnum';
 		$edit->cana->rel_id = 'itpfac';
 		$edit->cana->maxlength = 10;
-		$edit->cana->size = 3;
+		$edit->cana->size = 2;
 		//$edit->cana->rule = 'required|positive';
 		$edit->cana->autocomplete = false;
 		//$edit->cana->onkeyup = 'importe(<#i#>)';
 		//$edit->cana->insertValue=1;
-		$edit->cana->style ="height:30px;font-size:16";
+		$edit->cana->style ="height:100%;font-size:14";
 
 		$edit->preca = new dropdownField('Precio <#o#>', 'preca_<#i#>');
 		$edit->preca->db_name   = 'preca';
 		$edit->preca->css_class = 'inputnum';
 		$edit->preca->rel_id    = 'itpfac';
-		$edit->preca->size      = 10;
 		$edit->preca->rule      = 'positive|callback_chpreca[<#i#>]';
-		$edit->cana->style      ="height:30px;font-size:16";
+		$edit->preca->style      ="height:100%;align:right;font-size:14";
 //		$edit->preca->readonly = true;
 		
 		for($i = 1;$i <= 4;$i++){

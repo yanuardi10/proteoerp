@@ -70,14 +70,22 @@ class inputField extends objField{
           'id'          => $this->name,
           'type'        => $t,
           'value'       => $value,
-          'maxlength'   => $this->maxlength,
-          'title'       => $this->title,
-          'size'        => $this->size,
-          'onclick'     => $this->onclick,
-          'onchange'    => $this->onchange,
           'class'       => $this->css_class,
-          'style'       => $this->style
+          'size'        => $this->size,
           );
+          
+    if(strlen($this->maxlength)>0)
+    $atributes['maxlength']   = $this->maxlength;
+    if(strlen($this->title)>0)
+    $atributes['title']       = $this->title;
+    if(strlen($this->onclick)>0)
+    $atributes['onclick']     = $this->onclick;
+    if(strlen($this->onchange)>0)
+    $atributes['onchange']    = $this->onchange;
+    if(strlen($this->style)>0)
+    $atributes['style']       = $this->style;
+    
+    
 	if(isset($this->onkeyup)) $attributes['onkeyup']     =$this->onkeyup;
 	if($this->readonly)       $attributes['readonly']    ='readonly';
 	if(!$this->autocomplete)  $attributes['autocomplete']='off';
