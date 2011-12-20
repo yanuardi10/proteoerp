@@ -72,8 +72,9 @@ class inputField extends objField{
           'value'       => $value,
           'class'       => $this->css_class,
           'size'        => $this->size,
+          'style'       => $this->style
           );
-          
+
     if(strlen($this->maxlength)>0)
     $atributes['maxlength']   = $this->maxlength;
     if(strlen($this->title)>0)
@@ -82,10 +83,7 @@ class inputField extends objField{
     $atributes['onclick']     = $this->onclick;
     if(strlen($this->onchange)>0)
     $atributes['onchange']    = $this->onchange;
-    if(strlen($this->style)>0)
-    $atributes['style']       = $this->style;
-    
-    
+
 	if(isset($this->onkeyup)) $attributes['onkeyup']     =$this->onkeyup;
 	if($this->readonly)       $attributes['readonly']    ='readonly';
 	if(!$this->autocomplete)  $attributes['autocomplete']='off';

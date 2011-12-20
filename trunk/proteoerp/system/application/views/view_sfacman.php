@@ -314,7 +314,7 @@ function autocod(id){
 	$('#codigoa_'+id).autocomplete({
 		source: function( req, add){
 			$.ajax({
-				url:  "<?php echo site_url('ventas/spre/buscasinv'); ?>",
+				url:  "<?php echo site_url('ajax/buscasinv'); ?>",
 				type: "POST",
 				dataType: "json",
 				data: "q="+req.term,
@@ -385,12 +385,12 @@ function del_itspre(id){
 			<legend class="titulofieldset" style='color: #114411;'>Documento</legend>
 			<table width="100%" style="margin: 0; width: 100%;">
 			<tr>
-				<td class="littletableheader"><?php echo $form->numero->label  ?>*&nbsp;</td>
-				<td class="littletablerow" align="left"><?php echo $form->numero->output; ?>&nbsp;</td>
+				<td class="littletableheader"><?php echo $form->nfiscal->label; ?></td>
+				<td class="littletablerow">   <?php echo $form->nfiscal->output; ?></td>
 			</tr>
 			<tr>
-				<td class="littletableheader"><?php echo $form->nfiscal->label; ?></td>
-				<td class="littletablerow"><?php echo $form->nfiscal->output; ?></td>
+				<td class="littletableheader"><?php echo $form->numero->label  ?></td>
+				<td class="littletablerow" align="left"><?php echo $form->numero->output; ?>&nbsp;</td>
 			</tr>
 			<tr>
 				<td class="littletableheader"><?php echo $form->fecha->label;    ?>*&nbsp;</td>

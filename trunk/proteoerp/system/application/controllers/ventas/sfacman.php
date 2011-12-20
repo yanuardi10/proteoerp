@@ -240,7 +240,7 @@ class sfacman extends validaciones {
 		$edit->mandatario = new inputField('C&oacute;digo','mandatario');
 		$edit->mandatario->size = 6;
 		$edit->mandatario->maxlength=5;
-		$edit->mandatario->rule='existescli';
+		$edit->mandatario->rule='required|existescli';
 
 		$edit->mandanombre = new inputField('Nombre', 'mandanombre');
 		$edit->mandanombre->db_name     = 'mandanombre';
@@ -282,15 +282,17 @@ class sfacman extends validaciones {
 		$edit->vd->style='width:200px;';
 		$edit->vd->size = 5;
 
-		$edit->numero = new inputField('N&uacute;mero', 'numero');
+		$edit->numero = new inputField('Referencia', 'numero');
 		$edit->numero->size = 10;
 		$edit->numero->maxlength=8;
-		$edit->numero->rule='required';
+		//$edit->numero->rule='required';
+		$edit->numero->when=array('show');
 
 		$edit->nfiscal = new inputField('No.Fiscal', 'nfiscal');
 		$edit->nfiscal->size = 10;
 		$edit->nfiscal->maxlength=20;
-		$edit->nfiscal->rule='required';
+		$edit->nfiscal->autocomplete=false;
+		$edit->nfiscal->rule='required|callback_chnumero';
 
 		$edit->peso = new inputField('Peso', 'peso');
 		$edit->peso->css_class = 'inputnum';
@@ -434,6 +436,7 @@ class sfacman extends validaciones {
 
 		$data['script']  = script('jquery.js');
 		$data['script'] .= script('jquery-ui.js');
+		$data['script'] .= script('plugins/jquery.ui.autocomplete.autoSelectOne.js');
 		$data['script'] .= script('jquery-impromptu.js');
 		$data['script'] .= script('plugins/jquery.blockUI.js');
 		$data['script'] .= script('plugins/jquery.numeric.pack.js');
@@ -448,18 +451,23 @@ class sfacman extends validaciones {
 	}
 
 	function chnumero($numero){
-		$this->db->where('numero',$numero);
+		$mandatario=$this->input->post('mandatario');
+		$this->db->from('sfac');
+		$this->db->where('nfiscal'   ,$numero);
+		$this->db->where('mandatario',$mandatario);
 		$this->db->where('tipo_doc','T');
 		$cana=$this->db->count_all_results();
 		if($cana>0){
-			$this->validation->set_message('chnumero', 'Ya existe una factura con el mismo numero registrada en el sistema');
+			$this->validation->set_message('chnumero', 'Ya existe una factura con el mismo n&uacute;mero para el mismo mandatario registrada en el sistema');
 			return false;
 		}
 		return true;
 	}
 
 	function _pre_insert($do){
+		$numero  = $this->datasis->fprox_numero('nsfacman');
 		$transac = $this->datasis->fprox_numero('ntransa');
+		$do->set('numero' ,$numero);
 		$do->set('transac',$transac);
 		$con=$this->db->query('SELECT tasa,redutasa,sobretasa FROM civa ORDER BY fecha desc LIMIT 1');
 		$t=$con->row('tasa');$rt=$con->row('redutasa');$st=$con->row('sobretasa');
@@ -531,6 +539,7 @@ class sfacman extends validaciones {
 
 	function _post_insert($do){
 		$numero  =$do->get('numero');
+		$nfiscal =$do->get('nfiscal');
 		$fecha   =$do->get('fecha');
 		$totneto =$do->get('totalg');
 		$impuesto=$do->get('iva');
@@ -543,31 +552,33 @@ class sfacman extends validaciones {
 		$estampa =$do->get('estampa');
 		$error   = 0;
 
-		//Inserta en smov
-		$mnumnc = $this->datasis->fprox_numero('nccli');
-		$data=array();
-		$data['cod_cli']    = $manda;
-		$data['nombre']     = $nombre;
-		$data['tipo_doc']   = 'ND';
-		$data['numero']     = $mnumnc;
-		$data['fecha']      = $estampa;
-		$data['monto']      = $totneto;
-		$data['impuesto']   = $impuesto;
-		$data['abonos']     = 0;
-		$data['vence']      = $fecha;
-		$data['tipo_ref']   = 'FT';
-		$data['num_ref']    = $numero;
-		$data['observa1']   = 'FACTURA POR TERCERO A '.$cod_cli.' FC'.$numero;
-		$data['estampa']    = $estampa;
-		$data['hora']       = $hora;
-		$data['transac']    = $transac;
-		$data['usuario']    = $usuario;
-		$data['codigo']     = 'NOCON';
-		$data['descrip']    = 'NOTA DE CONTABILIDAD';
+		if($totneto>0){
+			//Inserta en smov
+			$mnumnc = $this->datasis->fprox_numero('nccli');
+			$data=array();
+			$data['cod_cli']    = $manda;
+			$data['nombre']     = $nombre;
+			$data['tipo_doc']   = 'ND';
+			$data['numero']     = $mnumnc;
+			$data['fecha']      = $estampa;
+			$data['monto']      = $totneto;
+			$data['impuesto']   = $impuesto;
+			$data['abonos']     = 0;
+			$data['vence']      = $fecha;
+			$data['tipo_ref']   = 'FT';
+			$data['num_ref']    = $nfiscal;
+			$data['observa1']   = 'FACTURA POR TERCERO A '.$cod_cli.' FC'.$nfiscal;
+			$data['estampa']    = $estampa;
+			$data['hora']       = $hora;
+			$data['transac']    = $transac;
+			$data['usuario']    = $usuario;
+			$data['codigo']     = 'NOCON';
+			$data['descrip']    = 'NOTA DE CONTABILIDAD';
 
-		$sql= $this->db->insert_string('smov', $data);
-		$ban=$this->db->simple_query($sql);
-		if($ban==false){ memowrite($sql,'sfacter'); $error++;}
+			$sql= $this->db->insert_string('smov', $data);
+			$ban=$this->db->simple_query($sql);
+			if($ban==false){ memowrite($sql,'sfacman'); $error++;}
+		}
 
 		$primary =implode(',',$do->pk);
 		logusu($do->table,"Creo $this->tits $primary ");
