@@ -307,7 +307,7 @@ function post_precioselec(ind,obj){
 
 function post_modbus_scli(){
 	var tipo  =Number($("#sclitipo").val()); if(tipo>0) tipo=tipo-1;
-	//var cambio=confirm('¿Deseas cambiar los precios por los que tenga asginado el cliente?');
+	//var cambio=confirm('Deseas cambiar los precios por los que tenga asginado el cliente?');
 
 	var arr=$('select[name^="preca_"]');
 	jQuery.each(arr, function() {
