@@ -98,6 +98,8 @@ $(function(){
 		},
 		minLength: 2,
 		select: function( event, ui ) {
+			$('#mandatario').val(ui.item.cod_cli);
+
 			$('#mandanombre').val(ui.item.nombre);
 			$('#mandanombre_val').text(ui.item.nombre);
 
