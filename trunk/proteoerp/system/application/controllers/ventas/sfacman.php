@@ -447,9 +447,22 @@ class sfacman extends validaciones {
 		$this->load->view('view_ventanas', $data);
 	}
 
+	function chnumero($numero){
+		$this->db->where('numero',$numero);
+		$this->db->where('tipo_doc','T');
+		$cana=$this->db->count_all_results();
+		if($cana>0){
+			$this->validation->set_message('chnumero', 'Ya existe una factura con el mismo numero registrada en el sistema');
+			return false;
+		}
+		return true;
+	}
+
 	function _pre_insert($do){
 		$transac = $this->datasis->fprox_numero('ntransa');
 		$do->set('transac',$transac);
+		$con=$this->db->query('SELECT tasa,redutasa,sobretasa FROM civa ORDER BY fecha desc LIMIT 1');
+		$t=$con->row('tasa');$rt=$con->row('redutasa');$st=$con->row('sobretasa');
 
 		$fecha =$do->get('fecha');
 		$vd    =$do->get('vendedor');
