@@ -333,7 +333,7 @@ function autocod(id){
 		minLength: 2,
 		select: function( event, ui ) {
 			//id='0';
-			$('#codigo_'+id).val(ui.item.codigo);
+			$('#codigoa_'+id).val(ui.item.codigo);
 			$('#desca_'+id).val(ui.item.descrip);
 			$('#precio1_'+id).val(ui.item.base1);
 			$('#precio2_'+id).val(ui.item.base2);
