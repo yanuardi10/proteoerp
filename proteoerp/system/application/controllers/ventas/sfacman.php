@@ -328,7 +328,7 @@ class sfacman extends validaciones {
 		$edit->codigoa->size     = 12;
 		$edit->codigoa->db_name  = 'codigoa';
 		$edit->codigoa->rel_id   = 'sitems';
-		$edit->codigoa->rule     = 'required';
+		$edit->codigoa->rule     = 'required|existesinv';
 
 		$edit->desca = new inputField('Descripci&oacute;n <#o#>', 'desca_<#i#>');
 		$edit->desca->size=36;
