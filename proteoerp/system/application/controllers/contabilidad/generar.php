@@ -87,7 +87,7 @@ class Generar extends Metodos {
 		$ban+=$this->validation->chfecha($fechaf);
 		
 		if($ban!=2) {echo 'Error: Fechas erroneas'; return false;}
-		
+		session_write_close();
 		$qfechai=date("Ymd",timestampFromInputDate($fechai, 'd/m/Y'));
 		$qfechaf=date("Ymd",timestampFromInputDate($fechaf, 'd/m/Y'));
 		$generar=$this->input->post('genera');
@@ -99,6 +99,7 @@ class Generar extends Metodos {
 	}
 
 	function procesarshellmes($anio=null,$mes=null,$modulos='APAN,BCAJ,CRUC,GSER,NOMI,OTIN,PRMO,RCAJ,SCST,SFAC,SMOV,SPRM'){
+		session_write_close();
 		if(empty($anio) || empty($mes) || strlen($anio)!=4 || strlen($mes)!=2){
 			echo "USO: php index.php contabilidad generar procesarshellmems anio mes [modulos]\n";
 			echo "  anio YYYY\n";
@@ -115,6 +116,7 @@ class Generar extends Metodos {
 	}
 
 	function procesarshell($qfechai=null,$qfechaf=null,$modulos='APAN,BCAJ,CRUC,GSER,NOMI,OTIN,PRMO,RCAJ,SCST,SFAC,SMOV,SPRM'){
+		session_write_close();
 		if(isset($_SERVER['argv']) && !isset($_SERVER['SERVER_NAME'])){ //asegura que se ejecute desde shell
 			if(empty($qfechai) OR empty($qfechai) OR strlen($qfechai)+strlen($qfechaf)<16){
 				echo "USO: php index.php contabilidad generar procesarshell fecha_inicial fecha_final [modulos]\n";

@@ -79,8 +79,8 @@ class Cierre extends Controller {
 		$mSQL = "INSERT INTO itcasi (fecha,comprob,origen,cuenta,referen,concepto,debe,haber,ccosto,sucursal)
 		    SELECT $mfinal fecha, 
 		    '$comprob' comp, 'MANUAL' origen,
-		    cuenta, 'CIERRE ".substr($mfinal,0,2)."' referen, 
-		    'CIERRE DE CUENTAS DE RESULTADO EJERCICIO ".substr($mfinal,0,2)."' concepto,
+		    cuenta, 'CIERRE ".$anio."' referen, 
+		    'CIERRE DE CUENTAS DE RESULTADO EJERCICIO ".$anio."' concepto,
 		    sum(haber) debe, sum(debe) haber, 0 ccosto, 0 sucu
 		    FROM itcasi WHERE cuenta>='4' AND fecha<=$mfinal AND fecha>=${annio}0101
 		    GROUP BY cuenta ";
