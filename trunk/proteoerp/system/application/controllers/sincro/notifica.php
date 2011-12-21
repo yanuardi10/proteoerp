@@ -4,12 +4,12 @@
 // pear install Net_SMTP
 // pear install Mail_mime
 
+date_default_timezone_set('America/Caracas');
 class notifica extends controller {
 
 	function notifica(){
 		parent::Controller();
 		$this->config->load('notifica');
-		$this->load->library('rapyd');
 		$this->error='';
 		$this->adjuntos=null;
 		$this->msj='';
@@ -31,6 +31,7 @@ class notifica extends controller {
 	}
 
 	function sms(){
+		$this->load->library('rapyd');
 		$this->datasis->modulo_id('923',1);
 		$this->rapyd->load('dataform');
 
@@ -82,6 +83,7 @@ class notifica extends controller {
 	}
 
 	function email(){
+		$this->load->library('rapyd');
 		$this->datasis->modulo_id('923',1);
 		$this->rapyd->load('dataform');
 
@@ -141,6 +143,7 @@ class notifica extends controller {
 	}
 
 	function eventos(){
+		$this->load->library('rapyd');
 		$this->datasis->modulo_id('923',1);
 
 		$this->rapyd->load('datafilter','datagrid');
@@ -179,6 +182,7 @@ class notifica extends controller {
 	}
 
 	function ejecutor(){
+		session_write_close();
 		if($this->secu->es_shell()){
 			$mSQL='SELECT *,UNIX_TIMESTAMP(`disparo`) AS utime FROM eventos WHERE activo="S"';
 			$query = $this->db->query($mSQL);
@@ -266,6 +270,7 @@ class notifica extends controller {
 	}
 
 	function dataediteventos(){
+		$this->load->library('rapyd');
 		$this->datasis->modulo_id('923',1);
 		$this->rapyd->load('dataedit');
 
