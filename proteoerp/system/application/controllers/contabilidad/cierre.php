@@ -65,8 +65,9 @@ class Cierre extends Controller {
 		if($mfinal==FALSE) redirect('contabilidad/cierre');
 
 		$mfinal  = date('Ymd',timestampFromInputDate($mfinal));
-		$ano     = substr($mfinal,2,2);
-		$comprob = "ZIERRE$ano";
+		$anio    = substr($mfinal,2,2);
+		$annio   = substr($mfinal,0,4);
+		$comprob = "ZIERRE$anio";
 
 		$this->db->simple_query("DELETE FROM itcasi WHERE comprob='$comprob'");
 		$this->db->simple_query("DELETE FROM casi   WHERE comprob='$comprob'");
@@ -81,7 +82,7 @@ class Cierre extends Controller {
 		    cuenta, 'CIERRE ".substr($mfinal,0,2)."' referen, 
 		    'CIERRE DE CUENTAS DE RESULTADO EJERCICIO ".substr($mfinal,0,2)."' concepto,
 		    sum(haber) debe, sum(debe) haber, 0 ccosto, 0 sucu
-		    FROM itcasi WHERE cuenta>='4' AND fecha<=$mfinal 
+		    FROM itcasi WHERE cuenta>='4' AND fecha<=$mfinal AND fecha>=${annio}0101
 		    GROUP BY cuenta ";
 		$centinela=$this->db->simple_query($mSQL);
 		if($centinela==FALSE){ memowrite($mSQL,'itcasi'); $error=TRUE; }
