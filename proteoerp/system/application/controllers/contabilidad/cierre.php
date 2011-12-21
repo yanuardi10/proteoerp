@@ -97,7 +97,13 @@ class Cierre extends Controller {
 		    FROM itcasi WHERE comprob='$comprob' group by comprob ";
 		$centinela=$this->db->simple_query($mSQL);
 		if($centinela==FALSE){ memowrite($mSQL,'itcasi'); $error=TRUE; }
-		$this->db->simple_query("DELETE FROM itcasi WHERE debe=haber AND comprob='$comprob'");
+		$centinela=$this->db->simple_query("DELETE FROM itcasi WHERE debe=haber AND comprob='$comprob'");
+		if($centinela==FALSE){ memowrite($mSQL,'itcasi'); $error=TRUE; }
+		$centinela=$this->db->simple_query("UPDATE casi SET 
+		    debe=(SELECT SUM(debe) FROM itcasi WHERE comprob='$comprob'),
+		    haber=(SELECT SUM(haber) FROM itcasi WHERE comprob='$comprob')
+		    WHERE comprob='$comprob'");
+		if($centinela==FALSE){ memowrite($mSQL,'itcasi'); $error=TRUE; }
 
 		if($error)
 			echo "Hubo algunos errores, se generaron centinelas, favor comunicarse con servicio tecnico";
