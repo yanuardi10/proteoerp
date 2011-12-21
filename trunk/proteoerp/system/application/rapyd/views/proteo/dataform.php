@@ -5,7 +5,10 @@
 <?php if($title!=""):?>
 			<table style="margin:0;width:100%;border-collapse:collapse;padding:0;">
 				<tr>
-					<td class="mainheader"><?php echo $title?></td>
+					<td class="mainheader" colspan="2"><?php echo $title?></td>
+				</tr>
+				<tr>
+					<td class="mainheader" align="left"><?php echo $container_tl ?></td>
 					<td class="mainheader" align="right"><?php echo $container_tr?></td>
 				</tr>
 			</table>
