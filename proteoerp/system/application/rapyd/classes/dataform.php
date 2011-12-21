@@ -38,7 +38,7 @@ class DataForm{
 	var $_on_error = false;
 	var $_on_success = false;
 	var $_built = false;
-	var $_button_container = array( "TR"=>array(), "BL"=>array(), "BR"=>array() );
+	var $_button_container = array( "TR"=>array(),"TL"=>array(), "BL"=>array(), "BR"=>array() );
 	var $_button_status = array();
 	var $_script = array( "show"=>"", "create"=>"", "modify"=>"", "idle"=>"", "reset"=>"");
   
@@ -273,6 +273,7 @@ class DataForm{
 		$data["error_string"] = "";
 		$data["form_scripts"] = "";
 		$data["container_tr"] = "";
+		$data["container_tl"] = "";
 		$data["container_bl"] = "";
 		$data["container_br"] = "";
 
@@ -288,6 +289,16 @@ class DataForm{
 			}
 			$data["container_tr"] = join("&nbsp;", $this->_button_container["TR"]);
 		}
+		
+		if ( (count($this->_button_container["TL"])>0) || (isset($this->_button_status[$this->_status]["TL"])) ){
+			if (isset($this->_button_status[$this->_status]["TL"])){
+				foreach ($this->_button_status[$this->_status]["TL"] as $state_buttons){
+					$this->_button_container["TL"][] = $state_buttons;
+				}
+			}
+			$data["container_tl"] = join("&nbsp;", $this->_button_container["TL"]);
+		}
+		
 		if ( (count($this->_button_container["BL"])>0) || (isset($this->_button_status[$this->_status]["BL"])) ){
 			if (isset($this->_button_status[$this->_status]["BL"])){
 				foreach ($this->_button_status[$this->_status]["BL"] as $state_buttons){
@@ -397,6 +408,7 @@ class DataForm{
 		$data["error_string"] = "";
 		$data["form_scripts"] = "";
 		$data["container_tr"] = "";
+		$data["container_tl"] = "";
 		$data["container_bl"] = "";
 		$data["container_br"] = "";
 		
@@ -408,6 +420,9 @@ class DataForm{
 		//buttons
 		if (count($this->_button_container["TR"])>0){
 			$data["container_tr"] = join("&nbsp;", $this->_button_container["TR"]);
+		}
+		if (count($this->_button_container["TL"])>0){
+			$data["container_tl"] = join("&nbsp;", $this->_button_container["TL"]);
 		}
 		if (count($this->_button_container["BL"])>0){
 			$data["container_bl"] = join("&nbsp;", $this->_button_container["BL"]);
@@ -620,6 +635,14 @@ class DataForm{
 	function on_success(){
 		return $this->_on_success;
 	}
-  
+	
+	function _build_add_button($caption=RAPYD_BUTTON_ADD){ 
+		$this->ci->load->library('datasis');
+		$uri = $this->ci->datasis->get_uri();
+		if(($this->_status == "show") || ($this->_status == "modify") || ($this->_status == "create") || ($this->_status == "unknow_record") || ($this->_action == "delete")){
+			$action = "javascript:window.location='".site_url($uri."/create")."'";
+			$this->button("btn_add", $caption, $action, "TL");//ANTES BL
+		}
+	}
 }
 ?>

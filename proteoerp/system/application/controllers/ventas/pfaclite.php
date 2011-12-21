@@ -83,18 +83,12 @@ class pfaclite extends validaciones{
 
 		//$grid->column('Vista'    , $uri2, "align='center'");
 		$grid->column_orderby('N&uacute;mero', $uri ,'numero');
-		$grid->column_orderby('Facturar'     , $uri3,'numero');
 		$grid->column_orderby("Fecha"        , '<dbdate_to_human><#fecha#></dbdate_to_human>','fecha', "align='center'");
 		$grid->column_orderby("Cliente"      , 'cod_cli','cod_cli');
 		$grid->column_orderby("Nombre"       , 'nombre','nombre');
-		$grid->column_orderby('Sub.Total'    , '<nformat><#totals#></nformat>', "totals", "align=right");
-		$grid->column_orderby('IVA'          , '<nformat><#iva#></nformat>'   , "iva",    "align=right");
 		$grid->column_orderby('Total'        , '<nformat><#totalg#></nformat>', "totalg", "align=right");
-		$grid->column_orderby("Referencia"   , 'referen','referen');
-		$grid->column_orderby("Factura"      , 'factura','factura');
-		$grid->column_orderby("Status"       , 'status', 'status');
 
-		$grid->add('ventas/pfaclite/crea');
+		$grid->add('ventas/pfaclite/dataedit/create');
 		$grid->build();
 
 		$data['content'] = $filter->output.$grid->output;
@@ -137,7 +131,7 @@ class pfaclite extends validaciones{
 		$edit->set_rel_title('itpfac', 'Producto <#o#>');
 
 		$edit->pre_process('insert' , '_pre_insert');
-		$edit->pre_process('update' , '_pre_update');
+		$edit->pre_process('update' , '_pre_insert');
 		$edit->pre_process('delete' , '_pre_delete');
 		$edit->post_process('insert', '_post_insert');
 		$edit->post_process('update', '_post_update');
@@ -153,11 +147,6 @@ class pfaclite extends validaciones{
 		$edit->fecha->mode = 'autohide';
 		$edit->fecha->size = 10;
 
-		$usr=$this->session->userdata('usuario');
-		$vd=$this->datasis->dameval("SELECT vendedor FROM usuario WHERE us_codigo='$usr'");
-		$edit->vd = new hiddenField ('Vendedor', 'vd');
-		$edit->vd->value = $vd;
-
 		$edit->mmargen = new inputField('mmargen', 'mmargen');
 
 		$edit->numero = new inputField('N&uacute;mero', 'numero');
@@ -168,28 +157,10 @@ class pfaclite extends validaciones{
 		$edit->numero->when = array('show', 'modify');
 
 		$edit->cliente = new dropdownField('CLIENTE', 'cod_cli');
-		$edit->cliente->options("SELECT cliente, nombre FROM scli WHERE vendedor='$vd'");
+		$edit->cliente->options("SELECT cliente, nombre FROM scli  ORDER  BY nombre");//WHERE vendedor='$vd'
 		
-		$edit->rifci = new inputField('RIF/CI', 'rifci');
-		$edit->rifci->autocomplete = false;
-		$edit->rifci->size = 15;
-		$edit->rifci->type ='inputhidden';
-
-		$edit->direc = new inputField('Direcci&oacute;n', 'direc');
-		$edit->direc->size = 40;
-		$edit->direc->type ='inputhidden';
-
 		$edit->observa = new inputField('Observaciones', 'observa');
 		$edit->observa->size = 25;
-
-		$edit->observ1 = new inputField('Observaciones', 'observ1');
-		$edit->observ1->size = 25;
-
-		// Para saber que precio se le va a dar al cliente
-		$edit->sclitipo = new hiddenField('', 'sclitipo');
-		$edit->sclitipo->db_name = 'sclitipo';
-		$edit->sclitipo->pointer = true;
-		$edit->sclitipo->insertValue = 1;
 
 		// Campos para el detalle
 		$edit->codigoa = new inputField('C&oacute;digo <#o#>', 'codigoa_<#i#>');
@@ -208,8 +179,7 @@ class pfaclite extends validaciones{
 		$edit->pdesca->rel_id = 'itpfac';
 		$edit->pdesca->type='inputhidden';
 		$edit->pdesca->pointer=true;
-		
-		
+				
 		$edit->pexisten = new inputField('Existencia <#o#>', 'pexisten_<#i#>');
 		$edit->pexisten->size    = 10;
 		$edit->pexisten->db_name = 'pexisten';
@@ -225,7 +195,7 @@ class pfaclite extends validaciones{
 		$edit->cana->size = 2;
 		//$edit->cana->rule = 'required|positive';
 		$edit->cana->autocomplete = false;
-		//$edit->cana->onkeyup = 'importe(<#i#>)';
+		$edit->cana->onkeyup = 'total(<#i#>)';
 		//$edit->cana->insertValue=1;
 		$edit->cana->style ="height:25px;font-size:14";
 
@@ -235,75 +205,6 @@ class pfaclite extends validaciones{
 		$edit->preca->rel_id    = 'itpfac';
 		$edit->preca->rule      = 'positive|callback_chpreca[<#i#>]';
 //		$edit->preca->readonly = true;
-		
-		for($i = 1;$i <= 4;$i++){
-			$obj = 'precio' . $i;
-			$edit->$obj = new hiddenField('Precio <#o#>', $obj . '_<#i#>');
-			$edit->$obj->db_name = 'sinv' . $obj;
-			$edit->$obj->rel_id = 'itpfac';
-			$edit->$obj->pointer = true;
-		}
-		
-		$edit->dxapli = new inputField('Precio <#o#>', 'dxapli_<#i#>');
-		$edit->dxapli->db_name = 'dxapli';
-		$edit->dxapli->rel_id = 'itpfac';
-		$edit->dxapli->size = 1;
-		$edit->dxapli->rule = 'trim';
-		$edit->dxapli->onchange="cal_dxapli(<#i#>)";
-
-		$edit->tota = new inputField('importe <#o#>', 'tota_<#i#>');
-		$edit->tota->db_name = 'tota';
-		$edit->tota->size = 8;
-		$edit->tota->css_class = 'inputnum';
-		$edit->tota->rel_id = 'itpfac';
-		$edit->tota->type='inputhidden';
-
-		$edit->itiva = new hiddenField('', 'itiva_<#i#>');
-		$edit->itiva->db_name = 'iva';
-		$edit->itiva->rel_id = 'itpfac';
-
-		$edit->itpvp = new hiddenField('', 'itpvp_<#i#>');
-		$edit->itpvp->db_name = 'pvp';
-		$edit->itpvp->rel_id = 'itpfac';
-
-		$edit->itcosto = new hiddenField('', 'itcosto_<#i#>');
-		$edit->itcosto->db_name = 'costo';
-		$edit->itcosto->rel_id = 'itpfac';
-
-		$edit->sinvpeso = new hiddenField('', 'sinvpeso_<#i#>');
-		$edit->sinvpeso->db_name = 'sinvpeso';
-		$edit->sinvpeso->rel_id = 'itpfac';
-		$edit->sinvpeso->pointer = true;
-
-		$edit->sinvtipo = new hiddenField('', 'sinvtipo_<#i#>');
-		$edit->sinvtipo->db_name = 'sinvtipo';
-		$edit->sinvtipo->rel_id = 'itpfac';
-		$edit->sinvtipo->pointer = true;
-
-		$edit->itmmargen = new hiddenField('', 'mmargen_<#i#>');
-		$edit->itmmargen->db_name = 'sinvmmargen';
-		$edit->itmmargen->rel_id = 'itpfac';
-		$edit->itmmargen->pointer = true;
-
-		$edit->itpond = new hiddenField('', 'pond_<#i#>');
-		$edit->itpond->db_name = 'sinvpond';
-		$edit->itpond->rel_id  = 'itpfac';
-		$edit->itpond->pointer = true;
-
-		$edit->itultimo = new hiddenField('', 'ultimo_<#i#>');
-		$edit->itultimo->db_name = 'sinvultimo';
-		$edit->itultimo->rel_id  = 'itpfac';
-		$edit->itultimo->pointer = true;
-
-		$edit->itformcal = new hiddenField('', 'formcal_<#i#>');
-		$edit->itformcal->db_name = 'sinvformcal';
-		$edit->itformcal->rel_id  = 'itpfac';
-		$edit->itformcal->pointer = true;
-
-		$edit->itpm = new hiddenField('', 'pm_<#i#>');
-		$edit->itpm->db_name = 'sinvpm';
-		$edit->itpm->rel_id  = 'itpfac';
-		$edit->itpm->pointer = true;
 
 		$edit->precat = new hiddenField('', 'precat_<#i#>');
 		$edit->precat->db_name = 'precat';
@@ -316,43 +217,31 @@ class pfaclite extends validaciones{
 		$edit->pmarca->pointer = true;
 		// fin de campos para detalle
 
-		$edit->ivat = new hiddenField('Impuesto', 'iva');
-		$edit->ivat->css_class = 'inputnum';
-		$edit->ivat->readonly = true;
-		$edit->ivat->size = 10;
-
-		$edit->totals = new hiddenField('Sub-Total', 'totals');
-		$edit->totals->css_class = 'inputnum';
-		$edit->totals->readonly = true;
-		$edit->totals->size = 10;
-
 		$edit->totalg = new hiddenField('Monto Total', 'totalg');
 		$edit->totalg->css_class = 'inputnum';
 		$edit->totalg->readonly = true;
 		$edit->totalg->size = 10;
 
 		$edit->usuario = new autoUpdateField('usuario', $this->session->userdata('usuario'), $this->session->userdata('usuario'));
-
+		
 		$control=$this->rapyd->uri->get_edited_id();
 
+		$edit->buttons('add');
 		if($fenvia < $hoy){
 			$edit->buttons('modify', 'save', 'undo', 'delete', 'back','add_rel');
-
-			$accion="javascript:window.location='".site_url('ventas/pfaclite/enviar/'.$control)."'";
+			$accion="javascript:window.location='".site_url('ventas/pfac/enviar/'.$control)."/pfaclite'";
 			$edit->button_status('btn_envia'  ,'Enviar Pedido'         ,$accion,'TR','show');
-		}elseif($faplica < $fenvia){
-			$hide=array('vd','peso','cliente','nombre','rifci','direc','observa','observ1','codigoa','desca','cana');
-			foreach($hide as $value)
-			$edit->$value->type="inputhidden";
-
-			$accion="javascript:window.location='".site_url('ventas/pfaclite/dataedit/modify/'.$control)."'";
-			$edit->button_status('btn_envia'  ,'Aplicar Descuentos'         ,$accion,'TR','show');
-
-			$edit->buttons( 'save', 'undo', 'delete', 'back');
 		}else{
 			$edit->buttons('save', 'undo', 'delete', 'back', 'add_rel');
-		}
+		}		
 
+		$sinv=$this->db->query("SELECT codigo,descrip,precio1,precio2,precio3,precio4,marca,existen FROM sinv ORDER BY marca");
+		$sinv=$sinv->result_array();
+		$sinv2=array();
+		foreach($sinv as $k=>$v){
+			$sinv2[$v['codigo']]=$v;
+		}
+		
 		if($this->genesal){
 			$edit->build();
 
@@ -361,18 +250,10 @@ class pfaclite extends validaciones{
 			$conten['hoy']     = $hoy;
 			$conten['fenvia']  = $fenvia;
 			$conten['faplica'] = $faplica;
-			$conten['title']   = heading('Pedidos No. '.$edit->numero->value);
-			$this->load->view('view_pfaclite', $conten);
-			
-
-			//$data['head']   = script('jquery.js');
-			//$data['head']  .= script('jquery-ui.js');
-			//$data['head']  .= script('plugins/jquery.numeric.pack.js');
-			//$data['head']  .= script('plugins/jquery.floatnumber.js');
-			//$data['head']  .= phpscript('nformat.js');
-			//$data['head']   = $this->rapyd->get_head();
-
-			//$this->load->view('view_ventanas_sola', $data);
+			$conten['sinv']    = $sinv2;
+			$data['content']   =$this->load->view('view_pfaclite', $conten,true);
+			$data['title']     = heading('Pedidos No. '.$edit->numero->value);
+			$this->load->view('view_ventanas_lite', $data);
 		}else{
 			$edit->on_save_redirect=false;
 			$edit->build();
@@ -384,214 +265,29 @@ class pfaclite extends validaciones{
 			}
 		}
 	}
-	
-	function crea(){
-		$npfactemp=$this->datasis->fprox_numero('npfactemp');
-		$npfactemp=substr($npfactemp,1);
-		$query="INSERT INTO itpfac(`numa`,`codigoa`,`desca`,`cana`,`preca`,`tota`,`iva`)
-		SELECT '_".$npfactemp."',codigo,descrip            ,0     ,precio1,0     ,iva FROM sinv WHERE activo='S'";
-		$this->db->query($query);
-		$query="INSERT INTO pfac(`numero`,`fecha`) VALUES('_".$npfactemp."',CURDATE())";
-		$this->db->query($query);
-		$id=$this->db->insert_id();
-		redirect('ventas/pfaclite/dataedit/modify/'.$id);
-	}
-
-	function pos(){
-		$this->rapyd->load('dataobject','datadetails');
-
-		$mSCLId=array(
-		'tabla'   =>'scli',
-		'columnas'=>array(
-			'cliente' =>'C&oacute;digo Cliente',
-			'nombre'=>'Nombre',
-			'cirepre'=>'Rif/Cedula',
-			'dire11'=>'Direcci&oacute;n',
-			'tipo'=>'Tipo'),
-		'filtro'  =>array('cliente'=>'C&oacute;digo Cliente','nombre'=>'Nombre'),
-		'retornar'=>array('cliente'=>'cod_cli','nombre'=>'nombre','rifci'=>'rifci',
-					'dire11'=>'direc'),
-		'titulo'  =>'Buscar Cliente',
-		'script'  => array('post_modbus_scli()'));
-		$boton =$this->datasis->modbus($mSCLId);
-
-		$query = $this->db->query("SELECT tipo,nombre FROM tarjeta ORDER BY tipo");
-		foreach ($query->result() as $row){
-			$sfpa[$row->tipo]=$row->nombre;
-		}
-
-		$tban['']='Banco';
-		$query = $this->db->query("SELECT cod_banc,nomb_banc FROM tban WHERE cod_banc<>'CAJ' ORDER BY nomb_banc");
-		foreach ($query->result() as $row){
-			$tban[$row->cod_banc]=$row->nomb_banc;
-		}
-
-		$conten=array();
-		$conten['sfpa']  = $sfpa;
-		$conten['tban']  = $tban;
-		$data['content'] = $this->load->view('view_pos_pfac', $conten,true);
-		$data['title']   = '';
-		$data['head']    = style('redmond/jquery-ui-1.8.1.custom.css');
-		$data['head']   .= style('ui.jqgrid.css');
-		$data['head']   .= style('ui.multiselect.css');
-		$data['head']   .= script('jquery.js');
-		$data['head']   .= script('interface.js');
-		$data['head']   .= script('jquery-ui.js');
-		$data['head']   .= script('plugins/jquery.ui.autocomplete.autoSelectOne.js');
-		$data['head']   .= script('jquery.layout.js');
-		$data['head']   .= script('i18n/grid.locale-sp.js');
-		$data['head']   .= script('ui.multiselect.js');
-		$data['head']   .= script('jquery.jqGrid.min.js');
-		$data['head']   .= script('jquery.tablednd.js');
-		$data['head']   .= script('jquery.contextmenu.js');
-		$data['head']   .= script('plugins/jquery.numeric.pack.js');
-		$data['head']   .= script('plugins/jquery.floatnumber.js');
-		$data['head']   .= phpscript('nformat.js');
-
-		$this->load->view('view_ventanas_sola', $data);
-	}
-
-	function posmayor(){
-		$this->rapyd->load('dataobject','datadetails');
-
-		$mSCLId=array(
-		'tabla'   =>'scli',
-		'columnas'=>array(
-			'cliente' =>'C&oacute;digo Cliente',
-			'nombre'=>'Nombre',
-			'cirepre'=>'Rif/Cedula',
-			'dire11'=>'Direcci&oacute;n',
-			'tipo'=>'Tipo'),
-		'filtro'  =>array('cliente'=>'C&oacute;digo Cliente','nombre'=>'Nombre'),
-		'retornar'=>array('cliente'=>'cod_cli','nombre'=>'nombre','rifci'=>'rifci',
-					'dire11'=>'direc'),
-		'titulo'  =>'Buscar Cliente',
-		'script'  => array('post_modbus_scli()'));
-		$boton =$this->datasis->modbus($mSCLId);
-
-		$query = $this->db->query("SELECT tipo,nombre FROM tarjeta ORDER BY tipo");
-		foreach ($query->result() as $row){
-			$sfpa[$row->tipo]=$row->nombre;
-		}
-
-		$tban['']='Banco';
-		$query = $this->db->query("SELECT cod_banc,nomb_banc FROM tban WHERE cod_banc<>'CAJ' ORDER BY nomb_banc");
-		foreach ($query->result() as $row){
-			$tban[$row->cod_banc]=$row->nomb_banc;
-		}
-
-		$conten=array();
-		$conten['sfpa']  = $sfpa;
-		$conten['tban']  = $tban;
-		$data['content'] = $this->load->view('view_pos_pfac_mayor', $conten,true);
-		$data['title']   = '';
-		$data['head']    = style('redmond/jquery-ui-1.8.1.custom.css');
-		$data['head']   .= style('ui.jqgrid.css');
-		$data['head']   .= style('ui.multiselect.css');
-		$data['head']   .= script('jquery.js');
-		$data['head']   .= script('interface.js');
-		$data['head']   .= script('jquery-ui.js');
-		$data['head']   .= script('plugins/jquery.ui.autocomplete.autoSelectOne.js');
-		$data['head']   .= script('jquery.layout.js');
-		$data['head']   .= script('i18n/grid.locale-sp.js');
-		$data['head']   .= script('ui.multiselect.js');
-		$data['head']   .= script('jquery.jqGrid.min.js');
-		$data['head']   .= script('jquery.tablednd.js');
-		$data['head']   .= script('jquery.contextmenu.js');
-		$data['head']   .= script('plugins/jquery.numeric.pack.js');
-		$data['head']   .= script('plugins/jquery.floatnumber.js');
-		$data['head']   .= phpscript('nformat.js');
-
-		$this->load->view('view_ventanas_sola', $data);
-	}
-
 	// Busca Productos para autocomplete
-	function buscasinv(){
-		$data = '{[ ]}';
-		$mid  = $this->input->post('q');
-		$cod  = $this->input->post('codigo');
-		$scli = $this->input->post('cod_cli');
-		if(strlen($scli)==0){ echo $data; return; }
-
-		$sql='SELECT mmargen FROM scli WHERE cliente='.$this->db->escape($scli);
-		$scli_margen=$this->datasis->dameval($sql);
-		$scli_margen=$scli_margen/100;
-
-		$qdb  = $this->db->escape('%'.$mid.'%');
-		$qba  = $this->db->escape($mid);
-		$coddb= $this->db->escape($cod);
-
-		$pp='precio1*(1-(mmargen/100))*(1-'.$scli_margen.')';
-
-		if($mid !== false){
-			$retArray = $retorno = array();
-
-			if(preg_match('/\+(?P<cana>\d+)/', $mid, $matches)>0 && $cod!==false){
-				$mSQL="SELECT TRIM(a.descrip) AS descrip, TRIM(a.codigo) AS codigo, a.$pp AS precio, a.iva,a.existen
-				FROM sinv AS  a
-				WHERE a.codigo=$coddb LIMIT 1";
-				$cana=$matches['cana'];
-			}else{
-				$mSQL="SELECT DISTINCT TRIM(a.descrip) AS descrip, TRIM(a.codigo) AS codigo, a.$pp AS precio, a.iva,a.existen
-				FROM sinv AS a
-				LEFT JOIN barraspos AS b ON a.codigo=b.codigo
-				WHERE (a.codigo LIKE $qdb OR a.descrip LIKE  $qdb OR a.barras LIKE $qdb OR b.suplemen=$qba) AND a.activo='S'
-				ORDER BY a.descrip LIMIT 10";
-				$cana=1;
-			}
-
-			$query = $this->db->query($mSQL);
-			if ($query->num_rows() > 0){
-				foreach( $query->result_array() as  $row ) {
-					$retArray['label']   = '('.$row['codigo'].') '.$row['descrip'].' '.$row['precio'].' Bs. - '.$row['existen'];
-					$retArray['codigo']  = $row['codigo'];
-					$retArray['cana']    = $cana;
-					$retArray['precio']  = round($row['precio'],2);
-					$retArray['descrip'] = $row['descrip'];
-					//$retArray['descrip'] = wordwrap($row['descrip'], 25, '<br />');
-					$retArray['iva']     = $row['iva'];
-					array_push($retorno, $retArray);
-				}
-				$data = json_encode($retorno);
-	        }
-		}
-		echo $data;
-	}
-
-	function creapfac(){
-		foreach($_POST as $ind=>$val){
-			$matches=array();
-			$_POST['fecha']=date('d/m/Y');
-
-			if(preg_match('/codigoa_(?P<id>\d+)/', $ind, $matches) > 0){
-				$id     = $matches['id'];
-				$precio = $_POST['precio_'.$id];
-				$iva    = $_POST['itiva_'.$id];
-				$_POST['preca_'.$id] = round($precio*100/(100+$iva),2);
-			}
-		}
-		//print_r($_POST);
-		$this->genesal=false;
-		$rt=$this->dataedit();
-		echo $rt;
-	}
-
-
-
+	
 	function _pre_insert($do){
 		$numero = $this->datasis->fprox_numero('npfac');
 		$do->set('numero', $numero);
-		//$transac = $this->datasis->fprox_numero('ntransa');
-		//$do->set('transac', $transac);
-		$fecha = $do->get('fecha');
-		$vd = $do->get('vd');
+		$fecha = date('%Y%m%d');
+		
+		$usr=$this->session->userdata('usuario');
+		$vd=$this->datasis->dameval("SELECT vendedor FROM usuario WHERE us_codigo='$usr'");
+		$do->set('vd',$vd);
+		$sinv=$this->db->query("SELECT codigo,iva FROM sinv ORDER BY marca");
+		$sinv=$sinv->result_array();
+		$sinv2=array();
+		foreach($sinv as $k=>$v){
+			$sinv2[$v['codigo']]=$v;
+		}
 
 		$iva = $totals = 0;
 		$cana = $do->count_rel('itpfac');
 		for($i = 0;$i < $cana;$i++){
 			$itcana  = $do->get_rel('itpfac', 'cana', $i);
 			$itpreca = $do->get_rel('itpfac', 'preca', $i);
-			$itiva   = $do->get_rel('itpfac', 'iva', $i);
+			$itiva   = $sinv2[$do->get_rel('itpfac', 'codigoa', $i)]['iva'];
 			$ittota  = $itpreca * $itcana;
 			$do->set_rel('itpfac', 'tota' , $ittota, $i);
 			$do->set_rel('itpfac', 'fecha' , $fecha , $i);
@@ -609,102 +305,6 @@ class pfaclite extends validaciones{
 		return true;
 	}
 
-	function _pre_update($do){
-		$error='';
-		$codigo = $do->get('numero');
-		$fecha  = $do->get('fecha');
-		$vd     = $do->get('vd');
-		$fenvia = $do->get('fenvia');
-		$faplica= $do->get('faplica');
-
-		$iva = $totals = 0;
-		$cana = $do->count_rel('itpfac');
-		for($i = 0;$i < $cana;$i++){
-			$codigoa = $do->get_rel('itpfac', 'codigoa', $i);
-			$itcana  = $do->get_rel('itpfac', 'cana'   , $i);
-			$itpreca = $do->get_rel('itpfac', 'preca'  , $i);
-			$itiva   = $do->get_rel('itpfac', 'iva'    , $i);
-
-			if(($faplica < $fenvia)){
-				$itdxapli = $do->get_rel('itpfac', 'dxapli', $i);
-				$itprecat = $this->input->post("precat_$i");
-				if(!$itdxapli)
-				$itdxapli=' ';
-
-				$itpreca  = $this->cal_dxapli($itprecat,$itdxapli);
-				if(1*$itpreca>0){
-					$do->set_rel('itpfac', 'preca'  , $itpreca, $i);
-					$do->set('faplica',date('Y-m-d'));
-				}else{
-					$error.="Error. El descuento por aplicar es incorrecto para el codigo $codigoa</br>";
-				}
-			}
-
-			$ittota  = $itpreca * $itcana;
-			$do->set_rel('itpfac', 'tota'    , $ittota, $i);
-			$do->set_rel('itpfac', 'fecha'   , $fecha , $i);
-			$do->set_rel('itpfac', 'vendedor', $vd    , $i);
-
-			$iva    += $ittota*$itiva/100;
-			$totals += $ittota;
-			$do->set_rel('itpfac', 'mostrado', $iva + $ittota, $i);
-		}
-		$totalg = $totals + $iva;
-
-		$do->set('totals' , round($totals , 2));
-		$do->set('totalg' , round($totalg , 2));
-		$do->set('iva'    , round($iva    , 2));
-
-		$mSQL='UPDATE sinv JOIN itpfac ON sinv.codigo=itpfac.codigoa SET sinv.exdes=sinv.exdes-itpfac.cana WHERE itpfac.numa='.$this->db->escape($codigo);
-		$ban=$this->db->simple_query($mSQL);
-		if($ban==false){ memowrite($mSQL,'pfac'); }
-
-		if(!empty($error)){
-			$do->error_message_ar['pre_ins']=$error;
-			$do->error_message_ar['pre_upd']=$error;
-			return false;
-		}
-		return true;
-	}
-
-	// Busca Clientes para autocomplete
-	function buscascli(){
-		$mid  = $this->input->post('q');
-		$qdb  = $this->db->escape('%'.$mid.'%');
-
-		$data = '{[ ]}';
-		if($mid !== false){
-			$retArray = $retorno = array();
-			$mSQL="SELECT TRIM(nombre) AS nombre, TRIM(rifci) AS rifci, cliente, tipo
-				FROM scli WHERE cliente LIKE ${qdb} OR rifci LIKE ${qdb}
-				ORDER BY rifci LIMIT 10";
-
-			$query = $this->db->query($mSQL);
-			if ($query->num_rows() > 0){
-				foreach( $query->result_array() as  $row ) {
-					$retArray['value']   = $row['rifci'];
-					$retArray['label']   = '('.$row['rifci'].') '.$row['nombre'];
-					$retArray['nombre']  = $row['nombre'];
-					$retArray['cod_cli'] = $row['cliente'];
-					$retArray['tipo']    = $row['tipo'];
-					array_push($retorno, $retArray);
-				}
-				$data = json_encode($retorno);
-			}
-		}
-		echo $data;
-		return true;
-	}
-
-	function chcodigoa($codigo){
-		$cana=$this->datasis->dameval('SELECT COUNT(*) FROM sinv WHERE activo=\'S\' AND codigo='.$this->db->escape($codigo));
-		if(empty($cana) || $cana==0){
-			$this->validation->set_message('chcodigoa', 'El campo %s contiene un codigo no v&aacute;lido o inactivo');
-			return false;
-		}
-		return true;
-	}
-
 	function _post_insert($do){
 		$cana = $do->count_rel('itpfac');
 		for($i = 0;$i < $cana;$i++){
@@ -719,13 +319,6 @@ class pfaclite extends validaciones{
 		$codigo = $do->get('numero');
 		logusu('pfac', "Pedido $codigo CREADO");
 	}
-
-	function enviar($id){
-		$ide=$this->db->escape($id);
-		$this->db->query("UPDATE pfac SET fenvia=CURDATE() WHERE id=$ide");
-		redirect("ventas/pfaclite/dataedit/show/$id");
-	}
-
 
 	function _post_update($do){
 		$cana = $do->count_rel('itpfac');

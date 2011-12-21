@@ -23,8 +23,6 @@ class pfac extends validaciones{
 			$this->db->simple_query('ALTER TABLE pfac ADD UNIQUE INDEX numero (numero)');
 		}
 		$this->pfacextjs();
-
-
 	}
 
 	function filteredgrid(){
@@ -843,10 +841,10 @@ class pfac extends validaciones{
 	}
 
 
-	function enviar($id){
+	function enviar($id,$dir='pfac'){
 		$ide=$this->db->escape($id);
 		$this->db->query("UPDATE pfac SET fenvia=CURDATE() WHERE id=$ide");
-		redirect("ventas/pfac/dataedit/show/$id");
+		redirect("ventas/$dir/dataedit/show/$id");
 	}
 
 	function aplicar($numero){
