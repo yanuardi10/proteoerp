@@ -26,7 +26,7 @@ class notifica extends controller {
 
 		$data['content'] = $out;
 		$data['title']   = '<h1>Env&iacute;os de mensajes</h1>';
-		$data['head']    = $this->rapyd->get_head();
+		$data['head']    = '';
 		$this->load->view('view_ventanas', $data);
 	}
 
