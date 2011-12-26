@@ -198,7 +198,7 @@ class Ordi extends Controller {
 		$edit->nomage->size     =40;
 
 		$arr=array(
-			'montofob' =>'Total factura extrangera $',
+			'montofob' =>'Total factura extranjera $',
 			//'aranceles'=>'Suma del Impuesto Arancelario '.$monedalocal,
 			);
 
