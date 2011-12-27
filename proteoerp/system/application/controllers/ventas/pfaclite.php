@@ -6,6 +6,7 @@ class pfaclite extends validaciones{
 		parent :: Controller();
 		$this->load->library('rapyd');
 		//$this->datasis->modulo_id(120,1);
+		
 	}
 
 	function index(){
@@ -108,16 +109,6 @@ class pfaclite extends validaciones{
 		$this->rapyd->load('dataobject', 'datadetails');
 		$this->load->helper('form');
 
-		$inven=array();
-		$query=$this->db->query('SELECT TRIM(codigo) AS codigo ,TRIM(descrip) AS descrip,tipo,base1,base2,base3,base4,iva,peso,precio1,pond FROM sinv WHERE activo=\'S\'');
-		if ($query->num_rows() > 0){
-			foreach ($query->result() as $row){
-				$ind='_'.$row->codigo;
-				$inven[$ind]=array($row->descrip,$row->tipo,$row->base1,$row->base2,$row->base3,$row->base4,$row->iva,$row->peso,$row->precio1,$row->pond);
-			}
-		}
-		$jinven=json_encode($inven);
-
 		$do = new DataObject('pfac');
 		$do->rel_one_to_many('itpfac', 'itpfac', array('numero' => 'numa'));
 		$do->pointer('scli' , 'scli.cliente=pfac.cod_cli', 'scli.tipo AS sclitipo', 'left');
@@ -156,8 +147,10 @@ class pfaclite extends validaciones{
 		$edit->numero->apply_rules = false; //necesario cuando el campo es clave y no se pide al usuario
 		$edit->numero->when = array('show', 'modify');
 
+		$usr=$this->session->userdata('usuario');
+		$vd=$this->datasis->dameval("SELECT vendedor FROM usuario WHERE us_codigo='$usr'");
 		$edit->cliente = new dropdownField('CLIENTE', 'cod_cli');
-		$edit->cliente->options("SELECT cliente, nombre FROM scli  ORDER  BY nombre");//WHERE vendedor='$vd'
+		$edit->cliente->options("SELECT cliente, nombre FROM scli WHERE vendedor='$vd'  ORDER  BY nombre");//
 		
 		$edit->observa = new inputField('Observaciones', 'observa');
 		$edit->observa->size = 25;
@@ -228,49 +221,64 @@ class pfaclite extends validaciones{
 
 		$edit->buttons('add');
 		if($fenvia < $hoy){
-			$edit->buttons('modify', 'save', 'undo', 'delete', 'back','add_rel');
-			$accion="javascript:window.location='".site_url('ventas/pfac/enviar/'.$control)."/pfaclite'";
-			$edit->button_status('btn_envia'  ,'Enviar Pedido'         ,$accion,'TR','show');
+			$edit->buttons('modify', 'save', 'delete', 'undo', 'back','add_rel');
+			if($PFACRESERVA=$this->datasis->traevalor('PFACRESERVA','indica si un pedido descuenta de inventario los producto')=='S'){
+				$accion="javascript:window.location='".site_url('ventas/pfaclite/reserva/'.$control)."/pfaclite'";
+				$edit->button_status('btn_envia'  ,'Enviar Pedido'         ,$accion,'TR','show');
+			}
 		}else{
-			$edit->buttons('save', 'undo', 'delete', 'back', 'add_rel');
-		}		
+			$edit->buttons('save', 'undo', 'back', 'add_rel');
+		}
+		
+		$accion="javascript:window.location='".site_url('ventas/pfaclite/load')."'";
+		$edit->button_status('btn_load'  ,'Subir desde Excel' ,$accion,'TL','show');
 
-		$sinv=$this->db->query("SELECT codigo,descrip,precio1,precio2,precio3,precio4,marca,existen FROM sinv ORDER BY marca");
+		$sinv=$this->db->query("SELECT codigo,descrip,precio1,precio2,precio3,precio4,marca,existen,iva FROM sinv ORDER BY marca");
 		$sinv=$sinv->result_array();
 		$sinv2=array();
 		foreach($sinv as $k=>$v){
 			$sinv2[$v['codigo']]=$v;
+			$sinviva['_'.$v['codigo']]=array('codigo'=>$v['codigo'],'iva'=>$v['iva']);
 		}
 		
 		if($this->genesal){
 			$edit->build();
 
-			$conten['inven']   = $jinven;
 			$conten['form']    = & $edit;
 			$conten['hoy']     = $hoy;
 			$conten['fenvia']  = $fenvia;
 			$conten['faplica'] = $faplica;
 			$conten['sinv']    = $sinv2;
+			$conten['sinviva'] = json_encode($sinviva);
 			$data['content']   =$this->load->view('view_pfaclite', $conten,true);
 			$data['title']     = heading('Pedidos No. '.$edit->numero->value);
 			$this->load->view('view_ventanas_lite', $data);
 		}else{
 			$edit->on_save_redirect=false;
 			$edit->build();
-
+			
 			if($edit->on_success()){
 				echo 'Pedido Guardado';
 			}elseif($edit->on_error()){
 				echo html_entity_decode(preg_replace('/<[^>]*>/', '', $edit->error_string));
+			}elseif($edit->on_show()){
+				print_r($edit->dataobject->get_all());
+			}else{
+				
 			}
 		}
 	}
-	// Busca Productos para autocomplete
 	
 	function _pre_insert($do){
-		$numero = $this->datasis->fprox_numero('npfac');
-		$do->set('numero', $numero);
-		$fecha = date('%Y%m%d');
+		$numero=$do->get('numero');
+		if(empty($numero)){
+			$numero = $this->datasis->fprox_numero('npfac');
+			$do->set('numero', $numero);
+			$fecha = date('%Y%m%d');
+		}else{
+			$fecha=$do->get('fecha');
+		}
+		
 		
 		$usr=$this->session->userdata('usuario');
 		$vd=$this->datasis->dameval("SELECT vendedor FROM usuario WHERE us_codigo='$usr'");
@@ -283,20 +291,28 @@ class pfaclite extends validaciones{
 		}
 
 		$iva = $totals = 0;
-		$cana = $do->count_rel('itpfac');
-		for($i = 0;$i < $cana;$i++){
+		$borrar=array();
+		for($i = 0;$i < $do->count_rel('itpfac');$i++){
 			$itcana  = $do->get_rel('itpfac', 'cana', $i);
-			$itpreca = $do->get_rel('itpfac', 'preca', $i);
-			$itiva   = $sinv2[$do->get_rel('itpfac', 'codigoa', $i)]['iva'];
-			$ittota  = $itpreca * $itcana;
-			$do->set_rel('itpfac', 'tota' , $ittota, $i);
-			$do->set_rel('itpfac', 'fecha' , $fecha , $i);
-			$do->set_rel('itpfac', 'vendedor', $vd , $i);
+			if($itcana>0){
+				$itpreca = $do->get_rel('itpfac', 'preca', $i);
+				$itiva   = $sinv2[$do->get_rel('itpfac', 'codigoa', $i)]['iva'];
+				$ittota  = $itpreca * $itcana;
+				$do->set_rel('itpfac', 'tota' , $ittota, $i);
+				$do->set_rel('itpfac', 'fecha' , $fecha , $i);
+				$do->set_rel('itpfac', 'vendedor', $vd , $i);
 
-			$iva    += $ittota * ($itiva / 100);
-			$totals += $ittota;
-			$do->set_rel('itpfac', 'mostrado', $iva + $ittota, $i);
+				$iva    += $ittota * ($itiva / 100);
+				$totals += $ittota;
+				$do->set_rel('itpfac', 'mostrado', $iva + $ittota, $i);
+			}else{
+				$borrar[$i]=$i;
+			}
 		}
+		$borrar=array_reverse($borrar,true);
+		foreach($borrar AS $value){
+			array_splice($do->data_rel['itpfac'],$value,1);
+		}		
 		$totalg = $totals + $iva;
 
 		$do->set('totals' , round($totals , 2));
@@ -345,5 +361,210 @@ class pfaclite extends validaciones{
 	function _post_delete($do){
 		$codigo = $do->get('numero');
 		logusu('pfac', "Pedido $codigo ELIMINADO");
+	}
+	
+	function load(){
+		$this->load->library("path");
+		$path=new Path();
+		$path->setPath($this->config->item('uploads_dir'));
+		$path->append('/archivos');
+		$this->upload_path =$path->getPath().'/';
+		
+		$this->rapyd->load("dataform");
+		$form = new DataForm("ventas/pfaclite/read");
+		$form->title('Cargar Archivo de Productos (xls)');
+
+		$form->archivo = new uploadField("Archivo","archivo");
+		$form->archivo->upload_path   = $this->upload_path;    
+		$form->archivo->allowed_types = "xls";
+		$form->archivo->delete_file   =false;
+		$form->archivo->rule   ="required";
+
+		$form->submit("btnsubmit","Guardar");
+		$form->build_form();
+
+		$data['content'] = $form->output;
+		$data['title']   = "<h1>Caragar Pedido desde Excel</h1>";
+		//$data["head"]    = $this->rapyd->get_head();
+		$this->load->view('view_ventanas_lite', $data);
+	}
+
+	function read(){
+		$this->load->library("Spreadsheet_Excel_Reader");
+		$type='';
+		if(isset($_FILES['archivoUserFile']['type']))$type=$_FILES['archivoUserFile']['type'];
+		//print_r($_FILES);
+		if( $type=='application/vnd.ms-excel'){
+			$name=$_FILES['archivoUserFile']['name'];
+			$dir=".././".$name;
+			$name=$_FILES['archivoUserFile']['name'];
+			if (copy($_FILES['archivoUserFile']['tmp_name'], 'uploads/'.$name)){
+				$uploadsdir =getcwd().'/uploads/';
+				$filedir    =$uploadsdir.$name;
+				$tmp=$dir;
+				$tmp=$filedir;
+				//$_FILES['archivoUserFile']['tmp_name'];
+				$data = new Spreadsheet_Excel_Reader();
+				$data->setOutputEncoding('CP1251');
+				$data->read($tmp);
+				error_reporting(E_ALL ^ E_NOTICE);
+				$cols=array();
+				
+				foreach($data->sheets AS $sheetk=>$sheetv){
+					foreach($sheetv['cells'] AS $rowk=>$rowv){
+						$data4[$sheetk][]=$rowv;
+					}
+				}
+				$this->limpia($data4);
+			}
+		}else{
+			return "El archivo no puede ser leido";
+		}
+	}
+	 
+	function limpia($data){
+		$las9=array();
+		$lose=array();
+		$line=0;
+		
+		$sinv=$this->db->query("SELECT codigo,descrip,precio1,precio2,precio3,precio4,marca,existen FROM sinv WHERE LENGTH(codigo)>0 ORDER BY marca");
+		$sinv=$sinv->result_array();
+		$sinv2=array();
+		foreach($sinv as $k=>$v){
+			$sinv2[$v['codigo']]=$v;
+		}
+		unset($inv);
+		
+		$scli2=$this->db->query("SELECT * FROM scli ");
+		$scli2=$scli2->result_array();
+		$scli=array();
+		foreach($scli2 as $k=>$v){
+			$scli[$v['codigo']]=$v;
+		}
+		unset($scli2);
+		
+		
+		foreach($data as $hojak=>$hoja){
+			$lose[$hojak]['cod_cli']=$data[$hojak][2][12];
+			foreach($hoja as $lineak=>$linea){
+				if(array_key_exists($linea[8],$sinv2)>0 && $linea[9]>0 && $linea[6]>0){
+					$line++;
+					$las9[$hojak][$line][$i=1]=$linea[$i];
+					$las9[$hojak][$line][$i=2]=$linea[$i];
+					$las9[$hojak][$line][$i=3]=$linea[$i];
+					$las9[$hojak][$line][$i=4]=$linea[$i];
+					$las9[$hojak][$line][$i=5]=$linea[$i];
+					$las9[$hojak][$line][$i=6]=$linea[$i];
+					$las9[$hojak][$line][$i=7]=$linea[$i];
+					$las9[$hojak][$line][$i=8]=$linea[$i];
+					$las9[$hojak][$line][$i=9]=$linea[$i];
+				}
+				
+				if(array_key_exists($linea[18],$sinv2)>0 && $linea[19]>0 && $linea[16]>0){
+					$line++;
+					$las9[$hojak][$line][$i=11]=$linea[$i];
+					$las9[$hojak][$line][$i=12]=$linea[$i];
+					$las9[$hojak][$line][$i=13]=$linea[$i];
+					$las9[$hojak][$line][$i=14]=$linea[$i];
+					$las9[$hojak][$line][$i=15]=$linea[$i];
+					$las9[$hojak][$line][$i=16]=$linea[$i];
+					$las9[$hojak][$line][$i=17]=$linea[$i];
+					$las9[$hojak][$line][$i=18]=$linea[$i];
+					$las9[$hojak][$line][$i=19]=$linea[$i];
+				}
+			}
+		}
+		$i=0;
+		$this->genesal=false;
+		$error='';
+		$usr=$this->session->userdata('usuario');
+		foreach($lose as $hoja=>$cliente){
+			$itpfac         =array();
+			$pfac['cod_cli']=$cliente['cod_cli'];
+			$pfac['numero'] =$this->datasis->fprox_numero('npfac');	
+			$pfac['transac']=$this->datasis->fprox_numero('ntransac');	
+			$pfac['direc']  =$scli['dire11'].$scli['dire12'];
+			$pfac['dire1']  =$scli['dire21'].$scli['dire22'];
+			$pfac['fecha']  =date('%Y%m%d');
+			$pfac['nombre'] =$scli['nombre'];
+			$pfac['rifci']  =$scli['refci'];
+			$pfac['usuario']=$usr;
+			$pfac['estampa']=date('%Y%m%d');
+			
+			$totals=$iva=0;
+			foreach($las9[$hoja] as $linea){
+				if(array_key_exists($linea[8],$sinv2)>0 && $linea[9]>0 && $linea[6]>0){
+					$itpfac=array(
+						'cana'      =>$linea['9'],
+						'preca'     =>$linea['6'],
+						'codigoa'   =>$linea['8'],
+						'iva'       =>$sinv['iva'],
+						'tota'      =>round($linea['9']*$linea['6'],2),
+						'numa'      =>$pfac['numero'],
+						'desca'     =>$sinv2[$linea[8]]['descrip'],
+						'usuario'   =>$usr,
+						'estampa'   =>date('%Y%m%d')
+					);
+					$totals +=round($linea['9']*$linea['6'],2);
+					$iva    +=round($totals*$sinv['iva']/100,2);
+					$this->db->insert('itpfac'  ,$itpfac);
+				}
+				
+				if(array_key_exists($linea[18],$sinv2)>0 && $linea[19]>0 && $linea[16]>0){
+					$itpfac=array(
+						'cana'      =>$linea['19'],
+						'preca'     =>$linea['16'],
+						'codigoa'   =>$linea['18'],
+						'iva'       =>$sinv['iva'],						
+						'tota'      =>round($linea['19']*$linea['16'],2),
+						'numa'      =>$pfac['numero'],
+						'desca'     =>$sinv2[$linea[8]]['descrip'],
+						'usuario'   =>$usr,
+						'estampa'   =>date('%Y%m%d')
+					);
+					$totals +=round($linea['19']*$linea['16'],2);
+					$iva    +=round($totals*$sinv['iva']/100,2);
+					$this->db->insert('itpfac'  ,$itpfac);
+				}
+			}
+			$totalg +=round($totals+$iva/100,2);
+			$pfac['totalg']=$totalg;
+			$pfac['totals']=$totals;
+			$pfac['iva']   =$iva;
+			
+			$this->db->insert('pfac',$pfac);
+			$id     =$this->db->insert_id();
+		}
+		echo $error;
+	
+		if(count($data)>1)
+		redirect('ventas/pfaclite/filteredgrid/'.$id);
+		else
+		redirect('ventas/pfaclite/dataedit/show/'.$id);
+	}
+	
+	function reserva($id,$dir='pfac'){
+		$PFACRESERVA=$this->datasis->traevalor('PFACRESERVA','indica si un pedido descuenta de inventario los producto');
+		if($PFACRESERVA=='S'){
+			
+			$this->rapyd->load('dataobject');
+			$do = new DataObject('pfac');
+			$do->rel_one_to_many('itpfac', 'itpfac', array('numero' => 'numa'));
+			$do->load($id);
+
+			for($i=0;$i < $do->count_rel('itpfac');$i++){
+				$codigoa  = $do->get_rel('itpfac','codigoa'  ,$i);
+				$cana     = $do->get_rel('itpfac','cana'     ,$i);
+				$this->datasis->sinvcarga( $codigoa, 'PEDI', $cana);
+				$this->datasis->sinvcarga( $codigoa, 'PEDI', -1*$cana);
+			}
+			$fenvia=date("Ymd");
+			$do->set('reserva','S');
+			$do->set('fenvia' ,$fenvia);
+			
+			$do->save();
+			
+		}
+		redirect("ventas/$dir/dataedit/show/$id");
 	}
 }

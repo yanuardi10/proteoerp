@@ -16,19 +16,43 @@ if(isset($form->error_string)) echo '<div class="alert">'.$form->error_string.'<
 echo $form_begin;
 if($form->_status!='show'){ ?>
 <script language="javascript" type="text/javascript">
+	
+function print_r(theObj){
+	var a='';
+   if(theObj.constructor == Array || theObj.constructor == Object){
+      a=a+"<ul>";
+      for(var p in theObj){
+         if(theObj [p] .constructor == Array || theObj [p] .constructor == Object){
+            a=a+"<li> ["+p+"]  => "+typeof(theObj)+"</li>";
+            a=a+"<ul>";
+            print_r(theObj [p] );
+            a=a+"</ul>";
+         } else {
+            a=a+"<li> ["+p+"]  => "+theObj [p] +"</li>";
+         }
+      }
+      a=a+"</ul>";
+   }
+   alert(a);
+}
+	
 	var importes= new Array();
 	function total(id){
 		cana=Number(document.getElementById("cana_"+id).value);
 		var e= document.getElementById("preca_"+id);
 		var preca = Number(e.options[e.selectedIndex].value);
-		importes[id]=cana*preca;
+		importes[id]=Math.round(cana*preca*100)/100;
 		totalizar();
 	}
 	
 	function totalizar(){
 		var totalg=0;
+		var sinviva = <?=$sinviva ?>;
+		var ivas=0;
 		for(var i in importes){
-			totalg=totalg+importes[i];
+			codigoa=document.getElementById("codigoa_"+i+"_val").firstChild.nodeValue;
+			iva=eval('sinviva._'+codigoa+'.iva');
+			totalg=totalg+importes[i]+(Math.round(importes[i]*iva/100)/100);
 		}
 		document.getElementById("totalg_value").innerHTML=totalg;
 	}
@@ -67,39 +91,64 @@ if($form->_status!='show'){ ?>
 			<?php 
 			$pmarcat='';
 			$i=0;
-			foreach($sinv as $row) {
-				
-				if($form->_status!='create'){
-					$it_codigoa  = "codigoa_$i";
-					$it_cana     = "cana_$i";
-					$it_preca    = "preca_$i";
-					$it_precat   = "precat_$i";
-					$it_pexisten = "pexisten_$i";
-					$it_pmarca   = "pmarca_$i";
-				
-					$pmarca  =$form->_dataobject->get_rel_pointer('itpfac','pmarca'  ,$i);
-					$pexisten=$form->_dataobject->get_rel_pointer('itpfac','pexisten',$i);
-					$pdesca  =$form->_dataobject->get_rel_pointer('itpfac','pdesca'  ,$i);
-					$codigoa =$form->_dataobject->get_rel('itpfac','codigoa',$i);
-					$preca   =$form->_dataobject->get_rel('itpfac','preca',$i);
-					$cana    =$form->_dataobject->get_rel('itpfac','cana',$i);
-					$f_codigoa=$form->$it_codigoa->output;
-					$f_cana   =$form->$it_cana->output;
-					if($form->_status!='show')
-					$f_cana   ='<input id="cana_'.$i.'" onkeyup="total(\''.$i.'\')" class="inputnum" type="text" autocomplete="off" size="2" value="'.($cana>0?$cana:'').'" name="cana_'.$i.'">';
-				}else{
+			
+			
+			$arreglo=array();
+			$it=array();
+			$a=array();
+			
+			if($form->_status!='create'){
+				$a=$form->_dataobject->get_all();
+				if(isset($a['itpfac']))
+					foreach($a['itpfac'] as $k=>$v)
+						$it[$v['codigoa']]=$v;
+			}
+		
+			if($form->_status=='show' ){
+				if(isset($a['itpfac'])){
+					foreach($a['itpfac'] as $k=>$v){
+						if(array_key_exists($v['codigoa'],$sinv)){
+							$arreglo[$k]         =$sinv[$v['codigoa']];
+							$arreglo[$k]['preca']=$v['preca'];
+							$arreglo[$k]['cana'] =$v['cana'];
+						}
+					}
+				}
+			}else{
+				foreach($sinv as $k=>$v){
+					$arreglo[$k]=$v;
+					if(array_key_exists($k,$it)){
+						$arreglo[$k]['preca']=$it[$k]['preca'];
+						$arreglo[$k]['cana'] =$it[$k]['cana'];
+					}else{
+						$arreglo[$k]['preca']=null;
+						$arreglo[$k]['cana']=0;
+					}
+				}
+			}
+			
+			foreach($arreglo as $row) {
+							
 					$pmarca  =$row['marca'];
 					$pexisten=$row['existen'];
 					$pdesca  =$row['descrip'];
 					$codigoa =$row['codigo'];
+					$preca   =$row['preca'];
+					$cana    =$row['cana'];
 					$precio1 =$row['precio1'];
 					$precio2 =$row['precio2'];
 					$precio1 =$row['precio1'];
-					
-					$f_codigoa='<input id="codigoa_'.$i.'" class="input" type="hidden" size="12" value='.$this->db->escape($row['codigo']).' name="codigoa_'.$i.'">
+					//$f_codigoa=$form->$it_codigoa->output;
+					//$f_cana   =$form->$it_cana->output;
+					if($form->_status!='show')
+					$f_cana   ='<input id="cana_'.$i.'" onkeyup="total(\''.$i.'\')" class="inputnum" type="text" autocomplete="off" size="2" value="'.($cana>0?$cana:'').'" name="cana_'.$i.'">';
+					else
+					$f_cana =nformat($cana);
+				
+					$f_codigoa='<input id="codigoa_'.$i.'" class="input" type="hidden" style="height:30px;font-size:16" size="12" value='.$this->db->escape($row['codigo']).' name="codigoa_'.$i.'">
 <span id="codigoa_'.$i.'_val">'.$row['codigo'].'</span>';
-					$f_cana ='<input id="cana_'.$i.'" onkeyup="total(\''.$i.'\')" class="inputnum" type="text" autocomplete="off" size="2" value="" name="cana_'.$i.'">';
-				}
+					
+				
 				
 				if($pmarcat!=$pmarca){
 					$pmarcat=$pmarca;
@@ -125,11 +174,13 @@ if($form->_status!='show'){ ?>
 							$sinv[$codigoa]['precio2']=> nformat($sinv[$codigoa]['precio2']),
 							);
 							$sel=array();
-							if($form->_status!='create' ){
-								$options[$preca]=$preca;
-								$sel=array($preca=>$preca);
+							if($form->_status!='create'){
+								if($preca){
+									$options[$preca]=$preca;
+									$sel=array($preca=>$preca);
+								}
 							}
-							echo form_dropdown('preca_'.$i, $options,$sel,'style="height:100%;width:60px" id="preca_'.$i.'"');
+							echo form_dropdown('preca_'.$i, $options,$sel,'style="height:30px;width:85px;font-size:18px" id="preca_'.$i.'"');
 						}
 					?>
 					&nbsp;
@@ -166,6 +217,7 @@ ob_end_flush();
 function comprimir_pagina($buffer) {
     $busca = array('/\>[^\S ]+/s','/[^\S ]+\</s','/(\s)+/s');
     $reemplaza = array('>','<','\\1');
-    return preg_replace($busca, $reemplaza, $buffer);
+    //return preg_replace($busca, $reemplaza, $buffer);
+    return $buffer;
 } 
 ?>
