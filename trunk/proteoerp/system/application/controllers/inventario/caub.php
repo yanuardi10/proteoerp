@@ -21,6 +21,7 @@ class Caub extends validaciones {
 		$this->datasis->modulo_id(307,1);
 		$ajus=$this->db->simple_query("INSERT IGNORE INTO caub (ubica,ubides,gasto,invfis) VALUES ('AJUS','AJUSTES','S','N')ON DUPLICATE KEY UPDATE ubides='AJUSTES', gasto='S',invfis='N'");
 		$infi=$this->db->simple_query("INSERT IGNORE INTO caub (ubica,ubides,gasto,invfis) VALUES ('INFI','INVENTARIO FISICO','S','S')ON DUPLICATE KEY UPDATE ubides='INVENTARIO FISICO', gasto='S',invfis='S'");
+		$pedi=$this->db->simple_query("INSERT IGNORE INTO caub (ubica,ubides,gasto,invfis) VALUES ('PEDI','PEDIDOS','N','N')ON DUPLICATE KEY UPDATE ubides='PEDIDOS', gasto='N',invfis='N'");
 		$this->db->simple_query("ALTER TABLE `caub`  ADD COLUMN `id` INT NOT NULL AUTO_INCREMENT FIRST,  DROP PRIMARY KEY,  ADD PRIMARY KEY ( `id`)");
 		redirect("inventario/caub/caubextjs");
     }

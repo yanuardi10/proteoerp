@@ -16,6 +16,10 @@ class pfac extends validaciones{
 
 		if(!$this->db->field_exists('faplica','pfac'))
 		$this->db->query("ALTER TABLE `pfac`  ADD COLUMN `faplica` DATE NULL DEFAULT '0000-00-00' COMMENT 'fecha en que se aplicaron los descuentos'");
+		
+				if(!$this->db->field_exists('faplica','pfac'))
+		$this->db->query("ALTER TABLE `pfac`  ADD COLUMN `reserva` CHAR(1) NOT NULL DEFAULT 'N'");
+		
 
 		if ( !$this->datasis->iscampo('pfac','id') ) {
 			$this->db->simple_query('ALTER TABLE pfac DROP PRIMARY KEY');
@@ -456,7 +460,7 @@ class pfac extends validaciones{
 		if($fenvia < $hoy){
 			$edit->buttons('modify', 'save', 'undo', 'delete', 'back','add_rel');
 
-			$accion="javascript:window.location='".site_url('ventas/pfac/enviar/'.$control)."'";
+			$accion="javascript:window.location='".site_url('ventas/pfaclite/enviar/'.$control)."'";
 			$edit->button_status('btn_envia'  ,'Enviar Pedido'         ,$accion,'TR','show');
 		}elseif($faplica < $fenvia){
 			$hide=array('vd','peso','cliente','nombre','rifci','direc','observa','observ1','codigoa','desca','cana');
