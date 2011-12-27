@@ -646,8 +646,8 @@ if ($query->num_rows()>0 ) {
 <?php }  // rows>0  </div> ?>
 </div>
 
-//////////
-<div id="tab5" style='background:#EFEFFF'>
+
+<div id="tab6" style='background:#EFEFFF'>
 	<table width='100%'><tr><td>
 	<fieldset style='border: 1px outset #8A0808;background: #FFFBE9;'>
 	<legend class="titulofieldset" >Bonos por volumen</legend>
@@ -666,41 +666,8 @@ if ($query->num_rows()>0 ) {
 	</table>
 	</fieldset>
 	</td><td>
-
-<?php if($form->_status=='show'){ ?>
-	<fieldset style='border: 1px outset #8A0808;background: #FFFBE9;'>
-	<legend class="titulofieldset" >Descuentos</legend>
-	<table border=0 width='100%'>
-	<tr>
-		<td valign="top"><?php 
-			$margen =  $this->datasis->dameval("SELECT margen FROM grup WHERE grupo='".$form->_dataobject->get('grupo')."'");
-			if ($margen > 0 ) {
-				echo "Descuento por Grupo ";
-				echo $margen."% ";
-				echo "Precio ".nformat($form->precio1->value * (100-$margen)/100); 
-			} else echo "No tiene descuento por grupo";
-			?>
-		</td>
-	</tr><tr>
-		<td valign="top"><?php
-			$margen =  $this->datasis->dameval("SELECT margen FROM sinvpromo WHERE codigo='".addslashes($form->_dataobject->get('codigo'))."'");
-			if ($margen > 0 ) {
-				echo "Descuento por Promocion ".$margen."% ";
-				echo "Precio ".nformat($form->precio1->value * (100-$margen)/100);
-			} else echo "No tiene descuento promocional";
-			?>
-		</td>
-	</tr>
-	</table>
-	</fieldset>
-	</td></tr></table>
-	<br/>
-
-
 </div>
 
-
-/////////
 
 </div>
 

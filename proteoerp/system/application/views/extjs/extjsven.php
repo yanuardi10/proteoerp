@@ -45,7 +45,7 @@ Ext.require([
 	'Ext.tip.*',
 	'Ext.ux.CheckColumn',
 	'Ext.toolbar.Paging'
-]);
+]); 
 
 var registro;
 var urlApp  = '<?php echo base_url(); ?>';
@@ -100,11 +100,12 @@ var ex_Modelo = Ext.regModel('ex_Modelo', {
 					icon: Ext.MessageBox.ERROR,
 					buttons: Ext.Msg.OK
 				});
-			} else {
-				if (win) {
-					win.form.reset();
-					win.this.onReset();
-				}
+
+			if (win) {
+				win.form.reset();
+				win.this.onReset();
+			}
+			
 			}
 		}
 	}
@@ -130,6 +131,17 @@ var storeData = Ext.create('Ext.data.Store', {
 var win;
 // Main 
 Ext.onReady(function(){
+Ext.Ajax.request({
+	url: '<?php echo base_url(); ?>assets/js/ext/locale/ext-lang-es.js',
+	success: function(response, opts) {
+		eval(response.responseText);
+	},
+	failure: function() {
+		Ext.Msg.alert('Error', 'Error al cargar archivos de idioma.');
+	}
+});
+
+
 	function showContactForm() {
 		if (!win) {
 			// Create Form
