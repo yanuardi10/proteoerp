@@ -32,9 +32,6 @@ class hiddenField extends objField{
 	 }
 
 	 function build(){
-		if(!isset($this -> size)){
-			$this -> size = 45;
-		}
 		$this->_getValue();
 
 		$output = "";
