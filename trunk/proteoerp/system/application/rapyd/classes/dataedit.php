@@ -513,4 +513,13 @@ class DataEdit extends DataForm {
 	function getstatus(){
 		return $this->_status;
 	}
+
+        function get_from_dataobjetct($db_name){
+                if($this->_dataobject->loaded){
+                        $requestValue =$this->_dataobject->get($db_name);
+                        if(empty($requestValue)) $requestValue=false;
+                }else
+                        $requestValue=false;
+                return $requestValue;
+        }
 }

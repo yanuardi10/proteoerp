@@ -32,39 +32,33 @@
 
 class DataObject{
 
-  var $table  = null;
-  var $loaded = false;
-  var $pk = array();
+	var $table  = null;
+	var $loaded = false;
+	var $pk = array();
 
-  var $fields = array();
-  var $field_meta	= array();
-  var $data = null;
-  var $data_rel = array();
+	var $fields = array();
+	var $field_meta = array();
+	var $data = null;
+	var $data_rel = array();
 
-  var $_pre_process_functions = array();
-  var $_post_process_functions = array();
-  var $post_process_result = null;
+	var $_pre_process_functions = array();
+	var $_post_process_functions = array();
+	var $post_process_result = null;
 	var $pre_process_result = null;
 	var $error_message_ar=array('pre_upd'=>'pre process error on Update','pre_ins'=>'pre process error on Insert','pre_del'=>'pre process error on Delete','post_upd'=>'','post_ins'=>'','post_del'=>'');
 
-  var $_rel_type     = array(); //[] 0 one_to_one, 1 one_to_many, 2 many_to_mary [] contador
-  var $_rel_fields   = array(); //campos para el join
-  var $_one_to_one   = array();
-  var $_one_to_many  = array();
-  var $_many_to_many = array();
+	var $_rel_type     = array(); //[] 0 one_to_one, 1 one_to_many, 2 many_to_mary [] contador
+	var $_rel_fields   = array(); //campos para el join
+	var $_one_to_one   = array();
+	var $_one_to_many  = array();
+	var $_many_to_many = array();
 
 	var $flag_pointer     = false;
 	var $flag_rel_pointer = array();
 	var $_pointer_data    = array();
 	var $_rel_pointer_data= array();
 	var $_order_by        = array();
-    var $field_order      = array();
-/*
-	$_pointer_data=array('id_rel'=>array('0' => array('campo1'=>'valor1','campo2'=>'valor2'),
-	                                     '1' => array('campo1'=>'valor1','campo2'=>'valor2'))
-	                     'id_rel'=>array('campo1'=>'valor1','campo2'=>'valor2'))
-	                     'tabla'=>array('campo1'=>'valor1','campo2'=>'valor2'))
-*/
+	var $field_order      = array();
 
  /**
   * PHP4 constructor.
@@ -125,16 +119,16 @@ class DataObject{
   * @param    string    $action can be "insert", "update" or "delete"
   * @return   void
   */
-  function _exec_pre_process_functions($action){
-  	$this->pre_process_result = TRUE;
-    if (isset($this->_pre_process_functions[$action])){
-      $function = $this->_pre_process_functions[$action];
-      $arr_values = $function["arr_values"];
-      (count($arr_values)>0)? array_unshift($arr_values, $this):$arr_values = array($this);
-      $this->pre_process_result =  call_user_func_array(array(&$this->ci, $function["name"]), $arr_values );
-      return  $this->pre_process_result;
-    }
-  }
+	function _exec_pre_process_functions($action){
+		$this->pre_process_result = TRUE;
+		if (isset($this->_pre_process_functions[$action])){
+			$function = $this->_pre_process_functions[$action];
+			$arr_values = $function["arr_values"];
+			(count($arr_values)>0)? array_unshift($arr_values, $this):$arr_values = array($this);
+			$this->pre_process_result =  call_user_func_array(array(&$this->ci, $function["name"]), $arr_values );
+		return  $this->pre_process_result;
+		}
+	}
 
  /**
   * prepare the call to a method inside current controller/method which w'll be executed after $action execution
@@ -147,9 +141,9 @@ class DataObject{
   * @param    array     $arr_values optional and custom array of parameters
   * @return   boolean
   */
-  function post_process($action,$function,$arr_values=array()){
-    $this->_post_process_functions[$action] = array("name"=>$function, "arr_values"=>$arr_values);
-  }
+	function post_process($action,$function,$arr_values=array()){
+		$this->_post_process_functions[$action] = array("name"=>$function, "arr_values"=>$arr_values);
+	}
 
  /**
   * exec the call of post_process function for $action (if is set)
@@ -158,15 +152,15 @@ class DataObject{
   * @param    string    $action can be "insert", "update" or "delete"
   * @return   void
   */
-  function _exec_post_process_functions($action){
-    if (isset($this->_post_process_functions[$action])){
-      $function = $this->_post_process_functions[$action];
-      $arr_values = $function["arr_values"];
-      (count($arr_values)>0)? array_unshift($arr_values, $this):$arr_values = array($this);
-      $this->post_process_result =  call_user_func_array(array(&$this->ci, $function["name"]), $arr_values);
-      return  $this->post_process_result;
-    }
-  }
+	function _exec_post_process_functions($action){
+	if (isset($this->_post_process_functions[$action])){
+		$function = $this->_post_process_functions[$action];
+		$arr_values = $function["arr_values"];
+		(count($arr_values)>0)? array_unshift($arr_values, $this):$arr_values = array($this);
+		$this->post_process_result =  call_user_func_array(array(&$this->ci, $function["name"]), $arr_values);
+		return  $this->post_process_result;
+	}
+	}
 
  /**
   * load a record from the DB, receives a parameter that
@@ -417,8 +411,8 @@ class DataObject{
       $escape = $this->_exec_pre_process_functions("insert");
 
 	  //by default pk is AutoIncrement and reloaded after an insert, otherwise new value of pk(s) is loaded from user input
-  	  $pk_ai = true;
-  	  foreach ($this->pk as $keyfield => $keyvalue)
+	  $pk_ai = true;
+	  foreach ($this->pk as $keyfield => $keyvalue)
       {
         if(isset($this->data[$keyfield])){
         	$this->pk[$keyfield] = $this->data[$keyfield];
@@ -538,9 +532,9 @@ class DataObject{
   * @access   public
   * @return   variant  integer or false
   */
-  function insert_id(){
-    return $this->db->insert_id();
-  }
+	function insert_id(){
+		return $this->db->insert_id();
+	}
 
  /**
   * loads a register from the DB, receives 3 parameters
@@ -1010,7 +1004,7 @@ class DataObject{
 		}
 		return $on;
 	}
- 
+
  /**
   * Borra un campo de la matriz de data de relacion
   *
@@ -1036,6 +1030,23 @@ class DataObject{
 	}
   }
 
+ /**
+  * Borra una fila de una relacion uno muchos
+  *
+  * @access   private
+  * @return   bolean
+  */
+	function rel_rm($rel_id,$id){
+		if($this->_rel_type[$rel_id][0]==1){
+			if($id<0) $id=$this->_rel_type[$rel_id][1];
+			if (isset($this->data_rel[$rel_id][$id])){
+				unset($this->data_rel[$rel_id][$id]);
+				return true;
+			}
+		}
+		return false;
+	}
+
   /**
   * Borra un campo de la matriz de data
   *
@@ -1050,11 +1061,11 @@ class DataObject{
       return false;
     }
   }
-  
+
 	function order_by($relid,$field,$order='asc'){
 	$this->_order_by[$relid][$field]=$order;
 	}
-    
+
 	function set_field_order($pk='',$field=''){
 		$this->field_order[$pk]=$field;
 	}
