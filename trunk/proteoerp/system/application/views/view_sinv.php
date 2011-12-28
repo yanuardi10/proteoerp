@@ -1,5 +1,6 @@
 <?php 
-echo $form_scripts.$form_begin;
+echo $scri;
+echo $form_begin;
 $container_tr=join("&nbsp;", $form->_button_container["TR"]);
 $container_bl=join("&nbsp;", $form->_button_container["BL"]);
 $container_br=join("&nbsp;", $form->_button_container["BR"]);
@@ -9,9 +10,228 @@ if ($form->_status=='delete' || $form->_action=='delete' || $form->_status=='unk
 	$meco = str_replace('class="tablerow"','class="tablerow" style="font-size:20px; align:center;" ',$meco);
 	echo $meco."</td><td align='center'>".img("images/borrar.jpg");
 else:
-?>
 
-<?php if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</div>'; ?>
+$campos=$form->template_details('sinvcombo');
+$scampos  ='<tr id="tr_sinvcombo_<#i#>">';
+$scampos .='<td class="littletablerow" align="left" >'.$campos['itcodigo']['field'].'</td>';
+$scampos .='<td class="littletablerow" align="left" >'.$campos['itdescrip']['field'].'</td>';
+$scampos .='<td class="littletablerow" align="right">'.$campos['itcantidad']['field'].  '</td>';
+$scampos .='<td class="littletablerow" align="right">'.$campos['itultimo']['field'].  '</td>';
+$scampos .='<td class="littletablerow" align="right">'.$campos['itpond']['field'];
+
+$ocultos=array('precio1','formacal');
+foreach($ocultos as $obj){
+	$obj2='it'.$obj;
+	$scampos.=$campos[$obj2]['field'];
+}
+$scampos .= '</td>';
+$scampos .= '<td class="littletablerow"  align="center"><a href=# onclick="del_sinvcombo(<#i#>);return false;">'.img("images/delete.jpg").'</a></td></tr>';
+$campos=$form->js_escape($scampos);
+
+if($form->_status!='show'){ ?>
+
+<script language="javascript" type="text/javascript">
+sinvcombo_cont=<?php echo $form->max_rel_count['sinvcombo']; ?>;
+invent = (<?php echo $inven; ?>);
+//jinven = eval('('+invent+')');
+
+function ocultatab(){
+tipo=$("#tipo").val();
+if(tipo=='Combo'){
+	$("#litab7").show();
+	$("#tab7").show();
+}else{
+	$("#litab7").hide();
+	$("#tab7").hide();
+}	
+}
+
+$(function(){
+	ocultatab();
+	$(".inputnum").numeric(".");
+	//totalizar();
+	for(var i=0;i < <?php echo $form->max_rel_count['sinvcombo']; ?>;i++){
+		autocod(i.toString());
+	}
+	$('input[name^="itcantidad_"]').keypress(function(e) {
+		if(e.keyCode == 13) {
+		    add_sinvcombo();
+			return false;
+		}
+	});
+	$("#tipo").change(function(){
+		ocultatab();
+	});
+});
+
+
+function dacodigo(nind){
+	ind=nind.toString();
+	var codigo = $("#itcodigo_"+ind).val();
+	var eeval;
+	eval('eeval= typeof invent._'+codigo);
+	//alert(eeval);
+	var descrip='';
+	if(eeval != "undefined"){
+		eval('itdescrip=invent._'+codigo+'[0]');
+		eval('ittipo   =invent._'+codigo+'[1]');
+		eval('itprecio1=invent._'+codigo+'[8]');
+		eval('itpond   =invent._'+codigo+'[9]');
+		eval('itultimo =invent._'+codigo+'[9]');
+
+		$("#itdescrip_"+ind).val(descrip);
+		$("#itprecio1_"+ind).val(base1);
+		$("#itpond_"+ind+"_val").val(pond);
+		$("#itultimo_"+ind).val(ultimo);
+	}else{
+		$("#itdescrip_"+ind).val('');
+		$("#itprecio1_"+ind).val('');
+		$("#itpond_"+ind).val('');
+		$("#itultimo_"+ind).val('');
+	}
+	post_modbus_sinv(nind);
+}
+function importe(id){
+	//var ind     = id.toString();
+	//var cana    = Number($("#cantidad_"+ind).val());
+	//var preca   = Number($("#precio_"+ind).val());
+	//var tota = roundNumber(cana*preca,2);
+	//$("#tota_"+ind).val(tota);
+	//$("#tota_"+ind+'_val').text(nformat(tota,2));
+
+	totalizar();
+}
+
+function totalizar(){
+	var tota   =0;
+	var arr=$('input[name^="itcantidad_"]');
+	jQuery.each(arr, function() {
+		nom=this.name
+		pos=this.name.lastIndexOf('_');
+		if(pos>0){
+			ind     = this.name.substring(pos+1);
+			cana    = Number($("#itcantidad_"+ind).val());
+			pond    = Number($("#itpond_"+ind).val());
+			ultimo  = Number($("#itultimo_"+ind).val());
+			formcal = Number($("#itformcal_"+ind).val());
+			tp      =Math.round(cana*pond*100)/100;
+			tu      =Math.round(cana*ultimo*100)/100;
+			switch(formcal)
+			{
+			case 'P': t=tp;
+			break;
+			case 'U': t=tu;
+			break;
+			case 'M':{if(tp>tu)
+				t=tp
+				else
+				t=tu;}
+			break;
+			default: t=tu;
+			}
+			
+			tota=tota+t;
+		}
+	});
+	$("#pond").val(tota);
+	$("#ultimo").val(tota);
+	requeridos();
+}
+
+function add_sinvcombo(){
+	var htm = <?php echo $campos; ?>;
+	can = sinvcombo_cont.toString();
+	con = (sinvcombo_cont+1).toString();
+	htm = htm.replace(/<#i#>/g,can);
+	htm = htm.replace(/<#o#>/g,con);
+	$("#__INPL__").after(htm);
+	$("#itcantidad_"+can).numeric(".");
+	autocod(can);
+	$('#itcodigo_'+can).focus();
+	$("#itcantidad_"+can).keypress(function(e) {
+		if(e.keyCode == 13) {
+		    add_sinvcombo();
+			return false;
+		}
+	});
+	sinvcombo_cont=sinvcombo_cont+1;
+}
+
+
+function post_modbus_sinv(nind){
+	ind=nind.toString();
+	
+	$("#itprecio_"+ind).empty();
+	var arr=$('#itprecio_'+ind);
+
+	descrip=$("#itdescrip_"+ind).val();
+	$("#itdescrip_"+ind+'_val').text(descrip);
+	
+	descrip=$("#itultimo_"+ind).val();
+	$("#itultimo_"+ind+'_val').text(descrip);
+	
+	descrip=$("#itpond_"+ind).val();
+	$("#itpond_"+ind+'_val').text(descrip);
+	
+	importe(nind);
+	totalizar();
+}
+
+
+
+function del_sinvcombo(id){
+	id = id.toString();
+	$('#tr_sinvcombo_'+id).remove();
+	totalizar();
+}
+
+//Agrega el autocomplete
+function autocod(id){
+	$('#itcodigo_'+id).autocomplete({
+		source: function( req, add){
+			$.ajax({
+				url:  "<?php echo site_url('ventas/spre/buscasinv'); ?>",
+				type: "POST",
+				dataType: "json",
+				data: "q="+req.term,
+				success:
+					function(data){
+						var sugiere = [];
+						$.each(data,
+							function(i, val){
+								sugiere.push( val );
+							}
+						);
+						add(sugiere);
+					},
+			})
+		},
+		minLength: 2,
+		select: function( event, ui ) {
+			$('#itcodigo_'+id).val(ui.item.codigo);
+			$('#itdescrip_'+id).val(ui.item.descrip);
+			$('#itprecio1_'+id).val(ui.item.base1);
+			$('#itpond_'+id).val(ui.item.pond);
+			$('#itultimo_'+id).val(ui.item.ultimo);
+			$('#itformcal_'+id).val(ui.item.formcal);
+			$('#itcantidad_'+id).val('1');
+			$('#itcantidad_'+id).focus();
+			$('#itcantidad_'+id).select();
+
+			var arr  = $('#itprecio_'+id);
+			post_modbus_sinv(id);
+			//cdescrip(id);
+			
+			importe(id);
+			totalizar();
+		}
+	});
+}
+</script>
+<?php } 
+
+
+ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</div>'; ?>
 <table border='0' width="100%">
 	<tr>
 		<td>
@@ -205,6 +425,9 @@ else:
 		<li><a href="#tab4">Movimientos</a></li>
 		<li><a href="#tab5">Promociones</a></li>
 		<li><a href="#tab6">Precio al Mayor</a></li>
+		<?php if(($form->_dataobject->get('tipo')=='Combo' && $form->_status=='show') || $form->_status!='show'){?>
+		<li id="litab7"><a href="#tab7">Articulos del Combo</a></li>
+		<?php }?>
 	</ul>
 	<div id="tab1" style='background:#EFEFFF'>
 	<table width="100%" border='0'>
@@ -308,12 +531,12 @@ else:
 			<legend class="titulofieldset" >Costos</legend>
 			<table width='100%'>
 				<tr>
-					<td class="littletableheaderc"><?=$form->pond->label    ?></td>
-					<td class="littletablerow" align='right'><?=$form->pond->output   ?></td>
-				</tr>
-				<tr>
 					<td class="littletableheaderc"><?=$form->ultimo->label   ?></td>
 					<td class="littletablerow" align='right'><?=$form->ultimo->output  ?></td>
+				</tr>
+				<tr>
+					<td class="littletableheaderc"><?=$form->pond->label    ?></td>
+					<td class="littletablerow" align='right'><?=$form->pond->output   ?></td>
 				</tr>
 				<tr>
 					<td class="littletableheaderc"><?=$form->standard->label    ?></td>
@@ -382,6 +605,56 @@ else:
 	</tr>
 	</table>
 </div>
+<?php if(($form->_dataobject->get('tipo')=='Combo' && $form->_status=='show') || $form->_status!='show'){?>
+<div id="tab7" style='background:#EFEFFF'>
+	<div style='overflow:auto;border: 1px solid #9AC8DA;background: #FAFAFA;height:200px'>
+		<table width='100%'>
+			<tr id='__INPL__'>
+				<td bgcolor='#7098D0'><strong>C&oacute;digo</strong></td>
+				<td bgcolor='#7098D0'><strong>Descripci&oacute;n</strong></td>
+				<td bgcolor='#7098D0'><strong>Cantidad</strong></td>
+				<td bgcolor='#7098D0'><strong>Ultimo</strong></td>
+				<td bgcolor='#7098D0'><strong>Ponderado</strong></td>
+				<?php if($form->_status!='show') {?>
+					<td  bgcolor='#7098D0' align='center'><strong>&nbsp;</strong></td>
+				<?php } ?>
+			</tr>
+			<?php 
+			for($i=0;$i<$form->max_rel_count['sinvcombo'];$i++) {
+				$itcodigo   = "itcodigo_$i";
+				$itdescrip  = "itdescrip_$i";
+				$itcantidad = "itcantidad_$i";
+				$itultimo   = "itultimo_$i";
+				$itpond     = "itpond_$i";
+				
+				$oculto='';
+				foreach($ocultos as $obj){
+					$obj2='it'.$obj.'_'.$i;
+					$oculto.=$form->$obj2->output;
+				}
+			?>
+			<tr id='tr_sinvcombo_<?php echo $i; ?>'>
+				<td class="littletablerow" align="left" nowrap><?php echo $form->$itcodigo->output; ?></td>
+				<td class="littletablerow" align="left"       ><?php echo $form->$itdescrip->output;  ?></td>
+				<td class="littletablerow" align="right"      ><?php echo $form->$itcantidad->output;   ?></td>
+				<td class="littletablerow" align="right"      ><?php echo $form->$itultimo->output.$oculto;  ?></td>
+				<td class="littletablerow" align="right"      ><?php echo $form->$itpond->output.$oculto;  ?></td>
+
+				<?php if($form->_status!='show') {?>
+				<td class="littletablerow" align="center">
+					<a href='#' onclick='del_sinvcombo(<?=$i ?>);return false;'><?php echo img("images/delete.jpg") ?></a>
+				</td>
+				<?php } ?>
+			</tr>
+			<?php } ?>
+			<tr id='__UTPL__'>
+			</tr>
+		</table>
+		</div>
+		<?php echo $container_bl ?>
+		<?php echo $container_br ?>	
+</div>
+<?php } ?>
 <div id="tab3" style='background:#EFEFFF'>
 	<table width='100%'>
 	<tr>
@@ -648,28 +921,29 @@ if ($query->num_rows()>0 ) {
 
 
 <div id="tab6" style='background:#EFEFFF'>
-	<table width='100%'><tr><td>
-	<fieldset style='border: 1px outset #8A0808;background: #FFFBE9;'>
-	<legend class="titulofieldset" >Bonos por volumen</legend>
-	<table width='100%'>
-	<tr>
-		<td class="littletableheaderc" width='50'>Desde</td>
-		<td class="littletablerow" align='right'><?=$form->fdesde->output ?></td>
-		<td class="littletableheaderc">Por la compra de </td>
-		<td class="littletablerow" align='right'><?=$form->bonicant->output ?></td>
-	</tr><tr>
-		<td class="littletableheaderc">Hasta</td>
-		<td class="littletablerow" align='right'><?=$form->fhasta->output ?></td>
-		<td class="littletableheaderc">Se lleva adicional </td>
-		<td class="littletablerow" align='right'><?=$form->bonifica->output ?></td>
-	</tr>
-	</table>
-	</fieldset>
-	</td><td>
+        <table width='100%'><tr><td>
+        <fieldset style='border: 1px outset #8A0808;background: #FFFBE9;'>
+        <legend class="titulofieldset" >Bonos por volumen</legend>
+        <table width='100%'>
+        <tr>
+                <td class="littletableheaderc" width='50'>Desde</td>
+                <td class="littletablerow" align='right'><?=$form->fdesde->output ?></td>
+                <td class="littletableheaderc">Por la compra de </td>
+                <td class="littletablerow" align='right'><?=$form->bonicant->output ?></td>
+        </tr><tr>
+                <td class="littletableheaderc">Hasta</td>
+                <td class="littletablerow" align='right'><?=$form->fhasta->output ?></td>
+                <td class="littletableheaderc">Se lleva adicional </td>
+                <td class="littletablerow" align='right'><?=$form->bonifica->output ?></td>
+        </tr>
+        </table>
+        </fieldset>
+        </td><td>
 </div>
 
 
 </div>
+
 
 <?php } //show ?>
 <?php echo $container_bl.$container_br; ?>

@@ -610,7 +610,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 			$retArray = $retorno = array();
 
 			$mSQL="SELECT DISTINCT TRIM(a.descrip) AS descrip, TRIM(a.codigo) AS codigo, a.precio1,precio2,precio3,precio4, a.iva,a.existen,a.tipo
-				,a.peso, a.ultimo, a.pond FROM sinv AS a
+				,a.peso, a.ultimo, a.pond,a.formcal FROM sinv AS a
 				LEFT JOIN barraspos AS b ON a.codigo=b.codigo
 				WHERE (a.codigo LIKE $qdb OR a.descrip LIKE  $qdb OR a.barras LIKE $qdb OR b.suplemen=$qba) AND a.activo='S'
 				ORDER BY a.descrip LIMIT 10";
@@ -632,6 +632,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 					$retArray['base3']   = $row['precio3']*100/(100+$row['iva']);
 					$retArray['base4']   = $row['precio4']*100/(100+$row['iva']);
 					$retArray['descrip'] = $row['descrip'];
+					$retArray['formcal'] = $row['formcal'];
 					//$retArray['descrip'] = wordwrap($row['descrip'], 25, '<br />');
 					$retArray['iva']     = $row['iva'];
 					array_push($retorno, $retArray);
