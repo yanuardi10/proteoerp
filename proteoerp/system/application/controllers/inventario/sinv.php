@@ -527,7 +527,7 @@ class sinv extends Controller {
 	// *********************************************************************************************************
 	function dataedit($status='',$id='' ) {
 		$this->rapyd->uri->keep_persistence();
-		$this->rapyd->load('dataedit','dataobject');
+		$this->rapyd->load('dataedit','datadetails');
 
 		$link  =site_url('inventario/common/add_marc');
 		$link4 =site_url('inventario/common/get_marca');
@@ -1087,16 +1087,20 @@ function sinvborraprv(mproveed, mcodigo){
 };
 </script>';
 
+
 		$do = new DataObject('sinv');
+		$do->rel_one_to_many('sinvcombo', 'sinvcombo', array('codigo' => 'combo'));
+		$do->rel_pointer('sinvcombo', 'sinv p', 'p.codigo=sinvcombo.codigo', 'p.descrip AS sinvdescrip,p.pond AS sinvpond,p.ultimo sinvultimo,p.formcal sinvformcal,p.precio1 sinvprecio1');
+		
 		if($status=='create' && !empty($id)){
 			$do->load($id);
 			$do->set('codigo', '');
 		}
 
-		$edit = new DataEdit('Maestro de Inventario', $do);
+		$edit = new DataDetails('Maestro de Inventario', $do);
 		$edit->pre_process('insert','_pre_inserup');
 		$edit->pre_process('update','_pre_inserup');
-		$edit->pre_process('delete','_pre_del');
+		$edit->pre_process('delete','_pre_del'    );
 		$edit->post_process('insert','_post_insert');
 		$edit->post_process('update','_post_update');
 		$edit->post_process('delete','_post_delete');
@@ -1140,6 +1144,7 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->tipo->option("Consumo","Consumo");
 		$edit->tipo->option("Fraccion","Fracci&oacute;n");
 		$edit->tipo->option("Lote","Lote");
+		$edit->tipo->option("Combo","Combo");
 
 		$AddUnidad='<a href="javascript:add_unidad();" title="Haz clic para Agregar una unidad nueva">'.image('list_plus.png','Agregar',array("border"=>"0")).'</a>';
 		$edit->unidad = new dropdownField("Unidad","unidad");
@@ -1480,10 +1485,84 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->pmb->css_class='inputnum';
 		$edit->pmb->size=10;
 		$edit->pmb->maxlength=10;
+		
+		/*INICIO SINV COMBO*/
+		$edit->itcodigo = new inputField('C&oacute;digo <#o#>', 'itcodigo_<#i#>');
+		$edit->itcodigo->size    = 12;
+		$edit->itcodigo->db_name = 'codigo';
+		$edit->itcodigo->rel_id  = 'sinvcombo';
+		//$edit->itcodigo->rule    = 'callback_chcodigo';
+		//$edit->itcodigo->onkeyup = 'OnEnter(event,<#i#>)';
 
+		$edit->itdescrip = new inputField('Descripci&oacute;n <#o#>', 'itdescrip_<#i#>');
+		$edit->itdescrip->size       = 32;
+		$edit->itdescrip->db_name    = 'descrip';
+		$edit->itdescrip->maxlength  = 50;
+		$edit->itdescrip->readonly   = true;
+		$edit->itdescrip->rel_id     = 'sinvcombo';
+		$edit->itdescrip->type       ='inputhidden';
 
+		$edit->itcantidad = new inputField('Cantidad <#o#>', 'itcantidad_<#i#>');
+		$edit->itcantidad->db_name      = 'cantidad';
+		$edit->itcantidad->css_class    = 'inputnum';
+		$edit->itcantidad->rel_id       = 'sinvcombo';
+		$edit->itcantidad->maxlength    = 10;
+		$edit->itcantidad->size         = 5;
+		$edit->itcantidad->rule         = 'required|positive';
+		$edit->itcantidad->autocomplete = false;
+		$edit->itcantidad->onkeyup      = 'importe(<#i#>)';
+		$edit->itcantidad->insertValue =1;
+		
+		$edit->itultimo = new inputField('Ultimo <#o#>', 'itultimo_<#i#>');
+		$edit->itultimo->size       = 32;
+		$edit->itultimo->db_name    = 'ultimo';
+		$edit->itultimo->maxlength  = 50;
+		$edit->itultimo->readonly   = true;
+		$edit->itultimo->rel_id     = 'sinvcombo';
+		$edit->itultimo->type       ='inputhidden';
+		
+		$edit->itpond = new inputField('Promedio <#o#>', 'itpond_<#i#>');
+		$edit->itpond->size       = 32;
+		$edit->itpond->db_name    = 'pond';
+		$edit->itpond->maxlength  = 50;
+		$edit->itpond->readonly   = true;
+		$edit->itpond->rel_id     = 'sinvcombo';
+		$edit->itpond->type       ='inputhidden';
+		
+		$ocultos=array('precio1','formacal');
+		foreach($ocultos as $obj){
+			$obj2='it'.$obj;
+			$edit->$obj2 = new hiddenField($obj.' <#o#>', $obj2 . '_<#i#>');
+			$edit->$obj2->db_name = 'sinv' . $obj;
+			$edit->$obj2->rel_id = 'sinvcombo';
+			$edit->$obj2->pointer = true;
+		}
+		
+		$edit->itestampa = new autoUpdateField('itestampa' ,date('Ymd'), date('Ymd'));
+		$edit->itestampa->db_name = 'estampa';
+		$edit->itestampa->rel_id = 'sinvcombo';
+		       
+		$edit->ithora    = new autoUpdateField('ithora',date('H:i:s'), date('H:i:s'));
+		$edit->ithora->db_name = 'hora';
+		$edit->ithora->rel_id = 'sinvcombo';
+		       
+		$edit->itusuario = new autoUpdateField('itusuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
+		$edit->itusuario->db_name = 'usuario';
+		$edit->itusuario->rel_id = 'sinvcombo';
+		
+		$inven=array();
+		$query=$this->db->query('SELECT TRIM(codigo) AS codigo ,TRIM(descrip) AS descrip,tipo,base1,base2,base3,base4,iva,peso,precio1,pond,ultimo FROM sinv WHERE activo=\'S\' AND tipo=\'Articulo\'');
+		if ($query->num_rows() > 0){
+			foreach ($query->result() as $row){
+				$ind='_'.$row->codigo;
+				$inven[$ind]=array($row->descrip,$row->tipo,$row->base1,$row->base2,$row->base3,$row->base4,$row->iva,$row->peso,$row->precio1,$row->pond);
+			}
+		}
+		$jinven=json_encode($inven);
+		$conten['inven']=$jinven;
+		/*FIN SINV COMBO*/
 
-		$edit->buttons("modify", "save", "undo", "delete", "back");
+		$edit->buttons("modify", "save", "undo", "delete", "back", "add_rel");
 		$edit->build();
 
 		$style = '<style type="text/css">
@@ -1572,16 +1651,17 @@ function sinvborraprv(mproveed, mcodigo){
 		$smenu['link']   = barra_menu('301');
 
 		$conten['form']  =&  $edit;
+		$conten['scri']  = script('jquery.js');
+		$conten['scri'] .= script('jquery-ui.js');
+		$conten['scri'] .= script('jquery.alerts.js');
+		$conten['scri'] .= script('plugins/jquery.blockUI.js');
+		$conten['scri'] .= script('plugins/jquery.numeric.pack.js');
+		$conten['scri'] .= script('plugins/jquery.floatnumber.js');
+		$conten['scri'] .= script('sinvmaes.js');
+		$conten['scri'] .= $script;
 		$data['content'] = $this->load->view('view_sinv', $conten,true);
 
-		$data['script']  = script('jquery.js');
-		$data['script'] .= script('jquery-ui.js');
-		$data['script'] .= script('jquery.alerts.js');
-		$data['script'] .= script('plugins/jquery.blockUI.js');
-		$data['script'] .= script('plugins/jquery.numeric.pack.js');
-		$data['script'] .= script('plugins/jquery.floatnumber.js');
-		$data['script'] .= script('sinvmaes.js');
-		$data['script'] .= $script;
+		
 
 		$data['style']   = style('jquery.alerts.css');
 		$data['style']  .= style('redmond/jquery-ui.css');
@@ -1594,6 +1674,14 @@ function sinvborraprv(mproveed, mcodigo){
 	}
 
 	function _pre_inserup($do){
+		$tipo=$do->get('tipo');
+		if($tipo!='Combo' && $do->count_rel('sinvcombo') >0){
+			$error='ERROR. el tipo de Articulo debe ser Combo, debido a que tiene varios Articulos relacionados';
+			$do->error_message_ar['pre_upd'] =$error;
+			$do->error_message_ar['pre_ins'] =$error;
+			return false;
+		}
+		
 		for($i=1;$i<5;$i++){
 			$prec='precio'.$i;
 			$$prec=round($do->get($prec),2); //optenemos el precio
