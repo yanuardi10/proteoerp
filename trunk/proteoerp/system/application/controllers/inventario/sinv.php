@@ -1141,7 +1141,7 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->tipo->option("Articulo","Art&iacute;culo" );
 		$edit->tipo->option("Servicio","Servicio");
 		$edit->tipo->option("Descartar","Descartar");
-		$edit->tipo->option("Consumo","Consumo");
+		//$edit->tipo->option("Consumo","Consumo");
 		$edit->tipo->option("Fraccion","Fracci&oacute;n");
 		$edit->tipo->option("Lote","Lote");
 		$edit->tipo->option("Combo","Combo");
