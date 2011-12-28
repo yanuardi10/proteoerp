@@ -92,13 +92,6 @@ function dacodigo(nind){
 	post_modbus_sinv(nind);
 }
 function importe(id){
-	//var ind     = id.toString();
-	//var cana    = Number($("#cantidad_"+ind).val());
-	//var preca   = Number($("#precio_"+ind).val());
-	//var tota = roundNumber(cana*preca,2);
-	//$("#tota_"+ind).val(tota);
-	//$("#tota_"+ind+'_val').text(nformat(tota,2));
-
 	totalizar();
 }
 
@@ -220,7 +213,6 @@ function autocod(id){
 
 			var arr  = $('#itprecio_'+id);
 			post_modbus_sinv(id);
-			//cdescrip(id);
 			
 			importe(id);
 			totalizar();
@@ -605,7 +597,7 @@ function autocod(id){
 	</tr>
 	</table>
 </div>
-<?php if(($form->_dataobject->get('tipo')=='Combo' && $form->_status=='show') || $form->_status!='show'){?>
+<?php if(true){?>
 <div id="tab7" style='background:#EFEFFF'>
 	<div style='overflow:auto;border: 1px solid #9AC8DA;background: #FAFAFA;height:200px'>
 		<table width='100%'>
