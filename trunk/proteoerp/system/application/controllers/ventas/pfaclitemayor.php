@@ -224,7 +224,7 @@ class pfaclitemayor extends validaciones{
 
 		// Campos para el detalle
 		$i=0;
-		$sel=array('a.codigo','a.descrip','a.existen','a.marca','a.iva'
+		$sel=array('a.codigo','a.descrip','a.existen','a.marca','a.iva','e.sinv_id'
 		,'ROUND(IF(formcal="U",ultimo,IF(formcal="P",pond,GREATEST(ultimo,pond)))*(100+a.mmargen)/100,2) AS precio'
 		,'IF(formcal="U",ultimo,IF(formcal="P",pond,GREATEST(ultimo,pond))) AS costo'
 		,'a.mmargen'
@@ -234,8 +234,10 @@ class pfaclitemayor extends validaciones{
 		,'a.escala1','a.pescala1'
 		,'a.escala2','a.pescala2'
 		,'a.escala3','a.pescala3');
+		$this->db->distinct();
 		$this->db->select($sel);
 		$this->db->from('sinv AS a');
+		$this->db->join('sinvfot AS e','a.id=e.sinv_id','left');
 		$this->db->where('a.activo','S');
 		$this->db->where('a.tipo','Articulo');
 		$this->db->orderby('a.marca');
@@ -262,7 +264,12 @@ class pfaclitemayor extends validaciones{
 			$edit->$obj->insertValue=$row->codigo;
 
 			$obj='desca_'.$i;
-			$edit->$obj = new freeField($obj,$obj,ucfirst(strtolower($row->descrip)));
+			$desca=ucfirst(strtolower($row->descrip));
+			if(!empty($row->sinv_id)){
+				$urldir = $this->config->slash_item('base_url').'images/foto.gif';
+				$desca .= ' <img src="'.$urldir.'" onclick="verimage(\''.$row->sinv_id.'\')">';
+			}
+			$edit->$obj = new freeField($obj,$obj,$desca);
 			$edit->$obj->ind = $i;
 
 			$obj='pexisten_'.$i;

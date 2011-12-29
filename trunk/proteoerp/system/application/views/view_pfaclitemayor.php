@@ -14,8 +14,7 @@ if(isset($form->error_string)) echo '<div class="alert">'.$form->error_string.'<
 echo $form_begin;
 $dbcliente=$this->db->escape($form->cliente->value);
 $nomcli=$this->datasis->dameval("SELECT nombre FROM scli WHERE cliente=$dbcliente");
-?>
-<?php echo $form->numero->value;
+
 if($form->getstatus()!='show'){
 ?>
 <script type="text/javascript">
@@ -51,17 +50,17 @@ function cescala(ind){
 	var pescala2= Number($('#pescala2_'+ind).val());
 	var pescala3= Number($('#pescala3_'+ind).val());
 	var cana    = Number($('#cana_'+ind).val());
-	var dxe     = $('#dxe_'+ind);
+	var valor   = 0;
 
 	if(cana >= escala3 && escala3>0){
-		dxe.val(pescala3);
+		valor=pescala3;
 	}else if(cana >= escala2 && escala2>0){
-		dxe.val(pescala2);
+		valor=pescala2;
 	}else if(cana >= escala1 && escala1>0){
-		dxe.val(pescala1);
-	}else{
-		dxe.val(0);
+		valor=pescala1;
 	}
+	$('#dxe_'+ind).val(valor);
+	$('#sh_dxe_'+ind).text(nformat(valor));
 	cprecio(ind);
 }
 
@@ -74,16 +73,20 @@ function importe(ind){
 	var escala3 = Number($('#escala3_'+ind).val());
 	var dxe     = $('#escala_'+ind);
 
-	if(cana < escala1 && escala1>0){
-		dxe.text('+'+escala1.toString());
-	}else if(cana < escala2 && escala2>0){
-		dxe.text('+'+escala2.toString());
-	}else if(cana < escala3 && escala3>0){
-		dxe.text('+'+escala3.toString());
+	if((cana < escala1 && escala1>0) || escala2==0){
+		dxe.text(escala1.toString()+'+');
+	}else if((cana < escala2 && escala2>0) || escala3==0){
+		dxe.text(escala2.toString()+'+');
+	}else{
+		dxe.text(escala3.toString()+'+');
 	}
 
 	$('#tota_'+ind).val(tota);
 	totaliza();
+}
+
+function verimage(ind){
+	vent=window.open ('<?php echo site_url('inventario/fotos/obtener/');?>'+'/'+ind,'fotoprod',"menubar=0,resizable=1,width=350,height=250,screenx="+((screen.availWidth/2)-175)+",screeny="+((screen.availHeight/2)-175));
 }
 
 function totaliza(){
@@ -117,7 +120,7 @@ function totaliza(){
 <?php } ?>
 <table align='center' width="100%">
 	<tr>
-		<td><?php echo ucwords(strtolower($nomcli)); ?></td>
+		<td><?php echo $form->numero->value.' '.ucwords(strtolower($nomcli)); ?></td>
 		<td align=right><?php echo $container_tr;?></td>
 	</tr>
 </table>
@@ -183,6 +186,17 @@ function totaliza(){
 		$it_pescala2 = "pescala2_$i";
 		$it_pescala3 = "pescala3_$i";
 
+		if($form->getstatus()!='show'){
+			$sh_dxm='<p class=\'miniblanco\'>'.(isset($form->$it_dxm->true_value)? $form->$it_dxm->true_value :0).'%</p>';
+			$sh_dxg='<p class=\'miniblanco\'>'.(isset($form->$it_dxg->true_value)? $form->$it_dxg->true_value :0).'%</p>';
+			$sh_dxz='<p class=\'miniblanco\'>'.(isset($form->$it_dxz->true_value)? $form->$it_dxz->true_value :0).'%</p>';
+			$sh_dxc='<p class=\'miniblanco\'>'.(isset($form->$it_dxc->true_value)? $form->$it_dxc->true_value :0).'%</p>';
+			$sh_dxp='<p class=\'miniblanco\'>'.(isset($form->$it_dxp->true_value)? $form->$it_dxp->true_value :0).'%</p>';
+			$sh_dxe='<p class=\'miniblanco\' id=\'sh_dxe_'.$i.'\'>'.(isset($form->$it_dxe->true_value)? $form->$it_dxe->true_value :0).'%</p>';
+		}else{
+			$sh_dxm=$sh_dxg=$sh_dxz=$sh_dxc=$sh_dxp=$sh_dxe='';
+		}
+
 		if($form->getstatus()=='show' && $form->$it_cana->value<=0) continue;
 		$pmarca=trim($form->$it_pmarca->value);
 		if($pmarcat!=$pmarca){
@@ -195,12 +209,12 @@ function totaliza(){
 	<tr id='tr_itpfac_<?php echo $i; ?>' <?php echo ($i%2 == 0) ? 'class="odd"' : '';?> >
 		<td><p class='miniblanco'><?php echo $form->$it_codigoa->value;?></p>
 			<?php echo $form->$it_desca->output.$form->$it_codigoa->output;   ?></td>
-		<td><?php echo $form->$it_dxm->output; ?></td>
-		<td><?php echo $form->$it_dxg->output; ?></td>
-		<td><?php echo $form->$it_dxz->output; ?></td>
-		<td><?php echo $form->$it_dxc->output; ?></td>
-		<td><?php echo $form->$it_dxp->output; ?></td>
-		<td><?php echo $form->$it_dxe->output; ?><b id='escala_<?php echo $i; ?>'></b></td>
+		<td align="center"><?php echo $sh_dxm.$form->$it_dxm->output; ?></td>
+		<td align="center"><?php echo $sh_dxg.$form->$it_dxg->output; ?></td>
+		<td align="center"><?php echo $sh_dxz.$form->$it_dxz->output; ?></td>
+		<td align="center"><?php echo $sh_dxc.$form->$it_dxc->output; ?></td>
+		<td align="center"><?php echo $sh_dxp.$form->$it_dxp->output; ?></td>
+		<td align="center"><?php echo $sh_dxe.$form->$it_dxe->output; ?><b id='escala_<?php echo $i; ?>'></b></td>
 		<td align="right"><?php echo nformat($form->$it_pexisten->value); ?></td>
 		<td align="right"><?php echo $form->$it_cana->output; ?></td>
 		<td align="right"><?php echo $form->$it_preca->output.$form->$it_mmargen->output.$form->$it_costo->output

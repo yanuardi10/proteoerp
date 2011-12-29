@@ -42,7 +42,7 @@ class Fotos extends Controller {
 			'filtro'  =>array('proveed'=>'C&oacute;digo','nombre'=>'Nombre'),
 			'retornar'=>array('proveed'=>'proveed'),
 			'titulo'  =>'Buscar Proveedor');
-			
+
 		$bSPRV=$this->datasis->modbus($mSPRV);
 
 		$filter = new DataFilter2("Filtro por Producto");
@@ -52,8 +52,8 @@ class Fotos extends Controller {
 		else
 			$ddire='left';
 
-		$filter->db->select("a.codigo as scodigo,a.descrip,a.grupo,b.codigo,a.id, a.marca, a.precio1,a.precio2,a.precio3,a.precio4"); 
-		$filter->db->from("sinv AS a");   
+		$filter->db->select("a.codigo as scodigo,a.descrip,a.grupo,b.codigo,a.id, a.marca, a.precio1,a.precio2,a.precio3,a.precio4");
+		$filter->db->from("sinv AS a");
 		$filter->db->join("sinvfot AS b","a.codigo=b.codigo",$ddire);
 		$filter->db->groupby("a.codigo");
 		$filter->script($ajax_onchange);
@@ -93,11 +93,11 @@ class Fotos extends Controller {
 		//$filter->grupo->style = "width:220px";
 
 		$filter->marca = new dropdownField("Marca", "marca");
-		$filter->marca->option("","");  
+		$filter->marca->option("","");
 		$filter->marca->options("SELECT TRIM(marca) AS clave, TRIM(marca) AS valor FROM marc ORDER BY marca");
-		$filter->marca->style = "width:140px"; 
+		$filter->marca->style = "width:140px";
 
-		$filter->fotos = new checkboxField("Mostrar solo productos con fotos", "fotos", "y","n"); 
+		$filter->fotos = new checkboxField("Mostrar solo productos con fotos", "fotos", "y","n");
 		$filter->fotos->clause='';
 		$filter->fotos->insertValue = "n";
 
@@ -121,7 +121,7 @@ class Fotos extends Controller {
 		//echo $grid->db->last_query();
 
 
-		//************ SUPER TABLE ************* 
+		//************ SUPER TABLE *************
 		$extras = '<script type="text/javascript">
 		//<![CDATA[
 		(function() {
@@ -150,7 +150,7 @@ class Fotos extends Controller {
 
 		$data['content'] = $grid->output;
 		$data['filtro']  = $filter->output;
-		
+
 		$data['script']  = script('jquery.js');
 
 		$data['head']    = $this->rapyd->get_head();
@@ -177,7 +177,7 @@ class Fotos extends Controller {
 		$sinv=array(
 			'tabla'   =>'sinv',
 			'columnas'=>array(
-			'codigo'  =>'C&acute;digo',
+			'codigo'  =>'C&oacute;digo',
 			'descrip' =>'Descripci&oacuten'),
 			'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'descrip'),
 			'retornar'=>array('codigo'=>'mcod'),
@@ -197,7 +197,6 @@ class Fotos extends Controller {
 		$edit->codigo->append($bSINV.'Seleccione todos los c&oacute;digos asociados a la foto separados por punto y coma (;)');
 		$edit->codigo->insertValue = $codigo;
 
-		//echo $edit->codigo->value;
 		$edit->foto = new uploadField('Imagen', 'nombre');
 		$edit->foto->rule          = 'required';
 		$edit->foto->upload_path   = $this->upload_path;
@@ -205,6 +204,12 @@ class Fotos extends Controller {
 		$edit->foto->delete_file   =false;
 		$edit->foto->append('Solo imagenes JPG');
 		$edit->foto->file_name = url_title($codigo).'_.jpg';
+
+		/*$edit->url = new inputField('Direcci&oacute;n Web','url');
+		$edit->url->size=30;
+		$edit->url->rule = 'condi_required|callback_chfoto';
+		$edit->url->append('Coloque la direccion URL si la foto viene de internet');
+		$edit->url->when=array('create');*/
 
 		$edit->principal = new dropdownField('Es foto principal','principal');
 		$edit->principal->option('N','No');
@@ -222,7 +227,7 @@ class Fotos extends Controller {
 
 		$pk=$edit->_dataobject->pk;
 		$pk=$pk['id'];
-		$edit->miframe = new iframeField("related", "inventario/fotos/asocfotos/$pk","210");  
+		$edit->miframe = new iframeField("related", "inventario/fotos/asocfotos/$pk","210");
 		$edit->miframe->when = array('modify','show');
 
 		$edit->buttons('modify', 'save', 'undo','delete', 'back');
@@ -260,6 +265,15 @@ class Fotos extends Controller {
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = heading('Carga de Fotos');
 		$this->load->view('view_ventanas', $data);
+	}
+
+	function chfoto($val){
+		$file=$_FILES['nombreUserFile']['name'];
+		if(empty($val) && empty($file)){
+			$this->validation->set_message('chfoto','El campo %s es requerido en este caso');
+			return false;
+		}
+		return true;
 	}
 
 	function asocfotos($id=''){
@@ -349,7 +363,9 @@ class Fotos extends Controller {
 	}
 
 	function _pre_insert($do){
-		$codigos=explode(';',$do->get('codigo'));
+		$codigos= explode(';',$do->get('codigo'));
+		//$url    = $do->get('url');
+		//$foto   = file_get_contents($url);
 
 		$id=$this->datasis->dameval("SELECT id FROM sinv WHERE codigo='$codigos[0]'");
 		$do->set('codigo' , $codigos[0]);
@@ -365,6 +381,7 @@ class Fotos extends Controller {
 				$c=true;
 			}
 		}
+		$do->rm_get('url');
 	}
 
 	function _pre_modifi($do){
@@ -580,7 +597,7 @@ class Fotos extends Controller {
 		$query = $this->db->query("SELECT * FROM sucu WHERE codigo=$sucu");
 		$msg='';
 		if ($query->num_rows() > 0){
-			$row = $query->row(); 
+			$row = $query->row();
 
 			$url=$row->url;
 			$url=$row->url.'/'.$row->proteo.'/uploads/inventario/Image/';
@@ -594,7 +611,7 @@ class Fotos extends Controller {
 					if (!file_exists($filename)) {
 						$uurl=$url.'/'.$row->nombre;
 						$uurl=reduce_double_slashes($uurl);
-						
+
 						$fp = fopen($filename, "w");
 						$ch = curl_init('http://'.$uurl);
 						curl_setopt($ch, CURLOPT_FILE, $fp);
@@ -603,9 +620,9 @@ class Fotos extends Controller {
 
 						curl_close($ch);
 						fclose($fp);
-						
+
 						$cont=file_get_contents($filename);
-						
+
 						$msg .= "Descargado $filename <br>";
 					}
 				}
