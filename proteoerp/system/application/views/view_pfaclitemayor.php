@@ -23,6 +23,7 @@ $(function() {
 	$('input[name^="preca_"]').each(function(){
 		$("#"+this.name+'_val').text(nformat(this.value,2));
 	});
+	totaliza();
 });
 
 function cprecio(ind){
@@ -110,7 +111,7 @@ function totaliza(){
 <table align='center' width="100%">
 	<tr>
 		<td>
-		<table width='100%' <?=($form->_status!='show'?' border="0" cellpadding="0" cellspacing="0"':'')?>>
+		<table width='100%' border="0" cellpadding="0" cellspacing="0">
 			<tr bgcolor='#7098D0'>
 				<td rowspan=2><b>C&oacute;digo</b></td>
 				<td rowspan=2><b>Descripci&oacute;n</b></td>
@@ -160,6 +161,7 @@ function totaliza(){
 				$it_pescala2 = "pescala2_$i";
 				$it_pescala3 = "pescala3_$i";
 
+				if($form->getstatus()=='show' && $form->$it_cana->value<=0) continue;
 				$pmarca=trim($form->$it_pmarca->value);
 				if($pmarcat!=$pmarca){
 					$pmarcat=$pmarca;

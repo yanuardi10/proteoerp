@@ -6,7 +6,7 @@ class pfaclitemayor extends validaciones{
 	function pfaclitemayor(){
 		parent :: Controller();
 		$this->load->library('rapyd');
-		//$this->datasis->modulo_id(120,1);
+		$this->datasis->modulo_id('142',1);
 	}
 
 	function index(){
@@ -73,7 +73,7 @@ class pfaclitemayor extends validaciones{
 		$filter->buttons('reset', 'search');
 		$filter->build('dataformfiltro');
 
-		$uri = anchor($this->url.'dataedit/show/<#id#>', '<#numero#>');
+		$uri = anchor($this->url.'dataedit/<raencode><#cod_cli#></raencode>/show/<#id#>', '<#numero#>');
 		$uri2 = anchor_popup('formatos/verhtml/PFAC/<#numero#>', 'Ver HTML', $atts);
 		$uri3 = anchor_popup('ventas/sfac/creadpfacf/<#numero#>', 'Facturar', $atts2);
 
@@ -86,10 +86,10 @@ class pfaclitemayor extends validaciones{
 		$grid->column_orderby('Fecha'        , '<dbdate_to_human><#fecha#></dbdate_to_human>','fecha', 'align=\'center\'');
 		$grid->column_orderby('Cliente'      , 'cod_cli','cod_cli');
 		$grid->column_orderby('Nombre'       , 'nombre','nombre');
-		$grid->column_orderby('Sub.Total'    , '<nformat><#totals#></nformat>', 'totals', "align=right");
+		//$grid->column_orderby('Sub.Total'    , '<nformat><#totals#></nformat>', 'totals', "align=right");
 		$grid->column_orderby('IVA'          , '<nformat><#iva#></nformat>'   , 'iva',    "align=right");
 		$grid->column_orderby('Total'        , '<nformat><#totalg#></nformat>', 'totalg', "align=right");
-		$grid->column_orderby('Referencia'   , 'referen','referen');
+		//$grid->column_orderby('Referencia'   , 'referen','referen');
 		$grid->column_orderby('Factura'      , 'factura','factura');
 		$grid->column_orderby('Status'       , 'status', 'status');
 
@@ -237,14 +237,14 @@ class pfaclitemayor extends validaciones{
 		$this->db->where('a.tipo','Articulo');
 		$this->db->orderby('a.marca');
 		$this->db->orderby('a.descrip');
+        $numero=$edit->get_from_dataobjetct('numero');
+        if($numero!==false){
+			$dbnumero=$this->db->escape($numero);
+			$this->db->join('itpfac AS b','a.codigo=b.codigoa AND b.numa='.$dbnumero,'left');
+		}
 		$this->db->join('marc AS c','a.marca=c.marca');
 		$this->db->join('grup AS d','a.grupo=d.grupo');
 		$this->db->limit(50);
-        $numero=$edit->get_from_dataobjetct('numero');
-        if($numero!==false){
-			$this->db->join('itpfac AS b','a.codigo=b.codigoa','LEFT');
-			$this->db->where('b.numa',$numero);
-		}
 
 		$query = $this->db->get();
 		//echo $this->db->last_query();
@@ -392,9 +392,12 @@ class pfaclitemayor extends validaciones{
 				$p_es+=$row->$nom;
 			}
 
+			$gdxe=$edit->get_from_dataobjetct_rel('itpfac','dxe',$i);
+
 			$obj='dxe_'.$i;
 			if($p_es>0){
-				$edit->$obj = new checkboxField('dxe', $obj, '0','0');
+				$gdxe=$edit->get_from_dataobjetct_rel('itpfac','dxe',$i);
+				$edit->$obj = new checkboxField('dxe', $obj, ($gdxe==false)?'0':$gdxe,'0');
 				$edit->$obj->onchange = "cescala('$i')";
 			}else{
 				$edit->$obj    = new autoUpdateField('dxp','0','0');
@@ -424,7 +427,7 @@ class pfaclitemayor extends validaciones{
 			$edit->$obj->insertValue = 0;
 			$edit->$obj->rel_id      = 'itpfac';
 			$edit->$obj->db_name     = 'tota';
-			$edit->$obj->ind;
+			$edit->$obj->ind         = $i;
 
 			$i++;
 		}
@@ -449,11 +452,16 @@ class pfaclitemayor extends validaciones{
 		$edit->totalg->readonly = true;
 		$edit->totalg->size = 10;
 
-		$edit->usuario = new autoUpdateField('usuario', $this->session->userdata('usuario'), $this->session->userdata('usuario'));
+		$edit->estampa = new autoUpdateField('estampa' ,date('Ymd'), date('Ymd'));
+		$edit->hora    = new autoUpdateField('hora',date('H:i:s'), date('H:i:s'));
+		$edit->usuario = new autoUpdateField('usuario',$this->secu->usuario(),$this->secu->usuario());
 
 		$control=$this->rapyd->uri->get_edited_id();
 
-		$edit->buttons('save', 'undo', 'delete', 'back','add');
+		$action = "javascript:window.location='".site_url($this->url.'filterscli')."'";
+		$edit->button('btn_add', 'Agregar', $action, 'TR');
+
+		$edit->buttons('save', 'modify','undo', 'delete', 'back');
 
 		if($this->genesal){
 			$edit->build();
@@ -500,24 +508,6 @@ class pfaclitemayor extends validaciones{
 		redirect('ventas/pfaclite/dataedit/modify/'.$id);
 	}
 
-	function creapfac(){
-		foreach($_POST as $ind=>$val){
-			$matches=array();
-			$_POST['fecha']=date('d/m/Y');
-
-			if(preg_match('/codigoa_(?P<id>\d+)/', $ind, $matches) > 0){
-				$id     = $matches['id'];
-				$precio = $_POST['precio_'.$id];
-				$iva    = $_POST['itiva_'.$id];
-				$_POST['preca_'.$id] = round($precio*100/(100+$iva),2);
-			}
-		}
-		//print_r($_POST);
-		$this->genesal=false;
-		$rt=$this->dataedit();
-		echo $rt;
-	}
-
 	function _pre_insert($do){
 		//Chequea que llege al menos un articulo
 		$ccana = 0;
@@ -538,7 +528,17 @@ class pfaclitemayor extends validaciones{
 		//$transac = $this->datasis->fprox_numero('ntransa');
 		//$do->set('transac', $transac);
 		$fecha = $do->get('fecha');
-		$vd    = $do->get('vd');
+		$vd    =$this->secu->getvendedor();
+		$do->set('vd',$vd);
+
+		$cod_cli = $do->get('cod_cli');
+		$rrow    = $this->datasis->damerow('SELECT nombre,rifci,zona FROM scli WHERE cliente='.$this->db->escape($cod_cli));
+		if($rrow!=false){
+			$do->set('nombre',$rrow['nombre']);
+			$do->set('rifci' ,$rrow['rifci']);
+			$do->set('zona' ,$rrow['zona']);
+		}
+
 
 		$iva = $totals = 0;
 		for($i = 0;$i < $cana;$i++){
@@ -554,8 +554,6 @@ class pfaclitemayor extends validaciones{
 				$iva    += $ittota * ($itiva / 100);
 				$totals += $ittota;
 				$do->set_rel('itpfac', 'mostrado', $iva + $ittota, $i);
-			}else{
-				$do->rel_rm('itpfac',$i);
 			}
 		}
 		$totalg = $totals + $iva;
