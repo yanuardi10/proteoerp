@@ -48,7 +48,7 @@ Ext.define('Ext.ux.statusbar.ValidationStatus', {
      * The {@link #text} value to be applied when there is a form validation error.
      * Defaults to <tt>'The form has errors (click for details...)'</tt>.
      */
-    showText : 'The form has errors (click for details...)',
+    showText : 'La forma tiene errores (click para detalles...)',
     /**
      * @cfg {String} showText
      * The {@link #text} value to display when the error list is displayed.
@@ -60,7 +60,7 @@ Ext.define('Ext.ux.statusbar.ValidationStatus', {
      * The {@link #text} value to be applied when the form is being submitted.
      * Defaults to <tt>'Saving...'</tt>.
      */
-    submitText : 'Saving...',
+    submitText : 'Guardando...',
     
     // private
     init : function(sb){

@@ -1112,14 +1112,14 @@ var cplaStore = new Ext.data.Store({
 								defaults: {  },
 								style:'padding:4px',
 								items: [
-									{ xtype: 'textfield', fieldLabel: 'Codigo',        labelWidth: 50, name: 'cliente',  allowBlank: false,   columnWidth: 0.20, id: 'cliente', maxLength: 5, enforceMaxLength: true },
-									{ xtype: 'textfield', fieldLabel: 'RIF/CI',        labelWidth:100, name: 'rifci',    allowBlank: false,   columnWidth: 0.40, regex: /((^[VEJG][0-9])|(^[P][A-Z0-9]))/, regexText: 'Debe colocar una letra JVGE y 10 digitos' },
-									{ xtype: 'combo',     fieldLabel: 'Grupo',         labelWidth: 60, name: 'grupo',    store: [".$grupo."], columnWidth: 0.40 },
-									{ xtype: 'textfield', fieldLabel: 'Nombre',        labelWidth: 50, name: 'nombre',   allowBlank: false,   columnWidth: 0.60 },
-									{ xtype: 'combo',     fieldLabel: 'Tipo',          labelWidth: 60, name: 'tiva',     store: [".$tiva."],  columnWidth: 0.30 },
-									{ xtype: 'textfield', fieldLabel: 'Contacto',      labelWidth: 50, name: 'contacto', allowBlank: true,    columnWidth: 0.60 },
-									{ xtype: 'combo',     fieldLabel: 'Precio',        labelWidth: 60, name: 'tipo',     store: [".$tipo."],  columnWidth: 0.30 },
-									{ xtype: 'textfield', fieldLabel: 'Nombre Fiscal', labelWidth: 90, name: 'nomfis',   allowBlank: true,    columnWidth : 0.98 },
+									{ xtype: 'textfield', fieldLabel: 'Codigo',        labelWidth: 50, name: 'cliente',  allowBlank: false, columnWidth: 0.20, id: 'cliente', maxLength: 5, enforceMaxLength: true },
+									{ xtype: 'textfield', fieldLabel: 'RIF/CI',        labelWidth:100, name: 'rifci',    allowBlank: false, columnWidth: 0.40, regex: /((^[VEJG][0-9])|(^[P][A-Z0-9]))/, regexText: 'Debe colocar una letra JVGE y 10 digitos' },
+									{ xtype: 'combo',     fieldLabel: 'Grupo',         labelWidth: 60, name: 'grupo',    allowBlank: false, columnWidth: 0.40, store: [".$grupo."] },
+									{ xtype: 'textfield', fieldLabel: 'Nombre',        labelWidth: 50, name: 'nombre',   allowBlank: false, columnWidth: 0.60, invalidText: 'Debe colocar el nombre'  },
+									{ xtype: 'combo',     fieldLabel: 'Tipo',          labelWidth: 60, name: 'tiva',     allowBlank: false, columnWidth: 0.30, store: [".$tiva."] },
+									{ xtype: 'textfield', fieldLabel: 'Contacto',      labelWidth: 50, name: 'contacto', allowBlank: true,  columnWidth: 0.60 },
+									{ xtype: 'combo',     fieldLabel: 'Precio',        labelWidth: 60, name: 'tipo',     allowBlank: false, columnWidth: 0.30, store: [".$tipo."] },
+									{ xtype: 'textfield', fieldLabel: 'Nombre Fiscal', labelWidth: 90, name: 'nomfis',   allowBlank: true,  columnWidth: 0.98, invalidText: 'Debe colocar el nombre fiscal'  },
 								]
 							},{
 								xtype:'tabpanel',

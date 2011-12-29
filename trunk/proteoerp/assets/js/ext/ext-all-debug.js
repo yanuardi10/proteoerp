@@ -79631,10 +79631,10 @@ Ext.define('Ext.grid.header.Container', {
     defaultWidth: 100,
 
 
-    sortAscText: 'Sort Ascending',
-    sortDescText: 'Sort Descending',
+    sortAscText: 'Ascendente',
+    sortDescText: 'Descendente',
     sortClearText: 'Clear Sort',
-    columnsText: 'Columns',
+    columnsText: 'Columnas',
 
     lastHeaderCls: Ext.baseCSSPrefix + 'column-header-last',
     firstHeaderCls: Ext.baseCSSPrefix + 'column-header-first',

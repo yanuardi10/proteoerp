@@ -48,12 +48,12 @@ Ext.define('Ext.ux.grid.filter.DateFilter', {
      * @cfg {String} afterText
      * Defaults to 'After'.
      */
-    afterText : 'After',
+    afterText : 'Despues',
     /**
      * @cfg {String} beforeText
      * Defaults to 'Before'.
      */
-    beforeText : 'Before',
+    beforeText : 'Antes',
     /**
      * @cfg {Object} compareMap
      * Map for assigning the comparison values used in serialization.
@@ -102,7 +102,7 @@ Ext.define('Ext.ux.grid.filter.DateFilter', {
      * @cfg {String} onText
      * Defaults to 'On'.
      */
-    onText : 'On',
+    onText : 'En',
 
     /**
      * @cfg {Object} pickerOpts
