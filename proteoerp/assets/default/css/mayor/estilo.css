@@ -1,0 +1,60 @@
+body{
+	background:#272727;
+	font: .8em "Lucida Grande", Tahoma, Arial, Helvetica, sans-serif;
+}
+ol{
+	margin:0;
+	padding: 0 1.5em;
+}
+table{
+	color:#FFF;
+	background:#272727;
+	border-collapse:collapse;
+	/*width:647px;
+	border:5px solid #900;*/
+}
+thead{
+
+}
+thead th{
+	padding:0em 0em 0em;
+	font-size:100%;
+	text-align:left;
+	background:#7098D0;
+}
+thead tr{
+	background-color:#5a7600;
+}
+td{
+	padding:0em 0em;
+}
+tbody tr.odd td{
+	background:transparent url(tr_bg.png) repeat top left;
+}
+tfoot{
+}
+tfoot td{
+	padding-bottom:1.5em;
+}
+tfoot tr{
+}
+* html tr.odd td{
+	background:#C00;
+	filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='tr_bg.png', sizingMethod='scale');
+}
+.rowgroup{
+	background-color:#272727;
+	color:#7f95ff;
+	font:italic bold 12px/16px Georgia, serif;
+}
+.colbg1{
+	background-color:#900;
+}
+.colbg2{
+	background-color:#00586c;
+}
+.miniblanco{
+	font-size:9px;
+	padding:0 0 0 0;
+	margin: 0 0 0 0;
+}

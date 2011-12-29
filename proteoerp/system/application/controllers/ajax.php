@@ -6,7 +6,7 @@ class Ajax extends Controller {
 	}
 
 	function index(){
-		
+
 	}
 
 	//***************************************
@@ -20,7 +20,7 @@ class Ajax extends Controller {
 		$data = '{[ ]}';
 		if($mid !== false){
 			$retArray = $retorno = array();
-			
+
 			//Cheque si existe el codigo
 			$mSQL="SELECT TRIM(nombre) AS nombre, TRIM(rif) AS rif, proveed, direc1 AS direc, reteiva
 				FROM sprv WHERE proveed=${qmid} LIMIT 1";
@@ -39,7 +39,7 @@ class Ajax extends Controller {
 			}else{
 				$ww='';
 			}
-			
+
 			$mSQL="SELECT TRIM(nombre) AS nombre, TRIM(rif) AS rif, proveed, direc1 AS direc, reteiva
 				FROM sprv WHERE rif LIKE ${qdb} OR nombre LIKE ${qdb} ${ww}
 				ORDER BY rif LIMIT 10";
@@ -116,8 +116,12 @@ class Ajax extends Controller {
 	}
 
 	function buscasinv(){
+		$comodin=$this->datasis->traevalor('COMODIN');
 		$mid  = $this->input->post('q');
-		$qdb  = $this->db->escape('%'.$mid.'%');
+		if(strlen($comodin)==1){
+			$mid=str_replace($comodin,'%',$mid);
+		}
+		$qdb  = $this->db->escape($mid.'%');
 		$qba  = $this->db->escape($mid);
 
 		$data = '{[ ]}';

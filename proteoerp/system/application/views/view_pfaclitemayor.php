@@ -66,9 +66,22 @@ function cescala(ind){
 }
 
 function importe(ind){
-	var cana  = Number($('#cana_'+ind).val());
-	var preca = Number($('#preca_'+ind).val());
-	var tota  = cana*preca;
+	var cana    = Number($('#cana_'+ind).val());
+	var preca   = Number($('#preca_'+ind).val());
+	var tota    = cana*preca;
+	var escala1 = Number($('#escala1_'+ind).val());
+	var escala2 = Number($('#escala2_'+ind).val());
+	var escala3 = Number($('#escala3_'+ind).val());
+	var dxe     = $('#escala_'+ind);
+
+	if(cana < escala1 && escala1>0){
+		dxe.text('+'+escala1.toString());
+	}else if(cana < escala2 && escala2>0){
+		dxe.text('+'+escala2.toString());
+	}else if(cana < escala3 && escala3>0){
+		dxe.text('+'+escala3.toString());
+	}
+
 	$('#tota_'+ind).val(tota);
 	totaliza();
 }
@@ -104,118 +117,123 @@ function totaliza(){
 <?php } ?>
 <table align='center' width="100%">
 	<tr>
-		<td><?php echo $nomcli; ?></td>
+		<td><?php echo ucwords(strtolower($nomcli)); ?></td>
 		<td align=right><?php echo $container_tr;?></td>
 	</tr>
 </table>
-<table align='center' width="100%">
-	<tr>
-		<td>
-		<table width='100%' border="0" cellpadding="0" cellspacing="0">
-			<tr bgcolor='#7098D0'>
-				<td rowspan=2><b>C&oacute;digo</b></td>
-				<td rowspan=2><b>Descripci&oacute;n</b></td>
-				<td colspan=6 align="center"><b>Descuentos</b></td>
-				<td rowspan=2 align="right" ><b>Exis</b></td>
-				<td rowspan=2 align="right" ><b>Cant</b></td>
-				<td rowspan=2 align="right" ><b>Precio</b></td>
-			</tr>
-			<tr bgcolor='#7098D0'>
-				<td>DM</td>
-				<td>DG</td>
-				<td>DZ</td>
-				<td>DC</td>
-				<td>DE</td>
-				<td>D+</td>
-			</tr>
 
-			<?php
-			$pmarcat='';
-			for($i=0;$i<$cana;$i++) {
-				$it_codigoa  = "codigoa_$i";
-				$it_desca    = "desca_$i";
-				$it_cana     = "cana_$i";
-				$it_preca    = "preca_$i";
-				$it_tota     = "tota_$i";
-				$it_iva      = "itiva_$i";
-				$it_costo    = "costo_$i";
-				$it_mmargen  = "sinvmmargen_$i";
-				$it_dxapli   = "dxapli_$i";
-				$it_pond     = "itpond_$i";
-				$it_ultimo   = "itultimo_$i";
-				$it_formcal  = "itformcal_$i";
-				$it_pm       = "itpm_$i";
-				$it_precat   = "precat_$i";
-				$it_pexisten = "pexisten_$i";
-				$it_pmarca   = "pmarca_$i";
-				$it_dxm      = "dxm_$i";
-				$it_dxg      = "dxg_$i";
-				$it_dxz      = "dxz_$i";
-				$it_dxc      = "dxc_$i";
-				$it_dxe      = "dxe_$i";
-				$it_dxp      = "dxp_$i";
-				$it_escala1  = "escala1_$i";
-				$it_escala2  = "escala2_$i";
-				$it_escala3  = "escala3_$i";
-				$it_pescala1 = "pescala1_$i";
-				$it_pescala2 = "pescala2_$i";
-				$it_pescala3 = "pescala3_$i";
+<table width='100%' align='center'>
+	<col>
+	<col class="colbg1">
+	<col class="colbg1">
+	<col class="colbg1">
+	<col class="colbg1">
+	<col class="colbg1">
+	<col class="colbg1">
+	<col>
+	<col>
+	<col class="colbg2">
+	<thead>
+		<tr>
+			<td rowspan=2><b>Art&iacute;culo</b></td>
+			<td colspan=6 align="center"><b>Descuentos</b></td>
+			<td rowspan=2 align="right" ><b>Exis.</b></td>
+			<td rowspan=2 align="center"><b>Cant.</b></td>
+			<td rowspan=2 align="right" ><b>Precio</b></td>
+		</tr>
+		<tr>
+			<td>DM</td>
+			<td>DG</td>
+			<td>DZ</td>
+			<td>DC</td>
+			<td>D+</td>
+			<td>DE</td>
+		</tr>
+	</thead>
+	<tbody>
+	<?php
+	$pmarcat='';
+	for($i=0;$i<$cana;$i++) {
+		$it_codigoa  = "codigoa_$i";
+		$it_desca    = "desca_$i";
+		$it_cana     = "cana_$i";
+		$it_preca    = "preca_$i";
+		$it_tota     = "tota_$i";
+		$it_iva      = "itiva_$i";
+		$it_costo    = "costo_$i";
+		$it_mmargen  = "sinvmmargen_$i";
+		$it_dxapli   = "dxapli_$i";
+		$it_pond     = "itpond_$i";
+		$it_ultimo   = "itultimo_$i";
+		$it_formcal  = "itformcal_$i";
+		$it_pm       = "itpm_$i";
+		$it_precat   = "precat_$i";
+		$it_pexisten = "pexisten_$i";
+		$it_pmarca   = "pmarca_$i";
+		$it_dxm      = "dxm_$i";
+		$it_dxg      = "dxg_$i";
+		$it_dxz      = "dxz_$i";
+		$it_dxc      = "dxc_$i";
+		$it_dxe      = "dxe_$i";
+		$it_dxp      = "dxp_$i";
+		$it_escala1  = "escala1_$i";
+		$it_escala2  = "escala2_$i";
+		$it_escala3  = "escala3_$i";
+		$it_pescala1 = "pescala1_$i";
+		$it_pescala2 = "pescala2_$i";
+		$it_pescala3 = "pescala3_$i";
 
-				if($form->getstatus()=='show' && $form->$it_cana->value<=0) continue;
-				$pmarca=trim($form->$it_pmarca->value);
-				if($pmarcat!=$pmarca){
-					$pmarcat=$pmarca;
-				?>
-				<tr style="background:#DD3333; font-weight:bold;color:#FFFFFF">
-					<td colspan="11"><?php echo $pmarca; ?></td>
-				</tr>
-				<?php } ?>
-			<tr id='tr_itpfac_<?php echo $i; ?>' <?=($i%2 == 0 ?'style="background:#FFFFFF;"':'style="background:#DDDDDD;"')?>>
-				<td><?php echo $form->$it_codigoa->output; ?></td>
-				<td><?php echo $form->$it_desca->output;   ?></td>
-				<td><?php echo $form->$it_dxm->output;     ?></td>
-				<td><?php echo $form->$it_dxg->output;     ?></td>
-				<td><?php echo $form->$it_dxz->output;     ?></td>
-				<td><?php echo $form->$it_dxc->output;     ?></td>
-				<td><?php echo $form->$it_dxe->output;     ?></td>
-				<td><?php echo $form->$it_dxp->output;     ?></td>
-				<td align="right"><?php echo nformat($form->$it_pexisten->value); ?></td>
-				<td align="right"><?php echo $form->$it_cana->output; ?></td>
-				<td align="right"><?php echo $form->$it_preca->output.$form->$it_mmargen->output.$form->$it_costo->output
-					.$form->$it_escala1->output
-					.$form->$it_escala2->output
-					.$form->$it_escala3->output
-					.$form->$it_pescala1->output
-					.$form->$it_pescala2->output
-					.$form->$it_pescala3->output
-					.$form->$it_tota->output
-					.$form->$it_iva->output; ?></td>
-			</tr>
-			<?php } ?>
-		</table>
-		</td>
+		if($form->getstatus()=='show' && $form->$it_cana->value<=0) continue;
+		$pmarca=trim($form->$it_pmarca->value);
+		if($pmarcat!=$pmarca){
+			$pmarcat=$pmarca;
+		?>
+		<tr class='rowgroup'>
+			<td colspan="11"><?php echo ucwords(strtolower($pmarca)); ?></td>
+		</tr>
+		<?php } ?>
+	<tr id='tr_itpfac_<?php echo $i; ?>' <?php echo ($i%2 == 0) ? 'class="odd"' : '';?> >
+		<td><p class='miniblanco'><?php echo $form->$it_codigoa->value;?></p>
+			<?php echo $form->$it_desca->output.$form->$it_codigoa->output;   ?></td>
+		<td><?php echo $form->$it_dxm->output; ?></td>
+		<td><?php echo $form->$it_dxg->output; ?></td>
+		<td><?php echo $form->$it_dxz->output; ?></td>
+		<td><?php echo $form->$it_dxc->output; ?></td>
+		<td><?php echo $form->$it_dxp->output; ?></td>
+		<td><?php echo $form->$it_dxe->output; ?><b id='escala_<?php echo $i; ?>'></b></td>
+		<td align="right"><?php echo nformat($form->$it_pexisten->value); ?></td>
+		<td align="right"><?php echo $form->$it_cana->output; ?></td>
+		<td align="right"><?php echo $form->$it_preca->output.$form->$it_mmargen->output.$form->$it_costo->output
+			.$form->$it_escala1->output
+			.$form->$it_escala2->output
+			.$form->$it_escala3->output
+			.$form->$it_pescala1->output
+			.$form->$it_pescala2->output
+			.$form->$it_pescala3->output
+			.$form->$it_tota->output
+			.$form->$it_iva->output; ?></td>
 	</tr>
+	<?php } ?>
+	</tbody>
+</table>
+
+<table width='100%' style='backgroud-color:#FFFDE9' align='center'>
 	<tr>
-		<td>
-		<table width='100%' style='backgroud-color:#FFFDE9' >
-			<tr>
-				<td class="littletablerow" width='350'><b><?php echo $form->observa->label;   ?></b></td>
-				<td class="littletableheader" align='right'><b><?php echo $form->totals->label; ?></b></td>
-				<td class="littletablerow" align='right'><?php echo $form->totals->output; ?></td>
-			</tr><tr>
-				<td class="littletablerow"><?php echo $form->observa->output;   ?></td>
-				<td class="littletableheader" align='right'><b><?php echo $form->ivat->label;    ?></b></td>
-				<td class="littletablerow" align='right'><?php echo $form->ivat->output; ?></td>
-			</tr><tr>
-				<td><?php echo $form->observ1->output; ?></td>
-				<td class="littletableheader" align='right' ><b><?php echo $form->totalg->label;  ?></b></td>
-				<td class="littletablerow" align='right' style='font-size:18px;font-weight: bold'><?php echo $form->totalg->output; ?></td>
-			</tr>
-		</table>
-		<?php echo $form_end; ?>
-		</td>
+		<td><b><?php echo $form->observa->label;   ?></b></td>
+		<td align='right'><b><?php echo $form->totals->label; ?></b></td>
+		<td align='right'><?php echo $form->totals->output; ?></td>
+	</tr><tr>
+		<td><?php echo $form->observa->output;   ?></td>
+		<td align='right'><b><?php echo $form->ivat->label;    ?></b></td>
+		<td align='right'><?php echo $form->ivat->output; ?></td>
+	</tr><tr>
+		<td><?php echo $form->observ1->output; ?></td>
+		<td align='right' ><b><?php echo $form->totalg->label;  ?></b></td>
+		<td align='right' style='font-size:18px;font-weight: bold'><?php echo $form->totalg->output; ?></td>
 	</tr>
 </table>
+<?php echo $form_end; ?>
+
 <?php endif; ?>
 <?php
 ob_end_flush();

@@ -113,7 +113,8 @@ class pfaclitemayor extends validaciones{
 		$filter = new DataFilter('Selecci&oacute;n de Clientes', 'scli');
 		$filter->button('btn_back',RAPYD_BUTTON_BACK,"javascript:window.location='".site_url($back)."'", 'BL');
 		$filter->nombre= new inputField('Nombre','nombre');
-		$filter->rifci= new inputField('RIF','rifci');
+		$filter->rifci= new inputField('CI/RIF','rifci');
+		$filter->rifci->size=15;
 		$filter->buttons('reset','search');
 		$filter->build();
 
@@ -135,6 +136,8 @@ class pfaclitemayor extends validaciones{
 	}
 
 	function dataedit($cliente){
+		if(!$this->_exitescli($cliente)) redirect($this->url.'filterscli');
+
 		$this->rapyd->load('dataobject', 'dataedit');
 		$this->rapyd->uri->keep_persistence();
 		$this->load->helper('form');
@@ -250,13 +253,12 @@ class pfaclitemayor extends validaciones{
 		//echo $this->db->last_query();
 		foreach ($query->result() as $row){
 			$obj='codigoa_'.$i;
-			$edit->$obj = new inputField('C&oacute;digo <#o#>', $obj);
+			$edit->$obj = new hiddenField('C&oacute;digo <#o#>', $obj);
 			$edit->$obj->ind     = $i;
 			$edit->$obj->size    = 12;
 			$edit->$obj->db_name = 'codigoa';
 			$edit->$obj->rel_id  = 'itpfac';
 			$edit->$obj->rule    = 'callback_chcodigoa';
-			$edit->$obj->type    = 'inputhidden';
 			$edit->$obj->insertValue=$row->codigo;
 
 			$obj='desca_'.$i;
@@ -458,8 +460,10 @@ class pfaclitemayor extends validaciones{
 
 		$control=$this->rapyd->uri->get_edited_id();
 
-		$action = "javascript:window.location='".site_url($this->url.'filterscli')."'";
-		$edit->button('btn_add', 'Agregar', $action, 'TR');
+		if($edit->getstatus()=='show'){
+			$action = "javascript:window.location='".site_url($this->url.'filterscli')."'";
+			$edit->button('btn_add', 'Agregar', $action, 'TR');
+		}
 
 		$edit->buttons('save', 'modify','undo', 'delete', 'back');
 
@@ -469,21 +473,13 @@ class pfaclitemayor extends validaciones{
 			$conten['cana']  = $sinvcana;
 			$conten['form']  = & $edit;
 			$conten['title'] = heading('Pedidos No. '.$edit->numero->value);
+			$data['head']    = style('mayor/estilo.css');
 			$data['script']  = script('jquery.js');
 			$data['script'] .= phpscript('nformat.js');
 			$data['content'] = $this->load->view('view_pfaclitemayor', $conten,true);
 			$data['title']   = '';
 			$this->load->view('view_ventanas_lite', $data);
 
-
-			//$data['head']   = script('jquery.js');
-			//$data['head']  .= script('jquery-ui.js');
-			//$data['head']  .= script('plugins/jquery.numeric.pack.js');
-			//$data['head']  .= script('plugins/jquery.floatnumber.js');
-			//$data['head']  .= phpscript('nformat.js');
-			//$data['head']   = $this->rapyd->get_head();
-
-			//$this->load->view('view_ventanas_sola', $data);
 		}else{
 			$edit->on_save_redirect=false;
 			$edit->build();
@@ -678,6 +674,18 @@ class pfaclitemayor extends validaciones{
 	function _post_delete($do){
 		$codigo = $do->get('numero');
 		logusu('pfac', "Pedido $codigo ELIMINADO");
+	}
+
+	function _exitescli($cliente){
+		$dbscli= $this->db->escape($cliente);
+		$mSQL  = "SELECT COUNT(*) AS cana FROM scli WHERE cliente=$dbscli";
+		$query = $this->db->query($mSQL);
+		if ($query->num_rows() > 0){
+			$row = $query->row();
+			if( $row->cana>0) return true; else return false;
+		}else{
+			return false;
+		}
 	}
 
 	function instalar(){
