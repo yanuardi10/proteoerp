@@ -69,7 +69,7 @@ Ext.define('Ext.ux.LiveSearchGridPanel', {
      */
     matchCls: 'x-livesearch-match',
     
-    defaultStatusText: 'Nothing Found',
+    defaultStatusText: 'No se encontro nada',
     
     // Component initialization override: adds the top and bottom toolbars and setup headers renderer.
     initComponent: function() {
@@ -89,13 +89,13 @@ Ext.define('Ext.ux.LiveSearchGridPanel', {
             }, {
                 xtype: 'button',
                 text: '<',
-                tooltip: 'Find Previous Row',
+                tooltip: 'Fila Anterior',
                 handler: me.onPreviousClick,
                 scope: me
             },{
                 xtype: 'button',
                 text: '>',
-                tooltip: 'Find Next Row',
+                tooltip: 'Proxima Fila',
                 handler: me.onNextClick,
                 scope: me
             }, '-', {
@@ -228,7 +228,7 @@ Ext.define('Ext.ux.LiveSearchGridPanel', {
              if (me.currentIndex !== null) {
                  me.getSelectionModel().select(me.currentIndex);
                  me.statusBar.setStatus({
-                     text: count + ' matche(s) found.',
+                     text: count + ' encontrados.',
                      iconCls: 'x-status-valid'
                  });
              }

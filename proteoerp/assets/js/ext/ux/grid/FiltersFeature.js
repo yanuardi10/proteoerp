@@ -161,7 +161,7 @@ Ext.define('Ext.ux.grid.FiltersFeature', {
      * @cfg {String} menuFilterText
      * defaults to <tt>'Filters'</tt>.
      */
-    menuFilterText : 'Filters',
+    menuFilterText : 'Filtros',
     /**
      * @cfg {String} paramPrefix
      * The url parameter prefix for the filters.

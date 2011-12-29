@@ -291,16 +291,16 @@ Ext.onReady(function() {
 
     if(Ext.grid.header.Container){
       Ext.apply(Ext.grid.header.Container.prototype, {
-        sortAscText  : "Sort Ascending",
-        sortDescText : "Sort Descending",
-        columnsText  : "Columns"
+        sortAscText  : "Ascendente",
+        sortDescText : "Descendente",
+        columnsText  : "Columnas"
       });
     }
 
     if(Ext.grid.GroupingFeature){
       Ext.apply(Ext.grid.GroupingFeature.prototype, {
         emptyGroupText : '(None)',
-        groupByText    : 'Group By This Field',
+        groupByText    : 'Agrupar por Este Campo',
         showGroupsText : 'Show in Groups'
       });
     }

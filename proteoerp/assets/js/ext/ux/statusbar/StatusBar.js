@@ -165,7 +165,7 @@ sb.setStatus({
      * It can be overridden at any time by passing the <code>text</code>
      * argument into <code>{@link #showBusy}</code>.
      */
-    busyText : 'Loading...',
+    busyText : 'Cargando...',
     /**
      * @cfg {Number} autoClear
      * The number of milliseconds to wait after setting the status via

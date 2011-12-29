@@ -286,8 +286,8 @@ Ext.onReady(function() {
 
     if(Ext.grid.header.Container){
       Ext.apply(Ext.grid.header.Container.prototype, {
-        sortAscText  : "Ordenar en forma ascendente",
-        sortDescText : "Ordenar en forma descendente",
+        sortAscText  : "Ascendente",
+        sortDescText : "Descendente",
         columnsText  : "Columnas"
       });
     }

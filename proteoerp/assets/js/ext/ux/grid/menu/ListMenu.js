@@ -31,7 +31,7 @@ Ext.define('Ext.ux.grid.menu.ListMenu', {
      * @cfg {String} paramPrefix
      * Defaults to 'Loading...'.
      */
-    loadingText : 'Loading...',
+    loadingText : 'Cargando...',
     /**
      * @cfg {Boolean} loadOnShow
      * Defaults to true.

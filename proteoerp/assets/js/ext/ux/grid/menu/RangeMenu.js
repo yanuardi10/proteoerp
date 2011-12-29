@@ -106,7 +106,7 @@ menuItemCfgs : {
      * </pre>
      */
     menuItemCfgs : {
-        emptyText: 'Enter Number...',
+        emptyText: 'Entre un Numero...',
         selectOnFocus: false,
         width: 155
     },

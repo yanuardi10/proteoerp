@@ -46,7 +46,7 @@ Ext.define('Ext.ux.grid.filter.BooleanFilter', {
 	 * @cfg {String} yesText
 	 * Defaults to 'Yes'.
 	 */
-	yesText : 'Yes',
+	yesText : 'Si',
 	/**
 	 * @cfg {String} noText
 	 * Defaults to 'No'.
