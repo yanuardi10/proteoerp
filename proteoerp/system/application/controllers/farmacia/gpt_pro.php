@@ -19,42 +19,25 @@ class gpt_pro extends Controller {
 		$this->rapyd->uri->keep_persistence();
 		$this->rapyd->load('datafilter','datagrid');
 
-		/*$filter = new DataFilter($this->titp, 'gpt_pro');
-
-		$filter->nom_pro = new inputField('Nombre del producto','nom_pro');
-		$filter->nom_pro->rule      ='max_length[200]';
-		$filter->nom_pro->maxlength =200;
-
-		$filter->lab_pro = new inputField('laboratorio','lab_pro');
-		$filter->lab_pro->rule      ='max_length[200]';
-		$filter->lab_pro->maxlength =200;
-
-		$filter->cod_pro = new inputField('Cod. Pro','cod_pro');
-		$filter->cod_pro->rule      ='max_length[200]';
-		$filter->cod_pro->maxlength =200;
-
-		$filter->gen_pro = new inputField('Gen&eacute;rico','gen_pro');
-		$filter->gen_pro->rule      ='max_length[300]';
-		$filter->gen_pro->maxlength =300;
-
-		$filter->buttons('reset', 'search');
-		$filter->build();*/
-		$filter = new DataForm('farmacia/gpt_pro/filteredgrid/process');
+		$filter = new DataFilter('', 'gpt_pro');
 
 		$filter->parr = new inputField('Par&aacute;metro', 'parr');
-		$filter->parr->rule = 'trim|required';
+		$filter->parr->rule   = 'trim|required';
+		$filter->parr->clause = '';
 
-		$filter->submit = new submitField('Buscar', 'submitbtn');
-		$filter->submit->in='parr';
-		$filter->build_form();
+		//$filter->submit = new submitField('Buscar', 'submitbtn');
+		//$filter->submit->in='parr';
+
+		$filter->buttons('reset', 'search');
+		$filter->build();
 
 		$uri = anchor($this->url.'dataedit/show/<raencode><#id_pro#></raencode>','<#nom_pro#>','target="framedetrepo" onclick="$(\'#cajafiltro\').hide();"');
 		//$uri = anchor($this->url.'dataedit/show/<raencode><#id_pro#></raencode>','<#nom_pro#>');
 
-		$grid = new DataGrid('Especialidades farmaceuticas','gpt_pro');
-		if ($filter->on_success()){
+		$grid = new DataGrid('Especialidades farmaceuticas');
+		if (strlen($filter->parr->newValue)>0){
 			$dbparr=$this->db->escape($filter->parr->newValue);
-			$filter->db->where('MATCH(nom_pro,pres_pro,lab_pro,gen_pro,mono_pro) AGAINST ('.$dbparr.')');
+			$grid->db->where('MATCH(nom_pro,pres_pro,lab_pro,gen_pro,mono_pro) AGAINST ('.$dbparr.')');
 		}
 		$grid->order_by('nom_pro');
 		$grid->per_page = 15;
@@ -177,10 +160,9 @@ class gpt_pro extends Controller {
 		$grid->column('Descripci&oacute;n'  ,'descrip','align="left"');
 		$grid->column('&Uacute;ltima compra','<dbdate_to_human><#fechac#></dbdate_to_human>','align="center"');
 		$grid->column('Existencia'          ,'<nformat><#existen#></nformat>','align="right"');
-		$grid->column('Precio'              ,'<nformat><#precio1#></nformat>','align="right"');
+		$grid->column('PVP'                 ,'<nformat><#precio1#></nformat>','align="right"');
 		$grid->build();
 
-		//$edit->buttons('back');
 		$edit->build();
 		$data['content'] = $edit->output;
 		if($grid->recordCount>0)
@@ -212,13 +194,11 @@ class gpt_pro extends Controller {
 			if ($tbl === false) continue;
 
 			while ($row = mdb_fetch_assoc($tbl)){
-				//print_r($row);
 				$sql = $this->db->insert_string($sistab, $row);
 				$ban=$this->db->simple_query($sql);
 				if($ban==false){
 					$error++;memowrite($sql,'gpt_prod');
 				}
-				//echo $sql.br();
 			}
 		}
 	}
