@@ -38,7 +38,7 @@ class DataEdit extends DataForm {
 	var $back_cancel_save = false;
 	var $back_cancel_delete = false;
 	var $on_save_redirect=true;
-	 
+
 	/**
 	 * PHP4 constructor.
 	 *
@@ -120,7 +120,7 @@ class DataEdit extends DataForm {
 				$this->_status = "unknow_record";
 			}
 			///// modify /////
-			
+
 		} elseif ($this->rapyd->uri->is_set("modify") && (count($this->rapyd->uri->get("modify")) == $this->_pkey + 1)) {
 			$this->_status = "modify";
 			$this->_process_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "modify", "update");
@@ -129,12 +129,12 @@ class DataEdit extends DataForm {
 				$this->_status = "unknow_record";
 			}
 			///// create /////
-			
+
 		} elseif ($this->rapyd->uri->is_set("create")) {
 			$this->_status = "create";
 			$this->_process_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "create", "insert");
 			///// delete /////
-			
+
 		} elseif ($this->rapyd->uri->is_set("delete") && (count($this->rapyd->uri->get("delete")) == $this->_pkey + 1)) {
 			$this->_status = "delete";
 			$this->_process_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "delete", "do_delete");
@@ -153,14 +153,14 @@ class DataEdit extends DataForm {
 			$this->_action = "insert";
 			$this->_postprocess_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "insert", "show");
 			///// update /////
-			
+
 		} elseif ($this->rapyd->uri->is_set("update")) {
 			$this->_action = "update";
 			//this uri is completed in the "process" method
 			$this->_postprocess_uri = $this->rapyd->uri->unset_clause($this->rapyd->uri->uri_array, "update");
 			$this->_dataobject->load($this->URI_to_pk($id_str, $this->_dataobject));
 			///// delete /////
-			
+
 		} elseif ($this->rapyd->uri->is_set("do_delete")) {
 			$this->_action = "delete";
 			$result = $this->_dataobject->load($this->URI_to_pk($id_str, $this->_dataobject));
@@ -190,7 +190,7 @@ class DataEdit extends DataForm {
 				if (isset($this->validation->$keyfield)) {
 					$pk_check[$keyfield] = $this->validation->$keyfield;
 					// detect that a pk is hidden, so no integrity check needed
-					
+
 				} elseif (array_key_exists($keyfield, $hiddens)) {
 					$pk_check[$keyfield] = $hiddens[$keyfield];
 				}
@@ -222,7 +222,7 @@ class DataEdit extends DataForm {
 				}
 				if ($this->on_success()) {
 					$this->_postprocess_uri.= "/" . $this->rapyd->uri->build_clause("show" . $this->pk_to_URI($this->_dataobject->pk));
-					
+
 					if($this->on_save_redirect){
 						if ($this->back_save) {
 							header("Refresh:0;url=" . $this->back_url);
@@ -383,7 +383,7 @@ class DataEdit extends DataForm {
 	function _build_save_button($caption = RAPYD_BUTTON_SAVE) {
 		if (($this->_status == "create") || ($this->_status == "modify")) {
 			$this->submit("btn_submit", $caption, "TR"); // ANTES bl
-			
+
 		}
 	}
 	/**
@@ -403,7 +403,7 @@ class DataEdit extends DataForm {
 				if ($this->rapyd->uri->is_set("modify")) {
 					$undo_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "modify", "show");
 					//is modify on error
-					
+
 				} elseif ($this->rapyd->uri->is_set("update")) {
 					$undo_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "update", "show");
 				}
@@ -433,7 +433,7 @@ class DataEdit extends DataForm {
 		if (($this->_status == "show") || ($this->_status == "unknow_record") || ($this->_action == "delete")) {
 			$action = "javascript:window.location='{$this->back_url}'";
 			$this->button("btn_back", $caption, $action, "TR"); //ANTES BL
-			
+
 		}
 	}
 	/**
@@ -514,12 +514,21 @@ class DataEdit extends DataForm {
 		return $this->_status;
 	}
 
-        function get_from_dataobjetct($db_name){
-                if($this->_dataobject->loaded){
-                        $requestValue =$this->_dataobject->get($db_name);
-                        if(empty($requestValue)) $requestValue=false;
-                }else
-                        $requestValue=false;
-                return $requestValue;
-        }
+	function get_from_dataobjetct($db_name){
+		if($this->_dataobject->loaded){
+			$requestValue =$this->_dataobject->get($db_name);
+			if(empty($requestValue)) $requestValue=false;
+		}else
+			$requestValue=false;
+		return $requestValue;
+	}
+
+	function get_from_dataobjetct_rel($rel_id,$field,$id=-1){
+		if($this->_dataobject->loaded){
+			$requestValue =$this->_dataobject->get_rel($rel_id, $field,$id);
+			if(empty($requestValue)) $requestValue=false;
+		}else
+			$requestValue=false;
+		return $requestValue;
+	}
 }
