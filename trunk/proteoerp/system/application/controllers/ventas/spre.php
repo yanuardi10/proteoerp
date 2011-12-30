@@ -98,7 +98,7 @@ function sprever(value, record, columnObj, grid, colNo, rowNo){
 	var url = '';
 	url = '<a href=\"#\" onclick=\"window.open(\'".base_url()."ventas/spre/dataedit/show/'+grid.getCellValue(9,rowNo)+ '\', \'_blank\', \'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'\')\"; heigth=\"600\" >';
 	url = url +value+'</a>';
-	return url;	
+	return url;
 }
 
 function imprimir(value, record, columnObj, grid, colNo, rowNo){
@@ -108,7 +108,7 @@ function imprimir(value, record, columnObj, grid, colNo, rowNo){
 	url = url+'&nbsp;<a href=\"#\" onclick=\"window.open(\'".base_url()."formatos/ver/PRESUP/'+grid.getCellValue(1,rowNo)+ '\', \'_blank\', \'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'\')\"; heigth=\"600\" >';
 	url = url +'<img src=\'".base_url()."images/pdf_logo.gif\'/>'+'&nbsp;</a>';
 
-	return url;	
+	return url;
 }
 ";
 		$colsOption = $sigmaA["colsOption"];
@@ -137,7 +137,7 @@ var gridOption={
 };
 
 var mygrid=new Sigma.Grid(gridOption);
-Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );		
+Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 ";
 
 
@@ -157,7 +157,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 
 		$data['content']  = $mtool;
 		$data['content'] .= $SigmaCont;
-		
+
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = heading('Presupuesto');
 		$this->load->view('view_ventanas', $data);
@@ -176,33 +176,33 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 				$sortField = $json->{'sortInfo'}[0]->{'columnId'};
 			} else {
 				$sortField = "numero";
-			}    
- 
+			}
+
 			if(isset($json->{'sortInfo'}[0]->{'sortOrder'})){
 				$sortOrder = $json->{'sortInfo'}[0]->{'sortOrder'};
 			} else {
 				$sortOrder = "DESC";
-			}    
+			}
 
 			for ($i = 0; $i < count($json->{'filterInfo'}); $i++) {
 				if($json->{'filterInfo'}[$i]->{'logic'} == "equal"){
 					$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . "='" . $json->{'filterInfo'}[$i]->{'value'} . "' ";
 				}elseif($json->{'filterInfo'}[$i]->{'logic'} == "notEqual"){
-					$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . "!='" . $json->{'filterInfo'}[$i]->{'value'} . "' ";    
+					$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . "!='" . $json->{'filterInfo'}[$i]->{'value'} . "' ";
 				}elseif($json->{'filterInfo'}[$i]->{'logic'} == "less"){
 					$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . "<" . $json->{'filterInfo'}[$i]->{'value'} . " ";
 				}elseif($json->{'filterInfo'}[$i]->{'logic'} == "lessEqual"){
-					$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . "<=" . $json->{'filterInfo'}[$i]->{'value'} . " ";    
+					$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . "<=" . $json->{'filterInfo'}[$i]->{'value'} . " ";
 				}elseif($json->{'filterInfo'}[$i]->{'logic'} == "great"){
 					$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . ">" . $json->{'filterInfo'}[$i]->{'value'} . " ";
 				}elseif($json->{'filterInfo'}[$i]->{'logic'} == "greatEqual"){
-					$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . ">=" . $json->{'filterInfo'}[$i]->{'value'} . " ";        
+					$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . ">=" . $json->{'filterInfo'}[$i]->{'value'} . " ";
 				}elseif($json->{'filterInfo'}[$i]->{'logic'} == "like"){
-					$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . " LIKE '%" . $json->{'filterInfo'}[$i]->{'value'} . "%' ";        
+					$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . " LIKE '%" . $json->{'filterInfo'}[$i]->{'value'} . "%' ";
 				}elseif($json->{'filterInfo'}[$i]->{'logic'} == "startWith"){
-					$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . " LIKE '" . $json->{'filterInfo'}[$i]->{'value'} . "%' ";        
+					$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . " LIKE '" . $json->{'filterInfo'}[$i]->{'value'} . "%' ";
 				}elseif($json->{'filterInfo'}[$i]->{'logic'} == "endWith"){
-					$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . " LIKE '%" . $json->{'filterInfo'}[$i]->{'value'} . "' ";                
+					$filter .= $json->{'filterInfo'}[$i]->{'columnId'} . " LIKE '%" . $json->{'filterInfo'}[$i]->{'value'} . "' ";
 				}
 				$filter .= " AND ";
 			}
@@ -212,13 +212,13 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 				//to get how many total records.
 				$mSQL = "SELECT count(*) FROM spre WHERE $filter numero>0";
 				$totalRec = $this->datasis->dameval($mSQL);
- 
- 
+
+
 				//make sure pageNo is inbound
 				if($pageNo<1||$pageNo>ceil(($totalRec/$pageSize))){
 					$pageNo = 1;
 				}
- 
+
 				$mSQL = "SELECT numero, fecha, cod_cli, nombre, totals, iva, totalg, vd, id FROM spre WHERE $filter numero>0 ORDER BY ".$sortField." ".$sortOrder." LIMIT ".($pageNo - 1)*$pageSize.", ".$pageSize;
 				$query = $this->db->query($mSQL);
 				if ($query->num_rows() > 0){
@@ -244,7 +244,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 				$sql = "";
 				$params = array();
 				$errors = "";
-  
+
 				//deal with those deleted
 				$deletedRecords = $json->{'deletedRecords'};
 				foreach ($deletedRecords as $value){
@@ -295,7 +295,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 			//pageno starts with 1 instead of 0
 			$mSQL = "SELECT numero, fecha, cod_cli, nombre, totals, iva, totalg FROM spre ORDER BY numero DESC LIMIT ".($pageNo - 1)*$pageSize.", ".$pageSize;
 			$query = $this->db->query($mSQL);
-	
+
 			if ($query->num_rows() > 0){
 				$retArray = array();
 				foreach( $query->result_array() as  $row ) {
@@ -311,7 +311,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 			echo $ret;
 		}
 	}
-	
+
 
 	//**********************************************************************************************************
 	//
@@ -354,7 +354,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		'tabla'   =>'scli',
 		'columnas'=>array(
 			'cliente' =>'C&oacute;digo Cliente',
-			'nombre'=>'Nombre', 
+			'nombre'=>'Nombre',
 			'cirepre'=>'Rif/Cedula',
 			'dire11'=>'Direcci&oacute;n',
 			'tipo'=>'Tipo'),
@@ -702,7 +702,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$do->set('totals' ,round($totals ,2));
 		$do->set('totalg' ,round($totalg ,2));
 		$do->set('iva'    ,round($iva    ,2));
-		
+
 		return true;
 	}
 
@@ -718,7 +718,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		if($precio4<0) $precio4=0;
 
 		if($preca<$precio4){
-			$this->validation->set_message('chpreca', 'El art&iacute;culo '.$codigo.' debe contener un precio de al menos '.nformat($precio4).'' .$preca);
+			$this->validation->set_message('chpreca', 'El art&iacute;culo '.$codigo.' debe contener un precio de al menos '.nformat($precio4));
 			return false;
 		}else{
 			return true;
@@ -749,7 +749,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		//LOCAL mALMACEN := '0001'
 		//LOCAL mTRANSAC := ''
 		//LOCAL mPEDIDO, mTIPO
-		
+
 		$query=$this->db->query("SELECT * FROM sfac WHERE tipo_doc='$tipo_doc' AND numero'$numero'");
 		$sfac     = $query->row_array();
 
@@ -804,7 +804,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
 
 		$where = $this->datasis->extjsfiltro($filters,'spre');
-	
+
 		$this->db->_protect_identifiers=false;
 		$this->db->select('*');
 		$this->db->from('spre');
@@ -840,7 +840,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 			$salida = "<br><table width='100%' border=1>";
 			$salida .= "<tr bgcolor='#e7e3e7'><td colspan=3>Movimiento en Cuentas X Cobrar</td></tr>";
 			$salida .= "<tr bgcolor='#e7e3e7'><td>Tp</td><td align='center'>Numero</td><td align='center'>Monto</td></tr>";
-			
+
 			foreach ($query->result_array() as $row)
 			{
 				$salida .= "<tr>";
@@ -917,16 +917,16 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 
 
 		$columnas = "
-		{ header: 'Numero',     width:  60, sortable: true,  dataIndex: 'numero',  field: { type: 'textfield' }, filter: { type: 'string' }}, 
-		{ header: 'Fecha',      width:  70, sortable: true,  dataIndex: 'fecha',   field: { type: 'date'      }, filter: { type: 'date'   }}, 
-		{ header: 'Cliente',    width:  50, sortable: true,  dataIndex: 'cod_cli', field: { type: 'textfield' }, filter: { type: 'string' }, renderer: renderScli }, 
-		{ header: 'Nombre',     width: 200, sortable: true,  dataIndex: 'nombre',  field: { type: 'textfield' }, filter: { type: 'string' }}, 
-		{ header: 'SubTotal',   width: 100, sortable: true,  dataIndex: 'totals',  field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
-		{ header: 'IVA',        width:  80, sortable: true,  dataIndex: 'iva',     field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
-		{ header: 'Total',      width: 100, sortable: true,  dataIndex: 'totalg',  field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
+		{ header: 'Numero',     width:  60, sortable: true,  dataIndex: 'numero',  field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Fecha',      width:  70, sortable: true,  dataIndex: 'fecha',   field: { type: 'date'      }, filter: { type: 'date'   }},
+		{ header: 'Cliente',    width:  50, sortable: true,  dataIndex: 'cod_cli', field: { type: 'textfield' }, filter: { type: 'string' }, renderer: renderScli },
+		{ header: 'Nombre',     width: 200, sortable: true,  dataIndex: 'nombre',  field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'SubTotal',   width: 100, sortable: true,  dataIndex: 'totals',  field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'IVA',        width:  80, sortable: true,  dataIndex: 'iva',     field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Total',      width: 100, sortable: true,  dataIndex: 'totalg',  field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
 		{ header: 'Vendedor',   width:  60, sortable: true,  dataIndex: 'vd',      field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Peso',       width:  60, sortable: true,  dataIndex: 'peso',    field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
-		{ header: 'Condiciones',width: 160, sortable: true,  dataIndex: 'condi1',  field: { type: 'textfield' }, filter: { type: 'string' }}, 
+		{ header: 'Peso',       width:  60, sortable: true,  dataIndex: 'peso',    field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Condiciones',width: 160, sortable: true,  dataIndex: 'condi1',  field: { type: 'textfield' }, filter: { type: 'string' }},
 		{ header: 'Usuario',    width:  60, sortable: true,  dataIndex: 'usuario', field: { type: 'textfield' }, filter: { type: 'string' }},
 		{ header: 'Rif/CI',     width:  90, sortable: true,  dataIndex: 'rifci' , field: { type: 'textfield' }, filter: { type: 'string' }},
 		{ header: 'Direc',      width: 200, sortable: true,  dataIndex: 'direc' , field: { type: 'textfield' }, filter: { type: 'string' }},
@@ -937,11 +937,11 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 
 		$coldeta = "
 	var Deta1Col = [
-		{ header: 'Codigo',      width:  90, sortable: true, dataIndex: 'codigo', field: { type: 'textfield' }, filter: { type: 'string' }, renderer: renderSinv }, 
-		{ header: 'codid',       dataIndex: 'codid',  hidden: true}, 
-		{ header: 'Descripcion', width: 250, sortable: true, dataIndex: 'desca',  field: { type: 'textfield' }, filter: { type: 'string' }}, 
-		{ header: 'Cant',        width:  60, sortable: true, dataIndex: 'cana',   field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
-		{ header: 'Precio',      width: 100, sortable: true, dataIndex: 'preca',  field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
+		{ header: 'Codigo',      width:  90, sortable: true, dataIndex: 'codigo', field: { type: 'textfield' }, filter: { type: 'string' }, renderer: renderSinv },
+		{ header: 'codid',       dataIndex: 'codid',  hidden: true},
+		{ header: 'Descripcion', width: 250, sortable: true, dataIndex: 'desca',  field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Cant',        width:  60, sortable: true, dataIndex: 'cana',   field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Precio',      width: 100, sortable: true, dataIndex: 'preca',  field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
 		{ header: 'Importe',     width: 100, sortable: true, dataIndex: 'importe',field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
 		{ header: 'IVA',         width:  60, sortable: true, dataIndex: 'iva',    field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
 		{ header: 'Precio 4',    width:  60, sortable: true, dataIndex: 'precio4',field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
@@ -949,7 +949,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 
 		$variables='';
 		$valida="		{ type: 'length', field: 'numero',  min:  1 }";
-		
+
 
 		$funciones = "
 function renderScli(value, p, record) {
@@ -1002,7 +1002,7 @@ function renderSinv(value, p, record) {
 		autoSync: true,
 		method: 'POST'
 	});
-	
+
 	//////////////////////////////////////////////////////////
 	//
 	var gridDeta1 = Ext.create('Ext.grid.Panel', {
@@ -1022,7 +1022,7 @@ function renderSinv(value, p, record) {
 		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/verhtml/PRESUP/{numero}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/html_icon.gif', 'alt' => 'Formato HTML', 'title' => 'Formato HTML','border'=>'0'))."</a></td>',
 		'<td align=\'center\'>{numero}</td>',
 		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/ver/PRESUP/{numero}\',     \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',   'title' => 'Formato PDF', 'border'=>'0'))."</a></td></tr>',
-		'<tr><td colspan=3 align=\'center\' >--</td></tr>',		
+		'<tr><td colspan=3 align=\'center\' >--</td></tr>',
 		'</table>','nanai'
 	];
 
@@ -1096,23 +1096,23 @@ function renderSinv(value, p, record) {
 					handler: function() {
 						var selection = gridMaest.getView().getSelectionModel().getSelection()[0];
 						Ext.MessageBox.show({
-							title: 'Confirme', 
-							msg: 'Seguro que quiere eliminar la compra Nro. '+selection.data.numero, 
-							buttons: Ext.MessageBox.YESNO, 
-							fn: function(btn){ 
-								if (btn == 'yes') { 
+							title: 'Confirme',
+							msg: 'Seguro que quiere eliminar la compra Nro. '+selection.data.numero,
+							buttons: Ext.MessageBox.YESNO,
+							fn: function(btn){
+								if (btn == 'yes') {
 									if (selection) {
 										//storeMaest.remove(selection);
 									}
 									storeMaest.load();
-								} 
-							}, 
-							icon: Ext.MessageBox.QUESTION 
-						});  
+								}
+							},
+							icon: Ext.MessageBox.QUESTION
+						});
 					}
 				}
 			]
-		}		
+		}
 		";
 
 
@@ -1129,7 +1129,7 @@ function renderSinv(value, p, record) {
 
 
 		$titulow = 'Compras';
-		
+
 		$filtros = "";
 		$features = "
 		features: [ { ftype: 'filters', encode: 'json', local: false } ],
@@ -1156,7 +1156,7 @@ function renderSinv(value, p, record) {
 		$data['coldeta']     = $coldeta;
 		$data['acordioni']   = $acordioni;
 		$data['final']       = $final;
-		
+
 		$data['title']  = heading('Presupuestos');
 		$this->load->view('extjs/extjsvenmd',$data);
 
@@ -1166,7 +1166,7 @@ function renderSinv(value, p, record) {
 
 
 		$script = "
-<script type=\"text/javascript\">		
+<script type=\"text/javascript\">
 var BASE_URL   = '".base_url()."';
 var BASE_PATH  = '".base_url()."';
 var BASE_ICONS = '".base_url()."assets/icons/';
@@ -1195,29 +1195,29 @@ var mxs = ((screen.availWidth/2)-400);
 var mys = ((screen.availHeight/2)-300);
 
 //Column Model Presupuestos
-var SpreCol = 
+var SpreCol =
 	[
-		{ header: 'Numero',     width:  60, sortable: true,  dataIndex: 'numero',  field: { type: 'textfield' }, filter: { type: 'string' }}, 
-		{ header: 'Fecha',      width:  70, sortable: false, dataIndex: 'fecha',   field: { type: 'date'      }, filter: { type: 'date'   }}, 
-		{ header: 'Cliente',    width:  50, sortable: true,  dataIndex: 'cod_cli', field: { type: 'textfield' }, filter: { type: 'string' }, renderer: renderScli }, 
-		{ header: 'Nombre',     width: 200, sortable: true,  dataIndex: 'nombre',  field: { type: 'textfield' }, filter: { type: 'string' }}, 
-		{ header: 'SubTotal',   width: 100, sortable: true,  dataIndex: 'totals',  field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
-		{ header: 'IVA',        width:  80, sortable: true,  dataIndex: 'iva',     field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
-		{ header: 'Total',      width: 100, sortable: true,  dataIndex: 'totalg',  field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
-		{ header: 'Peso',       width:  60, sortable: true,  dataIndex: 'peso',    field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
-		{ header: 'Condiciones',width: 160, sortable: true,  dataIndex: 'condi1',  field: { type: 'textfield' }, filter: { type: 'string' }}, 
-		{ header: 'Vende',      width:  40, sortable: true,  dataIndex: 'vd',      field: { type: 'textfield' }, filter: { type: 'string' }}, 
+		{ header: 'Numero',     width:  60, sortable: true,  dataIndex: 'numero',  field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Fecha',      width:  70, sortable: false, dataIndex: 'fecha',   field: { type: 'date'      }, filter: { type: 'date'   }},
+		{ header: 'Cliente',    width:  50, sortable: true,  dataIndex: 'cod_cli', field: { type: 'textfield' }, filter: { type: 'string' }, renderer: renderScli },
+		{ header: 'Nombre',     width: 200, sortable: true,  dataIndex: 'nombre',  field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'SubTotal',   width: 100, sortable: true,  dataIndex: 'totals',  field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'IVA',        width:  80, sortable: true,  dataIndex: 'iva',     field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Total',      width: 100, sortable: true,  dataIndex: 'totalg',  field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Peso',       width:  60, sortable: true,  dataIndex: 'peso',    field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Condiciones',width: 160, sortable: true,  dataIndex: 'condi1',  field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Vende',      width:  40, sortable: true,  dataIndex: 'vd',      field: { type: 'textfield' }, filter: { type: 'string' }},
 		{ header: 'Usuario',    width:  60, sortable: true,  dataIndex: 'usuario', field: { type: 'textfield' }, filter: { type: 'string' }}
 	];
 
 //Column Model Detalle de Presupuesto
-var ItSpreCol = 
+var ItSpreCol =
 	[
-		{ header: 'Codigo',      width:  90, sortable: true, dataIndex: 'codigo', field: { type: 'textfield' }, filter: { type: 'string' }, renderer: renderSinv }, 
-		{ header: 'codid',       dataIndex: 'codid',  hidden: true}, 
-		{ header: 'Descripcion', width: 250, sortable: true, dataIndex: 'desca',  field: { type: 'textfield' }, filter: { type: 'string' }}, 
-		{ header: 'Cant',        width:  60, sortable: true, dataIndex: 'cana',   field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
-		{ header: 'Precio',      width: 100, sortable: true, dataIndex: 'preca',  field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
+		{ header: 'Codigo',      width:  90, sortable: true, dataIndex: 'codigo', field: { type: 'textfield' }, filter: { type: 'string' }, renderer: renderSinv },
+		{ header: 'codid',       dataIndex: 'codid',  hidden: true},
+		{ header: 'Descripcion', width: 250, sortable: true, dataIndex: 'desca',  field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Cant',        width:  60, sortable: true, dataIndex: 'cana',   field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Precio',      width: 100, sortable: true, dataIndex: 'preca',  field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
 		{ header: 'Importe',     width: 100, sortable: true, dataIndex: 'importe',field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
 		{ header: 'IVA',         width:  60, sortable: true, dataIndex: 'iva',    field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
 		{ header: 'Precio 4',    width:  60, sortable: true, dataIndex: 'precio4',field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}
@@ -1267,7 +1267,7 @@ Ext.onReady(function() {
 				totalProperty: 'results'
 			}
 		}
-	});	
+	});
 
 	//////////////////////////////////////////////////////////
 	// create the Data Store
@@ -1286,7 +1286,7 @@ Ext.onReady(function() {
 		// encode and local configuration options defined previously for easier reuse
 		encode: 'json', // json encode the filter query
 		local: false
-	};    
+	};
 
 
 	//////////////////////////////////////////////////////////////////
@@ -1332,19 +1332,19 @@ Ext.onReady(function() {
 					handler: function() {
 						var selection = gridSpre.getView().getSelectionModel().getSelection()[0];
 						Ext.MessageBox.show({
-							title: 'Confirme', 
-							msg: 'Seguro que quiere eliminar el presupuesto Nro. '+selection.data.numero, 
-							buttons: Ext.MessageBox.YESNO, 
-							fn: function(btn){ 
-								if (btn == 'yes') { 
+							title: 'Confirme',
+							msg: 'Seguro que quiere eliminar el presupuesto Nro. '+selection.data.numero,
+							buttons: Ext.MessageBox.YESNO,
+							fn: function(btn){
+								if (btn == 'yes') {
 									if (selection) {
 										//storeSpre.remove(selection);
 									}
 									storeSpre.load();
-								} 
-							}, 
-							icon: Ext.MessageBox.QUESTION 
-						});  
+								}
+							},
+							icon: Ext.MessageBox.QUESTION
+						});
 					}
 				}
 			]
@@ -1419,7 +1419,7 @@ otros
 		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/verhtml/PRESUP/{numero}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/html_icon.gif', 'alt' => 'Formato HTML', 'title' => 'Formato HTML','border'=>'0'))."</a></td>',
 		'<td align=\'center\'>{numero}</td>',
 		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/ver/PRESUP/{numero}\',     \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',   'title' => 'Formato PDF', 'border'=>'0'))."</a></td></tr>',
-		'<tr><td colspan=3 align=\'center\' >--</td></tr>',		
+		'<tr><td colspan=3 align=\'center\' >--</td></tr>',
 		'</table>'
 	];
 	var spreTpl = Ext.create('Ext.Template', spreTplMarkup);
@@ -1508,7 +1508,7 @@ otros
 				title: 'center-detail-title',
 				margins: '0 0 0 0',
 				items: gridItSpre
-			}]	
+			}]
 		}]
 	});
 	storeSpre.load();
@@ -1517,7 +1517,7 @@ otros
 
 </script>
 ";
-		
+
 	}
 
 
