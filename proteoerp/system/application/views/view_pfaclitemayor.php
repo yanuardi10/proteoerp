@@ -71,17 +71,20 @@ function importe(ind){
 	var escala1 = Number($('#escala1_'+ind).val());
 	var escala2 = Number($('#escala2_'+ind).val());
 	var escala3 = Number($('#escala3_'+ind).val());
-	var dxe     = $('#escala_'+ind);
+	var valor   = 0;
 
 	if((cana < escala1 && escala1>0) || escala2==0){
-		dxe.text(escala1.toString()+'+');
+		valor=escala1;
 	}else if((cana < escala2 && escala2>0) || escala3==0){
-		dxe.text(escala2.toString()+'+');
+		valor=escala2;
 	}else{
-		dxe.text(escala3.toString()+'+');
+		valor=escala3;
 	}
 
 	$('#tota_'+ind).val(tota);
+	if(valor>0){
+		$('#escala_'+ind).text(valor.toString()+'+');
+	}
 	totaliza();
 }
 
