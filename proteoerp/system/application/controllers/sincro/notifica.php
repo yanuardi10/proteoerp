@@ -14,6 +14,7 @@ class notifica extends controller {
 		$this->adjuntos=null;
 		$this->msj='';
 		$this->tipo='txt';
+		$this->nmonit=true; //Colocar en false para obmitir el mensaje de cuenta no monitoreada
 		$this->instalar();
 	}
 
@@ -505,10 +506,15 @@ class notifica extends controller {
 			$hbody.= $body;
 			$hbody.= '</body></html>';
 			$message->setHTMLBody($hbody);
+			if($this->nmonit){
+				$message->setTXTBody("\n\nEsta es una cuenta de correo no monitoreada. Por favor no responda o reenvíe mensajes a esta cuenta.");
+			}
 		}else{
+			if($this->nmonit){
+				$body .= "\n\nEsta es una cuenta de correo no monitoreada. Por favor no responda o reenvíe mensajes a esta cuenta.";
+			}
 			$message->setTXTBody($body);
 		}
-		$message->setTXTBody("\n\nEsta es una cuenta de correo no monitoreada. Por favor no responda o reenvíe mensajes a esta cuenta.");
 		$sbody = $message->get();
 		$headers = $message->headers($extraheaders);
 
