@@ -7,11 +7,11 @@ class smov extends Controller {
 	function smov(){
 		parent::Controller();
 		$this->load->library('rapyd');
-		//$this->datasis->modulo_id(216,1);
+		$this->datasis->modulo_id('502',1);
 	}
 
 	function index(){
-		redirect($this->url."filteredgrid");
+		redirect($this->url.'filteredgrid');
 	}
 
 	function filteredgrid(){
@@ -75,7 +75,7 @@ class smov extends Controller {
 
 		$edit = new DataEdit($this->tits, 'smov');
 
-		$edit->back_url = site_url($this->url."filteredgrid");
+		$edit->back_url = site_url($this->url.'filteredgrid');
 		$edit->pre_process('insert','_pre_insert');
 		$edit->pre_process('update','_pre_update');
 		$edit->pre_process('delete','_pre_delete');
@@ -347,13 +347,13 @@ class smov extends Controller {
 		$numero = $this->uri->segment($this->uri->total_segments()-3);
 		$id     = $this->uri->segment($this->uri->total_segments()-4);
 		$mdevo  = "Exito";
-		
+
 		//memowrite("efecha=$efecha, fecha=$fecha, numero=$numero, id=$id, reinte=$reinte","sfacreiva");
-		
+
 		// status de la factura
 		$fecha  = substr($fecha, 6,4).substr($fecha, 3,2).substr($fecha, 0,2);
 		$efecha = substr($efecha,6,4).substr($efecha,3,2).substr($efecha,0,2);
-	
+
 		$tipo_doc = $this->datasis->dameval("SELECT tipo_doc FROM sfac WHERE id=$id");
 		$referen  = $this->datasis->dameval("SELECT referen  FROM sfac WHERE id=$id");
 		$numfac   = $this->datasis->dameval("SELECT numero   FROM sfac WHERE id=$id");
@@ -372,17 +372,17 @@ class smov extends Controller {
 
 				$transac = $this->datasis->prox_sql("ntransa");
 				$transac = str_pad($transac, 8, "0", STR_PAD_LEFT);
-			
+
 				if ($referen == 'C') {
 					$saldo =  $this->datasis->dameval("SELECT monto-abonos FROM smov WHERE tipo_doc='FC' AND numero='$numfac'");
 				}
 
 				if ( $tipo_doc == 'F') {
-					if ($referen == 'E') { 
+					if ($referen == 'E') {
 						// FACTURA PAGADA AL CONTADO GENERA ANTICIPO
 						$mnumant = $this->datasis->prox_sql("nancli");
 						$mnumant = str_pad($mnumant, 8, "0", STR_PAD_LEFT);
-						
+
 						$mSQL = "INSERT INTO smov  (cod_cli, nombre, tipo_doc, numero, fecha, monto, impuesto, vence, observa1, tipo_ref, num_ref, estampa, hora, transac, usuario, nroriva, emiriva )
 						SELECT cod_cli, nombre, 'AN' tipo_doc, '$mnumant' numero, freiva fecha, reiva monto, 0 impuesto, freiva vence,
 							CONCAT('RET/IVA DE ',cod_cli,' A DOC. ',tipo_doc,numero) observa1, IF(tipo_doc='F','FC', 'DV' ) tipo_ref, numero num_ref,
@@ -417,33 +417,33 @@ class smov extends Controller {
 								'NOCON 'codigo, 'NOTA DE CONTABILIDAD' descrip, creiva, ereiva
 								FROM sfac WHERE id=$id";
 							$this->db->simple_query($mSQL);
-							
+
 							// ABONA A LA FACTURA
 							$mSQL = "UPDATE smov SET abonos=abonos+$monto WHERE numero='$numfac' AND cod_cli='$cod_cli' AND tipo_doc='$tiposfac'";
 								$this->db->simple_query($mSQL);
-							
+
 							//Crea la relacion en ccli
-	
+
 							$mdevo = "<h1 style='color:green;'>EXITO</h1>Cambios Guardados, Nota de Credito generada y aplicada a la factura";
 						}
 					}
 					$mnumant = $this->datasis->prox_sql("ndcli");
 					$mnumant = str_pad($mnumant, 8, "0", STR_PAD_LEFT);
 					$mSQL = "INSERT INTO smov (cod_cli, nombre, tipo_doc, numero, fecha, monto, impuesto, abonos, vence, observa1, tipo_ref, num_ref, estampa, hora, usuario, transac, codigo, descrip, nroriva, emiriva )
-						SELECT 'REIVA' cod_cli, 'RETENCION DE I.V.A. POR COMPENSAR' nombre, 'ND' tipo_doc, '$mnumant' numero, freiva fecha, 
-						reiva monto, 0 impuesto, 0 abonos, freiva vence, CONCAT('RET/IVA DE ',cod_cli,' A ',tipo_doc,numero) observa1, 
-						IF(tipo_doc='F','FC', 'DV' ) tipo_ref, numero num_ref, curdate() estampa, 
+						SELECT 'REIVA' cod_cli, 'RETENCION DE I.V.A. POR COMPENSAR' nombre, 'ND' tipo_doc, '$mnumant' numero, freiva fecha,
+						reiva monto, 0 impuesto, 0 abonos, freiva vence, CONCAT('RET/IVA DE ',cod_cli,' A ',tipo_doc,numero) observa1,
+						IF(tipo_doc='F','FC', 'DV' ) tipo_ref, numero num_ref, curdate() estampa,
 						curtime() hora, '".$usuario."' usuario, '$transac' transac, 'NOCON 'codigo,
 						'NOTA DE CONTABILIDAD' descrip, creiva, ereiva
 					FROM sfac WHERE id=$id";
 					$this->db->simple_query($mSQL);
 					memowrite($mSQL,"sfacreivaND");
-						
+
 				} else {
 					// DEVOLUCIONES GENERA ND AL CLIENTE
 					$mnumant = $this->datasis->prox_sql("ndcli");
 					$mnumant = str_pad($mnumant, 8, "0", STR_PAD_LEFT);
-					
+
 					$mSQL = "INSERT INTO smov  (cod_cli, nombre, tipo_doc, numero, fecha, monto, impuesto, vence, observa1, tipo_ref, num_ref, estampa, hora, transac, usuario, nroriva, emiriva )
 					SELECT cod_cli, nombre, 'ND' tipo_doc, '$mnumant' numero, freiva fecha, reiva monto, 0 impuesto, freiva vence,
 						CONCAT('RET/IVA DE ',cod_cli,' A DOC. ',tipo_doc,numero) observa1, IF(tipo_doc='F','FC', 'DV' ) tipo_ref, numero num_ref,
@@ -456,15 +456,15 @@ class smov extends Controller {
 					$mnumant = $this->datasis->prox_sql("nccli");
 					$mnumant = str_pad($mnumant, 8, "0", STR_PAD_LEFT);
 					$mSQL = "INSERT INTO smov (cod_cli, nombre, tipo_doc, numero, fecha, monto, impuesto, abonos, vence, observa1, tipo_ref, num_ref, estampa, hora, usuario, transac, codigo, descrip, nroriva, emiriva )
-						SELECT 'REIVA' cod_cli, 'RETENCION DE I.V.A. POR COMPENSAR' nombre, 'NC' tipo_doc, '$mnumant' numero, freiva fecha, 
-						reiva monto, 0 impuesto, 0 abonos, freiva vence, CONCAT('RET/IVA DE ',cod_cli,' A ',tipo_doc,numero) observa1, 
-						IF(tipo_doc='F','FC', 'DV' ) tipo_ref, numero num_ref, curdate() estampa, 
+						SELECT 'REIVA' cod_cli, 'RETENCION DE I.V.A. POR COMPENSAR' nombre, 'NC' tipo_doc, '$mnumant' numero, freiva fecha,
+						reiva monto, 0 impuesto, 0 abonos, freiva vence, CONCAT('RET/IVA DE ',cod_cli,' A ',tipo_doc,numero) observa1,
+						IF(tipo_doc='F','FC', 'DV' ) tipo_ref, numero num_ref, curdate() estampa,
 						curtime() hora, '".$usuario."' usuario, '$transac' transac, 'NOCON 'codigo,
 						'NOTA DE CONTABILIDAD' descrip, creiva, ereiva
 					FROM sfac WHERE id=$id";
 					$this->db->simple_query($mSQL);
 					memowrite($mSQL,"sfacreivaND");
-					
+
 				}
 			} else {
 				$mdevo = "<h1 style='color:red;'>ERROR</h1>Retencion ya aplicada";
@@ -544,4 +544,3 @@ class smov extends Controller {
 	}
 
 }
-?>

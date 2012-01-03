@@ -13,7 +13,7 @@ class gser extends Controller {
 	function index() {
 		if($this->pi18n->pais=='COLOMBIA'){
 			redirect('finanzas/gsercol/filteredgrid');
-		}else{ 
+		}else{
 			//redirect('finanzas/gser/filteredgrid');
 			$this->gserextjs();
 		}
@@ -102,8 +102,8 @@ class gser extends Controller {
 		$grid->column_orderby('Banco'  , 'codb1'  ,'codb1' );
 		$grid->column('Tipo'   , 'tipo1'  ,'tipo11' );
 		$grid->column_orderby('Cheque' , 'cheque1'  ,'cheque1' );
-	
-		
+
+
 
 		$grid->add('finanzas/gser/agregar','Agregar Egreso');
 		$grid->build('datagridST');
@@ -180,18 +180,18 @@ function gserfiscal(mid){
 
 		$data['content'] = $grid->output;
 		$data['filtro']  = $filter->output;
-		
+
 		$data['script']  = $script;
 		$data['script'] .= script('jquery.js');
 		$data["script"] .= script("jquery.alerts.js");
 		$data['script'] .= script('superTables.js');
-		
+
 		$data['style']   = $style;
 		$data['style']  .=style('superTables.css');
 		$data['style']	.= style("jquery.alerts.css");
 
 		$data['extras']  = $extras;
-		
+
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = heading('Egresos por Gastos');
 		$this->load->view('view_ventanas', $data);
@@ -638,11 +638,11 @@ function gserfiscal(mid){
 		$mSQL='SELECT COUNT(*) AS cana, SUM(exento+montasa+monadic+monredu+tasa+sobretasa+reducida) AS monto FROM gserchi WHERE ngasto IS NULL AND aceptado="S" AND codbanc='.$dbcodbanc;
 		$r   =$this->datasis->damerow($mSQL);
 		if($r['cana']==0) show_error('Caja sin gastos');
-		
+
 		$mSQL="SELECT a.codprv, b.nombre FROM banc AS a JOIN sprv AS b ON a.codprv=b.proveed WHERE a.codbanc=$dbcodbanc";
 		$query = $this->db->query($mSQL);
 		if ($query->num_rows() > 0){
-			$row    = $query->row(); 
+			$row    = $query->row();
 			$nombre = $row->nombre;
 			$codprv = $row->codprv;
 		}else{
@@ -675,11 +675,11 @@ function gserfiscal(mid){
 		$bsprv=$this->datasis->modbus($modbus);
 
 		$script='var comis = '.$json_comis.';
-		
+
 		$(document).ready(function() {
 			desactivacampo("");
 		});
-		
+
 		function desactivacampo(codb1){
 			if(codb1.length>0 && codb1!="'.$this->mcred.'"){
 				eval("tbanco=comis._"+codb1+".tbanco;"  );
@@ -868,7 +868,7 @@ function gserfiscal(mid){
 			$dbcodbanc= $this->db->escape($codbanc);
 			$error    = 0;
 			$cr       = $this->mcred; //Marca para el credito
-			
+
 			$databan  = common::_traebandata($codbanc);
 			$datacar  = common::_traebandata($cargo);
 			if(!is_null($datacar)){
@@ -885,7 +885,7 @@ function gserfiscal(mid){
 				$transac  = $this->datasis->fprox_numero('ntransa');
 				$numero   = $this->datasis->fprox_numero('ngser');
 				$cheque   = ($tipo=='CAJ')? $this->datasis->banprox($codbanc): $numeroch ;
-				
+
 
 				$montasa=$monredu=$monadic=$tasa=$reducida=$sobretasa=$exento=$totpre=$totiva=0;
 				foreach ($query->result() as $row){
@@ -1137,13 +1137,13 @@ function gserfiscal(mid){
 				$dbcodprv = $this->db->escape($codprv);
 				$where = "fecha=$dbfecha AND proveed=$dbcodprv AND  numero=$dbnumero";
 				$mSQL = $this->db->update_string('gitser', $data, $where);
-				$ban=$this->db->simple_query($mSQL); 
+				$ban=$this->db->simple_query($mSQL);
 				if($ban==false){ memowrite($mSQL,'gser'); $error++; }
 
 				$data = array('ngasto' => $numero);
 				$where = "ngasto IS NULL AND  codbanc=$dbcodbanc";
 				$mSQL = $this->db->update_string('gserchi', $data, $where);
-				$ban=$this->db->simple_query($mSQL); 
+				$ban=$this->db->simple_query($mSQL);
 				if($ban==false){ memowrite($mSQL,'gser'); $error++; }
 			}
 		return ($error==0)? true : false;
@@ -1190,7 +1190,7 @@ function gserfiscal(mid){
 		$data['usuario']    = $this->session->userdata('usuario');
 		//$data['ffactura']   = '';
 		//$data['modificado'] = '';
-		
+
 		$sql=$this->db->insert_string('riva', $data);
 		$ban=$this->db->simple_query($sql);
 		if($ban==false){ memowrite($sql,'gser'); $error++;}
@@ -1244,7 +1244,7 @@ function gserfiscal(mid){
 
 	//Reversa la transaccion en sprm
 	function _rm_gsersprm($transac){
-		$this->db->delete('sprm', array('transac' => $transac)); 
+		$this->db->delete('sprm', array('transac' => $transac));
 	}
 
 	//genera el movimiento de banco cuando el pago es al contado
@@ -1255,7 +1255,7 @@ function gserfiscal(mid){
 		$ttipo   = $datacar['tbanco'];
 		$tipo1   = ($ttipo=='CAJ') ? 'D': 'C';
 		$error   = 0;
-		
+
 		$data=array();
 		$data['codbanc']    = $cargo;
 		$data['moneda']     = $datacar['moneda'];
@@ -1311,7 +1311,7 @@ function gserfiscal(mid){
 			$this->db->where('codbanc', $row->codbanc);
 			$this->db->where('tipo_op', $row->tipo_op);
 			$this->db->where('numero' , $row->numero);
-			$this->db->update('bmov', $data); 
+			$this->db->update('bmov', $data);
 
 			$cargo   =$row->codbanc;
 			$totneto =$row->monto;
@@ -1370,7 +1370,7 @@ function gserfiscal(mid){
 		}
 		$values=array_slice($url_pk,-$coun);
 		$claves=array_combine (array_reverse($pk) ,$values );
-		
+
 		$query="UPDATE gitser AS a
 			JOIN gser AS b on a.numero=b.numero and a.fecha = b.fecha and a.proveed = b.proveed
 			SET a.idgser=b.id
@@ -1501,13 +1501,13 @@ function gserfiscal(mid){
 		$edit->reteica->css_class = 'inputnum';
 		$edit->reteica->when      = array('show');
 		$edit->reteica->size      = 10;
-		$edit->reteica->showformat ='decimal'; 
+		$edit->reteica->showformat ='decimal';
 
 		$edit->retesimple = new inputField('Ret', 'retesimple');
 		$edit->retesimple->css_class = 'inputnum';
 		$edit->retesimple->when      = array('show');
 		$edit->retesimple->size      = 10;
-		$edit->retesimple->showformat ='decimal'; 
+		$edit->retesimple->showformat ='decimal';
 
 		$edit->codb1 = new dropdownField('Caja/Banco','codb1');
 		$edit->codb1->option('','');
@@ -1538,11 +1538,11 @@ function gserfiscal(mid){
 		$edit->monto1->onkeyup="contado()";
 		$edit->monto1->rule = 'condi_required|callback_chmontocontado|positive';
 		$edit->monto1->autocomplete=false;
-		$edit->monto1->showformat ='decimal'; 
+		$edit->monto1->showformat ='decimal';
 
 		$edit->credito= new inputField("Cr&eacute;dito", "credito");
 		$edit->credito->size = 10;
-		$edit->credito->showformat ='decimal'; 
+		$edit->credito->showformat ='decimal';
 		$edit->credito->css_class='inputnum';
 		$edit->credito->onkeyup="ccredito()";
 		$edit->credito->autocomplete=false;
@@ -1608,7 +1608,7 @@ function gserfiscal(mid){
 		$edit->precio->rel_id='gitser';
 		$edit->precio->autocomplete=false;
 		$edit->precio->onkeyup="importe(<#i#>)";
-		$edit->precio->showformat ='decimal'; 
+		$edit->precio->showformat ='decimal';
 
 		$ivas=$this->datasis->ivaplica();
 		$edit->tasaiva =  new dropdownField("IVA <#o#>", "tasaiva_<#i#>");
@@ -1643,7 +1643,7 @@ function gserfiscal(mid){
 
 		$edit->departa =  new dropdownField("Departamento <#o#>", "departa_<#i#>");
 		$edit->departa->option('','Seleccionar');
-		$edit->departa->options("SELECT codigo, CONCAT_WS('-',codigo,departam) AS label FROM dept ORDER BY codigo");
+		$edit->departa->options("SELECT TRIM(depto) AS codigo, CONCAT_WS('-',depto,TRIM(descrip)) AS label FROM dpto WHERE tipo='G' ORDER BY depto");
 		$edit->departa->db_name='departa';
 		$edit->departa->rule='required';
 		$edit->departa->style = 'width:100px';
@@ -1668,8 +1668,8 @@ function gserfiscal(mid){
 		$edit->itorigen->rel_id ='gereten';
 
 		$edit->codigorete = new dropdownField('','codigorete_<#i#>');
-		$edit->codigorete->option('','Seleccionar');  
-		$edit->codigorete->options('SELECT TRIM(codigo) AS codigo,TRIM(CONCAT_WS("-",codigo,activida)) AS activida FROM rete ORDER BY codigo'); 
+		$edit->codigorete->option('','Seleccionar');
+		$edit->codigorete->options('SELECT TRIM(codigo) AS codigo,TRIM(CONCAT_WS("-",codigo,activida)) AS activida FROM rete ORDER BY codigo');
 		$edit->codigorete->db_name='codigorete';
 		$edit->codigorete->rule   ='max_length[4]';
 		$edit->codigorete->style  ='width: 350px';
@@ -1685,7 +1685,7 @@ function gserfiscal(mid){
 		$edit->base->rel_id    ='gereten';
 		$edit->base->maxlength =10;
 		$edit->base->onkeyup   ='importerete(<#i#>)';
-		$edit->base->showformat ='decimal'; 
+		$edit->base->showformat ='decimal';
 
 		$edit->porcen = new inputField('porcen','porcen_<#i#>');
 		$edit->porcen->db_name='porcen';
@@ -1781,7 +1781,7 @@ function gserfiscal(mid){
 						}else{
 							$pgreten[$gind]= array($itbase,$fila['tari1'],$itbase*$fila['tari1']/100);
 						}
-			
+
 					}
 				}
 			}
@@ -1795,7 +1795,7 @@ function gserfiscal(mid){
 				$pivot['monto'] = round($vals[2],2);
 				$greten[]=$pivot;
 			}
-			
+
 		}
 		echo json_encode($greten);
 	}
@@ -1867,7 +1867,7 @@ function gserfiscal(mid){
 
 		$edit->tipo1 = new dropdownField('Tipo de operaci&oacute;n', 'tipo1');
 		$edit->tipo1->option('N','Nota de d&eacute;bito');
-		$edit->tipo1->option('C','Cheque');  
+		$edit->tipo1->option('C','Cheque');
 		$edit->tipo1->mode='autohide';
 		$edit->tipo1->group='Datos finacieros';
 
@@ -2280,10 +2280,10 @@ function gserfiscal(mid){
 		if($monto1 > 0.00){
 			$benefi=$do->get('benefi');
 			$msj = "EGRESO AL CONTADO SEGUN FACTURA $numero";
-			$this->_bmovgser($codbanc,$codprv,$codbanc,$negreso,$cheque,$fecha,$monto1,$benefi,$transac,$msj);	
+			$this->_bmovgser($codbanc,$codprv,$codbanc,$negreso,$cheque,$fecha,$monto1,$benefi,$transac,$msj);
 		}
 		//Fin del movimiento en el banco
-		
+
 		//Crea la cuenta por pagar si es necesario
 		if($totcred > 0.00){
 			$causado = $this->datasis->fprox_numero('ncausado');
@@ -2318,7 +2318,7 @@ function gserfiscal(mid){
 			$sql=$this->db->insert_string('sprm', $data);
 			$ban=$this->db->simple_query($sql);
 			if($ban==false){ memowrite($sql,'gser');}
-			
+
 			//Si tiene retencion de IVA
 			if($reiva>0){
 				$ncsprm = $this->datasis->fprox_numero('num_nc');
@@ -2352,9 +2352,9 @@ function gserfiscal(mid){
 
 				$sql=$this->db->insert_string('sprm', $data);
 				$ban=$this->db->simple_query($sql);
-				if($ban==false){ memowrite($sql,'gser');}				
+				if($ban==false){ memowrite($sql,'gser');}
 			}
-			
+
 			//Si tiene ISLR
 			if($reten>0){
 				$ncsprm = $this->datasis->fprox_numero('num_nc');
@@ -2398,7 +2398,7 @@ function gserfiscal(mid){
 	}
 
 	function _pre_delete($do){
-		$transac  = $do->get('transac');		
+		$transac  = $do->get('transac');
 		$tipo_doc = $do->get('tipo_doc');
 		$cod_prv  = $do->get('proveed');
 
@@ -2480,7 +2480,7 @@ function gserfiscal(mid){
 		$monto = (empty($monto))? 0: $monto;
 		if(!is_numeric($monto)){
 			$this->validation->set_message('chtasa', 'El campo %s general debe contener n&uacute;meros.');
-			return false;			
+			return false;
 		}
 
 		if($monto>0 && $iva>0){
@@ -2499,7 +2499,7 @@ function gserfiscal(mid){
 		$monto = (empty($monto))? 0: $monto;
 		if(!is_numeric($monto)){
 			$this->validation->set_message('chreducida', 'El campo %s reducida debe contener n&uacute;meros.');
-			return false;			
+			return false;
 		}
 
 		if($monto>0 && $iva>0){
@@ -2518,7 +2518,7 @@ function gserfiscal(mid){
 		$monto = (empty($monto))? 0: $monto;
 		if(!is_numeric($monto)){
 			$this->validation->set_message('chsobretasa', 'El campo %s adicional debe contener n&uacute;meros.');
-			return false;			
+			return false;
 		}
 
 		if($monto>0 && $iva>0){
@@ -2569,29 +2569,29 @@ function gserfiscal(mid){
 
 		if (!$this->db->table_exists('gserchi')) {
 			$query="CREATE TABLE IF NOT EXISTS `gserchi` (
-				`codbanc` varchar(5) NOT NULL DEFAULT '', 
-				`fechafac` date DEFAULT NULL, 
-				`numfac` varchar(8) DEFAULT NULL, 
-				`nfiscal` varchar(12) DEFAULT NULL, 
-				`rif` varchar(13) DEFAULT NULL, 
-				`proveedor` varchar(40) DEFAULT NULL, 
-				`codigo` varchar(6) DEFAULT NULL, 
-				`descrip` varchar(50) DEFAULT NULL, 
-				`moneda` char(2) DEFAULT NULL, 
-				`montasa` decimal(17,2) DEFAULT '0.00', 
-				`tasa` decimal(17,2) DEFAULT NULL, 
-				`monredu` decimal(17,2) DEFAULT '0.00', 
-				`reducida` decimal(17,2) DEFAULT NULL, 
-				`monadic` decimal(17,2) DEFAULT '0.00', 
-				`sobretasa` decimal(17,2) DEFAULT NULL, 
-				`exento` decimal(17,2) DEFAULT '0.00', 
-				`importe` decimal(12,2) DEFAULT NULL, 
-				`sucursal` char(2) DEFAULT NULL, 
-				`departa` char(2) DEFAULT NULL, 
-				`usuario` varchar(12) DEFAULT NULL, 
-				`estampa` date DEFAULT NULL, 
-				`hora` varchar(8) DEFAULT NULL, 
-				`id` int(11) unsigned NOT NULL AUTO_INCREMENT, 
+				`codbanc` varchar(5) NOT NULL DEFAULT '',
+				`fechafac` date DEFAULT NULL,
+				`numfac` varchar(8) DEFAULT NULL,
+				`nfiscal` varchar(12) DEFAULT NULL,
+				`rif` varchar(13) DEFAULT NULL,
+				`proveedor` varchar(40) DEFAULT NULL,
+				`codigo` varchar(6) DEFAULT NULL,
+				`descrip` varchar(50) DEFAULT NULL,
+				`moneda` char(2) DEFAULT NULL,
+				`montasa` decimal(17,2) DEFAULT '0.00',
+				`tasa` decimal(17,2) DEFAULT NULL,
+				`monredu` decimal(17,2) DEFAULT '0.00',
+				`reducida` decimal(17,2) DEFAULT NULL,
+				`monadic` decimal(17,2) DEFAULT '0.00',
+				`sobretasa` decimal(17,2) DEFAULT NULL,
+				`exento` decimal(17,2) DEFAULT '0.00',
+				`importe` decimal(12,2) DEFAULT NULL,
+				`sucursal` char(2) DEFAULT NULL,
+				`departa` char(2) DEFAULT NULL,
+				`usuario` varchar(12) DEFAULT NULL,
+				`estampa` date DEFAULT NULL,
+				`hora` varchar(8) DEFAULT NULL,
+				`id` int(11) unsigned NOT NULL AUTO_INCREMENT,
 				PRIMARY KEY (`id`)
 				) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=latin1 ROW_FORMAT=DYNAMIC";
 			$this->db->simple_query($query);
@@ -2608,7 +2608,7 @@ function gserfiscal(mid){
 			$this->db->simple_query($query);
 		}
 
-		
+
 		if (!$this->db->field_exists('ngasto','gserchi')) {
 			$query="ALTER TABLE `gserchi` ADD COLUMN `ngasto` VARCHAR(8) NULL DEFAULT NULL AFTER `departa`";
 			$this->db->simple_query($query);
@@ -2619,7 +2619,7 @@ function gserfiscal(mid){
 			$this->db->simple_query($query);
 		}
 
-		
+
 		if (!$this->db->table_exists('gereten')) {
 			$query="CREATE TABLE `gereten` (
 				`id` INT(10) NOT NULL AUTO_INCREMENT,
@@ -2638,7 +2638,7 @@ function gserfiscal(mid){
 			AUTO_INCREMENT=1;";
 			$this->db->simple_query($query);
 		}
-		
+
 		$mSQL="ALTER TABLE gereten CHANGE COLUMN id id INT(10) NOT NULL AUTO_INCREMENT FIRST";
 	}
 
@@ -2678,11 +2678,11 @@ function gserfiscal(mid){
 	function griditgser(){
 		$id   = isset($_REQUEST['id'])  ? $_REQUEST['id']   :  0;
 		if ($id == 0 ) $id = $this->datasis->dameval("SELECT MAX(id) FROM gser")  ;
-	
-	
+
+
 		$mSQL = "SELECT * FROM gitser WHERE idgser='$id' ORDER BY id ASC";
 		$query = $this->db->query($mSQL);
-		$results = $query->num_rows() ; 
+		$results = $query->num_rows() ;
 		$arr = $this->datasis->codificautf8($query->result_array());
 		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
 	}
@@ -2706,14 +2706,14 @@ function gserfiscal(mid){
 		if ( $query->num_rows() > 0 ){
 			$salida = "<br><table width='100%' border=1>";
 			$salida .= "<tr bgcolor='#e7e3e7'><td>Tp</td><td align='center'>Numero</td><td align='center'>Monto</td></tr>";
-			
+
 			foreach ($query->result_array() as $row)
 			{
 				if ( $codprv != $row['cod_prv']){
 					$codprv = $row['cod_prv'];
 					$salida .= "<tr bgcolor='#c7d3c7'>";
 					$salida .= "<td colspan=4>".trim($row['nombre']). "</td>";
-					$salida .= "</tr>";	
+					$salida .= "</tr>";
 				}
 				if ( $row['tipo_doc'] == 'FC' ) {
 					$saldo = $row['monto']-$row['abonos'];
@@ -2834,9 +2834,9 @@ function gserfiscal(mid){
 	]";
 
 		$variables='';
-		
+
 		$valida="		{ type: 'length', field: 'numero',  min:  1 }";
-		
+
 
 		$funciones = "
 function renderSprv(value, p, record) {
@@ -2889,7 +2889,7 @@ function renderSinv(value, p, record) {
 		autoSync: true,
 		method: 'POST'
 	});
-	
+
 	//////////////////////////////////////////////////////////
 	//
 	var gridDeta1 = Ext.create('Ext.grid.Panel', {
@@ -2909,7 +2909,7 @@ function renderSinv(value, p, record) {
 		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/verhtml/GSER/{id}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/html_icon.gif', 'alt' => 'Formato HTML', 'title' => 'Formato HTML','border'=>'0'))."</a></td>',
 		'<td align=\'center\'>{numero}</td>',
 		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/ver/GSER/{id}\',     \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',   'title' => 'Formato PDF', 'border'=>'0'))."</a></td></tr>',
-		'<tr><td colspan=3 align=\'center\' >--</td></tr>',		
+		'<tr><td colspan=3 align=\'center\' >--</td></tr>',
 		'</table>','nanai'
 	];
 
@@ -2983,23 +2983,23 @@ function renderSinv(value, p, record) {
 					handler: function() {
 						var selection = gridMaest.getView().getSelectionModel().getSelection()[0];
 						Ext.MessageBox.show({
-							title: 'Confirme', 
-							msg: 'Seguro que quiere eliminar la compra Nro. '+selection.data.numero, 
-							buttons: Ext.MessageBox.YESNO, 
-							fn: function(btn){ 
-								if (btn == 'yes') { 
+							title: 'Confirme',
+							msg: 'Seguro que quiere eliminar la compra Nro. '+selection.data.numero,
+							buttons: Ext.MessageBox.YESNO,
+							fn: function(btn){
+								if (btn == 'yes') {
 									if (selection) {
 										//storeMaest.remove(selection);
 									}
 									storeMaest.load();
-								} 
-							}, 
-							icon: Ext.MessageBox.QUESTION 
-						});  
+								}
+							},
+							icon: Ext.MessageBox.QUESTION
+						});
 					}
 				}
 			]
-		}		
+		}
 		";
 
 		$grid2 = ",{
@@ -3015,7 +3015,7 @@ function renderSinv(value, p, record) {
 
 
 		$titulow = 'Compras';
-		
+
 		$filtros = "";
 		$features = "
 		features: [ { ftype: 'filters', encode: 'json', local: false } ],
@@ -3042,7 +3042,7 @@ function renderSinv(value, p, record) {
 		$data['coldeta']     = $coldeta;
 		$data['acordioni']   = $acordioni;
 		$data['final']       = $final;
-		
+
 		$data['title']  = heading('Gastos');
 		$this->load->view('extjs/extjsvenmd',$data);
 	}
