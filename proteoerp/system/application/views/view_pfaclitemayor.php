@@ -12,6 +12,7 @@ else:
 if(isset($form->error_string)) echo '<div class="alert">'.$form->error_string.'</div>';
 
 echo $form_begin;
+
 $dbcliente=$this->db->escape($form->cliente->value);
 $nomcli=$this->datasis->dameval("SELECT nombre FROM scli WHERE cliente=$dbcliente");
 

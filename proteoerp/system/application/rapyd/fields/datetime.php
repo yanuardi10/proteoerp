@@ -112,7 +112,13 @@ class dateField extends objField{
           'class'       => $this->css_class,
           'style'       => $this->style);
         if($this->readonly) $attributes['readonly']='readonly';
+        if($this->type=='inputhidden'){
+          $attributes['type']='hidden';
+          $this->calendar=false;
+        }
+
         $output  = form_input($attributes); //'<div>'.
+        if($this->type=='inputhidden') $output="<span id='".$this->name."_val'>$value</span>".$output;
         if($this->calendar){
           $output .= ' <img src="'.RAPYD_LIBRARIES.'jscalendar/calender_icon.gif" id="'.$this->name.'_button" border="0" style="vertical-align:middle;" />'.$this->extra_output;
           $output .= HTML::javascriptTag('
