@@ -217,7 +217,7 @@ class XLSReporte extends writeexcel_workbookbig  {
 				}
 				//------se escribe los datos----------------------------
 				$l=$this->ii;
-				$this->selectWrite($l-1, $o,$row[$campo]);
+				$this->selectWrite($l-1, $o,$row[$campo],$campo);
 				//------se escribe los datos----------------------------
 			}
 			$this->ii++;
@@ -435,12 +435,13 @@ class XLSReporte extends writeexcel_workbookbig  {
 		return $salida;
 	}
 
-	function selectWrite($f,$c,$campo){
-		if(isset($this->DBfieldsType[$campo])){
-			$tipo=$this->DBfieldsType[$campo];
+	function selectWrite($f,$c,$campo,$dbcampo){
+		if(isset($this->DBfieldsType[$dbcampo])){
+			$tipo=$this->DBfieldsType[$dbcampo];
 		}else{
 			$tipo='string';
 		}
+
 		if(in_array($tipo,$this->wnumber)){
 			$this->worksheet->write_number($f, $c, $campo);
 		}elseif(in_array($tipo,$this->wstring)){
