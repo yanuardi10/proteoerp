@@ -3,7 +3,6 @@ require_once "writeexcel/class.writeexcel_workbookbig.inc.php";
 require_once "writeexcel/class.writeexcel_worksheet.inc.php";
 
 class XLSReporte extends writeexcel_workbookbig  {
-
 	var $fcount=0;
 	var $DBquery;
 	var $DBfieldsName;
@@ -22,8 +21,9 @@ class XLSReporte extends writeexcel_workbookbig  {
 	var $tituHeader;
 	var $tituSubHeader;
 	var $centrar=array();
-	var $wstring=array("string");
-	var $wnumber=array("real","int");
+	var $wstring=array('string');
+	var $wnumber=array('real','int');
+	var $wdate=array('date');
 	var $fc=5;
 	var $cc=0;
 	var $ii=0;
@@ -68,17 +68,17 @@ class XLSReporte extends writeexcel_workbookbig  {
 	function tcols(){
 		$this->dRep=false;
 		foreach ($this->DBfieldsName as $row){
-				$this->AddCol($row,20,$row);
-			}
+			$this->AddCol($row,20,$row);
+		}
 		//$this->grupo=$this->grupos;
 		//$this->cgrupo=TRUE;
 	}
 
-	function AddCol($DBnom,$width=-1,$TInom ,$align='L',$tipo=''){
+	function AddCol($DBnom,$width=-1,$TInom ,$align='L',$size=''){
 		//Add a column to the table
 		if (in_array($DBnom, $this->DBfieldsName)){
-			if(is_array($TInom))$TInom=implode(' ',$TInom);
-			$this->cols[]=array('titulo'=>$TInom,'campo'=>$DBnom,'tipo'=>$tipo);
+			if(is_array($TInom)) $TInom=implode(' ',$TInom);
+			$this->cols[]=array('titulo'=>$TInom,'campo'=>$DBnom);
 			$this->centrar[]='';
 			$this->ccols++;
 
@@ -113,7 +113,6 @@ class XLSReporte extends writeexcel_workbookbig  {
 	}
 
 	function Table() {
-
 		if($this->dRep)
 			$this->Header();//Encabezado
 		//------------campos tabla-------------------------------
@@ -156,14 +155,16 @@ class XLSReporte extends writeexcel_workbookbig  {
 					for($u=0;$u<count($this->grupo)-($cambio-1);$u++){//se recorre por grupos
 						foreach($this->cols AS $h=>$cols){							//se recorre por columnas
 							$campo=$cols['campo'];
-							if(in_array($campo,$this->totalizar))					//se verifica si la columna fue mandada a totalizar
-				//----se escribe los totales de grupos----------------------------
+							if(in_array($campo,$this->totalizar)){					//se verifica si la columna fue mandada a totalizar
+								//----se escribe los totales de grupos----------------------------
 								$this->worksheet->write($this->ii-1, $h,$stotal[$u][$campo],$this->t2);
-							else
+							}else{
 								$this->worksheet->write($this->ii-1, $h,' ',$this->t2);
+							}
 						}
-						foreach($this->cols  as $fila)			//se inicializan totale
+						foreach($this->cols  as $fila){			//se inicializan totale
 							$stotal[$u][$fila['campo']] = 0;
+						}
 						$this->ii++;
 					}
 				}
@@ -171,7 +172,6 @@ class XLSReporte extends writeexcel_workbookbig  {
 				$this->GroupTableHeader($row,$cambio);
 				$cambio=false;
 			}
-
 
 			//------se recorre por columnas para calculo de totales y escritura de datos----------------------------
 			foreach($this->cols AS $o=>$cols){
@@ -216,9 +216,8 @@ class XLSReporte extends writeexcel_workbookbig  {
 					}
 				}
 				//------se escribe los datos----------------------------
-				$tipo=$cols['tipo'];
 				$l=$this->ii;
-				$this->selectWrite($tipo,$l-1, $o,$row[$campo]);
+				$this->selectWrite($l-1, $o,$row[$campo]);
 				//------se escribe los datos----------------------------
 			}
 			$this->ii++;
@@ -247,41 +246,52 @@ class XLSReporte extends writeexcel_workbookbig  {
 			//--------escritura TOTAL FINAL--------------
 			foreach($this->cols AS $h=>$cols){
 				$campo=$cols['campo'];
-				if(in_array($campo,$this->totalizar))
+				if(in_array($campo,$this->totalizar)){
 					$this->worksheet->write($this->ii-1, $h,$rgtotal[$campo],$this->t1);
-				else
+				}else{
 					$this->worksheet->write($this->ii-1, $h,' ',$this->t1);
+				}
 			}
 		}
 		//--fin escritura totales finales --------------------------
-		if($this->dRep)
+		if($this->dRep){
 			$this->Footer();
+		}
+	}
 
-	}
 	function setType($campo,$tipo){//relleno
+		$this->DBfieldsType[$campo]=$tipo;
 	}
+
 	function setTitulo($tit='Listado',$size='',$font=''){
 		$this->Titulo =$tit;
 	}
+
 	function setSubTitulo($tit='',$size='',$font=''){
 		if(!empty($tit) ) $this->SubTitulo =$tit;
 	}
+
 	function setTableTitu($size='',$font=''){
 
 	}
+
 	function setRow($size='',$font=''){
 
 	}
+
 	function setHead($tituHeader='',$size='',$font=''){
 	}
+
 	function setSubHead($tituSubHeader='',$size='',$font=''){
 	}
+
 	function setHeadValores($param){
 		$CI =& get_instance();
 		$data= func_get_args();
 		foreach($data as $sale)
 			$this->tituHeader[]=$CI->datasis->traevalor($sale);
 	}
+
 	function setSubHeadValores($param){
 		$CI =& get_instance();
 		$data= func_get_args();
@@ -289,7 +299,7 @@ class XLSReporte extends writeexcel_workbookbig  {
 			$this->tituSubHeader[]=$CI->datasis->traevalor($sale);
 	}
 
-		function setAcumulador($param){
+	function setAcumulador($param){
 		$data= func_get_args();
 		foreach($data as $sale){
 			if (in_array($sale, $this->DBfieldsName) OR array_key_exists($sale,$this->fCols)){
@@ -302,7 +312,6 @@ class XLSReporte extends writeexcel_workbookbig  {
 		}
 	}
 
-
 	function setTotalizar($param){
 		$data= func_get_args();
 		$i=0;
@@ -313,6 +322,7 @@ class XLSReporte extends writeexcel_workbookbig  {
 			}
 		}
 	}
+
 	function setGrupo($param){
 		if(is_array($param))
 			$data=$param;
@@ -325,11 +335,14 @@ class XLSReporte extends writeexcel_workbookbig  {
 			}
 		}
 	}
+
 	function setSobreTabla($SobreTabla,$size=8,$font='Arial'){
 		$this->SobreTabla=$SobreTabla;
 	}
+
 	function setHeadGrupo($label='',$campo='',$font='',$size='',$type=''){
 	}
+
 	function setGrupoLabel($label){
 		if(is_array($label))
 			$data=$label;
@@ -353,10 +366,11 @@ class XLSReporte extends writeexcel_workbookbig  {
 				$this->grupoLabel[]=NULL;
 		}
 	}
+
 	function GroupTableHeader($row,$n=0){
 		for($i=$n-1;$i<count($this->grupo);$i++){
 
-				if (!empty($this->grupoLabel[$i])){
+			if (!empty($this->grupoLabel[$i])){
 
 				$sal=$this->_parsePattern($this->grupoLabel[$i]);
 				if(count($sal)>0){
@@ -379,20 +393,26 @@ class XLSReporte extends writeexcel_workbookbig  {
 			$this->ii++;
 		}
 	}
+
 	function Row($data,$linea=0,$pinta=1) {
 	}
+
 	function CalcWidths($width,$align) {
 	}
+
 	function add_fila($param){
 	}
+
 	function AddPage(){
 	}
+
 	function Footer(){
 		$this->centrar[0]=$this->Titulo.' :: Sistema ProteoERP';
 		$filas = $this->centrar;
 		$l='A'.($this->ii+2);
 		$this->worksheet->write_row($l, $filas, $this->h5);
 	}
+
 	function Output(){
 		$this->workbook->close();
 		header("Content-Type: application/x-msexcel; name=\"reporte.xls\"");
@@ -401,6 +421,7 @@ class XLSReporte extends writeexcel_workbookbig  {
 		fpassthru($fh);
 		unlink($this->fname);
 	}
+
 	function _parsePattern($pattern){
 		$template = $pattern;
 		$parsedcount = 0;
@@ -413,17 +434,25 @@ class XLSReporte extends writeexcel_workbookbig  {
 		}
 		return $salida;
 	}
-	function selectWrite($tipo,$f,$c,$campo){
-		if(in_array($tipo,$this->wnumber,true)){
+
+	function selectWrite($f,$c,$campo){
+		if(isset($this->DBfieldsType[$campo])){
+			$tipo=$this->DBfieldsType[$campo];
+		}else{
+			$tipo='string';
+		}
+		if(in_array($tipo,$this->wnumber)){
 			$this->worksheet->write_number($f, $c, $campo);
-		}elseif(in_array($tipo,$this->wstring,true))
-			{
-				$this->worksheet->write_string($f, $c, $campo);
-			}else
-			{
-				$this->worksheet->write($f, $c, $campo);
-			}
+		}elseif(in_array($tipo,$this->wstring)){
+			$this->worksheet->write_string($f, $c, $campo);
+		}elseif(in_array($tipo,$this->wdate)){
+			$campo=dbdate_to_human($campo);
+			$this->worksheet->write_string($f, $c, $campo);
+		}else{
+			$this->worksheet->write($f, $c, $campo);
+		}
 	}
+
 	function grupoCambio($bache,$row){
 		$i=0;
 		foreach($this->grupo as $fila) {
@@ -433,6 +462,7 @@ class XLSReporte extends writeexcel_workbookbig  {
 		}
 		return false;
 	}
+
 	function AddCof($field=-1,$width=-1,$caption='',$align='L', $tipo=''){//$fontsize=11
 		if(is_array($caption))
 			$caption=implode(' ',$caption);
@@ -460,9 +490,9 @@ class XLSReporte extends writeexcel_workbookbig  {
 		}
 	}
 }
+
 class PDFReporte extends XLSReporte{
 	function PDFReporte($mSQL=''){
 		$this->XLSReporte($mSQL);
 	}
 }
-?>

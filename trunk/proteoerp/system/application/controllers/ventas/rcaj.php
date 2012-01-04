@@ -42,7 +42,7 @@ class Rcaj extends validaciones {
 		$filter->cajero->option('','Todos');
 		$filter->cajero->options('SELECT cajero, nombre FROM scaj ORDER BY nombre');
 
-		$filter->buttons("reset","search");
+		$filter->buttons('reset','search');
 		$filter->build();
 
 		$data['content'] = $filter->output;
@@ -100,7 +100,7 @@ class Rcaj extends validaciones {
 			$grid->per_page=15;
 
 			$grid = new DataGrid('Recepcion de cajas para la fecha: '.$filter->fecha->value);
-			$select=array('c.cobrador AS cajero','c.f_factura AS fecha','a.tipo','a.recibido','a.numero');
+			$select=array('c.cobrador AS cajero','c.f_factura AS fecha','a.tipo','a.recibido','a.numero','d.nombre');
 			//$select=array('b.cajero','b.fecha','a.tipo','b.cajero','a.recibido','SUM(b.totalg) AS ingreso','a.numero');
 			//$select=array('b.cajero','b.fecha','b.cajero','b.recibido','b.numero');
 
@@ -110,6 +110,7 @@ class Rcaj extends validaciones {
 			$grid->db->from('rcaj AS a');
 			//$grid->db->join('rcaj AS a','a.cajero=b.cajero AND a.fecha=b.fecha','LEFT');
 			$grid->db->join('sfpa AS c','a.cajero=c.cobrador AND a.fecha=c.f_factura','RIGHT');
+			$grid->db->join('scaj AS d','c.cobrador=d.cajero','LEFT');
 			//$grid->db->where('c.cierre IS NULL');
 			$grid->db->groupby('c.cobrador');
 			$grid->use_function('iconcaja');
@@ -118,7 +119,7 @@ class Rcaj extends validaciones {
 			$grid->column('Numero'     ,'<sinulo><#numero#>|---</sinulo>','align=\'center\'');
 			//$grid->column('Tipo'       ,'<#tipo#>','align=\'center\'');
 			$grid->column('Fecha'      ,'<dbdate_to_human><#fecha#></dbdate_to_human>');
-			$grid->column('Cajero'     ,'cajero','align=\'center\'');
+			$grid->column('Cajero'     ,'<#cajero#>-<#nombre#>','align=\'center\'');
 			$grid->column('Recibido'   ,'<sinulo><nformat><#recibido#></nformat>|0.00</sinulo>','align=\'right\'');
 			//$grid->column('Ingreso'    ,'<nformat><#ingreso#></nformat>' ,'align=\'right\'');
 			$grid->column('Status/Caja','<iconcaja><#cajero#>|<#fecha#>|<#numero#>|<#tipo#>|'.$reve.'</iconcaja>','align="center"');
@@ -416,7 +417,7 @@ class Rcaj extends validaciones {
 			}else{
 				redirect('ventas/rcaj/precierre');
 			}
-			
+
 		}
 
 		$attr=array(

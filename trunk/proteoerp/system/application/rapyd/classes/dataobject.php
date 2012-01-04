@@ -60,13 +60,13 @@ class DataObject{
 	var $_order_by        = array();
 	var $field_order      = array();
 
- /**
-  * PHP4 constructor.
-  *
-  * @access   public
-  * @param    string   $table     database table name
-  * @return   void
-  */
+	/**
+	* PHP4 constructor.
+	*
+	* @access   public
+	* @param    string   $table     database table name
+	* @return   void
+	*/
 	function DataObject($table){
 
 		$this->ci =& get_instance();
@@ -97,28 +97,28 @@ class DataObject{
 		}
 	}
 
- /**
-  * prepare the call to a method inside current controller/method which can prevent $action to be executed.
-  * inside "function" definition, the first parameter must be the copy of DO, so in your pre-process function you can have access to current data.
-  * from DataForm (so also the extended DataEdit) you can use the same function.
-  *
-  * @access   public
-  * @param    string    $action can be "insert", "update" or "delete"
-  * @param    string    $function is the function/method name to be called
-  * @param    array     $arr_values optional and custom array of parameters
-  * @return   void
-  */
+	/**
+	* prepare the call to a method inside current controller/method which can prevent $action to be executed.
+	* inside "function" definition, the first parameter must be the copy of DO, so in your pre-process function you can have access to current data.
+	* from DataForm (so also the extended DataEdit) you can use the same function.
+	*
+	* @access   public
+	* @param    string    $action can be "insert", "update" or "delete"
+	* @param    string    $function is the function/method name to be called
+	* @param    array     $arr_values optional and custom array of parameters
+	* @return   void
+	*/
 	function pre_process($action,$function,$arr_values=array()){
 		$this->_pre_process_functions[$action] = array("name"=>$function, "arr_values"=>$arr_values);
 	}
 
- /**
-  * exec the call of pre_process function for $action (if is set)
-  *
-  * @access   private
-  * @param    string    $action can be "insert", "update" or "delete"
-  * @return   void
-  */
+	/**
+	* exec the call of pre_process function for $action (if is set)
+	*
+	* @access   private
+	* @param    string    $action can be "insert", "update" or "delete"
+	* @return   void
+	*/
 	function _exec_pre_process_functions($action){
 		$this->pre_process_result = TRUE;
 		if (isset($this->_pre_process_functions[$action])){
@@ -130,28 +130,28 @@ class DataObject{
 		}
 	}
 
- /**
-  * prepare the call to a method inside current controller/method which w'll be executed after $action execution
-  * inside "function" definition, the first parameter must be the copy of DO, so in your post-process function you can have access to current data.
-  * from DataForm (so also the extended DataEdit) you can use the same function.
-  *
-  * @access   public
-  * @param    string    $action can be "insert", "update" or "delete"
-  * @param    string    $function is the function/method name to be called
-  * @param    array     $arr_values optional and custom array of parameters
-  * @return   boolean
-  */
+	/**
+	* prepare the call to a method inside current controller/method which w'll be executed after $action execution
+	* inside "function" definition, the first parameter must be the copy of DO, so in your post-process function you can have access to current data.
+	* from DataForm (so also the extended DataEdit) you can use the same function.
+	*
+	* @access   public
+	* @param    string    $action can be "insert", "update" or "delete"
+	* @param    string    $function is the function/method name to be called
+	* @param    array     $arr_values optional and custom array of parameters
+	* @return   boolean
+	*/
 	function post_process($action,$function,$arr_values=array()){
 		$this->_post_process_functions[$action] = array("name"=>$function, "arr_values"=>$arr_values);
 	}
 
- /**
-  * exec the call of post_process function for $action (if is set)
-  *
-  * @access   private
-  * @param    string    $action can be "insert", "update" or "delete"
-  * @return   void
-  */
+	/**
+	* exec the call of post_process function for $action (if is set)
+	*
+	* @access   private
+	* @param    string    $action can be "insert", "update" or "delete"
+	* @return   void
+	*/
 	function _exec_post_process_functions($action){
 	if (isset($this->_post_process_functions[$action])){
 		$function = $this->_post_process_functions[$action];
@@ -162,14 +162,14 @@ class DataObject{
 	}
 	}
 
- /**
-  * load a record from the DB, receives a parameter that
-  * can be either a single key or a multiple field key (using an array)
-  *
-  * @access   public
-  * @param    mixed    $id
-  * @return   boolean
-  */
+	/**
+	* load a record from the DB, receives a parameter that
+	* can be either a single key or a multiple field key (using an array)
+	*
+	* @access   public
+	* @param    mixed    $id
+	* @return   boolean
+	*/
 	function load($id){
 
 		$this->pre_process_result = null;
@@ -237,25 +237,25 @@ class DataObject{
 		}
 	}
 
- /**
-  * associates the data from a recordset with the current object
-  *
-  * @access   private
-  * @param    array   $data is an associative array ($fieldname=>$value, ...)
-  * @return   void
-  */
+	/**
+	* associates the data from a recordset with the current object
+	*
+	* @access   private
+	* @param    array   $data is an associative array ($fieldname=>$value, ...)
+	* @return   void
+	*/
 	function bind_data( $data){
 		$this->data = $data;
 	}
 
- /**
-  * execute sub queries if there are relationships
-  *
-  * @access   private
-  * @param    array   $data is an associative array ($fieldname=>$value, ...)
-  * @return   void
-  */
-  function bind_rel(){
+	/**
+	* execute sub queries if there are relationships
+	*
+	* @access   private
+	* @param    array   $data is an associative array ($fieldname=>$value, ...)
+	* @return   void
+	*/
+	function bind_rel(){
 		if($this->make_rel){
 			if (count($this->pk)>1) return;
 
@@ -320,9 +320,9 @@ class DataObject{
 					}
 
 					if(isset($this->_order_by[$_one_to_many["id"]])){
-					    if(count($this->_order_by[$_one_to_many["id"]])>0)
-					    foreach($this->_order_by[$_one_to_many["id"]] AS $field=>$order)
-					      $this->db->order_by($field,$order);
+							if(count($this->_order_by[$_one_to_many["id"]])>0)
+							foreach($this->_order_by[$_one_to_many["id"]] AS $field=>$order)
+								$this->db->order_by($field,$order);
 					}
 
 					//inicio pointer
@@ -397,41 +397,39 @@ class DataObject{
 	}
 
 
-/**
-  * save the record by executing insert or update command
-  *
-  * @access   public
-  * @return   boolean
-  */
-  function save(){
-    //INSERT
-    if (!$this->loaded) {
+	/**
+	* save the record by executing insert or update command
+	*
+	* @access   public
+	* @return   boolean
+	*/
+	function save(){
+		//INSERT
+		if (!$this->loaded) {
+			//exec pre process function to escape the insert if it return false
+			$escape = $this->_exec_pre_process_functions("insert");
 
-      //exec pre process function to escape the insert if it return false
-      $escape = $this->_exec_pre_process_functions("insert");
+		//by default pk is AutoIncrement and reloaded after an insert, otherwise new value of pk(s) is loaded from user input
+		$pk_ai = true;
+		foreach ($this->pk as $keyfield => $keyvalue)
+			{
+				if(isset($this->data[$keyfield])){
+					$this->pk[$keyfield] = $this->data[$keyfield];
+					$pk_ai = false;
+				}
+			}
 
-	  //by default pk is AutoIncrement and reloaded after an insert, otherwise new value of pk(s) is loaded from user input
-	  $pk_ai = true;
-	  foreach ($this->pk as $keyfield => $keyvalue)
-      {
-        if(isset($this->data[$keyfield])){
-        	$this->pk[$keyfield] = $this->data[$keyfield];
-        	$pk_ai = false;
-        }
-      }
+			if ($escape !== false){
+				$result = $this->db->insert($this->table, $this->data);
+				if($result && $pk_ai){
+					$keys = array_keys($this->pk);
+					$key = $keys[0];
+					$this->pk[$key] = $this->insert_id();
 
-      if ($escape !== false)
-      {
-        $result = $this->db->insert($this->table, $this->data);
-        if($result && $pk_ai){
-          $keys = array_keys($this->pk);
-          $key = $keys[0];
-          $this->pk[$key] = $this->insert_id();
-
-          $this->data[$key] = $this->pk[$key];
-          $this->loaded = true;
-          //$this->bind_rel();
-         }
+					$this->data[$key] = $this->pk[$key];
+					$this->loaded = true;
+					//$this->bind_rel();
+				 }
 
 				if($this->save_rel){
 					//guarda detalles
@@ -457,40 +455,34 @@ class DataObject{
 					//fin del guarda detalle
 				}
 
-         if($result && $pk_ai){
-           $this->bind_rel();
-         }
+				 if($result && $pk_ai){
+					 $this->bind_rel();
+				 }
+				//exec post process function and store result in a property
+				$this->post_process_result = $this->_exec_post_process_functions("insert");
+				return $result;
 
+			} else {
+				return false;
+			}
+		//UPDATE
+		} else {
+			$this->db->where($this->pk);
 
-        //exec post process function and store result in a property
-        $this->post_process_result = $this->_exec_post_process_functions("insert");
-        return $result;
+			//exec pre process function to escape the insert if it return false
+			$escape = $this->_exec_pre_process_functions("update");
 
-      } else {
-        return false;
-      }
+			//by default pk is AutoIncrement otherwise new value of pk(s) is loaded from user input (after being used to retrieve the record to update)
+			foreach ($this->pk as $keyfield => $keyvalue){
+				if(isset($this->data[$keyfield])){
+					$this->pk[$keyfield] = $this->data[$keyfield];
+				}
+			}
 
-    //UPDATE
-    } else {
+			if ($escape !== false){
+				$result = $this->db->update($this->table, $this->data);
 
-      $this->db->where($this->pk);
-
-      //exec pre process function to escape the insert if it return false
-      $escape = $this->_exec_pre_process_functions("update");
-
-      //by default pk is AutoIncrement otherwise new value of pk(s) is loaded from user input (after being used to retrieve the record to update)
-      foreach ($this->pk as $keyfield => $keyvalue){
-        if(isset($this->data[$keyfield])){
-          $this->pk[$keyfield] = $this->data[$keyfield];
-        }
-      }
-
-
-      if ($escape !== false)
-      {
-        $result = $this->db->update($this->table, $this->data);
-
-        // guarda detalle
+				// guarda detalle
 				if($this->save_rel){
 					foreach($this->data_rel AS $rel=>$items){
 						//hace las equivalencias de las claves primarias
@@ -515,148 +507,147 @@ class DataObject{
 					//fin detalle
 				}
 
-        //exec post process function and store result in a property
-        $this->post_process_result = $this->_exec_post_process_functions("update");
-        return $result;
+				//exec post process function and store result in a property
+				$this->post_process_result = $this->_exec_post_process_functions("update");
+				return $result;
 
-      } else {
-        return false;
-      }
+			} else {
+				return false;
+			}
+		}
+	}
 
-    }
-  }
-
- /**
-  * returns the last autonumbering ID inserted. Returns false if function not supported
-  *
-  * @access   public
-  * @return   variant  integer or false
-  */
+	/**
+	* returns the last autonumbering ID inserted. Returns false if function not supported
+	*
+	* @access   public
+	* @return   variant  integer or false
+	*/
 	function insert_id(){
 		return $this->db->insert_id();
 	}
 
- /**
-  * loads a register from the DB, receives 3 parameters
-  *
-  * @access   public
-  * @param    string   $field
-  * @param    variant  $value
-  * @param    char     $fieldMetaType   (adodb metatype.. can be sniffed.. but.. non cio' voglia..)
-  * @return   boolean
-  */
-  function load_where($field, $value){
-    $this->db->where($field, $value);
+	/**
+	* loads a register from the DB, receives 3 parameters
+	*
+	* @access   public
+	* @param    string   $field
+	* @param    variant  $value
+	* @param    char     $fieldMetaType   (adodb metatype.. can be sniffed.. but.. non cio' voglia..)
+	* @return   boolean
+	*/
+	function load_where($field, $value){
+		$this->db->where($field, $value);
 
-    $query = $this->db->get($this->table);
+		$query = $this->db->get($this->table);
 
-    if ($query->num_rows()>1){
-      show_error("DataObject Error: More than one result");
-      return false;
-    } elseif($query->num_rows()===1)  {
-      $results = $query->result_array();
-      $this->bind_data($results[0]);
+		if ($query->num_rows()>1){
+			show_error("DataObject Error: More than one result");
+			return false;
+		} elseif($query->num_rows()===1)  {
+			$results = $query->result_array();
+			$this->bind_data($results[0]);
 
-      foreach ($this->pk as $keyfield=>$keyvalue){
-        $this->pk[$keyfield] = $results[0][$keyfield];
-      }
+			foreach ($this->pk as $keyfield=>$keyvalue){
+				$this->pk[$keyfield] = $results[0][$keyfield];
+			}
 
-      $this->loaded = true;
+			$this->loaded = true;
 
-      $this->bind_rel();
-      return true;
+			$this->bind_rel();
+			return true;
 
-    } else {
-      return false;
-    }
-  }
+		} else {
+			return false;
+		}
+	}
 
- /**
-  * prevent duplication of a given field
-  *
-  * @param   string   $field
-  * @param   variant  $value
-  * @return  boolean
-  */
-  function is_unique($field, $value){
-    $this->db->where($field, $value);
-    $query = $this->db->get($this->table);
+	/**
+	* prevent duplication of a given field
+	*
+	* @param   string   $field
+	* @param   variant  $value
+	* @return  boolean
+	*/
+	function is_unique($field, $value){
+		$this->db->where($field, $value);
+		$query = $this->db->get($this->table);
 
-    if($query->num_rows()>1){
-      return false;
-    } elseif ($query->num_rows()===1){
+		if($query->num_rows()>1){
+			return false;
+		} elseif ($query->num_rows()===1){
 
-      if ($this->loaded){
-        return ($this->data[$field] == $value);
-      } else {
-        return false;
-      }
+			if ($this->loaded){
+				return ($this->data[$field] == $value);
+			} else {
+				return false;
+			}
 
-    } else {
-      return true;
-    }
+		} else {
+			return true;
+		}
 
-  }
+	}
 
- /**
-  * prevent duplication of given fields on a db row
-  *
-  * @param   array    of field=>value to be checked
-  * @return  boolean
-  */
+	/**
+	* prevent duplication of given fields on a db row
+	*
+	* @param   array    of field=>value to be checked
+	* @return  boolean
+	*/
 
-  function are_unique($field){
-    if (is_array($field) && count($field)>0){
-      foreach($field as $fieldname => $value){
-        if($this->flag_pointer){
-          $this->db->where($this->table.'.'.$fieldname, $value);
-        }else{
-          $this->db->where($fieldname, $value);
-        }
-      }
-    } else {
-      return false;
-    }
-    $query = $this->db->get($this->table);
+	function are_unique($field){
+		if (is_array($field) && count($field)>0){
+			foreach($field as $fieldname => $value){
+				if($this->flag_pointer){
+					$this->db->where($this->table.'.'.$fieldname, $value);
+				}else{
+					$this->db->where($fieldname, $value);
+				}
+			}
+		} else {
+			return false;
+		}
+		$query = $this->db->get($this->table);
 
-    if ($query->num_rows()>1){
-      return false;
-    } elseif ($query->num_rows()===1){
+		if ($query->num_rows()>1){
+			return false;
+		} elseif ($query->num_rows()===1){
 
-      if ($this->loaded){
-        foreach($field as $fieldname => $value){
-          if($this->data[$fieldname] != $value) return false ;
-        }
-        return true;
-      }
-      return false;
-    } else {
-      return true;
-    }
-  }
+			if ($this->loaded){
+				foreach($field as $fieldname => $value){
+					if($this->data[$fieldname] != $value) return false ;
+				}
+				return true;
+			}
+			return false;
+		} else {
+			return true;
+		}
+	}
 
- /**
-  * get current value of a field
-  *
-  * @access   public
-  * @param    string  $field  the field name
-  * @return   mixed  value of a field or null if not set
-  */
-  function get($field){
-    if (isset($this->data[$field])) {
-      return $this->data[$field];
-    } else {
-      return null;
-    }
-  }
+	/**
+	* get current value of a field
+	*
+	* @access   public
+	* @param    string  $field  the field name
+	* @return   mixed  value of a field or null if not set
+	*/
+	function get($field){
+		if (isset($this->data[$field])) {
+			return $this->data[$field];
+		} else {
+			return null;
+		}
+	}
 
-  function get_pointer($field){
-    if (isset($this->_pointer_data[$field])) {
-      return $this->_pointer_data[$field];
-    } else {
-      return null;
-    }
-  }
+	function get_pointer($field){
+		if (isset($this->_pointer_data[$field])) {
+			return $this->_pointer_data[$field];
+		} else {
+			return null;
+		}
+	}
 
 	function count_rel($rel_id){
 		if(isset($this->data_rel[$rel_id])){
@@ -704,286 +695,274 @@ class DataObject{
 		return null;
 	}
 
- /**
-  * get related array (array of related/joined records)
-  *
-  * @access   public
-  * @param    string  $rel_id  the field name
-  * @return   mixed  value of a field or null if not set
-  */
-  function get_related($rel_id){
-    if (isset($this->data_rel[$rel_id])) {
-      return $this->data_rel[$rel_id];
-    } else {
-      return null;
-    }
-  }
+	/**
+	* get related array (array of related/joined records)
+	*
+	* @access   public
+	* @param    string  $rel_id  the field name
+	* @return   mixed  value of a field or null if not set
+	*/
+	function get_related($rel_id){
+		if (isset($this->data_rel[$rel_id])) {
+			return $this->data_rel[$rel_id];
+		} else {
+			return null;
+		}
+	}
 
 
- /**
-  * set new value to a field
-  *
-  * @access   public
-  * @param    string   $field  the field name
-  * @param    variant  $value     the new value
-  * @return   void
-  */
-  function set($field, $value)
-  {
+	/**
+	* set new value to a field
+	*
+	* @access   public
+	* @param    string   $field  the field name
+	* @param    variant  $value     the new value
+	* @return   void
+	*/
+	function set($field, $value){
 		$field_meta = $this->field_meta[$field];
 
-		if (in_array($field_meta->type,array("int","date")) && $value=="")
-		{
-		  $value = null;
+		if (in_array($field_meta->type,array("int","date")) && $value==""){
+			$value = null;
 		}
 
-    $this->data[$field] = $value;
-  }
+		$this->data[$field] = $value;
+	}
 
 
-  function set_rel($rel_id, $field, $value,$id=-1)
-  {
+	function set_rel($rel_id, $field, $value,$id=-1){
 		if($this->_rel_type[$rel_id][0]==0){      //uno a uno
 			$this->data_rel[$rel_id][$field] = $value;
 		}elseif($this->_rel_type[$rel_id][0]==1){ //uno muchos
 			if($id<0) $id=$this->_rel_type[$rel_id][1];
 			$this->data_rel[$rel_id][$id][$field]= $value;
 		}
-    //$this->data_rel[$rel_id][$field] = $value;
-  }
-
-  //Borra una relacion
-  function unset_rel($rel_id)
-  {
-	if(isset($this->_rel_type[$rel_id])){
-	  unset($this->_rel_type[$rel_id]);
-	  unset($this->data_rel[$rel_id]);
+		//$this->data_rel[$rel_id][$field] = $value;
 	}
-  }
+
+	//Borra una relacion
+	function unset_rel($rel_id){
+		if(isset($this->_rel_type[$rel_id])){
+			unset($this->_rel_type[$rel_id]);
+			unset($this->data_rel[$rel_id]);
+		}
+	}
 
 
- /**
-  * increment (+1) a field value
-  *
-  * @access   public
-  * @param    string   $field  the field name
-  * @return   void
-  */
-  function inc($field, $inc=1){
-    if (isset($this->data[$field])) {
-      $this->data[$field] = $this->data[$field]+$inc;
-    } else {
-      $this->data[$field] = $inc;
-    }
+	/**
+	* increment (+1) a field value
+	*
+	* @access   public
+	* @param    string   $field  the field name
+	* @return   void
+	*/
+	function inc($field, $inc=1){
+		if (isset($this->data[$field])) {
+			$this->data[$field] = $this->data[$field]+$inc;
+		} else {
+			$this->data[$field] = $inc;
+		}
 
-  }
+	}
 
- /**
-  * decrement (-1) a field value
-  *
-  * @access   public
-  * @param    string   $field     the field name
-  * @param    int      $dec       decrement factor
-  * @param    int      $positive  if value is negative return false;
-  * @return   void
-  */
-  function dec($field, $dec=1, $positive=true){
-    if (isset($this->data[$field])) {
-      if (($this->data[$field]-$dec < 0) && ($positive)){
-        return false;
-      } else {
-        $this->data[$field] = $this->data[$field]-$dec;
-      }
-    } else {
-      if ($positive){
-        return false;
-      } else {
-        $this->data[$field] = 0-$dec;
-      }
-    }
+	/**
+	* decrement (-1) a field value
+	*
+	* @access   public
+	* @param    string   $field     the field name
+	* @param    int      $dec       decrement factor
+	* @param    int      $positive  if value is negative return false;
+	* @return   void
+	*/
+	function dec($field, $dec=1, $positive=true){
+		if (isset($this->data[$field])) {
+			if (($this->data[$field]-$dec < 0) && ($positive)){
+				return false;
+			} else {
+				$this->data[$field] = $this->data[$field]-$dec;
+			}
+		} else {
+			if ($positive){
+				return false;
+			} else {
+				$this->data[$field] = 0-$dec;
+			}
+		}
+	}
 
-  }
+	/**
+	* get the the array of values of current record
+	*
+	* @access   public
+	* @return   array    associative array of current record
+	*/
+	function get_all() {
 
+		$data = $this->data;
+		$data = array_merge($data, $this->data_rel);
 
- /**
-  * get the the array of values of current record
-  *
-  * @access   public
-  * @return   array    associative array of current record
-  */
-  function get_all() {
+		return $data;
+	}
 
-    $data = $this->data;
-    $data = array_merge($data, $this->data_rel);
+	/**
+	* delete current loaded field
+	*
+	* @access   public
+	* @return   boolean
+	*/
+	function delete(){
+		if ($this->loaded){
+			$this->db->where($this->pk);
 
-    return $data;
-  }
+			//exec pre process function to escape the insert if it return false
+			$escape = $this->_exec_pre_process_functions("delete");
 
- /**
-  * delete current loaded field
-  *
-  * @access   public
-  * @return   boolean
-  */
-  function delete(){
-    if ($this->loaded){
-      $this->db->where($this->pk);
+			if ($escape !== false){
 
-      //exec pre process function to escape the insert if it return false
-      $escape = $this->_exec_pre_process_functions("delete");
+				$this->db->where($this->pk);
+				$result = $this->db->delete($this->table);
 
-      if ($escape !== false)
-      {
-
-        $this->db->where($this->pk);
-        $result = $this->db->delete($this->table);
-
-        //inicia detalle
-        foreach($this->data_rel AS $rel=>$items){
-        	//hace las equivalencias de las claves primarias
-        	foreach($this->_rel_fields[$rel] AS $iind){ // $iind[0] encab $iind[1] detalle
-             $indiceit=$iind[1];
-             $indice =$iind[0];
-             $pk_rel[$indiceit]=$this->pk[$indice];
-          }
-        	$this->db->where($pk_rel);
-        	 if($this->_rel_type[$rel][0]==0){   //uno a uno
-        	 	 $itresult = $this->db->delete($this->_one_to_one[$rel]['table']);
-        	 }elseif($this->_rel_type[$rel][0]==1){//uno a muchos
-        	 	 $itresult = $this->db->delete($this->_one_to_many[$rel]['table']);
-        	 }
-        }
-        //fin detalle
+				//inicia detalle
+				foreach($this->data_rel AS $rel=>$items){
+					//hace las equivalencias de las claves primarias
+					foreach($this->_rel_fields[$rel] AS $iind){ // $iind[0] encab $iind[1] detalle
+						 $indiceit=$iind[1];
+						 $indice =$iind[0];
+						 $pk_rel[$indiceit]=$this->pk[$indice];
+					}
+					$this->db->where($pk_rel);
+					 if($this->_rel_type[$rel][0]==0){   //uno a uno
+					 	 $itresult = $this->db->delete($this->_one_to_one[$rel]['table']);
+					 }elseif($this->_rel_type[$rel][0]==1){//uno a muchos
+					 	 $itresult = $this->db->delete($this->_one_to_many[$rel]['table']);
+					 }
+				}
+				//fin detalle
 
 
-        //exec post process function and store result in a property
-        $this->post_process_result = $this->_exec_post_process_functions("delete");
-        return $result;
+				//exec post process function and store result in a property
+				$this->post_process_result = $this->_exec_post_process_functions("delete");
+				return $result;
+			} else {
+				return false;
+			}
 
-      } else {
-        return false;
-      }
+		} else {
+			return false;
+		}
+	}
 
-    } else {
-      return false;
-    }
-  }
-
- /**
-  * delete a record (non necessary current loaded)
-  *
-  * @access   public
-  * @return   boolean
-  */
-  function delete_where($field,$value){
-
-    $this->db->where($field, $value);
-    return $this->db->delete($this->table);
-  }
+	/**
+	* delete a record (non necessary current loaded)
+	*
+	* @access   public
+	* @return   boolean
+	*/
+	function delete_where($field,$value){
+		$this->db->where($field, $value);
+		return $this->db->delete($this->table);
+	}
 
 
-  function rel_one_to_one ($id, $table, $field_fk="<#pk#>", $field="", $cascade="") {
-    if ($field=="") $field = $field_fk;
-    $arr["id"] = $id;
-    $arr["table"] = $table;  //table to join
-    if (strpos($table," as")>0) {
-      $alias = substr($table,strpos($table," as ")+4);
-    } else {
-      $alias = $table;
-    }
-    $arr["table_alias"] = $alias;
-    $arr["on"] = $this->_rel_build_on($alias,$field_fk,$id);
-    //$arr["on"] = $alias.".".$field." = ".$this->table.".".$field_fk;  //join "on"
-    $arr["cascade"] = $cascade;
-    $this->_rel_type[$id]=array(0,0);
-    $this->_one_to_one[$id] = $arr;
-  }
+	function rel_one_to_one ($id, $table, $field_fk="<#pk#>", $field="", $cascade="") {
+		if ($field=="") $field = $field_fk;
+		$arr["id"] = $id;
+		$arr["table"] = $table;  //table to join
+		if (strpos($table," as")>0) {
+			$alias = substr($table,strpos($table," as ")+4);
+		} else {
+			$alias = $table;
+		}
+		$arr["table_alias"] = $alias;
+		$arr["on"] = $this->_rel_build_on($alias,$field_fk,$id);
+		//$arr["on"] = $alias.".".$field." = ".$this->table.".".$field_fk;  //join "on"
+		$arr["cascade"] = $cascade;
+		$this->_rel_type[$id]=array(0,0);
+		$this->_one_to_one[$id] = $arr;
+	}
 
 
-  function rel_one_to_many ($id, $table, $field_fk="<#pk#>", $cascade="") {
-    $arr["id"] = $id;
-    $arr["table"] = $table;
-    if (strpos($table," as")>0) {
-      $alias = substr($table,strpos($table," as ")+4);
-    } else {
-      $alias = $table;
-    }
-    $arr["table_alias"] = $alias;
-    //$arr["on"] = $alias.".".$field_fk." = ".$this->table.".".$field_fk;  //join "on"
-    $arr["on"] = $this->_rel_build_on($alias,$field_fk,$id);
-    $arr["cascade"] = $cascade;
-    $this->_rel_type[$id]=array(1,0);
-    $this->_one_to_many[$id] = $arr;
-  }
+	function rel_one_to_many ($id, $table, $field_fk="<#pk#>", $cascade="") {
+		$arr["id"] = $id;
+		$arr["table"] = $table;
+		if (strpos($table," as")>0) {
+			$alias = substr($table,strpos($table," as ")+4);
+		} else {
+			$alias = $table;
+		}
+		$arr["table_alias"] = $alias;
+		//$arr["on"] = $alias.".".$field_fk." = ".$this->table.".".$field_fk;  //join "on"
+		$arr["on"] = $this->_rel_build_on($alias,$field_fk,$id);
+		$arr["cascade"] = $cascade;
+		$this->_rel_type[$id]=array(1,0);
+		$this->_one_to_many[$id] = $arr;
+	}
 
-  function order_rel_one_to_many($id,$order){
-    if(isset($this->_one_to_many[$id])){
-      $this->_one_to_many[$id]['order']=$order;
-    }
-  }
+	function order_rel_one_to_many($id,$order){
+		if(isset($this->_one_to_many[$id])){
+			$this->_one_to_many[$id]['order']=$order;
+		}
+	}
 
+	function rel_many_to_many($id, $table, $rel_table, $field,$field2, $cascade=""){
+		$arr["id"] = $id;
+		$arr["rel_table"] = $rel_table;
+		$arr["table"] = $table;
 
-  function rel_many_to_many ($id, $table, $rel_table, $field, $cascade="") {
-    $arr["id"] = $id;
-    $arr["rel_table"] = $rel_table;
-    $arr["table"] = $table;
+		//non sto' capendo piu' niente.. ma qui devo procedere come nelle altre relazioni
+		if (strpos($table," as")>0){
+			$alias = substr($table,strpos($table," as ")+4);
+		}else{
+			$alias = $table;
+		}
+		$arr["table_alias"] = $alias;
 
-    //non sto' capendo piu' niente.. ma qui devo procedere come nelle altre relazioni
-    if (strpos($table," as")>0) {
-      $alias = substr($table,strpos($table," as ")+4);
-    } else {
-      $alias = $table;
-    }
-    $arr["table_alias"] = $alias;
+		$arr["on"] = $rel_table.".".$field." = ".$table.".".$field;  //join "on"
+		$arr["cascade"] = $cascade;
+		$this->_rel_type[$id]=array(2,0);
+		$this->_many_to_many[$id]= $arr;
+	}
 
-    $arr["on"] = $rel_table.".".$field." = ".$table.".".$field;  //join "on"
-    $arr["cascade"] = $cascade;
-    $this->_rel_type[$id]=array(2,0);
-    $this->_many_to_many[$id]= $arr;
-  }
+	/**
+	* borra el id para insertarlo como registro nuevo
+	*
+	* @access   private
+	* @return   string
+	*/
 
- /**
-  * borra el id para insertarlo como registro nuevo
-  *
-  * @access   private
-  * @return   string
-  */
+	function unset_pk(){
+		foreach ($this->pk as $keyfield=>$keyvalue){
+			$this->pk[$keyfield]='';
+			$this->set($keyfield,'');
+		}
 
-        function unset_pk(){
-                foreach ($this->pk as $keyfield=>$keyvalue){
-                        $this->pk[$keyfield]='';
-                        $this->set($keyfield,'');
-                }
+		$itarr=array('_one_to_many','_one_to_one');
+		foreach($itarr AS $val){
+			foreach($this->$val AS $iid=>$arr ){
+				$fields = $this->db->field_data($arr['table']);
+				$can=$this->count_rel($iid);
+				//print_r($this->_rel_fields);
+				for($i=0;$i<$can;$i++){
+					foreach($this->_rel_fields[$iid] AS  $relid){
+						$this->set_rel($iid,$relid[1],'',$i);
+					}
+				}
+				foreach($fields as $field) {
+					if ($field->primary_key) {
+						for($i=0;$i<$can;$i++)
+							$this->set_rel($iid,$field->name,'',$i);
+					}
+				}
+			}
+		}
+	}
 
-                $itarr=array('_one_to_many','_one_to_one');
-                foreach($itarr AS $val){
-                        foreach($this->$val AS $iid=>$arr ){
-                                $fields = $this->db->field_data($arr['table']);
-                                $can=$this->count_rel($iid);
-                                //print_r($this->_rel_fields);
-                                for($i=0;$i<$can;$i++){
-                                        foreach($this->_rel_fields[$iid] AS  $relid){
-                                                $this->set_rel($iid,$relid[1],'',$i);
-                                        }
-                                }
-                                foreach($fields as $field) {
-                                        if ($field->primary_key) {
-                                                for($i=0;$i<$can;$i++)
-                                                        $this->set_rel($iid,$field->name,'',$i);
-                                        }
-                                }
-                        }
-                }
-        }
-
-
- /**
-  * construye el join 'on' para las relaciones
-  *
-  * @access   private
-  * @return   string
-  */
-
+	/**
+	* construye el join 'on' para las relaciones
+	*
+	* @access   private
+	* @return   string
+	*/
 	function _rel_build_on($alias,$fields,$id){
 		if(is_array($fields)){
 			$on='';
@@ -1005,37 +984,37 @@ class DataObject{
 		return $on;
 	}
 
- /**
-  * Borra un campo de la matriz de data de relacion
-  *
-  * @access   private
-  * @return   bolean
-  */
-  function rel_rm_field($rel_id,$field,$id){
-	if($this->_rel_type[$rel_id][0]==0){
-	  if (isset($this->data_rel[$rel_id][$field])) {
-	  	unset($this->data_rel[$rel_id][$field]);
-		return true;
-	  } else {
-	  	return false;
-	  }
-	}elseif($this->_rel_type[$rel_id][0]==1){
-	  if($id<0) $id=$this->_rel_type[$rel_id][1];
-	  if (isset($this->data_rel[$rel_id][$id][$field])) {
-	  	unset($this->data_rel[$rel_id][$id][$field]);
-		return true;
-	  }else{
-		return false;
-	  }
+	/**
+	* Borra un campo de la matriz de data de relacion
+	*
+	* @access   private
+	* @return   bolean
+	*/
+	function rel_rm_field($rel_id,$field,$id){
+		if($this->_rel_type[$rel_id][0]==0){
+			if (isset($this->data_rel[$rel_id][$field])) {
+				unset($this->data_rel[$rel_id][$field]);
+				return true;
+			} else {
+				return false;
+			}
+		}elseif($this->_rel_type[$rel_id][0]==1){
+			if($id<0) $id=$this->_rel_type[$rel_id][1];
+			if (isset($this->data_rel[$rel_id][$id][$field])) {
+				unset($this->data_rel[$rel_id][$id][$field]);
+				return true;
+			}else{
+				return false;
+			}
+		}
 	}
-  }
 
- /**
-  * Borra una fila de una relacion uno muchos
-  *
-  * @access   private
-  * @return   bolean
-  */
+	/**
+	* Borra una fila de una relacion uno muchos
+	*
+	* @access   private
+	* @return   bolean
+	*/
 	function rel_rm($rel_id,$id){
 		if($this->_rel_type[$rel_id][0]==1){
 			if($id<0) $id=$this->_rel_type[$rel_id][1];
@@ -1047,27 +1026,26 @@ class DataObject{
 		return false;
 	}
 
-  /**
-  * Borra un campo de la matriz de data
-  *
-  * @access   private
-  * @return   bolean
-  */
-  function rm_get($field){
-    if (isset($this->data[$field])) {
-      unset($this->data[$field]);
-	  return true;
-    } else {
-      return false;
-    }
-  }
+	/**
+	* Borra un campo de la matriz de data
+	*
+	* @access   private
+	* @return   bolean
+	*/
+	function rm_get($field){
+		if (isset($this->data[$field])) {
+			unset($this->data[$field]);
+			return true;
+		} else {
+			return false;
+		}
+	}
 
 	function order_by($relid,$field,$order='asc'){
-	$this->_order_by[$relid][$field]=$order;
+		$this->_order_by[$relid][$field]=$order;
 	}
 
 	function set_field_order($pk='',$field=''){
 		$this->field_order[$pk]=$field;
 	}
 }
-?>

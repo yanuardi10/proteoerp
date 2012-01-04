@@ -721,7 +721,6 @@ class pfaclitemayor extends validaciones{
 
 		if(!$this->db->field_exists('escala1', 'sinv')){
 			$mSQL="ALTER TABLE `sinv`
-			ADD COLUMN `pmb` DECIMAL(19,2) NOT NULL DEFAULT '0.00' COMMENT 'porcentaje mayor' AFTER `pm`,
 			ADD COLUMN `escala1` DECIMAL(12,2) NULL DEFAULT '0.00' AFTER `pmb`,
 			ADD COLUMN `pescala1` DECIMAL(5,2) NULL DEFAULT '0.00' COMMENT 'porcentaje descuento escala1' AFTER `escala1`,
 			ADD COLUMN `escala2` DECIMAL(12,2) NULL DEFAULT '0.00' AFTER `pescala1`,
