@@ -1104,8 +1104,7 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->post_process('insert','_post_insert');
 		$edit->post_process('update','_post_update');
 		$edit->post_process('delete','_post_delete');
-
-
+		
 		$edit->script($script,'create');
 		$edit->script($script,'modify');
 		$edit->back_url = site_url('inventario/sinv/filteredgrid');
@@ -1674,13 +1673,30 @@ function sinvborraprv(mproveed, mcodigo){
 	}
 
 	function _pre_inserup($do){
+		
+		$borrar=array();
+		foreach($do->data_rel['sinvcombo'] as $k=>$v)
+			if(empty($v['codigo']))
+			$borrar[]=$k;
+		
+		foreach($borrar as $v)
+		unset($do->data_rel['sinvcombo'][$v]);
+		
 		$tipo=$do->get('tipo');
-		if($tipo!='Combo' && $do->count_rel('sinvcombo') >0){
+		if($tipo!='Combo' && count($do->data_rel['sinvcombo']) >0){
 			$error='ERROR. el tipo de Articulo debe ser Combo, debido a que tiene varios Articulos relacionados';
 			$do->error_message_ar['pre_upd'] =$error;
 			$do->error_message_ar['pre_ins'] =$error;
 			return false;
 		}
+		
+		if($tipo=='Combo' && count($do->data_rel['sinvcombo']) <=0){
+			$error='ERROR. El Combo debe tener almenos un articulo';
+			$do->error_message_ar['pre_upd'] =$error;
+			$do->error_message_ar['pre_ins'] =$error;
+			return false;
+		}
+		
 		
 		for($i=1;$i<5;$i++){
 			$prec='precio'.$i;
@@ -2874,5 +2890,11 @@ function sinvborraprv(mproveed, mcodigo){
 		PRIMARY KEY  (`combo`,`codigo`)
 		) ENGINE=MyISAM DEFAULT CHARSET=latin1";
 		$this->db->simple_query($mSQL);
+		$query="ALTER TABLE `sinvcombo`  ADD COLUMN `id` INT NOT NULL AUTO_INCREMENT FIRST,  DROP PRIMARY KEY,  ADD PRIMARY KEY (`id`)";
+		$this->db->simple_query($query);
+		$query="ALTER TABLE `sinvcombo`  ADD COLUMN `ultimo` DECIMAL(19,2) NULL DEFAULT '0.00'"; 
+		$this->db->simple_query($query);
+		$query="ALTER TABLE `sinvcombo`  ADD COLUMN `pond` DECIMAL(19,2) NULL DEFAULT '0.00'  ";
+		$this->db->simple_query($query);
 	}
 }

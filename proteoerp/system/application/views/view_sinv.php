@@ -597,7 +597,8 @@ function autocod(id){
 	</tr>
 	</table>
 </div>
-<?php if(true){?>
+<?php if(($form->_dataobject->get('tipo')=='Combo' && $form->_status=='show') || $form->_status!='show'){?>
+
 <div id="tab7" style='background:#EFEFFF'>
 	<div style='overflow:auto;border: 1px solid #9AC8DA;background: #FAFAFA;height:200px'>
 		<table width='100%'>
