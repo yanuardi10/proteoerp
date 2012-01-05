@@ -236,7 +236,7 @@ class Datasis {
 		return("<a href='javascript:void(0);'onclick=\"vent=window.open('".site_url("buscar/index/$idt/$puri")."','ventbuscar$id','width=$width,height=$height,scrollbars=Yes,	status=Yes,resizable=Yes,screenx=5,screeny=5');vent.focus();document.body.setAttribute('onUnload','vent.close();');\">".image('system-search.png',$modbus['titulo'],array('border'=>'0')).'</a>');
 	}
 
-	function p_modbus($modbus,$puri='',$width=800,$height=600){
+	function p_modbus($modbus,$puri='',$width=800,$height=600,$id=''){
 		$CI =& get_instance();
 		//$uri  =$CI->uri->uri_string();
 		$uri=$this->get_uri();
@@ -244,7 +244,7 @@ class Datasis {
 		$parametros=serialize($modbus);
 
 		$data=array();
-		$id=$modbus['tabla'];
+		if (empty($id)) $id=$modbus['tabla'];
 
 		$idt=$this->dameval("SELECT id FROM modbus WHERE idm='$id' AND uri='$uri'");
 		if (!empty($idt)){

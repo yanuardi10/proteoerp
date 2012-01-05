@@ -247,7 +247,7 @@ class Recep extends Controller {
 		$data['head']   .= script('jquery-ui.js');
 		$data['head']   .= script('plugins/jquery.numeric.pack.js');
 		$data['head']   .= script('plugins/jquery.floatnumber.js');
-		$data['head']   .= script('plugins/jquery.meiomask.js');
+		//$data['head']   .= script('plugins/jquery.meiomask.js');
 		$data['head']   .= phpscript('nformat.js');
 		$data['head']   .= style('redmond/jquery-ui-1.8.1.custom.css');
 		$this->load->view('view_ventanas', $data);

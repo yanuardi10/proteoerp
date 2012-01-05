@@ -12,7 +12,6 @@ else:
 
 if(isset($form->error_string)) echo '<div class="alert">'.$form->error_string.'</div>';
 
-
 echo $form_begin;
 if($form->_status!='show'){ ?>
 <script language="javascript" type="text/javascript">
@@ -140,7 +139,7 @@ function print_r(theObj){
 					//$f_codigoa=$form->$it_codigoa->output;
 					//$f_cana   =$form->$it_cana->output;
 					if($form->_status!='show')
-					$f_cana   ='<input id="cana_'.$i.'" onkeyup="total(\''.$i.'\')" class="inputnum" type="text" autocomplete="off" size="2" value="'.($cana>0?$cana:'').'" name="cana_'.$i.'">';
+					$f_cana   ='<input id="cana_'.$i.'" onkeyup="total(\''.$i.'\')" class="inputnum" type="text" autocomplete="off" size="2" value="'.($cana>0?$cana:'').'" name="cana_'.$i.'" style="height:30px;font-size:18px">';
 					else
 					$f_cana =nformat($cana);
 				

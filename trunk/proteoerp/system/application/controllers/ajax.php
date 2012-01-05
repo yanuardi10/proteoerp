@@ -450,4 +450,86 @@ class Ajax extends Controller {
 		$data['title']   = '';
 		$this->load->view('view_ventanas', $data);
 	}
+	
+	
+	function buscasinv2(){
+		//busca por CODIGO comience por la busqueda LIKE 'BUSQUEDA%',
+		//sino busca por CODIGO en cualquier parte LIKE '%BUSQUEDA%',
+		//sino consigue buscar los que comiencen en DESCRIP LIKE 'BUSQUEDA%'	
+		//sino busca por DESCRIP LIKE '%BUSQUEDA%'
+		//acepta el parametro comodin
+		//busca solo los activos
+		
+		$comodin=$this->datasis->traevalor('COMODIN');
+		$mid  = $this->input->post('q');
+		if(strlen($comodin)==1){
+			$mid=str_replace($comodin,'%',$mid);
+		}
+
+		$data = '{[ ]}';
+		if($mid !== false){
+			$retArray = $retorno = array();
+
+			$mSQL="SELECT DISTINCT TRIM(a.descrip) AS descrip, TRIM(a.codigo) AS codigo, a.precio1,precio2,precio3,precio4, a.iva,a.existen,a.tipo
+				,a.peso, a.ultimo, a.pond,a.formcal,a.id FROM sinv AS a
+				WHERE a.codigo LIKE ".$this->db->escape($mid.'%')." AND a.activo='S'
+				ORDER BY a.descrip";
+			
+			
+			$query = $this->db->query($mSQL);
+			$cant=$query->num_rows();
+			if(!($cant>0)){
+				$mSQL="SELECT DISTINCT TRIM(a.descrip) AS descrip, TRIM(a.codigo) AS codigo, a.precio1,precio2,precio3,precio4, a.iva,a.existen,a.tipo
+				,a.peso, a.ultimo, a.pond,a.formcal,a.id FROM sinv AS a
+				WHERE a.codigo LIKE ".$this->db->escape('%'.$mid.'%')." AND a.activo='S'
+				ORDER BY a.descrip";
+				$query = $this->db->query($mSQL);
+				$cant=$query->num_rows();
+			}
+			
+			if(!($cant>0)){
+				$mSQL="SELECT DISTINCT TRIM(a.descrip) AS descrip, TRIM(a.codigo) AS codigo, a.precio1,precio2,precio3,precio4, a.iva,a.existen,a.tipo
+				,a.peso, a.ultimo, a.pond,a.formcal,a.id FROM sinv AS a
+				WHERE a.descrip LIKE ".$this->db->escape($mid.'%')." AND a.activo='S'
+				ORDER BY a.descrip";
+				$query = $this->db->query($mSQL);
+				$cant=$query->num_rows();
+			}
+			
+			if(!($cant>0)){
+				$mSQL="SELECT DISTINCT TRIM(a.descrip) AS descrip, TRIM(a.codigo) AS codigo, a.precio1,precio2,precio3,precio4, a.iva,a.existen,a.tipo
+				,a.peso, a.ultimo, a.pond,a.formcal,a.id FROM sinv AS a
+				WHERE a.descrip LIKE ".$this->db->escape('%'.$mid.'%')." AND a.activo='S'
+				ORDER BY a.descrip";
+				$query = $this->db->query($mSQL);
+				$cant=$query->num_rows();
+			}
+			
+			$cana=1;
+			if ($cant > 0){
+				foreach( $query->result_array() as  $row ) {
+					$retArray['label']   = '('.$row['codigo'].') '.$row['descrip'].' '.$row['precio1'].' Bs. - '.$row['existen'];
+					$retArray['value']   = $row['codigo'];
+					$retArray['codigo']  = $row['codigo'];
+					$retArray['cana']    = $cana;
+					$retArray['tipo']    = $row['tipo'];
+					$retArray['peso']    = $row['peso'];
+					$retArray['ultimo']  = $row['ultimo'];
+					$retArray['pond']    = $row['pond'];
+					$retArray['formcal'] = $row['formcal'];
+					$retArray['id']      = $row['id'];
+					$retArray['base1']   = $row['precio1']*100/(100+$row['iva']);
+					$retArray['base2']   = $row['precio2']*100/(100+$row['iva']);
+					$retArray['base3']   = $row['precio3']*100/(100+$row['iva']);
+					$retArray['base4']   = $row['precio4']*100/(100+$row['iva']);
+					$retArray['descrip'] = utf8_encode($row['descrip']);
+					//$retArray['descrip'] = wordwrap($row['descrip'], 25, '<br />');
+					$retArray['iva']     = $row['iva'];
+					array_push($retorno, $retArray);
+				}
+				$data = json_encode($retorno);
+	        }
+		}
+		echo $data;
+	}
 }
