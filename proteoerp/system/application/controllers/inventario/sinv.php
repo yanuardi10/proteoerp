@@ -1859,6 +1859,9 @@ function sinvborraprv(mproveed, mcodigo){
 			$do->error_message_ar['pre_ins'] =$error;
 			return false;
 		}
+		print_r($do->get_all());
+		echo "hola";
+		//exit();
 		
 		if($tipo=='Combo' && count($do->data_rel['sinvcombo']) <=0){
 			$error='ERROR. El Combo debe tener almenos un articulo';
