@@ -273,6 +273,7 @@ class rivc extends Controller {
 		$edit->it_fecha->size =11;
 		$edit->it_fecha->maxlength =10;
 		$edit->it_fecha->rel_id ='itrivc';
+		$edit->it_fecha->type='inputhidden';
 
 		$edit->it_numero = new inputField('numero','numero_<#i#>');
 		$edit->it_numero->db_name='numero';
@@ -515,8 +516,11 @@ class rivc extends Controller {
 		if(empty($scli)){
 			$retArray[0]['label']   = 'Debe seleccionar un cliente primero';
 			$retArray[0]['value']   = '';
-			$retArray[0]['cod_cli'] = '';
-			$retArray[0]['nombre']  = '';
+			$retArray[0]['gtotal']  = 0;
+			$retArray[0]['reiva']   = 0;
+			$retArray[0]['impuesto']= 0;
+			$retArray[0]['fecha']   = '';
+			$retArray[0]['tipo_doc']= '';
 			$data = json_encode($retArray);
 			echo $data;
 			return;
@@ -544,7 +548,6 @@ class rivc extends Controller {
 					$retArray['value']   = $row['numero'];
 					$retArray['gtotal']  = $row['totalg'];
 					$retArray['reiva']   = (($row['tipo_doc']=='D')? -1: 1)*round($row['reiva'],2);
-					//$retArray['reiva']   = round($row['reiva'],2);
 					$retArray['impuesto']= $row['iva'];
 					$retArray['fecha']   = dbdate_to_human($row['fecha']);
 					$retArray['tipo_doc']= $row['tipo_doc'];
@@ -557,6 +560,12 @@ class rivc extends Controller {
 				$retArray[0]['value']   = '';
 				$retArray[0]['cod_cli'] = '';
 				$retArray[0]['nombre']  = '';
+				$retArray[0]['gtotal']  = 0;
+				$retArray[0]['reiva']   = 0;
+				$retArray[0]['impuesto']= 0;
+				$retArray[0]['fecha']   = '';
+				$retArray[0]['tipo_doc']= '';
+
 				$data = json_encode($retArray);
 			}
 		}

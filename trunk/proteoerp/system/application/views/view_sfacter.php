@@ -53,11 +53,23 @@ $(function(){
 				success:
 					function(data){
 						var sugiere = [];
-						$.each(data,
-							function(i, val){
-								sugiere.push( val );
-							}
-						);
+						if(data.length==0){
+							$('#nombre').val('');
+							$('#nombre_val').text('');
+
+							$('#rifci').val('');
+							$('#rifci_val').text('');
+							$('#sclitipo').val('1');
+
+							$('#direc').val('');
+							$('#direc_val').text('');
+						}else{
+							$.each(data,
+								function(i, val){
+									sugiere.push( val );
+								}
+							);
+						}
 						add(sugiere);
 					},
 			})
