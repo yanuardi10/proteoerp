@@ -25,8 +25,11 @@ class dateonlyField extends dateField{
 	
   function _getNewValue(){
     $this->_getValue();
-    if (isset($this->request[$this->name])){
-      $this->newValue = date($this->dbformat,timestampFromInputDate($this->value, $this->format)); 
+    if (isset($this->request[$this->name])){     
+      if(!empty($this->value))
+        $this->newValue = date($this->dbformat,timestampFromInputDate($this->value, $this->format));
+        else
+        $this->newValue =null;
     }
   }
     

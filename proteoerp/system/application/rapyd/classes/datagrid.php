@@ -534,7 +534,7 @@ class DataGridColumn{
 			}
 			break;
 		case "pattern":
-			foreach ($this->fieldList as $fieldName){
+			foreach($this->fieldList as $fieldName){
 				if($dataRow[$fieldName]=='__TOET__'){
 					$this->rpattern = '';
 				}else{

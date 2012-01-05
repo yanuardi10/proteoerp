@@ -25,6 +25,7 @@ class Buscar extends Controller
 	var $groupby='';
 	//parametro que define el grupo de base de datos a usar
 	var $dbgroup='';
+	var $order_by='';
 
 	function Buscar(){
 		parent::Controller();
@@ -32,7 +33,6 @@ class Buscar extends Controller
 	}
 
 	function index(){
-
 		$this->rapyd->load('datafilter2','datagrid');
 		$this->_db2prop();
 		if(!empty($this->dbgroup)){
@@ -42,53 +42,99 @@ class Buscar extends Controller
 
 		$join=false;
 		//extrae las varibles provenientes de las uris
-		if ($this->p_uri){
+		if($this->p_uri){
 			$uris=array();
 			foreach($this->p_uri as $segment=>$nombre){
 				$valor=$this->uri->segment($segment);
-				//if($valor==false){
-				//	echo 'entre';
-				//	$this->p_uri=false;
-				//	break;
-				//}
 				$uris[$nombre]=$valor;
 			}
 		}
+		
+		$tablas=$this->db->query("show tables");
+		$tablas=$tablas->result_array();
+		$tables=array();
+		foreach($tablas as $row)
+			foreach($row as $k=>$v)
+				$tables[]=$v;
 
 		//Filtro
-		$codigo=$this->filtro;
-		$mSQL="SHOW FIELDS FROM $this->tabla WHERE Field IN ('".implode('\',\'',array_keys($this->filtro)).'\')';
-		$query = $this->db->query($mSQL);
-
-		$prev= array_merge(array_keys($this->columnas), array_keys($this->retornar));
-		$prev= array_unique($prev);
-		foreach($prev AS $ddata){
-				$ddata=$this->tabla.'.'.$ddata;
+		$filtros=array();
+		foreach($this->filtro as $k=>$v){
+			if(count(explode('.',$k))==2)
+				if(in_array(substr($k,0,strpos($k,'.')),$tables))
+					$filtros[substr($k,0,strpos($k,'.'))][substr($k,strpos($k,'.')+1)]=$v;
+				else
+				$filtros[$this->tabla][$k]=$v;
+			else
+			$filtros[$this->tabla][$k]=$v;
+		}
+		
+		$campos=array();
+		foreach($filtros as $k=>$v){
+			$mSQL="SHOW FIELDS FROM $k WHERE Field IN ('".implode('\',\'',array_keys($v)).'\')';
+			$query = $this->db->query($mSQL);
+			$temp=$query->result_array();
+			foreach($temp as $z=>$y){
+				$temp[$z]['titulo'] =$v[$temp[$z]['Field']];
+				$temp[$z]['db_name']=$k.'.'.$temp[$z]['Field'];
+			}
+			$campos=array_merge($campos,$temp);
+		}
+		
+		$r=array();
+		$rk=array();
+		if(!isset($this->retornar[0])){
+			foreach($this->retornar as $k=>$v){
+				$r[]=array($k=>$v);
+				$rk[]=$k;
+			}
+		}else{
+			$r=$this->retornar;
+			foreach($this->retornar as $k=>$v)
+				foreach($v as $kk=>$vv)
+					$rk[]=$kk;	
+		}
+		$prev=array_keys($this->columnas);
+		foreach($r as $k=>$v)
+			$prev= array_merge($prev, array_keys($v));
+		
+		$prev2= array_unique($prev);
+		foreach($prev2 AS $ddata){
+				$ddata=$ddata;
 				$select[]=$ddata;
 		}
-
+		
 		$filter = new DataFilter2('Par&aacute;metros de B&uacute;squeda');
-
 		$filter->db->select($select);
 		$filter->db->from($this->tabla);
 
-		if (!empty($this->groupby)) $filter->db->groupby($this->tabla.'.'.$this->groupby);
-		if (count($this->join)==3){  
+		if (!empty($this->groupby)) $filter->db->groupby($this->groupby);
+		//$filter->db->order_by('scli.nombre');
+		
+		foreach($this->join as $row){
+			if(count($row)==3){
+				$join=true;
+				$filter->db->join($row[0],$row[1],$row[2]);
+			}
+		}
+		if(count($this->join)==3){
 			$join=true;
 			$filter->db->join($this->join[0],$this->join[1],$this->join[2]);
 		}
-
-		foreach ($query->result() as $fila){
-			$campo=$fila->Field;
-			$titulo=$this->filtro[$campo];
-			if(strncasecmp ($fila->Type,'date', 4)==0){
+		
+		foreach($campos as $fila){
+			$campo  =$fila['Field'];
+			$campodb=$fila['db_name'];
+			$titulo =$fila['titulo'];
+			$type   =$fila['Type'];
+			if(strncasecmp($type,'date', 4)==0){
 				if(is_array ($titulo)){
 					$filter->$campo = new dateField($titulo[0],$campo,'Y/m/d');
 					$filter->$campo->clause='where';
 					$filter->$campo->operator='>=';
 					$campo2=$campo.'2';
 					$filter->$campo2 = new dateField($titulo[1],$campo2,'Y/m/d');
-					$filter->$campo2->db_name=$this->tabla.'.'.$campo;
+					$filter->$campo2->db_name=$campodb;
 					$filter->$campo2->clause='where';
 					$filter->$campo2->operator='<=';
 				}else{
@@ -103,8 +149,8 @@ class Buscar extends Controller
 					$filter->$campo->operator='>=';
 					$campo2=$campo.'2';
 					$filter->$campo2 = new inputField($titulo[1],$campo2);
-					$filter->$campo2->db_name=$this->tabla.'.'.$campo;
-					$filter->$campo2->db_name=$campo;
+					$filter->$campo2->db_name=$campodb;
+					$filter->$campo2->db_name=$campodb;
 					$filter->$campo2->clause='where';
 					$filter->$campo2->operator='<=';
 				}else{
@@ -123,7 +169,7 @@ class Buscar extends Controller
 					}
 				}
 			}
-			$filter->$campo->db_name=$this->tabla.'.'.$campo;
+			$filter->$campo->db_name=$campodb;
 		}
 
 		if (!empty($this->where)) {
@@ -151,38 +197,70 @@ class Buscar extends Controller
 			return '\''.$pattern.'\'';
 		}
 
-		$link='<j_escape><#'.implode("#></j_escape>,<j_escape><#",array_keys($this->retornar)).'#></j_escape>';
+		$rk2=array();
+		foreach($rk as $k=>$v){
+			$a=explode('.',$v);
+			if(count($a)==2){
+				if(array_key_exists($a[0],$filtros)){
+					$rk[$k]=substr($v,strpos($v,'.')+1);
+				}else{
+					$rk[$k]=$v;
+				}
+			}else{
+				$rk[$k]=$v;
+			}
+		}
+		
+		$link='<j_escape><#'.implode("#></j_escape>,<j_escape><#",$rk).'#></j_escape>';
 		//$link='\'<#'.implode("#>','<#",array_keys($this->retornar)).'#>\'';
 		$link = "javascript:pasar($link);";
 		$grid = new DataGrid("Resultados");
 		$grid->use_function('j_escape');
 		$grid->per_page = 10;
+		if (!empty($this->order_by)) $grid->order_by($this->order_by);
 		$i=0;
 		foreach ($this->columnas as $campo => $titulo){
-			$cp1=strrchr($campo, '.');
-			if ($cp1) $campo=str_replace('.','',$cp1);
 			if ($i==0){
-				$grid->order_by($this->tabla.'.'.$campo);
-				$grid->column_orderby($titulo,"<a href=\"$link\"><#$campo#></a>", $this->tabla.'.'.$campo);
-			}else
-				$grid->column_orderby($titulo,$campo,$this->tabla.'.'.$campo);
-			//else
-			//	$grid->column($titulo,$campo);
-			$i++;
-		} $grid->build();
-		//echo $grid->db->last_query();
-		$i=0; $pjs1='';$pjs2='';
-		foreach ($this->retornar as $campo => $id){
-			if ($this->p_uri)
-				$id = str_replace(array_keys($uris),array_values($uris),$id);
-			if($i==0) $pjs1.="p$i";
-			else      $pjs1.=",p$i";
-			$pjs2.="window.opener.document.getElementById('$id').value = p$i;\n";
+				$cp1=strrchr($campo, '.');
+				if ($cp1)$campo=str_replace('.','',$cp1);
+				
+				if (empty($this->order_by))
+				$grid->column_orderby($titulo,"<a href=\"$link\"><#".substr($campo,strpos($campo,'.'))."#></a>", $campo);
+			}else{
+				if(count(explode('.',$campo))==2)
+					if(in_array(substr($campo,0,strpos($campo,'.')),$tables))
+						$grid->column_orderby($titulo,substr($campo,strpos($campo,'.')+1),$campo);
+					else
+						$grid->column_orderby($titulo,$campo,$campo);
+				else
+					$grid->column_orderby($titulo,$campo,$campo);
+			}
 			$i++;
 		}
-
+		$grid->build();
+		//echo $grid->db->last_query();
+		$i=0; $pjs1='';$pjs2='';
+		foreach($r as $k=>$v){
+			//print_r($v);
+			foreach($v as $campo => $id){
+				if ($this->p_uri)
+					$id = str_replace(array_keys($uris),array_values($uris),$id);
+				if($i==0) $pjs1.="p$i";
+				else
+				$pjs1.=",p$i";
+				
+				$pjs2.="
+				if(window.opener.document.getElementById('$id').nodeName=='SPAN')
+				window.opener.document.getElementById('$id').innerHTML = p$i;
+				else
+				window.opener.document.getElementById('$id').value = p$i;
+				\n";
+				$i++;
+			}
+		}
+		
 		$jscript ="<SCRIPT LANGUAGE=\"JavaScript\">\n";
-		$jscript.="function pasar($pjs1) {\n";
+		$jscript.="function pasar($pjs1){\n";
 		$jscript.=" if (window.opener && !window.opener.closed){\n";
 		$jscript.=$pjs2;
 		$jscript.="   window.close();\n";
@@ -260,5 +338,7 @@ class Buscar extends Controller
 		) ENGINE=MyISAM AUTO_INCREMENT=1745 DEFAULT CHARSET=latin1";
 
 		$this->db->simple_query($mSQL);
+		$query="ALTER TABLE `stal`  CHANGE COLUMN `nombre` `nombre` TEXT NULL DEFAULT NULL";
+		$this->db->simple_query($query);
 	}
 }

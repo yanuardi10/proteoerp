@@ -410,10 +410,10 @@ class Common extends controller {
 		$barras =$this->input->post('barras');
 		$barrase=$this->db->escape($barras);
 		$cana = $this->datasis->dameval("SELECT count(*) FROM sinv WHERE barras=$barrase ");
-		if($cana=0 || empty($cana)){
+		if($cana==0 || empty($cana)){
 			$cana = $this->datasis->dameval("SELECT count(*) FROM sinv WHERE codigo=$barrase ");
 		}
-		echo (empty($cana))? 0 : $cana;
+		echo $cana;
 	}
 
 	function get_sinv(){

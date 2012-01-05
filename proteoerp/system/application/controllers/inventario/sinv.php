@@ -25,6 +25,7 @@ class sinv extends Controller {
 
 	function index(){
 		$this->datasis->modulo_id('301',1);
+		$this->instalar();
 		redirect("inventario/sinv/filteredgrid");
 	}
 
@@ -1087,10 +1088,71 @@ function sinvborraprv(mproveed, mcodigo){
 };
 </script>';
 
+		$modbus = array(
+			'tabla' => 'sinv',
+			'columnas'=>array(
+				'codigo'  =>'C&oacute;digo',
+				'descrip' =>'Descripci&oacute;n',
+				'precio1' =>'Precio 1',
+				'precio2' =>'Precio 2',
+				'precio3' =>'Precio 3',
+				'existen' =>'Existencia',
+				),
+			'filtro' => array('codigo' => 'C&oacute;digo'
+			,'descrip' => 'Descripci&oacute;n')
+			,'retornar'  => array(
+				 array('codigo'  => 'itcodigo_<#i#>')
+				,array('descrip' => 'itdescrip_<#i#>')
+				,array('descrip' => 'itdescrip_<#i#>_val')
+				,array('formcal' => 'itformcal_<#i#>')
+				,array('ultimo'  => 'itultimo_<#i#>_val')
+				,array('ultimo'  => 'itultimo_<#i#>')
+				,array('pond'    => 'itpond_<#i#>')
+				,array('pond'    => 'itpond_<#i#>_val')
+				,array('base1'   => 'itprecio1_<#i#>')
+				
+			),
+			'p_uri' => array(4 => '<#i#>'),
+			'titulo' => 'Buscar Articulo',
+			'where' => '`activo` = "S"',
+			'script' => array('totalizar()')
+		);
+		$bSINV_C = $this->datasis->p_modbus($modbus, '<#i#>');
+		
+		$modbus = array(
+			'tabla' => 'sinv',
+			'columnas'=>array(
+				'codigo'  =>'C&oacute;digo',
+				'descrip' =>'Descripci&oacute;n',
+				'precio1' =>'Precio 1',
+				'precio2' =>'Precio 2',
+				'precio3' =>'Precio 3',
+				'existen' =>'Existencia',
+				),
+			'filtro' => array('codigo' => 'C&oacute;digo'
+			,'descrip' => 'Descripci&oacute;n')
+			,'retornar'  => array(
+				 array('codigo'  => 'it2codigo_<#i#>')
+				,array('descrip' => 'it2descrip_<#i#>')
+				,array('descrip' => 'it2descrip_<#i#>_val')
+				,array('formcal' => 'it2formcal_<#i#>')
+				,array('ultimo'  => 'it2ultimo_<#i#>')
+				,array('pond'    => 'it2pond_<#i#>')
+				,array('id'      => 'it2id_sinv_<#i#>')
+				
+			),
+			'p_uri' => array(4 => '<#i#>'),
+			'titulo' => 'Buscar Articulo',
+			'where' => '`activo` = "S"',
+			'script' => array('totalizar2()')
+		);
+		$bSINV_I = $this->datasis->p_modbus($modbus, '<#i#>',800,600,'sinv_i');
 
 		$do = new DataObject('sinv');
-		$do->rel_one_to_many('sinvcombo', 'sinvcombo', array('codigo' => 'combo'));
-		$do->rel_pointer('sinvcombo', 'sinv p', 'p.codigo=sinvcombo.codigo', 'p.descrip AS sinvdescrip,p.pond AS sinvpond,p.ultimo sinvultimo,p.formcal sinvformcal,p.precio1 sinvprecio1');
+		$do->rel_one_to_many('sinvcombo' , 'sinvcombo' , array('codigo' => 'combo'));
+		$do->rel_pointer('sinvcombo'     , 'sinv p'    , 'p.codigo=sinvcombo.codigo', 'p.descrip AS sinvdescrip,p.pond AS sinvpond,p.ultimo sinvultimo,p.formcal sinvformcal,p.precio1 sinvprecio1');
+		$do->rel_one_to_many('sinvpitem' , 'sinvpitem' , array('codigo' => 'producto','id'=>'id_producto'));
+		$do->rel_one_to_many('sinvplabor', 'sinvplabor', array('codigo' => 'producto','id'=>'id_producto'));
 		
 		if($status=='create' && !empty($id)){
 			$do->load($id);
@@ -1492,6 +1554,7 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->itcodigo->rel_id  = 'sinvcombo';
 		//$edit->itcodigo->rule    = 'callback_chcodigo';
 		//$edit->itcodigo->onkeyup = 'OnEnter(event,<#i#>)';
+		$edit->itcodigo->append($bSINV_C);
 
 		$edit->itdescrip = new inputField('Descripci&oacute;n <#o#>', 'itdescrip_<#i#>');
 		$edit->itdescrip->size       = 32;
@@ -1509,8 +1572,8 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->itcantidad->size         = 5;
 		$edit->itcantidad->rule         = 'required|positive';
 		$edit->itcantidad->autocomplete = false;
-		$edit->itcantidad->onkeyup      = 'importe(<#i#>)';
-		$edit->itcantidad->insertValue =1;
+		$edit->itcantidad->onkeyup      = 'totalizar();';
+		$edit->itcantidad->value        ='1';
 		
 		$edit->itultimo = new inputField('Ultimo <#o#>', 'itultimo_<#i#>');
 		$edit->itultimo->size       = 32;
@@ -1528,7 +1591,7 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->itpond->rel_id     = 'sinvcombo';
 		$edit->itpond->type       ='inputhidden';
 		
-		$ocultos=array('precio1','formacal');
+		$ocultos=array('precio1','formcal');
 		foreach($ocultos as $obj){
 			$obj2='it'.$obj;
 			$edit->$obj2 = new hiddenField($obj.' <#o#>', $obj2 . '_<#i#>');
@@ -1549,6 +1612,115 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->itusuario->db_name = 'usuario';
 		$edit->itusuario->rel_id = 'sinvcombo';
 		
+		/*INICIO SINV ITEM RECETAS*/
+		$edit->it2codigo = new inputField('C&oacute;digo <#o#>', 'it2codigo_<#i#>');
+		$edit->it2codigo->size    = 12;
+		$edit->it2codigo->db_name = 'codigo';
+		$edit->it2codigo->rel_id  = 'sinvpitem';
+		$edit->it2codigo->append($bSINV_I);
+
+		$edit->it2descrip = new inputField('Descripci&oacute;n <#o#>', 'it2descrip_<#i#>');
+		$edit->it2descrip->size       = 32;
+		$edit->it2descrip->db_name    = 'descrip';
+		$edit->it2descrip->maxlength  = 50;
+		$edit->it2descrip->readonly   = true;
+		$edit->it2descrip->rel_id     = 'sinvpitem';
+		$edit->it2descrip->type       ='inputhidden';
+
+		$edit->it2cantidad = new inputField('Cantidad <#o#>', 'it2cantidad_<#i#>');
+		$edit->it2cantidad->db_name      = 'cantidad';
+		$edit->it2cantidad->css_class    = 'inputnum';
+		$edit->it2cantidad->rel_id       = 'sinvpitem';
+		$edit->it2cantidad->maxlength    = 10;
+		$edit->it2cantidad->size         = 5;
+		$edit->it2cantidad->rule         = 'positive';
+		$edit->it2cantidad->autocomplete = false;
+		$edit->it2cantidad->onkeyup      = 'importe(<#i#>)';
+		$edit->it2cantidad->insertValue =1;
+		
+		$edit->it2merma = new inputField('Ultimo <#o#>', 'it2merma_<#i#>');
+		$edit->it2merma->size       = 15;
+		$edit->it2merma->db_name    = 'merma';
+		$edit->it2merma->maxlength  = 15;
+		//$edit->it2merma->readonly   = true;
+		$edit->it2merma->rel_id     = 'sinvpitem';
+		//$edit->it2merma->type       ='inputhidden';
+		
+		$ocultos=array('ultimo','pond','formcal','id_sinv');
+		foreach($ocultos as $obj){
+			$obj2='it2'.$obj;
+			$edit->$obj2 = new hiddenField($obj.' <#o#>', $obj2 . '_<#i#>');
+			$edit->$obj2->db_name = $obj;
+			$edit->$obj2->rel_id  = 'sinvpitem';
+		}
+		
+		$edit->it2estampa = new autoUpdateField('it2estampa' ,date('Ymd'), date('Ymd'));
+		$edit->it2estampa->db_name = 'estampa';
+		$edit->it2estampa->rel_id = 'sinvpitem';
+		       
+		$edit->it2hora    = new autoUpdateField('it2hora',date('H:i:s'), date('H:i:s'));
+		$edit->it2hora->db_name = 'hora';
+		$edit->it2hora->rel_id = 'sinvpitem';
+		       
+		$edit->it2usuario = new autoUpdateField('it2usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
+		$edit->it2usuario->db_name = 'usuario';
+		$edit->it2usuario->rel_id = 'sinvpitem';
+		
+		/*INICIO SINV LABOR  ESTACIONES*/
+		$edit->it3estacion = new inputField('Estacion <#o#>', 'it3estacion_<#i#>');
+		$edit->it3estacion->size    = 12;
+		$edit->it3estacion->db_name = 'estacion';
+		$edit->it3estacion->rel_id  = 'sinvplabor';
+
+		$edit->it3nombre = new inputField('Nombre <#o#>', 'it3nombre_<#i#>');
+		$edit->it3nombre->size       = 32;
+		$edit->it3nombre->db_name    = 'nombre';
+		$edit->it3nombre->maxlength  = 50;
+		$edit->it3nombre->readonly   = true;
+		$edit->it3nombre->rel_id     = 'sinvplabor';
+		
+		$edit->it3actividad = new inputField('Actividad <#o#>', 'it3actividad_<#i#>');
+		$edit->it3actividad->size       = 32;
+		$edit->it3actividad->db_name    = 'actividad';
+		$edit->it3actividad->maxlength  = 50;
+		$edit->it3actividad->readonly   = true;
+		$edit->it3actividad->rel_id     = 'sinvplabor';
+		//$edit->it3actividad->type       ='inputhidden';
+
+		$edit->it3minutos = new inputField('Minutos <#o#>', 'it3minutos_<#i#>');
+		$edit->it3minutos->db_name      = 'minutos';
+		$edit->it3minutos->css_class    = 'inputnum';
+		$edit->it3minutos->rel_id       = 'sinvplabor';
+		$edit->it3minutos->maxlength    = 10;
+		$edit->it3minutos->size         = 5;
+		$edit->it3minutos->rule         = 'positive';
+		$edit->it3minutos->autocomplete = false;
+		//$edit->it3minutos->onkeyup      = 'importe(<#i#>)';
+		$edit->it3minutos->insertValue =0;
+		
+		$edit->it3segundos = new inputField('Segundos <#o#>', 'it3segundos_<#i#>');
+		$edit->it3segundos->db_name      = 'segundos';
+		$edit->it3segundos->css_class    = 'inputnum';
+		$edit->it3segundos->rel_id       = 'sinvplabor';
+		$edit->it3segundos->maxlength    = 10;
+		$edit->it3segundos->size         = 5;
+		$edit->it3segundos->rule         = 'positive';
+		$edit->it3segundos->autocomplete = false;
+		//$edit->it3segundos->onkeyup      = 'importe(<#i#>)';
+		$edit->it3segundos->insertValue =1;
+		
+		$edit->it3estampa = new autoUpdateField('it3estampa' ,date('Ymd'), date('Ymd'));
+		$edit->it3estampa->db_name = 'estampa';
+		$edit->it3estampa->rel_id = 'sinvpitem';
+		        
+		$edit->it3hora    = new autoUpdateField('it3hora',date('H:i:s'), date('H:i:s'));
+		$edit->it3hora->db_name = 'hora';
+		$edit->it3hora->rel_id = 'sinvpitem';
+		        
+		$edit->it3usuario = new autoUpdateField('it3usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
+		$edit->it3usuario->db_name = 'usuario';
+		$edit->it3usuario->rel_id = 'sinvpitem';
+		
 		$inven=array();
 		$query=$this->db->query('SELECT TRIM(codigo) AS codigo ,TRIM(descrip) AS descrip,tipo,base1,base2,base3,base4,iva,peso,precio1,pond,ultimo FROM sinv WHERE activo=\'S\' AND tipo=\'Articulo\'');
 		if ($query->num_rows() > 0){
@@ -1557,11 +1729,15 @@ function sinvborraprv(mproveed, mcodigo){
 				$inven[$ind]=array($row->descrip,$row->tipo,$row->base1,$row->base2,$row->base3,$row->base4,$row->iva,$row->peso,$row->precio1,$row->pond);
 			}
 		}
-		$jinven=json_encode($inven);
-		$conten['inven']=$jinven;
-		/*FIN SINV COMBO*/
+		
+		$edit->button_status("btn_add_sinvcombo" ,"Agregar","javascript:add_sinvcombo()","CO","modify","button_add_rel");
+        $edit->button_status("btn_add_sinvcombo" ,"Agregar","javascript:add_sinvcombo()","CO","create","button_add_rel");
+        $edit->button_status("btn_add_sinvpitem" ,"Agregar","javascript:add_sinvpitem()","IT","create","button_add_rel");
+        $edit->button_status("btn_add_sinvpitem" ,"Agregar","javascript:add_sinvpitem()","IT","modify","button_add_rel");
+        $edit->button_status("btn_add_sinvplabor" ,"Agregar","javascript:add_sinvplabor()","LA","create","button_add_rel");
+        $edit->button_status("btn_add_sinvplabor" ,"Agregar","javascript:add_sinvplabor()","LA","modify","button_add_rel");
 
-		$edit->buttons("modify", "save", "undo", "delete", "back", "add_rel");
+		$edit->buttons("modify", "save", "undo", "delete", "back");
 		$edit->build();
 
 		$style = '<style type="text/css">
@@ -1648,7 +1824,6 @@ function sinvborraprv(mproveed, mcodigo){
 		</script>';
 
 		$smenu['link']   = barra_menu('301');
-
 		$conten['form']  =&  $edit;
 		$conten['scri']  = script('jquery.js');
 		$conten['scri'] .= script('jquery-ui.js');
@@ -1659,13 +1834,9 @@ function sinvborraprv(mproveed, mcodigo){
 		$conten['scri'] .= script('sinvmaes.js');
 		$conten['scri'] .= $script;
 		$data['content'] = $this->load->view('view_sinv', $conten,true);
-
-		
-
 		$data['style']   = style('jquery.alerts.css');
 		$data['style']  .= style('redmond/jquery-ui.css');
 		$data['style']  .= $style;
-
 		$data['extras']  = $extras;
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = heading( substr($edit->descrip->value,0,30) );
@@ -1673,14 +1844,13 @@ function sinvborraprv(mproveed, mcodigo){
 	}
 
 	function _pre_inserup($do){
-		
+		//SINVCOMBO
 		$borrar=array();
 		foreach($do->data_rel['sinvcombo'] as $k=>$v)
 			if(empty($v['codigo']))
 			$borrar[]=$k;
-		
 		foreach($borrar as $v)
-		unset($do->data_rel['sinvcombo'][$v]);
+			unset($do->data_rel['sinvcombo'][$v]);
 		
 		$tipo=$do->get('tipo');
 		if($tipo!='Combo' && count($do->data_rel['sinvcombo']) >0){
@@ -1696,7 +1866,21 @@ function sinvborraprv(mproveed, mcodigo){
 			$do->error_message_ar['pre_ins'] =$error;
 			return false;
 		}
-		
+		//SINVPITEM
+		$borrar=array();
+		foreach($do->data_rel['sinvpitem'] as $k=>$v)
+			if(empty($v['codigo']))
+			$borrar[]=$k;
+		foreach($borrar as $v)
+			unset($do->data_rel['sinvpitem'][$v]);
+			
+		//SINVPLABOR
+		$borrar=array();
+		foreach($do->data_rel['sinvplabor'] as $k=>$v)
+			if(empty($v['estacion']))
+			$borrar[]=$k;
+		foreach($borrar as $v)
+			unset($do->data_rel['sinvplabor'][$v]);
 		
 		for($i=1;$i<5;$i++){
 			$prec='precio'.$i;
@@ -2895,6 +3079,54 @@ function sinvborraprv(mproveed, mcodigo){
 		$query="ALTER TABLE `sinvcombo`  ADD COLUMN `ultimo` DECIMAL(19,2) NULL DEFAULT '0.00'"; 
 		$this->db->simple_query($query);
 		$query="ALTER TABLE `sinvcombo`  ADD COLUMN `pond` DECIMAL(19,2) NULL DEFAULT '0.00'  ";
+		$this->db->simple_query($query);
+		
+		$query="CREATE TABLE `sinvpitem` (
+			`producto` VARCHAR(15) NULL DEFAULT NULL COMMENT 'codigo del prod terminado (sinv)',
+			`id_producto` VARCHAR(15) NULL DEFAULT NULL COMMENT 'id del prod terminado (sinv)',
+			`codigo` VARCHAR(15) NULL DEFAULT NULL COMMENT 'codigo del Insuma (sinv)',
+			`descrip` VARCHAR(40) NULL DEFAULT NULL,
+			`cantidad` DECIMAL(14,3) NULL DEFAULT '0.000',
+			`merma` DECIMAL(10,2) NULL DEFAULT '0.00' COMMENT 'Porcentaje de merma',
+			`estampa` DATE NULL DEFAULT NULL,
+			`usuario` VARCHAR(12) NULL DEFAULT '',
+			`hora` VARCHAR(8) NULL DEFAULT '',
+			`modificado` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+			`id_sinv` INT(11) NULL DEFAULT NULL,
+			`id` INT(11) NOT NULL AUTO_INCREMENT,
+			`ultimo` DECIMAL(19,2) NOT NULL DEFAULT '0.00',
+			`pond` DECIMAL(19,2) NOT NULL DEFAULT '0.00',
+			`formcal` CHAR(1) NOT NULL,
+			PRIMARY KEY (`id`),
+			INDEX `modificado` (`modificado`)
+		)
+		COMMENT='Insumos de un producto terminado'
+		COLLATE='latin1_swedish_ci'
+		ENGINE=MyISAM
+		ROW_FORMAT=DYNAMIC
+		AUTO_INCREMENT=1";
+		$this->db->simple_query($query);
+		$query="CREATE TABLE `sinvplabor` (
+			`producto` VARCHAR(15) NULL DEFAULT '' COMMENT 'Producto Terminado',
+			`estacion` VARCHAR(5) NULL DEFAULT NULL,
+			`nombre` VARCHAR(40) NULL DEFAULT NULL,
+			`actividad` DECIMAL(14,3) NULL DEFAULT '0.000',
+			`minutos` INT(6) NULL DEFAULT '0',
+			`segundos` INT(6) NULL DEFAULT '0',
+			`estampa` DATE NULL DEFAULT NULL,
+			`usuario` VARCHAR(12) NULL DEFAULT '',
+			`hora` VARCHAR(8) NULL DEFAULT '',
+			`modificado` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+			`id_producto` INT(11) NULL DEFAULT NULL,
+			`id` INT(11) NOT NULL AUTO_INCREMENT,
+			PRIMARY KEY (`id`),
+			INDEX `modificado` (`modificado`)
+		)
+		COMMENT='Acciones de la Orden de Produccion'
+		COLLATE='latin1_swedish_ci'
+		ENGINE=MyISAM
+		ROW_FORMAT=DYNAMIC
+		AUTO_INCREMENT=1";
 		$this->db->simple_query($query);
 	}
 }

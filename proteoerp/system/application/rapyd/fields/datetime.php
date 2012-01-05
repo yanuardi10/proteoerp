@@ -91,7 +91,12 @@ class dateField extends objField{
       case "create":
       case "modify":
         
-        $value = "";
+        if($this->type=='inputhidden')
+			$t='hidden';
+		else
+			$t=$this->type;
+		
+		$value='';
         
         //jscalendar integration
         if ($this->value != ""){
@@ -109,6 +114,7 @@ class dateField extends objField{
           'size'        => $this->size,
           'onclick'     => $this->onclick,
           'onchange'    => $this->onchange,
+           'type'        => $t,
           'class'       => $this->css_class,
           'style'       => $this->style);
         if($this->readonly) $attributes['readonly']='readonly';
@@ -119,7 +125,7 @@ class dateField extends objField{
 
         $output  = form_input($attributes); //'<div>'.
         if($this->type=='inputhidden') $output="<span id='".$this->name."_val'>$value</span>".$output;
-        if($this->calendar){
+        if($this->calendar && $t!='hidden'){
           $output .= ' <img src="'.RAPYD_LIBRARIES.'jscalendar/calender_icon.gif" id="'.$this->name.'_button" border="0" style="vertical-align:middle;" />'.$this->extra_output;
           $output .= HTML::javascriptTag('
            Calendar.setup({
@@ -133,6 +139,9 @@ class dateField extends objField{
          });');
         }
         
+         if($this->type=='inputhidden')
+			$output.="<span id='".$this->name."_val'  >$value</span>";
+			
         break;
 
         
