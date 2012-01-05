@@ -474,8 +474,6 @@ class sfac_add extends validaciones {
 		$edit->exento    = new inputField('Exento', 'exento');
 		$edit->maqfiscal = new inputField('Mq.Fiscal', 'maqfiscal');
 		$edit->referen   = new inputField('Referencia', 'referen');
-		$edit->transac   = new inputField('Transaccion', 'transac');
-		$edit->vence     = new inputField('Vence', 'vence');
 
 		$edit->reiva     = new inputField('Retencion de IVA', 'reiva');
 		$edit->creiva    = new inputField('Comprobante', 'creiva');
@@ -588,10 +586,12 @@ class sfac_add extends validaciones {
 		$do->set('monredu'  ,$monredu  );
 		$do->set('monadic'  ,$monadic  );
 
+		$fecha  = $do->get('fecha');
 		//Validacion del limite de credito del cliente
 		if($credito>0){
 			$dbcliente=$this->db->escape($cliente);
 			$limite   =$this->datasis->dameval("SELECT limite FROM scli WHERE cliente=$dbcliente");
+			$cdias    =$this->datasis->dameval("SELECT formap FROM scli WHERE cliente=$dbcliente");
 			$mSQL="SELECT SUM(monto*(tipo_doc IN ('FC','GI','ND'))) AS debe, SUM(monto*(tipo_doc IN ('NC','AB','AN'))) AS haber FROM smov WHERE cod_cli=$dbcliente";
 			$query = $this->db->query($mSQL);
 			if ($query->num_rows() > 0){
@@ -602,6 +602,12 @@ class sfac_add extends validaciones {
 				$do->error_message_ar['pre_ins']='El cliente no tiene suficiente cr&eacute;dito';
 				return false;
 			}
+			$objdate = date_create($fecha);
+			$objdate->add(new DateInterval('P'.$cdias.'D'));
+			$vence   = date_format($objdate, 'Y-m-d');
+			$do->set('vence',$vence);
+		}else{
+			$do->set('vence',$fecha);
 		}
 		//Fin de las validaciones
 
@@ -610,8 +616,6 @@ class sfac_add extends validaciones {
 		$do->set('numero',$numero);
 		$do->set('transac',$transac);
 		$do->set('referen',($credito>0)? 'C': 'E');
-
-		$fecha  = $do->get('fecha');
 		$vd     = $do->get('vendedor');
 		$tipoa  = $do->get('tipo_doc');
 		$cajero = $do->get('cajero');
@@ -686,6 +690,7 @@ class sfac_add extends validaciones {
 	function _post_insert($do){
 		$numero  = $do->get('numero');
 		$fecha   = $do->get('fecha');
+		$vence   = $do->get('vence');
 		$totneto = $do->get('totalg');
 		$hora    = $do->get('hora');
 		$usuario = $do->get('usuario');
@@ -693,7 +698,7 @@ class sfac_add extends validaciones {
 		$nombre  = $do->get('nombre');
 		$cod_cli = $do->get('cod_cli');
 		$estampa = $do->get('estampa');
-		$anticipo= $do->get('inicial');
+		$anticipo= round(floatval($do->get('inicial')),2);
 		$referen = $do->get('referen');
 		$tipo_doc= $do->get('tipo_doc');
 		$iva     = $do->get('iva');
@@ -708,11 +713,11 @@ class sfac_add extends validaciones {
 				$data['nombre']     = $nombre;
 				$data['tipo_doc']   = 'FC';
 				$data['numero']     = $numero;
-				$data['fecha']      = $estampa;
+				$data['fecha']      = $fecha;
 				$data['monto']      = $totneto;
 				$data['impuesto']   = $iva;
 				$data['abonos']     = $anticipo;
-				$data['vence']      = $fecha;
+				$data['vence']      = $vence;
 				$data['tipo_ref']   = '';
 				$data['num_ref']    = '';
 				$data['observa1']   = 'FACTURA DE CREDITO';
@@ -727,8 +732,9 @@ class sfac_add extends validaciones {
 				$ban=$this->db->simple_query($sql);
 				if($ban==false){ memowrite($sql,'sfac'); $error++;}
 
-				//Chequea si debe crear un anticipo
-				if($anticipo>0.00){
+				//Chequea si debe crear el abono
+
+				if($anticipo>0){
 					$mnumab = $this->datasis->fprox_numero('nabcli');
 
 					$data=array();

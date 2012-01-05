@@ -62,11 +62,19 @@ $(function(){
 				success:
 					function(data){
 						var sugiere = [];
-						$.each(data,
-							function(i, val){
-								sugiere.push( val );
-							}
-						);
+						if(data.length==0){
+							$('#nombre').val('');
+							$('#nombre_val').text('');
+
+							$('#rifci').val('');
+							$('#rifci_val').text('');
+						}else{
+							$.each(data,
+								function(i, val){
+									sugiere.push( val );
+								}
+							);
+						}
 						add(sugiere);
 					},
 			})
@@ -156,11 +164,29 @@ function autocod(id){
 				success:
 					function(data){
 						var sugiere = [];
-						$.each(data,
-							function(i, val){
-								sugiere.push( val );
-							}
-						);
+						if(data.length==0){
+							$('#tipo_doc_'+id).val('');
+							$('#tipo_doc_val_'+id).text('');
+
+							$('#gtotal_'+id).val('');
+							$('#gtotal_val_'+id).text('');
+
+							$('#impuesto_'+id).val('');
+							$('#impuesto_val_'+id).text('');
+
+							$('#reiva_'+id).val('');
+
+							$('#fecha_'+id+'_val').text('');
+							$('#fecha_'+id).val('');
+
+							totalizar();
+						}else{
+							$.each(data,
+								function(i, val){
+									sugiere.push( val );
+								}
+							);
+						}
 						add(sugiere);
 					},
 			})
@@ -180,7 +206,7 @@ function autocod(id){
 
 			$('#reiva_'+id).val(ui.item.reiva);
 
-			//$('#fecha_val_'+id).text(ui.item.fecha);
+			$('#fecha_'+id+'_val').text(ui.item.fecha);
 			$('#fecha_'+id).val(ui.item.fecha);
 
 			totalizar();
@@ -213,7 +239,7 @@ function autocod(id){
 				</tr>
 				<tr>
 					<td>
-					<fieldset  style='border: 1px outset #FEB404;background: #FFFCE8;'>
+					<fieldset  style='border: 1px outset #FEB404;background: #FFFCE8;  min-height:110px;'>
 						<table>
 							<tr>
 								<td class="littletablerowth"><?php echo $form->nrocomp->label  ?>*</td>
@@ -228,7 +254,7 @@ function autocod(id){
 						</table>
 					</fieldset>
 					</td><td>
-					<fieldset  style='border: 1px outset #FEB404;background: #FFFCE8;'>
+					<fieldset  style='border: 1px outset #FEB404;background: #FFFCE8;  min-height:110px;'>
 						<table>
 							<tr>
 								<td class="littletablerowth"><?php echo $form->cod_cli->label  ?>*</td>
@@ -332,7 +358,7 @@ function autocod(id){
 <table>
 <?php echo $form_end?>
 
-<?php if($form->_status=='show'){ 
+<?php if($form->_status=='show'){
 $transac=$form->get_from_dataobjetct('transac');
 ?>
 <br>

@@ -86,10 +86,20 @@ class MY_Validation extends CI_Validation{
 		$query = $this->CI->db->query($mSQL);
 		if ($query->num_rows() > 0){
 			$row = $query->row();
-			if( $row->status=='C')
-				return false; 
-			else
+			if( $row->status=='C'){
+				$tmc=timestampFromDBDate($row->status->fechac); //momento de cierre
+				$tmt=mktime(0, 0, 0);
+				if($tmt>$tmc){ //Chequea si lo puede abrir
+					$data = array('fechaa' => date('Ymd'), 'horaa' => date('H:i:s'), 'status' => 'A');
+					$mSQL_2 = $this->db->update_string('scaj', $data, "cajero=$dbscaj");
+					$rt=$this->CI->db->simple_query($mSQL_2);
+					return $rt;
+				}else{
+					return false;
+				}
+			}else{
 				return true;
+			}
 		}else{
 			return false;
 		}
@@ -174,7 +184,7 @@ class MY_Validation extends CI_Validation{
 	/**
 	 * Corre las validaciones
 	 *
-	 * Fue modifica con respecto a la original para soportar 
+	 * Fue modifica con respecto a la original para soportar
 	 * campos requeridos condicionales.
 	 * @access	public
 	 * @return	bool

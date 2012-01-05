@@ -57,6 +57,8 @@ class Formatos extends Controller{
 					echo eval('?>'.preg_replace("/;*\s*\?>/", "; ?>", str_replace('<?=', '<?php echo ', $row->proteo)).'<?php ');
 					$_html=ob_get_contents();
 				@ob_end_clean();
+				echo $_html;
+				exit();
 				if(strlen($_html)>0)
 					$this->cidompdf->html2pdf($_html,$_arch_nombre);
 				else

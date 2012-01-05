@@ -52,11 +52,23 @@ $(function(){
 				success:
 					function(data){
 						var sugiere = [];
-						$.each(data,
-							function(i, val){
-								sugiere.push( val );
-							}
-						);
+						if(data.length==0){
+							$('#nombre').val('');
+							$('#nombre_val').text('');
+
+							$('#rifci').val('');
+							$('#rifci_val').text('');
+							$('#sclitipo').val('1');
+
+							$('#direc').val('');
+							$('#direc_val').text('');
+						}else{
+							$.each(data,
+								function(i, val){
+									sugiere.push( val );
+								}
+							);
+						}
 						add(sugiere);
 					},
 			})
@@ -87,11 +99,22 @@ $(function(){
 				success:
 					function(data){
 						var sugiere = [];
-						$.each(data,
-							function(i, val){
-								sugiere.push( val );
-							}
-						);
+						if(data.length==0){
+							$('#mandanombre').val('');
+							$('#mandanombre_val').text('');
+
+							$('#mandarif').val('');
+							$('#mandarif_val').text('');
+
+							$('#mandadirec').val('');
+							$('#mandadirec_val').text('');
+						}else{
+							$.each(data,
+								function(i, val){
+									sugiere.push( val );
+								}
+							);
+						}
 						add(sugiere);
 					},
 			})
