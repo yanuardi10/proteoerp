@@ -141,7 +141,6 @@ class dateField extends objField{
         
          if($this->type=='inputhidden')
 			$output.="<span id='".$this->name."_val'  >$value</span>";
-			
         break;
 
         
