@@ -5,8 +5,7 @@ class pfaclite extends validaciones{
 	function pfaclite(){
 		parent :: Controller();
 		$this->load->library('rapyd');
-		//$this->datasis->modulo_id(120,1);
-		
+		$this->datasis->modulo_id(143,1);
 	}
 
 	function index(){
