@@ -147,9 +147,9 @@ class pfaclite extends validaciones{
 		$edit->numero->when = array('show', 'modify');
 
 		$usr=$this->session->userdata('usuario');
-		$vd=$this->datasis->dameval("SELECT vendedor FROM usuario WHERE us_codigo='$usr'");
+		$vd=$this->datasis->damerow("SELECT vendedor,almacen FROM usuario WHERE us_codigo='$usr'");
 		$edit->cliente = new dropdownField('CLIENTE', 'cod_cli');
-		$edit->cliente->options("SELECT cliente, nombre FROM scli WHERE vendedor='$vd'  ORDER  BY nombre");//
+		$edit->cliente->options("SELECT cliente, nombre FROM scli WHERE vendedor='".$vd['vendedor']."'  ORDER  BY nombre");//
 		
 		$edit->observa = new inputField('Observaciones', 'observa');
 		$edit->observa->size = 25;
@@ -216,6 +216,10 @@ class pfaclite extends validaciones{
 
 		$edit->usuario = new autoUpdateField('usuario', $this->session->userdata('usuario'), $this->session->userdata('usuario'));
 		
+		$edit->estampa = new autoUpdateField('estampa' ,date('Ymd'), date('Ymd'));
+		
+		$edit->hora    = new autoUpdateField('hora',date('H:i:s'), date('H:i:s'));
+
 		$control=$this->rapyd->uri->get_edited_id();
 
 		$edit->buttons('add');
@@ -232,7 +236,14 @@ class pfaclite extends validaciones{
 		$accion="javascript:window.location='".site_url('ventas/pfaclite/load')."'";
 		$edit->button_status('btn_load'  ,'Subir desde Excel' ,$accion,'TL','show');
 
-		$sinv=$this->db->query("SELECT codigo,descrip,precio1,precio2,precio3,precio4,marca,existen,iva FROM sinv ORDER BY marca");
+		$sinv=$this->db->query("SELECT a.codigo,descrip,precio1,precio2,precio3,precio4,marca,SUM(b.existen) existen,iva 
+		FROM sinv a 
+		JOIN itsinv b ON a.codigo=b.codigo 
+		WHERE activo='S' AND tipo='Articulo' AND b.alma='".$vd['almacen']."' 
+		GROUP BY a.codigo 
+		ORDER BY marca");
+		
+		
 		$sinv=$sinv->result_array();
 		$sinv2=array();
 		foreach($sinv as $k=>$v){
@@ -268,16 +279,26 @@ class pfaclite extends validaciones{
 		}
 	}
 	
+	
+	
 	function _pre_insert($do){
 		$numero=$do->get('numero');
 		if(empty($numero)){
 			$numero = $this->datasis->fprox_numero('npfac');
 			$do->set('numero', $numero);
+			$ntransac = $this->datasis->fprox_numero('transac');
+			$do->set('transac', $ntransac);
 			$fecha = date('%Y%m%d');
 		}else{
 			$fecha=$do->get('fecha');
 		}
 		
+		$cod_cli=$do->get('cod_cli');
+		$scli   =$this->datasis->damerow("SELECT rifci,nombre,CONCAT(dire11,' ',dire12) direc,CONCAT(dire21,' ',dire22) dire1 FROM scli WHERE cliente='$cod_cli'");
+		$do->set('rifci' ,$scli['rifci'] );
+		$do->set('nombre',$scli['nombre']);
+		$do->set('direc' ,$scli['direc'] );
+		$do->set('dire1' ,$scli['dire1'] );
 		
 		$usr=$this->session->userdata('usuario');
 		$vd=$this->datasis->dameval("SELECT vendedor FROM usuario WHERE us_codigo='$usr'");
@@ -543,8 +564,11 @@ class pfaclite extends validaciones{
 	}
 	
 	function reserva($id,$dir='pfac'){
+		$error='';
 		$PFACRESERVA=$this->datasis->traevalor('PFACRESERVA','indica si un pedido descuenta de inventario los producto');
 		if($PFACRESERVA=='S'){
+			$usr=$this->session->userdata('usuario');
+			$vd=$this->datasis->damerow("SELECT vendedor,almacen FROM usuario WHERE us_codigo='$usr'");
 			
 			$this->rapyd->load('dataobject');
 			$do = new DataObject('pfac');
@@ -554,16 +578,37 @@ class pfaclite extends validaciones{
 			for($i=0;$i < $do->count_rel('itpfac');$i++){
 				$codigoa  = $do->get_rel('itpfac','codigoa'  ,$i);
 				$cana     = $do->get_rel('itpfac','cana'     ,$i);
-				$this->datasis->sinvcarga( $codigoa, 'PEDI', $cana);
-				$this->datasis->sinvcarga( $codigoa, 'PEDI', -1*$cana);
+				$existen  =$this->datasis->dameval("SELECT existen FROM itsinv WHERE alma='".$vd['almacen']."' AND codigo='$codigoa'");
+				if(!($existen>$cana)){
+					$error.="ERROR. La cantidad solicitada($cana) es mayor a la existente ($existen).</br>";
+				}
+			}
+			if(empty($error)){
+				for($i=0;$i < $do->count_rel('itpfac');$i++){
+					$codigoa  = $do->get_rel('itpfac','codigoa'  ,$i);
+					$cana     = $do->get_rel('itpfac','cana'     ,$i);
+					$this->datasis->sinvcarga( $codigoa, $vd['almacen'], -1*$cana);
+					$this->datasis->sinvcarga( $codigoa, 'PEDI', $cana);
+				}
 			}
 			$fenvia=date("Ymd");
 			$do->set('reserva','S');
 			$do->set('fenvia' ,$fenvia);
 			
-			$do->save();
+			
 			
 		}
-		redirect("ventas/$dir/dataedit/show/$id");
+		if(empty($error)){
+			$do->save();
+			logusu('pfaclite',"Reservo pedido $id");
+			redirect("ventas/$dir/dataedit/show/$id");
+		}else{
+			$error="<div class='alert'>$error</div>";
+			logusu('pfaclite',"Reservo pedido $id. con ERROR:$error ");
+			$data['content'] = $error.anchor("ventas/pfaclite/dataedit/show/$id",'Regresar');
+			$data['title']   = " Pedidos ";
+			$data["head"]    = $this->rapyd->get_head();
+			$this->load->view('view_ventanas', $data);
+		}
 	}
 }

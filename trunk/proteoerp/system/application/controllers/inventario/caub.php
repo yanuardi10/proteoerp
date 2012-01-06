@@ -19,10 +19,23 @@ class Caub extends validaciones {
  
 	function index(){
 		$this->datasis->modulo_id(307,1);
-		$ajus=$this->db->simple_query("INSERT IGNORE INTO caub (ubica,ubides,gasto,invfis) VALUES ('AJUS','AJUSTES','S','N')ON DUPLICATE KEY UPDATE ubides='AJUSTES', gasto='S',invfis='N'");
-		$infi=$this->db->simple_query("INSERT IGNORE INTO caub (ubica,ubides,gasto,invfis) VALUES ('INFI','INVENTARIO FISICO','S','S')ON DUPLICATE KEY UPDATE ubides='INVENTARIO FISICO', gasto='S',invfis='S'");
-		$pedi=$this->db->simple_query("INSERT IGNORE INTO caub (ubica,ubides,gasto,invfis) VALUES ('PEDI','PEDIDOS','N','N')ON DUPLICATE KEY UPDATE ubides='PEDIDOS', gasto='N',invfis='N'");
+		$c=$this->datasis->dameval("SELECT COUNT(*) FROM caub WHERE ubica='AJUS'");
+		if(!($c>0))
+		$this->db->simple_query("INSERT IGNORE INTO caub (ubica,ubides,gasto,invfis) VALUES ('AJUS','AJUSTES','S','N')");
+		$this->db->simple_query("UPDATE caub SET ubides='AJUSTES', gasto='S',invfis='N' WHERE  ubica='AJUS' ");
+		
+		$c=$this->datasis->dameval("SELECT COUNT(*) FROM caub WHERE ubica='INFI'");
+		if(!($c>0))
+		$this->db->simple_query("INSERT IGNORE INTO caub (ubica,ubides,gasto,invfis) VALUES ('INFI','INVENTARIO FISICO','S','S')");
+		$this->db->simple_query("UPDATE caub SET ubides='INVENTARIO FISICO', gasto='S',invfis='S' WHERE ubica='INFI'");
+		
+		$c=$this->datasis->dameval("SELECT COUNT(*) FROM caub WHERE ubica='PEDI'");
+		if(!($c>0))
+		$this->db->simple_query("INSERT IGNORE INTO caub (ubica,ubides,gasto,invfis) VALUES ('PEDI','PEDIDOS','N','N')");
+		$this->db->simple_query("UPDATE caub SET ubides='PEDIDOS', gasto='N',invfis='N' WHERE ubica='PEDI'");
+		
 		$this->db->simple_query("ALTER TABLE `caub`  ADD COLUMN `id` INT NOT NULL AUTO_INCREMENT FIRST,  DROP PRIMARY KEY,  ADD PRIMARY KEY ( `id`)");
+		
 		redirect("inventario/caub/caubextjs");
     }
   
