@@ -18,10 +18,11 @@
  */
 class inputField extends objField{
 
-	var $type = 'text';
-	var $readonly=FALSE;
-	var $autocomplete=TRUE;
-	var $css_class = 'input';
+	var $type         = 'text';
+	var $css_class    = 'input';
+	var $readonly     = false;
+	var $autocomplete = true;
+	var $disable_paste= false;
 
 	function _getValue(){
 		parent::_getValue();
@@ -81,6 +82,7 @@ class inputField extends objField{
 				if(strlen($this->onchange)>0)  $atributes['onchange']  = $this->onchange;
 				if(isset($this->onkeyup))      $attributes['onkeyup']  = $this->onkeyup;
 				if($this->readonly)            $attributes['readonly'] = 'readonly';
+				if($this->disable_paste)       $attributes['onpaste']  = 'return false;';
 				if(!$this->autocomplete)       $attributes['autocomplete']='off';
 
 				$output = form_input($attributes) . $this->extra_output;
