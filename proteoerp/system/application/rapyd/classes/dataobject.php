@@ -988,7 +988,7 @@ class DataObject{
 	/**
 	* Borra un campo de la matriz de data de relacion
 	*
-	* @access   private
+	* @access   public
 	* @return   bolean
 	*/
 	function rel_rm_field($rel_id,$field,$id){
@@ -1013,7 +1013,7 @@ class DataObject{
 	/**
 	* Borra una fila de una relacion uno muchos
 	*
-	* @access   private
+	* @access   public
 	* @return   bolean
 	*/
 	function rel_rm($rel_id,$id){
@@ -1030,7 +1030,7 @@ class DataObject{
 	/**
 	* Borra un campo de la matriz de data
 	*
-	* @access   private
+	* @access   public
 	* @return   bolean
 	*/
 	function rm_get($field){
@@ -1040,6 +1040,20 @@ class DataObject{
 		} else {
 			return false;
 		}
+	}
+
+	/**
+	* Borra una relacion completa
+	*
+	* @access   public
+	* @return   bolean
+	*/
+	function truncate_rel($rel_id){
+		if (isset($this->data_rel[$rel_id])) {
+			unset($this->data_rel[$rel_id]);
+			return true;
+		}
+		return false;
 	}
 
 	function order_by($relid,$field,$order='asc'){
