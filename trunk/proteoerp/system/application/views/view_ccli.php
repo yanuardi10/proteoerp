@@ -48,7 +48,12 @@ function totaliza(){
 		pos=this.name.lastIndexOf('_');
 		if(pos>0){
 			ind    = this.name.substring(pos+1);
-			stota += Number(this.value);
+			num    = Number(this.value);
+			if(!isNaN(num)){
+				stota += num;
+			}else{
+				this.value='0';
+			}
 		}
 	});
 	$('#monto').val(roundNumber(stota,2));
@@ -56,7 +61,13 @@ function totaliza(){
 
 	resto=faltante();
 	utmo =$('input[id^="itmonto_"]').first();
-	hay  =Number(utmo.val());
+	num  =Number(utmo.val());
+	if(!isNaN(num)){
+		hay = num
+	}else{
+		hay = 0;
+		utmo.val('0');
+	}
 
 	utmo.val(roundNumber(hay+resto,2));
 }
@@ -68,7 +79,7 @@ function add_sfpa(){
 	htm = htm.replace(/<#i#>/g,can);
 	htm = htm.replace(/<#o#>/g,con);
 	$("#__ITPL__sfpa").after(htm);
-	falta =faltante();
+	falta = faltante();
 	$("#itmonto_"+can).val(falta);
 	sfpa_cont=sfpa_cont+1;
 	return can;
@@ -90,12 +101,16 @@ function apagar(){
 	jQuery.each($('input[id^="itmonto_"]'), function() {
 		pago+=Number($(this).val());
 	});
-	return pago;
+	if(isNaN(pago)) return 0; else return pago;
 }
 
 //Determina lo que falta por pagar
 function faltante(){
 	totalg=Number($("#monto").val());
+	if(isNaN(totalg)){
+		$("#monto").val('0');
+		totalg=0;
+	}
 	paga  = apagar();
 	resto = totalg-paga;
 	return resto;

@@ -27,14 +27,16 @@ class ccli extends Controller {
 		$filter->db->groupby('a.cod_cli');
 
 		$filter->cod_cli = new inputField('Cliente','cod_cli');
-		$filter->cod_cli->rule      ='max_length[5]';
-		$filter->cod_cli->size      =7;
-		$filter->cod_cli->maxlength =5;
+		$filter->cod_cli->rule      = 'max_length[5]';
+		$filter->cod_cli->size      = 7;
+		$filter->cod_cli->db_name   = 'a.cod_cli';
+		$filter->cod_cli->maxlength = 5;
 
 		$filter->nombre = new inputField('Nombre','nombre');
-		$filter->nombre->rule      ='max_length[8]';
-		$filter->nombre->size      =10;
-		$filter->nombre->maxlength =8;
+		$filter->nombre->rule      = 'max_length[8]';
+		$filter->nombre->size      = 10;
+		$filter->nombre->db_name   = 'a.nombre';
+		$filter->nombre->maxlength = 8;
 
 		$filter->buttons('reset', 'search');
 		$filter->build();
@@ -214,15 +216,16 @@ class ccli extends Controller {
 
 	        $obj='abono_'.$i;
 			$edit->$obj = new inputField('Abono',$obj);
-			$edit->$obj->db_name='abono';
-			$edit->$obj->autocomplete=false;
-			$edit->$obj->rel_id = 'itccli';
-			$edit->$obj->rule="max_length[18]|numeric|callback_chabono[$i]";
-			$edit->$obj->css_class='inputnum';
-			$edit->$obj->size =15;
-			$edit->$obj->showformat  ='decimal';
-			$edit->$obj->maxlength =18;
-			$edit->$obj->ind       = $i;
+			$edit->$obj->db_name      = 'abono';
+			$edit->$obj->rel_id       = 'itccli';
+			$edit->$obj->rule         = "max_length[18]|numeric|callback_chabono[$i]";
+			$edit->$obj->css_class    = 'inputnum';
+			$edit->$obj->showformat   = 'decimal';
+			$edit->$obj->autocomplete = false;
+			$edit->$obj->disable_paste= true;
+			$edit->$obj->size         = 15;
+			$edit->$obj->maxlength    = 18;
+			$edit->$obj->ind          = $i;
 
 			$i++;
 		}
@@ -336,7 +339,7 @@ class ccli extends Controller {
 		if ($query->num_rows() == 0) return false;
 		$saldo = $row->saldo;
 
-		if(abs($monto-$saldo)>0.001){
+		if($monto<=$saldo){
 			return true;
 		}else{
 			$this->validation->set_message('chabono', "No se le puede abonar al efecto $tipo-$numero un monto mayor al saldo");
