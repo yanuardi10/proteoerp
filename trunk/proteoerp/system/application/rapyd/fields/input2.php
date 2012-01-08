@@ -7,8 +7,8 @@
  * @license http://www.fsf.org/licensing/licenses/lgpl.txt LGPL
  * @version 0.9.6
  */
- 
- 
+
+
  /**
  * textField
  *
@@ -18,76 +18,74 @@
  */
 class inputField2 extends objField{
 
-  var $type = "text";
-  var $readonly=FALSE;
-  var $css_class = "input";
+	var $type = 'text';
+	var $readonly=FALSE;
+	var $css_class = 'input';
 
-  function _getValue(){
-    parent::_getValue();
-  }
-  
-  function _getNewValue(){
-    parent::_getNewValue();
-  }
+	function _getValue(){
+		parent::_getValue();
+	}
 
-  function build(){
-    if(!isset($this->size)){
-      $this->size = 45;
-    }
-    $this->_getValue();
-    
-    $output = "";
-    
-    switch ($this->status){
-    
-      case "disabled":
-      case "show":
-        if ( (!isset($this->value)) ){
-          $output = RAPYD_FIELD_SYMBOL_NULL;
-        } elseif ($this->value == ""){
-          $output = "";
-        } else {  
-          $output = nl2br(htmlspecialchars($this->value));
-        }
-        break;
+	function _getNewValue(){
+		parent::_getNewValue();
+	}
 
-      case "create":
-      case "modify":
-      
-        $value = ($this->type == "password")? "": $this->value;
+	function build(){
+		if(!isset($this->size)){
+			$this->size = 45;
+		}
+		$this->_getValue();
 
-        $attributes = array(
-          'name'        => $this->name,
-          'id'          => $this->id,
-          'type'        => $this->type,          
-          'value'       => $value,
-          'maxlength'   => $this->maxlength,
-          'size'        => $this->size,
-          'onclick'     => $this->onclick,
-          'onchange'    => $this->onchange,
-          'class'       => $this->css_class,
-          'style'       => $this->style
-          );
-		if($this->readonly) $attributes['readonly']='readonly';
-		if(!empty($this->tabindex)) $attributes['tabindex']=$this->tabindex;
-        $output = form_input($attributes) . $this->extra_output;
-        break;
+		$output = '';
 
-      case "hidden":
-        $attributes = array(
-          'name'        => $this->name,
-          'id'          => $this->id,
-          'type'        => "hidden",          
-          'value'       => $this->value);
-        $output = form_input($attributes) . $this->extra_output;     
+		switch ($this->status){
 
-        break;
+			case 'disabled':
+			case 'show':
+				if ( (!isset($this->value)) ){
+					$output = RAPYD_FIELD_SYMBOL_NULL;
+				} elseif ($this->value == ''){
+					$output = '';
+				} else {
+					$output = nl2br(htmlspecialchars($this->value));
+				}
+				break;
 
-        
-      default:
-    }
-    $this->output = "\n".$output."\n";
-  }
-    
+			case 'create':
+			case 'modify':
+
+				$value = ($this->type == 'password')? '': $this->value;
+
+				$attributes = array(
+					'name'      => $this->name,
+					'id'        => $this->id,
+					'type'      => $this->type,
+					'value'     => $value,
+					'maxlength' => $this->maxlength,
+					'size'      => $this->size,
+					'onclick'   => $this->onclick,
+					'onchange'  => $this->onchange,
+					'class'     => $this->css_class,
+					'style'     => $this->style
+					);
+				if($this->readonly) $attributes['readonly']='readonly';
+				if(!empty($this->tabindex)) $attributes['tabindex']=$this->tabindex;
+				$output = form_input($attributes) . $this->extra_output;
+				break;
+
+			case 'hidden':
+				$attributes = array(
+					'name'  => $this->name,
+					'id'    => $this->id,
+					'type'  => 'hidden',
+					'value' => $this->value);
+				$output = form_input($attributes) . $this->extra_output;
+
+				break;
+
+
+			default:
+		}
+		$this->output = "\n".$output."\n";
+	}
 }
-?>
