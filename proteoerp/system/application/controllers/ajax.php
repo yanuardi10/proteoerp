@@ -3,6 +3,7 @@ class Ajax extends Controller {
 
 	function Ajax(){
 		parent::Controller();
+		session_write_close();
 	}
 
 	function index(){
@@ -118,7 +119,7 @@ class Ajax extends Controller {
 	function buscasinv(){
 		$comodin=$this->datasis->traevalor('COMODIN');
 		$mid  = $this->input->post('q');
-		if(strlen($comodin)==1){
+		if(strlen($comodin)==1 && $comdin!='%'){
 			$mid=str_replace($comodin,'%',$mid);
 		}
 		$qdb  = $this->db->escape($mid.'%');
@@ -128,8 +129,9 @@ class Ajax extends Controller {
 		if($mid !== false){
 			$retArray = $retorno = array();
 
-			$mSQL="SELECT DISTINCT TRIM(a.descrip) AS descrip, TRIM(a.codigo) AS codigo, a.precio1,precio2,precio3,precio4, a.iva,a.existen,a.tipo
-				,a.peso, a.ultimo, a.pond FROM sinv AS a
+			$mSQL="SELECT DISTINCT TRIM(a.descrip) AS descrip, TRIM(a.codigo) AS codigo,
+				a.precio1,precio2,precio3,precio4, a.iva,a.existen,a.tipo,a.peso, a.ultimo, a.pond
+				FROM sinv AS a
 				LEFT JOIN barraspos AS b ON a.codigo=b.codigo
 				WHERE (a.codigo LIKE $qdb OR a.descrip LIKE  $qdb OR a.barras LIKE $qdb OR b.suplemen=$qba) AND a.activo='S'
 				ORDER BY a.descrip LIMIT 10";
@@ -450,16 +452,16 @@ class Ajax extends Controller {
 		$data['title']   = '';
 		$this->load->view('view_ventanas', $data);
 	}
-	
-	
+
+
 	function buscasinv2(){
 		//busca por CODIGO comience por la busqueda LIKE 'BUSQUEDA%',
 		//sino busca por CODIGO en cualquier parte LIKE '%BUSQUEDA%',
-		//sino consigue buscar los que comiencen en DESCRIP LIKE 'BUSQUEDA%'	
+		//sino consigue buscar los que comiencen en DESCRIP LIKE 'BUSQUEDA%'
 		//sino busca por DESCRIP LIKE '%BUSQUEDA%'
 		//acepta el parametro comodin
 		//busca solo los activos
-		
+
 		$comodin=$this->datasis->traevalor('COMODIN');
 		$mid  = $this->input->post('q');
 		if(strlen($comodin)==1){
@@ -474,8 +476,8 @@ class Ajax extends Controller {
 				,a.peso, a.ultimo, a.pond,a.formcal,a.id FROM sinv AS a
 				WHERE a.codigo LIKE ".$this->db->escape($mid.'%')." AND a.activo='S'
 				ORDER BY a.descrip";
-			
-			
+
+
 			$query = $this->db->query($mSQL);
 			$cant=$query->num_rows();
 			if(!($cant>0)){
@@ -486,7 +488,7 @@ class Ajax extends Controller {
 				$query = $this->db->query($mSQL);
 				$cant=$query->num_rows();
 			}
-			
+
 			if(!($cant>0)){
 				$mSQL="SELECT DISTINCT TRIM(a.descrip) AS descrip, TRIM(a.codigo) AS codigo, a.precio1,precio2,precio3,precio4, a.iva,a.existen,a.tipo
 				,a.peso, a.ultimo, a.pond,a.formcal,a.id FROM sinv AS a
@@ -495,7 +497,7 @@ class Ajax extends Controller {
 				$query = $this->db->query($mSQL);
 				$cant=$query->num_rows();
 			}
-			
+
 			if(!($cant>0)){
 				$mSQL="SELECT DISTINCT TRIM(a.descrip) AS descrip, TRIM(a.codigo) AS codigo, a.precio1,precio2,precio3,precio4, a.iva,a.existen,a.tipo
 				,a.peso, a.ultimo, a.pond,a.formcal,a.id FROM sinv AS a
@@ -504,7 +506,7 @@ class Ajax extends Controller {
 				$query = $this->db->query($mSQL);
 				$cant=$query->num_rows();
 			}
-			
+
 			$cana=1;
 			if ($cant > 0){
 				foreach( $query->result_array() as  $row ) {

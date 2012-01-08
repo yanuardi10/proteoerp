@@ -86,13 +86,14 @@ class DataObject{
 			$this->field_names[] = $field->name;
 			$this->field_meta[$field->name] = $field;
 			if ($field->primary_key) {
-				$this->pk[$field->name] = "";
+				$this->pk[$field->name] = '';
 			}
 		}
 
 		if (count($this->pk)==0){
 			//table must have a PK
 			$this->error = "The table $table are no PK";
+			show_error('DataObject Error: '.$this->error());
 			exit();
 		}
 	}
@@ -109,7 +110,7 @@ class DataObject{
 	* @return   void
 	*/
 	function pre_process($action,$function,$arr_values=array()){
-		$this->_pre_process_functions[$action] = array("name"=>$function, "arr_values"=>$arr_values);
+		$this->_pre_process_functions[$action] = array('name'=>$function, 'arr_values'=>$arr_values);
 	}
 
 	/**
@@ -123,9 +124,9 @@ class DataObject{
 		$this->pre_process_result = TRUE;
 		if (isset($this->_pre_process_functions[$action])){
 			$function = $this->_pre_process_functions[$action];
-			$arr_values = $function["arr_values"];
+			$arr_values = $function['arr_values'];
 			(count($arr_values)>0)? array_unshift($arr_values, $this):$arr_values = array($this);
-			$this->pre_process_result =  call_user_func_array(array(&$this->ci, $function["name"]), $arr_values );
+			$this->pre_process_result =  call_user_func_array(array(&$this->ci, $function['name']), $arr_values );
 		return  $this->pre_process_result;
 		}
 	}
@@ -142,7 +143,7 @@ class DataObject{
 	* @return   boolean
 	*/
 	function post_process($action,$function,$arr_values=array()){
-		$this->_post_process_functions[$action] = array("name"=>$function, "arr_values"=>$arr_values);
+		$this->_post_process_functions[$action] = array('name'=>$function, 'arr_values'=>$arr_values);
 	}
 
 	/**
@@ -155,9 +156,9 @@ class DataObject{
 	function _exec_post_process_functions($action){
 	if (isset($this->_post_process_functions[$action])){
 		$function = $this->_post_process_functions[$action];
-		$arr_values = $function["arr_values"];
+		$arr_values = $function['arr_values'];
 		(count($arr_values)>0)? array_unshift($arr_values, $this):$arr_values = array($this);
-		$this->post_process_result =  call_user_func_array(array(&$this->ci, $function["name"]), $arr_values);
+		$this->post_process_result =  call_user_func_array(array(&$this->ci, $function['name']), $arr_values);
 		return  $this->post_process_result;
 	}
 	}
@@ -176,7 +177,7 @@ class DataObject{
 		// can be an assoc. array:   array(pk1=>value, pk2=>value)
 		if ( is_array( $id)) {
 			if ( sizeof($id) != sizeof($this->pk) ) {
-				show_error("DataObject Error: Not enough parameters to load record");
+				show_error('DataObject Error: Not enough parameters to load record');
 				return false;
 			} else {
 				foreach ($this->pk as $keyfield=>$keyvalue){
@@ -211,7 +212,7 @@ class DataObject{
 		//echo $this->db->last_query();
 
 		if ($query->num_rows()>1){
-			show_error("DataObject Error: More than one result");
+			show_error('DataObject Error: More than one result');
 			return false;
 		} elseif ($query->num_rows()==1) {
 			if(!$this->flag_pointer){
@@ -257,24 +258,26 @@ class DataObject{
 	*/
 	function bind_rel(){
 		if($this->make_rel){
-			if (count($this->pk)>1) return;
+			if(count($this->pk)==0) return;
 
 			reset($this->pk);
-			list($pk_name, $pk_value) = each($this->pk);
-			$table_dot_pk = $this->table.".".$pk_name;
-			$where = array ($table_dot_pk => $pk_value);
+			$where=array();
+			foreach($this->pk AS $pk_name=>$pk_value){
+				$table_dot_pk = $this->table.'.'.$pk_name;
+				$where[$table_dot_pk] = $pk_value;
+			}
 
 			if (count($this->_one_to_one)>0){
 				foreach($this->_one_to_one as $_one_to_one){
-					$this->db->select($_one_to_one["table_alias"].".*");
+					$this->db->select($_one_to_one['table_alias'].'.*');
 					$this->db->from($this->table);
-					$_one_to_one["on"] = str_replace("<#pk#>", $pk_name, $_one_to_one["on"]);
-					$this->db->join($_one_to_one["table"], $_one_to_one["on"]);
+					$_one_to_one['on'] = str_replace('<#pk#>', $pk_name, $_one_to_one['on']);
+					$this->db->join($_one_to_one['table'], $_one_to_one['on']);
 					$this->db->where($where);
 
 					//inicio pointer
-					if(isset($this->flag_rel_pointer[$_one_to_one["id"]])){
-						foreach($this->flag_rel_pointer[$_one_to_one["id"]] AS $join){
+					if(isset($this->flag_rel_pointer[$_one_to_one['id']])){
+						foreach($this->flag_rel_pointer[$_one_to_one['id']] AS $join){
 							$this->db->join($join['table'], $join['on']);
 							if(!empty($join['select'])){
 								$this->db->select($join['select']);
@@ -285,24 +288,23 @@ class DataObject{
 					}
 					//fin pointer
 					$query = $this->db->get();
-					//echo $this->db->last_query();
 
 					if($query->num_rows()>0){
 						$results = $query->result_array();
 
-						if(isset($this->flag_rel_pointer[$_one_to_one["id"]])){
-							$fields = $this->db->list_fields($_one_to_one["table"]);
+						if(isset($this->flag_rel_pointer[$_one_to_one['id']])){
+							$fields = $this->db->list_fields($_one_to_one['table']);
 							$rresults = $query->result_array();
 							$results=array();
 							foreach($fields AS $field){
 								$results[$field]=$rresults[0][$field];
 								unset($rresults[0][$field]);
 							}
-							$this->_rel_pointer_data[$_one_to_many["id"]] =& $rresults[0];
-							$this->data_rel[$_one_to_one["id"]] = $results;
+							$this->_rel_pointer_data[$_one_to_many['id']] =& $rresults[0];
+							$this->data_rel[$_one_to_one['id']] = $results;
 						}else{
 							$results = $query->result_array();
-							$this->data_rel[$_one_to_one["id"]] = $results[0]; // one-to-one (i need just one record)
+							$this->data_rel[$_one_to_one['id']] = $results[0]; // one-to-one (i need just one record)
 						}
 					}
 				}
@@ -310,24 +312,24 @@ class DataObject{
 
 			if (count($this->_one_to_many)>0){
 				foreach($this->_one_to_many as $_one_to_many){
-					$this->db->select($_one_to_many["table_alias"].".*");
+					$this->db->select($_one_to_many['table_alias'].'.*');
 					$this->db->from($this->table);
-					$_one_to_many["on"] = str_replace("<#pk#>", $pk_name, $_one_to_many["on"]);
-					$this->db->join($_one_to_many["table"], $_one_to_many["on"]);
+					$_one_to_many['on'] = str_replace('<#pk#>', $pk_name, $_one_to_many['on']);
+					$this->db->join($_one_to_many['table'], $_one_to_many['on']);
 					$this->db->where($where);
-					if(isset($_one_to_many["order"])){
+					if(isset($_one_to_many['order'])){
 						$this->db->orderby($_one_to_many['order']);
 					}
 
-					if(isset($this->_order_by[$_one_to_many["id"]])){
-							if(count($this->_order_by[$_one_to_many["id"]])>0)
-							foreach($this->_order_by[$_one_to_many["id"]] AS $field=>$order)
+					if(isset($this->_order_by[$_one_to_many['id']])){
+							if(count($this->_order_by[$_one_to_many['id']])>0)
+							foreach($this->_order_by[$_one_to_many['id']] AS $field=>$order)
 								$this->db->order_by($field,$order);
 					}
 
 					//inicio pointer
-					if(isset($this->flag_rel_pointer[$_one_to_many["id"]])){
-						foreach($this->flag_rel_pointer[$_one_to_many["id"]] AS $join){
+					if(isset($this->flag_rel_pointer[$_one_to_many['id']])){
+						foreach($this->flag_rel_pointer[$_one_to_many['id']] AS $join){
 							$this->db->join($join['table'], $join['on'],$join['join']);
 							if(!empty($join['select'])){
 								$this->db->select($join['select']);
@@ -342,8 +344,8 @@ class DataObject{
 					//echo $this->db->last_query();
 
 					if($query->num_rows()>0)  {
-						if(isset($this->flag_rel_pointer[$_one_to_many["id"]])){
-							$fields = $this->db->list_fields($_one_to_many["table"]);
+						if(isset($this->flag_rel_pointer[$_one_to_many['id']])){
+							$fields = $this->db->list_fields($_one_to_many['table']);
 							$rresults = $query->result_array();
 							$results=array();
 							$cana=count($rresults);
@@ -354,10 +356,10 @@ class DataObject{
 								}
 								$results[$i]=$campos;
 							}
-							$this->_rel_pointer_data[$_one_to_many["id"]] =& $rresults;
-							$this->data_rel[$_one_to_many["id"]] = $results;
+							$this->_rel_pointer_data[$_one_to_many['id']] =& $rresults;
+							$this->data_rel[$_one_to_many['id']] = $results;
 						}else{
-							$this->data_rel[$_one_to_many["id"]] = $query->result_array(); // one-to-many (i need all related records)
+							$this->data_rel[$_one_to_many['id']] = $query->result_array(); // one-to-many (i need all related records)
 						}
 					}
 				}
@@ -365,17 +367,17 @@ class DataObject{
 
 			if (count($this->_many_to_many)>0){
 				foreach($this->_many_to_many as $_many_to_many){
-					$this->db->select($_many_to_many["table_alias"].".*");
-					$this->db->from($_many_to_many["rel_table"]);
-					$this->db->join($_many_to_many["table"], $_many_to_many["on"],"left");
-					$on2 = $_many_to_many["rel_table"].".".$pk_name." = ".$this->table.".".$pk_name;
-					$this->db->join($this->table, $on2,"left");
+					$this->db->select($_many_to_many['table_alias'].'.*');
+					$this->db->from($_many_to_many['rel_table']);
+					$this->db->join($_many_to_many['table'], $_many_to_many['on'],'left');
+					$on2 = $_many_to_many['rel_table'].'.'.$pk_name.' = '.$this->table.'.'.$pk_name;
+					$this->db->join($this->table, $on2,'left');
 					$this->db->where($where);
 
 					$query = $this->db->get();
 
 					if($query->num_rows()>0)  {
-						$this->data_rel[$_many_to_many["id"]] = $query->result_array(); // many-to-many (i need all related records)
+						$this->data_rel[$_many_to_many['id']] = $query->result_array(); // many-to-many (i need all related records)
 					}
 				}
 			}
@@ -407,12 +409,11 @@ class DataObject{
 		//INSERT
 		if (!$this->loaded) {
 			//exec pre process function to escape the insert if it return false
-			$escape = $this->_exec_pre_process_functions("insert");
+			$escape = $this->_exec_pre_process_functions('insert');
 
-		//by default pk is AutoIncrement and reloaded after an insert, otherwise new value of pk(s) is loaded from user input
-		$pk_ai = true;
-		foreach ($this->pk as $keyfield => $keyvalue)
-			{
+			//by default pk is AutoIncrement and reloaded after an insert, otherwise new value of pk(s) is loaded from user input
+			$pk_ai = true;
+			foreach ($this->pk as $keyfield => $keyvalue){
 				if(isset($this->data[$keyfield])){
 					$this->pk[$keyfield] = $this->data[$keyfield];
 					$pk_ai = false;
@@ -455,11 +456,11 @@ class DataObject{
 					//fin del guarda detalle
 				}
 
-				 if($result && $pk_ai){
-					 $this->bind_rel();
-				 }
+				if($result && $pk_ai){
+					$this->bind_rel();
+				}
 				//exec post process function and store result in a property
-				$this->post_process_result = $this->_exec_post_process_functions("insert");
+				$this->post_process_result = $this->_exec_post_process_functions('insert');
 				return $result;
 
 			} else {
@@ -470,7 +471,7 @@ class DataObject{
 			$this->db->where($this->pk);
 
 			//exec pre process function to escape the insert if it return false
-			$escape = $this->_exec_pre_process_functions("update");
+			$escape = $this->_exec_pre_process_functions('update');
 
 			//by default pk is AutoIncrement otherwise new value of pk(s) is loaded from user input (after being used to retrieve the record to update)
 			foreach ($this->pk as $keyfield => $keyvalue){
@@ -508,7 +509,7 @@ class DataObject{
 				}
 
 				//exec post process function and store result in a property
-				$this->post_process_result = $this->_exec_post_process_functions("update");
+				$this->post_process_result = $this->_exec_post_process_functions('update');
 				return $result;
 
 			} else {
@@ -542,7 +543,7 @@ class DataObject{
 		$query = $this->db->get($this->table);
 
 		if ($query->num_rows()>1){
-			show_error("DataObject Error: More than one result");
+			show_error('DataObject Error: More than one result');
 			return false;
 		} elseif($query->num_rows()===1)  {
 			$results = $query->result_array();
@@ -722,7 +723,7 @@ class DataObject{
 	function set($field, $value){
 		$field_meta = $this->field_meta[$field];
 
-		if (in_array($field_meta->type,array("int","date")) && $value==""){
+		if (in_array($field_meta->type,array('int','date')) && $value==''){
 			$value = null;
 		}
 
@@ -815,7 +816,7 @@ class DataObject{
 			$this->db->where($this->pk);
 
 			//exec pre process function to escape the insert if it return false
-			$escape = $this->_exec_pre_process_functions("delete");
+			$escape = $this->_exec_pre_process_functions('delete');
 
 			if ($escape !== false){
 
@@ -841,7 +842,7 @@ class DataObject{
 
 
 				//exec post process function and store result in a property
-				$this->post_process_result = $this->_exec_post_process_functions("delete");
+				$this->post_process_result = $this->_exec_post_process_functions('delete');
 				return $result;
 			} else {
 				return false;
@@ -864,36 +865,36 @@ class DataObject{
 	}
 
 
-	function rel_one_to_one ($id, $table, $field_fk="<#pk#>", $field="", $cascade="") {
-		if ($field=="") $field = $field_fk;
-		$arr["id"] = $id;
-		$arr["table"] = $table;  //table to join
-		if (strpos($table," as")>0) {
-			$alias = substr($table,strpos($table," as ")+4);
+	function rel_one_to_one ($id, $table, $field_fk='<#pk#>', $field='', $cascade='') {
+		if ($field=='') $field = $field_fk;
+		$arr['id'] = $id;
+		$arr['table'] = $table;  //table to join
+		if (strpos($table,' as')>0) {
+			$alias = substr($table,strpos($table,' as ')+4);
 		} else {
 			$alias = $table;
 		}
-		$arr["table_alias"] = $alias;
-		$arr["on"] = $this->_rel_build_on($alias,$field_fk,$id);
-		//$arr["on"] = $alias.".".$field." = ".$this->table.".".$field_fk;  //join "on"
-		$arr["cascade"] = $cascade;
+		$arr['table_alias'] = $alias;
+		$arr['on'] = $this->_rel_build_on($alias,$field_fk,$id);
+		//$arr['on'] = $alias.".".$field." = ".$this->table.".".$field_fk;  //join "on"
+		$arr['cascade'] = $cascade;
 		$this->_rel_type[$id]=array(0,0);
 		$this->_one_to_one[$id] = $arr;
 	}
 
 
-	function rel_one_to_many ($id, $table, $field_fk="<#pk#>", $cascade="") {
-		$arr["id"] = $id;
-		$arr["table"] = $table;
-		if (strpos($table," as")>0) {
-			$alias = substr($table,strpos($table," as ")+4);
+	function rel_one_to_many ($id, $table, $field_fk='<#pk#>', $cascade='') {
+		$arr['id'] = $id;
+		$arr['table'] = $table;
+		if (strpos($table,' as')>0) {
+			$alias = substr($table,strpos($table,' as ')+4);
 		} else {
 			$alias = $table;
 		}
-		$arr["table_alias"] = $alias;
-		//$arr["on"] = $alias.".".$field_fk." = ".$this->table.".".$field_fk;  //join "on"
-		$arr["on"] = $this->_rel_build_on($alias,$field_fk,$id);
-		$arr["cascade"] = $cascade;
+		$arr['table_alias'] = $alias;
+		//$arr['on'] = $alias.".".$field_fk." = ".$this->table.".".$field_fk;  //join "on"
+		$arr['on'] = $this->_rel_build_on($alias,$field_fk,$id);
+		$arr['cascade'] = $cascade;
 		$this->_rel_type[$id]=array(1,0);
 		$this->_one_to_many[$id] = $arr;
 	}
@@ -904,21 +905,21 @@ class DataObject{
 		}
 	}
 
-	function rel_many_to_many($id, $table, $rel_table, $field,$field2, $cascade=""){
-		$arr["id"] = $id;
-		$arr["rel_table"] = $rel_table;
-		$arr["table"] = $table;
+	function rel_many_to_many($id, $table, $rel_table, $field,$field2, $cascade=''){
+		$arr['id'] = $id;
+		$arr['rel_table'] = $rel_table;
+		$arr['table'] = $table;
 
 		//non sto' capendo piu' niente.. ma qui devo procedere come nelle altre relazioni
-		if (strpos($table," as")>0){
-			$alias = substr($table,strpos($table," as ")+4);
+		if (strpos($table,' as')>0){
+			$alias = substr($table,strpos($table,' as ')+4);
 		}else{
 			$alias = $table;
 		}
-		$arr["table_alias"] = $alias;
+		$arr['table_alias'] = $alias;
 
-		$arr["on"] = $rel_table.".".$field." = ".$table.".".$field;  //join "on"
-		$arr["cascade"] = $cascade;
+		$arr['on'] = $rel_table.'.'.$field.' = '.$table.'.'.$field;  //join 'on'
+		$arr['cascade'] = $cascade;
 		$this->_rel_type[$id]=array(2,0);
 		$this->_many_to_many[$id]= $arr;
 	}
@@ -978,7 +979,7 @@ class DataObject{
 
 			}
 		}else{
-			$on= $this->table.".".$fields." = ".$alias.".".$fields;
+			$on= $this->table.'.'.$fields.' = '.$alias.'.'.$fields;
 			$this->_rel_fields[$id][]=array($fields,$fields);
 		}
 		return $on;

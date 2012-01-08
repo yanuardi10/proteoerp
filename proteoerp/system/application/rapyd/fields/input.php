@@ -7,8 +7,8 @@
  * @license http://www.fsf.org/licensing/licenses/lgpl.txt LGPL
  * @version 0.9.6
  */
- 
- 
+
+
  /**
  * textField
  *
@@ -18,96 +18,94 @@
  */
 class inputField extends objField{
 
-  var $type = "text";
-  var $readonly=FALSE;
-  var $autocomplete=TRUE;
-  var $css_class = "input";
+	var $type = 'text';
+	var $readonly=FALSE;
+	var $autocomplete=TRUE;
+	var $css_class = 'input';
 
-  function _getValue(){
-    parent::_getValue();
-  }
-  
-  function _getNewValue(){
-    parent::_getNewValue();
-  }
+	function _getValue(){
+		parent::_getValue();
+	}
 
-  function build(){
-    if(!isset($this->size)){
-      $this->size = 45;
-    }
-    $this->_getValue();
-    
-    $output = "";
-    
-    switch ($this->status){
-    
-      case "disabled":
-      case "show":
-        if ( (!isset($this->value)) ){
-          $output = RAPYD_FIELD_SYMBOL_NULL;
-        } elseif ($this->value == ""){
-          $output = "";
-        } else { //echo $this->showformat;
-          if(substr_count($this->showformat,'decimal')>0){
-            $output = nformat($this->value);
-          }else{
-            $output =  nl2br(htmlspecialchars($this->value));
-          }
-        }
-        break;
+	function _getNewValue(){
+		parent::_getNewValue();
+	}
 
-      case "create":
-      case "modify":
-	if($this->type=='inputhidden')
-	$t='hidden';
-	else
-	$t=$this->type;
-	
-        $value = ($this->type == "password")? "": $this->value;
+	function build(){
+		if(!isset($this->size)){
+			$this->size = 45;
+		}
+		$this->_getValue();
 
-        $attributes = array(
-          'name'        => $this->name,
-          'id'          => $this->name,
-          'type'        => $t,
-          'value'       => $value,
-          'class'       => $this->css_class,
-          'size'        => $this->size,
-          'style'       => $this->style
-          );
+		$output = '';
 
-    if(strlen($this->maxlength)>0)
-    $atributes['maxlength']   = $this->maxlength;
-    if(strlen($this->title)>0)
-    $atributes['title']       = $this->title;
-    if(strlen($this->onclick)>0)
-    $atributes['onclick']     = $this->onclick;
-    if(strlen($this->onchange)>0)
-    $atributes['onchange']    = $this->onchange;
+		switch ($this->status){
 
-	if(isset($this->onkeyup)) $attributes['onkeyup']     =$this->onkeyup;
-	if($this->readonly)       $attributes['readonly']    ='readonly';
-	if(!$this->autocomplete)  $attributes['autocomplete']='off';
-        
-	$output = form_input($attributes) . $this->extra_output;
-	
-	if($this->type=='inputhidden')
-	$output.="<span id='".$this->name."_val'  >$this->value</span>";
-        
-	break;
+			case 'disabled':
+			case 'show':
+				if(!isset($this->value)){
+					$output = RAPYD_FIELD_SYMBOL_NULL;
+				}elseif($this->value == ''){
+					$output = '';
+				}else{
+					if(substr_count($this->showformat,'decimal')>0){
+						$output = nformat($this->value);
+					}else{
+						$output =  nl2br(htmlspecialchars($this->value));
+					}
+				}
+				break;
 
-      case "hidden":
-        $attributes = array(
-          'name'        => $this->name,
-          'id'          => $this->name,
-          'type'        => "hidden",
-          'value'       => $this->value);
-        $output = form_input($attributes) . $this->extra_output;
+			case 'create':
+			case 'modify':
+				if($this->type=='inputhidden')
+					$t='hidden';
+				else
+					$t=$this->type;
 
-        break;
-        
-      default:
-    }
-    $this->output = "\n".$output."\n";
-  }
+				$value = ($this->type == 'password')? '': $this->value;
+
+				$attributes = array(
+					'name'        => $this->name,
+					'id'          => $this->name,
+					'type'        => $t,
+					'value'       => $value,
+					'class'       => $this->css_class,
+					'size'        => $this->size,
+					'style'       => $this->style
+				);
+
+				if(strlen($this->maxlength)>0) $atributes['maxlength'] = $this->maxlength;
+				if(strlen($this->title)>0)     $atributes['title']     = $this->title;
+				if(strlen($this->onclick)>0)   $atributes['onclick']   = $this->onclick;
+				if(strlen($this->onchange)>0)  $atributes['onchange']  = $this->onchange;
+				if(isset($this->onkeyup))      $attributes['onkeyup']  = $this->onkeyup;
+				if($this->readonly)            $attributes['readonly'] = 'readonly';
+				if(!$this->autocomplete)       $attributes['autocomplete']='off';
+
+				$output = form_input($attributes) . $this->extra_output;
+
+				if($this->type=='inputhidden'){
+					if(substr_count($this->showformat,'decimal')>0)
+						$val=nformat($this->value);
+					else
+						$val=$this->value;
+					$output.='<span id=\''.$this->name.'_val\'>'.$val.'</span>';
+				}
+			break;
+
+			case 'hidden':
+				$attributes = array(
+					'name'        => $this->name,
+					'id'          => $this->name,
+					'type'        => 'hidden',
+					'value'       => $this->value);
+				$output = form_input($attributes) . $this->extra_output;
+
+				break;
+
+			default:
+		}
+		$this->output = "\n".$output."\n";
+	}
 }
-?>

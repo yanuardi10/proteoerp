@@ -123,7 +123,7 @@ class rivc extends Controller {
 		$edit->nrocomp = new inputField('Comprobante','nrocomp');
 		$edit->nrocomp->rule='max_length[8]|required';
 		$edit->nrocomp->size =10;
-		$edit->nrocomp->maxlength =8;
+		$edit->nrocomp->maxlength = '8';
 		$edit->nrocomp->autocomplete = false;
 
 		$edit->emision = new dateField('Fecha de Emisi&oacute;n','emision');
