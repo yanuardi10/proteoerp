@@ -320,6 +320,7 @@ class rivc extends Controller {
 		$edit->it_reiva->rel_id ='itrivc';
 		$edit->it_reiva->onkeyup ='totalizar()';
 		$edit->it_reiva->autocomplete = false;
+		$edit->it_reiva->disable_paste= true;
 		$edit->it_reiva->showformat ='decimal';
 		//****************************
 		//Fin del Detalle
