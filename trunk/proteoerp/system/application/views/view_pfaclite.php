@@ -82,7 +82,8 @@ function print_r(theObj){
 		<table width='100%' <?=($form->_status!='show'?' border="0" cellpadding="0" cellspacing="0"':'')?>>
 			<tr id='__INPL__' bgcolor='#7098D0'>
 				<td><strong>C&oacute;digo</strong></td>
-				<td><strong>Descripci&oacute;n</strong></td>
+				<td><strong>Descripci&oacute;n</strong></td>ç
+				<td><strong>Peso</strong></td>
 				<td><strong>Exis</strong></td>
 				<td><strong>Cant</strong></td>
 				<td><strong>Precio</strong></td>
@@ -130,6 +131,7 @@ function print_r(theObj){
 					$pmarca  =$row['marca'];
 					$pexisten=$row['existen'];
 					$pdesca  =$row['descrip'];
+					$peso    =$row['peso'];
 					$codigoa =$row['codigo'];
 					$preca   =$row['preca'];
 					$cana    =$row['cana'];
@@ -152,7 +154,7 @@ function print_r(theObj){
 					$pmarcat=$pmarca;
 			 ?>
 				<tr style="background:#DD3333; font-weight:bold;color:#FFFFFF">
-				<td colspan="5"><?php echo $pmarca; ?></td>
+				<td colspan="6"><?php echo $pmarca; ?></td>
 				</tr>
 				<?php 
 				}
@@ -160,6 +162,7 @@ function print_r(theObj){
 			<tr id='tr_itpfac_<?php echo $i; ?>' <?=($i%2 == 0 ?'style="background:#FFFFFF;"':'style="background:#DDDDDD;"')?>>
 				<td><?php echo $f_codigoa ?></td>
 				<td><?php echo $pdesca  ?>  </td>
+				<td align="right"><?php echo nformat($peso)  ?>  </td>
 				<td align="right"><?php echo nformat($pexisten)   ?></td>
 				<td align="right"><?php echo $f_cana;   ?></td>
 				<td align="right">
@@ -169,7 +172,7 @@ function print_r(theObj){
 						}else{
 							$options = array(
 							$sinv[$codigoa]['precio1']=> nformat($sinv[$codigoa]['precio1']),
-							$sinv[$codigoa]['precio2']=> nformat($sinv[$codigoa]['precio2']),
+							//$sinv[$codigoa]['precio2']=> nformat($sinv[$codigoa]['precio2']),
 							);
 							$sel=array();
 							if($form->_status!='create'){

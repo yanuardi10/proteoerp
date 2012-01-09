@@ -111,7 +111,7 @@ class pfaclite extends validaciones{
 		$do = new DataObject('pfac');
 		$do->rel_one_to_many('itpfac', 'itpfac', array('numero' => 'numa'));
 		$do->pointer('scli' , 'scli.cliente=pfac.cod_cli', 'scli.tipo AS sclitipo', 'left');
-		$do->rel_pointer('itpfac', 'sinv', 'itpfac.codigoa=sinv.codigo', 'sinv.descrip AS sinvdescrip, sinv.base1 AS sinvprecio1, sinv.base2 AS sinvprecio2, sinv.base3 AS sinvprecio3, sinv.base4 AS sinvprecio4, sinv.iva AS sinviva, sinv.peso AS sinvpeso,sinv.tipo AS sinvtipo,sinv.precio1 As sinvprecio1,sinv.pond AS sinvpond,sinv.mmargen as sinvmmargen,sinv.ultimo sinvultimo,sinv.formcal sinvformcal,sinv.pm sinvpm,sinv.existen pexisten,sinv.marca pmarca,sinv.descrip pdesca');
+		$do->rel_pointer('itpfac', 'sinv', 'itpfac.codigoa=sinv.codigo', 'sinv.descrip AS sinvdescrip, sinv.base1 AS sinvprecio1, sinv.base2 AS sinvprecio2, sinv.base3 AS sinvprecio3, sinv.base4 AS sinvprecio4, sinv.iva AS sinviva, sinv.peso AS sinvpeso,sinv.tipo AS sinvtipo,sinv.precio1 As sinvprecio1,sinv.pond AS sinvpond,sinv.mmargen as sinvmmargen,sinv.ultimo sinvultimo,sinv.formcal sinvformcal,sinv.pm sinvpm,sinv.existen pexisten,sinv.marca pmarca,sinv.descrip pdesca,sinv.peso ppeso');
 		$do->order_by('itpfac','sinv.marca',' ');
 		$do->order_by('itpfac','sinv.descrip',' ');
 		
@@ -171,6 +171,13 @@ class pfaclite extends validaciones{
 		$edit->pdesca->rel_id = 'itpfac';
 		$edit->pdesca->type='inputhidden';
 		$edit->pdesca->pointer=true;
+		
+		$edit->ppeso = new inputField('Peso <#o#>', 'ppeso_<#i#>');
+		$edit->ppeso->size    = 10;
+		$edit->ppeso->db_name = 'ppeso';
+		$edit->ppeso->rel_id  = 'itpfac';
+		$edit->ppeso->pointer =true;
+		$edit->ppeso->type    ='inputhidden';
 				
 		$edit->pexisten = new inputField('Existencia <#o#>', 'pexisten_<#i#>');
 		$edit->pexisten->size    = 10;
@@ -236,7 +243,7 @@ class pfaclite extends validaciones{
 		$accion="javascript:window.location='".site_url('ventas/pfaclite/load')."'";
 		$edit->button_status('btn_load'  ,'Subir desde Excel' ,$accion,'TL','show');
 
-		$sinv=$this->db->query("SELECT a.codigo,descrip,precio1,precio2,precio3,precio4,marca,SUM(b.existen) existen,iva 
+		$sinv=$this->db->query("SELECT a.codigo,descrip,precio1,precio2,precio3,precio4,marca,SUM(b.existen) existen,iva ,peso
 		FROM sinv a 
 		JOIN itsinv b ON a.codigo=b.codigo 
 		WHERE activo='S' AND tipo='Articulo' AND b.alma='".$vd['almacen']."' 
