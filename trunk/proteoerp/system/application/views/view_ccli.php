@@ -143,6 +143,7 @@ function faltante(){
 			<td align="right"  class="littletableheaderdet"><b>Monto</b></td>
 			<td align="center" class="littletableheaderdet"><b>Saldo</b></td>
 			<td align="right"  class="littletableheaderdet"><b>Abonar</b></td>
+			<td align="right"  class="littletableheaderdet"><b>P.Pago</b></td>
 		</tr>
 	</thead>
 	<tbody>
@@ -155,6 +156,7 @@ function faltante(){
 		$it_monto    = "monto_$i";
 		$it_abono    = "abono_$i";
 		$it_saldo    = "saldo_$i";
+		$it_ppago    = "ppago_$i";
 	?>
 	<tr id='tr_itccli_<?php echo $i; ?>' <?php echo ($i%2 == 0) ? 'class="odd"' : '';?> >
 		<td><?php echo $form->$it_tipo_doc->output;?>-<?php echo $form->$it_numero->output;?></td>
@@ -162,6 +164,7 @@ function faltante(){
 		<td align="right"><?php echo $form->$it_monto->output; ?></td>
 		<td align="right"><?php echo $form->$it_saldo->output; ?></td>
 		<td align="right"><?php echo $form->$it_abono->output; ?></td>
+		<td align="right"><?php echo $form->$it_ppago->output; ?></td>
 	</tr>
 	<?php } ?>
 	</tbody>

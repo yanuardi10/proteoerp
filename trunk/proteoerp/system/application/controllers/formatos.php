@@ -16,7 +16,7 @@ class Formatos extends Controller{
 		
 	}
 
-	function ver(){
+	function ver1(){
 		$parametros= func_get_args();
 		$this->_direccion='http://localhost/'.trim_slashes($this->config->item('base_url'));
 		if (count($parametros)>0){
@@ -43,22 +43,21 @@ class Formatos extends Controller{
 		}
 	}
 
-	function ver2(){
+	function ver(){
 		$parametros= func_get_args();
 		$this->_direccion='http://localhost/'.trim_slashes($this->config->item('base_url'));
 		if (count($parametros)>0){
 			$_arch_nombre=implode('-',$parametros);
 			$_fnombre=array_shift($parametros);
+			$_dbfnombre=$this->db->escape($_fnombre);
 			$this->load->library('dompdf/cidompdf');
-			$query = $this->db->query("SELECT proteo FROM formatos WHERE nombre='$_fnombre'");
+			$query = $this->db->query("SELECT proteo FROM formatos WHERE nombre=$_dbfnombre");
 			if ($query->num_rows() > 0){
 				$row = $query->row();
 				ob_start();
 					echo eval('?>'.preg_replace("/;*\s*\?>/", "; ?>", str_replace('<?=', '<?php echo ', $row->proteo)).'<?php ');
 					$_html=ob_get_contents();
 				@ob_end_clean();
-				echo $_html;
-				exit();
 				if(strlen($_html)>0)
 					$this->cidompdf->html2pdf($_html,$_arch_nombre);
 				else
