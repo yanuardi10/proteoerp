@@ -4,23 +4,6 @@ class sinv extends Controller {
 	function sinv(){
 		parent::Controller();
 		$this->load->library('rapyd');
-		$esta = $this->datasis->dameval( "SHOW columns FROM sinv WHERE Field='alto'" );
-		if ( empty($esta) ) $this->db->simple_query("ALTER TABLE sinv ADD alto DECIMAL(10,2) ");
-		$esta = $this->datasis->dameval( "SHOW columns FROM sinv WHERE Field='ancho'" );
-		if ( empty($esta) ) $this->db->simple_query("ALTER TABLE sinv ADD ancho DECIMAL(10,2) ");
-		$esta = $this->datasis->dameval( "SHOW columns FROM sinv WHERE Field='largo'" );
-		if ( empty($esta) ) $this->db->simple_query("ALTER TABLE sinv ADD largo DECIMAL(10,2) ");
-		$esta = $this->datasis->dameval( "SHOW columns FROM sinv WHERE Field='forma'" );
-		if ( empty($esta) ) $this->db->simple_query("ALTER TABLE sinv ADD forma VARCHAR(50) ");
-		$esta = $this->datasis->dameval( "SHOW columns FROM sinv WHERE Field='exento'" );
-		if ( empty($esta) ) $this->db->simple_query("ALTER TABLE sinv ADD exento CHAR(1) DEFAULT 'N' ");
-		if ( !$this->datasis->iscampo('sinv','mmargen') ) $this->db->simple_query("ALTER TABLE sinv ADD mmargen DECIMAL(7,2) DEFAULT 0 COMMENT 'Margen al Mayor'");
-
-		if(!$this->db->field_exists('pm','sinv'))
-		$this->db->query("ALTER TABLE `sinv`  ADD COLUMN `pm` DECIMAL(19,2) NOT NULL DEFAULT '0.00' COMMENT 'porcentaje mayor'");
-		if(!$this->db->field_exists('pmb','sinv'))
-		$this->db->query("ALTER TABLE `sinv`  ADD COLUMN `pmb` DECIMAL(19,2) NOT NULL DEFAULT '0.00' COMMENT 'porcentaje mayor'");
-
 	}
 
 	function index(){
@@ -1171,7 +1154,7 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->script($script,'modify');
 		$edit->back_url = site_url('inventario/sinv/filteredgrid');
 
-		$ultimo='<a href="javascript:ultimo();" title="Consultar ultimo c&oacute;digo ingresado"> Consultar ultimo c&oacute;digo</a>';
+		$ultimo ='<a href="javascript:ultimo();" title="Consultar ultimo c&oacute;digo ingresado"> Consultar ultimo c&oacute;digo</a>';
 		$sugerir='<a href="javascript:sugerir();" title="Sugerir un C&oacute;digo aleatorio">Sugerir C&oacute;digo </a>';
 
 		$edit->codigo = new inputField('C&oacute;digo', 'codigo');
@@ -3064,80 +3047,116 @@ function sinvborraprv(mproveed, mcodigo){
 	}
 
 	function instalar(){
-		$mSQL='ALTER TABLE `sinv` DROP PRIMARY KEY';
-		$this->db->simple_query($mSQL);
-		$mSQL='ALTER TABLE `sinv` ADD UNIQUE `codigo` (`codigo`)';
-		$this->db->simple_query($mSQL);
-		$mSQL='ALTER TABLE sinv ADD id INT AUTO_INCREMENT PRIMARY KEY';
-		$this->db->simple_query($mSQL);
+		//$mSQL="ALTER TABLE `sinvplabor` ALTER `actividad` DROP DEFAULT";
+		//$mSQL="ALTER TABLE `sinvplabor` CHANGE COLUMN `actividad` `actividad` VARCHAR(100) NOT NULL AFTER `nombre`";
 
-		$mSQL="CREATE TABLE IF NOT EXISTS `sinvcombo` (
-		`combo` char(15) NOT NULL,
-		`codigo` char(15) NOT NULL default '',
-		`descrip` char(30) default NULL,
-		`cantidad` decimal(10,3) default NULL,
-		`precio` decimal(15,2) default NULL,
-		`transac` char(8) default NULL,
-		`estampa` date default NULL,
-		`hora` char(8) default NULL,
-		`usuario` char(12) default NULL,
-		`costo` decimal(17,2) default '0.00',
-		PRIMARY KEY  (`combo`,`codigo`)
-		) ENGINE=MyISAM DEFAULT CHARSET=latin1";
-		$this->db->simple_query($mSQL);
-		$query="ALTER TABLE `sinvcombo`  ADD COLUMN `id` INT NOT NULL AUTO_INCREMENT FIRST,  DROP PRIMARY KEY,  ADD PRIMARY KEY (`id`)";
-		$this->db->simple_query($query);
-		$query="ALTER TABLE `sinvcombo`  ADD COLUMN `ultimo` DECIMAL(19,2) NULL DEFAULT '0.00'";
-		$this->db->simple_query($query);
-		$query="ALTER TABLE `sinvcombo`  ADD COLUMN `pond` DECIMAL(19,2) NULL DEFAULT '0.00'  ";
-		$this->db->simple_query($query);
+		$campos = $this->db->list_fields('sinv');
+		if (!in_array('id',$campos)){
+			$mSQL='ALTER TABLE `sinv` DROP PRIMARY KEY';
+			$this->db->simple_query($mSQL);
+			$mSQL='ALTER TABLE `sinv` ADD UNIQUE `codigo` (`codigo`)';
+			$this->db->simple_query($mSQL);
+			$mSQL='ALTER TABLE sinv ADD id INT AUTO_INCREMENT PRIMARY KEY';
+			$this->db->simple_query($mSQL);
+		}
 
-		$query="CREATE TABLE `sinvpitem` (
-			`producto` VARCHAR(15) NULL DEFAULT NULL COMMENT 'codigo del prod terminado (sinv)',
-			`id_producto` VARCHAR(15) NULL DEFAULT NULL COMMENT 'id del prod terminado (sinv)',
-			`codigo` VARCHAR(15) NULL DEFAULT NULL COMMENT 'codigo del Insuma (sinv)',
-			`descrip` VARCHAR(40) NULL DEFAULT NULL,
-			`cantidad` DECIMAL(14,3) NULL DEFAULT '0.000',
-			`merma` DECIMAL(10,2) NULL DEFAULT '0.00' COMMENT 'Porcentaje de merma',
-			`estampa` DATE NULL DEFAULT NULL,
-			`usuario` VARCHAR(12) NULL DEFAULT '',
-			`hora` VARCHAR(8) NULL DEFAULT '',
-			`modificado` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-			`id_sinv` INT(11) NULL DEFAULT NULL,
-			`id` INT(11) NOT NULL AUTO_INCREMENT,
-			`ultimo` DECIMAL(19,2) NOT NULL DEFAULT '0.00',
-			`pond` DECIMAL(19,2) NOT NULL DEFAULT '0.00',
-			`formcal` CHAR(1) NOT NULL,
-			PRIMARY KEY (`id`),
-			INDEX `modificado` (`modificado`)
-		)
-		COMMENT='Insumos de un producto terminado'
-		COLLATE='latin1_swedish_ci'
-		ENGINE=MyISAM
-		ROW_FORMAT=DYNAMIC
-		AUTO_INCREMENT=1";
-		$this->db->simple_query($query);
-		$query="CREATE TABLE `sinvplabor` (
-			`producto` VARCHAR(15) NULL DEFAULT '' COMMENT 'Producto Terminado',
-			`estacion` VARCHAR(5) NULL DEFAULT NULL,
-			`nombre` VARCHAR(40) NULL DEFAULT NULL,
-			`actividad` DECIMAL(14,3) NULL DEFAULT '0.000',
-			`minutos` INT(6) NULL DEFAULT '0',
-			`segundos` INT(6) NULL DEFAULT '0',
-			`estampa` DATE NULL DEFAULT NULL,
-			`usuario` VARCHAR(12) NULL DEFAULT '',
-			`hora` VARCHAR(8) NULL DEFAULT '',
-			`modificado` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-			`id_producto` INT(11) NULL DEFAULT NULL,
-			`id` INT(11) NOT NULL AUTO_INCREMENT,
-			PRIMARY KEY (`id`),
-			INDEX `modificado` (`modificado`)
-		)
-		COMMENT='Acciones de la Orden de Produccion'
-		COLLATE='latin1_swedish_ci'
-		ENGINE=MyISAM
-		ROW_FORMAT=DYNAMIC
-		AUTO_INCREMENT=1";
-		$this->db->simple_query($query);
+		if (!in_array('alto'   ,$campos)) $this->db->simple_query("ALTER TABLE sinv ADD alto DECIMAL(10,2)");
+		if (!in_array('alto'   ,$campos)) $this->db->simple_query("ALTER TABLE sinv ADD ancho DECIMAL(10,2)");
+		if (!in_array('largo'  ,$campos)) $this->db->simple_query("ALTER TABLE sinv ADD largo DECIMAL(10,2)");
+		if (!in_array('forma'  ,$campos)) $this->db->simple_query("ALTER TABLE sinv ADD forma VARCHAR(50)");
+		if (!in_array('exento' ,$campos)) $this->db->simple_query("ALTER TABLE sinv ADD exento CHAR(1) DEFAULT 'N'");
+		if (!in_array('mmargen',$campos)) $this->db->simple_query("ALTER TABLE sinv ADD mmargen DECIMAL(7,2) DEFAULT 0 COMMENT 'Margen al Mayor'");
+		if (!in_array('pm'     ,$campos)) $this->db->simple_query("ALTER TABLE `sinv`  ADD COLUMN `pm` DECIMAL(19,2) NOT NULL DEFAULT '0.00' COMMENT 'porcentaje mayor'");
+		if (!in_array('pmb'    ,$campos)) $this->db->simple_query("ALTER TABLE `sinv`  ADD COLUMN `pmb` DECIMAL(19,2) NOT NULL DEFAULT '0.00' COMMENT 'porcentaje mayor'");
+
+		if(!$this->db->table_exists('sinvcombo')){
+			$mSQL="CREATE TABLE `sinvcombo` (
+				`id` INT(11) NOT NULL AUTO_INCREMENT,
+				`combo` CHAR(15) NOT NULL,
+				`codigo` CHAR(15) NOT NULL DEFAULT '',
+				`descrip` CHAR(30) NULL DEFAULT NULL,
+				`cantidad` DECIMAL(10,3) NULL DEFAULT NULL,
+				`precio` DECIMAL(15,2) NULL DEFAULT NULL,
+				`transac` CHAR(8) NULL DEFAULT NULL,
+				`estampa` DATE NULL DEFAULT NULL,
+				`hora` CHAR(8) NULL DEFAULT NULL,
+				`usuario` CHAR(12) NULL DEFAULT NULL,
+				`costo` DECIMAL(17,2) NULL DEFAULT '0.00',
+				`ultimo` DECIMAL(19,2) NULL DEFAULT '0.00',
+				`pond` DECIMAL(19,2) NULL DEFAULT '0.00',
+				PRIMARY KEY (`id`)
+			)
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM;";
+			$this->db->simple_query($mSQL);
+		}
+
+		if(!$this->db->table_exists('sinvpitem')){
+			$mSQL="CREATE TABLE `sinvpitem` (
+				`producto` VARCHAR(15) NULL DEFAULT NULL COMMENT 'codigo del prod terminado (sinv)',
+				`id_producto` VARCHAR(15) NULL DEFAULT NULL COMMENT 'id del prod terminado (sinv)',
+				`codigo` VARCHAR(15) NULL DEFAULT NULL COMMENT 'codigo del Insuma (sinv)',
+				`descrip` VARCHAR(40) NULL DEFAULT NULL,
+				`cantidad` DECIMAL(14,3) NULL DEFAULT '0.000',
+				`merma` DECIMAL(10,2) NULL DEFAULT '0.00' COMMENT 'Porcentaje de merma',
+				`estampa` DATE NULL DEFAULT NULL,
+				`usuario` VARCHAR(12) NULL DEFAULT '',
+				`hora` VARCHAR(8) NULL DEFAULT '',
+				`modificado` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+				`id_sinv` INT(11) NULL DEFAULT NULL,
+				`id` INT(11) NOT NULL AUTO_INCREMENT,
+				`ultimo` DECIMAL(19,2) NOT NULL DEFAULT '0.00',
+				`pond` DECIMAL(19,2) NOT NULL DEFAULT '0.00',
+				`formcal` CHAR(1) NOT NULL,
+				PRIMARY KEY (`id`),
+				INDEX `modificado` (`modificado`)
+			)
+			COMMENT='Insumos de un producto terminado'
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM
+			ROW_FORMAT=DYNAMIC
+			AUTO_INCREMENT=1";
+			$this->db->simple_query($mSQL);
+		}
+
+		if(!$this->db->table_exists('sinvplabor')){
+			$mSQL="CREATE TABLE `sinvplabor` (
+				`producto` VARCHAR(15) NULL DEFAULT '' COMMENT 'Producto Terminado',
+				`estacion` VARCHAR(5) NULL DEFAULT NULL,
+				`nombre` VARCHAR(40) NULL DEFAULT NULL,
+				`actividad` VARCHAR(100) NOT NULL,
+				`minutos` INT(6) NULL DEFAULT '0',
+				`segundos` INT(6) NULL DEFAULT '0',
+				`estampa` DATE NULL DEFAULT NULL,
+				`usuario` VARCHAR(12) NULL DEFAULT '',
+				`hora` VARCHAR(8) NULL DEFAULT '',
+				`modificado` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+				`id_producto` INT(11) NULL DEFAULT NULL,
+				`id` INT(11) NOT NULL AUTO_INCREMENT,
+				PRIMARY KEY (`id`),
+				INDEX `modificado` (`modificado`)
+			)
+			COMMENT='Acciones de la Orden de Produccion'
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM
+			AUTO_INCREMENT=1";
+			$this->db->simple_query($mSQL);
+		}
+
+		if(!$this->db->table_exists('esta')){
+			$mSQL="CREATE TABLE `esta` (
+				`estacion` VARCHAR(5) NOT NULL DEFAULT '',
+				`nombre` VARCHAR(30) NULL DEFAULT NULL,
+				`descrip` TEXT NULL,
+				`jefe` CHAR(5) NULL DEFAULT NULL COMMENT 'tecnico',
+				`id` INT(11) NOT NULL AUTO_INCREMENT,
+				PRIMARY KEY (`id`),
+				UNIQUE INDEX `vendedor` (`estacion`)
+			)
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM
+			AUTO_INCREMENT=1";
+			$this->db->simple_query($mSQL);
+		}
 	}
 }
