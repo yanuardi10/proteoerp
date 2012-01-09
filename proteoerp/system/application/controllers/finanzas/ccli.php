@@ -227,6 +227,19 @@ class ccli extends Controller {
 			$edit->$obj->maxlength    = 18;
 			$edit->$obj->ind          = $i;
 
+	        $obj='ppago_'.$i;
+			$edit->$obj = new inputField('Abono',$obj);
+			$edit->$obj->db_name      = 'abono';
+			$edit->$obj->rel_id       = 'itccli';
+			$edit->$obj->rule         = "max_length[18]|numeric|callback_chabono[$i]";
+			$edit->$obj->css_class    = 'inputnum';
+			$edit->$obj->showformat   = 'decimal';
+			$edit->$obj->autocomplete = false;
+			$edit->$obj->disable_paste= true;
+			$edit->$obj->size         = 15;
+			$edit->$obj->maxlength    = 18;
+			$edit->$obj->ind          = $i;
+
 			$i++;
 		}
 		//************************************************
@@ -385,13 +398,14 @@ class ccli extends Controller {
 		$usuario = $do->get('usuario');
 		$cod_cli = $do->get('cod_cli');
 		$tipo_doc= $do->get('tipo_doc');
-		$itabono=$sfpamonto=0;
+		$itabono=$sfpamonto=$ppagomonto=0;
 
 		//Totaliza el abonado
 		$rel='itccli';
 		$cana = $do->count_rel($rel);
 		for($i = 0;$i < $cana;$i++){
-			$itabono+=$do->get_rel($rel, 'abono', $i);
+			$itabono   +=$do->get_rel($rel, 'abono', $i);
+			$ppagomonto+=$do->get_rel($rel, 'ppago', $i);
 		}
 		$itabono=round($itabono,2);
 
