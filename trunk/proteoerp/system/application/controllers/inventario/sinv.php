@@ -2,7 +2,7 @@
 class sinv extends Controller {
 
 	function sinv(){
-		parent::Controller(); 
+		parent::Controller();
 		$this->load->library('rapyd');
 		$esta = $this->datasis->dameval( "SHOW columns FROM sinv WHERE Field='alto'" );
 		if ( empty($esta) ) $this->db->simple_query("ALTER TABLE sinv ADD alto DECIMAL(10,2) ");
@@ -15,7 +15,7 @@ class sinv extends Controller {
 		$esta = $this->datasis->dameval( "SHOW columns FROM sinv WHERE Field='exento'" );
 		if ( empty($esta) ) $this->db->simple_query("ALTER TABLE sinv ADD exento CHAR(1) DEFAULT 'N' ");
 		if ( !$this->datasis->iscampo('sinv','mmargen') ) $this->db->simple_query("ALTER TABLE sinv ADD mmargen DECIMAL(7,2) DEFAULT 0 COMMENT 'Margen al Mayor'");
-		
+
 		if(!$this->db->field_exists('pm','sinv'))
 		$this->db->query("ALTER TABLE `sinv`  ADD COLUMN `pm` DECIMAL(19,2) NOT NULL DEFAULT '0.00' COMMENT 'porcentaje mayor'");
 		if(!$this->db->field_exists('pmb','sinv'))
@@ -43,7 +43,7 @@ class sinv extends Controller {
 				'titulo'  =>'Buscar Proveedor');
 
 		$bSPRV=$this->datasis->modbus($mSPRV);
-		
+
 		$mGRUP=array(
 				'tabla'   =>'grup',
 				'columnas'=>array(
@@ -56,7 +56,7 @@ class sinv extends Controller {
 				'titulo'  =>'Buscar Grupo');
 
 		$bGRUP=$this->datasis->modbus($mGRUP);
-		
+
 		$mMARC=array(
 				'tabla'   =>'marc',
 				'columnas'=>array(
@@ -224,7 +224,7 @@ class sinv extends Controller {
 
 		$filter->marca = new dropdownField("Marca", "marca");
 		$filter->marca->option('','Todas');
-		$filter->marca->options("SELECT TRIM(marca) AS clave, TRIM(marca) AS valor FROM marc ORDER BY marca"); 
+		$filter->marca->options("SELECT TRIM(marca) AS clave, TRIM(marca) AS valor FROM marc ORDER BY marca");
 		$filter->marca->style='width:190px;';
 		$filter->marca->group = "Dos";
 
@@ -330,14 +330,14 @@ class sinv extends Controller {
 		//echo $from;
 
 		$id = $this->datasis->guardasesion(array("data1"=>$from,"data2"=>$where));
-		
+
 		$mSQL = "UPDATE $from SET a.precio1=a.precio1*, a.precio2=a.precio2*, a.precio3=a.precio3*, a.precio4=a.precio4* $where";
 		//echo $from." id=$id  sesion:".$this->session->userdata('session_id');
 		$link1  =site_url('inventario/sinv/redondear');
 		$link2  =site_url('inventario/sinv/recalcular');
-		$link3  =site_url("inventario/sinv/auprec/$id"); 
-		$link4  =site_url("inventario/sinv/sinvcamgrup/"); 
-		$link5  =site_url("inventario/sinv/sinvcammarca/"); 
+		$link3  =site_url("inventario/sinv/auprec/$id");
+		$link4  =site_url("inventario/sinv/sinvcamgrup/");
+		$link5  =site_url("inventario/sinv/sinvcammarca/");
 
 		$script = '
 		<script type="text/javascript">
@@ -423,7 +423,7 @@ class sinv extends Controller {
 							}
 							});
 						},
-						error: function(h,t,e)  { jAlert("Error..codigo="+yurl+" ",e) } 
+						error: function(h,t,e)  { jAlert("Error..codigo="+yurl+" ",e) }
 					});
 				}
 			})
@@ -460,7 +460,7 @@ class sinv extends Controller {
 						jAlert(sino,"Informacion");
 						location.reload();
 						},
-						error: function(h,t,e)  { jAlert("Error..codigo="+yurl+" ",e) } 
+						error: function(h,t,e)  { jAlert("Error..codigo="+yurl+" ",e) }
 					});
 				}
 			})
@@ -569,7 +569,7 @@ class sinv extends Controller {
 
 			$("#tdecimal").change(function(){
 				var clase;
-				if($(this).attr("value")=="S") clase="inputnum"; else clase="inputonlynum";	
+				if($(this).attr("value")=="S") clase="inputnum"; else clase="inputonlynum";
 				$("#exmin").unbind();$("#exmin").removeClass(); $("#exmin").addClass(clase);
 				$("#exmax").unbind();$("#exmax").removeClass(); $("#exmax").addClass(clase);
 				$("#exord").unbind();$("#exord").removeClass(); $("#exord").addClass(clase);
@@ -610,9 +610,9 @@ class sinv extends Controller {
 						if ( bValid ) {
 							/*
 							$( "#users tbody" ).append( "<tr>" +
-								"<td>" + cod_prv.val() + "</"+"td>" + 
-								"<td>" + proveedor.val() + "</"+"td>" + 
-								"<td>" + codigo.val() + "</"+"td>" + 
+								"<td>" + cod_prv.val() + "</"+"td>" +
+								"<td>" + proveedor.val() + "</"+"td>" +
+								"<td>" + codigo.val() + "</"+"td>" +
 							"</"+"tr>" );
 							*/
 							$.ajax({
@@ -725,7 +725,7 @@ class sinv extends Controller {
                 height: "380",
                 width: "320",
                 draggable: true,
-                resizeable: true,   
+                resizeable: true,
                 title: "Unidades"
             });
             $("#goToMyPage").click(
@@ -734,7 +734,7 @@ class sinv extends Controller {
                     $("#modalDiv").dialog("open");
                     $("#modalIFrame").attr("src",url);
                     return false;
-            });           
+            });
 ////////////////////////////////////////////////////////////////////////////////
 	$( "#maintabcontainer" ).tabs();
 });
@@ -768,7 +768,7 @@ function checkRegexp( o, regexp, n ) {
 		return true;
 	}
 }
-		
+
 function dpto_change(){
 	$.post("'.$link12.'",{ depto:$("#depto").val() },function(data){$("#linea").html(data);})
 	$.post("'.$link14.'",{ linea:"" },function(data){$("#grupo").html(data);})
@@ -961,7 +961,7 @@ function sinvcodigo(mviejo){
 						)
 					}
 				},
-				error: function(h,t,e) { jAlert("Error..codigo="+yurl+" ",e) } 
+				error: function(h,t,e) { jAlert("Error..codigo="+yurl+" ",e) }
 			});
 		}
 	})
@@ -1110,7 +1110,7 @@ function sinvborraprv(mproveed, mcodigo){
 				,array('pond'    => 'itpond_<#i#>')
 				,array('pond'    => 'itpond_<#i#>_val')
 				,array('base1'   => 'itprecio1_<#i#>')
-				
+
 			),
 			'p_uri' => array(4 => '<#i#>'),
 			'titulo' => 'Buscar Articulo',
@@ -1118,7 +1118,7 @@ function sinvborraprv(mproveed, mcodigo){
 			'script' => array('totalizar()')
 		);
 		$bSINV_C = $this->datasis->p_modbus($modbus, '<#i#>');
-		
+
 		$modbus = array(
 			'tabla' => 'sinv',
 			'columnas'=>array(
@@ -1139,7 +1139,7 @@ function sinvborraprv(mproveed, mcodigo){
 				,array('ultimo'  => 'it2ultimo_<#i#>')
 				,array('pond'    => 'it2pond_<#i#>')
 				,array('id'      => 'it2id_sinv_<#i#>')
-				
+
 			),
 			'p_uri' => array(4 => '<#i#>'),
 			'titulo' => 'Buscar Articulo',
@@ -1153,7 +1153,7 @@ function sinvborraprv(mproveed, mcodigo){
 		$do->rel_pointer('sinvcombo'     , 'sinv p'    , 'p.codigo=sinvcombo.codigo', 'p.descrip AS sinvdescrip,p.pond AS sinvpond,p.ultimo sinvultimo,p.formcal sinvformcal,p.precio1 sinvprecio1');
 		$do->rel_one_to_many('sinvpitem' , 'sinvpitem' , array('codigo' => 'producto','id'=>'id_producto'));
 		$do->rel_one_to_many('sinvplabor', 'sinvplabor', array('codigo' => 'producto','id'=>'id_producto'));
-		
+
 		if($status=='create' && !empty($id)){
 			$do->load($id);
 			$do->set('codigo', '');
@@ -1166,7 +1166,7 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->post_process('insert','_post_insert');
 		$edit->post_process('update','_post_update');
 		$edit->post_process('delete','_post_delete');
-		
+
 		$edit->script($script,'create');
 		$edit->script($script,'modify');
 		$edit->back_url = site_url('inventario/sinv/filteredgrid');
@@ -1275,7 +1275,7 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->activo->option("N","No" );
 
 		$edit->serial2 = new freeField("","free","Serial");
-		$edit->serial2->in="activo"; 
+		$edit->serial2->in="activo";
 
 		$edit->serial = new dropdownField ('Usa Seriales', 'serial');
 		$edit->serial->style='width:50px;';
@@ -1284,13 +1284,13 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->serial->in="activo";
 
 		$edit->tdecimal2 = new freeField("","free","Usa Decimales");
-		$edit->tdecimal2->in="activo"; 
+		$edit->tdecimal2->in="activo";
 
 		$edit->tdecimal = new dropdownField("Usa Decimales", "tdecimal");
 		$edit->tdecimal->style='width:50px;';
 		$edit->tdecimal->option("N","No" );
 		$edit->tdecimal->option("S","Si" );
-		$edit->tdecimal->in="activo"; 
+		$edit->tdecimal->in="activo";
 
 		$edit->descrip = new inputField("Descripci&oacute;n", "descrip");
 		$edit->descrip->size=45;
@@ -1336,12 +1336,12 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->marca = new dropdownField("Marca", "marca");
 		$edit->marca->rule = 'required';
 		$edit->marca->style='width:180px;';
-		$edit->marca->option("","");  
+		$edit->marca->option("","");
 		$edit->marca->options("SELECT marca as codigo, marca FROM marc ORDER BY marca");
 		$edit->marca->append($AddMarca);
 
 		$edit->modelo  = new inputField("Modelo", "modelo");
-		$edit->modelo->size=24;  
+		$edit->modelo->size=24;
 		$edit->modelo->maxlength=20;
 		$edit->modelo->rule = "trim|strtoupper";
 
@@ -1403,7 +1403,7 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->redecen->option("N","No Cambiar");
 		$edit->redecen->option("M","Solo un Decimal "  );
 		$edit->redecen->option("F","Sin Decimales");
-		$edit->redecen->option("D","Decenas" );  
+		$edit->redecen->option("D","Decenas" );
 		$edit->redecen->option("C","Centenas"  );
 
 		for($i=1;$i<=4;$i++){
@@ -1546,7 +1546,7 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->pmb->css_class='inputnum';
 		$edit->pmb->size=10;
 		$edit->pmb->maxlength=10;
-		
+
 		/*INICIO SINV COMBO*/
 		$edit->itcodigo = new inputField('C&oacute;digo <#o#>', 'itcodigo_<#i#>');
 		$edit->itcodigo->size    = 12;
@@ -1574,7 +1574,7 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->itcantidad->autocomplete = false;
 		$edit->itcantidad->onkeyup      = 'totalizar();';
 		$edit->itcantidad->value        ='1';
-		
+
 		$edit->itultimo = new inputField('Ultimo <#o#>', 'itultimo_<#i#>');
 		$edit->itultimo->size       = 32;
 		$edit->itultimo->db_name    = 'ultimo';
@@ -1582,7 +1582,7 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->itultimo->readonly   = true;
 		$edit->itultimo->rel_id     = 'sinvcombo';
 		$edit->itultimo->type       ='inputhidden';
-		
+
 		$edit->itpond = new inputField('Promedio <#o#>', 'itpond_<#i#>');
 		$edit->itpond->size       = 32;
 		$edit->itpond->db_name    = 'pond';
@@ -1590,7 +1590,7 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->itpond->readonly   = true;
 		$edit->itpond->rel_id     = 'sinvcombo';
 		$edit->itpond->type       ='inputhidden';
-		
+
 		$ocultos=array('precio1','formcal');
 		foreach($ocultos as $obj){
 			$obj2='it'.$obj;
@@ -1599,19 +1599,19 @@ function sinvborraprv(mproveed, mcodigo){
 			$edit->$obj2->rel_id = 'sinvcombo';
 			$edit->$obj2->pointer = true;
 		}
-		
+
 		$edit->itestampa = new autoUpdateField('itestampa' ,date('Ymd'), date('Ymd'));
 		$edit->itestampa->db_name = 'estampa';
 		$edit->itestampa->rel_id = 'sinvcombo';
-		       
+
 		$edit->ithora    = new autoUpdateField('ithora',date('H:i:s'), date('H:i:s'));
 		$edit->ithora->db_name = 'hora';
 		$edit->ithora->rel_id = 'sinvcombo';
-		       
+
 		$edit->itusuario = new autoUpdateField('itusuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
 		$edit->itusuario->db_name = 'usuario';
 		$edit->itusuario->rel_id = 'sinvcombo';
-		
+
 		/*INICIO SINV ITEM RECETAS*/
 		$edit->it2codigo = new inputField('C&oacute;digo <#o#>', 'it2codigo_<#i#>');
 		$edit->it2codigo->size    = 12;
@@ -1637,7 +1637,7 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->it2cantidad->autocomplete = false;
 		$edit->it2cantidad->onkeyup      = 'importe(<#i#>)';
 		$edit->it2cantidad->insertValue =1;
-		
+
 		$edit->it2merma = new inputField('Ultimo <#o#>', 'it2merma_<#i#>');
 		$edit->it2merma->size       = 15;
 		$edit->it2merma->db_name    = 'merma';
@@ -1645,7 +1645,7 @@ function sinvborraprv(mproveed, mcodigo){
 		//$edit->it2merma->readonly   = true;
 		$edit->it2merma->rel_id     = 'sinvpitem';
 		//$edit->it2merma->type       ='inputhidden';
-		
+
 		$ocultos=array('ultimo','pond','formcal','id_sinv');
 		foreach($ocultos as $obj){
 			$obj2='it2'.$obj;
@@ -1653,21 +1653,21 @@ function sinvborraprv(mproveed, mcodigo){
 			$edit->$obj2->db_name = $obj;
 			$edit->$obj2->rel_id  = 'sinvpitem';
 		}
-		
+
 		$edit->it2estampa = new autoUpdateField('it2estampa' ,date('Ymd'), date('Ymd'));
 		$edit->it2estampa->db_name = 'estampa';
 		$edit->it2estampa->rel_id = 'sinvpitem';
-		       
+
 		$edit->it2hora    = new autoUpdateField('it2hora',date('H:i:s'), date('H:i:s'));
 		$edit->it2hora->db_name = 'hora';
 		$edit->it2hora->rel_id = 'sinvpitem';
-		       
+
 		$edit->it2usuario = new autoUpdateField('it2usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
 		$edit->it2usuario->db_name = 'usuario';
 		$edit->it2usuario->rel_id = 'sinvpitem';
-		
+
 		/*INICIO SINV LABOR  ESTACIONES*/
-		$edit->it3estacion = new inputField('Estacion <#o#>', 'it3estacion_<#i#>');
+		/*$edit->it3estacion = new inputField('Estacion <#o#>', 'it3estacion_<#i#>');
 		$edit->it3estacion->size    = 12;
 		$edit->it3estacion->db_name = 'estacion';
 		$edit->it3estacion->rel_id  = 'sinvplabor';
@@ -1677,8 +1677,16 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->it3nombre->db_name    = 'nombre';
 		$edit->it3nombre->maxlength  = 50;
 		$edit->it3nombre->readonly   = true;
-		$edit->it3nombre->rel_id     = 'sinvplabor';
-		
+		$edit->it3nombre->rel_id     = 'sinvplabor';*/
+
+		$edit->it3estacion = new  dropdownField('Estacion <#o#>', 'it3estacion_<#i#>');
+		$edit->it3estacion->option('','Seleccionar');
+		$edit->it3estacion->options('SELECT estacion,CONCAT(estacion,\'-\',nombre) AS lab FROM esta ORDER BY estacion');
+		$edit->it3estacion->style  = 'width:250px;';
+		$edit->it3estacion->rule   = 'required';
+		$edit->it3estacion->db_name = 'estacion';
+		$edit->it3estacion->rel_id  = 'sinvplabor';
+
 		$edit->it3actividad = new inputField('Actividad <#o#>', 'it3actividad_<#i#>');
 		$edit->it3actividad->size       = 32;
 		$edit->it3actividad->db_name    = 'actividad';
@@ -1697,7 +1705,7 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->it3minutos->autocomplete = false;
 		//$edit->it3minutos->onkeyup      = 'importe(<#i#>)';
 		$edit->it3minutos->insertValue =0;
-		
+
 		$edit->it3segundos = new inputField('Segundos <#o#>', 'it3segundos_<#i#>');
 		$edit->it3segundos->db_name      = 'segundos';
 		$edit->it3segundos->css_class    = 'inputnum';
@@ -1708,19 +1716,19 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->it3segundos->autocomplete = false;
 		//$edit->it3segundos->onkeyup      = 'importe(<#i#>)';
 		$edit->it3segundos->insertValue =1;
-		
+
 		$edit->it3estampa = new autoUpdateField('it3estampa' ,date('Ymd'), date('Ymd'));
 		$edit->it3estampa->db_name = 'estampa';
 		$edit->it3estampa->rel_id = 'sinvpitem';
-		        
+
 		$edit->it3hora    = new autoUpdateField('it3hora',date('H:i:s'), date('H:i:s'));
 		$edit->it3hora->db_name = 'hora';
 		$edit->it3hora->rel_id = 'sinvpitem';
-		        
+
 		$edit->it3usuario = new autoUpdateField('it3usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
 		$edit->it3usuario->db_name = 'usuario';
 		$edit->it3usuario->rel_id = 'sinvpitem';
-		
+
 		$inven=array();
 		$query=$this->db->query('SELECT TRIM(codigo) AS codigo ,TRIM(descrip) AS descrip,tipo,base1,base2,base3,base4,iva,peso,precio1,pond,ultimo FROM sinv WHERE activo=\'S\' AND tipo=\'Articulo\'');
 		if ($query->num_rows() > 0){
@@ -1729,7 +1737,7 @@ function sinvborraprv(mproveed, mcodigo){
 				$inven[$ind]=array($row->descrip,$row->tipo,$row->base1,$row->base2,$row->base3,$row->base4,$row->iva,$row->peso,$row->precio1,$row->pond);
 			}
 		}
-		
+
 		$edit->button_status("btn_add_sinvcombo" ,"Agregar","javascript:add_sinvcombo()","CO","modify","button_add_rel");
         $edit->button_status("btn_add_sinvcombo" ,"Agregar","javascript:add_sinvcombo()","CO","create","button_add_rel");
         $edit->button_status("btn_add_sinvpitem" ,"Agregar","javascript:add_sinvpitem()","IT","create","button_add_rel");
@@ -1851,7 +1859,7 @@ function sinvborraprv(mproveed, mcodigo){
 			$borrar[]=$k;
 		foreach($borrar as $v)
 			unset($do->data_rel['sinvcombo'][$v]);
-		
+
 		$tipo=$do->get('tipo');
 		if($tipo!='Combo' && count($do->data_rel['sinvcombo']) >0){
 			$error='ERROR. el tipo de Articulo debe ser Combo, debido a que tiene varios Articulos relacionados';
@@ -1862,7 +1870,7 @@ function sinvborraprv(mproveed, mcodigo){
 		print_r($do->get_all());
 		echo "hola";
 		//exit();
-		
+
 		if($tipo=='Combo' && count($do->data_rel['sinvcombo']) <=0){
 			$error='ERROR. El Combo debe tener almenos un articulo';
 			$do->error_message_ar['pre_upd'] =$error;
@@ -1876,7 +1884,7 @@ function sinvborraprv(mproveed, mcodigo){
 			$borrar[]=$k;
 		foreach($borrar as $v)
 			unset($do->data_rel['sinvpitem'][$v]);
-			
+
 		//SINVPLABOR
 		$borrar=array();
 		foreach($do->data_rel['sinvplabor'] as $k=>$v)
@@ -1884,7 +1892,7 @@ function sinvborraprv(mproveed, mcodigo){
 			$borrar[]=$k;
 		foreach($borrar as $v)
 			unset($do->data_rel['sinvplabor'][$v]);
-		
+
 		for($i=1;$i<5;$i++){
 			$prec='precio'.$i;
 			$$prec=round($do->get($prec),2); //optenemos el precio
@@ -1959,10 +1967,10 @@ function sinvborraprv(mproveed, mcodigo){
 		$mSQL .= "FROM $from"." ".$where;
 		$this->db->simple_query($mSQL);
 
-		$mSQL = "SET 
-			a.precio1=ROUND(a.precio1*(100+$porcent)/100,2), 
-			a.precio2=ROUND(a.precio2*(100+$porcent)/100,2), 
-			a.precio3=ROUND(a.precio3*(100+$porcent)/100,2), 
+		$mSQL = "SET
+			a.precio1=ROUND(a.precio1*(100+$porcent)/100,2),
+			a.precio2=ROUND(a.precio2*(100+$porcent)/100,2),
+			a.precio3=ROUND(a.precio3*(100+$porcent)/100,2),
 			a.precio4=ROUND(a.precio4*(100+$porcent)/100,2)";
 		//echo "UPDATE ".$from." ".$mSQL." ".$where;
 		$this->db->simple_query("UPDATE ".$from." ".$mSQL." ".$where);
@@ -2104,10 +2112,10 @@ function sinvborraprv(mproveed, mcodigo){
 
 		$mSQL = "UPDATE IGNORE invresu SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."' ";
 		$this->db->simple_query($mSQL);
-		
+
 		$mSQL = "UPDATE IGNORE invresu SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."' ";
 		$this->db->simple_query($mSQL);
-		
+
 		$mSQL = "UPDATE IGNORE barraspos SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."' ";
 		$this->db->simple_query($mSQL);
 
@@ -2454,7 +2462,7 @@ function sinvborraprv(mproveed, mcodigo){
 
 		$filter->marca = new dropdownField("Marca", "marca");
 		$filter->marca->option('','Todas');
-		$filter->marca->options("SELECT TRIM(marca) AS clave, TRIM(marca) AS valor FROM marc ORDER BY marca"); 
+		$filter->marca->options("SELECT TRIM(marca) AS clave, TRIM(marca) AS valor FROM marc ORDER BY marca");
 		$filter->marca->style='width:220px;';
 		$filter->marca->group = "Dos";
 
@@ -2548,7 +2556,7 @@ function sinvborraprv(mproveed, mcodigo){
 				$codigo=$this->datasis->dameval("SELECT codigo FROM sinv WHERE id=${dbid}");
 				$msj.='En el art&iacute;culo '.TRIM($codigo).' no se actualizo porque los precios deben tener valores mayores que el costo y en forma decrecientes (Precio 1 >= Precio 2 >= Precio 3 >= Precio 4).'.br();
 			}
-			
+
 		}
 		if($error>0) $msj.='Hubo alg&uacute;n error, se gener&oacute; un centinela';
 		return $msj;
@@ -2660,7 +2668,7 @@ function sinvborraprv(mproveed, mcodigo){
 	}
 
 	//Consulta rapida
-	function consulta(){  
+	function consulta(){
 		$this->load->helper('openflash');
 		$this->rapyd->load("datagrid");
 		$fields = $this->db->field_data('sinv');
@@ -2732,7 +2740,7 @@ function sinvborraprv(mproveed, mcodigo){
 		$script = "
 		<script type=\"text/javascript\" >
 
-		<!-- All the scripts will go here  --> 
+		<!-- All the scripts will go here  -->
 		var dsOption= {
 			fields :[
 				{name : 'mes'},
@@ -2763,7 +2771,7 @@ function sinvborraprv(mproveed, mcodigo){
 		var gridOption={
 			id : 'grid1',
 			loadURL : '/proteoerp/inventario/sinv/consulta_ventas/".$id."',
-			container : 'grid1_container', 
+			container : 'grid1_container',
 			dataset : dsOption ,
 			columns : colsOption,
 			allowCustomSkin: true,
@@ -2793,7 +2801,7 @@ function sinvborraprv(mproveed, mcodigo){
 		var gridOption1={
 			id : 'grid2',
 			loadURL : '/proteoerp/inventario/sinv/consulta_logusu/".$id."',
-			container : 'grid2_container', 
+			container : 'grid2_container',
 			dataset : dsOption1 ,
 			columns : colsOption1,
 			toolbarContent: 'pdf',
@@ -2827,7 +2835,7 @@ function sinvborraprv(mproveed, mcodigo){
 					<div style='border: 3px outset #EFEFEF;background: #EFEFFF '>
 					<div id='grid2_container' style='width:500px;height:250px'></div>
 					</div>
-					
+
 				</td>
 				<td>".
 				open_flash_chart_object( 250,180, site_url("inventario/sinv/compras/$id"))."
@@ -2863,18 +2871,18 @@ function sinvborraprv(mproveed, mcodigo){
 		$mSQL .= "GROUP BY MID( a.fecha ,1,7)  WITH ROLLUP LIMIT 60";
 
 		$mSQL  = "
-		SELECT 
-			MID(a.fecha,1,7) mes, 
-			sum(a.cantidad*(a.origen='3I')) cventa, 
-			ROUND(sum(a.promedio*a.cantidad*(a.origen='3I')),2) mventa, 
-			ROUND(sum(a.venta*(a.origen='3I')),2) mpvp, 
-			sum(a.cantidad*(a.origen='2C')) ccompra, 
+		SELECT
+			MID(a.fecha,1,7) mes,
+			sum(a.cantidad*(a.origen='3I')) cventa,
+			ROUND(sum(a.promedio*a.cantidad*(a.origen='3I')),2) mventa,
+			ROUND(sum(a.venta*(a.origen='3I')),2) mpvp,
+			sum(a.cantidad*(a.origen='2C')) ccompra,
 			sum(a.monto*(a.origen='2C')) mcompra,
-			ROUND(sum((a.venta-a.cantidad*a.promedio)*(a.origen='3I')),2) util, 
-			100- ROUND( sum(a.cantidad*a.promedio*(a.origen='3I'))*100/SUM(a.venta), 2) margen, 
+			ROUND(sum((a.venta-a.cantidad*a.promedio)*(a.origen='3I')),2) util,
+			100- ROUND( sum(a.cantidad*a.promedio*(a.origen='3I'))*100/SUM(a.venta), 2) margen,
 			round(avg(promedio),2) promedio
 		FROM costos a WHERE a.codigo='".addslashes($mCodigo)."' AND a.origen IN ('3I','2C')
-			AND a.fecha >= CONCAT(MID(SUBDATE(curdate(),365),1,8),'01') 
+			AND a.fecha >= CONCAT(MID(SUBDATE(curdate(),365),1,8),'01')
 		GROUP BY MID( a.fecha ,1,7)  WITH ROLLUP LIMIT 24";
 
 		$query = $this->db->query($mSQL);
@@ -2954,13 +2962,13 @@ function sinvborraprv(mproveed, mcodigo){
 			sum(a.tota*(a.tipoa='F')) mventa,
 			sum(a.tota*(a.tipoa='D')) mdevol,
 			sum(a.tota*if(a.tipoa='D',-1,1)) tota
-		FROM sitems a 
+		FROM sitems a
 		WHERE a.codigoa='$codigo' AND a.tipoa IN ('F','D') AND a.fecha >= CONCAT(MID(SUBDATE(curdate(),365),1,8),'01')
 		GROUP BY MID( a.fecha, 1,7 )  LIMIT 7";
 
 		$maxval = 0;
 		$query = $this->db->query($mSQL);
-		$data_1=$data_2=$meses=array(); 
+		$data_1=$data_2=$meses=array();
 		foreach($query->result() as $row ){
 			if ($row->cana>$maxval) $maxval=$row->cana;
 			$meses[]   = $row->mes;
@@ -2979,7 +2987,7 @@ function sinvborraprv(mproveed, mcodigo){
 		$g = new graph();
 		$g->set_is_decimal_separator_comma(1);
 		if($maxval > 0 ) {
-			$g->title( 'Ventas por Mes ','{font-size: 16px; color:#0F3054}' ); 
+			$g->title( 'Ventas por Mes ','{font-size: 16px; color:#0F3054}' );
 			$g->data_sets[] = $bar_1;
 
 			$g->set_x_labels($meses);
@@ -2999,7 +3007,7 @@ function sinvborraprv(mproveed, mcodigo){
 	}
 
 	function compras($id=''){
-		if (empty($id)) return; 
+		if (empty($id)) return;
 		$this->load->library('Graph');
 
 		$codigo = $this->datasis->dameval("SELECT codigo FROM sinv WHERE id=$id");
@@ -3010,14 +3018,14 @@ function sinvborraprv(mproveed, mcodigo){
 			sum(a.importe*(b.tipo_doc='FC')) mventa,
 			sum(a.importe*(b.tipo_doc='NC')) mdevol,
 			sum(a.importe*if(b.tipo_doc='NC',-1,1)) tota
-		FROM itscst a JOIN scst b ON a.control=b.control 
+		FROM itscst a JOIN scst b ON a.control=b.control
 		WHERE a.codigo='$codigo' AND b.tipo_doc IN ('FC','NC') AND b.fecha >= CONCAT(MID(SUBDATE(curdate(),365),1,8),'01')
-				AND  a.fecha <= b.actuali 
+				AND  a.fecha <= b.actuali
 		GROUP BY MID( b.fecha, 1,7 ) LIMIT 7  ";
 
 		$maxval = 0;
 		$query = $this->db->query($mSQL);
-		$data_1=$data_2=$meses=array(); 
+		$data_1=$data_2=$meses=array();
 		foreach($query->result() as $row ){
 			if ($row->cana>$maxval) $maxval=$row->cana;
 			$meses[]   = $row->mes;
@@ -3036,7 +3044,7 @@ function sinvborraprv(mproveed, mcodigo){
 		$g = new graph();
 		$g->set_is_decimal_separator_comma(1);
 		if($maxval > 0 ) {
-			$g->title( 'Compras por Mes ','{font-size: 16px; color:#0F3054}' ); 
+			$g->title( 'Compras por Mes ','{font-size: 16px; color:#0F3054}' );
 			$g->data_sets[] = $bar_1;
 
 			$g->set_x_labels($meses);
@@ -3079,11 +3087,11 @@ function sinvborraprv(mproveed, mcodigo){
 		$this->db->simple_query($mSQL);
 		$query="ALTER TABLE `sinvcombo`  ADD COLUMN `id` INT NOT NULL AUTO_INCREMENT FIRST,  DROP PRIMARY KEY,  ADD PRIMARY KEY (`id`)";
 		$this->db->simple_query($query);
-		$query="ALTER TABLE `sinvcombo`  ADD COLUMN `ultimo` DECIMAL(19,2) NULL DEFAULT '0.00'"; 
+		$query="ALTER TABLE `sinvcombo`  ADD COLUMN `ultimo` DECIMAL(19,2) NULL DEFAULT '0.00'";
 		$this->db->simple_query($query);
 		$query="ALTER TABLE `sinvcombo`  ADD COLUMN `pond` DECIMAL(19,2) NULL DEFAULT '0.00'  ";
 		$this->db->simple_query($query);
-		
+
 		$query="CREATE TABLE `sinvpitem` (
 			`producto` VARCHAR(15) NULL DEFAULT NULL COMMENT 'codigo del prod terminado (sinv)',
 			`id_producto` VARCHAR(15) NULL DEFAULT NULL COMMENT 'id del prod terminado (sinv)',

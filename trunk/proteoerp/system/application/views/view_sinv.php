@@ -1,4 +1,4 @@
-<?php 
+<?php
 echo $scri;
 echo $form_begin;
 
@@ -19,7 +19,7 @@ elseif ($form->_status=='create')
 	$container_it=join("&nbsp;", $form->_button_status[$form->_status]["IT"]);
 else
 	$container_it = '';
-	
+
 if ($form->_status=='modify')
 	$container_la=join("&nbsp;", $form->_button_status[$form->_status]["LA"]);
 elseif ($form->_status=='create')
@@ -70,7 +70,7 @@ $campos2=$form->js_escape($scampos2);
 $campos3   =$form->template_details('sinvplabor');
 $scampos3  ='<tr id="tr_sinvpitem_<#i#>">';
 $scampos3 .='<td class="littletablerow" align="left" >'.$campos3['it3estacion']['field'].'</td>';
-$scampos3 .='<td class="littletablerow" align="left" >'.$campos3['it3nombre']['field'].'</td>';
+//$scampos3 .='<td class="littletablerow" align="left" >'.$campos3['it3nombre']['field'].'</td>';
 $scampos3 .='<td class="littletablerow" align="right">'.$campos3['it3actividad']['field'].'</td>';
 $scampos3 .='<td class="littletablerow" align="right">'.$campos3['it3minutos']['field'].'</td>';
 $scampos3 .='<td class="littletablerow" align="right">'.$campos3['it3segundos']['field'].'</td>';
@@ -97,7 +97,7 @@ $modblink=site_url('/buscar/index/'.$idt.'/<#i#>');
 
 $idt  =$this->datasis->dameval("SELECT id FROM modbus WHERE idm='sinv_i' AND uri='$uri'");
 $modblink2=site_url('/buscar/index/'.$idt.'/<#i#>');
-?>	
+?>
 sinvcombo_cont=<?php echo $form->max_rel_count['sinvcombo']; ?>;
 sinvpitem_cont=<?php echo $form->max_rel_count['sinvpitem']; ?>;
 sinvplabor_cont=<?php echo $form->max_rel_count['sinvplabor']; ?>;
@@ -110,7 +110,7 @@ if(tipo=='Combo'){
 }else{
 	$("#litab7").hide();
 	$("#tab7").hide();
-}	
+}
 }
 
 $(function(){
@@ -129,14 +129,14 @@ $(function(){
 			return false;
 		}
 	});
-	
+
 	$('input[name^="it2cantidad_"]').keypress(function(e) {
 		if(e.keyCode == 13) {
 		    add_sinvpitem();
 			return false;
 		}
 	});
-	
+
 	$("#tipo").change(function(){
 		ocultatab();
 	});
@@ -198,7 +198,7 @@ function totalizar(){
 			break;
 			default: t=tu;
 			}
-			
+
 			tota=tota+t;
 		}
 	});
@@ -228,19 +228,19 @@ function add_sinvcombo(){
 
 function post_modbus_sinv(nind){
 	ind=nind.toString();
-	
+
 	$("#itprecio_"+ind).empty();
 	var arr=$('#itprecio_'+ind);
-    
+
 	descrip=$("#itdescrip_"+ind).val();
 	$("#itdescrip_"+ind+'_val').text(descrip);
-	
+
 	descrip=$("#itultimo_"+ind).val();
 	$("#itultimo_"+ind+'_val').text(descrip);
-	
+
 	descrip=$("#itpond_"+ind).val();
 	$("#itpond_"+ind+'_val').text(descrip);
-	
+
 	importe(nind);
 	totalizar();
 }
@@ -327,7 +327,7 @@ function del_sinvpitem(id){
 
 function modbusdepen2(i){
 	var id = i.toString();
-	
+
 	var link='<?=$modblink2 ?>';
 	link =link.replace(/<#i#>/g,id);
 	vent=window.open(link,'ventbuscarsinv_i','width=800,height=600,scrollbars=Yes,status=Yes,resizable=Yes,screenx=5,screeny=5');
@@ -362,7 +362,7 @@ function totalizar2(){
 			break;
 			default: t=tu;
 			}
-			
+
 			tota=tota+t;
 		}
 	});
@@ -412,22 +412,22 @@ function autocod2(id){
 
 function post_modbus_sinv2(nind){
 	ind=nind.toString();
-	
+
 	$("#it2precio_"+ind).empty();
 	var arr=$('#it2precio_'+ind);
-    
+
 	descrip=$("#it2descrip_"+ind).val();
 	$("#it2descrip_"+ind+'_val').text(descrip);
-	
+
 	descrip=$("#it2ultimo_"+ind).val();
 	$("#it2ultimo_"+ind+'_val').text(descrip);
-	
+
 	descrip=$("#it2pond_"+ind).val();
 	$("#it2pond_"+ind+'_val').text(descrip);
-	
+
 	descrip=$("#it2formcal_"+ind).val();
 	$("#it2formcal_"+ind+'_val').text(descrip);
-	
+
 	//importe(nind);
 	totalizar2();
 }
@@ -456,7 +456,7 @@ function del_sinvplabor(id){
 	//totalizar2();
 }
 </script>
-<?php } 
+<?php }
 
 
  if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</div>'; ?>
@@ -569,7 +569,7 @@ function del_sinvplabor(id){
 							if( !empty($form->enlace->output))
 							{
 								$mID = $this->datasis->dameval("SELECT id FROM sinv WHERE codigo='".addslashes(trim($form->enlace->output))."'");
-								echo anchor('inventario/sinv/dataedit/show/'.$mID,$form->enlace->output); 
+								echo anchor('inventario/sinv/dataedit/show/'.$mID,$form->enlace->output);
 							}
 						} else { echo $form->enlace->output; }
 						?>
@@ -780,7 +780,7 @@ function del_sinvplabor(id){
 					<td class="littletableheaderc"><?=$form->redecen->label ?></td>
 					<td class="littletablerow"><?=$form->redecen->output?></td>
 				</tr>
-			</table>	
+			</table>
 			</fieldset>
 		</td>
 		<td valign='top'>
@@ -829,7 +829,7 @@ function del_sinvplabor(id){
 					<td class="littletableheaderc">&nbsp;</td>
 					<td class="littletableheaderc">&nbsp;</td>
 				</tr>
-			</table>	
+			</table>
 			</fieldset>
 		</td>
 	</tr>
@@ -849,14 +849,14 @@ function del_sinvplabor(id){
 				<td  bgcolor='#7098D0' align='center'><strong>&nbsp;</strong></td>
 				<?php } ?>
 			</tr>
-			<?php 
+			<?php
 			for($i=0;$i<$form->max_rel_count['sinvcombo'];$i++) {
 				$itcodigo   = "itcodigo_$i";
 				$itdescrip  = "itdescrip_$i";
 				$itcantidad = "itcantidad_$i";
 				$itultimo   = "itultimo_$i";
 				$itpond     = "itpond_$i";
-				
+
 				$oculto='';
 				foreach($ocultos as $obj){
 					$obj2='it'.$obj.'_'.$i;
@@ -896,7 +896,7 @@ function del_sinvplabor(id){
 					<td  bgcolor='#7098D0' align='center'><strong>&nbsp;</strong></td>
 				<?php } ?>
 			</tr>
-			<?php 
+			<?php
 			for($i=0;$i<$form->max_rel_count['sinvpitem'];$i++){
 				$it2codigo   = "it2codigo_$i";
 				$it2descrip  = "it2descrip_$i";
@@ -929,16 +929,15 @@ function del_sinvplabor(id){
 	<div style='overflow:auto;border: 1px solid #9AC8DA;background: #FAFAFA;height:200px'>
 		<table width='100%'>
 			<tr id='__INPL_SINVPLABOR__'>
-				<td bgcolor='#7098D0'            ><strong>Estaci&oacute;n </strong></td>
-				<td bgcolor='#7098D0'            ><strong>Nombre            </strong></td>
-				<td bgcolor='#7098D0' align=right><strong>Actividad         </strong></td>
-				<td bgcolor='#7098D0' align=right><strong>Minutos           </strong></td>
-				<td bgcolor='#7098D0' align=right><strong>Segundos          </strong></td>
+				<td bgcolor='#7098D0'            ><strong>Estaci&oacute;n</strong></td>
+				<td bgcolor='#7098D0' align=right><strong>Actividad      </strong></td>
+				<td bgcolor='#7098D0' align=right><strong>Minutos        </strong></td>
+				<td bgcolor='#7098D0' align=right><strong>Segundos       </strong></td>
 				<?php if($form->_status!='show') {?>
 					<td  bgcolor='#7098D0' align='center'><strong>&nbsp;</strong></td>
 				<?php } ?>
 			</tr>
-			<?php 
+			<?php
 			for($i=0;$i<$form->max_rel_count['sinvplabor'];$i++){
 				$it3estacion = "it3estacion_$i";
 				$it3nombre   = "it3nombre_$i";
@@ -948,7 +947,6 @@ function del_sinvplabor(id){
 			?>
 			<tr id='tr_sinvpitem_<?=$i;?>'>
 				<td class="littletablerow" align="left" nowrap><?php echo $form->$it3estacion->output;   ?></td>
-				<td class="littletablerow" align="left"       ><?php echo $form->$it3nombre->output;     ?></td>
 				<td class="littletablerow" align="right"      ><?php echo $form->$it3actividad->output;  ?></td>
 				<td class="littletablerow" align="right"      ><?php echo $form->$it3minutos->output;    ?></td>
 				<td class="littletablerow" align="right"      ><?php echo $form->$it3segundos->output;    ?></td>
@@ -1012,7 +1010,7 @@ function del_sinvplabor(id){
 	</table>
 </div>
 <div id="tab4" style='background:#EFEFFF'>
-	
+
 	<table width='100%'>
 	<?php if($form->_status=='show'){ ?>
 	<tr>
@@ -1095,7 +1093,7 @@ function del_sinvplabor(id){
 				<fieldset style='border: 2px outset #FEB404;background: #FFFCE8;'>
 				<legend class="titulofieldset" >Codigo del proveedor</legend>
 				<table width='50%' border='0'>
-					<?php 
+					<?php
 						foreach($query->result() as $row ){
 							echo "
 							<tr>
@@ -1108,7 +1106,7 @@ function del_sinvplabor(id){
 									</a>
 								</td>
 							</tr>";
-						} 
+						}
 						echo "</table>";
 						?>
 				</fieldset>
@@ -1127,12 +1125,12 @@ function del_sinvplabor(id){
 				<legend class="titulofieldset" >Descuentos</legend>
 				<table border=0 width='100%'>
 				<tr>
-					<td valign="top"><?php 
+					<td valign="top"><?php
 						$margen =  $this->datasis->dameval("SELECT margen FROM grup WHERE grupo='".$form->_dataobject->get('grupo')."'");
 						if ($margen > 0 ) {
 							echo "Descuento por Grupo ";
 							echo $margen."% ";
-							echo "Precio ".nformat($form->precio1->value * (100-$margen)/100); 
+							echo "Precio ".nformat($form->precio1->value * (100-$margen)/100);
 						} else echo "No tiene descuento por grupo";
 						?>
 					</td>
@@ -1144,7 +1142,7 @@ function del_sinvplabor(id){
 							echo "Descuento por Promocion ".$margen."% ";
 							echo "Precio ".nformat($form->precio1->value * (100-$margen)/100);
 						} else echo "No tiene descuento promocional";
-						
+
 						?>
 					</td>
 				</tr>
@@ -1163,7 +1161,7 @@ if ($query->num_rows()>0 ) {
 	<fieldset style='border: 1px outset #8A0808;background: #FFFBE9;'>
 	<legend class="titulofieldset" >Codigos de Barras Asociados</legend>
 	<table width='100%' border=0>
-		<?php 
+		<?php
 			$m = 1;
 			foreach($query->result() as $row ){
 				if ( $m > 3 ) { ?>
@@ -1182,8 +1180,8 @@ if ($query->num_rows()>0 ) {
 				</td>
 			</tr></table>
 		</td>";
-				
-				$m += 1; 
+
+				$m += 1;
 			}
 			?>
 	</tr>
@@ -1199,7 +1197,7 @@ if ($query->num_rows()>0 ) {
 	<legend class="titulofieldset" >Productos Derivados</legend>
 	<table width='100%'>
 	<tr>
-		<?php 
+		<?php
 			$m = 1;
 			foreach($query->result() as $row ){
 				if ( $m > 4 ) {
@@ -1207,9 +1205,9 @@ if ($query->num_rows()>0 ) {
 					$m = 1;
 				}
 				echo "<td class='littletablerow'>";
-				echo anchor('inventario/sinv/dataedit/show/'.$row->id,$row->producto); 
+				echo anchor('inventario/sinv/dataedit/show/'.$row->id,$row->producto);
 				echo "</td>";
-				$m += 1; 
+				$m += 1;
 			}
 			?>
 	</tr>
