@@ -182,6 +182,11 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		
 		echo "$valor $campo $grupo";
 	}
+	
+	function instala(){
+			$query="ALTER TABLE `marc` ADD COLUMN `margen` DOUBLE(5,2) UNSIGNED NOT NULL DEFAULT '0.00'";
+			$this->db->simple_query();
+	}
 
 
 /*

@@ -1361,8 +1361,13 @@ var cplaStore = new Ext.data.Store({
 			$mSQL='ALTER TABLE `scli`  CHANGE COLUMN `clave` `clave` VARCHAR(50) NULL DEFAULT NULL AFTER `tiva`';
 			$this->db->simple_query($mSQL);
 		}
+			$query="ALTER TABLE `scli` ADD COLUMN `modifi` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP";
+			$this->db->simple_query($mSQL);
+			$query="ALTER TABLE `scli` ADD COLUMN `sucursal` CHAR(2) NULL DEFAULT NULL";
+			$this->db->simple_query($mSQL);
+			$query="ALTER TABLE `scli` ADD COLUMN `mmargen` DECIMAL(10,2) NULL DEFAULT NULL";
+			$this->db->simple_query($mSQL);
 	}
-
 
 	function sclibusca() {
 		$start    = isset($_REQUEST['start'])   ? $_REQUEST['start']  :  0;

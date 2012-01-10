@@ -1850,8 +1850,8 @@ function sinvborraprv(mproveed, mcodigo){
 			$do->error_message_ar['pre_ins'] =$error;
 			return false;
 		}
-		print_r($do->get_all());
-		echo "hola";
+		//print_r($do->get_all());
+		//echo "hola";
 		//exit();
 
 		if($tipo=='Combo' && count($do->data_rel['sinvcombo']) <=0){
@@ -3158,5 +3158,42 @@ function sinvborraprv(mproveed, mcodigo){
 			AUTO_INCREMENT=1";
 			$this->db->simple_query($mSQL);
 		}
+		
+		$query="ALTER TABLE `sinv` ADD COLUMN `mmargenplus` DECIMAL(7,2) NULL DEFAULT '0.00' COMMENT 'Margen al Mayor'";
+		$this->db->simple_query($query);
+		$query=" ALTER TABLE `sinv` ADD COLUMN `escala1` DECIMAL(12,2) NULL DEFAULT '0.00'";
+		$this->db->simple_query($query);
+		$query=" ALTER TABLE `sinv` ADD COLUMN `pescala1` DECIMAL(5,2) NULL DEFAULT '0.00' COMMENT 'porcentaje descuento escala1'";
+		$this->db->simple_query($query);
+		$query=" ALTER TABLE `sinv` ADD COLUMN `escala2` DECIMAL(12,2) NULL DEFAULT '0.00'";
+		$this->db->simple_query($query);
+		$query=" ALTER TABLE `sinv` ADD COLUMN `pescala2` DECIMAL(5,2) NULL DEFAULT '0.00' COMMENT 'porcentaje descuento escala2'";
+		$this->db->simple_query($query);
+		$query=" ALTER TABLE `sinv` ADD COLUMN `escala3` DECIMAL(12,2) NULL DEFAULT '0.00'";
+		$this->db->simple_query($query);
+		$query=" ALTER TABLE `sinv` ADD COLUMN `pescala3` DECIMAL(5,2) NULL DEFAULT '0.00' COMMENT 'porcentaje descuento escala3'";
+		$this->db->simple_query($query);
+		$query="CREATE TABLE `esta` (
+			`estacion` VARCHAR(5) NOT NULL DEFAULT '',
+			`nombre` VARCHAR(30) NULL DEFAULT NULL,
+			`descrip` TEXT NULL,
+			`jefe` CHAR(5) NULL DEFAULT NULL COMMENT 'tecnico',
+			`id` INT(11) NOT NULL AUTO_INCREMENT,
+			PRIMARY KEY (`id`),
+			UNIQUE INDEX `vendedor` (`estacion`)
+		)
+		COLLATE='latin1_swedish_ci'
+		ENGINE=MyISAM
+		ROW_FORMAT=DYNAMIC";
+		$this->db->simple_query($query);
+		$query="CREATE TABLE `barraspos` (
+			`codigo` CHAR(15) NOT NULL DEFAULT '',
+			`suplemen` CHAR(15) NOT NULL DEFAULT '',
+			PRIMARY KEY (`codigo`, `suplemen`)
+		)
+		COLLATE='latin1_swedish_ci'
+		ENGINE=MyISAM
+		ROW_FORMAT=DEFAULT";
+		$this->db->simple_query($query);
 	}
 }

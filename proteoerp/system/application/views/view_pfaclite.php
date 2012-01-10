@@ -83,7 +83,6 @@ function print_r(theObj){
 			<tr id='__INPL__' bgcolor='#7098D0'>
 				<td><strong>C&oacute;digo</strong></td>
 				<td><strong>Descripci&oacute;n</strong></td>ç
-				<td><strong>Peso</strong></td>
 				<td><strong>Exis</strong></td>
 				<td><strong>Cant</strong></td>
 				<td><strong>Precio</strong></td>
@@ -130,8 +129,9 @@ function print_r(theObj){
 							
 					$pmarca  =$row['marca'];
 					$pexisten=$row['existen'];
-					$pdesca  =$row['descrip'];
 					$peso    =$row['peso'];
+					$pdesca  =$row['descrip'].' '.nformat($peso).' KG';
+					
 					$codigoa =$row['codigo'];
 					$preca   =$row['preca'];
 					$cana    =$row['cana'];
@@ -141,7 +141,7 @@ function print_r(theObj){
 					//$f_codigoa=$form->$it_codigoa->output;
 					//$f_cana   =$form->$it_cana->output;
 					if($form->_status!='show')
-					$f_cana   ='<input id="cana_'.$i.'" onkeyup="total(\''.$i.'\')" class="inputnum" type="text" autocomplete="off" size="2" value="'.($cana>0?$cana:'').'" name="cana_'.$i.'" style="height:30px;font-size:18px">';
+					$f_cana   ='<input id="cana_'.$i.'" onkeyup="total(\''.$i.'\')" class="inputnum" type="text" autocomplete="off" size="1" value="'.($cana>0?$cana:'').'" name="cana_'.$i.'" style="height:30px;font-size:18px">';
 					else
 					$f_cana =nformat($cana);
 				
@@ -154,7 +154,7 @@ function print_r(theObj){
 					$pmarcat=$pmarca;
 			 ?>
 				<tr style="background:#DD3333; font-weight:bold;color:#FFFFFF">
-				<td colspan="6"><?php echo $pmarca; ?></td>
+				<td colspan="5"><?php echo $pmarca; ?></td>
 				</tr>
 				<?php 
 				}
@@ -162,8 +162,7 @@ function print_r(theObj){
 			<tr id='tr_itpfac_<?php echo $i; ?>' <?=($i%2 == 0 ?'style="background:#FFFFFF;"':'style="background:#DDDDDD;"')?>>
 				<td><?php echo $f_codigoa ?></td>
 				<td><?php echo $pdesca  ?>  </td>
-				<td align="right"><?php echo nformat($peso)  ?>  </td>
-				<td align="right"><?php echo nformat($pexisten)   ?></td>
+				<td align="right"><?php echo nformat($pexisten)  ?>  </td>
 				<td align="right"><?php echo $f_cana;   ?></td>
 				<td align="right">
 					<?php 
@@ -181,7 +180,7 @@ function print_r(theObj){
 									$sel=array($preca=>$preca);
 								}
 							}
-							echo form_dropdown('preca_'.$i, $options,$sel,'style="height:30px;width:85px;font-size:18px" id="preca_'.$i.'"');
+							echo form_dropdown('preca_'.$i, $options,$sel,'style="height:30px;width:75px;font-size:18px" id="preca_'.$i.'"');
 						}
 					?>
 					&nbsp;

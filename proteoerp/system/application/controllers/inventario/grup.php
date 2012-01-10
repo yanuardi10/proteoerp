@@ -640,7 +640,8 @@ function exento(mgrupo){
 				ADD COLUMN `margen` DECIMAL(10,2) NOT NULL DEFAULT '0.00' AFTER `comision`,
 				ADD COLUMN `margenc` DECIMAL(10,2) NOT NULL DEFAULT '0.00' AFTER `margen`";
 		$this->db->simple_query($mSQL);
-
+		$mSQL="ALTER TABLE `grup` ADD COLUMN `status` CHAR(1) NULL DEFAULT NULL";
+		$this->db->simple_query($mSQL);
 	}
 
 	//***************************
