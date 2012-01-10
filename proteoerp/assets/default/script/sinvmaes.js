@@ -9,7 +9,7 @@ function roundNumber(num, dec) {
 function roundSup(num, dec) {
 	num=num-0.01;
 	num=roundNumber(num,2);
-	
+
 	if(dec==0)
 		result = Math.ceil(num);
 	else{
@@ -20,12 +20,12 @@ function roundSup(num, dec) {
 		 previo=previo+result[i];
 		factor=5*(Math.pow(10,dec)/10);
 		previo=parseFloat(previo);
-		
+
 		if(previo<=factor)
 			diferencia=factor-previo;
 		else
 			diferencia=(2*factor)-previo;
-		
+
 		result=num+diferencia
 	}
 	return result;
@@ -41,10 +41,10 @@ function cost(pertenece){
 	}
 
 	var ultimo=parseFloat($("#ultimo").val());
-		
+
 	if(fcalc=="P"){
 		ccosto=costo;
-		
+
 	}else if(fcalc=="U"){
 		ccosto=ultimo;
 	}else{
@@ -57,10 +57,7 @@ function cost(pertenece){
 }
 
 function calculos(pertenece){
- 	if (pertenece=='M')
-	v=6;
-	else
-	v=5;	
+ 	if (pertenece=='M') v=6; else v=5;
 	var iva   =  parseFloat($("#iva").val());
 	var costo= cost(pertenece);
 	for(i=1;i<v;i++){
@@ -77,10 +74,7 @@ function cambioprecio(pertenece){
 	var i=0;
 	var costo=cost(pertenece);
 	var iva=parseFloat($("#iva").val());
-	if(pertenece=='M')
-	v=6;
-	else 
-	v=5;
+	if(pertenece=='M') v=6; else v=5;
 	for(i=1;i<v;i++){
 		precio=parseFloat($("#precio"+i).val());
 		base=precio*100/(100+iva);
@@ -92,32 +86,28 @@ function cambioprecio(pertenece){
 	}
 }
 
-function cambiobase(pertenece){ 
+function cambiobase(pertenece){
 	var i=0;
 	var costo=cost(pertenece);
 	var iva=parseFloat($("#iva").val());
-	if(pertenece=='M')
-	v=6;
-	else
-	v=5;
+	if(pertenece=='M') v=6; else v=5;
 	for(i=1;i<v;i++){
 		base=parseFloat($("#base"+i).val());
 		precio=(base*(iva+100)/100);
 		nprecio=roundNumber(precio,2);
-				
+
 		margen=100-(costo*100)/base;
 		nmargen=roundNumber(margen,2);
 		document.getElementById("margen"+i).value = nmargen;
 		$("#margen" + i).val(nmargen);
 		$("#precio"+i).val(nprecio);
-		
 	}
 }
 
 function redon(pertenece){
 	var redondeo =$("#redecen").val();
-	var i=0; 
-	var costo=cost(pertenece);    
+	var i=0;
+	var costo=cost(pertenece);
  	var iva=parseFloat($("#iva").val());
  	if(redondeo!="NO"){
 		if(redondeo=="D"){
@@ -129,9 +119,9 @@ function redon(pertenece){
 					nprecio=roundSup(precio,2);
 					//nprecio=Math.ceil(precio);
 					nprecio=roundNumber(nprecio,2);
-			     	base=nprecio*100/(100+iva);   
-			     	nbase=roundNumber(base,2);    
-			     	margen=100-(costo*100/nbase); 
+			     	base=nprecio*100/(100+iva);
+			     	nbase=roundNumber(base,2);
+			     	margen=100-(costo*100/nbase);
 			     	nmargen=roundNumber(margen,2);
 					$("#base" + i).val(nbase);
 					$("#precio" + i).val(nprecio);
@@ -146,9 +136,9 @@ function redon(pertenece){
 				if (precio!=0){
 					nprecio=Math.round(precio);
 					nprecio=roundNumber(nprecio,2);
-					base=nprecio*100/(100+iva);   
-					nbase=roundNumber(base,2);    
-					margen=100-(costo*100/nbase); 
+					base=nprecio*100/(100+iva);
+					nbase=roundNumber(base,2);
+					margen=100-(costo*100/nbase);
 					nmargen=roundNumber(margen,2);
 					$("#base" + i).val(nbase);
 					$("#precio" + i).val(nprecio);
@@ -172,11 +162,11 @@ function redon(pertenece){
 					$("#margen" + i).val(nmargen);
 				}
 			}
-		} 
+		}
 	}
 }
 
-function redonde(pertenece){ 
+function redonde(pertenece){
 	var redondeo =$("#redondeo").val();
 	var i=0;
 	var dec=parseInt(redondeo[1]);
@@ -252,7 +242,6 @@ function requeridos(load){
 		default:bloquea_precios(true);
 	}
 }
-
 
 function bloquea_precios(ban){
 	t=4;
