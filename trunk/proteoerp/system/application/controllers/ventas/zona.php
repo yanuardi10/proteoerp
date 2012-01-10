@@ -305,6 +305,11 @@ class Zona extends Controller {
 		$this->load->view('extjs/extjsven',$data);
 		
 	}
+	
+	function instala(){
+		$query="ALTER TABLE `zona` ADD COLUMN `margen` DECIMAL(5,2) UNSIGNED NOT NULL DEFAULT '0.00'";
+		$this->db->simple_query();	
+	}
 
 }
 ?>

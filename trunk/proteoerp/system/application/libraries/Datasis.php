@@ -456,7 +456,7 @@ class Datasis {
 		// REVISA SI EXISTE EN ITSINV
 		$mHAY = $this->dameval("SELECT COUNT(*) FROM itsinv WHERE codigo=".$codigoesc." AND alma='$mALMA'");
 		if ( $mHAY == 0 ){
-			$mSQL = $this->dameval("INSERT INTO itsinv SET codigo=".$codigoesc.", alma='$mALMA', existen=0");
+			$mSQL = $this->db->query("INSERT INTO itsinv SET codigo=".$codigoesc.", alma='$mALMA', existen=0");
 			$CI->db->simple_query($mSQL);
 		}
 

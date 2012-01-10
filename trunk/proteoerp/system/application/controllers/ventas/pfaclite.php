@@ -104,7 +104,7 @@ class pfaclite extends validaciones{
 		$this->load->view('view_ventanas', $data);
 	}
 
-	function dataedit(){
+	function dataedit($status='',$id=''){
 		$this->rapyd->load('dataobject', 'datadetails');
 		$this->load->helper('form');
 
@@ -242,17 +242,29 @@ class pfaclite extends validaciones{
 		
 		$accion="javascript:window.location='".site_url('ventas/pfaclite/load')."'";
 		$edit->button_status('btn_load'  ,'Subir desde Excel' ,$accion,'TL','show');
+		$edit->button_status('btn_load'  ,'Subir desde Excel' ,$accion,'TL','create');
+		$edit->button_status('btn_load'  ,'Subir desde Excel' ,$accion,'TL','modify');
 
-		$sinv=$this->db->query("SELECT a.codigo,descrip,precio1,precio2,precio3,precio4,marca,SUM(b.existen) existen,iva ,peso
-		FROM sinv a 
-		JOIN itsinv b ON a.codigo=b.codigo 
-		WHERE activo='S' AND tipo='Articulo' AND b.alma='".$vd['almacen']."' 
-		GROUP BY a.codigo 
-		ORDER BY marca");
+		if($status=='create'){
+			$sinv=$this->db->query("SELECT a.codigo,descrip,precio1,precio2,precio3,precio4,marca,SUM(b.existen) existen,iva ,peso
+			FROM sinv a 
+			JOIN itsinv b ON a.codigo=b.codigo 
+			WHERE activo='S' AND tipo='Articulo' AND b.alma='".$vd['almacen']."'  AND b.existen>0
+			GROUP BY a.codigo 
+			ORDER BY marca,descrip,peso");
+		}else{
+			$sinv=$this->db->query("SELECT a.codigo,descrip,precio1,precio2,precio3,precio4,marca,SUM(b.existen) existen,iva ,peso
+			FROM sinv a 
+			JOIN itsinv b ON a.codigo=b.codigo 
+			WHERE activo='S' AND tipo='Articulo' AND b.alma='".$vd['almacen']."' 
+			GROUP BY a.codigo 
+			ORDER BY marca,descrip,peso");
+		}
 		
 		
 		$sinv=$sinv->result_array();
 		$sinv2=array();
+		$sinviva=array();
 		foreach($sinv as $k=>$v){
 			$sinv2[$v['codigo']]=$v;
 			$sinviva['_'.$v['codigo']]=array('codigo'=>$v['codigo'],'iva'=>$v['iva']);
@@ -411,7 +423,7 @@ class pfaclite extends validaciones{
 		$form->build_form();
 
 		$data['content'] = $form->output;
-		$data['title']   = "<h1>Caragar Pedido desde Excel</h1>";
+		$data['title']   = "<h1>Cargar Pedido desde Excel</h1>";
 		//$data["head"]    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas_lite', $data);
 	}
@@ -445,6 +457,7 @@ class pfaclite extends validaciones{
 				$this->limpia($data4);
 			}
 		}else{
+			echo "El archivo no puede ser leido";
 			return "El archivo no puede ser leido";
 		}
 	}
@@ -575,7 +588,8 @@ class pfaclite extends validaciones{
 		$PFACRESERVA=$this->datasis->traevalor('PFACRESERVA','indica si un pedido descuenta de inventario los producto');
 		if($PFACRESERVA=='S'){
 			$usr=$this->session->userdata('usuario');
-			$vd=$this->datasis->damerow("SELECT vendedor,almacen FROM usuario WHERE us_codigo='$usr'");
+			$vd['vendedor']=$this->datasis->dameval("SELECT vendedor FROM usuario WHERE us_codigo='$usr'");
+			$vd['almacen'] =$this->datasis->dameval("SELECT almacen FROM usuario WHERE us_codigo='$usr'");
 			
 			$this->rapyd->load('dataobject');
 			$do = new DataObject('pfac');
@@ -594,8 +608,8 @@ class pfaclite extends validaciones{
 				for($i=0;$i < $do->count_rel('itpfac');$i++){
 					$codigoa  = $do->get_rel('itpfac','codigoa'  ,$i);
 					$cana     = $do->get_rel('itpfac','cana'     ,$i);
-					$this->datasis->sinvcarga( $codigoa, $vd['almacen'], -1*$cana);
-					$this->datasis->sinvcarga( $codigoa, 'PEDI', $cana);
+					//$this->datasis->sinvcarga( $codigoa, $vd['almacen'], -1*$cana);
+					//$this->datasis->sinvcarga( $codigoa, 'PEDI', $cana);
 				}
 			}
 			$fenvia=date("Ymd");
@@ -617,5 +631,9 @@ class pfaclite extends validaciones{
 			$data["head"]    = $this->rapyd->get_head();
 			$this->load->view('view_ventanas', $data);
 		}
+	}
+	
+	function instala(){
+		//ALTER TABLE `pfac`  ADD COLUMN `id` INT NULL AUTO_INCREMENT AFTER `fenvia`,  ADD PRIMARY KEY (`id`),  ADD UNIQUE INDEX `numero` (`numero`);
 	}
 }
