@@ -6,26 +6,17 @@ $container_tr=join("&nbsp;", $form->_button_container["TR"]);
 $container_bl=join("&nbsp;", $form->_button_container["BL"]);
 $container_br=join("&nbsp;", $form->_button_container["BR"]);
 
-if ($form->_status=='modify')
-	$container_co=join("&nbsp;", $form->_button_status[$form->_status]["CO"]);
-elseif ($form->_status=='create')
-	$container_co=join("&nbsp;", $form->_button_status[$form->_status]["CO"]);
-else
-	$container_co = '';
-
-if ($form->_status=='modify')
-	$container_it=join("&nbsp;", $form->_button_status[$form->_status]["IT"]);
-elseif ($form->_status=='create')
-	$container_it=join("&nbsp;", $form->_button_status[$form->_status]["IT"]);
-else
-	$container_it = '';
-
-if ($form->_status=='modify')
-	$container_la=join("&nbsp;", $form->_button_status[$form->_status]["LA"]);
-elseif ($form->_status=='create')
-	$container_la=join("&nbsp;", $form->_button_status[$form->_status]["LA"]);
-else
-	$container_la = '';
+if ($form->_status=='modify'){
+	$container_co=join('&nbsp;', $form->_button_status[$form->_status]['CO']);
+	$container_it=join('&nbsp;', $form->_button_status[$form->_status]['IT']);
+	$container_la=join('&nbsp;', $form->_button_status[$form->_status]['LA']);
+}elseif ($form->_status=='create'){
+	$container_co=join('&nbsp;', $form->_button_status[$form->_status]['CO']);
+	$container_it=join('&nbsp;', $form->_button_status[$form->_status]['IT']);
+	$container_la=join('&nbsp;', $form->_button_status[$form->_status]['LA']);
+}else{
+	$container_co = $container_it = $container_la = '';
+}
 
 if ($form->_status=='delete' || $form->_action=='delete' || $form->_status=='unknow_record'):
 	$meco = $form->output;
@@ -37,16 +28,14 @@ $campos=$form->template_details('sinvcombo');
 $scampos  ='<tr id="tr_sinvcombo_<#i#>">';
 $scampos .='<td class="littletablerow" align="left" >'.$campos['itcodigo']['field'].'</td>';
 $scampos .='<td class="littletablerow" align="left" >'.$campos['itdescrip']['field'].'</td>';
-$scampos .='<td class="littletablerow" align="right">'.$campos['itcantidad']['field'].  '</td>';
+$scampos .='<td class="littletablerow" align="right">'.$campos['itcantidad']['field'].'</td>';
 $scampos .='<td class="littletablerow" align="right">'.$campos['itultimo']['field'].  '</td>';
 $scampos .='<td class="littletablerow" align="right">'.$campos['itpond']['field'];
-
 $ocultos=array('precio1','formcal');
 foreach($ocultos as $obj){
 	$obj2='it'.$obj;
 	$scampos.=$campos[$obj2]['field'];
 }
-
 $scampos .= '</td>';
 $scampos .= '<td class="littletablerow"  align="center"><a href=# onclick="del_sinvcombo(<#i#>);return false;">'.img("images/delete.jpg").'</a></td></tr>';
 $campos=$form->js_escape($scampos);
@@ -57,20 +46,19 @@ $scampos2 .='<td class="littletablerow" align="left" >'.$campos2['it2codigo']['f
 $scampos2 .='<td class="littletablerow" align="left" >'.$campos2['it2descrip']['field'].'</td>';
 $scampos2 .='<td class="littletablerow" align="right">'.$campos2['it2cantidad']['field'].'</td>';
 $scampos2 .='<td class="littletablerow" align="right">'.$campos2['it2merma']['field'];
-
 $ocultos2=array('ultimo','pond','formcal','id_sinv');
 foreach($ocultos2 as $obj){
 	$obj2='it2'.$obj;
 	$scampos2.=$campos2[$obj2]['field'];
 }
-$scampos2.='</td>';
+$scampos2 .='</td>';
 $scampos2 .='<td class="littletablerow"  align="center"><a href=# onclick="del_sinvpitem(<#i#>);return false;">'.img("images/delete.jpg").'</a></td></tr>';
 $campos2=$form->js_escape($scampos2);
+
 
 $campos3   =$form->template_details('sinvplabor');
 $scampos3  ='<tr id="tr_sinvpitem_<#i#>">';
 $scampos3 .='<td class="littletablerow" align="left" >'.$campos3['it3estacion']['field'].'</td>';
-//$scampos3 .='<td class="littletablerow" align="left" >'.$campos3['it3nombre']['field'].'</td>';
 $scampos3 .='<td class="littletablerow" align="right">'.$campos3['it3actividad']['field'].'</td>';
 $scampos3 .='<td class="littletablerow" align="right">'.$campos3['it3minutos']['field'].'</td>';
 $scampos3 .='<td class="littletablerow" align="right">'.$campos3['it3segundos']['field'].'</td>';
@@ -90,38 +78,31 @@ html.ui-autocomplete {
 }
 </style>
 <script language="javascript" type="text/javascript">
-<?php
-$uri  =$this->datasis->get_uri();
-$idt  =$this->datasis->dameval("SELECT id FROM modbus WHERE idm='sinv' AND uri='$uri'");
-$modblink=site_url('/buscar/index/'.$idt.'/<#i#>');
 
-$idt  =$this->datasis->dameval("SELECT id FROM modbus WHERE idm='sinv_i' AND uri='$uri'");
-$modblink2=site_url('/buscar/index/'.$idt.'/<#i#>');
-?>
-sinvcombo_cont=<?php echo $form->max_rel_count['sinvcombo']; ?>;
-sinvpitem_cont=<?php echo $form->max_rel_count['sinvpitem']; ?>;
+sinvcombo_cont =<?php echo $form->max_rel_count['sinvcombo']; ?>;
+sinvpitem_cont =<?php echo $form->max_rel_count['sinvpitem']; ?>;
 sinvplabor_cont=<?php echo $form->max_rel_count['sinvplabor']; ?>;
 
 function ocultatab(){
-tipo=$("#tipo").val();
-if(tipo=='Combo'){
-	$("#litab7").show();
-	$("#tab7").show();
-}else{
-	$("#litab7").hide();
-	$("#tab7").hide();
-}
+	tipo=$("#tipo").val();
+	if(tipo=='Combo'){
+		$("#litab7").show();
+		$("#tab7").show();
+	}else{
+		$("#litab7").hide();
+		$("#tab7").hide();
+	}
 }
 
 $(function(){
 	ocultatab();
 	$(".inputnum").numeric(".");
-	//totalizar();
+	//totalizarcombo();
 	for(var i=0;i < <?php echo $form->max_rel_count['sinvcombo']; ?>;i++){
 		autocod(i.toString());
 	}
 	for(var i=0;i < <?php echo $form->max_rel_count['sinvpitem']; ?>;i++){
-		autocod2(i.toString());
+		autocodpitem(i.toString());
 	}
 	$('input[name^="itcantidad_"]').keypress(function(e) {
 		if(e.keyCode == 13) {
@@ -142,37 +123,7 @@ $(function(){
 	});
 });
 
-function dacodigo(nind){
-	//ind=nind.toString();
-	//var codigo = $("#itcodigo_"+ind).val();
-	//var eeval;
-	//eval('eeval= typeof invent._'+codigo);
-	////alert(eeval);
-	//var descrip='';
-	//if(eeval != "undefined"){
-	//	eval('itdescrip=invent._'+codigo+'[0]');
-	//	eval('ittipo   =invent._'+codigo+'[1]');
-	//	eval('itprecio1=invent._'+codigo+'[8]');
-	//	eval('itpond   =invent._'+codigo+'[9]');
-	//	eval('itultimo =invent._'+codigo+'[9]');
-    //
-	//	$("#itdescrip_"+ind).val(descrip);
-	//	$("#itprecio1_"+ind).val(base1);
-	//	$("#itpond_"+ind+"_val").val(pond);
-	//	$("#itultimo_"+ind).val(ultimo);
-	//}else{
-	//	$("#itdescrip_"+ind).val('');
-	//	$("#itprecio1_"+ind).val('');
-	//	$("#itpond_"+ind).val('');
-	//	$("#itultimo_"+ind).val('');
-	//}
-	//post_modbus_sinv(nind);
-}
-function importe(id){
-	totalizar();
-}
-
-function totalizar(){
+function totalizarcombo(){
 	var tota   =0;
 	var arr=$('input[name^="itcantidad_"]');
 	jQuery.each(arr, function() {
@@ -241,14 +192,13 @@ function post_modbus_sinv(nind){
 	descrip=$("#itpond_"+ind).val();
 	$("#itpond_"+ind+'_val').text(descrip);
 
-	importe(nind);
-	totalizar();
+	totalizarcombo();
 }
 
 function del_sinvcombo(id){
 	id = id.toString();
 	$('#tr_sinvcombo_'+id).remove();
-	totalizar();
+	totalizarcombo();
 }
 
 //Agrega el autocomplete
@@ -286,19 +236,9 @@ function autocod(id){
 			$('#itcantidad_'+id).select();
 			var arr  = $('#itprecio_'+id);
 			post_modbus_sinv(id);
-			importe(id);
-			totalizar();
+			totalizarcombo();
 		}
 	});
-}
-
-function modbusdepen(i){
-	var id = i.toString();
-	var link='<?=$modblink ?>';
-	link =link.replace(/<#i#>/g,id);
-	vent=window.open(link,'ventbuscarsinv','width=800,height=600,scrollbars=Yes,status=Yes,resizable=Yes,screenx=5,screeny=5');
-	vent.focus();
-	document.body.setAttribute('onUnload','vent=window.open(\'about:blank\',\'ventbuscarsinv\');vent.close();');
 }
 
 function add_sinvpitem(){
@@ -309,7 +249,8 @@ function add_sinvpitem(){
 	htm = htm.replace(/<#o#>/g,con);
 	$("#__INPL_SINVPITEM__").after(htm);
 	$("#it2cantidad_"+can).numeric(".");
-	autocod2(can);
+	$("#it2merma_"+can).numeric(".");
+	autocodpitem(can);
 	$('#it2codigo_'+can).focus();
 	$("#it2cantidad_"+can).keypress(function(e) {
 		if(e.keyCode == 13) {
@@ -322,21 +263,11 @@ function add_sinvpitem(){
 function del_sinvpitem(id){
 	id = id.toString();
 	$('#tr_sinvpitem_'+id).remove();
-	totalizar2();
+	totalizarpitem();
 }
 
-function modbusdepen2(i){
-	var id = i.toString();
-
-	var link='<?=$modblink2 ?>';
-	link =link.replace(/<#i#>/g,id);
-	vent=window.open(link,'ventbuscarsinv_i','width=800,height=600,scrollbars=Yes,status=Yes,resizable=Yes,screenx=5,screeny=5');
-	vent.focus();
-	document.body.setAttribute('onUnload','vent=window.open(\'about:blank\',\'ventbuscarsinv_i\');vent.close();');
-}
-
-function totalizar2(){
-	var tota   =0;
+function totalizarpitem(){
+	var tota   = 0;
 	var arr=$('input[name^="it2cantidad_"]');
 	jQuery.each(arr, function() {
 		nom=this.name;
@@ -347,8 +278,8 @@ function totalizar2(){
 			pond    = Number($("#it2pond_"+ind).val());
 			ultimo  = Number($("#it2ultimo_"+ind).val());
 			formcal = $("#it2formcal_"+ind).val();
-			tp      =Math.round(cana * pond  *100)/100;
-			tu      =Math.round(cana * ultimo*100)/100;
+			tp      = Math.round(cana * pond  *100)/100;
+			tu      = Math.round(cana * ultimo*100)/100;
 			//alert(cana+':'+pond+':'+ultimo+':'+formcal);
 			switch(formcal){
 			case 'P': t=tp;
@@ -356,7 +287,7 @@ function totalizar2(){
 			case 'U': t=tu;
 			break;
 			case 'M':{if(tp>tu)
-				t=tp
+				t=tp;
 				else
 				t=tu;}
 			break;
@@ -366,12 +297,14 @@ function totalizar2(){
 			tota=tota+t;
 		}
 	});
+	tota=roundNumber(tota,2);
 	$("#pond").val(tota);
 	$("#ultimo").val(tota);
-	requeridos();
+	calculos('S');
+	//requeridos();
 }
 
-function autocod2(id){
+function autocodpitem(id){
 	$('#it2codigo_'+id).autocomplete({
 		source: function( req, add){
 			$.ajax({
@@ -404,13 +337,13 @@ function autocod2(id){
 			$('#it2cantidad_'+id).val('1');
 			$('#it2cantidad_'+id).focus();
 			$('#it2cantidad_'+id).select();
-			post_modbus_sinv2(id);
-			totalizar2();
+			post_modbus_sinvpitem(id);
+			totalizarpitem();
 		}
 	});
 }
 
-function post_modbus_sinv2(nind){
+function post_modbus_sinvpitem(nind){
 	ind=nind.toString();
 
 	$("#it2precio_"+ind).empty();
@@ -428,8 +361,7 @@ function post_modbus_sinv2(nind){
 	descrip=$("#it2formcal_"+ind).val();
 	$("#it2formcal_"+ind+'_val').text(descrip);
 
-	//importe(nind);
-	totalizar2();
+	totalizarpitem();
 }
 
 function add_sinvplabor(){
@@ -453,7 +385,6 @@ function add_sinvplabor(){
 function del_sinvplabor(id){
 	id = id.toString();
 	$('#tr_sinvplabor_'+id).remove();
-	//totalizar2();
 }
 </script>
 <?php }
@@ -708,8 +639,8 @@ function del_sinvplabor(id){
 					<td class="littletablerow"><?php echo $this->datasis->traevalor('SINVDIMENCIONES','cm.') ?></td>
 				</tr>
 				<tr>
-					<td class='littletableheaderc'><?=$form->largo->label ?></td>
-					<td class="littletablerow"><?=$form->largo->output   ?></td>
+					<td class='littletableheaderc'><?php echo $form->largo->label; ?></td>
+					<td class="littletablerow"><?php echo $form->largo->output;   ?></td>
 					<td class="littletablerow"><?php echo $this->datasis->traevalor('SINVDIMENCIONES','cm.') ?></td>
 				</tr>
 			</table>
@@ -840,13 +771,13 @@ function del_sinvplabor(id){
 	<div style='overflow:auto;border: 1px solid #9AC8DA;background: #FAFAFA;height:200px'>
 		<table width='100%'>
 			<tr id='__INPL_SINVCOMBO__'>
-				<td bgcolor='#7098D0'><strong>C&oacute;digo</strong></td>
-				<td bgcolor='#7098D0'><strong>Descripci&oacute;n</strong></td>
-				<td bgcolor='#7098D0'><strong>Cantidad</strong></td>
-				<td bgcolor='#7098D0'><strong>Ultimo</strong></td>
-				<td bgcolor='#7098D0'><strong>Ponderado</strong></td>
+				<td bgcolor='#7098D0'><b>C&oacute;digo</b></td>
+				<td bgcolor='#7098D0'><b>Descripci&oacute;n</b></td>
+				<td bgcolor='#7098D0'><b>Cantidad</b></td>
+				<td bgcolor='#7098D0'><b>Ultimo</b></td>
+				<td bgcolor='#7098D0'><b>Ponderado</b></td>
 				<?php if($form->_status!='show') {?>
-				<td  bgcolor='#7098D0' align='center'><strong>&nbsp;</strong></td>
+				<td  bgcolor='#7098D0' align='center'><b>&nbsp;</b></td>
 				<?php } ?>
 			</tr>
 			<?php
@@ -864,11 +795,11 @@ function del_sinvplabor(id){
 				}
 			?>
 			<tr id='tr_sinvcombo_<?php echo $i; ?>'>
-				<td class="littletablerow" align="left" nowrap><?php echo $form->$itcodigo->output; ?></td>
-				<td class="littletablerow" align="left"       ><?php echo $form->$itdescrip->output;  ?></td>
-				<td class="littletablerow" align="right"      ><?php echo $form->$itcantidad->output;   ?></td>
-				<td class="littletablerow" align="right"      ><?php echo $form->$itultimo->output.$oculto;  ?></td>
-				<td class="littletablerow" align="right"      ><?php echo $form->$itpond->output.$oculto;  ?></td>
+				<td class="littletablerow" align="left" nowrap><?php echo $form->$itcodigo->output;       ?></td>
+				<td class="littletablerow" align="left"       ><?php echo $form->$itdescrip->output;      ?></td>
+				<td class="littletablerow" align="right"      ><?php echo $form->$itcantidad->output;     ?></td>
+				<td class="littletablerow" align="right"      ><?php echo $form->$itultimo->output;       ?></td>
+				<td class="littletablerow" align="right"      ><?php echo $form->$itpond->output.$oculto; ?></td>
 
 				<?php if($form->_status!='show') {?>
 				<td class="littletablerow" align="center">
@@ -888,12 +819,12 @@ function del_sinvplabor(id){
 	<div style='overflow:auto;border: 1px solid #9AC8DA;background: #FAFAFA;height:200px'>
 		<table width='100%'>
 			<tr id='__INPL_SINVPITEM__'>
-				<td bgcolor='#7098D0'            ><strong>C&oacute;digo     </strong></td>
-				<td bgcolor='#7098D0'            ><strong>Descripci&oacute;n</strong></td>
-				<td bgcolor='#7098D0' align=right><strong>Cantidad          </strong></td>
-				<td bgcolor='#7098D0' align=right><strong>Merma             </strong></td>
+				<td bgcolor='#7098D0'            ><b>C&oacute;digo     </b></td>
+				<td bgcolor='#7098D0'            ><b>Descripci&oacute;n</b></td>
+				<td bgcolor='#7098D0' align=right><b>Cantidad          </b></td>
+				<td bgcolor='#7098D0' align=right><b>Merma &#37;       </b></td>
 				<?php if($form->_status!='show') {?>
-					<td  bgcolor='#7098D0' align='center'><strong>&nbsp;</strong></td>
+					<td  bgcolor='#7098D0' align='center'><b>&nbsp;</b></td>
 				<?php } ?>
 			</tr>
 			<?php
@@ -911,7 +842,7 @@ function del_sinvplabor(id){
 				<td class="littletablerow" align="left" nowrap><?php echo $form->$it2codigo->output;   ?></td>
 				<td class="littletablerow" align="left"       ><?php echo $form->$it2descrip->output;  ?></td>
 				<td class="littletablerow" align="right"      ><?php echo $form->$it2cantidad->output; ?></td>
-				<td class="littletablerow" align="right"      ><?php echo $form->$it2merma->output.$form->$it2pond->output.$form->$it2ultimo->output.$form->$it2formcal->output.$form->$it2id_sinv->output;    ?></td>
+				<td class="littletablerow" align="right"      ><?php echo $form->$it2merma->output.$form->$it2pond->output.$form->$it2ultimo->output.$form->$it2formcal->output.$form->$it2id_sinv->output; ?></td>
 				<?php if($form->_status!='show'){?>
 				<td class="littletablerow" align="center">
 					<a href='#' onclick='del_sinvpitem(<?=$i ?>);return false;'><?php echo img("images/delete.jpg") ?></a>
@@ -929,12 +860,12 @@ function del_sinvplabor(id){
 	<div style='overflow:auto;border: 1px solid #9AC8DA;background: #FAFAFA;height:200px'>
 		<table width='100%'>
 			<tr id='__INPL_SINVPLABOR__'>
-				<td bgcolor='#7098D0'            ><strong>Estaci&oacute;n</strong></td>
-				<td bgcolor='#7098D0' align=right><strong>Actividad      </strong></td>
-				<td bgcolor='#7098D0' align=right><strong>Minutos        </strong></td>
-				<td bgcolor='#7098D0' align=right><strong>Segundos       </strong></td>
+				<td bgcolor='#7098D0' align='left' ><b>Estaci&oacute;n</b></td>
+				<td bgcolor='#7098D0' align='left' ><b>Actividad      </b></td>
+				<td bgcolor='#7098D0' align='right'><b>Minutos        </b></td>
+				<td bgcolor='#7098D0' align='right'><b>Segundos       </b></td>
 				<?php if($form->_status!='show') {?>
-					<td  bgcolor='#7098D0' align='center'><strong>&nbsp;</strong></td>
+					<td  bgcolor='#7098D0' align='center'><b>&nbsp;</b></td>
 				<?php } ?>
 			</tr>
 			<?php
@@ -946,13 +877,13 @@ function del_sinvplabor(id){
 				$it3segundos = "it3segundos_$i";
 			?>
 			<tr id='tr_sinvpitem_<?=$i;?>'>
-				<td class="littletablerow" align="left" nowrap><?php echo $form->$it3estacion->output;   ?></td>
-				<td class="littletablerow" align="right"      ><?php echo $form->$it3actividad->output;  ?></td>
-				<td class="littletablerow" align="right"      ><?php echo $form->$it3minutos->output;    ?></td>
-				<td class="littletablerow" align="right"      ><?php echo $form->$it3segundos->output;    ?></td>
+				<td class="littletablerow" align="left" nowrap><?php echo $form->$it3estacion->output;  ?></td>
+				<td class="littletablerow" align="right"      ><?php echo $form->$it3actividad->output; ?></td>
+				<td class="littletablerow" align="right"      ><?php echo $form->$it3minutos->output;   ?></td>
+				<td class="littletablerow" align="right"      ><?php echo $form->$it3segundos->output;  ?></td>
 				<?php if($form->_status!='show'){?>
 				<td class="littletablerow" align="center">
-					<a href='#' onclick='del_sinvplabor(<?=$i ?>);return false;'><?php echo img("images/delete.jpg") ?></a>
+					<a href='#' onclick='del_sinvplabor(<?=$i ?>);return false;'><?php echo img('images/delete.jpg') ?></a>
 				</td>
 				<?php } ?>
 			</tr>
@@ -973,7 +904,7 @@ function del_sinvplabor(id){
 			<table width='100%' border=0 >
 				<tr>
 					<td width='120' class="littletableheaderc"><?=$form->existen->label  ?></td>
-					<td class="littletablerow" align='right' ><?=$form->existen->output ?></td>
+					<td class="littletablerow" align='right'  ><?=$form->existen->output ?></td>
 				</tr>
 				<tr>
 					<td class="littletableheaderc"><?=$form->exmin->label  ?></td>
