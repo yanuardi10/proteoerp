@@ -105,6 +105,7 @@ class pfaclite extends validaciones{
 	}
 
 	function dataedit($status='',$id=''){
+
 		$this->rapyd->load('dataobject', 'datadetails');
 		$this->load->helper('form');
 
@@ -146,10 +147,10 @@ class pfaclite extends validaciones{
 		$edit->numero->apply_rules = false; //necesario cuando el campo es clave y no se pide al usuario
 		$edit->numero->when = array('show', 'modify');
 
-		$usr=$this->session->userdata('usuario');
-		$vd=$this->datasis->damerow("SELECT vendedor,almacen FROM usuario WHERE us_codigo='$usr'");
+		$usr  =$this->session->userdata('usuario');
+		$vd   =$this->datasis->damerow("SELECT vendedor,almacen FROM usuario WHERE us_codigo='$usr'");
 		$edit->cliente = new dropdownField('CLIENTE', 'cod_cli');
-		$edit->cliente->options("SELECT cliente, nombre FROM scli WHERE vendedor='".$vd['vendedor']."'  ORDER  BY nombre");//
+		$edit->cliente->options("SELECT cliente, CONCAT(' (',cliente,') ', nombre) FROM scli WHERE vendedor='".$vd['vendedor']."'  ORDER  BY nombre");//
 		
 		$edit->observa = new inputField('Observaciones', 'observa');
 		$edit->observa->size = 25;
@@ -245,6 +246,7 @@ class pfaclite extends validaciones{
 		$edit->button_status('btn_load'  ,'Subir desde Excel' ,$accion,'TL','create');
 		$edit->button_status('btn_load'  ,'Subir desde Excel' ,$accion,'TL','modify');
 
+		
 		if($status=='create'){
 			$sinv=$this->db->query("SELECT a.codigo,descrip,precio1,precio2,precio3,precio4,marca,SUM(b.existen) existen,iva ,peso
 			FROM sinv a 
@@ -253,10 +255,11 @@ class pfaclite extends validaciones{
 			GROUP BY a.codigo 
 			ORDER BY marca,descrip,peso");
 		}else{
+			$q="AND b.alma='".$vd['almacen']."'";
 			$sinv=$this->db->query("SELECT a.codigo,descrip,precio1,precio2,precio3,precio4,marca,SUM(b.existen) existen,iva ,peso
 			FROM sinv a 
 			JOIN itsinv b ON a.codigo=b.codigo 
-			WHERE activo='S' AND tipo='Articulo' AND b.alma='".$vd['almacen']."' 
+			WHERE activo='S' AND tipo='Articulo' ".(strlen($vd['vendedor'])>0?$q:'')."
 			GROUP BY a.codigo 
 			ORDER BY marca,descrip,peso");
 		}
@@ -322,7 +325,7 @@ class pfaclite extends validaciones{
 		$usr=$this->session->userdata('usuario');
 		$vd=$this->datasis->dameval("SELECT vendedor FROM usuario WHERE us_codigo='$usr'");
 		$do->set('vd',$vd);
-		$sinv=$this->db->query("SELECT codigo,iva FROM sinv ORDER BY marca");
+		$sinv=$this->db->query("SELECT codigo,iva,precio1 FROM sinv ORDER BY marca");
 		$sinv=$sinv->result_array();
 		$sinv2=array();
 		foreach($sinv as $k=>$v){
@@ -419,7 +422,7 @@ class pfaclite extends validaciones{
 		$form->archivo->delete_file   =false;
 		$form->archivo->rule   ="required";
 
-		$form->submit("btnsubmit","Guardar");
+		$form->submit("btnsubmit","Enviar");
 		$form->build_form();
 
 		$data['content'] = $form->output;
@@ -475,17 +478,8 @@ class pfaclite extends validaciones{
 		}
 		unset($inv);
 		
-		$scli2=$this->db->query("SELECT * FROM scli ");
-		$scli2=$scli2->result_array();
-		$scli=array();
-		foreach($scli2 as $k=>$v){
-			$scli[$v['codigo']]=$v;
-		}
-		unset($scli2);
-		
-		
 		foreach($data as $hojak=>$hoja){
-			$lose[$hojak]['cod_cli']=$data[$hojak][2][12];
+			$lose[$hojak]['cod_cli']=$data[$hojak][3][12];
 			foreach($hoja as $lineak=>$linea){
 				if(array_key_exists($linea[8],$sinv2)>0 && $linea[9]>0 && $linea[6]>0){
 					$line++;
@@ -514,20 +508,26 @@ class pfaclite extends validaciones{
 				}
 			}
 		}
+		
 		$i=0;
 		$this->genesal=false;
 		$error='';
 		$usr=$this->session->userdata('usuario');
+		
 		foreach($lose as $hoja=>$cliente){
 			$itpfac         =array();
+			$cod_clie       =$this->db->escape($cliente['cod_cli']);
+			$scli           =$this->datasis->damerow("SELECT * FROM scli WHERE cliente=$cod_clie");
+			$vd             =$this->datasis->dameval("SELECT vendedor FROM usuario WHERE us_codigo='$usr'");
+			$pfac['vd']     =$vd;
 			$pfac['cod_cli']=$cliente['cod_cli'];
 			$pfac['numero'] =$this->datasis->fprox_numero('npfac');	
 			$pfac['transac']=$this->datasis->fprox_numero('ntransac');	
 			$pfac['direc']  =$scli['dire11'].$scli['dire12'];
 			$pfac['dire1']  =$scli['dire21'].$scli['dire22'];
-			$pfac['fecha']  =date('%Y%m%d');
+			$pfac['fecha']  =date('Ymd');
 			$pfac['nombre'] =$scli['nombre'];
-			$pfac['rifci']  =$scli['refci'];
+			$pfac['rifci']  =$scli['rifci'];
 			$pfac['usuario']=$usr;
 			$pfac['estampa']=date('%Y%m%d');
 			
@@ -595,29 +595,39 @@ class pfaclite extends validaciones{
 			$do = new DataObject('pfac');
 			$do->rel_one_to_many('itpfac', 'itpfac', array('numero' => 'numa'));
 			$do->load($id);
-
+			
+			$sinv=$this->db->query("SELECT * FROM sinv");
+			$sinv=$sinv->result_array();
+			$sinv2=array();
+			$sinviva=array();
+			foreach($sinv as $k=>$v){
+				$sinv2[$v['codigo']]=$v;
+			}
+			$sinv=$sinv2;
+			unset($sinv2);
+	
 			for($i=0;$i < $do->count_rel('itpfac');$i++){
 				$codigoa  = $do->get_rel('itpfac','codigoa'  ,$i);
 				$cana     = $do->get_rel('itpfac','cana'     ,$i);
+				$preca    = $do->get_rel('itpfac','preca'    ,$i);
 				$existen  =$this->datasis->dameval("SELECT existen FROM itsinv WHERE alma='".$vd['almacen']."' AND codigo='$codigoa'");
-				if(!($existen>$cana)){
-					$error.="ERROR. La cantidad solicitada($cana) es mayor a la existente ($existen).</br>";
+				if($cana>$existen){
+					$error.="ERROR. La cantidad solicitada(".nformat($cana).") es mayor a la existente (".nformat($existen).") para ($codigoa).</br>";
 				}
+				if(round($preca,2)!=round($sinv[$codigoa]['precio1'],2))
+				$error.="ERROR. El precio para el producto ($codigoa) cambio. por favor corrijalo ó presione el boton modificar y luego guardar. el sistema los actualizara en ese momento";
 			}
 			if(empty($error)){
 				for($i=0;$i < $do->count_rel('itpfac');$i++){
 					$codigoa  = $do->get_rel('itpfac','codigoa'  ,$i);
 					$cana     = $do->get_rel('itpfac','cana'     ,$i);
-					//$this->datasis->sinvcarga( $codigoa, $vd['almacen'], -1*$cana);
-					//$this->datasis->sinvcarga( $codigoa, 'PEDI', $cana);
+					$this->datasis->sinvcarga( $codigoa, $vd['almacen'], -1*$cana);
+					$this->datasis->sinvcarga( $codigoa, 'PEDI', $cana);
 				}
 			}
 			$fenvia=date("Ymd");
 			$do->set('reserva','S');
 			$do->set('fenvia' ,$fenvia);
-			
-			
-			
 		}
 		if(empty($error)){
 			$do->save();
@@ -633,7 +643,9 @@ class pfaclite extends validaciones{
 		}
 	}
 	
-	function instala(){
-		//ALTER TABLE `pfac`  ADD COLUMN `id` INT NULL AUTO_INCREMENT AFTER `fenvia`,  ADD PRIMARY KEY (`id`),  ADD UNIQUE INDEX `numero` (`numero`);
+	function instalar(){
+		$query="ALTER TABLE `pfac`  ADD COLUMN `id` INT NULL AUTO_INCREMENT AFTER `fenvia`,
+		  ADD PRIMARY KEY (`id`),  ADD UNIQUE INDEX `numero` (`numero`)";
+		$this->db->simple_query($query);
 	}
 }
