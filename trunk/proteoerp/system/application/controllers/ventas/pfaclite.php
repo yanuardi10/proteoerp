@@ -247,23 +247,13 @@ class pfaclite extends validaciones{
 		$edit->button_status('btn_load'  ,'Subir desde Excel' ,$accion,'TL','modify');
 
 		
-		if($status=='create'){
-			$sinv=$this->db->query("SELECT a.codigo,descrip,precio1,precio2,precio3,precio4,marca,SUM(b.existen) existen,iva ,peso
-			FROM sinv a 
-			JOIN itsinv b ON a.codigo=b.codigo 
-			WHERE activo='S' AND tipo='Articulo' AND b.alma='".$vd['almacen']."'  AND b.existen>0
-			GROUP BY a.codigo 
-			ORDER BY marca,descrip,peso");
-		}else{
-			$q="AND b.alma='".$vd['almacen']."'";
-			$sinv=$this->db->query("SELECT a.codigo,descrip,precio1,precio2,precio3,precio4,marca,SUM(b.existen) existen,iva ,peso
-			FROM sinv a 
-			JOIN itsinv b ON a.codigo=b.codigo 
-			WHERE activo='S' AND tipo='Articulo' ".(strlen($vd['vendedor'])>0?$q:'')."
-			GROUP BY a.codigo 
-			ORDER BY marca,descrip,peso");
-		}
-		
+		$q="AND b.alma='".$vd['almacen']."'";
+		$sinv=$this->db->query("SELECT a.codigo,descrip,precio1,precio2,precio3,precio4,marca,SUM(b.existen) existen,iva ,peso
+		FROM sinv a 
+		JOIN itsinv b ON a.codigo=b.codigo 
+		WHERE activo='S' AND tipo='Articulo' ".(strlen($vd['vendedor'])>0?$q:'')."
+		GROUP BY a.codigo 
+		ORDER BY marca,descrip,peso");
 		
 		$sinv=$sinv->result_array();
 		$sinv2=array();
@@ -610,10 +600,10 @@ class pfaclite extends validaciones{
 				$codigoa  = $do->get_rel('itpfac','codigoa'  ,$i);
 				$cana     = $do->get_rel('itpfac','cana'     ,$i);
 				$preca    = $do->get_rel('itpfac','preca'    ,$i);
-				$existen  =$this->datasis->dameval("SELECT existen FROM itsinv WHERE alma='".$vd['almacen']."' AND codigo='$codigoa'");
-				if($cana>$existen){
-					$error.="ERROR. La cantidad solicitada(".nformat($cana).") es mayor a la existente (".nformat($existen).") para ($codigoa).</br>";
-				}
+				//$existen  =$this->datasis->dameval("SELECT existen FROM itsinv WHERE alma='".$vd['almacen']."' AND codigo='$codigoa'");
+				//if($cana>$existen){
+				//	$error.="ERROR. La cantidad solicitada(".nformat($cana).") es mayor a la existente (".nformat($existen).") para ($codigoa).</br>";
+				//}
 				if(round($preca,2)!=round($sinv[$codigoa]['precio1'],2))
 				$error.="ERROR. El precio para el producto ($codigoa) cambio. por favor corrijalo ó presione el boton modificar y luego guardar. el sistema los actualizara en ese momento";
 			}
