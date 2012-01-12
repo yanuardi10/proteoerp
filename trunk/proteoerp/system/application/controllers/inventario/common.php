@@ -309,7 +309,7 @@ class Common extends controller {
 			if ($query->num_rows() != 0){
 				$row = $query->row();
 				$cod_bar=$row->codigo;
-				
+
 				$mSQL  =$mSQL_p." WHERE codigo='${cod_bar}' LIMIT 1";
 				$query = $this->db->query($mSQL);
 				if($query->num_rows() == 0)
@@ -394,6 +394,22 @@ class Common extends controller {
 			$codigo =$this->datasis->dameval("SELECT codigo FROM sinv WHERE codigo=$barrase LIMIT 1");
 		}
 		echo $codigo;
+	}
+
+	function get_prod(){
+		$barras =$this->input->post('barras');
+		$barrase=$this->db->escape($barras);
+		$row=$this->datasis->damerow("SELECT descrip,codigo,serial FROM sinv WHERE barras=$barrase LIMIT 1");
+		$pivot=array();
+		if(!empty($row)){
+			$pivot['cana']   = 1;
+			$pivot['descrip']= $row['descrip'];
+			$pivot['codigo'] = $row['codigo'] ;
+			$pivot['serial'] = $row['serial'] ;
+		}else{
+			$pivot['cana'] = 0;
+		}
+		echo json_encode($pivot);
 	}
 
 	function get_descrip(){

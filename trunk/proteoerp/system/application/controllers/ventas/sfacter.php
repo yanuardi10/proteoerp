@@ -282,11 +282,12 @@ class sfacter extends validaciones {
 		//$edit->tipo_doc->option('D','Devoluci&oacute;n');
 		$edit->tipo_doc->style='width:200px;';
 		$edit->tipo_doc->size = 5;
-		$edit->cliente->rule='required';
+		$edit->tipo_doc->rule='required';
 
 		$edit->vd = new  dropdownField ('Vendedor', 'vd');
 		$edit->vd->options('SELECT vendedor, CONCAT(vendedor,\' \',nombre) nombre FROM vend ORDER BY vendedor');
 		$edit->vd->style='width:200px;';
+		$edit->vd->insertValue=$this->secu->getvendedor();
 		$edit->vd->size = 5;
 
 		$edit->numero = new inputField('N&uacute;mero', 'numero');
@@ -494,6 +495,11 @@ class sfacter extends validaciones {
 		$transac = $this->datasis->fprox_numero('ntransa');
 		$do->set('numero',$numero);
 		$do->set('transac',$transac);
+		$alma = $this->secu->getalmacen();
+		if(strlen($alma)<=0){
+			$alma = $this->datasis->traevalor('ALMACEN');
+		}
+		$do->set('almacen',$alma);
 		$con=$this->db->query("SELECT tasa,redutasa,sobretasa FROM civa ORDER BY fecha desc LIMIT 1");
 		$t=$con->row('tasa');$rt=$con->row('redutasa');$st=$con->row('sobretasa');
 
