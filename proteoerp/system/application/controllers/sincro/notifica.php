@@ -9,6 +9,7 @@ class notifica extends controller {
 
 	function notifica(){
 		parent::Controller();
+		$this->load->library('rapyd');
 		$this->config->load('notifica');
 		$this->error='';
 		$this->adjuntos=null;
@@ -32,7 +33,6 @@ class notifica extends controller {
 	}
 
 	function sms(){
-		$this->load->library('rapyd');
 		$this->datasis->modulo_id('923',1);
 		$this->rapyd->load('dataform');
 
@@ -84,7 +84,6 @@ class notifica extends controller {
 	}
 
 	function email(){
-		$this->load->library('rapyd');
 		$this->datasis->modulo_id('923',1);
 		$this->rapyd->load('dataform');
 
@@ -144,7 +143,6 @@ class notifica extends controller {
 	}
 
 	function eventos(){
-		$this->load->library('rapyd');
 		$this->datasis->modulo_id('923',1);
 
 		$this->rapyd->load('datafilter','datagrid');
@@ -271,7 +269,6 @@ class notifica extends controller {
 	}
 
 	function dataediteventos(){
-		$this->load->library('rapyd');
 		$this->datasis->modulo_id('923',1);
 		$this->rapyd->load('dataedit');
 
