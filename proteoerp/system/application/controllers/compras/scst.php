@@ -223,6 +223,7 @@ class Scst extends Controller {
 		$edit->pre_process('insert' ,'_pre_insert');
 		$edit->pre_process('update' ,'_pre_update');
 		$edit->pre_process('delete' ,'_pre_delete');
+
 		$edit->post_process('insert','_post_insert');
 		$edit->post_process('update','_post_update');
 		$edit->post_process('delete','_post_delete');
@@ -451,13 +452,13 @@ class Scst extends Controller {
 			$edit->button_status('btn_actuali','Actualizar'     ,$accion,'TR','show');
 			$edit->button_status('btn_precio' ,'Asignar precios',$accio2,'TR','show');
 			$edit->button_status('btn_cxp'    ,'Ajuste CxP'     ,$accio3,'TR','show');
-			$edit->buttons('modify');
+			$edit->buttons('save', 'delete','modify', 'exit','add_rel','add');
 		} else {
 			$control=$this->rapyd->uri->get_edited_id();
 			$accion="javascript:window.location='".site_url('compras/scst/reversar/'.$control)."'";
 			$edit->button_status('btn_reversar','Reversar'     ,$accion,'TR','show');
+			$edit->buttons( 'exit');
 		}
-		$edit->buttons('save', 'delete','modify', 'exit','add_rel','add');
 		$edit->build();
 
 		$smenu['link']  =  barra_menu('201');
@@ -840,7 +841,7 @@ class Scst extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
-	function _actualizar($control,$cprecio,$actuali=null){
+	function _actualizar($control, $cprecio, $actuali=null){
 		$error =0;
 		$pasa=$this->datasis->dameval('SELECT COUNT(*) FROM scst WHERE actuali>=fecha AND control='.$this->db->escape($control));
 
@@ -892,7 +893,7 @@ class Scst extends Controller {
 
 						if($itrow->precio1>0 && $itrow->precio2>0 && $itrow->precio3>0 && $itrow->precio4>0){
 							//Cambio de precios
-							if(!$cprecio){
+							if($cprecio){
 								$mSQL='UPDATE sinv SET 
 								precio1='.$this->db->escape($itrow->precio1).',
 								precio2='.$this->db->escape($itrow->precio2).',
