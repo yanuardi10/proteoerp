@@ -47,7 +47,12 @@ class pfaclite extends validaciones{
 
 		$boton = $this->datasis->modbus($scli);
 
+		$usr  =$this->session->userdata('usuario');
+		$vd   =$this->datasis->damerow("SELECT vendedor,almacen FROM usuario WHERE us_codigo='$usr'");
+
 		$filter = new DataFilter('Filtro de Pedidos Clientes', 'pfac');
+		if(strlen($vd['vendedor'])>0)
+		$filter->db->where('vd',$vd['vendedor']);
 
 		$filter->fechad = new dateonlyField('Desde', 'fechad');
 		$filter->fechah = new dateonlyField('Hasta', 'fechah');
@@ -76,17 +81,24 @@ class pfaclite extends validaciones{
 		$uri = anchor('ventas/pfaclite/dataedit/show/<#id#>', '<#numero#>');
 		$uri2 = anchor_popup('formatos/verhtml/PFAC/<#numero#>', 'Ver HTML', $atts);
 		$uri3 = anchor_popup('ventas/sfac/creadpfacf/<#numero#>', 'Facturar', $atts2);
+		
 
 		$grid = new DataGrid('');
 		$grid->order_by('numero', 'desc');
 		$grid->per_page = 50;
 
 		//$grid->column('Vista'    , $uri2, "align='center'");
+		
+		if(!(strlen($vd['vendedor'])>0))
+		$grid->column_orderby('Facturar'     , $uri3,'numero');
 		$grid->column_orderby('N&uacute;mero', $uri ,'numero');
 		$grid->column_orderby("Fecha"        , '<dbdate_to_human><#fecha#></dbdate_to_human>','fecha', "align='center'");
 		$grid->column_orderby("Cliente"      , 'cod_cli','cod_cli');
-		$grid->column_orderby("Nombre"       , 'nombre','nombre');
+		$grid->column_orderby("Nombre"       , 'nombre' ,'nombre');
+		if(!(strlen($vd['vendedor'])>0))
+		$grid->column_orderby("Vendedor"     , 'vd'     ,'vd');
 		$grid->column_orderby('Total'        , '<nformat><#totalg#></nformat>', "totalg", "align=right");
+		$grid->column_orderby('Estado'       , 'reserva' ,'reserva');
 
 		$grid->add('ventas/pfaclite/dataedit/create');
 		$grid->build();
@@ -246,14 +258,22 @@ class pfaclite extends validaciones{
 		$edit->button_status('btn_load'  ,'Subir desde Excel' ,$accion,'TL','create');
 		$edit->button_status('btn_load'  ,'Subir desde Excel' ,$accion,'TL','modify');
 
-		
-		$q="AND b.alma='".$vd['almacen']."'";
-		$sinv=$this->db->query("SELECT a.codigo,descrip,precio1,precio2,precio3,precio4,marca,SUM(b.existen) existen,iva ,peso
-		FROM sinv a 
-		JOIN itsinv b ON a.codigo=b.codigo 
-		WHERE activo='S' AND tipo='Articulo' ".(strlen($vd['vendedor'])>0?$q:'')."
-		GROUP BY a.codigo 
-		ORDER BY marca,descrip,peso");
+		if($status=='create'){
+				$sinv=$this->db->query("SELECT a.codigo,descrip,precio1,precio2,precio3,precio4,marca,SUM(b.existen) existen,iva ,peso
+				FROM sinv a 
+				JOIN itsinv b ON a.codigo=b.codigo 
+				WHERE activo='S' AND tipo='Articulo' AND b.alma='".$vd['almacen']."'  AND b.existen>0
+				GROUP BY a.codigo 
+				ORDER BY marca,descrip,peso");
+		}else{
+				$q="AND b.alma='".$vd['almacen']."'";
+				$sinv=$this->db->query("SELECT a.codigo,descrip,precio1,precio2,precio3,precio4,marca,SUM(b.existen) existen,iva ,peso
+				FROM sinv a 
+				JOIN itsinv b ON a.codigo=b.codigo 
+				WHERE activo='S' AND tipo='Articulo' ".(strlen($vd['vendedor'])>0?$q:'')."
+				GROUP BY a.codigo 
+				ORDER BY marca,descrip,peso");
+		}
 		
 		$sinv=$sinv->result_array();
 		$sinv2=array();
@@ -426,7 +446,7 @@ class pfaclite extends validaciones{
 		$type='';
 		if(isset($_FILES['archivoUserFile']['type']))$type=$_FILES['archivoUserFile']['type'];
 		//print_r($_FILES);
-		if( $type=='application/vnd.ms-excel'){
+		if($type=='application/vnd.ms-excel'){
 			$name=$_FILES['archivoUserFile']['name'];
 			$dir=".././".$name;
 			$name=$_FILES['archivoUserFile']['name'];
@@ -469,7 +489,7 @@ class pfaclite extends validaciones{
 		unset($inv);
 		
 		foreach($data as $hojak=>$hoja){
-			$lose[$hojak]['cod_cli']=$data[$hojak][3][12];
+			$lose[$hojak]['cod_cli']=$data[$hojak][4][12];
 			foreach($hoja as $lineak=>$linea){
 				if(array_key_exists($linea[8],$sinv2)>0 && $linea[9]>0 && $linea[6]>0){
 					$line++;
@@ -522,48 +542,51 @@ class pfaclite extends validaciones{
 			$pfac['estampa']=date('%Y%m%d');
 			
 			$totals=$iva=0;
-			foreach($las9[$hoja] as $linea){
-				if(array_key_exists($linea[8],$sinv2)>0 && $linea[9]>0 && $linea[6]>0){
-					$itpfac=array(
-						'cana'      =>$linea['9'],
-						'preca'     =>$linea['6'],
-						'codigoa'   =>$linea['8'],
-						'iva'       =>$sinv['iva'],
-						'tota'      =>round($linea['9']*$linea['6'],2),
-						'numa'      =>$pfac['numero'],
-						'desca'     =>$sinv2[$linea[8]]['descrip'],
-						'usuario'   =>$usr,
-						'estampa'   =>date('%Y%m%d')
-					);
-					$totals +=round($linea['9']*$linea['6'],2);
-					$iva    +=round($totals*$sinv['iva']/100,2);
-					$this->db->insert('itpfac'  ,$itpfac);
+			if(count($scli)>0){
+				foreach($las9[$hoja] as $linea){
+					if(array_key_exists($linea[8],$sinv2)>0 && $linea[9]>0 && $linea[6]>0){
+						$itpfac=array(
+							'cana'      =>$linea['9'],
+							'preca'     =>$linea['6'],
+							'codigoa'   =>$linea['8'],
+							'iva'       =>$sinv['iva'],
+							'tota'      =>round($linea['9']*$linea['6'],2),
+							'numa'      =>$pfac['numero'],
+							'desca'     =>$sinv2[$linea[8]]['descrip'],
+							'usuario'   =>$usr,
+							'estampa'   =>date('%Y%m%d')
+						);
+						$totals +=round($linea['9']*$linea['6'],2);
+						$iva    +=round($totals*$sinv['iva']/100,2);
+						$this->db->insert('itpfac'  ,$itpfac);
+					}
+					
+					if(array_key_exists($linea[18],$sinv2)>0 && $linea[19]>0 && $linea[16]>0){
+						$itpfac=array(
+							'cana'      =>$linea['19'],
+							'preca'     =>$linea['16'],
+							'codigoa'   =>$linea['18'],
+							'iva'       =>$sinv['iva'],						
+							'tota'      =>round($linea['19']*$linea['16'],2),
+							'numa'      =>$pfac['numero'],
+							'desca'     =>$sinv2[$linea[8]]['descrip'],
+							'usuario'   =>$usr,
+							'estampa'   =>date('%Y%m%d')
+						);
+						$totals +=round($linea['19']*$linea['16'],2);
+						$iva    +=round($totals*$sinv['iva']/100,2);
+						$this->db->insert('itpfac'  ,$itpfac);
+					}
 				}
-				
-				if(array_key_exists($linea[18],$sinv2)>0 && $linea[19]>0 && $linea[16]>0){
-					$itpfac=array(
-						'cana'      =>$linea['19'],
-						'preca'     =>$linea['16'],
-						'codigoa'   =>$linea['18'],
-						'iva'       =>$sinv['iva'],						
-						'tota'      =>round($linea['19']*$linea['16'],2),
-						'numa'      =>$pfac['numero'],
-						'desca'     =>$sinv2[$linea[8]]['descrip'],
-						'usuario'   =>$usr,
-						'estampa'   =>date('%Y%m%d')
-					);
-					$totals +=round($linea['19']*$linea['16'],2);
-					$iva    +=round($totals*$sinv['iva']/100,2);
-					$this->db->insert('itpfac'  ,$itpfac);
-				}
-			}
-			$totalg +=round($totals+$iva/100,2);
-			$pfac['totalg']=$totalg;
-			$pfac['totals']=$totals;
-			$pfac['iva']   =$iva;
 			
-			$this->db->insert('pfac',$pfac);
-			$id     =$this->db->insert_id();
+				$totalg +=round($totals+$iva/100,2);
+				$pfac['totalg']=$totalg;
+				$pfac['totals']=$totals;
+				$pfac['iva']   =$iva;
+				
+				$this->db->insert('pfac',$pfac);
+				$id     =$this->db->insert_id();
+			}
 		}
 		echo $error;
 	

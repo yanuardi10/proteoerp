@@ -1653,7 +1653,7 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->it3estacion->option('','Seleccionar');
 		$edit->it3estacion->options('SELECT estacion,CONCAT(estacion,\'-\',nombre) AS lab FROM esta ORDER BY estacion');
 		$edit->it3estacion->style  = 'width:250px;';
-		$edit->it3estacion->rule   = 'required';
+//		$edit->it3estacion->rule   = 'required';
 		$edit->it3estacion->db_name = 'estacion';
 		$edit->it3estacion->rel_id  = 'sinvplabor';
 
