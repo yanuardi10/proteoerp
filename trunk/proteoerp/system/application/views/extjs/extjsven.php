@@ -192,8 +192,8 @@ Ext.Ajax.request({
 							return;
 						}
 					}
-					//form.reset();
-					//this.onReset();
+					form.reset();
+					this.onReset();
 				},
 				onReset: function(){
 					this.setActiveRecord(null);

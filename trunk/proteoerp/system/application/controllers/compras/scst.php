@@ -9,14 +9,10 @@ class Scst extends Controller {
 	}
 
 	function index(){
-		//$this->db->simple_query("DELETE FROM itscst WHERE control IN (SELECT control FROM scst a WHERE LENGTH(a.transac)=0 or a.transac is null)");
-		//$this->db->simple_query("DELETE FROM scst a WHERE LENGTH(a.transac)=0 or a.transac is null");
-		//redirect('compras/scst/datafilter');
 		redirect('compras/scst/extgrid');
-		//$this->scstextjs();
 
 	}
-	
+
 	
 	function datafilter(){
 		//redirect('compras/scst/extgrid');
@@ -1722,7 +1718,7 @@ function renderSinv(value, p, record) {
 					handler: function(selModel, selections){
 						var selection = gridMaest.getView().getSelectionModel().getSelection()[0];
 						gridMaest.down('#delete').setDisabled(selections.length === 0);
-						window.open(urlApp+'compras/scst/dataedit/modify/'+selection.data.control, '_blank', 'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys);
+						window.open(urlApp+'compras/scst/dataedit/show/'+selection.data.control, '_blank', 'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys);
 					}
 				},{
 					iconCls: 'icon-delete',
@@ -1751,7 +1747,6 @@ function renderSinv(value, p, record) {
 			]
 		}		
 		";
-
 
 
 		$grid2 = ",{

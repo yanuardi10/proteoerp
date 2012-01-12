@@ -337,7 +337,6 @@ class smov extends Controller {
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = heading($this->tits);
 		$this->load->view('view_ventanas', $data);
-
 	}
 
 	function sfacreiva(){
@@ -543,4 +542,261 @@ class smov extends Controller {
 		$data['ncredito']   ='';
 	}
 
+	function grid(){
+		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']   :  0;
+		$limit   = isset($_REQUEST['limit'])  ? $_REQUEST['limit']   : 50;
+		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']    : '';
+		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
+
+		$where = $this->datasis->extjsfiltro($filters,'smov');
+		$this->db->_protect_identifiers=false;
+		$this->db->select('*');
+		$this->db->from('smov');
+
+		if (strlen($where)>1){
+			$this->db->where($where);
+		}
+
+		if ( $sort == '') $this->db->order_by( 'fecha', 'desc' );
+
+		$sort = json_decode($sort, true);
+		for ($i=0;$i<count($sort);$i++) {
+			$this->db->order_by($sort[$i]['property'],$sort[$i]['direction']);
+		}
+
+		$this->db->limit($limit, $start);
+
+		$query = $this->db->get();
+		$results = $query->num_rows();
+
+		$arr = $this->datasis->codificautf8($query->result_array());
+		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
+	}
+
+	function griditsmov(){
+		$transac   = isset($_REQUEST['transac'])  ? $_REQUEST['transac']  :  0;
+		$tipo_doc  = isset($_REQUEST['tipo_doc']) ? $_REQUEST['tipo_doc'] :  0;
+		$numero    = isset($_REQUEST['numero'])   ? $_REQUEST['numero']   :  0;
+		$cod_cli   = isset($_REQUEST['cod_cli'])  ? $_REQUEST['cod_cli']  :  0;
+		
+		if ($transac == 0 ){
+			$transac = $this->datasis->dameval("SELECT MAX(transac) FROM smov")  ;
+		}
+
+		$mSQL = "
+SELECT * FROM itccli WHERE transac='$transac'
+UNION ALL 
+SELECT * FROM itccli WHERE cod_cli='$cod_cli' AND numero='$numero' AND tipo_doc='$tipo_doc' AND transac!='$transac'
+UNION ALL
+SELECT * FROM itccli WHERE cod_cli='$cod_cli' AND numccli='$numero' AND tipoccli='$tipo_doc' AND transac!='$transac'
+ORDER BY estampa
+";
+	
+		$query = $this->db->query($mSQL);
+		$results =  0;
+		$mSQL = '';
+		$arr = $this->datasis->codificautf8($query->result_array());
+		echo '{success:true, message:"Loaded data"'.$mSQL.' ,results:'. $results.', data:'.json_encode($arr).'}';
+	}
+
+	function sclibu(){
+		$control = $this->uri->segment(4);
+		$id = $this->datasis->dameval("SELECT b.id FROM smov a JOIN sprv b ON a.proveed=b.proveed WHERE control='$control'");
+		redirect('finanzas/sprv/dataedit/show/'.$id);
+	}
+
+	function tabla() {
+		$transac  = isset($_REQUEST['transac'])  ? $_REQUEST['transac']  :  0;
+		$cod_cli  = isset($_REQUEST['cod_cli'])  ? $_REQUEST['cod_cli']  :  0;
+		$numero   = isset($_REQUEST['numero'])   ? $_REQUEST['numero']   :  0;
+		$tipo_doc = isset($_REQUEST['tipo_doc']) ? $_REQUEST['tipo_doc'] :  0;
+
+		$mSQL = "SELECT cod_prv, MID(nombre,1,25) nombre, tipo_doc, numero, monto, abonos
+			FROM sprm WHERE transac='$transac' ORDER BY cod_prv ";
+		$query = $this->db->query($mSQL);
+		$codcli = 'XXXXXXXXXXXXXXXX';
+		$salida = '';
+		$saldo  = 0;
+		if ( $query->num_rows() > 0 ){
+			$salida = "<br><table width='100%' border=1>";
+			$salida .= "<tr bgcolor='#e7e3e7'><td>Tp</td><td align='center'>Numero</td><td align='center'>Monto</td></tr>";
+			foreach ($query->result_array() as $row)
+			{
+				if ( $codcli != $row['cod_prv']){
+					$codcli = $row['cod_prv'];
+					$salida .= "<tr bgcolor='#c7d3c7'>";
+					$salida .= "<td colspan=4>".trim($row['nombre']). "</td>";
+					$salida .= "</tr>";	
+				}
+				if ( $row['tipo_doc'] == 'FC' ) {
+					$saldo = $row['monto']-$row['abonos'];
+				}
+				$salida .= "<tr>";
+				$salida .= "<td>".$row['tipo_doc']."</td>";
+				$salida .= "<td>".$row['numero'].  "</td>";
+				$salida .= "<td align='right'>".nformat($row['monto']).   "</td>";
+				$salida .= "</tr>";
+			}
+			$salida .= "<tr bgcolor='#d7c3c7'><td colspan='4' align='center'>Saldo : ".nformat($saldo). "</td></tr>";
+			$salida .= "</table>";
+		}
+
+		$mSQL = "SELECT cod_cli, MID(nombre,1,25) nombre, tipo_doc, numero, monto, abonos
+			FROM smov WHERE transac='$transac' ORDER BY cod_cli ";
+		$query = $this->db->query($mSQL);
+		$codcli = 'XXXXXXXXXXXXXXXX';
+		$saldo = 0;
+		if ( $query->num_rows() > 0 ){
+			$salida .= "<br><table width='100%' border=1>";
+			$salida .= "<tr bgcolor='#e7e3e7'><td>Tp</td><td align='center'>Numero</td><td align='center'>Monto</td></tr>";
+			foreach ($query->result_array() as $row)
+			{
+				if ( $codcli != $row['cod_cli']){
+					$codcli = $row['cod_cli'];
+					$salida .= "<tr bgcolor='#c7d3c7'>";
+					$salida .= "<td colspan=4>".trim($row['nombre']). "</td>";
+					$salida .= "</tr>";	
+				}
+				if ( $row['tipo_doc'] == 'FC' ) {
+					$saldo = $row['monto']-$row['abonos'];
+				}
+				$salida .= "<tr>";
+				$salida .= "<td>".$row['tipo_doc']."</td>";
+				$salida .= "<td>".$row['numero'].  "</td>";
+				$salida .= "<td align='right'>".nformat($row['monto']).   "</td>";
+				$salida .= "</tr>";
+			}
+			$salida .= "<tr bgcolor='#d7c3c7'><td colspan='4' align='center'>Saldo : ".nformat($saldo). "</td></tr>";
+			$salida .= "</table>";
+		}
+
+
+
+		//cod_cli, MID(nombre,1,25) nombre, tipo_doc, numero, monto, abonos
+		//Cruce de Cuentas
+		$mSQL = "SELECT b.proveed cod_cli, MID(b.nombre,1,25) nombre, a.monto, b.numero, b.fecha 
+			FROM itcruc AS a JOIN cruc AS b ON a.numero=b.numero
+			WHERE b.cliente='$cod_cli' AND a.onumero='$tipo_doc$numero'
+			UNION ALL
+			SELECT b.cliente cod_cli, MID(b.nomcli,1,25) nombre, -a.monto, b.numero, b.fecha 
+			FROM itcruc AS a JOIN cruc AS b ON a.numero=b.numero
+			WHERE b.cliente='$cod_cli' AND a.onumero='$tipo_doc$numero'
+			ORDER BY numero
+			";
+		$query = $this->db->query($mSQL);
+		$codcli = 'XXXXXXXXXXXXXXXX';
+		$saldo = 0;
+		if ( $query->num_rows() > 0 ){
+			$salida .= "<br><table width='100%' border=1>";
+			$salida .= "<td colspan=4>Cruce de Cuentas</td>";
+			$salida .= "<tr bgcolor='#e7e3e7'><td>Codigo</td><td align='center'>Numero</td><td align='center'>Monto</td></tr>";
+			foreach ($query->result_array() as $row)
+			{
+				$salida .= "<tr>";
+				$salida .= "<td>".$row['cod_cli']."</td>";
+				$salida .= "<td>".$row['numero'].  "</td>";
+				$salida .= "<td align='right'>".nformat($row['monto']).   "</td>";
+				$salida .= "</tr>";
+			}
+			$salida .= "</table>";
+		}
+		echo $salida;
+	}
+
+
+	function smovextjs() {
+		$encabeza='MOVIMIENTO DE CLIENTES';
+		$listados= $this->datasis->listados('smov');
+		$otros=$this->datasis->otros('smov', 'finanzas/smov');
+
+		$urlajax = 'finanzas/smov/';
+
+		$columnas = "
+			{ header: 'Cliente',   width: 50, sortable: true, dataIndex: 'cod_cli' , field: { type: 'textfield' }, filter: { type: 'string' }},
+			{ header: 'Nombre',    width:210, sortable: true, dataIndex: 'nombre' , field: { type: 'textfield' }, filter: { type: 'string' }},
+			{ header: 'Tipo',      width: 40, sortable: true, dataIndex: 'tipo_doc' , field: { type: 'textfield' }, filter: { type: 'string' }},
+			{ header: 'Numero',    width: 60, sortable: true, dataIndex: 'numero' , field: { type: 'textfield' }, filter: { type: 'string' }},
+			{ header: 'Fecha',     width: 80, sortable: true, dataIndex: 'fecha' , field: { type: 'date' }, filter: { type: 'date' }},
+			{ header: 'Monto',     width: 90, sortable: true, dataIndex: 'monto' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+			{ header: 'I.V.A.',    width: 90, sortable: true, dataIndex: 'impuesto' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+			{ header: 'Abonos',    width: 90, sortable: true, dataIndex: 'abonos' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+			{ header: 'Vence',     width: 80, sortable: true, dataIndex: 'vence' , field: { type: 'date' }, filter: { type: 'date' }},
+			{ header: 'Referen.',  width: 40, sortable: true, dataIndex: 'tipo_ref' , field: { type: 'textfield' }, filter: { type: 'string' }},
+			{ header: 'num_ref',   width: 60, sortable: true, dataIndex: 'num_ref' , field: { type: 'textfield' }, filter: { type: 'string' }},
+			{ header: 'observa1',  width: 60, sortable: true, dataIndex: 'observa1' , field: { type: 'textfield' }, filter: { type: 'string' }},
+			{ header: 'observa2',  width: 60, sortable: true, dataIndex: 'observa2' , field: { type: 'textfield' }, filter: { type: 'string' }},
+			{ header: 'Banco',     width: 60, sortable: true, dataIndex: 'banco' , field: { type: 'textfield' }, filter: { type: 'string' }},
+			{ header: 'tipo_op' ,  width: 60, sortable: true, dataIndex: 'tipo_op' , field: { type: 'textfield' }, filter: { type: 'string' }},
+			{ header: 'Fecha_op',  width: 60, sortable: true, dataIndex: 'fecha_op' , field: { type: 'date' }, filter: { type: 'date' }},
+			{ header: 'Num_op',    width: 60, sortable: true, dataIndex: 'num_op' , field: { type: 'textfield' }, filter: { type: 'string' }},
+			{ header: 'pP.Pago',   width: 80, sortable: true, dataIndex: 'ppago' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+			{ header: 'Reten',     width: 60, sortable: true, dataIndex: 'reten' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+			{ header: 'Codigo',    width: 60, sortable: true, dataIndex: 'codigo' , field: { type: 'textfield' }, filter: { type: 'string' }},
+			{ header: 'Descrip',   width: 60, sortable: true, dataIndex: 'descrip' , field: { type: 'textfield' }, filter: { type: 'string' }},
+			{ header: 'Control',   width: 60, sortable: true, dataIndex: 'control' , field: { type: 'textfield' }, filter: { type: 'string' }},
+			{ header: 'Usuario',   width: 60, sortable: true, dataIndex: 'usuario' , field: { type: 'textfield' }, filter: { type: 'string' }},
+			{ header: 'Estampa',   width: 60, sortable: true, dataIndex: 'estampa' , field: { type: 'date' }, filter: { type: 'date' }},
+			{ header: 'Hora',      width: 60, sortable: true, dataIndex: 'hora' , field: { type: 'textfield' }, filter: { type: 'string' }},
+			{ header: 'Transac',   width: 60, sortable: true, dataIndex: 'transac' , field: { type: 'textfield' }, filter: { type: 'string' }},
+			{ header: 'Origen',    width: 60, sortable: true, dataIndex: 'origen' , field: { type: 'textfield' }, filter: { type: 'string' }},
+			{ header: 'Cambio',    width: 60, sortable: true, dataIndex: 'cambio' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+			{ header: 'Mora',      width: 60, sortable: true, dataIndex: 'mora' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+			{ header: 'Reteiva',   width: 60, sortable: true, dataIndex: 'reteiva' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+			{ header: 'Vendedor',  width: 60, sortable: true, dataIndex: 'vendedor' , field: { type: 'textfield' }, filter: { type: 'string' }},
+			{ header: 'Nfiscal',   width: 60, sortable: true, dataIndex: 'nfiscal' , field: { type: 'textfield' }, filter: { type: 'string' }},
+			{ header: 'montasa',   width: 60, sortable: true, dataIndex: 'montasa' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+			{ header: 'monredu',   width: 60, sortable: true, dataIndex: 'monredu' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+			{ header: 'monadic',   width: 60, sortable: true, dataIndex: 'monadic' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+			{ header: 'tasa',      width: 60, sortable: true, dataIndex: 'tasa' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+			{ header: 'reducida',  width: 60, sortable: true, dataIndex: 'reducida' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+			{ header: 'sobretasa', width: 60, sortable: true, dataIndex: 'sobretasa' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+			{ header: 'exento',    width: 60, sortable: true, dataIndex: 'exento' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+			{ header: 'fecdoc',    width: 60, sortable: true, dataIndex: 'fecdoc' , field: { type: 'date' }, filter: { type: 'date' }},
+			{ header: 'nroriva',   width: 60, sortable: true, dataIndex: 'nroriva' , field: { type: 'textfield' }, filter: { type: 'string' }},
+			{ header: 'emiriva',   width: 60, sortable: true, dataIndex: 'emiriva' , field: { type: 'date' }, filter: { type: 'date' }},
+			{ header: 'codcp',     width: 60, sortable: true, dataIndex: 'codcp' , field: { type: 'textfield' }, filter: { type: 'string' }},
+			{ header: 'depto',     width: 60, sortable: true, dataIndex: 'depto' , field: { type: 'textfield' }, filter: { type: 'string' }},
+			{ header: 'maqfiscal', width: 60, sortable: true, dataIndex: 'maqfiscal' , field: { type: 'textfield' }, filter: { type: 'string' }},
+			{ header: 'modificado',width: 60, sortable: true, dataIndex: 'modificado' , field: { type: 'date' }, filter: { type: 'date' }},
+			{ header: 'Ningreso',  width: 60, sortable: true, dataIndex: 'ningreso' , field: { type: 'textfield' }, filter: { type: 'string' }},
+			{ header: 'Ncredito',  width: 60, sortable: true, dataIndex: 'ncredito' , field: { type: 'textfield' }, filter: { type: 'string' }}
+		";
+
+		$coldeta = "
+	var Deta1Col = [
+		{ header: 'Numero',  width: 60, sortable: true, dataIndex: 'numccli' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Tipo',    width: 40, sortable: true, dataIndex: 'tipoccli' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Cliente', width: 50, sortable: true, dataIndex: 'cod_cli' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Tipo',    width: 40, sortable: true, dataIndex: 'tipo_doc' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Numero',  width: 70, sortable: true, dataIndex: 'numero' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Fecha',   width: 80, sortable: true, dataIndex: 'fecha' , field: { type: 'date' }, filter: { type: 'date' }},
+		{ header: 'Monto',   width: 80, sortable: true, dataIndex: 'monto' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Abono',   width: 80, sortable: true, dataIndex: 'abono' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'P.Pago',  width: 80, sortable: true, dataIndex: 'ppago' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Reten',   width: 80, sortable: true, dataIndex: 'reten' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Cambio',  width: 80, sortable: true, dataIndex: 'cambio' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Mora',    width: 80, sortable: true, dataIndex: 'mora' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Transac', width: 60, sortable: true, dataIndex: 'transac' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Estampa', width: 80, sortable: true, dataIndex: 'estampa' , field: { type: 'date' }, filter: { type: 'date' }},
+		{ header: 'Hora',    width: 60, sortable: true, dataIndex: 'hora' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Usuario', width: 60, sortable: true, dataIndex: 'usuario' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Reteiva', width: 60, sortable: true, dataIndex: 'reteiva' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Nroriva', width: 60, sortable: true, dataIndex: 'nroriva' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Emiriva', width: 60, sortable: true, dataIndex: 'emiriva' , field: { type: 'date' }, filter: { type: 'date' }},
+		{ header: 'Recriva', width: 60, sortable: true, dataIndex: 'recriva' , field: { type: 'date' }, filter: { type: 'date' }},
+		{ header: 'id',      width: 60, sortable: true, dataIndex: 'id' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}]";
+
+		$variables='';
+		
+		$valida="		{ type: 'length', field: 'cliente',  min:  1 }";
+
+		$funciones = "
+function renderSprv(value, p, record) {
+	var mreto='';
+	if ( record.data.proveed == '' ){
+		mreto = '{0}';
+	} else {
+		mreto = '<a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'finanzas/smov/sprvbu/{1}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">{0}</a>';
+	}
+	return Ext.String.format(mreto,	value, record.data.control );
 }
