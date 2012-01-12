@@ -491,14 +491,11 @@ class sinv extends Controller {
 		$data['script'] .= script('plugins/jquery.floatnumber.js');
 		$data['script'] .= script('superTables.js');
 		$data['script'] .= $script;
-
 		$data['style']   = $style;
 		$data['style']  .= style('superTables.css');
 		$data['style']  .= style('jquery.alerts.css');
-
 		$data['extras']  = $extras;
 		$data['title']   = heading('Maestro de Inventario ');
-
 		$data['head']   = $this->rapyd->get_head();
 
 		$this->load->view('view_ventanas', $data);
@@ -512,564 +509,6 @@ class sinv extends Controller {
 	function dataedit($status='',$id='' ) {
 		$this->rapyd->uri->keep_persistence();
 		$this->rapyd->load('dataedit','datadetails');
-
-		$link  =site_url('inventario/common/add_marc');
-		$link4 =site_url('inventario/common/get_marca');
-		$link5 =site_url('inventario/common/add_unidad');
-		$link6 =site_url('inventario/common/get_unidad');
-		$link7 =site_url('inventario/sinv/ultimo');
-		$link8 =site_url('inventario/sinv/sugerir');
-		$link9 =site_url('inventario/common/add_depto');
-		$link10=site_url('inventario/common/get_depto');
-		$link11=site_url('inventario/common/add_linea');
-		$link12=site_url('inventario/common/get_linea');
-		$link13=site_url('inventario/common/add_grupo');
-		$link14=site_url('inventario/common/get_grupo');
-
-		$link20=site_url('inventario/sinv/sinvcodigoexiste');
-		$link21=site_url('inventario/sinv/sinvcodigo');
-		$link25=site_url('inventario/sinv/sinvbarras');
-		$link27=site_url('inventario/sinv/sinvpromo');
-
-		$link28=site_url('inventario/sinv/sinvproveed/');
-		$link29=site_url('inventario/sinv/sinvsprv/'.$id);
-
-		$link30=site_url('inventario/sinv/sinvborrasuple/');
-		$link35=site_url('inventario/sinv/sinvborraprv/');
-
-		$link40=site_url('inventario/sinv/sinvdescu/'.$id);
-		$link41=site_url('inventario/sinv/sinvcliente/');
-
-		$script='<script type="text/javascript">
-		function isNumeric(value) {
-		  if (value == null || !value.toString().match(/^[-]?\d*\.?\d*$/)) return false;
-		  return true;
-		};
-
-		$(document).ready(function() {
-			$("#depto").change(function(){dpto_change(); });
-			$("#linea").change(function(){ $.post("'.$link14.'",{ linea:$(this).val() },function(data){$("#grupo").html(data);}) });
-
-			$("#tdecimal").change(function(){
-				var clase;
-				if($(this).attr("value")=="S") clase="inputnum"; else clase="inputonlynum";
-				$("#exmin").unbind();$("#exmin").removeClass(); $("#exmin").addClass(clase);
-				$("#exmax").unbind();$("#exmax").removeClass(); $("#exmax").addClass(clase);
-				$("#exord").unbind();$("#exord").removeClass(); $("#exord").addClass(clase);
-				$("#exdes").unbind();$("#exdes").removeClass(); $("#exdes").addClass(clase);
-				$(".inputnum").numeric(".");
-				$(".inputonlynum").numeric("0");
-			});
-			requeridos(true);
-
-			$( "#dialog:ui-dialog" ).dialog( "destroy" );
-
-			var proveedor = $( "#proveedor" ),
-				cod_prv = $( "#cod_prv" ),
-				codigo = $( "#codigo" ),
-				cod_cli = $( "#cod_cli" ),
-				descuento = $( "#descuento" ),
-				tipo = $( "#tipo" ),
-				allFields = $( [] ).add( proveedor ).add( codigo ).add( cod_prv ),
-				tips = $( ".validateTips" );
-
-			$( "#sinvprv" ).dialog({
-				autoOpen: false,
-				height: 300,
-				width: 350,
-				modal: true,
-				buttons: {
-					"Guardar Codigo": function() {
-						var bValid = true;
-						allFields.removeClass( "ui-state-error" );
-
-						bValid = bValid && checkLength( proveedor, "proveedor", 3, 50 );
-						bValid = bValid && checkLength( cod_prv, "cod_prv", 1, 5 );
-						bValid = bValid && checkLength( codigo, "codigo", 6, 15 );
-
-						//bValid = bValid && checkRegexp( proveedor, /^[a-z]([0-9a-z_])+$/i, "Username may consist of a-z, 0-9, underscores, begin with a letter." );
-						// From jquery.validate.js (by joern), contributed by Scott Gonzalez: http://projects.scottsplayground.com/email_address_validation/
-						//bValid = bValid ;
-						if ( bValid ) {
-							/*
-							$( "#users tbody" ).append( "<tr>" +
-								"<td>" + cod_prv.val() + "</"+"td>" +
-								"<td>" + proveedor.val() + "</"+"td>" +
-								"<td>" + codigo.val() + "</"+"td>" +
-							"</"+"tr>" );
-							*/
-							$.ajax({
-								  url: "'.$link29.'/"+cod_prv.val()+"/"+codigo.val(),
-								  //context: document.body,
-								  success: function(msg){
-								    alert("Terminado: "+msg);
-								  }
-							});
-
-							$( this ).dialog( "close" );
-						}
-					},
-					Cancelar: function() {
-						$( this ).dialog( "close" );
-					}
-				},
-				close: function() {
-					allFields.val( "" ).removeClass( "ui-state-error" );
-				}
-			});
-			$( "#sinvdescu" ).dialog({
-				autoOpen: false,
-				height: 350,
-				width: 350,
-				modal: true,
-				buttons: {
-					"Guardar Descuento": function() {
-						var bValid = true;
-						allFields.removeClass( "ui-state-error" );
-
-						//bValid = bValid && checkLength( cliente,   "cliente",   3, 50 );
-						//bValid = bValid && checkLength( cod_cli,   "cod_cli",   1,  5 );
-						//bValid = bValid && checkLength( descuento, "descuento", 1, 15 );
-						//bValid = bValid && checkLength( tipo, "tipo", 1, 1 );
-						if ( bValid ) {
-							$.ajax({
-								url: "'.$link40.'/"+cod_cli.val()+"/"+descuento.val()+"/"+tipo.val(),
-								success: function(msg){
-									alert("Terminado: "+msg);
-								}
-							});
-							$( this ).dialog( "close" );
-						}
-					},
-					Cancelar: function() {
-						$( this ).dialog( "close" );
-					}
-				},
-				close: function() {
-					allFields.val( "" ).removeClass( "ui-state-error" );
-				}
-			});
-
-			$( "#proveedor" ).autocomplete({
-				source: function( req, add){
-					$.ajax({
-						url: "'.$link28.'",
-						type: "POST",
-						dataType: "json",
-						data: "tecla="+req.term,
-						success:
-							function(data) {
-								var sugiere = [];
-								$.each(data,
-									function(i, val){
-										sugiere.push( val );
-									}
-								);
-								add(sugiere);
-							},
-					})
-				},
-				minLength: 3,
-				select: function(evento, ui){
-					//$("#proveedor").val(ui.item.value.substr(0,ui.item.value.length-6));
-					//$("#cod_prv").val(ui.item.value.substr(ui.item.value.length-6, 5));
-					$("#cod_prv").val(ui.item.codigo);
-				}
-			});
-			$( "#cliente" ).autocomplete({
-				source: function( req, add){
-					$.ajax({
-						url: "'.$link41.'",
-						type: "POST",
-						dataType: "json",
-						data: "tecla="+req.term,
-						success:
-							function(data) {
-								var sugiere = [];
-								$.each(data,
-									function(i, val){
-										sugiere.push( val );
-									}
-								);
-								add(sugiere);
-							},
-					})
-				},
-				minLength: 3,
-				select: function(evento, ui){
-					$("#cod_cli").val(ui.item.codigo);
-				}
-			});
-
-		////////////////////////////////////////////////////////////////////////////////
-        $("#modalDiv").dialog({
-                modal: true,
-                autoOpen: false,
-                height: "380",
-                width: "320",
-                draggable: true,
-                resizeable: true,
-                title: "Unidades"
-            });
-            $("#goToMyPage").click(
-                function() {
-                    url = "/proteoerp/inventario/unidad";
-                    $("#modalDiv").dialog("open");
-                    $("#modalIFrame").attr("src",url);
-                    return false;
-            });
-////////////////////////////////////////////////////////////////////////////////
-	$( "#maintabcontainer" ).tabs();
-});
-
-function updateTips( t ) {
-	tips
-		.text( t )
-		.addClass( "ui-state-highlight" );
-	setTimeout(function() {
-		tips.removeClass( "ui-state-highlight", 1500 );
-	}, 500 );
-}
-
-function checkLength( o, n, min, max ) {
-	if ( o.val().length > max || o.val().length < min ) {
-		o.addClass( "ui-state-error" );
-		updateTips( "Length of " + n + " must be between " +
-			min + " and " + max + "." );
-		return false;
-	} else {
-		return true;
-	}
-}
-
-function checkRegexp( o, regexp, n ) {
-	if ( !( regexp.test( o.val() ) ) ) {
-		o.addClass( "ui-state-error" );
-		updateTips( n );
-		return false;
-	} else {
-		return true;
-	}
-}
-
-function dpto_change(){
-	$.post("'.$link12.'",{ depto:$("#depto").val() },function(data){$("#linea").html(data);})
-	$.post("'.$link14.'",{ linea:"" },function(data){$("#grupo").html(data);})
-}
-
-function ultimo(){
-	$.ajax({
-		url: "'.$link7.'",
-		success: function(msg){
-			alert( "El &uacute;ltimo c&oacute;digo ingresado fue: " + msg );
-		}
-	});
-}
-
-function sugerir(){
-	$.ajax({
-		url: "'.$link8.'",
-		success: function(msg){
-			if(msg){
-				$("#codigo").val(msg);
-			} else {
-				alert("No es posible generar otra sugerencia. Coloque el c&oacute;digo manualmente");
-			}
-		}
-	});
-}
-
-function add_marca(){
-	marca=prompt("Introduza el nombre de la MARCA a agregar");
-	if(marca==null){
-	} else {
-		$.ajax({
-			type: "POST",
-			processData:false,
-			url: "'.$link.'",
-			data: "valor="+marca,
-			success: function(msg){
-				if(msg=="s.i"){
-					marca=marca.substr(0,30);
-					$.post("'.$link4.'",{ x:"" },function(data){$("#marca").html(data);$("#marca").val(marca);})
-				} else {
-					alert("Disculpe. En este momento no se ha podido agregar la marca, por favor intente mas tarde");
-				}
-			}
-		});
-	}
-}
-
-function add_unidad(){
-	unidad=prompt("Introduza el nombre de la UNIDAD a agregar");
-	if(unidad==null){
-	}else{
-		$.ajax({
-		 type: "POST",
-		 processData:false,
-			url: "'.$link5.'",
-			data: "valor="+unidad,
-			success: function(msg){
-				if(msg=="s.i"){
-					unidad=unidad.substr(0,8);
-					$.post("'.$link6.'",{ x:"" },function(data){$("#unidad").html(data);$("#unidad").val(unidad);})
-				}
-				else{
-					alert("Disculpe. En este momento no se ha podido agregar la unidad, por favor intente mas tarde");
-				}
-			}
-		});
-	}
-}
-
-function add_depto(){
-	depto=prompt("Introduza el nombre del DEPARTAMENTO a agregar");
-	if(depto==null){
-	}else{
-		$.ajax({
-		 type: "POST",
-		 processData:false,
-			url: "'.$link9.'",
-			data: "valor="+depto,
-			success: function(msg){
-				if(msg=="Y.a-Existe"){
-					alert("Ya existe un Departamento con esa Descripcion");
-				}
-				else{
-					if(msg=="N.o-SeAgrego"){
-						alert("Disculpe. En este momento no se ha podido agregar el departamento, por favor intente mas tarde");
-					}else{
-						$.post("'.$link10.'",{ x:"" },function(data){$("#depto").html(data);$("#depto").val(msg);})
-					}
-				}
-			}
-		});
-	}
-}
-
-function add_linea(){
-	deptoval=$("#depto").val();
-	if(deptoval==""){
-		alert("Debe seleccionar un Departamento al cual agregar la linea");
-		}else{
-		linea=prompt("Introduza el nombre de la LINEA a agregar al DEPARTAMENTO seleccionado");
-		if(linea==null){
-		}else{
-			$.ajax({
-			 type: "POST",
-			 processData:false,
-				url: "'.$link11.'",
-				data: "valor="+linea+"&&valor2="+deptoval,
-				success: function(msg){
-					if(msg=="Y.a-Existe"){
-						alert("Ya existe una Linea con esa Descripcion");
-					}
-					else{
-						if(msg=="N.o-SeAgrego"){
-							alert("Disculpe. En este momento no se ha podido agregar la linea, por favor intente mas tarde");
-						}else{
-							$.post("'.$link12.'",{ depto:deptoval },function(data){$("#linea").html(data);$("#linea").val(msg);})
-						}
-					}
-				}
-			});
-		}
-	}
-}
-
-function add_grupo(){
-	lineaval=$("#linea").val();
-	deptoval=$("#depto").val();
-	if(lineaval==""){
-		alert("Debe seleccionar una Linea a la cual agregar el departamento");
-	}else{
-	grupo=prompt("Introduza el nombre del GRUPO a agregar a la LINEA seleccionada");
-		if(grupo==null){
-		}else{
-			$.ajax({
-			 type: "POST",
-		 processData:false,
-				url: "'.$link13.'",
-				data: "valor="+grupo+"&&valor2="+lineaval+"&&valor3="+deptoval,
-				success: function(msg){
-					if(msg=="Y.a-Existe"){
-						alert("Ya existe una Linea con esa Descripcion");
-					}
-					else{
-						if(msg=="N.o-SeAgrego"){
-							alert("Disculpe. En este momento no se ha podido agregar la linea, por favor intente mas tarde");
-						}else{
-							$.post("'.$link14.'",{ linea:lineaval },function(data){$("#grupo").html(data);$("#grupo").val(msg);})
-						}
-					}
-				}
-			});
-		}
-	}
-};
-
-function sinvcodigo(mviejo){
-	var yurl = "";
-	//var mcodigo=jPrompt("Ingrese el Codigo a cambiar ");
-	jPrompt("Codigo Nuevo","" ,"Codigo Nuevo", function(mcodigo){
-		if( mcodigo==null ){
-			jAlert("Cancelado por el usuario","Informacion");
-		} else if( mcodigo=="" ) {
-			jAlert("Cancelado,  Codigo vacio","Informacion");
-		} else {
-			yurl = encodeURIComponent(mcodigo);
-			$.ajax({
-				url: "'.$link20.'",
-				global: false,
-				type: "POST",
-				data: ({ codigo : encodeURIComponent(mcodigo) }),
-				dataType: "text",
-				async: false,
-				success: function(sino) {
-					if (sino.substring(0,1)=="S"){
-						jConfirm(
-							"Ya existe el codigo <div style=\"font-size: 200%;font-weight: bold \">"+mcodigo+"</"+"div>"+sino.substring(1)+"<p>si prosigue se eliminara el producto anterior y<br/> todo el movimiento de este, pasara al codigo "+mcodigo+"</"+"p> <p style=\"align: center;\">Desea <strong>Fusionarlos?</"+"strong></"+"p>",
-							"Confirmar Fusion",
-							function(r){
-							if (r) { sinvcodigocambia("S", mviejo, mcodigo); }
-							}
-						);
-					} else {
-						jConfirm(
-							"Sustitur el codigo actual  por: <center><h2 style=\"background: #ddeedd\">"+mcodigo+"</"+"h2></"+"center> <p>Al cambiar de codigo el producto, todos los<br/> movimientos y estadisticas se cambiaran<br/> correspondientemente.</"+"p> ",
-							"Confirmar cambio de codigo",
-							function(r) {
-								if (r) { sinvcodigocambia("N", mviejo, mcodigo); }
-							}
-						)
-					}
-				},
-				error: function(h,t,e) { jAlert("Error..codigo="+yurl+" ",e) }
-			});
-		}
-	})
-};
-
-function sinvcodigocambia( mtipo, mviejo, mcodigo ) {
-	$.ajax({
-		url: "'.$link21.'",
-		global: false,
-		type: "POST",
-		data: ({ tipo:  mtipo,
-			 viejo: mviejo,
-			 codigo: encodeURIComponent(mcodigo) }),
-		dataType: "text",
-		async: false,
-		success: function(sino) {
-			jAlert("Cambio finalizado "+sino,"Finalizado Exitosamente")
-		},
-		error: function(h,t,e) {jAlert("Error..","Finalizado con Error" )
-		}
-	});
-
-	if( mtipo=="N" ) {
-		location.reload(true);
-	} else {
-		location.replace("'.site_url("inventario/sinv/filteredgrid").'");
-	}
-}
-
-function sinvbarras(mcodigo){
-	var yurl = "";
-	jPrompt("Nuevo Codigo de Barras","" ,"Codigo Barras", function(mbarras){
-		if( mbarras==null ){
-			jAlert("Cancelado por el usuario","Informacion");
-		} else if( mbarras=="" ) {
-			jAlert("Cancelado,  Codigo vacio","Informacion");
-		} else {
-			$.ajax({
-				url: "'.$link25.'",
-				global: false,
-				type: "POST",
-				data: ({ id : mcodigo, codigo : encodeURIComponent(mbarras) }),
-				dataType: "text",
-				async: false,
-				success: function(sino)  { jAlert( sino,"Informacion")},
-				error:   function(h,t,e) { jAlert("Error..codigo="+mbarras+" <p>"+e+"</"+"p>","Error") }
-			});
-		}
-	})
-};
-
-function sinvpromo(mcodigo){
-	jPrompt("Descuento Promocional","" ,"Descuento", function(margen){
-		if( margen==null ){
-			jAlert("Cancelado por el usuario","Informacion");
-		} else if( margen=="" ) {
-			jAlert("Cancelado,  Codigo vacio","Informacion");
-		} else {
-			if (isNumeric(margen)) {
-				$.ajax({
-					url: "'.$link27.'",
-					global: false,
-					type: "POST",
-					data: ({ id : mcodigo, margen : margen }),
-					dataType: "text",
-					async: false,
-					success: function(sino)  { jAlert( sino,"Informacion")},
-					error:   function(h,t,e) { jAlert("Error..codigo="+margen+" <p>"+e+"</"+"p>","Error") }
-				});
-			} else { jAlert("Entrada no numerica","Alerta") }
-		}
-	})
-};
-// Descuento por Cliente
-function sinvdescu(mcodigo){
-	$( "#sinvdescu" ).dialog( "open" );
-};
-// Codigo de producto en el Proveedor
-function sinvproveed(mcodigo){
-	$( "#sinvprv" ).dialog( "open" );
-};
-
-function sinvborrasuple(mcodigo){
-	jConfirm(
-		"Desea eliminar este codigo suplementario?<p><strong>"+mcodigo+"</"+"strong></"+"p>",
-		"Confirmar Borrado",
-		function(r){
-			if (r) {
-			$.ajax({
-				url: "'.$link30.'",
-				global: false,
-				type: "POST",
-				data: ({ codigo : mcodigo }),
-				dataType: "text",
-				async: false,
-				success: function(sino)  { jAlert( sino,"Informacion")},
-				error:   function(h,t,e) { jAlert("Error..codigo="+mcodigo+" <p>"+e+"</"+"p>","Error") }
-			});
-			}
-		}
-	);
-};
-
-
-function sinvborraprv(mproveed, mcodigo){
-	jConfirm(
-		"Desea eliminar este codigo de proveedor?<p><strong>"+mcodigo+"</"+"strong></"+"p>",
-		"Confirmar Borrado",
-		function(r){
-			if (r) {
-			$.ajax({
-				url: "'.$link35.'",
-				global: false,
-				type: "POST",
-				data: ({ proveed : mproveed, codigo : mcodigo }),
-				dataType: "text",
-				async: false,
-				success: function(sino)  { jAlert( sino,"Informacion")},
-				error:   function(h,t,e) { jAlert("Error..codigo="+mcodigo+" <p>"+e+"</"+"p>","Error") }
-			});
-			}
-		}
-	);
-};
-</script>';
 
 		$modbus = array(
 			'tabla' => 'sinv',
@@ -1150,8 +589,6 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->post_process('update','_post_update');
 		$edit->post_process('delete','_post_delete');
 
-		$edit->script($script,'create');
-		$edit->script($script,'modify');
 		$edit->back_url = site_url('inventario/sinv/filteredgrid');
 
 		$ultimo ='<a href="javascript:ultimo();" title="Consultar ultimo c&oacute;digo ingresado"> Consultar ultimo c&oacute;digo</a>';
@@ -1374,12 +811,12 @@ function sinvborraprv(mproveed, mcodigo){
 
 		$edit->formcal = new dropdownField("Base C&aacute;lculo", "formcal");
 		$edit->formcal->style='width:110px;';
-		//$edit->formcal->rule="required";
-		//$edit->formcal->option("","Seleccione" );
+		$edit->formcal->rule="required";
 		$edit->formcal->option("U","Ultimo" );
 		$edit->formcal->option("P","Promedio" );
 		$edit->formcal->option("M","Mayor" );
-		$edit->formcal->onchange = "requeridos();calculos('I');";
+		$edit->formcal->insertValue='U';
+		$edit->formcal->onchange = "requeridos();calculos('S');";
 
 		$edit->redecen = new dropdownField("Redondear", "redecen");
 		$edit->redecen->style='width:110px;';
@@ -1452,7 +889,6 @@ function sinvborraprv(mproveed, mcodigo){
 
 		$edit->fechav = new dateField("Ultima Venta",'fechav','d/m/Y');
 		$edit->fechav->readonly = true;
-		//$edit->fechav->when =array("show");
 		$edit->fechav->size=10;
 
 		$edit->fdesde = new dateField("Desde",'fdesde','d/m/Y');
@@ -1494,7 +930,6 @@ function sinvborraprv(mproveed, mcodigo){
 			$edit->$objeto = new inputField("",$objeto);
 			$edit->$objeto->when =array("show");
 			$edit->$objeto->size=10;
-			//$edit->$objeto->in="pfecha$i";
 
 			$objeto="Eprov$i";
 			$edit->$objeto = new freeField("","","Proveedor");
@@ -1513,7 +948,6 @@ function sinvborraprv(mproveed, mcodigo){
 		$codigo=$edit->_dataobject->get("codigo");
 		$edit->almacenes = new containerField('almacenes',$this->_detalle($codigo));
 		$edit->almacenes->when = array("show","modify");
-
 
 		$edit->mmargen = new inputField("Margen al Mayor",'mmargen');
 		$edit->mmargen->css_class='inputnum';
@@ -1535,8 +969,6 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->itcodigo->size    = 12;
 		$edit->itcodigo->db_name = 'codigo';
 		$edit->itcodigo->rel_id  = 'sinvcombo';
-		//$edit->itcodigo->rule    = 'callback_chcodigo';
-		//$edit->itcodigo->onkeyup = 'OnEnter(event,<#i#>)';
 		$edit->itcodigo->append($bSINV_C);
 
 		$edit->itdescrip = new inputField('Descripci&oacute;n <#o#>', 'itdescrip_<#i#>');
@@ -1653,7 +1085,6 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->it3estacion->option('','Seleccionar');
 		$edit->it3estacion->options('SELECT estacion,CONCAT(estacion,\'-\',nombre) AS lab FROM esta ORDER BY estacion');
 		$edit->it3estacion->style  = 'width:250px;';
-		//$edit->it3estacion->rule   = 'required';
 		$edit->it3estacion->db_name = 'estacion';
 		$edit->it3estacion->rel_id  = 'sinvplabor';
 
@@ -1714,106 +1145,25 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
 		$edit->build();
 
-		$style = '<style type="text/css">
-		.maintabcontainer {width: 780px; margin: 5px auto;}
-		div#sinvprv label { display:block; }
-		div#sinvprv input { display:block; }
-		div#sinvprv input.text { margin-bottom:12px; width:95%; padding: .4em; }
-		div#sinvprv fieldset { padding:0; border:0; margin-top:20px; }
-		div#sinvprv h1 { font-size: 1.2em; margin: .6em 0; }
-		div#sinvdescu label { display:block; }
-		div#sinvdescu input { display:block; }
-		div#sinvdescu input.text { margin-bottom:12px; width:95%; padding: .4em; }
-		div#sinvdescu select { display:block; }
-		div#sinvdescu select.text { margin-bottom:12px; width:95%; padding: .4em; }
-		div#sinvdescu fieldset { padding:0; border:0; margin-top:20px; }
-		div#sinvdescu h1 { font-size: 1.2em; margin: .6em 0; }
-		.ui-dialog .ui-state-error { padding: .3em; }
-		.validateTips { border: 1px solid transparent; padding: 0.3em; }
-		</style>';
-
 		$mcodigo = $edit->codigo->value;
 		$mfdesde = $this->datasis->dameval("SELECT ADDDATE(MAX(fecha),-30) FROM costos WHERE codigo='".addslashes($mcodigo)."'");
 		$mfhasta = $this->datasis->dameval("SELECT MAX(fecha) FROM costos WHERE codigo='".addslashes($mcodigo)."'");
 
-		$extras = '<div style="display: none">
-			<form action="'.base_url().'/inventario/kardex/filteredgrid/search/osp" method="post" id="kardex" name="kardex" target="kpopup">
-				<input type="text" name="codigo" value="'.$mcodigo.'" />
-				<input type="text" name="ubica"  value="" />
-				<input type="text" name="fecha"  value="'.dbdate_to_human($mfdesde).'" />
-				<input type="text" name="fechah" value="'.dbdate_to_human($mfhasta).'" />
-				<input type="submit" />
-			</form>
-		</div>
-		<div id="sinvprv" title="Agregar codigo de Proveedor">
-			<p class="validateTips">Codigo del proveedor para este producto</p>
-			<form>
-			<fieldset>
-				<label for="proveedor">Proveedor</label>
-				<table cellspacing="0" cellpadding="0" width="100%">
-					<tr>
-						<td>
-							<input type="text" size="80" name="proveedor" id="proveedor" class="text ui-widget-content ui-corner-all" />
-						</td>
-						<td>
-							<input type="text" readonly="readonly" size="8" name="cod_prv" id="cod_prv" class="text ui-widget-content ui-corner-all" />
-						</td>
-					</tr>
-				</table>
-				<label for="codigo">Codigo</label>
-				<input type="text" name="codigo" id="codigo" value="" class="text ui-widget-content ui-corner-all" />
-			</fieldset>
-			</form>
-		</div>
-		<div id="sinvdescu" title="Agregar Descuento">
-			<p class="validateTips">Descuento para este producto</p>
-			<form>
-			<fieldset>
-				<label for="cliente">Cliente</label>
-				<table cellspacing="0" cellpadding="0" width="100%">
-					<tr>
-						<td>
-							<input type="text" size="80" name="cliente" id="cliente" class="text ui-widget-content ui-corner-all" />
-						</td>
-						<td>
-							<input type="text" readonly="readonly" size="8" name="cod_cli" id="cod_cli" class="text ui-widget-content ui-corner-all" />
-						</td>
-					</tr>
-				</table>
-				<label for="descuento">Porcentaje %</label>
-				<input type="text" name="descuento" id="descuento" value="" class="text ui-widget-content ui-corner-all" />
-				<label for="descuento">Aplicacion del Porcentaje</label>
-				<select name="tipo" id="tipo" value="D" class="text ui-widget-content ui-corner-all" >
-					<option value="D">Descuento: Precio1 - Porcentaje</option>
-					<option value="A">Aumento: Costo + Porcentaje</option>
-				</select>
-			</fieldset>
-			</form>
-		</div>
-		<script type="text/javascript">
-		function submitkardex() {
-			window.open("", "kpopup", "width=800,height=600,resizeable,scrollbars");
-			document.kardex.submit();
-		}
-		</script>';
-
 		$smenu['link']   = barra_menu('301');
-		$conten['form']  =&  $edit;
-		$conten['scri']  = script('jquery.js');
-		$conten['scri'] .= script('jquery-ui.js');
-		$conten['scri'] .= script('jquery.alerts.js');
-		$conten['scri'] .= script('plugins/jquery.blockUI.js');
-		$conten['scri'] .= script('plugins/jquery.numeric.pack.js');
-		$conten['scri'] .= script('plugins/jquery.floatnumber.js');
-		$conten['scri'] .= script('sinvmaes.js');
-		$conten['scri'] .= $script;
+		$conten['form']  =& $edit;
+
 		$data['content'] = $this->load->view('view_sinv', $conten,true);
+		$data['script']  = script('jquery.js');
+		$data['script'] .= script('jquery-ui.js');
+		$data['script'] .= script('jquery.alerts.js');
+		$data['script'] .= script('plugins/jquery.blockUI.js');
+		$data['script'] .= script('plugins/jquery.numeric.pack.js');
+		$data['script'] .= script('plugins/jquery.floatnumber.js');
+		$data['script'] .= script('sinvmaes.js');
 		$data['style']   = style('jquery.alerts.css');
 		$data['style']  .= style('redmond/jquery-ui.css');
-		$data['style']  .= $style;
-		$data['extras']  = $extras;
 		$data['head']    = $this->rapyd->get_head();
-		$data['title']   = heading( substr($edit->descrip->value,0,30) );
+		$data['title']   = heading(substr($edit->descrip->value,0,30));
 		$this->load->view('view_ventanas', $data);
 	}
 

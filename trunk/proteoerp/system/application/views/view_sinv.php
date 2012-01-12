@@ -1,5 +1,4 @@
 <?php
-echo $scri;
 echo $form_begin;
 
 $container_tr=join("&nbsp;", $form->_button_container["TR"]);
@@ -65,7 +64,19 @@ $scampos3 .='<td class="littletablerow" align="right">'.$campos3['it3segundos'][
 $scampos3 .='<td class="littletablerow"  align="center"><a href=# onclick="del_sinvplabor(<#i#>);return false;">'.img("images/delete.jpg").'</a></td></tr>';
 $campos3=$form->js_escape($scampos3);
 
-if($form->_status!='show'){ ?>
+$link  =site_url('inventario/common/add_marc');
+$link4 =site_url('inventario/common/get_marca');
+$link5 =site_url('inventario/common/add_unidad');
+$link6 =site_url('inventario/common/get_unidad');
+$link7 =site_url('inventario/sinv/ultimo');
+$link8 =site_url('inventario/sinv/sugerir');
+$link9 =site_url('inventario/common/add_depto');
+$link10=site_url('inventario/common/get_depto');
+$link11=site_url('inventario/common/add_linea');
+$link12=site_url('inventario/common/get_linea');
+$link13=site_url('inventario/common/add_grupo');
+$link14=site_url('inventario/common/get_grupo');
+?>
 <style >
 .ui-autocomplete {
 	max-height: 150px;
@@ -77,11 +88,17 @@ html.ui-autocomplete {
 	width: 600px;
 }
 </style>
-<script language="javascript" type="text/javascript">
 
-sinvcombo_cont =<?php echo $form->max_rel_count['sinvcombo']; ?>;
-sinvpitem_cont =<?php echo $form->max_rel_count['sinvpitem']; ?>;
+<?php if($form->_status!='show'){ ?>
+<script language="javascript" type="text/javascript">
+sinvcombo_cont =<?php echo $form->max_rel_count['sinvcombo'];  ?>;
+sinvpitem_cont =<?php echo $form->max_rel_count['sinvpitem'];  ?>;
 sinvplabor_cont=<?php echo $form->max_rel_count['sinvplabor']; ?>;
+
+function submitkardex() {
+	window.open('', "kpopup", "width=800,height=600,resizeable,scrollbars");
+	document.kardex.submit();
+}
 
 function ocultatab(){
 	tipo=$("#tipo").val();
@@ -96,6 +113,7 @@ function ocultatab(){
 
 $(function(){
 	ocultatab();
+	$('#maintabcontainer').tabs();
 	$(".inputnum").numeric(".");
 	//totalizarcombo();
 	for(var i=0;i < <?php echo $form->max_rel_count['sinvcombo']; ?>;i++){
@@ -121,6 +139,20 @@ $(function(){
 	$("#tipo").change(function(){
 		ocultatab();
 	});
+
+	$("#depto").change(function(){dpto_change(); });
+	$("#linea").change(function(){ $.post('<?php echo $link14 ?>',{ linea:$(this).val() },function(data){$("#grupo").html(data);}) });
+	$("#tdecimal").change(function(){
+		var clase;
+		if($(this).attr("value")=="S") clase="inputnum"; else clase="inputonlynum";
+		$("#exmin").unbind();$("#exmin").removeClass(); $("#exmin").addClass(clase);
+		$("#exmax").unbind();$("#exmax").removeClass(); $("#exmax").addClass(clase);
+		$("#exord").unbind();$("#exord").removeClass(); $("#exord").addClass(clase);
+		$("#exdes").unbind();$("#exdes").removeClass(); $("#exdes").addClass(clase);
+		$(".inputnum").numeric(".");
+		$(".inputonlynum").numeric("0");
+	});
+	cambioprecio('S');
 });
 
 function totalizarcombo(){
@@ -386,11 +418,541 @@ function del_sinvplabor(id){
 	id = id.toString();
 	$('#tr_sinvplabor_'+id).remove();
 }
+
+function add_marca(){
+	marca=prompt("Introduza el nombre de la MARCA a agregar");
+	if(marca==null){
+	} else {
+		$.ajax({
+			type: "POST",
+			processData:false,
+			url: '<?php echo $link ?>',
+			data: "valor="+marca,
+			success: function(msg){
+				if(msg=="s.i"){
+					marca=marca.substr(0,30);
+					$.post('<?php echo $link4 ?>',{ x:"" },function(data){$("#marca").html(data);$("#marca").val(marca);})
+				} else {
+					alert("Disculpe. En este momento no se ha podido agregar la marca, por favor intente mas tarde");
+				}
+			}
+		});
+	}
+}
+
+function add_unidad(){
+	unidad=prompt("Introduza el nombre de la UNIDAD a agregar");
+	if(unidad==null){
+	}else{
+		$.ajax({
+		 type: "POST",
+		 processData:false,
+			url: '<?php echo $link5 ?>',
+			data: "valor="+unidad,
+			success: function(msg){
+				if(msg=="s.i"){
+					unidad=unidad.substr(0,8);
+					$.post('<?php echo $link6 ?>',{ x:"" },function(data){$("#unidad").html(data);$("#unidad").val(unidad);})
+				}
+				else{
+					alert("Disculpe. En este momento no se ha podido agregar la unidad, por favor intente mas tarde");
+				}
+			}
+		});
+	}
+}
+
+function add_depto(){
+	depto=prompt("Introduza el nombre del DEPARTAMENTO a agregar");
+	if(depto==null){
+	}else{
+		$.ajax({
+		 type: "POST",
+		 processData:false,
+			url: '<?php echo $link9 ?>',
+			data: "valor="+depto,
+			success: function(msg){
+				if(msg=="Y.a-Existe"){
+					alert("Ya existe un Departamento con esa Descripcion");
+				}
+				else{
+					if(msg=="N.o-SeAgrego"){
+						alert("Disculpe. En este momento no se ha podido agregar el departamento, por favor intente mas tarde");
+					}else{
+						$.post('<?php echo $link10 ?>',{ x:"" },function(data){$("#depto").html(data);$("#depto").val(msg);})
+					}
+				}
+			}
+		});
+	}
+}
+
+function add_linea(){
+	deptoval=$("#depto").val();
+	if(deptoval==""){
+		alert("Debe seleccionar un Departamento al cual agregar la linea");
+	}else{
+		linea=prompt("Introduza el nombre de la LINEA a agregar al DEPARTAMENTO seleccionado");
+		if(linea==null){
+		}else{
+			$.ajax({
+			type: "POST",
+			processData:false,
+				url: '<?php echo $link11 ?>',
+				data: "valor="+linea+"&&valor2="+deptoval,
+				success: function(msg){
+					if(msg=="Y.a-Existe"){
+						alert("Ya existe una Linea con esa Descripcion");
+					}else{
+						if(msg=="N.o-SeAgrego"){
+							alert("Disculpe. En este momento no se ha podido agregar la linea, por favor intente mas tarde");
+						}else{
+							$.post('<?php echo $link12 ?>',{ depto:deptoval },function(data){$("#linea").html(data);$("#linea").val(msg);})
+						}
+					}
+				}
+			});
+		}
+	}
+}
+
+function add_grupo(){
+	lineaval=$("#linea").val();
+	deptoval=$("#depto").val();
+	if(lineaval==""){
+		alert("Debe seleccionar una Linea a la cual agregar el departamento");
+	}else{
+		grupo=prompt("Introduza el nombre del GRUPO a agregar a la LINEA seleccionada");
+		if(grupo==null){
+		}else{
+			$.ajax({
+				type: "POST",
+				processData:false,
+				url: '<?php echo $link13 ?>',
+				data: "valor="+grupo+"&&valor2="+lineaval+"&&valor3="+deptoval,
+				success: function(msg){
+					if(msg=="Y.a-Existe"){
+						alert("Ya existe una Linea con esa Descripcion");
+					}else{
+						if(msg=="N.o-SeAgrego"){
+							alert("Disculpe. En este momento no se ha podido agregar la linea, por favor intente mas tarde");
+						}else{
+							$.post('<?php echo $link14 ?>',{ linea:lineaval },function(data){$("#grupo").html(data);$("#grupo").val(msg);})
+						}
+					}
+				}
+			});
+		}
+	}
+};
+
+function dpto_change(){
+	$.post('<?php echo $link12 ?>',{ depto:$("#depto").val() },function(data){$("#linea").html(data);})
+	$.post('<?php echo $link14 ?>',{ linea:'' },function(data){$("#grupo").html(data);})
+}
+
+function ultimo(){
+	$.ajax({
+		url: '<?php echo $link7; ?>',
+		success: function(msg){
+			alert( "El &uacute;ltimo c&oacute;digo ingresado fue: " + msg );
+		}
+	});
+}
+
+function sugerir(){
+	$.ajax({
+		url: '<?php echo $link8 ?>',
+		success: function(msg){
+			if(msg){
+				$("#codigo").val(msg);
+			} else {
+				alert("No es posible generar otra sugerencia. Coloque el c&oacute;digo manualmente");
+			}
+		}
+	});
+}
+
+</script>
+<?php }else{
+//script cuando es show
+$id=$form->get_from_dataobjetct('id');
+
+$link20=site_url('inventario/sinv/sinvcodigoexiste');
+$link21=site_url('inventario/sinv/sinvcodigo');
+$link25=site_url('inventario/sinv/sinvbarras');
+$link27=site_url('inventario/sinv/sinvpromo');
+
+$link28=site_url('inventario/sinv/sinvproveed/');
+$link29=site_url('inventario/sinv/sinvsprv/'.$id);
+
+$link30=site_url('inventario/sinv/sinvborrasuple/');
+$link35=site_url('inventario/sinv/sinvborraprv/');
+
+$link40=site_url('inventario/sinv/sinvdescu/'.$id);
+$link41=site_url('inventario/sinv/sinvcliente/');
+?>
+<style type="text/css">
+	.maintabcontainer {width: 780px; margin: 5px auto;}
+	div#sinvprv label { display:block; }
+	div#sinvprv input { display:block; }
+	div#sinvprv input.text { margin-bottom:12px; width:95%; padding: .4em; }
+	div#sinvprv fieldset { padding:0; border:0; margin-top:20px; }
+	div#sinvprv h1 { font-size: 1.2em; margin: .6em 0; }
+	div#sinvdescu label { display:block; }
+	div#sinvdescu input { display:block; }
+	div#sinvdescu input.text { margin-bottom:12px; width:95%; padding: .4em; }
+	div#sinvdescu select { display:block; }
+	div#sinvdescu select.text { margin-bottom:12px; width:95%; padding: .4em; }
+	div#sinvdescu fieldset { padding:0; border:0; margin-top:20px; }
+	div#sinvdescu h1 { font-size: 1.2em; margin: .6em 0; }
+	.ui-dialog .ui-state-error { padding: .3em; }
+	.validateTips { border: 1px solid transparent; padding: 0.3em; }
+</style>
+
+<script language="javascript" type="text/javascript">
+function isNumeric(value) {
+  if (value == null || !value.toString().match(/^[-]?\d*\.?\d*$/)) return false;
+  return true;
+};
+
+$(document).ready(function() {
+	requeridos(true);
+	$("#dialog:ui-dialog").dialog("destroy");
+
+	var proveedor = $("#proveedor"),
+		cod_prv   = $("#cod_prv"),
+		codigo    = $("#codigo"),
+		cod_cli   = $("#cod_cli"),
+		descuento = $("#descuento"),
+		tipo      = $("#tipo"),
+		allFields = $([]).add( proveedor ).add( codigo ).add( cod_prv ),
+		tips      = $(".validateTips");
+
+	$("#sinvprv").dialog({
+		autoOpen: false,
+		height: 300,
+		width: 350,
+		modal: true,
+		buttons: {
+			"Guardar Codigo": function() {
+				var bValid = true;
+				allFields.removeClass( "ui-state-error" );
+
+				bValid = bValid && checkLength( proveedor, "proveedor", 3, 50 );
+				bValid = bValid && checkLength( cod_prv, "cod_prv", 1, 5 );
+				bValid = bValid && checkLength( codigo, "codigo", 6, 15 );
+
+				if ( bValid ) {
+					$.ajax({
+						  url: '<?php echo $link29 ?>'+'/'+cod_prv.val()+'/'+codigo.val(),
+						  //context: document.body,
+						  success: function(msg){
+						    alert("Terminado: "+msg);
+						  }
+					});
+					$(this).dialog("close");
+				}
+			},
+			Cancelar: function() {
+				$(this).dialog("close");
+			}
+		},
+		close: function() {
+			allFields.val("").removeClass("ui-state-error");
+		}
+	});
+
+	$("#sinvdescu").dialog({
+		autoOpen: false,
+		height: 350,
+		width: 350,
+		modal: true,
+		buttons: {
+			"Guardar Descuento": function() {
+				var bValid = true;
+				allFields.removeClass( "ui-state-error" );
+
+				if ( bValid ) {
+					$.ajax({
+						url: '<?php echo $link40 ?>'+"/"+cod_cli.val()+"/"+descuento.val()+"/"+tipo.val(),
+						success: function(msg){
+							alert("Terminado: "+msg);
+						}
+					});
+					$( this ).dialog( "close" );
+				}
+			},
+			Cancelar: function() {
+				$( this ).dialog( "close" );
+			}
+		},
+		close: function() {
+			allFields.val("").removeClass("ui-state-error");
+		}
+	});
+
+	$("#proveedor").autocomplete({
+		source: function( req, add){
+			$.ajax({
+				url: '<?php echo $link28 ?>',
+				type: "POST",
+				dataType: "json",
+				data: "tecla="+req.term,
+				success:
+					function(data) {
+						var sugiere = [];
+						$.each(data,
+							function(i, val){
+								sugiere.push( val );
+							}
+						);
+						add(sugiere);
+					},
+			})
+		},
+		minLength: 3,
+		select: function(evento, ui){
+			$("#cod_prv").val(ui.item.codigo);
+		}
+	});
+
+	$( "#cliente" ).autocomplete({
+		source: function( req, add){
+			$.ajax({
+				url: '<?php echo $link41 ?>',
+				type: "POST",
+				dataType: "json",
+				data: "tecla="+req.term,
+				success:
+					function(data) {
+						var sugiere = [];
+						$.each(data,
+							function(i, val){
+								sugiere.push( val );
+							}
+						);
+						add(sugiere);
+					},
+			})
+		},
+		minLength: 3,
+		select: function(evento, ui){
+			$("#cod_cli").val(ui.item.codigo);
+		}
+	});
+
+	$("#modalDiv").dialog({
+        modal: true,
+        autoOpen: false,
+        height: "380",
+        width: "320",
+        draggable: true,
+        resizeable: true,
+        title: "Unidades"
+    });
+    $("#goToMyPage").click(
+        function() {
+            url = "/proteoerp/inventario/unidad";
+            $("#modalDiv").dialog("open");
+            $("#modalIFrame").attr("src",url);
+            return false;
+    });
+	$( "#maintabcontainer" ).tabs();
+});
+
+function updateTips( t ) {
+	tips.text(t).addClass( "ui-state-highlight" );
+	setTimeout(function() {
+		tips.removeClass( "ui-state-highlight", 1500 );
+	},500);
+}
+
+function checkLength( o, n, min, max ) {
+	if ( o.val().length > max || o.val().length < min ) {
+		o.addClass( "ui-state-error" );
+		updateTips( "Length of " + n + " must be between " +
+			min + " and " + max + "." );
+		return false;
+	} else {
+		return true;
+	}
+}
+
+function checkRegexp( o, regexp, n ) {
+	if ( !( regexp.test( o.val() ) ) ) {
+		o.addClass( "ui-state-error" );
+		updateTips( n );
+		return false;
+	} else {
+		return true;
+	}
+}
+
+function sinvcodigo(mviejo){
+	var yurl = "";
+	//var mcodigo=jPrompt("Ingrese el Codigo a cambiar ");
+	jPrompt("Codigo Nuevo","" ,"Codigo Nuevo", function(mcodigo){
+		if( mcodigo==null ){
+			jAlert("Cancelado por el usuario","Informacion");
+		} else if( mcodigo=="" ) {
+			jAlert("Cancelado,  Codigo vacio","Informacion");
+		} else {
+			yurl = encodeURIComponent(mcodigo);
+			$.ajax({
+				url: '<?php echo $link20 ?>',
+				global: false,
+				type: "POST",
+				data: ({ codigo : encodeURIComponent(mcodigo) }),
+				dataType: "text",
+				async: false,
+				success: function(sino) {
+					if (sino.substring(0,1)=="S"){
+						jConfirm(
+							"Ya existe el codigo <div style=\"font-size: 200%;font-weight: bold \">"+mcodigo+"</"+"div>"+sino.substring(1)+"<p>si prosigue se eliminara el producto anterior y<br/> todo el movimiento de este, pasara al codigo "+mcodigo+"</"+"p> <p style=\"align: center;\">Desea <strong>Fusionarlos?</"+"strong></"+"p>",
+							"Confirmar Fusion",
+							function(r){
+							if (r) { sinvcodigocambia("S", mviejo, mcodigo); }
+							}
+						);
+					} else {
+						jConfirm(
+							"Sustitur el codigo actual  por: <center><h2 style=\"background: #ddeedd\">"+mcodigo+"</"+"h2></"+"center> <p>Al cambiar de codigo el producto, todos los<br/> movimientos y estadisticas se cambiaran<br/> correspondientemente.</"+"p> ",
+							"Confirmar cambio de codigo",
+							function(r) {
+								if (r) { sinvcodigocambia("N", mviejo, mcodigo); }
+							}
+						)
+					}
+				},
+				error: function(h,t,e) { jAlert("Error..codigo="+yurl+" ",e) }
+			});
+		}
+	})
+};
+
+function sinvcodigocambia( mtipo, mviejo, mcodigo ) {
+	$.ajax({
+		url: '<?php echo $link21 ?>',
+		global: false,
+		type: "POST",
+		data: ({ tipo:  mtipo,
+			 viejo: mviejo,
+			 codigo: encodeURIComponent(mcodigo) }),
+		dataType: "text",
+		async: false,
+		success: function(sino) {
+			jAlert("Cambio finalizado "+sino,"Finalizado Exitosamente")
+		},
+		error: function(h,t,e) {jAlert("Error..","Finalizado con Error" )
+		}
+	});
+
+	if( mtipo=="N" ) {
+		location.reload(true);
+	} else {
+		location.replace('<?php echo site_url("inventario/sinv/filteredgrid") ?>');
+	}
+}
+
+function sinvbarras(mcodigo){
+	var yurl = "";
+	jPrompt("Nuevo Codigo de Barras","" ,"Codigo Barras", function(mbarras){
+		if( mbarras==null ){
+			jAlert("Cancelado por el usuario","Informacion");
+		} else if( mbarras=="" ) {
+			jAlert("Cancelado,  Codigo vacio","Informacion");
+		} else {
+			$.ajax({
+				url: '<?php echo $link25 ?>',
+				global: false,
+				type: "POST",
+				data: ({ id : mcodigo, codigo : encodeURIComponent(mbarras) }),
+				dataType: "text",
+				async: false,
+				success: function(sino)  { jAlert( sino,"Informacion")},
+				error:   function(h,t,e) { jAlert("Error..codigo="+mbarras+" <p>"+e+"</"+"p>","Error") }
+			});
+		}
+	})
+};
+
+function sinvpromo(mcodigo){
+	jPrompt("Descuento Promocional","" ,"Descuento", function(margen){
+		if( margen==null ){
+			jAlert("Cancelado por el usuario","Informacion");
+		} else if( margen=="" ) {
+			jAlert("Cancelado,  Codigo vacio","Informacion");
+		} else {
+			if (isNumeric(margen)) {
+				$.ajax({
+					url: '<?php echo $link27 ?>',
+					global: false,
+					type: "POST",
+					data: ({ id : mcodigo, margen : margen }),
+					dataType: "text",
+					async: false,
+					success: function(sino)  { jAlert( sino,"Informacion")},
+					error:   function(h,t,e) { jAlert("Error..codigo="+margen+" <p>"+e+"</"+"p>","Error") }
+				});
+			} else { jAlert("Entrada no numerica","Alerta") }
+		}
+	})
+};
+// Descuento por Cliente
+function sinvdescu(mcodigo){
+	$( "#sinvdescu" ).dialog( "open" );
+};
+// Codigo de producto en el Proveedor
+function sinvproveed(mcodigo){
+	$( "#sinvprv" ).dialog( "open" );
+};
+
+function sinvborrasuple(mcodigo){
+	jConfirm(
+		"Desea eliminar este codigo suplementario?<p><strong>"+mcodigo+"</"+"strong></"+"p>",
+		"Confirmar Borrado",
+		function(r){
+			if (r) {
+			$.ajax({
+				url: '<?php echo $link30 ?>',
+				global: false,
+				type: "POST",
+				data: ({ codigo : mcodigo }),
+				dataType: "text",
+				async: false,
+				success: function(sino)  { jAlert( sino,"Informacion")},
+				error:   function(h,t,e) { jAlert("Error..codigo="+mcodigo+" <p>"+e+"</"+"p>","Error") }
+			});
+			}
+		}
+	);
+};
+
+function sinvborraprv(mproveed, mcodigo){
+	jConfirm(
+		"Desea eliminar este codigo de proveedor?<p><strong>"+mcodigo+"</"+"strong></"+"p>",
+		"Confirmar Borrado",
+		function(r){
+			if (r) {
+			$.ajax({
+				url: '<?php echo $link35 ?>',
+				global: false,
+				type: "POST",
+				data: ({ proveed : mproveed, codigo : mcodigo }),
+				dataType: "text",
+				async: false,
+				success: function(sino)  { jAlert( sino,"Informacion")},
+				error:   function(h,t,e) { jAlert("Error..codigo="+mcodigo+" <p>"+e+"</"+"p>","Error") }
+			});
+			}
+		}
+	);
+};
 </script>
 <?php }
-
-
- if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</div>'; ?>
+if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</div>';
+?>
 <table border='0' width="100%">
 	<tr>
 		<td>
@@ -1178,4 +1740,61 @@ if ($query->num_rows()>0 ) {
 </div>
 <?php echo $container_bl.$container_br; ?>
 <?php echo $form_end?>
+
+<?php if($form->_status=='show'){ ?>
+<div style="display: none">
+	<form action="'.base_url().'/inventario/kardex/filteredgrid/search/osp" method="post" id="kardex" name="kardex" target="kpopup">
+		<input type="text" name="codigo" value="'.$mcodigo.'" />
+		<input type="text" name="ubica"  value="" />
+		<input type="text" name="fecha"  value="'.dbdate_to_human($mfdesde).'" />
+		<input type="text" name="fechah" value="'.dbdate_to_human($mfhasta).'" />
+		<input type="submit" />
+	</form>
+</div>
+<div id="sinvprv" title="Agregar codigo de Proveedor">
+	<p class="validateTips">Codigo del proveedor para este producto</p>
+	<form>
+	<fieldset>
+		<label for="proveedor">Proveedor</label>
+		<table cellspacing="0" cellpadding="0" width="100%">
+			<tr>
+				<td>
+					<input type="text" size="80" name="proveedor" id="proveedor" class="text ui-widget-content ui-corner-all" />
+				</td>
+				<td>
+					<input type="text" readonly="readonly" size="8" name="cod_prv" id="cod_prv" class="text ui-widget-content ui-corner-all" />
+				</td>
+			</tr>
+		</table>
+		<label for="codigo">Codigo</label>
+		<input type="text" name="codigo" id="codigo" value="" class="text ui-widget-content ui-corner-all" />
+	</fieldset>
+	</form>
+</div>
+<div id="sinvdescu" title="Agregar Descuento">
+	<p class="validateTips">Descuento para este producto</p>
+	<form>
+	<fieldset>
+		<label for="cliente">Cliente</label>
+		<table cellspacing="0" cellpadding="0" width="100%">
+			<tr>
+				<td>
+					<input type="text" size="80" name="cliente" id="cliente" class="text ui-widget-content ui-corner-all" />
+				</td>
+				<td>
+					<input type="text" readonly="readonly" size="8" name="cod_cli" id="cod_cli" class="text ui-widget-content ui-corner-all" />
+				</td>
+			</tr>
+		</table>
+		<label for="descuento">Porcentaje %</label>
+		<input type="text" name="descuento" id="descuento" value="" class="text ui-widget-content ui-corner-all" />
+		<label for="descuento">Aplicacion del Porcentaje</label>
+		<select name="tipo" id="tipo" value="D" class="text ui-widget-content ui-corner-all" >
+			<option value="D">Descuento: Precio1 - Porcentaje</option>
+			<option value="A">Aumento: Costo + Porcentaje</option>
+		</select>
+	</fieldset>
+	</form>
+</div>
+<?php } ?>
 <?php endif; ?>
