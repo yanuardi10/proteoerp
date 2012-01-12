@@ -15,12 +15,13 @@ class Scli extends validaciones {
 	}
 
 	function index(){
+		//$data = '';
+		//$this->load->view('jqui/ventanas',$data);
 		if($this->pi18n->pais=='COLOMBIA'){
 			redirect('ventas/sclicol/filteredgrid');
 		}else{
 			//redirect('ventas/scli/filteredgrid');
 			$script = $this->scliextjs();
-
 		}
 	}
 
@@ -1007,7 +1008,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 
 		$tiva = "['C','Contribuyente'],['N','No Contribuyente'],['E','Especial'],['R','Regimen Exento'],['O','Otro']";
 
-		$tipo = "['1','PVP'],['2','Desc 2'],['3','Desc 3'],['4','Desc 4'],['5','Mayor'],['0','Inactivo']";
+		$tipo = "['1','Precio 1'],['2','Precio 2'],['3','Precio 3'],['4','Precio 4'],['5','Mayor'],['0','Inactivo']";
 
 		$consulrif=$this->datasis->traevalor('CONSULRIF');
 
@@ -1031,13 +1032,13 @@ function ftiva(val){
 
 function ftipo(val){
 	if ( val == '1'){
-		return 'PVP';
+		return 'Precio 1';
 	} else if ( val == '2'){
-		return  'Desc 2';
+		return  'Precio 2';
 	} else if ( val == '3'){
-		return  'Desc 3';
+		return  'Precio 3';
 	} else if ( val == '4'){
-		return  'Desc 4';
+		return  'Precio 4';
 	} else if ( val == '5'){
 		return  'Mayor';
 	} else if ( val == '0'){
@@ -1074,7 +1075,7 @@ function ftipo(val){
 		{ header: 'Mensaje',       width: 220, sortable: true, dataIndex: 'mensaje',  field:  { type: 'textfield' }, filter: { type: 'string'  }}
 	";
 
-		$campos = "'id','cliente','tipo','nombre','grupo','gr_desc','nit','formap','cuenta','limite','socio','contacto','dire11','dire12','ciudad1','dire21','dire22','ciudad2','telefono','telefon2','zona','pais','email','vendedor','porvend','cobrador','porcobr','repre','cirepre','ciudad','separa','copias','regimen','comisio','porcomi','rifci','observa','fecha1','fecha2','tiva','clave','nomfis','riffis','mensaje','modificado','sucursal','mmargen'";
+		$campos = "'id','cliente','tipo','nombre','grupo','gr_desc','nit','formap','cuenta','limite','socio','contacto','dire11','dire12','ciudad1','dire21','dire22','ciudad2','telefono','telefon2','zona','pais','email','vendedor','porvend','cobrador','porcobr','repre','cirepre','ciudad','separa','copias','regimen','comisio','porcomi','rifci','observa','fecha1','fecha2','tiva','clave','nomfis','riffis','mensaje','modificado','sucursal','mmargen','tolera','maxtole', 'credito' ";
 
 		$stores = "
 var scliStore = new Ext.data.Store({
@@ -1169,21 +1170,51 @@ var cplaStore = new Ext.data.Store({
 										]
 									}]
 								},
-
 								{
 									frame: true,border: false,autoScroll:true,title: 'Condiciones',
-									items:[{
+									items:[
+									{
 										xtype:'fieldset',
 										layout: 'column',
 										frame: true,
 										border: false,
 										labelAlign: 'right',
-										defaults: {xtype:'fieldset', labelWidth: 200, fieldStyle: 'text-align: right' },
+										defaults: {xtype:'fieldset', labelWidth: 130, fieldStyle: 'text-align: right' },
 										style:'padding:4px',
 										items: [
-											{ xtype: 'numberfield', fieldLabel: 'Dias de credito',             name: 'formap',  hideTrigger: false, renderer: Ext.util.Format.numberRenderer('0,000'),    columnWidth:0.55},
-											{ xtype: 'numberfield', fieldLabel: 'Monto limite ',               name: 'limite',  hideTrigger: true,  renderer: Ext.util.Format.numberRenderer('0,000.00'), columnWidth:0.55},
-											{ xtype: 'numberfield', fieldLabel: 'Margen para Ventas al Mayor', name: 'mmargen', hideTrigger: true, fieldStyle: 'text-align: right', renderer: Ext.util.Format.numberRenderer('0,000.00'), columnWidth:0.45 },
+";
+
+		//REVISA SI TIENE AUTORIZACION
+		//
+
+		$mLimite = $this->datasis->dameval("SELECT codigo FROM tmenus WHERE ejecutar like 'SCLILIMITE%'");
+		$mTolera = $this->datasis->dameval("SELECT codigo FROM tmenus WHERE ejecutar like 'SCLITOLERA%'"); 
+		$mMaxTol = $this->datasis->dameval("SELECT codigo FROM tmenus WHERE ejecutar like 'SCLIMAXTOLE%'");
+		$mUsuario = $this->db->escape($this->secu->usuario());
+		
+		$mALimite = $this->datasis->dameval("SELECT acceso FROM sida WHERE modulo=$mLimite AND usuario=$mUsuario ");
+		$mATolera = $this->datasis->dameval("SELECT acceso FROM sida WHERE modulo=$mTolera AND usuario=$mUsuario ");
+		$mAMaxTol = $this->datasis->dameval("SELECT acceso FROM sida WHERE modulo=$mMaxTol AND usuario=$mUsuario ");
+
+		if ($mALimite == 'S') $camposforma .= "{ xtype: 'combo',       fieldLabel: 'Forma de Pago ',     name: 'credito', store: [['S','Credito Activo'],['N','Credito Suspendido']], columnWidth: 0.45, fieldStyle: 'text-align: left' },";
+		$camposforma .= "\n{ xtype: 'numberfield', fieldLabel: 'Descuento al Mayor', name: 'mmargen', hideTrigger: true, fieldStyle: 'text-align: right', renderer: Ext.util.Format.numberRenderer('0,000.00'), columnWidth:0.45 },";
+		if ($mALimite == 'S'){
+			if ($mAMaxTol == 'S'){
+			$camposforma .= "
+											{ xtype: 'numberfield', fieldLabel: 'Dias de credito',    name: 'formap',  hideTrigger: false, renderer: Ext.util.Format.numberRenderer('0,000'),    columnWidth:0.45},
+											{ xtype: 'numberfield', fieldLabel: 'Monto limite ',      name: 'limite',  hideTrigger: true,  renderer: Ext.util.Format.numberRenderer('0,000.00'), columnWidth:0.45},
+											{ xtype: 'numberfield', fieldLabel: 'Tolerancia %',       name: 'tolera',  hideTrigger: false, renderer: Ext.util.Format.numberRenderer('0,000.00'), columnWidth:0.45},
+											{ xtype: 'numberfield', fieldLabel: 'Maxima Tolera.',     name: 'maxtole', hideTrigger: false, renderer: Ext.util.Format.numberRenderer('0,000.00'), columnWidth:0.45},
+";
+			} elseif ($mATolera == 'S') {
+			$camposforma .= "
+											{ xtype: 'numberfield', fieldLabel: 'Dias de credito',    name: 'formap',  hideTrigger: false, renderer: Ext.util.Format.numberRenderer('0,000'),    columnWidth:0.45},
+											{ xtype: 'numberfield', fieldLabel: 'Tolerancia %',       name: 'tolera',  hideTrigger: false, renderer: Ext.util.Format.numberRenderer('0,000.00'), columnWidth:0.45},
+";
+			}
+		}
+
+		$camposforma .= "
 										]
 									},{
 										xtype:'fieldset',
@@ -1335,14 +1366,14 @@ var cplaStore = new Ext.data.Store({
 
 		$data['title']  = heading('Clientes');
 		$this->load->view('extjs/extjsven',$data);
+		//$this->load->view('jqui/ventanas',$data);
 	}
 
 
-
 	function instalar(){
-		$seniat='http://www.seniat.gov.ve/BuscaRif/BuscaRif.jsp';
-		$mSQL="REPLACE INTO valores (nombre,valor,descrip) VALUES ('CONSULRIF','$seniat','Pagina de consulta de rif del seniat') ON DUPLICATE KEY UPDATE valor='$seniat'";
-		$this->db->simple_query($mSQL);
+		//$seniat='http://www.seniat.gov.ve/BuscaRif/BuscaRif.jsp';
+		//$mSQL="REPLACE INTO valores (nombre,valor,descrip) VALUES ('CONSULRIF','$seniat','Pagina de consulta de rif del seniat') ON DUPLICATE KEY UPDATE valor='$seniat'";
+		//$this->db->simple_query($mSQL);
 
 		if (!$this->db->field_exists('modifi','scli')) {
 			$mSQL='ALTER TABLE `scli` ADD `modifi` TIMESTAMP DEFAULT CURRENT_TIMESTAMP NULL AFTER `mensaje`';
