@@ -1,7 +1,7 @@
 <?php
-$container_bl=join("&nbsp;", $form->_button_container["BL"]);
-$container_br=join("&nbsp;", $form->_button_container["BR"]);
-$container_tr=join("&nbsp;", $form->_button_container["TR"]);
+$container_bl=join('&nbsp;', $form->_button_container['BL']);
+$container_br=join('&nbsp;', $form->_button_container['BR']);
+$container_tr=join('&nbsp;', $form->_button_container['TR']);
 
 if ($form->_status=='delete' OR $form->_action=='delete'):
 	echo $form->output;
@@ -20,7 +20,7 @@ $campos=$form->js_escape($scampos);
 if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</div>';
 //echo $form_scripts;
 
-echo $form_begin; 
+echo $form_begin;
 if($form->_status!='show'){
 ?>
 
@@ -46,28 +46,38 @@ function leer(){
 	valor=$("#"+apuntador).val();
 
 	if(campo=='it_barras'){
-		$.post("<?php echo site_url('inventario/common/get_cant'); ?>",{ barras:valor },function(data){
-			if(data==1){
-				$.post("<?php echo site_url('inventario/common/get_codigo') ?>",{ barras:valor },function(data){
-					$("#it_codigo_"+i).val(data);
-					$("#it_codigo_"+i+"_val").text(data);
-				});
-				$.post("<?php echo site_url('inventario/common/get_descrip');?>",{ barras:valor },function(data){
-					$("#it_descri_"+i).val(data);
-					$("#it_descri_"+i+"_val").text(data);
-				});
+		$.post("<?php echo site_url('inventario/common/get_prod'); ?>",{ barras:valor },function(data){
+			if(data.cana==1){
+				$("#it_codigo_"+i).val(data.codigo);
+				$("#it_codigo_"+i+"_val").text(data.codigo);
+				$("#it_descri_"+i).val(data.descrip);
+				$("#it_descri_"+i+"_val").text(data.descrip);
+
 				$("#it_serial_"+i).focus();
+				if(data.serial=='S'){
+					$("#it_cant_"+i).val('1');
+					$("#it_cant_"+i).attr('readonly','readonly');
+				}
 			}
 
-			if(data==0){
-				a=0;
-				ii=parseFloat(i)-1;
-				if(ii>=0){
-					codigo=$("#it_codigo_"+ii).val();
-					a=codigo.length;
+			if(data.cana==0){
+				arrcodigo=$('input[name^="it_codigo_"]');
+				if(arrcodigo.length>1){
+					codigo = arrcodigo[1].value;
+					nom    = arrcodigo[1].name;
+					pos    = nom.lastIndexOf('_');
+
+					if(pos>0){
+						ii = nom.substring(pos+1);
+					}else{
+						ii = -1;
+					}
+				}else{
+					codigo = '';
 				}
 
-				if(a>0){
+				a=codigo.length;
+				if(a>0 && ii>=0){
 					barras=$("#it_barras_"+ii).val();
 					descri=$("#it_descri_"+ii).val();
 
@@ -75,16 +85,26 @@ function leer(){
 					$("#it_barras_"+i).val(barras);
 					$("#it_descri_"+i).val(descri);
 					$("#it_serial_"+i).val(valor);
+					if($("#it_cant_"+ii).attr('readonly')){
+						$("#it_cant_"+i).attr('readonly','readonly');
+						$("#it_cant_"+i).val('1');
+					}
 
 					$("#it_codigo_"+i+"_val").text(codigo);
 					$("#it_descri_"+i+"_val").text(descri);
 					add_seri();
 				}else{
-					$("#it_barras_"+i).val('');
 					$("#it_barras_"+i).focus();
+					$("#it_codigo_"+i).val('');
+					$("#it_barras_"+i).val('');
+					$("#it_descri_"+i).val('');
+					$("#it_serial_"+i).val('');
+
+					$("#it_codigo_"+i+"_val").text('');
+					$("#it_descri_"+i+"_val").text('');
 				}
 			}
-		});
+		},'json');
 	}
 
 	if(campo=='it_serial'){
@@ -191,6 +211,7 @@ function add_seri(){
 	});
 	$("#it_cant_"+can).val(1);
 	$("#it_barras_"+can).focus();
+	$("#it_cant_"+can).numeric(".");
 }
 
 function del_seri(id){

@@ -81,6 +81,8 @@ class Recep extends Controller {
 	}
 
 	function dataedit(){
+		$alma=$this->secu->getalmacen();
+		if(empty($alma)) show_error('El usuario no tiene un almac&eacute;n asignado');
 		$this->rapyd->load('dataobject','datadetails');
 
 		/*$mSPRV=array(
@@ -184,6 +186,10 @@ class Recep extends Controller {
 		$edit->observa->rows = 1;
 		$edit->observa->style = 'width:100%;';
 
+		$edit->estampa = new autoUpdateField('estampa' ,date('Ymd'), date('Ymd'));
+		$edit->hora    = new autoUpdateField('hora',date('H:i:s'), date('H:i:s'));
+		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
+
 		//******************************
 		//     Inicio del detalle
 		//******************************
@@ -225,6 +231,7 @@ class Recep extends Controller {
 		$edit->itcant->autocomplete = false;
 		$edit->itcant->css_class    = 'inputnum';
 		$edit->itcant->insertValue  = 1;
+		$edit->itcant->disable_paste= true;
 		//******************************
 		//      Fin del detalle
 		//******************************
@@ -238,7 +245,7 @@ class Recep extends Controller {
 		$conten['jtipo']     = json_encode($tipo);
 		$conten['jorigen']   = json_encode($origen);
 		$conten['jtipos_ref']= json_encode($tipo_ref);
-		$conten['form']     =& $edit;
+		$conten['form']      =& $edit;
 
 		$data['content'] = $this->load->view('recep', $conten,true);
 		$data['title']   = heading($this->tits.' Nro. '.$edit->recep->value);
@@ -318,10 +325,21 @@ class Recep extends Controller {
 	function chserial($serial,$i){
 		$origen   = $this->input->post('origen');
 		$dbserial = $this->db->escape($serial);
+		$codigo   = $this->input->post('it_codigo_'.$i);
+		$dbcodigo = $this->db->escape($codigo);
+		$mSQL="SELECT COUNT(*) FROM seri WHERE codigo=${dbcodigo} AND serial=${dbserial}";
 		if($origen=='sfac'){
 			$this->validation->set_message('chserial', "El serial $serial no esta registrado al sistema, debe ingresarlo primero para hacer la salida");
-			$cana=$this->datasis->dameval("SELECT COUNT(*) FROM seri WHERE serial=${dbserial}");
+			$cana=$this->datasis->dameval($mSQL);
 			if($cana==0 || empty($cana)){
+				return false;
+			}
+		}elseif($origen=='scst'){
+			$this->validation->set_message('chserial', "El serial $serial ya esta registrado en el sistema");
+			$cana=$this->datasis->dameval($mSQL);
+			if($cana==0 || empty($cana)){
+				return true;
+			}else{
 				return false;
 			}
 		}
@@ -389,6 +407,14 @@ class Recep extends Controller {
 
 		$nrecep= $this->datasis->fprox_numero('nrecep');
 		$do->set('recep',$nrecep);
+
+		$alma = $this->secu->getalmacen();
+		$rel  = 'seri';
+		$cana = $do->count_rel($rel);
+		for($i = 0;$i < $cana;$i++){
+			$do->set_rel($rel, 'alma' ,$alma);
+		}
+
 		return true;
 	}
 
@@ -427,12 +453,12 @@ class Recep extends Controller {
 			$query="SELECT codigo,SUM(cant) cant FROM (
 				SELECT codigoa codigo,desca descrip, cana cant
 				FROM sitems a WHERE numa=$refee
-				UNION ALL 
-				SELECT b.codigo,b.descrip,-1*b.cant 
-				FROM seri b 
+				UNION ALL
+				SELECT b.codigo,b.descrip,-1*b.cant
+				FROM seri b
 				JOIN recep c ON b.recep=c.recep
 				WHERE c.refe=$refee AND c.origen='sfac' AND c.recep<>'$recep'
-			)t 
+			)t
 			GROUP BY codigo";
 			$sface=$this->datasis->consularray($query);
 		}
@@ -447,18 +473,18 @@ class Recep extends Controller {
 			SELECT codigo,SUM(cant) cant FROM (
 			SELECT codigoa codigo,desca descrip, 0 cant
 			FROM sitems a WHERE numa=$refee
-			UNION ALL 
-			SELECT b.codigo,b.descrip,b.cant 
-			FROM seri b 
+			UNION ALL
+			SELECT b.codigo,b.descrip,b.cant
+			FROM seri b
 			JOIN recep c ON b.recep=c.recep
 			WHERE c.refe=$refee AND c.origen='sfac' AND c.recep<>'$recep'
-			)t 
+			)t
 			GROUP BY codigo";
 			$sfac=$this->datasis->consularray($query);
 
 			$query="
 			SELECT b.codigo,b.serial
-			FROM seri b 
+			FROM seri b
 			JOIN recep c ON b.recep=c.recep
 			WHERE c.refe=$refee AND c.origen='sfac' AND c.recep<>'$recep'";
 			$sfacs=$this->datasis->consularray($query);
@@ -470,17 +496,17 @@ class Recep extends Controller {
 		$scst=array();$scsts=array();
 		if($origen=='scst' && $tipo=='E'){
 			$query="
-			SELECT b.codigo,SUM(b.cant) cant 
-			FROM seri b 
+			SELECT b.codigo,SUM(b.cant) cant
+			FROM seri b
 			JOIN recep c ON b.recep=c.recep
 			WHERE c.refe=$refee AND c.origen='scst' AND c.recep<>'$recep'
 			GROUP BY codigo";
 			$scst=$this->datasis->consularray($query);
 
-			//se trae los seriales recibidos para la recepcion 
+			//se trae los seriales recibidos para la recepcion
 			$query="
 			SELECT b.codigo,b.serial
-			FROM seri b 
+			FROM seri b
 			JOIN recep c ON b.recep=c.recep
 			WHERE c.refe=$refee AND c.origen='scst' AND c.recep<>'$recep'";
 			$scst=$this->datasis->consularray($query);
@@ -499,7 +525,7 @@ class Recep extends Controller {
 			$seriale=$this->db->escape($serial);
 
 			$where='';
-			
+
 			if(!empty($recep)){
 				$recepe=$this->db->escape($recep);
 				$where=" AND a.recep<>$recepe ";
@@ -642,10 +668,10 @@ class Recep extends Controller {
 			$this->db->query("DELETE FROM itsnot WHERE numero='$refe2'");
 			$query="
 			INSERT INTO itsnot (`numero`,`codigo`,`descrip`,`cant`,`saldo`,`entrega`,`factura`)
-			SELECT '$refe2' numero,codigo,a.descrip,b.cana cant,(b.cana-SUM(a.cant)) saldo,SUM(a.cant) entrega,$refee 
+			SELECT '$refe2' numero,codigo,a.descrip,b.cana cant,(b.cana-SUM(a.cant)) saldo,SUM(a.cant) entrega,$refee
 			FROM recep c
 			JOIN seri a ON a.recep=c.recep
-			JOIN sitems b ON a.codigo=b.codigoa AND c.refe=b.numa 
+			JOIN sitems b ON a.codigo=b.codigoa AND c.refe=b.numa
 			WHERE c.recep='$recep' AND b.tipoa='F' AND b.numa=$refee
 			GROUP BY codigo";
 			$this->db->query($query);

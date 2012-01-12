@@ -289,11 +289,16 @@ class sfac_add extends validaciones {
 		$edit->vd = new  dropdownField ('Vendedor', 'vd');
 		$edit->vd->options('SELECT vendedor, CONCAT(vendedor,\' \',nombre) nombre FROM vend ORDER BY vendedor');
 		$edit->vd->style='width:200px;';
+		$edit->vd->insertValue=$this->secu->getvendedor();
 
 		$edit->almacen= new dropdownField ('Almac&eacute;n', 'almacen');
 		$edit->almacen->options('SELECT ubica,ubides FROM caub ORDER BY ubides');
 		$edit->almacen->rule='required';
-		$edit->almacen->insertValue=$this->datasis->traevalor('ALMACEN');
+		$alma = $this->secu->getalmacen();
+		if(strlen($alma)<=0){
+			$alma = $this->datasis->traevalor('ALMACEN');
+		}
+		$edit->almacen->insertValue=$alma;
 		$edit->almacen->style='width:200px;';
 
 		$edit->numero = new inputField('N&uacute;mero', 'numero');
@@ -341,6 +346,7 @@ class sfac_add extends validaciones {
 		$edit->cajero->options('SELECT cajero,nombre FROM scaj ORDER BY nombre');
 		$edit->cajero->rule ='required|cajerostatus';
 		$edit->cajero->style='width:200px;';
+		$edit->cajero->insertValue=$this->secu->getcajero();
 
 		//***********************************
 		//  Campos para el detalle 1 sitems
@@ -570,7 +576,7 @@ class sfac_add extends validaciones {
 				$exento+=$itimporte;
 			}
 
-			$totalg    +=$itimporte*(1+($itiva/100));
+			$totalg    +=$itimporte+$iva;
 		}
 		$totalg = round($totalg,2);
 		if(abs($sfpa-$totalg)>0.01){
