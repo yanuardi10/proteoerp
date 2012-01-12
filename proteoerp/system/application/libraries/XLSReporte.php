@@ -451,7 +451,9 @@ class XLSReporte extends writeexcel_workbookbig  {
 		}elseif(in_array($tipo,$this->wstring)){
 			$this->worksheet->write_string($f, $c, $campo);
 		}elseif(in_array($tipo,$this->wdate)){
-			$campo=dbdate_to_human($campo);
+			if(function_exists('dbdate_to_huma')){
+				$campo=dbdate_to_human($campo);
+			}
 			$this->worksheet->write_string($f, $c, $campo);
 		}else{
 			$this->worksheet->write($f, $c, $campo);
