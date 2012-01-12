@@ -1191,27 +1191,27 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->tipo->option("Combo","Combo");
 
 		$AddUnidad='<a href="javascript:add_unidad();" title="Haz clic para Agregar una unidad nueva">'.image('list_plus.png','Agregar',array("border"=>"0")).'</a>';
-		$edit->unidad = new dropdownField("Unidad","unidad");
+		$edit->unidad = new dropdownField('Unidad','unidad');
 		$edit->unidad->style='width:100px;';
 		$edit->unidad->option('','Seleccionar');
 		$edit->unidad->options("SELECT unidades, unidades as valor FROM unidad ORDER BY unidades");
 		$edit->unidad->append($AddUnidad);
 
-		$edit->clave = new inputField("Clave", "clave");
+		$edit->clave = new inputField('Clave', 'clave');
 		$edit->clave->size=10;
 		$edit->clave->maxlength=8;
 		$edit->clave->rule = 'trim|strtoupper';
 
-		$edit->ubica = new inputField("Ubicacion", "ubica");
+		$edit->ubica = new inputField('Ubicaci&oacute;n', 'ubica');
 		$edit->ubica->size=10;
 		$edit->ubica->maxlength=8;
 		$edit->ubica->rule = 'trim|strtoupper';
 
 		$AddDepto='<a href="javascript:add_depto();" title="Haz clic para Agregar un nuevo Departamento">'.image('list_plus.png','Agregar',array("border"=>"0")).'</a>';
-		$edit->depto = new dropdownField("Departamento", "depto");
-		$edit->depto->rule ="required";
+		$edit->depto = new dropdownField('Departamento', 'depto');
+		$edit->depto->rule ='required';
 		$edit->depto->style='width:300px;white-space:nowrap;';
-		$edit->depto->option("","Seleccione un Departamento");
+		$edit->depto->option('','Seleccione un Departamento');
 		$edit->depto->options("SELECT depto, CONCAT(depto,'-',descrip) descrip FROM dpto WHERE tipo='I' ORDER BY depto");
 		$edit->depto->append($AddDepto);
 
@@ -1653,7 +1653,7 @@ function sinvborraprv(mproveed, mcodigo){
 		$edit->it3estacion->option('','Seleccionar');
 		$edit->it3estacion->options('SELECT estacion,CONCAT(estacion,\'-\',nombre) AS lab FROM esta ORDER BY estacion');
 		$edit->it3estacion->style  = 'width:250px;';
-//		$edit->it3estacion->rule   = 'required';
+		//$edit->it3estacion->rule   = 'required';
 		$edit->it3estacion->db_name = 'estacion';
 		$edit->it3estacion->rel_id  = 'sinvplabor';
 
@@ -3030,14 +3030,21 @@ function sinvborraprv(mproveed, mcodigo){
 			$this->db->simple_query($mSQL);
 		}
 
-		if (!in_array('alto'   ,$campos)) $this->db->simple_query("ALTER TABLE sinv ADD alto DECIMAL(10,2)");
-		if (!in_array('alto'   ,$campos)) $this->db->simple_query("ALTER TABLE sinv ADD ancho DECIMAL(10,2)");
-		if (!in_array('largo'  ,$campos)) $this->db->simple_query("ALTER TABLE sinv ADD largo DECIMAL(10,2)");
-		if (!in_array('forma'  ,$campos)) $this->db->simple_query("ALTER TABLE sinv ADD forma VARCHAR(50)");
-		if (!in_array('exento' ,$campos)) $this->db->simple_query("ALTER TABLE sinv ADD exento CHAR(1) DEFAULT 'N'");
-		if (!in_array('mmargen',$campos)) $this->db->simple_query("ALTER TABLE sinv ADD mmargen DECIMAL(7,2) DEFAULT 0 COMMENT 'Margen al Mayor'");
-		if (!in_array('pm'     ,$campos)) $this->db->simple_query("ALTER TABLE `sinv`  ADD COLUMN `pm` DECIMAL(19,2) NOT NULL DEFAULT '0.00' COMMENT 'porcentaje mayor'");
-		if (!in_array('pmb'    ,$campos)) $this->db->simple_query("ALTER TABLE `sinv`  ADD COLUMN `pmb` DECIMAL(19,2) NOT NULL DEFAULT '0.00' COMMENT 'porcentaje mayor'");
+		if (!in_array('alto'       ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD alto DECIMAL(10,2)");
+		if (!in_array('alto'       ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD ancho DECIMAL(10,2)");
+		if (!in_array('largo'      ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD largo DECIMAL(10,2)");
+		if (!in_array('forma'      ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD forma VARCHAR(50)");
+		if (!in_array('exento'     ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD exento CHAR(1) DEFAULT 'N'");
+		if (!in_array('mmargen'    ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD mmargen DECIMAL(7,2) DEFAULT 0 COMMENT 'Margen al Mayor'");
+		if (!in_array('pm'         ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `pm` DECIMAL(19,2) NOT NULL DEFAULT '0.00' COMMENT 'porcentaje mayor'");
+		if (!in_array('pmb'        ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `pmb` DECIMAL(19,2) NOT NULL DEFAULT '0.00' COMMENT 'porcentaje mayor'");
+		if (!in_array('mmargenplus',$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `mmargenplus` DECIMAL(7,2) NULL DEFAULT '0.00' COMMENT 'Margen al Mayor'");
+		if (!in_array('escala1'    ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `escala1` DECIMAL(12,2) NULL DEFAULT '0.00'");
+		if (!in_array('pescala1'   ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `pescala1` DECIMAL(5,2) NULL DEFAULT '0.00' COMMENT 'porcentaje descuento escala1'");
+		if (!in_array('escala2'    ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `escala2` DECIMAL(12,2) NULL DEFAULT '0.00'");
+		if (!in_array('pescala2'   ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `pescala2` DECIMAL(5,2) NULL DEFAULT '0.00' COMMENT 'porcentaje descuento escala2'");
+		if (!in_array('escala3'    ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `escala3` DECIMAL(12,2) NULL DEFAULT '0.00'");
+		if (!in_array('pescala3'   ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `pescala3` DECIMAL(5,2) NULL DEFAULT '0.00' COMMENT 'porcentaje descuento escala3'");
 
 		if(!$this->db->table_exists('sinvcombo')){
 			$mSQL="CREATE TABLE `sinvcombo` (
@@ -3057,7 +3064,7 @@ function sinvborraprv(mproveed, mcodigo){
 				PRIMARY KEY (`id`)
 			)
 			COLLATE='latin1_swedish_ci'
-			ENGINE=MyISAM;";
+			ENGINE=MyISAM";
 			$this->db->simple_query($mSQL);
 		}
 
@@ -3128,42 +3135,17 @@ function sinvborraprv(mproveed, mcodigo){
 			AUTO_INCREMENT=1";
 			$this->db->simple_query($mSQL);
 		}
-		
-		$query="ALTER TABLE `sinv` ADD COLUMN `mmargenplus` DECIMAL(7,2) NULL DEFAULT '0.00' COMMENT 'Margen al Mayor'";
-		$this->db->simple_query($query);
-		$query=" ALTER TABLE `sinv` ADD COLUMN `escala1` DECIMAL(12,2) NULL DEFAULT '0.00'";
-		$this->db->simple_query($query);
-		$query=" ALTER TABLE `sinv` ADD COLUMN `pescala1` DECIMAL(5,2) NULL DEFAULT '0.00' COMMENT 'porcentaje descuento escala1'";
-		$this->db->simple_query($query);
-		$query=" ALTER TABLE `sinv` ADD COLUMN `escala2` DECIMAL(12,2) NULL DEFAULT '0.00'";
-		$this->db->simple_query($query);
-		$query=" ALTER TABLE `sinv` ADD COLUMN `pescala2` DECIMAL(5,2) NULL DEFAULT '0.00' COMMENT 'porcentaje descuento escala2'";
-		$this->db->simple_query($query);
-		$query=" ALTER TABLE `sinv` ADD COLUMN `escala3` DECIMAL(12,2) NULL DEFAULT '0.00'";
-		$this->db->simple_query($query);
-		$query=" ALTER TABLE `sinv` ADD COLUMN `pescala3` DECIMAL(5,2) NULL DEFAULT '0.00' COMMENT 'porcentaje descuento escala3'";
-		$this->db->simple_query($query);
-		$query="CREATE TABLE `esta` (
-			`estacion` VARCHAR(5) NOT NULL DEFAULT '',
-			`nombre` VARCHAR(30) NULL DEFAULT NULL,
-			`descrip` TEXT NULL,
-			`jefe` CHAR(5) NULL DEFAULT NULL COMMENT 'tecnico',
-			`id` INT(11) NOT NULL AUTO_INCREMENT,
-			PRIMARY KEY (`id`),
-			UNIQUE INDEX `vendedor` (`estacion`)
-		)
-		COLLATE='latin1_swedish_ci'
-		ENGINE=MyISAM
-		ROW_FORMAT=DYNAMIC";
-		$this->db->simple_query($query);
-		$query="CREATE TABLE `barraspos` (
-			`codigo` CHAR(15) NOT NULL DEFAULT '',
-			`suplemen` CHAR(15) NOT NULL DEFAULT '',
-			PRIMARY KEY (`codigo`, `suplemen`)
-		)
-		COLLATE='latin1_swedish_ci'
-		ENGINE=MyISAM
-		ROW_FORMAT=DEFAULT";
-		$this->db->simple_query($query);
+
+		if(!$this->db->table_exists('barraspos')){
+			$query="CREATE TABLE `barraspos` (
+				`codigo` CHAR(15) NOT NULL DEFAULT '',
+				`suplemen` CHAR(15) NOT NULL DEFAULT '',
+				PRIMARY KEY (`codigo`, `suplemen`)
+			)
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM
+			ROW_FORMAT=DEFAULT";
+			$this->db->simple_query($query);
+		}
 	}
 }

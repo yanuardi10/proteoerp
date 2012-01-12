@@ -507,8 +507,12 @@ function del_sinvplabor(id){
 					</td>
 				</tr>
 				<tr>
-					<td class='littletableheaderc'>Barras</td>
+					<td class='littletableheaderc'><?php echo $form->barras->label   ?></td>
 					<td class="littletablerow"><?=$form->barras->output   ?></td>
+				</tr>
+				<tr>
+					<td class='littletableheaderc'><?php echo $form->ubica->label; ?></td>
+					<td class="littletablerow">    <?php echo $form->ubica->output;?></td>
 				</tr>
 			</table>
 		</td>
