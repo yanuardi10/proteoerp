@@ -56,6 +56,7 @@ function cost(pertenece){
 	return ccosto;
 }
 
+//Calcula los precios respetando el margen
 function calculos(pertenece){
  	if (pertenece=='M') v=6; else v=5;
 	var iva   =  parseFloat($("#iva").val());
@@ -70,6 +71,7 @@ function calculos(pertenece){
 	}
 }
 
+//Calcula el margen respetando el precio
 function cambioprecio(pertenece){
 	var i=0;
 	var costo=cost(pertenece);
@@ -86,6 +88,7 @@ function cambioprecio(pertenece){
 	}
 }
 
+//Calcula el margen respetando la base
 function cambiobase(pertenece){
 	var i=0;
 	var costo=cost(pertenece);
@@ -248,17 +251,15 @@ function bloquea_precios(ban){
 	if(ban){
 		for (i = 1; i <= t; i++) {
 			$("#margen"+i).attr('disabled','disabled');
-			$("#base"+i).attr('disabled','disabled');
+			$("#base"+i).attr(  'disabled','disabled');
 			$("#precio"+i).attr('disabled','disabled');
 		}
-	}
-	else{
-		for (i = 1; i <= t; i++) {
+	}else{
+		for (i = 1; i <= t; i++){
 			if($("#margen"+i).val()==false)$("#margen"+i).val(t-i + "0");
 			$("#margen"+i).attr('disabled','');
-			$("#base"+i).attr('disabled','');
+			$("#base"+i).attr(  'disabled','');
 			$("#precio"+i).attr('disabled','');
 		}
-		calculos('I');
 	}
 }
