@@ -252,7 +252,7 @@ class pfaclitemayor extends validaciones{
 		$this->db->limit(50);
 
 		$query = $this->db->get();
-		echo $this->db->last_query();
+
 		foreach ($query->result() as $row){
 			$obj='codigoa_'.$i;
 			$edit->$obj = new hiddenField('C&oacute;digo <#o#>', $obj);
