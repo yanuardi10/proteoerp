@@ -152,8 +152,8 @@ function faltante(){
 	<tr>
 		<td><?php echo $form->tipo_doc->label; ?></td>
 		<td><?php echo $form->tipo_doc->output; ?></td>
-		<td><?php echo $form->fechadoc->label; ?></td>
-		<td><?php echo $form->fechadoc->output; ?></td>
+		<td><?php echo $form->fecdoc->label; ?></td>
+		<td><?php echo $form->fecdoc->output; ?></td>
 	</tr>
 </table>
 
