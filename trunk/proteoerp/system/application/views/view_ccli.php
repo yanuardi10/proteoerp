@@ -85,6 +85,29 @@ function add_sfpa(){
 	return can;
 }
 
+function itsaldo(obj,saldo){
+	if(obj.value.length==0){
+		obj.value=saldo;
+		totaliza();
+	}
+}
+
+function itppago(obj,ind){
+	var monto=0;
+	var valor=Number(obj.value);
+	var nval=0;
+
+	if(valor==NaN){
+		obj.value='0';
+	}else if(valor<0){
+		monto=Number($('#abono_'+ind).val());
+		nval=monto*valor*-1/100;
+		obj.value=roundNumber(nval,2);
+		$('#abono_'+ind).val(roundNumber(monto-nval,2));
+		totaliza();
+	}
+}
+
 function del_sfpa(id){
 	id = id.toString();
 	$('#tr_sfpa_'+id).remove();

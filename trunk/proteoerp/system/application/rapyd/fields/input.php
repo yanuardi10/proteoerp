@@ -76,13 +76,14 @@ class inputField extends objField{
 					'style'       => $this->style
 				);
 
-				if(strlen($this->maxlength)>0) $atributes['maxlength'] = $this->maxlength;
-				if(strlen($this->title)>0)     $atributes['title']     = $this->title;
-				if(strlen($this->onclick)>0)   $atributes['onclick']   = $this->onclick;
-				if(strlen($this->onchange)>0)  $atributes['onchange']  = $this->onchange;
-				if(isset($this->onkeyup))      $attributes['onkeyup']  = $this->onkeyup;
-				if($this->readonly)            $attributes['readonly'] = 'readonly';
-				if($this->disable_paste)       $attributes['onpaste']  = 'return false;';
+				if(strlen($this->maxlength)>0) $attributes['maxlength'] = $this->maxlength;
+				if(strlen($this->title)>0)     $attributes['title']     = $this->title;
+				if(strlen($this->onclick)>0)   $attributes['onclick']   = $this->onclick;
+				if(strlen($this->onchange)>0)  $attributes['onchange']  = $this->onchange;
+				if(isset($this->onfocus))      $attributes['onfocus']   = $this->onfocus;
+				if(isset($this->onkeyup))      $attributes['onkeyup']   = $this->onkeyup;
+				if($this->readonly)            $attributes['readonly']  = 'readonly';
+				if($this->disable_paste)       $attributes['onpaste']   = 'return false;';
 				if(!$this->autocomplete)       $attributes['autocomplete']='off';
 
 				$output = form_input($attributes) . $this->extra_output;
