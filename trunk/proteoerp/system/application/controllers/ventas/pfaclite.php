@@ -523,80 +523,101 @@ class pfaclite extends validaciones{
 		$this->genesal=false;
 		$error='';
 		$usr=$this->session->userdata('usuario');
-		
+		$ids=array();
+		//print_r($lose);
+		//exit();
 		foreach($lose as $hoja=>$cliente){
 			$itpfac         =array();
+			if(is_null($cliente['cod_cli']))
+			$cliente['cod_cli'] ='';
 			$cod_clie       =$this->db->escape($cliente['cod_cli']);
-			$scli           =$this->datasis->damerow("SELECT * FROM scli WHERE cliente=$cod_clie");
-			$vd             =$this->datasis->dameval("SELECT vendedor FROM usuario WHERE us_codigo='$usr'");
-			$pfac['vd']     =$vd;
-			$pfac['cod_cli']=$cliente['cod_cli'];
-			$pfac['numero'] =$this->datasis->fprox_numero('npfac');	
-			$pfac['transac']=$this->datasis->fprox_numero('ntransac');	
-			$pfac['direc']  =$scli['dire11'].$scli['dire12'];
-			$pfac['dire1']  =$scli['dire21'].$scli['dire22'];
-			$pfac['fecha']  =date('Ymd');
-			$pfac['nombre'] =$scli['nombre'];
-			$pfac['rifci']  =$scli['rifci'];
-			$pfac['usuario']=$usr;
-			$pfac['estampa']=date('%Y%m%d');
 			
+			$c=$this->datasis->dameval("SELECT COUNT(*) FROM scli WHERE cliente=$cod_clie AND LENGTH(cliente)>0");			
 			$totals=$iva=0;
-			if(count($scli)>0){
-				foreach($las9[$hoja] as $linea){
-					if(array_key_exists($linea[8],$sinv2)>0 && $linea[9]>0 && $linea[6]>0){
-						$itpfac=array(
-							'cana'      =>$linea['9'],
-							'preca'     =>$linea['6'],
-							'codigoa'   =>$linea['8'],
-							'iva'       =>$sinv['iva'],
-							'tota'      =>round($linea['9']*$linea['6'],2),
-							'numa'      =>$pfac['numero'],
-							'desca'     =>$sinv2[$linea[8]]['descrip'],
-							'usuario'   =>$usr,
-							'estampa'   =>date('%Y%m%d')
-						);
-						$totals +=round($linea['9']*$linea['6'],2);
-						$iva    +=round($totals*$sinv['iva']/100,2);
-						$this->db->insert('itpfac'  ,$itpfac);
-					}
-					
-					if(array_key_exists($linea[18],$sinv2)>0 && $linea[19]>0 && $linea[16]>0){
-						$itpfac=array(
-							'cana'      =>$linea['19'],
-							'preca'     =>$linea['16'],
-							'codigoa'   =>$linea['18'],
-							'iva'       =>$sinv['iva'],						
-							'tota'      =>round($linea['19']*$linea['16'],2),
-							'numa'      =>$pfac['numero'],
-							'desca'     =>$sinv2[$linea[8]]['descrip'],
-							'usuario'   =>$usr,
-							'estampa'   =>date('%Y%m%d')
-						);
-						$totals +=round($linea['19']*$linea['16'],2);
-						$iva    +=round($totals*$sinv['iva']/100,2);
-						$this->db->insert('itpfac'  ,$itpfac);
-					}
-				}
-			
-				$totalg +=round($totals+$iva/100,2);
-				$pfac['totalg']=$totalg;
-				$pfac['totals']=$totals;
-				$pfac['iva']   =$iva;
+			if($c>0){
+				$scli           =$this->datasis->damerow("SELECT * FROM scli WHERE cliente=$cod_clie");
+				$vd             =$this->datasis->dameval("SELECT vendedor FROM usuario WHERE us_codigo='$usr'");
+				$pfac['vd']     =$vd;
+				$pfac['cod_cli']=$cliente['cod_cli'];
+				$pfac['numero'] =$this->datasis->fprox_numero('npfac');	
+				$pfac['transac']=$this->datasis->fprox_numero('ntransac');	
+				$pfac['direc']  =$scli['dire11'].$scli['dire12'];
+				$pfac['dire1']  =$scli['dire21'].$scli['dire22'];
+				$pfac['fecha']  =date('Ymd');
+				$pfac['nombre'] =$scli['nombre'];
+				$pfac['rifci']  =$scli['rifci'];
+				$pfac['usuario']=$usr;
+				$pfac['estampa']=date('%Y%m%d');
 				
-				$this->db->insert('pfac',$pfac);
-				$id     =$this->db->insert_id();
+				if(count($scli)>0){
+					foreach($las9[$hoja] as $linea){
+						if(array_key_exists($linea[8],$sinv2)>0 && $linea[9]>0 && $linea[6]>0){
+							$itpfac=array(
+								'cana'      =>$linea['9'],
+								'preca'     =>$linea['6'],
+								'codigoa'   =>$linea['8'],
+								'iva'       =>$sinv['iva'],
+								'tota'      =>round($linea['9']*$linea['6'],2),
+								'numa'      =>$pfac['numero'],
+								'desca'     =>$sinv2[$linea[8]]['descrip'],
+								'usuario'   =>$usr,
+								'estampa'   =>date('%Y%m%d')
+							);
+							$totals +=round($linea['9']*$linea['6'],2);
+							$iva    +=round($totals*$sinv['iva']/100,2);
+							$this->db->insert('itpfac'  ,$itpfac);
+						}
+						
+						if(array_key_exists($linea[18],$sinv2)>0 && $linea[19]>0 && $linea[16]>0){
+							$itpfac=array(
+								'cana'      =>$linea['19'],
+								'preca'     =>$linea['16'],
+								'codigoa'   =>$linea['18'],
+								'iva'       =>$sinv['iva'],						
+								'tota'      =>round($linea['19']*$linea['16'],2),
+								'numa'      =>$pfac['numero'],
+								'desca'     =>$sinv2[$linea[8]]['descrip'],
+								'usuario'   =>$usr,
+								'estampa'   =>date('%Y%m%d')
+							);
+							$totals +=round($linea['19']*$linea['16'],2);
+							$iva    +=round($totals*$sinv['iva']/100,2);
+							$this->db->insert('itpfac'  ,$itpfac);
+						}
+					}
+					$totalg +=round($totals+$iva/100,2);
+					$pfac['totalg']=$totalg;
+					$pfac['totals']=$totals;
+					$pfac['iva']   =$iva;
+					
+					$this->db->insert('pfac',$pfac);
+					$id     =$this->db->insert_id();
+					$ids[]  =$id;
+				}
 			}
 		}
-		echo $error;
-	
-		if(count($data)>1)
-		redirect('ventas/pfaclite/filteredgrid/'.$id);
+		if(count($data)>1 && empty($error)){
+			$error='';
+			foreach($ids as $val){
+				$error.=$this->reserv($val);
+			}
+			
+			if(empty($error)){
+				redirect('ventas/pfaclite/filteredgrid/');
+			}else{
+				$error="<div class='alert'>$error</div>";
+				logusu('pfaclite',"Reservo pedido $id. con ERROR:$error ");
+				$data['content'] = $error.anchor("ventas/pfaclite/filteredgrid/",'Ir al Filtro');
+				$data['title']   = " Pedidos ";
+				$data["head"]    = $this->rapyd->get_head();
+				$this->load->view('view_ventanas', $data);
+			}
+		}
 		else
 		redirect('ventas/pfaclite/dataedit/show/'.$id);
 	}
 	
-	function reserva($id,$dir='pfac'){
+	function reserv($id){
 		$error='';
 		$PFACRESERVA=$this->datasis->traevalor('PFACRESERVA','indica si un pedido descuenta de inventario los producto');
 		if($PFACRESERVA=='S'){
@@ -618,18 +639,33 @@ class pfaclite extends validaciones{
 			}
 			$sinv=$sinv2;
 			unset($sinv2);
-	
+			$iva = $totals = 0;
 			for($i=0;$i < $do->count_rel('itpfac');$i++){
 				$codigoa  = $do->get_rel('itpfac','codigoa'  ,$i);
 				$cana     = $do->get_rel('itpfac','cana'     ,$i);
-				$preca    = $do->get_rel('itpfac','preca'    ,$i);
-				//$existen  =$this->datasis->dameval("SELECT existen FROM itsinv WHERE alma='".$vd['almacen']."' AND codigo='$codigoa'");
-				//if($cana>$existen){
-				//	$error.="ERROR. La cantidad solicitada(".nformat($cana).") es mayor a la existente (".nformat($existen).") para ($codigoa).</br>";
-				//}
-				if(round($preca,2)!=round($sinv[$codigoa]['precio1'],2))
-				$error.="ERROR. El precio para el producto ($codigoa) cambio. por favor corrijalo ó presione el boton modificar y luego guardar. el sistema los actualizara en ese momento";
+				
+				$existen  =$this->datasis->dameval("SELECT existen FROM itsinv WHERE alma='".$vd['almacen']."' AND codigo='$codigoa'");
+				if($cana>$existen){
+					$error.="ERROR. La cantidad solicitada(".nformat($cana).") es mayor a la existente (".nformat($existen).") para ($codigoa).</br>";
+				}
+				$codigoae = $this->db->escape($codigoa);
+				$sinv   =$this->datasis->damerow("SELECT precio1,iva FROM sinv WHERE codigo=$codigoae");
+				$precio1=$sinv['precio1'];
+				$itiva  =$sinv['iva'];
+				$do->set_rel('itpfac','preca',$i);
+				$ittota  = $precio1 * $cana;
+				$do->set_rel('itpfac', 'tota'    , $ittota, $i);
+
+				$iva    += $ittota * ($itiva / 100);
+				$totals += $ittota;
+				$do->set_rel('itpfac', 'mostrado', $iva + $ittota, $i);
 			}
+			$totalg = $totals + $iva;
+
+			$do->set('totals' , round($totals , 2));
+			$do->set('totalg' , round($totalg , 2));
+			$do->set('iva'    , round($iva    , 2));
+			
 			if(empty($error)){
 				for($i=0;$i < $do->count_rel('itpfac');$i++){
 					$codigoa  = $do->get_rel('itpfac','codigoa'  ,$i);
@@ -641,9 +677,18 @@ class pfaclite extends validaciones{
 			$fenvia=date("Ymd");
 			$do->set('reserva','S');
 			$do->set('fenvia' ,$fenvia);
+			if(empty($error))
+				$do->save();
+			else
+			return $error;
 		}
+	}
+	
+	
+	function reserva($id,$dir='pfac'){
+		$error='';
+		$error.=$this->reserv($id);
 		if(empty($error)){
-			$do->save();
 			logusu('pfaclite',"Reservo pedido $id");
 			redirect("ventas/$dir/dataedit/show/$id");
 		}else{
