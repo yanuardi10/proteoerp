@@ -121,11 +121,11 @@ class ccli extends Controller {
 		$edit->numero->size =10;
 		$edit->numero->maxlength =8;
 
-		$edit->fechadoc = new dateonlyField('Fecha','fechadoc');
-		$edit->fechadoc->size =10;
-		$edit->fechadoc->maxlength =8;
-		$edit->fechadoc->insertValue=date('Y-m-d');
-		$edit->fechadoc->rule ='chfecha|required';
+		$edit->fecdoc = new dateonlyField('Fecha','fecdoc');
+		$edit->fecdoc->size =10;
+		$edit->fecdoc->maxlength =8;
+		$edit->fecdoc->insertValue=date('Y-m-d');
+		$edit->fecdoc->rule ='chfecha|required';
 
 		$edit->monto = new inputField('Total','monto');
 		$edit->monto->rule='max_length[17]|numeric';
@@ -150,8 +150,10 @@ class ccli extends Controller {
 		$this->db->where('a.cod_cli',$cliente);
 		$transac=$edit->get_from_dataobjetct('transac');
 		if($transac!==false){
+			$tipo_doc =$edit->get_from_dataobjetct('tipo_doc');
 			$dbtransac=$this->db->escape($transac);
 			$this->db->join('itccli AS b','a.tipo_doc = b.tipoccli AND a.numero=b.numccli AND a.transac='.$dbtransac);
+			$this->db->where('a.tipo_doc',$tipo_doc);
 		}else{
 			$this->db->where('a.monto > a.abonos');
 			$this->db->where_in('a.tipo_doc',array('FC','ND','GI'));
@@ -254,8 +256,8 @@ class ccli extends Controller {
 		$edit->tipo->db_name  = 'tipo';
 		$edit->tipo->rel_id   = 'sfpa';
 		$edit->tipo->style    = 'width:160px;';
-		$edit->tipo->insertValue='EF';
 		$edit->tipo->rule     = 'condi_required|callback_chsfpatipo[';
+		$edit->tipo->insertValue='EF';
 
 		$edit->numref = new inputField('Numero <#o#>', 'num_ref_<#i#>');
 		$edit->numref->size     = 12;
@@ -383,7 +385,6 @@ class ccli extends Controller {
 			return false;
 		}
 	}
-
 
 	function cuenta($cliente){
 		if(!$this->_exitescli($cliente)) redirect($this->url.'filterscli');
