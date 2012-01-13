@@ -37,6 +37,10 @@ $(function() {
 		totaliza();
 	});
 	totaliza();
+	$('form').submit(function() {
+		var r=confirm("Confirma guardar las transacciones?");
+		return r;
+	});
 });
 
 function totaliza(){
@@ -148,8 +152,8 @@ function faltante(){
 	<tr>
 		<td><?php echo $form->tipo_doc->label; ?></td>
 		<td><?php echo $form->tipo_doc->output; ?></td>
-		<td><?php echo $form->fecha->label; ?></td>
-		<td><?php echo $form->fecha->output; ?></td>
+		<td><?php echo $form->fechadoc->label; ?></td>
+		<td><?php echo $form->fechadoc->output; ?></td>
 	</tr>
 </table>
 

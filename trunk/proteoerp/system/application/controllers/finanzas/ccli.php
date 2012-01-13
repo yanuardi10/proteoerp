@@ -108,7 +108,7 @@ class ccli extends Controller {
 		$edit->tipo_doc->option('NC','Nota de credito');
 		$edit->tipo_doc->option('AN','Anticipo');
 		$edit->tipo_doc->style='width:140px;';
-		$edit->tipo_doc->rule ='enum[AB,NC,GI,AN]|required';
+		$edit->tipo_doc->rule ='enum[AB,NC,AN]|required';
 
 		$edit->codigo = new  dropdownField('Motivo', 'codigo');
 		$edit->codigo->option('','Ninguno');
@@ -121,11 +121,11 @@ class ccli extends Controller {
 		$edit->numero->size =10;
 		$edit->numero->maxlength =8;
 
-		$edit->fecha = new dateonlyField('Fecha','fecha');
-		$edit->fecha->size =10;
-		$edit->fecha->maxlength =8;
-		$edit->fecha->insertValue=date('Y-m-d');
-		$edit->fecha->rule ='chfecha|required';
+		$edit->fechadoc = new dateonlyField('Fecha','fechadoc');
+		$edit->fechadoc->size =10;
+		$edit->fechadoc->maxlength =8;
+		$edit->fechadoc->insertValue=date('Y-m-d');
+		$edit->fechadoc->rule ='chfecha|required';
 
 		$edit->monto = new inputField('Total','monto');
 		$edit->monto->rule='max_length[17]|numeric';
@@ -137,6 +137,7 @@ class ccli extends Controller {
 		$edit->usuario = new autoUpdateField('usuario',$this->secu->usuario(),$this->secu->usuario());
 		$edit->estampa = new autoUpdateField('estampa' ,date('Ymd'), date('Ymd'));
 		$edit->hora    = new autoUpdateField('hora',date('H:i:s'), date('H:i:s'));
+		$edit->fecha   = new autoUpdateField('fecha',date('Ymd'), date('Ymd'));
 
 		//************************************************
 		//inicio detalle itccli
@@ -312,6 +313,17 @@ class ccli extends Controller {
 		}
 	}
 
+	function chfuturo($fecha){
+		$fdoc=timestampFromInputDate($fecha);
+		$fact=mktime();
+
+		if($fdoc > $fact){
+			$this->validation->set_message('chfuturo', 'No puede meter un efecto a futuro');
+			return false;
+		}
+		return true;
+	}
+
 	function chtipo($val,$i){
 		$tipo=$this->input->post('tipo_'.$i);
 		if(empty($tipo)) return true;
@@ -410,6 +422,7 @@ class ccli extends Controller {
 		$usuario = $do->get('usuario');
 		$cod_cli = $do->get('cod_cli');
 		$tipo_doc= $do->get('tipo_doc');
+		$fecha   = $do->get('fecha');
 		$itabono=$sfpamonto=$ppagomonto=0;
 
 		//Totaliza el abonado
@@ -470,6 +483,7 @@ class ccli extends Controller {
 		}else{
 			$mnum = $this->datasis->fprox_numero('nancli');
 		}
+		$do->set('vence'  , $fecha );
 		$do->set('numero' , $mnum);
 		$do->set('transac', $transac);
 
