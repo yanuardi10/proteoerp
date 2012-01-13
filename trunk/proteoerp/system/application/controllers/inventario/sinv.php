@@ -2497,5 +2497,23 @@ class sinv extends Controller {
 			ROW_FORMAT=DEFAULT";
 			$this->db->simple_query($query);
 		}
+		if(!$this->db->table_exists('invfelr')){
+			$query="CREATE TABLE `invfelr` (
+				`codigo` CHAR(15) NOT NULL DEFAULT '',
+				`fecha` DATE NOT NULL DEFAULT '0000-00-00',
+				`precio` DECIMAL(17,2) NOT NULL DEFAULT '0.00',
+				`existen` DECIMAL(17,2) NULL DEFAULT NULL,
+				`anterior` DECIMAL(17,2) NULL DEFAULT NULL,
+				`parcial` DECIMAL(17,2) NULL DEFAULT NULL,
+				`alma` CHAR(4) NOT NULL DEFAULT '',
+				`tipo` CHAR(1) NULL DEFAULT NULL,
+				`fhora` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
+				`usuario` CHAR(12) NULL DEFAULT NULL,
+				`ubica` CHAR(10) NOT NULL DEFAULT ''
+			)
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM
+			ROW_FORMAT=DEFAULT";
+		}
 	}
 }
