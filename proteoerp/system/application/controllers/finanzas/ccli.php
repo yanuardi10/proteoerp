@@ -497,7 +497,7 @@ class ccli extends Controller {
 			if(empty($itabono) || $itabono==0){
 				$do->rel_rm($rel,$i);
 			}else{
-				$observa[]="PAGA ".$ittipo.$itnumero;
+				$observa[]=$ittipo.$itnumero;
 				$do->set_rel($rel, 'tipoccli', $tipo_doc, $i);
 				$do->set_rel($rel, 'cod_cli' , $cod_cli , $i);
 				$do->set_rel($rel, 'estampa' , $estampa , $i);
@@ -506,9 +506,11 @@ class ccli extends Controller {
 				$do->set_rel($rel, 'transac' , $transac , $i);
 			}
 		}
-		$observa=implode(',',$observa);
-		$do->set('observa1' , substr($observa,0,50));
-		$do->set('observa2' , substr($observa,50));
+		if(count($observa)>0){
+			$observa='PAGA '.implode(',',$observa);
+			$do->set('observa1' , substr($observa,0,50));
+			$do->set('observa2' , substr($observa,50));
+		}
 
 		$rel='sfpa';
 		$cana = $do->count_rel($rel);
@@ -562,14 +564,17 @@ class ccli extends Controller {
 
 				$itdbdata=array();
 				$itdbdata['cod_cli']  = $cliente;
-				$itdbdata['numccli']  = 'NC';
-				$itdbdata['tipoccli'] = $mnumnc;
+				$itdbdata['numccli']  = $mnumnc;
+				$itdbdata['tipoccli'] = 'NC';
 				$itdbdata['estampa']  = $do->get('estampa');
 				$itdbdata['hora']     = $do->get('hora');
 				$itdbdata['transac']  = $do->get('transac');
 				$itdbdata['usuario']  = $do->get('usuario');
 				$itdbdata['fecha']    = $do->get('fecha');
 				$itdbdata['monto']    = $this->ppagomonto;
+				$itdbdata['reten']    = 0;
+				$itdbdata['mora']     = 0;
+				$itdbdata['mora']     = 0;
 
 				unset($dbdata);
 			}
