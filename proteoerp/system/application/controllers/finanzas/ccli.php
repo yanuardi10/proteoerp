@@ -218,7 +218,7 @@ class ccli extends Controller {
 			$edit->$obj = new inputField('Abono',$obj);
 			$edit->$obj->db_name      = 'abono';
 			$edit->$obj->rel_id       = 'itccli';
-			$edit->$obj->rule         = "max_length[18]|numeric|callback_chabono[$i]";
+			$edit->$obj->rule         = "max_length[18]|numeric|positive|callback_chabono[$i]";
 			$edit->$obj->css_class    = 'inputnum';
 			$edit->$obj->showformat   = 'decimal';
 			$edit->$obj->autocomplete = false;
@@ -226,12 +226,13 @@ class ccli extends Controller {
 			$edit->$obj->size         = 15;
 			$edit->$obj->maxlength    = 18;
 			$edit->$obj->ind          = $i;
+			$edit->$obj->onfocus      = 'itsaldo(this,'.round($row->saldo,2).');';
 
 	        $obj='ppago_'.$i;
 			$edit->$obj = new inputField('Pronto Pago',$obj);
 			$edit->$obj->db_name      = 'ppago';
 			$edit->$obj->rel_id       = 'itccli';
-			$edit->$obj->rule         = "max_length[18]|numeric|callback_chabono[$i]";
+			$edit->$obj->rule         = "max_length[18]|numeric|positive|callback_chppago[$i]";
 			$edit->$obj->css_class    = 'inputnum';
 			$edit->$obj->showformat   = 'decimal';
 			$edit->$obj->autocomplete = false;
@@ -239,6 +240,7 @@ class ccli extends Controller {
 			$edit->$obj->size         = 15;
 			$edit->$obj->maxlength    = 18;
 			$edit->$obj->ind          = $i;
+			$edit->$obj->onchange     = "itppago(this,'$i');";
 
 			$i++;
 		}
@@ -333,8 +335,18 @@ class ccli extends Controller {
 		return true;
 	}
 
+	function chppago($monto,$i){
+		$tipo   = $this->input->post('tipo_doc');
+		if($tipo=='NC' && $monto>0){
+			$this->validation->set_message('chppago', "No se puede hacer pronto pago cuando el tipo de documento es una nota de cr&eacute;dito");
+			return false;
+		}
+		return true;
+	}
+
 	function chabono($monto,$i){
 		$tipo   = $this->input->post('tipo_doc_'.$i);
+		$ppago  = $this->input->post('ppago_'.$i);
 		$numero = $this->input->post('numero_'.$i);
 		$cod_cli= $this->input->post('cod_cli');
 		$fecha  = human_to_dbdate($this->input->post('fecha_'.$i));
@@ -352,7 +364,7 @@ class ccli extends Controller {
 		if ($query->num_rows() == 0) return false;
 		$saldo = $row->saldo;
 
-		if($monto<=$saldo){
+		if(($monto+$ppago)<=$saldo){
 			return true;
 		}else{
 			$this->validation->set_message('chabono', "No se le puede abonar al efecto $tipo-$numero un monto mayor al saldo");
@@ -492,6 +504,7 @@ class ccli extends Controller {
 			$do->set_rel($rel, 'usuario' , $usuario , $i);
 			$do->set_rel($rel, 'transac' , $transac , $i);
 		}
+		$this->ppagomonto=$ppagomonto;
 		return true;
 	}
 
@@ -502,20 +515,76 @@ class ccli extends Controller {
 		$rel_id='itccli';
 		$cana = $do->count_rel($rel_id);
 		if($cana>0){
+			if($this->ppagomonto>0){
+				//Crea la NC por Pronto pago
+				$mnumnc = $this->datasis->fprox_numero('nccli');
+
+				$dbdata=array();
+				$dbdata['cod_cli']    = $cliente;
+				$dbdata['nombre']     = $do->get('nombre');
+				$dbdata['tipo_doc']   = 'NC';
+				$dbdata['numero']     = $mnumnc;
+				$dbdata['fecha']      = $do->get('fecha');
+				$dbdata['monto']      = $this->ppagomonto;
+				$dbdata['impuesto']   = 0;
+				$dbdata['abonos']     = $this->ppagomonto;
+				$dbdata['vence']      = $do->get('fecha');
+				$dbdata['tipo_ref']   = 'AB';
+				$dbdata['num_ref']    = $do->get('numero');
+				$dbdata['observa1']   = 'DESCUENTO POR PRONTO PAGO';
+				$dbdata['estampa']    = $do->get('estampa');
+				$dbdata['hora']       = $do->get('hora');
+				$dbdata['transac']    = $do->get('transac');
+				$dbdata['usuario']    = $do->get('usuario');
+				$dbdata['codigo']     = 'NOCON';
+				$dbdata['descrip']    = 'NOTA DE CONTABILIDAD';
+				$dbdata['fecdoc']     = $do->get('fecha');
+				$dbdata['nroriva']    = '';
+				$dbdata['emiriva']    = '';
+
+				$mSQL = $this->db->insert_string('smov', $dbdata);
+				$ban=$this->db->simple_query($mSQL);
+				if($ban==false){ memowrite($mSQL,'ccli'); }
+
+				$itdbdata=array();
+				$itdbdata['cod_cli']  = $cliente;
+				$itdbdata['numccli']  = 'NC';
+				$itdbdata['tipoccli'] = $mnumnc;
+				$itdbdata['estampa']  = $do->get('estampa');
+				$itdbdata['hora']     = $do->get('hora');
+				$itdbdata['transac']  = $do->get('transac');
+				$itdbdata['usuario']  = $do->get('usuario');
+				$itdbdata['fecha']    = $do->get('fecha');
+				$itdbdata['monto']    = $this->ppagomonto;
+
+				unset($dbdata);
+			}
+
 			foreach($do->data_rel[$rel_id] AS $i=>$data){
 				$tipo_doc = $data['tipo_doc'];
 				$numero   = $data['numero'];
 				$fecha    = $data['fecha'];
 				$monto    = $data['abono'];
+				$ppago    = (empty($data['ppago']))? 0: $data['ppago'];
 
 				$dbtipo_doc = $this->db->escape($tipo_doc);
 				$dbnumero   = $this->db->escape($numero  );
 				$dbfecha    = $this->db->escape($fecha   );
+				$dbmonto    = $monto+$ppago;
 
-				$mSQL="UPDATE smov SET abonos=abonos+$monto WHERE tipo_doc=$dbtipo_doc AND fecha=$dbfecha AND numero=$dbnumero AND cod_cli=$dbcliente";
+				$mSQL="UPDATE smov SET abonos=abonos+$dbmonto WHERE tipo_doc=$dbtipo_doc AND fecha=$dbfecha AND numero=$dbnumero AND cod_cli=$dbcliente";
 				$ban=$this->db->simple_query($mSQL);
 				if($ban==false){ memowrite($mSQL,'ccli'); }
-				//echo $mSQL;
+
+				if($ppago > 0 ){
+					$itdbdata['tipo_doc'] = $tipo_doc;
+					$itdbdata['numero']   = $numero;
+					$itdbdata['abono']    = $ppago;
+
+					$mSQL = $this->db->insert_string('itccli', $itdbdata);
+					$ban=$this->db->simple_query($mSQL);
+					if($ban==false){ memowrite($mSQL,'ccli'); }
+				}
 			}
 		}
 		//exit();
