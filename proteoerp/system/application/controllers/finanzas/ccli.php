@@ -228,8 +228,8 @@ class ccli extends Controller {
 			$edit->$obj->ind          = $i;
 
 	        $obj='ppago_'.$i;
-			$edit->$obj = new inputField('Abono',$obj);
-			$edit->$obj->db_name      = 'abono';
+			$edit->$obj = new inputField('Pronto Pago',$obj);
+			$edit->$obj->db_name      = 'ppago';
 			$edit->$obj->rel_id       = 'itccli';
 			$edit->$obj->rule         = "max_length[18]|numeric|callback_chabono[$i]";
 			$edit->$obj->css_class    = 'inputnum';
@@ -404,8 +404,8 @@ class ccli extends Controller {
 		$rel='itccli';
 		$cana = $do->count_rel($rel);
 		for($i = 0;$i < $cana;$i++){
-			$itabono   +=$do->get_rel($rel, 'abono', $i);
-			$ppagomonto+=$do->get_rel($rel, 'ppago', $i);
+			$itabono    += $do->get_rel($rel, 'abono', $i);
+			$ppagomonto += $do->get_rel($rel, 'ppago', $i);
 		}
 		$itabono=round($itabono,2);
 

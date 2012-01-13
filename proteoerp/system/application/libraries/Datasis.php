@@ -113,8 +113,9 @@ class Datasis {
 		$CI->load->database('default',TRUE);
 		if ($CI->session->userdata('logged_in')){
 			$usuario = $CI->session->userdata['usuario'];
+			$dbusuario= $CI->db->escape($usuario);
 			// Prueba si es supervisor
-			$existe = $CI->datasis->dameval("SELECT COUNT(*) FROM usuario WHERE us_codigo='$usuario' AND supervisor='S'");
+			$existe = $CI->datasis->dameval("SELECT COUNT(*) FROM usuario WHERE us_codigo=$dbusuario AND supervisor='S'");
 			if ($existe > 0)
 				return  true;
 		}
@@ -125,9 +126,11 @@ class Datasis {
 		$CI =& get_instance();
 		$CI->load->database('default',TRUE);
 		if ($CI->session->userdata('logged_in')){
-			$usuario = $CI->session->userdata['usuario'];
+			$usuario  = $CI->session->userdata['usuario'];
+			$dbusuario= $CI->db->escape($usuario);
+			$dbid     = $CI->db->escape($id);
 			//$existe = $CI->datasis->dameval("SELECT COUNT(*) FROM intrasida WHERE usuario='$usuario' AND id='$id'");   //Tortuga
-			$existe = $CI->datasis->dameval("SELECT COUNT(*) FROM intrasida WHERE usuario='$usuario' AND modulo='$id'"); //Proteo
+			$existe = $CI->datasis->dameval("SELECT COUNT(*) FROM intrasida WHERE usuario=$dbusuario AND modulo=$dbid"); //Proteo
 			if ($existe  > 0 )
 				return  true;
 		}
@@ -172,7 +175,7 @@ class Datasis {
 		$CI =& get_instance();
 		$mc = $CI->db->query($mSQL);
 		foreach ($mc->list_fields() as $field)
-	 		array_push($ncampo, $field);
+			array_push($ncampo, $field);
 		if ($mc->num_rows() > 0){
 			foreach( $mc->result_array() as $row )
 				$bote[$row[$ncampo[0]]]=$row[$ncampo[1]];
@@ -184,7 +187,7 @@ class Datasis {
 		$out='';
 		if (is_array($parametros)){
 			foreach ($parametros as $value) {
-	  		$out .= "+this.form.$value.value+'/'";
+			$out .= "+this.form.$value.value+'/'";
 			}
 		}else
 			$out="+this.form.$parametros.value+'/'";

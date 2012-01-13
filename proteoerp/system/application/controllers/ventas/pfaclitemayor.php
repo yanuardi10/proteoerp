@@ -73,9 +73,9 @@ class pfaclitemayor extends validaciones{
 		$filter->buttons('reset', 'search');
 		$filter->build('dataformfiltro');
 
-		$uri = anchor($this->url.'dataedit/<raencode><#cod_cli#></raencode>/show/<#id#>', '<#numero#>');
+		$uri  = anchor($this->url.'dataedit/<raencode><#cod_cli#></raencode>/show/<#id#>', '<#numero#>');
 		$uri2 = anchor_popup('formatos/verhtml/PFAC/<#numero#>', 'Ver HTML', $atts);
-		$uri3 = anchor_popup('ventas/sfac/creadpfacf/<#numero#>', 'Facturar', $atts2);
+		$uri3 = anchor('ventas/sfac_add/creafrompfac/<#numero#>/create', 'Facturar');
 
 		$grid = new DataGrid('');
 		$grid->order_by('numero', 'desc');
@@ -86,10 +86,8 @@ class pfaclitemayor extends validaciones{
 		$grid->column_orderby('Fecha'        , '<dbdate_to_human><#fecha#></dbdate_to_human>','fecha', 'align=\'center\'');
 		$grid->column_orderby('Cliente'      , 'cod_cli','cod_cli');
 		$grid->column_orderby('Nombre'       , 'nombre','nombre');
-		//$grid->column_orderby('Sub.Total'    , '<nformat><#totals#></nformat>', 'totals', "align=right");
 		$grid->column_orderby('IVA'          , '<nformat><#iva#></nformat>'   , 'iva',    "align=right");
 		$grid->column_orderby('Total'        , '<nformat><#totalg#></nformat>', 'totalg', "align=right");
-		//$grid->column_orderby('Referencia'   , 'referen','referen');
 		$grid->column_orderby('Factura'      , 'factura','factura');
 		$grid->column_orderby('Status'       , 'status', 'status');
 
@@ -528,10 +526,8 @@ class pfaclitemayor extends validaciones{
 
 		$numero = $this->datasis->fprox_numero('npfac');
 		$do->set('numero', $numero);
-		//$transac = $this->datasis->fprox_numero('ntransa');
-		//$do->set('transac', $transac);
 		$fecha = $do->get('fecha');
-		$vd    =$this->secu->getvendedor();
+		$vd    = $this->secu->getvendedor();
 		$do->set('vd',$vd);
 
 		$cod_cli = $do->get('cod_cli');
@@ -539,9 +535,8 @@ class pfaclitemayor extends validaciones{
 		if($rrow!=false){
 			$do->set('nombre',$rrow['nombre']);
 			$do->set('rifci' ,$rrow['rifci']);
-			$do->set('zona' ,$rrow['zona']);
+			$do->set('zona'  ,$rrow['zona']);
 		}
-
 
 		$iva = $totals = 0;
 		for($i = 0;$i < $cana;$i++){

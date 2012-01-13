@@ -6,6 +6,7 @@ class sfac_add extends validaciones {
 	var $titp='Facturaci&oacute;n';
 	var $tits='Facturaci&oacute;n';
 	var $url ='ventas/sfac_add/';
+	var $_url=null;
 
 	function sfac_add(){
 		parent::Controller();
@@ -206,7 +207,7 @@ class sfac_add extends validaciones {
 
 		$data['extras']  = $extras;
 
-		$data["head"]    = $this->rapyd->get_head();
+		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = heading($this->titp);
 		$this->load->view('view_ventanas', $data);
 
@@ -258,6 +259,7 @@ class sfac_add extends validaciones {
 		$do->rel_pointer('sitems','sinv','sitems.codigoa=sinv.codigo','sinv.descrip AS sinvdescrip, sinv.base1 AS sinvprecio1, sinv.base2 AS sinvprecio2, sinv.base3 AS sinvprecio3, sinv.base4 AS sinvprecio4, sinv.iva AS sinviva, sinv.peso AS sinvpeso,sinv.tipo AS sinvtipo');
 
 		$edit = new DataDetails('Facturas', $do);
+
 		$edit->back_url = site_url('ventas/sfac_add/filteredgrid');
 		$edit->set_rel_title('sitems','Producto <#o#>');
 		$edit->set_rel_title('sfpa','Forma de pago <#o#>');
@@ -374,6 +376,7 @@ class sfac_add extends validaciones {
 		$edit->cana->autocomplete=false;
 		$edit->cana->onkeyup  ='importe(<#i#>)';
 		$edit->cana->showformat ='decimal';
+		$edit->cana->disable_paste=true;
 
 		$edit->preca = new inputField('Precio <#o#>', 'preca_<#i#>');
 		$edit->preca->db_name   = 'preca';
@@ -491,6 +494,7 @@ class sfac_add extends validaciones {
 		$edit->hora      = new autoUpdateField('hora',date('H:i:s'), date('H:i:s'));
 
 		$edit->buttons('save', 'back','add_rel','add');
+		if(!empty($this->_url)) $edit->_process_uri=$this->_url;
 		$edit->build();
 
 		$conten['form']  =&  $edit;
@@ -920,6 +924,76 @@ class sfac_add extends validaciones {
 
 		$primary =implode(',',$do->pk);
 		logusu($do->table,"Anulo ${tipo_doc}${numero} $this->tits $primary ");
+	}
+
+	function creafrompfac($numero,$status=null){
+		$this->_url= $this->url.'dataedit/insert';
+
+		$sel=array('a.cod_cli','b.nombre','b.tipo','b.rifci','b.dire11 AS direc'
+		,'a.totals','a.iva','a.totalg');
+		$this->db->select($sel);
+		$this->db->from('pfac AS a');
+		$this->db->join('scli AS b','a.cod_cli=b.cliente');
+		$this->db->where('a.numero',$numero);
+		$query = $this->db->get();
+
+		if ($query->num_rows() > 0 && $status=='create'){
+			$row = $query->row();
+			$_POST=array(
+				'btn_submit' => 'Guardar',
+				'fecha'      => inputDateFromTimestamp(mktime(0,0,0)),
+				'cajero'     => $this->secu->getcajero(),
+				'vd'         => $this->secu->getvendedor(),
+				'almacen'    => $this->secu->getalmacen(),
+				'tipo_doc'   => 'F',
+				'factura'    => '',
+				'cod_cli'    => $row->cod_cli,
+				'sclitipo'   => $row->tipo,
+				'nombre'     => rtrim($row->nombre),
+				'rifci'      => $row->rifci,
+				'direc'      => rtrim($row->direc),
+				'totals'     => $row->totals,
+				'iva'        => $row->iva,
+				'totalg'     => $row->totalg,
+			);
+
+			$itsel=array('a.codigoa','b.descrip AS desca','a.cana','a.preca','a.tota','a.iva',
+			'b.precio1','b.precio2','b.precio3','b.precio4','b.tipo','b.peso');
+			$this->db->select($itsel);
+			$this->db->from('itpfac AS a');
+			$this->db->join('sinv AS b','b.codigo=a.codigoa');
+			$this->db->where('a.numa',$numero);
+			$this->db->where('a.cana >','0');
+			$qquery = $this->db->get();
+			$i=0;
+
+			foreach ($qquery->result() as $itrow){
+				$_POST["codigoa_$i"]  = rtrim($itrow->codigoa);
+				$_POST["desca_$i"]    = rtrim($itrow->desca);
+				$_POST["cana_$i"]     = $itrow->cana;
+				$_POST["preca_$i"]    = $itrow->preca;
+				$_POST["tota_$i"]     = $itrow->tota;
+				$_POST["precio1_$i"]  = $itrow->precio1;
+				$_POST["precio2_$i"]  = $itrow->precio2;
+				$_POST["precio3_$i"]  = $itrow->precio3;
+				$_POST["precio4_$i"]  = $itrow->precio4;
+				$_POST["itiva_$i"]    = $itrow->iva;
+				$_POST["sinvpeso_$i"] = $itrow->peso;
+				$_POST["sinvtipo_$i"] = $itrow->tipo;
+				$_POST["detalle_$i"]  = '';
+				$i++;
+			}
+
+			//sfpa
+			$i=0;
+			$_POST["tipo_$i"]     = '';
+			$_POST["num_ref_$i"]  = '';
+			$_POST["banco_$i"]    = '';
+			$_POST["monto_$i"]    = 0;
+
+			$this->dataedit();
+		}
+
 	}
 
 	function instalar(){

@@ -13,7 +13,7 @@
 /**
  * ancestor
  */
-require_once ("dataform.php");
+require_once ('dataform.php');
 /**
  * DataEdit base class.
  *
@@ -48,7 +48,7 @@ class DataEdit extends DataForm {
 	 * @return   void
 	 */
 	function DataEdit($title, $table) {
-		if (is_object($table) && is_a($table, "DataObject")) {
+		if (is_object($table) && is_a($table, 'DataObject')) {
 			$dataobject = & $table;
 		} else {
 			$dataobject = new DataObject($table);
@@ -56,8 +56,8 @@ class DataEdit extends DataForm {
 		parent::DataForm(null, $dataobject);
 		$this->session = & $this->rapyd->session;
 		$this->_pkey = count($this->_dataobject->pk);
-		if ($this->rapyd->uri->get("osp", 1) == "") {
-			$this->rapyd->uri->un_set("osp");
+		if ($this->rapyd->uri->get('osp', 1) == '') {
+			$this->rapyd->uri->un_set('osp');
 		}
 		$this->_sniff_status();
 		$this->title($title);
@@ -70,9 +70,9 @@ class DataEdit extends DataForm {
 	 * @return   string
 	 */
 	function pk_to_URI($pk) {
-		$result = "";
+		$result = '';
 		foreach ($pk as $keyfield => $keyvalue) {
-			$result.= "/" . raencode($keyvalue);
+			$result.= '/' . raencode($keyvalue);
 		}
 		return $result;
 	}
@@ -86,7 +86,7 @@ class DataEdit extends DataForm {
 	function URI_to_pk($id_str, $do) {
 		$result = array();
 		//check and remove for '/' in first and last position for that explode work fine.
-		$tmp_ar = explode("/", $id_str);
+		$tmp_ar = explode('/', $id_str);
 		$keys = array_keys($do->pk);
 		for ($i = 0;$i <= count($tmp_ar) - 1;$i++) {
 			$result[$keys[$i]] = radecode($tmp_ar[$i]);
@@ -106,15 +106,15 @@ class DataEdit extends DataForm {
 		return join('/', $id_segment);
 	}
 	function _sniff_status() {
-		$this->_status = "idle";
+		$this->_status = 'idle';
 		$segment_array = $this->uri->segment_array();
 		$id_str = $this->segment_id_str($segment_array);
 		//The following var is unsuded?? it seams to be an old test remaining code??
 		//$uri_array = $this->rapyd->uri->explode_uri($this->uri->uri_string());
 		///// show /////
-		if ($this->rapyd->uri->is_set("show") && (count($this->rapyd->uri->get("show")) == $this->_pkey + 1)) {
-			$this->_status = "show";
-			$this->_process_uri = "";
+		if ($this->rapyd->uri->is_set('show') && (count($this->rapyd->uri->get('show')) == $this->_pkey + 1)) {
+			$this->_status = 'show';
+			$this->_process_uri = '';
 			$result = $this->_dataobject->load($this->URI_to_pk($id_str, $this->_dataobject));
 			if (!$result) {
 				$this->_status = "unknow_record";
