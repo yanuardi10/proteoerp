@@ -912,11 +912,13 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 	function crear() {
 		$js= file_get_contents('php://input');
 		$data= json_decode($js,true);
-		$campos = $data['data'];
+		$campos  = $data['data'];
 		$cliente = $data['data']['cliente'];
+		$nombre  = $data['data']['nombre'];
 
 		unset($campos['nomgrup']);
 		unset($campos['id']);
+		unset($campos['modificado']);
 
 		if(empty($cliente)){
 			$cliente = $this->_numatri();
@@ -933,7 +935,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 			$mSQL = $this->db->insert_string("scli", $campos );
 			$this->db->simple_query($mSQL);
 			logusu('scli',"CLIENTE $cliente $nombre CREADO");
-			echo "{ success: true, message: ".$data['data']['cliente']."}";
+			echo "{ success: true, message: codigo ".$data['data']['cliente'].' '.$nombre."}";
 		}
 	}
 
@@ -944,6 +946,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		$codigo = $campos['cliente'];
 		unset($campos['nomgrup']);
 		unset($campos['cliente']);
+		unset($campos['modificado']);
 		unset($campos['id']);
 		//print_r($campos);
 		$mSQL = $this->db->update_string("scli", $campos,"id='".$data['data']['id']."'" );
@@ -1185,16 +1188,19 @@ var cplaStore = new Ext.data.Store({
 ";
 
 		//REVISA SI TIENE AUTORIZACION
-		//
 
 		$mLimite = $this->datasis->dameval("SELECT codigo FROM tmenus WHERE ejecutar like 'SCLILIMITE%'");
 		$mTolera = $this->datasis->dameval("SELECT codigo FROM tmenus WHERE ejecutar like 'SCLITOLERA%'"); 
 		$mMaxTol = $this->datasis->dameval("SELECT codigo FROM tmenus WHERE ejecutar like 'SCLIMAXTOLE%'");
 		$mUsuario = $this->db->escape($this->secu->usuario());
+
+		$mALimite = 'N';
+		$mATolera = 'N';
+		$mAMaxTol = 'N';
 		
-		$mALimite = $this->datasis->dameval("SELECT acceso FROM sida WHERE modulo=$mLimite AND usuario=$mUsuario ");
-		$mATolera = $this->datasis->dameval("SELECT acceso FROM sida WHERE modulo=$mTolera AND usuario=$mUsuario ");
-		$mAMaxTol = $this->datasis->dameval("SELECT acceso FROM sida WHERE modulo=$mMaxTol AND usuario=$mUsuario ");
+		if ($mLimite) $mALimite = $this->datasis->dameval("SELECT acceso FROM sida WHERE modulo=$mLimite AND usuario=$mUsuario ");
+		if ($mTolera) $mATolera = $this->datasis->dameval("SELECT acceso FROM sida WHERE modulo=$mTolera AND usuario=$mUsuario ");
+		if ($mMaxTol) $mAMaxTol = $this->datasis->dameval("SELECT acceso FROM sida WHERE modulo=$mMaxTol AND usuario=$mUsuario ");
 
 		if ($mALimite == 'S') $camposforma .= "{ xtype: 'combo',       fieldLabel: 'Forma de Pago ',     name: 'credito', store: [['S','Credito Activo'],['N','Credito Suspendido']], columnWidth: 0.45, fieldStyle: 'text-align: left' },";
 		$camposforma .= "\n{ xtype: 'numberfield', fieldLabel: 'Descuento al Mayor', name: 'mmargen', hideTrigger: true, fieldStyle: 'text-align: right', renderer: Ext.util.Format.numberRenderer('0,000.00'), columnWidth:0.45 },";
