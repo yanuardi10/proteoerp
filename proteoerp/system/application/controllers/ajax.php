@@ -257,18 +257,21 @@ class Ajax extends Controller {
 		$data = '{[ ]}';
 		if($mid !== false){
 			$dbfactura = $this->db->escape($mid);
+			$referen   = $this->datasis->dameval('SELECT referen FROM sfac WHERE tipo_doc=\'F\' AND numero='.$dbfactura);
 			$retArray = $retorno = array();
-			$mSQL="SELECT
-					SUM(monto) AS monto
-				FROM sfpa AS a
-				WHERE a.tipo_doc='FC' AND numero=$dbfactura";
-			$cana=1;
+			$mSQL="SELECT SUM(ROUND((aa.cana-aa.dev)*preca*(1+aa.iva/100),2)) AS monto FROM (
+				SELECT  b.codigoa, b.cana, SUM(COALESCE(d.cana,0)) AS dev, b.preca,b.iva
+				FROM sitems AS b
+				LEFT JOIN sfac AS c  ON b.numa=c.factura AND c.tipo_doc='D'
+				LEFT JOIN sitems AS d ON c.numero=d.numa AND c.tipo_doc=d.tipoa AND b.codigoa=d.codigoa
+				WHERE b.numa=$dbfactura AND b.tipoa='F'
+				GROUP BY b.codigoa) AS aa";
 
 			$query = $this->db->query($mSQL);
 			if ($query->num_rows() > 0){
 				foreach( $query->result_array() as  $id=>$row ) {
-					$retArray['tipo']    = 'EF';
-					$retArray['monto']   = $row['monto'];
+					$retArray['tipo']    = ($referen=='C')? '' : 'EF';
+					$retArray['monto']   = round($row['monto'],2);
 					$retArray['num_ref'] = '';
 					$retArray['banco']   = '';
 					array_push($retorno, $retArray);
@@ -287,26 +290,34 @@ class Ajax extends Controller {
 		if($mid !== false){
 			$dbfactura = $this->db->escape($mid);
 			$retArray = $retorno = array();
-			$mSQL="SELECT TRIM(a.descrip) AS descrip,b.cana,TRIM(a.codigo) AS codigo, a.precio1,a.precio2,a.precio3,a.precio4,
-				a.iva,a.existen,a.tipo,a.peso, a.ultimo, a.pond
+			$mSQL="SELECT TRIM(a.descrip) AS descrip,b.cana,SUM(d.cana) AS dev,TRIM(a.codigo) AS codigo, a.precio1,a.precio2,a.precio3,a.precio4,
+				a.iva,a.existen,a.tipo,a.peso, a.ultimo, a.pond,b.preca
 				FROM sinv AS a
-				JOIN sitems AS b ON a.codigo=b.codigoa AND b.tipoa='F' AND b.numa=$dbfactura
+				JOIN sitems AS b ON a.codigo=b.codigoa
+				LEFT JOIN sfac AS c  ON b.numa=c.factura AND c.tipo_doc='D'
+				LEFT JOIN sitems AS d ON c.numero=d.numa AND c.tipo_doc=d.tipoa AND b.codigoa=d.codigoa
+				WHERE b.numa=$dbfactura AND b.tipoa='F'
+				GROUP BY b.codigoa
 				ORDER BY a.descrip";
-			$cana=1;
 
 			$query = $this->db->query($mSQL);
 			if ($query->num_rows() > 0){
 				foreach( $query->result_array() as  $id=>$row ) {
+					if(empty($row['cana'])) $row['cana']=0;
+					if(empty($row['dev']))  $row['dev'] =0;
+					$saldo = $row['cana']-$row['dev'];
+					if($saldo <=0) continue;
 					$retArray['codigo']  = utf8_encode($row['codigo']);
-					$retArray['cana']    = $row['cana'];
+					$retArray['cana']    = $saldo;
 					$retArray['tipo']    = $row['tipo'];
 					$retArray['peso']    = $row['peso'];
 					$retArray['ultimo']  = $row['ultimo'];
 					$retArray['pond']    = $row['pond'];
-					$retArray['base1']   = $row['precio1']*100/(100+$row['iva']);
-					$retArray['base2']   = $row['precio2']*100/(100+$row['iva']);
-					$retArray['base3']   = $row['precio3']*100/(100+$row['iva']);
-					$retArray['base4']   = $row['precio4']*100/(100+$row['iva']);
+					$retArray['preca']   = round($row['preca'],2);
+					$retArray['base1']   = round($row['precio1']*100/(100+$row['iva']),2);
+					$retArray['base2']   = round($row['precio2']*100/(100+$row['iva']),2);
+					$retArray['base3']   = round($row['precio3']*100/(100+$row['iva']),2);
+					$retArray['base4']   = round($row['precio4']*100/(100+$row['iva']),2);
 					$retArray['descrip'] = utf8_encode($row['descrip']);
 					$retArray['iva']     = $row['iva'];
 					array_push($retorno, $retArray);

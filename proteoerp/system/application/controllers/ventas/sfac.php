@@ -1,6 +1,6 @@
 <?php require_once(BASEPATH.'application/controllers/validaciones.php');
 class sfac extends validaciones {
-	
+
 	function sfac(){
 		parent::Controller();
 		$this->load->library('rapyd');
@@ -106,11 +106,11 @@ class sfac extends validaciones {
 
 		$mtool .= "</tr></table>";
 
-	
+
 		$grid = new DataGrid($mtool);
 		$grid->order_by('fecha','desc');
 		$grid->per_page = 50;
-		
+
 		$grid->column('Acciones',$uri2);
 		$grid->column_orderby('N&uacute;mero',$uri,'numero');
 		$grid->column_orderby('Fecha',    '<dbdate_to_human><#fecha#></dbdate_to_human>','fecha','align=\'center\'');
@@ -166,7 +166,7 @@ class sfac extends validaciones {
 	height: 320px; /* Required to set */
 	overflow: hidden; /* Required to set */
 }
-</style>	
+</style>
 ';
 
 $script ='
@@ -194,7 +194,7 @@ $sigma = "";
 		$data['content'] = $grid->output;
 
 		$data['filtro']  = $filter->output;
-		
+
 		$data['script']  = script('jquery.js');
 		$data["script"] .= script("jquery.alerts.js");
 		$data['script'] .= script('superTables.js');
@@ -222,7 +222,7 @@ $sigma = "";
 			echo " NO se guardo ";
 		}
 		logusu('SFAC',"Cambia Nro. Fiscal $mid ->  $nfiscal ");
-		
+
 	}
 
 
@@ -249,12 +249,12 @@ $sigma = "";
 			'where'   => '`activo` = "S"',
 		);
 		$btn=$this->datasis->p_modbus($modbus,'<#i#>');
-		
+
 		$mSCLId=array(
 		'tabla'   =>'scli',
 		'columnas'=>array(
 			'cliente' =>'C&oacute;digo Cliente',
-			'nombre'=>'Nombre', 
+			'nombre'=>'Nombre',
 			'cirepre'=>'Rif/Cedula',
 			'dire11'=>'Direcci&oacute;n',
 			'tipo'=>'Tipo'),
@@ -284,7 +284,7 @@ $sigma = "";
 		$edit->fecha->rule = 'required';
 		$edit->fecha->mode = 'autohide';
 		$edit->fecha->size = 10;
-		
+
 		$edit->tipo_doc = new  dropdownField ('Documento', 'tipo_doc');
 		$edit->tipo_doc->option('F','Factura');
 		$edit->tipo_doc->option('D','Devoluci&oacute;n');
@@ -387,7 +387,7 @@ $sigma = "";
 		$edit->numref->rel_id   = 'sfpa';
 		$edit->numref->rule     = 'required';
 
-		
+
 		$edit->monto = new inputField('Monto <#o#>', 'monto_<#i#>');
 		$edit->monto->db_name   = 'monto';
 		$edit->monto->css_class = 'inputnum';
@@ -395,14 +395,14 @@ $sigma = "";
 		$edit->monto->size      = 10;
 		$edit->monto->rule      = 'required|positive';
 		$edit->monto->readonly  = true;
-		
+
 		$edit->banco = new inputField('Banco <#o#>', 'banco_<#i#>');
 		$edit->banco->size=36;
 		$edit->banco->db_name='banco';
 		$edit->banco->maxlength=50;
 		$edit->banco->readonly  = true;
 		$edit->banco->rel_id='sfpa';
-		
+
 		//************************************************
 		//Fin detalle 2
 		//************************************************
@@ -461,13 +461,13 @@ $sigma = "";
 
 		$mreiva = round($edit->ivat->value*0.75,2);
 		if( $edit->_dataobject->get('reiva') > 0 )  $mreiva = $edit->_dataobject->get('reiva');
-	
+
 		$fecha = date('d/m/Y');
 		if( $edit->_dataobject->get('freiva') > 0 )  $fecha = dbdate_to_human($edit->_dataobject->get('freiva'));
 
 		$efecha = date('d/m/Y');
 		if( $edit->_dataobject->get('ereiva') > 0 )  $efecha = dbdate_to_human($edit->_dataobject->get('ereiva'));
-	
+
 		$nro = date('Ym');
 		if( $edit->_dataobject->get('creiva') > 0 )  $nro = $edit->_dataobject->get('creiva');
 		$reiva = '';
@@ -491,7 +491,7 @@ $sigma = "";
 		}
 
 		$link40 = base_url()."/ventas/sfac/sfacreiva/".$edit->_dataobject->get('id');
-		$script = "<script type=\"text/javascript\" >  
+		$script = "<script type=\"text/javascript\" >
 		$(function() {
 			$( \"#maintabcontainer\" ).tabs();
 		});
@@ -516,7 +516,7 @@ $sigma = "";
 				{name : 'url' }
 			],
 			recordType : 'object'
-		} 
+		}
 
 		function codigoaurl( value, record, columnObj, grid, colNo, rowNo ) {
 			var no=  value;
@@ -546,12 +546,12 @@ $sigma = "";
 		var gridOption={
 			id : 'grid1',
 			loadURL : '".base_url()."ventas/sfac/sfacsitems/".$edit->_dataobject->get("tipo_doc")."/".$edit->numero->value."',
-			container : 'grid1_container', 
+			container : 'grid1_container',
 			dataset : dsOption ,
 			columns : colsOption,
 			allowCustomSkin: true,
 			skin: 'vista',
-			toolbarContent: 'pdf'	
+			toolbarContent: 'pdf'
 		};
 
 		var mygrid=new Sigma.Grid(gridOption);
@@ -559,14 +559,14 @@ $sigma = "";
 		</script> ";
 
 		if ( $edit->referen->value == 'E') {
-			$saldo = 0; 
+			$saldo = 0;
 		} else {
 			$saldo = $this->datasis->dameval("SELECT monto-abonos FROM smov WHERE tipo_doc IN ('FC','NC') AND transac='".$edit->transac->value."'") ;
 		}
 
 		if ( $edit->reiva->value > 0 ) {
 
-		$scriptreiva = "<script type=\"text/javascript\" >  
+		$scriptreiva = "<script type=\"text/javascript\" >
 		// Retencin de IVA
 		function sfacreiva(mid){
 			var pide = '';
@@ -603,7 +603,7 @@ function sfacreiva(mid){
 		} else {
 			$scriptreiva .= "pide += '<tr><td colspan=2>Se aplicara una NC a la Factura<input type=\"checkbox\" value=\"reintegrar\" name=\"reinte\"  id=\"reinte\" style=\"text-align:right;visibility:hidden;\" /></td></tr>';";
 		}
-		
+
 		$scriptreiva .= "
 			pide += '</table>';
 
@@ -670,14 +670,14 @@ function sfacreiva(mid){
 									return true;
 								}
 							}
-							return false; 
+							return false;
 						}
 					},
 					state1: {
 						html: pide1,
 						buttons: { Volver: -1, Salir: 0, Guardar: 1 },
 						focus: 2,
-						submit:function(v,m,f){ 
+						submit:function(v,m,f){
 							mcaja   = f.caja;
 							mcheque = f.cheque;
 							mbenefi = f.benefi;
@@ -722,19 +722,19 @@ function sfacreiva(mid){
 
 							} else if(v=-1)
 								$.prompt.goToState('state0');//go back
-							return false; 
+							return false;
 						}
 					},
 					state2: {
 						html:'Desea Guardar los Cambios.....',
 						buttons: { Volver: true, Guardar: false },
-						submit:function(v,m,f){ 
+						submit:function(v,m,f){
 							if(!v){
 								$.prompt('fecha='+mfecha);
 								return true;
 								}
 							else $.prompt.goToState('state0');//go back
-							return false; 
+							return false;
 						}
 					}
 			};
@@ -773,7 +773,7 @@ function sfacreiva(mid){
 	function sfacsitems() {
 		$numa  = $this->uri->segment($this->uri->total_segments());
 		$tipoa = $this->uri->segment($this->uri->total_segments()-1);
-		
+
 		$mSQL  = 'SELECT a.codigoa, a.desca, a.cana, a.preca, a.tota, a.iva, IF(a.pvp < a.preca, a.preca, a.pvp)  pvp, ROUND(100-a.preca*100/IF(a.pvp<a.preca,a.preca, a.pvp),2) descuento, ROUND(100-ROUND(a.precio4*100/(100+a.iva),2)*100/a.preca,2) precio4, a.detalle, a.fdespacha, a.udespacha, a.bonifica, b.id url ';
 		$mSQL .= "FROM sitems a LEFT JOIN sinv b ON a.codigoa=b.codigo WHERE a.tipoa='$tipoa' AND a.numa='$numa' ";
 		$mSQL .= "ORDER BY a.codigoa";
@@ -811,7 +811,7 @@ function sfacreiva(mid){
 		// status de la factura
 		$fecha  = substr($fecha, 6,4).substr($fecha, 3,2).substr($fecha, 0,2);
 		$efecha = substr($efecha,6,4).substr($efecha,3,2).substr($efecha,0,2);
-	
+
 		$tipo_doc = $this->datasis->dameval("SELECT tipo_doc FROM sfac WHERE id=$id");
 		$referen  = $this->datasis->dameval("SELECT referen  FROM sfac WHERE id=$id");
 		$numfac   = $this->datasis->dameval("SELECT numero   FROM sfac WHERE id=$id");
@@ -836,11 +836,11 @@ function sfacreiva(mid){
 				}
 
 				if ( $tipo_doc == 'F') {
-					if ($referen == 'E') { 
+					if ($referen == 'E') {
 						// FACTURA PAGADA AL CONTADO GENERA ANTICIPO
 						$mnumant = $this->datasis->prox_sql("nancli");
 						$mnumant = str_pad($mnumant, 8, "0", STR_PAD_LEFT);
-						
+
 						$mSQL = "INSERT INTO smov  (cod_cli, nombre, tipo_doc, numero, fecha, monto, impuesto, vence, observa1, tipo_ref, num_ref, estampa, hora, transac, usuario, nroriva, emiriva )
 						SELECT cod_cli, nombre, 'AN' tipo_doc, '$mnumant' numero, freiva fecha, reiva monto, 0 impuesto, freiva vence,
 							CONCAT('RET/IVA DE ',cod_cli,' A DOC. ',tipo_doc,numero) observa1, IF(tipo_doc='F','FC', 'DV' ) tipo_ref, numero num_ref,
@@ -875,21 +875,21 @@ function sfacreiva(mid){
 								'NOCON 'codigo, 'NOTA DE CONTABILIDAD' descrip, creiva, ereiva
 								FROM sfac WHERE id=$id";
 							$this->db->simple_query($mSQL);
-							
+
 							// ABONA A LA FACTURA
 							$mSQL = "UPDATE smov SET abonos=abonos+$monto WHERE numero='$numfac' AND cod_cli='$cod_cli' AND tipo_doc='$tiposfac'";
 							$this->db->simple_query($mSQL);
 
-							//Crea la relacion en ccli	
+							//Crea la relacion en ccli
 							$mdevo = "<h1 style='color:green;'>EXITO</h1>Cambios Guardados, Nota de Credito generada y aplicada a la factura";
 						}
 					}
 					$mnumant = $this->datasis->prox_sql("ndcli");
 					$mnumant = str_pad($mnumant, 8, "0", STR_PAD_LEFT);
 					$mSQL = "INSERT INTO smov (cod_cli, nombre, tipo_doc, numero, fecha, monto, impuesto, abonos, vence, observa1, tipo_ref, num_ref, estampa, hora, usuario, transac, codigo, descrip, nroriva, emiriva )
-						SELECT 'REIVA' cod_cli, 'RETENCION DE I.V.A. POR COMPENSAR' nombre, 'ND' tipo_doc, '$mnumant' numero, freiva fecha, 
-						reiva monto, 0 impuesto, 0 abonos, freiva vence, CONCAT('RET/IVA DE ',cod_cli,' A ',tipo_doc,numero) observa1, 
-						IF(tipo_doc='F','FC', 'DV' ) tipo_ref, numero num_ref, curdate() estampa, 
+						SELECT 'REIVA' cod_cli, 'RETENCION DE I.V.A. POR COMPENSAR' nombre, 'ND' tipo_doc, '$mnumant' numero, freiva fecha,
+						reiva monto, 0 impuesto, 0 abonos, freiva vence, CONCAT('RET/IVA DE ',cod_cli,' A ',tipo_doc,numero) observa1,
+						IF(tipo_doc='F','FC', 'DV' ) tipo_ref, numero num_ref, curdate() estampa,
 						curtime() hora, '".$usuario."' usuario, '$transac' transac, 'NOCON 'codigo,
 						'NOTA DE CONTABILIDAD' descrip, creiva, ereiva
 					FROM sfac WHERE id=$id";
@@ -910,11 +910,11 @@ function sfacreiva(mid){
 
 					// Debe abonar la ND si existe un AN
 					/*
-					if ($referen == 'E') { 
+					if ($referen == 'E') {
 						// DEVOLUCIONES PAGADA AL CONTADO GENERA
 						$mnumant = $this->datasis->prox_sql("ndcli");
 						$mnumant = str_pad($mnumant, 8, "0", STR_PAD_LEFT);
-						
+
 						$mSQL = "INSERT INTO smov  (cod_cli, nombre, tipo_doc, numero, fecha, monto, impuesto, vence, observa1, tipo_ref, num_ref, estampa, hora, transac, usuario, nroriva, emiriva )
 						SELECT cod_cli, nombre, 'ND' tipo_doc, '$mnumant' numero, freiva fecha, reiva monto, 0 impuesto, freiva vence,
 							CONCAT('RET/IVA DE ',cod_cli,' A DOC. ',tipo_doc,numero) observa1, IF(tipo_doc='F','FC', 'DV' ) tipo_ref, numero num_ref,
@@ -949,13 +949,13 @@ function sfacreiva(mid){
 								'NOCON 'codigo, 'NOTA DE CONTABILIDAD' descrip, creiva, ereiva
 								FROM sfac WHERE id=$id";
 							$this->db->simple_query($mSQL);
-							
+
 							// ABONA A LA FACTURA
 							$mSQL = "UPDATE smov SET abonos=abonos+$monto WHERE numero='$numfac' AND cod_cli='$cod_cli' AND tipo_doc='$tiposfac'";
 								$this->db->simple_query($mSQL);
-							
+
 							//Crea la relacion en ccli
-	
+
 							$mdevo = "<h1 style='color:green;'>EXITO</h1>Cambios Guardados, Nota de Credito generada y aplicada a la factura";
 						}
 					}*/
@@ -964,15 +964,15 @@ function sfacreiva(mid){
 					$mnumant = $this->datasis->prox_sql("nccli");
 					$mnumant = str_pad($mnumant, 8, "0", STR_PAD_LEFT);
 					$mSQL = "INSERT INTO smov (cod_cli, nombre, tipo_doc, numero, fecha, monto, impuesto, abonos, vence, observa1, tipo_ref, num_ref, estampa, hora, usuario, transac, codigo, descrip, nroriva, emiriva )
-						SELECT 'REIVA' cod_cli, 'RETENCION DE I.V.A. POR COMPENSAR' nombre, 'NC' tipo_doc, '$mnumant' numero, freiva fecha, 
-						reiva monto, 0 impuesto, 0 abonos, freiva vence, CONCAT('RET/IVA DE ',cod_cli,' A ',tipo_doc,numero) observa1, 
-						IF(tipo_doc='F','FC', 'DV' ) tipo_ref, numero num_ref, curdate() estampa, 
+						SELECT 'REIVA' cod_cli, 'RETENCION DE I.V.A. POR COMPENSAR' nombre, 'NC' tipo_doc, '$mnumant' numero, freiva fecha,
+						reiva monto, 0 impuesto, 0 abonos, freiva vence, CONCAT('RET/IVA DE ',cod_cli,' A ',tipo_doc,numero) observa1,
+						IF(tipo_doc='F','FC', 'DV' ) tipo_ref, numero num_ref, curdate() estampa,
 						curtime() hora, '".$usuario."' usuario, '$transac' transac, 'NOCON 'codigo,
 						'NOTA DE CONTABILIDAD' descrip, creiva, ereiva
 					FROM sfac WHERE id=$id";
 					$this->db->simple_query($mSQL);
 					memowrite($mSQL,"sfacreivaND");
-					
+
 				}
 			}else{
 				$mdevo = "<h1 style='color:red;'>ERROR</h1>Retencion ya aplicada";
@@ -997,7 +997,7 @@ function sfacreiva(mid){
 		$benefi = rawurldecode($this->input->post('benefi'));
 
 		$mdevo  = "Exito";
-	
+
 		memowrite("efecha=$efecha, fecha=$fecha, numero=$numero, id=$id, caja=$caja, cheque=$cheque, benefi=$benefi ","sfacreivaef");
 
 		// status de la factura
@@ -1044,9 +1044,9 @@ function sfacreiva(mid){
 							$mnumant = $this->datasis->prox_sql("num_nd");
 							$mnumant = str_pad($mnumant, 8, "0", STR_PAD_LEFT);
 							$mSQL = "INSERT INTO sprm (cod_prv, nombre, tipo_doc, numero, fecha, monto, impuesto, abonos, vence, observa1, tipo_ref, num_ref, estampa, hora, usuario, transac, codigo, descrip )
-								SELECT 'REINT' cod_prv, 'REINTEGRO A CLIENTE' nombre, 'ND' tipo_doc, '$mnumant' numero, freiva fecha, 
-								reiva monto, 0 impuesto, 0 abonos, freiva vence, 'REINTEGRO POR RETENCION A DOCUMENTO $numfac' observa1, 
-									IF(tipo_doc='F','FC', 'DV' ) tipo_ref, numero num_ref, curdate() estampa, 
+								SELECT 'REINT' cod_prv, 'REINTEGRO A CLIENTE' nombre, 'ND' tipo_doc, '$mnumant' numero, freiva fecha,
+								reiva monto, 0 impuesto, 0 abonos, freiva vence, 'REINTEGRO POR RETENCION A DOCUMENTO $numfac' observa1,
+									IF(tipo_doc='F','FC', 'DV' ) tipo_ref, numero num_ref, curdate() estampa,
 								curtime() hora, '".$usuario."' usuario, '$transac' transac, 'NOCON 'codigo,
 								'NOTA DE CONTABILIDAD' descrip
 							FROM sfac WHERE id=$id";
@@ -1080,7 +1080,7 @@ function sfacreiva(mid){
 								$m = $this->datasis->dameval("SELECT COUNT(*) FROM bmov WHERE codbanc='$codbanc' AND tipo_op='ND' AND numero='$cheque' ");
 							}
 						}
-					
+
 						$negreso = $this->datasis->prox_sql("negreso");
 						$negreso = str_pad($negreso, 8, "0", STR_PAD_LEFT);
 
@@ -1113,9 +1113,9 @@ function sfacreiva(mid){
 						$mnumant = $this->datasis->prox_sql("ndcli");
 						$mnumant = str_pad($mnumant, 8, "0", STR_PAD_LEFT);
 						$mSQL = "INSERT INTO smov (cod_cli, nombre, tipo_doc, numero, fecha, monto, impuesto, abonos, vence, observa1, tipo_ref, num_ref, estampa, hora, usuario, transac, codigo, descrip, nroriva, emiriva )
-							SELECT 'REIVA' cod_cli, 'RETENCION DE IVA POR COMPENSAR' nombre, 'ND' tipo_doc, '$mnumant' numero, freiva fecha, 
-							reiva monto, 0 impuesto, 0 abonos, freiva vence, 'APLICACION DE RETENCION A DOCUMENTO $numfac' observa1, 
-								IF(tipo_doc='F','FC', 'DV' ) tipo_ref, numero num_ref, curdate() estampa, 
+							SELECT 'REIVA' cod_cli, 'RETENCION DE IVA POR COMPENSAR' nombre, 'ND' tipo_doc, '$mnumant' numero, freiva fecha,
+							reiva monto, 0 impuesto, 0 abonos, freiva vence, 'APLICACION DE RETENCION A DOCUMENTO $numfac' observa1,
+								IF(tipo_doc='F','FC', 'DV' ) tipo_ref, numero num_ref, curdate() estampa,
 							curtime() hora, '".$usuario."' usuario, '$transac' transac, 'NOCON 'codigo,
 							'NOTA DE CONTABILIDAD' descrip, creiva, ereiva
 						FROM sfac WHERE id=$id";
@@ -1124,7 +1124,7 @@ function sfacreiva(mid){
 					} else {
 						//Devoluciones
 					}
-					
+
 				} else {
 					$mdevo = "<h1 style='color:red;'>ERROR</h1>Retencion ya aplicada";
 				}
@@ -1137,11 +1137,11 @@ function sfacreiva(mid){
 	function sfacsig() {
 		$numa  = $this->uri->segment($this->uri->total_segments());
 		$tipoa = $this->uri->segment($this->uri->total_segments()-1);
-		
+
 		$mSQL  = 'SELECT a.codigoa, a.desca, a.cana, a.preca, a.tota, a.iva, IF(a.pvp < a.preca, a.preca, a.pvp)  pvp, ROUND(100-a.preca*100/IF(a.pvp<a.preca,a.preca, a.pvp),2) descuento, ROUND(100-ROUND(a.precio4*100/(100+a.iva),2)*100/a.preca,2) precio4, a.detalle, a.fdespacha, a.udespacha, a.bonifica, b.id url ';
 		$mSQL .= "FROM sitems a LEFT JOIN sinv b ON a.codigoa=b.codigo WHERE a.tipoa='$tipoa' AND a.numa='$numa' ";
 		$mSQL .= "ORDER BY a.codigoa";
-		
+
 
 		$query = $this->db->query($mSQL);
 
@@ -1184,25 +1184,25 @@ function sfacreiva(mid){
 			return true;
 		}
 	}
-	
+
 	function creadpfacf($numero){
 		$this->rapyd->load('dataform');
-		
+
 		$form = new DataForm("ventas/sfac/creadpfac/$numero");
 		$form->title('Sellecione el Almacen');
-		
+
 		$form->alma = new dropdownField("Almacen", 'alma');
 		$form->alma->options("SELECT ubica,ubides FROM caub WHERE invfis='N' AND gasto='N'");
-		
+
 		$form->submit("btnsubmit","Facturar");
 		$form->build_form();
-		
-		$data['content'] = $form->output;           
+
+		$data['content'] = $form->output;
 		$data['title']   = heading("Convertir Pedido en Factura");
 		$data["head"]    = $this->rapyd->get_head();
-		$this->load->view('view_ventanas', $data);  
+		$this->load->view('view_ventanas', $data);
 	}
-	
+
 	function creadpfac($numero){
 		$alma    =$this->input->post('alma');
 		$numeroe =$this->db->escape($numero);
@@ -1210,7 +1210,7 @@ function sfacreiva(mid){
 		$nsfac   =$this->datasis->fprox_numero('nsfac');
 		$transac =$this->datasis->fprox_numero('transac');
 		$almae   =$this->db->escape($alma);
-		
+
 		/*CREA ENCABEZADO DE LA FACTURA SFAC*/
 		$query="
 		INSERT INTO sfac (`tipo_doc`,`numero`,`fecha`,`vence`,`vd`,`cod_cli`,`rifci`,`nombre`,`direc`,`dire1`,`referen`,`iva`,`inicial`,`totals`,`totalg`,`observa`,`observ1`,`cajero`,`almacen`,`peso`,`pedido`,`usuario`,`estampa`,`hora`,`transac`,`zona`,`ciudad`,`comision`,`exento`,`tasa`,`reducida`,`sobretasa`,`montasa`,`monredu`,`monadic`)
@@ -1227,13 +1227,13 @@ function sfacreiva(mid){
 		JOIN itpfac d ON a.numero=d.numa
 		WHERE a.numero=$numeroe
 		";
-		
+
 		$this->db->query($query);
 		$id_sfac=$this->db->insert_id();
-		
+
 		/*CREA ENCABEZADO DE LA FACTURA SFAC*/
 		$query="
-		INSERT INTO sitems (`tipoa`,`numa`,`codigoa`,`desca`,`cana`,`preca`,`tota`,`iva`,`fecha`,`vendedor`,`costo`,`pvp`,`cajero`,`mostrado`,`usuario`,`estampa`,`hora`,`transac`,`precio4`,`id_sfac`) 
+		INSERT INTO sitems (`tipoa`,`numa`,`codigoa`,`desca`,`cana`,`preca`,`tota`,`iva`,`fecha`,`vendedor`,`costo`,`pvp`,`cajero`,`mostrado`,`usuario`,`estampa`,`hora`,`transac`,`precio4`,`id_sfac`)
 		SELECT 'F','$nsfac',d.codigoa,d.desca,d.cana,d.preca,d.tota,d.iva,CURDATE(),d.vendedor,d.costo,d.pvp,
 		d.cajero,d.mostrado,'$user' usuario,NOW() estampa,CURTIME(),'$transac',c.precio4,$id_sfac idsfac
 		FROM pfac a
@@ -1241,33 +1241,31 @@ function sfacreiva(mid){
 		JOIN sinv c ON d.codigoa=c.codigo
 		WHERE a.numero=$numeroe
 		";
-		
+
 		$this->db->query($query);
-		
+
 		$query="
 		INSERT IGNORE INTO smov ( cod_cli, nombre, dire1, dire2, tipo_doc, numero, fecha, monto, impuesto, abonos, vence, observa1, estampa, usuario, hora, transac, tasa, montasa, reducida, monredu, sobretasa, monadic, exento )
-		SELECT cod_cli, nombre, direc, dire1, tipo_doc, numero, fecha, totalg, iva,   0 abonos, vence, 
-		if(tipo_doc='D', 'DEVOLUCION EN VENTAS', 'FACTURA DE CREDITO' ) observa1, estampa, usuario, hora, transac, tasa, montasa, reducida, monredu, sobretasa, monadic, exento 
-		FROM sfac WHERE transac='$transac' and referen='C' 
+		SELECT cod_cli, nombre, direc, dire1, tipo_doc, numero, fecha, totalg, iva,   0 abonos, vence,
+		if(tipo_doc='D', 'DEVOLUCION EN VENTAS', 'FACTURA DE CREDITO' ) observa1, estampa, usuario, hora, transac, tasa, montasa, reducida, monredu, sobretasa, monadic, exento
+		FROM sfac WHERE transac='$transac' and referen='C'
 		LIMIT 1
 		";
-		
+
 		$this->db->query($query);
-		
-		$query="	
+
+		$query="
 		SELECT a.codigoa,b.almacen,-1*a.cana cana
-		FROM sitems a 
+		FROM sitems a
 		JOIN sfac b ON a.id_sfac=b.id
 		JOIN caub c ON b.almacen=c.ubica
 		WHERE b.transac='$transac'
 		";
-		
+
 		$query=$this->db->query($query);
 		foreach($query->result as $row)
 		$this->datasis->sinvcarga($row->codigoa,$row->almacen,$row->cana);
-		
-		
-		
+
 		redirect("ventas/sfac/dataedit/show/$id_sfac");
 	}
 
@@ -1295,7 +1293,7 @@ function sfacreiva(mid){
 		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
 
 		$where = $this->datasis->extjsfiltro($filters,'sfac');
-	
+
 		$this->db->_protect_identifiers=false;
 		$this->db->select('*');
 		$this->db->from('sfac');
@@ -1305,7 +1303,7 @@ function sfacreiva(mid){
 		}
 
 		if ( $sort == '') $this->db->order_by( 'id', 'desc' );
-		
+
 
 		$sort = json_decode($sort, true);
 		for ($i=0;$i<count($sort);$i++) {
@@ -1334,7 +1332,7 @@ function sfacreiva(mid){
 		$this->db->simple_query($mSQL);
 		logusu('sfac',"FACTURACION ".$campos['id']." MODIFICADO");
 		echo "{ success: true, message: 'Factura Modificado '}";
-		
+
 	}
 
 
@@ -1392,7 +1390,7 @@ function sfacreiva(mid){
 				$salida .= "<td align='right'>".nformat($row['monto']).   "</td>";
 				$salida .= "</tr>";
 			}
-			
+
 			$salida .= "</table>";
 		}
 
@@ -1421,7 +1419,7 @@ function sfacreiva(mid){
 		if ($numero == 0 ) $numero = $this->datasis->dameval("SELECT MAX(numero) FROM sfac")  ;
 		$mSQL = "SELECT * FROM sitems a JOIN sinv b ON a.codigoa=b.codigo WHERE a.numa='$numero' ORDER BY a.codigoa";
 		$query = $this->db->query($mSQL);
-		$results = $query->num_rows(); 
+		$results = $query->num_rows();
 		$arr = $this->datasis->codificautf8($query->result_array());
 		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
 	}
@@ -1540,9 +1538,9 @@ function sfacreiva(mid){
 
 
 		$variables='';
-		
+
 		$valida="		{ type: 'length', field: 'numero',  min:  1 }";
-		
+
 
 		$funciones = "
 function renderScli(value, p, record) {
@@ -1595,7 +1593,7 @@ function renderSinv(value, p, record) {
 		autoSync: true,
 		method: 'POST'
 	});
-	
+
 	//////////////////////////////////////////////////////////
 	//
 	var gridDeta1 = Ext.create('Ext.grid.Panel', {
@@ -1615,7 +1613,7 @@ function renderSinv(value, p, record) {
 		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/verhtml/FACTURA/{tipo_doc}/{numero}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/html_icon.gif', 'alt' => 'Formato HTML', 'title' => 'Formato HTML','border'=>'0'))."</a></td>',
 		'<td align=\'center\'>{numero}</td>',
 		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/ver/FACTURA/{tipo_doc}/{numero}\',     \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',   'title' => 'Formato PDF', 'border'=>'0'))."</a></td></tr>',
-		'<tr><td colspan=3 align=\'center\' >--</td></tr>',		
+		'<tr><td colspan=3 align=\'center\' >--</td></tr>',
 		'</table>','nanai'
 	];
 
@@ -1689,23 +1687,23 @@ function renderSinv(value, p, record) {
 					handler: function() {
 						var selection = gridMaest.getView().getSelectionModel().getSelection()[0];
 						Ext.MessageBox.show({
-							title: 'Confirme', 
-							msg: 'Seguro que quiere eliminar la compra Nro. '+selection.data.numero, 
-							buttons: Ext.MessageBox.YESNO, 
-							fn: function(btn){ 
-								if (btn == 'yes') { 
+							title: 'Confirme',
+							msg: 'Seguro que quiere eliminar la compra Nro. '+selection.data.numero,
+							buttons: Ext.MessageBox.YESNO,
+							fn: function(btn){
+								if (btn == 'yes') {
 									if (selection) {
 										//storeMaest.remove(selection);
 									}
 									storeMaest.load();
-								} 
-							}, 
-							icon: Ext.MessageBox.QUESTION 
-						});  
+								}
+							},
+							icon: Ext.MessageBox.QUESTION
+						});
 					}
 				}
 			]
-		}		
+		}
 		";
 
 		$grid2 = ",{
@@ -1721,7 +1719,7 @@ function renderSinv(value, p, record) {
 
 
 		$titulow = 'Compras';
-		
+
 		$filtros = "";
 		$features = "
 		features: [ { ftype: 'filters', encode: 'json', local: false } ],
@@ -1748,9 +1746,9 @@ function renderSinv(value, p, record) {
 		$data['coldeta']     = $coldeta;
 		$data['acordioni']   = $acordioni;
 		$data['final']       = $final;
-		
+
 		$data['title']  = heading('Facturacion');
 		$this->load->view('extjs/extjsvenmd',$data);
-		
+
 	}
 }

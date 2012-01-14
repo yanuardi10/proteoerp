@@ -121,6 +121,8 @@ $(function(){
 		},
 		minLength: 2,
 		select: function( event, ui ) {
+			$('#factura').val(ui.item.value);
+
 			$('#nombre').val(ui.item.nombre);
 			$('#nombre_val').text(ui.item.nombre);
 
@@ -146,6 +148,7 @@ $(function(){
 								add_sitems();
 								$('#codigoa_'+id).val(val.codigo);
 								$('#desca_'+id).val(val.descrip);
+								$('#preca_'+id).val(val.preca);
 								$('#precio1_'+id).val(val.base1);
 								$('#precio2_'+id).val(val.base2);
 								$('#precio3_'+id).val(val.base3);
@@ -298,7 +301,7 @@ function add_sfpa(){
 	htm = htm.replace(/<#o#>/g,con);
 	$("#__ITPL__sfpa").after(htm);
 	falta =faltante();
-	$("#monto_"+can).val(falta);
+	$("#monto_"+can).val(roundNumber(falta,2));
 	sfpa_cont=sfpa_cont+1;
 	return can;
 }
@@ -352,9 +355,11 @@ function post_modbus_sinv(nind){
 }
 
 function cdropdown(nind){
+	var tipo_doc=$("#tipo_doc").val();
 	var ind=nind.toString();
 	var preca=$("#preca_"+ind).val();
 	var pprecio  = document.createElement("select");
+	if(tipo_doc=='D') return false;
 
 	pprecio.setAttribute("id"    , "preca_"+ind);
 	pprecio.setAttribute("name"  , "preca_"+ind);

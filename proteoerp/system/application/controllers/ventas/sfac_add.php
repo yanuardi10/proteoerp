@@ -260,7 +260,7 @@ class sfac_add extends validaciones {
 
 		$edit = new DataDetails('Facturas', $do);
 
-		$edit->back_url = site_url('ventas/sfac_add/filteredgrid');
+		$edit->back_url = site_url('ventas/sfac/index');
 		$edit->set_rel_title('sitems','Producto <#o#>');
 		$edit->set_rel_title('sfpa','Forma de pago <#o#>');
 
@@ -323,7 +323,6 @@ class sfac_add extends validaciones {
 
 		$edit->cliente = new inputField('Cliente','cod_cli');
 		$edit->cliente->size = 6;
-		$edit->cliente->maxlength=5;
 		$edit->cliente->autocomplete=false;
 		$edit->cliente->rule='required|existescli';
 		//$edit->cliente->append($boton);
@@ -372,7 +371,7 @@ class sfac_add extends validaciones {
 		$edit->cana->rel_id   = 'sitems';
 		$edit->cana->maxlength= 10;
 		$edit->cana->size     = 6;
-		$edit->cana->rule     = 'required|positive';
+		$edit->cana->rule     = 'required|positive|callback_chcanadev[<#i#>]';
 		$edit->cana->autocomplete=false;
 		$edit->cana->onkeyup  ='importe(<#i#>)';
 		$edit->cana->showformat ='decimal';
@@ -383,7 +382,7 @@ class sfac_add extends validaciones {
 		$edit->preca->css_class = 'inputnum';
 		$edit->preca->rel_id    = 'sitems';
 		$edit->preca->size      = 10;
-		$edit->preca->rule      = 'required|positive';
+		$edit->preca->rule      = 'required|positive|callback_chpreca[<#i#>]';
 		$edit->preca->readonly  = true;
 		$edit->preca->showformat ='decimal';
 
@@ -526,6 +525,85 @@ class sfac_add extends validaciones {
 		$this->load->view('view_ventanas', $data);
 	}
 
+	//Chequea que el precio de los articulos de la devolucion sean los facturados
+	function chpreca($val,$i){
+		$tipo_doc = $this->input->post('tipo_doc');
+		$codigo   = $this->input->post('codigoa_'.$i);
+
+		if($tipo_doc == 'D'){
+			$factura  = $this->input->post('factura');
+			$dbfactura= $this->db->escape($factura);
+
+			if(!isset($this->devperca)){
+				$this->devpreca=array();
+				$mSQL="SELECT b.codigoa,b.preca
+				FROM sitems AS b
+				WHERE b.numa=$dbfactura AND b.tipoa='F'";
+				$query = $this->db->query($mSQL);
+				foreach ($query->result() as $row){
+					$ind=trim($row->codigoa);
+					$this->devpreca[$ind]=$row->preca;
+				}
+			}
+
+			if(isset($this->devpreca[$codigo])){
+				$this->validation->set_message('chpreca', 'El art&iacute;culo '.$codigo.' se esta devolviendo por un monto distinto al facturado que fue de '.nformat($this->devpreca[$codigo]));
+				if($this->devpreca[$codigo]-$val==0){
+					return true;
+				}
+			}else{
+				$this->validation->set_message('chpreca', 'El art&iacute;culo '.$codigo.' no fue facturado');
+				return false;
+			}
+		}elseif($tipo_doc == 'F'){
+			$precio4 = $this->datasis->dameval('SELECT precio4*100/(100+iva) FROM sinv WHERE codigo='.$this->db->escape($codigo));
+			$this->validation->set_message('chpreca', 'El art&iacute;culo '.$codigo.' debe contener un precio de al menos '.nformat($precio4));
+			if(empty($precio4)) $precio4=0; else $precio4=round($precio4,2);
+			if($precio4>$val){
+				return true;
+			}
+		}
+		return false;
+	}
+
+	//Chequea que la cantidad devuelta no sea mayor que la facturada
+	function chcanadev($val,$i){
+		$tipo_doc = $this->input->post('tipo_doc');
+		$factura  = $this->input->post('factura');
+		$codigo   = $this->input->post('codigoa_'.$i);
+
+		if($tipo_doc=='D'){
+			$dbfactura=$this->db->escape($factura);
+
+			if(!isset($this->devitems)){
+				$this->devitems=array();
+				$mSQL="SELECT b.codigoa,b.cana,SUM(d.cana) AS dev
+				FROM sitems AS b
+				LEFT JOIN sfac AS c  ON b.numa=c.factura AND c.tipo_doc='D'
+				LEFT JOIN sitems AS d ON c.numero=d.numa AND c.tipo_doc=d.tipoa AND b.codigoa=d.codigoa
+				WHERE b.numa=$dbfactura AND b.tipoa='F'
+				GROUP BY b.codigoa";
+				$query = $this->db->query($mSQL);
+				foreach ($query->result() as $row){
+					$ind=trim($row->codigoa);
+					$c=(empty($row->cana))? 0 : $row->cana;
+					$d=(empty($row->dev))?  0 : $row->dev;
+					$this->devitems[$ind]=$c-$d;
+				}
+			}
+			if(isset($this->devitems[$codigo])){
+				if($val <= $this->devitems[$codigo]){
+					return true;
+				}
+				$this->validation->set_message('chcanadev', 'Esta devolviendo m&aacute;s de lo que se facturo del art&iacute;culo '.$codigo.' puede devolver m&aacute;ximo '.$this->devitems[$codigo]);
+			}else{
+				$this->validation->set_message('chcanadev', 'El art&iacute;culo '.$codigo.' no se puede devolver, nunca fue facturado o ya esta devuelto');
+			}
+			return false;
+		}
+		return true;
+	}
+
 	function chtipo($val,$i){
 		$tipo=$this->input->post('tipo_'.$i);
 		if(empty($tipo)) return true;
@@ -548,6 +626,7 @@ class sfac_add extends validaciones {
 
 	function _pre_insert($do){
 		$cliente= $do->get('cod_cli');
+		$tipoa  = $do->get('tipo_doc');
 		$con=$this->db->query("SELECT tasa,redutasa,sobretasa FROM civa ORDER BY fecha desc LIMIT 1");
 		$t=$con->row('tasa');$rt=$con->row('redutasa');$st=$con->row('sobretasa');
 
@@ -591,7 +670,7 @@ class sfac_add extends validaciones {
 		}
 		$totalg = round($totalg,2);
 		if(abs($sfpa-$totalg)>0.01){
-			$do->error_message_ar['pre_ins']='El monto del pago no coincide con el monto de la factura ';
+			$do->error_message_ar['pre_ins']='El monto del pago no coincide con el monto de la factura';
 			return false;
 		}
 
@@ -605,19 +684,86 @@ class sfac_add extends validaciones {
 
 		$fecha  = $do->get('fecha');
 		//Validacion del limite de credito del cliente
-		if($credito>0){
+		if($credito>0 && $tipoa=='F'){
 			$dbcliente=$this->db->escape($cliente);
-			$limite   =$this->datasis->dameval("SELECT limite FROM scli WHERE cliente=$dbcliente");
-			$cdias    =$this->datasis->dameval("SELECT formap FROM scli WHERE cliente=$dbcliente");
+			$rrow    = $this->datasis->damerow("SELECT limite,formap,credito,tolera,socio FROM scli WHERE cliente=$dbcliente");
+			if($rrow!=false){
+				$cdias   = $rrow['formap'];
+				$credito = $rrow['credito'];
+				$tolera  = (100+$rrow['tolera'])/100;
+				$socio   = $rrow['socio'];
+				$limite  = $rrow['limite']*$tolera;
+			}else{
+				$limite = $cdias  = $tolera = 0;
+				$credito= 'N';
+				$socio  = null;
+			}
+
+			//Chequea la cuenta propia
 			$mSQL="SELECT SUM(monto*(tipo_doc IN ('FC','GI','ND'))) AS debe, SUM(monto*(tipo_doc IN ('NC','AB','AN'))) AS haber FROM smov WHERE cod_cli=$dbcliente";
 			$query = $this->db->query($mSQL);
 			if ($query->num_rows() > 0){
 				$row = $query->row();
 				$saldo=$row->debe-$row->haber;
+			}else{
+				$saldo=0;
 			}
-			if($credito > ($limite-$saldo)){
-				$do->error_message_ar['pre_ins']='El cliente no tiene suficiente cr&eacute;dito';
+
+			if($credito > ($limite-$saldo) || $cdias<=0 || $credito=='N'){
+				$do->error_message_ar['pre_ins']='El cliente no tiene suficiente cr&eacute;dito propio';
 				return false;
+			}
+
+			//Chequea la cuenta de sus asociados (si es responsables de otros clientes)
+			$mSQL="SELECT SUM(a.monto*(a.tipo_doc IN ('FC','GI','ND'))) AS debe, SUM(a.monto*(a.tipo_doc IN ('NC','AB','AN'))) AS haber
+				FROM smov AS a
+				JOIN scli AS b ON a.cod_cli=b.socio
+				WHERE b.socio=$dbcliente";
+			$query = $this->db->query($mSQL);
+			if ($query->num_rows() > 0){
+				$row = $query->row();
+				$asaldo=$row->debe-$row->haber;
+			}else{
+				$asaldo=0;
+			}
+
+			if($credito > ($limite-$saldo-$asaldo) || $cdias<=0 || $credito=='N'){
+				$do->error_message_ar['pre_ins']='El cliente no tiene suficiente cr&eacute;dito de grupo';
+				return false;
+			}
+
+			//Chequea el credito de su maestro (si es subordinado)
+			if(!empty($socio)){
+				$dbsocio= $this->db->escape($socio);
+				$rrow   = $this->datasis->damerow("SELECT limite,formap,credito,tolera,socio FROM scli WHERE cliente=$dbsocio");
+				if($rrow!=false){
+					$mastercdias   = $rrow['formap'];
+					$mastercredito = $rrow['credito'];
+					$mastertolera  = (100+$rrow['tolera'])/100;
+					$mastersocio   = $rrow['socio'];
+					$masterlimite  = $rrow['limite']*$tolera;
+				}else{
+					$masterlimite = $mastercdias = $mastertolera = 0;
+					$mastercredito= 'N';
+					$mastersocio  = null;
+				}
+
+				$mSQL="SELECT SUM(a.monto*(a.tipo_doc IN ('FC','GI','ND'))) AS debe, SUM(a.monto*(a.tipo_doc IN ('NC','AB','AN'))) AS haber
+				FROM smov AS a
+				JOIN scli AS b ON a.cod_cli=b.socio
+				WHERE b.socio=$dbsocio";
+				$query = $this->db->query($mSQL);
+				if ($query->num_rows() > 0){
+					$row = $query->row();
+					$mastersaldo=$row->debe-$row->haber;
+				}else{
+					$mastersaldo=0;
+				}
+
+				if($credito > ($masterlimite-$saldo-$mastersaldo) || $mastercdias<=0 || $mastercredito=='N'){
+					$do->error_message_ar['pre_ins']='El fiador del cliente no tiene suficiente saldo';
+					return false;
+				}
 			}
 			$objdate = date_create($fecha);
 			$objdate->add(new DateInterval('P'.$cdias.'D'));
@@ -635,13 +781,16 @@ class sfac_add extends validaciones {
 			$do->set('dire1' ,$rrow['dire12']);
 		}
 
-		$numero  = $this->datasis->fprox_numero('nsfac');
+		if($tipoa=='F'){
+			$numero  = $this->datasis->fprox_numero('nsfac');
+		}else{
+			$numero  = $this->datasis->fprox_numero('nccli');
+		}
 		$transac = $this->datasis->fprox_numero('ntransa');
-		$do->set('numero',$numero);
+		$do->set('numero' ,$numero);
 		$do->set('transac',$transac);
 		$do->set('referen',($credito>0)? 'C': 'E');
 		$vd     = $do->get('vendedor');
-		$tipoa  = $do->get('tipo_doc');
 		$cajero = $do->get('cajero');
 		$almacen= $do->get('almacen');
 		$estampa= $do->get('estampa');
@@ -705,6 +854,7 @@ class sfac_add extends validaciones {
 	}
 
 	function _pre_update($do){
+		$do->error_message_ar['pre_upd']='No se pueden modificar facturas';
 		return false;
 	}
 
@@ -817,15 +967,17 @@ class sfac_add extends validaciones {
 					$ban=$this->db->simple_query($mSQL);
 					if($ban==false){ memowrite($mSQL,'sfac');}
 				}
-			}else{
+			}else{ //Si es devolucion
 				$factura   = $do->get('factura');
 				$dbfactura = $factura;
-				$saldo     = $this->datasis->dameval("SELECT monto-abonos FROM smov WHERE tipo_doc='FC' AND numero=$dbfactura");
+				$debe      = $this->datasis->dameval("SELECT monto-abonos FROM smov WHERE tipo_doc='FC' AND numero=$dbfactura");
+				$haber     = $totneto;
+				if(empty($debe)) $debe=0;
 
-				$xaplica  = $saldo-$totneto;
+				$saldo  = $debe-$haber;
 
 				//Si se le debe hace un anticipo
-				if($xaplica<0){
+				if($saldo<0){
 					$mnumant = $this->datasis->fprox_numero('nancli');
 
 					$data=array();
@@ -836,7 +988,7 @@ class sfac_add extends validaciones {
 					$data['tipo_doc']   = 'AN';
 					$data['numero']     = $mnumant;
 					$data['fecha']      = $estampa;
-					$data['monto']      = abs($xaplica);
+					$data['monto']      = abs($saldo);
 					$data['impuesto']   = 0;
 					$data['abonos']     = 0;
 					$data['vence']      = $fecha;
@@ -855,59 +1007,61 @@ class sfac_add extends validaciones {
 					if($ban==false){ memowrite($mSQL,'sfac');}
 				}
 
-				$mnumnc = $this->datasis->fprox_numero('nccli');
-				$data=array();
-				$data['cod_cli']    = $cod_cli;
-				$data['nombre']     = $nombre;
-				$data['dire1']      = $direc;
-				$data['dire2']      = $dire1;
-				$data['tipo_doc']   = 'NC';
-				$data['numero']     = $mnumnc;
-				$data['fecha']      = $fecha;
-				$data['monto']      = $saldo;
-				$data['impuesto']   = $iva;
-				$data['abonos']     = 0;
-				$data['vence']      = $fecha;
-				$data['tipo_ref']   = 'DV';
-				$data['num_ref']    = $numero;
-				$data['observa1']   = 'POR DEVOLUCION DE '.$numero;
-				$data['estampa']    = $estampa;
-				$data['hora']       = $hora;
-				$data['transac']    = $transac;
-				$data['usuario']    = $usuario;
-				$data['codigo']     = 'NOCON';
-				$data['descrip']    = 'NOTA DE CONTABILIDAD';
+				if($debe>0){
+					$mnumnc = $this->datasis->fprox_numero('nccli');
+					$data=array();
+					$data['cod_cli']    = $cod_cli;
+					$data['nombre']     = $nombre;
+					$data['dire1']      = $direc;
+					$data['dire2']      = $dire1;
+					$data['tipo_doc']   = 'NC';
+					$data['numero']     = $mnumnc;
+					$data['fecha']      = $fecha;
+					$data['monto']      = $debe;
+					$data['impuesto']   = $iva;
+					$data['abonos']     = 0;
+					$data['vence']      = $fecha;
+					$data['tipo_ref']   = 'DV';
+					$data['num_ref']    = $numero;
+					$data['observa1']   = 'POR DEVOLUCION DE '.$numero;
+					$data['estampa']    = $estampa;
+					$data['hora']       = $hora;
+					$data['transac']    = $transac;
+					$data['usuario']    = $usuario;
+					$data['codigo']     = 'NOCON';
+					$data['descrip']    = 'NOTA DE CONTABILIDAD';
 
-				$mSQL = $this->db->insert_string('smov', $data);
-				$ban=$this->db->simple_query($mSQL);
-				if($ban==false){ memowrite($mSQL,'sfac');}
+					$mSQL = $this->db->insert_string('smov', $data);
+					$ban=$this->db->simple_query($mSQL);
+					if($ban==false){ memowrite($mSQL,'sfac');}
 
-				//Aplica la NC a la FC
-				$data=array();
-				$data['numccli']    = $mnumnc; //numero abono
-				$data['tipoccli']   = 'NC';
-				$data['cod_cli']    = $cod_cli;
-				$data['tipo_doc']   = 'FC';
-				$data['numero']     = $factura;
-				$data['fecha']      = $fecha;
-				$data['monto']      = $saldo;
-				$data['abono']      = $saldo;
-				$data['ppago']      = 0;
-				$data['reten']      = 0;
-				$data['cambio']     = 0;
-				$data['mora']       = 0;
-				$data['transac']    = $transac;
-				$data['estampa']    = $estampa;
-				$data['hora']       = $hora;
-				$data['usuario']    = $usuario;
-				$data['reteiva']    = 0;
-				$data['nroriva']    = '';
-				$data['emiriva']    = '';
-				$data['recriva']    = '';
+					//Aplica la NC a la FC
+					$data=array();
+					$data['numccli']    = $mnumnc; //numero abono
+					$data['tipoccli']   = 'NC';
+					$data['cod_cli']    = $cod_cli;
+					$data['tipo_doc']   = 'FC';
+					$data['numero']     = $factura;
+					$data['fecha']      = $fecha;
+					$data['monto']      = $debe;
+					$data['abono']      = $debe;
+					$data['ppago']      = 0;
+					$data['reten']      = 0;
+					$data['cambio']     = 0;
+					$data['mora']       = 0;
+					$data['transac']    = $transac;
+					$data['estampa']    = $estampa;
+					$data['hora']       = $hora;
+					$data['usuario']    = $usuario;
+					$data['reteiva']    = 0;
+					$data['nroriva']    = '';
+					$data['emiriva']    = '';
+					$data['recriva']    = '';
 
-				$sql= $this->db->insert_string('itccli', $data);
-				$ban=$this->db->simple_query($sql);
-				if($ban==false){ memowrite($sql,'sfac'); $error++;}
+					$sql= $this->db->insert_string('itccli', $data);
+					$ban=$this->db->simple_query($sql);
+					if($ban==false){ memowrite($sql,'sfac'); $error++;}
+				}
 			}
 		}
 
