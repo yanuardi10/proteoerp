@@ -921,10 +921,6 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 			$cliente = $this->_numatri();
 		}
 
-		//print_r($campos);
-		//echo "{ success: false, message: 'No quiero que insertes', errors: {'cliente': 'horroroso amigo'}}";
-		//return false;
-
 		$mHay = $this->datasis->dameval("SELECT count(*) FROM scli WHERE cliente='".$cliente."'");
 		if  ( $mHay > 0 ){
 			echo "{ success: false, message: 'Ya existe un cliente con ese codigo'}";
