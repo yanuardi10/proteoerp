@@ -28,6 +28,7 @@ $campos=$form->js_escape($scampos);
 $sfpa_campos=$form->template_details('sfpa');
 $sfpa_scampos  ='<tr id="tr_sfpa_<#i#>">';
 $sfpa_scampos .='<td class="littletablerow" align="left" >'.$sfpa_campos['tipo']['field'].  '</td>';
+$sfpa_scampos .='<td class="littletablerow" align="center" >'.$sfpa_campos['sfpafecha']['field'].  '</td>';
 $sfpa_scampos .='<td class="littletablerow" align="left" >'.$sfpa_campos['numref']['field'].'</td>';
 $sfpa_scampos .='<td class="littletablerow" align="left" >'.$sfpa_campos['banco']['field']. '</td>';
 $sfpa_scampos .='<td class="littletablerow" align="right">'.$sfpa_campos['monto']['field']. '</td>';
@@ -640,6 +641,7 @@ function del_sfpa(id){
 		<table width='100%'>
 			<tr id='__ITPL__sfpa'>
 				<td class="littletableheaderdet">Tipo</td>
+				<td class="littletableheaderdet">Fecha</td>
 				<td class="littletableheaderdet">N&uacute;mero</td>
 				<td class="littletableheaderdet">Banco</td>
 				<td class="littletableheaderdet">Monto</td>
@@ -650,15 +652,17 @@ function del_sfpa(id){
 			<?php
 
 			for($i=0; $i < $form->max_rel_count['sfpa']; $i++) {
-				$tipo   = "tipo_$i";
-				$numref = "numref_$i";
-				$monto  = "monto_$i";
-				$banco  = "banco_$i";
+				$tipo     = "tipo_$i";
+				$sfpafecha= "sfpafecha_$i";
+				$numref   = "numref_$i";
+				$monto    = "monto_$i";
+				$banco    = "banco_$i";
 			?>
 			<tr id='tr_sfpa_<?php echo $i; ?>'>
-				<td class="littletablerow" nowrap><?php echo $form->$tipo->output ?></td>
-				<td class="littletablerow">       <?php echo $form->$numref->output ?></td>
-				<td class="littletablerow">       <?php echo $form->$banco->output ?></td>
+				<td class="littletablerow" nowrap><?php echo $form->$tipo->output      ?></td>
+				<td class="littletablerow" align="center"><?php echo $form->$sfpafecha->output ?></td>
+				<td class="littletablerow">       <?php echo $form->$numref->output    ?></td>
+				<td class="littletablerow">       <?php echo $form->$banco->output     ?></td>
 				<td class="littletablerow" align="right"><?php echo $form->$monto->output ?></td>
 				<?php if($form->_status!='show') {?>
 					<td class="littletablerow"><a href=# onclick="del_sfpa(<?php echo $i; ?>);return false;"><?php echo img("images/delete.jpg"); ?></a></td></tr>

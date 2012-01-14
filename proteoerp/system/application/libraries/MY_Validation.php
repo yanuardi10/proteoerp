@@ -87,11 +87,12 @@ class MY_Validation extends CI_Validation{
 		if ($query->num_rows() > 0){
 			$row = $query->row();
 			if( $row->status=='C'){
-				$tmc=timestampFromDBDate($row->status->fechac); //momento de cierre
+				$tmc=timestampFromDBDate($row->fechac); //momento de cierre
 				$tmt=mktime(0, 0, 0);
+
 				if($tmt>$tmc){ //Chequea si lo puede abrir
 					$data = array('fechaa' => date('Ymd'), 'horaa' => date('H:i:s'), 'status' => 'A');
-					$mSQL_2 = $this->db->update_string('scaj', $data, "cajero=$dbscaj");
+					$mSQL_2 = $this->CI->db->update_string('scaj', $data, "cajero=$dbscaj");
 					$rt=$this->CI->db->simple_query($mSQL_2);
 					return $rt;
 				}else{
@@ -133,6 +134,12 @@ class MY_Validation extends CI_Validation{
 		}else{
 			return false;
 		}
+	}
+
+	//Para validar fecha con condi_required
+	function chitfecha($validar,$format=null,$fname=null){
+		if(empty($validar)) return true;
+		return $this->chfecha($validar,$format,'chitfecha');
 	}
 
 	function chfecha($validar,$format=null,$fname=null){

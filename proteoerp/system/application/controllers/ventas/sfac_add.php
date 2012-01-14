@@ -436,6 +436,13 @@ class sfac_add extends validaciones {
 		$edit->tipo->insertValue='EF';
 		//$edit->tipo->rule     = 'required';
 
+		$edit->sfpafecha = new dateonlyField('Fecha','sfpafecha_<#i#>');
+		$edit->sfpafecha->rel_id   = 'sfpa';
+		$edit->sfpafecha->db_name  = 'fecha';
+		$edit->sfpafecha->size     = 10;
+		$edit->sfpafecha->maxlength= 8;
+		$edit->sfpafecha->rule ='condi_required|callback_chtipo[<#i#>]';
+
 		$edit->numref = new inputField('Numero <#o#>', 'num_ref_<#i#>');
 		$edit->numref->size     = 12;
 		$edit->numref->db_name  = 'num_ref';
@@ -621,6 +628,13 @@ class sfac_add extends validaciones {
 		}
 		//Fin de las validaciones
 
+		$rrow    = $this->datasis->damerow('SELECT nombre,rifci,dire11,dire12 FROM scli WHERE cliente='.$this->db->escape($cliente));
+		if($rrow!=false){
+			$do->set('nombre',$rrow['nombre']);
+			$do->set('direc' ,$rrow['dire11']);
+			$do->set('dire1' ,$rrow['dire12']);
+		}
+
 		$numero  = $this->datasis->fprox_numero('nsfac');
 		$transac = $this->datasis->fprox_numero('ntransa');
 		$do->set('numero',$numero);
@@ -660,16 +674,17 @@ class sfac_add extends validaciones {
 
 		$cana=$do->count_rel('sfpa');
 		for($i=0;$i<$cana;$i++){
-			$sfpa_monto= $do->get_rel('sfpa','monto',$i);
+			$sfpatipo  = $do->get_rel('sfpa', 'tipo_doc',$i);
+			$sfpa_monto= $do->get_rel('sfpa','monto'    ,$i);
 			if($tipoa=='D'){
 				$sfpa_monto *= -1;
 			}
 
+			if($sfpatipo=='EF') $do->set_rel('sfpa', 'fecha' , $fecha , $i);
 			$do->set_rel('sfpa','tipo_doc' ,($tipoa=='F')? 'FC':'DE',$i);
 			$do->set_rel('sfpa','transac'  ,$transac   ,$i);
 			$do->set_rel('sfpa','vendedor' ,$vd        ,$i);
 			$do->set_rel('sfpa','cod_cli'  ,$cliente   ,$i);
-			$do->set_rel('sfpa','fecha'    ,$fecha     ,$i);
 			$do->set_rel('sfpa','f_factura',$fecha     ,$i);
 			$do->set_rel('sfpa','cobro'    ,$fecha     ,$i);
 			$do->set_rel('sfpa','cobrador' ,$cajero    ,$i);
@@ -712,6 +727,8 @@ class sfac_add extends validaciones {
 		$referen = $do->get('referen');
 		$tipo_doc= $do->get('tipo_doc');
 		$iva     = $do->get('iva');
+		$direc   = $do->get('direc');
+		$dire1   = $do->get('dire1');
 
 		if($referen=='C'){
 			$error   = 0;
@@ -721,6 +738,8 @@ class sfac_add extends validaciones {
 				$data=array();
 				$data['cod_cli']    = $cod_cli;
 				$data['nombre']     = $nombre;
+				$data['dire1']      = $direc;
+				$data['dire2']      = $dire1;
 				$data['tipo_doc']   = 'FC';
 				$data['numero']     = $numero;
 				$data['fecha']      = $fecha;
@@ -750,6 +769,8 @@ class sfac_add extends validaciones {
 					$data=array();
 					$data['cod_cli']    = $cod_cli;
 					$data['nombre']     = $nombre;
+					$data['dire1']      = $direc;
+					$data['dire2']      = $dire1;
 					$data['tipo_doc']   = 'AB';
 					$data['numero']     = $mnumab;
 					$data['fecha']      = $fecha;
@@ -810,6 +831,8 @@ class sfac_add extends validaciones {
 					$data=array();
 					$data['cod_cli']    = $cod_cli;
 					$data['nombre']     = $nombre;
+					$data['dire1']      = $direc;
+					$data['dire2']      = $dire1;
 					$data['tipo_doc']   = 'AN';
 					$data['numero']     = $mnumant;
 					$data['fecha']      = $estampa;
@@ -836,6 +859,8 @@ class sfac_add extends validaciones {
 				$data=array();
 				$data['cod_cli']    = $cod_cli;
 				$data['nombre']     = $nombre;
+				$data['dire1']      = $direc;
+				$data['dire2']      = $dire1;
 				$data['tipo_doc']   = 'NC';
 				$data['numero']     = $mnumnc;
 				$data['fecha']      = $fecha;
