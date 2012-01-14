@@ -62,6 +62,9 @@ class ccli extends Controller {
 
 	function dataedit($cliente){
 		if(!$this->_exitescli($cliente)) redirect($this->url.'filterscli');
+		$cajero=$this->secu->getcajero();
+		if(empty($cajero)) show_error('El usuario debe tener registrado un cajero para poder usar este modulo');
+
 		$this->rapyd->load('dataobject','datadetails');
 		$this->rapyd->uri->keep_persistence();
 
@@ -259,6 +262,13 @@ class ccli extends Controller {
 		$edit->tipo->rule     = 'condi_required|callback_chsfpatipo[';
 		$edit->tipo->insertValue='EF';
 
+		$edit->sfpafecha = new dateonlyField('Fecha','sfpafecha_<#i#>');
+		$edit->sfpafecha->rel_id   = 'sfpa';
+		$edit->sfpafecha->db_name  = 'fecha';
+		$edit->sfpafecha->size     = 10;
+		$edit->sfpafecha->maxlength= 8;
+		$edit->sfpafecha->rule ='condi_required|chitfecha|callback_chtipo[<#i#>]';
+
 		$edit->numref = new inputField('Numero <#o#>', 'num_ref_<#i#>');
 		$edit->numref->size     = 12;
 		$edit->numref->db_name  = 'num_ref';
@@ -426,12 +436,24 @@ class ccli extends Controller {
 		$fecha   = $do->get('fecha');
 		$itabono=$sfpamonto=$ppagomonto=0;
 
+		$rrow    = $this->datasis->damerow('SELECT nombre,rifci,dire11,dire12 FROM scli WHERE cliente='.$this->db->escape($cliente));
+		if($rrow!=false){
+			$do->set('nombre',$rrow['nombre']);
+			$do->set('dire1' ,$rrow['dire11']);
+			$do->set('dire2' ,$rrow['dire12']);
+		}
+
 		//Totaliza el abonado
 		$rel='itccli';
 		$cana = $do->count_rel($rel);
 		for($i = 0;$i < $cana;$i++){
-			$itabono    += $do->get_rel($rel, 'abono', $i);
-			$ppagomonto += $do->get_rel($rel, 'ppago', $i);
+			$itabono += $do->get_rel($rel, 'abono', $i);
+			$pppago   = $do->get_rel($rel, 'ppago', $i);
+			if(empty($pppago)){
+				$do->set_rel($rel,'ppago',0,$i);
+			}else{
+				$ppagomonto += $do->get_rel($rel, 'ppago', $i);
+			}
 		}
 		$itabono=round($itabono,2);
 
@@ -444,6 +466,14 @@ class ccli extends Controller {
 		$sfpamonto=round($sfpamonto,2);
 
 		//Realiza las validaciones
+		$cajero=$this->secu->getcajero();
+		$this->load->library('validation');
+		$rt=$this->validation->cajerostatus($cajero);
+		if(!$rt){
+			$do->error_message_ar['pre_ins']='El cajero usado ('.$cajero.') esta cerrado para esta fecha';
+			return false;
+		}
+
 		if($tipo_doc=='NC'){
 			$do->truncate_rel('sfpa');
 			if($itabono==0){
@@ -469,7 +499,7 @@ class ccli extends Controller {
 
 		$dbcliente= $this->db->escape($cliente);
 		$rowscli  = $this->datasis->damerow('SELECT nombre,dire11,dire12 FROM scli WHERE cliente='.$dbcliente);
-		$do->set('nombre' , $rowscli['nombre']);
+		$do->set('nombre', $rowscli['nombre']);
 		$do->set('dire1' , $rowscli['dire11']);
 		$do->set('dire2' , $rowscli['dire12']);
 
@@ -484,7 +514,7 @@ class ccli extends Controller {
 		}else{
 			$mnum = $this->datasis->fprox_numero('nancli');
 		}
-		$do->set('vence'  , $fecha );
+		$do->set('vence'  , $fecha);
 		$do->set('numero' , $mnum);
 		$do->set('transac', $transac);
 
@@ -510,18 +540,36 @@ class ccli extends Controller {
 		if(count($observa)>0){
 			$observa='PAGA '.implode(',',$observa);
 			$do->set('observa1' , substr($observa,0,50));
-			$do->set('observa2' , substr($observa,50));
+			if(strlen($observa)>50) $do->set('observa2' , substr($observa,50));
 		}
 
 		$rel='sfpa';
 		$cana = $do->count_rel($rel);
 		for($i = 0;$i < $cana;$i++){
-			$do->set_rel($rel, 'estampa' , $estampa , $i);
-			$do->set_rel($rel, 'hora'    , $hora    , $i);
-			$do->set_rel($rel, 'usuario' , $usuario , $i);
-			$do->set_rel($rel, 'transac' , $transac , $i);
+			$sfpatipo=$do->get_rel($rel, 'tipo_doc', $i);
+			if($sfpatipo=='EF') $do->set_rel($rel, 'fecha' , $fecha , $i);
+
+			$do->set_rel($rel,'estampa'  , $estampa , $i);
+			$do->set_rel($rel,'hora'     , $hora    , $i);
+			$do->set_rel($rel,'usuario'  , $usuario , $i);
+			$do->set_rel($rel,'transac'  , $transac , $i);
+			$do->set_rel($rel,'f_factura', $fecha   , $i);
+			$do->set_rel($rel,'cod_cli'  ,$cliente  , $i);
+			$do->set_rel($rel,'cobro'    ,$fecha    , $i);
+			$do->set_rel($rel,'vendedor' ,$this->secu->getvendedor(),$i);
+			$do->set_rel($rel,'cobrador' ,$this->secu->getcajero()  ,$i);
+			$do->set_rel($rel,'almacen'  ,$this->secu->getalmacen() ,$i);
 		}
 		$this->ppagomonto=$ppagomonto;
+
+		$do->set('mora'    ,0);
+		$do->set('reten'   ,0);
+		$do->set('cambio'  ,0);
+		$do->set('reteiva' ,0);
+		$do->set('ppago'   ,$ppagomonto);
+		$do->set('codigo'  ,'NOCON');
+		$do->set('descrip' ,'NOTA DE CONTABILIDAD');
+		$do->set('vendedor', $this->secu->getvendedor());
 		return true;
 	}
 
@@ -539,6 +587,8 @@ class ccli extends Controller {
 				$dbdata=array();
 				$dbdata['cod_cli']    = $cliente;
 				$dbdata['nombre']     = $do->get('nombre');
+				$dbdata['dire1']      = $do->get('dire1');
+				$dbdata['dire2']      = $do->get('dire2');
 				$dbdata['tipo_doc']   = 'NC';
 				$dbdata['numero']     = $mnumnc;
 				$dbdata['fecha']      = $do->get('fecha');
@@ -558,6 +608,9 @@ class ccli extends Controller {
 				$dbdata['fecdoc']     = $do->get('fecha');
 				$dbdata['nroriva']    = '';
 				$dbdata['emiriva']    = '';
+				$dbdata['reten']      = 0;
+				$dbdata['cambio']     = 0;
+				$dbdata['mora']       = 0;
 
 				$mSQL = $this->db->insert_string('smov', $dbdata);
 				$ban=$this->db->simple_query($mSQL);
@@ -574,7 +627,7 @@ class ccli extends Controller {
 				$itdbdata['fecha']    = $do->get('fecha');
 				$itdbdata['monto']    = $this->ppagomonto;
 				$itdbdata['reten']    = 0;
-				$itdbdata['mora']     = 0;
+				$itdbdata['cambio']   = 0;
 				$itdbdata['mora']     = 0;
 
 				unset($dbdata);
