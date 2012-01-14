@@ -215,11 +215,12 @@ class pfaclitemayor extends validaciones{
 		$sel=array('a.mmargen','b.margen');
 		$this->db->select($sel);
 		$this->db->from('scli AS a');
-		$this->db->join('zona AS b','a.zona=b.codigo');
+		$this->db->join('zona AS b','a.zona=b.codigo','left');
 		$this->db->where('a.cliente',$cliente);
 		$qdes=$this->db->get();
 		if ($query->num_rows() > 0){
 			$rdes = $qdes->row();
+
 		}else{
 			$rdes = new stdClass;
 			$rdes->mmargen = 0;

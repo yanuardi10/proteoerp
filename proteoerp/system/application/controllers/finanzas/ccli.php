@@ -137,10 +137,10 @@ class ccli extends Controller {
 		$edit->monto->maxlength =17;
 		$edit->monto->type='inputhidden';
 
-		$edit->usuario = new autoUpdateField('usuario',$this->secu->usuario(),$this->secu->usuario());
+		$edit->usuario = new autoUpdateField('usuario' ,$this->secu->usuario(),$this->secu->usuario());
 		$edit->estampa = new autoUpdateField('estampa' ,date('Ymd'), date('Ymd'));
-		$edit->hora    = new autoUpdateField('hora',date('H:i:s'), date('H:i:s'));
-		$edit->fecha   = new autoUpdateField('fecha',date('Ymd'), date('Ymd'));
+		$edit->hora    = new autoUpdateField('hora'    ,date('H:i:s'), date('H:i:s'));
+		$edit->fecha   = new autoUpdateField('fecha'   ,date('Ymd'), date('Ymd'));
 
 		//************************************************
 		//inicio detalle itccli
@@ -535,6 +535,10 @@ class ccli extends Controller {
 				$do->set_rel($rel, 'hora'    , $hora    , $i);
 				$do->set_rel($rel, 'usuario' , $usuario , $i);
 				$do->set_rel($rel, 'transac' , $transac , $i);
+				$do->set_rel($rel, 'mora'    , 0, $i);
+				$do->set_rel($rel, 'reten'   , 0, $i);
+				$do->set_rel($rel, 'cambio'  , 0, $i);
+				$do->set_rel($rel, 'reteiva' , 0, $i);
 			}
 		}
 		if(count($observa)>0){
@@ -660,7 +664,6 @@ class ccli extends Controller {
 				}
 			}
 		}
-		//exit();
 	}
 
 	function _pre_update($do){

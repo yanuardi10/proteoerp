@@ -433,6 +433,7 @@ class sfac_add extends validaciones {
 		$edit->tipo->db_name  = 'tipo';
 		$edit->tipo->rel_id   = 'sfpa';
 		$edit->tipo->insertValue='EF';
+		$edit->tipo->style  ='width:150px;';
 		//$edit->tipo->rule     = 'required';
 
 		$edit->sfpafecha = new dateonlyField('Fecha','sfpafecha_<#i#>');
@@ -452,8 +453,9 @@ class sfac_add extends validaciones {
 		$edit->banco->option('','Ninguno');
 		$edit->banco->options('SELECT cod_banc,nomb_banc  FROM tban ORDER BY nomb_banc');
 		$edit->banco->db_name='banco';
-		$edit->banco->rel_id='sfpa';
-		$edit->banco->rule     = 'condi_required|callback_chtipo[<#i#>]';
+		$edit->banco->rel_id ='sfpa';
+		$edit->banco->style  ='width:180px;';
+		$edit->banco->rule   ='condi_required|callback_chtipo[<#i#>]';
 
 		$edit->monto = new inputField('Monto <#o#>', 'monto_<#i#>');
 		$edit->monto->db_name   = 'monto';
