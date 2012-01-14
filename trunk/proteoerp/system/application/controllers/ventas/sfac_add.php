@@ -1173,10 +1173,11 @@ class sfac_add extends validaciones {
 
 			//sfpa
 			$i=0;
-			$_POST["tipo_$i"]     = '';
-			$_POST["num_ref_$i"]  = '';
-			$_POST["banco_$i"]    = '';
-			$_POST["monto_$i"]    = 0;
+			$_POST["tipo_$i"]      = '';
+			$_POST["sfpafecha_$i"] = '';
+			$_POST["num_ref_$i"]   = '';
+			$_POST["banco_$i"]     = '';
+			$_POST["monto_$i"]     = 0;
 
 			$this->dataedit();
 		}

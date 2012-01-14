@@ -41,9 +41,9 @@ class numletra{
 
 	private $numero=0;
 	private $genero=1;
-	private $lcentimo=" con ";
-	private $prefijo="";
-	private $sufijo="";
+	private $lcentimo=' con ';
+	private $prefijo='';
+	private $sufijo='';
 	private $mayusculas=0;
 	//textos
 	private $textos_posibles= array(
@@ -51,7 +51,7 @@ class numletra{
 	1 => array ('once ','doce ','trece ','catorce ','quince ','dieciseis ','diecisiete ','dieciocho ','diecinueve ',''),
 	2 => array ('diez ','veinte ','treinta ','cuarenta ','cincuenta ','sesenta ','setenta ','ochenta ','noventa ','veinti'),
 	3 => array ('cien ','doscientas ','trescientas ','cuatrocientas ','quinientas ','seiscientas ','setecientas ','ochocientas ','novecientas ','ciento '),
-  4 => array ('cien ','doscientos ','trescientos ','cuatrocientos ','quinientos ','seiscientos ','setecientos ','ochocientos ','novecientos ','ciento '),
+	4 => array ('cien ','doscientos ','trescientos ','cuatrocientos ','quinientos ','seiscientos ','setecientos ','ochocientos ','novecientos ','ciento '),
 	5 => array ('mil ','millon ','millones ','cero ','y ','uno ','dos ','con ','','')
 	);
 	private $aTexto;
@@ -71,10 +71,10 @@ class numletra{
  *	letraDecena: Contiene decena en letra
  *	letraCentena: Convierte centena en letra
  *
- ***************************************************************************/	
+ ***************************************************************************/
 	function __construct(){
 		for($i=0; $i<6;$i++)
-   			for($j=0;$j<10;$j++)
+			for($j=0;$j<10;$j++)
 				$this->aTexto[$i][$j]=$this->textos_posibles[$i][$j];
 	}
 
@@ -106,42 +106,40 @@ class numletra{
 		if($this->genero==1){ //masculino
 			$this->aTexto[0][0]=$this->textos_posibles[5][5];
 			for($j=0;$j<9;$j++)
-            	$this->aTexto[3][$j]= $this->aTexto[4][$j];
-
+				$this->aTexto[3][$j]= $this->aTexto[4][$j];
 		}else{//femenino
 			$this->aTexto[0][0]=$this->textos_posibles[0][0];
 			for($j=0;$j<9;$j++)
-            	$this->aTexto[3][$j]= $this->aTexto[3][$j];
+				$this->aTexto[3][$j]= $this->aTexto[3][$j];
 		}
 
-		$cnumero=sprintf("%015.2f",$this->numero);
-		$texto="";
+		$cnumero=sprintf('%015.2f',$this->numero);
+		$texto='';
 		if(strlen($cnumero)>15){
-			$texto="Excede tamaño permitido";
+			$texto='Excede tamaño permitido';
 		}else{
 			$hay_significativo=false;
 			for ($pos=0; $pos<12; $pos++){
 				// Control existencia Dígito significativo 
-   				if (!($hay_significativo)&&(substr($cnumero,$pos,1) == '0')) ;
-   				else $hay_dignificativo = true;
+				if (!($hay_significativo)&&(substr($cnumero,$pos,1) == '0')) ;
+				else $hay_dignificativo = true;
 
-   				// Detectar Tipo de Dígito 
-   				switch($pos % 3) {
-   					case 0: $texto.=$this->letraCentena($pos,$cnumero); break;
-   					case 1: $texto.=$this->letraDecena($pos,$cnumero); break;
-   					case 2: $texto.=$this->letraUnidad($pos,$cnumero); break;
+				// Detectar Tipo de Dígito
+				switch($pos % 3) {
+					case 0: $texto.=$this->letraCentena($pos,$cnumero); break;
+					case 1: $texto.=$this->letraDecena($pos,$cnumero); break;
+					case 2: $texto.=$this->letraUnidad($pos,$cnumero); break;
 				}
 			}
-   			// Detectar caso 0 
-   			if ($texto == '') $texto = $this->aTexto[5][3];
+			// Detectar caso 0
+			if ($texto == '') $texto = $this->aTexto[5][3];
 			if($this->mayusculas){//mayusculas
-				$texto=strtoupper($this->prefijo.$texto." ".$this->lcentimo." ".substr($cnumero,-2)."/100 ".$this->sufijo);	
+				$texto=strtoupper($this->prefijo.$texto.' '.$this->lcentimo.' '.substr($cnumero,-2).'/100 '.$this->sufijo);
 			}else{//minusculas
-				$texto=strtolower($this->prefijo.$texto." ".$this->lcentimo." ".substr($cnumero,-2)."/100 ".$this->sufijo);	
+				$texto=strtolower($this->prefijo.$texto.' '.$this->lcentimo.' '.substr($cnumero,-2).'/100 '.$this->sufijo);
 			}
 		}
 		return $texto;
-
 	}
 
 	public function __toString() {
@@ -150,32 +148,27 @@ class numletra{
 
 	//traducir letra a unidad
 	private function letraUnidad($pos,$cnumero){
-		$unidad_texto="";
-   		if( !((substr($cnumero,$pos,1) == '0') || 
-               (substr($cnumero,$pos - 1,1) == '1') ||
-               ((substr($cnumero, $pos - 2, 3) == '001') &&  (($pos == 2) || ($pos == 8)) ) 
-             )
-		  ){ 
+		$unidad_texto='';
+		if( !((substr($cnumero,$pos,1) == '0') || (substr($cnumero,$pos - 1,1) == '1') || ((substr($cnumero, $pos - 2, 3) == '001') &&  (($pos == 2) || ($pos == 8))))){ 
 			if((substr($cnumero,$pos,1) == '1') && ($pos <= 6)){
-   				$unidad_texto.=$this->aTexto[0][9]; 
+				$unidad_texto.=$this->aTexto[0][9];
 			}else{
 				$unidad_texto.=$this->aTexto[0][substr($cnumero,$pos,1) - 1];
 			}
 		}
-   		if((($pos == 2) || ($pos == 8)) && 
-		   (substr($cnumero, $pos - 2, 3) != '000')){//miles
+		if((($pos == 2) || ($pos == 8)) && (substr($cnumero, $pos - 2, 3) != '000')){//miles
 			if(substr($cnumero,$pos,1)=='1'){
 				if($pos <= 6){
-					$unidad_texto=substr($unidad_texto,0,-1)." ";
+					$unidad_texto=substr($unidad_texto,0,-1).' ';
 				}else{
-					$unidad_texto=substr($unidad_texto,0,-2)." ";
+					$unidad_texto=substr($unidad_texto,0,-2).' ';
 				}
 				$unidad_texto.= $this->aTexto[5][0]; 
 			}else{
 				$unidad_texto.=$this->aTexto[5][0]; 
 			}
 		}
-        if($pos == 5 && substr($cnumero, 0, 6) != '000000'){
+		if($pos == 5 && substr($cnumero, 0, 6) != '000000'){
 			if(substr($cnumero, 0, 6) == '000001'){//millones
 			  $unidad_texto.=$this->aTexto[5][1];
 			}else{
@@ -184,33 +177,34 @@ class numletra{
 		}
 		return $unidad_texto;
 	}
+
 	//traducir digito a decena
 	private function letraDecena($pos,$cnumero){
 		$decena_texto="";
-   		if (substr($cnumero,$pos,1) == '0'){
+		if (substr($cnumero,$pos,1) == '0'){
 			return;
 		}else if(substr($cnumero,$pos + 1,1) == '0'){ 
-   			$decena_texto.=$this->aTexto[2][substr($cnumero,$pos,1)-1];
+			$decena_texto.=$this->aTexto[2][substr($cnumero,$pos,1)-1];
 		}else if(substr($cnumero,$pos,1) == '1'){ 
-   			$decena_texto.=$this->aTexto[1][substr($cnumero,$pos+ 1,1)- 1];
+			$decena_texto.=$this->aTexto[1][substr($cnumero,$pos+ 1,1)- 1];
 		}else if(substr($cnumero,$pos,1) == '2'){
-   			$decena_texto.=$this->aTexto[2][9];
+			$decena_texto.=$this->aTexto[2][9];
 		}else{
-   			$decena_texto.=$this->aTexto[2][substr($cnumero,$pos,1)- 1] . $this->aTexto[5][4];
+			$decena_texto.=$this->aTexto[2][substr($cnumero,$pos,1)- 1] . $this->aTexto[5][4];
 		}
 		return $decena_texto;
-   	}
+	}
+
 	//traducir digito centena
-   	private function letraCentena($pos,$cnumero){
-		$centena_texto="";
-   		if (substr($cnumero,$pos,1) == '0') return;
-   		$pos2 = 3;
+	private function letraCentena($pos,$cnumero){
+		$centena_texto='';
+		if (substr($cnumero,$pos,1) == '0') return;
+		$pos2 = 3;
 		if((substr($cnumero,$pos,1) == '1') && (substr($cnumero,$pos+ 1, 2) != '00')){
-   			$centena_texto.=$this->aTexto[$pos2][9];
-   		}else{
-   			$centena_texto.=$this->aTexto[$pos2][substr($cnumero,$pos,1) - 1];
+			$centena_texto.=$this->aTexto[$pos2][9];
+		}else{
+			$centena_texto.=$this->aTexto[$pos2][substr($cnumero,$pos,1) - 1];
 		}
 		return $centena_texto;
 	}
-
 }
