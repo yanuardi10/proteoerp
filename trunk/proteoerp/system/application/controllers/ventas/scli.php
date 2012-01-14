@@ -8,9 +8,6 @@ class Scli extends validaciones {
 		$this->load->library('pi18n');
 		//$this->load->library("menues");
 		$this->datasis->modulo_id(131,1);
-		$this->load->database();
-		if ( !$this->datasis->iscampo('scli','mmargen') ) $this->db->simple_query("ALTER TABLE scli ADD mmargen DECIMAL(7,2) DEFAULT 0 COMMENT 'Margen al Mayor'");
-
 		//$this->instalar();
 	}
 
@@ -1190,14 +1187,14 @@ var cplaStore = new Ext.data.Store({
 		//REVISA SI TIENE AUTORIZACION
 
 		$mLimite = $this->datasis->dameval("SELECT codigo FROM tmenus WHERE ejecutar like 'SCLILIMITE%'");
-		$mTolera = $this->datasis->dameval("SELECT codigo FROM tmenus WHERE ejecutar like 'SCLITOLERA%'"); 
+		$mTolera = $this->datasis->dameval("SELECT codigo FROM tmenus WHERE ejecutar like 'SCLITOLERA%'");
 		$mMaxTol = $this->datasis->dameval("SELECT codigo FROM tmenus WHERE ejecutar like 'SCLIMAXTOLE%'");
 		$mUsuario = $this->db->escape($this->secu->usuario());
 
 		$mALimite = 'N';
 		$mATolera = 'N';
 		$mAMaxTol = 'N';
-		
+
 		if ($mLimite) $mALimite = $this->datasis->dameval("SELECT acceso FROM sida WHERE modulo=$mLimite AND usuario=$mUsuario ");
 		if ($mTolera) $mATolera = $this->datasis->dameval("SELECT acceso FROM sida WHERE modulo=$mTolera AND usuario=$mUsuario ");
 		if ($mMaxTol) $mAMaxTol = $this->datasis->dameval("SELECT acceso FROM sida WHERE modulo=$mMaxTol AND usuario=$mUsuario ");
@@ -1375,43 +1372,6 @@ var cplaStore = new Ext.data.Store({
 		//$this->load->view('jqui/ventanas',$data);
 	}
 
-
-	function instalar(){
-		//$seniat='http://www.seniat.gov.ve/BuscaRif/BuscaRif.jsp';
-		//$mSQL="REPLACE INTO valores (nombre,valor,descrip) VALUES ('CONSULRIF','$seniat','Pagina de consulta de rif del seniat') ON DUPLICATE KEY UPDATE valor='$seniat'";
-		//$this->db->simple_query($mSQL);
-
-		if (!$this->db->field_exists('modifi','scli')) {
-			$mSQL='ALTER TABLE `scli` ADD `modifi` TIMESTAMP DEFAULT CURRENT_TIMESTAMP NULL AFTER `mensaje`';
-			$this->db->simple_query($mSQL);
-		}
-
-		if (!$this->db->field_exists('id','scli')) {
-			$mSQL='ALTER TABLE `scli` DROP PRIMARY KEY, ADD UNIQUE `cliente` (`cliente`)';
-			$this->db->simple_query($mSQL);
-			$mSQL='ALTER TABLE scli ADD id INT AUTO_INCREMENT PRIMARY KEY';
-			$this->db->simple_query($mSQL);
-			$mSQL='ALTER TABLE `scli`  CHANGE COLUMN `formap` `formap` INT(6) NULL DEFAULT 0';
-			$this->db->simple_query($mSQL);
-			$mSQL='ALTER TABLE `scli`  CHANGE COLUMN `email` `email` VARCHAR(100) NULL DEFAULT NULL';
-			$this->db->simple_query($mSQL);
-			$mSQL='ALTER TABLE `scli`  CHANGE COLUMN `clave` `clave` VARCHAR(50) NULL DEFAULT NULL AFTER `tiva`';
-			$this->db->simple_query($mSQL);
-		}
-		$query="ALTER TABLE `scli` ADD COLUMN `modifi` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP";
-		$this->db->simple_query($mSQL);
-		$query="ALTER TABLE `scli` ADD COLUMN `sucursal` CHAR(2) NULL DEFAULT NULL";
-		$this->db->simple_query($mSQL);
-		$query="ALTER TABLE `scli` ADD COLUMN `mmargen` DECIMAL(10,2) NULL DEFAULT NULL";
-		$this->db->simple_query($mSQL);
-		$query="ALTER TABLE `scli`  ADD COLUMN `credito` CHAR(1) NULL DEFAULT 'S'";
-		$this->db->simple_query($mSQL);
-		$query="ALTER TABLE `scli` ADD COLUMN `tolera` DECIMAL(9,2) NULL DEFAULT '0' AFTER `credito`";
-		$this->db->simple_query($mSQL);
-		$query="ALTER TABLE `scli` ADD COLUMN `maxtole` DECIMAL(9,2) NULL DEFAULT '0' AFTER `tolera`";
-		$this->db->simple_query($mSQL);
-	}
-
 	function sclibusca() {
 		$start    = isset($_REQUEST['start'])   ? $_REQUEST['start']  :  0;
 		$limit    = isset($_REQUEST['limit'])   ? $_REQUEST['limit']  : 25;
@@ -1447,4 +1407,32 @@ var cplaStore = new Ext.data.Store({
 		}
 	}
 
+	function instalar(){
+		$seniat=$this->db->escape('http://contribuyente.seniat.gob.ve/BuscaRif/BuscaRif.jsp');
+		$mSQL  ="REPLACE INTO valores (nombre,valor,descrip) VALUES ('CONSULRIF',$seniat,'Pagina de consulta de rif del seniat') ON DUPLICATE KEY UPDATE valor=$seniat";
+		$this->db->simple_query($mSQL);
+
+		$campos = array();
+		$fields = $this->db->field_data('scli');
+		foreach ($fields as $field){
+			if    ($field->name=='formap' && $field->type!='int')     $this->db->simple_query('ALTER TABLE `scli`  CHANGE COLUMN `formap` `formap` INT(6) NULL DEFAULT 0');
+			elseif($field->name=='email'  && $field->max_length!=100) $this->db->simple_query('ALTER TABLE `scli`  CHANGE COLUMN `email` `email` VARCHAR(100) NULL DEFAULT NULL');
+			elseif($field->name=='clave'  && $field->max_length!=50)  $this->db->simple_query('ALTER TABLE `scli`  CHANGE COLUMN `clave` `clave` VARCHAR(50) NULL DEFAULT NULL');
+			$campos[]=$field->name;
+		}
+
+		if (!in_array('id',$campos)){
+			$mSQL='ALTER TABLE `scli` DROP PRIMARY KEY, ADD UNIQUE `cliente` (`cliente`)';
+			$this->db->simple_query($mSQL);
+			$mSQL='ALTER TABLE `scli` ADD `id` INT AUTO_INCREMENT PRIMARY KEY';
+			$this->db->simple_query($mSQL);
+		}
+
+		if(!in_array('modifi'  ,$campos)) $this->db->simple_query("ALTER TABLE `scli` ADD COLUMN `modifi` TIMESTAMP DEFAULT CURRENT_TIMESTAMP NULL AFTER `mensaje`");
+		if(!in_array('credito' ,$campos)) $this->db->simple_query("ALTER TABLE `scli` ADD COLUMN `credito` CHAR(1) NOT NULL DEFAULT 'N' AFTER `limite`");
+		if(!in_array('sucursal',$campos)) $this->db->simple_query("ALTER TABLE `scli` ADD COLUMN `sucursal` CHAR(2) NULL DEFAULT NULL");
+		if(!in_array('mmargen' ,$campos)) $this->db->simple_query("ALTER TABLE `scli` ADD COLUMN `mmargen` DECIMAL(7,2) NULL DEFAULT 0 COMMENT 'Margen al Mayor'");
+		if(!in_array('tolera'  ,$campos)) $this->db->simple_query("ALTER TABLE `scli` ADD COLUMN `tolera` DECIMAL(9,2) NULL DEFAULT '0' AFTER `credito`");
+		if(!in_array('maxtole' ,$campos)) $this->db->simple_query("ALTER TABLE `scli` ADD COLUMN `maxtole` DECIMAL(9,2) NULL DEFAULT '0' AFTER `tolera`");
+	}
 }
