@@ -3,7 +3,7 @@ class formatos extends validaciones {
 	var $genesal=true;
 
 	function formatos(){
-		parent::Controller(); 
+		parent::Controller();
 		$this->load->library('rapyd');
 		//$this->datasis->modulo_id(307,1);
 	}
@@ -45,7 +45,7 @@ class formatos extends validaciones {
 
 		$filter->buttons('reset','search');
 		$filter->build('dataformfiltro');
-		
+
 		$uri  = anchor('supervisor/formatos/dataedit/show/<#nombre#>'   ,'<#nombre#>');
 		$uri1 = anchor('supervisor/formatos/reporte/modify/<#nombre#>/' ,'Editar');
 		$uri2 = anchor('supervisor/formatos/rdatasis/modify/<#nombre#>/','Editar');
@@ -87,7 +87,7 @@ class formatos extends validaciones {
 		</script>';
 		$data['content'] = '<form>'.$grid->output.'</form>';
 		$data['filtro']  = $filter->output;
-		$data['title']   = '<h1>Menu de Formatos</h1>';
+		$data['title']   = heading('Menu de Formatos');
 		$data['head']    = script('jquery.pack.js').$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
@@ -95,18 +95,18 @@ class formatos extends validaciones {
 	function observa($nombre){
 		$this->rapyd->load('dataedit');
 
-		$edit = new DataEdit('Agregar Observacion','formatos');
+		$edit = new DataEdit('Agregar Observaci&oacute;n','formatos');
 		$edit->back_url = site_url('supervisor/formatos/filteredgrid');
 
 		$edit->observa= new textareaField('', 'observa');
 		$edit->observa->rows =3;
 		$edit->observa->cols=70;
 
-		$edit->buttons("modify", "save", "undo","back");
+		$edit->buttons('modify', 'save', 'undo','back');
 		$edit->build();
 
 		$data['content'] = $edit->output;
-		$data['title']   = '<h1>Observaciones</h1>';
+		$data['title']   = heading('Observaciones');
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
@@ -142,6 +142,7 @@ class formatos extends validaciones {
 
 		$this->rapyd->jquery[]='$("#proteo").tabby();';
 		$this->rapyd->jquery[]='$("#proteo").linedtextarea();';
+		$this->rapyd->jquery[]='estilo=$("#proteo").attr("style"); $("#proteo").attr("style",estilo+"-moz-tab-size:2 !important; tab-size:2 !important;")';
 
 		if($this->genesal){
 			$data['content'] = $edit->output;
@@ -245,7 +246,7 @@ class formatos extends validaciones {
 		$edit->reporte->cols=130;
 		$edit->reporte->rule = 'callback_eollw';
 
-		$edit->buttons("modify", "save", "undo","back");
+		$edit->buttons('modify', 'save', 'undo','back');
 		$edit->build();
 
 		$data['content'] = $edit->output;
@@ -285,26 +286,28 @@ class formatos extends validaciones {
 		$edit->nombre->rule= 'strtoupper|required';
 		$edit->nombre->size = 20;
 
-		$edit->buttons("modify", "save", "undo", "delete", "back");
+		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
 		$edit->build();
 
 		$data['content'] = $edit->output;
-		$data['title']   = "<h1>Agregar Formatos</h1>";
+		$data['title']   = heading('Agregar Formatos');
 		$data['head']    = $this->rapyd->get_head();
-		$this->load->view('view_ventanas', $data);  
+		$this->load->view('view_ventanas', $data);
 	}
 
 	function cactivo(){
 		$codigo=$this->input->post('codigo');
 		if(!empty($codigo)){
 			$pk=explode('|',$codigo);
-			$mSQL="UPDATE intrarepo SET activo=IF(activo='S','N','S') WHERE nombre='$pk[0]' AND modulo='$pk[1]'";
+			$dbpk1=$this->db->escape($pk[0]);
+			$dbpk2=$this->db->escape($pk[1]);
+			$mSQL="UPDATE intrarepo SET activo=IF(activo='S','N','S') WHERE nombre=$dbpk1 AND modulo=$dbpk2";
 			echo $this->db->simple_query($mSQL);
 		}else{
 			echo 0;
 		}
 	}
-	
+
 	function rtcpdf2(){
 		$this->rapyd->load('dataedit');
 
@@ -342,7 +345,7 @@ class formatos extends validaciones {
 
 		if($this->genesal){
 			$data['content'] = $edit->output;
-			$data['title']   = '<h1>Reporte TCPDF</h1>';
+			$data['title']   = heading('Reporte TCPDF');
 			$data['head']    = $this->rapyd->get_head();
 			$data['head']   .= script('plugins/jquery-linedtextarea.js').script('plugins/jquery.textarea.js').style('jquery-linedtextarea.css');
 			//$data['head']   .= script('codepress/codepress.js');
@@ -360,16 +363,17 @@ class formatos extends validaciones {
 
 		if($tcpdf!==false and $nombre!==false){
 			if(stripos($this->config->item('charset'), 'utf')===false){
-				$_POST['nombre']=utf8_decode($nombre);
-				$_POST['tcpdf']=utf8_decode($tcpdf);
+				$_POST['nombre'] = utf8_decode($nombre);
+				$_POST['tcpdf']  = utf8_decode($tcpdf);
 			}
 			$this->rtcpdf2();
 		}
 	}
 
 	function _post_insert($do){
-		$nombre=$do->get('nombre');
-		$mSQL="INSERT IGNORE INTO `reportes` (nombre) VALUES ('$nombre')";
+		$nombre  =$do->get('nombre');
+		$dbnombre=$this->db->escape($nombre);
+		$mSQL="INSERT IGNORE INTO `reportes` (nombre) VALUES ($dbnombre)";
 		$this->db->simple_query($mSQL);
 		logusu('formatos',"CREADO EL REPORTE $nombre");
 	}
@@ -382,15 +386,17 @@ class formatos extends validaciones {
 	}
 
 	function instalar(){
-		$mSQL="CREATE TABLE IF NOT EXISTS `intrarepo` (
-		  `nombre` varchar(71) NOT NULL default '',
-		  `modulo` varchar(10) NOT NULL default '',
-		  `titulo` varchar(20) default NULL,
-		  `mensaje` varchar(60) default NULL,
-		  `activo` char(1) default 'S',
-		  PRIMARY KEY  (`nombre`,`modulo`)
-		) ENGINE=MyISAM DEFAULT CHARSET=latin1";
-		$this->db->simple_query($mSQL);
-		$this->db->simple_query("ALTER TABLE `formatos`  ADD COLUMN `tcpdf2` TEXT NULL");
+		if ($this->db->table_exists('intrarepo')){
+			$mSQL="CREATE TABLE IF NOT EXISTS `intrarepo` (
+			`nombre` varchar(71) NOT NULL default '',
+			`modulo` varchar(10) NOT NULL default '',
+			`titulo` varchar(20) default NULL,
+			`mensaje` varchar(60) default NULL,
+			`activo` char(1) default 'S',
+			PRIMARY KEY  (`nombre`,`modulo`)
+			) ENGINE=MyISAM DEFAULT CHARSET=latin1";
+			$this->db->simple_query($mSQL);
+		}
+		if ($this->db->field_exists('tcpdf2', 'formatos')) $this->db->simple_query("ALTER TABLE `formatos`  ADD COLUMN `tcpdf2` TEXT NULL");
 	}
 }
