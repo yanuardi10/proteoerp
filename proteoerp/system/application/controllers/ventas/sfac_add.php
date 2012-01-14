@@ -11,7 +11,7 @@ class sfac_add extends validaciones {
 	function sfac_add(){
 		parent::Controller();
 		$this->load->library('rapyd');
-		//$this->datasis->modulo_id('13D',1);
+		$this->datasis->modulo_id('103',1);
 		$this->instalar();
 	}
 
@@ -556,10 +556,18 @@ class sfac_add extends validaciones {
 				return false;
 			}
 		}elseif($tipo_doc == 'F'){
-			$precio4 = $this->datasis->dameval('SELECT precio4*100/(100+iva) FROM sinv WHERE codigo='.$this->db->escape($codigo));
+			if(!isset($this->sclitipo)){
+				$cliente  = $this->input->post('cod_cli');
+				$this->sclitipo = $this->datasis->dameval('SELECT tipo FROM scli WHERE cliente='.$this->db->escape($cliente));
+			}
+			if($this->sclitipo=='5'){
+				$precio4 = $this->datasis->dameval('SELECT ultimo FROM sinv WHERE codigo='.$this->db->escape($codigo));
+			}else{
+				$precio4 = $this->datasis->dameval('SELECT precio4*100/(100+iva) FROM sinv WHERE codigo='.$this->db->escape($codigo));
+			}
 			$this->validation->set_message('chpreca', 'El art&iacute;culo '.$codigo.' debe contener un precio de al menos '.nformat($precio4));
 			if(empty($precio4)) $precio4=0; else $precio4=round($precio4,2);
-			if($precio4>$val){
+			if($val>=$precio4){
 				return true;
 			}
 		}
@@ -689,14 +697,14 @@ class sfac_add extends validaciones {
 			$rrow    = $this->datasis->damerow("SELECT limite,formap,credito,tolera,socio FROM scli WHERE cliente=$dbcliente");
 			if($rrow!=false){
 				$cdias   = $rrow['formap'];
-				$credito = $rrow['credito'];
+				$pcredito= $rrow['credito'];
 				$tolera  = (100+$rrow['tolera'])/100;
 				$socio   = $rrow['socio'];
 				$limite  = $rrow['limite']*$tolera;
 			}else{
-				$limite = $cdias  = $tolera = 0;
-				$credito= 'N';
-				$socio  = null;
+				$limite  = $cdias  = $tolera = 0;
+				$pcredito= 'N';
+				$socio   = null;
 			}
 
 			//Chequea la cuenta propia
@@ -709,7 +717,7 @@ class sfac_add extends validaciones {
 				$saldo=0;
 			}
 
-			if($credito > ($limite-$saldo) || $cdias<=0 || $credito=='N'){
+			if($credito > ($limite-$saldo) || $cdias<=0 || $pcredito=='N'){
 				$do->error_message_ar['pre_ins']='El cliente no tiene suficiente cr&eacute;dito propio';
 				return false;
 			}
@@ -727,7 +735,7 @@ class sfac_add extends validaciones {
 				$asaldo=0;
 			}
 
-			if($credito > ($limite-$saldo-$asaldo) || $cdias<=0 || $credito=='N'){
+			if($credito > ($limite-$saldo-$asaldo) || $cdias<=0 || $pcredito=='N'){
 				$do->error_message_ar['pre_ins']='El cliente no tiene suficiente cr&eacute;dito de grupo';
 				return false;
 			}
@@ -886,26 +894,26 @@ class sfac_add extends validaciones {
 			if($tipo_doc=='F'){
 				//Inserta en smov
 				$data=array();
-				$data['cod_cli']    = $cod_cli;
-				$data['nombre']     = $nombre;
-				$data['dire1']      = $direc;
-				$data['dire2']      = $dire1;
-				$data['tipo_doc']   = 'FC';
-				$data['numero']     = $numero;
-				$data['fecha']      = $fecha;
-				$data['monto']      = $totneto;
-				$data['impuesto']   = $iva;
-				$data['abonos']     = $anticipo;
-				$data['vence']      = $vence;
-				$data['tipo_ref']   = '';
-				$data['num_ref']    = '';
-				$data['observa1']   = 'FACTURA DE CREDITO';
-				$data['estampa']    = $estampa;
-				$data['hora']       = $hora;
-				$data['transac']    = $transac;
-				$data['usuario']    = $usuario;
-				$data['codigo']     = 'NOCON';
-				$data['descrip']    = 'NOTA DE CONTABILIDAD';
+				$data['cod_cli']  = $cod_cli;
+				$data['nombre']   = $nombre;
+				$data['dire1']    = $direc;
+				$data['dire2']    = $dire1;
+				$data['tipo_doc'] = 'FC';
+				$data['numero']   = $numero;
+				$data['fecha']    = $fecha;
+				$data['monto']    = $totneto;
+				$data['impuesto'] = $iva;
+				$data['abonos']   = $anticipo;
+				$data['vence']    = $vence;
+				$data['tipo_ref'] = '';
+				$data['num_ref']  = '';
+				$data['observa1'] = 'FACTURA DE CREDITO';
+				$data['estampa']  = $estampa;
+				$data['hora']     = $hora;
+				$data['transac']  = $transac;
+				$data['usuario']  = $usuario;
+				$data['codigo']   = 'NOCON';
+				$data['descrip']  = 'NOTA DE CONTABILIDAD';
 
 				$sql= $this->db->insert_string('smov', $data);
 				$ban=$this->db->simple_query($sql);
@@ -917,24 +925,24 @@ class sfac_add extends validaciones {
 					$mnumab = $this->datasis->fprox_numero('nabcli');
 
 					$data=array();
-					$data['cod_cli']    = $cod_cli;
-					$data['nombre']     = $nombre;
-					$data['dire1']      = $direc;
-					$data['dire2']      = $dire1;
-					$data['tipo_doc']   = 'AB';
-					$data['numero']     = $mnumab;
-					$data['fecha']      = $fecha;
-					$data['monto']      = $anticipo;
-					$data['impuesto']   = 0;
-					$data['vence']      = $fecha;
-					$data['tipo_ref']   = 'FC';
-					$data['num_ref']    = $numero;
-					$data['observa1']   = 'ABONO POR INCIAL DE FACTURA '.$numero;
-					$data['usuario']    = $usuario;
-					$data['estampa']    = $estampa;
-					$data['hora']       = $hora;
-					$data['transac']    = $transac;
-					$data['fecdoc']     = $fecha;
+					$data['cod_cli']  = $cod_cli;
+					$data['nombre']   = $nombre;
+					$data['dire1']    = $direc;
+					$data['dire2']    = $dire1;
+					$data['tipo_doc'] = 'AB';
+					$data['numero']   = $mnumab;
+					$data['fecha']    = $fecha;
+					$data['monto']    = $anticipo;
+					$data['impuesto'] = 0;
+					$data['vence']    = $fecha;
+					$data['tipo_ref'] = 'FC';
+					$data['num_ref']  = $numero;
+					$data['observa1'] = 'ABONO POR INCIAL DE FACTURA '.$numero;
+					$data['usuario']  = $usuario;
+					$data['estampa']  = $estampa;
+					$data['hora']     = $hora;
+					$data['transac']  = $transac;
+					$data['fecdoc']   = $fecha;
 
 					$mSQL = $this->db->insert_string('smov', $data);
 					$ban=$this->db->simple_query($mSQL);
