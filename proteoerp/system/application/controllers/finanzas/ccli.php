@@ -18,7 +18,7 @@ class ccli extends Controller {
 		$this->rapyd->load('datafilter','datagrid');
 
 		$filter = new DataFilter($this->titp);
-		$sel=array('a.cod_cli','b.nombre','SUM(a.monto-a.abonos) AS saldo');
+		$sel=array('TRIM(a.cod_cli) AS cod_cli','b.nombre','SUM(a.monto-a.abonos) AS saldo');
 		$filter->db->select($sel);
 		$filter->db->from('smov AS a');
 		$filter->db->join('scli AS b','a.cod_cli=b.cliente');
@@ -61,7 +61,7 @@ class ccli extends Controller {
 	}
 
 	function dataedit($cliente){
-		if(!$this->_exitescli($cliente)) redirect($this->url.'filterscli');
+		if(!$this->_exitescli($cliente)) redirect($this->url.'filteredgrid');
 		$cajero=$this->secu->getcajero();
 		if(empty($cajero)) show_error('El usuario debe tener registrado un cajero para poder usar este modulo');
 
