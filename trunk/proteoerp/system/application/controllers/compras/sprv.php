@@ -410,9 +410,9 @@ class Sprv extends validaciones {
 			$edit->build();
 
 			if($edit->on_success()){
-				$rt= 'Proveedor Guardado';
+				$rt= array(true, 'Proveedor Guardado');
 			}elseif($edit->on_error()){
-				$rt= html_entity_decode(preg_replace('/<[^>]*>/', '', $edit->error_string));
+				$rt= array(false,html_entity_decode(preg_replace('/<[^>]*>/', '', $edit->error_string)));
 			}
 			return $rt;
 		}
@@ -573,68 +573,46 @@ class Sprv extends validaciones {
 		$js= file_get_contents('php://input');
 		$data= json_decode($js,true);
 
-		//var_dump($data);
-		//echo count($data["data"]);
-		if ( array_key_exists( '0', $data['data']) ) {
-			$campos = $data['data'][count($data)-1];
-		} else {
-			$campos = $data['data'];
-		}
-		$proveed = $campos['proveed'];
-		$nombre  = $campos['nombre'];
-
+		$_POST = $this->datasis->extultireg($data);
 		$_POST['btn_submit']= 'Guardar';
-		$_POST['rif']      ='';
-		$_POST['nombre']   ='';
-		$_POST['contacto'] ='';
-		$_POST['grupo']    ='';
-		$_POST['tipo']     ='';
-		$_POST['tiva']     ='';
-		$_POST['nomfis']   ='';
-		$_POST['direc1']   ='';
-		$_POST['direc2']   ='';
-		$_POST['direc3']   ='';
-		$_POST['telefono'] ='';
-		$_POST['email']    ='';
-		$_POST['url']      ='';
-		$_POST['banco1']   ='';
-		$_POST['cuenta1']  ='';
-		$_POST['banco2']   ='';
-		$_POST['cuenta2']  ='';
-		$_POST['cliente']  ='';
-
 		$this->genesal=false;
 		$rt=$this->dataedit();
 
-
-		unset($campos['nomgrup']);
-		unset($campos['id']);
-
-		$mSQL1 = "SELECT count(*) FROM sprv WHERE proveed=".$this->db->escape($proveed);
-		$mHay = $this->datasis->dameval($mSQL1);
-		if  ( $mHay > 0 ){
-			echo "{ success: false, message: 'Ya existe ese codigo', data: [{id: '0'}]}";
+		if ( $rt[0] ) {
+			echo "{ success: true, message: '$rt[1]', data: [{id: '0'}]}";
 		} else {
-			$mSQL = $this->db->insert_string("sprv", $campos );
-			$this->db->simple_query($mSQL);
-			logusu('sprv',"PROVEEDOR $proveed $nombre CREADO");
-			echo "{ success: true, message: ".$proveed."}";
+			echo "{ success: false, message: '$rt[1]', data: [{id: '0'}]}";
 		}
 	}
 
 	function modificar(){
 		$js= file_get_contents('php://input');
 		$data= json_decode($js,true);
+
+/*
+		$_POST = $this->datasis->extultireg($data);
+		$_POST['btn_submit']= 'Guardar';
+		$this->genesal=false;
+		$rt=$this->dataedit();
+
+		if ( $rt[0] ) {
+			echo "{ success: true, message: '$rt[1]', data: [{id: '0'}]}";
+		} else {
+			echo "{ success: false, message: '$rt[1]', data: [{id: '0'}]}";
+		}
+*/
+
 		$campos = $data['data'];
 		$codigo = $campos['proveed'];
 		unset($campos['nomgrup']);
 		unset($campos['proveed']);
 		unset($campos['id']);
-		//print_r($campos);
+
 		$mSQL = $this->db->update_string("sprv", $campos,"id='".$data['data']['id']."'" );
 		$this->db->simple_query($mSQL);
 		logusu('sprv',"PROVEEDOR ".$data['data']['proveed']." MODIFICADO");
 		echo "{ success: true, message: 'Proveedor Modificado ', data: [] }";
+
 	}
 
 	function eliminar(){

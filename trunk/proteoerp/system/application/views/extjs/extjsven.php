@@ -72,9 +72,9 @@ var ex_Modelo = Ext.regModel('ex_Modelo', {
 		noCache: false,
 		api: {
 			read   : urlAjax + 'grid',
-			create : urlAjax + 'crear',
-			update : urlAjax + 'modificar',
-			destroy: urlAjax + 'eliminar',
+			create : urlAjax + 'crear/insert',
+			update : urlAjax + 'modificar/update',
+			destroy: urlAjax + 'eliminar/do_delete',
 			method: 'POST'
 		},
 		reader: {
