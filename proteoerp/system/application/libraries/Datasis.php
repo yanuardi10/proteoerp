@@ -840,4 +840,14 @@ class Datasis {
 		return $campos;
 	}
 
+	function extultireg($data){
+		if ( array_key_exists( '0', $data['data']) ) {
+			$campos = $data['data'][count($data)-1];
+		} else {
+			$campos = $data['data'];
+		}
+		return $campos;
+	}
+
+
 }
