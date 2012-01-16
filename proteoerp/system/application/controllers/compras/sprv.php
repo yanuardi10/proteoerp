@@ -6,13 +6,14 @@ class Sprv extends validaciones {
 		$this->load->library('rapyd');
 		$this->load->library('pi18n');
 		$this->datasis->modulo_id(206,1);
+		$this->genesal=true;
 	}
 
 	function index(){
 		$this->datasis->modulo_id(206,1);
 		if($this->pi18n->pais=='COLOMBIA'){
 			redirect('compras/sprvcol/filteredgrid');
-		}else{ 
+		}else{
 			//redirect('compras/sprv/filteredgrid');
 			$this->sprvextjs();
 		}
@@ -85,46 +86,46 @@ class Sprv extends validaciones {
 		$grid->build('datagridST');
 
 
-//************ SUPER TABLE ************* 
+		//************ SUPER TABLE *************
 		$extras = '
-<script type="text/javascript">
-//<![CDATA[
-(function() {
-	var mySt = new superTable("demoTable", {
-	cssSkin : "sSky",
-	fixedCols : 1,
-	headerRows : 1,
-	onStart : function () {	this.start = new Date();},
-	onFinish : function () {document.getElementById("testDiv").innerHTML += "Finished...<br>" + ((new Date()) - this.start) + "ms.<br>";}
-	});
-})();
-//]]>
-</script>
-';
-		$style ='
-<style type="text/css">
-.fakeContainer { /* The parent container */
-    margin: 5px;
-    padding: 0px;
-    border: none;
-    width: 740px; /* Required to set */
-    height: 320px; /* Required to set */
-    overflow: hidden; /* Required to set */
-}
-</style>	
-';
-//****************************************
+		<script type="text/javascript">
+		//<![CDATA[
+		(function() {
+			var mySt = new superTable("demoTable", {
+			cssSkin : "sSky",
+			fixedCols : 1,
+			headerRows : 1,
+			onStart : function () {	this.start = new Date();},
+			onFinish : function () {document.getElementById("testDiv").innerHTML += "Finished...<br>" + ((new Date()) - this.start) + "ms.<br>";}
+			});
+		})();
+		//]]>
+		</script>
+		';
+				$style ='
+		<style type="text/css">
+		.fakeContainer { /* The parent container */
+			margin: 5px;
+			padding: 0px;
+			border: none;
+			width: 740px; /* Required to set */
+			height: 320px; /* Required to set */
+			overflow: hidden; /* Required to set */
+		}
+		</style>
+		';
+		//****************************************
 
 
 		$data['content'] = $grid->output;
 		$data['filtro']  = $filter->output;
-		
+
 		$data['title']   = '<h1>Proveedores</h1>';
 
 		$data['style']   = $style;
 		$data['style']  .= style('superTables.css');
 
-		$data['extras']  = $extras;		
+		$data['extras']  = $extras;
 
 		$data['head']    = script('jquery.js');
 		$data["head"]   .= script('superTables.js');
@@ -136,15 +137,15 @@ class Sprv extends validaciones {
 		$this->rapyd->load('dataedit');
 
 		$mSCLId=array(
-		'tabla'   =>'scli',
-		'columnas'=>array(
-		'cliente' =>'C&oacute;digo Cliente',
-		'nombre'=>'Nombre',
-		'contacto'=>'Contacto',
-		'nomfis'=>'Nom. Fiscal'),
-		'filtro'  =>array('cliente'=>'C&oacute;digo Cliente','nombre'=>'Nombre'),
-		'retornar'=>array('cliente'=>'cliente','nomfis'=>'nomfis'),
-		'titulo'  =>'Buscar Cliente');
+			'tabla'   =>'scli',
+			'columnas'=>array(
+			'cliente' =>'C&oacute;digo Cliente',
+			'nombre'  =>'Nombre',
+			'contacto'=>'Contacto',
+			'nomfis'  =>'Nom. Fiscal'),
+			'filtro'  =>array('cliente'=>'C&oacute;digo Cliente','nombre'=>'Nombre'),
+			'retornar'=>array('cliente'=>'cliente','nomfis'=>'nomfis'),
+			'titulo'  =>'Buscar Cliente');
 
 		$qformato=$this->qformato=$this->datasis->formato_cpla();
 
@@ -167,60 +168,60 @@ class Sprv extends validaciones {
 		$consulrif=$this->datasis->traevalor('CONSULRIF');
 		$link=site_url('compras/sprv/uproveed');
 		$script ='
-		$(function() {
-			$("#tr_gr_desc").hide();
-			$("#grupo").change(function(){grupo();}).change();
-			$(".inputnum").numeric(".");
-			$("#banco1").change(function () { acuenta(); }).change();
-			$("#banco2").change(function () { acuenta(); }).change();
-		});
-		function grupo(){
-			t=$("#grupo").val();
-			a=$("#grupo :selected").text();
-			$("#gr_desc").val(a);
-		}
-		function acuenta(){
-			for(i=1;i<=2;i++){
-				vbanco=$("#banco"+i).val();
-				if(vbanco.length>0){
-					$("#tr_cuenta"+i).show();
-				}else{
-					$("#cuenta"+i).val("");
-					$("#tr_cuenta"+i).hide();
+			$(function() {
+				$("#tr_gr_desc").hide();
+				$("#grupo").change(function(){grupo();}).change();
+				$(".inputnum").numeric(".");
+				$("#banco1").change(function () { acuenta(); }).change();
+				$("#banco2").change(function () { acuenta(); }).change();
+			});
+			function grupo(){
+				t=$("#grupo").val();
+				a=$("#grupo :selected").text();
+				$("#gr_desc").val(a);
+			}
+			function acuenta(){
+				for(i=1;i<=2;i++){
+					vbanco=$("#banco"+i).val();
+					if(vbanco.length>0){
+						$("#tr_cuenta"+i).show();
+					}else{
+						$("#cuenta"+i).val("");
+						$("#tr_cuenta"+i).hide();
+					}
 				}
 			}
-		}
-		function anomfis(){
-				vtiva=$("#tiva").val();
-				if(vtiva=="C" || vtiva=="E" || vtiva=="R"){
-					$("#tr_nomfis").show();
-					$("#tr_riff").show();
-				}else{
-					$("#nomfis").val("");
-					$("#rif").val("");
-					$("#tr_nomfis").hide();
-					$("#tr_rif").hide();
-				}
-		}
+			function anomfis(){
+					vtiva=$("#tiva").val();
+					if(vtiva=="C" || vtiva=="E" || vtiva=="R"){
+						$("#tr_nomfis").show();
+						$("#tr_riff").show();
+					}else{
+						$("#nomfis").val("");
+						$("#rif").val("");
+						$("#tr_nomfis").hide();
+						$("#tr_rif").hide();
+					}
+			}
 
-		function consulrif(){
-				vrif=$("#rif").val();
-				if(vrif.length==0){
-					alert("Debe introducir primero un RIF");
-				}else{
-					vrif=vrif.toUpperCase();
-					$("#rif").val(vrif);
-					window.open("'.$consulrif.'"+"?p_rif="+vrif,"CONSULRIF","height=350,width=410");
-				}
-		}
-		function ultimo(){
-			$.ajax({
-				url: "'.$link.'",
-				success: function(msg){
-				  alert( "El ultimo codigo ingresado fue: " + msg );
-				}
-			});
-		}';
+			function consulrif(){
+					vrif=$("#rif").val();
+					if(vrif.length==0){
+						alert("Debe introducir primero un RIF");
+					}else{
+						vrif=vrif.toUpperCase();
+						$("#rif").val(vrif);
+						window.open("'.$consulrif.'"+"?p_rif="+vrif,"CONSULRIF","height=350,width=410");
+					}
+			}
+			function ultimo(){
+				$.ajax({
+					url: "'.$link.'",
+					success: function(msg){
+					alert( "El ultimo codigo ingresado fue: " + msg );
+					}
+				});
+			}';
 
 		$edit = new DataEdit('Proveedores', 'sprv');
 		$edit->script($script, 'create');
@@ -376,36 +377,45 @@ class Sprv extends validaciones {
 		$edit->nomfis->rule ="rule";
 		//$edit->nomfis->readonly =true;
 
-		$lcuent=anchor_popup("/contabilidad/cpla/dataedit/create","Agregar Cuenta Contable",$atts);
-		$edit->cuenta = new inputField("Cuenta. Contable", "cuenta");
+		$lcuent=anchor_popup('/contabilidad/cpla/dataedit/create','Agregar Cuenta Contable',$atts);
+		$edit->cuenta = new inputField('Cuenta Contable', 'cuenta');
 		$edit->cuenta->rule='trim|callback_chcuentac';
 		$edit->cuenta->size =13;
 		$edit->cuenta->append($bcpla);
 		$edit->cuenta->append($lcuent);
 
-		$edit->reteiva  = new inputField("% de Retenci&oacute;n","reteiva");
+		$edit->reteiva  = new inputField('% de Retenci&oacute;n','reteiva');
 		$edit->reteiva->size = 6;
 		$edit->reteiva->css_class='inputnum';
 
-		$edit->buttons("modify", "save", "undo", "delete", "back");
-		$edit->build();
+		$edit->buttons('modify','save','undo','delete','add','back');
 
-		$conten["form"]  =&  $edit;
-		$data['content'] = $this->load->view('view_sprv', $conten,true);
+		if($this->genesal){
+			$edit->build();
+			$conten['form']  =&  $edit;
+			$data['content'] = $this->load->view('view_sprv', $conten,true);
 
+			//$smenu['link']=barra_menu('230');
+			//$data['content'] = $edit->output;
+			//$data['smenu']   = $this->load->view('view_sub_menu', $smenu,true);
+			$data['title'] = heading('Proveedores');
 
+			$data['head']  = script('jquery.js');
+			$data['head'] .= script('plugins/jquery.numeric.pack.js');
+			$data['head'] .= script('plugins/jquery.floatnumber.js');
+			$data['head'] .= $this->rapyd->get_head();
+			$this->load->view('view_ventanas', $data);
+		}else{
+			$edit->on_save_redirect=false;
+			$edit->build();
 
-		//$smenu['link']=barra_menu('230');
-		//$data['content'] = $edit->output;
-		//$data['smenu']   = $this->load->view('view_sub_menu', $smenu,true);
-		$data['title']   = "<h1>Proveedores</h1>";
-
-
-		$data["head"]    = script("jquery.js");
-		$data["head"]   .= script("plugins/jquery.numeric.pack.js");
-		$data["head"]   .= script("plugins/jquery.floatnumber.js");
-		$data["head"]   .= $this->rapyd->get_head();
-		$this->load->view('view_ventanas', $data);
+			if($edit->on_success()){
+				$rt= 'Proveedor Guardado';
+			}elseif($edit->on_error()){
+				$rt= html_entity_decode(preg_replace('/<[^>]*>/', '', $edit->error_string));
+			}
+			return $rt;
+		}
 	}
 
 	function _pre_del($do) {
@@ -421,11 +431,13 @@ class Sprv extends validaciones {
 		}
 		return True;
 	}
+
 	function _post_insert($do){
 		$codigo=$do->get('proveed');
 		$nombre=$do->get('nombre');
 		logusu('sprv',"PROVEEDOR $codigo NOMBRE $nombre CREADO");
 	}
+
 	function _post_update($do){
 		$codigo=$do->get('proveed');
 		$nombre=$do->get('nombre');
@@ -436,6 +448,7 @@ class Sprv extends validaciones {
 		$nombre=$do->get('nombre');
 		logusu('sprv',"PROVEEDOR $codigo NOMBRE $nombre ELIMINADO");
 	}
+
 	function chexiste(){
 		$codigo=$this->input->post('proveed');
 		$rif=$this->input->post('rif');
@@ -463,7 +476,7 @@ class Sprv extends validaciones {
 		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM sprv WHERE rif='$rif'");
 		if($chek > 0){
 			//$nombre=$this->datasis->dameval("SELECT nombre FROM sprv WHERE rif='$rif'");
-			$do->error_message_ar['pre_insert'] = $do->error_message_ar['insert']='bobo';
+			$do->error_message_ar['pre_insert'] = $do->error_message_ar['insert']='';
 			return FALSE;
 		}else {
 		return TRUE;
@@ -479,7 +492,7 @@ class Sprv extends validaciones {
 		echo $consulproveed;
 	}
 
-	function consulta(){  
+	function consulta(){
 		$this->load->helper('openflash');
 		$this->rapyd->load("datagrid");
 		$fields = $this->db->field_data('sprv');
@@ -495,7 +508,7 @@ class Sprv extends validaciones {
 		$claves=array_combine (array_reverse($pk) ,$values );
 
 		$mCodigo = $this->datasis->dameval("SELECT proveed FROM sprv WHERE id=".$claves['id']."");
-		
+
 		$grid = new DataGrid('Ventas por Mes');
 		$grid->db->_protect_identifiers=false;
 		$grid->db->select( array('a.tipo_doc','a.fecha', 'a.numero', 'a.monto', 'a.abonos', 'a.monto-a.abonos saldo' ) );
@@ -504,7 +517,7 @@ class Sprv extends validaciones {
 		$grid->db->where('a.monto <> a.abonos');
 		$grid->db->where('a.tipo_doc IN ("FC","ND","GI") ' );
 		$grid->db->orderby('a.fecha');
-			
+
 		$grid->column("Fecha"   ,"fecha" );
 		$grid->column("Tipo", "tipo_doc",'align="CENTER"');
 		$grid->column("Numero",  "numero",'align="LEFT"');
@@ -524,7 +537,6 @@ class Sprv extends validaciones {
 			</div>";
 		$this->load->view('view_ventanas', $data);
 	}
-
 
 	function grid(){
 		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']   :  0;
@@ -560,20 +572,44 @@ class Sprv extends validaciones {
 	function crear() {
 		$js= file_get_contents('php://input');
 		$data= json_decode($js,true);
-		
+
 		//var_dump($data);
 		//echo count($data["data"]);
 		if ( array_key_exists( '0', $data['data']) ) {
 			$campos = $data['data'][count($data)-1];
 		} else {
-			$campos = $data['data'];	
+			$campos = $data['data'];
 		}
 		$proveed = $campos['proveed'];
 		$nombre  = $campos['nombre'];
 
+		$_POST['btn_submit']= 'Guardar';
+		$_POST['rif']      ='';
+		$_POST['nombre']   ='';
+		$_POST['contacto'] ='';
+		$_POST['grupo']    ='';
+		$_POST['tipo']     ='';
+		$_POST['tiva']     ='';
+		$_POST['nomfis']   ='';
+		$_POST['direc1']   ='';
+		$_POST['direc2']   ='';
+		$_POST['direc3']   ='';
+		$_POST['telefono'] ='';
+		$_POST['email']    ='';
+		$_POST['url']      ='';
+		$_POST['banco1']   ='';
+		$_POST['cuenta1']  ='';
+		$_POST['banco2']   ='';
+		$_POST['cuenta2']  ='';
+		$_POST['cliente']  ='';
+
+		$this->genesal=false;
+		$rt=$this->dataedit();
+
+
 		unset($campos['nomgrup']);
 		unset($campos['id']);
-		
+
 		$mSQL1 = "SELECT count(*) FROM sprv WHERE proveed=".$this->db->escape($proveed);
 		$mHay = $this->datasis->dameval($mSQL1);
 		if  ( $mHay > 0 ){
@@ -607,7 +643,7 @@ class Sprv extends validaciones {
 		$campos = $data['data'];
 
 		$proveed = $data['data']['proveed'];
-		
+
 		// VERIFICAR SI PUEDE
 		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM sprm WHERE cod_prv='$proveed'");
 		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM scst WHERE proveed='$proveed'");
@@ -627,12 +663,11 @@ class Sprv extends validaciones {
 	}
 
 
-
-//****************************************************************8
-//
-//
-//
-//****************************************************************8
+	//****************************************************************8
+	//
+	//
+	//
+	//****************************************************************8
 	function sprvextjs(){
 
 		$encabeza='PROVEEDORES';
@@ -649,56 +684,55 @@ class Sprv extends validaciones {
 
 		$urlajax = 'compras/sprv/';
 		$variables = "var mcliente = '';var mcuenta  = '';";
-		$funciones = "";
+		$funciones = '';
 		$valida = "
 		{ type: 'length', field: 'proveed',  min:  1 },
 		{ type: 'length', field: 'nombre',   min:  3 }
 		";
-		
+
 		$columnas = "
-		{ header: 'Codigo',        width:  60, sortable: true, dataIndex: 'proveed',  field:  { type: 'textfield' }, filter: { type: 'string'  }}, 
-		{ header: 'Tipo',          width:  60, sortable: true, dataIndex: 'tipo',     field:  { type: 'textfield' }, filter: { type: 'string'  }}, 
-		{ header: 'Nombre',        width: 220, sortable: true, dataIndex: 'nombre',   field:  { type: 'textfield' }, filter: { type: 'string'  }}, 
-		{ header: 'R.I.F.',        width:  80, sortable: true, dataIndex: 'rif',      field:  { type: 'textfield' }, filter: { type: 'string'  }}, 
-		{ header: 'Grupo',         width:  50, sortable: true, dataIndex: 'grupo',    field:  { type: 'textfield' }, filter: { type: 'string'  }}, 
-		{ header: 'Telefono',      width:  90, sortable: true, dataIndex: 'telefono', field:  { type: 'textfield' }, filter: { type: 'string'  }}, 
-		{ header: 'Contacto',      width: 120, sortable: true, dataIndex: 'contacto', field:  { type: 'textfield' }, filter: { type: 'string'  }}, 
-		{ header: 'Cliente',       width:  60, sortable: true, dataIndex: 'cliente',  field:  { type: 'textfield' }, filter: { type: 'string'  }}, 
-		{ header: 'Ret%',          width:  50, sortable: true, dataIndex: 'reteiva',  field:  { type: 'numeroc'   }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('00.00') }, 
+		{ header: 'Codigo',        width:  60, sortable: true, dataIndex: 'proveed',  field:  { type: 'textfield' }, filter: { type: 'string'  }},
+		{ header: 'Tipo',          width:  60, sortable: true, dataIndex: 'tipo',     field:  { type: 'textfield' }, filter: { type: 'string'  }},
+		{ header: 'Nombre',        width: 220, sortable: true, dataIndex: 'nombre',   field:  { type: 'textfield' }, filter: { type: 'string'  }},
+		{ header: 'R.I.F.',        width:  80, sortable: true, dataIndex: 'rif',      field:  { type: 'textfield' }, filter: { type: 'string'  }},
+		{ header: 'Grupo',         width:  50, sortable: true, dataIndex: 'grupo',    field:  { type: 'textfield' }, filter: { type: 'string'  }},
+		{ header: 'Telefono',      width:  90, sortable: true, dataIndex: 'telefono', field:  { type: 'textfield' }, filter: { type: 'string'  }},
+		{ header: 'Contacto',      width: 120, sortable: true, dataIndex: 'contacto', field:  { type: 'textfield' }, filter: { type: 'string'  }},
+		{ header: 'Cliente',       width:  60, sortable: true, dataIndex: 'cliente',  field:  { type: 'textfield' }, filter: { type: 'string'  }},
+		{ header: 'Ret%',          width:  50, sortable: true, dataIndex: 'reteiva',  field:  { type: 'numeroc'   }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('00.00') },
 		{ header: 'Origen',        width:  40, sortable: true, dataIndex: 'tiva',     field:  { type: 'textfield' }, filter: { type: 'string'  }},
 		{ header: 'Direccion',     width: 150, sortable: true, dataIndex: 'direc1',   field:  { type: 'textfield' }, filter: { type: 'string'  }},
 		{ header: 'Email',         width: 150, sortable: true, dataIndex: 'email',    field:  { type: 'textfield' }, filter: { type: 'string'  }},
 		{ header: 'Url',           width: 150, sortable: true, dataIndex: 'url',      field:  { type: 'textfield' }, filter: { type: 'string'  }},
 		{ header: 'Nombre Fiscal', width: 220, sortable: true, dataIndex: 'nomfis',   field:  { type: 'textfield' }, filter: { type: 'string'  }}
-	";
+		";
 
 		$campos = "'id','proveed','tipo','nombre','rif','grupo','nomgrup','telefono','contacto', 'direc1', 'direc2', 'direc3','cliente', 'observa', 'nit', 'codigo','tiva', 'email', 'url', 'banco1', 'cuenta1', 'banco2', 'cuenta2', 'nomfis', 'reteiva' ";
 
 		$stores = "
-var scliStore = new Ext.data.Store({
-	fields: [ 'item', 'valor'],
-	autoLoad: false, autoSync: false, pageSize: 30, pruneModifiedRecords: true, totalProperty: 'results',
-	proxy: {
-		type: 'ajax',
-		url : urlApp + 'ventas/scli/sclibusca',
-		extraParams: {  'cliente': mcliente, 'origen': 'store' },
-		reader: { type: 'json', totalProperty: 'results', root: 'data' }
-	},
-	method: 'POST'
-});
+		var scliStore = new Ext.data.Store({
+			fields: [ 'item', 'valor'],
+			autoLoad: false, autoSync: false, pageSize: 30, pruneModifiedRecords: true, totalProperty: 'results',
+			proxy: {
+				type: 'ajax',
+				url : urlApp + 'ventas/scli/sclibusca',
+				extraParams: {  'cliente': mcliente, 'origen': 'store' },
+				reader: { type: 'json', totalProperty: 'results', root: 'data' }
+			},
+			method: 'POST'
+		});
 
-var cplaStore = new Ext.data.Store({
-	fields: [ 'item', 'valor'],
-	autoLoad: false, autoSync: false, pageSize: 30, pruneModifiedRecords: true, totalProperty: 'results',
-	proxy: {
-		type: 'ajax',
-		url : urlApp + 'contabilidad/cpla/cplabusca',
-		extraParams: {  'cuenta': mcuenta, 'origen': 'store' },
-		reader: { type: 'json', totalProperty: 'results', root: 'data' }
-	},
-	method: 'POST'
-});
-		";
+		var cplaStore = new Ext.data.Store({
+			fields: [ 'item', 'valor'],
+			autoLoad: false, autoSync: false, pageSize: 30, pruneModifiedRecords: true, totalProperty: 'results',
+			proxy: {
+				type: 'ajax',
+				url : urlApp + 'contabilidad/cpla/cplabusca',
+				extraParams: {  'cuenta': mcuenta, 'origen': 'store' },
+				reader: { type: 'json', totalProperty: 'results', root: 'data' }
+			},
+			method: 'POST'
+		});";
 
 		$camposforma = "
 							{
@@ -806,7 +840,7 @@ var cplaStore = new Ext.data.Store({
 					beforeshow: function() {
 						var form = this.down('writerform').getForm();
 						this.activeRecord = registro;
-						
+
 						if (registro) {
 							mcliente = registro.data.cliente;
 							mcuenta  = registro.data.cuenta;
@@ -826,7 +860,7 @@ var cplaStore = new Ext.data.Store({
 ";
 
 		$filtros = "var filters = { ftype: 'filters', encode: 'json', local: false }; ";
-		
+
 		$winmethod = "
 				onSeniat: function(){
 					var form = this.getForm();
@@ -860,47 +894,9 @@ var cplaStore = new Ext.data.Store({
 		$data['winwidget']   = $winwidget;
 		$data['filtros']     = $filtros;
 		$data['winmethod']   = $winmethod;
-		
+
 		$data['title']  = heading('Proveedores');
 		$this->load->view('extjs/extjsven',$data);
-	}
-
-
-	function instalar(){
-
-		if (!$this->datasis->iscampo('sprv','id')) {
-			$this->db->simple_query('ALTER TABLE `sprv` DROP PRIMARY KEY');
-			$this->db->simple_query('ALTER TABLE `sprv` ADD id INT AUTO_INCREMENT PRIMARY KEY');
-		}
-		if (!$this->datasis->iscampo('sprv','copre')) 
-			$this->db->simple_query('ALTER TABLE sprv ADD copre VARCHAR(11) DEFAULT NULL NULL AFTER cuenta ');
-		
-		if (!$this->datasis->iscampo('sprv','ocompra')) 
-			$this->db->simple_query('ALTER TABLE sprv ADD ocompra CHAR(1) DEFAULT NULL NULL AFTER copre ');
-		
-		if (!$this->datasis->iscampo('sprv','dcredito')) 
-			$this->db->simple_query('ALTER TABLE sprv ADD dcredito DECIMAL(3,0) DEFAULT "0" NULL AFTER ocompra ');
-			
-		if (!$this->datasis->iscampo('sprv','despacho')) 
-			$this->db->simple_query('ALTER TABLE sprv ADD despacho DECIMAL(3,0) DEFAULT NULL NULL AFTER dcredito ');
-
-		if (!$this->datasis->iscampo('sprv','visita')) 
-			$this->db->simple_query('ALTER TABLE sprv ADD visita VARCHAR(9) DEFAULT NULL NULL AFTER despacho ');
-
-		if (!$this->datasis->iscampo('sprv','cate')) 
-			$this->db->simple_query('ALTER TABLE sprv ADD cate VARCHAR(20) NULL AFTER visita ');
-
-		if (!$this->datasis->iscampo('sprv','reteiva')) 
-			$this->db->simple_query('ALTER TABLE sprv ADD reteiva DECIMAL(7,2) DEFAULT "0.00" NULL AFTER cate ');
-
-		if (!$this->datasis->iscampo('sprv','ncorto')) 
-			$this->db->simple_query('ALTER TABLE sprv ADD ncorto VARCHAR(20) DEFAULT NULL NULL AFTER nombre ');
-
-		$this->db->simple_query('ALTER TABLE sprv CHANGE direc1 direc1 VARCHAR(105) DEFAULT NULL NULL');
-		$this->db->simple_query('ALTER TABLE sprv CHANGE direc2 direc2 VARCHAR(105) DEFAULT NULL NULL ');
-		$this->db->simple_query('ALTER TABLE sprv CHANGE direc3 direc3 VARCHAR(105) DEFAULT NULL NULL ');
-		$this->db->simple_query('ALTER TABLE sprv CHANGE nombre nombre VARCHAR(60) DEFAULT NULL NULL ');
-		$this->db->simple_query('ALTER TABLE sprv CHANGE nomfis nomfis VARCHAR(200) DEFAULT NULL NULL  ');
 	}
 
 	function sprvbusca() {
@@ -910,7 +906,7 @@ var cplaStore = new Ext.data.Store({
 		$semilla  = isset($_REQUEST['query'])   ? $_REQUEST['query']  : '';
 
 		$semilla = trim($semilla);
-	
+
 		$mSQL = "SELECT proveed item, CONCAT(proveed, ' ', nombre) valor FROM sprv WHERE tipo<>'0' ";
 		if ( strlen($semilla)>0 ){
 			$mSQL .= " AND ( proveed LIKE '$semilla%' OR nombre LIKE '%$semilla%' OR  rif LIKE '%$semilla%') ";
@@ -937,6 +933,27 @@ var cplaStore = new Ext.data.Store({
 			echo '{success:true, message:"proveedores", results:'. $results.', data:'.json_encode($arr).'}';
 		}
 	}
+	function instalar(){
 
+		$campos=$this->db->list_fields('sprv');
+		if (!in_array('id',$campos)){
+			$this->db->simple_query('ALTER TABLE `sprv` DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE `sprv` ADD id INT AUTO_INCREMENT PRIMARY KEY');
+		}
+
+		if (!in_array('copre'   ,$campos)) $this->db->simple_query('ALTER TABLE sprv ADD copre VARCHAR(11) DEFAULT NULL NULL AFTER cuenta');
+		if (!in_array('ocompra' ,$campos)) $this->db->simple_query('ALTER TABLE sprv ADD ocompra CHAR(1) DEFAULT NULL NULL AFTER copre');
+		if (!in_array('dcredito',$campos)) $this->db->simple_query('ALTER TABLE sprv ADD dcredito DECIMAL(3,0) DEFAULT "0" NULL AFTER ocompra');
+		if (!in_array('despacho',$campos)) $this->db->simple_query('ALTER TABLE sprv ADD despacho DECIMAL(3,0) DEFAULT NULL NULL AFTER dcredito');
+		if (!in_array('visita'  ,$campos)) $this->db->simple_query('ALTER TABLE sprv ADD visita VARCHAR(9) DEFAULT NULL NULL AFTER despacho');
+		if (!in_array('cate'    ,$campos)) $this->db->simple_query('ALTER TABLE sprv ADD cate VARCHAR(20) NULL AFTER visita');
+		if (!in_array('reteiva' ,$campos)) $this->db->simple_query('ALTER TABLE sprv ADD reteiva DECIMAL(7,2) DEFAULT "0.00" NULL AFTER cate');
+		if (!in_array('ncorto'  ,$campos)) $this->db->simple_query('ALTER TABLE sprv ADD ncorto VARCHAR(20) DEFAULT NULL NULL AFTER nombre');
+
+		$this->db->simple_query('ALTER TABLE sprv CHANGE direc1 direc1 VARCHAR(105) DEFAULT NULL NULL');
+		$this->db->simple_query('ALTER TABLE sprv CHANGE direc2 direc2 VARCHAR(105) DEFAULT NULL NULL');
+		$this->db->simple_query('ALTER TABLE sprv CHANGE direc3 direc3 VARCHAR(105) DEFAULT NULL NULL');
+		$this->db->simple_query('ALTER TABLE sprv CHANGE nombre nombre VARCHAR(60) DEFAULT NULL NULL');
+		$this->db->simple_query('ALTER TABLE sprv CHANGE nomfis nomfis VARCHAR(200) DEFAULT NULL NULL');
+	}
 }
-?>
