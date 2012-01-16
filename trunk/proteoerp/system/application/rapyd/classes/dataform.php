@@ -144,7 +144,7 @@ class DataForm{
 	}
 
 	function title($title){
-		$title = (lang($title)!="") ? lang($title) : $title;
+		$title = (lang($title)!='') ? lang($title) : $title;
 		$this->_title = $title;
 	}
 
@@ -159,8 +159,8 @@ class DataForm{
 	function use_function(){
 		$functions = func_get_args();
 		foreach($functions as $function){
-			if (!in_array(strtolower($function), $this->rapyd->config->item("replace_functions"))){
-				array_push($this->rapyd->config->config["replace_functions"], strtolower($function));
+			if (!in_array(strtolower($function), $this->rapyd->config->item('replace_functions'))){
+				array_push($this->rapyd->config->config['replace_functions'], strtolower($function));
 			}
 		}
 	}
@@ -371,8 +371,8 @@ class DataForm{
 					unset($fld);
 					$field_ref =& $this->$field_name;
 
-					if (($field_ref->status == "hidden" ||  in_array($field_ref->type, array('hidden','auto')))) {
-						$sr["is_hidden"] = true;
+					if (($field_ref->status == 'hidden' ||  in_array($field_ref->type, array('hidden','auto')))) {
+						$sr['is_hidden'] = true;
 					}
 
 					$fld['label']    = $field_ref->label.($this->_status=='show'?'':$field_ref->_required);
@@ -547,8 +547,8 @@ class DataForm{
 	//database save
 		switch($this->_action){
 
-			case "update":
-			case "insert":
+			case 'update':
+			case 'insert':
 
 			//validation failed
 				if (!$this->is_valid()){
@@ -558,7 +558,7 @@ class DataForm{
 					$this->_on_error = true;
 
 					foreach ($this->_fields as $field) {
-						$field->action = "idle";
+						$field->action = 'idle';
 					}
 					return false;
 
@@ -589,7 +589,7 @@ class DataForm{
 				}
 
 				if (!$return) {
-					if($this->_dataobject->pre_process_result===false)$this->error_string .= ($this->_action=="update")?$this->_dataobject->error_message_ar['pre_upd']:$this->_dataobject->error_message_ar['pre_ins'];
+					if($this->_dataobject->pre_process_result===false)$this->error_string .= ($this->_action=='update')?$this->_dataobject->error_message_ar['pre_upd']:$this->_dataobject->error_message_ar['pre_ins'];
 					$this->_on_show = false;
 					$this->_on_success = false;
 					$this->_on_error = true;
@@ -597,7 +597,7 @@ class DataForm{
 				return $return;
 			break;
 
-			case "delete":
+			case 'delete':
 				$return = $this->_dataobject->delete();
 
 				if (!$return){
@@ -612,7 +612,7 @@ class DataForm{
 				}
 			break;
 
-			case "idle":
+			case 'idle':
 				$this->_on_show = true;
 				$this->_on_success = false;
 				$this->_on_error = false;
@@ -639,8 +639,8 @@ class DataForm{
 	function _build_add_button($caption=RAPYD_BUTTON_ADD){
 		$this->ci->load->library('datasis');
 		$uri = $this->ci->datasis->get_uri();
-		if(($this->_status == 'show') || ($this->_status == 'modify') || ($this->_status == 'create') || ($this->_status == "unknow_record") || ($this->_action == 'delete')){
-			$action = "javascript:window.location='".site_url($uri."/create")."'";
+		if(($this->_status == 'show') || ($this->_status == 'modify') || ($this->_status == 'create') || ($this->_status == 'unknow_record') || ($this->_action == 'delete')){
+			$action = 'javascript:window.location=\''.site_url($uri.'/create').'\'';
 			$this->button('btn_add', $caption, $action, 'TL');//ANTES BL
 		}
 	}

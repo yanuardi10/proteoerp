@@ -55,7 +55,7 @@ class DataDetails extends DataForm{
 	var $_except=array();
 
 
- /**
+	/**
 	* PHP4 constructor.
 	*
 	* @access   public
@@ -67,10 +67,8 @@ class DataDetails extends DataForm{
 
 		if (is_object($table) && is_a($table, 'DataObject')){
 			$dataobject =& $table;
-		} else {
-
+		}else{
 			$dataobject = new DataObject($table);
-
 		}
 		parent::DataForm(null, $dataobject);
 
@@ -86,7 +84,7 @@ class DataDetails extends DataForm{
 		$this->title($title);
 	}
 
-/*	function one_to_many($ind, $tabla, $join){
+	/*function one_to_many($ind, $tabla, $join){
 		$this->_dataobject->rel_one_to_many($ind, $tabla, $join);
 	}
 
@@ -94,7 +92,7 @@ class DataDetails extends DataForm{
 		$this->_dataobject->rel_one_to_one($ind, $tabla, $join);
 	}*/
 
- /**
+	/**
 	* transforn a PK array in the same format of the one used in DO->load() function ie: array(pk1=>value1, pk2=>value2)
 	* in a string formated as we attent at the end (pk part)of the URI (as explain in conventions)=>/pk1_name/pk1_value/pk2_name/pk2_value/...
 	* @access   private
@@ -108,6 +106,7 @@ class DataDetails extends DataForm{
 		}
 		return $result;
 	}
+
 	/**
 	* rebuild the PK array in the same format of the one used in DO->load() function ie: array(pk1=>value1, pk2=>value2)
 	* from the string formated as we attent at the end (pk part)of the URI (as explain in conventions)=>/pk1_name/pk1_value/pk2_name/pk2_value/...
@@ -143,7 +142,6 @@ class DataDetails extends DataForm{
 
 
 	function _sniff_status(){
-
 		$this->_status = 'idle';
 		$segment_array = $this->uri->segment_array();
 		$id_str = $this->segment_id_str($segment_array);
@@ -169,7 +167,7 @@ class DataDetails extends DataForm{
 
 			$result = $this->_dataobject->load($this->URI_to_pk($id_str,$this->_dataobject));
 			if (!$result){
-					$this->_status = 'unknow_record';
+				$this->_status = 'unknow_record';
 			}
 
 		///// create /////
@@ -225,8 +223,8 @@ class DataDetails extends DataForm{
 
 		if ($this->_action=='update' || $this->_action=='insert'){
 			$pk_check=array();
-			$pk_error = '';
-			$hiddens = array();
+			$pk_error='';
+			$hiddens =array();
 
 			//pk fields mode can setted to "autohide" or "readonly" (so pk integrity violation check isn't needed)
 			foreach ($this->_fields as $field_name => $field_copy){
@@ -249,7 +247,7 @@ class DataDetails extends DataForm{
 			}
 
 			if (sizeof($pk_check) != $this->_pkey){
-			//If PK is Autoincrement we don't need to check PK integrity, But its supose that for a none AutoIcrement PK the form always contain the right PK fields
+				//If PK is Autoincrement we don't need to check PK integrity, But its supose that for a none AutoIcrement PK the form always contain the right PK fields
 				if (sizeof($this->_dataobject->pk)==1 && sizeof($pk_check)==0)return $result;
 			}
 			// this check the unicity of PK with the new DO function
@@ -274,7 +272,6 @@ class DataDetails extends DataForm{
 	}
 
 	function process(){
-	//$this->_details_fields();
 		$result = parent::process();
 
 		switch($this->_action){
@@ -293,7 +290,7 @@ class DataDetails extends DataForm{
 				 $this->_postprocess_uri .= '/'. $this->rapyd->uri->build_clause('show'.$this->pk_to_URI($this->_dataobject->pk));
 				if($this->on_save_redirect){
 					if ($this->back_save){
-							header('Refresh:0;url='.$this->back_url);
+						header('Refresh:0;url='.$this->back_url);
 					} else {
 						redirect('/'.$this->_postprocess_uri,'refresh');
 					}
@@ -371,7 +368,7 @@ class DataDetails extends DataForm{
 			//$add_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, 'show', 'create');
 			$add_uri = $this->rapyd->uri->unset_clause($this->rapyd->uri->uri_array, 'show');
 			$add_uri .='/'.$this->rapyd->uri->build_clause('create');
-			$action = "javascript:window.location='" . site_url($add_uri) . "'";
+			$action = 'javascript:window.location=\'' . site_url($add_uri) . '\'';
 			$this->button('btn_add', $caption, $action, 'TR');
 		}
 	}
@@ -382,7 +379,7 @@ class DataDetails extends DataForm{
 	}
 
 
- /**
+	/**
 	* append a default button
 	*
 	* @access   public
@@ -394,7 +391,7 @@ class DataDetails extends DataForm{
 		$this->_buttons[$name]=$caption;
 	}
 
- /**
+	/**
 	* append a set of default buttons
 	*
 	* @access   public
@@ -408,7 +405,7 @@ class DataDetails extends DataForm{
 		}
 	}
 
- /**
+	/**
 	* build the appended buttons
 	*
 	* @access   private
@@ -426,7 +423,7 @@ class DataDetails extends DataForm{
 		$this->_buttons = array();
 	}
 
- /**
+	/**
 	* append the default "modify" button, modify is the button that appears in the top-right corner when the status is "show"
 	*
 	* @access   public
@@ -436,12 +433,12 @@ class DataDetails extends DataForm{
 	function _build_modify_button($caption=RAPYD_BUTTON_MODIFY) {
 		if ($this->_status == 'show'  && $this->rapyd->uri->is_set('show')) {
 			$modify_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, 'show', 'modify');
-			$action = "javascript:window.location='" . site_url($modify_uri) . "'";
+			$action = 'javascript:window.location=\''.site_url($modify_uri).'\'';
 			$this->button('btn_modify', $caption, $action, 'TR');
 		}
 	}
 
- /**
+	/**
 	* append the default "delete" button, delete is the button that appears in the top-right corner when the status is "show"
 	*
 	* @access   public
@@ -451,16 +448,16 @@ class DataDetails extends DataForm{
 	function _build_delete_button($caption=RAPYD_BUTTON_DELETE){
 		if ($this->_status == 'show'  && $this->rapyd->uri->is_set('show')){
 			$delete_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, 'show', 'delete');
-			$action = "javascript:window.location='" . site_url($delete_uri) . '\'';
+			$action = 'javascript:window.location=\''.site_url($delete_uri) . '\'';
 			$this->button('btn_delete', $caption, $action, 'TR');
 		} elseif($this->_status == 'delete') {
-			$action = "javascript:window.location='" . site_url($this->_process_uri) . "'";
+			$action = 'javascript:window.location=\'' . site_url($this->_process_uri) . '\'';
 			$this->button('btn_delete', $caption, $action, 'BL');
 		}
 	}
 
 
- /**
+	/**
 	* append the default "save" button,  save is the button that appears in the bottom-left corner when the status is "create" or "modify"
 	*
 	* @access   public
@@ -473,7 +470,7 @@ class DataDetails extends DataForm{
 		}
 	}
 
- /**
+	/**
 	* append the default "delete" button, delete is the button that appears in the top-right corner when the status is "show"
 	*
 	* @access   public
@@ -490,14 +487,14 @@ class DataDetails extends DataForm{
 						$titulo=trim(str_replace('<#o#>','',$titulo));
 						//$titulo=strtolow($titulo);
 					}
-					$caption.=' '.$titulo;
-					$this->button("btn_add_$nrel", $caption,  'add_'.$nrel.'()', 'BL');
+					$ccaption =$caption.' '.$titulo;
+					$this->button('btn_add_'.$nrel, $ccaption,  'add_'.$nrel.'()', 'BL');
 				}
 			}
 		}
 	}
 
- /**
+	/**
 	* append the default "undo" button, undo is the button that appears in the top-right corner when the status is "create" or "modify"
 	*
 	* @access   public
@@ -517,7 +514,7 @@ class DataDetails extends DataForm{
 				} elseif ($this->rapyd->uri->is_set('update')){
 					$undo_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, 'update', 'show');
 				}
-				$action = "javascript:window.location='" . site_url($undo_uri) . "'";
+				$action = 'javascript:window.location=\''.site_url($undo_uri).'\'';
 			} else {
 				$action = "javascript:window.location='{$this->back_url}'";
 			}
@@ -533,7 +530,7 @@ class DataDetails extends DataForm{
 		}
 	}
 
- /**
+	/**
 	* append the default "back" button, back is the button that appears in the bottom-left corner when the status is "show"
 	*
 	* @access   public
@@ -547,7 +544,7 @@ class DataDetails extends DataForm{
 		}
 	}
 
- /**
+	/**
 	* append the default "backerror" button
 	*
 	* @access   public
@@ -561,7 +558,7 @@ class DataDetails extends DataForm{
 		}
 	}
 
- /**
+	/**
 	* process , main build method, it lunch process() method
 	*
 	* @access   public
@@ -576,7 +573,7 @@ class DataDetails extends DataForm{
 			$this->back_uri = ($this->back_uri != '')? $this->back_uri : trim($this->back_url, '/');
 		}
 
-		if (($this->back_uri == "") && isset($this->_buttons['back'])){
+		if (($this->back_uri == '') && isset($this->_buttons['back'])){
 			show_error('you must give a correct "BACK URI": $edit->back_uri');
 		}
 
@@ -660,7 +657,7 @@ class DataDetails extends DataForm{
 									if(isset($this->$obj->rule))
 										$this->$obj->rule    = str_replace('<#i#>',$i,$property->rule );
 
-									if(get_class($property)=='dropdownField' AND isset($property->msql) AND $this->details_expand==false){
+									if(get_class($property)=='dropdownField' && isset($property->msql) && $this->details_expand==false){
 										$mSQL=str_replace('<#i#>',$i,$property->msql );
 
 										$template = $mSQL;
@@ -679,11 +676,8 @@ class DataDetails extends DataForm{
 											$this->$obj->options($template);
 										}
 								}
-
-
 							}
 							$this->$property_name->apply_rules=false;
-
 						}
 
 						if($this->_status!='idle' AND $this->$property_name->ind<0){
@@ -706,7 +700,7 @@ class DataDetails extends DataForm{
 		$this->details_expand=true;
 	}
 
- /**
+	/**
 	* Link para eliminar el detalle
 	*
 	* @access   public
@@ -745,7 +739,7 @@ class DataDetails extends DataForm{
 	}
 
 
- /**
+	/**
 	* devuelve la plantilla de elementos detalle
 	*
 	* @access   public
@@ -760,7 +754,7 @@ class DataDetails extends DataForm{
 	}
 
 
- /**
+	/**
 	* cuenta la cantidad de relaciones
 	*
 	* @access   public
@@ -838,13 +832,13 @@ class DataDetails extends DataForm{
 			$cont='';
 			$write=false;
 			foreach ($lines as $line) {
-				if(preg_match("/<\?php \/\/@EOFS \?>/",$line)>0) break;
+				if(preg_match('/<\?php \/\/@EOFS \?>/',$line)>0) break;
 				if($write) $cont.=trim($line);
-				if(preg_match("/<\?php \/\/@BOFS \?>/",$line)>0) $write=true;
+				if(preg_match('/<\?php \/\/@BOFS \?>/',$line)>0) $write=true;
 			}
 
 			ob_start();
-			echo eval('?>'.preg_replace("/;*\s*\?>/", "; ?>", str_replace('<?=', '<?php echo ', $cont)).'<?php ');
+			echo eval('?>'.preg_replace('/;*\s*\?>/', '; ?>', str_replace('<?=', '<?php echo ', $cont)).'<?php ');
 			$buffer = ob_get_contents();
 			@ob_end_clean();
 			return $buffer;
@@ -866,15 +860,12 @@ class DataDetails extends DataForm{
 		return $string;
 	}
 
-
 	function _rel_script(){
 		$script='';
 		foreach($this->_dataobject->_rel_type AS $id_rel=>$type){
 			if($type[0]==1 && !in_array($id_rel,$this->_except)){
 				$html=$this->details_view($id_rel);
 				$html=$this->js_escape($html);
-				//$html=str_replace("\n",'',$html);
-				//$html=$this->ci->db->escape($html);
 
 				$num=$this->max_rel_count[$id_rel];
 				$script.="
@@ -918,7 +909,6 @@ class DataDetails extends DataForm{
 
 		$this->script($script,'create');
 		$this->script($script,'modify');
-		//$this->script($script,'idle');
 	}
 
 	function getval($obj){
@@ -948,4 +938,3 @@ class DataDetails extends DataForm{
 		return $requestValue;
 	}
 }
-?>

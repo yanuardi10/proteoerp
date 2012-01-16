@@ -421,7 +421,7 @@ class XLSReporte extends writeexcel_workbookbig  {
 		$this->workbook->close();
 		header("Content-Type: application/x-msexcel; name=\"reporte.xls\"");
 		header("Content-Disposition: inline; filename=\"reporte.xls\"");
-		$fh=fopen($this->fname, "rb");
+		$fh=fopen($this->fname, 'rb');
 		fpassthru($fh);
 		unlink($this->fname);
 	}
@@ -430,7 +430,7 @@ class XLSReporte extends writeexcel_workbookbig  {
 		$template = $pattern;
 		$parsedcount = 0;
 		$salida=array();
-		while (strpos($template,"#>")>0) {
+		while (strpos($template,'#>')>0) {
 			$parsedcount++;
 			$parsedfield = substr($template,strpos($template,"<#")+2,strpos($template,"#>")-strpos($template,"<#")-2);
 			$salida[]=$parsedfield;

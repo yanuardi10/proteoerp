@@ -508,8 +508,8 @@ class sfac_add extends validaciones {
 		$conten['form']  =&  $edit;
 
 		$data['style']   = style('redmond/jquery-ui.css');
-		$data['style']  .= style('gt_grid.css');
-		$data['style']  .= style('impromptu.css');
+		//$data['style']  .= style('gt_grid.css');
+		//$data['style']  .= style('impromptu.css');
 
 		$data['script']  = script('jquery.js');
 		$data['script'] .= script('jquery-ui.js');

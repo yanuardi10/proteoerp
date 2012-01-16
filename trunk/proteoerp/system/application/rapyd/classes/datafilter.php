@@ -284,7 +284,7 @@ class DataFilter extends DataForm{
 	*/
 	function _build_reset_button($caption=RAPYD_BUTTON_CLEAR){
 
-		$action = "javascript:window.location='".site_url($this->_reset_uri)."'";
+		$action = 'javascript:window.location=\''.site_url($this->_reset_uri).'\'';
 		$this->button('btn_reset', $caption, $action, 'BL');
 	}
 
