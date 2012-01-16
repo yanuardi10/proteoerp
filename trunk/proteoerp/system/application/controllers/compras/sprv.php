@@ -13,8 +13,8 @@ class Sprv extends validaciones {
 		if($this->pi18n->pais=='COLOMBIA'){
 			redirect('compras/sprvcol/filteredgrid');
 		}else{ 
-			redirect('compras/sprv/filteredgrid');
-			//$this->sprvextjs();
+			//redirect('compras/sprv/filteredgrid');
+			$this->sprvextjs();
 		}
 	}
 
@@ -560,20 +560,29 @@ class Sprv extends validaciones {
 	function crear() {
 		$js= file_get_contents('php://input');
 		$data= json_decode($js,true);
-		$campos = $data['data'];
-		$proveed = $data['data']['proveed'];
+		
+		//var_dump($data);
+		//echo count($data["data"]);
+		if ( array_key_exists( '0', $data['data']) ) {
+			$campos = $data['data'][count($data)-1];
+		} else {
+			$campos = $data['data'];	
+		}
+		$proveed = $campos['proveed'];
+		$nombre  = $campos['nombre'];
 
 		unset($campos['nomgrup']);
 		unset($campos['id']);
 		
-		$mHay = $this->datasis->dameval("SELECT count(*) FROM sprv WHERE codigo='".$proveed."'");
+		$mSQL1 = "SELECT count(*) FROM sprv WHERE proveed=".$this->db->escape($proveed);
+		$mHay = $this->datasis->dameval($mSQL1);
 		if  ( $mHay > 0 ){
-			echo "{ success: false, message: 'Ya existe ese codigo'}";
+			echo "{ success: false, message: 'Ya existe ese codigo', data: [{id: '0'}]}";
 		} else {
 			$mSQL = $this->db->insert_string("sprv", $campos );
 			$this->db->simple_query($mSQL);
 			logusu('sprv',"PROVEEDOR $proveed $nombre CREADO");
-			echo "{ success: true, message: ".$data['data']['proveed']."}";
+			echo "{ success: true, message: ".$proveed."}";
 		}
 	}
 
@@ -589,7 +598,7 @@ class Sprv extends validaciones {
 		$mSQL = $this->db->update_string("sprv", $campos,"id='".$data['data']['id']."'" );
 		$this->db->simple_query($mSQL);
 		logusu('sprv',"PROVEEDOR ".$data['data']['proveed']." MODIFICADO");
-		echo "{ success: true, message: 'Proveedor Modificado '}";
+		echo "{ success: true, message: 'Proveedor Modificado ', data: [] }";
 	}
 
 	function eliminar(){
@@ -643,7 +652,6 @@ class Sprv extends validaciones {
 		$funciones = "";
 		$valida = "
 		{ type: 'length', field: 'proveed',  min:  1 },
-		{ type: 'length', field: 'rif',      min: 10 }, 
 		{ type: 'length', field: 'nombre',   min:  3 }
 		";
 		
@@ -701,8 +709,8 @@ var cplaStore = new Ext.data.Store({
 								defaults: {xtype:'fieldset'  },
 								style:'padding:4px',
 								items: [
-									{ xtype: 'textfield', fieldLabel: 'Codigo',   labelWidth:60, name: 'proveed',  allowBlank: false, columnWidth : 0.20, id: 'proveed' },
-									{ xtype: 'textfield', fieldLabel: 'RIF',      labelWidth:40, name: 'rif',      allowBlank: false, columnWidth : 0.25 },
+									{ xtype: 'textfield', fieldLabel: 'Codigo',   labelWidth:60, name: 'proveed',  allowBlank: false, columnWidth : 0.20, id: 'proveed', maxLength: 5, enforceMaxLength: true  },
+									{ xtype: 'textfield', fieldLabel: 'RIF',      labelWidth:40, name: 'rif',      allowBlank: false, columnWidth : 0.25, regex: /((^[VEJG][0-9])|(^[P][A-Z0-9]))/, regexText: 'Debe colocar una letra JVGE y 10 digitos' },
 									{ xtype: 'combo',     fieldLabel: 'Grupo',    labelWidth:80, name: 'grupo',    store: [".$grupo."], columnWidth: 0.50 },
 									{ xtype: 'textfield', fieldLabel: 'Nombre',   labelWidth:60, name: 'nombre',   allowBlank: false, columnWidth : 0.60 },
 									{ xtype: 'combo',     fieldLabel: 'Origen',   labelWidth:65, name: 'tiva',     store: [['N','Nacional'],['I','Internacional'],['O','Otro']], columnWidth: 0.35 },
