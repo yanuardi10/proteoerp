@@ -198,7 +198,7 @@ class ordp extends Controller {
 		$edit->it1_porcentaje->db_name='porcentaje';
 		$edit->it1_porcentaje->rule='max_length[14]|numeric';
 		$edit->it1_porcentaje->css_class='inputnum';
-		$edit->it1_porcentaje->size =16;
+		$edit->it1_porcentaje->size =5;
 		$edit->it1_porcentaje->maxlength =14;
 		$edit->it1_porcentaje->rel_id = 'ordpindi';
 
@@ -213,7 +213,7 @@ class ordp extends Controller {
 		$edit->it2_codigo->maxlength =15;
 		$edit->it2_codigo->rel_id = 'ordpitem';
 
-		$edit->it2_descrip = new inputField('Descrip','it2descrip_<#i#>');
+		$edit->it2_descrip = new inputField('Descripci&oacute;n','it2descrip_<#i#>');
 		$edit->it2_descrip->db_name='descrip';
 		$edit->it2_descrip->rule='max_length[40]';
 		$edit->it2_descrip->size =42;
@@ -233,7 +233,7 @@ class ordp extends Controller {
 		$edit->it2_merma->db_name='merma';
 		$edit->it2_merma->rule='max_length[10]|numeric';
 		$edit->it2_merma->css_class='inputnum';
-		$edit->it2_merma->size =12;
+		$edit->it2_merma->size =5;
 		$edit->it2_merma->maxlength =10;
 		$edit->it2_merma->rel_id = 'ordpitem';
 
@@ -249,19 +249,21 @@ class ordp extends Controller {
 		//fin detalle ordpitem inicio ordplabor
 		//**************************************
 
+		$edit->it3_secuencia = new inputField('Secuencia','it3secuencia_<#i#>');
+		$edit->it3_secuencia->db_name='secuencia';
+		$edit->it3_secuencia->rule='max_length[6]|integer';
+		$edit->it3_secuencia->css_class='inputonlynum';
+		$edit->it3_secuencia->type = 'inputhidden';
+		$edit->it3_secuencia->size = 5;
+		$edit->it3_secuencia->maxlength =6;
+		$edit->it3_secuencia->rel_id = 'ordplabor';
+
 		$edit->it3_estacion = new  dropdownField('Estacion <#o#>', 'it3estacion_<#i#>');
 		$edit->it3_estacion->option('','Seleccionar');
 		$edit->it3_estacion->options('SELECT estacion,CONCAT(estacion,\'-\',nombre) AS lab FROM esta ORDER BY estacion');
 		$edit->it3_estacion->style  = 'width:250px;';
 		$edit->it3_estacion->db_name= 'estacion';
 		$edit->it3_estacion->rel_id = 'ordplabor';
-
-		$edit->it3_nombre = new inputField('Nombre','it3nombre_<#i#>');
-		$edit->it3_nombre->db_name='nombre';
-		$edit->it3_nombre->rule='max_length[40]';
-		$edit->it3_nombre->size =20;
-		$edit->it3_nombre->maxlength =40;
-		$edit->it3_nombre->rel_id = 'ordplabor';
 
 		$edit->it3_actividad = new inputField('Actividad','it3actividad_<#i#>');
 		$edit->it3_actividad->db_name='actividad';
@@ -349,34 +351,113 @@ class ordp extends Controller {
 
 	function instalar(){
 		if (!$this->db->table_exists('ordp')) {
-			$mSQL="CREATE TABLE `ordp` (
-			  `fecha` date DEFAULT NULL,
-			  `numero` varchar(8) NOT NULL DEFAULT '',
-			  `status` char(2) NOT NULL DEFAULT '' COMMENT 'Activa, Pausada, Finalizada',
-			  `cliente` char(5) DEFAULT NULL,
-			  `nombre` varchar(40) DEFAULT NULL COMMENT 'Nombre del Cliente',
-			  `instrucciones` text,
-			  `estampa` date NOT NULL DEFAULT '0000-00-00',
-			  `usuario` varchar(12) NOT NULL DEFAULT '',
-			  `hora` varchar(8) NOT NULL DEFAULT '',
-			  `modificado` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-			  `id` int(11) NOT NULL AUTO_INCREMENT,
-			  PRIMARY KEY (`id`),
-			  UNIQUE KEY `numero` (`numero`),
-			  KEY `modificado` (`modificado`)
-			) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=latin1 COMMENT='Orden de Produccion'";
+			$mSQL="CREATE TABLE `ordc` (
+				`fecha` DATE NULL DEFAULT NULL,
+				`numero` VARCHAR(8) NOT NULL DEFAULT '',
+				`status` CHAR(2) NOT NULL DEFAULT '',
+				`almacen` VARCHAR(4) NULL DEFAULT NULL,
+				`proveed` VARCHAR(5) NULL DEFAULT NULL,
+				`nombre` VARCHAR(40) NULL DEFAULT NULL,
+				`montotot` DECIMAL(14,2) NULL DEFAULT NULL,
+				`montoiva` DECIMAL(14,2) NULL DEFAULT NULL,
+				`montonet` DECIMAL(14,2) NULL DEFAULT NULL,
+				`montofac` DECIMAL(14,2) NULL DEFAULT NULL,
+				`condi` VARCHAR(30) NULL DEFAULT NULL,
+				`codban` CHAR(2) NULL DEFAULT NULL,
+				`tipo_op` CHAR(2) NULL DEFAULT NULL,
+				`cheque` VARCHAR(12) NULL DEFAULT NULL,
+				`comprob` VARCHAR(6) NULL DEFAULT NULL,
+				`anticipo` DECIMAL(12,2) NULL DEFAULT NULL,
+				`fechafac` DATE NULL DEFAULT '0000-00-00',
+				`arribo` DATE NULL DEFAULT NULL,
+				`factura` VARCHAR(8) NULL DEFAULT NULL,
+				`mdolar` DECIMAL(17,2) NOT NULL DEFAULT '0.00',
+				`peso` DECIMAL(12,2) NOT NULL DEFAULT '0.00',
+				`benefi` VARCHAR(40) NULL DEFAULT NULL,
+				`condi1` VARCHAR(40) NULL DEFAULT NULL,
+				`condi2` VARCHAR(40) NULL DEFAULT NULL,
+				`condi3` VARCHAR(40) NULL DEFAULT NULL,
+				`transac` VARCHAR(8) NOT NULL DEFAULT '',
+				`estampa` DATE NOT NULL DEFAULT '0000-00-00',
+				`usuario` VARCHAR(12) NOT NULL DEFAULT '',
+				`hora` VARCHAR(8) NOT NULL DEFAULT '',
+				PRIMARY KEY (`numero`)
+			)
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM;";
 			$this->db->simple_query($mSQL);
 		}
 		if (!$this->db->table_exists('ordpindi')) {
-
+			$mSQL="CREATE TABLE `ordpindi` (
+				`numero` VARCHAR(8) NULL DEFAULT '',
+				`codigo` VARCHAR(6) NULL DEFAULT NULL COMMENT 'Codigo de Gasto',
+				`descrip` VARCHAR(40) NULL DEFAULT NULL,
+				`porcentaje` DECIMAL(14,3) NULL DEFAULT '0.000',
+				`estampa` DATE NULL DEFAULT NULL,
+				`usuario` VARCHAR(12) NULL DEFAULT '',
+				`hora` VARCHAR(8) NULL DEFAULT '',
+				`modificado` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+				`id_ordp` INT(11) NULL DEFAULT NULL,
+				`id` INT(11) NOT NULL AUTO_INCREMENT,
+				PRIMARY KEY (`id`),
+				INDEX `modificado` (`modificado`),
+				INDEX `numero` (`numero`)
+			)
+			COMMENT='Costos indirectos Orden de Produccion'
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM
+			AUTO_INCREMENT=1";
+			$this->db->simple_query($mSQL);
 		}
 
 		if (!$this->db->table_exists('ordpitem')) {
-
+			$mSQL="CREATE TABLE `ordpitem` (
+				`numero` VARCHAR(8) NULL DEFAULT '',
+				`codigo` VARCHAR(15) NULL DEFAULT NULL,
+				`descrip` VARCHAR(40) NULL DEFAULT NULL,
+				`cantidad` DECIMAL(14,3) NULL DEFAULT '0.000',
+				`merma` DECIMAL(10,2) NULL DEFAULT '0.00',
+				`costo` DECIMAL(17,2) NULL DEFAULT '0.00',
+				`estampa` DATE NULL DEFAULT NULL,
+				`usuario` VARCHAR(12) NULL DEFAULT '',
+				`hora` VARCHAR(8) NULL DEFAULT '',
+				`modificado` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+				`id_ordp` INT(11) NULL DEFAULT NULL,
+				`id` INT(11) NOT NULL AUTO_INCREMENT,
+				PRIMARY KEY (`id`),
+				INDEX `modificado` (`modificado`),
+				INDEX `numero` (`numero`)
+			)
+			COMMENT='Insumos de la Orden de Produccion'
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM
+			AUTO_INCREMENT=1";
+			$this->db->simple_query($mSQL);
 		}
 
 		if (!$this->db->table_exists('ordplabor')) {
-
+			$mSQL="CREATE TABLE `ordplabor` (
+				`producto` VARCHAR(15) NULL DEFAULT '' COMMENT 'Producto Terminado',
+				`secuencia` INT(11) UNSIGNED NULL DEFAULT NULL COMMENT 'Secuencia de las actividades',
+				`estacion` VARCHAR(5) NULL DEFAULT NULL,
+				`nombre` VARCHAR(40) NULL DEFAULT NULL,
+				`actividad` VARCHAR(100) NOT NULL,
+				`minutos` INT(6) NULL DEFAULT '0',
+				`segundos` INT(6) NULL DEFAULT '0',
+				`estampa` DATE NULL DEFAULT NULL,
+				`usuario` VARCHAR(12) NULL DEFAULT '',
+				`hora` VARCHAR(8) NULL DEFAULT '',
+				`modificado` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+				`id_ordp` INT(11) NULL DEFAULT NULL,
+				`id` INT(11) NOT NULL AUTO_INCREMENT,
+				PRIMARY KEY (`id`),
+				INDEX `modificado` (`modificado`)
+			)
+			COMMENT='Acciones de la Orden de Produccion'
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM
+			AUTO_INCREMENT=1";
+			$this->db->simple_query($mSQL);
 		}
 	}
 

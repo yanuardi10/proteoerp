@@ -32,11 +32,15 @@ $ordpitem_campos=$form->js_escape($scampos);
 
 $campos   = $form->template_details('ordplabor');
 $scampos  = '<tr id="tr_ordplabor_<#i#>">';
+$scampos .= '<td class="littletablerow" align="left" >'.$campos['it3_secuencia']['field'].'</td>';
 $scampos .= '<td class="littletablerow" align="left" >'.$campos['it3_estacion']['field'].'</td>';
-$scampos .= '<td class="littletablerow" align="left" >'.$campos['it3_nombre']['field'].'</td>';
 $scampos .= '<td class="littletablerow" align="left" >'.$campos['it3_actividad']['field'].'</td>';
 $scampos .= '<td class="littletablerow" align="right">'.$campos['it3_minutos']['field'].' : '.$campos['it3_segundos']['field'].'</td>';
-$scampos .= '<td class="littletablerow"><a href=# onclick="del_ordplabor(<#i#>);return false;">'.img("images/delete.jpg").'</a></td>';
+$scampos .= '<td class="littletablerow">';
+$scampos .= '<a href=# onclick="updownlabor(<#i#>,-1);return false;"><span class="ui-icon ui-icon-triangle-1-n"/></a>';
+$scampos .= '<a href=# onclick="updownlabor(<#i#>, 1);return false;"><span class="ui-icon ui-icon-triangle-1-s"/></a>';
+$scampos .= '<a href=# onclick="del_ordplabor(<#i#>);return false;">'.img("images/delete.jpg").'</a>';
+$scampos .= '</td>';
 $scampos .= '</tr>';
 $ordplabor_campos=$form->js_escape($scampos);
 
@@ -165,7 +169,7 @@ $(function(){
 
 		}
 	});
-
+	enumeralabor();
 });
 
 function add_ordpindi(){
@@ -203,30 +207,33 @@ function add_ordplabor(){
 	con = (ordplabor_cont+1).toString();
 	htm = htm.replace(/<#i#>/g,can);
 	htm = htm.replace(/<#o#>/g,con);
-	$("#__INPL__ordplabor").after(htm);
+	$("#__INPL__ordplabor").before(htm);
 	$("#it3_minutos_"+can).numeric(".");
     $("#it3_segundos_"+can).numeric(".");
     $("#it3estacion_"+can).focus();
+    enumeralabor();
 	ordplabor_cont=ordplabor_cont+1;
+}
+
+function ordlabor(id){
+	var html=$('#tr_ordpindi_'+id).html();
 
 }
 
 function del_ordpindi(id){
 	id = id.toString();
 	$('#tr_ordpindi_'+id).remove();
-	totalizar();
 }
 
 function del_ordpitem(id){
 	id = id.toString();
 	$('#tr_ordpitem_'+id).remove();
-	totalizar();
 }
 
 function del_ordplabor(id){
 	id = id.toString();
 	$('#tr_ordplabor_'+id).remove();
-	totalizar();
+	enumeralabor();
 }
 function truncate(){
 	$('tr[id^="tr_ordplabor_"]').remove();
@@ -294,6 +301,44 @@ function autocodmgas(id){
 		}
 	});
 }
+
+function updownlabor(id,direc){
+	ind=id.toString();
+	var actu=$('#tr_ordplabor_'+ind);
+	var htm ='<tr id="tr_ordplabor_'+ind+'">'+actu.html()+'<tr>';
+
+	var enu=0;
+	var arr=$('[id^="tr_ordplabor_"]');
+	var eoa=arr.length-1;
+	jQuery.each(arr, function() {
+		if($(this).attr('id')=='tr_ordplabor_'+ind) return false;
+		enu+=1;
+	});
+	if(enu>0)  { ante=arr[enu-1]; p_ante=1; } else {p_ante=-1; }
+	if(enu<eoa){ prox=arr[enu+1]; p_prox=1; } else {p_prox=-1; }
+
+	if(direc>0 && p_prox>0){      //si baja
+		$('#tr_ordplabor_'+id).remove();
+		$("#"+$(prox).attr('id')).after(htm);
+		return true;
+	}else if(direc<0 && p_ante>0){ //si sube
+		$('#tr_ordplabor_'+id).remove();
+		$("#"+$(ante).attr('id')).before(htm);
+		return true;
+	}
+	enumeralabor();
+	return false;
+}
+
+function enumeralabor(){
+	var enu=0;
+	var arr=$('[id^="it3secuencia_"]').not('[id$="_val"]');
+	jQuery.each(arr, function() {
+		enu+=1;
+		$(this).val(enu);
+		$('#'+this.name+'_val').text(enu);
+	});
+}
 </script>
 <?php } ?>
 
@@ -355,32 +400,6 @@ function autocodmgas(id){
 	<tr>
 </table>
 
-<h3>Asociaci&oacute;n con los gastos</h3>
-<table width='100%'>
-	<tr id='__INPL__ordpindi'>
-		<th bgcolor='#7098D0'>C&oacute;digo</th>
-		<th bgcolor='#7098D0'>Descripci&oacute;n</th>
-		<th bgcolor='#7098D0'>% Participaci&oacute;n</th>
-		<?php if($form->_status!='show') {?>
-			<th bgcolor='#7098D0'>&nbsp;</th>
-		<?php } ?>
-	</tr>
-	<?php for($i=0;$i<$form->max_rel_count['ordpindi'];$i++) {
-		$it1_codigo    = "it1_codigo_$i";
-		$it1_descrip   = "it1_descrip_$i";
-		$it1_porcentaje= "it1_porcentaje_$i";
-	?>
-	<tr id='tr_ordpindi_<?php echo $i; ?>'>
-		<td class="littletablerow" align="left" ><?php echo $form->$it1_codigo->output;     ?></td>
-		<td class="littletablerow" align="left" ><?php echo $form->$it1_descrip->output;    ?></td>
-		<td class="littletablerow" align="right"><?php echo $form->$it1_porcentaje->output; ?></td>
-		<?php if($form->_status!='show') { ?>
-			<td class="littletablerow"><a href=# onclick="del_ordpindi(<?php echo $i ?>);return false;"><?php echo img('images/delete.jpg'); ?></a></td>
-		<?php } ?>
-	</tr>
-	<?php } ?>
-</table>
-<?php echo isset($form->_button_container['BL'][0])? $form->_button_container['BL'][0]: ''; ?>
 <h3>Insumos necesarios</h3>
 <table width='100%'>
 	<tr id='__INPL__ordpitem'>
@@ -415,9 +434,9 @@ function autocodmgas(id){
 <?php echo isset($form->_button_container['BL'][1])? $form->_button_container['BL'][1]: ''; ?>
 <h3>Actividades o labores a realizar</h3>
 <table width='100%'>
-	<tr id='__INPL__ordplabor'>
+	<tr>
+		<th bgcolor='#7098D0'>Secuencia</th>
 		<th bgcolor='#7098D0'>Estaci&oacute;n</th>
-		<th bgcolor='#7098D0'>Nombre</th>
 		<th bgcolor='#7098D0'>Actividad</th>
 		<th bgcolor='#7098D0'>Tiempo</th>
 		<?php if($form->_status!='show') {?>
@@ -425,28 +444,63 @@ function autocodmgas(id){
 		<?php } ?>
 	</tr>
 	<?php for($i=0;$i<$form->max_rel_count['ordplabor'];$i++) {
+		$it3_secuencia = "it3_secuencia_$i";
 		$it3_estacion  = "it3_estacion_$i";
-		$it3_nombre    = "it3_nombre_$i";
 		$it3_actividad = "it3_actividad_$i";
 		$it3_minutos   = "it3_minutos_$i";
 		$it3_segundos  = "it3_segundos_$i";
 	?>
 	<tr id='tr_ordplabor_<?php echo $i; ?>'>
+		<td class='littletablerow' align="left" ><?php echo $form->$it3_secuencia->output; ?></td>
 		<td class='littletablerow' align="left" ><?php echo $form->$it3_estacion->output;  ?></td>
-		<td class='littletablerow' align="left" ><?php echo $form->$it3_nombre->output;    ?></td>
 		<td class='littletablerow' align="left" ><?php echo $form->$it3_actividad->output; ?></td>
 		<td class='littletablerow' align="right">
 			<?php echo $form->$it3_minutos->output;   ?>:
 			<?php echo $form->$it3_segundos->output;  ?>
 		</td>
 		<?php if($form->_status!='show') {?>
-			<td class="littletablerow"><a href=# onclick="del_ordplabor(<?php echo $i ?>);return false;"><?php echo img("images/delete.jpg"); ?></a></td>
+			<td class="littletablerow">
+				<a href=# onclick="updownlabor(<?php echo $i ?>,-1);return false;"><span class="ui-icon ui-icon-triangle-1-n"/></a>
+				<a href=# onclick="updownlabor(<?php echo $i ?>, 1);return false;"><span class="ui-icon ui-icon-triangle-1-s"/></a>
+
+				<a href=# onclick="del_ordplabor(<?php echo $i ?>);return false;"><?php echo img("images/delete.jpg"); ?></a>
+			</td>
+		<?php } ?>
+	</tr>
+	<?php } ?>
+	<tr id='__INPL__ordplabor'>
+		<td colspan=5></td>
+	</tr>
+</table>
+<?php echo isset($form->_button_container['BL'][2])? $form->_button_container['BL'][2]: ''; ?>
+
+<h3>Gastos directos</h3>
+<table width='100%'>
+	<tr id='__INPL__ordpindi'>
+		<th bgcolor='#7098D0'>C&oacute;digo</th>
+		<th bgcolor='#7098D0'>Descripci&oacute;n</th>
+		<th bgcolor='#7098D0'>% Participaci&oacute;n</th>
+		<?php if($form->_status!='show') {?>
+			<th bgcolor='#7098D0'>&nbsp;</th>
+		<?php } ?>
+	</tr>
+	<?php for($i=0;$i<$form->max_rel_count['ordpindi'];$i++) {
+		$it1_codigo    = "it1_codigo_$i";
+		$it1_descrip   = "it1_descrip_$i";
+		$it1_porcentaje= "it1_porcentaje_$i";
+	?>
+	<tr id='tr_ordpindi_<?php echo $i; ?>'>
+		<td class="littletablerow" align="left" ><?php echo $form->$it1_codigo->output;     ?></td>
+		<td class="littletablerow" align="left" ><?php echo $form->$it1_descrip->output;    ?></td>
+		<td class="littletablerow" align="right"><?php echo $form->$it1_porcentaje->output; ?></td>
+		<?php if($form->_status!='show') { ?>
+			<td class="littletablerow"><a href=# onclick="del_ordpindi(<?php echo $i ?>);return false;"><?php echo img('images/delete.jpg'); ?></a></td>
 		<?php } ?>
 	</tr>
 	<?php } ?>
 </table>
+<?php echo isset($form->_button_container['BL'][0])? $form->_button_container['BL'][0]: ''; ?>
 <?php
-echo isset($form->_button_container['BL'][2])? $form->_button_container['BL'][2]: '';
 echo $container_br;
 echo $form_end
 ?>
@@ -456,5 +510,4 @@ $transac=$form->get_from_dataobjetct('transac');
 ?>
 
 <?php  } ?>
-
 <?php endif; ?>
