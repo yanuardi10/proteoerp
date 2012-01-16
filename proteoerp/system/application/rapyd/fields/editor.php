@@ -22,94 +22,92 @@
  * @access     public
  */
 class editorField extends objField{
-  
-  var $type = "editor";
+
+	var $type = 'editor';
 	var $upload_path = '/uploads/';
-	var $content_css ="";
+	var $content_css ='';
 
  /**
-  * if a data source (dataobject) exist, it get the current value of field
-  * this class override this method for "formatting" purposes
-  *
-  * @access   private
-  * @return   void
-  */
-  function _getValue(){
-    parent::_getValue();
-  }
+	* if a data source (dataobject) exist, it get the current value of field
+	* this class override this method for "formatting" purposes
+	*
+	* @access   private
+	* @return   void
+	*/
+	function _getValue(){
+		parent::_getValue();
+	}
 
  /**
-  * if detect a $_POST["fieldname"] it acquire the new value
-  * this class override this method for "formatting" purposes
-  *
-  * @access   private
-  * @return   void
-  */
-  function _getNewValue(){
-    parent::_getNewValue();
-  }
+	* if detect a $_POST["fieldname"] it acquire the new value
+	* this class override this method for "formatting" purposes
+	*
+	* @access   private
+	* @return   void
+	*/
+	function _getNewValue(){
+		parent::_getNewValue();
+	}
 
 
  /**
-  * build (only) the field (widhout labels or borders)
-  *
-  * @access   public
-  * @return   void
-  */
-  function build(){
-  
-    $output = "";
-    $GLOBALS["Editor_UserFilesPath"]=$this->upload_path;
-    $GLOBALS["content_css"]=($this->content_css!="")? $this->content_css : RAPYD_LIBRARIES.'tinymce/custom.css';
-    rapydlib("tinymce");
+	* build (only) the field (widhout labels or borders)
+	*
+	* @access   public
+	* @return   void
+	*/
+	function build(){
 
-    if(!isset($this->cols)){
-      $this->cols = 42;
-    }
-    if(!isset($this->rows)){
-      $this->rows = 15;
-    }
+		$output = '';
+		$GLOBALS['Editor_UserFilesPath']=$this->upload_path;
+		$GLOBALS['content_css']=($this->content_css!='')? $this->content_css : RAPYD_LIBRARIES.'tinymce/custom.css';
+		rapydlib('tinymce');
 
-    $this->_getValue();
-    
-    switch ($this->status){
-      
-      case "disabled":
-      case "show":
-        if (!isset($this->value)) {
-          $output = RAPYD_FIELD_SYMBOL_NULL;
-        } elseif ($this->value == ""){
-          $output = "";
-        } else {  
-          $output = '<div style="font-size:9px; width: 100%; height:100px; overflow: auto">'.(htmlspecialchars($this->value)).'</div>';
-        }
-        break;
+		if(!isset($this->cols)){
+			$this->cols = 42;
+		}
+		if(!isset($this->rows)){
+			$this->rows = 15;
+		}
 
-      case "create":
-      case "modify":
-        
-        $attributes = array(
-          'name'        => $this->name,
-          'id'          => $this->name,
-          'cols'        => $this->cols,
-          'rows'        => $this->rows,          
-          'onclick'     => $this->onclick,
-          'onchange'    => $this->onchange,
-          'class'       => "mceEditor",
-          'style'       => $this->style);
-        $output = form_textarea($attributes, $this->value);
-        break;
-        
-        
-      case "hidden":
-      
-        $output = form_hidden($this->name, $this->value);
-        break;
-        
-      default:
-    }
-    $this->output = $output;
-  }
-    
+		$this->_getValue();
+
+		switch ($this->status){
+
+			case 'disabled':
+			case 'show':
+				if (!isset($this->value)) {
+					$output = RAPYD_FIELD_SYMBOL_NULL;
+				} elseif ($this->value == ''){
+					$output = '';
+				} else {
+					$output = '<div style="font-size:9px; width: 100%; height:100px; overflow: auto">'.(htmlspecialchars($this->value)).'</div>';
+				}
+				break;
+
+			case 'create':
+			case 'modify':
+
+				$attributes = array(
+					'name'        => $this->name,
+					'id'          => $this->name,
+					'cols'        => $this->cols,
+					'rows'        => $this->rows,
+					'onclick'     => $this->onclick,
+					'onchange'    => $this->onchange,
+					'class'       => 'mceEditor',
+					'style'       => $this->style);
+				$output = form_textarea($attributes, $this->value);
+				break;
+
+
+			case 'hidden':
+
+				$output = form_hidden($this->name, $this->value);
+				break;
+
+			default:
+		}
+		$this->output = $output;
+	}
 }
-?>

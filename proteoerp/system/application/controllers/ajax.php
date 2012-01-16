@@ -420,12 +420,12 @@ class Ajax extends Controller {
 
 	//Autocomplete para mgas
 	function automgas(){
-		$mid   = $this->db->escape('%'.$this->input->post('q').'%');
-		//$proveed  = $this->input->post('sprv');
-		$data = '{[ ]}';
-		if(true){
+		$q   = $this->input->post('q');
 
-			$mSQL  = "SELECT a.codigo, a.descrip
+		$data = '{[ ]}';
+		if($q!==false){
+			$mid = $this->db->escape('%'.$q.'%');
+			$mSQL = "SELECT a.codigo, a.descrip
 				FROM mgas AS a
 			WHERE a.codigo LIKE ${mid} OR a.descrip LIKE ${mid} ORDER BY a.descrip LIMIT 10";
 
@@ -435,11 +435,67 @@ class Ajax extends Controller {
 			if ($query->num_rows() > 0){
 				foreach( $query->result_array() as  $row ) {
 					$retArray['value']      = $row['codigo'];
-					$retArray['label']      = trim($row['codigo']).' - '.trim($row['descrip']);
-					$retArray['codigo']     = trim($row['codigo']);
-					$retArray['descrip']    = trim($row['descrip']);
-					//$retArray['tari1']      = $row['tari1'];
-					//$retArray['retecodigo'] = trim($row['retecodigo']);
+					$retArray['label']      = trim($row['codigo']).' - '.utf8_encode(trim($row['descrip']));
+					$retArray['codigo']     = utf8_encode(trim($row['codigo']));
+					$retArray['descrip']    = utf8_encode(trim($row['descrip']));
+
+					array_push($retorno, $retArray);
+				}
+				$data = json_encode($retorno);
+			}
+		}
+		echo $data;
+	}
+
+	//Autocomplete para las labores de sinv
+	function buscaordplabor(){
+		$mid   = $this->input->post('q');
+		$data = '{[ ]}';
+		if($mid!==false){
+			$mid  = $this->db->escape($mid);
+			$mSQL = "SELECT a.estacion,a.nombre,a.actividad,a.minutos,a.segundos
+				FROM sinvplabor AS a
+			WHERE a.producto=${mid}";
+
+			$query = $this->db->query($mSQL);
+			$retArray = array();
+			$retorno = array();
+			if ($query->num_rows() > 0){
+				foreach( $query->result_array() as  $row ) {
+					$retArray['nombre']   = utf8_encode(trim($row['nombre']));
+					$retArray['minutos']  = $row['minutos'];
+					$retArray['segundos'] = $row['segundos'];
+					$retArray['estacion'] = $row['estacion'];
+
+					array_push($retorno, $retArray);
+				}
+				$data = json_encode($retorno);
+			}
+		}
+		echo $data;
+	}
+
+	//Autocomplete para las recetas de sinv
+	function buscaordpitem(){
+		$mid   = $this->input->post('q');
+		$data = '{[ ]}';
+		if($mid!==false){
+			$mid  = $this->db->escape($mid);
+			$mSQL = "SELECT a.codigo, a.descrip,a.cantidad,a.merma,a.ultimo
+				FROM sinvpitem AS a
+			WHERE a.producto=${mid}";
+
+			$query = $this->db->query($mSQL);
+			$retArray = array();
+			$retorno = array();
+			if ($query->num_rows() > 0){
+				foreach( $query->result_array() as  $row ) {
+					$retArray['codigo']  = utf8_encode(trim($row['codigo']));
+					$retArray['descrip'] = utf8_encode(trim($row['descrip']));
+					$retArray['merma']   = $row['merma'];
+					$retArray['cantidad']= $row['cantidad'];
+					$retArray['ultimo']  = $row['ultimo'];
+
 					array_push($retorno, $retArray);
 				}
 				$data = json_encode($retorno);
@@ -463,7 +519,6 @@ class Ajax extends Controller {
 		$data['title']   = '';
 		$this->load->view('view_ventanas', $data);
 	}
-
 
 	function buscasinv2(){
 		//busca por CODIGO comience por la busqueda LIKE 'BUSQUEDA%',
