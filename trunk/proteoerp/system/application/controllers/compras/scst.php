@@ -457,7 +457,7 @@ class Scst extends Controller {
 			$control=$this->rapyd->uri->get_edited_id();
 			$accion="javascript:window.location='".site_url('compras/scst/reversar/'.$control)."'";
 			$edit->button_status('btn_reversar','Reversar'     ,$accion,'TR','show');
-			$edit->buttons( 'exit');
+			$edit->buttons('save', 'exit');
 		}
 		$edit->build();
 
