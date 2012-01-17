@@ -218,7 +218,7 @@ class pfaclitemayor extends validaciones{
 		$this->db->join('zona AS b','a.zona=b.codigo','left');
 		$this->db->where('a.cliente',$cliente);
 		$qdes=$this->db->get();
-		if ($query->num_rows() > 0){
+		if ($qdes->num_rows() > 0){
 			$rdes = $qdes->row();
 
 		}else{
@@ -248,8 +248,8 @@ class pfaclitemayor extends validaciones{
 		$this->db->where('a.tipo','Articulo');
 		$this->db->orderby('a.marca');
 		$this->db->orderby('a.descrip');
-        $numero=$edit->get_from_dataobjetct('numero');
-        if($numero!==false){
+		$numero=$edit->get_from_dataobjetct('numero');
+		if($numero!==false){
 			$dbnumero=$this->db->escape($numero);
 			$this->db->join('itpfac AS b','a.codigo=b.codigoa AND b.numa='.$dbnumero,'left');
 		}
