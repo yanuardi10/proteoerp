@@ -94,9 +94,7 @@ class ingresos{
 				JOIN smov AS b ON a.transac=b.transac 
 				LEFT JOIN scli AS c ON a.cod_cli=c.cliente 
 				JOIN sfac AS d ON a.numero=d.numero AND d.tipo_doc='F'
-				WHERE b.cod_cli='REIVA' 
-					AND a.reteiva>0 
-					AND b.fecha BETWEEN $fdesde AND $fhasta AND a.nroriva IS NOT NULL
+				WHERE b.cod_cli='REIVA' AND a.reteiva>0 AND b.fecha BETWEEN $fdesde AND $fhasta AND a.nroriva IS NOT NULL
 				UNION ALL
 				SELECT b.fecha, a.numero, IF(LENGTH(TRIM(e.nomfis))>0,e.nomfis,e.nombre) AS nombre, e.rifci, a.clipro,
 					a.factura AS afecta, d.fecha AS fafecta, b.monto, a.transac, a.retencion, a.fecha, a.fecha, d.nfiscal
@@ -111,7 +109,13 @@ class ingresos{
 				JOIN itcruc AS d ON a.numero=d.numero
 				JOIN sfac AS e ON MID(d.onumero,3,8)=e.numero AND e.tipo_doc=MID(d.onumero,1,1)
 				JOIN scli AS f ON e.cod_cli=f.cliente
-				WHERE b.fecha BETWEEN $fdesde AND $fhasta AND b.cod_cli='REIVA'";
+				WHERE b.fecha BETWEEN $fdesde AND $fhasta AND b.cod_cli='REIVA'
+				UNION ALL
+				SELECT b.fecha fecha, a.numero numero, d.nombre nombre, d.rifci rifci, d.cliente cod_cli, a.numero afecta, a.fecha fafecta, a.reiva reteiva, a.transac transac, concat(b.periodo, b.nrocomp) nroriva, b.emision emiriva, b.fecha recriva, a.nfiscal nfiscal 
+				FROM  itrivc a JOIN rivc b ON a.idrivc = b.id JOIN smov c ON b.transac = c.transac JOIN scli d ON b.cod_cli = d.cliente
+				LEFT JOIN itccli e ON a.transac=e.transac 
+				WHERE c.tipo_doc = 'ND' AND b.fecha BETWEEN $fdesde AND $fhasta AND e.transac IS NULL
+				";
 		$query = $this->db->query($mSQL);
 
 		$data=array();
