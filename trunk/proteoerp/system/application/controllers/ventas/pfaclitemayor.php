@@ -255,7 +255,7 @@ class pfaclitemayor extends validaciones{
 		}
 		$this->db->join('marc AS c','a.marca=c.marca');
 		$this->db->join('grup AS d','a.grupo=d.grupo');
-		$this->db->limit(50);
+		$this->db->limit(200);
 
 		$query = $this->db->get();
 
