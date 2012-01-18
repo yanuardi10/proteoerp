@@ -98,7 +98,11 @@ class pfaclite extends validaciones{
 		if(!(strlen($vd['vendedor'])>0))
 		$grid->column_orderby("Vendedor"     , 'vd'     ,'vd');
 		$grid->column_orderby('Total'        , '<nformat><#totalg#></nformat>', "totalg", "align=right");
-		$grid->column_orderby('Estado'       , 'reserva' ,'reserva');
+		if(!(strlen($vd['vendedor'])>0)){
+			$grid->column_orderby('Reser'        , 'reserva' ,'reserva');
+			$grid->column_orderby('Estado'       , 'status'  ,'status' );
+			$grid->column_orderby('Factura'      , 'factura' ,'factura');
+		}
 
 		$grid->add('ventas/pfaclite/dataedit/create');
 		$grid->build();
@@ -652,7 +656,7 @@ class pfaclite extends validaciones{
 				$sinv   =$this->datasis->damerow("SELECT precio1,iva FROM sinv WHERE codigo=$codigoae");
 				$precio1=$sinv['precio1'];
 				$itiva  =$sinv['iva'];
-				$do->set_rel('itpfac','preca',$i);
+				$do->set_rel('itpfac','preca',$precio1,$i);
 				$ittota  = $precio1 * $cana;
 				$do->set_rel('itpfac', 'tota'    , $ittota, $i);
 
