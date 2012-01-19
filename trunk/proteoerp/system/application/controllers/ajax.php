@@ -463,6 +463,7 @@ class Ajax extends Controller {
 			if ($query->num_rows() > 0){
 				foreach( $query->result_array() as  $row ) {
 					$retArray['nombre']   = utf8_encode(trim($row['nombre']));
+					$retArray['actividad']= $row['actividad'];
 					$retArray['minutos']  = $row['minutos'];
 					$retArray['segundos'] = $row['segundos'];
 					$retArray['estacion'] = $row['estacion'];
@@ -492,7 +493,7 @@ class Ajax extends Controller {
 				foreach( $query->result_array() as  $row ) {
 					$retArray['codigo']  = utf8_encode(trim($row['codigo']));
 					$retArray['descrip'] = utf8_encode(trim($row['descrip']));
-					$retArray['merma']   = $row['merma'];
+					$retArray['merma']   = (empty($row['merma']))? 0 : $row['merma'];
 					$retArray['cantidad']= $row['cantidad'];
 					$retArray['ultimo']  = $row['ultimo'];
 

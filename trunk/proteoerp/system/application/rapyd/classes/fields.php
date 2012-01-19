@@ -39,7 +39,7 @@ class objField {
 
 	var $options = array(); //associative&multidim. array ($value => $description)
 	var $operator = '';  //default operator in datafilter
-	var $clause = "like";
+	var $clause = 'like';
 	var $like_side='both';
 
 
