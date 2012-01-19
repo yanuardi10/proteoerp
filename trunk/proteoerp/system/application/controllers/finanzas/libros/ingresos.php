@@ -169,6 +169,7 @@ class ingresos{
 		}
 
 		//Retenciones de rivc
+		/*
 		if($this->db->table_exists('rivc')){
 			$data=array();
 			$mSQL="SELECT a.fecha, CONCAT(a.periodo,a.nrocomp) AS nroriva, c.nombre, c.rifci, a.cod_cli,
@@ -183,7 +184,6 @@ class ingresos{
 
 			foreach ( $query->result() as $row ){
 				$factor=($row->tipo_doc=='F')? 1:-1;
-
 				$data['libro']      ='V';
 				$data['tipo']       ='CR';
 				$data['fuente']     ='MC';
@@ -219,7 +219,7 @@ class ingresos{
 				$flag=$this->db->simple_query($mSQL);
 				if(!$flag) memowrite($mSQL,'genesmov');
 			}
-		}
+		}*/
 
 		//RETENCIONES ANTERIORES PENDIENTES
 		/*$mSQL = "SELECT * FROM smov WHERE fecha<".$mes."01 AND cod_cli='REIVA' 
