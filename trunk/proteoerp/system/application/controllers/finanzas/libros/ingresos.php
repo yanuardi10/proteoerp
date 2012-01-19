@@ -110,11 +110,22 @@ class ingresos{
 				JOIN sfac AS e ON MID(d.onumero,3,8)=e.numero AND e.tipo_doc=MID(d.onumero,1,1)
 				JOIN scli AS f ON e.cod_cli=f.cliente
 				WHERE b.fecha BETWEEN $fdesde AND $fhasta AND b.cod_cli='REIVA'
+				
 				UNION ALL
 				SELECT b.fecha fecha, a.numero numero, d.nombre nombre, d.rifci rifci, d.cliente cod_cli, a.numero afecta, a.fecha fafecta, a.reiva reteiva, a.transac transac, concat(b.periodo, b.nrocomp) nroriva, b.emision emiriva, b.fecha recriva, a.nfiscal nfiscal 
-				FROM  itrivc a JOIN rivc b ON a.idrivc = b.id JOIN smov c ON b.transac = c.transac JOIN scli d ON b.cod_cli = d.cliente
-				LEFT JOIN itccli e ON a.transac=e.transac 
-				WHERE c.tipo_doc = 'ND' AND b.fecha BETWEEN $fdesde AND $fhasta AND e.transac IS NULL
+				FROM  itrivc a JOIN rivc b ON a.idrivc = b.id 
+				JOIN smov c ON b.transac = c.transac  AND a.numero=c.num_ref
+				JOIN scli d ON b.cod_cli = d.cliente
+				LEFT JOIN itccli e ON a.transac=e.transac  
+				WHERE c.tipo_doc = 'ND' AND b.fecha BETWEEN $fdesde AND $fhasta 
+				
+				UNION ALL
+				SELECT a.f_factura fecha, a.numero, IF(LENGTH(TRIM(c.nomfis))>0,c.nomfis,c.nombre) AS nombre, c.rifci, a.cod_cli, a.numero AS afecta, a.fecha AS fafecta, a.monto reteiva, a.transac, a.num_ref nroiva, a.fecha emiriva, a.fecha recriva, d.nfiscal 
+				FROM sfpa a 
+				JOIN smov b ON a.f_factura=b.fecha AND a.monto=b.monto AND a.numero=MID(b.observa1,12,8) 
+				JOIN scli c ON a.cod_cli=c.cliente 
+				JOIN sfac d ON a.transac=d.transac
+				WHERE a.f_factura BETWEEN $fdesde AND $fhasta AND a.tipo='RI' AND b.tipo_doc='ND' 
 				";
 		$query = $this->db->query($mSQL);
 
