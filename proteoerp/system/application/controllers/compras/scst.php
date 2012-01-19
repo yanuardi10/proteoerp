@@ -13,10 +13,10 @@ class Scst extends Controller {
 
 	}
 
-	
+
 	function datafilter(){
 		//redirect('compras/scst/extgrid');
-		
+
 		$this->rapyd->load('datagrid','datafilter');
 		$this->rapyd->uri->keep_persistence();
 
@@ -135,13 +135,13 @@ class Scst extends Controller {
 
 		$style ='
 		<style type="text/css">
-		.fakeContainer { 
+		.fakeContainer {
 		    margin: 5px;
 		    padding: 0px;
 		    border: none;
-		    width: 740px;  
-		    height: 320px; 
-		    overflow: hidden; 
+		    width: 740px;
+		    height: 320px;
+		    overflow: hidden;
 		}
 		</style>';
 		//****************************************
@@ -457,14 +457,14 @@ class Scst extends Controller {
 			$control=$this->rapyd->uri->get_edited_id();
 			$accion="javascript:window.location='".site_url('compras/scst/reversar/'.$control)."'";
 			$edit->button_status('btn_reversar','Reversar'     ,$accion,'TR','show');
-			$edit->buttons('save', 'exit');
+			$edit->buttons('save', 'exit','add_rel');
 		}
 		$edit->build();
 
 		$smenu['link']  =  barra_menu('201');
 		$data['smenu']  =  $this->load->view('view_sub_menu', $smenu,true);
 		$conten['form'] =& $edit;
-		
+
 		$ffecha=$edit->get_from_dataobjetct('fecha');
 		$conten['alicuota']=$this->datasis->ivaplica(($ffecha==false)? null : $ffecha);
 
@@ -486,15 +486,17 @@ class Scst extends Controller {
 		$this->rapyd->uri->keep_persistence();
 		$this->rapyd->load('datagrid','fields');
 
+		$error=$msj='';
 		if($this->input->post('pros') !== false){
 			$precio1=$this->input->post('scstp_1');
 			$precio2=$this->input->post('scstp_2');
 			$precio3=$this->input->post('scstp_3');
 			$precio4=$this->input->post('scstp_4');
 
-			$error='';
 			foreach(array_keys($precio1) as $ind){
-				if($precio1[$ind]>=$precio2[$ind] && $precio2[$ind]>=$precio3[$ind] && $precio3[$ind]>=$precio4[$ind]){
+				$pt1 = $precio1[$ind]>=$precio2[$ind] && $precio2[$ind]>=$precio3[$ind] && $precio3[$ind]>=$precio4[$ind];
+				$pt2 = $precio1[$ind]>0 && $precio2[$ind]>0 && $precio3[$ind]>0 && $precio4[$ind]>0;
+				if($pt1 && $pt2){
 					$data=array(
 						'precio1'=>$precio1[$ind],
 						'precio2'=>$precio2[$ind],
@@ -506,14 +508,16 @@ class Scst extends Controller {
 					$mSQL = $this->db->update_string('itscst',$data,$where);
 					$ban=$this->db->simple_query($mSQL);
 				}else{
-					$error='Los precios deben cumplir esta regla (precio 1 >= precio 2 >= precio 3 >= precio 4)';
+					$error='Los precios deben cumplir esta regla (precio 1 >= precio 2 >= precio 3 >= precio 4) y mayores a cero';
 				}
+			}
+			if(strlen($error)==0){
+				$msj='Precios guardados';
 			}
 		}
 
-
 		$ggrid =form_open('/compras/scst/cprecios/'.$control);
-		
+
 		function costo($formcal,$pond,$ultimo,$standard,$existen,$itcana){
 			$CI =& get_instance();
 			$costo_pond=$CI->_pond($existen,$itcana,$pond,$ultimo);
@@ -523,13 +527,14 @@ class Scst extends Controller {
 
 		function margen($formcal,$pond,$ultimo,$standard,$existen,$itcana,$precio,$iva){
 			$costo=costo($formcal,$pond,$ultimo,$standard,$existen,$itcana);
+			if($precio==0) return 0;
 			return round(100-(($costo*100)/($precio/(1+($iva/100)))),2);
 		}
 
 		function tcosto($id,$iva,$formcal,$pond,$ultimo,$standard,$existen,$itcana){
 			$costo=costo($formcal,$pond,$ultimo,$standard,$existen,$itcana);
 			$rt = nformat($costo);
-			
+
 			$rt.= '<input type="hidden" id="costo['.$id.']" name="costo['.$id.']" value="'.$costo.'" />';
 			$rt.= '<input type="hidden" id="iva['.$id.']" name="iva['.$id.']" value="'.$iva.'" />';
 			return $rt;
@@ -537,6 +542,7 @@ class Scst extends Controller {
 
 		$grid = new DataGrid('Precios de art&iacute;culos');
 		$grid->use_function('costo','margen','tcosto');
+		$grid->order_by('descrip');
 		$select=array('b.codigo','b.descrip','b.formcal','a.costo','b.ultimo','b.pond','b.standard','a.id',
 					  'a.precio1 AS scstp_1','a.precio2 AS scstp_2','a.precio3 AS scstp_3','a.precio4 AS scstp_4',
 					  'b.precio1 AS sinvp1' ,'b.precio2 AS sinvp2' ,'b.precio3 AS sinvp3' ,'b.precio4 AS sinvp4',
@@ -547,17 +553,12 @@ class Scst extends Controller {
 		$grid->db->join('sinv AS b','a.codigo=b.codigo');
 		$grid->db->where('control' , $control);
 
-		$grid->column('C&oacute;digo'     , 'codigo' );
-		$grid->column('Descripci&oacute;n', 'descrip');
+		//$grid->column('C&oacute;digo'     , '' );
+		$grid->column_orderby('Descripci&oacute;n', '<b class=\'mininegro\'><#codigo#></b><br><#descrip#>', 'descrip');
 
-		$grid->column('costo' , '<tcosto><#id#>|<#iva#>|<#formcal#>|<#pond#>|<#ultimo#>|<#standard#>|<#existen#>|<#cantidad#></tcosto>','align=\'rigth\'');
-		$itt=array('sinvp1','sinvp2','sinvp3','sinvp4');
-		foreach ($itt as $id=>$val){
-			$grid->column('Precio '.($id+1).' actual', $val,'align=\'right\'');
-		}
-
+		$ittt=array('sinvp1','sinvp2','sinvp3','sinvp4');
 		$itt=array('scstp_1','scstp_2','scstp_3','scstp_4');
-		foreach ($itt as $val){
+		foreach ($itt as $id=>$val){
 			$ind = $val;
 
 			$campo = new inputField('Campo', $ind);
@@ -566,8 +567,10 @@ class Scst extends Controller {
 			$campo->size     =8;
 			$campo->autocomplete=false;
 			$campo->css_class='inputnum';
+			$campo->append('<#'.$ittt[$id].'#>');
+			$campo->disable_paste=true;
 
-			$grid->column($ind , $campo,'align=\'center\'');
+			$grid->column('Precio '.($id+1) , $campo,'align=\'center\'');
 		}
 
 		$itt=array('margen_1','margen_2','margen_3','margen_4');
@@ -578,13 +581,14 @@ class Scst extends Controller {
 			$campo->grid_name=$ind.'[<#id#>]';
 			$campo->pattern  ='<margen><#formcal#>|<#pond#>|<#ultimo#>|<#standard#>|<#existen#>|<#cantidad#>|<#scstp_'.($id+1).'#>|<#iva#></margen>';
 			$campo->status   ='modify';
-			$campo->size     =5;
+			$campo->size     =3;
 			$campo->autocomplete=false;
 			$campo->css_class='inputnum';
+			$campo->disable_paste=true;
 
-			$grid->column($ind , $campo,'align=\'center\'');
+			$grid->column('Marg.'.($id+1) , $campo,'align=\'center\'');
 		}
-
+		$grid->column('Costo' , '<tcosto><#id#>|<#iva#>|<#formcal#>|<#pond#>|<#ultimo#>|<#standard#>|<#existen#>|<#cantidad#></tcosto>','align=\'right\'');
 		$action = "javascript:window.location='".site_url('compras/scst/dataedit/show/'.$control)."'";
 		$grid->button('btn_regresa', 'Regresar', $action, 'TR');
 
@@ -596,7 +600,8 @@ class Scst extends Controller {
 
 		$script='<script language="javascript" type="text/javascript">
 		$(function(){
-
+			$(".inputnum").numeric(".");
+			$(".inputonlynum").numeric();
 			$(\'input[name^="margen_"]\').keyup(function() {
 				nom=this.name;
 				pos0=this.name.lastIndexOf("_");
@@ -635,11 +640,14 @@ class Scst extends Controller {
 		});
 		</script>';
 
-		$data['content'] = $ggrid;
+		$data['content'] ='<div class="alert">'.$error.'</div>';
+		$data['content'].='<div>'.$msj.'</div>';
+		$data['content'].= $ggrid;
 		$data['title']   = heading('Cambio de precios');
 		$data['script']  = $script;
 		$data['script'] .= phpscript('nformat.js');
 		$data['head']    = $this->rapyd->get_head().script('jquery.pack.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js');
+		$data['head']   .=style('estilos.css');
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -824,7 +832,7 @@ class Scst extends Controller {
 			$cprecio   = $form->cprecio->newValue;
 			$actualiza = $form->fecha->newValue;
 			$cambio    = ($cprecio=='S') ? true : false;
-			
+
 			$rt=$this->_actualizar($control,$cambio,$actualiza);
 			if($rt===false){
 				$data['content']  = $this->error_string.br();
@@ -850,7 +858,7 @@ class Scst extends Controller {
 			cexento,cgenera,civagen,creduci,civared,cadicio,civaadi,cstotal,ctotal,cimpuesto,numero
 			FROM scst WHERE control=?';
 			$query=$this->db->query($SQL,array($control));
-			
+
 			if($query->num_rows()==1){
 				$row     = $query->row_array();
 				$transac = $row['transac'];
@@ -872,7 +880,7 @@ class Scst extends Controller {
 						$costo    = $this->_costos($itrow->formcal,$pond,$itrow->costo,$itrow->standard);
 						$dbcodigo = $this->db->escape($itrow->codigo);
 						//Actualiza el inventario
-						$mSQL='UPDATE sinv SET 
+						$mSQL='UPDATE sinv SET
 							pond='.$pond.',
 							ultimo='.$itrow->costo.',
 							prov3=prov2, prepro3=prepro2, pfecha3=pfecha2, prov2=prov1, prepro2=prepro1, pfecha2=pfecha1,
@@ -886,15 +894,15 @@ class Scst extends Controller {
 
 						//$mSQL='UPDATE itsinv SET existen=existen+'.$itrow->cantidad.' WHERE codigo='.$this->db->escape($itrow->codigo).' AND alma='.$this->db->escape($depo);
 						//$ban=$this->db->simple_query($mSQL);
-						
+
 						$this->datasis->sinvcarga($itrow->codigo,$depo, $itrow->cantidad );
-						
+
 						if(!$ban){ memowrite($mSQL,'scst'); $error++; }
 
 						if($itrow->precio1>0 && $itrow->precio2>0 && $itrow->precio3>0 && $itrow->precio4>0){
 							//Cambio de precios
 							if($cprecio){
-								$mSQL='UPDATE sinv SET 
+								$mSQL='UPDATE sinv SET
 								precio1='.$this->db->escape($itrow->precio1).',
 								precio2='.$this->db->escape($itrow->precio2).',
 								precio3='.$this->db->escape($itrow->precio3).',
@@ -906,11 +914,11 @@ class Scst extends Controller {
 						}
 
 						//Actualiza los margenes y bases
-						$mSQL='UPDATE sinv SET 
-							base1=ROUND(precio1*10000/(100+iva))/100, 
-							base2=ROUND(precio2*10000/(100+iva))/100, 
-							base3=ROUND(precio3*10000/(100+iva))/100, 
-							base4=ROUND(precio4*10000/(100+iva))/100, 
+						$mSQL='UPDATE sinv SET
+							base1=ROUND(precio1*10000/(100+iva))/100,
+							base2=ROUND(precio2*10000/(100+iva))/100,
+							base3=ROUND(precio3*10000/(100+iva))/100,
+							base4=ROUND(precio4*10000/(100+iva))/100,
 							margen1=ROUND(10000-('.$costo.'*10000/base1))/100,
 							margen2=ROUND(10000-('.$costo.'*10000/base2))/100,
 							margen3=ROUND(10000-('.$costo.'*10000/base3))/100,
@@ -964,7 +972,7 @@ class Scst extends Controller {
 					$riva['emision']    = ($fecha > $actuali) ? $fecha : $actuali;
 					$riva['periodo']    = substr($riva['emision'],0,6) ;
 					$riva['tipo_doc']   = $row['tipo_doc'];
-					$riva['fecha']      = $fecha; 
+					$riva['fecha']      = $fecha;
 					$riva['numero']     = $row['numero'];
 					$riva['nfiscal']    = $row['nfiscal'];
 					$riva['afecta']     = $row['fafecta'];
@@ -1121,7 +1129,7 @@ class Scst extends Controller {
 				//IF mTIPO = 'L'
 				//	SINVLOTCARGA( mm_DETA[i,1], XDEPO, mm_DETA[i,8], -mm_DETA[i,3] )
 				//ENDIF
-			
+
 				// DEBE ARREGLAR EL PROMEDIO BUSCANDO EN KARDEX
 				$mSQL = "SELECT promedio FROM costos WHERE codigo='".$row->codigo."' ORDER BY fecha DESC LIMIT 1";
 				$mPROM = $this->datasis->dameval($mSQL);
@@ -1131,7 +1139,7 @@ class Scst extends Controller {
 				}
 
 				if (count($mORDENES) > 0 ){
-					$mSALDO = $row->cantidad; 
+					$mSALDO = $row->cantidad;
 					foreach( $mORDENES as $orden){
 						if ($mSALDO > 0 ) {
 							$mSQL   = "SELECT recibido  FROM itordc WHERE numero='".$mORDENE."' AND codigo='".$row->codigo."'";
@@ -1200,10 +1208,10 @@ class Scst extends Controller {
 		$query="
 		INSERT INTO itscst (`numero`,`proveed`,`codigo`,`descrip`,`cantidad`,`control`,`iva`,`costo`,`importe`)
 		SELECT refe2,clipro,b.codigo,b.descrip,SUM(b.cant) cant,$controle,c.iva,c.ultimo,SUM(b.cant)*c.ultimo
-		FROM recep a 
+		FROM recep a
 		JOIN seri b ON a.recep=b.recep
 		JOIN sinv c ON b.codigo=c.codigo
-		WHERE origen='scst' AND a.refe2=$facturae AND clipro=$cod_prove 
+		WHERE origen='scst' AND a.refe2=$facturae AND clipro=$cod_prove
 		GROUP BY b.codigo";
 
 		$this->db->query($query);
@@ -1230,11 +1238,11 @@ class Scst extends Controller {
 	function _pre_insert($do){
 		$control=$do->get('control');
 		$transac=$do->get('transac');
-		
+
 		if(substr($control,7,1)=='_') $control = $this->datasis->fprox_numero('nscst');
 		if(empty($control)) $control = $this->datasis->fprox_numero('nscst');
 		if(empty($transac)) $transac = $this->datasis->fprox_numero('ntransac');
-		
+
 		$fecha   = $do->get('fecha');
 		$numero  = substr($do->get('serie'),-8);
 		$usuario = $do->get('usuario');
@@ -1352,9 +1360,9 @@ class Scst extends Controller {
 	}
 
 	//Chequea que el dia no sea superior a hoy
-	
+
 	function _post_update($do){
-		
+
 	}
 
 	function chddate($fecha){
@@ -1411,7 +1419,7 @@ class Scst extends Controller {
 
 	function _pre_update($do){
 		$this->_pre_insert($do);
-		
+
 		//return false;
 	}
 
@@ -1492,7 +1500,7 @@ class Scst extends Controller {
 
 		$mSQL = "SELECT a.codigo, a.descrip, a.cantidad, a.costo, a.importe, a.iva, a.ultimo, a.precio1, a.precio2, a.precio3, a.precio4, b.id codid FROM itscst a JOIN sinv b ON a.codigo=b.codigo WHERE a.control='$control' ORDER BY a.codigo";
 		$query = $this->db->query($mSQL);
-		$results =  0; 
+		$results =  0;
 		$arr = $this->datasis->codificautf8($query->result_array());
 		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
 	}
@@ -1514,14 +1522,14 @@ class Scst extends Controller {
 		if ( $query->num_rows() > 0 ){
 			$salida = "<br><table width='100%' border=1>";
 			$salida .= "<tr bgcolor='#e7e3e7'><td>Tp</td><td align='center'>Numero</td><td align='center'>Monto</td></tr>";
-			
+
 			foreach ($query->result_array() as $row)
 			{
 				if ( $codprv != $row['cod_prv']){
 					$codprv = $row['cod_prv'];
 					$salida .= "<tr bgcolor='#c7d3c7'>";
 					$salida .= "<td colspan=4>".trim($row['nombre']). "</td>";
-					$salida .= "</tr>";	
+					$salida .= "</tr>";
 				}
 				if ( $row['tipo_doc'] == 'FC' ) {
 					$saldo = $row['monto']-$row['abonos'];
@@ -1546,31 +1554,31 @@ class Scst extends Controller {
 		$urlajax = 'compras/scst/';
 
 		$columnas = "
-		{ header: 'Tipo',             width:  40, sortable: true,  dataIndex: 'tipo_doc', field: { type: 'textfield'  }, filter: { type: 'string'  }}, 
-		{ header: 'Numero',           width:  60, sortable: true,  dataIndex: 'numero',   field: { type: 'textfield'  }, filter: { type: 'string'  }}, 
-		{ header: 'Serie',            width: 100, sortable: true,  dataIndex: 'serie',    field: { type: 'textfield'  }, filter: { type: 'string'  }, editor: 'textfield' }, 
-		{ header: 'Fecha',            width:  70, sortable: false, dataIndex: 'fecha',    field: { type: 'date'       }, filter: { type: 'date'    }}, 
-		{ header: 'Recibida',         width:  70, sortable: false, dataIndex: 'recep',    field: { type: 'date'       }, filter: { type: 'date'    }}, 
-		{ header: 'Prov.',            width:  50, sortable: true,  dataIndex: 'proveed',  field: { type: 'textfield'  }, filter: { type: 'string'  }, renderer: renderSprv }, 
-		{ header: 'Nombre Proveedor', width: 200, sortable: true,  dataIndex: 'nombre',   field: { type: 'textfield'  }, filter: { type: 'string'  }}, 
-		{ header: 'SubTotal',         width: 100, sortable: true,  dataIndex: 'montotot', field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
-		{ header: 'IVA',              width:  80, sortable: true,  dataIndex: 'montoiva', field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
-		{ header: 'Total',            width: 100, sortable: true,  dataIndex: 'montonet', field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
-		{ header: 'Almacen',          width:  60, sortable: true,  dataIndex: 'depo',     field: { type: 'textfield'  }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
-		{ header: 'Observacion',      width: 160, sortable: true,  dataIndex: 'observa1', field: { type: 'textfield'  }, filter: { type: 'string'  }}, 
-		{ header: 'Control',          width:  60, sortable: true,  dataIndex: 'control',  field: { type: 'textfield'  }, filter: { type: 'string'  }}, 
-		{ header: 'Estampa',          width:  70, sortable: false, dataIndex: 'estampa',  field: { type: 'date'       }, filter: { type: 'date'    }}, 
-		{ header: 'Hora',             width:  60, sortable: true,  dataIndex: 'hora',     field: { type: 'textfield'  }, filter: { type: 'string'  }}, 
+		{ header: 'Tipo',             width:  40, sortable: true,  dataIndex: 'tipo_doc', field: { type: 'textfield'  }, filter: { type: 'string'  }},
+		{ header: 'Numero',           width:  60, sortable: true,  dataIndex: 'numero',   field: { type: 'textfield'  }, filter: { type: 'string'  }},
+		{ header: 'Serie',            width: 100, sortable: true,  dataIndex: 'serie',    field: { type: 'textfield'  }, filter: { type: 'string'  }, editor: 'textfield' },
+		{ header: 'Fecha',            width:  70, sortable: false, dataIndex: 'fecha',    field: { type: 'date'       }, filter: { type: 'date'    }},
+		{ header: 'Recibida',         width:  70, sortable: false, dataIndex: 'recep',    field: { type: 'date'       }, filter: { type: 'date'    }},
+		{ header: 'Prov.',            width:  50, sortable: true,  dataIndex: 'proveed',  field: { type: 'textfield'  }, filter: { type: 'string'  }, renderer: renderSprv },
+		{ header: 'Nombre Proveedor', width: 200, sortable: true,  dataIndex: 'nombre',   field: { type: 'textfield'  }, filter: { type: 'string'  }},
+		{ header: 'SubTotal',         width: 100, sortable: true,  dataIndex: 'montotot', field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'IVA',              width:  80, sortable: true,  dataIndex: 'montoiva', field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Total',            width: 100, sortable: true,  dataIndex: 'montonet', field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Almacen',          width:  60, sortable: true,  dataIndex: 'depo',     field: { type: 'textfield'  }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Observacion',      width: 160, sortable: true,  dataIndex: 'observa1', field: { type: 'textfield'  }, filter: { type: 'string'  }},
+		{ header: 'Control',          width:  60, sortable: true,  dataIndex: 'control',  field: { type: 'textfield'  }, filter: { type: 'string'  }},
+		{ header: 'Estampa',          width:  70, sortable: false, dataIndex: 'estampa',  field: { type: 'date'       }, filter: { type: 'date'    }},
+		{ header: 'Hora',             width:  60, sortable: true,  dataIndex: 'hora',     field: { type: 'textfield'  }, filter: { type: 'string'  }},
 		{ header: 'Usuario',          width:  60, sortable: true,  dataIndex: 'usuario',  field: { type: 'textfield'  }, filter: { type: 'string'  }}
 		";
 
 		$coldeta = "
 	var Deta1Col = [
-		{ header: 'Codigo',      width:  90, sortable: true, dataIndex: 'codigo',   field: { type: 'textfield' }, filter: { type: 'string' }, renderer: renderSinv }, 
-		{ header: 'codid',       dataIndex: 'codid',  hidden: true}, 
-		{ header: 'Descripcion', width: 250, sortable: true, dataIndex: 'descrip',  field: { type: 'textfield' }, filter: { type: 'string' }}, 
-		{ header: 'Cant',        width:  60, sortable: true, dataIndex: 'cantidad', field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
-		{ header: 'Precio',      width:  80, sortable: true, dataIndex: 'costo',    field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}, 
+		{ header: 'Codigo',      width:  90, sortable: true, dataIndex: 'codigo',   field: { type: 'textfield' }, filter: { type: 'string' }, renderer: renderSinv },
+		{ header: 'codid',       dataIndex: 'codid',  hidden: true},
+		{ header: 'Descripcion', width: 250, sortable: true, dataIndex: 'descrip',  field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Cant',        width:  60, sortable: true, dataIndex: 'cantidad', field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		{ header: 'Precio',      width:  80, sortable: true, dataIndex: 'costo',    field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
 		{ header: 'Importe',     width: 100, sortable: true, dataIndex: 'importe',  field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
 		{ header: 'IVA',         width:  60, sortable: true, dataIndex: 'iva',      field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
 		{ header: 'Ultimo',      width:  60, sortable: true, dataIndex: 'ultimo',   field: { type: 'textfield' }, filter: { type: 'string' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
@@ -1581,9 +1589,9 @@ class Scst extends Controller {
 	]";
 
 		$variables='';
-		
+
 		$valida="		{ type: 'length', field: 'cliente',  min:  1 }";
-		
+
 
 		$funciones = "
 function renderSprv(value, p, record) {
@@ -1634,7 +1642,7 @@ function renderSinv(value, p, record) {
 		autoSync: true,
 		method: 'POST'
 	});
-	
+
 	//////////////////////////////////////////////////////////
 	//
 	var gridDeta1 = Ext.create('Ext.grid.Panel', {
@@ -1654,7 +1662,7 @@ function renderSinv(value, p, record) {
 		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/verhtml/COMPRA/{control}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/html_icon.gif', 'alt' => 'Formato HTML', 'title' => 'Formato HTML','border'=>'0'))."</a></td>',
 		'<td align=\'center\'>{numero}</td>',
 		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/ver/COMPRA/{control}\',     \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',   'title' => 'Formato PDF', 'border'=>'0'))."</a></td></tr>',
-		'<tr><td colspan=3 align=\'center\' >--</td></tr>',		
+		'<tr><td colspan=3 align=\'center\' >--</td></tr>',
 		'</table>','nanai'
 	];
 
@@ -1730,23 +1738,23 @@ function renderSinv(value, p, record) {
 					handler: function() {
 						var selection = gridMaest.getView().getSelectionModel().getSelection()[0];
 						Ext.MessageBox.show({
-							title: 'Confirme', 
-							msg: 'Seguro que quiere eliminar la compra Nro. '+selection.data.numero, 
-							buttons: Ext.MessageBox.YESNO, 
-							fn: function(btn){ 
-								if (btn == 'yes') { 
+							title: 'Confirme',
+							msg: 'Seguro que quiere eliminar la compra Nro. '+selection.data.numero,
+							buttons: Ext.MessageBox.YESNO,
+							fn: function(btn){
+								if (btn == 'yes') {
 									if (selection) {
 										//storeMaest.remove(selection);
 									}
 									storeMaest.load();
-								} 
-							}, 
-							icon: Ext.MessageBox.QUESTION 
-						});  
+								}
+							},
+							icon: Ext.MessageBox.QUESTION
+						});
 					}
 				}
 			]
-		}		
+		}
 		";
 
 
@@ -1763,7 +1771,7 @@ function renderSinv(value, p, record) {
 
 
 		$titulow = 'Compras';
-		
+
 		$filtros = "";
 		$features = "
 		features: [ { ftype: 'filters', encode: 'json', local: false } ],
@@ -1790,7 +1798,7 @@ function renderSinv(value, p, record) {
 		$data['coldeta']     = $coldeta;
 		$data['acordioni']   = $acordioni;
 		$data['final']       = $final;
-		
+
 		$data['title']  = heading('Compras');
 		$this->load->view('extjs/extjsvenmd',$data);
 

@@ -140,10 +140,8 @@ class ordp extends Controller {
 		$edit->status = new dropdownField('Status','status');
 		$edit->status->option('A','Abierto');
 		$edit->status->option('C','Cerrado');
-		$edit->status->rule='max_length[2]|enum[A,C]';
-		$edit->status->size =4;
+		$edit->status->rule='enum[A,C]';
 		$edit->status->style='width:100px';
-		$edit->status->maxlength =2;
 
 		$edit->cliente = new inputField('Cliente','cliente');
 		$edit->cliente->rule='max_length[5]';
@@ -162,9 +160,15 @@ class ordp extends Controller {
 		$edit->instrucciones->rows = 4;
 
 		$edit->codigo = new inputField('Art&iacute;culo','codigo');
-		$edit->codigo->rule ='max_length[15]';
+		$edit->codigo->rule ='max_length[15]|existesinv';
 		$edit->codigo->size =7;
 		$edit->codigo->maxlength =15;
+
+		$edit->cana = new inputField('Cantidad a producir','cana');
+		$edit->cana->rule='max_length[10]|numeric|required';
+		$edit->cana->css_class='inputnum';
+		$edit->cana->size =5;
+		$edit->cana->maxlength =10;
 
 		$edit->desca = new inputField('Descripci&oacute;n <#o#>', 'desca');
 		$edit->desca->db_name='sinvdescrip';
@@ -225,7 +229,7 @@ class ordp extends Controller {
 		$edit->it2_cantidad->db_name='cantidad';
 		$edit->it2_cantidad->rule='max_length[14]|numeric';
 		$edit->it2_cantidad->css_class='inputnum';
-		$edit->it2_cantidad->size =16;
+		$edit->it2_cantidad->size =8;
 		$edit->it2_cantidad->maxlength =14;
 		$edit->it2_cantidad->rel_id = 'ordpitem';
 
@@ -241,7 +245,7 @@ class ordp extends Controller {
 		$edit->it2_costo->db_name='costo';
 		$edit->it2_costo->rule='max_length[17]|numeric';
 		$edit->it2_costo->css_class='inputnum';
-		$edit->it2_costo->size =19;
+		$edit->it2_costo->size =10;
 		$edit->it2_costo->maxlength =17;
 		$edit->it2_costo->rel_id = 'ordpitem';
 

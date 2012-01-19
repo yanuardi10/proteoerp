@@ -482,6 +482,19 @@ class DataGridColumn{
 				$vvalue= replaceFunctions($vvalue);
 				$this->field->value = $vvalue;
 
+				//Para soportar expancion de campos en la extra output
+				if(!empty($this->field->extra_output)){
+					$this->_parsePattern($this->field->extra_output);
+					$nname = $this->field->extra_output;
+					foreach ($this->fieldList as $fieldName){
+						if (isset($dataRow[$fieldName])){
+							$nname = str_replace("<#$fieldName#>",$dataRow[$fieldName],$nname);
+						}
+					}
+					 $this->field->extra_output = $nname;
+					$this->fieldList = array();
+				}
+
 				if(isset($this->field->grid_name)){
 					$this->_parsePattern($this->field->grid_name);
 					$nname = $this->field->grid_name;
@@ -507,6 +520,19 @@ class DataGridColumn{
 							}
 						}
 						$this->field->name = $nname;
+						$this->fieldList = array();
+					}
+
+					//Para soportar expancion de campos en la extra output
+					if(!empty($this->field->extra_output)){
+						$this->_parsePattern($this->field->extra_output);
+						$nname = $this->field->extra_output;
+						foreach ($this->fieldList as $fieldName){
+							if (isset($dataRow[$fieldName])){
+								$nname = str_replace("<#$fieldName#>",$dataRow[$fieldName],$nname);
+							}
+						}
+						 $this->field->extra_output = $nname;
 						$this->fieldList = array();
 					}
 

@@ -37,9 +37,9 @@ $scampos .= '<td class="littletablerow" align="left" >'.$campos['it3_estacion'][
 $scampos .= '<td class="littletablerow" align="left" >'.$campos['it3_actividad']['field'].'</td>';
 $scampos .= '<td class="littletablerow" align="right">'.$campos['it3_minutos']['field'].' : '.$campos['it3_segundos']['field'].'</td>';
 $scampos .= '<td class="littletablerow">';
-$scampos .= '<a href=# onclick="updownlabor(<#i#>,-1);return false;"><span class="ui-icon ui-icon-triangle-1-n"/></a>';
-$scampos .= '<a href=# onclick="updownlabor(<#i#>, 1);return false;"><span class="ui-icon ui-icon-triangle-1-s"/></a>';
-$scampos .= '<a href=# onclick="del_ordplabor(<#i#>);return false;">'.img("images/delete.jpg").'</a>';
+$scampos .= '<table><td><a href=# onclick="updownlabor(<#i#>,-1);return false;"><span class="ui-icon ui-icon-triangle-1-n"/></a>';
+$scampos .= '<a href=# onclick="updownlabor(<#i#>, 1);return false;"><span class="ui-icon ui-icon-triangle-1-s"/></a></td><td>';
+$scampos .= '<a href=# onclick="del_ordplabor(<#i#>);return false;">'.img("images/delete.jpg").'</a></td></table>';
 $scampos .= '</td>';
 $scampos .= '</tr>';
 $ordplabor_campos=$form->js_escape($scampos);
@@ -159,7 +159,7 @@ $(function(){
 								add_ordplabor();
 								$("#it3estacion_"+id).val(val.estacion);
 								$("#it3nombre_"+id).val(val.nombre);
-								//$("#it3actividad_"+id).val(val.actividad);
+								$("#it3actividad_"+id).val(val.actividad);
 								$("#it3minutos_"+id).val(val.minutos);
 								$("#it3segundos_"+id).val(val.segundos);
 							}
@@ -217,7 +217,6 @@ function add_ordplabor(){
 
 function ordlabor(id){
 	var html=$('#tr_ordpindi_'+id).html();
-
 }
 
 function del_ordpindi(id){
@@ -305,11 +304,15 @@ function autocodmgas(id){
 function updownlabor(id,direc){
 	ind=id.toString();
 	var actu=$('#tr_ordplabor_'+ind);
-	var htm ='<tr id="tr_ordplabor_'+ind+'">'+actu.html()+'<tr>';
-
-	var enu=0;
-	var arr=$('[id^="tr_ordplabor_"]');
-	var eoa=arr.length-1;
+	var it3estacion  = $('#it3estacion_'+ind).val();
+	var it3actividad = $('#it3actividad_'+ind).val();
+	var it3minutos   = $('#it3minutos_'+ind).val();
+	var it3segundos  = $('#it3segundos_'+ind).val();
+	var htm = '<tr id="tr_ordplabor_'+ind+'">'+actu.html()+'<tr>';
+	var enu = 0;
+	var arr = $('[id^="tr_ordplabor_"]');
+	var eoa = arr.length-1;
+	var rt  = false;
 	jQuery.each(arr, function() {
 		if($(this).attr('id')=='tr_ordplabor_'+ind) return false;
 		enu+=1;
@@ -320,14 +323,21 @@ function updownlabor(id,direc){
 	if(direc>0 && p_prox>0){      //si baja
 		$('#tr_ordplabor_'+id).remove();
 		$("#"+$(prox).attr('id')).after(htm);
-		return true;
+		rt = true;
 	}else if(direc<0 && p_ante>0){ //si sube
 		$('#tr_ordplabor_'+id).remove();
 		$("#"+$(ante).attr('id')).before(htm);
-		return true;
+		rt = true;
 	}
-	enumeralabor();
-	return false;
+
+	if(rt){
+		$('#it3estacion_'+ind).val(it3estacion);
+		$('#it3actividad_'+ind).val(it3actividad);
+		$('#it3minutos_'+ind).val(it3minutos);
+		$('#it3segundos_'+ind).val(it3segundos);
+		enumeralabor();
+	}
+	return rt;
 }
 
 function enumeralabor(){
@@ -386,6 +396,9 @@ function enumeralabor(){
 							</tr><tr>
 								<td class="littletablerowth"><?php echo $form->codigo->label   ?>*</td>
 								<td class="littletablerow">  <?php echo $form->codigo->output.$form->desca->output ?></td>
+							</tr><tr>
+								<td class="littletablerowth"><?php echo $form->cana->label   ?>*</td>
+								<td class="littletablerow">  <?php echo $form->cana->output  ?></td>
 							</tr>
 						</table>
 					</fieldset>
@@ -460,10 +473,14 @@ function enumeralabor(){
 		</td>
 		<?php if($form->_status!='show') {?>
 			<td class="littletablerow">
+				<table>
+					<td>
 				<a href=# onclick="updownlabor(<?php echo $i ?>,-1);return false;"><span class="ui-icon ui-icon-triangle-1-n"/></a>
 				<a href=# onclick="updownlabor(<?php echo $i ?>, 1);return false;"><span class="ui-icon ui-icon-triangle-1-s"/></a>
-
+					</td><td>
 				<a href=# onclick="del_ordplabor(<?php echo $i ?>);return false;"><?php echo img("images/delete.jpg"); ?></a>
+					</td>
+				</table>
 			</td>
 		<?php } ?>
 	</tr>
@@ -506,7 +523,7 @@ echo $form_end
 ?>
 
 <?php if($form->_status=='show'){
-$transac=$form->get_from_dataobjetct('transac');
+	$transac=$form->get_from_dataobjetct('transac');
 ?>
 
 <?php  } ?>
