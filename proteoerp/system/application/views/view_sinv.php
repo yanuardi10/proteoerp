@@ -1332,6 +1332,7 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 	</tr>
 	</table>
 </div>
+
 <?php if(($form->_dataobject->get('tipo')=='Combo' && $form->_status=='show') || $form->_status!='show'){?>
 <div id="tab7" style='background:#EFEFFF'>
 	<div style='overflow:auto;border: 1px solid #9AC8DA;background: #FAFAFA;height:200px'>
@@ -1444,7 +1445,7 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 			?>
 			<tr id='tr_sinvpitem_<?=$i;?>'>
 				<td class="littletablerow" align="left" nowrap><?php echo $form->$it3estacion->output;  ?></td>
-				<td class="littletablerow" align="left"      ><?php echo $form->$it3actividad->output; ?></td>
+				<td class="littletablerow" align="left"       ><?php echo $form->$it3actividad->output; ?></td>
 				<td class="littletablerow" align="right"      ><?php echo $form->$it3minutos->output;   ?></td>
 				<td class="littletablerow" align="right"      ><?php echo $form->$it3segundos->output;  ?></td>
 				<?php if($form->_status!='show'){?>
@@ -1721,16 +1722,16 @@ if ($query->num_rows()>0 ) {
 				<legend class="titulofieldset" >Bonos por volumen</legend>
 				<table width='100%'>
 				<tr>
-						<td class="littletableheaderc" width='50'>Desde</td>
-						<td class="littletablerow" align='right'><?=$form->fdesde->output ?></td>
-						<td class="littletableheaderc">Por la compra de </td>
-						<td class="littletablerow" align='right'><?=$form->bonicant->output ?></td>
+					<td class="littletablerow" >Fecha de inicio</td>
+					<td class="littletablerow" align='right'><?=$form->fdesde->output ?></td>
+					<td class="littletablerow">Por la compra de </td>
+					<td class="littletablerow" align='right'><?=$form->bonicant->output ?></td>
 				</tr>
 				<tr>
-						<td class="littletableheaderc">Hasta</td>
-						<td class="littletablerow" align='right'><?=$form->fhasta->output ?></td>
-						<td class="littletableheaderc">Se lleva adicional </td>
-						<td class="littletablerow" align='right'><?=$form->bonifica->output ?></td>
+					<td class="littletablerow">Fecha de fin</td>
+					<td class="littletablerow" align='right'><?=$form->fhasta->output ?></td>
+					<td class="littletablerow">Se lleva adicional </td>
+					<td class="littletablerow" align='right'><?=$form->bonifica->output ?></td>
 				</tr>
 				</table>
 				</fieldset>
@@ -1739,22 +1740,32 @@ if ($query->num_rows()>0 ) {
 				<legend class="titulofieldset" >Descuentos por escalas</legend>
 				<table width='100%'>
 				<tr>
-						<td class="littletableheaderc">1-Descuento del </td>
-						<td class="littletablerow" align='right'><?php echo $form->pescala1->output ?>%</td>
-						<td class="littletableheaderc">Por la compra m&iacute;nima de</td>
-						<td class="littletablerow" align='right'><?php echo $form->escala1->output ?></td>
+					<td class="littletablerow">1-Descuento del </td>
+					<td class="littletablerow" align='right'><?php echo $form->pescala1->output ?>%</td>
+					<td class="littletablerow">Por la compra m&iacute;nima de</td>
+					<td class="littletablerow" align='right'><?php echo $form->escala1->output ?></td>
 				</tr>
 				<tr>
-						<td class="littletableheaderc">2-Descuento del </td>
-						<td class="littletablerow" align='right'><?php echo $form->pescala2->output ?>%</td>
-						<td class="littletableheaderc">Por la compra m&iacute;nima de</td>
-						<td class="littletablerow" align='right'><?php echo $form->escala2->output ?></td>
+					<td class="littletablerow">2-Descuento del </td>
+					<td class="littletablerow" align='right'><?php echo $form->pescala2->output ?>%</td>
+					<td class="littletablerow">Por la compra m&iacute;nima de</td>
+					<td class="littletablerow" align='right'><?php echo $form->escala2->output ?></td>
 				</tr>
 				<tr>
-						<td class="littletableheaderc">3-Descuento del </td>
-						<td class="littletablerow" align='right'><?php echo $form->pescala3->output ?>%</td>
-						<td class="littletableheaderc">Por la compra m&iacute;nima de</td>
-						<td class="littletablerow" align='right'><?php echo $form->escala3->output ?></td>
+					<td class="littletablerow">3-Descuento del </td>
+					<td class="littletablerow" align='right'><?php echo $form->pescala3->output ?>%</td>
+					<td class="littletablerow">Por la compra m&iacute;nima de</td>
+					<td class="littletablerow" align='right'><?php echo $form->escala3->output ?></td>
+				</tr>
+				</table>
+				</fieldset>
+
+				<fieldset style='border: 1px outset #8A0808;background: #FFFBE9;'>
+				<legend class="titulofieldset" >Descuentos opcionales</legend>
+				<table width='100%'>
+				<tr>
+					<td class="littletablerow"><?php echo $form->mmargenplus->label ?></td>
+					<td class="littletablerow" align='right'><?php echo $form->mmargenplus->output ?>%</td>
 				</tr>
 				</table>
 				</fieldset>
