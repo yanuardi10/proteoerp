@@ -168,7 +168,9 @@ class ordp extends Controller {
 		$edit->cana->rule='max_length[10]|numeric|required';
 		$edit->cana->css_class='inputnum';
 		$edit->cana->size =5;
+		$edit->cana->autocomplete=false;
 		$edit->cana->maxlength =10;
+		$edit->cana->insertValue='1';
 
 		$edit->desca = new inputField('Descripci&oacute;n <#o#>', 'desca');
 		$edit->desca->db_name='sinvdescrip';
@@ -203,6 +205,7 @@ class ordp extends Controller {
 		$edit->it1_porcentaje->rule='max_length[14]|numeric';
 		$edit->it1_porcentaje->css_class='inputnum';
 		$edit->it1_porcentaje->size =5;
+		$edit->it1_porcentaje->autocomplete=false;
 		$edit->it1_porcentaje->maxlength =14;
 		$edit->it1_porcentaje->rel_id = 'ordpindi';
 
@@ -282,12 +285,14 @@ class ordp extends Controller {
 		$edit->it3_minutos->css_class='inputonlynum';
 		$edit->it3_minutos->size =8;
 		$edit->it3_minutos->maxlength =6;
+		$edit->it3_minutos->autocomplete=false;
 		$edit->it3_minutos->rel_id = 'ordplabor';
 
 		$edit->it3_segundos = new inputField('Segundos','it3segundos_<#i#>');
 		$edit->it3_segundos->db_name='segundos';
 		$edit->it3_segundos->rule='max_length[6]|integer';
 		$edit->it3_segundos->css_class='inputonlynum';
+		$edit->it1_segundos->autocomplete=false;
 		$edit->it3_segundos->size =3;
 		$edit->it3_segundos->maxlength =6;
 		$edit->it3_segundos->rel_id = 'ordplabor';

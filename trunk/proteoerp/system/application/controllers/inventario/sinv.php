@@ -971,6 +971,11 @@ class sinv extends Controller {
 		$edit->mmargen->size=10;
 		$edit->mmargen->maxlength=10;
 
+		$edit->mmargenplus = new inputField('Descuento +','mmargenplus');
+		$edit->mmargenplus->css_class='inputnum';
+		$edit->mmargenplus->size=10;
+		$edit->mmargenplus->maxlength=10;
+
 		$edit->pm = new inputField('Descuento al Mayor A','pm');
 		$edit->pm->css_class='inputnum';
 		$edit->pm->size=10;
