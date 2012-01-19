@@ -521,6 +521,7 @@ class Scst extends Controller {
 		function costo($formcal,$pond,$ultimo,$standard,$existen,$itcana){
 			$CI =& get_instance();
 			$costo_pond=$CI->_pond($existen,$itcana,$pond,$ultimo);
+			//echo "_pond($existen,$itcana,$pond,$ultimo);".br();
 			//$costo_pond=(($pond*$existen)+($itcana*$ultimo))/($itcana+$existen);
 			return $CI->_costos($formcal,$costo_pond,$ultimo,$standard);
 		}
@@ -546,8 +547,8 @@ class Scst extends Controller {
 		$select=array('b.codigo','b.descrip','b.formcal','a.costo','b.ultimo','b.pond','b.standard','a.id',
 					  'a.precio1 AS scstp_1','a.precio2 AS scstp_2','a.precio3 AS scstp_3','a.precio4 AS scstp_4',
 					  'b.precio1 AS sinvp1' ,'b.precio2 AS sinvp2' ,'b.precio3 AS sinvp3' ,'b.precio4 AS sinvp4',
-					  'b.ultimo','b.pond','b.standard','b.formcal','a.cantidad','b.existen','b.iva'
-					  );
+					  'b.formcal','a.cantidad','b.existen','b.iva'
+					);
 		$grid->db->select($select);
 		$grid->db->from('itscst AS a');
 		$grid->db->join('sinv AS b','a.codigo=b.codigo');
@@ -579,7 +580,7 @@ class Scst extends Controller {
 
 			$campo = new inputField('Campo', $ind);
 			$campo->grid_name=$ind.'[<#id#>]';
-			$campo->pattern  ='<margen><#formcal#>|<#pond#>|<#ultimo#>|<#standard#>|<#existen#>|<#cantidad#>|<#scstp_'.($id+1).'#>|<#iva#></margen>';
+			$campo->pattern  ='<margen><#formcal#>|<#pond#>|<#costo#>|<#standard#>|<#existen#>|<#cantidad#>|<#scstp_'.($id+1).'#>|<#iva#></margen>';
 			$campo->status   ='modify';
 			$campo->size     =3;
 			$campo->autocomplete=false;
@@ -588,7 +589,7 @@ class Scst extends Controller {
 
 			$grid->column('Marg.'.($id+1) , $campo,'align=\'center\'');
 		}
-		$grid->column('Costo' , '<tcosto><#id#>|<#iva#>|<#formcal#>|<#pond#>|<#ultimo#>|<#standard#>|<#existen#>|<#cantidad#></tcosto>','align=\'right\'');
+		$grid->column('Costo' , '<tcosto><#id#>|<#iva#>|<#formcal#>|<#pond#>|<#costo#>|<#standard#>|<#existen#>|<#cantidad#></tcosto>','align=\'right\'');
 		$action = "javascript:window.location='".site_url('compras/scst/dataedit/show/'.$control)."'";
 		$grid->button('btn_regresa', 'Regresar', $action, 'TR');
 
@@ -877,6 +878,7 @@ class Scst extends Controller {
 				if($qquery->num_rows()>0){
 					foreach ($qquery->result() as $itrow){
 						$pond     = $this->_pond($itrow->existen,$itrow->cantidad,$itrow->pond,$itrow->costo);
+						
 						$costo    = $this->_costos($itrow->formcal,$pond,$itrow->costo,$itrow->standard);
 						$dbcodigo = $this->db->escape($itrow->codigo);
 						//Actualiza el inventario
@@ -887,7 +889,6 @@ class Scst extends Controller {
 							prov1='.$this->db->escape($proveed).',
 							prepro1='.$itrow->costo.',
 							pfecha1='.$this->db->escape($fecha).'
-							//existen=existen+'.$itrow->cantidad.'
 							WHERE codigo='.$dbcodigo;
 						$ban=$this->db->simple_query($mSQL);
 						if(!$ban){ memowrite($mSQL,'scst'); $error++; }
