@@ -20,4 +20,19 @@ jQuery(function($){
 		showMonthAfterYear: false,
 		yearSuffix: ''};
 	$.datepicker.setDefaults($.datepicker.regional['es']);
+
+
+	$.timepicker.regional['es'] = {
+		timeOnlyTitle: 'Seleccione la hora',
+		timeText: 'Tiempo',
+		hourText: 'Hora',
+		minuteText: 'Minutos',
+		secondText: 'Segundos',
+		millisecText: 'Milisegundos',
+		currentText: 'Hoy',
+		closeText: 'Cerrar',
+		ampm: false
+	};
+	$.timepicker.setDefaults($.timepicker.regional['es']);
+
 });

@@ -35,7 +35,7 @@ class dateField extends objField{
 		parent::objField($label, $name);
 		$this->format = $format;
 
-		$this->extra_output = ""; //RAPYD_DATE_FORMAT;
+		$this->extra_output = ''; //RAPYD_DATE_FORMAT;
 	}
 
 	function _getValue(){
@@ -64,8 +64,8 @@ class dateField extends objField{
 			case 'show':
 				if (!isset($this->value)) {
 					$value = RAPYD_FIELD_SYMBOL_NULL;
-				} elseif ($this->value == ""){
-					$value = "";
+				} elseif ($this->value == ''){
+					$value = '';
 				} else {
 					$value = dbdate_to_human($this->value, $this->format);
 				}
@@ -78,7 +78,7 @@ class dateField extends objField{
 				$value = '';
 
 				//jscalendar integration
-				if ($this->value != ""){
+				if ($this->value != ''){
 					 if ($this->is_refill){
 						 $value = $this->value;
 					 } else {

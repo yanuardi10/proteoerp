@@ -30,25 +30,25 @@ if (!defined('RAPYD_PATH')){
 	 into the Rapyd config....
 	 *****************************************************************************************/
 	$_FCPATH = (strpos(FCPATH,'index.php')===false) ? FCPATH :dirname(FCPATH);
-	$rapyd_apppath = str_replace( str_replace("\\", "/", realpath($_FCPATH)).'/' ,"", APPPATH );
+	$rapyd_apppath = str_replace( str_replace("\\", '/', realpath($_FCPATH)).'/' ,'', APPPATH );
 
 	define('APPPDIR'  , BASEURL.$rapyd_apppath);
 	define('RAPYD_DIR', APPPDIR.'rapyd/');
 
 	//Now we only fix the elements directory.Each directory path (images and css) are given by the config
-	$elemnt = ($rpd["design_elements_path"]!="") ? $rpd["design_elements_path"] : RAPYD_DIR."elements/";
+	$elemnt = ($rpd['design_elements_path']!='') ? $rpd['design_elements_path'] : RAPYD_DIR.'elements/';
 
 	define('RAPYD_ELEMENTS', $elemnt);
 
-	$lib = ($rpd["libraries_path"]!="") ? $rpd["libraries_path"] : RAPYD_DIR."libraries/";
+	$lib = ($rpd['libraries_path']!='') ? $rpd['libraries_path'] : RAPYD_DIR.'libraries/';
 
 	define('RAPYD_LIBRARIES', $lib);
-	define('RAPYD_PATH', APPPATH."rapyd/");
+	define('RAPYD_PATH', APPPATH.'rapyd/');
 }
 
 //WARNING -- because components use the lang()helpers fonction, we have to load it manualy if the helpers is not loaded..
 //I think that this halpers function can be put into an other helpers because it is related only to CI syntax not Rapyd lang....
-if(isset($rpd['rapyd_lang_ON']) && $rpd['rapyd_lang_ON']===TRUE){
+if(isset($rpd['rapyd_lang_ON']) && $rpd['rapyd_lang_ON']===true){
 	require_once(RAPYD_PATH.'classes/rapyd_lang'.EXT);
 	require_once(RAPYD_PATH.'helpers/lang'.EXT);
 }else{
@@ -79,7 +79,7 @@ require_once(RAPYD_PATH.'helpers/datehelper'.EXT);
 require_once(RAPYD_PATH.'helpers/html'.EXT);
 require_once(RAPYD_PATH.'helpers/highlight'.EXT);
 require_once(RAPYD_PATH.'classes/rapyd_uri'.EXT);
-require_once(RAPYD_PATH."helpers/urlendecode.php");
+require_once(RAPYD_PATH.'helpers/urlendecode.php');
 
 /**
  * common inclusion
@@ -113,7 +113,7 @@ require_once(RAPYD_PATH.'common'.EXT);
 				include(APPPATH.'config/rapyd'.EXT);
 			}
 
-			foreach ($rpd["uri_keywords"] as $key=>$value){
+			foreach ($rpd['uri_keywords'] as $key=>$value){
 				if (!defined('RAPYD_URI_'.strtoupper($key))){
 					define('RAPYD_URI_'.strtoupper($key), $value);
 				}
@@ -124,7 +124,7 @@ require_once(RAPYD_PATH.'common'.EXT);
 
 			$this->config = new rapyd_config($rpd);
 
-//MYFW install
+			//MYFW install
 			if(!isset($rpd['use_rapyd_session_lib']) || $rpd['use_rapyd_session_lib']===TRUE){
 				$this->session = new rapyd_session($rpd['persistence_duration'],$rpd['persistence_limit']);
 			}else{
@@ -134,12 +134,9 @@ require_once(RAPYD_PATH.'common'.EXT);
 
 		 	$this->uri = new rapyd_uri($this);
 
-
 			if(isset($rpd['rapyd_lang_ON']) && $rpd['rapyd_lang_ON']===TRUE){
 				 $this->language = new rapyd_lang($this);
 			}
-
-
 
 			if(isset($rpd['rapyd_auth_ON']) && $rpd['rapyd_auth_ON']===TRUE){
 				 $this->auth = new rapyd_auth($this);
@@ -147,20 +144,20 @@ require_once(RAPYD_PATH.'common'.EXT);
 
 			$this->load_language();
 		}
-/*
-	 New Rapyd functions to preload $this->db when we want to preset it (complex query) for DF and DS (DG, DT).
-	 SEE THE SUPERCRUD CONTROLLER SAMPLE
+		/*
+		 New Rapyd functions to preload $this->db when we want to preset it (complex query) for DF and DS (DG, DT).
+		 SEE THE SUPERCRUD CONTROLLER SAMPLE
 
-	 also functions to switch and reset the rapyd data_conn group.
-	 For the moment we unset the Rapyd database object when we switch the curent rapyd connection.
-	 Think that we use this db object only for DF and DS,DG,DT shared work
-*/
+		 also functions to switch and reset the rapyd data_conn group.
+		 For the moment we unset the Rapyd database object when we switch the curent rapyd connection.
+		 Think that we use this db object only for DF and DS,DG,DT shared work
+		*/
 		//We set the new Rapyd data connection group or reset it to the config value if it use without arg..
 		//We can use '' to set the CI default connection group......
 		function set_connection($data_conn=null){
 			if(!isset($data_conn) || !is_string($data_conn)){
-					$config_conn =$this->config->item('data_conn');
-					$data_conn=(isset($config_conn) && is_string($config_conn))?$this->config->item('data_conn'):'';
+				$config_conn =$this->config->item('data_conn');
+				$data_conn=(isset($config_conn) && is_string($config_conn))?$this->config->item('data_conn'):'';
 			}
 			$this->data_conn = $data_conn;
 			unset($this->db);
@@ -188,7 +185,7 @@ require_once(RAPYD_PATH.'common'.EXT);
 		//asset folder name for each type.....
 		//get_elements_path() without Arg return the images (defaul type) directory, like RAPYD_IMAGES
 		function get_elements_path($elmnts_file='',$elmnts_type = 'image'){
-			$elemnt_file_path = ($this->config->item("design_elements_path")!="")? $_SERVER["DOCUMENT_ROOT"].substr($this->config->item("design_elements_path"),1): APPPATH."rapyd/elements/";
+			$elemnt_file_path = ($this->config->item('design_elements_path')!='')? $_SERVER['DOCUMENT_ROOT'].substr($this->config->item('design_elements_path'),1): APPPATH.'rapyd/elements/';
 			$design_folder_name = $this->config->item('assets_type_folder_name');
 
 			$theme_file_url = RAPYD_ELEMENTS.$this->config->item('theme').'/'.$design_folder_name[$elmnts_type].'/'.$elmnts_file;
@@ -214,12 +211,12 @@ require_once(RAPYD_PATH.'common'.EXT);
 			if (file_exists(RAPYD_PATH.'language/'.$language.EXT)){
 				include_once(RAPYD_PATH.'language/'.$language.EXT);
 			} else {
-				show_error("Error, rapyd language not found: ".RAPYD_PATH.'language/'.$language.EXT);
+				show_error('Error, rapyd language not found: '.RAPYD_PATH.'language/'.$language.EXT);
 			}
 		}
 
 		function set_view_path(){
-			$this->ci->load->_ci_view_path = RAPYD_PATH.'views/'.$this->config->item("theme").'/';
+			$this->ci->load->_ci_view_path = RAPYD_PATH.'views/'.$this->config->item('theme').'/';
 		}
 
 		function reset_view_path(){
@@ -228,10 +225,10 @@ require_once(RAPYD_PATH.'common'.EXT);
 
 		function get_head(){
 
-			$buffer = "";
+			$buffer = '';
 
 			//loading the theme components style from css file instead of the css.php version...
-			$this->css[]=$this->get_elements_path("rapyd_components.css","css");
+			$this->css[]=$this->get_elements_path('rapyd_components.css','css');
 			//css links
 			foreach ($this->css as $css){
 				$buffer .= HTML::cssLinkTag($css);
@@ -265,6 +262,8 @@ require_once(RAPYD_PATH.'common'.EXT);
 				$buffer .=script('jquery.contextmenu.js');
 				$buffer .=script('plugins/jquery.numeric.pack.js');
 				$buffer .=script('plugins/jquery.floatnumber.js');
+				$buffer .=script('plugins/jquery.ui.timepicker.addon.js');
+				$buffer .=script('i18n/jquery.ui.datepicker-es.js');
 
 				$script = join("\n\n",$this->jquery)."\n";
 				$script ='$(function(){'.$script.'});';

@@ -937,4 +937,14 @@ class DataDetails extends DataForm{
 			$requestValue=false;
 		return $requestValue;
 	}
+
+        function get_from_dataobjetct_rel($rel_id,$field,$id=-1){
+                if($this->_dataobject->loaded){
+                        $requestValue =$this->_dataobject->get_rel($rel_id, $field,$id);
+                        if(empty($requestValue)) $requestValue=false;
+                }else
+                        $requestValue=false;
+                return $requestValue;
+        }
+
 }
