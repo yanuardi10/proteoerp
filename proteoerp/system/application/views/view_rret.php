@@ -1,6 +1,6 @@
 <?php reset($form->_fields); ?>
 <?php if(strlen($form->error_string)>0){ ?>
-<div class="ui-state-error ui-corner-all" style="padding: 0pt 0.7em;"> 
+<div class="ui-state-error ui-corner-all" style="padding: 0pt 0.7em;">
 <p><span class="ui-icon ui-icon-alert" style="float: left; margin-right: 0.3em;"></span>
 	<?php echo $form->error_string; ?>
 </p>
@@ -10,7 +10,7 @@
 <?php echo $form->form_open; ?>
 <table align='center'>
 	<tr>
-		<td valign='top'>
+		<td valign='top'><p>
 			<table class="ui-widget ui-widget-content ui-corner-all">
 				<tr>
 					<th colspan=3 class="ui-widget-header">Efectivo</th>
@@ -30,14 +30,14 @@
 					$obj=next($form->_fields);
 				}
 				?>
-			</table>
+			</table></p>
 		</td>
 		<td valign='top'>
 			<p><table class="ui-widget ui-widget-content ui-corner-all" style="width:350px;">
 				<tr>
 					<th colspan=3 class="ui-widget-header">Otras formas de pago</th>
 				</tr>
-				<?php 
+				<?php
 				/*$obj=current($form->_fields);
 				for($i=0;$i< $c_otrp;$i++){
 					echo ($i % 2==0) ? '<tr>' : '';
@@ -48,7 +48,7 @@
 				}*/
 				?>
 
-				<?php 
+				<?php
 				$obj=current($form->_fields);
 				for($i=0;$i< $c_otrp;$i++){
 					echo '<tr>';
@@ -64,7 +64,7 @@
 				<tr>
 					<th colspan=3 class="ui-widget-header">Resumen global</th>
 				</tr>
-				<?php 
+				<?php
 				$obj=current($form->_fields);
 				for($i=0;$i<3;$i++){
 					echo '<tr>';
@@ -75,7 +75,7 @@
 				}?>
 				<tr>
 					<td><?php echo $regresa; ?></td>
-					<td><?php 
+					<td><?php
 					$attr=array(
 						'name' =>'submitform',
 						'value'=>'Hacer retiro',

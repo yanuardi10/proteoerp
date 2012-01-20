@@ -296,7 +296,7 @@ class Rcaj extends validaciones {
 			$("#TOTR_val").text(nformat(TOTR,2));
 			$("#TGLOB_val").text(nformat(TOTR+TEFE,2));
 		}';
-		$this->rapyd->jquery[]='$("input[name^=\'cOT\']").calculator( {onClose: function(value, inst) { gtotal(); }, onClose: function(value, inst) { gtotal(); }} );';
+		$this->rapyd->jquery[]='$("input[name^=\'cOT\']").calculator( {showOn: "button",useThemeRoller:true,onClose: function(value, inst) { gtotal(); }, onClose: function(value, inst) { gtotal(); }} );';
 
 		//hace el precierre
 		if ($form->on_success()){
