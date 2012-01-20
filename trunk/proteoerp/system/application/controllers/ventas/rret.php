@@ -2,7 +2,7 @@
 class Rret extends validaciones {
 
 	function Rret(){
-		parent::Controller(); 
+		parent::Controller();
 		$this->load->library('rapyd');
 		//$this->datasis->modulo_id('12A',1);
 		$this->load->database();
@@ -162,7 +162,7 @@ class Rret extends validaciones {
 			$form->$obj->size=10;
 			$form->$obj->autocomplete=false;
 		}
-		
+
 		$form->$obj->readonly=false;
 		//$form->$obj->rule='required';
 		$form->$obj->insertValue='';
@@ -186,7 +186,6 @@ class Rret extends validaciones {
 				$("#c"+obj).val(roundNumber(mul*valor,2));
 				gtotal();
 			});';
-		$this->rapyd->jquery[]='$("input[name^=\'cOT\']").calculator();';
 		$this->rapyd->jquery[]='function gtotal(){
 			TEFE=TOTR=0;
 			$(\'input[name^="cEFE"]\').each(function(i,e){
@@ -202,6 +201,7 @@ class Rret extends validaciones {
 			$("#TOTR").val(roundNumber(TOTR,2));
 			$("#TGLOB").val(roundNumber(TOTR+TEFE,2));
 		}';
+		$this->rapyd->jquery[]='$("input[name^=\'cOT\']").calculator( {onClose: function(value, inst) { gtotal(); }, onClose: function(value, inst) { gtotal(); }} );';
 
 		//hace el retiro de caja
 		if ($form->on_success()){

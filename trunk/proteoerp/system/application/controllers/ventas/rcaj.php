@@ -2,7 +2,7 @@
 class Rcaj extends validaciones {
 
 	function Rcaj(){
-		parent::Controller(); 
+		parent::Controller();
 		$this->load->library('rapyd');
 		//$this->load->library("menues");
 		$this->datasis->modulo_id('12A',1);
@@ -75,7 +75,7 @@ class Rcaj extends validaciones {
 				}else{
 					return image('caja_abierta.gif',"Cajero Abierto: $cajero",$atts).'<h3>Abierto</h3><center>'.anchor("ventas/rcaj/precierre/99/$cajero/$fecha", 'Pre-cerrar cajero').'</center>';
 				}*/
-			
+
 				return image('caja_abierta.gif',"Cajero Abierto: $cajero",$atts).'<h3>Abierto</h3><center>'.anchor("ventas/rcaj/precierre/99/$cajero/$fecha", 'Pre-cerrar cajero').'</center>';
 			}else{
 			//$cerrado = $CI->datasis->dameval("SELECT numero FROM rcaj WHERE cajero='$cajero' AND fecha='$fecha' ");
@@ -291,12 +291,12 @@ class Rcaj extends validaciones {
 			$("#TEFE").val(roundNumber(TEFE,2));
 			$("#TOTR").val(roundNumber(TOTR,2));
 			$("#TGLOB").val(roundNumber(TOTR+TEFE,2));
-			
+
 			$("#TEFE_val").text(nformat(TEFE,2));
 			$("#TOTR_val").text(nformat(TOTR,2));
 			$("#TGLOB_val").text(nformat(TOTR+TEFE,2));
 		}';
-		$this->rapyd->jquery[]='$("input[name^=\'cOT\']").calculator();';
+		$this->rapyd->jquery[]='$("input[name^=\'cOT\']").calculator( {onClose: function(value, inst) { gtotal(); }, onClose: function(value, inst) { gtotal(); }} );';
 
 		//hace el precierre
 		if ($form->on_success()){
@@ -310,13 +310,13 @@ class Rcaj extends validaciones {
 			//$this->db->simple_query($mSQL);
 
 			$mSQL="SELECT c.tipo, IFNULL(SUM(aa.monto),0) AS monto FROM
-				(SELECT b.tipo, b.monto AS monto 
-				FROM sfac AS a 
-				JOIN sfpa AS b ON a.transac=b.transac 
+				(SELECT b.tipo, b.monto AS monto
+				FROM sfac AS a
+				JOIN sfpa AS b ON a.transac=b.transac
 				WHERE a.fecha=$dbfecha AND b.cobrador=$dbcajero AND a.tipo_doc<>'X' AND MID(a.numero,1,1)<>'_'
 				UNION ALL
 				SELECT e.tipo,e.monto AS monto
-				FROM sfpa AS e 
+				FROM sfpa AS e
 				WHERE e.f_factura=$dbfecha AND e.cobrador=$dbcajero AND e.tipo_doc IN ('AB','AN')
 				) AS aa
 				RIGHT JOIN tarjeta AS c ON aa.tipo=c.tipo GROUP BY c.tipo";
@@ -324,15 +324,15 @@ class Rcaj extends validaciones {
 			/*$objfecha = DateTime::createFromFormat('Ymd', $fecha);
 			$objfecha->sub(new DateInterval('P1D'));
 			$dbfecha_s=$this->db->escape($objfecha->format('Y-m-d'));
-			$mSQL="SELECT bb.tipo, SUM(IFNULL(aa.monto,0)) AS monto FROM 
-				(SELECT a.tipo,a.monto 
-				FROM sfpa AS a 
-				JOIN sfac AS b ON b.numero=a.numero AND a.tipo_doc=CONCAT(b.tipo_doc, IF(b.referen='M','E',b.referen)) 
-				WHERE a.f_factura=$dbfecha AND SUBSTRING(a.tipo_doc,2,1)!='X' AND a.cobrador=$dbcajero 
-			UNION ALL 
-				SELECT a.tipo, monto 
-				FROM sfpa AS a 
-				JOIN sfac AS b ON b.numero=a.numero AND a.tipo_doc=CONCAT(b.tipo_doc, IF(b.referen='M','E',b.referen)) 
+			$mSQL="SELECT bb.tipo, SUM(IFNULL(aa.monto,0)) AS monto FROM
+				(SELECT a.tipo,a.monto
+				FROM sfpa AS a
+				JOIN sfac AS b ON b.numero=a.numero AND a.tipo_doc=CONCAT(b.tipo_doc, IF(b.referen='M','E',b.referen))
+				WHERE a.f_factura=$dbfecha AND SUBSTRING(a.tipo_doc,2,1)!='X' AND a.cobrador=$dbcajero
+			UNION ALL
+				SELECT a.tipo, monto
+				FROM sfpa AS a
+				JOIN sfac AS b ON b.numero=a.numero AND a.tipo_doc=CONCAT(b.tipo_doc, IF(b.referen='M','E',b.referen))
 				WHERE a.f_factura=$dbfecha_s AND SUBSTRING(a.tipo_doc,2,1)!='X' AND a.cobrador=$dbcajero AND MID(a.hora,1,2)>18 ) AS aa
 			RIGHT JOIN tarjeta AS bb ON aa.tipo=bb.tipo
 			GROUP BY tipo";*/
@@ -468,9 +468,9 @@ class Rcaj extends validaciones {
 		);
 
 		$mSQL="SELECT c.tipo,c.nombre ,b.recibido,b.sistema,b.diferencia
-		FROM rcaj    AS a 
+		FROM rcaj    AS a
 		JOIN itrcaj  AS b ON a.numero=b.numero
-		JOIN tarjeta AS c ON c.tipo=b.tipo 
+		JOIN tarjeta AS c ON c.tipo=b.tipo
 		WHERE a.numero=${dbnumero}";
 
 		$query = $this->db->query($mSQL);
@@ -550,9 +550,9 @@ class Rcaj extends validaciones {
 		//Cierre de caja
 		if ($form->on_success()){
 			$mSQL="SELECT a.fecha,c.tipo,c.nombre ,b.recibido,b.sistema,b.diferencia, a.transac
-			FROM rcaj    AS a 
+			FROM rcaj    AS a
 			JOIN itrcaj  AS b ON a.numero=b.numero
-			JOIN tarjeta AS c ON c.tipo=b.tipo 
+			JOIN tarjeta AS c ON c.tipo=b.tipo
 			WHERE a.numero=${dbnumero}";
 
 			$query = $this->db->query($mSQL);
@@ -588,12 +588,12 @@ class Rcaj extends validaciones {
 					'observa'  => $str
 				);
 				$where = 'numero='.$this->db->escape($numero);
-				$mmSQL = $this->db->update_string('rcaj', $arr, $where); 
+				$mmSQL = $this->db->update_string('rcaj', $arr, $where);
 				$this->db->simple_query($mmSQL);
 				//echo $mmSQL;
 
 				//cierra el cajero
-				
+
 				$cajero=$this->datasis->dameval('SELECT cajero FROM rcaj WHERE numero='.$dbnumero);
 				$sifact=$this->datasis->dameval("SELECT COUNT(*) FROM sfac WHERE cajero=".$this->db->escape($cajero)." AND fecha > $rcajfecha");
 				if($sifact==0){
