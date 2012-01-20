@@ -334,6 +334,55 @@ class ordp extends Controller {
 		return $rt;
 	}
 
+	function ordpbitafilter($ordplabor,$idordp){
+		$this->rapyd->load('datafilter','datagrid');
+
+		function dicstatus($status){
+			if($status=='I'){
+				$rt='Iniciado';
+			}elseif($status=='P'){
+				$rt='Parado';
+			}elseif($status=='T'){
+				$rt='Terminado';
+			}else{
+				$rt=$status;
+			}
+			return $rt;
+		}
+
+		$filter = new DataFilter($this->titp, 'ordpbita');
+		$filter->use_function('dicstatus');
+		$filter->db->where('id_ordplabor',$ordplabor);
+
+		$filter->fechahora = new dateField('Fechahora','fechahora');
+		$filter->fechahora->rule      ='chfecha';
+		$filter->fechahora->size      =10;
+		$filter->fechahora->maxlength =8;
+
+		$filter->buttons('reset', 'search');
+		$filter->build();
+
+		$uri = anchor($this->url.'dataedit/show/<raencode><#id#></raencode>','<#id#>');
+
+		$grid = new DataGrid('');
+		$grid->order_by('id');
+		$grid->per_page = 40;
+
+		$grid->column_orderby('Fecha','<dbdate_to_human><#fechahora#>|d/m/Y H:i</dbdate_to_human>','fechahora','align="center"');
+		$grid->column_orderby('Acci&oacute;n'     ,'<dicstatus><#status#></dicstatus>','status','align="center"');
+		$grid->column_orderby('Observaci&oacute;n','observacion','observacion','align="left"');
+		$grid->column_orderby('Registro','<dbdate_to_human><#estampa#>|d/m/Y H:i:s</dbdate_to_human>','estampa','align="center"');
+		$grid->column_orderby('Usuario','usuario','usuario','align="left"');
+
+		$grid->build();
+
+		$data['filtro']  = $filter->output;
+		$data['content'] = $grid->output;
+		$data['head']    = $this->rapyd->get_head().script('jquery.js');
+		$data['title']   = heading($this->titp);
+		$this->load->view('view_ventanas', $data);
+	}
+
 	function ordpbita($ordplabor,$idordp,$status){
 		$this->rapyd->load('dataedit');
 

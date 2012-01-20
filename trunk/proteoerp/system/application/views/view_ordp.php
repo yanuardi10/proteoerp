@@ -513,7 +513,7 @@ function enumeralabor(){
 				<?php if(strpos($rt['muestra'],'I')!==false){ ?><td><a href="<?php echo site_url($this->url.'ordpbita/'.$id_rel.'/'.$id.'/I/create'); ?>"><span title='Iniciar actividad'  class="ui-icon ui-icon-play"   /></a></td><?php } ?>
 				<?php if(strpos($rt['muestra'],'P')!==false){ ?><td><a href="<?php echo site_url($this->url.'ordpbita/'.$id_rel.'/'.$id.'/P/create'); ?>"><span title='Pausar actividad'   class="ui-icon ui-icon-pause"  /></a></td><?php } ?>
 				<?php if(strpos($rt['muestra'],'T')!==false){ ?><td><a href="<?php echo site_url($this->url.'ordpbita/'.$id_rel.'/'.$id.'/T/create'); ?>"><span title='Terminar actividad' class="ui-icon ui-icon-check"  /></a></td><?php } ?>
-				<?php if(strpos($rt['muestra'],'H')!==false){ ?><td><a href="<?php echo site_url($this->url.'ordpbita/'.$id_rel.'/'.$id.'/T/create'); ?>"><span title='Ver bitacora'       class="ui-icon ui-icon-extlink"/></a></td><?php } ?>
+				<?php if(strpos($rt['muestra'],'H')!==false){ ?><td><a href="<?php echo site_url($this->url.'ordpbitafilter/'.$id_rel.'/'.$id); ?>"><span title='Ver bitacora' class="ui-icon ui-icon-extlink"/></a></td><?php } ?>
 				<?php if( isset($rt['ultimo'])){ echo '<td>'.dbdate_to_human($rt['ultimo']).'</td>'; } ?>
 			</tr></table>
 		</td>
