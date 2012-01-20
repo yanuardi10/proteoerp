@@ -1042,8 +1042,8 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 		<td colspan='2' valign='top'>
 			<table border=0 width="100%">
 				<tr>
-					<td width="60" class="littletableheaderc"><? echo $form->codigo->label ?></td>
-					<?php if( $form->_status == "modify" ) { ?>
+					<td class="littletableheaderc"><? echo $form->codigo->label ?></td>
+					<?php if( $form->_status == 'modify' ) { ?>
 					<td class="littletablerow">
 					<input readonly value="<?=$form->codigo->output ?>" class='input' size='15' style='background: #F5F6CE;'  /></td>
 					<?php } else { ?>
@@ -1081,8 +1081,8 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 		<td colspan='2' valign='top'>
 			<table border=0 width="100%">
 				<tr>
-					<td class='littletableheaderc'>Descripcion</td>
-					<td class="littletablerow"><?=$form->descrip->output   ?></td>
+					<td class='littletableheaderc'><?php echo $form->descrip->label  ?></td>
+					<td class="littletablerow">    <?php echo $form->descrip->output ?></td>
 				</tr>
 				<tr>
 					<td class='littletableheaderc'>Adicional</td>

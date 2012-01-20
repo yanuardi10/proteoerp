@@ -30,15 +30,10 @@ class ordp extends Controller {
 		$filter->numero->size      =10;
 		$filter->numero->maxlength =8;
 
-		$filter->status = new inputField('Status','status');
+		$filter->status = new inputField('Estatus','status');
 		$filter->status->rule      ='max_length[2]';
 		$filter->status->size      =4;
 		$filter->status->maxlength =2;
-
-		$filter->cliente = new inputField('Cliente','cliente');
-		$filter->cliente->rule      ='max_length[5]';
-		$filter->cliente->size      =7;
-		$filter->cliente->maxlength =5;
 
 		$filter->nombre = new inputField('Nombre','nombre');
 		$filter->nombre->rule      ='max_length[40]';
@@ -50,37 +45,17 @@ class ordp extends Controller {
 		$filter->instrucciones->cols = 70;
 		$filter->instrucciones->rows = 4;
 
-		$filter->estampa = new dateField('Estampa','estampa');
-		$filter->estampa->rule      ='chfecha';
-		$filter->estampa->size      =10;
-		$filter->estampa->maxlength =8;
-
-		$filter->usuario = new inputField('Usuario','usuario');
-		$filter->usuario->rule      ='max_length[12]';
-		$filter->usuario->size      =14;
-		$filter->usuario->maxlength =12;
-
-		$filter->hora = new inputField('Hora','hora');
-		$filter->hora->rule      ='max_length[8]';
-		$filter->hora->size      =10;
-		$filter->hora->maxlength =8;
-
-		$filter->modificado = new inputField('Modificado','modificado');
-		$filter->modificado->rule      ='max_length[8]';
-		$filter->modificado->size      =10;
-		$filter->modificado->maxlength =8;
-
 		$filter->buttons('reset', 'search');
 		$filter->build();
 
-		$uri = anchor($this->url.'dataedit/show/<raencode><#id#></raencode>','<#id#>');
+		$uri = anchor($this->url.'dataedit/show/<raencode><#id#></raencode>','<#numero#>');
 
 		$grid = new DataGrid('');
 		$grid->order_by('id');
 		$grid->per_page = 40;
 
-		$grid->column_orderby('Fecha',$uri,'fecha','align="left"');
-		$grid->column_orderby('Numero','numero','numero','align="left"');
+		$grid->column_orderby('Numero',$uri,'numero','align="left"');
+		$grid->column_orderby('Fecha','fecha','fecha','align="left"');
 		$grid->column_orderby('Status','status','status','align="left"');
 		$grid->column_orderby('Cliente','cliente','cliente','align="left"');
 		$grid->column_orderby('Nombre','nombre','nombre','align="left"');
@@ -111,6 +86,7 @@ class ordp extends Controller {
 		$do->rel_one_to_many('ordpindi' , 'ordpindi' , array('id'=>'id_ordp'));
 		$do->rel_one_to_many('ordpitem' , 'ordpitem' , array('id'=>'id_ordp'));
 		$do->rel_one_to_many('ordplabor', 'ordplabor', array('id'=>'id_ordp'));
+		$do->order_rel_one_to_many('ordplabor','secuencia');
 
 		$edit = new DataDetails($this->tits, $do);
 		$edit->back_url = site_url($this->url.'filteredgrid');
@@ -131,20 +107,22 @@ class ordp extends Controller {
 		$edit->fecha->size =10;
 		$edit->fecha->maxlength =8;
 
-		$edit->numero = new inputField('Numero','numero');
+		$edit->numero = new inputField('N&uacute;mero','numero');
 		$edit->numero->rule='max_length[8]';
 		$edit->numero->size =10;
 		$edit->numero->maxlength =8;
 		$edit->numero->mode='autohide';
 
-		$edit->status = new dropdownField('Status','status');
+		$edit->status = new dropdownField('Estatus','status');
 		$edit->status->option('A','Abierto');
+		$edit->status->option('E','Produciendo');
+		$edit->status->option('P','Pausado');
 		$edit->status->option('C','Cerrado');
-		$edit->status->rule='enum[A,C]';
+		$edit->status->rule='enum[A,P,Es,C]';
 		$edit->status->style='width:100px';
 
 		$edit->cliente = new inputField('Cliente','cliente');
-		$edit->cliente->rule='max_length[5]';
+		$edit->cliente->rule='max_length[5]|required|existescli';
 		$edit->cliente->size =7;
 		$edit->cliente->maxlength =5;
 
@@ -292,7 +270,7 @@ class ordp extends Controller {
 		$edit->it3_segundos->db_name='segundos';
 		$edit->it3_segundos->rule='max_length[6]|integer';
 		$edit->it3_segundos->css_class='inputonlynum';
-		$edit->it1_segundos->autocomplete=false;
+		$edit->it3_segundos->autocomplete=false;
 		$edit->it3_segundos->size =3;
 		$edit->it3_segundos->maxlength =6;
 		$edit->it3_segundos->rel_id = 'ordplabor';
@@ -329,9 +307,157 @@ class ordp extends Controller {
 
 	}
 
+	function ordpbitaaction($id){
+		$sel=array('a.status','fechahora');
+		$this->db->select($sel);
+		$this->db->from('ordpbita AS a');
+		$this->db->where('a.id_ordplabor',$id);
+		$this->db->orderby('a.fechahora','desc');
+		$this->db->limit(1);
+		$query=$this->db->get();
+
+		$rt=array();
+		if ($query->num_rows() > 0){
+			$row = $query->row_array();
+
+			if($row['status']=='I'){
+				$rt['muestra']='T,P,H';
+			}elseif($row['status']=='P'){
+				$rt['muestra']='I,H';
+			}else{
+				$rt['muestra']='H';
+			}
+			$rt['ultimo'] = $row['fechahora'];
+		}else{
+			$rt['muestra']='I';
+		}
+		return $rt;
+	}
+
+	function ordpbita($ordplabor,$idordp,$status){
+		$this->rapyd->load('dataedit');
+
+		$edit = new DataEdit($this->tits, 'ordpbita');
+		$edit->back_save   = true;
+		$edit->back_cancel = true;
+		$edit->back_cancel_save   = true;
+		$edit->back_cancel_delete = true;
+
+		$edit->post_process('insert','_bita_post_insert');
+		$edit->post_process('update','_bita_post_update');
+		$edit->post_process('delete','_bita_post_delete');
+		$edit->pre_process( 'insert','_bita_pre_insert');
+		$edit->pre_process( 'update','_bita_pre_update');
+		$edit->pre_process( 'delete','_bita_pre_delete');
+
+		$edit->back_url = site_url($this->url.'dataedit/show/'.raencode($idordp));
+
+		$edit->status = new dropdownField('Estatus','status');
+		$edit->status->option('I','Iniciado' );
+		$edit->status->option('P','Pausado'  );
+		$edit->status->option('T','Terminado');
+		$edit->status->insertValue=$status;
+		$edit->status->rule='enum[I,P,T]';
+		$edit->status->style='width:100px';
+
+		$edit->fechahora = new dateField('Fecha hora','fechahora', 'd/m/Y H:i');
+		$edit->fechahora->rule='required';
+		$edit->fechahora->size =18;
+		$edit->fechahora->calendar=false;
+		$edit->fechahora->insertValue=date('Y-m-d H:i:s');
+		$edit->fechahora->maxlength =16;
+
+		$edit->observacion = new textareaField('Observaci&oacute;n','observacion');
+		$edit->observacion->rule='max_length[255]';
+		$edit->observacion->cols = 70;
+		$edit->observacion->rows = 4;
+
+		$edit->id_ordplabor = new autoUpdateField('id_ordplabor',$ordplabor,$ordplabor);
+		$edit->id_ordp = new autoUpdateField('id_ordp',$idordp,$idordp);
+		$edit->estampa = new autoUpdateField('estampa',date('Y-m-d H:i:s'), date('Y-m-d H:i:s'));
+		$edit->hora    = new autoUpdateField('hora',date('H:i:s'), date('H:i:s'));
+		$edit->usuario = new autoUpdateField('usuario',$this->secu->usuario(),$this->secu->usuario());
+
+		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
+		$edit->build();
+
+		$this->rapyd->jquery[]='$(".inputnum").numeric(".");';
+		$this->rapyd->jquery[]='$(".inputonlynum").numeric();';
+		$this->rapyd->jquery[]='$.datepicker.setDefaults($.datepicker.regional[\'es\']);';
+		$this->rapyd->jquery[]='$("#fechahora").datetimepicker({});';
+
+		$data['content'] = $edit->output;
+		$data['head']    = $this->rapyd->get_head();
+		$data['title']   = heading('Bit&aacute;cora de labores');
+		$this->load->view('view_ventanas', $data);
+
+	}
+
+
+	function _bita_post_insert($do){
+		$ordp   = $do->get('id_ordp');
+
+		$this->db->select(array('a.id'));
+		$this->db->from('ordplabor AS a');
+		$this->db->where('id_ordp', $ordp);
+
+		$i=0;
+		$query = $this->db->get();
+		$contador=array('I'=>0,'P'=>0,'T'=>0);
+		foreach ($query->result() as $row){
+			$id_rel=$row->id;
+
+			$this->db->select(array('a.status'));
+			$this->db->from('ordpbita AS a');
+			$this->db->where('a.id_ordplabor',$id_rel);
+			$this->db->orderby('a.estampa','desc');
+			$this->db->limit(1);
+
+			$itquery=$this->db->get();
+			if ($itquery->num_rows() > 0){
+				$itrow = $itquery->row();
+				$contador[$itrow->status]++;
+			}
+			$i++;
+		}
+
+		if($contador['I']>0){ //Esta produciento
+			$this->db->where('id', $ordp);
+			$this->db->update('ordp', array('status' => 'E'));
+		}elseif($contador['T']==$i){ //Esta cerrada
+			$this->db->where('id', $ordp);
+			$this->db->update('ordp', array('status' => 'C'));
+		}else{//Esta pausada
+			$this->db->where('id', $ordp);
+			$this->db->update('ordp', array('status' => 'P'));
+		}
+		return true;
+	}
+
+	function _bita_post_update($do){
+		return true;
+	}
+
+	function _bita_post_delete($do){
+		return true;
+	}
+
+	function _bita_pre_insert($do){
+		return true;
+	}
+
+	function _bita_pre_update($do){
+		return true;
+	}
+
+	function _bita_pre_delete($do){
+		return true;
+	}
+
 	function _pre_insert($do){
 		$numero  = $this->datasis->fprox_numero('nordp');
 		$do->set('numero',$numero);
+		$do->set('status','A');
 		return true;
 	}
 

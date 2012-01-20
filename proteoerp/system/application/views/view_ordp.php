@@ -40,8 +40,7 @@ $scampos .= '<td class="littletablerow">';
 $scampos .= '<table><td><a href=# onclick="updownlabor(<#i#>,-1);return false;"><span class="ui-icon ui-icon-triangle-1-n"/></a>';
 $scampos .= '<a href=# onclick="updownlabor(<#i#>, 1);return false;"><span class="ui-icon ui-icon-triangle-1-s"/></a></td><td>';
 $scampos .= '<a href=# onclick="del_ordplabor(<#i#>);return false;">'.img("images/delete.jpg").'</a></td></table>';
-$scampos .= '</td>';
-$scampos .= '</tr>';
+$scampos .= '</td></tr>';
 $ordplabor_campos=$form->js_escape($scampos);
 
 $anulado = 'N';
@@ -452,9 +451,7 @@ function enumeralabor(){
 		<th bgcolor='#7098D0'>Estaci&oacute;n</th>
 		<th bgcolor='#7098D0'>Actividad</th>
 		<th bgcolor='#7098D0'>Tiempo</th>
-		<?php if($form->_status!='show') {?>
-			<th bgcolor='#7098D0'>&nbsp;</th>
-		<?php } ?>
+		<th bgcolor='#7098D0'>&nbsp;</th>
 	</tr>
 	<?php for($i=0;$i<$form->max_rel_count['ordplabor'];$i++) {
 		$it3_secuencia = "it3_secuencia_$i";
@@ -475,13 +472,51 @@ function enumeralabor(){
 			<td class="littletablerow">
 				<table>
 					<td>
-				<a href=# onclick="updownlabor(<?php echo $i ?>,-1);return false;"><span class="ui-icon ui-icon-triangle-1-n"/></a>
-				<a href=# onclick="updownlabor(<?php echo $i ?>, 1);return false;"><span class="ui-icon ui-icon-triangle-1-s"/></a>
+						<a href=# onclick="updownlabor(<?php echo $i ?>,-1);return false;"><span class="ui-icon ui-icon-triangle-1-n"/></a>
+						<a href=# onclick="updownlabor(<?php echo $i ?>, 1);return false;"><span class="ui-icon ui-icon-triangle-1-s"/></a>
 					</td><td>
-				<a href=# onclick="del_ordplabor(<?php echo $i ?>);return false;"><?php echo img("images/delete.jpg"); ?></a>
+						<a href=# onclick="del_ordplabor(<?php echo $i ?>);return false;"><?php echo img("images/delete.jpg"); ?></a>
 					</td>
 				</table>
 			</td>
+		<?php }else{
+			$id = $form->get_from_dataobjetct('id');
+			$id_rel = $form->get_from_dataobjetct_rel('ordplabor','id',$i);
+			?>
+		<td class="littletablerow">
+			<table><tr>
+				<?php
+					$sel=array('a.status','fechahora');
+					$this->db->select($sel);
+					$this->db->from('ordpbita AS a');
+					$this->db->where('a.id_ordplabor',$id_rel);
+					$this->db->orderby('a.estampa','desc');
+					$this->db->limit(1);
+					$query=$this->db->get();
+
+					$rt=array();
+					if ($query->num_rows() > 0){
+						$row = $query->row_array();
+
+						if($row['status']=='I'){
+							$rt['muestra']='T,P,H';
+						}elseif($row['status']=='P'){
+							$rt['muestra']='I,H';
+						}else{
+							$rt['muestra']='H';
+						}
+						$rt['ultimo'] = $row['fechahora'];
+					}else{
+						$rt['muestra']='I';
+					}
+				?>
+				<?php if(strpos($rt['muestra'],'I')!==false){ ?><td><a href="<?php echo site_url($this->url.'ordpbita/'.$id_rel.'/'.$id.'/I/create'); ?>"><span title='Iniciar actividad'  class="ui-icon ui-icon-play"   /></a></td><?php } ?>
+				<?php if(strpos($rt['muestra'],'P')!==false){ ?><td><a href="<?php echo site_url($this->url.'ordpbita/'.$id_rel.'/'.$id.'/P/create'); ?>"><span title='Pausar actividad'   class="ui-icon ui-icon-pause"  /></a></td><?php } ?>
+				<?php if(strpos($rt['muestra'],'T')!==false){ ?><td><a href="<?php echo site_url($this->url.'ordpbita/'.$id_rel.'/'.$id.'/T/create'); ?>"><span title='Terminar actividad' class="ui-icon ui-icon-check"  /></a></td><?php } ?>
+				<?php if(strpos($rt['muestra'],'H')!==false){ ?><td><a href="<?php echo site_url($this->url.'ordpbita/'.$id_rel.'/'.$id.'/T/create'); ?>"><span title='Ver bitacora'       class="ui-icon ui-icon-extlink"/></a></td><?php } ?>
+				<?php if( isset($rt['ultimo'])){ echo '<td>'.dbdate_to_human($rt['ultimo']).'</td>'; } ?>
+			</tr></table>
+		</td>
 		<?php } ?>
 	</tr>
 	<?php } ?>

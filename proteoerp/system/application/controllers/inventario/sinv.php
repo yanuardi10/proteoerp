@@ -694,8 +694,8 @@ class sinv extends Controller {
 		$edit->activo->option('S','Si');
 		$edit->activo->option('N','No');
 
-		$edit->serial2 = new freeField("","free","Serial");
-		$edit->serial2->in="activo";
+		$edit->serial2 = new freeField('','free','Serial');
+		$edit->serial2->in='activo';
 
 		$edit->serial = new dropdownField ('Usa Seriales', 'serial');
 		$edit->serial->style='width:50px;';
