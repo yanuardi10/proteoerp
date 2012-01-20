@@ -172,7 +172,7 @@ class Rret extends validaciones {
 		$form->build_form();
 
 		$this->rapyd->jquery[]='var denomi='.json_encode($denomi).';';
-		$this->rapyd->jquery[]='$(":input").numeric(".");';
+		$this->rapyd->jquery[]='$(":input:not(input[name^=\'cOT\'])").numeric(".");';
 		$this->rapyd->jquery[]='$(\'input[name^="cEFE"]\').bind("keyup",function() { gtotal(); });';
 		$this->rapyd->jquery[]='$(\'input[name^="cOTR"]\').bind("keyup",function() { gtotal(); });';
 		$this->rapyd->jquery[]='$(\'input[name^="FEFE"]\').bind("keyup",function() { gtotal(); });';
@@ -201,7 +201,7 @@ class Rret extends validaciones {
 			$("#TOTR").val(roundNumber(TOTR,2));
 			$("#TGLOB").val(roundNumber(TOTR+TEFE,2));
 		}';
-		$this->rapyd->jquery[]='$("input[name^=\'cOT\']").calculator( {onClose: function(value, inst) { gtotal(); }, onClose: function(value, inst) { gtotal(); }} );';
+		$this->rapyd->jquery[]='$("input[name^=\'cOT\']").calculator( {showOn: "button",useThemeRoller:true,onClose: function(value, inst) { gtotal(); }, onClose: function(value, inst) { gtotal(); }} );';
 
 		//hace el retiro de caja
 		if ($form->on_success()){
