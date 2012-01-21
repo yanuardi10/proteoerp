@@ -25,46 +25,53 @@ class ordp extends Controller {
 		$filter->fecha->size      =10;
 		$filter->fecha->maxlength =8;
 
-		$filter->numero = new inputField('Numero','numero');
+		$filter->numero = new inputField('N&uacute;mero','numero');
 		$filter->numero->rule      ='max_length[8]';
 		$filter->numero->size      =10;
 		$filter->numero->maxlength =8;
 
-		$filter->status = new inputField('Estatus','status');
-		$filter->status->rule      ='max_length[2]';
-		$filter->status->size      =4;
-		$filter->status->maxlength =2;
+		$filter->status = new dropdownField('Estatus','status');
+		$filter->status->option('A','Abierto');
+		$filter->status->option('E','Produciendo');
+		$filter->status->option('P','Pausado');
+		$filter->status->option('C','Cerrado');
 
 		$filter->nombre = new inputField('Nombre','nombre');
 		$filter->nombre->rule      ='max_length[40]';
 		$filter->nombre->size      =42;
 		$filter->nombre->maxlength =40;
 
-		$filter->instrucciones = new textareaField('Instrucciones','instrucciones');
-		$filter->instrucciones->rule      ='max_length[8]';
-		$filter->instrucciones->cols = 70;
-		$filter->instrucciones->rows = 4;
-
 		$filter->buttons('reset', 'search');
 		$filter->build();
 
 		$uri = anchor($this->url.'dataedit/show/<raencode><#id#></raencode>','<#numero#>');
 
+		function dicstatus($status){
+			if($status=='A'){
+				$rt='Abierto';
+			}elseif($status=='C'){
+				$rt='Cerrado';
+			}elseif($status=='P'){
+				$rt='Pausado';
+			}elseif($status=='E'){
+				$rt='Produciendo';
+			}else{
+				$rt=$status;
+			}
+			return $rt;
+		}
+
 		$grid = new DataGrid('');
+		$grid->use_function('dicstatus');
 		$grid->order_by('id');
 		$grid->per_page = 40;
 
-		$grid->column_orderby('Numero',$uri,'numero','align="left"');
-		$grid->column_orderby('Fecha','fecha','fecha','align="left"');
-		$grid->column_orderby('Status','status','status','align="left"');
+		$grid->column_orderby('N&uacute;mero',$uri,'numero','align="left"');
+		$grid->column_orderby('Fecha'  ,'<dbdate_to_human><#fecha#></dbdate_to_human>','fecha','align="left"');
+		$grid->column_orderby('Estatus','<dicstatus><#status#></dicstatus>' ,'status','align="center"');
 		$grid->column_orderby('Cliente','cliente','cliente','align="left"');
-		$grid->column_orderby('Nombre','nombre','nombre','align="left"');
-		$grid->column_orderby('Instrucciones','instrucciones','instrucciones','align="left"');
-		$grid->column_orderby('Estampa','<dbdate_to_human><#estampa#></dbdate_to_human>','estampa','align="center"');
-		$grid->column_orderby('Usuario','usuario','usuario','align="left"');
-		$grid->column_orderby('Hora','hora','hora','align="left"');
-		$grid->column_orderby('Modificado','modificado','modificado','align="left"');
-		$grid->column_orderby('Id','<nformat><#id#></nformat>','id','align="right"');
+		$grid->column_orderby('Nombre' ,'nombre'  ,'nombre','align="left"');
+		//$grid->column_orderby('Instrucciones','instrucciones','instrucciones','align="left"');
 
 		$grid->add($this->url.'dataedit/create');
 		$grid->build();
@@ -120,6 +127,7 @@ class ordp extends Controller {
 		$edit->status->option('C','Cerrado');
 		$edit->status->rule='enum[A,P,Es,C]';
 		$edit->status->style='width:100px';
+		$edit->status->mode='autohide';
 
 		$edit->cliente = new inputField('Cliente','cliente');
 		$edit->cliente->rule='max_length[5]|required|existescli';
@@ -246,14 +254,14 @@ class ordp extends Controller {
 		$edit->it3_estacion = new  dropdownField('Estacion <#o#>', 'it3estacion_<#i#>');
 		$edit->it3_estacion->option('','Seleccionar');
 		$edit->it3_estacion->options('SELECT estacion,CONCAT(estacion,\'-\',nombre) AS lab FROM esta ORDER BY estacion');
-		$edit->it3_estacion->style  = 'width:250px;';
+		$edit->it3_estacion->style  = 'width:150px;';
 		$edit->it3_estacion->db_name= 'estacion';
 		$edit->it3_estacion->rel_id = 'ordplabor';
 
 		$edit->it3_actividad = new inputField('Actividad','it3actividad_<#i#>');
 		$edit->it3_actividad->db_name='actividad';
 		$edit->it3_actividad->rule='max_length[100]';
-		$edit->it3_actividad->size =40;
+		$edit->it3_actividad->size =35;
 		$edit->it3_actividad->maxlength =100;
 		$edit->it3_actividad->rel_id = 'ordplabor';
 
@@ -365,6 +373,9 @@ class ordp extends Controller {
 		$uri = anchor($this->url.'dataedit/show/<raencode><#id#></raencode>','<#id#>');
 
 		$grid = new DataGrid('');
+		$action = 'javascript:window.location=\'' . site_url($this->url.'dataedit/show/'.$idordp).'\'';
+		$grid->button('btn_create', 'Regresar', $action, 'TR');
+
 		$grid->order_by('id');
 		$grid->per_page = 40;
 
@@ -386,7 +397,17 @@ class ordp extends Controller {
 	function ordpbita($ordplabor,$idordp,$status){
 		$this->rapyd->load('dataedit');
 
-		$edit = new DataEdit($this->tits, 'ordpbita');
+		if($status=='I'){
+			$rt='inicio';
+		}elseif($status=='T'){
+			$rt='culmminaci&oacute;n';
+		}elseif($status=='P'){
+			$rt='pausa';
+		}else{
+			$rt=$status;
+		}
+
+		$edit = new DataEdit("Constancia de <b>$rt</b> de la labor en la estaci&oacute;n", 'ordpbita');
 		$edit->back_save   = true;
 		$edit->back_cancel = true;
 		$edit->back_cancel_save   = true;
@@ -401,13 +422,13 @@ class ordp extends Controller {
 
 		$edit->back_url = site_url($this->url.'dataedit/show/'.raencode($idordp));
 
-		$edit->status = new dropdownField('Estatus','status');
+		/*$edit->status = new dropdownField('Estatus','status');
 		$edit->status->option('I','Iniciado' );
 		$edit->status->option('P','Pausado'  );
 		$edit->status->option('T','Terminado');
 		$edit->status->insertValue=$status;
 		$edit->status->rule='enum[I,P,T]';
-		$edit->status->style='width:100px';
+		$edit->status->style='width:100px';*/
 
 		$edit->fechahora = new dateField('Fecha hora','fechahora', 'd/m/Y H:i');
 		$edit->fechahora->rule='required';
@@ -422,6 +443,7 @@ class ordp extends Controller {
 		$edit->observacion->rows = 4;
 
 		$edit->id_ordplabor = new autoUpdateField('id_ordplabor',$ordplabor,$ordplabor);
+		$edit->status  = new autoUpdateField('status',$status,$status);
 		$edit->id_ordp = new autoUpdateField('id_ordp',$idordp,$idordp);
 		$edit->estampa = new autoUpdateField('estampa',date('Y-m-d H:i:s'), date('Y-m-d H:i:s'));
 		$edit->hora    = new autoUpdateField('hora',date('H:i:s'), date('H:i:s'));
@@ -507,10 +529,43 @@ class ordp extends Controller {
 		$numero  = $this->datasis->fprox_numero('nordp');
 		$do->set('numero',$numero);
 		$do->set('status','A');
+		$usuario = $do->get('usuario');
+		$estampa = $do->get('estampa');
+		$hora    = $do->get('hora');
+
+		$rel='ordpitems';
+		$cana=$do->count_rel($rel);
+		for($i=0;$i<$cana;$i++){
+			$do->set_rel($rel,'numero' ,$numero  ,$i);
+			$do->set_rel($rel,'usuario',$usuario ,$i);
+			$do->set_rel($rel,'estampa',$estampa ,$i);
+			$do->set_rel($rel,'hora'   ,$hora    ,$i);
+		}
+
+		$rel='ordplabor';
+		$cana=$do->count_rel($rel);
+		for($i=0;$i<$cana;$i++){
+			$do->set_rel($rel,'usuario',$usuario ,$i);
+			$do->set_rel($rel,'estampa',$estampa ,$i);
+			$do->set_rel($rel,'hora'   ,$hora    ,$i);
+		}
+
+		$rel='ordpindi';
+		$cana=$do->count_rel($rel);
+		for($i=0;$i<$cana;$i++){
+			$do->set_rel($rel,'usuario',$usuario ,$i);
+			$do->set_rel($rel,'estampa',$estampa ,$i);
+			$do->set_rel($rel,'hora'   ,$hora    ,$i);
+		}
 		return true;
 	}
 
 	function _pre_update($do){
+		$status=$do->get('status');
+		if($status!='A'){
+			$do->error_message_ar['pre_upd']='No se pueden modificar ordenes que ya fueron puestas en marcha';
+			return false;
+		}
 		return true;
 	}
 

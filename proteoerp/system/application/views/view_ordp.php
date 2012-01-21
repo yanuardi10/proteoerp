@@ -356,7 +356,7 @@ function enumeralabor(){
 	<?php if($form->_status=='show'){ ?>
 	<tr>
 		<td valign="bottom">
-			<a href="javascript:void(0);" onclick="window.open('<?php echo base_url(); ?>/formatos/ver/RIVC/<?php echo $form->get_from_dataobjetct('id'); ?>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');">
+			<a href="javascript:void(0);" onclick="window.open('<?php echo base_url(); ?>/formatos/verhtml/ORDP/<?php echo $form->get_from_dataobjetct('id'); ?>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');">
 			<img src="<?php echo base_url(); ?>/images/reportes.gif" alt="Imprimir Documento" title="Imprimir Documento" border="0" height="30"></a>
 		</td>
 	</tr>
@@ -443,11 +443,15 @@ function enumeralabor(){
 	</tr>
 	<?php } ?>
 </table>
-<?php echo isset($form->_button_container['BL'][1])? $form->_button_container['BL'][1]: ''; ?>
+<?php
+if($form->_status=='show') {
+	echo anchor('/formatos/ver/ORDPITEM/'.$form->get_from_dataobjetct('id'),'Ver lista');
+}
+echo isset($form->_button_container['BL'][1])? $form->_button_container['BL'][1]: ''; ?>
 <h3>Actividades o labores a realizar</h3>
 <table width='100%'>
 	<tr>
-		<th bgcolor='#7098D0'>Secuencia</th>
+		<th bgcolor='#7098D0'>Secu.</th>
 		<th bgcolor='#7098D0'>Estaci&oacute;n</th>
 		<th bgcolor='#7098D0'>Actividad</th>
 		<th bgcolor='#7098D0'>Tiempo</th>
@@ -486,7 +490,7 @@ function enumeralabor(){
 		<td class="littletablerow">
 			<table><tr>
 				<?php
-					$sel=array('a.status','fechahora');
+					$sel=array('a.status','fechahora','id');
 					$this->db->select($sel);
 					$this->db->from('ordpbita AS a');
 					$this->db->where('a.id_ordplabor',$id_rel);
@@ -506,6 +510,7 @@ function enumeralabor(){
 							$rt['muestra']='H';
 						}
 						$rt['ultimo'] = $row['fechahora'];
+						$rt['id']    = $row['id'];
 					}else{
 						$rt['muestra']='I';
 					}
@@ -514,7 +519,9 @@ function enumeralabor(){
 				<?php if(strpos($rt['muestra'],'P')!==false){ ?><td><a href="<?php echo site_url($this->url.'ordpbita/'.$id_rel.'/'.$id.'/P/create'); ?>"><span title='Pausar actividad'   class="ui-icon ui-icon-pause"  /></a></td><?php } ?>
 				<?php if(strpos($rt['muestra'],'T')!==false){ ?><td><a href="<?php echo site_url($this->url.'ordpbita/'.$id_rel.'/'.$id.'/T/create'); ?>"><span title='Terminar actividad' class="ui-icon ui-icon-check"  /></a></td><?php } ?>
 				<?php if(strpos($rt['muestra'],'H')!==false){ ?><td><a href="<?php echo site_url($this->url.'ordpbitafilter/'.$id_rel.'/'.$id); ?>"><span title='Ver bitacora' class="ui-icon ui-icon-extlink"/></a></td><?php } ?>
-				<?php if( isset($rt['ultimo'])){ echo '<td>'.dbdate_to_human($rt['ultimo']).'</td>'; } ?>
+				<?php if( isset($rt['ultimo'])){
+					echo '<td>'.anchor('/formatos/ver/ORDPBITA/'.$rt['id'],dbdate_to_human($rt['ultimo'])).'</td>';
+				} ?>
 			</tr></table>
 		</td>
 		<?php } ?>
@@ -526,7 +533,7 @@ function enumeralabor(){
 </table>
 <?php echo isset($form->_button_container['BL'][2])? $form->_button_container['BL'][2]: ''; ?>
 
-<h3>Gastos directos</h3>
+<h3>Gastos indirectos</h3>
 <table width='100%'>
 	<tr id='__INPL__ordpindi'>
 		<th bgcolor='#7098D0'>C&oacute;digo</th>
