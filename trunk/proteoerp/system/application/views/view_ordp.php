@@ -24,7 +24,7 @@ $scampos  = '<tr id="tr_ordpitem_<#i#>">';
 $scampos .= '<td class="littletablerow" align="left" >'.$campos['it2_codigo']['field'].'</td>';
 $scampos .= '<td class="littletablerow" align="left" >'.$campos['it2_descrip']['field'].'</td>';
 $scampos .= '<td class="littletablerow" align="right">'.$campos['it2_cantidad']['field'].'</td>';
-$scampos .= '<td class="littletablerow" align="right">'.$campos['it2_merma']['field'].'</td>';
+$scampos .= '<td class="littletablerow" align="right">'.$campos['it2_merma']['field'].'%</td>';
 $scampos .= '<td class="littletablerow" align="right">'.$campos['it2_costo']['field'].'</td>';
 $scampos .= '<td class="littletablerow"><a href=# onclick="del_ordpitem(<#i#>);return false;">'.img("images/delete.jpg").'</a></td>';
 $scampos .= '</tr>';
@@ -32,7 +32,7 @@ $ordpitem_campos=$form->js_escape($scampos);
 
 $campos   = $form->template_details('ordplabor');
 $scampos  = '<tr id="tr_ordplabor_<#i#>">';
-$scampos .= '<td class="littletablerow" align="left" >'.$campos['it3_secuencia']['field'].'</td>';
+$scampos .= '<td class="littletablerow" align="left" >'.$campos['it3_id']['field'].$campos['it3_secuencia']['field'].'</td>';
 $scampos .= '<td class="littletablerow" align="left" >'.$campos['it3_estacion']['field'].'</td>';
 $scampos .= '<td class="littletablerow" align="left" >'.$campos['it3_actividad']['field'].'</td>';
 $scampos .= '<td class="littletablerow" align="right">'.$campos['it3_minutos']['field'].' : '.$campos['it3_segundos']['field'].'</td>';
@@ -191,10 +191,10 @@ function add_ordpitem(){
 	htm = htm.replace(/<#i#>/g,can);
 	htm = htm.replace(/<#o#>/g,con);
 	$("#__INPL__ordpitem").after(htm);
-	$("#it2_cantidad_"+can).numeric();
-	$("#it2_merma_"+can).numeric(".");
-	$("#it2_merma_"+can).val('0');
-	$("#it2_costo_"+can).numeric(".");
+	$("#it2cantidad_"+can).numeric();
+	$("#it2merma_"+can).numeric(".");
+	$("#it2merma_"+can).val('0');
+	$("#it2costo_"+can).numeric(".");
 	$("#it2codigo_"+can).focus();
 	autocod(can);
 	ordpitem_cont=ordpitem_cont+1;
@@ -207,8 +207,8 @@ function add_ordplabor(){
 	htm = htm.replace(/<#i#>/g,can);
 	htm = htm.replace(/<#o#>/g,con);
 	$("#__INPL__ordplabor").before(htm);
-	$("#it3_minutos_"+can).numeric(".");
-    $("#it3_segundos_"+can).numeric(".");
+	$("#it3minutos_"+can).numeric(".");
+    $("#it3segundos_"+can).numeric(".");
     $("#it3estacion_"+can).focus();
     enumeralabor();
 	ordplabor_cont=ordplabor_cont+1;
@@ -263,9 +263,10 @@ function autocod(id){
 		select: function( event, ui ) {
 			$('#codigoa_'+id).val(ui.item.codigo);
 			$('#it2descrip_'+id).val(ui.item.descrip);
+			$('#it2merma_'+id).val('0');
 			$('#it2descrip_'+id+'_val').text(ui.item.descrip);
 			$('#it2costo_'+id).val(ui.item.ultimo);
-			$("#it2_cantidad_"+can).focus();
+			$("#it2cantidad_"+can).focus();
 		}
 	});
 }
@@ -458,6 +459,7 @@ echo isset($form->_button_container['BL'][1])? $form->_button_container['BL'][1]
 		<th bgcolor='#7098D0'>&nbsp;</th>
 	</tr>
 	<?php for($i=0;$i<$form->max_rel_count['ordplabor'];$i++) {
+		$it3_id        = "it3_id_$i";
 		$it3_secuencia = "it3_secuencia_$i";
 		$it3_estacion  = "it3_estacion_$i";
 		$it3_actividad = "it3_actividad_$i";
@@ -465,7 +467,7 @@ echo isset($form->_button_container['BL'][1])? $form->_button_container['BL'][1]
 		$it3_segundos  = "it3_segundos_$i";
 	?>
 	<tr id='tr_ordplabor_<?php echo $i; ?>'>
-		<td class='littletablerow' align="left" ><?php echo $form->$it3_secuencia->output; ?></td>
+		<td class='littletablerow' align="left" ><?php echo $form->$it3_id->output.$form->$it3_secuencia->output; ?></td>
 		<td class='littletablerow' align="left" ><?php echo $form->$it3_estacion->output;  ?></td>
 		<td class='littletablerow' align="left" ><?php echo $form->$it3_actividad->output; ?></td>
 		<td class='littletablerow' align="right">
