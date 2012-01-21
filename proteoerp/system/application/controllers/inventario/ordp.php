@@ -242,6 +242,10 @@ class ordp extends Controller {
 		//fin detalle ordpitem inicio ordplabor
 		//**************************************
 
+		$edit->it3_id = new hiddenField('id','id_<#i#>');
+		$edit->it3_id->db_name='id';
+		$edit->it3_id->rel_id = 'ordplabor';
+
 		$edit->it3_secuencia = new inputField('Secuencia','it3secuencia_<#i#>');
 		$edit->it3_secuencia->db_name='secuencia';
 		$edit->it3_secuencia->rule='max_length[6]|integer';
