@@ -550,12 +550,16 @@ class pfaclitemayor extends validaciones{
 		for($i = 0;$i < $cana;$i++){
 			$itcana  = $do->get_rel('itpfac', 'cana', $i);
 			if($itcana>0){
-				$itpreca = $do->get_rel('itpfac', 'preca', $i);
-				$itiva   = $do->get_rel('itpfac', 'iva', $i);
-				$ittota  = $itpreca * $itcana;
+				$itcodigo = $do->get_rel('itpfac', 'codigoa', $i);
+				$itpreca  = $do->get_rel('itpfac', 'preca', $i);
+				$itiva    = $do->get_rel('itpfac', 'iva', $i);
+				$ittota   = $itpreca * $itcana;
+				$dbcodigoa= $this->db->escape($itcodigo);
+				$desca    = $this->datasis->dameval("SELECT descrip FROM sinv WHERE codigo=$dbcodigoa");
 				$do->set_rel('itpfac', 'tota'    , $ittota, $i);
 				$do->set_rel('itpfac', 'fecha'   , $fecha , $i);
 				$do->set_rel('itpfac', 'vendedor', $vd    , $i);
+				$do->set_rel('itpfac', 'desca'   , $desca , $i);
 
 				$iva    += $ittota * ($itiva / 100);
 				$totals += $ittota;

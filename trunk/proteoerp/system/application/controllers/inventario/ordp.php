@@ -269,23 +269,29 @@ class ordp extends Controller {
 		$edit->it3_actividad->maxlength =100;
 		$edit->it3_actividad->rel_id = 'ordplabor';
 
-		$edit->it3_minutos = new inputField('Minutos','it3minutos_<#i#>');
-		$edit->it3_minutos->db_name='minutos';
-		$edit->it3_minutos->rule='max_length[6]|integer';
-		$edit->it3_minutos->css_class='inputonlynum';
-		$edit->it3_minutos->size =8;
-		$edit->it3_minutos->maxlength =6;
-		$edit->it3_minutos->autocomplete=false;
-		$edit->it3_minutos->rel_id = 'ordplabor';
+		$edit->it3_tunidad = new dropdownField ('', 'it3tunidad_<#i#>');
+		$edit->it3_tunidad->option('H','Horas');
+		$edit->it3_tunidad->option('D','Dias');
+		$edit->it3_tunidad->option('S','Semanas');
+		$edit->it3_tunidad->style       = 'width:80px;';
+		$edit->it3_tunidad->db_name     = 'tunidad';
+		$edit->it3_tunidad->css_class   = 'inputnum';
+		$edit->it3_tunidad->rel_id      = 'sinvplabor';
+		$edit->it3_tunidad->rule        = 'enum[H,S,]';
+		$edit->it3_tunidad->insertValue = 'H';
+		$edit->it3_tunidad->rel_id = 'ordplabor';
 
-		$edit->it3_segundos = new inputField('Segundos','it3segundos_<#i#>');
-		$edit->it3_segundos->db_name='segundos';
-		$edit->it3_segundos->rule='max_length[6]|integer';
-		$edit->it3_segundos->css_class='inputonlynum';
-		$edit->it3_segundos->autocomplete=false;
-		$edit->it3_segundos->size =3;
-		$edit->it3_segundos->maxlength =6;
-		$edit->it3_segundos->rel_id = 'ordplabor';
+		$edit->it3_tiempo = new inputField('', 'it3tiempo_<#i#>');
+		$edit->it3_tiempo->db_name      = 'tiempo';
+		$edit->it3_tiempo->css_class    = 'inputnum';
+		$edit->it3_tiempo->rel_id       = 'sinvplabor';
+		$edit->it3_tiempo->maxlength    = 10;
+		$edit->it3_tiempo->size         = 5;
+		$edit->it3_tiempo->rule         = 'positive';
+		$edit->it3_tiempo->autocomplete = false;
+		$edit->it3_tiempo->insertValue  = 1;
+		$edit->it3_tiempo->rel_id = 'ordplabor';
+
 		//**************************************
 		//fin ordppedi
 		//**************************************
@@ -568,7 +574,7 @@ class ordp extends Controller {
 		$status=$do->get('status');
 		if($status!='A'){
 			$do->error_message_ar['pre_upd']='No se pueden modificar ordenes que ya fueron puestas en marcha';
-			return false;
+			//return false;
 		}
 		return true;
 	}
@@ -594,42 +600,31 @@ class ordp extends Controller {
 
 	function instalar(){
 		if (!$this->db->table_exists('ordp')) {
-			$mSQL="CREATE TABLE `ordc` (
-				`fecha` DATE NULL DEFAULT NULL,
+			$mSQL="CREATE TABLE `ordp` (
 				`numero` VARCHAR(8) NOT NULL DEFAULT '',
-				`status` CHAR(2) NOT NULL DEFAULT '',
-				`almacen` VARCHAR(4) NULL DEFAULT NULL,
-				`proveed` VARCHAR(5) NULL DEFAULT NULL,
-				`nombre` VARCHAR(40) NULL DEFAULT NULL,
-				`montotot` DECIMAL(14,2) NULL DEFAULT NULL,
-				`montoiva` DECIMAL(14,2) NULL DEFAULT NULL,
-				`montonet` DECIMAL(14,2) NULL DEFAULT NULL,
-				`montofac` DECIMAL(14,2) NULL DEFAULT NULL,
-				`condi` VARCHAR(30) NULL DEFAULT NULL,
-				`codban` CHAR(2) NULL DEFAULT NULL,
-				`tipo_op` CHAR(2) NULL DEFAULT NULL,
-				`cheque` VARCHAR(12) NULL DEFAULT NULL,
-				`comprob` VARCHAR(6) NULL DEFAULT NULL,
-				`anticipo` DECIMAL(12,2) NULL DEFAULT NULL,
-				`fechafac` DATE NULL DEFAULT '0000-00-00',
-				`arribo` DATE NULL DEFAULT NULL,
-				`factura` VARCHAR(8) NULL DEFAULT NULL,
-				`mdolar` DECIMAL(17,2) NOT NULL DEFAULT '0.00',
-				`peso` DECIMAL(12,2) NOT NULL DEFAULT '0.00',
-				`benefi` VARCHAR(40) NULL DEFAULT NULL,
-				`condi1` VARCHAR(40) NULL DEFAULT NULL,
-				`condi2` VARCHAR(40) NULL DEFAULT NULL,
-				`condi3` VARCHAR(40) NULL DEFAULT NULL,
-				`transac` VARCHAR(8) NOT NULL DEFAULT '',
+				`fecha` DATE NULL DEFAULT NULL,
+				`codigo` VARCHAR(15) NULL DEFAULT NULL COMMENT 'Codigo de inventario',
+				`cana` DECIMAL(10,2) NULL DEFAULT NULL COMMENT 'Cantidad a producir',
+				`status` CHAR(2) NULL DEFAULT '0' COMMENT 'Activa, Pausada, Finalizada',
+				`cliente` CHAR(5) NULL DEFAULT NULL,
+				`nombre` VARCHAR(40) NULL DEFAULT NULL COMMENT 'Nombre del Cliente',
+				`instrucciones` TEXT NULL,
 				`estampa` DATE NOT NULL DEFAULT '0000-00-00',
 				`usuario` VARCHAR(12) NOT NULL DEFAULT '',
 				`hora` VARCHAR(8) NOT NULL DEFAULT '',
-				PRIMARY KEY (`numero`)
+				`modificado` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+				`id` INT(11) NOT NULL AUTO_INCREMENT,
+				PRIMARY KEY (`id`),
+				UNIQUE INDEX `numero` (`numero`),
+				INDEX `modificado` (`modificado`)
 			)
+			COMMENT='Orden de Produccion'
 			COLLATE='latin1_swedish_ci'
-			ENGINE=MyISAM;";
+			ENGINE=MyISAM
+			AUTO_INCREMENT=1";
 			$this->db->simple_query($mSQL);
 		}
+
 		if (!$this->db->table_exists('ordpindi')) {
 			$mSQL="CREATE TABLE `ordpindi` (
 				`numero` VARCHAR(8) NULL DEFAULT '',
@@ -685,8 +680,9 @@ class ordp extends Controller {
 				`estacion` VARCHAR(5) NULL DEFAULT NULL,
 				`nombre` VARCHAR(40) NULL DEFAULT NULL,
 				`actividad` VARCHAR(100) NOT NULL,
-				`minutos` INT(6) NULL DEFAULT '0',
-				`segundos` INT(6) NULL DEFAULT '0',
+				`tunidad` CHAR(1) NULL DEFAULT 'H',
+				`tiempo` DECIMAL(10,2) UNSIGNED NULL DEFAULT '0',
+				`tiemporeal` INT(6) UNSIGNED NULL DEFAULT '0',
 				`estampa` DATE NULL DEFAULT NULL,
 				`usuario` VARCHAR(12) NULL DEFAULT '',
 				`hora` VARCHAR(8) NULL DEFAULT '',
@@ -700,6 +696,13 @@ class ordp extends Controller {
 			COLLATE='latin1_swedish_ci'
 			ENGINE=MyISAM
 			AUTO_INCREMENT=1";
+			$this->db->simple_query($mSQL);
+		}
+
+		if (!$this->db->field_exists('minutos', 'ordplabor')){
+			$mSQL="ALTER TABLE `ordplabor`
+			CHANGE COLUMN `minutos` `tunidad` CHAR(1) NULL DEFAULT 'H' AFTER `actividad`,
+			CHANGE COLUMN `segundos` `tiempo` DECIMAL(10,2) UNSIGNED NULL DEFAULT '0' AFTER `tunidad`";
 			$this->db->simple_query($mSQL);
 		}
 	}
