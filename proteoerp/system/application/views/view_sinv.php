@@ -1146,7 +1146,9 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 		<li><a href="#tab1">Parametros</a></li>
 		<li><a href="#tab2">Precios</a></li>
 		<li><a href="#tab3">Existencias</a></li>
+		<?php if($form->_status=='show'){ ?>
 		<li><a href="#tab4">Movimientos</a></li>
+		<?php } ?>
 		<li><a href="#tab5">Promociones</a></li>
 		<li><a href="#tab6">Precio al Mayor</a></li>
 		<?php if(($form->_dataobject->get('tipo')=='Combo' && $form->_status=='show') || $form->_status!='show'){?>
@@ -1460,7 +1462,7 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 	</div>
 	<?php echo $container_la ?>
 </div>
-
+<?php if($form->_status=='show'){ ?>
 <div id="tab3" style='background:#EFEFFF'>
 	<table width='100%'>
 	<tr>
@@ -1506,6 +1508,7 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 	</tr>
 	</table>
 </div>
+<?php } ?>
 <div id="tab4" style='background:#EFEFFF'>
 
 	<table width='100%'>
