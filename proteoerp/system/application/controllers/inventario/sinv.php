@@ -1117,25 +1117,26 @@ class sinv extends Controller {
 		$edit->it3actividad->maxlength  = 50;
 		$edit->it3actividad->rel_id     = 'sinvplabor';
 
-		$edit->it3minutos = new inputField('Minutos <#o#>', 'it3minutos_<#i#>');
-		$edit->it3minutos->db_name      = 'minutos';
-		$edit->it3minutos->css_class    = 'inputnum';
-		$edit->it3minutos->rel_id       = 'sinvplabor';
-		$edit->it3minutos->maxlength    = 10;
-		$edit->it3minutos->size         = 5;
-		$edit->it3minutos->rule         = 'positive';
-		$edit->it3minutos->autocomplete = false;
-		$edit->it3minutos->insertValue  = 0;
+		$edit->it3tunidad = new dropdownField ('', 'it3tunidad_<#i#>');
+		$edit->it3tunidad->option('H','Horas');
+		$edit->it3tunidad->option('D','Dias');
+		$edit->it3tunidad->option('S','Semanas');
+		$edit->it3tunidad->style       = 'width:80px;';
+		$edit->it3tunidad->db_name     = 'tunidad';
+		$edit->it3tunidad->css_class   = 'inputnum';
+		$edit->it3tunidad->rel_id      = 'sinvplabor';
+		$edit->it3tunidad->rule        = 'enum[H,S,]';
+		$edit->it3tunidad->insertValue = 'H';
 
-		$edit->it3segundos = new inputField('Segundos <#o#>', 'it3segundos_<#i#>');
-		$edit->it3segundos->db_name      = 'segundos';
-		$edit->it3segundos->css_class    = 'inputnum';
-		$edit->it3segundos->rel_id       = 'sinvplabor';
-		$edit->it3segundos->maxlength    = 10;
-		$edit->it3segundos->size         = 5;
-		$edit->it3segundos->rule         = 'positive';
-		$edit->it3segundos->autocomplete = false;
-		$edit->it3segundos->insertValue  = 1;
+		$edit->it3tiempo = new inputField('', 'it3tiempo_<#i#>');
+		$edit->it3tiempo->db_name      = 'tiempo';
+		$edit->it3tiempo->css_class    = 'inputnum';
+		$edit->it3tiempo->rel_id       = 'sinvplabor';
+		$edit->it3tiempo->maxlength    = 10;
+		$edit->it3tiempo->size         = 5;
+		$edit->it3tiempo->rule         = 'positive';
+		$edit->it3tiempo->autocomplete = false;
+		$edit->it3tiempo->insertValue  = 1;
 
 		$edit->it3estampa = new autoUpdateField('it3estampa' ,date('Ymd'), date('Ymd'));
 		$edit->it3estampa->db_name = 'estampa';
@@ -2500,6 +2501,15 @@ class sinv extends Controller {
 			COLLATE='latin1_swedish_ci'
 			ENGINE=MyISAM
 			AUTO_INCREMENT=1";
+			$this->db->simple_query($mSQL);
+		}
+
+		if (!$this->db->field_exists('minutos', 'sinvplabor')){
+			$mSQL="ALTER TABLE `sinvplabor`
+			ADD COLUMN `tiempo` DECIMAL(10,2) NULL DEFAULT '0' AFTER `actividad`,
+			ADD COLUMN `tunidad` CHAR(1) NULL DEFAULT 'H' COMMENT 'Unidad de tiempo Horas Dias Semanas' AFTER `tiempo`,
+			DROP COLUMN `minutos`,
+			DROP COLUMN `segundos`;";
 			$this->db->simple_query($mSQL);
 		}
 

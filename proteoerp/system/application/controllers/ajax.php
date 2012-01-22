@@ -453,7 +453,7 @@ class Ajax extends Controller {
 		$data = '{[ ]}';
 		if($mid!==false){
 			$mid  = $this->db->escape($mid);
-			$mSQL = "SELECT a.estacion,a.nombre,a.actividad,a.minutos,a.segundos
+			$mSQL = "SELECT a.estacion,a.nombre,a.actividad,a.tunidad,a.tiempo
 				FROM sinvplabor AS a
 			WHERE a.producto=${mid}";
 
@@ -464,8 +464,8 @@ class Ajax extends Controller {
 				foreach( $query->result_array() as  $row ) {
 					$retArray['nombre']   = utf8_encode(trim($row['nombre']));
 					$retArray['actividad']= $row['actividad'];
-					$retArray['minutos']  = $row['minutos'];
-					$retArray['segundos'] = $row['segundos'];
+					$retArray['tunidad']  = $row['tunidad'];
+					$retArray['tiempo']   = $row['tiempo'];
 					$retArray['estacion'] = $row['estacion'];
 
 					array_push($retorno, $retArray);

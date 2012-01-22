@@ -59,8 +59,8 @@ $campos3   =$form->template_details('sinvplabor');
 $scampos3  ='<tr id="tr_sinvpitem_<#i#>">';
 $scampos3 .='<td class="littletablerow" align="left" >'.$campos3['it3estacion']['field'].'</td>';
 $scampos3 .='<td class="littletablerow" align="left" >'.$campos3['it3actividad']['field'].'</td>';
-$scampos3 .='<td class="littletablerow" align="right">'.$campos3['it3minutos']['field'].'</td>';
-$scampos3 .='<td class="littletablerow" align="right">'.$campos3['it3segundos']['field'].'</td>';
+$scampos3 .='<td class="littletablerow" align="right">'.$campos3['it3tunidad']['field'].'</td>';
+$scampos3 .='<td class="littletablerow" align="right">'.$campos3['it3tiempo']['field'].'</td>';
 $scampos3 .='<td class="littletablerow"  align="center"><a href=# onclick="del_sinvplabor(<#i#>);return false;">'.img("images/delete.jpg").'</a></td></tr>';
 $campos3=$form->js_escape($scampos3);
 
@@ -403,8 +403,7 @@ function add_sinvplabor(){
 	htm = htm.replace(/<#i#>/g,can);
 	htm = htm.replace(/<#o#>/g,con);
 	$("#__INPL_SINVPLABOR__").after(htm);
-	$("#it3minutos_"+can).numeric("0");
-	$("#it3segundos_"+can).numeric("0");
+	$("#it3tiempo_"+can).numeric(".");
 	$('#it3estacion_'+can).focus();
 	$("#it3segundos_"+can).keypress(function(e) {
 		if(e.keyCode == 13) {
@@ -1429,8 +1428,8 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 			<tr id='__INPL_SINVPLABOR__'>
 				<td bgcolor='#7098D0' align='left' ><b>Estaci&oacute;n</b></td>
 				<td bgcolor='#7098D0' align='left' ><b>Actividad      </b></td>
-				<td bgcolor='#7098D0' align='right'><b>Minutos        </b></td>
-				<td bgcolor='#7098D0' align='right'><b>Segundos       </b></td>
+				<td bgcolor='#7098D0' align='right'><b>U. Tiempo      </b></td>
+				<td bgcolor='#7098D0' align='right'><b>Tiempo         </b></td>
 				<?php if($form->_status!='show') {?>
 					<td  bgcolor='#7098D0' align='center'><b>&nbsp;</b></td>
 				<?php } ?>
@@ -1440,14 +1439,14 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 				$it3estacion = "it3estacion_$i";
 				$it3nombre   = "it3nombre_$i";
 				$it3actividad= "it3actividad_$i";
-				$it3minutos  = "it3minutos_$i";
-				$it3segundos = "it3segundos_$i";
+				$it3tunidad  = "it3tunidad_$i";
+				$it3tiempo   = "it3tiempo_$i";
 			?>
 			<tr id='tr_sinvpitem_<?=$i;?>'>
 				<td class="littletablerow" align="left" nowrap><?php echo $form->$it3estacion->output;  ?></td>
 				<td class="littletablerow" align="left"       ><?php echo $form->$it3actividad->output; ?></td>
-				<td class="littletablerow" align="right"      ><?php echo $form->$it3minutos->output;   ?></td>
-				<td class="littletablerow" align="right"      ><?php echo $form->$it3segundos->output;  ?></td>
+				<td class="littletablerow" align="right"      ><?php echo $form->$it3tunidad->output;   ?></td>
+				<td class="littletablerow" align="right"      ><?php echo $form->$it3tiempo->output;  ?></td>
 				<?php if($form->_status!='show'){?>
 				<td class="littletablerow" align="center">
 					<a href='#' onclick='del_sinvplabor(<?=$i ?>);return false;'><?php echo img('images/delete.jpg') ?></a>

@@ -35,7 +35,8 @@ $scampos  = '<tr id="tr_ordplabor_<#i#>">';
 $scampos .= '<td class="littletablerow" align="left" >'.$campos['it3_id']['field'].$campos['it3_secuencia']['field'].'</td>';
 $scampos .= '<td class="littletablerow" align="left" >'.$campos['it3_estacion']['field'].'</td>';
 $scampos .= '<td class="littletablerow" align="left" >'.$campos['it3_actividad']['field'].'</td>';
-$scampos .= '<td class="littletablerow" align="right">'.$campos['it3_minutos']['field'].' : '.$campos['it3_segundos']['field'].'</td>';
+$scampos .= '<td class="littletablerow" align="right">'.$campos['it3_tunidad']['field'].'</td>';
+$scampos .= '<td class="littletablerow" align="right">'.$campos['it3_tiempo']['field'].'</td>';
 $scampos .= '<td class="littletablerow">';
 $scampos .= '<table><td><a href=# onclick="updownlabor(<#i#>,-1);return false;"><span class="ui-icon ui-icon-triangle-1-n"/></a>';
 $scampos .= '<a href=# onclick="updownlabor(<#i#>, 1);return false;"><span class="ui-icon ui-icon-triangle-1-s"/></a></td><td>';
@@ -159,8 +160,8 @@ $(function(){
 								$("#it3estacion_"+id).val(val.estacion);
 								$("#it3nombre_"+id).val(val.nombre);
 								$("#it3actividad_"+id).val(val.actividad);
-								$("#it3minutos_"+id).val(val.minutos);
-								$("#it3segundos_"+id).val(val.segundos);
+								$("#it3tunidad_"+id).val(val.tunidad);
+								$("#it3tiempo_"+id).val(val.tiempo);
 							}
 						);
 					},
@@ -207,8 +208,7 @@ function add_ordplabor(){
 	htm = htm.replace(/<#i#>/g,can);
 	htm = htm.replace(/<#o#>/g,con);
 	$("#__INPL__ordplabor").before(htm);
-	$("#it3minutos_"+can).numeric(".");
-    $("#it3segundos_"+can).numeric(".");
+    $("#it3tiempo_"+can).numeric(".");
     $("#it3estacion_"+can).focus();
     enumeralabor();
 	ordplabor_cont=ordplabor_cont+1;
@@ -455,6 +455,7 @@ echo isset($form->_button_container['BL'][1])? $form->_button_container['BL'][1]
 		<th bgcolor='#7098D0'>Secu.</th>
 		<th bgcolor='#7098D0'>Estaci&oacute;n</th>
 		<th bgcolor='#7098D0'>Actividad</th>
+		<th bgcolor='#7098D0'>U. Tiempo</th>
 		<th bgcolor='#7098D0'>Tiempo</th>
 		<th bgcolor='#7098D0'>&nbsp;</th>
 	</tr>
@@ -463,16 +464,15 @@ echo isset($form->_button_container['BL'][1])? $form->_button_container['BL'][1]
 		$it3_secuencia = "it3_secuencia_$i";
 		$it3_estacion  = "it3_estacion_$i";
 		$it3_actividad = "it3_actividad_$i";
-		$it3_minutos   = "it3_minutos_$i";
-		$it3_segundos  = "it3_segundos_$i";
+		$it3_tunidad   = "it3_tunidad_$i";
+		$it3_tiempo    = "it3_tiempo_$i";
 	?>
 	<tr id='tr_ordplabor_<?php echo $i; ?>'>
 		<td class='littletablerow' align="left" ><?php echo $form->$it3_id->output.$form->$it3_secuencia->output; ?></td>
 		<td class='littletablerow' align="left" ><?php echo $form->$it3_estacion->output;  ?></td>
 		<td class='littletablerow' align="left" ><?php echo $form->$it3_actividad->output; ?></td>
-		<td class='littletablerow' align="right">
-			<?php echo $form->$it3_minutos->output;   ?>:
-			<?php echo $form->$it3_segundos->output;  ?>
+		<td class='littletablerow' align="center"><?php echo $form->$it3_tunidad->output;   ?></td>
+		<td class='littletablerow' align="right"><?php echo $form->$it3_tiempo->output;    ?> </td>
 		</td>
 		<?php if($form->_status!='show') {?>
 			<td class="littletablerow">
