@@ -56,7 +56,7 @@ $campos2=$form->js_escape($scampos2);
 
 
 $campos3   =$form->template_details('sinvplabor');
-$scampos3  ='<tr id="tr_sinvpitem_<#i#>">';
+$scampos3  ='<tr id="tr_sinvplabor_<#i#>">';
 $scampos3 .='<td class="littletablerow" align="left" >'.$campos3['it3estacion']['field'].'</td>';
 $scampos3 .='<td class="littletablerow" align="left" >'.$campos3['it3actividad']['field'].'</td>';
 $scampos3 .='<td class="littletablerow" align="right">'.$campos3['it3tunidad']['field'].'</td>';
@@ -1444,11 +1444,11 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 				$it3tunidad  = "it3tunidad_$i";
 				$it3tiempo   = "it3tiempo_$i";
 			?>
-			<tr id='tr_sinvpitem_<?=$i;?>'>
+			<tr id='tr_sinvplabor_<?=$i;?>'>
 				<td class="littletablerow" align="left" nowrap><?php echo $form->$it3estacion->output;  ?></td>
 				<td class="littletablerow" align="left"       ><?php echo $form->$it3actividad->output; ?></td>
 				<td class="littletablerow" align="right"      ><?php echo $form->$it3tunidad->output;   ?></td>
-				<td class="littletablerow" align="right"      ><?php echo $form->$it3tiempo->output;  ?></td>
+				<td class="littletablerow" align="right"      ><?php echo $form->$it3tiempo->output;    ?></td>
 				<?php if($form->_status!='show'){?>
 				<td class="littletablerow" align="center">
 					<a href='#' onclick='del_sinvplabor(<?=$i ?>);return false;'><?php echo img('images/delete.jpg') ?></a>

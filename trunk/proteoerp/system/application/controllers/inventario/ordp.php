@@ -63,7 +63,7 @@ class ordp extends Controller {
 
 		$grid = new DataGrid('');
 		$grid->use_function('dicstatus');
-		$grid->order_by('id');
+		$grid->order_by('id','desc');
 		$grid->per_page = 40;
 
 		$grid->column_orderby('N&uacute;mero',$uri,'numero','align="left"');
@@ -125,6 +125,7 @@ class ordp extends Controller {
 		$edit->status->option('E','Produciendo');
 		$edit->status->option('P','Pausado');
 		$edit->status->option('C','Cerrado');
+		$edit->status->option('T','Terminado');
 		$edit->status->rule='enum[A,P,Es,C]';
 		$edit->status->style='width:100px';
 		$edit->status->mode='autohide';
@@ -163,6 +164,16 @@ class ordp extends Controller {
 		$edit->desca->maxlength=50;
 		$edit->desca->type ='inputhidden';
 		$edit->desca->pointer=true;
+
+		$edit->almacen= new dropdownField ('Almac&eacute;n', 'almacen');
+		$edit->almacen->options('SELECT ubica,ubides FROM caub WHERE ubica NOT IN (\'APRO\',\'PROD\') AND gasto=\'N\' ORDER BY ubides');
+		$edit->almacen->rule='required';
+		$alma = $this->secu->getalmacen();
+		if(strlen($alma)<=0){
+			$alma = $this->datasis->traevalor('ALMACEN');
+		}
+		$edit->almacen->insertValue=$alma;
+		$edit->almacen->style='width:200px;';
 
 		$edit->estampa = new autoUpdateField('estampa' ,date('Ymd'), date('Ymd'));
 		$edit->usuario = new autoUpdateField('usuario',$this->secu->usuario(),$this->secu->usuario());
@@ -297,6 +308,17 @@ class ordp extends Controller {
 		//**************************************
 
 		$edit->buttons('modify','save','undo','delete','add','back','add_rel');
+		$stat=$edit->_dataobject->get('status');
+		if($stat=='A'){
+			$accion="javascript:window.location='".site_url('inventario/stra/creadordp/'.$edit->_dataobject->pk['id'].'/insert')."'";
+			$edit->button_status('btn_reserva','Reservar',$accion,'TR','show');
+		}
+
+		if($stat=='C'){
+			$accion="javascript:window.location='".site_url('inventario/stra/creadordpt/'.$edit->_dataobject->pk['id'].'/insert')."'";
+			$edit->button_status('btn_terminar','Terminar',$accion,'TR','show');
+		}
+
 		$edit->build();
 
 		$script= '<script type="text/javascript" >
@@ -471,9 +493,7 @@ class ordp extends Controller {
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = heading('Bit&aacute;cora de labores');
 		$this->load->view('view_ventanas', $data);
-
 	}
-
 
 	function _bita_post_insert($do){
 		$ordp   = $do->get('id_ordp');
@@ -542,10 +562,13 @@ class ordp extends Controller {
 		$usuario = $do->get('usuario');
 		$estampa = $do->get('estampa');
 		$hora    = $do->get('hora');
+		$cana    = $do->get('cana');
 
 		$rel='ordpitems';
 		$cana=$do->count_rel($rel);
 		for($i=0;$i<$cana;$i++){
+			//$itcosto=$do->get_rel($rel,'costo',$i);
+			//$itcana =$do->get_rel($rel,'cantidad',$i);
 			$do->set_rel($rel,'numero' ,$numero  ,$i);
 			$do->set_rel($rel,'usuario',$usuario ,$i);
 			$do->set_rel($rel,'estampa',$estampa ,$i);
@@ -604,6 +627,7 @@ class ordp extends Controller {
 				`numero` VARCHAR(8) NOT NULL DEFAULT '',
 				`fecha` DATE NULL DEFAULT NULL,
 				`codigo` VARCHAR(15) NULL DEFAULT NULL COMMENT 'Codigo de inventario',
+				`almacen` VARCHAR(4) NULL DEFAULT NULL COMMENT 'Almacen de descuento',
 				`cana` DECIMAL(10,2) NULL DEFAULT NULL COMMENT 'Cantidad a producir',
 				`status` CHAR(2) NULL DEFAULT '0' COMMENT 'Activa, Pausada, Finalizada',
 				`cliente` CHAR(5) NULL DEFAULT NULL,
@@ -622,6 +646,11 @@ class ordp extends Controller {
 			COLLATE='latin1_swedish_ci'
 			ENGINE=MyISAM
 			AUTO_INCREMENT=1";
+			$this->db->simple_query($mSQL);
+		}
+
+		if ($this->db->field_exists('almacen', 'ordp')){
+			$mSQL="ALTER TABLE `ordp` ADD COLUMN `almacen` VARCHAR(4) NULL DEFAULT NULL COMMENT 'Almacen de descuento' AFTER `codigo`";
 			$this->db->simple_query($mSQL);
 		}
 
@@ -699,7 +728,7 @@ class ordp extends Controller {
 			$this->db->simple_query($mSQL);
 		}
 
-		if (!$this->db->field_exists('minutos', 'ordplabor')){
+		if ($this->db->field_exists('minutos', 'ordplabor')){
 			$mSQL="ALTER TABLE `ordplabor`
 			CHANGE COLUMN `minutos` `tunidad` CHAR(1) NULL DEFAULT 'H' AFTER `actividad`,
 			CHANGE COLUMN `segundos` `tiempo` DECIMAL(10,2) UNSIGNED NULL DEFAULT '0' AFTER `tunidad`";
