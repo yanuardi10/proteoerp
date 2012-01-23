@@ -307,11 +307,12 @@ class ordp extends Controller {
 		//fin ordppedi
 		//**************************************
 
-		$edit->buttons('modify','save','undo','delete','add','back','add_rel');
+		$edit->buttons('save','undo','add','back','add_rel');
 		$stat=$edit->_dataobject->get('status');
 		if($stat=='A'){
 			$accion="javascript:window.location='".site_url('inventario/stra/creadordp/'.$edit->_dataobject->pk['id'].'/insert')."'";
 			$edit->button_status('btn_reserva','Reservar',$accion,'TR','show');
+			$edit->buttons('modify','delete');
 		}
 
 		if($stat=='C'){
@@ -597,7 +598,7 @@ class ordp extends Controller {
 		$status=$do->get('status');
 		if($status!='A'){
 			$do->error_message_ar['pre_upd']='No se pueden modificar ordenes que ya fueron puestas en marcha';
-			//return false;
+			return false;
 		}
 		return true;
 	}
@@ -700,6 +701,24 @@ class ordp extends Controller {
 			ENGINE=MyISAM
 			AUTO_INCREMENT=1";
 			$this->db->simple_query($mSQL);
+		}
+		if (!$this->db->table_exists('ordpbita')) {
+			$mSQL="CREATE TABLE `ordpbita` (
+				`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+				`id_ordplabor` INT(11) UNSIGNED NOT NULL,
+				`id_ordp` INT(11) UNSIGNED NULL DEFAULT NULL,
+				`fechahora` DATETIME NOT NULL,
+				`status` CHAR(1) NOT NULL COMMENT 'I iniciado, P pausado, T terminado',
+				`observacion` TEXT NOT NULL,
+				`estampa` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+				`hora` VARCHAR(8) NOT NULL,
+				`usuario` VARCHAR(50) NOT NULL,
+				PRIMARY KEY (`id`),
+				INDEX `id_ordplabor` (`id_ordplabor`)
+			)
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM
+			AUTO_INCREMENT=1";
 		}
 
 		if (!$this->db->table_exists('ordplabor')) {

@@ -2533,6 +2533,17 @@ class sinv extends Controller {
 			$this->db->simple_query($mSQL);
 		}
 
+		if(!$this->db->table_exists('sinvprov')){
+			$mSQL="CREATE TABLE `sinvprov` (
+				`proveed` CHAR(5) NOT NULL DEFAULT '',
+				`codigop` CHAR(15) NOT NULL DEFAULT '',
+				`codigo` CHAR(15) NOT NULL DEFAULT '',
+				PRIMARY KEY (`proveed`, `codigop`, `codigo`)
+			)
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM";
+		}
+
 		if(!$this->db->table_exists('barraspos')){
 			$query="CREATE TABLE `barraspos` (
 				`codigo` CHAR(15) NOT NULL DEFAULT '',
