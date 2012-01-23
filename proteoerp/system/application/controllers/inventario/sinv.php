@@ -791,6 +791,7 @@ class sinv extends Controller {
 		$edit->ultimo->autcomplete=false;
 		$edit->ultimo->onkeyup = 'requeridos();';
 		$edit->ultimo->rule='required|mayorcero';
+		$edit->ultimo->autocomplete = false;
 
 		$edit->pond = new inputField('Promedio', 'pond');
 		$edit->pond->css_class='inputnum';
@@ -799,6 +800,7 @@ class sinv extends Controller {
 		$edit->pond->autcomplete=false;
 		$edit->pond->onkeyup = 'requeridos();';
 		$edit->pond->rule='required|mayorcero';
+		$edit->pond->autocomplete = false;
 
 		$edit->standard = new inputField('Standard', 'standard');
 		$edit->standard->css_class='inputnum';
@@ -806,6 +808,7 @@ class sinv extends Controller {
 		$edit->standard->size=10;
 		$edit->standard->maxlength=13;
 		$edit->standard->insertValue=0;
+		$edit->standard->autocomplete = false;
 
 		$edit->formcal = new dropdownField('Base C&aacute;lculo', 'formcal');
 		$edit->formcal->style='width:110px;';
@@ -2504,12 +2507,12 @@ class sinv extends Controller {
 			$this->db->simple_query($mSQL);
 		}
 
-		if (!$this->db->field_exists('minutos', 'sinvplabor')){
+		if ($this->db->field_exists('minutos', 'sinvplabor')){
 			$mSQL="ALTER TABLE `sinvplabor`
 			ADD COLUMN `tiempo` DECIMAL(10,2) NULL DEFAULT '0' AFTER `actividad`,
 			ADD COLUMN `tunidad` CHAR(1) NULL DEFAULT 'H' COMMENT 'Unidad de tiempo Horas Dias Semanas' AFTER `tiempo`,
 			DROP COLUMN `minutos`,
-			DROP COLUMN `segundos`;";
+			DROP COLUMN `segundos`";
 			$this->db->simple_query($mSQL);
 		}
 

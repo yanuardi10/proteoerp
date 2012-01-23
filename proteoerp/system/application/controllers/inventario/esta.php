@@ -24,7 +24,6 @@ class esta extends Controller {
 		$filter->db->from('esta AS a');
 		$filter->db->from('estajefe AS b','a.jefe=b.codigo');
 
-
 		$filter->nombre = new inputField('Nombre','nombre');
 		$filter->nombre->db_name   = 'a.nombre';
 		$filter->nombre->rule      = 'max_length[30]';
@@ -106,7 +105,6 @@ class esta extends Controller {
 
 		$edit->buttons('modify', 'save', 'add','undo', 'delete', 'back');
 		$edit->build();
-
 
 		$data['content'] = $edit->output;
 		$data['head']    = $this->rapyd->get_head();

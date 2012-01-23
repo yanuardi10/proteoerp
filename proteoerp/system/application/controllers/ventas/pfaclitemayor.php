@@ -554,16 +554,18 @@ class pfaclitemayor extends validaciones{
 				$itpreca  = $do->get_rel('itpfac', 'preca', $i);
 				$itiva    = $do->get_rel('itpfac', 'iva', $i);
 				$ittota   = $itpreca * $itcana;
-				$dbcodigoa= $this->db->escape($itcodigo);
-				$desca    = $this->datasis->dameval("SELECT descrip FROM sinv WHERE codigo=$dbcodigoa");
 				$do->set_rel('itpfac', 'tota'    , $ittota, $i);
 				$do->set_rel('itpfac', 'fecha'   , $fecha , $i);
 				$do->set_rel('itpfac', 'vendedor', $vd    , $i);
+				$dbcodigoa= $this->db->escape($itcodigo);
+				$desca    = $this->datasis->dameval("SELECT descrip FROM sinv WHERE codigo=$dbcodigoa");
 				$do->set_rel('itpfac', 'desca'   , $desca , $i);
 
 				$iva    += $ittota * ($itiva / 100);
 				$totals += $ittota;
 				$do->set_rel('itpfac', 'mostrado', $iva + $ittota, $i);
+			}else{
+				$do->rel_rm('itpfac',$i);
 			}
 		}
 		$totalg = $totals + $iva;
@@ -583,8 +585,9 @@ class pfaclitemayor extends validaciones{
 		$faplica= $do->get('faplica');
 
 		$iva = $totals = 0;
-		$cana = $do->count_rel('itpfac');
-		for($i = 0;$i < $cana;$i++){
+		//$cana  = $do->count_rel('itpfac');
+		$claves=array_keys($do->data_rel['itpfac']);
+		foreach($claves as $i){
 			$codigoa = $do->get_rel('itpfac', 'codigoa', $i);
 			$itcana  = $do->get_rel('itpfac', 'cana'   , $i);
 			$itpreca = $do->get_rel('itpfac', 'preca'  , $i);
@@ -609,6 +612,10 @@ class pfaclitemayor extends validaciones{
 			$do->set_rel('itpfac', 'tota'    , $ittota, $i);
 			$do->set_rel('itpfac', 'fecha'   , $fecha , $i);
 			$do->set_rel('itpfac', 'vendedor', $vd    , $i);
+
+			$dbcodigoa= $this->db->escape($codigoa);
+			$desca    = $this->datasis->dameval("SELECT descrip FROM sinv WHERE codigo=$dbcodigoa");
+			$do->set_rel('itpfac', 'desca'   , $desca , $i);
 
 			$iva    += $ittota*$itiva/100;
 			$totals += $ittota;
@@ -642,8 +649,8 @@ class pfaclitemayor extends validaciones{
 	}
 
 	function _post_insert($do){
-		$cana = $do->count_rel('itpfac');
-		for($i = 0;$i < $cana;$i++){
+		$claves=array_keys($do->data_rel['itpfac']);
+		foreach($claves as $i){
 			$itcodigo= $do->get_rel('itpfac', 'codigoa', $i);
 			$itcana  = $do->get_rel('itpfac', 'cana', $i);
 			$mSQL = "UPDATE sinv SET exdes=exdes+$itcana WHERE codigo=".$this->db->escape($itcodigo);
@@ -664,8 +671,8 @@ class pfaclitemayor extends validaciones{
 
 
 	function _post_update($do){
-		$cana = $do->count_rel('itpfac');
-		for($i = 0;$i < $cana;$i++){
+		$claves=array_keys($do->data_rel['itpfac']);
+		foreach($claves as $i){
 			$itcodigo= $do->get_rel('itpfac', 'codigoa', $i);
 			$itcana  = $do->get_rel('itpfac', 'cana', $i);
 			$mSQL = "UPDATE sinv SET exdes=exdes+$itcana WHERE codigo=".$this->db->escape($itcodigo);

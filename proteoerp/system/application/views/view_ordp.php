@@ -384,6 +384,9 @@ function enumeralabor(){
 							</tr><tr>
 								<td class="littletablerowth"><?php echo $form->status->label  ?>*</td>
 								<td class="littletablerow">  <?php echo $form->status->output ?></td>
+							</tr><tr>
+								<td class="littletablerowth"><?php echo $form->almacen->label  ?>*</td>
+								<td class="littletablerow">  <?php echo $form->almacen->output ?></td>
 							</tr>
 						</table>
 					</fieldset>

@@ -1,7 +1,7 @@
 <?php
-$container_bl=join("&nbsp;", $form->_button_container["BL"]);
-$container_br=join("&nbsp;", $form->_button_container["BR"]);
-$container_tr=join("&nbsp;", $form->_button_container["TR"]);
+$container_bl=join('&nbsp;', $form->_button_container['BL']);
+$container_br=join('&nbsp;', $form->_button_container['BR']);
+$container_tr=join('&nbsp;', $form->_button_container['TR']);
 
 if ($form->_status=='delete' || $form->_action=='delete' || $form->_status=='unknow_record'):
 	echo $form->output;
@@ -59,7 +59,7 @@ function del_itstra(id){
 </script>
 <?php } ?>
 
-<table align='center' width="80%">
+<table align='center' width='100%'>
 	<tr>
 		<td align=right><?php echo $container_tr?></td>
 	</tr>
@@ -77,7 +77,7 @@ function del_itstra(id){
 			</tr>
 			<tr>
 				<td class="littletableheader"><?php echo $form->recibe->label  ?>*&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->recibe->output ?>&nbsp;</td>				
+				<td class="littletablerow">   <?php echo $form->recibe->output ?>&nbsp;</td>
 				<td class="littletableheader"><?php echo $form->observ1->label  ?>&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->observ1->output ?>&nbsp;</td>
 
