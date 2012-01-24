@@ -917,7 +917,11 @@ class DataDetails extends DataForm{
 			if(empty($this->$obj->rel_id)){
 				$requestValue = $this->ci->input->post($name);
 				if($requestValue === FALSE AND $this->_dataobject->loaded){
-					$requestValue =$this->_dataobject->get($this->$obj->db_name);
+					if($this->$obj->pointer){
+						$requestValue =$this->_dataobject->get_pointer($this->$obj->db_name);
+					}else{
+						$requestValue =$this->_dataobject->get($this->$obj->db_name);
+					}
 					if(empty($requestValue)) $requestValue=FALSE;
 				}
 				return $requestValue;

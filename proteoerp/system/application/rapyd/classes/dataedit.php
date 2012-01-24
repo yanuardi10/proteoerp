@@ -499,7 +499,11 @@ class DataEdit extends DataForm {
 			$name = $this->$obj->name;
 			$requestValue = $this->ci->input->post($name);
 			if ($requestValue === false AND $this->_dataobject->loaded) {
-				$requestValue = $this->_dataobject->get($this->$obj->db_name);
+				if($this->$obj->pointer){
+					$requestValue =$this->_dataobject->get_pointer($this->$obj->db_name);
+				}else{
+					$requestValue =$this->_dataobject->get($this->$obj->db_name);
+				}
 				if (empty($requestValue)) $requestValue = false;
 			}
 		}elseif($this->_dataobject->loaded){

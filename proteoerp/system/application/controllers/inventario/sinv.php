@@ -532,7 +532,6 @@ class sinv extends Controller {
 				,array('pond'    => 'itpond_<#i#>')
 				,array('pond'    => 'itpond_<#i#>_val')
 				,array('base1'   => 'itprecio1_<#i#>')
-
 			),
 			'p_uri' => array(4 => '<#i#>'),
 			'titulo' => 'Buscar Articulo',
@@ -571,10 +570,13 @@ class sinv extends Controller {
 		$bSINV_I = $this->datasis->p_modbus($modbus, '<#i#>',800,600,'sinv_i');
 
 		$do = new DataObject('sinv');
+		$do->pointer('grup' , 'grup.grupo=sinv.grupo' , 'grup.grupo AS grupgrupo' , 'left');
+		$do->pointer('line' , 'line.linea=grup.linea' , 'line.linea AS linelinea' , 'left');
+		$do->pointer('dpto' , 'dpto.depto=line.depto' , 'dpto.depto AS dptodepto' , 'left');
 		$do->rel_one_to_many('sinvcombo' , 'sinvcombo' , array('codigo' => 'combo'));
 		$do->rel_one_to_many('sinvpitem' , 'sinvpitem' , array('codigo' => 'producto'));
 		$do->rel_one_to_many('sinvplabor', 'sinvplabor', array('codigo' => 'producto'));
-		$do->rel_pointer('sinvcombo'     , 'sinv p'    , 'p.codigo=sinvcombo.codigo', 'p.descrip AS sinvdescrip,p.pond AS sinvpond,p.ultimo sinvultimo,p.formcal sinvformcal,p.precio1 sinvprecio1');
+		$do->rel_pointer('sinvcombo'     , 'sinv AS p' , 'p.codigo=sinvcombo.codigo', 'p.descrip AS sinvdescrip,p.pond AS sinvpond,p.ultimo sinvultimo,p.formcal sinvformcal,p.precio1 sinvprecio1');
 
 		if($status=='create' && !empty($id)){
 			$do->load($id);
@@ -607,10 +609,20 @@ class sinv extends Controller {
 		$edit->alterno->maxlength=15;
 		$edit->alterno->rule = 'trim|strtoupper|unique';
 
-		$edit->enlace  = new inputField('C&oacute;digo Caja', 'enlace');
+		$edit->enlace  = new inputField('Caja', 'enlace');
 		$edit->enlace ->size=15;
 		$edit->enlace->maxlength=15;
 		$edit->enlace->rule = 'trim|strtoupper';
+		//$edit->enlace->append('Solo si es fracci&oacute;n');
+
+		$edit->aumento = new inputField('Aumento %', 'aumento');
+		$edit->aumento->css_class='inputnum';
+		$edit->aumento->size=5;
+		$edit->aumento->maxlength=8;
+		$edit->aumento->autcomplete=false;
+		$edit->aumento->rule='mayorcero';
+		$edit->aumento->autocomplete = false;
+		$edit->aumento->append('Solo si es fracci&oacute;n');
 
 		$edit->barras = new inputField('C&oacute;digo Barras', 'barras');
 		$edit->barras->size=15;
@@ -651,18 +663,23 @@ class sinv extends Controller {
 		$edit->depto->option('','Seleccione un Departamento');
 		$edit->depto->options("SELECT depto, CONCAT(depto,'-',descrip) descrip FROM dpto WHERE tipo='I' ORDER BY depto");
 		$edit->depto->append($AddDepto);
+		$edit->depto->db_name='dptodepto';
+		$edit->depto->pointer=true;
 
 		$AddLinea='<a href="javascript:add_linea();" title="Haz clic para Agregar una nueva Linea;">'.image('list_plus.png','Agregar',array("border"=>"0")).'</a>';
 		$edit->linea = new dropdownField('L&iacute;nea','linea');
 		$edit->linea->rule ='required';
 		$edit->linea->style='width:300px;';
 		$edit->linea->append($AddLinea);
+		$edit->linea->db_name='linelinea';
+		$edit->linea->pointer=true;
 		$depto=$edit->getval('depto');
 		if($depto!==FALSE){
 			$edit->linea->options("SELECT linea, CONCAT(LINEA,'-',descrip) descrip FROM line WHERE depto='$depto' ORDER BY descrip");
 		}else{
 			$edit->linea->option('','Seleccione un Departamento primero');
 		}
+
 
 		$AddGrupo='<a href="javascript:add_grupo();" title="Haz clic para Agregar un nuevo Grupo;">'.image('list_plus.png','Agregar',array("border"=>"0")).'</a>';
 		$edit->grupo = new dropdownField('Grupo', 'grupo');
