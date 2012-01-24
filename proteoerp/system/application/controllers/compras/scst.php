@@ -235,8 +235,8 @@ class Scst extends Controller {
 		$edit->fecha->size = 10;
 		$edit->fecha->rule ='required';
 		$transac=$edit->get_from_dataobjetct('transac');
-		if(!empty($transac))
-		$edit->fecha->mode='autohide';
+		//if(!empty($transac))
+		//$edit->fecha->mode='autohide';
 
 		$edit->vence = new DateonlyField('Vence', 'vence','d/m/Y');
 		$edit->vence->insertValue = date('Y-m-d');
@@ -1282,7 +1282,8 @@ class Scst extends Controller {
 				$do->set_rel('itscst','precio'.$o ,$pp,$i);
 			}
 
-			$do->set_rel('itscst','importe' ,$itimporte,$i);
+			$itimporte = $do->get_rel('itscst','importe' ,$i);
+			//$do->set_rel('itscst','importe' ,$itimporte,$i);
 			$do->set_rel('itscst','montoiva',$iiva     ,$i);
 			$do->set_rel('itscst','ultimo'  ,$row->ultimo,$i);
 			$do->set_rel('itscst','fecha'   ,$fecha    ,$i);
