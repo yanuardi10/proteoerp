@@ -168,8 +168,20 @@ class sitemslog extends ia {
 			return $rt;
 		}
 
+		function learn($id,$activo){
+
+			$options = array(
+			    'N'  => 'No refiere',
+			    'A'  => 'Activo',
+			    'D'  => 'No Activo',
+			);
+
+			$rt=form_dropdown("ll[$id]", $options,$activo);
+			return $rt;
+		}
+
 		$grid = new DataGrid('');
-		$grid->use_function('estu');
+		$grid->use_function('estu','learn');
 		$grid->order_by('usuario');
 		$grid->per_page = 40;
 
@@ -181,17 +193,65 @@ class sitemslog extends ia {
 		$grid->column_orderby('Modificado','<nformat><#modifica#></nformat>','modifica','align="right"');
 		$grid->column_orderby('Facturado' ,'<nformat><#facturado#></nformat>','facturado','align="right"');
 		$grid->column('Activo' ,'<estu><#agrega#>|<#eliminado#>|<#modifica#>|<#facturado#></estu>','align="center"');
-		$grid->column('Entrenar' ,$url,'align="center"');
+		//$grid->column('Entrenar' ,$url,'align="center"');
+		$grid->column_orderby('Referencia' ,'<learn><#id#>|<#aprende#></learn>','aprende','align="center"');
 		$grid->build();
 
 		//$data['filtro']  = $filter->output;
-		$data['content'] = $filter->output.$grid->output;
+		$data['content'] = $filter->output;
+		$data['content'].= form_open('supervisor/sitemslog/maprende');
+		$data['content'].= $grid->output;
+		$data['content'].= form_submit('mysubmit', 'Enviar').form_close();
 		$data['head']    = $this->rapyd->get_head().script('jquery.js');
 		$data['title']   = heading('Estudio del movimiento de cajas');
 		$this->load->view('view_ventanas', $data);
 	}
 
-	function maprende($id){
+	function _entrenar(){
+		$this->E=0.5;
+		$this->db->select(array('aprende','agrega','eliminado','modifica','facturado','id'));
+		$this->db->from('sitemsest');
+		$this->db->where('aprende <>','N');
+
+		$query = $this->db->get();
+		if($query->num_rows() > 0){
+			foreach ($query->result_array() as $row){
+				for($i=0;$i<10;$i++){
+					$neuro=$this->neurona('sitemslog',$row['agrega'],$row['eliminado'],$row['modifica'] ,$row['facturado']);
+					$neuro=intval($neuro);
+					$learn=($row['aprende']=='A')? 1 :-1;
+					if($neuro!=$learn){
+						echo ' '.$row['id'].' Aprende '.$learn.' | '.$neuro;
+						$this->aprende('sitemslog',array($row['agrega'],$row['eliminado'],$row['modifica'],$row['facturado']),$learn);
+					}else{
+						echo ' Aprendio '.br();
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	function maprende(){
+		$url='supervisor/sitemslog/estudio';
+		$this->rapyd->uri->keep_persistence();
+		$persistence = $this->rapyd->session->get_persistence($url, $this->rapyd->uri->gfid);
+		$back= (isset($persistence['back_uri'])) ?$persistence['back_uri'] : $url;
+
+		$ll=$this->input->post('ll');
+		if(is_array($ll)){
+			foreach($ll as $id=>$val){
+				$dbval=$this->db->escape($val);
+				$dbid =$this->db->escape($id);
+				$mSQL="UPDATE sitemsest SET aprende=$dbval WHERE id=$dbid";
+				$this->db->simple_query($mSQL);
+			}
+		}
+		$this->_entrenar();
+		redirect($back);
+	}
+
+	/*function maprende($id){
 		$this->E=0.5;
 		$url='supervisor/sitemslog/estudio';
 		$this->rapyd->uri->keep_persistence();
@@ -205,7 +265,7 @@ class sitemslog extends ia {
 		$this->aprende('sitemslog',array($row['agrega'],$row['eliminado'],$row['modifica'],$row['facturado']),$learn);
 
 		redirect($back);
-	}
+	}*/
 
 	function instalar(){
 		if(!$this->db->table_exists('sitemsest')){
