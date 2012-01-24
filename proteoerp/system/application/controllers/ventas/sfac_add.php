@@ -833,26 +833,31 @@ class sfac_add extends validaciones {
 
 		$cana=$do->count_rel('sfpa');
 		for($i=0;$i<$cana;$i++){
-			$sfpatipo  = $do->get_rel('sfpa', 'tipo_doc',$i);
-			$sfpa_monto= $do->get_rel('sfpa','monto'    ,$i);
-			if($tipoa=='D'){
-				$sfpa_monto *= -1;
-			}
+			$sfpatip   = $do->get_rel('sfpa', 'tipo',$i);
+			if(!empty($sfpatip)){
+				$sfpatipo  = $do->get_rel('sfpa', 'tipo_doc',$i);
+				$sfpa_monto= $do->get_rel('sfpa','monto'    ,$i);
+				if($tipoa=='D'){
+					$sfpa_monto *= -1;
+				}
 
-			if($sfpatipo=='EF') $do->set_rel('sfpa', 'fecha' , $fecha , $i);
-			$do->set_rel('sfpa','tipo_doc' ,($tipoa=='F')? 'FC':'DE',$i);
-			$do->set_rel('sfpa','transac'  ,$transac   ,$i);
-			$do->set_rel('sfpa','vendedor' ,$vd        ,$i);
-			$do->set_rel('sfpa','cod_cli'  ,$cliente   ,$i);
-			$do->set_rel('sfpa','f_factura',$fecha     ,$i);
-			$do->set_rel('sfpa','cobro'    ,$fecha     ,$i);
-			$do->set_rel('sfpa','cobrador' ,$cajero    ,$i);
-			$do->set_rel('sfpa','numero'   ,$numero    ,$i);
-			$do->set_rel('sfpa','almacen'  ,$almacen   ,$i);
-			$do->set_rel('sfpa','usuario'  ,$usuario   ,$i);
-			$do->set_rel('sfpa','estampa'  ,$estampa   ,$i);
-			$do->set_rel('sfpa','hora'     ,$hora      ,$i);
-			$do->set_rel('sfpa','monto'    ,$sfpa_monto,$i);
+				if($sfpatipo=='EF') $do->set_rel('sfpa', 'fecha' , $fecha , $i);
+				$do->set_rel('sfpa','tipo_doc' ,($tipoa=='F')? 'FC':'DE',$i);
+				$do->set_rel('sfpa','transac'  ,$transac   ,$i);
+				$do->set_rel('sfpa','vendedor' ,$vd        ,$i);
+				$do->set_rel('sfpa','cod_cli'  ,$cliente   ,$i);
+				$do->set_rel('sfpa','f_factura',$fecha     ,$i);
+				$do->set_rel('sfpa','cobro'    ,$fecha     ,$i);
+				$do->set_rel('sfpa','cobrador' ,$cajero    ,$i);
+				$do->set_rel('sfpa','numero'   ,$numero    ,$i);
+				$do->set_rel('sfpa','almacen'  ,$almacen   ,$i);
+				$do->set_rel('sfpa','usuario'  ,$usuario   ,$i);
+				$do->set_rel('sfpa','estampa'  ,$estampa   ,$i);
+				$do->set_rel('sfpa','hora'     ,$hora      ,$i);
+				$do->set_rel('sfpa','monto'    ,$sfpa_monto,$i);
+			}else{
+				$do->rel_rm('sfpa',$i);
+			}
 		}
 
 		$do->set('inicial',($credito>0)? $totalg-$credito : 0);
