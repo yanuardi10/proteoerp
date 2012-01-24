@@ -1054,26 +1054,28 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 					<td class="littletablerow"><?=$form->alterno->output   ?></td>
 				</tr>
 				<tr>
+					<td class='littletableheaderc'><?php echo $form->barras->label ?></td>
+					<td class="littletablerow">    <?php echo $form->barras->output     ?></td>
+				</tr>
+				<tr>
 					<td class='littletableheaderc'>Caja</td>
 					<td class="littletablerow">
 						<?php
 						if($form->_status=='show'){
-							if( !empty($form->enlace->output))
-							{
-								$mID = $this->datasis->dameval("SELECT id FROM sinv WHERE codigo='".addslashes(trim($form->enlace->output))."'");
-								echo anchor('inventario/sinv/dataedit/show/'.$mID,$form->enlace->output);
+							if( !empty($form->enlace->value)){
+								$dbenlace=$this->db->escape($form->enlace->value);
+								$mID = $this->datasis->dameval("SELECT id FROM sinv WHERE codigo=$dbenlace");
+								echo anchor('inventario/sinv/dataedit/show/'.$mID,$form->enlace->value);
 							}
-						} else { echo $form->enlace->output; }
+						}else{
+							echo $form->enlace->output;
+						}
 						?>
 					</td>
 				</tr>
 				<tr>
-					<td class='littletableheaderc'><?php echo $form->barras->label   ?></td>
-					<td class="littletablerow"><?=$form->barras->output   ?></td>
-				</tr>
-				<tr>
-					<td class='littletableheaderc'><?php echo $form->ubica->label; ?></td>
-					<td class="littletablerow">    <?php echo $form->ubica->output;?></td>
+					<td class='littletableheaderc'><?php echo $form->aumento->label;  ?></td>
+					<td class="littletablerow">    <?php echo $form->aumento->output; ?></td>
 				</tr>
 			</table>
 		</td>
@@ -1089,11 +1091,15 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 				</tr>
 				<tr>
 					<td class='littletableheaderc'><?=$form->marca->label ?></td>
-					<td class="littletablerow"><?=$form->marca->output   ?></td>
+					<td class="littletablerow"> <?=$form->marca->output   ?></td>
 				</tr>
 				<tr>
 					<td class='littletableheaderc'><?=$form->modelo->label ?></td>
-					<td class="littletablerow"><?=$form->modelo->output   ?></td>
+					<td class="littletablerow">    <?=$form->modelo->output   ?></td>
+				</tr>
+				<tr>
+					<td class='littletableheaderc'><?php echo $form->ubica->label;  ?></td>
+					<td class="littletablerow">    <?php echo $form->ubica->output; ?></td>
 				</tr>
 			</table>
 		</td>
@@ -1235,8 +1241,8 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 		<td valign='top'  align='left'>
 			<table border='0' >
 				<tr>
-					<td class='littletableheaderc'><?=$form->clase->label ?></td>
-					<td class="littletablerow"><?=$form->clase->output   ?></td>
+					<td class='littletableheaderc'><?php echo $form->clase->label ?></td>
+					<td class="littletablerow">    <?php echo $form->clase->output   ?></td>
 				</tr>
 				<tr>
 					<td class='littletableheaderc'><?=$form->garantia->label ?></td>
@@ -1293,37 +1299,37 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 				</tr>
 			  	<tr>
 					<td class="littletableheaderc">1</td>
-					<td class="littletablerow" align='right'><?=$form->margen1->output ?></td>
-					<td class="littletablerow" align='right'><?=$form->base1->output   ?></td>
-					<td class="littletablerow" align='right'><?=$form->precio1->output ?></td>
+					<td class="littletablerow" align='right'><?php echo $form->margen1->output ?></td>
+					<td class="littletablerow" align='right'><?php echo $form->base1->output   ?></td>
+					<td class="littletablerow" align='right'><?php echo $form->precio1->output ?></td>
 				</tr>
 				<tr>
 					<td class="littletableheaderc">2</td>
-					<td class="littletablerow" align='right'><?=$form->margen2->output ?></td>
-					<td class="littletablerow" align='right'><?=$form->base2->output   ?></td>
-					<td class="littletablerow" align='right'><?=$form->precio2->output ?></td>
+					<td class="littletablerow" align='right'><?php echo $form->margen2->output ?></td>
+					<td class="littletablerow" align='right'><?php echo $form->base2->output   ?></td>
+					<td class="littletablerow" align='right'><?php echo $form->precio2->output ?></td>
 				</tr>
 				<tr>
 					<td class="littletableheaderc">3</td>
-					<td class="littletablerow" align='right'><?=$form->margen3->output ?></td>
-					<td class="littletablerow" align='right'><?=$form->base3->output   ?></td>
-					<td class="littletablerow" align='right'><?=$form->precio3->output ?></td>
+					<td class="littletablerow" align='right'><?php echo $form->margen3->output ?></td>
+					<td class="littletablerow" align='right'><?php echo $form->base3->output   ?></td>
+					<td class="littletablerow" align='right'><?php echo $form->precio3->output ?></td>
 				</tr>
 				<tr>
 					<td class="littletableheaderc">4</td>
-					<td class="littletablerow" align='right'><?=$form->margen4->output ?></td>
-					<td class="littletablerow" align='right'><?=$form->base4->output   ?></td>
-					<td class="littletablerow" align='right'><?=$form->precio4->output ?></td>
+					<td class="littletablerow" align='right'><?php echo $form->margen4->output ?></td>
+					<td class="littletablerow" align='right'><?php echo $form->base4->output   ?></td>
+					<td class="littletablerow" align='right'><?php echo $form->precio4->output ?></td>
 				</tr>
 				<tr>
-					<td class="littletablerow" align='right'><?=$form->pm->label  ?>%</td>
-					<td class="littletablerow" align='right'><?=$form->pm->output ?></td>
+					<td class="littletablerow" align='right'><?php echo $form->pm->label  ?>%</td>
+					<td class="littletablerow" align='right'><?php echo $form->pm->output ?></td>
 					<td class="littletableheaderc">&nbsp;</td>
 					<td class="littletableheaderc">&nbsp;</td>
 				</tr>
 				<tr>
-					<td class="littletablerow" align='right'><?=$form->mmargen->label   ?>%</td>
-					<td class="littletablerow" align='right'><?=$form->mmargen->output ?></td>
+					<td class="littletablerow" align='right'><?php echo $form->mmargen->label  ?>%</td>
+					<td class="littletablerow" align='right'><?php echo $form->mmargen->output ?></td>
 					<td class="littletableheaderc">&nbsp;</td>
 					<td class="littletableheaderc">&nbsp;</td>
 				</tr>
