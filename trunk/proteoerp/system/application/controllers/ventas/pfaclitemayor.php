@@ -251,7 +251,7 @@ class pfaclitemayor extends validaciones{
 		$numero=$edit->get_from_dataobjetct('numero');
 		if($numero!==false){
 			$dbnumero=$this->db->escape($numero);
-			$this->db->join('itpfac AS b','a.codigo=b.codigoa AND b.numa='.$dbnumero,'left');
+			$this->db->join('itpfac AS b','a.codigo=b.codigoa AND b.numa='.$dbnumero);
 		}
 		$this->db->join('marc AS c','a.marca=c.marca');
 		$this->db->join('grup AS d','a.grupo=d.grupo');
@@ -478,7 +478,7 @@ class pfaclitemayor extends validaciones{
 			$edit->button('btn_add', 'Agregar', $action, 'TR');
 		}
 
-		$edit->buttons('save', 'modify','undo', 'delete', 'back');
+		$edit->buttons('save','undo', 'delete', 'back');
 
 		if($this->genesal){
 			$edit->build();
