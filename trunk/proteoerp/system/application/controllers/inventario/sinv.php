@@ -612,7 +612,7 @@ class sinv extends Controller {
 		$edit->enlace  = new inputField('Caja', 'enlace');
 		$edit->enlace ->size=15;
 		$edit->enlace->maxlength=15;
-		$edit->enlace->rule = 'trim|strtoupper';
+		$edit->enlace->rule = 'trim|strtoupper|existesinv';
 		//$edit->enlace->append('Solo si es fracci&oacute;n');
 
 		$edit->aumento = new inputField('Aumento %', 'aumento');

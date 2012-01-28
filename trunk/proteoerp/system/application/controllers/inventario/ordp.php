@@ -412,11 +412,13 @@ class ordp extends Controller {
 		$grid->order_by('id');
 		$grid->per_page = 40;
 
+		$link1=anchor('/formatos/ver/ORDPBITA/<#id#>','Comprobante');
 		$grid->column_orderby('Fecha','<dbdate_to_human><#fechahora#>|d/m/Y H:i</dbdate_to_human>','fechahora','align="center"');
 		$grid->column_orderby('Acci&oacute;n'     ,'<dicstatus><#status#></dicstatus>','status','align="center"');
 		$grid->column_orderby('Observaci&oacute;n','observacion','observacion','align="left"');
 		$grid->column_orderby('Registro','<dbdate_to_human><#estampa#>|d/m/Y H:i:s</dbdate_to_human>','estampa','align="center"');
 		$grid->column_orderby('Usuario','usuario','usuario','align="left"');
+		$grid->column('',$link1,'align="center"');
 
 		$grid->build();
 
@@ -751,6 +753,13 @@ class ordp extends Controller {
 			$mSQL="ALTER TABLE `ordplabor`
 			CHANGE COLUMN `minutos` `tunidad` CHAR(1) NULL DEFAULT 'H' AFTER `actividad`,
 			CHANGE COLUMN `segundos` `tiempo` DECIMAL(10,2) UNSIGNED NULL DEFAULT '0' AFTER `tunidad`";
+			$this->db->simple_query($mSQL);
+		}
+
+		if($this->db->field_exists('ordp', 'stra')){
+			$mSQL="ALTER TABLE `stra`
+			ADD COLUMN `ordp` VARCHAR(8) NULL DEFAULT NULL AFTER `numere`,
+			ADD COLUMN `esta` VARCHAR(5) NULL DEFAULT NULL AFTER `ordp`";
 			$this->db->simple_query($mSQL);
 		}
 	}
