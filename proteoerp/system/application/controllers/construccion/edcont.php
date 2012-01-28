@@ -610,10 +610,6 @@ class edcont extends Controller {
 			$this->db->simple_query($mSQL);
 		}
 
-		if(!$this->db->field_exists('especial', 'itedcont')){
-			$mSQL= "ALTER TABLE `itedcont` ADD COLUMN `especial` CHAR(1) NOT NULL DEFAULT 'N' AFTER `id_edcont`";
-		}
-
 		if (!$this->db->table_exists('itedcont')) {
 			$mSQL="CREATE TABLE `itedcont` (
 			  `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -624,6 +620,10 @@ class edcont extends Controller {
 			 KEY `id_edcont` (`id_edcont`)
 			) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=latin1";
 			$this->db->simple_query($mSQL);
+		}
+
+		if(!$this->db->field_exists('especial', 'itedcont')){
+			$mSQL= "ALTER TABLE `itedcont` ADD COLUMN `especial` CHAR(1) NOT NULL DEFAULT 'N' AFTER `id_edcont`";
 		}
 
 	}
