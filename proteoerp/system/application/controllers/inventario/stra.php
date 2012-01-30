@@ -72,6 +72,7 @@ class stra extends Controller {
 			'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'Descripci&oacute;n'),
 			'retornar'=>array('codigo'=>'codigo_<#i#>','descrip'=>'descrip_<#i#>'),
 			'where'   =>'activo = "S" AND tipo="Articulo"',
+			'script'  =>array('post_modbus("<#i#>")'),
 			'p_uri'=>array(4=>'<#i#>'),
 			'titulo'  =>'Busqueda de producto en inventario');
 		$btn=$this->datasis->p_modbus($modbus,'<#i#>');
@@ -132,15 +133,15 @@ class stra extends Controller {
 		$edit->codigo->append($btn);
 		$edit->codigo->rule = 'trim|required';
 		$edit->codigo->rel_id='itstra';
-		$edit->codigo->readonly=true;
 		$edit->codigo->maxlength=15;
 		$edit->codigo->size     =15;
 
 		$edit->descrip = new inputField('Descripci&oacute;n', 'descrip_<#i#>');
-		$edit->descrip->db_name='descrip';
-		$edit->descrip->rel_id='itstra';
-		$edit->descrip->maxlength=45;
-		$edit->descrip->size     =40;
+		$edit->descrip->db_name  = 'descrip';
+		$edit->descrip->rel_id   = 'itstra';
+		$edit->descrip->type     = 'inputhidden';
+		$edit->descrip->maxlength= 45;
+		$edit->descrip->size     = 40;
 
 		$edit->cantidad = new inputField('Cantidad', 'cantidad_<#i#>');
 		$edit->cantidad->db_name  ='cantidad';
@@ -156,16 +157,23 @@ class stra extends Controller {
 		$edit->hora    = new autoUpdateField('hora',date('H:i:s'), date('H:i:s'));
 		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
 
-		$edit->buttons('save', 'undo', 'back','add_rel');
+		$edit->buttons('save', 'undo', 'add','back','add_rel');
 
 		if($this->genesal){
 			$edit->build();
 			$conten['form']  =& $edit;
+			$data['style']   = style('redmond/jquery-ui.css');
+
+			$data['script']  = script('jquery.js');
+			$data['script'] .= script('jquery-ui.js');
+			$data['script'] .= script("jquery-impromptu.js");
+			$data['script'] .= script('plugins/jquery.numeric.pack.js');
+			$data['script'] .= script('plugins/jquery.ui.autocomplete.autoSelectOne.js');
+			$data['script'] .= script('plugins/jquery.floatnumber.js');
+			$data['script'] .= phpscript('nformat.js');
 			$data['content'] = $this->load->view('view_stra', $conten,true);
 			$data['title']   = heading('Transferencias de inventario');
-			$data['head']    = script('jquery.js').script('jquery-ui.js');
-			$data['head']   .= script('plugins/jquery.numeric.pack.js').script('plugins/jquery.meiomask.js');
-			$data['head']   .= style('vino/jquery-ui.css').$this->rapyd->get_head();
+			$data['head']    = $this->rapyd->get_head();
 			$this->load->view('view_ventanas', $data);
 		}else{
 			$edit->on_save_redirect=false;
@@ -180,21 +188,33 @@ class stra extends Controller {
 		}
 	}
 
-	function dataeditordp(){
+	function dataeditordp($numero,$esta){
+		if(!isset($_POST['codigo_0'])){
+			//SELECT c.codigo
+			//,COALESCE(b.cantidad*IF(tipoordp='E',-1,1),0) AS tracana
+			//,c.cantidad
+			//FROM stra AS a
+			//JOIN itstra AS b ON a.numero=b.numero
+			//RIGHT JOIN ordpitem AS c ON a.ordp=c.numero AND b.codigo=c.codigo
+			//WHERE c.numero='00000019'
+		}
+		$id_ordp=$this->datasis->dameval('SELECT id FROM ordp WHERE numero='.$this->db->escape($numero));
+		$this->back_dataedit='inventario/ordp/dataedit/show/'.$id_ordp;
 		$this->rapyd->load('dataobject','datadetails');
 		$modbus=array(
 			'tabla'   =>'sinv',
 			'columnas'=>array(
 				'codigo' =>'C&oacute;digo',
 				'descrip'=>'Descripci&oacute;n',
-				'precio1' =>'Precio 1',
-				'precio2' =>'Precio 2',
-				'precio3' =>'Precio 3',
-				'existen' =>'Existencia',
+				'precio1'=>'Precio 1',
+				'precio2'=>'Precio 2',
+				'precio3'=>'Precio 3',
+				'existen'=>'Existencia',
 				'peso'=>'Peso'),
 			'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'Descripci&oacute;n'),
 			'retornar'=>array('codigo'=>'codigo_<#i#>','descrip'=>'descrip_<#i#>'),
 			'where'   =>'activo = "S" AND tipo="Articulo"',
+			'script'  =>array('post_modbus("<#i#>")'),
 			'p_uri'=>array(4=>'<#i#>'),
 			'titulo'  =>'Busqueda de producto en inventario');
 		$btn=$this->datasis->p_modbus($modbus,'<#i#>');
@@ -216,7 +236,7 @@ class stra extends Controller {
 		$edit->script($script,'create');
 		$edit->script($script,'modify');
 
-		$edit->pre_process('insert','_pre_insert');
+		$edit->pre_process('insert','_pre_ordp_insert');
 		$edit->pre_process('update','_pre_update');
 		$edit->pre_process('delete','_pre_delete');
 		$edit->post_process('insert','_post_insert');
@@ -227,22 +247,31 @@ class stra extends Controller {
 		$edit->numero->apply_rules=false; //necesario cuando el campo es clave y no se pide al usuario
 		$edit->numero->when=array('show','modify');
 
+		$edit->ordp= new inputField('Orden de producci&oacute;n', 'ordp');
+		$edit->ordp->mode='autohide';
+		$edit->ordp->size=10;
+		$edit->ordp->rule='required|callback_chordp';
+		$edit->ordp->insertValue=$numero;
+		$edit->ordp->when=array('show','modify');
+
 		$edit->fecha = new  dateonlyField('Fecha', 'fecha');
 		$edit->fecha->rule='required|chfecha';
 		$edit->fecha->insertValue = date('Y-m-d');
 		$edit->fecha->size =12;
 
-		$edit->envia = new dropdownField('Almac&eacute;n que Env&iacute;a', 'envia');
-		$edit->envia->option('','Seleccionar');
-		$edit->envia->options('SELECT ubica,ubides FROM caub ORDER BY ubica');
-		$edit->envia->rule ='required';
-		$edit->envia->style='width:200px;';
+		$edit->esta = new  dropdownField('Estaci&oacute;n', 'esta');
+		$edit->esta->option('','Seleccionar');
+		$edit->esta->options('SELECT estacion,CONCAT(estacion,\'-\',nombre) AS lab FROM esta ORDER BY estacion');
+		$edit->esta->rule   = 'required';
+		$edit->esta->insertValue=$esta;
+		$edit->esta->style  = 'width:150px;';
 
-		$edit->recibe = new dropdownField('Almac&eacute;n que Recibe', 'recibe');
-		$edit->recibe->option('','Seleccionar');
-		$edit->recibe->options('SELECT ubica,ubides FROM caub ORDER BY ubica');
-		$edit->recibe->rule ='required|callback_chrecibe';
-		$edit->recibe->style='width:200px;';
+		$edit->tipoordp = new  dropdownField('Tipo de movimiento', 'tipoordp');
+		$edit->tipoordp->option('','Seleccionar');
+		$edit->tipoordp->option('E','Entrega');
+		$edit->tipoordp->option('R','Retiro' );
+		$edit->tipoordp->rule   = 'required|enum[E,R]';
+		$edit->tipoordp->style  = 'width:150px;';
 
 		$edit->observ1 = new inputField('Observaci&oacute;n','observ1');
 		$edit->observ1->rule='max_length[60]|trim';
@@ -253,17 +282,17 @@ class stra extends Controller {
 		$edit->codigo = new inputField('C&oacute;digo <#o#>', 'codigo_<#i#>');
 		$edit->codigo->db_name='codigo';
 		$edit->codigo->append($btn);
-		$edit->codigo->rule = 'trim|required';
+		$edit->codigo->rule = 'trim|required|sinvexiste';
 		$edit->codigo->rel_id='itstra';
-		$edit->codigo->readonly=true;
 		$edit->codigo->maxlength=15;
 		$edit->codigo->size     =15;
 
 		$edit->descrip = new inputField('Descripci&oacute;n', 'descrip_<#i#>');
-		$edit->descrip->db_name='descrip';
-		$edit->descrip->rel_id='itstra';
-		$edit->descrip->maxlength=45;
-		$edit->descrip->size     =40;
+		$edit->descrip->db_name  = 'descrip';
+		$edit->descrip->type     = 'inputhidden';
+		$edit->descrip->rel_id   = 'itstra';
+		$edit->descrip->maxlength= 45;
+		$edit->descrip->size     = 40;
 
 		$edit->cantidad = new inputField('Cantidad', 'cantidad_<#i#>');
 		$edit->cantidad->db_name  ='cantidad';
@@ -284,11 +313,19 @@ class stra extends Controller {
 		if($this->genesal){
 			$edit->build();
 			$conten['form']  =& $edit;
-			$data['content'] = $this->load->view('view_stra', $conten,true);
-			$data['title']   = heading('Transferencias de inventario');
-			$data['head']    = script('jquery.js').script('jquery-ui.js');
-			$data['head']   .= script('plugins/jquery.numeric.pack.js').script('plugins/jquery.meiomask.js');
-			$data['head']   .= style('vino/jquery-ui.css').$this->rapyd->get_head();
+			$data['content'] = $this->load->view('view_stra_ordp', $conten,true);
+			$data['style']   = style('redmond/jquery-ui.css');
+
+			$data['script']  = script('jquery.js');
+			$data['script'] .= script('jquery-ui.js');
+			$data['script'] .= script("jquery-impromptu.js");
+			$data['script'] .= script('plugins/jquery.numeric.pack.js');
+			$data['script'] .= script('plugins/jquery.ui.autocomplete.autoSelectOne.js');
+			$data['script'] .= script('plugins/jquery.floatnumber.js');
+			$data['script'] .= phpscript('nformat.js');
+			$data['content'] = $this->load->view('view_stra_ordp', $conten,true);
+			$data['head']    = $this->rapyd->get_head();
+			$data['title']   = heading('Transferencias de inventario para producci&oacute;n');
 			$this->load->view('view_ventanas', $data);
 		}else{
 			$edit->on_save_redirect=false;
@@ -301,6 +338,18 @@ class stra extends Controller {
 			}
 			return $rt;
 		}
+	}
+
+	function chordp($numero){
+		$this->db->from('ordp');
+		$this->db->where('status <>','T');
+		$this->db->where('numero',$numero);
+		$cana=$this->db->count_all_results();
+		if($cana>0){
+			return true;
+		}
+		$this->validation->set_message('chordp','No existe una orden de producci&oacute;n abierta con el n&uacute;mero '.$numero);
+		return false;
 	}
 
 	function creadordp($id_ordp){
@@ -392,38 +441,6 @@ class stra extends Controller {
 			$codigo = $row->codigo;
 			$cana   = $row->cana;
 			if($row->status=='C'){
-				$_POST=array(
-					'btn_submit' => 'Guardar',
-					'envia'      => 'APRO',
-					'fecha'      => dbdate_to_human($row->fecha),
-					'recibe'     => 'PROD',
-					'observ1'    => 'CONSUMO ORDEN DE PROD.'.$row->numero
-				);
-
-				$sel=array('a.codigo','b.descrip','a.cantidad');
-				$this->db->select($sel);
-				$this->db->from('ordpitem AS a');
-				$this->db->join('sinv AS b','a.codigo=b.codigo');
-				$this->db->where('a.id_ordp' , $id_ordp);
-				$mSQL_2 = $this->db->get();
-				$ordpitem_row =$mSQL_2->result();
-
-				foreach ($ordpitem_row as $id=>$itrow){
-					$ind='codigo_'.$id;
-					$_POST[$ind] = $itrow->codigo;
-					$ind='descrip_'.$id;
-					$_POST[$ind] = $itrow->descrip;
-					$ind='cantidad_'.$id;
-					$_POST[$ind] = $itrow->cantidad*$cana;
-				}
-
-				$rt=$this->dataedit();
-				if(strripos($rt,'Guardada')){
-					//$data = array('status' => 'T');
-					//$this->db->where('id', $id_ordp);
-					//$this->db->update('ordp', $data);
-				}
-
 				//Hace la transferencia de lo producido al almacen
 				$_POST=array(
 					'btn_submit' => 'Guardar',
@@ -508,6 +525,18 @@ class stra extends Controller {
 		return false;
 	}
 
+	function _pre_ordp_insert($do){
+		if($do->get('tipoordp')=='E'){
+			$do->set('envia' ,'APRO');
+			$do->set('recibe','PROD');
+		}else{
+			$do->set('envia' ,'PROD');
+			$do->set('recibe','APRO');
+		}
+
+		$this->_pre_insert($do);
+	}
+
 	function _pre_insert($do){
 		$numero=$this->datasis->fprox_numero('nstra');
 		$do->set('numero',$numero);
@@ -557,10 +586,12 @@ class stra extends Controller {
 	}
 
 	function _pre_update($do){
+		$do->error_message_ar['pre_upd']='No se pueden modificar las tranferencias.';
 		return false;
 	}
 
 	function _pre_delete($do){
+		$do->error_message_ar['pre_del']='No se pueden eliminar';
 		return false;
 	}
 
@@ -570,6 +601,9 @@ class stra extends Controller {
 			ADD COLUMN `ordp` VARCHAR(8) NULL DEFAULT NULL AFTER `numere`,
 			ADD COLUMN `esta` VARCHAR(5) NULL DEFAULT NULL AFTER `ordp`";
 			$this->db->simple_query($mSQL);
+			$mSQL="ALTER TABLE `stra` ADD COLUMN `tipoordp` CHAR(1) NULL DEFAULT NULL COMMENT 'Si es entrega a estacion o retiro de estacion' AFTER `esta`";
+			$this->db->simple_query($mSQL);
+
 		}
 	}
 }

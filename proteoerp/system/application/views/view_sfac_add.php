@@ -22,7 +22,7 @@ for($o=1;$o<5;$o++){
 $scampos .= $campos['itiva']['field'];
 $scampos .= $campos['sinvtipo']['field'];
 $scampos .= $campos['sinvpeso']['field'].'</td>';
-$scampos .= '<td class="littletablerow"><a href=# onclick="del_sitems(<#i#>);return false;">'.img("images/delete.jpg").'</a></td></tr>';
+$scampos .= '<td class="littletablerow"><a href=# onclick="del_sitems(<#i#>);return false;">'.img('images/delete.jpg').'</a></td></tr>';
 $campos=$form->js_escape($scampos);
 
 $sfpa_campos=$form->template_details('sfpa');
@@ -32,7 +32,7 @@ $sfpa_scampos .='<td class="littletablerow" align="center" >'.$sfpa_campos['sfpa
 $sfpa_scampos .='<td class="littletablerow" align="left" >'.$sfpa_campos['numref']['field'].'</td>';
 $sfpa_scampos .='<td class="littletablerow" align="left" >'.$sfpa_campos['banco']['field']. '</td>';
 $sfpa_scampos .='<td class="littletablerow" align="right">'.$sfpa_campos['monto']['field']. '</td>';
-$sfpa_scampos .='<td class="littletablerow"><a href=# onclick="del_sfpa(<#i#>);return false;">'.img("images/delete.jpg").'</a></td></tr>';
+$sfpa_scampos .='<td class="littletablerow"><a href=# onclick="del_sfpa(<#i#>);return false;">'.img('images/delete.jpg').'</a></td></tr>';
 $sfpa_campos=$form->js_escape($sfpa_scampos);
 
 if(isset($form->error_string)) echo '<div class="alert">'.$form->error_string.'</div>';
@@ -521,9 +521,11 @@ function del_sfpa(id){
 <?php } ?>
 <table align='center' width="95%">
 	<tr>
-<?php if ($form->_status=='show') { ?>
+<?php if ($form->_status=='show') {
+	$id=$form->get_from_dataobjetct('id');
+?>
 		<td>
-		<a href="#" onclick="window.open('<?php echo base_url() ?>formatos/verhtml/FACTURATER/<?php echo $form->numero->value.'/'.$form->tipo_doc->value ?>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');" heigth="600" >
+		<a href="#" onclick="window.open('<?php echo base_url() ?>formatos/verhtml/FACTURA/<?php echo $id ?>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');" heigth="600" >
 		<img src='<?php echo base_url() ?>images/html_icon.gif'></a>
 		</td>
 <?php } ?>
@@ -629,7 +631,7 @@ function del_sfpa(id){
 
 				<?php if($form->_status!='show') {?>
 				<td class="littletablerow">
-					<a href='#' onclick='del_sitems(<?php echo $i ?>);return false;'><?php echo img("images/delete.jpg"); ?></a>
+					<a href='#' onclick='del_sitems(<?php echo $i ?>);return false;'><?php echo img('images/delete.jpg'); ?></a>
 				</td>
 				<?php } ?>
 			</tr>
@@ -670,7 +672,7 @@ function del_sfpa(id){
 				<td class="littletablerow">       <?php echo $form->$banco->output     ?></td>
 				<td class="littletablerow" align="right"><?php echo $form->$monto->output ?></td>
 				<?php if($form->_status!='show') {?>
-					<td class="littletablerow"><a href=# onclick="del_sfpa(<?php echo $i; ?>);return false;"><?php echo img("images/delete.jpg"); ?></a></td></tr>
+					<td class="littletablerow"><a href=# onclick="del_sfpa(<?php echo $i; ?>);return false;"><?php echo img('images/delete.jpg'); ?></a></td></tr>
 				<?php } ?>
 			</tr>
 			<?php } ?>

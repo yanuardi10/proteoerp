@@ -165,8 +165,12 @@ class Ajax extends Controller {
 
 	//Busca sinv solo articulos
 	function buscasinvart(){
-		$mid  = $this->input->post('q');
-		$qdb  = $this->db->escape('%'.$mid.'%');
+		$comodin= $this->datasis->traevalor('COMODIN');
+		$mid    = $this->input->post('q');
+		if(strlen($comodin)==1 && $comodin!='%' && $mid!==false){
+			$mid=str_replace($comodin,'%',$mid);
+		}
+		$qdb  = $this->db->escape($mid.'%');
 		$qba  = $this->db->escape($mid);
 
 		$data = '{[ ]}';

@@ -232,6 +232,7 @@ class ordp extends Controller {
 		$edit->it2_cantidad->size =8;
 		$edit->it2_cantidad->maxlength =14;
 		$edit->it2_cantidad->rel_id = 'ordpitem';
+		$edit->it2_cantidad->autcomplete=false;
 
 		$edit->it2_merma = new inputField('Merma','it2merma_<#i#>');
 		$edit->it2_merma->db_name='merma';
@@ -308,8 +309,8 @@ class ordp extends Controller {
 		//**************************************
 
 		$edit->buttons('save','undo','add','back','add_rel');
-		$stat=$edit->_dataobject->get('status');
-		if($stat=='A'){
+		$stat=$edit->_dataobject->get('reserva');
+		if($stat!='S'){
 			$accion="javascript:window.location='".site_url('inventario/stra/creadordp/'.$edit->_dataobject->pk['id'].'/insert')."'";
 			$edit->button_status('btn_reserva','Reservar',$accion,'TR','show');
 			$edit->buttons('modify','delete');
@@ -560,14 +561,15 @@ class ordp extends Controller {
 
 	function _pre_insert($do){
 		$numero  = $this->datasis->fprox_numero('nordp');
-		$do->set('numero',$numero);
-		$do->set('status','A');
+		$do->set('numero' ,$numero);
+		$do->set('status' ,'A');
+		$do->set('reserva','N');
 		$usuario = $do->get('usuario');
 		$estampa = $do->get('estampa');
 		$hora    = $do->get('hora');
 		$cana    = $do->get('cana');
 
-		$rel='ordpitems';
+		$rel='ordpitem';
 		$cana=$do->count_rel($rel);
 		for($i=0;$i<$cana;$i++){
 			//$itcosto=$do->get_rel($rel,'costo',$i);
@@ -601,6 +603,38 @@ class ordp extends Controller {
 		if($status!='A'){
 			$do->error_message_ar['pre_upd']='No se pueden modificar ordenes que ya fueron puestas en marcha';
 			return false;
+		}
+		$numero  = $do->get('numero');
+		$usuario = $do->get('usuario');
+		$estampa = $do->get('estampa');
+		$hora    = $do->get('hora');
+		$cana    = $do->get('cana');
+
+		$rel='ordpitem';
+		$cana=$do->count_rel($rel);
+		for($i=0;$i<$cana;$i++){
+			//$itcosto=$do->get_rel($rel,'costo',$i);
+			//$itcana =$do->get_rel($rel,'cantidad',$i);
+			$do->set_rel($rel,'numero' ,$numero  ,$i);
+			$do->set_rel($rel,'usuario',$usuario ,$i);
+			$do->set_rel($rel,'estampa',$estampa ,$i);
+			$do->set_rel($rel,'hora'   ,$hora    ,$i);
+		}
+
+		$rel='ordplabor';
+		$cana=$do->count_rel($rel);
+		for($i=0;$i<$cana;$i++){
+			$do->set_rel($rel,'usuario',$usuario ,$i);
+			$do->set_rel($rel,'estampa',$estampa ,$i);
+			$do->set_rel($rel,'hora'   ,$hora    ,$i);
+		}
+
+		$rel='ordpindi';
+		$cana=$do->count_rel($rel);
+		for($i=0;$i<$cana;$i++){
+			$do->set_rel($rel,'usuario',$usuario ,$i);
+			$do->set_rel($rel,'estampa',$estampa ,$i);
+			$do->set_rel($rel,'hora'   ,$hora    ,$i);
 		}
 		return true;
 	}
@@ -636,6 +670,7 @@ class ordp extends Controller {
 				`cliente` CHAR(5) NULL DEFAULT NULL,
 				`nombre` VARCHAR(40) NULL DEFAULT NULL COMMENT 'Nombre del Cliente',
 				`instrucciones` TEXT NULL,
+				`reserva` CHAR(1) NULL COMMENT 'Si ya se resevo el inventario',
 				`estampa` DATE NOT NULL DEFAULT '0000-00-00',
 				`usuario` VARCHAR(12) NOT NULL DEFAULT '',
 				`hora` VARCHAR(8) NOT NULL DEFAULT '',
@@ -650,6 +685,10 @@ class ordp extends Controller {
 			ENGINE=MyISAM
 			AUTO_INCREMENT=1";
 			$this->db->simple_query($mSQL);
+		}
+
+		if ($this->db->field_exists('reserva', 'ordp')){
+			$mSQL="ALTER TABLE `ordp` ADD COLUMN `reserva` CHAR(1) NULL COMMENT 'Si ya se resevo el inventario' AFTER `instrucciones`;";
 		}
 
 		if ($this->db->field_exists('almacen', 'ordp')){

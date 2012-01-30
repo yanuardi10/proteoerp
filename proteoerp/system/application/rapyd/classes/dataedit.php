@@ -24,12 +24,12 @@ require_once ('dataform.php');
  */
 class DataEdit extends DataForm {
 	//deprecated could be removed in the 1.0
-	var $back_url = "";
+	var $back_url = '';
 	//new property
-	var $back_uri = "";
+	var $back_uri = '';
 	var $check_pk = true;
-	var $_postprocess_uri = "";
-	var $_undo_uri = "";
+	var $_postprocess_uri = '';
+	var $_undo_uri = '';
 	var $_buttons = array();
 	var $_pkey = 0;
 	var $back_save = false;
@@ -105,6 +105,7 @@ class DataEdit extends DataForm {
 		$id_segment = array_slice($segment_ar, -($this->_pkey));
 		return join('/', $id_segment);
 	}
+
 	function _sniff_status() {
 		$this->_status = 'idle';
 		$segment_array = $this->uri->segment_array();
@@ -117,31 +118,31 @@ class DataEdit extends DataForm {
 			$this->_process_uri = '';
 			$result = $this->_dataobject->load($this->URI_to_pk($id_str, $this->_dataobject));
 			if (!$result) {
-				$this->_status = "unknow_record";
+				$this->_status = 'unknow_record';
 			}
 			///// modify /////
 
-		} elseif ($this->rapyd->uri->is_set("modify") && (count($this->rapyd->uri->get("modify")) == $this->_pkey + 1)) {
-			$this->_status = "modify";
-			$this->_process_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "modify", "update");
+		} elseif ($this->rapyd->uri->is_set('modify') && (count($this->rapyd->uri->get('modify')) == $this->_pkey + 1)) {
+			$this->_status = 'modify';
+			$this->_process_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, 'modify', "update");
 			$result = $this->_dataobject->load($this->URI_to_pk($id_str, $this->_dataobject));
 			if (!$result) {
-				$this->_status = "unknow_record";
+				$this->_status = 'unknow_record';
 			}
 			///// create /////
 
-		} elseif ($this->rapyd->uri->is_set("create")) {
-			$this->_status = "create";
-			$this->_process_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "create", "insert");
+		} elseif ($this->rapyd->uri->is_set('create')) {
+			$this->_status = 'create';
+			$this->_process_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, 'create', "insert");
 			///// delete /////
 
-		} elseif ($this->rapyd->uri->is_set("delete") && (count($this->rapyd->uri->get("delete")) == $this->_pkey + 1)) {
-			$this->_status = "delete";
-			$this->_process_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "delete", "do_delete");
-			$this->_undo_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "delete", "show");
+		} elseif ($this->rapyd->uri->is_set('delete') && (count($this->rapyd->uri->get('delete')) == $this->_pkey + 1)) {
+			$this->_status = 'delete';
+			$this->_process_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, 'delete', "do_delete");
+			$this->_undo_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, 'delete', 'show');
 			$result = $this->_dataobject->load($this->URI_to_pk($id_str, $this->_dataobject));
 			if (!$result) {
-				$this->_status = "unknow_record";
+				$this->_status = 'unknow_record';
 			}
 		}
 	}
@@ -151,7 +152,7 @@ class DataEdit extends DataForm {
 		///// insert /////
 		if ($this->rapyd->uri->is_set("insert")) {
 			$this->_action = "insert";
-			$this->_postprocess_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "insert", "show");
+			$this->_postprocess_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "insert", 'show');
 			///// update /////
 
 		} elseif ($this->rapyd->uri->is_set("update")) {
@@ -162,10 +163,10 @@ class DataEdit extends DataForm {
 			///// delete /////
 
 		} elseif ($this->rapyd->uri->is_set("do_delete")) {
-			$this->_action = "delete";
+			$this->_action = 'delete';
 			$result = $this->_dataobject->load($this->URI_to_pk($id_str, $this->_dataobject));
 			if (!$result) {
-				$this->_status = "unknow_record";
+				$this->_status = 'unknow_record';
 			}
 		}
 	}
@@ -174,7 +175,7 @@ class DataEdit extends DataForm {
 		if (!$this->check_pk) return $result;
 		if ($this->_action == "update" || $this->_action == "insert") {
 			$pk_check = array();
-			$pk_error = "";
+			$pk_error = '';
 			$hiddens = array();
 			//pk fields mode can setted to "autohide" or "readonly" (so pk integrity violation check isn't needed)
 			foreach ($this->_fields as $field_name => $field_copy) {
@@ -214,27 +215,27 @@ class DataEdit extends DataForm {
 		switch ($this->_action) {
 			case "update":
 				if ($this->on_error()) {
-					$this->_status = "modify";
+					$this->_status = 'modify';
 					$this->_process_uri = $this->rapyd->uri->uri_string();
 					$this->_sniff_fields();
 					$this->_build_buttons();
 					$this->build_form();
 				}
 				if ($this->on_success()) {
-					$this->_postprocess_uri.= "/" . $this->rapyd->uri->build_clause("show" . $this->pk_to_URI($this->_dataobject->pk));
+					$this->_postprocess_uri.= '/' . $this->rapyd->uri->build_clause('show' . $this->pk_to_URI($this->_dataobject->pk));
 
 					if($this->on_save_redirect){
 						if ($this->back_save) {
 							header("Refresh:0;url=" . $this->back_url);
 						} else {
-							redirect("/" . $this->_postprocess_uri, 'refresh');
+							redirect('/' . $this->_postprocess_uri, 'refresh');
 						}
 					}
 				}
 			break;
 			case "insert":
 				if ($this->on_error()) {
-					$this->_status = "create";
+					$this->_status = 'create';
 					$this->_process_uri = $this->rapyd->uri->uri_string();
 					$this->_sniff_fields();
 					$this->_build_buttons();
@@ -252,7 +253,7 @@ class DataEdit extends DataForm {
 					}
 				}
 			break;
-			case "delete":
+			case 'delete':
 				if ($this->on_error()) {
 					$this->_build_buttons();
 					if (empty($this->_dataobject->error_message_ar['pre_del'])) $this->build_message_form(RAPYD_MSG_0206);
@@ -269,17 +270,17 @@ class DataEdit extends DataForm {
 			break;
 		}
 		switch ($this->_status) {
-			case "show":
-			case "modify":
-			case "create":
+			case 'show':
+			case 'modify':
+			case 'create':
 				$this->_build_buttons();
 				$this->build_form();
 			break;
-			case "delete":
+			case 'delete':
 				$this->_build_buttons();
 				$this->build_message_form(RAPYD_MSG_0209);
 			break;
-			case "unknow_record":
+			case 'unknow_record':
 				$this->_build_buttons();
 				$this->build_message_form(RAPYD_MSG_0208);
 			break;
@@ -293,7 +294,7 @@ class DataEdit extends DataForm {
 	 * @param    string  $caption  the label of the button (if not set, the default labels will used)
 	 * @return   void
 	 */
-	function crud_button($name = "", $caption = null) {
+	function crud_button($name = '', $caption = null) {
 		$this->_buttons[$name] = $caption;
 	}
 	/**
@@ -327,21 +328,21 @@ class DataEdit extends DataForm {
 		$this->_buttons = array();
 	}
 	/**
-	 * append the default "modify" button, modify is the button that appears in the top-right corner when the status is "show"
+	 * append the default 'modify' button, modify is the button that appears in the top-right corner when the status is 'show'
 	 *
 	 * @access   public
 	 * @param    string $caption  the label of the button (if not set, the default labels will used)
 	 * @return   void
 	 */
 	function _build_modify_button($caption = RAPYD_BUTTON_MODIFY) {
-		if ($this->_status == "show" && $this->rapyd->uri->is_set("show")) {
-			$modify_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "show", "modify");
+		if ($this->_status == 'show' && $this->rapyd->uri->is_set('show')) {
+			$modify_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, 'show', 'modify');
 			$action = "javascript:window.location='" . site_url($modify_uri) . "'";
-			$this->button("btn_modify", $caption, $action, "TR");
+			$this->button("btn_modify", $caption, $action, 'TR');
 		}
 	}
 	/**
-	 * append the default "create" button, modify is the button that appears in the top-right corner when the status is "show"
+	 * append the default 'create' button, modify is the button that appears in the top-right corner when the status is 'show'
 	 *
 	 * @access   public
 	 * @param    string $caption  the label of the button (if not set, the default labels will used)
@@ -353,87 +354,86 @@ class DataEdit extends DataForm {
 			$add_uri = $this->rapyd->uri->unset_clause($this->rapyd->uri->uri_array, 'show');
 			$add_uri .='/'.$this->rapyd->uri->build_clause('create');
 			$action = "javascript:window.location='".site_url($add_uri)."'";
-			$this->button("btn_add", $caption, $action, "TR");
+			$this->button("btn_add", $caption, $action, 'TR');
 		}
 	}
 	/**
-	 * append the default "delete" button, delete is the button that appears in the top-right corner when the status is "show"
+	 * append the default 'delete' button, delete is the button that appears in the top-right corner when the status is 'show'
 	 *
 	 * @access   public
 	 * @param    string  $caption  the label of the button (if not set, the default labels will used)
 	 * @return   void
 	 */
 	function _build_delete_button($caption = RAPYD_BUTTON_DELETE) {
-		if ($this->_status == "show" && $this->rapyd->uri->is_set("show")) {
-			$delete_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "show", "delete");
+		if ($this->_status == 'show' && $this->rapyd->uri->is_set('show')) {
+			$delete_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, 'show', 'delete');
 			$action = "javascript:window.location='" . site_url($delete_uri) . "'";
-			$this->button("btn_delete", $caption, $action, "TR");
-		} elseif ($this->_status == "delete") {
+			$this->button("btn_delete", $caption, $action, 'TR');
+		} elseif ($this->_status == 'delete') {
 			$action = "javascript:window.location='" . site_url($this->_process_uri) . "'";
 			$this->button("btn_delete", $caption, $action, "BL");
 		}
 	}
 	/**
-	 * append the default "save" button,  save is the button that appears in the bottom-left corner when the status is "create" or "modify"
+	 * append the default "save" button,  save is the button that appears in the bottom-left corner when the status is 'create' or 'modify'
 	 *
 	 * @access   public
 	 * @param    string  $caption  the label of the button (if not set, the default labels will used)
 	 * @return   void
 	 */
 	function _build_save_button($caption = RAPYD_BUTTON_SAVE) {
-		if (($this->_status == "create") || ($this->_status == "modify")) {
-			$this->submit("btn_submit", $caption, "TR"); // ANTES bl
+		if (($this->_status == 'create') || ($this->_status == 'modify')) {
+			$this->submit("btn_submit", $caption, 'TR'); // ANTES bl
 
 		}
 	}
 	/**
-	 * append the default "undo" button, undo is the button that appears in the top-right corner when the status is "create" or "modify"
+	 * append the default "undo" button, undo is the button that appears in the top-right corner when the status is 'create' or 'modify'
 	 *
 	 * @access   public
 	 * @param    string  $caption  the label of the button (if not set, the default labels will used)
 	 * @return   void
 	 */
 	function _build_undo_button($caption = RAPYD_BUTTON_UNDO) {
-		if ($this->_status == "create") {
+		if ($this->_status == 'create') {
 			$action = "javascript:window.location='{$this->back_url}'";
-			$this->button("btn_undo", $caption, $action, "TR");
-		} elseif ($this->_status == "modify") {
+			$this->button("btn_undo", $caption, $action, 'TR');
+		} elseif ($this->_status == 'modify') {
 			if (($this->back_cancel_save === FALSE) || ($this->back_cancel === FALSE)) {
 				//is modify
-				if ($this->rapyd->uri->is_set("modify")) {
-					$undo_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "modify", "show");
+				if ($this->rapyd->uri->is_set('modify')) {
+					$undo_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, 'modify', 'show');
 					//is modify on error
 
 				} elseif ($this->rapyd->uri->is_set("update")) {
-					$undo_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "update", "show");
+					$undo_uri = $this->rapyd->uri->change_clause($this->rapyd->uri->uri_array, "update", 'show');
 				}
 				$action = "javascript:window.location='" . site_url($undo_uri) . "'";
 			} else {
 				$action = "javascript:window.location='{$this->back_url}'";
 			}
-			$this->button("btn_undo", $caption, $action, "TR");
-		} elseif ($this->_status == "delete") {
+			$this->button("btn_undo", $caption, $action, 'TR');
+		} elseif ($this->_status == 'delete') {
 			if (($this->back_cancel_delete === FALSE) || ($this->back_cancel === FALSE)) {
 				$undo_uri = site_url($this->_undo_uri);
 				$action = "javascript:window.location='$undo_uri'";
 			} else {
 				$action = "javascript:window.location='{$this->back_url}'";
 			}
-			$this->button("btn_undo", $caption, $action, "TR");
+			$this->button('btn_undo', $caption, $action, 'TR');
 		}
 	}
 	/**
-	 * append the default "back" button, back is the button that appears in the bottom-left corner when the status is "show"
+	 * append the default 'back' button, back is the button that appears in the bottom-left corner when the status is 'show'
 	 *
 	 * @access   public
 	 * @param    string  $caption  the label of the button (if not set, the default labels will used)
 	 * @return   void
 	 */
 	function _build_back_button($caption = RAPYD_BUTTON_BACK) {
-		if (($this->_status == "show") || ($this->_status == "unknow_record") || ($this->_action == "delete")) {
+		if (($this->_status == 'show') || ($this->_status == 'unknow_record') || ($this->_action == 'delete')) {
 			$action = "javascript:window.location='{$this->back_url}'";
-			$this->button("btn_back", $caption, $action, "TR"); //ANTES BL
-
+			$this->button('btn_back', $caption, $action, 'TR'); //ANTES BL
 		}
 	}
 	/**
@@ -446,7 +446,7 @@ class DataEdit extends DataForm {
 	function _build_backerror_button($caption = RAPYD_BUTTON_BACKERROR) {
 		if (($this->_action == "do_delete") && ($this->_on_error)) {
 			$action = "javascript:window.history.back()";
-			$this->button("btn_backerror", $caption, $action, "TR");
+			$this->button("btn_backerror", $caption, $action, 'TR');
 		}
 	}
 	/**
@@ -457,12 +457,12 @@ class DataEdit extends DataForm {
 	 */
 	function build() {
 		//temp. back compatibility
-		if (site_url("") != "/") {
-			$this->back_uri = ($this->back_uri != "") ? $this->back_uri : trim(str_replace(site_url(""), "", str_replace($this->ci->config->item('url_suffix'), "", $this->back_url)), "/");
+		if (site_url('') != '/') {
+			$this->back_uri = ($this->back_uri != '') ? $this->back_uri : trim(str_replace(site_url(''), '', str_replace($this->ci->config->item('url_suffix'), '', $this->back_url)), '/');
 		} else {
-			$this->back_uri = ($this->back_uri != "") ? $this->back_uri : trim($this->back_url, "/");
+			$this->back_uri = ($this->back_uri != '') ? $this->back_uri : trim($this->back_url, '/');
 		}
-		if (($this->back_uri == "") && isset($this->_buttons["back"])) {
+		if (($this->back_uri == '') && isset($this->_buttons['back'])) {
 			show_error('you must give a correct "BACK URI": $edit->back_uri');
 		}
 		//sniff and build fields
@@ -471,8 +471,8 @@ class DataEdit extends DataForm {
 		$this->_sniff_action();
 		//build back_url
 		$persistence = $this->rapyd->session->get_persistence($this->back_uri, $this->rapyd->uri->gfid);
-		if (isset($persistence["back_post"])) {
-			$this->back_url = site_url($persistence["back_uri"]);
+		if (isset($persistence['back_post'])) {
+			$this->back_url = site_url($persistence['back_uri']);
 		} else {
 			$this->back_url = site_url($this->back_uri);
 		}
@@ -480,13 +480,14 @@ class DataEdit extends DataForm {
 		$this->process();
 	}
 
-	function rel_count() {
+	function rel_count($id_rel) {
 		if (($this->requestRefill == true)) {
-		} elseif (($this->status == "create")) {
+		} elseif (($this->status == 'create')) {
 			return 1;
-		} elseif (($this->status == "modify")) {
+		} elseif (($this->status == 'modify')) {
+
 		} elseif (($this->_dataobject->loaded) && (!isset($this->request[$this->name]))) {
-			return $this->_dataobject->count_rel('itstra');
+			return $this->_dataobject->count_rel($id_rel);
 		}
 	}
 
