@@ -15,7 +15,7 @@ else:
 		$html.='<td class="littletablerow" '.$align.'>'.$pivot.'</td>';
 	}
 	if($form->_status!='show') {
-		$html.='<td class="littletablerow"><a href=# onclick=\'del_itordi(<#i#>);return false;\'>Eliminar</a></td>';
+		$html.='<td class="littletablerow"><a href=# onclick=\'del_itordi(<#i#>);return false;\'>'.img('images/delete.jpg').'</a></td>';
 	}
 	$html.='</tr>';
 
@@ -35,7 +35,51 @@ if($form->_status!='show'){
 ?>
 
 <script language="javascript" type="text/javascript">
-itstra_cont=<?=$form->max_rel_count['itstra'] ?>;
+itstra_cont=<?php echo $form->max_rel_count['itstra'] ?>;
+
+$(function(){
+	$(".inputnum").numeric(".");
+	for(var i=0;i < <?php echo $form->max_rel_count['itstra']; ?>;i++){
+		autocod(i.toString());
+	}
+});
+
+function post_modbus(id){
+	//var id      = i.toString();
+	var descrip = $('#descrip_'+id).val();
+	$('#descrip_'+id+'_val').text(descrip);
+	$('#cantidad_'+id).focus();
+}
+
+//Agrega el autocomplete
+function autocod(id){
+	$('#codigo_'+id).autocomplete({
+		source: function( req, add){
+			$.ajax({
+				url:  "<?php echo site_url('ajax/buscasinvart'); ?>",
+				type: "POST",
+				dataType: "json",
+				data: "q="+req.term,
+				success:
+					function(data){
+						var sugiere = [];
+						$.each(data,
+							function(i, val){
+								sugiere.push( val );
+							}
+						);
+						add(sugiere);
+					},
+			})
+		},
+		minLength: 2,
+		select: function( event, ui ) {
+			$('#codigo_'+id).val(ui.item.codigo);
+			$('#descrip_'+id).val(ui.item.descrip);
+			post_modbus(id);
+		}
+	});
+}
 
 function add_itstra(){
 	var htm = <?php echo $campos; ?>;
@@ -47,10 +91,6 @@ function add_itstra(){
 	$("#cantidad_"+can).numeric(".");
 	itstra_cont=itstra_cont+1;
 }
-
-$(function(){
-	$(".inputnum").numeric(".");
-});
 
 function del_itstra(id){
 	id = id.toString();
@@ -110,7 +150,7 @@ function del_itstra(id){
 				<td class="littletablerow"><?php echo $form->$obj2->output ?></td>
 				<td class="littletablerow"align="right"><?php echo $form->$obj3->output ?></td>
 				<?php if($form->_status!='show') {?>
-					<td class="littletablerow"><a href=#onclick='del_itstra(<?php echo $i; ?>);return false;'>Eliminar</a></td>
+					<td class="littletablerow"><a href=#onclick='del_itstra(<?php echo $i; ?>);return false;'><?php echo img("images/delete.jpg"); ?></a></td>
 				<?php } ?>
 			</tr>
 			<?php } ?>

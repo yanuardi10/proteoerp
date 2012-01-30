@@ -501,6 +501,12 @@ class sfac_add extends validaciones {
 		$edit->estampa   = new autoUpdateField('estampa' ,date('Ymd'), date('Ymd'));
 		$edit->hora      = new autoUpdateField('hora',date('H:i:s'), date('H:i:s'));
 
+		if ($edit->_status == 'show'){
+			$print_url=site_url('ventas/sfac_add/dataprint/modify').$edit->pk_URI();
+			$action   = "javascript:window.location='${print_url}'";
+			$edit->button('btn_print', 'Imprimir', $action, 'TR');
+		}
+
 		$edit->buttons('save', 'back','add_rel','add');
 		if(!empty($this->_url)) $edit->_process_uri=$this->_url;
 		$edit->build();
@@ -525,6 +531,99 @@ class sfac_add extends validaciones {
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = heading($this->titp);
 		$this->load->view('view_ventanas', $data);
+	}
+
+	function dataprint($st,$uid){
+		$this->rapyd->load('dataedit');
+
+		$edit = new DataEdit('Imprimir factura', 'sfac');
+		$id=$edit->get_from_dataobjetct('id');
+		$urlid=$edit->pk_URI();
+		$url=site_url('formatos/ver/FACTURA'.$urlid);
+		$edit->back_url = site_url($this->url.'dataedit/show/'.$uid);
+
+		$edit->back_save   = true;
+		$edit->back_delete = true;
+		$edit->back_cancel = true;
+		$edit->back_cancel_save   = true;
+		$edit->back_cancel_delete = true;
+		//$edit->on_save_redirect   = false;
+
+		//$edit->post_process('update','_post_print_update');
+		$edit->pre_process('insert' ,'_pre_print_insert');
+		//$edit->pre_process('update' ,'_pre_print_update');
+		$edit->pre_process('delete' ,'_pre_print_delete');
+
+		$edit->container = new containerField('impresion','La descarga se realizara en 5 segundos, en caso de no hacerlo haga click '.anchor('formatos/ver/FACTURA'.$urlid,'aqui'));
+
+		$edit->nfiscal = new inputField('N&uacute;mero f&iacute;scal','nfiscal');
+		$edit->nfiscal->rule='max_length[12]|required';
+		$edit->nfiscal->size =14;
+		$edit->nfiscal->maxlength =12;
+		$edit->nfiscal->autocomplete=false;
+
+		$edit->tipo_doc = new inputField('Factura','tipo_doc');
+		$edit->tipo_doc->rule='max_length[1]';
+		$edit->tipo_doc->size =3;
+		$edit->tipo_doc->mode='autohide';
+		$edit->tipo_doc->maxlength =1;
+
+		$edit->numero = new inputField('N&uacute;mero','numero');
+		$edit->numero->rule='max_length[8]';
+		$edit->numero->mode='autohide';
+		$edit->numero->size =10;
+		$edit->numero->in='tipo_doc';
+		$edit->numero->maxlength =8;
+
+		$edit->fecha = new dateField('Fecha','fecha');
+		$edit->fecha->rule = 'chfecha';
+		$edit->fecha->mode = 'autohide';
+		$edit->fecha->size = 10;
+		$edit->fecha->maxlength =8;
+
+		$edit->cod_cli = new inputField('Cliente','cod_cli');
+		$edit->cod_cli->rule='max_length[5]';
+		$edit->cod_cli->size =7;
+		$edit->cod_cli->mode='autohide';
+		$edit->cod_cli->maxlength =5;
+
+		$edit->nombre = new inputField('Nombre','nombre');
+		$edit->nombre->rule='max_length[40]';
+		$edit->nombre->size =42;
+		$edit->nombre->mode='autohide';
+		$edit->nombre->in='cod_cli';
+		$edit->nombre->maxlength =40;
+
+		$edit->rifci = new inputField('Rif/Ci','rifci');
+		$edit->rifci->rule='max_length[13]';
+		$edit->rifci->size =15;
+		$edit->rifci->mode='autohide';
+		$edit->rifci->maxlength =13;
+
+		$edit->totalg = new inputField('Monto','totalg');
+		$edit->totalg->rule='max_length[12]|numeric';
+		$edit->totalg->css_class='inputnum';
+		$edit->totalg->size =14;
+		$edit->totalg->showformat='decimal';
+		$edit->totalg->mode='autohide';
+		$edit->totalg->maxlength =12;
+
+		$edit->buttons('save', 'undo','back');
+		$edit->build();
+
+		$script= '<script type="text/javascript" >
+		$(function() {
+			setTimeout(\'window.location="'.$url.'"\',5000);
+		});
+		</script>';
+
+		$data['content'] = $edit->output;
+		$data['head']    = $this->rapyd->get_head();
+		$data['script']  = script('jquery.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js');
+		$data['script'] .= $script;
+		$data['title']   = heading($this->tits);
+		$this->load->view('view_ventanas', $data);
+
 	}
 
 	//Chequea que el precio de los articulos de la devolucion sean los facturados
@@ -800,7 +899,7 @@ class sfac_add extends validaciones {
 		$do->set('numero' ,$numero);
 		$do->set('transac',$transac);
 		$do->set('referen',($credito>0)? 'C': 'E');
-		$vd     = $do->get('vendedor');
+		$vd     = $do->get('vd');
 		$cajero = $do->get('cajero');
 		$almacen= $do->get('almacen');
 		$estampa= $do->get('estampa');
@@ -815,7 +914,8 @@ class sfac_add extends validaciones {
 			$itiva     = $do->get_rel('sitems','iva',$i);
 			$itimporte = $itpreca*$itcana;
 			$do->set_rel('sitems','tota'    ,$itimporte,$i);
-			$do->set_rel('sitems','mostrado',$itimporte*(1+($itiva/100)),$i);
+			//$do->set_rel('sitems','mostrado',$itimporte*(1+($itiva/100)),$i);
+			$do->set_rel('sitems','mostrado',0,$i);
 
 			$iva    +=$itimporte*($itiva/100);
 			$totals +=$itimporte;
@@ -1190,6 +1290,9 @@ class sfac_add extends validaciones {
 		}
 
 	}
+
+	function _pre_print_insert($do){ return false;}
+	function _pre_print_delete($do){ return false;}
 
 	function instalar(){
 

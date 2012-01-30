@@ -620,7 +620,7 @@ class sinv extends Controller {
 		$edit->aumento->size=5;
 		$edit->aumento->maxlength=8;
 		$edit->aumento->autcomplete=false;
-		$edit->aumento->rule='mayorcero';
+		$edit->aumento->rule='numeric';
 		$edit->aumento->autocomplete = false;
 		$edit->aumento->append('Solo si es fracci&oacute;n');
 

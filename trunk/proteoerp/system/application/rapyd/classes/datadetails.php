@@ -378,6 +378,9 @@ class DataDetails extends DataForm{
 		$this->button('btn_exit', $caption, $action, 'TR');
 	}
 
+	function pk_URI() {
+		return $this->pk_to_URI($this->_dataobject->pk);
+	}
 
 	/**
 	* append a default button
