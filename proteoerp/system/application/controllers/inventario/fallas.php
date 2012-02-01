@@ -8,18 +8,19 @@ class fallas extends Controller {
 		$this->load->library('rapyd');
 
 		$this->falla[]=array('sql' =>'precio1 <= 0 OR precio2 <= 0 OR precio3 <= 0 OR precio4 <= 0 OR precio1 = NULL OR precio2 = NULL OR precio3 = NULL OR precio4 = NULL', 'nombre' => 'Productos sin precios');
-		$this->falla[]=array('sql' =>'ultimo <= 0 OR ultimo = NULL', 'nombre' => 'Productos sin costos');
-		$this->falla[]=array('sql' =>'base1 <= 0 OR base2 <= 0  OR base3 <= 0  OR base4 <= 0 ', 'nombre' => 'Productos sin bases');
+		$this->falla[]=array('sql' =>'ultimo <= 0 OR ultimo = NULL', 'nombre'                                                 => 'Productos sin costos');
+		$this->falla[]=array('sql' =>'base1 <= 0 OR base2 <= 0  OR base3 <= 0  OR base4 <= 0 ', 'nombre'                      => 'Productos sin bases');
 		$this->falla[]=array('sql' =>'precio1 < ultimo OR precio2 < ultimo OR precio3 < ultimo OR precio4 < ultimo', 'nombre' => 'Productos con precio por debajo de costo');
-		$this->falla[]=array('sql' =>'LENGTH(descrip) < 5', 'nombre' => 'Productos con descripciones menores a 5 cararteres');
-		$this->falla[]=array('sql' =>'margen1 > 100 OR margen2 > 100 OR margen3 > 100 OR margen4 > 100', 'nombre' => 'Productos con margenes altos');
-		$this->falla[]=array('sql' =>'margen1 < 10 OR margen2 < 10 OR margen3 < 10 OR margen4 < 10', 'nombre' => 'Productos con margenes bajos');
-		$this->falla[]=array('sql' =>'existen <= 0', 'nombre' => 'Productos sin existencia');
+		$this->falla[]=array('sql' =>'LENGTH(descrip) < 5', 'nombre'                                                          => 'Productos con descripciones menor a 5 caracteres');
+		$this->falla[]=array('sql' =>'margen1 > 100 OR margen2 > 100 OR margen3 > 100 OR margen4 > 100', 'nombre'             => 'Productos con margenes altos');
+		$this->falla[]=array('sql' =>'margen1 < 10 OR margen2 < 10 OR margen3 < 10 OR margen4 < 10', 'nombre'                 => 'Productos con margenes bajos');
+		$this->falla[]=array('sql' =>'existen < 0', 'nombre'                                                                  => 'Productos con existencia negativa');
+		$this->falla[]=array('sql' =>'( precio1 < precio2 OR precio2 < precio3 OR precio3 < precio4 )', 'nombre'              => 'Precios con orden no secuenciales decreciente');
 	}
 
 	function index(){
 		$this->rapyd->load('datagrid','dataform','datafilter');
-		$this->rapyd->uri->keep_persistence();  
+		$this->rapyd->uri->keep_persistence();
 
 		$form = new DataFilter('Seleccione las fallas');
 		foreach($this->falla AS $ind=>$checkbox){
@@ -46,10 +47,19 @@ class fallas extends Controller {
 					$grid->db->or_where($data['sql']);
 				}
 			}
-			$link=anchor('/inventario/sinv/dataedit/show/<#id#>','<#codigo#>');
+			$atts = array(
+				'width'      => '800',
+				'height'     => '600',
+				'scrollbars' => 'yes',
+				'status'     => 'yes',
+				'resizable'  => 'yes',
+				'screenx'    => '0',
+				'screeny'    => '0'
+			);
+			$link=anchor_popup('/inventario/sinv/dataedit/show/<#id#>','<#codigo#>', $atts);
 
-			//$grid->column("C&oacute;digo",$link);
-			$grid->column('C&oacute;digo','codigo');
+			$grid->column('C&oacute;digo',$link);
+			//$grid->column('C&oacute;digo','codigo');
 			$grid->column('Descripci&oacute;n','descrip');
 			$grid->column('Margenes'   ,'<ol><li><#margen1#></li><li><#margen2#></li><li><#margen3#></li><li><#margen4#></li></ol>');
 			$grid->column('Bases'      ,'<ol><li><#base1#></li><li><#base2#></li><li><#base3#></li><li><#base4#></li></ol>');
