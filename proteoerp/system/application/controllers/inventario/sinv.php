@@ -795,6 +795,7 @@ class sinv extends Controller {
 			$edit->iva->option($ivamonto,nformat($ivamonto));
 		}
 		$edit->iva->style='width:100px;';
+		$edit->iva->onchange='calculos(\'S\');';
 
 		$edit->exento = new dropdownField('Vender Exento', 'exento');
 		$edit->exento->style='width:50px;';
@@ -806,7 +807,7 @@ class sinv extends Controller {
 		$edit->ultimo->size=10;
 		$edit->ultimo->maxlength=13;
 		$edit->ultimo->autcomplete=false;
-		$edit->ultimo->onkeyup = 'requeridos();';
+		$edit->ultimo->onkeyup = 'requeridos();calculos(\'S\');';
 		$edit->ultimo->rule='required|mayorcero';
 		$edit->ultimo->autocomplete = false;
 
@@ -815,7 +816,7 @@ class sinv extends Controller {
 		$edit->pond->size=10;
 		$edit->pond->maxlength=13;
 		$edit->pond->autcomplete=false;
-		$edit->pond->onkeyup = 'requeridos();';
+		$edit->pond->onkeyup = 'requeridos();calculos(\'S\');';
 		$edit->pond->rule='required|mayorcero';
 		$edit->pond->autocomplete = false;
 
@@ -844,6 +845,7 @@ class sinv extends Controller {
 		$edit->redecen->option('D','Decenas');
 		$edit->redecen->option('C','Centenas');
 		$edit->redecen->rule='enum[N,M,F,D,C]';
+		$edit->redecen->onchange='calculos(\'S\');';
 
 		for($i=1;$i<=4;$i++){
 			$objeto="margen$i";

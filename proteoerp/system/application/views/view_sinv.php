@@ -1151,8 +1151,8 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 	<ul>
 		<li><a href="#tab1">Parametros</a></li>
 		<li><a href="#tab2">Precios</a></li>
-		<li><a href="#tab3">Existencias</a></li>
 		<?php if($form->_status=='show'){ ?>
+		<li><a href="#tab3">Existencias</a></li>
 		<li><a href="#tab4">Movimientos</a></li>
 		<?php } ?>
 		<li><a href="#tab5">Promociones</a></li>
