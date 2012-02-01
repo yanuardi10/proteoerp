@@ -9,12 +9,12 @@ class sinv extends Controller {
 	function index(){
 		$this->datasis->modulo_id('301',1);
 		$this->instalar();
-		redirect("inventario/sinv/filteredgrid");
+		redirect('inventario/sinv/filteredgrid');
 	}
 
 	function filteredgrid(){
 		$this->rapyd->uri->keep_persistence();
-		$this->rapyd->load("datafilter2","datagrid");
+		$this->rapyd->load('datafilter2','datagrid');
 		$mSPRV=array(
 				'tabla'   =>'sprv',
 				'columnas'=>array(
@@ -111,40 +111,40 @@ class sinv extends Controller {
 		//$filter->db->join('sinvfoto  e','e.codigo=a.codigo','LEFT');
 		$filter->script($DepoScript);
 
-		$filter->codigo = new inputField("C&oacute;digo", "codigo");
+		$filter->codigo = new inputField('C&oacute;digo', 'codigo');
 		$filter->codigo-> size=15;
-		$filter->codigo->group = "Uno";
+		$filter->codigo->group = 'Uno';
 
-		$filter->barras = new inputField("C&oacute;digo de barras", "barras");
+		$filter->barras = new inputField('C&oacute;digo de barras', 'barras');
 		$filter->barras -> size=25;
-		$filter->barras->group = "Uno";
+		$filter->barras->group = 'Uno';
 
-		$filter->descrip = new inputField("Descripci&oacute;n", "descrip");
+		$filter->descrip = new inputField("Descripci&oacute;n", 'descrip');
 		$filter->descrip->db_name='CONCAT_WS(" ",a.descrip,a.descrip2)';
 		$filter->descrip-> size=30;
-		$filter->descrip->group = "Uno";
+		$filter->descrip->group = 'Uno';
 
-		$filter->tipo = new dropdownField("Tipo", "tipo");
-		$filter->tipo->db_name=("a.tipo");
-		$filter->tipo->option("","Todos");
-		$filter->tipo->option("Articulo","Art&iacute;culo");
-		$filter->tipo->option("Servicio","Servicio");
-		$filter->tipo->option("Descartar","Descartar");
-		$filter->tipo->option("Consumo","Consumo");
-		$filter->tipo->option("Fraccion","Fracci&oacute;n");
+		$filter->tipo = new dropdownField('Tipo', 'tipo');
+		$filter->tipo->db_name='a.tipo';
+		$filter->tipo->option('','Todos');
+		$filter->tipo->option('Articulo' ,'Art&iacute;culo');
+		$filter->tipo->option('Servicio' ,'Servicio');
+		$filter->tipo->option('Descartar','Descartar');
+		$filter->tipo->option('Consumo'  ,'Consumo');
+		$filter->tipo->option('Fraccion','Fracci&oacute;n');
 		$filter->tipo ->style='width:120px;';
-		$filter->tipo->group = "Uno";
+		$filter->tipo->group = 'Uno';
 
-		$filter->clave = new inputField("Clave", "clave");
-		$filter->clave -> size=15;
-		$filter->clave->group = "Uno";
+		$filter->clave = new inputField('Clave', 'clave');
+		$filter->clave ->size=15;
+		$filter->clave->group = 'Uno';
 
-		$filter->activo = new dropdownField("Activo", "activo");
+		$filter->activo = new dropdownField('Activo', 'activo');
 		$filter->activo->option('','Todos');
 		$filter->activo->option('S','Si');
 		$filter->activo->option('N','No');
-		$filter->activo ->style='width:120px;';
-		$filter->activo->group = "Uno";
+		$filter->activo ->style= 'width:120px;';
+		$filter->activo->group = 'Uno';
 
 		$filter->proveed = new inputField("Proveedor", "proveed");
 		$filter->proveed->append($bSPRV);
@@ -173,10 +173,10 @@ class sinv extends Controller {
 		$filter->linea->group = "Dos";
 
 		$filter->linea2 = new dropdownField("L&iacute;nea","linea");
-		$filter->linea2->db_name="c.linea";
-		$filter->linea2->option("","Seleccione un Departamento primero");
-		$filter->linea2->in="linea";
-		$filter->linea2->group = "Dos";
+		$filter->linea2->db_name='c.linea';
+		$filter->linea2->option('',"Seleccione un Departamento primero");
+		$filter->linea2->in='linea';
+		$filter->linea2->group = 'Dos';
 		$filter->linea2->style='width:190px;';
 
 		$depto=$filter->getval('depto');
@@ -643,7 +643,7 @@ class sinv extends Controller {
 		$edit->unidad = new dropdownField('Unidad','unidad');
 		$edit->unidad->style='width:100px;';
 		$edit->unidad->option('','Seleccionar');
-		$edit->unidad->options("SELECT unidades, unidades as valor FROM unidad ORDER BY unidades");
+		$edit->unidad->options('SELECT unidades, unidades AS valor FROM unidad ORDER BY unidades');
 		$edit->unidad->append($AddUnidad);
 
 		$edit->clave = new inputField('Clave', 'clave');
@@ -661,7 +661,7 @@ class sinv extends Controller {
 		$edit->depto->rule ='required';
 		$edit->depto->style='width:300px;white-space:nowrap;';
 		$edit->depto->option('','Seleccione un Departamento');
-		$edit->depto->options("SELECT depto, CONCAT(depto,'-',descrip) descrip FROM dpto WHERE tipo='I' ORDER BY depto");
+		$edit->depto->options('SELECT depto, CONCAT(depto,\'-\',descrip) descrip FROM dpto WHERE tipo=\'I\' ORDER BY depto');
 		$edit->depto->append($AddDepto);
 		$edit->depto->db_name='dptodepto';
 		$edit->depto->pointer=true;
@@ -675,7 +675,8 @@ class sinv extends Controller {
 		$edit->linea->pointer=true;
 		$depto=$edit->getval('depto');
 		if($depto!==FALSE){
-			$edit->linea->options("SELECT linea, CONCAT(LINEA,'-',descrip) descrip FROM line WHERE depto='$depto' ORDER BY descrip");
+			$dbdepto=$this->db->escape($depto);
+			$edit->linea->options("SELECT linea, CONCAT(LINEA,'-',descrip) descrip FROM line WHERE depto=$dbdepto ORDER BY descrip");
 		}else{
 			$edit->linea->option('','Seleccione un Departamento primero');
 		}
@@ -689,7 +690,8 @@ class sinv extends Controller {
 
 		$linea=$edit->getval('linea');
 		if($linea!==FALSE){
-			$edit->grupo->options("SELECT grupo, CONCAT(grupo,'-',nom_grup) nom_grup FROM grup WHERE linea='$linea' ORDER BY nom_grup");
+			$dblinea=$this->db->escape($linea);
+			$edit->grupo->options("SELECT grupo, CONCAT(grupo,'-',nom_grup) nom_grup FROM grup WHERE linea=$dblinea ORDER BY nom_grup");
 		}else{
 			$edit->grupo->option('','Seleccione un Departamento primero');
 		}
@@ -807,7 +809,7 @@ class sinv extends Controller {
 		$edit->ultimo->size=10;
 		$edit->ultimo->maxlength=13;
 		$edit->ultimo->autcomplete=false;
-		$edit->ultimo->onkeyup = 'requeridos();calculos(\'S\');';
+		$edit->ultimo->onkeyup = 'calculos(\'S\');';
 		$edit->ultimo->rule='required|mayorcero';
 		$edit->ultimo->autocomplete = false;
 
@@ -816,7 +818,7 @@ class sinv extends Controller {
 		$edit->pond->size=10;
 		$edit->pond->maxlength=13;
 		$edit->pond->autcomplete=false;
-		$edit->pond->onkeyup = 'requeridos();calculos(\'S\');';
+		$edit->pond->onkeyup = 'calculos(\'S\');';
 		$edit->pond->rule='required|mayorcero';
 		$edit->pond->autocomplete = false;
 
@@ -856,6 +858,7 @@ class sinv extends Controller {
 			$edit->$objeto->onkeyup = 'calculos(\'I\');';
 			$edit->$objeto->autcomplete=false;
 			$edit->$objeto->rule='required|mayorcero';
+			$edit->$objeto->autcomplete=false;
 
 			$objeto="base$i";
 			$edit->$objeto = new inputField("Base $i", $objeto);
@@ -866,6 +869,7 @@ class sinv extends Controller {
 			$edit->$objeto->in="margen$i";
 			$edit->$objeto->onkeyup = 'cambiobase(\'I\');';
 			$edit->$objeto->rule='required|mayorcero';
+			$edit->$objeto->autcomplete=false;
 
 			$objeto="precio$i";
 			$edit->$objeto = new inputField("Precio $i", $objeto);
@@ -876,6 +880,7 @@ class sinv extends Controller {
 			$edit->$objeto->in="margen$i";
 			$edit->$objeto->onkeyup = 'cambioprecio(\'I\');';
 			$edit->$objeto->rule='required|mayorcero';
+			$edit->$objeto->autcomplete=false;
 		}
 
 		$edit->existen = new inputField('Cantidad Actual','existen');
@@ -918,7 +923,7 @@ class sinv extends Controller {
 		$edit->fhasta = new dateField('Desde','fhasta','d/m/Y');
 		$edit->fhasta->size=10;
 
-		$edit->bonicant = new inputField('Cant. Bonifica', "bonicant");
+		$edit->bonicant = new inputField('Cant. Bonifica', 'bonicant');
 		$edit->bonicant->size=10;
 		$edit->bonicant->maxlength=12;
 		$edit->bonicant->css_class='inputonlynum';
@@ -938,6 +943,7 @@ class sinv extends Controller {
 			$edit->$objeto->insertValue=0;
 			$edit->$objeto->css_class='inputnum';
 			$edit->$objeto->size=5;
+			$edit->$objeto->autcomplete=false;
 
 			$objeto="escala$i";
 			$edit->$objeto = new inputField('Cantidad m&iacute;nima para la escala '.$i,$objeto);
@@ -945,6 +951,7 @@ class sinv extends Controller {
 			$edit->$objeto->insertValue=0;
 			$edit->$objeto->css_class='inputnum';
 			$edit->$objeto->size=10;
+			$edit->$objeto->autcomplete=false;
 		}
 
 		for($i=1;$i<=3;$i++){
