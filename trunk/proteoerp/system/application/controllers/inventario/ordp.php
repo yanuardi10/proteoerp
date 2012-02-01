@@ -743,6 +743,7 @@ class ordp extends Controller {
 			AUTO_INCREMENT=1";
 			$this->db->simple_query($mSQL);
 		}
+
 		if (!$this->db->table_exists('ordpbita')) {
 			$mSQL="CREATE TABLE `ordpbita` (
 				`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -760,6 +761,7 @@ class ordp extends Controller {
 			COLLATE='latin1_swedish_ci'
 			ENGINE=MyISAM
 			AUTO_INCREMENT=1";
+			$this->db->simple_query($mSQL);
 		}
 
 		if (!$this->db->table_exists('ordplabor')) {

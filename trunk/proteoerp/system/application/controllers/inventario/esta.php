@@ -22,7 +22,7 @@ class esta extends Controller {
 		$sel=array('a.id','a.estacion','a.nombre','a.descrip','b.nombre AS jefe');
 		$filter->db->select($sel);
 		$filter->db->from('esta AS a');
-		$filter->db->from('estajefe AS b','a.jefe=b.codigo');
+		$filter->db->join('estajefe AS b','a.jefe=b.codigo');
 
 		$filter->nombre = new inputField('Nombre','nombre');
 		$filter->nombre->db_name   = 'a.nombre';
