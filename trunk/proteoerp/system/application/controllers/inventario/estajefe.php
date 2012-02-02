@@ -1,5 +1,5 @@
-<?php
-class estajefe extends Controller {
+<?php require_once(BASEPATH.'application/controllers/validaciones.php');
+class estajefe extends validaciones {
 	var $titp='Jefes de estaci&oacute;nes';
 	var $tits='Jefes de estaci&oacute;nes';
 	var $url ='inventario/estajefe/';
@@ -77,6 +77,11 @@ class estajefe extends Controller {
 		$edit->nombre->size =32;
 		$edit->nombre->maxlength =30;
 
+		$edit->cedula = new inputField('C&eacute;dula', 'cedula');
+		$edit->cedula->rule = 'trim|strtoupper|callback_chci';
+		$edit->cedula->maxlength =13;
+		$edit->cedula->size =14;
+
 		$edit->direc1 = new inputField('Direcci&oacute;n','direc1');
 		$edit->direc1->rule='max_length[35]';
 		$edit->direc1->size =37;
@@ -107,7 +112,6 @@ class estajefe extends Controller {
 		$data['script'] .= $script;
 		$data['title']   = heading($this->tits);
 		$this->load->view('view_ventanas', $data);
-
 	}
 
 	function _pre_insert($do){
@@ -140,14 +144,22 @@ class estajefe extends Controller {
 	function instalar(){
 		if (!$this->db->table_exists('estajefe')) {
 			$mSQL="CREATE TABLE `estajefe` (
-			  `codigo` varchar(5) NOT NULL DEFAULT '',
-			  `nombre` varchar(30) DEFAULT NULL,
-			  `direc1` varchar(35) DEFAULT NULL,
-			  `direc2` varchar(35) DEFAULT NULL,
-			  `telefono` varchar(13) DEFAULT NULL,
-			  `correo` varchar(250) DEFAULT NULL,
-			  PRIMARY KEY (`codigo`)
-			) ENGINE=MyISAM DEFAULT CHARSET=latin1";
+				`codigo` VARCHAR(5) NOT NULL DEFAULT '',
+				`nombre` VARCHAR(30) NULL DEFAULT NULL,
+				`cedula` VARCHAR(12) NULL DEFAULT NULL,
+				`direc1` VARCHAR(35) NULL DEFAULT NULL,
+				`direc2` VARCHAR(35) NULL DEFAULT NULL,
+				`telefono` VARCHAR(13) NULL DEFAULT NULL,
+				`correo` VARCHAR(250) NULL DEFAULT NULL,
+				PRIMARY KEY (`codigo`)
+			)
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM";
+			$this->db->simple_query($mSQL);
+		}
+
+		if(!$this->db->field_exists('cedula', 'estajefe')){
+			$mSQL="ALTER TABLE `estajefe` ADD COLUMN `cedula` VARCHAR(12) NULL DEFAULT NULL AFTER `nombre`";
 			$this->db->simple_query($mSQL);
 		}
 	}

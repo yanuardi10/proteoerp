@@ -1111,6 +1111,7 @@ class sinv extends Controller {
 		$edit->it2merma->css_class  = 'inputnum';
 		$edit->it2merma->rel_id     = 'sinvpitem';
 		$edit->it2merma->insertValue= 0;
+		$edit->it2merma->autcomplete= false;
 
 		$ocultos=array('ultimo','pond','formcal','id_sinv');
 		foreach($ocultos as $obj){

@@ -104,12 +104,12 @@ class ordp extends Controller {
 		$edit->post_process('insert','_post_insert');
 		$edit->post_process('update','_post_update');
 		$edit->post_process('delete','_post_delete');
-		$edit->pre_process('insert','_pre_insert');
-		$edit->pre_process('update','_pre_update');
-		$edit->pre_process('delete','_pre_delete');
+		$edit->pre_process( 'insert','_pre_insert');
+		$edit->pre_process( 'update','_pre_update');
+		$edit->pre_process( 'delete','_pre_delete');
 
 		$edit->fecha = new dateField('Fecha','fecha');
-		$edit->fecha->rule='chfecha';
+		$edit->fecha->rule='chfecha|required';
 		$edit->fecha->insertValue=date('Y-m-d');
 		$edit->fecha->size =10;
 		$edit->fecha->maxlength =8;
@@ -126,7 +126,7 @@ class ordp extends Controller {
 		$edit->status->option('P','Pausado');
 		$edit->status->option('C','Cerrado');
 		$edit->status->option('T','Terminado');
-		$edit->status->rule='enum[A,P,Es,C]';
+		$edit->status->rule='enum[A,P,Es,C]|required';
 		$edit->status->style='width:100px';
 		$edit->status->mode='autohide';
 
@@ -150,6 +150,7 @@ class ordp extends Controller {
 		$edit->codigo->rule ='max_length[15]|existesinv';
 		$edit->codigo->size =7;
 		$edit->codigo->maxlength =15;
+		$edit->codigo->rule='required|existesinv';
 
 		$edit->cana = new inputField('Cantidad a producir','cana');
 		$edit->cana->rule='max_length[10]|numeric|required';
@@ -212,7 +213,7 @@ class ordp extends Controller {
 
 		$edit->it2_codigo = new inputField('Codigo','it2codigo_<#i#>');
 		$edit->it2_codigo->db_name='codigo';
-		$edit->it2_codigo->rule='max_length[15]';
+		$edit->it2_codigo->rule='max_length[15]|required|existesinv';
 		$edit->it2_codigo->size =17;
 		$edit->it2_codigo->maxlength =15;
 		$edit->it2_codigo->rel_id = 'ordpitem';
@@ -273,6 +274,8 @@ class ordp extends Controller {
 		$edit->it3_estacion->style  = 'width:150px;';
 		$edit->it3_estacion->db_name= 'estacion';
 		$edit->it3_estacion->rel_id = 'ordplabor';
+		$edit->it3_estacion->rule   = 'required';
+
 
 		$edit->it3_actividad = new inputField('Actividad','it3actividad_<#i#>');
 		$edit->it3_actividad->db_name='actividad';
@@ -302,20 +305,21 @@ class ordp extends Controller {
 		$edit->it3_tiempo->rule         = 'positive';
 		$edit->it3_tiempo->autocomplete = false;
 		$edit->it3_tiempo->insertValue  = 1;
-		$edit->it3_tiempo->rel_id = 'ordplabor';
+		$edit->it3_tiempo->rel_id       = 'ordplabor';
 
 		//**************************************
 		//fin ordppedi
 		//**************************************
 
 		$edit->buttons('save','undo','add','back','add_rel');
-		$stat=$edit->_dataobject->get('reserva');
-		if($stat!='S'){
+		$reser=$edit->_dataobject->get('reserva');
+		if($reser!='S'){
 			$accion="javascript:window.location='".site_url('inventario/stra/creadordp/'.$edit->_dataobject->pk['id'].'/insert')."'";
 			$edit->button_status('btn_reserva','Reservar',$accion,'TR','show');
 			$edit->buttons('modify','delete');
 		}
 
+		$stat=$edit->_dataobject->get('status');
 		if($stat=='C'){
 			$accion="javascript:window.location='".site_url('inventario/stra/creadordpt/'.$edit->_dataobject->pk['id'].'/insert')."'";
 			$edit->button_status('btn_terminar','Terminar',$accion,'TR','show');
@@ -687,8 +691,9 @@ class ordp extends Controller {
 			$this->db->simple_query($mSQL);
 		}
 
-		if ($this->db->field_exists('reserva', 'ordp')){
+		if (!$this->db->field_exists('reserva', 'ordp')){
 			$mSQL="ALTER TABLE `ordp` ADD COLUMN `reserva` CHAR(1) NULL COMMENT 'Si ya se resevo el inventario' AFTER `instrucciones`;";
+			$this->db->simple_query($mSQL);
 		}
 
 		if ($this->db->field_exists('almacen', 'ordp')){
@@ -797,7 +802,7 @@ class ordp extends Controller {
 			$this->db->simple_query($mSQL);
 		}
 
-		if($this->db->field_exists('ordp', 'stra')){
+		if(!$this->db->field_exists('ordp', 'stra')){
 			$mSQL="ALTER TABLE `stra`
 			ADD COLUMN `ordp` VARCHAR(8) NULL DEFAULT NULL AFTER `numere`,
 			ADD COLUMN `esta` VARCHAR(5) NULL DEFAULT NULL AFTER `ordp`";
