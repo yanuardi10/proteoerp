@@ -293,7 +293,7 @@ function importerete(nind){
 		if(tt=='1')
 			monto=(importe*base1*tari1)/10000;
 		else if(importe>pama1)
-			monto=((importe-pama1)*base1)/10000;
+			monto=((importe-pama1)*base1*tari1)/10000;
 		else
 			monto=0;
 
