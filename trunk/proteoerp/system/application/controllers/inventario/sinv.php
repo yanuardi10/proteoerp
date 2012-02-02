@@ -619,7 +619,7 @@ class sinv extends Controller {
 		$edit->aumento->css_class='inputnum';
 		$edit->aumento->size=5;
 		$edit->aumento->maxlength=8;
-		$edit->aumento->autcomplete=false;
+		$edit->aumento->autocomplete=false;
 		$edit->aumento->rule='numeric';
 		$edit->aumento->autocomplete = false;
 		$edit->aumento->append('Solo si es fracci&oacute;n');
@@ -797,6 +797,7 @@ class sinv extends Controller {
 			$edit->iva->option($ivamonto,nformat($ivamonto));
 		}
 		$edit->iva->style='width:100px;';
+		$edit->iva->insertValue=$ivas['tasa'];
 		$edit->iva->onchange='calculos(\'S\');';
 
 		$edit->exento = new dropdownField('Vender Exento', 'exento');
@@ -808,7 +809,7 @@ class sinv extends Controller {
 		$edit->ultimo->css_class='inputnum';
 		$edit->ultimo->size=10;
 		$edit->ultimo->maxlength=13;
-		$edit->ultimo->autcomplete=false;
+		$edit->ultimo->autocomplete=false;
 		$edit->ultimo->onkeyup = 'calculos(\'S\');';
 		$edit->ultimo->rule='required|mayorcero';
 		$edit->ultimo->autocomplete = false;
@@ -817,14 +818,14 @@ class sinv extends Controller {
 		$edit->pond->css_class='inputnum';
 		$edit->pond->size=10;
 		$edit->pond->maxlength=13;
-		$edit->pond->autcomplete=false;
+		$edit->pond->autocomplete=false;
 		$edit->pond->onkeyup = 'calculos(\'S\');';
 		$edit->pond->rule='required|mayorcero';
 		$edit->pond->autocomplete = false;
 
 		$edit->standard = new inputField('Standard', 'standard');
 		$edit->standard->css_class='inputnum';
-		$edit->standard->autcomplete=false;
+		$edit->standard->autocomplete=false;
 		$edit->standard->size=10;
 		$edit->standard->maxlength=13;
 		$edit->standard->insertValue=0;
@@ -856,31 +857,28 @@ class sinv extends Controller {
 			$edit->$objeto->size=10;
 			$edit->$objeto->maxlength=6;
 			$edit->$objeto->onkeyup = 'calculos(\'I\');';
-			$edit->$objeto->autcomplete=false;
+			$edit->$objeto->autocomplete=false;
 			$edit->$objeto->rule='required|mayorcero';
-			$edit->$objeto->autcomplete=false;
 
 			$objeto="base$i";
 			$edit->$objeto = new inputField("Base $i", $objeto);
 			$edit->$objeto->css_class='inputnum';
 			$edit->$objeto->size=10;
 			$edit->$objeto->maxlength=13;
-			$edit->$objeto->autcomplete=false;
+			$edit->$objeto->autocomplete=false;
 			$edit->$objeto->in="margen$i";
 			$edit->$objeto->onkeyup = 'cambiobase(\'I\');';
 			$edit->$objeto->rule='required|mayorcero';
-			$edit->$objeto->autcomplete=false;
 
 			$objeto="precio$i";
 			$edit->$objeto = new inputField("Precio $i", $objeto);
 			$edit->$objeto->css_class='inputnum';
 			$edit->$objeto->size=10;
-			$edit->$objeto->autcomplete=false;
+			$edit->$objeto->autocomplete=false;
 			$edit->$objeto->maxlength=13;
 			$edit->$objeto->in="margen$i";
 			$edit->$objeto->onkeyup = 'cambioprecio(\'I\');';
 			$edit->$objeto->rule='required|mayorcero';
-			$edit->$objeto->autcomplete=false;
 		}
 
 		$edit->existen = new inputField('Cantidad Actual','existen');
@@ -943,7 +941,7 @@ class sinv extends Controller {
 			$edit->$objeto->insertValue=0;
 			$edit->$objeto->css_class='inputnum';
 			$edit->$objeto->size=5;
-			$edit->$objeto->autcomplete=false;
+			$edit->$objeto->autocomplete=false;
 
 			$objeto="escala$i";
 			$edit->$objeto = new inputField('Cantidad m&iacute;nima para la escala '.$i,$objeto);
@@ -951,7 +949,7 @@ class sinv extends Controller {
 			$edit->$objeto->insertValue=0;
 			$edit->$objeto->css_class='inputnum';
 			$edit->$objeto->size=10;
-			$edit->$objeto->autcomplete=false;
+			$edit->$objeto->autocomplete=false;
 		}
 
 		for($i=1;$i<=3;$i++){
@@ -998,20 +996,24 @@ class sinv extends Controller {
 		$edit->mmargen = new inputField('Margen al Mayor','mmargen');
 		$edit->mmargen->css_class='inputnum';
 		$edit->mmargen->size=10;
+		$edit->mmargen->insertValue=0;
 		$edit->mmargen->maxlength=10;
 
 		$edit->mmargenplus = new inputField('Descuento +','mmargenplus');
 		$edit->mmargenplus->css_class='inputnum';
+		$edit->mmargenplus->insertValue=0;
 		$edit->mmargenplus->size=10;
 		$edit->mmargenplus->maxlength=10;
 
 		$edit->pm = new inputField('Descuento al Mayor A','pm');
 		$edit->pm->css_class='inputnum';
 		$edit->pm->size=10;
+		$edit->pm->insertValue=0;
 		$edit->pm->maxlength=10;
 
 		$edit->pmb = new inputField('Descuento al Mayor B','pmb');
 		$edit->pmb->css_class='inputnum';
+		$edit->pmb->insertValue=0;
 		$edit->pmb->size=10;
 		$edit->pmb->maxlength=10;
 
@@ -1111,7 +1113,7 @@ class sinv extends Controller {
 		$edit->it2merma->css_class  = 'inputnum';
 		$edit->it2merma->rel_id     = 'sinvpitem';
 		$edit->it2merma->insertValue= 0;
-		$edit->it2merma->autcomplete= false;
+		$edit->it2merma->autocomplete= false;
 
 		$ocultos=array('ultimo','pond','formcal','id_sinv');
 		foreach($ocultos as $obj){
@@ -1273,7 +1275,7 @@ class sinv extends Controller {
 				$do->set($marg,round($$marg,2));
 			}
 		}else{
-			$do->error_message_ar['pre_upd'] = 'Los precios deben cumplir con:<br> Precio 1 mayor o igual al Precio 2 mayor o igual al  Precio 3 mayor o igual al Precio 4';
+			$do->error_message_ar['pre_upd'] =$do->error_message_ar['pre_ins'] = 'Los precios deben cumplir con:<br> Precio 1 mayor o igual al Precio 2 mayor o igual al  Precio 3 mayor o igual al Precio 4';
 			return false;
 		}
 
@@ -2011,7 +2013,7 @@ class sinv extends Controller {
 		return $estilo.$salida;
 	}
 
-	function _pre_del($do) {
+	function _pre_del($do){
 		$codigo=$this->db->escape($do->get('codigo'));
 		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM sitems WHERE codigoa=$codigo");
 		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM itscst WHERE codigo=$codigo");
@@ -2020,6 +2022,11 @@ class sinv extends Controller {
 		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM itsnot WHERE codigo=$codigo");
 		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM itsnte WHERE codigo=$codigo");
 		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM itsinv WHERE codigo=$codigo");
+		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM sinvpitem WHERE codigo=$codigo");
+		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM sinvcombo WHERE codigo=$codigo");
+
+		if ($this->db->table_exists('ordpitem'))
+			$chek += $this->datasis->dameval("SELECT COUNT(*) FROM ordpitem WHERE codigo=$codigo");
 
 		if ($chek > 0){
 			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='Producto con Movimiento no puede ser Borrado, solo se puede inactivar';

@@ -1,5 +1,10 @@
 <?php
-echo $form_begin;
+
+if ($form->_status=='delete' || $form->_action=='delete' || $form->_status=='unknow_record'):
+	$meco = $form->output;
+	$meco = str_replace('class="tablerow"','class="tablerow" style="font-size:20px; align:center;" ',$meco);
+	echo $meco."</td><td align='center'>".img("images/borrar.jpg");
+else:
 
 $container_tr=join("&nbsp;", $form->_button_container["TR"]);
 $container_bl=join("&nbsp;", $form->_button_container["BL"]);
@@ -17,11 +22,7 @@ if ($form->_status=='modify'){
 	$container_co = $container_it = $container_la = '';
 }
 
-if ($form->_status=='delete' || $form->_action=='delete' || $form->_status=='unknow_record'):
-	$meco = $form->output;
-	$meco = str_replace('class="tablerow"','class="tablerow" style="font-size:20px; align:center;" ',$meco);
-	echo $meco."</td><td align='center'>".img("images/borrar.jpg");
-else:
+echo $form_begin;
 
 $campos=$form->template_details('sinvcombo');
 $scampos  ='<tr id="tr_sinvcombo_<#i#>">';
