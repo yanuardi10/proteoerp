@@ -352,6 +352,7 @@ class stra extends Controller {
 		return false;
 	}
 
+	//Hace la reservacion del material para una orden de produccion
 	function creadordp($id_ordp){
 		$url='inventario/ordp/dataedit/show/'.$id_ordp;
 		$this->rapyd->uri->keep_persistence();
@@ -364,7 +365,7 @@ class stra extends Controller {
 		$mSQL="INSERT IGNORE INTO caub  (ubica,ubides,gasto) VALUES ('PROD','ALMACEN DE PRODUCCION','S')";
 		$this->db->simple_query($mSQL);
 
-		$sel=array('a.fecha','a.almacen','a.numero','a.status','a.cana');
+		$sel=array('a.fecha','a.almacen','a.numero','a.status','a.cana','a.reserva');
 		$this->db->select($sel);
 		$this->db->from('ordp AS a');
 		$this->db->join('sinv AS b','a.codigo=b.codigo');
@@ -374,7 +375,7 @@ class stra extends Controller {
 		if($mSQL_1->num_rows() > 0){
 			$row = $mSQL_1->row();
 			$cana= $row->cana;
-			if($row->status=='A'){
+			if($row->reserva=='N'){
 				$_POST=array(
 					'btn_submit' => 'Guardar',
 					'envia'      => $row->almacen,
@@ -401,7 +402,7 @@ class stra extends Controller {
 				}
 				$rt=$this->dataedit();
 				if(strripos($rt,'Guardada')){
-					$data = array('status' => 'P');
+					$data = array('status' => 'P','reserva'=>'S');
 					$this->db->where('id', $id_ordp);
 					$this->db->update('ordp', $data);
 				}
