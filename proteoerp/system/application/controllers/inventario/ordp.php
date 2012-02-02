@@ -55,6 +55,8 @@ class ordp extends Controller {
 				$rt='Pausado';
 			}elseif($status=='E'){
 				$rt='Produciendo';
+			}elseif($status=='T'){
+				$rt='Terminado';
 			}else{
 				$rt=$status;
 			}
@@ -233,7 +235,7 @@ class ordp extends Controller {
 		$edit->it2_cantidad->size =8;
 		$edit->it2_cantidad->maxlength =14;
 		$edit->it2_cantidad->rel_id = 'ordpitem';
-		$edit->it2_cantidad->autcomplete=false;
+		$edit->it2_cantidad->autocomplete=false;
 
 		$edit->it2_merma = new inputField('Merma','it2merma_<#i#>');
 		$edit->it2_merma->db_name='merma';

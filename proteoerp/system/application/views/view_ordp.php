@@ -24,7 +24,7 @@ $scampos  = '<tr id="tr_ordpitem_<#i#>">';
 $scampos .= '<td class="littletablerow" align="left" >'.$campos['it2_codigo']['field'].'</td>';
 $scampos .= '<td class="littletablerow" align="left" >'.$campos['it2_descrip']['field'].'</td>';
 $scampos .= '<td class="littletablerow" align="right">'.$campos['it2_cantidad']['field'].'</td>';
-$scampos .= '<td class="littletablerow" align="right">'.$campos['it2_merma']['field'].'%</td>';
+$scampos .= '<td class="littletablerow" align="right">'.$campos['it2_merma']['field'].' %</td>';
 $scampos .= '<td class="littletablerow" align="right">'.$campos['it2_costo']['field'].'</td>';
 $scampos .= '<td class="littletablerow"><a href=# onclick="del_ordpitem(<#i#>);return false;">'.img("images/delete.jpg").'</a></td>';
 $scampos .= '</tr>';
@@ -135,7 +135,6 @@ $(function(){
 						$.each(data,
 							function(id, val){
 								add_ordpitem();
-								$('#codigoa_'+id).val(val.codigo);
 								$('#it2descrip_'+id).val(val.descrip);
 								$('#it2descrip_'+id+'_val').text(val.descrip);
 								$('#it2costo_'+id).val(val.ultimo);
@@ -261,7 +260,7 @@ function autocod(id){
 		},
 		minLength: 2,
 		select: function( event, ui ) {
-			$('#codigoa_'+id).val(ui.item.codigo);
+			$('#it2codigo_'+id).val(ui.item.codigo);
 			$('#it2descrip_'+id).val(ui.item.descrip);
 			$('#it2merma_'+id).val('0');
 			$('#it2descrip_'+id+'_val').text(ui.item.descrip);
