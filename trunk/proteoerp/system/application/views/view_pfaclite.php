@@ -217,7 +217,7 @@ ob_end_flush();
 function comprimir_pagina($buffer) {
     $busca = array('/\>[^\S ]+/s','/[^\S ]+\</s','/(\s)+/s');
     $reemplaza = array('>','<','\\1');
-    //return preg_replace($busca, $reemplaza, $buffer);
-    return $buffer;
+    return preg_replace($busca, $reemplaza, $buffer);
+    //return $buffer;
 }
 ?>
