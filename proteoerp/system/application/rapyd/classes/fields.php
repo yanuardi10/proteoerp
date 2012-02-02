@@ -314,14 +314,11 @@ class objField {
 		} else {
 			//Options can use an other connetion than the rapyd current one!!!!! to retreive data from an other DB
 			//If rapyd use an other conn group than the default one you can use the default one by giving $data_conn=''
-			if(!isset($data_conn) || !is_string($data_conn)  )
-			{
-					$data_conn =(isset($this->rapyd->data_conn))?$this->rapyd->data_conn:'';
+			if(!isset($data_conn) || !is_string($data_conn)){
+				$data_conn =(isset($this->rapyd->data_conn))?$this->rapyd->data_conn:'';
 			}
 			$this->db = $this->ci->load->database($data_conn,TRUE);
-
 			$query = $this->db->query($options);
-
 			$result = $query->result_array();
 
 			$new_options = array();
