@@ -1,10 +1,10 @@
 <?php
 
 ob_start('comprimir_pagina');
-$container_bl=join("&nbsp;", $form->_button_container["BL"]);
-$container_br=join("&nbsp;", $form->_button_container["BR"]);
-$container_tr=join("&nbsp;", $form->_button_container["TR"]);
-$container_tl=join("&nbsp;", $form->_button_container["TL"]);
+$container_bl=join('&nbsp;', $form->_button_container['BL']);
+$container_br=join('&nbsp;', $form->_button_container['BR']);
+$container_tr=join('&nbsp;', $form->_button_container['TR']);
+$container_tl=join('&nbsp;', $form->_button_container['TL']);
 
 if ($form->_status=='delete' || $form->_action=='delete' || $form->_status=='unknow_record'):
 	echo $form->output;
@@ -15,7 +15,7 @@ if(isset($form->error_string)) echo '<div class="alert">'.$form->error_string.'<
 echo $form_begin;
 if($form->_status!='show'){ ?>
 <script language="javascript" type="text/javascript">
-	
+
 function print_r(theObj){
 	var a='';
    if(theObj.constructor == Array || theObj.constructor == Object){
@@ -34,7 +34,7 @@ function print_r(theObj){
    }
    alert(a);
 }
-	
+
 	var importes= new Array();
 	function total(id){
 		cana=Number(document.getElementById("cana_"+id).value);
@@ -43,7 +43,7 @@ function print_r(theObj){
 		importes[id]=Math.round(cana*preca*100)/100;
 		totalizar();
 	}
-	
+
 	function totalizar(){
 		var totalg=0;
 		var sinviva = <?=$sinviva ?>;
@@ -66,14 +66,16 @@ function print_r(theObj){
 <table align='center' width="95%">
 	<tr>
 		<td>
-		<table width='100%'><tr><td>
-			<table width="100%" style="margin: 0; width: 100%;">
+		<table width='100%'>
 			<tr>
-				<td><strong><?php echo $form->cliente->label.'</strong>'.$form->cliente->output; ?>&nbsp;</td>
+				<td>
+				<table width="100%" style="margin: 0; width: 100%;">
+					<tr>
+						<td><b><?php echo $form->cliente->label ?></b><?php echo $form->cliente->output; ?></td>
+					</tr>
+				</table>
+				</td>
 			</tr>
-			</table>
-		</td>
-		</tr>
 		</table>
 		</td>
 	</tr>
@@ -81,27 +83,27 @@ function print_r(theObj){
 		<td>
 		<table width='100%' <?=($form->_status!='show'?' border="0" cellpadding="0" cellspacing="0"':'')?>>
 			<tr id='__INPL__' bgcolor='#7098D0'>
-				<td><strong>C&oacute;digo</strong></td>
-				<td><strong>Descripci&oacute;n</strong></td>ç
-				<td><strong>Exis</strong></td>
-				<td><strong>Cant</strong></td>
-				<td><strong>Precio</strong></td>
+				<td><b>C&oacute;digo</b></td>
+				<td><b>Descripci&oacute;n</b></td>
+				<td><b>Exis</b></td>
+				<td><b>Cant</b></td>
+				<td><b>Precio</b></td>
 			</tr>
-			<?php 
+			<?php
 			$pmarcat='';
 			$i=0;
-			
+
 			$arreglo=array();
 			$it=array();
 			$a=array();
-			
+
 			if($form->_status!='create'){
 				$a=$form->_dataobject->get_all();
 				if(isset($a['itpfac']))
 					foreach($a['itpfac'] as $k=>$v)
 						$it[$v['codigoa']]=$v;
 			}
-		
+
 			if($form->_status=='show' ){
 				if(isset($a['itpfac'])){
 					foreach($a['itpfac'] as $k=>$v){
@@ -124,14 +126,14 @@ function print_r(theObj){
 					}
 				}
 			}
-			
+
 			foreach($arreglo as $row) {
-							
+
 					$pmarca  =$row['marca'];
 					$pexisten=$row['existen'];
 					$peso    =$row['peso'];
 					$pdesca  =$row['descrip'].' '.nformat($peso).' KG';
-					
+
 					$codigoa =$row['codigo'];
 					$preca   =$row['preca'];
 					$cana    =$row['cana'];
@@ -144,40 +146,38 @@ function print_r(theObj){
 					$f_cana   ='<input id="cana_'.$i.'" onkeyup="total(\''.$i.'\')" class="inputnum" type="text" autocomplete="off" size="1" value="'.($cana>0?$cana:'').'" name="cana_'.$i.'" style="height:30px;font-size:18px">';
 					else
 					$f_cana =nformat($cana);
-				
+
 					$f_codigoa='<input id="codigoa_'.$i.'" class="input" type="hidden" style="height:30px;font-size:16" size="12" value='.$this->db->escape($row['codigo']).' name="codigoa_'.$i.'">
 <span id="codigoa_'.$i.'_val">'.$row['codigo'].'</span>';
-					
-				
-				
+
 				if($pmarcat!=$pmarca){
 					$pmarcat=$pmarca;
 			 ?>
 				<tr style="background:#DD3333; font-weight:bold;color:#FFFFFF">
 				<td colspan="5"><?php echo $pmarca; ?></td>
 				</tr>
-				<?php 
+				<?php
 				}
 			?>
 			<tr id='tr_itpfac_<?php echo $i; ?>' <?=($i%2 == 0 ?'style="background:#FFFFFF;"':'style="background:#DDDDDD;"')?>>
 				<td><?php echo $f_codigoa ?></td>
-				<td><?php echo $pdesca  ?>  </td>
+				<td><?php echo $pdesca    ?></td>
 				<td align="right"><?php echo nformat($pexisten)  ?>  </td>
 				<td align="right"><?php echo $f_cana;   ?></td>
 				<td align="right">
-					<?php 
+					<?php
 					if($form->_status=='show'){
 							echo nformat($preca);
 						}else{
 							$options = array(
-							$sinv[$codigoa]['precio1']=> nformat($sinv[$codigoa]['precio1']),
+							$sinv[$codigoa]['precio'.$tiposcli]=> nformat($sinv[$codigoa]['precio'.$tiposcli]),
 							//$sinv[$codigoa]['precio2']=> nformat($sinv[$codigoa]['precio2']),
 							);
 							$sel=array();
 							if($form->_status!='create'){
 								if($preca){
 									$options[$preca]=$preca;
-									$sel=array($preca=>$preca);
+									$sel=$preca;
 								}
 							}
 							echo form_dropdown('preca_'.$i, $options,$sel,'style="height:30px;width:75px;font-size:18px" id="preca_'.$i.'"');
@@ -186,7 +186,7 @@ function print_r(theObj){
 					&nbsp;
 				</td>
 			</tr>
-			<?php 
+			<?php
 			$i++;
 			} ?>
 			<tr id='__UTPL__'>
@@ -199,12 +199,12 @@ function print_r(theObj){
 		<td>
 		<table width='100%'  >
 			<tr bgcolor='7098D0'>
-				<td align='right'><strong><?php echo $form->totalg->label;  ?></strong></td>
+				<td align='right'><b><?php echo $form->totalg->label;  ?></b></td>
 				<td align='right'><b id='totalg_value'><?php echo nformat($form->totalg->value); ?></b><?php echo $form->totalg->output; ?></td>
 			</tr>
 			<tr bgcolor="FFFDE9">
-				<td ><strong><?php echo $form->observa->label;   ?></strong></td>
-				<td ><?php echo $form->observa->output;   ?></td>
+				<td><b><?php echo $form->observa->label;   ?></b></td>
+				<td><?php echo $form->observa->output;   ?></td>
 			</tr>
 		</table>
 		<?php echo $form_end; ?>
@@ -217,7 +217,7 @@ ob_end_flush();
 function comprimir_pagina($buffer) {
     $busca = array('/\>[^\S ]+/s','/[^\S ]+\</s','/(\s)+/s');
     $reemplaza = array('>','<','\\1');
-    return preg_replace($busca, $reemplaza, $buffer);
-    //return $buffer;
-} 
+    //return preg_replace($busca, $reemplaza, $buffer);
+    return $buffer;
+}
 ?>
