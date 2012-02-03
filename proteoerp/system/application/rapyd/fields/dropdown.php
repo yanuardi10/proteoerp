@@ -91,12 +91,13 @@ class dropdownField extends objField{
 					'style' => $this->style
 					);
 
-					$output = form_input($attributes) ;
+					$output = form_input($attributes);
 
 					if($this->type=='inputhidden')
 					$output.='<span id=\''.$this->name."_val'  >$this->description</span>";
 				}else{
-					$output = form_dropdown($this->name, $this->options, $this->value, $id.$onchange.$style.$class). $this->extra_output;
+					$title  = ' title="'.$this->title.'"';
+					$output = form_dropdown($this->name, $this->options, $this->value, $id.$onchange.$style.$class.$title). $this->extra_output;
 				}
 
 				break;

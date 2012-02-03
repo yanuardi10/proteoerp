@@ -14,6 +14,7 @@ $campos   = $form->template_details('ordpindi');
 $scampos  = '<tr id="tr_ordpindi_<#i#>">';
 $scampos .= '<td class="littletablerow" align="left" >'.$campos['it1_codigo']['field'].'</td>';
 $scampos .= '<td class="littletablerow" align="left" >'.$campos['it1_descrip']['field'].'</td>';
+$scampos .= '<td class="littletablerow" align="left" >'.$campos['it1_tipo']['field'].'</td>';
 $scampos .= '<td class="littletablerow" align="right">'.$campos['it1_porcentaje']['field'].'</td>';
 $scampos .= '<td class="littletablerow"><a href=# onclick="del_ordpindi(<#i#>);return false;">'.img("images/delete.jpg").'</a></td>';
 $scampos .= '</tr>';
@@ -21,11 +22,12 @@ $ordpindi_campos=$form->js_escape($scampos);
 
 $campos   = $form->template_details('ordpitem');
 $scampos  = '<tr id="tr_ordpitem_<#i#>">';
-$scampos .= '<td class="littletablerow" align="left" >'.$campos['it2_codigo']['field'].'</td>';
-$scampos .= '<td class="littletablerow" align="left" >'.$campos['it2_descrip']['field'].'</td>';
-$scampos .= '<td class="littletablerow" align="right">'.$campos['it2_cantidad']['field'].'</td>';
-$scampos .= '<td class="littletablerow" align="right">'.$campos['it2_merma']['field'].' %</td>';
-$scampos .= '<td class="littletablerow" align="right">'.$campos['it2_costo']['field'].'</td>';
+$scampos .= '<td class="littletablerow" align="left"  >'.$campos['it2_codigo']['field'].'</td>';
+$scampos .= '<td class="littletablerow" align="left"  >'.$campos['it2_descrip']['field'].'</td>';
+$scampos .= '<td class="littletablerow" align="center">'.$campos['it2_fijo']['field'].'</td>';
+$scampos .= '<td class="littletablerow" align="right" >'.$campos['it2_cantidad']['field'].'</td>';
+$scampos .= '<td class="littletablerow" align="right" >'.$campos['it2_merma']['field'].' %</td>';
+$scampos .= '<td class="littletablerow" align="right" >'.$campos['it2_costo']['field'].'</td>';
 $scampos .= '<td class="littletablerow"><a href=# onclick="del_ordpitem(<#i#>);return false;">'.img("images/delete.jpg").'</a></td>';
 $scampos .= '</tr>';
 $ordpitem_campos=$form->js_escape($scampos);
@@ -265,7 +267,7 @@ function autocod(id){
 			$('#it2merma_'+id).val('0');
 			$('#it2descrip_'+id+'_val').text(ui.item.descrip);
 			$('#it2costo_'+id).val(ui.item.ultimo);
-			$("#it2cantidad_"+can).focus();
+			$("#it2cantidad_"+id).focus();
 		}
 	});
 }
@@ -420,6 +422,7 @@ function enumeralabor(){
 	<tr id='__INPL__ordpitem'>
 		<th bgcolor='#7098D0'>C&oacute;digo</th>
 		<th bgcolor='#7098D0'>Descripci&oacute;n</th>
+		<th bgcolor='#7098D0'>Fijo</th>
 		<th bgcolor='#7098D0'>Cantidad</th>
 		<th bgcolor='#7098D0'>% Merma</th>
 		<th bgcolor='#7098D0'>Costo</th>
@@ -430,16 +433,18 @@ function enumeralabor(){
 	<?php for($i=0;$i<$form->max_rel_count['ordpitem'];$i++) {
 		$it2_codigo   = "it2_codigo_$i";
 		$it2_descrip  = "it2_descrip_$i";
+		$it2_fijo     = "it2_fijo_$i";
 		$it2_cantidad = "it2_cantidad_$i";
 		$it2_merma    = "it2_merma_$i";
 		$it2_costo    = "it2_costo_$i";
 	?>
 	<tr id='tr_ordpitem_<?php echo $i; ?>'>
-		<td class="littletablerow" align="left" ><?php echo $form->$it2_codigo->output;   ?></td>
-		<td class="littletablerow" align="left" ><?php echo $form->$it2_descrip->output;  ?></td>
-		<td class="littletablerow" align="right"><?php echo $form->$it2_cantidad->output; ?></td>
-		<td class="littletablerow" align="right"><?php echo $form->$it2_merma->output;    ?>%</td>
-		<td class="littletablerow" align="right"><?php echo $form->$it2_costo->output;    ?></td>
+		<td class="littletablerow" align="left"  ><?php echo $form->$it2_codigo->output;   ?></td>
+		<td class="littletablerow" align="left"  ><?php echo $form->$it2_descrip->output;  ?></td>
+		<td class="littletablerow" align="center"><?php echo $form->$it2_fijo->output; ?></td>
+		<td class="littletablerow" align="right" ><?php echo $form->$it2_cantidad->output; ?></td>
+		<td class="littletablerow" align="right" ><?php echo $form->$it2_merma->output;    ?>%</td>
+		<td class="littletablerow" align="right" ><?php echo $form->$it2_costo->output;    ?></td>
 		<?php if($form->_status!='show') {?>
 			<td class="littletablerow"><a href=# onclick="del_ordpitem(<?php echo $i ?>);return false;"><?php echo img("images/delete.jpg"); ?></a></td>
 		<?php } ?>
@@ -543,7 +548,8 @@ echo isset($form->_button_container['BL'][1])? $form->_button_container['BL'][1]
 	<tr id='__INPL__ordpindi'>
 		<th bgcolor='#7098D0'>C&oacute;digo</th>
 		<th bgcolor='#7098D0'>Descripci&oacute;n</th>
-		<th bgcolor='#7098D0'>% Participaci&oacute;n</th>
+		<th bgcolor='#7098D0'>Tipo</th>
+		<th bgcolor='#7098D0'>Participaci&oacute;n</th>
 		<?php if($form->_status!='show') {?>
 			<th bgcolor='#7098D0'>&nbsp;</th>
 		<?php } ?>
@@ -551,11 +557,13 @@ echo isset($form->_button_container['BL'][1])? $form->_button_container['BL'][1]
 	<?php for($i=0;$i<$form->max_rel_count['ordpindi'];$i++) {
 		$it1_codigo    = "it1_codigo_$i";
 		$it1_descrip   = "it1_descrip_$i";
+		$it1_tipo      = "it1_tipo_$i";
 		$it1_porcentaje= "it1_porcentaje_$i";
 	?>
 	<tr id='tr_ordpindi_<?php echo $i; ?>'>
 		<td class="littletablerow" align="left" ><?php echo $form->$it1_codigo->output;     ?></td>
 		<td class="littletablerow" align="left" ><?php echo $form->$it1_descrip->output;    ?></td>
+		<td class="littletablerow" align="left" ><?php echo $form->$it1_tipo->output;    ?></td>
 		<td class="littletablerow" align="right"><?php echo $form->$it1_porcentaje->output; ?></td>
 		<?php if($form->_status!='show') { ?>
 			<td class="littletablerow"><a href=# onclick="del_ordpindi(<?php echo $i ?>);return false;"><?php echo img('images/delete.jpg'); ?></a></td>
