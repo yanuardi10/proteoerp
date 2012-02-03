@@ -465,7 +465,7 @@ class stra extends Controller {
 
 				//Calcula los costos
 				$itcosto=0;
-				$sel=array('a.cantidad','a.costo');
+				$sel=array('a.cantidad','a.costo','a.fijo');
 				$this->db->select($sel);
 				$this->db->from('ordpitem AS a');
 				$this->db->join('sinv AS b','a.codigo=b.codigo');
@@ -477,7 +477,7 @@ class stra extends Controller {
 					$itcosto+=$itrow->costo*$itrow->cantidad;
 				}
 
-				$sel=array('a.porcentaje');
+				$sel=array('a.porcentaje','a.tipo');
 				$this->db->select($sel);
 				$this->db->from('ordpindi AS a');
 				$this->db->where('a.id_ordp' , $id_ordp);
@@ -485,7 +485,7 @@ class stra extends Controller {
 				$ordpindi_row =$mSQL_4->result();
 				$costo=$itcosto;
 				foreach ($ordpindi_row as $itrow){
-					$costo += $itrow->porcentaje*$itcosto/100;
+					$costo += ($itrow->tipo=='M')? $itrow->porcentaje :$itrow->porcentaje*$itcosto/100;
 				}
 
 				$data = array('ultimo' => $costo,'formcal'=>'U');

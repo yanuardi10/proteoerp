@@ -95,6 +95,7 @@ class dateField extends objField{
 					'onchange'    => $this->onchange,
 					'class'       => $this->css_class,
 					'style'       => $this->style);
+				if(strlen($this->title)>0) $attributes['title']     = $this->title; 
 				if($this->readonly) $attributes['readonly']='readonly';
 				if($this->type=='inputhidden'){
 					$attributes['type']='hidden';

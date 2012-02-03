@@ -200,11 +200,21 @@ class ordp extends Controller {
 		$edit->it1_descrip->maxlength =40;
 		$edit->it1_descrip->rel_id = 'ordpindi';
 
+		$edit->it1_tipo = new dropdownField('tipo','it1tipo_<#i#>');
+		$edit->it1_tipo->option('P','Porcentual');
+		$edit->it1_tipo->option('M','Monetario');
+		$edit->it1_tipo->insertValue='P';
+		$edit->it1_tipo->style='width:100px';
+		$edit->it1_tipo->title='Si el costo es por cargo Porcentual al costo de los insumos o monto Monetario fijo';
+		$edit->it1_tipo->db_name='tipo';
+		$edit->it1_tipo->rule='required|enum[M,P]';
+		$edit->it1_tipo->rel_id = 'ordpindi';
+
 		$edit->it1_porcentaje = new inputField('Porcentaje','it1porcentaje_<#i#>');
 		$edit->it1_porcentaje->db_name='porcentaje';
 		$edit->it1_porcentaje->rule='max_length[14]|numeric';
 		$edit->it1_porcentaje->css_class='inputnum';
-		$edit->it1_porcentaje->size =5;
+		$edit->it1_porcentaje->size =10;
 		$edit->it1_porcentaje->autocomplete=false;
 		$edit->it1_porcentaje->maxlength =14;
 		$edit->it1_porcentaje->rel_id = 'ordpindi';
@@ -228,6 +238,16 @@ class ordp extends Controller {
 		$edit->it2_descrip->maxlength =40;
 		$edit->it2_descrip->rel_id = 'ordpitem';
 
+		$edit->it2_fijo = new dropdownField('fijo','it2fijo_<#i#>');
+		$edit->it2_fijo->option('N','No');
+		$edit->it2_fijo->option('S','Si');
+		$edit->it2_fijo->insertValue='N';
+		$edit->it2_fijo->style='width:50px';
+		$edit->it2_fijo->title='Si depende o no de la cantidad a producir';
+		$edit->it2_fijo->db_name='fijo';
+		$edit->it2_fijo->rule='required|enum[S,N]';
+		$edit->it2_fijo->rel_id = 'ordpitem';
+
 		$edit->it2_cantidad = new inputField('Cantidad','it2cantidad_<#i#>');
 		$edit->it2_cantidad->db_name='cantidad';
 		$edit->it2_cantidad->rule='max_length[14]|numeric';
@@ -241,6 +261,7 @@ class ordp extends Controller {
 		$edit->it2_merma->db_name='merma';
 		$edit->it2_merma->rule='max_length[10]|numeric';
 		$edit->it2_merma->css_class='inputnum';
+		$edit->it2_merma->title='Porcentaje de p&eacute;rdida';
 		$edit->it2_merma->size =5;
 		$edit->it2_merma->maxlength =10;
 		$edit->it2_merma->rel_id = 'ordpitem';
@@ -712,6 +733,7 @@ class ordp extends Controller {
 				`estampa` DATE NULL DEFAULT NULL,
 				`usuario` VARCHAR(12) NULL DEFAULT '',
 				`hora` VARCHAR(8) NULL DEFAULT '',
+				`tipo` CHAR(1) NULL DEFAULT 'P' COMMENT 'P porcentual, M monetario',
 				`modificado` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 				`id_ordp` INT(11) NULL DEFAULT NULL,
 				`id` INT(11) NOT NULL AUTO_INCREMENT,
@@ -738,6 +760,7 @@ class ordp extends Controller {
 				`usuario` VARCHAR(12) NULL DEFAULT '',
 				`hora` VARCHAR(8) NULL DEFAULT '',
 				`modificado` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+				`fijo` CHAR(1) NULL DEFAULT 'N' COMMENT 'N si depende de la cantidad, S si no depende de la cantidad',
 				`id_ordp` INT(11) NULL DEFAULT NULL,
 				`id` INT(11) NOT NULL AUTO_INCREMENT,
 				PRIMARY KEY (`id`),
@@ -801,6 +824,16 @@ class ordp extends Controller {
 			$mSQL="ALTER TABLE `ordplabor`
 			CHANGE COLUMN `minutos` `tunidad` CHAR(1) NULL DEFAULT 'H' AFTER `actividad`,
 			CHANGE COLUMN `segundos` `tiempo` DECIMAL(10,2) UNSIGNED NULL DEFAULT '0' AFTER `tunidad`";
+			$this->db->simple_query($mSQL);
+		}
+
+		if(!$this->db->field_exists('fijo', 'ordpitem')){
+			$mSQL="ALTER TABLE `ordpitem` ADD COLUMN `fijo` CHAR(1) NULL DEFAULT 'N' COMMENT 'N si depende de la cantidad, S si no depende de la cantidad' AFTER `modificado`";
+			$this->db->simple_query($mSQL);
+		}
+
+		if(!$this->db->field_exists('tipo', 'ordpindi')){
+			$mSQL="ALTER TABLE `ordpindi` ADD COLUMN `tipo` CHAR(1) NULL DEFAULT 'P' COMMENT 'P porcentual, M monetario' AFTER `hora`";
 			$this->db->simple_query($mSQL);
 		}
 
