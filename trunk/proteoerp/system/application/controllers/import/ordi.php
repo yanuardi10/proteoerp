@@ -387,7 +387,7 @@ class Ordi extends Controller {
 		$edit->button_status('btn_liqui','Descargar Caldeco',$accion,'BR','show');
 
 		$accion="javascript:window.location='".site_url('formatos/ver/ORDI'.$edit->pk_URI())."'";
-		$edit->button_status('btn_imprime','Imprimir',$accion,'TR','show');
+		$edit->button_status('btn_imprime','Imprimir',$accion,'BR','show');
 
 		$edit->buttons('undo','back');
 		$edit->build();
@@ -527,8 +527,9 @@ class Ordi extends Controller {
 		$grid->use_function('str_pad');
 		$grid->order_by('id','desc');
 		$grid->per_page = 5;
+		$status=$this->datasis->dameval('SELECT status FROM ordi WHERE numero='.$this->db->escape($id));
 
-		$uri=anchor('import/ordi/ordiva/'.$id.'/modify/<#id#>','<nformat><#tasa#></nformat>%');
+		$uri=($status!='C')? anchor('import/ordi/ordiva/'.$id.'/modify/<#id#>','<nformat><#tasa#></nformat>%'):'<nformat><#tasa#></nformat>%';
 
 		$grid->column('Tasa'          ,$uri);
 		$grid->column('Base Imponible','<nformat><#base#></nformat>','align=\'right\'');
