@@ -4,16 +4,16 @@ class limport extends Controller {
 	function limport() {
 		parent::Controller();
 		$this->load->library('rapyd');
-		$this->datasis->modulo_id(504,1);
+		$this->datasis->modulo_id('205',1);
 		$this->load->helper('date');
 	}
 
 	function liqui($lnumero) {
 		$dbnumero=$this->db->escape($lnumero);
 
-		$mSQL_1="SELECT numero, fecha, status, proveed, nombre, agente, nomage, montofob, gastosi, montocif, 
-		aranceles, gastosn, montotot, montoiva, montoexc, arribo, factura, cambioofi, cambioreal, peso, transac, 
-		estampa, usuario, hora, dua, cargoval, control, crm 
+		$mSQL_1="SELECT numero, fecha, status, proveed, nombre, agente, nomage, montofob, gastosi, montocif,
+		aranceles, gastosn, montotot, montoiva, montoexc, arribo, factura, cambioofi, cambioreal, peso, transac,
+		estampa, usuario, hora, dua, cargoval, control, crm
 		FROM ordi WHERE numero=$dbnumero";
 
 		$fnombre='liquidacion.xls';
@@ -103,7 +103,7 @@ class limport extends Controller {
 		$numerol   =$row1->numero;
 		$fecha     =dbdate_to_human($row1->fecha);
 		$arribo    =dbdate_to_human($row1->arribo);
-		$factura   =$row1->factura; 
+		$factura   =$row1->factura;
 		$dua       =$row1->dua;
 		$montofob  =$row1->montofob;
 		$gastosi   =$row1->gastosi;
@@ -202,13 +202,13 @@ class limport extends Controller {
 		$mm=$mm+2;
 		$dd=$mm+1;
 
-		$mSQL = "SELECT numero, fecha, codigo, descrip, cantidad, costofob, importefob, gastosi, costocif, 
-		importecif, importeciflocal, importecifreal,codaran, arancel, montoaran, gastosn, costofinal, importefinal, participam*100 AS part, 
+		$mSQL = "SELECT numero, fecha, codigo, descrip, cantidad, costofob, importefob, gastosi, costocif,
+		importecif, importeciflocal, importecifreal,codaran, arancel, montoaran, gastosn, costofinal, importefinal, participam*100 AS part,
 		participao, arancif, iva, precio1, precio2, precio3, precio4, estampa, hora, usuario, id,
 		importecifreal-importeciflocal AS cargo,
 		importecifreal+gastosn+montoaran AS importenac,
 		(importecifreal+gastosn+montoaran)/cantidad AS cunitario
-		FROM itordi WHERE numero=$dbnumero"; 
+		FROM itordi WHERE numero=$dbnumero";
 
 		$mc=$this->db->query($mSQL);
 		if($mc->num_rows() > 0){
