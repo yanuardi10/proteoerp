@@ -386,7 +386,7 @@ class Ordi extends Controller {
 		$accion="javascript:window.location='".site_url('import/limport/liqui/'.$edit->_dataobject->pk['numero'])."'";
 		$edit->button_status('btn_liqui','Descargar Caldeco',$accion,'BR','show');
 
-		$accion="javascript:window.location='".site_url('formatos/verhtml/ORDI'.$edit->pk_URI())."'";
+		$accion="javascript:window.location='".site_url('formatos/ver/ORDI'.$edit->pk_URI())."'";
 		$edit->button_status('btn_imprime','Imprimir',$accion,'TR','show');
 
 		$edit->buttons('undo','back');
