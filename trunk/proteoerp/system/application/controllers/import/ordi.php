@@ -469,8 +469,9 @@ class Ordi extends Controller {
 
 		$grid->use_function('str_pad');
 		$grid->order_by('a.numero','desc');
+		$status=$this->datasis->dameval('SELECT status FROM ordi WHERE numero='.$this->db->escape($id));
 
-		$uri=anchor('import/ordi/gseri/'.$id.'/modify/<#id#>','<sinulo><#numero#>|No tiene</sinulo>');
+		$uri=($status!='C')?anchor('import/ordi/gseri/'.$id.'/modify/<#id#>','<sinulo><#numero#>|No tiene</sinulo>') :'<sinulo><#numero#>|No tiene</sinulo>';
 
 		$grid->column('N. Factura',$uri);
 		$grid->column('Proveedor','<#proveed#>-<#nombre#>');
