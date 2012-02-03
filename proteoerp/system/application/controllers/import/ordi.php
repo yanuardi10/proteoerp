@@ -115,7 +115,7 @@ class Ordi extends Controller {
 			'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'Descripci&oacute;n'),
 			'retornar'=>array('codigo'=>'codaran_<#i#>','tarifa'=>'arancel_<#i#>'),
 			'p_uri'=>array(4=>'<#i#>'),
-			'titulo'  =>'Buscar Aranceles', 
+			'titulo'  =>'Buscar Aranceles',
 			'script'  =>array('aranpresis(<#i#>)'));
 		$aran=$this->datasis->p_modbus($aran,'<#i#>');
 
@@ -393,7 +393,7 @@ class Ordi extends Controller {
 			formatItem:formato,
 			width:200,
 			autoFill:true,
-			onItemSelect: function(li) { 
+			onItemSelect: function(li) {
 				srt=li.innerHTML;
 				arr=srt.split("-");
 				str=arr[1].replace(/^\s*|\s*$/g,"");
@@ -425,7 +425,7 @@ class Ordi extends Controller {
 		$data['content'] =  $this->load->view('view_ordi',$conten,true);
 		$data['title']   =  '<h1>Importaciones</h1>';
 		$data['head']    =  $this->rapyd->get_head().phpscript('nformat.js').script('plugins/jquery.autocomplete.js').style('jquery.autocomplete.css');
-		$this->load->view('view_ventanas', $data); 
+		$this->load->view('view_ventanas', $data);
 	}
 
 	function autocomplete($campo,$cod=FALSE){
@@ -485,6 +485,7 @@ class Ordi extends Controller {
 
 		$grid = new DataGrid('Lista de gastos nacionales','gser');
 		$grid->db->where('ordeni',$id);
+		$grid->db->where('tipo_doc <>','XX');
 		$grid->use_function('str_pad');
 		$grid->order_by('numero','desc');
 
@@ -723,15 +724,16 @@ class Ordi extends Controller {
 		$filter->db->select('numero,fecha,vence,nombre,totiva,totneto,totpre,proveed,ordeni');
 		$filter->db->from('gser');
 		$filter->db->where("(ordeni IS NULL or ordeni=$ordi or ordeni=0)");
+		$filter->db->where('tipo_doc <>','XX');
 
 		$filter->fechad = new dateonlyField('Desde', 'fechad','d/m/Y');
 		$filter->fechah = new dateonlyField('Hasta', 'fechah','d/m/Y');
 		$filter->fechad->clause  =$filter->fechah->clause='where';
 		$filter->fechad->db_name =$filter->fechah->db_name='fecha';
-		//$filter->fechad->insertValue = date('Y-m-d'); 
-		//$filter->fechah->insertValue = date('Y-m-d'); 
+		//$filter->fechad->insertValue = date('Y-m-d');
+		//$filter->fechah->insertValue = date('Y-m-d');
 		$filter->fechah->size=$filter->fechad->size=10;
-		$filter->fechad->operator='>='; 
+		$filter->fechad->operator='>=';
 		$filter->fechah->operator='<=';
 
 		$filter->numero = new inputField('N&uacute;mero', 'numero');
@@ -846,7 +848,7 @@ class Ordi extends Controller {
 		$pesotota=$row['pesotota'];
 		$montofob=$row['montofob'];
 		$gastosi =$this->datasis->dameval("SELECT SUM(monto)    AS gastosi  FROM gseri WHERE ordeni=$dbid");
-		$gastosn =$this->datasis->dameval("SELECT SUM(totpre)   AS gastosn  FROM gser  WHERE ordeni=$dbid");
+		$gastosn =$this->datasis->dameval("SELECT SUM(totpre)   AS gastosn  FROM gser  WHERE ordeni=$dbid AND tipo_doc<>'XX'");
 		$montoiva=$this->datasis->dameval("SELECT SUM(montoiva) AS montoiva FROM ordiva WHERE ordeni=$dbid");
 		$baseiva =$this->datasis->dameval("SELECT SUM(base)     AS base     FROM ordiva WHERE ordeni=$dbid");
 		if(empty($gastosn))  $gastosn =0;
@@ -916,7 +918,7 @@ class Ordi extends Controller {
 		if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
 
 		//Calculo de los precios
-		$mSQL="UPDATE itordi AS a JOIN sinv AS b ON a.codigo=b.codigo SET 
+		$mSQL="UPDATE itordi AS a JOIN sinv AS b ON a.codigo=b.codigo SET
 			a.precio1=(costoreal*100/(100-b.margen1))*(1+(b.iva/100)),
 			a.precio2=(costoreal*100/(100-b.margen2))*(1+(b.iva/100)),
 			a.precio3=(costoreal*100/(100-b.margen3))*(1+(b.iva/100)),
@@ -956,7 +958,7 @@ class Ordi extends Controller {
 		$mmSQL.="ROUND(a.montoaran+a.gastosn+(a.importecif*$cambioreal),2) AS importefinal2 ";                //calculo real
 		$mmSQL.='FROM (itordi AS a)';
 		$mmSQL.="WHERE a.numero = $dbid";*/
-		
+
 		return ($error==0) ? true: false;
 	}
 
@@ -1094,7 +1096,7 @@ class Ordi extends Controller {
 						$importecifreal += $itrow->importecifreal;
 
 						//Actualiza el inventario
-						$mSQL='UPDATE sinv SET 
+						$mSQL='UPDATE sinv SET
 							pond=(existen*IF(formcal="P",pond,IF(formcal="U",ultimo,GREATEST(pond,ultimo)))+'.$itrow->cantidad*$itrow->costoreal.')/(existen+'.$itrow->cantidad.'),
 							existen=existen+'.$itrow->cantidad.' WHERE codigo='.$this->db->escape($itrow->codigo);
 						$ban=$this->db->simple_query($mSQL);
@@ -1105,7 +1107,7 @@ class Ordi extends Controller {
 						if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
 
 						if($itrow->precio1>0 and $itrow->precio2>0 and $itrow->precio3>0 and $itrow->precio4>0){
-							$mSQL='UPDATE sinv SET 
+							$mSQL='UPDATE sinv SET
 								prov3=prov2, prepro3=prepro2, pfecha3=pfecha2, prov2=prov1, prepro2=prepro1, pfecha2=pfecha1,
 								prov1='.$this->db->escape($proveed).',
 								prepro1='.$itrow->costoreal.',
@@ -1118,12 +1120,12 @@ class Ordi extends Controller {
 								WHERE codigo='.$this->db->escape($itrow->codigo);
 							$ban=$this->db->simple_query($mSQL);
 							if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
-    
-							$mSQL='UPDATE sinv SET 
-								base1=ROUND(precio1*10000/(100+iva))/100, 
-								base2=ROUND(precio2*10000/(100+iva))/100, 
-								base3=ROUND(precio3*10000/(100+iva))/100, 
-								base4=ROUND(precio4*10000/(100+iva))/100, 
+
+							$mSQL='UPDATE sinv SET
+								base1=ROUND(precio1*10000/(100+iva))/100,
+								base2=ROUND(precio2*10000/(100+iva))/100,
+								base3=ROUND(precio3*10000/(100+iva))/100,
+								base4=ROUND(precio4*10000/(100+iva))/100,
 								margen1=ROUND(10000-(IF(formcal="P",pond,IF(formcal="U",ultimo,GREATEST(pond,ultimo)))*10000/base1))/100,
 								margen2=ROUND(10000-(IF(formcal="P",pond,IF(formcal="U",ultimo,GREATEST(pond,ultimo)))*10000/base2))/100,
 								margen3=ROUND(10000-(IF(formcal="P",pond,IF(formcal="U",ultimo,GREATEST(pond,ultimo)))*10000/base3))/100,
@@ -1324,7 +1326,7 @@ class Ordi extends Controller {
 			//echo $mSQL;
 			if($this->db->simple_query($mSQL)){
 				$dbnum=$this->db->escape($pk[3]);
-				$gastosn=$this->datasis->dameval('SELECT SUM(totpre) FROM gser WHERE ordeni='.$dbnum);
+				$gastosn=$this->datasis->dameval('SELECT SUM(totpre) FROM gser WHERE tipo_doc<>\'XX\' AND ordeni='.$dbnum);
 				if(empty($gastosn)) $gastosn=0;
 				$mSQL="UPDATE ordi SET gastosn=$gastosn WHERE numero=$dbnum";
 				$this->db->simple_query($mSQL);
@@ -1338,7 +1340,7 @@ class Ordi extends Controller {
 	//crea un contenedor para asociarlo
 	//con el crm
 	function contenedor($id){
-		
+
 	}
 
 	function _post_ordiva($do){
@@ -1386,7 +1388,7 @@ class Ordi extends Controller {
 		//$data['condiciones']= '';
 		//$data['definicion'] = '';
 		//$data['tipo']       = '';
-		$str = $this->db->insert_string('crm_contenedor', $data); 
+		$str = $this->db->insert_string('crm_contenedor', $data);
 		$this->db->simple_query($str);
 		$do->set('crm',$this->db->insert_id());
 
@@ -1445,121 +1447,131 @@ class Ordi extends Controller {
 	}
 
 	function instalar(){
-		$mSQL='ALTER TABLE `gser`  ADD COLUMN `ordeni` INT(15) UNSIGNED NULL DEFAULT NULL AFTER `compra`';
-		var_dump($this->db->simple_query($mSQL));
+		if(!$this->db->field_exists('ordeni', 'gser')){
+			$mSQL='ALTER TABLE `gser`  ADD COLUMN `ordeni` INT(15) UNSIGNED NULL DEFAULT NULL AFTER `compra`';
+			var_dump($this->db->simple_query($mSQL));
+		}
 
-		$mSQL="CREATE TABLE `itordi` (
-			`numero` INT(15) UNSIGNED NOT NULL,
-			`fecha` DATE NULL DEFAULT NULL,
-			`codigo` CHAR(15) NULL DEFAULT NULL,
-			`descrip` CHAR(45) NULL DEFAULT NULL,
-			`cantidad` DECIMAL(10,3) NULL DEFAULT NULL,
-			`costofob` DECIMAL(17,2) NULL DEFAULT NULL,
-			`importefob` DECIMAL(17,2) NULL DEFAULT NULL,
-			`gastosi` DECIMAL(17,2) NULL DEFAULT NULL,
-			`costocif` DECIMAL(17,2) NULL DEFAULT NULL,
-			`importecif` DECIMAL(17,2) NULL DEFAULT NULL,
-			`importeciflocal` DECIMAL(17,2) NULL DEFAULT NULL COMMENT 'importe cif en moneda local',
-			`codaran` CHAR(15) NULL DEFAULT NULL,
-			`arancel` DECIMAL(7,2) NULL DEFAULT NULL,
-			`montoaran` DECIMAL(17,2) NULL DEFAULT NULL,
-			`gastosn` DECIMAL(17,2) NULL DEFAULT NULL,
-			`costofinal` DECIMAL(17,2) NULL DEFAULT NULL,
-			`importefinal` DECIMAL(17,2) NULL DEFAULT NULL,
-			`participam` DECIMAL(7,4) NULL DEFAULT NULL,
-			`participao` DECIMAL(7,4) NULL DEFAULT NULL,
-			`arancif` DECIMAL(17,4) NULL DEFAULT '0.0000' COMMENT 'Monto del valor en base al cual se calcula el motoaran',
-			`iva` DECIMAL(17,2) NULL DEFAULT NULL,
-			`precio1` DECIMAL(15,2) NULL DEFAULT NULL,
-			`precio2` DECIMAL(15,2) NULL DEFAULT NULL,
-			`precio3` DECIMAL(15,2) NULL DEFAULT NULL,
-			`precio4` DECIMAL(15,2) NULL DEFAULT NULL,
-			`estampa` DATE NULL DEFAULT NULL,
-			`hora` CHAR(8) NULL DEFAULT NULL,
-			`usuario` CHAR(12) NULL DEFAULT NULL,
-			`id` INT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-			PRIMARY KEY (`id`),
-			INDEX `numero` (`numero`)
-		)
-		COLLATE='latin1_swedish_ci'
-		ENGINE=MyISAM
-		ROW_FORMAT=FIXED
-		AUTO_INCREMENT=0";
-		var_dump($this->db->simple_query($mSQL));
+		if (!$this->db->table_exists('itordi')) {
+			$mSQL="CREATE TABLE `itordi` (
+				`numero` INT(15) UNSIGNED NOT NULL,
+				`fecha` DATE NULL DEFAULT NULL,
+				`codigo` CHAR(15) NULL DEFAULT NULL,
+				`descrip` CHAR(45) NULL DEFAULT NULL,
+				`cantidad` DECIMAL(10,3) NULL DEFAULT NULL,
+				`costofob` DECIMAL(17,2) NULL DEFAULT NULL,
+				`importefob` DECIMAL(17,2) NULL DEFAULT NULL,
+				`gastosi` DECIMAL(17,2) NULL DEFAULT NULL,
+				`costocif` DECIMAL(17,2) NULL DEFAULT NULL,
+				`importecif` DECIMAL(17,2) NULL DEFAULT NULL,
+				`importeciflocal` DECIMAL(17,2) NULL DEFAULT NULL COMMENT 'importe cif en moneda local',
+				`codaran` CHAR(15) NULL DEFAULT NULL,
+				`arancel` DECIMAL(7,2) NULL DEFAULT NULL,
+				`montoaran` DECIMAL(17,2) NULL DEFAULT NULL,
+				`gastosn` DECIMAL(17,2) NULL DEFAULT NULL,
+				`costofinal` DECIMAL(17,2) NULL DEFAULT NULL,
+				`importefinal` DECIMAL(17,2) NULL DEFAULT NULL,
+				`participam` DECIMAL(7,4) NULL DEFAULT NULL,
+				`participao` DECIMAL(7,4) NULL DEFAULT NULL,
+				`arancif` DECIMAL(17,4) NULL DEFAULT '0.0000' COMMENT 'Monto del valor en base al cual se calcula el motoaran',
+				`iva` DECIMAL(17,2) NULL DEFAULT NULL,
+				`precio1` DECIMAL(15,2) NULL DEFAULT NULL,
+				`precio2` DECIMAL(15,2) NULL DEFAULT NULL,
+				`precio3` DECIMAL(15,2) NULL DEFAULT NULL,
+				`precio4` DECIMAL(15,2) NULL DEFAULT NULL,
+				`estampa` DATE NULL DEFAULT NULL,
+				`hora` CHAR(8) NULL DEFAULT NULL,
+				`usuario` CHAR(12) NULL DEFAULT NULL,
+				`id` INT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+				PRIMARY KEY (`id`),
+				INDEX `numero` (`numero`)
+			)
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM
+			ROW_FORMAT=FIXED
+			AUTO_INCREMENT=0";
+			var_dump($this->db->simple_query($mSQL));
+		}
 
-		$mSQL="CREATE TABLE `ordi` (
-			`numero` INT(15) UNSIGNED NOT NULL AUTO_INCREMENT,
-			`fecha` DATE NULL DEFAULT NULL,
-			`status` CHAR(1) NOT NULL DEFAULT '' COMMENT 'Estatus de la Compra Abierto, Eliminado y Cerrado',
-			`proveed` VARCHAR(5) NULL DEFAULT NULL COMMENT 'Proveedor',
-			`nombre` VARCHAR(40) NULL DEFAULT NULL COMMENT 'Nombre del Proveedor',
-			`agente` CHAR(5) NULL DEFAULT NULL COMMENT 'Agente Aduanal (Proveedor)',
-			`nomage` VARCHAR(40) NULL DEFAULT NULL COMMENT 'Agente Aduanal (Proveedor)',
-			`montofob` DECIMAL(19,2) NULL DEFAULT NULL COMMENT 'Total de la Factura extranjera',
-			`gastosi` DECIMAL(19,2) NULL DEFAULT NULL COMMENT 'Gastos Internacionales (Fletes, Seguros, etc)',
-			`montocif` DECIMAL(19,2) NULL DEFAULT NULL COMMENT 'Monto FOB+gastos Internacionales',
-			`aranceles` DECIMAL(19,2) NULL DEFAULT NULL COMMENT 'Suma del Impuesto Arancelario',
-			`gastosn` DECIMAL(19,2) NULL DEFAULT NULL COMMENT 'Gastos Nacionales',
-			`montotot` DECIMAL(19,2) NULL DEFAULT NULL COMMENT 'Monto CIF + Gastos Nacionales',
-			`montoiva` DECIMAL(19,2) NULL DEFAULT NULL COMMENT 'Monto del IVA pagado',
-			`montoexc` DECIMAL(12,2) NULL DEFAULT NULL,
-			`arribo` DATE NULL DEFAULT NULL COMMENT 'Fecha de Llegada',
-			`factura` VARCHAR(20) NULL DEFAULT NULL COMMENT 'Nro de Factura',
-			`cambioofi` DECIMAL(17,2) NOT NULL DEFAULT '0.00' COMMENT 'Cambio Fiscal US$ X Bs.',
-			`cambioreal` DECIMAL(17,2) NOT NULL DEFAULT '0.00' COMMENT 'Cambio Efectivamente Aplicado',
-			`peso` DECIMAL(12,2) NOT NULL DEFAULT '0.00' COMMENT 'Peso total',
-			`condicion` TEXT NULL,
-			`transac` VARCHAR(8) NOT NULL DEFAULT '',
-			`estampa` DATE NOT NULL DEFAULT '0000-00-00',
-			`usuario` VARCHAR(12) NOT NULL DEFAULT '',
-			`hora` VARCHAR(8) NOT NULL DEFAULT '',
-			`dua` CHAR(30) NULL DEFAULT NULL COMMENT 'DECLARACION UNICA ADUANAS',
-			`cargoval` DECIMAL(19,2) NULL DEFAULT NULL COMMENT 'Diferencia Cambiara $ oficial y aplicado',
-			`control` VARCHAR(8) NULL DEFAULT NULL COMMENT 'Apuntador a la factura con la que se relaciono',
-			`crm` INT(11) UNSIGNED NULL DEFAULT NULL COMMENT 'Apuntador al conetendor',
-			PRIMARY KEY (`numero`)
-		)
-		COLLATE='latin1_swedish_ci'
-		ENGINE=MyISAM
-		ROW_FORMAT=DYNAMIC
-		AUTO_INCREMENT=0";
-		var_dump($this->db->simple_query($mSQL));
+		if (!$this->db->table_exists('ordi')) {
+			$mSQL="CREATE TABLE `ordi` (
+				`numero` INT(15) UNSIGNED NOT NULL AUTO_INCREMENT,
+				`fecha` DATE NULL DEFAULT NULL,
+				`status` CHAR(1) NOT NULL DEFAULT '' COMMENT 'Estatus de la Compra Abierto, Eliminado y Cerrado',
+				`proveed` VARCHAR(5) NULL DEFAULT NULL COMMENT 'Proveedor',
+				`nombre` VARCHAR(40) NULL DEFAULT NULL COMMENT 'Nombre del Proveedor',
+				`agente` CHAR(5) NULL DEFAULT NULL COMMENT 'Agente Aduanal (Proveedor)',
+				`nomage` VARCHAR(40) NULL DEFAULT NULL COMMENT 'Agente Aduanal (Proveedor)',
+				`montofob` DECIMAL(19,2) NULL DEFAULT NULL COMMENT 'Total de la Factura extranjera',
+				`gastosi` DECIMAL(19,2) NULL DEFAULT NULL COMMENT 'Gastos Internacionales (Fletes, Seguros, etc)',
+				`montocif` DECIMAL(19,2) NULL DEFAULT NULL COMMENT 'Monto FOB+gastos Internacionales',
+				`aranceles` DECIMAL(19,2) NULL DEFAULT NULL COMMENT 'Suma del Impuesto Arancelario',
+				`gastosn` DECIMAL(19,2) NULL DEFAULT NULL COMMENT 'Gastos Nacionales',
+				`montotot` DECIMAL(19,2) NULL DEFAULT NULL COMMENT 'Monto CIF + Gastos Nacionales',
+				`montoiva` DECIMAL(19,2) NULL DEFAULT NULL COMMENT 'Monto del IVA pagado',
+				`montoexc` DECIMAL(12,2) NULL DEFAULT NULL,
+				`arribo` DATE NULL DEFAULT NULL COMMENT 'Fecha de Llegada',
+				`factura` VARCHAR(20) NULL DEFAULT NULL COMMENT 'Nro de Factura',
+				`cambioofi` DECIMAL(17,2) NOT NULL DEFAULT '0.00' COMMENT 'Cambio Fiscal US$ X Bs.',
+				`cambioreal` DECIMAL(17,2) NOT NULL DEFAULT '0.00' COMMENT 'Cambio Efectivamente Aplicado',
+				`peso` DECIMAL(12,2) NOT NULL DEFAULT '0.00' COMMENT 'Peso total',
+				`condicion` TEXT NULL,
+				`transac` VARCHAR(8) NOT NULL DEFAULT '',
+				`estampa` DATE NOT NULL DEFAULT '0000-00-00',
+				`usuario` VARCHAR(12) NOT NULL DEFAULT '',
+				`hora` VARCHAR(8) NOT NULL DEFAULT '',
+				`dua` CHAR(30) NULL DEFAULT NULL COMMENT 'DECLARACION UNICA ADUANAS',
+				`cargoval` DECIMAL(19,2) NULL DEFAULT NULL COMMENT 'Diferencia Cambiara $ oficial y aplicado',
+				`control` VARCHAR(8) NULL DEFAULT NULL COMMENT 'Apuntador a la factura con la que se relaciono',
+				`crm` INT(11) UNSIGNED NULL DEFAULT NULL COMMENT 'Apuntador al conetendor',
+				PRIMARY KEY (`numero`)
+			)
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM
+			ROW_FORMAT=DYNAMIC
+			AUTO_INCREMENT=0";
+			var_dump($this->db->simple_query($mSQL));
+		}
 
-		$mSQL="CREATE TABLE `ordiva` (
-			`id` INT(15) UNSIGNED NOT NULL AUTO_INCREMENT,
-			`ordeni` INT(15) UNSIGNED NULL DEFAULT NULL,
-			`tasa` DECIMAL(7,2) NULL DEFAULT NULL,
-			`base` DECIMAL(10,2) NULL DEFAULT NULL,
-			`montoiva` DECIMAL(10,2) NULL DEFAULT NULL,
-			`concepto` VARCHAR(100) NULL DEFAULT NULL,
-			PRIMARY KEY (`id`),
-			UNIQUE INDEX `ordi` (`ordeni`, `tasa`)
-		)
-		COLLATE='latin1_swedish_ci'
-		ENGINE=MyISAM
-		ROW_FORMAT=DEFAULT
-		AUTO_INCREMENT=0";
-		var_dump($this->db->simple_query($mSQL));
+		if (!$this->db->table_exists('ordiva')) {
+			$mSQL="CREATE TABLE `ordiva` (
+				`id` INT(15) UNSIGNED NOT NULL AUTO_INCREMENT,
+				`ordeni` INT(15) UNSIGNED NULL DEFAULT NULL,
+				`tasa` DECIMAL(7,2) NULL DEFAULT NULL,
+				`base` DECIMAL(10,2) NULL DEFAULT NULL,
+				`montoiva` DECIMAL(10,2) NULL DEFAULT NULL,
+				`concepto` VARCHAR(100) NULL DEFAULT NULL,
+				PRIMARY KEY (`id`),
+				UNIQUE INDEX `ordi` (`ordeni`, `tasa`)
+			)
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM
+			ROW_FORMAT=DEFAULT
+			AUTO_INCREMENT=0";
+			var_dump($this->db->simple_query($mSQL));
+		}
 
-		$mSQL="CREATE TABLE `gseri` (
-		`ordeni` INT(15) UNSIGNED NOT NULL,
-		`fecha` DATE NOT NULL DEFAULT '0000-00-00',
-		`numero` VARCHAR(8) NOT NULL DEFAULT '',
-		`concepto` VARCHAR(40) NULL DEFAULT NULL,
-		`monto` DECIMAL(19,2) NULL DEFAULT NULL,
-			`proveed` VARCHAR(5) NULL DEFAULT '',
-			`nombre` VARCHAR(30) NULL DEFAULT '',
-			`usuario` VARCHAR(12) NULL DEFAULT NULL,
-			`estampa` DATE NULL DEFAULT NULL,
-			`hora` VARCHAR(8) NULL DEFAULT NULL,
-			`id` INT(11) NOT NULL AUTO_INCREMENT,
-			PRIMARY KEY (`id`)
-		)
-		COLLATE='latin1_swedish_ci'
-		ENGINE=MyISAM
-		ROW_FORMAT=DYNAMIC
-		AUTO_INCREMENT=0";
-		var_dump($this->db->simple_query($mSQL));
+		if (!$this->db->table_exists('gseri')) {
+			$mSQL="CREATE TABLE `gseri` (
+			`ordeni` INT(15) UNSIGNED NOT NULL,
+			`fecha` DATE NOT NULL DEFAULT '0000-00-00',
+			`numero` VARCHAR(8) NOT NULL DEFAULT '',
+			`concepto` VARCHAR(40) NULL DEFAULT NULL,
+			`monto` DECIMAL(19,2) NULL DEFAULT NULL,
+				`proveed` VARCHAR(5) NULL DEFAULT '',
+				`nombre` VARCHAR(30) NULL DEFAULT '',
+				`usuario` VARCHAR(12) NULL DEFAULT NULL,
+				`estampa` DATE NULL DEFAULT NULL,
+				`hora` VARCHAR(8) NULL DEFAULT NULL,
+				`id` INT(11) NOT NULL AUTO_INCREMENT,
+				PRIMARY KEY (`id`)
+			)
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM
+			ROW_FORMAT=DYNAMIC
+			AUTO_INCREMENT=0";
+			var_dump($this->db->simple_query($mSQL));
+		}
 
 		$mSQL="ALTER TABLE `itordi`  ADD COLUMN `importecifreal` DECIMAL(17,2) NULL DEFAULT NULL COMMENT 'importe cif en moneda local al cambio real' AFTER `importeciflocal`";
 		var_dump($this->db->simple_query($mSQL));
