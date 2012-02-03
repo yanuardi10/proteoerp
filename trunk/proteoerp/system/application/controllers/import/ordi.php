@@ -176,7 +176,7 @@ class Ordi extends Controller {
 		$edit->status->style = 'width:120px';*/
 
 		$edit->proveed = new inputField('Proveedor', 'proveed');
-		$edit->proveed->rule     ='trim|required';
+		$edit->proveed->rule     ='trim|required|existesprv';
 		$edit->proveed->maxlength=5;
 		$edit->proveed->size     =7;
 		$edit->proveed->append($boton);
@@ -187,7 +187,7 @@ class Ordi extends Controller {
 		$edit->nombre->size     =40;
 
 		$edit->agente = new inputField('Agente aduanal', 'agente');
-		$edit->agente->rule     ='trim';
+		$edit->agente->rule     ='trim|existesprv';
 		$edit->agente->maxlength=5;
 		$edit->agente->size     =7;
 		$edit->agente->append($aboton);
@@ -209,6 +209,7 @@ class Ordi extends Controller {
 			$edit->$obj->size     =10;
 			$edit->$obj->css_class= 'inputnum';
 			$edit->$obj->autocomplete= false;
+			$edit->$obj->showformat  = 'decimal';
 		}
 
 		$arr=array(
@@ -225,6 +226,7 @@ class Ordi extends Controller {
 			$edit->$obj->size     =10;
 			$edit->$obj->css_class= 'inputnum';
 			$edit->$obj->autocomplete= false;
+			$edit->$obj->showformat  = 'decimal';
 			$edit->$obj->when=array('show');
 		}
 
@@ -245,6 +247,7 @@ class Ordi extends Controller {
 		$edit->cambioofi->maxlength=17;
 		$edit->cambioofi->size     =10;
 		$edit->cambioofi->autocomplete= false;
+		$edit->cambioofi->showformat  = 'decimal';
 
 		$edit->cambioreal = new inputField('Cambio Real', 'cambioreal');
 		$edit->cambioreal->css_class= 'inputnum';
@@ -252,12 +255,14 @@ class Ordi extends Controller {
 		$edit->cambioreal->maxlength=17;
 		$edit->cambioreal->size     =10;
 		$edit->cambioreal->autocomplete= false;
+		$edit->cambioreal->showformat  = 'decimal';
 
 		$edit->peso = new inputField('Peso Total', 'peso');
-		$edit->peso->css_class= 'inputnum';
-		$edit->peso->rule     ='trim';
-		$edit->peso->maxlength=12;
-		$edit->peso->size     =10;
+		$edit->peso->css_class = 'inputnum';
+		$edit->peso->rule      = 'trim';
+		$edit->peso->maxlength = 12;
+		$edit->peso->size      = 10;
+		$edit->peso->showformat= 'decimal';
 		$edit->peso->when=array('show');
 
 		$edit->condicion = new textareaField('Condiciones', 'condicion');
@@ -310,10 +315,11 @@ class Ordi extends Controller {
 			$edit->$obj->db_name  = $db;
 			$edit->$obj->css_class= 'inputnum';
 			$edit->$obj->rel_id   = 'itordi';
-			$edit->$obj->rule     ='trim';
-			$edit->$obj->maxlength=20;
-			$edit->$obj->size     =10;
+			$edit->$obj->rule     = 'trim';
+			$edit->$obj->maxlength= 20;
+			$edit->$obj->size     = 10;
 			$edit->$obj->autocomplete= false;
+			$edit->$obj->showformat  = 'decimal';
 		}
 
 		/*$edit->iva = new inputField('IVA <#o#>', 'iva_<#i#>');
@@ -347,6 +353,7 @@ class Ordi extends Controller {
 			$edit->$obj->size     = 5;
 			$edit->$obj->readonly =true;
 			$edit->$obj->autocomplete= false;
+			$edit->$obj->showformat  = 'decimal';
 		}
 
 		/*$arr=array('precio1','precio2','precio3','precio4');
@@ -379,7 +386,7 @@ class Ordi extends Controller {
 		$accion="javascript:window.location='".site_url('import/limport/liqui/'.$edit->_dataobject->pk['numero'])."'";
 		$edit->button_status('btn_liqui','Descargar Caldeco',$accion,'BR','show');
 
-		$accion="javascript:window.location='".site_url('formatos/verhtml/ORDI/'.$edit->pk_URI())."'";
+		$accion="javascript:window.location='".site_url('formatos/verhtml/ORDI'.$edit->pk_URI())."'";
 		$edit->button_status('btn_imprime','Imprimir',$accion,'TR','show');
 
 		$edit->buttons('undo','back');
@@ -1373,12 +1380,18 @@ class Ordi extends Controller {
 	}
 
 	function _pre_insert($do){
-		$transac=$this->datasis->fprox_numero('transac');
-		$usuario=$this->session->userdata('usuario');
+		$transac= $this->datasis->fprox_numero('ntransa');
+		$usuario= $this->session->userdata('usuario');
+		$sprv   = $do->get('proveed');
+		$agente = $do->get('agente');
+		$dbsprv  =$this->db->escape($sprv);
+        $dbagente=$this->db->escape($agente);
 
+		$do->set('nombre',$this->datasis->dameval('SELECT nombre FROM sprv WHERE proveed='.$dbsprv));
+		$do->set('nomage',$this->datasis->dameval('SELECT nombre FROM sprv WHERE proveed='.$dbagente));
 		$do->set('usuario',$usuario);
 		$do->set('transac',$transac);
-		$do->set('estampa',date('ymd'));
+		$do->set('estampa',date('Ymd'));
 		$do->set('hora'   ,date('H:i:s'));
 
 		//Crea el cotenedor
@@ -1386,7 +1399,7 @@ class Ordi extends Controller {
 		$data['status']     = 'A';
 		$data['fecha']      = date('Ymd');
 		$data['titulo']     = 'Importación '.$do->get('numero');
-		$data['proveed']    = $do->get('proveed');
+		$data['proveed']    = $sprv;
 		$data['descripcion']= 'Importación al proveedor '.$do->get('proveed').' numero '.$do->get('numero');
 		//$data['condiciones']= '';
 		//$data['definicion'] = '';
