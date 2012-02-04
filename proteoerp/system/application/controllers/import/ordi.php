@@ -270,6 +270,13 @@ class Ordi extends Controller {
 		$edit->condicion->cols = 37;
 		$edit->condicion->rows = 3;
 
+		$edit->estimadif = new inputField('Diferencia en estimaci&oacute;n', 'estimadif');
+		$edit->estimadif->css_class = 'inputnum';
+		$edit->estimadif->maxlength = 12;
+		$edit->estimadif->size      = 10;
+		$edit->estimadif->showformat= 'decimal';
+		$edit->estimadif->when=array('show');
+
 		//*********************
 		//comienza el detalle
 		//*********************
@@ -322,13 +329,6 @@ class Ordi extends Controller {
 			$edit->$obj->showformat  = 'decimal';
 		}
 
-		/*$edit->iva = new inputField('IVA <#o#>', 'iva_<#i#>');
-		$edit->iva->db_name  = 'iva';
-		$edit->iva->rel_id   = 'itordi';
-		$edit->iva->rule     ='trim';
-		$edit->iva->maxlength=7;
-		$edit->iva->size     =6;*/
-
 		$edit->codaran = new inputField('Codaran <#o#>', 'codaran_<#i#>');
 		$edit->codaran->db_name  = 'codaran';
 		$edit->codaran->rel_id   = 'itordi';
@@ -355,17 +355,6 @@ class Ordi extends Controller {
 			$edit->$obj->autocomplete= false;
 			$edit->$obj->showformat  = 'decimal';
 		}
-
-		/*$arr=array('precio1','precio2','precio3','precio4');
-		foreach($arr as $obj){
-			$edit->$obj = new inputField(ucfirst("$obj <#o#>"), "${obj}_<#i#>");
-			$edit->$obj->db_name  = $obj;
-			$edit->$obj->css_class= 'inputnum';
-			$edit->$obj->rel_id   = 'itordi';
-			$edit->$obj->rule     ='trim';
-			$edit->$obj->maxlength=15;
-			$edit->$obj->size     =10;
-		}*/
 		//Termina el detalle
 
 		$edit->ordeni  = new autoUpdateField('status','A','A');
@@ -382,6 +371,14 @@ class Ordi extends Controller {
 			$edit->button_status('btn_arancif', 'Reajustar los aranceles', $action, 'BR','show');
 
 			$edit->buttons('modify','save','delete','add_rel');
+		}else{
+			$id=$edit->get_from_dataobjetct('numero');
+			$this->db->where('ordeni', $id);
+			$this->db->from('ordiestima');
+			if($this->db->count_all_results()>0){
+				$accion="javascript:window.location='".site_url('import/ordi/gserestima'.$edit->pk_URI())."'";
+				$edit->button_status('btn_ginpo','Agregar gasto real',$accion,'BR','show');
+			}
 		}
 		$accion="javascript:window.location='".site_url('import/limport/liqui/'.$edit->_dataobject->pk['numero'])."'";
 		$edit->button_status('btn_liqui','Descargar Caldeco',$accion,'BR','show');
@@ -394,27 +391,6 @@ class Ordi extends Controller {
 
 		$auto_aran=site_url('import/ordi/autocomplete/codaran');
 		$this->rapyd->jquery[]='$(".inputnum").numeric(".");';
-		/*$this->rapyd->jquery[]='$(\'input[name^="codara"]\').autocomplete("'.$auto_aran.'",{
-			delay:10,
-			//minChars:2,
-			matchSubset:1,
-			matchContains:1,
-			cacheLength:10,
-			formatItem:formato,
-			width:200,
-			autoFill:true,
-			onItemSelect: function(li) {
-				srt=li.innerHTML;
-				arr=srt.split("-");
-				str=arr[1].replace(/^\s*|\s*$/g,"");
-				str=str.substring(0,str.length-1);
-				num=des_nformat(str);
-				$("#arancel_1").val(num);
-			},
-		});';*/
-
-		//$data['content'] = $edit->output;
-		//$data['smenu']   = $this->load->view('view_sub_menu','205',true);
 
 		if($edit->_status=='show'){
 			$conten['peroles'][] = $this->_showgeri($edit->_dataobject->pk['numero'],$stat)  ;
@@ -434,7 +410,7 @@ class Ordi extends Controller {
 
 		$conten['form']  =& $edit;
 		$data['content'] =  $this->load->view('view_ordi',$conten,true);
-		$data['title']   =  '<h1>Importaciones</h1>';
+		$data['title']   =  heading('Importaciones');
 		$data['head']    =  $this->rapyd->get_head().phpscript('nformat.js').script('plugins/jquery.autocomplete.js').style('jquery.autocomplete.css');
 		$this->load->view('view_ventanas', $data);
 	}
@@ -900,7 +876,103 @@ class Ordi extends Controller {
 
 		$data['content'] = $filter->output.$grid->output;
 		$data['head']    = $this->rapyd->get_head();
-		$data['title']   = '<h1>Relacion de gastos nacionales</h1>';
+		$data['title']   = '<h1>Relaci&oacute;n de gastos nacionales</h1>';
+		$this->load->view('view_ventanas', $data);
+	}
+
+	function gserestima($ordi){
+		$this->rapyd->load('datagrid','datafilter');
+
+		$modbus=array(
+			'tabla'   =>'sprv',
+			'columnas'=>array(
+			'proveed' =>'C&oacute;digo Proveedor',
+			'nombre'=>'Nombre',
+			'rif'=>'RIF'),
+			'filtro'  =>array('proveed'=>'C&oacute;digo Proveedor','nombre'=>'Nombre'),
+			'retornar'=>array('proveed'=>'proveed'),
+			'titulo'  =>'Buscar Proveedor');
+		$boton=$this->datasis->modbus($modbus);
+
+		$filter = new DataFilter('Filtro de Egresos');
+		$filter->db->select(array('b.id','a.id AS gser_id','a.numero','a.fecha','a.vence','a.nombre','a.totiva','a.totneto','a.totpre','a.proveed'));
+		$filter->db->from('gser AS a');
+		$filter->db->join('ordiestgser AS b','a.id=b.id_gser AND b.id_ordi='.$this->db->escape($ordi),'left');
+		$filter->db->where("(a.ordeni IS NULL OR a.ordeni=0)");
+		$filter->db->where('a.tipo_doc <>','XX');
+
+		$filter->fechad = new dateonlyField('Desde', 'fechad','d/m/Y');
+		$filter->fechah = new dateonlyField('Hasta', 'fechah','d/m/Y');
+		$filter->fechad->clause  =$filter->fechah->clause='where';
+		$filter->fechad->db_name =$filter->fechah->db_name='fecha';
+		//$filter->fechad->insertValue = date('Y-m-d');
+		//$filter->fechah->insertValue = date('Y-m-d');
+		$filter->fechah->size=$filter->fechad->size=10;
+		$filter->fechad->operator='>=';
+		$filter->fechah->operator='<=';
+
+		$filter->numero = new inputField('N&uacute;mero', 'numero');
+		$filter->numero->size=20;
+
+		$filter->proveedor = new inputField('Proveedor','proveed');
+		$filter->proveedor->append($boton);
+		$filter->proveedor->db_name = 'proveed';
+		$filter->proveedor->size=20;
+
+		$filter->monto  = new inputField2('Monto ','totpre');
+		$filter->monto->clause='where';
+		$filter->monto->operator='=';
+		$filter->monto->size = 20;
+		$filter->monto->css_class='inputnum';
+
+		$action = "javascript:window.location='".site_url('import/ordi/dataedit/show/'.$ordi)."'";
+		$filter->button('btn_regresa', 'Regresar', $action, 'TR');
+
+		$filter->buttons('reset','search');
+		$filter->build();
+
+		$uri  = anchor('finanzas/gser/dataedit/show/<#fecha#>/<#numero#>/<#proveed#>','<#numero#>');
+
+		$grid = new DataGrid();
+		$grid->order_by('numero','desc');
+		$grid->use_function('checker');
+		$grid->per_page = 15;
+
+		function checker($id,$gser_id,$ordi){
+			$arr=array($gser_id,$ordi);
+			if(empty($id)){
+				$sel=false;
+			}else{
+				$sel=true;
+			}
+			return form_checkbox($gser_id, serialize($arr),$sel);
+		}
+
+		$grid->column_orderby('N&uacute;mero','numero','numero');
+		$grid->column_orderby('Fecha'   ,'<dbdate_to_human><#fecha#></dbdate_to_human>','fecha','align=\'center\'');
+		$grid->column_orderby('Vence'   ,'<dbdate_to_human><#vence#></dbdate_to_human>','vence','align=\'center\'');
+		$grid->column_orderby('Nombre'  ,'nombre','nombre');
+		$grid->column_orderby('Monto'   ,'<nformat><#totpre#></nformat>','totpre','align=\'right\'');
+		$grid->column_orderby('Enlace'  ,'<checker><#id#>|<#gser_id#>|'.$ordi.'</checker>','ordeni','align=\'center\'');
+		$grid->build();
+
+		$this->rapyd->jquery[]='$(":checkbox:not(#ordeni)").change(function(){
+			name=$(this).attr("name");
+			$.post("'.site_url('import/ordi/agordiesti').'",{ data: $(this).val()},
+			function(data){
+					if(data=="1"){
+					return true;
+				}else{
+					$("input[name=\'"+name+"\']").removeAttr("checked");
+					alert("Hubo un error, comuniquese con soporte tecnico: "+data);
+					return false;
+				}
+			});
+		});';
+
+		$data['content'] = $filter->output.$grid->output;
+		$data['head']    = $this->rapyd->get_head();
+		$data['title']   = heading('Conciliaci&oacute;n de gastos nacionales');
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -1484,6 +1556,44 @@ class Ordi extends Controller {
 		}
 	}
 
+	function agordiesti(){
+		$data=$this->input->post('data');
+
+		if($data!==false){
+			$pk=unserialize($data);
+			$gser_id=$pk[0];
+			$ordi   =$pk[1];
+
+			$this->db->where('id_ordi', $ordi);
+			$this->db->where('id_gser', $gser_id);
+			$this->db->from('ordiestgser');
+			$cana=$this->db->count_all_results();
+
+			$data = array(
+				'id_ordi' => $ordi,
+				'id_gser' => $gser_id
+			);
+			if($cana>0){
+				$this->db->delete('ordiestgser', $data);
+			}else{
+				$this->db->insert('ordiestgser', $data);
+			}
+
+			$db_ordi=$this->db->escape($ordi);
+
+			$gsereal = $this->datasis->dameval("SELECT SUM(totpre) AS monto FROM (`gser` AS a) JOIN `ordiestgser` AS b ON `a`.`id`=`b`.`id_gser` AND b.id_ordi=$db_ordi");
+			if(empty($gsereal)) $gsereal=0;
+
+			$estimac = $this->datasis->dameval("SELECT SUM(monto)    AS monto    FROM ordiestima WHERE ordeni=$db_ordi");
+			if(empty($estimac)) $estimac=0;
+
+			$estimadif=$estimac-$gsereal;
+			$this->db->where('numero',$ordi);
+			$this->db->update('ordi' ,array('estimadif' => $estimadif));
+			echo '1';
+		}
+	}
+
 	//crea un contenedor para asociarlo
 	//con el crm
 	function contenedor($id){
@@ -1524,12 +1634,13 @@ class Ordi extends Controller {
 		$dbsprv  =$this->db->escape($sprv);
         $dbagente=$this->db->escape($agente);
 
-		$do->set('nombre',$this->datasis->dameval('SELECT nombre FROM sprv WHERE proveed='.$dbsprv));
-		$do->set('nomage',$this->datasis->dameval('SELECT nombre FROM sprv WHERE proveed='.$dbagente));
-		$do->set('usuario',$usuario);
-		$do->set('transac',$transac);
-		$do->set('estampa',date('Ymd'));
-		$do->set('hora'   ,date('H:i:s'));
+		$do->set('nombre'   ,$this->datasis->dameval('SELECT nombre FROM sprv WHERE proveed='.$dbsprv));
+		$do->set('nomage'   ,$this->datasis->dameval('SELECT nombre FROM sprv WHERE proveed='.$dbagente));
+		$do->set('usuario'  ,$usuario);
+		$do->set('transac'  ,$transac);
+		$do->set('estampa'  ,date('Ymd'));
+		$do->set('hora'     ,date('H:i:s'));
+		$do->set('estimadif',0);
 
 		//Crea el cotenedor
 		$data['usuario']    = $usuario;
@@ -1677,6 +1788,7 @@ class Ordi extends Controller {
 				`cargoval` DECIMAL(19,2) NULL DEFAULT NULL COMMENT 'Diferencia Cambiara $ oficial y aplicado',
 				`control` VARCHAR(8) NULL DEFAULT NULL COMMENT 'Apuntador a la factura con la que se relaciono',
 				`crm` INT(11) UNSIGNED NULL DEFAULT NULL COMMENT 'Apuntador al conetendor',
+				`estimadif` DECIMAL(10,2) NULL DEFAULT '0' COMMENT 'Diferencia en la estimacion',
 				PRIMARY KEY (`numero`)
 			)
 			COLLATE='latin1_swedish_ci'
@@ -1733,6 +1845,11 @@ class Ordi extends Controller {
 
 		if(!$this->db->field_exists('costoreal', 'itordi')){
 			$mSQL="ALTER TABLE `itordi`  ADD COLUMN `costoreal` DECIMAL(17,2) NULL DEFAULT NULL COMMENT 'costo unitario al dolar real' AFTER `importefinal`,  ADD COLUMN `importereal` DECIMAL(17,2) NULL DEFAULT NULL COMMENT 'importe al dolar real' AFTER `costoreal`";
+			var_dump($this->db->simple_query($mSQL));
+		}
+
+		if(!$this->db->field_exists('estimadif', 'ordi')){
+			$mSQL="ALTER TABLE `ordi`ADD COLUMN `estimadif` DECIMAL(10,2) NULL DEFAULT '0' COMMENT 'Diferencia en la estimacion' AFTER `crm`";
 			var_dump($this->db->simple_query($mSQL));
 		}
 

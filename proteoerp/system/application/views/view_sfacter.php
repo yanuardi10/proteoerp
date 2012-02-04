@@ -431,7 +431,7 @@ function del_itspre(id){
 			</tr>
 			<tr>
 				<td class="littletableheader"><?php echo $form->vd->label     ?>&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->vd->output    ?>&nbsp;</td>
+				<td class="littletablerow" colspan='2'><?php echo $form->vd->output    ?>&nbsp;</td>
 			</tr>
 			</table>
 			</fieldset>
