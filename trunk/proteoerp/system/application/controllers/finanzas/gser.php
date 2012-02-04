@@ -2960,7 +2960,7 @@ function renderSinv(value, p, record) {
 					text: 'Agregar',
 					scope: this,
 					handler: function(){
-						window.open(urlApp+'finanzas/gser/dataedit/create', '_blank', 'width=970,height=700,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys);
+						window.open(urlApp+'finanzas/gser/agregar', '_blank', 'width=970,height=700,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys);
 					}
 				},
 				{

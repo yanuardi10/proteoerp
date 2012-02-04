@@ -420,6 +420,7 @@ class Ordi extends Controller {
 			$conten['peroles'][] = $this->_showgeri($edit->_dataobject->pk['numero'],$stat)  ;
 			$conten['peroles'][] = $this->_showgeser($edit->_dataobject->pk['numero'],$stat) ;
 			$conten['peroles'][] = $this->_showordiva($edit->_dataobject->pk['numero'],$stat);
+			//$conten['peroles'][] = $this->_showordiestima($edit->_dataobject->pk['numero'],$stat);
 
 			$crm=$edit->_dataobject->get('crm');
 			if(!empty($crm)){
@@ -453,6 +454,38 @@ class Ordi extends Controller {
 			}
 		}
 	}
+
+	function _showordiestima($id,$stat='C'){
+		$this->rapyd->load('datagrid');
+
+		$grid = new DataGrid('Lista de gastos internacionales');
+		$select=array('a.concepto','a.monto','a.id');
+		$grid->db->select($select);
+		$grid->db->from('ordiestima AS a');
+		$grid->db->where('a.ordeni',$id);
+
+		$grid->use_function('str_pad');
+		$grid->order_by('a.concepto','desc');
+		$status=$this->datasis->dameval('SELECT status FROM ordi WHERE numero='.$this->db->escape($id));
+
+		$uri=($status!='C')?anchor('import/ordi/ordiestima/'.$id.'/modify/<#id#>','Modificar') :'Fijo';
+
+		$grid->column('Modificar',$uri);
+		$grid->column('Concepto','concepto');
+		$grid->column('Monto'    ,'<nformat><#monto#></nformat>','align=\'right\'');
+
+		if($stat!='C') $grid->add('import/ordi/ordiestima/'.$id.'/create','Agregar estimacion');
+		$grid->build();
+
+		if($grid->recordCount > 0){
+			return $grid->output;
+		}elseif($stat!='C'){
+			return $grid->_button_container['TR'][0];
+		}else{
+			return '';
+		}
+	}
+
 
 	function _showgeri($id,$stat='C'){
 		$this->rapyd->load('datagrid');
@@ -494,20 +527,73 @@ class Ordi extends Controller {
 	function _showgeser($id,$stat='C'){
 		$this->rapyd->load('datagrid');
 
-		$grid = new DataGrid('Lista de gastos nacionales','gser');
-		$grid->db->where('ordeni',$id);
-		$grid->db->where('tipo_doc <>','XX');
-		$grid->use_function('str_pad');
-		$grid->order_by('numero','desc');
+		$tablagrid=$pivot=array();
+		$sel= array('numero','proveed','nombre','fecha','totpre');
+		$this->db->select($sel);
+		$this->db->from('gser');
+		$this->db->where('ordeni',$id);
+		$this->db->where('tipo_doc <>','XX');
+		$this->db->order_by('numero','desc');
+		$query=$this->db->get();
+		if ($query->num_rows() > 0){
+			foreach ($query->result() as $row){
+				$pivot = array(
+					'numero'  => $row->numero,
+					'proveed' => $row->proveed,
+					'nombre'  => $row->nombre,
+					'fecha'   => $row->fecha,
+					'totpre'  => $row->totpre,
+					'estima'  => 'N',
+					'id'      => ''
+				);
+				$tablagrid[]=$pivot;
+			}
+		}
 
-		$grid->column('N. Factura','numero');
+		$sel= array('concepto','monto','id');
+		$this->db->select($sel);
+		$this->db->from('ordiestima');
+		$this->db->where('ordeni',$id);
+		$query=$this->db->get();
+		if ($query->num_rows() > 0){
+			foreach ($query->result() as $row){
+				$pivot = array(
+					'numero'  => 'Estimado',
+					'proveed' => '',
+					'nombre'  => $row->concepto,
+					'fecha'   => '',
+					'totpre'  => $row->monto,
+					'estima'  => 'S',
+					'id'      => $row->id
+				);
+
+				$tablagrid[]=$pivot;
+			}
+		}
+		$status=$this->datasis->dameval('SELECT status FROM ordi WHERE numero='.$this->db->escape($id));
+
+
+		function glink($estima,$idestima,$numero,$id,$sta){
+			if($sta=='C') return $numero;
+			if($estima=='S'){
+				$rt=anchor('import/ordi/ordiestima/'.$id.'/show/'.$idestima,$numero);
+			}else{
+				$rt=$numero;
+			}
+			return $rt;
+		}
+
+		$grid = new DataGrid('Lista de gastos nacionales',$tablagrid);
+		$grid->use_function('glink');
+
+		$grid->column('N. Factura','<glink><#estima#>|<#id#>|<#numero#>|'.$id.'|'.$status.'</glink>');
 		$grid->column('Proveedor' ,'proveed');
 		$grid->column('Nombre'    ,'nombre');
 		$grid->column('Fecha'     ,'<dbdate_to_human><#fecha#></dbdate_to_human>','align=\'center\'');
 		//$grid->column('Concepto'  ,'concepto');
 		$grid->column('Monto'     ,'<nformat><#totpre#></nformat>','align=\'right\'');
 
-		if($stat!='C') $grid->add('import/ordi/gser/'.$id,'Agregar/Eliminar gasto nacional');
+		if($stat!='C'){ $grid->add('import/ordi/gser/'.$id,'Agregar/Eliminar gasto nacional'); }
 		$grid->build();
 
 		if($grid->recordCount > 0){
@@ -767,6 +853,9 @@ class Ordi extends Controller {
 		$action = "javascript:window.location='".site_url('import/ordi/dataedit/show/'.$ordi)."'";
 		$filter->button('btn_regresa', 'Regresar', $action, 'TR');
 
+		$accion="javascript:window.location='".site_url('import/ordi/ordiestima/'.$ordi.'/create')."'";
+		$filter->button('btn_estima','Agregar estimaci&oacute;n',$accion,'BL');
+
 		$filter->buttons('reset','search');
 		$filter->build();
 
@@ -815,6 +904,47 @@ class Ordi extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
+	function ordiestima($ordi){
+		$this->rapyd->load('dataedit');
+
+		$edit = new DataEdit('Estimaci&oacute;n de gastos nacionales', 'ordiestima');
+		$edit->back_url = site_url('import/ordi/dataedit/show/'.$ordi);
+		$edit->back_save   = true;
+		$edit->back_cancel = true;
+		$edit->back_cancel_save   = true;
+		$edit->back_cancel_delete = true;
+
+		$edit->concepto = new inputField('Concepto','concepto');
+		$edit->concepto->rule='max_length[100]|required|strtoupper';
+		$edit->concepto->size =50;
+		$edit->concepto->maxlength =100;
+
+		$edit->monto = new inputField('Monto','monto');
+		$edit->monto->rule='max_length[10]|numeric|required';
+		$edit->monto->css_class='inputnum';
+		$edit->monto->size =12;
+		$edit->monto->maxlength =10;
+
+		$edit->ordeni  = new autoUpdateField('ordeni',$ordi,$ordi);
+
+		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
+		$edit->build();
+
+		$script= '<script type="text/javascript" >
+		$(function() {
+			$(".inputnum").numeric(".");
+			$(".inputonlynum").numeric();
+		});
+		</script>';
+
+		$data['content'] = $edit->output;
+		$data['head']    = $this->rapyd->get_head();
+		$data['script']  = script('jquery.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js');
+		$data['script'] .= $script;
+		$data['title']   = heading('Estimaci&oacute;n de gastos nacionales');
+		$this->load->view('view_ventanas', $data);
+	}
+
 	function adjuntos($id,$ordi){
 		$this->crm_back=site_url('import/ordi/dataedit/show/'.$ordi);
 		$this->prefijo='crm_';
@@ -859,16 +989,19 @@ class Ordi extends Controller {
 			WHERE numero=$dbid";
 		$row=$this->datasis->damerow($mSQL);
 
-		$pesotota=$row['pesotota'];
-		$montofob=$row['montofob'];
-		$gastosi =$this->datasis->dameval("SELECT SUM(monto)    AS gastosi  FROM gseri WHERE ordeni=$dbid");
-		$gastosn =$this->datasis->dameval("SELECT SUM(totpre)   AS gastosn  FROM gser  WHERE ordeni=$dbid AND tipo_doc<>'XX'");
-		$montoiva=$this->datasis->dameval("SELECT SUM(montoiva) AS montoiva FROM ordiva WHERE ordeni=$dbid");
-		$baseiva =$this->datasis->dameval("SELECT SUM(base)     AS base     FROM ordiva WHERE ordeni=$dbid");
-		if(empty($gastosn))  $gastosn =0;
+		$pesotota= $row['pesotota'];
+		$montofob= $row['montofob'];
+		$estimac = $this->datasis->dameval("SELECT SUM(monto)    AS monto    FROM ordiestima WHERE ordeni=$dbid");
+		$gastosi = $this->datasis->dameval("SELECT SUM(monto)    AS gastosi  FROM gseri WHERE ordeni=$dbid");
+		$gsermon = $this->datasis->dameval("SELECT SUM(totpre)   AS gastosn  FROM gser  WHERE ordeni=$dbid AND tipo_doc<>'XX'");
+		$montoiva= $this->datasis->dameval("SELECT SUM(montoiva) AS montoiva FROM ordiva WHERE ordeni=$dbid");
+		$baseiva = $this->datasis->dameval("SELECT SUM(base)     AS base     FROM ordiva WHERE ordeni=$dbid");
+		if(empty($estimac))  $estimac =0;
+		if(empty($gsermon))  $gsermon =0;
 		if(empty($gastosi))  $gastosi =0;
 		if(empty($montoiva)) $montoiva=0;
 		if(empty($baseiva))  $baseiva =0;
+		$gastosn = $estimac+$gsermon;
 
 		$mSQL="SELECT cambioofi, cambioreal FROM ordi WHERE numero=$dbid";
 		$row=$this->datasis->damerow($mSQL);
@@ -1610,7 +1743,7 @@ class Ordi extends Controller {
 				`monto` DECIMAL(10,2) NULL DEFAULT NULL,
 				`concepto` VARCHAR(100) NULL DEFAULT NULL,
 				PRIMARY KEY (`id`),
-				UNIQUE INDEX `ordi` (`ordeni`)
+				INDEX `ordi` (`ordeni`)
 			)
 			COLLATE='latin1_swedish_ci'
 			ENGINE=MyISAM
