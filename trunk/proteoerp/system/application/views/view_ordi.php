@@ -9,7 +9,7 @@ else:
 
 if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</div>';
 //echo $form_scripts;
-echo $form_begin; 
+echo $form_begin;
 
 	$objs=array(
 		'codigo'     =>'C&oacute;digo',
@@ -207,7 +207,7 @@ echo $form_begin;
 		?>
 	</tr>
 
-<?php 
+<?php
 for($i=0;$i<$form->max_rel_count['itordi'];$i++) {
 	echo '<tr id="tr_itordi_'.$i.'">';
 	foreach($objs AS $nom=>$nan){
@@ -238,13 +238,20 @@ for($i=0;$i<$form->max_rel_count['itordi'];$i++) {
 		<td class="littletablerowth" align='right'>&nbsp;<?php echo $form->montofob->label; ?></td>
 		<td class="littletablerow"  >&nbsp;<?php echo $form->montofob->output;?></td>
 	</tr>
+	<?php if($form->estimadif->value>0){ ?>
+	<tr>
+		<td class="littletablerow" align='center' colspan='6'>
+			<?php echo $form->estimadif->label.' '.$form->estimadif->output; ?>
+		</td>
+	</tr>
+	<?php } ?>
 </table>
 
 		<td>
 	<tr>
 	<tr>
 		<td>
-<?php 
+<?php
 if(isset($peroles)){
 	echo br().br().heading('Efectos relacionados a esta orden:',3);
 	foreach($peroles as $perol){
