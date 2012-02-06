@@ -106,6 +106,12 @@ class MY_Validation extends CI_Validation{
 		}
 	}
 
+	function porcent($porcen){
+		if ($porcen<=100 AND $porcen>=0) return true;
+		$this->validation->set_message('porcent', 'El valor del campo <b>%s</b> debe estar entre 0 y 100');
+		return false;
+	}
+
 	function enum($val,$posibles){
 		$this->set_message('enum', 'El campo %s contiene un valor inv&aacute;lido');
 		$posi=explode(',',$posibles);
