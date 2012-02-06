@@ -752,7 +752,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		if(!$pext) $edit->tolera->mode  = 'autohide';
 		if(!$paxt) $edit->maxtole->mode = 'autohide';
 
-		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
+		$edit->buttons('modify', 'save', 'undo', 'back');
 		$edit->build();
 
 		$script= '<script type="text/javascript" >

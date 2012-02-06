@@ -210,6 +210,68 @@ class Ajax extends Controller {
 		echo $data;
 	}
 
+	function ordpart(){
+		$ordp  = $this->input->post('ordp');
+		$esta  = $this->input->post('esta');
+		$tipo  = $this->input->post('tipo');
+
+		$data = '{[ ]}';
+		if($ordp !== false &&  $esta !== false &&  $tipo!== false){
+			$dbnumero=$this->db->escape($ordp);
+			if($tipo=='E'){
+				$mSQL="SELECT c.codigo,COALESCE(b.descrip,c.descrip) AS descrip
+				,SUM(COALESCE(b.cantidad*IF(tipoordp='E',-1,1),0)) AS tracana
+				,c.cantidad
+				FROM stra AS a
+				JOIN itstra AS b ON a.numero=b.numero
+				RIGHT JOIN ordpitem AS c ON a.ordp=c.numero AND b.codigo=c.codigo
+				WHERE c.numero=$dbnumero
+				GROUP BY c.codigo";
+
+				$retArray=$retorno=array();
+				$query = $this->db->query($mSQL);
+				if ($query->num_rows() > 0){
+					foreach( $query->result_array() as  $row ) {
+						$cana=$row['cantidad']+$row['tracana'];
+						if($cana>0){
+							$retArray['codigo']   = $row['codigo'];
+							$retArray['cantidad'] = $cana;
+							$retArray['descrip']  = utf8_encode($row['descrip']);
+
+							array_push($retorno, $retArray);
+						}
+					}
+					$data = json_encode($retorno);
+				}
+			}else{
+				$dbesta=$this->db->escape($esta);
+				$mSQL="SELECT b.codigo, b.descrip
+				SUM(b.cantidad*IF(a.tipoordp='E',1,-1)) AS cantidad
+				FROM stra AS a
+				JOIN itstra AS b ON a.numero=b.numero
+				WHERE a.ordp=$dbnumero AND a.esta=$dbesta
+				GROUP BY b.codigo";
+
+				$retArray=$retorno=array();
+				$query = $this->db->query($mSQL);
+				if ($query->num_rows() > 0){
+					foreach( $query->result_array() as  $row ) {
+						$cana=$row['cantidad'];
+						if($cana>0){
+							$retArray['codigo']   = $row['codigo'];
+							$retArray['cantidad'] = $cana;
+							$retArray['descrip']  = utf8_encode($row['descrip']);
+
+							array_push($retorno, $retArray);
+						}
+					}
+					$data = json_encode($retorno);
+				}
+			}
+			echo $data;
+		}
+
+	}
 
 	//Busca facturas para aplicarles devolucion
 	function buscasfacdev(){
