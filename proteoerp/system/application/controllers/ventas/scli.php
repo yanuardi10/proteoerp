@@ -345,7 +345,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 
 		$edit->pre_process('delete','_pre_del');
 		$edit->pre_process('insert','_pre_ins');
-		$edit->pre_process('update','_pre_ins');
+		$edit->pre_process('update','_pre_udp');
 
 		$edit->post_process('insert','_post_insert');
 		$edit->post_process('update','_post_update');
@@ -601,6 +601,175 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		}
 	}
 
+	function filtergridcredi(){
+		$this->rapyd->load('datafilter','datagrid');
+
+		$filter = new DataFilter('Gesti&oacute;n de l&iacute;mites de cr&eacute;dito', 'scli');
+
+		$filter->nombre = new inputField('Nombre','nombre');
+		$filter->nombre->rule      ='max_length[45]';
+		$filter->nombre->maxlength =45;
+
+		$filter->limited = new inputField('L&iacute;mite','limited');
+		$filter->limiteh = new inputField('L&iacute;mite','limiteh');
+		$filter->limited->size    = $filter->limiteh->size =8;
+		$filter->limited->clause  = $filter->limiteh->clause ='where';
+		$filter->limited->db_name = $filter->limiteh->db_name='limite';
+		$filter->limited->operator= '>=';
+		$filter->limiteh->operator= '<=';
+		$filter->limiteh->in      = 'limited';
+		$filter->limited->css_class = 'inputonlynum';
+		$filter->limiteh->css_class = 'inputonlynum';
+
+		$filter->credito = new dropdownField('Cr&eacute;dito','credito');
+		$filter->credito->option('' ,'Todos');
+		$filter->credito->option('S','Activo');
+		$filter->credito->option('N','Inactivo');
+		$filter->credito->title = 'Si el cliente puede o no optar por cr&eacute;dito en la empresa';
+		$filter->credito->style = 'width: 145px;';
+
+		$filter->buttons('reset', 'search');
+		$filter->build();
+
+		$uri = anchor('ventas/scli/creditoedit/modify/<#id#>','<#cliente#>');
+
+		$grid = new DataGrid('');
+		$grid->order_by('cliente');
+		$grid->per_page = 20;
+
+		$grid->column_orderby('Cliente',$uri,'cliente','align="left"');
+		$grid->column_orderby('Nombre','nombre','nombre','align="left"');
+		$grid->column_orderby('Cr&eacute;dito' ,'<#credito#>' ,'credito','align="center"');
+		$grid->column_orderby('D&iacute;as'    ,'<nformat><#formap#></nformat>'  ,'formap' ,'align="right"');
+		$grid->column_orderby('L&iacute;mite'  ,'<nformat><#limite#></nformat>'  ,'limite' ,'align="right"');
+		$grid->column_orderby('Tolera'         ,'<nformat><#tolera#></nformat>%' ,'tolera' ,'align="right"');
+		$grid->column_orderby('T.M&aacute;xima','<nformat><#maxtole#></nformat>%','maxtole','align="right"');
+
+		$grid->build();
+
+		$script= '<script type="text/javascript" >
+		$(function() {
+			$(".inputnum").numeric(".");
+			$(".inputonlynum").numeric();
+		});
+		</script>';
+
+		//$data['script']  = $script;
+		$data['filtro']  = $filter->output;
+		$data['content'] = $grid->output;
+		$data['head']    = $this->rapyd->get_head().script('jquery.js');
+		$data['title']   = heading('Gesti&oacute;n de l&iacute;mites de cr&eacute;dito');
+		$this->load->view('view_ventanas', $data);
+	}
+
+	function creditoedit(){
+		$this->rapyd->load('dataedit');
+
+		$edit = new DataEdit('L&iacute;mite de cr&eacute;dito', 'scli');
+		$edit->back_save   = true;
+		$edit->back_cancel = true;
+		$edit->back_cancel_save   = true;
+		$edit->back_cancel_delete = true;
+		$edit->back_url = site_url('ventas/scli/filtergridcredi');
+
+		$edit->post_process('insert','_pos_credi_insert');
+		$edit->post_process('update','_pos_credi_update');
+		$edit->post_process('delete','_pos_credi_delete');
+		$edit->pre_process( 'insert','_pre_credi_insert');
+		$edit->pre_process( 'update','_pre_credi_update');
+		$edit->pre_process( 'delete','_pre_credi_delete');
+
+		$edit->cliente = new inputField('Cliente','cliente');
+		$edit->cliente->rule='max_length[5]';
+		$edit->cliente->size =7;
+		$edit->cliente->maxlength =5;
+		$edit->cliente->mode= 'autohide';
+
+		$edit->nombre = new inputField('Nombre','nombre');
+		$edit->nombre->rule='max_length[45]';
+		$edit->nombre->in = 'cliente';
+		$edit->nombre->mode = 'autohide';
+		$edit->nombre->size =47;
+
+		$edit->credito = new dropdownField('Cr&eacute;dito','credito');
+		$edit->credito->rule = 'required|enum[S,N]';
+		$edit->credito->option('S','Activo');
+		$edit->credito->option('N','Inactivo');
+		$edit->credito->title = 'Si el cliente puede o no optar por cr&eacute;dito en la empresa';
+		$edit->credito->style = 'width: 145px;';
+
+		$edit->formap = new inputField('D&iacute;as de cr&eacute;dito','formap');
+		$edit->formap->rule      = 'max_length[6]|numeric|positive|required';
+		$edit->formap->title     = 'Plazo m&aacute;ximo de endeudamiento';
+		$edit->formap->autocomplete  = false;
+		$edit->formap->css_class = 'inputonlynum';
+		$edit->formap->size      = 15;
+		$edit->formap->maxlength = 6;
+		$edit->formap->append('Al ser cero automaticamente se anulara el cr&eacute;dito');
+
+		$edit->limite = new inputField('L&iacute;mite de cr&eacute;dito','limite');
+		$edit->limite->rule='max_length[20]|integer|positive|required';
+		$edit->limite->css_class='inputonlynum';
+		$edit->limite->title = 'Monto al cual se puede endeudar el cliente';
+		$edit->limite->size  = 15;
+		$edit->limite->autocomplete  = false;
+		$edit->limite->maxlength =20;
+		$edit->limite->append('Al ser cero automaticamente se anulara el cr&eacute;dito');
+
+		$edit->tolera = new inputField('% Tolerancia/M&aacute;ximo','tolera');
+		$edit->tolera->rule='max_length[9]|numeric|porcent|callback_chtolera|required';
+		$edit->tolera->css_class='inputnum';
+		$edit->tolera->title = 'Tolerancia porcentual de endeudamiento';
+		$edit->tolera->autocomplete  = false;
+		$edit->tolera->size =5;
+		$edit->tolera->maxlength =9;
+
+		$edit->maxtole = new inputField('Maxtole','maxtole');
+		$edit->maxtole->rule='max_length[9]|numeric|porcent|required';
+		$edit->maxtole->css_class='inputnum';
+		$edit->maxtole->autocomplete  = false;
+		$edit->maxtole->title = 'Punto m&aacute;ximo de tolerancia';
+		$edit->maxtole->size =5;
+		$edit->maxtole->in='tolera';
+		$edit->maxtole->maxlength =9;
+
+		$edit->motivo = new textareaField('Motivo', 'motivo');
+		$edit->motivo->title = 'Motivo o raz&oacute;n del cambio en la pol&iacute;tica de cr&eacute;dito';
+		$edit->motivo->cols = 50;
+		$edit->motivo->rows = 4;
+		$edit->motivo->rule = 'required';
+
+		$plim=$this->secu->puede('1310'); //Limite de Credito
+		$paxt=$this->secu->puede('1313'); //Asigna Extra credito
+		$pext=$this->secu->puede('1314'); //Extra credito
+
+		if(!$plim){
+			$edit->credito->mode = 'autohide';
+			$edit->formap->mode  = 'autohide';
+			$edit->limite->mode  = 'autohide';
+			$edit->motivo->mode  = 'autohide';
+		}
+		if(!$pext) $edit->tolera->mode  = 'autohide';
+		if(!$paxt) $edit->maxtole->mode = 'autohide';
+
+		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
+		$edit->build();
+
+		$script= '<script type="text/javascript" >
+		$(function() {
+			$(".inputnum").numeric(".");
+			$(".inputonlynum").numeric();
+		});
+		</script>';
+
+		$data['content'] = $edit->output;
+		$data['head']    = $this->rapyd->get_head();
+		$data['script']  = script('jquery.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js');
+		$data['script'] .= $script;
+		$data['title']   = heading('Cr&eacute;dito a cliente');
+		$this->load->view('view_ventanas', $data);
+	}
+
 	function claveedit(){
 		//$this->pi18n->cargar('scli','dataedit');
 		$this->rapyd->load('dataedit');
@@ -688,13 +857,28 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		echo $devo;
 	}
 
+	function chtolera($monto){
+		$paxt=$this->secu->puede('1313');
+		if($paxt){
+			$maxtole=$this->input->post('maxtole');
+		}else{
+			$maxtole=$this->datasis->dameval('SELECT maxtole FROM scli WHERE id='.$this->rapyd->uri->get_edited_id());
+		}
+
+		if($monto>$maxtole){
+			$this->validation->set_message('chtolera', 'La tolerancia no puede ser mayor que el margen m&aacute;ximo pautado');
+			return false;
+		}
+		return true;
+	}
+
 	function chdfiscal($tiva){
 		$nomfis=$this->input->post('nomfis');
 		$riffis=$this->input->post('riffis');
 		if($tiva=='C' OR $tiva=='E' OR $tiva=='R')
 			if(empty($nomfis)){
 				$this->validation->set_message('chdfiscal', "Debe introducir el nombre fiscal cuando el cliente es contribuyente");
-				return FALSE;
+				return false;
 			}
 			//elseif (empty($riffis)) {
 			//	$this->validation->set_message('chdfiscal', "Debe introducir rif fiscal");
@@ -702,6 +886,47 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 			//}
 		return TRUE;
 	}
+
+	function _pre_credi_update($do){
+		$cliente   = $do->get('cliente');
+		$limite    = $do->get('limite');
+		$dias      = $do->get('formap');
+		$this->credi_motivo=$this->input->post('motivo');
+
+		if(empty($limite) || empty($dias)){
+			$do->set('tolera' ,'0');
+			$do->set('maxtole','0');
+			$do->set('limite' ,'0');
+			$do->set('formap' ,'0');
+			$do->set('credito','N');
+		}
+		$do->rm_get('motivo');
+		$dbcliente = $this->db->escape($cliente);
+		$this->limitsant = $this->datasis->dameval('SELECT limite FROM scli WHERE cliente='.$dbcliente);
+	}
+
+	function _pos_credi_update($do){
+		$codigo=$do->get('cliente');
+		$limite=$do->get('limite');
+
+		$data = array(
+			'cliente'   => $codigo,
+			'credito'   => $do->get('credito'),
+			'limite'    => $limite,
+			'limiteant' => $this->limitsant,
+			'tolera'    => $do->get('tolera'),
+			'motivo'    => $this->credi_motivo,
+			'maxtol'    => $do->get('maxtole'),
+			'estampa'   => date('Y-m-d H:i:s'),
+			'usuario'   => $this->secu->usuario()
+		);
+
+		$this->db->insert('sclibitalimit', $data);
+		logusu('scli',"CLIENTE $codigo MODIFICADO, LIMITE ".$this->limitsant.'-->'.$limite);
+	}
+
+	function _pre_credi_insert($do){ return false; }
+	function _pre_credi_delete($do){ return false; }
 
 	function _pre_del($do) {
 		$codigo=$this->db->escape($do->get('cliente'));
@@ -719,6 +944,18 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 			return False;
 		}
 		return True;
+	}
+
+	function _pre_udp($do){
+		$do->set('riffis',trim($do->get('rifci')));
+		$nomfis = $do->get('nomfis');
+		if ( empty( $nomfis ) ) {
+			$do->set('nomfis',trim($do->get('nombre')));
+		}
+
+		$cliente   = $do->get('cliente');
+		$dbcliente = $this->db->escape($cliente);
+		$this->limitsant = $this->datasis->dameval('SELECT limite FROM scli WHERE cliente='.$dbcliente);
 	}
 
 	function _pre_ins($do) {
@@ -744,7 +981,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 	function _post_update($do){
 		$codigo=$do->get('cliente');
 		$limite=$do->get('limite');
-		logusu('scli',"CLIENTE $codigo MODIFICADO, LIMITE $limite");
+		logusu('scli',"CLIENTE $codigo MODIFICADO, LIMITE ".$this->limitsant.'-->'.$limite);
 	}
 
 	function _post_delete($do){
@@ -1421,6 +1658,25 @@ var cplaStore = new Ext.data.Store({
 			$mSQL='ALTER TABLE `scli` DROP PRIMARY KEY, ADD UNIQUE `cliente` (`cliente`)';
 			$this->db->simple_query($mSQL);
 			$mSQL='ALTER TABLE `scli` ADD `id` INT AUTO_INCREMENT PRIMARY KEY';
+			$this->db->simple_query($mSQL);
+		}
+
+		if(!$this->db->table_exists('sclibitalimit')){
+			$mSQL="CREATE TABLE `sclibitalimit` (
+				`id` INT(11) NULL AUTO_INCREMENT,
+				`cliente` CHAR(5) NULL DEFAULT NULL COLLATE 'utf8_unicode_ci',
+				`credito` CHAR(1) NULL DEFAULT NULL COLLATE 'utf8_unicode_ci',
+				`limite` BIGINT(20) NULL DEFAULT NULL,
+				`limiteant` BIGINT(20) NULL DEFAULT NULL,
+				`tolera` DECIMAL(9,2) NULL DEFAULT NULL,
+				`maxtol` DECIMAL(9,2) NULL DEFAULT NULL,
+				`motivo` TEXT NULL DEFAULT NULL,
+				`estampa` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+				`usuario` VARCHAR(12) NULL DEFAULT NULL,
+				PRIMARY KEY (`id`),
+				INDEX `cliente` (`cliente`)
+			)
+			ENGINE=MyISAM";
 			$this->db->simple_query($mSQL);
 		}
 
