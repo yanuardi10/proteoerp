@@ -308,6 +308,9 @@ class stra extends Controller {
 		$edit->hora    = new autoUpdateField('hora',date('H:i:s'), date('H:i:s'));
 		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
 
+		$accion="javascript:buscaprod()";
+		$edit->button_status('btn_terminar','Traer insumos',$accion,'TR','create');
+
 		$edit->buttons('save', 'undo', 'back','add_rel');
 
 		if($this->genesal){
