@@ -771,7 +771,7 @@ class ventas{
 				}
 
 				$ws->write_number( $mm,18, $row->reiva, $numero );		    // IVA RETENIDO
-				$ws->write_string( $mm,19, $row->comprobante, $cuerpo );	// NRO COMPROBANTE
+				$ws->write_string( $mm,19,($row->tipo=='CR') ? $row->numero:'', $cuerpo );	// NRO COMPROBANTE
 				if($row->tipo=='CR'){
 					if($fiscal)
 						$afecta=$this->datasis->dameval("SELECT nfiscal FROM sfac WHERE tipo_doc='F' AND numero=".$this->db->escape($row->afecta));
