@@ -66,6 +66,7 @@ class ingresos{
 			$data['reiva']    = $row->reteiva;
 			$data['fechal']   = $mes.'01';
 			$data['fafecta']  = $row->fafecta;
+			$data['nfiscal']  = $row->nfiscal;
 
 			$mSQL = $this->db->insert_string('siva', $data);
 			$flag=$this->db->simple_query($mSQL);
