@@ -9,12 +9,17 @@ class Grup extends validaciones {
 		$esta = $this->datasis->dameval( "SHOW columns FROM grup WHERE Field='status'" );
 		if ( empty($esta) ) $this->db->simple_query("ALTER TABLE grup ADD status CHAR(1) DEFAULT='A' ");
 		$this->db->simple_query("UPDATE grup SET status='A' WHERE status IS NULL ");
-	
-	
 	}
 
 	function index(){
-		redirect("inventario/grup/filteredgrid");
+		if ( !$this->datasis->iscampo('grup','id') ) {
+			$this->db->simple_query('ALTER TABLE grup DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE grup ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ');
+			$this->db->simple_query('ALTER TABLE grup ADD UNIQUE INDEX grupo (grupo)');
+		}
+		$this->datasis->modulo_id(306,1);
+		$this->grupextjs();
+		//redirect("inventario/grup/filteredgrid");
 	}
 
 	function filteredgrid(){
@@ -656,5 +661,429 @@ function exento(mgrupo){
 		logusu("SINV","Productos marcados por Grupos $grupo ");
 		echo "Productos Marcados '$sino'";
 	}
+
+
+	function grid(){
+		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']   :  0;
+		$limit   = isset($_REQUEST['limit'])  ? $_REQUEST['limit']   : 50;
+		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']    : '[{"property":"grupo","direction":"ASC"}]';
+		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
+
+		$where = $this->datasis->extjsfiltro($filters);
+		
+		$this->db->_protect_identifiers=false;
+		$this->db->select('*');
+		$this->db->from('grup');
+		if (strlen($where)>1) $this->db->where($where, NULL, FALSE); 
+		
+		$sort = json_decode($sort, true);
+		if ( count($sort) == 0 ) $this->db->order_by( 'grupo', 'asc' );
+		
+		for ( $i=0; $i<count($sort); $i++ ) {
+			$this->db->order_by($sort[$i]['property'],$sort[$i]['direction']);
+		}
+
+		$this->db->limit($limit, $start);
+
+		$query = $this->db->get();
+		$results = $this->db->count_all('grup');
+
+		$arr = $this->datasis->codificautf8($query->result_array());
+		echo '{success:true, message:"Loaded data", results:'. $results.', data:'.json_encode($arr).'}';
+	}
+
+
+	function crear(){
+		$js= file_get_contents('php://input');
+		$data= json_decode($js,true);
+		$campos   = $data['data'];
+		$grupo = $campos['grupo'];
+
+		if ( !empty($grupo) ) {
+			unset($campos['id']);
+			// Revisa si existe ya ese contrato
+			if ($this->datasis->dameval("SELECT COUNT(*) FROM grup WHERE grupo='$grupo'") == 0)
+			{
+				$mSQL = $this->db->insert_string("grup", $campos );
+				$this->db->simple_query($mSQL);
+				logusu('grup',"DEPARTAMENTO $grupo CREADO");
+				echo "{ success: true, message: 'grupo Agregada'}";
+			} else {
+				echo "{ success: false, message: 'Ya existe un grupo con ese Codigo!!'}";
+			}
+			
+		} else {
+			echo "{ success: false, message: 'Ya existe un grupo con ese Codigo!!'}";
+		}
+	}
+
+	function modificar(){
+		$js= file_get_contents('php://input');
+		$data= json_decode($js,true);
+		$campos = $data['data'];
+
+		$grupo = $campos['grupo'];
+		unset($campos['grupo']);
+		unset($campos['id']);
+
+		$mSQL = $this->db->update_string("grup", $campos,"id='".$data['data']['id']."'" );
+		$this->db->simple_query($mSQL);
+		logusu('grup',"GRUPOSS DE INVENTARIO $grupo ID ".$data['data']['id']." MODIFICADO");
+		echo "{ success: true, message: 'Grupo Modificado -> ".$data['data']['grupo']."'}";
+	}
+
+	function eliminar(){
+		$js= file_get_contents('php://input');
+		$data= json_decode($js,true);
+		$campos = $data['data'];
+
+		$grupo = $campos['grupo'];
+		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM grup WHERE grupo='$grupo'");
+		if ($chek > 0){
+			echo "{ success: false, message: 'Linea, con movimiento, no puede ser Borrado'}";
+		} else {
+			$this->db->simple_query("DELETE FROM grup WHERE grupo='$grupo'");
+			logusu('grup',"GRUPO $grupo ELIMINADO");
+			echo "{ success: true, message: 'Grupo Eliminado'}";
+		}
+	}
+
+
+//****************************************************************8
+//
+//
+//
+//****************************************************************8
+	function grupextjs(){
+		$encabeza='GRUPOS DE INVENTARIO';
+		$listados= $this->datasis->listados('grup');
+		$otros=$this->datasis->otros('grup', 'grup');
+
+		$mSQL = "SELECT depto, CONCAT(depto,' ', descrip) descrip FROM dpto WHERE tipo='I' ORDER BY depto ";
+		$depto = $this->datasis->llenacombo($mSQL);
+
+
+		$mSQL = "SELECT depto, CONCAT(depto,' ', descrip) descrip FROM dpto WHERE tipo='I' ORDER BY depto ";
+		$depto = $this->datasis->llenacombo($mSQL);
+
+		$urlajax = 'inventario/grup/';
+		$variables = "
+		var mdepto   = ''
+		var mlinea   = ''
+		var mcuentaV = ''
+		var mcuentaI = ''
+		var mcuentaC = ''
+		var mcuentaD = ''
+		";
+		$funciones = "
+function ftipo(val){
+	if ( val == 'I'){
+		return 'Inventario';
+	} else if ( val == 'G'){
+		return  'Gasto';
+	}
+}
+
+function fstatus(val){
+	if ( val == 'A'){
+		return 'Activo';
+	} else {
+		return  'Inactivo';
+	}
+}
+";
+
+		$valida = "
+		{ type: 'length', field: 'grupo',   min: 1 },
+		{ type: 'length', field: 'nom_grup', min: 1 }
+		";
+		
+		$columnas = "
+			{ header: 'Grupo',    width: 60, sortable: true, dataIndex: 'grupo',    field: { type: 'textfield' },  filter: { type: 'string' }},
+			{ header: 'Nombre',   width:200, sortable: true, dataIndex: 'nom_grup', field: { type: 'textfield' },  filter: { type: 'string' }},
+			{ header: 'Tipo',     width: 60, sortable: true, dataIndex: 'tipo',     field: { type: 'textfield' },  filter: { type: 'string' }, renderer: ftipo },
+
+			{ header: 'Status',   width: 60, sortable: true, dataIndex: 'status',   field: { type: 'textfield' },  filter: { type: 'string' }, renderer: fstatus },
+			{ header: 'Comision', width: 60, sortable: true, dataIndex: 'comision', field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+			{ header: 'Margen',   width: 60, sortable: true, dataIndex: 'margen',   field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+			{ header: 'Margenc',  width: 60, sortable: true, dataIndex: 'margenc',  field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+
+			{ header: 'Linea',    width: 60, sortable: true, dataIndex: 'linea',    field: { type: 'textfield' },  filter: { type: 'string' }},
+			{ header: 'Depto',    width: 60, sortable: true, dataIndex: 'depto',    field: { type: 'textfield' },  filter: { type: 'string' }},
+
+			{ header: 'Cta.Inventario', width:100, sortable: true, dataIndex: 'cu_inve',  field: { type: 'textfield' },  filter: { type: 'string' }},
+			{ header: 'Cta.Costo',      width:100, sortable: true, dataIndex: 'cu_cost',  field: { type: 'textfield' },  filter: { type: 'string' }},
+			{ header: 'Cta.Venta',      width:100, sortable: true, dataIndex: 'cu_venta', field: { type: 'textfield' },  filter: { type: 'string' }},
+			{ header: 'Cta.Devol.',     width:100, sortable: true, dataIndex: 'cu_devo',  field: { type: 'textfield' },  filter: { type: 'string' }},
+	      ";
+
+		$campos = "'id','grupo','nom_grup','tipo','comision','linea','depto','cu_inve','cu_cost','cu_venta','cu_devo','margen','margenc','status'";
+		
+		$camposforma = "
+							{
+							layout: 'column',
+							frame: false,
+							border: false,
+							labelAlign: 'right',
+							defaults: { xtype:'fieldset', labelWidth:80 },
+							style:'padding:4px',
+							items: [
+									{ fieldLabel: 'Grupo',   name: 'grupo',    width:140, xtype: 'textfield', id: 'grupo' },
+									{ fieldLabel: 'Tipo',    name: 'tipo',     width:260, xtype: 'combo', store: [['I','Inventario'],['G','Gastos']], labelWidth:160  },
+									{ fieldLabel: 'Nombre',  name: 'nom_grup', width:400, xtype: 'textfield' },
+
+									{ xtype: 'combo', fieldLabel: 'Departamento',  name: 'depto',  allowBlank: false, width: 400, store: [".$depto."],
+										listeners:{select:{fn:function(combo, value) {
+											var modelCmp = Ext.getCmp('linea');
+											mdepto  = combo.getValue();
+											mlinea  = '';
+											modelCmp.setValue('');
+											lineStore.proxy.extraParams.depto = mdepto ;
+											lineStore.load({ params: { 'depto': mdepto, linea: '', 'origen': 'depto' } });
+											var modelCmp = Ext.getCmp('linea');
+											//modelCmp.store.reload({params: { depto: combo.getValue() }});
+										}}}
+									},
+									{
+										xtype: 'combo',
+										fieldLabel: 'Linea',
+										name: 'linea',
+										id:   'linea',
+										mode: 'remote',
+										hideTrigger: false,
+										typeAhead: true,
+										forceSelection: true,										valueField: 'item',
+										displayField: 'valor',
+										store: lineStore,
+										width: 400,
+									},
+
+									{ fieldLabel: 'Status',          name: 'status',   width:160, xtype: 'combo', store: [['A','Activo'],['I','Inactivo']], labelWidth:80  },
+									{ fieldLabel: 'Margen Ventas',   name: 'margen',   width:240, labelWidth:170, xtype: 'numberfield', hideTrigger: true, fieldStyle: 'text-align: right', renderer : Ext.util.Format.numberRenderer('0,000.00')},
+									{ fieldLabel: 'Comision',        name: 'comision', width:140, labelWidth: 80, xtype: 'numberfield', hideTrigger: true, fieldStyle: 'text-align: right', renderer : Ext.util.Format.numberRenderer('0,000.00')},
+									{ fieldLabel: 'Margen Compras',  name: 'margenc',  width:260, labelWidth:190, xtype: 'numberfield', hideTrigger: true, fieldStyle: 'text-align: right', renderer : Ext.util.Format.numberRenderer('0,000.00')},
+
+
+								]
+							},{
+								frame: false,
+								border: false,
+								labelAlign: 'right',
+								defaults: {xtype:'fieldset'  },
+								style:'padding:4px',
+								items: [
+									{
+										xtype: 'combo',
+										fieldLabel: 'Cuenta Ventas ',
+										labelWidth:100,
+										name: 'cu_venta',
+										id:   'cuenta1',
+										mode: 'remote',
+										hideTrigger: true,
+										typeAhead: true,
+										forceSelection: true,										valueField: 'item',
+										displayField: 'valor',
+										store: cplaStoreV,
+										width: 400
+									},
+									{
+										xtype: 'combo',
+										fieldLabel: 'Cuenta Inventario',
+										labelWidth:100,
+										name: 'cu_inve',
+										id:   'cuenta2',
+										mode: 'remote',
+										hideTrigger: true,
+										typeAhead: true,
+										forceSelection: true,										valueField: 'item',
+										displayField: 'valor',
+										store: cplaStoreI,
+										width: 400
+									},
+									{
+										xtype: 'combo',
+										fieldLabel: 'Cuenta de Costo',
+										labelWidth:100,
+										name: 'cu_cost',
+										id:   'cuenta3',
+										mode: 'remote',
+										hideTrigger: true,
+										typeAhead: true,
+										forceSelection: true,										valueField: 'item',
+										displayField: 'valor',
+										store: cplaStoreC,
+										width: 400
+									},
+									{
+										xtype: 'combo',
+										fieldLabel: 'Cta. Devolucion',
+										labelWidth:100,
+										name: 'cu_devo',
+										id:   'cuenta4',
+										mode: 'remote',
+										hideTrigger: true,
+										typeAhead: true,
+										forceSelection: true,										valueField: 'item',
+										displayField: 'valor',
+										store: cplaStoreD,
+										width: 400
+									}
+								]
+							}
+		";
+
+		$titulow = 'Grupos de Inventario';
+
+		$dockedItems = "
+				{ iconCls: 'icon-reset', itemId: 'close', text: 'Cerrar',   scope: this, handler: this.onClose },
+				{ iconCls: 'icon-save',  itemId: 'save',  text: 'Guardar',  disabled: false, scope: this, handler: this.onSave }
+		";
+
+		$winwidget = "
+				closable: false,
+				closeAction: 'destroy',
+				width: 450,
+				height: 400,
+				resizable: false,
+				modal: true,
+				items: [writeForm],
+				listeners: {
+					beforeshow: function() {
+						var form = this.down('writerform').getForm();
+						this.activeRecord = registro;
+						
+						if (registro) {
+							mcuentaV  = registro.data.cu_venta;
+							cplaStoreV.proxy.extraParams.cu_venta   = mcuentaV ;
+							cplaStoreV.load({ params: { 'cuenta': registro.data.cu_venta, 'origen': 'beforeform' } });
+							
+							mcuentaI  = registro.data.cu_inve;
+							cplaStoreI.proxy.extraParams.cu_inve   = mcuentaI ;
+							cplaStoreI.load({ params: { 'cuenta': registro.data.cu_inve, 'origen': 'beforeform' } });
+							
+							mcuentaC  = registro.data.cu_cost;
+							cplaStoreC.proxy.extraParams.cu_cost   = mcuentaC ;
+							cplaStoreC.load({ params: { 'cuenta': registro.data.cu_cost, 'origen': 'beforeform' } });
+
+							mcuentaD  = registro.data.cu_devo;
+							cplaStoreD.proxy.extraParams.cu_devo   = mcuentaD ;
+							cplaStoreD.load({ params: { 'cuenta': registro.data.cu_devo, 'origen': 'beforeform' } });
+
+							mdepto  = registro.data.depto;
+							mlinea  = registro.data.linea;
+							lineStore.proxy.extraParams.depto   = mdepto ;
+							lineStore.load({ params: { 'depto': registro.data.depto, linea: registro.data.linea, 'origen': 'beforeform' } });
+
+							form.loadRecord(registro);
+						} else {
+							mcuentaV  = '';
+							mcuentaI  = '';
+							mcuentaC  = '';
+							mcuentaD  = '';
+							mdepto    = '';
+							mlinea    = '';
+						}
+					}
+				}
+";
+
+		$stores = "
+var cplaStoreV = new Ext.data.Store({
+	fields: [ 'item', 'valor'],
+	autoLoad: false,autoSync: false,pageSize: 50,
+	pruneModifiedRecords: true,totalProperty: 'results',
+	proxy: {
+		type: 'ajax',
+		url : urlApp + 'contabilidad/cpla/cplabusca',
+		extraParams: {  'cuenta': mcuentaV, 'origen': 'store' },
+		reader: {type: 'json',	totalProperty: 'results',root: 'data'
+		}
+	},
+	method: 'POST'
+});
+
+var cplaStoreI = new Ext.data.Store({
+	fields: [ 'item', 'valor'],
+	autoLoad: false,autoSync: false,pageSize: 50,
+	pruneModifiedRecords: true,totalProperty: 'results',
+	proxy: {
+		type: 'ajax',
+		url : urlApp + 'contabilidad/cpla/cplabusca',
+		extraParams: {  'cuenta': mcuentaI, 'origen': 'store' },
+		reader: {type: 'json',	totalProperty: 'results',root: 'data'
+		}
+	},
+	method: 'POST'
+});
+
+var cplaStoreC = new Ext.data.Store({
+	fields: [ 'item', 'valor'],
+	autoLoad: false,autoSync: false,pageSize: 50,
+	pruneModifiedRecords: true,totalProperty: 'results',
+	proxy: {
+		type: 'ajax',
+		url : urlApp + 'contabilidad/cpla/cplabusca',
+		extraParams: {  'cuenta': mcuentaC, 'origen': 'store' },
+		reader: {type: 'json',	totalProperty: 'results',root: 'data'
+		}
+	},
+	method: 'POST'
+});
+
+var cplaStoreD = new Ext.data.Store({
+	fields: [ 'item', 'valor'],
+	autoLoad: false,autoSync: false,pageSize: 50,
+	pruneModifiedRecords: true,totalProperty: 'results',
+	proxy: {
+		type: 'ajax',
+		url : urlApp + 'contabilidad/cpla/cplabusca',
+		extraParams: {  'cuenta': mcuentaD, 'origen': 'store' },
+		reader: {type: 'json',	totalProperty: 'results',root: 'data'
+		}
+	},
+	method: 'POST'
+});
+
+
+var lineStore = new Ext.data.Store({
+	fields: [ 'item', 'valor'],
+	autoLoad: false,autoSync: false,pageSize: 50,
+	pruneModifiedRecords: true,totalProperty: 'results',
+	proxy: {
+		type: 'ajax',
+		url : urlApp + 'inventario/line/linebusca/',
+		extraParams: {  'depto': mdepto, 'linea': mlinea, 'origen': 'store' },
+		reader: {type: 'json',	totalProperty: 'results',root: 'data'
+		}
+	},
+	method: 'POST'
+});
+
+		";
+
+		$features = "features: [ filters],";
+		$filtros = "var filters = { ftype: 'filters', encode: 'json', local: false }; ";
+
+		$data['listados']    = $listados;
+		$data['otros']       = $otros;
+		$data['encabeza']    = $encabeza;
+		$data['urlajax']     = $urlajax;
+		$data['variables']   = $variables;
+		$data['funciones']   = $funciones;
+		$data['valida']      = $valida;
+		$data['columnas']    = $columnas;
+		$data['campos']      = $campos;
+		$data['stores']      = $stores;
+		$data['camposforma'] = $camposforma;
+		$data['titulow']     = $titulow;
+		$data['dockedItems'] = $dockedItems;
+		$data['winwidget']   = $winwidget;
+		$data['features']    = $features;
+		$data['filtros']     = $filtros;
+		
+		$data['title']  = heading('Grupos de Inventario');
+		$this->load->view('extjs/extjsven',$data);
+	}
+
 }
 ?>

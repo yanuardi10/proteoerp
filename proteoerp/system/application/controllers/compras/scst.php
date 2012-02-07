@@ -1489,7 +1489,6 @@ class Scst extends Controller {
 		}
 
 		$this->db->limit($limit, $start);
-
 		$query = $this->db->get();
 		$results = $query->num_rows();
 
@@ -1505,6 +1504,7 @@ class Scst extends Controller {
 		$query = $this->db->query($mSQL);
 		$results =  0;
 		$arr = $this->datasis->codificautf8($query->result_array());
+		$results = sizeof($arr);
 		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
 	}
 
