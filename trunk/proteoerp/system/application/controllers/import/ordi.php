@@ -81,7 +81,6 @@ class Ordi extends Controller {
 	function dataedit(){
 		$this->rapyd->load('dataobject','datadetails');
 		$monedalocal='Bs';
-		//print_r(get_defined_constants());
 
 		$modbus=array(
 			'tabla'   =>'sinv',
@@ -91,7 +90,8 @@ class Ordi extends Controller {
 			'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'Descripci&oacute;n'),
 			'retornar'=>array('codigo'=>'codigo_<#i#>','descrip'=>'descrip_<#i#>'),
 			'p_uri'=>array(4=>'<#i#>'),
-			'titulo'  => 'Buscar Producto en inventario');
+			'titulo'  => 'Buscar Producto en inventario',
+			'script'  =>array('post_sinv_modbus("<#i#>")'));
 		$btn=$this->datasis->p_modbus($modbus,'<#i#>');
 
 		$sprv=array(
@@ -103,7 +103,8 @@ class Ordi extends Controller {
 			'filtro'  =>array('proveed'=>'C&oacute;digo Proveedor','nombre'=>'Nombre'),
 			'retornar'=>array('proveed'=>'proveed','nombre'=>'nombre'),
 			'titulo'  =>'Buscar Proveedor',
-			'where'   =>'tipo IN (3,4)');
+			'where'   =>'tipo IN (3,4)',
+			'script'  =>array('post_sprv_modbus()'));
 		$boton=$this->datasis->modbus($sprv);
 
 		$aran=array(
@@ -127,7 +128,8 @@ class Ordi extends Controller {
 				'rif'=>'RIF'),
 			'filtro'  =>array('proveed'=>'C&oacute;digo Proveedor','nombre'=>'Nombre'),
 			'retornar'=>array('proveed'=>'agente','nombre'=>'nomage'),
-			'titulo'  =>'Buscar Proveedor');
+			'titulo'  =>'Buscar Proveedor',
+			'script'  =>array('post_sprv_modbus()'));
 		$aboton=$this->datasis->modbus($asprv,'agsprv');
 
 		$script="
@@ -163,7 +165,7 @@ class Ordi extends Controller {
 		$edit->dua= new inputField('Declaraci&oacute;n &uacute;nica de aduana', 'dua');
 		$edit->dua->size=10;
 
-		$edit->fecha = new  dateonlyField('Fecha','fecha');
+		$edit->fecha = new  dateonlyField('Fecha de Factura','fecha');
 		$edit->fecha->insertValue = date('Y-m-d');
 		$edit->fecha->maxlength=8;
 		$edit->fecha->size =10;
@@ -185,9 +187,10 @@ class Ordi extends Controller {
 		$edit->nombre->rule     ='trim';
 		$edit->nombre->maxlength=40;
 		$edit->nombre->size     =40;
+		$edit->nombre->type ='inputhidden';
 
 		$edit->agente = new inputField('Agente aduanal', 'agente');
-		$edit->agente->rule     ='trim|existesprv';
+		$edit->agente->rule     ='trim|existesprv|required';
 		$edit->agente->maxlength=5;
 		$edit->agente->size     =7;
 		$edit->agente->append($aboton);
@@ -196,6 +199,7 @@ class Ordi extends Controller {
 		$edit->nomage->rule     ='trim';
 		$edit->nomage->maxlength=40;
 		$edit->nomage->size     =40;
+		$edit->nomage->type ='inputhidden';
 
 		$arr=array(
 			'montofob' =>'Total factura extranjera $',
@@ -210,6 +214,7 @@ class Ordi extends Controller {
 			$edit->$obj->css_class= 'inputnum';
 			$edit->$obj->autocomplete= false;
 			$edit->$obj->showformat  = 'decimal';
+			$edit->$obj->type ='inputhidden';
 		}
 
 		$arr=array(
@@ -247,6 +252,7 @@ class Ordi extends Controller {
 		$edit->cambioofi->maxlength=17;
 		$edit->cambioofi->size     =10;
 		$edit->cambioofi->autocomplete= false;
+		$edit->cambioofi->insertValue = 4.3;
 		$edit->cambioofi->showformat  = 'decimal';
 
 		$edit->cambioreal = new inputField('Cambio Real', 'cambioreal');
@@ -282,7 +288,7 @@ class Ordi extends Controller {
 		//*********************
 		$edit->codigo = new inputField('C&oacute;digo <#o#>','codigo_<#i#>');
 		$edit->codigo->db_name  = 'codigo';
-		$edit->codigo->rule     = 'trim|required';
+		$edit->codigo->rule     = 'trim|required|existesinv';
 		$edit->codigo->rel_id   = 'itordi';
 		$edit->codigo->maxlength= 15;
 		$edit->codigo->size     = 10;
@@ -295,66 +301,55 @@ class Ordi extends Controller {
 		$edit->descrip->maxlength=35;
 		$edit->descrip->size     =30;
 		$edit->descrip->autocomplete= false;
+		$edit->descrip->type ='inputhidden';
 
 		$edit->cantidad = new inputField('Cantidad <#o#>','cantidad_<#i#>');
 		$edit->cantidad->db_name  = 'cantidad';
 		$edit->cantidad->css_class= 'inputnum';
 		$edit->cantidad->rel_id   = 'itordi';
-		$edit->cantidad->rule     = 'numeric';
+		$edit->cantidad->rule     = 'numeric|mayorcero|required';
 		$edit->cantidad->maxlength= 10;
 		$edit->cantidad->size     = 7;
 		$edit->cantidad->autocomplete= false;
+		$edit->cantidad->showformat  = 'decimal';
 
 		$arr=array(
-			'costofob'    =>'costofob'    ,
-			'importefob'  =>'importefob'  ,
-			//'relgastosi'  =>'gastosi'     ,
-			//'costocif'    =>'costocif'    ,
-			//'importecif'  =>'importecif'  ,
-			//'montoaran'   =>'montoaran'   ,
-			//'relgastosn'  =>'gastosn'     ,
-			//'costofinal'  =>'costofinal'  ,
-			//'importefinal'=>'importefinal',
-			//'iva'           =>'iva'    ,
-			);
+			'costofob'   =>'costofob'    ,
+			'importefob' =>'importefob'  ,
+		);
 		foreach($arr as $obj=>$db){
 			$edit->$obj = new inputField(ucfirst("$obj <#o#>"), "${obj}_<#i#>");
 			$edit->$obj->db_name  = $db;
 			$edit->$obj->css_class= 'inputnum';
 			$edit->$obj->rel_id   = 'itordi';
-			$edit->$obj->rule     = 'trim';
+			$edit->$obj->rule     = 'trim|mayorcero|required';
 			$edit->$obj->maxlength= 20;
 			$edit->$obj->size     = 10;
 			$edit->$obj->autocomplete= false;
 			$edit->$obj->showformat  = 'decimal';
+			if($obj=='importefob') $edit->$obj->type ='inputhidden';
 		}
 
 		$edit->codaran = new inputField('Codaran <#o#>', 'codaran_<#i#>');
 		$edit->codaran->db_name  = 'codaran';
 		$edit->codaran->rel_id   = 'itordi';
-		$edit->codaran->rule     ='trim';
-		$edit->codaran->maxlength=15;
-		$edit->codaran->size     =10;
-		$edit->codaran->readonly =true;
+		$edit->codaran->rule     = 'trim|required';
+		$edit->codaran->maxlength= 15;
+		$edit->codaran->size     = 10;
+		//$edit->codaran->readonly = true;
 		$edit->codaran->append($aran);
 
-		$arr=array(
-			'arancel',
-			//'participam',
-			//'participao'
-		);
-		foreach($arr as $obj){
-			$edit->$obj = new inputField(ucfirst("$obj <#o#>"), "${obj}_<#i#>");
-			$edit->$obj->db_name  = $obj;
-			$edit->$obj->css_class= 'inputnum';
-			$edit->$obj->rel_id   = 'itordi';
-			$edit->$obj->rule     ='trim';
-			$edit->$obj->maxlength= 7;
-			$edit->$obj->size     = 5;
-			$edit->$obj->readonly =true;
-			$edit->$obj->autocomplete= false;
-			$edit->$obj->showformat  = 'decimal';
-		}
+		$edit->arancel = new inputField('arancel <#o#>','arancel_<#i#>');
+		$edit->arancel->db_name   = 'arancel';
+		$edit->arancel->css_class = 'inputnum';
+		$edit->arancel->rel_id    = 'itordi';
+		$edit->arancel->rule      = 'trim|mayorcero';
+		$edit->arancel->maxlength = 7;
+		$edit->arancel->size      = 5;
+		$edit->arancel->readonly  = true;
+		$edit->arancel->autocomplete= false;
+		$edit->arancel->showformat  = 'decimal';
+		$edit->arancel->type ='inputhidden';
 		//Termina el detalle
 
 		$edit->ordeni  = new autoUpdateField('status','A','A');
@@ -390,7 +385,7 @@ class Ordi extends Controller {
 		$edit->build();
 
 		$auto_aran=site_url('import/ordi/autocomplete/codaran');
-		$this->rapyd->jquery[]='$(".inputnum").numeric(".");';
+		//$this->rapyd->jquery[]='$(".inputnum").numeric(".");';
 
 		if($edit->_status=='show'){
 			$conten['peroles'][] = $this->_showgeri($edit->_dataobject->pk['numero'],$stat)  ;
@@ -410,25 +405,18 @@ class Ordi extends Controller {
 
 		$conten['form']  =& $edit;
 		$data['content'] =  $this->load->view('view_ordi',$conten,true);
-		$data['title']   =  heading('Importaciones');
-		$data['head']    =  $this->rapyd->get_head().phpscript('nformat.js').script('plugins/jquery.autocomplete.js').style('jquery.autocomplete.css');
-		$this->load->view('view_ventanas', $data);
-	}
 
-	function autocomplete($campo,$cod=FALSE){
-		if($cod!==false){
-			$cod=$this->db->escape_like_str($cod);
-			$qformato=$this->datasis->formato_cpla();
-			$data['codaran']="SELECT codigo AS c1 ,tarifa AS c2, descrip AS c3 FROM aran WHERE codigo LIKE '$cod%' ORDER BY codigo LIMIT 10";
-			if(isset($data[$campo])){
-			$query=$this->db->query($data[$campo]);
-				if($query->num_rows() > 0){
-					foreach($query->result() AS $row){
-						echo $row->c1.'|'.nformat($row->c2)."%\n";
-					}
-				}
-			}
-		}
+		$data['style']   = style('redmond/jquery-ui.css');
+
+		$data['script']  = script('jquery.js');
+		$data['script'] .= script('jquery-ui.js');
+		$data['script'] .= script('plugins/jquery.floatnumber.js');
+		$data['script'] .= script('plugins/jquery.numeric.pack.js');
+		$data['script'] .= script('plugins/jquery.ui.autocomplete.autoSelectOne.js');
+		$data['script'] .= phpscript('nformat.js');
+		$data['head']    = $this->rapyd->get_head();
+		$data['title']   =  heading('Importaciones');
+		$this->load->view('view_ventanas', $data);
 	}
 
 	function _showordiestima($id,$stat='C'){
@@ -447,7 +435,7 @@ class Ordi extends Controller {
 		$uri=($status!='C')?anchor('import/ordi/ordiestima/'.$id.'/modify/<#id#>','Modificar') :'Fijo';
 
 		$grid->column('Modificar',$uri);
-		$grid->column('Concepto','concepto');
+		$grid->column('Concepto' ,'concepto');
 		$grid->column('Monto'    ,'<nformat><#monto#></nformat>','align=\'right\'');
 
 		if($stat!='C') $grid->add('import/ordi/ordiestima/'.$id.'/create','Agregar estimacion');
@@ -639,7 +627,7 @@ class Ordi extends Controller {
 		$edit->post_process('delete','_post_gseri');
 
 		$edit->proveed = new inputField('Proveedor', 'proveed');
-		$edit->proveed->rule     ='trim';
+		$edit->proveed->rule     ='trim|existesprv';
 		$edit->proveed->maxlength=5;
 		$edit->proveed->size     =7;
 		$edit->proveed->append($boton);
@@ -660,15 +648,18 @@ class Ordi extends Controller {
 		$edit->numero = new inputField('N&uacute;mero', 'numero');
 		$edit->numero->size     = 10;
 		$edit->numero->maxlength=8;
+		$edit->numero->autocomplete=false;
 
 		$edit->concepto = new inputField('Concepto', 'concepto');
 		$edit->concepto->size     = 35;
 		$edit->concepto->maxlength= 40;
+		$edit->concepto->autocomplete=false;
 
 		$edit->monto = new inputField2('Monto $','monto');
-		$edit->monto->rule= 'required|numeric';
+		$edit->monto->rule= 'required|numeric|mayorcero';
 		$edit->monto->size = 20;
 		$edit->monto->css_class='inputnum';
+		$edit->monto->autocomplete=false;
 
 		$edit->ordeni  = new autoUpdateField('ordeni',$ordi,$ordi);
 		$edit->usuario = new autoUpdateField('usuario', $this->session->userdata('usuario'), $this->session->userdata('usuario'));
@@ -678,8 +669,41 @@ class Ordi extends Controller {
 		$edit->build();
 
 		$this->rapyd->jquery[]='$(".inputnum").numeric(".");';
+		$this->rapyd->jquery[]='$("#proveed").autocomplete({
+			source: function( req, add){
+				$.ajax({
+					url:  "'.site_url('ajax/buscasprv').'",
+					type: "POST",
+					dataType: "json",
+					data: "q="+req.term,
+					success:
+						function(data){
+							var sugiere = [];
+							if(data.length==0){
+								$("#nombre").val("");
+								//$("#nombre_val").text("");
+							}else{
+								$.each(data,
+									function(i, val){
+										sugiere.push( val );
+									}
+								);
+							}
+							add(sugiere);
+						},
+				})
+			},
+			minLength: 1,
+			select: function( event, ui ) {
+				$("#proveed").val(ui.item.proveed);
+				$("#nombre").val(ui.item.nombre);
+				//$("#nombre_val").text(ui.item.nombre);
+			}
+		});';
+
+
 		$data['content'] = $edit->output;
-		$data['title']   = '<h1>Gasto de importaci&oacute;n</h1>';
+		$data['title']   = heading('Gasto de importaci&oacute;n');
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
@@ -1190,20 +1214,24 @@ class Ordi extends Controller {
 		$form->almacen = new  dropdownField ('Almac&eacute;n', 'almacen');
 		$form->almacen->option('','Seleccionar');
 		$form->almacen->options("SELECT ubica,CONCAT_WS('-',ubica,ubides) AS val FROM caub WHERE gasto='N' and invfis='N' ORDER BY ubides");
+		$form->almacen->insertValue=$this->datasis->traevalor('ALMACEN');
 		$form->almacen->rule = 'required';
 
-		$form->fecha = new dateonlyField('Fecha de llegada de la mercancia', 'fecha','d/m/Y');
+		$form->fecha = new dateonlyField('Fecha de llegada de la mercanc&iacute;a', 'fecha','d/m/Y');
 		$form->fecha->insertValue = date('Y-m-d');
 		$form->fecha->rule='required';
 		$form->fecha->size=10;
 
-		/*for($i=1;$i<5;$i++){
-			$obj='margen'.$i;
-			$form->$obj = new inputField('Margen precio '.$i,$obj);
-			$form->$obj->size = 8;
-			$form->$obj->rule = 'required';
-			$form->$obj->css_class='inputnum';
-		}*/
+		$form->precios = new radiogroupField('Pol&iacute;tica de precios', 'precios',
+		array(
+			'S'=>'Cambiar precios repetando los margenes',
+			'N'=>'Cambiar margenes repetando los precios'
+		));
+		$form->precios->insertValue='S';
+		$form->precios->rule='required';
+
+		$action = 'javascript:window.location=\'' . site_url('import/ordi/dataedit/show/'.$control).'\'';
+		$form->button('btn_regresar', 'Regresar', $action, 'BR');
 
 		$form->submit('btnsubmit','Guardar');
 		$form->build_form();
@@ -1211,8 +1239,9 @@ class Ordi extends Controller {
 		if ($form->on_success()){
 			$almacen  = $form->almacen->newValue;
 			$actualiza= $form->fecha->newValue;
+			$cprecios = $form->precios->newValue;
 			$this->_calcula($control);
-			$rt=$this->_cargarordi($control,$almacen,$actualiza);
+			$rt=$this->_cargarordi($control,$almacen,$actualiza,$cprecios);
 			if($rt===false){
 				$data['content']  = $this->error_string.br();
 			}else{
@@ -1229,7 +1258,7 @@ class Ordi extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
-	function _cargarordi($id,$depo,$actualiza){
+	function _cargarordi($id,$depo,$actualiza,$cprecios){
 		$error =0;
 		$status=$this->datasis->dameval('SELECT status FROM ordi WHERE numero='.$this->db->escape($id));
 		//$gacona =$this->datasis->dameval("SELECT SUM(totpre)   AS gastosn  FROM gser  WHERE ordeni=$id"); //gastos comunes nacionales
@@ -1315,31 +1344,44 @@ class Ordi extends Controller {
 						$importecifreal += $itrow->importecifreal;
 
 						//Actualiza el inventario
+						$this->datasis->sinvcarga($itrow->codigo,$depo,$itrow->cantidad);
+						$dbcodigo = $this->db->escape($itrow->codigo);
+
 						$mSQL='UPDATE sinv SET
 							pond=(existen*IF(formcal="P",pond,IF(formcal="U",ultimo,GREATEST(pond,ultimo)))+'.$itrow->cantidad*$itrow->costoreal.')/(existen+'.$itrow->cantidad.'),
-							existen=existen+'.$itrow->cantidad.' WHERE codigo='.$this->db->escape($itrow->codigo);
+							prov3=prov2, prepro3=prepro2, pfecha3=pfecha2, prov2=prov1, prepro2=prepro1, pfecha2=pfecha1,
+							prov1='.$this->db->escape($proveed).',
+							prepro1='.$itrow->costoreal.',
+							pfecha1='.$this->db->escape($fecha).',
+							ultimo='.$itrow->costoreal.'
+							WHERE codigo='.$dbcodigo;
 						$ban=$this->db->simple_query($mSQL);
 						if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
 
-						$mSQL='UPDATE itsinv SET existen=existen+'.$itrow->cantidad.' WHERE codigo='.$this->db->escape($itrow->codigo).' AND alma='.$this->db->escape($depo);
-						$ban=$this->db->simple_query($mSQL);
-						if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
-
-						if($itrow->precio1>0 and $itrow->precio2>0 and $itrow->precio3>0 and $itrow->precio4>0){
+						//Cambia los precios
+						if($cprecios=='S'){
+							//$mSQL='UPDATE sinv SET
+							//	precio1='.$this->db->escape($itrow->precio1).',
+							//	precio2='.$this->db->escape($itrow->precio2).',
+							//	precio3='.$this->db->escape($itrow->precio3).',
+							//	precio4='.$this->db->escape($itrow->precio4).'
+							//	WHERE codigo='.$dbcodigo;
+							//$ban=$this->db->simple_query($mSQL);
+							//if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
 							$mSQL='UPDATE sinv SET
-								prov3=prov2, prepro3=prepro2, pfecha3=pfecha2, prov2=prov1, prepro2=prepro1, pfecha2=pfecha1,
-								prov1='.$this->db->escape($proveed).',
-								prepro1='.$itrow->costoreal.',
-								pfecha1='.$this->db->escape($fecha).',
-								ultimo='.$itrow->costoreal.',
-								precio1='.$this->db->escape($itrow->precio1).',
-								precio2='.$this->db->escape($itrow->precio2).',
-								precio3='.$this->db->escape($itrow->precio3).',
-								precio4='.$this->db->escape($itrow->precio4).'
-								WHERE codigo='.$this->db->escape($itrow->codigo);
+								base1=ROUND(IF(formcal="P",pond,IF(formcal="U",ultimo,GREATEST(pond,ultimo)))*10000/(100-margen1))/100,
+								base2=ROUND(IF(formcal="P",pond,IF(formcal="U",ultimo,GREATEST(pond,ultimo)))*10000/(100-margen2))/100,
+								base3=ROUND(IF(formcal="P",pond,IF(formcal="U",ultimo,GREATEST(pond,ultimo)))*10000/(100-margen3))/100,
+								base4=ROUND(IF(formcal="P",pond,IF(formcal="U",ultimo,GREATEST(pond,ultimo)))*10000/(100-margen4))/100,
+								precio1=ROUND(IF(formcal="P",pond,IF(formcal="U",ultimo,GREATEST(pond,ultimo)))*100*(100+iva)/(100-margen1))/100,
+								precio2=ROUND(IF(formcal="P",pond,IF(formcal="U",ultimo,GREATEST(pond,ultimo)))*100*(100+iva)/(100-margen2))/100,
+								precio3=ROUND(IF(formcal="P",pond,IF(formcal="U",ultimo,GREATEST(pond,ultimo)))*100*(100+iva)/(100-margen3))/100,
+								precio4=ROUND(IF(formcal="P",pond,IF(formcal="U",ultimo,GREATEST(pond,ultimo)))*100*(100+iva)/(100-margen4))/100,
+								activo="S"
+							WHERE codigo='.$dbcodigo;
 							$ban=$this->db->simple_query($mSQL);
 							if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
-
+						}else{
 							$mSQL='UPDATE sinv SET
 								base1=ROUND(precio1*10000/(100+iva))/100,
 								base2=ROUND(precio2*10000/(100+iva))/100,
@@ -1350,7 +1392,7 @@ class Ordi extends Controller {
 								margen3=ROUND(10000-(IF(formcal="P",pond,IF(formcal="U",ultimo,GREATEST(pond,ultimo)))*10000/base3))/100,
 								margen4=ROUND(10000-(IF(formcal="P",pond,IF(formcal="U",ultimo,GREATEST(pond,ultimo)))*10000/base4))/100,
 								activo="S"
-							WHERE codigo='.$this->db->escape($itrow->codigo);
+							WHERE codigo='.$dbcodigo;
 							$ban=$this->db->simple_query($mSQL);
 							if(!$ban){ memowrite($mSQL,'ordi'); $error++; }
 						}
