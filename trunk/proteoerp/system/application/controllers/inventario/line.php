@@ -9,7 +9,14 @@ class Line extends validaciones {
        }
 
        function index(){
-	      redirect("inventario/line/filteredgrid");
+	      if ( !$this->datasis->iscampo('line','id') ) {
+		     $this->db->simple_query('ALTER TABLE line DROP PRIMARY KEY');
+		     $this->db->simple_query('ALTER TABLE line ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ');
+		     $this->db->simple_query('ALTER TABLE line ADD UNIQUE INDEX linea (linea)');
+	      }
+	      $this->datasis->modulo_id(306,1);
+	      $this->lineextjs();
+	      //redirect("inventario/line/filteredgrid");
        }
 
        function filteredgrid(){
@@ -343,6 +350,372 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$ultimo=$this->datasis->dameval("SELECT linea FROM line ORDER BY linea DESC");
 		echo $ultimo;
        }
+
+	function grid(){
+		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']   :  0;
+		$limit   = isset($_REQUEST['limit'])  ? $_REQUEST['limit']   : 50;
+		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']    : '[{"property":"linea","direction":"ASC"}]';
+		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
+
+		$where = $this->datasis->extjsfiltro($filters);
+		
+		$this->db->_protect_identifiers=false;
+		$this->db->select('*');
+		$this->db->from('line');
+		if (strlen($where)>1) $this->db->where($where, NULL, FALSE); 
+		
+		$sort = json_decode($sort, true);
+		if ( count($sort) == 0 ) $this->db->order_by( 'linea', 'asc' );
+		
+		for ( $i=0; $i<count($sort); $i++ ) {
+			$this->db->order_by($sort[$i]['property'],$sort[$i]['direction']);
+		}
+
+		$this->db->limit($limit, $start);
+
+		$query = $this->db->get();
+		$results = $this->db->count_all('line');
+
+		$arr = $this->datasis->codificautf8($query->result_array());
+		echo '{success:true, message:"Loaded data", results:'. $results.', data:'.json_encode($arr).'}';
+	}
+
+
+	function crear(){
+		$js= file_get_contents('php://input');
+		$data= json_decode($js,true);
+		$campos   = $data['data'];
+		$linea = $campos['linea'];
+
+		if ( !empty($linea) ) {
+			unset($campos['id']);
+			// Revisa si existe ya ese contrato
+			if ($this->datasis->dameval("SELECT COUNT(*) FROM line WHERE linea='$linea'") == 0)
+			{
+				$mSQL = $this->db->insert_string("line", $campos );
+				$this->db->simple_query($mSQL);
+				logusu('line',"DEPARTAMENTO $linea CREADO");
+				echo "{ success: true, message: 'Linea Agregada'}";
+			} else {
+				echo "{ success: false, message: 'Ya existe un Linea con ese Codigo!!'}";
+			}
+			
+		} else {
+			echo "{ success: false, message: 'Ya existe un Linea con ese Codigo!!'}";
+		}
+	}
+
+	function modificar(){
+		$js= file_get_contents('php://input');
+		$data= json_decode($js,true);
+		$campos = $data['data'];
+
+		$linea = $campos['linea'];
+		unset($campos['linea']);
+		unset($campos['id']);
+
+		$mSQL = $this->db->update_string("line", $campos,"id='".$data['data']['id']."'" );
+		$this->db->simple_query($mSQL);
+		logusu('line',"LINEAS DE INVENTARIO $linea ID ".$data['data']['id']." MODIFICADO");
+		echo "{ success: true, message: 'Linea Modificada -> ".$data['data']['linea']."'}";
+	}
+
+	function eliminar(){
+		$js= file_get_contents('php://input');
+		$data= json_decode($js,true);
+		$campos = $data['data'];
+
+		$linea = $campos['linea'];
+		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM grup WHERE linea='$linea'");
+		if ($chek > 0){
+			echo "{ success: false, message: 'Linea, con movimiento, no puede ser Borrado'}";
+		} else {
+			$this->db->simple_query("DELETE FROM line WHERE linea='$linea'");
+			logusu('line',"LINEA $linea ELIMINADA");
+			echo "{ success: true, message: 'Departamento Eliminado'}";
+		}
+	}
+
+
+//0414 376 0149 juan picapiedras
+
+//****************************************************************8
+//
+//
+//
+//****************************************************************8
+	function lineextjs(){
+		$encabeza='LINEAS DE INVENTARIO';
+		$listados= $this->datasis->listados('line');
+		$otros=$this->datasis->otros('line', 'line');
+
+		$mSQL = "SELECT depto, CONCAT(depto,' ', descrip) descrip FROM dpto WHERE tipo='I' ORDER BY depto ";
+		$depto = $this->datasis->llenacombo($mSQL);
+
+		$urlajax = 'inventario/line/';
+		$variables = "
+		var mdepto   = ''
+		var mcuentaV = ''
+		var mcuentaI = ''
+		var mcuentaC = ''
+		var mcuentaD = ''
+		";
+		$funciones = "";
+
+		$valida = "
+		{ type: 'length', field: 'linea',   min: 1 },
+		{ type: 'length', field: 'descrip', min: 1 }
+		";
+		
+		$columnas = "
+		     { header: 'Linea',           width: 50, sortable: true, dataIndex: 'linea',    field: { type: 'textfield' }, filter: { type: 'string' }},
+		     { header: 'Descripcion',     width:200, sortable: true, dataIndex: 'descrip',  field: { type: 'textfield' }, filter: { type: 'string' }},
+		     { header: 'Depto.',          width: 50, sortable: true, dataIndex: 'depto',    field: { type: 'textfield' }, filter: { type: 'string' }},
+		     { header: 'Cta.Costo',       width:100, sortable: true, dataIndex: 'cu_cost',  field: { type: 'textfield' }, filter: { type: 'string' }},
+		     { header: 'Cta.Inventario',  width:100, sortable: true, dataIndex: 'cu_inve',  field: { type: 'textfield' }, filter: { type: 'string' }},
+		     { header: 'Cta.Venta',       width:100, sortable: true, dataIndex: 'cu_venta', field: { type: 'textfield' }, filter: { type: 'string' }},
+		     { header: 'Cta.Devolucion',  width:100, sortable: true, dataIndex: 'cu_devo',  field: { type: 'textfield' }, filter: { type: 'string' }},
+	      ";
+
+		$campos = "'linea','descrip','cu_cost','cu_inve','cu_venta','cu_devo','depto','id'";
+		
+		$camposforma = "
+							{
+							frame: false,
+							border: false,
+							labelAlign: 'right',
+							defaults: { xtype:'fieldset', labelWidth:90 },
+							style:'padding:4px',
+							items: [
+									{ fieldLabel: 'Linea',       name: 'linea',   width:120,  xtype: 'textfield', id: 'linea' },
+									{ fieldLabel: 'Descripcion', name: 'descrip', width:400,  xtype: 'textfield' },
+									{ xtype: 'combo', fieldLabel: 'Departamento',  name: 'depto',  allowBlank: false, width: 400, store: [".$depto."] },
+								]
+							},{
+								frame: false,
+								border: false,
+								labelAlign: 'right',
+								defaults: {xtype:'fieldset'  },
+								style:'padding:4px',
+								items: [
+									{
+										xtype: 'combo',
+										fieldLabel: 'Cuenta Ventas ',
+										labelWidth:100,
+										name: 'cu_venta',
+										id:   'cuenta1',
+										mode: 'remote',
+										hideTrigger: true,
+										typeAhead: true,
+										forceSelection: true,										valueField: 'item',
+										displayField: 'valor',
+										store: cplaStoreV,
+										width: 400
+									},
+									{
+										xtype: 'combo',
+										fieldLabel: 'Cuenta Inventario',
+										labelWidth:100,
+										name: 'cu_inve',
+										id:   'cuenta2',
+										mode: 'remote',
+										hideTrigger: true,
+										typeAhead: true,
+										forceSelection: true,										valueField: 'item',
+										displayField: 'valor',
+										store: cplaStoreI,
+										width: 400
+									},
+									{
+										xtype: 'combo',
+										fieldLabel: 'Cuenta de Costo',
+										labelWidth:100,
+										name: 'cu_cost',
+										id:   'cuenta3',
+										mode: 'remote',
+										hideTrigger: true,
+										typeAhead: true,
+										forceSelection: true,										valueField: 'item',
+										displayField: 'valor',
+										store: cplaStoreC,
+										width: 400
+									},
+									{
+										xtype: 'combo',
+										fieldLabel: 'Cta. Devolucion',
+										labelWidth:100,
+										name: 'cu_devo',
+										id:   'cuenta4',
+										mode: 'remote',
+										hideTrigger: true,
+										typeAhead: true,
+										forceSelection: true,										valueField: 'item',
+										displayField: 'valor',
+										store: cplaStoreD,
+										width: 400
+									}
+								]
+							}
+		";
+
+		$titulow = 'Lineas de Inventario';
+
+		$dockedItems = "
+				{ iconCls: 'icon-reset', itemId: 'close', text: 'Cerrar',   scope: this, handler: this.onClose },
+				{ iconCls: 'icon-save',  itemId: 'save',  text: 'Guardar',  disabled: false, scope: this, handler: this.onSave }
+		";
+
+		$winwidget = "
+				closable: false,
+				closeAction: 'destroy',
+				width: 450,
+				height: 330,
+				resizable: false,
+				modal: true,
+				items: [writeForm],
+				listeners: {
+					beforeshow: function() {
+						var form = this.down('writerform').getForm();
+						this.activeRecord = registro;
+						
+						if (registro) {
+							mcuentaV  = registro.data.cu_venta;
+							cplaStoreV.proxy.extraParams.cu_venta   = mcuentaV ;
+							cplaStoreV.load({ params: { 'cuenta': registro.data.cu_venta, 'origen': 'beforeform' } });
+							
+							mcuentaI  = registro.data.cu_inve;
+							cplaStoreI.proxy.extraParams.cu_inve   = mcuentaI ;
+							cplaStoreI.load({ params: { 'cuenta': registro.data.cu_inve, 'origen': 'beforeform' } });
+							
+							mcuentaC  = registro.data.cu_cost;
+							cplaStoreC.proxy.extraParams.cu_cost   = mcuentaC ;
+							cplaStoreC.load({ params: { 'cuenta': registro.data.cu_cost, 'origen': 'beforeform' } });
+
+							mcuentaD  = registro.data.cu_devo;
+							cplaStoreD.proxy.extraParams.cu_devo   = mcuentaD ;
+							cplaStoreD.load({ params: { 'cuenta': registro.data.cu_devo, 'origen': 'beforeform' } });
+
+							form.loadRecord(registro);
+						} else {
+							mcuentaV  = '';
+							mcuentaI  = '';
+							mcuentaC  = '';
+							mcuentaD  = '';
+						}
+					}
+				}
+";
+
+		$stores = "
+var cplaStoreV = new Ext.data.Store({
+	fields: [ 'item', 'valor'],
+	autoLoad: false,autoSync: false,pageSize: 50,
+	pruneModifiedRecords: true,totalProperty: 'results',
+	proxy: {
+		type: 'ajax',
+		url : urlApp + 'contabilidad/cpla/cplabusca',
+		extraParams: {  'cuenta': mcuentaV, 'origen': 'store' },
+		reader: {type: 'json',	totalProperty: 'results',root: 'data'
+		}
+	},
+	method: 'POST'
+});
+
+var cplaStoreI = new Ext.data.Store({
+	fields: [ 'item', 'valor'],
+	autoLoad: false,autoSync: false,pageSize: 50,
+	pruneModifiedRecords: true,totalProperty: 'results',
+	proxy: {
+		type: 'ajax',
+		url : urlApp + 'contabilidad/cpla/cplabusca',
+		extraParams: {  'cuenta': mcuentaI, 'origen': 'store' },
+		reader: {type: 'json',	totalProperty: 'results',root: 'data'
+		}
+	},
+	method: 'POST'
+});
+
+var cplaStoreC = new Ext.data.Store({
+	fields: [ 'item', 'valor'],
+	autoLoad: false,autoSync: false,pageSize: 50,
+	pruneModifiedRecords: true,totalProperty: 'results',
+	proxy: {
+		type: 'ajax',
+		url : urlApp + 'contabilidad/cpla/cplabusca',
+		extraParams: {  'cuenta': mcuentaC, 'origen': 'store' },
+		reader: {type: 'json',	totalProperty: 'results',root: 'data'
+		}
+	},
+	method: 'POST'
+});
+
+var cplaStoreD = new Ext.data.Store({
+	fields: [ 'item', 'valor'],
+	autoLoad: false,autoSync: false,pageSize: 50,
+	pruneModifiedRecords: true,totalProperty: 'results',
+	proxy: {
+		type: 'ajax',
+		url : urlApp + 'contabilidad/cpla/cplabusca',
+		extraParams: {  'cuenta': mcuentaD, 'origen': 'store' },
+		reader: {type: 'json',	totalProperty: 'results',root: 'data'
+		}
+	},
+	method: 'POST'
+});
+
+		";
+
+		$features = "features: [ filters],";
+		$filtros = "var filters = { ftype: 'filters', encode: 'json', local: false }; ";
+
+		$data['listados']    = $listados;
+		$data['otros']       = $otros;
+		$data['encabeza']    = $encabeza;
+		$data['urlajax']     = $urlajax;
+		$data['variables']   = $variables;
+		$data['funciones']   = $funciones;
+		$data['valida']      = $valida;
+		$data['columnas']    = $columnas;
+		$data['campos']      = $campos;
+		$data['stores']      = $stores;
+		$data['camposforma'] = $camposforma;
+		$data['titulow']     = $titulow;
+		$data['dockedItems'] = $dockedItems;
+		$data['winwidget']   = $winwidget;
+		$data['features']    = $features;
+		$data['filtros']     = $filtros;
+		
+		$data['title']  = heading('Departamentos');
+		$this->load->view('extjs/extjsven',$data);
+	}
+
+
+       function linebusca() {
+	      $depto  = isset($_REQUEST['depto']) ? $_REQUEST['depto'] : '';
+	      $linea  = isset($_REQUEST['linea']) ? $_REQUEST['linea'] : '';
+	      $check  = 0;
+	      $mSQL = '';
+
+	      // busca si existe el depto
+	      $check = $this->datasis->dameval("SELECT COUNT(*) FROM dpto WHERE TRIM(depto)='$depto'");
+	      
+	      if ( $check == 1 ) {
+		     $mSQL = "SELECT linea item, CONCAT(linea, ' ', descrip) valor FROM line WHERE TRIM(depto)='$depto' ";
+		     if ($linea != '') {
+			    $check = $this->datasis->dameval("SELECT COUNT(*) FROM line WHERE depto='$depto' AND linea='$linea'");
+			    if ($check == 1) $mSQL .= " AND linea='$linea'";
+		     }
+		     $mSQL .= "ORDER BY linea ";
+	      }
+	      if ( empty($mSQL)) {
+		     echo '{success:true, message:"'.$mSQL.'" vacio, Loaded data", results: 0, data:'.json_encode(array()).'}';
+	      } else {
+		     $query = $this->db->query($mSQL);
+		     $arr = $this->datasis->codificautf8($query->result_array());
+		     echo '{success:true, message:"Exito", results:'. sizeof($arr).', data:'.json_encode($arr).'}';
+	      }
+	      
+       }
+
 }
-//Nelly Lee, Joan Glasgow, Tayler Glasgow (child 9yrs) Tate Glasgow (child 7)
 ?>

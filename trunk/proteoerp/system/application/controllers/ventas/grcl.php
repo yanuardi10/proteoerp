@@ -64,7 +64,7 @@ class Grcl extends validaciones {
 		$data['title']   = "<h1>Grupos de Clientes</h1>";
 		$data["head"]    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);	
-    }
+	}
 	function dataedit()
 	{ 
 		$this->rapyd->load("dataedit");
@@ -256,7 +256,7 @@ class Grcl extends validaciones {
 	function grclextjs(){
 		$encabeza='GRUPOS DE CLIENTES';
 		$listados= $this->datasis->listados('grcl');
-		$otros=$this->datasis->otros('grpr', 'grcl');
+		$otros=$this->datasis->otros('grcl', 'grcl');
 
 		$urlajax = 'ventas/grcl/';
 		$variables = "var mcuenta = ''";
@@ -345,7 +345,7 @@ function clase(val){
 						if (registro) {
 							mcuenta  = registro.data.cuenta;
 							cplaStore.proxy.extraParams.cuenta   = mcuenta ;
-							cplaStore.load({ params: { 'cliente': registro.data.cliente, 'origen': 'beforeform' } });
+							cplaStore.load({ params: { 'cuenta': registro.data.cuenta, 'origen': 'beforeform' } });
 							form.loadRecord(registro);
 						} else {
 							mcuenta  = '';

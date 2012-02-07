@@ -169,8 +169,7 @@ class Cpla extends Controller {
 		$semilla = trim($semilla);
 		
 		$long = $this->datasis->dameval('SELECT LENGTH(TRIM(formato)) FROM cemp LIMIT 1');
-		if($long===NULL)
-		$long=0;
+		if($long===NULL) $long=0;
 		$mSQL = '';
 	
 		$mSQL = "SELECT codigo item, CONCAT(codigo, ' ', descrip) valor FROM cpla WHERE LENGTH(TRIM(codigo))=$long ";
@@ -180,7 +179,7 @@ class Cpla extends Controller {
 			if ( strlen($cuenta)>0 ) $mSQL .= " AND ( codigo LIKE '$cuenta%' OR descrip LIKE '%$cuenta%' ) ";
 		}
 		$mSQL .= "ORDER BY descrip ";
-		$results = $this->db->count_all('scli');
+		$results = $this->db->count_all('cpla');
 
 		if ( empty($mSQL)) {
 			echo '{success:true, message:"mSQL vacio, Loaded data", results: 0, data:'.json_encode(array()).'}';
@@ -196,7 +195,7 @@ class Cpla extends Controller {
 				}
 				$arr[] = $meco;
 			}
-			echo '{success:true, message:"'.$mSQL.'", results:'. $results.', data:'.json_encode($arr).'}';
+			echo '{success:true, message:"mSQL", results:'. $results.', data:'.json_encode($arr).'}';
 		}
 	}
 

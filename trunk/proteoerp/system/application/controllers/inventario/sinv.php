@@ -103,7 +103,7 @@ class sinv extends Controller {
 		';
 
 		$filter = new DataFilter2('Filtro por Producto');
-		$filter->db->select("a.existen AS existen,a.marca marca,a.tipo AS tipo,id,codigo,a.descrip,precio1,precio2,precio3,precio4,b.nom_grup AS nom_grup,b.grupo AS grupoid,c.descrip AS nom_linea,c.linea AS linea,d.descrip AS nom_depto,d.depto AS depto, activo, mmargen ");
+		$filter->db->select("a.existen, a.marca, a.tipo, a.id, a.codigo, a.descrip, a.precio1, a.precio2, a.precio3, a.precio4, b.nom_grup, b.grupo grupoid, c.descrip nom_linea, c.linea linea, d.descrip nom_depto, d.depto, a.activo, a.mmargen ");
 		$filter->db->from('sinv AS a');
 		$filter->db->join('grup AS b','a.grupo=b.grupo','LEFT');
 		$filter->db->join('line AS c','b.linea=c.linea', 'LEFT');
