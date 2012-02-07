@@ -435,7 +435,7 @@ class ordp extends Controller {
 
 		$grid = new DataGrid('');
 		$action = 'javascript:window.location=\'' . site_url($this->url.'dataedit/show/'.$idordp).'\'';
-		$grid->button('btn_create', 'Regresar', $action, 'TR');
+		$grid->button('btn_back', 'Regresar', $action, 'TR');
 
 		$grid->order_by('id');
 		$grid->per_page = 40;

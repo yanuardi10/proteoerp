@@ -815,19 +815,20 @@ class DataDetails extends DataForm{
 
 			foreach($campos AS $campo){
 					$group['series'][]=array(
-								'is_hidden' => false,
-								'series_name' => $campo['name'],
-								'series_tr' => 'id="tr_'.$campo['name'].'"',
-								'series_td' => 'id="td_'.$campo['name'].'"',
-								'fields' => array(array(
-											'label'    => $campo['label'],
-											'field_td' => 'id="td_'.$campo['name'].'"',
-											'field'    =>$campo['field'],
-											'type'     =>$campo['type'],
-											'status'   => 'modify'
-											),
-										),
-								);
+						'is_hidden' => false,
+						'series_name' => $campo['name'],
+						'series_tr' => 'id="tr_'.$campo['name'].'"',
+						'series_td' => 'id="td_'.$campo['name'].'"',
+						'fields' => array(
+									array(
+									'label'    => $campo['label'],
+									'field_td' => 'id="td_'.$campo['name'].'"',
+									'field'    =>$campo['field'],
+									'type'     =>$campo['type'],
+									'status'   => 'modify'
+									),
+								),
+					);
 
 			}
 			$path=RAPYD_PATH.'views/'.$this->ci->rapyd->config->item('theme').'/dataform.php';
@@ -945,13 +946,13 @@ class DataDetails extends DataForm{
 		return $requestValue;
 	}
 
-        function get_from_dataobjetct_rel($rel_id,$field,$id=-1){
-                if($this->_dataobject->loaded){
-                        $requestValue =$this->_dataobject->get_rel($rel_id, $field,$id);
-                        if(empty($requestValue)) $requestValue=false;
-                }else
-                        $requestValue=false;
-                return $requestValue;
-        }
+	function get_from_dataobjetct_rel($rel_id,$field,$id=-1){
+		if($this->_dataobject->loaded){
+			$requestValue =$this->_dataobject->get_rel($rel_id, $field,$id);
+			if(empty($requestValue)) $requestValue=false;
+		}else
+			$requestValue=false;
+		return $requestValue;
+	}
 
 }

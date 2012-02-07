@@ -667,4 +667,35 @@ class Ajax extends Controller {
 		}
 		echo $data;
 	}
+
+	//Busca sinv solo articulos
+	function buscaaran(){
+		$comodin= $this->datasis->traevalor('COMODIN');
+		$mid    = $this->input->post('q');
+		if(strlen($comodin)==1 && $comodin!='%' && $mid!==false){
+			$mid=str_replace($comodin,'%',$mid);
+		}
+		$qdb  = $this->db->escape($mid.'%');
+		$qba  = $this->db->escape($mid);
+
+		$data = '{[ ]}';
+		if($mid !== false){
+			$retArray = $retorno = array();
+			$mSQL="SELECT a.codigo, a.descrip, a.tarifa
+			FROM aran AS a
+			WHERE descrip LIKE $qdb OR codigo LIKE $qdb";
+
+			$query = $this->db->query($mSQL);
+			if ($query->num_rows() > 0){
+				foreach( $query->result_array() as  $row ) {
+					$retArray['label']   = '('.$row['codigo'].') '.$row['descrip'].' '.$row['tarifa'];
+					$retArray['value']   = $row['codigo'];
+					$retArray['tarifa']  = $row['tarifa'];
+					array_push($retorno, $retArray);
+				}
+				$data = json_encode($retorno);
+	        }
+		}
+		echo $data;
+	}
 }

@@ -252,7 +252,6 @@ require_once(RAPYD_PATH.'common'.EXT);
 				$buffer .=style('ui.jqgrid.css');
 				$buffer .=style('ui.multiselect.css');
 				$buffer .=script('jquery.js');
-				$buffer .=script('interface.js');
 				$buffer .=script('jquery-ui.js');
 				$buffer .=script('jquery.layout.js');
 				$buffer .=script('i18n/grid.locale-sp.js');
