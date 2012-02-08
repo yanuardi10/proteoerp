@@ -125,14 +125,19 @@ class pfaclite extends validaciones{
 		$this->rapyd->uri->keep_persistence();
 		$persistence = $this->rapyd->session->get_persistence($url, $this->rapyd->uri->gfid);
 		$back= (isset($persistence['back_uri'])) ?$persistence['back_uri'] : $url;
+		$vd   = $this->secu->getvendedor();
 
 		$this->rapyd->load('datafilter','datagrid');
 
 		$filter = new DataFilter('Selecci&oacute;n de Clientes', 'scli');
 		$filter->button('btn_back',RAPYD_BUTTON_BACK,"javascript:window.location='".site_url($back)."'", 'BL');
+		$filter->db->where('vendedor',$vd);
+
 		$filter->nombre= new inputField('Nombre','nombre');
+
 		$filter->rifci= new inputField('CI/RIF','rifci');
 		$filter->rifci->size=15;
+
 		$filter->buttons('reset','search');
 		$filter->build();
 
@@ -148,8 +153,8 @@ class pfaclite extends validaciones{
 
 		$data['content'] = $filter->output.$grid->output;
 		$data['title']   = heading('Clientes');
-		$data["head"]    = $this->rapyd->get_head();
-		$data["extras"]  = '';
+		$data['head']    = $this->rapyd->get_head();
+		$data['extras']  = '';
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -172,9 +177,9 @@ class pfaclite extends validaciones{
 		$edit->back_url = site_url('ventas/pfaclite/filteredgrid');
 		$edit->set_rel_title('itpfac', 'Producto <#o#>');
 
-		$edit->pre_process( 'insert', '_pre_insert');
-		$edit->pre_process( 'update', '_pre_insert');
-		$edit->pre_process( 'delete', '_pre_delete');
+		$edit->pre_process( 'insert', '_pre_insert' );
+		$edit->pre_process( 'update', '_pre_insert' );
+		$edit->pre_process( 'delete', '_pre_delete' );
 		$edit->post_process('insert', '_post_insert');
 		$edit->post_process('update', '_post_update');
 		$edit->post_process('delete', '_post_delete');
@@ -185,7 +190,6 @@ class pfaclite extends validaciones{
 
 		$edit->fecha = new inputField('Fecha', 'fecha');
 		$edit->fecha->insertValue = date('Y-m-d');
-		//$edit->fecha->rule = 'required';
 		$edit->fecha->mode = 'autohide';
 		$edit->fecha->size = 10;
 
@@ -198,10 +202,13 @@ class pfaclite extends validaciones{
 		$edit->numero->apply_rules = false; //necesario cuando el campo es clave y no se pide al usuario
 		$edit->numero->when = array('show', 'modify');
 
-		$dbcliente=$this->db->escape($cliente);
-		$edit->cliente = new dropdownField('CLIENTE', 'cod_cli');
-		$edit->cliente->options("SELECT cliente, CONCAT(' (',cliente,') ', nombre) AS label FROM scli WHERE vendedor=$dbvd  AND cliente=$dbcliente ORDER  BY nombre");
+		$edit->cliente = new hiddenField('Cliente', 'cod_cli');
+		$edit->cliente->insertValue=$cliente;
 		$edit->cliente->rule='required';
+
+		$dbcliente=$this->db->escape($cliente);
+		$nombre=$this->datasis->dameval("SELECT nombre FROM scli WHERE cliente=$dbcliente");
+		$edit->nombre = new freeField('Nombre','nombre',$nombre);
 
 		$edit->observa = new inputField('Observaciones', 'observa');
 		$edit->observa->size = 25;
@@ -222,13 +229,6 @@ class pfaclite extends validaciones{
 		$edit->pdesca->rel_id = 'itpfac';
 		$edit->pdesca->type='inputhidden';
 		$edit->pdesca->pointer=true;
-
-		$edit->ppeso = new inputField('Peso <#o#>', 'ppeso_<#i#>');
-		$edit->ppeso->size    = 10;
-		$edit->ppeso->db_name = 'ppeso';
-		$edit->ppeso->rel_id  = 'itpfac';
-		$edit->ppeso->pointer =true;
-		$edit->ppeso->type    ='inputhidden';
 
 		$edit->pexisten = new inputField('Existencia <#o#>', 'pexisten_<#i#>');
 		$edit->pexisten->size    = 10;
@@ -258,6 +258,11 @@ class pfaclite extends validaciones{
 		$edit->precat->db_name = 'precat';
 		$edit->precat->rel_id  = 'itpfac';
 		$edit->precat->pointer = true;
+
+		$edit->iva = new hiddenField('', 'iva_<#i#>');
+		$edit->iva->db_name = 'iva';
+		$edit->iva->rel_id  = 'itpfac';
+		$edit->iva->pointer = true;
 
 		$edit->pmarca = new inputField('', 'pmarca_<#i#>');
 		$edit->pmarca->db_name = 'pmarca';
@@ -295,31 +300,42 @@ class pfaclite extends validaciones{
 		//$edit->button_status('btn_load','Subir desde Excel',$accion,'TL','modify');
 
 		$alma   = $this->secu->getalmacen();
-		$dbalma = $this->db->escape($alma);
 		$tiposcli=$this->datasis->dameval("SELECT tipo FROM scli WHERE cliente=$dbcliente");
 		if($tiposcli<1) $tiposcli=1; elseif($tiposcli>4) $tiposcli=4;
+
+		$sel=array('TRIM(a.codigo) AS codigo','descrip'
+		,'precio1','precio2','precio3','precio4'
+		,'marca','SUM(b.existen) existen','iva','peso');
+		$this->db->select($sel);
+		$this->db->from('sinv AS a');
+		$this->db->join('itsinv AS b','a.codigo=b.codigo');
+		$this->db->where('activo','S');
+		$this->db->where('tipo','Articulo');
+		$this->db->group_by('a.codigo');
+		$this->db->order_by('a.marca , a.descrip , a.peso');
+		$this->db->limit(100);
+
 		if($status=='create'){
-			$sinv=$this->db->query("SELECT a.codigo,descrip,precio1,precio2,precio3,precio4,marca,SUM(b.existen) existen,iva ,peso
-			FROM sinv a
-			JOIN itsinv b ON a.codigo=b.codigo
-			WHERE activo='S' AND tipo='Articulo' AND b.alma=$dbalma AND b.existen>0
-			GROUP BY a.codigo
-			ORDER BY marca,descrip,peso");
-		}else{
-			$sinv=$this->db->query("SELECT a.codigo,descrip,precio1,precio2,precio3,precio4,marca,SUM(b.existen) existen,iva ,peso
-			FROM sinv a
-			JOIN itsinv b ON a.codigo=b.codigo
-			WHERE activo='S' AND tipo='Articulo' ".(strlen($alma)>0? 'AND b.alma='.$dbalma :'')."
-			GROUP BY a.codigo
-			ORDER BY marca,descrip,peso");
+			$this->db->where('b.existen >','0');
+			$this->db->where('b.alma'     ,$alma);
 		}
+		$sinv=$this->db->get();
 
 		$sinv=$sinv->result_array();
-		$sinv2=array();
-		$sinviva=array();
+		$sinv_arr=array();
 		foreach($sinv as $k=>$v){
-			$sinv2[$v['codigo']]=$v;
-			$sinviva['_'.$v['codigo']]=array('codigo'=>$v['codigo'],'iva'=>$v['iva']);
+			$sinv_arr[$v['codigo']]=array(
+				 'descrip'=>$v['descrip']
+				,'precio1'=>$v['precio1']*100/(100+$v['iva'])
+				,'precio2'=>$v['precio2']*100/(100+$v['iva'])
+				,'precio3'=>$v['precio3']*100/(100+$v['iva'])
+				,'precio4'=>$v['precio4']*100/(100+$v['iva'])
+				,'marca'  =>$v['marca']
+				,'existen'=>$v['existen']
+				,'iva'    =>$v['iva']
+				,'peso'   =>$v['peso']
+				,'codigo' =>$v['codigo']
+			);
 		}
 
 		if($this->genesal){
@@ -327,11 +343,7 @@ class pfaclite extends validaciones{
 
 			$conten['tiposcli']= $tiposcli;
 			$conten['form']    = & $edit;
-			$conten['hoy']     = $hoy;
-			$conten['fenvia']  = $fenvia;
-			$conten['faplica'] = $faplica;
-			$conten['sinv']    = $sinv2;
-			$conten['sinviva'] = json_encode($sinviva);
+			$conten['sinv']    = $sinv_arr;
 			$data['content']   = $this->load->view('view_pfaclite', $conten,true);
 			$data['title']     = heading('Pedidos No. '.$edit->numero->value);
 			$this->load->view('view_ventanas_lite', $data);
@@ -370,28 +382,26 @@ class pfaclite extends validaciones{
 
 		$vd=$this->secu->getvendedor();
 		$do->set('vd',$vd);
-		$sinv=$this->db->query("SELECT codigo,iva,precio1 FROM sinv ORDER BY marca");
-		$sinv=$sinv->result_array();
-		$sinv2=array();
-		foreach($sinv as $k=>$v){
-			$sinv2[$v['codigo']]=$v;
-		}
 
 		$iva = $totals = 0;
 		$borrar=array();
 		for($i = 0;$i < $do->count_rel('itpfac');$i++){
 			$itcana  = $do->get_rel('itpfac', 'cana', $i);
 			if($itcana>0){
-				$itpreca = $do->get_rel('itpfac', 'preca', $i);
-				$itiva   = $sinv2[$do->get_rel('itpfac', 'codigoa', $i)]['iva'];
-				$ittota  = $itpreca * $itcana;
-				$do->set_rel('itpfac', 'tota' , $ittota, $i);
-				$do->set_rel('itpfac', 'fecha' , $fecha , $i);
-				$do->set_rel('itpfac', 'vendedor', $vd , $i);
+				$itpreca = $do->get_rel('itpfac','preca'  ,$i);
+				$itcodigo= $do->get_rel('itpfac','codigoa',$i);
+				$itiva   = $do->get_rel('itpfac','iva'    ,$i)/100;
 
-				$iva    += $ittota * ($itiva / 100);
+				$ittota  = $itpreca*$itcana;
+				$mostrado= $ittota*(1+$itiva);
+
+				$do->set_rel('itpfac', 'tota'    , $ittota  , $i);
+				$do->set_rel('itpfac', 'fecha'   , $fecha   , $i);
+				$do->set_rel('itpfac', 'vendedor', $vd      , $i);
+				$do->set_rel('itpfac', 'mostrado', $mostrado, $i);
+
+				$iva    += $ittota*$itiva;
 				$totals += $ittota;
-				$do->set_rel('itpfac', 'mostrado', $iva + $ittota, $i);
 			}else{
 				$borrar[$i]=$i;
 			}
@@ -419,6 +429,7 @@ class pfaclite extends validaciones{
 			if($ban==false){ memowrite($mSQL,'pfac'); }
 		}
 		$codigo = $do->get('numero');
+
 		logusu('pfac', "Pedido $codigo CREADO");
 	}
 

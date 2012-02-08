@@ -898,7 +898,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 			$do->set('maxtole','0');
 			$do->set('limite' ,'0');
 			$do->set('formap' ,'0');
-			$do->set('credito','N');
+			//$do->set('credito','N');
 		}
 		$do->rm_get('motivo');
 		$dbcliente = $this->db->escape($cliente);

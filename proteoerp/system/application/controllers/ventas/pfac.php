@@ -16,10 +16,9 @@ class pfac extends validaciones{
 
 		if(!$this->db->field_exists('faplica','pfac'))
 		$this->db->query("ALTER TABLE `pfac`  ADD COLUMN `faplica` DATE NULL DEFAULT '0000-00-00' COMMENT 'fecha en que se aplicaron los descuentos'");
-		
-				if(!$this->db->field_exists('faplica','pfac'))
+
+		if(!$this->db->field_exists('faplica','pfac'))
 		$this->db->query("ALTER TABLE `pfac`  ADD COLUMN `reserva` CHAR(1) NOT NULL DEFAULT 'N'");
-		
 
 		if ( !$this->datasis->iscampo('pfac','id') ) {
 			$this->db->simple_query('ALTER TABLE pfac DROP PRIMARY KEY');
@@ -704,8 +703,8 @@ class pfac extends validaciones{
 			$itpreca = $do->get_rel('itpfac', 'preca', $i);
 			$itiva   = $do->get_rel('itpfac', 'iva', $i);
 			$ittota  = $itpreca * $itcana;
-			$do->set_rel('itpfac', 'tota' , $ittota, $i);
-			$do->set_rel('itpfac', 'fecha' , $fecha , $i);
+			$do->set_rel('itpfac', 'tota'    , $ittota, $i);
+			$do->set_rel('itpfac', 'fecha'   , $fecha , $i);
 			$do->set_rel('itpfac', 'vendedor', $vd , $i);
 
 			$iva    += $ittota * ($itiva / 100);
