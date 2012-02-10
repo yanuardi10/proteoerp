@@ -9,7 +9,7 @@ class repomenu extends validaciones {
 	}
 
 	function index(){
-		redirect("supervisor/repomenu/filteredgrid");
+		redirect('supervisor/repomenu/filteredgrid');
 	}
 
 	function filteredgrid(){

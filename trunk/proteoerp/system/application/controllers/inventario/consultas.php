@@ -177,6 +177,37 @@ class Consultas extends Controller {
 		return false;
 	}
 
+	//Trae el descuento
+	function _desc_precio($codigo,$aplica='sinv'){
+		$dbcodigo =$this->db->escape($codigo);
+		if($aplica=='sinv'){
+			$this->db->select(array('a.descufijo','b.margen'));
+			$this->db->from('sinv AS a');
+			$this->db->join('grup AS b','a.grupo=b.grupo','left');
+			$this->db->where('codigo',$codigo);
+
+			$query = $this->db->get();
+			if ($query->num_rows() > 0){
+				$row = $query->row();
+				if(empty($row->descufijo) || $row->descufijo==0.0){
+					$descufijo  = $this->datasis->dameval('SELECT margen FROM sinvpromo WHERE codigo='.$dbcodigo);
+					$descurazon = 'Descuento promocional';
+
+					if(empty($descufijo)){
+						$descufijo  = $row->margen;
+						$descurazon = 'Descuento por grupo';
+					}
+				}else{
+					$descufijo  = $row->descufijo;
+					$descurazon = 'Descuento por producto';
+				}
+			}
+		}else{
+			$descufijo  = 0;
+			$descurazon = '';
+		}
+		return $descufijo;
+	}
 
 	//***********************************
 	// Consulta de precios para el kiosk
