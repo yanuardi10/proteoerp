@@ -13,7 +13,7 @@ class Forma extends Controller{
 
 	function Forma(){
 		parent::Controller();
-		$this->load->library("rapyd");
+		$this->load->library('rapyd');
 		//$this->load->library("numletra");
 	}
 
