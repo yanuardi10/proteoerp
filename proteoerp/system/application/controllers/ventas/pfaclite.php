@@ -160,6 +160,8 @@ class pfaclite extends validaciones{
 
 	function dataedit($cliente='',$status='',$id=''){
 
+		if(!$this->_exitescli($cliente)) redirect($this->url.'filterscli');
+
 		$this->rapyd->load('dataobject', 'datadetails');
 		$this->load->helper('form');
 
@@ -358,6 +360,18 @@ class pfaclite extends validaciones{
 			}elseif($edit->on_show()){
 				print_r($edit->dataobject->get_all());
 			}
+		}
+	}
+
+	function _exitescli($cliente){
+		$dbscli= $this->db->escape($cliente);
+		$mSQL  = "SELECT COUNT(*) AS cana FROM scli WHERE cliente=$dbscli";
+		$query = $this->db->query($mSQL);
+		if ($query->num_rows() > 0){
+			$row = $query->row();
+			if( $row->cana>0) return true; else return false;
+		}else{
+			return false;
 		}
 	}
 
