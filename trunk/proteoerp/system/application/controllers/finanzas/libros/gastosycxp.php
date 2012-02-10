@@ -138,6 +138,7 @@ class gastosycxp{
 		FROM sprm AS a
 		LEFT JOIN sprv AS b ON a.cod_prv=b.proveed
 		JOIN itppro  AS c ON a.numero=c.numppro AND a.tipo_doc=c.tipoppro AND c.cod_prv=a.cod_prv
+		JOIN scst AS d ON c.tipo_doc=d.tipo_doc AND c.numero=d.numero
 		WHERE a.fecha BETWEEN $fdesde AND $fhasta AND b.tipo<>'5'
 		AND a.tipo_doc='NC' AND a.codigo NOT IN ('NOCON','')
 		GROUP BY cod_prv,tipo_doc,numero";
