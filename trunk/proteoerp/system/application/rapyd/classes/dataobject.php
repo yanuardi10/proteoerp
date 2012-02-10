@@ -827,16 +827,23 @@ class DataObject{
 				foreach($this->data_rel AS $rel=>$items){
 					//hace las equivalencias de las claves primarias
 					foreach($this->_rel_fields[$rel] AS $iind){ // $iind[0] encab $iind[1] detalle
-						 $indiceit=$iind[1];
-						 $indice =$iind[0];
-						 $pk_rel[$indiceit]=$this->pk[$indice];
+						$indiceit=$iind[1];
+						$indice =$iind[0];
+						if(isset($this->pk[$indice])){
+							$pk_rel[$indiceit]=$this->pk[$indice];
+						}else{
+							$pk_rel[$indiceit]=$this->get($indice);
+						}
+						if(empty($pk_rel[$indiceit])){
+							return false;
+						}
 					}
 					$this->db->where($pk_rel);
-					 if($this->_rel_type[$rel][0]==0){   //uno a uno
-					 	 $itresult = $this->db->delete($this->_one_to_one[$rel]['table']);
-					 }elseif($this->_rel_type[$rel][0]==1){//uno a muchos
-					 	 $itresult = $this->db->delete($this->_one_to_many[$rel]['table']);
-					 }
+					if($this->_rel_type[$rel][0]==0){   //uno a uno
+						 $itresult = $this->db->delete($this->_one_to_one[$rel]['table']);
+					}elseif($this->_rel_type[$rel][0]==1){//uno a muchos
+						 $itresult = $this->db->delete($this->_one_to_many[$rel]['table']);
+					}
 				}
 				//fin detalle
 
