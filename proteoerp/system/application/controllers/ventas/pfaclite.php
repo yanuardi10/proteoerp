@@ -76,10 +76,13 @@ class pfaclite extends validaciones{
 		$filter->cliente->append($boton);
 		$filter->cliente->group = "dos";
 
+		$accion="javascript:window.location='".site_url('ventas/pfaclite/load')."'";
+		$filter->button('btn_load','Subir desde Excel',$accion,'TR');
+
 		$filter->buttons('reset', 'search');
 		$filter->build('dataformfiltro');
 
-		$uri = anchor('ventas/pfaclite/dataedit/show/<#id#>', '<#numero#>');
+		$uri = anchor('ventas/pfaclite/dataedit/<raencode><#cod_cli#></raencode>/show/<#id#>', '<#numero#>');
 		$uri2 = anchor_popup('formatos/verhtml/PFAC/<#numero#>', 'Ver HTML', $atts);
 		$uri3 = anchor_popup('ventas/sfac/creadpfacf/<#numero#>', 'Facturar', $atts2);
 
@@ -295,8 +298,6 @@ class pfaclite extends validaciones{
 			$edit->buttons('save', 'undo', 'back', 'add_rel');
 		}
 
-		$accion="javascript:window.location='".site_url('ventas/pfaclite/load')."'";
-		$edit->button('btn_load','Subir desde Excel',$accion,'TL');
 		//$edit->button_status('btn_load','Subir desde Excel',$accion,'TL','show');
 		//$edit->button_status('btn_load','Subir desde Excel',$accion,'TL','create');
 		//$edit->button_status('btn_load','Subir desde Excel',$accion,'TL','modify');
@@ -466,6 +467,7 @@ class pfaclite extends validaciones{
 		$mSQL='UPDATE sinv JOIN itpfac ON sinv.codigo=itpfac.codigoa SET sinv.exdes=sinv.exdes-itpfac.cana WHERE itpfac.numa='.$this->db->escape($codigo);
 		$ban=$this->db->simple_query($mSQL);
 		if($ban==false){ memowrite($mSQL,'pfac'); }
+
 		return true;
 	}
 
