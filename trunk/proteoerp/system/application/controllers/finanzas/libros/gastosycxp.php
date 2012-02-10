@@ -187,6 +187,59 @@ class gastosycxp{
 				if(!$flag) memowrite($mSQL,'genecxp');
 			}
 		}
+
+		$mSQL="SELECT a.cod_prv, a.tipo_doc, a.numero,a.nfiscal,a.transac,a.montasa,a.tasa,a.monredu,a.reducida,a.monadic, a.sobretasa, a.exento, a.impuesto, a.monto, a.reteiva, a.fecha, a.fecapl, b.rif, b.nomfis ,GROUP_CONCAT(TRIM(c.numero)) AS afecta
+		FROM sprm AS a
+		LEFT JOIN sprv AS b ON a.cod_prv=b.proveed
+		JOIN itppro AS c
+		ON a.transac=c.transac
+		WHERE a.fecha BETWEEN $fdesde AND $fhasta AND b.tipo<>'5' AND a.tipo_doc='NC' AND a.codigo='DESPP' AND c.ppago>0
+		GROUP BY cod_prv,tipo_doc,numero";
+		$query = $this->db->query($mSQL);
+
+		if ( $query->num_rows() > 0 ){
+			foreach( $query->result() as $row ) {
+				if($row->impuesto == 0 && empty($row->codigo) ) continue;
+				$stotal = $row->monto-$row->impuesto;
+				$fecha  = ($row->fecapl==null) ? $row->fecha : $row->fecapl;
+				$fecha  = preg_replace('/[^0-9]+/', '',$fecha);
+
+				$data=array();
+				$data['libro']    = 'C';
+				$data['tipo']     = $row->tipo_doc;
+				$data['fuente']   = 'MP';
+				$data['sucursal'] = '00';
+				$data['fecha']    = $fecha;
+				$data['numero']   = $row->numero;
+				$data['clipro']   = $row->cod_prv;
+				$data['nombre']   = $row->nomfis;
+				$data['contribu'] = 'CO';
+				$data['rif']      = $row->rif;
+				$data['registro'] = ($fecha<$mFECHAF)? '04':'01';
+				$data['nacional'] =  'S';
+				$data['nfiscal']  = $row->nfiscal;
+				$data['general']  = $row->montasa;
+				$data['geneimpu'] = $row->tasa;
+				$data['reducida'] = $row->monredu;
+				$data['reduimpu'] = $row->reducida;
+				$data['adicional']= $row->monadic;
+				$data['adicimpu'] = $row->sobretasa;
+				$data['exento']   = $row->exento;
+				$data['impuesto'] = $row->impuesto;
+				$data['gtotal']   = $row->monto;
+				$data['stotal']   = $stotal;
+				$data['fechal']   = $mes.'01';
+				$data['referen']  = '';
+				$data['reiva']    = $row->reteiva;
+				$data['afecta']   = $row->afecta;
+				$data['fafecta']  = '';
+
+				$mSQL = $this->db->insert_string('siva', $data);
+				$flag=$this->db->simple_query($mSQL);
+				if(!$flag) memowrite($mSQL,'genecxp');
+			}
+		}
+
 		// Procesando Compras scst
 		$mSQL = "UPDATE siva SET gtotal=exento+general+geneimpu+adicional+reduimpu+reducida+adicimpu
 				WHERE fuente='MP' AND libro='C' ";
