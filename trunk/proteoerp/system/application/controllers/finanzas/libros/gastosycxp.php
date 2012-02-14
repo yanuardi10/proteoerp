@@ -189,13 +189,23 @@ class gastosycxp{
 			}
 		}
 
-		$mSQL="SELECT a.cod_prv, a.tipo_doc, a.numero,a.nfiscal,a.transac,a.montasa,a.tasa,a.monredu,a.reducida,a.monadic, a.sobretasa, a.exento, a.impuesto, a.monto, a.reteiva, a.fecha, a.fecapl, b.rif, b.nomfis ,GROUP_CONCAT(TRIM(c.numero)) AS afecta
-		FROM sprm AS a
-		LEFT JOIN sprv AS b ON a.cod_prv=b.proveed
-		JOIN itppro AS c
-		ON a.transac=c.transac
-		WHERE a.fecha BETWEEN $fdesde AND $fhasta AND b.tipo<>'5' AND a.tipo_doc='NC' AND a.codigo='DESPP' AND c.ppago>0
-		GROUP BY cod_prv,tipo_doc,numero";
+		//Carga los descuentos por pronto pago
+		$mSQL="SELECT a.cod_prv, a.tipo_doc, a.numero,a.nfiscal,a.transac,
+			ROUND(IF(d.cstotal  >0, d.cgenera*(c.ppago/c.monto),0),2) AS montasa,
+			ROUND(IF(d.montoiva >0, d.civagen*(c.ppago/c.monto),0),2) AS tasa,
+			ROUND(IF(d.cstotal  >0, d.creduci*(c.ppago/c.monto),0),2) AS monredu,
+			ROUND(IF(d.montoiva >0, d.civared*(c.ppago/c.monto),0),2) AS reducida,
+			ROUND(IF(d.cstotal  >0, d.cadicio*(c.ppago/c.monto),0),2) AS monadic,
+			ROUND(IF(d.montoiva >0, d.civaadi*(c.ppago/c.monto),0),2) AS sobretasa,
+			ROUND(IF(d.cstotal  >0, d.cexento*(c.ppago/c.monto),0),2) AS exento,
+			ROUND(IF(d.cimpuesto>0, d.cimpuesto*(c.ppago/c.monto),0),2) AS impuesto,
+			c.ppago,
+			c.reteiva, a.fecha, a.fecapl, b.rif, b.nomfis ,TRIM(c.numero) AS afecta
+			FROM sprm AS a
+			LEFT JOIN sprv AS b ON a.cod_prv=b.proveed
+			JOIN itppro AS c ON a.transac=c.transac
+			JOIN scst AS d ON c.tipo_doc=d.tipo_doc AND c.numero=d.numero
+			WHERE a.fecha BETWEEN $fdesde AND $fhasta AND b.tipo<>'5' AND a.tipo_doc='NC' AND a.codigo='DESPP' AND c.ppago>0";
 		$query = $this->db->query($mSQL);
 
 		if ( $query->num_rows() > 0 ){
