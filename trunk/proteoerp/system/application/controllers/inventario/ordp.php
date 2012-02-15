@@ -440,7 +440,7 @@ class ordp extends Controller {
 		$grid->order_by('id');
 		$grid->per_page = 40;
 
-		$link1=anchor('/formatos/ver/ORDPBITA/<#id#>','Comprobante');
+		$link1=anchor_popup('/formatos/ver/ORDPBITA/<#id#>','Comprobante',array());
 		$grid->column_orderby('Fecha','<dbdate_to_human><#fechahora#>|d/m/Y H:i</dbdate_to_human>','fechahora','align="center"');
 		$grid->column_orderby('Acci&oacute;n'     ,'<dicstatus><#status#></dicstatus>','status','align="center"');
 		$grid->column_orderby('Observaci&oacute;n','observacion','observacion','align="left"');
