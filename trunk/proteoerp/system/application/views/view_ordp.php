@@ -530,7 +530,7 @@ echo isset($form->_button_container['BL'][1])? $form->_button_container['BL'][1]
 				<?php if(strpos($rt['muestra'],'T')!==false){ ?><td><a href="<?php echo site_url($this->url.'ordpbita/'.$id_rel.'/'.$id.'/T/create'); ?>"><span title='Terminar actividad' class="ui-icon ui-icon-check"  /></a></td><?php } ?>
 				<?php if(strpos($rt['muestra'],'H')!==false){ ?><td><a href="<?php echo site_url($this->url.'ordpbitafilter/'.$id_rel.'/'.$id); ?>"><span title='Ver bitacora' class="ui-icon ui-icon-extlink"/></a></td><?php } ?>
 				<?php if( isset($rt['ultimo'])){
-					echo '<td>'.anchor('/formatos/ver/ORDPBITA/'.$rt['id'],dbdate_to_human($rt['ultimo'])).'</td>';
+					echo '<td>'.anchor_popup('/formatos/ver/ORDPBITA/'.$rt['id'],dbdate_to_human($rt['ultimo']),array()).'</td>';
 				} ?>
 			</tr></table>
 		</td>
