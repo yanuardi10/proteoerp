@@ -488,8 +488,9 @@ class stra extends Controller {
 				$ordpindi_row =$mSQL_4->result();
 				$costo=$itcosto;
 				foreach ($ordpindi_row as $itrow){
-					$costo += ($itrow->tipo=='M')? $itrow->porcentaje :$itrow->porcentaje*$itcosto/100;
+					$costo += ($itrow->tipo=='M')? $itrow->porcentaje/$cana :$itrow->porcentaje*$itcosto/100;
 				}
+				$costo=round($costo,2);
 
 				$data = array('ultimo' => $costo,'formcal'=>'U');
 				$this->db->where('codigo', $codigo);
