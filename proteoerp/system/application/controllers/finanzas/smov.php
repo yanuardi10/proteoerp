@@ -799,4 +799,5 @@ function renderSprv(value, p, record) {
 		mreto = '<a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'finanzas/smov/sprvbu/{1}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">{0}</a>';
 	}
 	return Ext.String.format(mreto,	value, record.data.control );
+}";
 }

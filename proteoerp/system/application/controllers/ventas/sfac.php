@@ -1304,7 +1304,6 @@ function sfacreiva(mid){
 
 		if ( $sort == '') $this->db->order_by( 'id', 'desc' );
 
-
 		$sort = json_decode($sort, true);
 		for ($i=0;$i<count($sort);$i++) {
 			$this->db->order_by($sort[$i]['property'],$sort[$i]['direction']);
