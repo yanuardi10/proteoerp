@@ -156,6 +156,9 @@ class sfacdesp extends Controller {
 		$filter->db->where('a.fdespacha IS NULL');
 		$filter->db->where('a.tipo_doc','F');
 		$filter->db->where('c.factura IS NULL');
+		$filter->db->where('MID(a.numero,1,1) <> "_"');
+		$filter->db->where('a.referen <> "P"');
+
 		$filter->db->orderby("a.fecha DESC, a.numero");
 		$filter->db->_escape_char='';
 		$filter->db->_protect_identifiers=false;
