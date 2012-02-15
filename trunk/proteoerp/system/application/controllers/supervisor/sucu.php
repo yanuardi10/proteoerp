@@ -4,10 +4,10 @@ class sucu extends Controller{
 	function sucu(){
 		parent::Controller();
 		$this->load->library('rapyd');
-		$this->datasis->modulo_id('90D',1);
 	}
 
 	function index(){
+		$this->datasis->modulo_id('90D',1);
 		redirect('supervisor/sucu/filteredgrid');
 	}
 
@@ -101,11 +101,11 @@ class sucu extends Controller{
 		
 		$mSQL = '';
 	
-		$mSQL = "SELECT codigo item, sucursal valor FROM sucu ";
+		$mSQL = "SELECT codigo item, CONCAT(codigo, ' ', sucursal) valor FROM sucu WHERE codigo IS NOT NULL ";
 		if ( strlen($semilla)>0 ){
-			$mSQL .= " AND ( codigo LIKE '$semilla%' OR sucu LIKE '%$semilla%' ) ";
+			$mSQL .= " AND ( codigo LIKE '$semilla%' OR sucursal LIKE '%$semilla%' ) ";
 		} else {
-			if ( strlen($sucursal)>0 ) $mSQL .= " AND ( codigo LIKE '$sucursal%' OR descrip LIKE '%$suursal%' ) ";
+			if ( strlen($sucursal)>0 ) $mSQL .= " AND ( codigo LIKE '$sucursal%' OR sucursal LIKE '%$sucursal%' ) ";
 		}
 		$mSQL .= "ORDER BY sucursal ";
 		$results = $this->db->count_all('sucu');
@@ -115,6 +115,7 @@ class sucu extends Controller{
 		} else {
 			$mSQL .= " limit $start, $limit ";
 			$query = $this->db->query($mSQL);
+			/*
 			$arr = array();
 			foreach ($query->result_array() as $row)
 			{
@@ -123,7 +124,8 @@ class sucu extends Controller{
 					$meco[$idd] = utf8_encode($campo);
 				}
 				$arr[] = $meco;
-			}
+			}*/
+			$arr = $this->datasis->codificautf8($query->result_array());
 			echo '{success:true, message:"'.$mSQL.'", results:'. $results.', data:'.json_encode($arr).'}';
 		}
 	}

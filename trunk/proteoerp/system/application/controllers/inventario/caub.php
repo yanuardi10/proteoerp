@@ -19,6 +19,12 @@ class Caub extends validaciones {
  
 	function index(){
 		$this->datasis->modulo_id(307,1);
+		if ( !$this->datasis->iscampo('caub','id') ) {
+			$this->db->simple_query('ALTER TABLE caub DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE caub ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ');
+			$this->db->simple_query('ALTER TABLE caub ADD UNIQUE INDEX ubica (ubica)');
+		}
+
 		$c=$this->datasis->dameval("SELECT COUNT(*) FROM caub WHERE ubica='AJUS'");
 		if(!($c>0))
 		$this->db->simple_query("INSERT IGNORE INTO caub (ubica,ubides,gasto,invfis) VALUES ('AJUS','AJUSTES','S','N')");
@@ -241,10 +247,6 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 
 
 
-
-
-
-
 	function dataedit($status='',$id='')
  	{
 		$this->rapyd->load("dataobject","dataedit");
@@ -425,7 +427,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$where = $this->datasis->extjsfiltro($filters);
 		
 		$this->db->_protect_identifiers=false;
-		$this->db->select(array("id","ubica","ubides","IF(invfis='S','SI',IF(invfis='N','NO',invfis)) invfis","IF(gasto='S','SI',IF(gasto='N','NO',gasto)) gasto","sucursal","cu_cost","cu_caja"));
+		$this->db->select(array("id","ubica","ubides","IF(invfis='S','SI',IF(invfis='N','NO',invfis)) invfis","IF(gasto='S','SI',IF(gasto='N','NO',gasto)) gasto","sucursal","cu_cost","cu_caja","url","odbc"));
 		$this->db->from($this->tabla);
 		if (strlen($where)>1) $this->db->where($where, NULL, FALSE); 
 		
@@ -472,14 +474,15 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$data= json_decode($js,true);
 		$campos = $data['data'];
 
-		$codigo = $campos['ubica'];
+		$ubica = $campos['ubica'];
+		$id    = $campos['id'];
 		unset($campos['ubica']);
 		unset($campos['id']);
 
-		$mSQL = $this->db->update_string("caub", $campos,"id=".$data['data']['id'] );
+		$mSQL = $this->db->update_string("caub", $campos,"id=".$id );
 		$this->db->simple_query($mSQL);
-		logusu('caub',"ALMACEN $codigo ID ".$data['data']['id']." MODIFICADO");
-		echo "{ success: true, message: 'Almacen Modificado -> ".$data['data']['ubica']."'}";
+		logusu('caub',"ALMACEN $ubica ID ".$id." MODIFICADO");
+		echo "{ success: true, message: 'Almacen Modificado -> ".$ubica."'}";
 	}
 
 	function eliminar(){
@@ -502,13 +505,13 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 	 function caubextjs(){
 		$encabeza='ALMACENES';
 		$listados= $this->datasis->listados('caub');
-		//$otros=$this->datasis->otros('rete', 'finanzas/rete');
 		$otros='';
 
 		$titulow='ALMACENES';
 		$urlajax = 'inventario/caub/';
 		$variables = "
 		var mcuenta='';
+		var mcucaja='';
 		var msucursal='';
 		";
 
@@ -522,16 +525,18 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		";
 		
 		$columnas = "
-		{ header: 'C&oacute;digo'  ,width:  50, sortable: true, dataIndex: 'ubica'   ,field: { type: 'textfield' }, filter: { type: 'string' }}, 
-		{ header: 'Nombre'         ,width: 200, sortable: true, dataIndex: 'ubides'  ,field: { type: 'textfield' }, filter: { type: 'string' }}, 
-		{ header: 'Gasto'          ,width:  80, sortable: true, dataIndex: 'gasto'   ,field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Inv. Fisico'    ,width:  80, sortable: true, dataIndex: 'invfis'  ,field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Sucursal'       ,width: 100, sortable: true, dataIndex: 'sucursal',field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Cuenta Almacen' ,width:  90, sortable: true, dataIndex: 'cu_cost',field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Cuenta Caja'    ,width:  90, sortable: true, dataIndex: 'cu_caja' ,field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'C&oacute;digo',  width:  50, sortable: true, dataIndex: 'ubica',   field: { type: 'textfield' }, filter: { type: 'string' }}, 
+		{ header: 'Nombre',         width: 200, sortable: true, dataIndex: 'ubides',  field: { type: 'textfield' }, filter: { type: 'string' }}, 
+		{ header: 'Gasto',          width:  80, sortable: true, dataIndex: 'gasto',   field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Inv. Fisico',    width:  80, sortable: true, dataIndex: 'invfis',  field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Sucursal',       width: 100, sortable: true, dataIndex: 'sucursal',field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'URL',            width: 120, sortable: true, dataIndex: 'url',     field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'ODBC',           width:  90, sortable: true, dataIndex: 'odbc',    field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Cuenta Almacen', width:  90, sortable: true, dataIndex: 'cu_cost', field: { type: 'textfield' }, filter: { type: 'string' }},
+		{ header: 'Cuenta Caja',    width:  90, sortable: true, dataIndex: 'cu_caja', field: { type: 'textfield' }, filter: { type: 'string' }},
 		";
 
-		$campos = "'id', 'ubica','ubides','gasto','invfis','sucursal','sucursal','cu_cost', 'cu_caja'";
+		$campos = "'id', 'ubica', 'ubides', 'gasto', 'invfis', 'sucursal', 'sucursal', 'cu_cost', 'cu_caja', 'url', 'odbc'";
 		
 		$camposforma = "
 							{
@@ -543,11 +548,24 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 							style:'padding:4px',
 							layout: 'column',
 							items: [
-									{ xtype: 'textfield'  ,fieldLabel: 'C&oacute;digo'           ,name: 'ubica'   ,width:110, allowBlank: false ,id: 'ubica'                      },
-									{ xtype: 'textfield'  ,fieldLabel: 'Nombre'           ,name: 'ubides'  ,width:270, allowBlank: false                                   },
-									{ xtype: 'combo'      ,fieldLabel: 'Gasto'            ,name: 'gasto'   ,width:300, allowBlank: false ,store: [".$sn."]                 },
-									{ xtype: 'combo'      ,fieldLabel: 'Inv F&itilde;sico'       ,name: 'invfis'  ,width:300, allowBlank: false ,store: [".$sn."]                 },
-									{ xtype: 'combo'      ,fieldLabel: 'Sucursal'         ,name: 'sucursal',width:300, allowBlank: true  ,store: sucuStore, id: 'sucursal', mode: 'remote', hideTrigger: true, typeAhead: true, forceSelection: true, valueField: 'item', displayField: 'valor'},
+									{ xtype: 'textfield'  ,fieldLabel: 'C&oacute;digo',           name: 'ubica'   ,width:120, allowBlank: false ,id: 'ubica' },
+									{ xtype: 'textfield'  ,fieldLabel: 'Nombre',                  name: 'ubides'  ,width:280, allowBlank: false  },
+									{ xtype: 'combo'      ,fieldLabel: 'Gasto',                   name: 'gasto'   ,width:130, allowBlank: false ,store: [".$sn."] },
+									{ xtype: 'combo'      ,fieldLabel: 'Inventario F&itilde;sico',name: 'invfis'  ,width:270, allowBlank: false ,store: [".$sn."], labelWidth:210 },
+									{ xtype: 'combo'      ,fieldLabel: 'Sucursal',                name: 'sucursal',width:400, allowBlank: true  ,store: sucuStore, id: 'sucursal', mode: 'remote', hideTrigger: true, typeAhead: true, forceSelection: true, valueField: 'item', displayField: 'valor'},
+								]
+							},{
+							xtype:'fieldset',
+							title: 'Conexiones Remotas',
+							frame: false,
+							border: false,
+							labelAlign: 'right',
+							defaults: { xtype:'fieldset', labelWidth:70 },
+							style:'padding:4px',
+							layout: 'column',
+							items: [
+									{ xtype: 'textfield'  ,fieldLabel: 'Sitio WEB', name: 'url',  width:400, allowBlank: false },
+									{ xtype: 'textfield'  ,fieldLabel: 'ODBC',      name: 'odbc', width:400, allowBlank: false },
 								]
 							},{
 							xtype:'fieldset',
@@ -555,7 +573,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 							frame: false,
 							border: false,
 							labelAlign: 'right',
-							defaults: { xtype:'fieldset', labelWidth:170 },
+							defaults: { xtype:'fieldset', labelWidth:120 },
 							style:'padding:4px',
 							layout: 'column',
 							items: [
@@ -569,7 +587,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 				closable: false,
 				closeAction: 'destroy',
 				width: 450,
-				height: 340,
+				height: 380,
 				resizable: false,
 				modal: true,
 				items: [writeForm],
