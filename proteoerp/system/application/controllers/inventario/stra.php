@@ -498,7 +498,7 @@ class stra extends Controller {
 				$dbcodigo=$this->db->escape($codigo);
 
 				$mSQL="UPDATE sinv SET
-				pond   = (existen*pond+${costo}*${cana})/(existen+${cana}),
+				pond   = IF(existen IS NULL,${costo},(existen*pond+${costo}*${cana})/(existen+${cana})),
 				base1  = ${costo}*100/(100-margen1),
 				base2  = ${costo}*100/(100-margen2),
 				base3  = ${costo}*100/(100-margen3),
