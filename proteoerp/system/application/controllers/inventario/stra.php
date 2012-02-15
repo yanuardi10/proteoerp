@@ -461,9 +461,9 @@ class stra extends Controller {
 
 				$rt=$this->dataedit();
 				if(strripos($rt,'Guardada')){
-					$data = array('status' => 'T');
+					/*$data = array('status' => 'T');
 					$this->db->where('id', $id_ordp);
-					$this->db->update('ordp', $data);
+					$this->db->update('ordp', $data);*/
 				}
 
 				//Calcula los costos
@@ -477,7 +477,7 @@ class stra extends Controller {
 				$ordpitem_row =$mSQL_2->result();
 
 				foreach ($ordpitem_row as $itrow){
-					$itcosto+=$itrow->costo*$itrow->cantidad;
+					$itcosto+=($itrow->fijo=='S')? $itrow->costo : $itrow->costo*$itrow->cantidad;
 				}
 
 				$sel=array('a.porcentaje','a.tipo');
@@ -511,6 +511,8 @@ class stra extends Controller {
 				$ban=$this->db->simple_query($mSQL);
 				if(!$ban){ memowrite($mSQL,'straordp'); $error++; }
 
+echo $mSQL;
+exit();
 				echo $rt.' '.anchor($back,'regresar');
 			}else{
 				redirect($back);

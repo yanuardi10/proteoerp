@@ -578,20 +578,20 @@ class smov extends Controller {
 		$tipo_doc  = isset($_REQUEST['tipo_doc']) ? $_REQUEST['tipo_doc'] :  0;
 		$numero    = isset($_REQUEST['numero'])   ? $_REQUEST['numero']   :  0;
 		$cod_cli   = isset($_REQUEST['cod_cli'])  ? $_REQUEST['cod_cli']  :  0;
-		
+
 		if ($transac == 0 ){
 			$transac = $this->datasis->dameval("SELECT MAX(transac) FROM smov")  ;
 		}
 
 		$mSQL = "
 SELECT * FROM itccli WHERE transac='$transac'
-UNION ALL 
+UNION ALL
 SELECT * FROM itccli WHERE cod_cli='$cod_cli' AND numero='$numero' AND tipo_doc='$tipo_doc' AND transac!='$transac'
 UNION ALL
 SELECT * FROM itccli WHERE cod_cli='$cod_cli' AND numccli='$numero' AND tipoccli='$tipo_doc' AND transac!='$transac'
 ORDER BY estampa
 ";
-	
+
 		$query = $this->db->query($mSQL);
 		$results =  0;
 		$mSQL = '';
@@ -626,7 +626,7 @@ ORDER BY estampa
 					$codcli = $row['cod_prv'];
 					$salida .= "<tr bgcolor='#c7d3c7'>";
 					$salida .= "<td colspan=4>".trim($row['nombre']). "</td>";
-					$salida .= "</tr>";	
+					$salida .= "</tr>";
 				}
 				if ( $row['tipo_doc'] == 'FC' ) {
 					$saldo = $row['monto']-$row['abonos'];
@@ -655,7 +655,7 @@ ORDER BY estampa
 					$codcli = $row['cod_cli'];
 					$salida .= "<tr bgcolor='#c7d3c7'>";
 					$salida .= "<td colspan=4>".trim($row['nombre']). "</td>";
-					$salida .= "</tr>";	
+					$salida .= "</tr>";
 				}
 				if ( $row['tipo_doc'] == 'FC' ) {
 					$saldo = $row['monto']-$row['abonos'];
@@ -674,11 +674,11 @@ ORDER BY estampa
 
 		//cod_cli, MID(nombre,1,25) nombre, tipo_doc, numero, monto, abonos
 		//Cruce de Cuentas
-		$mSQL = "SELECT b.proveed cod_cli, MID(b.nombre,1,25) nombre, a.monto, b.numero, b.fecha 
+		$mSQL = "SELECT b.proveed cod_cli, MID(b.nombre,1,25) nombre, a.monto, b.numero, b.fecha
 			FROM itcruc AS a JOIN cruc AS b ON a.numero=b.numero
 			WHERE b.cliente='$cod_cli' AND a.onumero='$tipo_doc$numero'
 			UNION ALL
-			SELECT b.cliente cod_cli, MID(b.nomcli,1,25) nombre, -a.monto, b.numero, b.fecha 
+			SELECT b.cliente cod_cli, MID(b.nomcli,1,25) nombre, -a.monto, b.numero, b.fecha
 			FROM itcruc AS a JOIN cruc AS b ON a.numero=b.numero
 			WHERE b.cliente='$cod_cli' AND a.onumero='$tipo_doc$numero'
 			ORDER BY numero
@@ -787,17 +787,19 @@ ORDER BY estampa
 		{ header: 'id',      width: 60, sortable: true, dataIndex: 'id' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}]";
 
 		$variables='';
-		
+
 		$valida="		{ type: 'length', field: 'cliente',  min:  1 }";
 
 		$funciones = "
-function renderSprv(value, p, record) {
-	var mreto='';
-	if ( record.data.proveed == '' ){
-		mreto = '{0}';
-	} else {
-		mreto = '<a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'finanzas/smov/sprvbu/{1}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">{0}</a>';
+		function renderSprv(value, p, record) {
+			var mreto='';
+			if ( record.data.proveed == '' ){
+				mreto = '{0}';
+			} else {
+				mreto = '<a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'finanzas/smov/sprvbu/{1}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">{0}</a>';
+			}
+			return Ext.String.format(mreto,	value, record.data.control );
+		}";
 	}
-	return Ext.String.format(mreto,	value, record.data.control );
 }";
 }
