@@ -601,14 +601,16 @@ class stra extends Controller {
 	}
 
 	function instalar(){
-		if($this->db->field_exists('ordp', 'stra')){
+		if(!$this->db->field_exists('ordp', 'stra')){
 			$mSQL="ALTER TABLE `stra`
 			ADD COLUMN `ordp` VARCHAR(8) NULL DEFAULT NULL AFTER `numere`,
 			ADD COLUMN `esta` VARCHAR(5) NULL DEFAULT NULL AFTER `ordp`";
 			$this->db->simple_query($mSQL);
+		}
+
+		if(!$this->db->field_exists('tipoordp', 'stra')){
 			$mSQL="ALTER TABLE `stra` ADD COLUMN `tipoordp` CHAR(1) NULL DEFAULT NULL COMMENT 'Si es entrega a estacion o retiro de estacion' AFTER `esta`";
 			$this->db->simple_query($mSQL);
-
 		}
 	}
 }
