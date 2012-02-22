@@ -174,7 +174,12 @@ class pfaclite extends validaciones{
 		$do = new DataObject('pfac');
 		$do->rel_one_to_many('itpfac', 'itpfac', array('numero' => 'numa'));
 		$do->pointer('scli' , 'scli.cliente=pfac.cod_cli', 'scli.tipo AS sclitipo', 'left');
-		$do->rel_pointer('itpfac', 'sinv', 'itpfac.codigoa=sinv.codigo', 'sinv.descrip AS sinvdescrip, sinv.base1 AS sinvprecio1, sinv.base2 AS sinvprecio2, sinv.base3 AS sinvprecio3, sinv.base4 AS sinvprecio4, sinv.iva AS sinviva, sinv.peso AS sinvpeso,sinv.tipo AS sinvtipo,sinv.precio1 As sinvprecio1,sinv.pond AS sinvpond,sinv.mmargen as sinvmmargen,sinv.ultimo sinvultimo,sinv.formcal sinvformcal,sinv.pm sinvpm,sinv.existen pexisten,sinv.marca pmarca,sinv.descrip pdesca,sinv.peso ppeso');
+		$do->rel_pointer('itpfac', 'sinv', 'itpfac.codigoa=sinv.codigo', '
+			sinv.iva AS sinviva,
+			sinv.existen AS pexisten,
+			sinv.marca AS pmarca,
+			sinv.descrip AS pdesca,
+			sinv.peso AS ppeso');
 		$do->order_by('itpfac','sinv.marca',' ');
 		$do->order_by('itpfac','sinv.descrip',' ');
 
@@ -232,15 +237,15 @@ class pfaclite extends validaciones{
 		$edit->pdesca->maxlength = 50;
 		$edit->pdesca->readonly = true;
 		$edit->pdesca->rel_id = 'itpfac';
-		$edit->pdesca->type='inputhidden';
+		$edit->pdesca->type   ='inputhidden';
 		$edit->pdesca->pointer=true;
 
 		$edit->pexisten = new inputField('Existencia <#o#>', 'pexisten_<#i#>');
 		$edit->pexisten->size    = 10;
 		$edit->pexisten->db_name = 'pexisten';
 		$edit->pexisten->rel_id  = 'itpfac';
-		$edit->pexisten->pointer = true;
 		$edit->pexisten->type    = 'inputhidden';
+		$edit->pexisten->pointer = true;
 
 		$edit->cana = new inputField('Cantidad <#o#>', 'cana_<#i#>');
 		$edit->cana->db_name = 'cana';
@@ -258,11 +263,6 @@ class pfaclite extends validaciones{
 		$edit->preca->css_class = 'inputnum';
 		$edit->preca->rel_id    = 'itpfac';
 		$edit->preca->rule      = 'positive|callback_chpreca[<#i#>]';
-
-		$edit->precat = new hiddenField('', 'precat_<#i#>');
-		$edit->precat->db_name = 'precat';
-		$edit->precat->rel_id  = 'itpfac';
-		$edit->precat->pointer = true;
 
 		$edit->iva = new hiddenField('', 'iva_<#i#>');
 		$edit->iva->db_name = 'iva';
@@ -307,20 +307,19 @@ class pfaclite extends validaciones{
 		if($tiposcli<1) $tiposcli=1; elseif($tiposcli>4) $tiposcli=4;
 
 		$sel=array('TRIM(a.codigo) AS codigo','descrip'
-		,'precio1','precio2','precio3','precio4'
+		,'precio1','precio2','precio3','precio4','exord'
 		,'marca','SUM(b.existen) existen','iva','peso');
 		$this->db->select($sel);
 		$this->db->from('sinv AS a');
-		$this->db->join('itsinv AS b','a.codigo=b.codigo');
+		$this->db->join('itsinv AS b','a.codigo=b.codigo AND b.alma='.$this->db->escape($alma));
 		$this->db->where('activo','S');
-		$this->db->where('tipo','Articulo');
+		$this->db->where('tipo'  ,'Articulo');
 		$this->db->group_by('a.codigo');
 		$this->db->order_by('a.marca , a.descrip , a.peso');
 		$this->db->limit(100);
 
 		if($status=='create'){
 			$this->db->where('b.existen >','0');
-			$this->db->where('b.alma'     ,$alma);
 		}
 		$sinv=$this->db->get();
 
@@ -328,16 +327,17 @@ class pfaclite extends validaciones{
 		$sinv_arr=array();
 		foreach($sinv as $k=>$v){
 			$sinv_arr[$v['codigo']]=array(
-				 'descrip'=>$v['descrip']
-				,'precio1'=>$v['precio1']*100/(100+$v['iva'])
-				,'precio2'=>$v['precio2']*100/(100+$v['iva'])
-				,'precio3'=>$v['precio3']*100/(100+$v['iva'])
-				,'precio4'=>$v['precio4']*100/(100+$v['iva'])
-				,'marca'  =>$v['marca']
-				,'existen'=>$v['existen']
-				,'iva'    =>$v['iva']
-				,'peso'   =>$v['peso']
-				,'codigo' =>$v['codigo']
+				 'descrip' => $v['descrip']
+				,'precio1' => $v['precio1']*100/(100+$v['iva'])
+				,'precio2' => $v['precio2']*100/(100+$v['iva'])
+				,'precio3' => $v['precio3']*100/(100+$v['iva'])
+				,'precio4' => $v['precio4']*100/(100+$v['iva'])
+				,'marca'   => $v['marca']
+				,'existen' => $v['existen']
+				,'iva'     => $v['iva']
+				,'peso'    => $v['peso']
+				,'codigo'  => $v['codigo']
+				,'exord'   => $v['exord']
 			);
 		}
 
@@ -348,7 +348,9 @@ class pfaclite extends validaciones{
 			$conten['form']    = & $edit;
 			$conten['sinv']    = $sinv_arr;
 			$data['content']   = $this->load->view('view_pfaclite', $conten,true);
-			$data['title']     = heading('Pedidos No. '.$edit->numero->value);
+			$data['head']      = style('mayor/estilo.css');
+			//$data['title']     = heading('Pedidos No. '.$edit->numero->value);
+			$data['title']     = heading('Pedidos ligeros');
 			$this->load->view('view_ventanas_lite', $data);
 		}else{
 			$edit->on_save_redirect=false;
@@ -438,7 +440,7 @@ class pfaclite extends validaciones{
 		for($i = 0;$i < $cana;$i++){
 			$itcodigo= $do->get_rel('itpfac', 'codigoa', $i);
 			$itcana  = $do->get_rel('itpfac', 'cana', $i);
-			$mSQL = "UPDATE sinv SET exdes=exdes+$itcana WHERE codigo=".$this->db->escape($itcodigo);
+			$mSQL = "UPDATE sinv SET exord=IF(exord IS NULL,$itcana,exord+$itcana WHERE codigo=".$this->db->escape($itcodigo);
 
 			$ban=$this->db->simple_query($mSQL);
 			if($ban==false){ memowrite($mSQL,'pfac'); }

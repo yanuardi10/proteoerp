@@ -698,4 +698,54 @@ class Ajax extends Controller {
 		}
 		echo $data;
 	}
+
+	//Funcion para traer los clientes en los pedidos ligeros
+	function scliex(){
+		$comodin= $this->datasis->traevalor('COMODIN');
+		$mid    = $this->input->post('q');
+		if(strlen($comodin)==1 && $comodin!='%' && $mid!==false){
+			$mid=str_replace($comodin,'%',$mid);
+		}
+		$qdb  = $this->db->escape($mid.'%');
+		$qba  = $this->db->escape($mid);
+
+		$data = '{[ ]}';
+		if($mid !== false){
+			$retArray = $retorno = array();
+
+			//Cheque si existe el codigo
+			$mSQL="SELECT TRIM(nombre) AS nombre, TRIM(rifci) AS rifci, cliente
+				FROM scli WHERE cliente=${qba} LIMIT 1";
+			$query = $this->db->query($mSQL);
+			if ($query->num_rows() == 1){
+				$row = $query->row_array();
+
+				$retArray['rifci']   = $row['rifci'];
+				$retArray['nombre']  = utf8_encode($row['nombre']);
+				$retArray['cod_cli'] = $row['cliente'];
+				array_push($retorno, $retArray);
+				$ww=" AND cliente<>${qba}";
+			}else{
+				$ww='';
+			}
+
+			$mSQL="SELECT TRIM(nombre) AS nombre, TRIM(rifci) AS rifci, cliente
+				FROM scli WHERE (cliente LIKE ${qdb} OR rifci LIKE ${qdb} OR nombre LIKE ${qdb}) $ww
+				ORDER BY rifci LIMIT 10";
+
+			$query = $this->db->query($mSQL);
+			if ($query->num_rows() > 0){
+				foreach( $query->result_array() as  $row ) {
+					$retArray['rifci']   = $row['rifci'];
+					$retArray['nombre']  = utf8_encode($row['nombre']);
+					$retArray['cod_cli'] = $row['cliente'];
+					array_push($retorno, $retArray);
+				}
+			}
+			if(count($data)>0)
+				$data = json_encode($retorno);
+		}
+		echo $data;
+		return true;
+	}
 }
