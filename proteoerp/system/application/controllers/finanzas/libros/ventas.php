@@ -736,7 +736,6 @@ class ventas{
 				else
 					$ws->write_string( $mm, 2, $row->tipo, $cuerpoc );	// TIPO
 
-				$ws->write_string( $mm, 3, $row->numero, $cuerpo );		// Nro. Documento
 				$ws->write_string( $mm, 4, $row->inicial, $cuerpo );	// INICIAL
 				$ws->write_string( $mm, 5, $row->final, $cuerpo );		// FINAL
 
@@ -761,16 +760,16 @@ class ventas{
 					$ws->write_number( $mm, 8, $row->ventatotal, $numero );	// VENTAS + IVA
 					$ws->write_number( $mm, 9, $row->exento, $numero );   	// VENTAS EXENTAS
 					$ws->write_number( $mm,10, 0, $cuerpo );   					    // EXPORTACION
-					$ws->write_number( $mm,11, $row->general, $numero );		// GENERAL
-					$ws->write_number( $mm,12, $row->geneimpu, $numero );		// GENEIMPU
+					$ws->write_number( $mm,11, $row->general, $numero );	// GENERAL
+					$ws->write_number( $mm,12, $row->geneimpu, $numero );	// GENEIMPU
 					$ws->write_number( $mm,13, $row->adicional, $numero );	// ADICIONAL
-					$ws->write_number( $mm,14, $row->adicimpu, $numero );		// ADICIMPU
-					$ws->write_number( $mm,15, $row->reducida, $numero );		// REDUCIDA
-					$ws->write_number( $mm,16, $row->reduimpu, $numero );		// REDUIMPU
+					$ws->write_number( $mm,14, $row->adicimpu, $numero );	// ADICIMPU
+					$ws->write_number( $mm,15, $row->reducida, $numero );	// REDUCIDA
+					$ws->write_number( $mm,16, $row->reduimpu, $numero );	// REDUIMPU
 					$ws->write_number( $mm,17, 0, $numero );		// REDUIMPU
 				}
 
-				$ws->write_number( $mm,18, $row->reiva, $numero );		    // IVA RETENIDO
+				$ws->write_number( $mm,18, $row->reiva, $numero );		// IVA RETENIDO
 				$ws->write_string( $mm,19,($row->tipo=='CR') ? $row->numero:'', $cuerpo );	// NRO COMPROBANTE
 				if($row->tipo=='CR'){
 					if($fiscal)
@@ -986,7 +985,7 @@ class ventas{
 		$ws->write($mm, 9, "47" , $cuerpoc );
 		$ws->write_formula($mm, 10, "=M$celda+O$celda+Q$celda", $Rnumero );
 
-		$ws->write($mm, 16, 'CR -Comprobante Ret.', $cuerpo );
+		$ws->write($mm, 16, 'CR -Comprobante Retencion', $cuerpo );
 		$ws->write_blank( $mm+1, 16,  $cuerpo );
 		$ws->write($mm, 18, '04 -Ajuste', $cuerpo );
 		$ws->write_blank( $mm, 19,  $cuerpo );
