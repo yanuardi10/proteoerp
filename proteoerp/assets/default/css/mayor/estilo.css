@@ -1,6 +1,7 @@
 body{
 	background:#272727;
 	font: .8em "Lucida Grande", Tahoma, Arial, Helvetica, sans-serif;
+	color:#7f95ff;
 }
 ol{
 	margin:0;
@@ -32,6 +33,7 @@ tbody tr.odd td{
 	background:transparent url(tr_bg.png) repeat top left;
 }
 tfoot{
+	background:#7098D0;
 }
 tfoot td{
 	padding-bottom:1.5em;
