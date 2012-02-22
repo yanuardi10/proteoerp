@@ -11,7 +11,15 @@ class smov extends Controller {
 	}
 
 	function index(){
-		redirect($this->url.'filteredgrid');
+		if ( !$this->datasis->iscampo('smov','id') ) {
+			$this->db->simple_query('ALTER TABLE smov DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE smov ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ');
+			$this->db->simple_query('ALTER TABLE smov ADD UNIQUE INDEX cod_cli (cod_cli, tipo_doc, numero, fecha)');
+			echo "Indice ID Creado";
+		}
+		//redirect($this->url.'filteredgrid');
+		$this->smovextjs();
+
 	}
 
 	function filteredgrid(){
@@ -557,7 +565,7 @@ class smov extends Controller {
 			$this->db->where($where);
 		}
 
-		if ( $sort == '') $this->db->order_by( 'fecha', 'desc' );
+		if ( $sort == '') $this->db->order_by( 'id', 'desc' );
 
 		$sort = json_decode($sort, true);
 		for ($i=0;$i<count($sort);$i++) {
@@ -575,22 +583,46 @@ class smov extends Controller {
 
 	function griditsmov(){
 		$transac   = isset($_REQUEST['transac'])  ? $_REQUEST['transac']  :  0;
-		$tipo_doc  = isset($_REQUEST['tipo_doc']) ? $_REQUEST['tipo_doc'] :  0;
-		$numero    = isset($_REQUEST['numero'])   ? $_REQUEST['numero']   :  0;
-		$cod_cli   = isset($_REQUEST['cod_cli'])  ? $_REQUEST['cod_cli']  :  0;
+		$tipo_doc  = isset($_REQUEST['tipo_doc']) ? $_REQUEST['tipo_doc'] :  '';
+		$numero    = isset($_REQUEST['numero'])   ? $_REQUEST['numero']   :  '';
+		$cod_cli   = isset($_REQUEST['cod_cli'])  ? $_REQUEST['cod_cli']  :  '';
+
+
+//numccli, tipoccli, cod_cli, tipo_doc, numero, fecha, monto, abono, ppago, reten, reteiva
+		//{ header: 'Cambio',  width: 80, sortable: true, dataIndex: 'cambio' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		//{ header: 'Mora',    width: 80, sortable: true, dataIndex: 'mora' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		//{ header: 'Transac', width: 60, sortable: true, dataIndex: 'transac' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		//{ header: 'Estampa', width: 80, sortable: true, dataIndex: 'estampa' , field: { type: 'date' }, filter: { type: 'date' }},
+		//{ header: 'Hora',    width: 60, sortable: true, dataIndex: 'hora' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		//{ header: 'Usuario', width: 60, sortable: true, dataIndex: 'usuario' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		//{ header: 'Reteiva', width: 60, sortable: true, dataIndex: 'reteiva' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		//{ header: 'Nroriva', width: 60, sortable: true, dataIndex: 'nroriva' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		//{ header: 'Emiriva', width: 60, sortable: true, dataIndex: 'emiriva' , field: { type: 'date' }, filter: { type: 'date' }},
+		//{ header: 'Recriva', width: 60, sortable: true, dataIndex: 'recriva' , field: { type: 'date' }, filter: { type: 'date' }},
+		//{ header: 'id',      width: 60, sortable: true, dataIndex: 'id' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}
+
+
+
 
 		if ($transac == 0 ){
-			$transac = $this->datasis->dameval("SELECT MAX(transac) FROM smov")  ;
+			$id = $this->datasis->dameval("SELECT MAX(id) FROM smov ")  ;
+			$transac = $this->datasis->dameval("SELECT transac FROM smov WHERE id=$id ")  ;
 		}
 
 		$mSQL = "
-SELECT * FROM itccli WHERE transac='$transac'
-UNION ALL
-SELECT * FROM itccli WHERE cod_cli='$cod_cli' AND numero='$numero' AND tipo_doc='$tipo_doc' AND transac!='$transac'
-UNION ALL
-SELECT * FROM itccli WHERE cod_cli='$cod_cli' AND numccli='$numero' AND tipoccli='$tipo_doc' AND transac!='$transac'
+SELECT
+cod_cli, fecha, 
+IF(tipo_doc='$tipo_doc' AND numero='$numero', tipoccli, tipo_doc) tipo_doc,
+IF(tipo_doc='$tipo_doc' AND numero='$numero', numccli, numero) numero,
+monto, abono, ppago, reten, reteiva
+FROM itccli WHERE transac='$transac' ";
+/*
+#UNION ALL
+#SELECT * FROM itccli WHERE cod_cli='$cod_cli' AND numero='$numero' AND tipo_doc='$tipo_doc' AND transac!='$transac'
+#UNION ALL
+#SELECT * FROM itccli WHERE cod_cli='$cod_cli' AND numccli='$numero' AND tipoccli='$tipo_doc' AND transac!='$transac'
 ORDER BY estampa
-";
+";*/
 
 		$query = $this->db->query($mSQL);
 		$results =  0;
@@ -709,6 +741,7 @@ ORDER BY estampa
 		$listados= $this->datasis->listados('smov');
 		$otros=$this->datasis->otros('smov', 'finanzas/smov');
 
+		$modulo = 'smov';
 		$urlajax = 'finanzas/smov/';
 
 		$columnas = "
@@ -764,8 +797,6 @@ ORDER BY estampa
 
 		$coldeta = "
 	var Deta1Col = [
-		{ header: 'Numero',  width: 60, sortable: true, dataIndex: 'numccli' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Tipo',    width: 40, sortable: true, dataIndex: 'tipoccli' , field: { type: 'textfield' }, filter: { type: 'string' }},
 		{ header: 'Cliente', width: 50, sortable: true, dataIndex: 'cod_cli' , field: { type: 'textfield' }, filter: { type: 'string' }},
 		{ header: 'Tipo',    width: 40, sortable: true, dataIndex: 'tipo_doc' , field: { type: 'textfield' }, filter: { type: 'string' }},
 		{ header: 'Numero',  width: 70, sortable: true, dataIndex: 'numero' , field: { type: 'textfield' }, filter: { type: 'string' }},
@@ -774,21 +805,17 @@ ORDER BY estampa
 		{ header: 'Abono',   width: 80, sortable: true, dataIndex: 'abono' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
 		{ header: 'P.Pago',  width: 80, sortable: true, dataIndex: 'ppago' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
 		{ header: 'Reten',   width: 80, sortable: true, dataIndex: 'reten' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Cambio',  width: 80, sortable: true, dataIndex: 'cambio' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Mora',    width: 80, sortable: true, dataIndex: 'mora' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Transac', width: 60, sortable: true, dataIndex: 'transac' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Estampa', width: 80, sortable: true, dataIndex: 'estampa' , field: { type: 'date' }, filter: { type: 'date' }},
-		{ header: 'Hora',    width: 60, sortable: true, dataIndex: 'hora' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Usuario', width: 60, sortable: true, dataIndex: 'usuario' , field: { type: 'textfield' }, filter: { type: 'string' }},
+		//{ header: 'Cambio',  width: 80, sortable: true, dataIndex: 'cambio' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+		//{ header: 'Mora',    width: 80, sortable: true, dataIndex: 'mora' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
 		{ header: 'Reteiva', width: 60, sortable: true, dataIndex: 'reteiva' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
 		{ header: 'Nroriva', width: 60, sortable: true, dataIndex: 'nroriva' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Emiriva', width: 60, sortable: true, dataIndex: 'emiriva' , field: { type: 'date' }, filter: { type: 'date' }},
-		{ header: 'Recriva', width: 60, sortable: true, dataIndex: 'recriva' , field: { type: 'date' }, filter: { type: 'date' }},
-		{ header: 'id',      width: 60, sortable: true, dataIndex: 'id' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}]";
+		//{ header: 'Emiriva', width: 60, sortable: true, dataIndex: 'emiriva' , field: { type: 'date' }, filter: { type: 'date' }},
+		//{ header: 'Recriva', width: 60, sortable: true, dataIndex: 'recriva' , field: { type: 'date' }, filter: { type: 'date' }},
+		]";
 
 		$variables='';
 
-		$valida="		{ type: 'length', field: 'cliente',  min:  1 }";
+		$valida="		{ type: 'length', field: 'cod_cli',  min:  1 }";
 
 		$funciones = "
 		function renderSprv(value, p, record) {
@@ -800,6 +827,200 @@ ORDER BY estampa
 			}
 			return Ext.String.format(mreto,	value, record.data.control );
 		}";
+
+		$campos = $this->datasis->extjscampos($modulo);
+
+		$stores = "
+	Ext.define('It".$modulo."', {
+		extend: 'Ext.data.Model',
+		fields: [".$this->datasis->extjscampos("itccli")."],
+		proxy: {
+			type: 'ajax',
+			noCache: false,
+			api: {
+				read   : urlAjax + 'griditsmov',
+				method: 'POST'
+			},
+			reader: {
+				type: 'json',
+				root: 'data',
+				successProperty: 'success',
+				messageProperty: 'message',
+				totalProperty: 'results'
+			}
+		}
+	});
+
+	//////////////////////////////////////////////////////////
+	// create the Data Store
+	var storeIt".$modulo." = Ext.create('Ext.data.Store', {
+		model: 'It".$modulo."',
+		autoLoad: false,
+		autoSync: true,
+		method: 'POST'
+	});
+
+	//////////////////////////////////////////////////////////
+	//
+	var gridDeta1 = Ext.create('Ext.grid.Panel', {
+		width:   '100%',
+		height:  '100%',
+		store:   storeIt".$modulo.",
+		title:   'Detalle del Movimiento',
+		iconCls: 'icon-grid',
+		frame:   true,
+		features: [ { ftype: 'filters', encode: 'json', local: false } ],
+		columns: Deta1Col
+	});
+
+	var ".$modulo."TplMarkup = [
+		'<table width=\'100%\' bgcolor=\"#F3F781\">',
+		'<tr><td colspan=3 align=\'center\'><p style=\'font-size:14px;font-weight:bold\'>IMPRIMIR FACTURA</p></td></tr><tr>',
+		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'ventas/sfac_add/dataprint/modify/{id}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/html_icon.gif', 'alt' => 'Formato HTML', 'title' => 'Formato HTML','border'=>'0'))."</a></td>',
+		'<td align=\'center\'>{numero}</td>',
+		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'ventas/sfac_add/dataprint/modify/{id}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',  'title' => 'Formato PDF', 'border'=>'0'))."</a></td></tr>',
+		'<tr><td colspan=3 align=\'center\' >--</td></tr>',
+		'</table>','nanai'
+	];
+
+
+
+	// Al cambiar seleccion
+	gridMaest.getSelectionModel().on('selectionchange', function(sm, selectedRecord) {
+		if (selectedRecord.length) {
+			gridMaest.down('#delete').setDisabled(selectedRecord.length === 0);
+			gridMaest.down('#update').setDisabled(selectedRecord.length === 0);
+			numero   = selectedRecord[0].data.numero;
+			cod_cli  = selectedRecord[0].data.cod_cli;
+			tipo_doc = selectedRecord[0].data.tipo_doc;
+			transac  = selectedRecord[0].data.transac;
+			gridDeta1.setTitle( numero+' '+selectedRecord[0].data.nombre);
+			storeIt".$modulo.".load({ params: { numero: numero, cod_cli: cod_cli, tipo_doc: tipo_doc, transac: transac }});
+			var meco1 = Ext.getCmp('imprimir');
+			Ext.Ajax.request({
+				url: urlAjax +'tabla',
+				params: { numero: numero, cod_cli: cod_cli, tipo_doc: tipo_doc, transac: transac  },
+				success: function(response) {
+					var vaina = response.responseText;
+					".$modulo."TplMarkup.pop();
+					".$modulo."TplMarkup.push(vaina);
+					var ".$modulo."Tpl = Ext.create('Ext.Template', ".$modulo."TplMarkup );
+					meco1.setTitle('Imprimir Compra');
+					".$modulo."Tpl.overwrite(meco1.body, selectedRecord[0].data );
+				}
+			});
+		}
+	});
+";
+
+		$acordioni = "{
+					layout: 'fit',
+					items:[
+						{
+							name: 'imprimir',
+							id: 'imprimir',
+							border:false,
+							html: 'Para imprimir seleccione una Compra '
+						}
+					]
+				},
+";
+
+		$dockedItems = "{
+			xtype: 'toolbar',
+			items: [
+				{
+					iconCls: 'icon-add',
+					text: 'Agregar',
+					scope: this,
+					handler: function(){
+						window.open(urlApp+'ventas/sfac_add/dataedit/create', '_blank', 'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys);
+					}
+				},
+				{
+					iconCls: 'icon-update',
+					text: 'Modificar',
+					disabled: true,
+					itemId: 'update',
+					scope: this,
+					handler: function(selModel, selections){
+						var selection = gridMaest.getView().getSelectionModel().getSelection()[0];
+						gridMaest.down('#delete').setDisabled(selections.length === 0);
+						window.open(urlApp+'ventas/sfac_add/dataedit/modify/'+selection.data.id, '_blank', 'width=900,height=730,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys);
+					}
+				},{
+					iconCls: 'icon-delete',
+					text: 'Eliminar',
+					disabled: true,
+					itemId: 'delete',
+					scope: this,
+					handler: function() {
+						var selection = gridMaest.getView().getSelectionModel().getSelection()[0];
+						Ext.MessageBox.show({
+							title: 'Confirme',
+							msg: 'Seguro que quiere eliminar la compra Nro. '+selection.data.numero,
+							buttons: Ext.MessageBox.YESNO,
+							fn: function(btn){
+								if (btn == 'yes') {
+									if (selection) {
+										//storeMaest.remove(selection);
+									}
+									storeMaest.load();
+								}
+							},
+							icon: Ext.MessageBox.QUESTION
+						});
+					}
+				}
+			]
+		}
+		";
+
+		$grid2 = ",{
+				itemId: 'viewport-center-detail',
+				activeTab: 0,
+				region: 'south',
+				height: '40%',
+				split: true,
+				margins: '0 0 0 0',
+				preventHeader: true,
+				items: gridDeta1
+			}";
+
+
+		$titulow = 'Movimiento';
+
+		$filtros = "";
+		$features = "
+		features: [ { ftype: 'filters', encode: 'json', local: false } ],
+		plugins: [Ext.create('Ext.grid.plugin.CellEditing', { clicksToEdit: 2 })],
+";
+
+		$final = "storeIt".$modulo.".load();";
+
+		$data['listados']    = $listados;
+		$data['otros']       = $otros;
+		$data['encabeza']    = $encabeza;
+		$data['urlajax']     = $urlajax;
+		$data['variables']   = $variables;
+		$data['funciones']   = $funciones;
+		$data['valida']      = $valida;
+		$data['stores']      = $stores;
+		$data['columnas']    = $columnas;
+		$data['campos']      = $campos;
+		$data['titulow']     = $titulow;
+		$data['dockedItems'] = $dockedItems;
+		$data['features']    = $features;
+		$data['filtros']     = $filtros;
+		$data['grid2']       = $grid2;
+		$data['coldeta']     = $coldeta;
+		$data['acordioni']   = $acordioni;
+		$data['final']       = $final;
+
+		$data['title']  = heading('Movimiento de Cliente');
+		$this->load->view('extjs/extjsvenmd',$data);
+
+
 	}
-}";
+
 }
