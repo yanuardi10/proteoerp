@@ -128,8 +128,8 @@ class pfaclitemayor extends validaciones{
 
 		$data['content'] = $filter->output.$grid->output;
 		$data['title']   = heading('Clientes');
-		$data["head"]    = $this->rapyd->get_head();
-		$data["extras"]  = '';
+		$data['head']    = $this->rapyd->get_head();
+		$data['extras']  = '';
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -294,6 +294,7 @@ class pfaclitemayor extends validaciones{
 			$edit->$obj->autocomplete = false;
 			$edit->$obj->style        = "height:25px;font-size:14";
 			$edit->$obj->onkeyup      = "cescala('$i')";
+			$edit->$obj->rule         = "callback_chescala[$i]";
 
 			$obj='pmarca_'.$i;
 			$edit->$obj = new inputField('', $obj);
@@ -478,7 +479,7 @@ class pfaclitemayor extends validaciones{
 			$edit->button('btn_add', 'Agregar', $action, 'TR');
 		}
 
-		$edit->buttons('save','undo', 'delete', 'back');
+		$edit->buttons('save','undo', 'modify','delete', 'back');
 
 		if($this->genesal){
 			$edit->build();
@@ -565,7 +566,7 @@ class pfaclitemayor extends validaciones{
 				$totals += $ittota;
 				$do->set_rel('itpfac', 'mostrado', $iva + $ittota, $i);
 			}else{
-				$do->rel_rm('itpfac',$i);
+				//$do->rel_rm('itpfac',$i);
 			}
 		}
 		$totalg = $totals + $iva;
@@ -637,6 +638,23 @@ class pfaclitemayor extends validaciones{
 			return false;
 		}
 		return true;
+	}
+
+	function chescala($cana,$ind){
+		$codigo  =$this->input->post('codigoa_'.$ind);
+
+		$dbcodigo=$this->db->escape($codigo);
+		$clave   =$this->datasis->dameval('SELECT clave FROM sinv WHERE codigo='.$dbcodigo);
+		if(preg_match('/VX(?P<esc>\d+)/', $clave, $matches)>0){
+			if($cana % $matches['esc'] == 0){
+				return true;
+			}else{
+				$this->validation->set_message('chescala', "La cantidad del producto $codigo debe ser multiplo de ".$matches['esc']);
+				return false;
+			}
+		}else{
+			return true;
+		}
 	}
 
 	function chcodigoa($codigo){
