@@ -227,18 +227,18 @@ class pfaclite extends validaciones{
 		$edit->codigoa = new inputField('C&oacute;digo <#o#>', 'codigoa_<#i#>');
 		$edit->codigoa->size = 12;
 		$edit->codigoa->db_name = 'codigoa';
-		$edit->codigoa->rel_id = 'itpfac';
-		$edit->codigoa->rule = 'callback_chcodigoa';
-		$edit->codigoa->type='inputhidden';
+		$edit->codigoa->rel_id  = 'itpfac';
+		$edit->codigoa->rule    = 'callback_chcodigoa';
+		$edit->codigoa->type    = 'inputhidden';
 
 		$edit->pdesca = new inputField('Descripci&oacute;n <#o#>', 'pdesca_<#i#>');
-		$edit->pdesca->size = 32;
-		$edit->pdesca->db_name = 'pdesca';
+		$edit->pdesca->size      = 32;
+		$edit->pdesca->db_name   = 'pdesca';
 		$edit->pdesca->maxlength = 50;
-		$edit->pdesca->readonly = true;
-		$edit->pdesca->rel_id = 'itpfac';
-		$edit->pdesca->type   ='inputhidden';
-		$edit->pdesca->pointer=true;
+		$edit->pdesca->readonly  = true;
+		$edit->pdesca->rel_id    = 'itpfac';
+		$edit->pdesca->type      = 'inputhidden';
+		$edit->pdesca->pointer   = true;
 
 		$edit->pexisten = new inputField('Existencia <#o#>', 'pexisten_<#i#>');
 		$edit->pexisten->size    = 10;
@@ -479,23 +479,23 @@ class pfaclite extends validaciones{
 	}
 
 	function load(){
-		$this->load->library("path");
+		$this->load->library('path');
 		$path=new Path();
 		$path->setPath($this->config->item('uploads_dir'));
 		$path->append('/archivos');
 		$this->upload_path =$path->getPath().'/';
 
-		$this->rapyd->load("dataform");
-		$form = new DataForm("ventas/pfaclite/read");
+		$this->rapyd->load('dataform');
+		$form = new DataForm('ventas/pfaclite/read');
 		$form->title('Cargar Archivo de Productos (xls)');
 
-		$form->archivo = new uploadField("Archivo","archivo");
+		$form->archivo = new uploadField('Archivo','archivo');
 		$form->archivo->upload_path   = $this->upload_path;
-		$form->archivo->allowed_types = "xls";
+		$form->archivo->allowed_types = 'xls';
 		$form->archivo->delete_file   =false;
-		$form->archivo->rule   ="required";
+		$form->archivo->rule   ='required';
 
-		$form->submit("btnsubmit","Enviar");
+		$form->submit('btnsubmit','Enviar');
 		$form->build_form();
 
 		$data['content'] = $form->output;
@@ -505,13 +505,13 @@ class pfaclite extends validaciones{
 	}
 
 	function read(){
-		$this->load->library("Spreadsheet_Excel_Reader");
+		$this->load->library('Spreadsheet_Excel_Reader');
 		$type='';
 		if(isset($_FILES['archivoUserFile']['type']))$type=$_FILES['archivoUserFile']['type'];
 		//print_r($_FILES);
 		if($type=='application/vnd.ms-excel'){
 			$name=$_FILES['archivoUserFile']['name'];
-			$dir=".././".$name;
+			$dir='.././'.$name;
 			$name=$_FILES['archivoUserFile']['name'];
 			if (copy($_FILES['archivoUserFile']['tmp_name'], 'uploads/'.$name)){
 				$uploadsdir =getcwd().'/uploads/';
@@ -533,8 +533,8 @@ class pfaclite extends validaciones{
 				$this->limpia($data4);
 			}
 		}else{
-			echo "El archivo no puede ser leido";
-			return "El archivo no puede ser leido";
+			echo 'El archivo no puede ser leido';
+			return 'El archivo no puede ser leido';
 		}
 	}
 
@@ -747,7 +747,6 @@ class pfaclite extends validaciones{
 		}
 	}
 
-
 	function reserva($id,$dir='pfac'){
 		$error='';
 		$error.=$this->reserv($id);
@@ -764,9 +763,174 @@ class pfaclite extends validaciones{
 		}
 	}
 
+	function pfl() {
+		require_once 'Spreadsheet/Excel/Writer.php';
+		$vd  = $this->secu->getVendedor();
+		$vnom= $this->datasis->dameval('SELECT nombre FROM vend WHERE vendedor='.$this->db->escape($vd));
+
+		$workbook = new Spreadsheet_Excel_Writer();
+		$workbook->send('pfl_'.date('d-m-Y').'.xls');
+
+		$ftit =& $workbook->addFormat();
+		$ftit->setAlign('merge');
+		$ftit->setVAlign('vcenter');
+		$ftit->setFgColor(23);
+		$ftit->setColor(1);
+		$ftit->setBold();
+		$ftit->setLocked();
+
+		$ffot =& $workbook->addFormat();
+		$ffot->setFgColor(23);
+		$ffot->setColor(1);
+		$ffot->setBold();
+		$ffot->setLocked();
+
+		$fbod0 =& $workbook->addFormat();
+		$fbod0->setLocked();
+		$fbod0->setBorder(1);
+
+		$fbod1 =& $workbook->addFormat();
+		$fbod1->setLocked();
+		$fbod1->setBorder(1);
+
+		$fbod2 =& $workbook->addFormat();
+		$fbod2->setLocked();
+		$fbod2->setBorder(1);
+
+		$fbod0->setFgColor(26);
+		$fbod1->setFgColor(41);
+		$fbod2->setFgColor(42);
+
+		$fcod =& $workbook->addFormat();
+		$fcod->setLocked();
+		$fcod->setBorder(1);
+		$fcod->setBold();
+
+		$fedi =& $workbook->addFormat();
+		$fedi->setFgColor(31);
+		$fedi->setBorder(1);
+
+		$fgru =& $workbook->addFormat();
+		$fgru->setFgColor(32);
+		$fgru->setLocked();
+		$fgru->setColor(1);
+		$fgru->setBold();
+
+		$fpre =& $workbook->addFormat();
+		$fpre->setLocked();
+		$fpre->setBold();
+
+		$this->db->select(array('a.cliente','a.nombre','a.tipo'));
+		$this->db->from('scli AS a');
+		$this->db->where('a.vendedor',$vd);
+		$this->db->order_by('a.cliente');
+		//$this->db->limit(1);
+		$bquery = $this->db->get();
+
+		if ($bquery->num_rows() > 0){
+			foreach($bquery->result() as $id=>$rrow){
+				if($rrow->tipo<1){
+					$tipo=1;
+				}elseif($rrow->tipo>4){
+					$tipo=1;
+				}else{
+					$tipo=$rrow->tipo;
+				}
+
+				$worksheet =& $workbook->addWorksheet($rrow->cliente);
+				$worksheet->protect('kunelet');
+				$worksheet->setInputEncoding('ISO-8859-2');
+				$worksheet->hideScreenGridlines();
+				$worksheet->setZoom(75);
+				$worksheet->setColumn(0,0, 30);
+				$worksheet->setColumn(1,2, 5 );
+				$worksheet->setColumn(5,5, 15);
+				$worksheet->setColumn(6,6, 20);
+
+				$worksheet->writeString(0, 0,"Representante: ($vd) $vnom",$fpre );
+				$worksheet->writeString(0, 6,'Fecha: '.date('d/m/Y')     ,$fpre);
+				$worksheet->writeString(1, 0,"Cliente: ($rrow->cliente) $rrow->nombre",$fpre );
+				$worksheet->mergeCells(0,6,0,7);
+				$worksheet->mergeCells(0,0,0,5);
+				$worksheet->mergeCells(1,0,1,7);
+
+				$mfil=2;
+				$worksheet->writeString($mfil, 0,'Producto' ,$ftit);
+				$worksheet->writeString($mfil, 1,'Presenta' ,$ftit);
+				$worksheet->writeString($mfil, 3,'Peso'     ,$ftit);
+				$worksheet->writeString($mfil, 4,'Precio'   ,$ftit);
+				$worksheet->writeString($mfil, 5,'Total Bs.',$ftit);
+				$worksheet->writeString($mfil, 6,'Cod. SAP' ,$ftit);
+				$worksheet->writeString($mfil, 7,'Pedido'   ,$ftit);
+				$worksheet->mergeCells($mfil,1,$mfil,2);
+				$worksheet->freezePanes(array($mfil+1,0,$mfil+1,0));
+				$worksheet->setRow($mfil, 25);
+				$mfil++;
+
+				$sel=array('a.peso','a.codigo','a.descrip','a.marca AS grupo','b.nom_grup','a.unidad',
+				'round(a.precio1*100/(100+a.iva),2) AS base1',
+				'round(a.precio2*100/(100+a.iva),2) AS base2',
+				'round(a.precio3*100/(100+a.iva),2) AS base3',
+				'round(a.precio4*100/(100+a.iva),2) AS base4');
+				$this->db->select($sel);
+				$this->db->from('sinv AS a');
+				$this->db->join('grup AS b','a.grupo=b.grupo');
+				$this->db->where('a.activo','S');
+				$this->db->order_by('a.grupo,a.descrip');
+				$query = $this->db->get();
+
+				$cini=$mfil+2;
+				$grup='';
+				$o=$lfil=0;
+				$ff1=array();
+				$fbod='fbod0';
+				if ($query->num_rows() > 0){
+					foreach ($query->result() as $row){
+						$mmfil=$mfil+1;
+						if($grup!=$row->grupo){
+							$worksheet->writeString($mfil, 0,$row->nom_grup,$fgru);
+							$worksheet->writeBlank( $mfil, 1,$fgru);
+							$worksheet->writeBlank( $mfil, 2,$fgru);
+							$worksheet->writeBlank( $mfil, 3,$fgru);
+							$worksheet->writeBlank( $mfil, 4,$fgru);
+							$worksheet->writeBlank( $mfil, 5,$fgru);
+							$worksheet->writeBlank( $mfil, 6,$fgru);
+							$worksheet->writeBlank( $mfil, 7,$fgru);
+							$mfil++;
+							$mmfil=$mfil+1;
+							$grup=$row->grupo;
+							$fbod='fbod'.$o;
+							$o=($o>=2)? 0: $o+1;
+						}
+
+						$obj='base'.$tipo;
+						$worksheet->writeString( $mfil, 0,$row->descrip     ,$$fbod);
+						$worksheet->writeNumber( $mfil, 1,$row->peso        ,$$fbod);
+						$worksheet->writeString( $mfil, 2,$row->unidad      ,$$fbod);
+						$worksheet->writeFormula($mfil, 3,"=H$mmfil*B$mmfil",$$fbod);
+						$worksheet->writeNumber( $mfil, 4,$row->$obj        ,$$fbod);
+						$worksheet->writeFormula($mfil, 5,"=H$mmfil*E$mmfil",$$fbod);
+						$worksheet->writeString( $mfil, 6,$row->codigo      ,$fcod);
+						$worksheet->writeNumber( $mfil, 7,0                 ,$fedi);
+						$mfil++;
+					}
+				}
+				$worksheet->writeString( $mfil, 0,'Totales...'     ,$ffot);
+				$worksheet->writeBlank(  $mfil, 1,$ffot);
+				$worksheet->writeBlank(  $mfil, 2,$ffot);
+				$worksheet->writeFormula($mfil, 3,"=SUM(D4:D$mfil)",$ffot);
+				$worksheet->writeBlank(  $mfil, 4,$ffot);
+				$worksheet->writeFormula($mfil, 5,"=SUM(F4:F$mfil)",$ffot);
+				$worksheet->writeBlank(  $mfil, 6 ,$ffot);
+				$worksheet->writeFormula($mfil, 7,"=SUM(H4:H$mfil)",$ffot);
+			}
+		}
+		$workbook->close();
+	}
+
 	function instalar(){
 		$query="ALTER TABLE `pfac`  ADD COLUMN `id` INT NULL AUTO_INCREMENT AFTER `fenvia`,
-		  ADD PRIMARY KEY (`id`),  ADD UNIQUE INDEX `numero` (`numero`)";
+		ADD PRIMARY KEY (`id`),  ADD UNIQUE INDEX `numero` (`numero`)";
 		$this->db->simple_query($query);
 	}
 }
