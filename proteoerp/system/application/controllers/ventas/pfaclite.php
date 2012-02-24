@@ -136,6 +136,10 @@ class pfaclite extends validaciones{
 		$filter->button('btn_back',RAPYD_BUTTON_BACK,"javascript:window.location='".site_url($back)."'", 'BL');
 		$filter->db->where('vendedor',$vd);
 
+		$filter->cliente = new inputField('C&oacute;digo', 'cod_cli');
+		$filter->cliente->size = 8;
+		//$filter->cliente->append($boton);
+
 		$filter->nombre= new inputField('Nombre','nombre');
 
 		$filter->rifci= new inputField('CI/RIF','rifci');
