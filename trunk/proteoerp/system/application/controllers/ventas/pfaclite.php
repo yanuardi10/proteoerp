@@ -55,8 +55,8 @@ class pfaclite extends validaciones{
 		if(strlen($vd['vendedor'])>0)
 		$filter->db->where('vd',$vd['vendedor']);
 
-		$filter->fechad = new dateonlyField('Desde', 'fechad');
-		$filter->fechah = new dateonlyField('Hasta', 'fechah');
+		$filter->fechad = new dateonlyField('Fecha Desde', 'fechad');
+		$filter->fechah = new dateonlyField('Fecha Hasta', 'fechah');
 		$filter->fechad->clause = $filter->fechah->clause   = 'where';
 		$filter->fechad->db_name = $filter->fechah->db_name = 'fecha';
 		//$filter->fechad->insertValue = date('Y-m-d');
@@ -86,7 +86,7 @@ class pfaclite extends validaciones{
 		$uri2 = anchor_popup('formatos/verhtml/PFAC/<#numero#>', 'Ver HTML', $atts);
 		$uri3 = anchor_popup('ventas/sfac/creadpfacf/<#numero#>', 'Facturar', $atts2);
 
-		$grid = new DataGrid('');
+		$grid = new DataGrid('Lista de pedidos realizados');
 		$grid->order_by('numero', 'desc');
 		$grid->per_page = 50;
 
@@ -107,7 +107,7 @@ class pfaclite extends validaciones{
 			$grid->column_orderby('Factura'      , 'factura' ,'factura');
 		}
 
-		$grid->add($this->url.'filterscli');
+		$grid->add($this->url.'filterscli','Incluir nuevo pedido');
 		$grid->build();
 
 		$data['content'] = $filter->output.$grid->output;
@@ -146,7 +146,7 @@ class pfaclite extends validaciones{
 
 		$uri = anchor($this->url.'dataedit/<raencode><#cliente#></raencode>/create','<#cliente#>');
 
-		$grid = new DataGrid('Seleccione el clientes');
+		$grid = new DataGrid('Seleccione el cliente al cual se le va a realizar el pedido');
 		$grid->order_by('nombre','asc');
 		$grid->per_page=20;
 		$grid->column_orderby('Cliente',$uri,'cliente');
@@ -286,7 +286,11 @@ class pfaclite extends validaciones{
 
 		$control=$this->rapyd->uri->get_edited_id();
 
-		$edit->buttons('add');
+		if($edit->getstatus()=='show'){
+			$action = "javascript:window.location='".site_url($this->url.'filterscli')."'";
+			$edit->button('btn_add', 'Incluir nuevo pedido', $action, 'TR');
+		}
+
 		if($fenvia < $hoy){
 			$edit->buttons('modify', 'save', 'delete', 'undo', 'back','add_rel');
 			$PFACRESERVA=$this->datasis->traevalor('PFACRESERVA','indica si un pedido descuenta de inventario los producto');
@@ -848,7 +852,7 @@ class pfaclite extends validaciones{
 				$worksheet->setColumn(6,6, 20);
 
 				$worksheet->writeString(0, 0,"Representante: ($vd) $vnom",$fpre );
-				$worksheet->writeString(0, 6,'Fecha: '.date('d/m/Y')     ,$fpre);
+				$worksheet->writeString(0, 6,'Fecha: '.date('d/m/Y H:i:s')     ,$fpre);
 				$worksheet->writeString(1, 0,"Cliente: ($rrow->cliente) $rrow->nombre",$fpre );
 				$worksheet->mergeCells(0,6,0,7);
 				$worksheet->mergeCells(0,0,0,5);
