@@ -66,8 +66,8 @@ $(function(){
 							$('#nombre').val('');
 							$('#nombre_val').text('');
 
-							$('#rifci').val('');
-							$('#rifci_val').text('');
+							$('#rif').val('');
+							$('#rif_val').text('');
 						}else{
 							$.each(data,
 								function(i, val){
@@ -85,7 +85,7 @@ $(function(){
 			$('#nombre_val').text(ui.item.nombre);
 			$('#rif').val(ui.item.rifci);
 			$('#rif_val').text(ui.item.rifci);
-			//$('#cod_cli').val(ui.item.cod_cli);
+			$('#cod_cli').val(ui.item.cod_cli);
 		}
 	});
 
