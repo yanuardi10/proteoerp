@@ -917,11 +917,34 @@ class rivc extends Controller {
 			if($itreferen=='C'){
 				$saldo =  $this->datasis->dameval("SELECT monto-abonos FROM smov WHERE tipo_doc='FC' AND numero='$itnumero'");
 			}else{
-				$saldo = 0;
+
+				if($ittipo_doc=='F'){
+					$sel=array('b.monto - b.abonos AS saldo','b.numero');
+					$this->db->select($sel);
+					$this->db->from('sfac AS a');
+					$this->db->join('smov AS b','a.cod_cli=b.cod_cli AND a.transac=b.transac AND a.fecha=b.fecha');
+					$this->db->where('a.tipo_doc','F');
+					$this->db->where('b.tipo_doc','ND');
+					$this->db->where('a.numero'  ,$itnumero);
+					$query = $this->db->get();
+
+					if ($query->num_rows() > 0){
+						$row = $query->row();
+
+						$ittipo_doc = 'ND';
+						$itnumero   = $row->numero;
+
+						$saldo=$row->saldo;
+					}else{
+						$saldo = 0;
+					}
+				}else{
+					$saldo = 0;
+				}
 			}
 
-			//Si es una factura
-			if($ittipo_doc == 'F'){
+			//Si es una factura o una nota de debito
+			if($ittipo_doc == 'F' || $ittipo_doc=='ND'){
 				//Si el saldo es 0  o menor que el monto retenido
 				if($saldo==0 || $itmonto>$saldo){
 					$sobrante+=$itmonto;
@@ -938,7 +961,7 @@ class rivc extends Controller {
 					$data['impuesto']   = 0;
 					$data['abonos']     = $itmonto;
 					$data['vence']      = $fecha;
-					$data['tipo_ref']   = ($ittipo_doc=='F')? 'FC' : 'DV';
+					$data['tipo_ref']   = ($ittipo_doc=='F')? 'FC' : 'ND';
 					$data['num_ref']    = $itnumero;
 					$data['observa1']   = 'APLICACION DE RET/IVA A '.$ittipo_doc.$itnumero;
 					$data['estampa']    = $estampa;
@@ -955,10 +978,10 @@ class rivc extends Controller {
 					$ban=$this->db->simple_query($mSQL);
 					if($ban==false){ memowrite($mSQL,'rivc'); }
 
-					//Aplica la NC a la FC
+					//Aplica la NC a la FC o ND segun sea el caso
 					$data=array();
 					$data['numccli']    = $itnumero;
-					$data['tipoccli']   = ($ittipo_doc=='F')? 'FC' : 'DV';;
+					$data['tipoccli']   = ($ittipo_doc=='F')? 'FC' : 'ND';
 					$data['cod_cli']    = $cod_cli;
 					$data['tipo_doc']   = 'NC';
 					$data['numero']     = $mnumnc;
@@ -983,7 +1006,7 @@ class rivc extends Controller {
 					if($ban==false){ memowrite($mSQL,'rivc');}
 
 					// Abona la factura
-					$tiposfac = ($ittipo_doc=='D')? 'NC':'FC';
+					$tiposfac = ($ittipo_doc=='F')? 'FC':'ND';
 					$mSQL = "UPDATE smov SET abonos=abonos+$itmonto WHERE numero='$itnumero' AND cod_cli='$cod_cli' AND tipo_doc='$tiposfac'";
 					$ban=$this->db->simple_query($mSQL);
 					if($ban==false){ memowrite($mSQL,'rivc'); }
@@ -1000,7 +1023,7 @@ class rivc extends Controller {
 				$data['impuesto']   = 0;
 				$data['abonos']     = 0;
 				$data['vence']      = $vence;
-				$data['tipo_ref']   = ($ittipo_doc=='F')? 'FC' : 'DV';
+				$data['tipo_ref']   = ($ittipo_doc=='F')? 'FC' : 'ND';
 				$data['num_ref']    = $itnumero;
 				$data['observa1']   = 'RET/IVA DE '.$cod_cli.' A DOC. '.$ittipo_doc.$itnumero;
 				$data['estampa']    = $estampa;
