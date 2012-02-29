@@ -1308,10 +1308,12 @@ function sfacreiva(mid){
 		for ($i=0;$i<count($sort);$i++) {
 			$this->db->order_by($sort[$i]['property'],$sort[$i]['direction']);
 		}
+
 		$sql = $this->db->_compile_select($this->db->_count_string . $this->db->_protect_identifiers('numrows'));
 		$results = $this->datasis->dameval($sql);
 		$this->db->limit($limit, $start);
 		$query = $this->db->get();
+
 		$arr = $this->datasis->codificautf8($query->result_array());
 
 		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
@@ -1718,7 +1720,7 @@ function renderSinv(value, p, record) {
 			}";
 
 
-		$titulow = 'Compras';
+		$titulow = 'Facturacion';
 
 		$filtros = "";
 		$features = "
