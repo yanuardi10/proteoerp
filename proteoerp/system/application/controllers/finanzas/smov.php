@@ -572,10 +572,12 @@ class smov extends Controller {
 			$this->db->order_by($sort[$i]['property'],$sort[$i]['direction']);
 		}
 
+		$sql = $this->db->_compile_select($this->db->_count_string . $this->db->_protect_identifiers('numrows'));
+		$results = $this->datasis->dameval($sql);
 		$this->db->limit($limit, $start);
-
 		$query = $this->db->get();
-		$results = $query->num_rows();
+
+		$mSQL = '';
 
 		$arr = $this->datasis->codificautf8($query->result_array());
 		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
@@ -587,42 +589,50 @@ class smov extends Controller {
 		$numero    = isset($_REQUEST['numero'])   ? $_REQUEST['numero']   :  '';
 		$cod_cli   = isset($_REQUEST['cod_cli'])  ? $_REQUEST['cod_cli']  :  '';
 
-
-//numccli, tipoccli, cod_cli, tipo_doc, numero, fecha, monto, abono, ppago, reten, reteiva
-		//{ header: 'Cambio',  width: 80, sortable: true, dataIndex: 'cambio' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		//{ header: 'Mora',    width: 80, sortable: true, dataIndex: 'mora' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		//{ header: 'Transac', width: 60, sortable: true, dataIndex: 'transac' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		//{ header: 'Estampa', width: 80, sortable: true, dataIndex: 'estampa' , field: { type: 'date' }, filter: { type: 'date' }},
-		//{ header: 'Hora',    width: 60, sortable: true, dataIndex: 'hora' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		//{ header: 'Usuario', width: 60, sortable: true, dataIndex: 'usuario' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		//{ header: 'Reteiva', width: 60, sortable: true, dataIndex: 'reteiva' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		//{ header: 'Nroriva', width: 60, sortable: true, dataIndex: 'nroriva' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		//{ header: 'Emiriva', width: 60, sortable: true, dataIndex: 'emiriva' , field: { type: 'date' }, filter: { type: 'date' }},
-		//{ header: 'Recriva', width: 60, sortable: true, dataIndex: 'recriva' , field: { type: 'date' }, filter: { type: 'date' }},
-		//{ header: 'id',      width: 60, sortable: true, dataIndex: 'id' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}
-
-
-
-
 		if ($transac == 0 ){
 			$id = $this->datasis->dameval("SELECT MAX(id) FROM smov ")  ;
 			$transac = $this->datasis->dameval("SELECT transac FROM smov WHERE id=$id ")  ;
-		}
+		} else
+			$id = $this->datasis->dameval("SELECT id FROM smov WHERE tipo_doc='$tipo_doc' AND numero='$numero' AND cod_cli='$cod_cli'")  ;
+		
 
+		$fecha = $this->datasis->dameval("SELECT estampa FROM smov WHERE id=$id ");
+		
 		$mSQL = "
 SELECT
-cod_cli, fecha, 
+'1' origen, cod_cli, fecha, 
 IF(tipo_doc='$tipo_doc' AND numero='$numero', tipoccli, tipo_doc) tipo_doc,
 IF(tipo_doc='$tipo_doc' AND numero='$numero', numccli, numero) numero,
 monto, abono, ppago, reten, reteiva
-FROM itccli WHERE transac='$transac' ";
-/*
-#UNION ALL
-#SELECT * FROM itccli WHERE cod_cli='$cod_cli' AND numero='$numero' AND tipo_doc='$tipo_doc' AND transac!='$transac'
-#UNION ALL
-#SELECT * FROM itccli WHERE cod_cli='$cod_cli' AND numccli='$numero' AND tipoccli='$tipo_doc' AND transac!='$transac'
-ORDER BY estampa
-";*/
+FROM itccli WHERE transac='$transac' AND estampa>='$fecha'
+UNION ALL
+SELECT
+'2' origen, cod_cli, fecha, 
+IF(tipo_doc='$tipo_doc' AND numero='$numero', tipoccli, tipo_doc) tipo_doc,
+IF(tipo_doc='$tipo_doc' AND numero='$numero', numccli, numero) numero,
+monto, abono, ppago, reten, reteiva
+FROM itccli WHERE cod_cli='$cod_cli' AND numero='$numero' AND tipo_doc='$tipo_doc' AND transac!='$transac'
+UNION ALL
+SELECT
+'3' origen, cod_cli, fecha, 
+IF(tipo_doc='$tipo_doc' AND numero='$numero', tipoccli, tipo_doc) tipo_doc,
+IF(tipo_doc='$tipo_doc' AND numero='$numero', numccli, numero) numero,
+monto, abono, ppago, reten, reteiva
+FROM itccli WHERE cod_cli='$cod_cli' AND numccli='$numero' AND tipoccli='$tipo_doc' AND transac!='$transac'
+UNION ALL
+SELECT
+'4' origen, b.cliente cod_cli, a.ofecha fecha, 'CR' tipo_doc,
+a.numero,  a.monto,  0,0,0,0
+FROM itcruc AS a JOIN cruc AS b ON a.numero=b.numero 
+WHERE b.cliente='$cod_cli' AND a.onumero='$tipo_doc$numero'
+UNION ALL
+SELECT
+IF(a.tipo='ADE','4','5') origen, b.cliente cod_cli, a.ofecha fecha, MID(onumero,1,2) tipo_doc,
+MID(onumero,3,8), a.monto,  0,0,0,0
+FROM itcruc AS a JOIN cruc AS b ON a.numero=b.numero 
+WHERE b.transac='$transac' 
+";
+
 
 		$query = $this->db->query($mSQL);
 		$results =  0;
@@ -702,8 +712,6 @@ ORDER BY estampa
 			$salida .= "</table>";
 		}
 
-
-
 		//cod_cli, MID(nombre,1,25) nombre, tipo_doc, numero, monto, abonos
 		//Cruce de Cuentas
 		$mSQL = "SELECT b.proveed cod_cli, MID(b.nombre,1,25) nombre, a.monto, b.numero, b.fecha
@@ -756,19 +764,19 @@ ORDER BY estampa
 			{ header: 'Vence',     width: 80, sortable: true, dataIndex: 'vence' , field: { type: 'date' }, filter: { type: 'date' }},
 			{ header: 'Referen.',  width: 40, sortable: true, dataIndex: 'tipo_ref' , field: { type: 'textfield' }, filter: { type: 'string' }},
 			{ header: 'num_ref',   width: 60, sortable: true, dataIndex: 'num_ref' , field: { type: 'textfield' }, filter: { type: 'string' }},
-			{ header: 'observa1',  width: 60, sortable: true, dataIndex: 'observa1' , field: { type: 'textfield' }, filter: { type: 'string' }},
-			{ header: 'observa2',  width: 60, sortable: true, dataIndex: 'observa2' , field: { type: 'textfield' }, filter: { type: 'string' }},
+			{ header: 'observa1',  width:200, sortable: true, dataIndex: 'observa1' , field: { type: 'textfield' }, filter: { type: 'string' }},
+			{ header: 'observa2',  width:160, sortable: true, dataIndex: 'observa2' , field: { type: 'textfield' }, filter: { type: 'string' }},
 			{ header: 'Banco',     width: 60, sortable: true, dataIndex: 'banco' , field: { type: 'textfield' }, filter: { type: 'string' }},
 			{ header: 'tipo_op' ,  width: 60, sortable: true, dataIndex: 'tipo_op' , field: { type: 'textfield' }, filter: { type: 'string' }},
 			{ header: 'Fecha_op',  width: 60, sortable: true, dataIndex: 'fecha_op' , field: { type: 'date' }, filter: { type: 'date' }},
 			{ header: 'Num_op',    width: 60, sortable: true, dataIndex: 'num_op' , field: { type: 'textfield' }, filter: { type: 'string' }},
-			{ header: 'pP.Pago',   width: 80, sortable: true, dataIndex: 'ppago' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+			{ header: 'PP.Pago',   width: 80, sortable: true, dataIndex: 'ppago' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
 			{ header: 'Reten',     width: 60, sortable: true, dataIndex: 'reten' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
 			{ header: 'Codigo',    width: 60, sortable: true, dataIndex: 'codigo' , field: { type: 'textfield' }, filter: { type: 'string' }},
 			{ header: 'Descrip',   width: 60, sortable: true, dataIndex: 'descrip' , field: { type: 'textfield' }, filter: { type: 'string' }},
 			{ header: 'Control',   width: 60, sortable: true, dataIndex: 'control' , field: { type: 'textfield' }, filter: { type: 'string' }},
 			{ header: 'Usuario',   width: 60, sortable: true, dataIndex: 'usuario' , field: { type: 'textfield' }, filter: { type: 'string' }},
-			{ header: 'Estampa',   width: 60, sortable: true, dataIndex: 'estampa' , field: { type: 'date' }, filter: { type: 'date' }},
+			{ header: 'Estampa',   width: 70, sortable: true, dataIndex: 'estampa' , field: { type: 'date' }, filter: { type: 'date' }},
 			{ header: 'Hora',      width: 60, sortable: true, dataIndex: 'hora' , field: { type: 'textfield' }, filter: { type: 'string' }},
 			{ header: 'Transac',   width: 60, sortable: true, dataIndex: 'transac' , field: { type: 'textfield' }, filter: { type: 'string' }},
 			{ header: 'Origen',    width: 60, sortable: true, dataIndex: 'origen' , field: { type: 'textfield' }, filter: { type: 'string' }},
@@ -777,26 +785,27 @@ ORDER BY estampa
 			{ header: 'Reteiva',   width: 60, sortable: true, dataIndex: 'reteiva' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
 			{ header: 'Vendedor',  width: 60, sortable: true, dataIndex: 'vendedor' , field: { type: 'textfield' }, filter: { type: 'string' }},
 			{ header: 'Nfiscal',   width: 60, sortable: true, dataIndex: 'nfiscal' , field: { type: 'textfield' }, filter: { type: 'string' }},
-			{ header: 'montasa',   width: 60, sortable: true, dataIndex: 'montasa' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-			{ header: 'monredu',   width: 60, sortable: true, dataIndex: 'monredu' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-			{ header: 'monadic',   width: 60, sortable: true, dataIndex: 'monadic' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-			{ header: 'tasa',      width: 60, sortable: true, dataIndex: 'tasa' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-			{ header: 'reducida',  width: 60, sortable: true, dataIndex: 'reducida' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-			{ header: 'sobretasa', width: 60, sortable: true, dataIndex: 'sobretasa' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-			{ header: 'exento',    width: 60, sortable: true, dataIndex: 'exento' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-			{ header: 'fecdoc',    width: 60, sortable: true, dataIndex: 'fecdoc' , field: { type: 'date' }, filter: { type: 'date' }},
-			{ header: 'nroriva',   width: 60, sortable: true, dataIndex: 'nroriva' , field: { type: 'textfield' }, filter: { type: 'string' }},
-			{ header: 'emiriva',   width: 60, sortable: true, dataIndex: 'emiriva' , field: { type: 'date' }, filter: { type: 'date' }},
-			{ header: 'codcp',     width: 60, sortable: true, dataIndex: 'codcp' , field: { type: 'textfield' }, filter: { type: 'string' }},
-			{ header: 'depto',     width: 60, sortable: true, dataIndex: 'depto' , field: { type: 'textfield' }, filter: { type: 'string' }},
-			{ header: 'maqfiscal', width: 60, sortable: true, dataIndex: 'maqfiscal' , field: { type: 'textfield' }, filter: { type: 'string' }},
-			{ header: 'modificado',width: 60, sortable: true, dataIndex: 'modificado' , field: { type: 'date' }, filter: { type: 'date' }},
+			{ header: 'MonTasa',   width: 60, sortable: true, dataIndex: 'montasa' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+			{ header: 'MonRedu',   width: 60, sortable: true, dataIndex: 'monredu' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+			{ header: 'MonAdic',   width: 60, sortable: true, dataIndex: 'monadic' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+			{ header: 'Tasa',      width: 60, sortable: true, dataIndex: 'tasa' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+			{ header: 'Reducida',  width: 60, sortable: true, dataIndex: 'reducida' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+			{ header: 'Sobretasa', width: 60, sortable: true, dataIndex: 'sobretasa' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+			{ header: 'Exento',    width: 60, sortable: true, dataIndex: 'exento' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
+			{ header: 'Fec.Doc',   width: 70, sortable: true, dataIndex: 'fecdoc' , field: { type: 'date' }, filter: { type: 'date' }},
+			{ header: 'Nr.RetIVA', width: 90, sortable: true, dataIndex: 'nroriva' , field: { type: 'textfield' }, filter: { type: 'string' }},
+			{ header: 'Emision',   width: 70, sortable: true, dataIndex: 'emiriva' , field: { type: 'date' }, filter: { type: 'date' }},
+			{ header: 'Cli/Pro',   width: 60, sortable: true, dataIndex: 'codcp' , field: { type: 'textfield' }, filter: { type: 'string' }},
+			{ header: 'Depto',     width: 60, sortable: true, dataIndex: 'depto' , field: { type: 'textfield' }, filter: { type: 'string' }},
+			{ header: 'MaqFiscal', width: 60, sortable: true, dataIndex: 'maqfiscal' , field: { type: 'textfield' }, filter: { type: 'string' }},
+			{ header: 'Modificado',width: 90, sortable: true, dataIndex: 'modificado' , field: { type: 'date' }, filter: { type: 'date' }},
 			{ header: 'Ningreso',  width: 60, sortable: true, dataIndex: 'ningreso' , field: { type: 'textfield' }, filter: { type: 'string' }},
 			{ header: 'Ncredito',  width: 60, sortable: true, dataIndex: 'ncredito' , field: { type: 'textfield' }, filter: { type: 'string' }}
 		";
 
 		$coldeta = "
 	var Deta1Col = [
+		{ header: 'O',       width: 20, sortable: true, dataIndex: 'origen' , field: { type: 'textfield' }, filter: { type: 'string' }},
 		{ header: 'Cliente', width: 50, sortable: true, dataIndex: 'cod_cli' , field: { type: 'textfield' }, filter: { type: 'string' }},
 		{ header: 'Tipo',    width: 40, sortable: true, dataIndex: 'tipo_doc' , field: { type: 'textfield' }, filter: { type: 'string' }},
 		{ header: 'Numero',  width: 70, sortable: true, dataIndex: 'numero' , field: { type: 'textfield' }, filter: { type: 'string' }},
@@ -833,7 +842,7 @@ ORDER BY estampa
 		$stores = "
 	Ext.define('It".$modulo."', {
 		extend: 'Ext.data.Model',
-		fields: [".$this->datasis->extjscampos("itccli")."],
+		fields: ['origen',".$this->datasis->extjscampos("itccli")."],
 		proxy: {
 			type: 'ajax',
 			noCache: false,
@@ -875,7 +884,7 @@ ORDER BY estampa
 
 	var ".$modulo."TplMarkup = [
 		'<table width=\'100%\' bgcolor=\"#F3F781\">',
-		'<tr><td colspan=3 align=\'center\'><p style=\'font-size:14px;font-weight:bold\'>IMPRIMIR FACTURA</p></td></tr><tr>',
+		'<tr><td colspan=3 align=\'center\'><p style=\'font-size:14px;font-weight:bold\'>IMPRIMIR DOCUMENTO</p></td></tr><tr>',
 		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'ventas/sfac_add/dataprint/modify/{id}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/html_icon.gif', 'alt' => 'Formato HTML', 'title' => 'Formato HTML','border'=>'0'))."</a></td>',
 		'<td align=\'center\'>{numero}</td>',
 		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'ventas/sfac_add/dataprint/modify/{id}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',  'title' => 'Formato PDF', 'border'=>'0'))."</a></td></tr>',
@@ -889,7 +898,7 @@ ORDER BY estampa
 	gridMaest.getSelectionModel().on('selectionchange', function(sm, selectedRecord) {
 		if (selectedRecord.length) {
 			gridMaest.down('#delete').setDisabled(selectedRecord.length === 0);
-			gridMaest.down('#update').setDisabled(selectedRecord.length === 0);
+			//gridMaest.down('#update').setDisabled(selectedRecord.length === 0);
 			numero   = selectedRecord[0].data.numero;
 			cod_cli  = selectedRecord[0].data.cod_cli;
 			tipo_doc = selectedRecord[0].data.tipo_doc;
@@ -929,7 +938,7 @@ ORDER BY estampa
 		$dockedItems = "{
 			xtype: 'toolbar',
 			items: [
-				{
+				/*{
 					iconCls: 'icon-add',
 					text: 'Agregar',
 					scope: this,
@@ -948,7 +957,8 @@ ORDER BY estampa
 						gridMaest.down('#delete').setDisabled(selections.length === 0);
 						window.open(urlApp+'ventas/sfac_add/dataedit/modify/'+selection.data.id, '_blank', 'width=900,height=730,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys);
 					}
-				},{
+				},*/
+				{
 					iconCls: 'icon-delete',
 					text: 'Eliminar',
 					disabled: true,

@@ -37,14 +37,14 @@ Ext.Loader.setPath('Ext.ux', BASE_UX);
 Ext.require([
 	'Ext.grid.*',
 	'Ext.ux.grid.FiltersFeature',
-	'Ext.data.*',
-	'Ext.util.*',
-	'Ext.state.*',
-	'Ext.form.*',
-	'Ext.window.MessageBox',
-	'Ext.tip.*',
-	'Ext.ux.CheckColumn',
-	'Ext.toolbar.Paging'
+	//'Ext.data.*',
+	//'Ext.util.*',
+	//'Ext.state.*',
+	//'Ext.form.*',
+	//'Ext.window.MessageBox',
+	//'Ext.tip.*',
+	//'Ext.ux.CheckColumn',
+	//'Ext.toolbar.Paging'
 ]);
 
 var registro;
