@@ -950,6 +950,7 @@ class rivc extends Controller {
 					$sobrante+=$itmonto;
 				}else{
 					//Como tiene saldo suficiente crea una NC y la aplica a la FC
+
 					$mnumnc = $this->datasis->fprox_numero('nccli');
 					$data=array();
 					$data['cod_cli']    = $cod_cli;
@@ -961,9 +962,9 @@ class rivc extends Controller {
 					$data['impuesto']   = 0;
 					$data['abonos']     = $itmonto;
 					$data['vence']      = $fecha;
-					$data['tipo_ref']   = ($ittipo_doc=='F')? 'FC' : 'ND';
-					$data['num_ref']    = $itnumero;
-					$data['observa1']   = 'APLICACION DE RET/IVA A '.$ittipo_doc.$itnumero;
+					$data['tipo_ref']   = 'FC';
+					$data['num_ref']    = $do->get_rel($rel,'numero',$i);
+					$data['observa1']   = 'APLICACION DE RET/IVA A FC'.$do->get_rel($rel,'numero',$i);
 					$data['estampa']    = $estampa;
 					$data['hora']       = $hora;
 					$data['transac']    = $transac;
@@ -1023,9 +1024,9 @@ class rivc extends Controller {
 				$data['impuesto']   = 0;
 				$data['abonos']     = 0;
 				$data['vence']      = $vence;
-				$data['tipo_ref']   = ($ittipo_doc=='F')? 'FC' : 'ND';
-				$data['num_ref']    = $itnumero;
-				$data['observa1']   = 'RET/IVA DE '.$cod_cli.' A DOC. '.$ittipo_doc.$itnumero;
+				$data['tipo_ref']   = 'FC';
+				$data['num_ref']    = $do->get_rel($rel, 'numero'  , $i);
+				$data['observa1']   = 'RET/IVA DE '.$cod_cli.' A DOC. FC'.$do->get_rel($rel,'numero', $i);
 				$data['estampa']    = $estampa;
 				$data['hora']       = $hora;
 				$data['transac']    = $transac;
