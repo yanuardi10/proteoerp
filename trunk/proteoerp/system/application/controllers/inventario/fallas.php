@@ -8,7 +8,7 @@ class fallas extends Controller {
 		$this->load->library('rapyd');
 
 		$this->falla[]=array('sql' =>'precio1 <= 0 OR precio2 <= 0 OR precio3 <= 0 OR precio4 <= 0 OR precio1 = NULL OR precio2 = NULL OR precio3 = NULL OR precio4 = NULL', 'nombre' => 'Productos sin precios');
-		$this->falla[]=array('sql' =>'ultimo <= 0 OR ultimo = NULL', 'nombre'                                                 => 'Productos sin costos');
+		$this->falla[]=array('sql' =>'ultimo <= 0 OR ultimo IS NULL', 'nombre'                                                 => 'Productos sin costos');
 		$this->falla[]=array('sql' =>'base1 <= 0 OR base2 <= 0  OR base3 <= 0  OR base4 <= 0 ', 'nombre'                      => 'Productos sin bases');
 		$this->falla[]=array('sql' =>'precio1 < ultimo OR precio2 < ultimo OR precio3 < ultimo OR precio4 < ultimo', 'nombre' => 'Productos con precio por debajo de costo');
 		$this->falla[]=array('sql' =>'LENGTH(descrip) < 5', 'nombre'                                                          => 'Productos con descripciones menor a 5 caracteres');
@@ -41,6 +41,7 @@ class fallas extends Controller {
 			$grid->db->select=array('codigo','LEFT(descrip,20)AS descrip','margen1','margen2','margen3','margen4','base1','base2','base3','base4','precio1','precio2','precio3','precio4','id','existen','ultimo','pond');
 			$grid->db->from('sinv');
 			$grid->per_page = 15;
+			$grid->order_by('existen','desc');
 			foreach($this->falla AS $ind=>$data){
 				$id='f_'.$ind;
 				if($this->input->post($id)){
@@ -59,13 +60,12 @@ class fallas extends Controller {
 			$link=anchor_popup('/inventario/sinv/dataedit/show/<#id#>','<#codigo#>', $atts);
 
 			$grid->column('C&oacute;digo',$link);
-			//$grid->column('C&oacute;digo','codigo');
 			$grid->column('Descripci&oacute;n','descrip');
 			$grid->column('Margenes'   ,'<ol><li><#margen1#></li><li><#margen2#></li><li><#margen3#></li><li><#margen4#></li></ol>');
 			$grid->column('Bases'      ,'<ol><li><#base1#></li><li><#base2#></li><li><#base3#></li><li><#base4#></li></ol>');
 			$grid->column('Precios'    ,'<ol><li><#precio1#></li><li><#precio2#></li><li><#precio3#></li><li><#precio4#></li></ol>');
 			$grid->column('Costos'     ,'<ul><li><b>Ultimo:</b><#ultimo#></li><li><b>Promedio:</b><#pond#></li></ul>');
-			$grid->column('Existencia' ,'existen' ,'align=\'right\'');
+			$grid->column_orderby('Existencia' ,'existen','existen' ,'align=\'right\'');
 			$grid->build();
 			//echo $grid->db->last_query();
 			$salida.=$grid->output;
@@ -76,12 +76,50 @@ class fallas extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
+	//Repite el precio superior cuando no existe
 	function arreglaprecios(){
 		$mSQL='UPDATE sinv SET precio2=precio1, base2=base1, margen2=margen1 WHERE precio2=0 OR precio2 IS NULL';
 		var_dump($this->db->simple_query($mSQL));
 		$mSQL='UPDATE sinv SET precio3=precio2, base3=base2, margen3=margen2 WHERE precio3=0 OR precio3 IS NULL';
 		var_dump($this->db->simple_query($mSQL));
 		$mSQL='UPDATE sinv SET precio4=ROUND(ultimo*100/(100-(margen3-0.5))*(1+(iva/100)),2), base4=ROUND(ultimo*100/(100-(margen3-0.5)),2), margen4=margen3-.5 WHERE precio4=0 OR precio4 IS NULL';
+		var_dump($this->db->simple_query($mSQL));
+	}
+
+	//Arregla la secuencia de precios
+	function arreglasecu(){
+		$mSQL='UPDATE sinv SET precio2=precio1, base2=base1, margen2=margen1 WHERE margen2>margen1';
+		var_dump($this->db->simple_query($mSQL));
+		$mSQL='UPDATE sinv SET precio3=precio2, base3=base2, margen3=margen2 WHERE margen3>margen2';
+		var_dump($this->db->simple_query($mSQL));
+		$mSQL='UPDATE sinv SET precio4=ROUND(ultimo*100/(100-(margen3-0.5))*(1+(iva/100)),2), base4=ROUND(ultimo*100/(100-(margen3-0.5)),2), margen4=margen3-.5 WHERE margen4>=margen3';
+		var_dump($this->db->simple_query($mSQL));
+	}
+
+	//Recalcula los margenes y las bases respetando el precio
+	function arreglamarbases(){
+		$mSQL="UPDATE datasis.sinv SET
+		base1=precio1*100/(100+iva),
+		base2=precio2*100/(100+iva),
+		base3=precio3*100/(100+iva),
+		base4=precio4*100/(100+iva)";
+		var_dump($this->db->simple_query($mSQL));
+
+		$mSQL="UPDATE datasis.sinv SET
+		margen1=ROUND(100-((IF(formcal='U',ultimo,IF(formcal='P',pond,GREATEST(pond,ultimo)))*100)/base1),2),
+		margen2=ROUND(100-((IF(formcal='U',ultimo,IF(formcal='P',pond,GREATEST(pond,ultimo)))*100)/base2),2),
+		margen3=ROUND(100-((IF(formcal='U',ultimo,IF(formcal='P',pond,GREATEST(pond,ultimo)))*100)/base3),2),
+		margen4=ROUND(100-((IF(formcal='U',ultimo,IF(formcal='P',pond,GREATEST(pond,ultimo)))*100)/base4),2)";
+		var_dump($this->db->simple_query($mSQL));
+	}
+
+	//Arregla los margenes negativos
+	function arreglamargneg(){
+		$mSQL='UPDATE sinv SET precio2=precio1, base2=base1, margen2=margen1 WHERE margen2<=0';
+		var_dump($this->db->simple_query($mSQL));
+		$mSQL='UPDATE sinv SET precio3=precio2, base3=base2, margen3=margen2 WHERE margen3<=0';
+		var_dump($this->db->simple_query($mSQL));
+		$mSQL='UPDATE sinv SET precio4=ROUND(ultimo*100/(100-(margen3*0.90))*(1+(iva/100)),2), base4=ROUND(ultimo*100/(100-(margen3*0.9)),2), margen4=margen3*.9 WHERE margen4<=0';
 		var_dump($this->db->simple_query($mSQL));
 	}
 }
