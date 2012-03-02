@@ -15,18 +15,18 @@ class hoteleria{
 			referen, planilla, clipro, nombre, contribu, rif, registro,
 			nacional, exento, general, geneimpu, 
 			adicional, adicimpu,  reducida,  reduimpu, stotal, impuesto, 
-			gtotal, reiva, fechal, fafecta) 
+			gtotal, reiva, fechal, fafecta,serial) 
 			SELECT 0 AS id,
 			'V' AS libro, 
 			IF(a.tipo='D','NC',CONCAT('F',a.tipo)) AS tipo, 
 			'FR' AS fuente, 
 			'00' AS sucursal, 
 			a.fecha, 
-			a.numero, 
+			a.nfiscal, 
 			' ' AS numhasta, 
 			' ' AS caja, 
-			' ' AS nfiscal, 
-			'  ' AS nhfiscal, 
+			a.nfiscal AS nfiscal, 
+			a.nfiscal AS nhfiscal, 
 			IF(a.tipo='E',a.numero,a.numero ) AS referen, 
 			'  ' AS planilla, 
 			a.cod_cli AS clipro, 
@@ -47,13 +47,14 @@ class hoteleria{
 			a.gtotal*(a.tipo<>'X') AS gtotal, 
 			0 AS reiva, 
 			".$mes."01 AS fechal, 
-			0 AS fafecta 
+			0 AS fafecta, 
+			a.maqfiscal AS serial
 			FROM rfac AS a 
 			LEFT JOIN scli AS c ON a.cod_cli=c.cliente 
 			WHERE a.fecha BETWEEN $fdesde AND $fhasta AND a.tipo NOT IN ('P','T')";
 		$flag=$this->db->simple_query($mSQL);
 		if(!$flag) memowrite($mSQL,'generest');
-		
+
 		// CARGA LAS RETENCIONES DE IVA DE CONTADO
 		$mSQL = "SELECT * FROM sfpa WHERE tipo='RI' AND	EXTRACT(YEAR_MONTH FROM f_factura)=$mes AND tipo_doc='FE' ";
 		$query = $this->db->query($mSQL);
