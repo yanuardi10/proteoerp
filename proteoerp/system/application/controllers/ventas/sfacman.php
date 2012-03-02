@@ -560,7 +560,7 @@ class sfacman extends validaciones {
 			$data['nombre']     = $nombre;
 			$data['tipo_doc']   = 'ND';
 			$data['numero']     = $mnumnc;
-			$data['fecha']      = $estampa;
+			$data['fecha']      = $fecha;
 			$data['monto']      = $totneto;
 			$data['impuesto']   = $impuesto;
 			$data['abonos']     = 0;
