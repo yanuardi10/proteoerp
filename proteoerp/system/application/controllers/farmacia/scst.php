@@ -260,6 +260,15 @@ class Scst extends Controller {
 		//echo $detalle->db->last_query();
 		$c_articulos=$detalle->recordCount;
 
+		$query = $this->rapyd->db->query('SELECT SUM(a.cantidad) AS cant FROM itscst AS a WHERE a.control='.$this->db->escape($numero));
+		if ($query->num_rows() > 0){
+			$row = $query->row_array();
+			$unid = $row['cant'];
+		}else{
+			$unid = 0;
+		}
+		$edit->unidades = new freeField('Unidades','unidades',nformat($unid));
+
 		$script='
 		function pcrear(id){
 			var pasar=["barras","descrip","ultimo","iva","codigo","pond","precio1","precio2","precio3","precio4"];
@@ -692,6 +701,7 @@ class Scst extends Controller {
 		$form->almacen = new  dropdownField ('Almac&eacute;n', 'almacen');
 		if ($cana>1)$form->almacen->option('','Seleccionar');
 		$form->almacen->options("SELECT ubica,CONCAT_WS('-',ubica,ubides) AS val FROM caub WHERE gasto='N' and invfis='N' ORDER BY ubides");
+		$form->almacen->insertValue=$this->datasis->traevalor('ALMACEN');
 		$form->almacen->rule = 'required';
 
 		$proveed=$this->_traesprv($control);
