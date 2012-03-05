@@ -186,13 +186,14 @@ class CI_Upload {
 		}
 
 		// Set the uploaded data as class variables
-		$this->file_temp = $_FILES[$field]['tmp_name'];		
+		$this->file_temp = $_FILES[$field]['tmp_name'];
 		$this->file_name = $this->_prep_filename($_FILES[$field]['name']);
-		$this->file_size = $_FILES[$field]['size'];		
+		$this->file_size = $_FILES[$field]['size'];
 		$this->file_type = preg_replace("/^(.+?);.*$/", "\\1", $_FILES[$field]['type']);
+		$this->file_type = str_replace(array('"','\'') ,'', $this->file_type);
 		$this->file_type = strtolower($this->file_type);
 		$this->file_ext	 = $this->get_extension($_FILES[$field]['name']);
-		
+
 		// Convert the file size to kilobytes
 		if ($this->file_size > 0)
 		{
@@ -571,10 +572,9 @@ class CI_Upload {
 					return FALSE;
 				}
 			}
-
 			if (is_array($mime))
 			{
-				if (in_array($this->file_type, $mime, TRUE))
+				if (in_array($this->file_type, $mime))
 				{
 					return TRUE;
 				}
@@ -584,10 +584,10 @@ class CI_Upload {
 				if ($mime == $this->file_type)
 				{
 					return TRUE;
-				}	
-			}		
+				}
+			}
 		}
-		
+
 		return FALSE;
 	}
 	
@@ -656,7 +656,7 @@ class CI_Upload {
 	 *
 	 * @access	public
 	 * @return	bool
-	 */	
+	 */
 	function validate_upload_path()
 	{
 		if ($this->upload_path == '')
