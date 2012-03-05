@@ -520,7 +520,7 @@ class pfaclite extends validaciones{
 
 		$rti='';
 		if ($form->on_success()){
-			$arch= $form->archivo->upload_data['file_name'];
+			$arch= '/tmp/'.$form->archivo->upload_data['file_name'];
 			$rt=$this->nread($arch);
 			$rti="<p>$rt</p>";
 		}
@@ -531,11 +531,11 @@ class pfaclite extends validaciones{
 		$this->load->view('view_ventanas_lite', $data);
 	}
 
-	function nread(){
+	function nread($arch){
 		$this->load->library('Spreadsheet_Excel_Reader');
 		$rt='';
 		$this->spreadsheet_excel_reader->setOutputEncoding('CP1251');
-		$this->spreadsheet_excel_reader->read('pfl_05-03-2012.xls');
+		$this->spreadsheet_excel_reader->read($arch);
 		array_shift($this->spreadsheet_excel_reader->sheets);
 		$hojas=count($this->spreadsheet_excel_reader->sheets);
 		for($i=0;$i<$hojas;$i++){
@@ -561,13 +561,17 @@ class pfaclite extends validaciones{
 				}
 			}
 
-			$_POST['observa']='EXCEL '.$genefec;
+			$_POST['observa']='Fuera de linea, Hoja del '.$genefec;
 			if(!empty($_POST['cod_cli'])){
 				$this->genesal=false;
 				$rrt=$this->dataedit($_POST['cod_cli'],'','');
 				$rt.=$rrt."<br />";
 			}
 			$_POST=array();
+		}
+
+		if(file_exists($arch)){
+			unlink($arch);
 		}
 		return $rt;
 	}
@@ -629,7 +633,7 @@ class pfaclite extends validaciones{
 					$this->datasis->sinvcarga( $codigoa, 'PEDI', $cana);
 				}
 			}
-			$fenvia=date("Ymd");
+			$fenvia=date('Ymd');
 			$do->set('reserva','S');
 			$do->set('fenvia' ,$fenvia);
 			if(empty($error))
@@ -656,7 +660,7 @@ class pfaclite extends validaciones{
 	}
 
 	function pfl(){
-		if (!extension_loaded('perl')) show_error('Se necesita la extenci&oacute;n perl, comuniquese con soporte t&eacute;cnico');
+		if(!extension_loaded('perl')) show_error('Se necesita la extenci&oacute;n perl, comuniquese con soporte t&eacute;cnico');
 
 		$vd   = $this->secu->getVendedor();
 		$vnom = $this->datasis->dameval('SELECT nombre FROM vend WHERE vendedor='.$this->db->escape($vd));
@@ -669,7 +673,7 @@ class pfaclite extends validaciones{
 		$fname= 'pfl_'.date('d-m-Y').'.xls';
 		$comp = $this->datasis->traevalor('TITULO1');
 		$rif  = $this->datasis->traevalor('RIF');
-		$key  = 'Kunelet';
+		$key  = $this->datasis->traevalor('RIF');
 
 		header("Content-type: application/x-msexcel; name=\"${fname}\"");
 		header("Content-Disposition: inline; filename=\"${fname}\"");
@@ -926,7 +930,7 @@ __END__
 
 PERL_END;
 
-		file_put_contents('excel.pl', $pl);
+		//file_put_contents('excel.pl', $pl);
 		$perl = new Perl();
 		$pobj = $perl->eval($pl);
 	}
