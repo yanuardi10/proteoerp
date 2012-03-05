@@ -17,6 +17,7 @@ class metas extends Controller{
 		$filter->db->select(array('a.*','b.nombre'));
 		$filter->db->from('metas AS a');
 		$filter->db->join('vend AS b','a.vendedor=b.vendedor');
+		//$filter->db->join('sinv AS c','a.codigo=c.codigo');
 
 		$filter->fecha = new dateonlyField('Fecha', 'fecha','m/Y');
 		$filter->fecha->clause  ='where';
@@ -47,7 +48,8 @@ class metas extends Controller{
 		$grid->per_page=15;
 
 		$grid->column_orderby('Fecha'   ,$uri      ,'fecha'   );
-		$grid->column_orderby('Codigo'  ,'codigo'  ,'codigo'  );
+		$grid->column_orderby('Clave'  ,'codigo'  ,'codigo'  );
+		//$grid->column_orderby('Descripci&oacute;n' ,'descrip'  ,'descrip'  );
 		$grid->column_orderby('Cantidad','cantidad','cantidad','align="right"');
 		$grid->column_orderby('Vendedor','<#vendedor#>-<#nombre#>','vendedor');
 
@@ -84,7 +86,7 @@ class metas extends Controller{
 		$edit->fecha->append('mes/año');
 		$edit->fecha->rule = 'required';
 
-		$edit->codigo = new dropdownField('C&oacute;digo', 'codigo');
+		$edit->codigo = new dropdownField('Clave de producto', 'codigo');
 		$edit->codigo->option('','');
 		$edit->codigo->rule='required';
 		$edit->codigo->options('SELECT TRIM(clave),TRIM(clave) AS valor FROM sinv GROUP BY clave');

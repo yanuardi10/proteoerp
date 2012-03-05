@@ -65,7 +65,7 @@ function totalizar(){
 
 <table width='100%' <?=($form->_status!='show'?' border="0" cellpadding="0" cellspacing="0"':'')?>>
 	<col>
-	<col class="colbg1">
+	<col>
 	<col>
 	<col class="colbg2">
 	<thead>
