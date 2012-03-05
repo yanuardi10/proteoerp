@@ -306,7 +306,7 @@ class Comparativo extends Controller {
 						foreach($ccolumncal AS $obj){
 							$param[]=$row->$obj;
 						}
-						$min=$estadistica($param);
+						$min=ceil($estadistica($param)/$frecuencia);
 						$where = 'codigo ='.$this->db->escape($row->codigo);
 						$data=array('exmin' => $min);
 						if(!empty($maximos)){

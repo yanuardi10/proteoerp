@@ -832,7 +832,7 @@ class pfaclite extends validaciones{
 		$this->db->from('scli AS a');
 		$this->db->where('a.vendedor',$vd);
 		$this->db->order_by('a.cliente');
-		//$this->db->limit(1);
+		$this->db->limit(3);
 		$bquery = $this->db->get();
 
 		if ($bquery->num_rows() > 0){
