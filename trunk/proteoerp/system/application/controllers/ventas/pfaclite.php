@@ -7,6 +7,10 @@ class pfaclite extends validaciones{
 		parent :: Controller();
 		$this->load->library('rapyd');
 		$this->datasis->modulo_id(143,1);
+		$vd=trim($this->secu->getvendedor());
+		if(empty($vd)){
+			show_error('Usuario no tiene adignado vendedor, debe asignarlo primero para poder usar este modulo');
+		}
 	}
 
 	function index(){
@@ -79,6 +83,9 @@ class pfaclite extends validaciones{
 		$accion="javascript:window.location='".site_url('ventas/pfaclite/load')."'";
 		$filter->button('btn_load','Subir desde Excel',$accion,'TR');
 
+		$accion="javascript:window.location='".site_url('ventas/pfaclite/pfl')."'";
+		$filter->button('btn_pfl','Descargar Hoja de Excel',$accion,'TR');
+
 		$filter->buttons('reset', 'search');
 		$filter->build('dataformfiltro');
 
@@ -95,11 +102,11 @@ class pfaclite extends validaciones{
 		if(!(strlen($vd['vendedor'])>0))
 		$grid->column_orderby('Facturar'     , $uri3,'numero');
 		$grid->column_orderby('N&uacute;mero', $uri ,'numero');
-		$grid->column_orderby("Fecha"        , '<dbdate_to_human><#fecha#></dbdate_to_human>','fecha', "align='center'");
-		$grid->column_orderby("Cliente"      , 'cod_cli','cod_cli');
-		$grid->column_orderby("Nombre"       , 'nombre' ,'nombre');
+		$grid->column_orderby('Fecha'        , '<dbdate_to_human><#fecha#></dbdate_to_human>','fecha', "align='center'");
+		$grid->column_orderby('Cliente'      , 'cod_cli','cod_cli');
+		$grid->column_orderby('Nombre'       , 'nombre' ,'nombre');
 		if(!(strlen($vd['vendedor'])>0))
-		$grid->column_orderby("Vendedor"     , 'vd'     ,'vd');
+		$grid->column_orderby('Vendedor'     , 'vd'     ,'vd');
 		$grid->column_orderby('Total'        , '<nformat><#totalg#></nformat>', "totalg", "align=right");
 		if(!(strlen($vd['vendedor'])>0)){
 			$grid->column_orderby('Reser'        , 'reserva' ,'reserva');
@@ -111,7 +118,6 @@ class pfaclite extends validaciones{
 		$grid->build();
 
 		$data['content'] = $filter->output.$grid->output;
-		$data['filtro']  = '';
 
 		$data['script']  = script('jquery.js');
 		$data['script'] .= script('jquery-ui.js');
@@ -225,7 +231,7 @@ class pfaclite extends validaciones{
 		$edit->nombre = new freeField('Nombre','nombre',$nombre);
 
 		$edit->observa = new inputField('Observaciones', 'observa');
-		$edit->observa->size = 25;
+		$edit->observa->size = 40;
 
 		// Campos para el detalle
 		$edit->codigoa = new inputField('C&oacute;digo <#o#>', 'codigoa_<#i#>');
@@ -365,12 +371,14 @@ class pfaclite extends validaciones{
 			$edit->build();
 
 			if($edit->on_success()){
-				echo 'Pedido Guardado';
+				$numero=$edit->_dataobject->get('numero');
+				$rt = 'Pedido del cliente '.$edit->cliente->value.' - '.$edit->nombre->value.' ha sido guardado bajo el n&uacute;mero '.$numero.'.';
 			}elseif($edit->on_error()){
-				echo html_entity_decode(preg_replace('/<[^>]*>/', '', $edit->error_string));
-			}elseif($edit->on_show()){
-				print_r($edit->dataobject->get_all());
+				$rt = html_entity_decode(preg_replace('/<[^>]*>/', '', $edit->error_string));
+			}else{
+				$rt='';
 			}
+			return $rt;
 		}
 	}
 
@@ -494,198 +502,74 @@ class pfaclite extends validaciones{
 		$this->upload_path =$path->getPath().'/';
 
 		$this->rapyd->load('dataform');
-		$form = new DataForm('ventas/pfaclite/read');
+		$form = new DataForm('ventas/pfaclite/load/insert');
 		$form->title('Cargar Archivo de Productos (xls)');
 
 		$form->archivo = new uploadField('Archivo','archivo');
-		$form->archivo->upload_path   = $this->upload_path;
+		$form->archivo->upload_path   = '';
 		$form->archivo->allowed_types = 'xls';
-		$form->archivo->delete_file   =false;
-		$form->archivo->rule   ='required';
+		$form->archivo->delete_file   = false;
+		$form->archivo->upload_root   = '/tmp';
+		$form->archivo->rule          = 'required';
+
+		$accion="javascript:window.location='".site_url('ventas/pfaclite/filteredgrid')."'";
+		$form->button('btn_pfl','Regresar',$accion,'TR');
 
 		$form->submit('btnsubmit','Enviar');
 		$form->build_form();
 
-		$data['content'] = $form->output;
-		$data['title']   = "<h1>Cargar Pedido desde Excel</h1>";
-		//$data["head"]    = $this->rapyd->get_head();
+		$rti='';
+		if ($form->on_success()){
+			$arch= $form->archivo->upload_data['file_name'];
+			$rt=$this->nread($arch);
+			$rti="<p>$rt</p>";
+		}
+
+		$data['content'] = $rti.$form->output;
+		$data['title']   = heading('Cargar Pedido desde Excel');
+		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas_lite', $data);
 	}
 
-	function read(){
+	function nread(){
 		$this->load->library('Spreadsheet_Excel_Reader');
-		$type='';
-		if(isset($_FILES['archivoUserFile']['type']))$type=$_FILES['archivoUserFile']['type'];
-		//print_r($_FILES);
-		if($type=='application/vnd.ms-excel'){
-			$name=$_FILES['archivoUserFile']['name'];
-			$dir='.././'.$name;
-			$name=$_FILES['archivoUserFile']['name'];
-			if (copy($_FILES['archivoUserFile']['tmp_name'], 'uploads/'.$name)){
-				$uploadsdir =getcwd().'/uploads/';
-				$filedir    =$uploadsdir.$name;
-				$tmp=$dir;
-				$tmp=$filedir;
-				//$_FILES['archivoUserFile']['tmp_name'];
-				$data = new Spreadsheet_Excel_Reader();
-				$data->setOutputEncoding('CP1251');
-				$data->read($tmp);
-				error_reporting(E_ALL ^ E_NOTICE);
-				$cols=array();
+		$rt='';
+		$this->spreadsheet_excel_reader->setOutputEncoding('CP1251');
+		$this->spreadsheet_excel_reader->read('pfl_05-03-2012.xls');
+		array_shift($this->spreadsheet_excel_reader->sheets);
+		$hojas=count($this->spreadsheet_excel_reader->sheets);
+		for($i=0;$i<$hojas;$i++){
+			$o=0;
+			$genefec='';
+			foreach($this->spreadsheet_excel_reader->sheets[$i]['cells'] as $id=>$row){
 
-				foreach($data->sheets AS $sheetk=>$sheetv){
-					foreach($sheetv['cells'] AS $rowk=>$rowv){
-						$data4[$sheetk][]=$rowv;
-					}
-				}
-				$this->limpia($data4);
-			}
-		}else{
-			echo 'El archivo no puede ser leido';
-			return 'El archivo no puede ser leido';
-		}
-	}
-
-	function limpia($data){
-		$las9=array();
-		$lose=array();
-		$line=0;
-
-		$sinv=$this->db->query("SELECT codigo,descrip,precio1,precio2,precio3,precio4,marca,existen FROM sinv WHERE LENGTH(codigo)>0 ORDER BY marca");
-		$sinv=$sinv->result_array();
-		$sinv2=array();
-		foreach($sinv as $k=>$v){
-			$sinv2[$v['codigo']]=$v;
-		}
-		unset($inv);
-
-		foreach($data as $hojak=>$hoja){
-			$lose[$hojak]['cod_cli']=$data[$hojak][4][12];
-			foreach($hoja as $lineak=>$linea){
-				if(array_key_exists($linea[8],$sinv2)>0 && $linea[9]>0 && $linea[6]>0){
-					$line++;
-					$las9[$hojak][$line][$i=1]=$linea[$i];
-					$las9[$hojak][$line][$i=2]=$linea[$i];
-					$las9[$hojak][$line][$i=3]=$linea[$i];
-					$las9[$hojak][$line][$i=4]=$linea[$i];
-					$las9[$hojak][$line][$i=5]=$linea[$i];
-					$las9[$hojak][$line][$i=6]=$linea[$i];
-					$las9[$hojak][$line][$i=7]=$linea[$i];
-					$las9[$hojak][$line][$i=8]=$linea[$i];
-					$las9[$hojak][$line][$i=9]=$linea[$i];
-				}
-
-				if(array_key_exists($linea[18],$sinv2)>0 && $linea[19]>0 && $linea[16]>0){
-					$line++;
-					$las9[$hojak][$line][$i=11]=$linea[$i];
-					$las9[$hojak][$line][$i=12]=$linea[$i];
-					$las9[$hojak][$line][$i=13]=$linea[$i];
-					$las9[$hojak][$line][$i=14]=$linea[$i];
-					$las9[$hojak][$line][$i=15]=$linea[$i];
-					$las9[$hojak][$line][$i=16]=$linea[$i];
-					$las9[$hojak][$line][$i=17]=$linea[$i];
-					$las9[$hojak][$line][$i=18]=$linea[$i];
-					$las9[$hojak][$line][$i=19]=$linea[$i];
+				if($id==1){
+					$genefec=(isset($row[8]))?$row[8]:'';
+				}elseif($id==2){
+					$_POST['cod_cli']=(isset($row[1]))?$row[1]:'';
+				}elseif($id>3){
+					if(empty($_POST['cod_cli'])) continue;
+					$codigo=trim($row[8]);
+					if(empty($codigo)) continue;
+					if(empty($row[9]) || $row[9]<1) continue;
+					$_POST['codigoa_'.$o] =$codigo;
+					$_POST['cana_'.$o]    =$row[9];
+					$_POST['preca_'.$o]   =$row[5];
+					$o++;
+				}else{
+					continue;
 				}
 			}
-		}
 
-		$i=0;
-		$this->genesal=false;
-		$error='';
-		$usr=$this->session->userdata('usuario');
-		$ids=array();
-		//print_r($lose);
-		//exit();
-		foreach($lose as $hoja=>$cliente){
-			$itpfac         =array();
-			if(is_null($cliente['cod_cli']))
-			$cliente['cod_cli'] ='';
-			$cod_clie       =$this->db->escape($cliente['cod_cli']);
-
-			$c=$this->datasis->dameval("SELECT COUNT(*) FROM scli WHERE cliente=$cod_clie AND LENGTH(cliente)>0");
-			$totals=$iva=0;
-			if($c>0){
-				$scli            = $this->datasis->damerow("SELECT * FROM scli WHERE cliente=$cod_clie");
-				$vd              = $this->secu->getvendedor();
-				$pfac['vd']      = $vd;
-				$pfac['cod_cli'] = $cliente['cod_cli'];
-				$pfac['numero']  = $this->datasis->fprox_numero('npfac');
-				$pfac['transac'] = $this->datasis->fprox_numero('ntransac');
-				$pfac['direc']   = $scli['dire11'].$scli['dire12'];
-				$pfac['dire1']   = $scli['dire21'].$scli['dire22'];
-				$pfac['fecha']   = date('Ymd');
-				$pfac['nombre']  = $scli['nombre'];
-				$pfac['rifci']   = $scli['rifci'];
-				$pfac['usuario'] = $usr;
-				$pfac['estampa'] = date('%Y%m%d');
-
-				if(count($scli)>0){
-					foreach($las9[$hoja] as $linea){
-						if(array_key_exists($linea[8],$sinv2)>0 && $linea[9]>0 && $linea[6]>0){
-							$itpfac=array(
-								'cana'      =>$linea['9'],
-								'preca'     =>$linea['6'],
-								'codigoa'   =>$linea['8'],
-								'iva'       =>$sinv['iva'],
-								'tota'      =>round($linea['9']*$linea['6'],2),
-								'numa'      =>$pfac['numero'],
-								'desca'     =>$sinv2[$linea[8]]['descrip'],
-								'usuario'   =>$usr,
-								'estampa'   =>date('%Y%m%d')
-							);
-							$totals +=round($linea['9']*$linea['6'],2);
-							$iva    +=round($totals*$sinv['iva']/100,2);
-							$this->db->insert('itpfac'  ,$itpfac);
-						}
-
-						if(array_key_exists($linea[18],$sinv2)>0 && $linea[19]>0 && $linea[16]>0){
-							$itpfac=array(
-								'cana'      =>$linea['19'],
-								'preca'     =>$linea['16'],
-								'codigoa'   =>$linea['18'],
-								'iva'       =>$sinv['iva'],
-								'tota'      =>round($linea['19']*$linea['16'],2),
-								'numa'      =>$pfac['numero'],
-								'desca'     =>$sinv2[$linea[8]]['descrip'],
-								'usuario'   =>$usr,
-								'estampa'   =>date('%Y%m%d')
-							);
-							$totals +=round($linea['19']*$linea['16'],2);
-							$iva    +=round($totals*$sinv['iva']/100,2);
-							$this->db->insert('itpfac'  ,$itpfac);
-						}
-					}
-					$totalg +=round($totals+$iva/100,2);
-					$pfac['totalg']=$totalg;
-					$pfac['totals']=$totals;
-					$pfac['iva']   =$iva;
-
-					$this->db->insert('pfac',$pfac);
-					$id     =$this->db->insert_id();
-					$ids[]  =$id;
-				}
+			$_POST['observa']='EXCEL '.$genefec;
+			if(!empty($_POST['cod_cli'])){
+				$this->genesal=false;
+				$rrt=$this->dataedit($_POST['cod_cli'],'','');
+				$rt.=$rrt."<br />";
 			}
+			$_POST=array();
 		}
-		if(count($data)>1 && empty($error)){
-			$error='';
-			foreach($ids as $val){
-				$error.=$this->reserv($val);
-			}
-
-			if(empty($error)){
-				redirect('ventas/pfaclite/filteredgrid/');
-			}else{
-				$error="<div class='alert'>$error</div>";
-				logusu('pfaclite',"Reservo pedido $id. con ERROR:$error ");
-				$data['content'] = $error.anchor("ventas/pfaclite/filteredgrid/",'Ir al Filtro');
-				$data['title']   = " Pedidos ";
-				$data["head"]    = $this->rapyd->get_head();
-				$this->load->view('view_ventanas', $data);
-			}
-		}
-		else
-		redirect('ventas/pfaclite/dataedit/show/'.$id);
+		return $rt;
 	}
 
 	function reserv($id){
@@ -771,169 +655,280 @@ class pfaclite extends validaciones{
 		}
 	}
 
-	function pfl() {
-		require_once 'Spreadsheet/Excel/Writer.php';
-		$vd  = $this->secu->getVendedor();
-		$vnom= $this->datasis->dameval('SELECT nombre FROM vend WHERE vendedor='.$this->db->escape($vd));
+	function pfl(){
+		if (!extension_loaded('perl')) show_error('Se necesita la extenci&oacute;n perl, comuniquese con soporte t&eacute;cnico');
 
-		$workbook = new Spreadsheet_Excel_Writer();
-		$workbook->send('pfl_'.date('d-m-Y').'.xls');
+		$vd   = $this->secu->getVendedor();
+		$vnom = $this->datasis->dameval('SELECT nombre FROM vend WHERE vendedor='.$this->db->escape($vd));
+		$dbvd = $this->db->escape($vd);
 
-		$ftit =& $workbook->addFormat();
-		$ftit->setAlign('merge');
-		$ftit->setVAlign('vcenter');
-		$ftit->setFgColor(23);
-		$ftit->setColor(1);
-		$ftit->setBold();
-		$ftit->setLocked();
+		$db   = $this->db->database;
+		$host = $this->db->hostname;
+		$usr  = $this->db->username;
+		$pwd  = $this->db->password;
+		$fname= 'pfl_'.date('d-m-Y').'.xls';
+		$comp = $this->datasis->traevalor('TITULO1');
+		$rif  = $this->datasis->traevalor('RIF');
+		$key  = 'Kunelet';
 
-		$ffot =& $workbook->addFormat();
-		$ffot->setFgColor(23);
-		$ffot->setColor(1);
-		$ffot->setBold();
-		$ffot->setLocked();
+		header("Content-type: application/x-msexcel; name=\"${fname}\"");
+		header("Content-Disposition: inline; filename=\"${fname}\"");
 
-		$fbod0 =& $workbook->addFormat();
-		$fbod0->setLocked();
-		$fbod0->setBorder(1);
+		$pl=<<<PERL_END
+use strict;
+use DBI();
+use Spreadsheet::WriteExcel;
 
-		$fbod1 =& $workbook->addFormat();
-		$fbod1->setLocked();
-		$fbod1->setBorder(1);
+my \$workbook   = Spreadsheet::WriteExcel->new(\\*STDOUT);
+\$workbook->compatibility_mode();
+\$workbook->set_properties(
+	title    => 'Hoja de pedidos fuera de linea',
+	company  => '$comp',
+	comments => 'firma',
+);
 
-		$fbod2 =& $workbook->addFormat();
-		$fbod2->setLocked();
-		$fbod2->setBorder(1);
+my \$worksheet0 = \$workbook->add_worksheet("clientes");
+\$worksheet0->activate();
+\$worksheet0->protect('clientes');
+my \$dbh = DBI->connect("DBI:mysql:database=$db;host=$host","$usr", "$pwd",{'RaiseError' => 1});
+my \$mSQL="SELECT TRIM(cliente) AS cliente, TRIM(nombre) AS nombre ,TRIM(rifci) AS rifci,tipo
+FROM scli
+WHERE vendedor=$dbvd
+ORDER BY cliente  LIMIT 200";
 
-		$fbod0->setFgColor(26);
-		$fbod1->setFgColor(41);
-		$fbod2->setFgColor(42);
+my \$mfil= 2;
+my \$scli;
+my \$count_scli=\$mfil;
+my \$sth = \$dbh->prepare(\$mSQL);
+\$sth->execute();
 
-		$fcod =& $workbook->addFormat();
-		$fcod->setLocked();
-		$fcod->setBorder(1);
-		$fcod->setBold();
+my \$lock = \$workbook->add_format();
+\$lock->set_locked(1);
 
-		$fedi =& $workbook->addFormat();
-		$fedi->setFgColor(31);
-		$fedi->setBorder(1);
+my \$unlock = \$workbook->add_format();
+\$unlock->set_locked(0);
 
-		$fgru =& $workbook->addFormat();
-		$fgru->setFgColor(32);
-		$fgru->setLocked();
-		$fgru->setColor(1);
-		$fgru->setBold();
+my \$ftit = \$workbook->add_format();
+\$ftit->set_align('merge');
+\$ftit->set_valign('vcenter');
+\$ftit->set_fg_color(23);
+\$ftit->set_color(1);
+\$ftit->set_bold();
+\$ftit->set_locked(1);
 
-		$fpre =& $workbook->addFormat();
-		$fpre->setLocked();
-		$fpre->setBold();
+\$worksheet0->write_string(0, 0 ,'$comp $rif');
+\$worksheet0->set_column(0,0, 6 );
+\$worksheet0->set_column(1,1, 46);
+\$worksheet0->set_column(2,2, 12);
+\$worksheet0->set_column(3,3, 5 );
 
-		$this->db->select(array('a.cliente','a.nombre','a.tipo'));
-		$this->db->from('scli AS a');
-		$this->db->where('a.vendedor',$vd);
-		$this->db->order_by('a.cliente');
-		$this->db->limit(3);
-		$bquery = $this->db->get();
+\$worksheet0->write_string( \$mfil, 0,'Codigo',\$ftit);
+\$worksheet0->write_string( \$mfil, 1,'Nombre',\$ftit);
+\$worksheet0->write_string( \$mfil, 2,'Rif'   ,\$ftit);
+\$worksheet0->write_string( \$mfil, 3,'Tipo'  ,\$ftit);
+\$mfil++;
 
-		if ($bquery->num_rows() > 0){
-			foreach($bquery->result() as $id=>$rrow){
-				if($rrow->tipo<1){
-					$tipo=1;
-				}elseif($rrow->tipo>4){
-					$tipo=1;
-				}else{
-					$tipo=$rrow->tipo;
-				}
+while(my \$row = \$sth->fetchrow_hashref()){
+	if(\$count_scli<3){ \$scli=\$row->{'cliente'}; }
+	\$count_scli++;
+	\$worksheet0->write_string( \$mfil, 0,\$row->{'cliente'},\$lock);
+	\$worksheet0->write_string( \$mfil, 1,\$row->{'nombre'} ,\$lock);
+	\$worksheet0->write_string( \$mfil, 2,\$row->{'rifci'}  ,\$lock);
+	\$worksheet0->write( \$mfil, 3,\$row->{'tipo'},\$lock);
+	\$mfil++;
+}
 
-				$worksheet =& $workbook->addWorksheet($rrow->cliente);
-				$worksheet->protect('kunelet');
-				$worksheet->setInputEncoding('ISO-8859-2');
-				$worksheet->hideScreenGridlines();
-				$worksheet->setZoom(75);
-				$worksheet->setColumn(0,0, 30);
-				$worksheet->setColumn(1,2, 5 );
-				$worksheet->setColumn(5,5, 15);
-				$worksheet->setColumn(6,6, 20);
+my \$ffot = \$workbook->add_format();
+\$ffot->set_fg_color(23);
+\$ffot->set_color(1);
+\$ffot->set_bold();
+\$ffot->set_locked(1);
 
-				$worksheet->writeString(0, 0,"Representante: ($vd) $vnom",$fpre );
-				$worksheet->writeString(0, 6,'Fecha: '.date('d/m/Y H:i:s')     ,$fpre);
-				$worksheet->writeString(1, 0,"Cliente: ($rrow->cliente) $rrow->nombre",$fpre );
-				$worksheet->mergeCells(0,6,0,7);
-				$worksheet->mergeCells(0,0,0,5);
-				$worksheet->mergeCells(1,0,1,7);
+my \$fbod0 = \$workbook->add_format();
+\$fbod0->set_locked(1);
+\$fbod0->set_border(1);
 
-				$mfil=2;
-				$worksheet->writeString($mfil, 0,'Producto' ,$ftit);
-				$worksheet->writeString($mfil, 1,'Presenta' ,$ftit);
-				$worksheet->writeString($mfil, 3,'Peso'     ,$ftit);
-				$worksheet->writeString($mfil, 4,'Precio'   ,$ftit);
-				$worksheet->writeString($mfil, 5,'Total Bs.',$ftit);
-				$worksheet->writeString($mfil, 6,'Cod. SAP' ,$ftit);
-				$worksheet->writeString($mfil, 7,'Pedido'   ,$ftit);
-				$worksheet->mergeCells($mfil,1,$mfil,2);
-				$worksheet->freezePanes(array($mfil+1,0,$mfil+1,0));
-				$worksheet->setRow($mfil, 25);
-				$mfil++;
+my \$fbod1 = \$workbook->add_format();
+\$fbod1->set_locked(1);
+\$fbod1->set_border(1);
 
-				$sel=array('a.peso','a.codigo','a.descrip','a.marca AS grupo','b.nom_grup','a.unidad',
-				'round(a.precio1*100/(100+a.iva),2) AS base1',
-				'round(a.precio2*100/(100+a.iva),2) AS base2',
-				'round(a.precio3*100/(100+a.iva),2) AS base3',
-				'round(a.precio4*100/(100+a.iva),2) AS base4');
-				$this->db->select($sel);
-				$this->db->from('sinv AS a');
-				$this->db->join('grup AS b','a.grupo=b.grupo');
-				$this->db->where('a.activo','S');
-				$this->db->order_by('a.grupo,a.descrip');
-				$query = $this->db->get();
+my \$fbod2 = \$workbook->add_format();
+\$fbod2->set_locked(1);
+\$fbod2->set_border(1);
 
-				$cini=$mfil+2;
-				$grup='';
-				$o=$lfil=0;
-				$ff1=array();
-				$fbod='fbod0';
-				if ($query->num_rows() > 0){
-					foreach ($query->result() as $row){
-						$mmfil=$mfil+1;
-						if($grup!=$row->grupo){
-							$worksheet->writeString($mfil, 0,$row->nom_grup,$fgru);
-							$worksheet->writeBlank( $mfil, 1,$fgru);
-							$worksheet->writeBlank( $mfil, 2,$fgru);
-							$worksheet->writeBlank( $mfil, 3,$fgru);
-							$worksheet->writeBlank( $mfil, 4,$fgru);
-							$worksheet->writeBlank( $mfil, 5,$fgru);
-							$worksheet->writeBlank( $mfil, 6,$fgru);
-							$worksheet->writeBlank( $mfil, 7,$fgru);
-							$mfil++;
-							$mmfil=$mfil+1;
-							$grup=$row->grupo;
-							$fbod='fbod'.$o;
-							$o=($o>=2)? 0: $o+1;
-						}
+\$mfil=0;
 
-						$obj='base'.$tipo;
-						$worksheet->writeString( $mfil, 0,$row->descrip     ,$$fbod);
-						$worksheet->writeNumber( $mfil, 1,$row->peso        ,$$fbod);
-						$worksheet->writeString( $mfil, 2,$row->unidad      ,$$fbod);
-						$worksheet->writeFormula($mfil, 3,"=H$mmfil*B$mmfil",$$fbod);
-						$worksheet->writeNumber( $mfil, 4,$row->$obj        ,$$fbod);
-						$worksheet->writeFormula($mfil, 5,"=H$mmfil*E$mmfil",$$fbod);
-						$worksheet->writeString( $mfil, 6,$row->codigo      ,$fcod);
-						$worksheet->writeNumber( $mfil, 7,0                 ,$fedi);
-						$mfil++;
-					}
-				}
-				$worksheet->writeString( $mfil, 0,'Totales...'     ,$ffot);
-				$worksheet->writeBlank(  $mfil, 1,$ffot);
-				$worksheet->writeBlank(  $mfil, 2,$ffot);
-				$worksheet->writeFormula($mfil, 3,"=SUM(D4:D$mfil)",$ffot);
-				$worksheet->writeBlank(  $mfil, 4,$ffot);
-				$worksheet->writeFormula($mfil, 5,"=SUM(F4:F$mfil)",$ffot);
-				$worksheet->writeBlank(  $mfil, 6 ,$ffot);
-				$worksheet->writeFormula($mfil, 7,"=SUM(H4:H$mfil)",$ffot);
-			}
+
+\$fbod0->set_fg_color(26);
+\$fbod1->set_fg_color(41);
+\$fbod2->set_fg_color(42);
+
+my \$fcod = \$workbook->add_format();
+\$fcod->set_locked(1);
+\$fcod->set_border(1);
+\$fcod->set_bold();
+
+my \$fedi = \$workbook->add_format(locked => 0);
+\$fedi->set_fg_color(31);
+\$fedi->set_border(1);
+#\$fedi->set_locked(0);
+
+my \$fgru = \$workbook->add_format();
+\$fgru->set_fg_color(32);
+\$fgru->set_locked(1);
+\$fgru->set_color(1);
+\$fgru->set_bold();
+
+my \$fpre = \$workbook->add_format();
+\$fpre->set_locked();
+\$fpre->set_bold();
+
+my @months = qw(Ene Feb Mar Abr May Jun Jul Ago Sep Oct Nov Dic);
+my @weekDays = qw(Domingo Lunes Martes Miercoles Jueves Viernes Sabado Domingo);
+my \$second;
+my \$minute;
+my \$hour;
+my \$dayOfMonth;
+my \$month;
+my \$yearOffset;
+my \$dayOfWeek;
+my \$dayOfYear;
+my \$daylightSavings;
+(\$second, \$minute, \$hour, \$dayOfMonth, \$month, \$yearOffset, \$dayOfWeek, \$dayOfYear, \$daylightSavings) = localtime();
+my \$year = 1900 + \$yearOffset;
+my \$theTime = "\$weekDays[\$dayOfWeek] \$dayOfMonth/\$month/\$year \$hour:\$minute:\$second";
+my \$mmfil= \$mfil+1;
+my \$grup = '';
+
+my \$formula = "=IF(ISNA(VLOOKUP(A2,clientes!A4:D\$count_scli,200,0)),1,VLOOKUP(A2,clientes!A4:D\$count_scli,200,0))";
+my \$count;
+
+\$count_scli++;
+for (\$count = 1; \$count <= 10; \$count++) {
+	my \$worksheet = \$workbook->add_worksheet(\$count);
+	\$worksheet->select();
+
+	my \$vlookup = \$worksheet->store_formula(\$formula);
+	@\$vlookup = map {s/_ref2d/_ref2dV/;\$_} @\$vlookup;
+
+
+	\$worksheet->protect("00\$count");
+	\$worksheet->hide_gridlines();
+	\$worksheet->set_zoom(75);
+	\$worksheet->set_column(0,0, 30);
+	\$worksheet->set_column(1,2, 5 );
+	\$worksheet->set_column(5,5, 15);
+	\$worksheet->set_column(6,6, 8 );
+	\$worksheet->set_column(7,7, 15);
+
+	\$worksheet->write_string(0, 0,'Representante: ($vd) $vnom',\$lock);
+	\$worksheet->write_string(0, 7,\$theTime ,\$lock);
+	\$worksheet->write_blank(1, 0,\$unlock);
+
+	\$worksheet->repeat_formula('I2',\$vlookup,\$lock,('200','4') x 2);
+	\$worksheet->repeat_formula('B2',\$vlookup,\$lock,('200','2') x 2);
+
+	#\$worksheet->merge_cells(0,6,0,7);
+	#\$worksheet->merge_cells(0,0,0,5);
+	#\$worksheet->merge_cells(1,1,1,6);
+
+	\$mfil=2;
+	\$worksheet->write_string(\$mfil, 0,'Producto' ,\$ftit);
+	\$worksheet->write_string(\$mfil, 1,'Presenta' ,\$ftit);
+	\$worksheet->write_blank(\$mfil , 2,\$ftit);
+	\$worksheet->write_string(\$mfil, 3,'Peso'     ,\$ftit);
+	\$worksheet->write_string(\$mfil, 4,'Precio'   ,\$ftit);
+	\$worksheet->write_string(\$mfil, 5,'Total Bs.',\$ftit);
+	\$worksheet->write_string(\$mfil, 6,'Exis.'    ,\$ftit);
+	\$worksheet->write_string(\$mfil, 7,'Cod. SAP' ,\$ftit);
+	\$worksheet->write_string(\$mfil, 8,'Pedido'   ,\$ftit);
+	\$worksheet->freeze_panes(\$mfil+1,0,\$mfil+1,0);
+	\$worksheet->set_row(\$mfil, 25);
+
+	\$mSQL = "SELECT a.peso, a.codigo, a.descrip, a.marca AS grupo, a.marca AS nom_grup, a.unidad, a.existen,
+		round(a.precio1*100/(100+a.iva),2) AS base1,
+		round(a.precio2*100/(100+a.iva),2) AS base2,
+		round(a.precio3*100/(100+a.iva),2) AS base3,
+		round(a.precio4*100/(100+a.iva),2) AS base4
+	FROM sinv AS a
+	JOIN grup AS b ON a.grupo=b.grupo
+	WHERE a.activo='S' AND a.tipo='Articulo'
+	ORDER BY a.marca, a.descrip LIMIT 500";
+
+	\$mfil++;
+	\$mmfil= \$mfil+1;
+	\$grup = '';
+
+	\$sth  = \$dbh->prepare(\$mSQL);
+	\$sth->execute();
+
+	while(my \$row = \$sth->fetchrow_hashref()){
+		\$mmfil=\$mfil+1;
+		if(\$grup ne \$row->{'grupo'}){
+			\$worksheet->write_string(\$mfil, 0,\$row->{'nom_grup'},\$fgru);
+			\$worksheet->write_blank( \$mfil, 1,\$fgru);
+			\$worksheet->write_blank( \$mfil, 2,\$fgru);
+			\$worksheet->write_blank( \$mfil, 3,\$fgru);
+			\$worksheet->write_blank( \$mfil, 4,\$fgru);
+			\$worksheet->write_blank( \$mfil, 5,\$fgru);
+			\$worksheet->write_blank( \$mfil, 6,\$fgru);
+			\$worksheet->write_blank( \$mfil, 7,\$fgru);
+			\$worksheet->write_blank( \$mfil, 8,\$fgru);
+			\$mfil++;
+			\$mmfil=\$mfil+1;
+			\$grup=\$row->{'grupo'};
+			#\$fbod='fbod'.\$o;
+			#\$o=(\$o>=2)? 0: \$o+1;
 		}
-		$workbook->close();
+
+		\$worksheet->write_string( \$mfil, 0,\$row->{'descrip'} ,\$fbod0);
+		\$worksheet->write( \$mfil, 1,\$row->{'peso'}    ,\$fbod0);
+		\$worksheet->write_string( \$mfil, 2,\$row->{'unidad'}  ,\$fbod0);
+		\$worksheet->write_formula(\$mfil, 3,"=I\$mmfil*B\$mmfil",\$fbod0,90);
+		\$worksheet->write_formula(\$mfil, 4,"=IF(I2=2, \$row->{'base2'},IF(I2=3,\$row->{'base3'},IF(I2=4 ,\$row->{'base4'}, \$row->{'base1'})))",\$fbod0);
+		\$worksheet->write_formula(\$mfil, 5,"=I\$mmfil*E\$mmfil",\$fbod0);
+		\$worksheet->write( \$mfil, 6,\$row->{'existen'}   ,\$fbod0 );
+		\$worksheet->write_string( \$mfil, 7,\$row->{'codigo'}   ,\$fcod );
+		\$worksheet->write_number( \$mfil, 8,0                   ,\$fedi );
+		\$worksheet->data_validation(\$mfil, 8, {
+			validate => 'integer',
+			criteria => '>=',
+			value    => 0,
+		});
+		\$mfil++;
+	}
+	\$worksheet->write_string( \$mfil, 0,'Totales...'     ,\$ffot);
+	\$worksheet->write_blank(  \$mfil, 1,\$ffot);
+	\$worksheet->write_blank(  \$mfil, 2,\$ffot);
+	\$worksheet->write_formula(\$mfil, 3,"=SUM(D4:D\$mfil)",\$ffot);
+	\$worksheet->write_blank(  \$mfil, 4,\$ffot);
+	\$worksheet->write_formula(\$mfil, 5,"=SUM(F4:F\$mfil)",\$ffot);
+	\$worksheet->write_blank(  \$mfil, 6 ,\$ffot);
+	\$worksheet->write_blank(  \$mfil, 7 ,\$ffot);
+	\$worksheet->write_formula(\$mfil, 8,"=SUM(I4:I\$mfil)",\$ffot);
+
+	\$workbook->define_name('DpScli', "=clientes!A4:A\$count_scli");
+	\$worksheet->data_validation(1, 0, {
+			validate      => 'list',
+			dropdown      => 1,
+			input_title   => 'Cliente',
+			input_message => 'Seleccione el cliente al cual se le va a realizar el pedido',
+			value         => '=DpScli',
+		});
+}
+
+#\$worksheet->autofilter(2, 0,\$mfil ,7);
+\$sth->finish();
+\$dbh->disconnect();
+\$workbook->close();
+
+__END__
+
+PERL_END;
+
+		file_put_contents('excel.pl', $pl);
+		$perl = new Perl();
+		$pobj = $perl->eval($pl);
 	}
 
 	function instalar(){
