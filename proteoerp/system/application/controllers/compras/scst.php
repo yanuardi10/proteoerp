@@ -1204,8 +1204,6 @@ class Scst extends Controller {
 		$control=substr($control,1,7).'_';
 		$controle=$this->db->escape($control);
 
-		//$transac=$this->datasis->fprox_numero('ntransac');
-
 		$query="
 		INSERT INTO itscst (`numero`,`proveed`,`codigo`,`descrip`,`cantidad`,`control`,`iva`,`costo`,`importe`)
 		SELECT refe2,clipro,b.codigo,b.descrip,SUM(b.cant) cant,$controle,c.iva,c.ultimo,SUM(b.cant)*c.ultimo
@@ -1242,7 +1240,7 @@ class Scst extends Controller {
 
 		if(substr($control,7,1)=='_') $control = $this->datasis->fprox_numero('nscst');
 		if(empty($control)) $control = $this->datasis->fprox_numero('nscst');
-		if(empty($transac)) $transac = $this->datasis->fprox_numero('ntransac');
+		if(empty($transac)) $transac = $this->datasis->fprox_numero('ntransa');
 
 		$fecha   = $do->get('fecha');
 		$numero  = substr($do->get('serie'),-8);
@@ -1250,7 +1248,7 @@ class Scst extends Controller {
 		$proveed = $do->get('proveed');
 		$depo    = $do->get('depo');
 		$estampa = date('Ymd');
-		$hora    = date("H:i:s");
+		$hora    = date('H:i:s');
 		$alicuota=$this->datasis->ivaplica($fecha);
 
 		$iva=$stotal=0;
