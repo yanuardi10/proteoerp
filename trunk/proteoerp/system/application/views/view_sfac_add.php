@@ -529,7 +529,7 @@ function del_sfpa(id){
 		<img src='<?php echo base_url() ?>images/html_icon.gif'></a>
 		</td>
 <?php } ?>
-		<td align=right><?php echo $container_tr?></td>
+		<td align=right><?php echo $container_tr; ?><?php echo $form->pfac->output; ?></td>
 	</tr>
 </table>
 <table align='center' width="100%">

@@ -274,8 +274,8 @@ class Scst extends Controller {
 
 		$edit->tipo = new dropdownField('Tipo', 'tipo_doc');
 		$edit->tipo->option('FC','Factura a Cr&eacute;dito');
-		$edit->tipo->option('NC','Nota de Cr&eacute;dito');
-		$edit->tipo->option('NE','Nota de Entrega');
+		//$edit->tipo->option('NC','Nota de Cr&eacute;dito'); //Falta implementar los metodos post para este caso
+		//$edit->tipo->option('NE','Nota de Entrega');        //Falta implementar los metodos post para este caso
 		$edit->tipo->rule = 'required';
 		$edit->tipo->style='width:140px;';
 
@@ -394,8 +394,8 @@ class Scst extends Controller {
 		$edit->codigo->rel_id   = 'itscst';
 
 		$edit->descrip = new hiddenField('Descripci&oacute;n', 'descrip_<#i#>');
-		$edit->descrip->size=30;
-		$edit->descrip->db_name='descrip';
+		$edit->descrip->size     =30;
+		$edit->descrip->db_name  ='descrip';
 		$edit->descrip->maxlength=12;
 		$edit->descrip->rel_id  ='itscst';
 
@@ -408,6 +408,7 @@ class Scst extends Controller {
 		$edit->cantidad->css_class='inputnum';
 		$edit->cantidad->rule     = 'require|numeric';
 		$edit->cantidad->rel_id   = 'itscst';
+		$edit->cantidad->showformat= 'decimal';
 
 		$edit->costo = new inputField('Costo', 'costo_<#i#>');
 		$edit->costo->css_class='inputnum';
@@ -417,6 +418,7 @@ class Scst extends Controller {
 		$edit->costo->autocomplete=false;
 		$edit->costo->db_name='costo';
 		$edit->costo->rel_id ='itscst';
+		$edit->costo->showformat= 'decimal';
 
 		$edit->importe = new inputField('Importe', 'importe_<#i#>');
 		$edit->importe->db_name='importe';
@@ -425,16 +427,19 @@ class Scst extends Controller {
 		$edit->importe->autocomplete=false;
 		$edit->importe->onkeyup='costo(<#i#>)';
 		$edit->importe->css_class='inputnum';
+		$edit->importe->showformat= 'decimal';
 		//$edit->importe->type='inputhidden';
 
 		$edit->sinvpeso = new hiddenField('', 'sinvpeso_<#i#>');
 		$edit->sinvpeso->db_name = 'sinvpeso';
 		$edit->sinvpeso->rel_id  = 'itscst';
 		$edit->sinvpeso->pointer = true;
+		$edit->sinvpeso->showformat= 'decimal';
 
 		$edit->iva = new hiddenField('Impuesto', 'iva_<#i#>');
 		$edit->iva->db_name = 'iva';
 		$edit->iva->rel_id='itscst';
+		$edit->iva->showformat= 'decimal';
 		//fin de campos para detalle
 
 		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
@@ -855,158 +860,243 @@ class Scst extends Controller {
 		$pasa=$this->datasis->dameval('SELECT COUNT(*) FROM scst WHERE actuali>=fecha AND control='.$this->db->escape($control));
 
 		if($pasa==0){
-			$SQL='SELECT transac,depo,proveed,fecha,vence, nombre,tipo_doc,nfiscal,fafecta,reteiva,
+			$SQL='SELECT tipo_doc,transac,depo,proveed,fecha,vence, nombre,tipo_doc,nfiscal,fafecta,reteiva,
 			cexento,cgenera,civagen,creduci,civared,cadicio,civaadi,cstotal,ctotal,cimpuesto,numero
 			FROM scst WHERE control=?';
 			$query=$this->db->query($SQL,array($control));
 
 			if($query->num_rows()==1){
+				$estampa = date('Y-m-d H:i:s');
+				$hora    = date('H:i:s');
+				$usuario = $this->session->userdata('usuario');
 				$row     = $query->row_array();
-				$transac = $row['transac'];
-				$depo    = $row['depo'];
-				$proveed = $row['proveed'];
-				$fecha   = str_replace('-','',$row['fecha']);
-				$vence   = $row['vence'];
-				$reteiva = $row['reteiva'];
-				if(empty($actuali)) $actuali=date('Ymd');
 
-				$itdata=array();
-				$sql='SELECT a.codigo,a.cantidad,a.importe,a.importe/a.cantidad AS costo,
-					a.precio1,a.precio2,a.precio3,a.precio4,b.formcal,b.ultimo,b.standard,b.pond,b.existen
-					FROM itscst AS a JOIN sinv AS b ON a.codigo=b.codigo WHERE a.control=?';
-				$qquery=$this->db->query($sql,array($control));
-				if($qquery->num_rows()>0){
-					foreach ($qquery->result() as $itrow){
-						$pond     = $this->_pond($itrow->existen,$itrow->cantidad,$itrow->pond,$itrow->costo);
-						
-						$costo    = $this->_costos($itrow->formcal,$pond,$itrow->costo,$itrow->standard);
-						$dbcodigo = $this->db->escape($itrow->codigo);
-						//Actualiza el inventario
-						$mSQL='UPDATE sinv SET
-							pond='.$pond.',
-							ultimo='.$itrow->costo.',
-							prov3=prov2, prepro3=prepro2, pfecha3=pfecha2, prov2=prov1, prepro2=prepro1, pfecha2=pfecha1,
-							prov1='.$this->db->escape($proveed).',
-							prepro1='.$itrow->costo.',
-							pfecha1='.$this->db->escape($fecha).'
-							WHERE codigo='.$dbcodigo;
-						$ban=$this->db->simple_query($mSQL);
-						if(!$ban){ memowrite($mSQL,'scst'); $error++; }
+				if($row['tipo_doc']=='FC'){
+					$transac = $row['transac'];
+					$depo    = $row['depo'];
+					$proveed = $row['proveed'];
+					$fecha   = str_replace('-','',$row['fecha']);
+					$vence   = $row['vence'];
+					$reteiva = $row['reteiva'];
+					if(empty($actuali)) $actuali=date('Ymd');
 
-						//$mSQL='UPDATE itsinv SET existen=existen+'.$itrow->cantidad.' WHERE codigo='.$this->db->escape($itrow->codigo).' AND alma='.$this->db->escape($depo);
-						//$ban=$this->db->simple_query($mSQL);
+					$itdata=array();
+					$sql='SELECT a.codigo,a.cantidad,a.importe,a.importe/a.cantidad AS costo,
+						a.precio1,a.precio2,a.precio3,a.precio4,b.formcal,b.ultimo,b.standard,b.pond,b.existen
+						FROM itscst AS a JOIN sinv AS b ON a.codigo=b.codigo WHERE a.control=?';
+					$qquery=$this->db->query($sql,array($control));
+					if($qquery->num_rows()>0){
+						foreach ($qquery->result() as $itrow){
+							$pond     = $this->_pond($itrow->existen,$itrow->cantidad,$itrow->pond,$itrow->costo);
 
-						$this->datasis->sinvcarga($itrow->codigo,$depo, $itrow->cantidad );
-
-						if(!$ban){ memowrite($mSQL,'scst'); $error++; }
-
-						if($itrow->precio1>0 && $itrow->precio2>0 && $itrow->precio3>0 && $itrow->precio4>0){
-							//Cambio de precios
-							if($cprecio){
-								$mSQL='UPDATE sinv SET
-								precio1='.$this->db->escape($itrow->precio1).',
-								precio2='.$this->db->escape($itrow->precio2).',
-								precio3='.$this->db->escape($itrow->precio3).',
-								precio4='.$this->db->escape($itrow->precio4).'
+							$costo    = $this->_costos($itrow->formcal,$pond,$itrow->costo,$itrow->standard);
+							$dbcodigo = $this->db->escape($itrow->codigo);
+							//Actualiza el inventario
+							$mSQL='UPDATE sinv SET
+								pond='.$pond.',
+								ultimo='.$itrow->costo.',
+								prov3=prov2, prepro3=prepro2, pfecha3=pfecha2, prov2=prov1, prepro2=prepro1, pfecha2=pfecha1,
+								prov1='.$this->db->escape($proveed).',
+								prepro1='.$itrow->costo.',
+								pfecha1='.$this->db->escape($fecha).'
 								WHERE codigo='.$dbcodigo;
-								$ban=$this->db->simple_query($mSQL);
-								if(!$ban){ memowrite($mSQL,'scst'); $error++; }
-							}//Fin del cambio de precios
+							$ban=$this->db->simple_query($mSQL);
+							if(!$ban){ memowrite($mSQL,'scst'); $error++; }
+
+							//$mSQL='UPDATE itsinv SET existen=existen+'.$itrow->cantidad.' WHERE codigo='.$this->db->escape($itrow->codigo).' AND alma='.$this->db->escape($depo);
+							//$ban=$this->db->simple_query($mSQL);
+
+							$this->datasis->sinvcarga($itrow->codigo,$depo, $itrow->cantidad );
+
+							if(!$ban){ memowrite($mSQL,'scst'); $error++; }
+
+							if($itrow->precio1>0 && $itrow->precio2>0 && $itrow->precio3>0 && $itrow->precio4>0){
+								//Cambio de precios
+								if($cprecio){
+									$mSQL='UPDATE sinv SET
+									precio1='.$this->db->escape($itrow->precio1).',
+									precio2='.$this->db->escape($itrow->precio2).',
+									precio3='.$this->db->escape($itrow->precio3).',
+									precio4='.$this->db->escape($itrow->precio4).'
+									WHERE codigo='.$dbcodigo;
+									$ban=$this->db->simple_query($mSQL);
+									if(!$ban){ memowrite($mSQL,'scst'); $error++; }
+								}//Fin del cambio de precios
+							}
+
+							//Actualiza los margenes y bases
+							$mSQL='UPDATE sinv SET
+								base1=ROUND(precio1*10000/(100+iva))/100,
+								base2=ROUND(precio2*10000/(100+iva))/100,
+								base3=ROUND(precio3*10000/(100+iva))/100,
+								base4=ROUND(precio4*10000/(100+iva))/100,
+								margen1=ROUND(10000-('.$costo.'*10000/base1))/100,
+								margen2=ROUND(10000-('.$costo.'*10000/base2))/100,
+								margen3=ROUND(10000-('.$costo.'*10000/base3))/100,
+								margen4=ROUND(10000-('.$costo.'*10000/base4))/100,
+								activo="S"
+							WHERE codigo='.$dbcodigo;
+							$ban=$this->db->simple_query($mSQL);
+							if(!$ban){ memowrite($mSQL,'scst'); $error++; }
+							//Fin de la actualizacion de inventario
 						}
-
-						//Actualiza los margenes y bases
-						$mSQL='UPDATE sinv SET
-							base1=ROUND(precio1*10000/(100+iva))/100,
-							base2=ROUND(precio2*10000/(100+iva))/100,
-							base3=ROUND(precio3*10000/(100+iva))/100,
-							base4=ROUND(precio4*10000/(100+iva))/100,
-							margen1=ROUND(10000-('.$costo.'*10000/base1))/100,
-							margen2=ROUND(10000-('.$costo.'*10000/base2))/100,
-							margen3=ROUND(10000-('.$costo.'*10000/base3))/100,
-							margen4=ROUND(10000-('.$costo.'*10000/base4))/100,
-							activo="S"
-						WHERE codigo='.$dbcodigo;
-						$ban=$this->db->simple_query($mSQL);
-						if(!$ban){ memowrite($mSQL,'scst'); $error++; }
-						//Fin de la actualizacion de inventario
 					}
-				}
 
-				//Carga la CxP
-				$mSQL='DELETE FROM sprm WHERE transac='.$this->db->escape($transac);
-				$ban=$this->db->simple_query($mSQL);
-				if(!$ban){ memowrite($mSQL,'scst'); $error++; }
+					//Inicio de la retencion
+					if($reteiva>0){
+						$niva    = $this->datasis->fprox_numero('niva');
+						$ivaplica= $this->datasis->ivaplica($fecha);
 
-				$sprm=array();
-				$causado = $this->datasis->fprox_numero('ncausado');
-				$sprm['cod_prv']  = $proveed;
-				$sprm['nombre']   = $row['nombre'];
-				$sprm['tipo_doc'] = $row['tipo_doc'];
-				$sprm['numero']   = $row['numero'];
-				$sprm['fecha']    = $actuali;
-				$sprm['vence']    = $vence;
-				$sprm['monto']    = $row['ctotal'];
-				$sprm['impuesto'] = $row['cimpuesto'];
-				$sprm['abonos']   = 0;
-				$sprm['observa1'] = 'FACTURA DE COMPRA';
-				$sprm['reteiva']  = $reteiva;
-				$sprm['causado']  = $causado;
-				$sprm['estampa']  = date('Y-m-d H:i:s');
-				$sprm['usuario']  = $this->session->userdata('usuario');
-				$sprm['hora']     = date('H:i:s');
-				$sprm['transac']  = $transac;
-				//$sprm['montasa']  = $row['cimpuesto'];
-				//$sprm['impuesto'] = $row['cimpuesto'];
-				//$sprm['impuesto'] = $row['cimpuesto'];
+						$riva['nrocomp']    = $niva;
+						$riva['emision']    = ($fecha > $actuali) ? $fecha : $actuali;
+						$riva['periodo']    = substr($riva['emision'],0,6) ;
+						$riva['tipo_doc']   = $row['tipo_doc'];
+						$riva['fecha']      = $fecha;
+						$riva['numero']     = $row['numero'];
+						$riva['nfiscal']    = $row['nfiscal'];
+						$riva['afecta']     = $row['fafecta'];
+						$riva['clipro']     = $proveed;
+						$riva['nombre']     = $row['nombre'];
+						$riva['rif']        = $this->datasis->dameval('SELECT rif FROM sprv WHERE proveed='.$this->db->escape($proveed));
+						$riva['exento']     = $row['cexento'];
+						$riva['tasa']       = $ivaplica['tasa'];
+						$riva['tasaadic']   = $ivaplica['sobretasa'];
+						$riva['tasaredu']   = $ivaplica['redutasa'];
+						$riva['general']    = $row['cgenera'];
+						$riva['geneimpu']   = $row['civagen'];
+						$riva['adicional']  = $row['cadicio'];
+						$riva['adicimpu']   = $row['civaadi'];
+						$riva['reducida']   = $row['creduci'];
+						$riva['reduimpu']   = $row['civared'];
+						$riva['stotal']     = $row['cstotal'];
+						$riva['impuesto']   = $row['cimpuesto'];
+						$riva['gtotal']     = $row['ctotal'];
+						$riva['reiva']      = $reteiva;
+						$riva['transac']    = $transac;
+						$riva['estampa']    = $estampa;
+						$riva['hora']       = $hora;
+						$riva['usuario']    = $usuario;
+						$mSQL=$this->db->insert_string('riva', $riva);
+						$ban =$this->db->simple_query($mSQL);
+						if(!$ban){ memowrite($mSQL,'scst'); $error++; }
 
-				$mSQL=$this->db->insert_string('sprm', $sprm);
-				$ban =$this->db->simple_query($mSQL);
-				if(!$ban){ memowrite($mSQL,'scst'); $error++; }
-				//Fin de la carga de la CxP
+						//Crea la nota de credito
+						$mnumnc = $this->datasis->fprox_numero('num_nc');
+						$data=array();
+						$data['cod_prv']    = $proveed;
+						$data['nombre']     = $nombre;
+						$data['tipo_doc']   = 'NC';
+						$data['numero']     = $mnumnc;
+						$data['fecha']      = $fecha;
+						$data['monto']      = $reteiva;
+						$data['impuesto']   = 0;
+						$data['abonos']     = $reteiva;
+						$data['vence']      = $fecha;
+						$data['tipo_ref']   = 'FC';
+						$data['num_ref']    = $row['numero'];
+						$data['observa1']   = 'RET/IVA CAUSADA A FC'.$row['numero'];
+						$data['estampa']    = $estampa;
+						$data['hora']       = $hora;
+						$data['transac']    = $transac;
+						$data['usuario']    = $usuario;
+						$data['codigo']     = 'NOCON';
+						$data['descrip']    = 'NOTA DE CONTABILIDAD';
+						$mSQL = $this->db->insert_string('sprm', $data);
+						$ban=$this->db->simple_query($mSQL);
+						if($ban==false){ memowrite($mSQL,'scst'); }
 
-				//Inicio de la retencion
-				if($reteiva>0){
-					$niva    = $this->datasis->fprox_numero('niva');
-					$ivaplica=$this->datasis->ivaplica($fecha);
+						//Aplica la NC a la FC
+						$data=array();
+						$data['numppro']    = $row['numero'];
+						$data['tipoppro']   = 'FC';
+						$data['cod_prv']    = $proveed;
+						$data['tipo_doc']   = 'NC';
+						$data['numero']     = $mnumnc;
+						$data['fecha']      = $fecha;
+						$data['monto']      = $reteiva;
+						$data['abono']      = $reteiva;
+						$data['ppago']      = 0;
+						$data['reten']      = 0;
+						$data['cambio']     = 0;
+						$data['mora']       = 0;
+						$data['transac']    = $transac;
+						$data['estampa']    = $estampa;
+						$data['hora']       = $hora;
+						$data['usuario']    = $usuario;
+						$data['preten']     = 0;
+						$data['creten']     = 0;
+						$data['breten']     = 0;
+						$data['reteiva']    = 0;
+						$mSQL = $this->db->insert_string('itppro', $data);
+						$ban=$this->db->simple_query($mSQL);
+						if($ban==false){ memowrite($mSQL,'scst');}
 
-					$riva['nrocomp']    = $niva;
-					$riva['emision']    = ($fecha > $actuali) ? $fecha : $actuali;
-					$riva['periodo']    = substr($riva['emision'],0,6) ;
-					$riva['tipo_doc']   = $row['tipo_doc'];
-					$riva['fecha']      = $fecha;
-					$riva['numero']     = $row['numero'];
-					$riva['nfiscal']    = $row['nfiscal'];
-					$riva['afecta']     = $row['fafecta'];
-					$riva['clipro']     = $proveed;
-					$riva['nombre']     = $row['nombre'];
-					$riva['rif']        = $this->datasis->dameval('SELECT rif FROM sprv WHERE proveed='.$this->db->escape($proveed));
-					$riva['exento']     = $row['cexento'];
-					$riva['tasa']       = $ivaplica['tasa'];
-					$riva['tasaadic']   = $ivaplica['sobretasa'];
-					$riva['tasaredu']   = $ivaplica['redutasa'];
-					$riva['general']    = $row['cgenera'];
-					$riva['geneimpu']   = $row['civagen'];
-					$riva['adicional']  = $row['cadicio'];
-					$riva['adicimpu']   = $row['civaadi'];
-					$riva['reducida']   = $row['creduci'];
-					$riva['reduimpu']   = $row['civared'];
-					$riva['stotal']     = $row['cstotal'];
-					$riva['impuesto']   = $row['cimpuesto'];
-					$riva['gtotal']     = $row['ctotal'];
-					$riva['reiva']      = $reteiva;
-					$riva['transac']    = $transac;
-					$riva['estampa']    = date('Y-m-d H:i:s');
-					$riva['hora']       = date('H:i:s');
-					$riva['usuario']    = $this->session->userdata('usuario');
+						//Crea la nota de debito
+						$mnumnd = $this->datasis->fprox_numero('num_nd');
+						$data=array();
+						$data['cod_prv']   = 'REIVA';
+						$data['nombre']    = 'RETENCION DE I.V.A. POR COMPENSAR';
+						$data['tipo_doc']  = 'ND';
+						$data['numero']    = $mnumnd;
+						$data['fecha']     = $fecha;
+						$data['monto']     = $reteiva;
+						$data['impuesto']  = 0;
+						$data['abonos']    = 0;
+						$data['vence']     = $fecha;
+						$data['tipo_ref']  = 'FC';
+						$data['num_ref']   = $row['numero'];
+						$data['observa1']  = 'RET/IVA DE '.$proveed.' A DOC. FC'.$row['numero'];
+						$data['estampa']   = $estampa;
+						$data['hora']      = $hora;
+						$data['transac']   = $transac;
+						$data['usuario']   = $usuario;
+						$data['codigo']    = 'NOCON';
+						$data['descrip']   = 'NOTA DE CONTABILIDAD';
+						$mSQL = $this->db->insert_string('sprv', $data);
+						$ban=$this->db->simple_query($mSQL);
+						if($ban==false){ memowrite($mSQL,'scst'); }
+					}//Fin de la retencion
 
-					$mSQL=$this->db->insert_string('riva', $riva);
+					//Carga la CxP
+					$mSQL='DELETE FROM sprm WHERE transac='.$this->db->escape($transac);
+					$ban=$this->db->simple_query($mSQL);
+					if(!$ban){ memowrite($mSQL,'scst'); $error++; }
+
+					$sprm=array();
+					$causado = $this->datasis->fprox_numero('ncausado');
+					$sprm['cod_prv']  = $proveed;
+					$sprm['nombre']   = $row['nombre'];
+					$sprm['tipo_doc'] = $row['tipo_doc'];
+					$sprm['numero']   = $row['numero'];
+					$sprm['fecha']    = $actuali;
+					$sprm['vence']    = $vence;
+					$sprm['monto']    = $row['ctotal'];
+					$sprm['impuesto'] = $row['cimpuesto'];
+					$sprm['abonos']   = $reteiva;
+					$sprm['observa1'] = 'FACTURA DE COMPRA';
+					$sprm['reteiva']  = $reteiva;
+					$sprm['causado']  = $causado;
+					$sprm['estampa']  = date('Y-m-d H:i:s');
+					$sprm['usuario']  = $this->session->userdata('usuario');
+					$sprm['hora']     = date('H:i:s');
+					$sprm['transac']  = $transac;
+					//$sprm['montasa']  = $row['cimpuesto'];
+					//$sprm['impuesto'] = $row['cimpuesto'];
+
+					$mSQL=$this->db->insert_string('sprm', $sprm);
 					$ban =$this->db->simple_query($mSQL);
 					if(!$ban){ memowrite($mSQL,'scst'); $error++; }
-				}//Fin de la retencion
+					//Fin de la carga de la CxP
 
-				$mSQL='UPDATE scst SET `actuali`='.$actuali.', `recep`='.$actuali.' WHERE `control`='.$this->db->escape($control);
-				$ban=$this->db->simple_query($mSQL);
-				if(!$ban){ memowrite($mSQL,'scst'); $error++; }
+					$mSQL='UPDATE scst SET `actuali`='.$actuali.', `recep`='.$actuali.' WHERE `control`='.$this->db->escape($control);
+					$ban=$this->db->simple_query($mSQL);
+					if(!$ban){ memowrite($mSQL,'scst'); $error++; }
+
+				}elseif($row['tipo_doc']=='NC'){
+					//Falta implementar
+				}elseif($row['tipo_doc']=='NE'){
+					//Falta implementar
+				}
 			}else{
 				$this->error_string='Compra no existe';
 				return false;

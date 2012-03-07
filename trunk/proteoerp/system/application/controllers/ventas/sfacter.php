@@ -588,7 +588,7 @@ class sfacter extends validaciones {
 		$data['nombre']     = $nombre;
 		$data['tipo_doc']   = 'FC';
 		$data['numero']     = $numero;
-		$data['fecha']      = $estampa;
+		$data['fecha']      = $fecha;
 		$data['monto']      = $totneto;
 		$data['impuesto']   = $iva;
 		$data['abonos']     = 0;
