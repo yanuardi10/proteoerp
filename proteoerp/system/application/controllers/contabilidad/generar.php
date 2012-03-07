@@ -150,6 +150,7 @@ class Generar extends Metodos {
 
 		if($generar){
 			foreach ($generar as $modulo){
+				$modulo=trim($modulo);
 				$dbmodulo= $this->db->escape($modulo);
 
 				$mod_query  = $this->db->query("SELECT origen, control FROM reglascont WHERE modulo=$dbmodulo AND regla=1");
