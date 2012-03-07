@@ -197,7 +197,7 @@ class sfac_add extends validaciones {
 		$data['filtro']  = $filter->output;
 
 		$data['script']  = script('jquery.js');
-		$data["script"] .= script("jquery.alerts.js");
+		$data['script'] .= script("jquery.alerts.js");
 		$data['script'] .= script('superTables.js');
 		$data['script'] .= $script;
 
@@ -491,6 +491,7 @@ class sfac_add extends validaciones {
 		$edit->exento    = new inputField('Exento', 'exento');
 		$edit->maqfiscal = new inputField('Mq.Fiscal', 'maqfiscal');
 		$edit->referen   = new inputField('Referencia', 'referen');
+		$edit->pfac      = new hiddenField('Presupuesto', 'pfac');
 
 		$edit->reiva     = new inputField('Retencion de IVA', 'reiva');
 		$edit->creiva    = new inputField('Comprobante', 'creiva');
@@ -525,8 +526,8 @@ class sfac_add extends validaciones {
 		$data['script'] .= script('plugins/jquery.ui.autocomplete.autoSelectOne.js');
 		$data['script'] .= phpscript('nformat.js');
 		$data['script'] .= script('plugins/jquery.floatnumber.js');
-		$data['script'] .= script("gt_msg_en.js");
-		$data['script'] .= script("gt_grid_all.js");
+		$data['script'] .= script('gt_msg_en.js');
+		$data['script'] .= script('gt_grid_all.js');
 		$data['content'] = $this->load->view('view_sfac_add', $conten,true);
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = heading($this->titp);
@@ -965,6 +966,10 @@ class sfac_add extends validaciones {
 		$do->set('totalg' ,round($totalg ,2));
 		$do->set('iva'    ,round($iva    ,2));
 
+		$this->pfac = $do->get('pfac');
+		$do->rm_get('pfac');
+
+
 		return true;
 	}
 
@@ -1201,6 +1206,13 @@ class sfac_add extends validaciones {
 			$sql="UPDATE sinv   SET existen=existen+$factor*$itcana WHERE codigo=$dbcodigoa";
 			$ban=$this->db->simple_query($sql);
 			if($ban==false){ memowrite($sql,'sfac'); $error++;}
+
+		}
+
+		//Si viene de pfac
+		if(strlen($this->pfac)>7){
+			$this->db->where('numero', $this->pfac);
+			$this->db->update('pfac', array('factura' => $factura));
 		}
 
 		$primary =implode(',',$do->pk);
@@ -1249,6 +1261,7 @@ class sfac_add extends validaciones {
 				'totals'     => $row->totals,
 				'iva'        => $row->iva,
 				'totalg'     => $row->totalg,
+				'pfac'       => $numero,
 			);
 
 			$itsel=array('a.codigoa','b.descrip AS desca','a.cana','a.preca','a.tota','a.iva',

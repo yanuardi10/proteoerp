@@ -111,6 +111,8 @@ $(function(){
 		},
 		minLength: 2,
 		select: function( event, ui ) {
+			$('#sprv').val(ui.item.value);
+
 			$('#sprvnombre').val(ui.item.nombre);
 			$('#sprvnombre_val').text(ui.item.nombre);
 
