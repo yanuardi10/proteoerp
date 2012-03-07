@@ -162,7 +162,7 @@ class Generar extends Metodos {
 
 					$query=$this->db->simple_query("DELETE FROM casi   WHERE fecha BETWEEN $qfechai AND $qfechaf AND origen='$modulo'");
 					$query=$this->db->simple_query("DELETE FROM itcasi WHERE fecha BETWEEN $qfechai AND $qfechaf AND origen LIKE '$modulo%'");
-					echo "DELETE FROM itcasi WHERE fecha BETWEEN $qfechai AND $qfechaf AND origen LIKE '$modulo%'";
+					//echo "DELETE FROM itcasi WHERE fecha BETWEEN $qfechai AND $qfechaf AND origen LIKE '$modulo%'";
 				}else{
 					continue;
 				}
