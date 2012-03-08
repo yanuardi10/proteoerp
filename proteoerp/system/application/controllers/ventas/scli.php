@@ -606,6 +606,9 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 
 		$filter = new DataFilter('Gesti&oacute;n de l&iacute;mites de cr&eacute;dito', 'scli');
 
+		$filter->cliente = new inputField('C&oacute;digo', 'cliente');
+		$filter->cliente->size=6;
+
 		$filter->nombre = new inputField('Nombre','nombre');
 		$filter->nombre->rule      ='max_length[45]';
 		$filter->nombre->maxlength =45;

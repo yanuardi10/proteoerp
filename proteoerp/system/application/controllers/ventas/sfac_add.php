@@ -969,7 +969,6 @@ class sfac_add extends validaciones {
 		$this->pfac = $do->get('pfac');
 		$do->rm_get('pfac');
 
-
 		return true;
 	}
 
@@ -1213,6 +1212,7 @@ class sfac_add extends validaciones {
 		if(strlen($this->pfac)>7){
 			$this->db->where('numero', $this->pfac);
 			$this->db->update('pfac', array('factura' => $factura));
+
 		}
 
 		$primary =implode(',',$do->pk);
