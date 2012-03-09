@@ -676,50 +676,85 @@ class Scst extends Controller {
 		//Para CXP
 		$edit->cexento = new inputField('Excento', 'cexento');
 		$edit->cexento->size = 15;
+		$edit->cexento->autocomplete=false;
+		$edit->cexento->showformat= 'decimal';
 		$edit->cexento->onkeyup='ctotales()';
+		$edit->cexento->rule='numeric';
 		$edit->cexento->css_class='inputnum';
 
 		$edit->cgenera = new inputField('Base imponible tasa General', 'cgenera');
 		$edit->cgenera->size = 15;
 		$edit->cgenera->onkeyup='cal_iva('.$alicuota['tasa'].',\'civagen\',this.value)';
 		$edit->cgenera->css_class='inputnum';
+		$edit->cgenera->showformat= 'decimal';
+		$edit->cgenera->rule='numeric';
+		$edit->cgenera->autocomplete=false;
 
 		$edit->civagen = new inputField('Monto alicuota tasa General', 'civagen');
 		$edit->civagen->size = 10;
+		$edit->civagen->autocomplete=false;
+		$edit->civagen->showformat= 'decimal';
 		$edit->civagen->onkeyup='cal_base('.$alicuota['tasa'].',\'cgenera\',this.value)';
+		$edit->civagen->rule='numeric';
 		$edit->civagen->css_class='inputnum';
 
 		$edit->creduci = new inputField('Base imponible tasa Reducida', 'creduci');
 		$edit->creduci->size = 15;
+		$edit->creduci->autocomplete=false;
+		$edit->creduci->showformat= 'decimal';
 		$edit->creduci->onkeyup='cal_iva('.$alicuota['redutasa'].',\'civared\',this.value)';
+		$edit->creduci->rule='numeric';
 		$edit->creduci->css_class='inputnum';
 
 		$edit->civared = new inputField('Monto alicuota tasa Reducida', 'civared');
 		$edit->civared->size = 10;
+		$edit->civared->autocomplete=false;
+		$edit->civared->showformat= 'decimal';
 		$edit->civared->onkeyup='cal_base('.$alicuota['redutasa'].',\'creduci\',this.value)';
 		$edit->civared->css_class='inputnum';
 
 		$edit->cadicio = new inputField('Base imponible tasa Adicional', 'cadicio');
 		$edit->cadicio->size = 15;
+		$edit->cadicio->autocomplete=false;
+		$edit->cadicio->showformat= 'decimal';
 		$edit->cadicio->onkeyup='cal_iva('.$alicuota['sobretasa'].',\'civaadi\',this.value)';
 		$edit->cadicio->css_class='inputnum';
 
 		$edit->civaadi = new inputField('Monto alicuota tasa Adicional', 'civaadi');
 		$edit->civaadi->size = 10;
+		$edit->civaadi->autocomplete=false;
+		$edit->civaadi->showformat= 'decimal';
+		$edit->civaadi->rule='numeric';
 		$edit->civaadi->onkeyup='cal_base('.$alicuota['sobretasa'].',\'cadicio\',this.value)';
 		$edit->civaadi->css_class='inputnum';
 
 		$edit->cstotal = new hiddenField('Sub-total', 'cstotal');
 		$edit->cstotal->size = 20;
+		$edit->cstotal->rule='numeric';
 		$edit->cstotal->css_class='inputnum';
+
+		$edit->riva = new inputField('Retenci&oacute;n IVA', 'reteiva');
+		$edit->riva->size = 10;
+		$edit->riva->showformat= 'decimal';
+		$edit->riva->rule='numeric';
+		$edit->riva->autocomplete=false;
+		$edit->riva->css_class='inputnum';
+		$contribu= $this->datasis->traevalor('CONTRIBUYENTE');
+		$rif     = $this->datasis->traevalor('RIF');
+		if(!($contribu=='ESPECIAL' && strtoupper($rif[0])!='V')){
+			$edit->riva->when=array('show');
+		}
 
 		$edit->cimpuesto = new hiddenField('Total Impuesto', 'cimpuesto');
 		$edit->cimpuesto->size = 10;
+		$edit->cimpuesto->rule='numeric';
+		$edit->cimpuesto->autocomplete=false;
 		$edit->cimpuesto->css_class='inputnum';
 
 		$edit->ctotal  = new hiddenField('Total', 'ctotal');
-		$edit->ctotal ->size = 20;
-		$edit->ctotal ->css_class='inputnum';
+		$edit->ctotal->size = 20;
+		$edit->ctotal->rule='numeric';
+		$edit->ctotal->css_class='inputnum';
 		//Fin de CxP
 
 		$edit->buttons('save', 'undo','modify', 'back');
@@ -731,8 +766,20 @@ class Scst extends Controller {
 		$ffecha=false;
 		$conten['alicuota'] = $alicuota;
 
+		$proveed=$edit->get_from_dataobjetct('proveed');
+		$conten['priva']   = $this->datasis->dameval('SELECT reteiva FROM sprv WHERE proveed='.$this->db->escape($proveed));
+		$conten['priva']   = $conten['priva']/100;
 		$data['script']  = script('jquery.js');
 		$data['script'] .= script('jquery-ui.js');
+		$data['script'] .= script('jquery.layout.js');
+		$data['script'] .= script('grid.locale-sp.js');
+		$data['script'] .= script('ui.multiselect.js');
+		$data['script'] .= script('jquery.jqGrid.min.js');
+		$data['script'] .= script('jquery.tablednd.js');
+		$data['script'] .= script('jquery.contextmenu.js');
+		$data['script'] .= style('ui.jqgrid.css');
+		$data['script'] .= style('ui.multiselect.css');
+
 		$data['script'] .= script('plugins/jquery.numeric.pack.js');
 		$data['script'] .= script('plugins/jquery.floatnumber.js');
 		$data['script'] .= phpscript('nformat.js');
@@ -866,7 +913,7 @@ class Scst extends Controller {
 			$query=$this->db->query($SQL,array($control));
 
 			if($query->num_rows()==1){
-				$estampa = date('Y-m-d H:i:s');
+				$estampa = date('Y-m-d');
 				$hora    = date('H:i:s');
 				$usuario = $this->session->userdata('usuario');
 				$row     = $query->row_array();
@@ -942,8 +989,90 @@ class Scst extends Controller {
 						}
 					}
 
+					//Limpia primero la data
+					$mSQL='DELETE FROM sprm WHERE transac='.$this->db->escape($transac);
+					$ban=$this->db->simple_query($mSQL);
+					if(!$ban){ memowrite($mSQL,'scst'); $error++; }
+
 					//Inicio de la retencion
 					if($reteiva>0){
+						//Crea la nota de credito
+						$mnumnc = $this->datasis->fprox_numero('num_nc');
+						$sprm=array();
+						$sprm['cod_prv']    = $proveed;
+						$sprm['nombre']     = $row['nombre'];
+						$sprm['tipo_doc']   = 'NC';
+						$sprm['numero']     = $mnumnc;
+						$sprm['fecha']      = $actuali;
+						$sprm['monto']      = $reteiva;
+						$sprm['impuesto']   = 0;
+						$sprm['abonos']     = $reteiva;
+						$sprm['vence']      = $actuali;
+						$sprm['tipo_ref']   = 'FC';
+						$sprm['num_ref']    = $row['numero'];
+						$sprm['observa1']   = 'RET/IVA CAUSADA A FC'.$row['numero'];
+						$sprm['estampa']    = $estampa;
+						$sprm['hora']       = $hora;
+						$sprm['transac']    = $transac;
+						$sprm['usuario']    = $usuario;
+						$sprm['codigo']     = 'NOCON';
+						$sprm['descrip']    = 'NOTA DE CONTABILIDAD';
+						$mSQL = $this->db->insert_string('sprm', $sprm);
+						$ban=$this->db->simple_query($mSQL);
+						if(!$ban){ memowrite($mSQL,'scst'); $error++; }
+
+						//Aplica la NC a la FC
+						$itppro=array();
+						$itppro['numppro']    = $mnumnc;
+						$itppro['tipoppro']   = 'NC';
+						$itppro['cod_prv']    = $proveed;
+						$itppro['tipo_doc']   = 'FC';
+						$itppro['numero']     = $row['numero'];
+						$itppro['fecha']      = $actuali;
+						$itppro['monto']      = $reteiva;
+						$itppro['abono']      = $reteiva;
+						$itppro['ppago']      = 0;
+						$itppro['reten']      = 0;
+						$itppro['cambio']     = 0;
+						$itppro['mora']       = 0;
+						$itppro['transac']    = $transac;
+						$itppro['estampa']    = $estampa;
+						$itppro['hora']       = $hora;
+						$itppro['usuario']    = $usuario;
+						$itppro['preten']     = 0;
+						$itppro['creten']     = 0;
+						$itppro['breten']     = 0;
+						$itppro['reteiva']    = 0;
+						$mSQL = $this->db->insert_string('itppro', $itppro);
+						$ban=$this->db->simple_query($mSQL);
+						if(!$ban){ memowrite($mSQL,'scst'); $error++;}
+
+						//Crea la nota de debito
+						$mnumnd = $this->datasis->fprox_numero('num_nd');
+						$sprm=array();
+						$sprm['cod_prv']   = 'REIVA';
+						$sprm['nombre']    = 'RETENCION DE I.V.A. POR COMPENSAR';
+						$sprm['tipo_doc']  = 'ND';
+						$sprm['numero']    = $mnumnd;
+						$sprm['fecha']     = $actuali;
+						$sprm['monto']     = $reteiva;
+						$sprm['impuesto']  = 0;
+						$sprm['abonos']    = 0;
+						$sprm['vence']     = $actuali;
+						$sprm['tipo_ref']  = 'FC';
+						$sprm['num_ref']   = $row['numero'];
+						$sprm['observa1']  = 'RET/IVA DE '.$proveed.' A DOC. FC'.$row['numero'];
+						$sprm['estampa']   = $estampa;
+						$sprm['hora']      = $hora;
+						$sprm['transac']   = $transac;
+						$sprm['usuario']   = $usuario;
+						$sprm['codigo']    = 'NOCON';
+						$sprm['descrip']   = 'NOTA DE CONTABILIDAD';
+						$mSQL = $this->db->insert_string('sprm', $sprm);
+						$ban=$this->db->simple_query($mSQL);
+						if(!$ban){ memowrite($mSQL,'scst'); $error++;}
+
+						//Crea la retencion
 						$niva    = $this->datasis->fprox_numero('niva');
 						$ivaplica= $this->datasis->ivaplica($fecha);
 
@@ -979,89 +1108,9 @@ class Scst extends Controller {
 						$mSQL=$this->db->insert_string('riva', $riva);
 						$ban =$this->db->simple_query($mSQL);
 						if(!$ban){ memowrite($mSQL,'scst'); $error++; }
-
-						//Crea la nota de credito
-						$mnumnc = $this->datasis->fprox_numero('num_nc');
-						$data=array();
-						$data['cod_prv']    = $proveed;
-						$data['nombre']     = $nombre;
-						$data['tipo_doc']   = 'NC';
-						$data['numero']     = $mnumnc;
-						$data['fecha']      = $fecha;
-						$data['monto']      = $reteiva;
-						$data['impuesto']   = 0;
-						$data['abonos']     = $reteiva;
-						$data['vence']      = $fecha;
-						$data['tipo_ref']   = 'FC';
-						$data['num_ref']    = $row['numero'];
-						$data['observa1']   = 'RET/IVA CAUSADA A FC'.$row['numero'];
-						$data['estampa']    = $estampa;
-						$data['hora']       = $hora;
-						$data['transac']    = $transac;
-						$data['usuario']    = $usuario;
-						$data['codigo']     = 'NOCON';
-						$data['descrip']    = 'NOTA DE CONTABILIDAD';
-						$mSQL = $this->db->insert_string('sprm', $data);
-						$ban=$this->db->simple_query($mSQL);
-						if($ban==false){ memowrite($mSQL,'scst'); }
-
-						//Aplica la NC a la FC
-						$data=array();
-						$data['numppro']    = $row['numero'];
-						$data['tipoppro']   = 'FC';
-						$data['cod_prv']    = $proveed;
-						$data['tipo_doc']   = 'NC';
-						$data['numero']     = $mnumnc;
-						$data['fecha']      = $fecha;
-						$data['monto']      = $reteiva;
-						$data['abono']      = $reteiva;
-						$data['ppago']      = 0;
-						$data['reten']      = 0;
-						$data['cambio']     = 0;
-						$data['mora']       = 0;
-						$data['transac']    = $transac;
-						$data['estampa']    = $estampa;
-						$data['hora']       = $hora;
-						$data['usuario']    = $usuario;
-						$data['preten']     = 0;
-						$data['creten']     = 0;
-						$data['breten']     = 0;
-						$data['reteiva']    = 0;
-						$mSQL = $this->db->insert_string('itppro', $data);
-						$ban=$this->db->simple_query($mSQL);
-						if($ban==false){ memowrite($mSQL,'scst');}
-
-						//Crea la nota de debito
-						$mnumnd = $this->datasis->fprox_numero('num_nd');
-						$data=array();
-						$data['cod_prv']   = 'REIVA';
-						$data['nombre']    = 'RETENCION DE I.V.A. POR COMPENSAR';
-						$data['tipo_doc']  = 'ND';
-						$data['numero']    = $mnumnd;
-						$data['fecha']     = $fecha;
-						$data['monto']     = $reteiva;
-						$data['impuesto']  = 0;
-						$data['abonos']    = 0;
-						$data['vence']     = $fecha;
-						$data['tipo_ref']  = 'FC';
-						$data['num_ref']   = $row['numero'];
-						$data['observa1']  = 'RET/IVA DE '.$proveed.' A DOC. FC'.$row['numero'];
-						$data['estampa']   = $estampa;
-						$data['hora']      = $hora;
-						$data['transac']   = $transac;
-						$data['usuario']   = $usuario;
-						$data['codigo']    = 'NOCON';
-						$data['descrip']   = 'NOTA DE CONTABILIDAD';
-						$mSQL = $this->db->insert_string('sprv', $data);
-						$ban=$this->db->simple_query($mSQL);
-						if($ban==false){ memowrite($mSQL,'scst'); }
 					}//Fin de la retencion
 
 					//Carga la CxP
-					$mSQL='DELETE FROM sprm WHERE transac='.$this->db->escape($transac);
-					$ban=$this->db->simple_query($mSQL);
-					if(!$ban){ memowrite($mSQL,'scst'); $error++; }
-
 					$sprm=array();
 					$causado = $this->datasis->fprox_numero('ncausado');
 					$sprm['cod_prv']  = $proveed;
@@ -1076,9 +1125,9 @@ class Scst extends Controller {
 					$sprm['observa1'] = 'FACTURA DE COMPRA';
 					$sprm['reteiva']  = $reteiva;
 					$sprm['causado']  = $causado;
-					$sprm['estampa']  = date('Y-m-d H:i:s');
-					$sprm['usuario']  = $this->session->userdata('usuario');
-					$sprm['hora']     = date('H:i:s');
+					$sprm['estampa']  = $estampa;
+					$sprm['usuario']  = $usuario;
+					$sprm['hora']     = $hora;
 					$sprm['transac']  = $transac;
 					//$sprm['montasa']  = $row['cimpuesto'];
 					//$sprm['impuesto'] = $row['cimpuesto'];
@@ -1119,18 +1168,18 @@ class Scst extends Controller {
 		}
 
 		$scst     = $query->row_array();
-		$mTRANSAC = $scst["transac"];
+		$mTRANSAC = $scst['transac'];
 		// Si esta actualizada
-		$mACTUALI = $scst["actuali"];
-		$fecha    = $scst["fecha"];
-		$tipo_doc = $scst["tipo_doc"];
-		$numero   = $scst["numero"];
-		$montonet = $scst["montonet"];
-		$reteiva  = $scst["reteiva"];
-		$fafecta  = $scst["fafecta"];
-		$anticipo = $scst["anticipo"];
-		$proveed  = $scst["proveed"];
-		$mALMA    = $scst["depo"];
+		$mACTUALI = $scst['actuali'];
+		$fecha    = $scst['fecha'];
+		$tipo_doc = $scst['tipo_doc'];
+		$numero   = $scst['numero'];
+		$montonet = $scst['montonet'];
+		$reteiva  = $scst['reteiva'];
+		$fafecta  = $scst['fafecta'];
+		$anticipo = $scst['anticipo'];
+		$proveed  = $scst['proveed'];
+		$mALMA    = $scst['depo'];
 
 		//********************************
 		//
@@ -1159,7 +1208,7 @@ class Scst extends Controller {
 		}
 		// si no esta cargada
 		if ( $mACTUALI < $fecha ){
-			echo "Factura no ha sido cargada";
+			echo 'Factura no ha sido cargada';
 			return ;
 		}
 
@@ -1193,8 +1242,8 @@ class Scst extends Controller {
 		$this->db->simple_query($mSQL);
 
 		// ANULA LA RETENCION SI TIENE
-		if ( $this->datasis->dameval("SELECT COUNT(*) FROM riva WHERE transac='$mTRANSAC+'") > 0 ){
-			$mTRANULA = '_'.substr($this->datasis-prox_sql('rivanula'),1,7);
+		if ( $this->datasis->dameval("SELECT COUNT(*) FROM riva WHERE transac='$mTRANSAC'") > 0 ){
+			$mTRANULA = '_'.substr($this->datasis->prox_sql('rivanula'),1,7);
 			$this->db->simple_query("UPDATE riva SET transac='$mTRANULA' WHERE transac='$mTRANSAC' ");
 		}
 
@@ -1280,11 +1329,11 @@ class Scst extends Controller {
 				$this->db->simple_query($mSQL);
 			}
 		}
-
-		//CMNJ("Compra Reversada en Inventario y CxP")
-		//RETURN(.T.)
-		echo "<h1>Compra Reversada en Inventario y CxP</h1>";
-		echo anchor('compras/scst/dataedit/show/'.$control,'Regresar');
+		$data['head']    = $this->rapyd->get_head();
+		$data['content'] = 'Compra Reversada en Inventario y CxP'.br();
+		$data['content'].= anchor('compras/scst/dataedit/show/'.$control,'Regresar');
+		$data['title']   = heading('Reverso de compra');
+		$this->load->view('view_ventanas', $data);
 	}
 
 	function creadseri($cod_prov,$factura){

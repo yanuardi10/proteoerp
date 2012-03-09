@@ -163,7 +163,7 @@ function totalizar(){
 				$data = array(
 					'name'  => 'preca_'.$i,
 					'id'    => 'preca_'.$i,
-					'value' => $sinv[$codigoa]['precio'.$tiposcli],
+					'value' => round($sinv[$codigoa]['precio'.$tiposcli],2),
 					'type'  => 'hidden'
 				);
 				echo form_input($data).nformat($sinv[$codigoa]['precio'.$tiposcli]);

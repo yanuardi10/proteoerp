@@ -56,6 +56,7 @@ class pfaclitemayor extends validaciones{
 		$filter->fechad->clause = $filter->fechah->clause   = 'where';
 		$filter->fechad->db_name = $filter->fechah->db_name = 'fecha';
 		$filter->fechah->size = $filter->fechad->size = 10;
+		$filter->fechah->rule  = $filter->fechad->rule = 'trim';
 		$filter->fechad->operator = '>=';
 		$filter->fechah->operator = '<=';
 		$filter->fechad->group = 'uno';
@@ -63,12 +64,14 @@ class pfaclitemayor extends validaciones{
 
 		$filter->numero = new inputField('N&uacute;mero', 'numero');
 		$filter->numero->size = 10;
+		$filter->numero->rule  = 'trim';
 		$filter->numero->group = 'dos';
 
 		$filter->cliente = new inputField('Cliente', 'cod_cli');
 		$filter->cliente->size = 8;
 		$filter->cliente->append($boton);
-		$filter->cliente->group = "dos";
+		$filter->cliente->rule  = 'trim';
+		$filter->cliente->group = 'dos';
 
 		$filter->buttons('reset', 'search');
 		$filter->build('dataformfiltro');
@@ -82,13 +85,12 @@ class pfaclitemayor extends validaciones{
 		$grid->per_page = 50;
 
 		$grid->column_orderby('N&uacute;mero', $uri ,'numero');
-		$grid->column_orderby('Facturar'     , $uri3,'numero');
+		$grid->column_orderby('Factura'      , "<siinulo><#factura#>|$uri3|<#factura#></siinulo>",'factura');
 		$grid->column_orderby('Fecha'        , '<dbdate_to_human><#fecha#></dbdate_to_human>','fecha', 'align=\'center\'');
 		$grid->column_orderby('Cliente'      , 'cod_cli','cod_cli');
 		$grid->column_orderby('Nombre'       , 'nombre','nombre');
 		$grid->column_orderby('IVA'          , '<nformat><#iva#></nformat>'   , 'iva',    "align=right");
 		$grid->column_orderby('Total'        , '<nformat><#totalg#></nformat>', 'totalg', "align=right");
-		$grid->column_orderby('Factura'      , 'factura','factura');
 		$grid->column_orderby('Status'       , 'status', 'status');
 
 		$grid->add($this->url.'filterscli');
