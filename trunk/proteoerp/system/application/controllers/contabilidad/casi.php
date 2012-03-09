@@ -121,11 +121,11 @@ class casi extends Controller {
 			'filtro'  =>array('codigo'=>'C&oacute;digo','descrip'=>'Descripci&oacute;n'),
 			'retornar'=>array(
 				'codigo' =>'cuenta_<#i#>',
- 				'departa'=>'ccosto<#i#>',
+				'departa'=>'ccosto<#i#>',
 				'descrip'=>'concepto_<#i#>',
 				'departa'=>'cpladeparta_<#i#>',
 				'ccosto' =>'cplaccosto_<#i#>'
- 			),
+			),
 			'titulo'  =>'Buscar Cuenta',
 			'p_uri'=>array(4=>'<#i#>'),
 			'where'=>"codigo LIKE \"$qformato\"",
@@ -133,7 +133,7 @@ class casi extends Controller {
 			);
 		$btn=$this->datasis->p_modbus($modbus,'<#i#>');
 
- 		$uri="/contabilidad/casi/dpto/";
+		$uri='/contabilidad/casi/dpto/';
 
 		$do = new DataObject('casi');
 		$do->rel_one_to_many('itcasi', 'itcasi', array('id'=>'idcasi'));
@@ -278,8 +278,8 @@ class casi extends Controller {
 		$data['style']  .= style('impromptu.css');
 		$data['script']  = script('jquery.js');
 		$data['script'] .= script('jquery-ui.js');
-		$data['script'] .= script("jquery-impromptu.js");
-		$data['script'] .= script("plugins/jquery.blockUI.js");
+		$data['script'] .= script('jquery-impromptu.js');
+		$data['script'] .= script('plugins/jquery.blockUI.js');
 		$data['script'] .= script('plugins/jquery.numeric.pack.js');
 		$data['script'] .= phpscript('nformat.js');
 		$data['script'] .= script('plugins/jquery.floatnumber.js');
@@ -288,12 +288,11 @@ class casi extends Controller {
 	}
 
 	function grid1(){
-		
 		$page  = 1;//$this->input->post('page');
 		$limit = 50;//$this->input->post('rows'); // get how many rows we want to have into the grid - rowNum parameter in the grid 
 		$sidx  = 1; //$this->input->post('sidx'); // get index row - i.e. user click to sort. At first time sortname parameter -after that the index from colModel 
 		$sord  = 'DESC';//$this->input->post('sord');
-		$tabla = "casi";
+		$tabla = 'casi';
 
 		$this->db->from($tabla);
 
@@ -324,10 +323,10 @@ class casi extends Controller {
 		$this->load->helper('xml');
 		header("Content-type: text/xml;charset=".$this->config->item('charset'));
 		$s = "<?xml version='1.0' encoding='".$this->config->item('charset')."'?>";
-		$s .=  "<rows>";
-		$s .= "<page>".$page."</page>";
-		$s .= "<total>".$total_pages."</total>";
-		$s .= "<records>".$count."</records>";
+		$s .= '<rows>';
+		$s .= '<page>'.$page.'</page>';
+		$s .= '<total>'.$total_pages.'</total>';
+		$s .= '<records>'.$count.'</records>';
 
 		$this->db->orderby($sidx,$sord);
 		$this->db->limit($limit,$start);
@@ -337,21 +336,21 @@ class casi extends Controller {
 //print_r($campos);
 		foreach ($query->result() as $row){
 			$s .= "<row id='". $row->id."'>";
-			$s .= "<cell>".xml_convert($row->comprob)."</cell>";
-			$s .= "<cell>".xml_convert($row->fecha)."</cell>";
-			$s .= "<cell>".xml_convert($row->descrip)."</cell>";
-			$s .= "<cell>".xml_convert($row->debe)."</cell>";
-			$s .= "<cell>".xml_convert($row->haber)."</cell>";
-			$s .= "<cell>".xml_convert($row->total)."</cell>";
+			$s .= '<cell>'.xml_convert($row->comprob).'</cell>';
+			$s .= '<cell>'.xml_convert($row->fecha).'</cell>';
+			$s .= '<cell>'.xml_convert($row->descrip).'</cell>';
+			$s .= '<cell>'.xml_convert($row->debe).'</cell>';
+			$s .= '<cell>'.xml_convert($row->haber).'</cell>';
+			$s .= '<cell>'.xml_convert($row->total).'</cell>';
 /*
 			foreach($campos AS $campo){
 				$a = $campo->name;
 				$s .= "<cell>".xml_convert($row->$a)."</cell>";
 			}
 */
-			$s .= "</row>";
+			$s .= '</row>';
 		}
-		$s .= "</rows>"; 
+		$s .= '</rows>';
 		echo $s;
 	}
 
@@ -456,7 +455,7 @@ class casi extends Controller {
 
 		$data['content'] =$filter->output.$grid->output;
 		$data['head']    = $this->rapyd->get_head();
-		$data['title']   =heading('Auditorita de Asientos');
+		$data['title']   =heading('Auditoria de Asientos');
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -476,13 +475,24 @@ class casi extends Controller {
 		);
 		$bcpla =$this->datasis->modbus($mCPLA);
 
+		$atts = array(
+			'width'      => '800',
+			'height'     => '600',
+			'scrollbars' => 'yes',
+			'status'     => 'yes',
+			'resizable'  => 'yes',
+			'screenx'    => '0',
+			'screeny'    => '0'
+		);
+
+		$uri = anchor_popup('ventas/scli/dataedit/modify/<#id#>','<#cliente#>',$atts);
 		$grid = new DataGrid();
-		$grid->db->select(array('a.cliente','a.rifci','a.nombre','a.cuenta'));
+		$grid->db->select(array('a.cliente','a.rifci','a.nombre','a.cuenta','a.id'));
 		$grid->db->from('scli AS a');
 		$grid->db->join('cpla AS b','a.cuenta=b.codigo','LEFT');
 		$grid->db->where('b.codigo IS NULL');
 		$grid->per_page = 40;
-		$grid->column_orderby('C&oacute;digo','cliente','cliente');
+		$grid->column_orderby('C&oacute;digo',$uri,'cliente');
 		$grid->column_orderby('Nombre','nombre','nombre');
 		$grid->column_orderby('Rif/CI','rifci' ,'rifci');
 		$grid->column_orderby('Cuenta','cuenta','cuenta');
@@ -494,7 +504,7 @@ class casi extends Controller {
 		$form->cuenta = new inputField('Cuenta', 'cuenta');
 		$form->cuenta->rule = 'trim|required|callback_chcuentac';
 		$form->cuenta->size =15;
-                $form->cuenta->append($bcpla);
+		$form->cuenta->append($bcpla);
 
 		$form->submit('btnsubmit','Cambiar');
 		$form->build_form();
@@ -509,7 +519,7 @@ class casi extends Controller {
 		$data['content'] = ($grid->recordCount > 0) ? $form->output : '';
 		$data['content'].= $grid->output;
 		$data['head']    = $this->rapyd->get_head();
-		$data['title']   = heading('Auditorita de cuentas en clientes');
+		$data['title']   = heading('Auditoria de cuentas en clientes');
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -529,13 +539,24 @@ class casi extends Controller {
 		);
 		$bcpla =$this->datasis->modbus($mCPLA);
 
+		$atts = array(
+			'width'      => '800',
+			'height'     => '600',
+			'scrollbars' => 'yes',
+			'status'     => 'yes',
+			'resizable'  => 'yes',
+			'screenx'    => '0',
+			'screeny'    => '0'
+		);
+
+		$uri = anchor_popup('finanzas/botr/dataedit/modify/<#codigo#>','<#codigo#>',$atts);
 		$grid = new DataGrid();
 		$grid->db->select(array('a.codigo','a.nombre','a.cuenta'));
 		$grid->db->from('botr AS a');
 		$grid->db->join('cpla AS b','a.cuenta=b.codigo','LEFT');
 		$grid->db->where('b.codigo IS NULL');
 		$grid->per_page = 40;
-		$grid->column_orderby('C&oacute;digo','codigo','codigo');
+		$grid->column_orderby('C&oacute;digo', $uri ,'codigo');
 		$grid->column_orderby('Nombre','nombre','nombre');
 		$grid->column_orderby('Cuenta','cuenta','cuenta');
 		$action = "javascript:window.location='".site_url('contabilidad/casi/auditoria')."'";
@@ -561,7 +582,7 @@ class casi extends Controller {
 		$data['content'] = ($grid->recordCount > 0) ? $form->output : '';
 		$data['content'].= $grid->output;
 		$data['head']    = $this->rapyd->get_head();
-		$data['title']   = heading('Auditorita de cuentas en clientes');
+		$data['title']   = heading('Auditoria de cuentas en clientes');
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -581,13 +602,24 @@ class casi extends Controller {
 		);
 		$bcpla =$this->datasis->modbus($mCPLA);
 
+		$atts = array(
+			'width'      => '800',
+			'height'     => '600',
+			'scrollbars' => 'yes',
+			'status'     => 'yes',
+			'resizable'  => 'yes',
+			'screenx'    => '0',
+			'screeny'    => '0'
+		);
+
+		$uri = anchor_popup('compras/sprv/dataedit/modify/<#id#>','<#proveed#>',$atts);
 		$grid = new DataGrid();
-		$grid->db->select(array('a.proveed','a.rif','a.nombre','a.cuenta'));
+		$grid->db->select(array('a.proveed','a.rif','a.nombre','a.cuenta','a.id'));
 		$grid->db->from('sprv AS a');
 		$grid->db->join('cpla AS b','a.cuenta=b.codigo','LEFT');
 		$grid->db->where('b.codigo IS NULL');
 		$grid->per_page = 40;
-		$grid->column_orderby('C&oacute;digo','proveed','proveed');
+		$grid->column_orderby('C&oacute;digo',$uri,'proveed');
 		$grid->column_orderby('Nombre','nombre','nombre');
 		$grid->column_orderby('Rif'   ,'rif'   ,'rif');
 		$grid->column_orderby('Cuenta','cuenta','cuenta');
@@ -614,7 +646,7 @@ class casi extends Controller {
 		$data['content'] = ($grid->recordCount > 0) ? $form->output : '';
 		$data['content'].= $grid->output;
 		$data['head']    = $this->rapyd->get_head();
-		$data['title']   = heading('Auditorita de cuentas en proveedores');
+		$data['title']   = heading('Auditoria de cuentas en proveedores');
 		$this->load->view('view_ventanas', $data);
 	}
 

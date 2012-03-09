@@ -1,5 +1,5 @@
-<?php echo $form_scripts?>
-<?php echo $form_begin?>
+<?php echo $form_scripts; ?>
+<?php echo $form_begin;   ?>
 <?php 
 //$container_tr=join("&nbsp;", $form->_button_container["TR"]);
 //$container_bl=join("&nbsp;", $form->_button_container["BL"]);
@@ -10,7 +10,7 @@
 	<tr>
 		<td>
 			<?php if($form->_status=='show'){ ?>
-			<a href='<?php echo base_url()."compras/sprv/consulta/".$form->_dataobject->get('id'); ?>'>
+			<a href='<?php echo base_url()."compras/sprv/consulta/".$form->_dataobject->get('id'); ?>' >
 			<?php
 				$propiedad = array('src' => 'images/ojos.png', 'alt' => 'Consultar Movimiento', 'title' => 'Consultar Detalles','border'=>'0','height'=>'25');
 				echo img($propiedad);
@@ -71,6 +71,18 @@
 			<table border=0 width="100%">
 			<tr>
 				<td colspan='3' class="littletablerow"><?=$form->nomfis->output?></td>
+			</tr>
+			</table>
+			</fieldset>
+		</td>
+	</tr>
+	<tr>
+		<td colspan='3'>
+			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
+			<legend class="titulofieldset" style='color: #114411;'>Contabilidad</legend>
+			<table border=0 width="100%">
+			<tr>
+				<td colspan='3' class="littletablerow"><?=$form->cuenta->output?></td>
 			</tr>
 			</table>
 			</fieldset>
