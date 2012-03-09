@@ -4,7 +4,7 @@ class invresu extends Controller {
 	function invresu(){
 		parent::Controller();
 		$this->load->library('rapyd');
-		$this->datasis->modulo_id('51D',1);
+		//$this->datasis->modulo_id('51D',1);
 	}
 
 	function index(){
