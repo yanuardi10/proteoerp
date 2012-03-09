@@ -73,12 +73,14 @@ class pfaclite extends validaciones{
 
 		$filter->numero = new inputField('N&uacute;mero', 'numero');
 		$filter->numero->size = 10;
+		$filter->numero->rule  = 'trim';
 		$filter->numero->group = 'dos';
 
 		$filter->cliente = new inputField('Cliente', 'cod_cli');
 		$filter->cliente->size = 8;
 		$filter->cliente->append($boton);
-		$filter->cliente->group = "dos";
+		$filter->cliente->rule  = 'trim';
+		$filter->cliente->group = 'dos';
 
 		$accion="javascript:window.location='".site_url('ventas/pfaclite/load')."'";
 		$filter->button('btn_load','Subir desde Excel',$accion,'TR');
@@ -91,7 +93,7 @@ class pfaclite extends validaciones{
 
 		$uri = anchor('ventas/pfaclite/dataedit/<raencode><#cod_cli#></raencode>/show/<#id#>', '<#numero#>');
 		$uri2 = anchor_popup('formatos/verhtml/PFAC/<#numero#>', 'Ver HTML', $atts);
-		$uri3 = anchor_popup('ventas/sfac/creadpfacf/<#numero#>', 'Facturar', $atts2);
+		$uri3 = anchor('ventas/sfac_add/creafrompfac/<#numero#>/create', 'Facturar');
 
 		$grid = new DataGrid('Lista de pedidos realizados');
 		$grid->order_by('numero', 'desc');
@@ -99,19 +101,21 @@ class pfaclite extends validaciones{
 
 		//$grid->column('Vista'    , $uri2, "align='center'");
 
-		if(!(strlen($vd['vendedor'])>0))
-		$grid->column_orderby('Facturar'     , $uri3,'numero');
 		$grid->column_orderby('N&uacute;mero', $uri ,'numero');
+		if($this->secu->puede('103')){
+			$grid->column_orderby('Factura'      , "<siinulo><#factura#>|$uri3|<#factura#></siinulo>",'factura');
+		}else{
+			$grid->column_orderby('Factura'      , "<siinulo><#factura#>|N/A|<#factura#></siinulo>",'factura');
+		}
 		$grid->column_orderby('Fecha'        , '<dbdate_to_human><#fecha#></dbdate_to_human>','fecha', "align='center'");
 		$grid->column_orderby('Cliente'      , 'cod_cli','cod_cli');
 		$grid->column_orderby('Nombre'       , 'nombre' ,'nombre');
 		if(!(strlen($vd['vendedor'])>0))
-		$grid->column_orderby('Vendedor'     , 'vd'     ,'vd');
+			$grid->column_orderby('Vendedor'     , 'vd'     ,'vd');
 		$grid->column_orderby('Total'        , '<nformat><#totalg#></nformat>', "totalg", "align=right");
 		if(!(strlen($vd['vendedor'])>0)){
 			$grid->column_orderby('Reser'        , 'reserva' ,'reserva');
 			$grid->column_orderby('Estado'       , 'status'  ,'status' );
-			$grid->column_orderby('Factura'      , 'factura' ,'factura');
 		}
 
 		$grid->add($this->url.'filterscli','Incluir nuevo pedido');
@@ -277,7 +281,6 @@ class pfaclite extends validaciones{
 		$edit->iva = new hiddenField('', 'iva_<#i#>');
 		$edit->iva->db_name = 'iva';
 		$edit->iva->rel_id  = 'itpfac';
-		$edit->iva->pointer = true;
 
 		$edit->pmarca = new inputField('', 'pmarca_<#i#>');
 		$edit->pmarca->db_name = 'pmarca';
@@ -549,12 +552,15 @@ class pfaclite extends validaciones{
 					$_POST['cod_cli']=(isset($row[1]))?$row[1]:'';
 				}elseif($id>3){
 					if(empty($_POST['cod_cli'])) continue;
-					$codigo=trim($row[8]);
+					$codigo  =trim($row[8]);
 					if(empty($codigo)) continue;
 					if(empty($row[9]) || $row[9]<1) continue;
+					$dbcodigo=$this->db->escape($codigo);
+					$iva = $this->datasis->dameval('SELECT iva FROM sinv WHERE codigo='.$dbcodigo);
 					$_POST['codigoa_'.$o] =$codigo;
 					$_POST['cana_'.$o]    =$row[9];
 					$_POST['preca_'.$o]   =$row[5];
+					$_POST['iva_'.$o]     =$iva;
 					$o++;
 				}else{
 					continue;

@@ -13,10 +13,10 @@ echo $form_begin;
 if($form->_status!='show'){ ?>
 
 <script language="javascript" type="text/javascript">
-var itscst_cont =<?php echo $form->max_rel_count['itscst']; ?>;
 var tasa_general=<?php echo $alicuota['tasa'];     ?>;
 var tasa_reducid=<?php echo $alicuota['redutasa']; ?>;
 var tasa_adicion=<?php echo $alicuota['sobretasa'];?>;
+var priva = <?php echo $priva ?>;
 
 $(function(){
 	$(".inputnum").numeric(".");
@@ -35,6 +35,8 @@ function ctotales(){
 	impu += Number($("#civagen").val());
 	impu += Number($("#civared").val());
 
+
+	$("#reteiva").val(roundNumber(impu*priva,2));
 	$("#cstotal").val(roundNumber(base,2));
 	$("#ctotal").val(roundNumber(base+impu,2));
 	$("#cimpuesto").val(roundNumber(impu,2));
@@ -56,31 +58,31 @@ function cal_iva(iva,obj,base){
 </script>
 <?php } ?>
 <?php echo $container_tr; ?>
-<table>
-	<tr>
-		<td>Alicuota</td>
-		<td>Base</td>
-		<td>Impuesto</td>
+<table class="ui-widget ui-widget-content ui-corner-all">
+	<tr >
+		<th class="ui-widget-header">Alicuota</th>
+		<th class="ui-widget-header">Base</th>
+		<th class="ui-widget-header">Impuesto</th>
 	</tr>
 	<tr>
 		<td>Exento</td>
-		<td><?php echo $form->cexento->output;   ?></td>
+		<td align='right'><?php echo $form->cexento->output;   ?></td>
 		<td></td>
 	</tr>
 	<tr>
 		<td>General <?php echo $alicuota['tasa'];     ?>%</td>
-		<td><?php echo $form->cgenera->output;   ?></td>
-		<td><?php echo $form->civagen->output;   ?></td>
-	</tr>	
+		<td align='right'><?php echo $form->cgenera->output;   ?></td>
+		<td align='right'><?php echo $form->civagen->output;   ?></td>
+	</tr>
 	<tr>
 		<td>Reducida <?php echo $alicuota['redutasa']; ?>%</td>
-		<td><?php echo $form->creduci->output;   ?></td>
-		<td><?php echo $form->civared->output;   ?></td>
+		<td align='right'><?php echo $form->creduci->output;   ?></td>
+		<td align='right'><?php echo $form->civared->output;   ?></td>
 	</tr>
 	<tr>
 		<td>Adicional<?php echo $alicuota['sobretasa'];?>%</td>
-		<td><?php echo $form->cadicio->output;   ?></td>
-		<td><?php echo $form->civaadi->output;   ?></td>
+		<td align='right'><?php echo $form->cadicio->output;   ?></td>
+		<td align='right'><?php echo $form->civaadi->output;   ?></td>
 	</tr>
 	<tr>
 		<td>Totales</td>
@@ -88,11 +90,16 @@ function cal_iva(iva,obj,base){
 		<td align='right'><b id='cimpuesto_val'><?php echo nformat($form->cimpuesto->value); ?></b><?php echo $form->cimpuesto->output; ?></td>
 	</tr>
 	<tr>
+		<td><?php echo $form->riva->label;   ?></td>
+		<td></td>
+		<td align='right'><?php echo $form->riva->output;   ?></td>
+	</tr>
+	<tr>
 		<td>Total global</td>
 		<td align='right'><b id='ctotal_val'><?php echo nformat($form->ctotal->value);   ?></b><?php echo $form->ctotal->output;   ?></td>
 		<td></td>
 	</tr>
 </table>
-	
+
 <?php echo $form_end?>
 <?php endif; ?>
