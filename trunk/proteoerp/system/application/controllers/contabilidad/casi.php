@@ -379,11 +379,14 @@ class casi extends Controller {
 
 	function auditoria(){
 
-		$arr[] = anchor('contabilidad/casi/auditcasi','Auditoria en Asientos'     ,'title="Registros con cuentas contables inv&aacute;lidas"');
-		$arr[].= anchor('contabilidad/casi/auditsprv','Auditoria en Proveedores'  ,'title="Registros con cuentas contables inv&aacute;lidas"');
-		$arr[].= anchor('contabilidad/casi/auditscli','Auditoria en Clientes'     ,'title="Registros con cuentas contables inv&aacute;lidas"');
-		$arr[].= anchor('contabilidad/casi/auditbotr','Auditoria en Conceptos'    ,'title="Registros con cuentas contables inv&aacute;lidas"');
-		$arr[].= anchor('contabilidad/casi/transac'  ,'Localizador de Transacciones','title="Busca una transacci&oaacute;n en la base de datos"');
+		$arr[] = anchor('contabilidad/casi/auditcasi'  ,'Auditoria en Asientos'         ,'title="Registros con cuentas contables inv&aacute;lidas"');
+		$arr[].= anchor('contabilidad/casi/auditsprv'  ,'Auditoria en Proveedores'      ,'title="Registros con cuentas contables inv&aacute;lidas"');
+		$arr[].= anchor('contabilidad/casi/auditscli'  ,'Auditoria en Clientes'         ,'title="Registros con cuentas contables inv&aacute;lidas"');
+		$arr[].= anchor('contabilidad/casi/auditbotr'  ,'Auditoria en Conceptos'        ,'title="Registros con cuentas contables inv&aacute;lidas"');
+		$arr[].= anchor('contabilidad/casi/auditmgas'  ,'Auditoria en Maestro de gatos' ,'title="Registros con cuentas contables inv&aacute;lidas"');
+		$arr[].= anchor('contabilidad/casi/auditban'   ,'Auditoria en Bancos'           ,'title="Registros con cuentas contables inv&aacute;lidas"');
+		$arr[].= anchor('contabilidad/casi/auditreglas','Auditoria en reglas contables' ,'title="Registros con cuentas contables inv&aacute;lidas"');
+		$arr[].= anchor('contabilidad/casi/transac'    ,'Localizador de Transacciones'  ,'title="Busca una transacci&oacute;n en la base de datos"');
 
 		$data['content'] = '<p>M&oacute;dulo para ayudar a encontrar y solucionar problemas de inconsistencias en los registros que producen asientos descuadrados.</p>';
 		$data['content'].= ul($arr);
@@ -464,6 +467,186 @@ class casi extends Controller {
 		$data['content'] =$filter->output.$grid->output;
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   =heading('Auditoria de Asientos');
+		$this->load->view('view_ventanas', $data);
+	}
+
+	function auditmgas(){
+		$this->rapyd->load('datagrid','dataform');
+
+		$qformato=$this->datasis->formato_cpla();
+		$mCPLA=array(
+			'tabla'   =>'cpla',
+			'columnas'=>array(
+			        'codigo' =>'C&oacute;digo',
+			        'descrip'=>'Descripci&oacute;n'),
+			'filtro'  =>array('codigo'=>'C&oacute;digo','descrip'=>'Descripci&oacute;n'),
+			'retornar'=>array('codigo'=>'cuenta'),
+			'titulo'  =>'Buscar Cuenta',
+			'where'=>"codigo LIKE \"$qformato\"",
+		);
+		$bcpla =$this->datasis->modbus($mCPLA);
+
+		$atts = array(
+			'width'      => '800',
+			'height'     => '600',
+			'scrollbars' => 'yes',
+			'status'     => 'yes',
+			'resizable'  => 'yes',
+			'screenx'    => '0',
+			'screeny'    => '0'
+		);
+
+		$uri = anchor_popup('finanzas/mgas/dataedit/modify/<#id#>','<#codigo#>',$atts);
+		$grid = new DataGrid('Registros cuya cuenta no existe en el plan de cuentas');
+		$grid->order_by('a.codigo');
+		$grid->db->select(array('a.codigo','a.tipo','a.descrip','a.cuenta','a.grupo','a.id'));
+		$grid->db->from('mgas AS a');
+		$grid->db->join('cpla AS b','a.cuenta=b.codigo','LEFT');
+		$grid->db->where('b.codigo IS NULL');
+		$grid->per_page = 40;
+		$grid->column_orderby('C&oacute;digo',$uri,'codigo');
+		$grid->column_orderby('Descripci&oacute;n','descrip','descrip');
+		$grid->column_orderby('Tipo','tipo','tipo');
+		$grid->column_orderby('Grupo','grupo' ,'grupo');
+		$grid->column_orderby('Cuenta','cuenta','cuenta');
+		$action = "javascript:window.location='".site_url('contabilidad/casi/auditoria')."'";
+		$grid->button('btn_regresa', 'Regresar', $action, 'TR');
+		$grid->build();
+
+		$form = new DataForm('contabilidad/casi/auditmgas/process');
+		$form->cuenta = new inputField('Cuenta contable', 'cuenta');
+		$form->cuenta->rule = 'trim|required|callback_chcuentac';
+		$form->cuenta->size =15;
+		$form->cuenta->append($bcpla.'Coloque la cuenta contable para ser asginada a todos los registros encontrados y presione cambiar.');
+
+		$form->submit('btnsubmit','Cambiar');
+		$form->build_form();
+
+		if ($form->on_success()){
+			$cuenta= $this->db->escape($form->cuenta->newValue);
+			$mSQL='UPDATE mgas AS a LEFT JOIN cpla AS b ON a.cuenta=b.codigo SET a.cuenta='.$cuenta.' WHERE b.codigo IS NULL';
+			$this->db->simple_query($mSQL);
+			redirect('contabilidad/casi/auditmgas');
+		}
+
+		$data['content'] = ($grid->recordCount > 0) ? $form->output : '';
+		$data['content'].= $grid->output;
+		$data['head']    = $this->rapyd->get_head();
+		$data['title']   = heading('Auditoria de cuentas en maestro de gatos');
+		$this->load->view('view_ventanas', $data);
+	}
+
+	function auditban(){
+		$this->rapyd->load('datagrid','dataform');
+
+		$qformato=$this->datasis->formato_cpla();
+		$mCPLA=array(
+			'tabla'   =>'cpla',
+			'columnas'=>array(
+			        'codigo' =>'C&oacute;digo',
+			        'descrip'=>'Descripci&oacute;n'),
+			'filtro'  =>array('codigo'=>'C&oacute;digo','descrip'=>'Descripci&oacute;n'),
+			'retornar'=>array('codigo'=>'cuenta'),
+			'titulo'  =>'Buscar Cuenta',
+			'where'=>"codigo LIKE \"$qformato\"",
+		);
+		$bcpla =$this->datasis->modbus($mCPLA);
+
+		$atts = array(
+			'width'      => '800',
+			'height'     => '600',
+			'scrollbars' => 'yes',
+			'status'     => 'yes',
+			'resizable'  => 'yes',
+			'screenx'    => '0',
+			'screeny'    => '0'
+		);
+
+		$uri = anchor_popup('finanzas/mgas/dataedit/modify/<#id#>','<#codbanc#>',$atts);
+		$grid = new DataGrid('Registros cuya cuenta no existe en el plan de cuentas');
+		$grid->order_by('a.codbanc');
+		$grid->db->select(array('a.codbanc','a.tbanco','a.banco','a.cuenta','a.id'));
+		$grid->db->from('banc AS a');
+		$grid->db->join('cpla AS b','a.cuenta=b.codigo','LEFT');
+		$grid->db->where('b.codigo IS NULL');
+		$grid->per_page = 40;
+		$grid->column_orderby('C&oacute;digo',$uri,'codbanc');
+		$grid->column_orderby('Banco','banco','banco');
+		$grid->column_orderby('Tipo' ,'tbaco','tbanco');
+		$grid->column_orderby('Cuenta','cuenta','cuenta');
+		$action = "javascript:window.location='".site_url('contabilidad/casi/auditoria')."'";
+		$grid->button('btn_regresa', 'Regresar', $action, 'TR');
+		$grid->build();
+
+		$form = new DataForm('contabilidad/casi/auditbanc/process');
+		$form->cuenta = new inputField('Cuenta contable', 'cuenta');
+		$form->cuenta->rule = 'trim|required|callback_chcuentac';
+		$form->cuenta->size =15;
+		$form->cuenta->append($bcpla.'Coloque la cuenta contable para ser asginada a todos los registros encontrados y presione cambiar.');
+
+		$form->submit('btnsubmit','Cambiar');
+		$form->build_form();
+
+		if ($form->on_success()){
+			$cuenta= $this->db->escape($form->cuenta->newValue);
+			$mSQL='UPDATE banc AS a LEFT JOIN cpla AS b ON a.cuenta=b.codigo SET a.cuenta='.$cuenta.' WHERE b.codigo IS NULL';
+			$this->db->simple_query($mSQL);
+			redirect('contabilidad/casi/auditbanc');
+		}
+
+		$data['content'] = ($grid->recordCount > 0) ? $form->output : '';
+		$data['content'].= $grid->output;
+		$data['head']    = $this->rapyd->get_head();
+		$data['title']   = heading('Auditoria de cuentas en maestro de gatos');
+		$this->load->view('view_ventanas', $data);
+	}
+
+	function auditreglas(){
+		$this->rapyd->load('datagrid','dataform');
+
+		$qformato=$this->datasis->formato_cpla();
+		$mCPLA=array(
+			'tabla'   =>'cpla',
+			'columnas'=>array(
+			        'codigo' =>'C&oacute;digo',
+			        'descrip'=>'Descripci&oacute;n'),
+			'filtro'  =>array('codigo'=>'C&oacute;digo','descrip'=>'Descripci&oacute;n'),
+			'retornar'=>array('codigo'=>'cuenta'),
+			'titulo'  =>'Buscar Cuenta',
+			'where'=>"codigo LIKE \"$qformato\"",
+		);
+		$bcpla =$this->datasis->modbus($mCPLA);
+
+		$atts = array(
+			'width'      => '800',
+			'height'     => '600',
+			'scrollbars' => 'yes',
+			'status'     => 'yes',
+			'resizable'  => 'yes',
+			'screenx'    => '0',
+			'screeny'    => '0'
+		);
+
+		//$uri = anchor_popup('finanzas/mgas/dataedit/modify/<#modulo#>/<#regla#>','<#modulo#>:<#regla#>',$atts);
+		$grid = new DataGrid('Registros cuya cuenta no existe en el plan de cuentas');
+		$grid->order_by('a.modulo');
+		$grid->db->select(array('a.modulo','a.tabla','a.descripcion','a.cuenta','a.regla'));
+		$grid->db->from('reglascont AS a');
+		$grid->db->join('cpla AS b','a.cuenta=b.codigo','LEFT');
+		$grid->db->like('a.cuenta',$qformato);
+		$grid->db->where('b.codigo IS NULL');
+		$grid->per_page = 40;
+		$grid->column_orderby('C&oacute;digo','<#modulo#>:<#regla#>','modulo');
+		$grid->column_orderby('Tabla','tabla','tabla');
+		$grid->column_orderby('Descripci&oacute;n' ,'descripcion','descripcion');
+		$grid->column_orderby('Cuenta','cuenta','cuenta');
+		$action = "javascript:window.location='".site_url('contabilidad/casi/auditoria')."'";
+		$grid->button('btn_regresa', 'Regresar', $action, 'TR');
+		$grid->build();
+
+		$data['content'] = $grid->output;
+		$data['head']    = $this->rapyd->get_head();
+		$data['title']   = heading('Auditoria de cuentas en maestro de gatos');
 		$this->load->view('view_ventanas', $data);
 	}
 
