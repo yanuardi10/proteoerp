@@ -788,7 +788,7 @@ function fstatus(val){
 	if ( val == 'A'){
 		return 'Activo';
 	} else {
-		return  'Inactivo';
+		return  'Bloqueado';
 	}
 }
 ";
@@ -858,7 +858,7 @@ function fstatus(val){
 										width: 400,
 									},
 
-									{ fieldLabel: 'Status',          name: 'status',   width:160, xtype: 'combo', store: [['A','Activo'],['I','Inactivo']], labelWidth:80  },
+									{ fieldLabel: 'Status',          name: 'status',   width:160, xtype: 'combo', store: [['A','Activo'],['B','Bloqueado']], labelWidth:80  },
 									{ fieldLabel: 'Margen Ventas',   name: 'margen',   width:240, labelWidth:170, xtype: 'numberfield', hideTrigger: true, fieldStyle: 'text-align: right', renderer : Ext.util.Format.numberRenderer('0,000.00')},
 									{ fieldLabel: 'Comision',        name: 'comision', width:140, labelWidth: 80, xtype: 'numberfield', hideTrigger: true, fieldStyle: 'text-align: right', renderer : Ext.util.Format.numberRenderer('0,000.00')},
 									{ fieldLabel: 'Margen Compras',  name: 'margenc',  width:260, labelWidth:190, xtype: 'numberfield', hideTrigger: true, fieldStyle: 'text-align: right', renderer : Ext.util.Format.numberRenderer('0,000.00')},
