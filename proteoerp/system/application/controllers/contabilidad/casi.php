@@ -6,9 +6,9 @@ class casi extends Controller {
 	function casi(){
 		parent::Controller();
 		$this->load->library('rapyd');
-		$this->load->database();
-		if ( !$this->db->field_exists('id','casi')) {
-			echo "cambio";
+		$this->datasis->modulo_id('607',1);
+
+		if (!$this->db->field_exists('id','casi')) {
 			$mSQL='ALTER TABLE `casi` DROP PRIMARY KEY, ADD UNIQUE `comprob` (`comprob`)';
 			$this->db->simple_query($mSQL);
 			$mSQL='ALTER TABLE casi ADD id INT AUTO_INCREMENT PRIMARY KEY';
@@ -47,13 +47,13 @@ class casi extends Controller {
 		$filter->comprob->size=15;
 
 		$filter->descrip = new inputField("Descripci&oacute;n", "descrip");
-		$filter->descrip->db_name="descrip"; 
+		$filter->descrip->db_name="descrip";
 
-		$filter->origen = new dropdownField("Or&iacute;gen", "origen");  
+		$filter->origen = new dropdownField("Or&iacute;gen", "origen");
 		$filter->origen->option("","Todos");
 		$filter->origen->options("SELECT modulo, modulo valor FROM reglascont GROUP BY modulo");
 
-		$filter->status = new dropdownField("Status", "status");  
+		$filter->status = new dropdownField("Status", "status");
 		$filter->status->option("","Todos");
 		$filter->status->option("A","Actualizado");
 		$filter->status->option("D","Diferido");
@@ -289,8 +289,8 @@ class casi extends Controller {
 
 	function grid1(){
 		$page  = 1;//$this->input->post('page');
-		$limit = 50;//$this->input->post('rows'); // get how many rows we want to have into the grid - rowNum parameter in the grid 
-		$sidx  = 1; //$this->input->post('sidx'); // get index row - i.e. user click to sort. At first time sortname parameter -after that the index from colModel 
+		$limit = 50;//$this->input->post('rows'); // get how many rows we want to have into the grid - rowNum parameter in the grid
+		$sidx  = 1; //$this->input->post('sidx'); // get index row - i.e. user click to sort. At first time sortname parameter -after that the index from colModel
 		$sord  = 'DESC';//$this->input->post('sord');
 		$tabla = 'casi';
 
@@ -308,11 +308,11 @@ class casi extends Controller {
 		}else{
 			$count=0;
 		}
- 
-		if( $count > 0 && $limit > 0) { 
-			$total_pages = ceil($count/$limit); 
+
+		if( $count > 0 && $limit > 0) {
+			$total_pages = ceil($count/$limit);
 		} else {
-			$total_pages = 0; 
+			$total_pages = 0;
 		}
 
 		if ($page > $total_pages) $page=$total_pages;
@@ -379,12 +379,16 @@ class casi extends Controller {
 
 	function auditoria(){
 
-		$data['content'] = anchor('contabilidad/casi/auditcasi','Auditoria en Asientos'   ).br();
-		$data['content'].= anchor('contabilidad/casi/auditsprv','Auditoria en Proveedores').br();
-		$data['content'].= anchor('contabilidad/casi/auditscli','Auditoria en Clientes'   ).br();
-		$data['content'].= anchor('contabilidad/casi/auditbotr','Auditoria en Conceptos'  ).br();
+		$arr[] = anchor('contabilidad/casi/auditcasi','Auditoria en Asientos'     ,'title="Registros con cuentas contables inv&aacute;lidas"');
+		$arr[].= anchor('contabilidad/casi/auditsprv','Auditoria en Proveedores'  ,'title="Registros con cuentas contables inv&aacute;lidas"');
+		$arr[].= anchor('contabilidad/casi/auditscli','Auditoria en Clientes'     ,'title="Registros con cuentas contables inv&aacute;lidas"');
+		$arr[].= anchor('contabilidad/casi/auditbotr','Auditoria en Conceptos'    ,'title="Registros con cuentas contables inv&aacute;lidas"');
+		$arr[].= anchor('contabilidad/casi/transac'  ,'Localizador de Transacciones','title="Busca una transacci&oaacute;n en la base de datos"');
+
+		$data['content'] = '<p>M&oacute;dulo para ayudar a encontrar y solucionar problemas de inconsistencias en los registros que producen asientos descuadrados.</p>';
+		$data['content'].= ul($arr);
 		$data['head']    = '';
-		$data['title']   = heading('Auditorita de Contable');
+		$data['title']   = heading('Auditoria de Contabilidad');
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -394,6 +398,7 @@ class casi extends Controller {
 		$filter = new DataFilter('Auditoria de Asientos');
 		$filter->db->select(array('a.comprob','a.fecha','a.concepto','a.origen','a.debe','a.haber','a.cuenta'));
 		$filter->db->from('itcasi AS a');
+		//$filter->db->join('casi AS c' ,'a.comprob=c.comprob');
 		$filter->db->join('cpla AS b' ,'a.cuenta=b.codigo','LEFT');
 		$filter->db->where('b.codigo IS NULL');
 		//$filter->db->where('cuenta NOT REGEXP \'^([0-9]+\.)+[0-9]+\' OR cuenta IS NULL');
@@ -405,12 +410,14 @@ class casi extends Controller {
 		$filter->fechah->size=$filter->fechad->size=12;
 		$filter->fechad->operator='>=';
 		$filter->fechah->operator='<=';
+		$filter->fechad->group=$filter->fechah->group='Fecha';
 
 		$filter->comprob = new inputField('N&uacute;mero'     , 'comprob');
 		$filter->comprob->size=15;
 
 		$filter->origen = new dropdownField('Or&iacute;gen', 'origen');
 		$filter->origen->option('','Todos');
+		$filter->origen->style = 'width:180px';
 		$filter->origen->options('SELECT modulo, modulo valor FROM reglascont GROUP BY modulo');
 
 		$filter->buttons('reset','search');
@@ -438,12 +445,13 @@ class casi extends Controller {
 			return $rt;
 		}
 
-		$grid = new DataGrid();
+		$grid = new DataGrid('Registros cuya cuenta no existe en el plan de cuentas');
 		$grid->use_function('regla');
 		$grid->order_by('fecha','asc');
 		$grid->per_page = 40;
 		$grid->column_orderby('N&uacute;mero','comprob','comprob');
 		$grid->column_orderby('Cuenta','cuenta','cuenta');
+		//$grid->column_orderby('Transac','transac','transac');
 		$grid->column_orderby('Fecha'   ,'<dbdate_to_human><#fecha#></dbdate_to_human>','fecha',"align='center'");
 		$grid->column_orderby('Concepto','concepto','concepto');
 		$grid->column_orderby('Or&iacute;gen','<regla><#origen#></regla>','origen',"align='center'");
@@ -486,7 +494,7 @@ class casi extends Controller {
 		);
 
 		$uri = anchor_popup('ventas/scli/dataedit/modify/<#id#>','<#cliente#>',$atts);
-		$grid = new DataGrid();
+		$grid = new DataGrid('Registros cuya cuenta no existe en el plan de cuentas');
 		$grid->db->select(array('a.cliente','a.rifci','a.nombre','a.cuenta','a.id'));
 		$grid->db->from('scli AS a');
 		$grid->db->join('cpla AS b','a.cuenta=b.codigo','LEFT');
@@ -501,10 +509,10 @@ class casi extends Controller {
 		$grid->build();
 
 		$form = new DataForm('contabilidad/casi/auditscli/process');
-		$form->cuenta = new inputField('Cuenta', 'cuenta');
+		$form->cuenta = new inputField('Cuenta contable', 'cuenta');
 		$form->cuenta->rule = 'trim|required|callback_chcuentac';
 		$form->cuenta->size =15;
-		$form->cuenta->append($bcpla);
+		$form->cuenta->append($bcpla.'Coloque la cuenta contable para ser asginada a todos los registros encontrados y presione cambiar.');
 
 		$form->submit('btnsubmit','Cambiar');
 		$form->build_form();
@@ -550,7 +558,7 @@ class casi extends Controller {
 		);
 
 		$uri = anchor_popup('finanzas/botr/dataedit/modify/<#codigo#>','<#codigo#>',$atts);
-		$grid = new DataGrid();
+		$grid = new DataGrid('Registros cuya cuenta no existe en el plan de cuentas');
 		$grid->db->select(array('a.codigo','a.nombre','a.cuenta'));
 		$grid->db->from('botr AS a');
 		$grid->db->join('cpla AS b','a.cuenta=b.codigo','LEFT');
@@ -564,10 +572,10 @@ class casi extends Controller {
 		$grid->build();
 
 		$form = new DataForm('contabilidad/casi/auditbotr/process');
-		$form->cuenta = new inputField('Cuenta', 'cuenta');
+		$form->cuenta = new inputField('Cuenta contable', 'cuenta');
 		$form->cuenta->rule = 'trim|required|callback_chcuentac';
 		$form->cuenta->size =15;
-		$form->cuenta->append($bcpla);
+		$form->cuenta->append($bcpla.'Coloque la cuenta contable para ser asginada a todos los registros encontrados y presione cambiar.');
 
 		$form->submit('btnsubmit','Cambiar');
 		$form->build_form();
@@ -582,7 +590,7 @@ class casi extends Controller {
 		$data['content'] = ($grid->recordCount > 0) ? $form->output : '';
 		$data['content'].= $grid->output;
 		$data['head']    = $this->rapyd->get_head();
-		$data['title']   = heading('Auditoria de cuentas en clientes');
+		$data['title']   = heading('Auditoria en otros conceptos contables');
 		$this->load->view('view_ventanas', $data);
 	}
 
@@ -613,7 +621,7 @@ class casi extends Controller {
 		);
 
 		$uri = anchor_popup('compras/sprv/dataedit/modify/<#id#>','<#proveed#>',$atts);
-		$grid = new DataGrid();
+		$grid = new DataGrid('Registros cuya cuenta no existe en el plan de cuentas');
 		$grid->db->select(array('a.proveed','a.rif','a.nombre','a.cuenta','a.id'));
 		$grid->db->from('sprv AS a');
 		$grid->db->join('cpla AS b','a.cuenta=b.codigo','LEFT');
@@ -628,10 +636,10 @@ class casi extends Controller {
 		$grid->build();
 
 		$form = new DataForm('contabilidad/casi/auditsprv/process');
-		$form->cuenta = new inputField('Cuenta', 'cuenta');
+		$form->cuenta = new inputField('Cuenta contable', 'cuenta');
 		$form->cuenta->rule = 'trim|required|callback_chcuentac';
 		$form->cuenta->size =15;
-		$form->cuenta->append($bcpla);
+		$form->cuenta->append($bcpla.'Coloque la cuenta contable para ser asginada a todos los registros encontrados y presione cambiar.');
 
 		$form->submit('btnsubmit','Cambiar');
 		$form->build_form();
@@ -650,6 +658,56 @@ class casi extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
+	function transac($transac=''){
+		$this->rapyd->load('dataform');
+
+		$filter = new dataForm('contabilidad/casi/transac/procesar');
+		$filter->valor = new inputField('N&uacute;mero de transacci&oacute;n', 'valor');
+		$filter->valor->rule = 'required|callback_chvalidt';
+		$filter->valor->autocomplete=false;
+		$filter->valor->maxlength=8;
+		$filter->valor->size=10;
+
+		$action = "javascript:window.location='".site_url('contabilidad/casi/auditoria')."'";
+		$filter->button('btn_regresa', 'Regresar', $action, 'BL');
+		$filter->submit('btnsubmit','Buscar');
+		$filter->build_form();
+
+		$sal='';
+		if ($filter->on_success() && $filter->is_valid()){
+			$this->load->library('table');
+			$this->table->set_heading('Tabla', 'Campo', 'Coincidencias');
+			$valor=$this->db->escape(str_pad($filter->valor->newValue,8,'0', STR_PAD_LEFT));
+
+			$tables = $this->db->list_tables();
+			foreach ($tables as $table){
+				if (preg_match("/^view_.*$|^sp_.*$/i",$table)) continue;
+
+				$fields = $this->db->list_fields($table);
+				if (in_array('transac', $fields)){
+					$mSQL="SELECT COUNT(*) AS cana FROM `$table` WHERE `transac` = $valor";
+
+					$cana=$this->datasis->dameval($mSQL);
+					if($cana>0){
+						$this->table->add_row($table,'transac',$cana);
+					}
+				}
+			}
+			$sal = $this->table->generate();
+		}
+		$data['content'] = $filter->output.$sal;
+		$data['title']   = heading('Localizador de Transacciones');
+		$data['head']    = $this->rapyd->get_head();
+		$this->load->view('view_ventanas', $data);
+	}
+
+	function chvalidt($transac){
+		if (preg_match("/^[0-9]{1,8}$/i",$transac)) return true;
+
+		$this->validation->set_message('chvalidt','La transacci&oacute;n no parece v&aacute;lida, debe tener una longitud no mayor a 8 y caracteres num&eacute;ricos');
+		return false;
+	}
+
 	function _pre_insert($do){
 		$cana=$do->count_rel('itcasi');
 		$comprob=$do->get('comprob');
@@ -661,14 +719,14 @@ class casi extends Controller {
 			$ahaber=$do->get_rel('itcasi','haber' ,$i);
 			$do->set_rel('itcasi','comprob',$comprob,$i);
 			$do->set_rel('itcasi','fecha'  ,$fecha  ,$i);
-			
+
 			if ($adebe!=0 && $ahaber!=0){
 				$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='No puede tener debe y haber en el asiento '.$o;
-				return false;	
+				return false;
 			}
 			if ($adebe==0 && $ahaber==0){
 				$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='Debe tener debe o haber en el asiento '.$o;
-				return false;	
+				return false;
 			}
 			if($adebe != 0){
 				$debe+=$adebe;
@@ -679,11 +737,11 @@ class casi extends Controller {
 		}
 		if ($debe == 0){
 			$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='Debe ingresar al menos un monto en la columna de debe.';
-			return false;	
+			return false;
 		}
 		if ($haber == 0){
 			$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='Debe ingresar al menos un monto en la columna de haber.';
-			return false;	
+			return false;
 		}
 		if($debe-$haber != 0){ $do->set('status' ,'D'); }
 
@@ -711,11 +769,11 @@ class casi extends Controller {
 			$ahaber=$do->get_rel('itcasi','haber' ,$i);
 			if ($adebe!=0 && $ahaber!=0){
 				$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='No puede tener debe y haber en el asiento '.$o;
-				return false;	
+				return false;
 			}
 			if ($adebe==0 && $ahaber==0){
 				$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='Debe tener debe o haber en el asiento '.$o;
-				return false;	
+				return false;
 			}
 			if($adebe != 0){
 				$debe+=$adebe;
@@ -726,11 +784,11 @@ class casi extends Controller {
 		}
 		if ($debe == 0){
 			$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='Debe ingresar al menos un monto en la columna de debe.';
-			return false;	
+			return false;
 		}
 		if ($haber == 0){
 			$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='Debe ingresar al menos un monto en la columna de haber.';
-			return false;	
+			return false;
 		}
 		if($debe-$haber != 0){ $do->set('status' ,'D'); }
 
@@ -758,9 +816,8 @@ class casi extends Controller {
 		logusu('casi',"Asiento $codigo ELIMINADO");
 	}
 
-	function getData()
-	{
-		memowrite("datajqgridget","datajqgrid");
+	function getData(){
+		//memowrite('datajqgridget','datajqgrid');
 
 		$this->load->library('datajqgrid');
 		$grid             = $this->datajqgrid;
@@ -769,16 +826,13 @@ class casi extends Controller {
 		echo $rs;
 	}
 
-
 	 #Put information
-
-	function setData()
-	{
+	function setData(){
 	    $this->load->library('datajqgrid');
 	    $grid             = $this->datajqgrid;
 	    $response         = $grid->operations('casi','id');
 	}
-	
+
 	// Postea la tabla principal a Extjs
 	function grid(){
 		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']   :  0;
@@ -789,7 +843,7 @@ class casi extends Controller {
 		$where = $this->datasis->extjsfiltro($filters,'casi');
 
 		$this->db->_protect_identifiers=false;
-		
+
 		$this->db->select('*');
 		$this->db->from('casi');
 		if (strlen($where)>1){
@@ -798,18 +852,14 @@ class casi extends Controller {
 
 		$sql = $this->db->_compile_select($this->db->_count_string . $this->db->_protect_identifiers('numrows'));
 		$results = $this->datasis->dameval($sql);
-		
+
 		$sort = json_decode($sort, true);
 		for ($i=0;$i<count($sort);$i++) {
 			$this->db->order_by($sort[$i]['property'],$sort[$i]['direction']);
 		}
 
-
-
 		$this->db->limit($limit, $start);
 		$query = $this->db->get();
-
-
 
 		$arr = $this->datasis->codificautf8($query->result_array());
 		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
@@ -821,7 +871,7 @@ class casi extends Controller {
 
 		$mSQL = "SELECT * FROM itcasi a WHERE a.comprob='$comprob' ORDER BY a.cuenta";
 		$query = $this->db->query($mSQL);
-		$results =  0; 
+		$results =  0;
 		$arr = $this->datasis->codificautf8($query->result_array());
 		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
 	}
@@ -843,14 +893,14 @@ class casi extends Controller {
 		if ( $query->num_rows() > 0 ){
 			$salida = "<br><table width='100%' border=1>";
 			$salida .= "<tr bgcolor='#e7e3e7'><td>Tp</td><td align='center'>Numero</td><td align='center'>Monto</td></tr>";
-			
+
 			foreach ($query->result_array() as $row)
 			{
 				if ( $codprv != $row['cod_prv']){
 					$codprv = $row['cod_prv'];
 					$salida .= "<tr bgcolor='#c7d3c7'>";
 					$salida .= "<td colspan=4>".trim($row['nombre']). "</td>";
-					$salida .= "</tr>";	
+					$salida .= "</tr>";
 				}
 				if ( $row['tipo_doc'] == 'FC' ) {
 					$saldo = $row['monto']-$row['abonos'];
@@ -904,9 +954,9 @@ class casi extends Controller {
 	]";
 
 		$variables='';
-		
+
 		$valida="		{ type: 'length', field: 'cliente',  min:  1 }";
-		
+
 
 		$funciones = "
 function renderSprv(value, p, record) {
@@ -957,7 +1007,7 @@ function renderSinv(value, p, record) {
 		autoSync: true,
 		method: 'POST'
 	});
-	
+
 	//////////////////////////////////////////////////////////
 	//
 	var gridDeta1 = Ext.create('Ext.grid.Panel', {
@@ -977,7 +1027,7 @@ function renderSinv(value, p, record) {
 		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/verhtml/COMPRA/{comprob}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/html_icon.gif', 'alt' => 'Formato HTML', 'title' => 'Formato HTML','border'=>'0'))."</a></td>',
 		'<td align=\'center\'>{comprob}</td>',
 		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/ver/COMPRA/{comprob}\',     \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',   'title' => 'Formato PDF', 'border'=>'0'))."</a></td></tr>',
-		'<tr><td colspan=3 align=\'center\' >--</td></tr>',		
+		'<tr><td colspan=3 align=\'center\' >--</td></tr>',
 		'</table>'
 	];
 
@@ -990,7 +1040,7 @@ function renderSinv(value, p, record) {
 			gridDeta1.setTitle(comprob+' '+selectedRecord[0].data.descrip);
 			storeItCasi.load({ params: { comprob: comprob }});
 			var meco1 = Ext.getCmp('imprimir');
-			
+
 			var casiTpl = Ext.create('Ext.Template', casiTplMarkup );
 			meco1.setTitle('Imprimir Asiento');
 			casiTpl.overwrite(meco1.body, selectedRecord[0].data );
@@ -1057,23 +1107,23 @@ function renderSinv(value, p, record) {
 					handler: function() {
 						var selection = gridMaest.getView().getSelectionModel().getSelection()[0];
 						Ext.MessageBox.show({
-							title: 'Confirme', 
-							msg: 'Seguro que quiere eliminar la compra Nro. '+selection.data.numero, 
-							buttons: Ext.MessageBox.YESNO, 
-							fn: function(btn){ 
-								if (btn == 'yes') { 
+							title: 'Confirme',
+							msg: 'Seguro que quiere eliminar la compra Nro. '+selection.data.numero,
+							buttons: Ext.MessageBox.YESNO,
+							fn: function(btn){
+								if (btn == 'yes') {
 									if (selection) {
 										//storeMaest.remove(selection);
 									}
 									storeMaest.load();
-								} 
-							}, 
-							icon: Ext.MessageBox.QUESTION 
-						});  
+								}
+							},
+							icon: Ext.MessageBox.QUESTION
+						});
 					}
 				}
 			]
-		}		
+		}
 		";
 
 		$grid2 = ",{
@@ -1089,7 +1139,7 @@ function renderSinv(value, p, record) {
 
 
 		$titulow = 'Asientos';
-		
+
 		$filtros = "";
 		$features = "
 		features: [ { ftype: 'filters', encode: 'json', local: false } ],
@@ -1116,7 +1166,7 @@ function renderSinv(value, p, record) {
 		$data['coldeta']     = $coldeta;
 		$data['acordioni']   = $acordioni;
 		$data['final']       = $final;
-		
+
 		$data['title']  = heading('Asientos');
 		$this->load->view('extjs/extjsvenmd',$data);
 

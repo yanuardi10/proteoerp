@@ -1194,7 +1194,7 @@ class sfac_add extends validaciones {
 			$dbcodigoa = $this->db->escape($itcodigoa);
 
 			$factor=($tipo_doc=='F')? -1:1;
-			$sql="INSERT IGNORE INTO itsinv (alma,codigo,existen) VALUES ($dbalma,$dbcodigoa,$factor*$itcana)";
+			$sql="INSERT IGNORE INTO itsinv (alma,codigo,existen) VALUES ($dbalma,$dbcodigoa,0)";
 			$ban=$this->db->simple_query($sql);
 			if($ban==false){ memowrite($sql,'sfac'); $error++;}
 
@@ -1211,7 +1211,7 @@ class sfac_add extends validaciones {
 		//Si viene de pfac
 		if(strlen($this->pfac)>7 && $tipo_doc == 'F'){
 			$this->db->where('numero', $this->pfac);
-			$this->db->update('pfac', array('factura' => $numero));
+			$this->db->update('pfac', array('factura' => $numero,'status' => 'C'));
 			$dbpfac=$this->db->escape($this->pfac);
 
 			$sql="UPDATE itpfac AS c JOIN sinv   AS d ON d.codigo=c.codigoa
@@ -1247,6 +1247,7 @@ class sfac_add extends validaciones {
 		$this->db->from('pfac AS a');
 		$this->db->join('scli AS b','a.cod_cli=b.cliente');
 		$this->db->where('a.numero',$numero);
+		$this->db->where('a.status','P');
 		$query = $this->db->get();
 
 		if ($query->num_rows() > 0 && $status=='create'){
