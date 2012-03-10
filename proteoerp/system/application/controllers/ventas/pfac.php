@@ -686,8 +686,6 @@ class pfac extends validaciones{
 		echo $rt;
 	}
 
-
-
 	function _pre_insert($do){
 		$numero = $this->datasis->fprox_numero('npfac');
 		$do->set('numero', $numero);

@@ -127,12 +127,17 @@ function totalizar(){
 			$precio2 = $row['precio2'];
 			$precio1 = $row['precio1'];
 			if($form->_status!='show'){
-				$f_cana   ='<input id="cana_'.$i.'" onkeyup="total(\''.$i.'\')" class="inputnum" type="text" autocomplete="off" size="4" value="'.($cana>0?$cana:'').'" name="cana_'.$i.'" style="height:30px;font-size:18px">';
+				$obj = 'cana_'.$i;
+				if(isset($form->$obj)){
+					$f_cana=$form->$obj->output;
+				}else{
+					$f_cana='<input type="text" autocomplete="off" onkeyup="total(\''.$i.'\')" maxlength="10" style="height:30px;font-size:18px" size="4" class="inputnum" id="cana_'.$i.'" value="'.($cana>0?$cana:'').'" name="cana_'.$i.'">';
+				}
 			}else{
 				$f_cana =nformat($cana);
 			}
 
-			$f_codigoa='<input id="codigoa_'.$i.'" class="input" type="hidden" style="height:30px;font-size:16" size="12" value='.$this->db->escape($row['codigo']).' name="codigoa_'.$i.'"> <span id="codigoa_'.$i.'_val">'.$row['codigo'].'</span>';
+			$f_codigoa='<input id="codigoa_'.$i.'" type="hidden" value='.$this->db->escape($row['codigo']).' name="codigoa_'.$i.'"> <span id="codigoa_'.$i.'_val">'.$row['codigo'].'</span>';
 
 		if($pmarcat!=$pmarca){
 			$pmarcat=$pmarca;

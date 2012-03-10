@@ -140,9 +140,10 @@ class pfaclite extends validaciones{
 	}
 
 	function filterscli(){
-		$vd=trim($this->secu->getvendedor());
-		if(empty($vd)){
-			show_error('Usuario no tiene adignado vendedor, debe asignarlo primero para poder usar este modulo');
+		$vd   = trim($this->secu->getvendedor());
+		$caub = trim($this->secu->getalmacen());
+		if(empty($vd) || empty($caub)){
+			show_error('Usuario no tiene asignado vendedor o cajro, debe asignarlo primero para poder usar este modulo');
 		}
 
 		$url=$this->url.'filteredgrid';
@@ -277,11 +278,11 @@ class pfaclite extends validaciones{
 		$edit->cana->css_class = 'inputnum';
 		$edit->cana->rel_id = 'itpfac';
 		$edit->cana->maxlength = 10;
-		$edit->cana->size = 2;
-		$edit->cana->rule = 'positive';
+		$edit->cana->size = 4;
+		$edit->cana->rule = 'positive|callback_chcana[<#i#>]';
 		$edit->cana->autocomplete = false;
-		$edit->cana->onkeyup = 'total(<#i#>)';
-		$edit->cana->style ="height:25px;font-size:14";
+		$edit->cana->onkeyup = 'total(\'<#i#>\')';
+		$edit->cana->style ="height: 30px; font-size: 18px;";
 
 		$edit->preca = new dropdownField('Precio <#o#>', 'preca_<#i#>');
 		$edit->preca->db_name   = 'preca';
@@ -394,6 +395,36 @@ class pfaclite extends validaciones{
 			}
 			return $rt;
 		}
+	}
+
+	function chcana($cana,$i){
+		$codigo   = $this->input->post('codigoa_'.$i);
+		$dbcodigo = $this->db->escape($codigo);
+
+		$this->validation->set_message('chcana', 'No existe cantidad suficiente para el art&iacute;culo '.$codigo);
+		$udp=$this->rapyd->uri->is_set('update');
+		if($udp){
+			$arrurl = $this->uri->segment_array();
+			$id     = array_pop($arrurl);
+			$numa   = $this->datasis->dameval("SELECT numero FROM pfac WHERE id=".$this->db->escape($id));
+			$dbnuma = $this->db->escape($numa);
+
+			$mSQL="SELECT  COALESCE(b.existen,0)-COALESCE(a.exord,0)+COALESCE(c.cana,0) AS cana
+			FROM sinv AS a
+			LEFT JOIN itsinv AS b ON a.codigo=b.codigo
+			LEFT JOIN itpfac AS c ON a.codigo=c.codigoa AND c.numa=$dbnuma
+			WHERE a.codigo=$dbcodigo";
+		}else{
+			$mSQL="SELECT  COALESCE(b.existen,0)-COALESCE(a.exord,0) AS cana
+			FROM sinv AS a
+			LEFT JOIN itsinv AS b ON a.codigo=b.codigo
+			WHERE a.codigo=$dbcodigo";
+		}
+		$hay=$this->datasis->dameval($mSQL);
+
+		if(empty($hay))  return false;
+		if($cana > $hay) return false;
+		return true;
 	}
 
 	function _exitescli($cliente){
@@ -581,7 +612,8 @@ class pfaclite extends validaciones{
 		$hojas=count($this->spreadsheet_excel_reader->sheets);
 		for($i=0;$i<$hojas;$i++){
 			$o=0;
-			$genefec='';
+			$genefec ='';
+			$msjfalla=array();
 			foreach($this->spreadsheet_excel_reader->sheets[$i]['cells'] as $id=>$row){
 
 				if($id==1){
@@ -595,11 +627,28 @@ class pfaclite extends validaciones{
 					if(empty($codigo)) continue;
 					if(empty($row[9]) || $row[9]<1) continue;
 					$dbcodigo=$this->db->escape($codigo);
+
+					$mSQL="SELECT  COALESCE(b.existen,0)-COALESCE(a.exord,0) AS cana
+						FROM sinv AS a
+						LEFT JOIN itsinv AS b ON a.codigo=b.codigo
+						WHERE a.codigo=$dbcodigo";
+					$hay=$this->datasis->dameval($mSQL);
+					if($hay<=0){
+						$msjfalla[]="Producto $codigo sin existencia, no se registro.";
+						continue;
+					}
+
 					$iva = $this->datasis->dameval('SELECT iva FROM sinv WHERE codigo='.$dbcodigo);
-					$_POST['codigoa_'.$o] =$codigo;
-					$_POST['cana_'.$o]    =$row[9];
-					$_POST['preca_'.$o]   =$row[5];
-					$_POST['iva_'.$o]     =$iva;
+					$_POST['codigoa_'.$o] = $codigo;
+
+					if($row[9]>$hay){
+						$_POST['cana_'.$o] = $hay;
+						$msjfalla[]="Producto $codigo entro en falla, se pidio $row[9] y se registro $hay.";
+					}else{
+						$_POST['cana_'.$o] = $row[9];
+					}
+					$_POST['preca_'.$o]   = $row[5];
+					$_POST['iva_'.$o]     = $iva;
 					$o++;
 				}else{
 					continue;
@@ -608,10 +657,13 @@ class pfaclite extends validaciones{
 
 			$_POST['vd'] = $vd;
 			$_POST['observa']='Fuera de linea, Hoja del '.$genefec;
-			if(!empty($_POST['cod_cli'])){
+			if(!empty($_POST['cod_cli']) && $o>0){
 				$this->genesal=false;
 				$rrt=$this->dataedit($_POST['cod_cli'],'','');
 				$rt.=$rrt.'<br />';
+				if(count($msjfalla)>0){
+					$rt.=implode(br(),$msjfalla);
+				}
 			}
 			$_POST=array();
 		}
