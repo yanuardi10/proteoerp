@@ -663,7 +663,7 @@ class pfac extends validaciones{
 					array_push($retorno, $retArray);
 				}
 				$data = json_encode($retorno);
-	        }
+		}
 		}
 		echo $data;
 	}
@@ -694,7 +694,7 @@ class pfac extends validaciones{
 		//$transac = $this->datasis->fprox_numero('ntransa');
 		//$do->set('transac', $transac);
 		$fecha = $do->get('fecha');
-		$vd = $do->get('vd');
+		$vd    = $do->get('vd');
 
 		$iva = $totals = 0;
 		$cana = $do->count_rel('itpfac');
@@ -716,6 +716,7 @@ class pfac extends validaciones{
 		$do->set('totals' , round($totals , 2));
 		$do->set('totalg' , round($totalg , 2));
 		$do->set('iva'    , round($iva    , 2));
+		$do->set('status' , 'P');
 		return true;
 	}
 
@@ -765,7 +766,11 @@ class pfac extends validaciones{
 		$do->set('totalg' , round($totalg , 2));
 		$do->set('iva'    , round($iva    , 2));
 
-		$mSQL='UPDATE sinv JOIN itpfac ON sinv.codigo=itpfac.codigoa SET sinv.exdes=sinv.exdes-itpfac.cana WHERE itpfac.numa='.$this->db->escape($codigo);
+		$dbnuma=$this->db->escape($codigo);
+		$mSQL  ="UPDATE itpfac AS c JOIN sinv   AS d ON d.codigo=c.codigoa
+			SET d.exord=IF(d.exord>c.cana,d.exord-c.cana,0)
+			WHERE c.numa = $dbnuma";
+
 		$ban=$this->db->simple_query($mSQL);
 		if($ban==false){ memowrite($mSQL,'pfac'); }
 

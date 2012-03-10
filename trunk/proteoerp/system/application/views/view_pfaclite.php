@@ -117,7 +117,7 @@ function totalizar(){
 
 	foreach($arreglo as $row) {
 			$pmarca  = $row['marca'];
-			$pexisten= $row['existen'];
+			$pexisten= ($row['existen']>$row['exord'])?$row['existen']-$row['exord']:0;
 			$peso    = $row['peso'];
 			$pdesca  = $row['descrip'].' '.nformat($peso).' KG';
 			$codigoa = $row['codigo'];

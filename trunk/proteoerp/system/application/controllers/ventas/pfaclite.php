@@ -7,10 +7,6 @@ class pfaclite extends validaciones{
 		parent :: Controller();
 		$this->load->library('rapyd');
 		$this->datasis->modulo_id(143,1);
-		$vd=trim($this->secu->getvendedor());
-		if(empty($vd)){
-			show_error('Usuario no tiene adignado vendedor, debe asignarlo primero para poder usar este modulo');
-		}
 	}
 
 	function index(){
@@ -30,16 +26,6 @@ class pfaclite extends validaciones{
 			'screeny'    => '0'
 		);
 
-		$atts2 = array(
-			'width'      => '480',
-			'height'     => '240',
-			'scrollbars' => 'yes',
-			'status'     => 'yes',
-			'resizable'  => 'yes',
-			'screenx'    => '980',
-			'screeny'    => '760'
-		);
-
 		$scli = array(
 			'tabla' => 'scli',
 			'columnas' => array(
@@ -52,19 +38,14 @@ class pfaclite extends validaciones{
 
 		$boton = $this->datasis->modbus($scli);
 
-		$usr  =$this->session->userdata('usuario');
-		$vd   =$this->datasis->damerow("SELECT vendedor,almacen FROM usuario WHERE us_codigo='$usr'");
+		$vd=trim($this->secu->getvendedor());
 
 		$filter = new DataFilter('Filtro de Pedidos Clientes', 'pfac');
-		if(strlen($vd['vendedor'])>0)
-		$filter->db->where('vd',$vd['vendedor']);
 
 		$filter->fechad = new dateonlyField('Fecha Desde', 'fechad');
 		$filter->fechah = new dateonlyField('Fecha Hasta', 'fechah');
 		$filter->fechad->clause = $filter->fechah->clause   = 'where';
 		$filter->fechad->db_name = $filter->fechah->db_name = 'fecha';
-		//$filter->fechad->insertValue = date('Y-m-d');
-		//$filter->fechah->insertValue = date('Y-m-d');
 		$filter->fechah->size = $filter->fechad->size = 10;
 		$filter->fechad->operator = '>=';
 		$filter->fechah->operator = '<=';
@@ -85,21 +66,22 @@ class pfaclite extends validaciones{
 		$accion="javascript:window.location='".site_url('ventas/pfaclite/load')."'";
 		$filter->button('btn_load','Subir desde Excel',$accion,'TR');
 
-		$accion="javascript:window.location='".site_url('ventas/pfaclite/pfl')."'";
-		$filter->button('btn_pfl','Descargar Hoja de Excel',$accion,'TR');
+		if(strlen($vd)>0){
+			$filter->db->where('vd',$vd);
+			$accion="javascript:window.location='".site_url('ventas/pfaclite/pfl')."'";
+			$filter->button('btn_pfl','Descargar Hoja de Excel',$accion,'TR');
+		}
 
 		$filter->buttons('reset', 'search');
 		$filter->build('dataformfiltro');
 
-		$uri = anchor('ventas/pfaclite/dataedit/<raencode><#cod_cli#></raencode>/show/<#id#>', '<#numero#>');
+		$uri  = anchor('ventas/pfaclite/dataedit/<raencode><#cod_cli#></raencode>/show/<#id#>', '<#numero#>');
 		$uri2 = anchor_popup('formatos/verhtml/PFAC/<#numero#>', 'Ver HTML', $atts);
 		$uri3 = anchor('ventas/sfac_add/creafrompfac/<#numero#>/create', 'Facturar');
 
 		$grid = new DataGrid('Lista de pedidos realizados');
 		$grid->order_by('numero', 'desc');
 		$grid->per_page = 50;
-
-		//$grid->column('Vista'    , $uri2, "align='center'");
 
 		$grid->column_orderby('N&uacute;mero', $uri ,'numero');
 		if($this->secu->puede('103')){
@@ -110,15 +92,13 @@ class pfaclite extends validaciones{
 		$grid->column_orderby('Fecha'        , '<dbdate_to_human><#fecha#></dbdate_to_human>','fecha', "align='center'");
 		$grid->column_orderby('Cliente'      , 'cod_cli','cod_cli');
 		$grid->column_orderby('Nombre'       , 'nombre' ,'nombre');
-		if(!(strlen($vd['vendedor'])>0))
+		if(!(strlen($vd)>0))
 			$grid->column_orderby('Vendedor'     , 'vd'     ,'vd');
 		$grid->column_orderby('Total'        , '<nformat><#totalg#></nformat>', "totalg", "align=right");
-		if(!(strlen($vd['vendedor'])>0)){
-			$grid->column_orderby('Reser'        , 'reserva' ,'reserva');
-			$grid->column_orderby('Estado'       , 'status'  ,'status' );
-		}
 
-		$grid->add($this->url.'filterscli','Incluir nuevo pedido');
+		if(strlen($vd)>0){
+			$grid->add($this->url.'filterscli','Incluir nuevo pedido');
+		}
 		$grid->build();
 
 		$data['content'] = $filter->output.$grid->output;
@@ -133,11 +113,42 @@ class pfaclite extends validaciones{
 		$this->load->view('view_ventanas', $data);
 	}
 
+	function vencepedido(){
+		$sel=array('b.codigoa','SUM(b.cana)');
+		$this->db->select($sel);
+		$this->db->from('pfac AS a');
+		$this->db->join('itpfac AS b','a.numero=b.numa');
+		$this->db->where('a.fecha < DATE_SUB(CURDATE(),INTERVAL 3 DAY)');
+		$this->db->where('a.status','P');
+		$this->db->where('b.codigoa IS NOT NULL');
+		$this->db->group_by('b.cana');
+		$query=$this->db->get();
+
+		if ($query->num_rows() > 0){
+			foreach ($query->result() as $row){
+				$dbcodigo= $this->db->escape($row->codigoa);
+				$itcana  = $row->cana;
+
+				$mSQL = "UPDATE sinv SET exord=IF(exord IS NULL OR exord>=$itcana , 0 , exord-$itcana) WHERE codigo=$dbcodigo";
+				$ban=$this->db->simple_query($mSQL);
+				if($ban==false){ memowrite($mSQL,'pfaclite'); }
+			}
+			$mSQL="UPDATE pfac SET status='C' WHERE fecha <= CURDATE()-3 AND status='P'";
+			$ban=$this->db->simple_query($mSQL);
+			if($ban==false){ memowrite($mSQL,'pfaclite'); }
+		}
+	}
+
 	function filterscli(){
+		$vd=trim($this->secu->getvendedor());
+		if(empty($vd)){
+			show_error('Usuario no tiene adignado vendedor, debe asignarlo primero para poder usar este modulo');
+		}
+
 		$url=$this->url.'filteredgrid';
 		$this->rapyd->uri->keep_persistence();
 		$persistence = $this->rapyd->session->get_persistence($url, $this->rapyd->uri->gfid);
-		$back= (isset($persistence['back_uri'])) ?$persistence['back_uri'] : $url;
+		$back= (isset($persistence['back_uri']))? $persistence['back_uri'] : $url;
 		$vd   = $this->secu->getvendedor();
 
 		$this->rapyd->load('datafilter','datagrid');
@@ -202,7 +213,7 @@ class pfaclite extends validaciones{
 		$edit->set_rel_title('itpfac', 'Producto <#o#>');
 
 		$edit->pre_process( 'insert', '_pre_insert' );
-		$edit->pre_process( 'update', '_pre_insert' );
+		$edit->pre_process( 'update', '_pre_update' );
 		$edit->pre_process( 'delete', '_pre_delete' );
 		$edit->post_process('insert', '_post_insert');
 		$edit->post_process('update', '_post_update');
@@ -415,8 +426,10 @@ class pfaclite extends validaciones{
 		$do->set('nombre',$scli['nombre']);
 		$do->set('direc' ,$scli['direc'] );
 		$do->set('dire1' ,$scli['dire1'] );
+		$do->set('status','P');
 
-		$vd=$this->secu->getvendedor();
+		$vd=$this->input->post('vd');
+		if(empty($vd)) $vd=$this->secu->getvendedor();
 		$do->set('vd',$vd);
 
 		$iva = $totals = 0;
@@ -459,14 +472,37 @@ class pfaclite extends validaciones{
 		for($i = 0;$i < $cana;$i++){
 			$itcodigo= $do->get_rel('itpfac', 'codigoa', $i);
 			$itcana  = $do->get_rel('itpfac', 'cana', $i);
-			$mSQL = "UPDATE sinv SET exord=IF(exord IS NULL,$itcana,exord+$itcana WHERE codigo=".$this->db->escape($itcodigo);
+			$mSQL = "UPDATE sinv SET exord=IF(exord IS NULL,$itcana,exord+$itcana) WHERE codigo=".$this->db->escape($itcodigo);
 
 			$ban=$this->db->simple_query($mSQL);
-			if($ban==false){ memowrite($mSQL,'pfac'); }
+			if($ban==false){ memowrite($mSQL,'pfaclite'); }
 		}
 		$codigo = $do->get('numero');
 
 		logusu('pfac', "Pedido $codigo CREADO");
+	}
+
+	function _pre_update($do){
+		$factura= trim($do->get('factura'));
+		if(!empty($factura)){
+			$do->error_message_ar['pre_upd']='El pedido ya fue facturado con el n&uacute;mero '.$factura.' no puede modificarlo';
+			return false;
+		}
+		if($do->get('status') != 'P'){
+			$do->error_message_ar['pre_upd']='Pedido ya procesado, no puede ser modificado';
+			return false;
+		}
+
+		$numa   = $do->get('numero');
+		$dbnuma = $this->db->escape($numa);
+
+		$sql="UPDATE itpfac AS c JOIN sinv   AS d ON d.codigo=c.codigoa
+		SET d.exord=IF(d.exord>c.cana,d.exord-c.cana,0)
+		WHERE c.numa = $dbnuma";
+		$ban=$this->db->simple_query($sql);
+		if($ban==false){ memowrite($sql,'pfaclite'); $error++;}
+
+		return $this->_pre_insert($do);
 	}
 
 	function _post_update($do){
@@ -474,27 +510,29 @@ class pfaclite extends validaciones{
 		for($i = 0;$i < $cana;$i++){
 			$itcodigo= $do->get_rel('itpfac', 'codigoa', $i);
 			$itcana  = $do->get_rel('itpfac', 'cana', $i);
-			$mSQL = "UPDATE sinv SET exdes=exdes+$itcana WHERE codigo=".$this->db->escape($itcodigo);
 
+			$mSQL = "UPDATE sinv SET exord=exord+$itcana WHERE codigo=".$this->db->escape($itcodigo);
 			$ban=$this->db->simple_query($mSQL);
-			if($ban==false){ memowrite($mSQL,'pfac'); }
+			if($ban==false){ memowrite($mSQL,'pfaclite'); }
 		}
 		$codigo = $do->get('numero');
 		logusu('pfac', "Pedido $codigo MODIFICADO");
 	}
 
 	function _pre_delete($do){
+		$status = $do->get('status');
 		$codigo = $do->get('numero');
-		$mSQL='UPDATE sinv JOIN itpfac ON sinv.codigo=itpfac.codigoa SET sinv.exdes=sinv.exdes-itpfac.cana WHERE itpfac.numa='.$this->db->escape($codigo);
-		$ban=$this->db->simple_query($mSQL);
-		if($ban==false){ memowrite($mSQL,'pfac'); }
-
+		if($status!='C'){
+			$mSQL='UPDATE sinv JOIN itpfac ON sinv.codigo=itpfac.codigoa SET sinv.exord=IF(sinv.exord>itpfac.cana,sinv.exord-itpfac.cana,0) WHERE itpfac.numa='.$this->db->escape($codigo);
+			$ban=$this->db->simple_query($mSQL);
+			if($ban==false){ memowrite($mSQL,'pfaclite'); }
+		}
 		return true;
 	}
 
 	function _post_delete($do){
 		$codigo = $do->get('numero');
-		logusu('pfac', "Pedido $codigo ELIMINADO");
+		logusu('pfaclite', "Pedido $codigo ELIMINADO");
 	}
 
 	function load(){
@@ -548,6 +586,7 @@ class pfaclite extends validaciones{
 
 				if($id==1){
 					$genefec=(isset($row[8]))?$row[8]:'';
+					$vd =(preg_match('/^.*\((?P<vd>\w+)\).*$/',$row[1], $matches)>0)? $matches['vd'] : $this->secu->getvendedor();
 				}elseif($id==2){
 					$_POST['cod_cli']=(isset($row[1]))?$row[1]:'';
 				}elseif($id>3){
@@ -567,11 +606,12 @@ class pfaclite extends validaciones{
 				}
 			}
 
+			$_POST['vd'] = $vd;
 			$_POST['observa']='Fuera de linea, Hoja del '.$genefec;
 			if(!empty($_POST['cod_cli'])){
 				$this->genesal=false;
 				$rrt=$this->dataedit($_POST['cod_cli'],'','');
-				$rt.=$rrt."<br />";
+				$rt.=$rrt.'<br />';
 			}
 			$_POST=array();
 		}
@@ -680,6 +720,7 @@ class pfaclite extends validaciones{
 		$comp = $this->datasis->traevalor('TITULO1');
 		$rif  = $this->datasis->traevalor('RIF');
 		$key  = $this->datasis->traevalor('RIF');
+		$prot = ''; //Colocar # para desactivar
 
 		header("Content-type: application/x-msexcel; name=\"${fname}\"");
 		header("Content-Disposition: inline; filename=\"${fname}\"");
@@ -698,8 +739,8 @@ my \$workbook   = Spreadsheet::WriteExcel->new(\\*STDOUT);
 );
 
 my \$worksheet0 = \$workbook->add_worksheet("clientes");
-\$worksheet0->activate();
-\$worksheet0->protect('clientes');
+#\$worksheet0->hide_gridlines(2);
+$prot\$worksheet0->protect('clientes');
 my \$dbh = DBI->connect("DBI:mysql:database=$db;host=$host","$usr", "$pwd",{'RaiseError' => 1});
 my \$mSQL="SELECT TRIM(cliente) AS cliente, TRIM(nombre) AS nombre ,TRIM(rifci) AS rifci,tipo
 FROM scli
@@ -714,6 +755,7 @@ my \$sth = \$dbh->prepare(\$mSQL);
 
 my \$lock = \$workbook->add_format();
 \$lock->set_locked(1);
+\$lock->set_hidden();
 
 my \$unlock = \$workbook->add_format();
 \$unlock->set_locked(0);
@@ -727,7 +769,7 @@ my \$ftit = \$workbook->add_format();
 \$ftit->set_locked(1);
 
 \$worksheet0->write_string(0, 0 ,'$comp $rif');
-\$worksheet0->set_column(0,0, 6 );
+\$worksheet0->set_column(0,0, 8 );
 \$worksheet0->set_column(1,1, 46);
 \$worksheet0->set_column(2,2, 12);
 \$worksheet0->set_column(3,3, 5 );
@@ -747,6 +789,8 @@ while(my \$row = \$sth->fetchrow_hashref()){
 	\$worksheet0->write( \$mfil, 3,\$row->{'tipo'},\$lock);
 	\$mfil++;
 }
+\$count_scli++;
+\$workbook->define_name('DpScli', '=clientes!\$A\$4:\$A$'.\$count_scli);
 
 my \$ffot = \$workbook->add_format();
 \$ffot->set_fg_color(23);
@@ -757,6 +801,7 @@ my \$ffot = \$workbook->add_format();
 my \$fbod0 = \$workbook->add_format();
 \$fbod0->set_locked(1);
 \$fbod0->set_border(1);
+\$fbod0->set_hidden();
 
 my \$fbod1 = \$workbook->add_format();
 \$fbod1->set_locked(1);
@@ -767,7 +812,6 @@ my \$fbod2 = \$workbook->add_format();
 \$fbod2->set_border(1);
 
 \$mfil=0;
-
 
 \$fbod0->set_fg_color(26);
 \$fbod1->set_fg_color(41);
@@ -811,19 +855,23 @@ my \$mmfil= \$mfil+1;
 my \$grup = '';
 
 my \$formula = "=IF(ISNA(VLOOKUP(A2,clientes!A4:D\$count_scli,200,0)),1,VLOOKUP(A2,clientes!A4:D\$count_scli,200,0))";
+my \$fformul = "=IF(ISNA(VLOOKUP(A2,clientes!A4:D\$count_scli,200,0)),\"Seleccione el cliente en la celda A2\",VLOOKUP(A2,clientes!A4:D\$count_scli,200,0))";
 my \$count;
+my \$sinv_cant;
+my \$i=0;
+my \$worksheet;
 
-\$count_scli++;
 for (\$count = 1; \$count <= 10; \$count++) {
-	my \$worksheet = \$workbook->add_worksheet(\$count);
-	\$worksheet->select();
+	\$worksheet = \$workbook->add_worksheet(\$count);
+	\$worksheet->hide_gridlines(2);
 
 	my \$vlookup = \$worksheet->store_formula(\$formula);
 	@\$vlookup = map {s/_ref2d/_ref2dV/;\$_} @\$vlookup;
 
+	my \$vvlookup = \$worksheet->store_formula(\$fformul);
+	@\$vvlookup = map {s/_ref2d/_ref2dV/;\$_} @\$vvlookup;
 
-	\$worksheet->protect("00\$count");
-	\$worksheet->hide_gridlines();
+	$prot\$worksheet->protect("00\$count");
 	\$worksheet->set_zoom(75);
 	\$worksheet->set_column(0,0, 30);
 	\$worksheet->set_column(1,2, 5 );
@@ -836,11 +884,7 @@ for (\$count = 1; \$count <= 10; \$count++) {
 	\$worksheet->write_blank(1, 0,\$unlock);
 
 	\$worksheet->repeat_formula('I2',\$vlookup,\$lock,('200','4') x 2);
-	\$worksheet->repeat_formula('B2',\$vlookup,\$lock,('200','2') x 2);
-
-	#\$worksheet->merge_cells(0,6,0,7);
-	#\$worksheet->merge_cells(0,0,0,5);
-	#\$worksheet->merge_cells(1,1,1,6);
+	\$worksheet->repeat_formula('B2',\$vvlookup,\$lock,('200','2') x 2);
 
 	\$mfil=2;
 	\$worksheet->write_string(\$mfil, 0,'Producto' ,\$ftit);
@@ -853,28 +897,31 @@ for (\$count = 1; \$count <= 10; \$count++) {
 	\$worksheet->write_string(\$mfil, 7,'Cod. SAP' ,\$ftit);
 	\$worksheet->write_string(\$mfil, 8,'Pedido'   ,\$ftit);
 	\$worksheet->freeze_panes(\$mfil+1,0,\$mfil+1,0);
-	\$worksheet->set_row(\$mfil, 25);
+	\$worksheet->set_row(\$mfil, 22);
+}
+\$mfil++;
+\$mmfil= \$mfil+1;
+\$grup = '';
 
-	\$mSQL = "SELECT a.peso, a.codigo, a.descrip, a.marca AS grupo, a.marca AS nom_grup, a.unidad, a.existen,
-		round(a.precio1*100/(100+a.iva),2) AS base1,
-		round(a.precio2*100/(100+a.iva),2) AS base2,
-		round(a.precio3*100/(100+a.iva),2) AS base3,
-		round(a.precio4*100/(100+a.iva),2) AS base4
-	FROM sinv AS a
-	JOIN grup AS b ON a.grupo=b.grupo
-	WHERE a.activo='S' AND a.tipo='Articulo'
-	ORDER BY a.marca, a.descrip LIMIT 500";
+\$mSQL = "SELECT a.peso, a.codigo, a.descrip, a.marca AS grupo, a.marca AS nom_grup, a.unidad, a.existen-a.exord AS existen,
+	round(a.precio1*100/(100+a.iva),2) AS base1,
+	round(a.precio2*100/(100+a.iva),2) AS base2,
+	round(a.precio3*100/(100+a.iva),2) AS base3,
+	round(a.precio4*100/(100+a.iva),2) AS base4
+FROM sinv AS a
+JOIN grup AS b ON a.grupo=b.grupo
+WHERE a.activo='S' AND a.tipo='Articulo'
+ORDER BY a.marca, a.descrip LIMIT 500";
 
-	\$mfil++;
-	\$mmfil= \$mfil+1;
-	\$grup = '';
+\$sth  = \$dbh->prepare(\$mSQL);
+\$sth->execute();
 
-	\$sth  = \$dbh->prepare(\$mSQL);
-	\$sth->execute();
 
-	while(my \$row = \$sth->fetchrow_hashref()){
-		\$mmfil=\$mfil+1;
-		if(\$grup ne \$row->{'grupo'}){
+while(my \$row = \$sth->fetchrow_hashref()){
+	\$mmfil=\$mfil+1;
+	if(\$grup ne \$row->{'grupo'}){
+		foreach \$worksheet (\$workbook->sheets()) {
+			if(\$worksheet->get_name() eq 'clientes'){ next; }
 			\$worksheet->write_string(\$mfil, 0,\$row->{'nom_grup'},\$fgru);
 			\$worksheet->write_blank( \$mfil, 1,\$fgru);
 			\$worksheet->write_blank( \$mfil, 2,\$fgru);
@@ -884,18 +931,19 @@ for (\$count = 1; \$count <= 10; \$count++) {
 			\$worksheet->write_blank( \$mfil, 6,\$fgru);
 			\$worksheet->write_blank( \$mfil, 7,\$fgru);
 			\$worksheet->write_blank( \$mfil, 8,\$fgru);
-			\$mfil++;
-			\$mmfil=\$mfil+1;
-			\$grup=\$row->{'grupo'};
-			#\$fbod='fbod'.\$o;
-			#\$o=(\$o>=2)? 0: \$o+1;
 		}
+		\$mfil++;
+		\$mmfil=\$mfil+1;
+		\$grup=\$row->{'grupo'};
+	}
 
+	foreach \$worksheet (\$workbook->sheets()){
+		if(\$worksheet->get_name() eq 'clientes'){ next; }
 		\$worksheet->write_string( \$mfil, 0,\$row->{'descrip'} ,\$fbod0);
 		\$worksheet->write( \$mfil, 1,\$row->{'peso'}    ,\$fbod0);
 		\$worksheet->write_string( \$mfil, 2,\$row->{'unidad'}  ,\$fbod0);
 		\$worksheet->write_formula(\$mfil, 3,"=I\$mmfil*B\$mmfil",\$fbod0,90);
-		\$worksheet->write_formula(\$mfil, 4,"=IF(I2=2, \$row->{'base2'},IF(I2=3,\$row->{'base3'},IF(I2=4 ,\$row->{'base4'}, \$row->{'base1'})))",\$fbod0);
+		\$worksheet->write_formula(\$mfil, 4,'=IF(\$I\$2=2,'.\$row->{'base2'}.',IF(\$I\$2=3,'.\$row->{'base3'}.',IF(\$I\$2=4,'."\$row->{'base4'},\$row->{'base1'})))",\$fbod0);
 		\$worksheet->write_formula(\$mfil, 5,"=I\$mmfil*E\$mmfil",\$fbod0);
 		\$worksheet->write( \$mfil, 6,\$row->{'existen'}   ,\$fbod0 );
 		\$worksheet->write_string( \$mfil, 7,\$row->{'codigo'}   ,\$fcod );
@@ -905,8 +953,14 @@ for (\$count = 1; \$count <= 10; \$count++) {
 			criteria => '>=',
 			value    => 0,
 		});
-		\$mfil++;
 	}
+	\$mfil++;
+}
+\$sinv_cant=\$mfil;
+\$sth->finish();
+
+foreach \$worksheet (\$workbook->sheets()) {
+	if(\$worksheet->get_name() eq 'clientes'){ next; }
 	\$worksheet->write_string( \$mfil, 0,'Totales...'     ,\$ffot);
 	\$worksheet->write_blank(  \$mfil, 1,\$ffot);
 	\$worksheet->write_blank(  \$mfil, 2,\$ffot);
@@ -917,19 +971,18 @@ for (\$count = 1; \$count <= 10; \$count++) {
 	\$worksheet->write_blank(  \$mfil, 7 ,\$ffot);
 	\$worksheet->write_formula(\$mfil, 8,"=SUM(I4:I\$mfil)",\$ffot);
 
-	\$workbook->define_name('DpScli', "=clientes!A4:A\$count_scli");
 	\$worksheet->data_validation(1, 0, {
-			validate      => 'list',
-			dropdown      => 1,
-			input_title   => 'Cliente',
-			input_message => 'Seleccione el cliente al cual se le va a realizar el pedido',
-			value         => '=DpScli',
-		});
+		validate      => 'list',
+		dropdown      => 1,
+		input_title   => 'Cliente',
+		input_message => 'Seleccione el cliente al cual se le va a realizar el pedido',
+		value         => '=DpScli',
+	});
 }
 
 #\$worksheet->autofilter(2, 0,\$mfil ,7);
-\$sth->finish();
 \$dbh->disconnect();
+\$workbook->sheets(1)->activate();
 \$workbook->close();
 
 __END__
