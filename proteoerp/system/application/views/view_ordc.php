@@ -103,14 +103,22 @@ function del_itordc(id){
 
 <table align='center' width="95%">
 	<tr>
-		<td align=right><?php echo $container_tr?></td>
+		<td align=right>
+		<?php if ($form->_status=='show') { $id=$form->get_from_dataobjetct('numero'); ?>
+		<a href="#" onclick="window.open('<?php echo base_url() ?>formatos/ver/ORDC/<?php echo $id ?>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');" heigth="600" >
+		<img src='<?php echo base_url() ?>images/pdf_logo.gif'></a>
+		<a href="#" onclick="window.open('<?php echo base_url() ?>formatos/verhtml/ORDC/<?php echo $id ?>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');" heigth="600" >
+		<img src='<?php echo base_url() ?>images/html_icon.gif'></a>
+		<?php } ?>
+
+		<?php echo $container_tr?></td>
 	</tr>
 	<tr>
 		<td>
 		<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
 		<legend class="titulofieldset" style='color: #114411;'>Orden de Compra<?php if($form->_status=='show' or $form->_status=='modify' ) echo str_pad($form->numero->output,8,0,0); ?></legend>
 		<table width="100%" style="margin: 0; width: 100%;">
-			
+
 			<tr >
 				<td class="littletableheader"><?php echo $form->fecha->label;    ?>*&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->fecha->output;   ?>&nbsp;</td>
@@ -129,7 +137,7 @@ function del_itordc(id){
 				<td class="littletablerow" >  <?php echo $form->fechafac->output ?>&nbsp;</td>
 				<td class="littletableheader"><?=$form->peso->label  ?>&nbsp;</td>
 				<td class="littletablerow" align="left"><?=$form->peso->output ?>&nbsp;</td>
-				
+
 			</tr>
 		</table>
 		</fieldset>
@@ -141,7 +149,7 @@ function del_itordc(id){
 		<fieldset style='border: 2px outset #9AC8DA;background: #EFEFFF;'>
 		<legend class="titulofieldset" style='color: #114411;'>Lista de Art&iacute;culos</legend>
 		<table width='100%'>
-			
+
 			<tr>
 				<td class="littletableheaderdet">C&oacute;digo</td>
 				<td class="littletableheaderdet">Descripci&oacute;n</td>
@@ -164,7 +172,7 @@ function del_itordc(id){
 				$it_pond    = "pond_$i";
 				$it_peso    = "sinvpeso_$i";
 				$it_tipo    = "sinvtipo_$i";
-				
+
 				$pprecios='';
 				for($o=1;$o<5;$o++){
 					$it_obj   = "precio${o}_${i}";
@@ -192,7 +200,7 @@ function del_itordc(id){
 			<?php } ?>
 
 			<tr id='__UTPL__'>
-				
+
 				<td id='cueca'colspan='6' class="littletableheaderdet">&nbsp;</td>
 			</tr>
 		</table>
@@ -241,7 +249,7 @@ function del_itordc(id){
 					<?php
 						$mSQL="SELECT us_nombre FROM usuario WHERE us_codigo='".trim($form->_dataobject->get('usuario'))."'";
 						$us_nombre = $this->datasis->dameval($mSQL);
-					
+
 					?>
 					<td class="littletablerow" align='center'><?php echo $form->_dataobject->get('usuario'); ?>&nbsp;</td>
 					<td class="littletablerow" align='center'><?php echo $us_nombre ?>&nbsp;</td>

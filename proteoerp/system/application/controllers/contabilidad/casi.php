@@ -385,7 +385,10 @@ class casi extends Controller {
 		$arr[].= anchor('contabilidad/casi/auditbotr'  ,'Auditoria en Conceptos'        ,'title="Registros con cuentas contables inv&aacute;lidas"');
 		$arr[].= anchor('contabilidad/casi/auditmgas'  ,'Auditoria en Maestro de gatos' ,'title="Registros con cuentas contables inv&aacute;lidas"');
 		$arr[].= anchor('contabilidad/casi/auditban'   ,'Auditoria en Bancos'           ,'title="Registros con cuentas contables inv&aacute;lidas"');
-		$arr[].= anchor('contabilidad/casi/auditreglas','Auditoria en reglas contables' ,'title="Registros con cuentas contables inv&aacute;lidas"');
+		$arr[].= anchor('contabilidad/casi/auditreglas','Auditoria en Reglas contables' ,'title="Registros con cuentas contables inv&aacute;lidas"');
+		$arr[].= anchor('contabilidad/casi/auditline'  ,'Auditoria en L&iacute;neas de inventario' ,'title="Registros con cuentas contables inv&aacute;lidas"');
+		$arr[].= anchor('contabilidad/casi/auditconc'  ,'Auditoria en Conceptos de nomina' ,'title="Registros con cuentas contables inv&aacute;lidas"');
+		$arr[].= anchor('contabilidad/casi/auditrete'  ,'Auditoria en Retenciones'      ,'title="Registros con cuentas contables inv&aacute;lidas"');
 		$arr[].= anchor('contabilidad/casi/transac'    ,'Localizador de Transacciones'  ,'title="Busca una transacci&oacute;n en la base de datos"');
 
 		$data['content'] = '<p>M&oacute;dulo para ayudar a encontrar y solucionar problemas de inconsistencias en los registros que producen asientos descuadrados.</p>';
@@ -518,13 +521,20 @@ class casi extends Controller {
 		$form->cuenta->rule = 'trim|required|callback_chcuentac';
 		$form->cuenta->size =15;
 		$form->cuenta->append($bcpla.'Coloque la cuenta contable para ser asginada a todos los registros encontrados y presione cambiar.');
+		$form->grupo = new dropdownField('Grupo', 'grupo');
+		$form->grupo->option('','Todos');
+		$form->grupo->options("SELECT grupo,grupo AS val FROM mgas GROUP BY grupo");
+		$form->grupo->style = 'width:140px';
+		$form->grupo->append('Adicionalmente puede elegir un grupo para condicionar la asignaci&oacute;n');
 
 		$form->submit('btnsubmit','Cambiar');
 		$form->build_form();
 
 		if ($form->on_success()){
-			$cuenta= $this->db->escape($form->cuenta->newValue);
-			$mSQL='UPDATE mgas AS a LEFT JOIN cpla AS b ON a.cuenta=b.codigo SET a.cuenta='.$cuenta.' WHERE b.codigo IS NULL';
+			$cuenta = $this->db->escape(trim($form->cuenta->newValue));
+			$grupo  = $form->grupo->newValue;
+			if(!empty($grupo)) $ww=' AND a.grupo='.$this->db->escape($grupo); else $ww='';
+			$mSQL='UPDATE mgas AS a LEFT JOIN cpla AS b ON a.cuenta=b.codigo SET a.cuenta='.$cuenta.' WHERE b.codigo IS NULL'.$ww;
 			$this->db->simple_query($mSQL);
 			redirect('contabilidad/casi/auditmgas');
 		}
@@ -578,7 +588,7 @@ class casi extends Controller {
 		$grid->button('btn_regresa', 'Regresar', $action, 'TR');
 		$grid->build();
 
-		$form = new DataForm('contabilidad/casi/auditbanc/process');
+		$form = new DataForm('contabilidad/casi/auditban/process');
 		$form->cuenta = new inputField('Cuenta contable', 'cuenta');
 		$form->cuenta->rule = 'trim|required|callback_chcuentac';
 		$form->cuenta->size =15;
@@ -588,10 +598,10 @@ class casi extends Controller {
 		$form->build_form();
 
 		if ($form->on_success()){
-			$cuenta= $this->db->escape($form->cuenta->newValue);
+			$cuenta= $this->db->escape(trim($form->cuenta->newValue));
 			$mSQL='UPDATE banc AS a LEFT JOIN cpla AS b ON a.cuenta=b.codigo SET a.cuenta='.$cuenta.' WHERE b.codigo IS NULL';
 			$this->db->simple_query($mSQL);
-			redirect('contabilidad/casi/auditbanc');
+			redirect('contabilidad/casi/auditban');
 		}
 
 		$data['content'] = ($grid->recordCount > 0) ? $form->output : '';
@@ -603,19 +613,7 @@ class casi extends Controller {
 
 	function auditreglas(){
 		$this->rapyd->load('datagrid','dataform');
-
 		$qformato=$this->datasis->formato_cpla();
-		$mCPLA=array(
-			'tabla'   =>'cpla',
-			'columnas'=>array(
-			        'codigo' =>'C&oacute;digo',
-			        'descrip'=>'Descripci&oacute;n'),
-			'filtro'  =>array('codigo'=>'C&oacute;digo','descrip'=>'Descripci&oacute;n'),
-			'retornar'=>array('codigo'=>'cuenta'),
-			'titulo'  =>'Buscar Cuenta',
-			'where'=>"codigo LIKE \"$qformato\"",
-		);
-		$bcpla =$this->datasis->modbus($mCPLA);
 
 		$atts = array(
 			'width'      => '800',
@@ -627,22 +625,41 @@ class casi extends Controller {
 			'screeny'    => '0'
 		);
 
-		//$uri = anchor_popup('finanzas/mgas/dataedit/modify/<#modulo#>/<#regla#>','<#modulo#>:<#regla#>',$atts);
-		$grid = new DataGrid('Registros cuya cuenta no existe en el plan de cuentas');
+		function extraecuenta($cuenta){
+			if(preg_match_all('/(?P<cuenta>([0-9]+\.?)+)/', $cuenta, $matches)>0){
+				$CI =& get_instance();
+				$err=false;
+				foreach($matches['cuenta'] as $cc){
+					$cc=$CI->db->escape($cc);
+					$cana=$CI->datasis->dameval('SELECT COUNT(*) FROM cpla WHERE codigo='.$cc);
+					if(!($cana>0)){
+						$err=true;
+					}
+				}
+			}
+			if($err){
+				return "<b style='color:red'>$cuenta</b>";
+			}else{
+				return $cuenta;
+			}
+		}
+
+		$uri = anchor_popup('contabilidad/reglas/dataedit/<#modulo#>/modify/<#modulo#>/<#regla#>','<#modulo#>:<#regla#>',$atts);
+		$grid = new DataGrid('Registros de reglas que imponen cuentas contables, las que no existen estan remarcadas en <b style=\'color:red\'>rojo</b>');
+		$grid->use_function('extraecuenta');
 		$grid->order_by('a.modulo');
 		$grid->db->select(array('a.modulo','a.tabla','a.descripcion','a.cuenta','a.regla'));
 		$grid->db->from('reglascont AS a');
-		$grid->db->join('cpla AS b','a.cuenta=b.codigo','LEFT');
-		$grid->db->like('a.cuenta',$qformato);
-		$grid->db->where('b.codigo IS NULL');
+		$grid->db->where('a.cuenta REGEXP','([0-9]+\.[0-9]+\.?)+');
 		$grid->per_page = 40;
-		$grid->column_orderby('C&oacute;digo','<#modulo#>:<#regla#>','modulo');
+		$grid->column_orderby('C&oacute;digo',$uri,'modulo');
 		$grid->column_orderby('Tabla','tabla','tabla');
 		$grid->column_orderby('Descripci&oacute;n' ,'descripcion','descripcion');
-		$grid->column_orderby('Cuenta','cuenta','cuenta');
+		$grid->column_orderby('Cuenta','<extraecuenta><#cuenta#></extraecuenta>','cuenta');
 		$action = "javascript:window.location='".site_url('contabilidad/casi/auditoria')."'";
 		$grid->button('btn_regresa', 'Regresar', $action, 'TR');
 		$grid->build();
+		//echo $grid->db->last_query();
 
 		$data['content'] = $grid->output;
 		$data['head']    = $this->rapyd->get_head();
@@ -678,12 +695,14 @@ class casi extends Controller {
 
 		$uri = anchor_popup('ventas/scli/dataedit/modify/<#id#>','<#cliente#>',$atts);
 		$grid = new DataGrid('Registros cuya cuenta no existe en el plan de cuentas');
-		$grid->db->select(array('a.cliente','a.rifci','a.nombre','a.cuenta','a.id'));
+		$grid->db->select(array('a.cliente','a.rifci','a.nombre','a.cuenta','a.grupo','a.id'));
 		$grid->db->from('scli AS a');
 		$grid->db->join('cpla AS b','a.cuenta=b.codigo','LEFT');
 		$grid->db->where('b.codigo IS NULL');
+		$grid->db->orwhere('a.cuenta NOT LIKE',$qformato);
 		$grid->per_page = 40;
 		$grid->column_orderby('C&oacute;digo',$uri,'cliente');
+		$grid->column_orderby('Grupo','grupo','grupo');
 		$grid->column_orderby('Nombre','nombre','nombre');
 		$grid->column_orderby('Rif/CI','rifci' ,'rifci');
 		$grid->column_orderby('Cuenta','cuenta','cuenta');
@@ -696,13 +715,20 @@ class casi extends Controller {
 		$form->cuenta->rule = 'trim|required|callback_chcuentac';
 		$form->cuenta->size =15;
 		$form->cuenta->append($bcpla.'Coloque la cuenta contable para ser asginada a todos los registros encontrados y presione cambiar.');
+		$form->grupo = new dropdownField('Grupo', 'grupo');
+		$form->grupo->option('','Todos');
+		$form->grupo->options("SELECT grupo,grupo AS val FROM scli GROUP BY grupo");
+		$form->grupo->style = 'width:140px';
+		$form->grupo->append('Adicionalmente puede elegir un grupo para condicionar la asignaci&oacute;n');
 
 		$form->submit('btnsubmit','Cambiar');
 		$form->build_form();
 
 		if ($form->on_success()){
-			$cuenta= $this->db->escape($form->cuenta->newValue);
-			$mSQL='UPDATE scli AS a LEFT JOIN cpla AS b ON a.cuenta=b.codigo SET a.cuenta='.$cuenta.' WHERE b.codigo IS NULL';
+			$cuenta= $this->db->escape(trim($form->cuenta->newValue));
+			$grupo  = $form->grupo->newValue;
+			if(!empty($grupo)) $ww=' AND a.grupo='.$this->db->escape($grupo); else $ww='';
+			$mSQL='UPDATE scli AS a LEFT JOIN cpla AS b ON a.cuenta=b.codigo SET a.cuenta='.$cuenta.' WHERE b.codigo IS NULL'.$ww;
 			$this->db->simple_query($mSQL);
 			redirect('contabilidad/casi/auditscli');
 		}
@@ -764,10 +790,229 @@ class casi extends Controller {
 		$form->build_form();
 
 		if ($form->on_success()){
-			$cuenta= $this->db->escape($form->cuenta->newValue);
+			$cuenta= $this->db->escape(trim($form->cuenta->newValue));
 			$mSQL='UPDATE botr AS a LEFT JOIN cpla AS b ON a.cuenta=b.codigo SET a.cuenta='.$cuenta.' WHERE b.codigo IS NULL';
 			$this->db->simple_query($mSQL);
-			redirect('contabilidad/casi/auditscli');
+			redirect('contabilidad/casi/auditbotr');
+		}
+
+		$data['content'] = ($grid->recordCount > 0) ? $form->output : '';
+		$data['content'].= $grid->output;
+		$data['head']    = $this->rapyd->get_head();
+		$data['title']   = heading('Auditoria en otros conceptos contables');
+		$this->load->view('view_ventanas', $data);
+	}
+
+	function auditrete(){
+		$this->rapyd->load('datagrid','dataform');
+
+		$qformato=$this->datasis->formato_cpla();
+		$mCPLA=array(
+			'tabla'   =>'cpla',
+			'columnas'=>array(
+			        'codigo' =>'C&oacute;digo',
+			        'descrip'=>'Descripci&oacute;n'),
+			'filtro'  =>array('codigo'=>'C&oacute;digo','descrip'=>'Descripci&oacute;n'),
+			'retornar'=>array('codigo'=>'cuenta'),
+			'titulo'  =>'Buscar Cuenta',
+			'where'=>"codigo LIKE \"$qformato\"",
+		);
+		$bcpla =$this->datasis->modbus($mCPLA);
+
+		$atts = array(
+			'width'      => '800',
+			'height'     => '600',
+			'scrollbars' => 'yes',
+			'status'     => 'yes',
+			'resizable'  => 'yes',
+			'screenx'    => '0',
+			'screeny'    => '0'
+		);
+
+		$uri = anchor_popup('finanzas/rete/dataedit/modify/<#codigo#>','<#codigo#>',$atts);
+		$grid = new DataGrid('Registros cuya cuenta no existe en el plan de cuentas');
+		$grid->db->select(array('a.codigo','a.activida','a.cuenta'));
+		$grid->db->from('rete AS a');
+		$grid->db->join('cpla AS b','a.cuenta=b.codigo','LEFT');
+		$grid->db->where('b.codigo IS NULL');
+		$grid->per_page = 40;
+		$grid->column_orderby('C&oacute;digo', $uri ,'codigo');
+		$grid->column_orderby('Actividad','activida','activida');
+		$grid->column_orderby('Cuenta','cuenta','cuenta');
+		$action = "javascript:window.location='".site_url('contabilidad/casi/auditoria')."'";
+		$grid->button('btn_regresa', 'Regresar', $action, 'TR');
+		$grid->build();
+
+		$form = new DataForm('contabilidad/casi/auditrete/process');
+		$form->cuenta = new inputField('Cuenta contable', 'cuenta');
+		$form->cuenta->rule = 'trim|required|callback_chcuentac';
+		$form->cuenta->size =15;
+		$form->cuenta->append($bcpla.'Coloque la cuenta contable para ser asginada a todos los registros encontrados y presione cambiar.');
+
+		$form->submit('btnsubmit','Cambiar');
+		$form->build_form();
+
+		if ($form->on_success()){
+			$cuenta= $this->db->escape(trim($form->cuenta->newValue));
+			$mSQL='UPDATE rete AS a LEFT JOIN cpla AS b ON a.cuenta=b.codigo SET a.cuenta='.$cuenta.' WHERE b.codigo IS NULL';
+			$this->db->simple_query($mSQL);
+			redirect('contabilidad/casi/auditrete');
+		}
+
+		$data['content'] = ($grid->recordCount > 0) ? $form->output : '';
+		$data['content'].= $grid->output;
+		$data['head']    = $this->rapyd->get_head();
+		$data['title']   = heading('Auditoria en Retenciones');
+		$this->load->view('view_ventanas', $data);
+	}
+
+	function auditconc(){
+		$this->rapyd->load('datagrid','dataform');
+
+		$qformato=$this->datasis->formato_cpla();
+		$mCPLA=array(
+			'tabla'   =>'cpla',
+			'columnas'=>array(
+			        'codigo' =>'C&oacute;digo',
+			        'descrip'=>'Descripci&oacute;n'),
+			'filtro'  =>array('codigo'=>'C&oacute;digo','descrip'=>'Descripci&oacute;n'),
+			'retornar'=>array('codigo'=>'cuenta'),
+			'titulo'  =>'Buscar Cuenta',
+			'where'=>"codigo LIKE \"$qformato\"",
+		);
+		$bcpla =$this->datasis->modbus($mCPLA);
+
+		$atts = array(
+			'width'      => '800',
+			'height'     => '600',
+			'scrollbars' => 'yes',
+			'status'     => 'yes',
+			'resizable'  => 'yes',
+			'screenx'    => '0',
+			'screeny'    => '0'
+		);
+
+		$uri = anchor_popup('nomina/conc/dataedit/modify/<#concepto#>','<#concepto#>',$atts);
+		$grid = new DataGrid('Registros cuya cuenta no existe en el plan de cuentas');
+		$grid->db->select(array('a.concepto','a.descrip','a.cuenta','a.contra'));
+		$grid->db->from('conc AS a');
+		$grid->db->join('cpla AS b','a.cuenta=b.codigo','LEFT');
+		$grid->db->join('cpla AS c','a.cuenta=b.codigo','LEFT');
+		$grid->db->where('b.codigo IS NULL');
+		$grid->db->orwhere('c.codigo IS NULL');
+		$grid->per_page = 40;
+		$grid->column_orderby('Concepto', $uri ,'concepto');
+		$grid->column_orderby('Descripcion','descrip','descrip');
+		$grid->column_orderby('Cuenta','cuenta','cuenta');
+		$grid->column_orderby('Contra','contra','contra');
+		$action = "javascript:window.location='".site_url('contabilidad/casi/auditoria')."'";
+		$grid->button('btn_regresa', 'Regresar', $action, 'TR');
+		$grid->build();
+
+		$form = new DataForm('contabilidad/casi/auditconc/process');
+		$form->cuenta = new inputField('Cuenta contable', 'cuenta');
+		$form->cuenta->rule = 'trim|required|callback_chcuentac';
+		$form->cuenta->size =15;
+		$form->cuenta->append($bcpla.'Coloque la cuenta contable para ser asginada a todos los registros encontrados y presione cambiar.');
+		$form->campo = new dropdownField('Campo', 'campo');
+		$form->campo->option('','Seleccionar');
+		$form->campo->option('cuenta' ,'Cuenta');
+		$form->campo->option('contra' ,'Contra');
+		$form->campo->style = 'width:140px';
+		$form->campo->rule='required|enum[cuenta,contra]';
+
+		$form->submit('btnsubmit','Cambiar');
+		$form->build_form();
+
+		if ($form->on_success()){
+			$cuenta= $this->db->escape(trim($form->cuenta->newValue));
+			$campo = $form->campo->newValue;
+			$mSQL="UPDATE conc AS a LEFT JOIN cpla AS b ON a.$campo=b.codigo SET a.$campo=$cuenta WHERE b.codigo IS NULL";
+			$this->db->simple_query($mSQL);
+			redirect('contabilidad/casi/auditconc');
+		}
+
+		$data['content'] = ($grid->recordCount > 0) ? $form->output : '';
+		$data['content'].= $grid->output;
+		$data['head']    = $this->rapyd->get_head();
+		$data['title']   = heading('Auditoria en conceptos de nomina');
+		$this->load->view('view_ventanas', $data);
+	}
+
+	function auditline(){
+		$this->rapyd->load('datagrid','dataform');
+
+		$qformato=$this->datasis->formato_cpla();
+		$mCPLA=array(
+			'tabla'   =>'cpla',
+			'columnas'=>array(
+			        'codigo' =>'C&oacute;digo',
+			        'descrip'=>'Descripci&oacute;n'),
+			'filtro'  =>array('codigo'=>'C&oacute;digo','descrip'=>'Descripci&oacute;n'),
+			'retornar'=>array('codigo'=>'cuenta'),
+			'titulo'  =>'Buscar Cuenta',
+			'where'=>"codigo LIKE \"$qformato\"",
+		);
+		$bcpla =$this->datasis->modbus($mCPLA);
+
+		$atts = array(
+			'width'      => '800',
+			'height'     => '600',
+			'scrollbars' => 'yes',
+			'status'     => 'yes',
+			'resizable'  => 'yes',
+			'screenx'    => '0',
+			'screeny'    => '0'
+		);
+
+		$uri = anchor_popup('inventario/line/dataedit/modify/<#linea#>','<#linea#>',$atts);
+		$grid = new DataGrid('Registros cuya cuenta no existe en el plan de cuentas');
+		$grid->db->select(array('a.linea','a.descrip','a.cu_cost','a.cu_inve','a.cu_venta','a.cu_devo'));
+		$grid->db->from('line AS a');
+		$grid->db->join('cpla AS b','a.cu_cost =b.codigo' ,'LEFT');
+		$grid->db->join('cpla AS c','a.cu_inve =b.codigo' ,'LEFT');
+		$grid->db->join('cpla AS d','a.cu_venta=b.codigo','LEFT');
+		$grid->db->join('cpla AS e','a.cu_devo =b.codigo' ,'LEFT');
+
+		$grid->db->where('b.codigo IS NULL');
+		$grid->db->orwhere('c.codigo IS NULL');
+		$grid->db->orwhere('d.codigo IS NULL');
+		$grid->db->orwhere('e.codigo IS NULL');
+		$grid->per_page = 40;
+		$grid->column_orderby('C&oacute;digo', $uri ,'codigo');
+		$grid->column_orderby('Nombre','descrip','descrip');
+		$grid->column_orderby('C. Costo','cu_cost'  ,'cu_cost' );
+		$grid->column_orderby('C. Inven','cu_inve'  ,'cu_inve' );
+		$grid->column_orderby('C. Venta','cu_venta' ,'cu_venta');
+		$grid->column_orderby('C. Devol','cu_devo'  ,'cu_devo' );
+
+		$action = "javascript:window.location ='".site_url('contabilidad/casi/auditoria')."'";
+		$grid->button('btn_regresa', 'Regresar', $action, 'TR');
+		$grid->build();
+
+		$form = new DataForm('contabilidad/casi/auditline/process');
+		$form->cuenta = new inputField('Cuenta contable', 'cuenta');
+		$form->cuenta->rule = 'trim|required|callback_chcuentac';
+		$form->cuenta->size =15;
+		$form->cuenta->append($bcpla.'Coloque la cuenta contable para ser asginada a todos los registros encontrados y presione cambiar.');
+		$form->campo = new dropdownField('Campo', 'campo');
+		$form->campo->option('','Seleccionar');
+		$form->campo->option('cu_cost' ,'Costo');
+		$form->campo->option('cu_inve' ,'Inventario');
+		$form->campo->option('cu_venta','Ventas');
+		$form->campo->option('cu_devo' ,'Devolucion');
+		$form->campo->style = 'width:140px';
+		$form->campo->rule='required|enum[cu_cost,cu_inve,cu_venta,cu_devo]';
+
+		$form->submit('btnsubmit','Cambiar');
+		$form->build_form();
+
+		if ($form->on_success()){
+			$cuenta= $this->db->escape(trim($form->cuenta->newValue));
+			$campo = $form->campo->newValue;
+			$mSQL="UPDATE line AS a LEFT JOIN cpla AS b ON a.$campo=b.codigo SET a.$campo=$cuenta WHERE b.codigo IS NULL";
+			$this->db->simple_query($mSQL);
+			redirect('contabilidad/casi/auditline');
 		}
 
 		$data['content'] = ($grid->recordCount > 0) ? $form->output : '';
@@ -805,12 +1050,13 @@ class casi extends Controller {
 
 		$uri = anchor_popup('compras/sprv/dataedit/modify/<#id#>','<#proveed#>',$atts);
 		$grid = new DataGrid('Registros cuya cuenta no existe en el plan de cuentas');
-		$grid->db->select(array('a.proveed','a.rif','a.nombre','a.cuenta','a.id'));
+		$grid->db->select(array('a.proveed','a.rif','a.nombre','a.cuenta','a.grupo','a.id'));
 		$grid->db->from('sprv AS a');
 		$grid->db->join('cpla AS b','a.cuenta=b.codigo','LEFT');
 		$grid->db->where('b.codigo IS NULL');
 		$grid->per_page = 40;
 		$grid->column_orderby('C&oacute;digo',$uri,'proveed');
+		$grid->column_orderby('Grupo' ,'grupo','grupo');
 		$grid->column_orderby('Nombre','nombre','nombre');
 		$grid->column_orderby('Rif'   ,'rif'   ,'rif');
 		$grid->column_orderby('Cuenta','cuenta','cuenta');
@@ -823,13 +1069,20 @@ class casi extends Controller {
 		$form->cuenta->rule = 'trim|required|callback_chcuentac';
 		$form->cuenta->size =15;
 		$form->cuenta->append($bcpla.'Coloque la cuenta contable para ser asginada a todos los registros encontrados y presione cambiar.');
+		$form->grupo = new dropdownField('Grupo', 'grupo');
+		$form->grupo->option('','Todos');
+		$form->grupo->options("SELECT grupo,grupo AS val FROM sprv GROUP BY grupo");
+		$form->grupo->style = 'width:140px';
+		$form->grupo->append('Adicionalmente puede elegir un grupo para condicionar la asignaci&oacute;n');
 
 		$form->submit('btnsubmit','Cambiar');
 		$form->build_form();
 
 		if ($form->on_success()){
 			$cuenta= $this->db->escape($form->cuenta->newValue);
-			$mSQL='UPDATE sprv AS a LEFT JOIN cpla AS b ON a.cuenta=b.codigo SET a.cuenta='.$cuenta.' WHERE b.codigo IS NULL';
+			$grupo  = $form->grupo->newValue;
+			if(!empty($grupo)) $ww=' AND a.grupo='.$this->db->escape($grupo); else $ww='';
+			$mSQL='UPDATE sprv AS a LEFT JOIN cpla AS b ON a.cuenta=b.codigo SET a.cuenta='.$cuenta.' WHERE b.codigo IS NULL'.$ww;
 			$this->db->simple_query($mSQL);
 			redirect('contabilidad/casi/auditsprv');
 		}
