@@ -32,7 +32,7 @@ class Mvcerti extends validaciones {
 		
 	}
 	function index(){
-		$this->datasis->modulo_id(506,1);
+		$this->datasis->modulo_id('13C',1);
 		//redirect("ventas/mvcerti/filteredgrid");
 		$this->mvcertiextjs();
 	}
