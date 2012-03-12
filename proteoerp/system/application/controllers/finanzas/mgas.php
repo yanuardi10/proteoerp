@@ -455,6 +455,7 @@ class Mgas extends validaciones {
 		$data= json_decode($js,true);
 		$campos = $data['data'];
 		$codigo = $campos['codigo'];
+		$id     = $campos['id'];
 		
 		unset($campos['codigo']);
 		unset($campos['id']);
@@ -462,10 +463,10 @@ class Mgas extends validaciones {
 		
 		$campos['nom_grup'] = $this->datasis->dameval("SELECT nom_grup FROM grga WHERE grupo='".$campos['grupo']."'");
 
-		$mSQL = $this->db->update_string("mgas", $campos,"id=".$data['data']['id'] );
+		$mSQL = $this->db->update_string("mgas", $campos,"id=".$id );
 		$this->db->simple_query($mSQL);
 		logusu('mgas',"mgas $codigo ID ".$data['data']['id']." MODIFICADO");
-		echo "{ success: true, message: 'mgas Modificada -> ".$data['data']['codigo']."'}";
+		echo "{ success: true, message: 'mgas Modificada -> ".$codigo."'}";
 	}
 
 	function eliminar(){
