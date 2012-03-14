@@ -745,8 +745,9 @@ class ventas{
 				else
 					$ws->write_string( $mm, 2, $row->tipo, $cuerpoc );	// TIPO
 
-				$ws->write_string( $mm, 4, $row->inicial, $cuerpo );	// INICIAL
-				$ws->write_string( $mm, 5, $row->final, $cuerpo );		// FINAL
+				$ws->write_string( $mm, 3, $row->numero , $cuerpo );		// Nro. Documento
+				$ws->write_string( $mm, 4, $row->inicial, $cuerpo );		// INICIAL
+				$ws->write_string( $mm, 5, $row->final  , $cuerpo );		// FINAL
 
 				if($row->tipo=='FT'){
 					$row->tercero   =$row->ventatotal;
