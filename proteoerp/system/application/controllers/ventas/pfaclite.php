@@ -335,21 +335,38 @@ class pfaclite extends validaciones{
 		$tiposcli=$this->datasis->dameval("SELECT tipo FROM scli WHERE cliente=$dbcliente");
 		if($tiposcli<1) $tiposcli=1; elseif($tiposcli>4) $tiposcli=4;
 
-		$sel=array('TRIM(a.codigo) AS codigo','descrip'
-		,'precio1','precio2','precio3','precio4','exord'
-		,'marca','SUM(b.existen) existen','iva','peso');
-		$this->db->select($sel);
+		$sel=array('TRIM(a.codigo) AS codigo','a.descrip'
+		,'a.precio1','a.precio2','a.precio3','a.precio4','a.exord'
+		,'a.marca','b.existen','a.iva','a.peso');
+
 		$this->db->from('sinv AS a');
 		$this->db->join('itsinv AS b','a.codigo=b.codigo AND b.alma='.$this->db->escape($alma));
-		$this->db->where('activo','S');
-		$this->db->where('tipo'  ,'Articulo');
+		$this->db->where('a.activo','S');
+		$this->db->where('a.tipo'  ,'Articulo');
 		$this->db->group_by('a.codigo');
 		$this->db->order_by('a.marca , a.descrip , a.peso');
 		$this->db->limit(100);
 
-		if($status=='create'){
-			$this->db->where('b.existen >','0');
+		$act_meta=false;
+		if($status=='create' || $status=='insert'){
+			$this->db->where('b.existen > a.exord');
+			if($this->db->table_exists('metas')){
+				$pmargen=$this->datasis->dameval('SELECT pmargen FROM vend WHERE vendedor='.$dbvd);
+				if(empty($pmargen)){
+					$pmargen=0;
+				}else{
+					$pmargen=$pmargen/100;
+				}
+				$mmes=date('Ym');
+				$uday=days_in_month(substr($mmes,4),substr($mmes,0,4));
+				$this->db->join('metas  AS c','a.codigo=c.codigo AND c.fecha='.$mmes,'left');
+				$this->db->join('sitems AS d','d.codigoa=c.codigo AND vendedor='.$dbvd.' AND d.fecha BETWEEN '.$mmes.'01 AND '.$mmes.$uday,'left');
+				$sel[]="COALESCE(c.cantidad,0)*$pmargen AS meta";
+				$sel[]='COALESCE(SUM(d.cana),0) AS vendido';
+				$act_meta=true;
+			}
 		}
+		$this->db->select($sel);
 		$sinv=$this->db->get();
 
 		$sinv=$sinv->result_array();
@@ -368,11 +385,16 @@ class pfaclite extends validaciones{
 				,'codigo'  => $v['codigo']
 				,'exord'   => $v['exord']
 			);
+			if($act_meta){
+				$sinv_arr[$v['codigo']]['meta']   = $v['meta'];
+				$sinv_arr[$v['codigo']]['vendido']= $v['vendido'];
+			}
 		}
 
 		if($this->genesal){
 			$edit->build();
 
+			$conten['act_meta']= $act_meta;
 			$conten['tiposcli']= $tiposcli;
 			$conten['form']    = & $edit;
 			$conten['sinv']    = $sinv_arr;
@@ -583,6 +605,7 @@ class pfaclite extends validaciones{
 		$form->archivo->delete_file   = false;
 		$form->archivo->upload_root   = '/tmp';
 		$form->archivo->rule          = 'required';
+		$form->archivo->append("Solo archivos en formado xls (Excel 97-2003)");
 
 		$accion="javascript:window.location='".site_url('ventas/pfaclite/filteredgrid')."'";
 		$form->button('btn_pfl','Regresar',$accion,'TR');

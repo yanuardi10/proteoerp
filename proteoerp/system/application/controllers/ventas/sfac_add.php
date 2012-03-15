@@ -294,7 +294,7 @@ class sfac_add extends validaciones {
 		$edit->vd->insertValue=$this->secu->getvendedor();
 
 		$edit->almacen= new dropdownField ('Almac&eacute;n', 'almacen');
-		$edit->almacen->options('SELECT ubica,ubides FROM caub ORDER BY ubides');
+		$edit->almacen->options('SELECT ubica,ubides FROM caub WHERE gasto="N" ORDER BY ubides');
 		$edit->almacen->rule='required';
 		$alma = $this->secu->getalmacen();
 		if(strlen($alma)<=0){
