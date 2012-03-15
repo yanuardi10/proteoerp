@@ -605,7 +605,7 @@ class pfaclite extends validaciones{
 		$form->archivo->delete_file   = false;
 		$form->archivo->upload_root   = '/tmp';
 		$form->archivo->rule          = 'required';
-		$form->archivo->append("Solo archivos en formado xls (Excel 97-2003)");
+		$form->archivo->append("Solo archivos en formato xls (Excel 97-2003)");
 
 		$accion="javascript:window.location='".site_url('ventas/pfaclite/filteredgrid')."'";
 		$form->button('btn_pfl','Regresar',$accion,'TR');
