@@ -65,12 +65,14 @@ function totalizar(){
 
 <table width='100%' <?=($form->_status!='show'?' border="0" cellpadding="0" cellspacing="0"':'')?>>
 	<col>
+	<?php if($act_meta) echo '<col align=\'center\'>'; ?>
 	<col>
 	<col>
 	<col class="colbg2">
 	<thead>
 	<tr id='__INPL__'>
 		<td><b>Art&iacute;culo</b></td>
+		<?php if($act_meta) echo '<td><b>Meta</b></td>'; ?>
 		<td><b>Exis. </b></td>
 		<td><b>Cant. </b></td>
 		<td><b>Precio</b></td>
@@ -151,6 +153,15 @@ function totalizar(){
 	<tr id='tr_itpfac_<?php echo $i; ?>' <?php echo ($i%2 == 0) ? 'class="odd"' : '';?> >
 		<td><p class='miniblanco'><?php echo $f_codigoa ?></p>
 			<?php echo $pdesca    ?></td>
+		<?php if($act_meta){ ?>
+		<td align='center'>
+			<?php if($row['meta']>0){ ?>
+				<b class='miniblanco' style='color:#<?php echo color(ceil($row['vendido']*100/$row['meta'])); ?>'><?php echo nformat($row['vendido'],0).'/'.nformat($row['meta'],0); ?></b>
+			<?php }else{
+				echo '-';
+			} ?>
+		</td>
+		<?php } ?>
 		<td align='right'><?php echo nformat($pexisten)  ?>  </td>
 		<td align='right'><?php echo $f_cana;   ?></td>
 		<td align='right'><?php
@@ -194,6 +205,17 @@ function totalizar(){
 <?php echo $form_end; ?>
 <?php endif;
 ob_end_flush();
+
+function color($i=0){
+	$max=255;
+	$min=0;
+
+	$r=($i<50)? $max: ceil(-($i-50)*(($max-$min)/50)  +$max);
+	$g=($i<50)? ceil(-$i*(($min-$max)/50)  +$min): $max;
+	$b=0;
+	$color=str_pad( strtoupper(dechex($r)),2, '0', STR_PAD_LEFT).str_pad( strtoupper(dechex($g)),2, '0', STR_PAD_LEFT).str_pad( strtoupper(dechex($b)),2, '0', STR_PAD_LEFT);
+	return $color;
+}
 
 // Función para eliminar todos los espacios en blanco
 function comprimir_pagina($buffer) {
