@@ -3,6 +3,7 @@ class metas extends Controller{
 
 	function metas(){
 		parent::Controller();
+		$this->datasis->modulo_id('12B',1);
 		$this->load->library('rapyd');
 		$this->instalar();
 	}
@@ -12,6 +13,7 @@ class metas extends Controller{
 	}
 
 	function filteredgrid(){
+		$this->load->helper('fecha');
 		$this->rapyd->load('datafilter','datagrid');
 
 		$filter = new DataFilter('Metas');
@@ -42,13 +44,21 @@ class metas extends Controller{
 		$filter->buttons('reset','search');
 		$filter->build();
 
-		$uri = anchor('ventas/metas/dataedit/show/<#id#>','<#fecha#>');
+		function formfecha($mes){
+			$anio = substr($mes,0,4);
+			$nom=mesLetra(substr($mes,4));
+			return "$nom-$anio";
+		}
+
+		$uri = anchor('ventas/metas/dataedit/show/<#id#>','<formfecha><#fecha#></formfecha>');
 
 		$grid = new DataGrid('Lista de Metas');
+		$grid->order_by('fecha','desc');
+		$grid->use_function('formfecha');
 		$grid->per_page=15;
 
-		$grid->column_orderby('Fecha'   ,$uri      ,'fecha'   );
-		$grid->column_orderby('Producto','codigo'  ,'<#codigo#>-<#descrip#>'  );
+		$grid->column_orderby('Fecha'     ,$uri      ,'fecha'   );
+		$grid->column_orderby('Producto'  ,'codigo'  ,'<#codigo#>-<#descrip#>'  );
 		$grid->column_orderby('Descripci&oacute;n' ,'descrip'  ,'descrip'  );
 		$grid->column_orderby('Peso U.'   ,'<nformat><#pesosinv#></nformat>','pesosinv','align="right"');
 		$grid->column_orderby('Peso Meta' ,'<nformat><#peso#></nformat>'    ,'peso'    ,'align="right"');
@@ -304,6 +314,7 @@ class metas extends Controller{
 	}
 
 	function compara(){
+		$this->load->helper('fecha');
 		$this->rapyd->load('datafilter','datagrid');
 		$this->db->_escape_char='';
 		$this->db->_protect_identifiers=false;
@@ -317,6 +328,12 @@ class metas extends Controller{
 
 		function dif($a,$b){
 			return nformat($a-$b);
+		}
+
+		function formfecha($mes){
+			$anio = substr($mes,0,4);
+			$nom=mesLetra(substr($mes,4));
+			return "$nom-$anio";
 		}
 
 		$base_process_uri= $this->rapyd->uri->implode_uri('base_uri','gfid','orderby');
@@ -333,8 +350,6 @@ class metas extends Controller{
 		$filter->fecha->append('mes/año');
 		$filter->fecha->rule = 'required';
 
-		$filter->public = new checkboxField('Agrupado por Vendedor', 'public', '1','0');
-
 		$filter->vendedor = new dropdownField('Vendedor', 'vendedor');
 		$filter->vendedor->option('','Todos');
 		$filter->vendedor->options("SELECT vendedor, CONCAT(vendedor,'-',nombre) AS nom FROM vend WHERE tipo IN ('V','A') ORDER BY vendedor");
@@ -342,61 +357,55 @@ class metas extends Controller{
 		$accion="javascript:window.location='".site_url('ventas/metas/filteredgrid')."'";
 		$filter->button('btn_pfl','Regresar',$accion,'TR');
 
-
-		$filter->submit('btnsubmit','Descargar');
+		$filter->submit('btnsubmit','Buscar');
 		$filter->build_form();
 
 		if($this->rapyd->uri->is_set('search') AND $filter->is_valid()){
 
 			$fecha    = $filter->fecha->newValue;
 			$vendedor = $filter->vendedor->newValue;
-			$agrupar  = $filter->public->newValue;
-			$udia=days_in_month(substr($fecha,4),substr($fecha,0,4));
+			$udia     = days_in_month(substr($fecha,4),substr($fecha,0,4));
 
 			$fechai=$fecha.'01';
 			$fechaf=$fecha.$udia;
 
-			$mSQL="(SELECT
-			d.cantidad AS metasv, b.clave, c.vd AS vendedor, e.nombre as nombrev,
-			SUM(a.cana*b.peso) AS ventas
-			FROM sitems AS a JOIN sinv AS b ON a.codigoa=b.codigo
-			JOIN sfac AS c ON a.tipoa=c.tipo_doc AND a.numa=c.numero
-			JOIN metas AS d ON b.codigo=d.codigo AND d.fecha=$fecha
-			JOIN vend AS e ON c.vd=e.vendedor
-			WHERE a.fecha >= $fechai AND a.fecha <= $fechaf
-			GROUP BY b.clave,c.vd) AS h";
-
 			$grid = new DataGrid('Resultados');
-			$grid->use_function('colum');
-			$select=array('h.clave AS codigo','SUM(h.metasv) AS metas','SUM(h.ventas) AS ventas','SUM(h.ventas)-SUM(h.metasv) AS diferen','h.vendedor','h.nombrev');
-			$grid->db->select($select);
-			$grid->db->from($mSQL);
+			$grid->use_function('colum','dif','formfecha');
+
+			$sel=array('a.codigo','a.descrip',
+			'SUM(d.cana*IF(tipoa=\'D\',-1,1)) AS ventas');
 
 			if(!empty($vendedor)){
-				$grid->db->where('h.vendedor',$vendedor);
+				$dbvd=$this->db->escape($vendedor);
+				$sel[]=$dbvd.' AS vendedor';
+				$sel[]=$this->db->escape($filter->vendedor->options[$vendedor]).' AS nombrev';
+				$sel[]='c.cantidad AS meta';
+
+				$pmargen=$this->datasis->dameval('SELECT pmargen FROM vend WHERE vendedor='.$dbvd);
+				if(empty($pmargen)) $pmargen=0; else $pmargen=$pmargen/100;
+				$sel[]='c.cantidad*'.$pmargen.' AS meta';
+				$ww= ' AND d.vendedor='.$dbvd;
 			}else{
-				$grid->db->orderby('h.vendedor');
+				$sel[]='c.cantidad AS meta';
+				$ww='';
 			}
 
-			if($agrupar=='0'){
-				$grid->db->groupby('h.clave');
-			}else{
-				$grid->db->groupby('h.clave,h.vendedor');
-			}
+			$grid->db->from('sinv   AS a');
+			$grid->db->join('metas  AS c','a.codigo=c.codigo AND c.fecha='.$fecha);
+			$grid->db->join('sitems AS d',"d.codigoa=c.codigo AND d.fecha BETWEEN $fechai AND $fechaf $ww",'left');
+			$grid->db->join('vend   AS e','d.vendedor=e.vendedor','left');
+			$grid->db->group_by('a.codigo');
+			$grid->db->select($sel);
 
-			if($agrupar=='0'){
-				$grid->column('Codigo'     ,'codigo' );
-				$grid->column('Venta'      ,'<nformat><#ventas#></nformat>'      ,"align='right'");
-				$grid->column('Metas'      ,'<#metas#>',"align='right'");
-				$grid->column('Diferencia' ,'<colum><nformat><#diferen#></nformat></colum>' ,"align='right'");
-			}else{
-				$grid->column('Codigo'     ,'codigo' );
-				$grid->column('Vendedor'   ,'<#vendedor#>',"align='center'");
-				$grid->column('Nombre'     ,'<#nombrev#>' ,"align='left'");
-				$grid->column('Venta'      ,'<nformat><#ventas#></nformat>',"align='right'");
-				$grid->column('Metas'      ,'<nformat><#metas#></nformat>' ,"align='right'");
-				$grid->column('Diferencia' ,'<colum><nformat><#diferen#></nformat></colum>' ,"align='right'");
+			$grid->column('C&oacute;digo'     ,'codigo');
+			$grid->column('Descripci&oacute;n','descrip' );
+			if(!empty($vendedor)){
+				$grid->column('Vendedor'   ,'vendedor',"align='center'");
+				$grid->column('Nombre'     ,'nombrev' ,"align='left'");
 			}
+			$grid->column('Venta'      ,'<nformat><#ventas#></nformat>',"align='right'");
+			$grid->column('Meta'       ,'<nformat><#meta#></nformat>'  ,"align='right'");
+			$grid->column('Diferencia' ,'<colum><dif><#ventas#>|<#meta#></dif></colum>' ,"align='right'");
 
 			$grid->build();
 			$tabla=$grid->output;

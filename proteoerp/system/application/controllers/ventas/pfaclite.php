@@ -362,7 +362,7 @@ class pfaclite extends validaciones{
 				$this->db->join('metas  AS c','a.codigo=c.codigo AND c.fecha='.$mmes,'left');
 				$this->db->join('sitems AS d','d.codigoa=c.codigo AND vendedor='.$dbvd.' AND d.fecha BETWEEN '.$mmes.'01 AND '.$mmes.$uday,'left');
 				$sel[]="COALESCE(c.cantidad,0)*$pmargen AS meta";
-				$sel[]='COALESCE(SUM(d.cana),0) AS vendido';
+				$sel[]='COALESCE(SUM(d.cana*IF(tipoa=\'D\',-1,1)),0) AS vendido';
 				$act_meta=true;
 			}
 		}
