@@ -98,23 +98,26 @@ class ingresos{
 			WHERE b.cod_cli='REIVA' AND a.reteiva>0 AND b.fecha BETWEEN $fdesde AND $fhasta AND a.nroriva IS NOT NULL
 			UNION ALL
 			SELECT b.fecha, a.numero, IF(LENGTH(TRIM(e.nomfis))>0,e.nomfis,e.nombre) AS nombre, e.rifci, a.clipro, a.factura AS afecta, d.fecha AS fafecta, b.monto, a.transac, a.retencion, a.fecha, a.fecha, d.nfiscal
-			FROM smov AS b JOIN prmo AS a ON a.transac=b.transac
+			FROM smov AS b 
+			JOIN prmo AS a ON a.transac=b.transac
 			LEFT JOIN sfac AS d ON a.factura=d.numero AND d.tipo_doc='F'
 			LEFT JOIN scli AS e ON d.cod_cli=e.cliente
 			WHERE b.fecha BETWEEN $fdesde AND $fhasta AND b.cod_cli='REIVA'
 			UNION ALL
 			SELECT b.fecha, '000000000000' AS numero, IF(LENGTH(TRIM(f.nomfis))>0,f.nomfis,f.nombre) AS nombre, f.rifci AS rifci, a.proveed AS clipro, MID(d.onumero,3,8) AS afecta, d.ofecha AS fafecta, d.monto, a.transac, '00000000000000' AS retencion, a.fecha, a.fecha, e.nfiscal AS nfiscal
-			FROM smov AS b JOIN cruc AS a ON a.transac=b.transac
+			FROM smov AS b 
+			JOIN cruc AS a ON a.transac=b.transac
 			JOIN itcruc AS d ON a.numero=d.numero
 			JOIN sfac AS e ON MID(d.onumero,3,8)=e.numero AND e.tipo_doc=MID(d.onumero,1,1)
 			JOIN scli AS f ON e.cod_cli=f.cliente
 			WHERE b.fecha BETWEEN $fdesde AND $fhasta AND b.cod_cli='REIVA'
 			UNION ALL
-			SELECT b.fecha fecha, a.numero numero, d.nombre nombre, d.rifci rifci, d.cliente cod_cli, a.numero afecta, a.fecha fafecta, a.reiva reteiva, a.transac transac, concat(b.periodo, b.nrocomp) nroriva, b.emision emiriva, b.fecha recriva, a.nfiscal nfiscal
-			FROM  itrivc a JOIN rivc b ON a.idrivc = b.id
+			SELECT b.fecha fecha, a.numero numero, d.nombre nombre, d.rifci rifci, d.cliente cod_cli, a.numero afecta, a.fecha fafecta, IF(c.tipo_doc='NC',-1,1)*a.reiva reteiva, a.transac transac, CONCAT(b.periodo, b.nrocomp) nroriva, b.emision emiriva, b.fecha recriva, a.nfiscal nfiscal
+			FROM  itrivc a 
+			JOIN rivc b ON a.idrivc = b.id
 			JOIN smov c ON b.transac = c.transac  AND a.numero=c.num_ref
 			JOIN scli d ON b.cod_cli = d.cliente
-			WHERE c.tipo_doc = 'ND' AND b.fecha BETWEEN $fdesde AND $fhasta
+			WHERE c.cod_cli='REIVA' AND b.fecha BETWEEN $fdesde AND $fhasta
 			UNION ALL
 			SELECT a.f_factura fecha, a.numero, IF(LENGTH(TRIM(c.nomfis))>0,c.nomfis,c.nombre) AS nombre, c.rifci, a.cod_cli, a.numero AS afecta, a.fecha AS fafecta, a.monto reteiva, a.transac, a.num_ref nroiva, a.fecha emiriva, a.fecha recriva, d.nfiscal
 			FROM sfpa a
