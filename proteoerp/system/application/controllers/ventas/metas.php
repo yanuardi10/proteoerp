@@ -289,8 +289,9 @@ class metas extends Controller{
 					$monto=floatval($monto);
 					if($monto>0){
 						$data['peso']   = $monto*1000;
-						$data['fecha']      = $anio.$ind_ex[$i];
+						$data['fecha']  = $anio.$ind_ex[$i];
 						$mSQL = $this->db->insert_string('metas', $data);
+						$mSQL.= 'ON DUPLICATE KEY UPDATE `peso`='.$data['peso'];
 						$ban=$this->db->simple_query($mSQL);
 						if(!$ban){ memowrite($mSQL,'metas'); $error++; }
 					}
