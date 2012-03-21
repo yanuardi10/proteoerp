@@ -299,17 +299,18 @@ class metas extends Controller{
 			}
 		}
 
+		$ww=implode(',',$inex);
+		$mSQL="UPDATE
+			metas AS a
+			JOIN sinv AS b ON a.codigo=b.codigo
+			SET a.cantidad=CEIL(a.peso/b.peso)
+			WHERE b.peso>0 AND fecha IN ($ww)";
+		$ban=$this->db->simple_query($mSQL);
+
 		if(file_exists($arch)) unlink($arch);
 		if($error>0){
 			return 'Hubo algunos errores se generaron centinelas.';
 		}else{
-			$ww=implode(',',$inex);
-			$mSQL="UPDATE
-				metas AS a
-				JOIN sinv AS b ON a.codigo=b.codigo
-				SET a.cantidad=CEIL(a.peso/b.peso)
-				WHERE b.peso>0 AND fecha IN ($ww)";
-			$ban=$this->db->simple_query($mSQL);
 			return 'Archivo procesado.';
 		}
 	}

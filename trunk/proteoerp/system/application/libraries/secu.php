@@ -28,7 +28,7 @@ class secu{
 
 	function _getdata(){
 		if($this->es_logeado() && $this->_datac==false){
-			$sel=array('cajero','vendedor','almacen','sucursal','nombre');
+			$sel=array('cajero','vendedor','almacen','sucursal','us_nombre');
 			$this->db->select($sel);
 			$this->db->from('usuario');
 			$this->db->where('us_codigo',$this->usuario());
@@ -42,7 +42,7 @@ class secu{
 				$this->vendedor= $row['vendedor'];
 				$this->almacen = $row['almacen'] ;
 				$this->sucursal= $row['sucursal'];
-				$this->nombre  = $row['nombre']  ;
+				$this->nombre  = $row['us_nombre'];
 			}
 			$this->_datac=true;
 		}

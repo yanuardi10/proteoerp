@@ -342,7 +342,7 @@ function autocodaran(id){
 	</tr>
 </table>
 <p>
-<table style="margin:0;width:98%;">
+<table style="margin:0;width:100%;">
 	<tr>
 		<th colspan='8' class="littletableheader"><b>Lista de Art&iacute;culos</b></th>
 	</tr>
@@ -383,7 +383,7 @@ for($i=0;$i<$form->max_rel_count['itordi'];$i++) {
 </p>
 
 <?php echo $container_bl; ?>
-<table style="margin:0;width:98%;">
+<table style="margin:0;width:100%;">
 	<tr>
 		<th colspan='6' class="littletableheader"><b>Res&uacute;men Financiero</b></th>
 	</tr>
