@@ -21,8 +21,8 @@ class XLSReporte extends writeexcel_workbookbig  {
 	var $tituHeader;
 	var $tituSubHeader;
 	var $centrar=array();
-	var $wstring=array('string');
-	var $wnumber=array('real','int');
+	var $wstring=array('string','char');
+	var $wnumber=array('real','int','decimal');
 	var $wdate=array('date');
 	var $fc=5;
 	var $cc=0;
@@ -51,19 +51,18 @@ class XLSReporte extends writeexcel_workbookbig  {
 				$this->DBfieldsMax_lengt[$field->name]=$field->max_length;
 			}
 		}
-
 		$this->fname     = tempnam('/tmp', 'reporte.xls');
 		$this->workbook  = new writeexcel_workbookbig($this->fname);
 		$this->worksheet = $this->workbook->addworksheet();
 
 		//estilos encabezados
-		$this->h1  =& $this->workbook->addformat(array('bold'    => 1,'color' => 'black','size'    => 18,'merge'  => 1));
-		$this->h2  =& $this->workbook->addformat(array('bold'    => 1,'color' => 'black','size'    => 16,'merge'  => 1));
-		$this->h3  =& $this->workbook->addformat(array('bold'    => 1,'color' => 'black','size'    => 12,'merge'  => 1,'align' => 'left'));
-		$this->h4  =& $this->workbook->addformat(array('bold'    => 1,'color' => 'black','size'    => 8, 'merge'  => 0,'align' => 'left'));
-		$this->h5  =& $this->workbook->addformat(array('bold'    => 1,'color' => 'black','size'    => 6, 'merge'  => 0));
-		$this->t1  =& $this->workbook->addformat(array('bold'    => 1,'size'  => 9, 'merge' => 0, 'fg_color' => 0x37 ));
-		$this->t2  =& $this->workbook->addformat(array('bold'    => 1,'size'  => 8, 'merge' => 0, 'fg_color' => 0x2f ));
+		$this->h1  =& $this->workbook->addformat(array('bold' => 1,'color' => 'black','size'    => 18,'merge'  => 1));
+		$this->h2  =& $this->workbook->addformat(array('bold' => 1,'color' => 'black','size'    => 16,'merge'  => 1));
+		$this->h3  =& $this->workbook->addformat(array('bold' => 1,'color' => 'black','size'    => 12,'merge'  => 1,'align' => 'left'));
+		$this->h4  =& $this->workbook->addformat(array('bold' => 1,'color' => 'black','size'    => 8, 'merge'  => 0,'align' => 'left'));
+		$this->h5  =& $this->workbook->addformat(array('bold' => 1,'color' => 'black','size'    => 6, 'merge'  => 0));
+		$this->t1  =& $this->workbook->addformat(array('bold' => 1,'size'  => 9, 'merge' => 0, 'fg_color' => 0x37 ));
+		$this->t2  =& $this->workbook->addformat(array('bold' => 1,'size'  => 8, 'merge' => 0, 'fg_color' => 0x2f ));
 	}
 	function tcols(){
 		$this->dRep=false;
@@ -119,7 +118,7 @@ class XLSReporte extends writeexcel_workbookbig  {
 		//$this->worksheet->set_column(0,$this->ccols,18);
 		foreach($this->cols AS $cl=>$cols){
 			$titulo=$cols['titulo'];
-			$this->worksheet->write($this->ii, $cl, $titulo,$this->t1);
+			$this->worksheet->write_string($this->ii, $cl, $titulo,$this->t1);
 		}
 		$this->ii=$this->ii+2;
 		//----------fin campos tabla-----------------------------
@@ -157,7 +156,7 @@ class XLSReporte extends writeexcel_workbookbig  {
 							$campo=$cols['campo'];
 							if(in_array($campo,$this->totalizar)){ //se verifica si la columna fue mandada a totalizar
 								//----se escribe los totales de grupos----------------------------
-								$this->worksheet->write($this->ii-1, $h,$stotal[$u][$campo],$this->t2);
+								$this->worksheet->write_number($this->ii-1, $h,$stotal[$u][$campo],$this->t2);
 							}else{
 								$this->worksheet->write($this->ii-1, $h,' ',$this->t2);
 							}
@@ -232,9 +231,9 @@ class XLSReporte extends writeexcel_workbookbig  {
 							$campo=$cols['campo'];
 							if(in_array($campo,$this->totalizar))
 								//--------escritura totales finales--------------
-								$this->worksheet->write($this->ii-1, $h,$rstotal[$u][$campo],$this->t2);
+								$this->worksheet->write_number($this->ii-1, $h,$rstotal[$u][$campo],$this->t2);
 							else
-								$this->worksheet->write($this->ii-1, $h,' ',$this->t2);
+								$this->worksheet->write_number($this->ii-1, $h,' ',$this->t2);
 						}
 						foreach($this->cols  as $i=>$fila ){
 							$stotal[$u][$fila['campo']] = 0;
@@ -247,9 +246,9 @@ class XLSReporte extends writeexcel_workbookbig  {
 			foreach($this->cols AS $h=>$cols){
 				$campo=$cols['campo'];
 				if(in_array($campo,$this->totalizar)){
-					$this->worksheet->write($this->ii-1, $h,$rgtotal[$campo],$this->t1);
+					$this->worksheet->write_number($this->ii-1, $h,$rgtotal[$campo],$this->t1);
 				}else{
-					$this->worksheet->write($this->ii-1, $h,' ',$this->t1);
+					$this->worksheet->write_number($this->ii-1, $h,' ',$this->t1);
 				}
 			}
 		}
@@ -451,7 +450,7 @@ class XLSReporte extends writeexcel_workbookbig  {
 		}elseif(in_array($tipo,$this->wstring)){
 			$this->worksheet->write_string($f, $c, $campo);
 		}elseif(in_array($tipo,$this->wdate)){
-			if(function_exists('dbdate_to_huma')){
+			if(function_exists('dbdate_to_human')){
 				$campo=dbdate_to_human($campo);
 			}
 			$this->worksheet->write_string($f, $c, $campo);

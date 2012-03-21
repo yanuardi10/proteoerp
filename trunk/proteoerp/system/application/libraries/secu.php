@@ -7,6 +7,7 @@ class secu{
 	var $vendedor= '';
 	var $almacen = '';
 	var $sucursal= '';
+	var $nombre  = '';
 	var $_datac  = false;
 
 	function secu(){
@@ -27,7 +28,7 @@ class secu{
 
 	function _getdata(){
 		if($this->es_logeado() && $this->_datac==false){
-			$sel=array('cajero','vendedor','almacen','sucursal');
+			$sel=array('cajero','vendedor','almacen','sucursal','nombre');
 			$this->db->select($sel);
 			$this->db->from('usuario');
 			$this->db->where('us_codigo',$this->usuario());
@@ -41,6 +42,7 @@ class secu{
 				$this->vendedor= $row['vendedor'];
 				$this->almacen = $row['almacen'] ;
 				$this->sucursal= $row['sucursal'];
+				$this->nombre  = $row['nombre']  ;
 			}
 			$this->_datac=true;
 		}
@@ -50,6 +52,12 @@ class secu{
 		$this->_getdata();
 		return $this->cajero;
 	}
+
+	function getnombre(){
+		$this->_getdata();
+		return $this->nombre;
+	}
+
 
 	function getvendedor(){
 		$this->_getdata();
