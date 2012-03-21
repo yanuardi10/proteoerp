@@ -19,7 +19,6 @@ class smov extends Controller {
 		}
 		//redirect($this->url.'filteredgrid');
 		$this->smovextjs();
-
 	}
 
 	function filteredgrid(){
@@ -594,27 +593,27 @@ class smov extends Controller {
 			$transac = $this->datasis->dameval("SELECT transac FROM smov WHERE id=$id ")  ;
 		} else
 			$id = $this->datasis->dameval("SELECT id FROM smov WHERE tipo_doc='$tipo_doc' AND numero='$numero' AND cod_cli='$cod_cli'")  ;
-		
+
 
 		$fecha = $this->datasis->dameval("SELECT estampa FROM smov WHERE id=$id ");
-		
+
 		$mSQL = "
 SELECT
-'1' origen, cod_cli, fecha, 
+'1' origen, cod_cli, fecha,
 IF(tipo_doc='$tipo_doc' AND numero='$numero', tipoccli, tipo_doc) tipo_doc,
 IF(tipo_doc='$tipo_doc' AND numero='$numero', numccli, numero) numero,
 monto, abono, ppago, reten, reteiva
 FROM itccli WHERE transac='$transac' AND estampa>='$fecha'
 UNION ALL
 SELECT
-'2' origen, cod_cli, fecha, 
+'2' origen, cod_cli, fecha,
 IF(tipo_doc='$tipo_doc' AND numero='$numero', tipoccli, tipo_doc) tipo_doc,
 IF(tipo_doc='$tipo_doc' AND numero='$numero', numccli, numero) numero,
 monto, abono, ppago, reten, reteiva
 FROM itccli WHERE cod_cli='$cod_cli' AND numero='$numero' AND tipo_doc='$tipo_doc' AND transac!='$transac'
 UNION ALL
 SELECT
-'3' origen, cod_cli, fecha, 
+'3' origen, cod_cli, fecha,
 IF(tipo_doc='$tipo_doc' AND numero='$numero', tipoccli, tipo_doc) tipo_doc,
 IF(tipo_doc='$tipo_doc' AND numero='$numero', numccli, numero) numero,
 monto, abono, ppago, reten, reteiva
@@ -623,14 +622,14 @@ UNION ALL
 SELECT
 '4' origen, b.cliente cod_cli, a.ofecha fecha, 'CR' tipo_doc,
 a.numero,  a.monto,  0,0,0,0
-FROM itcruc AS a JOIN cruc AS b ON a.numero=b.numero 
+FROM itcruc AS a JOIN cruc AS b ON a.numero=b.numero
 WHERE b.cliente='$cod_cli' AND a.onumero='$tipo_doc$numero'
 UNION ALL
 SELECT
 IF(a.tipo='ADE','4','5') origen, b.cliente cod_cli, a.ofecha fecha, MID(onumero,1,2) tipo_doc,
 MID(onumero,3,8), a.monto,  0,0,0,0
-FROM itcruc AS a JOIN cruc AS b ON a.numero=b.numero 
-WHERE b.transac='$transac' 
+FROM itcruc AS a JOIN cruc AS b ON a.numero=b.numero
+WHERE b.transac='$transac'
 ";
 
 

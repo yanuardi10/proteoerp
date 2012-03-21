@@ -259,7 +259,7 @@ class ccli extends Controller {
 		$edit->tipo->db_name  = 'tipo';
 		$edit->tipo->rel_id   = 'sfpa';
 		$edit->tipo->style    = 'width:160px;';
-		$edit->tipo->rule     = 'condi_required|callback_chsfpatipo[';
+		$edit->tipo->rule     = 'condi_required|callback_chsfpatipo[<#i#>]';
 		$edit->tipo->insertValue='EF';
 
 		$edit->sfpafecha = new dateonlyField('Fecha','sfpafecha_<#i#>');

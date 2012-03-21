@@ -33,7 +33,7 @@ function arr_menu($nivel=1,$pertenece=NULL){
 function arr2link($arr){
 	$att = array(
 		'width'      => $arr['ancho'],
-		'heigth'     => $arr['alto'],
+		'height'     => $arr['alto'],
 		'scrollbars' => 'Yes',
 		'status'     => 'Yes',
 		'resizable'  => 'Yes',
