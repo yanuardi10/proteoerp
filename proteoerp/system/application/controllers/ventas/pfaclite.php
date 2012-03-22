@@ -114,7 +114,7 @@ class pfaclite extends validaciones{
 	}
 
 	function vencepedido(){
-		$sel=array('b.codigoa','SUM(b.cana)');
+		$sel=array('b.codigoa','SUM(b.cana) AS cana');
 		$this->db->select($sel);
 		$this->db->from('pfac AS a');
 		$this->db->join('itpfac AS b','a.numero=b.numa');
