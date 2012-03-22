@@ -121,7 +121,7 @@ class pfaclite extends validaciones{
 		$this->db->where('a.fecha < DATE_SUB(CURDATE(),INTERVAL 3 DAY)');
 		$this->db->where('a.status','P');
 		$this->db->where('b.codigoa IS NOT NULL');
-		$this->db->group_by('b.cana');
+		$this->db->group_by('b.codigoa');
 		$query=$this->db->get();
 
 		if ($query->num_rows() > 0){
@@ -136,6 +136,26 @@ class pfaclite extends validaciones{
 			$mSQL="UPDATE pfac SET status='C' WHERE fecha <= CURDATE()-3 AND status='P'";
 			$ban=$this->db->simple_query($mSQL);
 			if($ban==false){ memowrite($mSQL,'pfaclite'); }
+		}
+
+		$sel=array('b.codigoa','SUM(b.cana) AS cana');
+		$this->db->select($sel);
+		$this->db->from('pfac AS a');
+		$this->db->join('itpfac AS b','a.numero=b.numa');
+		$this->db->where('a.status','P');
+		$this->db->where('b.codigoa IS NOT NULL');
+		$this->db->group_by('b.codigoa');
+		$query=$this->db->get();
+
+		if ($query->num_rows() > 0){
+			foreach ($query->result() as $row){
+				$dbcodigo= $this->db->escape($row->codigoa);
+				$itcana  = $row->cana;
+
+				$mSQL = "UPDATE sinv SET exord=$itcana WHERE codigo=$dbcodigo";
+				$ban=$this->db->simple_query($mSQL);
+				if($ban==false){ memowrite($mSQL,'pfaclite'); }
+			}
 		}
 	}
 
@@ -978,7 +998,7 @@ for (\$count = 1; \$count <= 10; \$count++) {
 \$mmfil= \$mfil+1;
 \$grup = '';
 
-\$mSQL = "SELECT a.peso, a.codigo, a.descrip, a.marca AS grupo, a.marca AS nom_grup, a.unidad, a.existen-a.exord AS existen,
+\$mSQL = "SELECT a.peso, a.codigo, a.descrip, a.marca AS grupo, a.marca AS nom_grup, a.unidad, IF(a.existen<a.exord,0,a.existen-a.exord) AS existen,
 	round(a.precio1*100/(100+a.iva),2) AS base1,
 	round(a.precio2*100/(100+a.iva),2) AS base2,
 	round(a.precio3*100/(100+a.iva),2) AS base3,
