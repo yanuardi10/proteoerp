@@ -343,7 +343,7 @@ class Ordi extends Controller {
 		$edit->arancel->db_name   = 'arancel';
 		$edit->arancel->css_class = 'inputnum';
 		$edit->arancel->rel_id    = 'itordi';
-		$edit->arancel->rule      = 'trim|mayorcero';
+		$edit->arancel->rule      = 'trim';
 		$edit->arancel->maxlength = 7;
 		$edit->arancel->size      = 5;
 		$edit->arancel->readonly  = true;
