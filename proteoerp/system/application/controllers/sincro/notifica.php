@@ -504,11 +504,11 @@ class notifica extends controller {
 			$hbody.= '</body></html>';
 			$message->setHTMLBody($hbody);
 			if($this->nmonit){
-				$message->setTXTBody("\n\nEsta es una cuenta de correo no monitoreada. Por favor no responda o reenvÃ­e mensajes a esta cuenta.");
+				$message->setTXTBody("\n\nEsta es una cuenta de correo no monitoreada. Por favor no responda o reenvíe mensajes a esta cuenta.");
 			}
 		}else{
 			if($this->nmonit){
-				$body .= "\n\nEsta es una cuenta de correo no monitoreada. Por favor no responda o reenvÃ­e mensajes a esta cuenta.";
+				$body .= "\n\nEsta es una cuenta de correo no monitoreada. Por favor no responda o reenvíe mensajes a esta cuenta.";
 			}
 			$message->setTXTBody($body);
 		}
