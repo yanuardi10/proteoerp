@@ -214,9 +214,11 @@ class notifica extends controller {
 						$updfecha=$this->db->escape(date('Y-m-d H:i:s',mktime($pte[0], $pte[1], $pte[2])));
 
 						$activa=$this->meval($__row->activador);
+
 						if($activa){
+
 							$msj=$this->meval($__row->accion);
-							if(empty($msj)) continue;
+							if(empty($msj) && is_null($this->adjuntos)) continue;
 
 							preg_match_all("/(?<para>[0-9]{4}\-[0-9]{7})/" ,$__row->para,$matches);
 							$telefonos= $matches['para'];
@@ -257,6 +259,7 @@ class notifica extends controller {
 						if($error==0){
 							$this->db->simple_query("UPDATE eventos SET disparo=$updfecha WHERE id=".$__row->id);
 						}
+						$this->adjuntos = null;
 					}
 				}
 			}
