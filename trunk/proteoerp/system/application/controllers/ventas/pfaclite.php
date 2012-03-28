@@ -6,7 +6,6 @@ class pfaclite extends validaciones{
 	function pfaclite(){
 		parent :: Controller();
 		$this->load->library('rapyd');
-		$this->datasis->modulo_id(143,1);
 	}
 
 	function index(){
@@ -14,6 +13,7 @@ class pfaclite extends validaciones{
 	}
 
 	function filteredgrid(){
+		$this->datasis->modulo_id(143,1);
 		$this->rapyd->load('datagrid', 'datafilter');
 
 		$atts = array(
@@ -133,7 +133,7 @@ class pfaclite extends validaciones{
 				$ban=$this->db->simple_query($mSQL);
 				if($ban==false){ memowrite($mSQL,'pfaclite'); }
 			}
-			$mSQL="UPDATE pfac SET status='C' WHERE fecha <= CURDATE()-3 AND status='P'";
+			$mSQL="UPDATE pfac SET status='C' WHERE fecha < DATE_SUB(CURDATE(),INTERVAL 3 DAY) AND status='P'";
 			$ban=$this->db->simple_query($mSQL);
 			if($ban==false){ memowrite($mSQL,'pfaclite'); }
 		}
@@ -160,6 +160,7 @@ class pfaclite extends validaciones{
 	}
 
 	function filterscli(){
+		$this->datasis->modulo_id(143,1);
 		$vd   = trim($this->secu->getvendedor());
 		$caub = trim($this->secu->getalmacen());
 		if(empty($vd) || empty($caub)){
@@ -208,6 +209,7 @@ class pfaclite extends validaciones{
 	}
 
 	function dataedit($cliente='',$status='',$id=''){
+		$this->datasis->modulo_id(143,1);
 
 		if(!$this->_exitescli($cliente)) redirect($this->url.'filterscli');
 
@@ -609,6 +611,7 @@ class pfaclite extends validaciones{
 	}
 
 	function load(){
+		$this->datasis->modulo_id(143,1);
 		$this->load->library('path');
 		$path=new Path();
 		$path->setPath($this->config->item('uploads_dir'));
@@ -802,6 +805,7 @@ class pfaclite extends validaciones{
 
 	function pfl(){
 		if(!extension_loaded('perl')) show_error('Se necesita la extenci&oacute;n perl, comuniquese con soporte t&eacute;cnico');
+		$this->datasis->modulo_id(143,1);
 
 		$vd   = $this->secu->getVendedor();
 		$vnom = $this->datasis->dameval('SELECT nombre FROM vend WHERE vendedor='.$this->db->escape($vd));
