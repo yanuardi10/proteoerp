@@ -604,7 +604,12 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 	function filtergridcredi(){
 		$this->rapyd->load('datafilter','datagrid');
 
-		$filter = new DataFilter('Gesti&oacute;n de l&iacute;mites de cr&eacute;dito', 'scli');
+		$filter = new DataFilter('Gesti&oacute;n de l&iacute;mites de cr&eacute;dito');
+		$sel=array('a.formap','a.limite' ,'a.tolera','a.maxtole','a.cliente','a.nombre','a.credito','b.motivo','a.id');
+		$filter->db->select($sel);
+		$filter->db->from('scli AS a');
+		$filter->db->join('sclibitalimit AS b','a.cliente=b.cliente','left');
+		$filter->db->group_by('a.cliente');
 
 		$filter->cliente = new inputField('C&oacute;digo', 'cliente');
 		$filter->cliente->size=6;
@@ -640,13 +645,14 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		$grid->order_by('cliente');
 		$grid->per_page = 20;
 
-		$grid->column_orderby('Cliente',$uri,'cliente','align="left"');
+		$grid->column_orderby('Cliente',$uri   ,'cliente','align="left"');
 		$grid->column_orderby('Nombre','nombre','nombre','align="left"');
 		$grid->column_orderby('Cr&eacute;dito' ,'<#credito#>' ,'credito','align="center"');
 		$grid->column_orderby('D&iacute;as'    ,'<nformat><#formap#></nformat>'  ,'formap' ,'align="right"');
 		$grid->column_orderby('L&iacute;mite'  ,'<nformat><#limite#></nformat>'  ,'limite' ,'align="right"');
 		$grid->column_orderby('Tolera'         ,'<nformat><#tolera#></nformat>%' ,'tolera' ,'align="right"');
 		$grid->column_orderby('T.M&aacute;xima','<nformat><#maxtole#></nformat>%','maxtole','align="right"');
+		$grid->column('Motivo','motivo');
 
 		$grid->build();
 
@@ -755,7 +761,10 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		if(!$pext) $edit->tolera->mode  = 'autohide';
 		if(!$paxt) $edit->maxtole->mode = 'autohide';
 
-		$edit->buttons('modify', 'save', 'undo', 'back');
+		if($plim || $paxt || $pext){
+			$edit->buttons('modify', 'save');
+		}
+		$edit->buttons('undo', 'back');
 		$edit->build();
 
 		$script= '<script type="text/javascript" >
