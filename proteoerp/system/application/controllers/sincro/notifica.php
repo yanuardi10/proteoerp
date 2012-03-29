@@ -261,6 +261,7 @@ class notifica extends controller {
 							$this->db->simple_query("UPDATE eventos SET disparo=$updfecha WHERE id=".$__row->id);
 						}
 						$this->adjuntos = null;
+						$this->embededimage=array();
 					}
 				}
 			}
@@ -495,7 +496,7 @@ class notifica extends controller {
 
 		if(count($this->embededimage)>0){
 			foreach($this->embededimage AS $adj){
-				$message->addHTMLImage($adj[0],$adj[1],$adj[2],$adj[3],$adj[5]);
+				$message->addHTMLImage($adj[0],$adj[1],$adj[2],$adj[3],$adj[4]);
 			}
 		}
 
