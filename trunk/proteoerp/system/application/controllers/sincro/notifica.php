@@ -13,6 +13,7 @@ class notifica extends controller {
 		$this->config->load('notifica');
 		$this->error='';
 		$this->adjuntos=null;
+		$this->embededimage=array();
 		$this->msj='';
 		$this->tipo='txt';
 		$this->nmonit=true; //Colocar en false para obmitir el mensaje de cuenta no monitoreada
@@ -460,6 +461,14 @@ class notifica extends controller {
 		return false;
 	}
 
+	function mailimage($file,$alt='',$c_type='application/octet-stream',$name='',$isfile=true,$content_id=null){
+		if(empty($content_id)){
+            $content_id = md5(uniqid(time()));
+        }
+		$this->embededimage[]=array($file,$c_type,$name,$isfile,$content_id);
+		return "<img alt='$alt' src='cid:$content_id' />";
+	}
+
 	function _mail($to,$subject,$body){
 		if(!@include_once 'Mail.php'){
 			$this->error='Problemas al cargar la clase Mail, probablemente sea necesario instalarla desde PEAR, comuniquese con soporte t&eacute;cnico';
@@ -483,6 +492,12 @@ class notifica extends controller {
 			'To'      => $to,
 			'Subject' => $subject
 		);
+
+		if(count($this->embededimage)>0){
+			foreach($this->embededimage AS $adj){
+				$message->addHTMLImage($adj[0],$adj[1],$adj[2],$adj[3],$adj[5]);
+			}
+		}
 
 		if(is_array($this->adjuntos)){
 			foreach($this->adjuntos AS $adj){
