@@ -612,9 +612,11 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		$filter->db->group_by('a.cliente');
 
 		$filter->cliente = new inputField('C&oacute;digo', 'cliente');
+		$filter->cliente->db_name=  'a.cliente';
 		$filter->cliente->size=6;
 
 		$filter->nombre = new inputField('Nombre','nombre');
+		$filter->nombre->db_name=  'a.nombre';
 		$filter->nombre->rule      ='max_length[45]';
 		$filter->nombre->maxlength =45;
 
@@ -622,7 +624,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		$filter->limiteh = new inputField('L&iacute;mite','limiteh');
 		$filter->limited->size    = $filter->limiteh->size =8;
 		$filter->limited->clause  = $filter->limiteh->clause ='where';
-		$filter->limited->db_name = $filter->limiteh->db_name='limite';
+		$filter->limited->db_name = $filter->limiteh->db_name='a.limite';
 		$filter->limited->operator= '>=';
 		$filter->limiteh->operator= '<=';
 		$filter->limiteh->in      = 'limited';
@@ -630,6 +632,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		$filter->limiteh->css_class = 'inputonlynum';
 
 		$filter->credito = new dropdownField('Cr&eacute;dito','credito');
+		$filter->credito->db_name = 'a.credito';
 		$filter->credito->option('' ,'Todos');
 		$filter->credito->option('S','Activo');
 		$filter->credito->option('N','Inactivo');
