@@ -14,17 +14,23 @@ function nformat($numero,$num=null,$centimos=null,$miles=null){
 		$sig='-';
 		$numero=abs($numero);
 	}
-	if(is_null($centimos)) $centimos = (is_null(constant("RAPYD_DECIMALS"))) ? ',' : RAPYD_DECIMALS;
-	if(is_null($miles))    $miles    = (is_null(constant("RAPYD_THOUSANDS")))? '.' : RAPYD_THOUSANDS;
-	if(is_null($num))      $num      = (is_null(constant("RAPYD_NUM")))      ?  2  : RAPYD_NUM;
+	if(is_null($centimos)) $centimos = (is_null(constant('RAPYD_DECIMALS'))) ? ',' : RAPYD_DECIMALS;
+	if(is_null($miles))    $miles    = (is_null(constant('RAPYD_THOUSANDS')))? '.' : RAPYD_THOUSANDS;
+	if(is_null($num))      $num      = (is_null(constant('RAPYD_NUM')))      ?  2  : RAPYD_NUM;
 	if(!($numero > 0) OR (!is_numeric($numero)))$numero=0;
 	return $sig.number_format($numero,$num,$centimos,$miles);
 }
 
+function htmlnformat($numero){
+	$centimos = (is_null(constant('RAPYD_DECIMALS'))) ? ',' : RAPYD_DECIMALS;
+	$numero   = nformat($numero);
+	return str_replace(',','<span style="font-size:0.5em;">'.$centimos,$numero).'</span>';
+}
+
 function des_nformat($numero,$num=null,$centimos=null,$miles=null){
 	if(empty($numero)) return null;
-	if(is_null($centimos)) $centimos = (is_null(constant("RAPYD_DECIMALS"))) ? ',' : RAPYD_DECIMALS;
-	if(is_null($miles))    $miles    = (is_null(constant("RAPYD_THOUSANDS")))? '.' : RAPYD_THOUSANDS;
+	if(is_null($centimos)) $centimos = (is_null(constant('RAPYD_DECIMALS'))) ? ',' : RAPYD_DECIMALS;
+	if(is_null($miles))    $miles    = (is_null(constant('RAPYD_THOUSANDS')))? '.' : RAPYD_THOUSANDS;
 	$numero=str_replace($miles,'',$numero);
 	$numero=str_replace($centimos,'.',$numero);
 	return floatval($numero);
@@ -61,7 +67,7 @@ function cadAnum($num){
 		}
 		$omag++;
 	}
-	
+
 	$numero=intval(str_replace(array(',','.'),'',$num));
 	if($ban)
 		$omag=pow(10,$omag);
