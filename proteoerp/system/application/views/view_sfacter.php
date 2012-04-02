@@ -330,7 +330,7 @@ function autocod(id){
 	$('#codigoa_'+id).autocomplete({
 		source: function( req, add){
 			$.ajax({
-				url:  "<?php echo site_url('ventas/spre/buscasinv'); ?>",
+				url:  "<?php echo site_url('ajax/buscasinv'); ?>",
 				type: "POST",
 				dataType: "json",
 				data: "q="+req.term,
