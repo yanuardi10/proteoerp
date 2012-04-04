@@ -1127,14 +1127,13 @@ class sfac_add extends validaciones {
 				}
 
 				if($debe>0){
-					$mnumnc = $this->datasis->fprox_numero('nccli');
 					$data=array();
 					$data['cod_cli']    = $cod_cli;
 					$data['nombre']     = $nombre;
 					$data['dire1']      = $direc;
 					$data['dire2']      = $dire1;
 					$data['tipo_doc']   = 'NC';
-					$data['numero']     = $mnumnc;
+					$data['numero']     = $numero;
 					$data['fecha']      = $fecha;
 					$data['monto']      = $debe;
 					$data['impuesto']   = $iva;
@@ -1142,7 +1141,7 @@ class sfac_add extends validaciones {
 					$data['vence']      = $fecha;
 					$data['tipo_ref']   = 'DV';
 					$data['num_ref']    = $numero;
-					$data['observa1']   = 'POR DEVOLUCION DE '.$numero;
+					$data['observa1']   = 'POR DEVOLUCION DE '.$factura ;
 					$data['estampa']    = $estampa;
 					$data['hora']       = $hora;
 					$data['transac']    = $transac;
@@ -1156,7 +1155,7 @@ class sfac_add extends validaciones {
 
 					//Aplica la NC a la FC
 					$data=array();
-					$data['numccli']    = $mnumnc; //numero abono
+					$data['numccli']    = $numero; //numero abono
 					$data['tipoccli']   = 'NC';
 					$data['cod_cli']    = $cod_cli;
 					$data['tipo_doc']   = 'FC';
