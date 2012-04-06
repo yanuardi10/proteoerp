@@ -1416,9 +1416,17 @@ function sfacreiva(mid){
 	}
 
 	function gridsitems(){
-		$numero   = isset($_REQUEST['numero'])  ? $_REQUEST['numero']   :  0;
-		if ($numero == 0 ) $numero = $this->datasis->dameval("SELECT MAX(numero) FROM sfac")  ;
-		$mSQL = "SELECT * FROM sitems a JOIN sinv b ON a.codigoa=b.codigo WHERE a.numa='$numero' ORDER BY a.codigoa";
+		$numero = isset($_REQUEST['numero'])  ? $_REQUEST['numero']   :  0;
+		$id     = isset($_REQUEST['id'])  ? $_REQUEST['id']   :  0;
+		
+		//if ($numero == 0 ) $numero = $this->datasis->dameval("SELECT MAX(nu) FROM sfac");
+		if ($id == 0 ) $id = $this->datasis->dameval("SELECT MAX(id) FROM sfac");
+		
+		$numero   = $this->datasis->dameval("SELECT numero FROM sfac WHERE id=$id");
+		$tipo_doc = $this->datasis->dameval("SELECT tipo_doc FROM sfac WHERE id=$id");
+		
+		
+		$mSQL = "SELECT * FROM sitems a JOIN sinv b ON a.codigoa=b.codigo WHERE a.tipoa='$tipo_doc' AND a.numa='$numero' ORDER BY a.codigoa";
 		$query = $this->db->query($mSQL);
 		$results = $query->num_rows();
 		$arr = $this->datasis->codificautf8($query->result_array());

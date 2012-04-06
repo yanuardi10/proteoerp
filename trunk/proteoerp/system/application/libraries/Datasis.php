@@ -820,6 +820,14 @@ class Datasis {
 		return $arr;
 	}
 
+	function codificautf81($row){
+		$meco = array();
+		foreach( $row as $campo ) {
+			$meco[] = utf8_encode($campo);
+		}
+		return $meco;
+	}
+
 	function extjscampos($tabla){
 		$CI =& get_instance();
 		$query = $CI->db->query("DESCRIBE $tabla");
