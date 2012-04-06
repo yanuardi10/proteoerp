@@ -11,10 +11,12 @@ class Sprv extends validaciones {
 
 	function index(){
 		$this->datasis->modulo_id(206,1);
+		if ( !$this->datasis->iscampo('sprv','canticipo') ) {
+			$this->db->simple_query('ALTER TABLE sprv ADD COLUMN canticipo VARCHAR(15) AFTER nomfis ');
+		}
 		if($this->pi18n->pais=='COLOMBIA'){
 			redirect('compras/sprvcol/filteredgrid');
 		}else{
-			//redirect('compras/sprv/filteredgrid');
 			$this->sprvextjs();
 		}
 	}
@@ -641,11 +643,11 @@ class Sprv extends validaciones {
 	}
 
 
-	//****************************************************************8
+	//****************************************************************
 	//
 	//
 	//
-	//****************************************************************8
+	//****************************************************************
 	function sprvextjs(){
 
 		$encabeza='PROVEEDORES';
@@ -669,23 +671,25 @@ class Sprv extends validaciones {
 		";
 
 		$columnas = "
-		{ header: 'Codigo',        width:  60, sortable: true, dataIndex: 'proveed',  field:  { type: 'textfield' }, filter: { type: 'string'  }},
-		{ header: 'Tipo',          width:  60, sortable: true, dataIndex: 'tipo',     field:  { type: 'textfield' }, filter: { type: 'string'  }},
-		{ header: 'Nombre',        width: 220, sortable: true, dataIndex: 'nombre',   field:  { type: 'textfield' }, filter: { type: 'string'  }},
-		{ header: 'R.I.F.',        width:  80, sortable: true, dataIndex: 'rif',      field:  { type: 'textfield' }, filter: { type: 'string'  }},
-		{ header: 'Grupo',         width:  50, sortable: true, dataIndex: 'grupo',    field:  { type: 'textfield' }, filter: { type: 'string'  }},
-		{ header: 'Telefono',      width:  90, sortable: true, dataIndex: 'telefono', field:  { type: 'textfield' }, filter: { type: 'string'  }},
-		{ header: 'Contacto',      width: 120, sortable: true, dataIndex: 'contacto', field:  { type: 'textfield' }, filter: { type: 'string'  }},
-		{ header: 'Cliente',       width:  60, sortable: true, dataIndex: 'cliente',  field:  { type: 'textfield' }, filter: { type: 'string'  }},
-		{ header: 'Ret%',          width:  50, sortable: true, dataIndex: 'reteiva',  field:  { type: 'numeroc'   }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('00.00') },
-		{ header: 'Origen',        width:  40, sortable: true, dataIndex: 'tiva',     field:  { type: 'textfield' }, filter: { type: 'string'  }},
-		{ header: 'Direccion',     width: 150, sortable: true, dataIndex: 'direc1',   field:  { type: 'textfield' }, filter: { type: 'string'  }},
-		{ header: 'Email',         width: 150, sortable: true, dataIndex: 'email',    field:  { type: 'textfield' }, filter: { type: 'string'  }},
-		{ header: 'Url',           width: 150, sortable: true, dataIndex: 'url',      field:  { type: 'textfield' }, filter: { type: 'string'  }},
-		{ header: 'Nombre Fiscal', width: 220, sortable: true, dataIndex: 'nomfis',   field:  { type: 'textfield' }, filter: { type: 'string'  }}
+		{ header: 'Codigo',        width:  60, sortable: true, dataIndex: 'proveed',   field:  { type: 'textfield' }, filter: { type: 'string'  }},
+		{ header: 'Tipo',          width:  60, sortable: true, dataIndex: 'tipo',      field:  { type: 'textfield' }, filter: { type: 'string'  }},
+		{ header: 'Nombre',        width: 220, sortable: true, dataIndex: 'nombre',    field:  { type: 'textfield' }, filter: { type: 'string'  }},
+		{ header: 'R.I.F.',        width:  80, sortable: true, dataIndex: 'rif',       field:  { type: 'textfield' }, filter: { type: 'string'  }},
+		{ header: 'Grupo',         width:  50, sortable: true, dataIndex: 'grupo',     field:  { type: 'textfield' }, filter: { type: 'string'  }},
+		{ header: 'Telefono',      width:  90, sortable: true, dataIndex: 'telefono',  field:  { type: 'textfield' }, filter: { type: 'string'  }},
+		{ header: 'Contacto',      width: 120, sortable: true, dataIndex: 'contacto',  field:  { type: 'textfield' }, filter: { type: 'string'  }},
+		{ header: 'Cliente',       width:  60, sortable: true, dataIndex: 'cliente',   field:  { type: 'textfield' }, filter: { type: 'string'  }},
+		{ header: 'Ret%',          width:  50, sortable: true, dataIndex: 'reteiva',   field:  { type: 'numeroc'   }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('00.00') },
+		{ header: 'Origen',        width:  40, sortable: true, dataIndex: 'tiva',      field:  { type: 'textfield' }, filter: { type: 'string'  }},
+		{ header: 'Direccion',     width: 150, sortable: true, dataIndex: 'direc1',    field:  { type: 'textfield' }, filter: { type: 'string'  }},
+		{ header: 'Email',         width: 150, sortable: true, dataIndex: 'email',     field:  { type: 'textfield' }, filter: { type: 'string'  }},
+		{ header: 'Url',           width: 150, sortable: true, dataIndex: 'url',       field:  { type: 'textfield' }, filter: { type: 'string'  }},
+		{ header: 'Nombre Fiscal', width: 220, sortable: true, dataIndex: 'nomfis',    field:  { type: 'textfield' }, filter: { type: 'string'  }},
+		{ header: 'Cuenta',        width:  80, sortable: true, dataIndex: 'cuenta',    field:  { type: 'textfield' }, filter: { type: 'string'  }},
+		{ header: 'Cta.Anticipo',  width:  80, sortable: true, dataIndex: 'canticipo', field:  { type: 'textfield' }, filter: { type: 'string'  }},
 		";
 
-		$campos = "'id','proveed','tipo','nombre','rif','grupo','nomgrup','telefono','contacto', 'direc1', 'direc2', 'direc3','cliente', 'observa', 'nit', 'codigo','tiva', 'email', 'url', 'banco1', 'cuenta1', 'banco2', 'cuenta2', 'nomfis', 'reteiva' ";
+		$campos = "'id','proveed','tipo','nombre','rif','grupo','nomgrup','telefono','contacto', 'direc1', 'direc2', 'direc3','cliente', 'observa', 'nit', 'codigo','tiva', 'email', 'url', 'banco1', 'cuenta1', 'banco2', 'cuenta2', 'nomfis', 'reteiva', 'cuenta', 'canticipo' ";
 
 		$stores = "
 		var scliStore = new Ext.data.Store({

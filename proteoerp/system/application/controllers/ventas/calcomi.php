@@ -8,7 +8,7 @@ class Calcomi extends Controller {
 	function Calcomi(){
 		parent::Controller();
 		$this->load->library("rapyd");
-		$this->datasis->modulo_id('12B',1);
+		$this->datasis->modulo_id('12C',1);
 	}
 
 	function index() {
