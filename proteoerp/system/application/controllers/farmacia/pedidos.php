@@ -26,7 +26,7 @@ class Pedidos extends Controller {
 			);*/
 
 		$filter = new DataFilter('Productos vendidos en el d&iacute;a');
-		$filter->db->select(array('a.codigoa','b.barras','a.desca', 'SUM(a.cana) AS venta','d.exmax - IF(d.existen<0,0,d.existen) AS pedir','d.exmin','d.exmax','d.existen'));
+		$filter->db->select(array('a.codigoa','TRIM(b.barras) AS barras','a.desca', 'SUM(a.cana) AS venta','d.exmax - IF(d.existen<0,0,d.existen) AS pedir','d.exmin','d.exmax','d.existen'));
 		$filter->db->from('sitems AS a');
 		$filter->db->join('farmaxasig AS b','a.codigoa=b.abarras');
 		$filter->db->join('sinv AS d','a.codigoa=d.codigo');
@@ -118,7 +118,7 @@ class Pedidos extends Controller {
 		$apedir=$this->input->post('apedir');
 		foreach($apedir as $pedir){
 			$arr=explode('#',$pedir);
-			$data= array('barras'=>$arr[0],'numero'=>$num,'cana'=>$arr[1]);
+			$data= array('barras'=>trim($arr[0]),'numero'=>$num,'cana'=>$arr[1]);
 			$sql = $farmaxDB->insert_string('apedir', $data);
 
 			$ban = $farmaxDB->simple_query($sql);
