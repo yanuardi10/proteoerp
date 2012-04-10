@@ -444,6 +444,8 @@ class pfaclite extends validaciones{
 	function chcana($cana,$i){
 		$codigo   = $this->input->post('codigoa_'.$i);
 		$dbcodigo = $this->db->escape($codigo);
+		$alma     = $this->secu->getalmacen();
+		$dbalma   = $this->db->escape($alma);
 
 		$this->validation->set_message('chcana', 'No existe cantidad suficiente para el art&iacute;culo '.$codigo);
 		$udp=$this->rapyd->uri->is_set('update');
@@ -457,12 +459,12 @@ class pfaclite extends validaciones{
 			FROM sinv AS a
 			LEFT JOIN itsinv AS b ON a.codigo=b.codigo
 			LEFT JOIN itpfac AS c ON a.codigo=c.codigoa AND c.numa=$dbnuma
-			WHERE a.codigo=$dbcodigo";
+			WHERE a.codigo=$dbcodigo AND b.alma=$dbalma";
 		}else{
 			$mSQL="SELECT  COALESCE(b.existen,0)-COALESCE(a.exord,0) AS cana
 			FROM sinv AS a
 			LEFT JOIN itsinv AS b ON a.codigo=b.codigo
-			WHERE a.codigo=$dbcodigo";
+			WHERE a.codigo=$dbcodigo AND b.alma=$dbalma";
 		}
 		$hay=$this->datasis->dameval($mSQL);
 
