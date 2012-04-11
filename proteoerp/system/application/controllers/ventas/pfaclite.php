@@ -357,7 +357,7 @@ class pfaclite extends validaciones{
 			$edit->button('btn_add', 'Incluir nuevo pedido', $action, 'TR');
 		}
 
-		$iusr= $do->get_from_dataobjetct('usuario');
+		$iusr= $edit->get_from_dataobjetct('usuario');
 		if(($fenvia < $hoy) && ($iusr == $this->secu->usuario())){
 			$edit->buttons('modify', 'save', 'delete', 'undo', 'back','add_rel');
 			$PFACRESERVA=$this->datasis->traevalor('PFACRESERVA','indica si un pedido descuenta de inventario los producto');
