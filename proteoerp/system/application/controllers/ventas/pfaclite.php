@@ -75,19 +75,33 @@ class pfaclite extends validaciones{
 		$filter->buttons('reset', 'search');
 		$filter->build('dataformfiltro');
 
+		function hfactura($status,$factura){
+			if($status=='P'){
+				$rt = anchor('ventas/sfac_add/creafrompfac/<#numero#>/create', 'Facturar');
+			}else{
+				if(empty($factura)){
+					$rt = 'Cerrada';
+				}else{
+					$rt = $factura;
+				}
+			}
+			return $rt;
+		}
+
 		$uri  = anchor('ventas/pfaclite/dataedit/<raencode><#cod_cli#></raencode>/show/<#id#>', '<#numero#>');
 		$uri2 = anchor_popup('formatos/verhtml/PFAC/<#numero#>', 'Ver HTML', $atts);
 		$uri3 = anchor('ventas/sfac_add/creafrompfac/<#numero#>/create', 'Facturar');
 
 		$grid = new DataGrid('Lista de pedidos realizados');
+		$grid->use_function('hfactura');
 		$grid->order_by('numero', 'desc');
 		$grid->per_page = 50;
 
 		$grid->column_orderby('N&uacute;mero', $uri ,'numero');
 		if($this->secu->puede('103')){
-			$grid->column_orderby('Factura'      , "<siinulo><#factura#>|$uri3|<#factura#></siinulo>",'factura');
+			$grid->column_orderby('Factura'      , "<hfactura><#status#>|<#factura#></hfactura>",'factura');
 		}else{
-			$grid->column_orderby('Factura'      , "<siinulo><#factura#>|N/A|<#factura#></siinulo>",'factura');
+			$grid->column_orderby('Factura'      , "<hfactura><#status#>|<#factura#></hfactura>",'factura');
 		}
 		$grid->column_orderby('Fecha'        , '<dbdate_to_human><#fecha#></dbdate_to_human>','fecha', "align='center'");
 		$grid->column_orderby('Cliente'      , 'cod_cli','cod_cli');
@@ -287,6 +301,11 @@ class pfaclite extends validaciones{
 		$edit->pdesca->rel_id    = 'itpfac';
 		$edit->pdesca->type      = 'inputhidden';
 		$edit->pdesca->pointer   = true;
+
+		$edit->itdesca = new hiddenField('descrip', 'itdesca_<#i#>');
+		$edit->itdesca->insertValue = '';
+		$edit->itdesca->db_name     = 'desca';
+		$edit->itdesca->rel_id      = 'itpfac';
 
 		$edit->pexisten = new inputField('Existencia <#o#>', 'pexisten_<#i#>');
 		$edit->pexisten->size    = 10;

@@ -177,6 +177,14 @@ function totalizar(){
 				echo form_input($data);
 
 				$data = array(
+					'name'  => 'itdesca_'.$i,
+					'id'    => 'itdesca_'.$i,
+					'value' => $sinv[$codigoa]['descrip'],
+					'type'  => 'hidden'
+				);
+				echo form_input($data);
+
+				$data = array(
 					'name'  => 'preca_'.$i,
 					'id'    => 'preca_'.$i,
 					'value' => round($sinv[$codigoa]['precio'.$tiposcli],2),
