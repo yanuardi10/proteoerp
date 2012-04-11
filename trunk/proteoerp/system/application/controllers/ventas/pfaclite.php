@@ -347,7 +347,7 @@ class pfaclite extends validaciones{
 		$edit->totalg->size = 10;
 
 		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'), $this->session->userdata('usuario'));
-		$edit->estampa = new autoUpdateField('estampa',date('Ymd'), date('Ymd'));
+		$edit->estampa = new autoUpdateField('estampa',date('Ymd')  , date('Ymd'));
 		$edit->hora    = new autoUpdateField('hora'   ,date('H:i:s'), date('H:i:s'));
 
 		$control=$this->rapyd->uri->get_edited_id();
@@ -357,7 +357,8 @@ class pfaclite extends validaciones{
 			$edit->button('btn_add', 'Incluir nuevo pedido', $action, 'TR');
 		}
 
-		if($fenvia < $hoy){
+		$iusr= $do->get_from_dataobjetct('usuario');
+		if(($fenvia < $hoy) && ($iusr == $this->secu->usuario())){
 			$edit->buttons('modify', 'save', 'delete', 'undo', 'back','add_rel');
 			$PFACRESERVA=$this->datasis->traevalor('PFACRESERVA','indica si un pedido descuenta de inventario los producto');
 			if($PFACRESERVA=='S'){
@@ -381,7 +382,6 @@ class pfaclite extends validaciones{
 		,'a.marca','b.existen','a.iva','a.peso');
 
 		$this->db->from('sinv AS a');
-		$this->db->join('itsinv AS b','a.codigo=b.codigo AND b.alma='.$this->db->escape($alma));
 		$this->db->where('a.activo','S');
 		$this->db->where('a.tipo'  ,'Articulo');
 		$this->db->group_by('a.codigo');
@@ -390,6 +390,7 @@ class pfaclite extends validaciones{
 
 		$act_meta=false;
 		if($status=='create' || $status=='insert'){
+			$this->db->join('itsinv AS b','a.codigo=b.codigo AND b.alma='.$this->db->escape($alma));
 			$this->db->where('b.existen > a.exord');
 			if($this->db->table_exists('metas')){
 				$pmargen=$this->datasis->dameval('SELECT pmargen FROM vend WHERE vendedor='.$dbvd);
@@ -406,6 +407,10 @@ class pfaclite extends validaciones{
 				$sel[]='COALESCE(SUM(d.cana*IF(tipoa=\'D\',-1,1)),0) AS vendido';
 				$act_meta=true;
 			}
+		}elseif($status=='show'){
+			$this->db->join('itsinv AS b','a.codigo=b.codigo');
+		}else{
+			$this->db->join('itsinv AS b','a.codigo=b.codigo AND b.alma='.$this->db->escape($alma));
 		}
 		$this->db->select($sel);
 		$sinv=$this->db->get();
