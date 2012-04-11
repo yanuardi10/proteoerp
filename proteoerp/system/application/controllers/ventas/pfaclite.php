@@ -75,9 +75,9 @@ class pfaclite extends validaciones{
 		$filter->buttons('reset', 'search');
 		$filter->build('dataformfiltro');
 
-		function hfactura($status,$factura){
+		function hfactura($status,$factura,$numero){
 			if($status=='P'){
-				$rt = anchor('ventas/sfac_add/creafrompfac/<#numero#>/create', 'Facturar');
+				$rt = anchor('ventas/sfac_add/creafrompfac/'.$numero.'/create', 'Facturar');
 			}else{
 				if(empty($factura)){
 					$rt = 'Cerrada';
@@ -99,9 +99,9 @@ class pfaclite extends validaciones{
 
 		$grid->column_orderby('N&uacute;mero', $uri ,'numero');
 		if($this->secu->puede('103')){
-			$grid->column_orderby('Factura'      , "<hfactura><#status#>|<#factura#></hfactura>",'factura');
+			$grid->column_orderby('Factura'      , "<hfactura><#status#>|<#factura#>|<#numero#></hfactura>",'factura');
 		}else{
-			$grid->column_orderby('Factura'      , "<hfactura><#status#>|<#factura#></hfactura>",'factura');
+			$grid->column_orderby('Factura'      , "<hfactura><#status#>|<#factura#>|<#numero#></hfactura>",'factura');
 		}
 		$grid->column_orderby('Fecha'        , '<dbdate_to_human><#fecha#></dbdate_to_human>','fecha', "align='center'");
 		$grid->column_orderby('Cliente'      , 'cod_cli','cod_cli');
