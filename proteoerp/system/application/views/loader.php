@@ -21,7 +21,7 @@
 <?php echo script("plugins/interface.js"); ?>
 <?php echo script("plugins/jquery.masonry.min.js"); ?>
 
-<script type="text/javascript" charset=<?=$this->config->item('charset'); ?>">
+<script type="text/javascript" charset="<?php echo $this->config->item('charset'); ?>">
 $(document).ready(function() {
 	$("#accordion").myAccordion({
 		speed: "fast",   // @param : low, medium, fast
