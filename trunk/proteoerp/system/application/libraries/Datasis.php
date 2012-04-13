@@ -423,6 +423,30 @@ class Datasis {
 		return $opciones;
 	}
 
+	function llenaopciones($mSQL, $todos=false ){
+		$CI =& get_instance();
+		$query = $CI->db->query($mSQL);
+		$opciones = '';
+		$colu = array();
+		foreach( $query->list_fields() as $campo ) {
+			$colu[] = $campo;
+		}
+		if ($query->num_rows() > 0){
+			foreach ($query->result_array() as $row){
+				$opciones .= "<option value='".$row[$colu[0]]."'>".utf8_encode(trim($row[$colu[1]]))."</option>";
+			}
+		}
+		$query->free_result();
+		if ( $todos ){
+			return '<select><option value=\0\'>Todos</option>'.$opciones.'</select>';
+		} else {
+			return '<select>'.$opciones.'</select>';
+		}
+	}
+
+
+
+
 	//****************************************************
 	//
 	//  CARGA CANTIDAD ACTUALIZANDO MAESTRO Y DETALLE
@@ -804,29 +828,43 @@ class Datasis {
 			$where .= $qs;
 		}
 		return LTRIM(substr($where,4,1000));
-
 	}
 
 	function codificautf8($query){
-		$arr = array();
-		foreach ( $query as $row)
-		{
-			$meco = array();
-			foreach( $row as $idd=>$campo ) {
-				$meco[$idd] = utf8_encode($campo);
+		$CI =& get_instance();
+		if ( $CI->db->char_set == 'utf8' ) {
+			$arr = array();
+			foreach ( $query as $row )
+			{
+				$meco = array();
+				foreach( $row as $idd=>$campo ) {
+					$meco[$idd] = $campo;
+				}
+				$arr[] = $meco;
 			}
-			$arr[] = $meco;
+		} else {
+			$arr = array();
+			foreach ( $query as $row)
+			{
+				$meco = array();
+				foreach( $row as $idd=>$campo ) {
+					$meco[$idd] = utf8_encode($campo);
+				}
+				$arr[] = $meco;
+			}
 		}
 		return $arr;
 	}
 
 	function codificautf81($row){
-		$meco = array();
-		foreach( $row as $campo ) {
-			$meco[] = utf8_encode($campo);
-		}
+			$meco = array();
+			foreach( $row as $idd=>$campo ) {
+				$meco[$idd] = utf8_encode($campo);
+			}
 		return $meco;
 	}
+
+
 
 	function extjscampos($tabla){
 		$CI =& get_instance();
@@ -856,5 +894,24 @@ class Datasis {
 		return $campos;
 	}
 
+
+	function jqgcampos($mSQL){
+		$CI =& get_instance();
+		$query = $CI->db->query($mSQL);
+		$i = 0;
+		$campos = '';
+		if ($query->num_rows() > 0){
+			foreach ($query->result_array() as $row){
+				if ( $i == 0 ) {
+					$campos = implode(':',$row);
+					$i = 1;
+				} else {
+					$campos .= ";".implode(':',$row);
+				}
+
+			}
+		}
+		return utf8_encode($campos);
+	}
 
 }
