@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<meta http-equiv="Content-type" content="text/html; charset=<?=$this->config->item('charset'); ?>" >
+<meta http-equiv="Content-type" content="text/html; charset=<?php echo $this->config->item('charset'); ?>" >
 <title>ProteoERP<?php if(isset($title)) echo ':'.preg_replace('/<[^>]*>/', '', $title); ?></title>
 <?php echo style("ventanas.css");?>
 <?php if (isset($style))  echo $style; ?>
@@ -12,9 +12,9 @@
 </style>
 <?php }; ?>
 
-<?php if( !isset($tabla) )   $tabla=''; ?>
-<?php if (isset($head))   echo $head;   ?>
-<?php if (isset($script)) echo $script; ?>
+<?php if(!isset($tabla)) $tabla='';    ?>
+<?php if(isset($head))   echo $head;   ?>
+<?php if(isset($script)) echo $script; ?>
 
 <?php if (isset($filtro)) { ?>
 <script type="text/javascript">
@@ -22,7 +22,7 @@ $(function(){
 	$("#mostrafiltro").click(function(event) {
 		estado = $("#cajafiltro").css("display");
 		if(estado == "none"){ $("#cajafiltro").show();
-		}else{ $("#cajafiltro").hide();		}
+		}else{ $("#cajafiltro").hide();}
 	});
 	$("#cajafiltro").hide();
 });
@@ -54,7 +54,7 @@ $(function(){
 			</td>
 		</tr>
 		<?php } ?>
-		
+
 		<?php if (isset($subtitle)) { ?>
 		<tr>
 			<td colspan='2'><?php echo $subtitle; ?></td>
@@ -69,12 +69,10 @@ $(function(){
 			<?php }; ?>
 		</tr>
 	</table>
-	<div class="footer">
-		<p>Tiempo de la consulta {elapsed_time} seg | Proteo ERP </p>
-	</div>
 </div>
-
+<div class="footer">
+	<p>Tiempo de la consulta {elapsed_time} seg | Proteo ERP </p>
+</div>
 <?php if (isset($extras)) echo $extras; ?>
-
 </body>
 </html>

@@ -81,7 +81,7 @@ function importe(id){
 	totalizar();
 }
 
-function costo(id){ 
+function costo(id){
 	var ind     = id.toString();
 	var cana    = Number($("#cantidad_"+ind).val());
 	var importe = Number($("#importe_"+ind).val());
@@ -99,7 +99,6 @@ function totalizar(){
 	var totals   =0;
 	var importe  =0;
 	var peso     =0;
-
 	var cana     =0;
 	var cexento  =0;
 	var cgenera  =0;
@@ -108,6 +107,8 @@ function totalizar(){
 	var civared  =0;
 	var cadicio  =0;
 	var civaadi  =0;
+	var montotot =0;
+	var montoiva =0;
 
 	var arr=$('input[name^="importe_"]');
 	jQuery.each(arr, function() {
@@ -138,24 +139,30 @@ function totalizar(){
 			}
 		}
 	});
+	montotot = $("#montotot").val();
+	montoiva = $("#montoiva").val();
+
 	$("#peso").val(roundNumber(peso,2));
+
+	//$("#montotot").val(roundNumber(totals,2));
+	//$("#montoiva").val(roundNumber(iva,2));
+
+	if(Math.abs(totals-montotot) >= 0.02 ){
+		$("#montotot").val(roundNumber(totals,2));
+	}else{
+		totals = montotot;
+	}
+	if(Math.abs(iva-montoiva) >=0.02 ){
+		$("#montoiva").val(roundNumber(iva,2));
+	}else{
+		iva = montoiva;
+	}
+
 	$("#montonet").val(roundNumber(totals+iva,2));
-	$("#montotot").val(roundNumber(totals,2));
-	$("#montoiva").val(roundNumber(iva,2));
-
-	/*$("#cexento").val(roundNumber(cexento,2));
-	$("#cgenera").val(roundNumber(cgenera,2));
-	$("#civagen").val(roundNumber(civagen,2));
-	$("#creduci").val(roundNumber(creduci,2));
-	$("#civared").val(roundNumber(civared,2));
-	$("#cadicio").val(roundNumber(cadicio,2));
-	$("#civaadi").val(roundNumber(civaadi,2));
-	ctotales();*/
-
 	$("#peso_val").text(nformat(peso,2));
 	$("#montonet_val").text(nformat(totals+iva,2));
 	$("#montotot_val").text(nformat(totals,2));
-	$("#montoiva_val").text(nformat(iva,2));
+	//$("#montoiva_val").text(nformat(iva,2));
 }
 
 //Calcula los montos que van a CxP
@@ -213,8 +220,9 @@ function post_modbus_sinv(nind){
 }
 
 function cmontotot(){
-	totals  = 0;
-	importe = $("#montotot").val();
+	var totals  = 0;
+	var vimporte = $("#montotot").val();
+	var iva      = Number($("#montoiva").val());
 
 	var arr=$('input[name^="importe_"]');
 	jQuery.each(arr, function() {
@@ -228,10 +236,22 @@ function cmontotot(){
 			id  = Number(this.name.substring(pos+1));
 			val = Number(this.value);
 			part= val/totals;
-			$(this).val(roundNumber(importe*part,2));
+			$(this).val(roundNumber(vimporte*part,2));
 			costo(id);
 		}
-	});	
+	});
+
+	$("#montonet_val").text(nformat(totals+iva,2));
+	$("#montonet").val(totals+iva);
+}
+
+
+function cmontoiva(){
+	var totals = Number($("#montotot").val());
+	var iva    = Number($("#montoiva").val());
+
+	$("#montonet_val").text(nformat(totals+iva,2));
+	$("#montonet").val(totals+iva);
 }
 
 function post_modbus_sprv(){
@@ -279,7 +299,6 @@ function autocod(id){
 			$('#cantidad_'+id).focus();
 			$('#cantidad_'+id).select();
 			//post_modbus_sinv(parseInt(id));
-
 			importe(parseInt(id));
 			totalizar();
 		}
@@ -400,11 +419,11 @@ function autocod(id){
 		<?php echo $container_br ?>
 		<br>
 
-<table  width="100%" style="margin:0;width:100%;" > 
-	<tr>                                                           
-		<td colspan=10 class="littletableheader">Totales</td>      
-	</tr>                                                          
-	<tr> 
+<table  width="100%" style="margin:0;width:100%;" >
+	<tr>
+		<td colspan=10 class="littletableheader">Totales</td>
+	</tr>
+	<tr>
 		<td width="131" class="littletablerowth" align='right'><?php echo $form->rislr->label;     ?></td>
 		<td width="122" class="littletablerow"   align='right'><?php echo $form->rislr->output;    ?></td>
 		<td width="125" class="littletablerowth" align='right'><?php echo $form->anticipo->label;  ?></td>
@@ -413,12 +432,12 @@ function autocod(id){
 		<td width="139" class="littletablerow"   align='right'><?php echo $form->montotot->output; ?></td>
 	</tr>
 	<tr>
-		<td class="littletablerowth" align='right'><?php echo $form->riva->label;     ?></td>
-		<td class="littletablerow"   align='right'><?php echo $form->riva->output;    ?></td>
-		<td class="littletablerowth" align='right'><?php echo $form->inicial->label;  ?></td>
-		<td class="littletablerow"   align='right'><?php echo $form->inicial->output; ?></td>
-		<td class="littletablerowth" align='right'><?php echo $form->montoiva->label; ?></td>
-		<td class="littletablerow"   align='right'><b id='montoiva_val'><?php echo nformat($form->montoiva->value); ?><b><?php echo $form->montoiva->output; ?></td>
+		<td class="littletablerowth" align='right'><?php echo $form->riva->label;      ?></td>
+		<td class="littletablerow"   align='right'><?php echo $form->riva->output;     ?></td>
+		<td class="littletablerowth" align='right'><?php echo $form->inicial->label;   ?></td>
+		<td class="littletablerow"   align='right'><?php echo $form->inicial->output;  ?></td>
+		<td class="littletablerowth" align='right'><?php echo $form->montoiva->label;  ?></td>
+		<td class="littletablerow"   align='right'><?php echo $form->montoiva->output; ?></td>
 	</tr>
 	<tr>
 		<td class="littletablerowth" align='right'><?php echo $form->mdolar->label;   ?></td>
@@ -428,7 +447,7 @@ function autocod(id){
 		<td class="littletablerowth" align='right'><?php echo $form->montonet->label; ?></td>
 		<td class="littletablerow"   align='right'><b id='montonet_val' style='font-size:18px;font-weight: bold' ><?php echo nformat($form->montonet->value); ?></b><?php echo $form->montonet->output; ?></td>
 	</tr>
-	<tr>                                                           
+	<tr>
 		<td colspan=10 class="littletableheader"><?php echo $form->observa1->label;    ?></td>
 	</tr>
 	<tr>
@@ -438,9 +457,9 @@ function autocod(id){
 	</tr>
 </table>
 
-	  <td>
+		<td>
 	<tr>
 <table>
-	
+
 <?php echo $form_end?>
 <?php endif; ?>

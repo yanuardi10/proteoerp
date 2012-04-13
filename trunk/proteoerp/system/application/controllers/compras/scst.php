@@ -295,10 +295,13 @@ class Scst extends Controller {
 		$edit->montotot  = new inputField('Subtotal', 'montotot');
 		$edit->montotot->onkeyup='cmontotot()';
 		$edit->montotot->size = 15;
+		$edit->montotot->autocomplete=false;
 		$edit->montotot->css_class='inputnum';
 
-		$edit->montoiva  = new hiddenField('IVA', 'montoiva');
-		$edit->montoiva->size = 20;
+		$edit->montoiva  = new inputField('IVA', 'montoiva');
+		$edit->montoiva->onkeyup='cmontoiva()';
+		$edit->montoiva->size = 15;
+		$edit->montoiva->autocomplete=false;
 		$edit->montoiva->css_class='inputnum';
 
 		$edit->montonet  = new hiddenField('Total', 'montonet');
@@ -438,7 +441,7 @@ class Scst extends Controller {
 
 		$edit->iva = new hiddenField('Impuesto', 'iva_<#i#>');
 		$edit->iva->db_name = 'iva';
-		$edit->iva->rel_id='itscst';
+		$edit->iva->rel_id  = 'itscst';
 		$edit->iva->showformat= 'decimal';
 		//fin de campos para detalle
 
@@ -1450,15 +1453,31 @@ class Scst extends Controller {
 			$stotal += $itimporte;
 		}
 		$gtotal=$stotal+$iva;
-		$do->set('numero'  ,$numero);
-		$do->set('control' ,$control);
-		$do->set('estampa' ,$estampa);
-		$do->set('hora'    ,$hora);
-		$do->set('transac' ,$transac);
-		$do->set('montotot',round($stotal,2));
-		$do->set('montonet',round($gtotal,2));
-		$do->set('montoiva',round($iva   ,2));
+		$do->set('numero'   , $numero);
+		$do->set('control'  , $control);
+		$do->set('estampa'  , $estampa);
+		$do->set('hora'     , $hora);
+		$do->set('transac'  , $transac);
 
+		//$montonet = $do->get('montonet');
+		$montotot = $do->get('montotot');
+		$montoiva = $do->get('montoiva');
+		$cm=false;
+		if(abs($montotot-$stotal)<=0.02){
+			$cm     = true;
+			$stotal = $montotot;
+		}
+		if(abs($montoiva-$iva)<=0.02){
+			$cm  = true;
+			$iva = $montoiva;
+		}
+		if($cm){
+			$gtotal=$stotal+$iva;
+		}
+
+		$do->set('montotot' , round($stotal,2));
+		$do->set('montonet' , round($gtotal,2));
+		$do->set('montoiva' , round($iva   ,2));
 		$do->set('cgenera'  , round($cgenera,2));
 		$do->set('civagen'  , round($civagen,2));
 		$do->set('creduci'  , round($creduci,2));
