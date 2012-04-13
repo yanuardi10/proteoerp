@@ -1,16 +1,135 @@
 <?php
 class Marc extends Controller{
 	var $genesal=true;
+	var $url ='inventario/marc/';
+	var $titp = 'Marcas';
+	var $tits = 'Marcas';
 
 	function marc(){
 		parent::Controller(); 
 		$this->load->library('rapyd');
+		$this->load->library('jqdatagrid');
 		//$this->datasis->modulo_id('30B',1);
 	}
 
 	function index(){
-		redirect('inventario/marc/filteredgrid');
+		//redirect('inventario/marc/filteredgrid');
+		if ( !$this->datasis->iscampo('marc','id') ) {
+			$this->db->simple_query('ALTER TABLE marc DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE marc ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ');
+			$this->db->simple_query('ALTER TABLE marc ADD UNIQUE INDEX marca (marca)');
+		}
+
+		redirect($this->url.'jqdatag');
 	}
+
+	function jqdatag(){
+		$grid = $this->defgrid();
+		$param['grid'] = $grid->deploy();
+		$param['tabs'] = false;
+		$param['encabeza'] = $this->titp;
+		$this->load->view('jqgrid/crud',$param);
+	}
+
+
+	function defgrid($deployed = false){
+		$url ='inventario/marc/';
+		$titp = 'Marcas';
+
+		$grid  = new $this->jqdatagrid;
+
+		$grid->addField('id');
+		$grid->label('ID');
+		$grid->params(array('align' => "'center'",
+							'width' => 20,
+							'editable' => 'false',
+							'editoptions' => '{readonly:true,size:10}'
+			)
+		);
+
+		$grid->addField('marca');
+		$grid->label('Marca');
+		$grid->params(array('width' => 180,
+							'editable' => 'true',
+							'edittype' => "'text'",
+							'editrules' => '{required:true}'
+			)
+		);
+
+		#show paginator
+		$grid->showpager(true);
+		
+		$grid->setViewRecords(true);
+
+		#width
+		$grid->setWidth('400');
+		#height
+		$grid->setHeight('300');
+		#table title
+		$grid->setTitle($titp);
+
+		#show/hide navigations buttons
+		$grid->setAdd(true);
+		$grid->setEdit(true);
+		$grid->setDelete(true);
+		$grid->setSearch(true);
+		$grid->setView(false);
+		$grid->setRowNum(20);
+		//$grid->setRowList('[]');
+		#export buttons
+		//$grid->setPdf(true,array('title' => 'Test pdf'));
+
+		#GET url
+		$grid->setUrlget(site_url($url.'getdata/'));
+
+		#Set url
+		$grid->setUrlput(site_url($url.'setdata/'));
+            
+		if ($deployed) {
+			return $grid->deploy();
+		} else {
+			return $grid;
+		}
+	
+	}
+
+	/**
+	* Get data result as json
+	*/
+	function getData()
+	{
+		$grid       = $this->jqdatagrid;
+		$response   = $grid->getData('marc',array(array()),array(),false);
+		$rs = $grid->jsonresult( $response);
+		echo $rs;
+	}
+
+	/**
+	* Put information
+	*/
+	function setData()
+	{
+		$this->load->library('jqdatagrid');
+		$oper = $this->input->post('oper');
+		// ver si puede borrar
+		if ($oper == 'del') {
+			// si tiene personas no puede borrar
+			$id   = $this->input->post('id');
+			$mSQL = "SELECT COUNT(*) FROM sinv a JOIN marc b ON a.marca=b.marca WHERE b.id=$id";
+			if ($this->datasis->dameval($mSQL) == 0 ){
+				$grid             = $this->jqdatagrid;
+				$response         = $grid->operations('marc','id');
+				echo 'Registro Borrado!!!';
+			} else {
+				echo 'No se puede borrar, existen productos con esta marca';
+			}			
+		} else {
+			$grid             = $this->jqdatagrid;
+			$response         = $grid->operations('marc','id');
+			echo 'Registro Actualizado';
+		}
+	}
+
 
 	function filteredgrid(){
 		$this->rapyd->load('datafilter','datagrid');
