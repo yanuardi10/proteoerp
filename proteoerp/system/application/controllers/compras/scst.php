@@ -10,9 +10,7 @@ class Scst extends Controller {
 
 	function index(){
 		redirect('compras/scst/extgrid');
-
 	}
-
 
 	function datafilter(){
 		//redirect('compras/scst/extgrid');
