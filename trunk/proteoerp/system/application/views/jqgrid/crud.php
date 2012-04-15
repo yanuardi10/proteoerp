@@ -18,7 +18,7 @@
 <?php echo script('jquery.jqGrid.min.js')  ?>
 
 <!-- DATAGRID -->
-<link rel="stylesheet" type="text/css" media="screen" href="<?php echo base_url(); ?>assets/default/datagrid/datagrid.css" />
+<link rel="stylesheet" type="text/css" media="screen" href="<?php echo base_url(); ?>assets/default/script/datagrid/datagrid.css" />
 <?php echo script('datagrid/datagrid.js')  ?>
 
 <!-- LAYOUT -->
