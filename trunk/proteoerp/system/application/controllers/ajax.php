@@ -180,7 +180,7 @@ class Ajax extends Controller {
 			$mSQL="SELECT DISTINCT TRIM(a.descrip) AS descrip, TRIM(a.codigo) AS codigo, a.precio1,precio2,precio3,precio4, a.iva,a.existen,a.tipo
 				,a.peso, a.ultimo, a.pond FROM sinv AS a
 				LEFT JOIN barraspos AS b ON a.codigo=b.codigo
-				WHERE (a.codigo LIKE $qdb OR a.descrip LIKE  $qdb OR a.barras LIKE $qdb OR b.suplemen=$qba) AND a.activo='S' AND a.tipo='Articulo'
+				WHERE (a.codigo LIKE $qdb OR a.descrip LIKE  $qdb OR a.barras LIKE $qdb OR b.suplemen=$qba OR a.alterno LIKE $qba) AND a.activo='S' AND a.tipo='Articulo'
 				ORDER BY a.descrip LIMIT 10";
 			$cana=1;
 
