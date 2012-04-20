@@ -917,7 +917,20 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		}
 		$do->rm_get('motivo');
 		$dbcliente = $this->db->escape($cliente);
-		$this->limitsant = $this->datasis->dameval('SELECT limite FROM scli WHERE cliente='.$dbcliente);
+
+		$sel=array('limite','credito','tolera','maxtole','formap');
+		$this->db->select($sel);
+		$this->db->from('scli AS a');
+		$this->db->where('cliente',$cliente);
+		$query = $this->db->get();
+		$row = $query->row();
+
+
+		$this->limitsant   = $row->limite;
+		$this->creditosant = $row->credito;
+		$this->tolerasant  = $row->tolera;
+		$this->maxtolesant = $row->maxtole;
+		$this->formapsant  = $row->formap;
 	}
 
 	function _pos_credi_update($do){
@@ -925,15 +938,20 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		$limite=$do->get('limite');
 
 		$data = array(
-			'cliente'   => $codigo,
-			'credito'   => $do->get('credito'),
-			'limite'    => $limite,
-			'limiteant' => $this->limitsant,
-			'tolera'    => $do->get('tolera'),
-			'motivo'    => $this->credi_motivo,
-			'maxtol'    => $do->get('maxtole'),
-			'estampa'   => date('Y-m-d H:i:s'),
-			'usuario'   => $this->secu->usuario()
+			'cliente'    => $codigo,
+			'credito'    => $do->get('credito'),
+			'creditoant' => $this->creditosant,
+			'limite'     => $limite,
+			'limiteant'  => $this->limitsant,
+			'tolera'     => $do->get('tolera'),
+			'toleraant'  => $this->tolerasant,
+			'motivo'     => $this->credi_motivo,
+			'formap'     => $do->get('formap'),
+			'formapsant' => $this->formapsant,
+			'maxtol'     => $do->get('maxtole'),
+			'maxtolant'  => $this->maxtolesant,
+			'estampa'    => date('Y-m-d H:i:s'),
+			'usuario'    => $this->secu->usuario()
 		);
 
 		$this->db->insert('sclibitalimit', $data);
@@ -1678,20 +1696,35 @@ var cplaStore = new Ext.data.Store({
 
 		if(!$this->db->table_exists('sclibitalimit')){
 			$mSQL="CREATE TABLE `sclibitalimit` (
-				`id` INT(11) NULL AUTO_INCREMENT,
-				`cliente` CHAR(5) NULL DEFAULT NULL COLLATE 'utf8_unicode_ci',
-				`credito` CHAR(1) NULL DEFAULT NULL COLLATE 'utf8_unicode_ci',
+				`id` INT(11) NOT NULL AUTO_INCREMENT,
+				`cliente` CHAR(5) NULL DEFAULT NULL COLLATE 'latin1_swedish_ci',
+				`credito` CHAR(1) NULL DEFAULT NULL COLLATE 'latin1_swedish_ci',
+				`creditoant` CHAR(1) NULL DEFAULT NULL,
 				`limite` BIGINT(20) NULL DEFAULT NULL,
 				`limiteant` BIGINT(20) NULL DEFAULT NULL,
 				`tolera` DECIMAL(9,2) NULL DEFAULT NULL,
+				`toleraant` DECIMAL(9,2) NULL DEFAULT NULL,
 				`maxtol` DECIMAL(9,2) NULL DEFAULT NULL,
-				`motivo` TEXT NULL DEFAULT NULL,
+				`maxtolant` DECIMAL(9,2) NULL DEFAULT NULL,
+				`motivo` TEXT NULL,
 				`estampa` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
 				`usuario` VARCHAR(12) NULL DEFAULT NULL,
 				PRIMARY KEY (`id`),
 				INDEX `cliente` (`cliente`)
 			)
-			ENGINE=MyISAM";
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM
+			AUTO_INCREMENT=1";
+			$this->db->simple_query($mSQL);
+		}
+
+		if(!$this->db->field_exists('creditoant', 'sclibitalimit')){
+			$mSQL="ALTER TABLE `sclibitalimit`
+			ADD COLUMN `creditoant` CHAR(1) NULL DEFAULT NULL AFTER `credito`,
+			ADD COLUMN `toleraant` DECIMAL(9,2) NULL DEFAULT NULL AFTER `tolera`,
+			ADD COLUMN `maxtolant` DECIMAL(9,2) NULL DEFAULT NULL AFTER `maxtol`,
+			ADD COLUMN `formap` INT(6) NULL DEFAULT NULL AFTER `maxtol`,
+			ADD COLUMN `formapsant` INT(6) NULL DEFAULT NULL AFTER `formap`";
 			$this->db->simple_query($mSQL);
 		}
 
