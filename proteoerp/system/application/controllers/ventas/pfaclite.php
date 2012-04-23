@@ -543,7 +543,7 @@ class pfaclite extends validaciones{
 				$itiva   = $do->get_rel('itpfac','iva'    ,$i)/100;
 
 				$ittota  = $itpreca*$itcana;
-				$mostrado= $ittota*(1+$itiva);
+				$mostrado= $itpreca*(1+$itiva);
 
 				$do->set_rel('itpfac', 'tota'    , $ittota  , $i);
 				$do->set_rel('itpfac', 'fecha'   , $fecha   , $i);
@@ -833,7 +833,7 @@ class pfaclite extends validaciones{
 		if(!extension_loaded('perl')) show_error('Se necesita la extenci&oacute;n perl, comuniquese con soporte t&eacute;cnico');
 		$this->datasis->modulo_id(143,1);
 
-		$vd   = $this->secu->getVendedor();
+		$vd   = $this->secu->getvendedor();
 		$vnom = $this->datasis->dameval('SELECT nombre FROM vend WHERE vendedor='.$this->db->escape($vd));
 		$dbvd = $this->db->escape($vd);
 
