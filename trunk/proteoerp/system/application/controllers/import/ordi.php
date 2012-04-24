@@ -73,7 +73,7 @@ class Ordi extends Controller {
 		//echo $grid->db->last_query();
 
 		$data['content'] = $filter->output.$grid->output;
-		$data['title']   = '<h1>Importaciones</h1>';
+		$data['title']   = heading('Importaciones');
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
@@ -449,7 +449,6 @@ class Ordi extends Controller {
 			return '';
 		}
 	}
-
 
 	function _showgeri($id,$stat='C'){
 		$this->rapyd->load('datagrid');

@@ -163,6 +163,57 @@ class Ajax extends Controller {
 		echo $data;
 	}
 
+	//Busca sinv solo articulos para compras con codigos alternos
+	function buscascstart(){
+		$comodin= $this->datasis->traevalor('COMODIN');
+		$mid    = $this->input->post('q');
+		if(strlen($comodin)==1 && $comodin!='%' && $mid!==false){
+			$mid=str_replace($comodin,'%',$mid);
+		}
+		$qdb    = $this->db->escape($mid.'%');
+		$qba    = $this->db->escape($mid);
+		$sprv   = $this->input->post('sprv');
+		$dbsprv = $this->db->escape($sprv);
+
+		$data = '{[ ]}';
+		if($mid !== false){
+			$retArray = $retorno = array();
+
+			$mSQL="SELECT DISTINCT TRIM(a.descrip) AS descrip, TRIM(a.codigo) AS codigo, a.precio1,precio2,precio3,precio4, a.iva,a.existen,a.tipo
+				,a.peso, a.ultimo, a.pond
+				FROM sinv AS a
+				LEFT JOIN barraspos AS b ON a.codigo=b.codigo
+				LEFT JOIN sinvprov  AS c ON c.proveed=$dbsprv AND c.codigo=a.codigo
+				WHERE (a.codigo LIKE $qdb OR a.descrip LIKE  $qdb OR a.barras LIKE $qdb OR b.suplemen=$qba OR a.alterno LIKE $qba OR c.codigop=$qdb) AND a.activo='S' AND a.tipo='Articulo'
+				ORDER BY a.descrip LIMIT 10";
+			$cana=1;
+
+			$query = $this->db->query($mSQL);
+			if ($query->num_rows() > 0){
+				foreach( $query->result_array() as  $row ) {
+					$retArray['label']   = '('.$row['codigo'].') '.$row['descrip'].' '.$row['precio1'].' Bs. - '.$row['existen'];
+					$retArray['value']   = $row['codigo'];
+					$retArray['codigo']  = $row['codigo'];
+					$retArray['cana']    = $cana;
+					$retArray['tipo']    = $row['tipo'];
+					$retArray['peso']    = $row['peso'];
+					$retArray['ultimo']  = $row['ultimo'];
+					$retArray['pond']    = $row['pond'];
+					$retArray['base1']   = $row['precio1']*100/(100+$row['iva']);
+					$retArray['base2']   = $row['precio2']*100/(100+$row['iva']);
+					$retArray['base3']   = $row['precio3']*100/(100+$row['iva']);
+					$retArray['base4']   = $row['precio4']*100/(100+$row['iva']);
+					$retArray['descrip'] = utf8_encode($row['descrip']);
+					//$retArray['descrip'] = wordwrap($row['descrip'], 25, '<br />');
+					$retArray['iva']     = $row['iva'];
+					array_push($retorno, $retArray);
+				}
+				$data = json_encode($retorno);
+	        }
+		}
+		echo $data;
+	}
+
 	//Busca sinv solo articulos
 	function buscasinvart(){
 		$comodin= $this->datasis->traevalor('COMODIN');

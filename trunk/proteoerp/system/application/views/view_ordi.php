@@ -230,13 +230,14 @@ function calcula(){
 }
 
 function autocodsinv(id){
+	var sprv=$('#proveed').val();
 	$('#codigo_'+id).autocomplete({
 		source: function( req, add){
 			$.ajax({
-				url:  "<?php echo site_url('ajax/buscasinvart'); ?>",
+				url:  "<?php echo site_url('ajax/buscascstart'); ?>",
 				type: "POST",
 				dataType: "json",
-				data: "q="+encodeURIComponent(req.term),
+				data: "q="+encodeURIComponent(req.term)+"&sprv="+encodeURIComponent(sprv),
 				success:
 					function(data){
 						var sugiere = [];
