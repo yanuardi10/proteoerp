@@ -5,7 +5,7 @@ class aran extends validaciones {
 	function aran(){
 		parent::Controller();
 		$this->load->library('rapyd');
-		$this->datasis->modulo_id(305,1);
+		$this->datasis->modulo_id(204,1);
 	}
 
 	function index(){
@@ -19,7 +19,7 @@ class aran extends validaciones {
 	}
 
 	function extgrid(){
-		$this->datasis->modulo_id(305,1);
+		$this->datasis->modulo_id(204,1);
 		$this->aranextjs();
 	}
 
@@ -138,25 +138,25 @@ class aran extends validaciones {
 		$mSQL="ALTER TABLE `aran`  ADD COLUMN `dolar` DECIMAL(8,2) NULL AFTER `unidad`";
 		$this->db->simple_query($mSQL);
 	}
-	
+
 	function grid(){
 		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']   :  0;
 		$limit   = isset($_REQUEST['limit'])  ? $_REQUEST['limit']   : 50;
 		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']    : 'codigo';
 		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
-		
+
 		$where = "codigo IS NOT NULL ";
 
 		//Buscar posicion 0 Cero
 		if (isset($_REQUEST['filter'])){
 			$filter = json_decode($_REQUEST['filter'], true);
 			if (is_array($filter)) {
-				//Dummy Where. 
+				//Dummy Where.
 				$where = " codigo IS NOT NULL ";
 				$qs = "";
 				for ($i=0;$i<count($filter);$i++){
 					switch($filter[$i]['type']){
-					case 'string' : $qs .= " AND ".$filter[$i]['field']." LIKE '%".$filter[$i]['value']."%'"; 
+					case 'string' : $qs .= " AND ".$filter[$i]['field']." LIKE '%".$filter[$i]['value']."%'";
 						Break;
 					case 'list' :
 						if (strstr($filter[$i]['value'],',')){
@@ -170,29 +170,29 @@ class aran extends validaciones {
 							$qs .= " AND ".$filter[$i]['field']." = '".$filter[$i]['value']."'";
 						}
 						Break;
-					case 'boolean' : $qs .= " AND ".$filter[$i]['field']." = ".($filter[$i]['value']); 
+					case 'boolean' : $qs .= " AND ".$filter[$i]['field']." = ".($filter[$i]['value']);
 						Break;
 					case 'numeric' :
 						switch ($filter[$i]['comparison']) {
-							case 'ne' : $qs .= " AND ".$filter[$i]['field']." != ".$filter[$i]['value']; 
+							case 'ne' : $qs .= " AND ".$filter[$i]['field']." != ".$filter[$i]['value'];
 								Break;
-							case 'eq' : $qs .= " AND ".$filter[$i]['field']." = ".$filter[$i]['value']; 
+							case 'eq' : $qs .= " AND ".$filter[$i]['field']." = ".$filter[$i]['value'];
 								Break;
-							case 'lt' : $qs .= " AND ".$filter[$i]['field']." < ".$filter[$i]['value']; 
+							case 'lt' : $qs .= " AND ".$filter[$i]['field']." < ".$filter[$i]['value'];
 								Break;
-							case 'gt' : $qs .= " AND ".$filter[$i]['field']." > ".$filter[$i]['value']; 
+							case 'gt' : $qs .= " AND ".$filter[$i]['field']." > ".$filter[$i]['value'];
 								Break;
 						}
 						Break;
 					case 'date' :
 						switch ($filter[$i]['comparison']) {
-							case 'ne' : $qs .= " AND ".$filter[$i]['field']." != '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
+							case 'ne' : $qs .= " AND ".$filter[$i]['field']." != '".date('Y-m-d',strtotime($filter[$i]['value']))."'";
 								Break;
-							case 'eq' : $qs .= " AND ".$filter[$i]['field']." = '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
+							case 'eq' : $qs .= " AND ".$filter[$i]['field']." = '".date('Y-m-d',strtotime($filter[$i]['value']))."'";
 								Break;
-							case 'lt' : $qs .= " AND ".$filter[$i]['field']." < '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
+							case 'lt' : $qs .= " AND ".$filter[$i]['field']." < '".date('Y-m-d',strtotime($filter[$i]['value']))."'";
 								Break;
-							case 'gt' : $qs .= " AND ".$filter[$i]['field']." > '".date('Y-m-d',strtotime($filter[$i]['value']))."'"; 
+							case 'gt' : $qs .= " AND ".$filter[$i]['field']." > '".date('Y-m-d',strtotime($filter[$i]['value']))."'";
 								Break;
 						}
 						Break;
@@ -201,7 +201,7 @@ class aran extends validaciones {
 				$where .= $qs;
 			}
 		}
-		
+
 		$this->db->_protect_identifiers=false;
 		$this->db->select('*');
 		$this->db->from('aran');
@@ -209,11 +209,11 @@ class aran extends validaciones {
 		if (strlen($where)>1){
 			$this->db->where($where, NULL, FALSE);
 		}
-		
+
 		$sort = json_decode($sort, true);
 
 		if ( count($sort) == 0 ) $this->db->order_by( 'codigo', 'asc' );
-		
+
 		for ( $i=0; $i<count($sort); $i++ ) {
 			$this->db->order_by($sort[$i]['property'],$sort[$i]['direction']);
 		}
@@ -254,7 +254,7 @@ class aran extends validaciones {
 			} else {
 				echo "{ success: false, message: 'Ya existe un Arancel con ese Codigo!!'}";
 			}
-			
+
 		} else {
 			echo "{ success: false, message: 'Ya existe un Arancel con ese Codigo!!'}";
 		}
@@ -292,9 +292,6 @@ class aran extends validaciones {
 		}
 	}
 
-
-//0414 376 0149 juan picapiedras
-
 //****************************************************************
 //
 //
@@ -316,19 +313,19 @@ class aran extends validaciones {
 		{ type: 'length', field: 'codigo', min: 1 },
 		{ type: 'length', field: 'descrip', min: 1 }
 		";
-		
+
 
 		$columnas = "
-		{ header: 'id',          width:  30, sortable: true, dataIndex: 'id' }, 
-		{ header: 'Codigo',      width:  90, sortable: true, dataIndex: 'codigo',  field: { type: 'textfield' }, filter: { type: 'string' } }, 
-		{ header: 'Descripcion', width: 200, sortable: true, dataIndex: 'descrip', field: { type: 'textfield' }, filter: { type: 'string' } }, 
+		{ header: 'id',          width:  30, sortable: true, dataIndex: 'id' },
+		{ header: 'Codigo',      width:  90, sortable: true, dataIndex: 'codigo',  field: { type: 'textfield' }, filter: { type: 'string' } },
+		{ header: 'Descripcion', width: 200, sortable: true, dataIndex: 'descrip', field: { type: 'textfield' }, filter: { type: 'string' } },
 		{ header: 'Unidad',      width:  90, sortable: true, dataIndex: 'unidad',  field: { type: 'textfield' }, filter: { type: 'string' } },
 		{ header: 'Tarifa',      width:  90, sortable: true, dataIndex: 'tarifa',  field: { type: 'numberfield'}, filter: { type: 'number' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
 		{ header: 'Cambio',      width:  90, sortable: true, dataIndex: 'dolar',   field: { type: 'numberfield'}, filter: { type: 'number' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')}
 	";
 
 		$campos = "'id', 'codigo', 'descrip', 'unidad', 'tarifa', 'dolar'";
-		
+
 		$camposforma = "
 							{
 							frame: false,
@@ -364,7 +361,7 @@ class aran extends validaciones {
 					beforeshow: function() {
 						var form = this.down('writerform').getForm();
 						this.activeRecord = registro;
-						
+
 						if (registro) {
 							form.loadRecord(registro);
 						}
@@ -385,9 +382,9 @@ class aran extends validaciones {
 		$data['titulow']     = $titulow;
 		$data['dockedItems'] = $dockedItems;
 		$data['winwidget']   = $winwidget;
-		
+
 		$data['title']  = heading('Aranceles');
 		$this->load->view('extjs/extjsven',$data);
 	}
-	
+
 }
