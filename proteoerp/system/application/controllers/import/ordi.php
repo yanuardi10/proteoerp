@@ -58,7 +58,7 @@ class Ordi extends Controller {
 		$grid = new DataGrid('Lista');
 		$grid->use_function('str_pad');
 		$grid->order_by('numero','desc');
-		$grid->per_page = 5;
+		$grid->per_page = 15;
 
 		$grid->column_orderby('N&uacute;mero',$uri,'numero');
 		$grid->column_orderby('Fecha'        ,'<dbdate_to_human><#fecha#></dbdate_to_human>','fecha','align=\'center\'');
