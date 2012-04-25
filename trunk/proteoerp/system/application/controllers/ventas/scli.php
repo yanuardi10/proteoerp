@@ -657,6 +657,8 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		$grid->column_orderby('T.M&aacute;xima','<nformat><#maxtole#></nformat>%','maxtole','align="right"');
 		$grid->column('Motivo','motivo');
 
+		$action = "javascript:window.location='".site_url('/reportes/ver/SCLILIMIT/SCLI')."'";
+		$grid->button('btn_reporte', 'Reporte', $action,'TR');
 		$grid->build();
 
 		$script= '<script type="text/javascript" >
