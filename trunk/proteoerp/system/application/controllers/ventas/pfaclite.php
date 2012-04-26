@@ -295,7 +295,7 @@ class pfaclite extends validaciones{
 
 		$edit->pdesca = new inputField('Descripci&oacute;n <#o#>', 'pdesca_<#i#>');
 		$edit->pdesca->size      = 32;
-		$edit->pdesca->db_name   = 'pdesca';
+		$edit->pdesca->db_name   = 'desca';
 		$edit->pdesca->maxlength = 50;
 		$edit->pdesca->readonly  = true;
 		$edit->pdesca->rel_id    = 'itpfac';
@@ -510,7 +510,11 @@ class pfaclite extends validaciones{
 	}
 
 	function _pre_insert($do){
-		$numero=$do->get('numero');
+		$numero  = $do->get('numero');
+		$usuario = $do->get('usuario');
+		$estampa = $do->get('estampa');
+		$hora    = $do->get('hora');  
+
 		if(empty($numero)){
 			$numero = $this->datasis->fprox_numero('npfac');
 			$do->set('numero', $numero);
@@ -549,6 +553,10 @@ class pfaclite extends validaciones{
 				$do->set_rel('itpfac', 'fecha'   , $fecha   , $i);
 				$do->set_rel('itpfac', 'vendedor', $vd      , $i);
 				$do->set_rel('itpfac', 'mostrado', $mostrado, $i);
+
+				$do->set_rel('itpfac', 'usuario', $usuario , $i);
+				$do->set_rel('itpfac', 'estampa', $estampa , $i);
+				$do->set_rel('itpfac', 'hora'   , $hora    , $i);
 
 				$iva    += $ittota*$itiva;
 				$totals += $ittota;
@@ -705,8 +713,9 @@ class pfaclite extends validaciones{
 						LEFT JOIN itsinv AS b ON a.codigo=b.codigo
 						WHERE a.codigo=$dbcodigo";
 					$hay=$this->datasis->dameval($mSQL);
+
 					if($hay<=0){
-						$msjfalla[]="Producto $codigo sin existencia, no se registro.";
+						$msjfalla[]="Producto $codigo sin existencia, no se registro, cliente $_POST[cod_cli].";
 						continue;
 					}
 
@@ -715,7 +724,7 @@ class pfaclite extends validaciones{
 
 					if($row[9]>$hay){
 						$_POST['cana_'.$o] = $hay;
-						$msjfalla[]="Producto $codigo entro en falla, se pidio $row[9] y se registro $hay.";
+						$msjfalla[]="Producto $codigo entro en falla, se pidio $row[9] y se registro $hay, cliente $_POST[cod_cli].";
 					}else{
 						$_POST['cana_'.$o] = $row[9];
 					}
@@ -733,9 +742,9 @@ class pfaclite extends validaciones{
 				$this->genesal=false;
 				$rrt=$this->dataedit($_POST['cod_cli'],'','');
 				$rt.=$rrt.'<br />';
-				if(count($msjfalla)>0){
-					$rt.=implode(br(),$msjfalla);
-				}
+			}
+			if(count($msjfalla)>0){
+				$rt.=implode(br(),$msjfalla).br();
 			}
 			$_POST=array();
 		}
