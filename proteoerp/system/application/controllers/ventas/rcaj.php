@@ -4,7 +4,6 @@ class Rcaj extends validaciones {
 	function Rcaj(){
 		parent::Controller();
 		$this->load->library('rapyd');
-		//$this->load->library("menues");
 		$this->datasis->modulo_id('12A',1);
 		$this->load->database();
 	}
@@ -415,7 +414,6 @@ class Rcaj extends validaciones {
 			}else{
 				redirect('ventas/rcaj/precierre');
 			}
-
 		}
 
 		$attr=array(
@@ -453,19 +451,27 @@ class Rcaj extends validaciones {
 
 		$form = new DataForm("ventas/rcaj/forcierre/$numero/process");
 
-		/*$form->titulos = new freeField("","","Recibido &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
-		$form->titulos1 = new freeField("","","Sistema &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
-		$form->titulos1->in='titulos';
-		$form->titulos2 = new freeField("","","Diferencia");
-		$form->titulos2->in='titulos';*/
-
 		$attr=array(
 			'class'  => 'ui-state-default ui-corner-all',
 			'onclick'=> "javascript:window.location='".site_url('ventas/rcaj/filteredgrid')."'",
 			'value'  => 'Regresar'
 		);
 
-		$mSQL="SELECT c.tipo,c.nombre ,b.recibido,b.sistema,b.diferencia
+		$totales=array(0,0,0,0);
+		$retiros=array();
+		$sel=array('TRIM(tipo) AS tipo','SUM(monto) AS monto');
+		$this->db->select($sel);
+		$this->db->from('rret');
+		$this->db->where('cierre',$numero);
+		$this->db->group_by('tipo');
+		$query = $this->db->get();
+		foreach ($query->result() as $row){
+			$retiros[$row->tipo] = nformat($row->monto);
+			$totales[0]+=$row->monto;
+		}
+		//$totales[0]=nformat($totales[0]);
+
+		$mSQL="SELECT TRIM(c.tipo) AS tipo,0 AS retiro,c.nombre ,b.recibido,b.sistema,b.diferencia
 		FROM rcaj    AS a
 		JOIN itrcaj  AS b ON a.numero=b.numero
 		JOIN tarjeta AS c ON c.tipo=b.tipo
@@ -473,20 +479,24 @@ class Rcaj extends validaciones {
 
 		$query = $this->db->query($mSQL);
 		if($query->num_rows()>0){
-			$totales=array(0,0,0);
-			$arr=array('recibido','sistema','diferencia');
+			$arr=array('retiro','recibido','sistema','diferencia');
 			foreach ($query->result() as $i=>$row){
 				foreach($arr AS $o=>$nobj){
 					$obj = $nobj.$row->tipo;
 					$totales[$o]+=$row->$nobj;
 					$form->$obj = new inputField('('.$row->tipo.') '.$row->nombre, $obj);
 					$form->$obj->style='text-align:right';
-					$form->$obj->insertValue=$row->$nobj;
+					if($nobj=='retiro'){
+						$form->$obj->insertValue= (isset($retiros[$row->tipo]))? $retiros[$row->tipo] : 0 ;
+					}else{
+						$form->$obj->insertValue=$row->$nobj;
+					}
+
 					$form->$obj->size=10;
 					$form->$obj->rule='numeric';
 					$form->$obj->autocomplete=false;
-					if($o==0) $sobj=$obj; else $form->$obj->in=$sobj;
-					if($o!=0) {
+					//if($o==0) $sobj=$obj; else $form->$obj->in=$sobj;
+					if($o!=1) {
 						$form->$obj->readonly=true;
 						$form->$obj->type='inputhidden';
 					}
@@ -542,6 +552,8 @@ class Rcaj extends validaciones {
 			$("#tdiferencia").val(roundNumber(TDIFE,2));
 			$("#trecibido_val").text(nformat(TRECI,2));
 			$("#tdiferencia_val").text(nformat(TDIFE,2));
+			$("#tretiro_val").text(nformat($("#tretiro").val(),2));
+			$("#tsistema_val").text(nformat($("#tsistema").val(),2));
 		}';
 		$this->rapyd->jquery[]='gtotal();';
 
@@ -741,6 +753,7 @@ class Rcaj extends validaciones {
 		JOIN rcaj AS b ON a.fecha=b.fecha AND b.cajero=a.cajero
 		WHERE a.referen='C' AND b.numero=${dbnumero}");
 
+		$cont['retiros'] = $retiros;
 		$cont['credito'] = (empty($credito))? 0 : $credito;
 		$cont['form']    = &$form;
 		$data['content'] = $this->load->view('view_rcajcierre',$cont, true);
@@ -763,7 +776,7 @@ class Rcaj extends validaciones {
 
 	function _reversar($numero){
 		$dbnumero=$this->db->escape($numero);
-		$mSQL='SELECT tipo, transac FROM rcaj WHERE numero='.$dbnumero;
+		$mSQL  = 'SELECT tipo, transac FROM rcaj WHERE numero='.$dbnumero;
 		$query = $this->db->query($mSQL);
 		$er    = 0;
 
@@ -801,7 +814,7 @@ class Rcaj extends validaciones {
 			$ban =$this->db->simple_query($mSQL);
 			if($ban==false) memowrite($mSQL,'rcaj');
 			$er +=$ban;
-			$mSQL='UPDATE rret SET cierre=NULL WHERE numero='.$dbnumero;
+			$mSQL='UPDATE rret SET cierre=NULL WHERE cierre='.$dbnumero;
 			$ban =$this->db->simple_query($mSQL);
 			if($ban==false) memowrite($mSQL,'rcaj');
 			$er +=$ban;
@@ -824,15 +837,35 @@ class Rcaj extends validaciones {
 	}
 
 	function instalar(){
-		$mSQL="CREATE TABLE `itrcaj` (`numero` VARCHAR (8), `tipo` VARCHAR (15), `recibido` DECIMAL (17,2), `sistema` DECIMAL (17,2), `diferencia` DECIMAL (17,2),PRIMARY KEY (`numero`, `tipo`))";
-		$this->db->simple_query($mSQL);
-		$mSQL="ALTER TABLE `itrcaj`  ADD COLUMN `cierre` CHAR(1) NOT NULL DEFAULT 'N' AFTER `tipo`";
-		$this->db->simple_query($mSQL);
+		if(!$this->db->table_exists('itrcaj')){
+			$mSQL="CREATE TABLE `itrcaj` (
+				`numero` VARCHAR(8) NOT NULL DEFAULT '' COLLATE 'latin1_swedish_ci',
+				`tipo` VARCHAR(15) NOT NULL DEFAULT '' COLLATE 'latin1_swedish_ci',
+				`cierre` CHAR(1) NOT NULL DEFAULT 'N' COLLATE 'latin1_swedish_ci',
+				`recibido` DECIMAL(17,2) NULL DEFAULT NULL,
+				`sistema` DECIMAL(17,2) NULL DEFAULT NULL,
+				`diferencia` DECIMAL(17,2) NULL DEFAULT NULL,
+				PRIMARY KEY (`numero`, `tipo`, `cierre`)
+			)
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM;";
+			$this->db->simple_query($mSQL);
+		}
+
+		if($this->db->field_exists('cierre', 'itrcaj')){
+			$mSQL="ALTER TABLE `itrcaj`  ADD COLUMN `cierre` CHAR(1) NOT NULL DEFAULT 'N' AFTER `tipo`";
+			$this->db->simple_query($mSQL);
+		}
 		$mSQL="ALTER TABLE `itrcaj`  DROP PRIMARY KEY,  ADD PRIMARY KEY (`numero`, `tipo`, `cierre`)";
 		$this->db->simple_query($mSQL);
-		$mSQL="ALTER TABLE `sfpa`  ADD COLUMN `cierre` CHAR(8) DEFAULT '' AFTER `hora`";
-		$this->db->simple_query($mSQL);
+
+		if($this->db->field_exists('cierre', 'sfpa')){
+			$mSQL="ALTER TABLE `sfpa`  ADD COLUMN `cierre` CHAR(8) DEFAULT '' AFTER `hora`";
+			$this->db->simple_query($mSQL);
+		}
+
 		$mSQL="ALTER TABLE `rcaj` CHANGE COLUMN `estampa` `estampa` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP";
 		$this->db->simple_query($mSQL);
+
 	}
 }

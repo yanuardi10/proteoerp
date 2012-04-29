@@ -5,7 +5,7 @@ class Rret extends validaciones {
 		parent::Controller();
 		$this->load->library('rapyd');
 		//$this->datasis->modulo_id('12A',1);
-		$this->load->database();
+		//$this->load->database();
 	}
 
 	function index(){
@@ -22,15 +22,13 @@ class Rret extends validaciones {
 		$filter->fechah = new dateonlyField('Hasta', 'fechah','d/m/Y');
 		$filter->fechad->clause  =$filter->fechah->clause='where';
 		$filter->fechad->db_name =$filter->fechah->db_name='fecha';
-		//$filter->fechad->insertValue = date('Y-m-d');
-		//$filter->fechah->insertValue = date('Y-m-d');
 		$filter->fechah->size=$filter->fechad->size=11;
 		$filter->fechad->operator='>=';
 		$filter->fechah->operator='<=';
 
 		$filter->cajero = new dropdownField('Cajero', 'cajero');
 		$filter->cajero->option('','Todos');
-		$filter->cajero->options('SELECT cajero, nombre FROM scaj ORDER BY nombre');
+		$filter->cajero->options('SELECT TRIM(cajero) AS cajero, nombre FROM scaj ORDER BY nombre');
 
 		$filter->buttons('reset','search');
 		$filter->build();
@@ -64,7 +62,7 @@ class Rret extends validaciones {
 		$form->cajero->rule='required';
 		$form->cajero->insertValue=$cajero;
 		$form->cajero->option('','Seleccionar');
-		$form->cajero->options('SELECT cajero,CONCAT_WS("-",cajero,nombre) FROM scaj ORDER BY cajero');
+		$form->cajero->options('SELECT TRIM(cajero) AS cajero,CONCAT_WS("-",cajero,nombre) FROM scaj ORDER BY cajero');
 
 		$form->submit('btnsubmit','Retirar');
 		$form->build_form();
@@ -260,7 +258,10 @@ class Rret extends validaciones {
 	}
 
 	function retirohechocaj($cajero,$monto){
-		$data['content'] = "<H1>Retiro realizado al cajero <b>$cajero</b></H1> <H1>por un monto de <b>".nformat($monto)."</b></H1>".br();
+		$nombre=$this->datasis->dameval('SELECT nombre FROM scaj WHERE cajero='.$this->db->escape($cajero));
+
+		$data['content'] = "<h1>Retiro realizado al cajero <b>$cajero - $nombre</b></h1>";
+		$data['content'].= "<p>por un monto de <b>".nformat($monto)."</b></p>";
 		$data['content'].= '<center>'.anchor('ventas/rret/retirocaj','Regresar').'</center>';
 		$data['title']   = '<h1>Retiros de Caja</h1>';
 		$data['head']    = $this->rapyd->get_head();
@@ -269,7 +270,7 @@ class Rret extends validaciones {
 
 
 	function retirohecho($cajero,$monto){
-		$data['content'] = "Retiro realizado al cajero <b>$cajero</b> por un monto de <b>".nformat($monto)."</b>".br();
+		$data['content'] = "Retiro realizado al cajero <b>$cajero</b> por un monto de <b>".nformat($monto).'</b>'.br();
 		$data['content'].= '<center>'.anchor('ventas/rret','Regresar').'</center>';
 		$data['title']   = '<h1>Retiros de Caja</h1>';
 		$data['head']    = $this->rapyd->get_head();
