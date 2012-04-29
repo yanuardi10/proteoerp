@@ -1093,6 +1093,56 @@ class rivc extends Controller {
 				$mSQL = $this->db->insert_string('smov', $data);
 				$ban=$this->db->simple_query($mSQL);
 				if($ban==false){ memowrite($mSQL,'RIVC'); }
+
+				//Aplica la NC a la ND si es posible
+
+				/*$data=array();
+				$data['numccli']    = $itnumero;
+				$data['tipoccli']   = ($ittipo_doc=='F')? 'FC' : 'ND';
+				$data['cod_cli']    = $cod_cli;
+				$data['tipo_doc']   = 'NC';
+				$data['numero']     = $mnumnc;
+				$data['fecha']      = $fecha;
+				$data['monto']      = $itmonto;
+				$data['abono']      = $itmonto;
+				$data['ppago']      = 0;
+				$data['reten']      = 0;
+				$data['cambio']     = 0;
+				$data['mora']       = 0;
+				$data['transac']    = $transac;
+				$data['estampa']    = $estampa;
+				$data['hora']       = $hora;
+				$data['usuario']    = $usuario;
+				$data['reteiva']    = 0;
+				$data['nroriva']    = '';
+				$data['emiriva']    = '';
+				$data['recriva']    = '';
+
+				$mSQL = $this->db->insert_string('itccli', $data);
+				$ban=$this->db->simple_query($mSQL);
+				if($ban==false){ memowrite($mSQL,'rivc');}*/
+
+				/*$data=array();
+				$data['cod_cli']    = 'REIVA';
+				$data['nombre']     = 'RETENCION DE I.V.A. POR COMPENSAR';
+				$data['tipo_doc']   = 'ND';
+				$data['numero']     = $mnumnd;
+				$data['fecha']      = $fecha;
+				$data['monto']      = $itmonto;
+				$data['impuesto']   = 0;
+				$data['abonos']     = 0;
+				$data['vence']      = $vence;
+				$data['tipo_ref']   = 'FC';
+				$data['num_ref']    = $do->get_rel($rel, 'numero'  , $i);
+				$data['observa1']   = 'RET/IVA DE '.$cod_cli.' A DOC. FC'.$do->get_rel($rel,'numero', $i);
+				$data['estampa']    = $estampa;
+				$data['hora']       = $hora;
+				$data['transac']    = $transac;
+				$data['usuario']    = $usuario;
+				$data['codigo']     = 'NOCON';
+				$data['descrip']    = 'NOTA DE CONTABILIDAD';
+				$data['nroriva']    = $comprob;
+				$data['emiriva']    = $efecha;*/
 			}
 		}
 
