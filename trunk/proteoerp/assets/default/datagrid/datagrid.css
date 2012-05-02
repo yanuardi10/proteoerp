@@ -1,0 +1,24 @@
+/* 
+    Document   : datagrid
+    Created on : 13/08/2010, 11:52:57 AM
+    Author     : vicman
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+/* 
+   TODO customize this sample style
+   Syntax recommendation http://www.w3.org/TR/REC-CSS2/
+*/
+
+root { 
+    display: block;
+}
+
+.dtgExcelIcon {
+
+            background-image: url("images/excel.gif") !important;
+            left: 0px;
+}
+
+
