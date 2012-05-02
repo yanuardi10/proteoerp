@@ -45,8 +45,13 @@
 					?>
 				</tr>
 				<tr>
-					<td> Monto a cr&eacute;dito:</td>
-					<td><?php echo nformat($credito); ?></td>
+					<td>Monto a cr&eacute;dito:</td>
+					<td align='right'><?php echo nformat($credito); ?></td>
+					<td colspan=3 align='right'></td>
+				</tr>
+				<tr>
+					<td>Apartado de Retenci&oacute;n:</td>
+					<td align='right'><?php echo nformat($rp); ?></td>
 					<td colspan=3 align='right'><?php echo implode('',$form->_button_container['BL']); ?></td>
 				</tr>
 			</table>

@@ -118,18 +118,18 @@ class Bcaj extends Controller {
 
 		$data['content'].= '<tr><td><img src="'.base_url().'images/dinero.jpg'.'" height="100px"></td><td bgcolor="#ddeedd">';
 		$data['content'].= '<p>'.anchor('finanzas/bcaj/depositoefe'  ,'Deposito de efectivo: ');
-		$data['content'].= 'Esta opci&oacute;n se utiliza para depositar lo recaudado en efectivo desde 
+		$data['content'].= 'Esta opci&oacute;n se utiliza para depositar lo recaudado en efectivo desde
 		                    las cajas para los bancos, debe tener a mano el n&uacute;mero del deposito.</p>';
 
 		$data['content'].= '</td></tr><tr><td><img src="'.base_url().'images/tarjetas.jpg'.'" height="100px"></td><td>';
 		$data['content'].= '<p>'.anchor('finanzas/bcaj/depositotar'  ,'Deposito de tarjetas: ');
-		$data['content'].= 'Para registrar lo recaudado mediante tarjetas electr&oacute;nicas (Cr&eacute;dito, Debito, Cesta Ticket) 
+		$data['content'].= 'Para registrar lo recaudado mediante tarjetas electr&oacute;nicas (Cr&eacute;dito, Debito, Cesta Ticket)
 		                    seg&uacute;n los valores impresos en los cierres diarios de los puntos de venta electr&oacute;nicos.</p>';
 
 		$data['content'].= '</td></tr><tr><td><img src="'.base_url().'images/transfer.jpg'.'" height="100px" ></td><td bgcolor="#ddeedd">';
 		$data['content'].= '<p>'.anchor('finanzas/bcaj/transferencia','Transferencias: ');
 		$data['content'].= 'Puede hacer transferencias entre cajas o entre cuentas bancarias, las que correspondan a
-		                    cuentas bancarias pueden realizarce mediante cheque-deposito (manual) o NC-ND por transferencia 
+		                    cuentas bancarias pueden realizarce mediante cheque-deposito (manual) o NC-ND por transferencia
 		                    electr&oacute;nica, en cualquier caso debe tener los n&uacute;meros de documentos correspondientes.</p>';
 
 		$data['content'].= '</td></tr><tr><td><img src="'.base_url().'images/caja_activa.gif'.'" height="100px" ></td><td>';
@@ -144,7 +144,7 @@ class Bcaj extends Controller {
 
 		$data['content'].= '</td></tr><tr><td colspan=2 align="center">'.anchor('finanzas/bcaj/index'        ,'Regresar').br();
 		$data['content'].= '</td></tr></table>'.br();
-		
+
 		$data['title']   = heading('Selecciona la operaci&oacute;n que desea realizar');
 		$data['head']    = $this->rapyd->get_head();  //.phpscript('nformat.js');
 		$this->load->view('view_ventanas', $data);
@@ -212,7 +212,7 @@ class Bcaj extends Controller {
 		//$edit->$obj->readonly=true;
 		//$edit->recibe->style = 'width:180px';
 
-		$numero=$edit->_dataobject->get('numero');
+		/*$numero=$edit->get_from_dataobjetct('numero');
 		$detalle = new DataDetalle($edit->_status);
 
 			//Campos para el detalle
@@ -253,7 +253,7 @@ class Bcaj extends Controller {
 			//$detalle->column("Cantidad"          ,"<#cantidad#>");
 			$detalle->build();
 
-		$edit->detalle=new freeField("detalle", 'detalle',$detalle->output);
+		$edit->detalle=new freeField("detalle", 'detalle',$detalle->output);*/
 
 		$back_url = site_url('finanzas/bcaj/agregar');
 		$edit->button('btn_undo', 'Regresar', "javascript:window.location='${back_url}'", 'TR');
@@ -454,7 +454,7 @@ class Bcaj extends Controller {
 				'cheques' =>'Cheques',
 				'efectivo'=>'Efectivo',
 				'monto'   =>'Monto total');
-		
+
 		foreach($campos AS $obj=>$titulo){
 			$edit->$obj = new inputField($titulo, $obj);
 			$edit->$obj->css_class='inputnum';
@@ -468,7 +468,7 @@ class Bcaj extends Controller {
 
 		$edit->envia->rule   = 'required';
 		$edit->envia->style  = 'width:180px';
-		$edit->recibe->style = 'width:180px';
+		$edit->recibe->style .= 'width:180px';
 
 		$back_url = site_url('finanzas/bcaj/agregar');
 		$edit->button('btn_undo', 'Regresar', "javascript:window.location='${back_url}'", 'TR');
@@ -649,7 +649,7 @@ class Bcaj extends Controller {
 		$edit->fecha->rule = 'chfecha|required';
 		$edit->fecha->dbformat='Y-m-d';
 		$edit->fecha->size=10;
-		
+
 		$back_url=site_url('finanzas/bcaj/agregar');
 		$edit->button('btn_undo','Regresar',"javascript:window.location='$back_url'",'BL');
 		$edit->submit('btnsubmit','Siguiente');
@@ -827,7 +827,7 @@ class Bcaj extends Controller {
 				$sql="DELETE FROM bmov WHERE transac=$transac";
 				$ban=$this->db->simple_query($sql);
 				if($ban==false){ memowrite($sql,'bcaj'); $error++; }
-				
+
 				$monto=$row->monto;
 				$sql='CALL sp_actusal('.$this->db->escape($row->envia).",'$sp_fecha',$monto)";
 				$ban=$this->db->simple_query($sql);
@@ -991,6 +991,10 @@ class Bcaj extends Controller {
 		$transac= $this->datasis->fprox_numero('ntransa');
 		$numeroe= $this->datasis->banprox($envia);
 		$numeroe = str_pad($numeroe, 12, '0', STR_PAD_LEFT);
+		$usuario = $this->secu->usuario();
+		$estampa = date('Y-m-d');
+		$hora    = date('H:i:s');
+		$benefi  = trim($this->datasis->traevalor('TITULO1'));
 		//$numeror = ($_numeror===false)? str_pad($numeror, 12, '0', STR_PAD_LEFT): $_numeror;
 
 
@@ -1007,7 +1011,7 @@ class Bcaj extends Controller {
 				$infbanc[$row->codbanc]['numcuent']=$row->numcuent;
 				$infbanc[$row->codbanc]['tbanco']  =$row->tbanco;
 				$infbanc[$row->codbanc]['banco']   =$row->banco;
-				$infbanc[$row->codbanc]['saldo']   =$row->banco;
+				$infbanc[$row->codbanc]['saldo']   =$row->saldo;
 			}
 		}
 
@@ -1016,7 +1020,7 @@ class Bcaj extends Controller {
 			'fecha'   => $fecha,
 			'numero'  => $numero,
 			'transac' => $transac,
-			'usuario' => $this->session->userdata('usuario'),
+			'usuario' => $usuario,
 			'envia'   => $envia,
 			'tipoe'   => 'ND',
 			'numeroe' => $numeroe,
@@ -1027,14 +1031,14 @@ class Bcaj extends Controller {
 			'bancor'  => $infbanc[$recibe]['banco'],
 			'concepto'=> 'DEPOSITO DE CAJA '.$envia.' A BANCO '.$recibe,
 			'concep2' => ($auto)? 'AUTOTRANFER' : '',
-			'benefi'  => '',
+			'benefi'  => $benefi,
 			'boleta'  => '',
 			'precinto'=> '',
 			'comprob' => '',
 			'totcant' => '',
 			'status'  => '',
-			'estampa' => date('Ymd'),
-			'hora'    => date('H:i:s'),
+			'estampa' => $estampa,
+			'hora'    => $hora,
 			'deldia'  => $fecha,
 			'tarjeta' => 0,
 			'tdebito' => 0,
@@ -1055,24 +1059,26 @@ class Bcaj extends Controller {
 		if($ban==false){ memowrite($mSQL,'bcaj'); $error++; }
 
 		$data=array();
-			$data['codbanc']  = $envia;
-			$data['numcuent'] = $infbanc[$envia]['numcuent'];
-			$data['banco']    = $infbanc[$envia]['banco'];
-			$data['saldo']    = $infbanc[$envia]['saldo'];
-			$data['tipo_op']  = 'ND';
-			$data['numero']   = $numeroe;
-			$data['fecha']    = $fecha;
-			$data['clipro']   = 'O';
-			$data['codcp']    = 'TRANS';
-			$data['monto']    = $monto;
-			$data['concepto'] = 'DEPOSITO DE CAJA '.$envia.' A BANCO '.$recibe;
-			$data['concep2']  = '';
-			$data['transac']  = $transac;
-			$data['usuario']  = $this->session->userdata('usuario');
-			$data['estampa']  = date('Ymd');
-			$data['hora']     = date('H:i:s');
-			$data['benefi']   = '-';
-			$data['moneda']   = $moneda;
+		$data['codbanc']  = $envia;
+		$data['numcuent'] = $infbanc[$envia]['numcuent'];
+		$data['banco']    = $infbanc[$envia]['banco'];
+		$data['saldo']    = $infbanc[$envia]['saldo'];
+		$data['tipo_op']  = 'ND';
+		$data['numero']   = $numeroe;
+		$data['fecha']    = $fecha;
+		$data['clipro']   = 'O';
+		$data['codcp']    = 'CAJAS';
+		$data['nombre']   = 'DEPOSITO DESDE CAJA';
+		$data['monto']    = $monto;
+		$data['concepto'] = 'DEPOSITO DE CAJA '.$envia.' A BANCO '.$recibe;
+		$data['concep2']  = '';
+		$data['transac']  = $transac;
+		$data['usuario']  = $usuario;
+		$data['estampa']  = $estampa;
+		$data['hora']     = $hora;
+		$data['benefi']   = '-';
+		$data['comprob']  = $numero;
+		$data['moneda']   = $moneda;
 
 		$sql=$this->db->insert_string('bmov', $data);
 		$ban=$this->db->simple_query($sql);
@@ -1088,19 +1094,25 @@ class Bcaj extends Controller {
 		$data['numcuent'] = $infbanc[$recibe]['numcuent'];
 		$data['banco']    = $infbanc[$recibe]['banco'];
 		$data['saldo']    = $infbanc[$recibe]['saldo'];
-		$data['tipo_op']  = 'NC';
+		$data['tipo_op']  = 'DE';
 		$data['numero']   = $numeror;
 		$data['fecha']    = $fecha;
 		$data['clipro']   = 'O';
-		$data['codcp']    = 'TRANS';
+		$data['bruto']    = 0;
+		$data['comision'] = 0;
+		$data['impuesto'] = 0;
+		$data['codcp']    = 'CAJAS';
+		$data['nombre']   = 'DEPOSITO DESDE CAJA';
 		$data['monto']    = $monto;
 		$data['concepto'] = 'DEPOSITO DE CAJA '.$envia.' A BANCO '.$recibe;
 		$data['concep2']  = '';
 		$data['transac']  = $transac;
-		$data['usuario']  = $this->session->userdata('usuario');
-		$data['estampa']  = date('Ymd');
-		$data['hora']     = date('H:i:s');
+		$data['usuario']  = $usuario;
+		$data['estampa']  = $estampa;
+		$data['hora']     = $hora;
 		$data['benefi']   = '-';
+		$data['documen']  = $numero;
+		$data['comprob']  = $numero;
 		$data['moneda']   = $moneda;
 		$sql=$this->db->insert_string('bmov', $data);
 		$ban=$this->db->simple_query($sql);
@@ -1117,6 +1129,9 @@ class Bcaj extends Controller {
 		$numeroe = $this->datasis->banprox($envia);
 		$dbrecibe= $this->db->escape($recibe);
 		$sp_fecha= str_replace('-','',$fecha);
+		$usuario = $this->secu->usuario();
+		$estampa = date('Y-m-d');
+		$hora    = date('H:i:s');
 		$error   = 0;
 		$this->bcajnumero=$numero;
 
@@ -1144,7 +1159,6 @@ class Bcaj extends Controller {
 			'fecha'   => $fecha,
 			'numero'  => $numero,
 			'transac' => $transac,
-			'usuario' => $this->session->userdata('usuario'),
 			'envia'   => $envia,
 			'tipoe'   => 'ND',
 			'numeroe' => $numeroe,
@@ -1161,8 +1175,9 @@ class Bcaj extends Controller {
 			'comprob' => '',
 			'totcant' => 0,
 			'status'  => '',
-			'estampa' => date('Ymd'),
-			'hora'    => date('H:i:s'),
+			'usuario' => $usuario,
+			'estampa' => $estampa,
+			'hora'    => $hora,
 			'deldia'  => $fecha,
 			'tarjeta' => $tarjeta,
 			'tdebito' => $tdebito,
@@ -1193,9 +1208,9 @@ class Bcaj extends Controller {
 		$data['concep2']  = '';
 		$data['comprob']  = $numero;
 		$data['transac']  = $transac;
-		$data['usuario']  = $this->session->userdata('usuario');
-		$data['estampa']  = date('Ymd');
-		$data['hora']     = date('H:i:s');
+		$data['usuario']  = $usuario;
+		$data['estampa']  = $estampa;
+		$data['hora']     = $hora;
 		$data['moneda']   = $moneda;
 		$sql=$this->db->insert_string('bmov', $data);
 		$ban=$this->db->simple_query($sql);
@@ -1226,9 +1241,9 @@ class Bcaj extends Controller {
 		$data['comprob']  = $numero;
 		$data['documen']  = $numero;
 		$data['transac']  = $transac;
-		$data['usuario']  = $this->session->userdata('usuario');
-		$data['estampa']  = date('Ymd');
-		$data['hora']     = date('H:i:s');
+		$data['usuario']  = $usuario;
+		$data['estampa']  = $estampa;
+		$data['hora']     = $hora;
 		$data['moneda']   = $moneda;
 		$sql=$this->db->insert_string('bmov', $data);
 		$ban=$this->db->simple_query($sql);
@@ -1260,9 +1275,9 @@ class Bcaj extends Controller {
 				$data['comprob']  = $numero;
 				$data['documen']  = $numero;
 				$data['transac']  = $transac;
-				$data['usuario']  = $this->session->userdata('usuario');
-				$data['estampa']  = date('Ymd');
-				$data['hora']     = date('H:i:s');
+				$data['usuario']  = $usuario;
+				$data['estampa']  = $estampa;
+				$data['hora']     = $hora;
 				$data['moneda']   = $moneda;
 				$sql=$this->db->insert_string('bmov', $data);
 				$ban=$this->db->simple_query($sql);
@@ -1299,9 +1314,9 @@ class Bcaj extends Controller {
 			$data['orden']    = '';
 			$data['tipo_doc'] = 'FC';
 			$data['transac']  = $transac;
-			$data['usuario']  = $this->session->userdata('usuario');
-			$data['estampa']  = date('Ymd');
-			$data['hora']     = date('H:i:s');
+			$data['usuario']  = $usuario;
+			$data['estampa']  = $estampa;
+			$data['hora']     = $hora;
 			$sql=$this->db->insert_string('gser', $data);
 			$ban=$this->db->simple_query($sql);
 			if($ban==false){ memowrite($sql,'bcaj'); $error++; }
@@ -1321,9 +1336,9 @@ class Bcaj extends Controller {
 			$data['departa']  = $infbanc[$recibe]['depto'];
 			$data['sucursal'] = ' ';
 			$data['transac']  = $transac;
-			$data['usuario']  = $this->session->userdata('usuario');
-			$data['estampa']  = date('Ymd');
-			$data['hora']     = date('H:i:s');
+			$data['usuario']  = $usuario;
+			$data['estampa']  = $estampa;
+			$data['hora']     = $hora;
 			$sql=$this->db->insert_string('gitser', $data);
 			$ban=$this->db->simple_query($sql);
 			if($ban==false){ memowrite($sql,'bcaj'); $error++; }
@@ -1351,9 +1366,9 @@ class Bcaj extends Controller {
 				$data['comprob']  = $numero;
 				$data['documen']  = $numero;
 				$data['transac']  = $transac;
-				$data['usuario']  = $this->session->userdata('usuario');
-				$data['estampa']  = date('Ymd');
-				$data['hora']     = date('H:i:s');
+				$data['usuario']  = $usuario;
+				$data['estampa']  = $estampa;
+				$data['hora']     = $hora;
 				$data['moneda']   = $moneda;
 				$sql=$this->db->insert_string('bmov', $data);
 				$ban=$this->db->simple_query($sql);
@@ -1379,9 +1394,9 @@ class Bcaj extends Controller {
 			$data['observa2'] = '';
 			$data['control']  = $nsmov;
 			$data['transac']  = $transac;
-			$data['usuario']  = $this->session->userdata('usuario');
-			$data['estampa']  = date('Ymd');
-			$data['hora']     = date('H:i:s');
+			$data['usuario']  = $usuario;
+			$data['estampa']  = $estampa;
+			$data['hora']     = $hora;
 			$sql=$this->db->insert_string('smov', $data);
 			$ban=$this->db->simple_query($sql);
 			if($ban==false){ memowrite($sql,'bcaj'); $error++; }
