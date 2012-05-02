@@ -24,6 +24,12 @@ if( isset($tema) == false) {
 <?php echo script('jquery-ui-1.8.18.custom.min.js') ?>
 
 
+
+<!-- Impromptu -->
+
+<?php echo script('jquery-impromptu.js') ?>
+<?php echo style('impromptu/default.css') ?>
+
 <!-- JQGRID -->
 <?php echo style('themes/ui.jqgrid.css') ?>
 <?php echo script('i18n/grid.locale-sp.js') ?>
