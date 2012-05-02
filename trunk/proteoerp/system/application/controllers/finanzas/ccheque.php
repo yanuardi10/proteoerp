@@ -40,7 +40,7 @@ jQuery("#a1").click( function(){
 	if (id)	{
 		var ret = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getRowData\',id);
 		window.open(\''.base_url().'formatos/ver/CCHEQUE/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');		
-	} else { alert("Por favor Seleccione una Solicitud");}
+	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
 });
 
 
@@ -124,14 +124,14 @@ jQuery("#a1").click( function(){
 													dataType: "json",
 													data: request,
 													type: "POST",
-													error: function(res, status) { alert(res.status+" : "+res.statusText+". Status: "+status);},
+													error: function(res, status) { $.prompt(res.status+" : "+res.statusText+". Status: "+status);},
 													success: function( data ) { response( data );	}
 												});
 											}
 										});
 										jQuery(el).autocomplete("widget").css("font-size","11px");
 									} 
-								} else { alert("Falta jQuery UI") }
+								} else { $.prompt("Falta jQuery UI") }
 							},200);
 						},
 						}'
@@ -280,10 +280,10 @@ jQuery("#a1").click( function(){
 		$grid->setTitle($this->titp);
 		$grid->setfilterToolbar(true);
 		//$grid->setToolbar('true, "top"');
-		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){ if (a.responseText.length > 0)	alert(a.responseText); return [true, a ];} ');
-		$grid->setFormOptionsA('closeAfterAdd: true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){ if (a.responseText.length > 0)	alert(a.responseText); return [true, a ];} ');
+		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){ if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		$grid->setFormOptionsA('closeAfterAdd: true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){ if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
 
-		$grid->setAfterSubmit("alert('Respuesta:'+a.responseText); return [true, a ];");
+		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
 
 
 		#show/hide navigations buttons
