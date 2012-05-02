@@ -80,7 +80,35 @@ class Rret extends validaciones {
 	function retiro($cajero=NULL){
 		//Para cuando venga de datasis y sin parametros
 		if(is_null($cajero)){
+			$data['content'] = 'No ha seleccionado ning&uacute;n cajero. no puede realizar el retiro '.anchor('ventas/rret/crear','Regresar');
+			$data['title']   = heading('Retiro para el cajero '.$cajero);
+			$data['head']    =
+			$this->load->view('view_ventanas', $data);
 			return;
+		}else{
+			$this->db->select(array('a.status'));
+			$this->db->from('scaj AS a');
+			$this->db->where('a.cajero',$cajero);
+			$query = $this->db->get();
+
+			if ($query->num_rows() > 0){
+				$row = $query->row();
+				if($row->status=='C'){
+					//Cajero cerrado
+					$data['content'] = 'El cajero seleccionado fue cerrado. no puede realizar el retiro '.anchor('ventas/rret/crear','Regresar');
+					$data['title']   = heading('Retiro para el cajero '.$cajero);
+					$data['head']    =
+					$this->load->view('view_ventanas', $data);
+					return;
+				}
+			}else{
+				//Cajero no existe
+				$data['content'] = 'El cajero seleccionado no existe. no puede realizar el retiro '.anchor('ventas/rret/crear','Regresar');
+				$data['title']   = heading('Retiro para el cajero '.$cajero);
+				$data['head']    =
+				$this->load->view('view_ventanas', $data);
+				return;
+			}
 		}
 
 		$this->rapyd->load('dataform');
