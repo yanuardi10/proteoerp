@@ -949,7 +949,6 @@ class sfac_add extends validaciones {
 				$do->set_rel('sfpa','cod_cli'  ,$cliente   ,$i);
 				$do->set_rel('sfpa','f_factura',$fecha     ,$i);
 				$do->set_rel('sfpa','fecha'    ,$fecha     ,$i);
-				$do->set_rel('sfpa','cobro'    ,$fecha     ,$i);
 				$do->set_rel('sfpa','cobrador' ,$cajero    ,$i);
 				$do->set_rel('sfpa','numero'   ,$numero    ,$i);
 				$do->set_rel('sfpa','almacen'  ,$almacen   ,$i);

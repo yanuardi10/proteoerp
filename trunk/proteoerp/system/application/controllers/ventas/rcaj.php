@@ -324,6 +324,10 @@ class Rcaj extends validaciones {
 				SELECT e.tipo,e.monto AS monto
 				FROM sfpa AS e
 				WHERE e.f_factura=$dbfecha AND e.cobrador=$dbcajero AND e.tipo_doc IN ('AB','AN')
+				UNION ALL
+				SELECT d.tipo,d.monto AS monto
+				FROM sfpa AS d
+				WHERE d.f_factura=$dbfecha AND d.cobrador=$dbcajero AND d.tipo_doc = 'CC'
 				) AS aa
 				RIGHT JOIN tarjeta AS c ON aa.tipo=c.tipo GROUP BY c.tipo";
 
@@ -334,6 +338,13 @@ class Rcaj extends validaciones {
 				foreach ($retiquery->result() as $rreti){
 					$rret[$rreti->tipo] = $rreti->monto;
 				}
+			}
+
+			//Toma en cuenta los cambios de cheque
+			$ccheq=0;
+			$ccquery = $this->db->query("SELECT SUM(d.monto) AS monto FROM sfpa AS d WHERE d.f_factura=$dbfecha AND d.cobrador=$dbcajero AND d.tipo_doc = 'CC'");
+			foreach ($ccquery->result() as $ccrow){
+				$ccheq += $ccrow->monto;
 			}
 
 			$query = $this->db->query($mSQL);
@@ -354,12 +365,13 @@ class Rcaj extends validaciones {
 					$recibido = (isset($form->$nobj))? (empty($form->$nobj->newValue))? 0.00 :floatval($form->$nobj->newValue) : 0.00;
 					if(array_key_exists($row->tipo, $rret)) $recibido += $rret[$row->tipo];
 					if($row->monto>0 || $recibido>0){
+						$monto = ($row->tipo=='EF')? $row->monto-$ccheq : $row->monto;
 						$str.= $row->tipo.' '.$recibido.'  ';
 						$arr['tipo']       = $row->tipo;
 						$arr['recibido']   = $recibido;
-						$arr['sistema']    = $row->monto;
-						$arr['diferencia'] = $recibido-$row->monto;
-						$ingreso   += $row->monto;
+						$arr['sistema']    = $monto;
+						$arr['diferencia'] = $recibido-$monto;
+						$ingreso   += $monto;
 						$rrecibido += $recibido;
 						$mSQL = $this->db->insert_string('itrcaj', $arr);
 						$this->db->simple_query($mSQL);
@@ -490,7 +502,7 @@ class Rcaj extends validaciones {
 
 			foreach($arr AS $o=>$nobj){
 				$obj = 't'.$nobj;
-				$form->$obj = new inputField('Totales:', $obj);
+				$form->$obj = new inputField('<b>Totales:</b>', $obj);
 				$form->$obj->style='text-align:right';
 				$form->$obj->size=10;
 				$form->$obj->insertValue=$totales[$o];
@@ -788,13 +800,25 @@ class Rcaj extends validaciones {
 		JOIN rcaj AS b ON a.fecha=b.fecha AND b.cajero=a.cajero
 		WHERE a.referen='C' AND b.numero=${dbnumero}");
 
+		$rp=0;
 		$mSQL = "SELECT SUM(a.monto) AS rp
 		FROM sfpa AS a
 		JOIN rcaj AS b ON a.fecha=b.fecha AND a.cobrador=b.cajero
 		WHERE b.numero=${dbnumero} AND a.tipo='RP'";
-		$rp=$this->datasis->dameval($mSQL);
+		$rp+=$this->datasis->dameval($mSQL);
 
-		$cont['rp']      = empty($rp)? 0 : $rp ;
+		//Toma en cuenta los cambios de cheque
+		$ccheq=0;
+		$ccquery = $this->db->query("SELECT SUM(d.monto) AS monto
+		FROM sfpa AS d
+		JOIN rcaj AS b ON d.fecha=b.fecha AND d.cobrador=b.cajero
+		WHERE b.numero=${dbnumero} AND d.tipo_doc = 'CC'");
+		foreach ($ccquery->result() as $ccrow){
+			$ccheq += $ccrow->monto;
+		}
+
+		$cont['rp']      = $rp    ;
+		$cont['cc']      = $ccheq ;
 		$cont['retiros'] = $retiros;
 		$cont['credito'] = (empty($credito))? 0 : $credito;
 		$cont['form']    = &$form;
