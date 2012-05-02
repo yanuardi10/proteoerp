@@ -1,10 +1,10 @@
 <?php
-class ccheque extends Controller {
+class sfpach extends Controller {
 	var $titp='Cambio efectivo por otros Medios de Pago';
 	var $tits='Cambio efectivo por otros Medios de Pago';
-	var $url ='finanzas/ccheque/';
+	var $url ='finanzas/sfpach/';
 
-	function ccheque(){
+	function sfpach(){
 		parent::Controller();
 		$this->load->library('rapyd');
 		$this->load->library('jqdatagrid');
@@ -39,7 +39,7 @@ jQuery("#a1").click( function(){
 	var id = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
 	if (id)	{
 		var ret = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getRowData\',id);
-		window.open(\''.base_url().'formatos/ver/CCHEQUE/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+		window.open(\''.base_url().'formatos/ver/SFPACH/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');		
 	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
 });
 
@@ -276,36 +276,12 @@ jQuery("#a1").click( function(){
 
 		$grid->showpager(true);
 		$grid->setWidth('');
-		$grid->setHeight('300');
+		$grid->setHeight('340');
 		$grid->setTitle($this->titp);
 		$grid->setfilterToolbar(true);
 		//$grid->setToolbar('true, "top"');
 		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){ if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
-		$grid->setFormOptionsA('
-
-
-	closeAfterAdd: true,
-	mtype: "POST",
-	width: 520,
-	height:300,
-	closeOnEscape: true,
-	top: 50,
-	left:20,
-	recreateForm:true,
-	afterSubmit:
-		function(a,b){
-			if (a.responseText.length > 0) {
-				var res = $.parseJSON(a.responseText);
-				$.prompt(res.mensaje,
-					{ submit: function(e,v,m,f){
-						window.open(\''.base_url().'formatos/ver/CCHEQUE/\'+res.id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
-						}
-					}
-				); return [true, a ];
-			}
-		}
-		
-		');
+		$grid->setFormOptionsA('closeAfterAdd: true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){ if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
 
 		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
 
@@ -407,7 +383,7 @@ return [false, response.responseText]
 		if ($valor) $mWHERE[] = array('like', 'us_nombre', $valor, 'both' );
 
 
-		$response   = $grid->getData('view_ccheque', array(array()), array(), false, $mWHERE );
+		$response   = $grid->getData('view_sfpach', array(array()), array(), false, $mWHERE );
 		$rs = $grid->jsonresult( $response);
 		echo $rs;
 		//echo $this->db->last_query();
@@ -436,11 +412,10 @@ return [false, response.responseText]
 				$data['usuario'] = $this->secu->usuario();
 				$data['estampa'] = date('Ymd');
 				$data['hora']    = date('H:i:s');
-				$data['numero'] = str_pad($this->datasis->prox_sql('nccheque'), 8, "0", STR_PAD_LEFT);
+				$data['numero'] = str_pad($this->datasis->prox_sql('nsfpach'), 8, "0", STR_PAD_LEFT);
 				$this->db->insert('sfpa', $data);
-				$id = $this->db->insert_id();
 			}
-			echo "{\"id\":\"$id\",\"mensaje\":\"Registro Agregado\"}";
+			echo 'Registro Agregado';
 			return;
 
 		} elseif($oper == 'edit') {
