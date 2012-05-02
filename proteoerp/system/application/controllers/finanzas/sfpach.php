@@ -1,7 +1,7 @@
 <?php
 class sfpach extends Controller {
-	var $titp='Cambio efectivo por otros Medios de Pago';
-	var $tits='Cambio efectivo por otros Medios de Pago';
+	var $titp='Modificacion de Medios de Pago';
+	var $tits='Modificacion de Medios de Pago';
 	var $url ='finanzas/sfpach/';
 
 	function sfpach(){
@@ -92,52 +92,6 @@ jQuery("#a1").click( function(){
 			)
 		);
 
-
-		$link  = site_url('ajax/buscascli');
-
-		$grid->addField('cod_cli');
-		$grid->label('Cliente');
-		$grid->params(array('width'       => 60,
-							'hidden'      => 'true',
-							'editable'    => 'true',
-							'edittype'    => "'text'",
-							'editrules'   => '{ edithidden:true, required:true }',
-							'editoptions' => '{
-						"dataInit":function(el){
-							setTimeout(function(){
-								if(jQuery.ui) { 
-									if(jQuery.ui.autocomplete){
-										jQuery(el).autocomplete({
-											"appendTo":"body",
-											"disabled":false,
-											"delay":300,
-											"minLength":1,
-											"select": function(event, ui) { 
-												$("#aaaaaa").remove();
-												$("#cod_cli").after("<div id=\"aaaaaa\">Nombre <strong>"+ui.item.nombre+" </strong>RIF/CI <strong>"+ui.item.rifci+" </strong><br>Direccion <strong>"+ui.item.direc+"</strong></div>"); 
-											},
-											"source":function (request, response){
-												request.acelem = "cod_cli";
-												request.oper = "autocomplete";
-												$.ajax({
-													url: "'.$link.'",
-													dataType: "json",
-													data: request,
-													type: "POST",
-													error: function(res, status) { $.prompt(res.status+" : "+res.statusText+". Status: "+status);},
-													success: function( data ) { response( data );	}
-												});
-											}
-										});
-										jQuery(el).autocomplete("widget").css("font-size","11px");
-									} 
-								} else { $.prompt("Falta jQuery UI") }
-							},200);
-						},
-						}'
-			)
-		);
-
 		$grid->addField('nombre');
 		$grid->label('Nombre Cliente');
 		$grid->params(array('width'    => 180,
@@ -157,25 +111,26 @@ jQuery("#a1").click( function(){
 
 		$grid->addField('fecha');
 		$grid->label('Fecha');
-		$grid->params(array('width'       => 80,
-							'search'      => 'true',
-							'editable'    => 'true',
-							'edittype'    => "'text'",
-							'editrules'   => '{ required:true,date:true}',
-							'formoptions' => '{ label:"Fecha" }'
+		$grid->params(array(
+					'width'       => 80,
+					'search'      => 'true',
+					'editable'    => 'false',
+					'edittype'    => "'text'",
+					'editrules'   => '{ required:true,date:true}',
+					'formoptions' => '{ label:"Fecha" }'
 			)
 		);
 
 		$grid->addField('tipo');
 		$grid->label('Tipo');
-		$grid->params(array('align'    => "'center'",
-							'width'         => 30,
-							'editable'      => 'true',
-							'edittype'      => "'select'",
-							'editrules'   => '{ required:true }',
-							'editoptions'   => '{ dataUrl: "ddtarjeta"}',
-							'stype'         => "'text'"
-							//'searchoptions' => '{ dataUrl: "ddtarjeta", sopt: ["eq", "ne"]}'
+		$grid->params(array(
+					'align'    => "'center'",
+					'width'         => 30,
+					'editable'      => 'true',
+					'edittype'      => "'select'",
+					'editrules'   => '{ required:true }',
+					'editoptions'   => '{ dataUrl: "ddtarjeta"}',
+					'stype'         => "'text'"
 			)
 		);
 
@@ -184,7 +139,7 @@ jQuery("#a1").click( function(){
 		$grid->params(array('width'       => 100,
 							'editable'    => 'true',
 							'edittype'    => "'text'",
-							'editrules'    => '{required:true}',
+							'editrules'   => '{required:true}',
 							'editoptions' => '{ size:20, maxlength: 12 }',
 			)
 		);
@@ -212,7 +167,6 @@ jQuery("#a1").click( function(){
 							'editrules'     => '{ edithidden:true, required:true }',
 							'editoptions'   => '{ dataUrl: "ddbanco"}',
 							'stype'         => "'tsxt'",
-							//'searchoptions' => '{ dataUrl: "ddbanco", sopt: ["eq", "ne"]}'
 			)
 		);
 
@@ -229,7 +183,7 @@ jQuery("#a1").click( function(){
 		$grid->label('Cajero');
 		$grid->params(array('width'         => 120,
 							'hidden'        => 'true',
-							'editable'      => 'true',
+							'editable'      => 'false',
 							'edittype'      => "'select'",
 							'editrules'     => '{ edithidden: true, required:true }',
 							'editoptions'   => '{ dataUrl: "ddcajero"}',
@@ -237,7 +191,6 @@ jQuery("#a1").click( function(){
 							'searchoptions' => '{ dataUrl: "ddcajero", sopt: ["eq", "ne"]}'
 			)
 		);
-
 
 		$grid->addField('nomcajero');
 		$grid->label('Nombre Cajero');
@@ -279,7 +232,7 @@ jQuery("#a1").click( function(){
 		$grid->setHeight('340');
 		$grid->setTitle($this->titp);
 		$grid->setfilterToolbar(true);
-		//$grid->setToolbar('true, "top"');
+
 		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){ if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
 		$grid->setFormOptionsA('closeAfterAdd: true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){ if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
 
@@ -287,22 +240,14 @@ jQuery("#a1").click( function(){
 
 
 		#show/hide navigations buttons
-		$grid->setAdd(true);                               
+		$grid->setAdd(false);
 		$grid->setEdit(true);
 		$grid->setDelete(true);
 		$grid->setSearch(true);
-		$grid->setRowNum(30);
+		$grid->setRowNum(20);
             
 		$grid->setShrinkToFit('false');
-/*
-afterSubmit: function(response, postdata) { 
-if (response.responseText == "") { 
-return [true, response.responseText] 
-} 
-else { 
-return [false, response.responseText] 
-} 
-*/
+
 		#export buttons
 		//$grid->setPdf(true,array('title' => 'Test pdf'));
 
@@ -317,7 +262,6 @@ return [false, response.responseText]
 		} else {
 			return $grid;
 		}
-
 	}
 
 	function ddtarjeta(){
@@ -401,11 +345,12 @@ return [false, response.responseText]
 		$data = $_POST;
 		unset($data['oper']);
 		unset($data['id']);
-		$data['cobrador']  = $data['cajero'];
-		$data['f_factura'] = $data['fecha'];
+		//$data['cobrador']  = $data['cajero'];
+		//$data['f_factura'] = $data['fecha'];
 		unset($data['cajero']);
 		
 		if($oper == 'add'){
+			/*
 			if(false == empty($data)){
 				$data['tipo_doc'] = 'CC';
 				$data['f_factura'] = $data['fecha'];
@@ -415,15 +360,17 @@ return [false, response.responseText]
 				$data['numero'] = str_pad($this->datasis->prox_sql('nsfpach'), 8, "0", STR_PAD_LEFT);
 				$this->db->insert('sfpa', $data);
 			}
-			echo 'Registro Agregado';
+			*/
+			echo 'De este modulo no se puede Agregado';
 			return;
 
 		} elseif($oper == 'edit') {
-			$data['tipo_doc'] = 'CC';
-			$data['f_factura'] = $data['fecha'];
-			$data['usuario'] = $this->secu->usuario();
-			$data['estampa'] = date('Ymd');
-			$data['hora']    = date('H:i:s');
+			//$data['tipo_doc'] = 'CC';
+			//$data['f_factura'] = $data['fecha'];
+			//$data['usuario'] = $this->secu->usuario();
+			//$data['estampa'] = date('Ymd');
+			//$data['hora']    = date('H:i:s');
+			unset($data['monto']);
 			$this->db->where('id', $id);
 			$this->db->update('sfpa', $data);
 			echo 'Registro Guardado';
