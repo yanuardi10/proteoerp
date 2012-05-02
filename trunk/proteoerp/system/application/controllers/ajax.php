@@ -15,6 +15,8 @@ class Ajax extends Controller {
 	//***************************************
 	function buscasprv(){
 		$mid  = $this->input->post('q');
+		if($mid == false) $mid  = $this->input->post('term');
+
 		$qdb  = $this->db->escape('%'.$mid.'%');
 		$qmid = $this->db->escape($mid);
 
@@ -65,6 +67,8 @@ class Ajax extends Controller {
 
 	function buscascli(){
 		$mid  = $this->input->post('q');
+		if($mid == false) $mid  = $this->input->post('term');
+
 		$qmid = $this->db->escape($mid);
 		$qdb  = $this->db->escape('%'.$mid.'%');
 
@@ -119,6 +123,8 @@ class Ajax extends Controller {
 	function buscasinv(){
 		$comodin= $this->datasis->traevalor('COMODIN');
 		$mid    = $this->input->post('q');
+		if($mid == false) $mid  = $this->input->post('term');
+
 		if(strlen($comodin)==1 && $comodin!='%' && $mid!==false){
 			$mid=str_replace($comodin,'%',$mid);
 		}
@@ -218,6 +224,8 @@ class Ajax extends Controller {
 	function buscasinvart(){
 		$comodin= $this->datasis->traevalor('COMODIN');
 		$mid    = $this->input->post('q');
+		if($mid == false) $mid  = $this->input->post('term');
+
 		if(strlen($comodin)==1 && $comodin!='%' && $mid!==false){
 			$mid=str_replace($comodin,'%',$mid);
 		}
@@ -447,6 +455,8 @@ class Ajax extends Controller {
 
 	function buscacpla(){
 		$mid   = $this->input->post('q');
+		if($mid == false) $mid  = $this->input->post('term');
+
 		$qdb   = $this->db->escape($mid.'%');
 
 		$data = '{[ ]}';

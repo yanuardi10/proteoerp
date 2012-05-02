@@ -160,6 +160,9 @@ class Jqdatagrid
 	private $rowList = "[10,20,30]";
 	
 	private $hiddengrid = false;
+
+	private $afterSubmit = '';
+
 	
 	function __construct ()
 	{
@@ -295,6 +298,18 @@ class Jqdatagrid
     {
         $this->FormOptionsE = "{".$element."},";
     }
+
+    /**
+     * After Submit Function
+     * @param text $element
+     * @return void
+     */
+    public function setAfterSubmit($element)
+    {
+        $this->afterSubmit = $element;
+    }
+
+
 
     /**
      * Show or not, view data button
@@ -577,8 +592,9 @@ class Jqdatagrid
 		#propiedades de las ventanas
 		//$html .= ",edit:{ bottominfo: 'jojojojojoj',addCaption: 'Add Record' }";
 
+
 		#calendario
-		$calendar = "size: 10, maxlengh: 10,dataInit: function(element) { $(element).datepicker({dateFormat: 'yy-mm-dd',changeMonth: true,changeYear: true,yearRange: '" . (date('Y',time()) - 30) .":" .(date('Y',time()) + 10) ."'})}";
+		$calendar = "size: 10, maxlengh: 10, dataInit: function(element) { $(element).datepicker({dateFormat: 'yy-mm-dd',changeMonth: true,changeYear: true,yearRange: '" . (date('Y',time()) - 30) .":" .(date('Y',time()) + 10) ."'})}";
 
 		$html     .=  $margen.',colModel:[' . "\r";
 		$fieldname = '';
@@ -586,10 +602,7 @@ class Jqdatagrid
 
 			#recorre la parametrizacion
 			foreach($this->_field as $row => $value){
-				//pprint_r($row);
 				if($row == 'field'){
-					//if(isset($value[title))
-					//pprint_r($value);
 					#recorre c/u de los campos
 					foreach($value as $field){
 						$alias        = $field;
@@ -629,7 +642,6 @@ class Jqdatagrid
 										$isdate = true;
 										$pos = strpos($params,'editoptions:{');
 										$addcal = substr($params, $pos +  13);
-										//echo "addcal".$addcal;
 										if(false == empty($addcal)){
 											$calc = ",editoptions: {{$calendar} $addcal,searchoptions: {{$calendar}}";
 										} else {
@@ -646,14 +658,12 @@ class Jqdatagrid
 										}
 									}
 								}
-								//if ($field=='ingreso') echo "params=$params\ncalc1= $calc\n";
 							}
 							if( empty($fieldname)) {
 								$fieldname   = $margen."	{name:'{$field}',index:'{$field}',label:'{$alias}' {$params} {$validators} {$calc}}\n";
 							} else {
 								$fieldname .= $margen. "	,{name:'{$field}',index:'{$field}',label:'{$alias}' {$params} {$validators} {$calc}}\n";
 							}
-							//if ($field=='ingreso') echo "calc2=$calc\n";
 						}
 					}
 				}
@@ -668,9 +678,9 @@ class Jqdatagrid
         $this->return['querystring'] = ($this->CI->config->item('enable_query_strings') == FALSE)?'\'false\'':'\'true\'';
 
         #paginador
-         if($this->showpager){
-            $bar   = '';
-            $bar  .= "	
+		if($this->showpager){
+			$bar   = '';
+			$bar  .= "	
 	jQuery(\"#newapi{$this->_gridname}\").jqGrid('navGrid', '#pnewapi{$this->_gridname}', {
 		view:{$this->_buttons['view']},
 		edit:{$this->_buttons['edit']},
@@ -678,6 +688,7 @@ class Jqdatagrid
 		del:{$this->_buttons['delete']},
 		search:{$this->_buttons['search']}
 	},\r\n";
+
 			if ( $this->FormOptionsE=='' ){
 				$bar  .= "	{closeAfterEdit:true, mtype: 'POST'}/*edit options*/,\r\n";
 			} else {
@@ -689,10 +700,18 @@ class Jqdatagrid
 			} else {
 				$bar  .= "	".$this->FormOptionsA."\n";
 			}
-							
-			$bar   .= "	{mtype: 'POST',	afterSubmit: function(a,b){ if (a.responseText.length > 0)	alert(a.responseText); return [true, a ];}} /*delete options*/,
-	{sopt:['eq','cn','ge','le'], overlay:false,mtype: 'POST'}/*search options*/	
-	)";
+
+			$bar   .= "	{mtype: 'POST',	afterSubmit: function(a,b){ ";
+			
+			if ( $this->afterSubmit =='' ) {
+				$bar   .= "if (a.responseText.length > 0) alert(a.responseText); return [true, a ];";
+			} else {
+				$bar   .= $this->afterSubmit;
+			}
+
+			$bar   .= "}} /*delete options*/,\r\n";
+			$bar   .= "	{sopt:['eq','cn','ge','le'], overlay:false,mtype: 'POST', multipleSearch:true }/*search options*/\r\n	";
+			$bar   .= "		)";
 
             $key = array_search('true', $this->_export); // find if we muest show the export button;
             if($key){
@@ -701,19 +720,7 @@ class Jqdatagrid
                                           )";
                 $loadbutton = true;
             }
-            
-/*
-$bar .= "
-.navButtonAdd('#pnewapi{$this->_gridname}',{
-   caption:'Agre', 
-   buttonicon:'ui-icon-add', 
-   onClickButton: function(){ 
-     alert('Adding Row');
-   }, 
-   position:'last'
-})";
-*/ 
-            
+
             $bar     .= ";\r\n";
             if($loadbutton){
                $bar .= "dtgLoadButton();\r\n";
@@ -721,15 +728,8 @@ $bar .= "
             
 		if ($this->filterToolbar){
 			$bar .= "grid.jqGrid('filterToolbar');\r\n";
-		}
-
-/*
-$bar .= 'var gridId = $(this).attr("id");
-$("#"+gridId).setGridWidth($("#RightPane").innerWidth - 2);
-';
-*/
-		//$bar .= "grid.jqGrid('filterToolbar')\r\n";
-
+            $this->return['menosalto'] = 105;
+		} else $this->return['menosalto'] = 90;
             //$this->_buttons['excel'];
             $this->return['pager'] = $bar;
 		}
@@ -771,8 +771,9 @@ $("#"+gridId).setGridWidth($("#RightPane").innerWidth - 2);
         $sortby     = $this->CI->input->get_post('sidx');
         $sortdir    = $this->CI->input->get_post('sord');
         $page       = $this->CI->input->get_post('page');
-        $fields2    = array();
+        $filters     = $this->CI->input->get_post('filters');
 
+        $fields2    = array();
 
        // if(!$sortby) $sortby =1;
 
@@ -780,33 +781,33 @@ $("#"+gridId).setGridWidth($("#RightPane").innerWidth - 2);
         $this->CI->db->select('count(1) as rows');
         $this->CI->db->from($table);
 
-        if( false == empty($filter) ) {
-            switch ($oper) {
-                case 'cn':
-                  $this->CI->db->like( $table .'.' . $filter, $filtertext );
-                break;
-                case 'eq':
-                  $this->CI->db->where( $table .'.' . $filter , $filtertext );
-                break;
-                case 'ge':
-                  $this->CI->db->where( "$table .{$filter} >=", $filtertext );
-                break;
-                 case 'le':
-                  $this->CI->db->where( "$table .{$filter} <=", $filtertext );
-                break;
-                default:
-                  $this->CI->db->like( $table .'.' . $filter, $filtertext );
-                break;
-            }
-        }
+		if( false == empty($filter) ) {
+			switch ($oper) {
+			case 'cn':
+				$this->CI->db->like( $table .'.' . $filter, $filtertext );
+				break;
+			case 'eq':
+				$this->CI->db->where( $table .'.' . $filter , $filtertext );
+				break;
+			case 'ge':
+				$this->CI->db->where( "$table .{$filter} >=", $filtertext );
+				break;
+			case 'le':
+				$this->CI->db->where( "$table .{$filter} <=", $filtertext );
+				break;
+			default:
+				$this->CI->db->like( $table .'.' . $filter, $filtertext );
+				break;
+			}
+		}
 
-        $total = $this->CI->db->get()->row();
-        $count           = $total->rows;
-        if( $count >0 ) {
-            $total_pages = ceil($count/$limit);
-        } else {
-            $total_pages = 0;
-       }
+		$total = $this->CI->db->get()->row();
+		$count           = $total->rows;
+		if( $count >0 ) {
+			$total_pages = ceil($count/$limit);
+		} else {
+			$total_pages = 0;
+		}
 
         $response['records']  = $count;
         $response['total']    = $total_pages;
@@ -839,7 +840,18 @@ $("#"+gridId).setGridWidth($("#RightPane").innerWidth - 2);
 
 		if ( !empty($mwhere) ) {
 			foreach($mwhere as $busca){
-				if ( $busca[0]=='like') {
+				if ( trim(strtoupper($busca[0])) == 'LIKE') {
+					$this->CI->db->like( $busca[1], $busca[2], $busca[3] );
+				} else {
+					$this->CI->db->where( $busca[1], $busca[2] );
+				}
+			}
+		}
+
+		if ( !empty($filters) ) {
+			$mQUERY = $this->constructWhere($filters);
+			foreach($mQUERY as $busca){
+				if ( trim(strtoupper($busca[0])) == 'LIKE') {
 					$this->CI->db->like( $busca[1], $busca[2], $busca[3] );
 				} else {
 					$this->CI->db->where( $busca[1], $busca[2] );
@@ -970,6 +982,88 @@ $("#"+gridId).setGridWidth($("#RightPane").innerWidth - 2);
     }
 
 
+	public function constructWhere($s){
+		$qwery = "";
+		$mWHERE = array();
+		//['eq','ne','lt','le','gt','ge','bw','bn','in','ni','ew','en','cn','nc']
+		$qopers = array(
+						'eq'=>" = ",
+						'ne'=>" <> ",
+						'lt'=>" < ",
+						'le'=>" <= ",
+						'gt'=>" > ",
+						'ge'=>" >= ",
+						'bw'=>" LIKE ",
+						'bn'=>" NOT LIKE ",
+						'in'=>" IN ",
+						'ni'=>" NOT IN ",
+						'ew'=>" LIKE ",
+						'en'=>" NOT LIKE ",
+						'cn'=>" LIKE " ,
+						'nc'=>" NOT LIKE " );
+						
+		$operador = array(" <> "," < "," <= "," > "," >= ");
+						
+						
+		if ($s) {
+			$jsona = json_decode($s,true);
+			if( is_array($jsona) ){
+				$gopr = $jsona['groupOp'];
+				$rules = $jsona['rules'];
+				$i =0;
+				foreach($rules as $key=>$val) {
+					$field = $val['field'];
+					$op = $val['op'];
+					$v = $val['data'];
+					if($v && $op) {
+						if (in_array( $qopers[$op], $operador)) { 
+							$mWHERE[] = array( trim($qopers[$op]), $field.$qopers[$op], $v, $gopr );
+						} else {
+							$mWHERE[] = array( trim($qopers[$op]), $field, $v, 'both', $gopr );
+						}
+						$i++;
+						// ToSql in this case is absolutley needed
+						$v = $this->ToSql($field,$op,$v);
+						if ($i == 1) $qwery = " AND ";
+						else $qwery .= " " .$gopr." ";
+						switch ($op) {
+							// in need other thing
+							case 'in' :
+							case 'ni' :
+								$qwery .= $field.$qopers[$op]." (".$v.")";
+								break;
+							default:
+								$qwery .= $field.$qopers[$op].$v;
+						}
+					}
+				}
+			}
+		}
+		//return $qwery;
+		return $mWHERE;
+	}
+
+	public function ToSql ($field, $oper, $val) {
+		// we need here more advanced checking using the type of the field - i.e. integer, string, float
+		switch ($field) {
+			case 'id':
+				return intval($val);
+				break;
+			case 'xxxxxxamount':
+			case 'xxxssstax':
+			case 'xxsssstotal':
+				return floatval($val);
+				break;
+			default :
+				//mysql_real_escape_string is better
+				if($oper=='bw' || $oper=='bn') return "'" . addslashes($val) . "%'";
+				else if ($oper=='ew' || $oper=='en') return "'%" . addcslashes($val) . "'";
+				else if ($oper=='cn' || $oper=='nc') return "'%" . addslashes($val) . "%'";
+				else return "'" . addslashes($val) . "'";
+		}
+	}
+
+
     /**
     * Convert result to valid json
     * @param json $json
@@ -1093,6 +1187,8 @@ $("#"+gridId).setGridWidth($("#RightPane").innerWidth - 2);
         //echo  $query;
         return $query;
     }
+
+
 
 }
 

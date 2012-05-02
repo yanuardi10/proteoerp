@@ -2,12 +2,24 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 
+<?php 
+if( isset($tema) == false) {
+	$tema = 'proteo';
+} 
+?>
+
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title><?php echo $encabeza ?></title>
 
 
 <!-- JQUERY -->
-<?php echo style('themes/redmond/jquery-ui-1.8.18.custom.css'); ?>
+<?php echo style('themes/'.$tema.'/'.$tema.'.css'); ?>
+
+<?php 
+	if ( isset($tema1) ) 
+	echo style('themes/'.$tema1.'/'.$tema1.'.css'); 
+?>
+
 <?php echo script('jquery-1.7.1.min.js') ?>
 <?php echo script('jquery-ui-1.8.18.custom.min.js') ?>
 
@@ -18,7 +30,7 @@
 <?php echo script('jquery.jqGrid.min.js')  ?>
 
 <!-- DATAGRID -->
-<link rel="stylesheet" type="text/css" media="screen" href="<?php echo base_url(); ?>assets/default/script/datagrid/datagrid.css" />
+<link rel="stylesheet" type="text/css" media="screen" href="<?php echo base_url(); ?>assets/default/datagrid/datagrid.css" />
 <?php echo script('datagrid/datagrid.js')  ?>
 
 <!-- LAYOUT -->
@@ -52,7 +64,7 @@ $(document).ready(function() {
 		},
 		center__onresize: function (pane, $Pane) {
 			jQuery("#newapi<?php echo $grid['gridname'];?>").jqGrid('setGridWidth',$Pane.innerWidth()-6);
-			jQuery("#newapi<?php echo $grid['gridname'];?>").jqGrid('setGridHeight',$Pane.innerHeight()-105);
+			jQuery("#newapi<?php echo $grid['gridname'];?>").jqGrid('setGridHeight',$Pane.innerHeight()-<?php echo $grid['menosalto']?>);
 		}
 	});
 
@@ -84,14 +96,12 @@ $(document).ready(function() {
 				grid.editGridRow(id, {closeAfterEdit:true,mtype:'POST'});
 				return;
 			}
-			//rowList:[10,20,30],
-			//viewrecords: true
+
 <?php echo $grid['table'];?>
 
+
 	})
-
 <?php echo $grid['pager'];?>;
-
 <?php if (isset($grid1)) { ?>
 	var grid1 = jQuery("#newapi<?php echo $grid1['gridname'];?>").jqGrid({
 		ajaxGridOptions : {type:"POST"},
@@ -108,9 +118,7 @@ $(document).ready(function() {
 			<?php echo $grid1['table'];?>
 	})
 <?php echo $grid1['pager'];?>;
-
 <?php }; ?>
-
 <?php if (isset($grid2)) { ?>
 	var grid2 = jQuery("#newapi<?php echo $grid2['gridname'];?>").jqGrid({
 		ajaxGridOptions : {type:"POST"},
@@ -127,11 +135,40 @@ $(document).ready(function() {
 			<?php echo $grid2['table'];?>
 	})
 <?php echo $grid2['pager'];?>;
-
 <?php }; ?>
-	
-});
+<?php if (isset($funciones))  echo $funciones; ?>
 
+<?php if (isset($listados)) { ?>
+	jQuery("#listados").jqGrid({
+		datatype: "local",
+		height: 'auto',
+		colNames:['','Reporte','Nombre'],
+		colModel:[{name:'id',index:'id', width:10},{name:'titulo',index:'titulo', width:165}, {name:'nombre',index:'nombre', hidden:true}],
+		multiselect: false,
+		hiddengrid: true,
+		width: 190,
+		caption: "Reportes",
+		ondblClickRow: function(id, row, col, e){ 
+			var ret = $("#listados").getRowData(id); 
+			window.open("<?php echo base_url() ?>reportes/ver/"+ret.nombre, "_blank", "width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400)),screeny=((screen.availWidth/2)-300)");
+//window.open("/proteoerp/reportes/ver/PERSONA",                "_blank", "width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400)),screeny=((screen.availWidth/2)-300)");
+			//alert("id="+id+" "+ret.nombre)
+			}
+	});
+
+	<?php echo $listados ?>
+	
+for(var i=0;i<=datalis.length;i++)
+	jQuery("#listados").jqGrid('addRowData',i+1,datalis[i]);
+
+<?php } ?>
+
+
+
+<?php if (isset($otros))  echo $otros; ?>
+
+
+});
 </script>
 
 <?php

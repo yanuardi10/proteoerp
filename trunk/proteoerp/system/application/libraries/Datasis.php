@@ -561,8 +561,9 @@ class Datasis {
 	//      Manda los Reportes
 	//
 	//*******************************
-	function listados($modulo){
+	function listados($modulo, $tipo = 'E'){
 		$CI =& get_instance();
+		$reposcript = '';
 
 		$mSQL="UPDATE tmenus SET ejecutar=REPLACE(ejecutar,"."'".'( "'."','".'("'."') WHERE modulo LIKE '%LIS'";
 		$CI->db->simple_query($mSQL);
@@ -572,7 +573,7 @@ class Datasis {
 
 		$listados = '';
 
-		if($modulo){
+		if($modulo) {
 			$modulo=strtoupper($modulo);
 
 			$CI->db->_escape_char='';
@@ -587,82 +588,77 @@ class Datasis {
 			$CI->db->like("a.ejecutar","REPOSQL", "after");
 			$CI->db->where('a.modulo',$modulo."LIS");
 			$CI->db->orderby("a.secu");
+			$i = 0;
 
 			$query = $CI->db->get();
-
-			if ($query->num_rows() > 0) {
-				foreach ($query->result_array() as $row)
-				{
-					$listados .= "[ '".$row['secu']."', '".$row['titulo']."', '".$row['nombre']."' ],";
+			if ( $tipo=='E') { // EXTJ SENCHA
+				if ($query->num_rows() > 0) {
+					foreach ($query->result_array() as $row)
+					{
+						$listados .= "[ '".$row['secu']."', '".$row['titulo']."', '".$row['nombre']."' ],";
+						$i = $row['secu'];
+					}
+				} else {
+					$listados .= "['-','No tiene listados','' ],";
 				}
-			} else {
-				//$listados .= "<tr><td>No se encontraron listados</td><tr>";
-				$listados .= "['-','No tiene listados','' ],";
-			}
 
-			$query->free_result();
+				$query->free_result();
+				$CI->db->_protect_identifiers=false;
+				$CI->db->select("a.titulo, a.mensaje, a.nombre");
+				$CI->db->from("intrarepo a" );
+				$CI->db->join("tmenus    b","CONCAT(a.modulo,'LIS')=b.modulo AND b.ejecutar LIKE CONCAT('%',a.nombre,'%') ","left");
+				$CI->db->where("b.codigo IS NULL");
+				$CI->db->where("a.modulo",$modulo );
+				$CI->db->where("a.activo","S");
+				$CI->db->orderby("a.titulo");
+				$query = $CI->db->get();
 
-			//$CI->db->_escape_char='';
-			$CI->db->_protect_identifiers=false;
+				if ($query->num_rows() > 0) {
+					foreach ($query->result_array() as $row)
+					{
+						$i++;
+						$listados .= "[ '".$i."', '".$row['titulo']."', '".$row['nombre']."' ],";
+					}
+				} 
+				$query->free_result();
 
-			$CI->db->select("a.titulo, a.mensaje, a.nombre");
-			$CI->db->from("intrarepo a" );
-			$CI->db->join("tmenus    b","CONCAT(a.modulo,'LIS')=b.modulo AND b.ejecutar LIKE CONCAT('%',a.nombre,'%') ","left");
-			$CI->db->where("b.codigo IS NULL");
-			$CI->db->where("a.modulo",$modulo );
-			$CI->db->where("a.activo","S");
-			$CI->db->orderby("a.titulo");
-			$query = $CI->db->get();
-
-
-			if ($query->num_rows() > 0) {
-				foreach ($query->result_array() as $row)
-				{
-					$listados .= "[ '*', '".$row['titulo']."', '".$row['nombre']."' ],";
-				}
-			} else {
-				//$listados .= "[ '-', 'No hay listados Proteo', '' ]";
-			}
-			$query->free_result();
-
-			$reposcript = "
-	var storeListado = Ext.create('Ext.data.ArrayStore', {
-		autoDestroy: true,
-		storeId: 'listadoStore',
-		idIndex: 0,
-		fields: [ 'numero', 'nombre', 'reporte' ],
-		data: [".$listados."]
-	});
-
-	function renderRepo(value, p, record) {
-		var mreto='';
-		if ( record.data.numero == '-' ){
-			mreto = '<div style=\'background-color:#BCEFBC;text-weight:bold;align:center;\'>{0}</div>';
-		} else {
-			mreto = '<a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'reportes/ver/{1}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">{0}</a>';
-		}
-		return Ext.String.format(
-		mreto,
-		value,
-		record.data.reporte
-		);
-	}
-
-	var gridListado = Ext.create('Ext.grid.Panel', {
-		title: 'Listados',
-		store: storeListado,
-		width: '199',
-		columns: [
-			{ header: 'Nro.',   dataIndex: 'numero', width:  30 },
-			{ header: 'Nombre de los Reportes', dataIndex: 'nombre', width: 169, renderer: renderRepo },
-			{ header: 'Rep.',   dataIndex: 'reporte', hidden:  true }
-		]
-	});
+				$reposcript = "
+	var storeListado = Ext.create('Ext.data.ArrayStore', {autoDestroy: true,storeId: 'listadoStore',idIndex: 0,fields: [ 'numero', 'nombre', 'reporte' ],	data: [".$listados."]});
+	function renderRepo(value, p, record) {var mreto='';if ( record.data.numero == '-' ){ mreto = '<div style=\'background-color:#BCEFBC;text-weight:bold;align:center;\'>{0}</div>';} else { mreto = '<a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'reportes/ver/{1}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">{0}</a>';}return Ext.String.format(mreto,value,record.data.reporte);}
+	var gridListado = Ext.create('Ext.grid.Panel', {title: 'Listados',store: storeListado,width: '199',columns: [{ header: 'Nro.',   dataIndex: 'numero', width:  30 },{ header: 'Nombre de los Reportes', dataIndex: 'nombre', width: 169, renderer: renderRepo },{ header: 'Rep.',   dataIndex: 'reporte', hidden:  true }]});
 ";
+			} else {  //JQGRID
+				if ($query->num_rows() > 0) {
+					foreach ($query->result_array() as $row)
+					{
+						$listados .= "{ id:'".$row['secu']."', titulo:'".$row['titulo']."', nombre:'".$row['nombre']."' },";
+						$i = $row['secu'];
+					}
+				} else {
+					$listados .= "{'-','No tiene listados','' },";
+				}
 
-		//'<a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'reportes/ver/{1}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">{0}</a>',
+				$query->free_result();
+				$CI->db->_protect_identifiers=false;
+				$CI->db->select("a.titulo, a.mensaje, a.nombre");
+				$CI->db->from("intrarepo a" );
+				$CI->db->join("tmenus    b","CONCAT(a.modulo,'LIS')=b.modulo AND b.ejecutar LIKE CONCAT('%',a.nombre,'%') ","left");
+				$CI->db->where("b.codigo IS NULL");
+				$CI->db->where("a.modulo",$modulo );
+				$CI->db->where("a.activo","S");
+				$CI->db->orderby("a.titulo");
+				$query = $CI->db->get();
 
-
+				if ($query->num_rows() > 0) {
+					foreach ($query->result_array() as $row)
+					{
+						$i++;
+						$listados .= "{ id:'".$i."', titulo:'".$row['titulo']."', nombre:'".$row['nombre']."' },";
+					}
+				} 
+				$query->free_result();
+				$reposcript = "var datalis = [".$listados."];";
+			}
 		}
 
 		return $reposcript;
@@ -672,10 +668,10 @@ class Datasis {
 
 	//*******************************
 	//
-	//      Manda los Reportes
+	//      Manda Otras Funciones
 	//
 	//*******************************
-	function otros($modulo, $url, $param = ''){
+	function otros($modulo, $tipo = 'E' ){
 		$CI =& get_instance();
 
 		if ( ! $this->iscampo('tmenus','proteo') ) {
@@ -704,69 +700,58 @@ class Datasis {
 			$mSQL .= "AND a.modulo='".$modulo."OTR' ORDER BY a.secu";
 			$query = $CI->db->query($mSQL);
 
-			if ($query->num_rows() > 0) {
-				foreach ($query->result_array() as $row)
-				{
-					$Otros .= "[ '".$row['secu']."', '".trim($row['titulo'])."', '".trim($row['proteo'])."' ],";
-					if ( $row['proteo'] != 'N/A'){
-						$Otros1 .= "<tr><td>";
-						if ( empty($row['proteo'])) {
-							$Otros1 .= trim($row['titulo']);
-						} else {
-							$Otros1 .= trim($row['proteo']);
+
+			if ( $tipo == 'E' ) {
+				if ($query->num_rows() > 0) {
+					foreach ($query->result_array() as $row)
+					{
+						$Otros .= "[ '".$row['secu']."', '".trim($row['titulo'])."', '".trim($row['proteo'])."' ],";
+						if ( $row['proteo'] != 'N/A'){
+							$Otros1 .= "<tr><td>";
+							if ( empty($row['proteo'])) {
+								$Otros1 .= trim($row['titulo']);
+							} else {
+								$Otros1 .= trim($row['proteo']);
+							}
+							$Otros1 .="</td></tr>";
 						}
-						$Otros1 .="</td></tr>";
 					}
+				} else {
+					$Otros .= "['-','No tiene Funciones','' ]";
+					$Otros1 .= "<tr><td>No hay Opciones</td></tr>";
 				}
-			} else {
-				$Otros .= "['-','No tiene Funciones','' ]";
-				$Otros1 .= "<tr><td>No hay Opciones</td></tr>";
-			}
-			$query->free_result();
-			$Otros1 .= "</table>";
-
-
-
-			$otroscript = "
-	var storeOtros = Ext.create('Ext.data.ArrayStore', {
-		autoDestroy: true,
-		storeId: 'OtrosStore',
-		autoload: true,
-		idIndex: 0,
-		fields: [ 'numero', 'nombre', 'proteo' ],
-		data: [".$Otros."]
-	});
-
-	function renderOtro(value, p, record) {
-		var mreto='';
-		if ( record.data.numero == '-' ){
-			mreto = '{0}';
-		} else {
-			//mreto = '<a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'".$url."/{1}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">{0}</a>';
-			mreto = '{1}';
-		}
-		return Ext.String.format(
-		mreto,
-		value,
-		record.data.proteo
-		);
-	}
-
-	var gridOtros = Ext.create('Ext.grid.Panel', {
-		title: 'Otras Funciones',
-		store: storeOtros,
-		width: '199',
-		columns: [
-			//{ header: 'Nro.',   dataIndex: 'numero', width:  30 },
-			{ header: 'Funcion que Ejecuta', dataIndex: 'nombre', width: 196, renderer: renderOtro },
-			{ header: 'Otro',   dataIndex: 'ejecutar', hidden:  true }
-		]
-	});
+				$query->free_result();
+				$Otros1 .= "</table>";
+				$otroscript = "
+	var storeOtros = Ext.create('Ext.data.ArrayStore', {autoDestroy: true,	storeId: 'OtrosStore',	autoload: true,	idIndex: 0,	fields: [ 'numero', 'nombre', 'proteo' ],data: [".$Otros."]	});
+	function renderOtro(value, p, record) { var mreto=''; if ( record.data.numero == '-' ){mreto = '{0}';	} else {mreto = '{1}';}	return Ext.String.format(mreto,value,record.data.proteo);}
+	var gridOtros = Ext.create('Ext.grid.Panel', {title: 'Otras Funciones',store: storeOtros,width: '199',columns: [{ header: 'Funcion que Ejecuta', dataIndex: 'nombre', width: 196, renderer: renderOtro },{ header: 'Otro',   dataIndex: 'ejecutar', hidden:  true }]});
 ";
 
-		}
+			} else { // JQGRID	
+				if ($query->num_rows() > 0) {
+					foreach ($query->result_array() as $row)
+					{
+						$Otros .= "{ id:'".$row['secu']."', titulo:'".trim($row['titulo'])."', proteo:'".trim($row['proteo'])."' },";
+						if ( $row['proteo'] != 'N/A'){
+							//$Otros1 .= "<tr><td>";
+							if ( empty($row['proteo'])) {
+								$Otros1 .= trim($row['titulo']);
+							} else {
+								//$Otros1 .= trim($row['proteo']);
+							}
+							//$Otros1 .="</td></tr>";
+						}
+					}
+				} else {
+					$Otros .= "['-','No tiene Funciones','' ]";
+					//$Otros1 .= "<tr><td>No hay Opciones</td></tr>";
+				}
+				$query->free_result();
+				$Otros1 .= "var dataotr = [ ".$Otros." ]";
+			}
 
-		//return $otroscript;
+		}
 		return $Otros1;
 
 	}

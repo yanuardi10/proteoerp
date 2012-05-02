@@ -1,10 +1,11 @@
 <?php
 require_once(BASEPATH.'application/controllers/validaciones.php');
-//almacenes
 class Caub extends validaciones {
-	 
 	var $data_type = null;
 	var $data = null;
+	var $titp='Almacenes';
+	var $tits='Almacenes';
+	var $url ='inventario/caub/';
 	
 	function caub(){
 		parent::Controller(); 
@@ -14,7 +15,9 @@ class Caub extends validaciones {
 		$this->datasis->modulo_id(307,1);
 
 		$this->load->library("rapyd");
-		define ("THISFILE",   APPPATH."controllers/nomina". $this->uri->segment(2).EXT);
+		$this->load->library('jqdatagrid');
+
+		//define ("THISFILE",   APPPATH."controllers/nomina". $this->uri->segment(2).EXT);
 	}
  
 	function index(){
@@ -25,25 +28,366 @@ class Caub extends validaciones {
 			$this->db->simple_query('ALTER TABLE caub ADD UNIQUE INDEX ubica (ubica)');
 		}
 
-		$c=$this->datasis->dameval("SELECT COUNT(*) FROM caub WHERE ubica='AJUS'");
-		if(!($c>0))
-		$this->db->simple_query("INSERT IGNORE INTO caub (ubica,ubides,gasto,invfis) VALUES ('AJUS','AJUSTES','S','N')");
-		$this->db->simple_query("UPDATE caub SET ubides='AJUSTES', gasto='S',invfis='N' WHERE  ubica='AJUS' ");
+		if ( !$this->datasis->iscampo('caub','url') ) {
+			$this->db->simple_query('ALTER TABLE caub ADD COLUMN url VARCHAR(100)');
+		}
+
+		if ( !$this->datasis->iscampo('caub','odbc') ) {
+			$this->db->simple_query('ALTER TABLE caub ADD COLUMN odbc VARCHAR(100)');
+		}
+
+		$c=$this->datasis->dameval('SELECT COUNT(*) FROM caub WHERE ubica="AJUS"');
+		if(!($c>0)) $this->db->simple_query('INSERT IGNORE INTO caub (ubica,ubides,gasto,invfis) VALUES ("AJUS","AJUSTES","S","N")');
+		$this->db->simple_query('UPDATE caub SET ubides="AJUSTES", gasto="S",invfis="N" WHERE  ubica="AJUS" ');
 		
 		$c=$this->datasis->dameval("SELECT COUNT(*) FROM caub WHERE ubica='INFI'");
-		if(!($c>0))
-		$this->db->simple_query("INSERT IGNORE INTO caub (ubica,ubides,gasto,invfis) VALUES ('INFI','INVENTARIO FISICO','S','S')");
+		if(!($c>0)) $this->db->simple_query("INSERT IGNORE INTO caub (ubica,ubides,gasto,invfis) VALUES ('INFI','INVENTARIO FISICO','S','S')");
 		$this->db->simple_query("UPDATE caub SET ubides='INVENTARIO FISICO', gasto='S',invfis='S' WHERE ubica='INFI'");
 		
 		$c=$this->datasis->dameval("SELECT COUNT(*) FROM caub WHERE ubica='PEDI'");
-		if(!($c>0))
-		$this->db->simple_query("INSERT IGNORE INTO caub (ubica,ubides,gasto,invfis) VALUES ('PEDI','PEDIDOS','N','N')");
+		if(!($c>0))	$this->db->simple_query("INSERT IGNORE INTO caub (ubica,ubides,gasto,invfis) VALUES ('PEDI','PEDIDOS','N','N')");
 		$this->db->simple_query("UPDATE caub SET ubides='PEDIDOS', gasto='N',invfis='N' WHERE ubica='PEDI'");
 		
 		$this->db->simple_query("ALTER TABLE `caub`  ADD COLUMN `id` INT NOT NULL AUTO_INCREMENT FIRST,  DROP PRIMARY KEY,  ADD PRIMARY KEY ( `id`)");
 		
-		redirect("inventario/caub/caubextjs");
+		//redirect("inventario/caub/caubextjs");
+		redirect('inventario/caub/jqdatag');
+
     }
+ 
+ 	function jqdatag(){
+
+		$grid = $this->defgrid();
+		$param['grid'] = $grid->deploy();
+
+		$bodyscript = '
+<script type="text/javascript">
+</script>
+';
+
+		$funciones = 'jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid({ondblClickRow: function(id){ alert("id="+id); }});';
+
+		$param['listados'] = $this->datasis->listados('CAUB', 'JQ');
+		//$param['otros']    = $this->datasis->otros('CAUB', 'JQ');
+
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+		$WestPanel = '
+<div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content">
+	<div class="otros">
+	<table id="west-grid">
+	<tr><td><div class="tema1">
+		<table id="listados"></table> 
+		</div>
+	</td></tr>
+	<tr><td>
+		<table id="otros"></table> 
+	</td></tr>
+	</table>
+	</div>
+</div> <!-- #LeftPane -->
+';
+
+		$SouthPanel = '
+<div id="BottomPane" class="ui-layout-south ui-widget ui-widget-content">
+<p>'.$this->datasis->traevalor('TITULO1').'</p>
+</div> <!-- #BottomPanel -->
+';
+
+
+		$param['WestPanel']  = $WestPanel;
+		//$param['EastPanel']  = $EastPanel;
+		$param['SouthPanel'] = $SouthPanel;
+		$param['funciones'] = $funciones;
+		//$param['bodyscript'] = $bodyscript;
+		$param['tema1'] = 'darkness';
+		$param['tabs'] = false;
+		$param['encabeza'] = $this->titp;
+		$this->load->view('jqgrid/crud',$param);
+	
+	}	
+
+	function defgrid( $deployed = false ){
+		$i = 1;
+		$link  = site_url('ajax/buscacpla');
+
+		$grid  = new $this->jqdatagrid;
+
+		$grid->addField('id');
+		$grid->label('Id');
+		$grid->params(array('align' => "'center'",
+							'frozen' => 'true',
+							'width' => 50,
+							'editable' => 'false',
+							'search' => 'false'
+			)
+		);
+
+		$grid->addField('ubica');
+		$grid->label('Codigo');
+		$grid->params(array('width' => 60,
+							'editable' => 'true',
+							'edittype' => "'text'",
+							'search' => 'false',
+							'editoptions' => '{ size:5, maxlength: 4 }'
+			)
+		);
+
+		$grid->addField('ubides');
+		$grid->label('Nombre');
+		$grid->params(array('width' => 180,
+							'editable' => 'true',
+							'edittype' => "'text'",
+							'search' => 'false',
+							'editoptions' => '{ size:30, maxlength: 50 }'
+			)
+		);
+
+		$grid->addField('sucursal');
+		$grid->label('Sucursal');
+		$grid->params(array('width' => 100,
+							'editable' => 'true',
+							'edittype' => "'select'",
+							'editoptions'   => '{ dataUrl: "ddsucu"}',
+							'stype' => "'select'",
+							'searchoptions' => '{ dataUrl: "ddsucu", sopt: ["eq", "ne"]}',
+							'search' => 'false'
+			)
+		);
+
+		$grid->addField('gasto');
+		$grid->label('Gasto');
+		$grid->params(array('width' => 40,
+							'editable' => 'true',
+							'edittype' => "'select'",
+							'search' => 'false',
+							'editoptions' => '{value: {"S":"Si", "N":"No"} }'
+			)
+		);
+
+		$grid->addField('invfis');
+		$grid->label('Inv.F');
+		$grid->params(array('width' => 40,
+							'editable' => 'true',
+							'edittype' => "'select'",
+							'search' => 'false',
+							'editoptions' => '{value: {"S":"Si", "N":"No"} }'
+			)
+		);
+
+		$grid->addField('url');
+		$grid->label('URL');
+		$grid->params(array('width' => 200,
+							'editable' => 'true',
+							'edittype' => "'text'",
+							'search' => 'false',
+							'editoptions' => '{ size:30, maxlength: 50 }'
+			)
+		);
+
+		$grid->addField('odbc');
+		$grid->label('ODBC');
+		$grid->params(array('width' => 200,
+							'editable' => 'true',
+							'edittype' => "'text'",
+							'search' => 'false',
+							'editoptions' => '{ size:30, maxlength: 50 }'
+			)
+		);
+
+		$grid->addField('odbc');
+		$grid->label('ODBC');
+		$grid->params(array('width' => 200,
+							'editable' => 'true',
+							'edittype' => "'text'",
+							'search' => 'false',
+							'editoptions' => '{ size:30, maxlength: 50 }'
+			)
+		);
+
+		$grid->addField('cu_cost');
+		$grid->label('Cta.Costo');
+		$grid->params(array('width' => 70,
+							'frozen' => 'true',
+							'editable' => 'true',
+							'edittype' => "'text'",
+							'editoptions' => '{
+						"dataInit":function(el){
+							setTimeout(function(){
+								if(jQuery.ui) { 
+									if(jQuery.ui.autocomplete){
+										jQuery(el).autocomplete({
+											"appendTo":"body",
+											"disabled":false,
+											"delay":300,
+											"minLength":1,
+											"select": function(event, ui) { 
+												$("#aaaaaa").remove();
+												$("#cu_cost").after("<div id=\"aaaaaa\"><strong>"+ui.item.descrip+"</strong></div>"); 
+											},
+											"source":function (request, response){
+												request.acelem = "cu_cost";
+												request.oper = "autocomplete";
+												$.ajax({
+													url: "'.$link.'",
+													dataType: "json",
+													data: request,
+													type: "POST",
+													error: function(res, status) { alert(res.status+" : "+res.statusText+". Status: "+status);},
+													success: function( data ) { response( data );	}
+												});
+											}
+										});
+										jQuery(el).autocomplete("widget").css("font-size","11px");
+									} 
+								} else { alert("Falta jQuery UI") }
+							},200);
+						}}',
+							'search' => 'false'
+			)
+		);
+
+		$grid->addField('cu_caja');
+		$grid->label('Cta.Caja');
+		$grid->params(array('width' => 70,
+							'frozen' => 'true',
+							'editable' => 'true',
+							'edittype' => "'text'",
+							'editoptions' => '{
+						"dataInit":function(el){
+							setTimeout(function(){
+								if(jQuery.ui) { 
+									if(jQuery.ui.autocomplete){
+										jQuery(el).autocomplete({
+											"appendTo":"body",
+											"disabled":false,
+											"delay":300,
+											"minLength":1,
+											"select": function(event, ui) { 
+												$("#bbbbbb").remove();
+												$("#cu_caja").after("<div id=\"bbbbbb\"><strong>"+ui.item.descrip+"</strong></div>"); 
+											},
+											"source":function (request, response){
+												request.acelem = "cu_caja";
+												request.oper = "autocomplete";
+												$.ajax({
+													url: "'.$link.'",
+													dataType: "json",
+													data: request,
+													type: "POST",
+													error: function(res, status) { alert(res.status+" : "+res.statusText+". Status: "+status);},
+													success: function( data ) { response( data );	}
+												});
+											}
+										});
+										jQuery(el).autocomplete("widget").css("font-size","11px");
+									} 
+								} else { alert("Falta jQuery UI") }
+							},200);
+						}}',
+							'search' => 'false'
+			)
+		);
+
+
+		$grid->showpager(true);
+		$grid->setWidth('');
+		$grid->setHeight('310');
+		$grid->setTitle('Almacenes');
+		$grid->setfilterToolbar(false);
+		//$grid->setToolbar('true, "top"');
+		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:350, closeOnEscape: true, top: 50, left:20, recreateForm:true ');
+		$grid->setFormOptionsA('closeAfterAdd: true, mtype: "POST", width: 520, height:350, closeOnEscape: true, top: 50, left:20, recreateForm:true ');
+
+
+		#show/hide navigations buttons
+		$grid->setAdd(true);                               
+		$grid->setEdit(true);
+		$grid->setDelete(true);
+		$grid->setSearch(false);
+		$grid->setRowNum(30);
+            
+		$grid->setShrinkToFit('false');
+            
+		#export buttons
+		//$grid->setPdf(true,array('title' => 'Test pdf'));
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		#GET url
+		$grid->setUrlget(site_url($this->url.'getdata/'));
+
+		if ($deployed) {
+			return $grid->deploy();
+		} else {
+			return $grid;
+		}
+	}
+
+
+	function ddsucu(){
+		$mSQL = "SELECT codigo, CONCAT(codigo,' ',sucursal) sucursal  FROM sucu ORDER BY codigo";
+		echo $this->datasis->llenaopciones($mSQL, true);
+	}
+
+
+	/**
+	* Get data result as json
+	*/
+	function getData()
+	{
+		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
+		$mWHERE = array();
+		
+		$grid       = $this->jqdatagrid;
+		$response   = $grid->getData('caub', array(array()), array(), false, $mWHERE );
+
+		$rs = $grid->jsonresult( $response);
+		echo $rs;
+	}
+	
+
+	/**
+	* Put information
+	*/
+	function setData()
+	{
+		$this->load->library('jqdatagrid');
+		$oper   = $this->input->post('oper');
+		$id     = $this->input->post('id');
+		$codigo = $this->input->post('ubica');
+		
+		$data = $_POST;
+
+		unset($data['oper']);
+		unset($data['id']);
+
+		if($oper == 'add'){
+			if(false == empty($data)){
+				$this->db->insert('caub', $data);
+			}
+			echo '';
+			return;
+
+		} elseif($oper == 'edit') {
+			unset($data['ubica']);
+			$this->db->where('id', $id);
+			$this->db->update('caub', $data);
+			return;
+		} elseif($oper == 'del') {
+			$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM itsinv WHERE alma='$codigo' AND existen>0");
+			if ($chek > 0){
+				echo " El almacen no fuede ser eliminado; tiene movimiento ";
+			} else {
+				$this->db->simple_query("DELETE FROM caub WHERE id=$id ");
+				logusu('caub',"Almacen $codigo ELIMINADO");
+				echo "{ success: true, message: 'Almacen Eliminado'}";
+			}
+		};
+	}
+
   
 	function filteredgrid(){
 		$this->rapyd->load("datafilter","datagrid");
@@ -246,7 +590,6 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
        }
 
 
-
 	function dataedit($status='',$id='')
  	{
 		$this->rapyd->load("dataobject","dataedit");
@@ -353,11 +696,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$edit->cu_caja->rule="trim|callback_chcuentac";
 		$edit->cu_caja->append($bcu_caja);
     
-    //$edit->sucursal=new inputField("Sucursal","sucursal");
-    //$edit->sucursal->size =4;
-    //$edit->sucursal->maxlength=2;
-    //$edit->sucursal->rule="trim";
-    
+   
 		$edit->buttons("modify", "save", "undo", "delete", "back");
 		$edit->build();
  
@@ -411,6 +750,230 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$ultimo=$this->datasis->dameval("SELECT LPAD(hexa,2,0) FROM serie LEFT JOIN caub ON LPAD(ubica,2,0)=LPAD(hexa,2,0) WHERE valor<255 AND ubica IS NULL LIMIT 1");
 		echo $ultimo;
 	}
+
+
+	function gridlis( $modulo ){
+		$i = 1;
+
+		$grid  = new $this->jqdatagrid;
+
+		$grid->addField('id');
+		$grid->label('Id');
+		$grid->params(array('align' => "'center'",
+							'frozen' => 'true',
+							'width' => 50,
+							'editable' => 'false',
+							'search' => 'false'
+			)
+		);
+
+		$grid->addField('ubica');
+		$grid->label('Codigo');
+		$grid->params(array('width' => 60,
+							'editable' => 'true',
+							'edittype' => "'text'",
+							'search' => 'false',
+							'editoptions' => '{ size:5, maxlength: 4 }'
+			)
+		);
+
+		$grid->addField('ubides');
+		$grid->label('Nombre');
+		$grid->params(array('width' => 180,
+							'editable' => 'true',
+							'edittype' => "'text'",
+							'search' => 'false',
+							'editoptions' => '{ size:30, maxlength: 50 }'
+			)
+		);
+
+		$grid->addField('sucursal');
+		$grid->label('Sucursal');
+		$grid->params(array('width' => 100,
+							'editable' => 'true',
+							'edittype' => "'select'",
+							'editoptions'   => '{ dataUrl: "ddsucu"}',
+							'stype' => "'select'",
+							'searchoptions' => '{ dataUrl: "ddsucu", sopt: ["eq", "ne"]}',
+							'search' => 'false'
+			)
+		);
+
+		$grid->addField('gasto');
+		$grid->label('Gasto');
+		$grid->params(array('width' => 40,
+							'editable' => 'true',
+							'edittype' => "'select'",
+							'search' => 'false',
+							'editoptions' => '{value: {"S":"Si", "N":"No"} }'
+			)
+		);
+
+		$grid->addField('invfis');
+		$grid->label('Inv.F');
+		$grid->params(array('width' => 40,
+							'editable' => 'true',
+							'edittype' => "'select'",
+							'search' => 'false',
+							'editoptions' => '{value: {"S":"Si", "N":"No"} }'
+			)
+		);
+
+		$grid->addField('url');
+		$grid->label('URL');
+		$grid->params(array('width' => 200,
+							'editable' => 'true',
+							'edittype' => "'text'",
+							'search' => 'false',
+							'editoptions' => '{ size:30, maxlength: 50 }'
+			)
+		);
+
+		$grid->addField('odbc');
+		$grid->label('ODBC');
+		$grid->params(array('width' => 200,
+							'editable' => 'true',
+							'edittype' => "'text'",
+							'search' => 'false',
+							'editoptions' => '{ size:30, maxlength: 50 }'
+			)
+		);
+
+		$grid->addField('odbc');
+		$grid->label('ODBC');
+		$grid->params(array('width' => 200,
+							'editable' => 'true',
+							'edittype' => "'text'",
+							'search' => 'false',
+							'editoptions' => '{ size:30, maxlength: 50 }'
+			)
+		);
+
+		$grid->addField('cu_cost');
+		$grid->label('Cta.Costo');
+		$grid->params(array('width' => 70,
+							'frozen' => 'true',
+							'editable' => 'true',
+							'edittype' => "'text'",
+							'editoptions' => '{
+						"dataInit":function(el){
+							setTimeout(function(){
+								if(jQuery.ui) { 
+									if(jQuery.ui.autocomplete){
+										jQuery(el).autocomplete({
+											"appendTo":"body",
+											"disabled":false,
+											"delay":300,
+											"minLength":1,
+											"select": function(event, ui) { 
+												$("#aaaaaa").remove();
+												$("#cu_cost").after("<div id=\"aaaaaa\"><strong>"+ui.item.descrip+"</strong></div>"); 
+											},
+											"source":function (request, response){
+												request.acelem = "cu_cost";
+												request.oper = "autocomplete";
+												$.ajax({
+													url: "'.$link.'",
+													dataType: "json",
+													data: request,
+													type: "POST",
+													error: function(res, status) { alert(res.status+" : "+res.statusText+". Status: "+status);},
+													success: function( data ) { response( data );	}
+												});
+											}
+										});
+										jQuery(el).autocomplete("widget").css("font-size","11px");
+									} 
+								} else { alert("Falta jQuery UI") }
+							},200);
+						}}',
+							'search' => 'false'
+			)
+		);
+
+		$grid->addField('cu_caja');
+		$grid->label('Cta.Caja');
+		$grid->params(array('width' => 70,
+							'frozen' => 'true',
+							'editable' => 'true',
+							'edittype' => "'text'",
+							'editoptions' => '{
+						"dataInit":function(el){
+							setTimeout(function(){
+								if(jQuery.ui) { 
+									if(jQuery.ui.autocomplete){
+										jQuery(el).autocomplete({
+											"appendTo":"body",
+											"disabled":false,
+											"delay":300,
+											"minLength":1,
+											"select": function(event, ui) { 
+												$("#bbbbbb").remove();
+												$("#cu_caja").after("<div id=\"bbbbbb\"><strong>"+ui.item.descrip+"</strong></div>"); 
+											},
+											"source":function (request, response){
+												request.acelem = "cu_caja";
+												request.oper = "autocomplete";
+												$.ajax({
+													url: "'.$link.'",
+													dataType: "json",
+													data: request,
+													type: "POST",
+													error: function(res, status) { alert(res.status+" : "+res.statusText+". Status: "+status);},
+													success: function( data ) { response( data );	}
+												});
+											}
+										});
+										jQuery(el).autocomplete("widget").css("font-size","11px");
+									} 
+								} else { alert("Falta jQuery UI") }
+							},200);
+						}}',
+							'search' => 'false'
+			)
+		);
+
+
+		$grid->showpager(true);
+		$grid->setWidth('');
+		$grid->setHeight('340');
+		$grid->setTitle('Almacenes');
+		$grid->setfilterToolbar(true);
+		//$grid->setToolbar('true, "top"');
+		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:350, closeOnEscape: true, top: 50, left:20, recreateForm:true ');
+		$grid->setFormOptionsA('closeAfterAdd: true, mtype: "POST", width: 520, height:350, closeOnEscape: true, top: 50, left:20, recreateForm:true ');
+
+
+		#show/hide navigations buttons
+		$grid->setAdd(true);                               
+		$grid->setEdit(true);
+		$grid->setDelete(true);
+		$grid->setSearch(false);
+		$grid->setRowNum(30);
+            
+		$grid->setShrinkToFit('false');
+            
+		#export buttons
+		//$grid->setPdf(true,array('title' => 'Test pdf'));
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		#GET url
+		$grid->setUrlget(site_url($this->url.'getdata/'));
+
+		if ($deployed) {
+			return $grid->deploy();
+		} else {
+			return $grid;
+		}
+	}
+
+
+
+
+
+
 	
 	/*
 	 * INICIO EXTJS
