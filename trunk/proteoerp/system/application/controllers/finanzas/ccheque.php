@@ -318,15 +318,6 @@ jQuery("#a1").click( function(){
 		$grid->setRowNum(30);
             
 		$grid->setShrinkToFit('false');
-/*
-afterSubmit: function(response, postdata) { 
-if (response.responseText == "") { 
-return [true, response.responseText] 
-} 
-else { 
-return [false, response.responseText] 
-} 
-*/
 		#export buttons
 		//$grid->setPdf(true,array('title' => 'Test pdf'));
 
