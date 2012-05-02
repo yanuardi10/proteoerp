@@ -671,7 +671,7 @@ class Datasis {
 	//      Manda Otras Funciones
 	//
 	//*******************************
-	function otros($modulo, $tipo = 'E' ){
+	function otros( $modulo, $tipo = 'E' ){
 		$CI =& get_instance();
 
 		if ( ! $this->iscampo('tmenus','proteo') ) {
@@ -689,7 +689,6 @@ class Datasis {
 
 		if($modulo){
 			$modulo=strtoupper($modulo);
-			$Otros1 = '<table>';
 
 			$CI->db->_escape_char='';
 			$CI->db->_protect_identifiers=false;
@@ -700,8 +699,8 @@ class Datasis {
 			$mSQL .= "AND a.modulo='".$modulo."OTR' ORDER BY a.secu";
 			$query = $CI->db->query($mSQL);
 
-
 			if ( $tipo == 'E' ) {
+				$Otros1 = '<table>';
 				if ($query->num_rows() > 0) {
 					foreach ($query->result_array() as $row)
 					{
@@ -722,11 +721,6 @@ class Datasis {
 				}
 				$query->free_result();
 				$Otros1 .= "</table>";
-				$otroscript = "
-	var storeOtros = Ext.create('Ext.data.ArrayStore', {autoDestroy: true,	storeId: 'OtrosStore',	autoload: true,	idIndex: 0,	fields: [ 'numero', 'nombre', 'proteo' ],data: [".$Otros."]	});
-	function renderOtro(value, p, record) { var mreto=''; if ( record.data.numero == '-' ){mreto = '{0}';	} else {mreto = '{1}';}	return Ext.String.format(mreto,value,record.data.proteo);}
-	var gridOtros = Ext.create('Ext.grid.Panel', {title: 'Otras Funciones',store: storeOtros,width: '199',columns: [{ header: 'Funcion que Ejecuta', dataIndex: 'nombre', width: 196, renderer: renderOtro },{ header: 'Otro',   dataIndex: 'ejecutar', hidden:  true }]});
-";
 
 			} else { // JQGRID	
 				if ($query->num_rows() > 0) {
@@ -748,7 +742,7 @@ class Datasis {
 					//$Otros1 .= "<tr><td>No hay Opciones</td></tr>";
 				}
 				$query->free_result();
-				$Otros1 .= "var dataotr = [ ".$Otros." ]";
+				//$Otros1 .= "var dataotr = [ ".$Otros." ]";
 			}
 
 		}
