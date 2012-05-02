@@ -876,11 +876,11 @@ class rivc extends Controller {
 		$comprob   = $periodo.$numero;
 
 		//$reinte  = $this->uri->segment($this->uri->total_segments());
-		$efecha  = $do->get('emision');
-		$fecha   = $do->get('fecha');
-		$ex_fecha=explode('-',$fecha);
-		$numero  = $do->get('nrocomp');
-		$vence   = $ex_fecha[0].$ex_fecha[1].days_in_month($ex_fecha[1],$ex_fecha[0]);
+		$efecha   = $do->get('emision');
+		$fecha    = $do->get('fecha');
+		$ex_fecha = explode('-',$fecha);
+		$numero   = $do->get('nrocomp');
+		$vence    = $ex_fecha[0].$ex_fecha[1].days_in_month($ex_fecha[1],$ex_fecha[0]);
 
 		$mSQL = "DELETE FROM smov WHERE transac='$transac'";
 		$ban=$this->db->simple_query($mSQL);
@@ -902,9 +902,9 @@ class rivc extends Controller {
 			if ($query->num_rows() > 0){
 				$row = $query->row();
 
-				$anterior    = $row->reiva;
-				$itreferen   = $row->referen;
-				$itfactura   = $row->factura;
+				$anterior  = $row->reiva;
+				$itreferen = $row->referen;
+				$itfactura = $row->factura;
 			}
 
 			if($anterior == 0) {
@@ -1092,57 +1092,73 @@ class rivc extends Controller {
 
 				$mSQL = $this->db->insert_string('smov', $data);
 				$ban=$this->db->simple_query($mSQL);
-				if($ban==false){ memowrite($mSQL,'RIVC'); }
+				if($ban==false){ memowrite($mSQL,'rivc'); }
 
 				//Aplica la NC a la ND si es posible
+				//$mnumnd; $fecha;
+				$this->db->select(array('a.numero','a.fecha','a.monto - a.abonos AS saldo'));
+				$this->db->from('smov   AS a');
+				$this->db->join('itrivc AS b' , 'a.transac=b.transac AND a.fecha=b.fecha AND a.num_ref=b.numero');
+				$this->db->where('b.numero'   , $itfactura);
+				$this->db->where('b.tipo_doc' , 'F');
+				$this->db->where('a.tipo_doc' , 'ND');
+				$this->db->where('a.cod_cli'  , 'REIVA');
+				$qquery=$this->db->get();
 
-				/*$data=array();
-				$data['numccli']    = $itnumero;
-				$data['tipoccli']   = ($ittipo_doc=='F')? 'FC' : 'ND';
-				$data['cod_cli']    = $cod_cli;
-				$data['tipo_doc']   = 'NC';
-				$data['numero']     = $mnumnc;
-				$data['fecha']      = $fecha;
-				$data['monto']      = $itmonto;
-				$data['abono']      = $itmonto;
-				$data['ppago']      = 0;
-				$data['reten']      = 0;
-				$data['cambio']     = 0;
-				$data['mora']       = 0;
-				$data['transac']    = $transac;
-				$data['estampa']    = $estampa;
-				$data['hora']       = $hora;
-				$data['usuario']    = $usuario;
-				$data['reteiva']    = 0;
-				$data['nroriva']    = '';
-				$data['emiriva']    = '';
-				$data['recriva']    = '';
+				if ($qquery->num_rows() == 1){
+					$rrrow = $qquery->row();
+					if($rrrow->saldo >= $itmonto){
+						$data=array();
+						$data['numccli']    = $mnumnc;
+						$data['tipoccli']   = 'NC';
+						$data['cod_cli']    = $cod_cli;
+						$data['tipo_doc']   = 'ND';
+						$data['numero']     = $rrrow->numero;
+						$data['fecha']      = $rrrow->fecha;
+						$data['monto']      = $itmonto;
+						$data['abono']      = $itmonto;
+						$data['ppago']      = 0;
+						$data['reten']      = 0;
+						$data['cambio']     = 0;
+						$data['mora']       = 0;
+						$data['transac']    = $transac;
+						$data['estampa']    = $estampa;
+						$data['hora']       = $hora;
+						$data['usuario']    = $usuario;
+						$data['reteiva']    = 0;
+						$data['nroriva']    = '';
+						$data['emiriva']    = '';
+						$data['recriva']    = '';
 
-				$mSQL = $this->db->insert_string('itccli', $data);
-				$ban=$this->db->simple_query($mSQL);
-				if($ban==false){ memowrite($mSQL,'rivc');}*/
+						$mSQL = $this->db->insert_string('itccli', $data);
+						$ban=$this->db->simple_query($mSQL);
+						if($ban==false){ memowrite($mSQL,'rivc');}
 
-				/*$data=array();
-				$data['cod_cli']    = 'REIVA';
-				$data['nombre']     = 'RETENCION DE I.V.A. POR COMPENSAR';
-				$data['tipo_doc']   = 'ND';
-				$data['numero']     = $mnumnd;
-				$data['fecha']      = $fecha;
-				$data['monto']      = $itmonto;
-				$data['impuesto']   = 0;
-				$data['abonos']     = 0;
-				$data['vence']      = $vence;
-				$data['tipo_ref']   = 'FC';
-				$data['num_ref']    = $do->get_rel($rel, 'numero'  , $i);
-				$data['observa1']   = 'RET/IVA DE '.$cod_cli.' A DOC. FC'.$do->get_rel($rel,'numero', $i);
-				$data['estampa']    = $estampa;
-				$data['hora']       = $hora;
-				$data['transac']    = $transac;
-				$data['usuario']    = $usuario;
-				$data['codigo']     = 'NOCON';
-				$data['descrip']    = 'NOTA DE CONTABILIDAD';
-				$data['nroriva']    = $comprob;
-				$data['emiriva']    = $efecha;*/
+						//Abona la ND
+						$dbfecha =$this->db->escape($rrrow->fecha);
+						$dbnumero=$this->db->escape($rrrow->numero);
+						$mSQL="UPDATE smov SET abonos=abonos+$itmonto
+						WHERE
+						cod_cli ='REIVA' AND
+						tipo_doc='ND' AND
+						numero  = $dbnumero AND
+						fecha   = $dbfecha";
+						$ban=$this->db->simple_query($mSQL);
+						if($ban==false){ memowrite($mSQL,'rivc');}
+//echo $mSQL;
+						//Abona la NC
+						$dbfecha =$this->db->escape($fecha);
+						$dbnumero=$this->db->escape($mnumnc);
+						$mSQL="UPDATE smov SET abonos=monto
+						WHERE
+						cod_cli ='REIVA' AND
+						tipo_doc='NC' AND
+						numero  = $dbnumero AND
+						fecha   = $dbfecha";
+						$ban=$this->db->simple_query($mSQL);
+						if($ban==false){ memowrite($mSQL,'rivc');}
+					}
+				}
 			}
 		}
 
@@ -1271,9 +1287,8 @@ class rivc extends Controller {
 		}
 		$periodo = $do->get('periodo');
 		$nrocomp = $do->get('nrocomp');
-
+//exit();
 		$primary =implode(',',$do->pk);
-
 		logusu($do->table,"Creo $this->tits ID $primary ${periodo }${nrocomp}");
 		return true;
 	}

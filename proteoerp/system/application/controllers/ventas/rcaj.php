@@ -209,9 +209,23 @@ class Rcaj extends validaciones {
 		}
 		//Fin del efectivo
 
+		//Calculo del monto en retenciones e ISLR
+		$retenciones=array();
+		$sel=array('TRIM(tipo) AS tipo','SUM(monto) AS monto');
+		$this->db->select($sel);
+		$this->db->from('sfpa');
+		$this->db->where('cobrador',$cajero);
+		$this->db->where('fecha',$fecha);
+		$this->db->where_in('tipo',array('RI','IR'));
+		$this->db->group_by('tipo');
+		$query = $this->db->get();
+		foreach ($query->result() as $row){
+			$retenciones[$row->tipo] = $row->monto;
+		}
+
 		//Inicio otras formas de pago
 		$c_otrp=0;
-		$mSQL='SELECT a.tipo,a.nombre FROM tarjeta a WHERE a.tipo NOT IN (\'EF\',\'NC\',\'ND\', \'DE\',\'IR\',\'DP\')';
+		$mSQL='SELECT a.tipo,a.nombre FROM tarjeta a WHERE a.tipo NOT IN (\'EF\',\'RP\',\'NC\',\'ND\', \'DE\',\'DP\') AND a.activo=\'S\'';
 		$query = $this->db->query($mSQL);
 		foreach ($query->result() as $i=>$row){
 			$c_otrp++;
@@ -223,13 +237,13 @@ class Rcaj extends validaciones {
 				$form->$obj->size=10;
 				$form->$obj->rule='numeric';
 				$form->$obj->autocomplete=false;
-				/*if($o==1){
-					$form->$obj->in=$sobj;
-				}else{
-					$form->$obj->css_class='cotrasf';
-					$form->$obj->indice   = $row->tipo;
+				if(in_array($row->tipo,array('RI','IR','RP'))){
+					$form->$obj->readonly=true;
+					$form->$obj->type='inputhidden';
+					$form->$obj->showformat='decimal';
+					$form->$obj->insertValue=(isset($retenciones[$row->tipo]))? $retenciones[$row->tipo] : 0;
 				}
-				$sobj=$obj;*/
+
 			}
 		}
 		//Fin otras formas de pago
@@ -293,46 +307,25 @@ class Rcaj extends validaciones {
 			$("#TOTR_val").text(nformat(TOTR,2));
 			$("#TGLOB_val").text(nformat(TOTR+TEFE,2));
 		}';
-		$this->rapyd->jquery[]='$("input[name^=\'cOT\']").calculator( {showOn: "button",useThemeRoller:true,onClose: function(value, inst) { gtotal(); }, onClose: function(value, inst) { gtotal(); }} );';
+		$this->rapyd->jquery[]='$("input[name^=\'cOT\']").not("input[id$=\'IR\']").not("input[id$=\'RI\']").not("input[id$=\'RP\']").calculator( {showOn: "button",useThemeRoller:true,onClose: function(value, inst) { gtotal(); }, onClose: function(value, inst) { gtotal(); }} );';
+		$this->rapyd->jquery[]='gtotal();';
 
 		//hace el precierre
 		if ($form->on_success()){
 			$dbfecha  = $this->db->escape($fecha);
 			$dbcajero = $this->db->escape($cajero);
 
-			//$mSQL="DELETE FROM sitems WHERE MID(numero,1,1)='_' AND cajero=$dbcajero";
-			//$this->db->simple_query($mSQL);
-
-			//$mSQL="DELETE FROM sfac WHERE MID(numero,1,1)='_' AND cajero=$dbcajero";
-			//$this->db->simple_query($mSQL);
-
 			$mSQL="SELECT c.tipo, IFNULL(SUM(aa.monto),0) AS monto FROM
 				(SELECT b.tipo, b.monto AS monto
 				FROM sfac AS a
 				JOIN sfpa AS b ON a.transac=b.transac
-				WHERE a.fecha=$dbfecha AND b.cobrador=$dbcajero AND a.tipo_doc<>'X' AND MID(a.numero,1,1)<>'_'
+				WHERE a.fecha=$dbfecha AND b.cobrador=$dbcajero AND a.tipo_doc<>'X' AND MID(a.numero,1,1)<>'_' AND b.tipo<>'RP'
 				UNION ALL
 				SELECT e.tipo,e.monto AS monto
 				FROM sfpa AS e
 				WHERE e.f_factura=$dbfecha AND e.cobrador=$dbcajero AND e.tipo_doc IN ('AB','AN')
 				) AS aa
 				RIGHT JOIN tarjeta AS c ON aa.tipo=c.tipo GROUP BY c.tipo";
-
-			/*$objfecha = DateTime::createFromFormat('Ymd', $fecha);
-			$objfecha->sub(new DateInterval('P1D'));
-			$dbfecha_s=$this->db->escape($objfecha->format('Y-m-d'));
-			$mSQL="SELECT bb.tipo, SUM(IFNULL(aa.monto,0)) AS monto FROM
-				(SELECT a.tipo,a.monto
-				FROM sfpa AS a
-				JOIN sfac AS b ON b.numero=a.numero AND a.tipo_doc=CONCAT(b.tipo_doc, IF(b.referen='M','E',b.referen))
-				WHERE a.f_factura=$dbfecha AND SUBSTRING(a.tipo_doc,2,1)!='X' AND a.cobrador=$dbcajero
-			UNION ALL
-				SELECT a.tipo, monto
-				FROM sfpa AS a
-				JOIN sfac AS b ON b.numero=a.numero AND a.tipo_doc=CONCAT(b.tipo_doc, IF(b.referen='M','E',b.referen))
-				WHERE a.f_factura=$dbfecha_s AND SUBSTRING(a.tipo_doc,2,1)!='X' AND a.cobrador=$dbcajero AND MID(a.hora,1,2)>18 ) AS aa
-			RIGHT JOIN tarjeta AS bb ON aa.tipo=bb.tipo
-			GROUP BY tipo";*/
 
 			//Toma en cuenta los retiros
 			$rret=array();
@@ -379,7 +372,7 @@ class Rcaj extends validaciones {
 					'cajero'  => $cajero,
 					'caja'    => $caja,
 					'observa' => $str,
-					'usuario' => $this->session->userdata('usuario'),
+					'usuario' => $this->secu->usuario(),
 					'tipo'    => 'T',
 					'recibido'=> $rrecibido,
 					'ingreso' => $ingreso,
@@ -389,19 +382,11 @@ class Rcaj extends validaciones {
 				$this->db->simple_query($mSQL);
 
 				$dbnumero=$this->db->escape($numero);
-				/*$mSQL="UPDATE sfac JOIN sfpa ON sfac.transac=sfpa.transac SET sfpa.cierre=$dbnumero
-				WHERE sfac.fecha=$dbfecha AND sfac.cajero=$dbcajero";*/
 
 				$mSQL="UPDATE sfpa JOIN sfac ON sfac.numero=sfpa.numero AND sfpa.tipo_doc=CONCAT(sfac.tipo_doc, IF(sfac.referen='M','E',sfac.referen))
 				SET sfpa.cierre=$dbnumero
 				WHERE sfpa.f_factura=$dbfecha    AND SUBSTRING(sfpa.tipo_doc,2,1)!='X' AND sfpa.cobrador=$dbcajero ";
 				$this->db->simple_query($mSQL);
-
-				//Esto es tambien del cajero nocturno
-				//$mSQL="UPDATE sfpa JOIN sfac ON sfac.numero=sfpa.numero AND sfpa.tipo_doc=CONCAT(sfac.tipo_doc, IF(sfac.referen='M','E',sfac.referen))
-				//SET sfpa.cierre=$dbnumero
-				//WHERE sfpa.f_factura>=$dbfecha_s AND SUBSTRING(sfpa.tipo_doc,2,1)!='X' AND sfpa.cobrador=$dbcajero AND MID(sfpa.hora,1,2)>18";
-				//$this->db->simple_query($mSQL);
 
 				if($this->db->table_exists('rret')){
 					$mSQL="UPDATE rret SET cierre=$dbnumero WHERE cajero=$dbcajero AND fecha=$dbfecha AND cierre IS NULL";
@@ -466,16 +451,15 @@ class Rcaj extends validaciones {
 		$this->db->group_by('tipo');
 		$query = $this->db->get();
 		foreach ($query->result() as $row){
-			$retiros[$row->tipo] = nformat($row->monto);
+			$retiros[$row->tipo] = $row->monto;
 			$totales[0]+=$row->monto;
 		}
-		//$totales[0]=nformat($totales[0]);
 
 		$mSQL="SELECT TRIM(c.tipo) AS tipo,0 AS retiro,c.nombre ,b.recibido,b.sistema,b.diferencia
 		FROM rcaj    AS a
 		JOIN itrcaj  AS b ON a.numero=b.numero
 		JOIN tarjeta AS c ON c.tipo=b.tipo
-		WHERE a.numero=${dbnumero}";
+		WHERE a.numero=${dbnumero} AND c.tipo<>'RP'";
 
 		$query = $this->db->query($mSQL);
 		if($query->num_rows()>0){
@@ -487,16 +471,17 @@ class Rcaj extends validaciones {
 					$form->$obj = new inputField('('.$row->tipo.') '.$row->nombre, $obj);
 					$form->$obj->style='text-align:right';
 					if($nobj=='retiro'){
-						$form->$obj->insertValue= (isset($retiros[$row->tipo]))? $retiros[$row->tipo] : 0 ;
+						$form->$obj->insertValue= (isset($retiros[$row->tipo]))? $retiros[$row->tipo] : '0' ;
+						$form->$obj->showformat='decimal';
 					}else{
 						$form->$obj->insertValue=$row->$nobj;
+						$form->$obj->rule='numeric';
 					}
 
 					$form->$obj->size=10;
-					$form->$obj->rule='numeric';
 					$form->$obj->autocomplete=false;
-					//if($o==0) $sobj=$obj; else $form->$obj->in=$sobj;
-					if($o!=1) {
+
+					if($o!=1 || in_array($row->tipo,array('RI','IR'))) {
 						$form->$obj->readonly=true;
 						$form->$obj->type='inputhidden';
 					}
@@ -559,6 +544,10 @@ class Rcaj extends validaciones {
 
 		//Cierre de caja
 		if ($form->on_success()){
+			$usuario = $this->secu->usuario();
+			$estampa = date('Y-m-d');
+			$hora    = date('H:i:s');
+
 			$mSQL="SELECT a.fecha,c.tipo,c.nombre ,b.recibido,b.sistema,b.diferencia, a.transac
 			FROM rcaj    AS a
 			JOIN itrcaj  AS b ON a.numero=b.numero
@@ -586,11 +575,9 @@ class Rcaj extends validaciones {
 						$sistema     += $row->sistema;
 						$mmSQL = $this->db->insert_string('itrcaj', $arr);
 						$this->db->simple_query($mmSQL);
-						//echo $mmSQL."\n";
 					}
 				}$rcajfecha=$this->db->escape($row->fecha);
 				$transac=$row->transac;
-				//$transac=$this->datasis->fprox_numero('ntransa');
 
 				$arr = array(
 					'tipo'     => 'F',
@@ -600,7 +587,6 @@ class Rcaj extends validaciones {
 				$where = 'numero='.$this->db->escape($numero);
 				$mmSQL = $this->db->update_string('rcaj', $arr, $where);
 				$this->db->simple_query($mmSQL);
-				//echo $mmSQL;
 
 				//cierra el cajero
 
@@ -619,15 +605,55 @@ class Rcaj extends validaciones {
 					$ban=$this->db->simple_query($mmSQL);
 					if($ban==false) memowrite($mmSQL,'rcaj');
 				}
-				//echo $mmSQL;
+
+				//Inicio de las transacciones ISLR
+				$mmSQL = "SELECT a.monto,a.fecha,a.numero,c.nombre,a.transac
+				FROM sfpa AS a
+				JOIN rcaj AS b ON a.fecha=b.fecha AND a.cobrador=b.cajero
+				JOIN scli AS c ON a.cod_cli=c.cliente
+				WHERE b.numero=${dbnumero} AND a.tipo='IR'";
+				$qquery = $this->db->query($mmSQL);
+
+				foreach ($qquery->result() as $rrow){
+					$XNUMERO = $this->datasis->fprox_numero('ndcli');
+
+					$data['tipo_doc'] = 'ND';
+					$data['numero']   = $XNUMERO;
+					$data['cod_cli']  = 'RETEN';
+					$data['nombre']   = 'RETENCION DE ISLR';
+					$data['fecha']    = $rrow->fecha;
+					$data['monto']    = $rrow->monto;
+					$data['impuesto'] = 0;
+					$data['vence']    = date('Ymd',mktime(0, 0, 0, substr($rrow->fecha,5,2)+1, 3, substr($rrow->fecha,0,4)));
+					$data['observa1'] = 'RET/ISLR DE FE '.$rrow->numero;
+					$data['observa2'] = 'CLIENTE '.$rrow->nombre;
+					$data['banco']    = '';
+					$data['tipo_op']  = '';
+					$data['num_op']   = '';
+					$data['reten']    = 0 ;
+					$data['ppago']    = 0 ;
+					$data['control']  = '';
+					$data['cambio']   = 0 ;
+					$data['mora']     = 0 ;
+					$data['abonos']   = 0 ;
+					$data['transac']  = $rrow->transac;
+					$data['usuario']  = $usuario;
+					$data['estampa']  = $estampa;
+					$data['hora']     = $hora;
+
+					$mSQL = $this->db->insert_string('smov', $data);
+					$ban=$this->db->simple_query($mSQL);
+					if($ban==false) memowrite($mSQL,'rcaj');
+				}
+				//Fin de las retenciones ISLR
 
 				//Crea el movimiento en smov
 				$mSQL  = 'SELECT fecha, cajero FROM rcaj WHERE numero='.$dbnumero;
 				$query = $this->db->query($mSQL);
 				$row   = $query->first_row();
-				$fecha =$row->fecha;
-				$sfecha=str_replace('','-',$fecha);
-				$cajero=$row->cajero;
+				$fecha = $row->fecha;
+				$sfecha= str_replace('','-',$fecha);
+				$cajero= $row->cajero;
 
 				$nbmov=$this->_banprox($caja);
 				$mSQL = 'SELECT moneda, numcuent,banco,saldo FROM banc WHERE codbanc= ? ';
@@ -649,6 +675,9 @@ class Rcaj extends validaciones {
 				$data['monto']      =$rrecibido;
 				$data['concepto']   ="ENTREGA FINAL CAJERO $cajero DIA ".dbdate_to_human($fecha);
 				$data['transac']    =$transac;
+				$data['usuario']    =$usuario;
+				$data['estampa']    =$estampa;
+				$data['hora']       =$hora;
 
 				$mSQL = $this->db->insert_string('bmov', $data);
 				$ban=$this->db->simple_query($mSQL);
@@ -705,6 +734,9 @@ class Rcaj extends validaciones {
 						$data['monto']      =abs($dif);
 						$data['concepto']   ="FALTANTE EN CAJA $caja CAJERO $cajero DIA ".dbdate_to_human($fecha);
 						$data['transac']    =$transac;
+						$data['usuario']    =$usuario;
+						$data['estampa']    =$estampa;
+						$data['hora']       =$hora;
 
 						$mSQL = $this->db->insert_string('bmov', $data);
 						$ban=$this->db->simple_query($mSQL);
@@ -726,6 +758,9 @@ class Rcaj extends validaciones {
 						$data['monto']      =abs($dif);
 						$data['concepto']   ="SOBRANTE EN CAJA $caja CAJERO $cajero DIA ".dbdate_to_human($fecha);
 						$data['transac']    =$transac;
+						$data['usuario']    =$usuario;
+						$data['estampa']    =$estampa;
+						$data['hora']       =$hora;
 
 						$mSQL = $this->db->insert_string('bmov', $data);
 						$ban=$this->db->simple_query($mSQL);
@@ -753,6 +788,13 @@ class Rcaj extends validaciones {
 		JOIN rcaj AS b ON a.fecha=b.fecha AND b.cajero=a.cajero
 		WHERE a.referen='C' AND b.numero=${dbnumero}");
 
+		$mSQL = "SELECT SUM(a.monto) AS rp
+		FROM sfpa AS a
+		JOIN rcaj AS b ON a.fecha=b.fecha AND a.cobrador=b.cajero
+		WHERE b.numero=${dbnumero} AND a.tipo='RP'";
+		$rp=$this->datasis->dameval($mSQL);
+
+		$cont['rp']      = empty($rp)? 0 : $rp ;
 		$cont['retiros'] = $retiros;
 		$cont['credito'] = (empty($credito))? 0 : $credito;
 		$cont['form']    = &$form;
@@ -775,14 +817,30 @@ class Rcaj extends validaciones {
 	}
 
 	function _reversar($numero){
-		$dbnumero=$this->db->escape($numero);
-		$mSQL  = 'SELECT tipo, transac FROM rcaj WHERE numero='.$dbnumero;
-		$query = $this->db->query($mSQL);
-		$er    = 0;
+		$dbnumero= $this->db->escape($numero);
+		$mSQL    = 'SELECT tipo, transac FROM rcaj WHERE numero='.$dbnumero;
+		$query   = $this->db->query($mSQL);
+		$er      = 0;
 
 		if ($query->num_rows() > 0){
 			$row = $query->row();
 			if($row->tipo=='F'){
+				//Reversa las ISLR
+				$mmSQL = "SELECT a.monto,a.fecha,a.numero,a.transac
+				FROM sfpa AS a
+				JOIN rcaj AS b ON a.fecha=b.fecha AND a.cobrador=b.cajero
+				WHERE b.numero=${dbnumero} AND a.tipo='IR'";
+				$qquery = $this->db->query($mmSQL);
+				foreach ($qquery->result() as $rrow){
+					$this->db->where('cod_cli' , 'RETEN');
+					$this->db->where('tipo_doc', 'ND');
+					$this->db->where('fecha'   , $rrow->fecha);
+					$this->db->where('transac' , $rrow->transac);
+					$this->db->where('monto'   , $rrow->monto);
+					$this->db->delete('smov');
+				}
+				//Fin del reverso de las ISLR
+
 				$transac  = $row->transac;
 				$dbtransac= $this->db->escape($transac);
 				$sfecha   = date('Ymd');

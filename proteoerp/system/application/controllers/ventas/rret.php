@@ -133,7 +133,7 @@ class Rret extends validaciones {
 
 		//Inicio otras formas de pago
 		$c_otrp=0;
-		$mSQL='SELECT a.tipo,a.nombre FROM tarjeta a WHERE a.tipo NOT IN (\'EF\',\'NC\',\'ND\', \'DE\',\'IR\',\'DP\')';
+		$mSQL='SELECT a.tipo,a.nombre FROM tarjeta a WHERE a.tipo=\'CH\'';
 		$query = $this->db->query($mSQL);
 		foreach ($query->result() as $i=>$row){
 			$c_otrp++;
@@ -351,7 +351,7 @@ class Rret extends validaciones {
 
 		//Inicio otras formas de pago
 		$c_otrp=0;
-		$mSQL='SELECT a.tipo,a.nombre FROM tarjeta a WHERE a.tipo NOT IN (\'EF\',\'NC\',\'ND\', \'DE\',\'IR\',\'DP\')';
+		$mSQL='SELECT a.tipo,a.nombre FROM tarjeta a WHERE a.tipo=\'CH\'';
 		$query = $this->db->query($mSQL);
 		foreach ($query->result() as $i=>$row){
 			$c_otrp++;
