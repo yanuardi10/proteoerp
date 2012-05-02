@@ -428,7 +428,6 @@ class Bcaj extends Controller {
 		$edit->recibe = new dropdownField('Recibe','recibe');
 		$edit->recibe->option('','Seleccionar');
 
-
 		$edit->numeror = new inputField('N&uacute;mero de deposito', 'numeror');
 		$edit->numeror->rule='required';
 		$edit->numeror->size=20;
@@ -440,9 +439,16 @@ class Bcaj extends Controller {
 				if($("#cheques").val().length>0)  cheques =parseFloat($("#cheques").val());  else cheques =0;
 				monto   =efectivo+cheques;
 				$("#monto").val(roundNumber(monto,2));
+			}
+
+			function get_cheques(){
+				$.get("'.site_url('finanzas/bcaj/chequelist').'", function(data) {
+					$("#chequelist").html(data);
+				});
 			}';
 
 		$this->rapyd->jquery[]='$("#cheques,#efectivo").bind("keyup",function() { totaliza(); });';
+		$this->rapyd->jquery[]='$("#recibe").bind("change",function() { get_cheques(); });';
 		$edit->script($script);
 
 		$edit->envia->options( "SELECT TRIM(codbanc) AS codbanc,$desca FROM banc WHERE tbanco='CAJ'");
@@ -469,6 +475,9 @@ class Bcaj extends Controller {
 		$edit->envia->rule   = 'required';
 		$edit->envia->style  = 'width:180px';
 		$edit->recibe->style .= 'width:180px';
+
+		$edit->container = new containerField('','<div id=\'chequelist\'>Lista de cheques</div>');
+		$edit->container->group = 'Montos';
 
 		$back_url = site_url('finanzas/bcaj/agregar');
 		$edit->button('btn_undo', 'Regresar', "javascript:window.location='${back_url}'", 'TR');
@@ -499,6 +508,28 @@ class Bcaj extends Controller {
 		$data['title']   = heading('Deposito');
 		$data['head']    = $this->rapyd->get_head().phpscript('nformat.js');
 		$this->load->view('view_ventanas', $data);
+	}
+
+	function chequelist(){
+		$this->db->select(array('a.monto','a.tipo','b.nomb_banc','c.nombre'));
+		$this->db->from('sfpa AS a');
+		$this->db->join('tban AS b','a.banco=cod_banc');
+		$this->db->join('scli AS c','a.cod_cli=c.cliente');
+		$this->db->where('a.tipo','CH');
+		$this->db->where('status IS NULL');
+		$query = $this->db->get();
+
+		echo '<table>';
+		foreach ($query->result() as $row){
+			echo '<tr>';
+			echo '<td>'.form_checkbox('sfpa', 'accept').'</td>';
+			echo "<td>$row->nombre</td>";
+			echo "<td>$row->nomb_banc</td>";
+			echo '<td>'.nformat($row->monto).'</td>';
+			echo '</tr>';
+		}
+		echo '</table>';
+
 	}
 
 	function depositotar(){
