@@ -86,7 +86,7 @@ jQuery("#a1").click( function(){
 		$grid->label('Id');
 		$grid->params(array('align'    => "'center'",
 							'frozen'   => 'true',
-							'width'    => 70,
+							'width'    => 60,
 							'editable' => 'false',
 							'search'   => 'false'
 			)
@@ -97,6 +97,16 @@ jQuery("#a1").click( function(){
 		$grid->params(array('width'    => 180,
 							'editable' => 'false',
 							'edittype' => "'text'"
+			)
+		);
+
+		$grid->addField('tipo_doc');
+		$grid->label('Doc.');
+		$grid->params(array(
+					'width'    => 30,
+					'align'    => "'center'",
+					'editable' => 'false',
+					'edittype' => "'text'"
 			)
 		);
 
@@ -135,8 +145,8 @@ jQuery("#a1").click( function(){
 		);
 
 		$grid->addField('num_ref');
-		$grid->label('Nro.Documento');
-		$grid->params(array('width'       => 100,
+		$grid->label('Nro. Cheque');
+		$grid->params(array('width'       => 90,
 							'editable'    => 'true',
 							'edittype'    => "'text'",
 							'editrules'   => '{required:true}',
@@ -229,7 +239,7 @@ jQuery("#a1").click( function(){
 
 		$grid->showpager(true);
 		$grid->setWidth('');
-		$grid->setHeight('340');
+		$grid->setHeight('290');
 		$grid->setTitle($this->titp);
 		$grid->setfilterToolbar(true);
 
@@ -237,7 +247,6 @@ jQuery("#a1").click( function(){
 		$grid->setFormOptionsA('closeAfterAdd: true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){ if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
 
 		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
-
 
 		#show/hide navigations buttons
 		$grid->setAdd(false);
@@ -249,7 +258,6 @@ jQuery("#a1").click( function(){
 		$grid->setShrinkToFit('false');
 
 		#export buttons
-		//$grid->setPdf(true,array('title' => 'Test pdf'));
 
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
@@ -370,10 +378,26 @@ jQuery("#a1").click( function(){
 			//$data['usuario'] = $this->secu->usuario();
 			//$data['estampa'] = date('Ymd');
 			//$data['hora']    = date('H:i:s');
-			unset($data['monto']);
+
+			//REVISA SI DEBE GENERAR MOVIMIENTO EF
+			$montoo = $this->datasis->dameval("SELECT monto FROM sfpa WHERE id=$id");
+			$dife =    $montoo - $data['monto'];
+			if ( round($dife,2) <> 0 ) {
+				$query = $this->db->get_where('sfpa', array('id'=>$id) );
+				$row = $query->row_array();
+				$row['tipo'] = 'EF';
+				$row['monto'] = $dife;
+				unset($row['id']);
+				$this->db->insert('sfpa', $row);
+				logusu('SFPA',"Cambia forma de pago: id=$id  monto=$montoo ");
+
+				//unset($data['monto']);
+			} else {
+				unset($data['monto']);
+			}
 			$this->db->where('id', $id);
 			$this->db->update('sfpa', $data);
-			echo 'Registro Guardado';
+			echo 'Registro Guardado ';
 			return;
 
 		} elseif($oper == 'del') {

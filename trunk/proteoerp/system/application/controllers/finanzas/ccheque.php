@@ -86,7 +86,7 @@ jQuery("#a1").click( function(){
 		$grid->label('Id');
 		$grid->params(array('align'    => "'center'",
 							'frozen'   => 'true',
-							'width'    => 70,
+							'width'    => 60,
 							'editable' => 'false',
 							'search'   => 'false'
 			)
@@ -276,7 +276,7 @@ jQuery("#a1").click( function(){
 
 		$grid->showpager(true);
 		$grid->setWidth('');
-		$grid->setHeight('300');
+		$grid->setHeight('290');
 		$grid->setTitle($this->titp);
 		$grid->setfilterToolbar(true);
 		//$grid->setToolbar('true, "top"');
@@ -431,6 +431,7 @@ jQuery("#a1").click( function(){
 				$this->db->insert('sfpa', $data);
 				$id = $this->db->insert_id();
 			}
+			logusu('SFPA',"Agrega Cambio de medio de pago por efectivo: id=$id, ".$data['numero'].", monto=".$data['monto']);
 			echo "{\"id\":\"$id\",\"mensaje\":\"Registro Agregado\"}";
 			return;
 
@@ -442,6 +443,7 @@ jQuery("#a1").click( function(){
 			$data['hora']    = date('H:i:s');
 			$this->db->where('id', $id);
 			$this->db->update('sfpa', $data);
+			logusu('SFPA',"Edita Cambio de medio de pago por efectivo: id=$id, ".$data['numero'].", monto=".$data['monto']);
 			echo 'Registro Guardado';
 			return;
 

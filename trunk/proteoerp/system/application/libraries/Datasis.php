@@ -438,7 +438,7 @@ class Datasis {
 		}
 		$query->free_result();
 		if ( $todos ){
-			return '<select><option value=\0\'>Todos</option>'.$opciones.'</select>';
+			return '<select><option value=\0\'>Seleccione</option>'.$opciones.'</select>';
 		} else {
 			return '<select>'.$opciones.'</select>';
 		}
