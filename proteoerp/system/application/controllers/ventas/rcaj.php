@@ -5,7 +5,6 @@ class Rcaj extends validaciones {
 		parent::Controller();
 		$this->load->library('rapyd');
 		$this->datasis->modulo_id('12A',1);
-		$this->load->database();
 	}
 
 	function index(){
@@ -24,8 +23,6 @@ class Rcaj extends validaciones {
 			'screenx'    => '0',
 			'screeny'    => '0');
 
-		$titulo  = anchor_popup('supermercado/lresumen', ' Ver Resumen de caja',$atts)." <---> ";
-		$titulo .= anchor_popup('supermercado/lresumen/indext',' Ver Resumen de todas las cajas',$atts);
 		$recep = anchor('ventas/rcaj/forcierre/','Recepcion de Caja');
 		//$filter = new DataFilter($titulo);
 		$filter = new DataFilter('Filtro');
@@ -901,6 +898,7 @@ class Rcaj extends validaciones {
 			if($ban==false) memowrite($mSQL,'rcaj');
 			$er +=$ban;
 		}
+		logusu('rcaj',"Reverso de cierre de caja numero $numero");
 
 		return ($er>0) ? false: true;
 	}

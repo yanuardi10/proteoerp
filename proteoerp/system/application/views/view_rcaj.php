@@ -1,11 +1,15 @@
 <?php reset($form->_fields); ?>
 <?php if(strlen($form->error_string)>0){ ?>
-<div class="ui-state-error ui-corner-all" style="padding: 0pt 0.7em;"> 
+<div class="ui-state-error ui-corner-all" style="padding: 0pt 0.7em;">
 <p><span class="ui-icon ui-icon-alert" style="float: left; margin-right: 0.3em;"></span>
 	<?php echo $form->error_string; ?>
 </p>
 </div>
-<?php } ?>
+<?php }
+if(!isset($efeadic)){
+	$efeadic=2;
+}
+?>
 
 <?php echo $form->form_open; ?>
 <table align='center'>
@@ -25,7 +29,7 @@
 					$obj=next($form->_fields);
 				}
 				$obj=current($form->_fields);
-				for($i=0;$i<2;$i++){
+				for($i=0;$i<$efeadic;$i++){
 					echo '<tr><td>'.$obj->label.'</td><td>&nbsp;</td><td>'.$obj->output.'</td></tr>';
 					$obj=next($form->_fields);
 				}
@@ -37,7 +41,7 @@
 				<tr>
 					<th colspan=3 class="ui-widget-header">Otras formas de pago</th>
 				</tr>
-				<?php 
+				<?php
 				/*$obj=current($form->_fields);
 				for($i=0;$i< $c_otrp;$i++){
 					echo ($i % 2==0) ? '<tr>' : '';
@@ -48,7 +52,7 @@
 				}*/
 				?>
 
-				<?php 
+				<?php
 				$obj=current($form->_fields);
 				for($i=0;$i< $c_otrp;$i++){
 					echo '<tr>';
@@ -64,21 +68,22 @@
 				<tr>
 					<th colspan=3 class="ui-widget-header">Resumen global</th>
 				</tr>
-				<?php 
+				<?php
 				$obj=current($form->_fields);
-				for($i=0;$i<4;$i++){
+				for($i=0;$i<5;$i++){
 					echo '<tr>';
 					echo '<td>'.$obj->label.'</td>';
 					echo '<td align="right">'.$obj->output.'</td>';
 					echo '</tr>';
 					$obj=next($form->_fields);
+					if($obj===false) break;
 				}?>
 				<tr>
 					<td><?php echo $regresa; ?></td>
-					<td><?php 
+					<td align="right"><?php
 					$attr=array(
 						'name' =>'submitform',
-						'value'=>'Hacer pre-cierre',
+						'value'=>'Guardar',
 						'class'=>'fg-buttons ui-state-default ui-corner-all');
 					echo form_submit($attr);
 					?></td>
