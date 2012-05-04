@@ -137,7 +137,7 @@ class Jqdatagrid
     #alto de la pagina
     private $height  = 150;
 
-    private $return  = array('table' => '', 'pager' => '');
+	private $return  = array('table' => '', 'pager' => '');
 
 	private $title    = '';
 
@@ -162,6 +162,10 @@ class Jqdatagrid
 	private $hiddengrid = false;
 
 	private $afterSubmit = '';
+
+	private $multiSelect = false;
+
+	private $onSelectRow = '';  
 
 	
 	function __construct ()
@@ -258,6 +262,18 @@ class Jqdatagrid
         $this->viewrecords = $element;
     }
 
+
+    /**
+     * Show record summary
+     * @param bool $element
+     * @return void
+     */
+    public function setMultiSelect($element)
+    {
+        $this->multiSelect = $element;
+    }
+
+
     /**
      * Show record summary
      * @param bool $element
@@ -309,6 +325,15 @@ class Jqdatagrid
         $this->afterSubmit = $element;
     }
 
+    /**
+     * After Submit Function
+     * @param text $element
+     * @return void
+     */
+    public function setonSelectRow($element)
+    {
+        $this->onSelectRow = $element;
+    }
 
 
     /**
@@ -575,7 +600,16 @@ class Jqdatagrid
 			$html .= $margen.",rowList: []\r\n";
 			$html .= $margen.",pgtext: null\r\n";
 		} else 
+
 		 $html .= $margen.",rowList: $this->rowList\r\n";
+
+		if ($this->onSelectRow)
+		 $html .= $margen.",onSelectRow: $this->onSelectRow\r\n";
+
+
+		if($this->multiSelect == true ){
+			$html .= $margen.",multiselect: true\r\n";
+		}
 
 		if($this->hiddengrid == true )
 			$html .= $margen.",hiddengrid: true\r\n";
@@ -586,7 +620,7 @@ class Jqdatagrid
 		}
 		
 		//$html .= ",onCellSelect: function(response,postdata){ alert('aaaaaa');}\r\n";
-        $querydata = array( 'dtgFields' => $this->_field );
+		$querydata = array( 'dtgFields' => $this->_field );
 		$this->CI->session->set_userdata($querydata);
 
 		#propiedades de las ventanas

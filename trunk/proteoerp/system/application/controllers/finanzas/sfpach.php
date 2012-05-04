@@ -38,10 +38,32 @@ $(function() {
 jQuery("#a1").click( function(){
 	var id = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
 	if (id)	{
-		var ret = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getRowData\',id);
+		//var ret = jQuery("#newapi'.$param['grid']['gridname'].'").jqGrid(\'getRowData\',id);
 		window.open(\''.base_url().'formatos/ver/SFPACH/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');		
 	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
 });
+
+
+	function sumamonto()
+        { 
+		var grid = jQuery("#newapi'.$param['grid']['gridname'].'");
+		var s;
+		var total = 0;
+		var rowcells=new Array();
+		s = grid.getGridParam(\'selarrrow\'); 
+		$("#totaldep").html("");
+
+		if(s.length)
+		{
+			for(var i=0;i<s.length;i++)
+			{
+				var entirerow = grid.jqGrid(\'getRowData\',s[i]);
+				total += Number(entirerow["monto"]);
+			}
+		total = Math.round(total*100)/100;	
+		$("#totaldep").html("Monto: "+total+"<p>Caja<input></input></p><p>Banco</>");
+		}
+	};
 
 
 </script>
@@ -56,8 +78,13 @@ jQuery("#a1").click( function(){
 	<tr><td>
 			<a style="width:190px" href="#" id="a1">Imprimir Copia</a>
 	</td></tr>
+	<tr><td>
+			<a style="width:190px" href="#" id="m1">DEPOSITAR</a>
+	</td></tr>
 	</table>
 	</div>
+	<div id="totaldep" style="font-size:20px;text-align:center;"></div>
+	
 </div> <!-- #LeftPane -->
 ';
 
@@ -242,6 +269,8 @@ jQuery("#a1").click( function(){
 		$grid->setHeight('290');
 		$grid->setTitle($this->titp);
 		$grid->setfilterToolbar(true);
+		$grid->setMultiSelect(true);
+		$grid->setonSelectRow('sumamonto');
 
 		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){ if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
 		$grid->setFormOptionsA('closeAfterAdd: true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){ if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
