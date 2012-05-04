@@ -442,7 +442,7 @@ class Bcaj extends Controller {
 			}
 
 			function get_cheques(){
-				$.get("'.site_url('finanzas/bcaj/chequelist').'", function(data) {
+				$.post("'.site_url('finanzas/bcaj/chequelist').'",{ recibe: $("#recibe").val()}, function(data) {
 					$("#chequelist").html(data);
 				});
 			}';
@@ -511,24 +511,36 @@ class Bcaj extends Controller {
 	}
 
 	function chequelist(){
-		$this->db->select(array('a.monto','a.tipo','b.nomb_banc','c.nombre'));
-		$this->db->from('sfpa AS a');
-		$this->db->join('tban AS b','a.banco=cod_banc');
-		$this->db->join('scli AS c','a.cod_cli=c.cliente');
-		$this->db->where('a.tipo','CH');
-		$this->db->where('status IS NULL');
-		$query = $this->db->get();
+		$recibe=$this->input->post('recibe');
+		if(!empty($recibe)){
+			$dbrecibe=$this->db->escape($recibe);
 
-		echo '<table>';
-		foreach ($query->result() as $row){
-			echo '<tr>';
-			echo '<td>'.form_checkbox('sfpa', 'accept').'</td>';
-			echo "<td>$row->nombre</td>";
-			echo "<td>$row->nomb_banc</td>";
-			echo '<td>'.nformat($row->monto).'</td>';
-			echo '</tr>';
+			$this->db->select(array('a.id','a.tipo_doc','a.numero','a.monto','a.tipo','b.nomb_banc','c.nombre'));
+			$this->db->from('sfpa AS a');
+			$this->db->join('tban AS b','a.banco=cod_banc');
+			$this->db->join('scli AS c','a.cod_cli=c.cliente');
+			$this->db->join('banc AS d',"a.banco=d.tbanco AND d.codbanc=$dbrecibe",'left');
+			$this->db->where('a.tipo','CH');
+			$this->db->where('status IS NULL');
+			$this->db->order_by('d.codbanc IS NULL');
+			$this->db->order_by('a.banco');
+			$query = $this->db->get();
+			//echo $this->db->last_query();
+
+			echo '<table>';
+			foreach ($query->result() as $row){
+				echo '<tr>';
+				echo '<td>'.form_checkbox('CC['.$row->id.']', 'accept').'</td>';
+				echo '<td>'.$row->tipo_doc.$row->numero.'</td>';
+				echo "<td>$row->nombre</td>";
+				echo "<td>$row->nomb_banc</td>";
+				echo '<td align=\'right\'>'.nformat($row->monto).'</td>';
+				echo '</tr>';
+			}
+			echo '</table>';
+		}else{
+			echo 'Debe seleccionar un receptor.';
 		}
-		echo '</table>';
 
 	}
 
