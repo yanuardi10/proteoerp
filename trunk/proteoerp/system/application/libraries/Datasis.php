@@ -51,8 +51,9 @@ class Datasis {
 	}
 
 
-	function prox_sql($mcontador){
-		$aa=$this->prox_numero($mcontador);
+	function prox_sql($mcontador, $pad=0){
+		$aa = $this->prox_numero($mcontador);
+		if ( $pad > 0) str_pad($aa, $pad, "0", STR_PAD_LEFT);
 		return $aa;
 	}
 
@@ -423,27 +424,56 @@ class Datasis {
 		return $opciones;
 	}
 
-	function llenaopciones($mSQL, $todos=false ){
+	function llenaopciones($mSQL, $todos=false, $id='' ){
 		$CI =& get_instance();
 		$query = $CI->db->query($mSQL);
 		$opciones = '';
 		$colu = array();
+		$select = '<select>';
+		if ( !empty($id)) $select = '<select id="'.$id.'">';
 		foreach( $query->list_fields() as $campo ) {
 			$colu[] = $campo;
 		}
 		if ($query->num_rows() > 0){
 			foreach ($query->result_array() as $row){
-				$opciones .= "<option value='".$row[$colu[0]]."'>".utf8_encode(trim($row[$colu[1]]))."</option>";
+				$opciones .= "<option value=\"".$row[$colu[0]]."\">".utf8_encode(trim($row[$colu[1]]))."</option>";
 			}
 		}
 		$query->free_result();
 		if ( $todos ){
-			return '<select><option value=\0\'>Seleccione</option>'.$opciones.'</select>';
+			return $select.'<option value="">Seleccione</option>'.$opciones.'</select>';
 		} else {
-			return '<select>'.$opciones.'</select>';
+			return $select.$opciones.'</select>';
 		}
 	}
 
+
+	function actusal($codbanc, $fecha, $monto){
+		$CI =& get_instance();
+		
+		$fecha = str_replace('-','',$fecha);
+		$fecha = str_replace('/','',$fecha);
+		
+		// Actualiza el saldo
+		$mSQL = "UPDATE banc SET saldo=saldo+$monto WHERE codbanc='$codbanc'";
+		$CI->db->simple_query($mSQL);
+
+		// SI NO EXISTE LO CREA
+		$mSQL = "SELECT COUNT(*) FROM bsal WHERE codbanc='$codbanc' AND ano=".substr($fecha,0,4);
+		if ( $this->dameval($mSQL) == 0 ) {
+			$mSQL = "INSERT INTO bcaj SET codbanc='$codbanc' AND ano=".substr($fecha,0,4);
+			$CI->db->simple_query($mSQL);
+		
+			//SALDO INICIAL
+			$mSQL = "SELECT saldo+saldo01+ saldo02+ saldo03+ saldo04+ saldo05+ saldo06+saldo07+ saldo08+ saldo09+ saldo10+ saldo11+ saldo12 ";
+			$mSQL .= "FROM bsal WHERE codbanc='$codbanc' ORDER BY ano DESC";
+			$mSALDO = $this->dameval($mSQL);
+		}
+		$nomsal = 'saldo'.substr($fecha,6,2);
+		$mSQL   = "UPDATE bsal SET $nomsal=$nomsal+$monto WHERE codbanc='$codbanc' AND ano=".substr($fecha,0,4);
+		$CI->db->simple_query($mSQL);
+		//$sql='CALL sp_actusal('.$CI->db->escape($banco).",'$fecha',$monto)";
+	}
 
 
 
