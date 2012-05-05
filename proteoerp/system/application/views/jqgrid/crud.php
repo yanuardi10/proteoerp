@@ -20,6 +20,8 @@ if( isset($tema) == false) {
 	echo style('themes/'.$tema1.'/'.$tema1.'.css'); 
 ?>
 
+<?php echo phpscript('nformat.js') ?>
+
 <?php echo script('jquery-1.7.1.min.js') ?>
 <?php echo script('jquery-ui-1.8.18.custom.min.js') ?>
 

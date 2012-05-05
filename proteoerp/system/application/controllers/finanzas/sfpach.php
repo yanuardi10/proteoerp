@@ -30,9 +30,70 @@ class sfpach extends Controller {
 
 		$bodyscript = '
 <script type="text/javascript">
+var montotal = 0;
+
+function probar( o, n ) {
+	if ( o.val().length < 1 ) {
+		o.addClass( "ui-state-error" );
+		updateTips( "Seleccion un " + n + "." );
+		return false;
+	} else {
+		return true;
+	}
+};
 
 $(function() {
 	$( "input:submit, a, button", ".otros" ).button();
+
+	var 	envia = $( "#envia" ),
+		recibe = $( "#recibe" ),
+		allFields = $( [] ).add( envia ).add( recibe );
+
+	var grid = jQuery("#newapi'.$param['grid']['gridname'].'");
+	var s;
+	s = grid.getGridParam(\'selarrrow\'); 
+
+	$( "#deposito-form" ).dialog({
+		autoOpen: false,
+		height: 300,
+		width: 420,
+		modal: true,
+		buttons: {
+			"Guardar": function() {
+				var bValid = true;
+				allFields.removeClass( "ui-state-error" );
+				bValid = bValid && probar( envia, "Caja" );
+				bValid = bValid && probar( recibe, "Banco" );
+				if ( bValid ) {
+                                        $.ajax({
+                                                type: "POST",
+                                                url:"'.site_url("finanzas/sfpach/depositos").'",
+                                                processData: true,
+                                                data: "envia="+escape(envia.val())+"&recibe="+escape(recibe.val())+"&monto="+escape(montotal)+"&ids="+escape(s),
+                                                success: function(a){
+							var res = $.parseJSON(a);
+							$.prompt(res.mensaje,
+								{ submit: function(e,v,m,f){
+									window.open(\''.base_url().'formatos/ver/BANCAJA/\'+res.numero, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+									}
+								}
+							);
+							grid.trigger("reloadGrid");
+							sumamonto();
+							return [true, a ];
+						}
+					})
+					$( this ).dialog( "close" );
+				}
+			},
+			Cancelar: function() {$( this ).dialog( "close" );}
+		},
+		close: function() {allFields.val( "" ).removeClass( "ui-state-error" );}
+	});
+	$( "#depositar" ).click(function() {
+		sumamonto();
+		$( "#deposito-form" ).dialog( "open" );
+	});
 });
 
 jQuery("#a1").click( function(){
@@ -61,11 +122,11 @@ jQuery("#a1").click( function(){
 				total += Number(entirerow["monto"]);
 			}
 		total = Math.round(total*100)/100;	
-		$("#totaldep").html("Monto: "+total+"<p>Caja<input></input></p><p>Banco</>");
+		$("#totaldep").html("Bs. "+nformat(total,2));
+		$("#montoform").html("Monto: "+nformat(total,2));
+		montotal = total;
 		}
 	};
-
-
 </script>
 ';
 
@@ -76,22 +137,42 @@ jQuery("#a1").click( function(){
 	<div class="otros">
 	<table id="west-grid">
 	<tr><td>
-			<a style="width:190px" href="#" id="a1">Imprimir Copia</a>
+		<a style="width:190px" href="#" id="a1">Imprimir Copia</a>
 	</td></tr>
 	<tr><td>
-			<a style="width:190px" href="#" id="m1">DEPOSITAR</a>
+		<a style="width:190px" href="#" id="depositar">DEPOSITAR</a>
 	</td></tr>
 	</table>
 	</div>
 	<div id="totaldep" style="font-size:20px;text-align:center;"></div>
-	
 </div> <!-- #LeftPane -->
 ';
+
+		$mSQL  = "SELECT codbanc, CONCAT(codbanc, ' ', TRIM(banco), IF(tbanco='CAJ',' ',numcuent) ) banco FROM banc WHERE tbanco='CAJ' AND activo='S' ORDER BY codbanc ";
+		$cajas = $this->datasis->llenaopciones($mSQL, true, 'envia');
+
+		$mSQL   = "SELECT codbanc, CONCAT(codbanc, ' ', TRIM(banco),' ', IF(tbanco='CAJ',' ',numcuent) ) banco FROM banc WHERE tbanco<>'CAJ' AND activo='S' ORDER BY codbanc ";
+		$bancos = $this->datasis->llenaopciones($mSQL, true, 'recibe');
+
 
 		$SouthPanel = '
 <div id="BottomPane" class="ui-layout-south ui-widget ui-widget-content">
 <p>'.$this->datasis->traevalor('TITULO1').'</p>
 </div> <!-- #BottomPanel -->
+
+<div id="deposito-form" title="Enviar a Depositar">
+	<p class="validateTips" style="font-size:18px">Indique la caja que envia y la cuenta de banco que recibe.</p>
+	<form>
+	<fieldset style="border:none;font-size:12px;">
+		<label for="caj">Caja</label>
+		'.$cajas.'<br><br>
+		<label for="banc">Banco</label>
+		'.$bancos.'<br><br>
+		<div id="montoform" style="font-size:20px;text-align:center"></div>
+		
+	</fieldset>
+	</form>
+</div>
 ';
 
 		$param['WestPanel']  = $WestPanel;
@@ -322,6 +403,105 @@ jQuery("#a1").click( function(){
 	}
 
 
+	function depositos(){
+		// Genera el deposito pendiente
+		$envia   = $this->input->get_post('envia');
+		$recibe  = $this->input->get_post('recibe');
+		$monto   = $this->input->get_post('monto');
+		$cheques = $this->input->get_post('ids');
+		$fecha   = date('Ymd');
+		
+		// Revisamos si el monto coincide con la suma
+		$mMonto = $this->datasis->dameval("SELECT SUM(monto) FROM sfpa WHERE id IN ( $cheques )");
+		if ($monto <> $mMonto) memowrite("Diferencia de monto $monto <> $mMonto");
+
+		$monto = $mMonto;
+	
+		$mTRANSAC = $this->datasis->prox_sql("ntransa",8);
+
+		$i = 0;
+		while ( $i == 0){
+			$XNUMERO  =$this->datasis->prox_sql("nbcaj",8);
+			if ($this->datasis->dameval("SELECT count(*) FROM bcaj WHERE numero='".$XNUMERO."'") == 0 ){
+				$i = 1;
+			};
+		}
+
+		$XNUMEROE = $this->datasis->banprox($envia);
+		$data = array();
+		
+		$data['fecha']      = $fecha;
+		$data['numero']     = $XNUMERO;
+		$data['tipo']       = 'DE';
+		$data['tarjeta']    = 0;
+		$data['tdebito']    = 0;
+		$data['cheques']    = $monto;
+		$data['efectivo']   = 0;
+		$data['comision']   = 0;
+		$data['islr']       = 0;
+		$data['monto']      = $monto;
+		$data['envia']      = $envia;
+		$data['bancoe']     = $this->datasis->dameval("SELECT banco FROM banc WHERE codbanc='$envia'");
+		$data['tipoe']      = 'ND';
+		$data['numeroe']    = $XNUMEROE;
+		$data['recibe']     = $recibe;
+		$data['bancor']     = $this->datasis->dameval("SELECT banco FROM banc WHERE codbanc='$recibe'");
+		$data['tipor']      = 'DE';
+		$data['numeror']    = '********';
+		$data['concepto']   = "DEPOSITO DESDE CAJA $envia A BANCO $recibe ";
+		$data['concep2']    = "CHEQUES";
+		$data['status']     = 'P';  // Pendiente/Cerrado/Anulado
+		$data['usuario']    = $this->secu->usuario();
+		$data['estampa']    = $fecha;
+		$data['hora']       = date('H:i:s');
+		$data['transac']    = $mTRANSAC;
+
+		//$data['comprob',  xcomprob })
+		//$data['benefi',   xbenefi })
+		//$data['totcant',  xtotcant })
+		//$data['deldia',   xdeldia })
+
+		//Guarda en BCAJ
+		$this->db->insert('bcaj', $data);
+		$this->datasis->actusal( $envia, $fecha, -$monto );
+		
+		$mSQL = "UPDATE sfpa SET deposito='$XNUMERO', status='P' WHERE id IN ($cheques)";
+		$this->db->simple_query($mSQL);
+	
+		//GUARDA EN BMOV LA SALIDA DE CAJA
+		$data = array();
+		
+		$data['codbanc']  = $envia;
+		$data['numcuent'] = $this->datasis->dameval("SELECT numcuent FROM banc WHERE codbanc='$envia'");
+		$data['banco']    = $this->datasis->dameval("SELECT banco    FROM banc WHERE codbanc='$envia'");
+		$data['saldo']    = $this->datasis->dameval("SELECT saldo    FROM banc WHERE codbanc='$envia'");
+		$data['tipo_op']  = 'ND';
+		$data['numero']   = $XNUMEROE;
+		$data['fecha']    = $fecha;
+		$data['clipro']   = 'O';
+		$data['codcp']    = 'CAJAS';
+		$data['nombre']   = 'DEPOSITO DESDE CAJA';
+		$data['monto']    = $monto;
+		$data['concepto'] = "DEPOSITO DESDE CAJA $envia A BANCO $recibe ";
+		$data['concep2']  = "";
+		$data['benefi']   = "";
+		$this->db->insert('bmov', $data);
+		
+		logusu('BCAJ',"Deposito de cheques de caja Nro. $XNUMERO creada");
+		
+		echo "{\"numero\":\"$XNUMERO\",\"mensaje\":\"Registro Agregado\"}";
+
+	}
+
+
+	function ddcaja($tipo=''){
+		$mSQL = "SELECT codbanc, CONCAT(codbanc, ' ', TRIM(banco), IF(tbanco='CAJ','',cuenta) ) banco FROM banc ";
+		if ( !empty($tipo) ) $mSQL .= " WHERE tbanco='$tipo' ";
+		$mSQL .= " ORDER BY codbanc ";
+		echo $this->datasis->llenaopciones($mSQL, true);
+	}
+
+
 	/**
 	* Get data result as json
 	*/
@@ -363,7 +543,6 @@ jQuery("#a1").click( function(){
 		$valor = $this->input->get_post('us_nombre');
 		if ($valor) $mWHERE[] = array('like', 'us_nombre', $valor, 'both' );
 
-
 		$response   = $grid->getData('view_sfpach', array(array()), array(), false, $mWHERE );
 		$rs = $grid->jsonresult( $response);
 		echo $rs;
@@ -382,32 +561,13 @@ jQuery("#a1").click( function(){
 		$data = $_POST;
 		unset($data['oper']);
 		unset($data['id']);
-		//$data['cobrador']  = $data['cajero'];
-		//$data['f_factura'] = $data['fecha'];
 		unset($data['cajero']);
 		
 		if($oper == 'add'){
-			/*
-			if(false == empty($data)){
-				$data['tipo_doc'] = 'CC';
-				$data['f_factura'] = $data['fecha'];
-				$data['usuario'] = $this->secu->usuario();
-				$data['estampa'] = date('Ymd');
-				$data['hora']    = date('H:i:s');
-				$data['numero'] = str_pad($this->datasis->prox_sql('nsfpach'), 8, "0", STR_PAD_LEFT);
-				$this->db->insert('sfpa', $data);
-			}
-			*/
 			echo 'De este modulo no se puede Agregado';
 			return;
 
 		} elseif($oper == 'edit') {
-			//$data['tipo_doc'] = 'CC';
-			//$data['f_factura'] = $data['fecha'];
-			//$data['usuario'] = $this->secu->usuario();
-			//$data['estampa'] = date('Ymd');
-			//$data['hora']    = date('H:i:s');
-
 			//REVISA SI DEBE GENERAR MOVIMIENTO EF
 			$montoo = $this->datasis->dameval("SELECT monto FROM sfpa WHERE id=$id");
 			$dife =    $montoo - $data['monto'];
@@ -419,8 +579,6 @@ jQuery("#a1").click( function(){
 				unset($row['id']);
 				$this->db->insert('sfpa', $row);
 				logusu('SFPA',"Cambia forma de pago: id=$id  monto=$montoo ");
-
-				//unset($data['monto']);
 			} else {
 				unset($data['monto']);
 			}

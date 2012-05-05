@@ -301,7 +301,8 @@ jQuery("#a1").click( function(){
 						window.open(\''.base_url().'formatos/ver/CCHEQUE/\'+res.id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
 						}
 					}
-				); return [true, a ];
+				);
+				return [true, a ];
 			}
 		}
 		
