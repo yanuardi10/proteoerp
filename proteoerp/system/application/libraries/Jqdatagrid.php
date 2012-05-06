@@ -1098,21 +1098,60 @@ class Jqdatagrid
 	}
 
 
-    /**
-    * Convert result to valid json
-    * @param json $json
-    */
-    function jqgridSelect($json)
-    {
-        $selectval = str_replace("[", '', $json);
-        $selectval = str_replace("]", '', $selectval);
-        $selectval = str_replace("{", '', $selectval);
-        $selectval = str_replace("}", '', $selectval);
-        $selectval = str_replace('"', '', $selectval);
-        $selectval = str_replace(",", ';', $selectval);
+	/**
+	* Convert result to valid json
+	* @param json $json
+	*/
+	function jqgridSelect($json)
+	{
+		$selectval = str_replace("[", '', $json);
+		$selectval = str_replace("]", '', $selectval);
+		$selectval = str_replace("{", '', $selectval);
+		$selectval = str_replace("}", '', $selectval);
+		$selectval = str_replace('"', '', $selectval);
+		$selectval = str_replace(",", ';', $selectval);
+		return $selectval;
+	}
 
-        return $selectval;
-    }
+
+	function autocomplete( $link, $name, $id, $html )
+	{
+		$salida = '{"dataInit":function(el){
+			setTimeout(function(){
+				if(jQuery.ui) { 
+					if(jQuery.ui.autocomplete){
+						jQuery(el).autocomplete({
+							"appendTo":"body",
+							"disabled":false,
+							"delay":300,
+							"minLength":1,
+							"select": function(event, ui) { 
+								$("#'.$id.'").remove();
+								$("#'.$name.'").after("'.$html.'"); 
+							},
+							"source":function (request, response){
+								request.acelem = "'.$name.'";
+								request.oper = "autocomplete";
+								$.ajax({
+									url: "'.$link.'",
+									dataType: "json",
+									data: request,
+									type: "POST",
+									error: function(res, status) { $.prompt(res.status+" : "+res.statusText+". Status: "+status);},
+									success: function( data ) { response( data );	}
+								});
+							}
+						});
+						jQuery(el).autocomplete("widget").css("font-size","11px");
+					} 
+				} else { $.prompt("Falta jQuery UI") }
+			},200);
+		},
+	}';
+	return $salida;
+
+	}
+
 
     /**
      * Export data to pdf or csv
