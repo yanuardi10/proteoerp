@@ -14,11 +14,11 @@ class sfpach extends Controller {
 
 	function index(){
 		//redirect($this->url.'filteredgrid');
-		 if ( !$this->datasis->iscampo('sfpa','deposito') ) {
-			$this->db->simple_query('ALTER TABLE sfpa ADD COLUMN deposito CHAR(12) NULL DEFAULT NULL ');
-		};
 		 if ( !$this->datasis->iscampo('sfpa','id') ) {
 			$this->db->simple_query('ALTER TABLE sfpa ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
+		};
+		 if ( !$this->datasis->iscampo('sfpa','deposito') ) {
+			$this->db->simple_query('ALTER TABLE sfpa ADD COLUMN deposito CHAR(12) NULL DEFAULT NULL ');
 		};
 		redirect($this->url.'jqdatag');
 	}

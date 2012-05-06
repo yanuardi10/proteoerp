@@ -94,50 +94,20 @@ jQuery("#a1").click( function(){
 
 
 		$link  = site_url('ajax/buscascli');
+		$afterhtml = '<div id=\"aaaaaa\">Nombre <strong>"+ui.item.nombre+" </strong>RIF/CI <strong>"+ui.item.rifci+" </strong><br>Direccion <strong>"+ui.item.direc+"</strong></div>';
+		$auto = $grid->autocomplete( $link, 'cod_cli', 'aaaaa', $afterhtml );
 
 		$grid->addField('cod_cli');
 		$grid->label('Cliente');
-		$grid->params(array('width'       => 60,
-							'hidden'      => 'true',
-							'editable'    => 'true',
-							'edittype'    => "'text'",
-							'editrules'   => '{ edithidden:true, required:true }',
-							'editoptions' => '{
-						"dataInit":function(el){
-							setTimeout(function(){
-								if(jQuery.ui) { 
-									if(jQuery.ui.autocomplete){
-										jQuery(el).autocomplete({
-											"appendTo":"body",
-											"disabled":false,
-											"delay":300,
-											"minLength":1,
-											"select": function(event, ui) { 
-												$("#aaaaaa").remove();
-												$("#cod_cli").after("<div id=\"aaaaaa\">Nombre <strong>"+ui.item.nombre+" </strong>RIF/CI <strong>"+ui.item.rifci+" </strong><br>Direccion <strong>"+ui.item.direc+"</strong></div>"); 
-											},
-											"source":function (request, response){
-												request.acelem = "cod_cli";
-												request.oper = "autocomplete";
-												$.ajax({
-													url: "'.$link.'",
-													dataType: "json",
-													data: request,
-													type: "POST",
-													error: function(res, status) { $.prompt(res.status+" : "+res.statusText+". Status: "+status);},
-													success: function( data ) { response( data );	}
-												});
-											}
-										});
-										jQuery(el).autocomplete("widget").css("font-size","11px");
-									} 
-								} else { $.prompt("Falta jQuery UI") }
-							},200);
-						},
-						}'
+		$grid->params(array(	'width'       => 60,
+					'hidden'      => 'true',
+					'editable'    => 'true',
+					'edittype'    => "'text'",
+					'editrules'   => '{ edithidden:true, required:true }',
+					'editoptions' => $auto
 			)
 		);
-
+							
 		$grid->addField('nombre');
 		$grid->label('Nombre Cliente');
 		$grid->params(array('width'    => 180,
@@ -172,7 +142,7 @@ jQuery("#a1").click( function(){
 							'width'         => 30,
 							'editable'      => 'true',
 							'edittype'      => "'select'",
-							'editrules'   => '{ required:true }',
+							'editrules'     => '{ required:true }',
 							'editoptions'   => '{ dataUrl: "ddtarjeta"}',
 							'stype'         => "'text'"
 							//'searchoptions' => '{ dataUrl: "ddtarjeta", sopt: ["eq", "ne"]}'
@@ -280,34 +250,15 @@ jQuery("#a1").click( function(){
 		$grid->setTitle($this->titp);
 		$grid->setfilterToolbar(true);
 		//$grid->setToolbar('true, "top"');
-		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){ if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
-		$grid->setFormOptionsA('
-
-
-	closeAfterAdd: true,
-	mtype: "POST",
-	width: 520,
-	height:300,
-	closeOnEscape: true,
-	top: 50,
-	left:20,
-	recreateForm:true,
-	afterSubmit:
-		function(a,b){
-			if (a.responseText.length > 0) {
-				var res = $.parseJSON(a.responseText);
-				$.prompt(res.mensaje,
-					{ submit: function(e,v,m,f){
-						window.open(\''.base_url().'formatos/ver/CCHEQUE/\'+res.id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) {var res = $.parseJSON(a.responseText);
+					$.prompt(res.mensaje,{
+						submit: function(e,v,m,f){
+							window.open(\''.base_url().'formatos/ver/CCHEQUE/\'+res.id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
 						}
-					}
-				);
-				return [true, a ];
-			}
-		}
-		
-		');
-
+					});
+					return [true, a ];}}'
+					);
 		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
 
 
