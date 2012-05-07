@@ -53,7 +53,7 @@ class Datasis {
 
 	function prox_sql($mcontador, $pad=0){
 		$aa = $this->prox_numero($mcontador);
-		if ( $pad > 0) str_pad($aa, $pad, "0", STR_PAD_LEFT);
+		if ( $pad > 0) $aa = str_pad($aa, $pad, "0", STR_PAD_LEFT);
 		return $aa;
 	}
 

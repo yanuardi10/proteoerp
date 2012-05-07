@@ -403,6 +403,113 @@ jQuery("#a1").click( function(){
 	}
 
 
+
+	function ddcaja($tipo=''){
+		$mSQL = "SELECT codbanc, CONCAT(codbanc, ' ', TRIM(banco), IF(tbanco='CAJ','',cuenta) ) banco FROM banc ";
+		if ( !empty($tipo) ) $mSQL .= " WHERE tbanco='$tipo' ";
+		$mSQL .= " ORDER BY codbanc ";
+		echo $this->datasis->llenaopciones($mSQL, true);
+	}
+
+
+	/**
+	* Get data result as json
+	*/
+	function getdata()
+	{
+		$tabla = 'view_sfpach';
+		$filters = $this->input->get_post('filters');
+		$mWHERE = array();
+
+		$grid       = $this->jqdatagrid;
+		
+		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
+
+		$mWHERE = $grid->geneTopWhere($tabla);
+
+/*
+		$valor = $this->input->get_post('nombre');
+		if ($valor) $mWHERE[] = array('like', 'nombre', $valor, 'both' );
+
+		$valor = $this->input->get_post('numero');
+		if( !empty($valor) ) $valor = str_pad($valor, 8, "0", STR_PAD_LEFT);
+		if ($valor) $mWHERE[] = array('like', 'numero', $valor, 'after' );
+
+		$valor = $this->input->get_post('fecha');
+		if ($valor) $mWHERE[] = array('', 'fecha', $valor, '' );
+			
+		$valor = $this->input->get_post('tipo');
+		if ($valor) $mWHERE[] = array('', 'tipo', $valor );
+
+		$valor = $this->input->get_post('num_ref');
+		if ($valor) $mWHERE[] = array('', 'num_ref', $valor );
+
+		$valor = $this->input->get_post('monto');
+		if ($valor) $mWHERE[] = array('', 'monto', $valor+0 );
+			
+		$valor = $this->input->get_post('nombanc');
+		if ($valor) $mWHERE[] = array('like', 'nombanc', $valor, 'both' );
+
+		$valor = $this->input->get_post('nomcajero');
+		if ($valor) $mWHERE[] = array('like', 'nomcajero', $valor, 'both' );
+
+		$valor = $this->input->get_post('us_nombre');
+		if ($valor) $mWHERE[] = array('like', 'us_nombre', $valor, 'both' );
+*/
+
+		$response   = $grid->getData($tabla, array(array()), array(), false, $mWHERE );
+		$rs = $grid->jsonresult( $response);
+		echo $rs;
+		//echo $this->db->last_query();
+	}
+
+	/**
+	* Put information
+	*/
+	function setData()
+	{
+		//$this->load->library('jqdatagrid');
+		$oper   = $this->input->post('oper');
+		$id     = $this->input->post('id');
+
+		$data = $_POST;
+		unset($data['oper']);
+		unset($data['id']);
+		unset($data['cajero']);
+		
+		if($oper == 'add'){
+			echo 'De este modulo no se puede Agregado';
+			return;
+
+		} elseif($oper == 'edit') {
+			//REVISA SI DEBE GENERAR MOVIMIENTO EF
+			$montoo = $this->datasis->dameval("SELECT monto FROM sfpa WHERE id=$id");
+			$dife =    $montoo - $data['monto'];
+			if ( round($dife,2) <> 0 ) {
+				$query = $this->db->get_where('sfpa', array('id'=>$id) );
+				$row = $query->row_array();
+				$row['tipo'] = 'EF';
+				$row['monto'] = $dife;
+				unset($row['id']);
+				$this->db->insert('sfpa', $row);
+				logusu('SFPA',"Cambia forma de pago: id=$id  monto=$montoo ");
+			} else {
+				unset($data['monto']);
+			}
+			$this->db->where('id', $id);
+			$this->db->update('sfpa', $data);
+			echo 'Registro Guardado ';
+			return;
+
+		} elseif($oper == 'del') {
+			$this->db->simple_query("DELETE FROM sfpa WHERE id=$id ");
+			logusu('sfpa',"Cambio de Cheque $id ELIMINADO");
+			echo "Registro Eliminado";
+			return;
+		}
+	}
+
+
 	function depositos(){
 		// Genera el deposito pendiente
 		$envia   = $this->input->get_post('envia');
@@ -493,107 +600,6 @@ jQuery("#a1").click( function(){
 
 	}
 
-
-	function ddcaja($tipo=''){
-		$mSQL = "SELECT codbanc, CONCAT(codbanc, ' ', TRIM(banco), IF(tbanco='CAJ','',cuenta) ) banco FROM banc ";
-		if ( !empty($tipo) ) $mSQL .= " WHERE tbanco='$tipo' ";
-		$mSQL .= " ORDER BY codbanc ";
-		echo $this->datasis->llenaopciones($mSQL, true);
-	}
-
-
-	/**
-	* Get data result as json
-	*/
-	function getdata()
-	{
-
-		$filters = $this->input->get_post('filters');
-		$mWHERE = array();
-
-		$grid       = $this->jqdatagrid;
-		
-		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
-
-		$valor = $this->input->get_post('nombre');
-		if ($valor) $mWHERE[] = array('like', 'nombre', $valor, 'both' );
-
-		$valor = $this->input->get_post('numero');
-		if( !empty($valor) ) $valor = str_pad($valor, 8, "0", STR_PAD_LEFT);
-		if ($valor) $mWHERE[] = array('like', 'numero', $valor, 'after' );
-
-		$valor = $this->input->get_post('fecha');
-		if ($valor) $mWHERE[] = array('', 'fecha', $valor, '' );
-			
-		$valor = $this->input->get_post('tipo');
-		if ($valor) $mWHERE[] = array('', 'tipo', $valor );
-
-		$valor = $this->input->get_post('num_ref');
-		if ($valor) $mWHERE[] = array('', 'num_ref', $valor );
-
-		$valor = $this->input->get_post('monto');
-		if ($valor) $mWHERE[] = array('', 'monto', $valor+0 );
-			
-		$valor = $this->input->get_post('nombanc');
-		if ($valor) $mWHERE[] = array('like', 'nombanc', $valor, 'both' );
-
-		$valor = $this->input->get_post('nomcajero');
-		if ($valor) $mWHERE[] = array('like', 'nomcajero', $valor, 'both' );
-
-		$valor = $this->input->get_post('us_nombre');
-		if ($valor) $mWHERE[] = array('like', 'us_nombre', $valor, 'both' );
-
-		$response   = $grid->getData('view_sfpach', array(array()), array(), false, $mWHERE );
-		$rs = $grid->jsonresult( $response);
-		echo $rs;
-		//echo $this->db->last_query();
-	}
-
-	/**
-	* Put information
-	*/
-	function setData()
-	{
-		//$this->load->library('jqdatagrid');
-		$oper   = $this->input->post('oper');
-		$id     = $this->input->post('id');
-
-		$data = $_POST;
-		unset($data['oper']);
-		unset($data['id']);
-		unset($data['cajero']);
-		
-		if($oper == 'add'){
-			echo 'De este modulo no se puede Agregado';
-			return;
-
-		} elseif($oper == 'edit') {
-			//REVISA SI DEBE GENERAR MOVIMIENTO EF
-			$montoo = $this->datasis->dameval("SELECT monto FROM sfpa WHERE id=$id");
-			$dife =    $montoo - $data['monto'];
-			if ( round($dife,2) <> 0 ) {
-				$query = $this->db->get_where('sfpa', array('id'=>$id) );
-				$row = $query->row_array();
-				$row['tipo'] = 'EF';
-				$row['monto'] = $dife;
-				unset($row['id']);
-				$this->db->insert('sfpa', $row);
-				logusu('SFPA',"Cambia forma de pago: id=$id  monto=$montoo ");
-			} else {
-				unset($data['monto']);
-			}
-			$this->db->where('id', $id);
-			$this->db->update('sfpa', $data);
-			echo 'Registro Guardado ';
-			return;
-
-		} elseif($oper == 'del') {
-			$this->db->simple_query("DELETE FROM sfpa WHERE id=$id ");
-			logusu('sfpa',"Cambio de Cheque $id ELIMINADO");
-			echo "Registro Eliminado";
-			return;
-		}
-	}
 
 
 	function instalar(){
