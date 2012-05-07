@@ -338,12 +338,10 @@ class Caub extends validaciones {
 	*/
 	function getData()
 	{
-		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
-		$mWHERE = array();
-		
 		$grid       = $this->jqdatagrid;
+		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
+		$mWHERE = $grid->geneTopWhere('bcaj');
 		$response   = $grid->getData('caub', array(array()), array(), false, $mWHERE );
-
 		$rs = $grid->jsonresult( $response);
 		echo $rs;
 	}

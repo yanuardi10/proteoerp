@@ -520,6 +520,28 @@ class Desarrollo extends Controller{
 			$tab2 = $this->mtab(2);
 			$tab3 = $this->mtab(3);
 			$tab4 = $this->mtab(4);
+
+			$str .= 'class Bcaj extends Controller {'."\n";
+			$str .= $tab1.'var $mModulo=\''.strtoupper($db).'\';'."\n";
+			$str .= $tab1.'var $titp=\'Nombre del Modulo\';'."\n";
+			$str .= $tab1.'var $tits=\'Nombre del Modulo\';'."\n";
+			$str .= $tab1.'var $url =\'direccion/'.$db.'/\';'."\n\n";
+
+			$str .= $tab1.'function bcaj(){'."\n";
+			$str .= $tab2.'parent::Controller();'."\n";
+			$str .= $tab2.'$this->load->library(\'rapyd\');'."\n";
+			$str .= $tab2.'$this->load->library(\'jqdatagrid\');'."\n";
+			$str .= $tab2.'//$this->datasis->modulo_id(\'NNN\',1);'."\n";
+			$str .= $tab1.'}'."\n\n";
+
+			$str .= $tab1.'function index(){'."\n";
+			$str .= $tab2.'/*if ( !$this->datasis->iscampo(\''.$db.'\',\'id\') ) {'."\n";
+			$str .= $tab2.'$this->db->simple_query(\'ALTER TABLE '.$db.' DROP PRIMARY KEY\');'."\n";
+			$str .= $tab2.'$this->db->simple_query(\'ALTER TABLE '.$db.' ADD UNIQUE INDEX numero (numero)\');'."\n";
+			$str .= $tab2.'$this->db->simple_query(\'ALTER TABLE '.$db.' ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)\');'."\n";
+			$str .= $tab1.'};*/'."\n";
+			$str .= $tab2.'redirect($this->url.\'jqdatag\');'."\n";
+			$str .= $tab1.'}'."\n\n";
 			
 			$str .= $tab1.'//***************************'."\n";
 			$str .= $tab1.'//Layout en la Ventana'."\n";
@@ -634,8 +656,20 @@ class Desarrollo extends Controller{
 						$str .= $tab3.'\'editrules\'     => \'{ required:true }\','."\n";
 						$str .= $tab3.'\'editoptions\'   => \'{ size:10, maxlength: 10 }\','."\n";
 						$str .= $tab3.'\'formatter\'     => "\'number\'",'."\n";
-						$str .= $tab3.'\'formatoptions\' => \'{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }\''."\n";
-	
+						if (substr($row->Type,0,3) == 'int'){
+							$str .= $tab3.'\'formatoptions\' => \'{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }\''."\n";
+						} else {
+							$str .= $tab3.'\'formatoptions\' => \'{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }\''."\n";
+						}
+
+					} elseif ( substr($row->Type,0,7) == 'varchar' or substr($row->Type,0,4) == 'char'  ) {
+						$long = str_replace(array('varchar(','char(',')'),"", $row->Type)*10;
+						if ( $long > 200 ) $long = 200;
+						if ( $long < 40 ) $long = 40;
+						
+						$str .= $tab3.'\'width\'         => '.$long.','."\n";
+						$str .= $tab3.'\'edittype\'      => "\'text\'",'."\n";
+
 					} else {
 						$str .= $tab3.'\'width\'         => 140,'."\n";
 						$str .= $tab3.'\'edittype\'      => "\'text\'",'."\n";
@@ -694,19 +728,12 @@ class Desarrollo extends Controller{
 			$str .= $tab1.'function getdata()'."\n";
 			$str .= $tab1.'{'."\n";
 
-			$str .= $tab2.'$filters = $this->input->get_post(\'filters\');'."\n";
-			$str .= $tab2.'$mWHERE = array();'."\n";
+			//$str .= $tab2.'$filters = $this->input->get_post(\'filters\');'."\n";
 
 			$str .= $tab2.'$grid       = $this->jqdatagrid;'."\n\n";
-		
+
 			$str .= $tab2.'// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO'."\n";
-
-			$str .= $tab2.'$valor = $this->input->get_post(\'nombre\');'."\n";
-			$str .= $tab2.'if ($valor) $mWHERE[] = array(\'like\', \'nombre\', $valor, \'both\' );'."\n\n";
-
-			$str .= $tab2.'$valor = $this->input->get_post(\'numero\');'."\n";
-			$str .= $tab2.'if( !empty($valor) ) $valor = str_pad($valor, 8, "0", STR_PAD_LEFT);'."\n";
-			$str .= $tab2.'if ($valor) $mWHERE[] = array(\'like\', \'numero\', $valor, \'after\' );'."\n\n";
+			$str .= $tab2.'$mWHERE = $grid->geneTopWhere(\''.$db.'\');'."\n\n";
 
 			$str .= $tab2.'$response   = $grid->getData(\''.$db.'\', array(array()), array(), false, $mWHERE );'."\n";
 			$str .= $tab2.'$rs = $grid->jsonresult( $response);'."\n";
@@ -750,6 +777,7 @@ class Desarrollo extends Controller{
 			$str .= $tab3.'}'."\n";
 			$str .= $tab2.'};'."\n";
 			$str .= $tab1.'}'."\n";
+			$str .= '}'."\n";
 			
 			$columna .= $str."\n";
 			

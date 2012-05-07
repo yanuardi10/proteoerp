@@ -210,7 +210,7 @@ jQuery("#a1").click( function(){
 		$grid->addField('comision');
 		$grid->label('Comision');
 		$grid->params(array(
-			'search'        => 'true',
+			'search'        => 'false',
 			'editable'      => 'false',
 			'align'         => "'right'",
 			'edittype'      => "'text'",
@@ -225,7 +225,7 @@ jQuery("#a1").click( function(){
 		$grid->addField('islr');
 		$grid->label('ISLR');
 		$grid->params(array(
-			'search'        => 'true',
+			'search'        => 'false',
 			'editable'      => 'false',
 			'align'         => "'right'",
 			'edittype'      => "'text'",
@@ -534,17 +534,11 @@ jQuery("#a1").click( function(){
 	*/
 	function getdata()
 	{
-		$filters = $this->input->get_post('filters');
-		$mWHERE = array();
+		//$filters = $this->input->get_post('filters');
 		$grid       = $this->jqdatagrid;
 
 		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
-		$valor = $this->input->get_post('nombre');
-		if ($valor) $mWHERE[] = array('like', 'nombre', $valor, 'both' );
-
-		$valor = $this->input->get_post('numero');
-		if( !empty($valor) ) $valor = str_pad($valor, 8, "0", STR_PAD_LEFT);
-		if ($valor) $mWHERE[] = array('like', 'numero', $valor, 'after' );
+		$mWHERE = $grid->geneTopWhere('bcaj');
 
 		$response   = $grid->getData('bcaj', array(array()), array(), false, $mWHERE );
 		$rs = $grid->jsonresult( $response);

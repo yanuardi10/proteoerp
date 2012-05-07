@@ -108,34 +108,34 @@ class Jqdatagrid
 	#urls de envio de informacion
 	private $url_put   = '';
 
-    #url de consulta
-    private $url_get   = '';
+	#url de consulta
+	private $url_get   = '';
 
-    #url de edicion
-    private $url_edit  = '';
+	#url de edicion
+	private $url_edit  = '';
 
-    #url de eliminacion
-    private $url_del   = '';
+	#url de eliminacion
+	private $url_del   = '';
 
-    private $datatype  = 'json';
+	private $datatype  = 'json';
 
-    #numero de registros por pagina
-    private $rowNum    = 20;
+	#numero de registros por pagina
+	private $rowNum    = 20;
 
-    #ancho de la pagina
-    private $width;
+	#ancho de la pagina
+	private $width;
 
-    #Ancho automatico
-    private $autowidth = 'true';
+	#Ancho automatico
+	private $autowidth = 'true';
 
-    #muestra la barra de paginacion
-    private $showpager = true;
+	#muestra la barra de paginacion
+	private $showpager = true;
     
-    # Ajustar al tamano
-    private $shrinkToFit = 'true';
+	# Ajustar al tamano
+	private $shrinkToFit = 'true';
 
-    #alto de la pagina
-    private $height  = 150;
+	#alto de la pagina
+	private $height  = 150;
 
 	private $return  = array('table' => '', 'pager' => '');
 
@@ -182,324 +182,317 @@ class Jqdatagrid
 	* @param String $field Field name
 	* @return void
 	*/
-    public function addField($field)
-    {
+	public function addField($field)
+	{
 		$this->fieldtemp = $field;
 		$this->_field['field'][$field] = trim($field);
 	}
 
-    /**
-     * Crea una clase con sus metodos
-     * @param string $name nombre clase
-     * @param <type> $args elementos que recibe la clase
-     * @return void
-     * 
-     */
-    function __call ($name, $args)
-    {
+	/**
+	* Crea una clase con sus metodos
+	* @param string $name nombre clase
+	* @param <type> $args elementos que recibe la clase
+	* @return void
+	* 
+	*/
+	function __call ($name, $args)
+	{
 
-        if ( substr(strtolower($name), 0, 3) == 'set' || substr(strtolower($name), 0, 3) == 'add' ) {
-            $name = substr($name, 3);
-            $name[0] = strtolower($name[0]);
-        }
+		if ( substr(strtolower($name), 0, 3) == 'set' || substr(strtolower($name), 0, 3) == 'add' ) {
+			$name = substr($name, 3);
+			$name[0] = strtolower($name[0]);
+		}
 
-        $this->_field[$name][$this->fieldtemp] = $args[0];
-        return $this;
-    }
+		$this->_field[$name][$this->fieldtemp] = $args[0];
+		return $this;
+	}
 
-    function setgridName($name){
-        $this->_gridname = '_' . $name;
-    }
+	function setgridName($name){
+		$this->_gridname = '_' . $name;
+	}
 
 
-    /**
-     *Show or not, the Add button
-     * @param bool $element
-     * @return void
-     */
-    public function setAdd($element)
-    {
-        $this->_buttons['add'] = "'{$element}'";
-    }
+	/**
+	*Show or not, the Add button
+	* @param bool $element
+	* @return void
+	*/
+	public function setAdd($element)
+	{
+		$this->_buttons['add'] = "'{$element}'";
+	}
 
-    /**
-     *Show or not, the Edit button
-     * @param bool $element
-     * @return void
-     */
-    public function setEdit($element)
-    {
-        $this->_buttons['edit'] = "'{$element}'";
-    }
+	/**
+	*Show or not, the Edit button
+	* @param bool $element
+	* @return void
+	*/
+	public function setEdit($element)
+	{
+		$this->_buttons['edit'] = "'{$element}'";
+	}
     
-    /**
-     *Show or not, the Delete button
-     * @param bool $element
-     * @return void
-     */
-    public function setDelete($element)
-    {
-        $this->_buttons['delete'] = "'{$element}'";
-    }
+	/**
+	*Show or not, the Delete button
+	* @param bool $element
+	* @return void
+	*/
+	public function setDelete($element)
+	{
+		$this->_buttons['delete'] = "'{$element}'";
+	}
 
-    /**
-     * Show or not, search button
-     * @param bool $element
-     * @return void
-     */
-    public function setSearch($element)
-    {
-        $this->_buttons['search'] = "'{$element}'";
-    }
+	/**
+	* Show or not, search button
+	* @param bool $element
+	* @return void
+	*/
+	public function setSearch($element)
+	{
+		$this->_buttons['search'] = "'{$element}'";
+	}
 
-    /**
-     * Show record summary
-     * @param bool $element
-     * @return void
-     */
-    public function setViewRecords($element)
-    {
-        $this->viewrecords = $element;
-    }
-
-
-    /**
-     * Show record summary
-     * @param bool $element
-     * @return void
-     */
-    public function setMultiSelect($element)
-    {
-        $this->multiSelect = $element;
-    }
+	/**
+	* Show record summary
+	* @param bool $element
+	* @return void
+	*/
+	public function setViewRecords($element)
+	{
+		$this->viewrecords = $element;
+	}
 
 
-    /**
-     * Show record summary
-     * @param bool $element
-     * @return void
-     */
-    public function setHiddenGrid($element)
-    {
-        $this->hiddengrid = $element;
-    }
+	/**
+	* Show record summary
+	* @param bool $element
+	* @return void
+	*/
+	public function setMultiSelect($element)
+	{
+		$this->multiSelect = $element;
+	}
 
 
-    /**
-     * Show record summary
-     * @param text $element
-     * @return void
-     */
-    public function setRowList($element)
-    {
-        $this->rowList = $element;
-    }
-
-    /**
-     * Show or not, search options
-     * @param text $element
-     * @return void
-     */
-    public function setFormOptionsA($element)
-    {
-        $this->FormOptionsA = "{".$element."},";
-    }
-
-    /**
-     * Show or not, search options
-     * @param text $element
-     * @return void
-     */
-    public function setFormOptionsE($element)
-    {
-        $this->FormOptionsE = "{".$element."},";
-    }
-
-    /**
-     * After Submit Function
-     * @param text $element
-     * @return void
-     */
-    public function setAfterSubmit($element)
-    {
-        $this->afterSubmit = $element;
-    }
-
-    /**
-     * After Submit Function
-     * @param text $element
-     * @return void
-     */
-    public function setonSelectRow($element)
-    {
-        $this->onSelectRow = $element;
-    }
+	/**
+	* Show record summary
+	* @param bool $element
+	* @return void
+	*/
+	public function setHiddenGrid($element)
+	{
+		$this->hiddengrid = $element;
+	}
 
 
-    /**
-     * Show or not, view data button
-     * @param bool $element
-     * @return void
-     */
-    public function setView($element)
-    {
-        $this->_buttons['view'] = "'{$element}'";
-    }
+	/**
+	* Show record summary
+	* @param text $element
+	* @return void
+	*/
+	public function setRowList($element)
+	{
+		$this->rowList = $element;
+	}
 
-    /**
-     * Show or not excel icon to export
-     * @param bool $element
-     * @return void
-     */
-    public function setExcel($element)
-    {
-        $this->_export['excel'] = "{$element}";
-    }
+	/**
+	* Show or not, search options
+	* @param text $element
+	* @return void
+	*/
+	public function setFormOptionsA($element)
+	{
+		$this->FormOptionsA = "{".$element."},";
+	}
 
+	/**
+	* Show or not, search options
+	* @param text $element
+	* @return void
+	*/
+	public function setFormOptionsE($element)
+	{
+		$this->FormOptionsE = "{".$element."},";
+	}
 
-    /**
-     * Show or not pdf icon to export
-     * @param bool $element
-     * @param array $params pdf properties array('exclude' => array('field1','fields'), // fields to exclude to show
-     *                                           'title' => title, // pdf title
-     *                                           'orientation' => portrait/landscape, //paper orientation
-     *                                           'stream' => true/false, // download or save (./temp/filename.pdf)
-     * @return void
-     */
-    public function setPdf($element,$params = array())
-    {
-        $this->_export['pdf']       = "{$element}";
-        $this->_exportpdf['params'] = $params; //isset($params['title'])?$params['title']:'';
+	/**
+	* After Submit Function
+	* @param text $element
+	* @return void
+	*/
+	public function setAfterSubmit($element)
+	{
+		$this->afterSubmit = $element;
+	}
 
-    }
-
-    /**
-     * Show or not Csv icon to export
-     * @param bool $element
-     * @return void
-     */
-    public function setCsv($element)
-    {
-        $this->_export['csv'] = "{$element}";
-    }
-
-    /**
-     * Show or not Csv icon to export
-     * @param bool $element
-     * @return void
-     */
-    public function setXml($element)
-    { 
-        $this->_export['xml'] = "{$element}";
-    }
-
-    /**
-     * Show or not print icon to export
-     * @param bool $element
-     * @return void
-     */
-    public function setPrint($element)
-    {
-        $this->_export['print'] = "{$element}";
-    }
-
-    /**
-     * Ordenacion de campos
-     * @param String $field campo por el cual va a ordenar
-     * @param String $order Orden del campo, asc/desc
-     */
-    public function setSortname( $field, $order = 'desc')
-    {
-        $this->sortname = $field;
-        $this->sorttype = $order;
-    }
-
-    /**
-     * Establece la URL de consulta
-     * @param String $url url donde va a recibir la informacion
-     */
-    public function setUrlget($url)
-    {
-        $this->url_get = $url;
-
-    }
-
-    /**
-     * Establece la URL de envio de informacion
-     * @param String $url url donde va a enviar la informacion
-     */
-    public function setUrlput($url)
-    {
-        $this->url_put = $url;
-
-    }
-
-    /**
-     *Devuelve la URL de donde trae la informacion
-     * @return String url, url de consulta
-     */
-    public function getUrlget()
-    {
-        return $this->url_get;
-    }
+	/**
+	* After Submit Function
+	* @param text $element
+	* @return void
+	*/
+	public function setonSelectRow($element)
+	{
+		$this->onSelectRow = $element;
+	}
 
 
-    /**
-     *Tipo de datos de consulta
-     * @param String $datatype json/xml
-     *
-     */
-    public function setDataType($datatype = 'json')
-    {
-        $this->datatype = $datatype;
-    }
+	/**
+	* Show or not, view data button
+	* @param bool $element
+	* @return void
+	*/
+	public function setView($element)
+	{
+		$this->_buttons['view'] = "'{$element}'";
+	}
 
-    /**
-     * Register per page
-     * @param Int $rowNum registres
-     */
-    public function setRowNum($rowNum)
-    {
-        $this->rowNum = $rowNum;
-    }
-
-    /**
-     * Shrink to Fit
-     * @param text $shrink registres
-     */
-    public function setShrinkToFit($shrink)
-    {
-        $this->shrinkToFit = $shrink;
-    }
-
-    /**
-     * Filter Tool bar
-     * @param text $activa registres
-     */
-    public function setfilterToolbar($activa)
-    {
-        $this->filterToolbar = $activa;
-    }
+	/**
+	* Show or not excel icon to export
+	* @param bool $element
+	* @return void
+	*/
+	public function setExcel($element)
+	{
+		$this->_export['excel'] = "{$element}";
+	}
 
 
-    /**
-     * Tool bar
-     * @param text $arreglo registres
-     */
-    public function setToolbar($arreglo)
-    {
-        $this->Toolbar = $arreglo;
-    }
+	/**
+	* Show or not pdf icon to export
+	* @param bool $element
+	* @param array $params pdf properties array('exclude' => array('field1','fields'), // fields to exclude to show
+	*                                           'title' => title, // pdf title
+	*                                           'orientation' => portrait/landscape, //paper orientation
+	*                                           'stream' => true/false, // download or save (./temp/filename.pdf)
+	* @return void
+	*/
+	public function setPdf($element,$params = array())
+	{
+		$this->_export['pdf']       = "{$element}";
+		$this->_exportpdf['params'] = $params; //isset($params['title'])?$params['title']:'';
+	}
+
+	/**
+	* Show or not Csv icon to export
+	* @param bool $element
+	* @return void
+	*/
+	public function setCsv($element)
+	{
+		$this->_export['csv'] = "{$element}";
+	}
+
+	/**
+	* Show or not Csv icon to export
+	* @param bool $element
+	* @return void
+	*/
+	public function setXml($element)
+	{ 
+		$this->_export['xml'] = "{$element}";
+	}
+
+	/**
+	* Show or not print icon to export
+	* @param bool $element
+	* @return void
+	*/
+	public function setPrint($element)
+	{
+		$this->_export['print'] = "{$element}";
+	}
+
+	/**
+	* Ordenacion de campos
+	* @param String $field campo por el cual va a ordenar
+	* @param String $order Orden del campo, asc/desc
+	*/
+	public function setSortname( $field, $order = 'desc')
+	{
+		$this->sortname = $field;
+		$this->sorttype = $order;
+	}
+
+	/**
+	* Establece la URL de consulta
+	* @param String $url url donde va a recibir la informacion
+	*/
+	public function setUrlget($url)
+	{
+		$this->url_get = $url;
+	}
+
+	/**
+	* Establece la URL de envio de informacion
+	* @param String $url url donde va a enviar la informacion
+	*/
+	public function setUrlput($url)
+	{
+		$this->url_put = $url;
+	}
+
+	/**
+	*Devuelve la URL de donde trae la informacion
+	* @return String url, url de consulta
+	*/
+	public function getUrlget()
+	{
+		return $this->url_get;
+	}
 
 
+	/**
+	*Tipo de datos de consulta
+	* @param String $datatype json/xml
+	*
+	*/
+	public function setDataType($datatype = 'json')
+	{
+		$this->datatype = $datatype;
+	}
 
+	/**
+	* Register per page
+	* @param Int $rowNum registres
+	*/
+	public function setRowNum($rowNum)
+	{
+		$this->rowNum = $rowNum;
+	}
 
-    /**
-     * Grouping 
-     * @param text $shrink registres
-     */
-    public function setGrouping($grupo)
-    {
+	/**
+	* Shrink to Fit
+	* @param text $shrink registres
+	*/
+	public function setShrinkToFit($shrink)
+	{
+		$this->shrinkToFit = $shrink;
+	}
+
+	/**
+	* Filter Tool bar
+	* @param text $activa registres
+	*/
+	public function setfilterToolbar($activa)
+	{
+		$this->filterToolbar = $activa;
+	}
+
+	/**
+	* Tool bar
+	* @param text $arreglo registres
+	*/
+	public function setToolbar($arreglo)
+	{
+		$this->Toolbar = $arreglo;
+	}
+
+	/**
+	* Grouping 
+	* @param text $shrink registres
+	*/
+	public function setGrouping($grupo)
+	{
 		$grupo = strtolower($grupo);
 		
 		if ( empty($grupo) ){
@@ -517,37 +510,37 @@ class Jqdatagrid
 		//"groupField : ['name'], groupDataSorted : true ";
 	}
 
-    /**
-     * Width table
-     * @param Int $width Ancho de la pagina
-     */
-    public function setWidth($width)
-    {
-        $this->width = $width;
-    }
+	/**
+	* Width table
+	* @param Int $width Ancho de la pagina
+	*/
+	public function setWidth($width)
+	{
+		$this->width = $width;
+	}
 
-    /**
-     *Height table
-     * @param Int $height Height table
-     */
-    public function setHeight($height)
-    {
-        $this->height = $height;
-    }
+	/**
+	*Height table
+	* @param Int $height Height table
+	*/
+	public function setHeight($height)
+	{
+		$this->height = $height;
+	}
 
-    /**
-     * Table title
-     * @param String $title page title
-     * @return void
-     */
+	/**
+	* Table title
+	* @param String $title page title
+	* @return void
+	*/
 	public function setTitle($title)
 	{
 		$this->title = $title;
 	}
 
-    /**
-     * Generathe the HTML code
-     */
+	/**
+	* Generathe the HTML code
+	*/
 	public function deploy()
 	{
 		/**
@@ -578,10 +571,12 @@ class Jqdatagrid
 		}else{
 			$html  .= $margen.",autowidth:$this->autowidth\r\n";
 		}
+		
 		if(false == empty($this->sortname)){
 			$html .= $margen.",sortname: '$this->sortname'\r\n";
 			$html .= $margen.",sortorder: '$this->sorttype'\r\n";
 		}
+		
 		if($this->height){
 			$html  .= $margen.",height:'$this->height'\r\n";
 		}
@@ -600,8 +595,7 @@ class Jqdatagrid
 			$html .= $margen.",rowList: []\r\n";
 			$html .= $margen.",pgtext: null\r\n";
 		} else 
-
-		 $html .= $margen.",rowList: $this->rowList\r\n";
+			$html .= $margen.",rowList: $this->rowList\r\n";
 
 		if ($this->onSelectRow)
 		 $html .= $margen.",onSelectRow: $this->onSelectRow\r\n";
@@ -795,25 +789,25 @@ class Jqdatagrid
 	* @param bool $prefix indicate si put prefix at recordset fields
 	* @return Array $response
 	*/
-    public function getData($table, $joinmodel = array(), $fields = array(), $prefix = true, $mwhere='')
-    {
-        $limit      = $this->CI->input->get_post('rows');
-        $limitstart = $this->CI->input->get_post('limitstart');
-        $filter     = $this->CI->input->get_post('searchField');
-        $filtertext = $this->CI->input->get_post('searchString');
-        $oper       = $this->CI->input->get_post('searchOper');
-        $sortby     = $this->CI->input->get_post('sidx');
-        $sortdir    = $this->CI->input->get_post('sord');
-        $page       = $this->CI->input->get_post('page');
-        $filters     = $this->CI->input->get_post('filters');
+	public function getData($table, $joinmodel = array(), $fields = array(), $prefix = true, $mwhere='')
+	{
+		$limit      = $this->CI->input->get_post('rows');
+		$limitstart = $this->CI->input->get_post('limitstart');
+		$filter     = $this->CI->input->get_post('searchField');
+		$filtertext = $this->CI->input->get_post('searchString');
+		$oper       = $this->CI->input->get_post('searchOper');
+		$sortby     = $this->CI->input->get_post('sidx');
+		$sortdir    = $this->CI->input->get_post('sord');
+		$page       = $this->CI->input->get_post('page');
+		$filters     = $this->CI->input->get_post('filters');
 
-        $fields2    = array();
+		$fields2    = array();
 
-       // if(!$sortby) $sortby =1;
+		// if(!$sortby) $sortby =1;
 
-        $response = array();
-        $this->CI->db->select('count(1) as rows');
-        $this->CI->db->from($table);
+		$response = array();
+		$this->CI->db->select('count(1) as rows');
+		$this->CI->db->from($table);
 
 		if( false == empty($filter) ) {
 			switch ($oper) {
@@ -843,135 +837,144 @@ class Jqdatagrid
 			$total_pages = 0;
 		}
 
-        $response['records']  = $count;
-        $response['total']    = $total_pages;
-        $response['page']     = $page;
-        if ($page > $total_pages){
-            $page=$total_pages;
-        }
-        $limitstart = $limit*$page - $limit; // do not put $limit*($page - 1)
-        $limitstart = ($limitstart < 0)?0:$limitstart;
+		$response['records']  = $count;
+		$response['total']    = $total_pages;
+		$response['page']     = $page;
+		if ($page > $total_pages){
+			$page=$total_pages;
+		}
+		$limitstart = $limit*$page - $limit; // do not put $limit*($page - 1)
+		$limitstart = ($limitstart < 0)?0:$limitstart;
 
-        if( false == empty($filter) ) {
-            switch ($oper) {
-                case 'cn':
-                  $this->CI->db->like( $table .'.' . $filter, $filtertext );
-                break;
-                case 'eq':
-                  $this->CI->db->where( $table .'.' . $filter , $filtertext );
-                break;
-                case 'ge':
-                  $this->CI->db->where( "$table .{$filter} >=", $filtertext );
-                break;
-                 case 'le':
-                  $this->CI->db->where( "$table .{$filter} <=", $filtertext );
-                break;
-                default:
-                  $this->CI->db->like( $table .'.' . $filter, $filtertext );
-                break;
-            }
-        }
+		if( false == empty($filter) ) {
+			switch ($oper) {
+			case 'cn':
+				$this->CI->db->like( $table .'.' . $filter, $filtertext );
+				break;
+			case 'eq':
+				$this->CI->db->where( $table .'.' . $filter , $filtertext );
+				break;
+			case 'ge':
+				$this->CI->db->where( "$table .{$filter} >=", $filtertext );
+				break;
+			case 'le':
+				$this->CI->db->where( "$table .{$filter} <=", $filtertext );
+				break;
+			default:
+				$this->CI->db->like( $table .'.' . $filter, $filtertext );
+				break;
+			}
+		}
 
 		if ( !empty($mwhere) ) {
 			foreach($mwhere as $busca){
 				if ( trim(strtoupper($busca[0])) == 'LIKE') {
 					$this->CI->db->like( $busca[1], $busca[2], $busca[3] );
 				} else {
-					$this->CI->db->where( $busca[1], $busca[2] );
+					//memowrite($busca[0].' '.$busca[1].' '.$busca[2],'aaaa');
+
+					if ( in_array($busca[0], array('>','<')) || in_array($busca[0],array('<>','>=','<=','!=')) ){
+						$this->CI->db->where( $busca[1].' '.$busca[0], $busca[2] );
+					} else {
+						$this->CI->db->where( $busca[1], $busca[2] );
+					}
 				}
 			}
 		}
 
 		if ( !empty($filters) ) {
+		
 			$mQUERY = $this->constructWhere($filters);
 			foreach($mQUERY as $busca){
 				if ( trim(strtoupper($busca[0])) == 'LIKE') {
 					$this->CI->db->like( $busca[1], $busca[2], $busca[3] );
 				} else {
-					$this->CI->db->where( $busca[1], $busca[2] );
+					if ( in_array($busca[0], array('>','>','<>','>=','<=','!=' ))){
+						$this->CI->db->where( $busca[1].$busca[0], $busca[2] );
+					} else {
+						$this->CI->db->where( $busca[1], $busca[2] );
+					}
 				}
 			}
 		}
 
+		if( empty($sortdir) ) {
+			$sortdir = 'asc';
+		}
 
-        if( empty($sortdir) ) {
-                $sortdir = 'asc';
-        }
+		if( !empty($sortby) ) {
+			$this->CI->db->order_by( $sortby, $sortdir );
+	       }
 
-        if( !empty($sortby) ) {
-                $this->CI->db->order_by( $sortby, $sortdir );
-        }
+		if( !isset($limitstart) || $limitstart == '' ) {
+			$limitstart = 0;
+		}
 
-        if( !isset($limitstart) || $limitstart == '' ) {
-                $limitstart = 0;
-        }
+		if( isset($limitstart) && !empty($limit) ) {
+			$this->CI->db->limit( $limit, $limitstart );
+		}
+		if(false == empty($joinmodel)){
+			if(is_array($joinmodel)){ 
+				foreach($joinmodel as $model){
+					if(isset($model['table']) && isset($model['join'])){
+						$this->CI->db->join($model['table']/*tablename*/, $model['join']/*join fields*/, (isset($model['type']))?$model['type']:'inner'/*join type*/);
+						if(isset($model['fields']) && false == empty($model['fields']) && $prefix){
+							foreach($model['fields'] as $field){
+								$fields2[] = "{$model['table']}.{$field} AS {$model['table']}_{$field}";
+							}
+						}else{
+							if(isset($model['fields']) && false == empty($model['fields'])){
+								foreach($model['fields'] as $field){
+									$fields2[] = "{$model['table']}.{$field}";
+								} 
+							}
+						}
+					}
+				}
+			}
 
-        if( isset($limitstart) && !empty($limit) ) {
-               $this->CI->db->limit( $limit, $limitstart );
-        }
-        if(false == empty($joinmodel)){
-            if(is_array($joinmodel)){ 
-                foreach($joinmodel as $model){
-                    if(isset($model['table']) && isset($model['join'])){
-                       $this->CI->db->join($model['table']/*tablename*/, $model['join']/*join fields*/, (isset($model['type']))?$model['type']:'inner'/*join type*/);
-                       if(isset($model['fields']) && false == empty($model['fields']) && $prefix){
-                            foreach($model['fields'] as $field){
-                                $fields2[] = "{$model['table']}.{$field} AS {$model['table']}_{$field}";
-                            }
-                        }else{
-                            if(isset($model['fields']) && false == empty($model['fields'])){
-                               foreach($model['fields'] as $field){
-                                    $fields2[] = "{$model['table']}.{$field}";
-                               } 
-                            }
-                        }
-                    }
-                }
-            }
+			if(empty($fields) && $prefix){
+				$fieldstable = $this->CI->db->list_fields($table);
+				foreach($fieldstable as $field){
+					//$fields = array_push((array)$fields, (array)"{$field} AS {$table}_{$field}" );
+					$fields[] = "{$table}.{$field} AS {$table}_{$field}";
+				}
+			}else{
+				if(empty($fields)){
+					$fieldstable = $this->CI->db->list_fields($table);
+					foreach($fieldstable as $field){
+						//$fields = array_push((array)$fields, (array)"{$field} AS {$table}_{$field}" );
+						$fields[] = "{$table}.{$field}";
+					}
+				}
+			}
 
-            if(empty($fields) && $prefix){
-                $fieldstable = $this->CI->db->list_fields($table);
-                foreach($fieldstable as $field){
-                    //$fields = array_push((array)$fields, (array)"{$field} AS {$table}_{$field}" );
-                    $fields[] = "{$table}.{$field} AS {$table}_{$field}";
-                }
-            }else{
-                if(empty($fields)){
-                    $fieldstable = $this->CI->db->list_fields($table);
-                    foreach($fieldstable as $field){
-                        //$fields = array_push((array)$fields, (array)"{$field} AS {$table}_{$field}" );
-                        $fields[] = "{$table}.{$field}";
-                    }
-                }
-            }
+			$fields = array_merge($fields, $fields2);
 
-            $fields = array_merge($fields, $fields2);
+			$this->CI->db->select($fields);
+			$this->CI->db->from($table);
+			$rs = $this->CI->datasis->codificautf8($this->CI->db->get()->result_array());
 
-            $this->CI->db->select($fields);
-            $this->CI->db->from($table);
-            $rs = $this->CI->datasis->codificautf8($this->CI->db->get()->result_array());
+		}else{
+			$rs = $this->CI->datasis->codificautf8($this->CI->db->get()->result_array());;
+		}
+		//echo $this->CI->db->last_query();
+		$queryString = $this->CI->db->last_query();
 
+		$querydata = array( 'dtgQuery'  => $this->CI->db->last_query() );
 
-        }else{
-            $rs = $this->CI->datasis->codificautf8($this->CI->db->get()->result_array());;
-        }
-        //echo $this->CI->db->last_query();
-        $queryString = $this->CI->db->last_query();
+		$this->CI->session->set_userdata($querydata);
 
-        $querydata = array( 'dtgQuery'  => $this->CI->db->last_query() );
+		$response['data'] = $rs;
+		return $response;
+	}
 
-        $this->CI->session->set_userdata($querydata);
-
-        $response['data'] = $rs;
-        return $response;
-    }
-
-    /**
-     * Execute CRUD process
-     * @param String $table table name
-     * @param String $key primary key
-     * @return void
-     */
+	/***********************************************************************
+	* Execute CRUD process
+	* @param String $table table name
+	* @param String $key primary key
+	* @return void
+	*/
 	public function operations($table,$key = 'id')
 	{
 
@@ -1005,17 +1008,21 @@ class Jqdatagrid
 		}
 	}
 
-    /**
-     * Return data like json
-     * @param Array $result
-     * @return object json
-     */
-    public function jsonresult($result)
-    {
-        return json_encode($result);
-    }
+	/***********************************************************************
+	* Return data like json
+	* @param Array $result
+	* @return object json
+	*/
+	public function jsonresult($result)
+	{
+		return json_encode($result);
+	}
 
 
+	/***********************************************************************
+	*
+	*
+	*/
 	public function constructWhere($s){
 		$qwery = "";
 		$mWHERE = array();
@@ -1076,7 +1083,11 @@ class Jqdatagrid
 		//return $qwery;
 		return $mWHERE;
 	}
-
+	/***********************************************************************
+	*
+	*
+	*
+	*/
 	public function ToSql ($field, $oper, $val) {
 		// we need here more advanced checking using the type of the field - i.e. integer, string, float
 		switch ($field) {
@@ -1098,7 +1109,7 @@ class Jqdatagrid
 	}
 
 
-	/**
+	/***********************************************************************
 	* Convert result to valid json
 	* @param json $json
 	*/
@@ -1114,6 +1125,10 @@ class Jqdatagrid
 	}
 
 
+	/***********************************************************************
+	* Genera el codigo java para autocomplete
+	*
+	*/
 	function autocomplete( $link, $name, $id, $html )
 	{
 		$salida = '{"dataInit":function(el){
@@ -1146,101 +1161,137 @@ class Jqdatagrid
 					} 
 				} else { $.prompt("Falta jQuery UI") }
 			},200);
-		},
-	}';
-	return $salida;
+		},}';
+		return $salida;
+	}
+
+	/***********************************************************************
+	* Export data to pdf or csv
+	* @param String $type pdf/csv
+	* @return <type> 
+	*/
+	function geneTopWhere($db){
+		$mWhere = array();
+		$campos = $this->CI->db->field_data($db);
+		
+		if ($this->CI->input->get_post('_search')==true){
+			foreach ( $campos as $campo)
+			{
+				$valor = $this->CI->input->get_post($campo->name);
+				if ($valor) {
+					if ( $campo->type == 'string' || $campo->type == 'string' ){
+						$mWhere[] = array('like', $campo->name, $valor, 'left' );
+						
+					} elseif ( $campo->type == 'date' || $campo->type == 'timestamp' ) {
+						$mWhere[] = array('', $campo->name, $valor, '' );
+						
+					} elseif ( $campo->type == 'real' || $campo->type == 'int'  ) {
+						//memowrite(substr($valor,0,1).' '.$campo->name.' '.substr($valor,1),'bbb');
+						$valor= trim($valor);
+						if ( in_array(substr($valor,0,2), array('>=','<=','<>','!=') ) )  {
+							$mWhere[] = array(substr($valor,0,2), $campo->name, substr($valor,2), '' );
+						} elseif ( in_array(substr($valor,0,1), array('>','<') ) ) {
+							$mWhere[] = array(substr($valor,0,1), $campo->name, substr($valor,1), '' );
+						} else 
+							$mWhere[] = array('', $campo->name, $valor, '' );
+
+					} elseif ( $campo->type == 'blob' ) {
+						$mWhere[] = array('like', $campo->name, $valor, 'both' );
+					}
+				}
+			}
+		}
+		return $mWhere;
+	}
+
+
+	/***********************************************************************
+	* Export data to pdf or csv
+	* @param String $type pdf/csv
+	* @return <type> 
+	*/
+	function export()
+	{
+
+		$queryString = $this->CI->config->item('enable_query_strings');
+		if($queryString === false){
+			$arrFormat = $this->CI->uri->uri_to_assoc();
+			if(isset ($arrFormat['_exportto'])){
+				$format = $arrFormat['_exportto'];
+			}else{
+				return false;
+			}
+		}else{
+			$format = $this->CI->input->get('_exportto', TRUE);
+			if(empty($format)){
+				return false;
+			}
+		}
+		$query  = $this->CI->session->userdata('dtgQuery');
+		$fields = $this->CI->session->userdata('dtgFields');
+		$sql    = $this->_cleanExportSql($query, $fields);
+
+		if($format == 'csv'){
+			$this->CI->load->dbutil();
+			$query = $this->CI->db->query($sql);
+			$delimiter = ",";
+			$newline = "\r\n";
+			header ("Content-disposition: attachment; filename=csvoutput_". time(). ".csv") ;
+			echo $this->CI->dbutil->csv_from_result($query,$delimiter, $newline);
+			exit;
+		}elseif($format == 'xml'){
+			$this->CI->load->dbutil();
+			$query = $this->CI->db->query($sql);
+			header ("Content-disposition: attachment;content-type: text/xml; filename=xmloutput_". time(). ".xml") ;
+			$config = array (
+				'root'    => 'root',
+				'element' => 'element',
+				'newline' => "\n",
+				'tab'     => "\t"
+			);
+
+			echo $this->CI->dbutil->xml_from_result($query, $config);
+			exit;
+		}elseif($format == 'pdf'){
+			$this->CI->load->plugin('to_pdf');
+			$query  = $this->CI->db->query($sql);
+			$params = $this->_exportpdf['params'];
+			$exclude     = (isset($params['exclude']))?$params['exclude']:array();
+			$orientation = (isset($params['orientation']))?$params['orientation']:'portrait';
+			$stream      = (isset($params['stream']))?$params['stream']:true;
+
+			$html   = '';
+			$html  .= (isset($params['title']))?'<h3><center>' .$params['title'] . '</center></h3>':'';
+			$html  .= html_prepare($query, $exclude);
+
+			//echo $html;
+			pdf_create($html, "pdfoutput_". time(),$stream,$orientation);
+		}
+		//echo "== {$query} ==";
+	}
+
+
+	/***********************************************************************
+	* Show report table
+	* @param Int $reportid
+	*/
+	function report($reportid)
+	{
 
 	}
 
 
-    /**
-     * Export data to pdf or csv
-     * @param String $type pdf/csv
-     * @return <type> 
-     */
-    function export()
-    {
-
-       $queryString = $this->CI->config->item('enable_query_strings');
-       if($queryString === false){
-         $arrFormat = $this->CI->uri->uri_to_assoc();
-         if(isset ($arrFormat['_exportto'])){
-            $format = $arrFormat['_exportto'];
-         }else{
-             return false;
-         }
-       }else{
-           $format = $this->CI->input->get('_exportto', TRUE);
-           if(empty($format)){
-              return false;
-           }
-       }
-       $query  = $this->CI->session->userdata('dtgQuery');
-       $fields = $this->CI->session->userdata('dtgFields');
-       $sql    = $this->_cleanExportSql($query, $fields);
-
-       if($format == 'csv'){
-           $this->CI->load->dbutil();
-           $query = $this->CI->db->query($sql);
-           $delimiter = ",";
-           $newline = "\r\n";
-           header ("Content-disposition: attachment; filename=csvoutput_". time(). ".csv") ;
-           echo $this->CI->dbutil->csv_from_result($query,$delimiter, $newline);
-           exit;
-       }elseif($format == 'xml'){
-           $this->CI->load->dbutil();
-           $query = $this->CI->db->query($sql);
-           header ("Content-disposition: attachment;content-type: text/xml; filename=xmloutput_". time(). ".xml") ;
-           $config = array (
-                      'root'    => 'root',
-                      'element' => 'element',
-                      'newline' => "\n",
-                      'tab'     => "\t"
-                     );
-
-           echo $this->CI->dbutil->xml_from_result($query, $config);
-           exit;
-       }elseif($format == 'pdf'){
-           $this->CI->load->plugin('to_pdf');
-           $query  = $this->CI->db->query($sql);
-           $params = $this->_exportpdf['params'];
-           $exclude     = (isset($params['exclude']))?$params['exclude']:array();
-           $orientation = (isset($params['orientation']))?$params['orientation']:'portrait';
-           $stream      = (isset($params['stream']))?$params['stream']:true;
-
-           $html   = '';
-           $html  .= (isset($params['title']))?'<h3><center>' .$params['title'] . '</center></h3>':'';
-           $html  .= html_prepare($query, $exclude);
-
-           //echo $html;
-           pdf_create($html, "pdfoutput_". time(),$stream,$orientation);
-       }
-       //echo "== {$query} ==";
-
-    }
-
-
-    /**
-     * Show report table
-     * @param Int $reportid
-     */
-    function report($reportid)
-    {
-
-    }
-
-
-    /**
-     * Unset the Limit and show only the field data
-     * @param String $sql
-     * @param Array $fields
-     * @return String $sql
-     */
-    private function _cleanExportSql($sql, $fields)
-    {
-        $query  = '';
-        $frompos   = strpos($sql, 'FROM');
-        $select    = 'SELECT ';
+	/***********************************************************************
+	* Unset the Limit and show only the field data
+	* @param String $sql
+	* @param Array $fields
+	* @return String $sql
+	*/
+	private function _cleanExportSql($sql, $fields)
+	{
+		$query  = '';
+		$frompos   = strpos($sql, 'FROM');
+		$select    = 'SELECT ';
 
 //        if(isset($this->_field['field'])){
 //            $i = 0;
@@ -1251,20 +1302,16 @@ class Jqdatagrid
 //            }
 //
 //        }
-        //echo $sql. '<hr>';
-        $query     = $sql; //substr($sql, $frompos);
-        $limitpos  = stripos($query, 'LIMIT ');
-        if($limitpos > 0){
-            $query     = substr($query, 0,$limitpos);
-        }
-        //echo  $query;
-        return $query;
-    }
-
-
-
+		//echo $sql. '<hr>';
+		$query     = $sql; //substr($sql, $frompos);
+		$limitpos  = stripos($query, 'LIMIT ');
+		if($limitpos > 0){
+			$query     = substr($query, 0,$limitpos);
+		}
+		//echo  $query;
+		return $query;
+	}
 }
-
 
 /* End of file datagrid.php */
 /* Location: ./system/application/libraries/Datagrid.php */
