@@ -103,7 +103,7 @@ class pfaclite extends validaciones{
 		}else{
 			$grid->column_orderby('Factura'      , "<hfactura><#status#>|<#factura#>|<#numero#></hfactura>",'factura');
 		}
-		$grid->column_orderby('Fecha'        , '<dbdate_to_human><#fecha#></dbdate_to_human>','fecha', "align='center'");
+		$grid->column_orderby('Fecha'        , '<dbdate_to_human><#fecha#></dbdate_to_human> <#hora#>','fecha', "align='center'");
 		$grid->column_orderby('Cliente'      , 'cod_cli','cod_cli');
 		$grid->column_orderby('Nombre'       , 'nombre' ,'nombre');
 		if(!(strlen($vd)>0))
@@ -513,7 +513,7 @@ class pfaclite extends validaciones{
 		$numero  = $do->get('numero');
 		$usuario = $do->get('usuario');
 		$estampa = $do->get('estampa');
-		$hora    = $do->get('hora');  
+		$hora    = $do->get('hora');
 
 		if(empty($numero)){
 			$numero = $this->datasis->fprox_numero('npfac');

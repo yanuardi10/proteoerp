@@ -500,9 +500,9 @@ class Invfis extends Controller {
 		$error  ='';
 
 		if($tipo)
-			$where='modificado IS NOT NULL AND actualizado IS NULL'; //no asume ceros
+			$where='a.modificado IS NOT NULL AND a.actualizado IS NULL'; //no asume ceros
 		else
-			$where='actualizado IS NULL'; //asume ceros
+			$where='a.actualizado IS NULL'; //asume ceros
 		$fromwhere="FROM $tabla a JOIN sinv b ON a.codigo=b.codigo WHERE $where";
 
 		$cana=$this->datasis->dameval("SELECT COUNT(*) $fromwhere");
