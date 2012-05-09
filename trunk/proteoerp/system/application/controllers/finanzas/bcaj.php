@@ -27,7 +27,7 @@ class Bcaj extends Controller {
 		};
 		redirect($this->url.'jqdatag');
 	}
-	
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//***************************
@@ -133,7 +133,10 @@ jQuery("#a1").click( function(){
 			'width'         => 80,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true,date:true}',
-			'formoptions'   => '{ label:"Fecha" }'
+			'formoptions'   => '{ label:"Fecha" }',
+			//'formatoptions' => '{formatter:\'date\'}',
+			'formatter'     => "'date'",
+			//'formatter'     => 'date'
 		));
 
 
@@ -584,7 +587,7 @@ jQuery("#a1").click( function(){
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	
+
 	function filteredgrid(){
 
 		$this->rapyd->load('datafilter','datagrid');
@@ -1019,7 +1022,7 @@ jQuery("#a1").click( function(){
 			}';
 
 		$this->rapyd->jquery[]='$("#cheques,#efectivo").bind("keyup",function() { totaliza(); });';
-		$this->rapyd->jquery[]='$("#recibe").bind("change",function() { get_cheques(); });';
+		//$this->rapyd->jquery[]='$("#recibe").bind("change",function() { get_cheques(); });';
 		$edit->script($script);
 
 		$edit->envia->options( "SELECT TRIM(codbanc) AS codbanc,$desca FROM banc WHERE tbanco='CAJ'");
@@ -1047,8 +1050,8 @@ jQuery("#a1").click( function(){
 		$edit->envia->style  = 'width:180px';
 		$edit->recibe->style .= 'width:180px';
 
-		$edit->container = new containerField('','<div id=\'chequelist\'>Lista de cheques</div>');
-		$edit->container->group = 'Montos';
+		//$edit->container = new containerField('','<div id=\'chequelist\'>Lista de cheques</div>');
+		//$edit->container->group = 'Montos';
 
 		$back_url = site_url('finanzas/bcaj/agregar');
 		$edit->button('btn_undo', 'Regresar', "javascript:window.location='${back_url}'", 'TR');

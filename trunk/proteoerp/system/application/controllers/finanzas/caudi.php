@@ -10,6 +10,7 @@ class Caudi extends validaciones {
 	}
 
 	function index(){
+		$this->instalar();
 		redirect('finanzas/caudi/filteredgrid');
 	}
 
@@ -42,7 +43,7 @@ class Caudi extends validaciones {
 		$filter->buttons('reset', 'search');
 		$filter->build();
 
-		$uri = anchor($this->url.'dataedit/show/<raencode><#id#></raencode>','<str_pad><#id#>|10|0|0</str_pad>');
+		$uri = anchor($this->url.'/auditoria/<raencode><#caja#></raencode>','<str_pad><#id#>|10|0|0</str_pad>');
 
 		function status($sto){
 			if($sto=='P')
@@ -417,6 +418,39 @@ class Caudi extends validaciones {
 
 
 	function instalar(){
+		if (!$this->db->table_exists('caudi')) {
+			$mSQL="CREATE TABLE `caudi` (
+			  `id` int(10) NOT NULL AUTO_INCREMENT,
+			  `caja` char(2) COLLATE utf8_unicode_ci DEFAULT NULL,
+			  `uscaja` varchar(12) COLLATE utf8_unicode_ci DEFAULT NULL,
+			  `status` char(1) COLLATE utf8_unicode_ci DEFAULT 'P' COMMENT 'Anulad, Pendiente, Cerrada',
+			  `saldo` decimal(12,2) DEFAULT '0.00',
+			  `monto` decimal(12,2) DEFAULT '0.00',
+			  `diferencia` decimal(12,2) DEFAULT '0.00',
+			  `observa` text COLLATE utf8_unicode_ci,
+			  `transac` varchar(8) COLLATE utf8_unicode_ci DEFAULT NULL,
+			  `estampa` date DEFAULT NULL,
+			  `hora` varchar(8) COLLATE utf8_unicode_ci DEFAULT NULL,
+			  `usuario` varchar(12) COLLATE utf8_unicode_ci DEFAULT NULL,
+			  `momento` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			  PRIMARY KEY (`id`)
+			) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
+			$this->db->simple_query($mSQL);
+		}
 
+		if (!$this->db->table_exists('itcaudi')) {
+			$mSQL="CREATE TABLE `itcaudi` (
+			  `id` int(20) unsigned NOT NULL AUTO_INCREMENT,
+			  `id_caudi` int(10) unsigned DEFAULT NULL,
+			  `caja` char(2) DEFAULT NULL,
+			  `tipo` char(2) DEFAULT NULL,
+			  `monto` decimal(12,2) DEFAULT NULL,
+			  `estampa` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+			  PRIMARY KEY (`id`),
+			  KEY `Index 2` (`tipo`,`caja`),
+			  KEY `id_caudi` (`id_caudi`)
+			) ENGINE=MyISAM AUTO_INCREMENT=9 DEFAULT CHARSET=latin1 COMMENT='Retiros de caja'";
+			$this->db->simple_query($mSQL);
+		}
 	}
 }
