@@ -41,17 +41,80 @@ class Bcaj extends Controller {
 
 		$bodyscript = '
 <script type="text/javascript">
-$(function() {
-	$( "input:submit, a, button", ".otros" ).button();
-});
-
 jQuery("#a1").click( function(){
 	var id = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
 	if (id)	{
 		var ret = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getRowData\',id);
-		window.open(\'/proteoerp/formatos/ver/BCAJ/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+		window.open(\'/proteoerp/formatos/ver/BANCAJA/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
 	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
 });
+
+jQuery("#a2").click( function(){
+	var id = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
+	if (id)	{
+		var ret = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getRowData\',id);
+		window.open(\'/proteoerp/formatos/verhtml/BANCAJA/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
+});
+
+
+
+$(function() {
+	$( "input:submit, a, button", ".otros" ).button();
+
+	var 	numero = $( "#numrto" ),
+		fecha = $( "#fecha" ),
+		allFields = $( [] ).add( numero ).add( fecha );
+
+	var grid = jQuery("#newapi'.$param['grid']['gridname'].'");
+	var s;
+	s = grid.getGridParam(\'selarrrow\'); 
+
+	$( "#cerrardpt-form" ).dialog({
+		autoOpen: false,
+		height: 300,
+		width: 420,
+		modal: true,
+		buttons: {
+			"Guardar": function() {
+				var bValid = true;
+				allFields.removeClass( "ui-state-error" );
+				bValid = bValid && probar( numero, "Numweo" );
+				bValid = bValid && probar( fecha,  "Fecha" );
+				if ( bValid ) {
+                                        $.ajax({
+                                                type: "POST",
+                                                url:"'.site_url("finanzas/bcaj/cerrardpt").'",
+                                                processData: true,
+                                                data: "envia="+escape(envia.val())+"&recibe="+escape(recibe.val())+"&monto="+escape(montotal)+"&ids="+escape(s),
+                                                success: function(a){
+							var res = $.parseJSON(a);
+							$.prompt(res.mensaje,
+								{ submit: function(e,v,m,f){
+									window.open(\''.base_url().'formatos/ver/BANCAJA/\'+res.numero, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+									}
+								}
+							);
+							grid.trigger("reloadGrid");
+							return [true, a ];
+						}
+					})
+					$( this ).dialog( "close" );
+				}
+			},
+			Cancelar: function() {$( this ).dialog( "close" );}
+		},
+		close: function() {allFields.val( "" ).removeClass( "ui-state-error" );}
+	});
+	$( "#cerrardpt" ).click(function() {
+		var id = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
+		if (id)	{
+			var ret = $("#newapi'. $param['grid']['gridname'].'").getRowData(id);  
+			$( "#cerrardpt-form" ).dialog( "open" );
+		} else { $.prompt("<h1>Por favor Seleccione un Deposito</h1>");}
+	});
+});
+
 </script>
 ';
 
@@ -71,12 +134,18 @@ jQuery("#a1").click( function(){
 	</td></tr>
 </table>
 
-	<table id="west-grid">
+<table id="west-grid">
+	<tr>
+		<td><a style="width:190px" href="#" id="a1">Imprimir a PDF</a></td>
+	</tr>
+	<tr>
+		<td><a style="width:190px" href="#" id="a2">Imprimir a HTML</a></td>
+	</tr>
 	<tr><td>
-			<a style="width:190px" href="#" id="a1">Imprimir Copia</a>
+		<a style="width:190px" href="#" id="cerrardpt">Cerrar Deposito</a>
 	</td></tr>
-	</table>
-	</div>
+</table>
+</div>
 </div> <!-- #LeftPane -->
 ';
 
@@ -84,6 +153,19 @@ jQuery("#a1").click( function(){
 <div id="BottomPane" class="ui-layout-south ui-widget ui-widget-content">
 <p>'.$this->datasis->traevalor('TITULO1').'</p>
 </div> <!-- #BottomPanel -->
+
+<div id="cerrardpt-form" title="Enviar a Depositar">
+	<p class="validateTips" style="font-size:18px">Indique el numero y la fecha.</p>
+	<form>
+	<fieldset style="border:none;font-size:12px;">
+		<label for="num">Numero</label>
+		<input type="text" id="numero"></input>
+		<label for="fec">Fecha</label>
+		'.date('d/m/Y').'<br><br>
+	</fieldset>
+	</form>
+</div>
+
 ';
 		$param['WestPanel']  = $WestPanel;
 		//$param['EastPanel']  = $EastPanel;
@@ -150,93 +232,13 @@ jQuery("#a1").click( function(){
 			'edittype'      => "'text'",
 		));
 
-
-		$grid->addField('tarjeta');
-		$grid->label('Monto T.C.');
+		$grid->addField('status');
+		$grid->label('Status');
 		$grid->params(array(
-			'search'        => 'false',
+			'search'        => 'true',
 			'editable'      => 'false',
-			'align'         => "'right'",
-			'width'         => 100,
+			'width'         => 50,
 			'edittype'      => "'text'",
-			'editrules'     => '{ required:true }',
-			'editoptions'   => '{ size:10, maxlength: 10 }',
-			'formatter'     => "'number'",
-			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
-		));
-
-
-		$grid->addField('tdebito');
-		$grid->label('Monto T.D.');
-		$grid->params(array(
-			'search'        => 'false',
-			'editable'      => 'false',
-			'align'         => "'right'",
-			'edittype'      => "'text'",
-			'width'         => 100,
-			'editrules'     => '{ required:true }',
-			'editoptions'   => '{ size:10, maxlength: 10 }',
-			'formatter'     => "'number'",
-			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
-		));
-
-		$grid->addField('cheques');
-		$grid->label('Monto CH');
-		$grid->params(array(
-			'search'        => 'false',
-			'editable'      => 'false',
-			'align'         => "'right'",
-			'edittype'      => "'text'",
-			'width'         => 100,
-			'editrules'     => '{ required:true }',
-			'editoptions'   => '{ size:10, maxlength: 10 }',
-			'formatter'     => "'number'",
-			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
-		));
-
-
-		$grid->addField('efectivo');
-		$grid->label('Efectivo');
-		$grid->params(array(
-			'search'        => 'false',
-			'editable'      => 'false',
-			'align'         => "'right'",
-			'edittype'      => "'text'",
-			'width'         => 100,
-			'editrules'     => '{ required:true }',
-			'editoptions'   => '{ size:10, maxlength: 10 }',
-			'formatter'     => "'number'",
-			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
-		));
-
-
-		$grid->addField('comision');
-		$grid->label('Comision');
-		$grid->params(array(
-			'search'        => 'false',
-			'editable'      => 'false',
-			'align'         => "'right'",
-			'edittype'      => "'text'",
-			'width'         => 90,
-			'editrules'     => '{ required:true }',
-			'editoptions'   => '{ size:10, maxlength: 10 }',
-			'formatter'     => "'number'",
-			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
-		));
-
-
-		$grid->addField('islr');
-		$grid->label('ISLR');
-		$grid->params(array(
-			'search'        => 'false',
-			'editable'      => 'false',
-			'align'         => "'right'",
-			'edittype'      => "'text'",
-			'width'         => 90,
-			'editrules'     => '{ required:true }',
-			'editoptions'   => '{ size:10, maxlength: 10 }',
-			'formatter'     => "'number'",
-			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
 
@@ -338,6 +340,94 @@ jQuery("#a1").click( function(){
 		));
 
 
+		$grid->addField('tarjeta');
+		$grid->label('Monto T.C.');
+		$grid->params(array(
+			'search'        => 'false',
+			'editable'      => 'false',
+			'align'         => "'right'",
+			'width'         => 100,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10 }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('tdebito');
+		$grid->label('Monto T.D.');
+		$grid->params(array(
+			'search'        => 'false',
+			'editable'      => 'false',
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10 }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+		$grid->addField('cheques');
+		$grid->label('Monto CH');
+		$grid->params(array(
+			'search'        => 'false',
+			'editable'      => 'false',
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10 }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('efectivo');
+		$grid->label('Efectivo');
+		$grid->params(array(
+			'search'        => 'false',
+			'editable'      => 'false',
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10 }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('comision');
+		$grid->label('Comision');
+		$grid->params(array(
+			'search'        => 'false',
+			'editable'      => 'false',
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 90,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10 }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('islr');
+		$grid->label('ISLR');
+		$grid->params(array(
+			'search'        => 'false',
+			'editable'      => 'false',
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 90,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10 }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
 		$grid->addField('concepto');
 		$grid->label('Concepto 1');
 		$grid->params(array(
@@ -410,16 +500,6 @@ jQuery("#a1").click( function(){
 			'editoptions'   => '{ size:10, maxlength: 10 }',
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
-		));
-
-
-		$grid->addField('status');
-		$grid->label('Status');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => 'false',
-			'width'         => 50,
-			'edittype'      => "'text'",
 		));
 
 
@@ -512,8 +592,8 @@ jQuery("#a1").click( function(){
 		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
 
 		#show/hide navigations buttons
-		$grid->setAdd(true);
-		$grid->setEdit(true);
+		$grid->setAdd(false);
+		$grid->setEdit(false);
 		$grid->setDelete(true);
 		$grid->setSearch(true);
 		$grid->setRowNum(30);
@@ -543,7 +623,7 @@ jQuery("#a1").click( function(){
 		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
 		$mWHERE = $grid->geneTopWhere('bcaj');
 
-		$response   = $grid->getData('bcaj', array(array()), array(), false, $mWHERE );
+		$response   = $grid->getData('bcaj', array(array()), array(), false, $mWHERE, 'id', 'desc' );
 		$rs = $grid->jsonresult( $response);
 		echo $rs;
 	}

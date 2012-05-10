@@ -789,17 +789,24 @@ class Jqdatagrid
 	* @param bool $prefix indicate si put prefix at recordset fields
 	* @return Array $response
 	*/
-	public function getData($table, $joinmodel = array(), $fields = array(), $prefix = true, $mwhere='')
+	public function getData($table, $joinmodel = array(), $fields = array(), $prefix = true, $mwhere='', $orden='', $orddire='')
 	{
 		$limit      = $this->CI->input->get_post('rows');
 		$limitstart = $this->CI->input->get_post('limitstart');
 		$filter     = $this->CI->input->get_post('searchField');
 		$filtertext = $this->CI->input->get_post('searchString');
 		$oper       = $this->CI->input->get_post('searchOper');
+
 		$sortby     = $this->CI->input->get_post('sidx');
 		$sortdir    = $this->CI->input->get_post('sord');
+
 		$page       = $this->CI->input->get_post('page');
 		$filters     = $this->CI->input->get_post('filters');
+		
+		if ( empty($sortby) )  {
+			$sortby  = $orden;
+			$sortdir = $orddire;
+		}
 
 		$fields2    = array();
 
@@ -871,8 +878,6 @@ class Jqdatagrid
 				if ( trim(strtoupper($busca[0])) == 'LIKE') {
 					$this->CI->db->like( $busca[1], $busca[2], $busca[3] );
 				} else {
-					//memowrite($busca[0].' '.$busca[1].' '.$busca[2],'aaaa');
-
 					if ( in_array($busca[0], array('>','<')) || in_array($busca[0],array('<>','>=','<=','!=')) ){
 						$this->CI->db->where( $busca[1].' '.$busca[0], $busca[2] );
 					} else {
@@ -883,17 +888,12 @@ class Jqdatagrid
 		}
 
 		if ( !empty($filters) ) {
-		
 			$mQUERY = $this->constructWhere($filters);
 			foreach($mQUERY as $busca){
 				if ( trim(strtoupper($busca[0])) == 'LIKE') {
 					$this->CI->db->like( $busca[1], $busca[2], $busca[3] );
 				} else {
-					if ( in_array($busca[0], array('>','>','<>','>=','<=','!=' ))){
-						$this->CI->db->where( $busca[1].$busca[0], $busca[2] );
-					} else {
-						$this->CI->db->where( $busca[1], $busca[2] );
-					}
+					$this->CI->db->where( $busca[1], $busca[2] );
 				}
 			}
 		}
