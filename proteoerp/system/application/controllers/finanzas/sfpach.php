@@ -24,7 +24,6 @@ class sfpach extends Controller {
 	}
 
 	function jqdatag(){
-
 		$grid = $this->defgrid();
 		$param['grid'] = $grid->deploy();
 
