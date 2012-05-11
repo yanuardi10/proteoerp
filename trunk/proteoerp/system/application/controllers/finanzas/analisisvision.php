@@ -110,10 +110,10 @@ GROUP BY fecha
 			$grid = '
 jQuery("#resumen").jqGrid({
 	datatype: "local",
-	height: "auto",
+	height: "140",
 	colNames:["Fecha", "Ventas", "Compras", "Utilidad","Gastos", "Inversion", "Neto","Ingreso", "Deposito"],
 	colModel:[
-		{name:"fecha",     index:"fecha",     width:70, align:"center",sorttype:"text" },
+		{name:"fecha",     index:"fecha",     width:50, align:"center",sorttype:"text" },
 		{name:"ventas",    index:"ventas",    width:80, align:"right", sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }},
 		{name:"compras",   index:"compras",   width:80, align:"right", sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }},
 		{name:"util",      index:"util",      width:80, align:"right", sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }},
@@ -135,6 +135,82 @@ var mydata = [ '."\n$ladata];\n";
 			
 			$grid .= ' for(var i=0;i<=mydata.length;i++) jQuery("#resumen").jqGrid(\'addRowData\',i+1,mydata[i]);'."\n";
 
+			$mSQL = '
+SELECT fecha, caja, cajero, usuario, sum(recibido) recibido, sum(ingreso) ingreso, sum(diferen) diferen, sum(recaudado) recaudado, sum(ingreso-recaudado) difcierre
+FROM (
+SELECT EXTRACT(YEAR_MONTH FROM fecha) fecha, caja, cajero, usuario, sum(recibido) recibido, sum(ingreso) ingreso, sum(ingreso-recibido) diferen, 0 recaudado
+FROM rcaj
+WHERE year(fecha)>=year(curdate())
+GROUP BY  EXTRACT(YEAR_MONTH FROM fecha), caja, cajero
+UNION ALL
+SELECT EXTRACT(YEAR_MONTH FROM f_factura) fecha, "99" caja, cobrador, usuario, 0, 0, 0, sum(monto) recaudado
+FROM sfpa 
+WHERE YEAR(f_factura)>=YEAR(curdate()) 
+GROUP BY  EXTRACT(YEAR_MONTH FROM f_factura),  cobrador, usuario 
+) AAA 
+GROUP BY fecha, caja, cajero, usuario
+';
+
+			$ladata     = '';
+			$trecibido  = 0;
+			$tingreso   = 0;
+			$tdiferen   = 0;
+			$tdifcierre = 0;
+			$trecaudado = 0;
+
+			$query = $this->db->query($mSQL);
+			if ($query->num_rows() > 0)
+			{
+				foreach ($query->result() as $row)
+				{
+					$ladata .= "{ fecha:'".   $row->fecha.     "', ";
+					$ladata .= "caja:'".      $row->caja.      "', ";
+					$ladata .= "cajero:'".    $row->cajero.    "', ";
+					$ladata .= "usuario:'".   $row->usuario.   "', ";
+					$ladata .= "recibido:'".  $row->recibido.  "', ";
+					$ladata .= "ingreso:'".   $row->ingreso.   "', ";
+					$ladata .= "diferen:'".   $row->diferen.   "', ";
+					$ladata .= "recaudado:'". $row->recaudado. "', ";
+					$ladata .= "difcierre:'". $row->difcierre. "'},\n";
+
+					$trecibido  += $row->recibido;
+					$tingreso   += $row->ingreso;
+					$tdiferen   += $row->diferen;
+					$tdifcierre += $row->difcierre;
+					$trecaudado += $row->recaudado;
+				}
+			} 			
+
+
+			$grid1 = '
+jQuery("#cierres").jqGrid({
+	datatype: "local",
+	height: "200",
+	colNames:["Fecha", "Caja", "Cajero", "Usuario","Recibido","Ingreso", "Diferencia","Recaudado","Dif.Cierre"],
+	colModel:[
+		{name:"fecha",      index:"fecha",     width:50, align:"center", sorttype:"text" },
+		{name:"caja",       index:"caja",      width:40, align:"center", sorttype:"text" },
+		{name:"cajero",     index:"cajero",    width:50, align:"center", sorttype:"text" },
+		{name:"usuario",    index:"usuario",   width:60, align:"left", sorttype:"text" },
+		{name:"recibido",   index:"recibido",  width:80, align:"right",  sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }},
+		{name:"ingreso",    index:"gastos",    width:80, align:"right",  sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }},
+		{name:"diferen",    index:"diferen",   width:60, align:"right",  sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }},
+		{name:"recaudado",  index:"recaudado", width:60, align:"right",  sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }},
+		{name:"difcierre",  index:"difcierre", width:60, align:"right",  sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }}
+	],
+	multiselect: false,
+	footerrow: true,
+	loadComplete: function () {
+		$(this).jqGrid(\'footerData\',\'set\',
+		{fecha:\'TOTALES\', caja:"", cajero:"", usuario:"", recibido:"'.$trecibido.'", ingreso:"'.$tingreso.'", difer:"'.$tdiferen.'", ingreso:"'.$tingreso.'", diferen:"'.$tdiferen.'", recaudado:"'.$trecaudado.'", difcierre:"'.$tdifcierre.'"});
+	},
+	caption: "Resumen de Cierres de Caja"
+});
+var mydata1 = [ '."\n$ladata];\n";
+			
+			$grid1 .= ' for(var i=0;i<=mydata1.length;i++) jQuery("#cierres").jqGrid(\'addRowData\',i+1,mydata1[i]);'."\n";
+
+
 
 /*
 		$link="ventas/analisis";
@@ -154,7 +230,7 @@ var mydata = [ '."\n$ladata];\n";
 		//$grid->db->from('vresumen');
 		//$grid->db->groupby('fecha');
 		$grid->build();
-*/		
+		
 
 		
 		$grid2 = new DataGrid2('Disponibilidad');
@@ -193,13 +269,19 @@ var mydata = [ '."\n$ladata];\n";
 		$grid4->build();
 		
 		$this->db->simple_query("DROP TABLE vresumen");
-		
+*/		
 		$data['centerpanel'] = 
 	"<table width='95%' border='0'>
   <tr>
-    <td valign='top'>
-    <table id=\"resumen\"></table>
-    </td>"
+	<td valign='top'>
+		<table id=\"resumen\"></table>
+	</td>
+  </tr><tr>
+	<td valign='top'>
+		<table id=\"cierres\"></table>
+	</td>
+"
+
 /*
     <td valign='top'><div style='overflow: auto; width: 100%;'>$grid2->output</div></td>
   </tr>
@@ -240,7 +322,7 @@ $(function () {
 });
 </script>
 ';*/
-		$data['funciones'] = $grid;
+		$data['funciones'] = $grid.$grid1;
 	 	$data['title']     = "Visi&oacute;n General";
 	 	$data['encabeza']  = "Visi&oacute;n General";
 	 	$data["head"]      = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
