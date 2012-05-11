@@ -705,7 +705,7 @@ class Scst extends Controller {
 		foreach ($query->result() as $row){
 			if(empty($row->codigo)) continue;
 			$cana=intval($row->cantidad);
-			$fdesde=date('Ymd', mktime(0, 0, 0, date('n')-3, 1, date('Y')));
+			$fdesde=date('Ymd', mktime(0, 0, 0, date('n')-2, 1, date('Y')));
 			$fhasta=date('Ymd', mktime(0, 0, 0, date('n'), 0, date('Y')));
 
 			//$sql = "SELECT COUNT(*) FROM sinv WHERE existen+$cana > exmax AND codigo=".$this->db->escape($row->codigo);
