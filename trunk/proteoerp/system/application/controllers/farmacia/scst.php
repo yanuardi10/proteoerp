@@ -696,7 +696,7 @@ class Scst extends Controller {
 		$localdb  = $this->db->database;
 
 		$msj='';
-		$mSQL ="SELECT COALESCE(c.abarras,b.codigo) AS codigo,a.descrip, a.cantidad
+		/*$mSQL ="SELECT COALESCE(c.abarras,b.codigo) AS codigo,a.descrip, a.cantidad
 		  FROM ${farmaxdb}.itscst AS a 
 		  LEFT JOIN ${localdb}.sinv AS b ON a.codigo=b.codigo 
 		  LEFT JOIN ${localdb}.farmaxasig AS c ON a.codigo=c.barras AND c.proveed=a.proveed 
@@ -719,7 +719,7 @@ class Scst extends Controller {
 			$lim    = $cana+$compra;
 
 			if($lim > ($venta/2)) $msj=$row->codigo.'-'.$row->descrip.', Cantidad: '."$cana/$lim".br();
-		}
+		}*/
 
 		$form = new DataForm("farmacia/scst/cargar/$control/process");
 		$form->title('Carga de compra proveniente de droguer&iacute;a');
