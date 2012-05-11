@@ -690,7 +690,28 @@ class Scst extends Controller {
 		$this->rapyd->uri->keep_persistence();
 		$this->rapyd->load('dataform');
 
+		$dbcontrol= $this->db->escape($control);
+		$farmaxDB = $this->load->database('farmax',TRUE);
+		$farmaxdb = $farmaxDB->database;
+		$localdb  = $this->db->database;
+
+		$msj='';
+		$mSQL ="SELECT COALESCE(c.abarras,b.codigo) AS codigo,a.descrip, a.cantidad
+		  FROM ${farmaxdb}.itscst AS a 
+		  LEFT JOIN ${localdb}.sinv AS b ON a.codigo=b.codigo 
+		  LEFT JOIN ${localdb}.farmaxasig AS c ON a.codigo=c.barras AND c.proveed=a.proveed 
+		WHERE a.control=$dbcontrol";
+		$query = $this->db->query($mSQL);
+		foreach ($query->result() as $row){
+			if(empty($row->codigo)) continue;
+			$cana=intval($row->cantidad);
+			$sql = "SELECT COUNT(*) FROM sinv WHERE existen+$cana > exmax AND codigo=".$this->db->escape($row->codigo);
+			$ch  = $this->datasis->dameval($sql);
+			if($ch>0) $msj=$row->codigo.'-'.$row->descrip.', Cantidad: '.$cana.br();
+		}
+
 		$form = new DataForm("farmacia/scst/cargar/$control/process");
+		$form->title('Carga de compra proveniente de droguer&iacute;a');
 
 		$form->nfiscal = new inputField('Control F&iacute;scal', 'nfiscal');
 		$form->nfiscal->rule = 'required|strtoupper';
@@ -707,11 +728,24 @@ class Scst extends Controller {
 		$proveed=$this->_traesprv($control);
 		$dias=$this->datasis->dameval('SELECT b.dcredito FROM sprv AS b WHERE b.proveed='.$this->db->escape($proveed));
 
-		$form->dias = new inputField('D&iacute;as de cr&eacute;dito', 'dias','d/m/Y');
+		$form->dias = new inputField('D&iacute;as de cr&eacute;dito', 'dias');
 		$form->dias->insertValue = ($dias>0)? $dias :  21;
 		$form->dias->rule = 'required|integer';
 		$form->dias->css_class= 'inputnum';
 		$form->dias->size = 5;
+
+		if(strlen($msj)>0){
+			$form->free  = new containerField('','<p class="alert">Se ha detectado sobre existencia en los siguientes productos'.br().$msj.'Es necesaria la clave de aprobaci&oacute;n para continuar</p>');
+
+			$form->clavef = new inputField('Clave de aprobaci&oacute;n', 'clavef');
+			$form->clavef->rule= 'callback_chclavef|required';
+			$form->clavef->size= 10;
+			$form->clavef->autocomplete=false;
+			$form->clavef->type='password';
+		}
+
+		$action = "javascript:window.location='".site_url('farmacia/scst/dataedit/show/'.$control)."'";
+		$form->button('btn_regresa', 'Regresar', $action, 'TR');
 
 		$form->submit('btnsubmit','Guardar');
 		$form->build_form();
@@ -736,6 +770,18 @@ class Scst extends Controller {
 		$data['head']    = $this->rapyd->get_head().script('jquery.js').script('plugins/jquery.numeric.pack.js');
 		$data['title']   = '<h1>Cargar compra '.$control.'</h1>';
 		$this->load->view('view_ventanas', $data);
+	}
+
+	function chclavef($valor){
+		$this->validation->set_message('chclavef', 'Clave de aprobaci&oacute;n inv&aacute;lida');
+		$clave=trim($this->datasis->traevalor('SCSTCLAVEEXMAX','Clave de aprobacion para compras por encima del maximo'));
+		if(empty($clave)){
+			$rif  = str_replace('-','',$this->datasis->traevalor('RIF'));
+			$clave= substr($rif,-4);
+			$this->datasis->ponevalor('SCSTCLAVEEXMAX',$clave);
+		}
+		if($clave==$valor) return true;
+		return false;
 	}
 
 	function _traesprv($control){
