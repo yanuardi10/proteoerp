@@ -705,9 +705,20 @@ class Scst extends Controller {
 		foreach ($query->result() as $row){
 			if(empty($row->codigo)) continue;
 			$cana=intval($row->cantidad);
-			$sql = "SELECT COUNT(*) FROM sinv WHERE existen+$cana > exmax AND codigo=".$this->db->escape($row->codigo);
-			$ch  = $this->datasis->dameval($sql);
-			if($ch>0) $msj=$row->codigo.'-'.$row->descrip.', Cantidad: '.$cana.br();
+			$fdesde=date('Ymd', mktime(0, 0, 0, date('n')-3, 1, date('Y')));
+			$fhasta=date('Ymd', mktime(0, 0, 0, date('n'), 0, date('Y')));
+
+			//$sql = "SELECT COUNT(*) FROM sinv WHERE existen+$cana > exmax AND codigo=".$this->db->escape($row->codigo);
+			$sql   = "SELECT SUM(cana) AS cana FROM sitems WHERE fecha BETWEEN $fdesde AND $fhasta AND codigoa=".$this->db->escape($row->codigo);
+			$venta = $this->datasis->dameval($sql);
+
+			$fdesde=date('Ymd', mktime(0, 0, 0, date('n'), 1, date('Y')));
+			$fhasta=date('Ymd');
+			$sql = "SELECT SUM(cantidad) AS cana FROM itscst WHERE fecha BETWEEN $fdesde AND $fhasta AND codigo=".$this->db->escape($row->codigo);
+			$compra = $this->datasis->dameval($sql);
+			$lim    = $cana+$compra;
+
+			if($lim > ($venta/2)) $msj=$row->codigo.'-'.$row->descrip.', Cantidad: '."$cana/$lim".br();
 		}
 
 		$form = new DataForm("farmacia/scst/cargar/$control/process");
