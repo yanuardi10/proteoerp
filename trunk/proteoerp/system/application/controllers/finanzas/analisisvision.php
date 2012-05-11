@@ -148,7 +148,7 @@ FROM sfpa
 WHERE YEAR(f_factura)>=YEAR(curdate()) 
 GROUP BY  EXTRACT(YEAR_MONTH FROM f_factura),  cobrador, usuario 
 ) AAA 
-GROUP BY fecha, caja, cajero, usuario
+GROUP BY fecha, caja, cajero 
 ';
 
 			$ladata     = '';
