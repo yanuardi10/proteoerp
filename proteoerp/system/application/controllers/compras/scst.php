@@ -951,9 +951,6 @@ class Scst extends Controller {
 							$ban=$this->db->simple_query($mSQL);
 							if(!$ban){ memowrite($mSQL,'scst'); $error++; }
 
-							//$mSQL='UPDATE itsinv SET existen=existen+'.$itrow->cantidad.' WHERE codigo='.$this->db->escape($itrow->codigo).' AND alma='.$this->db->escape($depo);
-							//$ban=$this->db->simple_query($mSQL);
-
 							$this->datasis->sinvcarga($itrow->codigo,$depo, $itrow->cantidad );
 
 							if(!$ban){ memowrite($mSQL,'scst'); $error++; }

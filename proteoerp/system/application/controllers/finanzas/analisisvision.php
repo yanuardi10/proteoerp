@@ -186,7 +186,7 @@ GROUP BY fecha, caja, cajero
 jQuery("#cierres").jqGrid({
 	datatype: "local",
 	height: "200",
-	colNames:["Fecha", "Caja", "Cajero", "Usuario","Recibido","Ingreso", "Diferencia","Recaudado","Dif.Cierre"],
+	colNames:["Fecha", "Caja", "Cajero", "Usuario","Recibido","Sistema", "Faltante","Recaudado","Dif.Rec."],
 	colModel:[
 		{name:"fecha",      index:"fecha",     width:50, align:"center", sorttype:"text" },
 		{name:"caja",       index:"caja",      width:40, align:"center", sorttype:"text" },
