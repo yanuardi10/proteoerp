@@ -61,7 +61,7 @@ $(function() {
 			"Guardar": function() {
 				var bValid = true;
 				allFields.removeClass( "ui-state-error" );
-				bValid = bValid && probar( envia, "Caja" );
+				bValid = bValid && probar( envia,  "Caja" );
 				bValid = bValid && probar( recibe, "Banco" );
 				if ( bValid ) {
                                         $.ajax({
@@ -562,11 +562,6 @@ jQuery("#a1").click( function(){
 		$data['hora']       = date('H:i:s');
 		$data['transac']    = $mTRANSAC;
 
-		//$data['comprob',  xcomprob })
-		//$data['benefi',   xbenefi })
-		//$data['totcant',  xtotcant })
-		//$data['deldia',   xdeldia })
-
 		//Guarda en BCAJ
 		$this->db->insert('bcaj', $data);
 		$this->datasis->actusal( $envia, $fecha, -$monto );
@@ -591,6 +586,10 @@ jQuery("#a1").click( function(){
 		$data['concepto'] = "DEPOSITO DESDE CAJA $envia A BANCO $recibe ";
 		$data['concep2']  = "";
 		$data['benefi']   = "";
+		$data['usuario']  = $this->secu->usuario();
+		$data['estampa']  = $fecha;
+		$data['hora']     = date('H:i:s');
+		$data['transac']  = $mTRANSAC;
 		$this->db->insert('bmov', $data);
 		
 		logusu('BCAJ',"Deposito de cheques de caja Nro. $XNUMERO creada");

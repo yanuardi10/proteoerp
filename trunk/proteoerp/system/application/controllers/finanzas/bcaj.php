@@ -57,13 +57,23 @@ jQuery("#a2").click( function(){
 	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
 });
 
+function probar( o, n ) {
+	if ( o.val().length < 1 ) {
+		o.addClass( "ui-state-error" );
+		updateTips( "Seleccion un " + n + "." );
+		return false;
+	} else {
+		return true;
+	}
+};
 
 
 $(function() {
+	var mId = 0;
 	$( "input:submit, a, button", ".otros" ).button();
 
-	var 	numero = $( "#numrto" ),
-		fecha = $( "#fecha" ),
+	var 	numero = $( "#fnumero" ),
+		fecha  = $( "#ffecha" ),
 		allFields = $( [] ).add( numero ).add( fecha );
 
 	var grid = jQuery("#newapi'.$param['grid']['gridname'].'");
@@ -79,19 +89,19 @@ $(function() {
 			"Guardar": function() {
 				var bValid = true;
 				allFields.removeClass( "ui-state-error" );
-				bValid = bValid && probar( numero, "Numweo" );
+				bValid = bValid && probar( numero, "Numero" );
 				bValid = bValid && probar( fecha,  "Fecha" );
 				if ( bValid ) {
                                         $.ajax({
                                                 type: "POST",
                                                 url:"'.site_url("finanzas/bcaj/cerrardpt").'",
                                                 processData: true,
-                                                data: "envia="+escape(envia.val())+"&recibe="+escape(recibe.val())+"&monto="+escape(montotal)+"&ids="+escape(s),
+                                                data: "id="+mId+"&numero="+escape(numero.val())+"&fecha="+escape(fecha.val()),
                                                 success: function(a){
 							var res = $.parseJSON(a);
 							$.prompt(res.mensaje,
 								{ submit: function(e,v,m,f){
-									window.open(\''.base_url().'formatos/ver/BANCAJA/\'+res.numero, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+									window.open(\''.base_url().'formatos/ver/BANCAJA/\'+res.id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
 									}
 								}
 							);
@@ -106,10 +116,12 @@ $(function() {
 		},
 		close: function() {allFields.val( "" ).removeClass( "ui-state-error" );}
 	});
+	
 	$( "#cerrardpt" ).click(function() {
 		var id = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
 		if (id)	{
 			var ret = $("#newapi'. $param['grid']['gridname'].'").getRowData(id);  
+			mId = id;
 			$( "#cerrardpt-form" ).dialog( "open" );
 		} else { $.prompt("<h1>Por favor Seleccione un Deposito</h1>");}
 	});
@@ -159,13 +171,12 @@ $(function() {
 	<form>
 	<fieldset style="border:none;font-size:12px;">
 		<label for="num">Numero</label>
-		<input type="text" id="numero"></input>
+		<input type="text" id="fnumero"></input><br><br>
 		<label for="fec">Fecha</label>
-		'.date('d/m/Y').'<br><br>
+		<input type="text" id="ffecha" value ="'.date('d/m/Y').'"></input>
 	</fieldset>
 	</form>
 </div>
-
 ';
 		$param['WestPanel']  = $WestPanel;
 		//$param['EastPanel']  = $EastPanel;
@@ -663,6 +674,53 @@ $(function() {
 			}
 		};
 	}
+
+
+	/*********************************88
+	 *
+	 * cierra el deposito
+	 *
+	 */
+	function cerrardpt(){
+		// Genera el deposito pendiente
+		$numero   = $this->input->get_post('numero');
+		$fecha    = $this->input->get_post('fecha');
+		$id       = $this->input->get_post('id');
+		
+		// Revisamos
+		$check = 0;
+		if ($id <= 0) $check = 1;
+		if ($this->datasis->dameval("SELECT status FROM bcaj WHERE id=$id ") <> 'P') $check +=1 ;
+		if (empty($numero)) $check +1;
+		
+		if ( $check == 0 )
+		{
+			$mTRANSAC = $this->datasis->dameval("SELECT transac FROM bcaj WHERE id=$id ");
+			$XNUMERO  = $this->datasis->dameval("SELECT numero  FROM bcaj WHERE id=$id ");
+
+			//Actualiza el numero en bcaj
+			$mSQL = "UPDATE bcaj SET status='C', numero='$numero' WHERE id=$id ";
+			$this->db->simple_query($mSQL);
+
+			//Guarda en BCAJ
+			$mSQL = "INSERT INTO bmov (codbanc, moneda, numcuent, banco, saldo, tipo_op, numero, fecha, clipro, codcp, nombre, monto, concepto, concep2, liable, transac, usuario, estampa, hora, anulado)
+				SELECT a.recibe codbanc, b.moneda, b.numcuent, b.banco, b.saldo, a.tipor tipo_op, '$numero' numero, a.fecha, 'O' clipro, 'CAJAS' codcp, concepto nombre, a.monto, a.concepto, a.concep2, 'S' liable, a.transac, a.usuario, a.estampa, a.hora, 'N' anulado
+				FROM bcaj a JOIN banc b ON a.recibe=b.codbanc
+				WHERE a.transac='$mTRANSAC'";
+			$this->db->simple_query($mSQL);
+
+			$mSQL = "UPDATE sfpa SET status='C' WHERE deposito='$XNUMERO' AND status='P'";
+			$this->db->simple_query($mSQL);
+		
+			logusu('BCAJ',"Deposito de cheques de caja Nro. $XNUMERO cerrado");
+		
+			echo "{\"numero\":\"$XNUMERO\",\"mensaje\":\"Deposito Cerrado\"}";
+		} else {
+			echo "{\"numero\":\",\"mensaje\":\"Error al Guardar\"}";
+			
+		}
+	}
+
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
