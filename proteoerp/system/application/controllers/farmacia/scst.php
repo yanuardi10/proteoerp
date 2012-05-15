@@ -49,7 +49,7 @@ class Scst extends Controller {
 		$filter->fechad->clause  =$filter->fechah->clause='where';
 		$filter->fechad->db_name =$filter->fechah->db_name='fecha';
 		$filter->fechah->size=$filter->fechad->size=10;
-		$filter->fechad->operator='>='; 
+		$filter->fechad->operator='>=';
 		$filter->fechah->operator='<=';
 
 		$filter->numero = new inputField('Factura', 'numero');
@@ -222,7 +222,7 @@ class Scst extends Controller {
 				$row = $query->row();
 				$m   = $row->margen/100;
 				$val = nformat($row->margen).'%';
-				$link= anchor_popup('inventario/sinvpromo/dataeditexpress/'.raencode($sinv).'/show/'.$row->id,$val, $atts); 
+				$link= anchor_popup('inventario/sinvpromo/dataeditexpress/'.raencode($sinv).'/show/'.$row->id,$val, $atts);
 			}else{
 				$m   = $margen/100;
 				$val = nformat($margen).'%';
@@ -331,7 +331,7 @@ class Scst extends Controller {
 
 		$conten['form']  =&  $edit;
 		$conten['carti'] = $c_articulos;
-		$data['content'] = $this->load->view('view_farmax_compras', $conten,true); 
+		$data['content'] = $this->load->view('view_farmax_compras', $conten,true);
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = '<h1>Compras Descargadas</h1>';
 		$this->load->view('view_ventanas', $data);
@@ -468,10 +468,10 @@ class Scst extends Controller {
 			$tabla    = $dbfarmax->database;
 
 			$mSQL="SELECT COALESCE( b.codigo , c.abarras) AS sinv, a.cstandard, COALESCE(e.margen,f.margen) AS margen, a.id
-			FROM ($tabla.`itscst`  AS a) 
-			LEFT JOIN `sinv`       AS b ON `a`.`codigo`=`b`.`codigo` 
-			LEFT JOIN `farmaxasig` AS c ON `a`.`codigo`=`c`.`barras` AND c.proveed=$dbproveed 
-			LEFT JOIN `sinv`       AS d ON `d`.`codigo`=`c`.`abarras` 
+			FROM ($tabla.`itscst`  AS a)
+			LEFT JOIN `sinv`       AS b ON `a`.`codigo`=`b`.`codigo`
+			LEFT JOIN `farmaxasig` AS c ON `a`.`codigo`=`c`.`barras` AND c.proveed=$dbproveed
+			LEFT JOIN `sinv`       AS d ON `d`.`codigo`=`c`.`abarras`
 			LEFT JOIN `grup`       AS e ON b.grupo=e.grupo
 			LEFT JOIN `grup`       AS f ON d.grupo=f.grupo
 			WHERE `a`.`control` = $dbcontrol";
@@ -492,7 +492,7 @@ class Scst extends Controller {
 					//echo $sql.br();
 				}
 			}
-		
+
 		}
 	}
 
@@ -696,30 +696,39 @@ class Scst extends Controller {
 		$localdb  = $this->db->database;
 
 		$msj='';
-		/*$mSQL ="SELECT COALESCE(c.abarras,b.codigo) AS codigo,a.descrip, a.cantidad
-		  FROM ${farmaxdb}.itscst AS a 
-		  LEFT JOIN ${localdb}.sinv AS b ON a.codigo=b.codigo 
-		  LEFT JOIN ${localdb}.farmaxasig AS c ON a.codigo=c.barras AND c.proveed=a.proveed 
-		WHERE a.control=$dbcontrol";
-		$query = $this->db->query($mSQL);
-		foreach ($query->result() as $row){
-			if(empty($row->codigo)) continue;
-			$cana=intval($row->cantidad);
-			$fdesde=date('Ymd', mktime(0, 0, 0, date('n')-2, 1, date('Y')));
-			$fhasta=date('Ymd', mktime(0, 0, 0, date('n'), 0, date('Y')));
+		$block=$this->datasis->traevalor('SCSTACTIVABLOQUEO','Activa la bloque al cargar compras, P:por promedio,M:por valor maximo');
 
-			//$sql = "SELECT COUNT(*) FROM sinv WHERE existen+$cana > exmax AND codigo=".$this->db->escape($row->codigo);
-			$sql   = "SELECT SUM(cana) AS cana FROM sitems WHERE fecha BETWEEN $fdesde AND $fhasta AND codigoa=".$this->db->escape($row->codigo);
-			$venta = $this->datasis->dameval($sql);
+		if($block=='P' || $block=='M'){
+			$mSQL ="SELECT COALESCE(c.abarras,b.codigo) AS codigo,a.descrip, a.cantidad
+			FROM ${farmaxdb}.itscst AS a
+			LEFT JOIN ${localdb}.sinv AS b ON a.codigo=b.codigo
+			LEFT JOIN ${localdb}.farmaxasig AS c ON a.codigo=c.barras AND c.proveed=a.proveed
+			WHERE a.control=$dbcontrol";
+			$query = $this->db->query($mSQL);
+			foreach ($query->result() as $row){
+				if(empty($row->codigo)) continue;
+				$cana=intval($row->cantidad);
+				$fdesde=date('Ymd', mktime(0, 0, 0, date('n')-2, 1, date('Y')));
+				$fhasta=date('Ymd', mktime(0, 0, 0, date('n'), 0, date('Y')));
 
-			$fdesde=date('Ymd', mktime(0, 0, 0, date('n'), 1, date('Y')));
-			$fhasta=date('Ymd');
-			$sql = "SELECT SUM(cantidad) AS cana FROM itscst WHERE fecha BETWEEN $fdesde AND $fhasta AND codigo=".$this->db->escape($row->codigo);
-			$compra = $this->datasis->dameval($sql);
-			$lim    = $cana+$compra;
+				if($block=='P'){
+					$sql   = "SELECT SUM(cana) AS cana FROM sitems WHERE fecha BETWEEN $fdesde AND $fhasta AND codigoa=".$this->db->escape($row->codigo);
+					$venta = $this->datasis->dameval($sql);
 
-			if($lim > ($venta/2)) $msj=$row->codigo.'-'.$row->descrip.', Cantidad: '."$cana/$lim".br();
-		}*/
+					$fdesde=date('Ymd', mktime(0, 0, 0, date('n'), 1, date('Y')));
+					$fhasta=date('Ymd');
+					$sql = "SELECT SUM(cantidad) AS cana FROM itscst WHERE fecha BETWEEN $fdesde AND $fhasta AND codigo=".$this->db->escape($row->codigo);
+					$compra = $this->datasis->dameval($sql);
+					$lim    = $cana+$compra;
+
+					if($lim > ($venta/2)) $msj.=$row->codigo.'-'.$row->descrip.', Cantidad: '."$cana/$lim".br();
+				}else{
+					$sql = "SELECT COUNT(*) FROM sinv WHERE existen+$cana > exmax AND codigo=".$this->db->escape($row->codigo);
+					$ch = $this->datasis->dameval($sql);
+					if($ch>0) $msj.=$row->codigo.'-'.$row->descrip.', Se esta comprando mas del m&aacute;ximo establecido.'.br();
+				}
+			}
+		}
 
 		$form = new DataForm("farmacia/scst/cargar/$control/process");
 		$form->title('Carga de compra proveniente de droguer&iacute;a');
@@ -812,10 +821,10 @@ class Scst extends Controller {
 		$localdb =$this->db->database;
 		$retorna ='';
 
-		$sql ="SELECT COUNT(*) AS cana 
-		  FROM ${farmaxdb}.itscst AS a 
-		  LEFT JOIN ${localdb}.sinv AS b ON a.codigo=b.codigo 
-		  LEFT JOIN ${localdb}.farmaxasig AS c ON a.codigo=c.barras AND c.proveed=a.proveed 
+		$sql ="SELECT COUNT(*) AS cana
+		  FROM ${farmaxdb}.itscst AS a
+		  LEFT JOIN ${localdb}.sinv AS b ON a.codigo=b.codigo
+		  LEFT JOIN ${localdb}.farmaxasig AS c ON a.codigo=c.barras AND c.proveed=a.proveed
 		WHERE a.control=$control AND b.codigo IS NULL AND c.abarras IS NULL";
 
 		$query=$this->db->query($sql);
@@ -927,7 +936,7 @@ class Scst extends Controller {
 						$rt=$farmaxDB->simple_query($sql);
 						if(!$rt) memowrite($sql,'farmaejec');
 
-						/*$mSQL="UPDATE 
+						/*$mSQL="UPDATE
 						  ${localdb}.itscst AS a
 						  JOIN ${localdb}.farmaxasig AS b ON a.codigo=b.barras AND a.proveed=b.proveed
 						  SET a.codigo=b.abarras
