@@ -696,7 +696,7 @@ class Scst extends Controller {
 		$localdb  = $this->db->database;
 
 		$msj='';
-		$block=$this->datasis->traevalor('SCSTACTIVABLOQUEO','Activa la bloque al cargar compras, P:por promedio,M:por valor maximo');
+		$block=trim($this->datasis->traevalor('SCSTACTIVABLOQUEO','Activa la bloque al cargar compras, P:por promedio,M:por valor maximo'));
 
 		if($block=='P' || $block=='M'){
 			$mSQL ="SELECT COALESCE(c.abarras,b.codigo) AS codigo,a.descrip, a.cantidad
@@ -714,14 +714,17 @@ class Scst extends Controller {
 				if($block=='P'){
 					$sql   = "SELECT SUM(cana) AS cana FROM sitems WHERE fecha BETWEEN $fdesde AND $fhasta AND codigoa=".$this->db->escape($row->codigo);
 					$venta = $this->datasis->dameval($sql);
+					if(empty($venta)) $venta=0; else $venta = ceil($venta/2);
 
 					$fdesde=date('Ymd', mktime(0, 0, 0, date('n'), 1, date('Y')));
 					$fhasta=date('Ymd');
-					$sql = "SELECT SUM(cantidad) AS cana FROM itscst WHERE fecha BETWEEN $fdesde AND $fhasta AND codigo=".$this->db->escape($row->codigo);
+					$sql = "SELECT SUM(IF(b.tipo_doc IN ('FC','NE'),1,-1)*a.cantidad) AS cana FROM itscst AS a JOIN scst AS b ON a.control=b.control  WHERE b.recep BETWEEN $fdesde AND $fhasta AND a.codigo=".$this->db->escape($row->codigo);
+
 					$compra = $this->datasis->dameval($sql);
+					if(empty($compra)) $compra=0;
 					$lim    = $cana+$compra;
 
-					if($lim > ($venta/2)) $msj.=$row->codigo.'-'.$row->descrip.', Cantidad: '."$cana/$lim".br();
+					if($lim > $venta) $msj.='&nbsp;&nbsp;-'.$row->codigo.'-'.$row->descrip.', Cantidad: <b>'.nformat($cana).'</b>, Compra en el mes: <b>'.nformat($compra).'</b>, L&iacute;mite: <b>'.nformat($venta).'</b>'.br();
 				}else{
 					$sql = "SELECT COUNT(*) FROM sinv WHERE existen+$cana > exmax AND codigo=".$this->db->escape($row->codigo);
 					$ch = $this->datasis->dameval($sql);
@@ -755,7 +758,7 @@ class Scst extends Controller {
 		$form->dias->size = 5;
 
 		if(strlen($msj)>0){
-			$form->free  = new containerField('','<p class="alert">Se ha detectado sobre existencia en los siguientes productos'.br().$msj.'Es necesaria la clave de aprobaci&oacute;n para continuar</p>');
+			$form->free  = new containerField('','<p class="alert">Se ha detectado sobre existencia en los siguientes productos:'.br().$msj.'Es necesaria la clave de aprobaci&oacute;n para continuar</p>');
 
 			$form->clavef = new inputField('Clave de aprobaci&oacute;n', 'clavef');
 			$form->clavef->rule= 'callback_chclavef|required';
