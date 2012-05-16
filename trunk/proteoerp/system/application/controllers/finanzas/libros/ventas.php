@@ -3803,7 +3803,7 @@ class ventas{
 		}
 
 		if ($this->db->field_exists('sprv', 'sfac')){
-			$seltipo="IF(a.sprv IS NULL,IF(a.tipo_doc='D','NC',CONCAT(a.tipo_doc,'C')),'FT') AS tipo";
+			$seltipo="IF(a.sprv IS NULL OR LENGTH(TRIM(a.sprv))=0 ,IF(a.tipo_doc='D','NC',CONCAT(a.tipo_doc,'C')),'FT') AS tipo";
 		}else{
 			$seltipo="IF(a.tipo_doc='D','NC',CONCAT(a.tipo_doc,'C')) AS tipo";
 		}
