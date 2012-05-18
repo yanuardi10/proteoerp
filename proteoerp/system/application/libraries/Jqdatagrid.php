@@ -741,25 +741,26 @@ class Jqdatagrid
 			$bar   .= "	{sopt:['eq','cn','ge','le'], overlay:false,mtype: 'POST', multipleSearch:true }/*search options*/\r\n	";
 			$bar   .= "		)";
 
-            $key = array_search('true', $this->_export); // find if we muest show the export button;
-            if($key){
-                $bar  .= ".navButtonAdd('#pnewapi{$this->_gridname}',
-                                           { caption:'', buttonicon:'ui-icon-extlink', onClickButton:dtgOpenExportdata, position: 'last', title:'Export data', cursor: 'pointer'}
-                                          )";
-                $loadbutton = true;
-            }
+		$key = array_search('true', $this->_export); // find if we muest show the export button;
+		if($key)
+		{
+			$bar  .= ".navButtonAdd('#pnewapi{$this->_gridname}',
+					{ caption:'', buttonicon:'ui-icon-extlink', onClickButton:dtgOpenExportdata, position: 'last', title:'Export data', cursor: 'pointer'}
+				)";
+			$loadbutton = true;
+		}
 
-            $bar     .= ";\r\n";
-            if($loadbutton){
-               $bar .= "dtgLoadButton();\r\n";
-            }
+		$bar     .= ";\r\n";
+		if($loadbutton){
+			$bar .= "dtgLoadButton();\r\n";
+		}
             
 		if ($this->filterToolbar){
-			$bar .= "grid.jqGrid('filterToolbar');\r\n";
-            $this->return['menosalto'] = 105;
+			$bar .= "\tgrid.jqGrid('filterToolbar');\r\n";
+			$this->return['menosalto'] = 105;
 		} else $this->return['menosalto'] = 90;
-            //$this->_buttons['excel'];
-            $this->return['pager'] = $bar;
+			//$this->_buttons['excel'];
+			$this->return['pager'] = $bar;
 		}
 		return $this->return;
 	}
@@ -809,8 +810,6 @@ class Jqdatagrid
 		}
 
 		$fields2    = array();
-
-		// if(!$sortby) $sortby =1;
 
 		$response = array();
 		$this->CI->db->select('count(1) as rows');
@@ -1131,15 +1130,13 @@ class Jqdatagrid
 	*/
 	function autocomplete( $link, $name, $id, $html )
 	{
-		$salida = '{"dataInit":function(el){
+		$salida = '
+		"dataInit":function(el){
 			setTimeout(function(){
 				if(jQuery.ui) { 
 					if(jQuery.ui.autocomplete){
 						jQuery(el).autocomplete({
-							"appendTo":"body",
-							"disabled":false,
-							"delay":300,
-							"minLength":1,
+							"appendTo":"body","disabled":false,"delay":300,"minLength":1,
 							"select": function(event, ui) { 
 								$("#'.$id.'").remove();
 								$("#'.$name.'").after("'.$html.'"); 
@@ -1161,9 +1158,10 @@ class Jqdatagrid
 					} 
 				} else { $.prompt("Falta jQuery UI") }
 			},200);
-		},}';
+		}';
 		return $salida;
 	}
+
 
 	/***********************************************************************
 	* Export data to pdf or csv
@@ -1180,13 +1178,16 @@ class Jqdatagrid
 				$valor = $this->CI->input->get_post($campo->name);
 				if ($valor) {
 					if ( $campo->type == 'string' || $campo->type == 'string' ){
-						$mWhere[] = array('like', $campo->name, $valor, 'left' );
+						if ( $campo->max_length >= 5) {
+							$mWhere[] = array('like', $campo->name, $valor, 'after' );
+						} else {
+							$mWhere[] = array('', $campo->name, $valor, '' );
+						}
 						
 					} elseif ( $campo->type == 'date' || $campo->type == 'timestamp' ) {
 						$mWhere[] = array('', $campo->name, $valor, '' );
 						
 					} elseif ( $campo->type == 'real' || $campo->type == 'int'  ) {
-						//memowrite(substr($valor,0,1).' '.$campo->name.' '.substr($valor,1),'bbb');
 						$valor= trim($valor);
 						if ( in_array(substr($valor,0,2), array('>=','<=','<>','!=') ) )  {
 							$mWhere[] = array(substr($valor,0,2), $campo->name, substr($valor,2), '' );
@@ -1196,6 +1197,8 @@ class Jqdatagrid
 							$mWhere[] = array('', $campo->name, $valor, '' );
 
 					} elseif ( $campo->type == 'blob' ) {
+						$mWhere[] = array('like', $campo->name, $valor, 'both' );
+					} else {
 						$mWhere[] = array('like', $campo->name, $valor, 'both' );
 					}
 				}
