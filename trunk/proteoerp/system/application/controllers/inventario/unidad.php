@@ -42,7 +42,7 @@ class Unidad extends Controller{
 ';
 
 		$param['tabs'] = false;
-		$param['WestSize'] = "west__size:	410,\n";
+		$param['WestSize'] = "410";
 		$param['WestPanel']  = $WestPanel;
 		$param['encabeza'] = 'Unidades y Marcas';
 		$this->load->view('jqgrid/crud',$param);

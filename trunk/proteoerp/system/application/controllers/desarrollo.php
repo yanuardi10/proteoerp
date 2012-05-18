@@ -506,8 +506,13 @@ class Desarrollo extends Controller{
 	function jqgrid(){
 		$db =$this->uri->segment(3);
 		if($db===false){
-			exit('Debe especificar en la uri la tabla');
+			exit('Debe especificar en la uri la tabla y el directorio "/tabla/directorio"');
 		}
+		$contro =$this->uri->segment(4);
+		if($contro===false){
+			$contro = 'CONTROLADOR';
+		}
+		
 		$query = $this->db->query("DESCRIBE $db");
 		$i = 0;
 		if ($query->num_rows() > 0){
@@ -521,13 +526,13 @@ class Desarrollo extends Controller{
 			$tab3 = $this->mtab(3);
 			$tab4 = $this->mtab(4);
 
-			$str .= 'class Bcaj extends Controller {'."\n";
+			$str .= 'class '.ucfirst($db).' extends Controller {'."\n";
 			$str .= $tab1.'var $mModulo=\''.strtoupper($db).'\';'."\n";
-			$str .= $tab1.'var $titp=\'Nombre del Modulo\';'."\n";
-			$str .= $tab1.'var $tits=\'Nombre del Modulo\';'."\n";
-			$str .= $tab1.'var $url =\'direccion/'.$db.'/\';'."\n\n";
+			$str .= $tab1.'var $titp=\'Modulo '.strtoupper($db).'\';'."\n";
+			$str .= $tab1.'var $tits=\'Modulo '.strtoupper($db).'\';'."\n";
+			$str .= $tab1.'var $url =\''.$contro.'/'.$db.'/\';'."\n\n";
 
-			$str .= $tab1.'function bcaj(){'."\n";
+			$str .= $tab1.'function '.ucfirst($db).'(){'."\n";
 			$str .= $tab2.'parent::Controller();'."\n";
 			$str .= $tab2.'$this->load->library(\'rapyd\');'."\n";
 			$str .= $tab2.'$this->load->library(\'jqdatagrid\');'."\n";
@@ -574,24 +579,25 @@ class Desarrollo extends Controller{
 
 			$str .= $tab2.'$WestPanel = \''."\n";
 			$str .= '&lt;div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content"&gt;'."\n";
-			$str .= '&lt;div class="otros"&gt;'."\n";
-			$str .= '&lt;table id="west-grid"&gt;'."\n";
-			$str .= '	&lt;tr>&lt;td>&lt;div class="tema1"&gt;'."\n";
-			$str .= '		&lt;table id="listados"&gt;&lt;/table&gt;'."\n";
-			$str .= '		&lt;/div&gt;'."\n";
-			$str .= '	&lt;/td>&lt;/tr&gt;'."\n";
-			$str .= '	&lt;tr>&lt;td&gt;'."\n";
-			$str .= '		&lt;table id="otros"&gt;&lt;/table&gt;'."\n";
-			$str .= '	&lt;/td>&lt;/tr&gt;'."\n";
+			$str .= '&lt;div class="anexos"&gt;'."\n\n";
+			$str .= '&lt;table id="west-grid" align="center"&gt;'."\n";
+			$str .= '	&lt;tr&gt;'."\n";
+			$str .= '		&lt;td&gt;&lt;div class="tema1"&gt;&lt;table id="listados"&gt;&lt;/table&gt;&lt;/div&gt;&lt;/td&gt;'."\n";
+			$str .= '	&lt;/tr&gt;'."\n";
+			$str .= '	&lt;tr&gt;&lt;td&gt;'."\n";
+			$str .= '		&lt;td&gt;&lt;div class="tema1"&gt;&lt;table id="otros"&gt;&lt;/table&gt;&lt;/div&gt;&lt;/td&gt;'."\n";
+//			$str .= '		&lt;table id="otros"&gt;&lt;/table&gt;'."\n";
+			$str .= '	&lt;/td&gt;&lt;/tr&gt;'."\n";
 			$str .= '&lt;/table&gt;'."\n\n";
 
-			//$str .= '	&lt;div class="otros"&gt;'."\n";
-			$str .= '	&lt;table id="west-grid"&gt;'."\n";
-			$str .= '	&lt;tr&gt;&lt;td&gt;'."\n";
-			$str .= '			&lt;a style="width:190px" href="#" id="a1"&gt;Imprimir Copia&lt;/a&gt;'."\n";
-			$str .= '	&lt;/td&gt;&lt;/tr&gt;'."\n";
-			$str .= '	&lt;/table&gt;'."\n";
-			$str .= '	&lt;/div&gt;'."\n";
+			$str .= '&lt;table id="west-grid" align="center"&gt;'."\n";
+			$str .= '	&lt;tr&gt;'."\n";
+			$str .= '		&lt;td&gt;&lt;/td&gt;'."\n";
+			$str .= '	&lt;/tr&gt;'."\n";
+			$str .= '&lt;/table&gt;'."\n";
+			$str .= '&lt;/div&gt;'."\n";
+			
+			$str .= '//		&lt;td&gt;&lt;a style="width:190px" href="#" id="a1"&gt;Imprimir Copia&lt;/a&gt;&lt;/td&gt;'."\n";
 			
 			$str .= '&lt;/div> &lt;!-- #LeftPane --&gt;'."\n";
 			$str .= '\';'."\n\n";
@@ -606,6 +612,9 @@ class Desarrollo extends Controller{
 			$str .= $tab2.'//$param[\'EastPanel\']  = $EastPanel;'."\n";
 			$str .= $tab2.'$param[\'SouthPanel\'] = $SouthPanel;'."\n";
 
+			$str .= $tab2.'$param[\'listados\'] = $this->datasis->listados(\''.strtoupper($db).'\', \'JQ\');'."\n";
+			$str .= $tab2.'$param[\'otros\']    = $this->datasis->otros(\''.strtoupper($db).'\', \'JQ\');'."\n";
+
 			$str .= $tab2.'$param[\'tema1\'] = \'darkness\';'."\n";
 
 			$str .= $tab2.'$param[\'bodyscript\'] = $bodyscript;'."\n";
@@ -619,9 +628,11 @@ class Desarrollo extends Controller{
 			$str .= $tab1.'//Definicion del Grid y la Forma'."\n";
 			$str .= $tab1.'//***************************'."\n";
 			$str .= $tab1.'function defgrid( $deployed = false ){'."\n";
-			$str .= $tab2.'$i = 1;'."\n\n";
+			$str .= $tab2.'$i      = 1;'."\n";
+			$str .= $tab2.'$editar = "false";'."\n\n";
 			$str .= $tab2.'$grid  = new $this->jqdatagrid;'."\n\n";
 			$columna .= $str;
+			$str = '';
 
 
 			foreach ($query->result() as $row){
@@ -632,15 +643,15 @@ class Desarrollo extends Controller{
 					$str  .= $tab3.'\'align\'    => "\'center\'",'."\n";
 					$str  .= $tab3.'\'frozen\'   => \'true\','."\n";
 					$str  .= $tab3.'\'width\'    => 60,'."\n";
-					$str  .= $tab3.'\'editable\' => \'false\','."\n";
+					$str  .= $tab3.'\'editable\' => $editar,'."\n";
 					$str  .= $tab3.'\'search\'   => \'false\''."\n";
 				} else {
 					$str  = $tab2.'$grid->addField(\''.$row->Field.'\');'."\n";
-					$str .= $tab2.'$grid->label(\''.$row->Field.'\');'."\n";
+					$str .= $tab2.'$grid->label(\''.ucfirst($row->Field).'\');'."\n";
 
 					$str .= $tab2.'$grid->params(array('."\n";
 					$str .= $tab3.'\'search\'        => \'true\','."\n";
-					$str .= $tab3.'\'editable\'      => \'false\','."\n";
+					$str .= $tab3.'\'editable\'      => \'true\','."\n";
 
 					if ( $row->Type == 'date' or $row->Type == 'timestamp' ) {
 						$str .= $tab3.'\'width\'         => 80,'."\n";
@@ -654,7 +665,7 @@ class Desarrollo extends Controller{
 						$str .= $tab3.'\'edittype\'      => "\'text\'",'."\n";
 						$str .= $tab3.'\'width\'         => 100,'."\n";
 						$str .= $tab3.'\'editrules\'     => \'{ required:true }\','."\n";
-						$str .= $tab3.'\'editoptions\'   => \'{ size:10, maxlength: 10 }\','."\n";
+						$str .= $tab3.'\'editoptions\'   => \'{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }\','."\n";
 						$str .= $tab3.'\'formatter\'     => "\'number\'",'."\n";
 						if (substr($row->Type,0,3) == 'int'){
 							$str .= $tab3.'\'formatoptions\' => \'{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }\''."\n";
@@ -670,14 +681,20 @@ class Desarrollo extends Controller{
 						$str .= $tab3.'\'width\'         => '.$long.','."\n";
 						$str .= $tab3.'\'edittype\'      => "\'text\'",'."\n";
 
+					} elseif ( $row->Type == 'text' ) {
+						$long = 250;
+						$str .= $tab3.'\'width\'         => '.$long.','."\n";
+						$str .= $tab3.'\'edittype\'      => "\'textarea\'",'."\n";
+						$str .= $tab3.'\'editoptions\'   => "\'{rows:"2", cols:"60"}\'",'."\n";
+						//$str .= $tab3.'\'formoptions\'   => "\'{rows:"2", cols:"60"}\'",'."\n";
+						
+
 					} else {
 						$str .= $tab3.'\'width\'         => 140,'."\n";
 						$str .= $tab3.'\'edittype\'      => "\'text\'",'."\n";
 					}
 				}
-
 				$str .= $tab2.'));'."\n\n";
-
 				$columna .= $str."\n";
 			}
 			
@@ -689,15 +706,8 @@ class Desarrollo extends Controller{
 			$str .= $tab2.'$grid->setToolbar(\'false\', \'"top"\');'."\n\n";
 		
 			$str .= $tab2.'$grid->setFormOptionsE(\'closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} \');'."\n";
-			$str .= $tab2.'$grid->setFormOptionsA(\'closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) {var res = $.parseJSON(a.responseText);'."\n";
-			$str .= $tab2.'			$.prompt(res.mensaje,{'."\n";
-			$str .= $tab2.'				submit: function(e,v,m,f){'."\n";
-			$str .= $tab2.'					window.open(\\\'\'.base_url().\'formatos/ver/'.strtoupper($db).'/\\\'+res.id, \\\'_blank\\\', \\\'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\\\');'."\n";
-			$str .= $tab2.'			}'."\n";
-			$str .= $tab2.'			});'."\n";
-			$str .= $tab2.'			return [true, a ];}}'."\n";
-			$str .= $tab2.'			\');'."\n\n";
-			
+			$str .= $tab2.'$grid->setFormOptionsA(\'closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} \');'."\n";
+
 			$str .= $tab2.'$grid->setAfterSubmit("$.prompt(\'Respuesta:\'+a.responseText); return [true, a ];");'."\n\n";
 
 			$str .= $tab2.'#show/hide navigations buttons'."\n";
@@ -749,31 +759,33 @@ class Desarrollo extends Controller{
 			$str .= $tab2.'$this->load->library(\'jqdatagrid\');'."\n";
 			$str .= $tab2.'$oper   = $this->input->post(\'oper\');'."\n";
 			$str .= $tab2.'$id     = $this->input->post(\'id\');'."\n";
-			$str .= $tab2.'$data   = $_POST;'."\n\n";
+			$str .= $tab2.'$data   = $_POST;'."\n";
+			$str .= $tab2.'$check  = 0;'."\n\n";
 
 			$str .= $tab2.'unset($data[\'oper\']);'."\n";
 			$str .= $tab2.'unset($data[\'id\']);'."\n";
 
 			$str .= $tab2.'if($oper == \'add\'){'."\n";
 			$str .= $tab3.'if(false == empty($data)){'."\n";
-			$str .= $tab4.'$this->db->insert(\'caub\', $data);'."\n";
+			$str .= $tab4.'$this->db->insert(\''.$db.'\', $data);'."\n";
 			$str .= $tab3.'}'."\n";
 			//$str .= $tab2.'echo \'\';'."\n";
-			$str .= $tab3.'return;'."\n\n";
+			$str .= $tab3.'return "Registro Agregado";'."\n\n";
 
 			$str .= $tab2.'} elseif($oper == \'edit\') {'."\n";
-			$str .= $tab3.'unset($data[\'ubica\']);'."\n";
+			$str .= $tab3.'//unset($data[\'ubica\']);'."\n";
 			$str .= $tab3.'$this->db->where(\'id\', $id);'."\n";
 			$str .= $tab3.'$this->db->update(\''.$db.'\', $data);'."\n";
-			$str .= $tab3.'return;'."\n\n";
+			$str .= $tab3.'return "Registro Modificado";'."\n\n";
+			
 			$str .= $tab2.'} elseif($oper == \'del\') {'."\n";
-			$str .= $tab3.'$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM itsinv WHERE alma=\'$codigo\' AND existen>0");'."\n";
-			$str .= $tab3.'if ($chek > 0){'."\n";
-			$str .= $tab4.'echo " El almacen no fuede ser eliminado; tiene movimiento ";'."\n";
+			$str .= $tab3.'//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM '.$db.' WHERE id=\'$id\' ");'."\n";
+			$str .= $tab3.'if ($check > 0){'."\n";
+			$str .= $tab4.'echo " El registro no puede ser eliminado; tiene movimiento ";'."\n";
 			$str .= $tab3.'} else {'."\n";
-			$str .= $tab4.'$this->db->simple_query("DELETE FROM caub WHERE id=$id ");'."\n";
-			$str .= $tab4.'logusu(\''.$db.'\',"Almacen $codigo ELIMINADO");'."\n";
-			$str .= $tab4.'echo "{ success: true, message: \'Registro Eliminado\'}";'."\n";
+			$str .= $tab4.'$this->db->simple_query("DELETE FROM '.$db.' WHERE id=$id ");'."\n";
+			$str .= $tab4.'logusu(\''.$db.'\',"Registro ????? ELIMINADO");'."\n";
+			$str .= $tab4.'echo "Registro Eliminado";'."\n";
 			$str .= $tab3.'}'."\n";
 			$str .= $tab2.'};'."\n";
 			$str .= $tab1.'}'."\n";

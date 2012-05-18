@@ -212,38 +212,7 @@ class Caub extends validaciones {
 							'frozen' => 'true',
 							'editable' => 'true',
 							'edittype' => "'text'",
-							'editoptions' => '{
-						"dataInit":function(el){
-							setTimeout(function(){
-								if(jQuery.ui) { 
-									if(jQuery.ui.autocomplete){
-										jQuery(el).autocomplete({
-											"appendTo":"body",
-											"disabled":false,
-											"delay":300,
-											"minLength":1,
-											"select": function(event, ui) { 
-												$("#aaaaaa").remove();
-												$("#cu_cost").after("<div id=\"aaaaaa\"><strong>"+ui.item.descrip+"</strong></div>"); 
-											},
-											"source":function (request, response){
-												request.acelem = "cu_cost";
-												request.oper = "autocomplete";
-												$.ajax({
-													url: "'.$link.'",
-													dataType: "json",
-													data: request,
-													type: "POST",
-													error: function(res, status) { alert(res.status+" : "+res.statusText+". Status: "+status);},
-													success: function( data ) { response( data );	}
-												});
-											}
-										});
-										jQuery(el).autocomplete("widget").css("font-size","11px");
-									} 
-								} else { alert("Falta jQuery UI") }
-							},200);
-						}}',
+							'editoptions' => '{'.$grid->autocomplete($link, 'cu_cost','cucucu','<div id=\"cucucu\"><b>"+ui.item.descrip+"</b></div>').'}',
 							'search' => 'false'
 			)
 		);
@@ -254,38 +223,7 @@ class Caub extends validaciones {
 							'frozen' => 'true',
 							'editable' => 'true',
 							'edittype' => "'text'",
-							'editoptions' => '{
-						"dataInit":function(el){
-							setTimeout(function(){
-								if(jQuery.ui) { 
-									if(jQuery.ui.autocomplete){
-										jQuery(el).autocomplete({
-											"appendTo":"body",
-											"disabled":false,
-											"delay":300,
-											"minLength":1,
-											"select": function(event, ui) { 
-												$("#bbbbbb").remove();
-												$("#cu_caja").after("<div id=\"bbbbbb\"><strong>"+ui.item.descrip+"</strong></div>"); 
-											},
-											"source":function (request, response){
-												request.acelem = "cu_caja";
-												request.oper = "autocomplete";
-												$.ajax({
-													url: "'.$link.'",
-													dataType: "json",
-													data: request,
-													type: "POST",
-													error: function(res, status) { alert(res.status+" : "+res.statusText+". Status: "+status);},
-													success: function( data ) { response( data );	}
-												});
-											}
-										});
-										jQuery(el).autocomplete("widget").css("font-size","11px");
-									} 
-								} else { alert("Falta jQuery UI") }
-							},200);
-						}}',
+							'editoptions' => '{'.$grid->autocomplete($link, 'cu_caja','cacaca','<div id=\"cacaca\"><b>"+ui.item.descrip+"</b></div>').'}',
 							'search' => 'false'
 			)
 		);

@@ -12,34 +12,39 @@ if( isset($tema) == false) {
 <title><?php echo $encabeza ?></title>
 
 
-<!-- JQUERY -->
-<?php echo style('themes/'.$tema.'/'.$tema.'.css'); ?>
-
-<?php 
-	if ( isset($tema1) ) 
-	echo style('themes/'.$tema1.'/'.$tema1.'.css'); 
+<!-- ESTILOS -->
+<?php
+echo style('themes/'.$tema.'/'.$tema.'.css'); 
+if ( isset($tema1) ) echo style('themes/'.$tema1.'/'.$tema1.'.css');
+if ( isset($anexos) ) echo style('themes/'.$anexos.'/'.$anexos.'.css'); 
+//echo style('themes/anexos/anexos.css');
 ?>
 
-<?php echo phpscript('nformat.js') ?>
 
-<?php echo script('jquery-1.7.1.min.js') ?>
-<?php echo script('jquery-ui-1.8.18.custom.min.js') ?>
-
+<!-- JQUERY -->
+<?php
+echo phpscript('nformat.js');
+echo script('jquery-min.js');
+echo script('plugins/jquery.numeric.pack.js');
+echo script('jquery-ui.custom.min.js')
+?>
 
 
 <!-- Impromptu -->
-
 <?php echo script('jquery-impromptu.js') ?>
 <?php echo style('impromptu/default.css') ?>
+
 
 <!-- JQGRID -->
 <?php echo style('themes/ui.jqgrid.css') ?>
 <?php echo script('i18n/grid.locale-sp.js') ?>
 <?php echo script('jquery.jqGrid.min.js')  ?>
 
+
 <!-- DATAGRID -->
 <link rel="stylesheet" type="text/css" media="screen" href="<?php echo base_url(); ?>assets/default/datagrid/datagrid.css" />
 <?php echo script('datagrid/datagrid.js')  ?>
+
 
 <!-- LAYOUT -->
 <?php echo script('jquery.layout.js') ?>
@@ -47,14 +52,10 @@ if( isset($tema) == false) {
 <style>
 html, body {margin: 0; padding: 0; overflow: hidden; font-size: 75%;}
 /*Splitter style */
-#LeftPane {overflow: auto;}
-#RightPane {padding: 2px;overflow: auto;}
-.ui-tabs-nav li {position: relative;}
-.ui-tabs-selected a span {padding-right: 10px;}
-.ui-tabs-close {display: none;position: absolute;top: 3px;right: 0px;z-index: 800;width: 16px;height: 14px;font-size: 10px; font-style: normal;cursor: pointer;}
-.ui-tabs-selected .ui-tabs-close {display: block;}
-.ui-layout-west .ui-jqgrid tr.jqgrow td { border-bottom: 0px none;}
-.ui-datepicker {z-index:1200;}
+#LeftPane  {padding: 2px; overflow: auto;}
+#RightPane {padding: 2px; overflow: auto;}
+.ui-layout-west .ui-jqgrid tr.jqgrow td { border-bottom: 1px solid;}
+
 </style>
 
 <script type="text/javascript">
@@ -64,34 +65,24 @@ var url = '';
 var mGrid = '<?php echo $grid['gridname'] ?>';
 
 $(document).ready(function() {
+<?php
+	if ( isset($readyLayout) ){
+		echo $readyLayout;
+	} else {?>
 	$('body').layout({
+		minSize: 30,
+		north__size: 60,
 		resizerClass: 'ui-state-default',
-		<?php echo (isset($WestSize) == true)? $WestSize:''; ?>
-		west__onresize: function (pane, $Pane) {
-			jQuery("#west-grid").jqGrid('setGridWidth',$Pane.innerWidth()-2);
-		},
+		<?php echo (isset($WestSize) == true)? "west__size:".$WestSize.", ":"west__size: 212,\n"; ?>
+		west__onresize: function (pane, $Pane){jQuery("#west-grid").jqGrid('setGridWidth',$Pane.innerWidth()-2);},
 		center__onresize: function (pane, $Pane) {
 			jQuery("#newapi<?php echo $grid['gridname'];?>").jqGrid('setGridWidth',$Pane.innerWidth()-6);
 			jQuery("#newapi<?php echo $grid['gridname'];?>").jqGrid('setGridHeight',$Pane.innerHeight()-<?php echo $grid['menosalto']?>);
 		}
 	});
-
-	var maintab =jQuery('#tabs','#RightPane').tabs({
-		add: function(e, ui) {
-			// append close thingy
-			$(ui.tab).parents('li:first')
-				.append('<span class="ui-tabs-close ui-icon ui-icon-close" title="Close Tab"></span>')
-				.find('span.ui-tabs-close')
-				.click(function() {
-					maintab.tabs('remove', $('li', maintab).index($(this).parents('li:first')[0]));
-				});
-				// select just added tab
-			maintab.tabs('select', '#' + ui.panel.id);
-		}
-	});
+<?php }; ?>
 
 	dtgLoadButton();
-
 	var grid = jQuery("#newapi<?php echo $grid['gridname'];?>").jqGrid({
 		ajaxGridOptions : {type:"POST"},
 			jsonReader : {
@@ -106,7 +97,6 @@ $(document).ready(function() {
 			}
 
 <?php echo $grid['table'];?>
-
 
 	})
 <?php echo $grid['pager'];?>;
@@ -125,9 +115,11 @@ $(document).ready(function() {
 			}
 			<?php echo $grid1['table'];?>
 	})
-<?php echo $grid1['pager'];?>;
-<?php }; ?>
-<?php if (isset($grid2)) { ?>
+<?php
+	echo $grid1['pager'];
+}; 
+
+if (isset($grid2)) { ?>
 	var grid2 = jQuery("#newapi<?php echo $grid2['gridname'];?>").jqGrid({
 		ajaxGridOptions : {type:"POST"},
 			jsonReader : {
@@ -142,16 +134,17 @@ $(document).ready(function() {
 			}
 			<?php echo $grid2['table'];?>
 	})
-<?php echo $grid2['pager'];?>;
-<?php }; ?>
-<?php if (isset($funciones))  echo $funciones; ?>
+<?php
+	echo $grid2['pager'];
+}; 
 
-<?php if (isset($listados)) { ?>
+if (isset($listados)) {
+	if (!empty($listados)) {?>
 	jQuery("#listados").jqGrid({
 		datatype: "local",
-		height: 'auto',
+		height: '200',
 		colNames:['','Reporte','Nombre'],
-		colModel:[{name:'id',index:'id', width:10},{name:'titulo',index:'titulo', width:165}, {name:'nombre',index:'nombre', hidden:true}],
+		colModel:[{name:'id',index:'id', width:15},{name:'titulo',index:'titulo', width:165}, {name:'nombre',index:'proteo', hidden:true}],
 		multiselect: false,
 		hiddengrid: true,
 		width: 190,
@@ -159,22 +152,44 @@ $(document).ready(function() {
 		ondblClickRow: function(id, row, col, e){ 
 			var ret = $("#listados").getRowData(id); 
 			window.open("<?php echo base_url() ?>reportes/ver/"+ret.nombre, "_blank", "width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400)),screeny=((screen.availWidth/2)-300)");
-//window.open("/proteoerp/reportes/ver/PERSONA",                "_blank", "width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400)),screeny=((screen.availWidth/2)-300)");
-			//alert("id="+id+" "+ret.nombre)
+			}
+	});
+	<?php echo $listados ?>
+
+	for(var i=0;i<=datalis.length;i++) jQuery("#listados").jqGrid('addRowData',i+1,datalis[i]);
+
+<?php
+	}
+} 
+
+if (isset($otros)) {
+	if (!empty($otros)) {?>
+	jQuery("#otros").jqGrid({
+		datatype: "local",
+		height: 100,
+		colNames:['','Funciones','Nombre'],
+		colModel:[{name:'id',index:'id', width:15},{name:'titulo',index:'titulo', width:165}, {name:'proteo',index:'proteo', hidden:true}],
+		multiselect: false,
+		hiddengrid: true,
+		width: 190,
+		caption: "Funciones",
+		ondblClickRow: function(id, row, col, e){ 
+			var ret = $("#otros").getRowData(id); 
+			window.open("<?php echo base_url() ?>reportes/ver/"+ret.nombre, "_blank", "width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400)),screeny=((screen.availWidth/2)-300)");
 			}
 	});
 
-	<?php echo $listados ?>
+	<?php echo $otros ?>
 	
-for(var i=0;i<=datalis.length;i++)
-	jQuery("#listados").jqGrid('addRowData',i+1,datalis[i]);
+	for(var i=0;i<=dataotr.length;i++) jQuery("#otros").jqGrid('addRowData',i+1,dataotr[i]);
 
-<?php } ?>
+<?php
+	}
+};
 
+if (isset($funciones))  echo $funciones;
 
-
-<?php if (isset($otros))  echo $otros; ?>
-
+?>
 
 });
 </script>
@@ -191,7 +206,7 @@ for(var i=0;i<=datalis.length;i++)
 <?php echo (isset($WestPanel) == true)? $WestPanel:''; ?>
 
 <?php 
-if(isset($centerpanel) ==true) {
+if(isset($centerpanel) == true) {
 	echo $centerpanel;
 } else{?>
 <div id="RightPane" class="ui-layout-center ui-helper-reset ui-widget-content" align="center"><!-- Tabs pane -->

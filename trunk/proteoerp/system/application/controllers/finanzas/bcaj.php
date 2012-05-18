@@ -67,7 +67,6 @@ function probar( o, n ) {
 	}
 };
 
-
 $(function() {
 	var mId = 0;
 	$( "input:submit, a, button", ".otros" ).button();
@@ -136,17 +135,17 @@ $(function() {
 		$WestPanel = '
 <div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content">
 <div class="otros">
-<table id="west-grid">
-	<tr><td><div class="tema1">
-		<table id="listados"></table>
-		</div>
-	</td></tr>
+
+<table id="west-grid" align="center">
 	<tr><td>
-		<table id="otros"></table>
-	</td></tr>
+		<div class="anexos"><table id="listados"></table></div></td>
+	</tr>
+	<tr>
+		<td><table id="otros"></table></td>
+	</tr>
 </table>
 
-<table id="west-grid">
+<table id="west-grid" align="center">
 	<tr>
 		<td><a style="width:190px" href="#" id="a1">Imprimir a PDF</a></td>
 	</tr>
@@ -171,17 +170,21 @@ $(function() {
 	<form>
 	<fieldset style="border:none;font-size:12px;">
 		<label for="num">Numero</label>
-		<input type="text" id="fnumero"></input><br><br>
+		<input type="text" id="fnumero"><br><br>
 		<label for="fec">Fecha</label>
-		<input type="text" id="ffecha" value ="'.date('d/m/Y').'"></input>
+		<input type="text" id="ffecha" value ="'.date('d/m/Y').'">
 	</fieldset>
 	</form>
 </div>
 ';
 		$param['WestPanel']  = $WestPanel;
 		//$param['EastPanel']  = $EastPanel;
+		$param['listados'] = $this->datasis->listados('BCAJ', 'JQ');
+		$param['otros']    = $this->datasis->otros('BCAJ', 'JQ');
+
 		$param['SouthPanel'] = $SouthPanel;
 		$param['tema1'] = 'darkness';
+		//$param['tema']  = 'bootstrap';
 		$param['bodyscript'] = $bodyscript;
 		$param['tabs'] = false;
 		$param['encabeza'] = $this->titp;
@@ -229,7 +232,6 @@ $(function() {
 			'formoptions'   => '{ label:"Fecha" }',
 			//'formatoptions' => '{formatter:\'date\'}',
 			'formatter'     => "'date'",
-			//'formatter'     => 'date'
 		));
 
 
@@ -699,7 +701,7 @@ $(function() {
 			$XNUMERO  = $this->datasis->dameval("SELECT numero  FROM bcaj WHERE id=$id ");
 
 			//Actualiza el numero en bcaj
-			$mSQL = "UPDATE bcaj SET status='C', numero='$numero' WHERE id=$id ";
+			$mSQL = "UPDATE bcaj SET status='C', numeror='$numero' WHERE id=$id ";
 			$this->db->simple_query($mSQL);
 
 			//Guarda en BCAJ
