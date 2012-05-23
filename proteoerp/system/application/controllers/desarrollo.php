@@ -597,7 +597,7 @@ class Desarrollo extends Controller{
 			$str .= '&lt;/table&gt;'."\n";
 			$str .= '&lt;/div&gt;'."\n";
 			
-			$str .= '//		&lt;td&gt;&lt;a style="width:190px" href="#" id="a1"&gt;Imprimir Copia&lt;/a&gt;&lt;/td&gt;'."\n";
+			$str .= "'.\n".'//		&lt;td&gt;&lt;a style="width:190px" href="#" id="a1"&gt;Imprimir Copia&lt;/a&gt;&lt;/td&gt;'."\n'";
 			
 			$str .= '&lt;/div> &lt;!-- #LeftPane --&gt;'."\n";
 			$str .= '\';'."\n\n";
@@ -651,7 +651,7 @@ class Desarrollo extends Controller{
 
 					$str .= $tab2.'$grid->params(array('."\n";
 					$str .= $tab3.'\'search\'        => \'true\','."\n";
-					$str .= $tab3.'\'editable\'      => \'true\','."\n";
+					$str .= $tab3.'\'editable\'      => $editar,'."\n";
 
 					if ( $row->Type == 'date' or $row->Type == 'timestamp' ) {
 						$str .= $tab3.'\'width\'         => 80,'."\n";

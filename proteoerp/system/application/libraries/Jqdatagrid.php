@@ -157,7 +157,7 @@ class Jqdatagrid
 	
 	private $viewrecords = true;
 	
-	private $rowList = "[10,20,30]";
+	private $rowList = "[20,30,50,100]";
 	
 	private $hiddengrid = false;
 
