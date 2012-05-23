@@ -615,7 +615,8 @@ class Desarrollo extends Controller{
 			$str .= $tab2.'$param[\'listados\'] = $this->datasis->listados(\''.strtoupper($db).'\', \'JQ\');'."\n";
 			$str .= $tab2.'$param[\'otros\']    = $this->datasis->otros(\''.strtoupper($db).'\', \'JQ\');'."\n";
 
-			$str .= $tab2.'$param[\'tema1\'] = \'darkness\';'."\n";
+			$str .= $tab2.'$param[\'tema1\']     = \'darkness\';'."\n";
+			$str .= $tab2.'$param[\'anexos\']    = \'anexos1\';'."\n";
 
 			$str .= $tab2.'$param[\'bodyscript\'] = $bodyscript;'."\n";
 			$str .= $tab2.'$param[\'tabs\'] = false;'."\n";
