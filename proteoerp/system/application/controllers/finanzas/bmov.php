@@ -1,8 +1,8 @@
 <?php
 class Bmov extends Controller {
 	var $mModulo='BMOV';
-	var $titp='Modulo BMOV';
-	var $tits='Modulo BMOV';
+	var $titp='Movimiento de Bancos';
+	var $tits='Movimiento de Bancos';
 	var $url ='finanzas/bmov/';
 
 	function Bmov(){
@@ -46,8 +46,39 @@ jQuery("#a1").click( function(){
 </script>
 ';
 
+		$readyLayout = '
+	$(\'body\').layout({
+		minSize: 30,
+		north__size: 60,
+		resizerClass: \'ui-state-default\',
+		west__size: 212,
+		west__onresize: function (pane, $Pane){jQuery("#west-grid").jqGrid(\'setGridWidth\',$Pane.innerWidth()-2);},
+	});
+	
+	$(\'div.ui-layout-center\').layout({
+		minSize: 30,
+		resizerClass: "ui-state-default",
+		center__paneSelector: ".centro-centro",
+		south__paneSelector:  ".centro-sur",
+		south__size: 100,
+		center__onresize: function (pane, $Pane) {
+			jQuery("#newapi'.$param['grid']['gridname'].'").jqGrid(\'setGridWidth\',$Pane.innerWidth()-6);
+			jQuery("#newapi'.$param['grid']['gridname'].'").jqGrid(\'setGridHeight\',$Pane.innerHeight()-110);
+		}
+	});
+';
+
+
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		$mSQL1     = "SELECT codbanc codigo, tbanco banco, format(saldo,2) saldo, numcuent FROM banc WHERE activo='S' ORDER BY IF(tbanco='CAJ','ZZZ',tbanco) ";
+		$colModel = "{name:'codigo',index:'codigo', label:'Cod', width:15 }, {name:'banco',index:'banco', label:'Bco', width:25}, {name:'saldo', index:'saldo', label:'Saldo', align:'right', width:80}, {name:'numcuent', index:'numcuent', label:'Nro. Cuenta', align:'center', width:140} ";
+
+		//$datos = $this->datasis->jqdata($mSQL1,'databanc');
+		$funciones = $this->datasis->jqtablawest('saldobanc', 'Saldo de Bancos', $colModel,  $mSQL1);
+
+
 
 		$WestPanel = '
 <div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content">
@@ -61,33 +92,50 @@ jQuery("#a1").click( function(){
 		<td><div class="tema1"><table id="otros"></table></div></td>
 	</td></tr>
 </table>
-
+</div>
 <table id="west-grid" align="center">
 	<tr>
-		<td></td>
+		<td><div class="tema1" style="font-size: 80%;"><table id="saldobanc"></table></div></td>
 	</tr>
 </table>
-</div>
+
 '.
 //		<td><a style="width:190px" href="#" id="a1">Imprimir Copia</a></td>
 '</div> <!-- #LeftPane -->
 ';
+
+		$centerpanel = '
+<div id="RightPane" class="ui-layout-center">
+	<div class="centro-centro">
+		<table id="newapi'.$param['grid']['gridname'].'"></table>
+		<div id="pnewapi'.$param['grid']['gridname'].'"></div>
+	</div>
+	<div class="centro-sur" id="adicional" style="overflow:auto;">
+	</div>
+</div> <!-- #RightPane -->
+';
+
 
 		$SouthPanel = '
 <div id="BottomPane" class="ui-layout-south ui-widget ui-widget-content">
 <p>'.$this->datasis->traevalor('TITULO1').'</p>
 </div> <!-- #BottomPanel -->
 ';
-		$param['WestPanel']  = $WestPanel;
+		$param['WestPanel']    = $WestPanel;
 		//$param['EastPanel']  = $EastPanel;
-		$param['SouthPanel'] = $SouthPanel;
-		$param['listados'] = $this->datasis->listados('BMOV', 'JQ');
-		$param['otros']    = $this->datasis->otros('BMOV', 'JQ');
-		$param['tema1'] = 'darkness';
+		$param['readyLayout']  = $readyLayout;
+		$param['SouthPanel']   = $SouthPanel;
+		$param['listados']     = $this->datasis->listados('BMOV', 'JQ');
+		$param['otros']        = $this->datasis->otros('BMOV', 'JQ');
+		
+		$param['centerpanel']  = $centerpanel;
+		$param['funciones']    = $funciones;
+		$param['tema1']        = 'darkness';
 		$param['anexos']       = 'anexos1';
-		$param['bodyscript'] = $bodyscript;
-		$param['tabs'] = false;
-		$param['encabeza'] = $this->titp;
+		$param['bodyscript']   = $bodyscript;
+		$param['tabs']         = false;
+		$param['encabeza']     = $this->titp;
+		
 		$this->load->view('jqgrid/crud',$param);
 	}
 
@@ -111,12 +159,13 @@ jQuery("#a1").click( function(){
 		));
 
 		$grid->addField('codbanc');
-		$grid->label('Codbanc');
+		$grid->label('Codigo');
 		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 40,
-			'edittype'      => "'text'",
+			'align'      => "'center'",
+			'search'     => 'true',
+			'editable'   => $editar,
+			'width'      => 40,
+			'edittype'   => "'text'",
 		));
 
 /*
@@ -569,7 +618,7 @@ jQuery("#a1").click( function(){
 
 		$grid->showpager(true);
 		$grid->setWidth('');
-		$grid->setHeight('290');
+		$grid->setHeight('270');
 		$grid->setTitle($this->titp);
 		$grid->setfilterToolbar(true);
 		$grid->setToolbar('false', '"top"');
@@ -579,12 +628,25 @@ jQuery("#a1").click( function(){
 		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
 
 		#show/hide navigations buttons
-		$grid->setAdd(true);
-		$grid->setEdit(true);
+		$grid->setAdd(false);
+		$grid->setEdit(false);
 		$grid->setDelete(true);
 		$grid->setSearch(true);
 		$grid->setRowNum(30);
 		$grid->setShrinkToFit('false');
+
+		$grid->setonSelectRow('
+			function(id){
+				$.ajax({
+					url: "'.base_url().$this->url.'tabla/"+id,
+					success: function(msg){
+						//alert( "El ultimo codigo ingresado fue: " + msg );
+						$("#adicional").html(msg);
+					}
+				});
+			}
+		');
+
 
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
@@ -650,272 +712,74 @@ jQuery("#a1").click( function(){
 			}
 		};
 	}
+
+	function tabla() {
+		$id = $this->uri->segment($this->uri->total_segments());
+		
+		$row = $this->datasis->damereg("SELECT clipro, tipo_op, numero, estampa, transac FROM bmov WHERE id=$id");
+
+		$transac  = $row['transac'];
+		$numero   = $row['numero'];
+		$tipo_doc = $row['tipo_op'];
+		$estampa  = $row['estampa'];
+
+		$td1  = "<td style='border-style:solid;border-width:1px;border-color:#78FFFF;' valign='top' align='center'>\n";
+		$td1 .= "<table width='98%'>\n<caption style='background-color:#5E352B;color:#FFFFFF;font-style:bold'>";
+
+		$mSQL = "SELECT cod_prv, MID(nombre,1,25) nombre, tipo_doc, numero, monto, abonos
+			FROM sprm WHERE transac='$transac' ORDER BY cod_prv ";
+
+		$query = $this->db->query($mSQL);
+		$codcli = 'XXXXXXXXXXXXXXXX';
+		$salida = '<table width="100%"><tr>';
+		$saldo  = 0;
+		if ( $query->num_rows() > 0 ){
+			$salida .= $td1;
+			$salida .= "Movimiento en Proveedores</caption>";
+			$salida .= "<tr bgcolor='#E7E3E7'><td>Nombre</td><td>Tp</td><td align='center'>Numero</td><td align='center'>Monto</td></tr>";
+			foreach ($query->result_array() as $row)
+			{
+				if ( $row['tipo_doc'] == 'FC' ) {
+					$saldo = $row['monto']-$row['abonos'];
+				}
+				$salida .= "<tr>";
+				$salida .= "<td>".$row['cod_prv'].'-'.$row['nombre']."</td>";
+				$salida .= "<td>".$row['tipo_doc']."</td>";
+				$salida .= "<td>".$row['numero'].  "</td>";
+				$salida .= "<td align='right'>".nformat($row['monto']).   "</td>";
+				$salida .= "</tr>";
+			}
+			$salida .= "<tr bgcolor='#d7c3c7'><td colspan='4' align='center'>Saldo : ".nformat($saldo). "</td></tr>";
+			$salida .= "</table></td>";
+		}
+
+		$mSQL = "SELECT cod_cli, MID(nombre,1,25) nombre, tipo_doc, numero, monto, abonos
+			FROM smov WHERE transac='$transac' ORDER BY cod_cli ";
+		$query = $this->db->query($mSQL);
+		$codcli = 'XXXXXXXXXXXXXXXX';
+		$saldo = 0;
+		if ( $query->num_rows() > 0 ){
+			$salida .= $td1;
+			$salida .= "Movimiento en Clientes</caption>";
+			$salida .= "<tr bgcolor='#e7e3e7'><td>Nombre</td><td>Tp</td><td align='center'>Numero</td><td align='center'>Monto</td></tr>";
+			foreach ($query->result_array() as $row)
+			{
+				if ( $row['tipo_doc'] == 'FC' ) {
+					$saldo = $row['monto']-$row['abonos'];
+				}
+				$salida .= "<tr>";
+				$salida .= "<td>".$row['cod_cli'].'-'.$row['nombre']."</td>";
+				$salida .= "<td>".$row['tipo_doc']."</td>";
+				$salida .= "<td>".$row['numero'].  "</td>";
+				$salida .= "<td align='right'>".nformat($row['monto']).   "</td>";
+				$salida .= "</tr>";
+			}
+//			$salida .= "<tr bgcolor='#d7c3c7'><td colspan='4' align='center'>Saldo : ".nformat($saldo). "</td></tr>";
+			$salida .= "</table></td>";
+		}
+
+
+		echo $salida.'</tr></table>';
+	}
+
 }
-/*
-class Bmov extends Controller {
-	function bmov(){
-		parent::Controller(); 
-		$this->load->library('rapyd');
-	}
-
-	function index(){
-		$this->rapyd->load('datafilter','datagrid');
-		$this->rapyd->uri->keep_persistence();
-
-		$filter = new DataFilter('Filtro de movimientos de bancos');
-		$select=array('fecha','numero','fecha','nombre','monto',"CONCAT_WS(' ',banco ,numcuent) AS banco",'tipo_op','codbanc','concepto','anulado');
-		$filter->db->select($select);
-		$filter->db->from('bmov');
-
-		$filter->fecha = new dateonlyField('Fecha', 'fecha');
-		$filter->fecha->size     = 10;
-		$filter->fecha->operator = '=';
-		$filter->fecha->clause   = 'where';
-
-		$filter->numero = new inputField('N&uacute;mero', 'numero');
-		$filter->numero->size=20;
-
-		$filter->nombre = new inputField('Nombre', 'nombre');
-		$filter->nombre->size=40;
-
-		$filter->banco = new dropdownField('Banco', 'codbanc');
-		$filter->banco->option('','Todos');
-		$filter->banco->options("SELECT codbanc,banco FROM banc where tbanco<>'CAJ' ORDER BY codbanc");
-
-		$filter->buttons('reset','search');
-		$filter->build();
-
-		$uri = anchor('finanzas/bmov/dataedit/show/<#codbanc#>/<#tipo_op#>/<#numero#>','<#numero#>');
-		$grid = new DataGrid('Lista');
-		$grid->order_by('fecha','desc');
-		$grid->per_page = 15;
-
-		$grid->column_orderby('N&uacute;mero',$uri ,'numero');
-		$grid->column_orderby('Fecha'        ,'<dbdate_to_human><#fecha#></dbdate_to_human>','fecha');
-		$grid->column_orderby('Nombre'       ,'nombre','nombre');
-		$grid->column_orderby('Banco'        ,'banco','banco');
-		$grid->column_orderby('Monto'        ,'<nformat><#monto#></nformat>' ,'monto','align=\'right\'');
-		$grid->column_orderby('Concepto'     ,'concepto','concepto');
-		$grid->column_orderby('Anulado'      ,'anulado','anulado','align=center');
-
-		$grid->build();
-
-		$data['content'] = $filter->output.$grid->output;
-		$data['title']   = heading('Movimientos de bancos');
-		$data['head']    = $this->rapyd->get_head();
-		$this->load->view('view_ventanas', $data);
-	}
-
-	function dataedit(){
-		$this->rapyd->load('dataedit');
-		$this->rapyd->uri->keep_persistence();
-
-		$edit = new DataEdit('Movimiento', 'bmov');
-		$edit->back_url = 'finanzas/bmov/index';
-		$status=$edit->_status;
-		if($status!='show') show_error('Error de par&aacute;metros');
-
-		$edit->codbanc = new inputField('C&oacute;digo del Banco','codbanc');
-		$edit->codbanc->rule='max_length[2]';
-		$edit->codbanc->size =4;
-		$edit->codbanc->maxlength =2;
-
-		$edit->moneda = new inputField('Moneda','moneda');
-		$edit->moneda->rule='max_length[2]';
-		$edit->moneda->size =4;
-		$edit->moneda->maxlength =2;
-
-		$edit->numcuent = new inputField('N&uacute;mero de cuenta','numcuent');
-		$edit->numcuent->rule='max_length[18]';
-		$edit->numcuent->size =20;
-		$edit->numcuent->maxlength =18;
-
-		$edit->banco = new inputField('Banco','banco');
-		$edit->banco->rule='max_length[30]';
-		$edit->banco->size =32;
-		$edit->banco->maxlength =30;
-
-		$edit->saldo = new inputField('Saldo','saldo');
-		$edit->saldo->rule='max_length[17]|numeric';
-		$edit->saldo->css_class='inputnum';
-		$edit->saldo->size =19;
-		$edit->saldo->maxlength =17;
-
-		$edit->tipo_op = new dropdownField('Tipo de operaci&oacute;n', 'tipo_op');
-		$edit->tipo_op->option('NC','Nota de cr&eacute;dito');
-		$edit->tipo_op->option('ND','Nota de d&eacute;bito');
-		$edit->tipo_op->option('CH','Cheque');
-		$edit->tipo_op->option('DE','Deposito');
-		$edit->tipo_op->mode='autohide';
-		$edit->tipo_op->rule='max_length[2]';
-
-		$edit->numero = new inputField('N&uacute;mero','numero');
-		$edit->numero->rule='max_length[12]';
-		$edit->numero->size =14;
-		$edit->numero->maxlength =12;
-
-		$edit->fecha = new dateField('Fecha','fecha');
-		$edit->fecha->rule='chfecha';
-		$edit->fecha->size =10;
-		$edit->fecha->maxlength =8;
-
-		$edit->clipro = new inputField('Clte/Prv','clipro');
-		$edit->clipro->rule='max_length[1]';
-		$edit->clipro->size =3;
-		$edit->clipro->maxlength =1;
-
-		$edit->codcp = new inputField('codcp','codcp');
-		$edit->codcp->rule='max_length[5]';
-		$edit->codcp->size =7;
-		$edit->codcp->maxlength =5;
-		$edit->codcp->in='clipro';
-
-		$edit->nombre = new inputField('Nombre','nombre');
-		$edit->nombre->rule='max_length[30]';
-		$edit->nombre->size =32;
-		$edit->nombre->maxlength =30;
-		$edit->nombre->in='clipro';
-
-		$edit->monto = new inputField('Monto','monto');
-		$edit->monto->rule='max_length[17]|numeric';
-		$edit->monto->css_class='inputnum';
-		$edit->monto->size =19;
-		$edit->monto->maxlength =17;
-
-		$edit->concepto = new inputField('Concepto','concepto');
-		$edit->concepto->rule='max_length[50]';
-		$edit->concepto->size =52;
-		$edit->concepto->maxlength =50;
-		$edit->concepto->group='Conceptos';
-
-		$edit->concep2 = new inputField('...','concep2');
-		$edit->concep2->rule='max_length[50]';
-		$edit->concep2->size =52;
-		$edit->concep2->maxlength =50;
-		$edit->concep2->group='Conceptos';
-
-		$edit->concep3 = new inputField('...','concep3');
-		$edit->concep3->rule='max_length[50]';
-		$edit->concep3->size =52;
-		$edit->concep3->maxlength =50;
-		$edit->concep3->group='Conceptos';
-
-		$edit->documen = new inputField('Documento','documen');
-		$edit->documen->rule='max_length[8]';
-		$edit->documen->size =10;
-		$edit->documen->maxlength =8;
-
-		$edit->comprob = new inputField('Comprobante','comprob');
-		$edit->comprob->rule='max_length[6]';
-		$edit->comprob->size =8;
-		$edit->comprob->maxlength =6;
-
-		$edit->status = new inputField('Estatus','status');
-		$edit->status->rule='max_length[1]';
-		$edit->status->size =3;
-		$edit->status->maxlength =1;
-
-		$edit->cuenta = new inputField('Cuenta','cuenta');
-		$edit->cuenta->rule='max_length[15]';
-		$edit->cuenta->size =17;
-		$edit->cuenta->maxlength =15;
-
-		$edit->enlace = new inputField('Enlace','enlace');
-		$edit->enlace->rule='max_length[15]';
-		$edit->enlace->size =17;
-		$edit->enlace->maxlength =15;
-
-		$edit->bruto = new inputField('bruto','bruto');
-		$edit->bruto->rule='max_length[17]|numeric';
-		$edit->bruto->css_class='inputnum';
-		$edit->bruto->size =19;
-		$edit->bruto->maxlength =17;
-
-		$edit->comision = new inputField('Comisi&oacute;n','comision');
-		$edit->comision->rule='max_length[17]|numeric';
-		$edit->comision->css_class='inputnum';
-		$edit->comision->size =19;
-		$edit->comision->maxlength =17;
-
-		$edit->impuesto = new inputField('Impuesto','impuesto');
-		$edit->impuesto->rule='max_length[17]|numeric';
-		$edit->impuesto->css_class='inputnum';
-		$edit->impuesto->size =19;
-		$edit->impuesto->maxlength =17;
-
-		$edit->registro = new inputField('Registro','registro');
-		$edit->registro->rule='max_length[10]';
-		$edit->registro->size =12;
-		$edit->registro->maxlength =10;
-
-		$edit->concilia = new dateField('Conciliado','concilia');
-		$edit->concilia->rule='chfecha';
-		$edit->concilia->size =10;
-		$edit->concilia->maxlength =8;
-
-		$edit->benefi = new inputField('Beneficiario','benefi');
-		$edit->benefi->rule='max_length[40]';
-		$edit->benefi->size =42;
-		$edit->benefi->maxlength =40;
-
-		$edit->posdata = new dateField('Posdata','posdata');
-		$edit->posdata->rule='chfecha';
-		$edit->posdata->size =10;
-		$edit->posdata->maxlength =8;
-
-		$edit->abanco = new inputField('abanco','abanco');
-		$edit->abanco->rule='max_length[1]';
-		$edit->abanco->size =3;
-		$edit->abanco->maxlength =1;
-
-		$edit->liable = new dropdownField('Liable','liable');
-		$edit->liable->option('S','S&iacute;');
-		$edit->liable->option('N','No;');
-		$edit->liable->rule='max_length[1]';
-
-		$edit->tipo_op->option('ND','Nota de d&eacute;bito');
-		$edit->transac = new inputField('Transacci&oacute;n','transac');
-		$edit->transac->rule='max_length[8]';
-		$edit->transac->size =10;
-		$edit->transac->maxlength =8;
-
-		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
-
-		$edit->estampa = new autoUpdateField('estampa' ,date('Ymd'), date('Ymd'));
-
-		$edit->hora    = new autoUpdateField('hora',date('H:m:s'), date('H:m:s'));
-
-		$edit->anulado = new inputField('Anulado','anulado');
-		$edit->anulado->rule='max_length[1]';
-		$edit->anulado->size =3;
-		$edit->anulado->maxlength =1;
-
-		$edit->negreso = new inputField('N&uacute;mmero de egreso','negreso');
-		$edit->negreso->rule='max_length[8]';
-		$edit->negreso->size =10;
-		$edit->negreso->maxlength =8;
-
-		$edit->ndebito = new inputField('N&uacute;mmero d&eacute;bito','ndebito');
-		$edit->ndebito->rule='max_length[8]';
-		$edit->ndebito->size =10;
-		$edit->ndebito->maxlength =8;
-
-		$edit->ncausado = new inputField('N&uacute;mmero causado','ncausado');
-		$edit->ncausado->rule='max_length[8]';
-		$edit->ncausado->size =10;
-		$edit->ncausado->maxlength =8;
-
-		$edit->ncredito = new inputField('N&uacute;mmero cr&eacute;dito','ncredito');
-		$edit->ncredito->rule='max_length[8]';
-		$edit->ncredito->size =10;
-		$edit->ncredito->maxlength =8;
-
-		$edit->buttons('undo', 'back');
-		$edit->build();
-		$data['content'] = $edit->output;
-		$data['head']    = $this->rapyd->get_head();
-		$data['title']   = heading('Movimientos de bancos');
-		$this->load->view('view_ventanas', $data);
-	}
-}
-*/
