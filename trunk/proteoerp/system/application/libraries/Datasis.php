@@ -770,6 +770,91 @@ class Datasis {
 		return $Otros1;
 	}
 
+
+	//******************************************
+	//
+	//      Convierte un SElect a Data JqGrid
+	//
+	//******************************************
+	function jqdata($mSQL,$data) {
+		$CI =& get_instance();
+
+		$colNames = '';
+		$colModel = '';
+		$Salida   = '';
+		$Tempo    = '';
+
+		$CI->db->_escape_char='';
+		$CI->db->_protect_identifiers=false;
+
+		$query = $CI->db->query($mSQL);
+
+		if ($query->num_rows() > 0) {
+			$i = 0;
+			foreach ($query->result_array() as $row)
+			{
+				$titulos = array_keys($row);
+				$valores = array_values($row);
+				if ( empty($colNames) ) {
+					$colNames = "colNames: ['id','".implode("','",$titulos)."'],";
+				}
+				$Tempo .= "\t\t{ id:'".$i."'";
+				$m = 0;
+				foreach($titulos as $tt) {
+					
+					$Tempo .= ", $tt:'".$valores[$m]."'";
+					$m++;
+				}
+				$Tempo .= " },\n";
+				$i++;
+			}
+			$Salida = "var $data = [\n".$Tempo."\t];";
+		} else {
+			$Salida = "";
+		}
+		$query->free_result();
+		return array('data' => $Salida, 'colNames' => $colNames, 'i' => $i+2 ) ;
+	}
+
+
+	//******************************************
+	//
+	//      Convierte un SElect a Data JqGrid
+	//
+	//******************************************
+	function jqtablawest($nombre, $caption, $colModel,  $mSQL, $alto=200, $ancho=190) {
+
+		//colNames:[\'\',\'Reporte\',\'Nombre\'],
+		
+		$columnas = $this->jqdata($mSQL,$nombre."dat");
+
+		//'.$columnas['colNames'].'		
+		$Salida = '
+	jQuery("#'.$nombre.'").jqGrid({
+		datatype: "local",
+		height: \''.$alto.'\',
+		colModel:[{name:\'id\',index:\'id\', hidden:true},'.$colModel.'],
+		multiselect: false,
+		shrinkToFit: false,
+		hiddengrid: true,
+		width: '.$ancho.',
+		rowNum:'.$columnas['i'].',
+		caption: "'.$caption.'",'.
+		
+//		ondblClickRow: function(id, row, col, e){ 
+//			var ret = $("#listados").getRowData(id); 
+//			window.open("<?php echo base_url() ? >reportes/ver/"+ret.nombre, "_blank", "width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400)),screeny=((screen.availWidth/2)-300)");
+//			}
+	'
+	});
+	'.$columnas['data'].'
+	for(var i=0;i<='.$nombre."dat".'.length;i++) jQuery("#'.$nombre.'").jqGrid(\'addRowData\',i+1,'.$nombre.'dat[i]);
+	';
+	
+		return $Salida;
+	}
+
+
 	function extjsfiltro($filtros, $tabla = ''){
 		if ( !empty($tabla)) $tabla = trim($tabla).".";
 		$where = "";

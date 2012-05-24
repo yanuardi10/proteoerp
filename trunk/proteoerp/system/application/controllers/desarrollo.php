@@ -584,10 +584,10 @@ class Desarrollo extends Controller{
 			$str .= '	&lt;tr&gt;'."\n";
 			$str .= '		&lt;td&gt;&lt;div class="tema1"&gt;&lt;table id="listados"&gt;&lt;/table&gt;&lt;/div&gt;&lt;/td&gt;'."\n";
 			$str .= '	&lt;/tr&gt;'."\n";
-			$str .= '	&lt;tr&gt;&lt;td&gt;'."\n";
+			$str .= '	&lt;tr&gt;'."\n";
 			$str .= '		&lt;td&gt;&lt;div class="tema1"&gt;&lt;table id="otros"&gt;&lt;/table&gt;&lt;/div&gt;&lt;/td&gt;'."\n";
 //			$str .= '		&lt;table id="otros"&gt;&lt;/table&gt;'."\n";
-			$str .= '	&lt;/td&gt;&lt;/tr&gt;'."\n";
+			$str .= '	&lt;/tr&gt;'."\n";
 			$str .= '&lt;/table&gt;'."\n\n";
 
 			$str .= '&lt;table id="west-grid" align="center"&gt;'."\n";

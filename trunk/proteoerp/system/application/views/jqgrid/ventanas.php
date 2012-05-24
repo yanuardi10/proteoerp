@@ -25,8 +25,6 @@ if( isset($tema) == false) {
 <?php echo script('jquery-1.7.1.min.js') ?>
 <?php echo script('jquery-ui-1.8.18.custom.min.js') ?>
 
-
-
 <!-- Impromptu -->
 
 <?php echo script('jquery-impromptu.js') ?>
