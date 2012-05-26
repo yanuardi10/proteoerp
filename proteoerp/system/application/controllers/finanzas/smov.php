@@ -844,10 +844,10 @@ jQuery("#boton1").click( function(){
 		$td1  = "<td style='border-style:solid;border-width:1px;border-color:#78FFFF;' valign='top' align='center'>\n";
 		$td1 .= "<table width='98%'>\n<caption style='background-color:#5E352B;color:#FFFFFF;font-style:bold'>";
 
+		// Movimientos Relacionados en Proveedores SPRM
 		$mSQL = "SELECT cod_prv, MID(nombre,1,25) nombre, tipo_doc, numero, monto, abonos
 			FROM sprm WHERE transac='$transac' ORDER BY cod_prv ";
 		$query = $this->db->query($mSQL);
-		$codcli = 'XXXXXXXXXXXXXXXX';
 		$salida = '<table width="100%"><tr>';
 		$saldo  = 0;
 		if ( $query->num_rows() > 0 ){
@@ -866,14 +866,15 @@ jQuery("#boton1").click( function(){
 				$salida .= "<td align='right'>".nformat($row['monto']).   "</td>";
 				$salida .= "</tr>";
 			}
-			$salida .= "<tr bgcolor='#d7c3c7'><td colspan='4' align='center'>Saldo : ".nformat($saldo). "</td></tr>";
+			if ($saldo <> 0)
+				$salida .= "<tr bgcolor='#d7c3c7'><td colspan='4' align='center'>Saldo : ".nformat($saldo). "</td></tr>";
 			$salida .= "</table></td>";
 		}
 
+		// Movimientos Relacionados en SMOV
 		$mSQL = "SELECT cod_cli, MID(nombre,1,25) nombre, tipo_doc, numero, monto, abonos
 			FROM smov WHERE transac='$transac' AND id<>$id ORDER BY cod_cli ";
 		$query = $this->db->query($mSQL);
-		$codcli = 'XXXXXXXXXXXXXXXX';
 		$saldo = 0;
 		if ( $query->num_rows() > 0 ){
 			$salida .= $td1;
@@ -891,10 +892,10 @@ jQuery("#boton1").click( function(){
 				$salida .= "<td align='right'>".nformat($row['monto']).   "</td>";
 				$salida .= "</tr>";
 			}
-//			$salida .= "<tr bgcolor='#d7c3c7'><td colspan='4' align='center'>Saldo : ".nformat($saldo). "</td></tr>";
 			$salida .= "</table></td>";
 		}
 
+		//Retencion de IVA RIVC
 		$mSQL = "
 			SELECT b.periodo, b.nrocomp, a.reiva
 			FROM itrivc a JOIN rivc b ON a.idrivc=b.id WHERE a.tipo_doc=IF('$tipo_doc'='FC','F','D') AND a.numero='$numero'
@@ -918,11 +919,9 @@ jQuery("#boton1").click( function(){
 			$salida .= "</table></td>";
 		}
 
-
+		// Factura Relacionada SFAC
 		if ( $tipo_doc <> 'FC' ){
-			$mSQL = "
-				SELECT tipo_doc, numero, totalg FROM sfac a WHERE a.transac='$transac'			
-				";
+			$mSQL = "SELECT tipo_doc, numero, totalg FROM sfac a WHERE a.transac='$transac'	";
 			$query = $this->db->query($mSQL);
 			if ( $query->num_rows() > 0 ){
 				$salida .= $td1;
@@ -940,23 +939,15 @@ jQuery("#boton1").click( function(){
 			}
 		}
 
-
-		$mSQL = "
-			SELECT tipo_doc, numero, monto, abono FROM itccli WHERE transac='$transac' AND estampa='$estampa'
-		";
-
+		// Movimientos Relacionados ITCCLI
+		$mSQL = "SELECT tipo_doc, numero, monto, abono FROM itccli WHERE transac='$transac' AND estampa='$estampa'";
 		$query = $this->db->query($mSQL);
 		if ( $query->num_rows() == 0 ){
-			$mSQL = "
-				SELECT tipoccli, numccli, monto, abono FROM itccli WHERE tipo_doc='$tipo_doc' AND numero='$numero' 
-			";
+			$mSQL = "SELECT tipoccli tipo_doc, numccli numero, monto, abono FROM itccli WHERE tipo_doc='$tipo_doc' AND numero='$numero' ";
 			$query = $this->db->query($mSQL);
 		}
-		
-		
-		$codcli = 'XXXXXXXXXXXXXXXX';
-		$saldo = 0;
 		if ( $query->num_rows() > 0 ){
+			$saldo = 0;
 			$salida .= $td1;
 			$salida .= "Movimientos Relacionados</caption>";
 			$salida .= "<tr bgcolor='#e7e3e7'><td>Tp</td><td align='center'>Numero</td><td align='center'>Monto</td><td align='center'>Abono</td></tr>";
@@ -970,10 +961,12 @@ jQuery("#boton1").click( function(){
 				$salida .= "<td align='right'>".nformat($row['abono']).   "</td>";
 				$salida .= "</tr>";
 			}
-			$salida .= "<tr bgcolor='#d7c3c7'><td colspan='4' align='center'><b>Saldo : ".nformat($saldo). "</b></td></tr>";
+			if ($saldo <> 0)
+				$salida .= "<tr bgcolor='#d7c3c7'><td colspan='4' align='center'><b>Saldo : ".nformat($saldo). "</b></td></tr>";
 			$salida .= "</table></td>";
 		}
 
+		// FORMA DE PAGO SFPA
 		$mSQL = "SELECT CONCAT(a.tipo,' ', b.nombre) tipo, a.num_ref, a.banco, a.monto 
 			FROM sfpa a JOIN tarjeta b ON a.tipo=b.tipo WHERE a.transac='$transac' AND a.monto<>0";
 		$query = $this->db->query($mSQL);
@@ -995,7 +988,25 @@ jQuery("#boton1").click( function(){
 			$salida .= "</table></td>";
 		}
 
-		//Cruce de Cuentas
+		// Prestamos PRMO
+		$mSQL = "SELECT if(observa2='',observa1,observa2) observa, monto FROM prmo WHERE transac='$transac' AND clipro='$cod_cli' AND monto<>0";
+		$query = $this->db->query($mSQL);
+		$saldo = 0;
+		if ( $query->num_rows() > 0 ){
+			$salida .= $td1;
+			$salida .= "Prestamos</caption>";
+			$salida .= "<tr bgcolor='#e7e3e7'><td>Observacion</td><td align='center'>Monto</td></tr>";
+			foreach ($query->result_array() as $row)
+			{
+				$salida .= "<tr>";
+				$salida .= "<td>".$row['observa']."</td>";
+				$salida .= "<td align='right'>".nformat($row['monto'])."</td>";
+				$salida .= "</tr>";
+			}
+			$salida .= "</table></td>";
+		}
+
+		//Cruce de Cuentas ITCRUC
 		$mSQL = "
 			SELECT b.tipo tipo, b.proveed codcp, MID(b.nombre,1,25) nombre, a.onumero, a.monto, b.numero, b.fecha
 			FROM itcruc AS a JOIN cruc AS b ON a.numero=b.numero
@@ -1005,10 +1016,7 @@ jQuery("#boton1").click( function(){
 			FROM itcruc AS a JOIN cruc AS b ON a.numero=b.numero
 			WHERE b.cliente='$cod_cli' AND b.transac='$transac' ORDER BY onumero
 			"; 
-
-		//memowrite($mSQL);
 		$query = $this->db->query($mSQL);
-		//$codcli = 'XXXXXXXXXXXXXXXX';
 		$saldo = 0;
 		if ( $query->num_rows() > 0 ){
 			$salida .= $td1;
