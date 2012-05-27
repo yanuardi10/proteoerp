@@ -215,7 +215,7 @@ $(function() {
 			'align'         => "'center'",
 			'search'        => 'true',
 			'editable'      => 'true',
-			'width'         => 50,
+			'width'         => 40,
 			'edittype'      => "'text'",
 		));
 
@@ -248,9 +248,10 @@ $(function() {
 		$grid->addField('status');
 		$grid->label('Status');
 		$grid->params(array(
+			'align'         => "'center'",
 			'search'        => 'true',
 			'editable'      => 'false',
-			'width'         => 50,
+			'width'         => 40,
 			'edittype'      => "'text'",
 		));
 
@@ -727,7 +728,7 @@ $(function() {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
+/*
 	function filteredgrid(){
 
 		$this->rapyd->load('datafilter','datagrid');
@@ -926,48 +927,6 @@ $(function() {
 		//$edit->$obj->readonly=true;
 		//$edit->recibe->style = 'width:180px';
 
-		/*$numero=$edit->get_from_dataobjetct('numero');
-		$detalle = new DataDetalle($edit->_status);
-
-			//Campos para el detalle
-			$detalle->db->select('numero,tipo,concep, denomi, cantidad, monto ');
-			$detalle->db->from('itbcaj');
-			$detalle->db->where("numero='$numero'");
-
-			$detalle->codigo = new inputField2("Tipo", "tipo<#i#>");
-			$detalle->codigo->size=3;
-			$detalle->codigo->db_name='tipo';
-			$detalle->codigo->append($this->datasis->p_modbus($modbus,'<#i#>'));
-			$detalle->codigo->readonly=TRUE;
-
-			$detalle->concep = new inputField("Conc.", "concep<#i#>");
-			$detalle->concep->size=15;
-			$detalle->concep->db_name='concep';
-			$detalle->concep->maxlength=12;
-
-			$detalle->denomi = new inputField("Denom", "denomi<#i#>");
-			$detalle->denomi->css_class='inputnum';
-			$detalle->denomi->size=20;
-			$detalle->denomi->db_name='denomi';
-
-			$detalle->cantidad = new inputField("Cant", "cantidad<#i#>");
-			$detalle->cantidad->css_class='inputnum';
-			$detalle->cantidad->size=20;
-			$detalle->cantidad->db_name='cantidad';
-
-			$detalle->monto = new inputField("Monto", "monto<#i#>");
-			$detalle->monto->css_class='inputnum';
-			$detalle->monto->size=20;
-			$detalle->monto->db_name='monto';
-			//fin de campos para detalle
-
-			//Columnas del detalle
-			$detalle->column("Tipo","<#tipo#><#concep#><#denomi#><#cantidad#><#monto#>");
-			//$detalle->column("Descripci&oacute;n","<#descrip#>");
-			//$detalle->column("Cantidad"          ,"<#cantidad#>");
-			$detalle->build();
-
-		$edit->detalle=new freeField("detalle", 'detalle',$detalle->output);*/
 
 		$back_url = site_url('finanzas/bcaj/agregar');
 		$edit->button('btn_undo', 'Regresar', "javascript:window.location='${back_url}'", 'TR');
@@ -1032,15 +991,6 @@ $(function() {
 		$edit->numeroe->size=20;
 		$edit->numeroe->append('Solo si el que env&iacute;a es un banco');
 
-			/*if($row->tipo=='DE'){
-				$formato='BANCAJA';
-			}if($row->tipo=='TR' && $row->recibe=='CAJ' && $row->envia=='CAJ'){
-				$formato='BTRANCJ';
-			}if($row->recibe!='CAJ' && $row->envia!='CAJ' && $row->tipoe=='ND' && $row->tipor=='NC'){
-				$formato='BTRANND';
-			}if($row->recibe!='CAJ' && $row->envia!='CAJ' && $row->tipoe=='CH' && $row->tipor=='DE'){
-				$formato='BTRANCH';
-			}*/
 
 		$env=$this->input->post('envia');
 		$edit->recibe = new dropdownField('Recibe y N&uacute;mero','recibe');
@@ -1457,12 +1407,6 @@ $(function() {
 
 				//$edit->back_url = site_url('finanzas/bcaj/index');
 
-				/*$edit->fecha = new DateonlyField('Fecha', 'fecha','d/m/Y');
-				$edit->fecha->insertValue = date('Y-m-d');
-				$edit->fecha->rule = 'chfecha|required';
-				$edit->fecha->dbformat='Y-m-d';
-				$edit->fecha->append(HTML::button('traesaldo', 'Consultar monto', '', 'button', 'button'));
-				$edit->fecha->size=10;*/
 
 				$campos=array(
 					'efectivo'=>'Efectivo caja: '.$this->cajas['efectivo'],
@@ -2475,4 +2419,5 @@ $(function() {
 		$sql='SELECT tbanco FROM banc WHERE codbanc='.$this->db->escape($codigo);
 		return $this->datasis->dameval($sql);
 	}
+*/
 }
