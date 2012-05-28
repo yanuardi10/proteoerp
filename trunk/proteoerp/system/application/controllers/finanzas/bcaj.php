@@ -15,7 +15,7 @@ class Bcaj extends Controller {
 			$this->config->set_item('cajas', array('cobranzas'=>'99','efectivo'=>'99', 'valores'=>'99', 'tarjetas'=>'99', 'gastos'=>'99'));
 		}
 		$this->guitipo=array('DE'=>'Deposito','TR'=>'Transferencia');
-		$this->datasis->modulo_id('51D',1);
+		//$this->datasis->modulo_id('51D',1);
 		$this->bcajnumero='';
 	}
 
@@ -35,6 +35,9 @@ class Bcaj extends Controller {
 	//
 	//***************************
 	function jqdatag(){
+		if (!$this->datasis->sidapuede('BCAJ', 'TODOS')) {
+			redirect('/bienvenido/noautorizado');
+		}
 
 		$grid = $this->defgrid();
 		$param['grid'] = $grid->deploy();
@@ -353,7 +356,6 @@ $(function() {
 			'edittype'      => "'text'",
 		));
 
-
 		$grid->addField('tarjeta');
 		$grid->label('Monto T.C.');
 		$grid->params(array(
@@ -367,7 +369,6 @@ $(function() {
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
-
 
 		$grid->addField('tdebito');
 		$grid->label('Monto T.D.');
@@ -397,7 +398,6 @@ $(function() {
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
 		$grid->addField('efectivo');
 		$grid->label('Efectivo');
 		$grid->params(array(
@@ -412,7 +412,6 @@ $(function() {
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
 		$grid->addField('comision');
 		$grid->label('Comision');
 		$grid->params(array(
@@ -426,7 +425,6 @@ $(function() {
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
-
 
 		$grid->addField('islr');
 		$grid->label('ISLR');
@@ -451,7 +449,6 @@ $(function() {
 			'edittype'      => "'text'",
 		));
 
-
 		$grid->addField('concep2');
 		$grid->label('Concepto 2');
 		$grid->params(array(
@@ -460,7 +457,6 @@ $(function() {
 			'width'         => 140,
 			'edittype'      => "'text'",
 		));
-
 
 		$grid->addField('benefi');
 		$grid->label('Beneficiario');
@@ -471,7 +467,6 @@ $(function() {
 			'edittype'      => "'text'",
 		));
 
-
 		$grid->addField('Boleta');
 		$grid->label('boleta');
 		$grid->params(array(
@@ -480,7 +475,6 @@ $(function() {
 			'width'         => 70,
 			'edittype'      => "'text'",
 		));
-
 
 		$grid->addField('precinto');
 		$grid->label('Precinto');
@@ -491,7 +485,6 @@ $(function() {
 			'edittype'      => "'text'",
 		));
 
-
 		$grid->addField('comprob');
 		$grid->label('Comprob');
 		$grid->params(array(
@@ -500,7 +493,6 @@ $(function() {
 			'width'         => 60,
 			'edittype'      => "'text'",
 		));
-
 
 		$grid->addField('totcant');
 		$grid->label('Cantidad');
@@ -516,7 +508,6 @@ $(function() {
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
 		$grid->addField('transac');
 		$grid->label('Transac');
 		$grid->params(array(
@@ -526,7 +517,6 @@ $(function() {
 			'edittype'      => "'text'",
 		));
 
-
 		$grid->addField('usuario');
 		$grid->label('Usuario');
 		$grid->params(array(
@@ -535,7 +525,6 @@ $(function() {
 			'width'         => 60,
 			'edittype'      => "'text'",
 		));
-
 
 		$grid->addField('estampa');
 		$grid->label('Estampa');
@@ -548,7 +537,6 @@ $(function() {
 			'editrules'     => '{ required:true,date:true}',
 			'formoptions'   => '{ label:"Fecha" }'
 		));
-
 
 		$grid->addField('hora');
 		$grid->label('Hora');
@@ -791,12 +779,6 @@ $(function() {
 		$this->load->view('view_ventanas', $data);
 	}
 
-	function formato($numero){
-		$formato=$this->_formato($numero);
-		$url='formatos/ver/'.$formato.'/'.$numero;
-		redirect($url);
-	}
-
 	function dataedit(){
 		$this->rapyd->load('dataedit');
 		$edit = new DataEdit('Deposito en caja', 'bcaj');
@@ -827,6 +809,14 @@ $(function() {
 		$data['head']    = $this->rapyd->get_head().phpscript('nformat.js');
 		$this->load->view('view_ventanas', $data);
 	}
+*/
+
+	function formato($numero){
+		$formato=$this->_formato($numero);
+		$url='formatos/ver/'.$formato.'/'.$numero;
+		redirect($url);
+	}
+
 
 	function agregar(){
 		$data['content'] = '<table align="center">';
@@ -2419,5 +2409,4 @@ $(function() {
 		$sql='SELECT tbanco FROM banc WHERE codbanc='.$this->db->escape($codigo);
 		return $this->datasis->dameval($sql);
 	}
-*/
 }

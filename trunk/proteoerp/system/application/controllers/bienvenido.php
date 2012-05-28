@@ -77,6 +77,14 @@ class Bienvenido extends Controller {
 		$this->load->view('ingreso', $data);
 	}
 
+	function noautorizado(){
+		$viene=$this->session->userdata('estaba');
+		$data['content'] ='<center><h1 style="font-size:28px;color:red;">Acceso Denegado</h1><br>No tiene suficientes derechos para entrar a este Modulo<br><br><br>'.img("images/perrotriste.png").'</center>';
+		// Build the thing
+		$this->load->view('view_ventanas', $data);
+	}
+
+
 	function accordion($pertenece=NULL){
 		if(empty($pertenece)) return;
 		$out='';
