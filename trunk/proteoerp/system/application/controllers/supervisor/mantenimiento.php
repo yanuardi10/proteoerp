@@ -30,41 +30,55 @@ class Mantenimiento extends Controller{
 
 		//$out=ul($list, $attributes);
 		//$data['content'] = $out;
-
-
+//image('repair-database.jpeg')
 
 		$data['content'] = '
 <div class="column">
-
 	<div class="portlet">
 		<div class="portlet-header">Borrar Prefacturas</div>
 		<div class="portlet-content">
 			<table width="100%">
 				<tr>
-					<td>'.image('trash.gif').'</td>
-					<td>'.anchor('supervisor/mantenimiento/bprefac','Borrar PreFacturas menores o iguales al d&iacute;a de ayer').'</td>
+					<td>'.anchor('#',img(array('src'=>'assets/default/images/clean-database.jpeg','border'=>'0','alt'=>'Actualizar')),array('onclick'=>'bobo(\''.base_url().'supervisor/mantenimiento/bprefac\');return false;')).'</td>
+					<td>Borrar PreFacturas menores o iguales al d&iacute;a de ayer</td>
 				</tr>
 			</table>
 		</div>
 	</div>
-	
 	<div class="portlet">
 		<div class="portlet-header">Descargar Puertos</div>
-		<div class="portlet-content">'.anchor('supervisor/mantenimiento/puertosdir','Descargar PUERTOS.DIR').'</div>
+		<div class="portlet-content">
+			<table width="100%">
+				<tr>
+					<td>'.anchor('supervisor/mantenimiento/puertosdir',img(array('src'=>'assets/default/images/download-database.jpeg','border'=>'0','alt'=>'Actualizar'))).'</td>
+					<td>Descargar PUERTOS.DIR para DataSIS</td>
+				</tr>
+			</table>
+		</div>
 	</div>
-
 	<div class="portlet">
 		<div class="portlet-header">Recalcualr Inventario</div>
-		<div class="portlet-content">'.anchor('supervisor/mantenimiento/calcosto','Recalcula Inventario').'</div>
+		<div class="portlet-content">
+			<table width="100%">
+				<tr>
+					<td>'.anchor('#',img(array('src'=>'assets/default/images/inventario1.png','border'=>'0','alt'=>'Actualizar')),array('onclick'=>'bobo(\''.base_url().'supervisor/mantenimiento/calcosto\');return false;')).'</td>
+					<td>Recalcula Inventario</td>
+				</tr>
+			</table>
+		</div>
 	</div>
-
 	<div class="portlet">
 		<div class="portlet-header">Cambiar Almacen en NE</div>
-		<div class="portlet-content">'.anchor('supervisor/mantenimiento/sntealma','Modifica el almac&eacute;n en las notas de entrega').'</div>
+		<div class="portlet-content">
+			<table width="100%">
+				<tr>
+					<td>'.image('package.png').'</td>
+					<td>'.anchor('supervisor/mantenimiento/sntealma','Modifica el almac&eacute;n en las notas de entrega').'</td>
+				</tr>
+			</table>
+		</div>
 	</div>
-
 </div>
-
 <div class="column">
 
 	<div class="portlet">
@@ -81,7 +95,14 @@ class Mantenimiento extends Controller{
 
 	<div class="portlet">
 		<div class="portlet-header">Revisa CLientes</div>
-		<div class="portlet-content">'.anchor('supervisor/mantenimiento/clinconsis','Incosistencias Clientes').'</div>
+		<div class="portlet-content">
+			<table width="100%">
+				<tr>
+					<td>'.image('clients.png').'</td>
+					<td>'.anchor('supervisor/mantenimiento/clinconsis','Incosistencias Clientes').'</td>
+				</tr>
+			</table>
+		</div>
 	</div>
 
 	<div class="portlet">
@@ -89,7 +110,7 @@ class Mantenimiento extends Controller{
 		<div class="portlet-content">
 			<table width="100%">
 				<tr>
-					<td>'.image('copy-database.gif').'</td>
+					<td>'.image('report-database.jpeg').'</td>
 					<td>'.anchor('supervisor/repodupli/','Detecta Reportes Duplicados').'</td>
 				</tr>
 			</table>
@@ -100,66 +121,66 @@ class Mantenimiento extends Controller{
 		<div class="portlet-header">Actualizar Proteo</div>
 		<div class="portlet-content">
 			<table width="100%">
-			<tr>
-				<td>'.image('svnupdate.gif').'</td>
-				<td>'.anchor('supervisor/mantenimiento/actualizaproteo','Actualiza proteo a la &uacute;ltima vesi&oacute;n del svn').'</td>
-			</tr>
+				<tr>
+					<td align="center">'.anchor('#',img(array('src'=>'assets/default/images/logo.png','border'=>'0','alt'=>'Actualizar')),array('onclick'=>'bobo(\''.base_url().'supervisor/mantenimiento/actualizaproteo\');return false;')).'</td>
+				</tr><tr>
+					<td>Actualiza proteo a la &uacute;ltima vesi&oacute;n</td>
+				</tr>
 			</table>
 		</div>
 	</div>
 </div>
 <div class="column">
-
 	<div class="portlet">
 		<div class="portlet-header">Vaciar ModBus</div>
 		<div class="portlet-content">
 			<table width="100%">
 				<tr>
-					<td>'.image('delete-database.gif').'</td>
-					<td>'.anchor('supervisor/mantenimiento/bmodbus','Vaciar tablas Temporales').'</td>
+					<td>'.anchor('#',img(array('src'=>'assets/default/images/delete-database.jpeg','border'=>'0','alt'=>'Borrar Temporales')),array('onclick'=>'bobo(\''.base_url().'supervisor/mantenimiento/bmodbus\');return false;')).'</td>
+					<td>Vaciar tablas Temporales</td>
 				</tr>
 			</table>
 		</div>
 	</div>
-	
 	<div class="portlet">
 		<div class="portlet-header">Reparar Tablas</div>
 		<div class="portlet-content">
 			<table width="100%">
 				<tr>
-					<td>'.image('repair-database.gif').'</td>
-					<td>'.anchor('supervisor/mantenimiento/reparatabla','Reparar Tablas').'</td>
+					<td>'.anchor('#',img(array('src'=>'assets/default/images/repair-database.jpeg','border'=>'0','alt'=>'Reparar')),array('onclick'=>'bobo(\''.base_url().'supervisor/mantenimiento/reparatabla\');return false;')).'</td>
+					<td>Reparar Todas las Tablas de la BD</td>
 				</tr>
 			</table>
 		</div>
 	</div>
-
 	<div class="portlet">
 		<div class="portlet-header">Mantenimiento de Tablas</div>
 		<div class="portlet-content">
 			<table width="100%">
 				<tr>
-					<td>'.image('check-options.gif').'</td>
+					<td>'.image('accept-database.png').'</td>
 					<td>'.anchor('supervisor/mantenimiento/tablas','Mantenimiento de Tablas').'</td>
 				</tr>
 			</table>
 		</div>
 	</div>
-
 	<div class="portlet">
 		<div class="portlet-header">Modificar Contadores</div>
-		<div class="portlet-content1">'.anchor('supervisor/mantenimiento/contadores','Cambios en contadores').'Advertencia: uselo solo si sabe lo que esta haciendo'.'</div>
+		<div class="portlet-content">
+			<table width="100%">
+				<tr>
+					<td>'.image('speedometer.png').'</td>
+					<td>'.anchor('supervisor/mantenimiento/contadores','Cambiar Contadores').'<br>Advertencia: uselo solo si sabe lo que esta haciendo'.'</td>
+				</tr>
+			</table>
+		</div>
 	</div>
 </div>
-
 ';
-
-
-		//<link rel="stylesheet" href="../demos.css">
 
 		$style = '
 <style>
-.column { width: 270px; float: left; padding-bottom: 100px; }
+.column { width: 255px; float: left; padding-bottom: 100px; }
 .portlet { margin: 0 1em 1em 0; }
 .portlet-header { margin: 0em; padding-bottom: 4px; padding-left: 0.2em; }
 //.portlet-header { margin: 0.3em; padding-bottom: 4px; padding-left: 0.2em; }
@@ -170,7 +191,9 @@ class Mantenimiento extends Controller{
 .ui-sortable-placeholder { border: 1px dotted black; visibility: visible !important; height: 50px !important; }
 .ui-sortable-placeholder * { visibility: hidden; }
 </style>
+';
 
+		$script = '
 <script>
 $(function() {
 	$( ".column" ).sortable({ connectWith: ".column" });
@@ -189,27 +212,59 @@ $(function() {
 
 	$( ".column" ).disableSelection();
 });
+function bobo(url){'."
+	$.blockUI({
+		message: $('#displayBox'), 
+		css: { 
+		top:  ($(window).height() - 400) /2 + 'px', 
+		left: ($(window).width() - 400) /2 + 'px', 
+		width: '400px' 
+		}".' 			
+	}); 
+	$.get(url, function(data) {
+		setTimeout($.unblockUI, 2); 
+		$.prompt(data);
+	});
+	return false;
+};
 </script>
 ';
 
-		$data['head']  = style('themes/proteo/proteo.css');
-		$data['head'] .= script('jquery-min.js');
-		$data['head'] .= script('jquery-ui.custom.min.js');
-		$data['head'] .= $style;
-		$data['head'] .= $this->rapyd->get_head();
+		$espera = '<div id="displayBox" style="display:none" ><p>Espere.....</p><img  src="'.base_url().'images/doggydig.gif" width="131px" height="79px"  /></div>';
+		$data['content'] .= $espera;
+		//$data['content'] .= $porcent;
+
+		$data['style']   = style('themes/proteo/proteo.css');
+		$data['style']  .= style('impromptu/default.css');
+		$data['style']  .= $style;
+
+		$data['script']  = script('jquery-min.js');
+		$data['script'] .= script('jquery-ui.custom.min.js');
+		$data['script'] .= script('plugins/jquery.blockUI.js');
+		$data['script'] .= script('jquery-impromptu.js');
+		$data['script'] .= $script;
+		
+		//$data['head'] .= $style;
+		$data['head']   = $this->rapyd->get_head();
 
 		$data['title']   = '<h1>Mantenimiento</h1>';
 		$this->load->view('view_ventanas', $data);
 	}
 
 	function reparatabla(){
+		$resulta = "<h1>Tablas con Fallas:</h1>\n";
+		$sifallo = false;
 		$this->datasis->modulo_id('900',1);
 		$this->load->dbutil();
 		$tables = $this->db->list_tables();
 		foreach ($tables as $table){
-			$this->dbutil->repair_table($table);
+			if ( !$this->dbutil->repair_table($table) ){
+				$sifallo = true;
+				$resulta .= "$table\n";
+			}
 		}
-		redirect('supervisor/mantenimiento');
+		if ( !$sifallo) $resulta .= "<p>Todas las Tablas se repararon con Exito</p>";
+		echo $resulta ;
 	}
 
 	function bprefac(){
@@ -218,14 +273,15 @@ $(function() {
 		$this->db->simple_query($mSQL);
 		$mSQL="DELETE FROM sfac WHERE MID(numero,1,1)='_' AND fecha<CURDATE()";
 		$this->db->simple_query($mSQL);
-		redirect('supervisor/mantenimiento');
+		echo '<h1>Borrado Realizado con Exito</h1>';
 	}
 
 	function bmodbus(){
 		$this->datasis->modulo_id('900',1);
 		$mSQL="TRUNCATE modbus";
 		$this->db->simple_query($mSQL);
-		redirect('supervisor/mantenimiento');
+		echo '<h1>Vaciado de Tablas temporales Realizado</h1>';
+
 	}
 
 	function centinelas(){
@@ -831,26 +887,27 @@ $(function() {
 	}
 
 	function actualizaproteo(){
+		$responde = '<h1>Resultado de la Actualizacion</h1>';
 		if (!extension_loaded('svn')) {
-			$data['content'] = 'La extension svn no esta cargada, debe cargarla para poder usar estas opciones';
+			$responde .= 'La extension svn no esta cargada, debe cargarla para poder usar estas opciones...';
 		}else{
 			$dir=getcwd();
 			$svn=$dir.'/.svn';
 
 			if(!is_writable($svn)){
-				$data['content']= 'No se tiene permiso al directorio .svn, comuniquese con soporte t&eacute;cnico';
+				$responde .= 'No se tiene permiso al directorio .svn, comuniquese con soporte t&eacute;cnico...';
 			}else{
 				$aver=0; //<-- falta consultar la version actual
 				$ver =@svn_update($dir);
 
 				if($ver>0){
 					if($ver>$aver){
-						$data['content'] = 'Actualizado a la versi&oacute;n: '.$ver;
+						$responde .= 'Actualizado a la versi&oacute;n: '.$ver;
 					}else{
-						$data['content'] = 'Ya estaba la ultima versi&oacute;n instalada '.$arr['revision'];
+						$responde .= 'Ya estaba la ultima versi&oacute;n instalada '.$arr['revision'];
 					}
 				}else{
-					$data['content'] = 'Hubo problemas con la actualizaci&oacute;n, comuniquese con soporte t&eacute;cnico';
+					$responde .= 'Hubo problemas con la actualizaci&oacute;n, comuniquese con soporte t&eacute;cnico';
 				}
 			}
 		}
@@ -864,9 +921,10 @@ $(function() {
 		/*$cmd="mysql -u $usr -p $pwd -h $host -D $db < intramenu.sql";
 		$sal=exec($cmd);*/
 
-		$data['title']   = heading('Actualizaci&oacute;n de ProteoERP desde el svn');
-		$data['head']    = '';
-		$this->load->view('view_ventanas', $data);
+		//$data['title']   = heading('Actualizaci&oacute;n de ProteoERP desde el svn');
+		//$data['head']    = '';
+		//$this->load->view('view_ventanas', $data);
+		echo $responde;
 	}
 
 	function respaldo(){
@@ -910,8 +968,9 @@ $(function() {
 			$data = file_get_contents($temp);
 			force_download('PUERTOS.DIR', $data);
 			unlink($temp);
+			//echo "<h1>Archivo listo para descargar</h1><a>PUERTOS.DIR</a>";
 		}else{
-			echo 'Debe cargar las librerias dbase para poder usar este modulo';
+			echo '<h1>Falla de Sistema</h1>Debe cargar las librerias dbase para poder usar este modulo';
 		}
 	}
 
@@ -946,6 +1005,7 @@ $(function() {
 		$this->db->simple_query("CALL sp_calcopasa()");
 		$this->db->simple_query("CALL sp_calcoinv()");
 		$this->db->simple_query("CALL sp_calcoestadis()");
+		echo '<h1>Recalculo Concluido</h1>';
 	}
 
 	
