@@ -32,11 +32,9 @@ class invresu extends Controller {
 		$monto->css_class='inputnum';
 		$monto->autocomplete=false;
 
-		//$uri = anchor('finanzas/bmov/dataedit/show/<#codbanc#>/<#tipo_op#>/<#numero#>','<#numero#>');
 		$grid = new DataGrid('Lista');
 		$grid->per_page = 12;
 
-		//$uri2  =  anchor('finanzas/invresu/calcula/<#anno#><#mes#>',img(array('src'=>'images/engrana.png','border'=>'0','alt'=>'Editar')));
 		$uri2 = anchor('#',img(array('src'=>'images/engrana.png','border'=>'0','alt'=>'Calcula')),array('onclick'=>'bobo(\''.base_url().'finanzas/invresu/calcula/<#anno#><#mes#>\');return false;'));
 		$uri2 .= "&nbsp;&nbsp;";
 		$uri2 .= anchor('#',img(array('src'=>'images/refresh.png','border'=>'0','alt'=>'Rebaja')),array('onclick'=>'foo(\''.base_url().'finanzas/invresu/recalcula/<#anno#><#mes#>\');return false;'));
@@ -105,11 +103,13 @@ class invresu extends Controller {
 		$data['content'] = $filter->output.$porcent.$ggrid.$espera;
 		
 		$data['title']   = heading('Libro de inventario');
+		$data['style']   = style('impromptu/default.css');
 		
 		$data['script']  = script("jquery.js");
 		$data['script'] .= script('plugins/jquery.numeric.pack.js');
 		$data['script'] .= script('plugins/jquery.floatnumber.js');
 		$data['script'] .= script('plugins/jquery.blockUI.js');
+		$data['script'] .= script('jquery-impromptu.js');
 		$data['script'] .= $script;
 
 		$data['head']    = $this->rapyd->get_head();
@@ -124,7 +124,6 @@ class invresu extends Controller {
 			$meco++;
 		}
 		echo "Calculo Concluido";
-		//redirect('finanzas/invresu');
 	}
 
 	function recalcula(){
