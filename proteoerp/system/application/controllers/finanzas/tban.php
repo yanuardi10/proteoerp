@@ -123,7 +123,6 @@ jQuery("#a1").click( function(){
 				'formoptions' => '{ label:"Codigo" }'
 		));
 
-
 		$grid->addField('nomb_banc');
 		$grid->label('Banco');
 		$grid->params(array(
@@ -133,7 +132,6 @@ jQuery("#a1").click( function(){
 			'edittype'      => "'text'",
 			'editoptions' => '{ size:30, maxlength: 30 }'
 		));
-
 
 		$grid->addField('tipotra');
 		$grid->label('Tipo');
@@ -218,8 +216,9 @@ jQuery("#a1").click( function(){
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
-			'width'         => 60,
+			'width'         => 180,
 			'edittype'      => "'text'",
+			'editoptions' => '{ size:30, maxlength: 60 }'
 		));
 
 		$grid->showpager(true);
@@ -277,6 +276,8 @@ jQuery("#a1").click( function(){
 		$this->load->library('jqdatagrid');
 		$oper   = $this->input->post('oper');
 		$id     = $this->input->post('id');
+		
+		$cod_banc = "";
 		$data   = $_POST;
 		$check  = 0;
 
@@ -286,21 +287,24 @@ jQuery("#a1").click( function(){
 			if(false == empty($data)){
 				$this->db->insert('tban', $data);
 			}
-			return "Registro Agregado";
+			echo "Registro Agregado";
 
 		} elseif($oper == 'edit') {
-			//unset($data['ubica']);
+			$cod_banc = $this->datasis->dameval("SELECT cod_banc FROM tban WHERE id=$id");
+			unset($data['cod_banc']);
 			$this->db->where('id', $id);
 			$this->db->update('tban', $data);
-			return "Registro Modificado";
+			echo "Registro Modificado";
 
 		} elseif($oper == 'del') {
-			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM tban WHERE id='$id' ");
+			$cod_banc = $this->datasis->dameval("SELECT cod_banc FROM tban WHERE id=$id");
+			$check  =  $this->datasis->dameval("SELECT COUNT(*) FROM banc WHERE tbanco='$cod_banc' ");
+			$check +=  $this->datasis->dameval("SELECT COUNT(*) FROM sfpa WHERE banco='$cod_banc' ");
 			if ($check > 0){
 				echo " El registro no puede ser eliminado; tiene movimiento ";
 			} else {
 				$this->db->simple_query("DELETE FROM tban WHERE id=$id ");
-				logusu('tban',"Registro ????? ELIMINADO");
+				logusu('tban',"Registro tabla de bancos ELIMINADO");
 				echo "Registro Eliminado";
 			}
 		};

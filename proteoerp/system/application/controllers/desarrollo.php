@@ -771,13 +771,13 @@ class Desarrollo extends Controller{
 			$str .= $tab4.'$this->db->insert(\''.$db.'\', $data);'."\n";
 			$str .= $tab3.'}'."\n";
 			//$str .= $tab2.'echo \'\';'."\n";
-			$str .= $tab3.'return "Registro Agregado";'."\n\n";
+			$str .= $tab3.'echo "Registro Agregado";'."\n\n";
 
 			$str .= $tab2.'} elseif($oper == \'edit\') {'."\n";
 			$str .= $tab3.'//unset($data[\'ubica\']);'."\n";
 			$str .= $tab3.'$this->db->where(\'id\', $id);'."\n";
 			$str .= $tab3.'$this->db->update(\''.$db.'\', $data);'."\n";
-			$str .= $tab3.'return "Registro Modificado";'."\n\n";
+			$str .= $tab3.'echo "Registro Modificado";'."\n\n";
 			
 			$str .= $tab2.'} elseif($oper == \'del\') {'."\n";
 			$str .= $tab3.'//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM '.$db.' WHERE id=\'$id\' ");'."\n";

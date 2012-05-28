@@ -9,7 +9,10 @@ class Sprm extends Controller {
 		parent::Controller();
 		$this->load->library('rapyd');
 		$this->load->library('jqdatagrid');
-		$this->datasis->modulo_id(500,1);
+		//$this->datasis->modulo_id(500,1);
+		if (!$this->datasis->sidapuede('SPRM', 'TODOS')) {
+			redirect('/bienvenido/noautorizado');
+		}
 	}
 
 	function index(){
@@ -988,7 +991,7 @@ jQuery("#boton1").click( function(){
 			$mSQL = "SELECT tipoppro tipo_doc, numppro numero, monto, abono FROM itppro WHERE tipo_doc='$tipo_doc' AND numero='$numero'";
 			$query = $this->db->query($mSQL);
 		}
-		//$salida .= "<td>$mSQL</td>";
+
 		if ( $query->num_rows() > 0 ){
 			$saldo = 0;
 			$salida .= $td1;
@@ -1079,7 +1082,6 @@ jQuery("#boton1").click( function(){
 		}
 		echo $salida.'</tr></table>';
 	}
-
 
 
 /*

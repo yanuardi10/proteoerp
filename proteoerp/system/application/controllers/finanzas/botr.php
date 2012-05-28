@@ -217,7 +217,6 @@ jQuery("#a1").click( function(){
 
 		$oper   = $this->input->post('oper');
 		$id     = $this->input->post('id');
-		$codigo = $this->datasis->dameval("SELECT codigo FROM botr WHERE id=$id");
 		
 		$data   = $_POST;
 		$check  = 0;
@@ -236,12 +235,14 @@ jQuery("#a1").click( function(){
 			}
 
 		} elseif($oper == 'edit') {
+			$codigo = $this->datasis->dameval("SELECT codigo FROM botr WHERE id=$id");
 			unset($data['codigo']);   // No cambia el Codigo
 			$this->db->where('id', $id);
 			$this->db->update('botr', $data);
 			echo " Registro Modificado";
 
 		} elseif($oper == 'del') {
+			$codigo = $this->datasis->dameval("SELECT codigo FROM botr WHERE id=$id");
 			$check  =  $this->datasis->dameval("SELECT count(*) FROM bmov   WHERE clipro='O' AND codcp=".$this->db->escape($codigo));
 			$check +=  $this->datasis->dameval("SELECT count(*) FROM itotin WHERE codigo=".$this->db->escape($codigo));
 			$check +=  $this->datasis->dameval("SELECT count(*) FROM smov   WHERE codigo=".$this->db->escape($codigo));

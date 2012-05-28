@@ -9,28 +9,195 @@ class Mantenimiento extends Controller{
 
 	function index(){
 		$this->datasis->modulo_id('900',1);
-		$list = array();
-		$list[]=anchor('supervisor/mantenimiento/bprefac','Borrar PreFacturas menores o iguales al d&iacute;a de ayer');
-		$list[]=anchor('supervisor/mantenimiento/puertosdir','Descargar PUERTOS.DIR');
-		$list[]=anchor('supervisor/mantenimiento/bmodbus','Vaciar la tabla ModBus');
-		$list[]=anchor('supervisor/mantenimiento/centinelas','Centinelas');
-		$list[]=anchor('supervisor/mantenimiento/reparatabla','Reparar Tablas');
-		$list[]=anchor('supervisor/mantenimiento/clinconsis','Incosistencias Clientes');
-		$list[]=anchor('supervisor/mantenimiento/calcosto','Recalcula Inventario');
-		$list[]=anchor('supervisor/repodupli/','Reportes Duplicado');
-		$list[]=anchor('supervisor/mantenimiento/contadores','Cambios en contadores').'Advertencia: uselo solo si sabe lo que esta haciendo';
-		$list[]=anchor('supervisor/mantenimiento/tablas','Mantenimiento de Tablas');
-		$list[]=anchor('supervisor/mantenimiento/sntealma','Modifica el almac&eacute;n en las notas de entrega');
-		$list[]=anchor('supervisor/mantenimiento/actualizaproteo','Actualiza proteo a la &uacute;ltima vesi&oacute;n del svn');
+		//$list = array();
+		//$list[]=anchor('supervisor/mantenimiento/bprefac','Borrar PreFacturas menores o iguales al d&iacute;a de ayer');
+		//$list[]=anchor('supervisor/mantenimiento/puertosdir','Descargar PUERTOS.DIR');
+		//$list[]=anchor('supervisor/mantenimiento/bmodbus','Vaciar la tabla ModBus');
+		//$list[]=anchor('supervisor/mantenimiento/centinelas','Centinelas');
+		//$list[]=anchor('supervisor/mantenimiento/reparatabla','Reparar Tablas');
+		//$list[]=anchor('supervisor/mantenimiento/clinconsis','Incosistencias Clientes');
+		//$list[]=anchor('supervisor/mantenimiento/calcosto','Recalcula Inventario');
+		//$list[]=anchor('supervisor/repodupli/','Reportes Duplicado');
+		//$list[]=anchor('supervisor/mantenimiento/contadores','Cambios en contadores').'Advertencia: uselo solo si sabe lo que esta haciendo';
+		//$list[]=anchor('supervisor/mantenimiento/tablas','Mantenimiento de Tablas');
+		//$list[]=anchor('supervisor/mantenimiento/sntealma','Modifica el almac&eacute;n en las notas de entrega');
+		//$list[]=anchor('supervisor/mantenimiento/actualizaproteo','Actualiza proteo a la &uacute;ltima vesi&oacute;n del svn');
 
-		$attributes = array(
-			'class' => 'boldlist',
-			'id'    => 'mylist'
-		);
+		//$attributes = array(
+		//	'class' => 'boldlist',
+		//	'id'    => 'mylist'
+		//);
 
-		$out=ul($list, $attributes);
-		$data['content'] = $out;
-		$data['head']    = script("jquery.pack.js").script("jquery.treeview.pack.js").$this->rapyd->get_head().style('jquery.treeview.css');
+		//$out=ul($list, $attributes);
+		//$data['content'] = $out;
+
+
+
+		$data['content'] = '
+<div class="column">
+
+	<div class="portlet">
+		<div class="portlet-header">Borrar Prefacturas</div>
+		<div class="portlet-content">
+			<table width="100%">
+				<tr>
+					<td>'.image('trash.gif').'</td>
+					<td>'.anchor('supervisor/mantenimiento/bprefac','Borrar PreFacturas menores o iguales al d&iacute;a de ayer').'</td>
+				</tr>
+			</table>
+		</div>
+	</div>
+	
+	<div class="portlet">
+		<div class="portlet-header">Descargar Puertos</div>
+		<div class="portlet-content">'.anchor('supervisor/mantenimiento/puertosdir','Descargar PUERTOS.DIR').'</div>
+	</div>
+
+	<div class="portlet">
+		<div class="portlet-header">Recalcualr Inventario</div>
+		<div class="portlet-content">'.anchor('supervisor/mantenimiento/calcosto','Recalcula Inventario').'</div>
+	</div>
+
+	<div class="portlet">
+		<div class="portlet-header">Cambiar Almacen en NE</div>
+		<div class="portlet-content">'.anchor('supervisor/mantenimiento/sntealma','Modifica el almac&eacute;n en las notas de entrega').'</div>
+	</div>
+
+</div>
+
+<div class="column">
+
+	<div class="portlet">
+		<div class="portlet-header">Centinelas</div>
+		<div class="portlet-content">
+			<table width="100%">
+			<tr>
+				<td>'.image('process-stop32.png').'</td>
+				<td>'.anchor('supervisor/mantenimiento/centinelas','Centinelas').' o Mesajes del sistema</td>
+			</tr>
+		</table>
+		</div>
+	</div>
+
+	<div class="portlet">
+		<div class="portlet-header">Revisa CLientes</div>
+		<div class="portlet-content">'.anchor('supervisor/mantenimiento/clinconsis','Incosistencias Clientes').'</div>
+	</div>
+
+	<div class="portlet">
+		<div class="portlet-header">Reportes Duplicados</div>
+		<div class="portlet-content">
+			<table width="100%">
+				<tr>
+					<td>'.image('copy-database.gif').'</td>
+					<td>'.anchor('supervisor/repodupli/','Detecta Reportes Duplicados').'</td>
+				</tr>
+			</table>
+		</div>
+	</div>
+
+	<div class="portlet">
+		<div class="portlet-header">Actualizar Proteo</div>
+		<div class="portlet-content">
+			<table width="100%">
+			<tr>
+				<td>'.image('svnupdate.gif').'</td>
+				<td>'.anchor('supervisor/mantenimiento/actualizaproteo','Actualiza proteo a la &uacute;ltima vesi&oacute;n del svn').'</td>
+			</tr>
+			</table>
+		</div>
+	</div>
+</div>
+<div class="column">
+
+	<div class="portlet">
+		<div class="portlet-header">Vaciar ModBus</div>
+		<div class="portlet-content">
+			<table width="100%">
+				<tr>
+					<td>'.image('delete-database.gif').'</td>
+					<td>'.anchor('supervisor/mantenimiento/bmodbus','Vaciar tablas Temporales').'</td>
+				</tr>
+			</table>
+		</div>
+	</div>
+	
+	<div class="portlet">
+		<div class="portlet-header">Reparar Tablas</div>
+		<div class="portlet-content">
+			<table width="100%">
+				<tr>
+					<td>'.image('repair-database.gif').'</td>
+					<td>'.anchor('supervisor/mantenimiento/reparatabla','Reparar Tablas').'</td>
+				</tr>
+			</table>
+		</div>
+	</div>
+
+	<div class="portlet">
+		<div class="portlet-header">Mantenimiento de Tablas</div>
+		<div class="portlet-content">
+			<table width="100%">
+				<tr>
+					<td>'.image('check-options.gif').'</td>
+					<td>'.anchor('supervisor/mantenimiento/tablas','Mantenimiento de Tablas').'</td>
+				</tr>
+			</table>
+		</div>
+	</div>
+
+	<div class="portlet">
+		<div class="portlet-header">Modificar Contadores</div>
+		<div class="portlet-content1">'.anchor('supervisor/mantenimiento/contadores','Cambios en contadores').'Advertencia: uselo solo si sabe lo que esta haciendo'.'</div>
+	</div>
+</div>
+
+';
+
+
+		//<link rel="stylesheet" href="../demos.css">
+
+		$style = '
+<style>
+.column { width: 270px; float: left; padding-bottom: 100px; }
+.portlet { margin: 0 1em 1em 0; }
+.portlet-header { margin: 0em; padding-bottom: 4px; padding-left: 0.2em; }
+//.portlet-header { margin: 0.3em; padding-bottom: 4px; padding-left: 0.2em; }
+.portlet-header .ui-icon { float: right; }
+.portlet-content { padding: 0.4em; }
+.portlet-content1 { padding: 0.4em; background-color:#C9D4D8; }
+.portlet-content2 { padding: 0.4em; }
+.ui-sortable-placeholder { border: 1px dotted black; visibility: visible !important; height: 50px !important; }
+.ui-sortable-placeholder * { visibility: hidden; }
+</style>
+
+<script>
+$(function() {
+	$( ".column" ).sortable({ connectWith: ".column" });
+
+	$( ".portlet" ).addClass( "ui-widget ui-widget-content ui-helper-clearfix ui-corner-all" )
+	.find( ".portlet-header" )
+		.addClass( "ui-widget-header ui-corner-all" )
+		.prepend( "<span class=\'ui-icon ui-icon-minusthick\'></span>")
+		.end()
+	.find( ".portlet-content" );
+
+	$( ".portlet-header .ui-icon" ).click(function() {
+		$( this ).toggleClass( "ui-icon-minusthick" ).toggleClass( "ui-icon-plusthick" );
+		$( this ).parents( ".portlet:first" ).find( ".portlet-content" ).toggle();
+	});
+
+	$( ".column" ).disableSelection();
+});
+</script>
+';
+
+		$data['head']  = style('themes/proteo/proteo.css');
+		$data['head'] .= script('jquery-min.js');
+		$data['head'] .= script('jquery-ui.custom.min.js');
+		$data['head'] .= $style;
+		$data['head'] .= $this->rapyd->get_head();
+
 		$data['title']   = '<h1>Mantenimiento</h1>';
 		$this->load->view('view_ventanas', $data);
 	}

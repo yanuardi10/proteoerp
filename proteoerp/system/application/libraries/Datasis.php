@@ -147,7 +147,7 @@ class Datasis {
 	}
 
 	//Identifica el modulo y controla el acceso
-	function modulo_id($modulo,$ventana=0){
+	function modulo_id( $modulo, $ventana=0 ){
 		if ($this->essuper()) return true;
 		$CI =& get_instance();
 		$CI->load->database('default',TRUE);
@@ -168,6 +168,79 @@ class Datasis {
 		else
 			redirect('/bienvenido/ingresar');
 	}
+
+	//Identifica el modulo y controla el acceso
+	function modulo_nombre( $modulo, $ventana=0 ){
+		if ($this->essuper()) return true;
+		$CI =& get_instance();
+		$CI->load->database( 'default',TRUE );
+		$CI->session->set_userdata('last_activity', time());
+		if($CI->session->userdata('logged_in')){
+			$usr=$CI->session->userdata('usuario');
+
+
+
+
+			
+			$mSQL   = "SELECT COUNT(*) FROM sida WHERE modulo = '$modulo' AND  usuario='$usr' AND acceso='S'";   //Proteo
+			$cursor = $CI->db->query($mSQL);
+			$rr    = $cursor->row_array();
+			$sal   = each($rr);
+			if ($sal[1] > 0)
+				return true;
+		}
+		$CI->session->set_userdata('estaba', $CI->uri->uri_string());
+		if($ventana)
+			redirect('/bienvenido/ingresarVentana');
+		else
+			redirect('/bienvenido/ingresar');
+	}
+
+
+	/***************************************
+	 *
+	 *   Integracion con tmenus
+	 *
+	 */
+	function sidapuede($modulo, $opcion){
+		if ($this->essuper())
+			return true;
+
+		//Si Esta Vacio no da opcion
+		if ( empty($modulo) )
+			return false;
+
+		if ( empty($opcion) )
+			return false;
+
+		$CI =& get_instance();
+		$CI->load->database( 'default',TRUE );
+		$CI->session->set_userdata('last_activity', time());
+		if($CI->session->userdata('logged_in')){
+			$usuario = $CI->db->escape($CI->session->userdata('usuario'));
+			$modulo  = $CI->db->escape($modulo);
+			if ( $opcion == 'TODOS' ){
+				$mSQL  = "SELECT count(*) ";
+				$mSQL .= "FROM sida a JOIN tmenus b ON b.codigo=a.modulo ";
+				$mSQL .= "WHERE a.acceso='S' AND a.usuario=$usuario AND b.modulo=$modulo ";
+				if ( $CI->datasis->dameval($mSQL) > 0 )
+					return true;
+				else
+					return false;
+			} else {
+				$opcion  = $CI->db->escape($opcion);
+				$mSQL  = "SELECT count(*) ";
+				$mSQL .= "FROM sida a JOIN tmenus b ON b.codigo=a.modulo ";
+				$mSQL .= "WHERE a.acceso='S' AND a.usuario=$usuario AND b.modulo=$modulo ";
+				$mSQL .= "AND b.proteo=$opcion ";
+				if ( $CI->datasis->dameval($mSQL) > 0 )
+					return true;
+				else
+					return false;
+			}
+		}
+	}
+	
 
 	//Convierte una consulta a un array
 	function consularray($mSQL){
@@ -609,17 +682,26 @@ class Datasis {
 			$CI->db->_escape_char='';
 			$CI->db->_protect_identifiers=false;
 
-			$CI->db->select("a.secu, a.titulo, a.mensaje, REPLACE(MID(a.ejecutar,10,30),"."'".'")'."','')  nombre");
-			$CI->db->from("tmenus    a" );
-			$CI->db->join("sida      b","a.codigo=b.modulo");
-			$CI->db->join("reportes  d","REPLACE(MID(a.ejecutar,10,30),"."'".'")'."','')=d.nombre");
-			$CI->db->where('b.acceso','S');
-			$CI->db->where('b.usuario',$CI->session->userdata('usuario') );
-			$CI->db->like("a.ejecutar","REPOSQL", "after");
-			$CI->db->where('a.modulo',$modulo."LIS");
-			$CI->db->orderby("a.secu");
-			$i = 0;
+			if ( $this->essuper() ) {
+				$CI->db->select("a.secu, a.titulo, a.mensaje, REPLACE(MID(a.ejecutar,10,30),"."'".'")'."','')  nombre");
+				$CI->db->from("tmenus a" );
+				$CI->db->join("reportes  d","REPLACE(MID(a.ejecutar,10,30),"."'".'")'."','')=d.nombre");
+				$CI->db->like("a.ejecutar","REPOSQL", "after");
+				$CI->db->where('a.modulo',$modulo."LIS");
+				$CI->db->orderby("a.secu");
+			} else {
+				$CI->db->select("a.secu, a.titulo, a.mensaje, REPLACE(MID(a.ejecutar,10,30),"."'".'")'."','')  nombre");
+				$CI->db->from("tmenus    a" );
+				$CI->db->join("sida      b","a.codigo=b.modulo");
+				$CI->db->join("reportes  d","REPLACE(MID(a.ejecutar,10,30),"."'".'")'."','')=d.nombre");
+				$CI->db->where('b.acceso','S');
+				$CI->db->where('b.usuario',$CI->session->userdata('usuario') );
+				$CI->db->like("a.ejecutar","REPOSQL", "after");
+				$CI->db->where('a.modulo',$modulo."LIS");
+				$CI->db->orderby("a.secu");
+			}
 
+			$i = 0;
 			$query = $CI->db->get();
 			if ( $tipo=='E') { // EXTJ SENCHA
 				if ($query->num_rows() > 0) {
@@ -724,10 +806,17 @@ class Datasis {
 			$modulo=strtoupper($modulo);
 			$CI->db->_escape_char='';
 			$CI->db->_protect_identifiers=false;
-			$mSQL  = "SELECT a.secu, a.titulo, a.mensaje, a.proteo ";
-			$mSQL .= "FROM tmenus a JOIN sida b ON a.codigo=b.modulo ";
-			$mSQL .= "WHERE b.acceso='S' AND b.usuario='".$CI->session->userdata('usuario')."' ";
-			$mSQL .= "AND a.modulo='".$modulo."OTR' ORDER BY a.secu";
+
+			if ( $this->essuper() ) {
+				$mSQL  = "SELECT a.secu, a.titulo, a.mensaje, a.proteo ";
+				$mSQL .= "FROM tmenus a ";
+				$mSQL .= "WHERE a.modulo='".$modulo."OTR' ORDER BY a.secu";
+			} else {
+				$mSQL  = "SELECT a.secu, a.titulo, a.mensaje, a.proteo ";
+				$mSQL .= "FROM tmenus a JOIN sida b ON a.codigo=b.modulo ";
+				$mSQL .= "WHERE b.acceso='S' AND b.usuario='".$CI->session->userdata('usuario')."' ";
+				$mSQL .= "AND a.modulo='".$modulo."OTR' ORDER BY a.secu";
+			}
 			$query = $CI->db->query($mSQL);
 
 			if ( $tipo == 'JQ' ) {
