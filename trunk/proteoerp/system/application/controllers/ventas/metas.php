@@ -270,7 +270,7 @@ class metas extends Controller{
 			if(empty($ind_ex[8]) || empty($ind_ex[9]) || empty($ind_ex[10])){
 				foreach($meses as $mes=>$val){
 					for($i=8;$i<11;$i++){
-						if(stripos($row[$i] , $mes)){
+						if(stripos(trim($row[$i]) , $mes)!==false){
 							$ind_ex[$i] = $val;
 							$inex[]     = $anio.$val;
 							$mSQL='DELETE FROM metas WHERE fecha='.$this->db->escape($anio.$val);
@@ -293,6 +293,7 @@ class metas extends Controller{
 						$mSQL = $this->db->insert_string('metas', $data);
 						$mSQL.= 'ON DUPLICATE KEY UPDATE `peso`='.$data['peso'];
 						$ban=$this->db->simple_query($mSQL);
+
 						if(!$ban){ memowrite($mSQL,'metas'); $error++; }
 					}
 				}
