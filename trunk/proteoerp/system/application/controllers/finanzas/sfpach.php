@@ -191,19 +191,31 @@ jQuery("#a1").click( function(){
 
 		$grid->addField('id');
 		$grid->label('Id');
-		$grid->params(array('align'    => "'center'",
-							'frozen'   => 'true',
-							'width'    => 60,
-							'editable' => 'false',
-							'search'   => 'false'
+		$grid->params(array(
+				'align'    => "'center'",
+				'frozen'   => 'true',
+				'width'    => 60,
+				'editable' => 'false',
+				'search'   => 'false'
 			)
 		);
 
 		$grid->addField('nombre');
 		$grid->label('Nombre Cliente');
-		$grid->params(array('width'    => 180,
-							'editable' => 'false',
-							'edittype' => "'text'"
+		$grid->params(array(
+				'width'    => 180,
+				'editable' => 'false',
+				'edittype' => "'text'"
+			)
+		);
+
+		$grid->addField('status');
+		$grid->label('Status');
+		$grid->params(array(
+				'width'    => 30,
+				'align'    => "'center'",
+				'editable' => 'false',
+				'edittype' => "'text'"
 			)
 		);
 
@@ -401,15 +413,12 @@ jQuery("#a1").click( function(){
 		echo $this->datasis->llenaopciones($mSQL, true);
 	}
 
-
-
 	function ddcaja($tipo=''){
 		$mSQL = "SELECT codbanc, CONCAT(codbanc, ' ', TRIM(banco), IF(tbanco='CAJ','',cuenta) ) banco FROM banc ";
 		if ( !empty($tipo) ) $mSQL .= " WHERE tbanco='$tipo' ";
 		$mSQL .= " ORDER BY codbanc ";
 		echo $this->datasis->llenaopciones($mSQL, true);
 	}
-
 
 	/**
 	* Get data result as json
@@ -423,7 +432,6 @@ jQuery("#a1").click( function(){
 		$grid       = $this->jqdatagrid;
 		
 		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
-
 		$mWHERE = $grid->geneTopWhere($tabla);
 
 		$response   = $grid->getData($tabla, array(array()), array(), false, $mWHERE );
@@ -567,7 +575,6 @@ jQuery("#a1").click( function(){
 		echo "{\"numero\":\"$XNUMERO\",\"mensaje\":\"Registro Agregado\"}";
 
 	}
-
 
 
 	function instalar(){
