@@ -1,4 +1,235 @@
 <?php
+class Prof extends Controller {
+	var $mModulo='PROF';
+	var $titp='Profesiones';
+	var $tits='Profesiones';
+	var $url ='nomina/prof/';
+
+	function Prof(){
+		parent::Controller();
+		$this->load->library('rapyd');
+		$this->load->library('jqdatagrid');
+		//$this->datasis->modulo_id('NNN',1);
+	}
+
+	function index(){
+		if ( !$this->datasis->iscampo('prof','id') ) {
+			$this->db->simple_query('ALTER TABLE prof DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE prof ADD UNIQUE INDEX codigo (codigo)');
+			$this->db->simple_query('ALTER TABLE prof ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
+		};
+		redirect($this->url.'jqdatag');
+	}
+
+	//***************************
+	//Layout en la Ventana
+	//
+	//***************************
+	function jqdatag(){
+
+		$grid = $this->defgrid();
+		$param['grid'] = $grid->deploy();
+
+		$bodyscript = '
+<script type="text/javascript">
+$(function() {
+	$( "input:submit, a, button", ".otros" ).button();
+});
+
+jQuery("#a1").click( function(){
+	var id = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
+	if (id)	{
+		var ret = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getRowData\',id);
+		window.open(\'/proteoerp/formatos/ver/PROF/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
+});
+</script>
+';
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		$WestPanel = '
+<div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content">
+<div class="anexos">
+
+<table id="west-grid" align="center">
+	<tr>
+		<td><div class="tema1"><table id="listados"></table></div></td>
+	</tr>
+	<tr>
+		<td><div class="tema1"><table id="otros"></table></div></td>
+	</tr>
+</table>
+
+<table id="west-grid" align="center">
+	<tr>
+		<td></td>
+	</tr>
+</table>
+</div>
+'.
+//		<td><a style="width:190px" href="#" id="a1">Imprimir Copia</a></td>
+'</div> <!-- #LeftPane -->
+';
+
+		$SouthPanel = '
+<div id="BottomPane" class="ui-layout-south ui-widget ui-widget-content">
+<p>'.$this->datasis->traevalor('TITULO1').'</p>
+</div> <!-- #BottomPanel -->
+';
+		//$param['WestPanel']  = $WestPanel;
+		//$param['EastPanel']  = $EastPanel;
+		$param['SouthPanel'] = $SouthPanel;
+		$param['listados'] = $this->datasis->listados('PROF', 'JQ');
+		$param['otros']    = $this->datasis->otros('PROF', 'JQ');
+		$param['tema1']     = 'darkness';
+		$param['anexos']    = 'anexos1';
+		$param['bodyscript'] = $bodyscript;
+		$param['tabs'] = false;
+		$param['encabeza'] = $this->titp;
+		$this->load->view('jqgrid/crud',$param);
+	}
+
+	//***************************
+	//Definicion del Grid y la Forma
+	//***************************
+	function defgrid( $deployed = false ){
+		$i      = 1;
+		$editar = "true";
+
+		$grid  = new $this->jqdatagrid;
+
+		$grid->addField('id');
+		$grid->label('Id');
+		$grid->params(array(
+			'align'    => "'center'",
+			'frozen'   => 'true',
+			'width'    => 60,
+			'editable' => 'false',
+			'search'   => 'false'
+		));
+
+
+		$grid->addField('codigo');
+		$grid->label('Codigo');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 100,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:10, maxlength: 8 }',
+		));
+
+
+		$grid->addField('profesion');
+		$grid->label('Profesion');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 250,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 40 }',
+		));
+
+
+		$grid->showpager(true);
+		$grid->setWidth('');
+		$grid->setHeight('290');
+		$grid->setTitle($this->titp);
+		$grid->setfilterToolbar(true);
+		$grid->setToolbar('false', '"top"');
+
+		$grid->setFormOptionsE('closeAfterEdit:false, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
+
+		#show/hide navigations buttons
+		$grid->setAdd(true);
+		$grid->setEdit(true);
+		$grid->setDelete(true);
+		$grid->setSearch(true);
+		$grid->setRowNum(30);
+		$grid->setShrinkToFit('false');
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		#GET url
+		$grid->setUrlget(site_url($this->url.'getdata/'));
+
+		if ($deployed) {
+			return $grid->deploy();
+		} else {
+			return $grid;
+		}
+	}
+
+	/**
+	* Busca la data en el Servidor por json
+	*/
+	function getdata()
+	{
+		$grid       = $this->jqdatagrid;
+
+		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
+		$mWHERE = $grid->geneTopWhere('prof');
+
+		$response   = $grid->getData('prof', array(array()), array(), false, $mWHERE, 'codigo' );
+		$rs = $grid->jsonresult( $response);
+		echo $rs;
+	}
+
+	/**
+	* Guarda la Informacion
+	*/
+	function setData()
+	{
+		$this->load->library('jqdatagrid');
+		$oper   = $this->input->post('oper');
+		$id     = $this->input->post('id');
+		$data   = $_POST;
+		$check  = 0;
+
+		unset($data['oper']);
+		unset($data['id']);
+		if($oper == 'add'){
+			$profes = $this->input->post('codigo');
+			if(false == empty($data)){
+				$this->db->insert('prof', $data);
+				logusu('PROF',"Registro $profes CREADO");
+				echo "Registro Agregado";
+			} else
+				echo "Procesos de Agregar Fallo!!!";
+			
+
+		} elseif($oper == 'edit') {
+			$profes = $this->datasis->dameval("SELECT codigo FROM prof WHERE id=$id");
+			$profnu = $this->input->post('codigo');
+			$this->db->where('id', $id);
+			$this->db->update('prof', $data);
+			$this->db->simple_query("UPDATE pers SET profes=? WHERE profes=?",array($profnu, $profes));
+			logusu('PROF',"Registro $profes MODIFICADO");
+			echo "Registro Modificado";
+
+		} elseif($oper == 'del') {
+			$profes = $this->datasis->dameval("SELECT codigo FROM prof WHERE id=$id");
+			$check =  $this->datasis->dameval("SELECT COUNT(*) FROM pers WHERE profes='$profes' ");
+			if ($check > 0){
+				echo " El registro no puede ser eliminado; tiene personal de esta profesion";
+			} else {
+				$this->db->simple_query("DELETE FROM prof WHERE id=$id ");
+				logusu('PROF',"Registro $profes ELIMINADO");
+				echo "Registro Eliminado";
+			}
+		};
+	}
+}
+
+
+/*
 	class prof extends Controller{
 		function prof(){
 			parent::Controller();
@@ -280,4 +511,5 @@
 	}
 
 }
+ */
 ?>

@@ -84,13 +84,13 @@ jQuery("#a1").click( function(){
 
 		$grid->addField('id');
 		$grid->label('Id');
-		$grid->params(array('align'    => "'center'",
-							'frozen'   => 'true',
-							'width'    => 60,
-							'editable' => 'false',
-							'search'   => 'false'
-			)
-		);
+		$grid->params(array(
+			'align'    => "'center'",
+			'frozen'   => 'true',
+			'width'    => 60,
+			'editable' => 'false',
+			'search'   => 'false'
+		));
 
 
 		$link  = site_url('ajax/buscascli');
@@ -104,7 +104,7 @@ jQuery("#a1").click( function(){
 					'editable'    => 'true',
 					'edittype'    => "'text'",
 					'editrules'   => '{ edithidden:true, required:true }',
-					'editoptions' => $auto
+					'editoptions' => '{'.$auto.'}'
 			)
 		);
 							
@@ -143,7 +143,7 @@ jQuery("#a1").click( function(){
 							'editable'      => 'true',
 							'edittype'      => "'select'",
 							'editrules'     => '{ required:true }',
-							'editoptions'   => '{ dataUrl: "ddtarjeta"}',
+							'editoptions'   => '{ dataUrl: "'.base_url().'ajax/ddtarjeta"}',
 							'stype'         => "'text'"
 							//'searchoptions' => '{ dataUrl: "ddtarjeta", sopt: ["eq", "ne"]}'
 			)
@@ -180,7 +180,7 @@ jQuery("#a1").click( function(){
 							'editable'      => 'true',
 							'edittype'      => "'select'",
 							'editrules'     => '{ edithidden:true, required:true }',
-							'editoptions'   => '{ dataUrl: "ddbanco"}',
+							'editoptions'   => '{ dataUrl: "'.base_url().'ajax/ddbanco"}',
 							'stype'         => "'tsxt'",
 							//'searchoptions' => '{ dataUrl: "ddbanco", sopt: ["eq", "ne"]}'
 			)
@@ -202,9 +202,9 @@ jQuery("#a1").click( function(){
 							'editable'      => 'true',
 							'edittype'      => "'select'",
 							'editrules'     => '{ edithidden: true, required:true }',
-							'editoptions'   => '{ dataUrl: "ddcajero"}',
+							'editoptions'   => '{ dataUrl: "'.base_url().'ajax/ddcajero"}',
 							'stype'         => "'select'",
-							'searchoptions' => '{ dataUrl: "ddcajero", sopt: ["eq", "ne"]}'
+							'searchoptions' => '{ dataUrl: "'.base_url().'ajax/ddcajero", sopt: ["eq", "ne"]}'
 			)
 		);
 
@@ -287,25 +287,6 @@ jQuery("#a1").click( function(){
 
 	}
 
-	function ddtarjeta(){
-		$mSQL = "SELECT tipo, CONCAT(tipo,' ',nombre) nombre FROM tarjeta WHERE activo!='N' AND tipo NOT IN ('EF', 'DE', 'NC','RI','IR','RP')";
-		echo $this->datasis->llenaopciones($mSQL, true);
-	}
-
-	function ddbanco(){
-		$mSQL = "SELECT cod_banc, CONCAT(cod_banc, ' ', nomb_banc) banco FROM tban WHERE cod_banc<>'CAJ' ORDER BY nomb_banc ";
-		echo $this->datasis->llenaopciones($mSQL, true);
-	}
-
-	function ddusuario(){
-		$mSQL = "SELECT us_codigo, CONCAT(us_codigo, ' ', us_nombre) us_nombre FROM usuario ORDER BY us_codigo";
-		echo $this->datasis->llenaopciones($mSQL, true);
-	}
-
-	function ddcajero(){
-		$mSQL = "SELECT cajero, CONCAT(cajero, ' ', nombre) nombre FROM scaj ORDER BY nombre";
-		echo $this->datasis->llenaopciones($mSQL, true);
-	}
 
 
 	/**

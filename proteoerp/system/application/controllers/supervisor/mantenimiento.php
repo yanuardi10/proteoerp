@@ -33,6 +33,7 @@ class Mantenimiento extends Controller{
 //image('repair-database.jpeg')
 
 		$data['content'] = '
+<center>
 <div class="column">
 	<div class="portlet">
 		<div class="portlet-header">Borrar Prefacturas</div>
@@ -50,7 +51,7 @@ class Mantenimiento extends Controller{
 		<div class="portlet-content">
 			<table width="100%">
 				<tr>
-					<td>'.anchor('supervisor/mantenimiento/puertosdir',img(array('src'=>'assets/default/images/download-database.jpeg','border'=>'0','alt'=>'Actualizar'))).'</td>
+					<td>'.anchor('supervisor/mantenimiento/puertosdir',img(array('src'=>'assets/default/images/download.png','border'=>'0','alt'=>'Actualizar'))).'</td>
 					<td>Descargar PUERTOS.DIR para DataSIS</td>
 				</tr>
 			</table>
@@ -72,24 +73,23 @@ class Mantenimiento extends Controller{
 		<div class="portlet-content">
 			<table width="100%">
 				<tr>
-					<td>'.image('package.png').'</td>
-					<td>'.anchor('supervisor/mantenimiento/sntealma','Modifica el almac&eacute;n en las notas de entrega').'</td>
+					<td>'.anchor('#',img(array('src'=>'assets/default/images/package.png','border'=>'0','alt'=>'Actualizar')),array('onclick'=>'bobo(\''.base_url().'supervisor/mantenimiento/sntealma\');return false;')).'</td>
+					<td>Modifica el almac&eacute;n en las notas de entrega</td>
 				</tr>
 			</table>
 		</div>
 	</div>
 </div>
 <div class="column">
-
 	<div class="portlet">
 		<div class="portlet-header">Centinelas</div>
 		<div class="portlet-content">
 			<table width="100%">
-			<tr>
-				<td>'.image('process-stop32.png').'</td>
-				<td>'.anchor('supervisor/mantenimiento/centinelas','Centinelas').' o Mesajes del sistema</td>
-			</tr>
-		</table>
+				<tr>
+					<td>'.anchor('#',img(array('src'=>'assets/default/images/process-stop32.png','border'=>'0','alt'=>'Actualizar')),array('onclick'=>'bobo(\''.base_url().'supervisor/mantenimiento/centinelas\');return false;')).'</td>
+					<td>Centinelas o Mesajes del sistema</td>
+				</tr>
+			</table>
 		</div>
 	</div>
 
@@ -98,8 +98,8 @@ class Mantenimiento extends Controller{
 		<div class="portlet-content">
 			<table width="100%">
 				<tr>
-					<td>'.image('clients.png').'</td>
-					<td>'.anchor('supervisor/mantenimiento/clinconsis','Incosistencias Clientes').'</td>
+					<td>'.anchor('#',img(array('src'=>'assets/default/images/clients.png','border'=>'0','alt'=>'Actualizar')),array('onclick'=>'bobo(\''.base_url().'supervisor/mantenimiento/clinconsis\');return false;')).'</td>
+					<td>Incosistencias Clientes</td>
 				</tr>
 			</table>
 		</div>
@@ -110,8 +110,8 @@ class Mantenimiento extends Controller{
 		<div class="portlet-content">
 			<table width="100%">
 				<tr>
-					<td>'.image('report-database.jpeg').'</td>
-					<td>'.anchor('supervisor/repodupli/','Detecta Reportes Duplicados').'</td>
+					<td>'.anchor('#',img(array('src'=>'assets/default/images/report-database.jpeg','border'=>'0','alt'=>'Actualizar')),array('onclick'=>'bobo(\''.base_url().'supervisor/repodupli\');return false;')).'</td>
+					<td>Detecta Reportes Duplicados</td>
 				</tr>
 			</table>
 		</div>
@@ -158,8 +158,8 @@ class Mantenimiento extends Controller{
 		<div class="portlet-content">
 			<table width="100%">
 				<tr>
-					<td>'.image('accept-database.png').'</td>
-					<td>'.anchor('supervisor/mantenimiento/tablas','Mantenimiento de Tablas').'</td>
+					<td>'.anchor('#',img(array('src'=>'assets/default/images/accept-database.png','border'=>'0','alt'=>'Reparar')),array('onclick'=>'bobo(\''.base_url().'supervisor/mantenimiento/tablas\');return false;')).'</td>
+					<td>Mantenimiento de las Tablas</td>
 				</tr>
 			</table>
 		</div>
@@ -169,13 +169,15 @@ class Mantenimiento extends Controller{
 		<div class="portlet-content">
 			<table width="100%">
 				<tr>
-					<td>'.image('speedometer.png').'</td>
-					<td>'.anchor('supervisor/mantenimiento/contadores','Cambiar Contadores').'<br>Advertencia: uselo solo si sabe lo que esta haciendo'.'</td>
+					<td>'.anchor('#',img(array('src'=>'assets/default/images/speedometer.png','border'=>'0','alt'=>'Borrar Temporales')),array('onclick'=>'bobo(\''.base_url().'supervisor/mantenimiento/contadores\');return false;')).'</td>
+					<td>Cambiar Contadores<br>Advertencia: uselo solo si sabe lo que esta haciendo'.'</td>
 				</tr>
 			</table>
 		</div>
 	</div>
 </div>
+</center>
+
 ';
 
 		$style = '

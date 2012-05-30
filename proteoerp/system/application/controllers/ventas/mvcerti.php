@@ -104,7 +104,7 @@ jQuery("#a1").click( function(){
 <p>'.$this->datasis->traevalor('TITULO1').'</p>
 </div> <!-- #BottomPanel -->
 ';
-		$param['WestPanel']  = $WestPanel;
+		//$param['WestPanel']  = $WestPanel;
 		//$param['EastPanel']  = $EastPanel;
 		$param['SouthPanel'] = $SouthPanel;
 		$param['listados'] = $this->datasis->listados('MVCERTI', 'JQ');

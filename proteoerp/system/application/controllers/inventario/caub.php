@@ -150,9 +150,9 @@ class Caub extends validaciones {
 				'width'         => 100,
 				'editable'      => 'true',
 				'edittype'      => "'select'",
-				'editoptions'   => '{ dataUrl: "ddsucu"}',
+				'editoptions'   => '{ dataUrl: "'.base_url().'ajax/ddsucu"}',
 				'stype'         => "'select'",
-				'searchoptions' => '{ dataUrl: "ddsucu", sopt: ["eq", "ne"]}',
+				'searchoptions' => '{ dataUrl: "'.base_url().'ajax/ddsucu", sopt: ["eq", "ne"]}',
 				'search'        => 'false'
 			)
 		);
@@ -271,12 +271,12 @@ class Caub extends validaciones {
 			return $grid;
 		}
 	}
-
+/*
 	function ddsucu(){
 		$mSQL = "SELECT codigo, CONCAT(codigo,' ',sucursal) sucursal  FROM sucu ORDER BY codigo";
 		echo $this->datasis->llenaopciones($mSQL, true);
 	}
-
+*/
 	/**
 	* Get data result as json
 	*/
