@@ -330,11 +330,10 @@ jQuery("#a1").click( function(){
 		$valor = $this->input->get_post('us_nombre');
 		if ($valor) $mWHERE[] = array('like', 'us_nombre', $valor, 'both' );
 
-
 		$response   = $grid->getData('view_ccheque', array(array()), array(), false, $mWHERE );
 		$rs = $grid->jsonresult( $response);
 		echo $rs;
-		//echo $this->db->last_query();
+
 	}
 
 	/**
