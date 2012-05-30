@@ -426,36 +426,6 @@ jQuery("#a1").click( function(){
 
 		$mWHERE = $grid->geneTopWhere($tabla);
 
-/*
-		$valor = $this->input->get_post('nombre');
-		if ($valor) $mWHERE[] = array('like', 'nombre', $valor, 'both' );
-
-		$valor = $this->input->get_post('numero');
-		if( !empty($valor) ) $valor = str_pad($valor, 8, "0", STR_PAD_LEFT);
-		if ($valor) $mWHERE[] = array('like', 'numero', $valor, 'after' );
-
-		$valor = $this->input->get_post('fecha');
-		if ($valor) $mWHERE[] = array('', 'fecha', $valor, '' );
-			
-		$valor = $this->input->get_post('tipo');
-		if ($valor) $mWHERE[] = array('', 'tipo', $valor );
-
-		$valor = $this->input->get_post('num_ref');
-		if ($valor) $mWHERE[] = array('', 'num_ref', $valor );
-
-		$valor = $this->input->get_post('monto');
-		if ($valor) $mWHERE[] = array('', 'monto', $valor+0 );
-			
-		$valor = $this->input->get_post('nombanc');
-		if ($valor) $mWHERE[] = array('like', 'nombanc', $valor, 'both' );
-
-		$valor = $this->input->get_post('nomcajero');
-		if ($valor) $mWHERE[] = array('like', 'nomcajero', $valor, 'both' );
-
-		$valor = $this->input->get_post('us_nombre');
-		if ($valor) $mWHERE[] = array('like', 'us_nombre', $valor, 'both' );
-*/
-
 		$response   = $grid->getData($tabla, array(array()), array(), false, $mWHERE );
 		$rs = $grid->jsonresult( $response);
 		echo $rs;
