@@ -62,7 +62,7 @@ class Mantenimiento extends Controller{
 		<div class="portlet-content">
 			<table width="100%">
 				<tr>
-					<td>'.anchor('#',img(array('src'=>'assets/default/images/inventario1.png','border'=>'0','alt'=>'Actualizar')),array('onclick'=>'bobo(\''.base_url().'supervisor/mantenimiento/calcosto\');return false;')).'</td>
+					<td>'.anchor('#',img(array('src'=>'assets/default/images/inventario1.png','border'=>'0','alt'=>'Recalcular')),array('onclick'=>'bobo(\''.base_url().'supervisor/mantenimiento/calcosto\');return false;')).'</td>
 					<td>Recalcula Inventario</td>
 				</tr>
 			</table>
@@ -86,7 +86,7 @@ class Mantenimiento extends Controller{
 		<div class="portlet-content">
 			<table width="100%">
 				<tr>
-					<td>'.anchor('#',img(array('src'=>'assets/default/images/process-stop32.png','border'=>'0','alt'=>'Actualizar')),array('onclick'=>'bobo(\''.base_url().'supervisor/mantenimiento/centinelas\');return false;')).'</td>
+					<td>'.anchor('supervisor/mantenimiento/centinelas',img(array('src'=>'assets/default/images/process-stop32.png','border'=>'0','alt'=>'Actualizar'))).'</td>
 					<td>Centinelas o Mesajes del sistema</td>
 				</tr>
 			</table>
@@ -98,7 +98,7 @@ class Mantenimiento extends Controller{
 		<div class="portlet-content">
 			<table width="100%">
 				<tr>
-					<td>'.anchor('#',img(array('src'=>'assets/default/images/clients.png','border'=>'0','alt'=>'Actualizar')),array('onclick'=>'bobo(\''.base_url().'supervisor/mantenimiento/clinconsis\');return false;')).'</td>
+					<td>'.anchor('supervisor/mantenimiento/clinconsis',img(array('src'=>'assets/default/images/clients.png','border'=>'0','alt'=>'Inconsistencia de Clientes'))).'</td>
 					<td>Incosistencias Clientes</td>
 				</tr>
 			</table>
@@ -158,7 +158,7 @@ class Mantenimiento extends Controller{
 		<div class="portlet-content">
 			<table width="100%">
 				<tr>
-					<td>'.anchor('#',img(array('src'=>'assets/default/images/accept-database.png','border'=>'0','alt'=>'Reparar')),array('onclick'=>'bobo(\''.base_url().'supervisor/mantenimiento/tablas\');return false;')).'</td>
+					<td>'.anchor('supervisor/mantenimiento/tablas',img(array('src'=>'assets/default/images/accept-database.png','border'=>'0','alt'=>'Reparar'))).'</td>
 					<td>Mantenimiento de las Tablas</td>
 				</tr>
 			</table>
@@ -535,7 +535,7 @@ function bobo(url){'."
 		$grid->column('Ajustar Saldo'          ,'<descheck><#numero#>|<#cod_cli#>|<#tipo_doc#>|<#fecha#>|<#abonoreal#></descheck>',"align=center");
 
 		$grid->build();
-		echo $grid->db->last_query();
+		//echo $grid->db->last_query();
 		//memowrite($grid->db->last_query());
 
 		$script='';
