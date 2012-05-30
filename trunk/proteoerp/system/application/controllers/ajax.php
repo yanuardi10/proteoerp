@@ -809,4 +809,40 @@ class Ajax extends Controller {
 		echo $data;
 		return true;
 	}
+
+	// Para JQGRID	
+	function ddsucu(){
+		$mSQL = "SELECT codigo, CONCAT(codigo,' ',sucursal) sucursal  FROM sucu ORDER BY codigo";
+		echo $this->datasis->llenaopciones($mSQL, true);
+	}
+
+	function ddtarjeta(){
+		$mSQL = "SELECT tipo, CONCAT(tipo,' ',nombre) nombre FROM tarjeta WHERE activo!='N' AND tipo NOT IN ('EF', 'DE', 'NC','RI','IR','RP')";
+		echo $this->datasis->llenaopciones($mSQL, true);
+	}
+
+	function ddbanco(){
+		$mSQL = "SELECT cod_banc, CONCAT(cod_banc, ' ', nomb_banc) banco FROM tban WHERE cod_banc<>'CAJ' ORDER BY nomb_banc ";
+		echo $this->datasis->llenaopciones($mSQL, true);
+	}
+
+	function ddusuario(){
+		$mSQL = "SELECT us_codigo, CONCAT(us_codigo, ' ', us_nombre) us_nombre FROM usuario ORDER BY us_codigo";
+		echo $this->datasis->llenaopciones($mSQL, true);
+	}
+
+	function ddcajero(){
+		$mSQL = "SELECT cajero, CONCAT(cajero, ' ', nombre) nombre FROM scaj ORDER BY nombre";
+		echo $this->datasis->llenaopciones($mSQL, true);
+	}
+	function ddcaub(){
+		$mSQL = "SELECT ubica, CONCAT(ubica, ' ', ubides) ubides FROM caub ORDER BY ubica ";
+		echo $this->datasis->llenaopciones($mSQL, true);
+	}
+	function ddvende(){
+		$mSQL = "SELECT vendedor, CONCAT(vendedor, ' ', nombre) nombre FROM vend ORDER BY vendedor ";
+		echo $this->datasis->llenaopciones($mSQL, true);
+	}
+
+	
 }

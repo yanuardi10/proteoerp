@@ -1,5 +1,382 @@
 <?php
 class Usuarios extends Controller {
+	var $mModulo='Usuarios del Sistema';
+	var $titp = 'Modulo de Usuarios del Sistema';
+	var $tits = 'Modulo de Usuarios del Sistema';
+	var $url  = 'supervisor/usuarios/';
+
+	function Usuarios(){
+		parent::Controller();
+		$this->load->library('rapyd');
+		$this->load->library('jqdatagrid');
+		//$this->datasis->modulo_id('NNN',1);
+	}
+
+	function index(){
+		if ( !$this->datasis->iscampo('usuario','id') ) {
+			$this->db->simple_query('ALTER TABLE usuario DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE usuario ADD UNIQUE INDEX codigo (codigo)');
+			$this->db->simple_query('ALTER TABLE usuario ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
+		};
+		redirect($this->url.'jqdatag');
+	}
+
+	//***************************
+	//Layout en la Ventana
+	//
+	//***************************
+	function jqdatag(){
+
+		$grid = $this->defgrid();
+		$param['grid'] = $grid->deploy();
+
+		$bodyscript = '
+<script type="text/javascript">
+$(function() {
+	$( "input:submit, a, button", ".a1" ).button();
+});
+
+jQuery("#a1").click( function(){
+	var id = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
+	if (id)	{
+		var ret = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getRowData\',id);
+		$.get(\''.base_url().'supervisor/usuarios/cclave/\'+id ,function(data){
+			$.prompt(data,{
+				buttons: { Guardar: true, Cancelar: false },
+				focus: 1,
+				submit: function(e,v,m,f){
+					if ( v == true ){
+						if ( f.us_clave1 == f.us_clave ){
+							$(\'#fclave\').submit();
+						} else {
+							m.children(\'#error\').html("ERROR: Claves Diferentes!!! intente de nuevo...");
+							return false;
+						}
+					}
+					
+				}
+/*				
+				callback: function(e,v,m,f){
+					if ( v == true ){
+						if ( f.us_clave1 == f.us_clave ){
+							$(\'#fclave\').submit();
+						} else {
+							m.children(\'#error\').html("Claves Diferentes!!!");
+							return false;
+						}
+					}
+				}
+*/
+				}
+			);
+		})
+		//window.open(\''.base_url().'supervisor/usuarios/cclave/modify/\'+id, \'_blank\', \'width=400,height=300,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+	} else {
+		$.prompt("<h2>Por favor Seleccione un Usuario</h2>");}
+});
+</script>
+';
+//supervisor/usuarios/cclave/modify/<#us_codigo#>
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		$WestPanel = '
+<div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content">
+<div class="anexos">
+
+<table id="west-grid" align="center">
+	<tr>
+		<td><div class="tema1"><table id="listados"></table></div></td>
+	</tr>
+	<tr>
+		<td><div class="tema1"><table id="otros"></table></div></td>
+	</tr>
+
+</table>
+
+<table id="west-grid" align="center">
+	<tr>
+		<td><div class="a1"><a style="width:190px" href="#" id="a1">Cambiar Clave</a></div></td>
+	</tr>
+</table>
+</div>
+'.
+//		<td><a style="width:190px" href="#" id="a1">Imprimir Copia</a></td>
+'</div> <!-- #LeftPane -->
+';
+
+		$SouthPanel = '
+<div id="BottomPane" class="ui-layout-south ui-widget ui-widget-content">
+<p>'.$this->datasis->traevalor('TITULO1').'</p>
+</div> <!-- #BottomPanel -->
+';
+		$param['WestPanel']  = $WestPanel;
+		//$param['EastPanel']  = $EastPanel;
+		$param['SouthPanel'] = $SouthPanel;
+		$param['listados'] = $this->datasis->listados('USUARIO', 'JQ');
+		$param['otros']    = $this->datasis->otros('USUARIO', 'JQ');
+		$param['tema1']     = 'darkness';
+		$param['anexos']    = 'anexos1';
+		$param['bodyscript'] = $bodyscript;
+		$param['tabs'] = false;
+		$param['encabeza'] = $this->titp;
+		$this->load->view('jqgrid/crud',$param);
+	}
+
+	//***************************
+	//Definicion del Grid y la Forma
+	//***************************
+	function defgrid( $deployed = false ){
+		$i      = 1;
+		$editar = "true";
+
+		$grid  = new $this->jqdatagrid;
+
+		$grid->addField('id');
+		$grid->label('Id');
+		$grid->params(array(
+			'align'    => "'center'",
+			'frozen'   => 'true',
+			'width'    => 40,
+			'editable' => 'false',
+			'search'   => 'false'
+		));
+
+		$grid->addField('us_codigo');
+		$grid->label('Codigo');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:10, maxlength: 12 }',
+		));
+
+
+		$grid->addField('us_nombre');
+		$grid->label('Nombre');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 150,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:15, maxlength: 15 }',
+		));
+
+		$grid->addField('supervisor');
+		$grid->label('Super');
+		$grid->params(array(
+			'align'       => "'center'",
+			'width'       => 40,
+			'editable'    => 'true',
+			'edittype'    => "'select'",
+			'search'      => 'false',
+			'editrules'   => '{ required:true}',
+			'editoptions' => '{value: {"N":"No","S":"Si" } }'
+		));
+
+		$grid->addField('vendedor');
+		$grid->label('Vende');
+		$grid->params(array(
+			'align'         => "'center'",
+			'width'         => 50,
+			'editable'      => 'true',
+			'edittype'      => "'select'",
+			'editoptions'   => '{ dataUrl: "'.base_url().'ajax/ddvende"}',
+		));
+
+		$grid->addField('cajero');
+		$grid->label('Cajero');
+		$grid->params(array(
+			'align'    => "'center'",
+			'width'         => 50,
+			'editable'      => 'true',
+			'edittype'      => "'select'",
+			'editoptions'   => '{ dataUrl: "'.base_url().'ajax/ddcajero"}',
+		));
+
+		$grid->addField('almacen');
+		$grid->label('Almacen');
+		$grid->params(array(
+			'align'         => "'center'",
+			'width'         => 50,
+			'editable'      => 'true',
+			'edittype'      => "'select'",
+			'editoptions'   => '{ dataUrl: "'.base_url().'ajax/ddcaub"}',
+		));
+
+		$grid->addField('sucursal');
+		$grid->label('Sucursal');
+		$grid->params(array(
+			'align'    => "'center'",
+			'width'         => 50,
+			'editable'      => 'true',
+			'edittype'      => "'select'",
+			'editoptions'   => '{ dataUrl: "'.base_url().'ajax/ddsucu"}',
+		));
+
+		$grid->addField('activo');
+		$grid->label('Activo');
+		$grid->params(array(
+			'align'       => "'center'",
+			'width'       => 40,
+			'editable'    => 'true',
+			'edittype'    => "'select'",
+			'search'      => 'false',
+			'editoptions' => '{value: {"S":"Si", "N":"No"} }',
+			'editrules'     => '{ required:true}',
+		));
+
+		$grid->addField('us_clave');
+		$grid->label('Clave');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 120,
+			'edittype'      => "'password'",
+			'hidden'        => 'true',
+			'editrules'     => '{edithidden:true, required:true}'
+		));
+
+		$grid->addField('us_fechae');
+		$grid->label('Entrada');
+		$grid->params(array(
+			'search'        => 'false',
+			'editable'      => 'false',
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
+
+		$grid->addField('us_horae');
+		$grid->label('Hora Entr');
+		$grid->params(array(
+			'search'        => 'false',
+			'editable'      => 'false',
+			'width'         => 60,
+			'edittype'      => "'text'",
+		));
+
+
+		$grid->addField('us_fechas');
+		$grid->label('Salida');
+		$grid->params(array(
+			'search'        => 'false',
+			'editable'      => 'false',
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
+
+
+		$grid->addField('us_horas');
+		$grid->label('Hora Sal');
+		$grid->params(array(
+			'search'        => 'false',
+			'editable'      => 'false',
+			'width'         => 60,
+			'edittype'      => "'text'",
+		));
+
+		$grid->showpager(true);
+		$grid->setWidth('');
+		$grid->setHeight('290');
+		$grid->setTitle($this->titp);
+		$grid->setfilterToolbar(true);
+		$grid->setToolbar('false', '"top"');
+
+		$grid->setFormOptionsE('
+			closeAfterEdit:false, mtype: "POST", width: 520, height:320, closeOnEscape: true, top: 50,left:20, recreateForm:true,
+			afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},
+			beforeShowForm: function(frm){ $(\'#us_codigo\').attr(\'readonly\',\'readonly\');}
+		');
+		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:320, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+
+		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
+
+		#show/hide navigations buttons
+		$grid->setAdd(true);
+		$grid->setEdit(true);
+		$grid->setDelete(true);
+		$grid->setSearch(true);
+		$grid->setRowNum(30);
+		$grid->setShrinkToFit('false');
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		#GET url
+		$grid->setUrlget(site_url($this->url.'getdata/'));
+
+		if ($deployed) {
+			return $grid->deploy();
+		} else {
+			return $grid;
+		}
+	}
+
+	/**
+	* Busca la data en el Servidor por json
+	*/
+	function getdata()
+	{
+		$grid       = $this->jqdatagrid;
+
+		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
+		$mWHERE = $grid->geneTopWhere('usuario');
+
+		$response   = $grid->getData('usuario', array(array()), array(), false, $mWHERE, 'us_nombre' );
+		$rs = $grid->jsonresult( $response);
+		echo $rs;
+	}
+
+	/**
+	* Guarda la Informacion
+	*/
+	function setData()
+	{
+		$this->load->library('jqdatagrid');
+		$oper   = $this->input->post('oper');
+		$id     = $this->input->post('id');
+		$data   = $_POST;
+		$check  = 0;
+
+		unset($data['oper']);
+		unset($data['id']);
+		if($oper == 'add'){
+			if(false == empty($data)){
+				$this->db->insert('usuario', $data);
+			}
+			echo "Registro Agregado";
+
+		} elseif($oper == 'edit') {
+			unset($data['us_codigo']);
+			$this->db->where('id', $id);
+			$this->db->update('usuario', $data);
+			echo "Registro Modificado";
+
+		} elseif($oper == 'del') {
+			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM usuario WHERE id='$id' ");
+			if ($check > 0){
+				echo " El registro no puede ser eliminado; tiene movimiento ";
+			} else {
+				$this->db->simple_query("DELETE FROM usuario WHERE id=$id ");
+				logusu('usuario',"Registro ????? ELIMINADO");
+				echo "Registro Eliminado";
+			}
+		}
+
+	}
+
+/*
+class Usuarios extends Controller {
 
 	function Usuarios(){
 		parent::Controller();
@@ -168,44 +545,6 @@ class Usuarios extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
-	function cclave(){ 
-		$this->rapyd->load('dataedit');
-		$this->rapyd->uri->keep_persistence();
-
-		$edit = new DataEdit('Cambio de clave de usuario', 'usuario');
-		$edit->back_save   =true;
-		$edit->back_cancel =true;
-		$edit->back_cancel_save=true;
-		$edit->back_url = site_url('supervisor/usuarios/filteredgrid');
-		$edit->post_process('update','_pos_updatec');
-
-		$edit->us_codigo = new inputField('C&oacute;digo de Usuario','us_codigo');
-		$edit->us_codigo->mode = 'autohide';
-		$edit->us_codigo->when = array('show');
-
-		$edit->us_clave = new inputField('Clave','us_clave');
-		$edit->us_clave->rule = 'required|matches[us_clave1]';
-		$edit->us_clave->type = 'password';
-		$edit->us_clave->when = array('modify','idle');
-
-		$edit->us_clave1 = new inputField('Confirmar Clave','us_clave1');
-		$edit->us_clave1->db_name = 'us_clave';
-		$edit->us_clave1->rule    = 'required';
-		$edit->us_clave1->type    = 'password';
-		$edit->us_clave1->when    = array('modify','idle');
-
-		$edit->us_clave1->size       = $edit->us_clave->size      =12;
-		$edit->us_clave1->maxlength  = $edit->us_clave->maxlength =15;
-
-		$edit->buttons('modify', 'save', 'undo', 'back');
-		$edit->build();
-
-		$data['content'] = $edit->output;
-		$data['title']   = heading('Cambio de clave');
-		$data['head']    = $this->rapyd->get_head();
-		$this->load->view('view_ventanas', $data); 
-	}
-
 	function _pre_delete($do) {
 		$codigo=$do->get('us_codigo');
 		if ($codigo==$this->session->userdata('usuario')){
@@ -238,13 +577,7 @@ class Usuarios extends Controller {
 		return TRUE;
 	}
 
-	function _pos_updatec($do){
-		$codigo=$do->get('us_codigo');
-		$superv=$do->get('supervisor');
-		logusu('USUARIOS',"CAMBIO DE CLAVE DEL USUARIO $codigo");
-		return TRUE;
-	}
-
+*/
 	function soporte(){
 		$mSQL="INSERT INTO `usuario` (`us_codigo`, `us_nombre`, `us_clave`,`supervisor`) VALUES ('SOPORTE', 'PERS. DREMANVA', 'DREMANVA','S');";
 		$this->db->simple_query($mSQL);
@@ -255,4 +588,59 @@ class Usuarios extends Controller {
 		$this->db->simple_query($mSQL);
 		echo "Agregado campo almacen";
 	}
+
+
+	function cclave(){
+		$id     = $this->uri->segment($this->uri->total_segments());
+
+		$us_codigo = $this->datasis->dameval("SELECT us_codigo FROM usuario WHERE id=$id");
+		$us_nombre = $this->datasis->dameval("SELECT us_nombre FROM usuario WHERE id=$id");
+
+		$salir = '
+<h2>Cambio de Clave:</h2><center><h1>'.$us_nombre.'</h1></center>
+<p id="error" style="color:red"></p>
+<form action="'.base_url().'supervisor/usuarios/cclaveg" method="post" id="fclave">
+	<table style="margin: 0pt; width: 98%;">
+		<tbody>
+		<tr id="tr_us_codigo">
+			<td style="width: 120px;" >Código</td>
+			<td style="padding: 1px;" id="td_us_codigo">'.$us_codigo.'&nbsp;</td>
+		</tr>
+		<tr id="tr_us_clave">
+			<td style="width: 120px;" >Clave*</td>
+			<td style="padding: 1px;" id="td_us_clave"><input name="us_clave" value="" id="us_clave" size="12" maxlength="15" type="password">&nbsp;</td>
+		</tr>
+		<tr id="tr_us_clave1">
+			<td style="width: 120px;">Confirmar*</td>
+			<td style="padding: 1px;" id="td_us_clave1"><input name="us_clave1" value="" id="us_clave1" size="12" maxlength="15" type="password">&nbsp;</td>
+		</tr>
+		</tbody>
+	</table>
+	<input name="id" value="'.$id.'" id="id" type="hidden">	
+</form>
+';
+		echo $salir;
+
+	}
+
+	function cclaveg(){
+		$us_clave  = $this->input->post('us_clave');
+		$us_clave1 = $this->input->post('us_clave1');
+		$id        = $this->input->post('id');
+		if ( $us_clave == $us_clave1) {
+			$clave = $this->db->escape($us_clave);
+			if ( $id > 0)
+				$this->db->simple_query("UPDATE usuario SET us_clave=".$clave." WHERE id=$id");
+		}
+		redirect($this->url.'jqdatag');
+	}
+
+
+	function _pos_updatec($do){
+		$codigo=$do->get('us_codigo');
+		$superv=$do->get('supervisor');
+		logusu('USUARIOS',"CAMBIO DE CLAVE DEL USUARIO $codigo");
+		return true;
+	}
 }
+?>

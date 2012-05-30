@@ -676,17 +676,21 @@ class Desarrollo extends Controller{
 
 					} elseif ( substr($row->Type,0,7) == 'varchar' or substr($row->Type,0,4) == 'char'  ) {
 						$long = str_replace(array('varchar(','char(',')'),"", $row->Type)*10;
+						$maxlong = $long/10;
 						if ( $long > 200 ) $long = 200;
 						if ( $long < 40 ) $long = 40;
 						
 						$str .= $tab3.'\'width\'         => '.$long.','."\n";
 						$str .= $tab3.'\'edittype\'      => "\'text\'",'."\n";
+						$str .= $tab3.'\'editrules\'     => \'{ required:true}\','."\n";
+						$str .= $tab3.'\'editoptions\'   => \'{ size:30, maxlength: '.$maxlong.' }\','."\n";
 
 					} elseif ( $row->Type == 'text' ) {
 						$long = 250;
 						$str .= $tab3.'\'width\'         => '.$long.','."\n";
 						$str .= $tab3.'\'edittype\'      => "\'textarea\'",'."\n";
 						$str .= $tab3.'\'editoptions\'   => "\'{rows:"2", cols:"60"}\'",'."\n";
+
 						//$str .= $tab3.'\'formoptions\'   => "\'{rows:"2", cols:"60"}\'",'."\n";
 						
 
@@ -769,14 +773,17 @@ class Desarrollo extends Controller{
 			$str .= $tab2.'if($oper == \'add\'){'."\n";
 			$str .= $tab3.'if(false == empty($data)){'."\n";
 			$str .= $tab4.'$this->db->insert(\''.$db.'\', $data);'."\n";
-			$str .= $tab3.'}'."\n";
+			$str .= $tab4.'echo "Registro Agregado";'."\n\n";
+			$str .= $tab4.'logusu(\''.strtoupper($db).'\',"Registro ????? INCLUIDO");'."\n";
+			$str .= $tab3.'} else'."\n";
 			//$str .= $tab2.'echo \'\';'."\n";
-			$str .= $tab3.'echo "Registro Agregado";'."\n\n";
+			$str .= $tab3.'echo "Fallo Agregado!!!";'."\n\n";
 
 			$str .= $tab2.'} elseif($oper == \'edit\') {'."\n";
 			$str .= $tab3.'//unset($data[\'ubica\']);'."\n";
 			$str .= $tab3.'$this->db->where(\'id\', $id);'."\n";
 			$str .= $tab3.'$this->db->update(\''.$db.'\', $data);'."\n";
+			$str .= $tab3.'logusu(\''.strtoupper($db).'\',"Registro ????? MODIFICADO");'."\n";
 			$str .= $tab3.'echo "Registro Modificado";'."\n\n";
 			
 			$str .= $tab2.'} elseif($oper == \'del\') {'."\n";
@@ -785,7 +792,7 @@ class Desarrollo extends Controller{
 			$str .= $tab4.'echo " El registro no puede ser eliminado; tiene movimiento ";'."\n";
 			$str .= $tab3.'} else {'."\n";
 			$str .= $tab4.'$this->db->simple_query("DELETE FROM '.$db.' WHERE id=$id ");'."\n";
-			$str .= $tab4.'logusu(\''.$db.'\',"Registro ????? ELIMINADO");'."\n";
+			$str .= $tab4.'logusu(\''.strtoupper($db).'\',"Registro ????? ELIMINADO");'."\n";
 			$str .= $tab4.'echo "Registro Eliminado";'."\n";
 			$str .= $tab3.'}'."\n";
 			$str .= $tab2.'};'."\n";
