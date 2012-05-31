@@ -473,7 +473,7 @@ function bobo(url){'."
 			'a.numero',
 			'a.nombre',
 			'a.monto',
-			'sum(b.abono)+(SELECT COALESCE(SUM(d.monto),0) FROM `itcruc` AS d WHERE CONCAT(`a`.`tipo_doc`,`a`.`numero`)=`d`.`onumero`) AS abonoreal',
+			'sum(b.abono)+(SELECT COALESCE(SUM(d.monto),0) FROM `itcruc` d  JOIN cruc e ON d.numero=e.numero WHERE e.cliente=a.cod_cli AND CONCAT(`a`.`tipo_doc`,`a`.`numero`)=`d`.`onumero`) AS abonoreal',
 			'a.abonos AS inconsist',);
 
 		$filter->db->select($select);
