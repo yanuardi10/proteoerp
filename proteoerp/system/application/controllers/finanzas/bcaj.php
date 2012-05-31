@@ -120,13 +120,39 @@ $(function() {
 	});
 	
 	$( "#cerrardpt" ).click(function() {
-		var id = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
+		var id     = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
 		if (id)	{
-			var ret = $("#newapi'. $param['grid']['gridname'].'").getRowData(id);  
+			var ret    = $("#newapi'. $param['grid']['gridname'].'").getRowData(id);  
 			mId = id;
-			$( "#cerrardpt-form" ).dialog( "open" );
+			if ( ret["status"] == "P" ){
+				$( "#cerrardpt-form" ).dialog( "open" );
+			} else {
+				$.prompt("<h1>Movimiento no esta Pendiente</h1>");
+			}
+			
 		} else { $.prompt("<h1>Por favor Seleccione un Deposito</h1>");}
 	});
+	
+	$( "#borrar" ).click(function() {
+		var id = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
+		var m = "";
+		if (id)	{
+			$.prompt( "Eliminar Registro? ",{
+					buttons: { Borrar:true, Cancelar:false},
+					callback: function(e,v,m,f){
+						if (v == true) {
+							$.get("'.base_url().$this->url.'bcajborra/"+id,
+							function(data){
+								alert(data);
+							});
+						}
+					}
+				}
+			);
+		} else { $.prompt("<h2>Por favor Seleccione un Movimiento</h2>");}
+	});
+	
+	
 });
 
 </script>
@@ -155,9 +181,13 @@ $(function() {
 	<tr>
 		<td><a style="width:190px" href="#" id="a2">Imprimir a HTML</a></td>
 	</tr>
-	<tr><td>
-		<a style="width:190px" href="#" id="cerrardpt">Cerrar Deposito</a>
-	</td></tr>
+	<tr>
+		<td><a style="width:190px" href="#" id="cerrardpt">Cerrar Deposito</a></td>
+	</tr>
+	<tr>
+		<td><a style="width:190px" href="#" id="borrar">Eliminar Movimiento</a></td>
+	</tr>
+
 </table>
 </div>
 </div> <!-- #LeftPane -->
@@ -667,7 +697,7 @@ $(function() {
 	}
 
 
-	/*********************************88
+	/*********************************
 	 *
 	 * cierra el deposito
 	 *
@@ -710,6 +740,54 @@ $(function() {
 			echo "{\"numero\":\",\"mensaje\":\"Error al Guardar\"}";
 			
 		}
+	}
+
+
+	/*********************************
+	 *
+	 * Elimina Movimiento
+	 *
+	 */
+	function bcajborra(){
+		$id = $this->uri->segment($this->uri->total_segments());
+		
+		$transac = $this->datasis->dameval("SELECT transac FROM bcaj WHERE id=$id");
+		$status  = $this->datasis->dameval("SELECT status FROM bcaj WHERE id=$id");
+		$numero  = $this->datasis->dameval("SELECT numero FROM bcaj WHERE id=$id");
+
+		if ( $this->datasis->dameval("SELECT COUNT(*) FROM bmov WHERE transac='$transac' ") > 0 ){
+			$mSQL = "SELECT codbanc, fecha, monto*if(tipo_op IN ('CH','ND'),1,-1) monto FROM bmov WHERE transac='$transac'";
+			$query = $this->db->query($mSQL);
+			if ( $query->num_rows() > 0 ) {
+				foreach( $query->result() as $row ) {
+					$this->datasis->actusal($row->codbanc, $row->fecha, $row->monto);
+				}
+			}
+		}
+
+		$this->db->simple_query("DELETE FROM bcaj   WHERE transac=?", array($transac));
+		$this->db->simple_query("DELETE FROM bmov   WHERE transac=?", array($transac));
+		$this->db->simple_query("DELETE FROM gser   WHERE transac=?", array($transac));
+		$this->db->simple_query("DELETE FROM smov   WHERE transac=?", array($transac));
+		$this->db->simple_query("DELETE FROM itccli WHERE transac=?", array($transac));
+		$this->db->simple_query("DELETE FROM gitser WHERE transac=?", array($transac));
+
+		/*
+		FOR i := 1 TO LEN(mm_DETA)
+			IF !EMPTY(mm_DETA[i,2])
+				mSQL := "UPDATE tardet SET saldo=saldo+? WHERE tarjeta=? AND concepto=?"
+				EJECUTASQL(mSQL, { mm_DETA[i,5], mm_DETA[i,1], mm_DETA[i,2] })
+			ENDIF     
+		NEXT
+		*/
+		
+		// LIBERA LOS CHEQUES SI ES DE
+		$this->db->simple_query("UPDATE sfpa SET status='' AND deposito='' WHERE deposito=?", array($numero));
+
+		logusu('BCAJ',"MOVIMIENTO DE CAJA $numero ELIMINADO");
+		
+		echo "Movimiento de Caja Eliminado ";
+		
 	}
 
 
