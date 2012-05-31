@@ -146,7 +146,7 @@ class Ajax extends Controller {
 			$query = $this->db->query($mSQL);
 			if ($query->num_rows() > 0){
 				foreach( $query->result_array() as  $row ) {
-					$retArray['label']   = '('.$row['codigo'].')'.$row['descrip'].' Bs.'.$row['precio1'].'  '.$row['existen'].'';
+					$retArray['label']   = '('.$row['codigo'].')'.utf8_encode($row['descrip']).' Bs.'.$row['precio1'].'  '.$row['existen'].'';
 					$retArray['value']   = $row['codigo'];
 					$retArray['codigo']  = $row['codigo'];
 					$retArray['cana']    = $cana;
