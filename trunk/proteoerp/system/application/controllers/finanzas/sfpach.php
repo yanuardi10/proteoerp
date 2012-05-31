@@ -17,8 +17,11 @@ class sfpach extends Controller {
 		 if ( !$this->datasis->iscampo('sfpa','id') ) {
 			$this->db->simple_query('ALTER TABLE sfpa ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
 		};
-		 if ( !$this->datasis->iscampo('sfpa','deposito') ) {
+		if ( !$this->datasis->iscampo('sfpa','deposito') ) {
 			$this->db->simple_query('ALTER TABLE sfpa ADD COLUMN deposito CHAR(12) NULL DEFAULT NULL ');
+		};
+		if ( !$this->datasis->iscampo('sfpa','cuentach') ) {
+			$this->db->simple_query('ALTER TABLE sfpa ADD COLUMN cuentach CHAR(22) NULL DEFAULT NULL ');
 		};
 		redirect($this->url.'jqdatag');
 	}
@@ -189,26 +192,6 @@ jQuery("#a1").click( function(){
 
 		$grid  = new $this->jqdatagrid;
 
-		$grid->addField('id');
-		$grid->label('Id');
-		$grid->params(array(
-				'align'    => "'center'",
-				'frozen'   => 'true',
-				'width'    => 60,
-				'editable' => 'false',
-				'search'   => 'false'
-			)
-		);
-
-		$grid->addField('nombre');
-		$grid->label('Nombre Cliente');
-		$grid->params(array(
-				'width'    => 180,
-				'editable' => 'false',
-				'edittype' => "'text'"
-			)
-		);
-
 		$grid->addField('status');
 		$grid->label('Status');
 		$grid->params(array(
@@ -222,113 +205,148 @@ jQuery("#a1").click( function(){
 		$grid->addField('tipo_doc');
 		$grid->label('Doc.');
 		$grid->params(array(
-					'width'    => 30,
-					'align'    => "'center'",
-					'editable' => 'false',
-					'edittype' => "'text'"
+				'width'    => 30,
+				'align'    => "'center'",
+				'editable' => 'false',
+				'edittype' => "'text'"
 			)
 		);
 
 		$grid->addField('numero');
 		$grid->label('Numero');
-		$grid->params(array('align'    => "'center'",
-							'width'    => 70,
-							'editable' => 'false',
-							'edittype' => "'text'"
+		$grid->params(array(
+				'align'    => "'center'",
+				'width'    => 70,
+				'editable' => 'false',
+				'edittype' => "'text'"
 			)
 		);
 
 		$grid->addField('fecha');
 		$grid->label('Fecha');
 		$grid->params(array(
-					'width'       => 80,
-					'search'      => 'true',
-					'editable'    => 'false',
-					'edittype'    => "'text'",
-					'editrules'   => '{ required:true,date:true}',
-					'formoptions' => '{ label:"Fecha" }'
+				'align'       => "'center'",
+				'width'       => 80,
+				'search'      => 'true',
+				'editable'    => 'false',
+				'edittype'    => "'text'",
+				'editrules'   => '{ required:true,date:true}',
+				'formoptions' => '{ label:"Fecha" }'
 			)
 		);
 
 		$grid->addField('tipo');
 		$grid->label('Tipo');
 		$grid->params(array(
-					'align'    => "'center'",
-					'width'         => 30,
-					'editable'      => 'true',
-					'edittype'      => "'select'",
-					'editrules'   => '{ required:true }',
-					'editoptions'   => '{ dataUrl: "ddtarjeta"}',
-					'stype'         => "'text'"
+				'align'         => "'center'",
+				'width'         => 30,
+				'editable'      => 'true',
+				'edittype'      => "'select'",
+				'editrules'     => '{ required:true }',
+				'editoptions'   => '{ dataUrl: "ddtarjeta"}',
+				'stype'         => "'text'"
 			)
 		);
 
 		$grid->addField('num_ref');
 		$grid->label('Nro. Cheque');
-		$grid->params(array('width'       => 90,
-							'editable'    => 'true',
-							'edittype'    => "'text'",
-							'editrules'   => '{required:true}',
-							'editoptions' => '{ size:20, maxlength: 12 }',
+		$grid->params(array(
+				'width'       => 90,
+				'editable'    => 'true',
+				'edittype'    => "'text'",
+				'editrules'   => '{required:true}',
+				'editoptions' => '{ size:20, maxlength: 12 }',
 			)
 		);
 
 		$grid->addField('monto');
 		$grid->label('Monto');
-		$grid->params(array('width'         => 100,
-							'editable'      => 'true',
-							'align'         => "'right'",
-							'edittype'      => "'text'",
-							'search'        => 'true',
-							'editrules'     => '{ required:true }',
-							'editoptions'   => '{ size:10, maxlength: 10 }',
-							'formatter'     => "'number'",
-							'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		$grid->params(array(
+				'width'         => 100,
+				'editable'      => 'true',
+				'align'         => "'right'",
+				'edittype'      => "'text'",
+				'search'        => 'true',
+				'editrules'     => '{ required:true }',
+				'editoptions'   => '{ size:10, maxlength: 10 }',
+				'formatter'     => "'number'",
+				'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 			)
 		);
 
+		$grid->addField('cuentach');
+		$grid->label('Cta Corriente');
+		$grid->params(array(
+				'align'       => "'center'",
+				'width'       => 150,
+				'editable'    => 'true',
+				'edittype'    => "'text'",
+				'editrules'   => '{required:true}',
+				'editoptions' => '{ size:20, maxlength: 20 }',
+			)
+		);
+
+
+
 		$grid->addField('banco');
 		$grid->label('Banco');
-		$grid->params(array('width'         => 40,
-							'hidden'        => 'true',
-							'editable'      => 'true',
-							'edittype'      => "'select'",
-							'editrules'     => '{ edithidden:true, required:true }',
-							'editoptions'   => '{ dataUrl: "ddbanco"}',
-							'stype'         => "'tsxt'",
+		$grid->params(array(
+				'width'         => 40,
+				'hidden'        => 'true',
+				'editable'      => 'true',
+				'edittype'      => "'select'",
+				'editrules'     => '{ edithidden:true, required:true }',
+				'editoptions'   => '{ dataUrl: "ddbanco"}',
+				'stype'         => "'tsxt'",
 			)
 		);
 
 		$grid->addField('nombanc');
 		$grid->label('Nombre del Banco');
-		$grid->params(array('width'         => 140,
-							'editable'      => 'false',
-							'edittype'      => "'text'",
-							'search'        => 'true'
+		$grid->params(array(		
+				'width'         => 140,
+				'editable'      => 'false',
+				'edittype'      => "'text'",
+				'search'        => 'true'
 			)
 		);
+
+
+
+		$grid->addField('nombre');
+		$grid->label('Nombre Cliente');
+		$grid->params(array(
+				'width'    => 180,
+				'editable' => 'false',
+				'edittype' => "'text'"
+			)
+		);
+
 
 		$grid->addField('cajero');
 		$grid->label('Cajero');
-		$grid->params(array('width'         => 120,
-							'hidden'        => 'true',
-							'editable'      => 'false',
-							'edittype'      => "'select'",
-							'editrules'     => '{ edithidden: true, required:true }',
-							'editoptions'   => '{ dataUrl: "ddcajero"}',
-							'stype'         => "'select'",
-							'searchoptions' => '{ dataUrl: "ddcajero", sopt: ["eq", "ne"]}'
+		$grid->params(array(
+				'width'         => 120,
+				'hidden'        => 'true',
+				'editable'      => 'false',
+				'edittype'      => "'select'",
+				'editrules'     => '{ edithidden: true, required:true }',
+				'editoptions'   => '{ dataUrl: "ddcajero"}',
+				'stype'         => "'select'",
+				'searchoptions' => '{ dataUrl: "ddcajero", sopt: ["eq", "ne"]}'
 			)
 		);
+
 
 		$grid->addField('nomcajero');
 		$grid->label('Nombre Cajero');
-		$grid->params(array('width'         => 120,
-							'editable'      => 'false',
-							'edittype'      => "'text'"
+		$grid->params(array(
+				'width'         => 120,
+				'editable'      => 'false',
+				'edittype'      => "'text'"
 			)
 		);
-
+/*
 		$grid->addField('us_nombre');
 		$grid->label('Nombre de Uusario');
 		$grid->params(array('width'     => 140,
@@ -355,6 +373,19 @@ jQuery("#a1").click( function(){
 							'search'    => 'false'
 			)
 		);
+*/
+
+		$grid->addField('id');
+		$grid->label('Id');
+		$grid->params(array(
+				'align'    => "'center'",
+				'frozen'   => 'true',
+				'width'    => 60,
+				'editable' => 'false',
+				'search'   => 'false'
+			)
+		);
+
 
 		$grid->showpager(true);
 		$grid->setWidth('');

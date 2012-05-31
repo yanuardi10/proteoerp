@@ -630,7 +630,7 @@ jQuery("#a1").click( function(){
 		#show/hide navigations buttons
 		$grid->setAdd(false);
 		$grid->setEdit(false);
-		$grid->setDelete(true);
+		$grid->setDelete(false);
 		$grid->setSearch(true);
 		$grid->setRowNum(30);
 		$grid->setShrinkToFit('false');
@@ -691,14 +691,14 @@ jQuery("#a1").click( function(){
 		unset($data['id']);
 		if($oper == 'add'){
 			if(false == empty($data)){
-				$this->db->insert('bmov', $data);
+				//$this->db->insert('bmov', $data);
 			}
 			return "Registro Agregado";
 
 		} elseif($oper == 'edit') {
 			//unset($data['ubica']);
-			$this->db->where('id', $id);
-			$this->db->update('bmov', $data);
+			//$this->db->where('id', $id);
+			//$this->db->update('bmov', $data);
 			return "Registro Modificado";
 
 		} elseif($oper == 'del') {
@@ -706,7 +706,7 @@ jQuery("#a1").click( function(){
 			if ($check > 0){
 				echo " El registro no puede ser eliminado; tiene movimiento ";
 			} else {
-				$this->db->simple_query("DELETE FROM bmov WHERE id=$id ");
+				//$this->db->simple_query("DELETE FROM bmov WHERE id=$id ");
 				logusu('bmov',"Registro ????? ELIMINADO");
 				echo "Registro Eliminado";
 			}
