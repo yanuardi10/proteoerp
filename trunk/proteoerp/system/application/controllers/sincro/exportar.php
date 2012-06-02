@@ -255,6 +255,7 @@ class Exportar extends Controller {
 				while ($row = mysql_fetch_assoc($query)) {
 					$sql = $this->db->insert_string($ttable, $row);
 					$sql = str_replace('INSERT ','INSERT IGNORE ',$sql);
+					$sql.="\n";
 
 					fwrite($handle, $sql);
 				}
