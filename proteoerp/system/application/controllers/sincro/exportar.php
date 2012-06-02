@@ -246,6 +246,21 @@ class Exportar extends Controller {
 			}
 			mysql_free_result($query);
 		}
+		
+		$ttables=array('grup','line','dpto');
+		foreach($ttables AS $ttable){
+			$mSQL="SELECT * FROM $ttable";
+			$query=mysql_unbuffered_query($mSQL,$this->db->conn_id);
+			if ($query!==false){
+				while ($row = mysql_fetch_assoc($query)) {
+					$sql = $this->db->insert_string($ttable, $row);
+					$sql = str_replace('INSERT ','INSERT IGNORE ',$sql);
+
+					fwrite($handle, $sql);
+				}
+				mysql_free_result($query);
+			}
+		}
 
 		if(!array_key_exists('HTTP_USER_AGENT', $_SERVER)) $_SERVER['HTTP_USER_AGENT']='curl';
 		fclose($handle);
