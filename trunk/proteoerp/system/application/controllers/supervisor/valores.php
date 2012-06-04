@@ -107,7 +107,8 @@ jQuery("#a1").click( function(){
 			'frozen'   => 'true',
 			'width'    => 60,
 			'editable' => 'false',
-			'search'   => 'false'
+			'search'   => 'false',
+			'hidden'   => 'true'
 		));
 
 		$grid->addField('nombre');
@@ -115,8 +116,9 @@ jQuery("#a1").click( function(){
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
-			'width'         => 200,
+			'width'         => 170,
 			'edittype'      => "'text'",
+			'editoptions'   => "{ readonly: 'readonly'}"
 		));
 
 
@@ -125,7 +127,7 @@ jQuery("#a1").click( function(){
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
-			'width'         => 200,
+			'width'         => 280,
 			'edittype'      => "'text'",
 		));
 
@@ -135,14 +137,14 @@ jQuery("#a1").click( function(){
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
-			'width'         => 200,
+			'width'         => 300,
 			'edittype'      => "'text'",
 		));
 
 
 		$grid->showpager(true);
 		$grid->setWidth('');
-		$grid->setHeight('290');
+		$grid->setHeight('390');
 		$grid->setTitle($this->titp);
 		$grid->setfilterToolbar(true);
 		$grid->setToolbar('false', '"top"');

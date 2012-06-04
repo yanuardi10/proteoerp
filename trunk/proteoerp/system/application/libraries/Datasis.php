@@ -177,11 +177,6 @@ class Datasis {
 		$CI->session->set_userdata('last_activity', time());
 		if($CI->session->userdata('logged_in')){
 			$usr=$CI->session->userdata('usuario');
-
-
-
-
-			
 			$mSQL   = "SELECT COUNT(*) FROM sida WHERE modulo = '$modulo' AND  usuario='$usr' AND acceso='S'";   //Proteo
 			$cursor = $CI->db->query($mSQL);
 			$rr    = $cursor->row_array();
@@ -410,6 +405,20 @@ class Datasis {
 		return $aa;
 	}
 
+	function prox_imenu($mod=''){
+		$mSQL  = "SELECT bbb.hexa FROM (";
+		$mSQL .= "SELECT max(b.valor+1) siguiente ";
+		$mSQL .= "FROM intramenu a JOIN serie b ON a.modulo=b.hexa ";
+		if($mod==''){
+			$mSQL .= "WHERE length(a.modulo)=1 ) aaa ";
+		} else {
+			$mSQL .= "WHERE MID(a.modulo,1,1)='$mod' AND length(a.modulo)=3 ) aaa";
+		}
+		$mSQL .= "JOIN serie bbb WHERE bbb.valor=aaa.siguiente ";
+		
+		$return = $this->dameval($mSQL);
+	}
+	
 	function fprox_numero($mcontador,$long=8){
 		$numero=$this->prox_numero($mcontador);
 		return str_pad($numero, $long, "0", STR_PAD_LEFT);
@@ -832,7 +841,7 @@ class Datasis {
 				}
 				$query->free_result();
 
-			} else { // JQGRID	
+			} else { // extj
 				$Otros1 = '<table>';
 				if ($query->num_rows() > 0) {
 					foreach ($query->result_array() as $row)
@@ -860,10 +869,40 @@ class Datasis {
 	}
 
 
+
+	//*******************************
+	//
+	// Modulos del Menu de DataSIS
+	//
+	//*******************************
+	function menuMod(){
+		$CI =& get_instance();
+		$mSQL = "SELECT (`a`.`codigo` + 10000) AS `id`, concat(substr(`a`.`modulo`,1,4), replace(replace(substr(`a`.`modulo`,5,16),'OTR',''),'LIS','')) AS `modulo`,-(1) AS `secu`,(select `b`.`mensaje` from `tmenus` `b` where ((`b`.`modulo` regexp '[0-9]') and (`b`.`ejecutar` like concat('%',substr(`a`.`modulo`,1,4),replace(replace(substr(`a`.`modulo`,5,16),'OTR',''),'LIS',''),'%'))) limit 1) AS `nombre` from `tmenus` `a` where ((`a`.`modulo` <> 'MENUINT') and (not((`a`.`modulo` regexp '[0-9]')))) group by concat(substr(`a`.`modulo`,1,4),replace(replace(substr(`a`.`modulo`,5,16),'OTR',''),'LIS',''))  order by `modulo`,`secu`";
+		$query = $CI->db->query($mSQL);
+		$Salida  = '';
+		$Salida .= "\t\t{ id:'10000', modulo:'MENUDTS', nombre:'MENUS PRINCIPAL DATASIS' },\n";
+		if ($query->num_rows() > 0) {
+			foreach ($query->result_array() as $row)
+			{
+				if (trim($row['modulo']) == 'TMENUS' )
+					$Salida .= "\t\t{ id:'".$row['id']."', modulo:'".trim($row['modulo'])."', nombre:'OPCIONES DEL MENUS' },\n";
+				elseif (trim($row['modulo']) == 'USERS' )
+					$Salida .= "\t\t{ id:'".$row['id']."', modulo:'".trim($row['modulo'])."', nombre:'USUARIOS DEL SISTEMA' },\n";
+				else
+					$Salida .= "\t\t{ id:'".$row['id']."', modulo:'".trim($row['modulo'])."', nombre:'".trim($row['nombre'])."' },\n";
+			}
+			$Salida = "var datamenu = [\n".$Salida."\t];";
+		}
+		$query->free_result();
+		return $Salida;
+	}
+
+
 	//******************************************
 	//
 	//      Convierte un SElect a Data JqGrid
-	//
+	//  mSQL : SQL SELECT
+	//  data : Variable para colocar local data
 	//******************************************
 	function jqdata($mSQL,$data) {
 		$CI =& get_instance();
@@ -1065,7 +1104,6 @@ class Datasis {
 		}
 		return $campos;
 	}
-
 
 	function jqgcampos($mSQL){
 		$CI =& get_instance();
