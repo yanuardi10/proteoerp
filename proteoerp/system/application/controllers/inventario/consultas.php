@@ -170,7 +170,7 @@ class Consultas extends Controller {
 			
 			$fotos=$this->datasis->dameval('SELECT COUNT(*) FROM sinvfot WHERE sinv_id='.$row->id);
 			if($fotos>0){
-				$data['img']       = img('inventario/fotos/thumbnail/'.$row->id);
+				$data['img'] = img('inventario/fotos/thumbnail/'.$row->id);
 			}
 			return $data;
 		}

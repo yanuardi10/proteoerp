@@ -17,7 +17,6 @@ if( isset($tema) == false) {
 echo style('themes/'.$tema.'/'.$tema.'.css'); 
 if ( isset($tema1) ) echo style('themes/'.$tema1.'/'.$tema1.'.css');
 if ( isset($anexos) ) echo style('themes/'.$anexos.'/'.$anexos.'.css'); 
-//echo style('themes/anexos/anexos.css');
 ?>
 
 
@@ -65,6 +64,7 @@ var url = '';
 var mGrid = '<?php echo $grid['gridname'] ?>';
 
 $(document).ready(function() {
+	var lastsel2;
 <?php
 	if ( isset($readyLayout) ){
 		echo $readyLayout;
@@ -83,23 +83,29 @@ $(document).ready(function() {
 <?php }; ?>
 
 	dtgLoadButton();
-	var grid = jQuery("#newapi<?php echo $grid['gridname'];?>").jqGrid({
+	var gridId1 = "#newapi<?php echo $grid['gridname'];?>";
+	var grid = jQuery(gridId1).jqGrid({
 		ajaxGridOptions : {type:"POST"},
 			jsonReader : {
 				root:"data",
 				repeatitems: false
-			},
-			ondblClickRow: function(id){
-				var gridwidth = jQuery("#newapi<?php echo $grid['gridname'];?>").width();
+			}
+<?php if( !isset($onclick1) ) { ?>
+			,ondblClickRow: function(id){
+				var gridwidth = jQuery(gridId1).width();
 				gridwidth = gridwidth/2;
 				grid.editGridRow(id, {closeAfterEdit:true,mtype:'POST'});
 				return;
 			}
+<?php } else 
+			echo $onclick1;
+?>
 
 <?php echo $grid['table'];?>
 
 	})
 <?php echo $grid['pager'];?>;
+
 <?php if (isset($grid1)) { ?>
 	var grid1 = jQuery("#newapi<?php echo $grid1['gridname'];?>").jqGrid({
 		ajaxGridOptions : {type:"POST"},
@@ -113,6 +119,7 @@ $(document).ready(function() {
 				grid1.editGridRow(id, {closeAfterEdit:true,mtype:'POST'});
 				return;
 			}
+			
 			<?php echo $grid1['table'];?>
 	})
 <?php

@@ -302,7 +302,12 @@ class Jqdatagrid
 	*/
 	public function setFormOptionsA($element)
 	{
-		$this->FormOptionsA = "{".$element."},";
+		if ($element == '')
+			$this->FormOptionsA = "";
+		elseif($element == '-')
+			$this->FormOptionsA = "-";
+		else
+			$this->FormOptionsA = "{".$element."},";
 	}
 
 	/**
@@ -312,7 +317,13 @@ class Jqdatagrid
 	*/
 	public function setFormOptionsE($element)
 	{
-		$this->FormOptionsE = "{".$element."},";
+		if ($element == '')
+			$this->FormOptionsE = "";
+		elseif($element == '-')
+			$this->FormOptionsA = "";
+		else
+			$this->FormOptionsE = "{".$element."},";
+
 	}
 
 	/**
@@ -326,7 +337,7 @@ class Jqdatagrid
 	}
 
 	/**
-	* After Submit Function
+	* Set ON Selection
 	* @param text $element
 	* @return void
 	*/
@@ -551,6 +562,7 @@ class Jqdatagrid
 
 		$html      = '';
 		$loadbutton = false;
+
 		if(false == empty($this->url_get)){
 			$html .=  $margen.",url:'{$this->url_get}/'\r\n";
 			$post = (false == empty($this->url_put))?$this->url_put:$this->url_get;
@@ -561,7 +573,6 @@ class Jqdatagrid
 		$html     .=  $margen.",shrinkToFit: $this->shrinkToFit \r\n";
 
 		if ( $this->grouping == 'true' ) {
-			//$html  .=  ",sortname: 'facultad' \r\n";
 			$html  .=  $margen.",grouping: true \r\n";
 			$html  .=  $margen.",groupingView: ".$this->groupingView." \r\n";
 		}
@@ -616,10 +627,6 @@ class Jqdatagrid
 		//$html .= ",onCellSelect: function(response,postdata){ alert('aaaaaa');}\r\n";
 		$querydata = array( 'dtgFields' => $this->_field );
 		$this->CI->session->set_userdata($querydata);
-
-		#propiedades de las ventanas
-		//$html .= ",edit:{ bottominfo: 'jojojojojoj',addCaption: 'Add Record' }";
-
 
 		#calendario
 		$calendar = "size: 10, maxlengh: 10, dataInit: function(element) { $(element).datepicker({dateFormat: 'yy-mm-dd',changeMonth: true,changeYear: true,yearRange: '" . (date('Y',time()) - 30) .":" .(date('Y',time()) + 10) ."'})}";
@@ -719,12 +726,16 @@ class Jqdatagrid
 
 			if ( $this->FormOptionsE=='' ){
 				$bar  .= "	{closeAfterEdit:true, mtype: 'POST'}/*edit options*/,\r\n";
+			} elseif($this->FormOptionsE=='-') {
+				$bar  .= "\n";
 			} else {
 				$bar  .= "	".$this->FormOptionsE."\n";
 			}
 
 			if ( $this->FormOptionsA=='' ){
 				$bar  .= "	{closeAfterAdd:true, mtype: 'POST'} /*add options*/,\r\n";
+			} elseif($this->FormOptionsA=='-') {
+				$bar  .= "\n";
 			} else {
 				$bar  .= "	".$this->FormOptionsA."\n";
 			}
@@ -733,6 +744,8 @@ class Jqdatagrid
 			
 			if ( $this->afterSubmit =='' ) {
 				$bar   .= "if (a.responseText.length > 0) alert(a.responseText); return [true, a ];";
+			} elseif($this->afterSubmit=='-') {
+				$bar  .= "\n";
 			} else {
 				$bar   .= $this->afterSubmit;
 			}
@@ -802,7 +815,7 @@ class Jqdatagrid
 		$sortdir    = $this->CI->input->get_post('sord');
 
 		$page       = $this->CI->input->get_post('page');
-		$filters     = $this->CI->input->get_post('filters');
+		$filters    = $this->CI->input->get_post('filters');
 		
 		if ( empty($sortby) )  {
 			$sortby  = $orden;
@@ -931,7 +944,7 @@ class Jqdatagrid
 					}
 				}
 			}
-
+			
 			if(empty($fields) && $prefix){
 				$fieldstable = $this->CI->db->list_fields($table);
 				foreach($fieldstable as $field){
@@ -947,26 +960,62 @@ class Jqdatagrid
 					}
 				}
 			}
-
+			
 			$fields = array_merge($fields, $fields2);
-
+			
 			$this->CI->db->select($fields);
 			$this->CI->db->from($table);
 			$rs = $this->CI->datasis->codificautf8($this->CI->db->get()->result_array());
-
+		
 		}else{
 			$rs = $this->CI->datasis->codificautf8($this->CI->db->get()->result_array());;
 		}
 		//echo $this->CI->db->last_query();
 		$queryString = $this->CI->db->last_query();
-
+		
 		$querydata = array( 'dtgQuery'  => $this->CI->db->last_query() );
-
+		
 		$this->CI->session->set_userdata($querydata);
-
+		
 		$response['data'] = $rs;
 		return $response;
 	}
+
+
+	/**
+	* Return an Array with table information:
+	* with a given select
+	*/
+	public function getDataSimple($mSQL)
+	{
+		$limit      = $this->CI->input->get_post('rows');
+		$limitstart = $this->CI->input->get_post('limitstart');
+		$filter     = $this->CI->input->get_post('searchField');
+		$filtertext = $this->CI->input->get_post('searchString');
+		$oper       = $this->CI->input->get_post('searchOper');
+
+		$sortby     = $this->CI->input->get_post('sidx');
+		$sortdir    = $this->CI->input->get_post('sord');
+
+		$page       = $this->CI->input->get_post('page');
+		$filters    = $this->CI->input->get_post('filters');
+		
+		$query = $this->CI->db->query($mSQL);
+		$rs = $this->CI->datasis->codificautf8($query->result_array());;
+		
+		//echo $this->CI->db->last_query();
+		$queryString = $this->CI->db->last_query();
+	
+		$querydata = array( 'dtgQuery'  => $this->CI->db->last_query() );
+		
+		$this->CI->session->set_userdata($querydata);
+		
+		$response['data'] = $rs;
+		return $response;
+	}
+
+
+
 
 	/***********************************************************************
 	* Execute CRUD process
@@ -1053,8 +1102,8 @@ class Jqdatagrid
 				$i =0;
 				foreach($rules as $key=>$val) {
 					$field = $val['field'];
-					$op = $val['op'];
-					$v = $val['data'];
+					$op    = $val['op'];
+					$v     = $val['data'];
 					if($v && $op) {
 						if (in_array( $qopers[$op], $operador)) { 
 							$mWHERE[] = array( trim($qopers[$op]), $field.$qopers[$op], $v, $gopr );

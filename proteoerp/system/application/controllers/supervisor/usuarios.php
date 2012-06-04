@@ -253,6 +253,7 @@ jQuery("#a1").click( function(){
 			'formoptions'   => '{ label:"Fecha" }'
 		));
 
+/*
 		$grid->addField('us_horae');
 		$grid->label('Hora Entr');
 		$grid->params(array(
@@ -284,6 +285,7 @@ jQuery("#a1").click( function(){
 			'width'         => 60,
 			'edittype'      => "'text'",
 		));
+*/
 
 		$grid->showpager(true);
 		$grid->setWidth('');

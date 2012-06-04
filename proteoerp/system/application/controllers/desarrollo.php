@@ -541,10 +541,10 @@ class Desarrollo extends Controller{
 
 			$str .= $tab1.'function index(){'."\n";
 			$str .= $tab2.'/*if ( !$this->datasis->iscampo(\''.$db.'\',\'id\') ) {'."\n";
-			$str .= $tab2.'$this->db->simple_query(\'ALTER TABLE '.$db.' DROP PRIMARY KEY\');'."\n";
-			$str .= $tab2.'$this->db->simple_query(\'ALTER TABLE '.$db.' ADD UNIQUE INDEX numero (numero)\');'."\n";
-			$str .= $tab2.'$this->db->simple_query(\'ALTER TABLE '.$db.' ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)\');'."\n";
-			$str .= $tab1.'};*/'."\n";
+			$str .= $tab3.'$this->db->simple_query(\'ALTER TABLE '.$db.' DROP PRIMARY KEY\');'."\n";
+			$str .= $tab3.'$this->db->simple_query(\'ALTER TABLE '.$db.' ADD UNIQUE INDEX numero (numero)\');'."\n";
+			$str .= $tab3.'$this->db->simple_query(\'ALTER TABLE '.$db.' ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)\');'."\n";
+			$str .= $tab2.'};*/'."\n";
 			$str .= $tab2.'redirect($this->url.\'jqdatag\');'."\n";
 			$str .= $tab1.'}'."\n\n";
 			
