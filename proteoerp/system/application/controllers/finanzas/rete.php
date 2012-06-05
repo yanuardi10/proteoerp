@@ -1,5 +1,346 @@
 <?php require_once(BASEPATH.'application/controllers/validaciones.php');
 //retenciones
+class Rete extends Controller {
+	var $mModulo='RETE';
+	var $titp='Codigos Retenciones de ISLR';
+	var $tits='Codigos Retenciones de ISLR';
+	var $url ='finanzas/rete/';
+
+	function Rete(){
+		parent::Controller();
+		$this->load->library('rapyd');
+		$this->load->library('jqdatagrid');
+		//$this->datasis->modulo_nombre('RETE');
+	}
+
+	function index(){
+		if ( !$this->datasis->iscampo('rete','concepto') ) {
+			$this->db->simple_query('ALTER TABLE rete ADD COLUMN concepto VARCHAR(10) NULL ');
+		};
+		if ( !$this->datasis->iscampo('rete','id') ) {
+			$this->db->simple_query('ALTER TABLE rete DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE rete ADD UNIQUE INDEX codigo (codigo)');
+			$this->db->simple_query('ALTER TABLE rete ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
+		};
+		redirect($this->url.'jqdatag');
+	}
+
+	//***************************
+	//Layout en la Ventana
+	//
+	//***************************
+	function jqdatag(){
+
+		$grid = $this->defgrid();
+		$param['grid'] = $grid->deploy();
+
+		$bodyscript = '
+<script type="text/javascript">
+$(function() {
+	$( "input:submit, a, button", ".otros" ).button();
+});
+
+jQuery("#a1").click( function(){
+	var id = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
+	if (id)	{
+		var ret = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getRowData\',id);
+		window.open(\'/proteoerp/formatos/ver/RETE/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
+});
+</script>
+';
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		$WestPanel = '
+<div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content">
+<div class="anexos">
+
+<table id="west-grid" align="center">
+	<tr>
+		<td><div class="tema1"><table id="listados"></table></div></td>
+	</tr>
+	<tr>
+		<td><div class="tema1"><table id="otros"></table></div></td>
+	</tr>
+</table>
+
+<table id="west-grid" align="center">
+	<tr>
+		<td></td>
+	</tr>
+</table>
+</div>
+'.
+//		<td><a style="width:190px" href="#" id="a1">Imprimir Copia</a></td>
+'</div> <!-- #LeftPane -->
+';
+
+		$SouthPanel = '
+<div id="BottomPane" class="ui-layout-south ui-widget ui-widget-content">
+<p>'.$this->datasis->traevalor('TITULO1').'</p>
+</div> <!-- #BottomPanel -->
+';
+		$param['WestPanel']  = $WestPanel;
+		//$param['EastPanel']  = $EastPanel;
+		$param['SouthPanel'] = $SouthPanel;
+		$param['listados'] = $this->datasis->listados('RETE', 'JQ');
+		$param['otros']    = $this->datasis->otros('RETE', 'JQ');
+		$param['tema1']     = 'darkness';
+		$param['anexos']    = 'anexos1';
+		$param['bodyscript'] = $bodyscript;
+		$param['tabs'] = false;
+		$param['encabeza'] = $this->titp;
+		$this->load->view('jqgrid/crud',$param);
+	}
+
+	//***************************
+	//Definicion del Grid y la Forma
+	//***************************
+	function defgrid( $deployed = false ){
+		$i      = 1;
+		$editar = "true";
+		$link  = site_url('ajax/buscacpla');
+
+		$grid  = new $this->jqdatagrid;
+
+		$grid->addField('codigo');
+		$grid->label('Codigo');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:6, maxlength: 4 }',
+		));
+
+		$grid->addField('activida');
+		$grid->label('Activida');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 250,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:50, maxlength: 45 }',
+		));
+
+		$grid->addField('tipo');
+		$grid->label('Tipo');
+		$grid->params(array(
+			'align'         => "'center'",
+			'search'        => 'false',
+			'editable'      => $editar,
+			'width'         => 40,
+			'editrules'     => '{ required:true}',
+			'edittype'      => "'select'",
+			'search'        => 'false',
+			'editoptions'   => '{value: {"JD":"Juridio Domiciliado", "JN":"Juridico No Domiciliado", "NR":"Natural Residente","NN":"Natural No Residente"} }'
+
+		));
+
+		$grid->addField('base1');
+		$grid->label('Base');
+		$grid->params(array(
+			'search'        => 'false',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 70,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+		$grid->addField('tari1');
+		$grid->label('Retencion%');
+		$grid->params(array(
+			'search'        => 'false',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 70,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+		$grid->addField('pama1');
+		$grid->label('Exencion');
+		$grid->params(array(
+			'search'        => 'false',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 70,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+		$grid->addField('cuenta');
+		$grid->label('Cta. Contable');
+		$grid->params(array(
+			'align'         => "'center'",
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 100,
+			'edittype'      => "'text'",
+			//'editrules'     => '{ required:true}',
+			//'editoptions'   => '{ size:30, maxlength: 15 }',
+			'editoptions' => '{'.$grid->autocomplete($link, 'cuenta','cucucu','<div id=\"cucucu\"><b>"+ui.item.descrip+"</b></div>').'}',
+		));
+
+		$grid->addField('concepto');
+		$grid->label('Concepto');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 60,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:10, maxlength: 10 }',
+		));
+
+
+		$grid->addField('tipodesc');
+		$grid->label('Persona');
+		$grid->params(array(
+			'align'         => "'center'",
+			'search'        => 'false',
+			'editable'      => $editar,
+			'width'         => 100,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 2 }',
+		));
+
+
+		$grid->addField('id');
+		$grid->label('Id');
+		$grid->params(array(
+			'align'    => "'center'",
+			'frozen'   => 'true',
+			'width'    => 60,
+			'editable' => 'false',
+			'search'   => 'false',
+			'hidden'   => 'true'
+		));
+
+		$grid->setGrouping('tipodesc');
+
+		$grid->showpager(true);
+		$grid->setWidth('');
+		$grid->setHeight('370');
+		$grid->setTitle($this->titp);
+		$grid->setfilterToolbar(true);
+		$grid->setToolbar('false', '"top"');
+
+		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
+
+		#show/hide navigations buttons
+		$grid->setAdd(true);
+		$grid->setEdit(true);
+		$grid->setDelete(true);
+		$grid->setSearch(false);
+		$grid->setRowNum(100);
+		$grid->setShrinkToFit('false');
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		#GET url
+		$grid->setUrlget(site_url($this->url.'getdata/'));
+
+		if ($deployed) {
+			return $grid->deploy();
+		} else {
+			return $grid;
+		}
+	}
+
+	/**
+	* Busca la data en el Servidor por json
+	*/
+	function getdata()
+	{
+		$grid       = $this->jqdatagrid;
+
+		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
+		$mWHERE = $grid->geneTopWhere('rete');
+		$mSQL = "
+		SELECT codigo, activida, base1, tari1, pama1, tipo, cuenta, concepto, id,
+		CONCAT(tipo,' ',if(tipo='JD','Juridico Domiciliado',
+		  if(tipo='JN','Juridico No Domiciliado',
+		    if(tipo='NR','Natural Domiciliado','Natural No Domiciliado')
+		  )
+		)) tipodesc
+		FROM rete
+		ORDER BY tipo, codigo
+		";
+
+		//$response   = $grid->getData('rete', array(array()), array(), false, $mWHERE, 'tipo, codigo' );
+		$response   = $grid->getDataSimple($mSQL);
+		$rs = $grid->jsonresult( $response);
+		echo $rs;
+	}
+
+	/**
+	* Guarda la Informacion
+	*/
+	function setData()
+	{
+		$this->load->library('jqdatagrid');
+		$oper   = $this->input->post('oper');
+		$id     = $this->input->post('id');
+		$data   = $_POST;
+		$check  = 0;
+
+		unset($data['oper']);
+		unset($data['id']);
+		unset($data['tipodesc']);
+
+		if($oper == 'add'){
+			if(false == empty($data)){
+				$codigo    = $this->input->post('codigo');
+				$this->db->insert('rete', $data);
+				echo "Registro Agregado";
+				logusu('RETE',"Registro $codigo INCLUIDO");
+			} else
+			echo "Fallo Agregado!!!";
+
+		} elseif($oper == 'edit') {
+			$codigo    = $this->input->post('codigo');
+			unset($data['codigo']);
+			$this->db->where('id', $id);
+			$this->db->update('rete', $data);
+			logusu('RETE',"Registro $codigo MODIFICADO");
+			echo "Registro Modificado";
+
+		} elseif($oper == 'del') {
+			$codigo    = $this->input->post('codigo');
+			$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM gser WHERE creten='$codigo'");
+			if ($check > 0){
+				echo " El registro no puede ser eliminado; tiene movimiento ";
+			} else {
+				$this->db->simple_query("DELETE FROM rete WHERE id=$id ");
+				logusu('RETE',"Registro $codigo ELIMINADO");
+				echo "Registro Eliminado";
+			}
+		};
+	}
+}
+
+
+
+/*
  class Rete extends validaciones {
 
 	var $data_type = null;
@@ -276,7 +617,7 @@
 	}
 
 
-//0414 376 0149 juan picapiedras
+
 
 //****************************************************************8
 //
@@ -418,4 +759,5 @@ var cplaStore = new Ext.data.Store({
 	}
 
 }
+*/
 ?>
