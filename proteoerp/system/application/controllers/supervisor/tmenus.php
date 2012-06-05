@@ -173,7 +173,6 @@ jQuery("#a1").click( function(){
 			'editable'      => $editar,
 			'width'         => 200,
 			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:30, maxlength: 120 }',
 		));
 

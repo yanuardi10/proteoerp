@@ -28,11 +28,12 @@ echo script('plugins/jquery.numeric.pack.js');
 echo script('jquery-ui.custom.min.js')
 ?>
 
+<!-- Block Out -->
+<?php echo script('plugins/jquery.blockUI.js'); ?>
 
 <!-- Impromptu -->
 <?php echo script('jquery-impromptu.js') ?>
 <?php echo style('impromptu/default.css') ?>
-
 
 <!-- JQGRID -->
 <?php echo style('themes/ui.jqgrid.css') ?>
@@ -199,6 +200,25 @@ if (isset($funciones))  echo $funciones;
 ?>
 
 });
+
+<?php if (isset($postready))  echo $postready; ?>
+
+function esperar(url){
+	$.blockUI({
+		message: $('#displayBox'), 
+		css: { 
+			top:  ($(window).height() - 400) /2 + 'px', 
+			left: ($(window).width()  - 400) /2 + 'px', 
+			width: '300px' 
+		}
+	});
+	$.get(url, function(data) {
+		setTimeout($.unblockUI, 2); 
+		$.prompt(data);
+	});
+	return false;
+};
+
 </script>
 
 <?php
@@ -237,6 +257,8 @@ if(isset($centerpanel) == true) {
 </div>
 
 <?php if(isset($bodyscript)) echo $bodyscript; ?>
+
+<div id="displayBox" style="display:none" ><p>Disculpe por la espere.....</p><img  src="<?php echo base_url() ?>images/doggydig.gif" width="131px" height="79px"/></div>
 
 </body>
 </html>
