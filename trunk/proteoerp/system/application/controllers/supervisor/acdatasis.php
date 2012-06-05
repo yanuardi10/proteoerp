@@ -98,7 +98,7 @@ class acdatasis extends Controller {
 		echo $this->db->simple_query($mSQL);
 	}
 
-	function copia($usua=null){
+	function copiav(){
 		$this->rapyd->load('datafilter','datagrid');
 		$usuario=$usua;
 
@@ -165,11 +165,11 @@ class acdatasis extends Controller {
 		}else{
 			$tabla='';
 		}
-
+		
 		$data['content'] = $filter->output.form_open('').$tabla.form_close();
 		$data['title']   = heading('Copiar Accesos de Usuario en DataSIS');
 		$data['head']    = script('jquery.js').$this->rapyd->get_head();
-		$this->load->view('view_ventanas', $data);
+		$this->load->view('view_ventanas', '');
 	}
 
 	function copiar($usr,$usuario){
@@ -202,18 +202,26 @@ $(function() {
 	$( "input:submit, a, button", ".otros" ).button();
 });
 
-jQuery("#a1").click( function(){
-	var id = jQuery("'. $grid1Id.'").jqGrid(\'getGridParam\',\'selrow\');
-	if (id)	{
-		var ret = jQuery("'. $grid1Id.'").jqGrid(\'getRowData\',id);
-		window.open(\'/proteoerp/formatos/ver/VIEW_TMENUSACC/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
-	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
+jQuery("#bcopiar").click( function(){
+	var usuario = $("#usuario").val();
+	var ucopia  = $("#copia").val();
+	if ( ucopia == usuario ){
+		$.prompt("<h1>Usuario y copia iguales!!!</h1>");
+	} else {	
+		if (ucopia)	{
+			esperar(\''.site_url("supervisor/acdatasis/copia/").'\'+"/"+usuario+"/"+ucopia);
+		} else {
+			$.prompt("<h1>Por favor Seleccione un Usuario del cual Copiar!!!</h1>");
+		}
+	}
 });
 </script>
 ';
 
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		$mSQL = "SELECT us_codigo, CONCAT(us_codigo,' ', us_nombre) FROM usuario WHERE supervisor='N' ORDER BY us_codigo";
 
 		$WestPanel = '
 <div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content">
@@ -223,12 +231,12 @@ jQuery("#a1").click( function(){
 	<tr>
 	<td>
 		<table width="100%"><tr>
-			<td style="font-size:16px;font-weight:bold;">Usuario:</td><td>&nbsp;'.
-				$this->datasis->llenaopciones("SELECT us_codigo, CONCAT(us_codigo,' ', us_nombre) FROM usuario WHERE supervisor='N' ORDER BY us_codigo", false, $id='usuario' )
-			.'</td>
+			<td style="font-size:16px;font-weight:bold;">Usuario:</td>
+			<td>&nbsp;'.$this->datasis->llenaopciones($mSQL, false, $id='usuario' ).'</td>
+			<td rowspan="2"><div class="otros"><a style="width:70px;height:30px;" href="#" id="bcopiar">Copiar</a></div><td>
 		</tr></tr>
 			<td style="font-size:16px;font-weight:bold;">Copiar de:</td><td>&nbsp;'.
-				$this->datasis->llenaopciones("SELECT us_codigo, CONCAT(us_codigo,' ', us_nombre) FROM usuario WHERE supervisor='N' ORDER BY us_codigo", true, $id='copia' )
+				$this->datasis->llenaopciones($mSQL, true, $id='copia' )
 			.'</td>
 		</tr></table>
 	</td>
@@ -243,9 +251,7 @@ jQuery("#a1").click( function(){
 	</tr>
 </table>
 </div>
-'.
-//		<td><a style="width:190px" href="#" id="a1">Imprimir Copia</a></td>
-'</div> <!-- #LeftPane -->
+</div> <!-- #LeftPane -->
 ';
 
 
@@ -274,12 +280,14 @@ jQuery("#a1").click( function(){
 			jQuery("'.$grid1Id.'").jqGrid(\'setGridParam\',{url:"'.site_url($this->url.'getdata/').'/"+ret.modulo+"/"+$("#usuario").val(), page:1});
 			jQuery("'.$grid1Id.'").trigger("reloadGrid");
 		}
-	});
+	});	
 	'.$this->datasis->menuMod().'
 
 	for(var i=0;i<=datamenu.length;i++) jQuery("#titulos").jqGrid(\'addRowData\',i+1,datamenu[i]);
+
 ';
 
+		$postready = '';
 
 		$onclick1 = '
 			,ondblClickRow: function(id){
@@ -292,6 +300,7 @@ jQuery("#a1").click( function(){
 		$param['onclick1']   = $onclick1;
 		$param['WestSize']   = 390;
 		$param['funciones']  = $funciones;
+		//$param['postready']  = $postready;
 		//$param['EastPanel']  = $EastPanel;
 		$param['SouthPanel'] = $SouthPanel;
 		$param['listados']   = $this->datasis->listados('VIEW_TMENUSACC', 'JQ');
@@ -435,6 +444,9 @@ jQuery("#a1").click( function(){
 		$rs = '';
 		if ( $modulo) {
 			$usuario = $this->uri->segment(5);
+			// CREA SI FALTA ALGUNO
+			$mSQL = "INSERT IGNORE INTO sida SELECT ? usuario, codigo modulo, 'N' acceso FROM tmenus";
+			$this->db->simple_query($mSQL, array($usuario));
 			if ( $modulo == 'MENUDTS') {
 				$mSQL  = "select a.codigo id, a.modulo, a.secu, a.titulo nombre, b.acceso, b.usuario ";
 				$mSQL .= "from tmenus a left join sida b on a.codigo = b.modulo ";
@@ -499,7 +511,31 @@ jQuery("#a1").click( function(){
 		};
 	}
 
-
+	function copia(){
+		$usuario = $this->uri->segment(4);
+		$copia   = $this->uri->segment(5);
+		
+		if ( $usuario != $copia ){
+			//Borra los del usuario
+			$mSQL = "DELETE FROM sida WHERE usuario=? ";
+			$this->db->query($mSQL, array($usuario));
+			echo "Eliminado Accesos anteriores<br>";
+			
+			//Porsia Agrega desde tmenus
+			$mSQL = "INSERT IGNORE INTO sida (usuario, modulo, acceso) SELECT ? usuario, codigo modulo, 'N' FROM tmenus ";
+			$this->db->query($mSQL, array($copia));
+			echo 'Insertados Accesos Faltantes<br>';
+			
+			//Copia desde el usuario copia
+			$mSQL = "INSERT INTO sida (usuario, modulo, acceso) SELECT ? usuario, modulo, acceso FROM sida WHERE usuario=? ";
+			$this->db->query($mSQL, array($usuario, $copia ));
+			echo "Insertados Nuevos Accesos <br>";
+			
+			echo "<h1>El Usuario ".$usuario." ahora tiene los accesos de ".$copia."</h1>";
+		} else {
+			echo "<h1>Usuarios origen y destino iguales ".$usuario."=".$copia."</h1>";
+		}
+	}
 
 }
 ?>

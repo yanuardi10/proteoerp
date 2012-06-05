@@ -586,9 +586,21 @@ class Usuarios extends Controller {
 	}
 
 	function instalar(){
-		$mSQL="ALTER TABLE `usuario`  ADD COLUMN `almacen` CHAR(4) NULL";
-		$this->db->simple_query($mSQL);
-		echo "Agregado campo almacen";
+		if ( !$this->datasis->iscampo('usuario','almacen') ) {
+			$mSQL="ALTER TABLE `usuario`  ADD COLUMN `almacen` CHAR(4) NULL";
+			$this->db->simple_query($mSQL);
+			echo "Agregado campo almacen";
+		}
+		if ( !$this->datasis->iscampo('usuario','sucursal') ) {
+			$mSQL="ALTER TABLE `usuario`  ADD COLUMN `sucursal` CHAR(2) NULL";
+			$this->db->simple_query($mSQL);
+			echo "Agregado campo sucursal";
+		}
+		if ( !$this->datasis->iscampo('usuario','activo') ) {
+			$mSQL="ALTER TABLE `usuario`  ADD COLUMN `activo` CHAR(1) NULL";
+			$this->db->simple_query($mSQL);
+			echo "Agregado campo activo";
+		}
 	}
 
 

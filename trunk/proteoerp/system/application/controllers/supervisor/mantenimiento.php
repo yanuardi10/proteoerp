@@ -232,7 +232,7 @@ function bobo(url){'."
 </script>
 ';
 
-		$espera = '<div id="displayBox" style="display:none" ><p>Espere.....</p><img  src="'.base_url().'images/doggydig.gif" width="131px" height="79px"  /></div>';
+		$espera = '<div id="displayBox" style="display:none" ><p>Disculpe por la espere.....</p><img  src="'.base_url().'images/doggydig.gif" width="131px" height="79px"  /></div>';
 		$data['content'] .= $espera;
 		//$data['content'] .= $porcent;
 
