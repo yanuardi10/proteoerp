@@ -114,7 +114,7 @@ class Rcaj extends validaciones {
 			$grid->column('Numero'     ,'<sinulo><#numero#>|---</sinulo>','align=\'center\'');
 			$grid->column('Fecha'      ,'<dbdate_to_human><#fecha#></dbdate_to_human>');
 			$grid->column('Cajero'     ,'<#cajero#>-<#nombre#>','align=\'center\'');
-			$grid->column('Recibido'   ,'<sinulo><nformat><#recibido#></nformat>|0.00</sinulo>','align=\'right\'');
+			$grid->column('Entregado por el cajero'   ,'<sinulo><nformat><#recibido#></nformat>|0.00</sinulo>','align=\'right\'');
 			//$grid->column('Ingreso'    ,'<nformat><#ingreso#></nformat>' ,'align=\'right\'');
 			$grid->column('Status/Caja','<iconcaja><#cajero#>|<#fecha#>|<#numero#>|<#tipo#>|'.$reve.'</iconcaja>','align="center"');
 			$grid->column('Ver html'   ,"<siinulo><#numero#>|---|$urih</siinulo>",'align=\'center\'');
