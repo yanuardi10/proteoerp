@@ -480,13 +480,30 @@ class Ajax extends Controller {
 				}
 				$data = json_encode($retorno);
 			}else{
-				$retArray[0]['label']    = 'No se consiguieron cuentas';
-				$retArray[0]['value']    = '';
-				$retArray[0]['descrip']  = '';
-				$retArray[0]['departa']  = '';
-				$retArray[0]['ccosto']   = '';
+				//Busca por Descripcion
+				$qdb   = $this->db->escape('%'.$mid.'%');
+				$mSQL="SELECT codigo, descrip, departa, ccosto FROM cpla WHERE descrip LIKE $qdb AND codigo LIKE \"$qformato\"";;
+				$query = $this->db->query($mSQL);
+				if ($query->num_rows() > 0){
+					foreach( $query->result_array() as  $row ) {
+						$retArray['label']    = $row['codigo'].'-'.utf8_encode($row['descrip']);
+						$retArray['value']    = $row['codigo'];
+						$retArray['descrip']  = utf8_encode($row['descrip']);
+						$retArray['departa']  = $row['departa'];
+						$retArray['ccosto']   = $row['ccosto'];
+	
+						array_push($retorno, $retArray);
+					}
+					$data = json_encode($retorno);
+				}else{
+					$retArray[0]['label']    = 'No se consiguieron cuentas';
+					$retArray[0]['value']    = '';
+					$retArray[0]['descrip']  = '';
+					$retArray[0]['departa']  = '';
+					$retArray[0]['ccosto']   = '';
 
-				$data = json_encode($retArray);
+					$data = json_encode($retArray);
+				}
 			}
 		}
 		echo $data;

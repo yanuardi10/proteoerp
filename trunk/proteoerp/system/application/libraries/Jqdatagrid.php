@@ -513,7 +513,7 @@ class Jqdatagrid
 		}
 		if ( $this->grouping == 'true' ){
 			$this->grouping = 'true';
-			$this->groupingView = "{ groupField : ['".$grupo."'], groupColumnShow : [false] }";
+			$this->groupingView = "{ groupField : ['".$grupo."'], groupColumnShow : [false], groupCollapse: false, groupText: ['<b>{0}</b>'] }";
 		} else {
 			$this->grouping = 'false';
 			$this->groupingView = "";
@@ -970,7 +970,7 @@ class Jqdatagrid
 		}else{
 			$rs = $this->CI->datasis->codificautf8($this->CI->db->get()->result_array());;
 		}
-		//echo $this->CI->db->last_query();
+		memowrite($this->CI->db->last_query(),'RETE');
 		$queryString = $this->CI->db->last_query();
 		
 		$querydata = array( 'dtgQuery'  => $this->CI->db->last_query() );
