@@ -265,7 +265,7 @@ jQuery("#a1").click( function(){
 		#show/hide navigations buttons
 		$grid->setAdd(true);                               
 		$grid->setEdit(true);
-		$grid->setDelete(true);
+		$grid->setDelete(false);
 		$grid->setSearch(true);
 		$grid->setRowNum(30);
             
@@ -380,13 +380,12 @@ jQuery("#a1").click( function(){
 			return;
 
 		} elseif($oper == 'del') {
-			$this->db->simple_query("DELETE FROM sfpa WHERE id=$id ");
+			//$this->db->simple_query("DELETE FROM sfpa WHERE id=$id ");
 			logusu('sfpa',"Cambio de Cheque $id ELIMINADO");
 			echo "Registro Eliminado";
 			return;
 		}
 	}
-
 
 	function instalar(){
 	

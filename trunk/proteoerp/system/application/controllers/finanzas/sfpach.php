@@ -281,7 +281,7 @@ jQuery("#a1").click( function(){
 				'width'       => 150,
 				'editable'    => 'true',
 				'edittype'    => "'text'",
-				'editrules'   => '{required:true}',
+				'editrules'   => '{required:false}',
 				'editoptions' => '{ size:20, maxlength: 20 }',
 			)
 		);
@@ -310,7 +310,6 @@ jQuery("#a1").click( function(){
 				'search'        => 'true'
 			)
 		);
-
 
 
 		$grid->addField('nombre');
@@ -403,7 +402,7 @@ jQuery("#a1").click( function(){
 		#show/hide navigations buttons
 		$grid->setAdd(false);
 		$grid->setEdit(true);
-		$grid->setDelete(true);
+		$grid->setDelete(false);
 		$grid->setSearch(true);
 		$grid->setRowNum(20);
             
@@ -510,7 +509,7 @@ jQuery("#a1").click( function(){
 			return;
 
 		} elseif($oper == 'del') {
-			$this->db->simple_query("DELETE FROM sfpa WHERE id=$id ");
+			//$this->db->simple_query("DELETE FROM sfpa WHERE id=$id ");
 			logusu('sfpa',"Cambio de Cheque $id ELIMINADO");
 			echo "Registro Eliminado";
 			return;
