@@ -84,8 +84,8 @@ $(function() {
 
 	$( "#cerrardpt-form" ).dialog({
 		autoOpen: false,
-		height: 300,
-		width: 420,
+		height: 200,
+		width: 350,
 		modal: true,
 		buttons: {
 			"Guardar": function() {
@@ -198,14 +198,19 @@ $(function() {
 <p>'.$this->datasis->traevalor('TITULO1').'</p>
 </div> <!-- #BottomPanel -->
 
-<div id="cerrardpt-form" title="Enviar a Depositar">
+<div id="cerrardpt-form" title="Recepcion de Depositos">
 	<p class="validateTips" style="font-size:18px">Indique el numero y la fecha.</p>
 	<form>
 	<fieldset style="border:none;font-size:12px;">
-		<label for="num">Numero</label>
-		<input type="text" id="fnumero"><br><br>
-		<label for="fec">Fecha</label>
-		<input type="text" id="ffecha" value ="'.date('d/m/Y').'">
+		<table width="90%">
+		<tr>
+			<td><label for="num">Numero</label></td>
+			<td><input type="text" id="fnumero"></td>
+		</tr><tr>
+			<td><label for="fec">Fecha</label></td>
+			<td><input type="text" id="ffecha" value ="'.date('d/m/Y').'"></td>
+		</tr>
+		</table>
 	</fieldset>
 	</form>
 </div>
