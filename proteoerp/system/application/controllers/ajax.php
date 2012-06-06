@@ -861,5 +861,20 @@ class Ajax extends Controller {
 		echo $this->datasis->llenaopciones($mSQL, true);
 	}
 
+	function dddivi(){
+		$mSQL = "SELECT division, CONCAT(division,' ',descrip) descrip  FROM divi ORDER BY division";
+		echo $this->datasis->llenaopciones($mSQL, true);
+	}
+
+	function dddepag(){
+		$mSQL = "SELECT depto, CONCAT(depto,' ',descrip) descrip FROM dpto WHERE tipo='G' ORDER BY depto";
+		echo $this->datasis->llenaopciones($mSQL, true);
+	}
+
+	function dddepai(){
+		$mSQL = "SELECT depto, CONCAT(depto,' ',descrip) descrip FROM dpto WHERE tipo='I' ORDER BY depto";
+		echo $this->datasis->llenaopciones($mSQL, true);
+	}
+
 	
 }

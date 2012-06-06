@@ -1,7 +1,7 @@
 <?php
 class sfpach extends Controller {
-	var $titp='Modificacion de Medios de Pago';
-	var $tits='Modificacion de Medios de Pago';
+	var $titp='Arreglo y Deposito de Cheques ';
+	var $tits='Arreglo y Deposito de Cheques';
 	var $url ='finanzas/sfpach/';
 
 	function sfpach(){
@@ -395,8 +395,8 @@ jQuery("#a1").click( function(){
 		$grid->setMultiSelect(true);
 		$grid->setonSelectRow('sumamonto');
 
-		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){ if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
-		$grid->setFormOptionsA('closeAfterAdd: true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){ if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 420, height:220, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){ if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		$grid->setFormOptionsA('closeAfterAdd: true, mtype: "POST", width: 400, height:220, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){ if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
 
 		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
 
