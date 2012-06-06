@@ -231,6 +231,7 @@ jQuery("#a1").click( function(){
 		unset($data['id']);
 		if($oper == 'add'){
 			if(false == empty($data)){
+				$departa = $this->input->post('departa');
 				$this->db->insert('depa', $data);
 				$this->db->simple_query("UPDATE depa a JOIN divi b ON a.division=b.division SET a.descrip=b.descrip");
 				echo "Registro Agregado ".$departa;

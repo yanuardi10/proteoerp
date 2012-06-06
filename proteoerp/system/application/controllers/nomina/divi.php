@@ -215,7 +215,6 @@ jQuery("#a1").click( function(){
 
 		} elseif($oper == 'del') {
 			$division = $this->datasis->dameval("SELECT division FROM divi WHERE id=$id");
-			
 			$chek  =  $this->datasis->dameval("SELECT COUNT(*) FROM pers WHERE divi='$division'");
 			$chek +=  $this->datasis->dameval("SELECT COUNT(*) FROM depa WHERE division='$division'");
 			if ($check > 0){
