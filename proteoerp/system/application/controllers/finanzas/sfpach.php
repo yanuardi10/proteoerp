@@ -600,6 +600,9 @@ jQuery("#a1").click( function(){
 		$data['transac']  = $mTRANSAC;
 		$this->db->insert('bmov', $data);
 		
+		//Actualiza saldo
+		$this->datasis->actusal($envia, $fecha, -$monto);
+		
 		logusu('BCAJ',"Deposito de cheques de caja Nro. $XNUMERO creada");
 		
 		echo "{\"numero\":\"$XNUMERO\",\"mensaje\":\"Registro Agregado\"}";

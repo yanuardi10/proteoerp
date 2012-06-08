@@ -31,7 +31,6 @@ class Datasis {
 		return $this->damerow($mSQL, $data );
 	}
 
-
 	// Tae valor de la table VALORES
 	function traevalor($nombre,$descrip=''){
 		$CI =& get_instance();

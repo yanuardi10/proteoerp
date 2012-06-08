@@ -222,6 +222,7 @@ jQuery("#a1").click( function(){
 		if($oper == 'add'){
 			if(false == empty($data)){
 				$this->db->insert('zona', $data);
+				logusu('ZONA',"Registro ".$data['codigo']." ".$data['nombre']." INCLUIDO");
 			}
 			$mRet = "Registro Agregado";
 
@@ -232,6 +233,7 @@ jQuery("#a1").click( function(){
 				unset($data['codigo']);
 				$this->db->where( 'id',   $id);
 				$this->db->update('zona', $data);
+				logusu('ZONA',"Registro ".$data['codigo']." ".$data['nombre']." EDITADO");
 				$mRet = "Registro Modificado";
 
 			} else {
@@ -243,11 +245,11 @@ jQuery("#a1").click( function(){
 					$this->db->update('zona', $data);
 					$this->db->simple_query("UPDATE scli SET zona=".$this->db->escape($codigo)." WHERE zona=".$this->db->escape($zonav));
 					$this->db->simple_query("UPDATE sfac SET zona=".$this->db->escape($codigo)." WHERE zona=".$this->db->escape($zonav));
+					logusu('ZONA',"Registro ".$data['codigo']." ".$data['nombre']." INCLUIDO");
 					$mRet = "Zona modificada y actualizada en clientes";
 				} else {
 					// Aqui deberia Fusionar
 					$mRet  = "No se puede cambiar la zona a una que ya existe, debe fusionarlas<br>";
-					//$mRet .= "SELECT COUNT(*) FROM zona WHERE codigo=".$this->db->escape($codigo);
 				}
 			}
 			echo $mRet;
