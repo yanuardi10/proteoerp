@@ -240,7 +240,7 @@ jQuery("#a1").click( function(){
 			if(false == empty($data)){
 				$this->db->insert('tmenus', $data);
 				echo "Registro Agregado";
-				logusu('TMENUS',"Registro ".$data['codigo']." INCLUIDO");
+				logusu('TMENUS',"Registro Cod:".$data['codigo']." Mod:".$data['modulo']." INCLUIDO");
 			} else
 			echo "Fallo Inclusion!!!";
 
@@ -249,7 +249,7 @@ jQuery("#a1").click( function(){
 			unset($data['codigo']);
 			$this->db->where('codigo', $codigo);
 			$this->db->update('tmenus', $data);
-			logusu('TMENUS',"Registro ".$codigo." MODIFICADO");
+			logusu('TMENUS',"Registro Cod:".$codigo." Mod:".$data['modulo']." MODIFICADO");
 			echo "Registro Modificado";
 
 		} elseif($oper == 'del') {
@@ -259,7 +259,7 @@ jQuery("#a1").click( function(){
 			} else {
 				//$this->db->simple_query("DELETE FROM tmenus WHERE id=$id ");
 				logusu('TMENUS',"Registro ????? ELIMINADO");
-				echo "Registro Eliminado";
+				echo "Registro No Eliminado";
 			}
 		};
 	}
