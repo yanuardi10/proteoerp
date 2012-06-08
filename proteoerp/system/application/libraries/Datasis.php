@@ -777,12 +777,12 @@ class Datasis {
 						$listados .= "\t\t{ id:'".$i."', titulo:'".$row['titulo']."', nombre:'".$row['nombre']."' },\n";
 					}
 				} 
-				$query->free_result();
 				if ( !empty($listados)) {
 					$reposcript = "var datalis = [\n".$listados."\n\t];";
 				} else {
 					$reposcript = "";
 				}
+				$query->free_result();
 			}
 		}
 		return $reposcript;

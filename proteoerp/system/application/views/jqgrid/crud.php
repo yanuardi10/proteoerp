@@ -67,6 +67,7 @@ var mGrid = '<?php echo $grid['gridname'] ?>';
 $(document).ready(function() {
 	var lastsel2;
 <?php
+	//Layout por defecto
 	if ( isset($readyLayout) ){
 		echo $readyLayout;
 	} else {?>
@@ -81,9 +82,16 @@ $(document).ready(function() {
 			jQuery("#newapi<?php echo $grid['gridname'];?>").jqGrid('setGridHeight',$Pane.innerHeight()-<?php echo $grid['menosalto']?>);
 		}
 	});
-<?php }; ?>
+<?php }; 
 
-	dtgLoadButton();
+	echo "\tdtgLoadButton();";
+	//Layout por defecto
+	if ( isset($grid123) ){
+		echo $grid123;
+	} else {?>
+
+	// Grid por Defecto
+	
 	var gridId1 = "#newapi<?php echo $grid['gridname'];?>";
 	var grid = jQuery(gridId1).jqGrid({
 		ajaxGridOptions : {type:"POST"},
@@ -91,13 +99,11 @@ $(document).ready(function() {
 				root:"data",
 				repeatitems: false
 			}
+<?php } ?>
 <?php if( !isset($onclick1) ) { ?>
-			,ondblClickRow: function(id){
-				var gridwidth = jQuery(gridId1).width();
-				gridwidth = gridwidth/2;
-				grid.editGridRow(id, {closeAfterEdit:true,mtype:'POST'});
-				return;
-			}
+
+			<?php if(!empty($grid['ondblClickRow'])) echo $grid['ondblClickRow'];?>
+
 <?php } else 
 			echo $onclick1;
 ?>
@@ -108,24 +114,22 @@ $(document).ready(function() {
 <?php echo $grid['pager'];?>;
 
 <?php if (isset($grid1)) { ?>
-	var grid1 = jQuery("#newapi<?php echo $grid1['gridname'];?>").jqGrid({
+	var gridId2 = "#newapi<?php echo $grid1['gridname'];?>";
+	var grid1 = jQuery(gridId2).jqGrid({
 		ajaxGridOptions : {type:"POST"},
 			jsonReader : {
 				root:"data",
 				repeatitems: false
-			},
-			ondblClickRow: function(id){
-				var gridwidth = jQuery("#newapi<?php echo $grid1['gridname'];?>").width();
-				gridwidth = gridwidth/2;
-				grid1.editGridRow(id, {closeAfterEdit:true,mtype:'POST'});
-				return;
 			}
-			
+			<?php if(!empty($grid1['ondblClickRow'])) echo $grid1['ondblClickRow'];?>
+		
 			<?php echo $grid1['table'];?>
 	})
-<?php
-	echo $grid1['pager'];
-}; 
+<?php echo $grid1['pager'];}; 
+
+//grids Detalles
+if (isset($detalles)) echo $detalles;
+
 
 if (isset($grid2)) { ?>
 	var grid2 = jQuery("#newapi<?php echo $grid2['gridname'];?>").jqGrid({

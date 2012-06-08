@@ -1,5 +1,602 @@
 <?php require_once(BASEPATH.'application/controllers/validaciones.php');
+class Apan extends Controller {
+	var $mModulo='APAN';
+	var $titp='Aplicacion de Anticipos';
+	var $tits='Aplicacion de Anticipos';
+	var $url ='finanzas/apan/';
 
+	function Apan(){
+		parent::Controller();
+		$this->load->library('rapyd');
+		$this->load->library('jqdatagrid');
+		//$this->datasis->modulo_id('NNN',1);
+	}
+
+	function index(){
+		if ( !$this->datasis->iscampo('apan','id') ) {
+			$this->db->simple_query('ALTER TABLE apan DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE apan ADD UNIQUE INDEX numero (numero)');
+			$this->db->simple_query('ALTER TABLE apan ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
+		};
+		redirect($this->url.'jqdatag');
+	}
+
+	//***************************
+	//Layout en la Ventana
+	//
+	//***************************
+	function jqdatag(){
+
+		$grid = $this->defgrid();
+		$param['grids'][] = $grid->deploy();
+
+		$readyLayout = '
+	$(\'body\').layout({
+		minSize: 30,
+		north__size: 60,
+		resizerClass: \'ui-state-default\',
+		west__size: 212,
+		west__onresize: function (pane, $Pane){jQuery("#west-grid").jqGrid(\'setGridWidth\',$Pane.innerWidth()-2);},
+	});
+	
+	$(\'div.ui-layout-center\').layout({
+		minSize: 30,
+		resizerClass: "ui-state-default",
+		center__paneSelector: ".centro-centro",
+		south__paneSelector:  ".centro-sur",
+		south__size: 150,
+		center__onresize: function (pane, $Pane) {
+			jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'setGridWidth\',$Pane.innerWidth()-6);
+			jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'setGridHeight\',$Pane.innerHeight()-110);
+		}
+	});
+	';
+
+
+		$bodyscript = '
+<script type="text/javascript">
+$(function() {
+	$( "input:submit, a, button", ".boton1" ).button();
+});
+
+jQuery("#boton1").click( function(){
+	var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
+	if (id)	{
+		var ret = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
+		window.open(\'/proteoerp/formatos/ver/APAN/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
+});
+</script>
+';
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		$WestPanel = '
+<div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content">
+
+<div class="anexos">
+<table id="west-grid" align="center">
+	<tr>
+		<td><div class="tema1"><table id="listados"></table></div></td>
+	</tr><tr>
+		<td><div class="tema1"><table id="otros"></table></div></td>
+	</tr>
+</table>
+</div>
+<table id="west-grid" align="center">
+	<tr>
+		<td><div class="tema1 boton1"><a style="width:190px" href="#" id="boton1">Reimprimir Documento '.img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',  'title' => 'Formato PDF', 'border'=>'0')).'</a></div></td>
+	</tr>
+</table>
+
+'.
+
+'</div> <!-- #LeftPane -->
+';
+
+		$grid1   = $this->defgridit();
+		$param['grids'][] = $grid1->deploy();
+
+		$centerpanel = '
+<div id="RightPane" class="ui-layout-center">
+	<div class="centro-centro">
+		<table id="newapi'.$param['grids'][0]['gridname'].'"></table>
+		<div id="pnewapi'.$param['grids'][0]['gridname'].'"></div>
+	</div>
+	<div class="centro-sur" id="adicional" style="overflow:auto;">
+
+		<table id="newapi'.$param['grids'][1]['gridname'].'"></table>
+	</div>
+</div> <!-- #RightPane -->
+';
+
+//		<div id="pnewapi'. $param['grid1']['gridname'].'"></div>
+
+
+		$funciones = '';
+
+		$SouthPanel = '
+<div id="BottomPane" class="ui-layout-south ui-widget ui-widget-content">
+<p>'.$this->datasis->traevalor('TITULO1').'</p>
+</div> <!-- #BottomPanel -->
+';
+
+		$param['WestPanel']    = $WestPanel;
+		//$param['EastPanel']  = $EastPanel;
+		$param['readyLayout']  = $readyLayout;
+		$param['SouthPanel']   = $SouthPanel;
+		$param['listados']     = $this->datasis->listados('APAN', 'JQ');
+		$param['otros']        = $this->datasis->otros('APAN', 'JQ');
+		
+		$param['centerpanel']  = $centerpanel;
+		$param['funciones']    = $funciones;
+
+		$param['temas']        = array('proteo','darkness','anexos1');
+
+		$param['bodyscript']   = $bodyscript;
+		$param['tabs']         = false;
+		$param['encabeza']     = $this->titp;
+
+		$this->load->view('jqgrid/crud2',$param);
+	}
+
+	//***************************
+	//Definicion del Grid y la Forma
+	//***************************
+	function defgrid( $deployed = false ){
+		$i      = 1;
+		$editar = "false";
+
+		$grid  = new $this->jqdatagrid;
+
+		$grid->addField('numero');
+		$grid->label('Numero');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 60,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 8 }',
+		));
+
+
+		$grid->addField('fecha');
+		$grid->label('Fecha');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
+
+
+		$grid->addField('tipo');
+		$grid->label('Tipo');
+		$grid->params(array(
+			'align'         => "'center'",
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 1 }',
+		));
+
+
+		$grid->addField('clipro');
+		$grid->label('Cli/Prv');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 50,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 5 }',
+		));
+
+
+		$grid->addField('nombre');
+		$grid->label('Nombre');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 30 }',
+		));
+
+
+		$grid->addField('monto');
+		$grid->label('Monto');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('reinte');
+		$grid->label('Reintegro');
+		$grid->params(array(
+			'align'         => "'center'",
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 50,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 5 }',
+		));
+
+
+		$grid->addField('observa1');
+		$grid->label('Observa1');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 50 }',
+		));
+
+/*
+		$grid->addField('observa2');
+		$grid->label('Observa2');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 50 }',
+		));
+*/
+
+		$grid->addField('transac');
+		$grid->label('Transac');
+		$grid->params(array(
+			'align'         => "'center'",
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 70,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 8 }',
+		));
+
+
+		$grid->addField('estampa');
+		$grid->label('Estampa');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 70,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
+
+		$grid->addField('hora');
+		$grid->label('Hora');
+		$grid->params(array(
+			'align'         => "'center'",
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 60,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 8 }',
+		));
+
+		$grid->addField('usuario');
+		$grid->label('Usuario');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 100,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 12 }',
+		));
+
+		$grid->addField('modificado');
+		$grid->label('Modificado');
+		$grid->params(array(
+			'align'         => "'center'",
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 70,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Modificado" }'
+		));
+
+		$grid->addField('id');
+		$grid->label('Id');
+		$grid->params(array(
+			'align'         => "'center'",
+			'frozen'        => 'true',
+			'width'         => 40,
+			'editable'      => 'false',
+			'search'        => 'false'
+		));
+
+
+		$grid->showpager(true);
+		$grid->setWidth('');
+		$grid->setHeight('230');
+		$grid->setTitle($this->titp);
+		$grid->setfilterToolbar(true);
+		$grid->setToolbar('false', '"top"');
+
+		$grid->setOnSelectRow('
+			function(id){
+				if (id){
+					var ret = $("#titulos").getRowData(id);
+					jQuery(gridId2).jqGrid(\'setGridParam\',{url:"'.site_url($this->url.'getdatait/').'/"+id+"/", page:1});
+					jQuery(gridId2).trigger("reloadGrid");
+				}
+			}
+		');
+
+		$grid->setFormOptionsE('-');
+		$grid->setFormOptionsA('-');
+		$grid->setAfterSubmit("-");
+		$grid->setOndblClickRow('');
+
+		#show/hide navigations buttons
+		$grid->setAdd(false);
+		$grid->setEdit(false);
+		$grid->setDelete(false);
+		$grid->setSearch(false);
+		$grid->setRowNum(30);
+		$grid->setShrinkToFit('false');
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		#GET url
+		$grid->setUrlget(site_url($this->url.'getdata/'));
+
+		if ($deployed) {
+			return $grid->deploy();
+		} else {
+			return $grid;
+		}
+	}
+
+	/**
+	* Busca la data en el Servidor por json
+	*/
+	function getdata()
+	{
+		$grid       = $this->jqdatagrid;
+
+		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
+		$mWHERE = $grid->geneTopWhere('apan');
+
+		$response   = $grid->getData('apan', array(array()), array(), false, $mWHERE, 'id', 'desc' );
+		$rs = $grid->jsonresult( $response);
+		echo $rs;
+	}
+
+	/**
+	* Guarda la Informacion
+	*/
+	function setData()
+	{
+		$this->load->library('jqdatagrid');
+		$oper   = $this->input->post('oper');
+		$id     = $this->input->post('id');
+		$data   = $_POST;
+		$check  = 0;
+
+		unset($data['oper']);
+		unset($data['id']);
+		if($oper == 'add'){
+			if(false == empty($data)){
+				$this->db->insert('apan', $data);
+				echo "Registro Agregado";
+
+				logusu('APAN',"Registro ????? INCLUIDO");
+			} else
+			echo "Fallo Agregado!!!";
+
+		} elseif($oper == 'edit') {
+			//unset($data['ubica']);
+			$this->db->where('id', $id);
+			$this->db->update('apan', $data);
+			logusu('APAN',"Registro ????? MODIFICADO");
+			echo "Registro Modificado";
+
+		} elseif($oper == 'del') {
+			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM apan WHERE id='$id' ");
+			if ($check > 0){
+				echo " El registro no puede ser eliminado; tiene movimiento ";
+			} else {
+				$this->db->simple_query("DELETE FROM apan WHERE id=$id ");
+				logusu('APAN',"Registro ????? ELIMINADO");
+				echo "Registro Eliminado";
+			}
+		};
+	}
+
+	//**********************************
+	//Definicion del Grid del Item
+	//**********************************
+	function defgridit( $deployed = false ){
+		$i      = 1;
+		$editar = "false";
+
+		$grid  = new $this->jqdatagrid;
+
+		$grid->addField('origen');
+		$grid->label('Origen');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 2 }',
+		));
+
+		$grid->addField('anticipo');
+		$grid->label('Anticipo');
+		$grid->params(array(
+			'align'         => "'center'",
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 100,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 2 }',
+		));
+
+		$grid->addField('numero');
+		$grid->label('Numero');
+		$grid->params(array(
+			'align'         => "'center'",
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 100,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 8 }',
+		));
+
+		$grid->addField('fecha');
+		$grid->label('Fecha');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 90,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
+
+
+		$grid->addField('monto');
+		$grid->label('Monto');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('abono');
+		$grid->label('Abono');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('id');
+		$grid->label('Id');
+		$grid->params(array(
+			'align'         => "'center'",
+			'frozen'        => 'true',
+			'width'         => 40,
+			'editable'      => 'false',
+			'search'        => 'false',
+			'hidden'        => 'true'
+		));
+
+
+		$grid->showpager(true);
+		$grid->setWidth('');
+		$grid->setHeight(100);
+		$grid->setTitle($this->titp);
+		$grid->setfilterToolbar(false);
+		$grid->setToolbar('false', '"top"');
+
+		$grid->setFormOptionsE('-');
+		$grid->setFormOptionsA('-');
+		$grid->setAfterSubmit("-");
+		$grid->setOndblClickRow('');
+
+
+		#show/hide navigations buttons
+		$grid->setAdd(false);
+		$grid->setEdit(false);
+		$grid->setDelete(true);
+		$grid->setSearch(true);
+		$grid->setRowNum(100);
+		$grid->setShrinkToFit('false');
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdatait/'));
+
+		#GET url
+		$grid->setUrlget(site_url($this->url.'getdatait/'));
+
+		if ($deployed) {
+			return $grid->deploy();
+		} else {
+			return $grid;
+		}
+	}
+
+	/*
+	* Busca la data en el Servidor por json
+	*/
+	function getdatait()
+	{
+		$id = $this->uri->segment(4);
+		if ($id){
+			$transac = $this->datasis->dameval("SELECT transac FROM apan WHERE id=$id");
+			$grid       = $this->jqdatagrid;
+			$mSQL = "
+				SELECT 'Cliente' origen, cod_cli, fecha, CONCAT(tipoccli,numccli) anticipo, CONCAT(tipo_doc, numero) numero, monto, abono, ppago, reten, reteiva, id
+				FROM itccli WHERE transac='$transac' 
+				UNION ALL
+				SELECT 'Prveed' origen, cod_prv, fecha, CONCAT(tipoppro,numppro) anticipo, CONCAT(tipo_doc, numero) numero, monto, abono, ppago, reten, reteiva, id
+				FROM itppro WHERE transac='$transac'
+			";
+
+			$response   = $grid->getDataSimple($mSQL);
+			$rs = $grid->jsonresult( $response);
+		} else
+			$rs ='';
+		echo $rs;
+	}
+
+
+
+
+
+/*
 class apan extends validaciones {
 
 	function apan(){
@@ -19,92 +616,6 @@ class apan extends validaciones {
 		//redirect("finanzas/apan/filteredgrid");
 	}
 
-	function filteredgrid(){
-		$this->rapyd->load("datafilter","datagrid");
-		$this->rapyd->uri->keep_persistence();
-
-		$filter = new DataFilter("Filtro por N&uacute;mero", 'apan');
-
-		$filter->numero = new inputField("N&uacute;mero", "numero");
-		$filter->numero->size=12;
-		$filter->numero->maxlength=8;
-
-		$filter->nombre = new inputField("Nombre", "nombre");
-		$filter->nombre->size=12;
-		$filter->nombre->maxlength=30;
-
-		$filter->tipo = new dropdownField("Tipo", "tipo");
-		$filter->tipo->option("","");
-		$filter->tipo->option("C","C");
-		$filter->tipo->option("P","P");
-		$filter->tipo->style="width:100px";
-
-		$filter->buttons("reset","search");
-		$filter->build('dataformfiltro');
-
-		$uri = anchor('finanzas/apan/dataedit/<#tipo#>/show/<#id#>','<#numero#>');
-		$uri_2 = anchor('finanzas/apan/dataedit/<#tipo#>/show/<#id#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar','height'=>'12')));
-
-		$grid = new DataGrid("Lista de Aplicaci&oacute;n de Anticipos");
-		$grid->order_by("numero","asc");
-		$grid->per_page = 50;
-
-		$grid->column('Acci&oacute;n',$uri_2,'align=center');
-		$grid->column_orderby("N&uacute;mero",$uri,'numero');
-		$grid->column_orderby("Fecha","<dbdate_to_human><#fecha#></dbdate_to_human>",'fecha',"align='center'");
-		$grid->column_orderby("Tipo","tipo",'tipo');
-		$grid->column_orderby("Clipro","clipro",'clipro');
-		$grid->column_orderby("Nombre","nombre",'nombre');
-		$grid->column_orderby("Observaci&oacute;n 1","observa1",'observa1');
-		$grid->column_orderby("Observaci&oacute;n 2","observa2",'observa2');
-		$grid->column("Monto","<nformat><#monto#>|2|,|.</nformat>" ,'align=right');
-		$grid->column("Reinte","<nformat><#reinte#>|2|,|.</nformat>" ,'align=right');
-			
-		//$grid->add("finanzas/apan/dataedit/create");
-		$grid->build('datagridST');
-
-		//********** SUPER TABLE *************
-		$extras = '
-<script type="text/javascript">
-//<![CDATA[
-(function() {
-	var mySt = new superTable("demoTable", {
-	cssSkin : "sSky",
-	fixedCols : 1,
-	headerRows : 1,
-	onStart : function () {	this.start = new Date();},
-	onFinish : function () {document.getElementById("testDiv").innerHTML += "Finished...<br>" + ((new Date()) - this.start) + "ms.<br>";}
-	});
-})();
-//]]>
-</script>
-';
-		$style ='
-<style type="text/css">
-.fakeContainer { /* The parent container */
-    margin: 5px;
-    padding: 0px;
-    border: none;
-    width: 740px; /* Required to set */
-    height: 320px; /* Required to set */
-    overflow: hidden; /* Required to set */
-}
-</style>	
-';
-		//****************************************
-		$data['style']   = $style;
-		$data['style']  .= style('superTables.css');
-		$data['extras']  = $extras;
-
-		$data['content'] = $grid->output;
-		$data['filtro']  = $filter->output;
-
-		$data['title']  = heading('Aplicaci&oacute;n de Anticipos');
-		$data['script']   = script('jquery.js');
-		$data["script"]  .= script('superTables.js');
-		$data['head']  = $this->rapyd->get_head();
-		$this->load->view('view_ventanas', $data);
-	}
 
 	function dataedit($tipo)	{
 		$this->rapyd->load('dataobject','datadetails');
@@ -289,7 +800,7 @@ class apan extends validaciones {
 		$data["head"]    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
-
+*/
 	function instalar(){
 		//$sql="ALTER TABLE `apan`  DROP PRIMARY KEY";
 		//$this->db->query($sql);

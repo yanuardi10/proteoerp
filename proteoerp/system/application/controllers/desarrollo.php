@@ -638,14 +638,14 @@ class Desarrollo extends Controller{
 
 			foreach ($query->result() as $row){
 				if ( $row->Field == 'id') {
-					$str  .= $tab2.'$grid->addField(\'id\');'."\n";
+					$str   = $tab2.'$grid->addField(\'id\');'."\n";
 					$str  .= $tab2.'$grid->label(\'Id\');'."\n";
 					$str  .= $tab2.'$grid->params(array('."\n";
-					$str  .= $tab3.'\'align\'    => "\'center\'",'."\n";
-					$str  .= $tab3.'\'frozen\'   => \'true\','."\n";
-					$str  .= $tab3.'\'width\'    => 60,'."\n";
-					$str  .= $tab3.'\'editable\' => $editar,'."\n";
-					$str  .= $tab3.'\'search\'   => \'false\''."\n";
+					$str  .= $tab3.'\'align\'         => "\'center\'",'."\n";
+					$str  .= $tab3.'\'frozen\'        => \'true\','."\n";
+					$str  .= $tab3.'\'width\'         => 40,'."\n";
+					$str  .= $tab3.'\'editable\'      => \'false\','."\n";
+					$str  .= $tab3.'\'search\'        => \'false\''."\n";
 				} else {
 					$str  = $tab2.'$grid->addField(\''.$row->Field.'\');'."\n";
 					$str .= $tab2.'$grid->label(\''.ucfirst($row->Field).'\');'."\n";

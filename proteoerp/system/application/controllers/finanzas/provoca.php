@@ -1,4 +1,341 @@
 <?php require_once(BASEPATH.'application/controllers/validaciones.php');
+class Provoca extends Controller {
+	var $mModulo='PROVOCA';
+	var $titp='Proveedores Eventuales';
+	var $tits='Proveedores Eventuales';
+	var $url ='finanzas/provoca/';
+
+	function Provoca(){
+		parent::Controller();
+		$this->load->library('rapyd');
+		$this->load->library('jqdatagrid');
+		//$this->datasis->modulo_id('NNN',1);
+	}
+
+	function index(){
+		if ( !$this->datasis->iscampo('provoca','id') ) {
+			$this->db->simple_query('ALTER TABLE provoca DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE provoca DROP INDEX rif');
+			$this->db->simple_query('ALTER TABLE provoca ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ');
+			$this->db->simple_query('ALTER TABLE provoca ADD UNIQUE INDEX rif (rif)');
+		}
+		$this->db->simple_query('UPDATE provoca SET rif=TRIM(rif)');
+		redirect($this->url.'jqdatag');
+	}
+
+	//***************************
+	//Layout en la Ventana
+	//
+	//***************************
+	function jqdatag(){
+
+		$grid = $this->defgrid();
+		$param['grid'] = $grid->deploy();
+
+		$bodyscript = '
+<script type="text/javascript">
+$(function() {
+	$( "input:submit, a, button", ".otros" ).button();
+});
+
+jQuery("#a1").click( function(){
+	var id = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
+	if (id)	{
+		var ret = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getRowData\',id);
+		window.open(\'/proteoerp/formatos/ver/PROVOCA/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
+});
+</script>
+';
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		$WestPanel = '
+<div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content">
+<div class="anexos">
+
+<table id="west-grid" align="center">
+	<tr>
+		<td><div class="tema1"><table id="listados"></table></div></td>
+	</tr>
+	<tr>
+		<td><div class="tema1"><table id="otros"></table></div></td>
+	</tr>
+</table>
+
+<table id="west-grid" align="center">
+	<tr>
+		<td></td>
+	</tr>
+</table>
+</div>
+'.
+//		<td><a style="width:190px" href="#" id="a1">Imprimir Copia</a></td>
+'</div> <!-- #LeftPane -->
+';
+
+		$SouthPanel = '
+<div id="BottomPane" class="ui-layout-south ui-widget ui-widget-content">
+<p>'.$this->datasis->traevalor('TITULO1').'</p>
+</div> <!-- #BottomPanel -->
+';
+
+		$centerpanel = '
+<div id="RightPane" class="ui-layout-center">
+	<div class="centro-centro">
+		<table id="newapi'.$param['grid']['gridname'].'"></table>
+		<div id="pnewapi'.$param['grid']['gridname'].'"></div>
+	</div>
+	<div class="centro-sur" id="adicional" style="overflow:auto;">
+	</div>
+</div> <!-- #RightPane -->
+';
+
+		$readyLayout = '
+	$(\'body\').layout({
+		minSize: 30,
+		north__size: 60,
+		resizerClass: \'ui-state-default\',
+		west__size: 212,
+		west__onresize: function (pane, $Pane){jQuery("#west-grid").jqGrid(\'setGridWidth\',$Pane.innerWidth()-2);},
+	});
+	
+	$(\'div.ui-layout-center\').layout({
+		minSize: 30,
+		resizerClass: "ui-state-default",
+		center__paneSelector: ".centro-centro",
+		south__paneSelector:  ".centro-sur",
+		south__size: 120,
+		center__onresize: function (pane, $Pane) {
+			jQuery("#newapi'.$param['grid']['gridname'].'").jqGrid(\'setGridWidth\',$Pane.innerWidth()-6);
+			jQuery("#newapi'.$param['grid']['gridname'].'").jqGrid(\'setGridHeight\',$Pane.innerHeight()-110);
+		}
+	});
+	';
+
+		$param['WestPanel']   = $WestPanel;
+		//$param['EastPanel']  = $EastPanel;
+		
+		$param['SouthPanel']  = $SouthPanel;
+		$param['listados']    = $this->datasis->listados('PROVOCA', 'JQ');
+		$param['otros']       = $this->datasis->otros('PROVOCA', 'JQ');
+		$param['tema1']       = 'darkness';
+
+		$param['readyLayout']  = $readyLayout;
+		$param['centerpanel']  = $centerpanel;
+		$param['anexos']      = 'anexos1';
+		$param['bodyscript']  = $bodyscript;
+		$param['tabs']        = false;
+		$param['encabeza']    = $this->titp;
+		$this->load->view('jqgrid/crud',$param);
+	}
+
+	//***************************
+	//Definicion del Grid y la Forma
+	//***************************
+	function defgrid( $deployed = false ){
+		$i      = 1;
+		$editar = "true";
+
+		$grid  = new $this->jqdatagrid;
+
+		$grid->addField('rif');
+		$grid->label('R.I.F.');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:13, maxlength: 13 }',
+		));
+
+
+		$grid->addField('nombre');
+		$grid->label('Nombre');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 300,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:40, maxlength: 80 }',
+		));
+
+
+		$grid->addField('fecha');
+		$grid->label('Fecha');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
+
+		$grid->addField('id');
+		$grid->label('Id');
+		$grid->params(array(
+			'align'    => "'center'",
+			'frozen'   => 'true',
+			'width'    => 60,
+			'editable' => 'false',
+			'search'   => 'false'
+		));
+
+
+		$grid->showpager(true);
+		$grid->setWidth('');
+		$grid->setHeight('260');
+		$grid->setTitle($this->titp);
+		$grid->setfilterToolbar(true);
+		$grid->setToolbar('false', '"top"');
+
+		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 400, height:180, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 400, height:180, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
+
+		#show/hide navigations buttons
+		$grid->setAdd(true);
+		$grid->setEdit(true);
+		$grid->setDelete(true);
+		$grid->setSearch(true);
+		$grid->setRowNum(30);
+		$grid->setShrinkToFit('false');
+
+		$grid->setonSelectRow('
+			function(id){
+				$.ajax({
+					url: "'.base_url().$this->url.'tabla/"+id,
+					success: function(msg){$("#adicional").html(msg);}
+				});
+			}
+		');
+
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		#GET url
+		$grid->setUrlget(site_url($this->url.'getdata/'));
+
+		if ($deployed) {
+			return $grid->deploy();
+		} else {
+			return $grid;
+		}
+	}
+
+	/**
+	* Busca la data en el Servidor por json
+	*/
+	function getdata()
+	{
+		$grid       = $this->jqdatagrid;
+
+		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
+		$mWHERE = $grid->geneTopWhere('provoca');
+
+		$response   = $grid->getData('provoca', array(array()), array(), false, $mWHERE, 'id', 'desc' );
+		$rs = $grid->jsonresult( $response);
+		echo $rs;
+	}
+
+	/**
+	* Guarda la Informacion
+	*/
+	function setData()
+	{
+		$this->load->library('jqdatagrid');
+		$oper   = $this->input->post('oper');
+		$id     = $this->input->post('id');
+		$data   = $_POST;
+		$check  = 0;
+
+		unset($data['oper']);
+		unset($data['id']);
+		if($oper == 'add'){
+			if(false == empty($data)){
+				$rif = $this->input->post('rif');
+				$this->db->insert('provoca', $data);
+				echo "Registro Agregado";
+				logusu('PROVOCA',"Registro ".$rif." INCLUIDO");
+			} else
+				echo "Fallo Agregado!!!";
+
+		} elseif($oper == 'edit') {
+			$rifn = $this->input->post('rif');
+			$rifo = $this->datasis->dameval("SELECT rif FROM provoca WHERE id=$id");
+			if ( $rifn == $rifo ){
+				// No cambio el RIF
+				unset($data['rif']);
+				$this->db->where('id', $id);
+				$this->db->update('provoca', $data);
+			} else {
+				// Cambio el RIF debe cambiar en gitser
+				$this->db->query("UPDATE gitser SET rif=? WHERE rif=?",array($rifn,$rifo));
+				// Si el Rif ya existe se Borra
+				$this->db->query("DELETE FROM provoca WHERE rif=? AND id<>$id", array($rifn,$rifo));
+				$this->db->where('id', $id);
+				$this->db->update('provoca', $data);
+			}
+			logusu('PROVOCA',"Registro ".$rifn." MODIFICADO");
+			echo "Registro Modificado";
+
+		} elseif($oper == 'del') {
+			$rif   = $this->datasis->dameval("SELECT rif FROM provoca WHERE id=$id");
+			$check = $this->datasis->dameval("SELECT COUNT(*) FROM gitser WHERE rif=".$this->db->escape($rif));
+			if ($check > 0){
+				echo " El registro no puede ser eliminado; tiene movimiento ";
+			} else {
+				$this->db->simple_query("DELETE FROM provoca WHERE id=$id");
+				logusu('PROVOCA',"Registro ".$rif." ELIMINADO");
+				echo "Registro Eliminado ".$rif;
+			}
+		};
+	}
+
+	function tabla() {
+		$id = $this->uri->segment($this->uri->total_segments());
+		
+		$rif = $this->datasis->dameval("SELECT rif FROM provoca WHERE id=$id");
+
+		$td1  = "<td style='border-style:solid;border-width:1px;border-color:#78FFFF;' valign='top' align='center'>\n";
+		$td1 .= "<table width='98%'>\n<caption style='background-color:#5E352B;color:#FFFFFF;font-style:bold'>";
+
+		// Movimientos Relacionados en Proveedores GASTOS
+		$mSQL = "SELECT proveed, numero, fecha, descrip, numfac, iva, importe FROM gitser WHERE rif=? ORDER BY id DESC LIMIT 5";
+		$query = $this->db->query($mSQL, array($rif));
+		$salida = '<table width="100%"><tr>';
+		$saldo  = 0;
+		if ( $query->num_rows() > 0 ){
+			$salida .= $td1;
+			$salida .= "Movimientos Recientes (5)</caption>";
+			$salida .= "<tr bgcolor='#E7E3E7'><td>Prov.</td><td>Fecha</td><td>Numero</td><td>Factura</td><td align='center'>Descripcion</td><td align='center'>IVA</td><td align='center'>Monto</td></tr>";
+			foreach ($query->result_array() as $row)
+			{
+				$salida .= "<tr>";
+				$salida .= "<td>".$row['proveed']."</td>";
+				$salida .= "<td>".$row['fecha']."</td>";
+				$salida .= "<td>".$row['numero']."</td>";
+				$salida .= "<td>".$row['numfac']."</td>";
+				$salida .= "<td>".$row['descrip']."</td>";
+				$salida .= "<td align='right'>".nformat($row['iva']).   "</td>";
+				$salida .= "<td align='right'>".nformat($row['importe']).   "</td>";
+				$salida .= "</tr>";
+			}
+			$salida .= "</table></td>";
+		}
+		echo $salida.'</tr></table>';
+	}
+
+}
+
+
+/*
 class Provoca extends validaciones {
 
 	function Provoca(){
@@ -362,7 +699,6 @@ class Provoca extends validaciones {
 		$this->load->view('extjs/extjsven',$data);
 		
 	}
-
-
 }
+ */
 ?>
