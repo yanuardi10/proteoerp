@@ -167,6 +167,10 @@ class Jqdatagrid
 
 	private $onSelectRow = '';  
 
+	private $ondblClickRow = 'i';
+
+	private $onClick = '';
+
 	
 	function __construct ()
 	{
@@ -341,7 +345,7 @@ class Jqdatagrid
 	* @param text $element
 	* @return void
 	*/
-	public function setonSelectRow($element)
+	public function setOnSelectRow($element)
 	{
 		$this->onSelectRow = $element;
 	}
@@ -498,6 +502,27 @@ class Jqdatagrid
 		$this->Toolbar = $arreglo;
 	}
 
+
+	/**
+	* On Double Click
+	* @param text $arreglo registres
+	*/
+	public function setOndblClickRow($element)
+	{
+		$this->ondblClickRow = $element;
+	}
+
+
+	/**
+	* On Double Click
+	* @param text $arreglo registres
+	*/
+	public function setOnClick($element)
+	{
+		$this->onClick = $element;
+	}
+
+
 	/**
 	* Grouping 
 	* @param text $shrink registres
@@ -564,7 +589,7 @@ class Jqdatagrid
 		$loadbutton = false;
 
 		if(false == empty($this->url_get)){
-			$html .=  $margen.",url:'{$this->url_get}/'\r\n";
+			$html .= "\t,url:'{$this->url_get}/'\r\n";
 			$post = (false == empty($this->url_put))?$this->url_put:$this->url_get;
 			$html .=  $margen.",editurl:'{$post}/'\r\n";
 		}
@@ -609,7 +634,7 @@ class Jqdatagrid
 			$html .= $margen.",rowList: $this->rowList\r\n";
 
 		if ($this->onSelectRow)
-		 $html .= $margen.",onSelectRow: $this->onSelectRow\r\n";
+			$html .= $margen.",onSelectRow: $this->onSelectRow\r\n";
 
 
 		if($this->multiSelect == true ){
@@ -712,6 +737,22 @@ class Jqdatagrid
         $this->return['export']      = $this->_export;
         $this->return['querystring'] = ($this->CI->config->item('enable_query_strings') == FALSE)?'\'false\'':'\'true\'';
 
+
+	if ( $this->ondblClickRow == 'i'){
+		$this->ondblClickRow = '
+			,ondblClickRow: function(id){
+				var gridwidth = jQuery("#newapi'.$this->_gridname.'").width();
+				gridwidth = gridwidth/2;
+				grid1.editGridRow(id, {closeAfterEdit:true,mtype:\'POST\'});
+				return;
+			}';
+	}
+	
+	$this->return['ondblClickRow'] = $this->ondblClickRow;
+	
+	$this->return['onClick'] = $this->onClick;
+
+
         #paginador
 		if($this->showpager){
 			$bar   = '';
@@ -725,7 +766,7 @@ class Jqdatagrid
 	},\r\n";
 
 			if ( $this->FormOptionsE=='' ){
-				$bar  .= "	{closeAfterEdit:true, mtype: 'POST'}/*edit options*/,\r\n";
+				$bar  .= "	{closeAfterEdit:true, mtype: 'POST'},\r\n"; // edit options
 			} elseif($this->FormOptionsE=='-') {
 				$bar  .= "\n";
 			} else {
@@ -733,7 +774,7 @@ class Jqdatagrid
 			}
 
 			if ( $this->FormOptionsA=='' ){
-				$bar  .= "	{closeAfterAdd:true, mtype: 'POST'} /*add options*/,\r\n";
+				$bar  .= "	{closeAfterAdd:true, mtype: 'POST'} ,\r\n"; //add options
 			} elseif($this->FormOptionsA=='-') {
 				$bar  .= "\n";
 			} else {
@@ -751,10 +792,10 @@ class Jqdatagrid
 			}
 
 			$bar   .= "}} /*delete options*/,\r\n";
-			$bar   .= "	{sopt:['eq','cn','ge','le'], overlay:false,mtype: 'POST', multipleSearch:true }/*search options*/\r\n	";
+			$bar   .= "	{sopt:['eq','cn','ge','le'], overlay:false,mtype: 'POST', multipleSearch:true }\r\n"; //search options
 			$bar   .= "		)";
 
-		$key = array_search('true', $this->_export); // find if we muest show the export button;
+		$key = array_search('true', $this->_export); // find if we must show the export button;
 		if($key)
 		{
 			$bar  .= ".navButtonAdd('#pnewapi{$this->_gridname}',
@@ -769,7 +810,7 @@ class Jqdatagrid
 		}
             
 		if ($this->filterToolbar){
-			$bar .= "\tgrid.jqGrid('filterToolbar');\r\n";
+			$bar .= "\t$(\"#newapi{$this->_gridname}\").jqGrid('filterToolbar');\r\n";
 			$this->return['menosalto'] = 105;
 		} else $this->return['menosalto'] = 90;
 			//$this->_buttons['excel'];

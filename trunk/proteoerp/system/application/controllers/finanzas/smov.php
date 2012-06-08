@@ -69,7 +69,6 @@ class Smov extends Controller {
 $(function() {
 	$( "input:submit, a, button", ".boton1" ).button();
 });
-
 jQuery("#boton1").click( function(){
 	var id = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
 	if (id)	{
