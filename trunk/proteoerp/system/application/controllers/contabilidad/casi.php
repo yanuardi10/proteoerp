@@ -1095,7 +1095,7 @@ class casi extends Controller {
 	}
 
 	function transac($transac=''){
-		$this->rapyd->load('dataform');
+		$this->rapyd->load('datagrid','dataform');
 
 		$filter = new dataForm('contabilidad/casi/transac/procesar');
 		$filter->valor = new inputField('N&uacute;mero de transacci&oacute;n', 'valor');
@@ -1117,7 +1117,7 @@ class casi extends Controller {
 
 			$tables = $this->db->list_tables();
 			foreach ($tables as $table){
-				if (preg_match("/^view_.*$|^sp_.*$/i",$table)) continue;
+				if (preg_match("/^view_.*$|^sp_.*$|^viemovinxventas$/i",$table)) continue;
 
 				$fields = $this->db->list_fields($table);
 				if (in_array('transac', $fields)){
@@ -1125,11 +1125,22 @@ class casi extends Controller {
 
 					$cana=$this->datasis->dameval($mSQL);
 					if($cana>0){
-						$this->table->add_row($table,'transac',$cana);
+
+						$grid = new DataGrid("$table: $cana");
+						//$grid->per_page = $cana;
+						$grid->db->from($table);
+						$grid->db->where("transac = $valor");
+						foreach($fields as $ff){
+							$grid->column($ff , $ff);
+						}
+						$grid->build();
+						$sal.=$grid->output;
+
+						//$this->table->add_row($table,'transac',$cana);
 					}
 				}
 			}
-			$sal = $this->table->generate();
+			//$sal = $this->table->generate();
 		}
 		$data['content'] = $filter->output.$sal;
 		$data['title']   = heading('Localizador de Transacciones');
