@@ -111,8 +111,6 @@ jQuery("#boton1").click( function(){
 </div> <!-- #RightPane -->
 ';
 
-//		<div id="pnewapi'. $param['grid1']['gridname'].'"></div>
-
 
 		$funciones = '';
 
@@ -130,7 +128,7 @@ jQuery("#boton1").click( function(){
 		$param['otros']        = $this->datasis->otros('APAN', 'JQ');
 		
 		$param['centerpanel']  = $centerpanel;
-		$param['funciones']    = $funciones;
+		//$param['funciones']    = $funciones;
 
 		$param['temas']        = array('proteo','darkness','anexos1');
 
@@ -334,7 +332,6 @@ jQuery("#boton1").click( function(){
 			'editable'      => 'false',
 			'search'        => 'false'
 		));
-
 
 		$grid->showpager(true);
 		$grid->setWidth('');

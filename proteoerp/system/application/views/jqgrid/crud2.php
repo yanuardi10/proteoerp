@@ -49,11 +49,10 @@ if ( isset($readyLayout) == false ){
 		west__size: '.$WestSize.',
 		west__onresize: function (pane, $Pane){jQuery("#west-grid").jqGrid(\'setGridWidth\',$Pane.innerWidth()-2);},
 		center__onresize: function (pane, $Pane) {
-			jQuery("#newapi'.$grid['gridname'].')jqGrid(\'setGridWidth\',$Pane.innerWidth()-6);
-			jQuery("#newapi'.$grid['gridname'].').jqGrid(\'setGridHeight\',$Pane.innerHeight()-'.$grid['menosalto'].');
+			jQuery("#newapi'.$grids[0]['gridname'].'").jqGrid(\'setGridWidth\',$Pane.innerWidth()-6);
+			jQuery("#newapi'.$grids[0]['gridname'].'").jqGrid(\'setGridHeight\',$Pane.innerHeight()-'.$grids[0]['menosalto'].');
 		}
 	});
-	tdtgLoadButton();
 ';
 }
 
@@ -247,8 +246,8 @@ if(isset($centerpanel) == true) {
 	echo $centerpanel;
 } else{?>
 <div id="RightPane" class="ui-layout-center ui-helper-reset ui-widget-content" align="center"><!-- Tabs pane -->
-	<table id="newapi<?php echo $grid['gridname'];?>"></table> 
-	<div   id="pnewapi<?php echo $grid['gridname'];?>"></div>
+	<table id="newapi<?php echo $grids[0]['gridname'];?>"></table> 
+	<div   id="pnewapi<?php echo $grids[0]['gridname'];?>"></div>
 </div> <!-- #RightPane -->
 
 <?php } ?>

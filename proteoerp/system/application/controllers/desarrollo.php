@@ -554,7 +554,7 @@ class Desarrollo extends Controller{
 			$str .= $tab1.'//***************************'."\n";
 			$str .= $tab1.'function jqdatag(){'."\n\n";
 			$str .= $tab2.'$grid = $this->defgrid();'."\n";
-			$str .= $tab2.'$param[\'grid\'] = $grid->deploy();'."\n\n";
+			$str .= $tab2.'$param[\'grids\'][] = $grid->deploy();'."\n\n";
 
 			$str .= $tab2.'$bodyscript = \''."\n";
 			$str .= '&lt;script type="text/javascript"&gt;'."\n";
@@ -564,9 +564,9 @@ class Desarrollo extends Controller{
 			$str .= '});'."\n\n";
 
 			$str .= 'jQuery("#a1").click( function(){'."\n";
-			$str .= '	var id = jQuery("#newapi\'. $param[\'grid\'][\'gridname\'].\'").jqGrid(\\\'getGridParam\\\',\\\'selrow\\\');'."\n";
+			$str .= '	var id = jQuery("#newapi\'. $param[\'grids\'][0][\'gridname\'].\'").jqGrid(\\\'getGridParam\\\',\\\'selrow\\\');'."\n";
 			$str .= '	if (id)	{'."\n";
-			$str .= '		var ret = jQuery("#newapi\'. $param[\'grid\'][\'gridname\'].\'").jqGrid(\\\'getRowData\\\',id);'."\n";
+			$str .= '		var ret = jQuery("#newapi\'. $param[\'grids\'][0][\'gridname\'].\'").jqGrid(\\\'getRowData\\\',id);'."\n";
 			$str .= '		window.open(\\\''.base_url().'formatos/ver/'.strtoupper($db).'/\\\'+id, \\\'_blank\\\', \\\'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\\\');'."\n";
 			$str .= '	} else { $.prompt("&lt;h1&gt;Por favor Seleccione un Movimiento&lt;/h1&gt;");}'."\n";
 			$str .= '});'."\n";
@@ -615,13 +615,13 @@ class Desarrollo extends Controller{
 			$str .= $tab2.'$param[\'listados\'] = $this->datasis->listados(\''.strtoupper($db).'\', \'JQ\');'."\n";
 			$str .= $tab2.'$param[\'otros\']    = $this->datasis->otros(\''.strtoupper($db).'\', \'JQ\');'."\n";
 
-			$str .= $tab2.'$param[\'tema1\']     = \'darkness\';'."\n";
-			$str .= $tab2.'$param[\'anexos\']    = \'anexos1\';'."\n";
+			$str .= $tab2.'$param[\'temas\']     = array(\'proteo\',\'darkness\',\'anexos1\');'."\n";
+			//$str .= $tab2.'$param[\'anexos\']    = \'anexos1\';'."\n";
 
 			$str .= $tab2.'$param[\'bodyscript\'] = $bodyscript;'."\n";
 			$str .= $tab2.'$param[\'tabs\'] = false;'."\n";
 			$str .= $tab2.'$param[\'encabeza\'] = $this->titp;'."\n";
-			$str .= $tab2.'$this->load->view(\'jqgrid/crud\',$param);'."\n";
+			$str .= $tab2.'$this->load->view(\'jqgrid/crud2\',$param);'."\n";
 			$str .= $tab1.'}'."\n\n";
 
 
