@@ -567,7 +567,7 @@ class Desarrollo extends Controller{
 			$str .= '	var id = jQuery("#newapi\'. $param[\'grids\'][0][\'gridname\'].\'").jqGrid(\\\'getGridParam\\\',\\\'selrow\\\');'."\n";
 			$str .= '	if (id)	{'."\n";
 			$str .= '		var ret = jQuery("#newapi\'. $param[\'grids\'][0][\'gridname\'].\'").jqGrid(\\\'getRowData\\\',id);'."\n";
-			$str .= '		window.open(\\\''.base_url().'formatos/ver/'.strtoupper($db).'/\\\'+id, \\\'_blank\\\', \\\'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\\\');'."\n";
+			$str .= '		window.open(\\\'\'.base_url().\'formatos/ver/'.strtoupper($db).'/\\\'+id, \\\'_blank\\\', \\\'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\\\');'."\n";
 			$str .= '	} else { $.prompt("&lt;h1&gt;Por favor Seleccione un Movimiento&lt;/h1&gt;");}'."\n";
 			$str .= '});'."\n";
 			$str .= '&lt;/script&gt;'."\n";

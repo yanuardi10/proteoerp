@@ -1,12 +1,369 @@
 <?php
 //asignacion
 class Asig extends Controller {
-	
+	var $mModulo='ASIG';
+	var $titp='Asignaciones Particulares';
+	var $tits='Asignaciones Particulares';
+	var $url ='nomina/asig/';
+
+	function Asig(){
+		parent::Controller();
+		$this->load->library('rapyd');
+		$this->load->library('jqdatagrid');
+		//$this->datasis->modulo_id('NNN',1);
+	}
+
+	function index(){
+		if ( !$this->datasis->iscampo('asig','id') ) {
+			$this->db->simple_query('ALTER TABLE asig DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE asig ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ');
+			$this->db->simple_query('ALTER TABLE asig ADD UNIQUE INDEX codigo (codigo, concepto, fecha)');
+		}
+		redirect($this->url.'jqdatag');
+	}
+
+	//***************************
+	//Layout en la Ventana
+	//
+	//***************************
+	function jqdatag(){
+
+		$grid = $this->defgrid();
+		$param['grids'][] = $grid->deploy();
+
+		$bodyscript = '
+<script type="text/javascript">
+$(function() {
+	$( "input:submit, a, button", ".otros" ).button();
+});
+
+jQuery("#a1").click( function(){
+	var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
+	if (id)	{
+		var ret = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
+		window.open(\''.base_url().'formatos/ver/ASIG/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
+});
+</script>
+';
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		$WestPanel = '
+<div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content">
+<div class="anexos">
+
+<table id="west-grid" align="center">
+	<tr>
+		<td><div class="tema1"><table id="listados"></table></div></td>
+	</tr>
+	<tr>
+		<td><div class="tema1"><table id="otros"></table></div></td>
+	</tr>
+</table>
+
+<table id="west-grid" align="center">
+	<tr>
+		<td></td>
+	</tr>
+</table>
+</div>
+'.
+//		<td><a style="width:190px" href="#" id="a1">Imprimir Copia</a></td>
+'</div> <!-- #LeftPane -->
+';
+
+		$SouthPanel = '
+<div id="BottomPane" class="ui-layout-south ui-widget ui-widget-content">
+<p>'.$this->datasis->traevalor('TITULO1').'</p>
+</div> <!-- #BottomPanel -->
+';
+		$param['WestPanel']  = $WestPanel;
+		//$param['EastPanel']  = $EastPanel;
+		$param['SouthPanel'] = $SouthPanel;
+		$param['listados'] = $this->datasis->listados('ASIG', 'JQ');
+		$param['otros']    = $this->datasis->otros('ASIG', 'JQ');
+		$param['temas']     = array('proteo','darkness','anexos1');
+		$param['bodyscript'] = $bodyscript;
+		$param['tabs'] = false;
+		$param['encabeza'] = $this->titp;
+		$this->load->view('jqgrid/crud2',$param);
+	}
+
+	//***************************
+	//Definicion del Grid y la Forma
+	//***************************
+	function defgrid( $deployed = false ){
+		$i      = 1;
+		$editar = "true";
+
+		$grid  = new $this->jqdatagrid;
+		$link = site_url('ajax/buscapers');
+		$despues =
+'				$("input#nombre").val(ui.item.nombre);';
+		
+
+		$grid->addField('codigo');
+		$grid->label('Codigo');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 70,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{'.$grid->autocomplete($link, 'codigo','aaaaaa','<div id=\"aaaaaa\"></div>',$despues).'}',
+		));
+
+		$grid->addField('nombre');
+		$grid->label('Nombre');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:40, maxlength: 30, readonly:true }',
+		));
+
+
+		$link1    = site_url('ajax/buscaconc');
+		$despues1 =
+'				$("input#tipo").val(ui.item.tipo);
+				$("input#descrip").val(ui.item.descrip);
+				$("textarea#formula").val(ui.item.formula);';
+
+		$grid->addField('concepto');
+		$grid->label('Concepto');
+		$grid->params(array(
+			'align'         => "'center'",
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 60,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{'.$grid->autocomplete($link1, 'concepto','aaaaaa','<div id=\"aaaaaa\"></div>',$despues1).'}',
+		));
+
+		$grid->addField('tipo');
+		$grid->label('Tipo');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:8, maxlength: 1, readonly:true }',
+		));
+
+
+		$grid->addField('descrip');
+		$grid->label('Descrip');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:40, maxlength: 35, readonly:true }',
+		));
+
+		$grid->addField('formula');
+		$grid->label('Formula');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 250,
+			'edittype'      => "'textarea'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ rows:3, cols: 50 }',
+		));
+
+/*
+		$grid->addField('monto');
+		$grid->label('Monto');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 140,
+			'edittype'      => "'text'",
+			'width'         => 90,
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+*/
+		$grid->addField('fecha');
+		$grid->label('Fecha');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
+/*
+		$grid->addField('cuota');
+		$grid->label('Cuota');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => 'false',
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			//'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
+		));
+
+		$grid->addField('cuotat');
+		$grid->label('Nro. Cuotas');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			//'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
+		));
+
+		$grid->addField('valor');
+		$grid->label('Monto/Cuota');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 90,
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+*/
+		$grid->addField('id');
+		$grid->label('Id');
+		$grid->params(array(
+			'align'         => "'center'",
+			'frozen'        => 'true',
+			'width'         => 40,
+			'editable'      => 'false',
+			'search'        => 'false'
+		));
+
+		$grid->showpager(true);
+		$grid->setWidth('');
+		$grid->setHeight('290');
+		$grid->setTitle($this->titp);
+		$grid->setfilterToolbar(true);
+		$grid->setToolbar('false', '"top"');
+
+		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:340, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:340, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
+
+		#show/hide navigations buttons
+		$grid->setAdd(true);
+		$grid->setEdit(true);
+		$grid->setDelete(true);
+		$grid->setSearch(true);
+		$grid->setRowNum(30);
+		$grid->setShrinkToFit('false');
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		#GET url
+		$grid->setUrlget(site_url($this->url.'getdata/'));
+
+		if ($deployed) {
+			return $grid->deploy();
+		} else {
+			return $grid;
+		}
+	}
+
+	/**
+	* Busca la data en el Servidor por json
+	*/
+	function getdata()
+	{
+		$grid       = $this->jqdatagrid;
+
+		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
+		$mWHERE = $grid->geneTopWhere('asig');
+
+		$response   = $grid->getData('asig', array(array()), array(), false, $mWHERE );
+		$rs = $grid->jsonresult( $response);
+		echo $rs;
+	}
+
+	/**
+	* Guarda la Informacion
+	*/
+	function setData()
+	{
+		$this->load->library('jqdatagrid');
+		$oper   = $this->input->post('oper');
+		$id     = $this->input->post('id');
+		$data   = $_POST;
+		$check  = 0;
+
+		//Valida 
+		if ($oper <> 'del'){
+			$codigo   = $this->input->post('codigo');
+			$concepto = $this->input->post('concepto');
+			$check = $this->datasis->dameval('SELECT count(*) FROM pers WHERE codigo='.$this->db->escape($codigo));
+			if ( $check == 0 ){
+				echo "No se encontro esa persona en los registros ".$codigo;
+				return;
+			}
+			$check = $this->datasis->dameval('SELECT count(*) FROM conc WHERE concepto='.$this->db->escape($concepto));
+			if ( $check == 0 ){
+				echo "no se encontro ese concepto en los registros ";
+				return;
+			}
+		}
+
+		unset($data['oper']);
+		unset($data['id']);
+		if($oper == 'add'){
+			if(false == empty($data)){
+				$this->db->insert('asig', $data);
+				echo "Registro Agregado";
+				logusu('ASIG',"Registro ".$codigo." ".$concepto." INCLUIDO");
+			} else
+			echo "Fallo Agregado!!!";
+
+		} elseif($oper == 'edit') {
+			//unset($data['ubica']);
+			$this->db->where('id', $id);
+			$this->db->update('asig', $data);
+			logusu('ASIG',"Registro ".$codigo." ".$concepto." MODIFICADO");
+			echo "Registro Modificado";
+
+		} elseif($oper == 'del') {
+			$codigo   = $this->datasis->dameval("SELECT codigo   FROM asig WHERE id=$id");
+			$concepto = $this->datasis->dameval("SELECT concepto FROM asig WHERE id=$id");
+			$this->db->simple_query("DELETE FROM asig WHERE id=$id ");
+			logusu('ASIG',"Registro ".$codigo." ".$concepto." ELIMINADO");
+			echo "Registro Eliminado";
+		};
+	}
+
+/*
+class Asig extends Controller {
+
 function asig(){
 		parent::Controller(); 
 		$this->load->library("rapyd");
 	}
-		
+
 	function index(){
 		if ( !$this->datasis->iscampo('asig','id') ) {
 			$this->db->simple_query('ALTER TABLE asig DROP PRIMARY KEY');
@@ -66,6 +423,7 @@ function asig(){
 		$this->load->view('view_ventanas', $data);	
 
 	}
+
 	function dataedit()
  	{
 		$this->rapyd->load("dataedit");
@@ -190,7 +548,8 @@ function asig(){
 		}
   	return TRUE;
 	}
-	
+*/
+
 	function instalar(){
 		$mSQL="ALTER TABLE asig ADD PRIMARY KEY (codigo);";
 		$this->db->simple_query($mSQL);	

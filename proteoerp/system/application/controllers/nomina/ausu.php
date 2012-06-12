@@ -1,4 +1,311 @@
 <?php
+class Ausu extends Controller {
+	var $mModulo='AUSU';
+	var $titp='Modulo AUSU';
+	var $tits='Modulo AUSU';
+	var $url ='nomina/ausu/';
+
+	function Ausu(){
+		parent::Controller();
+		$this->load->library('rapyd');
+		$this->load->library('jqdatagrid');
+		//$this->datasis->modulo_id('NNN',1);
+	}
+
+	function index(){
+		if ( !$this->datasis->iscampo('ausu','id') ) {
+			$this->db->simple_query('ALTER TABLE ausu DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE ausu ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ');
+			$this->db->simple_query('ALTER TABLE ausu ADD UNIQUE INDEX codigo (codigo, fecha)');
+		}
+		redirect($this->url.'jqdatag');
+	}
+
+	//***************************
+	//Layout en la Ventana
+	//
+	//***************************
+	function jqdatag(){
+
+		$grid = $this->defgrid();
+		$param['grids'][] = $grid->deploy();
+
+		$bodyscript = '
+<script type="text/javascript">
+$(function() {
+	$( "input:submit, a, button", ".otros" ).button();
+});
+
+jQuery("#a1").click( function(){
+	var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
+	if (id)	{
+		var ret = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
+		window.open(\''.base_url().'formatos/ver/AUSU/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
+});
+</script>
+';
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		$WestPanel = '
+<div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content">
+<div class="anexos">
+
+<table id="west-grid" align="center">
+	<tr>
+		<td><div class="tema1"><table id="listados"></table></div></td>
+	</tr>
+	<tr>
+		<td><div class="tema1"><table id="otros"></table></div></td>
+	</tr>
+</table>
+
+<table id="west-grid" align="center">
+	<tr>
+		<td></td>
+	</tr>
+</table>
+</div>
+'.
+//		<td><a style="width:190px" href="#" id="a1">Imprimir Copia</a></td>
+'</div> <!-- #LeftPane -->
+';
+
+		$SouthPanel = '
+<div id="BottomPane" class="ui-layout-south ui-widget ui-widget-content">
+<p>'.$this->datasis->traevalor('TITULO1').'</p>
+</div> <!-- #BottomPanel -->
+';
+		$param['WestPanel']  = $WestPanel;
+		//$param['EastPanel']  = $EastPanel;
+		$param['SouthPanel'] = $SouthPanel;
+		$param['listados'] = $this->datasis->listados('AUSU', 'JQ');
+		$param['otros']    = $this->datasis->otros('AUSU', 'JQ');
+		$param['temas']     = array('proteo','darkness','anexos1');
+		$param['bodyscript'] = $bodyscript;
+		$param['tabs'] = false;
+		$param['encabeza'] = $this->titp;
+		$this->load->view('jqgrid/crud2',$param);
+	}
+
+	//***************************
+	//Definicion del Grid y la Forma
+	//***************************
+	function defgrid( $deployed = false ){
+		$i      = 1;
+		$editar = "true";
+
+		$grid  = new $this->jqdatagrid;
+
+		$link = site_url('ajax/buscapers');
+		$despues =
+'				$("input#nombre").val(ui.item.nombre);
+				$("input#sueldoa").val(ui.item.sueldo);';
+
+		$grid->addField('codigo');
+		$grid->label('Codigo');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 150,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{'.$grid->autocomplete($link, 'codigo','aaaaaa','<div id=\"aaaaaa\"></div>',$despues).'}',
+		));
+
+
+		$grid->addField('nombre');
+		$grid->label('Nombre');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 30, readonly: true }',
+		));
+
+
+		$grid->addField('fecha');
+		$grid->label('Fecha');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
+
+
+		$grid->addField('sueldoa');
+		$grid->label('Sueldo Ant.');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, readonly:true, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('sueldo');
+		$grid->label('Nuevo Sueldo');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('observ1');
+		$grid->label('Observaciones');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 46 }',
+		));
+
+
+		$grid->addField('oberv2');
+		$grid->label('Obervaciones');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 46 }',
+		));
+
+
+		$grid->addField('id');
+		$grid->label('Id');
+		$grid->params(array(
+			'align'         => "'center'",
+			'frozen'        => 'true',
+			'width'         => 40,
+			'editable'      => 'false',
+			'search'        => 'false'
+		));
+
+
+		$grid->showpager(true);
+		$grid->setWidth('');
+		$grid->setHeight('290');
+		$grid->setTitle($this->titp);
+		$grid->setfilterToolbar(true);
+		$grid->setToolbar('false', '"top"');
+
+		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
+
+		#show/hide navigations buttons
+		$grid->setAdd(true);
+		$grid->setEdit(true);
+		$grid->setDelete(true);
+		$grid->setSearch(true);
+		$grid->setRowNum(30);
+		$grid->setShrinkToFit('false');
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		#GET url
+		$grid->setUrlget(site_url($this->url.'getdata/'));
+
+		if ($deployed) {
+			return $grid->deploy();
+		} else {
+			return $grid;
+		}
+	}
+
+	/**
+	* Busca la data en el Servidor por json
+	*/
+	function getdata()
+	{
+		$grid       = $this->jqdatagrid;
+
+		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
+		$mWHERE = $grid->geneTopWhere('ausu');
+
+		$response   = $grid->getData('ausu', array(array()), array(), false, $mWHERE );
+		$rs = $grid->jsonresult( $response);
+		echo $rs;
+	}
+
+	/**
+	* Guarda la Informacion
+	*/
+	function setData()
+	{
+		$this->load->library('jqdatagrid');
+		$oper   = $this->input->post('oper');
+		$id     = $this->input->post('id');
+		$data   = $_POST;
+		$check  = 0;
+
+		if ($oper <> 'del'){
+			$codigo  = $this->input->post('codigo');
+			$check = $this->datasis->dameval('SELECT count(*) FROM pers WHERE codigo='.$this->db->escape($codigo));
+			if ( $check == 0 ){
+				echo "No se encontro esa persona en los registros ";
+				return;
+			}
+			$sueldo  = $this->input->post('sueldo');
+			if ( $sueldo <= 0  ) {
+				echo "El sueldo debe ser mayor que 0";
+				return;
+			}
+		}
+
+		unset($data['oper']);
+		unset($data['id']);
+		if($oper == 'add'){
+			if(false == empty($data)){
+				$this->db->insert('ausu', $data);
+				echo "Registro Agregado";
+				logusu('AUSU',"Registro ".$codigo." INCLUIDO");
+			} else
+			echo "Fallo Agregado!!!";
+
+		} elseif($oper == 'edit') {
+			$this->db->where('id', $id);
+			$this->db->update('ausu', $data);
+			logusu('AUSU',"Registro ".$codigo." MODIFICADO");
+			echo "Registro Modificado";
+
+		} elseif($oper == 'del') {
+			$codigo =  $this->datasis->dameval("SELECT codigo FROM ausu WHERE id='$id' ");
+			$this->db->simple_query("DELETE FROM ausu WHERE id=$id ");
+			logusu('AUSU',"Registro ".$codigo." ELIMINADO");
+			echo "Registro Eliminado";
+
+		};
+	}
+}
+
+/*
+
 class ausu extends Controller {
 	
 	function ausu(){
@@ -471,4 +778,5 @@ var persStore = new Ext.data.Store({
 		$this->load->view('extjs/extjsven',$data);
 	}
 }
+ */
 ?>

@@ -39,6 +39,9 @@ class Casi extends Controller {
 		$grid = $this->defgrid();
 		$param['grids'][] = $grid->deploy();
 
+		$grid1   = $this->defgridit();
+		$param['grids'][] = $grid1->deploy();
+
 		$readyLayout = '
 	$(\'body\').layout({
 		minSize: 30,
@@ -47,7 +50,7 @@ class Casi extends Controller {
 		west__size: 212,
 		west__onresize: function (pane, $Pane){jQuery("#west-grid").jqGrid(\'setGridWidth\',$Pane.innerWidth()-2);},
 	});
-	
+
 	$(\'div.ui-layout-center\').layout({
 		minSize: 30,
 		resizerClass: "ui-state-default",
@@ -57,30 +60,50 @@ class Casi extends Controller {
 		center__onresize: function (pane, $Pane) {
 			jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'setGridWidth\',$Pane.innerWidth()-6);
 			jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'setGridHeight\',$Pane.innerHeight()-110);
+			
+			jQuery("#newapi'.$param['grids'][1]['gridname'].'").jqGrid(\'setGridWidth\',$Pane.innerWidth()-6);
+			jQuery("#newapi'.$param['grids'][1]['gridname'].'").jqGrid(\'setGridHeight\',$("div#adicional").innerHeight()-60);
 		}
 	});
 	';
 
 
-
 		$bodyscript = '
 <script type="text/javascript">
 $(function() {
-	$( "input:submit, a, button", ".otros" ).button();
+	$( "input:submit, a, button", ".boton1" ).button();
 });
 
-jQuery("#a1").click( function(){
+jQuery("#boton1").click( function(){
 	var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
 	if (id)	{
 		var ret = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
-		window.open(\'/proteoerp/formatos/ver/CASI/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+		window.open(\''.base_url().'formatos/ver/CASI/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
 	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
 });
+
+jQuery("#boton2").click( function(){
+		window.open(\''.base_url().'contabilidad/casi/dataedit/create/\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+});
+
+jQuery("#boton3").click( function(){
+	var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
+	if (id)	{
+		var ret = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
+		window.open(\''.base_url().'contabilidad/casi/dataedit/modify/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
+});
+
+jQuery("#boton4").click( function(){
+	window.open(\''.base_url().'contabilidad/casi/auditoria/\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+});
+
+
 </script>
 ';
 
 		#Set url
-		$grid->setUrlput(site_url($this->url.'setdata/'));
+		//$grid->setUrlput(site_url($this->url.'setdata/'));
 
 		$WestPanel = '
 <div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content">
@@ -94,20 +117,21 @@ jQuery("#a1").click( function(){
 		<td><div class="tema1"><table id="otros"></table></div></td>
 	</tr>
 </table>
-
+</div>
 <table id="west-grid" align="center">
 	<tr>
-		<td></td>
+		<td><div class="tema1 boton1"><a style="width:190px" href="#" id="boton1">Imprimir '.img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',  'title' => 'Formato PDF', 'border'=>'0')).'</a></div></td>
+	</tr><tr>
+		<td><div class="tema1 boton1"><a style="width:190px" href="#" id="boton2">Agregar  '.img(array('src' => 'images/agrega4.png', 'alt' => 'Formato PDF',  'title' => 'Formato PDF', 'border'=>'0')).'</a></div></td>
+	</tr><tr>
+		<td><div class="tema1 boton1"><a style="width:190px" href="#" id="boton3">Editar  '.img(array('src' => 'images/editar.png', 'alt' => 'Formato PDF',  'title' => 'Formato PDF', 'border'=>'0')).'</a></div></td>
+	</tr><tr>
+		<td><div class="tema1 boton1"><a style="width:190px" href="#" id="boton4">Auditoria  '.img(array('src' => 'images/checklist.png', 'alt' => 'Formato PDF',  'title' => 'Formato PDF', 'border'=>'0')).'</a></div></td>
 	</tr>
 </table>
-</div>
-'.
-//		<td><a style="width:190px" href="#" id="a1">Imprimir Copia</a></td>
-'</div> <!-- #LeftPane -->
+</div> <!-- #LeftPane -->
 ';
 
-		$grid1   = $this->defgridit();
-		$param['grids'][] = $grid1->deploy();
 
 		$centerpanel = '
 <div id="RightPane" class="ui-layout-center">
@@ -116,12 +140,10 @@ jQuery("#a1").click( function(){
 		<div id="pnewapi'.$param['grids'][0]['gridname'].'"></div>
 	</div>
 	<div class="centro-sur" id="adicional" style="overflow:auto;">
-
 		<table id="newapi'.$param['grids'][1]['gridname'].'"></table>
 	</div>
 </div> <!-- #RightPane -->
 ';
-
 
 		$SouthPanel = '
 <div id="BottomPane" class="ui-layout-south ui-widget ui-widget-content">
@@ -343,7 +365,7 @@ jQuery("#a1").click( function(){
 		$grid->params(array(
 			'align'         => "'center'",
 			'frozen'        => 'true',
-			'width'         => 40,
+			'width'         => 60,
 			'editable'      => 'false',
 			'search'        => 'false'
 		));
@@ -371,8 +393,8 @@ jQuery("#a1").click( function(){
 		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
 
 		#show/hide navigations buttons
-		$grid->setAdd(true);
-		$grid->setEdit(true);
+		$grid->setAdd(false);
+		$grid->setEdit(false);
 		$grid->setDelete(true);
 		$grid->setSearch(true);
 		$grid->setRowNum(30);
@@ -483,17 +505,6 @@ jQuery("#a1").click( function(){
 		));
 */
 
-		$grid->addField('origen');
-		$grid->label('Origen');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 60,
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 20 }',
-		));
-
 
 		$grid->addField('cuenta');
 		$grid->label('Cuenta');
@@ -512,7 +523,7 @@ jQuery("#a1").click( function(){
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
-			'width'         => 120,
+			'width'         => 100,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:30, maxlength: 12 }',
@@ -560,6 +571,18 @@ jQuery("#a1").click( function(){
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
+		$grid->addField('origen');
+		$grid->label('Origen');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 50,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 20 }',
+		));
+
+
 
 		$grid->addField('ccosto');
 		$grid->label('C.Costo');
@@ -583,6 +606,20 @@ jQuery("#a1").click( function(){
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:30, maxlength: 12 }',
 		));
+
+		$grid->addField('comprob');
+		$grid->label('Comprob');
+		$grid->params(array(
+			'align'         => "'center'",
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 70,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 8 }',
+		));
+
+
 
 
 		$grid->addField('id');
@@ -663,9 +700,9 @@ jQuery("#a1").click( function(){
 	{
 		$id = $this->uri->segment(4);
 		if ($id){
-			$comprob = $this->datasis->dameval("SELECT comprob FROM itcasi WHERE id=$id");
+			$comprob = $this->datasis->dameval("SELECT comprob FROM casi WHERE id=$id");
 			$grid    = $this->jqdatagrid;
-			$mSQL = "SELECT origen, cuenta, referen, concepto, debe, haber, ccosto, sucursal, id FROM itcasi WHERE comprob='$comprob' ";
+			$mSQL = "SELECT origen, cuenta, referen, concepto, debe, haber, ccosto, sucursal, id, comprob FROM itcasi WHERE comprob='$comprob' ";
 			$response   = $grid->getDataSimple($mSQL);
 			$rs = $grid->jsonresult( $response);
 		} else
