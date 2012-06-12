@@ -42,9 +42,8 @@ echo script('jquery-ui.custom.min.js')
 
 
 <!-- DATAGRID -->
-<link rel="stylesheet" type="text/css" media="screen" href="<?php echo base_url(); ?>assets/default/datagrid/datagrid.css" />
 <?php echo script('datagrid/datagrid.js')  ?>
-
+<?php echo style('../datagrid/datagrid.css') ?>
 
 <!-- LAYOUT -->
 <?php echo script('jquery.layout.js') ?>

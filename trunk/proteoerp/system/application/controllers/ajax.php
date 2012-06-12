@@ -1,4 +1,29 @@
 <?php
+/*  FUNCIONES INVOCADAS POR AJAX
+ *
+ *
+ *
+ *  BUSQUEDAS
+ *		PROVEEDORES 	buscasprv 
+ *
+ *		CLIENTES	buscascli
+ *
+ *		INVENTARIO	buscasinv
+ *				buscascstart   (Busca sinv solo articulos para compras con codigos alternos)
+ *				buscasinvart   (Busca sinv solo articulos)
+ *
+ *		FACTURAS	buscasfacdev   (Busca facturas para aplicarles devolucion)
+ *
+ *		FORMAS DE PAGO	buscasfpadev   (Busca las formas de pago de una factura para devolverlos)
+ *
+ *		PLAN DE CUENTAS buscacpla
+ *
+ *
+ *			
+ *				
+ *  
+ *
+*/
 class Ajax extends Controller {
 
 	function Ajax(){
@@ -20,7 +45,7 @@ class Ajax extends Controller {
 		$qdb  = $this->db->escape('%'.$mid.'%');
 		$qmid = $this->db->escape($mid);
 
-		$data = '{[ ]}';
+		$data = '[{ }]';
 		if($mid !== false){
 			$retArray = $retorno = array();
 
@@ -65,6 +90,11 @@ class Ajax extends Controller {
 		return true;
 	}
 
+	/**************************************************************
+	 *
+	 *  BUSCA LOS CLIENTES
+	 *
+	*/
 	function buscascli(){
 		$mid  = $this->input->post('q');
 		if($mid == false) $mid  = $this->input->post('term');
@@ -72,7 +102,7 @@ class Ajax extends Controller {
 		$qmid = $this->db->escape($mid);
 		$qdb  = $this->db->escape('%'.$mid.'%');
 
-		$data = '{[ ]}';
+		$data = '[{ }]';
 		if($mid !== false){
 			$retArray = $retorno = array();
 
@@ -120,6 +150,12 @@ class Ajax extends Controller {
 		return true;
 	}
 
+
+	/**************************************************************
+	 *
+	 *  BUSCA LOS INVENTARIO
+	 *
+	*/
 	function buscasinv(){
 		$comodin= $this->datasis->traevalor('COMODIN');
 		$mid    = $this->input->post('q');
@@ -131,7 +167,7 @@ class Ajax extends Controller {
 		$qdb  = $this->db->escape($mid.'%');
 		$qba  = $this->db->escape($mid);
 
-		$data = '{[ ]}';
+		$data = '[{ }]';
 		if($mid !== false){
 			$retArray = $retorno = array();
 
@@ -181,7 +217,7 @@ class Ajax extends Controller {
 		$sprv   = $this->input->post('sprv');
 		$dbsprv = $this->db->escape($sprv);
 
-		$data = '{[ ]}';
+		$data = '[{ }]';
 		if($mid !== false){
 			$retArray = $retorno = array();
 
@@ -232,7 +268,7 @@ class Ajax extends Controller {
 		$qdb  = $this->db->escape($mid.'%');
 		$qba  = $this->db->escape($mid);
 
-		$data = '{[ ]}';
+		$data = '[{ }]';
 		if($mid !== false){
 			$retArray = $retorno = array();
 
@@ -274,7 +310,7 @@ class Ajax extends Controller {
 		$esta  = $this->input->post('esta');
 		$tipo  = $this->input->post('tipo');
 
-		$data = '{[ ]}';
+		$data = '[{ }]';
 		if($ordp !== false &&  $esta !== false &&  $tipo!== false){
 			$dbnumero=$this->db->escape($ordp);
 			if($tipo=='E'){
@@ -339,7 +375,7 @@ class Ajax extends Controller {
 		$qdb   = $this->db->escape('%'.$mid.'%');
 		$sclidb= $this->db->escape($scli);
 
-		$data = '{[ ]}';
+		$data = '[{ }]';
 
 		if($mid !== false){
 			$retArray = $retorno = array();
@@ -379,7 +415,7 @@ class Ajax extends Controller {
 	function buscasfpadev(){
 		$mid = $this->input->post('q');
 
-		$data = '{[ ]}';
+		$data = '[{ }]';
 		if($mid !== false){
 			$dbfactura = $this->db->escape($mid);
 			$referen   = $this->datasis->dameval('SELECT referen FROM sfac WHERE tipo_doc=\'F\' AND numero='.$dbfactura);
@@ -411,7 +447,7 @@ class Ajax extends Controller {
 	function buscasinvdev(){
 		$mid = $this->input->post('q');
 
-		$data = '{[ ]}';
+		$data = '[{ }]';
 		if($mid !== false){
 			$dbfactura = $this->db->escape($mid);
 			$retArray = $retorno = array();
@@ -453,13 +489,16 @@ class Ajax extends Controller {
 		echo $data;
 	}
 
+	//
+	// Busca Plan de cuentas
+	//
 	function buscacpla(){
 		$mid   = $this->input->post('q');
 		if($mid == false) $mid  = $this->input->post('term');
 
 		$qdb   = $this->db->escape($mid.'%');
 
-		$data = '{[ ]}';
+		$data = '[{ }]';
 		if($mid !== false){
 			$qformato=$this->datasis->formato_cpla();
 			$retArray = $retorno = array();
@@ -515,7 +554,7 @@ class Ajax extends Controller {
 		$qdb   = $this->db->escape('%'.$mid.'%');
 		$scli  = $this->input->post('scli');
 
-		$data = '{[ ]}';
+		$data = '[{ }]';
 		if($mid !== false){
 			$qformato=$this->datasis->formato_cpla();
 			$retArray = $retorno = array();
@@ -566,7 +605,7 @@ class Ajax extends Controller {
 	function automgas(){
 		$q   = $this->input->post('q');
 
-		$data = '{[ ]}';
+		$data = '[{ }]';
 		if($q!==false){
 			$mid = $this->db->escape('%'.$q.'%');
 			$mSQL = "SELECT a.codigo, a.descrip
@@ -594,7 +633,7 @@ class Ajax extends Controller {
 	//Autocomplete para las labores de sinv
 	function buscaordplabor(){
 		$mid   = $this->input->post('q');
-		$data = '{[ ]}';
+		$data = '[{ }]';
 		if($mid!==false){
 			$mid  = $this->db->escape($mid);
 			$mSQL = "SELECT a.estacion,a.nombre,a.actividad,a.tunidad,a.tiempo
@@ -623,7 +662,7 @@ class Ajax extends Controller {
 	//Autocomplete para las recetas de sinv
 	function buscaordpitem(){
 		$mid   = $this->input->post('q');
-		$data = '{[ ]}';
+		$data = '[{ }]';
 		if($mid!==false){
 			$mid  = $this->db->escape($mid);
 			$mSQL = "SELECT a.codigo, a.descrip,a.cantidad,a.merma,a.ultimo
@@ -679,7 +718,7 @@ class Ajax extends Controller {
 			$mid=str_replace($comodin,'%',$mid);
 		}
 
-		$data = '{[ ]}';
+		$data = '[{ }]';
 		if($mid !== false){
 			$retArray = $retorno = array();
 
@@ -756,7 +795,7 @@ class Ajax extends Controller {
 		$qdb  = $this->db->escape($mid.'%');
 		$qba  = $this->db->escape($mid);
 
-		$data = '{[ ]}';
+		$data = '[{ }]';
 		if($mid !== false){
 			$retArray = $retorno = array();
 			$mSQL="SELECT a.codigo, a.descrip, a.tarifa
@@ -787,7 +826,7 @@ class Ajax extends Controller {
 		$qdb  = $this->db->escape($mid.'%');
 		$qba  = $this->db->escape($mid);
 
-		$data = '{[ ]}';
+		$data = '[{ }]';
 		if($mid !== false){
 			$retArray = $retorno = array();
 
@@ -875,6 +914,172 @@ class Ajax extends Controller {
 		$mSQL = "SELECT depto, CONCAT(depto,' ',descrip) descrip FROM dpto WHERE tipo='I' ORDER BY depto";
 		echo $this->datasis->llenaopciones($mSQL, true);
 	}
+
+	//***************************************
+	//          BUSCA GASTO
+	//***************************************
+	function buscamgas(){
+		$mid  = $this->input->post('q');
+		if($mid == false) $mid  = $this->input->post('term');
+
+		$qdb  = $this->db->escape('%'.$mid.'%');
+		$qmid = $this->db->escape($mid.'%');
+
+		$data = '[{ }]';
+		if($mid !== false){
+			$retArray = $retorno = array();
+
+			//Cheque si existe el codigo
+			/*
+			$mSQL="SELECT TRIM(descrip) AS descrip, codigo FROM mgas WHERE codigo=${qmid} LIMIT 1";
+			$query = $this->db->query($mSQL);
+			if ($query->num_rows() == 1){
+				$row = $query->row_array();
+				$retArray['value']   = $row['codigo'];
+				$retArray['label']   = '('.$row['codigo'].') '.utf8_encode($row['nombre']);
+				array_push($retorno, $retArray);
+				$ww=" AND codigo<>${qmid}";
+			}else{
+				$ww='';
+			}
+			*/
+			
+			$mSQL="SELECT TRIM(descrip) AS nombre, codigo FROM mgas WHERE descrip LIKE ${qdb} OR codigo LIKE ${qmid} ORDER BY descrip LIMIT 20";
+			$query = $this->db->query($mSQL);
+			if ($query->num_rows() > 0){
+				foreach( $query->result_array() as  $row ) {
+					$retArray['value']   = $row['codigo'];
+					$retArray['label']   = utf8_encode($row['nombre']).'('.$row['codigo'].') ';
+					array_push($retorno, $retArray);
+				}
+				$data = json_encode($retorno);
+			}
+		}
+		echo $data;
+		return true;
+	}
+	
+	//***************************************
+	//          BUSCA GASTO o PROVEEDOR
+	//***************************************
+	function buscasprvmgas(){
+		$tipo  = $this->input->post('cargo');
+		$cta   = $this->input->post('acelem');
+		
+		if ( $cta == 'ctade')
+			$tipo = substr($tipo,0,1);
+		else
+			$tipo = substr($tipo,2,1);
+		
+		if ( $tipo == 'P')
+			$this->buscasprv();
+		else
+			$this->buscamgas();
+	}
+	
+	//***************************************
+	//          BUSCA PERSONA
+	//***************************************
+	function buscapers(){
+		$mid  = $this->input->post('q');
+		if($mid == false) $mid  = $this->input->post('term');
+
+		$qdb  = $this->db->escape('%'.$mid.'%');
+		$qmid = $this->db->escape($mid.'%');
+
+		$data = '[{ }]';
+		if($mid !== false){
+			$retArray = $retorno = array();
+			$mSQL="	SELECT codigo, CONCAT(TRIM(apellido),', ',TRIM(nombre),' (',nacional,TRIM(cedula),')') AS label,
+					CONCAT(TRIM(apellido),', ',TRIM(nombre))  nombre, sueldo, enlace
+				FROM pers WHERE nombre LIKE ${qdb} OR apellido LIKE ${qdb} OR codigo LIKE ${qmid} ORDER BY nombre LIMIT 20";
+			$query = $this->db->query($mSQL);
+			if ($query->num_rows() > 0){
+				foreach( $query->result_array() as  $row ) {
+					$retArray['value']   = $row['codigo'];
+					$retArray['label']   = utf8_encode($row['label']);
+					$retArray['nombre']  = utf8_encode($row['nombre']);
+					$retArray['sueldo']  = $row['sueldo'];
+					$retArray['enlace']  = utf8_encode($row['enlace']);
+					array_push($retorno, $retArray);
+				}
+				$data = json_encode($retorno);
+			}
+		}
+		echo $data;
+		return true;
+	}
+
+	//***************************************
+	//          BUSCA PERSONA
+	//***************************************
+	function buscaconc(){
+		$mid  = $this->input->post('q');
+		if($mid == false) $mid  = $this->input->post('term');
+
+		$qdb  = $this->db->escape('%'.$mid.'%');
+		$qmid = $this->db->escape($mid.'%');
+
+		$data = '[{ }]';
+		if($mid !== false){
+			$retArray = $retorno = array();
+			$mSQL="	SELECT concepto, CONCAT(TRIM(descrip),' (',concepto,')') AS label,
+					IF(tipo='A','Asignacion',IF(tipo='D','Deduccion','Otros')) tipo,
+					TRIM(descrip) descrip, formula
+				FROM conc WHERE descrip LIKE ${qdb} OR concepto LIKE ${qmid} ORDER BY concepto LIMIT 20";
+			$query = $this->db->query($mSQL);
+			if ($query->num_rows() > 0){
+				foreach( $query->result_array() as  $row ) {
+					$retArray['value']   = $row['concepto'];
+					$retArray['label']   = utf8_encode($row['label']);
+					$retArray['tipo']    = utf8_encode($row['tipo']);
+					$retArray['descrip'] = utf8_encode($row['descrip']);
+					$retArray['formula'] = utf8_encode($row['formula']);
+					array_push($retorno, $retArray);
+				}
+				$data = json_encode($retorno);
+			}
+		}
+		echo $data;
+		return true;
+	}
+
+
+	//***************************************
+	//      BUSCA EFECTOS DE CLIENTE
+	//***************************************
+	function buscasmovep(){
+		$mid  = $this->input->post('q');
+		if($mid == false) $mid  = $this->input->post('term');
+
+		$qdb  = $this->db->escape('%'.$mid.'%');
+		$qmid = $this->db->escape($mid.'%');
+
+		$cod_cli = $this->input->post('cargo');
+
+		$data = '[{ }]';
+		if($mid !== false){
+			$retArray = $retorno = array();
+			$mSQL="	SELECT numero, CONCAT(tipo_doc, numero, ' ', fecha, ' Monto:', monto-abonos) label, tipo_doc, monto-abonos monto, abonos FROM smov 
+				WHERE cod_cli=".$this->db->escape($cod_cli)." AND monto>abonos AND tipo_doc IN ('FC','ND') AND numero LIKE ${qmid} ORDER BY tipo_doc, numero LIMIT 20";
+			$query = $this->db->query($mSQL);
+			if ($query->num_rows() > 0){
+				foreach( $query->result_array() as  $row ) {
+					$retArray['value']    = $row['numero'];
+					$retArray['label']    = utf8_encode($row['label']);
+					$retArray['tipo_doc'] = $row['tipo_doc'];
+					$retArray['monto']    = $row['monto'];
+					$retArray['abonos']   = $row['abonos'];
+					array_push($retorno, $retArray);
+				}
+				$data = json_encode($retorno);
+			}
+		}
+		echo $data;
+		return true;
+	}
+
+
 
 	
 }

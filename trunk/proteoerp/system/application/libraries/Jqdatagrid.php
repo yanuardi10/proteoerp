@@ -713,7 +713,7 @@ class Jqdatagrid
 											if(false == empty($addcal)){
 						 						$calc = ",editoptions: {{$calendar} $addcal ,searchoptions: {{$calendar}}";
 											} else {
-												$calc = ",editoptions: {{$calendar}}, searchoptions: {{$calendar}}";
+												$calc = ",editoptions: {{$calendar}, defaultValue:'".date('Y-m-d')."'}, searchoptions: {{$calendar}}";
 											}
 										}
 									}
@@ -1218,7 +1218,7 @@ class Jqdatagrid
 	* Genera el codigo java para autocomplete
 	*
 	*/
-	function autocomplete( $link, $name, $id, $html )
+	function autocomplete( $link, $name, $id, $html, $despues='' )
 	{
 		$salida = '
 		"dataInit":function(el){
@@ -1227,13 +1227,14 @@ class Jqdatagrid
 					if(jQuery.ui.autocomplete){
 						jQuery(el).autocomplete({
 							"appendTo":"body","disabled":false,"delay":300,"minLength":1,
-							"select": function(event, ui) { 
+							"select": function(event, ui) {
 								$("#'.$id.'").remove();
-								$("#'.$name.'").after("'.$html.'"); 
+								$("#'.$name.'").after("'.$html.'");'.$despues.'
 							},
 							"source":function (request, response){
 								request.acelem = "'.$name.'";
-								request.oper = "autocomplete";
+								request.oper   = "autocomplete";
+								request.cargo  = _cargo;
 								$.ajax({
 									url: "'.$link.'",
 									dataType: "json",

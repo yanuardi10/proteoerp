@@ -1,214 +1,432 @@
 <?php
 //adelantoprestamos
 class Pres extends Controller {
-	
-	function pres(){
-		parent::Controller(); 
-		$this->load->library("rapyd");
+	var $mModulo='PRES';
+	var $titp='Descuento de Prestamos por Nomina';
+	var $tits='Descuento de Prestamos por Nomina';
+	var $url ='nomina/pres/';
+
+	function Pres(){
+		parent::Controller();
+		$this->load->library('rapyd');
+		$this->load->library('jqdatagrid');
+		//$this->datasis->modulo_id('NNN',1);
 	}
-	
+
 	function index(){
 		if ( !$this->datasis->iscampo('pres','id') ) {
 			$this->db->simple_query('ALTER TABLE pres DROP PRIMARY KEY');
 			$this->db->simple_query('ALTER TABLE pres ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ');
 			$this->db->simple_query('ALTER TABLE pres ADD UNIQUE INDEX cliente (cod_cli, tipo_doc, numero )');
 		}
-		$this->datasis->modulo_id(710,1);
-		$this->presextjs();
+		redirect($this->url.'jqdatag');
 	}
- 
-	function filteredgrid(){
-		$this->rapyd->load("datafilter","datagrid");
-		$this->rapyd->uri->keep_persistence();
 
-		$filter = new DataFilter("Filtro por N&uacute;mero", 'pres');
-		
-		$filter->numero = new inputField("N&uacute;mero", "numero");
-		
-		$filter->buttons("reset","search");
-		$filter->build();
+	//***************************
+	//Layout en la Ventana
+	//
+	//***************************
+	function jqdatag(){
 
-		$uri = anchor('nomina/pres/dataedit/show/<#cod_cli#>/<#tipo_doc#>/<#numero#>','<#numero#>');
+		$grid = $this->defgrid();
+		$param['grids'][] = $grid->deploy();
 
-		$grid = new DataGrid("Lista de Adelantos de Prestaciones");
-		$grid->order_by("numero","asc");
-		$grid->per_page = 20;
+		$bodyscript = '
+<script type="text/javascript">
+$(function() {
+	$( "input:submit, a, button", ".otros" ).button();
+});
 
-		$grid->column("N&uacute;mero",$uri);
-		$grid->column("Nombre","nombre");
-		$grid->column("Fecha","<dbdate_to_human><#fecha#></dbdate_to_human>","align='center'");
-		$grid->column("Tipo","tipo_doc");
-		$grid->column("Monto","monto");
+jQuery("#a1").click( function(){
+	var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
+	if (id)	{
+		var ret = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
+		window.open(\''.base_url().'formatos/ver/PRES/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
+});
+</script>
+';
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		$WestPanel = '
+<div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content">
+<div class="anexos">
+
+<table id="west-grid" align="center">
+	<tr>
+		<td><div class="tema1"><table id="listados"></table></div></td>
+	</tr>
+	<tr>
+		<td><div class="tema1"><table id="otros"></table></div></td>
+	</tr>
+</table>
+
+<table id="west-grid" align="center">
+	<tr>
+		<td></td>
+	</tr>
+</table>
+</div>
+'.
+//		<td><a style="width:190px" href="#" id="a1">Imprimir Copia</a></td>
+'</div> <!-- #LeftPane -->
+';
+
+		$SouthPanel = '
+<div id="BottomPane" class="ui-layout-south ui-widget ui-widget-content">
+<p>'.$this->datasis->traevalor('TITULO1').'</p>
+</div> <!-- #BottomPanel -->
+';
+		$param['WestPanel']  = $WestPanel;
+		//$param['EastPanel']  = $EastPanel;
+		$param['SouthPanel'] = $SouthPanel;
+		$param['listados'] = $this->datasis->listados('PRES', 'JQ');
+		$param['otros']    = $this->datasis->otros('PRES', 'JQ');
+		$param['temas']     = array('proteo','darkness','anexos1');
+		$param['bodyscript'] = $bodyscript;
+		$param['tabs'] = false;
+		$param['encabeza'] = $this->titp;
+		$this->load->view('jqgrid/crud2',$param);
+	}
+
+	//***************************
+	//Definicion del Grid y la Forma
+	//***************************
+	function defgrid( $deployed = false ){
+		$i      = 1;
+		$editar = "true";
+
+		$grid  = new $this->jqdatagrid;
+
+		$grid  = new $this->jqdatagrid;
+		$link = site_url('ajax/buscapers');
+		$despues ='
+								$("input#nombre").val(ui.item.nombre);
+								$("input#cod_cli").val(ui.item.enlace);
+								_cargo = ui.item.enlace;';
+
+		$grid->addField('codigo');
+		$grid->label('Codigo');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 70,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{'.$grid->autocomplete($link, 'codigo','aaaaaa','<div id=\"aaaaaa\"></div>',$despues).'}', 
+			'formoptions'   => '{ label:"Codigo del Trabajador" }',
+		));
+
+
+		$grid->addField('nombre');
+		$grid->label('Nombre');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 30, readonly: true }',
+		));
+
+
+		$grid->addField('cod_cli');
+		$grid->label('Cliente');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 50,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:5, maxlength: 5, readonly: true }',
+			'formoptions'   => '{ label:"Enlace Administrativo" }',
+		));
+
+		$link1 = site_url('ajax/buscasmovep');
+		$despues1 ='
+								$("input#tipo_doc").val(ui.item.tipo_doc);
+								$("input#monto").val(ui.item.monto);
+								';
+
+
+		$grid->addField('numero');
+		$grid->label('Numero');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:10, '.$grid->autocomplete($link1, 'codigo','aaaaaa','<div id=\"aaaaaa\"></div>',$despues1).'}',
+			'formoptions'   => '{ label:"Numero de Efecto" }',
+		));
+
+		$grid->addField('tipo_doc');
+		$grid->label('Tipo_doc');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 2 }',
+			'formoptions'   => '{ label:"Tipo de Documento" }',
+		));
+
+
+		$grid->addField('monto');
+		$grid->label('Monto');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{label:"Monto adeudado",decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+		$grid->addField('fecha');
+		$grid->label('Fecha');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }',
+			//'editoptions'   => '{ defaultValue:"'.date('Y-m-d').'"}'
+		));
+
+
+		$grid->addField('nroctas');
+		$grid->label('Nro.Cuotas');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ defaultValue:"1",size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); },
+				dataEvents: [{
+					type: "change", fn: function(e){
+						var cuotas = Number($(e.target).val());
+						var monto  = Number($("input#monto").val());
+						var cuota  = 0;
+						if ( cuotas==0) { cuotas=1; };
+						cuota = monto/cuotas;
+						$("input#cuota").val(cuota);
+					}
+				}]
+	
+			}',
+			'formatter'     => "'number'",
+			'formatoptions' => '{label:"Numero de Cuotas", decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+		$grid->addField('cuota');
+		$grid->label('Cuota');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ defaultValue:"0", size:10, maxlength: 10, readonly: true, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{label:"Descuento por Nomina",decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+		$grid->addField('apartir');
+		$grid->label('Apartir');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Inicio del descuento" }'
+		));
+
+		$grid->addField('cadano');
+		$grid->label('Intervalo');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'select'",
+			'editoptions'   => '{value: {"1":"Cada Nomina", "2":"Cas 2 Nominas"} }',
+			'editrules'     => '{ required:true}',
+		));
+
+		$grid->addField('observ1');
+		$grid->label('Observaciones');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 250,
+			'edittype'      => "'text'",
+			//'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:40, maxlength: 46 }',
+		));
+
+		$grid->addField('oberv2');
+		$grid->label('Obervaciones');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 250,
+			'edittype'      => "'text'",
+			//'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:40, maxlength: 46 }',
+		));
+
+		$grid->addField('modificado');
+		$grid->label('Modificado');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => 'false',
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
+
+		$grid->addField('id');
+		$grid->label('Id');
+		$grid->params(array(
+			'align'         => "'center'",
+			'frozen'        => 'true',
+			'width'         => 40,
+			'editable'      => 'false',
+			'search'        => 'false'
+		));
+
+		$grid->showpager(true);
+		$grid->setWidth('');
+		$grid->setHeight('290');
+		$grid->setTitle($this->titp);
+		$grid->setfilterToolbar(true);
+		$grid->setToolbar('false', '"top"');
+
+		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:450, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:450, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
+
+		#show/hide navigations buttons
+		$grid->setAdd(true);
+		$grid->setEdit(true);
+		$grid->setDelete(true);
+		$grid->setSearch(true);
+		$grid->setRowNum(30);
+		$grid->setShrinkToFit('false');
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		#GET url
+		$grid->setUrlget(site_url($this->url.'getdata/'));
+
+		if ($deployed) {
+			return $grid->deploy();
+		} else {
+			return $grid;
+		}
+	}
+
+	/**
+	* Busca la data en el Servidor por json
+	*/
+	function getdata()
+	{
+		$grid       = $this->jqdatagrid;
+
+		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
+		$mWHERE = $grid->geneTopWhere('pres');
+
+		$response   = $grid->getData('pres', array(array()), array(), false, $mWHERE );
+		$rs = $grid->jsonresult( $response);
+		echo $rs;
+	}
+
+	/**
+	* Guarda la Informacion
+	*/
+	function setData()
+	{
+		$this->load->library('jqdatagrid');
+		$oper   = $this->input->post('oper');
+		$id     = $this->input->post('id');
+		$data   = $_POST;
+		$check  = 0;
+
+		// Valida
+		if($oper != 'del'){
+			$codigo   = $this->input->post('codigo');
+			$cod_cli  = $this->input->post('cod_cli');
+			$numero   = $this->input->post('numero');
+			$tipo_doc = $this->input->post('tipo_doc');
+			$check = $this->datasis->dameval('SELECT count(*) FROM pers WHERE codigo='.$this->db->escape($codigo));
+			if ( $check == 0 ){
+				echo "No se encontro esa persona en los registros ".$codigo;
+				return;
+			}
+			$check = $this->datasis->dameval('SELECT count(*) FROM scli WHERE cliente='.$this->db->escape($cod_cli));
+			if ( $check == 0 ){
+				echo "No se encontro el enlace Administrativo ".$cod_cli;
+				return;
+			}
+			$check = $this->datasis->dameval('SELECT count(*) FROM smov WHERE cod_cli='.$this->db->escape($cod_cli)." AND tipo_doc='$tipo_doc' AND numero='$numero' AND monto>abonos " );
+			if ( $check == 0 ){
+				echo "No se encontro la deuda a cobrar ".$tipo_doc.$numero;
+				return;
+			}
+			$data['nombre']  = $this->datasis->dameval("SELECT CONCAT(TRIM(nombre),' ',TRIM(apellido)) nombre FROM pers WHERE codigo='$codigo'");
+		}
+		unset($data['oper']);
+		unset($data['id']);
+		if($oper == 'add'){
+			if(false == empty($data)){
+				//Busca si ya existe
+				$check = $this->datasis->dameval('SELECT count(*) FROM pres WHERE cod_cli='.$this->db->escape($cod_cli)." AND tipo_doc='$tipo_doc' AND numero='$numero' " );
+				if ( $check == 0 ) {
+					$this->db->insert('pres', $data);
+					echo "Registro Agregado";
+					logusu('PRES',"Registro  INCLUIDO");
+				} else
+				echo "Registro ya Agregado!!!";
 				
-		$grid->add("nomina/pres/dataedit/create");
-		$grid->build();
-		
-		$data['content'] = $filter->output.$grid->output;
-		$data['title']   = "<h1>Adelantos de Prestaciones</h1>";
-		$data["head"]    = $this->rapyd->get_head();
-		$this->load->view('view_ventanas', $data);
-	}
-	
-	function dataedit()	{
-		$this->rapyd->load("dataedit");
- 		$edit = new DataEdit("Adelanto de Prestamos", "pres");
-		$edit->back_url = site_url("nomina/pres/filteredgrid");
-		
-		$edit->post_process('insert','_post_insert');
-		$edit->post_process('update','_post_update');
-		$edit->post_process('delete','_post_delete');
-		
-		$script ='
-		$(function() {
-			$(".inputnum").numeric(".");
-		});
-		';
-		
-		$pers=array(
-		'tabla'   =>'pers',
-		'columnas'=>array(
-		'codigo'  =>'Codigo',
-		'cedula'  =>'Cedula',
-		'nombre'  =>'Nombre',
-		'apellido'=>'Apellido'),
-		'filtro'  =>array('codigo'=>'C&oacute;digo','cedula'=>'Cedula'),
-		'retornar'=>array('codigo'=>'codigo','nombre'=>'nombre'),
-		'titulo'  =>'Buscar Personal');
-					  
-		$boton1=$this->datasis->modbus($pers);
+			} else
+				echo "Fallo Agregado!!!";
 
- 		$scli=array(
-	  'tabla'   =>'scli',
-	  'columnas'=>array(
-		'cliente' =>'C&oacute;digo Cliente',
-		'nombre'  =>'Nombre',
-		'contacto'=>'Contacto'),
-	  'filtro'  =>array('cliente'=>'C&oacute;digo Cliente','nombre'=>'Nombre'),
-	  'retornar'=>array('cliente'=>'cod_cli'),
-	  'titulo'  =>'Buscar Cliente');
-		
-		$boton=$this->datasis->modbus($scli);
-		
-		$edit->script($script, "create");
-		$edit->script($script, "modify");
-		
-		$edit->enlase =  new inputField("Enlase","cod_cli");
-		$edit->enlase->mode="autohide";
-		$edit->enlase->size =7;
-		$edit->enlase->maxlength=5;
-		$edit->enlase->rule = "required";
-		$edit->enlase->append($boton);
-		
-		$edit->tipo = new dropdownField("Tipo", "tipo_doc");  
-		$edit->tipo->option("ND","ND");
-		$edit->tipo->option("NC","NC");
-		$edit->tipo->style='width:60px';
-		$edit->tipo->mode="autohide";
-		$edit->tipo->rule="required";
-		
-		$edit->numero =  new inputField("N&uacute;mero", "numero");
-		$edit->numero->mode="autohide";
-		$edit->numero->size =10;
-		$edit->numero->maxlength=8;
-		$edit->numero->rule = "required|callback_chexiste";
-		
-		$edit->fecha = new DateField("Fecha","fecha");
-		$edit->fecha->size = 12;
-		
-		$edit->codigo =  new inputField("C&oacute;digo", "codigo");
-		$edit->codigo->size = 15;
-		$edit->codigo->maxlength=15;
-		$edit->codigo->append($boton1);
-		$edit->codigo->rule="required";
-		$edit->codigo->group="Trabajador";
-		
-		$edit->nombre = new inputField("Nombre","nombre");
-		$edit->nombre->size =45;
-		$edit->nombre->maxlength=35;
-		$edit->nombre->group="Trabajador";
-	  	
-		$edit->monto = new inputField("Saldo","monto");
-		$edit->monto->size =17;
-		$edit->monto->maxlength=14;
-		$edit->monto->css_class='inputnum';
-		$edit->monto->rule='numeric';
-		$edit->monto->group="Datos de Prestamo";
+		} elseif($oper == 'edit') {
+			$this->db->where('id', $id);
+			$this->db->update('pres', $data);
+			logusu('PRES',"Registro ????? MODIFICADO");
+			echo "Registro Modificado";
 
-		$edit->nroctas = new inputField("Nº Cuota","nroctas");
-		$edit->nroctas->size =4;
-		$edit->nroctas->maxlength=2;
-		$edit->nroctas->css_class='inputnum';
-		$edit->nroctas->rule='integer';
-		$edit->nroctas->group="Datos de Prestamo";
-
-		$edit->cuota = new inputField("Cuota","cuota");
-		$edit->cuota->size = 17;
-		$edit->cuota->maxlength=14;
-		$edit->cuota->css_class='inputnum';
-		$edit->cuota->rule='numeric';
-		$edit->cuota->group="Datos de Prestamo";
-	  	  
-		$edit->apartir = new DateonlyField("Cobrar A partir de:","apartir");
-		$edit->apartir->size = 12;
-		$edit->apartir->group="Datos de Prestamo";
-    
-		$edit->cadano = new inputField("Frecuencia","cadano");
-		$edit->cadano->size =2;
-		$edit->cadano->maxlength=1;
-		$edit->cadano->group="Datos de Prestamo";
-		
-		$edit->observ1 = new inputField("Observaciones","observ1");
-		$edit->observ1->size =45;
-		$edit->observ1->maxlength=46;
-		$edit->observ1->group="Datos de Prestamo";		
-		
-		$edit->observ2 = new inputField("","oberv2");
-		$edit->observ2->size = 45;
-		$edit->observ2->maxlength=46;
-		$edit->observ2->group="Datos de Prestamo";
-		
-		//$edit->pagado = new inputField("Pagado","pagado");
-		//$edit->pagado->size = 1;
-									
-		$edit->buttons("modify", "save", "undo", "delete", "back");
-		$edit->build();
-
-		$data['content'] = $edit->output;           
-		$data['title']   = "<h1>Adelanto Prestamos</h1>";        
-		$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
-		$this->load->view('view_ventanas', $data);
-	}
-	function _post_insert($do){
-		$codigo=$do->get('numero');
-		$nombre=$do->get('nombre');
-		logusu('pres',"ADELANTO DE PRESTACIONES PARA  $codigo NOMBRE  $nombre CREADO");
-	}
-	function _post_update($do){
-		$codigo=$do->get('numero');
-		$nombre=$do->get('nombre');
-		logusu('pres',"ADELANTO DE PRESTACIONES PARA  $codigo NOMBRE  $nombre  MODIFICADO");
-	}
-	function _post_delete($do){
-		$codigo=$do->get('numero');
-		$nombre=$do->get('nombre');
-		logusu('pres',"ADELANTO DE PRESTACIONES PARA  $codigo NOMBRE  $nombre  ELIMINADO ");
-	}
-	function chexiste($tipo_doc){
-		$tipo_doc=$this->input->post('tipo_doc');
-		$codigo=$this->input->post('cod_cli');
-		$numero=$this->input->post('numero');
-		//echo 'numero'.$numero.'codigo'.$codigo.'tipo'.$tipo_doc;
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM pres WHERE tipo_doc='$tipo_doc' AND numero='$numero' AND cod_cli='$codigo'");
-		if ($chek > 0){
-			$nombre=$this->datasis->dameval("SELECT nombre FROM pres WHERE cod_cli='$codigo'");
-			$this->validation->set_message('chexiste',"Adelanto de Prestamo para $nombre ya existe");
-			return FALSE;
-		}else {
-  		return TRUE;
-		}	
+		} elseif($oper == 'del') {
+			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM pres WHERE id='$id' ");
+			if ($check > 0){
+				echo " El registro no puede ser eliminado; tiene movimiento ";
+			} else {
+				$this->db->simple_query("DELETE FROM pres WHERE id=$id ");
+				logusu('PRES',"Registro ????? ELIMINADO");
+				echo "Registro Eliminado";
+			}
+		};
 	}
 
-	
+
 	function grid(){
 		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']   :  0;
 		$limit   = isset($_REQUEST['limit'])  ? $_REQUEST['limit']   : 50;
@@ -468,4 +686,5 @@ var persStore = new Ext.data.Store({
 		$this->load->view('extjs/extjsven',$data);
 	}
 }
+
 ?>

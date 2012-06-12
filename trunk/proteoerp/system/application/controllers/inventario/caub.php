@@ -13,9 +13,9 @@ class Caub extends validaciones {
 		$this->load->helper('url');
 		$this->load->helper('text');
 		$this->datasis->modulo_id(307,1);
-
 		$this->load->library("rapyd");
 		$this->load->library('jqdatagrid');
+		//$this->load->library('jformer');
 	}
  
 	function index(){
@@ -51,39 +51,169 @@ class Caub extends validaciones {
 		//redirect("inventario/caub/caubextjs");
 		redirect('inventario/caub/jqdatag');
 
-    }
+	}
  
+	//***************************
+	//Layout en la Ventana
+	//
+	//***************************
  	function jqdatag(){
 
 		$grid = $this->defgrid();
-		$param['grid'] = $grid->deploy();
+		$param['grids'][] = $grid->deploy();
 
-		$bodyscript = '
-<script type="text/javascript">
-</script>
+	$LayoutStyle = '
+html, body {margin: 0; padding: 0; overflow: hidden; font-size: 75%;}
+/*Splitter style */
+#LeftPane  {padding: 2px; overflow: auto;}
+#RightPane {padding: 2px; overflow: auto;}
+.ui-layout-west .ui-jqgrid tr.jqgrow td { border-bottom: 1px solid;}
+
+input.text { margin-bottom:12px; width:95%; padding: .4em; }
+fieldset { padding:0; border:0; margin-top:25px; }
+h1 { font-size: 1.2em; margin: .6em 0; }
+.ui-dialog .ui-state-error { padding: .3em; }
+.validateTips { border: 1px solid transparent; padding: 0.3em; }
 ';
 
-		$funciones = 'jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid({ondblClickRow: function(id){ alert("id="+id); }});';
+//label, input { display:block; }
+		$bodyscript = '
+<script type="text/javascript">
+$(function() {
+	$( "input:submit, a, button", ".boton1" ).button();
+});
+
+</script>
+
+<div class="formcont">
+	<div id="forma1" title="Create new user"></div>
+</div>
+
+';
+
+/*
+$(function() {
+	// a workaround for a flaw in the demo system (http://dev.jqueryui.com/ticket/4375), ignore!
+	$("#dialog:ui-dialog").dialog( "destroy" );
+		
+	var name = $( "#name" ),
+		email = $( "#email" ),
+		password = $( "#password" ),
+		allFields = $( [] ).add( name ).add( email ).add( password ),
+		tips = $( ".validateTips" );
+
+	function updateTips( t ) {
+		tips
+		.text( t )
+		.addClass( "ui-state-highlight" );
+		setTimeout(function() {
+			tips.removeClass( "ui-state-highlight", 1500 );
+		}, 500 );
+	}
+
+	function checkLength( o, n, min, max ) {
+		if ( o.val().length > max || o.val().length < min ) {
+			o.addClass( "ui-state-error" );
+			updateTips( "Length of " + n + " must be between " +
+				min + " and " + max + "." );
+			return false;
+		} else {
+			return true;
+		}
+	}
+
+	function checkRegexp( o, regexp, n ) {
+		if ( !( regexp.test( o.val() ) ) ) {
+			o.addClass( "ui-state-error" );
+			updateTips( n );
+			return false;
+		} else {
+			return true;
+		}
+	}
+		
+	$( "#forma1" ).dialog({
+		autoOpen: false,
+		height: 300,
+		width: 350,
+		modal: true,
+		buttons: {
+			"Crear cuenta": function() {
+				var bValid = true;
+				allFields.removeClass( "ui-state-error" );
+
+				bValid = bValid && checkLength( name, "username", 3, 16 );
+				bValid = bValid && checkLength( email, "email", 6, 80 );
+				bValid = bValid && checkLength( password, "password", 5, 16 );
+
+				bValid = bValid && checkRegexp( name, /^[a-z]([0-9a-z_])+$/i, "Username may consist of a-z, 0-9, underscores, begin with a letter." );
+				// From jquery.validate.js (by joern), contributed by Scott Gonzalez: http://projects.scottsplayground.com/email_address_validation/
+				bValid = bValid && checkRegexp( password, /^([0-9a-zA-Z])+$/, "Password field only allow : a-z 0-9" );
+
+				if ( bValid ) {
+					$( "#users tbody" ).append( "<tr>" +
+						"<td>" + name.val() + "</td>" + 
+						"<td>" + email.val() + "</td>" + 
+						"<td>" + password.val() + "</td>" +
+					"</tr>" ); 
+					$( this ).dialog( "close" );
+				}
+			},
+			Cancel: function() {
+				$( this ).dialog( "close" );
+			}
+		},
+		close: function() {
+			allFields.val( "" ).removeClass( "ui-state-error" );
+		}
+	});
+
+	$("#boton1").click( function(){
+		var id   = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
+		var msql = "";
+		if (id)	{
+			$.post("'.base_url().'inventario/caub/jforma/"+id, function(data){
+				$("#forma1").html(data);
+			});
+			$("#forma1").dialog("open");
+		} else {
+			$.prompt("<h1>Por favor Seleccione un Almacen</h1>");
+		}
+	});
+
+
+});
+*/
+
+
+
+
+		$funciones = 'jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid({ondblClickRow: function(id){ alert("id="+id); }});';
 
 		$param['listados'] = $this->datasis->listados('CAUB', 'JQ');
 		//$param['otros']    = $this->datasis->otros('CAUB', 'JQ');
 
-
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
+		
 		$WestPanel = '
 <div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content">
-	<div class="otros">
-	<table id="west-grid">
-	<tr><td><div class="tema1">
-		<table id="listados"></table> 
-		</div>
-	</td></tr>
-	<tr><td>
-		<table id="otros"></table> 
-	</td></tr>
-	</table>
-	</div>
+<div class="anexos">
+
+<table id="west-grid" align="center">
+	<tr>
+		<td><div class="tema1"><table id="listados"></table></div></td>
+	</tr>
+	<tr>
+		<td><div class="tema1"><table id="otros"></table></div></td>
+	</tr>
+</table>
+</div>
+<table id="west-grid" align="center">
+	<tr>
+		<td><div class="tema1 boton1"></div></td>
+	</tr>
+</table>
 </div> <!-- #LeftPane -->
 ';
 
@@ -93,16 +223,17 @@ class Caub extends validaciones {
 </div> <!-- #BottomPanel -->
 ';
 
-		$param['WestPanel']  = $WestPanel;
+		$param['WestPanel']   = $WestPanel;
 		//$param['EastPanel']  = $EastPanel;
-		$param['SouthPanel'] = $SouthPanel;
-		$param['funciones'] = $funciones;
-		//$param['bodyscript'] = $bodyscript;
-		$param['tema1'] = 'darkness';
-		$param['tabs'] = false;
-		$param['encabeza'] = $this->titp;
-		$this->load->view('jqgrid/crud',$param);
-	
+		$param['LayoutStyle'] = $LayoutStyle;
+		$param['SouthPanel']  = $SouthPanel;
+		$param['funciones']   = $funciones;
+		//$param['bodyscript']  = $bodyscript;
+		$param['temas']       = array('proteo','darkness','anexos1');
+		//$param['tabs']        = false;
+		$param['encabeza']    = $this->titp;
+		
+		$this->load->view('jqgrid/crud2',$param);
 	}	
 
 	function defgrid( $deployed = false ){
@@ -162,8 +293,8 @@ class Caub extends validaciones {
 		$grid->params(array(
 				'width'       => 40,
 				'editable'    => 'true',
-				'edittype'    => "'select'",
 				'search'      => 'false',
+				'edittype'    => "'select'",
 				'editoptions' => '{value: {"S":"Si", "N":"No"} }'
 			)
 		);
@@ -271,12 +402,7 @@ class Caub extends validaciones {
 			return $grid;
 		}
 	}
-/*
-	function ddsucu(){
-		$mSQL = "SELECT codigo, CONCAT(codigo,' ',sucursal) sucursal  FROM sucu ORDER BY codigo";
-		echo $this->datasis->llenaopciones($mSQL, true);
-	}
-*/
+
 	/**
 	* Get data result as json
 	*/
@@ -317,6 +443,7 @@ class Caub extends validaciones {
 			$this->db->where('id', $id);
 			$this->db->update('caub', $data);
 			return;
+
 		} elseif($oper == 'del') {
 			$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM itsinv WHERE alma='$codigo' AND existen>0");
 			if ($chek > 0){
@@ -326,7 +453,47 @@ class Caub extends validaciones {
 				logusu('caub',"Almacen $codigo ELIMINADO");
 				echo "{ success: true, message: 'Almacen Eliminado'}";
 			}
+
 		};
 	}
+
+	function jforma(){
+
+
+		$salida = '
+	<p class="validateTips">Todos los Campos son Necesarios.</p>
+	<form>
+	<fieldset>
+		<label for="name">Nombre</label>
+		<input type="text" name="name" id="name" class="text ui-widget-content ui-corner-all" value="Meco" />
+		<label for="email">Email</label>
+		<input type="text" name="email" id="email" value="" class="text ui-widget-content ui-corner-all" />
+		<label for="password">Password</label>
+		<input type="password" name="password" id="password" value="" class="text ui-widget-content ui-corner-all" />
+	</fieldset>
+	</form>';
+	
+		echo $salida;
+
+	}
+
+	// Set the function for a successful form submission
+	function onSubmit($formValues) {
+		$formValues = $formValues->contactFormPage->contactFormSection;
+
+		if(!empty($formValues->name->middleInitial)) {
+			$name = $formValues->name->firstName.' '.$formValues->name->middleInitial.' '.$formValues->name->lastName;
+		} else {
+			$name = $formValues->name->firstName.' '.$formValues->name->lastName;
+		}
+
+		$message['failureHtml'] = '<p style="margin-bottom: .5em;">Thanks for Contacting Us</p><p>Your message has been successfully sent.</p>';
+   
+		return $message;
+	}
+
+// Process any request to the form
+//$contact->processRequest();
+
 }
 ?>

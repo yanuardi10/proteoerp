@@ -176,16 +176,14 @@ $(function() {
 
 <table id="west-grid" align="center">
 	<tr>
-		<td><a style="width:190px" href="#" id="a1">Imprimir a PDF</a></td>
+		<td><a style="width:90px" href="#" id="a1">Imprimir PDF</a></td>
+		<td><a style="width:90px" href="#" id="a2">Imprimir HTML</a></td>
 	</tr>
 	<tr>
-		<td><a style="width:190px" href="#" id="a2">Imprimir a HTML</a></td>
+		<td colspan="2"><a style="width:190px" href="#" id="cerrardpt">Cerrar Deposito</a></td>
 	</tr>
 	<tr>
-		<td><a style="width:190px" href="#" id="cerrardpt">Cerrar Deposito</a></td>
-	</tr>
-	<tr>
-		<td><a style="width:190px" href="#" id="borrar">Eliminar Movimiento</a></td>
+		<td colspan="2"><a style="width:190px" href="#" id="borrar">Eliminar Movimiento</a></td>
 	</tr>
 
 </table>

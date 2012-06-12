@@ -36,6 +36,8 @@ html, body {margin: 0; padding: 0; overflow: hidden; font-size: 75%;}
 ';
 }
 
+if ( isset($readyscript) == false ) $readyscript = '';
+
 if( isset($WestSize) == false)  $WestSize = 212;
 if( isset($onclick)  == false)  $onclick = '';
 
@@ -155,10 +157,9 @@ if (isset($otros)) {
 if ( isset($temas) ) {
 	foreach( $temas as $temaco ){echo style('themes/'.$temaco.'/'.$temaco.'.css');}
 }
-?>
 
-<!-- JQUERY -->
-<?php
+echo "<!-- JQUERY -->";
+
 echo phpscript('nformat.js');
 echo script('jquery-min.js');
 echo script('plugins/jquery.numeric.pack.js');
@@ -166,27 +167,32 @@ echo script('jquery-ui.custom.min.js');
 if ( isset($jquerys) ) {
 	foreach( $jquerys as $jq ){ echo script($jq); }
 }
+
+
+echo "<!-- Block Out -->";
+echo script('plugins/jquery.blockUI.js'); 
+
+echo "<!-- Impromptu -->";
+echo script('jquery-impromptu.js');
+echo style('impromptu/default.css');
+
+echo "<!-- JQGRID -->";
+echo style('themes/ui.jqgrid.css');
+echo script('i18n/grid.locale-sp.js');
+echo script('jquery.jqGrid.min.js');
+
+echo "<!-- DATAGRID -->";
+echo script('datagrid/datagrid.js');
+echo style('../datagrid/datagrid.css');
+
+echo "<!-- LAYOUT -->";
+echo script('jquery.layout.js');
+
+//echo "<!-- JFORMER -->";"
+//echo script('jFormer.js');
+//echo style('jformer.css');
+
 ?>
-
-<!-- Block Out -->
-<?php echo script('plugins/jquery.blockUI.js'); ?>
-
-<!-- Impromptu -->
-<?php echo script('jquery-impromptu.js') ?>
-<?php echo style('impromptu/default.css') ?>
-
-<!-- JQGRID -->
-<?php echo style('themes/ui.jqgrid.css') ?>
-<?php echo script('i18n/grid.locale-sp.js') ?>
-<?php echo script('jquery.jqGrid.min.js')  ?>
-
-<!-- DATAGRID -->
-<link rel="stylesheet" type="text/css" media="screen" href="<?php echo base_url(); ?>assets/default/datagrid/datagrid.css" />
-<?php echo script('datagrid/datagrid.js')  ?>
-
-<!-- LAYOUT -->
-<?php echo script('jquery.layout.js') ?>
-
 <style>
 <?php echo $LayoutStyle; ?>
 </style>
@@ -197,8 +203,11 @@ var site_url = '<?php echo site_url() ?>';
 var url = '';
 
 $(document).ready(function() {
-	var lastsel2;
+	var lastsel2=0;
+	var _cargo = "";
 <?php
+	echo $readyscript;
+
 	//Layout por defecto
 	echo $readyLayout;
 	//Grids
