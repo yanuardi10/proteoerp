@@ -32,6 +32,9 @@ class Cruc extends Controller {
 		$grid = $this->defgrid();
 		$param['grids'][] = $grid->deploy();
 
+		$grid1   = $this->defgridit();
+		$param['grids'][] = $grid1->deploy();
+
 		$readyLayout = '
 	$(\'body\').layout({
 		minSize: 30,
@@ -97,8 +100,6 @@ jQuery("#a1").click( function(){
 '</div> <!-- #LeftPane -->
 ';
 
-		$grid1   = $this->defgridit();
-		$param['grids'][] = $grid1->deploy();
 
 
 		$centerpanel = '
