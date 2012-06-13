@@ -50,6 +50,7 @@ class Cruc extends Controller {
 		center__onresize: function (pane, $Pane) {
 			jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'setGridWidth\',$Pane.innerWidth()-6);
 			jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'setGridHeight\',$Pane.innerHeight()-110);
+			jQuery("#newapi'.$param['grids'][1]['gridname'].'").jqGrid(\'setGridWidth\',$Pane.innerWidth()-6);
 		}
 	});
 	';
@@ -235,7 +236,7 @@ jQuery("#a1").click( function(){
 
 
 		$grid->addField('nomcli');
-		$grid->label('Nomcli');
+		$grid->label('Nombre');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -259,7 +260,6 @@ jQuery("#a1").click( function(){
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
-
 
 		$grid->addField('codbanc');
 		$grid->label('Banco');
