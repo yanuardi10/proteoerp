@@ -536,7 +536,7 @@ class Desarrollo extends Controller{
 			$str .= $tab2.'parent::Controller();'."\n";
 			$str .= $tab2.'$this->load->library(\'rapyd\');'."\n";
 			$str .= $tab2.'$this->load->library(\'jqdatagrid\');'."\n";
-			$str .= $tab2.'//$this->datasis->modulo_id(\'NNN\',1);'."\n";
+			$str .= $tab2.'//$this->datasis->modulo_nombre( $modulo, $ventana=0 );'."\n";
 			$str .= $tab1.'}'."\n\n";
 
 			$str .= $tab1.'function index(){'."\n";

@@ -1122,5 +1122,11 @@ class Datasis {
 		}
 		return utf8_encode($campos);
 	}
+	
+	//Modifica Intramenu
+	function modintramenu($ancho,$alto,$ejecutar){
+		$CI =& get_instance();
+		$CI->db->simple_query('UPDATE intramenu SET ancho='.$ancho.', alto='.$alto.' WHERE ejecutar="'.$ejecutar.'" OR ejecutar="/'.$ejecutar.'"');
+	}
 
 }

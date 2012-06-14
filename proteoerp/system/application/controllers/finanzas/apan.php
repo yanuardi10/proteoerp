@@ -30,6 +30,10 @@ class Apan extends Controller {
 		$grid = $this->defgrid();
 		$param['grids'][] = $grid->deploy();
 
+		$grid1   = $this->defgridit();
+		$param['grids'][] = $grid1->deploy();
+
+
 		$readyLayout = '
 	$(\'body\').layout({
 		minSize: 30,
@@ -48,6 +52,7 @@ class Apan extends Controller {
 		center__onresize: function (pane, $Pane) {
 			jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'setGridWidth\',$Pane.innerWidth()-6);
 			jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'setGridHeight\',$Pane.innerHeight()-110);
+			jQuery("#newapi'.$param['grids'][1]['gridname'].'").jqGrid(\'setGridWidth\',$Pane.innerWidth()-6);
 		}
 	});
 	';
@@ -95,8 +100,6 @@ jQuery("#boton1").click( function(){
 '</div> <!-- #LeftPane -->
 ';
 
-		$grid1   = $this->defgridit();
-		$param['grids'][] = $grid1->deploy();
 
 		$centerpanel = '
 <div id="RightPane" class="ui-layout-center">

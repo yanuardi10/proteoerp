@@ -1,5 +1,588 @@
 <?php
 class Noco extends Controller {
+	var $mModulo='NOCO';
+	var $titp='Contratos de Nomina';
+	var $tits='Contratos de Nomina';
+	var $url ='nomina/noco/';
+
+	function Noco(){
+		parent::Controller();
+		$this->load->library('rapyd');
+		$this->load->library('jqdatagrid');
+		//$this->datasis->modulo_nombre('NOCO',1);
+	}
+
+	function index(){
+		if ( !$this->datasis->iscampo('noco','id') ) {
+			$this->db->simple_query('ALTER TABLE noco DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE noco ADD UNIQUE INDEX codigo (codigo)');
+			$this->db->simple_query('ALTER TABLE noco ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
+		};
+		if ( !$this->datasis->iscampo('itnoco','id') ) {
+			$this->db->simple_query('ALTER TABLE itnoco DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE itnoco ADD UNIQUE INDEX codigo (codigo, concepto)');
+			$this->db->simple_query('ALTER TABLE itnoco ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
+		};
+		$this->datasis->modintramenu(900,700,"nomina/noco");
+		redirect($this->url.'jqdatag');
+	}
+
+	//***************************
+	//Layout en la Ventana
+	//
+	//***************************
+	function jqdatag(){
+
+		$grid = $this->defgrid();
+		$param['grids'][] = $grid->deploy();
+
+		$grid1   = $this->defgridit();
+		$param['grids'][] = $grid1->deploy();
+
+		$grid2   = $this->defgridcon();
+		$param['grids'][] = $grid2->deploy();
+
+
+		$readyLayout = '
+	$(\'body\').layout({
+		minSize: 30,
+		north__size: 60,
+		resizerClass: \'ui-state-default\',
+		west__size: 212,
+		west__onresize: function (pane, $Pane){jQuery("#west-grid").jqGrid(\'setGridWidth\',$Pane.innerWidth()-2);},
+	});
+	
+	$(\'div.ui-layout-center\').layout({
+		minSize: 30,
+		resizerClass: "ui-state-default",
+		center__paneSelector: ".centro-centro",
+		south__paneSelector:  ".centro-sur",
+		south__size: 220,
+		center__onresize: function (pane, $Pane) {
+			jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'setGridWidth\',$Pane.innerWidth()-6);
+			jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'setGridHeight\',$Pane.innerHeight()-100);
+		}
+	});
+	';
+
+
+		$bodyscript = '
+<script type="text/javascript">
+$(function() {
+	$( "input:submit, a, button", ".boton1" ).button();
+});
+
+jQuery("#boton1").click( function(){
+	var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
+	if (id)	{
+		var ret = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
+		window.open(\'/proteoerp/formatos/ver/APAN/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
+});
+</script>
+';
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		$WestPanel = '
+<div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content">
+
+<div class="anexos">
+<table id="west-grid" align="center">
+	<tr>
+		<td><div class="tema1"><table id="listados"></table></div></td>
+	</tr><tr>
+		<td><div class="tema1"><table id="otros"></table></div></td>
+	</tr>
+</table>
+</div>
+<table id="west-grid" align="center">
+	<tr>
+		<td><div class="tema1 boton1"><a style="width:190px" href="#" id="boton1">Reimprimir Documento '.img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',  'title' => 'Formato PDF', 'border'=>'0')).'</a></div></td>
+	</tr>
+</table>
+
+'.
+
+'</div> <!-- #LeftPane -->
+';
+
+		$centerpanel = '
+<div id="RightPane" class="ui-layout-center">
+	<div class="centro-centro">
+		<table id="newapi'.$param['grids'][0]['gridname'].'"></table>
+		<div id="pnewapi'.$param['grids'][0]['gridname'].'"></div>
+	</div>
+	<div class="centro-sur" id="adicional" style="overflow:auto;">
+	<table width="100%"><tr>
+		<td><table id="newapi'.$param['grids'][1]['gridname'].'"></table></td>
+		<td><table id="newapi'.$param['grids'][2]['gridname'].'"></table></td>
+	</tr></table>
+	</div>
+</div> <!-- #RightPane -->
+';
+
+
+		$SouthPanel = '
+<div id="BottomPane" class="ui-layout-south ui-widget ui-widget-content">
+<p>'.$this->datasis->traevalor('TITULO1').'</p>
+</div> <!-- #BottomPanel -->
+';
+
+		$param['WestPanel']    = $WestPanel;
+		//$param['EastPanel']  = $EastPanel;
+		$param['readyLayout']  = $readyLayout;
+		$param['SouthPanel']   = $SouthPanel;
+		$param['listados']     = $this->datasis->listados('NOCO', 'JQ');
+		$param['otros']        = $this->datasis->otros('NOCO', 'JQ');
+		
+		$param['centerpanel']  = $centerpanel;
+		//$param['funciones']    = $funciones;
+
+		$param['temas']        = array('proteo','darkness','anexos1');
+
+		$param['bodyscript']   = $bodyscript;
+		$param['tabs']         = false;
+		$param['encabeza']     = $this->titp;
+
+		$this->load->view('jqgrid/crud2',$param);
+	}
+
+	//***************************
+	//Definicion del Grid y la Forma
+	//***************************
+	function defgrid( $deployed = false ){
+		$i      = 1;
+		$editar = "false";
+
+		$grid  = new $this->jqdatagrid;
+
+		$grid->addField('codigo');
+		$grid->label('Codigo');
+		$grid->params(array(
+			'align'         => "'center'",
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 50,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 5 }',
+		));
+
+
+		$grid->addField('tipo');
+		$grid->label('Tipo');
+		$grid->params(array(
+			'align'         => "'center'",
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 1 }',
+		));
+
+
+		$grid->addField('nombre');
+		$grid->label('Nombre');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 250,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 40 }',
+		));
+
+
+		$grid->addField('observa1');
+		$grid->label('Observaciones');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 250,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 40 }',
+		));
+
+
+		$grid->addField('observa2');
+		$grid->label('Observaciones');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 40 }',
+		));
+
+
+		$grid->addField('modificado');
+		$grid->label('Modificado');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Modificado" }'
+		));
+
+
+		$grid->addField('id');
+		$grid->label('Id');
+		$grid->params(array(
+			'align'         => "'center'",
+			'frozen'        => 'true',
+			'width'         => 40,
+			'editable'      => 'false',
+			'search'        => 'false'
+		));
+
+		$grid->showpager(true);
+		$grid->setWidth('');
+		$grid->setHeight('160');
+		$grid->setTitle($this->titp);
+		$grid->setfilterToolbar(true);
+		$grid->setToolbar('false', '"top"');
+
+		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
+
+		#show/hide navigations buttons
+		$grid->setAdd(true);
+		$grid->setEdit(true);
+		$grid->setDelete(true);
+		$grid->setSearch(true);
+		$grid->setRowNum(30);
+		$grid->setShrinkToFit('false');
+
+		#Set url
+		//$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		#GET url
+		$grid->setUrlget(site_url($this->url.'getdata/'));
+
+		if ($deployed) {
+			return $grid->deploy();
+		} else {
+			return $grid;
+		}
+	}
+
+	/**
+	* Busca la data en el Servidor por json
+	*/
+	function getdata()
+	{
+		$grid       = $this->jqdatagrid;
+
+		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
+		$mWHERE = $grid->geneTopWhere('noco');
+
+		$response   = $grid->getData('noco', array(array()), array(), false, $mWHERE );
+		$rs = $grid->jsonresult( $response);
+		echo $rs;
+	}
+
+	/**
+	* Guarda la Informacion
+	*/
+	function setData()
+	{
+		$this->load->library('jqdatagrid');
+		$oper   = $this->input->post('oper');
+		$id     = $this->input->post('id');
+		$data   = $_POST;
+		$check  = 0;
+
+		unset($data['oper']);
+		unset($data['id']);
+		if($oper == 'add'){
+			if(false == empty($data)){
+				$this->db->insert('noco', $data);
+				echo "Registro Agregado";
+
+				logusu('NOCO',"Registro ????? INCLUIDO");
+			} else
+			echo "Fallo Agregado!!!";
+
+		} elseif($oper == 'edit') {
+			//unset($data['ubica']);
+			$this->db->where('id', $id);
+			$this->db->update('noco', $data);
+			logusu('NOCO',"Registro ????? MODIFICADO");
+			echo "Registro Modificado";
+
+		} elseif($oper == 'del') {
+			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM noco WHERE id='$id' ");
+			if ($check > 0){
+				echo " El registro no puede ser eliminado; tiene movimiento ";
+			} else {
+				$this->db->simple_query("DELETE FROM noco WHERE id=$id ");
+				logusu('NOCO',"Registro ????? ELIMINADO");
+				echo "Registro Eliminado";
+			}
+		};
+	}
+
+
+	//***************************
+	//Definicion del Grid y la Forma
+	//***************************
+	function defgridit( $deployed = false ){
+		$i      = 1;
+		$editar = "false";
+
+		$grid  = new $this->jqdatagrid;
+/*
+		$grid->addField('codigo');
+		$grid->label('Codigo');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 50,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 5 }',
+		));
+*/
+
+		$grid->addField('concepto');
+		$grid->label('Cod.');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 35,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 4 }',
+		));
+
+
+		$grid->addField('descrip');
+		$grid->label('Concepto');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 35 }',
+		));
+
+
+		$grid->addField('tipo');
+		$grid->label('Tipo');
+		$grid->params(array(
+			'align'         => "'center'",
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 35,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 1 }',
+		));
+
+/*
+		$grid->addField('grupo');
+		$grid->label('Grupo');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 4 }',
+		));
+*/
+
+		$grid->addField('id');
+		$grid->label('Id');
+		$grid->params(array(
+			'align'         => "'center'",
+			'frozen'        => 'true',
+			'width'         => 40,
+			'editable'      => 'false',
+			'search'        => 'false',
+			'hidden'        => 'true'
+		));
+
+
+		$grid->showpager(true);
+		$grid->setWidth('310');
+		$grid->setHeight('170');
+		$grid->setTitle('Conceptos del Contrato');
+		$grid->setfilterToolbar(false);
+		$grid->setToolbar('false', '"top"');
+
+		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
+
+		#show/hide navigations buttons
+		$grid->setAdd(true);
+		$grid->setEdit(true);
+		$grid->setDelete(true);
+		$grid->setSearch(true);
+		$grid->setRowNum(30);
+		$grid->setShrinkToFit('false');
+
+		#Set url
+		//$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		#GET url
+		$grid->setUrlget(site_url($this->url.'getdatait/'));
+
+		if ($deployed) {
+			return $grid->deploy();
+		} else {
+			return $grid;
+		}
+	}
+
+	/**
+	* Busca la data en el Servidor por json
+	*/
+	function getdatait()
+	{
+		$grid       = $this->jqdatagrid;
+
+		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
+		$mWHERE = $grid->geneTopWhere('itnoco');
+
+		$response   = $grid->getData('itnoco', array(array()), array(), false, $mWHERE );
+		$rs = $grid->jsonresult( $response);
+		echo $rs;
+	}
+
+
+	//***************************
+	//Definicion del Grid y la Forma
+	//***************************
+	function defgridcon( $deployed = false ){
+		$i      = 1;
+		$editar = "false";
+
+		$grid  = new $this->jqdatagrid;
+
+		$grid->addField('concepto');
+		$grid->label('Cod.');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 35,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 4 }',
+		));
+
+
+		$grid->addField('descrip');
+		$grid->label('Concepto');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 35 }',
+		));
+
+
+		$grid->addField('tipo');
+		$grid->label('Tipo');
+		$grid->params(array(
+			'align'         => "'center'",
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 35,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 1 }',
+		));
+
+/*
+		$grid->addField('grupo');
+		$grid->label('Grupo');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 4 }',
+		));
+*/
+
+		$grid->addField('id');
+		$grid->label('Id');
+		$grid->params(array(
+			'align'         => "'center'",
+			'frozen'        => 'true',
+			'width'         => 40,
+			'editable'      => 'false',
+			'search'        => 'false',
+			'hidden'        => 'true'
+		));
+
+
+		$grid->showpager(true);
+		$grid->setWidth('310');
+		$grid->setHeight('170');
+		$grid->setTitle('Conceptos Disponibles');
+		$grid->setfilterToolbar(false);
+		$grid->setToolbar('false', '"top"');
+
+		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
+
+		#show/hide navigations buttons
+		$grid->setAdd(true);
+		$grid->setEdit(true);
+		$grid->setDelete(true);
+		$grid->setSearch(true);
+		$grid->setRowNum(30);
+		$grid->setShrinkToFit('false');
+
+		#Set url
+		//$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		#GET url
+		$grid->setUrlget(site_url($this->url.'getdatacon/'));
+
+		if ($deployed) {
+			return $grid->deploy();
+		} else {
+			return $grid;
+		}
+	}
+
+	/**
+	* Busca la data en el Servidor por json
+	*/
+	function getdatacon()
+	{
+		$grid       = $this->jqdatagrid;
+
+		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
+		$mWHERE = $grid->geneTopWhere('conc');
+
+		$response   = $grid->getData('conc', array(array()), array(), false, $mWHERE );
+		$rs = $grid->jsonresult( $response);
+		echo $rs;
+	}
+
+
+
+/*
+class Noco extends Controller {
 	
 	function noco(){
 		parent::Controller();
@@ -77,17 +660,17 @@ class Noco extends Controller {
 ';
 		$style ='
 <style type="text/css">
-.fakeContainer { /* The parent container */
+.fakeContainer { 
     margin: 5px;
     padding: 0px;
     border: none;
-    width: 740px; /* Required to set */
-    height: 320px; /* Required to set */
-    overflow: hidden; /* Required to set */
+    width: 740px;
+    height: 320px;
+    overflow: hidden;
 }
 </style>	
 ';
-//****************************************
+// ****************************************
 
 
 		$data['style']   = $style;
@@ -247,23 +830,6 @@ class Noco extends Controller {
 		}
 		echo '{success:true, message:"Loaded data" ,results:'. $results.', maestro:'.json_encode($arr).'}';
 	}
-
-/*
-	function manoco1(){
-		$query = $this->db->query("SELECT nombre name, 'meco@gmail.com' email, ingreso start, sueldo salary, true active FROM pers ORDER BY nombre");
-		$results = $this->db->count_all('pers');
-		$arr = array();
-		foreach ($query->result_array() as $row)
-		{
-			$meco = array();
-			foreach( $row as $idd=>$campo ) {
-				$meco[$idd] = utf8_encode($campo);
-			}
-			$arr[] = $meco;
-		}
-		echo '{success:true, message:"Loaded data" ,results:'. $results.', maestro:'.json_encode($arr).'}';
-	}
-*/
 
 	function itnoco(){
 		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']   : 'contrato';
@@ -873,5 +1439,6 @@ Ext.onReady(function(){
 ";
 		return $script;	
 	}
+*/
 }
 ?>

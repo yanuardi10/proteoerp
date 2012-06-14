@@ -27,7 +27,8 @@ class Bienvenido extends Controller {
 		if ( empty($esta) ) $this->db->simple_query("ALTER TABLE usuario ADD activo CHAR(1) ");
 		$this->db->simple_query("UPDATE usuario SET activo='S' WHERE activo <> 'N' ");
 		$this->db->simple_query("UPDATE usuario SET activo='S' WHERE activo IS NULL ");
-		
+
+
 		if (!preg_match("/^[^'\"]+$/", $usr)>0){
 			$sess_data = array('logged_in'=> FALSE);
 			$this->session->set_userdata($sess_data);
@@ -52,11 +53,11 @@ class Bienvenido extends Controller {
 	}
 	function ingresar(){
 		$viene=$this->session->userdata('estaba');
-		$attributes  = array('name' => 'ingresar_form');
-		$data['titulo1'] = form_open('bienvenido/autentificar',$attributes);
-		$attributes  = array('name' => 'user','size' => '6','autocomplete'=>'off');
+		$attributes       = array('name' => 'ingresar_form');
+		$data['titulo1']  = form_open('bienvenido/autentificar',$attributes);
+		$attributes       = array('name' => 'user','size' => '6','autocomplete'=>'off');
 		$data['titulo1'] .='<table><tr><td>Usuario: </td><td>'.form_input($attributes).'</td></tr>';
-		$attributes  = array('name' => 'pws','size' => '6','type' => 'password','autocomplete'=>'off');
+		$attributes       = array('name' => 'pws','size' => '6','type' => 'password','autocomplete'=>'off');
 		$data['titulo1'] .='<tr><td> Clave:  </td><td>'.form_input($attributes).'</td></tr>';
 		$data['titulo1'] .='<tr><td></td><td>'.form_submit('usr_submit', 'Enviar').form_close().'</td></tr></table>';
 		// Build the thing
