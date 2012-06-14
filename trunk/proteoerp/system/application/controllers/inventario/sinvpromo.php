@@ -87,7 +87,8 @@ class sinvpromo extends validaciones {
 			}
 		}';
 
-		$select=array('a.id','a.codigo','b.descrip','b.marca','b.precio1','a.margen','a.cantidad','b.id AS sinvid');
+		$select=array('a.id','a.codigo','b.ultimo','b.descrip','b.marca'
+		,'b.precio1','a.margen','a.cantidad','b.precio1*(1-(a.margen/100)) AS pfinal','b.id AS sinvid');
 
 		$filter = new DataFilter2('Filtro de promociones');
 		$filter->script($js);
@@ -153,18 +154,24 @@ class sinvpromo extends validaciones {
 		$llink=anchor_popup('inventario/consultas/preciosgeneral/<#codigo#>', 'Consultar precio', $attr);
 		$attr['width']  = '420';
 		$attr['height'] = '400';
-		$llin2=anchor_popup('inventario/precios_sinv/dataedit/modify/<#sinvid#>', '<#precio1#>', $attr);
+		$llin2=anchor_popup('inventario/precios_sinv/dataedit/modify/<#sinvid#>', '<nformat><#precio1#></nformat>', $attr);
+
+		function pinta($u,$d,$char){
+			if($u > $d) return "<b style='color:red'>$char</b>";
+			return "<b style='color:green'>$char</b>";
+		}
 
 		$grid = new DataGrid('Lista de Art&iacute;culos');
-		$grid->use_function('dropdown');
+		$grid->use_function('dropdown','pinta');
 		$grid->order_by('codigo','asc');
 		$grid->per_page = 15;
 
 		$grid->column_orderby('C&oacute;digo'     ,$link     ,'codigo');
-		$grid->column_orderby('Descripci&oacute;n', 'descrip' ,'descrip');
-		//$grid->column_orderby('PVP'  ,'precio1' ,'precio1');
-		$grid->column_orderby('PVP'  ,$llin2 ,'precio1');
-		$grid->column_orderby('Marca', 'marca' ,'marca');
+		$grid->column_orderby('Descripci&oacute;n','<pinta><#ultimo#>|<#pfinal#>|<#descrip#></pinta>' ,'descrip');
+		$grid->column_orderby('Costo'  ,'<nformat><#ultimo#></nformat>'  ,'ultimo' ,'align=\'right\'');
+		$grid->column_orderby('P.Final','<nformat><#pfinal#></nformat>'  ,'pfinal' ,'align=\'right\'');
+		$grid->column_orderby('PVP'    ,$llin2    ,'precio1','align=\'right\'');
+		$grid->column_orderby('Marca'  ,'marca'   ,'marca'  );
 		$grid->column_orderby('Promoci&oacute;n',"<dropdown><#id#>|<#margen#>|$sop</dropdown>",'margen','align="right"');
 		$grid->column('Consulta' ,$llink);
 		//$grid->column_orderby('F.Desde'        ,'<dbdate_to_human>fechad</dbdate_to_human>','fechad');
