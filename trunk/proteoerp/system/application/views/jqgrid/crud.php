@@ -65,6 +65,8 @@ var mGrid = '<?php echo $grid['gridname'] ?>';
 
 $(document).ready(function() {
 	var lastsel2;
+	var _cargo = "";
+
 <?php
 	//Layout por defecto
 	if ( isset($readyLayout) ){
