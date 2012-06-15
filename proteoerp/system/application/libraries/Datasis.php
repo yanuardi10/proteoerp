@@ -427,15 +427,30 @@ class Datasis {
 		$CI =& get_instance();
 		$dbcodban=$CI->db->escape($codban);
 		$tipo=$this->dameval("SELECT tbanco FROM banc WHERE codbanc=$dbcodban");
-		if($tipo=='CAJ'){
+		if($tipo != 'CAJ'){
 			$nom='nBAN'.$codban;
-			while(1){
+			while(true){
 				$numero=$this->fprox_numero($nom,12);
 				$dbnumero=$CI->db->escape($numero);
 				$mSQL = "SELECT COUNT(*) AS n FROM bmov WHERE numero=$dbnumero";
 				$query= $CI->db->query($mSQL);
 				$row  = $query->first_row('array');
 				if($row['n']==0) break;
+			}
+			return $numero;
+		} else {
+			$mSQL  = "UPDATE banc SET proxch='000000000000'  WHERE codbanc='$codban'";
+			$mSQL  = "UPDATE banc SET proxch=LPAD(proxch+1,12,'0')  WHERE codbanc='$codban'";
+			$CI->db->simple_query($mSQL);
+			$numero = $CI->datasis->dameval("SELECT proxch FROM banc WHERE codbanc='$codban'");
+			while(true){
+				$mSQL  = "UPDATE banc SET proxch=LPAD(proxch+1,12,'0') WHERE codbanc='$codban'";
+				if ( $CI->datasis->dameval("SELECT COUNT(*) FROM bmov WHERE codbanc='$codban' AND numero='$numero'") == 0){ 
+					break;
+				}
+				$mSQL  = "UPDATE banc SET proxch=LPAD(proxch+1,12,'0')  WHERE codbanc='$codban'";
+				$CI->db->simple_query($mSQL);
+				$numero = $CI->datasis->dameval("SELECT proxch FROM banc WHERE codbanc='$codban'");
 			}
 			return $numero;
 		}
@@ -463,8 +478,6 @@ class Datasis {
 		$mSQL = $CI->db->update_string('data_sesion', $datos, "sesionid='$id'");
 		$CI->db->simple_query($mSQL);
 		return $this->dameval("SELECT id FROM data_sesion WHERE sesionid='$id'");
-
-
 	}
 
 	// GUARDA DATOS DE SESION EN MYSQL

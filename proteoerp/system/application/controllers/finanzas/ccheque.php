@@ -54,7 +54,7 @@ jQuery("#a1").click( function(){
 	<div class="otros">
 	<table id="west-grid">
 	<tr><td>
-			<a style="width:190px" href="#" id="a1">Imprimir Copia</a>
+		<td><div class="tema1 a1"><a style="width:190px" href="#" id="a1">Imprimir '.img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',  'title' => 'Formato PDF', 'border'=>'0')).'</a></div></td>
 	</td></tr>
 	</table>
 	</div>
@@ -71,6 +71,7 @@ jQuery("#a1").click( function(){
 		//$param['EastPanel']  = $EastPanel;
 		$param['SouthPanel'] = $SouthPanel;
 
+		$param['tema1']        = 'darkness';
 		$param['bodyscript'] = $bodyscript;
 		$param['tabs'] = false;
 		$param['encabeza'] = $this->titp;
@@ -99,101 +100,122 @@ jQuery("#a1").click( function(){
 
 		$grid->addField('cod_cli');
 		$grid->label('Cliente');
-		$grid->params(array(	'width'       => 60,
-					'hidden'      => 'true',
-					'editable'    => 'true',
-					'edittype'    => "'text'",
-					'editrules'   => '{ edithidden:true, required:true }',
-					'editoptions' => '{'.$auto.'}'
+		$grid->params(array(
+				'width'       => 60,
+				'hidden'      => 'true',
+				'editable'    => 'true',
+				'edittype'    => "'text'",
+				'editrules'   => '{ edithidden:true, required:true }',
+				'editoptions' => '{'.$auto.'}'
 			)
 		);
 							
 		$grid->addField('nombre');
 		$grid->label('Nombre Cliente');
-		$grid->params(array('width'    => 180,
-							'editable' => 'false',
-							'edittype' => "'text'"
+		$grid->params(array(
+				'width'    => 180,
+				'editable' => 'false',
+				'edittype' => "'text'"
 			)
 		);
 
 		$grid->addField('numero');
 		$grid->label('Numero');
-		$grid->params(array('align'    => "'center'",
-							'width'    => 70,
-							'editable' => 'false',
-							'edittype' => "'text'"
+		$grid->params(array(
+				'align'    => "'center'",
+				'width'    => 70,
+				'editable' => 'false',
+				'edittype' => "'text'"
 			)
 		);
 
 		$grid->addField('fecha');
 		$grid->label('Fecha');
-		$grid->params(array('width'       => 80,
-							'search'      => 'true',
-							'editable'    => 'true',
-							'edittype'    => "'text'",
-							'editrules'   => '{ required:true,date:true}',
-							'formoptions' => '{ label:"Fecha" }'
+		$grid->params(array(
+				'width'       => 80,
+				'search'      => 'true',
+				'editable'    => 'true',
+				'edittype'    => "'text'",
+				'editrules'   => '{ required:true,date:true}',
+				'formoptions' => '{ label:"Fecha" }'
 			)
 		);
 
 		$grid->addField('tipo');
 		$grid->label('Tipo');
-		$grid->params(array('align'    => "'center'",
-							'width'         => 30,
-							'editable'      => 'true',
-							'edittype'      => "'select'",
-							'editrules'     => '{ required:true }',
-							'editoptions'   => '{ dataUrl: "'.base_url().'ajax/ddtarjeta"}',
-							'stype'         => "'text'"
-							//'searchoptions' => '{ dataUrl: "ddtarjeta", sopt: ["eq", "ne"]}'
+		$grid->params(array(
+				'align'    => "'center'",
+				'width'         => 30,
+				'editable'      => 'true',
+				'edittype'      => "'select'",
+				'editrules'     => '{ required:true }',
+				'editoptions'   => '{ dataUrl: "'.base_url().'ajax/ddtarjeta"}',
+				'stype'         => "'text'"
+				//'searchoptions' => '{ dataUrl: "ddtarjeta", sopt: ["eq", "ne"]}'
 			)
 		);
 
 		$grid->addField('num_ref');
 		$grid->label('Nro.Documento');
-		$grid->params(array('width'       => 100,
-							'editable'    => 'true',
-							'edittype'    => "'text'",
-							'editrules'    => '{required:true}',
-							'editoptions' => '{ size:20, maxlength: 12 }',
+		$grid->params(array(
+				'width'       => 100,
+				'editable'    => 'true',
+				'edittype'    => "'text'",
+				'editrules'    => '{required:true}',
+				'editoptions' => '{ size:20, maxlength: 12 }',
 			)
 		);
 
 		$grid->addField('monto');
 		$grid->label('Monto');
-		$grid->params(array('width'         => 100,
-							'editable'      => 'true',
-							'align'         => "'right'",
-							'edittype'      => "'text'",
-							'search'        => 'true',
-							'editrules'     => '{ required:true }',
-							'editoptions'   => '{ size:10, maxlength: 10 }',
-							'formatter'     => "'number'",
-							'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		$grid->params(array(
+				'width'         => 100,
+				'editable'      => 'true',
+				'align'         => "'right'",
+				'edittype'      => "'text'",
+				'search'        => 'true',
+				'editrules'     => '{ required:true }',
+				'editoptions'   => '{ size:10, maxlength: 10 }',
+				'formatter'     => "'number'",
+				'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 			)
 		);
 
 		$grid->addField('banco');
 		$grid->label('Banco');
-		$grid->params(array('width'         => 40,
-							'hidden'        => 'true',
-							'editable'      => 'true',
-							'edittype'      => "'select'",
-							'editrules'     => '{ edithidden:true, required:true }',
-							'editoptions'   => '{ dataUrl: "'.base_url().'ajax/ddbanco"}',
-							'stype'         => "'tsxt'",
-							//'searchoptions' => '{ dataUrl: "ddbanco", sopt: ["eq", "ne"]}'
+		$grid->params(array(
+				'width'         => 40,
+				'hidden'        => 'true',
+				'editable'      => 'true',
+				'edittype'      => "'select'",
+				'editrules'     => '{ edithidden:true, required:true }',
+				'editoptions'   => '{ dataUrl: "'.base_url().'ajax/ddbanco"}',
+				'stype'         => "'tsxt'",
 			)
 		);
 
 		$grid->addField('nombanc');
 		$grid->label('Nombre del Banco');
-		$grid->params(array('width'         => 140,
-							'editable'      => 'false',
-							'edittype'      => "'text'",
-							'search'        => 'true'
+		$grid->params(array(
+				'width'         => 140,
+				'editable'      => 'false',
+				'edittype'      => "'text'",
+				'search'        => 'true'
 			)
 		);
+
+		$grid->addField('cuentach');
+		$grid->label('Cta Corriente');
+		$grid->params(array(
+				'align'       => "'center'",
+				'width'       => 150,
+				'editable'    => 'true',
+				'edittype'    => "'text'",
+				'editrules'   => '{required:false}',
+				'editoptions' => '{ size:20, maxlength: 20 }',
+			)
+		);
+
 
 		$grid->addField('cajero');
 		$grid->label('Cajero');
@@ -287,53 +309,23 @@ jQuery("#a1").click( function(){
 
 	}
 
-
-
 	/**
 	* Get data result as json
 	*/
 	function getdata()
 	{
-
+		$tabla = 'view_ccheque';
+		
 		$filters = $this->input->get_post('filters');
 		$mWHERE = array();
 
 		$grid       = $this->jqdatagrid;
-		
+		$mWHERE = $grid->geneTopWhere($tabla);
+
 		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
-
-		$valor = $this->input->get_post('nombre');
-		if ($valor) $mWHERE[] = array('like', 'nombre', $valor, 'both' );
-
-		$valor = $this->input->get_post('numero');
-		if( !empty($valor) ) $valor = str_pad($valor, 8, "0", STR_PAD_LEFT);
-		if ($valor) $mWHERE[] = array('like', 'numero', $valor, 'after' );
-
-		$valor = $this->input->get_post('fecha');
-		if ($valor) $mWHERE[] = array('', 'fecha', $valor, '' );
-			
-		$valor = $this->input->get_post('tipo');
-		if ($valor) $mWHERE[] = array('', 'tipo', $valor );
-
-		$valor = $this->input->get_post('num_ref');
-		if ($valor) $mWHERE[] = array('', 'num_ref', $valor );
-
-		$valor = $this->input->get_post('monto');
-		if ($valor) $mWHERE[] = array('', 'monto', $valor+0 );
-			
-		$valor = $this->input->get_post('nombanc');
-		if ($valor) $mWHERE[] = array('like', 'nombanc', $valor, 'both' );
-
-		$valor = $this->input->get_post('nomcajero');
-		if ($valor) $mWHERE[] = array('like', 'nomcajero', $valor, 'both' );
-
-		$valor = $this->input->get_post('us_nombre');
-		if ($valor) $mWHERE[] = array('like', 'us_nombre', $valor, 'both' );
-
 		$response   = $grid->getData('view_ccheque', array(array()), array(), false, $mWHERE );
 		$rs = $grid->jsonresult( $response);
 		echo $rs;
-
 	}
 
 	/**
@@ -354,33 +346,53 @@ jQuery("#a1").click( function(){
 		
 		if($oper == 'add'){
 			if(false == empty($data)){
-				$data['tipo_doc'] = 'CC';
+				$data['tipo_doc']  = 'CC';
 				$data['f_factura'] = $data['fecha'];
-				$data['usuario'] = $this->secu->usuario();
-				$data['estampa'] = date('Ymd');
-				$data['hora']    = date('H:i:s');
-				$data['numero'] = str_pad($this->datasis->prox_sql('nccheque'), 8, "0", STR_PAD_LEFT);
+				$data['usuario']   = $this->secu->usuario();
+				$data['estampa']   = date('Ymd');
+				$data['hora']      = date('H:i:s');
+				$data['transac']   = str_pad($this->datasis->prox_sql('ntransa'),  8, "0", STR_PAD_LEFT);
+				$data['numero']    = str_pad($this->datasis->prox_sql('nccheque'), 8, "0", STR_PAD_LEFT);
 				$this->db->insert('sfpa', $data);
 				$id = $this->db->insert_id();
+
+				// DESCARGA EL EFECTIVO
+				$data['tipo'] = 'EF';
+				$data['monto'] = -1*$data['monto'];
+				$this->db->insert('sfpa', $data);
+
 			}
 			logusu('SFPA',"Agrega Cambio de medio de pago por efectivo: id=$id, ".$data['numero'].", monto=".$data['monto']);
 			echo "{\"id\":\"$id\",\"mensaje\":\"Registro Agregado\"}";
 			return;
 
 		} elseif($oper == 'edit') {
-			$data['tipo_doc'] = 'CC';
+			$transac = $this->datasis->dameval("SELECT transac FROM sfpa WHERE id=$id");
+			$numero  = $this->datasis->dameval("SELECT numero FROM sfpa WHERE id=$id");
+			$data['tipo_doc']  = 'CC';
 			$data['f_factura'] = $data['fecha'];
-			$data['usuario'] = $this->secu->usuario();
-			$data['estampa'] = date('Ymd');
-			$data['hora']    = date('H:i:s');
+			$data['usuario']   = $this->secu->usuario();
+			$data['estampa']   = date('Ymd');
+			$data['hora']      = date('H:i:s');
 			$this->db->where('id', $id);
 			$this->db->update('sfpa', $data);
-			logusu('SFPA',"Edita Cambio de medio de pago por efectivo: id=$id, ".$data['numero'].", monto=".$data['monto']);
+
+			// DESCARGA EL EFECTIVO
+			$data['tipo']  = 'EF';
+			$data['monto'] = -1*$data['monto'];
+			
+			$this->db->where('transac', $transac);
+			$this->db->where('tipo', 'EF');
+			$this->db->update('sfpa', $data);
+
+			logusu('SFPA',"Edita Cambio de medio de pago por efectivo: id=$id, ".$numero.", monto=".$data['monto']);
 			echo 'Registro Guardado';
 			return;
 
 		} elseif($oper == 'del') {
-			//$this->db->simple_query("DELETE FROM sfpa WHERE id=$id ");
+			// revisa si 3l cheque se cobro
+			$transac = $this->datasis->dameval("SELECT transac FROM sfpa WHERE id=$id");
+			$this->db->simple_query("DELETE FROM sfpa WHERE transac='$transac' ");
 			logusu('sfpa',"Cambio de Cheque $id ELIMINADO");
 			echo "Registro Eliminado";
 			return;
@@ -390,5 +402,5 @@ jQuery("#a1").click( function(){
 	function instalar(){
 	
 	}
-
 }
+?>

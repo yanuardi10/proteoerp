@@ -71,12 +71,10 @@ function probar( o, n ) {
 };
 
 $(function() {
+	$("#dialog:ui-dialog").dialog( "destroy" );
 	var mId = 0;
+	var montotal = 0;
 	$( "input:submit, a, button", ".otros" ).button();
-
-	var 	numero = $( "#fnumero" ),
-		fecha  = $( "#ffecha" ),
-		allFields = $( [] ).add( numero ).add( fecha );
 
 	var grid = jQuery("#newapi'.$param['grid']['gridname'].'");
 	var s;
@@ -118,14 +116,19 @@ $(function() {
 		},
 		close: function() {allFields.val( "" ).removeClass( "ui-state-error" );}
 	});
+
 	
 	$( "#cerrardpt" ).click(function() {
 		var id     = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
 		if (id)	{
 			var ret    = $("#newapi'. $param['grid']['gridname'].'").getRowData(id);  
 			mId = id;
+			$.post("'.base_url().'finanzas/bcaj/formacierre/"+id, function(data){
+				$("#forma1").html(data);
+			});
 			if ( ret["status"] == "P" ){
-				$( "#cerrardpt-form" ).dialog( "open" );
+				//$( "#cerrardpt-form" ).dialog( "open" );
+				$( "#forma1" ).dialog( "open" );
 			} else {
 				$.prompt("<h1>Movimiento no esta Pendiente</h1>");
 			}
@@ -153,6 +156,52 @@ $(function() {
 	});
 	
 	
+		
+	var fnombre = $( "#name" ),
+		email = $( "#email" ),
+		password = $( "#password" ),
+		allFields = $( [] ).add( name ).add( email ).add( password ),
+		tips = $( ".validateTips" );
+
+	$( "#forma1" ).dialog({
+		autoOpen: false,
+		height: 470,
+		width: 550,
+		modal: true,
+		buttons: {
+			"Cerrar Deposito": function() {
+				var bValid = true;
+				allFields.removeClass( "ui-state-error" );
+				$.ajax({
+					type: "POST",
+					dataType: "html",
+					url: "/proteoerp/finanzas/bcaj/arrechisimo",
+					async: false,
+					data: $("#cierreforma").serialize(),
+					success: function(r,s,x){ alert(error) }
+					
+				});
+
+/*
+				if ( bValid ) {
+					$( "#users tbody" ).append( "<tr>" +
+						"<td>" + name.val() + "</td>" + 
+						"<td>" + email.val() + "</td>" + 
+						"<td>" + password.val() + "</td>" +
+					"</tr>" ); 
+					$( this ).dialog( "close" );
+				}
+*/
+			},
+			Cancel: function() {
+				$( this ).dialog( "close" );
+			}
+		},
+		close: function() {
+			allFields.val( "" ).removeClass( "ui-state-error" );
+		}
+	});
+
 });
 
 </script>
@@ -168,22 +217,19 @@ $(function() {
 <table id="west-grid" align="center">
 	<tr><td>
 		<div class="anexos"><table id="listados"></table></div></td>
-	</tr>
-	<tr>
+	</tr><tr>
 		<td><table id="otros"></table></td>
 	</tr>
 </table>
 
 <table id="west-grid" align="center">
 	<tr>
-		<td><a style="width:90px" href="#" id="a1">Imprimir PDF</a></td>
-		<td><a style="width:90px" href="#" id="a2">Imprimir HTML</a></td>
-	</tr>
-	<tr>
-		<td colspan="2"><a style="width:190px" href="#" id="cerrardpt">Cerrar Deposito</a></td>
-	</tr>
-	<tr>
-		<td colspan="2"><a style="width:190px" href="#" id="borrar">Eliminar Movimiento</a></td>
+		<td><div class="tema1"><a style="width:90px" href="#" id="a1">Imprimir '.img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',  'title' => 'Formato PDF', 'border'=>'0')).'</a></div></td>
+		<td><div class="tema1"><a style="width:90px" href="#" id="a2">Ver en '.img(array('src' => 'images/html_icon.gif', 'alt' => 'Formato HTML',  'title' => 'Formato HTML', 'border'=>'0')).'</a></div></td>
+	</tr><tr>
+		<td colspan="2"><div class="tema1"><a style="width:190px" href="#" id="cerrardpt">Cerrar Deposito '.img(array('src' => 'images/candado.jpg', 'alt' => 'Eliminar',  'title' => 'Eliminar', 'border'=>'0')).'</a></div></td>
+	</tr><tr>
+		<td colspan="2"><div class="tema1"><a style="width:190px" href="#" id="borrar">Eliminar Movimiento '.img(array('src' => 'images/delete.jpg', 'alt' => 'Eliminar',  'title' => 'Eliminar', 'border'=>'0')).'</a></div></td>
 	</tr>
 
 </table>
@@ -196,6 +242,10 @@ $(function() {
 <p>'.$this->datasis->traevalor('TITULO1').'</p>
 </div> <!-- #BottomPanel -->
 
+<div id="forma1" title="Recepcion de Depositos"></div>
+
+';
+/*
 <div id="cerrardpt-form" title="Recepcion de Depositos">
 	<p class="validateTips" style="font-size:18px">Indique el numero y la fecha.</p>
 	<form>
@@ -212,18 +262,40 @@ $(function() {
 	</fieldset>
 	</form>
 </div>
+ 
+*/
+
+		$funciones = '
+	jQuery("#aceptados").jqGrid({
+		datatype: "local",
+		height: 200,
+		colNames:["id","Numero","Cuenta", "Monto"],
+		colModel:[
+			{name:"id",     index:"id",     width:30, hidden:true},
+			{name:"numero", index:"numero", width:70},
+			{name:"cuenta",index:"cuenta", width:120},
+			{name:"monto",index:"monto", width:80, align:"right"},
+		],
+		multiselect: true,
+		caption: "Cheques Enviados"
+	});
+
 ';
+
+
+
 		$param['WestPanel']  = $WestPanel;
 		//$param['EastPanel']  = $EastPanel;
-		$param['listados'] = $this->datasis->listados('BCAJ', 'JQ');
-		$param['otros']    = $this->datasis->otros('BCAJ', 'JQ');
+		$param['listados']   = $this->datasis->listados('BCAJ', 'JQ');
+		$param['otros']      = $this->datasis->otros('BCAJ', 'JQ');
+		//$param['funciones']  = $funciones;
 
 		$param['SouthPanel'] = $SouthPanel;
 		$param['tema1'] = 'darkness';
 		//$param['tema']  = 'bootstrap';
 		$param['bodyscript'] = $bodyscript;
 		$param['tabs'] = false;
-		$param['encabeza'] = $this->titp;
+		$param['encabeza']   = $this->titp;
 		$this->load->view('jqgrid/crud',$param);
 	}
 
@@ -758,9 +830,9 @@ $(function() {
 			$mSQL = "UPDATE bcaj SET status='C', numeror='$numero' WHERE id=$id ";
 			$this->db->simple_query($mSQL);
 
-			$codbanc = $this->datasis->dameval("SELECT recibe FROM bcaj WHERE a.transac='$mTRANSAC'");
-			$fecha   = $this->datasis->dameval("SELECT fecha FROM bcaj WHERE a.transac='$mTRANSAC'");
-			$monto   = $this->datasis->dameval("SELECT monto FROM bcaj WHERE a.transac='$mTRANSAC'");
+			$codbanc = $this->datasis->dameval("SELECT recibe FROM bcaj WHERE transac='$mTRANSAC'");
+			$fecha   = $this->datasis->dameval("SELECT fecha  FROM bcaj WHERE transac='$mTRANSAC'");
+			$monto   = $this->datasis->dameval("SELECT monto  FROM bcaj WHERE transac='$mTRANSAC'");
 			$this->datasis->actusal($codbanc, $fecha, $monto);
 
 			//Guarda en BMOV
@@ -2527,4 +2599,110 @@ $(function() {
 		$sql='SELECT tbanco FROM banc WHERE codbanc='.$this->db->escape($codigo);
 		return $this->datasis->dameval($sql);
 	}
+
+
+	// forma de cierre de deposito
+	function formacierre(){
+		$id = $this->uri->segment($this->uri->total_segments());
+		$reg = $this->datasis->damereg("SELECT a.numero, a.fecha, a.monto, a.codbanc, a.envia, b.banco FROM bcaj a JOIN banc b ON a.codbanc=b.codbanc WHERE a.id=$id");
+		
+		$salida = '
+<script type="text/javascript">
+	jQuery("#aceptados").jqGrid({
+		datatype: "local",
+		height: 190,
+		colNames:["id","Banco","Numero","Cuenta", "Monto"],
+		colModel:[
+			{name:"id",     index:"id",     width:10, hidden:true},
+			{name:"banco",  index:"banco",  width:40},
+			{name:"numero", index:"numero", width:90},
+			{name:"cuenta", index:"cuenta", width:150},
+			{name:"monto",  index:"monto",  width:80, align:"right"},
+		],
+		multiselect: true,
+		onSelectRow: sumadepo,
+		onSelectAll: sumadepo
+	});
+
+	
+	var mcheques = [
+';
+		$mSQL = "SELECT id, banco, num_ref, cuentach, monto FROM sfpa WHERE deposito='".$reg['numero']."'";
+		$query = $this->db->query($mSQL);
+		if ($query->num_rows() > 0 ){
+			foreach( $query->result() as $row ){
+				$salida .= '{id:"'.$row->id.'",';
+				$salida .= 'banco:"'.$row->banco.'",';
+				$salida .= 'numero:"'.$row->num_ref.'",';
+				$salida .= 'cuenta:"'.$row->cuentach.'",';
+				$salida .= 'monto:"'.$row->monto.'"},';
+			}
+		}
+		$salida .= '
+	];
+	for(var i=0;i<=mcheques.length;i++) jQuery("#aceptados").jqGrid(\'addRowData\',i+1,mcheques[i]);
+	
+	$("#ffecha").datepicker({dateFormat:"dd/mm/yy"});
+
+	function sumadepo()
+        { 
+		var grid = jQuery("#aceptados");
+		var s;
+		var total = 0;
+		var meco = "";
+		var rowcells=new Array();
+		s = grid.getGridParam(\'selarrrow\'); 
+		$("#fsele").html("");
+		if(s.length)
+		{
+			for(var i=0; i<s.length; i++)
+			{
+				var entirerow = grid.jqGrid(\'getRowData\',s[i]);
+				total += Number(entirerow["monto"]);
+				meco = meco+entirerow["id"]+",";
+			}
+			total = Math.round(total*100)/100;	
+			$("#grantotal").html(nformat(total,2));
+			$("input#fsele").val(meco);
+			$("input#fmonto").val(total);
+			montotal = total;
+		} else {
+			total = 0;
+			$("#grantotal").html(" "+nformat(total,2));
+			$("input#fsele").val("");
+			$("input#fmonto").val(total);
+			montotal = total;	
+		}
+	};
+
+</script>
+	
+	<h1 style="text-align:center">Cierre de Deposito Nro. '.$reg['numero'].'</h1>
+	<p style="text-align:center;font-size:12px;">Fecha: '.$reg['fecha'].' Banco: '.$reg['codbanc'].' '.$reg['banco'].'</p>
+	<form id="cierreforma">	
+	<table width="80%" align="center"><tr>
+		<td  class="CaptionTD" align="right">Numero</td>
+		<td><input type="text" name="fnumero" id="fnumero" class="text ui-widget-content ui-corner-all" maxlengh="12" size="12" value="" /></td>
+		<td  class="CaptionTD"  align="right">Fecha</td>
+		<td>&nbsp;<input name="ffecha" id="ffecha" type="text" value="'.date('d/m/Y').'" maxlengh="10" size="10"  /></td>
+	</tr></table>
+	<input id="fmonto" name="fmonto" type="hidden">
+	<input id="fsele"  name="fsele" type="hidden">
+	<input id="fnumero"  name="fnumero" type="hidden" value="'.$reg['numero'].'">
+	<input id="fid"  name="fid" type="hidden" value="'.$id.'">
+	</form>
+	<br>
+	<center><table id="aceptados"><table></center>
+	<table width="80%">
+	<td>Monto en Transito: <div style="font-size:20px;font-weight:bold">'.nformat($reg['monto']).'</div></td><td>
+	Depositado:<div id="grantotal" style="font-size:20px;font-weight:bold">0.00</div>
+	</td></table>
+	
+	';
+	
+		echo $salida;
+
+	}
 }
+
+?>
