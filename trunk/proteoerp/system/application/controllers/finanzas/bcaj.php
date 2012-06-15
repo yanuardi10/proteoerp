@@ -74,11 +74,18 @@ $(function() {
 	$("#dialog:ui-dialog").dialog( "destroy" );
 	var mId = 0;
 	var montotal = 0;
-	$( "input:submit, a, button", ".otros" ).button();
-
+	var fnumero = $("#fnumero");
+	var ffecha = $("#ffecha");
 	var grid = jQuery("#newapi'.$param['grid']['gridname'].'");
 	var s;
+	var allFields = $( [] ).add( fnumero ).add( ffecha );
+	
+	var tips = $( ".validateTips" );
+
 	s = grid.getGridParam(\'selarrrow\'); 
+	$( "input:submit, a, button", ".otros" ).button();
+
+
 
 	$( "#cerrardpt-form" ).dialog({
 		autoOpen: false,
@@ -172,26 +179,25 @@ $(function() {
 			"Cerrar Deposito": function() {
 				var bValid = true;
 				allFields.removeClass( "ui-state-error" );
-				$.ajax({
-					type: "POST",
-					dataType: "html",
-					url: "/proteoerp/finanzas/bcaj/arrechisimo",
-					async: false,
-					data: $("#cierreforma").serialize(),
-					success: function(r,s,x){ alert(error) }
-					
-				});
-
-/*
 				if ( bValid ) {
-					$( "#users tbody" ).append( "<tr>" +
-						"<td>" + name.val() + "</td>" + 
-						"<td>" + email.val() + "</td>" + 
-						"<td>" + password.val() + "</td>" +
-					"</tr>" ); 
-					$( this ).dialog( "close" );
+					$.ajax({
+						type: "POST",
+						dataType: "html",
+						url:"'.site_url("finanzas/bcaj/cerrardpt").'",
+						async: false,
+						data: $("#cierreforma").serialize(),
+						success: function(r,s,x){
+							var res = $.parseJSON(r);
+							if ( res.status == "E"){
+								alert("Error: "+res.mensaje);
+							} else {
+								alert(res.mensaje);
+								grid.trigger("reloadGrid");
+								return [true, a ];
+							}
+						}
+					});
 				}
-*/
 			},
 			Cancel: function() {
 				$( this ).dialog( "close" );
@@ -811,47 +817,210 @@ $(function() {
 	 */
 	function cerrardpt(){
 		// Genera el deposito pendiente
-		$numero   = $this->input->get_post('numero');
-		$fecha    = $this->input->get_post('fecha');
-		$id       = $this->input->get_post('id');
-		
+		$deposito = $this->input->get_post('fdeposito'); //Nro deposito
+		$fecha    = $this->input->get_post('ffecha'); 
+		$id       = $this->input->get_post('fid');
+		$monto    = $this->input->get_post('fmonto');
+		$cheques  = substr(trim($this->input->get_post('fsele')),0,-1);
+		$numbcaj  = $this->input->get_post('fnumbcaj'); //Nro de Bcaj
+		$caja     = '';
+		$codbanc  = '';
+		$mensaje  = "";
+		$envia    = '00';
+	
 		// Revisamos
 		$check = 0;
-		if ($id <= 0) $check = 1;
-		if ($this->datasis->dameval("SELECT status FROM bcaj WHERE id=$id ") <> 'P') $check +=1 ;
-		if (empty($numero)) $check +1;
+		if ($id <= 0) {
+			$check    = 1;
+			$mensaje .= "ID en 0 ";
+		} else
+			$codbanc  = $this->datasis->dameval("SELECT codbanc FROM bcaj WHERE id=$id");
+
+		$caja  = $this->datasis->dameval("SELECT envia FROM bcaj WHERE id=$id");
+		$recibe = $codbanc;
+
+		if ($this->datasis->dameval("SELECT status FROM bcaj WHERE id=$id ") <> 'P') {
+			$check +=1 ;
+			$mensaje .= "Deposito no Pendiente ";
+		}
+		if (empty($deposito)){
+			$check +1;
+			$mensaje .= "Falta: Numero de Deposito ";
+		}
+		if (empty($monto)){
+			$check +1;
+			$mensaje .= 'Debe colocar el monto ';
+		} else {
+			if ( $monto <= 0 ){
+				$check +1;
+				$mensaje .= 'El monto debe ser > 0 ';
+			}
+		}
 		
+		if (empty($codbanc)){
+			$check +1;
+			$mensaje .= 'No esta definido el banco receptor ';
+		}
+
 		if ( $check == 0 )
 		{
-			$mTRANSAC = $this->datasis->dameval("SELECT transac FROM bcaj WHERE id=$id ");
-			$XNUMERO  = $this->datasis->dameval("SELECT numero  FROM bcaj WHERE id=$id ");
+			// Revisamos si el monto coincide con la suma
+			$fecha = substr($fecha,-4,4).substr($fecha,3,2).substr($fecha,0,2);
 
+			$mMdepo = $this->datasis->dameval("SELECT SUM(monto) FROM sfpa WHERE id IN ( $cheques )");
+			$monto  = $this->datasis->dameval("SELECT SUM(monto) FROM sfpa WHERE deposito='$numbcaj'");
+			
+			// GUARDA EN BCAJ
+			$numeroe = $this->datasis->banprox('00');
+			$numeror = $this->datasis->banprox($codbanc);
+			$transac = $this->datasis->prox_sql("ntransa",8);
+
+			$i = 0;
+			while ( $i == 0){
+				$numero  =$this->datasis->prox_sql("nbcaj",8);
+				if ($this->datasis->dameval("SELECT count(*) FROM bcaj WHERE numero='".$numero."'") == 0 ){
+					$i = 1;
+				};
+			}
+
+			$data = array();
+			$data['fecha']      = $fecha;
+			$data['numero']     = $numero;
+			$data['tipo']       = 'DE';
+			$data['tarjeta']    = 0;
+			$data['tdebito']    = 0;
+			$data['cheques']    = $monto;
+			$data['efectivo']   = 0;
+			$data['comision']   = 0;
+			$data['islr']       = 0;
+			$data['monto']      = $monto;
+			$data['envia']      = '00';
+			$data['bancoe']     = 'DEPOSITO EN TRANSITO';
+			$data['tipoe']      = 'ND';
+			$data['numeroe']    = $numeroe;
+			$data['codbanc']    = $caja;  //de donde vino
+			$data['recibe']     = $codbanc;
+			$data['bancor']     = $this->datasis->dameval("SELECT banco FROM banc WHERE codbanc='$codbanc'");
+			$data['tipor']      = 'DE';
+			$data['numeror']    = $numeror;
+			$data['concepto']   = "RECEPCION DE DEPOSITO DE TRANSITO A BANCO $codbanc ";
+			$data['concep2']    = "CHEQUES";
+			$data['status']     = 'C';  // Pendiente/Cerrado/Anulado
+			$data['usuario']    = $this->secu->usuario();
+			$data['estampa']    = $fecha;
+			$data['hora']       = date('H:i:s');
+			$data['transac']    = $transac;
+
+			//Guarda en BCAJ
+			$this->db->insert('bcaj', $data);
+			$this->datasis->actusal( '00', $fecha, -$monto );
+
+			$mSQL = "UPDATE sfpa SET deposito='$numero', status='C' WHERE id IN ($cheques)";
+			$this->db->simple_query($mSQL);
+
+			//GUARDA EN BMOV LA SALIDA DE CAJA
+			$data = array();
+		
+			$data['codbanc']  = '00';
+			$data['numcuent'] = $this->datasis->dameval("SELECT numcuent FROM banc WHERE codbanc='00'");
+			$data['banco']    = $this->datasis->dameval("SELECT banco    FROM banc WHERE codbanc='00'");
+			$data['saldo']    = $this->datasis->dameval("SELECT saldo    FROM banc WHERE codbanc='00'");
+			$data['tipo_op']  = 'ND';
+			$data['numero']   = $numeroe;
+			$data['fecha']    = $fecha;
+			$data['clipro']   = 'O';
+			$data['codcp']    = 'CAJAS';
+			$data['nombre']   = 'DEPOSITO DESDE CAJA';
+			$data['monto']    = $monto; // Saca el monto completo
+			$data['concepto'] = "RECEPCION DE DEPOSITO DE TRANSITO A BANCO $codbanc ";
+			$data['concep2']  = "";
+			$data['benefi']   = "";
+			$data['usuario']  = $this->secu->usuario();
+			$data['estampa']  = $fecha;
+			$data['hora']     = date('H:i:s');
+			$data['transac']  = $transac;
+			$this->db->insert('bmov', $data);
+		
+			//Actualiza saldo en caja de transito
+			$this->datasis->actusal($codbanc, $fecha, $mMdepo);
+
+			$data['codbanc']  = $codbanc;
+			$data['numcuent'] = $this->datasis->dameval("SELECT numcuent FROM banc WHERE codbanc='$codbanc'");
+			$data['banco']    = $this->datasis->dameval("SELECT banco    FROM banc WHERE codbanc='$codbanc'");
+			$data['saldo']    = $this->datasis->dameval("SELECT saldo    FROM banc WHERE codbanc='$codbanc'");
+			$data['tipo_op']  = 'NC';
+			$data['numero']   = $numeror;
+			$data['fecha']    = $fecha;
+			$data['clipro']   = 'O';
+			$data['codcp']    = 'CAJAS';
+			$data['nombre']   = 'DEPOSITO DESDE CAJA';
+			$data['monto']    = $mMdepo;
+			$data['concepto'] = "DEPOSITO DESDE CAJA $envia A BANCO $recibe ";
+			$data['concep2']  = "";
+			$data['benefi']   = "";
+			$data['usuario']  = $this->secu->usuario();
+			$data['estampa']  = $fecha;
+			$data['hora']     = date('H:i:s');
+			$data['transac']  = $transac;
+			$this->db->insert('bmov', $data);
+
+			//Si los montos son diferentes genera la devolucion
+			///devuelve las cheques no depositados
+			if ($monto > $mMdepo){
+				//Actualiza saldo en caja de transito
+				$this->datasis->actusal($caja, $fecha, $monto-$mMdepo);
+				$data['codbanc']  = $codbanc;
+				$data['numcuent'] = $this->datasis->dameval("SELECT numcuent FROM banc WHERE codbanc='$codbanc'");
+				$data['banco']    = $this->datasis->dameval("SELECT banco    FROM banc WHERE codbanc='$codbanc'");
+				$data['saldo']    = $this->datasis->dameval("SELECT saldo    FROM banc WHERE codbanc='$codbanc'");
+				$data['tipo_op']  = 'NC';
+				$data['numero']   = $numeror;
+				$data['fecha']    = $fecha;
+				$data['clipro']   = 'O';
+				$data['codcp']    = 'CAJAS';
+				$data['nombre']   = 'CHEQUES NO DEPOSITADOS';
+				$data['monto']    = $monto-$mMdepo;
+				$data['concepto'] = "DEVOLUCION DE CHEQUES CAJA '00' A CAJA $caja ";
+				$data['concep2']  = "";
+				$data['benefi']   = "";
+				$data['usuario']  = $this->secu->usuario();
+				$data['estampa']  = $fecha;
+				$data['hora']     = date('H:i:s');
+				$data['transac']  = $transac;
+				$this->db->insert('bmov', $data);
+				
+				$mSQL = "UPDATE sfpa SET status='' WHERE  status='P' AND deposito='$numbcaj'";
+				$this->db->simple_query($mSQL);
+			}
+			
+			//cierra el deposito incial
+			$mSQL = "UPDATE bcaj SET status='C' WHERE numero='$numbcaj'";
+			$this->db->simple_query($mSQL);
+			
+
+			logusu('BCAJ',"Cierre de Deposito de cheques de caja Nro. $numero creada");
+
+/*
 			//Actualiza el numero en bcaj
 			$mSQL = "UPDATE bcaj SET status='C', numeror='$numero' WHERE id=$id ";
 			$this->db->simple_query($mSQL);
-
-			$codbanc = $this->datasis->dameval("SELECT recibe FROM bcaj WHERE transac='$mTRANSAC'");
-			$fecha   = $this->datasis->dameval("SELECT fecha  FROM bcaj WHERE transac='$mTRANSAC'");
-			$monto   = $this->datasis->dameval("SELECT monto  FROM bcaj WHERE transac='$mTRANSAC'");
-			$this->datasis->actusal($codbanc, $fecha, $monto);
-
 			//Guarda en BMOV
 			$mSQL = "INSERT INTO bmov (codbanc, moneda, numcuent, banco, saldo, tipo_op, numero, fecha, clipro, codcp, nombre, monto, concepto, concep2, liable, transac, usuario, estampa, hora, anulado)
 				SELECT a.recibe codbanc, b.moneda, b.numcuent, b.banco, b.saldo, a.tipor tipo_op, '$numero' numero, a.fecha, 'O' clipro, 'CAJAS' codcp, concepto nombre, a.monto, a.concepto, a.concep2, 'S' liable, a.transac, a.usuario, a.estampa, a.hora, 'N' anulado
 				FROM bcaj a JOIN banc b ON a.recibe=b.codbanc
 				WHERE a.transac='$mTRANSAC'";
 			$this->db->simple_query($mSQL);
-
 			$mSQL = "UPDATE sfpa SET status='C' WHERE deposito='$XNUMERO' AND status='P'";
 			$this->db->simple_query($mSQL);
-		
-			logusu('BCAJ',"Deposito de cheques de caja Nro. $XNUMERO cerrado");
-		
-			echo "{\"numero\":\"$XNUMERO\",\"mensaje\":\"Deposito Cerrado\"}";
+*/		
+
+			echo '{"status":"G","numero":"$numero","mensaje":"Deposito Cerrado '.$numero.'"}';
 		} else {
-			echo "{\"numero\":\",\"mensaje\":\"Error al Guardar\"}";
+			echo '{"status":"E","numero":"'.$id.'","mensaje":"'.$mensaje.'"}';
 			
 		}
+
+
 	}
 
 
@@ -2676,20 +2845,20 @@ $(function() {
 	};
 
 </script>
-	
+	<p class="validateTips"></p>
 	<h1 style="text-align:center">Cierre de Deposito Nro. '.$reg['numero'].'</h1>
 	<p style="text-align:center;font-size:12px;">Fecha: '.$reg['fecha'].' Banco: '.$reg['codbanc'].' '.$reg['banco'].'</p>
 	<form id="cierreforma">	
 	<table width="80%" align="center"><tr>
 		<td  class="CaptionTD" align="right">Numero</td>
-		<td><input type="text" name="fnumero" id="fnumero" class="text ui-widget-content ui-corner-all" maxlengh="12" size="12" value="" /></td>
+		<td><input type="text" name="fdeposito" id="fdeposito" class="text ui-widget-content ui-corner-all" maxlengh="12" size="12" value="" /></td>
 		<td  class="CaptionTD"  align="right">Fecha</td>
 		<td>&nbsp;<input name="ffecha" id="ffecha" type="text" value="'.date('d/m/Y').'" maxlengh="10" size="10"  /></td>
 	</tr></table>
-	<input id="fmonto" name="fmonto" type="hidden">
-	<input id="fsele"  name="fsele" type="hidden">
-	<input id="fnumero"  name="fnumero" type="hidden" value="'.$reg['numero'].'">
-	<input id="fid"  name="fid" type="hidden" value="'.$id.'">
+	<input id="fmonto"   name="fmonto"   type="hidden">
+	<input id="fsele"    name="fsele"    type="hidden">
+	<input id="fnumbcaj" name="fnumbcaj" type="hidden" value="'.$reg['numero'].'">
+	<input id="fid"      name="fid"      type="hidden" value="'.$id.'">
 	</form>
 	<br>
 	<center><table id="aceptados"><table></center>
@@ -2703,6 +2872,8 @@ $(function() {
 		echo $salida;
 
 	}
+	
+	
 }
 
 ?>
