@@ -188,10 +188,6 @@ echo style('../datagrid/datagrid.css');
 echo "<!-- LAYOUT -->";
 echo script('jquery.layout.js');
 
-//echo "<!-- JFORMER -->";"
-//echo script('jFormer.js');
-//echo style('jformer.css');
-
 ?>
 <style>
 <?php echo $LayoutStyle; ?>

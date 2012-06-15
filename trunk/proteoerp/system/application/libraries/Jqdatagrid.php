@@ -743,7 +743,7 @@ class Jqdatagrid
 			,ondblClickRow: function(id){
 				var gridwidth = jQuery("#newapi'.$this->_gridname.'").width();
 				gridwidth = gridwidth/2;
-				grid1.editGridRow(id, {closeAfterEdit:true,mtype:\'POST\'});
+				jQuery("#newapi'.$this->_gridname.'").editGridRow(id, {closeAfterEdit:true,mtype:\'POST\'});
 				return;
 			}';
 	}

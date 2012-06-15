@@ -23,6 +23,10 @@ class sfpach extends Controller {
 		if ( !$this->datasis->iscampo('sfpa','cuentach') ) {
 			$this->db->simple_query('ALTER TABLE sfpa ADD COLUMN cuentach CHAR(22) NULL DEFAULT NULL ');
 		};
+		if ( !$this->datasis->iscampo('bcaj','codbanc') ) {
+			$this->db->simple_query('ALTER TABLE bcaj ADD COLUMN codbanc CHAR(2) NULL DEFAULT NULL ');
+		};
+		$this->db->simple_query("INSERT IGNORE INTO banc SET codbanc='00', tbanco='CAJ', proxch='000000000000', saldo=0, numcuent='CAJA TRANSITO', banco='CAJA TRANSITO', activo='S', tipocta='K'");
 		redirect($this->url.'jqdatag');
 	}
 
@@ -138,11 +142,11 @@ jQuery("#a1").click( function(){
 <div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content">
 	<div class="otros">
 	<table id="west-grid">
+	<tr>
+		<td><div class="tema1 a1"><a style="width:190px" href="#" id="a1">Imprimir '.img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',  'title' => 'Formato PDF', 'border'=>'0')).'</a></div></td>
+	</tr>
 	<tr><td>
-		<a style="width:190px" href="#" id="a1">Imprimir Copia</a>
-	</td></tr>
-	<tr><td>
-		<a style="width:190px" href="#" id="depositar">DEPOSITAR</a>
+		<div class="tema1"><a style="width:190px" href="#" id="depositar">DEPOSITAR</a></div>
 	</td></tr>
 	</table>
 	</div>
@@ -180,7 +184,8 @@ jQuery("#a1").click( function(){
 		$param['WestPanel']  = $WestPanel;
 		//$param['EastPanel']  = $EastPanel;
 		$param['SouthPanel'] = $SouthPanel;
-
+		$param['tema1']        = 'darkness';
+		
 		$param['bodyscript'] = $bodyscript;
 		$param['tabs'] = false;
 		$param['encabeza'] = $this->titp;
@@ -516,7 +521,6 @@ jQuery("#a1").click( function(){
 		}
 	}
 
-
 	function depositos(){
 		// Genera el deposito pendiente
 		$envia   = $this->input->get_post('envia');
@@ -530,22 +534,24 @@ jQuery("#a1").click( function(){
 		if ($monto <> $mMonto) memowrite("Diferencia de monto $monto <> $mMonto");
 
 		$monto = $mMonto;
-	
-		$mTRANSAC = $this->datasis->prox_sql("ntransa",8);
+
+		$transac = $this->datasis->prox_sql("ntransa",8);
 
 		$i = 0;
 		while ( $i == 0){
-			$XNUMERO  =$this->datasis->prox_sql("nbcaj",8);
-			if ($this->datasis->dameval("SELECT count(*) FROM bcaj WHERE numero='".$XNUMERO."'") == 0 ){
+			$numero  =$this->datasis->prox_sql("nbcaj",8);
+			if ($this->datasis->dameval("SELECT count(*) FROM bcaj WHERE numero='".$numero."'") == 0 ){
 				$i = 1;
 			};
 		}
 
-		$XNUMEROE = $this->datasis->banprox($envia);
+		$numeroe = $this->datasis->banprox($envia);
+		$numeror = $this->datasis->banprox('00');
 		$data = array();
 		
 		$data['fecha']      = $fecha;
-		$data['numero']     = $XNUMERO;
+		$data['numero']     = $numero;
+
 		$data['tipo']       = 'DE';
 		$data['tarjeta']    = 0;
 		$data['tdebito']    = 0;
@@ -555,26 +561,31 @@ jQuery("#a1").click( function(){
 		$data['islr']       = 0;
 		$data['monto']      = $monto;
 		$data['envia']      = $envia;
+		
 		$data['bancoe']     = $this->datasis->dameval("SELECT banco FROM banc WHERE codbanc='$envia'");
+
 		$data['tipoe']      = 'ND';
-		$data['numeroe']    = $XNUMEROE;
-		$data['recibe']     = $recibe;
-		$data['bancor']     = $this->datasis->dameval("SELECT banco FROM banc WHERE codbanc='$recibe'");
+		$data['numeroe']    = $numeroe;
+
+		$data['codbanc']    = $recibe;
+		$data['recibe']     = '00';
+		$data['bancor']     = 'DEPOSITO EN TRANSITO';
 		$data['tipor']      = 'DE';
-		$data['numeror']    = '********';
+
+		$data['numeror']    = $numeror;
 		$data['concepto']   = "DEPOSITO DESDE CAJA $envia A BANCO $recibe ";
 		$data['concep2']    = "CHEQUES";
 		$data['status']     = 'P';  // Pendiente/Cerrado/Anulado
 		$data['usuario']    = $this->secu->usuario();
 		$data['estampa']    = $fecha;
 		$data['hora']       = date('H:i:s');
-		$data['transac']    = $mTRANSAC;
+		$data['transac']    = $transac;
 
 		//Guarda en BCAJ
 		$this->db->insert('bcaj', $data);
 		$this->datasis->actusal( $envia, $fecha, -$monto );
 		
-		$mSQL = "UPDATE sfpa SET deposito='$XNUMERO', status='P' WHERE id IN ($cheques)";
+		$mSQL = "UPDATE sfpa SET deposito='$numero', status='P' WHERE id IN ($cheques)";
 		$this->db->simple_query($mSQL);
 	
 		//GUARDA EN BMOV LA SALIDA DE CAJA
@@ -585,7 +596,7 @@ jQuery("#a1").click( function(){
 		$data['banco']    = $this->datasis->dameval("SELECT banco    FROM banc WHERE codbanc='$envia'");
 		$data['saldo']    = $this->datasis->dameval("SELECT saldo    FROM banc WHERE codbanc='$envia'");
 		$data['tipo_op']  = 'ND';
-		$data['numero']   = $XNUMEROE;
+		$data['numero']   = $numeroe;
 		$data['fecha']    = $fecha;
 		$data['clipro']   = 'O';
 		$data['codcp']    = 'CAJAS';
@@ -597,18 +608,36 @@ jQuery("#a1").click( function(){
 		$data['usuario']  = $this->secu->usuario();
 		$data['estampa']  = $fecha;
 		$data['hora']     = date('H:i:s');
-		$data['transac']  = $mTRANSAC;
+		$data['transac']  = $transac;
 		$this->db->insert('bmov', $data);
 		
-		//Actualiza saldo
-		$this->datasis->actusal($envia, $fecha, -$monto);
-		
-		logusu('BCAJ',"Deposito de cheques de caja Nro. $XNUMERO creada");
-		
-		echo "{\"numero\":\"$XNUMERO\",\"mensaje\":\"Registro Agregado\"}";
+		//Actualiza saldo en caja de transito
+		$this->datasis->actusal('00', $fecha, $monto);
 
+		$data['codbanc']  = '00';
+		$data['numcuent'] = $this->datasis->dameval("SELECT numcuent FROM banc WHERE codbanc='$envia'");
+		$data['banco']    = $this->datasis->dameval("SELECT banco    FROM banc WHERE codbanc='$envia'");
+		$data['saldo']    = $this->datasis->dameval("SELECT saldo    FROM banc WHERE codbanc='$envia'");
+		$data['tipo_op']  = 'NC';
+		$data['numero']   = $numeror;
+		$data['fecha']    = $fecha;
+		$data['clipro']   = 'O';
+		$data['codcp']    = 'CAJAS';
+		$data['nombre']   = 'DEPOSITO DESDE CAJA';
+		$data['monto']    = $monto;
+		$data['concepto'] = "DEPOSITO DESDE CAJA $envia A BANCO $recibe ";
+		$data['concep2']  = "";
+		$data['benefi']   = "";
+		$data['usuario']  = $this->secu->usuario();
+		$data['estampa']  = $fecha;
+		$data['hora']     = date('H:i:s');
+		$data['transac']  = $transac;
+		$this->db->insert('bmov', $data);
+
+		
+		logusu('BCAJ',"Deposito de cheques de caja Nro. $numero creada");
+		echo "{\"numero\":\"$numero\",\"mensaje\":\"Registro Agregado\"}";
 	}
-
 
 	function instalar(){
 	

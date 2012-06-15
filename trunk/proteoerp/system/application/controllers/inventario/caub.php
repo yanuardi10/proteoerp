@@ -457,9 +457,7 @@ $(function() {
 		};
 	}
 
-	function jforma(){
-
-
+	function forma(){
 		$salida = '
 	<p class="validateTips">Todos los Campos son Necesarios.</p>
 	<form>
