@@ -548,34 +548,6 @@ jQuery("#boton1").click( function(){
 			'editoptions'   => '{ size:30, maxlength: 12 }',
 		));
 
-/*
-		$grid->addField('apagar');
-		$grid->label('Apagar');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'align'         => "'right'",
-			'edittype'      => "'text'",
-			'width'         => 100,
-			'editrules'     => '{ required:true }',
-			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
-			'formatter'     => "'number'",
-			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
-		));
-
-
-		$grid->addField('inventario');
-		$grid->label('Inventario');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 40,
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 1 }',
-		));
-*/
-
 		$grid->addField('nfiscal');
 		$grid->label('Nfiscal');
 		$grid->params(array(
@@ -586,7 +558,6 @@ jQuery("#boton1").click( function(){
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:30, maxlength: 12 }',
 		));
-
 
 		$grid->addField('exento');
 		$grid->label('Exento');
@@ -602,7 +573,6 @@ jQuery("#boton1").click( function(){
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
 		$grid->addField('sobretasa');
 		$grid->label('Sobretasa');
 		$grid->params(array(
@@ -616,7 +586,6 @@ jQuery("#boton1").click( function(){
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
-
 
 		$grid->addField('reducida');
 		$grid->label('Reducida');
@@ -632,7 +601,6 @@ jQuery("#boton1").click( function(){
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
 		$grid->addField('tasa');
 		$grid->label('Tasa');
 		$grid->params(array(
@@ -647,7 +615,6 @@ jQuery("#boton1").click( function(){
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
 		$grid->addField('preauto');
 		$grid->label('Preauto');
 		$grid->params(array(
@@ -658,88 +625,6 @@ jQuery("#boton1").click( function(){
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:30, maxlength: 1 }',
 		));
-
-/*
-		$grid->addField('descu');
-		$grid->label('Descu');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'align'         => "'right'",
-			'edittype'      => "'text'",
-			'width'         => 100,
-			'editrules'     => '{ required:true }',
-			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
-			'formatter'     => "'number'",
-			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
-		));
-
-
-		$grid->addField('cargos');
-		$grid->label('Cargos');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'align'         => "'right'",
-			'edittype'      => "'text'",
-			'width'         => 100,
-			'editrules'     => '{ required:true }',
-			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
-			'formatter'     => "'number'",
-			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
-		));
-
-
-		$grid->addField('licor');
-		$grid->label('Licor');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'align'         => "'right'",
-			'edittype'      => "'text'",
-			'width'         => 100,
-			'editrules'     => '{ required:true }',
-			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
-			'formatter'     => "'number'",
-			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
-		));
-
-
-		$grid->addField('observa1');
-		$grid->label('Observa1');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 200,
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 60 }',
-		));
-
-
-		$grid->addField('observa2');
-		$grid->label('Observa2');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 200,
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 60 }',
-		));
-
-
-		$grid->addField('observa3');
-		$grid->label('Observa3');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 200,
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 60 }',
-		));
-*/
 
 		$grid->addField('reteiva');
 		$grid->label('Reteiva');
@@ -755,52 +640,6 @@ jQuery("#boton1").click( function(){
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-/*
-		$grid->addField('montasa');
-		$grid->label('Montasa');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'align'         => "'right'",
-			'edittype'      => "'text'",
-			'width'         => 100,
-			'editrules'     => '{ required:true }',
-			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
-			'formatter'     => "'number'",
-			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
-		));
-
-
-		$grid->addField('monredu');
-		$grid->label('Monredu');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'align'         => "'right'",
-			'edittype'      => "'text'",
-			'width'         => 100,
-			'editrules'     => '{ required:true }',
-			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
-			'formatter'     => "'number'",
-			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
-		));
-
-
-		$grid->addField('monadic');
-		$grid->label('Monadic');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'align'         => "'right'",
-			'edittype'      => "'text'",
-			'width'         => 100,
-			'editrules'     => '{ required:true }',
-			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
-			'formatter'     => "'number'",
-			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
-		));
-
-*/
 		$grid->addField('fafecta');
 		$grid->label('Fafecta');
 		$grid->params(array(
@@ -811,7 +650,6 @@ jQuery("#boton1").click( function(){
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:30, maxlength: 8 }',
 		));
-
 
 		$grid->addField('cexento');
 		$grid->label('Cexento');
@@ -827,7 +665,6 @@ jQuery("#boton1").click( function(){
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
 		$grid->addField('cgenera');
 		$grid->label('Cgenera');
 		$grid->params(array(
@@ -841,7 +678,6 @@ jQuery("#boton1").click( function(){
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
-
 
 		$grid->addField('civagen');
 		$grid->label('Civagen');
@@ -857,7 +693,6 @@ jQuery("#boton1").click( function(){
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
 		$grid->addField('creduci');
 		$grid->label('Creduci');
 		$grid->params(array(
@@ -871,7 +706,6 @@ jQuery("#boton1").click( function(){
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
-
 
 		$grid->addField('civared');
 		$grid->label('Civared');
@@ -887,7 +721,6 @@ jQuery("#boton1").click( function(){
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
 		$grid->addField('cadicio');
 		$grid->label('Cadicio');
 		$grid->params(array(
@@ -901,7 +734,6 @@ jQuery("#boton1").click( function(){
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
-
 
 		$grid->addField('civaadi');
 		$grid->label('Civaadi');
@@ -917,7 +749,6 @@ jQuery("#boton1").click( function(){
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
 		$grid->addField('cstotal');
 		$grid->label('Cstotal');
 		$grid->params(array(
@@ -931,7 +762,6 @@ jQuery("#boton1").click( function(){
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
-
 
 		$grid->addField('ctotal');
 		$grid->label('Ctotal');
@@ -1029,18 +859,18 @@ jQuery("#boton1").click( function(){
 		$grid->setfilterToolbar(true);
 		$grid->setToolbar('false', '"top"');
 
-		$grid->setOnSelectRow('
-			function(id){
+		$grid->setOnSelectRow(' function(id){
 				if (id){
 					var ret = $("#titulos").getRowData(id);
 					jQuery(gridId2).jqGrid(\'setGridParam\',{url:"'.site_url($this->url.'getdatait/').'/"+id+"/", page:1});
 					jQuery(gridId2).trigger("reloadGrid");
 				}
-			},
-			cellEdit: true,
-			cellsubmit: "remote",
-			cellurl: "'.site_url($this->url.'setdata/').'"
-		');
+			}');
+			
+			//cellEdit: true,
+			//cellsubmit: "remote",
+			//cellurl: "'.site_url($this->url.'setdata/').'"
+		//');
 		$grid->setOndblClickRow("");
 
 		$grid->setFormOptionsE('-'); //'closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
@@ -1049,14 +879,14 @@ jQuery("#boton1").click( function(){
 
 		#show/hide navigations buttons
 		$grid->setAdd(false);
-		$grid->setEdit(false);
+		$grid->setEdit(true);
 		$grid->setDelete(false);
 		$grid->setSearch(true);
 		$grid->setRowNum(30);
 		$grid->setShrinkToFit('false');
 
 		#Set url
-		//$grid->setUrlput(site_url($this->url.'setdata/'));
+		$grid->setUrlput(site_url($this->url.'setdata/'));
 
 		#GET url
 		$grid->setUrlget(site_url($this->url.'getdata/'));
@@ -1132,55 +962,6 @@ jQuery("#boton1").click( function(){
 		$editar = "false";
 
 		$grid  = new $this->jqdatagrid;
-/*
-		$grid->addField('fecha');
-		$grid->label('Fecha');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 80,
-			'align'         => "'center'",
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true,date:true}',
-			'formoptions'   => '{ label:"Fecha" }'
-		));
-
-
-		$grid->addField('numero');
-		$grid->label('Numero');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 80,
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 8 }',
-		));
-
-
-		$grid->addField('proveed');
-		$grid->label('Proveed');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 50,
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 5 }',
-		));
-
-
-		$grid->addField('depo');
-		$grid->label('Depo');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 40,
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 4 }',
-		));
-*/
 
 		$grid->addField('codigo');
 		$grid->label('Codigo');
@@ -1193,7 +974,6 @@ jQuery("#boton1").click( function(){
 			'editoptions'   => '{ size:30, maxlength: 15 }',
 		));
 
-
 		$grid->addField('descrip');
 		$grid->label('Descripcion');
 		$grid->params(array(
@@ -1204,7 +984,6 @@ jQuery("#boton1").click( function(){
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:30, maxlength: 45 }',
 		));
-
 
 		$grid->addField('cantidad');
 		$grid->label('Cantidad');
@@ -1220,37 +999,6 @@ jQuery("#boton1").click( function(){
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-/*
-		$grid->addField('devcant');
-		$grid->label('Devcant');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'align'         => "'right'",
-			'edittype'      => "'text'",
-			'width'         => 100,
-			'editrules'     => '{ required:true }',
-			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
-			'formatter'     => "'number'",
-			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
-		));
-
-
-		$grid->addField('devfrac');
-		$grid->label('Devfrac');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'align'         => "'right'",
-			'edittype'      => "'text'",
-			'width'         => 100,
-			'editrules'     => '{ required:true }',
-			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
-			'formatter'     => "'number'",
-			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
-		));
-*/
-
 		$grid->addField('costo');
 		$grid->label('Costo');
 		$grid->params(array(
@@ -1264,7 +1012,6 @@ jQuery("#boton1").click( function(){
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
-
 
 		$grid->addField('importe');
 		$grid->label('Importe');
@@ -1280,6 +1027,19 @@ jQuery("#boton1").click( function(){
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
+		$grid->addField('devcant');
+		$grid->label('Faltante');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => 'true',
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 60,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
 
 		$grid->addField('iva');
 		$grid->label('IVA');
@@ -1295,7 +1055,6 @@ jQuery("#boton1").click( function(){
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
 		$grid->addField('montoiva');
 		$grid->label('Monto IVA');
 		$grid->params(array(
@@ -1310,7 +1069,6 @@ jQuery("#boton1").click( function(){
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
 		$grid->addField('control');
 		$grid->label('Control');
 		$grid->params(array(
@@ -1321,22 +1079,6 @@ jQuery("#boton1").click( function(){
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:30, maxlength: 8 }',
 		));
-
-/*
-		$grid->addField('garantia');
-		$grid->label('Garantia');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'align'         => "'right'",
-			'edittype'      => "'text'",
-			'width'         => 100,
-			'editrules'     => '{ required:true }',
-			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
-			'formatter'     => "'number'",
-			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
-		));
-*/
 
 		$grid->addField('ultimo');
 		$grid->label('Ultimo');
@@ -1412,114 +1154,6 @@ jQuery("#boton1").click( function(){
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-/*
-		$grid->addField('transac');
-		$grid->label('Transac');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 80,
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 8 }',
-		));
-
-
-		$grid->addField('estampa');
-		$grid->label('Estampa');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 80,
-			'align'         => "'center'",
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true,date:true}',
-			'formoptions'   => '{ label:"Fecha" }'
-		));
-
-
-		$grid->addField('hora');
-		$grid->label('Hora');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 80,
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 8 }',
-		));
-
-
-		$grid->addField('usuario');
-		$grid->label('Usuario');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 120,
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 12 }',
-		));
-
-
-		$grid->addField('licor');
-		$grid->label('Licor');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'align'         => "'right'",
-			'edittype'      => "'text'",
-			'width'         => 100,
-			'editrules'     => '{ required:true }',
-			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
-			'formatter'     => "'number'",
-			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
-		));
-
-
-		$grid->addField('silicor');
-		$grid->label('Silicor');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'align'         => "'right'",
-			'edittype'      => "'text'",
-			'width'         => 100,
-			'editrules'     => '{ required:true }',
-			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
-			'formatter'     => "'number'",
-			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
-		));
-
-
-		$grid->addField('flote');
-		$grid->label('Flote');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 80,
-			'align'         => "'center'",
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true,date:true}',
-			'formoptions'   => '{ label:"Fecha" }'
-		));
-
-
-		$grid->addField('cstandard');
-		$grid->label('Cstandard');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'align'         => "'right'",
-			'edittype'      => "'text'",
-			'width'         => 100,
-			'editrules'     => '{ required:true }',
-			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
-			'formatter'     => "'number'",
-			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
-		));
-*/
-
 		$grid->addField('id');
 		$grid->label('Id');
 		$grid->params(array(
@@ -1530,20 +1164,6 @@ jQuery("#boton1").click( function(){
 			'search'        => 'false'
 		));
 
-/*
-		$grid->addField('modificado');
-		$grid->label('Modificado');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 80,
-			'align'         => "'center'",
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true,date:true}',
-			'formoptions'   => '{ label:"Fecha" }'
-		));
-*/
-
 		$grid->showpager(true);
 		$grid->setWidth('');
 		$grid->setHeight('170');
@@ -1551,9 +1171,18 @@ jQuery("#boton1").click( function(){
 		$grid->setfilterToolbar(false);
 		$grid->setToolbar('false', '"top"');
 
-		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
-		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
-		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
+		$grid->setOnSelectRow('
+			function(id){if (id){var ret = $("#titulos").getRowData(id);}},
+			cellEdit: true,
+			cellsubmit: "remote",
+			cellurl: "'.site_url($this->url.'setdatait/').'"
+		');
+		$grid->setOndblClickRow("");
+
+
+		$grid->setFormOptionsE('');
+		$grid->setFormOptionsA('');
+		$grid->setAfterSubmit('');
 
 		#show/hide navigations buttons
 		$grid->setAdd(true);
@@ -1594,7 +1223,45 @@ jQuery("#boton1").click( function(){
 
 	}
 
+	/**
+	* Busca la data en el Servidor por json
+	*/
+	function setdatait()
+	{
+		$this->load->library('jqdatagrid');
+		$oper   = $this->input->post('oper');
+		$id     = $this->input->post('id');
+		$data   = $_POST;
+		$check  = 0;
 
+		unset($data['oper']);
+		unset($data['id']);
+		if($oper == 'add'){
+			//if(false == empty($data)){
+			//	$this->db->insert('scst', $data);
+			//	echo "Registro Agregado";
+			//	logusu('SCST',"Registro ????? INCLUIDO");
+			//} else
+			echo "Fallo Agregado!!!";
+
+		} elseif($oper == 'edit') {
+			$this->db->where('id', $id);
+			$this->db->update('itscst', $data);
+			logusu('SCST',"Registro $id MODIFICADO");
+			echo "Registro Modificado";
+
+		} elseif($oper == 'del') {
+			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM scst WHERE id='$id' ");
+			//if ($check > 0){
+				echo " El registro no puede ser eliminado; tiene movimiento ";
+			//} else {
+			//	$this->db->simple_query("DELETE FROM scst WHERE id=$id ");
+			//	logusu('SCST',"Registro ????? ELIMINADO");
+			//	echo "Registro Eliminado";
+			//}
+		};
+
+	}
 
 
 
