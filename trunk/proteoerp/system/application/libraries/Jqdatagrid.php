@@ -163,6 +163,8 @@ class Jqdatagrid
 
 	private $afterSubmit = '';
 
+	private $afterShow = '';
+
 	private $multiSelect = false;
 
 	private $onSelectRow = '';  
@@ -339,6 +341,18 @@ class Jqdatagrid
 	{
 		$this->afterSubmit = $element;
 	}
+
+
+	/**
+	* After Submit Function
+	* @param text $element
+	* @return void
+	*/
+	public function setAfterShow($element)
+	{
+		$this->afterShow = $element;
+	}
+
 
 	/**
 	* Set ON Selection
@@ -635,6 +649,8 @@ class Jqdatagrid
 
 		if ($this->onSelectRow)
 			$html .= $margen.",onSelectRow: $this->onSelectRow\r\n";
+
+		//if ($this->afterShow) $html .= $margen.",afterShowForm: $this->afterShow \r\n";
 
 
 		if($this->multiSelect == true ){

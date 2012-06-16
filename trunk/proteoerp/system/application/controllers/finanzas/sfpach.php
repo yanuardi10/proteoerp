@@ -350,34 +350,6 @@ jQuery("#a1").click( function(){
 				'edittype'      => "'text'"
 			)
 		);
-/*
-		$grid->addField('us_nombre');
-		$grid->label('Nombre de Uusario');
-		$grid->params(array('width'     => 140,
-							'editable'  => 'false',
-							'edittype'  => "'text'",
-							'search'    => 'true'
-			)
-		);
-
-		$grid->addField('estampa');
-		$grid->label('Estampa');
-		$grid->params(array('width'    => 80,
-							'search'   => 'false',
-							'editable' => 'false',
-							'edittype' => "'text'"
-			)
-		);
-
-		$grid->addField('hora');
-		$grid->label('Hora');
-		$grid->params(array('width'     => 60,
-							'editable'  => 'false',
-							'edittype'  => "'text'",
-							'search'    => 'false'
-			)
-		);
-*/
 
 		$grid->addField('id');
 		$grid->label('Id');
@@ -403,6 +375,16 @@ jQuery("#a1").click( function(){
 		$grid->setFormOptionsA('closeAfterAdd: true, mtype: "POST", width: 400, height:220, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){ if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
 
 		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
+
+		$grid->setAfterShow('function(formid) { alert(formid); }');
+/*				if ( ($(\'#listbox\').val()) == "" ) {
+					alert(\'Please select an option.\');
+					$(\'form#\'+formid, form).hide();
+					return false;
+				}
+			}
+				    ');
+*/
 
 		#show/hide navigations buttons
 		$grid->setAdd(false);
@@ -495,8 +477,13 @@ jQuery("#a1").click( function(){
 
 		} elseif($oper == 'edit') {
 			//REVISA SI DEBE GENERAR MOVIMIENTO EF
-			$montoo = $this->datasis->dameval("SELECT monto FROM sfpa WHERE id=$id");
-			$dife =    $montoo - $data['monto'];
+			$tipo_doc = $this->datasis->dameval("SELECT tipo_doc FROM sfpa WHERE id=$id");
+			$montoo   = $this->datasis->dameval("SELECT monto FROM sfpa WHERE id=$id");
+			if ($tipo_doc == 'CC') {
+				$dife = 0;
+			} else
+				$dife =    $montoo - $data['monto'];
+				
 			if ( round($dife,2) <> 0 ) {
 				$query = $this->db->get_where('sfpa', array('id'=>$id) );
 				$row = $query->row_array();
