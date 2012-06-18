@@ -1,4 +1,4 @@
-<?php
+<?php		$funciones = "";
 class Usuarios extends Controller {
 	var $mModulo='Usuarios del Sistema';
 	var $titp = 'Modulo de Usuarios del Sistema';
@@ -28,7 +28,7 @@ class Usuarios extends Controller {
 	function jqdatag(){
 
 		$grid = $this->defgrid();
-		$param['grid'] = $grid->deploy();
+		$param['grids'][] = $grid->deploy();
 
 		$bodyscript = '
 <script type="text/javascript">
@@ -37,9 +37,9 @@ $(function() {
 });
 
 jQuery("#a1").click( function(){
-	var id = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
+	var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
 	if (id)	{
-		var ret = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getRowData\',id);
+		var ret = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
 		$.get(\''.base_url().'supervisor/usuarios/cclave/\'+id ,function(data){
 			$.prompt(data,{
 				buttons: { Guardar: true, Cancelar: false },
@@ -111,9 +111,17 @@ jQuery("#a1").click( function(){
 <p>'.$this->datasis->traevalor('TITULO1').'</p>
 </div> <!-- #BottomPanel -->
 ';
+
+		$funciones = '
+//$("select#vendedor").selectmenu({style:"popup"});
+		';
+
+
 		$param['WestPanel']  = $WestPanel;
 		//$param['EastPanel']  = $EastPanel;
 		$param['SouthPanel'] = $SouthPanel;
+		$param['funciones'] = $funciones;
+		
 		$param['listados'] = $this->datasis->listados('USUARIO', 'JQ');
 		$param['otros']    = $this->datasis->otros('USUARIO', 'JQ');
 		$param['tema1']     = 'darkness';
@@ -121,7 +129,7 @@ jQuery("#a1").click( function(){
 		$param['bodyscript'] = $bodyscript;
 		$param['tabs'] = false;
 		$param['encabeza'] = $this->titp;
-		$this->load->view('jqgrid/crud',$param);
+		$this->load->view('jqgrid/crud2',$param);
 	}
 
 	//***************************
@@ -297,7 +305,15 @@ jQuery("#a1").click( function(){
 		$grid->setFormOptionsE('
 			closeAfterEdit:false, mtype: "POST", width: 520, height:320, closeOnEscape: true, top: 50,left:20, recreateForm:true,
 			afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},
-			beforeShowForm: function(frm){ $(\'#us_codigo\').attr(\'readonly\',\'readonly\');}
+			beforeShowForm: function(frm){
+					$(\'#us_codigo\').attr(\'readonly\',\'readonly\');
+			//	},
+			//afterShowForm: function(frm){
+					$("select#supervisor").selectmenu({style:"popup"});
+					$("select#vendedor").selectmenu({style:"popup"});
+					$("select#cajero").selectmenu({style:"popup"});
+				}
+			
 		');
 		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:320, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
 
