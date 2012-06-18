@@ -164,6 +164,9 @@ echo phpscript('nformat.js');
 echo script('jquery-min.js');
 echo script('plugins/jquery.numeric.pack.js');
 echo script('jquery-ui.custom.min.js');
+echo script('jquery.ui.selectmenu.js');
+echo style('jquery.ui.selectmenu.css');
+
 if ( isset($jquerys) ) {
 	foreach( $jquerys as $jq ){ echo script($jq); }
 }

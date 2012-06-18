@@ -167,6 +167,8 @@ class Generar extends Metodos {
 					continue;
 				}
 
+				$mSQL="UPDATE reten=0   FROM scst WHERE reten IS NULL   AND  recep BETWEEN $qfechai AND $qfechaf ";
+				$mSQL="UPDATE reteiva=0 FROM scst WHERE reteiva IS NULL AND  recep BETWEEN $qfechai AND $qfechaf ";
 				if ($modulo == 'SCST' ) {
 					$mSQL="SELECT a.$mCONTROL mgrupo FROM $mTABLA WHERE a.recep BETWEEN $qfechai AND $qfechaf GROUP BY a.$mCONTROL";
 				} else {
