@@ -180,10 +180,10 @@ jQuery("#a1").click( function(){
 			'align'       => "'center'",
 			'width'       => 40,
 			'editable'    => 'true',
-			'edittype'    => "'select'",
+			'edittype'    => "'checkbox'",
 			'search'      => 'false',
 			'editrules'   => '{ required:true}',
-			'editoptions' => '{value: {"N":"No","S":"Si" } }'
+			'editoptions' => '{value: "S:N" }'
 		));
 
 		$grid->addField('vendedor');
@@ -232,10 +232,10 @@ jQuery("#a1").click( function(){
 			'align'       => "'center'",
 			'width'       => 40,
 			'editable'    => 'true',
-			'edittype'    => "'select'",
+			'edittype'    => "'checkbox'",
 			'search'      => 'false',
-			'editoptions' => '{value: {"S":"Si", "N":"No"} }',
-			'editrules'     => '{ required:true}',
+			'editrules'   => '{ required:true}',
+			'editoptions' => '{value: "S:N" }'
 		));
 
 		$grid->addField('us_clave');
@@ -303,19 +303,41 @@ jQuery("#a1").click( function(){
 		$grid->setToolbar('false', '"top"');
 
 		$grid->setFormOptionsE('
-			closeAfterEdit:false, mtype: "POST", width: 520, height:320, closeOnEscape: true, top: 50,left:20, recreateForm:true,
-			afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},
+			closeAfterEdit:false,
+			mtype: "POST",
+			width: 520,
+			height:320,
+			closeOnEscape: true,
+			top: 50,
+			left:20,
+			recreateForm:true,
+			afterSubmit: function(a,b){
+				if (a.responseText.length > 0)
+					$.prompt(a.responseText);
+				return [true, a ];
+				},
 			beforeShowForm: function(frm){
 					$(\'#us_codigo\').attr(\'readonly\',\'readonly\');
-			//	},
-			//afterShowForm: function(frm){
-					$("select#supervisor").selectmenu({style:"popup"});
-					$("select#vendedor").selectmenu({style:"popup"});
-					$("select#cajero").selectmenu({style:"popup"});
+				},
+			afterShowForm: function(frm){
+					$("select").selectmenu({style:"popup"});
 				}
 			
 		');
-		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:320, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		$grid->setFormOptionsA('
+			closeAfterAdd:true,
+			mtype: "POST",
+			width: 520,
+			height:320,
+			closeOnEscape: true,
+			top: 50,
+			left:20,
+			recreateForm:true,
+			afterSubmit: function(a,b){
+				if (a.responseText.length > 0)
+					$.prompt(a.responseText);
+				return [true, a ];}
+		');
 
 		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
 
