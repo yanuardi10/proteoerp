@@ -239,6 +239,11 @@ class sinv extends Controller {
 		$mtool .= img(array('src' => 'images/aprecios.gif', 'alt' => 'Aumento de Precios', 'title' => 'Aumento de Precios','border'=>'0','height'=>'32'));
 		$mtool .= "</a>&nbsp;</td>";
 
+		$mtool .= "<td>&nbsp;<a href='javascript:auprecm()'>";
+		$mtool .= img(array('src' => 'images/price-rise.jpg', 'alt' => 'Aumento de Precios Mayor', 'title' => 'Aumento de Precios Mayor','border'=>'0','height'=>'32'));
+		$mtool .= "</a>&nbsp;</td>";
+
+
 		$mtool .= "<td>&nbsp;<a href='javascript:void(0);' ";
 		$mtool .= 'onclick="window.open(\''.base_url()."inventario/etiqueta_sinv/menu', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');".'" heigth="600"'.'>';
 		$mtool .= img(array('src' => 'images/etiquetas.jpg', 'alt' => 'Etiquetas', 'title' => 'Etiquetas','border'=>'0','height'=>'32'));
@@ -321,6 +326,7 @@ class sinv extends Controller {
 		$link3  =site_url("inventario/sinv/auprec/$id");
 		$link4  =site_url("inventario/sinv/sinvcamgrup/");
 		$link5  =site_url("inventario/sinv/sinvcammarca/");
+		$link6  =site_url("inventario/sinv/auprecm/$id");
 
 		$script = '
 		<script type="text/javascript">
@@ -372,6 +378,23 @@ class sinv extends Controller {
 				}
 			}
 		};
+
+
+		function auprecm(){
+			var porcen=prompt("Porcentaje de Aumento Mayor?");
+			if( porcen ==null){
+				alert("Cancelado");
+			} else {
+				if( isNumeric(porcen) ){
+					$.ajax({ url: "'.$link6.'/"+porcen,
+					complete: function(){ alert(("Aumento Finalizado")) }
+					});
+				} else {
+					alert("Entrada no numerica");
+				}
+			}
+		};
+
 
 		function cambgrupo(){
 			var yurl = "";
@@ -1192,11 +1215,11 @@ class sinv extends Controller {
 		}
 
 		$edit->button_status('btn_add_sinvcombo' ,'Agregar','javascript:add_sinvcombo()' ,'CO','modify','button_add_rel');
-        $edit->button_status('btn_add_sinvcombo' ,'Agregar','javascript:add_sinvcombo()' ,'CO','create','button_add_rel');
-        $edit->button_status('btn_add_sinvpitem' ,'Agregar','javascript:add_sinvpitem()' ,'IT','create','button_add_rel');
-        $edit->button_status('btn_add_sinvpitem' ,'Agregar','javascript:add_sinvpitem()' ,'IT','modify','button_add_rel');
-        $edit->button_status('btn_add_sinvplabor','Agregar','javascript:add_sinvplabor()','LA','create','button_add_rel');
-        $edit->button_status('btn_add_sinvplabor','Agregar','javascript:add_sinvplabor()','LA','modify','button_add_rel');
+		$edit->button_status('btn_add_sinvcombo' ,'Agregar','javascript:add_sinvcombo()' ,'CO','create','button_add_rel');
+		$edit->button_status('btn_add_sinvpitem' ,'Agregar','javascript:add_sinvpitem()' ,'IT','create','button_add_rel');
+		$edit->button_status('btn_add_sinvpitem' ,'Agregar','javascript:add_sinvpitem()' ,'IT','modify','button_add_rel');
+		$edit->button_status('btn_add_sinvplabor','Agregar','javascript:add_sinvplabor()','LA','create','button_add_rel');
+		$edit->button_status('btn_add_sinvplabor','Agregar','javascript:add_sinvplabor()','LA','modify','button_add_rel');
 
 		$edit->buttons('modify', 'save', 'undo', 'delete', 'add','back');
 		$edit->build();
@@ -1347,6 +1370,34 @@ class sinv extends Controller {
 		$this->db->simple_query("UPDATE ".$from." ".$mSQL." ".$where);
 		$this->db->call_function("sp_sinv_recalcular", "M" );
 		$this->db->call_function("sp_sinv_redondea");
+	}
+
+	// **************************************
+	//
+	// -- Aumento de Precios -- //
+	//
+	// **************************************
+	function auprecm() {
+		$porcent = $this->uri->segment($this->uri->total_segments());
+		$id = $this->uri->segment($this->uri->total_segments()-1);
+		$data = $this->datasis->damesesion($id);
+
+		$from  = $data['data1'];
+		$where = $data['data2'];
+
+		// Respalda los precios anteriores
+		//$mN = $this->datasis->prox_sql('nsinvplog');
+		//$ms_codigo = $this->session->userdata('usuario');
+		//$mSQL = "INSERT INTO sinvplog ";
+		//$mSQL .= "SELECT '".$mN."', '".addslashes($ms_codigo)."', now(), curtime(), a.codigo, a.precio1, a.precio2, a.precio3, a.precio4 ";
+		//$mSQL .= "FROM $from"." ".$where;
+		//$this->db->simple_query($mSQL);
+
+		$mSQL = "SET mmargen=mmargen+$porcent ";
+
+		$this->db->simple_query("UPDATE ".$from." ".$mSQL." ".$where);
+		//$this->db->call_function("sp_sinv_recalcular", "M" );
+		//$this->db->call_function("sp_sinv_redondea");
 	}
 
 
