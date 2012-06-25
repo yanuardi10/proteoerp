@@ -640,12 +640,10 @@ class Datasis {
 						$descu = $mNECE*$mFRACCI;
 						$mSQL = "UPDATE itsinv SET existen=existen+$descu WHERE codigo=$codigoesc AND alma=$dbmALMA";
 						$CI->db->simple_query($mSQL);
-						//EJECUTASQL(mSQL,{ mNECE*mFRACCI, mCODIGO, mALMA })
 					} else {
 						$descu = $mNECE/abs($mFRACCI);
 						$mSQL = "UPDATE itsinv SET existen=existen+$descu WHERE codigo=$codigoesc AND alma=$dbmALMA";
 						$CI->db->simple_query($mSQL);
-						//EJECUTASQL(mSQL,{ mNECE/ABS(mFRACCI), mCODIGO, mALMA })
 					}
 
 					// DESCUENTA DEL MAYOR
