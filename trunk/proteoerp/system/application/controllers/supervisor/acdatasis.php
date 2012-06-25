@@ -277,14 +277,14 @@ jQuery("#bcopiar").click( function(){
 		if ( $modulo) {
 			$usuario = $this->uri->segment(5);
 			// CREA SI FALTA ALGUNO
-			$mSQL = "INSERT IGNORE INTO sida SELECT ? usuario, codigo modulo, 'N' acceso FROM tmenus";
-			$this->db->simple_query($mSQL, array($usuario));
+			$mSQL = "INSERT IGNORE INTO sida SELECT ".$this->db->escape(trim($usuario))." usuario, codigo modulo, 'N' acceso FROM tmenus";
+			$this->db->simple_query($mSQL);
+			memowrite($mSQL);
 			if ( $modulo == 'MENUDTS') {
 				$mSQL  = "select a.codigo id, a.modulo, a.secu, a.titulo nombre, b.acceso, b.usuario ";
 				$mSQL .= "from tmenus a left join sida b on a.codigo = b.modulo ";
 				$mSQL .= "where a.modulo <> 'MENUINT' and a.modulo regexp '[0-9]'  ";
 				$mSQL .= "and b.usuario=".$this->db->escape($usuario)." ";
-				//$mSQL .= "and a.modulo LIKE ".$this->db->escape($modulo."%");
 				$mSQL .= "order by modulo,secu";
 			} else {
 				$mSQL  = "select a.codigo id, a.modulo, a.secu, a.titulo nombre, b.acceso, b.usuario ";

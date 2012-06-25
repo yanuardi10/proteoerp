@@ -85,8 +85,8 @@ $(function() {
 	s = grid.getGridParam(\'selarrrow\'); 
 	$( "input:submit, a, button", ".otros" ).button();
 
-
-
+'.
+/*
 	$( "#cerrardpt-form" ).dialog({
 		autoOpen: false,
 		height: 200,
@@ -123,7 +123,7 @@ $(function() {
 		},
 		close: function() {allFields.val( "" ).removeClass( "ui-state-error" );}
 	});
-
+*/'
 	
 	$( "#cerrardpt" ).click(function() {
 		var id     = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
@@ -134,7 +134,6 @@ $(function() {
 				$("#forma1").html(data);
 			});
 			if ( ret["status"] == "P" ){
-				//$( "#cerrardpt-form" ).dialog( "open" );
 				$( "#forma1" ).dialog( "open" );
 			} else {
 				$.prompt("<h1>Movimiento no esta Pendiente</h1>");
@@ -251,43 +250,8 @@ $(function() {
 <div id="forma1" title="Recepcion de Depositos"></div>
 
 ';
-/*
-<div id="cerrardpt-form" title="Recepcion de Depositos">
-	<p class="validateTips" style="font-size:18px">Indique el numero y la fecha.</p>
-	<form>
-	<fieldset style="border:none;font-size:12px;">
-		<table width="90%">
-		<tr>
-			<td><label for="num">Numero</label></td>
-			<td><input type="text" id="fnumero"></td>
-		</tr><tr>
-			<td><label for="fec">Fecha</label></td>
-			<td><input type="text" id="ffecha" value ="'.date('d/m/Y').'"></td>
-		</tr>
-		</table>
-	</fieldset>
-	</form>
-</div>
- 
-*/
 
-		$funciones = '
-	jQuery("#aceptados").jqGrid({
-		datatype: "local",
-		height: 200,
-		colNames:["id","Numero","Cuenta", "Monto"],
-		colModel:[
-			{name:"id",     index:"id",     width:30, hidden:true},
-			{name:"numero", index:"numero", width:70},
-			{name:"cuenta",index:"cuenta", width:120},
-			{name:"monto",index:"monto", width:80, align:"right"},
-		],
-		multiselect: true,
-		caption: "Cheques Enviados"
-	});
-
-';
-
+		$funciones = '';
 
 
 		$param['WestPanel']  = $WestPanel;

@@ -326,21 +326,21 @@ jQuery("#a1").click( function(){
 			)
 		);
 
-
+/*
 		$grid->addField('cajero');
 		$grid->label('Cajero');
 		$grid->params(array(
 				'width'         => 120,
 				'hidden'        => 'true',
 				'editable'      => 'false',
-				'edittype'      => "'select'",
-				'editrules'     => '{ edithidden: true, required:true }',
-				'editoptions'   => '{ dataUrl: "ddcajero"}',
-				'stype'         => "'select'",
-				'searchoptions' => '{ dataUrl: "ddcajero", sopt: ["eq", "ne"]}'
+				//'edittype'      => "'select'",
+				//'editrules'     => '{ edithidden: true, required:true }',
+				//'editoptions'   => '{ dataUrl: "ddcajero"}',
+				//'stype'         => "'select'",
+				//'searchoptions' => '{ dataUrl: "ddcajero", sopt: ["eq", "ne"]}'
 			)
 		);
-
+*/
 
 		$grid->addField('nomcajero');
 		$grid->label('Nombre Cajero');
@@ -450,7 +450,7 @@ jQuery("#a1").click( function(){
 		
 		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
 		$mWHERE = $grid->geneTopWhere($tabla);
-
+		//memowrite("where=".serialize($mWHERE));
 		$response   = $grid->getData($tabla, array(array()), array(), false, $mWHERE );
 		$rs = $grid->jsonresult( $response);
 		echo $rs;

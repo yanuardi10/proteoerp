@@ -25,6 +25,11 @@ class Analisisvision extends Controller {
 		//$this->db->simple_query("DROP TABLE IF EXISTS vresumen");    
    
 		$mSQL = "
+SELECT *, 
+ROUND((SELECT valor FROM valores WHERE nombre='EST_PERDIDA')*ventas/100,2)    perdida,
+ROUND((SELECT valor FROM valores WHERE nombre='EST_CMUNICIPAL')*ventas/100,2) municipal,
+ROUND((SELECT valor FROM valores WHERE nombre='EST_ISLR')*(nutil)/100,2)      islr
+FROM (
 SELECT fecha, sum(ventas) ventas, sum(compras) compras, sum(ventas-compras) util ,sum(gastos) gastos, sum(inversion)  inversion,
 sum(ventas-compras-gastos-inversion) nutil, sum(ingreso ) ingreso, sum(deposito) deposito
 FROM (
@@ -54,6 +59,7 @@ WHERE YEAR(fecha) = YEAR(curdate()) AND tipo_op='ND'  AND codbanc='99' AND codba
 GROUP BY EXTRACT(YEAR_MONTH FROM fecha) 
 ) MECO
 GROUP BY fecha
+) pico
 ";
 
 		$atts = array(
@@ -65,12 +71,6 @@ GROUP BY fecha
 			'screenx'   =>'5',
 			'screeny'   =>'5');    
 
-
-			//$grid  = "<table id='consulta'>";
-			//$grid .= "<tr><th>fecha</th><th>ventas</th><th>compras</th><th>gastos</th><th>inversion</th></tr>";
-			
-			//fecha, ventas, compras, gastos, inversion
-
 			$ladata     = '';
 			$tventas    = 0;
 			$tcompras   = 0;
@@ -80,21 +80,27 @@ GROUP BY fecha
 			$tnutil     = 0;
 			$tingreso   = 0;
 			$tdeposito  = 0;
+			$tperdida   = 0;
+			$tmunicipal = 0;
+			$tislr      = 0;
 
 			$query = $this->db->query($mSQL);
 			if ($query->num_rows() > 0)
 			{
 				foreach ($query->result() as $row)
 				{
-					$ladata .= "{ fecha:  '".$row->fecha.    "', ";
-					$ladata .= "ventas:   '".$row->ventas.   "', ";
-					$ladata .= "compras:  '".$row->compras.  "', ";
-					$ladata .= "util:     '".$row->util.     "', ";
-					$ladata .= "gastos:   '".$row->gastos.   "', ";
+					$ladata .= "{ fecha:'".  $row->fecha.    "', ";
+					$ladata .= "ventas:'".   $row->ventas.   "', ";
+					$ladata .= "compras:'".  $row->compras.  "', ";
+					$ladata .= "util:'".     $row->util.     "', ";
+					$ladata .= "gastos:'".   $row->gastos.   "', ";
 					$ladata .= "inversion:'".$row->inversion."', ";
-					$ladata .= "nutil:    '".$row->nutil.    "', ";
-					$ladata .= "ingreso:  '".$row->ingreso.  "', ";
-					$ladata .= "deposito: '".$row->deposito."'},\n ";
+					$ladata .= "nutil:'".    $row->nutil.    "', ";
+					$ladata .= "ingreso:'".  $row->ingreso.  "', ";
+					$ladata .= "deposito:'". $row->deposito. "', ";
+					$ladata .= "perdida:'".  $row->perdida.   "', ";
+					$ladata .= "municipal:'".$row->municipal."',";
+					$ladata .= "islr:'".     $row->islr.        "'},\n ";
 
 					$tventas    += $row->ventas;
 					$tcompras   += $row->compras;
@@ -104,14 +110,17 @@ GROUP BY fecha
 					$tnutil     += $row->nutil;
 					$tingreso   += $row->ingreso;
 					$tdeposito  += $row->deposito;
+					$tperdida   += $row->perdida;
+					$tmunicipal += $row->municipal;
+					$tislr      += $row->islr;
 				}
-			} 			
+			}
 
 			$grid = '
 jQuery("#resumen").jqGrid({
 	datatype: "local",
 	height: "140",
-	colNames:["Fecha", "Ventas", "Compras", "Utilidad","Gastos", "Inversion", "Neto","Ingreso", "Deposito"],
+	colNames:["Fecha", "Ventas", "Compras", "Utilidad","Gastos", "Inversion", "Neto","Ingreso", "Deposito","Perdida","I.Mun.","ISLR"],
 	colModel:[
 		{name:"fecha",     index:"fecha",     width:50, align:"center",sorttype:"text" },
 		{name:"ventas",    index:"ventas",    width:80, align:"right", sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }},
@@ -121,13 +130,16 @@ jQuery("#resumen").jqGrid({
 		{name:"inversion", index:"inversion", width:80, align:"right", sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }},
 		{name:"nutil",     index:"nutil",     width:80, align:"right", sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }},
 		{name:"ingreso",   index:"ingreso",   width:80, align:"right", sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }},
-		{name:"deposito",  index:"deposito",  width:80, align:"right", sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }}
+		{name:"deposito",  index:"deposito",  width:80, align:"right", sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }},
+		{name:"perdida",   index:"perdida",   width:80, align:"right", sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }},
+		{name:"municipal", index:"municipal", width:80, align:"right", sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }},
+		{name:"islr",      index:"islr",      width:80, align:"right", sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }}
 	],
 	multiselect: false,
 	footerrow: true,
 	loadComplete: function () {
 		$(this).jqGrid(\'footerData\',\'set\',
-		{fecha:\'TOTALES\', ventas:\''.$tventas.'\', compras:"'.$tcompras.'", util:"'.$tutil.'",gastos:"'.$tgastos.'", inversion:"'.$tinversion.'", nutil:"'.$tnutil.'", ingreso:"'.$tingreso.'", deposito:"'.$tdeposito.'"});
+		{fecha:"TOTALES", ventas:"'.$tventas.'", compras:"'.$tcompras.'", util:"'.$tutil.'",gastos:"'.$tgastos.'", inversion:"'.$tinversion.'", nutil:"'.$tnutil.'", ingreso:"'.$tingreso.'", deposito:"'.$tdeposito.'", perdida:"'.$tperdida.'", municipal:"'.$tmunicipal.'", islr:"'.$tislr.'"});
 	},
 	caption: "Resumen de Gesti&oacute;n"
 });

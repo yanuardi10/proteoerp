@@ -1,4 +1,547 @@
 <?php
+class Ppro extends Controller {
+	var $mModulo='PPRO';
+	var $titp='Pago a Proveedor';
+	var $tits='Pago a Proveedor';
+	var $url ='finanzas/ppro/';
+
+	function Ppro(){
+		parent::Controller();
+		$this->load->library('rapyd');
+		$this->load->library('jqdatagrid');
+		//$this->datasis->modulo_nombre( $modulo, $ventana=0 );
+	}
+
+	function index(){
+		/*if ( !$this->datasis->iscampo('sprv','id') ) {
+			$this->db->simple_query('ALTER TABLE sprv DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE sprv ADD UNIQUE INDEX numero (numero)');
+			$this->db->simple_query('ALTER TABLE sprv ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
+		};*/
+		$this->datasis->modintramenu( 900, 600, $url );
+		redirect($this->url.'jqdatag');
+	}
+
+	//***************************
+	//Layout en la Ventana
+	//
+	//***************************
+	function jqdatag(){
+
+		$grid = $this->defgrid();
+		$param['grids'][] = $grid->deploy();
+
+		$bodyscript = '
+<script type="text/javascript">
+jQuery("#a1").click( function(){
+	var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
+	if (id)	{
+		var ret = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
+		window.open(\''.base_url().'reportes/ver/SPRMECU/SPRM/\'+ret.cod_prv, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+	} else { $.prompt("<h1>Por favor Seleccione un Proveedor</h1>");}
+});
+
+function probar( o, n ) {
+	if ( o.val().length < 1 ) {
+		o.addClass( "ui-state-error" );
+		updateTips( "Seleccion un " + n + "." );
+		return false;
+	} else {
+		return true;
+	}
+};
+
+$(function() {
+	$("#dialog:ui-dialog").dialog( "destroy" );
+	var mId = 0;
+	var montotal = 0;
+	var ffecha = $("#ffecha");
+	var grid = jQuery("#newapi'.$param['grids'][0]['gridname'].'");
+	var s;
+	var allFields = $( [] ).add( ffecha );
+	
+	var tips = $( ".validateTips" );
+
+	s = grid.getGridParam(\'selarrrow\'); 
+	$( "input:submit, a, button", ".otros" ).button();
+
+	$( "#abono" ).click(function() {
+		var id     = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
+		if (id)	{
+			var ret    = $("#newapi'. $param['grids'][0]['gridname'].'").getRowData(id);  
+			mId = id;
+			$.post("'.base_url().'finanzas/ppro/formaabono/"+id, function(data){
+				$("#fabono").html(data);
+			});
+			$( "#fabono" ).dialog( "open" );
+			
+		} else { $.prompt("<h1>Por favor Seleccione un Proveedor</h1>");}
+	});
+	
+	$( "#borrar" ).click(function() {
+		var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
+		var m = "";
+		if (id)	{
+			$.prompt( "Eliminar Registro? ",{
+					buttons: { Borrar:true, Cancelar:false},
+					callback: function(e,v,m,f){
+						if (v == true) {
+							$.get("'.base_url().$this->url.'bcajborra/"+id,
+							function(data){
+								alert(data);
+							});
+						}
+					}
+				}
+			);
+		} else { $.prompt("<h2>Por favor Seleccione un Movimiento</h2>");}
+	});
+	
+	
+	$( "#fabono" ).dialog({
+		autoOpen: false,
+		height: 470,
+		width: 790,
+		modal: true,
+		buttons: {
+			"Pagar": function() {
+				var bValid = true;
+				allFields.removeClass( "ui-state-error" );
+				if ( bValid ) {
+					$.ajax({
+						type: "POST",
+						dataType: "html",
+						url:"'.site_url("finanzas/ppro/abono").'",
+						async: false,
+						data: $("#abonoforma").serialize(),
+						success: function(r,s,x){
+							var res = $.parseJSON(r);
+							if ( res.status == "E"){
+								alert("Error: "+res.mensaje);
+							} else {
+								alert(res.mensaje);
+								grid.trigger("reloadGrid");
+								return [true, a ];
+							}
+						}
+					});
+				}
+			},
+			Cancel: function() {
+				$( this ).dialog( "close" );
+			}
+		},
+		close: function() {
+			allFields.val( "" ).removeClass( "ui-state-error" );
+		}
+	});
+
+});
+
+</script>
+';
+
+		$WestPanel = '
+<div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content">
+<div class="otros">
+
+<table id="west-grid" align="center">
+	<tr><td>
+		<div class="anexos"><table id="listados"></table></div></td>
+	</tr><tr>
+		<td><table id="otros"></table></td>
+	</tr>
+</table>
+
+<table id="west-grid" align="center">
+	<tr>
+		<td><div class="tema1"><a style="width:190px" href="#" id="a1">Estado de Cuenta '.img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',  'title' => 'Formato PDF', 'border'=>'0')).'</a></div></td>
+	</tr><tr>
+		<td><div class="tema1"><a style="width:190px" href="#" id="abono">Pagar y/o Abonar '.img(array('src' => 'images/candado.jpg', 'alt' => 'Abonar',  'title' => 'Abonar', 'border'=>'0')).'</a></div></td>
+	</tr>
+
+</table>
+</div>
+</div> <!-- #LeftPane -->
+';
+
+
+//	</tr><tr>
+//		<td><div class="tema1"><a style="width:190px" href="#" id="borrar">Eliminar Movimiento '.img(array('src' => 'images/delete.jpg', 'alt' => 'Eliminar',  'title' => 'Eliminar', 'border'=>'0')).'</a></div></td>
+
+
+
+		$SouthPanel = '
+<div id="BottomPane" class="ui-layout-south ui-widget ui-widget-content">
+<p>'.$this->datasis->traevalor('TITULO1').'</p>
+</div> <!-- #BottomPanel -->
+
+<div id="fabono" title="Pagos y Abonos"></div>
+
+';
+
+
+
+
+		$param['WestPanel']  = $WestPanel;
+		//$param['EastPanel']  = $EastPanel;
+		$param['SouthPanel'] = $SouthPanel;
+		$param['listados'] = $this->datasis->listados('PPRO', 'JQ');
+		$param['otros']    = $this->datasis->otros('PPRO', 'JQ');
+		$param['temas']     = array('proteo','darkness','anexos1');
+		$param['bodyscript'] = $bodyscript;
+		$param['tabs'] = false;
+		$param['encabeza'] = $this->titp;
+		$this->load->view('jqgrid/crud2',$param);
+	}
+
+	//***************************
+	//Definicion del Grid y la Forma
+	//***************************
+	function defgrid( $deployed = false ){
+		$i      = 1;
+		$editar = "false";
+
+		$grid  = new $this->jqdatagrid;
+
+		$grid->addField('cod_prv');
+		$grid->label('Codigo');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 5 }',
+		));
+
+
+		$grid->addField('rif');
+		$grid->label('RIF');
+		$grid->params(array(
+			'align'         => "'center'",
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 90,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 12 }',
+		));
+
+
+		$grid->addField('nombre');
+		$grid->label('Proveedor');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 250,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 40 }',
+		));
+
+
+		$grid->addField('saldo');
+		$grid->label('Saldo');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('cantidad');
+		$grid->label('Cant.');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+		));
+
+
+		$grid->addField('nueva');
+		$grid->label('Nueva');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
+
+		$grid->addField('vieja');
+		$grid->label('Vieja');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
+
+		$grid->addField('dias');
+		$grid->label('Dias');
+		$grid->params(array(
+			'align'         => "'center'",
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+		));
+
+
+		$grid->addField('id');
+		$grid->label('Id');
+		$grid->params(array(
+			'align'         => "'center'",
+			'frozen'        => 'true',
+			'width'         => 40,
+			'editable'      => 'false',
+			'search'        => 'false'
+		));
+
+		$grid->showpager(true);
+		$grid->setWidth('');
+		$grid->setHeight('290');
+		$grid->setTitle($this->titp);
+		$grid->setfilterToolbar(true);
+		$grid->setToolbar('false', '"top"');
+
+		//$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		//$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		//$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
+
+		#show/hide navigations buttons
+		$grid->setAdd(false);
+		$grid->setEdit(false);
+		$grid->setDelete(false);
+		$grid->setSearch(false);
+		$grid->setOndblClickRow('');
+		$grid->setRowNum(30);
+		$grid->setShrinkToFit('false');
+
+		#Set url
+		//$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		#GET url
+		$grid->setUrlget(site_url($this->url.'getdata/'));
+
+		if ($deployed) {
+			return $grid->deploy();
+		} else {
+			return $grid;
+		}
+	}
+
+	/**
+	* Busca la data en el Servidor por json
+	*/
+	function getdata()
+	{
+		$grid = $this->jqdatagrid;
+		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
+		$mWHERE = $grid->geneTopWhere('view_ppro');
+
+		$response   = $grid->getData('view_ppro', array(array()), array(), false, $mWHERE );
+		$rs = $grid->jsonresult( $response);
+		echo $rs;
+	}
+
+	/**
+	* Guarda la Informacion
+	*/
+	function setData()
+	{
+		$this->load->library('jqdatagrid');
+		$oper   = $this->input->post('oper');
+		$id     = $this->input->post('id');
+		$data   = $_POST;
+		$check  = 0;
+
+		unset($data['oper']);
+		unset($data['id']);
+		if($oper == 'add'){
+			if(false == empty($data)){
+				$this->db->insert('sprv', $data);
+				echo "Registro Agregado";
+
+				logusu('SPRV',"Registro ????? INCLUIDO");
+			} else
+			echo "Fallo Agregado!!!";
+
+		} elseif($oper == 'edit') {
+			//unset($data['ubica']);
+			$this->db->where('id', $id);
+			$this->db->update('sprv', $data);
+			logusu('SPRV',"Registro ????? MODIFICADO");
+			echo "Registro Modificado";
+
+		} elseif($oper == 'del') {
+			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM sprv WHERE id='$id' ");
+			if ($check > 0){
+				echo " El registro no puede ser eliminado; tiene movimiento ";
+			} else {
+				$this->db->simple_query("DELETE FROM sprv WHERE id=$id ");
+				logusu('SPRV',"Registro ????? ELIMINADO");
+				echo "Registro Eliminado";
+			}
+		};
+	}
+
+
+	// forma de cierre de deposito
+	function formaabono(){
+		$id      = $this->uri->segment($this->uri->total_segments());
+		$proveed = $this->datasis->dameval("SELECT proveed FROM sprv WHERE id=$id");
+
+		$reg = $this->datasis->damereg("SELECT proveed, nombre, rif FROM sprv WHERE id=$id");
+
+		$salida = '
+<script type="text/javascript">
+	var lastcell = 0;
+	jQuery("#aceptados").jqGrid({
+		datatype: "local",
+		height: 190,
+		colNames:["id","Tipo","Numero","Fecha","Vence","Monto","Saldo", "Faltante","Abonar","P.Pago"],
+		colModel:[
+			{name:"id",       index:"id",       width:10, hidden:true},
+			{name:"tipo_doc", index:"tipo_doc", width:40},
+			{name:"numero",   index:"numero",   width:90},
+			{name:"fecha",    index:"fecha",    width:90},
+			{name:"vence",    index:"vence",    width:90},
+			{name:"monto",    index:"monto",    width:80, align:"right", edittype:"text", editable:false, formatter: "number", formatoptions: {label:"Monto adeudado",decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 } },
+			{name:"saldo",    index:"saldo",    width:80, align:"right", edittype:"text", editable:false, formatter: "number", formatoptions: {label:"Monto adeudado",decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 } },
+			{name:"faltan",   index:"faltan",   width:80, align:"right", edittype:"text", editable:false, formatter: "number", formatoptions: {label:"Monto adeudado",decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 } },
+			{name:"abonar",   index:"abonar",   width:80, align:"right", edittype:"text", editable:true },
+			{name:"ppago",    index:"ppago",    width:80, align:"right", edittype:"text", editable:true },
+		],
+		onSelectRow: function(id){
+			var grid1 = jQuery("#aceptados");
+			var row;
+			if(id && id !== lastcell){
+				grid1.jqGrid("restoreRow",lastcell);
+				row = grid1.jqGrid(\'getRowData\', id );
+				//alert("paso 1 "+row["abonar"]);
+				if (row["abonar"] == "" ){
+					grid1.jqGrid("setCell",id,"abonar", row["saldo"]);
+				}
+				grid1.jqGrid("editRow",id,true);
+				lastcell=id;
+			}
+			sumatot();
+		},
+		editurl: "'.base_url().'finanzas/ppro/abonoguarda",
+	});
+	
+	var mefectos = [
+';
+
+
+
+		$mSQL = "SELECT id, tipo_doc, numero, fecha, vence, monto, monto-abonos saldo, '' faltan, '' abonar, '' ppago FROM sprm WHERE monto>abonos AND tipo_doc IN ('FC','ND','GI') AND cod_prv=".$this->db->escape($reg['proveed']);
+		$query = $this->db->query($mSQL);
+		if ($query->num_rows() > 0 ){
+			foreach( $query->result() as $row ){
+				$salida .= "\t\t".'{id:"'.$row->id.'",';
+				$salida .= 'tipo_doc:"'.$row->tipo_doc.'",';
+				$salida .= 'numero:"'.  $row->numero.'",';
+				$salida .= 'fecha:"'.   $row->fecha.'",';
+				$salida .= 'vence:"'.   $row->vence.'",';
+				$salida .= 'monto:"'.   $row->monto.'",';
+				$salida .= 'saldo:"'.   $row->saldo.'",';
+				$salida .= 'faltan:"'.  $row->faltan.'",';
+				$salida .= 'abonar:"'.  $row->abonar.'",';
+				$salida .= 'ppago:"'.   $row->ppago.'"},'."\n";
+			}
+		}
+		$salida .= '
+	];
+	for(var i=0;i<=mefectos.length;i++) jQuery("#aceptados").jqGrid(\'addRowData\',i+1,mefectos[i]);
+	
+	$("#ffecha").datepicker({dateFormat:"dd/mm/yy"});
+
+	function sumatot()
+        { 
+		var grid = jQuery("#aceptados");
+		var s;
+		var total = 0;
+		var meco = "";
+		var rowcells = new Array();
+		var entirerow;
+		s = grid.getGridParam(\'selarrrow\'); 
+		$("#fsele").html("");
+		if(s.length)
+		{
+			for(var i=0; i<s.length; i++)
+			{
+				entirerow = grid.jqGrid(\'getRowData\',s[i]);
+				if (Number(entirerow["abonar"]) == 0) {
+					entirerow["abonar"] = entirerow["saldo"];
+				}
+				total += Number(entirerow["abonar"]);
+				meco = meco+entirerow["id"]+",";
+			}
+			total = Math.round(total*100)/100;	
+			$("#grantotal").html(nformat(total,2));
+			$("input#fsele").val(meco);
+			$("input#fmonto").val(total);
+			montotal = total;
+		} else {
+			total = 0;
+			$("#grantotal").html(" "+nformat(total,2));
+			$("input#fsele").val("");
+			$("input#fmonto").val(total);
+			montotal = total;	
+		}
+	};
+
+</script>
+	<p class="validateTips"></p>
+	<form id="abonoforma">	
+	<table width="80%" align="center"><tr>
+		<td  class="CaptionTD"  align="right">Fecha</td>
+		<td>&nbsp;<input name="ffecha" id="ffecha" type="text" value="'.date('d/m/Y').'" maxlengh="10" size="10"  /></td>
+		<td  class="CaptionTD"  align="right">Comprobante</td>
+		<td>&nbsp;<input name="fcomprob" id="fcomprob" type="text" value="" maxlengh="10" size="10"  /></td>
+	</tr></table>
+	<input id="fmonto"   name="fmonto"   type="hidden">
+	<input id="fsele"    name="fsele"    type="hidden">
+	<input id="fid"      name="fid"      type="hidden" value="'.$id.'">
+	</form>
+	<br>
+	<center><table id="aceptados"><table></center>
+	<table width="80%">
+	<td><div id="grantotal" style="font-size:20px;font-weight:bold">Monto a pagar: 0.00</div>
+	</td></table>
+
+	';
+	
+		echo $salida;
+
+	}
+	
+
+	function abonoguarda(){
+		echo 'a' ;
+	}
+
+
+}
+
+
+
+/*
 class psprv extends Controller {
 	var $titp='Pago a proveedores';
 	var $tits='Pago a proveedor';
@@ -676,3 +1219,5 @@ class psprv extends Controller {
 	}
 
 }
+*/
+?>
