@@ -141,7 +141,7 @@ class b2b extends validaciones {
 		$edit->url->insertValue='http://';
 		$edit->url->size       =  50;
 		$edit->url->maxlength  =  50;
-		$edit->url->rule       = 'required';
+		$edit->url->rule       = 'required|trim';
 		$edit->url->append('Ej: http://www.ejemplo.com');
 
 		$edit->puerto = new inputField('Puerto', 'puerto');
@@ -153,16 +153,19 @@ class b2b extends validaciones {
 		$edit->proteo = new inputField('Ruta a proteo', 'proteo');
 		$edit->proteo->insertValue='proteoerp';
 		$edit->proteo->size       =  20;
+		$edit->proteo->rule       = 'trim';
 		$edit->proteo->maxlength  =  20;
 
 		$edit->usuario = new inputField('C&oacute;digo remoto', 'usuario');
 		$edit->usuario->size      =  20;
 		$edit->usuario->maxlength =  20;
+		$edit->usuario->rule      = 'trim';
 		$edit->usuario->rule      = 'required';
 
 		$edit->clave = new inputField('Clave', 'clave');
 		$edit->clave->size      =  10;
 		$edit->clave->maxlength =  10;
+		$edit->clave->rule      = 'trim';
 		$edit->clave->rule      = 'required';
 
 		$edit->tipo = new dropdownField('Tipo','tipo');
@@ -754,7 +757,7 @@ class b2b extends validaciones {
 
 		$er=0;
 		$this->load->helper('url');
-		$server_url = reduce_double_slashes($config['url'].'/'.$config['proteo'].'/'.'rpcserver');
+		$server_url = reduce_double_slashes(trim($config['url']).'/'.trim($config['proteo']).'/'.'rpcserver');
 
 		$this->load->library('xmlrpc');
 		$this->xmlrpc->xmlrpc_defencoding=$this->config->item('charset');
@@ -1150,7 +1153,7 @@ class b2b extends validaciones {
 
 		$er=0;
 		$this->load->helper('url');
-		$server_url = reduce_double_slashes($config['url'].'/'.$config['proteo'].'/'.'rpcserver');
+		$server_url = reduce_double_slashes(trim($config['url']).'/'.trim($config['proteo']).'/'.'rpcserver');
 
 		$this->load->library('xmlrpc');
 		$this->xmlrpc->xmlrpc_defencoding=$this->config->item('charset');
