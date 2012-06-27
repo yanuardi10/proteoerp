@@ -1463,91 +1463,186 @@ class sinv extends Controller {
 	// Cambia el codigo
 	function sinvcodigo() {
 		$mexiste  = $this->input->post('tipo');
-		$mcodigo  = rawurldecode($this->input->post('codigo'));
+		$mmcodigo = rawurldecode($this->input->post('codigo'));
 		$mviejoid = $this->input->post('viejo');
 
-		$mviejo  = $this->datasis->dameval("SELECT codigo FROM sinv WHERE id=$mviejoid ");
+		$mmviejo  = $this->datasis->dameval('SELECT codigo FROM sinv WHERE id='.$this->db->escape($mviejoid));
+		$mviejo   = $this->db->escape($mmviejo); 
+		$mcodigo  = $this->db->escape($mmcodigo); 
 		//echo "$mexiste  $mcodigo  $mviejo ";
 
 		if($mexiste=='S'){
-			$mSQL = "DELETE FROM sinv WHERE codigo='".addslashes($mviejo)."'";
+			$mSQL = "DELETE FROM sinv WHERE codigo=$mviejo";
 			$this->db->simple_query($mSQL);
 		} else {
-			$mSQL = "UPDATE sinv SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."'";
+			$mSQL = "UPDATE sinv SET codigo=$mcodigo WHERE codigo=$mviejo";
 			$this->db->simple_query($mSQL);
 		}
 
 		if ( $mexiste=='S' ) {
-			$mSQL  = "SELECT * FROM itsinv WHERE codigo='".addslashes($mviejo)."'";
+			$mSQL  = "SELECT * FROM itsinv WHERE codigo=$mviejo";
 			$query = $this->db->query($mSQL);
 			$mexisten = 0;
 			if ($query->num_rows() > 0 ) {
 				foreach ($query->result() as $row ) {
-					$mSQL = "UPDATE itsinv SET existen=existen+".$row->existen."
-						WHERE codigo='".addslashes($mcodigo)."' AND alma='".addslashes($row->alma)."'";
+					$dbalma = $this->db->escape($row->alma);
+					$mSQL   = "UPDATE itsinv SET existen=existen+".$row->existen."
+						WHERE codigo=$mcodigo AND alma=$dbalma";
 					$this->db->simple_query($mSQL);
 					$mexisten += $row->existen;
 				}
 			}
 			//Actualiza sinv
-			$mSQL = "UPDATE sinv SET existen=exiten+".$mexisten." WHERE codigo='".addslashes($mcodigo)."'";
+			$mSQL = "UPDATE sinv SET existen=exiten+".$mexisten." WHERE codigo=$mcodigo";
 			// Borra los items
-			$mSQL = "DELETE FROM itsinv WHERE codigo='".addslashes($mviejo)."'";
+			$mSQL = "DELETE FROM itsinv WHERE codigo=$mviejo";
 			$this->db->simple_query($mSQL);
 		}else{
-			$mSQL = "UPDATE itsinv SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."' ";
+			$mSQL = "UPDATE itsinv SET codigo=$mcodigo WHERE codigo=$mviejo";
 			$this->db->simple_query($mSQL);
 		}
 
-		$mSQL = "UPDATE itstra SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."'";
+		$mSQL = "UPDATE itstra SET codigo=$mcodigo WHERE codigo=$mviejo";
 		$this->db->simple_query($mSQL);
 
-		$mSQL = "UPDATE itscst SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."'";
+		$mSQL = "UPDATE itscst SET codigo=$mcodigo WHERE codigo=$mviejo";
 		$this->db->simple_query($mSQL);
 
-		$mSQL = "UPDATE sitems SET codigoa='".addslashes($mcodigo)."' WHERE codigoa='".addslashes($mviejo)."'";
+		$mSQL = "UPDATE sitems SET codigoa=$mcodigo WHERE codigoa=$mviejo";
 		$this->db->simple_query($mSQL);
 
-		$mSQL = "UPDATE itsnot SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."' ";
+		$mSQL = "UPDATE itsnot SET codigo=$mcodigo WHERE codigo=$mviejo";
 		$this->db->simple_query($mSQL);
 
-		$mSQL = "UPDATE itsnte SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."' ";
+		$mSQL = "UPDATE itsnte SET codigo=$mcodigo WHERE codigo=$mviejo";
 		$this->db->simple_query($mSQL);
 
-		$mSQL = "UPDATE itspre SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."' ";
+		$mSQL = "UPDATE itspre SET codigo=$mcodigo WHERE codigo=$mviejo";
 		$this->db->simple_query($mSQL);
 
-		$mSQL = "UPDATE itssal SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."' ";
+		$mSQL = "UPDATE itssal SET codigo=$mcodigo WHERE codigo=$mviejo";
 		$this->db->simple_query($mSQL);
 
-		$mSQL = "UPDATE itconv SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."' ";
+		$mSQL = "UPDATE itconv SET codigo=$mcodigo WHERE codigo=$mviejo";
 		$this->db->simple_query($mSQL);
 
-		$mSQL = "UPDATE seri SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."' ";
+		$mSQL = "UPDATE seri SET codigo=$mcodigo WHERE codigo=$mviejo";
 		$this->db->simple_query($mSQL);
 
-		$mSQL = "UPDATE itpfac SET codigoa='".addslashes($mcodigo)."' WHERE codigoa='".addslashes($mviejo)."' ";
+		$mSQL = "UPDATE itpfac SET codigoa=$mcodigo WHERE codigoa=$mviejo";
 		$this->db->simple_query($mSQL);
 
-		$mSQL = "UPDATE itordc SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."' ";
+		$mSQL = "UPDATE itordc SET codigo=$mcodigo WHERE codigo=$mviejo";
 		$this->db->simple_query($mSQL);
 
-		$mSQL = "UPDATE IGNORE invresu SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."' ";
+		$mSQL = "UPDATE IGNORE invresu SET codigo=$mcodigo WHERE codigo=$mviejo";
 		$this->db->simple_query($mSQL);
 
-		$mSQL = "UPDATE IGNORE invresu SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."' ";
+		$mSQL = "UPDATE IGNORE invresu SET codigo=$mcodigo WHERE codigo=$mviejo";
 		$this->db->simple_query($mSQL);
 
-		$mSQL = "UPDATE IGNORE barraspos SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."' ";
+		$mSQL = "UPDATE IGNORE barraspos SET codigo=$mcodigo WHERE codigo=$mviejo";
 		$this->db->simple_query($mSQL);
 
-		$mSQL = "UPDATE IGNORE sinvfot SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."' ";
+		$mSQL = "UPDATE IGNORE sinvfot SET codigo=$mcodigo WHERE codigo=$mviejo";
 		$this->db->simple_query($mSQL);
 
-		$mSQL = "UPDATE IGNORE sinvpromo SET codigo='".addslashes($mcodigo)."' WHERE codigo='".addslashes($mviejo)."' ";
+		$mSQL = "UPDATE IGNORE sinvpromo SET codigo=$mcodigo WHERE codigo=$mviejo";
 		$this->db->simple_query($mSQL);
 
-		logusu("SINV","Cambio codigo ".$mviejo."-->".$mcodigo);
+		logusu("SINV","Cambio codigo ".$mmviejo."-->".$mmcodigo);
+	}
+	
+	function _sinvcodig(){
+		$mexiste  = $this->input->post('tipo');
+		$mmcodigo = rawurldecode($this->input->post('codigo'));
+		$mviejoid = $this->input->post('viejo');
+
+		$mmviejo  = $this->datasis->dameval('SELECT codigo FROM sinv WHERE id='.$this->db->escape($mviejoid));
+		$mviejo   = $this->db->escape($mmviejo); 
+		$mcodigo  = $this->db->escape($mmcodigo); 
+		//echo "$mexiste  $mcodigo  $mviejo ";
+
+		if($mexiste=='S'){
+			$mSQL = "DELETE FROM sinv WHERE codigo=$mviejo";
+			$this->db->simple_query($mSQL);
+		} else {
+			$mSQL = "UPDATE sinv SET codigo=$mcodigo WHERE codigo=$mviejo";
+			$this->db->simple_query($mSQL);
+		}
+
+		if ( $mexiste=='S' ) {
+			$mSQL  = "SELECT * FROM itsinv WHERE codigo=$mviejo";
+			$query = $this->db->query($mSQL);
+			$mexisten = 0;
+			if ($query->num_rows() > 0 ) {
+				foreach ($query->result() as $row ) {
+					$dbalma = $this->db->escape($row->alma);
+					$mSQL   = "UPDATE itsinv SET existen=existen+".$row->existen."
+						WHERE codigo=$mcodigo AND alma=$dbalma";
+					$this->db->simple_query($mSQL);
+					$mexisten += $row->existen;
+				}
+			}
+			//Actualiza sinv
+			$mSQL = "UPDATE sinv SET existen=exiten+".$mexisten." WHERE codigo=$mcodigo";
+			// Borra los items
+			$mSQL = "DELETE FROM itsinv WHERE codigo=$mviejo";
+			$this->db->simple_query($mSQL);
+		}else{
+			$mSQL = "UPDATE itsinv SET codigo=$mcodigo WHERE codigo=$mviejo";
+			$this->db->simple_query($mSQL);
+		}
+
+		$mSQL = "UPDATE itstra SET codigo=$mcodigo WHERE codigo=$mviejo";
+		$this->db->simple_query($mSQL);
+
+		$mSQL = "UPDATE itscst SET codigo=$mcodigo WHERE codigo=$mviejo";
+		$this->db->simple_query($mSQL);
+
+		$mSQL = "UPDATE sitems SET codigoa=$mcodigo WHERE codigoa=$mviejo";
+		$this->db->simple_query($mSQL);
+
+		$mSQL = "UPDATE itsnot SET codigo=$mcodigo WHERE codigo=$mviejo";
+		$this->db->simple_query($mSQL);
+
+		$mSQL = "UPDATE itsnte SET codigo=$mcodigo WHERE codigo=$mviejo";
+		$this->db->simple_query($mSQL);
+
+		$mSQL = "UPDATE itspre SET codigo=$mcodigo WHERE codigo=$mviejo";
+		$this->db->simple_query($mSQL);
+
+		$mSQL = "UPDATE itssal SET codigo=$mcodigo WHERE codigo=$mviejo";
+		$this->db->simple_query($mSQL);
+
+		$mSQL = "UPDATE itconv SET codigo=$mcodigo WHERE codigo=$mviejo";
+		$this->db->simple_query($mSQL);
+
+		$mSQL = "UPDATE seri SET codigo=$mcodigo WHERE codigo=$mviejo";
+		$this->db->simple_query($mSQL);
+
+		$mSQL = "UPDATE itpfac SET codigoa=$mcodigo WHERE codigoa=$mviejo";
+		$this->db->simple_query($mSQL);
+
+		$mSQL = "UPDATE itordc SET codigo=$mcodigo WHERE codigo=$mviejo";
+		$this->db->simple_query($mSQL);
+
+		$mSQL = "UPDATE IGNORE invresu SET codigo=$mcodigo WHERE codigo=$mviejo";
+		$this->db->simple_query($mSQL);
+
+		$mSQL = "UPDATE IGNORE invresu SET codigo=$mcodigo WHERE codigo=$mviejo";
+		$this->db->simple_query($mSQL);
+
+		$mSQL = "UPDATE IGNORE barraspos SET codigo=$mcodigo WHERE codigo=$mviejo";
+		$this->db->simple_query($mSQL);
+
+		$mSQL = "UPDATE IGNORE sinvfot SET codigo=$mcodigo WHERE codigo=$mviejo";
+		$this->db->simple_query($mSQL);
+
+		$mSQL = "UPDATE IGNORE sinvpromo SET codigo=$mcodigo WHERE codigo=$mviejo";
+		$this->db->simple_query($mSQL);
+
+		logusu("SINV","Cambio codigo ".$mmviejo."-->".$mmcodigo);		
 	}
 
 	// Codigos de barra suplementarios

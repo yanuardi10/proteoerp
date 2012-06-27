@@ -1,9 +1,15 @@
 <?php require_once(APPPATH.'/controllers/inventario/consultas.php');
 class Pedidos extends Controller {
+	var $mModulo='FALLAPED';
+	var $titp='Modulo FALLAPED';
+	var $tits='Modulo FALLAPED';
+	var $url ='farmacia/pedidos/';
+
 
 	function Pedidos(){
 		parent::Controller();
 		$this->load->library('rapyd');
+		$this->load->library('jqdatagrid');
 		$this->datasis->modulo_id('20E',1);
 	}
 
@@ -143,10 +149,165 @@ class Pedidos extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
+	function pedidofalla(){
+		$tema = 'proteo';
+		$data['head']  = style('themes/'.$tema.'/'.$tema.'.css');
+		$data['head'] .= phpscript('nformat.js');
+		$data['head'] .= script('jquery-min.js');
+		$data['head'] .= script('plugins/jquery.numeric.pack.js');
+		$data['head'] .= script('jquery-ui.custom.min.js');
+		$data['head'] .= script('jquery-impromptu.js');
+		$data['head'] .= style('impromptu/default.css');
+		$data['head'] .= style('themes/ui.jqgrid.css');
+		$data['head'] .= script('i18n/grid.locale-sp.js');
+		$data['head'] .= script('jquery.jqGrid.min.js');
+		$data['head'] .= script('datagrid/datagrid.js');
+		$data['head'] .= script('jquery.layout.js');
+
+		$script  = '';
+		$content = array();
+
+		$data['content'] = $this->load->view('view_farmax_pedido', $content,true);
+		$data['content'] = $this->defgrid();
+		$data['script']  = $script;
+		$data['title']   = heading('Compras a droguerias');
+		$this->load->view('view_ventanas', $data);
+
+	}
+
+	function defgrid( $deployed = false ){
+		$i      = 1;
+		$editar = "false";
+
+		$grid  = new $this->jqdatagrid;
+
+		$grid->addField('id');
+		$grid->label('Id');
+		$grid->params(array(
+			'align'    => "'center'",
+			'frozen'   => 'true',
+			'width'    => 60,
+			'editable' => $editar,
+			'search'   => 'false'
+		));
+
+
+		$grid->addField('codigo');
+		$grid->label('Codigo');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 150,
+			'edittype'      => "'text'",
+		));
+
+
+		$grid->addField('barras');
+		$grid->label('Barras');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 150,
+			'edittype'      => "'text'",
+		));
+
+
+		$grid->addField('descrip');
+		$grid->label('Descripcion');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+		));
+
+
+		$grid->addField('cana');
+		$grid->label('Cana');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
+		));
+
+
+		$grid->addField('ventas');
+		$grid->label('Ventas');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
+		));
+
+
+		$grid->showpager(true);
+		$grid->setWidth('');
+		$grid->setHeight('290');
+		$grid->setTitle($this->titp);
+		$grid->setfilterToolbar(true);
+		$grid->setToolbar('false', '"top"');
+
+		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
+
+		#show/hide navigations buttons
+		$grid->setAdd(true);
+		$grid->setEdit(true);
+		$grid->setDelete(true);
+		$grid->setSearch(true);
+		$grid->setRowNum(30);
+		$grid->setShrinkToFit('false');
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		#GET url
+		$grid->setUrlget(site_url($this->url.'getdata/'));
+
+		if ($deployed) {
+			return $grid->deploy();
+		} else {
+			return $grid;
+		}
+	}
+
+
 	function _farmaurl($opt='farmax'){
 		$uri='drogueria/pedidos';
 		$url=reduce_double_slashes($_SERVER['HTTP_HOST'].'/'.$opt.'/'.$uri);
 		$url=prep_url($url);
 		return $url;
+	}
+
+	function instalar(){
+		if(!$this->db->table_exists('fallaped')){
+			$mSQL="CREATE TABLE `fallaped` (
+				`id` INT(10) NULL AUTO_INCREMENT,
+				`codigo` VARCHAR(15) NULL,
+				`barras` VARCHAR(15) NULL,
+				`descrip` VARCHAR(45) NULL,
+				`cana` INT(11) NULL,
+				`ventas` INT(11) NULL,
+				PRIMARY KEY (`id`),
+				UNIQUE INDEX `codigo` (`codigo`)
+			)
+			COMMENT='pedidos a droguerias por fallas'
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM";
+			$this->db->simple_query($mSQL);
+		}
 	}
 }
