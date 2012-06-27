@@ -780,6 +780,15 @@ class Rcaj extends validaciones {
 					$ban=$this->db->simple_query($mSQL);
 					if($ban==false) memowrite($mSQL,'rcaj');
 				}
+
+				//Crea los movimientos bmov a consecuencia de los pagos con depositos
+				$mSQL="INSERT IGNORE INTO bmov ( codbanc, tipo_op, numero, fecha, clipro, codcp, nombre, monto, concepto, status, liable, transac, usuario, estampa, hora, anulado)
+				SELECT a.banco codbanc, a.tipo tipo_op, a.num_ref numero, a.fecha, 'C' clipro, a.cod_cli codcp, b.nombre, a.monto, 'INGRESO POR COBRANZA' concepto, 'P' status, 'S' liable, a.transac, a.usuario, a.estampa, a.hora, 'N' anulado
+				FROM sfpa a JOIN scli b ON a.cod_cli=b.cliente
+				WHERE a.tipo='DE' AND tipo_doc<>'AB'";
+				$ban=$this->db->simple_query($mSQL);
+				if($ban==false) memowrite($mSQL,'rcaj');
+
 				logusu('rcaj',"Cerro cajero $cajero de $fecha");
 
 				redirect('ventas/rcaj/filteredgrid/search');

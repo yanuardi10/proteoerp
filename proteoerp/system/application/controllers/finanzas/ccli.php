@@ -261,6 +261,7 @@ class ccli extends Controller {
 		$edit->tipo->style    = 'width:160px;';
 		$edit->tipo->rule     = 'condi_required|callback_chsfpatipo[<#i#>]';
 		$edit->tipo->insertValue='EF';
+		$edit->tipo->onchange   = 'sfpatipo(<#i#>)';
 
 		$edit->sfpafecha = new dateonlyField('Fecha','sfpafecha_<#i#>');
 		$edit->sfpafecha->rel_id   = 'sfpa';
@@ -277,7 +278,13 @@ class ccli extends Controller {
 
 		$edit->banco = new dropdownField('Banco <#o#>', 'banco_<#i#>');
 		$edit->banco->option('','Ninguno');
-		$edit->banco->options('SELECT cod_banc,nomb_banc  FROM tban ORDER BY nomb_banc');
+		$edit->banco->options('SELECT cod_banc,nomb_banc 
+			FROM tban 
+			WHERE cod_banc<>\'CAJ\'  
+		UNION ALL 
+			SELECT codbanc,CONCAT_WS(\' \',TRIM(banco),numcuent) 
+			FROM banc 
+			WHERE tbanco <> \'CAJ\' ORDER BY nomb_banc');
 		$edit->banco->db_name='banco';
 		$edit->banco->rel_id ='sfpa';
 		$edit->banco->style  ='width:200px;';
@@ -341,7 +348,7 @@ class ccli extends Controller {
 		if(empty($tipo)) return true;
 		$this->validation->set_message('chtipo', 'El campo %s es obligatorio');
 
-		if(empty($val) && ($tipo!='EF'))
+		if(empty($val) && ($tipo=='NC' || $tipo=='DP'))
 			return false;
 		else
 			return true;
@@ -664,6 +671,44 @@ class ccli extends Controller {
 				}
 			}
 		}
+		
+		$rel='sfpa';
+		$cana = $do->count_rel($rel);
+		for($i = 0;$i < $cana;$i++){
+			$sfpatipo = $do->get_rel($rel, 'tipo_doc', $i);
+			$codbanc  = $do->get_rel($rel,'banco',$i);
+			$dbcodbanc= $this->db->escape($codbanc);
+			$monto    = $do->get_rel($rel,'monto',$i);
+			if($sfpatipo=='DP' || $sfpatipo=='NC'){
+				$ffecha  = $do->get_rel($rel,'fecha',$i);
+				$itdbdata=array();
+				$itdbdata['codbanc']  = $codbanc;
+				$itdbdata['tipo_op']  = $do->get_rel($rel,'tipo',$i);
+				$itdbdata['numero']   = $do->get_rel($rel,'num_ref',$i);
+				$itdbdata['fecha']    = $ffecha;
+				$itdbdata['clipro']   = 'C';
+				$itdbdata['codcp']    = $cliente;
+				$itdbdata['nombre']   = $do->get('nombre');
+				$itdbdata['monto']    = $monto;
+				$itdbdata['concepto'] = 'INGRESO POR COBRANZA';
+				$itdbdata['status']   = 'P';
+				$itdbdata['liable']   = 'S';
+				$itdbdata['transac']  = $do->get('transac');
+				$itdbdata['usuario']  = $do->get('usuario');
+				$itdbdata['estampa']  = $do->get('estampa');
+				$itdbdata['hora']     = $do->get('hora');
+				$itdbdata['anulado']  = 'N';
+				$mSQL = $this->db->insert_string('bmov', $itdbdata);
+				$ban=$this->db->simple_query($mSQL);
+				if($ban==false){ memowrite($mSQL,'ccli'); }
+				
+				$sfecha=str_replace('-','',$ffecha);
+				$mSQL="CALL sp_actusal($dbcodbanc,'$sfecha',$monto)";
+				$ban=$this->db->simple_query($mSQL);
+				if($ban==false) memowrite($mSQL,'rcaj');
+			}
+		}
+		
 	}
 
 	function _pre_update($do){

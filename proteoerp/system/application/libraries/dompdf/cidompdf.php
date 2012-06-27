@@ -9,11 +9,11 @@ class cidompdf {
 		$this->orien = 'portrait'; //landscape
 	}
 
-	function html2pdf($html,$nombre='formato.pdf'){
+	function html2pdf($html,$nombre='formato.pdf',$attach=false){
 		$dompdf = new DOMPDF();
 		$dompdf->load_html($html);
 		$dompdf->set_paper($this->paper, $this->orien);
 		$dompdf->render();
-		$dompdf->stream($nombre, array('Attachment' => false));
+		$dompdf->stream($nombre, array('Attachment' => $attach));
 	}
 }

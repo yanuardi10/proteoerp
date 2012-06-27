@@ -448,7 +448,7 @@ class sfac_add extends validaciones {
 		$edit->numref->size     = 12;
 		$edit->numref->db_name  = 'num_ref';
 		$edit->numref->rel_id   = 'sfpa';
-		//$edit->numref->rule     = 'condi_required|callback_chtipo[<#i#>]';
+		$edit->numref->rule     = 'condi_required|callback_chtipo[<#i#>]';
 
 		$edit->banco = new dropdownField('Banco <#o#>', 'banco_<#i#>');
 		$edit->banco->option('','Ninguno');
@@ -547,7 +547,7 @@ class sfac_add extends validaciones {
 		$edit = new DataEdit('Imprimir factura', 'sfac');
 		$id=$edit->get_from_dataobjetct('id');
 		$urlid=$edit->pk_URI();
-		$url=site_url('formatos/ver/FACTURA'.$urlid);
+		$url=site_url('formatos/descargar/FACTURA'.$urlid);
 		$edit->back_url = site_url($this->url.'dataedit/show/'.$uid);
 
 		$edit->back_save   = true;
@@ -562,7 +562,7 @@ class sfac_add extends validaciones {
 		//$edit->pre_process('update' ,'_pre_print_update');
 		$edit->pre_process('delete' ,'_pre_print_delete');
 
-		$edit->container = new containerField('impresion','La descarga se realizara en 5 segundos, en caso de no hacerlo haga click '.anchor('formatos/ver/FACTURA'.$urlid,'aqui'));
+		$edit->container = new containerField('impresion','La descarga se realizara en 5 segundos, en caso de no hacerlo haga click '.anchor('formatos/descargar/FACTURA'.$urlid,'aqui'));
 
 		$edit->nfiscal = new inputField('N&uacute;mero f&iacute;scal','nfiscal');
 		$edit->nfiscal->rule='max_length[12]|required';
@@ -726,7 +726,7 @@ class sfac_add extends validaciones {
 		if(empty($tipo)) return true;
 		$this->validation->set_message('chtipo', 'El campo %s es obligatorio');
 
-		if(empty($val) && ($tipo!='EF'))
+		if(empty($val) && ($tipo=='NC' || $tipo=='DP'))
 			return false;
 		else
 			return true;
