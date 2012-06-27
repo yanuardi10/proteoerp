@@ -26,6 +26,18 @@ if($form->getstatus()!='show'){
 	$sfpa_scampos .='<td class="littletablerow" align="right">'.$sfpa_campos['itmonto']['field'].'</td>';
 	$sfpa_scampos .='<td class="littletablerow"><a href=# onclick="del_sfpa(<#i#>);return false;">'.img("images/delete.jpg").'</a></td></tr>';
 	$sfpa_campos=$form->js_escape($sfpa_scampos);
+
+	$sfpade=$sfpach="<option value=''>Ninguno</option>";
+	$mSQL="SELECT cod_banc,nomb_banc FROM tban WHERE cod_banc<>'CAJ'";
+	$query = $this->db->query($mSQL);
+	foreach ($query->result() as $row){
+		$sfpach.="<option value='".trim($row->cod_banc)."'>".trim($row->nomb_banc)."</option>";
+	}
+	$mSQL="SELECT codbanc AS cod_banc,CONCAT_WS(' ',TRIM(banco),numcuent) AS nomb_banc FROM banc WHERE tbanco <> 'CAJ' ORDER BY nomb_banc";
+	$query = $this->db->query($mSQL);
+	foreach ($query->result() as $row){
+		$sfpade.="<option value='".trim($row->cod_banc)."'>".trim($row->nomb_banc)."</option>";
+	}
 ?>
 <script type="text/javascript">
 var sfpa_cont=<?php echo $form->max_rel_count['sfpa'];?>;
@@ -142,6 +154,21 @@ function faltante(){
 	paga  = apagar();
 	resto = totalg-paga;
 	return resto;
+}
+
+function sfpatipo(id){
+	id     = id.toString();
+	tipo   = $("#tipo_"+id).val();
+	sfpade = <?php echo $form->js_escape($sfpade); ?>;
+	sfpach = <?php echo $form->js_escape($sfpach); ?>;
+	banco  = $("#banco_"+id).val();
+	if(tipo=='DE' || tipo=='NC'){
+		$("#banco_"+id).html(sfpade);
+	}else{
+		$("#banco_"+id).html(sfpach);
+	}
+	$("#banco_"+id).val(banco);
+	return true;
 }
 </script>
 <?php } ?>
