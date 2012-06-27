@@ -430,10 +430,11 @@ class sfac_add extends validaciones {
 		$edit->tipo = new  dropdownField('Tipo <#o#>', 'tipo_<#i#>');
 		$edit->tipo->option('','CREDITO');
 		$edit->tipo->options('SELECT tipo, nombre FROM tarjeta WHERE activo=\'S\' ORDER BY nombre');
-		$edit->tipo->db_name  = 'tipo';
-		$edit->tipo->rel_id   = 'sfpa';
-		$edit->tipo->insertValue='EF';
-		$edit->tipo->style  ='width:150px;';
+		$edit->tipo->db_name    = 'tipo';
+		$edit->tipo->rel_id     = 'sfpa';
+		$edit->tipo->insertValue= 'EF';
+		$edit->tipo->style      = 'width:150px;';
+		$edit->tipo->onchange   = 'sfpatipo(<#i#>)';
 		//$edit->tipo->rule     = 'required';
 
 		$edit->sfpafecha = new dateonlyField('Fecha','sfpafecha_<#i#>');
@@ -451,7 +452,13 @@ class sfac_add extends validaciones {
 
 		$edit->banco = new dropdownField('Banco <#o#>', 'banco_<#i#>');
 		$edit->banco->option('','Ninguno');
-		$edit->banco->options('SELECT cod_banc,nomb_banc  FROM tban ORDER BY nomb_banc');
+		$edit->banco->options('SELECT cod_banc,nomb_banc 
+			FROM tban 
+			WHERE cod_banc<>\'CAJ\'  
+		UNION ALL 
+			SELECT codbanc,CONCAT_WS(\' \',TRIM(banco),numcuent) 
+			FROM banc 
+			WHERE tbanco <> \'CAJ\' ORDER BY nomb_banc');
 		$edit->banco->db_name='banco';
 		$edit->banco->rel_id ='sfpa';
 		$edit->banco->style  ='width:180px;';

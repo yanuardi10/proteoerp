@@ -38,7 +38,20 @@ $sfpa_campos=$form->js_escape($sfpa_scampos);
 if(isset($form->error_string)) echo '<div class="alert">'.$form->error_string.'</div>';
 
 echo $form_begin;
-if($form->_status!='show'){ ?>
+if($form->_status!='show'){ 
+	
+	$sfpade=$sfpach="<option value=''>Ninguno</option>";
+	$mSQL="SELECT cod_banc,nomb_banc FROM tban WHERE cod_banc<>'CAJ'";
+	$query = $this->db->query($mSQL);
+	foreach ($query->result() as $row){
+		$sfpach.="<option value='".trim($row->cod_banc)."'>".trim($row->nomb_banc)."</option>";
+	}
+	$mSQL="SELECT codbanc AS cod_banc,CONCAT_WS(' ',TRIM(banco),numcuent) AS nomb_banc FROM banc WHERE tbanco <> 'CAJ' ORDER BY nomb_banc";
+	$query = $this->db->query($mSQL);
+	foreach ($query->result() as $row){
+		$sfpade.="<option value='".trim($row->cod_banc)."'>".trim($row->nomb_banc)."</option>";
+	}
+?>
 
 <script language="javascript" type="text/javascript">
 var sitems_cont=<?php echo $form->max_rel_count['sitems']; ?>;
@@ -51,6 +64,9 @@ $(function(){
 		cdropdown(i);
 		cdescrip(i);
 		autocod(i.toString());
+	}
+	for(var i=0;i < <?php echo $form->max_rel_count['sfpa']; ?>;i++){
+		sfpatipo(i);
 	}
 
 	$('#cod_cli').autocomplete({
@@ -516,6 +532,21 @@ function del_sfpa(id){
 	if(arr.length<=0){
 		add_sfpa();
 	}
+}
+
+function sfpatipo(id){
+	id     = id.toString();
+	tipo   = $("#tipo_"+id).val();
+	sfpade = <?php echo $form->js_escape($sfpade); ?>;
+	sfpach = <?php echo $form->js_escape($sfpach); ?>;
+	banco  = $("#banco_"+id).val();
+	if(tipo=='DE' || tipo=='NC'){
+		$("#banco_"+id).html(sfpade);
+	}else{
+		$("#banco_"+id).html(sfpach);
+	}
+	$("#banco_"+id).val(banco);
+	return true;
 }
 </script>
 <?php } ?>
