@@ -535,7 +535,7 @@ class Datasis {
 		}
 		$query->free_result();
 		if ( $todos ){
-			return $select.'<option value="000">Seleccione</option>'.$opciones.'</select>';
+			return $select.'<option value="-">Seleccione</option>'.$opciones.'</select>';
 		} else {
 			return $select.$opciones.'</select>';
 		}
@@ -1134,10 +1134,15 @@ class Datasis {
 		return utf8_encode($campos);
 	}
 	
-	//Modifica Intramenu
-	function modintramenu($ancho,$alto,$ejecutar){
+	//**************************************************
+	//
+	//       Modifica Intramenu
+	//
+	function modintramenu( $ancho, $alto, $ejecutar ){
 		$CI =& get_instance();
-		$CI->db->simple_query('UPDATE intramenu SET ancho='.$ancho.', alto='.$alto.' WHERE ejecutar="'.$ejecutar.'" OR ejecutar="/'.$ejecutar.'"');
+		$mSQL = 'UPDATE intramenu SET ancho='.$ancho.', alto='.$alto.' WHERE ejecutar="'.$ejecutar.'" OR ejecutar="/'.$ejecutar.'"';
+		memowrite($mSQL,"intramenu");
+		$CI->db->simple_query($mSQL);
 	}
 
 }

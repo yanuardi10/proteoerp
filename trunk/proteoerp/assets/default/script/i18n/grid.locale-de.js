@@ -4,11 +4,22 @@
  * Version 1.0.0 (developed for jQuery Grid 3.3.1)
  * Olaf Klöppel opensource@blue-hit.de
  * http://blue-hit.de/ 
+ *
+ * Updated for jqGrid 3.8
+ * Andreas Flack
+ * http://www.contentcontrol-berlin.de
+ *
+ * Updated for jQuery 4.4
+ * Oleg Kiriljuk oleg.kiriljuk@ok-soft-gmbh.com
+ * the format corresponds now the format from
+ * https://github.com/jquery/globalize/blob/master/lib/cultures/globalize.culture.de.js
+ *
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
 **/
-$.jgrid = {
+$.jgrid = $.jgrid || {};
+$.extend($.jgrid,{
 	defaults : {
 		recordtext: "Zeige {0} - {1} von {2}",
 	    emptyrecords: "Keine Datensätze vorhanden",
@@ -17,12 +28,12 @@ $.jgrid = {
 	},
 	search : {
 		caption: "Suche...",
-		Find: "Finden",
+		Find: "Suchen",
 		Reset: "Zurücksetzen",
 	    odata : ['gleich', 'ungleich', 'kleiner', 'kleiner gleich','größer','größer gleich', 'beginnt mit','beginnt nicht mit','ist in','ist nicht in','endet mit','endet nicht mit','enthält','enthält nicht'],
-	    groupOps: [	{ op: "AND", text: "alle" },	{ op: "OR",  text: "mindestens eins" }	],
-		matchText: " match",
-		rulesText: " rules"
+	    groupOps: [	{ op: "AND", text: "alle" },	{ op: "OR",  text: "mindestens eine" }	],
+		matchText: " erfülle",
+		rulesText: " Bedingung(en)"
 	},
 	edit : {
 		addCaption: "Datensatz hinzufügen",
@@ -39,10 +50,10 @@ $.jgrid = {
 		    number: "Bitte geben Sie eine Zahl ein",
 		    minValue:"Wert muss größer oder gleich sein, als ",
 		    maxValue:"Wert muss kleiner oder gleich sein, als ",
-		    email: "ist keine valide E-Mail Adresse",
+		    email: "ist keine gültige E-Mail-Adresse",
 		    integer: "Bitte geben Sie eine Ganzzahl ein",
 			date: "Bitte geben Sie ein gültiges Datum ein",
-			url: "ist keine gültige URL. Prefix muss eingegeben werden ('http://' oder 'https://')",
+			url: "ist keine gültige URL. Präfix muss eingegeben werden ('http://' oder 'https://')",
 			nodefined : " ist nicht definiert!",
 			novalue : " Rückgabewert ist erforderlich!",
 			customarray : "Benutzerdefinierte Funktion sollte ein Array zurückgeben!",
@@ -50,7 +61,7 @@ $.jgrid = {
 		}
 	},
 	view : {
-	    caption: "Datensatz anschauen",
+	    caption: "Datensatz anzeigen",
 	    bClose: "Schließen"
 	},
 	del : {
@@ -61,13 +72,13 @@ $.jgrid = {
 	},
 	nav : {
 		edittext: " ",
-	    edittitle: "Ausgewählten Zeile editieren",
+	    edittitle: "Ausgewählte Zeile editieren",
 		addtext:" ",
-	    addtitle: "Neuen Zeile einfügen",
+	    addtitle: "Neue Zeile einfügen",
 	    deltext: " ",
 	    deltitle: "Ausgewählte Zeile löschen",
 	    searchtext: " ",
-	    searchtitle: "Datensatz finden",
+	    searchtitle: "Datensatz suchen",
 	    refreshtext: "",
 	    refreshtitle: "Tabelle neu laden",
 	    alertcap: "Warnung",
@@ -76,18 +87,18 @@ $.jgrid = {
 		viewtitle: "Ausgewählte Zeile anzeigen"
 	},
 	col : {
-		caption: "Spalten anzeigen/verbergen",
+		caption: "Spalten auswählen",
 		bSubmit: "Speichern",
 		bCancel: "Abbrechen"	
 	},
 	errors : {
 		errcap : "Fehler",
 		nourl : "Keine URL angegeben",
-		norecords: "Keine Datensätze zum verarbeiten",
+		norecords: "Keine Datensätze zu bearbeiten",
 		model : "colNames und colModel sind unterschiedlich lang!"
 	},
 	formatter : {
-		integer : {thousandsSeparator: " ", defaultValue: '0'},
+		integer : {thousandsSeparator: ".", defaultValue: '0'},
 		number : {decimalSeparator:",", thousandsSeparator: ".", decimalPlaces: 2, defaultValue: '0,00'},
 		currency : {decimalSeparator:",", thousandsSeparator: ".", decimalPlaces: 2, prefix: "", suffix:" €", defaultValue: '0,00'},
 		date : {
@@ -99,22 +110,55 @@ $.jgrid = {
 				"Jan", "Feb", "Mar", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez",
 				"Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"
 			],
-			AmPm : ["am","pm","AM","PM"],
-			S: function (j) {return j < 11 || j > 13 ? ['st', 'nd', 'rd', 'th'][Math.min((j - 1) % 10, 3)] : 'th'},
+			AmPm : ["","","",""],
+			S: function (j) {return '.';}, // one can also use 'er' instead of '.' but one have to use additional word like 'der' or 'den' before
 			srcformat: 'Y-m-d',
-			newformat: 'd/m/Y',
+			newformat: 'd.m.Y',
 			masks : {
-		        ISO8601Long:"d.m.Y H:i:s",
-		        ISO8601Short:"d.m.Y",
-		        ShortDate: "j.n.Y",
-		        LongDate: "l, d. F Y",
-		        FullDateTime: "l, d. F Y G:i:s",
-		        MonthDay: "d. F",
-		        ShortTime: "G:i",
-		        LongTime: "G:i:s",
+				// see http://php.net/manual/en/function.date.php for PHP format used in jqGrid
+				// and see http://docs.jquery.com/UI/Datepicker/formatDate
+				// and https://github.com/jquery/globalize#dates for alternative formats used frequently
+		        ISO8601Long: "Y-m-d H:i:s",
+		        ISO8601Short: "Y-m-d",
+				// short date:
+				//    d - Day of the month, 2 digits with leading zeros
+				//    m - Numeric representation of a month, with leading zeros
+				//    Y - A full numeric representation of a year, 4 digits
+		        ShortDate: "d.m.Y",	// in jQuery UI Datepicker: "dd.MM.yyyy"
+				// long date:
+				//    l - A full textual representation of the day of the week
+				//    j - Day of the month without leading zeros
+				//    F - A full textual representation of a month
+				//    Y - A full numeric representation of a year, 4 digits
+		        LongDate: "l, j. F Y", // in jQuery UI Datepicker: "dddd, d. MMMM yyyy"
+				// long date with long time:
+				//    l - A full textual representation of the day of the week
+				//    j - Day of the month without leading zeros
+				//    F - A full textual representation of a month
+				//    Y - A full numeric representation of a year, 4 digits
+				//    H - 24-hour format of an hour with leading zeros
+				//    i - Minutes with leading zeros
+				//    s - Seconds, with leading zeros
+		        FullDateTime: "l, j. F Y H:i:s", // in jQuery UI Datepicker: "dddd, d. MMMM yyyy HH:mm:ss"
+				// month day:
+				//    d - Day of the month, 2 digits with leading zeros
+				//    F - A full textual representation of a month
+		        MonthDay: "d F", // in jQuery UI Datepicker: "dd MMMM"
+				// short time (without seconds)
+				//    H - 24-hour format of an hour with leading zeros
+				//    i - Minutes with leading zeros
+		        ShortTime: "H:i", // in jQuery UI Datepicker: "HH:mm"
+				// long time (with seconds)
+				//    H - 24-hour format of an hour with leading zeros
+				//    i - Minutes with leading zeros
+				//    s - Seconds, with leading zeros
+		        LongTime: "H:i:s", // in jQuery UI Datepicker: "HH:mm:ss"
 		        SortableDateTime: "Y-m-d\\TH:i:s",
 		        UniversalSortableDateTime: "Y-m-d H:i:sO",
-		        YearMonth: "F Y"
+				// month with year
+				//    F - A full textual representation of a month
+				//    Y - A full numeric representation of a year, 4 digits
+		        YearMonth: "F Y" // in jQuery UI Datepicker: "MMMM yyyy"
 		    },
 		    reformatAfterEdit : false
 		},
@@ -124,5 +168,5 @@ $.jgrid = {
 	    checkbox : {disabled:true},
 		idName : 'id'
 	}
-};
+});
 })(jQuery);

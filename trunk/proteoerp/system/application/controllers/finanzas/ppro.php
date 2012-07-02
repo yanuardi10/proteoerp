@@ -13,12 +13,13 @@ class Ppro extends Controller {
 	}
 
 	function index(){
-		/*if ( !$this->datasis->iscampo('sprv','id') ) {
-			$this->db->simple_query('ALTER TABLE sprv DROP PRIMARY KEY');
-			$this->db->simple_query('ALTER TABLE sprv ADD UNIQUE INDEX numero (numero)');
-			$this->db->simple_query('ALTER TABLE sprv ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
-		};*/
-		$this->datasis->modintramenu( 900, 600, $url );
+		if ( !$this->datasis->iscampo('sprm','preabono') ) {
+			$this->db->simple_query('ALTER TABLE sprm ADD preabono DECIMAL(17,2) NULL DEFAULT 0 AFTER causado ');
+		};
+		if ( !$this->datasis->iscampo('sprm','preppago') ) {
+			$this->db->simple_query('ALTER TABLE sprm ADD preppago DECIMAL(17,2) NULL DEFAULT 0 AFTER preabono ');
+		};
+		$this->datasis->modintramenu( 900, 600, 'finanzas/ppro' );
 		redirect($this->url.'jqdatag');
 	}
 
@@ -66,9 +67,9 @@ $(function() {
 	$( "input:submit, a, button", ".otros" ).button();
 
 	$( "#abono" ).click(function() {
-		var id     = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
+		var id     = jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
 		if (id)	{
-			var ret    = $("#newapi'. $param['grids'][0]['gridname'].'").getRowData(id);  
+			var ret    = $("#newapi'.$param['grids'][0]['gridname'].'").getRowData(id);  
 			mId = id;
 			$.post("'.base_url().'finanzas/ppro/formaabono/"+id, function(data){
 				$("#fabono").html(data);
@@ -78,6 +79,51 @@ $(function() {
 		} else { $.prompt("<h1>Por favor Seleccione un Proveedor</h1>");}
 	});
 	
+
+	$( "#fabono" ).dialog({
+		autoOpen: false, height: 470, width: 790, modal: true,
+		buttons: {
+			"Aprobar Pago": function() {
+				var bValid = true;
+				var rows = $("#aceptados").jqGrid("getGridParam","data");
+				var paras = new Array();
+				for(var i=0;i < rows.length; i++){
+					var row=rows[i];
+					paras.push($.param(row));
+				}
+				// Coloca el Grid en un input
+				$("#fgrid").val(JSON.stringify(paras));
+				allFields.removeClass( "ui-state-error" );
+				if ( bValid ) {
+					$.ajax({
+						type: "POST", dataType: "html", async: false,
+						url:"'.site_url("finanzas/ppro/abono").'",
+						data: $("#abonoforma").serialize(),
+						success: function(r,s,x){
+							var res = $.parseJSON(r);
+							if ( res.status == "A"){
+								alert(res.mensaje);
+								grid.trigger("reloadGrid");
+								$( this ).dialog( "close" );
+								window.open(\''.base_url().'reportes/ver/SPRMPRE/\'+res.id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+								return [true, a ];
+							} else {
+								alert("Error: "+res.mensaje);
+							}
+						}
+					});
+				}
+			},
+			Cancel: function() { $( this ).dialog( "close" ); }
+		},
+		close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
+	});
+});
+
+</script>
+';
+
+/*
 	$( "#borrar" ).click(function() {
 		var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
 		var m = "";
@@ -96,50 +142,12 @@ $(function() {
 			);
 		} else { $.prompt("<h2>Por favor Seleccione un Movimiento</h2>");}
 	});
-	
-	
-	$( "#fabono" ).dialog({
-		autoOpen: false,
-		height: 470,
-		width: 790,
-		modal: true,
-		buttons: {
-			"Pagar": function() {
-				var bValid = true;
-				allFields.removeClass( "ui-state-error" );
-				if ( bValid ) {
-					$.ajax({
-						type: "POST",
-						dataType: "html",
-						url:"'.site_url("finanzas/ppro/abono").'",
-						async: false,
-						data: $("#abonoforma").serialize(),
-						success: function(r,s,x){
-							var res = $.parseJSON(r);
-							if ( res.status == "E"){
-								alert("Error: "+res.mensaje);
-							} else {
-								alert(res.mensaje);
-								grid.trigger("reloadGrid");
-								return [true, a ];
-							}
-						}
-					});
-				}
-			},
-			Cancel: function() {
-				$( this ).dialog( "close" );
-			}
-		},
-		close: function() {
-			allFields.val( "" ).removeClass( "ui-state-error" );
-		}
-	});
 
-});
+*/
 
-</script>
-';
+
+
+
 
 		$WestPanel = '
 <div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content">
@@ -157,7 +165,7 @@ $(function() {
 	<tr>
 		<td><div class="tema1"><a style="width:190px" href="#" id="a1">Estado de Cuenta '.img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',  'title' => 'Formato PDF', 'border'=>'0')).'</a></div></td>
 	</tr><tr>
-		<td><div class="tema1"><a style="width:190px" href="#" id="abono">Pagar y/o Abonar '.img(array('src' => 'images/candado.jpg', 'alt' => 'Abonar',  'title' => 'Abonar', 'border'=>'0')).'</a></div></td>
+		<td><div class="tema1"><a style="width:190px" href="#" id="abono">Preparar Pago '.img(array('src' => 'images/candado.jpg', 'alt' => 'Abonar',  'title' => 'Abonar', 'border'=>'0')).'</a></div></td>
 	</tr>
 
 </table>
@@ -179,8 +187,6 @@ $(function() {
 <div id="fabono" title="Pagos y Abonos"></div>
 
 ';
-
-
 
 
 		$param['WestPanel']  = $WestPanel;
@@ -215,7 +221,6 @@ $(function() {
 			'editoptions'   => '{ size:30, maxlength: 5 }',
 		));
 
-
 		$grid->addField('rif');
 		$grid->label('RIF');
 		$grid->params(array(
@@ -228,7 +233,6 @@ $(function() {
 			'editoptions'   => '{ size:30, maxlength: 12 }',
 		));
 
-
 		$grid->addField('nombre');
 		$grid->label('Proveedor');
 		$grid->params(array(
@@ -239,7 +243,6 @@ $(function() {
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:30, maxlength: 40 }',
 		));
-
 
 		$grid->addField('saldo');
 		$grid->label('Saldo');
@@ -255,7 +258,6 @@ $(function() {
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
 		$grid->addField('cantidad');
 		$grid->label('Cant.');
 		$grid->params(array(
@@ -264,7 +266,6 @@ $(function() {
 			'width'         => 40,
 			'edittype'      => "'text'",
 		));
-
 
 		$grid->addField('nueva');
 		$grid->label('Nueva');
@@ -299,7 +300,6 @@ $(function() {
 			'width'         => 40,
 			'edittype'      => "'text'",
 		));
-
 
 		$grid->addField('id');
 		$grid->label('Id');
@@ -352,7 +352,6 @@ $(function() {
 		$grid = $this->jqdatagrid;
 		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
 		$mWHERE = $grid->geneTopWhere('view_ppro');
-
 		$response   = $grid->getData('view_ppro', array(array()), array(), false, $mWHERE );
 		$rs = $grid->jsonresult( $response);
 		echo $rs;
@@ -375,7 +374,6 @@ $(function() {
 			if(false == empty($data)){
 				$this->db->insert('sprv', $data);
 				echo "Registro Agregado";
-
 				logusu('SPRV',"Registro ????? INCLUIDO");
 			} else
 			echo "Fallo Agregado!!!";
@@ -399,8 +397,9 @@ $(function() {
 		};
 	}
 
-
-	// forma de cierre de deposito
+	//*********************************************************
+	// Forma de Abono
+	//
 	function formaabono(){
 		$id      = $this->uri->segment($this->uri->total_segments());
 		$proveed = $this->datasis->dameval("SELECT proveed FROM sprv WHERE id=$id");
@@ -410,9 +409,11 @@ $(function() {
 		$salida = '
 <script type="text/javascript">
 	var lastcell = 0;
+	var totalapa = 0;
+	var grid1 = jQuery("#aceptados");
 	jQuery("#aceptados").jqGrid({
 		datatype: "local",
-		height: 190,
+		height: 250,
 		colNames:["id","Tipo","Numero","Fecha","Vence","Monto","Saldo", "Faltante","Abonar","P.Pago"],
 		colModel:[
 			{name:"id",       index:"id",       width:10, hidden:true},
@@ -423,33 +424,33 @@ $(function() {
 			{name:"monto",    index:"monto",    width:80, align:"right", edittype:"text", editable:false, formatter: "number", formatoptions: {label:"Monto adeudado",decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 } },
 			{name:"saldo",    index:"saldo",    width:80, align:"right", edittype:"text", editable:false, formatter: "number", formatoptions: {label:"Monto adeudado",decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 } },
 			{name:"faltan",   index:"faltan",   width:80, align:"right", edittype:"text", editable:false, formatter: "number", formatoptions: {label:"Monto adeudado",decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 } },
-			{name:"abonar",   index:"abonar",   width:80, align:"right", edittype:"text", editable:true },
-			{name:"ppago",    index:"ppago",    width:80, align:"right", edittype:"text", editable:true },
+			{name:"abonar",   index:"abonar",   width:80, align:"right", edittype:"text", editable:true,  formatter: "number", formatoptions: {label:"Monto adeudado",decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 } },
+			{name:"ppago",    index:"ppago",    width:80, align:"right", edittype:"text", editable:true,  formatter: "number", formatoptions: {label:"Monto adeudado",decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 } }
 		],
-		onSelectRow: function(id){
-			var grid1 = jQuery("#aceptados");
+		cellEdit : true,
+		cellsubmit : "clientArray",
+		afterSaveCell: function (id,name,val,iRow,iCol){
 			var row;
-			if(id && id !== lastcell){
-				grid1.jqGrid("restoreRow",lastcell);
+			if ( val=="" ){
 				row = grid1.jqGrid(\'getRowData\', id );
-				//alert("paso 1 "+row["abonar"]);
-				if (row["abonar"] == "" ){
-					grid1.jqGrid("setCell",id,"abonar", row["saldo"]);
-				}
-				grid1.jqGrid("editRow",id,true);
-				lastcell=id;
+				grid1.jqGrid("setCell",id,"abonar", Number(row["saldo"])-Number(row["faltan"]));
 			}
 			sumatot();
-		},
-		editurl: "'.base_url().'finanzas/ppro/abonoguarda",
+		}, 
+		editurl: "clientArray"
 	});
 	
 	var mefectos = [
 ';
 
-
-
-		$mSQL = "SELECT id, tipo_doc, numero, fecha, vence, monto, monto-abonos saldo, '' faltan, '' abonar, '' ppago FROM sprm WHERE monto>abonos AND tipo_doc IN ('FC','ND','GI') AND cod_prv=".$this->db->escape($reg['proveed']);
+		$mSQL  = "SELECT a.id, a.tipo_doc, a.numero, a.fecha, a.vence, a.monto, a.monto-a.abonos saldo, round(if(sum(d.devcant*d.costo) is null,0.00,sum(d.devcant*d.costo)),2) AS faltan, preabono abonar, preppago ppago ";
+		$mSQL .= "FROM sprm a ";
+		$mSQL .= 'LEFT JOIN scst   c ON a.transac=c.transac AND a.tipo_doc=c.tipo_doc AND a.cod_prv=c.proveed ';
+		$mSQL .= 'LEFT JOIN itscst d ON c.control=d.control AND d.devcant is NOT NULL ';
+		$mSQL .= "WHERE a.monto>a.abonos AND a.tipo_doc IN ('FC','ND','GI') AND a.cod_prv=".$this->db->escape($reg['proveed']);
+		$mSQL .= ' GROUP BY a.cod_prv, a.tipo_doc, a.numero ';
+		$mSQL .= "ORDER BY a.fecha ";
+		
 		$query = $this->db->query($mSQL);
 		if ($query->num_rows() > 0 ){
 			foreach( $query->result() as $row ){
@@ -465,80 +466,121 @@ $(function() {
 				$salida .= 'ppago:"'.   $row->ppago.'"},'."\n";
 			}
 		}
+		$mSQL  = "SELECT codbanc, CONCAT(codbanc, ' ', banco, numcuent) banco ";
+		$mSQL .= "FROM banc ";
+		$mSQL .= "WHERE activo='S' ";
+		$mSQL .= "ORDER BY (tbanco='CAJ'), codbanc ";
 		$salida .= '
 	];
 	for(var i=0;i<=mefectos.length;i++) jQuery("#aceptados").jqGrid(\'addRowData\',i+1,mefectos[i]);
-	
 	$("#ffecha").datepicker({dateFormat:"dd/mm/yy"});
-
 	function sumatot()
         { 
 		var grid = jQuery("#aceptados");
 		var s;
 		var total = 0;
-		var meco = "";
 		var rowcells = new Array();
 		var entirerow;
-		s = grid.getGridParam(\'selarrrow\'); 
-		$("#fsele").html("");
+		s = grid.jqGrid("getGridParam","data");
 		if(s.length)
 		{
-			for(var i=0; i<s.length; i++)
+			for(var i=0; i< s.length; i++)
 			{
-				entirerow = grid.jqGrid(\'getRowData\',s[i]);
-				if (Number(entirerow["abonar"]) == 0) {
-					entirerow["abonar"] = entirerow["saldo"];
+				entirerow = s[i];
+				if ( Number(entirerow["abonar"])>Number(entirerow["saldo"]) ){
+					grid.jqGrid("setCell",s[i]["id"],"abonar", entirerow["saldo"]);
+					total += Number(entirerow["saldo"]);
+					total -= Number(entirerow["faltan"]);
+				} else {
+					total += Number(entirerow["abonar"]);
 				}
-				total += Number(entirerow["abonar"]);
-				meco = meco+entirerow["id"]+",";
+				//Calcula el descuento
+				if (  Number(entirerow["ppago"]) < 0 ){
+					if (Number(entirerow["abonar"]) == 0 ){
+						grid1.jqGrid("setCell",s[i]["id"],"abonar", Number(entirerow["saldo"])-Number(entirerow["faltan"]));
+					}
+					total -= Number(entirerow["abonar"])*Math.abs(Number(entirerow["ppago"]))/100;
+					grid.jqGrid("setCell",s[i]["id"],"ppago", Number(entirerow["abonar"])*Math.abs(Number(entirerow["ppago"]))/100);
+				} else {
+					total -= Number(entirerow["ppago"]);
+				}
 			}
 			total = Math.round(total*100)/100;	
-			$("#grantotal").html(nformat(total,2));
-			$("input#fsele").val(meco);
+			$("#grantotal").html("Total a Pagar: "+nformat(total,2));
 			$("input#fmonto").val(total);
 			montotal = total;
 		} else {
 			total = 0;
-			$("#grantotal").html(" "+nformat(total,2));
-			$("input#fsele").val("");
+			$("#grantotal").html("Sin seleccion");
 			$("input#fmonto").val(total);
 			montotal = total;	
 		}
 	};
+	sumatot();
 
 </script>
+	<div style="background-color:#D0D0D0;font-weight:bold;font-size:14px;text-align:center"><table width="100%"><tr><td>Codigo: '.$reg['proveed'].'</td><td>'.$reg['nombre'].'</td><td>RIF: '.$reg['rif'].'</td></tr></table></div>
 	<p class="validateTips"></p>
 	<form id="abonoforma">	
-	<table width="80%" align="center"><tr>
-		<td  class="CaptionTD"  align="right">Fecha</td>
-		<td>&nbsp;<input name="ffecha" id="ffecha" type="text" value="'.date('d/m/Y').'" maxlengh="10" size="10"  /></td>
-		<td  class="CaptionTD"  align="right">Comprobante</td>
-		<td>&nbsp;<input name="fcomprob" id="fcomprob" type="text" value="" maxlengh="10" size="10"  /></td>
-	</tr></table>
+	<table width="80%" align="center">
+	<tr>
+		<td class="CaptionTD" align="right">Fecha</td>
+		<td>&nbsp;'.date('d/m/Y').'</td>
+		<td  class="CaptionTD"  align="right">Comprobante Externo</td>
+		<td>&nbsp;<input name="fcomprob" id="fcomprob" type="text" value="" maxlengh="6" size="8"  /></td>
+	</tr>
+	</table>
 	<input id="fmonto"   name="fmonto"   type="hidden">
 	<input id="fsele"    name="fsele"    type="hidden">
 	<input id="fid"      name="fid"      type="hidden" value="'.$id.'">
-	</form>
+	<input id="fgrid"    name="fgrid"    type="hidden">
 	<br>
 	<center><table id="aceptados"><table></center>
-	<table width="80%">
-	<td><div id="grantotal" style="font-size:20px;font-weight:bold">Monto a pagar: 0.00</div>
-	</td></table>
+	<table width="100%">
+	<tr>
+		<td align="center"><div id="grantotal" style="font-size:20px;font-weight:bold">Monto a pagar: 0.00</div></td>
+	</tr>
+	</table>
+	</form>
+';
 
-	';
+/*		<td class="CaptionTD">Banco/Caja '.$this->datasis->llenaopciones($mSQL, false, $id='fbanco' ).'</td> */
 	
 		echo $salida;
-
 	}
-	
 
 	function abonoguarda(){
 		echo 'a' ;
 	}
 
-
+	function abono(){
+		$comprob   = $this->input->post('fcomprob');
+		$fecha     = $this->input->post('ffecha');
+		$grid      = $this->input->post('fgrid');
+		$id        = $this->input->post('fid');
+		$monto     = $this->input->post('fmonto');
+		$fsele     = $this->input->post('fsele');
+		$check     = 0;
+		$meco      = json_decode($grid);
+		foreach( $meco as $row ){
+			parse_str($row,$linea[]);
+		}
+	
+		$cod_prv = $this->datasis->dameval("SELECT proveed FROM sprv WHERE id=$id");
+		foreach( $linea as $efecto ){
+			//actualiza los movimientos
+			$this->db->where('cod_prv',  $cod_prv);
+			$this->db->where('numero',   $efecto['numero']);
+			$this->db->where('tipo_doc', $efecto['tipo_doc']);
+			$this->db->where('fecha',    $efecto['fecha']);
+			if ( $efecto['abonar'] == 0 ) $efecto['ppago'] = "0";
+			$data = array("preabono"=>$efecto['abonar'], "preppago"=>$efecto['ppago'], "comprob"=>$comprob);
+			$this->db->update('sprm', $data);
+		}
+		logusu('SPRM',"Aprobacion de pagos CREADO $cod_prv "+$grid);
+		echo '{"status":"A","id":"'.$id.'","mensaje":"Aprobacion Guardada"}';
+	}
 }
-
 
 
 /*
