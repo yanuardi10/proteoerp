@@ -885,7 +885,7 @@ class Ajax extends Controller {
 
 	// Para JQGRID	
 	function ddsucu(){
-		$mSQL = "SELECT TRIM(codigo) codigo, CONCAT(TRIM(codigo),' ',TRIM(sucursal)) sucursal  FROM sucu ORDER BY codigo";
+		$mSQL = "SELECT TRIM(codigo) codigo, CONCAT(TRIM(codigo),' ',TRIM(sucursal)) sucursal FROM sucu ORDER BY codigo";
 		echo $this->datasis->llenaopciones($mSQL, true);
 	}
 
@@ -898,6 +898,19 @@ class Ajax extends Controller {
 		$mSQL = "SELECT cod_banc, CONCAT(cod_banc, ' ', nomb_banc) banco FROM tban WHERE cod_banc<>'CAJ' ORDER BY nomb_banc ";
 		echo $this->datasis->llenaopciones($mSQL, true);
 	}
+
+	function ddbanc(){
+		$tipo = $this->uri->segment(3);
+		
+		$mSQL  = "SELECT codbanc, CONCAT(codbanc, ' ', banco, numcuent) banco ";
+		$mSQL .= "FROM banc ";
+		$mSQL .= "WHERE activo='S'  ";
+		if ( $tipo == 'B' ) $mSQL .= " AND tbanco<>'CAJ' ";
+		if ( $tipo == 'C' ) $mSQL .= " AND tbanco='CAJ' ";
+		$mSQL .= "ORDER BY (tbanco='CAJ'), codbanc ";
+		echo $this->datasis->llenaopciones($mSQL, true);
+	}
+
 
 	function ddusuario(){
 		$mSQL = "SELECT us_codigo, CONCAT(us_codigo, ' ', us_nombre) us_nombre FROM usuario ORDER BY us_codigo";

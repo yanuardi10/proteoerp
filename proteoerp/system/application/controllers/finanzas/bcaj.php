@@ -767,7 +767,7 @@ $(function() {
 				echo " El almacen no fuede ser eliminado; tiene movimiento ";
 			} else {
 				//$this->db->simple_query("DELETE FROM caub WHERE id=$id ");
-				logusu('bcaj',"Almacen $codigo ELIMINADO");
+				logusu('BCAJ',"Almacen $codigo ELIMINADO");
 				echo "{ success: true, message: 'Registro Eliminado'}";
 			}
 		};
