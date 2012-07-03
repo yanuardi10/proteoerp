@@ -212,26 +212,6 @@ jQuery("#a1").click( function(){
 			)
 		);
 
-		$grid->addField('tipo_doc');
-		$grid->label('Doc.');
-		$grid->params(array(
-				'width'    => 30,
-				'align'    => "'center'",
-				'editable' => 'false',
-				'edittype' => "'text'"
-			)
-		);
-
-		$grid->addField('numero');
-		$grid->label('Numero');
-		$grid->params(array(
-				'align'    => "'center'",
-				'width'    => 70,
-				'editable' => 'false',
-				'edittype' => "'text'"
-			)
-		);
-
 		$grid->addField('fecha');
 		$grid->label('Fecha');
 		$grid->params(array(
@@ -296,8 +276,6 @@ jQuery("#a1").click( function(){
 			)
 		);
 
-
-
 		$grid->addField('banco');
 		$grid->label('Banco');
 		$grid->params(array(
@@ -330,6 +308,29 @@ jQuery("#a1").click( function(){
 				'edittype' => "'text'"
 			)
 		);
+
+
+
+		$grid->addField('tipo_doc');
+		$grid->label('Doc.');
+		$grid->params(array(
+				'width'    => 30,
+				'align'    => "'center'",
+				'editable' => 'false',
+				'edittype' => "'text'"
+			)
+		);
+
+		$grid->addField('numero');
+		$grid->label('Numero');
+		$grid->params(array(
+				'align'    => "'center'",
+				'width'    => 70,
+				'editable' => 'false',
+				'edittype' => "'text'"
+			)
+		);
+
 
 /*
 		$grid->addField('cajero');
