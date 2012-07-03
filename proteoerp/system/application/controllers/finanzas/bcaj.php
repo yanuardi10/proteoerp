@@ -843,7 +843,7 @@ $(function() {
 			//Busca Proximo Numero
 			$i = 0;
 			while ( $i == 0){
-				$numero  =$this->datasis->prox_sql("nbcaj",8);
+				$numero  = $this->datasis->prox_sql("nbcaj",8);
 				if ($this->datasis->dameval("SELECT count(*) FROM bcaj WHERE numero='".$numero."'") == 0 ){
 					$i = 1;
 				};
@@ -855,11 +855,11 @@ $(function() {
 			$data['tipo']       = 'DE';
 			$data['tarjeta']    = 0;
 			$data['tdebito']    = 0;
-			$data['cheques']    = $monto;
+			$data['cheques']    = $mMdepo; //$monto;
 			$data['efectivo']   = 0;
 			$data['comision']   = 0;
 			$data['islr']       = 0;
-			$data['monto']      = $monto;
+			$data['monto']      = $mMdepo; //$monto;
 			$data['envia']      = '00';
 			$data['bancoe']     = 'DEPOSITO EN TRANSITO';
 			$data['tipoe']      = 'ND';
@@ -869,7 +869,7 @@ $(function() {
 			$data['bancor']     = $this->datasis->dameval("SELECT banco FROM banc WHERE codbanc='$codbanc'");
 			$data['tipor']      = 'DE';
 			$data['numeror']    = $numeror;
-			$data['concepto']   = "RECEPCION DE DEPOSITO DE TRANSITO A BANCO $codbanc ";
+			$data['concepto']   = "CIERRE DE DEPOSITO DE TRANSITO A BANCO $codbanc ";
 			$data['concep2']    = "CHEQUES";
 			$data['status']     = 'C';  // Pendiente/Cerrado/Anulado
 			$data['usuario']    = $this->secu->usuario();
@@ -879,7 +879,7 @@ $(function() {
 
 			//Guarda en BCAJ
 			$this->db->insert('bcaj', $data);
-			$this->datasis->actusal( '00', $fecha, -$monto );
+			$this->datasis->actusal( '00', $fecha, -$mMdepo );
 
 			$mSQL = "UPDATE sfpa SET deposito='$numero', status='C' WHERE id IN ($cheques)";
 			$this->db->simple_query($mSQL);
@@ -898,7 +898,7 @@ $(function() {
 			$data['codcp']    = 'CAJAS';
 			$data['nombre']   = 'DEPOSITO DESDE CAJA';
 			$data['monto']    = $monto; // Saca el monto completo
-			$data['concepto'] = "RECEPCION DE DEPOSITO DE TRANSITO A BANCO $codbanc ";
+			$data['concepto'] = "CIERRE DE DEPOSITO EN TRANSITO A BANCO $codbanc ";
 			$data['concep2']  = "";
 			$data['benefi']   = "";
 			$data['usuario']  = $this->secu->usuario();
@@ -921,7 +921,7 @@ $(function() {
 			$data['codcp']    = 'CAJAS';
 			$data['nombre']   = 'DEPOSITO DESDE CAJA';
 			$data['monto']    = $mMdepo;
-			$data['concepto'] = "DEPOSITO DESDE CAJA $envia A BANCO $recibe ";
+			$data['concepto'] = "DEPOSITO CONCILIADO A BANCO $recibe ";
 			$data['concep2']  = "";
 			$data['benefi']   = "";
 			$data['usuario']  = $this->secu->usuario();
@@ -947,7 +947,7 @@ $(function() {
 				$data['codcp']    = 'CAJAS';
 				$data['nombre']   = 'CHEQUES NO DEPOSITADOS';
 				$data['monto']    = $monto-$mMdepo;
-				$data['concepto'] = "DEVOLUCION DE CHEQUES CAJA '00' A CAJA $caja ";
+				$data['concepto'] = "CHEQUES RECHAZADOS EN DEPOSITO (00 => $caja) ";
 				$data['concep2']  = "";
 				$data['benefi']   = "";
 				$data['usuario']  = $this->secu->usuario();
@@ -958,6 +958,39 @@ $(function() {
 				
 				$mSQL = "UPDATE sfpa SET status='' WHERE  status='P' AND deposito='$numbcaj'";
 				$this->db->simple_query($mSQL);
+
+				$numero  = $this->datasis->prox_sql("nbcaj",8);
+				$data = array();
+				$data['fecha']      = $fecha;
+				$data['numero']     = $numero;
+				$data['tipo']       = 'DE';
+				$data['tarjeta']    = 0;
+				$data['tdebito']    = 0;
+				$data['cheques']    = $monto-$mMdepo;
+				$data['efectivo']   = 0;
+				$data['comision']   = 0;
+				$data['islr']       = 0;
+				$data['monto']      = $monto-$mMdepo;
+				$data['envia']      = '00';
+				$data['bancoe']     = 'DEPOSITO EN TRANSITO';
+				$data['tipoe']      = 'ND';
+				$data['numeroe']    = $numeroe;
+				$data['codbanc']    = $caja;  //de donde vino
+				$data['recibe']     = $caja;
+				$data['bancor']     = $this->datasis->dameval("SELECT banco FROM banc WHERE codbanc='$caja'");
+				$data['tipor']      = 'DE';
+				$data['numeror']    = $numeror;
+				$data['concepto']   = "CUEQUES RECHAZADOS EN DEPOSITO A BANCO $codbanc ";
+				$data['concep2']    = "CHEQUES";
+				$data['status']     = 'C';  // Pendiente/Cerrado/Anulado
+				$data['usuario']    = $this->secu->usuario();
+				$data['estampa']    = $fecha;
+				$data['hora']       = date('H:i:s');
+				$data['transac']    = $transac;
+				//Guarda en BCAJ
+				$this->db->insert('bcaj', $data);
+				$this->datasis->actusal( '00', $fecha, -$mMdepo );
+
 			}
 			
 			//cierra el deposito incial
