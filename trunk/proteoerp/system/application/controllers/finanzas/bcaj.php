@@ -833,12 +833,14 @@ $(function() {
 
 			$mMdepo = $this->datasis->dameval("SELECT SUM(monto) FROM sfpa WHERE id IN ( $cheques )");
 			$monto  = $this->datasis->dameval("SELECT SUM(monto) FROM sfpa WHERE deposito='$numbcaj'");
+			$bancoo = 
 			
 			// GUARDA EN BCAJ
 			$numeroe = $this->datasis->banprox('00');
 			$numeror = $this->datasis->banprox($codbanc);
 			$transac = $this->datasis->prox_sql("ntransa",8);
 
+			//Busca Proximo Numero
 			$i = 0;
 			while ( $i == 0){
 				$numero  =$this->datasis->prox_sql("nbcaj",8);
@@ -932,8 +934,9 @@ $(function() {
 			///devuelve las cheques no depositados
 			if ($monto > $mMdepo){
 				//Actualiza saldo en caja de transito
+				$numeror = $this->datasis->banprox($caja);
 				$this->datasis->actusal($caja, $fecha, $monto-$mMdepo);
-				$data['codbanc']  = $codbanc;
+				$data['codbanc']  = $caja;
 				$data['numcuent'] = $this->datasis->dameval("SELECT numcuent FROM banc WHERE codbanc='$codbanc'");
 				$data['banco']    = $this->datasis->dameval("SELECT banco    FROM banc WHERE codbanc='$codbanc'");
 				$data['saldo']    = $this->datasis->dameval("SELECT saldo    FROM banc WHERE codbanc='$codbanc'");
@@ -960,23 +963,8 @@ $(function() {
 			//cierra el deposito incial
 			$mSQL = "UPDATE bcaj SET status='C' WHERE numero='$numbcaj'";
 			$this->db->simple_query($mSQL);
-			
 
 			logusu('BCAJ',"Cierre de Deposito de cheques de caja Nro. $numero creada");
-
-/*
-			//Actualiza el numero en bcaj
-			$mSQL = "UPDATE bcaj SET status='C', numeror='$numero' WHERE id=$id ";
-			$this->db->simple_query($mSQL);
-			//Guarda en BMOV
-			$mSQL = "INSERT INTO bmov (codbanc, moneda, numcuent, banco, saldo, tipo_op, numero, fecha, clipro, codcp, nombre, monto, concepto, concep2, liable, transac, usuario, estampa, hora, anulado)
-				SELECT a.recibe codbanc, b.moneda, b.numcuent, b.banco, b.saldo, a.tipor tipo_op, '$numero' numero, a.fecha, 'O' clipro, 'CAJAS' codcp, concepto nombre, a.monto, a.concepto, a.concep2, 'S' liable, a.transac, a.usuario, a.estampa, a.hora, 'N' anulado
-				FROM bcaj a JOIN banc b ON a.recibe=b.codbanc
-				WHERE a.transac='$mTRANSAC'";
-			$this->db->simple_query($mSQL);
-			$mSQL = "UPDATE sfpa SET status='C' WHERE deposito='$XNUMERO' AND status='P'";
-			$this->db->simple_query($mSQL);
-*/		
 
 			echo '{"status":"G","numero":"$numero","mensaje":"Deposito Cerrado '.$numero.'"}';
 		} else {
