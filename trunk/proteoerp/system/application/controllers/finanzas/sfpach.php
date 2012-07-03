@@ -56,8 +56,7 @@ $(function() {
 		allFields = $( [] ).add( envia ).add( recibe );
 
 	var grid = jQuery("#newapi'.$param['grid']['gridname'].'");
-	var s;
-	s = grid.getGridParam(\'selarrrow\'); 
+	var s = grid.getGridParam(\'selarrrow\'); 
 
 	$( "#deposito-form" ).dialog({
 		autoOpen: false,
@@ -67,6 +66,7 @@ $(function() {
 		buttons: {
 			"Guardar": function() {
 				var bValid = true;
+				s = grid.getGridParam(\'selarrrow\'); 
 				allFields.removeClass( "ui-state-error" );
 				bValid = bValid && probar( envia,  "Caja" );
 				bValid = bValid && probar( recibe, "Banco" );
@@ -142,9 +142,6 @@ jQuery("#a1").click( function(){
 <div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content">
 	<div class="otros">
 	<table id="west-grid">
-	<tr>
-		<td><div class="tema1 a1"><a style="width:190px" href="#" id="a1">Imprimir '.img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',  'title' => 'Formato PDF', 'border'=>'0')).'</a></div></td>
-	</tr>
 	<tr><td>
 		<div class="tema1"><a style="width:190px" href="#" id="depositar">DEPOSITAR</a></div>
 	</td></tr>
@@ -153,6 +150,14 @@ jQuery("#a1").click( function(){
 	<div id="totaldep" style="font-size:20px;text-align:center;"></div>
 </div> <!-- #LeftPane -->
 ';
+
+/*
+ 	<tr>
+		<td><div class="tema1 a1"><a style="width:190px" href="#" id="a1">Imprimir '.img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',  'title' => 'Formato PDF', 'border'=>'0')).'</a></div></td>
+	</tr>
+*/
+
+
 
 		$mSQL  = "SELECT codbanc, CONCAT(codbanc, ' ', TRIM(banco), IF(tbanco='CAJ',' ',numcuent) ) banco FROM banc WHERE tbanco='CAJ' AND activo='S' ORDER BY codbanc ";
 		$cajas = $this->datasis->llenaopciones($mSQL, true, 'envia');
@@ -371,20 +376,12 @@ jQuery("#a1").click( function(){
 		$grid->setMultiSelect(true);
 		$grid->setonSelectRow('sumamonto');
 
-		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 420, height:220, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){ if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
-		$grid->setFormOptionsA('closeAfterAdd: true, mtype: "POST", width: 400, height:220, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){ if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		$grid->setFormOptionsE('closeAfterEdit:false, mtype: "POST", width: 420, height:220, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){ if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		$grid->setFormOptionsA('closeAfterAdd: true,  mtype: "POST", width: 400, height:220, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){ if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
 
 		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
 
 		$grid->setAfterShow('function(formid) { alert(formid); }');
-/*				if ( ($(\'#listbox\').val()) == "" ) {
-					alert(\'Please select an option.\');
-					$(\'form#\'+formid, form).hide();
-					return false;
-				}
-			}
-				    ');
-*/
 
 		#show/hide navigations buttons
 		$grid->setAdd(false);
