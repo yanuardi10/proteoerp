@@ -16,7 +16,22 @@ class Rret extends validaciones {
 		$this->rapyd->load('datafilter','datagrid');
 		$this->rapyd->uri->keep_persistence();
 
-		$filter = new DataFilter('Filtro de Retiros de Caja', 'rret');
+
+		$atts = array(
+			'width'      => '800',
+			'height'     => '600',
+			'scrollbars' => 'yes',
+			'status'     => 'yes',
+			'resizable'  => 'yes',
+			'screenx'    => '0',
+			'screeny'    => '0');
+
+		$sel=array('SUM(a.monto) AS monto','a.estampa AS fecha','GROUP_CONCAT(tipo) AS tipo','b.nombre','a.cajero','a.cierre','a.id');
+		$filter = new DataFilter('Filtro de Retiros de Caja');
+		$filter->db->select($sel);
+		$filter->db->from('rret AS a');
+		$filter->db->join('scaj AS b','a.cajero=b.cajero');
+		$filter->db->group_by('estampa','cajero');
 
 		$filter->fechad = new dateonlyField('Desde', 'fechad','d/m/Y');
 		$filter->fechah = new dateonlyField('Hasta', 'fechah','d/m/Y');
@@ -37,11 +52,14 @@ class Rret extends validaciones {
 		$grid->order_by('fecha','asc');
 		$grid->per_page = 7;
 
-		$grid->column_orderby('Fecha' ,'<dbdate_to_human><#fecha#></dbdate_to_human>','fecha','align="center"');
-		$grid->column_orderby('Cajero','cajero','cajero','align="left"');
+		$formato= anchor_popup('formatos/verhtml/RRET/<#id#>', 'Ver formato',$atts);
+		
+		$grid->column_orderby('Fecha' ,'<dbdate_to_human><#fecha#>|d/m/Y H:i:s</dbdate_to_human>','fecha','align="center"');
+		$grid->column_orderby('Cajero','(<#cajero#>) <#nombre#>','cajero','align="left"');
 		$grid->column_orderby('Cierre','<sinulo><#cierre#>|No Aplicado</sinulo>','cajero','align="left"');
 		$grid->column_orderby('Tipo'  ,'tipo'  ,'tipo'  ,'align="left"');
 		$grid->column_orderby('Monto' ,'<nformat><#monto#></nformat>','monto','align="right"');
+		$grid->column('Formato',$formato);
 
 		$grid->add('ventas/rret/crear');
 		$grid->build();
@@ -231,6 +249,7 @@ class Rret extends validaciones {
 
 		//hace el retiro de caja
 		if ($form->on_success()){
+			$estampa=date('Y-m-d H:i:s');
 			//$dbcajero = $this->db->escape($cajero);
 			$fecha=date('Ymd');
 			$arr=array();
@@ -254,6 +273,7 @@ class Rret extends validaciones {
 							$arr['cajero'] = $cajero;
 							$arr['monto']  = $recibido;
 							$arr['fecha']  = $fecha;
+							$arr['estampa']= $estampa;
 							$monto+=$recibido;
 
 							$mSQL = $this->db->insert_string('rret', $arr);
@@ -262,7 +282,8 @@ class Rret extends validaciones {
 					}
 				}
 			}
-			redirect('ventas/rret/retirohechocaj/'.$cajero.'/'.$monto);
+			$iid=$this->db->insert_id();
+			redirect('ventas/rret/retirohecho/'.$cajero.'/'.$monto.'/'.$iid);
 		}
 
 		$attr=array(
@@ -285,11 +306,16 @@ class Rret extends validaciones {
 		$this->load->view('view_ventanas', $data);
 	}
 
-	function retirohechocaj($cajero,$monto){
+	function retirohechocaj($cajero,$monto,$id=0){
 		$nombre=$this->datasis->dameval('SELECT nombre FROM scaj WHERE cajero='.$this->db->escape($cajero));
+		
+		if($id==0)
+			$descarga=anchor('formatos/descargar/RRET/'.$id,'Imprimir');
+		else
+			$descarga='';
 
 		$data['content'] = "<h1>Retiro realizado al cajero <b>$cajero - $nombre</b></h1>";
-		$data['content'].= "<p>por un monto de <b>".nformat($monto)."</b></p>";
+		$data['content'].= "<p>por un monto de <b>".nformat($monto).'</b> '.$descarga.'</p>';
 		$data['content'].= '<center>'.anchor('ventas/rret/retirocaj','Regresar').'</center>';
 		$data['title']   = '<h1>Retiros de Caja</h1>';
 		$data['head']    = $this->rapyd->get_head();
@@ -297,10 +323,19 @@ class Rret extends validaciones {
 	}
 
 
-	function retirohecho($cajero,$monto){
-		$data['content'] = "Retiro realizado al cajero <b>$cajero</b> por un monto de <b>".nformat($monto).'</b>'.br();
+	function retirohecho($cajero,$monto,$id=0){
+		$nombre=$this->datasis->dameval('SELECT nombre FROM scaj WHERE cajero='.$this->db->escape($cajero));
+		
+		if($id!=0)
+			$descarga=anchor('formatos/descargar/RRET/'.$id,'Imprimir');
+		else
+			$descarga='';
+
+		$data['content'] = "<h1>Retiro realizado al cajero <b>$cajero - $nombre</b></h1>";
+		$data['content'].= '<p>por un monto de <b>'.nformat($monto).'</b> '.$descarga.'</p>';
 		$data['content'].= '<center>'.anchor('ventas/rret','Regresar').'</center>';
-		$data['title']   = '<h1>Retiros de Caja</h1>';
+
+		$data['title']   = '<h1>Retiros de Cajero</h1>';
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
