@@ -192,6 +192,7 @@ $(function() {
 							} else {
 								alert(res.mensaje);
 								grid.trigger("reloadGrid");
+								$( "#forma1" ).dialog( "close" );
 								return [true, a ];
 							}
 						}
@@ -233,6 +234,10 @@ $(function() {
 		<td><div class="tema1"><a style="width:90px" href="#" id="a2">Ver en '.img(array('src' => 'images/html_icon.gif', 'alt' => 'Formato HTML',  'title' => 'Formato HTML', 'border'=>'0')).'</a></div></td>
 	</tr><tr>
 		<td colspan="2"><div class="tema1"><a style="width:190px" href="#" id="cerrardpt">Cerrar Deposito '.img(array('src' => 'images/candado.jpg', 'alt' => 'Eliminar',  'title' => 'Eliminar', 'border'=>'0')).'</a></div></td>
+	</tr><tr>
+		<td colspan="2">&nbsp;</td>
+	</tr><tr>
+		<td colspan="2">&nbsp;</td>
 	</tr><tr>
 		<td colspan="2"><div class="tema1"><a style="width:190px" href="#" id="borrar">Eliminar Movimiento '.img(array('src' => 'images/delete.jpg', 'alt' => 'Eliminar',  'title' => 'Eliminar', 'border'=>'0')).'</a></div></td>
 	</tr>
@@ -898,7 +903,7 @@ $(function() {
 			$data['codcp']    = 'CAJAS';
 			$data['nombre']   = 'DEPOSITO DESDE CAJA';
 			$data['monto']    = $monto; // Saca el monto completo
-			$data['concepto'] = "CIERRE DE DEPOSITO EN TRANSITO A BANCO $codbanc ";
+			$data['concepto'] = "CIERRE DEPOSITO EN TRANSITO BANCO $codbanc ";
 			$data['concep2']  = "";
 			$data['benefi']   = "";
 			$data['usuario']  = $this->secu->usuario();
@@ -921,7 +926,7 @@ $(function() {
 			$data['codcp']    = 'CAJAS';
 			$data['nombre']   = 'DEPOSITO DESDE CAJA';
 			$data['monto']    = $mMdepo;
-			$data['concepto'] = "DEPOSITO CONCILIADO A BANCO $recibe ";
+			$data['concepto'] = "DEPOSITO CONCILIADO BANCO $recibe ";
 			$data['concep2']  = "";
 			$data['benefi']   = "";
 			$data['usuario']  = $this->secu->usuario();
@@ -947,7 +952,7 @@ $(function() {
 				$data['codcp']    = 'CAJAS';
 				$data['nombre']   = 'CHEQUES NO DEPOSITADOS';
 				$data['monto']    = $monto-$mMdepo;
-				$data['concepto'] = "CHEQUES RECHAZADOS EN DEPOSITO (00 => $caja) ";
+				$data['concepto'] = "CHEQUES RECHAZADOS DEPOSITO (00 => $caja) ";
 				$data['concep2']  = "";
 				$data['benefi']   = "";
 				$data['usuario']  = $this->secu->usuario();
@@ -980,7 +985,7 @@ $(function() {
 				$data['bancor']     = $this->datasis->dameval("SELECT banco FROM banc WHERE codbanc='$caja'");
 				$data['tipor']      = 'DE';
 				$data['numeror']    = $numeror;
-				$data['concepto']   = "CUEQUES RECHAZADOS EN DEPOSITO A BANCO $codbanc ";
+				$data['concepto']   = "CUEQUES RECHAZADOS DEPOSITO BANCO $codbanc ";
 				$data['concep2']    = "CHEQUES";
 				$data['status']     = 'C';  // Pendiente/Cerrado/Anulado
 				$data['usuario']    = $this->secu->usuario();
@@ -1038,24 +1043,11 @@ $(function() {
 		$this->db->simple_query("DELETE FROM itccli WHERE transac=?", array($transac));
 		$this->db->simple_query("DELETE FROM gitser WHERE transac=?", array($transac));
 
-		/*
-		FOR i := 1 TO LEN(mm_DETA)
-			IF !EMPTY(mm_DETA[i,2])
-				mSQL := "UPDATE tardet SET saldo=saldo+? WHERE tarjeta=? AND concepto=?"
-				EJECUTASQL(mSQL, { mm_DETA[i,5], mm_DETA[i,1], mm_DETA[i,2] })
-			ENDIF     
-		NEXT
-		*/
-		
 		// LIBERA LOS CHEQUES SI ES DE
 		$this->db->simple_query("UPDATE sfpa SET status='' AND deposito='' WHERE deposito=?", array($numero));
-
 		logusu('BCAJ',"MOVIMIENTO DE CAJA $numero ELIMINADO");
-		
 		echo "Movimiento de Caja Eliminado ";
-		
 	}
-
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////

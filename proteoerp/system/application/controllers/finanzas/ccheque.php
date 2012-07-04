@@ -83,17 +83,6 @@ jQuery("#a1").click( function(){
 
 		$grid  = new $this->jqdatagrid;
 
-		$grid->addField('id');
-		$grid->label('Id');
-		$grid->params(array(
-			'align'    => "'center'",
-			'frozen'   => 'true',
-			'width'    => 60,
-			'editable' => 'false',
-			'search'   => 'false'
-		));
-
-
 		$link  = site_url('ajax/buscascli');
 		$afterhtml = '<div id=\"aaaaaa\">Nombre <strong>"+ui.item.nombre+" </strong>RIF/CI <strong>"+ui.item.rifci+" </strong><br>Direccion <strong>"+ui.item.direc+"</strong></div>';
 		$auto = $grid->autocomplete( $link, 'cod_cli', 'aaaaa', $afterhtml );
@@ -265,6 +254,16 @@ jQuery("#a1").click( function(){
 							'search'    => 'false'
 			)
 		);
+
+		$grid->addField('id');
+		$grid->label('Id');
+		$grid->params(array(
+			'align'    => "'center'",
+			'frozen'   => 'true',
+			'width'    => 60,
+			'editable' => 'false',
+			'search'   => 'false'
+		));
 
 		$grid->showpager(true);
 		$grid->setWidth('');
