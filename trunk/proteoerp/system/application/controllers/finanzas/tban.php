@@ -2,8 +2,8 @@
 //tbanco
 class Tban extends Controller {
 	var $mModulo='TBAN';
-	var $titp='Modulo TBAN';
-	var $tits='Modulo TBAN';
+	var $titp='Tabla de Bancos';
+	var $tits='Tabla de Bancos';
 	var $url ='finanzas/tban/';
 
 	function Tban(){
@@ -101,26 +101,16 @@ jQuery("#a1").click( function(){
 
 		$grid  = new $this->jqdatagrid;
 
-		$grid->addField('id');
-		$grid->label('Id');
-		$grid->params(array(
-				'align'       => "'center'",
-				'frozen'      => 'true',
-				'width'       => 30,
-				'editable'    => 'false',
-				'search'      => 'false',
-		));
-
 		$grid->addField('cod_banc');
 		$grid->label('Cod');
 		$grid->params(array(
-				'align'       => "'center'",
-				'search'      => 'true',
-				'editable'    => $editar,
-				'width'       => 40,
-				'edittype'    => "'text'",
-				'editoptions' => '{ size:4, maxlength: 3 }',
-				'formoptions' => '{ label:"Codigo" }'
+			'align'       => "'center'",
+			'search'      => 'true',
+			'editable'    => $editar,
+			'width'       => 40,
+			'edittype'    => "'text'",
+			'editoptions' => '{ size:4, maxlength: 3 }',
+			'formoptions' => '{ label:"Codigo" }'
 		));
 
 		$grid->addField('nomb_banc');
@@ -136,6 +126,7 @@ jQuery("#a1").click( function(){
 		$grid->addField('tipotra');
 		$grid->label('Tipo');
 		$grid->params(array(
+			'align'       => "'center'",
 			'width'       => 40,
 			'editable'    => 'true',
 			'edittype'    => "'select'",
@@ -218,7 +209,17 @@ jQuery("#a1").click( function(){
 			'editable'      => $editar,
 			'width'         => 180,
 			'edittype'      => "'text'",
-			'editoptions' => '{ size:30, maxlength: 60 }'
+			'editoptions'   => '{ size:30, maxlength: 60 }'
+		));
+
+		$grid->addField('id');
+		$grid->label('Id');
+		$grid->params(array(
+			'align'       => "'center'",
+			'frozen'      => 'true',
+			'width'       => 30,
+			'editable'    => 'false',
+			'search'      => 'false',
 		));
 
 		$grid->showpager(true);
@@ -262,7 +263,6 @@ jQuery("#a1").click( function(){
 
 		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
 		$mWHERE = $grid->geneTopWhere('tban');
-
 		$response   = $grid->getData('tban', array(array()), array(), false, $mWHERE, 'cod_banc' );
 		$rs = $grid->jsonresult( $response);
 		echo $rs;
@@ -310,7 +310,6 @@ jQuery("#a1").click( function(){
 		};
 	}
 }
-
 
 /*
 class Tban extends Controller {

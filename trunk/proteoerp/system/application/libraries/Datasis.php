@@ -439,7 +439,7 @@ class Datasis {
 			}
 			return $numero;
 		} else {
-			$mSQL  = "UPDATE banc SET proxch='000000000000'  WHERE codbanc='$codban'";
+			//$mSQL  = "UPDATE banc SET proxch='000000000000'  WHERE codbanc='$codban'";
 			$mSQL  = "UPDATE banc SET proxch=LPAD(proxch+1,12,'0')  WHERE codbanc='$codban'";
 			$CI->db->simple_query($mSQL);
 			$numero = $CI->datasis->dameval("SELECT proxch FROM banc WHERE codbanc='$codban'");

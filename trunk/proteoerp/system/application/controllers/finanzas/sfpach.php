@@ -285,7 +285,7 @@ jQuery("#a1").click( function(){
 				'edittype'      => "'select'",
 				'editrules'     => '{ edithidden:true, required:true }',
 				'editoptions'   => '{ dataUrl: "ddbanco"}',
-				'stype'         => "'tsxt'",
+				'stype'         => "'text'",
 			)
 		);
 
@@ -558,7 +558,7 @@ jQuery("#a1").click( function(){
 		$data['tipor']      = 'DE';
 
 		$data['numeror']    = $numeror;
-		$data['concepto']   = "DEPOSITO DESDE CAJA $envia A BANCO $recibe ";
+		$data['concepto']   = "TRANSITO DESDE CAJA $envia A BANCO $recibe ";
 		$data['concep2']    = "CHEQUES";
 		$data['status']     = 'P';  // Pendiente/Cerrado/Anulado
 		$data['usuario']    = $this->secu->usuario();

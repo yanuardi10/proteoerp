@@ -202,7 +202,7 @@ jQuery("#boton1").click( function(){
 			'width'         => 120,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 12 }',
+			'editoptions'   => '{ size:30, maxlength: 20 }',
 		));
 
 
