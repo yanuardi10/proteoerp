@@ -316,7 +316,7 @@ class Rcaj extends validaciones {
 				(SELECT b.tipo, b.monto AS monto
 				FROM sfac AS a
 				JOIN sfpa AS b ON a.transac=b.transac
-				WHERE a.fecha=$dbfecha AND b.cobrador=$dbcajero AND a.tipo_doc<>'X' AND MID(a.numero,1,1)<>'_' AND b.tipo<>'RP'
+				WHERE a.fecha=$dbfecha AND a.referen='E' AND b.cobrador=$dbcajero AND a.tipo_doc<>'X' AND MID(a.numero,1,1)<>'_' AND b.tipo<>'RP'
 				UNION ALL
 				SELECT e.tipo,e.monto AS monto
 				FROM sfpa AS e
@@ -327,6 +327,8 @@ class Rcaj extends validaciones {
 				WHERE d.f_factura=$dbfecha AND d.cobrador=$dbcajero AND d.tipo_doc = 'CC'
 				) AS aa
 				RIGHT JOIN tarjeta AS c ON aa.tipo=c.tipo GROUP BY c.tipo";
+			//echo $mSQL;
+			//exit();
 
 			//Toma en cuenta los retiros
 			$rret=array();
@@ -561,7 +563,7 @@ class Rcaj extends validaciones {
 			FROM rcaj    AS a
 			JOIN itrcaj  AS b ON a.numero=b.numero
 			JOIN tarjeta AS c ON c.tipo=b.tipo
-			WHERE a.numero=${dbnumero}";
+			WHERE a.numero=${dbnumero} AND c.tipo<>'DE' ";
 
 			$query = $this->db->query($mSQL);
 			if($query->num_rows()>0){
