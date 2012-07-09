@@ -13,17 +13,9 @@ class Chgara extends Controller {
 	}
 
 	function index(){
-		/*if ( !$this->datasis->iscampo('chgara','id') ) {
-			$this->db->simple_query('ALTER TABLE chgara DROP PRIMARY KEY');
-			$this->db->simple_query('ALTER TABLE chgara ADD UNIQUE INDEX numero (numero)');
-			$this->db->simple_query('ALTER TABLE chgara ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
-		};*/
-
 		if ( !$this->datasis->iscampo('chgara','enviado') ) {
 			$this->db->simple_query('ALTER TABLE chgara ADD COLUMN enviado DATE NULL AFTER deposito');
 		};
-
-
 		redirect($this->url.'jqdatag');
 	}
 
@@ -42,6 +34,11 @@ $(function() {
 	$( "input:submit, a, button", ".otros" ).button();
 });
 
+jQuery("#listado").click( function(){
+	window.open(\''.base_url().'reportes/ver/CHGARA/\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+});
+
+
 $( "#depositar" ).click(function() {
 	var grid = jQuery("#newapi'.$param['grids'][0]['gridname'].'");
 	var s = grid.getGridParam(\'selarrrow\');
@@ -54,6 +51,7 @@ $( "#depositar" ).click(function() {
 					$.get("'.base_url().$this->url.'chenvia/"+meco,
 					function(data){
 						alert(data);
+						grid.trigger("reloadGrid");
 					});
 				}
 			}
@@ -62,6 +60,53 @@ $( "#depositar" ).click(function() {
 		$.prompt("<h1>Seleccione los Cheques</h1>");
 	}
 });
+
+
+$( "#cobrados" ).click(function() {
+	var grid = jQuery("#newapi'.$param['grids'][0]['gridname'].'");
+	var s = grid.getGridParam(\'selarrrow\');
+	if(s.length){
+		meco = sumamonto(0);
+		$.prompt( "<h1>Marcar como Cobrado?</h1>Marca solo los cheques que fueron previamente Enviados al Cobro", {
+			buttons: { Guardar: true, Cancelar: false },
+			submit: function(e,v,m,f){
+				if (v){
+					$.get("'.base_url().$this->url.'chcobrados/"+meco,
+					function(data){
+						alert(data);
+						grid.trigger("reloadGrid");
+					});
+				}
+			}
+		});
+	} else {
+		$.prompt("<h1>Seleccione los Cheques</h1>");
+	}
+});
+
+
+$( "#devueltos" ).click(function() {
+	var grid = jQuery("#newapi'.$param['grids'][0]['gridname'].'");
+	var s = grid.getGridParam(\'selarrrow\');
+	if(s.length){
+		meco = sumamonto(0);
+		$.prompt( "<h1>Marcar los cheques Devueltos ?</h1>Marca solo los cheques que fueron previamente Enviados al Cobro", {
+			buttons: { Guardar: true, Cancelar: false },
+			submit: function(e,v,m,f){
+				if (v){
+					$.get("'.base_url().$this->url.'chdevueltos/"+meco,
+					function(data){
+						alert(data);
+						grid.trigger("reloadGrid");
+					});
+				}
+			}
+		});
+	} else {
+		$.prompt("<h1>Seleccione los Cheques</h1>");
+	}
+});
+
 
 
 function sumamonto(rowId){ 
@@ -108,18 +153,11 @@ function sumamonto(rowId){
 };
 $(function(){$(".inputnum").numeric(".");});
 
+
+
 </script>
 ';
 
-/*
-jQuery("#a1").click( function(){
-	var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
-	if (id)	{
-		var ret = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
-		window.open(\''.base_url().'formatos/ver/CHGARA/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
-	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
-});
-*/
 
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
@@ -129,11 +167,15 @@ jQuery("#a1").click( function(){
 	<div class="otros">
 	<table id="west-grid">
 	<tr><td>
+		<div class="tema1"><a style="width:190px" href="#" id="listado">Listado '.img(array('src' => 'assets/default/images/print.png', 'alt' => 'Listado',  'title' => 'Listado', 'border'=>'0')).'</a></div>
+	<tr><td>
 		<div class="tema1"><a style="width:190px" href="#" id="depositar">Enviar a Cobro '.img(array('src' => 'assets/default/images/cheque.png', 'alt' => 'Cheques',  'title' => 'Cheques', 'border'=>'0')).'</a></div>
 	</td></tr>
 	<tr><td>&nbsp;</td></tr>
 	<tr><td>
-		<div class="tema1"><a style="width:190px" href="#" id="efectivo">Marcar Cobrados '.img(array('src' => 'assets/default/images/monedas.png', 'alt' => 'Efectivo',  'title' => 'Efectivo', 'border'=>'0')).'</a></div>
+		<div class="tema1"><a style="width:190px" href="#" id="cobrados">Cheques Cobrados '.img(array('src' => 'assets/default/images/monedas.png', 'alt' => 'Cobrados',  'title' => 'Cobrados', 'border'=>'0')).'</a></div>
+	<tr><td>
+		<div class="tema1"><a style="width:190px" href="#" id="devueltos">Cheques Devueltos '.img(array('src' => 'images/N.gif', 'alt' => 'Devueltos',  'title' => 'Devueltos', 'border'=>'0')).'</a></div>
 	</td></tr>
 	</table>
 	</div>
@@ -146,7 +188,24 @@ jQuery("#a1").click( function(){
 <p>'.$this->datasis->traevalor('TITULO1').'</p>
 </div> <!-- #BottomPanel -->
 ';
+
+		$funciones = '
+	function fstatus(el, val, opts){
+		var meco=\'<div><img src="'.base_url().'images/S.gif" width="20" height="18" border="0" /></div>\';
+		if ( el == "E" ){
+			meco=\'<div><img src="'.base_url().'assets/default/images/cheque.png" width="20" height="18" border="0" /></div>\';
+		} else if (el == "C") {
+			meco=\'<div><img src="'.base_url().'assets/default/images/monedas.png" width="20" height="18" border="0" /></div>\';
+		} else if (el == "D") {
+			meco=\'<div><img src="'.base_url().'images/N.gif" width="20" height="20" border="0" /></div>\';
+		}
+		return meco;
+	}
+';
+
 		$param['WestPanel']  = $WestPanel;
+		$param['funciones']  = $funciones;
+
 		//$param['EastPanel']  = $EastPanel;
 		$param['SouthPanel'] = $SouthPanel;
 		$param['listados'] = $this->datasis->listados('CHGARA', 'JQ');
@@ -167,7 +226,31 @@ jQuery("#a1").click( function(){
 		$ids = substr($ids,0,-1);
 		$mSQL = "UPDATE chgara SET status='E', enviado=curdate() WHERE id IN ($ids) AND status='P' ";
 		$this->db->simple_query($mSQL);
-		echo "Cheques enviados $mSQL";
+		echo "Cheques enviados ";
+	}
+
+	//*********************************************
+	// Guarda los que se enviaron a depositar
+	//*********************************************
+	function chcobrados(){
+		$ids = $this->uri->segment(4);
+		$ids = str_replace("-",",", $ids);
+		$ids = substr($ids,0,-1);
+		$mSQL = "UPDATE chgara SET status='C' WHERE id IN ($ids) AND status='E' ";
+		$this->db->simple_query($mSQL);
+		echo "Cheques marcados como Cobrados ";
+	}
+
+	//*********************************************
+	// Guarda los que se enviaron a depositar
+	//*********************************************
+	function chdevueltos(){
+		$ids = $this->uri->segment(4);
+		$ids = str_replace("-",",", $ids);
+		$ids = substr($ids,0,-1);
+		$mSQL = "UPDATE chgara SET status='P', deposito='DEVUELTO' WHERE id IN ($ids) AND status='E' ";
+		$this->db->simple_query($mSQL);
+		echo "Cheques marcados como Devueltos ";
 	}
 
 
@@ -183,6 +266,21 @@ jQuery("#a1").click( function(){
 		$link  = site_url('ajax/buscascli');
 		$afterhtml = '<div id=\"aaaaaa\">Nombre <strong>"+ui.item.nombre+" </strong>RIF/CI <strong>"+ui.item.rifci+" </strong><br>Direccion <strong>"+ui.item.direc+"</strong></div>';
 		$auto = $grid->autocomplete( $link, 'cod_cli', 'aaaaa', $afterhtml );
+
+
+		$grid->addField('status');
+		$grid->label('Status');
+		$grid->params(array(
+			'search'        => 'true',
+			'align'         => "'center'",
+			'editable'      => 'false',
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 1 }',
+			'formatter'     => 'fstatus'
+		));
+
 
 		$grid->addField('cod_cli');
 		$grid->label('Cliente');
@@ -285,16 +383,16 @@ jQuery("#a1").click( function(){
 			'editoptions'   => '{ size:30, maxlength: 250 }',
 		));
 
-		$grid->addField('status');
-		$grid->label('Status');
+		$grid->addField('enviado');
+		$grid->label('Enviado Cobro');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => 'false',
-			'width'         => 40,
+			'width'         => 80,
 			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 1 }',
+			'editrules'     => '{ required:true,date:true}'
 		));
+
 
 		$grid->addField('deposito');
 		$grid->label('Deposito');
@@ -327,7 +425,7 @@ jQuery("#a1").click( function(){
 			'align'         => "'center'",
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true,date:true}',
-			'formoptions'   => '{ label:"Fecha" }'
+			'formoptions'   => '{ label:"Estampa" }'
 		));
 
 		$grid->addField('hora');
@@ -408,7 +506,7 @@ jQuery("#a1").click( function(){
 		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
 		$mWHERE = $grid->geneTopWhere('chgara');
 
-		$response   = $grid->getData('chgara', array(array('table'=>'scli', 'join'=>'chgara.cod_cli=scli.cliente', 'fields'=>array('nombre'))), array(), false, $mWHERE, 'fecha' );
+		$response   = $grid->getData('chgara', array(array('table'=>'scli', 'join'=>'chgara.cod_cli=scli.cliente', 'fields'=>array('nombre'))), array(), false, $mWHERE, 'status desc,fecha' );
 		$rs = $grid->jsonresult( $response);
 		echo $rs;
 	}
