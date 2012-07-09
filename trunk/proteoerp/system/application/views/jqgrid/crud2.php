@@ -17,7 +17,6 @@ if( isset($temas) == false) $temas[] = $tema;
 if( isset($tema1))  $temas[] = $tema1;
 if( isset($anexos)) $temas[] = $anexos;
 
-
 $cintu = '
 <table width="100%" bgcolor="#2067B5">
 	<tr>
