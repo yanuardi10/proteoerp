@@ -121,7 +121,6 @@ jQuery("#a1").click( function(){
 			'editoptions'   => "{ readonly: 'readonly'}"
 		));
 
-
 		$grid->addField('valor');
 		$grid->label('Valor');
 		$grid->params(array(
@@ -129,8 +128,8 @@ jQuery("#a1").click( function(){
 			'editable'      => $editar,
 			'width'         => 280,
 			'edittype'      => "'text'",
+			'editoptions'   => '{ size:70, maxlength: 200 }',
 		));
-
 
 		$grid->addField('descrip');
 		$grid->label('Descrip');
@@ -139,8 +138,8 @@ jQuery("#a1").click( function(){
 			'editable'      => $editar,
 			'width'         => 300,
 			'edittype'      => "'text'",
+			'editoptions'   => '{ size:70, maxlength: 200 }',
 		));
-
 
 		$grid->showpager(true);
 		$grid->setWidth('');

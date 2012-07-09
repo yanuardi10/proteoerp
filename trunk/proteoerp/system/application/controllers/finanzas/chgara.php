@@ -18,6 +18,12 @@ class Chgara extends Controller {
 			$this->db->simple_query('ALTER TABLE chgara ADD UNIQUE INDEX numero (numero)');
 			$this->db->simple_query('ALTER TABLE chgara ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
 		};*/
+
+		if ( !$this->datasis->iscampo('chgara','enviado') ) {
+			$this->db->simple_query('ALTER TABLE chgara ADD COLUMN enviado DATE NULL AFTER deposito');
+		};
+
+
 		redirect($this->url.'jqdatag');
 	}
 
@@ -36,6 +42,76 @@ $(function() {
 	$( "input:submit, a, button", ".otros" ).button();
 });
 
+$( "#depositar" ).click(function() {
+	var grid = jQuery("#newapi'.$param['grids'][0]['gridname'].'");
+	var s = grid.getGridParam(\'selarrrow\');
+	if(s.length){
+		meco = sumamonto(0);
+		$.prompt( "<h1>Enviar a Depositar ?</h1>", {
+			buttons: { Guardar: true, Cancelar: false },
+			submit: function(e,v,m,f){
+				if (v){
+					$.get("'.base_url().$this->url.'chenvia/"+meco,
+					function(data){
+						alert(data);
+					});
+				}
+			}
+		});
+	} else {
+		$.prompt("<h1>Seleccione los Cheques</h1>");
+	}
+});
+
+
+function sumamonto(rowId){ 
+	var grid = jQuery("#newapi'.$param['grids'][0]['gridname'].'"); 
+	var s; 
+	var total = 0; 
+	var rowcells=new Array();
+	var entirerow;
+	var hoy   = new Date();
+	var fecha ;
+	var meco = "";
+
+	if ( rowId > 0 ) {
+		entirerow = grid.jqGrid(\'getRowData\',rowId);
+		fecha = new Date(entirerow["fecha"].split("-").join("/"))
+		if ( hoy < fecha ){
+			alert( "Cheque no vencido" );
+		} 
+	}
+
+	s = grid.getGridParam(\'selarrrow\'); 
+	$("#totaldep").html("");
+	if(s.length)
+	{
+		for(var i=0;i<s.length;i++)
+		{
+			entirerow = grid.jqGrid(\'getRowData\',s[i]);
+			fecha = new Date(entirerow["fecha"].split("-").join("/"))
+			if ( hoy >= fecha ){
+				total += Number(entirerow["monto"]);
+				meco = meco+entirerow["id"]+"-";
+			} else {
+				if ( rowId == 0 ) {
+					grid.resetSelection(s[i]);
+				}
+			}
+		}
+	total = Math.round(total*100)/100;	
+	$("#totaldep").html("Bs. "+nformat(total,2));
+	$("#montoform").html("Monto: "+nformat(total,2));
+	montotal = total;
+	}
+	return meco;
+};
+$(function(){$(".inputnum").numeric(".");});
+
+</script>
+';
+
+/*
 jQuery("#a1").click( function(){
 	var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
 	if (id)	{
@@ -43,34 +119,26 @@ jQuery("#a1").click( function(){
 		window.open(\''.base_url().'formatos/ver/CHGARA/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
 	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
 });
-</script>
-';
+*/
 
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
 
 		$WestPanel = '
 <div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content">
-<div class="anexos">
-
-<table id="west-grid" align="center">
-	<tr>
-		<td><div class="tema1"><table id="listados"></table></div></td>
-	</tr>
-	<tr>
-		<td><div class="tema1"><table id="otros"></table></div></td>
-	</tr>
-</table>
-
-<table id="west-grid" align="center">
-	<tr>
-		<td></td>
-	</tr>
-</table>
-</div>
-'.
-//		<td><a style="width:190px" href="#" id="a1">Imprimir Copia</a></td>
-'</div> <!-- #LeftPane -->
+	<div class="otros">
+	<table id="west-grid">
+	<tr><td>
+		<div class="tema1"><a style="width:190px" href="#" id="depositar">Enviar a Cobro '.img(array('src' => 'assets/default/images/cheque.png', 'alt' => 'Cheques',  'title' => 'Cheques', 'border'=>'0')).'</a></div>
+	</td></tr>
+	<tr><td>&nbsp;</td></tr>
+	<tr><td>
+		<div class="tema1"><a style="width:190px" href="#" id="efectivo">Marcar Cobrados '.img(array('src' => 'assets/default/images/monedas.png', 'alt' => 'Efectivo',  'title' => 'Efectivo', 'border'=>'0')).'</a></div>
+	</td></tr>
+	</table>
+	</div>
+	<div id="totaldep" style="font-size:20px;text-align:center;"></div>
+</div> <!-- #LeftPane -->
 ';
 
 		$SouthPanel = '
@@ -90,6 +158,19 @@ jQuery("#a1").click( function(){
 		$this->load->view('jqgrid/crud2',$param);
 	}
 
+	//*********************************************
+	// Guarda los que se enviaron a depositar
+	//*********************************************
+	function chenvia(){
+		$ids = $this->uri->segment(4);
+		$ids = str_replace("-",",", $ids);
+		$ids = substr($ids,0,-1);
+		$mSQL = "UPDATE chgara SET status='E', enviado=curdate() WHERE id IN ($ids) AND status='P' ";
+		$this->db->simple_query($mSQL);
+		echo "Cheques enviados $mSQL";
+	}
+
+
 	//***************************
 	//Definicion del Grid y la Forma
 	//***************************
@@ -107,11 +188,19 @@ jQuery("#a1").click( function(){
 		$grid->label('Cliente');
 		$grid->params(array(
 				'width'       => 60,
-				'hidden'      => 'true',
 				'editable'    => $editar,
 				'edittype'    => "'text'",
 				'editrules'   => '{ edithidden:true, required:true }',
 				'editoptions' => '{'.$auto.'}'
+			)
+		);
+
+		$grid->addField('nombre');
+		$grid->label('Nombre');
+		$grid->params(array(
+				'width'       => 160,
+				'editable'    => 'false',
+				'edittype'    => "'text'",
 			)
 		);
 
@@ -127,41 +216,16 @@ jQuery("#a1").click( function(){
 			'formoptions'   => '{ label:"Fecha" }'
 		));
 
-
 		$grid->addField('numero');
 		$grid->label('Numero');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
-			'width'         => 160,
+			'width'         => 100,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:30, maxlength: 16 }',
 		));
-
-		$grid->addField('cuentach');
-		$grid->label('Cuentach');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 200,
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 22 }',
-		));
-
-		$grid->addField('banco');
-		$grid->label('Banco');
-		$grid->params(array(
-			'width'         => 40,
-			'hidden'        => 'true',
-			'editable'      => $editar,
-			'edittype'      => "'select'",
-			'editrules'     => '{ edithidden:true, required:true }',
-			'editoptions'   => '{ dataUrl: "'.base_url().'ajax/ddbanco"}',
-			'stype'         => "'text'",
-		));
-
 
 		$grid->addField('monto');
 		$grid->label('Monto');
@@ -177,6 +241,28 @@ jQuery("#a1").click( function(){
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
+		$grid->addField('banco');
+		$grid->label('Banco');
+		$grid->params(array(
+			'align'         => "'center'",
+			'width'         => 40,
+			'editable'      => $editar,
+			'edittype'      => "'select'",
+			'editrules'     => '{ edithidden:true, required:true }',
+			'editoptions'   => '{ dataUrl: "'.base_url().'ajax/ddbanco"}',
+			'stype'         => "'text'",
+		));
+
+		$grid->addField('cuentach');
+		$grid->label('Cuenta Bancaria');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 170,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 22 }',
+		));
 
 		$grid->addField('vendedor');
 		$grid->label('Vendedor');
@@ -189,7 +275,6 @@ jQuery("#a1").click( function(){
 			'editoptions'   => '{ dataUrl: "'.base_url().'ajax/ddvende"}',
 		));
 
-
 		$grid->addField('observa');
 		$grid->label('Observacion');
 		$grid->params(array(
@@ -197,10 +282,8 @@ jQuery("#a1").click( function(){
 			'editable'      => $editar,
 			'width'         => 200,
 			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30 }',
+			'editoptions'   => '{ size:30, maxlength: 250 }',
 		));
-
 
 		$grid->addField('status');
 		$grid->label('Status');
@@ -213,6 +296,16 @@ jQuery("#a1").click( function(){
 			'editoptions'   => '{ size:30, maxlength: 1 }',
 		));
 
+		$grid->addField('deposito');
+		$grid->label('Deposito');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => 'false',
+			'width'         => 120,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 12 }',
+		));
 
 		$grid->addField('usuario');
 		$grid->label('Usuario');
@@ -224,7 +317,6 @@ jQuery("#a1").click( function(){
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:30, maxlength: 12 }',
 		));
-
 
 		$grid->addField('estampa');
 		$grid->label('Estampa');
@@ -238,7 +330,6 @@ jQuery("#a1").click( function(){
 			'formoptions'   => '{ label:"Fecha" }'
 		));
 
-
 		$grid->addField('hora');
 		$grid->label('Hora');
 		$grid->params(array(
@@ -249,7 +340,6 @@ jQuery("#a1").click( function(){
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:30, maxlength: 8 }',
 		));
-
 
 		$grid->addField('modificado');
 		$grid->label('Modificado');
@@ -263,19 +353,6 @@ jQuery("#a1").click( function(){
 			'formoptions'   => '{ label:"Fecha" }'
 		));
 
-
-		$grid->addField('deposito');
-		$grid->label('Deposito');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => 'false',
-			'width'         => 120,
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 12 }',
-		));
-
-
 		$grid->addField('id');
 		$grid->label('Id');
 		$grid->params(array(
@@ -286,13 +363,15 @@ jQuery("#a1").click( function(){
 			'search'        => 'false'
 		));
 
-
 		$grid->showpager(true);
 		$grid->setWidth('');
 		$grid->setHeight('290');
 		$grid->setTitle($this->titp);
 		$grid->setfilterToolbar(true);
 		$grid->setToolbar('false', '"top"');
+		$grid->setMultiSelect(true);
+
+		$grid->setonSelectRow('sumamonto');
 
 		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:350, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
 		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:350, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
@@ -329,7 +408,7 @@ jQuery("#a1").click( function(){
 		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
 		$mWHERE = $grid->geneTopWhere('chgara');
 
-		$response   = $grid->getData('chgara', array(array()), array(), false, $mWHERE );
+		$response   = $grid->getData('chgara', array(array('table'=>'scli', 'join'=>'chgara.cod_cli=scli.cliente', 'fields'=>array('nombre'))), array(), false, $mWHERE, 'fecha' );
 		$rs = $grid->jsonresult( $response);
 		echo $rs;
 	}
@@ -349,18 +428,20 @@ jQuery("#a1").click( function(){
 		unset($data['id']);
 		if($oper == 'add'){
 			if(false == empty($data)){
+				$data['status']    = 'P';
+				$data['usuario']   = $this->secu->usuario();
+				$data['estampa']   = date('Ymd');
+				$data['hora']      = date('H:i:s');
 				$this->db->insert('chgara', $data);
 				echo "Registro Agregado";
-
-				logusu('CHGARA',"Registro ????? INCLUIDO");
+				logusu('CHGARA',"Registro  INCLUIDO");
 			} else
 			echo "Fallo Agregado!!!";
 
 		} elseif($oper == 'edit') {
-			//unset($data['ubica']);
 			$this->db->where('id', $id);
 			$this->db->update('chgara', $data);
-			logusu('CHGARA',"Registro ????? MODIFICADO");
+			logusu('CHGARA',"Registro $id MODIFICADO");
 			echo "Registro Modificado";
 
 		} elseif($oper == 'del') {
@@ -369,7 +450,7 @@ jQuery("#a1").click( function(){
 				echo " El registro no puede ser eliminado; tiene movimiento ";
 			} else {
 				$this->db->simple_query("DELETE FROM chgara WHERE id=$id ");
-				logusu('CHGARA',"Registro ????? ELIMINADO");
+				logusu('CHGARA',"Registro $id  ELIMINADO");
 				echo "Registro Eliminado";
 			}
 		};
