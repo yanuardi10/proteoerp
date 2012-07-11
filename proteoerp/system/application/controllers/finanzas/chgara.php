@@ -153,8 +153,6 @@ function sumamonto(rowId){
 };
 $(function(){$(".inputnum").numeric(".");});
 
-
-
 </script>
 ';
 
