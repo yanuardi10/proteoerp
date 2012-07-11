@@ -419,7 +419,7 @@ class Scst extends Controller {
 		$filter->proveedor = new inputField('Proveedor', 'proveed');
 		$filter->proveedor->db_name='a.proveed';
 		$filter->proveedor->append($boton);
-		$filter->proveedor->db_name = 'proveed';
+		$filter->proveedor->db_name = 'a.proveed';
 		$filter->proveedor->size=20;
 
 		$filter->barras = new inputField('C&oacute;digo seg&uacute;n proveedor', 'barras');
