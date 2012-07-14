@@ -822,8 +822,8 @@ jQuery("#boton1").click( function(){
 			if ($check > 0){
 				echo " El registro no puede ser eliminado; tiene movimiento ";
 			} else {
-				$this->db->simple_query("DELETE FROM smov WHERE id=$id ");
-				logusu('smov',"Registro ????? ELIMINADO");
+				//$this->db->simple_query("DELETE FROM smov WHERE id=$id ");
+				//logusu('smov',"Registro ????? ELIMINADO");
 				echo "Registro Eliminado";
 			}
 		};
