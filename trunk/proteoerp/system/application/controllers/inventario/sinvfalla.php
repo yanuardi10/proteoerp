@@ -113,6 +113,30 @@ jQuery("#a1").click( function(){
 			'editoptions'   => '{ size:30, maxlength: 15 }',
 		));
 
+		$grid->addField('descrip');
+		$grid->label('Descripcion');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => 'false',
+			'width'         => 250,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 15 }',
+		));
+
+		$grid->addField('dias');
+		$grid->label('Dias de Inv');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => 'true',
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
+		));
 
 		$grid->addField('fecha');
 		$grid->label('Fecha');
@@ -204,7 +228,7 @@ jQuery("#a1").click( function(){
 		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
 		$mWHERE = $grid->geneTopWhere('sinvfalla');
 
-		$response   = $grid->getData('sinvfalla', array(array()), array(), false, $mWHERE );
+		$response   = $grid->getData('sinvfalla', array(array('table'=>'sinv', 'join'=>'sinvfalla.codigo=sinv.codigo', 'fields'=>array('descrip'))), array(), false, $mWHERE, 'sinvfalla.codigo' );
 		$rs = $grid->jsonresult( $response);
 		echo $rs;
 	}
