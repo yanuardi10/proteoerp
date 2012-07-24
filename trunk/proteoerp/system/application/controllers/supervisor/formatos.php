@@ -385,6 +385,90 @@ class formatos extends validaciones {
 		logusu('formatos',"BORRADO EL REPORTE $nombre");
 	}
 
+
+	function puertos(){
+		$this->rapyd->uri->keep_persistence();
+		$this->rapyd->load('datafilter','datagrid');
+
+		$sel=array('nombre', "SUBSTRING_INDEX(forma,'\r',1) AS puerto");
+		$filter = new DataFilter('Filtro por Menu de Formatos');
+		$filter->db->from('formatos');
+		$filter->db->select($sel);
+
+		$filter->nombre = new inputField('Nombre', 'nombre');
+		$filter->nombre->db_name='nombre';
+		$filter->nombre->size=15;
+		$filter->nombre->group = 'UNO';
+
+		$filter->buttons('reset','search');
+		$filter->build('dataformfiltro');
+
+		$uri1 = anchor('supervisor/formatos/cambiapuerto/<#nombre#>/LPT1'  ,'LPT1' );
+		$uri2 = anchor('supervisor/formatos/cambiapuerto/<#nombre#>/SPOOL' ,'SPOOL');
+
+		$grid = new DataGrid('Lista de Menu de Formatos');
+		$grid->order_by('nombre','asc');
+		$grid->per_page = 50;
+
+		$grid->column('Nombre', 'nombre');
+		$grid->column('Puerto', 'puerto');
+		$grid->column('Acci&oacute;n', "$uri1,$uri2");
+
+		$grid->build();
+		//echo $grid->db->last_query();
+
+		$url=site_url('supervisor/formatos/cactivo');
+		/*$data['script']='<script type="text/javascript">
+		$(document).ready(function() {
+			$("form :checkbox").click(function () {
+				$.ajax({
+					type: "POST",
+					url: "'.$url.'",
+					data: "codigo="+this.name,
+					success: function(msg){
+					if (msg==0)
+						alert("Ocurrio un problema");
+					}
+				});
+		}).change();
+		});
+		</script>';*/
+		$data['content'] = '<form>'.$grid->output.'</form>';
+		$data['filtro']  = $filter->output;
+		$data['title']   = heading('Menu de Formatos');
+		$data['head']    = script('jquery.pack.js').$this->rapyd->get_head();
+		$this->load->view('view_ventanas', $data);
+	}
+
+	function cambiapuerto($nombre,$tipo){
+		$this->rapyd->uri->keep_persistence();
+		$persistence = $this->rapyd->session->get_persistence('supervisor/formatos/puertos', $this->rapyd->uri->gfid);
+		$back= (isset($persistence['back_uri'])) ?$persistence['back_uri'] : 'supervisor/formatos/puertos';
+
+		if($tipo=='LPT1'){
+			$val='LPT1';
+		}elseif($tipo=='SPOOL'){
+			$val="C:\\SPOOL\\${nombre}.TXT";
+		}else{
+			return '';
+		}
+
+		$dbnombre = $this->db->escape($nombre);
+		$formato  = $this->datasis->dameval("SELECT forma FROM formatos WHERE nombre=$dbnombre");
+		if(empty($formato)){
+			return false;
+		}
+
+		$pos      = strpos($formato, "\r");
+		$nformato = $val.substr($formato,$pos);
+		$data     = array('forma' => $nformato);
+		$where    = "nombre=$dbnombre";
+		$mSQL     = $this->db->update_string('formatos', $data, $where);
+
+		$this->db->simple_query($mSQL);
+		redirect($back);
+	}
+
 	function instalar(){
 		if ($this->db->table_exists('intrarepo')){
 			$mSQL="CREATE TABLE IF NOT EXISTS `intrarepo` (
