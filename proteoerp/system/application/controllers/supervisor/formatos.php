@@ -393,6 +393,7 @@ class formatos extends validaciones {
 		$sel=array('nombre', "SUBSTRING_INDEX(forma,'\r',1) AS puerto");
 		$filter = new DataFilter('Filtro por Menu de Formatos');
 		$filter->db->from('formatos');
+		$filter->db->where('LENGTH(forma) > 1');
 		$filter->db->select($sel);
 
 		$filter->nombre = new inputField('Nombre', 'nombre');
@@ -403,16 +404,21 @@ class formatos extends validaciones {
 		$filter->buttons('reset','search');
 		$filter->build('dataformfiltro');
 
-		$uri1 = anchor('supervisor/formatos/cambiapuerto/<#nombre#>/LPT1'  ,'LPT1' );
-		$uri2 = anchor('supervisor/formatos/cambiapuerto/<#nombre#>/SPOOL' ,'SPOOL');
+		$aropt = array();
+		$opts  = array('LPT1','LPT2','LPT3','COM1','COM2','COM3','SPOOL','ARCHIVO');
+		foreach($opts as $opt){
+			$aropt[]= anchor('supervisor/formatos/cambiapuerto/<#nombre#>/'.$opt,$opt);
+		}
+
+		$uri = implode(',',$aropt);
 
 		$grid = new DataGrid('Lista de Menu de Formatos');
 		$grid->order_by('nombre','asc');
-		$grid->per_page = 50;
+		$grid->per_page = 30;
 
-		$grid->column('Nombre', 'nombre');
-		$grid->column('Puerto', 'puerto');
-		$grid->column('Acci&oacute;n', "$uri1,$uri2");
+		$grid->column('Nombre del reporte', 'nombre');
+		$grid->column('Puerto Actual', 'puerto');
+		$grid->column('Acci&oacute;n', $uri);
 
 		$grid->build();
 		//echo $grid->db->last_query();
@@ -445,27 +451,35 @@ class formatos extends validaciones {
 		$persistence = $this->rapyd->session->get_persistence('supervisor/formatos/puertos', $this->rapyd->uri->gfid);
 		$back= (isset($persistence['back_uri'])) ?$persistence['back_uri'] : 'supervisor/formatos/puertos';
 
-		if($tipo=='LPT1'){
-			$val='LPT1';
+		if(preg_match('/^(LPT)|(COM)[0-9]+$/', $tipo) > 0){
+			$val = $tipo;
 		}elseif($tipo=='SPOOL'){
-			$val="C:\\SPOOL\\${nombre}.TXT";
+			$val = "C:\\SPOOL\\${nombre}.TXT";
+		}elseif($tipo=='ARCHIVO'){
+			$val = "${nombre}.TXT";
 		}else{
-			return '';
+			redirect($back);
 		}
 
 		$dbnombre = $this->db->escape($nombre);
 		$formato  = $this->datasis->dameval("SELECT forma FROM formatos WHERE nombre=$dbnombre");
 		if(empty($formato)){
-			return false;
+			redirect($back);
 		}
 
 		$pos      = strpos($formato, "\r");
-		$nformato = $val.substr($formato,$pos);
-		$data     = array('forma' => $nformato);
-		$where    = "nombre=$dbnombre";
-		$mSQL     = $this->db->update_string('formatos', $data, $where);
+		$anteri = substr($formato,0,$pos);
+		//Valida que esta cambiando un puerto valido
+		if(preg_match('/^[a-zA-Z0-9:\\\_.]+$/',$anteri) > 0){
 
-		$this->db->simple_query($mSQL);
+			$nformato = $val.substr($formato,$pos);
+			$data     = array('forma' => $nformato);
+			$where    = "nombre=$dbnombre";
+			$mSQL     = $this->db->update_string('formatos', $data, $where);
+
+			$this->db->simple_query($mSQL);
+		}
+
 		redirect($back);
 	}
 
