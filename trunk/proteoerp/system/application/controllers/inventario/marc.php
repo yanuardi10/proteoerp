@@ -110,7 +110,18 @@ class Marc extends Controller{
 	function setData()
 	{
 		$this->load->library('jqdatagrid');
+		$oper   = $this->input->post('oper');
+		$id     = $this->input->post('id');
+		$data   = $_POST;
+		$check  = 0;
+
+
+		$this->load->library('jqdatagrid');
 		$oper = $this->input->post('oper');
+		unset($data['oper']);
+		unset($data['id']);
+
+
 		// ver si puede borrar
 		if ($oper == 'del') {
 			// si tiene personas no puede borrar
@@ -123,11 +134,34 @@ class Marc extends Controller{
 			} else {
 				echo 'No se puede borrar, existen productos con esta marca';
 			}			
+		} elseif($oper == 'edit') {
+			$marcant = $this->datasis->dameval("SELECT marca FROM marc WHERE id=$id");
+
+			$this->db->where('id', $id);
+			$this->db->update('marc', $data);
+
+			$mSQL = "UPDATE sinv SET marca=".$this->db->escape($data['marca'])." WHERE marca=".$this->db->escape($marcant);
+			$this->db->simple_query($mSQL);
+			
+			logusu('MARC',"Registro $id MODIFICADO");
+			//echo "Registro Modificado";
+			echo $mSQL;
+
+		} elseif($oper == 'add'){
+			if(false == empty($data)){
+				$this->db->insert('marc', $data);
+				echo "Registro Agregado";
+				logusu('MARC',"Registro  INCLUIDO");
+			} else
+			echo "Fallo Agregado!!!";
+		}
+/*
 		} else {
-			$grid             = $this->jqdatagrid;
-			$response         = $grid->operations('marc','id');
+			$grid       = $this->jqdatagrid;
+			$response   = $grid->operations('marc','id');
 			echo 'Registro Actualizado';
 		}
+*/
 	}
 
 

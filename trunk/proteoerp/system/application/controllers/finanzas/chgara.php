@@ -16,6 +16,10 @@ class Chgara extends Controller {
 		if ( !$this->datasis->iscampo('chgara','enviado') ) {
 			$this->db->simple_query('ALTER TABLE chgara ADD COLUMN enviado DATE NULL AFTER deposito');
 		};
+		if ( !$this->datasis->iscampo('chgara','codbanc') ) {
+			$this->db->simple_query('ALTER TABLE chgara ADD COLUMN codbanc CHR(2) NULL AFTER enviado');
+		};
+
 		redirect($this->url.'jqdatag');
 	}
 
@@ -499,14 +503,16 @@ $(function(){$(".inputnum").numeric(".");});
 	*/
 	function getdata()
 	{
-		$grid       = $this->jqdatagrid;
+		$grid = $this->jqdatagrid;
+		$join = array(array('table'=>'scli', 'join'=>'chgara.cod_cli=scli.cliente', 'fields'=>array('nombre')));
 
 		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
-		$mWHERE = $grid->geneTopWhere('chgara');
+		$mWHERE = $grid->geneSqlWhere('chgara', $join);
 
-		$response   = $grid->getData('chgara', array(array('table'=>'scli', 'join'=>'chgara.cod_cli=scli.cliente', 'fields'=>array('nombre'))), array(), false, $mWHERE, 'status desc,fecha' );
+		$response   = $grid->getData('chgara', $join , array(), false, $mWHERE, 'status desc,fecha' );
 		$rs = $grid->jsonresult( $response);
 		echo $rs;
+		//print_r($mWHERE);
 	}
 
 	/**

@@ -163,6 +163,8 @@ class Jqdatagrid
 
 	private $afterSubmit = '';
 
+	private $afterPager  = '';
+
 	private $afterShow = '';
 
 	private $multiSelect = false;
@@ -342,6 +344,16 @@ class Jqdatagrid
 		$this->afterSubmit = $element;
 	}
 
+
+	/**
+	* After Pager
+	* @param text $element
+	* @return void
+	*/
+	public function setAfterPager($element)
+	{
+		$this->afterPager = $element;
+	}
 
 	/**
 	* After Submit Function
@@ -807,9 +819,13 @@ class Jqdatagrid
 				$bar   .= $this->afterSubmit;
 			}
 
-			$bar   .= "}} /*delete options*/,\r\n";
-			$bar   .= "	{sopt:['eq','cn','ge','le'], overlay:false,mtype: 'POST', multipleSearch:true }\r\n"; //search options
-			$bar   .= "		)";
+			$bar   .= "}},\r\n";
+			$bar   .= "	{sopt:['eq','cn','ge','le'], overlay:false,mtype: 'POST', multipleSearch:true }"; //search options
+			if ( $this->afterPager == '' )
+				$bar .= "\r\n";
+			else
+				$bar   .= ",\r\n".$this->afterPager;
+			$bar   .= ")";
 
 		$key = array_search('true', $this->_export); // find if we must show the export button;
 		if($key)
@@ -1005,14 +1021,12 @@ class Jqdatagrid
 			if(empty($fields) && $prefix){
 				$fieldstable = $this->CI->db->list_fields($table);
 				foreach($fieldstable as $field){
-					//$fields = array_push((array)$fields, (array)"{$field} AS {$table}_{$field}" );
 					$fields[] = "{$table}.{$field} AS {$table}_{$field}";
 				}
 			}else{
 				if(empty($fields)){
 					$fieldstable = $this->CI->db->list_fields($table);
 					foreach($fieldstable as $field){
-						//$fields = array_push((array)$fields, (array)"{$field} AS {$table}_{$field}" );
 						$fields[] = "{$table}.{$field}";
 					}
 				}
@@ -1027,7 +1041,7 @@ class Jqdatagrid
 		}else{
 			$rs = $this->CI->datasis->codificautf8($this->CI->db->get()->result_array());;
 		}
-		memowrite($this->CI->db->last_query(),'RETE');
+		memowrite($this->CI->db->last_query(),'JQGETDATA');
 		$queryString = $this->CI->db->last_query();
 		
 		$querydata = array( 'dtgQuery'  => $this->CI->db->last_query() );
@@ -1082,7 +1096,6 @@ class Jqdatagrid
 	*/
 	public function operations($table,$key = 'id')
 	{
-
 		$oper   = $this->CI->input->post('oper');
 		//$oper   = $data['oper'];
 		if($oper == 'add'){
@@ -1185,7 +1198,6 @@ class Jqdatagrid
 				}
 			}
 		}
-		//return $qwery;
 		return $mWHERE;
 	}
 	/***********************************************************************
@@ -1271,25 +1283,22 @@ class Jqdatagrid
 
 
 	/***********************************************************************
-	* Export data to pdf or csv
-	* @param String $type pdf/csv
-	* @return <type> 
+	* Returns the where from a table
 	*/
 	function geneTopWhere($db){
 		$mWhere = array();
-		$campos = $this->CI->db->field_data($db);
-		
 		if ($this->CI->input->get_post('_search')==true){
+			$campos = $this->CI->db->field_data($db);
 			foreach ( $campos as $campo)
 			{
 				$valor = $this->CI->input->get_post($campo->name);
 				if ($valor) {
-					if ( $campo->type == 'string' || $campo->type == 'string' ){
-						if ( $campo->max_length >= 5) {
+					if ( $campo->type == 'string' ){
+						if ( substr($valor,0,1) == '%' || substr($valor,0,1) == '*' ) {
+							$valor = substr($valor,1);
+							$mWhere[] = array('like', $campo->name, $valor, 'both' );
+						} else 
 							$mWhere[] = array('like', $campo->name, $valor, 'after' );
-						} else {
-							$mWhere[] = array('', $campo->name, $valor, '' );
-						}
 						
 					} elseif ( $campo->type == 'date' || $campo->type == 'timestamp' ) {
 						$mWhere[] = array('', $campo->name, $valor, '' );
@@ -1316,13 +1325,68 @@ class Jqdatagrid
 
 
 	/***********************************************************************
+	* Returns the where from a table
+	*/
+	function geneSqlWhere($tabla, $join ){
+		$campost = $this->CI->db->field_data($tabla);
+		
+		$campos = array();
+		foreach( $campost as $ca ){
+			$campos[] = array("tabla"=>$tabla, "name"=>$ca->name, "type"=>$ca->type, "max_length"=> $ca->max_length, "primary_key"=>$ca->primary_key);
+		}
+
+		foreach($join as $model){
+			$campost = $this->CI->db->field_data($model['table']);
+			foreach( $campost as $ca ){
+				if (  array_search( $ca->name, $model['fields'] ) !== false ) {
+					$campos[] = array("tabla"=>$model['table'], "name"=>$ca->name, "type"=>$ca->type, "max_length"=> $ca->max_length, "primary_key"=>$ca->primary_key);
+				}
+			}
+		}
+		$mWhere = array();
+		if ($this->CI->input->get_post('_search')==true){
+			foreach ( $campos as $campo)
+			{
+				$valor = $this->CI->input->get_post($campo['name']);
+				if ($valor) {
+					if ( $campo['type'] == 'string' ){
+						if ( substr($valor,0,1) == '%' || substr($valor,0,1) == '*' ) {
+							$valor = substr($valor,1);
+							$mWhere[] = array('like', $campo['tabla'].'.'.$campo['name'], $valor, 'both' );
+						} else
+							$mWhere[] = array('like', $campo['tabla'].'.'.$campo['name'], $valor, 'after' );
+						
+					} elseif ( $campo['type'] == 'date' || $campo['type'] == 'timestamp' ) {
+						$mWhere[] = array('', $campo['tabla'].'.'.$campo['name'], $valor, '' );
+						
+					} elseif ( $campo['type'] == 'real' || $campo['type'] == 'int'  ) {
+						$valor= trim($valor);
+						if ( in_array(substr($valor,0,2), array('>=','<=','<>','!=') ) )  {
+							$mWhere[] = array(substr($valor,0,2), $campo['tabla'].'.'.$campo['name'], substr($valor,2), '' );
+						} elseif ( in_array(substr($valor,0,1), array('>','<') ) ) {
+							$mWhere[] = array(substr($valor,0,1), $campo['tabla'].'.'.$campo['name'], substr($valor,1), '' );
+						} else 
+							$mWhere[] = array('', $campo['tabla'].'.'.$campo['name'], $valor, '' );
+
+					} elseif ( $campo->type == 'blob' ) {
+						$mWhere[] = array('like', $campo['tabla'].'.'.$campo['name'], $valor, 'both' );
+					} else {
+						$mWhere[] = array('like', $campo['tabla'].'.'.$campo['name'], $valor, 'both' );
+					}
+				}
+			}
+		}
+		return $mWhere;
+	}
+
+
+	/***********************************************************************
 	* Export data to pdf or csv
 	* @param String $type pdf/csv
 	* @return <type> 
 	*/
 	function export()
 	{
-
 		$queryString = $this->CI->config->item('enable_query_strings');
 		if($queryString === false){
 			$arrFormat = $this->CI->uri->uri_to_assoc();

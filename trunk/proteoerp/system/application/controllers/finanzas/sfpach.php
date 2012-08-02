@@ -305,7 +305,7 @@ jQuery("#a1").click( function(){
 				'editable'      => 'true',
 				'edittype'      => "'select'",
 				'editrules'     => '{ required:true }',
-				'editoptions'   => '{ dataUrl: "ddtarjeta"}',
+				'editoptions'   => '{ dataUrl: "'.base_url().'ajax/ddtarjeta"}',
 				'stype'         => "'text'"
 			)
 		);
@@ -356,7 +356,7 @@ jQuery("#a1").click( function(){
 				'editable'      => 'true',
 				'edittype'      => "'select'",
 				'editrules'     => '{ edithidden:true, required:true }',
-				'editoptions'   => '{ dataUrl: "ddbanco"}',
+				'editoptions'   => '{ dataUrl: "'.base_url().'ajax/ddbanco"}',
 				'stype'         => "'text'",
 			)
 		);
@@ -689,112 +689,121 @@ jQuery("#a1").click( function(){
 		$monto   = $this->input->get_post('monto');
 		$fecha   = date('Ymd');
 
-		$monto = $mMonto;
+		$mMonto = $monto;
+		
+		// Validar
+		$check = 0;
+		
+		if ( $monto <= 0 ) $check = $check + 1 ;
+		
+		if ( $check == 0 ){
+		
+			$transac = $this->datasis->prox_sql("ntransa",8);
 
-		$transac = $this->datasis->prox_sql("ntransa",8);
+			$i = 0;
+			while ( $i == 0){
+				$numero  =$this->datasis->prox_sql("nbcaj",8);
+				if ($this->datasis->dameval("SELECT count(*) FROM bcaj WHERE numero='".$numero."'") == 0 ){
+					$i = 1;
+				};
+			}
 
-		$i = 0;
-		while ( $i == 0){
-			$numero  =$this->datasis->prox_sql("nbcaj",8);
-			if ($this->datasis->dameval("SELECT count(*) FROM bcaj WHERE numero='".$numero."'") == 0 ){
-				$i = 1;
-			};
+			$numeroe = $this->datasis->banprox($envia);
+			$numeror = $this->datasis->banprox('00');
+			$data = array();
+		
+			$data['fecha']      = $fecha;
+			$data['numero']     = $numero;
+	
+			$data['tipo']       = 'DE';
+			$data['tarjeta']    = 0;
+			$data['tdebito']    = 0;
+			$data['cheques']    = 0;
+			$data['efectivo']   = $monto;
+			$data['comision']   = 0;
+			$data['islr']       = 0;
+			$data['monto']      = $monto;
+			$data['envia']      = $envia;
+			
+			$data['bancoe']     = $this->datasis->dameval("SELECT banco FROM banc WHERE codbanc='$envia'");
+	
+			$data['tipoe']      = 'ND';
+			$data['numeroe']    = $numeroe;
+	
+			$data['codbanc']    = $recibe;
+			$data['recibe']     = '00';
+			$data['bancor']     = 'DEPOSITO EN TRANSITO';
+				$data['tipor']      = 'DE';
+	
+			$data['numeror']    = $numeror;
+			$data['concepto']   = "TRANSITO DESDE CAJA $envia A BANCO $recibe ";
+			$data['concep2']    = "CHEQUES";
+			$data['status']     = 'P';  // Pendiente/Cerrado/Anulado
+			$data['usuario']    = $this->secu->usuario();
+			$data['estampa']    = $fecha;
+			$data['hora']       = date('H:i:s');
+			$data['transac']    = $transac;
+
+			//Guarda en BCAJ
+			$this->db->insert('bcaj', $data);
+			$this->datasis->actusal( $envia, $fecha, -$monto );
+		
+			//$mSQL = "UPDATE sfpa SET deposito='$numero', status='P' WHERE id IN ($cheques)";
+			//$this->db->simple_query($mSQL);
+	
+			//GUARDA EN BMOV LA SALIDA DE CAJA
+			$data = array();
+		
+			$data['codbanc']  = $envia;
+			$data['numcuent'] = $this->datasis->dameval("SELECT numcuent FROM banc WHERE codbanc='$envia'");
+			$data['banco']    = $this->datasis->dameval("SELECT banco    FROM banc WHERE codbanc='$envia'");
+			$data['saldo']    = $this->datasis->dameval("SELECT saldo    FROM banc WHERE codbanc='$envia'");
+			$data['tipo_op']  = 'ND';
+			$data['numero']   = $numeroe;
+			$data['fecha']    = $fecha;
+			$data['clipro']   = 'O';
+			$data['codcp']    = 'CAJAS';
+			$data['nombre']   = 'DEPOSITO DESDE CAJA';
+			$data['monto']    = $monto;
+			$data['concepto'] = "DEPOSITO DESDE CAJA $envia A BANCO $recibe ";
+			$data['concep2']  = "";
+				$data['benefi']   = "";
+			$data['usuario']  = $this->secu->usuario();
+			$data['estampa']  = $fecha;
+			$data['hora']     = date('H:i:s');
+			$data['transac']  = $transac;
+			$this->db->insert('bmov', $data);
+		
+			//Actualiza saldo en caja de transito
+			$this->datasis->actusal('00', $fecha, $monto);
+
+			$data['codbanc']  = '00';
+			$data['numcuent'] = $this->datasis->dameval("SELECT numcuent FROM banc WHERE codbanc='$envia'");
+			$data['banco']    = $this->datasis->dameval("SELECT banco    FROM banc WHERE codbanc='$envia'");
+			$data['saldo']    = $this->datasis->dameval("SELECT saldo    FROM banc WHERE codbanc='$envia'");
+			$data['tipo_op']  = 'NC';
+			$data['numero']   = $numeror;
+			$data['fecha']    = $fecha;
+			$data['clipro']   = 'O';
+			$data['codcp']    = 'CAJAS';
+			$data['nombre']   = 'DEPOSITO DESDE CAJA';
+			$data['monto']    = $monto;
+			$data['concepto'] = "DEPOSITO DESDE CAJA $envia A BANCO $recibe ";
+			$data['concep2']  = "";
+			$data['benefi']   = "";
+			$data['usuario']  = $this->secu->usuario();
+			$data['estampa']  = $fecha;
+			$data['hora']     = date('H:i:s');
+			$data['transac']  = $transac;
+			$this->db->insert('bmov', $data);
+	
+			logusu('BCAJ',"Deposito en efectivo de caja Nro. $numero creada");
+			echo "{\"numero\":\"$numero\",\"mensaje\":\"Registro Agregado\"}";
+		} else {
+			echo "{\"numero\":\"$numero\",\"mensaje\":\"Error \"}";
 		}
-
-		$numeroe = $this->datasis->banprox($envia);
-		$numeror = $this->datasis->banprox('00');
-		$data = array();
 		
-		$data['fecha']      = $fecha;
-		$data['numero']     = $numero;
-
-		$data['tipo']       = 'DE';
-		$data['tarjeta']    = 0;
-		$data['tdebito']    = 0;
-		$data['cheques']    = 0;
-		$data['efectivo']   = $monto;
-		$data['comision']   = 0;
-		$data['islr']       = 0;
-		$data['monto']      = $monto;
-		$data['envia']      = $envia;
-		
-		$data['bancoe']     = $this->datasis->dameval("SELECT banco FROM banc WHERE codbanc='$envia'");
-
-		$data['tipoe']      = 'ND';
-		$data['numeroe']    = $numeroe;
-
-		$data['codbanc']    = $recibe;
-		$data['recibe']     = '00';
-		$data['bancor']     = 'DEPOSITO EN TRANSITO';
-		$data['tipor']      = 'DE';
-
-		$data['numeror']    = $numeror;
-		$data['concepto']   = "TRANSITO DESDE CAJA $envia A BANCO $recibe ";
-		$data['concep2']    = "CHEQUES";
-		$data['status']     = 'P';  // Pendiente/Cerrado/Anulado
-		$data['usuario']    = $this->secu->usuario();
-		$data['estampa']    = $fecha;
-		$data['hora']       = date('H:i:s');
-		$data['transac']    = $transac;
-
-		//Guarda en BCAJ
-		$this->db->insert('bcaj', $data);
-		$this->datasis->actusal( $envia, $fecha, -$monto );
-		
-		//$mSQL = "UPDATE sfpa SET deposito='$numero', status='P' WHERE id IN ($cheques)";
-		//$this->db->simple_query($mSQL);
-	
-		//GUARDA EN BMOV LA SALIDA DE CAJA
-		$data = array();
-		
-		$data['codbanc']  = $envia;
-		$data['numcuent'] = $this->datasis->dameval("SELECT numcuent FROM banc WHERE codbanc='$envia'");
-		$data['banco']    = $this->datasis->dameval("SELECT banco    FROM banc WHERE codbanc='$envia'");
-		$data['saldo']    = $this->datasis->dameval("SELECT saldo    FROM banc WHERE codbanc='$envia'");
-		$data['tipo_op']  = 'ND';
-		$data['numero']   = $numeroe;
-		$data['fecha']    = $fecha;
-		$data['clipro']   = 'O';
-		$data['codcp']    = 'CAJAS';
-		$data['nombre']   = 'DEPOSITO DESDE CAJA';
-		$data['monto']    = $monto;
-		$data['concepto'] = "DEPOSITO DESDE CAJA $envia A BANCO $recibe ";
-		$data['concep2']  = "";
-		$data['benefi']   = "";
-		$data['usuario']  = $this->secu->usuario();
-		$data['estampa']  = $fecha;
-		$data['hora']     = date('H:i:s');
-		$data['transac']  = $transac;
-		$this->db->insert('bmov', $data);
-		
-		//Actualiza saldo en caja de transito
-		$this->datasis->actusal('00', $fecha, $monto);
-
-		$data['codbanc']  = '00';
-		$data['numcuent'] = $this->datasis->dameval("SELECT numcuent FROM banc WHERE codbanc='$envia'");
-		$data['banco']    = $this->datasis->dameval("SELECT banco    FROM banc WHERE codbanc='$envia'");
-		$data['saldo']    = $this->datasis->dameval("SELECT saldo    FROM banc WHERE codbanc='$envia'");
-		$data['tipo_op']  = 'NC';
-		$data['numero']   = $numeror;
-		$data['fecha']    = $fecha;
-		$data['clipro']   = 'O';
-		$data['codcp']    = 'CAJAS';
-		$data['nombre']   = 'DEPOSITO DESDE CAJA';
-		$data['monto']    = $monto;
-		$data['concepto'] = "DEPOSITO DESDE CAJA $envia A BANCO $recibe ";
-		$data['concep2']  = "";
-		$data['benefi']   = "";
-		$data['usuario']  = $this->secu->usuario();
-		$data['estampa']  = $fecha;
-		$data['hora']     = date('H:i:s');
-		$data['transac']  = $transac;
-		$this->db->insert('bmov', $data);
-	
-		logusu('BCAJ',"Deposito en efectivo de caja Nro. $numero creada");
-		echo "{\"numero\":\"$numero\",\"mensaje\":\"Registro Agregado\"}";
 	}
-
-
 
 
 	function instalar(){

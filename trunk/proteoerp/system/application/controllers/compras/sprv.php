@@ -780,7 +780,8 @@ class Sprv extends validaciones {
 										mode: 'remote',
 										hideTrigger: true,
 										typeAhead: true,
-										forceSelection: true,										valueField: 'item',
+										forceSelection: true,
+										valueField: 'item',
 										displayField: 'valor',
 										store: scliStore,
 										columnWidth: 0.80
@@ -793,7 +794,8 @@ class Sprv extends validaciones {
 										mode: 'remote',
 										hideTrigger: true,
 										typeAhead: true,
-										forceSelection: true,										valueField: 'item',
+										forceSelection: true,
+										valueField: 'item',
 										displayField: 'valor',
 										store: cplaStore,
 										columnWidth: 0.80

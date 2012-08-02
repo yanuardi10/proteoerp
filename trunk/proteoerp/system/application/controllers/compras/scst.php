@@ -51,9 +51,9 @@ class Scst extends Controller {
 		south__paneSelector:  ".centro-sur",
 		south__size: 220,
 		center__onresize: function (pane, $Pane) {
-			jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'setGridWidth\',$Pane.innerWidth()-6);
+			jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'setGridWidth\', $Pane.innerWidth()-6);
 			jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'setGridHeight\',$Pane.innerHeight()-100);
-			jQuery("#newapi'.$param['grids'][1]['gridname'].'").jqGrid(\'setGridWidth\',$Pane.innerWidth()-6);
+			jQuery("#newapi'.$param['grids'][1]['gridname'].'").jqGrid(\'setGridWidth\', $Pane.innerWidth()-6);
 		}
 	});
 	';
@@ -867,10 +867,6 @@ jQuery("#boton1").click( function(){
 				}
 			}');
 			
-			//cellEdit: true,
-			//cellsubmit: "remote",
-			//cellurl: "'.site_url($this->url.'setdata/').'"
-		//');
 		$grid->setOndblClickRow("");
 
 		$grid->setFormOptionsE('-'); //'closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
