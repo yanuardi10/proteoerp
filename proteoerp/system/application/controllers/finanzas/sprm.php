@@ -864,7 +864,7 @@ jQuery("#boton1").click( function(){
 			} else {
 				//$this->db->simple_query("DELETE FROM sprm WHERE id=$id ");
 				//logusu('sprm',"Registro ????? ELIMINADO");
-				echo "Registro Eliminado";
+				echo "Registro no Eliminado";
 			}
 		};
 	}

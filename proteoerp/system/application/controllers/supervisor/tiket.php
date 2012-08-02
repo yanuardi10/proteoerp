@@ -1,5 +1,847 @@
 <?php
 class Tiket extends Controller {
+	var $mModulo='TIKET';
+	var $titp='Tickets de Servicio';
+	var $tits='Tickets de Servicio';
+	var $url ='supervisor/tiket/';
+
+	function Tiket(){
+		parent::Controller();
+		$this->load->library('rapyd');
+		$this->load->library('jqdatagrid');
+		//$this->datasis->modulo_nombre( $modulo, $ventana=0 );
+	}
+
+	function index(){
+		$this->datasis->modintramenu( 1024, 500, 'supervisor/tiket' );
+		redirect($this->url.'jqdatag');
+	}
+
+	//***************************
+	//Layout en la Ventana
+	//
+	//***************************
+	function jqdatag(){
+
+		$grid = $this->defgrid();
+		$param['grids'][] = $grid->deploy();
+
+		$grid1   = $this->defgridIt();
+		$param['grids'][] = $grid1->deploy();
+
+		$readyLayout = '
+	$(\'body\').layout({
+		minSize: 30,
+		north__size: 60,
+		resizerClass: \'ui-state-default\',
+		west__size: 212,
+		west__onresize: function (pane, $Pane){jQuery("#west-grid").jqGrid(\'setGridWidth\',$Pane.innerWidth()-2);},
+	});
+	
+	$(\'div.ui-layout-center\').layout({
+		minSize: 30,
+		resizerClass: "ui-state-default",
+		center__paneSelector: ".centro-centro",
+		south__paneSelector:  ".centro-sur",
+		south__size: 142,
+		center__onresize: function (pane, $Pane) {
+			jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'setGridWidth\', $Pane.innerWidth()-6);
+			jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'setGridHeight\',$Pane.innerHeight()-100);
+			jQuery("#newapi'.$param['grids'][1]['gridname'].'").jqGrid(\'setGridWidth\', $Pane.innerWidth()-6);
+		}
+	});
+	
+	function masterval() { return master; };
+	';
+
+
+		$bodyscript = '
+<script type="text/javascript">
+$(function() {
+	$( "input:submit, a, button", ".otros" ).button();
+});
+
+$( "#subep" ).click(function() {
+	var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
+	if (id)	{
+		var ret = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
+		$.get("'.base_url().'supervisor/tiket/subep/"+id,
+		function(data){
+			alert(data);
+			jQuery("#newapi'. $param['grids'][0]['gridname'].'").trigger("reloadGrid");
+		});
+
+	} else { $.prompt("<h1>Por favor Seleccione un Ticket</h1>");}
+});
+
+$( "#bajap" ).click(function() {
+	var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
+	if (id)	{
+		var ret = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
+		$.get("'.base_url().'supervisor/tiket/bajap/"+id,
+		function(data){
+			alert(data);
+			jQuery("#newapi'. $param['grids'][0]['gridname'].'").trigger("reloadGrid");
+		});
+
+	} else { $.prompt("<h1>Por favor Seleccione un Ticket</h1>");}
+});
+
+jQuery("#cestado").click( function(){
+	var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
+	if (id)	{
+		var ret = jQuery("#newapi'. $param['grids'][1]['gridname'].'").jqGrid(\'getRowData\',id);
+		$.prompt(
+			"<h1>Cambiar Estado del Tiket "+id+"</h1>",
+			{
+				buttons: { "Cerrado":1,  "Resuelto":2, "Pendiente":3, "Cancelar": 0 }, focus: 1,
+				callback: function(e,v,m,f){
+					if (v != 0) {
+						$.get("'.base_url().'supervisor/tiket/cestado/"+id+"/"+v,
+						function(data){ alert(data); });
+					}
+				}
+			}
+		);
+	} else { $.prompt("<h1>Por favor Seleccione un Ticket</h1>");}
+});
+
+
+
+jQuery("#a1").click( function(){
+	var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
+	if (id)	{
+		var ret = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
+		window.open(\''.base_url().'formatos/ver/TIKET/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
+});
+</script>
+';
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		$WestPanel = '
+<div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content">
+<div class="otros">
+<table id="west-grid" align="center">
+	<tr>
+		<td><div class="tema1"><table id="listados"></table></div></td>
+	</tr>
+	<tr>
+		<td><div class="tema1"><table id="otros"></table></div></td>
+	</tr>
+</table>
+
+<table id="west-grid" align="center">
+	<tr>
+		<td colspan="2" style="text-align:center;border-width:1px;border-style:solid;border-color:#CCCCCC;"><spam style="font-size:16px;font-weight:bold;">Prioridades</spam></td>
+	</tr>
+	<tr>
+		<td><div class="tema1"><a style="width:90px" href="#" id="subep">Subir'.img(array('src' => 'images/arrow_up.png', 'alt' => 'Bajar',  'title' => 'Bajar', 'border'=>'0')).'</a></div></td>
+		<td><div class="tema1"><a style="width:90px" href="#" id="bajap">Bajar'.img(array('src' => 'images/arrow_down.png',   'alt' => 'Subir',  'title' => 'Subir', 'border'=>'0')).'</a></div></td>
+	</tr>
+	<tr style="background:#CCCCDD;">
+		<td><img src="'.base_url().'images/circulorojo.png" width="20" height="18" border="0" />Muy Alta</td>
+		<td><img src="'.base_url().'images/circulonaranja.png" width="20" height="18" border="0" />Alta</td>
+	</tr>
+	<tr style="background:#CCCCDD;">
+		<td><img src="'.base_url().'images/circuloamarillo.png" width="20" height="18" border="0" />Media</td>
+		<td><img src="'.base_url().'images/circuloazul.png" width="20" height="18" border="0" />Baja</td>
+	</tr>
+	<tr style="background:#CCCCDD;">
+		<td colspan="2"><img src="'.base_url().'images/circuloverde.png" width="20" height="18" border="0" />Muy Baja</td>
+	</tr>
+	<tr>
+		<td colspan="2" style="text-align:center;border-width:1px;border-style:solid;border-color:#CCCCCC;"><spam style="font-size:16px;font-weight:bold;">Estados</spam></td>
+	</tr>
+	<tr>
+		<td colspan="2"><div class="tema1"><a style="width:190px" href="#" id="cestado">Cambio de Estado'.img(array('src' => 'images/face-smile.png', 'alt' => 'Estado',  'title' => 'Estado', 'border'=>'0')).'</a></div></td>
+	</tr>
+	<tr style="background:#CCDDCC;">
+		<td><img src="'.base_url().'images/face-crying.png" width="20" height="18" border="0" />Nuevo</td>
+		<td><img src="'.base_url().'images/face-tired.png"  width="20" height="18" border="0" />Pendiente</td>
+	</tr>
+	<tr style="background:#CCDDCC;">
+		<td><img src="'.base_url().'images/face-cool.png" width="20" height="18" border="0" />Cerrado</td>
+		<td><img src="'.base_url().'images/face-smile.png" width="20" height="18" border="0" />Resuelto</td>
+	</tr>
+
+</table>
+</div>
+</div> <!-- #LeftPane -->
+';
+
+
+
+
+		$centerpanel = '
+<div id="RightPane" class="ui-layout-center">
+	<div class="centro-centro">
+		<table id="newapi'.$param['grids'][0]['gridname'].'"></table>
+		<div id="pnewapi'.$param['grids'][0]['gridname'].'"></div>
+	</div>
+	<div class="centro-sur" id="adicional" style="overflow:auto;">
+		<table id="newapi'.$param['grids'][1]['gridname'].'"></table>
+		<div id="pnewapi'.$param['grids'][1]['gridname'].'"></div>
+	</div>
+</div> <!-- #RightPane -->
+';
+
+		$SouthPanel = '
+<div id="BottomPane" class="ui-layout-south ui-widget ui-widget-content">
+<p>'.$this->datasis->traevalor('TITULO1').'</p>
+</div> <!-- #BottomPanel -->
+';
+		$readyscript = "\tvar master = -1;\n";
+
+		$funciones = '
+	function festado(el, val, opts){
+		var meco=\'<div><img src="'.base_url().'images/face-devilish.png" width="18" height="18" border="0" /></div>\';
+		if ( el == "N" ){
+			meco=\'<div><img src="'.base_url().'images/face-crying.png" width="20" height="18" border="0" /></div>\';
+		} else if (el == "C") {
+			meco=\'<div><img src="'.base_url().'images/face-cool.png" width="20" height="18" border="0" /></div>\';
+		} else if (el == "R") {
+			meco=\'<div><img src="'.base_url().'images/face-smile.png" width="20" height="20" border="0" /></div>\';
+		} else if (el == "P") {
+			meco=\'<div><img src="'.base_url().'images/face-tired.png" width="20" height="20" border="0" /></div>\';
+		}
+		return meco;
+	};
+	function fprioridad(el, val, opts){
+		var meco=\'<div><img src="'.base_url().'images/circuloverde.png" width="20" height="18" border="0" /></div>\';
+		if ( el == "5" ){
+			meco=\'<div><img src="'.base_url().'images/circulorojo.png" width="20" height="18" border="0" /></div>\';
+		} else if (el == "4") {
+			meco=\'<div><img src="'.base_url().'images/circulonaranja.png" width="20" height="18" border="0" /></div>\';
+		} else if (el == "3") {
+			meco=\'<div><img src="'.base_url().'images/circuloamarillo.png" width="20" height="20" border="0" /></div>\';
+		} else if (el == "2") {
+			meco=\'<div><img src="'.base_url().'images/circuloazul.png" width="20" height="20" border="0" /></div>\';
+		} else if (el == "1") {
+			meco=\'<div><img src="'.base_url().'images/circuloverde.png" width="20" height="20" border="0" /></div>\';
+		}
+		return meco;
+	}	
+';
+
+		$param['WestPanel']  = $WestPanel;
+		$param['funciones']  = $funciones;
+
+		$param['readyLayout']  = $readyLayout;
+		$param['readyscript']  = $readyscript;
+
+		//$param['EastPanel']  = $EastPanel;
+		$param['listados']   = $this->datasis->listados('BCAJ', 'JQ');
+		$param['otros']      = $this->datasis->otros('BCAJ', 'JQ');
+		//$param['funciones']  = $funciones;
+
+		$param['centerpanel']  = $centerpanel;
+		$param['SouthPanel'] = $SouthPanel;
+		$param['temas']     = array('proteo','darkness','anexos1');
+
+		//$param['tema']  = 'bootstrap';
+		$param['bodyscript'] = $bodyscript;
+		$param['tabs'] = false;
+		$param['encabeza']   = $this->titp;
+
+		$this->load->view('jqgrid/crud2',$param);
+	}
+
+	//***************************
+	//Definicion del Grid y la Forma
+	//***************************
+	function defgrid( $deployed = false ){
+		$i      = 1;
+		$editar = "true";
+
+		$estado    = array("N"=>"Nuevo","P"=>"Pendiente","R"=>"Resueltos","C"=>"Cerrado");
+		$prioridad = array("1"=>"Muy Alta","2"=>"Alta","3"=>"Media","4"=>"Baja","5"=>"Muy baja");
+
+		$grid  = new $this->jqdatagrid;
+
+		$grid->addField('id');
+		$grid->label('Numero');
+		$grid->params(array(
+			'align'         => "'center'",
+			'frozen'        => 'true',
+			'width'         => 50,
+			'editable'      => 'false',
+			'search'        => 'false',
+			'editoptions'   => '{ readonly: "readonly", size:8 }'
+		));
+
+		$grid->addField('estampa');
+		$grid->label('Fecha');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => 'false',
+			'width'         => 130,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
+
+/*
+		$grid->addField('actualizado');
+		$grid->label('Actualizado');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => 'false',
+			'width'         => 120,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
+*/
+
+		$grid->addField('usuario');
+		$grid->label('Usuario');
+		$grid->params(array(
+			'align'         => "'center'",
+			'search'        => 'true',
+			'editable'      => 'false',
+			'width'         => 80,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 50 }'
+		));
+
+		$grid->addField('contenido');
+		$grid->label('Contenido');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => 'true',
+			'width'         => 400,
+			'edittype'      => "'textarea'",
+			'editoptions'   => "{ rows:25, cols:80}",
+			'formoptions'   => '{ label:"Cont." }'
+		));
+
+		$grid->addField('prioridad');
+		$grid->label('Prioridad');
+		$grid->params(array(
+			'align'         => "'center'",
+			'search'        => 'true',
+			'editable'      => 'true',
+			'width'         => 40,
+			'edittype'      => "'select'",
+			'editoptions'   => '{value: {"1":"1 Muy Alta","2":" 2 Alta","3":" 3 Media","4":" 4 Baja","5":"5 Muy baja" } }',
+			'formatter'     => 'fprioridad'
+		));
+
+		$grid->addField('estado');
+		$grid->label('Estado');
+		$grid->params(array(
+			'align'         => "'center'",
+			'search'        => 'true',
+			'editable'      => 'false',
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 1 }',
+			'formatter'     => 'festado'
+		));
+
+/*
+		$grid->addField('padre');
+		$grid->label('Padre');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 1 }',
+		));
+
+
+		$grid->addField('pertenece');
+		$grid->label('Pertenece');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 50,
+			'edittype'      => "'text'",
+		));
+*/
+
+		$grid->showpager(true);
+		$grid->setWidth('');
+		$grid->setHeight('141');
+		$grid->setTitle($this->titp);
+		$grid->setfilterToolbar(true);
+		$grid->setToolbar('false', '"top"');
+		$grid->setOndblClickRow(',ondblClickRow: function(rid){ $(gridId1).jqGrid("viewGridRow", rid, {closeOnEscape:true}); }');
+
+		$grid->setOnSelectRow(' function(id){
+				if (id){
+					var ret = $("#titulos").getRowData(id);
+					jQuery(gridId2).jqGrid(\'setGridParam\',{url:"'.site_url($this->url.'getdatait/').'/"+id+"/", page:1});
+					jQuery(gridId2).trigger("reloadGrid");
+					master = id;
+				}
+			}'
+		);
+
+		//$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 680, height:500, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		$grid->setFormOptionsA('
+			closeAfterAdd:true,
+			mtype: "POST",
+			width: 680,
+			height:500,
+			closeOnEscape: true,
+			top: 50,
+			left:20,
+			recreateForm:true,
+			afterSubmit: function(a,b){
+				if (a.responseText.length > 0)
+					$.prompt(a.responseText);
+				return [true, a ];
+			}
+		');
+
+
+		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
+
+		$grid->setAfterPager(
+'		{beforeShowForm: function ($form) {
+			$form.css({"max-height":0.50*screen.height+"px","width": "680px"});
+			$form.find("td.DataTD").each(function () {
+				var $this = $(this), html = $this.html();
+				if (html.substr(0, 6) === "&nbsp;") {
+					$(this).html(html.substr(6));
+				}
+				$this.children("span").css({
+					overflow: "auto",
+					"text-align": "inherit", 
+					display: "inline-block",
+					"max-height": "350px",
+					"width": "590px"
+				});
+			});
+			$form.find("td.CaptionTD").each(function () {
+				var $this = $(this), html = $this.html();
+				$this.removeAttr("width");
+				$this.attr("width","80");
+				
+
+			});
+			},
+                width: 700}');
+
+
+		#show/hide navigations buttons   td.DataTD
+		$grid->setAdd(true);
+		$grid->setEdit(false);
+		$grid->setDelete(false);
+		$grid->setSearch(false);
+		$grid->setRowNum(20);
+		$grid->setShrinkToFit('false');
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		#GET url
+		$grid->setUrlget(site_url($this->url.'getdata/'));
+
+		if ($deployed) {
+			return $grid->deploy();
+		} else {
+			return $grid;
+		}
+	}
+
+	/**
+	* Busca la data en el Servidor por json
+	*/
+	function getdata()
+	{
+		$grid       = $this->jqdatagrid;
+
+		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
+		$mWHERE = $grid->geneTopWhere('tiket');
+		$mWHERE[] = array( '','padre','S','' );
+
+		$response   = $grid->getData('tiket', array(array()), array(), false, $mWHERE, 'tiket.id desc, tiket.estampa ', 'desc' );
+		$rs = $grid->jsonresult( $response);
+		echo $rs;
+	}
+
+	/**
+	* Guarda la Informacion
+	*/
+	function setData()
+	{
+		$this->load->library('jqdatagrid');
+		$oper   = $this->input->post('oper');
+		$id     = $this->input->post('id');
+		$data   = $_POST;
+		$check  = 0;
+
+		unset($data['oper']);
+		unset($data['id']);
+		if($oper == 'add'){
+			if(false == empty($data)){
+				$data['usuario'] = $this->secu->usuario();
+				$data['estampa'] = date('Y-m-d H:i:s');
+				$data['estado']  = 'N';
+				$data['padre']   = 'S';
+				
+				$this->db->insert('tiket', $data);
+				echo "Registro Agregado";
+
+				logusu('TIKET',"Registro Numero $id INCLUIDO");
+			} else
+			echo "Fallo Agregado!!!";
+
+		} elseif($oper == 'edit') {
+			//unset($data['ubica']);
+			//$this->db->where('id', $id);
+			//$this->db->update('tiket', $data);
+			//logusu('TIKET',"Registro ????? MODIFICADO");
+			echo "Registro No Modificable";
+
+		} elseif($oper == 'del') {
+			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM tiket WHERE id='$id' ");
+			if ($check > 0){
+				echo " El registro no puede ser eliminado; tiene movimiento ";
+			} else {
+				$this->db->simple_query("DELETE FROM tiket WHERE id=$id ");
+				logusu('TIKET',"Registro ????? ELIMINADO");
+				echo "Registro Eliminado";
+			}
+		};
+	}
+
+	//***************************
+	//Definicion del Grid y la Forma
+	//***************************
+	function defgridIt( $deployed = false ){
+		$i      = 1;
+		$editar = "true";
+
+		$estado    = array("N"=>"Nuevo","P"=>"Pendiente","R"=>"Resueltos","C"=>"Cerrado");
+		$prioridad = array("1"=>"Muy Alta","2"=>"Alta","3"=>"Media","4"=>"Baja","5"=>"Muy baja");
+
+		$grid  = new $this->jqdatagrid;
+
+
+		$grid->addField('id');
+		$grid->label('Numero');
+		$grid->params(array(
+			'align'         => "'center'",
+			'frozen'        => 'true',
+			'width'         => 50,
+			'hidden'        => 'true',
+			'search'        => 'false',
+			'editoptions'   => '{ readonly: "readonly", size:8 }'
+		));
+
+		$grid->addField('estampa');
+		$grid->label('Fecha');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => 'false',
+			'width'         => 130,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
+
+
+		$grid->addField('pertenece');
+		$grid->label('Pertenece');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => 'true',
+			'width'         => 50,
+			'edittype'      => "'text'",
+			'hidden'        => "true",
+			'editrules'     => "{ edithidden:true,  }",
+			'editoptions'   => '{ readonly: "readonly", size:8, value: masterval }'
+		));
+
+
+/*
+		$grid->addField('actualizado');
+		$grid->label('Actualizado');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => 'false',
+			'width'         => 90,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
+*/
+		$grid->addField('usuario');
+		$grid->label('Usuario');
+		$grid->params(array(
+			'align'         => "'center'",
+			'search'        => 'true',
+			'editable'      => 'false',
+			'width'         => 60,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 50 }'
+		));
+
+		$grid->addField('contenido');
+		$grid->label('Contenido');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => 'true',
+			'width'         => 550,
+			'edittype'      => "'textarea'",
+			'editoptions'   => "{ rows:20, cols:80}",
+			'formoptions'   => '{ label:"Cont." }'
+		));
+/*
+		$grid->addField('prioridad');
+		$grid->label('Prioridad');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => 'false',
+			'width'         => 40,
+			'edittype'      => "'text'",
+		));
+
+		$grid->addField('estado');
+		$grid->label('Estado');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => 'false',
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 1 }',
+		));
+*/
+
+		$grid->showpager(true);
+		$grid->setWidth('');
+		$grid->setHeight('90');
+		//$grid->setTitle($this->titp);
+		//$grid->setfilterToolbar(true);
+		$grid->setToolbar('false', '"top"');
+		$grid->setOndblClickRow(',ondblClickRow: function(rid){ $(gridId2).jqGrid("viewGridRow", rid, {closeOnEscape:true}); }');
+
+		//$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 680, height:500, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		$grid->setFormOptionsA('
+			closeAfterAdd:true,
+			mtype: "POST",
+			width: 680,
+			height:500,
+			closeOnEscape: true,
+			top: 50, left:20,
+			recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},
+			beforeInitData: function(){
+				if ( master > 0 ){
+					return true;
+				} else {
+					$.prompt("<h1>Seleecione un Ticket</h1>");
+					return false;
+				}
+			}
+		       ');
+		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
+
+		$grid->setAfterPager(
+'		{beforeShowForm: function ($form) {
+			$form.css({"max-height":0.50*screen.height+"px","width": "680px"});
+			$form.find("td.DataTD").each(function () {
+				var $this = $(this), html = $this.html();
+				if (html.substr(0, 6) === "&nbsp;") {
+					$(this).html(html.substr(6));
+				}
+				$this.children("span").css({
+					overflow: "auto",
+					"text-align": "inherit", 
+					display: "inline-block",
+					"max-height": "350px",
+					"width": "590px"
+				});
+			});
+			$form.find("td.CaptionTD").each(function () {
+				var $this = $(this), html = $this.html();
+				$this.removeAttr("width");
+				$this.attr("width","80");
+			});
+			},
+                width: 700}');
+
+
+
+		#show/hide navigations buttons
+		$grid->setAdd(true);
+		$grid->setEdit(false);
+		$grid->setDelete(false);
+		$grid->setSearch(true);
+		$grid->setRowNum(30);
+		$grid->setShrinkToFit('false');
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdataIt/'));
+
+		#GET url
+		$grid->setUrlget(site_url($this->url.'getdataIt/'));
+
+		if ($deployed) {
+			return $grid->deploy();
+		} else {
+			return $grid;
+		}
+	}
+
+	/**
+	* Busca la data en el Servidor por json
+	*/
+	function getdataIt() {
+		$id = $this->uri->segment(4);
+		if ($id == false ){
+			$id = $this->datasis->dameval("SELECT MAX(id) FROM tiket WHERE padre='S' AND estado NOT IN ('C','R')");
+		}
+
+		$grid       = $this->jqdatagrid;
+
+		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
+		$mWHERE = $grid->geneTopWhere('tiket');
+		$mWHERE[] = array( '','padre','N','' );
+		$mWHERE[] = array( '','pertenece',$id,'' );
+
+		$response   = $grid->getData('tiket', array(array()), array(), false, $mWHERE, 'tiket.id', 'desc' );
+		$rs = $grid->jsonresult( $response);
+		echo $rs;
+	}
+
+	/**
+	* Guarda la Informacion
+	*/
+	function setDataIt()
+	{
+		$this->load->library('jqdatagrid');
+		$oper   = $this->input->post('oper');
+		$id     = $this->input->post('id');
+		$data   = $_POST;
+		$check  = 0;
+
+		unset($data['oper']);
+		unset($data['id']);
+		if($oper == 'add'){
+			if(false == empty($data)){
+				$data['usuario'] = $this->secu->usuario();
+				$data['estampa'] = date('Y-m-d H:i:s');
+				$data['estado']  = 'N';
+				$data['padre']   = 'N';
+				$this->db->insert('tiket', $data);
+				$id = $this->db->insert_id();
+
+				// Modifica El Padre
+				$this->db->where('id', $data['pertenece']);
+				$this->db->update('tiket',array("estado"=>"P"));
+				echo "Registro Agregado";
+				logusu('TIKET',"Registro Numero $id Pertenece ".$data['pertenece']." INCLUIDO");
+			} else
+				echo "Fallo Agregado!!!";
+
+		} elseif($oper == 'edit') {
+			//unset($data['ubica']);
+			//$this->db->where('id', $id);
+			//$this->db->update('tiket', $data);
+			//logusu('TIKET',"Registro ????? MODIFICADO");
+			echo "Registro Modificado";
+
+		} elseif($oper == 'del') {
+			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM tiket WHERE id='$id' ");
+			if ($check > 0){
+				echo " El registro no puede ser eliminado; tiene movimiento ";
+			} else {
+				$this->db->simple_query("DELETE FROM tiket WHERE id=$id ");
+				logusu('TIKET',"Registro ????? ELIMINADO");
+				echo "Registro Eliminado";
+			}
+		};
+	}
+
+
+
+	//*******************************************
+	//
+	// Baja la Prioridad
+	//
+	function bajap(){
+		$id = $this->uri->segment($this->uri->total_segments());
+		if ( $id > 0 ){
+			$prioridad  = $this->datasis->dameval("SELECT prioridad FROM tiket WHERE id=$id");
+			if ( $prioridad <= 1 ){
+				echo "No puede Bajarla del Minimo";
+			} else {
+				$prioridad = $prioridad - 1;
+				$this->db->where('id', $id);
+				$this->db->update('tiket', array("prioridad"=>$prioridad));
+				echo "Prioridad Disminuida";
+			}
+		} else {
+			echo "Error de seleccion ";
+		}
+	}
+
+
+	//*******************************************
+	//
+	// Baja la Prioridad
+	//
+	function subep(){
+		$id = $this->uri->segment($this->uri->total_segments());
+		if ( $id > 0 ){
+			$prioridad  = $this->datasis->dameval("SELECT prioridad FROM tiket WHERE id=$id");
+			if ( $prioridad >= 5  ){
+				echo "No puede Subirla mas del Maximo";
+			} else {
+				$prioridad = $prioridad + 1;
+				$this->db->where('id', $id);
+				$this->db->update('tiket', array("prioridad"=>$prioridad));
+				echo "Prioridad Aumentada";
+			}
+		} else {
+			echo "Error de seleccion ";
+		}
+	}
+
+	//*******************************************
+	//
+	// Baja la Prioridad
+	//
+	function cestado(){
+		$id  = $this->uri->segment($this->uri->total_segments()-1);
+		$edo = $this->uri->segment($this->uri->total_segments());
+		if ( $id > 0 && $edo > 0 ){
+			if ( $edo == 1 )
+				$estado = "C";
+			elseif ( $edo == 2)
+				$estado = "R";
+			else
+				$estado = "P";
+
+				$this->db->where('id', $id);
+				$this->db->update('tiket', array("estado"=>$estado));
+				echo "Estado Cambiado";
+		} else {
+			echo "Error de seleccion ";
+		}
+	}
+
+
+}
+
+/*
+class Tiket extends Controller {
 
 	var $estado;
 	var $prioridad;
@@ -11,10 +853,10 @@ class Tiket extends Controller {
 		$this->load->library("menues");
 		$this->modulo=908;
 		$this->estado=array(
-		 "N"=>"Nuevo",
-     "P"=>"Pendiente",
-     "R"=>"Resueltos",
-     "C"=>"Cerrado");
+		"N"=>"Nuevo",
+		"P"=>"Pendiente",
+		"R"=>"Resueltos",
+		"C"=>"Cerrado");
 
 		$this->prioridad=array(
 		 "1"=>"Muy Alta",
@@ -396,4 +1238,11 @@ class Tiket extends Controller {
 		$this->db->simple_query($mSQL);
 	}
 }
+
+// sebastian 4000
+// elcarmen 4000
+// BOTICA 4000
+// ESTACION 6000
+// GEMA 7000
+*/
 ?>

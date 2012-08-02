@@ -174,7 +174,6 @@ jQuery("#a1").click( function(){
 			'editoptions'   => '{ size:30, maxlength: 8 }',
 		));
 
-
 		$grid->addField('id');
 		$grid->label('Id');
 		$grid->params(array(
