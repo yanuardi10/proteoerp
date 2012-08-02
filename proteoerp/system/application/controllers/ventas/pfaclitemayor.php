@@ -104,6 +104,7 @@ class pfaclitemayor extends validaciones{
 
 	function filterscli(){
 		$url=$this->url.'filteredgrid';
+		$ven=$this->secu->getvendedor();
 		$this->rapyd->uri->keep_persistence();
 		$persistence = $this->rapyd->session->get_persistence($url, $this->rapyd->uri->gfid);
 		$back= (isset($persistence['back_uri'])) ?$persistence['back_uri'] : $url;
@@ -111,6 +112,7 @@ class pfaclitemayor extends validaciones{
 		$this->rapyd->load('datafilter','datagrid');
 
 		$filter = new DataFilter('Selecci&oacute;n de Clientes', 'scli');
+		$filter->db->where('vendedor',$ven);
 		$filter->button('btn_back',RAPYD_BUTTON_BACK,"javascript:window.location='".site_url($back)."'", 'BL');
 		$filter->nombre= new inputField('Nombre','nombre');
 		$filter->rifci= new inputField('CI/RIF','rifci');
