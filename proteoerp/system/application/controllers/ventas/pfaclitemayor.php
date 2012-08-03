@@ -112,11 +112,18 @@ class pfaclitemayor extends validaciones{
 		$this->rapyd->load('datafilter','datagrid');
 
 		$filter = new DataFilter('Selecci&oacute;n de Clientes', 'scli');
-		$filter->db->where('vendedor',$ven);
+		//$filter->db->where('vendedor',$ven);
 		$filter->button('btn_back',RAPYD_BUTTON_BACK,"javascript:window.location='".site_url($back)."'", 'BL');
 		$filter->nombre= new inputField('Nombre','nombre');
+
 		$filter->rifci= new inputField('CI/RIF','rifci');
 		$filter->rifci->size=15;
+
+		$filter->vd = new  dropdownField ('Vendedor', 'vd');
+		$filter->vd->options('SELECT vendedor, CONCAT(vendedor,\' \',nombre) nombre FROM vend ORDER BY vendedor');
+		$filter->vd->style='width:200px;';
+		$filter->vd->insertValue=$ven;
+
 		$filter->buttons('reset','search');
 		$filter->build();
 
