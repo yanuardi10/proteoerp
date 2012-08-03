@@ -119,7 +119,8 @@ class pfaclitemayor extends validaciones{
 		$filter->rifci= new inputField('CI/RIF','rifci');
 		$filter->rifci->size=15;
 
-		$filter->vd = new  dropdownField ('Vendedor', 'vd');
+		$filter->vd = new  dropdownField ('Vendedor', 'vendedor');
+		$filter->vd->option('','Todos');
 		$filter->vd->options('SELECT vendedor, CONCAT(vendedor,\' \',nombre) nombre FROM vend ORDER BY vendedor');
 		$filter->vd->style='width:200px;';
 		$filter->vd->insertValue=$ven;
@@ -551,11 +552,12 @@ class pfaclitemayor extends validaciones{
 		$do->set('vd',$vd);
 
 		$cod_cli = $do->get('cod_cli');
-		$rrow    = $this->datasis->damerow('SELECT nombre,rifci,zona FROM scli WHERE cliente='.$this->db->escape($cod_cli));
+		$rrow    = $this->datasis->damerow('SELECT nombre,rifci,zona,vendedor FROM scli WHERE cliente='.$this->db->escape($cod_cli));
 		if($rrow!=false){
 			$do->set('nombre',$rrow['nombre']);
 			$do->set('rifci' ,$rrow['rifci']);
 			$do->set('zona'  ,$rrow['zona']);
+			$do->set('vd'    ,$rrow['vendedor']);
 		}
 
 		$iva = $totals = 0;
