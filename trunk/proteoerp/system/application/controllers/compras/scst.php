@@ -18,7 +18,6 @@ class Scst extends Controller {
 			$this->db->simple_query('ALTER TABLE scst ADD UNIQUE INDEX control (control)');
 			$this->db->simple_query('ALTER TABLE scst ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
 		};
-
 		redirect($this->url.'jqdatag');
 	}
 
