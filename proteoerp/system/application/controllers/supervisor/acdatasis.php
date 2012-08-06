@@ -289,7 +289,7 @@ jQuery("#bcopiar").click( function(){
 			} else {
 				$mSQL  = "select a.codigo id, a.modulo, a.secu, a.titulo nombre, b.acceso, b.usuario ";
 				$mSQL .= "from tmenus a left join sida b on a.codigo = b.modulo ";
-				$mSQL .= "where a.modulo <> 'MENUINT' and not a.modulo regexp '[0-9]' and a.titulo not in ('Prox','Ante','Busca','Tabla') ";
+				$mSQL .= "where a.modulo <> 'MENUINT' and not a.modulo regexp '[0-9]' ";   //and a.titulo not in ('Prox','Ante','Busca','Tabla') ";
 				$mSQL .= "and b.usuario=".$this->db->escape($usuario)." ";
 				$mSQL .= "and a.modulo LIKE ".$this->db->escape($modulo."%");
 				$mSQL .= "order by modulo,secu";

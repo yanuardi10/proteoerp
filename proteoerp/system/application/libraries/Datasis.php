@@ -73,6 +73,13 @@ class Datasis {
 		else return false;
 	}
 
+	function isindice($tabla, $indice){
+		$CI =& get_instance();
+		$query = $CI->db->query("SHOW INDEX FROM $tabla WHERE Key_name = '$indice'");
+		if ($query->num_rows()>0) return true ;
+		else return false;
+	}
+
 	function adia(){
 		$dias = array();
 		for($i=1;$i<=31;$i++) {
@@ -524,7 +531,7 @@ class Datasis {
 		$opciones = '';
 		$colu = array();
 		$select = '<select>';
-		if ( !empty($id)) $select = '<select id="'.$id.'">';
+		if ( !empty($id)) $select = '<select id="'.$id.'" name="'.$id.'">';
 		foreach( $query->list_fields() as $campo ) {
 			$colu[] = $campo;
 		}

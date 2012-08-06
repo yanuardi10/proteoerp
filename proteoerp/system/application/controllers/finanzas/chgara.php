@@ -14,12 +14,20 @@ class Chgara extends Controller {
 
 	function index(){
 		if ( !$this->datasis->iscampo('chgara','enviado') ) {
-			$this->db->simple_query('ALTER TABLE chgara ADD COLUMN enviado DATE NULL AFTER deposito');
+			$this->db->query('ALTER TABLE chgara ADD COLUMN enviado DATE NULL AFTER deposito');
 		};
 		if ( !$this->datasis->iscampo('chgara','codbanc') ) {
-			$this->db->simple_query('ALTER TABLE chgara ADD COLUMN codbanc CHR(2) NULL AFTER enviado');
+			$this->db->query('ALTER TABLE chgara ADD COLUMN codbanc CHAR(2) NULL AFTER enviado');
 		};
-
+		if ( !$this->datasis->iscampo('chgara','fdeposito') ) {
+			$this->db->query('ALTER TABLE chgara ADD COLUMN fdeposito DATE NULL AFTER codbanc');
+		};
+		if ( !$this->datasis->iscampo('chgara','transac') ) {
+			$this->db->query('ALTER TABLE chgara ADD COLUMN transac VARCHAR(8) NULL AFTER fdeposito');
+		};
+		if ( $this->datasis->isindice('bmov','idunico') ){
+			$this->db->query('ALTER TABLE bmov DROP INDEX idunico, ADD INDEX principal (codbanc, tipo_op, numero)');
+		}
 		redirect($this->url.'jqdatag');
 	}
 
@@ -31,6 +39,13 @@ class Chgara extends Controller {
 
 		$grid = $this->defgrid();
 		$param['grids'][] = $grid->deploy();
+
+		$mSQL  = "SELECT codbanc, CONCAT(codbanc, ' ', trim(banco),' ', numcuent) banco ";
+		$mSQL .= "FROM banc WHERE activo='S'  AND tbanco<>'CAJ' ";
+		$mSQL .= "ORDER BY (tbanco='CAJ'), codbanc ";
+		$obanc = $this->datasis->llenaopciones($mSQL, true,  'cuenta' );
+		$obanc = str_replace('"',"'", $obanc);
+
 
 		$bodyscript = '
 <script type="text/javascript">
@@ -71,20 +86,52 @@ $( "#cobrados" ).click(function() {
 	var s = grid.getGridParam(\'selarrrow\');
 	if(s.length){
 		meco = sumamonto(0);
-		$.prompt( "<h1>Marcar como Cobrado?</h1>Marca solo los cheques que fueron previamente Enviados al Cobro", {
+		$.prompt( "<h1>Marcar como Cobrado?</h1>Marca solo los cheques que fueron previamente Enviados al Cobro<br/>Cuenta Bancaria: '.$obanc.'<br>Fecha del deposito: <br/> <input type=\'text\' id=\'mfecha\' name=\'mfecha\' value=\''.date('d-m-Y').'\' maxlengh=\'10\' size=\'10\' ><br/>Numero de Deposito:<br/><input type=\'text\' id=\'numdep\' name=\'numdep\' value=\'\'><br/>", {
 			buttons: { Guardar: true, Cancelar: false },
 			submit: function(e,v,m,f){
 				if (v){
-					$.get("'.base_url().$this->url.'chcobrados/"+meco,
-					function(data){
-						alert(data);
-						grid.trigger("reloadGrid");
-					});
+					mfecha = f.mfecha.substr(6,4)+f.mfecha.substr(3,2)+f.mfecha.substr(0,2);
+					if (f.numdep == ""){
+						alert("Debe colocar el Nro de deposito!!!");					
+					} else {
+						$.get("'.base_url().$this->url.'chcobrados/"+meco+"/"+f.numdep+"/"+f.cuenta+"/"+mfecha,
+						function(data){
+							alert(data);
+							grid.trigger("reloadGrid");
+						});
+					}
 				}
 			}
 		});
+		$("#mfecha").datepicker({dateFormat:"dd-mm-yy"});
 	} else {
 		$.prompt("<h1>Seleccione los Cheques</h1>");
+	}
+});
+
+$( "#pagar" ).click(function() {
+	var grid = jQuery("#newapi'.$param['grids'][0]['gridname'].'");
+	var s = grid.getGridParam(\'selarrrow\');
+	if(s.length == 1){
+		entirerow = grid.jqGrid(\'getRowData\',s[0]);
+		if ( entirerow["status"].search("moneda") < 0 ){
+			$.prompt("<h1>Cheque no cobrado o ya aplicado</h1>Seleccione uno que este depositado y cobrado");
+		} else {
+			$.prompt( "<h1>Aplicar Pago?</h1>Aplicar cheque cobrado a Factura? ", {
+				buttons: { Guardar: true, Cancelar: false },
+				submit: function(e,v,m,f){
+					if (v){
+						$.get("'.base_url().$this->url.'chpagar/"+entirerow["id"],
+						function(data){
+							alert(data);
+							grid.trigger("reloadGrid");
+						});
+					}
+				}
+			});
+		}
+	} else {
+		$.prompt("<h1>Seleccione un solo Cheque</h1>");
 	}
 });
 
@@ -148,10 +195,10 @@ function sumamonto(rowId){
 				}
 			}
 		}
-	total = Math.round(total*100)/100;	
-	$("#totaldep").html("Bs. "+nformat(total,2));
-	$("#montoform").html("Monto: "+nformat(total,2));
-	montotal = total;
+		total = Math.round(total*100)/100;
+		$("#totaldep").html("Bs. "+nformat(total,2));
+		$("#montoform").html("Monto: "+nformat(total,2));
+		montotal = total;
 	}
 	return meco;
 };
@@ -169,15 +216,17 @@ $(function(){$(".inputnum").numeric(".");});
 	<div class="otros">
 	<table id="west-grid">
 	<tr><td>
-		<div class="tema1"><a style="width:190px" href="#" id="listado">Listado '.img(array('src' => 'assets/default/images/print.png', 'alt' => 'Listado',  'title' => 'Listado', 'border'=>'0')).'</a></div>
+		<div class="tema1"><a style="width:190px;text-align:left;" href="#" id="listado">'.img(array('src' => 'assets/default/images/print.png', 'alt' => 'Listado',  'title' => 'Listado', 'border'=>'0')).'&nbsp;&nbsp;&nbsp;&nbsp;Listado</a></div>
 	<tr><td>
-		<div class="tema1"><a style="width:190px" href="#" id="depositar">Enviar a Cobro '.img(array('src' => 'assets/default/images/cheque.png', 'alt' => 'Cheques',  'title' => 'Cheques', 'border'=>'0')).'</a></div>
+		<div class="tema1"><a style="width:190px;text-align:left;" href="#" id="depositar">'.img(array('src' => 'assets/default/images/cheque.png', 'alt' => 'Cheques',  'title' => 'Cheques', 'border'=>'0')).'&nbsp;&nbsp;&nbsp;&nbsp;Enviar a Depositar </a></div>
 	</td></tr>
 	<tr><td>&nbsp;</td></tr>
 	<tr><td>
-		<div class="tema1"><a style="width:190px" href="#" id="cobrados">Cheques Cobrados '.img(array('src' => 'assets/default/images/monedas.png', 'alt' => 'Cobrados',  'title' => 'Cobrados', 'border'=>'0')).'</a></div>
+		<div class="tema1"><a style="width:190px;text-align:left;" href="#" id="cobrados">'.img(array('src' => 'assets/default/images/monedas.png', 'alt' => 'Cobrados',  'title' => 'Cobrados', 'border'=>'0')).'&nbsp;&nbsp;&nbsp;&nbsp;Cheques Cobrados</a></div>
 	<tr><td>
-		<div class="tema1"><a style="width:190px" href="#" id="devueltos">Cheques Devueltos '.img(array('src' => 'images/N.gif', 'alt' => 'Devueltos',  'title' => 'Devueltos', 'border'=>'0')).'</a></div>
+		<div class="tema1"><a style="width:190px;text-align:left;" href="#" id="devueltos">'.img(array('src' => 'images/N.gif', 'alt' => 'Devueltos',  'title' => 'Devueltos', 'border'=>'0')).'&nbsp;&nbsp;&nbsp;&nbsp;Cheques Devueltos </a></div><br>
+	<tr><td>
+		<div class="tema1"><a style="width:190px;text-align:left;" href="#" id="pagar">'.img(array('src' => 'images/face-smile.png', 'alt' => 'Pagar',  'title' => 'Pagar', 'border'=>'0')).'&nbsp;&nbsp;&nbsp;&nbsp;Pagar Factura</a></div><br>
 	</td></tr>
 	</table>
 	</div>
@@ -200,6 +249,8 @@ $(function(){$(".inputnum").numeric(".");});
 			meco=\'<div><img src="'.base_url().'assets/default/images/monedas.png" width="20" height="18" border="0" /></div>\';
 		} else if (el == "D") {
 			meco=\'<div><img src="'.base_url().'images/N.gif" width="20" height="20" border="0" /></div>\';
+		} else if (el == "A") {
+			meco=\'<div><img src="'.base_url().'images/face-smile.png" width="20" height="20" border="0" /></div>\';
 		}
 		return meco;
 	}
@@ -235,12 +286,16 @@ $(function(){$(".inputnum").numeric(".");});
 	// Guarda los que se enviaron a depositar
 	//*********************************************
 	function chcobrados(){
-		$ids = $this->uri->segment(4);
+		$ids     = $this->uri->segment(4);
+		$numdep  = $this->uri->segment(5);
+		$codbanc = $this->uri->segment(6);
+		$fecha   = $this->uri->segment(7);
+		
 		$ids = str_replace("-",",", $ids);
 		$ids = substr($ids,0,-1);
-		$mSQL = "UPDATE chgara SET status='C' WHERE id IN ($ids) AND status='E' ";
-		$this->db->simple_query($mSQL);
-		echo "Cheques marcados como Cobrados ";
+		$mSQL = "UPDATE chgara SET status='C', deposito=?, codbanc=?, fdeposito=? WHERE id IN ($ids) AND status='E' ";
+		$this->db->query($mSQL, array($numdep, $codbanc, $fecha));
+		echo "Cheques marcados como Cobrados ".$fecha;
 	}
 
 	//*********************************************
@@ -251,10 +306,173 @@ $(function(){$(".inputnum").numeric(".");});
 		$ids = str_replace("-",",", $ids);
 		$ids = substr($ids,0,-1);
 		$mSQL = "UPDATE chgara SET status='P', deposito='DEVUELTO' WHERE id IN ($ids) AND status='E' ";
-		$this->db->simple_query($mSQL);
+		$this->db->query($mSQL);
 		echo "Cheques marcados como Devueltos ";
 	}
 
+	//*********************************************
+	// Guarda los que se enviaron a depositar
+	//*********************************************
+	function chpagar(){
+		$id = $this->uri->segment(4);
+		$reg    = $this->datasis->damereg("SELECT * FROM chgara WHERE id=$id");
+
+		$data = array();
+		
+		$chmonto  = $reg["monto"];
+		$cod_cli  = $reg["cod_cli"];
+		$deposito = $reg["deposito"];
+		$codbanc  = $reg["codbanc"];
+		$fecha    = $reg["fecha"];
+
+		$regcli = $this->datasis->damereg("SELECT nombre FROM scli WHERE cliente=".$this->db->escape($cod_cli));
+		
+		// Analiza el Edo Cta
+		$saldo = $this->datasis->dameval("SELECT sum(monto-abonos) saldo FROM smov WHERE cod_cli=".$this->db->escape($cod_cli)." AND tipo_doc IN ('FC','ND','GI') ");
+		if ( $saldo == '') $saldo = '0.00';
+		
+		if ($chmonto > $saldo){
+			echo "Monto del cheque ($chmonto) es mayor que el saldo deudor ($saldo) , debe generar un Anticipo";
+			return;
+		}
+		
+		$efecto = $this->datasis->damereg("SELECT tipo_doc, numero, monto, impuesto FROM smov WHERE cod_cli=".$this->db->escape($cod_cli)." AND monto-abonos>=".$chmonto." AND tipo_doc IN ('FC','ND','GI') ORDER BY fecha limit 1");
+		$mSQL   = "UPDATE chgara SET status='P', deposito='DEVUELTO' WHERE id IN ($id) AND status='E' ";
+
+		// CREA EL ABONO
+		$xnumero   = str_pad($this->datasis->prox_sql("nabcli"),  8, '0', STR_PAD_LEFT);
+		$mcontrol  = str_pad($this->datasis->prox_sql("nsmov"),   8, '0', STR_PAD_LEFT);
+		$transac   = str_pad($this->datasis->prox_sql("ntransa"), 8, '0', STR_PAD_LEFT);
+		$xningreso = str_pad($this->datasis->prox_sql('ningreso'),8, '0', STR_PAD_LEFT);
+
+		$data = array();
+		$data['cod_cli']  = $cod_cli; 
+		$data['nombre']   = $regcli['nombre']; 
+		$data['tipo_doc'] = 'AB'; 
+		$data['numero']   = $xnumero; 
+		$data['fecha']    = $fecha; 
+		$data['monto']    = $chmonto; 
+		
+		$data['impuesto'] = $chmonto*$efecto['impuesto']/$efecto['monto'];
+		$data['vence']    = $fecha;
+		$data['tipo_ref'] = $efecto['tipo_doc'];
+		$data['num_ref']  = $efecto['numero'];
+		$data['observa1'] = "PAGA: ".$efecto['tipo_doc'].$efecto['numero'];
+		$data['observa2'] =  "";
+		$data['banco']    = $codbanc; 
+		$data['fecha_op'] = $fecha; 
+		$data['num_op']   = $deposito; 
+		$data['tipo_op']  =  'DE'; 
+		$data['reten']    = 0;
+		$data['ppago']    = 0;
+		$data['cambio']   = 0;
+		$data['mora']     = 0;
+		$data['control']  = $mcontrol;
+		$data['codigo']   =  '';
+		$data['descrip']  = '';
+		$data['reteiva']  =  0;
+		$data['nroriva']  = '';
+		$data['emiriva']  = '';
+		$data['ningreso'] = $xningreso;
+
+		$data['usuario']    = $this->secu->usuario();
+		$data['estampa']    = date('Ymd');
+		$data['hora']       = date('H:i:s');
+		$data['transac']    = $transac;
+		
+		$this->db->insert('smov',$data);
+
+		//Detalle en itccli
+		$data = array();
+		$data['numccli']  = $xnumero;
+		$data['tipoccli'] = 'AB';
+		$data['cod_cli']  = $cod_cli;
+		$data['numero']   = $efecto['numero'];
+		$data['tipo_doc'] = $efecto['tipo_doc'];
+		$data['fecha']    = $fecha;
+		$data['monto']    = $efecto['monto'];
+		$data['abono']    = $chmonto;
+		$data['reten']    = 0;
+		$data['ppago']    = 0;
+		$data['cambio']   = 0;
+		$data['mora']     = 0;
+		$data['reteiva']  = '';
+
+		$data['usuario']    = $this->secu->usuario();
+		$data['estampa']    = date('Ymd');
+		$data['hora']       = date('H:i:s');
+		$data['transac']    = $transac;
+
+		$this->db->insert('itccli',$data);
+
+		//Actualiza la Factura
+		$mSQL = "UPDATE smov SET abonos=abonos+? WHERE tipo_doc=? AND cod_cli=? AND numero=?";
+		$this->db->query($mSQL,	array( $chmonto, $efecto['tipo_doc'], $cod_cli ,$efecto['numero'] ));
+
+		// FORMA DE PAGO
+		$data = array();
+		$mcajero = $this->datasis->dameval("SELECT cajero FROM usuario WHERE us_codigo=".$this->db->escape($this->secu->usuario()));
+
+		$data['tipo_doc']  = 'AB';
+		$data['numero']    = $xnumero;
+		$data['tipo']      = 'DE';
+		$data['monto']     = $chmonto;
+		$data['num_ref']   = $deposito;
+		$data['clave']     = '';
+		$data['fecha']     = $fecha;
+		$data['banco']     = $codbanc;
+		$data['cambio']    = 0;
+		$data['f_factura'] = $fecha;
+		$data['cod_cli']   = $cod_cli;
+
+		$data['vendedor']  = $mcajero;
+		$data['cobrador']  = $mcajero;
+
+		$data['usuario']   = $this->secu->usuario();
+		$data['estampa']   = date('Ymd');
+		$data['hora']      = date('H:i:s');
+		$data['transac']   = $transac;
+
+		$this->db->insert('sfpa',$data);
+
+		$this->datasis->actusal($codbanc, $fecha, $chmonto);
+               
+		$msql = "SELECT numcuent, banco, moneda, saldo FROM banc WHERE codbanc=".$this->db->escape($codbanc);
+		$banreg = $this->datasis->damereg($msql);
+
+		$data = array();
+		$data['codbanc']   = $codbanc;
+		$data['numcuent']  = $banreg['numcuent'];
+		$data['banco']     = $banreg['banco'];
+		$data['moneda']    = $banreg['moneda'];
+		$data['saldo']     = $banreg['saldo'];
+		$data['fecha']     = $fecha;   //mpago[i,5] })  se jode la contabilidad si la fecha no es igual
+		$data['benefi']    = '';
+		$data['tipo_op']   = 'DE';
+		$data['numero']    = str_pad($deposito,12,'0',STR_PAD_LEFT);
+		$data['monto']     = $chmonto;
+		$data['clipro']    = 'C';
+		$data['codcp']     = $cod_cli;
+		$data['nombre']    = $regcli['nombre'];
+		$data['concepto']  = 'INGRESO POR COBRANZA ';
+		$data['concep2']   = 
+		$data['concep3']   = 
+		$data['status']    = 'P';
+		$data['bruto']     = $chmonto;
+		$data['negreso']   = $xningreso;
+
+		$data['usuario']   = $this->secu->usuario();
+		$data['estampa']   = date('Ymd');
+		$data['hora']      = date('H:i:s');
+		$data['transac']   = $transac;
+
+		$this->db->insert('bmov',$data);
+
+		$mSQL = "UPDATE chgara SET status='A', transac='$transac' WHERE id=$id  ";
+		$this->db->simple_query($mSQL);
+
+		echo "Cuenta por cobrar actualizada ";
+	}
 
 	//***************************
 	//Definicion del Grid y la Forma
@@ -287,7 +505,7 @@ $(function(){$(".inputnum").numeric(".");});
 		$grid->addField('cod_cli');
 		$grid->label('Cliente');
 		$grid->params(array(
-				'width'       => 60,
+				'width'       => 50,
 				'editable'    => $editar,
 				'edittype'    => "'text'",
 				'editrules'   => '{ edithidden:true, required:true }',
@@ -395,6 +613,27 @@ $(function(){$(".inputnum").numeric(".");});
 			'editrules'     => '{ required:true,date:true}'
 		));
 
+		$grid->addField('codbanc');
+		$grid->label('Cuenta');
+		$grid->params(array(
+			'align'         => "'center'",
+			'width'         => 40,
+			'editable'      => 'false',
+			'edittype'      => "'text'",
+		));
+
+		$grid->addField('fdeposito');
+		$grid->label('F Deposito');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => 'false',
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha Deposito" }'
+		));
+
 
 		$grid->addField('deposito');
 		$grid->label('Deposito');
@@ -403,8 +642,6 @@ $(function(){$(".inputnum").numeric(".");});
 			'editable'      => 'false',
 			'width'         => 120,
 			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 12 }',
 		));
 
 		$grid->addField('usuario');
@@ -465,7 +702,7 @@ $(function(){$(".inputnum").numeric(".");});
 
 		$grid->showpager(true);
 		$grid->setWidth('');
-		$grid->setHeight('290');
+		$grid->setHeight('385');
 		$grid->setTitle($this->titp);
 		$grid->setfilterToolbar(true);
 		$grid->setToolbar('false', '"top"');
@@ -525,6 +762,10 @@ $(function(){$(".inputnum").numeric(".");});
 		$id     = $this->input->post('id');
 		$data   = $_POST;
 		$check  = 0;
+		$status = 'P';
+
+		if ( $id > 0 )
+			$status = $this->datasis->dameval("SELECT status FROM chgara WHERE id=$id");
 
 		unset($data['oper']);
 		unset($data['id']);
@@ -541,10 +782,14 @@ $(function(){$(".inputnum").numeric(".");});
 			echo "Fallo Agregado!!!";
 
 		} elseif($oper == 'edit') {
-			$this->db->where('id', $id);
-			$this->db->update('chgara', $data);
-			logusu('CHGARA',"Registro $id MODIFICADO");
-			echo "Registro Modificado";
+			// Solo modifica los Cheques pendientes
+			if ( $status == 'P'){			$this->db->where('id', $id);
+				$this->db->update('chgara', $data);
+				logusu('CHGARA',"Registro $id MODIFICADO");
+				echo "Registro Modificado";
+			} else
+			echo "Cheque no puede modificarse, no esta pendiente";
+			
 
 		} elseif($oper == 'del') {
 			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM chgara WHERE id='$id' ");

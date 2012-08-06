@@ -901,14 +901,14 @@ class Ajax extends Controller {
 
 	function ddbanc(){
 		$tipo = $this->uri->segment(3);
-		
+		$id   = $this->uri->segment(4);
 		$mSQL  = "SELECT codbanc, CONCAT(codbanc, ' ', banco, numcuent) banco ";
 		$mSQL .= "FROM banc ";
 		$mSQL .= "WHERE activo='S'  ";
 		if ( $tipo == 'B' ) $mSQL .= " AND tbanco<>'CAJ' ";
 		if ( $tipo == 'C' ) $mSQL .= " AND tbanco='CAJ' ";
 		$mSQL .= "ORDER BY (tbanco='CAJ'), codbanc ";
-		echo $this->datasis->llenaopciones($mSQL, true);
+		echo $this->datasis->llenaopciones($mSQL, true, $id);
 	}
 
 
