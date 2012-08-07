@@ -25,9 +25,9 @@ class Libros extends Controller {
 		}
 
 		$mk=mktime(0, 0 , 0, date("n")-1,date("j"), date("Y"));
-		$checkbox="<input type='checkbox' name='generar[]' value='<#accion#>' /> "; 
+		$checkbox="<input type='checkbox' name='generar[]' value='<#accion#>' /> ";
 		$submit= form_submit('<#accion#>', 'Generar');
-		$sanio = form_dropdown('year',$anhos,date('Y',$mk)); 
+		$sanio = form_dropdown('year',$anhos,date('Y',$mk));
 		$smes  = form_dropdown('mes' ,$mmes ,date('m',$mk));
 
 		function obser($gene,$estampa,$metodo){
@@ -100,7 +100,7 @@ class Libros extends Controller {
 		$data['extras']  = $this->load->view('view_preloader',array(),true);
 		$this->load->view('view_ventanas', $data);
 	}
-	
+
 	function generar(){
 		if(empty($_POST['generar'])) return;
 		foreach($_POST['generar'] AS $gene){
@@ -119,7 +119,7 @@ class Libros extends Controller {
 		$this->_telefono('compras');
 		compras::wlcexcel($mes);
 	}
-	// libros ventas fiscal	
+	// libros ventas fiscal
 	function wlcexcel3($mes=null) {
 		if(!$this->_checkfecha($mes)) show_error('Parametro inv&aacute;lido');
 		$this->_telefono('compras');
@@ -178,13 +178,14 @@ class Libros extends Controller {
 		$this->_telefono('ventas');
 		ventas::wlvexcel3($mes);
 	}
-	//libro de ventas separado por sucursal
+	//Libro de ventas separado por sucursal
 	function wlvexcelsucu($mes=null) {
 		if(!$this->_checkfecha($mes)) show_error('Parametro inv&aacute;lido');
 		$this->_telefono('ventas');
 		ventas::wlvexcelfiscal($mes);
 	}
 
+	//Libro de ventas no agrupado
 	function wlvexcel1($mes=null) {
 		if(!$this->_checkfecha($mes)) show_error('Parametro inv&aacute;lido');
 		$this->_telefono('ventas');
@@ -360,7 +361,7 @@ class Libros extends Controller {
 			}elseif(preg_match("/^gene.*$/i",$method->name)) {
 				$gene[]=anchor("finanzas/libros/$method->name/$par",$method->name);
 			}
-			
+
 		}
 		$data['content'] = '<table><tr><td>'.ul($libro).'</td><td>'.ul($gene).'</td></tr></table>';
 		$data['title']   = heading('Prueba de los libros parametro '.$par);
@@ -395,7 +396,7 @@ class Libros extends Controller {
 		}
 		$mSQL = "UPDATE scst SET exento=$mEXENTO, tasa=$mTASA,montasa=$mMONTASA,reducida=$mREDUCIDA,monredu=$mMONREDU,sobretasa=$mSOBRETASA,monadic=$mMONADIC WHERE control=$mCONTROL ";
 		$this->db->simple_query($mSQL);
-	} 
+	}
 
 	function _checkfecha($mes){
 		return ($mes>190000 AND $mes <999999) ? true : false;
@@ -417,13 +418,13 @@ class Libros extends Controller {
 	}
 
 	function _arreglatasa($mTRANSAC){
-		$mTASA =$mREDUCIDA=$mSOBRETASA = $mMONTASA =$mMONREDU = $mMONADIC = $mEXENTO= $mIVA= 0; 
+		$mTASA =$mREDUCIDA=$mSOBRETASA = $mMONTASA =$mMONREDU = $mMONADIC = $mEXENTO= $mIVA= 0;
 		$mATASAS    = '';
 
 		$query = $this->db->query("SELECT * FROM sitems WHERE transac='$mTRANSAC' AND tipoa<>'X'");
 		foreach ( $query->result() as $row ){
 			if (empty($mATASAS)) $mATASAS = $this->datasis->ivaplica($row->fecha);
-			$mIVA    = $row->iva; 
+			$mIVA    = $row->iva;
 			$mTOTA   = $row->tota;
 			if ( $mIVA == $mATASAS['tasa']) {
 				$mTASA    += round($mTOTA*$mIVA/100,2);
@@ -442,7 +443,7 @@ class Libros extends Controller {
 		$this->db->simple_query($mSQL);
 	}
 
-	// Ajusta al valor 
+	// Ajusta al valor
 	function _ajustainv($mes, $cambia){
 		$cambia = str_replace(",","", $cambia );
 		$mSQL = "SELECT sum(minicial), sum(mcompras), sum(mventas), sum(mfinal) FROM invresu WHERE mes=$mes ";
@@ -451,7 +452,7 @@ class Libros extends Controller {
 		$difer = $row[3]-$cambia;
 		$factor = ( $row[2] + $difer ) / $row[2];
 		//echo "$cambia  $difer  $factor";
-		ejecutasql("UPDATE invresu SET mventas=mventas*".$factor." WHERE mes=$mes");    
+		ejecutasql("UPDATE invresu SET mventas=mventas*".$factor." WHERE mes=$mes");
 		saldofinal($mes);
 	}
 
@@ -464,7 +465,7 @@ class Libros extends Controller {
 		$ano = substr($mes,0,4);
 		$mes = substr($mes,5,2);
 		$mes = $mes-1;
-		if ( $mes == 0 ){ 
+		if ( $mes == 0 ){
 			$mes = '12';
 			$ano = $ano - 1 ;
 		}
@@ -481,29 +482,29 @@ class Libros extends Controller {
 		$this->db->simple_query("DELETE FROM invresu WHERE mes=$mes");
 
 		$mSQL = "INSERT INTO invresu
-			SELECT 
-			EXTRACT(YEAR_MONTH FROM a.fecha) AS mes, 
-			a.codigo, b.descrip, 0 AS inicial, 
-			sum(a.cantidad*(a.origen IN ('2C','2D'))*IF(a.origen='2D',-1,1)) AS compras, 
-			sum(a.cantidad*(a.origen IN ('3I','3M') )) AS ventas, 
-			sum(a.cantidad*(a.origen='1T')) AS trans, 
-			sum((a.cantidad-a.anteri)*(a.origen IN ('0F','8F'))) AS fisico,  
-			sum(a.cantidad*(a.origen='4N')) AS notas,  
-			0 AS final,  0 AS minicial,  
-			sum(a.monto*(a.origen IN ('2C','2D'))*IF(a.origen='2D',-1,1)) AS mcompras, 
-			sum(a.cantidad*a.promedio*(a.origen IN ('3I','3M'))) AS mventas, 
-			sum(a.cantidad*a.promedio*(a.origen='1T')) AS mtrans, 
-			sum((a.cantidad-a.anteri)*a.promedio*(a.origen IN ('0F','8F'))) AS mfisico, 
-			sum(a.cantidad*a.promedio*(a.origen='4N')) AS mnotas, 
-			0 AS mfinal, sum(venta)  
-			FROM costos AS a LEFT JOIN sinv AS b ON a.codigo=b.codigo  
-			WHERE a.fecha BETWEEN $fdesde AND $fhasta  AND MID(b.tipo,1,1)!='S' 
+			SELECT
+			EXTRACT(YEAR_MONTH FROM a.fecha) AS mes,
+			a.codigo, b.descrip, 0 AS inicial,
+			sum(a.cantidad*(a.origen IN ('2C','2D'))*IF(a.origen='2D',-1,1)) AS compras,
+			sum(a.cantidad*(a.origen IN ('3I','3M') )) AS ventas,
+			sum(a.cantidad*(a.origen='1T')) AS trans,
+			sum((a.cantidad-a.anteri)*(a.origen IN ('0F','8F'))) AS fisico,
+			sum(a.cantidad*(a.origen='4N')) AS notas,
+			0 AS final,  0 AS minicial,
+			sum(a.monto*(a.origen IN ('2C','2D'))*IF(a.origen='2D',-1,1)) AS mcompras,
+			sum(a.cantidad*a.promedio*(a.origen IN ('3I','3M'))) AS mventas,
+			sum(a.cantidad*a.promedio*(a.origen='1T')) AS mtrans,
+			sum((a.cantidad-a.anteri)*a.promedio*(a.origen IN ('0F','8F'))) AS mfisico,
+			sum(a.cantidad*a.promedio*(a.origen='4N')) AS mnotas,
+			0 AS mfinal, sum(venta)
+			FROM costos AS a LEFT JOIN sinv AS b ON a.codigo=b.codigo
+			WHERE a.fecha BETWEEN $fdesde AND $fhasta  AND MID(b.tipo,1,1)!='S'
 			GROUP BY mes,a.codigo ";
 		$this->db->simple_query($mSQL);
 
 		//Insertamos los del mes pasado que no tienen movimiento este mes
 		$this->db->simple_query("INSERT IGNORE INTO invresu (mes, codigo,descrip, inicial, compras,ventas, trans, fisico,notas,final, minicial, mcompras, mventas, mtrans, mfisico, mnotas, mfinal ) SELECT $mes, codigo, descrip, 0, 0,0,0,0,0,0,0,0,0,0,0,0,0 FROM invresu WHERE mes=$mesa");
-		
+
 		//Eliminar notas y transferencias
 		$this->db->simple_query("UPDATE invresu SET ventas=ventas+notas, mventas=mventas+mnotas, notas=0, mnotas=0 WHERE mes=$mes ");
 		$this->db->simple_query("UPDATE invresu SET ventas=ventas-trans, mventas=mventas-mtrans, trans=0, mtrans=0 WHERE mes=$mes ");
@@ -541,7 +542,7 @@ class Libros extends Controller {
 		$link=site_url('/finanzas/libros/activar');
 		$data['script']='<script type="text/javascript">
 		$(document).ready(function() {
-			$(":checkbox").click(function () { 
+			$(":checkbox").click(function () {
 				activar($(this).attr("value"));
 			});
 		});
@@ -567,7 +568,7 @@ class Libros extends Controller {
 		echo $this->db->simple_query($mSQL);
 	}
 
-	function cedit(){ 
+	function cedit(){
 		$this->rapyd->load("dataedit");
 
 		$edit = new DataEdit("Edici&oacute;n de caja", "libros");
@@ -605,7 +606,7 @@ class Libros extends Controller {
 		  `estampa` timestamp NOT NULL default CURRENT_TIMESTAMP,
 		  `fgenera` char(6) default NULL,
 		  PRIMARY KEY  (`metodo`)
-		) ENGINE=MyISAM DEFAULT CHARSET=latin1";   
+		) ENGINE=MyISAM DEFAULT CHARSET=latin1";
 		$this->db->simple_query($mSQL);
 
 		$mSQL="ALTER TABLE `siva` ADD `hora` TIME DEFAULT '0' NULL";
