@@ -8,6 +8,29 @@ class Rcaj extends validaciones {
 	}
 
 	function index(){
+		if ( !$this->datasis->iscampo('rcaj','xventa') ) {
+			$this->db->query('ALTER TABLE rcaj ADD COLUMN xventa DECIMAL(17,2) NULL DEFAULT 0');
+		};
+		if ( !$this->datasis->iscampo('rcaj','xviva') ) {
+			$this->db->query('ALTER TABLE rcaj ADD COLUMN xviva DECIMAL(17,2) NULL DEFAULT 0');
+		};
+		if ( !$this->datasis->iscampo('rcaj','xdevo') ) {
+			$this->db->query('ALTER TABLE rcaj ADD COLUMN xdevo DECIMAL(17,2) NULL DEFAULT 0');
+		};
+		if ( !$this->datasis->iscampo('rcaj','xdiva') ) {
+			$this->db->query('ALTER TABLE rcaj ADD COLUMN xdiva DECIMAL(17,2) NULL DEFAULT 0');
+		};
+		if ( !$this->datasis->iscampo('rcaj','maqfiscal') ) {
+			$this->db->query('ALTER TABLE rcaj ADD COLUMN maqfiscal VARCHAR(17) NULL ');
+		};
+		if ( !$this->datasis->iscampo('rcaj','ultimafc') ) {
+			$this->db->query('ALTER TABLE rcaj ADD COLUMN ultimafc VARCHAR(10) NULL ');
+		};
+		if ( !$this->datasis->iscampo('rcaj','ultimaNc') ) {
+			$this->db->query('ALTER TABLE rcaj ADD COLUMN ultimanc VARCHAR(10) NULL ');
+		};
+
+
 		redirect('ventas/rcaj/filteredgrid');
 	}
 
@@ -123,7 +146,7 @@ class Rcaj extends validaciones {
 			$data['content'] .= $grid->output;
 		}
 
-		$data['title']   = '<h1>Recepci&oacute;n de cajas</h1>';
+		$data['title']   = '<h1>Recepci&oacute;n de Caja</h1>';
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
@@ -444,6 +467,8 @@ class Rcaj extends validaciones {
 			$this->load->view('view_ventanas', $data);
 			return ;
 		}
+
+		$nomcajero = $this->datasis->dameval('SELECT CONCAT(TRIM(a.cajero),b.nombre) cajero FROM rcaj a JOIN scaj b ON a.cajero=b.cajero WHERE a.tipo="T" AND a.numero='.$dbnumero);
 
 		$form = new DataForm("ventas/rcaj/forcierre/$numero/process");
 
@@ -810,16 +835,14 @@ class Rcaj extends validaciones {
 
 		$rp=0;
 		$mSQL = "SELECT SUM(a.monto) AS rp
-		FROM sfpa AS a
-		JOIN rcaj AS b ON a.fecha=b.fecha AND a.cobrador=b.cajero
+		FROM sfpa AS a JOIN rcaj AS b ON a.fecha=b.fecha AND a.cobrador=b.cajero
 		WHERE b.numero=${dbnumero} AND a.tipo='RP'";
 		$rp+=$this->datasis->dameval($mSQL);
 
 		//Toma en cuenta los cambios de cheque
 		$ccheq=0;
 		$ccquery = $this->db->query("SELECT SUM(d.monto) AS monto
-		FROM sfpa AS d
-		JOIN rcaj AS b ON d.fecha=b.fecha AND d.cobrador=b.cajero
+		FROM sfpa AS d JOIN rcaj AS b ON d.fecha=b.fecha AND d.cobrador=b.cajero
 		WHERE b.numero=${dbnumero} AND d.tipo_doc = 'CC'");
 		foreach ($ccquery->result() as $ccrow){
 			$ccheq += $ccrow->monto;
@@ -832,7 +855,7 @@ class Rcaj extends validaciones {
 		$cont['form']    = &$form;
 		$data['content'] = $this->load->view('view_rcajcierre',$cont, true);
 		//$data['content'] = $form->output;
-		$data['title']   = heading('Recepci&oacute;n de cajas');
+		$data['title']   = heading('Recepci&oacute;n de Caja '.$nomcajero);
 		$data['head']    = $this->rapyd->get_head().script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js').phpscript('nformat.js');
 		$this->load->view('view_ventanas', $data);
 	}
