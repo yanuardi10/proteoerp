@@ -1052,6 +1052,7 @@ class ventas{
 		unlink($fname);
 	}
 
+	//Libro de ventas no agrupado
 	function wlvexcel1($mes) {
 		$udia=days_in_month(substr($mes,4),substr($mes,0,4));
 		$fdesde=$mes.'01';
@@ -1091,7 +1092,7 @@ class ventas{
 				a.adicimpu*IF(a.tipo='NC',-1,1)  adicimpu,
 				a.reducida*IF(a.tipo='NC',-1,1)  reducida,
 				a.reduimpu*IF(a.tipo='NC',-1,1)  reduimpu,
-				a.contribu, a.registro
+				a.contribu, a.registro,a.afecta,a.fecharece
 			FROM siva a LEFT JOIN scli b ON a.clipro=b.cliente
 			WHERE a.fechal BETWEEN $fdesde AND $fhasta AND a.libro='V' AND a.tipo<>'FA'
 			ORDER BY a.fecha, IF(a.tipo IN ('FC','XE','XC'),1,2), numero ";
@@ -1281,8 +1282,18 @@ class ventas{
 				$ws->write_number( $mm,15, $row->reducida, $numero );		// REDUCIDA
 				$ws->write_number( $mm,16, $row->reduimpu, $numero );		// REDUIMPU
 				$ws->write_number( $mm,17, $row->reiva, $numero );		// IVA RETENIDO
+				if($row->tipo=='CR'){
+					$afecta=$row->afecta;
+					$ws->write_string( $mm,18, $afecta , $numero ); //NRO FACT AFECTA
+				}else{
+					$afecta=$row->referen;
+					$ws->write_string( $mm,18, $afecta, $numero ); //NRO FACT AFECTA
+				}
+
+
 				//$ws->write_string( $mm,18, $row['comprobante'], $cuerpo );	// NRO COMPROBANTE
-				//$ws->write_string( $mm,19, $row['fechacomp'], $cuerpo );	// FECHA COMPROB
+				$fecharece = substr($row->fecharece,8,2)."/".$ameses[substr($row->fecharece,5,2)-1]."/".substr($row->fecharece,0,4);
+				$ws->write_string( $mm,19, $fecharece, $cuerpo );	// FECHA COMPROB
 				$ws->write_number( $mm,20, 0, $numero );	// IMPUESTO PERCIBIDO
 				$mm++;
 			}
@@ -1505,6 +1516,7 @@ class ventas{
 		//print "$header\n$data";
 	}
 
+	//Libro de ventas no agrupado version 2
 	function wlvexcel2($mes) {
 		$udia=days_in_month(substr($mes,4),substr($mes,0,4));
 		$fdesde=$mes.'01';
