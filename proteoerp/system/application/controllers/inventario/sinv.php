@@ -1467,8 +1467,8 @@ class sinv extends Controller {
 		$mviejoid = $this->input->post('viejo');
 
 		$mmviejo  = $this->datasis->dameval('SELECT codigo FROM sinv WHERE id='.$this->db->escape($mviejoid));
-		$mviejo   = $this->db->escape($mmviejo); 
-		$mcodigo  = $this->db->escape($mmcodigo); 
+		$mviejo   = $this->db->escape($mmviejo);
+		$mcodigo  = $this->db->escape($mmcodigo);
 		//echo "$mexiste  $mcodigo  $mviejo ";
 
 		if($mexiste=='S'){
@@ -1552,15 +1552,15 @@ class sinv extends Controller {
 
 		logusu("SINV","Cambio codigo ".$mmviejo."-->".$mmcodigo);
 	}
-	
+
 	function _sinvcodig(){
 		$mexiste  = $this->input->post('tipo');
 		$mmcodigo = rawurldecode($this->input->post('codigo'));
 		$mviejoid = $this->input->post('viejo');
 
 		$mmviejo  = $this->datasis->dameval('SELECT codigo FROM sinv WHERE id='.$this->db->escape($mviejoid));
-		$mviejo   = $this->db->escape($mmviejo); 
-		$mcodigo  = $this->db->escape($mmcodigo); 
+		$mviejo   = $this->db->escape($mmviejo);
+		$mcodigo  = $this->db->escape($mmcodigo);
 		//echo "$mexiste  $mcodigo  $mviejo ";
 
 		if($mexiste=='S'){
@@ -1642,7 +1642,7 @@ class sinv extends Controller {
 		$mSQL = "UPDATE IGNORE sinvpromo SET codigo=$mcodigo WHERE codigo=$mviejo";
 		$this->db->simple_query($mSQL);
 
-		logusu("SINV","Cambio codigo ".$mmviejo."-->".$mmcodigo);		
+		logusu("SINV","Cambio codigo ".$mmviejo."-->".$mmcodigo);
 	}
 
 	// Codigos de barra suplementarios

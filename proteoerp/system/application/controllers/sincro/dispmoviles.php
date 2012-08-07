@@ -145,7 +145,7 @@ class Dispmoviles extends Controller {
 		foreach ($query->result_array() as $row){
 			$cadena=implode('{%}',$row)."\n";
 			#$cadena=str_replace('','',$cadena);
-echo $cadena;
+		echo $cadena;
 		}
 	}
 
@@ -167,5 +167,100 @@ echo $cadena;
 		}
 	}
 
+	function gsqlite(){
+
+		$cclientes="CREATE TABLE scli (
+			id       INTEGER PRIMARY KEY,
+			cliente  VARCHAR(5) UNIQUE,
+			nombre   VARCHAR(45)   ,
+			direc    TEXT          ,
+			ciudad   VARCHAR(40)   ,
+			telefono VARCHAR(30)   ,
+			rifci    VARCHAR(13)   ,
+			email    VARCHAR(100)  ,
+			repre    VARCHAR(30)   ,
+			tipo     CHAR(1)       ,
+			vsaldo   DECIMAL(10,2)  ,
+			csaldo   DECIMAL(10,2)  ,
+			formap   INTEGER
+		);";
+
+		$csinv="CREATE TABLE sinv (
+			id       INTEGER PRIMARY KEY,
+			codigo   VARCHAR(15) UNIQUE,
+			descrip  VARCHAR(45)  ,
+			base1    DECIMAL(13,2) ,
+			base2    DECIMAL(13,2) ,
+			base3    DECIMAL(13,2) ,
+			base4    DECIMAL(13,2) ,
+			costo    DECIMAL(13,2) ,
+			iva      DECIMAL(6,2)  ,
+			bonifica INTEGER       ,
+			bonicant INTEGER       ,
+			fdesde   INTEGER       ,
+			fhasta   INTEGER
+		)";
+
+		$ctarjeta="CREATE TABLE tarjeta (
+			id      INTEGER PRIMARY KEY,
+			tipo    CHAR(2)  UNIQUE,
+			nombre  VARCHAR(20),
+			pideban INTEGER
+		)";
+
+		$ctban="CREATE TABLE tban (
+			id      INTEGER PRIMARY KEY,
+			cod_banc CHAR(3) UNIQUE,
+			nomb_banc VARCHAR(30)
+		)";
+
+		$config['hostname'] = 'localhost';
+		$config['username'] = 'myusername';
+		$config['password'] = 'mypassword';
+		$config['database'] = 'mobil';
+		$config['dbdriver'] = 'sqlite';
+		$config['dbprefix'] = '';
+		$config['pconnect'] = FALSE;
+		$config['db_debug'] = TRUE;
+		$config['cache_on'] = FALSE;
+		$config['cachedir'] = '';
+		$config['char_set'] = 'utf8';
+		$config['dbcollat'] = 'utf8_general_ci';
+		$dblite = $this->load->database($config,true);
+
+
+		$mSQL=array();
+		//$mSQL['sinv'] = "SELECT
+		//	codigo, descrip,
+		//	base1,base2,base3,base4,
+		//	ultimo AS costo, iva,1 AS bonifica,10 AS bonicant,
+		//	UNIX_TIMESTAMP(fdesde) AS fdesde ,UNIX_TIMESTAMP(fhasta) AS fhasta
+		//	FROM sinv
+		//	WHERE activo='S' AND tipo='Articulo' AND base1>0 AND base2>0 AND base3>0 AND base3>0 AND ultimo>0";
+		//$mSQL['tban']    = "SELECT cod_banc,nomb_banc FROM tban";
+		//$mSQL['tarjeta'] = "SELECT tipo,nombre,tipo IN ('CH','DE') AS pideban FROM tarjeta";
+		$mSQL['scli']="SELECT
+			cliente, TRIM(nombre) AS nombre,CONCAT_WS('-',TRIM(dire11),TRIM(dire12)) AS direc,
+			TRIM(ciudad) AS ciudad,TRIM(telefono) AS telefono,TRIM(rifci) AS rifci,TRIM(email) AS email,
+			TRIM(repre) AS repre,tipo, 0 AS vsaldo,0 AS csaldo,formap
+			FROM scli ORDER BY nombre";
+
+		echo '<pre>';
+		foreach($mSQL AS $table=>$sql){
+			echo  $table."\n";
+			$query = $this->db->query($sql);
+			foreach ($query->result_array() as $row){
+				$mLITE=$dblite->insert_string($table, $row);
+				//echo $mLITE;
+				$rt=$dblite->simple_query($mLITE);
+				if($rt==false){
+					echo $mLITE."\n";
+					exit();
+				}
+				//$dblite->simple_query('COMMIT');
+			}
+		}
+		echo '</pre>';
+
+	}
 }
-?>

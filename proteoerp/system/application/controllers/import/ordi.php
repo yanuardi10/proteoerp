@@ -1710,7 +1710,7 @@ class Ordi extends Controller {
 
 	function _post_insert($do){
 		$codigo=$do->get('numero');
-		logusu('stra',"ORDI $codigo CREADO");
+		logusu('ordi',"ORDI $codigo CREADO");
 
 		$peso=$this->datasis->dameval("SELECT SUM(b.peso) AS peso FROM itordi AS a JOIN sinv AS b ON a.codigo=b.codigo AND a.numero=$codigo");
 		if(empty($peso)) $peso=0;
