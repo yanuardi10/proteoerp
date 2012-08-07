@@ -29,6 +29,7 @@
 					<?php
 					$i=0; $to=false;
 					foreach($form->_fields as $id=>$obj){
+						if(substr($id,0,2)=='x_') continue;
 						if($i%4==0){
 							$color = ($to)? 'bgcolor="#E4E4E4"' : '';
 							echo "</tr><tr $color >";
@@ -62,4 +63,45 @@
 		</td>
 	</tr>
 </tabla>
+<?php if($b_fiscal=='S'){ ?>
+<table align='center'>
+	<tr>
+		<td valign='top'>
+			<table class="ui-widget ui-widget-content ui-corner-all">
+				<tr>
+					<th colspan=2 class="ui-widget-header">Datos F&iacute;scales</th>
+				</tr>
+				<tr>
+					<td>Total Venta seg&uacute;n cierre fiscal:</td>
+					<td align='right'><?php echo $form->x_venta->output; ?></td>
+				</tr>
+				<tr>
+					<td>Total IVA seg&uacute;n cierre fiscal:</td>
+					<td align='right'><?php echo $form->x_viva->output; ?></td>
+				</tr>
+				<tr>
+					<td>N&uacute;mero ultima Factura</td>
+					<td align='right'><?php echo $form->x_ultimafc->output; ?></td>
+				</tr>
+				<tr>
+					<td>Total de notas de cr&eacute;dito seg&uacute;n cierre fiscal</td>
+					<td align='right'><?php echo $form->x_devo->output; ?></td>
+				</tr>
+				<tr>
+					<td>Total de IVA de notas de cr&eacute;dito seg&uacute;n cierre fiscal</td>
+					<td align='right'><?php echo $form->x_diva->output; ?></td>
+				</tr>
+				<tr>
+					<td>N&uacute;mero ultima NC</td>
+					<td align='right'><?php echo $form->x_ultimanc->output; ?></td>
+				</tr>
+				<tr>
+					<td>Serial Maquina Fiscal</td>
+					<td align='right'><?php echo $form->x_maqfiscal->output; ?></td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+</tabla>
+<?php } ?>
 <?php echo $form->form_close; ?>

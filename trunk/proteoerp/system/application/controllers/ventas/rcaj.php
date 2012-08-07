@@ -506,6 +506,7 @@ class Rcaj extends validaciones {
 					$totales[$o]+=$row->$nobj;
 					$form->$obj = new inputField('('.$row->tipo.') '.$row->nombre, $obj);
 					$form->$obj->style='text-align:right';
+					$form->$obj->css_class ='inputnum';
 					if($nobj=='retiro'){
 						$form->$obj->insertValue= (isset($retiros[$row->tipo]))? $retiros[$row->tipo] : '0' ;
 						$form->$obj->showformat='decimal';
@@ -538,11 +539,61 @@ class Rcaj extends validaciones {
 			}
 		}
 
+		$b_fiscal=$this->datasis->traevalor('USAMAQFISCAL','Activa el modo fiscal en el cierre de caja');
+		if($b_fiscal=='S'){
+			$form->x_venta = new inputField('Total Venta seg&uacute;n cierre fiscal','xventa');
+			$form->x_venta->rule      ='max_length[17]|numeric|required';
+			$form->x_venta->css_class ='inputnum';
+			$form->x_venta->size      =19;
+			$form->x_venta->maxlength =17;
+			$form->x_venta->autocomplete=false;
+
+			$form->x_viva = new inputField('Total IVA seg&uacute;n cierre fiscal','xviva');
+			$form->x_viva->rule      ='max_length[17]|numeric|required';
+			$form->x_viva->css_class ='inputnum';
+			$form->x_viva->size      =19;
+			$form->x_viva->maxlength =17;
+			$form->x_viva->autocomplete=false;
+
+			$form->x_devo = new inputField('Total de notas de cr&eacute;dito seg&uacute;n cierre fiscal','xdevo');
+			$form->x_devo->rule      ='max_length[17]|numeric|required';
+			$form->x_devo->css_class ='inputnum';
+			$form->x_devo->size      =19;
+			$form->x_devo->maxlength =17;
+			$form->x_devo->autocomplete=false;
+
+			$form->x_diva = new inputField('Total de IVA seg&uacute;n cierre fiscal','xdiva');
+			$form->x_diva->rule      ='max_length[17]|numeric|required';
+			$form->x_diva->css_class ='inputnum';
+			$form->x_diva->size      =19;
+			$form->x_diva->maxlength =17;
+			$form->x_diva->autocomplete=false;
+
+			$form->x_maqfiscal = new inputField('Serial Maquina Fiscal','maqfiscal');
+			$form->x_maqfiscal->rule      ='max_length[17]|strtoupper|required';
+			$form->x_maqfiscal->size      =19;
+			$form->x_maqfiscal->maxlength =17;
+			$form->x_maqfiscal->autocomplete=false;
+
+			$form->x_ultimafc = new inputField('N&uacute;mero ultima Factura','ultimafc');
+			$form->x_ultimafc->rule      ='max_length[10]|required';
+			$form->x_ultimafc->size      =12;
+			$form->x_ultimafc->maxlength =10;
+			$form->x_ultimafc->autocomplete=false;
+
+			$form->x_ultimanc = new inputField('N&uacute;mero ultima NC','ultimanc');
+			$form->x_ultimanc->rule      ='max_length[10]|required';
+			$form->x_ultimanc->size      =12;
+			$form->x_ultimanc->maxlength =10;
+			$form->x_ultimanc->autocomplete=false;
+		}
+
+
 		$form->button('btn_reg', 'Regresar',"javascript:window.location='".site_url('ventas/rcaj/filteredgrid/search')."'", 'BL');
 		$form->submit('btnsubmit','Cerrar cajero');
 		$form->build_form();
 
-		$this->rapyd->jquery[]='$(":input").numeric(".");';
+		$this->rapyd->jquery[]='$(".inputnum").numeric(".");';
 		$this->rapyd->jquery[]='$(\'input[name^="recibido"]\').bind("keyup",function() { gtotal(); });';
 		$this->rapyd->jquery[]='$(\'input[name^="recibido"]\').bind("mouseleave",function() { gtotal(); });';
 		$this->rapyd->jquery[]='$("#df1").submit(function() { return confirm("Estas seguro de realizar el Cierre?"); })';
@@ -618,8 +669,18 @@ class Rcaj extends validaciones {
 				$arr = array(
 					'tipo'     => 'F',
 					'recibido' => $rrecibido,
-					'observa'  => $str
+					'observa'  => $str,
 				);
+
+				if($b_fiscal=='S'){
+					$arr['xventa']    = $form->x_venta->newValue;
+					$arr['xviva']     = $form->x_viva->newValue;
+					$arr['xdevo']     = $form->x_devo->newValue;
+					$arr['xdiva']     = $form->x_diva->newValue;
+					$arr['maqfiscal'] = $form->x_maqfiscal->newValue;
+					$arr['ultimafc']  = $form->x_ultimafc->newValue;
+					$arr['ultimanc']  = $form->x_ultimanc->newValue;
+				}
 				$where = 'numero='.$this->db->escape($numero);
 				$mmSQL = $this->db->update_string('rcaj', $arr, $where);
 				$this->db->simple_query($mmSQL);
@@ -848,6 +909,7 @@ class Rcaj extends validaciones {
 			$ccheq += $ccrow->monto;
 		}
 
+		$cont['b_fiscal']= $b_fiscal;
 		$cont['rp']      = $rp    ;
 		$cont['cc']      = $ccheq ;
 		$cont['retiros'] = $retiros;
