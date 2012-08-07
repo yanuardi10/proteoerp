@@ -1092,7 +1092,8 @@ class ventas{
 				a.adicimpu*IF(a.tipo='NC',-1,1)  adicimpu,
 				a.reducida*IF(a.tipo='NC',-1,1)  reducida,
 				a.reduimpu*IF(a.tipo='NC',-1,1)  reduimpu,
-				a.contribu, a.registro,a.afecta,a.fecharece
+				a.contribu, a.registro,a.afecta,a.fecharece,
+				IF(a.tipo='NC',referen,'') AS referen
 			FROM siva a LEFT JOIN scli b ON a.clipro=b.cliente
 			WHERE a.fechal BETWEEN $fdesde AND $fhasta AND a.libro='V' AND a.tipo<>'FA'
 			ORDER BY a.fecha, IF(a.tipo IN ('FC','XE','XC'),1,2), numero ";
@@ -1284,16 +1285,18 @@ class ventas{
 				$ws->write_number( $mm,17, $row->reiva, $numero );		// IVA RETENIDO
 				if($row->tipo=='CR'){
 					$afecta=$row->afecta;
-					$ws->write_string( $mm,18, $afecta , $numero ); //NRO FACT AFECTA
+					$ws->write_string( $mm,18, $row->numero, $numero ); //NRO FACT AFECTA
 				}else{
 					$afecta=$row->referen;
-					$ws->write_string( $mm,18, $afecta, $numero ); //NRO FACT AFECTA
+					$ws->write_string( $mm,18, $afecta, $numero ); //NRO COMPROBANTE
 				}
 
 
 				//$ws->write_string( $mm,18, $row['comprobante'], $cuerpo );	// NRO COMPROBANTE
-				$fecharece = substr($row->fecharece,8,2)."/".$ameses[substr($row->fecharece,5,2)-1]."/".substr($row->fecharece,0,4);
-				$ws->write_string( $mm,19, $fecharece, $cuerpo );	// FECHA COMPROB
+				if(strlen(trim($row->fecharece))>0){
+					$fecharece = substr($row->fecharece,8,2)."/".substr($row->fecharece,5,2)."/".substr($row->fecharece,0,4);
+					$ws->write_string( $mm,19, $fecharece, $cuerpo );	// FECHA COMPROB
+				}
 				$ws->write_number( $mm,20, 0, $numero );	// IMPUESTO PERCIBIDO
 				$mm++;
 			}
