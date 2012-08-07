@@ -26,7 +26,7 @@ class Rcaj extends validaciones {
 		if ( !$this->datasis->iscampo('rcaj','ultimafc') ) {
 			$this->db->query('ALTER TABLE rcaj ADD COLUMN ultimafc VARCHAR(10) NULL ');
 		};
-		if ( !$this->datasis->iscampo('rcaj','ultimaNc') ) {
+		if ( !$this->datasis->iscampo('rcaj','ultimanc') ) {
 			$this->db->query('ALTER TABLE rcaj ADD COLUMN ultimanc VARCHAR(10) NULL ');
 		};
 
