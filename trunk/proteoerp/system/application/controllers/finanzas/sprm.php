@@ -140,20 +140,8 @@ jQuery("#boton1").click( function(){
 
 		$grid  = new $this->jqdatagrid;
 
-
-		$grid->addField('id');
-		$grid->label('Id');
-		$grid->params(array(
-			'align'    => "'center'",
-			'frozen'   => 'true',
-			'width'    => 60,
-			'editable' => $editar,
-			'search'   => 'false'
-		));
-
-
 		$grid->addField('cod_prv');
-		$grid->label('Codigo');
+		$grid->label('Prov.');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -161,9 +149,8 @@ jQuery("#boton1").click( function(){
 			'edittype'      => "'text'",
 		));
 
-
 		$grid->addField('nombre');
-		$grid->label('Nombre');
+		$grid->label('Nombre del Proveedor');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -175,6 +162,7 @@ jQuery("#boton1").click( function(){
 		$grid->addField('tipo_doc');
 		$grid->label('Tipo');
 		$grid->params(array(
+			'align'         => '"center"',
 			'search'        => 'true',
 			'editable'      => $editar,
 			'width'         => 40,
@@ -264,7 +252,7 @@ jQuery("#boton1").click( function(){
 
 
 		$grid->addField('tipo_ref');
-		$grid->label('Tipo_ref');
+		$grid->label('Ref. Tipo');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -274,7 +262,7 @@ jQuery("#boton1").click( function(){
 
 
 		$grid->addField('num_ref');
-		$grid->label('Num_ref');
+		$grid->label('Ref. Numero');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -284,7 +272,7 @@ jQuery("#boton1").click( function(){
 
 
 		$grid->addField('observa1');
-		$grid->label('Observa1');
+		$grid->label('Observaciones 1');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -294,7 +282,7 @@ jQuery("#boton1").click( function(){
 
 
 		$grid->addField('observa2');
-		$grid->label('Observa2');
+		$grid->label('Observaciones 2');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -314,7 +302,7 @@ jQuery("#boton1").click( function(){
 
 
 		$grid->addField('tipo_op');
-		$grid->label('Tipo_op');
+		$grid->label('Operacion');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -322,19 +310,19 @@ jQuery("#boton1").click( function(){
 			'edittype'      => "'text'",
 		));
 
-
+/*
 		$grid->addField('comprob');
-		$grid->label('Comprob');
+		$grid->label('Comprobante');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
 			'width'         => 60,
 			'edittype'      => "'text'",
 		));
-
+*/
 
 		$grid->addField('numche');
-		$grid->label('Numche');
+		$grid->label('Nro Cheque');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -354,7 +342,7 @@ jQuery("#boton1").click( function(){
 
 
 		$grid->addField('descrip');
-		$grid->label('Descrip');
+		$grid->label('Descripcion');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -364,7 +352,7 @@ jQuery("#boton1").click( function(){
 
 
 		$grid->addField('ppago');
-		$grid->label('Ppago');
+		$grid->label('Pronto Pago');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -379,7 +367,7 @@ jQuery("#boton1").click( function(){
 
 
 		$grid->addField('nppago');
-		$grid->label('Nppago');
+		$grid->label('Nro P.Pago');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -389,7 +377,7 @@ jQuery("#boton1").click( function(){
 
 
 		$grid->addField('reten');
-		$grid->label('Reten');
+		$grid->label('Retencion');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -404,7 +392,7 @@ jQuery("#boton1").click( function(){
 
 
 		$grid->addField('nreten');
-		$grid->label('Nreten');
+		$grid->label('Nro Reten.');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -427,7 +415,7 @@ jQuery("#boton1").click( function(){
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
+/*
 		$grid->addField('posdata');
 		$grid->label('Posdata');
 		$grid->params(array(
@@ -439,7 +427,7 @@ jQuery("#boton1").click( function(){
 			'editrules'     => '{ required:true,date:true}',
 			'formoptions'   => '{ label:"Fecha" }'
 		));
-
+*/
 
 		$grid->addField('benefi');
 		$grid->label('Benefi');
@@ -450,7 +438,7 @@ jQuery("#boton1").click( function(){
 			'edittype'      => "'text'",
 		));
 
-
+/*
 		$grid->addField('control');
 		$grid->label('Control');
 		$grid->params(array(
@@ -459,7 +447,7 @@ jQuery("#boton1").click( function(){
 			'width'         => 80,
 			'edittype'      => "'text'",
 		));
-
+*/
 
 		$grid->addField('transac');
 		$grid->label('Transac');
@@ -503,7 +491,7 @@ jQuery("#boton1").click( function(){
 			'edittype'      => "'text'",
 		));
 
-
+/*
 		$grid->addField('cambio');
 		$grid->label('Cambio');
 		$grid->params(array(
@@ -517,7 +505,7 @@ jQuery("#boton1").click( function(){
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
-
+*/
 
 		$grid->addField('pmora');
 		$grid->label('Pmora');
@@ -550,12 +538,14 @@ jQuery("#boton1").click( function(){
 
 
 		$grid->addField('nfiscal');
-		$grid->label('Nfiscal');
+		$grid->label('Nro. Fiscal');
 		$grid->params(array(
 			'search'        => 'true',
-			'editable'      => $editar,
+			'editable'      => 'true',
 			'width'         => 120,
 			'edittype'      => "'text'",
+			'formoptions'   => '{ label:"Numero fiscal" }',
+			'editoptions'   => '{ size:15, maxlength: 20 }'
 		));
 
 
@@ -681,14 +671,15 @@ jQuery("#boton1").click( function(){
 		$grid->label('Afecta');
 		$grid->params(array(
 			'search'        => 'true',
-			'editable'      => $editar,
+			'editable'      => 'true',
 			'width'         => 100,
 			'edittype'      => "'text'",
+			'formoptions'   => '{ label:"Factura Afectada" }',
+			'editoptions'   => '{ size:10, maxlength: 10 }'
 		));
 
-
 		$grid->addField('fecapl');
-		$grid->label('Fecapl');
+		$grid->label('Aplicada');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -699,17 +690,16 @@ jQuery("#boton1").click( function(){
 			'formoptions'   => '{ label:"Fecha" }'
 		));
 
-
 		$grid->addField('serie');
-		$grid->label('Serie');
+		$grid->label('Numero Completo');
 		$grid->params(array(
 			'search'        => 'true',
-			'editable'      => $editar,
+			'editable'      => 'true',
 			'width'         => 120,
 			'edittype'      => "'text'",
+			'editoptions'   => '{ size:15, maxlength: 20 }',
 		));
-
-
+/*
 		$grid->addField('depto');
 		$grid->label('Depto');
 		$grid->params(array(
@@ -718,8 +708,7 @@ jQuery("#boton1").click( function(){
 			'width'         => 40,
 			'edittype'      => "'text'",
 		));
-
-
+*/
 		$grid->addField('modificado');
 		$grid->label('Modificado');
 		$grid->params(array(
@@ -729,10 +718,9 @@ jQuery("#boton1").click( function(){
 			'align'         => "'center'",
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true,date:true}',
-			'formoptions'   => '{ label:"Fecha" }'
+			'formoptions'   => '{ label:"Modificado" }'
 		));
-
-
+/*
 		$grid->addField('negreso');
 		$grid->label('Negreso');
 		$grid->params(array(
@@ -741,7 +729,6 @@ jQuery("#boton1").click( function(){
 			'width'         => 80,
 			'edittype'      => "'text'",
 		));
-
 
 		$grid->addField('ndebito');
 		$grid->label('Ndebito');
@@ -752,7 +739,6 @@ jQuery("#boton1").click( function(){
 			'edittype'      => "'text'",
 		));
 
-
 		$grid->addField('causado');
 		$grid->label('Causado');
 		$grid->params(array(
@@ -761,15 +747,15 @@ jQuery("#boton1").click( function(){
 			'width'         => 80,
 			'edittype'      => "'text'",
 		));
-
-
-		$grid->addField('causado');
-		$grid->label('Causado');
+*/
+		$grid->addField('id');
+		$grid->label('Id');
 		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 80,
-			'edittype'      => "'text'",
+			'align'    => "'center'",
+			'frozen'   => 'true',
+			'width'    => 60,
+			'editable' => $editar,
+			'search'   => 'false'
 		));
 
 		$grid->showpager(true);
@@ -779,8 +765,8 @@ jQuery("#boton1").click( function(){
 		$grid->setfilterToolbar(true);
 		$grid->setToolbar('false', '"top"');
 
-		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
-		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 420, height:200, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 420, height:200, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
 		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
 
 		$grid->setonSelectRow('
@@ -797,7 +783,7 @@ jQuery("#boton1").click( function(){
 
 
 		#show/hide navigations buttons
-		$grid->setAdd(true);
+		$grid->setAdd(false);
 		$grid->setEdit(true);
 		$grid->setDelete(true);
 		$grid->setSearch(true);
@@ -847,7 +833,7 @@ jQuery("#boton1").click( function(){
 		unset($data['id']);
 		if($oper == 'add'){
 			if(false == empty($data)){
-				$this->db->insert('sprm', $data);
+				//$this->db->insert('sprm', $data);
 			}
 			return "Registro Agregado";
 
@@ -855,7 +841,7 @@ jQuery("#boton1").click( function(){
 			//unset($data['ubica']);
 			$this->db->where('id', $id);
 			$this->db->update('sprm', $data);
-			return "Registro Modificado";
+			return "Registro $id Modificado";
 
 		} elseif($oper == 'del') {
 			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM sprm WHERE id='$id' ");
