@@ -60,7 +60,7 @@ class compras{
 		    SELECT DISTINCT a.sucursal, 
 		    b.emision AS fecha, 
 		    d.rif,
-		    d.nomfis nombre, 
+		    IF(MID(b.transac,1,1)='_','ANULADO',d.nomfis) nombre, 
 		    a.contribu,
 		    a.referen,
 		    a.planilla,'  ' aaa,
@@ -78,10 +78,10 @@ class compras{
 		    a.adicimpu * 0, 
 		    a.reducida * 0,
 		    a.reduimpu * 0, 
-		    SUM(b.reiva*IF(a.tipo='NC',-1,1)) reiva,
+		    (SUM(b.reiva*IF(a.tipo='NC',-1,1))*MID(b.transac,1,1)<>'_') reiva,
 		    ' ' nrocomp,
 		    b.emision, CONCAT(EXTRACT(YEAR_MONTH FROM fechal),b.nrocomp) numo, 'CR' AS tipo_doc,SUM(a.impuesto) AS impuesto, a.nacional,$dbcampo AS afecta
-		    FROM siva AS a JOIN riva AS b ON a.numero=b.numero AND a.tipo=b.tipo_doc AND MID(b.transac,1,1)<>'_' AND a.reiva=b.reiva 
+		    FROM siva AS a JOIN riva AS b ON a.numero=b.numero AND a.tipo=b.tipo_doc AND a.reiva=b.reiva 
 		              LEFT JOIN sprv AS d ON b.clipro=d.proveed 
 		    WHERE libro='C' AND fechal BETWEEN $fdesde AND $fhasta AND a.fecha>0 AND a.reiva>0 
 		    GROUP BY a.fecha,a.tipo,numo,a.rif
@@ -349,7 +349,7 @@ class compras{
 		$ws->write_formula($mm, 7, "=N$celda" , $Rnumero );
 		$ws->write($mm, 8, '323', $h1 );
 		$ws->write_formula($mm, 9, "=O$celda" , $Rnumero );
-		
+
 		$mm ++;
 		$ws->write($mm, 5, 'Total Compras Internas Gravadas por Alicuota General', $h3 );
 		$ws->write_blank($mm, 2, $h1 );	
@@ -360,7 +360,7 @@ class compras{
 		$ws->write_formula($mm, 7, "=P$celda" , $Rnumero );
 		$ws->write($mm, 8, '34', $h1 );
 		$ws->write_formula($mm, 9, "=Q$celda" , $Rnumero );
-		
+
 		$mm ++;
 		$ws->write($mm, 5, 'Total Compras Internas Gravadas por Alicuota General mas Adicional', $h3 );
 		$ws->write_blank($mm, 2, $h1 );
@@ -371,18 +371,18 @@ class compras{
 		$ws->write_formula($mm, 7, "=R$celda" , $Rnumero );
 		$ws->write($mm, 8, '342', $h1 );
 		$ws->write_formula($mm, 9, "=S$celda" , $Rnumero );
-		
+
 		$mm ++;
 		$ws->write($mm, 5, 'Total Compras Internas Gravadas por Alicuota Reducida', $h3 );
-		$ws->write_blank($mm, 2, $h1 );	
-		$ws->write_blank($mm, 3, $h1 );	
-		$ws->write_blank($mm, 4, $h1 );	
-		//$ws->write_blank($mm, 5, $h1 );	
+		$ws->write_blank($mm, 2, $h1 );
+		$ws->write_blank($mm, 3, $h1 );
+		$ws->write_blank($mm, 4, $h1 );
+		//$ws->write_blank($mm, 5, $h1 );
 		$ws->write($mm, 6, '333', $h1 );
 		$ws->write_formula($mm, 7, "=T$celda" , $Rnumero );
 		$ws->write($mm, 8, '343', $h1 );
 		$ws->write_formula($mm, 9, "=U$celda" , $Rnumero );
-		
+
 		$mm1=$mm;
 		$mm ++;
 		$ws->write($mm, 1, 'Total Compras y Creditos para efectos de determinacion', $h2 );
