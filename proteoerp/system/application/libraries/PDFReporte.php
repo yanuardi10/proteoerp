@@ -4,6 +4,7 @@ require_once('Fpdf.php');
 
 class PDFReporte extends Fpdf {
 	var $bits=0;
+	var $ppnum=true;  //Activa o desactiva el numero de las paginas
 	var $ProcessingTable=false;
 	var $TableWidth;
 	var $aCols=array();
@@ -28,7 +29,7 @@ class PDFReporte extends Fpdf {
 	var $DBfieldsName;
 	var $DBfieldsType;
 	var $DBfieldsMax_lengt;
-	Var $DBieldsNum;
+	var $DBieldsNum;
 	var $totalizar=array();
 	var $ctotalizar=false;
 	var $propiedades=array("HeaderColor"=>array(174,174,174),
@@ -227,7 +228,7 @@ class PDFReporte extends Fpdf {
 
 		$this->SetFont('Times','I',6);
 		//$this->Cell(0,0,'Página '.$this->PageNo().'/{nb}',0,1,'R');
-		$this->Cell(0,0,utf8_decode('Página ').$this->PageNo().'/{nb}',0,1,'R');
+		if($this->ppnum) $this->Cell(0,0,utf8_decode('Página ').$this->PageNo().'/{nb}',0,1,'R');
 
 		//Head
 		$this->SetFont($this->view['HeadFont'],'',$this->view['HeadSize']);
