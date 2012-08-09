@@ -208,7 +208,7 @@ jQuery("#boton2").click( function(){
 			'width'         => 120,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 20 }',
+			'editoptions'   => '{ size:15, maxlength: 20 }',
 		));
 
 
@@ -330,6 +330,18 @@ jQuery("#boton2").click( function(){
 		));
 
 
+		$grid->addField('nfiscal');
+		$grid->label('Nfiscal');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => 'true',
+			'width'         => 120,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:10, maxlength: 12 }',
+		));
+
+/*
 		$grid->addField('anticipo');
 		$grid->label('Anticipo');
 		$grid->params(array(
@@ -343,8 +355,7 @@ jQuery("#boton2").click( function(){
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
-
-
+*/
 
 		$grid->addField('control');
 		$grid->label('Control');
@@ -357,7 +368,7 @@ jQuery("#boton2").click( function(){
 			'editoptions'   => '{ size:30, maxlength: 8 }',
 		));
 
-
+/*
 		$grid->addField('flete');
 		$grid->label('Flete');
 		$grid->params(array(
@@ -431,10 +442,10 @@ jQuery("#boton2").click( function(){
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
-
+*/
 
 		$grid->addField('actuali');
-		$grid->label('Actuali');
+		$grid->label('Actualizada');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -445,7 +456,7 @@ jQuery("#boton2").click( function(){
 			'formoptions'   => '{ label:"Fecha" }'
 		));
 
-
+/*
 		$grid->addField('mdolar');
 		$grid->label('Mdolar');
 		$grid->params(array(
@@ -489,7 +500,7 @@ jQuery("#boton2").click( function(){
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
-
+*/
 
 		$grid->addField('peso');
 		$grid->label('Peso');
@@ -554,17 +565,6 @@ jQuery("#boton2").click( function(){
 			'editoptions'   => '{ size:30, maxlength: 12 }',
 		));
 
-		$grid->addField('nfiscal');
-		$grid->label('Nfiscal');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 120,
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 12 }',
-		));
-
 		$grid->addField('exento');
 		$grid->label('Exento');
 		$grid->params(array(
@@ -620,7 +620,7 @@ jQuery("#boton2").click( function(){
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
-
+/*
 		$grid->addField('preauto');
 		$grid->label('Preauto');
 		$grid->params(array(
@@ -631,9 +631,9 @@ jQuery("#boton2").click( function(){
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:30, maxlength: 1 }',
 		));
-
+*/
 		$grid->addField('reteiva');
-		$grid->label('Reteiva');
+		$grid->label('Retencion IVA');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -647,16 +647,17 @@ jQuery("#boton2").click( function(){
 		));
 
 		$grid->addField('fafecta');
-		$grid->label('Fafecta');
+		$grid->label('F. Afectada');
 		$grid->params(array(
 			'search'        => 'true',
-			'editable'      => $editar,
+			'editable'      => 'true',
 			'width'         => 80,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 8 }',
+			'editoptions'   => '{ label:"Factura Afectada", size:10, maxlength: 8 }',
 		));
 
+/*
 		$grid->addField('cexento');
 		$grid->label('Cexento');
 		$grid->params(array(
@@ -797,7 +798,7 @@ jQuery("#boton2").click( function(){
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
-
+*/
 
 		$grid->addField('modificado');
 		$grid->label('Modificado');
@@ -813,7 +814,7 @@ jQuery("#boton2").click( function(){
 
 
 		$grid->addField('notae');
-		$grid->label('Notae');
+		$grid->label('Nota E.');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -822,7 +823,7 @@ jQuery("#boton2").click( function(){
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:30, maxlength: 8 }',
 		));
-
+/*
 
 		$grid->addField('factura');
 		$grid->label('Factura');
@@ -834,7 +835,7 @@ jQuery("#boton2").click( function(){
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:30, maxlength: 8 }',
 		));
-
+*/
 
 		$grid->addField('consigna');
 		$grid->label('Consigna');
@@ -875,9 +876,9 @@ jQuery("#boton2").click( function(){
 			
 		$grid->setOndblClickRow("");
 
-		$grid->setFormOptionsE('-'); //'closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 350, height:200, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
 		$grid->setFormOptionsA('-'); 
-		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
+		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a];");
 
 		#show/hide navigations buttons
 		$grid->setAdd(false);
