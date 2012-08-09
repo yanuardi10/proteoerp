@@ -213,7 +213,7 @@ jQuery("#a1").click( function(){
 			'width'         => 80,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 8 }',
+			'editoptions'   => '{ size:30, maxlength: 20 }',
 		));
 
 		$grid->addField('rif');
