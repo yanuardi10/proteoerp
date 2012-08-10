@@ -9,6 +9,8 @@ class Scst extends Controller {
 		parent::Controller();
 		$this->load->library('rapyd');
 		$this->load->library('jqdatagrid');
+		$this->back_dataedit='compras/scst/datafilter';
+		$this->genesal=true;
 		//$this->datasis->modulo_nombre( $modulo, $ventana=0 );
 	}
 
@@ -42,7 +44,7 @@ class Scst extends Controller {
 		west__size: 212,
 		west__onresize: function (pane, $Pane){jQuery("#west-grid").jqGrid(\'setGridWidth\',$Pane.innerWidth()-2);},
 	});
-	
+
 	$(\'div.ui-layout-center\').layout({
 		minSize: 30,
 		resizerClass: "ui-state-default",
@@ -130,7 +132,7 @@ jQuery("#boton2").click( function(){
 		$param['SouthPanel']   = $SouthPanel;
 		$param['listados']     = $this->datasis->listados('SCST', 'JQ');
 		$param['otros']        = $this->datasis->otros('SCST', 'JQ');
-		
+
 		$param['centerpanel']  = $centerpanel;
 		//$param['funciones']    = $funciones;
 
@@ -873,11 +875,11 @@ jQuery("#boton2").click( function(){
 					jQuery(gridId2).trigger("reloadGrid");
 				}
 			}');
-			
+
 		$grid->setOndblClickRow("");
 
 		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 350, height:200, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
-		$grid->setFormOptionsA('-'); 
+		$grid->setFormOptionsA('-');
 		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a];");
 
 		#show/hide navigations buttons
@@ -1698,27 +1700,47 @@ class Scst extends Controller {
 			$edit->button_status('btn_reversar','Reversar'     ,$accion,'TR','show');
 			$edit->buttons('save', 'exit','add_rel');
 		}
-		$edit->build();
 
-		$smenu['link']  =  barra_menu('201');
-		$data['smenu']  =  $this->load->view('view_sub_menu', $smenu,true);
-		$conten['form'] =& $edit;
 
-		$ffecha=$edit->get_from_dataobjetct('fecha');
-		$conten['alicuota']=$this->datasis->ivaplica(($ffecha==false)? null : $ffecha);
 
-		$data['script']  = script('jquery.js');
-		$data['script'] .= script('jquery-ui.js');
-		$data['script'] .= script('plugins/jquery.numeric.pack.js');
-		$data['script'] .= script('plugins/jquery.floatnumber.js');
-		$data['script'] .= script('plugins/jquery.ui.autocomplete.autoSelectOne.js');
-		$data['script'] .= phpscript('nformat.js');
-		$data['head']    = $this->rapyd->get_head();
-		$data['head']   .= style('redmond/jquery-ui-1.8.1.custom.css');
-		$data['content'] = $this->load->view('view_compras', $conten,true);
-		$data['title']   = heading('Compras');
 
-		$this->load->view('view_ventanas', $data);
+
+		if($this->genesal){
+			$edit->build();
+
+			$smenu['link']  =  barra_menu('201');
+			$data['smenu']  =  $this->load->view('view_sub_menu', $smenu,true);
+			$conten['form'] =& $edit;
+
+			$ffecha=$edit->get_from_dataobjetct('fecha');
+			$conten['alicuota']=$this->datasis->ivaplica(($ffecha==false)? null : $ffecha);
+
+			$data['script']  = script('jquery.js');
+			$data['script'] .= script('jquery-ui.js');
+			$data['script'] .= script('plugins/jquery.numeric.pack.js');
+			$data['script'] .= script('plugins/jquery.floatnumber.js');
+			$data['script'] .= script('plugins/jquery.ui.autocomplete.autoSelectOne.js');
+			$data['script'] .= phpscript('nformat.js');
+			$data['head']    = $this->rapyd->get_head();
+			$data['head']   .= style('redmond/jquery-ui-1.8.1.custom.css');
+			$data['content'] = $this->load->view('view_compras', $conten,true);
+			$data['title']   = heading('Compras');
+
+			$this->load->view('view_ventanas', $data);
+		}else{
+			$edit->on_save_redirect=false;
+			$edit->build();
+
+			if($edit->on_success()){
+				$this->claves=$edit->_dataobject->pk;
+				$this->claves['control']=$edit->_dataobject->get('control');
+				$rt= 'Compra Guardada';
+			}elseif($edit->on_error()){
+				$rt= html_entity_decode(preg_replace('/<[^>]*>/', '', $edit->error_string));
+			}
+			return $rt;
+		}
+
 	}
 
 	function cprecios($control){
@@ -2586,6 +2608,7 @@ class Scst extends Controller {
 	}
 
 	function _pre_insert($do){
+
 		$control=$do->get('control');
 		$transac=$do->get('transac');
 
