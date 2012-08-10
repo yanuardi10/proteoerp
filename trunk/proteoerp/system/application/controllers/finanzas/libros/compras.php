@@ -29,7 +29,7 @@ class compras{
 		}
 
 		$mSQL = "SELECT DISTINCT a.sucursal, a.fecha, a.rif,
-		    if(e.proveed IS NULL, if(d.nombre IS NULL or d.nombre='', a.nombre, d.nombre ), if(e.nombre IS NULL or e.nombre='', a.nombre, if(e.nomfis='',e.nombre,e.nomfis)) ) nombre, 
+		    if(e.proveed IS NULL, if(d.nombre IS NULL or d.nombre='', a.nombre, d.nombre ), if(e.nombre IS NULL or e.nombre='', a.nombre, if(e.nomfis='',e.nombre,e.nomfis)) ) nombre,
 		    a.contribu,
 		    a.referen,
 		    a.planilla,
@@ -38,29 +38,29 @@ class compras{
 		    a.nfiscal,
 		    IF(a.tipo='ND',$dbcampo,'        ') numnd,
 		    IF(a.tipo='NC',$dbcampo,'        ') numnc,
-		    a.registro oper, 
-		    '        ' compla, 
+		    a.registro oper,
+		    '        ' compla,
 		    sum(a.gtotal   *IF(a.tipo='NC',-1,1)) gtotal,
-		    sum(a.exento   *IF(a.tipo='NC',-1,1)) exento, 
+		    sum(a.exento   *IF(a.tipo='NC',-1,1)) exento,
 		    sum(a.general  *IF(a.tipo='NC',-1,1)) general,
 		    sum(a.geneimpu *IF(a.tipo='NC',-1,1)) geneimpu,
 		    sum(a.adicional*IF(a.tipo='NC',-1,1)) adicional,
-		    sum(a.adicimpu *IF(a.tipo='NC',-1,1)) adicimpu, 
+		    sum(a.adicimpu *IF(a.tipo='NC',-1,1)) adicimpu,
 		    sum(a.reducida *IF(a.tipo='NC',-1,1)) reducida,
-		    sum(a.reduimpu *IF(a.tipo='NC',-1,1)) reduimpu, 
+		    sum(a.reduimpu *IF(a.tipo='NC',-1,1)) reduimpu,
 		    0 reiva,
 		    ' ' nrocomp,
-		    NULL AS emision, 
+		    NULL AS emision,
 		    $dbcampo numo, a.tipo tipo_doc, SUM(a.impuesto) AS impuesto, a.nacional,a.afecta
-		    FROM siva AS a LEFT JOIN provoca AS d ON a.rif=d.rif 
-		                   LEFT JOIN sprv AS e ON a.clipro=e.proveed 
-		    WHERE libro='C' AND fechal BETWEEN $fdesde AND $fhasta AND a.fecha>0 
-		    GROUP BY a.fecha,a.tipo,numo,a.rif 
+		    FROM siva AS a LEFT JOIN provoca AS d ON a.rif=d.rif
+		                   LEFT JOIN sprv AS e ON a.clipro=e.proveed
+		    WHERE libro='C' AND fechal BETWEEN $fdesde AND $fhasta AND a.fecha>0
+		    GROUP BY a.fecha,a.tipo,numo,a.rif
 		UNION
-		    SELECT DISTINCT a.sucursal, 
-		    b.emision AS fecha, 
+		    SELECT DISTINCT a.sucursal,
+		    b.emision AS fecha,
 		    d.rif,
-		    IF(MID(b.transac,1,1)='_','ANULADO',d.nomfis) nombre, 
+		    IF(MID(b.transac,1,1)='_','ANULADO',d.nomfis) nombre,
 		    a.contribu,
 		    a.referen,
 		    a.planilla,'  ' aaa,
@@ -68,27 +68,27 @@ class compras{
 		    a.nfiscal,
 		    '        ' numnd,
 		    '        ' numnc,
-		    a.registro oper, 
-		    a.referen, 
+		    a.registro oper,
+		    a.referen,
 		    a.gtotal   * 0,
-		    a.exento   * 0, 
+		    a.exento   * 0,
 		    a.general  * 0,
 		    a.geneimpu * 0,
 		    a.adicional* 0,
-		    a.adicimpu * 0, 
+		    a.adicimpu * 0,
 		    a.reducida * 0,
-		    a.reduimpu * 0, 
-		    (SUM(b.reiva*IF(a.tipo='NC',-1,1))*MID(b.transac,1,1)<>'_') reiva,
+		    a.reduimpu * 0,
+		    SUM(b.reiva*IF(a.tipo='NC',-1,1)*(MID(b.transac,1,1)<>'_')) reiva,
 		    ' ' nrocomp,
 		    b.emision, CONCAT(EXTRACT(YEAR_MONTH FROM fechal),b.nrocomp) numo, 'CR' AS tipo_doc,SUM(a.impuesto) AS impuesto, a.nacional,$dbcampo AS afecta
-		    FROM siva AS a JOIN riva AS b ON a.numero=b.numero AND a.tipo=b.tipo_doc AND a.reiva=b.reiva 
-		              LEFT JOIN sprv AS d ON b.clipro=d.proveed 
-		    WHERE libro='C' AND fechal BETWEEN $fdesde AND $fhasta AND a.fecha>0 AND a.reiva>0 
+		    FROM siva AS a JOIN riva AS b ON a.numero=b.numero AND a.tipo=b.tipo_doc AND a.reiva=b.reiva
+		              LEFT JOIN sprv AS d ON b.clipro=d.proveed
+		    WHERE libro='C' AND fechal BETWEEN $fdesde AND $fhasta AND a.fecha>0 AND a.reiva>0
 		    GROUP BY a.fecha,a.tipo,numo,a.rif
 		    ORDER BY fecha,numo ";
 
-//FROM siva AS a JOIN riva AS b ON a.numero=b.numero AND a.tipo=b.tipo_doc AND MID(b.transac,1,1)<>'_' AND a.reiva=b.reiva 
-//WHERE libro='C' AND fechal BETWEEN $fdesde AND $fhasta AND a.fecha>0 AND a.reiva>0 
+//FROM siva AS a JOIN riva AS b ON a.numero=b.numero AND a.tipo=b.tipo_doc AND MID(b.transac,1,1)<>'_' AND a.reiva=b.reiva
+//WHERE libro='C' AND fechal BETWEEN $fdesde AND $fhasta AND a.fecha>0 AND a.reiva>0
 		$fname = tempnam("/tmp","lcompras.xls");
 		$this->load->library("workbook", array("fname"=>$fname));
 		$wb = & $this->workbook ;
@@ -123,7 +123,7 @@ class compras{
 
 		$ws->write(1, 0, $this->datasis->traevalor('TITULO1') , $h1 );
 		$ws->write(2, 0, "RIF: ".$this->datasis->traevalor('RIF') , $h1 );
-		
+
 		$ws->write(4,0, $hs, $h );
 		for ( $i=1; $i<26; $i++ ) {
 			$ws->write_blank(4, $i,  $h );
@@ -224,10 +224,10 @@ class compras{
 			foreach( $mc->result() as $row ) {
 				$ws->write_string( $mm,  0, $ii, $cuerpo );
 				$ws->write_string( $mm,  1, substr($row->fecha,8,2)."/".substr($row->fecha,5,2)."/".substr($row->fecha,0,4), $cuerpo );
-				$ws->write_string( $mm,  2, $row->tipo_doc,  $cuerpo ); 
-				$ws->write_string( $mm,  3, $row->numo,  $cuerpo ); 
-				$ws->write_string( $mm,  4, $row->planilla,  $cuerpo ); 
-				$ws->write_string( $mm,  5, $row->nombre,  $cuerpo ); 
+				$ws->write_string( $mm,  2, $row->tipo_doc,  $cuerpo );
+				$ws->write_string( $mm,  3, $row->numo,  $cuerpo );
+				$ws->write_string( $mm,  4, $row->planilla,  $cuerpo );
+				$ws->write_string( $mm,  5, $row->nombre,  $cuerpo );
 				$ws->write_string( $mm,  6, $row->rif,  $cuerpo );
 				if ($row->oper != '04' ){
 					$ws->write_number( $mm,  7, $row->gtotal, $numero );
@@ -263,7 +263,7 @@ class compras{
 		$fventas = "=G$celda";   // VENTAS
 		$fexenta = "=H$celda";   // VENTAS EXENTAS
 		$fbase   = "=P$celda";   // BASE IMPONIBLE
-		$fiva    = "=Q$celda";   // I.V.A. 
+		$fiva    = "=Q$celda";   // I.V.A.
 
 		$ws->write( $mm, 0,"Totales...",  $Tnumero );
 		$ws->write_blank( $mm,  1,  $Tnumero );
@@ -273,22 +273,22 @@ class compras{
 		$ws->write_blank( $mm,  5,  $Tnumero );
 		$ws->write_blank( $mm,  6,  $Tnumero );
 
-		$ws->write_formula( $mm,  7, "=SUM(H$dd:H$mm)", $Tnumero );   //"VENTAS EXENTAS" 
-		$ws->write_formula( $mm,  8, "=SUM(I$dd:I$mm)", $Tnumero );   //"BASE IMPONIBLE" 
-		$ws->write_formula( $mm,  9, "=SUM(J$dd:J$mm)", $Tnumero );   //"VENTAS + IVA" 
-		$ws->write_formula( $mm, 10, "=SUM(K$dd:K$mm)", $Tnumero );   //"VENTAS EXENTAS" 
-		$ws->write_formula( $mm, 11, "=SUM(L$dd:L$mm)", $Tnumero );   //"BASE IMPONIBLE" 
-		$ws->write_formula( $mm, 12, "=SUM(M$dd:M$mm)", $Tnumero );   //"VENTAS + IVA" 
-		$ws->write_formula( $mm, 13, "=SUM(N$dd:N$mm)", $Tnumero );   //"VENTAS EXENTAS" 
-		$ws->write_formula( $mm, 14, "=SUM(O$dd:O$mm)", $Tnumero );   //"VENTAS EXENTAS" 
-		$ws->write_formula( $mm, 15, "=SUM(P$dd:P$mm)", $Tnumero );   //"VENTAS + IVA" 
-		$ws->write_formula( $mm, 16, "=SUM(Q$dd:Q$mm)", $Tnumero );   //"VENTAS EXENTAS" 
-		$ws->write_formula( $mm, 17, "=SUM(R$dd:R$mm)", $Tnumero );   //"VENTAS EXENTAS" 
-		$ws->write_formula( $mm, 18, "=SUM(S$dd:S$mm)", $Tnumero );   //"VENTAS + IVA" 
-		$ws->write_formula( $mm, 19, "=SUM(T$dd:T$mm)", $Tnumero );   //"VENTAS EXENTAS" 
-		$ws->write_formula( $mm, 20, "=SUM(U$dd:U$mm)", $Tnumero );   //"VENTAS EXENTAS" 
-		$ws->write_formula( $mm, 21, "=SUM(V$dd:V$mm)", $Tnumero );   //"VENTAS + IVA" 
-		$ws->write_formula( $mm, 22, "=SUM(W$dd:W$mm)", $Tnumero );   //"VENTAS EXENTAS" 
+		$ws->write_formula( $mm,  7, "=SUM(H$dd:H$mm)", $Tnumero );   //"VENTAS EXENTAS"
+		$ws->write_formula( $mm,  8, "=SUM(I$dd:I$mm)", $Tnumero );   //"BASE IMPONIBLE"
+		$ws->write_formula( $mm,  9, "=SUM(J$dd:J$mm)", $Tnumero );   //"VENTAS + IVA"
+		$ws->write_formula( $mm, 10, "=SUM(K$dd:K$mm)", $Tnumero );   //"VENTAS EXENTAS"
+		$ws->write_formula( $mm, 11, "=SUM(L$dd:L$mm)", $Tnumero );   //"BASE IMPONIBLE"
+		$ws->write_formula( $mm, 12, "=SUM(M$dd:M$mm)", $Tnumero );   //"VENTAS + IVA"
+		$ws->write_formula( $mm, 13, "=SUM(N$dd:N$mm)", $Tnumero );   //"VENTAS EXENTAS"
+		$ws->write_formula( $mm, 14, "=SUM(O$dd:O$mm)", $Tnumero );   //"VENTAS EXENTAS"
+		$ws->write_formula( $mm, 15, "=SUM(P$dd:P$mm)", $Tnumero );   //"VENTAS + IVA"
+		$ws->write_formula( $mm, 16, "=SUM(Q$dd:Q$mm)", $Tnumero );   //"VENTAS EXENTAS"
+		$ws->write_formula( $mm, 17, "=SUM(R$dd:R$mm)", $Tnumero );   //"VENTAS EXENTAS"
+		$ws->write_formula( $mm, 18, "=SUM(S$dd:S$mm)", $Tnumero );   //"VENTAS + IVA"
+		$ws->write_formula( $mm, 19, "=SUM(T$dd:T$mm)", $Tnumero );   //"VENTAS EXENTAS"
+		$ws->write_formula( $mm, 20, "=SUM(U$dd:U$mm)", $Tnumero );   //"VENTAS EXENTAS"
+		$ws->write_formula( $mm, 21, "=SUM(V$dd:V$mm)", $Tnumero );   //"VENTAS + IVA"
+		$ws->write_formula( $mm, 22, "=SUM(W$dd:W$mm)", $Tnumero );   //"VENTAS EXENTAS"
 		$ws->write_blank( $mm,  23,  $Tnumero );
 		$ws->write_blank( $mm,  24,  $Tnumero );
 		$ws->write_blank( $mm,  25,  $Tnumero );
@@ -352,9 +352,9 @@ class compras{
 
 		$mm ++;
 		$ws->write($mm, 5, 'Total Compras Internas Gravadas por Alicuota General', $h3 );
-		$ws->write_blank($mm, 2, $h1 );	
-		$ws->write_blank($mm, 3, $h1 );	
-		$ws->write_blank($mm, 4, $h1 );	
+		$ws->write_blank($mm, 2, $h1 );
+		$ws->write_blank($mm, 3, $h1 );
+		$ws->write_blank($mm, 4, $h1 );
 		//$ws->write_blank($mm, 5, $h1 );
 		$ws->write($mm, 6, '33', $h1 );
 		$ws->write_formula($mm, 7, "=P$celda" , $Rnumero );
@@ -416,26 +416,26 @@ class compras{
 		$this->db->simple_query("UPDATE scst SET montasa=0, tasa =0     WHERE montasa IS NULL ");
 		$this->db->simple_query("UPDATE scst SET monredu=0, reducida=0  WHERE monredu IS NULL ");
 		$this->db->simple_query("UPDATE scst SET monadic=0, sobretasa=0 WHERE monadic IS NULL ");
-		
+
 		$this->db->simple_query("DELETE FROM siva WHERE EXTRACT(YEAR_MONTH FROM fechal) = $mes AND fuente='CP' ");
 		$sql="UPDATE scst SET
 		cexento=null,cgenera=null, civagen=null,cadicio=null, civaadi=null,creduci=null,civared=null,cstotal=null, cimpuesto=null,ctotal=null
-		WHERE (cexento+cgenera+civagen+cadicio+civaadi+creduci+civared+cstotal+cimpuesto+ctotal=0 OR 
+		WHERE (cexento+cgenera+civagen+cadicio+civaadi+creduci+civared+cstotal+cimpuesto+ctotal=0 OR
 		       cexento+cgenera+civagen+cadicio+civaadi+creduci+civared+cstotal+cimpuesto+ctotal IS NULL) AND recep BETWEEN $fdesde AND $fhasta";
 		$this->db->simple_query($sql);
 
 		// REVISAR COMPRAS
 		$query = $this->db->query("SELECT control FROM scst WHERE abs(exento+montasa+monredu+monadic-montotot)>0.1 AND EXTRACT(YEAR_MONTH FROM fecha)=$mes ");
 
-		// Procesando Compra 
+		// Procesando Compra
 		if ($query->num_rows() > 0) foreach ($query->result() as $row) $this->scstarretasa( $row->control );
 		// VER LO DE FACTURAS RECIBIDAS CON FECHA ANTERIOR
 		//$mFECHAA = $this->datasis->dameval("SELECT fecha FROM civa WHERE fecha < (SELECT MAX(fecha) FROM siva) ORDER BY fecha DESC LIMIT 1");
 		$mFECHAF = $this->datasis->dameval("SELECT max(fecha) FROM civa WHERE fecha<=$mes"."01");
 
 		$tasas = $this->_tasas($mes);
-		$mivag = $tasas['general'];  
-		$mivar = $tasas['reducida']; 
+		$mivag = $tasas['general'];
+		$mivar = $tasas['reducida'];
 		$mivaa = $tasas['adicional'];
 
 		if($this->db->field_exists('serie', 'scst') AND $this->db->field_exists('serie', 'siva')){
@@ -446,17 +446,17 @@ class compras{
 			$addcamp='';
 		}
 
-		$mSQL = "INSERT INTO siva  
-			(id, libro, tipo, fuente, sucursal, fecha, numero, numhasta,  caja, nfiscal,  nhfiscal, 
+		$mSQL = "INSERT INTO siva
+			(id, libro, tipo, fuente, sucursal, fecha, numero, numhasta,  caja, nfiscal,  nhfiscal,
 			referen, planilla, clipro, nombre, contribu, rif, registro,
-			nacional, exento, general, geneimpu, 
-			adicional,reduimpu, reducida,adicimpu,stotal, impuesto, 
-			gtotal, reiva, fechal, fafecta $addcamp) 
+			nacional, exento, general, geneimpu,
+			adicional,reduimpu, reducida,adicimpu,stotal, impuesto,
+			gtotal, reiva, fechal, fafecta $addcamp)
 			SELECT 0 AS id,
-			'C' AS libro, 
-			b.tipo_doc AS tipo, 
-			'CP' AS fuente, 
-			'00' AS sucursal, 
+			'C' AS libro,
+			b.tipo_doc AS tipo,
+			'CP' AS fuente,
+			'00' AS sucursal,
 			b.fecha,
 			b.numero AS numero,
 			' ' AS numhasta,
@@ -483,10 +483,10 @@ class compras{
 			COALESCE(b.ctotal,b.montonet)    AS gtotal,
 			b.reteiva AS reiva,
 			".$mes."01 AS fechal,
-			0 fafecta 
+			0 fafecta
 			$msqlnum
 		FROM itscst AS a JOIN scst as b ON a.control=b.control
-		LEFT JOIN sprv AS c ON b.proveed=c.proveed 
+		LEFT JOIN sprv AS c ON b.proveed=c.proveed
 		WHERE b.recep BETWEEN $fdesde AND $fhasta AND b.actuali >= b.fecha AND c.tiva<>'I'
 		GROUP BY b.control";
 
@@ -494,8 +494,8 @@ class compras{
 		$flag=$this->db->simple_query($mSQL);
 		if(!$flag) memowrite($mSQL,'genecompras');
 
-		$iivag=$mivag/100; 
-		$iivar=$mivar/100; 
+		$iivag=$mivag/100;
+		$iivar=$mivar/100;
 		$iivaa=$mivaa/100;
 
 		if($this->db->table_exists('ordi')){
@@ -507,17 +507,17 @@ class compras{
 		}
 
 		//para los productos importados
-		$mSQL = "INSERT INTO siva 
-			(id, libro, tipo, fuente, sucursal, fecha, numero, numhasta,  caja, nfiscal,  nhfiscal, 
+		$mSQL = "INSERT INTO siva
+			(id, libro, tipo, fuente, sucursal, fecha, numero, numhasta,  caja, nfiscal,  nhfiscal,
 			referen, planilla, clipro, nombre, contribu, rif, registro,
-			nacional, exento, general, geneimpu, 
-			adicional,reduimpu, reducida,adicimpu,stotal, impuesto, 
-			gtotal, reiva, fechal, fafecta) 
+			nacional, exento, general, geneimpu,
+			adicional,reduimpu, reducida,adicimpu,stotal, impuesto,
+			gtotal, reiva, fechal, fafecta)
 			SELECT 0 AS id,
-			'C' AS libro, 
-			b.tipo_doc AS tipo, 
-			'CP' AS fuente, 
-			'00' AS sucursal, 
+			'C' AS libro,
+			b.tipo_doc AS tipo,
+			'CP' AS fuente,
+			'00' AS sucursal,
 			b.fecha,
 			b.numero,
 			' ' AS numhasta,
@@ -544,9 +544,9 @@ class compras{
 			b.montonet-b.descu AS gtotal,
 			b.reteiva AS reiva,
 			".$mes."01 AS fechal,
-			0 fafecta 
+			0 fafecta
 		FROM itscst AS a JOIN scst AS b ON a.control=b.control
-		LEFT JOIN sprv AS c ON b.proveed=c.proveed 
+		LEFT JOIN sprv AS c ON b.proveed=c.proveed
 		$jjoin
 		WHERE b.recep BETWEEN $fdesde AND $fhasta AND b.actuali >= b.fecha AND c.tiva='I'
 		GROUP BY b.control";

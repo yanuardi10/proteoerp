@@ -13,6 +13,7 @@ class sfac_add extends validaciones {
 		$this->load->library('rapyd');
 		$this->datasis->modulo_id('103',1);
 		$this->instalar();
+		$this->genesal=true;
 	}
 
 	function index(){
@@ -452,12 +453,12 @@ class sfac_add extends validaciones {
 
 		$edit->banco = new dropdownField('Banco <#o#>', 'banco_<#i#>');
 		$edit->banco->option('','Ninguno');
-		$edit->banco->options('SELECT cod_banc,nomb_banc 
-			FROM tban 
-			WHERE cod_banc<>\'CAJ\'  
-		UNION ALL 
-			SELECT codbanc,CONCAT_WS(\' \',TRIM(banco),numcuent) 
-			FROM banc 
+		$edit->banco->options('SELECT cod_banc,nomb_banc
+			FROM tban
+			WHERE cod_banc<>\'CAJ\'
+		UNION ALL
+			SELECT codbanc,CONCAT_WS(\' \',TRIM(banco),numcuent)
+			FROM banc
 			WHERE tbanco <> \'CAJ\' ORDER BY nomb_banc');
 		$edit->banco->db_name='banco';
 		$edit->banco->rel_id ='sfpa';
@@ -517,28 +518,44 @@ class sfac_add extends validaciones {
 
 		$edit->buttons('save', 'back','add_rel','add');
 		if(!empty($this->_url)) $edit->_process_uri=$this->_url;
-		$edit->build();
 
-		$conten['form']  =&  $edit;
 
-		$data['style']   = style('redmond/jquery-ui.css');
-		//$data['style']  .= style('gt_grid.css');
-		//$data['style']  .= style('impromptu.css');
+		if($this->genesal){
+			$edit->build();
+			$conten['form']  =&  $edit;
 
-		$data['script']  = script('jquery.js');
-		$data['script'] .= script('jquery-ui.js');
-		$data['script'] .= script("jquery-impromptu.js");
-		$data['script'] .= script("plugins/jquery.blockUI.js");
-		$data['script'] .= script('plugins/jquery.numeric.pack.js');
-		$data['script'] .= script('plugins/jquery.ui.autocomplete.autoSelectOne.js');
-		$data['script'] .= phpscript('nformat.js');
-		$data['script'] .= script('plugins/jquery.floatnumber.js');
-		$data['script'] .= script('gt_msg_en.js');
-		$data['script'] .= script('gt_grid_all.js');
-		$data['content'] = $this->load->view('view_sfac_add', $conten,true);
-		$data['head']    = $this->rapyd->get_head();
-		$data['title']   = heading($this->titp);
-		$this->load->view('view_ventanas', $data);
+			$data['style']   = style('redmond/jquery-ui.css');
+			//$data['style']  .= style('gt_grid.css');
+			//$data['style']  .= style('impromptu.css');
+
+			$data['script']  = script('jquery.js');
+			$data['script'] .= script('jquery-ui.js');
+			$data['script'] .= script("jquery-impromptu.js");
+			$data['script'] .= script("plugins/jquery.blockUI.js");
+			$data['script'] .= script('plugins/jquery.numeric.pack.js');
+			$data['script'] .= script('plugins/jquery.ui.autocomplete.autoSelectOne.js');
+			$data['script'] .= phpscript('nformat.js');
+			$data['script'] .= script('plugins/jquery.floatnumber.js');
+			$data['script'] .= script('gt_msg_en.js');
+			$data['script'] .= script('gt_grid_all.js');
+			$data['content'] = $this->load->view('view_sfac_add', $conten,true);
+			$data['head']    = $this->rapyd->get_head();
+			$data['title']   = heading($this->titp);
+			$this->load->view('view_ventanas', $data);
+		}else{
+			$edit->on_save_redirect=false;
+			$edit->build();
+
+			if($edit->on_success()){
+				$this->claves=$edit->_dataobject->pk;
+				$this->claves['numero']  = $edit->_dataobject->get('numero');
+				$this->claves['tipo_doc']= $edit->_dataobject->get('tipo_doc');
+				$rt= 'Venta Guardada';
+			}elseif($edit->on_error()){
+				$rt= html_entity_decode(preg_replace('/<[^>]*>/', '', $edit->error_string));
+			}
+			return $rt;
+		}
 	}
 
 	function dataprint($st,$uid){
