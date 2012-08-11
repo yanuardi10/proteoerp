@@ -86,7 +86,40 @@ class compras{
 		    WHERE libro='C' AND fechal BETWEEN $fdesde AND $fhasta AND a.fecha>0 AND a.reiva>0
 		    GROUP BY a.fecha,a.tipo,numo,a.rif
 		    ORDER BY fecha,numo ";
+/*
+SELECT DISTINCT a.sucursal,
+	b.emision AS fecha,
+	d.rif,
+	IF(MID(b.transac,1,1)='_','ANULADO',d.nomfis) nombre,
+	'CO' AS contribu,
+	'' AS referen,
+	'' AS planilla,'  ' aaa,
+	'*       ' numero,
+	b.nfiscal,
+	'        ' numnd,
+	'        ' numnc,
+	'01' AS oper,
+	'' AS referen,
+	0 AS gtotal   ,
+	0 AS exento   ,
+	0 AS general  ,
+	0 AS geneimpu ,
+	0 AS adicional,
+	0 AS adicimpu ,
+	0 AS reducida ,
+	0 AS reduimpu ,
+	(b.reiva*IF(b.tipo_doc='NC',-1,1)*(MID(b.transac,1,1)<>'_')) reiva,
+	' ' nrocomp,
+	b.emision, CONCAT(EXTRACT(YEAR_MONTH FROM b.fecha),b.nrocomp) numo, 'CR' AS tipo_doc,
+	b.impuesto AS impuesto,
+	'S' nacional,b.numero AS afecta
+FROM riva AS b
+LEFT JOIN siva AS a ON a.numero=b.numero AND a.tipo=b.tipo_doc AND a.reiva=b.reiva AND a.libro='C'
+LEFT JOIN sprv AS d ON b.clipro=d.proveed
+WHERE b.fecha BETWEEN 20120701 AND 20120731
+ORDER BY fecha,numo
 
+ */
 //FROM siva AS a JOIN riva AS b ON a.numero=b.numero AND a.tipo=b.tipo_doc AND MID(b.transac,1,1)<>'_' AND a.reiva=b.reiva
 //WHERE libro='C' AND fechal BETWEEN $fdesde AND $fhasta AND a.fecha>0 AND a.reiva>0
 		$fname = tempnam("/tmp","lcompras.xls");
