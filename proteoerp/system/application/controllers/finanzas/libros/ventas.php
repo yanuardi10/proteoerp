@@ -1271,24 +1271,23 @@ class ventas{
 					$ws->write_string( $mm, 5, "03", $cuerpoc );		// TIPO Transac
 				else
 					$ws->write_string( $mm, 5, $row->registro, $cuerpoc );		// TIPO Transac
-				$ws->write_string( $mm, 6, $row->afecta, $cuerpo );		// DOC. AFECTADO
-				$ws->write_string( $mm, 7, $row->contribu, $cuerpo );		// CONTRIBUYENTE
+				$ws->write_string( $mm, 6, $row->referen, $cuerpo );		// DOC. AFECTADO
+				$ws->write_string( $mm, 7, $row->contribu, $cuerpo );	// CONTRIBUYENTE
 				$ws->write_number( $mm, 8, $row->ventatotal, $numero );	// VENTAS + IVA
 				$ws->write_number( $mm, 9, $row->exento, $numero );   	// VENTAS EXENTAS
-				$ws->write_number( $mm,10, 0, $cuerpo );   					// EXPORTACION
-				$ws->write_number( $mm,11, $row->general, $numero );		// GENERAL
-				$ws->write_number( $mm,12, $row->geneimpu, $numero );		// GENEIMPU
+				$ws->write_number( $mm,10, 0, $cuerpo );   				// EXPORTACION
+				$ws->write_number( $mm,11, $row->general, $numero );	// GENERAL
+				$ws->write_number( $mm,12, $row->geneimpu, $numero );	// GENEIMPU
 				$ws->write_number( $mm,13, $row->adicional, $numero );	// ADICIONAL
-				$ws->write_number( $mm,14, $row->adicimpu, $numero );		// ADICIMPU
-				$ws->write_number( $mm,15, $row->reducida, $numero );		// REDUCIDA
-				$ws->write_number( $mm,16, $row->reduimpu, $numero );		// REDUIMPU
+				$ws->write_number( $mm,14, $row->adicimpu, $numero );	// ADICIMPU
+				$ws->write_number( $mm,15, $row->reducida, $numero );	// REDUCIDA
+				$ws->write_number( $mm,16, $row->reduimpu, $numero );	// REDUIMPU
 				$ws->write_number( $mm,17, $row->reiva, $numero );		// IVA RETENIDO
 				if($row->tipo=='CR'){
 					$afecta=$row->afecta;
 					$ws->write_string( $mm,18, $row->numero, $numero ); //NRO FACT AFECTA
 				}else{
-					$afecta=$row->referen;
-					$ws->write_string( $mm,18, $afecta, $numero ); //NRO COMPROBANTE
+					$ws->write_string( $mm,18, '', $numero ); //NRO COMPROBANTE
 				}
 
 
