@@ -147,6 +147,7 @@ $(function() {
 			
 		} else { $.prompt("<h1>Por favor Seleccione un Deposito</h1>");}
 	});
+
 	
 	$( "#borrar" ).click(function() {
 		var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');

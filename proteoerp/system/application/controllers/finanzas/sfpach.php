@@ -174,21 +174,8 @@ function sumamonto(){
 	montotal = total;
 	}
 };
-$(function(){$(".inputnum").numeric(".");});
 </script>
 ';
-
-/*
-jQuery("#a1").click( function(){
-	var id = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
-	if (id)	{
-		//var ret = jQuery("#newapi'.$param['grid']['gridname'].'").jqGrid(\'getRowData\',id);
-		window.open(\''.base_url().'formatos/ver/SFPACH/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');		
-	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
-});
-*/
-
-
 
 
 		#Set url
@@ -236,7 +223,6 @@ jQuery("#a1").click( function(){
 		<label for="banc">Banco</label>
 		'.$bancos.'<br><br>
 		<div id="montoform" style="font-size:20px;text-align:center"></div>
-		
 	</fieldset>
 	</form>
 </div>
@@ -251,7 +237,6 @@ jQuery("#a1").click( function(){
 		'.$efbanco.'<br><br>
 		<label for="banc">Monto</label>
 		<input class="inputnum" id="efmonto" size="12" type="text" style="text-align:right;">
-		
 	</fieldset>
 	</form>
 </div>

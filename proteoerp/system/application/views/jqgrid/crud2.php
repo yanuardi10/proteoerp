@@ -104,7 +104,7 @@ if (isset($listados)) {
 		caption: "Reportes",
 		ondblClickRow: function(id, row, col, e){ 
 			var ret = $("#listados").getRowData(id); 
-			window.open("<?php echo base_url() ?>reportes/ver/"+ret.nombre, "_blank", "width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400)),screeny=((screen.availWidth/2)-300)");
+			window.open("'.base_url().'reportes/ver/"+ret.nombre, "_blank", "width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400)),screeny=((screen.availWidth/2)-300)");
 			}
 	});
 	'.$listados.'
@@ -119,7 +119,7 @@ if (isset($otros)) {
 	//Otras Funciones
 	jQuery("#otros").jqGrid({
 		datatype: "local",
-		height: 100,
+		height: \'200\',
 		colNames:["","Funciones","Nombre"],
 		colModel:[
 			{name:"id",    index:"id",     width:15},
@@ -131,9 +131,13 @@ if (isset($otros)) {
 		width: 190,
 		caption: "Funciones",
 		ondblClickRow: function(id, row, col, e){ 
-			var ret = $("#otros").getRowData(id); 
-			window.open("<?php echo base_url() ?>reportes/ver/"+ret.nombre, "_blank", "width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400)),screeny=((screen.availWidth/2)-300)");
+			var ret = $("#otros").getRowData(id);
+			if (ret.proteo) {
+				eval(ret.proteo+"()");
+			} else {
+				alert("Funcion no Definida");
 			}
+		}
 	});
 	'.$otros.'
 	for(var i=0;i<=dataotr.length;i++) jQuery("#otros").jqGrid(\'addRowData\',i+1,dataotr[i]);
@@ -170,13 +174,15 @@ if ( isset($jquerys) ) {
 	foreach( $jquerys as $jq ){ echo script($jq); }
 }
 
-
 echo "<!-- Block Out -->";
 echo script('plugins/jquery.blockUI.js'); 
 
 echo "<!-- Impromptu -->";
 echo script('jquery-impromptu.js');
 echo style('impromptu/default.css');
+
+echo script('apprise-1.5.min.js');
+echo style('apprise.min.css');
 
 echo "<!-- JQGRID -->";
 echo style('themes/ui.jqgrid.css');
@@ -189,6 +195,8 @@ echo style('../datagrid/datagrid.css');
 
 echo "<!-- LAYOUT -->";
 echo script('jquery.layout.js');
+
+echo '$(function(){$(".inputnum").numeric(".");});';
 
 ?>
 <style>
