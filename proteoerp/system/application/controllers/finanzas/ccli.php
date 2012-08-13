@@ -18,11 +18,11 @@ class ccli extends Controller {
 		$this->rapyd->load('datafilter','datagrid');
 
 		$filter = new DataFilter($this->titp);
-		$sel=array('TRIM(a.cod_cli) AS cod_cli','b.nombre','SUM(a.monto-a.abonos) AS saldo');
+		$sel=array('TRIM(a.cod_cli) AS cod_cli','b.nombre','SUM(a.monto-a.abonos) AS saldo','b.rifci');
 		$filter->db->select($sel);
 		$filter->db->from('smov AS a');
-		$filter->db->join('scli AS b','a.cod_cli=b.cliente');
-		$filter->db->where('a.monto > a.abonos');
+		$filter->db->join('scli AS b','a.cod_cli=b.cliente','left');
+		//$filter->db->where('a.monto > a.abonos');
 		$filter->db->where_in('a.tipo_doc',array('FC','ND','GI'));
 		$filter->db->groupby('a.cod_cli');
 
@@ -48,6 +48,7 @@ class ccli extends Controller {
 		$grid->per_page = 40;
 
 		$grid->column_orderby('Cliente'    ,$uri,'cod_cli','align="left"');
+		$grid->column_orderby('Rif/CI'     ,'rifci','rifci','align="left"');
 		$grid->column_orderby('Nombre'     ,'nombre','nombre','align="left"');
 		$grid->column_orderby('Saldo'      ,'<nformat><#saldo#></nformat>','saldo','align="right"');
 
@@ -62,6 +63,10 @@ class ccli extends Controller {
 
 	function dataedit($cliente){
 		if(!$this->_exitescli($cliente)) redirect($this->url.'filteredgrid');
+		$dbcliente=$this->db->escape($cliente);
+		$scli_nombre=$this->datasis->dameval("SELECT nombre FROM scli WHERE cliente=$dbcliente");
+		$scli_rif   =$this->datasis->dameval("SELECT rifci FROM scli WHERE cliente=$dbcliente");
+
 		$cajero=$this->secu->getcajero();
 		if(empty($cajero)) show_error('El usuario debe tener registrado un cajero para poder usar este modulo');
 
@@ -278,12 +283,12 @@ class ccli extends Controller {
 
 		$edit->banco = new dropdownField('Banco <#o#>', 'banco_<#i#>');
 		$edit->banco->option('','Ninguno');
-		$edit->banco->options('SELECT cod_banc,nomb_banc 
-			FROM tban 
-			WHERE cod_banc<>\'CAJ\'  
-		UNION ALL 
-			SELECT codbanc,CONCAT_WS(\' \',TRIM(banco),numcuent) 
-			FROM banc 
+		$edit->banco->options('SELECT cod_banc,nomb_banc
+			FROM tban
+			WHERE cod_banc<>\'CAJ\'
+		UNION ALL
+			SELECT codbanc,CONCAT_WS(\' \',TRIM(banco),numcuent)
+			FROM banc
 			WHERE tbanco <> \'CAJ\' ORDER BY nomb_banc');
 		$edit->banco->db_name='banco';
 		$edit->banco->rel_id ='sfpa';
@@ -307,7 +312,8 @@ class ccli extends Controller {
 
 		$conten['cana']  = $i;
 		$conten['form']  = & $edit;
-		$conten['title'] = heading('');
+		$conten['title'] = heading("Cobro a cliente: ($cliente) $scli_nombre $scli_rif");
+
 		$data['head']    = style('estilo.css');
 		$data['head']   .= $this->rapyd->get_head();
 		$data['script']  = script('jquery.js');
@@ -671,7 +677,7 @@ class ccli extends Controller {
 				}
 			}
 		}
-		
+
 		$rel='sfpa';
 		$cana = $do->count_rel($rel);
 		for($i = 0;$i < $cana;$i++){
@@ -701,14 +707,14 @@ class ccli extends Controller {
 				$mSQL = $this->db->insert_string('bmov', $itdbdata);
 				$ban=$this->db->simple_query($mSQL);
 				if($ban==false){ memowrite($mSQL,'ccli'); }
-				
+
 				$sfecha=str_replace('-','',$ffecha);
 				$mSQL="CALL sp_actusal($dbcodbanc,'$sfecha',$monto)";
 				$ban=$this->db->simple_query($mSQL);
 				if($ban==false) memowrite($mSQL,'rcaj');
 			}
 		}
-		
+
 	}
 
 	function _pre_update($do){

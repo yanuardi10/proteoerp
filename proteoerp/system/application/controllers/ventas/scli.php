@@ -261,6 +261,9 @@ function chrif(rif){
 			acum=acum+parseInt(rif[i])*factor[i];
 		}
 		acum=11-acum%11;
+		if(acum>=10 || acum<=0){
+			acum=0;
+		}
 		return (acum==parseInt(rif[9]));
 	}else{
 		return true;
