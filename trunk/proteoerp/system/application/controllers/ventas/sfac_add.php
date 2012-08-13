@@ -565,7 +565,10 @@ class sfac_add extends validaciones {
 		$id=$edit->get_from_dataobjetct('id');
 		$urlid=$edit->pk_URI();
 		$url=site_url('formatos/descargar/FACTURA'.$urlid);
-		$edit->back_url = site_url($this->url.'dataedit/show/'.$uid);
+		if(isset($this->back_url))
+			$edit->back_url = site_url($this->back_url);
+		else
+			$edit->back_url = site_url($this->url.'dataedit/show/'.$uid);
 
 		$edit->back_save   = true;
 		$edit->back_delete = true;
@@ -648,7 +651,6 @@ class sfac_add extends validaciones {
 		$data['script'] .= $script;
 		$data['title']   = heading($this->tits);
 		$this->load->view('view_ventanas', $data);
-
 	}
 
 	//Chequea que el precio de los articulos de la devolucion sean los facturados
@@ -698,6 +700,40 @@ class sfac_add extends validaciones {
 			}
 		}
 		return false;
+	}
+
+	function anular($id){
+		$this->rapyd->load('dataobject','datadetails');
+
+		$do = new DataObject('sfac');
+		$do->rel_one_to_many('sitems', 'sitems', array('id'=>'id_sfac'));
+		$do->rel_one_to_many('sfpa'  , 'sfpa'  , array('numero','transac'));
+
+		$do->load($id);
+
+		$tipo_doc = $do->get('tipo_doc');
+		$numero   = $do->get('numero');
+		$fecha    = $do->get('fecha');
+		$referen  = $do->get('referen');
+		$cajero   = $do->get('cajero');
+		$inicial  = $do->get('inicial');
+
+		$dbtipo_doc = $this->db->escape($tipo_doc);
+		$dbnumero   = $this->db->escape($numero);
+		$dbfecha    = $this->db->escape($fecha);
+		$hoy        = date('Y-m-d');
+
+		if($tipo_doc=='F'){
+			if($refere=='C' && $inicial==0){
+				$mSQL ="SELECT abono FROM smov WHERE tipo_doc=$dbtipo_doc AND numero=$dbnumero AND fecha=$dbfecha";
+				$abono=$this->datasis->dameval($mSQL);
+				if($abono==0){
+					//Anula la factura
+				}
+			}elseif($fecha == $hoy){
+				//Anula la factura
+			}
+		}
 	}
 
 	//Chequea que la cantidad devuelta no sea mayor que la facturada

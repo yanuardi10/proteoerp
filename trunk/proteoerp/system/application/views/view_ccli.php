@@ -172,6 +172,9 @@ function sfpatipo(id){
 }
 </script>
 <?php } ?>
+<?php
+echo $title;
+?>
 <table align='center' width="100%">
 	<tr>
 		<td colspan=3><?php echo $form->numero->value.$form->cod_cli->output ?>
