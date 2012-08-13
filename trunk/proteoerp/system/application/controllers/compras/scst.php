@@ -655,7 +655,7 @@ jQuery("#boton2").click( function(){
 			'editable'      => 'true',
 			'width'         => 80,
 			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
+			'editrules'     => '{ required:false}',
 			'editoptions'   => '{ label:"Factura Afectada", size:10, maxlength: 8 }',
 		));
 
