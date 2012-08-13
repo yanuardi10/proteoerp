@@ -944,6 +944,12 @@ class Ajax extends Controller {
 		$mSQL = "SELECT depto, CONCAT(depto,' ',descrip) descrip FROM dpto WHERE tipo='I' ORDER BY depto";
 		echo $this->datasis->llenaopciones($mSQL, true);
 	}
+	function ddgrcl(){
+		$mSQL = "SELECT grupo, CONCAT(grupo, ' ', gr_desc) banco FROM grcl ORDER BY grupo ";
+		echo $this->datasis->llenaopciones($mSQL, true);
+	}
+
+
 
 	//***************************************
 	//          BUSCA GASTO

@@ -705,25 +705,14 @@ jQuery("#a1").click( function(){
 
 /*
 //obligacionesiva
- class Siva extends Controller {
+class Siva extends Controller {
 	
-	var $data_type = null;
-	var $data = null;
-	 
-	function siva(){
-		parent::Controller(); 
-		//required helpers for samples
-		$this->load->helper('url');
-		$this->load->helper('text');
-		//rapyd library
-		$this->load->library("rapyd");
-		define ("THISFILE",   APPPATH."controllers/nomina". $this->uri->segment(2).EXT);
-   }
   function index(){
     	$this->datasis->modulo_id(508,1);
     	redirect("finanzas/siva/filteredgrid");
-    }
-	function filteredgrid(){
+       }
+       
+       function filteredgrid(){
 		$this->rapyd->load("datafilter","datagrid");
 		$this->rapyd->uri->keep_persistence();
 

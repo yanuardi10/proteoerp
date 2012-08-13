@@ -5,9 +5,91 @@
  * @author		Andres Hocevar
  * @version		0.1
  * @filesource
+
+funciones
+	//FUNCIONES DE BD
+	dameval($mpara,$data=array())
+	damerow($mSQL,$data=array())
+	damereg($mSQL,$data=array())
+	traevalor($nombre,$descrip='')
+	ponevalor($nombre, $mvalor)
+	prox_sql($mcontador, $pad=0)
+	existetabla($tabla)
+	istabla($tabla)
+	iscampo($tabla,$campo)
+	isindice($tabla, $indice)
+	agregacol($tabla,$columna,$tipo)
+	guardasesion($datos)                  // GUARDA DATOS DE SESION EN MYSQL
+
+
+	//FUNCIONES DE FECHA
+	adia()                       // ARREGLO DE DIAS
+	ames()                       // ARREGLO DE MESES
+	aano()                       // ARREGLO DE ANOS
+	calendario($forma,$nombre)
+	jscalendario()
+
+
+	//FUNCIONES DE ACCESO
+	essuper()                             // ES SUPERVISOR
+	login()                               // MARCA LOGGED EN USERDATA
+	puede($id)                            // SI TIENE ACCESO A id
+	modulo_id( $modulo, $ventana=0 )      // Identifica el modulo y controla el acceso
+	modulo_nombre( $modulo, $ventana=0 )  // 
+	sidapuede($modulo, $opcion)           //
+	puede_ejecuta($nombre)                // si tiene acceso a un modulo por nombre de ejecucion
+
+	
+	consularray($mSQL)                    //Convierte una consulta a un array
+	form2uri($clase,$metodo,$parametros)
+	ivaplica($mfecha=NULL)
+	get_uri()
+	modbus($modbus,$id='',$width=800,$height=600,$puri='')
+	p_modbus($modbus,$puri='',$width=800,$height=600,$id='')
+	periodo($mTIPO, $mFECHA )
+	nivel()
+	formato_cpla()                        // Formato de Contabilidad
+	prox_numero($mcontador,$usr=NULL)     // Proximo numero
+	prox_imenu($mod='')                   // Proxima opcion de menu
+	fprox_numero($mcontador,$long=8)      // Proximo numero
+	banprox($codban)                      // Proximo documento bancario
+	
+	damesesion($id)
+	llenacombo($mSQL)
+	llenaopciones($mSQL, $todos=false, $id='' )
+	llenajqselect($mSQL, $todos=false )
+	actusal($codbanc, $fecha, $monto)     // Actualiza saldo en Bancos
+
+	
+	sinvcarga( $mCODIGO, $mALMA, $mCANTIDAD) // CARGA CANTIDAD ACTUALIZANDO MAESTRO Y DETALLE
+
+	
+	listados($modulo, $tipo = 'E')   // Manda los Reportes disponibles
+	otros( $modulo, $tipo = 'E' )    // Manda otras funciones
+	menuMod()
+
+	
+	jqdata($mSQL,$data)    //  Convierte un SElect a Data JqGrid
+	
+	jqtablawest($nombre, $caption, $colModel,  $mSQL, $alto=200, $ancho=190) // Convierte un SElect a Data JqGrid
+
+	extjsfiltro($filtros, $tabla = '')
+	codificautf8($query)
+	codificautf81($row){
+
+	extjscampos($tabla)
+	extultireg($data)
+	jqgcampos($mSQL)
+	
+	modintramenu( $ancho, $alto, $ejecutar ) // Modifica tamano de ventana Intramenu
+
+
 **/
 
 class Datasis {
+	
+// FUNCIONES DE BD
+
 	// TRAE EL PRIMER CAMPO DEL PRIMER REGISTRO DE LA CONSULTA
 	function dameval($mpara,$data=array()){
 		$CI =& get_instance();
@@ -16,7 +98,7 @@ class Datasis {
 		$aa = each($rr);
 		return $aa[1];
 	}
-
+	// TRAE EL REGISTRO COMPLETO EN UN ARREGLO
 	function damerow($mSQL,$data=array()){
 		$CI =& get_instance();
 		$query = $CI->db->query($mSQL,$data);
@@ -26,12 +108,12 @@ class Datasis {
 		return $row;
 	}
 
-
+	// TRAE UN ARREGLO CON TODOS LOS REGISTROS
 	function damereg($mSQL,$data=array()){
 		return $this->damerow($mSQL, $data );
 	}
 
-	// Tae valor de la table VALORES
+	// Trae valor de la table VALORES
 	function traevalor($nombre,$descrip=''){
 		$CI =& get_instance();
 		$dbnombre=$CI->db->escape($nombre);
@@ -49,23 +131,48 @@ class Datasis {
 		$CI->db->simple_query("REPLACE INTO valores SET nombre='$nombre', valor=".$CI->db->escape($mvalor));
 	}
 
+	// DEVUELVE EL SIGUIENTE NUMERO DEL CONTADOR
+	function prox_numero($mcontador,$usr=NULL){
+		$CI =& get_instance();
+		if (empty($usr))
+			$usr=$CI->session->userdata('usuario');
+		if(!$CI->db->table_exists($mcontador))
+			$CI->db->simple_query("CREATE TABLE $mcontador (
+			`numero` INT(11) NOT NULL AUTO_INCREMENT,
+			`usuario` CHAR(10) NULL DEFAULT NULL,
+			`fecha` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+			PRIMARY KEY (`numero`))");
+		$CI->db->query("INSERT INTO $mcontador VALUES(null, '$usr', now() )");
+		$aa = $CI->db->insert_id();
+		return $aa;
+	}
 
+	// TRAE EL SIGUIENTE NUMERO FORMATEADO A 8 DIGITOS
+	function fprox_numero($mcontador,$long=8){
+		$numero=$this->prox_numero($mcontador);
+		return str_pad($numero, $long, "0", STR_PAD_LEFT);
+	}
+
+	// TRAE EL SIGUIENTE NUMERO DEL CONTADOR FORMATEADO A $pad DIGITOS
 	function prox_sql($mcontador, $pad=0){
 		$aa = $this->prox_numero($mcontador);
 		if ( $pad > 0) $aa = str_pad($aa, $pad, "0", STR_PAD_LEFT);
 		return $aa;
 	}
 
+	// SI EXISTE UNA TABLA DADA
 	function existetabla($tabla){
 		$CI =& get_instance();
 		return $CI->db->table_exists($tabla);
 	}
 
+	// SI EXISTEUNA TABLA DADA
 	function istabla($tabla){
 		$CI =& get_instance();
 		return $CI->db->table_exists($tabla);
 	}
 
+	// SI EXISTE UN CAMPO EN UNA TABLA
 	function iscampo($tabla,$campo){
 		$CI =& get_instance();
 		$aa = $this->dameval("SHOW FIELDS FROM $tabla WHERE Field ='$campo'");
@@ -73,6 +180,7 @@ class Datasis {
 		else return false;
 	}
 
+	// SI EXISTE UN INDICE EN UNA TABLA
 	function isindice($tabla, $indice){
 		$CI =& get_instance();
 		$query = $CI->db->query("SHOW INDEX FROM $tabla WHERE Key_name = '$indice'");
@@ -80,6 +188,15 @@ class Datasis {
 		else return false;
 	}
 
+	// AGREGA COLUMNA A UNA TABLA SI NO EXISTE
+	function agregacol($tabla,$columna,$tipo){
+		$CI =& get_instance();
+		$existe  = $CI->db->query("DESCRIBE $tabla $columna");
+		if ( $existe->num_rows() == 0  )
+			$CI->db->query("ALTER TABLE $tabla ADD COLUMN $columna $tipo");
+	}
+
+	// ARREGLO DE DIAS 1...31
 	function adia(){
 		$dias = array();
 		for($i=1;$i<=31;$i++) {
@@ -89,6 +206,7 @@ class Datasis {
 		return $dias;
 	}
 
+	// ARREGLO DE MESES 1...12
 	function ames(){
 		$mes = array();
 		for($i=1;$i<=31;$i++){
@@ -98,17 +216,13 @@ class Datasis {
 		return $mes;
 	}
 
+	// ARREGLO DE ANOS 
 	function aano(){
+		
 		$ano  = array('2004'=>'2004','2005'=>'2005','2006'=>'2006','2007'=>'2007','2008'=>'2008','2009'=>'2009','2010'=>'2010');
 		return $ano;
 	}
 
-	function agregacol($tabla,$columna,$tipo){
-		$CI =& get_instance();
-		$existe  = $CI->db->query("DESCRIBE $tabla $columna");
-		if ( $existe->num_rows() == 0  )
-			$CI->db->query("ALTER TABLE $tabla ADD COLUMN $columna $tipo");
-	}
 
 	function login(){
 		$CI =& get_instance();
@@ -136,7 +250,6 @@ class Datasis {
 			$usuario  = $CI->session->userdata['usuario'];
 			$dbusuario= $CI->db->escape($usuario);
 			$dbid     = $CI->db->escape($id);
-			//$existe = $CI->datasis->dameval("SELECT COUNT(*) FROM intrasida WHERE usuario='$usuario' AND id='$id'");   //Tortuga
 			$existe = $CI->datasis->dameval("SELECT COUNT(*) FROM intrasida WHERE usuario=$dbusuario AND modulo=$dbid"); //Proteo
 			if ($existe  > 0 )
 				return  true;
@@ -144,10 +257,42 @@ class Datasis {
 		return false;
 	}
 
+	// Verifica acceso en tmenus por funcion a ejecutar
+	function puede_ejecuta($nombre, $modulo){
+		$CI =& get_instance();
+		$m = $this->dameval("SELECT codigo FROM tmenus WHERE ejecutar like '".$nombre."%'") ;
+		if ( $m > 0 )
+			if ($this->dameval("SELECT acceso FROM sida WHERE modulo=$m AND usuario=".$CI->db->escape($CI->session->userdata('usuario'))) == 'S')
+				return true;
+			else
+				return false;
+		else
+			return false;
+	}
+
+/*
+			$m = 0;
+			while ( $m == 0 ){
+				$m = $this->dameval("SELECT codigo FROM tmenus WHERE ejecutar like 'SCLITOLERA%'") ;
+				if ( $m == 0 ){
+					// CREAR MENU
+					$mSQL  = "INSERT IGNORE INTO tmenus (codigo, modulo, secu, titulo, mensaje, ejecutar) VALUES ";
+					$mSQL += "(0,'SCLIOTR', 5, 'LIMITE TOLERANCIA','EXTRA LIMITE','SCLITOLERA()'),";
+					$mSQL += "(0,'SCLIOTR', 6, 'LIMITE MAXIMO','LIMITE MAXIMO','SCLIMAXTOLE()')";
+					$CI->db->query($mSQL);
+					//A TODOS LOS QUE TIENEN CREDITO LES COLOCA S
+					$mSQL = "UPDATE scli SET credito=IF(limite > 0 AND formap>0,'S','N')  ";
+					$CI->db->query($mSQL);
+				}
+			}
+*/
+
+	// Coloca un input con calendario
 	function calendario($forma,$nombre){
 		return "<input type=\"text\" name=\"$nombre\" /><a href=\"#\" onclick=\"return getCalendar(document.$forma.$nombre);\"/><img src='calendar.png' border='0' /></a>";
 	}
 
+	// Script con calendario javascript
 	function jscalendario(){
 		return "<script language=\"Javascript\" src=\"calendar.js\"></script>";
 	}
@@ -395,22 +540,6 @@ class Datasis {
 		return $qformato;
 	}
 
-	function prox_numero($mcontador,$usr=NULL){
-		$CI =& get_instance();
-		if (empty($usr))
-			$usr=$CI->session->userdata('usuario');
-		if(!$CI->db->table_exists($mcontador))
-			$CI->db->simple_query("CREATE TABLE $mcontador (
-			`numero` INT(11) NOT NULL AUTO_INCREMENT,
-			`usuario` CHAR(10) NULL DEFAULT NULL,
-			`fecha` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-			PRIMARY KEY (`numero`))");
-
-		$CI->db->query("INSERT INTO $mcontador VALUES(null, '$usr', now() )");
-		$aa = $CI->db->insert_id();
-		return $aa;
-	}
-
 	function prox_imenu($mod=''){
 		$mSQL  = "SELECT bbb.hexa FROM (";
 		$mSQL .= "SELECT max(b.valor+1) siguiente ";
@@ -425,10 +554,6 @@ class Datasis {
 		$return = $this->dameval($mSQL);
 	}
 	
-	function fprox_numero($mcontador,$long=8){
-		$numero=$this->prox_numero($mcontador);
-		return str_pad($numero, $long, "0", STR_PAD_LEFT);
-	}
 
 	function banprox($codban){
 		$CI =& get_instance();
@@ -530,6 +655,7 @@ class Datasis {
 		$query = $CI->db->query($mSQL);
 		$opciones = '';
 		$colu = array();
+		$arreglo = '{ ';
 		$select = '<select>';
 		if ( !empty($id)) $select = '<select id="'.$id.'" name="'.$id.'">';
 		foreach( $query->list_fields() as $campo ) {
@@ -538,14 +664,38 @@ class Datasis {
 		if ($query->num_rows() > 0){
 			foreach ($query->result_array() as $row){
 				$opciones .= "<option value=\"".$row[$colu[0]]."\">".utf8_encode(trim($row[$colu[1]]))."</option>";
+				$arreglo .= "\"".$row[$colu[0]]."\":\"".utf8_encode(trim($row[$colu[1]]))."\", ";
 			}
 		}
 		$query->free_result();
+		$arreglo .= " }";
+		//return $arreglo;
 		if ( $todos ){
 			return $select.'<option value="-">Seleccione</option>'.$opciones.'</select>';
 		} else {
 			return $select.$opciones.'</select>';
 		}
+	}
+
+	function llenajqselect($mSQL, $todos=false ){
+		$CI =& get_instance();
+		$query = $CI->db->query($mSQL);
+		$colu = array();
+		if ( $todos )
+			$arreglo = '{ "":"SELECCIONE", ';
+		else
+			$arreglo = '{ ';
+		foreach( $query->list_fields() as $campo ) {
+			$colu[] = $campo;
+		}
+		if ($query->num_rows() > 0){
+			foreach ($query->result_array() as $row){
+				$arreglo .= "\"".$row[$colu[0]]."\":\"".utf8_encode(trim($row[$colu[1]]))."\", ";
+			}
+		}
+		$query->free_result();
+		$arreglo .= " }";
+		return $arreglo;
 	}
 
 
@@ -917,7 +1067,7 @@ class Datasis {
 
 	//******************************************
 	//
-	//      Convierte un SElect a Data JqGrid
+	//  Convierte un SElect a Data JqGrid
 	//  mSQL : SQL SELECT
 	//  data : Variable para colocar local data
 	//******************************************

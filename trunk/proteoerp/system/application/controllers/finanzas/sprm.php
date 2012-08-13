@@ -521,7 +521,6 @@ jQuery("#boton1").click( function(){
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
 		$grid->addField('reteiva');
 		$grid->label('Reteiva');
 		$grid->params(array(
@@ -536,7 +535,6 @@ jQuery("#boton1").click( function(){
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
 		$grid->addField('nfiscal');
 		$grid->label('Nro. Fiscal');
 		$grid->params(array(
@@ -547,7 +545,6 @@ jQuery("#boton1").click( function(){
 			'formoptions'   => '{ label:"Numero fiscal" }',
 			'editoptions'   => '{ size:15, maxlength: 20 }'
 		));
-
 
 		$grid->addField('montasa');
 		$grid->label('Montasa');
@@ -563,7 +560,6 @@ jQuery("#boton1").click( function(){
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
 		$grid->addField('monredu');
 		$grid->label('Monredu');
 		$grid->params(array(
@@ -577,7 +573,6 @@ jQuery("#boton1").click( function(){
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
-
 
 		$grid->addField('monadic');
 		$grid->label('Monadic');
@@ -593,7 +588,6 @@ jQuery("#boton1").click( function(){
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
 		$grid->addField('tasa');
 		$grid->label('Tasa');
 		$grid->params(array(
@@ -607,7 +601,6 @@ jQuery("#boton1").click( function(){
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
-
 
 		$grid->addField('reducida');
 		$grid->label('Reducida');
@@ -623,7 +616,6 @@ jQuery("#boton1").click( function(){
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
 		$grid->addField('sobretasa');
 		$grid->label('Sobretasa');
 		$grid->params(array(
@@ -637,7 +629,6 @@ jQuery("#boton1").click( function(){
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
-
 
 		$grid->addField('exento');
 		$grid->label('Exento');
@@ -653,7 +644,6 @@ jQuery("#boton1").click( function(){
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
 		$grid->addField('fecdoc');
 		$grid->label('Fecdoc');
 		$grid->params(array(
@@ -665,7 +655,6 @@ jQuery("#boton1").click( function(){
 			'editrules'     => '{ required:true,date:true}',
 			'formoptions'   => '{ label:"Fecha" }'
 		));
-
 
 		$grid->addField('afecta');
 		$grid->label('Afecta');
@@ -699,6 +688,7 @@ jQuery("#boton1").click( function(){
 			'edittype'      => "'text'",
 			'editoptions'   => '{ size:15, maxlength: 20 }',
 		));
+
 /*
 		$grid->addField('depto');
 		$grid->label('Depto');
@@ -709,6 +699,7 @@ jQuery("#boton1").click( function(){
 			'edittype'      => "'text'",
 		));
 */
+
 		$grid->addField('modificado');
 		$grid->label('Modificado');
 		$grid->params(array(
@@ -748,6 +739,7 @@ jQuery("#boton1").click( function(){
 			'edittype'      => "'text'",
 		));
 */
+
 		$grid->addField('id');
 		$grid->label('Id');
 		$grid->params(array(
