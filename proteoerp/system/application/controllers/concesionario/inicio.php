@@ -12,7 +12,7 @@ class inicio extends Controller {
 		$this->load->library('rapyd');
 		//$this->datasis->modulo_id(216,1);
 		$this->instalar();
-		$mSQL="INSERT IGNORE INTO `sinv` (`codigo`, `descrip`, `unidad`, `tipo`, `comision`, `pond`, `ultimo`, `pvp_s`, `pvp_bs`, `iva`, `margen1`, `margen2`, `margen3`) VALUES ('PLACA', 'PLACA', 'UNID.', 'Servicio', 0, 500, 500, 0, 0, 0, 0, 0, 0)";
+		$mSQL="INSERT IGNORE INTO `sinv` (`codigo`, `descrip`, `unidad`, `tipo`, `comision`, `pond`, `ultimo`, `pvp_s`, `pvp_bs`, `iva`, `margen1`, `margen2`, `margen3`,`activo`) VALUES ('PLACA', 'PLACA', 'UNID.', 'Servicio', 0, 500, 500, 0, 0, 0, 0, 0, 0, 'S')";
 		$this->db->simple_query($mSQL);
 	}
 

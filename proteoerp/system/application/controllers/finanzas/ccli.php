@@ -18,13 +18,12 @@ class ccli extends Controller {
 		$this->rapyd->load('datafilter','datagrid');
 
 		$filter = new DataFilter($this->titp);
-		$sel=array('TRIM(a.cod_cli) AS cod_cli','b.nombre','SUM(a.monto-a.abonos) AS saldo','b.rifci');
+		$sel=array('TRIM(b.cliente) AS cod_cli','b.nombre','SUM(a.monto-a.abonos) AS saldo','b.rifci');
 		$filter->db->select($sel);
-		$filter->db->from('smov AS a');
-		$filter->db->join('scli AS b','a.cod_cli=b.cliente','left');
-		//$filter->db->where('a.monto > a.abonos');
-		$filter->db->where_in('a.tipo_doc',array('FC','ND','GI'));
-		$filter->db->groupby('a.cod_cli');
+
+		$filter->db->from('scli AS b');
+		$filter->db->join('smov AS a',"a.cod_cli=b.cliente AND a.tipo_doc IN ('FC','ND','GI') AND a.monto > a.abonos",'left');
+		$filter->db->groupby('b.cliente');
 
 		$filter->cod_cli = new inputField('Cliente','cod_cli');
 		$filter->cod_cli->rule      = 'max_length[5]';
@@ -50,7 +49,7 @@ class ccli extends Controller {
 		$grid->column_orderby('Cliente'    ,$uri,'cod_cli','align="left"');
 		$grid->column_orderby('Rif/CI'     ,'rifci','rifci','align="left"');
 		$grid->column_orderby('Nombre'     ,'nombre','nombre','align="left"');
-		$grid->column_orderby('Saldo'      ,'<nformat><#saldo#></nformat>','saldo','align="right"');
+		$grid->column_orderby('Saldo'      ,'<nformat><sinulo><#saldo#>|0</sinulo></nformat>','saldo','align="right"');
 
 		$grid->build();
 
