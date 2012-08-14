@@ -21,7 +21,7 @@ class Scli extends Controller {
 		if ( !$this->datasis->iscampo('scli','url') ) {
 			$this->db->query('ALTER TABLE scli ADD COLUMN url VARCHAR(120) NULL ');
 		};
-
+		$this->datasis->modintramenu( 1000, 650, 'ventas/scli' );
 		redirect($this->url.'jqdatag');
 	}
 
@@ -480,7 +480,7 @@ function sclilimite(){
 		$grid->params(array(
 			'hidden'        => 'true',
 			'search'        => 'true',
-			'editable'      => $editar,
+			'editable'      => 'false',
 			'width'         => 40,
 			'edittype'      => "'select'",
 			'editoptions'   => '{value: {"S":"Activo","N":"Suspendido" }, style:"width:100px" }',
@@ -500,7 +500,6 @@ function sclilimite(){
 			'formoptions'   => '{ rowpos:'.$linea.', colpos:2 }'
 		));
 
-
 		$grid->addField('mmargen');
 		$grid->label('% Mayor');
 		$grid->params(array(
@@ -516,13 +515,12 @@ function sclilimite(){
 			'formoptions'   => '{ rowpos:'.$linea.', colpos:1, label:"Desc. Mayor %" }'
 		));
 
-
 		$grid->addField('formap');
 		$grid->label('Dias CR');
 		$grid->params(array(
 			'hidden'        => 'true',
 			'search'        => 'true',
-			'editable'      => $editar,
+			'editable'      => 'false',
 			'align'         => "'right'",
 			'edittype'      => "'text'",
 			'width'         => 40,
@@ -690,22 +688,19 @@ function sclilimite(){
 			'formoptions'   => '{ rowpos:'.$linea.', colpos:1 }'
 		));
 
-
 		$grid->addField('limite');
 		$grid->label('Limite');
 		$grid->params(array(
 			'hidden'        => 'true',
 			'align'         => "'right'",
 			'search'        => 'true',
-			'editable'      => $editar,
+			'editable'      => 'false',
 			'width'         => 80,
 			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }',
 			'formoptions'   => '{ rowpos:'.$linea.', colpos:1 }'
 		));
-
-
 
 		$linea = $linea + 1;
 		$grid->addField('email');
@@ -747,7 +742,6 @@ function sclilimite(){
 			'editoptions'   => '{ size:30, maxlength: 18 }',
 			'formoptions'   => '{ rowpos:'.$linea.', colpos:2 }'
 		));
-
 
 
 /*
@@ -977,7 +971,7 @@ function sclilimite(){
 		$grid->params(array(
 			'hidden'        => 'true',
 			'search'        => 'true',
-			'editable'      => $editar,
+			'editable'      => 'false',
 			'align'         => "'right'",
 			'edittype'      => "'text'",
 			'width'         => 100,
@@ -993,7 +987,7 @@ function sclilimite(){
 		$grid->params(array(
 			'hidden'        => 'true',
 			'search'        => 'true',
-			'editable'      => $editar,
+			'editable'      => 'false',
 			'align'         => "'right'",
 			'edittype'      => "'text'",
 			'width'         => 100,
@@ -1035,8 +1029,8 @@ function sclilimite(){
 		$grid->setFormOptionsE('
 			closeAfterEdit:false,
 			mtype: "POST",
-			width: 700,
-			height:500,
+			width: 720,
+			height:450,
 			closeOnEscape: true,
 			top: 50,
 			left:20,
@@ -1060,8 +1054,8 @@ function sclilimite(){
 		$grid->setFormOptionsA('
 			closeAfterAdd:true,
 			mtype: "POST",
-			width: 700,
-			height:500,
+			width: 720,
+			height:450,
 			closeOnEscape: true,
 			top: 50,
 			left:20,
