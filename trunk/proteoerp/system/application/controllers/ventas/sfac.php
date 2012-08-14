@@ -73,7 +73,7 @@ jQuery("#boton1").click( function(){
 });
 
 jQuery("#boton2").click( function(){
-	window.open(\'/proteoerp/ventas/sfac_add/dataedit/create\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+	window.open(\'/proteoerp/ventas/sfac_add/dataedit/create\', \'_blank\', \'width=900,height=700,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-350)\');
 });
 
 </script>
@@ -1085,7 +1085,7 @@ jQuery("#a1").click( function(){
 		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
 
 		#show/hide navigations buttons
-		$grid->setAdd(true);
+		$grid->setAdd(false);
 		$grid->setEdit(true);
 		$grid->setDelete(true);
 		$grid->setSearch(true);
