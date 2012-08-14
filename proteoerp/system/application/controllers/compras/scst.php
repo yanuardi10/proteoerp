@@ -2763,7 +2763,9 @@ class Scst extends Controller {
 	//Chequea que el dia no sea superior a hoy
 
 	function _post_update($do){
-
+		$codigo  = $do->get('numero');
+		$control = $do->get('control');
+		logusu('scst',"Compra $codigo control $control MODIFICADA");
 	}
 
 	function chddate($fecha){
@@ -2810,7 +2812,7 @@ class Scst extends Controller {
 	function _post_insert($do){
 		$codigo  = $do->get('numero');
 		$control = $do->get('control');
-		logusu('snte',"Compra $codigo control $control CREADA");
+		logusu('scst',"Compra $codigo control $control CREADA");
 	}
 
 	function _post_cxp_update($do){
@@ -2820,6 +2822,13 @@ class Scst extends Controller {
 
 
 	function _pre_update($do){
+		$actuali= new DateTime($do->get('actuali'));
+		$fecha  = new DateTime($do->get('fecha'));
+
+		if($actuali >= $fecha){
+			$do->error_message_ar['pre_upd'] = $do->error_message_ar['update']='No se puede modificar una compra actualizada, debe reversarla primero.';
+			return false;
+		}
 		$this->_pre_insert($do);
 
 		//return false;
