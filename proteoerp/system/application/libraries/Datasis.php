@@ -17,15 +17,16 @@ funciones
 	existetabla($tabla)
 	istabla($tabla)
 	iscampo($tabla,$campo)
-	isindice($tabla, $indice)
-	agregacol($tabla,$columna,$tipo)
+	isindice($tabla, $indice)             // SI EXISTE EL INDICE
+	agregacol($tabla,$columna,$tipo)      // AGREGA COLUMNA A TABLA
 	guardasesion($datos)                  // GUARDA DATOS DE SESION EN MYSQL
+	modintramenu( $ancho, $alto, $ejecutar ) // Modifica tamano de ventana Intramenu
 
 
 	//FUNCIONES DE FECHA
-	adia()                       // ARREGLO DE DIAS
-	ames()                       // ARREGLO DE MESES
-	aano()                       // ARREGLO DE ANOS
+	adia()                                // ARREGLO DE DIAS
+	ames()                                // ARREGLO DE MESES
+	aano()                                // ARREGLO DE ANOS
 	calendario($forma,$nombre)
 	jscalendario()
 
@@ -41,7 +42,7 @@ funciones
 
 	
 	consularray($mSQL)                    //Convierte una consulta a un array
-	form2uri($clase,$metodo,$parametros)
+	form2uri($clase,$metodo,$parametros)  //
 	ivaplica($mfecha=NULL)
 	get_uri()
 	modbus($modbus,$id='',$width=800,$height=600,$puri='')
@@ -81,7 +82,6 @@ funciones
 	extultireg($data)
 	jqgcampos($mSQL)
 	
-	modintramenu( $ancho, $alto, $ejecutar ) // Modifica tamano de ventana Intramenu
 
 
 **/
