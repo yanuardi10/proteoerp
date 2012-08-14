@@ -80,7 +80,7 @@ jQuery("#boton3").click( function(){
 	var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
 	if (id)	{
 		var ret = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
-		window.open(\'/proteoerp/compras/scst/dataedit/show/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+		window.open(\'/proteoerp/compras/scst/dataedit/show/\'+id, \'_blank\', \'width=1000,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-500), screeny=((screen.availWidth/2)-300)\');
 	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
 });
 
