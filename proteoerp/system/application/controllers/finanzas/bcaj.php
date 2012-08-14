@@ -1234,7 +1234,7 @@ $(function() {
 			if ($check > 0){
 				echo " El registro no puede ser eliminado; tiene movimiento ";
 			} else {
-				$this->db->simple_query("DELETE FROM sfpa WHERE id=$id ");
+				//$this->db->simple_query("DELETE FROM sfpa WHERE id=$id ");
 				logusu('SFPA',"Registro ????? ELIMINADO");
 				echo "Registro Eliminado";
 			}
