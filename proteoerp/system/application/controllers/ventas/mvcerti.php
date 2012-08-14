@@ -33,6 +33,14 @@ class Mvcerti extends validaciones {
 				ROW_FORMAT=DEFAULT
 ";
 			$this->db->simple_query($mSQL);
+			
+			$mSQL = "CREATE ALGORITHM=UNDEFINED SQL SECURITY INVOKER VIEW `view_mvcerti` AS
+				select `a`.`id` AS `id`,if((`a`.`status` = 'A'),'ACTIVO','CERRADO') AS `status`,`a`.`cliente` AS `cliente`,`b`.`nombre` AS `nombre`,`a`.`fecha` AS `fecha`,`a`.`numero` AS `numero`,`a`.`obra` AS `obra`
+				from (`mvcerti` `a` join `scli` `b` on((`a`.`cliente` = `b`.`cliente`)))
+				order by `a`.`id` desc";
+				
+			$this->db->simple_query($mSQL);
+			
 		}
 	}
 
