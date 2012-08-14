@@ -293,43 +293,45 @@ class compra extends scst {
 			$_POST['observa3']   = '';
 
 			$rt=$this->dataedit();
-			$this->_actualizar($this->claves['control'], 'S');
+			if($rt=='Compra Guardada'){
+				$this->_actualizar($this->claves['control'], 'S');
 
-			$data=array();
-			$data['id_scst']    = $this->claves['id'];
-			$data['codigo_sinv']= $edit->codigo->newValue;
-			$data['modelo']     = $edit->descrip->newValue;
-			$data['color']      = $edit->color->newValue;
-			$data['motor']      = $edit->motor->newValue;
-			$data['carroceria'] = $edit->carroceria->newValue;
-			$data['uso']        = $edit->uso->newValue;
-			$data['tipo']       = $edit->tipo->newValue;
-			$data['clase']      = $edit->clase->newValue;
-			$data['anio']       = $edit->anio->newValue;
-			$data['peso']       = $edit->peso->newValue;
-			$data['transmision']= $edit->transmision->newValue;
-			$data['placa']      = $edit->placa->newValue;
-			$data['precioplaca']= $edit->precioplaca->newValue;
+				$data=array();
+				$data['id_scst']    = $this->claves['id'];
+				$data['codigo_sinv']= $edit->codigo->newValue;
+				$data['modelo']     = $edit->descrip->newValue;
+				$data['color']      = $edit->color->newValue;
+				$data['motor']      = $edit->motor->newValue;
+				$data['carroceria'] = $edit->carroceria->newValue;
+				$data['uso']        = $edit->uso->newValue;
+				$data['tipo']       = $edit->tipo->newValue;
+				$data['clase']      = $edit->clase->newValue;
+				$data['anio']       = $edit->anio->newValue;
+				$data['peso']       = $edit->peso->newValue;
+				$data['transmision']= $edit->transmision->newValue;
+				$data['placa']      = $edit->placa->newValue;
+				$data['precioplaca']= $edit->precioplaca->newValue;
 
-			$mSQL = $this->db->insert_string('sinvehiculo', $data);
-			$this->db->simple_query($mSQL);
+				$mSQL = $this->db->insert_string('sinvehiculo', $data);
+				$this->db->simple_query($mSQL);
 
-			$content = $rt.br();
-			$content.= anchor('formatos/ver/COMPRA/'.$this->claves['id'],'Descargar compra').br();
-			$content.= anchor($this->url,'Regresar');
+				$content = $rt.br();
+				$content.= anchor('formatos/ver/COMPRA/'.$this->claves['id'],'Descargar compra').br();
+				$content.= anchor($this->url,'Regresar');
 
-			$data['content'] = $content;
-			$data['script']  = script('jquery.js');
-			$data['script'] .= script('jquery-ui.js');
-			$data['script'] .= script('plugins/jquery.numeric.pack.js');
-			$data['script'] .= script('plugins/jquery.floatnumber.js');
-			$data['script'] .= script('plugins/jquery.ui.autocomplete.autoSelectOne.js');
-			$data['script'] .= phpscript('nformat.js');
-			$data['head']    = $this->rapyd->get_head();
-			$data['head']   .= style('redmond/jquery-ui-1.8.1.custom.css');
-			$data['title']   = heading($this->tits);
-			$this->load->view('view_ventanas', $data);
-			return;
+				$data['content'] = $content;
+				$data['script']  = script('jquery.js');
+				$data['script'] .= script('jquery-ui.js');
+				$data['script'] .= script('plugins/jquery.numeric.pack.js');
+				$data['script'] .= script('plugins/jquery.floatnumber.js');
+				$data['script'] .= script('plugins/jquery.ui.autocomplete.autoSelectOne.js');
+				$data['script'] .= phpscript('nformat.js');
+				$data['head']    = $this->rapyd->get_head();
+				$data['head']   .= style('redmond/jquery-ui-1.8.1.custom.css');
+				$data['title']   = heading($this->tits);
+				$this->load->view('view_ventanas', $data);
+				return;
+			}
 		}
 
 		$script= '<script type="text/javascript" >
@@ -360,9 +362,13 @@ class compra extends scst {
 				},
 				minLength: 2,
 				select: function( event, ui ) {
+					$("#proveed").attr("readonly", "readonly");
+
 					$("#nombre").val(ui.item.nombre);
 					$("#nombre_val").text(ui.item.nombre);
 					$("#proveed").val(ui.item.proveed);
+
+					setTimeout(function() {  $("#proveed").removeAttr("readonly"); }, 1500);
 				}
 			});
 

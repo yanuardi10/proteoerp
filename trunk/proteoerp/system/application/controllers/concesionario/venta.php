@@ -44,7 +44,7 @@ class venta extends sfac_add {
 		';
 
 		$sel=array('a.codigo_sinv','a.modelo','a.color','a.motor','a.carroceria','a.uso','a.anio','a.placa','b.iva',
-		'a.peso','a.precioplaca','a.transmision','b.precio1','b.precio2','b.precio3','b.precio4','b.descrip');
+		'a.peso','a.precioplaca','a.transmision','b.precio1','b.precio2','b.precio3','b.precio4','b.descrip','a.clase','a.tipo');
 
 		$this->db->select($sel);
 		$this->db->from('sinvehiculo AS a');
@@ -69,6 +69,8 @@ class venta extends sfac_add {
 			$transmision = $row->transmision;
 			$descrip     = $row->descrip;
 			$precioplaca = $row->precioplaca;
+			$clase       = $row->clase;
+			$tipo        = $row->tipo;
 			$precio1     = round($row->precio1*100/(100+$iiva),2);
 			$precio2     = round($row->precio2*100/(100+$iiva),2);
 			$precio3     = round($row->precio3*100/(100+$iiva),2);
@@ -86,6 +88,10 @@ class venta extends sfac_add {
 		$edit->cliente->rule='required|existescli';
 		//$edit->cliente->append($boton);
 		$edit->cliente->group = 'Datos de la factura';
+
+		$edit->rifci = new freeField('Modelo', 'rif','<span id="rifci_val"></span>');
+		$edit->rifci->group = 'Datos del veh&iacute;culo';
+		$edit->rifci->in='cliente';
 
 		$edit->nombre = new inputField('Nombre', 'nombre');
 		$edit->nombre->size = 50;
@@ -131,13 +137,13 @@ class venta extends sfac_add {
 		$edit->carroceria = new freeField('Serial de Carrocer&iacute;a','vh_carroceria','<b>'.$carroceria.'</b>');
 		$edit->carroceria->group = 'Datos del veh&iacute;culo';
 
-		$edit->uso = new  freeField('Tipo de uso','vh_uso',$uso);
+		$edit->uso = new  freeField('Uso','vh_uso',$uso);
 		$edit->uso->group = 'Datos del veh&iacute;culo';
 
-		$edit->tipo = new  freeField('Tipo de uso','vh_tipo',$uso);
+		$edit->tipo = new  freeField('Tipo','vh_tipo',$tipo);
 		$edit->tipo->group = 'Datos del veh&iacute;culo';
 
-		$edit->clase = new  freeField('Tipo de uso','vh_clase',$uso);
+		$edit->clase = new  freeField('Clase','vh_clase',$clase);
 		$edit->clase->group = 'Datos del veh&iacute;culo';
 
 		$edit->transmision = new  freeField('Transmisi&oacute;n','vh_transmision',$transmision);
@@ -294,15 +300,11 @@ class venta extends sfac_add {
 							function(data){
 								var sugiere = [];
 								if(data.length==0){
+									$("#cod_cli").val("");
 									$("#nombre").val("");
 									$("#nombre_val").text("");
-
-									$("#rifci").val("");
 									$("#rifci_val").text("");
-									$("#sclitipo").val("1");
 
-									$("#direc").val("");
-									$("#direc_val").text("");
 								}else{
 									$.each(data,
 										function(i, val){
@@ -316,17 +318,15 @@ class venta extends sfac_add {
 				},
 				minLength: 2,
 				select: function( event, ui ) {
+					$("#cod_cli").attr("readonly", "readonly");
 					$("#nombre").val(ui.item.nombre);
 					$("#nombre_val").text(ui.item.nombre);
 
-					//$("#rifci").val(ui.item.rifci);
-					//$("#rifci_val").text(ui.item.rifci);
+					$("#rifci_val").text(ui.item.rifci);
 
-					$("#cliente").val(ui.item.cod_cli);
-					//$("#sclitipo").val(ui.item.tipo);
+					$("#cod_cli").val(ui.item.cod_cli);
+					setTimeout(function() {  $("#cod_cli").removeAttr("readonly"); }, 1500);
 
-					//$("#direc").val(ui.item.direc);
-					//$("#direc_val").text(ui.item.direc);
 				}
 			});
 
