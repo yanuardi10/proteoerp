@@ -864,12 +864,12 @@ function sclilimite(){
 		$grid->label('Fecha1');
 		$grid->params(array(
 			'search'        => 'true',
-			'editable'      => $editar,
+			'editable'      => 'false',
 			'width'         => 80,
 			'align'         => "'center'",
 			'hidden'        => 'true',
 			'edittype'      => "'text'",
-			'editrules'     => '{ required:true,date:true}',
+			'editrules'     => '{ required:false,date:true}',
 			'formoptions'   => '{ label:"Fecha" }'
 		));
 /*
