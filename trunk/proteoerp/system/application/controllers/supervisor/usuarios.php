@@ -171,59 +171,7 @@ jQuery("#a1").click( function(){
 			'width'         => 150,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:15, maxlength: 15 }',
-		));
-
-		$grid->addField('supervisor');
-		$grid->label('Super');
-		$grid->params(array(
-			'align'       => "'center'",
-			'width'       => 40,
-			'editable'    => 'true',
-			'edittype'    => "'checkbox'",
-			'search'      => 'false',
-			'editrules'   => '{ required:true}',
-			'editoptions' => '{value: "S:N" }'
-		));
-
-		$grid->addField('vendedor');
-		$grid->label('Vende');
-		$grid->params(array(
-			'align'         => "'center'",
-			'width'         => 50,
-			'editable'      => 'true',
-			'edittype'      => "'select'",
-			'editoptions'   => '{ dataUrl: "'.base_url().'ajax/ddvende"}',
-		));
-
-		$grid->addField('cajero');
-		$grid->label('Cajero');
-		$grid->params(array(
-			'align'    => "'center'",
-			'width'         => 50,
-			'editable'      => 'true',
-			'edittype'      => "'select'",
-			'editoptions'   => '{ dataUrl: "'.base_url().'ajax/ddcajero"}',
-		));
-
-		$grid->addField('almacen');
-		$grid->label('Almacen');
-		$grid->params(array(
-			'align'         => "'center'",
-			'width'         => 50,
-			'editable'      => 'true',
-			'edittype'      => "'select'",
-			'editoptions'   => '{ dataUrl: "'.base_url().'ajax/ddcaub"}',
-		));
-
-		$grid->addField('sucursal');
-		$grid->label('Sucursal');
-		$grid->params(array(
-			'align'    => "'center'",
-			'width'         => 50,
-			'editable'      => 'true',
-			'edittype'      => "'select'",
-			'editoptions'   => '{ dataUrl: "'.base_url().'ajax/ddsucu"}',
+			'editoptions'   => '{ size:30, maxlength: 30 }',
 		));
 
 		$grid->addField('activo');
@@ -236,6 +184,68 @@ jQuery("#a1").click( function(){
 			'search'      => 'false',
 			'editrules'   => '{ required:true}',
 			'editoptions' => '{value: "S:N" }'
+		));
+
+		$grid->addField('supervisor');
+		$grid->label('Super');
+		$grid->params(array(
+			'align'       => "'center'",
+			'width'       => 40,
+			'editable'    => 'true',
+			'edittype'    => "'checkbox'",
+			'search'      => 'false',
+			'editrules'   => '{ required:true}',
+			'editoptions' => '{value: "S:N" }',
+			'formoptions'   => '{ label:"Supervisor" }'
+		));
+
+		$mSQL = "SELECT TRIM(vendedor) vendedor, CONCAT(trim(vendedor), ' ', trim(nombre)) nombre FROM vend ORDER BY vendedor ";
+		$link = $this->datasis->llenajqselect($mSQL, true);
+		$grid->addField('vendedor');
+		$grid->label('Vende');
+		$grid->params(array(
+			'align'         => "'center'",
+			'width'         => 50,
+			'editable'      => 'true',
+			'edittype'      => "'select'",
+			'editoptions'   => '{ value: '.$link.', style:"width:250px "}',
+			'formoptions'   => '{ label:"Vendedor" }'
+		));
+
+		$mSQL = "SELECT cajero, CONCAT(cajero, ' ', nombre) nombre FROM scaj ORDER BY nombre";
+		$link = $this->datasis->llenajqselect($mSQL, true);
+		$grid->addField('cajero');
+		$grid->label('Cajero');
+		$grid->params(array(
+			'align'    => "'center'",
+			'width'         => 50,
+			'editable'      => 'true',
+			'edittype'      => "'select'",
+			'editoptions'   => '{ value: '.$link.', style:"width:250px "}',
+		));
+
+		$mSQL = "SELECT ubica, CONCAT(ubica, ' ', ubides) ubides FROM caub WHERE gasto='N' AND invfis='N' ORDER BY ubica ";
+		$link = $this->datasis->llenajqselect($mSQL, true);
+		$grid->addField('almacen');
+		$grid->label('Almacen');
+		$grid->params(array(
+			'align'         => "'center'",
+			'width'         => 50,
+			'editable'      => 'true',
+			'edittype'      => "'select'",
+			'editoptions'   => '{ value: '.$link.', style:"width:250px" }',
+		));
+
+		$mSQL = "SELECT TRIM(codigo) codigo, CONCAT(TRIM(codigo),' ',TRIM(sucursal)) sucursal FROM sucu ORDER BY codigo";
+		$link = $this->datasis->llenajqselect($mSQL, true);
+		$grid->addField('sucursal');
+		$grid->label('Sucursal');
+		$grid->params(array(
+			'align'    => "'center'",
+			'width'         => 50,
+			'editable'      => 'true',
+			'edittype'      => "'select'",
+			'editoptions'   => '{ value: '.$link.', style:"width:250px" }',
 		));
 
 		$grid->addField('us_clave');
@@ -305,8 +315,8 @@ jQuery("#a1").click( function(){
 		$grid->setFormOptionsE('
 			closeAfterEdit:false,
 			mtype: "POST",
-			width: 520,
-			height:320,
+			width: 400,
+			height:340,
 			closeOnEscape: true,
 			top: 50,
 			left:20,
@@ -327,8 +337,8 @@ jQuery("#a1").click( function(){
 		$grid->setFormOptionsA('
 			closeAfterAdd:true,
 			mtype: "POST",
-			width: 520,
-			height:320,
+			width: 400,
+			height:340,
 			closeOnEscape: true,
 			top: 50,
 			left:20,
@@ -336,7 +346,12 @@ jQuery("#a1").click( function(){
 			afterSubmit: function(a,b){
 				if (a.responseText.length > 0)
 					$.prompt(a.responseText);
-				return [true, a ];}
+				return [true, a ];
+			},
+			afterShowForm: function(frm){
+					$("select").selectmenu({style:"popup"});
+				}
+
 		');
 
 		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");

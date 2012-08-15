@@ -1070,6 +1070,9 @@ function sclilimite(){
 						consulrif("rifci");
 					}).addClass("fm-button ui-state-default ui-corner-all fm-button-icon-left").prependTo("#Act_Buttons>td.EditButton");
 				},
+			afterShowForm: function(frm){
+					$("select").selectmenu({style:"popup"});
+				}
 		');
 
 		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
