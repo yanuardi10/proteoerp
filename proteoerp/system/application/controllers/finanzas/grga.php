@@ -18,6 +18,7 @@ class Grga extends Controller {
 			$this->db->simple_query('ALTER TABLE grga ADD UNIQUE INDEX grupo (grupo)');
 			$this->db->simple_query('ALTER TABLE grga ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
 		};
+		$this->datasis->modintramenu( 680, 450, substr($this->url,0,-1) );
 		redirect($this->url.'jqdatag');
 	}
 
@@ -28,7 +29,7 @@ class Grga extends Controller {
 	function jqdatag(){
 
 		$grid = $this->defgrid();
-		$param['grid'] = $grid->deploy();
+		$param['grids'][] = $grid->deploy();
 
 		$bodyscript = '
 <script type="text/javascript">
@@ -37,9 +38,9 @@ $(function() {
 });
 
 jQuery("#a1").click( function(){
-	var id = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
+	var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
 	if (id)	{
-		var ret = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getRowData\',id);
+		var ret = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
 		window.open(\'/proteoerp/formatos/ver/GRGA/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
 	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
 });
@@ -88,7 +89,7 @@ jQuery("#a1").click( function(){
 		$param['bodyscript'] = $bodyscript;
 		$param['tabs'] = false;
 		$param['encabeza'] = $this->titp;
-		$this->load->view('jqgrid/crud',$param);
+		$this->load->view('jqgrid/crud2',$param);
 	}
 
 	//***************************
@@ -127,7 +128,7 @@ jQuery("#a1").click( function(){
 
 
 		$grid->addField('cu_inve');
-		$grid->label('Cta. Inventario');
+		$grid->label('Cta. Contable');
 		$grid->params(array(
 			'width'         => 120,
 			'frozen'        => 'true',
@@ -148,16 +149,15 @@ jQuery("#a1").click( function(){
 			'hidden'   => 'true'
 		));
 
-
 		$grid->showpager(true);
 		$grid->setWidth('');
-		$grid->setHeight('290');
+		$grid->setHeight('235');
 		$grid->setTitle($this->titp);
 		$grid->setfilterToolbar(true);
 		$grid->setToolbar('false', '"top"');
 
-		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:200, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
-		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:200, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 400, height:180, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
+		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 400, height:180, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
 		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
 
 		#show/hide navigations buttons

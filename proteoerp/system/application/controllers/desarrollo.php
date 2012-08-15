@@ -525,6 +525,7 @@ class Desarrollo extends Controller{
 			$tab2 = $this->mtab(2);
 			$tab3 = $this->mtab(3);
 			$tab4 = $this->mtab(4);
+			$tab5 = $this->mtab(5);
 
 			$str .= 'class '.ucfirst($db).' extends Controller {'."\n";
 			$str .= $tab1.'var $mModulo=\''.strtoupper($db).'\';'."\n";
@@ -545,7 +546,9 @@ class Desarrollo extends Controller{
 			$str .= $tab3.'$this->db->simple_query(\'ALTER TABLE '.$db.' ADD UNIQUE INDEX numero (numero)\');'."\n";
 			$str .= $tab3.'$this->db->simple_query(\'ALTER TABLE '.$db.' ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)\');'."\n";
 			$str .= $tab2.'};*/'."\n";
+			$str .= $tab2.'$this->datasis->modintramenu( 800, 600, substr($this->url,0,-1) );'."\n";
 			$str .= $tab2.'redirect($this->url.\'jqdatag\');'."\n";
+
 			$str .= $tab1.'}'."\n\n";
 			
 			$str .= $tab1.'//***************************'."\n";
@@ -689,7 +692,7 @@ class Desarrollo extends Controller{
 						$long = 250;
 						$str .= $tab3.'\'width\'         => '.$long.','."\n";
 						$str .= $tab3.'\'edittype\'      => "\'textarea\'",'."\n";
-						$str .= $tab3.'\'editoptions\'   => "\'{rows:"2", cols:"60"}\'",'."\n";
+						$str .= $tab3.'\'editoptions\'   => "\'{rows:2, cols:60}\'",'."\n";
 
 						//$str .= $tab3.'\'formoptions\'   => "\'{rows:"2", cols:"60"}\'",'."\n";
 						
@@ -710,8 +713,8 @@ class Desarrollo extends Controller{
 			$str .= $tab2.'$grid->setfilterToolbar(true);'."\n";
 			$str .= $tab2.'$grid->setToolbar(\'false\', \'"top"\');'."\n\n";
 		
-			$str .= $tab2.'$grid->setFormOptionsE(\'closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} \');'."\n";
-			$str .= $tab2.'$grid->setFormOptionsA(\'closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} \');'."\n";
+			$str .= $tab2.'$grid->setFormOptionsE(\'closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} \');'."\n";
+			$str .= $tab2.'$grid->setFormOptionsA(\'closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} \');'."\n";
 
 			$str .= $tab2.'$grid->setAfterSubmit("$.prompt(\'Respuesta:\'+a.responseText); return [true, a ];");'."\n\n";
 
@@ -765,6 +768,7 @@ class Desarrollo extends Controller{
 			$str .= $tab2.'$oper   = $this->input->post(\'oper\');'."\n";
 			$str .= $tab2.'$id     = $this->input->post(\'id\');'."\n";
 			$str .= $tab2.'$data   = $_POST;'."\n";
+			$str .= $tab2.'$mcodp  = "??????";'."\n";
 			$str .= $tab2.'$check  = 0;'."\n\n";
 
 			$str .= $tab2.'unset($data[\'oper\']);'."\n";
@@ -772,21 +776,41 @@ class Desarrollo extends Controller{
 
 			$str .= $tab2.'if($oper == \'add\'){'."\n";
 			$str .= $tab3.'if(false == empty($data)){'."\n";
-			$str .= $tab4.'$this->db->insert(\''.$db.'\', $data);'."\n";
-			$str .= $tab4.'echo "Registro Agregado";'."\n\n";
-			$str .= $tab4.'logusu(\''.strtoupper($db).'\',"Registro ????? INCLUIDO");'."\n";
+			$str .= $tab4.'$check = $this->datasis->dameval("SELECT count(*) FROM '.$db.' WHERE $mcodp=".$this->db->escape($data[$mcodp]));'."\n";
+			$str .= $tab4.'if ( $check == 0 ){'."\n";
+			$str .= $tab5.'$this->db->insert(\''.$db.'\', $data);'."\n";
+			$str .= $tab5.'echo "Registro Agregado";'."\n\n";
+			$str .= $tab5.'logusu(\''.strtoupper($db).'\',"Registro ????? INCLUIDO");'."\n";
+			$str .= $tab4.'} else'."\n";
+			$str .= $tab5.'echo "Ya existe un registro con ese $mcodp";'."\n";
+
 			$str .= $tab3.'} else'."\n";
 			//$str .= $tab2.'echo \'\';'."\n";
-			$str .= $tab3.'echo "Fallo Agregado!!!";'."\n\n";
+			$str .= $tab4.'echo "Fallo Agregado!!!";'."\n\n";
 
 			$str .= $tab2.'} elseif($oper == \'edit\') {'."\n";
-			$str .= $tab3.'//unset($data[\'ubica\']);'."\n";
-			$str .= $tab3.'$this->db->where(\'id\', $id);'."\n";
-			$str .= $tab3.'$this->db->update(\''.$db.'\', $data);'."\n";
-			$str .= $tab3.'logusu(\''.strtoupper($db).'\',"Registro ????? MODIFICADO");'."\n";
-			$str .= $tab3.'echo "Registro Modificado";'."\n\n";
-			
+			$str .= $tab3.'$nuevo  = $data[$mcodp];'."\n";
+			$str .= $tab3.'$anterior = $this->datasis->dameval("SELECT $mcodp FROM '.$db.' WHERE id=$id");'."\n";
+			$str .= $tab3.'if ( $nuevo <> $anterior ){'."\n";
+			$str .= $tab4.'//si no son iguales borra el que existe y cambia'."\n";
+			$str .= $tab4.'$this->db->query("DELETE FROM '.$db.' WHERE $mcodp=?", array($mcodp));'."\n";
+			$str .= $tab4.'$this->db->query("UPDATE '.$db.' SET $mcodp=? WHERE $mcodp=?", array( $nuevo, $anterior ));'."\n";
+			$str .= $tab4.'$this->db->where("id", $id);'."\n";
+			$str .= $tab4.'$this->db->update("'.$db.'", $data);'."\n";	
+			$str .= $tab4.'logusu(\''.strtoupper($db).'\',"$mcodp Cambiado/Fusionado Nuevo:".$nuevo." Anterior: ".$anterior." MODIFICADO");'."\n";
+			$str .= $tab4.'echo "Grupo Cambiado/Fusionado en clientes";'."\n";
+
+			$str .= $tab3.'} else {'."\n";
+			$str .= $tab4.'unset($data[$mcodp]);'."\n";
+			$str .= $tab4.'$this->db->where("id", $id);'."\n";
+			$str .= $tab4.'$this->db->update(\''.$db.'\', $data);'."\n";
+			$str .= $tab4.'logusu(\''.strtoupper($db).'\',"Grupo de Cliente  ".$nuevo." MODIFICADO");'."\n";
+			$str .= $tab4.'echo "$mcodp Modificado";'."\n";
+			$str .= $tab3.'}'."\n\n";
+		
 			$str .= $tab2.'} elseif($oper == \'del\') {'."\n";
+			$str .= $tab2.'$meco = $this->datasis->dameval("SELECT $mcodp FROM '.$db.' WHERE id=$id");'."\n";
+
 			$str .= $tab3.'//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM '.$db.' WHERE id=\'$id\' ");'."\n";
 			$str .= $tab3.'if ($check > 0){'."\n";
 			$str .= $tab4.'echo " El registro no puede ser eliminado; tiene movimiento ";'."\n";
