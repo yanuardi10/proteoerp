@@ -2166,11 +2166,12 @@ class Scst extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
-	function _actualizar($control, $cprecio, $actuali=null){
-		$error =0;
-		$pasa=$this->datasis->dameval('SELECT COUNT(*) FROM scst WHERE actuali>=fecha AND control='.$this->db->escape($control));
+	function _actualizar($id, $cprecio, $actuali=null){
+		$error = 0;
+		$pasa  = $this->datasis->dameval('SELECT COUNT(*) FROM scst WHERE actuali>=fecha AND id= '.$id );
 
-		if($pasa==0){
+		if( $pasa==0 ){
+			$control=$this->datasis->dameval('SELECT control FROM scst WHERE  id='.$id);
 			$SQL='SELECT tipo_doc,transac,depo,proveed,fecha,vence, nombre,tipo_doc,nfiscal,fafecta,reteiva,
 			cexento,cgenera,civagen,creduci,civared,cadicio,civaadi,cstotal,ctotal,cimpuesto,numero
 			FROM scst WHERE control=?';
