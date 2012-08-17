@@ -686,9 +686,16 @@ class ccli extends Controller {
 			$monto    = $do->get_rel($rel,'monto',$i);
 			//Si es deposito en banco o transferencia crea el movimiento
 			if($sfpatipo=='DE' || $sfpatipo=='NC'){
+				$sql ='SELECT tbanco,moneda,banco,saldo,depto,numcuent FROM banc WHERE codbanc='.$dbcodbanc;
+				$fila=$this->datasis->damerow($sql);
+
 				$ffecha  = $do->get_rel($rel,'fecha',$i);
 				$itdbdata=array();
 				$itdbdata['codbanc']  = $codbanc;
+				$itdbdata['moneda']   = $fila['moneda'];
+				$itdbdata['numcuent'] = $fila['numcuent'];
+				$itdbdata['banco']    = $fila['banco'];
+				$itdbdata['saldo']    = $fila['saldo']+$monto;
 				$itdbdata['tipo_op']  = $do->get_rel($rel,'tipo',$i);
 				$itdbdata['numero']   = $do->get_rel($rel,'num_ref',$i);
 				$itdbdata['fecha']    = $ffecha;
