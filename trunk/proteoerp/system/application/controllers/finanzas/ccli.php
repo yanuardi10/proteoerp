@@ -714,7 +714,6 @@ class ccli extends Controller {
 				if($ban==false) memowrite($mSQL,'rcaj');
 			}
 		}
-		exit();
 
 	}
 
