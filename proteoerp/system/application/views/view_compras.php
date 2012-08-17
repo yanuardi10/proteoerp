@@ -269,25 +269,37 @@ function autocod(id){
 	$('#codigo_'+id).autocomplete({
 		source: function( req, add){
 			$.ajax({
-				url:  "<?php echo site_url('ventas/spre/buscasinv'); ?>",
+				url:  "<?php echo site_url('ajax/buscasinv'); ?>",
 				type: "POST",
 				dataType: "json",
 				data: "q="+req.term,
 				success:
 					function(data){
 						var sugiere = [];
-						$.each(data,
-							function(i, val){
-								sugiere.push( val );
-							}
-						);
+
+						if(data.length==0){
+							$('#codigo_'+id).val("");
+							$('#descrip_'+id).val("");
+							$('#it_descrip_val_'+id).text("");
+							$('#iva_'+id).val(0);
+							$('#sinvpeso_'+id).val(0);
+							$('#costo_'+id).val(0);
+							$('#cantidad_'+id).val('');
+						}else{
+							$.each(data,
+								function(i, val){
+									sugiere.push( val );
+								}
+							);
+						}
 						add(sugiere);
 					},
 			})
 		},
 		minLength: 2,
 		select: function( event, ui ) {
-			//id='0';
+			$('#codigo_'+id).attr("readonly", "readonly");
+
 			var cana=Number($("#cantidad_"+ind).val());
 			$('#codigo_'+id).val(ui.item.codigo);
 			$('#descrip_'+id).val(ui.item.descrip);
@@ -301,6 +313,7 @@ function autocod(id){
 			//post_modbus_sinv(parseInt(id));
 			importe(parseInt(id));
 			totalizar();
+			setTimeout(function() {  $('#codigo_'+id).removeAttr("readonly"); }, 1500);
 		}
 	});
 }
