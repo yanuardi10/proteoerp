@@ -259,21 +259,22 @@ class venta extends sfac_add {
 				$mSQL = $this->db->update_string('sinvehiculo', $data,'id='.$this->db->escape($id));
 				$this->db->simple_query($mSQL);
 
-				$content = $rt.br();
-				$content.= anchor('formatos/ver/FACTURA/'.$this->claves['id'],'Descargar factura').br();
-				$content.= anchor($this->url,'Regresar');
-
-				$data['content'] = $content;
-				$data['script']  = script('jquery.js');
-				$data['script'] .= script('jquery-ui.js');
-				$data['script'] .= script('plugins/jquery.numeric.pack.js');
-				$data['script'] .= script('plugins/jquery.floatnumber.js');
-				$data['script'] .= script('plugins/jquery.ui.autocomplete.autoSelectOne.js');
-				$data['script'] .= phpscript('nformat.js');
-				$data['head']    = $this->rapyd->get_head();
-				$data['head']   .= style('redmond/jquery-ui-1.8.1.custom.css');
-				$data['title']   = heading($this->tits);
-				$this->load->view('view_ventanas', $data);
+				//$content = $rt.br();
+				//$content.= anchor('formatos/ver/FACTURA/'.$this->claves['id'],'Descargar factura').br();
+				//$content.= anchor($this->url,'Regresar');
+                //
+				//$data['content'] = $content;
+				//$data['script']  = script('jquery.js');
+				//$data['script'] .= script('jquery-ui.js');
+				//$data['script'] .= script('plugins/jquery.numeric.pack.js');
+				//$data['script'] .= script('plugins/jquery.floatnumber.js');
+				//$data['script'] .= script('plugins/jquery.ui.autocomplete.autoSelectOne.js');
+				//$data['script'] .= phpscript('nformat.js');
+				//$data['head']    = $this->rapyd->get_head();
+				//$data['head']   .= style('redmond/jquery-ui-1.8.1.custom.css');
+				//$data['title']   = heading($this->tits);
+				//$this->load->view('view_ventanas', $data);
+				redirect($this->url.'dataprint/modify/'.$data['id_sfac']);
 				return;
 			}else{
 				$edit->error_string =  htmlentities($rt);
@@ -326,7 +327,6 @@ class venta extends sfac_add {
 
 					$("#cod_cli").val(ui.item.cod_cli);
 					setTimeout(function() {  $("#cod_cli").removeAttr("readonly"); }, 1500);
-
 				}
 			});
 

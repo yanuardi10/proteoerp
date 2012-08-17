@@ -68,7 +68,7 @@ jQuery("#boton1").click( function(){
 	var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
 	if (id)	{
 		var ret = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
-		window.open(\'/proteoerp/formatos/ver/FACTURA/\'+id+"/id", \'_blank\', \'width=900,height=800,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-400)\');
+		window.open(\''.site_url('ventas/sfac_add/dataprint/modify').'/\'+id, \'_blank\', \'width=900,height=800,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-400)\');
 	} else { $.prompt("<h1>Por favor Seleccione una Factura</h1>");}
 });
 
@@ -1849,13 +1849,13 @@ class sfac extends validaciones {
 
 		$style ='
 <style type="text/css">
-.fakeContainer {          // The parent container 
+.fakeContainer {          // The parent container
 	margin: 5px;
 	padding: 0px;
 	border: none;
-	width: 640px;     // Required to set 
-	height: 320px;    // Required to set 
-	overflow: hidden; // Required to set 
+	width: 640px;     // Required to set
+	height: 320px;    // Required to set
+	overflow: hidden; // Required to set
 }
 </style>
 ';
@@ -3109,14 +3109,14 @@ function sfacreiva(mid){
 	function gridsitems(){
 		$numero = isset($_REQUEST['numero'])  ? $_REQUEST['numero']   :  0;
 		$id     = isset($_REQUEST['id'])  ? $_REQUEST['id']   :  0;
-		
+
 		//if ($numero == 0 ) $numero = $this->datasis->dameval("SELECT MAX(nu) FROM sfac");
 		if ($id == 0 ) $id = $this->datasis->dameval("SELECT MAX(id) FROM sfac");
-		
+
 		$numero   = $this->datasis->dameval("SELECT numero FROM sfac WHERE id=$id");
 		$tipo_doc = $this->datasis->dameval("SELECT tipo_doc FROM sfac WHERE id=$id");
-		
-		
+
+
 		$mSQL = "SELECT * FROM sitems a JOIN sinv b ON a.codigoa=b.codigo WHERE a.tipoa='$tipo_doc' AND a.numa='$numero' ORDER BY a.codigoa";
 		$query = $this->db->query($mSQL);
 		$results = $query->num_rows();

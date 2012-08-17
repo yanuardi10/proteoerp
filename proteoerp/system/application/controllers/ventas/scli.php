@@ -136,7 +136,7 @@ function consulrif(campo){
 
 function chrif(rif){
 	rif.toUpperCase();
-	var patt=/((^[VEJG][0-9])|(^[P][A-Z0-9]))/;  
+	var patt=/((^[VEJG][0-9])|(^[P][A-Z0-9]))/;
 	if(patt.test(rif)){
 		return true;
 	}else{
@@ -146,7 +146,7 @@ function chrif(rif){
 
 function rchrifci(value, colname) {
 	value.toUpperCase();
-	var patt=/((^[VEJG][0-9])|(^[P][A-Z0-9]))/;  
+	var patt=/((^[VEJG][0-9])|(^[P][A-Z0-9]))/;
 	if( !patt.test(value) )
 		return [false,"El Rif colocado no es correcto, por favor verifique con el SENIAT."];
 	else
@@ -1136,8 +1136,8 @@ function sclilimite(){
 					$mcodigo = $this->proxcli();
 					$data['cliente'] = $mcodigo;
 				}
-				
-				
+
+
 				//Busca a ver si esta repetido
 				if ( $this->datasis->dameval("SELECT count(*) FROM scli WHERE cliente=".$this->db->escape($mcodigo)) > 0 ){
 					echo "Codigo ya existe ";
@@ -1242,7 +1242,7 @@ function sclilimite(){
 
 	function resumen() {
 		$id = $this->uri->segment($this->uri->total_segments());
-		
+
 		$row = $this->datasis->damereg("SELECT cliente, credito, formap, limite, tolera, maxtole, observa, tipo  FROM scli WHERE id=$id");
 
 		$cod_cli  = $row['cliente'];
@@ -1253,12 +1253,12 @@ function sclilimite(){
 		$maxtole  = $row['maxtole'];
 		$observa  = $row['observa'];
 		$tipo     = $row['tipo'];
-		
+
 		if( $credito == 'S')
 			$mcredito = "Activo";
 		else
 			$mcredito = "Suspendido";
-	
+
 		$saldo  = 0;
 		$saldo  = $this->datasis->dameval("SELECT sum(monto*IF(tipo_doc IN ('FC','ND','GI'),1,-1)) saldo FROM smov WHERE cod_cli=".$this->db->escape($cod_cli));
 
@@ -1274,10 +1274,10 @@ function sclilimite(){
 		$salida .= "<tr style='background-color:#EEEEEE;'><td>Saldo Actual      </td><td align='right'>".nformat($saldo)."   </td></tr>\n";
 		$salida .= "<tr style='background-color:#FBEC88;'><td>Credito Disponible</td><td align='right'><b>".nformat($limite-$saldo)."</b></td></tr>\n";
 		$salida .= "</table>\n";
-		
+
 		if ( !empty($observa) )
 			$salida .= "<br><b>Observaciones:</b><textarea cols='28' rows='4' readonly='readonly'>$observa</textarea>\n";
-		
+
 		echo $salida;
 	}
 
@@ -1381,13 +1381,13 @@ class Scli extends validaciones {
 ';
 		$style ='
 <style type="text/css">
-.fakeContainer { // The parent container 
+.fakeContainer { // The parent container
     margin: 5px;
     padding: 0px;
     border: none;
-    width: 740px; // Required to set 
-    height: 320px; // Required to set 
-    overflow: hidden; // Required to set 
+    width: 740px; // Required to set
+    height: 320px; // Required to set
+    overflow: hidden; // Required to set
 }
 </style>
 ';
@@ -1521,7 +1521,7 @@ function consulrif(campo){
 function chrif(rif){
 	rif.toUpperCase();
 	var patt=/[EJPGV][0-9]{9} * /g;
-	if(patt.test(rif)){ 
+	if(patt.test(rif)){
 		var factor= new Array(4,3,2,7,6,5,4,3,2);
 		var v=0;
 		if(rif[0]=="V"){
@@ -2184,7 +2184,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 			//}
 		return TRUE;
 	}
-/*
+
 	function _pre_credi_update($do){
 		$cliente   = $do->get('cliente');
 		$limite    = $do->get('limite');
@@ -2261,7 +2261,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		}
 		return True;
 	}
-
+/*
 	function _pre_udp($do){
 		$do->set('riffis',trim($do->get('rifci')));
 		$nomfis = $do->get('nomfis');
@@ -2884,7 +2884,7 @@ var cplaStore = new Ext.data.Store({
 	function sclimemo() {
 		$mid     = $_REQUEST['mid'];
 		$mensaje = urldecode($_REQUEST['mensaje']);
-		
+
 		$this->db->query("UPDATE scli SET observa=? WHERE id=$mid",array($mensaje));
 		echo "Observaciones Guardadas";
 	}
@@ -2904,14 +2904,14 @@ var cplaStore = new Ext.data.Store({
 		$this->db->query("UPDATE scli SET socio=".$this->db->escape($mnuevo)." WHERE socio=".$this->db->escape($mviejo));
 		// SPRV
 		$this->db->query("UPDATE sprv SET cliente=".$this->db->escape($mnuevo)." WHERE cliente=".$this->db->escape($mviejo));
-		// SMOV 
+		// SMOV
 		$this->db->query("UPDATE smov SET cod_cli=".$this->db->escape($mnuevo)." WHERE cod_cli=".$this->db->escape($mviejo));
 		// APAN
 		$this->db->query("UPDATE apan SET clipro=".$this->db->escape($mnuevo)." WHERE clipro=".$this->db->escape($mviejo)." AND tipo='C' ");
 		$this->db->query("UPDATE apan SET reinte=".$this->db->escape($mnuevo)." WHERE reinte=".$this->db->escape($mviejo)." AND tipo='P' ");
 		// ITCCLI
 		$this->db->query("UPDATE itccli SET cod_cli=".$this->db->escape($mnuevo)." WHERE cod_cli=".$this->db->escape($mviejo));
-		// BMOV CLIPRO='C'  CODCP 
+		// BMOV CLIPRO='C'  CODCP
 		$this->db->query("UPDATE bmov SET codcp=".$this->db->escape($mnuevo)." WHERE codcp=".$this->db->escape($mviejo)." AND clipro='C'");
 		// SFPA
 		$this->db->query("UPDATE sfpa SET cod_cli=".$this->db->escape($mnuevo)." WHERE cod_cli=".$this->db->escape($mviejo));

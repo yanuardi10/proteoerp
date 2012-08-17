@@ -34,7 +34,7 @@ class compra extends scst {
 				'codigo' =>'C&oacute;digo',
 				'descrip'=>'Descripci&oacute;n'),
 			'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'Descripci&oacute;n'),
-			'retornar'=>array('codigo'=>'codigo_0','descrip'=>'descrip_0'),
+			'retornar'=>array('codigo'=>'codigo_0','descrip'=>'descrip_0','peso'=>'peso'),
 			'script'  => array('post_modbus_sinv()'),
 			'titulo'  =>'Buscar Art&iacute;culo',
 			'where'   =>'activo = "S"');
@@ -351,11 +351,18 @@ class compra extends scst {
 						success:
 							function(data){
 								var sugiere = [];
-								$.each(data,
-									function(i, val){
-										sugiere.push( val );
-									}
-								);
+								if(data.length==0){
+									$("#proveed").val("");
+									$("#nombre").val("");
+									$("#nombre_val").text("");
+								}else{
+
+									$.each(data,
+										function(i, val){
+											sugiere.push( val );
+										}
+									);
+								}
 								add(sugiere);
 							},
 					})
@@ -382,22 +389,32 @@ class compra extends scst {
 						success:
 							function(data){
 								var sugiere = [];
-								$.each(data,
-									function(i, val){
-										sugiere.push( val );
-									}
-								);
+
+								if(data.length==0){
+									$("#proveed").val("");
+									$("#nombre").val("");
+									$("#nombre_val").text("");
+								}else{
+									$.each(data,
+										function(i, val){
+											sugiere.push( val );
+										}
+									);
+								}
 								add(sugiere);
 							},
 					})
 				},
 				minLength: 2,
 				select: function( event, ui ) {
+					$("#codigo_0").attr("readonly", "readonly");
+
 					$("#codigo_0").val(ui.item.codigo);
 					$("#descrip_0").val(ui.item.descrip);
 					//$("#tasa").val(ui.item.iva);
 					$("#peso").val(ui.item.peso);
 					post_modbus_sinv();
+					setTimeout(function() {  $("#codigo_0").removeAttr("readonly"); }, 1500);
 				}
 			});
 		});

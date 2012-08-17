@@ -568,7 +568,8 @@ class sfac_add extends validaciones {
 		if(isset($this->back_url))
 			$edit->back_url = site_url($this->back_url);
 		else
-			$edit->back_url = site_url($this->url.'dataedit/show/'.$uid);
+			$edit->back_url = site_url('ajax/reccierraventana');
+			//$edit->back_url = site_url($this->url.'dataedit/show/'.$uid);
 
 		$edit->back_save   = true;
 		$edit->back_delete = true;
