@@ -680,7 +680,7 @@ class ccli extends Controller {
 		$rel='sfpa';
 		$cana = $do->count_rel($rel);
 		for($i = 0;$i < $cana;$i++){
-			$sfpatipo = $do->get_rel($rel, 'tipo_doc', $i);
+			$sfpatipo = $do->get_rel($rel, 'tipo', $i);
 			$codbanc  = $do->get_rel($rel,'banco',$i);
 			$dbcodbanc= $this->db->escape($codbanc);
 			$monto    = $do->get_rel($rel,'monto',$i);
@@ -714,6 +714,7 @@ class ccli extends Controller {
 				if($ban==false) memowrite($mSQL,'rcaj');
 			}
 		}
+		exit();
 
 	}
 
