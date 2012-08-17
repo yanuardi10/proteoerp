@@ -880,7 +880,7 @@ class sfac_add extends validaciones {
 				$saldo=0;
 			}
 
-			if($credito > ($limite-$saldo) || $cdias<=0 || $pcredito=='N'){
+			if($saldo >0 && ($credito > ($limite-$saldo) || $cdias<=0 || $pcredito=='N')){
 				$do->error_message_ar['pre_ins']='El cliente no tiene suficiente cr&eacute;dito propio';
 				return false;
 			}
