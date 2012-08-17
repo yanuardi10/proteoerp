@@ -3,7 +3,7 @@
 class Contenedor extends validaciones {
 
 	function Contenedor(){
-		parent::Controller(); 
+		parent::Controller();
 		$this->load->library('rapyd');
 		$this->prefijo='crm_';
 		$this->crm_back='';
@@ -205,8 +205,14 @@ class Contenedor extends validaciones {
 		$this->rapyd->load('dataedit');
 		$edit = new DataEdit('Comentario', $this->prefijo.'comentarios');
 
+		$edit->back_save   = true;
+		$edit->back_delete = true;
+		$edit->back_cancel = true;
+		$edit->back_cancel_save   = true;
+		$edit->back_cancel_delete = true;
+
 		if(empty($this->crm_back))
-			$edit->back_url = site_url('crm/contenedor/dataedit/show/'.$contenedor);
+			$edit->back_url = site_url('crm/contenedor/dataedit/modify/'.$contenedor);
 		else
 			$edit->back_url = $this->crm_back;
 
@@ -247,7 +253,7 @@ class Contenedor extends validaciones {
 		$parti->db->where('contenedor',$id);
 		$parti->per_page = 100;
 
-		$url=anchor(reduce_double_slashes($uurl.'/'.$id.$adicio.'/show/<#codigo#>'),'<#codigo#>');
+		$url=anchor(reduce_double_slashes($uurl.'/'.$id.$adicio.'/modify/<#codigo#>'),'<#codigo#>');
 		$parti->column('C&oacute;digo' ,$url    );
 		$parti->column('Descripci&oacute;n','descripcion');
 		$parti->column('Enlace' ,'enlace' );
@@ -270,7 +276,7 @@ class Contenedor extends validaciones {
 		$adjun->db->where('contenedor',$id);
 		$adjun->per_page = 100;
 
-		$url=anchor(reduce_double_slashes($uurl.'/'.$id.$adicio.'/show/<#id#>'),'Modificar');
+		$url=anchor(reduce_double_slashes($uurl.'/'.$id.$adicio.'/modify/<#id#>'),'Modificar');
 		$adjun->column('Acci&oacute;n'  ,$url  );
 		$adjun->column('Fecha'  ,'<dbdate_to_human><#fecha#></dbdate_to_human>');
 		$adjun->column('Nombre' ,'nombre'    );
@@ -292,7 +298,7 @@ class Contenedor extends validaciones {
 		$monto->db->where('contenedor',$id);
 		$monto->per_page = 100;
 
-		$url=anchor(reduce_double_slashes($uurl.'/'.$id.$adicio.'/show/<#id#>'),'<#id#>');
+		$url=anchor(reduce_double_slashes($uurl.'/'.$id.$adicio.'/modify/<#id#>'),'<#id#>');
 		$monto->column('N&uacute;mero'  ,$url );
 		$monto->column('Partida' ,'partida');
 		$monto->column('Fecha'  ,'<dbdate_to_human><#fecha#></dbdate_to_human>');
@@ -316,7 +322,7 @@ class Contenedor extends validaciones {
 		$even->order_by('fecha','asc');
 		$even->per_page = 100;
 
-		$url=anchor(reduce_double_slashes($uurl.'/'.$id.$adicio.'/show/<#id#>'),'Modificar');
+		$url=anchor(reduce_double_slashes($uurl.'/'.$id.$adicio.'/modify/<#id#>'),'Modificar');
 		$even->column('N&uacute;mero'  ,$url);
 		$even->column('Fecha'  ,'<dbdate_to_human><#fecha#></dbdate_to_human>');
 		$even->column('Vence'  ,'<dbdate_to_human><#vence#></dbdate_to_human>');
@@ -340,7 +346,7 @@ class Contenedor extends validaciones {
 		$grid->order_by('fecha','asc');
 		$grid->per_page = 100;
 
-		$url=anchor(reduce_double_slashes($uurl.'/'.$id.$adicio.'/show/<#id#>'),'Modificar');
+		$url=anchor(reduce_double_slashes($uurl.'/'.$id.$adicio.'/modify/<#id#>'),'Modificar');
 		$grid->column('N&uacute;mero'  ,$url );
 		$grid->column('Fecha'  ,'<dbdate_to_human><#fecha#></dbdate_to_human>'      );
 		$grid->column('Motivo' ,'motivo'    );
@@ -356,6 +362,12 @@ class Contenedor extends validaciones {
 	function eventos($contenedor){
 		$this->rapyd->load('dataedit');
 		$edit = new DataEdit('Eventos', $this->prefijo.'eventos');
+
+		$edit->back_save   = true;
+		$edit->back_delete = true;
+		$edit->back_cancel = true;
+		$edit->back_cancel_save   = true;
+		$edit->back_cancel_delete = true;
 
 		if(empty($this->crm_back))
 			$edit->back_url = site_url('crm/contenedor/dataedit/show/'.$contenedor);
@@ -403,6 +415,12 @@ class Contenedor extends validaciones {
 		$boton=$this->datasis->modbus($mgas);
 
 		$edit = new DataEdit('Partidas', $this->prefijo.'partidas');
+
+		$edit->back_save   = true;
+		$edit->back_delete = true;
+		$edit->back_cancel = true;
+		$edit->back_cancel_save   = true;
+		$edit->back_cancel_delete = true;
 
 		if(empty($this->crm_back))
 			$edit->back_url = site_url('crm/contenedor/dataedit/show/'.$contenedor);
@@ -512,6 +530,12 @@ class Contenedor extends validaciones {
 		$this->rapyd->load('dataedit');
 		$edit = new DataEdit('Adjuntos', $this->prefijo.'adjuntos');
 
+		$edit->back_save   = true;
+		$edit->back_delete = true;
+		$edit->back_cancel = true;
+		$edit->back_cancel_save   = true;
+		$edit->back_cancel_delete = true;
+
 		if(empty($this->crm_back))
 			$edit->back_url = site_url('crm/contenedor/dataedit/show/'.$contenedor);
 		else
@@ -555,6 +579,12 @@ class Contenedor extends validaciones {
 
 		$this->rapyd->load('dataedit');
 		$edit = new DataEdit('Imagenes', $this->prefijo.'adjuntos');
+
+		$edit->back_save   = true;
+		$edit->back_delete = true;
+		$edit->back_cancel = true;
+		$edit->back_cancel_save   = true;
+		$edit->back_cancel_delete = true;
 
 		if(empty($this->crm_back))
 			$edit->back_url = site_url('crm/contenedor/dataedit/show/'.$contenedor);
@@ -605,130 +635,143 @@ class Contenedor extends validaciones {
 	function instalar(){
 		$prefijo=$this->prefijo;
 
-		$mSQL="CREATE TABLE `${prefijo}comentarios` (
-		  `id` int(11) NOT NULL AUTO_INCREMENT,
-		  `usuario` varchar(50) DEFAULT NULL,
-		  `contenedor` int(11) NOT NULL DEFAULT '0',
-		  `fecha` date DEFAULT NULL,
-		  `motivo` varchar(200) DEFAULT NULL,
-		  `cuerpo` text,
-		  PRIMARY KEY (`id`)
-		) ENGINE=MyISAM DEFAULT CHARSET=".$this->db->char_set;
-		var_dump($this->db->simple_query($mSQL));
+		if (!$this->db->table_exists("${prefijo}comentarios")) {
+			$mSQL="CREATE TABLE `${prefijo}comentarios` (
+			`id` int(11) NOT NULL AUTO_INCREMENT,
+			`usuario` varchar(50) DEFAULT NULL,
+			`contenedor` int(11) NOT NULL DEFAULT '0',
+			`fecha` date DEFAULT NULL,
+			`motivo` varchar(200) DEFAULT NULL,
+			`cuerpo` text,
+			PRIMARY KEY (`id`)
+			) ENGINE=MyISAM DEFAULT CHARSET=".$this->db->char_set;
+			$this->db->simple_query($mSQL);
+		}
 
-		$mSQL="CREATE TABLE `${prefijo}definiciones` (
-		  `id` int(7) NOT NULL AUTO_INCREMENT,
-		  `nombre` varchar(50) DEFAULT '0',
-		  `estructura` text,
-		  PRIMARY KEY (`id`)
-		) ENGINE=MyISAM DEFAULT CHARSET=".$this->db->char_set;
-		var_dump($this->db->simple_query($mSQL));
+		if (!$this->db->table_exists("${prefijo}definiciones")) {
+			$mSQL="CREATE TABLE `${prefijo}definiciones` (
+			`id` int(7) NOT NULL AUTO_INCREMENT,
+			`nombre` varchar(50) DEFAULT '0',
+			`estructura` text,
+			PRIMARY KEY (`id`)
+			) ENGINE=MyISAM DEFAULT CHARSET=".$this->db->char_set;
+			$this->db->simple_query($mSQL);
+		}
 
-		$mSQL="CREATE TABLE `${prefijo}contenedor` (
-		  `id` int(11) NOT NULL AUTO_INCREMENT,
-		  `usuario` varchar(50) DEFAULT NULL,
-		  `derivado` int(11) DEFAULT '0',
-		  `definicion` int(7) DEFAULT '0',
-		  `tipo` int(7) DEFAULT '0',
-		  `status` int(7) DEFAULT '0',
-		  `fecha` date DEFAULT NULL,
-		  `cierre` date DEFAULT NULL,
-		  `resumen` varchar(200) DEFAULT NULL,
-		  `titulo` varchar(200) DEFAULT NULL,
-		  `cliente` varchar(5) DEFAULT NULL,
-		  `proveed` varchar(5) DEFAULT NULL,
-		  `descripcion` text,
-		  `condiciones` text,
-		  PRIMARY KEY (`id`)
-		) ENGINE=MyISAM DEFAULT CHARSET=".$this->db->char_set." COMMENT='contenedor'";
-		var_dump($this->db->simple_query($mSQL));
 
-		$mSQL="CREATE TABLE `${prefijo}eventos` (
-		  `id` int(11) NOT NULL AUTO_INCREMENT,
-		  `usuario` varchar(50) DEFAULT NULL,
-		  `contenedor` int(11) NOT NULL DEFAULT '0',
-		  `fecha` date DEFAULT NULL,
-		  `evento` varchar(200) DEFAULT NULL,
-		  `vence` date DEFAULT NULL,
-		  PRIMARY KEY (`id`)
-		) ENGINE=MyISAM DEFAULT CHARSET=".$this->db->char_set;
-		var_dump($this->db->simple_query($mSQL));
+		if (!$this->db->table_exists("${prefijo}contenedor")) {
+			$mSQL="CREATE TABLE `${prefijo}contenedor` (
+			`id` int(11) NOT NULL AUTO_INCREMENT,
+			`usuario` varchar(50) DEFAULT NULL,
+			`derivado` int(11) DEFAULT '0',
+			`definicion` int(7) DEFAULT '0',
+			`tipo` int(7) DEFAULT '0',
+			`status` int(7) DEFAULT '0',
+			`fecha` date DEFAULT NULL,
+			`cierre` date DEFAULT NULL,
+			`resumen` varchar(200) DEFAULT NULL,
+			`titulo` varchar(200) DEFAULT NULL,
+			`cliente` varchar(5) DEFAULT NULL,
+			`proveed` varchar(5) DEFAULT NULL,
+			`descripcion` text,
+			`condiciones` text,
+			PRIMARY KEY (`id`)
+			) ENGINE=MyISAM DEFAULT CHARSET=".$this->db->char_set." COMMENT='contenedor'";
+			$this->db->simple_query($mSQL);
+		}
 
-		$mSQL="CREATE TABLE `${prefijo}imagenes` (
-		  `id` int(11) NOT NULL AUTO_INCREMENT,
-		  `usuario` varchar(50) DEFAULT NULL,
-		  `contenedor` int(11) NOT NULL DEFAULT '0',
-		  `fecha` date DEFAULT NULL,
-		  `nombre` varchar(200) DEFAULT NULL,
-		  `descripcion` text,
-		  `url` varchar(200) DEFAULT NULL,
-		  `imagen` blob,
-		  PRIMARY KEY (`id`)
-		) ENGINE=MyISAM DEFAULT CHARSET=".$this->db->char_set;
-		var_dump($this->db->simple_query($mSQL));
+		if (!$this->db->table_exists("${prefijo}eventos")) {
+			$mSQL="CREATE TABLE `${prefijo}eventos` (
+			`id` int(11) NOT NULL AUTO_INCREMENT,
+			`usuario` varchar(50) DEFAULT NULL,
+			`contenedor` int(11) NOT NULL DEFAULT '0',
+			`fecha` date DEFAULT NULL,
+			`evento` varchar(200) DEFAULT NULL,
+			`vence` date DEFAULT NULL,
+			PRIMARY KEY (`id`)
+			) ENGINE=MyISAM DEFAULT CHARSET=".$this->db->char_set;
+			$this->db->simple_query($mSQL);
+		}
 
-		$mSQL="CREATE TABLE `${prefijo}status` (
-		  `id` int(7) NOT NULL AUTO_INCREMENT,
-		  `usuario` varchar(50) DEFAULT NULL,
-		  `definicion` int(11) DEFAULT '0',
-		  `descrip` varchar(50) DEFAULT '0',
-		  PRIMARY KEY (`id`)
-		) ENGINE=MyISAM DEFAULT CHARSET=utf8";
-		var_dump($this->db->simple_query($mSQL));
+		if (!$this->db->table_exists("${prefijo}imagenes")) {
+			$mSQL="CREATE TABLE `${prefijo}imagenes` (
+			`id` int(11) NOT NULL AUTO_INCREMENT,
+			`usuario` varchar(50) DEFAULT NULL,
+			`contenedor` int(11) NOT NULL DEFAULT '0',
+			`fecha` date DEFAULT NULL,
+			`nombre` varchar(200) DEFAULT NULL,
+			`descripcion` text,
+			`url` varchar(200) DEFAULT NULL,
+			`imagen` blob,
+			PRIMARY KEY (`id`)
+			) ENGINE=MyISAM DEFAULT CHARSET=".$this->db->char_set;
+			$this->db->simple_query($mSQL);
+		}
 
-		$mSQL="CREATE TABLE `${prefijo}tipos` (
-		  `id` int(7) NOT NULL AUTO_INCREMENT,
-		  `usuario` varchar(50) DEFAULT NULL,
-		  `contenedor` int(11) DEFAULT '0',
-		  `descrip` varchar(50) DEFAULT '0',
-		  PRIMARY KEY (`id`)
-		) ENGINE=MyISAM DEFAULT CHARSET=".$this->db->char_set;
-		var_dump($this->db->simple_query($mSQL));
+		if (!$this->db->table_exists("${prefijo}status")) {
+			$mSQL="CREATE TABLE `${prefijo}status` (
+			`id` int(7) NOT NULL AUTO_INCREMENT,
+			`usuario` varchar(50) DEFAULT NULL,
+			`definicion` int(7) DEFAULT '0',
+			`descrip` varchar(50) DEFAULT '0',
+			PRIMARY KEY (`id`)
+			) ENGINE=MyISAM DEFAULT CHARSET=".$this->db->char_set;
+			$this->db->simple_query($mSQL);
+		}
 
-		$mSQL="CREATE TABLE `${prefijo}adjuntos` (
-		  `id` int(11) NOT NULL AUTO_INCREMENT,
-		  `usuario` varchar(50) DEFAULT NULL,
-		  `contenedor` int(11) NOT NULL DEFAULT '0',
-		  `fecha` date DEFAULT NULL,
-		  `nombre` varchar(200) DEFAULT NULL,
-		  `descripcion` text,
-		  `url` varchar(200) DEFAULT NULL,
-		  PRIMARY KEY (`id`)
-		) ENGINE=MyISAM DEFAULT CHARSET=".$this->db->char_set;
-		var_dump($this->db->simple_query($mSQL));
+		if (!$this->db->table_exists("${prefijo}tipos")) {
+			$mSQL="CREATE TABLE `${prefijo}tipos` (
+			`id` int(7) NOT NULL AUTO_INCREMENT,
+			`usuario` varchar(50) DEFAULT NULL,
+			`definicion` int(7) DEFAULT '0',
+			`descrip` varchar(50) DEFAULT '0',
+			PRIMARY KEY (`id`)
+			) ENGINE=MyISAM DEFAULT CHARSET=".$this->db->char_set;
+			$this->db->simple_query($mSQL);
+		}
 
-		$mSQL="CREATE TABLE `${prefijo}montos` (
-		  `id` int(11) NOT NULL AUTO_INCREMENT,
-		  `usuario` varchar(50) DEFAULT NULL,
-		  `contenedor` int(11) NOT NULL DEFAULT '0',
-		  `fecha` date DEFAULT NULL,
-		  `partida` varchar(15) DEFAULT NULL,
-		  `descripcion` varchar(200) DEFAULT NULL,
-		  `debe` decimal(19,0) DEFAULT '0',
-		  `haber` decimal(19,0) DEFAULT '0',
-		  PRIMARY KEY (`id`)
-		) ENGINE=MyISAM DEFAULT CHARSET=".$this->db->char_set;
-		var_dump($this->db->simple_query($mSQL));
+		if (!$this->db->table_exists("${prefijo}adjuntos")) {
+			$mSQL="CREATE TABLE `${prefijo}adjuntos` (
+			`id` int(11) NOT NULL AUTO_INCREMENT,
+			`usuario` varchar(50) DEFAULT NULL,
+			`contenedor` int(11) NOT NULL DEFAULT '0',
+			`fecha` date DEFAULT NULL,
+			`nombre` varchar(200) DEFAULT NULL,
+			`descripcion` text,
+			`url` varchar(200) DEFAULT NULL,
+			PRIMARY KEY (`id`)
+			) ENGINE=MyISAM DEFAULT CHARSET=".$this->db->char_set;
+			$this->db->simple_query($mSQL);
+		}
 
-		$mSQL="CREATE TABLE `${prefijo}partidas` (
-		  `codigo` varchar(15) NOT NULL DEFAULT '',
-		  `contenedor` int(7) NOT NULL,
-		  `descripcion` varchar(100) DEFAULT NULL,
-		  `enlace` varchar(6) DEFAULT NULL,
-		  `iva` decimal(5,2) DEFAULT NULL,
-		  `medida` varchar(5) DEFAULT NULL,
-		  `dacumu` varchar(5) DEFAULT NULL,
-		  PRIMARY KEY (`codigo`)
-		) ENGINE=MyISAM DEFAULT CHARSET=".$this->db->char_set;
-		var_dump($this->db->simple_query($mSQL));
+		if (!$this->db->table_exists("${prefijo}montos")) {
+			$mSQL="CREATE TABLE `${prefijo}montos` (
+			`id` int(11) NOT NULL AUTO_INCREMENT,
+			`usuario` varchar(50) DEFAULT NULL,
+			`contenedor` int(11) NOT NULL DEFAULT '0',
+			`fecha` date DEFAULT NULL,
+			`partida` varchar(15) DEFAULT NULL,
+			`descripcion` varchar(200) DEFAULT NULL,
+			`debe` decimal(19,0) DEFAULT '0',
+			`haber` decimal(19,0) DEFAULT '0',
+			PRIMARY KEY (`id`)
+			) ENGINE=MyISAM DEFAULT CHARSET=".$this->db->char_set;
+			$this->db->simple_query($mSQL);
+		}
 
-		$mSQL="ALTER TABLE `${prefijo}status`  CHANGE COLUMN `contenedor` `definicion` INT(7) NULL DEFAULT '0' AFTER `usuario`";
-		var_dump($this->db->simple_query($mSQL));
+		if (!$this->db->table_exists("${prefijo}partidas")) {
+			$mSQL="CREATE TABLE `${prefijo}partidas` (
+			`codigo` varchar(15) NOT NULL DEFAULT '',
+			`contenedor` int(7) NOT NULL,
+			`descripcion` varchar(100) DEFAULT NULL,
+			`enlace` varchar(6) DEFAULT NULL,
+			`iva` decimal(5,2) DEFAULT NULL,
+			`medida` varchar(5) DEFAULT NULL,
+			`dacumu` varchar(5) DEFAULT NULL,
+			PRIMARY KEY (`codigo`)
+			) ENGINE=MyISAM DEFAULT CHARSET=".$this->db->char_set;
+			$this->db->simple_query($mSQL);
+		}
 
-		$mSQL="ALTER TABLE `${prefijo}tipos`  CHANGE COLUMN `contenedor` `definicion` INT(7) NULL DEFAULT '0' AFTER `usuario`";
-		var_dump($this->db->simple_query($mSQL));
-
-		$mSQL="ALTER TABLE `${prefijo}contenedor`  ADD COLUMN `definicion` INT(7) NULL DEFAULT '0' AFTER `derivado`;";
-		var_dump($this->db->simple_query($mSQL));
 	}
 }
