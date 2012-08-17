@@ -718,7 +718,7 @@ class ccli extends Controller {
 				$sfecha=str_replace('-','',$ffecha);
 				$mSQL="CALL sp_actusal($dbcodbanc,'$sfecha',$monto)";
 				$ban=$this->db->simple_query($mSQL);
-				if($ban==false) memowrite($mSQL,'rcaj');
+				if($ban==false) memowrite($mSQL,'ccli');
 			}
 		}
 
