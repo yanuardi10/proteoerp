@@ -684,7 +684,8 @@ class ccli extends Controller {
 			$codbanc  = $do->get_rel($rel,'banco',$i);
 			$dbcodbanc= $this->db->escape($codbanc);
 			$monto    = $do->get_rel($rel,'monto',$i);
-			if($sfpatipo=='DP' || $sfpatipo=='NC'){
+			//Si es deposito en banco o transferencia crea el movimiento
+			if($sfpatipo=='DE' || $sfpatipo=='NC'){
 				$ffecha  = $do->get_rel($rel,'fecha',$i);
 				$itdbdata=array();
 				$itdbdata['codbanc']  = $codbanc;
