@@ -50,25 +50,19 @@ class Callcenter extends Controller {
 		$grid->order_by('nombre','asc');
 		$grid->per_page=20;
 
-		$uri_2  = anchor('ventas/scli/dataedit/show/<#id#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar','height'=>'12','title'=>'Editar')));
-		$uri_2 .= anchor('ventas/scli/consulta/<#id#>',img(array('src'=>'images/estadistica.jpeg','border'=>'0','alt'=>'Consultar','height'=>'12','title'=>'Consultar')));
-		$uri_2 .= img(array('src'=>'images/<siinulo><#tipo#>|N|S</siinulo>.gif','border'=>'0','alt'=>'Estado','title'=>'Estado'));
-
-		//$grid->column('Acci&oacute;n',$uri_2);
 		$grid->column_orderby('Cliente',$uri,'cliente');
 		$grid->column_orderby('Nombre','nombre','nombre');
 		$grid->column_orderby('Rif/CI','rifci','rifci');
 		$grid->column_orderby('Tipo'  ,'tiva','tiva','align=\'center\'');
 		$grid->column_orderby('Telefono','telefono','telefono');
 
-		$grid->add('ventas/scli/dataedit/create','Agregar');
+		//$grid->add('ventas/scli/dataedit/create','Agregar');
 		$grid->build();
-
 
 		$data['content'] = $grid->output;
 		$data['filtro']  = $filter->output;
 		$data['title']   = heading('Modulo de Clientes');
-		$data['script']  = script('jquery.js');
+		$data['script']  = $this->rapyd->get_head().script('jquery.js');
 		//$data["script"] .= script('superTables.js');
 		$this->load->view('view_ventanas', $data);
 
@@ -81,11 +75,6 @@ class Callcenter extends Controller {
 		$edit = new DataEdit('Ficha del cliente','scli');
 		$edit->back_url = site_url($this->url.'filteredgrid');
 
-		/*$edit->pre_process( 'insert','_pre_insert');
-		$edit->pre_process( 'delete','_pre_delete');
-		$edit->post_process('insert','_post_insert');
-		$edit->post_process('update','_post_update');
-		$edit->post_process('delete','_post_delete');*/
 
 		$edit->cliente = new inputField('Cliente', 'cliente');
 		$edit->cliente->rule     ='trim|required|existesprv';
@@ -112,8 +101,6 @@ class Callcenter extends Controller {
 		$edit->telefono->size     =40;
 		$edit->telefono->mode = 'autohide';
 
-		//$accion="javascript:window.location='".site_url('import/limport/liqui/'.$edit->_dataobject->pk['numero'])."'";
-		//$edit->button_status('btn_liqui','Descargar Caldeco',$accion,'BR','show');
 
 		$edit->buttons('undo','back');
 		$edit->build();
