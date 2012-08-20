@@ -164,7 +164,7 @@ class precios_sinv extends Controller{
 	function _pos_update($do){
 		$codigo= $do->get('codigo');
 		$precio4= $do->get('precio4');
-		logusu('sinv',"PRECIOS del producto $codigo MODIFICADO, precio4 $precio4");
+		logusu('SINV',"PRECIOS del producto $codigo MODIFICADO, precio4 $precio4");
 	}
 
 	function _pre_create($do){

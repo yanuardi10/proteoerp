@@ -145,7 +145,7 @@ jQuery("#a1").click( function(){
 			'width'         => 40,
 			'edittype'      => "'select'",
 			'editrules'     => '{ required:true}',
-			'editoptions'   => '{value: {"V":"Vendedor","C":"Cobrador","A":"Ambos" }, style:"width:100px" }'
+			'editoptions'   => '{value: {"V":"Vendedor","C":"Cobrador","A":"Ambos","I":"Inactivo" }, style:"width:100px" }'
 		));
 
 /*
@@ -280,7 +280,12 @@ jQuery("#a1").click( function(){
 		$grid->setfilterToolbar(true);
 		$grid->setToolbar('false', '"top"');
 
-		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 420, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
+		$grid->setFormOptionsE('
+			closeAfterEdit:true, mtype: "POST", width: 420, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true,
+			afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},
+			beforeShowForm: function(frm){ $(\'#vendedor\').attr(\'readonly\',\'readonly\');},
+			afterShowForm: function(frm){$("select").selectmenu({style:"popup"});}
+		');
 		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 420, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
 		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
 
@@ -369,13 +374,14 @@ jQuery("#a1").click( function(){
 			//}
 
 		} elseif($oper == 'del') {
-			$meco = $this->datasis->dameval("SELECT $mcodp FROM vend WHERE id=$id");
-			$check =  $this->datasis->dameval("SELECT COUNT(*) FROM sfac WHERE vd=".$this->db->escape($meco));
+			$vendedor = $this->db->escape($this->datasis->dameval("SELECT $mcodp FROM vend WHERE id=$id"));
+			$check    = $this->datasis->dameval("SELECT COUNT(*) FROM sfac WHERE vd=".$vendedor);
+			$check   += $this->datasis->dameval("SELECT COUNT(*) FROM scli WHERE vendedor=".$vendedor." OR cobrador=".$vendedor);
 			if ($check > 0){
 				echo " El registro no puede ser eliminado; tiene movimiento ";
 			} else {
 				$this->db->simple_query("DELETE FROM vend WHERE id=$id ");
-				logusu('VEND',"Registro ".$meco." ELIMINADO");
+				logusu('VEND',"Vendedor ".$vendedor." ELIMINADO");
 				echo "Vendedor Eliminado";
 			}
 		};
