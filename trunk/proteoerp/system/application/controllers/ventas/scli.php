@@ -328,7 +328,7 @@ function sclilimite(){
 		$mSQL = "SELECT TRIM(ciudad) ciudad, TRIM(ciudad) nombre FROM ciud ORDER BY ciudad ";
 		$aciudad  = $this->datasis->llenajqselect($mSQL, false );
 
-		$mSQL = "SELECT vendedor, TRIM(nombre) nombre FROM vend ORDER BY nombre ";
+		$mSQL = "SELECT vendedor, concat( vendedor, ' ',TRIM(nombre)) nombre FROM vend ORDER BY nombre ";
 		$avende  = $this->datasis->llenajqselect($mSQL, true );
 
 
@@ -353,7 +353,6 @@ function sclilimite(){
 			'editable'      => $editar,
 			'width'         => 40,
 			'edittype'      => "'select'",
-			//'editrules'     => '{ edithidden:true, required:true }',
 			'editoptions'   => '{ value: '.$agrupo.',  style:"width:250px"}',
 			'stype'         => "'text'",
 			'formoptions'   => '{ rowpos:'.$linea.', colpos:2 }'
@@ -1136,13 +1135,12 @@ function sclilimite(){
 					$mcodigo = $this->proxcli();
 					$data['cliente'] = $mcodigo;
 				}
-
-
 				//Busca a ver si esta repetido
 				if ( $this->datasis->dameval("SELECT count(*) FROM scli WHERE cliente=".$this->db->escape($mcodigo)) > 0 ){
 					echo "Codigo ya existe ";
 					return;
 				}
+				$data['credito'] = 'S';
 				$this->db->insert('scli', $data);
 				echo "Registro Agregado ".$mcodigo;
 				logusu('SCLI',"Cliente $mcodigo INCLUIDO");
