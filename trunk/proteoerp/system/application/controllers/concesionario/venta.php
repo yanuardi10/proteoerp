@@ -18,34 +18,8 @@ class venta extends sfac_add {
 		$this->rapyd->load('dataedit');
 		$iva  = $this->datasis->ivaplica();
 
-		$jsc='function calcula(){
-			if($("#vh_tasa").val().length>0){
-				tasa=parseFloat($("#vh_tasa").val());
-				if($("#vh_base").val().length>0) base=parseFloat($("#vh_base").val()); else base=0;
-				$("#montoiva").val(roundNumber(base*(tasa/100),2));
-			}
-		}
-
-		function calculaiva(){
-			if($("#vh_tasa").val().length>0){
-				tasa=parseFloat($("#vh_tasa").val());
-				if($("#vh_montoiva").val().length>0) montoiva=parseFloat($("#montoiva").val()); else montoiva=0;
-				$("#vh_base").val(roundNumber(montoiva*100/tasa,2));
-			}
-		}
-
-		function post_modbus_sinv(){
-			$("#descrip_0_val").text($("#descrip_0").val());
-		}
-
-		function post_modbus_sprv(){
-			$("#nombre_val").text($("#nombre").val());
-		}
-		';
-
 		$sel=array('a.codigo_sinv','a.modelo','a.color','a.motor','a.carroceria','a.uso','a.anio','a.placa','b.iva',
 		'a.peso','a.precioplaca','a.transmision','b.precio1','b.precio2','b.precio3','b.precio4','b.descrip','a.clase','a.tipo');
-
 		$this->db->select($sel);
 		$this->db->from('sinvehiculo AS a');
 		$this->db->join('sinv AS b','a.codigo_sinv=b.codigo');
@@ -77,6 +51,29 @@ class venta extends sfac_add {
 			$precio4     = round($row->precio4*100/(100+$iiva),2);
 
 		}
+
+		$jsc='function calcula(){
+			if($("#vh_precio").val().length>0) base=parseFloat($("#vh_precio").val()); else base=0;
+			if($("#vh_tasa").val().length>0  ) tasa=parseFloat($("#vh_tasa").val())  ; else tasa=0;
+			$("#vh_monto").text(nformat(base*(1+(tasa/100))+'.$precioplaca.',2));
+		}
+
+		function calculaiva(){
+			if($("#vh_tasa").val().length>0){
+				tasa=parseFloat($("#vh_tasa").val());
+				if($("#vh_montoiva").val().length>0) montoiva=parseFloat($("#montoiva").val()); else montoiva=0;
+				$("#vh_base").val(roundNumber(montoiva*100/tasa,2));
+			}
+		}
+
+		function post_modbus_sinv(){
+			$("#descrip_0_val").text($("#descrip_0").val());
+		}
+
+		function post_modbus_sprv(){
+			$("#nombre_val").text($("#nombre").val());
+		}
+		';
 
 		$edit = new DataForm($this->url.'venta/'.$id.'/insert');
 
@@ -174,6 +171,8 @@ class venta extends sfac_add {
 		$edit->tasa->insertValue=$iva['tasa'];
 		$edit->tasa->group = 'Datos del financieros';
 		foreach($iva AS $nom=>$val) $edit->tasa->option($val,nformat($val).'%');
+
+		$edit->precio =  new freeField('Monto a pagar','monto','<b id="vh_monto">0.0</b>');
 
 		$accion="javascript:window.location='".site_url('concesionario/inicio')."'";
 		$edit->button('btn_cargar','Regresar',$accion,'BL');
@@ -286,9 +285,11 @@ class venta extends sfac_add {
 		$(function() {
 			$(".inputnum").numeric(".");
 			$(".inputonlynum").numeric();
-			$("#vh_tasa").change(function() { calcula(); });
-			$("#vh_base").bind("keyup",function() { calcula(); });
-			$("#vh_montoiva").bind("keyup",function() { calculaiva(); });
+			$("#vh_tasa").change(function(){ calcula(); });
+			$("#vh_precio").change(function(){ calcula(); });
+			//$("#vh_base").bind("keyup",function() { calcula(); });
+			//$("#vh_montoiva").bind("keyup",function() { calculaiva(); });
+			calcula();
 
 			$("#cod_cli").autocomplete({
 				source: function( req, add){
