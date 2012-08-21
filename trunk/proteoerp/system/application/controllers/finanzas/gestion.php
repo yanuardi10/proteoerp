@@ -290,7 +290,7 @@ class gestion extends Controller {
 		$action = "javascript:window.location='".site_url('ventas/metas/filteredgrid')."'";
 		$grid->button('btn_regresa', 'Regresar', $action, 'TR');
 
-		$grid->submit('pros', 'Guardar','BR');
+		$grid->submit('pros', 'Generar','BR');
 		$grid->build();
 
 		$ggrid.=$grid->output;
@@ -327,6 +327,12 @@ class gestion extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
+	function gauge($val=0){
+		$this->load->library('dial_gauge',array('value'=>$val));
+		header('Content-Type: image/png');
+		$this->dial_gauge->display_png();
+	}
+
 	function ejecutor(){
 		$fcorte = func_get_args();
 		$fdesde = array_shift($fcorte);
@@ -338,7 +344,7 @@ class gestion extends Controller {
 		WHERE a.puntos > 0
 		ORDER BY b.nombre");
 
-		$content  = '<table border=1 width=100%>';
+		$content  = '<table  width=100%>';
 		$content .= '<col>';
 		$content .= '<col>';
 		$content .= '<col>';
@@ -348,11 +354,19 @@ class gestion extends Controller {
 			$content .= '<col class="colbg'.$v.'">';
 			$content .= '<col class="colbg'.$v.'">';
 		}
-		$content .= '<tr><thead><th>Concepto</th><th>Puntos</th><th>Objetivo</th>';
+		$content .= '<thead><tr><th rowspan=2 >Concepto</th><th rowspan=2>Puntos</th><th rowspan=2>Objetivo</th>';
 		foreach($fcorte as $corte){
-			$content .= '<th colspan="3" align="center">Corte '.dbdate_to_human($corte).'</th>';
+			$content .= '<td colspan="3" align="center">Corte '.dbdate_to_human($corte).'</td>';
 		}
-		$content .= '</thead></tr>';
+		$content .= '<th rowspan=2 >Medida</th></tr>';
+
+		$content .= '<tr>';
+		foreach($fcorte as $corte){
+			$content .= '<td align="center">Objetivo logrado</td>';
+			$content .= '<td align="center">% Logrado</td>';
+			$content .= '<td align="center">Puntos Ganados</td>';
+		}
+		$content .= '</tr></thead>';
 
 		$grupo='';
 		$pinta=true;
@@ -366,8 +380,8 @@ class gestion extends Controller {
 			$ccana   = count($resul);
 			if($grupo!=$__row->grupo){
 				$grupo = $__row->grupo;
-				$cspan = $ccana*3+3;
-				$content .= '<tr class=\'rowgroup\' ><td colspan='.$cspan.'>'.$__row->grupo.'</td></tr>';
+				$cspan = $ccana*3+4;
+				$content .= '<tr class=\'rowgroup\' style=\'background-color:#FFAD28;\'><td colspan='.$cspan.'>'.$__row->grupo.'</td></tr>';
 			}
 
 			$puntos_porce += $puntos;
@@ -390,27 +404,31 @@ class gestion extends Controller {
 
 				if(!isset($puntos_total[$pos])) $puntos_total[$pos]=0;
 				$puntos_total[$pos] += $acumulado;
+				if($pos==($ccana-1)){
+						$content .= '<td align="center">'.img($this->url.'gauge/'.round($pp,1)).'</td>';
+				}
 			}
 			$content .= '</tr>';
 		}
 
-		$content .= '<tr>';
-		$content .= '<td>Totales</td>';
+		$content .= '<tr style="font-size: 28pt;background-color:#5846FF;">';
+		$content .= '<td><b >Totales</b></td>';
 		$content .= '<td align="center">'.$puntos_porce.'</td>';
 		$content .= '<td></td>';
 		for($i=0;$i<$ccana;$i++){
 			$content .= '<td colspan=2></td>';
 			$content .= '<td align="right">'.$puntos_total[$i].'</td>';
 		}
-		$content .= '</tr>';
+		$content .= '<td align="center">'.img($this->url.'gauge/'.round($puntos_total[$i-1],1)).'</td>';
 		$content .= '</table>';
+		$content .= '</tr>';
 		$content .= anchor($this->url.'cdatos','Regresar');
 
 		$data['head']    = style('mayor/estilo.css');
 		$data['script']  = script('jquery.js');
 		$data['script'] .= phpscript('nformat.js');
 		$data['content'] = $content;
-		$data['title']   = '';
+		$data['title']   = '<h1>Indicadores de Gesti&oacute;n desde el '.dbdate_to_human($fdesde).' hasta el '.dbdate_to_human($fhasta).'</h1>';
 		$this->load->view('view_ventanas_lite', $data);
 
 	}
