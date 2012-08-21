@@ -898,7 +898,7 @@ class sfac_add extends validaciones {
 				$asaldo=0;
 			}
 
-			if($credito > ($limite-$saldo-$asaldo) || $cdias<=0 || $pcredito=='N'){
+			if($saldo >0 && ($credito > ($limite-$saldo-$asaldo) || $cdias<=0 || $pcredito=='N')){
 				$do->error_message_ar['pre_ins']='El cliente no tiene suficiente cr&eacute;dito de grupo';
 				return false;
 			}
