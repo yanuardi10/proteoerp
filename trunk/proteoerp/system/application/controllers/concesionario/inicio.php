@@ -1,4 +1,6 @@
 <?php
+require_once(BASEPATH.'application/controllers/formams.php');
+
 class inicio extends Controller {
 
 	var $titp  = 'Compra y Ventas de Veh&iacute;culos';
@@ -63,6 +65,7 @@ class inicio extends Controller {
 
 		$url =anchor($this->urlext.'venta/index/<#id#>','Vender');
 		$url2=anchor($this->urlext.'venta/dataprint/modify/<#id_sfac#>','<dbdate_to_human><#venta#></dbdate_to_human>');
+		$url2.=','.anchor($this->url.'certifi/modify/<#id#>','Certificado');
 
 		$grid->column_orderby('Compra','<dbdate_to_human><#compra#></dbdate_to_human>','compra','align="right"');
 		$grid->column_orderby('Venta' ,"<siinulo><#id_sfac#>|$url|$url2</siinulo>",'id_sfac','align="center"');
@@ -83,6 +86,167 @@ class inicio extends Controller {
 		$data['head']    = $this->rapyd->get_head().script('jquery.js');
 		$data['title']   = heading($this->titp);
 		$this->load->view('view_ventanas', $data);
+	}
+
+	function certifi(){
+		$iid=$this->rapyd->uri->get('modify');
+		$id = $iid[1];
+
+		$sel=array(
+		'a.nombre','a.casa','a.calle','a.urb','a.ciudad','a.municipio','a.estado','a.cpostal',
+		'a.ctelefono1','a.telefono1','a.ctelefono2','a.telefono2','d.nombre AS sclinom','d.nomfis','d.telefono','d.telefon2',
+		"CONCAT_WS(' ',d.dire11,d.dire12) AS direc",'b.ciudad');
+		$this->db->select($sel);
+		$this->db->from('sinvehiculo AS a');
+		$this->db->join('sfac AS b','a.id_sfac=b.id');
+		$this->db->join('scli AS d','b.cod_cli=d.cliente');
+		$this->db->where('a.id' , $id);
+		$query = $this->db->get();
+
+		if ($query->num_rows() > 0){
+			$row = $query->row();
+
+			$nombre     = (empty($row->nomfis))? $row->sclinom : $row->nomfis;
+
+			//$casa       = $row->casa;
+			//$calle      = $row->calle;
+			//$urb        = $row->urb;
+			//$ciudad     = $row->ciudad;
+			//$municipio  = $row->municipio;
+			//$estado     = $row->estado;
+			//$cpostal    = $row->cpostal;
+			//$ctelefono1 = $row->ctelefono1;
+			//$telefono1  = $row->telefono1;
+			//$ctelefono2 = $row->ctelefono2;
+			//$telefono2  = $row->telefono2;
+
+			$data=array();
+			if(empty($row->nombre)){
+				$data['nombre'] = $nombre;
+
+				$where = 'id = '.$this->db->escape($id);
+				$str = $this->db->update_string('sinvehiculo', $data, $where);
+				$this->db->simple_query($str);
+
+			}
+		}
+
+		$this->rapyd->load('dataedit');
+
+		$edit = new DataEdit($this->tits, 'sinvehiculo');
+
+		$edit->back_url = site_url($this->url.'index');
+
+		$edit->nombre = new inputField('Nombre','nombre');
+		$edit->nombre->rule='max_length[200]|required';
+		$edit->nombre->maxlength =200;
+
+		$edit->casa = new inputField('Casa Quinta Edificio Apto','casa');
+		$edit->casa->rule='max_length[100]|required';
+		//$edit->casa->size =102;
+		$edit->casa->maxlength =100;
+
+		$edit->calle = new inputField('Avenida, calle, plaza, esquina','calle');
+		$edit->calle->rule='max_length[100]|required';
+		//$edit->calle->size =102;
+		$edit->calle->maxlength =100;
+
+		$edit->urb = new inputField('Urbanizaci&oacute;n, Bario, Residencia','urb');
+		$edit->urb->rule='max_length[100]|required';
+		//$edit->urb->size =102;
+		$edit->urb->maxlength =100;
+
+		$edit->ciudad = new inputField('Ciudad','ciudad');
+		$edit->ciudad->rule='max_length[100]|required';
+		//$edit->ciudad->size =102;
+		$edit->ciudad->maxlength =100;
+
+		$edit->municipio = new inputField('Parroquia, distrito, Municipio','municipio');
+		$edit->municipio->rule='max_length[100]|required';
+		//$edit->municipio->size =102;
+		$edit->municipio->maxlength =100;
+
+		$edit->estado = new inputField('Estado','estado');
+		$edit->estado->rule='max_length[100]|required';
+		//$edit->estado->size =102;
+		$edit->estado->maxlength =100;
+
+		$edit->cpostal = new inputField('C&oacute;digo Postal','cpostal');
+		$edit->cpostal->rule='max_length[10]|numeric|required';
+		$edit->cpostal->size =10;
+		$edit->cpostal->maxlength =10;
+
+		$edit->ctelefono1 = new inputField('Tel&eacute;fono de Habitaci&oacute;n','ctelefono1');
+		$edit->ctelefono1->rule='max_length[100]|numeric|required';
+		$edit->ctelefono1->size =6;
+		$edit->ctelefono1->maxlength =100;
+
+		$edit->telefono1 = new inputField('','telefono1');
+		$edit->telefono1->rule='max_length[100]|numeric|required';
+		$edit->telefono1->size =10;
+		$edit->telefono1->maxlength =10;
+		$edit->telefono1->in='ctelefono1';
+
+		$edit->ctelefono2 = new inputField('Tel&eacute;fono de Trabajo','ctelefono2');
+		$edit->ctelefono2->rule='max_length[100]|numeric|required';
+		$edit->ctelefono2->size =6;
+		$edit->ctelefono2->maxlength =4;
+
+		$edit->telefono2 = new inputField('','telefono2');
+		$edit->telefono2->rule='max_length[100]|numeric|required';
+		$edit->telefono2->size =10;
+		$edit->telefono2->maxlength =10;
+		$edit->telefono2->in='ctelefono2';
+
+		$accion="javascript:window.location='".site_url($this->url.'certificado'.$edit->pk_URI())."'";
+		$edit->button_status('btn_imprime','Certificado',$accion,'BR','show');
+
+
+		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
+		//$edit->submit = new submitField("login","btn_submit");
+		$edit->build();
+
+		$data['content'] = $edit->output;
+		$data['head']    = $this->rapyd->get_head().script('jquery.js');
+		$data['title']   = heading($this->titp);
+		$this->load->view('view_ventanas', $data);
+	}
+
+	function certificado($id){
+
+		$sel=array('b.numero','b.fecha',
+		'a.nombre','a.casa','a.calle','a.urb','a.ciudad','a.municipio','a.estado','a.cpostal',
+		'a.ctelefono1','a.telefono1','a.ctelefono2','a.telefono2','d.nombre AS sclinom','d.nomfis','d.telefono','d.telefon2',
+		"CONCAT_WS(' ',d.dire11,d.dire12) AS direc",'b.ciudad','b.rifci');
+		$this->db->select($sel);
+		$this->db->from('sinvehiculo AS a');
+		$this->db->join('sfac AS b','a.id_sfac=b.id');
+		$this->db->join('scli AS d','b.cod_cli=d.cliente');
+		$this->db->where('a.id' , $id);
+		$query = $this->db->get();
+
+		if ($query->num_rows() > 0){
+			$row = $query->row();
+
+			$data['rifci']      = $row->rifci;
+			$data['factura']    = $row->numero;
+			$data['ffactura']   = $row->fecha;
+			$data['nombre']     = $row->nombre;
+			$data['casa']       = $row->casa;
+			$data['calle']      = $row->calle;
+			$data['urb']        = $row->urb;
+			$data['ciudad']     = $row->ciudad;
+			$data['municipio']  = $row->municipio;
+			$data['estado']     = $row->estado;
+			$data['cpostal']    = $row->cpostal;
+			$data['ctelefono1'] = $row->ctelefono1;
+			$data['telefono1']  = $row->telefono1;
+			$data['ctelefono2'] = $row->ctelefono2;
+			$data['telefono2']  = $row->telefono2;
+			$data['titulo1']    = $this->datasis->traevalor('TITULO1');
+
+			formams::_msxml('certificado',$data);
+		}
 	}
 
 	function instalar(){
