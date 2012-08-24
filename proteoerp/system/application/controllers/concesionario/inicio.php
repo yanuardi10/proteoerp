@@ -234,6 +234,7 @@ class inicio extends Controller {
 			$data['nombre']     = $row->nombre;
 			$data['casa']       = $row->casa;
 			$data['calle']      = $row->calle;
+			$data['ciudad']      = $row->ciudad;
 			$data['urb']        = $row->urb;
 			$data['ciudad']     = $row->ciudad;
 			$data['municipio']  = $row->municipio;
