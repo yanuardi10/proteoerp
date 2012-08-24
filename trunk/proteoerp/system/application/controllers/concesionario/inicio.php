@@ -198,9 +198,41 @@ class inicio extends Controller {
 		$edit->telefono2->maxlength =10;
 		$edit->telefono2->in='ctelefono2';
 
+		$edit->distrito = new inputField('Distrito','distrito');
+		$edit->distrito->rule='max_length[100]';
+
+		$edit->aseguradora = new inputField('Nombre de la aseguradora','aseguradora');
+		$edit->aseguradora->rule = 'max_length[100]';
+		$edit->aseguradora->group = 'Datos del seguro';
+
+		$edit->poliza = new inputField('Poliza','poliza');
+		$edit->poliza->rule = 'max_length[100]';
+		$edit->poliza->group = 'Datos del seguro';
+
+		$edit->vence = new dateonlyField('Vencimiento de la p&oacute;liza','vence');
+		$edit->vence->rule = 'chfecha';
+		$edit->vence->group = 'Datos del seguro';
+
+		$edit->nomban = new inputField('Nombre banco','nomban');
+		$edit->nomban->rule = 'max_length[100]';
+		$edit->nomban->group='Reserva de dominio';
+
+		$edit->banrif = new inputField('Rif del banco','banrif');
+		$edit->banrif->rule = 'max_length[10]';
+		$edit->banrif->group='Reserva de dominio';
+
+		$edit->representante = new inputField('Representacion','representante');
+		$edit->representante->rule = 'max_length[100]';
+
+		$edit->concesionario = new inputField('Concesionario B','concesionario');
+		$edit->concesionario->rule = 'max_length[100]';
+
+		$edit->concesionariorif = new inputField('Concesionario B Rif','concesionariorif');
+		$edit->concesionariorif->rule = 'max_length[10]';
+
+
 		$accion="javascript:window.location='".site_url($this->url.'certificado'.$edit->pk_URI())."'";
 		$edit->button_status('btn_imprime','Certificado',$accion,'BR','show');
-
 
 		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
 		//$edit->submit = new submitField("login","btn_submit");
@@ -214,10 +246,10 @@ class inicio extends Controller {
 
 	function certificado($id){
 
-		$sel=array('b.numero','b.fecha',
-		'a.nombre','a.casa','a.calle','a.urb','a.ciudad','a.municipio','a.estado','a.cpostal',
+		$sel=array('b.numero','b.fecha','a.distrito','a.aseguradora','a.vence','a.nomban','a.banrif','a.representante','a.concesionario','a.concesionariorif',
+		'a.nombre','a.casa','a.calle','a.urb','a.ciudad','a.municipio','a.estado','a.cpostal','a.poliza',
 		'a.ctelefono1','a.telefono1','a.ctelefono2','a.telefono2','d.nombre AS sclinom','d.nomfis','d.telefono','d.telefon2',
-		"CONCAT_WS(' ',d.dire11,d.dire12) AS direc",'b.ciudad','b.rifci');
+		'b.ciudad','b.rifci');
 		$this->db->select($sel);
 		$this->db->from('sinvehiculo AS a');
 		$this->db->join('sfac AS b','a.id_sfac=b.id');
@@ -228,23 +260,32 @@ class inicio extends Controller {
 		if ($query->num_rows() > 0){
 			$row = $query->row();
 
-			$data['rifci']      = $row->rifci;
-			$data['factura']    = $row->numero;
-			$data['ffactura']   = $row->fecha;
-			$data['nombre']     = $row->nombre;
-			$data['casa']       = $row->casa;
-			$data['calle']      = $row->calle;
-			$data['ciudad']      = $row->ciudad;
-			$data['urb']        = $row->urb;
-			$data['ciudad']     = $row->ciudad;
-			$data['municipio']  = $row->municipio;
-			$data['estado']     = $row->estado;
-			$data['cpostal']    = $row->cpostal;
-			$data['ctelefono1'] = $row->ctelefono1;
-			$data['telefono1']  = $row->telefono1;
-			$data['ctelefono2'] = $row->ctelefono2;
-			$data['telefono2']  = $row->telefono2;
-			$data['titulo1']    = $this->datasis->traevalor('TITULO1');
+			$data['rifci']            = $row->rifci;
+			$data['factura']          = $row->numero;
+			$data['ffactura']         = $row->fecha;
+			$data['nombre']           = $row->nombre;
+			$data['casa']             = $row->casa;
+			$data['calle']            = $row->calle;
+			$data['ciudad']           = $row->ciudad;
+			$data['urb']              = $row->urb;
+			$data['ciudad']           = $row->ciudad;
+			$data['municipio']        = $row->municipio;
+			$data['estado']           = $row->estado;
+			$data['cpostal']          = $row->cpostal;
+			$data['ctelefono1']       = $row->ctelefono1;
+			$data['telefono1']        = $row->telefono1;
+			$data['ctelefono2']       = $row->ctelefono2;
+			$data['telefono2']        = $row->telefono2;
+			$data['titulo1']          = $this->datasis->traevalor('TITULO1');
+			$data['distrito']         = $row->distrito;
+			$data['aseguradora']      = $row->aseguradora;
+			$data['vence']            = $row->vence;
+			$data['nomban']           = $row->nomban;
+			$data['banrif']           = $row->banrif;
+			$data['representante']    = $row->representante;
+			$data['concesionario']    = $row->concesionario;
+			$data['concesionariorif'] = $row->concesionariorif;
+			$data['poliza']           = $row->poliza;
 
 			formams::_msxml('certificado',$data);
 		}
