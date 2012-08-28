@@ -75,6 +75,7 @@ function importe(id){
 	var ind     = id.toString();
 	var cana    = Number($("#cantidad_"+ind).val());
 	var precio  = Number($("#costo_"+ind).val());
+
 	var iimporte= roundNumber(cana*precio,2);
 	$("#importe_"+ind).val(iimporte);
 	//$("#it_importe_val_"+ind).text(nformat(iimporte,2));
@@ -223,7 +224,6 @@ function cmontotot(){
 	var totals  = 0;
 	var vimporte = $("#montotot").val();
 	var iva      = Number($("#montoiva").val());
-
 	var arr=$('input[name^="importe_"]');
 	jQuery.each(arr, function() {
 		totals  = totals+Number(this.value);
@@ -244,7 +244,6 @@ function cmontotot(){
 	$("#montonet_val").text(nformat(totals+iva,2));
 	$("#montonet").val(totals+iva);
 }
-
 
 function cmontoiva(){
 	var totals = Number($("#montotot").val());
@@ -300,19 +299,19 @@ function autocod(id){
 		select: function( event, ui ) {
 			$('#codigo_'+id).attr("readonly", "readonly");
 
-			var cana=Number($("#cantidad_"+ind).val());
+			var cana=Number($("#cantidad_"+id).val());
 			$('#codigo_'+id).val(ui.item.codigo);
 			$('#descrip_'+id).val(ui.item.descrip);
 			$('#it_descrip_val_'+id).text(ui.item.descrip);
 			$('#iva_'+id).val(ui.item.iva);
 			$('#sinvpeso_'+id).val(ui.item.peso);
 			$('#costo_'+id).val(ui.item.pond);
-			if(cana<=0) $("#cantidad_"+ind).val(1);
+			if(cana<=0) $("#cantidad_"+id).val('1');
 			$('#cantidad_'+id).focus();
 			$('#cantidad_'+id).select();
 			//post_modbus_sinv(parseInt(id));
 			importe(parseInt(id));
-			totalizar();
+			//totalizar();
 			setTimeout(function() {  $('#codigo_'+id).removeAttr("readonly"); }, 1500);
 		}
 	});

@@ -213,7 +213,7 @@ class inicio extends Controller {
 		$edit->vence->rule = 'chfecha';
 		$edit->vence->group = 'Datos del seguro';
 
-		$edit->nomban = new inputField('Nombre banco','nomban');
+		$edit->nomban = new inputField('Nombre  del banco','nomban');
 		$edit->nomban->rule = 'max_length[100]';
 		$edit->nomban->group='Reserva de dominio';
 
@@ -221,7 +221,7 @@ class inicio extends Controller {
 		$edit->banrif->rule = 'max_length[10]';
 		$edit->banrif->group='Reserva de dominio';
 
-		$edit->representante = new inputField('Representacion','representante');
+		$edit->representante = new inputField('Representaci&oacute;n','representante');
 		$edit->representante->rule = 'max_length[100]';
 
 		$edit->concesionario = new inputField('Concesionario B','concesionario');
@@ -229,7 +229,6 @@ class inicio extends Controller {
 
 		$edit->concesionariorif = new inputField('Concesionario B Rif','concesionariorif');
 		$edit->concesionariorif->rule = 'max_length[10]';
-
 
 		$accion="javascript:window.location='".site_url($this->url.'certificado'.$edit->pk_URI())."'";
 		$edit->button_status('btn_imprime','Certificado',$accion,'BR','show');
@@ -262,7 +261,7 @@ class inicio extends Controller {
 
 			$data['rifci']            = $row->rifci;
 			$data['factura']          = $row->numero;
-			$data['ffactura']         = $row->fecha;
+			$data['ffactura']         = dbdate_to_human($row->fecha);
 			$data['nombre']           = $row->nombre;
 			$data['casa']             = $row->casa;
 			$data['calle']            = $row->calle;
@@ -279,7 +278,7 @@ class inicio extends Controller {
 			$data['titulo1']          = $this->datasis->traevalor('TITULO1');
 			$data['distrito']         = $row->distrito;
 			$data['aseguradora']      = $row->aseguradora;
-			$data['vence']            = $row->vence;
+			$data['vence']            = (!empty($row->vence))? dbdate_to_human($row->vence) : '';
 			$data['nomban']           = $row->nomban;
 			$data['banrif']           = $row->banrif;
 			$data['representante']    = $row->representante;
