@@ -43,7 +43,7 @@ class Chgara extends Controller {
 		$mSQL  = "SELECT codbanc, CONCAT(codbanc, ' ', trim(banco),' ', numcuent) banco ";
 		$mSQL .= "FROM banc WHERE activo='S'  AND tbanco<>'CAJ' ";
 		$mSQL .= "ORDER BY (tbanco='CAJ'), codbanc ";
-		$obanc = $this->datasis->llenaopciones($mSQL, true,  'cuenta' );
+		$obanc = $this->datasis->llenaopciones($mSQL, false,  'cuenta' );
 		$obanc = str_replace('"',"'", $obanc);
 
 
@@ -451,18 +451,16 @@ $(function(){$(".inputnum").numeric(".");});
 			return;
 		}
 
-		$saldo  = $this->datasis->dameval("SELECT SUM(monto-abonos)   saldo  FROM smov WHERE id IN ( $efectos ) " );
+		$saldo  = $this->datasis->dameval("SELECT SUM(monto-abonos) saldo FROM smov WHERE id IN ( $efectos ) " );
 		$factor = $this->datasis->dameval("SELECT SUM(impuesto)/sum(monto) factor FROM smov WHERE id IN ( $efectos ) " );
 
 		$obser  = $this->datasis->dameval("SELECT GROUP_CONCAT(CONCAT(tipo_doc, numero)) efecto FROM smov WHERE id IN ( $efectos ) " );
 		$regcli = $this->datasis->damereg("SELECT nombre FROM scli WHERE cliente=".$this->db->escape($cod_cli));
 
-		if ($chmonto > $saldo){
-			echo "Monto del cheque ($chmonto) es mayor que el saldo deudor ($saldo) , debe generar un Anticipo p seleccionar mas efectos";
+		if ( $chmonto > $saldo){
+			echo '{"status":"E","numero":"$deposito","mensaje":"Monto del cheque ('.$chmonto.') es mayor que el saldo deudor ('.$saldo.') , debe generar un Anticipo o seleccionar mas efectos"}';
 			return;
 		}
-		//echo '{"status":"E","numero":"$deposito","mensaje":"Fino mano "}';
-		//return ;
 
 		// CREA EL ABONO
 		$xnumero   = str_pad($this->datasis->prox_sql("nabcli"),  8, '0', STR_PAD_LEFT);
@@ -568,7 +566,7 @@ $(function(){$(".inputnum").numeric(".");});
 
 		$this->db->insert('bmov',$data);
 
-		$query  = $this->db->query("SELECT tipo_doc, numero, monto, impuesto, abonos, id FROM smov WHERE id IN ( $efectos ) " );
+		$query  = $this->db->query("SELECT tipo_doc, numero, monto, impuesto, abonos, id, fecha FROM smov WHERE id IN ( $efectos ) ORDER BY fecha desc, monto desc" );
 		$resta = $chmonto;
 		foreach( $query->result_array() as $efecto ) {
 		
@@ -607,12 +605,10 @@ $(function(){$(".inputnum").numeric(".");});
 			$this->db->query($mSQL,	array( $abonar, $efecto['id'] ));
 			if ($resta <=0 ) break;
 		}
-
 		$mSQL = "UPDATE chgara SET status='A', transac='$transac' WHERE id=$id  ";
 		$this->db->simple_query($mSQL);
-
 		echo '{"status":"G","numero":"$deposito","mensaje":"Deposito Aplicado a CxC "}';
-		//echo "Cuenta por cobrar actualizada ";
+
 	}
 
 	//***************************
@@ -859,7 +855,7 @@ $(function(){$(".inputnum").numeric(".");});
 		$grid->setAdd(true);
 		$grid->setEdit(true);
 		$grid->setDelete(true);
-		$grid->setSearch(true);
+		$grid->setSearch(false);
 		$grid->setRowNum(30);
 		$grid->setShrinkToFit('false');
 
