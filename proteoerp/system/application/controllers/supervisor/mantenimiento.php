@@ -216,15 +216,15 @@ $(function() {
 });
 function bobo(url){'."
 	$.blockUI({
-		message: $('#displayBox'), 
-		css: { 
-		top:  ($(window).height() - 400) /2 + 'px', 
-		left: ($(window).width() - 400) /2 + 'px', 
-		width: '400px' 
-		}".' 			
-	}); 
+		message: $('#displayBox'),
+		css: {
+		top:  ($(window).height() - 400) /2 + 'px',
+		left: ($(window).width() - 400) /2 + 'px',
+		width: '400px'
+		}".'
+	});
 	$.get(url, function(data) {
-		setTimeout($.unblockUI, 2); 
+		setTimeout($.unblockUI, 2);
 		$.prompt(data);
 	});
 	return false;
@@ -245,7 +245,7 @@ function bobo(url){'."
 		$data['script'] .= script('plugins/jquery.blockUI.js');
 		$data['script'] .= script('jquery-impromptu.js');
 		$data['script'] .= $script;
-		
+
 		//$data['head'] .= $style;
 		$data['head']   = $this->rapyd->get_head();
 
@@ -370,12 +370,12 @@ function bobo(url){'."
 		if($this->rapyd->uri->is_set("search") AND $filter->is_valid()){
 			$fechah=$filter->fechah->newValue;
 			$fechad=$filter->fechad->newValue;
-				
+
 			$alma=$this->datasis->dameval("SELECT a.ubica FROM (`costos` as a) LEFT JOIN `caub` AS b ON `a`.`ubica`=`b`.`ubica` WHERE `b`.`ubica` = 'NULL' AND `origen` = '3I' AND a.fecha >= '$fechad' AND a.fecha <= '$fechah'");
 			//echo $alma;
-			 
+
 			$uri = anchor('supervisor/mantenimiento/cambioalma/modify/<#tipo_doc#>/<#numero#>','Cambio');
-				
+
 			$grid = new DataGrid('Almacenes inconsistentes');
 			$select=array('a.fecha','a.numero','a.cod_cli','a.tipo_doc','a.totalg','a.almacen');
 			$grid->db->select($select);
@@ -384,7 +384,7 @@ function bobo(url){'."
 			$grid->db->where("a.fecha >= ",$fechad);
 			$grid->db->where("a.fecha <=",$fechah);
 			$grid->per_page = 15;
-			 
+
 			$grid->column('Fecha'      ,'<dbdate_to_human><#fecha#></dbdate_to_human>' ,'fecha');
 			$grid->column('Numero'     ,'numero'  );
 			$grid->column('Cliente'    ,'cod_cli' );
@@ -392,7 +392,7 @@ function bobo(url){'."
 			$grid->column('Monto'      ,'totalg'  );
 			$grid->column('Almacen'    ,'almacen' );
 			$grid->column('Realizar'    ,$uri );
-				
+
 			$grid->build();
 			//echo $grid->db->last_query();
 			//memowrite($grid->db->last_query());
@@ -552,7 +552,7 @@ function bobo(url){'."
 					      alert("No se puedo ajustar el saldo");
 					  }
 					});
-				}).change(); 
+				}).change();
 			});
 			</script>';
 
@@ -567,14 +567,14 @@ function bobo(url){'."
 	function clinconsismasivo(){
 		$this->datasis->modulo_id('900',1);
 		$mSQL="SELECT
-			`a`.`fecha`, 
-			`a`.`tipo_doc`, 
-			`a`.`cod_cli`, 
-			`a`.`numero`, 
-			sum(b.abono)+(SELECT COALESCE(SUM(d.monto),0) FROM `itcruc` AS d WHERE CONCAT(`a`.`tipo_doc`,`a`.`numero`)=`d`.`onumero`) AS abonoreal, 
-			`a`.`abonos` AS inconsist 
-			FROM (`smov` AS a) 
-			JOIN `itccli` AS b ON `a`.`cod_cli`=`b`.`cod_cli` AND a.numero=b.numero AND a.tipo_doc=b.tipo_doc 
+			`a`.`fecha`,
+			`a`.`tipo_doc`,
+			`a`.`cod_cli`,
+			`a`.`numero`,
+			sum(b.abono)+(SELECT COALESCE(SUM(d.monto),0) FROM `itcruc` AS d WHERE CONCAT(`a`.`tipo_doc`,`a`.`numero`)=`d`.`onumero`) AS abonoreal,
+			`a`.`abonos` AS inconsist
+			FROM (`smov` AS a)
+			JOIN `itccli` AS b ON `a`.`cod_cli`=`b`.`cod_cli` AND a.numero=b.numero AND a.tipo_doc=b.tipo_doc
 			WHERE b.tipo_doc='FC'
 			GROUP BY `a`.`cod_cli`, `a`.`tipo_doc`, `a`.`numero` HAVING `abonoreal` <> inconsist LIMIT 300";
 
@@ -743,9 +743,9 @@ function bobo(url){'."
 		$tables = $this->db->list_tables();
 		//print("<pre>");
 		//print_R($tables);
-				
-		$form = new DataForm("supervisor/mantenimiento/tablas/process"); 
-		$form->free = new freeField("Lista de Tablas","free","Chequear|Reparar|Optimizar");  
+
+		$form = new DataForm("supervisor/mantenimiento/tablas/process");
+		$form->free = new freeField("Lista de Tablas","free","Chequear|Reparar|Optimizar");
 		foreach($tables as $tabla){
 			$che="chequea_".$tabla;
 			$re="repara_".$tabla;
@@ -776,8 +776,8 @@ function bobo(url){'."
 			$atras=anchor('supervisor/mantenimiento/tablas','Atras');
 			//print_R($_POST);
 			foreach($_POST as $nom=>$val){
-				
-					
+
+
 				if($this->db->simple_query($val)){
 					$data["content"].= "Se Proceso:".$nom." Con la consulta:(".$val.")<br>";
 				}else{
@@ -789,7 +789,7 @@ function bobo(url){'."
 		}
 		$data['title']   = "Mantenimiento de tablas";
 		$data["rapyd_head"] = $this->rapyd->get_head();
-		 
+
 		$this->load->view("view_ventanas", $data);
 	}
 
@@ -943,7 +943,7 @@ function bobo(url){'."
 		$sal=exec($cmd);
 
 		$this->zip->read_file($file);
-		$this->zip->download($db.'.zip'); 
+		$this->zip->download($db.'.zip');
 		unlink($file);
 	}
 
@@ -978,7 +978,7 @@ function bobo(url){'."
 
 	//Para reconstruir sfac a partir de sfpa, sitems,scli y sinv
 	function ressfac(){
-		$mSQL="INSERT INTO sfac 
+		$mSQL="INSERT INTO sfac
 		SELECTaa.tipoa,aa.numa,aa.fecha,aa.fecha,aa.vendedor,aa.codigoa,aa.rifci,aa.nombre,aa.dire11,aa.dire12,'' AS orden,'' AS referen,SUM(aa.iva),0 AS inicial,SUM(aa.tota) AS totals,SUM(aa.tota+aa.iva) AS totalg,'' AS status, '' AS observa,'' AS observ1,0 AS devolu,aa.cajero,'0001' AS almacen,0 AS peso,'' AS factura,'' AS pedido,aa.usuario,aa.estampa,aa.hora,aa.transac,'' AS nfiscal,'' AS zona,'' AS ciudad,0 AS comision,'N' AS pagada,'N' AS sepago,
 		0  AS dias,
 		'' AS fpago,
@@ -993,7 +993,7 @@ function bobo(url){'."
 		'' AS notcred,'' AS fentrega,'' AS  fpagom,'' AS fdespacha,'' AS udespacha,'' AS numarma,'' AS maqfiscal,null AS id,'' AS dmaqfiscal,'' AS nromanual,'' AS fmanual,'' AS lleva
 		FROM
 		(SELECT b.*,c.iva AS sinviva,c.peso,e.cliente,e.nombre,e.dire11,e.dire12,e.rifci
-		FROM sfac AS a 
+		FROM sfac AS a
 		RIGHT JOIN sitems AS b ON a.tipo_doc=b.tipoa AND a.numero=b.numa
 		JOIN sinv AS c ON b.codigoa=c.codigo
 		JOIN sfpa AS d ON b.tipoa=MID(d.tipo_doc,1,1) AND b.numa=d.numero
@@ -1001,7 +1001,61 @@ function bobo(url){'."
 		GROUP BY aa.tipoa,aa.numa";
 		echo $mSQL;
 	}
-	
+
+	function factraza($numero=null){
+		$this->datasis->modulo_id('900',1);
+		if(empty($numero)) show_error('Falta n&uacute;mero de factura');
+		$this->rapyd->load('datafilter','datagrid');
+
+		$sel=array('b.tipoa','b.codigoa','b.desca','b.despacha','b.udespacha','b.fdespacha','b.cana');
+		$grid = new DataGrid('Productos de la factura '.$numero);
+		$grid->db->select($sel);
+		$grid->db->from('sfac AS a');
+		$grid->db->join('sitems AS b', 'a.numero=b.numa AND a.tipo_doc=b.tipoa');
+		$grid->db->where('a.numero',$numero);
+		$grid->db->order_by('b.codigoa');
+		$grid->column('C&oacute;digo','codigoa');
+		$grid->column('Descripci&oacute;n','desca'  );
+		$grid->column('Despachado' ,'<#despacha#> : <#udespacha#> <dbdate_to_human><#fdespacha#></dbdate_to_human>');
+		$grid->column('Cantidad', 'cana','align="left"');
+		$grid->build();
+
+		$sel=array('b.tipoa','b.numa','b.codigoa','b.desca','b.despacha','b.udespacha','b.fdespacha','b.cana');
+		$grid2 = new DataGrid('Devoluciones de la factura '.$numero);
+		$grid2->db->select($sel);
+		$grid2->db->from('sfac AS a');
+		$grid2->db->join('sitems AS b', 'a.numero=b.numa AND a.tipo_doc=b.tipoa');
+		$grid2->db->where('a.factura',$numero);
+		$grid2->db->order_by('b.numa','b.codigoa');
+		$grid2->column('Tipo','tipoa');
+		$grid2->column('N&uacute;mero','numa');
+		$grid2->column('C&oacute;digo','codigoa');
+		$grid2->column('Descripci&oacute;n','desca'  );
+		//$grid2->column('Despachado' ,'<#despacha#> : <#udespacha#> <dbdate_to_human><#fdespacha#></dbdate_to_human>');
+		$grid2->column('Cantidad', 'cana','align="rigth"');
+		$grid2->build();
+
+		$sel=array('b.codigo','b.numero','b.descrip','b.entrega','b.saldo','b.cant');
+		$grid3 = new DataGrid('Notas de despacho '.$numero);
+		$grid3->db->select($sel);
+		$grid3->db->from('snot AS a');
+		$grid3->db->join('itsnot AS b', 'a.numero=b.numero');
+		$grid3->db->where('a.factura',$numero);
+		$grid3->db->order_by('b.numero','b.codigo');
+		$grid3->column('N&uacute;mero','numero');
+		$grid3->column('C&oacute;digo'      ,'codigo');
+		$grid3->column('Descripci&oacute;n' ,'descrip'  );
+		$grid3->column('Cantidad', 'cant'   ,'align="rigth"');
+		$grid3->column('Saldo'   , 'saldo'  ,'align="rigth"');
+		$grid3->column('Entrega' , 'entrega','align="rigth"');
+		$grid3->build();
+
+		$tabla=$grid->output.br().br().$grid2->output.br().br().$grid3->output;
+		$data['content']  = $tabla;
+		$data['title']    = heading('Trazas de factura');
+		$data['head']     = $this->rapyd->get_head();
+		$this->load->view('view_ventanas', $data);
+	}
 
 	function calcosto(){
 		$this->db->simple_query("CALL sp_calcopasa()");
@@ -1010,5 +1064,5 @@ function bobo(url){'."
 		echo '<h1>Recalculo Concluido</h1>';
 	}
 
-	
+
 }
