@@ -101,10 +101,8 @@ jQuery("#boton2").click( function(){
 		<td><div class="tema1 boton1"><a style="width:190px;text-align:left;" href="#" id="boton1">'.img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',  'title' => 'Formato PDF', 'border'=>'0')).'&nbsp;&nbsp;&nbsp;&nbsp;Reimprimir Documento </a></div></td>
 	</tr>
 </table>
-
-'.
-
-'</div> <!-- #LeftPane -->
+<div class="centro-sur" id="adicional" style="overflow:auto;"></div>
+</div> <!-- #LeftPane -->
 ';
 
 		$centerpanel = '
@@ -116,7 +114,8 @@ jQuery("#boton2").click( function(){
 	<div class="centro-sur" id="adicional" style="overflow:auto;">
 		<table id="newapi'.$param['grids'][1]['gridname'].'"></table>
 	</div>
-</div> <!-- #RightPane -->
+</div>
+<!-- #RightPane -->
 ';
 
 
@@ -1071,11 +1070,18 @@ jQuery("#a1").click( function(){
 		$grid->setfilterToolbar(true);
 		$grid->setToolbar('false', '"top"');
 
-		$grid->setOnSelectRow(' function(id){
+		$grid->setOnSelectRow('
+			function(id){
 				if (id){
 					var ret = $("#titulos").getRowData(id);
 					jQuery(gridId2).jqGrid(\'setGridParam\',{url:"'.site_url($this->url.'getdatait/').'/"+id+"/", page:1});
 					jQuery(gridId2).trigger("reloadGrid");
+					$.ajax({
+						url: "'.base_url().$this->url.'tabla/"+id,
+						success: function(msg){
+							$("#adicional").html(msg);
+						}
+					});
 				}
 			}');
 
@@ -3024,22 +3030,41 @@ function sfacreiva(mid){
 		$this->db->simple_query($mSQL);
 		logusu('sfac',"FACTURACION ".$campos['id']." MODIFICADO");
 		echo "{ success: true, message: 'Factura Modificado '}";
-
 	}
 
 
 	function tabla() {
-		$id   = isset($_REQUEST['id'])  ? $_REQUEST['id']   :  0;
+		$id = $this->uri->segment($this->uri->total_segments());
 		$cliente = $this->datasis->dameval("SELECT cod_cli FROM sfac WHERE id='$id'");
 		$transac = $this->datasis->dameval("SELECT transac FROM sfac WHERE id='$id'");
+		$salida = '';
 
+		// Revisa formas de pago sfpa
+		$mSQL = "SELECT tipo, numero, monto FROM sfpa WHERE transac='$transac' AND monto<>0";
+		$query = $this->db->query($mSQL);
+		if ( $query->num_rows() > 0 ){
+			$salida .= "<br><table width='100%' border=1>";
+			$salida .= "<tr bgcolor='#e7e3e7'><td colspan=3>Forma de Pago</td></tr>";
+			$salida .= "<tr bgcolor='#e7e3e7'><td>Tipo</td><td align='center'>Numero</td><td align='center'>Monto</td></tr>";
+			foreach ($query->result_array() as $row)
+			{
+				$salida .= "<tr>";
+				$salida .= "<td>".$row['tipo']."</td>";
+				$salida .= "<td>".$row['numero'].  "</td>";
+				$salida .= "<td align='right'>".nformat($row['monto']).   "</td>";
+				$salida .= "</tr>";
+			}
+
+			$salida .= "</table>";
+		}
+
+		// Cuentas por Cobrar
 		$mSQL = "SELECT cod_cli, MID(nombre,1,25) nombre, tipo_doc, numero, monto, abonos FROM smov WHERE cod_cli='$cliente' AND abonos<>monto AND tipo_doc<>'AB' ORDER BY fecha DESC ";
 		$query = $this->db->query($mSQL);
-		$salida = '';
 		$saldo = 0;
 		if ( $query->num_rows() > 0 ){
-			$salida = "<br><table width='100%' border=1>";
-			$salida .= "<tr bgcolor='#e7e3e7'><td colspan=3>Movimiento en Cuentas X Cobrar</td></tr>";
+			$salida .= "<br><table width='100%' border=1>";
+			$salida .= "<tr bgcolor='#e7e3e7'><td colspan=3>Movimiento Pendientes en CxC</td></tr>";
 			$salida .= "<tr bgcolor='#e7e3e7'><td>Tp</td><td align='center'>Numero</td><td align='center'>Monto</td></tr>";
 			$i = 1;
 			foreach ($query->result_array() as $row)
@@ -3067,26 +3092,7 @@ function sfacreiva(mid){
 		}
 		$query->free_result();
 
-		// Revisa formas de pago sfpa
-		$mSQL = "SELECT tipo, numero, monto FROM sfpa WHERE transac='$transac' AND monto<>0";
-		$query = $this->db->query($mSQL);
-		if ( $query->num_rows() > 0 ){
-			$salida .= "<br><table width='100%' border=1>";
-			$salida .= "<tr bgcolor='#e7e3e7'><td colspan=3>Forma de Pago</td></tr>";
-			$salida .= "<tr bgcolor='#e7e3e7'><td>Tipo</td><td align='center'>Numero</td><td align='center'>Monto</td></tr>";
-			foreach ($query->result_array() as $row)
-			{
-				$salida .= "<tr>";
-				$salida .= "<td>".$row['tipo']."</td>";
-				$salida .= "<td>".$row['numero'].  "</td>";
-				$salida .= "<td align='right'>".nformat($row['monto']).   "</td>";
-				$salida .= "</tr>";
-			}
-
-			$salida .= "</table>";
-		}
-
-		// Revisa formas de pago sfpa
+		// Revisa movimiento de bancos
 		$mSQL = "SELECT codbanc, numero, monto FROM bmov WHERE transac='$transac' ";
 		$query = $this->db->query($mSQL);
 		if ( $query->num_rows() > 0 ){
@@ -3103,6 +3109,7 @@ function sfacreiva(mid){
 			}
 			$salida .= "</table>";
 		}
+
 		echo $salida;
 	}
 

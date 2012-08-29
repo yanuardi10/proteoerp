@@ -1,18 +1,516 @@
 <?php
-class invresu extends Controller {
+class Invresu extends Controller {
+	var $mModulo='INVRESU';
+	var $titp='Libro de Inventario';
+	var $tits='Libro de Inventario';
+	var $url ='finanzas/invresu/';
 
-	function invresu(){
+	function Invresu(){
 		parent::Controller();
 		$this->load->library('rapyd');
-		//$this->datasis->modulo_id('51D',1);
+		$this->load->library('jqdatagrid');
+		//$this->datasis->modulo_nombre( $modulo, $ventana=0 );
 	}
 
 	function index(){
+		if ( !$this->datasis->iscampo('invresu','id') ) {
+			$this->db->simple_query('ALTER TABLE invresu DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE invresu ADD UNIQUE INDEX mesco (mes, codigo)');
+			$this->db->simple_query('ALTER TABLE invresu ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
+		};
+		$this->datasis->modintramenu( 800, 600, substr($this->url,0,-1) );
+		redirect($this->url.'jqdatag');
+	}
+
+	//***************************
+	//Layout en la Ventana
+	//
+	//***************************
+	function jqdatag(){
+
+		$grid = $this->defgrid();
+		$param['grids'][] = $grid->deploy();
+
+		$bodyscript = '
+<script type="text/javascript">
+$(function() {
+	$( "input:submit, a, button", ".otros" ).button();
+});
+
+jQuery("#genera").click( function(){
+	window.open(\''.base_url().'finanzas/invresu/genelibro/\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+});
+</script>
+';
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		$WestPanel = '
+<div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content">
+<div class="otros">
+
+<table id="west-grid" align="center">
+	<tr>
+		<td><div class="tema1"><table id="listados"></table></div></td>
+	</tr>
+	<tr>
+		<td><div class="tema1"><table id="otros"></table></div></td>
+	<tr><td>&nbsp;</td></tr>
+	<tr><td>
+		<div class="tema1"><a style="width:190px;text-align:left;" href="#" id="genera">'.img(array('src' => 'images/engrana.png', 'alt' => 'Generar',  'title' => 'Generar', 'border'=>'0')).'&nbsp;&nbsp;&nbsp;&nbsp;Generar Listado</a></div>
+	</tr>
+
+</table>
+
+<table id="west-grid" align="center">
+	<tr>
+		<td></td>
+	</tr>
+</table>
+</div>
+'.
+//		<td><a style="width:190px" href="#" id="a1">Imprimir Copia</a></td>
+'</div> <!-- #LeftPane -->
+';
+
+		$SouthPanel = '
+<div id="BottomPane" class="ui-layout-south ui-widget ui-widget-content">
+<p>'.$this->datasis->traevalor('TITULO1').'</p>
+</div> <!-- #BottomPanel -->
+';
+		$param['WestPanel']  = $WestPanel;
+		//$param['EastPanel']  = $EastPanel;
+		$param['SouthPanel'] = $SouthPanel;
+		$param['listados'] = $this->datasis->listados('INVRESU', 'JQ');
+		$param['otros']    = $this->datasis->otros('INVRESU', 'JQ');
+		$param['temas']     = array('proteo','darkness','anexos1');
+		$param['bodyscript'] = $bodyscript;
+		$param['tabs'] = false;
+		$param['encabeza'] = $this->titp;
+		$this->load->view('jqgrid/crud2',$param);
+	}
+
+	//***************************
+	//Definicion del Grid y la Forma
+	//***************************
+	function defgrid( $deployed = false ){
+		$i      = 1;
+		$editar = "true";
+		$linea   = 1;
+
+		$grid  = new $this->jqdatagrid;
+		$grid->addField('mes');
+		$grid->label('Ano Mes');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10  }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:1 }'
+		));
+
+		$linea = $linea + 1;
+		$grid->addField('codigo');
+		$grid->label('Codigo');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 100,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:15, maxlength: 15 }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:1 }'
+		));
+
+
+		$grid->addField('descrip');
+		$grid->label('Descripcion');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:false}',
+			'editoptions'   => '{ size:30, maxlength: 45 }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:2 }'
+		));
+
+
+		$linea = $linea + 1;
+		$grid->addField('inicial');
+		$grid->label('Inicial');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 80,
+			'editrules'     => '{ required:false }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:1 }'
+		));
+
+
+		$grid->addField('compras');
+		$grid->label('Compras');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:false }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:2 }'
+		));
+
+
+		$linea = $linea + 1;
+		$grid->addField('ventas');
+		$grid->label('Ventas');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:false }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:1 }'
+		));
+
+
+		$grid->addField('trans');
+		$grid->label('Trans');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:false }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:2 }'
+		));
+
+
+		$linea = $linea + 1;
+		$grid->addField('fisico');
+		$grid->label('Fisico');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:false }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:1 }'
+		));
+
+
+		$grid->addField('notas');
+		$grid->label('Notas');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:false }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:2 }'
+		));
+
+
+		$linea = $linea + 1;
+		$grid->addField('final');
+		$grid->label('Final');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:1 }'
+		));
+
+
+		$grid->addField('minicial');
+		$grid->label('Minicial');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:2 }'
+		));
+
+
+		$linea = $linea + 1;
+		$grid->addField('mcompras');
+		$grid->label('Mcompras');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:1 }'
+
+		));
+
+
+		$grid->addField('mventas');
+		$grid->label('Mventas');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:2 }'
+		));
+
+
+		$linea = $linea + 1;
+		$grid->addField('mtrans');
+		$grid->label('Mtrans');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:1 }'
+		));
+
+
+		$grid->addField('mfisico');
+		$grid->label('Mfisico');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:2 }'
+		));
+
+
+		$linea = $linea + 1;
+		$grid->addField('mnotas');
+		$grid->label('Mnotas');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:1 }'
+		));
+
+
+		$grid->addField('mfinal');
+		$grid->label('Mfinal');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:2 }'
+		));
+
+
+		$linea = $linea + 1;
+		$grid->addField('mpventa');
+		$grid->label('Mpventa');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }, align:"rigth" }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:1, align:"right" }'
+		));
+
+		$grid->addField('id');
+		$grid->label('Id');
+		$grid->params(array(
+			'hidden'        => 'true',
+			'align'         => "'center'",
+			'hidden'        => "true",
+			'frozen'        => 'true',
+			'width'         => 40,
+			'editable'      => 'false',
+			'search'        => 'false'
+		));
+
+		$grid->showpager(true);
+		$grid->setWidth('');
+		$grid->setHeight('290');
+		$grid->setTitle($this->titp);
+		$grid->setfilterToolbar(true);
+		$grid->setToolbar('false', '"top"');
+
+		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 600, height:350, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
+		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 600, height:350, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
+		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
+
+		#show/hide navigations buttons
+		$grid->setAdd(true);
+		$grid->setEdit(true);
+		$grid->setDelete(true);
+		$grid->setSearch(true);
+		$grid->setRowNum(30);
+		$grid->setShrinkToFit('false');
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		#GET url
+		$grid->setUrlget(site_url($this->url.'getdata/'));
+
+		if ($deployed) {
+			return $grid->deploy();
+		} else {
+			return $grid;
+		}
+	}
+
+	/**
+	* Busca la data en el Servidor por json
+	*/
+	function getdata()
+	{
+		$grid       = $this->jqdatagrid;
+
+		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
+		$mWHERE = $grid->geneTopWhere('invresu');
+
+		$response   = $grid->getData('invresu', array(array()), array(), false, $mWHERE );
+		$rs = $grid->jsonresult( $response);
+		echo $rs;
+	}
+
+	/**
+	* Guarda la Informacion
+	*/
+	function setData()
+	{
+		$this->load->library('jqdatagrid');
+		$oper   = $this->input->post('oper');
+		$id     = $this->input->post('id');
+		$data   = $_POST;
+		$mcodp  = "mes";
+		$check  = 0;
+
+		unset($data['oper']);
+		unset($data['id']);
+		if($oper == 'add'){
+			if(false == empty($data)){
+				$check = $this->datasis->dameval("SELECT count(*) FROM invresu WHERE $mcodp=".$this->db->escape($data[$mcodp])." AND codigo="+$this->db->escape($data['codigo'])  );
+				if ( $check == 0 ){
+					$this->db->insert('invresu', $data);
+					echo "Registro Agregado";
+
+					logusu('INVRESU',"Registro ".$data['mes']." ".$data['codigo']." INCLUIDO");
+				} else
+					echo "Ya existe un registro con ese mes y codigo";
+			} else
+				echo "Fallo Agregado!!!";
+
+		} elseif($oper == 'edit') {
+			$nuevo  = $data[$mcodp];
+			$anterior = $this->datasis->dameval("SELECT $mcodp FROM invresu WHERE id=$id");
+			unset($data[$mcodp]);
+			$this->db->where("id", $id);
+			$this->db->update('invresu', $data);
+			logusu('INVRESU',"Libro de Inventario  ".$nuevo." MODIFICADO");
+			echo "$mcodp Modificado";
+
+		} elseif($oper == 'del') {
+			$codigo = $this->datasis->dameval("SELECT $mcodp FROM invresu WHERE id=$id");
+			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM invresu WHERE id='$id' ");
+			if ($check > 0){
+				echo " El registro no puede ser eliminado; tiene movimiento ";
+			} else {
+				$this->db->simple_query("DELETE FROM invresu WHERE id=$id ");
+				logusu('INVRESU',"Registro ????? ELIMINADO");
+				echo "Registro Eliminado";
+			}
+		};
+	}
+
+
+	function genelibro(){
 		$this->rapyd->load('datafilter','datagrid','fields');
 		$this->rapyd->uri->keep_persistence();
 
-		$filter = new DataFilter('Filtro del libro de inventario','view_invresutotal');
-		//$filter->error_string=$error;
+		$filter = new DataFilter('Libro de inventario','view_invresutotal');
+		//$filter->error_string=$error; 
+		
+		// Genera automaticamente si no estan
+		$mes  = date('Y');
+		if ( $this->datasis->dameval("SELECT count(*) FROM sitems WHERE year(fecha)=$mes") == 0 ) {
+			$mSQL = "INSERT IGNORE INTO invresu (mes, codigo) SELECT CONCAT(YEAR(fecha),MONTH(fecha)) mes, codigoa FROM sitems WHERE YEAR(ffecha)=YEAR(curdate()) GROUP BY YEAR(fecha), MONTH(fecha) ";
+			$this->db->simple_query($mSQL);
+		}
+		
 		$mes = $this->datasis->dameval("SELECT MID(MAX(mes),1,4) FROM invresu");
 	
 		$filter->fecha = new inputField('A&ntilde;o', 'anno');

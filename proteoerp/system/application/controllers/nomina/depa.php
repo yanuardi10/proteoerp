@@ -19,6 +19,7 @@ class Depa extends Controller {
 			$this->db->simple_query('ALTER TABLE depa ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ');
 			$this->db->simple_query('ALTER TABLE depa ADD UNIQUE INDEX dividepa (division, departa)');
 		};
+		$this->datasis->modintramenu( 620, 505, substr($this->url,0,-1) );
 		redirect($this->url.'jqdatag');
 	}
 
@@ -29,7 +30,7 @@ class Depa extends Controller {
 	function jqdatag(){
 
 		$grid = $this->defgrid();
-		$param['grid'] = $grid->deploy();
+		$param['grids'][] = $grid->deploy();
 
 		$bodyscript = '
 <script type="text/javascript">
@@ -38,9 +39,9 @@ $(function() {
 });
 
 jQuery("#a1").click( function(){
-	var id = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
+	var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
 	if (id)	{
-		var ret = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getRowData\',id);
+		var ret = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
 		window.open(\'/proteoerp/formatos/ver/DEPA/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
 	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
 });
@@ -82,14 +83,14 @@ jQuery("#a1").click( function(){
 		//$param['WestPanel']  = $WestPanel;
 		//$param['EastPanel']  = $EastPanel;
 		$param['SouthPanel'] = $SouthPanel;
-		$param['listados'] = $this->datasis->listados('DEPA', 'JQ');
-		$param['otros']    = $this->datasis->otros('DEPA', 'JQ');
-		$param['tema1']     = 'darkness';
-		$param['anexos']    = 'anexos1';
+		$param['listados']   = $this->datasis->listados('DEPA', 'JQ');
+		$param['otros']      = $this->datasis->otros('DEPA', 'JQ');
+		$param['temas']       = array('proteo','darkness','anexos1');
+		$param['anexos']     = 'anexos1';
 		$param['bodyscript'] = $bodyscript;
 		$param['tabs'] = false;
 		$param['encabeza'] = $this->titp;
-		$this->load->view('jqgrid/crud',$param);
+		$this->load->view('jqgrid/crud2',$param);
 	}
 
 	//***************************
@@ -98,6 +99,13 @@ jQuery("#a1").click( function(){
 	function defgrid( $deployed = false ){
 		$i      = 1;
 		$editar = "true";
+
+		$mSQL = "SELECT division, CONCAT(division, ' ', descrip) descrip FROM divi ORDER BY division ";
+		$adivision = $this->datasis->llenajqselect($mSQL, false );
+
+		$mSQL  = "SELECT depto, CONCAT( depto, ' ', descrip) nombre FROM dpto WHERE tipo='G' ORDER BY depto ";
+		$aenlace   = $this->datasis->llenajqselect($mSQL, false );
+
 
 		$grid  = new $this->jqdatagrid;
 
@@ -127,15 +135,16 @@ jQuery("#a1").click( function(){
 		$grid->addField('division');
 		$grid->label('Division');
 		$grid->params(array(
-			'align'    => "'center'",
+			'align'         => "'center'",
 			'search'        => 'true',
 			'editable'      => $editar,
 			'width'         => 60,
 			'edittype'      => "'select'",
-			'editoptions'   => '{ dataUrl: "'.base_url().'ajax/dddivi"}',
+			'editoptions'   => '{ value: '.$adivision.',  style:"width:250px"}',
+			'stype'         => "'text'",
+
+
 		));
-
-
 
 		$grid->addField('descrip');
 		$grid->label('Descripcion');
@@ -156,12 +165,14 @@ jQuery("#a1").click( function(){
 			'editable'      => $editar,
 			'width'         => 60,
 			'edittype'      => "'select'",
-			'editoptions'   => '{ dataUrl: "'.base_url().'ajax/dddepag"}',
+			'editoptions'   => '{ value: '.$aenlace.',  style:"width:250px"}',
+			'stype'         => "'text'"
 		));
 
 		$grid->addField('id');
 		$grid->label('Id');
 		$grid->params(array(
+			'hidden'   => 'true',
 			'align'    => "'center'",
 			'frozen'   => 'true',
 			'width'    => 40,
@@ -176,8 +187,8 @@ jQuery("#a1").click( function(){
 		$grid->setfilterToolbar(true);
 		$grid->setToolbar('false', '"top"');
 
-		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:200, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
-		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:200, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 400, height:210, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});}');
+		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 400, height:210, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});}');
 		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
 
 		#show/hide navigations buttons

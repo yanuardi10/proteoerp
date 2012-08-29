@@ -57,6 +57,7 @@ jQuery("#listado").click( function(){
 	window.open(\''.base_url().'reportes/ver/CHGARA/\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
 });
 
+var grid = jQuery("#newapi'.$param['grids'][0]['gridname'].'");
 
 $( "#depositar" ).click(function() {
 	var grid = jQuery("#newapi'.$param['grids'][0]['gridname'].'");
@@ -69,7 +70,7 @@ $( "#depositar" ).click(function() {
 				if (v){
 					$.get("'.base_url().$this->url.'chenvia/"+meco,
 					function(data){
-						alert(data);
+						apprise("<h1>"+data+"</h1>");
 						grid.trigger("reloadGrid");
 					});
 				}
@@ -96,7 +97,7 @@ $( "#cobrados" ).click(function() {
 					} else {
 						$.get("'.base_url().$this->url.'chcobrados/"+meco+"/"+f.numdep+"/"+f.cuenta+"/"+mfecha,
 						function(data){
-							alert(data);
+							apprise("<h1>"+data+"</h1>");
 							grid.trigger("reloadGrid");
 						});
 					}
@@ -109,7 +110,29 @@ $( "#cobrados" ).click(function() {
 	}
 });
 
-$( "#pagar" ).click(function() {
+$( "#devueltos" ).click(function() {
+	var grid = jQuery("#newapi'.$param['grids'][0]['gridname'].'");
+	var s = grid.getGridParam(\'selarrrow\');
+	if(s.length){
+		meco = sumamonto(0);
+		$.prompt( "<h1>Marcar los cheques Devueltos ?</h1>Marca solo los cheques que fueron previamente Enviados al Cobro", {
+			buttons: { Guardar: true, Cancelar: false },
+			submit: function(e,v,m,f){
+				if (v){
+					$.get("'.base_url().$this->url.'chdevueltos/"+meco,
+					function(data){
+						apprise("<h1>"+data+"</h1>");
+						grid.trigger("reloadGrid");
+					});
+				}
+			}
+		});
+	} else {
+		$.prompt("<h1>Seleccione los Cheques</h1>");
+	}
+});
+
+$( "#cerrar" ).click(function() {
 	var grid = jQuery("#newapi'.$param['grids'][0]['gridname'].'");
 	var s = grid.getGridParam(\'selarrrow\');
 	if(s.length == 1){
@@ -117,13 +140,39 @@ $( "#pagar" ).click(function() {
 		if ( entirerow["status"].search("moneda") < 0 ){
 			$.prompt("<h1>Cheque no cobrado o ya aplicado</h1>Seleccione uno que este depositado y cobrado");
 		} else {
-			$.prompt( "<h1>Aplicar Pago?</h1>Aplicar cheque cobrado a Factura? ", {
+			$.prompt( "<h1>Registrar pago y deposito manualmente?</h1>Cerrar cheque cobrado por carga manual? ", {
 				buttons: { Guardar: true, Cancelar: false },
 				submit: function(e,v,m,f){
 					if (v){
-						$.get("'.base_url().$this->url.'chpagar/"+entirerow["id"],
+						$.get("'.base_url().$this->url.'chcerrar/"+entirerow["id"],
 						function(data){
-							alert(data);
+							apprise("<h1>"+data+"</h1>");
+							grid.trigger("reloadGrid");
+						});
+					}
+				}
+			});
+		}
+	} else {
+		$.prompt("<h1>Seleccione un solo Cheque</h1>");
+	}
+});
+
+$( "#anular" ).click(function() {
+	var grid = jQuery("#newapi'.$param['grids'][0]['gridname'].'");
+	var s = grid.getGridParam(\'selarrrow\');
+	if(s.length == 1){
+		entirerow = grid.jqGrid(\'getRowData\',s[0]);
+		if ( entirerow["status"].search("S.gif") < 0 ){
+			$.prompt("<h1>Cheque no esta pendiente</h1>Seleccione otro");
+		} else {
+			$.prompt( "<h1>Anular Cheque en garantia?</h1>Anular este cheque por Incobrable? ", {
+				buttons: { Guardar: true, Cancelar: false },
+				submit: function(e,v,m,f){
+					if (v){
+						$.get("'.base_url().$this->url.'chanular/"+entirerow["id"],
+						function(data){
+							apprise("<h1>"+data+"</h1>");
 							grid.trigger("reloadGrid");
 						});
 					}
@@ -136,29 +185,65 @@ $( "#pagar" ).click(function() {
 });
 
 
-$( "#devueltos" ).click(function() {
+$( "#pagar" ).click(function() {
 	var grid = jQuery("#newapi'.$param['grids'][0]['gridname'].'");
 	var s = grid.getGridParam(\'selarrrow\');
-	if(s.length){
-		meco = sumamonto(0);
-		$.prompt( "<h1>Marcar los cheques Devueltos ?</h1>Marca solo los cheques que fueron previamente Enviados al Cobro", {
-			buttons: { Guardar: true, Cancelar: false },
-			submit: function(e,v,m,f){
-				if (v){
-					$.get("'.base_url().$this->url.'chdevueltos/"+meco,
-					function(data){
-						alert(data);
-						grid.trigger("reloadGrid");
-					});
-				}
-			}
+	var id = 0;
+	var entirerow;
+	if(s.length == 1){
+		entirerow = grid.jqGrid(\'getRowData\',s[0]);
+		id = entirerow["id"];
+		var ret   = $("#newapi'. $param['grids'][0]['gridname'].'").getRowData(id);  
+		mId = id;
+		$.post("'.base_url().'finanzas/chgara/formapaga/"+id, function(data){
+			$("#forma1").html(data);
 		});
+		if ( entirerow["status"].search("moneda") < 0 ) {
+			$.prompt("<h1>Cheque no cobrado o ya aplicado</h1>Seleccione uno que este depositado y cobrado");
+		} else {
+			$( "#forma1" ).dialog( "open" );
+		}	
 	} else {
-		$.prompt("<h1>Seleccione los Cheques</h1>");
+		$.prompt("<h1>Por favor Seleccione un Deposito</h1>");
 	}
 });
 
+$( "#forma1" ).dialog({
+	autoOpen: false,
+	height: 470,
+	width: 550,
+	modal: true,
+	buttons: {
+		"Aplicar Pago": function() {
+			var bValid = true;
+			//allFields.removeClass( "ui-state-error" );
+			if ( bValid ) {
+				$.ajax({
+					type: "POST",
+					dataType: "html",
+					url:"'.site_url("finanzas/chgara/chpagar").'",
+					async: false,
+					data: $("#pagaforma").serialize(),
+					success: function(r,s,x){
+						var res = $.parseJSON(r);
+						if ( res.status == "E"){
+							apprise("<h2>Error:</h2> <h1>"+res.mensaje+"</h1>");
+						} else {
+							apprise("<h1>"+res.mensaje+"</h1>");
+							grid.trigger("reloadGrid");
+							$( "#forma1" ).dialog( "close" );
+							return [true, a ];
+						}
+					}
+				});
+			}
+		},
+		Cancel: function() {
+			$( this ).dialog( "close" );
+		}
+	}
 
+});
 
 function sumamonto(rowId){ 
 	var grid = jQuery("#newapi'.$param['grids'][0]['gridname'].'"); 
@@ -174,7 +259,7 @@ function sumamonto(rowId){
 		entirerow = grid.jqGrid(\'getRowData\',rowId);
 		fecha = new Date(entirerow["fecha"].split("-").join("/"))
 		if ( hoy < fecha ){
-			alert( "Cheque no vencido" );
+			apprise( "<h1>Cheque no vencido</h1>" );
 		} 
 	}
 
@@ -226,7 +311,11 @@ $(function(){$(".inputnum").numeric(".");});
 	<tr><td>
 		<div class="tema1"><a style="width:190px;text-align:left;" href="#" id="devueltos">'.img(array('src' => 'images/N.gif', 'alt' => 'Devueltos',  'title' => 'Devueltos', 'border'=>'0')).'&nbsp;&nbsp;&nbsp;&nbsp;Cheques Devueltos </a></div><br>
 	<tr><td>
-		<div class="tema1"><a style="width:190px;text-align:left;" href="#" id="pagar">'.img(array('src' => 'images/face-smile.png', 'alt' => 'Pagar',  'title' => 'Pagar', 'border'=>'0')).'&nbsp;&nbsp;&nbsp;&nbsp;Pagar Factura</a></div><br>
+		<div class="tema1"><a style="width:190px;text-align:left;" href="#" id="pagar">'.img(array('src' => 'images/face-smile.png', 'alt' => 'Pagar',  'title' => 'Pagar', 'border'=>'0')).'&nbsp;&nbsp;&nbsp;&nbsp;Aplicar pago a Cliente</a></div>
+	<tr><td>
+		<div class="tema1"><a style="width:190px;text-align:left;" href="#" id="cerrar">'.img(array('src' => 'images/face-cool.png', 'alt' => 'Cerrar',  'title' => 'Cerrar', 'border'=>'0')).'&nbsp;&nbsp;&nbsp;&nbsp;Aplicar Manualmente</a></div><br>
+	<tr><td>
+		<div class="tema1"><a style="width:190px;text-align:left;" href="#" id="anular">'.img(array('src' => 'images/face-devilish.png', 'alt' => 'Anular',  'title' => 'Anular', 'border'=>'0')).'&nbsp;&nbsp;&nbsp;&nbsp;Cheque Incobrable</a></div><br>
 	</td></tr>
 	</table>
 	</div>
@@ -238,6 +327,8 @@ $(function(){$(".inputnum").numeric(".");});
 <div id="BottomPane" class="ui-layout-south ui-widget ui-widget-content">
 <p>'.$this->datasis->traevalor('TITULO1').'</p>
 </div> <!-- #BottomPanel -->
+<div id="forma1" title="Recepcion de Depositos"></div>
+
 ';
 
 		$funciones = '
@@ -251,6 +342,10 @@ $(function(){$(".inputnum").numeric(".");});
 			meco=\'<div><img src="'.base_url().'images/N.gif" width="20" height="20" border="0" /></div>\';
 		} else if (el == "A") {
 			meco=\'<div><img src="'.base_url().'images/face-smile.png" width="20" height="20" border="0" /></div>\';
+		} else if (el == "0") {
+			meco=\'<div><img src="'.base_url().'images/face-devilish.png" width="20" height="20" border="0" /></div>\';
+		} else if (el == "B") {
+			meco=\'<div><img src="'.base_url().'images/face-cool.png" width="20" height="20" border="0" /></div>\';
 		}
 		return meco;
 	}
@@ -311,12 +406,38 @@ $(function(){$(".inputnum").numeric(".");});
 	}
 
 	//*********************************************
+	// Anula los cheques incobrables
+	//*********************************************
+	function chanular(){
+		$ids = $this->uri->segment(4);
+		$mSQL = "UPDATE chgara SET status='0', deposito='INCOBRABLE' WHERE id IN ($ids) AND status='P' ";
+		$this->db->query($mSQL);
+		echo "Cheques marcados como Incobrables ";
+	}
+
+	//*********************************************
+	// Cierra los cheques que se depositan manualmente
+	//*********************************************
+	function chcerrar(){
+		$ids = $this->uri->segment(4);
+		$mSQL = "UPDATE chgara SET status='B', deposito='MANUAL' WHERE id IN ($ids) AND status='C' ";
+		$this->db->query($mSQL);
+		echo "Cheques marcados como cobrados manualmente";
+	}
+
+
+	//*********************************************
 	// Guarda los que se enviaron a depositar
 	//*********************************************
 	function chpagar(){
-		$id = $this->uri->segment(4);
-		$reg    = $this->datasis->damereg("SELECT * FROM chgara WHERE id=$id");
-
+		$id       = $this->input->get_post('fid');
+		$reg      = $this->datasis->damereg("SELECT * FROM chgara WHERE id=$id");
+		$monto    = $this->input->get_post('fmonto');
+		$efectos  = substr(trim($this->input->get_post('fsele')),0,-1);
+		$caja     = '';
+		$codbanc  = '';
+		$mensaje  = "";
+		$envia    = '00';
 		$data = array();
 		
 		$chmonto  = $reg["monto"];
@@ -325,19 +446,23 @@ $(function(){$(".inputnum").numeric(".");});
 		$codbanc  = $reg["codbanc"];
 		$fecha    = $reg["fecha"];
 
-		$regcli = $this->datasis->damereg("SELECT nombre FROM scli WHERE cliente=".$this->db->escape($cod_cli));
-		
-		// Analiza el Edo Cta
-		$saldo = $this->datasis->dameval("SELECT sum(monto-abonos) saldo FROM smov WHERE cod_cli=".$this->db->escape($cod_cli)." AND tipo_doc IN ('FC','ND','GI') ");
-		if ( $saldo == '') $saldo = '0.00';
-		
-		if ($chmonto > $saldo){
-			echo "Monto del cheque ($chmonto) es mayor que el saldo deudor ($saldo) , debe generar un Anticipo";
+		if ( strlen($efectos) == 0 ) {
+			echo '{"status":"E","numero":"$deposito","mensaje":"Seleccione algun efecto!! "}';
 			return;
 		}
-		
-		$efecto = $this->datasis->damereg("SELECT tipo_doc, numero, monto, impuesto FROM smov WHERE cod_cli=".$this->db->escape($cod_cli)." AND monto-abonos>=".$chmonto." AND tipo_doc IN ('FC','ND','GI') ORDER BY fecha limit 1");
-		$mSQL   = "UPDATE chgara SET status='P', deposito='DEVUELTO' WHERE id IN ($id) AND status='E' ";
+
+		$saldo  = $this->datasis->dameval("SELECT SUM(monto-abonos)   saldo  FROM smov WHERE id IN ( $efectos ) " );
+		$factor = $this->datasis->dameval("SELECT SUM(impuesto)/sum(monto) factor FROM smov WHERE id IN ( $efectos ) " );
+
+		$obser  = $this->datasis->dameval("SELECT GROUP_CONCAT(CONCAT(tipo_doc, numero)) efecto FROM smov WHERE id IN ( $efectos ) " );
+		$regcli = $this->datasis->damereg("SELECT nombre FROM scli WHERE cliente=".$this->db->escape($cod_cli));
+
+		if ($chmonto > $saldo){
+			echo "Monto del cheque ($chmonto) es mayor que el saldo deudor ($saldo) , debe generar un Anticipo p seleccionar mas efectos";
+			return;
+		}
+		//echo '{"status":"E","numero":"$deposito","mensaje":"Fino mano "}';
+		//return ;
 
 		// CREA EL ABONO
 		$xnumero   = str_pad($this->datasis->prox_sql("nabcli"),  8, '0', STR_PAD_LEFT);
@@ -348,16 +473,17 @@ $(function(){$(".inputnum").numeric(".");});
 		$data = array();
 		$data['cod_cli']  = $cod_cli; 
 		$data['nombre']   = $regcli['nombre']; 
-		$data['tipo_doc'] = 'AB'; 
+		$data['tipo_doc'] = 'AB';
 		$data['numero']   = $xnumero; 
 		$data['fecha']    = $fecha; 
 		$data['monto']    = $chmonto; 
-		
-		$data['impuesto'] = $chmonto*$efecto['impuesto']/$efecto['monto'];
+
+	
+		$data['impuesto'] = $chmonto*$factor;
 		$data['vence']    = $fecha;
-		$data['tipo_ref'] = $efecto['tipo_doc'];
-		$data['num_ref']  = $efecto['numero'];
-		$data['observa1'] = "PAGA: ".$efecto['tipo_doc'].$efecto['numero'];
+		//$data['tipo_ref'] = $efecto['tipo_doc'];
+		//$data['num_ref']  = $efecto['numero'];
+		$data['observa1'] = "PAGA: ".$obser;   //$efecto['tipo_doc'].$efecto['numero'];
 		$data['observa2'] =  "";
 		$data['banco']    = $codbanc; 
 		$data['fecha_op'] = $fecha; 
@@ -381,33 +507,6 @@ $(function(){$(".inputnum").numeric(".");});
 		$data['transac']    = $transac;
 		
 		$this->db->insert('smov',$data);
-
-		//Detalle en itccli
-		$data = array();
-		$data['numccli']  = $xnumero;
-		$data['tipoccli'] = 'AB';
-		$data['cod_cli']  = $cod_cli;
-		$data['numero']   = $efecto['numero'];
-		$data['tipo_doc'] = $efecto['tipo_doc'];
-		$data['fecha']    = $fecha;
-		$data['monto']    = $efecto['monto'];
-		$data['abono']    = $chmonto;
-		$data['reten']    = 0;
-		$data['ppago']    = 0;
-		$data['cambio']   = 0;
-		$data['mora']     = 0;
-		$data['reteiva']  = '';
-
-		$data['usuario']    = $this->secu->usuario();
-		$data['estampa']    = date('Ymd');
-		$data['hora']       = date('H:i:s');
-		$data['transac']    = $transac;
-
-		$this->db->insert('itccli',$data);
-
-		//Actualiza la Factura
-		$mSQL = "UPDATE smov SET abonos=abonos+? WHERE tipo_doc=? AND cod_cli=? AND numero=?";
-		$this->db->query($mSQL,	array( $chmonto, $efecto['tipo_doc'], $cod_cli ,$efecto['numero'] ));
 
 		// FORMA DE PAGO
 		$data = array();
@@ -435,6 +534,7 @@ $(function(){$(".inputnum").numeric(".");});
 
 		$this->db->insert('sfpa',$data);
 
+		// CARGA A EL BANCO
 		$this->datasis->actusal($codbanc, $fecha, $chmonto);
                
 		$msql = "SELECT numcuent, banco, moneda, saldo FROM banc WHERE codbanc=".$this->db->escape($codbanc);
@@ -468,10 +568,51 @@ $(function(){$(".inputnum").numeric(".");});
 
 		$this->db->insert('bmov',$data);
 
+		$query  = $this->db->query("SELECT tipo_doc, numero, monto, impuesto, abonos, id FROM smov WHERE id IN ( $efectos ) " );
+		$resta = $chmonto;
+		foreach( $query->result_array() as $efecto ) {
+		
+			if ( $efecto['monto']-$efecto['abonos'] > $resta )
+				$abonar = $resta;
+			else
+				$abonar = $efecto['monto']-$efecto['abonos'];
+				
+			$resta = $resta - $abonar;
+
+			//Detalle en itccli
+			$data = array();
+			$data['numccli']  = $xnumero;
+			$data['tipoccli'] = 'AB';
+			$data['cod_cli']  = $cod_cli;
+			$data['numero']   = $efecto['numero'];
+			$data['tipo_doc'] = $efecto['tipo_doc'];
+			$data['fecha']    = $fecha;
+			$data['monto']    = $efecto['monto'];
+			$data['abono']    = $abonar;
+			$data['reten']    = 0;
+			$data['ppago']    = 0;
+			$data['cambio']   = 0;
+			$data['mora']     = 0;
+			$data['reteiva']  = '';
+
+			$data['usuario']    = $this->secu->usuario();
+			$data['estampa']    = date('Ymd');
+			$data['hora']       = date('H:i:s');
+			$data['transac']    = $transac;
+
+			$this->db->insert('itccli',$data);
+
+			//Actualiza la Factura
+			$mSQL = "UPDATE smov SET abonos=abonos+? WHERE id = ?";
+			$this->db->query($mSQL,	array( $abonar, $efecto['id'] ));
+			if ($resta <=0 ) break;
+		}
+
 		$mSQL = "UPDATE chgara SET status='A', transac='$transac' WHERE id=$id  ";
 		$this->db->simple_query($mSQL);
 
-		echo "Cuenta por cobrar actualizada ";
+		echo '{"status":"G","numero":"$deposito","mensaje":"Deposito Aplicado a CxC "}';
+		//echo "Cuenta por cobrar actualizada ";
 	}
 
 	//***************************
@@ -802,6 +943,100 @@ $(function(){$(".inputnum").numeric(".");});
 			}
 		};
 	}
-}
 
+	// forma de cierre de deposito
+	function formapaga(){
+		$id  = $this->uri->segment($this->uri->total_segments());
+		$reg = $this->datasis->damereg("SELECT * FROM chgara WHERE id=$id");
+
+		$salida = '
+<script type="text/javascript">
+	jQuery("#aceptados").jqGrid({
+		datatype: "local",
+		height: 190,
+		colNames:["id","Tipo","Numero","Fecha", "Saldo"],
+		colModel:[
+			{name:"id",       index:"id",       width:10, hidden:true},
+			{name:"tipo_doc", index:"tipo_doc", width:40},
+			{name:"numero",   index:"numero",   width:90},
+			{name:"fecha",    index:"fecha",    width:90},
+			{name:"saldo",    index:"saldo",    width:80, align:"right"},
+		],
+		multiselect: true,
+		onSelectRow: sumadepo,
+		onSelectAll: sumadepo
+	});
+
+	
+	var mcheques = [
+';
+		$mSQL = "SELECT id, tipo_doc, numero, fecha, monto-abonos saldo FROM smov WHERE tipo_doc='FC' AND monto>abonos AND cod_cli='".$reg['cod_cli']."' ORDER BY fecha";
+		$query = $this->db->query($mSQL);
+		if ($query->num_rows() > 0 ){
+			foreach( $query->result() as $row ){
+				$salida .= '{id:"'.     $row->id.      '",';
+				$salida .= 'tipo_doc:"'.$row->tipo_doc.'",';
+				$salida .= 'numero:"'.  $row->numero.  '",';
+				$salida .= 'fecha:"'.   $row->fecha.   '",';
+				$salida .= 'saldo:"'.   $row->saldo.   '" },';
+			}
+		}
+		$salida .= '
+	];
+	for(var i=0;i<=mcheques.length;i++) jQuery("#aceptados").jqGrid(\'addRowData\',i+1,mcheques[i]);
+	
+	$("#ffecha").datepicker({dateFormat:"dd/mm/yy"});
+
+	function sumadepo()
+        { 
+		var grid = jQuery("#aceptados");
+		var s;
+		var total = 0;
+		var meco = "";
+		var rowcells=new Array();
+		s = grid.getGridParam(\'selarrrow\'); 
+		$("#fsele").html("");
+		if(s.length)
+		{
+			for(var i=0; i<s.length; i++)
+			{
+				var entirerow = grid.jqGrid(\'getRowData\',s[i]);
+				total += Number(entirerow["saldo"]);
+				meco = meco+entirerow["id"]+",";
+			}
+			total = Math.round(total*100)/100;	
+			$("#grantotal").html(nformat(total,2));
+			$("input#fsele").val(meco);
+			$("input#fmonto").val(total);
+			montotal = total;
+		} else {
+			total = 0;
+			$("#grantotal").html(" "+nformat(total,2));
+			$("input#fsele").val("");
+			$("input#fmonto").val(total);
+			montotal = total;	
+		}
+	};
+</script>
+
+	<p class="validateTips"></p>
+	<h1 style="text-align:center">Aplicacion de Garantia Nro. '.$reg['numero'].'</h1>
+	<p style="text-align:center;font-size:12px;">Fecha: '.$reg['fecha'].' Banco: '.$reg['banco'].'</p>
+	<form id="pagaforma">	
+	<input id="fmonto"   name="fmonto"   type="hidden">
+	<input id="fsele"    name="fsele"    type="hidden">
+	<input id="fnumbcaj" name="fnumbcaj" type="hidden" value="'.$reg['numero'].'">
+	<input id="fid"      name="fid"      type="hidden" value="'.$id.'">
+	<input id="ftipo"    name="ftipo"    type="hidden" value="C">
+	</form>
+	<br>
+	<center><table id="aceptados"><table></center>
+	<table width="80%">
+	<td>Monto Cobrado: <div style="font-size:20px;font-weight:bold">'.nformat($reg['monto']).'</div></td><td>
+	Aplicar:<div id="grantotal" style="font-size:20px;font-weight:bold">0.00</div>
+	</td></table>
+	';
+		echo $salida;
+	}
+}
 ?>

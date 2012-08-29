@@ -295,23 +295,22 @@ $(function() {
 
 		$funciones = '';
 
-		$param['WestPanel']  = $WestPanel;
+		$param['WestPanel']    = $WestPanel;
 		$param['readyLayout']  = $readyLayout;
 
 		//$param['EastPanel']  = $EastPanel;
-		$param['listados']   = $this->datasis->listados('BCAJ', 'JQ');
-		$param['otros']      = $this->datasis->otros('BCAJ', 'JQ');
+		$param['listados']     = $this->datasis->listados('BCAJ', 'JQ');
+		$param['otros']        = $this->datasis->otros('BCAJ', 'JQ');
 		//$param['funciones']  = $funciones;
 
 		$param['centerpanel']  = $centerpanel;
-		$param['SouthPanel'] = $SouthPanel;
-		//$param['tema1'] = 'darkness';
-		$param['temas']     = array('proteo','darkness','anexos1');
+		$param['SouthPanel']   = $SouthPanel;
+		$param['temas']        = array('proteo','darkness','anexos1');
 		
-		//$param['tema']  = 'bootstrap';
-		$param['bodyscript'] = $bodyscript;
-		$param['tabs'] = false;
-		$param['encabeza']   = $this->titp;
+		$param['bodyscript']   = $bodyscript;
+		$param['tabs']         = false;
+		$param['encabeza']     = $this->titp;
+		
 		$this->load->view('jqgrid/crud2',$param);
 	}
 
@@ -3373,7 +3372,6 @@ $(function() {
 		$sql='SELECT tbanco FROM banc WHERE codbanc='.$this->db->escape($codigo);
 		return $this->datasis->dameval($sql);
 	}
-
 
 	// forma de cierre de deposito
 	function formacierre(){

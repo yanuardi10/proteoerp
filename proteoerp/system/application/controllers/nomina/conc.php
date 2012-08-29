@@ -19,6 +19,7 @@ class Conc extends Controller {
 			$this->db->simple_query('ALTER TABLE conc ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ');
 			$this->db->simple_query('ALTER TABLE conc ADD UNIQUE INDEX concepto (concepto)');
 		}
+		$this->datasis->modintramenu( 800, 600, substr($this->url,0,-1) );
 		redirect($this->url.'jqdatag');
 	}
 
@@ -131,7 +132,7 @@ jQuery("#a1").click( function(){
 			'editable'      => $editar,
 			'width'         => 40,
 			'edittype'      => "'select'",
-			'editoptions'   => '{value: {"A":"Asignacion", "D":"Deduccion"} }',
+			'editoptions'   => '{value: {"A":"Asignacion", "D":"Deduccion"}, style:"width:140px"} ',
 			'editrules'     => '{ required:true}',
 		));
 
@@ -153,7 +154,7 @@ jQuery("#a1").click( function(){
 			'editable'      => $editar,
 			'width'         => 40,
 			'edittype'      => "'select'",
-			'editoptions'   => '{value: {"S   ":"Semanal", "Q   ":"Quincenal", "B   ":"Bisemanal", "M   ":"Mensual",  "SQ  ":"Semanal/Quincenal", "SQM ":"Sem/Quin/Mensual", "SQMB":"Sem/Quin/Men/Bisemanal"} }',
+			'editoptions'   => '{value: {"S   ":"Semanal", "Q   ":"Quincenal", "B   ":"Bisemanal", "M   ":"Mensual",  "SQ  ":"Semanal/Quincenal", "SQM ":"Sem/Quin/Mensual", "SQMB":"Sem/Quin/Men/Bisemanal"}, style:"width:200px"} ',
 			'editrules'     => '{ required:true}',
 			'formoptions'   => '{ label: "Aplicacion" }',
 		));
@@ -208,7 +209,7 @@ jQuery("#a1").click( function(){
 			'editable'      => $editar,
 			'width'         => 40,
 			'edittype'      => "'select'",
-			'editoptions'   => '{value: {"P":"Proveedor", "G":"Gasto"},
+			'editoptions'   => '{value: {"P":"Proveedor", "G":"Gasto"}, style:"width:100px",
 				dataEvents: [{
 					type: "change", fn: function(e){
 						var v=$(e.target).val();
@@ -239,7 +240,7 @@ jQuery("#a1").click( function(){
 			'editable'      => $editar,
 			'width'         => 40,
 			'edittype'      => "'select'",
-			'editoptions'   => '{value: {"P":"Proveedor", "G":"Gasto"},
+			'editoptions'   => '{value: {"P":"Proveedor", "G":"Gasto"}, style:"width:100px",
 				dataEvents: [{
 					type: "change", fn: function(e){
 						var v=$(e.target).val();
@@ -270,7 +271,7 @@ jQuery("#a1").click( function(){
 			'width'         => 40,
 			'editrules'     => '{ required:true}',
 			'edittype'      => "'select'",
-			'editoptions'   => '{value: {"S":"Si", "N":"No"} }',
+			'editoptions'   => '{value: {"S":"Si", "N":"No"}, style:"width:80px" }',
 			'formoptions'   => '{label:"Liquidaciones"}'
 
 		));
@@ -287,7 +288,7 @@ jQuery("#a1").click( function(){
 
 		$grid->showpager(true);
 		$grid->setWidth('');
-		$grid->setHeight('290');
+		$grid->setHeight('380');
 		$grid->setTitle($this->titp);
 		$grid->setfilterToolbar(true);
 		$grid->setToolbar('false', '"top"');
@@ -303,8 +304,8 @@ jQuery("#a1").click( function(){
 			}
 		');
 
-		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:500, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
-		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:500, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:480, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
+		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:480, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
 		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
 
 		#show/hide navigations buttons

@@ -1,5 +1,876 @@
 <?php require_once(BASEPATH.'application/controllers/validaciones.php');
-//proveed
+class Pers extends Controller {
+	var $mModulo='PERS';
+	var $titp='Personal Trabajador';
+	var $tits='Personal Trabajador';
+	var $url ='nomina/pers/';
+
+	function Pers(){
+		parent::Controller();
+		$this->load->library('rapyd');
+		$this->load->library('jqdatagrid');
+		//$this->datasis->modulo_nombre( $modulo, $ventana=0 );
+	}
+
+	function index(){
+		/*if ( !$this->datasis->iscampo('pers','id') ) {
+			$this->db->simple_query('ALTER TABLE pers DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE pers ADD UNIQUE INDEX numero (numero)');
+			$this->db->simple_query('ALTER TABLE pers ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
+		};*/
+		$this->datasis->modintramenu( 900, 600, substr($this->url,0,-1) );
+		redirect($this->url.'jqdatag');
+	}
+
+	//***************************
+	//Layout en la Ventana
+	//
+	//***************************
+	function jqdatag(){
+
+		$grid = $this->defgrid();
+		$param['grids'][] = $grid->deploy();
+
+		$bodyscript = '
+<script type="text/javascript">
+$(function() {
+	$( "input:submit, a, button", ".otros" ).button();
+});
+
+jQuery("#a1").click( function(){
+	var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
+	if (id)	{
+		var ret = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
+		window.open(\''.base_url().'formatos/ver/PERS/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
+});
+</script>
+';
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		$WestPanel = '
+<div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content">
+<div class="anexos">
+
+<table id="west-grid" align="center">
+	<tr>
+		<td><div class="tema1"><table id="listados"></table></div></td>
+	</tr>
+	<tr>
+		<td><div class="tema1"><table id="otros"></table></div></td>
+	</tr>
+</table>
+
+<table id="west-grid" align="center">
+	<tr>
+		<td></td>
+	</tr>
+</table>
+</div>
+'.
+//		<td><a style="width:190px" href="#" id="a1">Imprimir Copia</a></td>
+'</div> <!-- #LeftPane -->
+';
+
+		$SouthPanel = '
+<div id="BottomPane" class="ui-layout-south ui-widget ui-widget-content">
+<p>'.$this->datasis->traevalor('TITULO1').'</p>
+</div> <!-- #BottomPanel -->
+';
+		$param['WestPanel']  = $WestPanel;
+		//$param['EastPanel']  = $EastPanel;
+		$param['SouthPanel'] = $SouthPanel;
+		$param['listados'] = $this->datasis->listados('PERS', 'JQ');
+		$param['otros']    = $this->datasis->otros('PERS', 'JQ');
+		$param['temas']     = array('proteo','darkness','anexos1');
+		$param['bodyscript'] = $bodyscript;
+		$param['tabs'] = false;
+		$param['encabeza'] = $this->titp;
+		$this->load->view('jqgrid/crud2',$param);
+	}
+
+	//***************************
+	//Definicion del Grid y la Forma
+	//***************************
+	function defgrid( $deployed = false ){
+		$i      = 1;
+		$editar = "true";
+		$linea = 1;
+
+		$grid  = new $this->jqdatagrid;
+
+		$grid->addField('codigo');
+		$grid->label('Codigo');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:10, maxlength: 15 }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:1 }'
+		));
+
+		$grid->addField('nombre');
+		$grid->label('Nombre');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 150,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 30 }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:2 }'
+		));
+
+		$linea = $linea + 1;
+		$grid->addField('nacional');
+		$grid->label('Nac.');
+		$grid->params(array(
+			'align'         => "'center'",
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'select'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{value: {"V":"Venezolana","E":"Extranjera","P":"Pasaporte" }, style:"width:120px" }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:1, label: "Nacionalidad" }'
+		));
+
+		$grid->addField('apellido');
+		$grid->label('Apellido');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 150,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 30 }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:2 }'
+		));
+
+		$linea = $linea + 1;
+		$grid->addField('cedula');
+		$grid->label('Cedula');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 70,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:10, maxlength: 10 }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:1, label: "C.I./Pasaporte" }'
+		));
+
+		$grid->addField('direc1');
+		$grid->label('Direccion 1');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:false}',
+			'editoptions'   => '{ size:30, maxlength: 30 }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:2 }'
+		));
+
+
+		$linea = $linea + 1;
+		$grid->addField('tipo');
+		$grid->label('Frec.');
+		$grid->params(array(
+			'align'         => "'center'",
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'select'",
+			'editoptions'   => '{value: {"Q":"Quincenal","S":"Semanal","B":"Bisemanal","M":"Mensual","O":"Otro" }, style:"width:120px" }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:1, label: "Frecuencia" }'
+		));
+
+		$grid->addField('direc2');
+		$grid->label('Direccion 2');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:false}',
+			'editoptions'   => '{ size:30, maxlength: 30 }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:2 }'
+		));
+
+
+		$linea = $linea + 1;
+		$grid->addField('status');
+		$grid->label('Status');
+		$grid->params(array(
+			'align'         => "'center'",
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'select'",
+			'editoptions'   => '{value: {"A":"Activo","V":"Vacaciones","I":"Inactivo","R":"Retirado","P":"Permiso" }, style:"width:120px" }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:1, label: "Frecuencia" }'
+		));
+
+
+		$grid->addField('direc3');
+		$grid->label('Direccion 3');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:false}',
+			'editoptions'   => '{ size:30, maxlength: 30 }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:2 }'
+		));
+
+
+		$linea = $linea + 1;
+		$grid->addField('nacimi');
+		$grid->label('Nacio');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:1, label:"Nacimiento" }'
+		));
+
+		$grid->addField('telefono');
+		$grid->label('Telefono');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:false}',
+			'editoptions'   => '{ size:30, maxlength: 30 }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:2 }'
+		));
+
+
+/*
+		$grid->addField('sso');
+		$grid->label('SSO');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 110,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 11 }',
+		));
+*/
+
+		$linea = $linea + 1;
+		$grid->addField('sexo');
+		$grid->label('Sexo');
+		$grid->params(array(
+			'align'         => "'center'",
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'select'",
+			'editoptions'   => '{value: {"F":"Femenino","M":"Masculino","O":"Otro" }, style:"width:120px" }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:1, label: "Sexo" }'
+		));
+
+		$mSQL  = "SELECT division, CONCAT(division, ' ', descrip) descrip FROM divi ORDER BY division ";
+		$adivi = $this->datasis->llenajqselect($mSQL, false );
+
+		$grid->addField('divi');
+		$grid->label('Divi');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'select'",
+			'editoptions'   => '{ value: '.$adivi.',  style:"width:250px"}',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:2, label: "Division" }'
+		));
+
+		$linea = $linea + 1;
+		$grid->addField('civil');
+		$grid->label('Edo.Civil');
+		$grid->params(array(
+			'align'         => "'center'",
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'select'",
+			'editoptions'   => '{value: {"S":"Soltero","C":"Casado","D":"Divorciado","V":"Viudo" }, style:"width:120px" }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:1, label: "Estado Civil" }'
+		));
+
+		$mSQL  = "SELECT departa, CONCAT(departa, ' ', depadesc) descrip FROM depa ORDER BY departa ";
+		$adepa = $this->datasis->llenajqselect($mSQL, false );
+
+		$grid->addField('depto');
+		$grid->label('Depto.');
+		$grid->params(array(
+			'align'         => "'center'",
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 50,
+			'edittype'      => "'select'",
+			'editoptions'   => '{ value: '.$adepa.',  style:"width:250px"}',
+			'stype'         => "'text'",
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:2, label:"Departamento" }'
+		));
+
+		$mSQL  = "SELECT cargo, CONCAT(cargo, ' ', descrip) descrip FROM carg ORDER BY cargo ";
+		$acargo = $this->datasis->llenajqselect($mSQL, false );
+
+		$linea = $linea + 1;
+		$grid->addField('ingreso');
+		$grid->label('Ingreso');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:1, label:"Fecha Ingreso" }'
+		));
+		
+		$grid->addField('cargo');
+		$grid->label('Cargo');
+		$grid->params(array(
+			'align'         => "'center'",
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 50,
+			'edittype'      => "'select'",
+			'editoptions'   => '{ value: '.$acargo.',  style:"width:250px"}',
+			'stype'         => "'text'",
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:2, label:"Cargo" }'
+		));
+
+
+		$linea = $linea + 1;
+		$grid->addField('sueldo');
+		$grid->label('Sueldo');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:1, label:"Sueldo" }'
+		));
+
+		$mSQL  = "SELECT codigo, profesion FROM prof ORDER BY profesion ";
+		$aprof = $this->datasis->llenajqselect($mSQL, false );
+		$grid->addField('profes');
+		$grid->label('Profes');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'edittype'      => "'select'",
+			'editoptions'   => '{ value: '.$aprof.',  style:"width:250px"}',
+			'stype'         => "'text'",
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:2, label:"Profesion" }'
+		));
+
+		$linea = $linea + 1;
+		$grid->addField('niveled');
+		$grid->label('Nivel F.');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'select'",
+			'editoptions'   => '{value: {"01":"Primaria","02":"Bachillerato","03":"Tecnico Medio","04":"T.S.U.","05":"Universitario","06":"PHD/Master" }, style:"width:150px" }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:1, label: "Formacion" }'
+		));
+
+
+		$grid->addField('cuenta');
+		$grid->label('Cuenta');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 150,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:false}',
+			'editoptions'   => '{ size:15, maxlength: 20 }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:2, label: "Cta. Bancaria" }'
+		));
+
+/*
+		$grid->addField('retiro');
+		$grid->label('Retiro');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Retiro" }'
+		));
+*/
+
+		$linea = $linea + 1;
+		$grid->addField('dialib');
+		$grid->label('Dialib');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:3, maxlength: 2 }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:1, label:"Dias Libres" }'
+		));
+
+
+		$mSQL  = "SELECT codigo, CONCAT(codigo, ' ', nombre) nombre FROM noco ORDER BY codigo ";
+		$anoco = $this->datasis->llenajqselect($mSQL, false );
+		$grid->addField('contrato');
+		$grid->label('Contrato');
+		$grid->params(array(
+			'align'         => "'center'",
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 50,
+			'edittype'      => "'select'",
+			'editoptions'   => '{ value: '.$anoco.',  style:"width:250px"}',
+			'stype'         => "'text'",
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:2, label:"Contrato" }'
+		));
+
+
+
+/*
+		$grid->addField('banco');
+		$grid->label('Banco');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 150,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 15 }',
+		));
+
+
+		$grid->addField('cutipo');
+		$grid->label('Cutipo');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 1 }',
+		));
+*/
+/*
+		$grid->addField('vari1');
+		$grid->label('Vari1');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('vari2');
+		$grid->label('Vari2');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('vari3');
+		$grid->label('Vari3');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('vari4');
+		$grid->label('Vari4');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
+		));
+
+
+		$grid->addField('vari5');
+		$grid->label('Vari5');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
+
+
+		$grid->addField('vari6');
+		$grid->label('Vari6');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('uaumento');
+		$grid->label('Uaumento');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('formato');
+		$grid->label('Formato');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 100,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:10, maxlength: 10 }',
+		));
+
+
+		$grid->addField('dialab');
+		$grid->label('Dialab');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:3, maxlength: 2 }',
+		));
+
+
+		$grid->addField('xdialab');
+		$grid->label('Xdialab');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 2 }',
+		));
+
+
+		$grid->addField('sucursal');
+		$grid->label('Sucursal');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 2 }',
+		));
+		$grid->addField('carnet');
+		$grid->label('Carnet');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 100,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 10 }',
+		));
+*/
+
+		$linea = $linea + 1;
+		$grid->addField('enlace');
+		$grid->label('Enlace');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 50,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:false}',
+			'editoptions'   => '{ size:5, maxlength: 5 }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:1, label:"Enlace" }'
+		));
+
+
+		$grid->addField('vence');
+		$grid->label('Vence');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:false,date:true}',
+			'formoptions'   => '{ label:"Vencimiento" }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:2, label:"Vencimiento" }'
+		));
+
+
+
+/*
+		$grid->addField('estampa');
+		$grid->label('Estampa');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
+
+		$grid->addField('usuario');
+		$grid->label('Usuario');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 120,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 12 }',
+		));
+
+		$grid->addField('hora');
+		$grid->label('Hora');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 8 }',
+		));
+
+		$grid->addField('transac');
+		$grid->label('Transac');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 8 }',
+		));
+
+		$grid->addField('cuentab');
+		$grid->label('Cuentab');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 20 }',
+		));
+
+		$grid->addField('modificado');
+		$grid->label('Modificado');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
+*/
+
+		$grid->addField('id');
+		$grid->label('Id');
+		$grid->params(array(
+			'hidden'        => 'true',
+			'align'         => "'center'",
+			'frozen'        => 'true',
+			'width'         => 40,
+			'editable'      => 'false',
+			'search'        => 'false'
+		));
+
+/*
+		$grid->addField('horario');
+		$grid->label('Horario');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 4 }',
+		));
+*/
+
+		$grid->showpager(true);
+		$grid->setWidth('');
+		$grid->setHeight('380');
+		$grid->setTitle($this->titp);
+		$grid->setfilterToolbar(true);
+		$grid->setToolbar('false', '"top"');
+
+		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 700, height:450, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
+		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 700, height:450, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
+		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
+
+		#show/hide navigations buttons
+		$grid->setAdd(true);
+		$grid->setEdit(true);
+		$grid->setDelete(true);
+		$grid->setSearch(true);
+		$grid->setRowNum(30);
+		$grid->setShrinkToFit('false');
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		#GET url
+		$grid->setUrlget(site_url($this->url.'getdata/'));
+
+		if ($deployed) {
+			return $grid->deploy();
+		} else {
+			return $grid;
+		}
+	}
+
+	/**
+	* Busca la data en el Servidor por json
+	*/
+	function getdata()
+	{
+		$grid       = $this->jqdatagrid;
+
+		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
+		$mWHERE = $grid->geneTopWhere('pers');
+
+		$response   = $grid->getData('pers', array(array()), array(), false, $mWHERE );
+		$rs = $grid->jsonresult( $response);
+		echo $rs;
+	}
+
+	/**
+	* Guarda la Informacion
+	*/
+	function setData()
+	{
+		$this->load->library('jqdatagrid');
+		$oper   = $this->input->post('oper');
+		$id     = $this->input->post('id');
+		$data   = $_POST;
+		$mcodp  = "codigo";
+		$check  = 0;
+
+		unset($data['oper']);
+		unset($data['id']);
+		if($oper == 'add'){
+			if(false == empty($data)){
+				$check = $this->datasis->dameval("SELECT count(*) FROM pers WHERE $mcodp=".$this->db->escape($data[$mcodp]));
+				if ( $check == 0 ){
+					$this->db->insert('pers', $data);
+					echo "Registro Agregado";
+					logusu('PERS',"Registro ????? INCLUIDO");
+				} else
+					echo "Ya existe un registro con ese $mcodp";
+			} else
+				echo "Fallo Agregado!!!";
+
+		} elseif($oper == 'edit') {
+			$nuevo  = $data[$mcodp];
+			$anterior = $this->datasis->dameval("SELECT $mcodp FROM pers WHERE id=$id");
+			//if ( $nuevo <> $anterior ){
+			//	//si no son iguales borra el que existe y cambia
+			//	$this->db->query("DELETE FROM pers WHERE $mcodp=?", array($mcodp));
+			//	$this->db->query("UPDATE pers SET $mcodp=? WHERE $mcodp=?", array( $nuevo, $anterior ));
+			//	$this->db->where("id", $id);
+			//	$this->db->update("pers", $data);
+			//	logusu('PERS',"$mcodp Cambiado/Fusionado Nuevo:".$nuevo." Anterior: ".$anterior." MODIFICADO");
+			//	echo "Grupo Cambiado/Fusionado en clientes";
+			//} else {
+				unset($data[$mcodp]);
+				$this->db->where("id", $id);
+				$this->db->update('pers', $data);
+				logusu('PERS',"Personal  ".$nuevo." MODIFICADO");
+				echo "$nuevo Modificado";
+			//}
+
+		} elseif($oper == 'del') {
+			$codigo = $this->datasis->dameval("SELECT $mcodp FROM pers WHERE id=$id");
+			$check  = $this->datasis->dameval("SELECT COUNT(*) FROM nomina WHERE codigo=".$this->db->escape($codigo));
+			if ($check > 0){
+				echo " El registro no puede ser eliminado; tiene movimiento ";
+			} else {
+				$this->db->simple_query("DELETE FROM pers WHERE id=$id ");
+				logusu('PERS',"Registro $codigo ELIMINADO");
+				echo "Registro Eliminado";
+			}
+		};
+	}
+
+
+/*
 class pers extends validaciones {
 
 	function pers(){
@@ -101,13 +972,13 @@ class pers extends validaciones {
 ';
 		$style ='
 <style type="text/css">
-.fakeContainer { /* The parent container */
+.fakeContainer { // The parent container
     margin: 5px;
     padding: 0px;
     border: none;
-    width: 740px; /* Required to set */
-    height: 320px; /* Required to set */
-    overflow: hidden; /* Required to set */
+    width: 740px; // Required to set 
+    height: 320px; // Required to set 
+    overflow: hidden; // Required to set 
 }
 </style>	
 ';
@@ -283,14 +1154,15 @@ class pers extends validaciones {
 		$edit->email->group = "Datos del Trabajador";
 		$edit->email->maxlength=50;
 		$edit->email->rule="trim";
-		/*
-		$edit->posicion = new dropdownField("Tipo de Escritura" ,"escritura");
-		$edit->posicion->option("","");                                                 
-		$edit->posicion->options("SELECT codigo,posicion FROM posicion  ORDER BY codigo");
-		$edit->posicion->group = "Datos del Trabajador";
-		$edit->posicion->rule="trim|strtoupper";
-		$edit->posicion->style ="width:170px;";
-		*/
+
+		
+		//$edit->posicion = new dropdownField("Tipo de Escritura" ,"escritura");
+		//$edit->posicion->option("","");                                                 
+		//$edit->posicion->options("SELECT codigo,posicion FROM posicion  ORDER BY codigo");
+		//$edit->posicion->group = "Datos del Trabajador";
+		//$edit->posicion->rule="trim|strtoupper";
+		//$edit->posicion->style ="width:170px;";
+		
 		
 		$edit->civil = new dropdownField("Estado Civil", "civil");
 		$edit->civil->style = "width:100px;";
@@ -386,11 +1258,11 @@ class pers extends validaciones {
 		$edit->retiro->in = "ingreso";
 		$edit->retiro->rule="trim|chfecha";
 		
-		/*$edit->trabaja = new dropdownField("Tipo de Trabajador","tipot");
-		$edit->trabaja->option("","");
-		$edit->trabaja->options("SELECT codigo,tipo  FROM tipot ORDER BY codigo");
-		$edit->trabaja->group = "Relaci&oacute;n Laboral";
-		$edit->trabaja->style = "width:200px;";*/
+		//$edit->trabaja = new dropdownField("Tipo de Trabajador","tipot");
+		//$edit->trabaja->option("","");
+		//$edit->trabaja->options("SELECT codigo,tipo  FROM tipot ORDER BY codigo");
+		//$edit->trabaja->group = "Relaci&oacute;n Laboral";
+		//$edit->trabaja->style = "width:200px;";
 		
 		$edit->tipo = new dropdownField("Tipo de N&oacute;mina","tipo");
 		$edit->tipo->option("","");
@@ -1076,6 +1948,7 @@ var scliStore = new Ext.data.Store({
 			echo '{success:true, message:"Todo bien", results:'. $results.', data:'.json_encode($arr).'}';
 		}
 	}
+*/
 }
 
 ?>

@@ -691,7 +691,7 @@ class b2b extends validaciones {
 // Metodos para gestionar transacciones como compras
 //****************************************************
 	function traecompra($par,$ultimo=null){
-		$rt=$this->_trae_compra($par,$ultimo);
+		$rt = $this->_trae_compra($par,$ultimo);
 		if($rt==0){
 			$str=$this->comprasCargadas.' transacciones descargadas';
 		}else{

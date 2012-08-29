@@ -3214,7 +3214,6 @@ function renderSinv(value, p, record) {
 		$data['coldeta']     = $coldeta;
 		$data['acordioni']   = $acordioni;
 		$data['final']       = $final;
-
 		$data['title']  = heading('Compras');
 		$this->load->view('extjs/extjsvenmd',$data);
 
