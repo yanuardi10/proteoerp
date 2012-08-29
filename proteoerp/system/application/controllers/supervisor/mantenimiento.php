@@ -1007,7 +1007,7 @@ function bobo(url){'."
 		if(empty($numero)) show_error('Falta n&uacute;mero de factura');
 		$this->rapyd->load('datafilter','datagrid');
 
-		$sel=array('b.tipoa','b.codigoa','b.desca','b.despacha','b.udespacha','b.fdespacha','b.cana');
+		$sel=array('b.tipoa','a.fecha','b.codigoa','b.desca','b.despacha','b.udespacha','b.fdespacha','b.cana');
 		$grid = new DataGrid('Productos de la factura '.$numero);
 		$grid->db->select($sel);
 		$grid->db->from('sfac AS a');
@@ -1017,6 +1017,7 @@ function bobo(url){'."
 		$grid->column('C&oacute;digo','codigoa');
 		$grid->column('Descripci&oacute;n','desca'  );
 		$grid->column('Despachado' ,'<#despacha#> : <#udespacha#> <dbdate_to_human><#fdespacha#></dbdate_to_human>');
+		$grid->column('Fecha'   ,'<dbdate_to_human><#fecha#></dbdate_to_human>');
 		$grid->column('Cantidad', 'cana','align="left"');
 		$grid->build();
 
