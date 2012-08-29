@@ -97,16 +97,16 @@ function consulrif(campo){
 ';
 
 
-		$param['WestPanel']  = $WestPanel;
+		$param['WestPanel']   = $WestPanel;
 		//$param['EastPanel']  = $EastPanel;
-		$param['funciones']  = $funciones;
-		$param['SouthPanel'] = $SouthPanel;
-		$param['listados'] = $this->datasis->listados('SPRV', 'JQ');
-		$param['otros']    = $this->datasis->otros('SPRV', 'JQ');
-		$param['temas']     = array('proteo','darkness','anexos1');
-		$param['bodyscript'] = $bodyscript;
-		$param['tabs'] = false;
-		$param['encabeza'] = $this->titp;
+		$param['funciones']   = $funciones;
+		$param['SouthPanel']  = $SouthPanel;
+		$param['listados']    = $this->datasis->listados('SPRV', 'JQ');
+		$param['otros']       = $this->datasis->otros('SPRV', 'JQ');
+		$param['temas']       = array('proteo','darkness','anexos1');
+		$param['bodyscript']  = $bodyscript;
+		$param['tabs']        = false;
+		$param['encabeza']    = $this->titp;
 		$this->load->view('jqgrid/crud2',$param);
 	}
 

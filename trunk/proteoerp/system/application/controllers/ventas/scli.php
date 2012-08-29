@@ -21,6 +21,15 @@ class Scli extends Controller {
 		if ( !$this->datasis->iscampo('scli','url') ) {
 			$this->db->query('ALTER TABLE scli ADD COLUMN url VARCHAR(120) NULL ');
 		};
+		if ( !$this->datasis->iscampo('scli','pin') ) {
+			$this->db->query('ALTER TABLE scli ADD COLUMN pin VARCHAR(10) NULL ');
+		};
+		if ( !$this->datasis->iscampo('scli','fb') ) {
+			$this->db->query('ALTER TABLE scli ADD COLUMN fb VARCHAR(120) NULL ');
+		};
+		if ( !$this->datasis->iscampo('scli','twitter') ) {
+			$this->db->query('ALTER TABLE scli ADD COLUMN twitter VARCHAR(120) NULL ');
+		};
 		$this->datasis->modintramenu( 1000, 650, 'ventas/scli' );
 		redirect($this->url.'jqdatag');
 	}
@@ -702,6 +711,32 @@ function sclilimite(){
 		));
 
 		$linea = $linea + 1;
+		$grid->addField('repre');
+		$grid->label('Representante');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 150,
+			'edittype'      => "'text'",
+			//'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 30 }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:2 }'
+		));
+
+		$grid->addField('cirepre');
+		$grid->label('Rep.C.I.');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 90,
+			'edittype'      => "'text'",
+			//'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:10, maxlength: 13 }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:1 }'
+		));
+
+
+		$linea = $linea + 1;
 		$grid->addField('email');
 		$grid->label('Email');
 		$grid->params(array(
@@ -739,6 +774,44 @@ function sclilimite(){
 			'edittype'      => "'text'",
 			//'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:30, maxlength: 18 }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:1 }'
+		));
+
+		$grid->addField('fb');
+		$grid->label('facebook');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 180,
+			'edittype'      => "'text'",
+			//'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 18 }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:2 }'
+		));
+
+
+		$linea = $linea + 1;
+		$grid->addField('pin');
+		$grid->label('PIN');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 180,
+			'edittype'      => "'text'",
+			//'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 18 }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:1 }'
+		));
+
+		$grid->addField('twitter');
+		$grid->label('twitter');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 180,
+			'edittype'      => "'text'",
+			//'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 18 }',
 			'formoptions'   => '{ rowpos:'.$linea.', colpos:2 }'
 		));
 
@@ -756,31 +829,6 @@ function sclilimite(){
 			'formoptions'   => '{ rowpos:'.$linea.', colpos:1 }'
 		));
 */
-
-		$linea = $linea + 1;
-		$grid->addField('repre');
-		$grid->label('Representante');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 150,
-			'edittype'      => "'text'",
-			//'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 30 }',
-			'formoptions'   => '{ rowpos:'.$linea.', colpos:2 }'
-		));
-
-		$grid->addField('cirepre');
-		$grid->label('Rep.C.I.');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 90,
-			'edittype'      => "'text'",
-			//'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:10, maxlength: 13 }',
-			'formoptions'   => '{ rowpos:'.$linea.', colpos:1 }'
-		));
 
 
 
@@ -1029,7 +1077,7 @@ function sclilimite(){
 			closeAfterEdit:false,
 			mtype: "POST",
 			width: 720,
-			height:450,
+			height:470,
 			closeOnEscape: true,
 			top: 50,
 			left:20,
@@ -1054,7 +1102,7 @@ function sclilimite(){
 			closeAfterAdd:true,
 			mtype: "POST",
 			width: 720,
-			height:450,
+			height:470,
 			closeOnEscape: true,
 			top: 50,
 			left:20,

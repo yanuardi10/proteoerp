@@ -140,7 +140,6 @@ $(function() {
 									}
 								}
 							);
-							//grid.trigger("reloadGrid");
 							return [true, a ];
 						}
 					})
@@ -151,7 +150,6 @@ $(function() {
 		},
 		close: function() {allFields.val( "" ).removeClass( "ui-state-error" );}
 	});
-
 });
 
 function sumamonto(){ 

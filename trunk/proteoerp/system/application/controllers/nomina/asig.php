@@ -130,8 +130,8 @@ jQuery("#a1").click( function(){
 		$link1    = site_url('ajax/buscaconc');
 		$despues1 =
 '				$("input#tipo").val(ui.item.tipo);
-				$("input#descrip").val(ui.item.descrip);
-				$("textarea#formula").val(ui.item.formula);';
+				$("input#descrip").val(ui.item.descrip);';
+				//$("textarea#formula").val(ui.item.formula);
 
 		$grid->addField('concepto');
 		$grid->label('Concepto');
@@ -232,7 +232,7 @@ jQuery("#a1").click( function(){
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
 		));
-
+*/
 		$grid->addField('valor');
 		$grid->label('Monto/Cuota');
 		$grid->params(array(
@@ -245,7 +245,7 @@ jQuery("#a1").click( function(){
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
-*/
+
 		$grid->addField('id');
 		$grid->label('Id');
 		$grid->params(array(
