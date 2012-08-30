@@ -61,7 +61,8 @@ class sfacdesp extends Controller {
 		$filter->fechad->rule='required';
 		$filter->fechad->insertValue=date('Y-m-d');
 
-		$filter->numero = new inputField('N&uacute;mero', 'a.numero');
+		$filter->numero = new inputField('N&uacute;mero', 'numero');
+		$filter->numero->db_name = 'a.numero';
 		$filter->numero->size = 20;
 
 		$action = "javascript:window.location='".site_url('ventas/sfacdesp/index')."'";
@@ -145,7 +146,7 @@ class sfacdesp extends Controller {
 		//$this->rapyd->uri->keep_persistence();
 
 		$filter = new DataFilter('Recuerde que las fechas son obligatoria');
-		$select=array("IF(a.tipo_doc='F','Activa',IF(a.tipo_doc='D','Devolucion',IF(a.tipo_doc='X','Anulada','Otro'))) AS tipo_doc", 
+		$select=array("IF(a.tipo_doc='F','Activa',IF(a.tipo_doc='D','Devolucion',IF(a.tipo_doc='X','Anulada','Otro'))) AS tipo_doc",
 		"a.cod_cli AS cliente","a.fecha","if(a.referen='C','Cred','Cont') referen","a.numero","a.nombre","a.totalg AS total","a.vd");
 		$filter->db->select($select);
 		$filter->db->from('sfac AS a');
