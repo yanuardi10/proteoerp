@@ -13,11 +13,13 @@ class Scli extends Controller {
 	}
 
 	function index(){
-		/*if ( !$this->datasis->iscampo('scli','id') ) {
-			$this->db->simple_query('ALTER TABLE scli DROP PRIMARY KEY');
-			$this->db->simple_query('ALTER TABLE scli ADD UNIQUE INDEX numero (numero)');
-			$this->db->simple_query('ALTER TABLE scli ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
-		};*/
+		if ( !$this->datasis->iscampo('scli','id') ) {
+			$mSQL='ALTER TABLE `scli` DROP PRIMARY KEY, ADD UNIQUE `cliente` (`cliente`)';
+			$this->db->simple_query($mSQL);
+			$mSQL='ALTER TABLE `scli` ADD `id` INT AUTO_INCREMENT PRIMARY KEY';
+			$this->db->simple_query($mSQL);
+		};
+
 		if ( !$this->datasis->iscampo('scli','url') ) {
 			$this->db->query('ALTER TABLE scli ADD COLUMN url VARCHAR(120) NULL ');
 		};
@@ -48,11 +50,11 @@ class Scli extends Controller {
 		$grid = $this->defgrid();
 		$param['grids'][] = $grid->deploy();
 		$consulrif=trim($this->datasis->traevalor('CONSULRIF'));
+		//$link   = site_url('ajax/buscacpla');
 
 
 		$forma = "No tiene Acceso a Modificar Credito";
 		if ( $this->datasis->puede_ejecuta('SCLILIMITE', 'SCLI') ) {
-			//$forma = "<form id='flimite' name='flimite' >";
 			if ( $this->datasis->puede_ejecuta('SCLITOLERA', 'SCLI') ) {
 				if ( $this->datasis->puede_ejecuta('SCLIMAXTOLE', 'SCLI')) {
 					$forma .= "<table align='center' width='95%'>";
@@ -79,8 +81,6 @@ class Scli extends Controller {
 			}
 			$forma .= "<tr><td colspan=\'2\'>Observaciones: </td></tr><tr><td colspan=\'2\'><textarea id=\'observa\' name=\'observa\' rows=\'3\' cols=\'50\' ></textarea></td></tr>";
 			$forma .= "</table>";
-			//$forma .= "<input type=\'hidden\' id=\'mid\' name=\'mid\' value=\'\"+id+\"\'>";
-			//$forma .= "</form>";
 		}
 
 
@@ -159,9 +159,6 @@ function consulcne(campo){
 		window.open("http://www.cne.gov.ve/web/registro_electoral/ce.php?nacionalidad="+vrif.substr(0,1)+"&cedula="+vrif.substr(1),"CONSULCNE","height=400,width=510");
 	}
 }
-
-
-
 
 function chrif(rif){
 	rif.toUpperCase();
@@ -348,6 +345,9 @@ function sclilimite(){
 		$i       = 1;
 		$editar  = "true";
 		$linea   = 1;
+		
+		$link   = site_url('ajax/buscacpla');
+
 		$mSQL = "SELECT grupo, CONCAT(grupo, ' ', gr_desc) banco FROM grcl ORDER BY grupo ";
 		$agrupo  = $this->datasis->llenajqselect($mSQL, false );
 
@@ -490,6 +490,20 @@ function sclilimite(){
 		));
 */
 		$linea = $linea + 1;
+
+		$grid->addField('cuenta');
+		$grid->label('Contable');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 150,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:false}',
+			'editoptions'   => '{'.$grid->autocomplete($link, 'cuenta','cucucu','<div id=\"cucucu\"><b>"+ui.item.descrip+"</b></div>').'}',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:1 }'
+		));
+
+		
 		$grid->addField('dire11');
 		$grid->label('Direccion 1');
 		$grid->params(array(
@@ -809,7 +823,6 @@ function sclilimite(){
 			'formoptions'   => '{ rowpos:'.$linea.', colpos:2 }'
 		));
 
-
 		$linea = $linea + 1;
 		$grid->addField('pin');
 		$grid->label('PIN');
@@ -818,7 +831,6 @@ function sclilimite(){
 			'editable'      => $editar,
 			'width'         => 180,
 			'edittype'      => "'text'",
-			//'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:30, maxlength: 18 }',
 			'formoptions'   => '{ rowpos:'.$linea.', colpos:1 }'
 		));
@@ -830,28 +842,9 @@ function sclilimite(){
 			'editable'      => $editar,
 			'width'         => 180,
 			'edittype'      => "'text'",
-			//'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:30, maxlength: 18 }',
 			'formoptions'   => '{ rowpos:'.$linea.', colpos:2 }'
 		));
-
-
-/*
-		$grid->addField('cuenta');
-		$grid->label('Contable');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 100,
-			'edittype'      => "'text'",
-			//'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:15, maxlength: 15 }',
-			'formoptions'   => '{ rowpos:'.$linea.', colpos:1 }'
-		));
-*/
-
-
-
 
 /*
 		$grid->addField('ciudad');
@@ -1048,7 +1041,6 @@ function sclilimite(){
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
 		$grid->addField('maxtole');
 		$grid->label('MaxTolera');
 		$grid->params(array(
@@ -1063,8 +1055,6 @@ function sclilimite(){
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
-
-
 
 		$grid->showpager(true);
 		$grid->setWidth('');
@@ -1092,12 +1082,11 @@ function sclilimite(){
 		}'
 		);
 
-
 		$grid->setFormOptionsE('
 			closeAfterEdit:false,
 			mtype: "POST",
 			width: 720,
-			height:470,
+			height:490,
 			closeOnEscape: true,
 			top: 50,
 			left:20,
@@ -1125,7 +1114,7 @@ function sclilimite(){
 			closeAfterAdd:true,
 			mtype: "POST",
 			width: 720,
-			height:470,
+			height:490,
 			closeOnEscape: true,
 			top: 50,
 			left:20,
