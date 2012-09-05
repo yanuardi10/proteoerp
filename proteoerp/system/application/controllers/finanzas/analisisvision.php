@@ -9,7 +9,7 @@ class Analisisvision extends Controller {
 	}
 	
 	function index(){
-		$this->datasis->modintramenu( 900, 600, "/finanzas/analisisvision" );
+		$this->datasis->modintramenu( 900, 600, "finanzas/analisisvision" );
 		redirect("/finanzas/analisisvision/ver");
 	}
 	
@@ -128,7 +128,7 @@ jQuery("#resumen").jqGrid({
 	datatype: "local",
 	shrinkToFit: false,
 	autowidth: true,
-	height: "140",
+	height: "200",
 	colNames:["Fecha", "Ventas", "Compras", "Utilidad","%","Gastos", "%", "Inversion", "Neto","Ingreso", "Deposito","Perdida","I.Mun.","ISLR"],
 	colModel:[
 		{name:"fecha",     index:"fecha",     width:50, align:"center",sorttype:"text" },
@@ -150,7 +150,7 @@ jQuery("#resumen").jqGrid({
 	footerrow: true,
 	loadComplete: function () {
 		$(this).jqGrid(\'footerData\',\'set\',
-		{fecha:"TOTALES", ventas:"'.$tventas.'", compras:"'.$tcompras.'", util:"'.$tutil.'", putil:"-", gastos:"'.$tgastos.'", pgastos:"-", inversion:"'.$tinversion.'", nutil:"'.$tnutil.'", ingreso:"'.$tingreso.'", deposito:"'.$tdeposito.'", perdida:"'.$tperdida.'", municipal:"'.$tmunicipal.'", islr:"'.$tislr.'"});
+		{fecha:"TOTALES", ventas:"'.$tventas.'", compras:"'.$tcompras.'", util:"'.$tutil.'", putil:"0", gastos:"'.$tgastos.'", pgastos:"0", inversion:"'.$tinversion.'", nutil:"'.$tnutil.'", ingreso:"'.$tingreso.'", deposito:"'.$tdeposito.'", perdida:"'.$tperdida.'", municipal:"'.$tmunicipal.'", islr:"'.$tislr.'"});
 	},
 	caption: "Resumen de Gesti&oacute;n"
 });
@@ -208,7 +208,7 @@ GROUP BY fecha, caja, cajero
 			$grid1 = '
 jQuery("#cierres").jqGrid({
 	datatype: "local",
-	height: "200",
+	height: "160",
 	colNames:["Fecha", "Caja", "Cajero", "Usuario","Recibido","Sistema", "Faltante","Recaudado","Dif.Rec."],
 	colModel:[
 		{name:"fecha",      index:"fecha",     width:50, align:"center", sorttype:"text" },

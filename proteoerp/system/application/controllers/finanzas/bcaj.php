@@ -20,7 +20,7 @@ class Bcaj extends Controller {
 	}
 
 	function index(){
-		 if ( !$this->datasis->iscampo('bcaj','id') ) {
+		if ( !$this->datasis->iscampo('bcaj','id') ) {
 			$this->db->simple_query('ALTER TABLE bcaj DROP PRIMARY KEY');
 			$this->db->simple_query('ALTER TABLE bcaj ADD UNIQUE INDEX numero (numero)');
 			$this->db->simple_query('ALTER TABLE bcaj ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
