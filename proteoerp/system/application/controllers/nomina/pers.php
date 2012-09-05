@@ -31,6 +31,15 @@ class Pers extends Controller {
 		$grid = $this->defgrid();
 		$param['grids'][] = $grid->deploy();
 
+		$fvari = '"<h1>Variables del Trabajador</h1>Cliente: <b>"+ret.nombre+"</b><br><br><table align=center><tr><td>';
+		$fvari .= $this->datasis->traevalor('NOMVARI1').':</td><td> <input type=\'text\' id=\'xvari1\' name=\'xvari1\' size=\'6\' maxlength=\'5\' value=\""+ret.vari1+"\"></td></tr><tr><td>';
+		$fvari .= $this->datasis->traevalor('NOMVARI2').':</td><td> <input type=\'text\' id=\'xvari2\' name=\'xvari2\' size=\'6\' maxlength=\'5\' value=\""+ret.vari2+"\"></td></tr><tr><td>';
+		$fvari .= $this->datasis->traevalor('NOMVARI3').':</td><td> <input type=\'text\' id=\'xvari3\' name=\'xvari3\' size=\'6\' maxlength=\'5\' value=\""+ret.vari3+"\"></td></tr><tr><td>';
+		$fvari .= $this->datasis->traevalor('NOMVARI4').':</td><td> <input type=\'text\' id=\'xvari4\' name=\'xvari4\' size=\'6\' maxlength=\'5\' value=\""+ret.vari4+"\"></td></tr><tr><td>';
+		$fvari .= $this->datasis->traevalor('NOMVARI5').':</td><td> <input type=\'text\' id=\'xvari5\' name=\'xvari5\' size=\'6\' maxlength=\'5\' value=\""+ret.vari5+"\"></td></tr><tr><td>';
+		$fvari .= $this->datasis->traevalor('NOMVARI6').':</td><td> <input type=\'text\' id=\'xvari6\' name=\'xvari6\' size=\'6\' maxlength=\'5\' value=\""+ret.vari6+"\"></td></tr></table>"';
+
+
 		$bodyscript = '
 <script type="text/javascript">
 $(function() {
@@ -44,6 +53,43 @@ jQuery("#a1").click( function(){
 		window.open(\''.base_url().'formatos/ver/PERS/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
 	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
 });
+
+function variables(){
+	var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
+	if (id)	{
+		var mnuevo = "";
+		var ret = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
+		$.prompt('.$fvari.',{
+			buttons: { Cambiar:true, Salir:false},
+			callback: function(e,v,m,f){
+				mvari1 = f.xvari1;
+				mvari2 = f.xvari2;
+				mvari3 = f.xvari3;
+				mvari4 = f.xvari4;
+				mvari5 = f.xvari5;
+				mvari6 = f.xvari6;
+				if (v) {
+					$.ajax({
+						url: "'.site_url('nomina/pers/variables').'",
+						global: false,
+						type: "POST",
+						data: ({ mid: id, xvari1 : encodeURIComponent(mvari1), xvari2 : encodeURIComponent(mvari2), xvari3 : encodeURIComponent(mvari3), xvari4 : encodeURIComponent(mvari4), xvari5 : encodeURIComponent(mvari5), xvari6 : encodeURIComponent(mvari6) }),
+						dataType: "text",
+						async: false,
+						success: function(sino) {
+							apprise(sino);
+							jQuery("#newapi'. $param['grids'][0]['gridname'].'").trigger("reloadGrid");
+						},
+						error: function(h,t,e) { apprise("Error..codigo="+yurl+" ",e) }
+					});
+				}
+			}
+		});
+	} else
+		$.prompt("<h1>Por favor Seleccione un Cliente</h1>");
+}
+
+
 </script>
 ';
 
@@ -479,10 +525,11 @@ jQuery("#a1").click( function(){
 			'editoptions'   => '{ size:30, maxlength: 1 }',
 		));
 */
-/*
+
 		$grid->addField('vari1');
 		$grid->label('Vari1');
 		$grid->params(array(
+			'hidden'        => 'true',
 			'search'        => 'true',
 			'editable'      => $editar,
 			'align'         => "'right'",
@@ -498,6 +545,7 @@ jQuery("#a1").click( function(){
 		$grid->addField('vari2');
 		$grid->label('Vari2');
 		$grid->params(array(
+			'hidden'        => 'true',
 			'search'        => 'true',
 			'editable'      => $editar,
 			'align'         => "'right'",
@@ -513,6 +561,7 @@ jQuery("#a1").click( function(){
 		$grid->addField('vari3');
 		$grid->label('Vari3');
 		$grid->params(array(
+			'hidden'        => 'true',
 			'search'        => 'true',
 			'editable'      => $editar,
 			'align'         => "'right'",
@@ -528,6 +577,7 @@ jQuery("#a1").click( function(){
 		$grid->addField('vari4');
 		$grid->label('Vari4');
 		$grid->params(array(
+			'hidden'        => 'true',
 			'search'        => 'true',
 			'editable'      => $editar,
 			'align'         => "'right'",
@@ -543,6 +593,7 @@ jQuery("#a1").click( function(){
 		$grid->addField('vari5');
 		$grid->label('Vari5');
 		$grid->params(array(
+			'hidden'        => 'true',
 			'search'        => 'true',
 			'editable'      => $editar,
 			'width'         => 80,
@@ -556,6 +607,7 @@ jQuery("#a1").click( function(){
 		$grid->addField('vari6');
 		$grid->label('Vari6');
 		$grid->params(array(
+			'hidden'        => 'true',
 			'search'        => 'true',
 			'editable'      => $editar,
 			'align'         => "'right'",
@@ -567,7 +619,7 @@ jQuery("#a1").click( function(){
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
+/*
 		$grid->addField('uaumento');
 		$grid->label('Uaumento');
 		$grid->params(array(
@@ -868,6 +920,25 @@ jQuery("#a1").click( function(){
 			}
 		};
 	}
+
+	function variables() {
+		$id      = $_REQUEST['mid'];
+		$mvari1  = $_REQUEST['xvari1'];
+		$mvari2  = $_REQUEST['xvari2'];
+		$mvari3  = $_REQUEST['xvari3'];
+		$mvari4  = $_REQUEST['xvari4'];
+		$mvari5  = $_REQUEST['xvari5'];
+		$mvari6  = $_REQUEST['xvari6'];
+
+		$this->db->where("id", $id);
+		$this->db->update('pers', array( "vari1"=>$mvari1, "vari2"=>$mvari2, "vari3"=>$mvari3, "vari4"=>$mvari4, "vari5"=>$mvari5, "vari6"=>$mvari6 ));
+		
+		echo "Trabajador Avtualizado";
+		//ELIMINAR DE SCLI
+	}
+
+
+
 
 
 /*

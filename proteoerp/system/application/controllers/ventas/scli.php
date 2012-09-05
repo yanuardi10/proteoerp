@@ -30,6 +30,11 @@ class Scli extends Controller {
 		if ( !$this->datasis->iscampo('scli','twitter') ) {
 			$this->db->query('ALTER TABLE scli ADD COLUMN twitter VARCHAR(120) NULL ');
 		};
+		if ( !$this->datasis->iscampo('scli','upago') ) {
+			$this->db->query('ALTER TABLE scli ADD COLUMN upago CHAR(6) NULL ');
+		};
+
+
 		$this->datasis->modintramenu( 1000, 650, 'ventas/scli' );
 		redirect($this->url.'jqdatag');
 	}
@@ -142,6 +147,21 @@ function consulrif(campo){
 		window.open("'.$consulrif.'"+"?p_rif="+vrif,"CONSULRIF","height=350,width=410");
 	}
 }
+
+function consulcne(campo){
+	vrif=$("#"+campo).val();
+	naci="V";
+	if(vrif.length==0){
+		alert("Debe introducir primero un RIF");
+	}else{
+		vrif=vrif.toUpperCase();
+		$("#riffis").val(vrif);
+		window.open("http://www.cne.gov.ve/web/registro_electoral/ce.php?nacionalidad="+vrif.substr(0,1)+"&cedula="+vrif.substr(1),"CONSULCNE","height=400,width=510");
+	}
+}
+
+
+
 
 function chrif(rif){
 	rif.toUpperCase();
@@ -414,7 +434,7 @@ function sclilimite(){
 			'width'         => 60,
 			'edittype'      => "'select'",
 			'editrules'     => '{ required:true}',
-			'editoptions'   => '{value: {"1":"Precio 1","2":"Precio 2","3":"Precio 3","4":"Precio 4", "5":"Mayor 5", "0":"Inactivo 0" }, style:"width:100px" }',
+			'editoptions'   => '{value: {"1":"Precio 1","2":"Precio 2","3":"Precio 3","4":"Precio 4", "5":"Mayor 5", "0":"Inactivo 0" }, style:"width:150px" }',
 			'formoptions'   => '{ rowpos:'.$linea.', colpos:1 }'
 		));
 
@@ -562,7 +582,7 @@ function sclilimite(){
 			'width'         => 50,
 			'edittype'      => "'select'",
 			'editrules'     => '{ edithidden:true, required:true }',
-			'editoptions'   => '{ value: '.$azona.',  style:"width:150px"}',
+			'editoptions'   => '{ value: '.$azona.',  style:"width:220px"}',
 			'stype'         => "'text'",
 			'formoptions'   => '{ rowpos:'.$linea.', colpos:1 }'
 		));
@@ -576,7 +596,7 @@ function sclilimite(){
 			'width'         => 50,
 			'edittype'      => "'select'",
 			'editrules'     => '{ required:false}',
-			'editoptions'   => '{ value: '.$avende.',  style:"width:150px"}',
+			'editoptions'   => '{ value: '.$avende.',  style:"width:220px"}',
 			'stype'         => "'text'",
 			'formoptions'   => '{ rowpos:'.$linea.', colpos:1 }'
 		));
@@ -691,7 +711,7 @@ function sclilimite(){
 			'width'         => 50,
 			'edittype'      => "'select'",
 			'editrules'     => '{ required:false}',
-			'editoptions'   => '{ value: '.$avende.',  style:"width:150px"}',
+			'editoptions'   => '{ value: '.$avende.',  style:"width:220px"}',
 			'stype'         => "'text'",
 			'formoptions'   => '{ rowpos:'.$linea.', colpos:1 }'
 		));
@@ -1092,6 +1112,9 @@ function sclilimite(){
 					$(\'<a href="#">SENIAT<span class="ui-icon ui-icon-disk"></span></a>\').click(function(){
 						consulrif("rifci");
 					}).addClass("fm-button ui-state-default ui-corner-all fm-button-icon-left").prependTo("#Act_Buttons>td.EditButton");
+					$(\'<a href="#">CNE<span class="ui-icon ui-icon-disk"></span></a>\').click(function(){
+						consulcne("rifci");
+					}).addClass("fm-button ui-state-default ui-corner-all fm-button-icon-left").prependTo("#Act_Buttons>td.EditButton");
 				},
 			afterShowForm: function(frm){
 					$("select").selectmenu({style:"popup"});
@@ -1116,6 +1139,9 @@ function sclilimite(){
 					$(\'<a href="#">SENIAT<span class="ui-icon ui-icon-disk"></span></a>\').click(function(){
 						consulrif("rifci");
 					}).addClass("fm-button ui-state-default ui-corner-all fm-button-icon-left").prependTo("#Act_Buttons>td.EditButton");
+					$(\'<a href="#">CNE<span class="ui-icon ui-icon-disk"></span></a>\').click(function(){
+						consulcne("rifci");
+					}).addClass("fm-button ui-state-default ui-corner-all fm-button-icon-left").prependTo("#Act_Buttons>td.EditButton");
 				},
 			afterShowForm: function(frm){
 					$("select").selectmenu({style:"popup"});
@@ -1124,7 +1150,7 @@ function sclilimite(){
 
 		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
 
-		#show/hide navigations buttons
+		#show/hide navigations buttons 
 		$grid->setAdd(true);
 		$grid->setEdit(true);
 		$grid->setDelete(true);
