@@ -126,6 +126,8 @@ GROUP BY fecha
 			$grid = '
 jQuery("#resumen").jqGrid({
 	datatype: "local",
+	shrinkToFit: false,
+	autowidth: true,
 	height: "140",
 	colNames:["Fecha", "Ventas", "Compras", "Utilidad","%","Gastos", "%", "Inversion", "Neto","Ingreso", "Deposito","Perdida","I.Mun.","ISLR"],
 	colModel:[
@@ -148,7 +150,7 @@ jQuery("#resumen").jqGrid({
 	footerrow: true,
 	loadComplete: function () {
 		$(this).jqGrid(\'footerData\',\'set\',
-		{fecha:"TOTALES", ventas:"'.$tventas.'", compras:"'.$tcompras.'", util:"'.$tutil.'", putil:"'.$tputil.'", gastos:"'.$tgastos.'", pgastos:"'.$tpgastos.'", inversion:"'.$tinversion.'", nutil:"'.$tnutil.'", ingreso:"'.$tingreso.'", deposito:"'.$tdeposito.'", perdida:"'.$tperdida.'", municipal:"'.$tmunicipal.'", islr:"'.$tislr.'"});
+		{fecha:"TOTALES", ventas:"'.$tventas.'", compras:"'.$tcompras.'", util:"'.$tutil.'", putil:"-", gastos:"'.$tgastos.'", pgastos:"-", inversion:"'.$tinversion.'", nutil:"'.$tnutil.'", ingreso:"'.$tingreso.'", deposito:"'.$tdeposito.'", perdida:"'.$tperdida.'", municipal:"'.$tmunicipal.'", islr:"'.$tislr.'"});
 	},
 	caption: "Resumen de Gesti&oacute;n"
 });
