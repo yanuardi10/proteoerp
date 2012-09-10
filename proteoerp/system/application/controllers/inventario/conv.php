@@ -222,7 +222,7 @@ class conv extends Controller {
 		$this->costo_entrada= 0;
 		$this->peso_salida  = 0;
 		$this->pesos        = array();
-		
+
 		//Hasta aca en costo trae el valor del ultimo de sinv, se opera para cambiarlo a:
 		//costo=costo*(entrada o salida segun se el caso)
 		for($i=0;$i<$cana;$i++){
@@ -310,7 +310,7 @@ class conv extends Controller {
 			$ent    = $do->get_rel('itconv','entrada',$i);
 			$sal    = $do->get_rel('itconv','salida' ,$i);
 
-			$monto   = $sal-$ent;
+			$monto   = $ent-$sal;
 			$dbcodigo= $this->db->escape($codigo);
 			$dbalma  = $this->db->escape($alma);
 
@@ -326,10 +326,10 @@ class conv extends Controller {
 				$mycosto="IF(formcal='P',pond,IF(formcal='U',$ncosto,IF(formcal='S',standard,GREATEST(pond,ultimo))))";
 				$mSQL='UPDATE sinv SET
 							ultimo ='.$ncosto.',
-							base1  =ROUND(precio1*10000/(100+iva))/100, 
-							base2  =ROUND(precio2*10000/(100+iva))/100, 
-							base3  =ROUND(precio3*10000/(100+iva))/100, 
-							base4  =ROUND(precio4*10000/(100+iva))/100, 
+							base1  =ROUND(precio1*10000/(100+iva))/100,
+							base2  =ROUND(precio2*10000/(100+iva))/100,
+							base3  =ROUND(precio3*10000/(100+iva))/100,
+							base4  =ROUND(precio4*10000/(100+iva))/100,
 							margen1=ROUND(10000-(('.$mycosto.')*10000/base1))/100,
 							margen2=ROUND(10000-(('.$mycosto.')*10000/base2))/100,
 							margen3=ROUND(10000-(('.$mycosto.')*10000/base3))/100,
@@ -365,7 +365,7 @@ class conv extends Controller {
 		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
 
 		$where = $this->datasis->extjsfiltro($filters,'conv');
-	
+
 		$this->db->_protect_identifiers=false;
 		$this->db->select('*');
 		$this->db->from('conv');
@@ -403,7 +403,7 @@ class conv extends Controller {
 			$salida = "<br><table width='100%' border=1>";
 			$salida .= "<tr bgcolor='#e7e3e7'><td colspan=3>Movimiento en Cuentas X Cobrar</td></tr>";
 			$salida .= "<tr bgcolor='#e7e3e7'><td>Tp</td><td align='center'>Numero</td><td align='center'>Monto</td></tr>";
-			
+
 			foreach ($query->result_array() as $row)
 			{
 				$salida .= "<tr>";
@@ -450,7 +450,7 @@ class conv extends Controller {
 
 		$mSQL = "SELECT * FROM itconv a JOIN sinv b ON a.codigo=b.codigo WHERE a.numero='$numero' ORDER BY a.codigo";
 		$query = $this->db->query($mSQL);
-		$results =  0; 
+		$results =  0;
 		$arr = array();
 		foreach ($query->result_array() as $row)
 		{
@@ -469,7 +469,7 @@ class conv extends Controller {
 
 		$modulo = 'conv';
 		$urlajax = 'inventario/conv/';
-		
+
 		$listados= $this->datasis->listados($modulo);
 		$otros=$this->datasis->otros($modulo, $urlajax);
 
@@ -497,9 +497,9 @@ class conv extends Controller {
 ]";
 
 		$variables='';
-		
+
 		$valida="		{ type: 'length', field: 'numero',  min:  1 }";
-		
+
 
 		$funciones = "
 function renderScli(value, p, record) {
@@ -552,7 +552,7 @@ function renderSinv(value, p, record) {
 		autoSync: true,
 		method: 'POST'
 	});
-	
+
 	//////////////////////////////////////////////////////////
 	//
 	var gridDeta1 = Ext.create('Ext.grid.Panel', {
@@ -572,7 +572,7 @@ function renderSinv(value, p, record) {
 		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/verhtml/CONV/{numero}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/html_icon.gif', 'alt' => 'Formato HTML', 'title' => 'Formato HTML','border'=>'0'))."</a></td>',
 		'<td align=\'center\'>{numero}</td>',
 		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/ver/CONV/{numero}\',     \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',   'title' => 'Formato PDF', 'border'=>'0'))."</a></td></tr>',
-		'<tr><td colspan=3 align=\'center\' >--</td></tr>',		
+		'<tr><td colspan=3 align=\'center\' >--</td></tr>',
 		'</table>','nanai'
 	];
 
@@ -646,23 +646,23 @@ function renderSinv(value, p, record) {
 					handler: function() {
 						var selection = gridMaest.getView().getSelectionModel().getSelection()[0];
 						Ext.MessageBox.show({
-							title: 'Confirme', 
-							msg: 'Seguro que quiere eliminar la compra Nro. '+selection.data.numero, 
-							buttons: Ext.MessageBox.YESNO, 
-							fn: function(btn){ 
-								if (btn == 'yes') { 
+							title: 'Confirme',
+							msg: 'Seguro que quiere eliminar la compra Nro. '+selection.data.numero,
+							buttons: Ext.MessageBox.YESNO,
+							fn: function(btn){
+								if (btn == 'yes') {
 									if (selection) {
 										//storeMaest.remove(selection);
 									}
 									storeMaest.load();
-								} 
-							}, 
-							icon: Ext.MessageBox.QUESTION 
-						});  
+								}
+							},
+							icon: Ext.MessageBox.QUESTION
+						});
 					}
 				}
 			]
-		}		
+		}
 		";
 
 		$grid2 = ",{
@@ -678,7 +678,7 @@ function renderSinv(value, p, record) {
 
 
 		$titulow = 'Compras';
-		
+
 		$filtros = "";
 		$features = "
 		features: [ { ftype: 'filters', encode: 'json', local: false } ],
@@ -705,10 +705,10 @@ function renderSinv(value, p, record) {
 		$data['coldeta']     = $coldeta;
 		$data['acordioni']   = $acordioni;
 		$data['final']       = $final;
-		
+
 		$data['title']  = heading('Notas de Entrega');
 		$this->load->view('extjs/extjsvenmd',$data);
-		
+
 	}
 
 }

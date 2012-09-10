@@ -132,7 +132,7 @@ class pfaclite extends validaciones{
 		$this->db->select($sel);
 		$this->db->from('pfac AS a');
 		$this->db->join('itpfac AS b','a.numero=b.numa');
-		$this->db->where('a.fecha < DATE_SUB(CURDATE(),INTERVAL 3 DAY)');
+		$this->db->where('a.fecha < DATE_SUB(CURDATE(),INTERVAL 5 DAY)');
 		$this->db->where('a.status','P');
 		$this->db->where('b.codigoa IS NOT NULL');
 		$this->db->group_by('b.codigoa');
@@ -178,7 +178,7 @@ class pfaclite extends validaciones{
 		$vd   = trim($this->secu->getvendedor());
 		$caub = trim($this->secu->getalmacen());
 		if(empty($vd) || empty($caub)){
-			show_error('Usuario no tiene asignado vendedor o cajro, debe asignarlo primero para poder usar este modulo');
+			show_error('Usuario no tiene asignado vendedor o cajero, debe asignarlo primero para poder usar este modulo');
 		}
 
 		$url=$this->url.'filteredgrid';
