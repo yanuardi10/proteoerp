@@ -65,7 +65,7 @@ class inicio extends Controller {
 
 		$url =anchor($this->urlext.'venta/index/<#id#>','Vender');
 		$url2=anchor($this->urlext.'venta/dataprint/modify/<#id_sfac#>','<dbdate_to_human><#venta#></dbdate_to_human>');
-		$url2.=','.anchor($this->url.'certifi/modify/<#id#>','Certificado');
+		$url2.=br().anchor($this->url.'certifi/modify/<#id#>','Certificado');
 
 		$grid->column_orderby('Compra','<dbdate_to_human><#compra#></dbdate_to_human>','compra','align="right"');
 		$grid->column_orderby('Venta' ,"<siinulo><#id_sfac#>|$url|$url2</siinulo>",'id_sfac','align="center"');
@@ -310,11 +310,32 @@ class inicio extends Controller {
 				`placa` VARCHAR(10) NULL DEFAULT NULL,
 				`precioplaca` DECIMAL(10,2) NULL DEFAULT NULL,
 				`tasa` DECIMAL(10,2) NULL DEFAULT NULL,
+				`nombre` VARCHAR(200) NULL DEFAULT NULL,
+				`casa` VARCHAR(100) NULL DEFAULT NULL,
+				`calle` VARCHAR(100) NULL DEFAULT NULL,
+				`urb` VARCHAR(100) NULL DEFAULT NULL,
+				`ciudad` VARCHAR(100) NULL DEFAULT NULL,
+				`municipio` VARCHAR(100) NULL DEFAULT NULL,
+				`estado` VARCHAR(100) NULL DEFAULT NULL,
+				`cpostal` VARCHAR(10) NULL DEFAULT NULL,
+				`ctelefono1` VARCHAR(4) NULL DEFAULT NULL,
+				`telefono1` VARCHAR(8) NULL DEFAULT NULL,
+				`ctelefono2` VARCHAR(4) NULL DEFAULT NULL,
+				`telefono2` VARCHAR(8) NULL DEFAULT NULL,
+				`distrito` VARCHAR(100) NULL DEFAULT NULL,
+				`aseguradora` VARCHAR(200) NULL DEFAULT NULL,
+				`vence` DATE NULL DEFAULT NULL,
+				`nomban` VARCHAR(200) NULL DEFAULT NULL,
+				`banrif` VARCHAR(20) NULL DEFAULT NULL,
+				`representante` VARCHAR(100) NULL DEFAULT NULL,
+				`concesionario` VARCHAR(100) NULL DEFAULT NULL,
+				`concesionariorif` VARCHAR(20) NULL DEFAULT NULL,
+				`poliza` VARCHAR(50) NULL DEFAULT NULL,
 				PRIMARY KEY (`id`)
 			)
 			COMMENT='Vehiculos a la venta'
 			COLLATE='latin1_swedish_ci'
-			ENGINE=MyISAM";
+			ENGINE=MyISAM;";
 			$this->db->simple_query($mSQL);
 		}
 	}
