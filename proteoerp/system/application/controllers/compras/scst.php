@@ -35,7 +35,6 @@ class Scst extends Controller {
 		$grid1   = $this->defgridit();
 		$param['grids'][] = $grid1->deploy();
 
-
 		$readyLayout = '
 	$(\'body\').layout({
 		minSize: 30,
