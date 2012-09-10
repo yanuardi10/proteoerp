@@ -15,7 +15,7 @@ class Analisisvision extends Controller {
 	
 	function ver(){
 		
-		$this->rapyd->load("datagrid2");
+		//$this->rapyd->load("datagrid2");
 		//$this->load->library('table');
 		
 		$MANO = substr(date("Y"),0,4)+0;

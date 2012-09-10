@@ -591,7 +591,7 @@ jQuery("#a1").click( function(){
 		$grid->label('No Fiscal');
 		$grid->params(array(
 			'search'        => 'true',
-			'editable'      => $editar,
+			'editable'      => 'true',
 			'width'         => 120,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
@@ -1140,22 +1140,23 @@ jQuery("#a1").click( function(){
 		unset($data['oper']);
 		unset($data['id']);
 		if($oper == 'add'){
+			/*
 			if(false == empty($data)){
 				$this->db->insert('sfac', $data);
 				echo "Registro Agregado";
 
 				logusu('SFAC',"Registro ????? INCLUIDO");
-			} else
+			} else*/
 			echo "Fallo Agregado!!!";
 
 		} elseif($oper == 'edit') {
-			//unset($data['ubica']);
 			$this->db->where('id', $id);
 			$this->db->update('sfac', $data);
-			logusu('SFAC',"Registro ????? MODIFICADO");
+			logusu('SFAC',"Registro $id MODIFICADO");
 			echo "Registro Modificado";
 
 		} elseif($oper == 'del') {
+			/*
 			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM sfac WHERE id='$id' ");
 			if ($check > 0){
 				echo " El registro no puede ser eliminado; tiene movimiento ";
@@ -1164,6 +1165,7 @@ jQuery("#a1").click( function(){
 				logusu('SFAC',"Registro ????? ELIMINADO");
 				echo "Registro Eliminado";
 			}
+			*/
 		};
 	}
 
