@@ -59,7 +59,7 @@ class ejecutasql extends Controller {
 		$grid->column_orderby('Nombre','nombre','nombre','align="left"');
 		$grid->column_orderby('Script','<pscript><#script#></pscript>','script','align="left"');
 
-		$grid->add($this->url.'dataedit/create');
+		//$grid->add($this->url.'dataedit/create');
 		$grid->build();
 
 		$data['filtro']  = $filter->output;
@@ -127,7 +127,7 @@ class ejecutasql extends Controller {
 				if (stristr($mSQL, 'SELECT')){
 					$mSQL2 = $this->encrypt->encode($mSQL);
 
-					$salida.="<form action='/../../proteoerp/xlsauto/repoauto2/'; method='post'>
+					$salida.="<form action='".site_url('xlsauto/repoauto2')."'; method='post'>
 					<input size='100' type='hidden' name='mSQL' value='$mSQL2'>
 					<input type='submit' value='Descargar a Excel' name='boton'/>
 					</form>";
