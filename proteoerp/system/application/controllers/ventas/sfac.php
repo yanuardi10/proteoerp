@@ -73,7 +73,7 @@ jQuery("#boton1").click( function(){
 });
 
 jQuery("#boton2").click( function(){
-	window.open(\'/proteoerp/ventas/sfac_add/dataedit/create\', \'_blank\', \'width=900,height=700,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-350)\');
+	window.open(\''.site_url('ventas/sfac_add/dataedit/create').'\', \'_blank\', \'width=900,height=700,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-350)\');
 });
 
 </script>
