@@ -44,7 +44,7 @@ class Pedidos extends Controller {
 //having (b.existen <= b.exmin)
 //order by b.descrip
 
-		$columnas = array("a.codigoa", "d.barras", "b.descrip AS desca", "b.existen", "b.exmin", "b.exmax", "d.proveed", "sum(c.cantidad * (c.origen = '3I')) AS trimestral", "round((sum(c.cantidad * (c.origen = '3I'))/3),0) AS mensual", "round((sum(c.cantidad*(c.origen = '3I'))/6),0) AS quincenal", "round((sum(c.cantidad * (c.origen = '3I'))/12),0) AS semanal, exmax-existen AS pedir");
+		$columnas = array("a.codigoa", "d.barras", "b.descrip AS desca", "b.existen", "b.exmin", "b.exmax", "d.proveed", "sum(c.cantidad * (c.origen = '3I')) AS trimestral", "round((sum(c.cantidad * (c.origen = '3I'))/3),0) AS mensual", "round((sum(c.cantidad*(c.origen = '3I'))/6),0) AS quincenal", "round((sum(c.cantidad * (c.origen = '3I'))/12),0) AS semanal, exmax-if(existen<0,0,existen) AS pedir");
 
 		$filter = new DataFilter('Productos vendidos en el d&iacute;a');
 		//$filter->db->select(array('a.codigoa','TRIM(b.barras) AS barras','a.desca', 'SUM(a.cana) AS venta','d.exmax - IF(d.existen<0,0,d.existen) AS pedir','d.exmin','d.exmax','d.existen'));
