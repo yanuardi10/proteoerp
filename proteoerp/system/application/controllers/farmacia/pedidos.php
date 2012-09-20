@@ -31,13 +31,36 @@ class Pedidos extends Controller {
 				'screeny'    => '0'
 			);*/
 
+
+//select a.codigoa, b.descrip, b.existen, b.exmin, b.exmax, d.barras, d.proveed, sum(c.cantidad * (c.origen = '3I')) AS trimestral, round((sum(c.cantidad * (c.origen = '3I'))/3),0) AS mensual, round((sum(c.cantidad*(c.origen = '3I'))/6),0) AS quincenal, round((sum(c.cantidad * (c.origen = '3I'))/12),0) AS semanal
+//from
+// sitems a
+//join sinv b on a.codigoa = b.codigo
+//join costos c on a.codigoa = c.codigo left
+//join farmaxasig d on a.codigoa = d.abarras
+
+//where ((a.fecha = curdate()) and (c.fecha >= (curdate() - 90)))
+//group by a.codigoa
+//having (b.existen <= b.exmin)
+//order by b.descrip
+
+		$columnas = array("a.codigoa", "d.barras", "b.descrip AS desca", "b.existen", "b.exmin", "b.exmax", "d.proveed", "sum(c.cantidad * (c.origen = '3I')) AS trimestral", "round((sum(c.cantidad * (c.origen = '3I'))/3),0) AS mensual", "round((sum(c.cantidad*(c.origen = '3I'))/6),0) AS quincenal", "round((sum(c.cantidad * (c.origen = '3I'))/12),0) AS semanal, exmax-existen AS pedir");
+
 		$filter = new DataFilter('Productos vendidos en el d&iacute;a');
-		$filter->db->select(array('a.codigoa','TRIM(b.barras) AS barras','a.desca', 'SUM(a.cana) AS venta','d.exmax - IF(d.existen<0,0,d.existen) AS pedir','d.exmin','d.exmax','d.existen'));
-		$filter->db->from('sitems AS a');
-		$filter->db->join('farmaxasig AS b','a.codigoa=b.abarras','left');
-		$filter->db->join('sinv AS d','a.codigoa=d.codigo');
+		//$filter->db->select(array('a.codigoa','TRIM(b.barras) AS barras','a.desca', 'SUM(a.cana) AS venta','d.exmax - IF(d.existen<0,0,d.existen) AS pedir','d.exmin','d.exmax','d.existen'));
+
+		$filter->db->select($columnas);
+
+		$filter->db->from('sitems     AS a');
+		$filter->db->join('sinv       AS b','a.codigoa=b.codigo');
+		$filter->db->join('costos     AS c','a.codigoa=c.codigo');
+		$filter->db->join('farmaxasig AS d','a.codigoa=d.abarras');
+
+		$filter->db->where('b.existen <= b.exmin ');
+		$filter->db->where('a.fecha = curdate() and c.fecha >= curdate() - 90');
+
+
 		$filter->db->groupby('a.codigoa');
-		$filter->db->where('d.existen <= d.exmin ');
 		$filter->db->having('pedir > 0');
 		if(!$this->rapyd->uri->is_set('search')) $filter->db->where('a.fecha',date('Y-m-d'));
 
@@ -79,12 +102,19 @@ class Pedidos extends Controller {
 		$grid->column('Pedir' ,'<descheck><#barras#>|<#pedir#></descheck>');
 		$grid->column_orderby('Barras'  ,'barras','barras');
 		$grid->column_orderby('Descripci&oacute;n'   ,'desca','desca');
-		$grid->column_orderby('Venta','<nformat><#venta#></nformat>','venta','align=\'right\'');
-		$grid->column_orderby('Existencia','<pinta><#existen#></pinta>','existen','align=\'right\'');
-		$grid->column('Rango' ,'[<nformat><#exmin#></nformat>-<nformat><#exmax#></nformat>]' ,'align=\'center\'');
-		$grid->column_orderby('Pedido','pedir','cana','align=\'right\'');
+		$grid->column('Trimestral','<nformat><#trimestral#>|0</nformat>','align=\'right\'' );
+		$grid->column('Mensual',   '<nformat><#mensual#>|0</nformat>',   'align=\'right\'' );
+		$grid->column('Quincenal', '<nformat><#quincenal#>|0</nformat>', 'align=\'right\'' );
+		$grid->column('Semanal',   '<nformat><#semanal#>|0</nformat>',   'align=\'right\'' );
+		$grid->column('Actual',    '<pinta><#existen#>|0</pinta>',       'align=\'right\'' );
+		$grid->column('Min' ,      '<nformat><#exmin#>|0</nformat>',     'align=\'center\'');
+		$grid->column('Max' ,      '<nformat><#exmax#>|0</nformat>',     'align=\'center\'');
+		$grid->column('Sugerido','pedir','align=\'right\'');
 
 		$grid->build();
+
+		//$grid->column('Rango' ,'[<nformat><#exmin#></nformat>-<nformat><#exmax#></nformat>]' ,'align=\'center\'');
+
 
 		if($grid->recordCount>0){
 			$tabla=$grid->output.form_submit('mysubmit', 'Mandar pedido a FarmaSIS');
