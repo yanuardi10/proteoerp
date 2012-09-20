@@ -78,7 +78,6 @@ jQuery("#boton2").click( function(){
 
 </script>
 ';
-
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
 
@@ -890,7 +889,7 @@ jQuery("#a1").click( function(){
 */
 
 		$grid->addField('maqfiscal');
-		$grid->label('Maqfiscal');
+		$grid->label('Maq. Fiscal');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -2291,10 +2290,10 @@ function sfacreiva(mid){
 	pide += '<tr><td>Comprobante</td><td><input type=\"text\" size=\"20\" value=\"".$nro."\"    name=\"numero\" id=\"numero\" /></td></tr>';
 	pide += '<tr><td>Recepcion   </td><td>';
 	pide += '<input type=\"text\" size=\"10\" value=\"".$fecha."\"  name=\"fecha\"  id=\"fecha\"  />';
-	pide += '<img src=\"/proteoerp/system/application/rapyd/libraries/jscalendar/calender_icon.gif\" id=\"fecha_button\" style=\"vertical-align: middle;\" border=\"0\">';
+	pide += '<img src=\"".site_url("system/application/rapyd/libraries/jscalendar/calender_icon.gif")."\" id=\"fecha_button\" style=\"vertical-align: middle;\" border=\"0\">';
 	pide += '</td></tr>';
 	pide += '<tr><td>Emision</td><td><input type=\"text\" size=\"10\" value=\"".$efecha."\" name=\"efecha\" id=\"efecha\" />';
-	pide += '<img src=\"/proteoerp/system/application/rapyd/libraries/jscalendar/calender_icon.gif\" id=\"efecha_button\" style=\"vertical-align: middle;\" border=\"0\"></td></tr>';
+	pide += '<img src=\"".site_url("system/application/rapyd/libraries/jscalendar/calender_icon.gif")."\" id=\"efecha_button\" style=\"vertical-align: middle;\" border=\"0\"></td></tr>';
 	pide += '<tr><td>Monto </td><td><input readonly type=\"text\" size=\"10\" value=\"".$mreiva."\" name=\"reiva\"  id=\"reiva\" style=\"text-align:right\" /></td></tr>';";
 
 		if ( $saldo < $mreiva ) {

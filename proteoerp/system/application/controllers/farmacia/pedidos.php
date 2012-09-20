@@ -34,7 +34,7 @@ class Pedidos extends Controller {
 		$filter = new DataFilter('Productos vendidos en el d&iacute;a');
 		$filter->db->select(array('a.codigoa','TRIM(b.barras) AS barras','a.desca', 'SUM(a.cana) AS venta','d.exmax - IF(d.existen<0,0,d.existen) AS pedir','d.exmin','d.exmax','d.existen'));
 		$filter->db->from('sitems AS a');
-		$filter->db->join('farmaxasig AS b','a.codigoa=b.abarras');
+		$filter->db->join('farmaxasig AS b','a.codigoa=b.abarras','left');
 		$filter->db->join('sinv AS d','a.codigoa=d.codigo');
 		$filter->db->groupby('a.codigoa');
 		$filter->db->where('d.existen <= d.exmin ');
