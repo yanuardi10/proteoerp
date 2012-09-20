@@ -1191,6 +1191,7 @@ function sclilimite(){
 		if($oper == 'add'){
 			if(false == empty($data)){
 				$data['cliente'] = trim($data['cliente']);
+				$data['riffis'] = $data['rifci'];
 				// SI EL CODIGO ESTA VACIO GENERA UNO
 				if ( strlen($data['cliente']) > 0 )
 					$mcodigo = $data['cliente'];
@@ -1212,6 +1213,7 @@ function sclilimite(){
 
 		} elseif($oper == 'edit') {
 			$mcodigo = $data['cliente'];
+			$data['riffis'] = $data['rifci'];
 			unset($data['cliente']);
 			$this->db->where('id', $id);
 			$this->db->update('scli', $data);

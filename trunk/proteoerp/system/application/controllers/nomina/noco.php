@@ -57,7 +57,7 @@ class Noco extends Controller {
 		resizerClass: "ui-state-default",
 		center__paneSelector: ".centro-centro",
 		south__paneSelector:  ".centro-sur",
-		south__size: 220,
+		south__size: 260,
 		center__onresize: function (pane, $Pane) {
 			jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'setGridWidth\',$Pane.innerWidth()-6);
 			jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'setGridHeight\',$Pane.innerHeight()-100);
@@ -68,6 +68,7 @@ class Noco extends Controller {
 
 		$bodyscript = '
 <script type="text/javascript">
+var idnoco = 0;
 $(function() {
 	$( "input:submit, a, button", ".boton1" ).button();
 });
@@ -76,7 +77,7 @@ jQuery("#boton1").click( function(){
 	var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
 	if (id)	{
 		var ret = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
-		window.open(\'/proteoerp/formatos/ver/APAN/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+		window.open(\''.site_url('formatos/ver/APAN/').'\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
 	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
 });
 </script>
@@ -99,9 +100,23 @@ jQuery("#boton1").click( function(){
 </div>
 <table id="west-grid" align="center">
 	<tr>
-		<td><div class="tema1 boton1"><a style="width:190px" href="#" id="boton1">Reimprimir Documento '.img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',  'title' => 'Formato PDF', 'border'=>'0')).'</a></div></td>
+		<td><div class="tema1 boton1"><a style="width:190px" href="#" id="boton1">Imprimir Contrato '.img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',  'title' => 'Formato PDF', 'border'=>'0')).'</a></div></td>
 	</tr>
 </table>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<b>Ayuda:</b>
+<hr>
+Para <b>AGREGAR</b> un concepto al contrato, seleccione uno y haga doble click sobre un <b>"Conceptos Disponibles"</b>.
+<br>
+<hr>
+Para <b>ELIMINAR</b> un concepto del contrato, seleccione uno y haga doble click sobre un <b>"Concepto del Contrato</b>".
+<hr>
+
 
 '.
 
@@ -154,33 +169,32 @@ jQuery("#boton1").click( function(){
 	//***************************
 	function defgrid( $deployed = false ){
 		$i      = 1;
-		$editar = "false";
+		$editar = "true";
 
 		$grid  = new $this->jqdatagrid;
 
 		$grid->addField('codigo');
 		$grid->label('Codigo');
 		$grid->params(array(
-			'align'         => "'center'",
 			'search'        => 'true',
 			'editable'      => $editar,
 			'width'         => 50,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 5 }',
+			'editoptions'   => '{ size:5, maxlength: 5 }',
 		));
 
 
 		$grid->addField('tipo');
-		$grid->label('Tipo');
+		$grid->label('Freq.');
 		$grid->params(array(
 			'align'         => "'center'",
-			'search'        => 'true',
 			'editable'      => $editar,
 			'width'         => 40,
-			'edittype'      => "'text'",
+			'edittype'      => "'select'",
+			'editoptions'   => '{value: {"S":"Semanal", "Q":"Quincenal", "B":"Bisemanal", "M":"Mensual" }, style:"width:170px"} ',
 			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 1 }',
+			'formoptions'   => '{ label: "Frecuencia" }',
 		));
 
 
@@ -192,31 +206,31 @@ jQuery("#boton1").click( function(){
 			'width'         => 250,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 40 }',
+			'editoptions'   => '{ size:40, maxlength: 40 }',
 		));
 
 
 		$grid->addField('observa1');
-		$grid->label('Observaciones');
+		$grid->label('Observaciones 1');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
 			'width'         => 250,
 			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 40 }',
+			'editrules'     => '{ required:false}',
+			'editoptions'   => '{ size:40, maxlength: 40 }',
 		));
 
 
 		$grid->addField('observa2');
-		$grid->label('Observaciones');
+		$grid->label('Observaciones 2');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
 			'width'         => 200,
 			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 40 }',
+			'editrules'     => '{ required:false}',
+			'editoptions'   => '{ size:40, maxlength: 40 }',
 		));
 
 
@@ -224,7 +238,7 @@ jQuery("#boton1").click( function(){
 		$grid->label('Modificado');
 		$grid->params(array(
 			'search'        => 'true',
-			'editable'      => $editar,
+			'editable'      => 'false',
 			'width'         => 80,
 			'align'         => "'center'",
 			'edittype'      => "'text'",
@@ -245,25 +259,39 @@ jQuery("#boton1").click( function(){
 
 		$grid->showpager(true);
 		$grid->setWidth('');
-		$grid->setHeight('160');
+		$grid->setHeight('220');
 		$grid->setTitle($this->titp);
 		$grid->setfilterToolbar(true);
 		$grid->setToolbar('false', '"top"');
 
-		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
-		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		$grid->setOnSelectRow('
+			function(id){
+				if (id){
+					idnoco = id;
+					jQuery(gridId2).jqGrid(\'setGridParam\',{url:"'.site_url($this->url.'getdatait/').'/"+id+"/", page:1});
+					jQuery(gridId2).trigger("reloadGrid");
+				}
+			}');
+		$grid->setOndblClickRow('');
+
+
+		//$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		//$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+
+		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 480, height:220, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
+		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 480, height:220, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
 		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
 
 		#show/hide navigations buttons
 		$grid->setAdd(true);
 		$grid->setEdit(true);
 		$grid->setDelete(true);
-		$grid->setSearch(true);
+		$grid->setSearch(false);
 		$grid->setRowNum(30);
 		$grid->setShrinkToFit('false');
 
 		#Set url
-		//$grid->setUrlput(site_url($this->url.'setdata/'));
+		$grid->setUrlput(site_url($this->url.'setdata/'));
 
 		#GET url
 		$grid->setUrlget(site_url($this->url.'getdata/'));
@@ -285,7 +313,7 @@ jQuery("#boton1").click( function(){
 		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
 		$mWHERE = $grid->geneTopWhere('noco');
 
-		$response   = $grid->getData('noco', array(array()), array(), false, $mWHERE );
+		$response   = $grid->getData('noco', array(array()), array(), false, $mWHERE, 'codigo' );
 		$rs = $grid->jsonresult( $response);
 		echo $rs;
 	}
@@ -305,28 +333,36 @@ jQuery("#boton1").click( function(){
 		unset($data['id']);
 		if($oper == 'add'){
 			if(false == empty($data)){
-				$this->db->insert('noco', $data);
-				echo "Registro Agregado";
-
-				logusu('NOCO',"Registro ????? INCLUIDO");
+				$codigo = $data['codigo'];
+				$msql = "SELECT COUNT(0) FROM noco WHERE codigo=".$this->db->escape($codigo);
+				if ($this->datasis->dameval($msql) == 0 ) {
+					$this->db->insert('noco', $data);
+					echo "Contrato Agregado";
+					logusu('NOCO',"Contrato de Nomina ".$codigo." INCLUIDO");
+				} else {
+					echo "Codigo ya existe";
+				}
 			} else
 			echo "Fallo Agregado!!!";
 
 		} elseif($oper == 'edit') {
-			//unset($data['ubica']);
+			$codigo = $data['codigo'];
+			unset($data['codigo']);
 			$this->db->where('id', $id);
 			$this->db->update('noco', $data);
-			logusu('NOCO',"Registro ????? MODIFICADO");
-			echo "Registro Modificado";
+			logusu('NOCO',"Contrato de Nomina ".$codigo." MODIFICADO");
+			echo "Contrato Modificado";
 
 		} elseif($oper == 'del') {
-			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM noco WHERE id='$id' ");
+			$codigo = $this->datasis->dameval("SELECT codigo FROM noco WHERE id=$id");
+			$check =  $this->datasis->dameval("SELECT COUNT(*) FROM nomina WHERE trabaja=".$this->db->escape($codigo)." or contrato=".$this->db->escape($codigo));
 			if ($check > 0){
 				echo " El registro no puede ser eliminado; tiene movimiento ";
 			} else {
-				$this->db->simple_query("DELETE FROM noco WHERE id=$id ");
-				logusu('NOCO',"Registro ????? ELIMINADO");
-				echo "Registro Eliminado";
+				$this->db->simple_query("DELETE FROM noco   WHERE id=$id ");
+				$this->db->simple_query("DELETE FROM itnoco WHERE codigo=".$this->db->escape($codigo) );
+				logusu('NOCO',"Contrato de Nomina ".$codigo." ELIMINADO");
+				echo "Contrato Eliminado";
 			}
 		};
 	}
@@ -389,19 +425,6 @@ jQuery("#boton1").click( function(){
 			'editoptions'   => '{ size:30, maxlength: 1 }',
 		));
 
-/*
-		$grid->addField('grupo');
-		$grid->label('Grupo');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 40,
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 4 }',
-		));
-*/
-
 		$grid->addField('id');
 		$grid->label('Id');
 		$grid->params(array(
@@ -413,13 +436,32 @@ jQuery("#boton1").click( function(){
 			'hidden'        => 'true'
 		));
 
-
 		$grid->showpager(true);
 		$grid->setWidth('310');
-		$grid->setHeight('170');
+		$grid->setHeight('195');
 		$grid->setTitle('Conceptos del Contrato');
 		$grid->setfilterToolbar(false);
 		$grid->setToolbar('false', '"top"');
+
+		$grid->setOndblClickRow('
+			,ondblClickRow: function(id){
+				if (id){
+					$.prompt( "Eliminar Concepto al Contrato? ",{
+						buttons: { Eliminar:true, Cancelar:false},
+						callback: function(e,v,m,f){
+							if (v == true) {
+								$.get("'.base_url().$this->url.'elimina/"+id,
+								function(data){
+									//alert(data);
+									jQuery(gridId2).jqGrid(\'setGridParam\',{url:"'.site_url($this->url.'getdatait/').'/"+idnoco+"/", page:1});
+									jQuery(gridId2).trigger("reloadGrid");
+								});
+							}
+						}
+					});
+				}
+			}');
+
 
 		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
 		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
@@ -451,15 +493,36 @@ jQuery("#boton1").click( function(){
 	*/
 	function getdatait()
 	{
-		$grid       = $this->jqdatagrid;
+		$grid  = $this->jqdatagrid;
+		$id    = $this->uri->segment(4);
+		if ($id == false ){
+			$id = $this->datasis->dameval("SELECT MIN(id) FROM noco");
+		}
+		$codigo = $this->datasis->dameval("SELECT codigo FROM noco WHERE id=$id");
 
-		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
-		$mWHERE = $grid->geneTopWhere('itnoco');
-
-		$response   = $grid->getData('itnoco', array(array()), array(), false, $mWHERE );
+		$grid    = $this->jqdatagrid;
+		$mSQL    = "SELECT * FROM itnoco WHERE codigo=".$this->db->escape($codigo)." ORDER BY concepto ";
+		$response   = $grid->getDataSimple($mSQL);
 		$rs = $grid->jsonresult( $response);
 		echo $rs;
+
 	}
+
+
+
+	/**
+	* Agrega Concepto a Contrato
+	*/
+	function elimina()
+	{
+		$id     = $this->uri->segment(4);
+		$idnoco = $this->uri->segment(5);
+		$msql = "DELETE FROM itnoco WHERE id=$id";
+		$this->db->query($msql);
+		$rs = "Concepto eliminado del Contrato";
+		echo $rs;
+	}
+
 
 
 	//***************************
@@ -507,19 +570,6 @@ jQuery("#boton1").click( function(){
 			'editoptions'   => '{ size:30, maxlength: 1 }',
 		));
 
-/*
-		$grid->addField('grupo');
-		$grid->label('Grupo');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 40,
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 4 }',
-		));
-*/
-
 		$grid->addField('id');
 		$grid->label('Id');
 		$grid->params(array(
@@ -534,10 +584,30 @@ jQuery("#boton1").click( function(){
 
 		$grid->showpager(true);
 		$grid->setWidth('310');
-		$grid->setHeight('170');
+		$grid->setHeight('195');
 		$grid->setTitle('Conceptos Disponibles');
 		$grid->setfilterToolbar(false);
 		$grid->setToolbar('false', '"top"');
+
+		$grid->setOndblClickRow('
+			,ondblClickRow: function(id){
+				if (id){
+					$.prompt( "Agregar Concepto al Contrato? ",{
+						buttons: { Agregar:true, Cancelar:false},
+						callback: function(e,v,m,f){
+							if (v == true) {
+								$.get("'.base_url().$this->url.'agrega/"+id+"/"+idnoco,
+								function(data){
+									//alert(data);
+									jQuery(gridId2).jqGrid(\'setGridParam\',{url:"'.site_url($this->url.'getdatait/').'/"+idnoco+"/", page:1});
+									jQuery(gridId2).trigger("reloadGrid");
+								});
+							}
+						}
+					});
+				}
+			}');
+
 
 		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
 		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
@@ -550,9 +620,6 @@ jQuery("#boton1").click( function(){
 		$grid->setSearch(true);
 		$grid->setRowNum(30);
 		$grid->setShrinkToFit('false');
-
-		#Set url
-		//$grid->setUrlput(site_url($this->url.'setdata/'));
 
 		#GET url
 		$grid->setUrlget(site_url($this->url.'getdatacon/'));
@@ -574,10 +641,37 @@ jQuery("#boton1").click( function(){
 		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
 		$mWHERE = $grid->geneTopWhere('conc');
 
-		$response   = $grid->getData('conc', array(array()), array(), false, $mWHERE );
+		$response   = $grid->getData('conc', array(array()), array(), false, $mWHERE, 'concepto' );
 		$rs = $grid->jsonresult( $response);
 		echo $rs;
 	}
+
+
+	/**
+	* Agrega Concepto a Contrato
+	*/
+	function agrega()
+	{
+		$id     = $this->uri->segment(4);
+		$idnoco = $this->uri->segment(5);
+
+		$codigo   = $this->datasis->dameval("SELECT codigo   FROM noco WHERE id=$idnoco");
+		$concepto = $this->datasis->dameval("SELECT concepto FROM conc WHERE id=$id");
+		$rs = "El Contrato ya contienen ese Concepto ".$concepto;
+		
+		$msql = "SELECT COUNT(*) FROM itnoco WHERE codigo=".$this->db->escape($codigo)." AND concepto=".$this->db->escape($concepto);
+
+		if ($this->datasis->dameval($msql) == 0 ){
+			$msql  = "INSERT IGNORE INTO itnoco ( codigo, concepto, descrip, tipo, grupo )
+				  SELECT ".$this->db->escape($codigo)." codigo, concepto, descrip, tipo, grupo
+				  FROM conc WHERE concepto=".$this->db->escape($concepto);
+			$this->db->query($msql);
+			$rs = "Concepto ".$concepto." agregado al Contrato";
+		}
+		echo $rs;
+	}
+
+
 
 
 

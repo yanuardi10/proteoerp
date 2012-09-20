@@ -42,16 +42,6 @@ jQuery("#a1").click( function(){
 	} else { $.prompt("<h1>Por favor Seleccione un Proveedor</h1>");}
 });
 
-function probar( o, n ) {
-	if ( o.val().length < 1 ) {
-		o.addClass( "ui-state-error" );
-		updateTips( "Seleccion un " + n + "." );
-		return false;
-	} else {
-		return true;
-	}
-};
-
 $(function() {
 	$("#dialog:ui-dialog").dialog( "destroy" );
 	var mId = 0;
@@ -66,21 +56,21 @@ $(function() {
 	s = grid.getGridParam(\'selarrrow\'); 
 	$( "input:submit, a, button", ".otros" ).button();
 
-	$( "#abono" ).click(function() {
+	$( "#preabono" ).click(function() {
 		var id     = jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
 		if (id)	{
 			var ret    = $("#newapi'.$param['grids'][0]['gridname'].'").getRowData(id);  
 			mId = id;
-			$.post("'.base_url().'finanzas/ppro/formaabono/"+id, function(data){
-				$("#fabono").html(data);
+			$.post("'.base_url().'finanzas/ppro/formapabono/"+id, function(data){
+				$("#fabono").html("");
+				$("#fpreabono").html(data);
 			});
-			$( "#fabono" ).dialog( "open" );
+			$( "#fpreabono" ).dialog( "open" );
 			
 		} else { $.prompt("<h1>Por favor Seleccione un Proveedor</h1>");}
 	});
-	
 
-	$( "#fabono" ).dialog({
+	$( "#fpreabono" ).dialog({
 		autoOpen: false, height: 470, width: 790, modal: true,
 		buttons: {
 			"Aprobar Pago": function() {
@@ -97,18 +87,18 @@ $(function() {
 				if ( bValid ) {
 					$.ajax({
 						type: "POST", dataType: "html", async: false,
-						url:"'.site_url("finanzas/ppro/abono").'",
-						data: $("#abonoforma").serialize(),
+						url:"'.site_url("finanzas/ppro/pabono").'",
+						data: $("#abonopforma").serialize(),
 						success: function(r,s,x){
 							var res = $.parseJSON(r);
 							if ( res.status == "A"){
 								alert(res.mensaje);
 								grid.trigger("reloadGrid");
-								$( this ).dialog( "close" );
 								window.open(\''.base_url().'reportes/ver/SPRMPRE/\'+res.id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+								$( "#fpreabono" ).dialog( "close" );
 								return [true, a ];
 							} else {
-								alert("Error: "+res.mensaje);
+								apprise("<div style=\"font-size:16px;font-weight:bold;background:red;color:white\">Error:</div> <h1>"+res.mensaje+"</h1>");
 							}
 						}
 					});
@@ -118,7 +108,117 @@ $(function() {
 		},
 		close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
 	});
+
+	$( "#abonos" ).click(function() {
+		var id     = jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
+		if (id)	{
+			var ret    = $("#newapi'.$param['grids'][0]['gridname'].'").getRowData(id);  
+			mId = id;
+			$.post("'.base_url().'finanzas/ppro/formaabono/"+id, function(data){
+				$("#fpreabono").html("");
+				$("#fabono").html(data);
+			});
+			$( "#fabono" ).dialog( "open" );
+			
+		} else { $.prompt("<h1>Por favor Seleccione un Proveedor</h1>");}
+	});
+
+	$( "#fabono" ).dialog({
+		autoOpen: false, height: 470, width: 790, modal: true,
+		buttons: {
+			"Abonar": function() {
+				var bValid = true;
+				var rows = $("#abonados").jqGrid("getGridParam","data");
+				var paras = new Array();
+				for(var i=0;i < rows.length; i++){
+					var row=rows[i];
+					paras.push($.param(row));
+				}
+				allFields.removeClass( "ui-state-error" );
+				if ( bValid ) {
+					// Coloca el Grid en un input
+					$("#fgrid").val(JSON.stringify(paras));
+					$.ajax({
+						type: "POST", dataType: "html", async: false,
+						url:"'.site_url("finanzas/ppro/abono").'",
+						data: $("#abonoforma").serialize(),
+						success: function(r,s,x){
+							var res = $.parseJSON(r);
+							if ( res.status == "A"){
+								apprise(res.mensaje);
+								grid.trigger("reloadGrid");
+								window.open(\''.base_url().'formato/ver/PPROABB/\'+res.id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+								$( "#fabono" ).dialog( "close" );
+								return [true, a ];
+							} else {
+								apprise("<div style=\"font-size:16px;font-weight:bold;background:red;color:white\">Error:</div> <h1>"+res.mensaje+"</h1>");
+							}
+						}
+					});
+				}
+			},
+			Cancel: function() { $( this ).dialog( "close" ); }
+		},
+		close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
+	});
+
+
+	$( "#ncredito" ).click(function() {
+		var id     = jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
+		if (id)	{
+			var ret    = $("#newapi'.$param['grids'][0]['gridname'].'").getRowData(id);  
+			mId = id;
+			$.post("'.base_url().'finanzas/ppro/formancredito/"+id, function(data){
+				$("#fpreabono").html("");
+				$("#fabono").html("");
+				$("#fncredito").html(data);
+			});
+			$( "#fncredito" ).dialog( "open" );
+			
+		} else { $.prompt("<h1>Por favor Seleccione un Proveedor</h1>");}
+	});
+
+	$( "#fncredito" ).dialog({
+		autoOpen: false, height: 470, width: 790, modal: true,
+		buttons: {
+			"Abonar": function() {
+				var bValid = true;
+				var rows = $("#abonados").jqGrid("getGridParam","data");
+				var paras = new Array();
+				for(var i=0;i < rows.length; i++){
+					var row=rows[i];
+					paras.push($.param(row));
+				}
+				allFields.removeClass( "ui-state-error" );
+				if ( bValid ) {
+					// Coloca el Grid en un input
+					$("#fgrid").val(JSON.stringify(paras));
+					$.ajax({
+						type: "POST", dataType: "html", async: false,
+						url:"'.site_url("finanzas/ppro/ncredito").'",
+						data: $("#ncreditoforma").serialize(),
+						success: function(r,s,x){
+							var res = $.parseJSON(r);
+							if ( res.status == "A"){
+								apprise(res.mensaje);
+								grid.trigger("reloadGrid");
+								window.open(\''.base_url().'formato/ver/PPROABB/\'+res.id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+								$( "#fabono" ).dialog( "close" );
+								return [true, a ];
+							} else {
+								apprise("<div style=\"font-size:16px;font-weight:bold;background:red;color:white\">Error:</div> <h1>"+res.mensaje+"</h1>");
+							}
+						}
+					});
+				}
+			},
+			Cancel: function() { $( this ).dialog( "close" ); }
+		},
+		close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
+	});
+
 });
+
 
 </script>
 ';
@@ -146,9 +246,6 @@ $(function() {
 */
 
 
-
-
-
 		$WestPanel = '
 <div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content">
 <div class="otros">
@@ -163,9 +260,13 @@ $(function() {
 
 <table id="west-grid" align="center">
 	<tr>
-		<td><div class="tema1"><a style="width:190px" href="#" id="a1">Estado de Cuenta '.img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',  'title' => 'Formato PDF', 'border'=>'0')).'</a></div></td>
+		<td><div class="tema1"><a style="width:190px" href="#" id="a1">      <table><tr><td>'.img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',  'title' => 'Formato PDF', 'border'=>'0')).'</td><td>Estado de Cuenta</td></tr></table></a></div></td>
 	</tr><tr>
-		<td><div class="tema1"><a style="width:190px" href="#" id="abono">Preparar Pago '.img(array('src' => 'images/candado.jpg', 'alt' => 'Abonar',  'title' => 'Abonar', 'border'=>'0')).'</a></div></td>
+		<td><div class="tema1"><a style="width:190px" href="#" id="preabono"><table><tr><td>'.img(array('src' => 'images/checklist.png', 'alt' => 'Pre Abonar',  'title' => 'Pre Abonar', 'border'=>'0')).'</td><td>Preparar Pago</td></tr></table></a></div></td>
+	</tr><tr>
+		<td><div class="tema1"><a style="width:190px" href="#" id="abonos"> <table><tr><td>'.  img(array('src' => 'images/check.png', 'alt' => 'Abonos',  'title' => 'Abonos', 'border'=>'0')).'</td><td>Pagar o Abonar</td></tr></table></a></div></td>
+	</tr><tr>
+		<td><div class="tema1"><a style="width:190px" href="#" id="ncredito"><table><tr><td>'.  img(array('src' => 'images/star.png', 'alt' => 'Nota de Credito',  'title' => 'Nota de Credito', 'border'=>'0')).'</td><td>Notas de Credito</td></tr></table></a></div></td>
 	</tr>
 
 </table>
@@ -174,20 +275,16 @@ $(function() {
 ';
 
 
-//	</tr><tr>
-//		<td><div class="tema1"><a style="width:190px" href="#" id="borrar">Eliminar Movimiento '.img(array('src' => 'images/delete.jpg', 'alt' => 'Eliminar',  'title' => 'Eliminar', 'border'=>'0')).'</a></div></td>
-
-
-
 		$SouthPanel = '
 <div id="BottomPane" class="ui-layout-south ui-widget ui-widget-content">
 <p>'.$this->datasis->traevalor('TITULO1').'</p>
 </div> <!-- #BottomPanel -->
 
+<div id="fpreabono" title="Autorizar Abonos"></div>
 <div id="fabono" title="Pagos y Abonos"></div>
+<div id="fncredito" title="Notas de Creditos"></div>
 
 ';
-
 
 		$param['WestPanel']  = $WestPanel;
 		//$param['EastPanel']  = $EastPanel;
@@ -400,7 +497,7 @@ $(function() {
 	//*********************************************************
 	// Forma de Abono
 	//
-	function formaabono(){
+	function formapabono(){
 		$id      = $this->uri->segment($this->uri->total_segments());
 		$proveed = $this->datasis->dameval("SELECT proveed FROM sprv WHERE id=$id");
 
@@ -447,7 +544,7 @@ $(function() {
 		$mSQL .= "FROM sprm a ";
 		$mSQL .= 'LEFT JOIN scst   c ON a.transac=c.transac AND a.tipo_doc=c.tipo_doc AND a.cod_prv=c.proveed ';
 		$mSQL .= 'LEFT JOIN itscst d ON c.control=d.control AND d.devcant is NOT NULL ';
-		$mSQL .= "WHERE a.monto>a.abonos AND a.tipo_doc IN ('FC','ND','GI') AND a.cod_prv=".$this->db->escape($reg['proveed']);
+		$mSQL .= "WHERE a.monto > a.abonos AND a.tipo_doc IN ('FC','ND','GI') AND a.cod_prv=".$this->db->escape($reg['proveed']);
 		$mSQL .= ' GROUP BY a.cod_prv, a.tipo_doc, a.numero ';
 		$mSQL .= "ORDER BY a.fecha ";
 		
@@ -521,7 +618,7 @@ $(function() {
 </script>
 	<div style="background-color:#D0D0D0;font-weight:bold;font-size:14px;text-align:center"><table width="100%"><tr><td>Codigo: '.$reg['proveed'].'</td><td>'.$reg['nombre'].'</td><td>RIF: '.$reg['rif'].'</td></tr></table></div>
 	<p class="validateTips"></p>
-	<form id="abonoforma">	
+	<form id="abonopforma">	
 	<table width="80%" align="center">
 	<tr>
 		<td class="CaptionTD" align="right">Fecha</td>
@@ -544,16 +641,346 @@ $(function() {
 	</form>
 ';
 
-/*		<td class="CaptionTD">Banco/Caja '.$this->datasis->llenaopciones($mSQL, false, $id='fbanco' ).'</td> */
-	
+
 		echo $salida;
 	}
 
-	function abonoguarda(){
-		echo 'a' ;
+
+	//*********************************************************
+	// Forma de Abono
+	//
+	function formaabono(){
+		$id      = $this->uri->segment($this->uri->total_segments());
+		$proveed = $this->datasis->dameval("SELECT proveed FROM sprv WHERE id=$id");
+
+		$reg = $this->datasis->damereg("SELECT proveed, nombre, rif FROM sprv WHERE id=$id");
+
+		$salida = '
+
+<script type="text/javascript">
+	var lastcell = 0;
+	var totalapa = 0;
+	var grid1 = jQuery("#abonados");
+	jQuery("#abonados").jqGrid({
+		datatype: "local",
+		height: 240,
+		colNames:["id","Tipo","Numero","Fecha","Vence","Monto","Saldo", "Abonar","P.Pago"],
+		colModel:[
+			{name:"id",       index:"id",       width:10, hidden:true},
+			{name:"tipo_doc", index:"tipo_doc", width:40},
+			{name:"numero",   index:"numero",   width:90},
+			{name:"fecha",    index:"fecha",    width:90},
+			{name:"vence",    index:"vence",    width:90},
+			{name:"monto",    index:"monto",    width:80, align:"right", edittype:"text", editable:false, formatter: "number", formatoptions: {label:"Monto adeudado",decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 } },
+			{name:"saldo",    index:"saldo",    width:80, align:"right", edittype:"text", editable:false, formatter: "number", formatoptions: {label:"Monto adeudado",decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 } },
+			{name:"abonar",   index:"abonar",   width:80, align:"right", edittype:"text", editable:true,  formatter: "number", formatoptions: {label:"Monto adeudado",decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 } },
+			{name:"ppago",    index:"ppago",    width:80, align:"right", edittype:"text", editable:true,  formatter: "number", formatoptions: {label:"Monto adeudado",decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 } }
+		],
+		cellEdit : true,
+		cellsubmit : "clientArray",
+		afterSaveCell: function (id,name,val,iRow,iCol){
+			var row;
+			if ( val=="" ){
+				row = grid1.jqGrid(\'getRowData\', id );
+				grid1.jqGrid("setCell",id,"abonar", Number(row["saldo"]));
+			}
+			sumabo();
+		}, 
+		editurl: "clientArray"
+	});
+	
+	var mefectos = [
+';
+
+		$mSQL  = "SELECT a.id, a.tipo_doc, a.numero, a.fecha, a.vence, a.monto, a.monto-a.abonos saldo, preabono abonar, preppago ppago ";
+		$mSQL .= "FROM sprm a ";
+		$mSQL .= 'LEFT JOIN scst   c ON a.transac=c.transac AND a.tipo_doc=c.tipo_doc AND a.cod_prv=c.proveed ';
+		$mSQL .= 'LEFT JOIN itscst d ON c.control=d.control AND d.devcant is NOT NULL ';
+		$mSQL .= "WHERE a.monto > a.abonos AND a.tipo_doc IN ('FC','ND','GI') AND a.cod_prv=".$this->db->escape($reg['proveed']);
+		$mSQL .= ' GROUP BY a.cod_prv, a.tipo_doc, a.numero ';
+		$mSQL .= "ORDER BY a.fecha ";
+		
+		$query = $this->db->query($mSQL);
+		if ($query->num_rows() > 0 ){
+			foreach( $query->result() as $row ){
+				$salida .= "\t\t".'{id:"'.$row->id.'",';
+				$salida .= 'tipo_doc:"'.$row->tipo_doc.'",';
+				$salida .= 'numero:"'.  $row->numero.'",';
+				$salida .= 'fecha:"'.   $row->fecha.'",';
+				$salida .= 'vence:"'.   $row->vence.'",';
+				$salida .= 'monto:"'.   $row->monto.'",';
+				$salida .= 'saldo:"'.   $row->saldo.'",';
+				$salida .= 'abonar:"'.  $row->abonar.'",';
+				$salida .= 'ppago:"'.   $row->ppago.'"},'."\n";
+			}
+		}
+		$mSQL  = "SELECT codbanc, CONCAT(codbanc, ' ', banco, numcuent) banco ";
+		$mSQL .= "FROM banc ";
+		$mSQL .= "WHERE activo='S' ";
+		$mSQL .= "ORDER BY (tbanco='CAJ'), codbanc ";
+		
+		$mSQL  = "SELECT codbanc, CONCAT(codbanc, ' ', TRIM(banco), IF(tbanco='CAJ',' ',numcuent) ) banco FROM banc WHERE activo='S' ORDER BY tbanco='CAJ', codbanc ";
+		$cajas = $this->datasis->llenaopciones($mSQL, true, 'fcodbanc');
+
+		
+		$salida .= '
+	];
+	for(var i=0;i<=mefectos.length;i++) jQuery("#abonados").jqGrid(\'addRowData\',i+1,mefectos[i]);
+	$("#ffecha").datepicker({dateFormat:"dd/mm/yy"});
+	function sumabo()
+        { 
+		var grid = jQuery("#abonados");
+		var s;
+		var total = 0;
+		var rowcells = new Array();
+		var entirerow;
+		s = grid.jqGrid("getGridParam","data");
+		if(s.length)
+		{
+			for(var i=0; i< s.length; i++)
+			{
+				entirerow = s[i];
+				if ( Number(entirerow["abonar"])>Number(entirerow["saldo"]) ){
+					grid.jqGrid("setCell",s[i]["id"],"abonar", entirerow["saldo"]);
+					total += Number(entirerow["saldo"]);
+				} else {
+					total += Number(entirerow["abonar"]);
+				}
+				//Calcula el descuento
+				if (  Number(entirerow["ppago"]) < 0 ){
+					if (Number(entirerow["abonar"]) == 0 ){
+						grid1.jqGrid("setCell",s[i]["id"],"abonar", Number(entirerow["saldo"]));
+					}
+					total -= Number(entirerow["abonar"])*Math.abs(Number(entirerow["ppago"]))/100;
+					grid.jqGrid("setCell",s[i]["id"],"ppago", Number(entirerow["abonar"])*Math.abs(Number(entirerow["ppago"]))/100);
+				} else {
+					total -= Number(entirerow["ppago"]);
+				}
+			}
+			total = Math.round(total*100)/100;	
+			$("#grantotal").html("Total a Pagar: "+nformat(total,2));
+			$("input#fmonto").val(total);
+			montotal = total;
+		} else {
+			total = 0;
+			$("#grantotal").html("Sin seleccion");
+			$("input#fmonto").val(total);
+			montotal = total;	
+		}
+	};
+	sumabo();
+
+</script>
+	<div style="background-color:#D0D0D0;font-weight:bold;font-size:14px;text-align:center"><table width="100%"><tr><td>Codigo: '.$reg['proveed'].'</td><td>'.$reg['nombre'].'</td><td>RIF: '.$reg['rif'].'</td></tr></table></div>
+	<p class="validateTips"></p>
+	<form id="abonoforma">	
+	<table width="90%" align="center" border="0">
+	<tr>
+		<td class="CaptionTD" align="right">Banco/Caja</td>
+		<td>&nbsp;'.$cajas.'</td>
+
+		<td class="CaptionTD" align="right">Tipo</td>
+		<td>&nbsp;<select name="ftipo" id="ftipo" value="CH"><option value="CH">Cheque</option><option value="ND">Nota debito</option> </select></td>
+
+		<td  class="CaptionTD"  align="right">Numero</td>
+		<td>&nbsp;<input name="fcomprob" id="fcomprob" type="text" value="" maxlengh="12" size="12"  /></td>
+	<tr>
+		<td class="CaptionTD" align="right">Beneficiario:</td>
+		<td colspan="3">&nbsp;<input name="fbenefi" id="fbenefi" type="text" value="" maxlengh="60" size="50"  /></td>
+		<td class="CaptionTD" align="right">Fecha</td>
+		<td>&nbsp;<input name="ffecha" id="ffecha" maxlength="10" size="10" value=\''.date('d/m/Y').'\'/></td>
+	</tr>
+	</tr>
+	</table>
+	<input id="fmonto"   name="fmonto"   type="hidden">
+	<input id="fsele"    name="fsele"    type="hidden">
+	<input id="fid"      name="fid"      type="hidden" value="'.$id.'">
+	<input id="fgrid"    name="fgrid"    type="hidden">
+	<br>
+	<center><table id="abonados"><table></center>
+	<table width="100%">
+	<tr>
+		<td align="center"><div id="grantotal" style="font-size:20px;font-weight:bold">Monto a pagar: 0.00</div></td>
+	</tr>
+	</table>
+	</form>
+';
+
+
+		echo $salida;
 	}
 
-	function abono(){
+//	function abonoguarda(){
+//		echo 'a' ;
+//	}
+
+	//*********************************************************
+	// Forma de Notas de Credito
+	//
+	function formancredito(){
+		$id      = $this->uri->segment($this->uri->total_segments());
+		$proveed = $this->datasis->dameval("SELECT proveed FROM sprv WHERE id=$id");
+
+		$reg = $this->datasis->damereg("SELECT proveed, nombre, rif FROM sprv WHERE id=$id");
+
+		$salida = '
+
+<script type="text/javascript">
+	var lastcell = 0;
+	var totalapa = 0;
+	var grid1 = jQuery("#abonados");
+	jQuery("#abonados").jqGrid({
+		datatype: "local",
+		height: 240,
+		colNames:["id","Tipo","Numero","Fecha","Vence","Monto","Saldo", "Abonar","P.Pago"],
+		colModel:[
+			{name:"id",       index:"id",       width:10, hidden:true},
+			{name:"tipo_doc", index:"tipo_doc", width:40},
+			{name:"numero",   index:"numero",   width:90},
+			{name:"fecha",    index:"fecha",    width:90},
+			{name:"vence",    index:"vence",    width:90},
+			{name:"monto",    index:"monto",    width:80, align:"right", edittype:"text", editable:false, formatter: "number", formatoptions: {label:"Monto adeudado",decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 } },
+			{name:"saldo",    index:"saldo",    width:80, align:"right", edittype:"text", editable:false, formatter: "number", formatoptions: {label:"Monto adeudado",decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 } },
+			{name:"abonar",   index:"abonar",   width:80, align:"right", edittype:"text", editable:true,  formatter: "number", formatoptions: {label:"Monto adeudado",decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 } },
+			{name:"ppago",    index:"ppago",    width:80, align:"right", edittype:"text", editable:true,  formatter: "number", formatoptions: {label:"Monto adeudado",decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 } }
+		],
+		cellEdit : true,
+		cellsubmit : "clientArray",
+		afterSaveCell: function (id,name,val,iRow,iCol){
+			var row;
+			if ( val=="" ){
+				row = grid1.jqGrid(\'getRowData\', id );
+				grid1.jqGrid("setCell",id,"abonar", Number(row["saldo"]));
+			}
+			sumabo();
+		}, 
+		editurl: "clientArray"
+	});
+	
+	var mefectos = [
+';
+
+		$mSQL  = "SELECT a.id, a.tipo_doc, a.numero, a.fecha, a.vence, a.monto, a.monto-a.abonos saldo, preabono abonar, preppago ppago ";
+		$mSQL .= "FROM sprm a ";
+		$mSQL .= 'LEFT JOIN scst   c ON a.transac=c.transac AND a.tipo_doc=c.tipo_doc AND a.cod_prv=c.proveed ';
+		$mSQL .= 'LEFT JOIN itscst d ON c.control=d.control AND d.devcant is NOT NULL ';
+		$mSQL .= "WHERE a.monto > a.abonos AND a.tipo_doc IN ('FC','ND','GI') AND a.cod_prv=".$this->db->escape($reg['proveed']);
+		$mSQL .= ' GROUP BY a.cod_prv, a.tipo_doc, a.numero ';
+		$mSQL .= "ORDER BY a.fecha ";
+		
+		$query = $this->db->query($mSQL);
+		if ($query->num_rows() > 0 ){
+			foreach( $query->result() as $row ){
+				$salida .= "\t\t".'{id:"'.$row->id.'",';
+				$salida .= 'tipo_doc:"'.$row->tipo_doc.'",';
+				$salida .= 'numero:"'.  $row->numero.'",';
+				$salida .= 'fecha:"'.   $row->fecha.'",';
+				$salida .= 'vence:"'.   $row->vence.'",';
+				$salida .= 'monto:"'.   $row->monto.'",';
+				$salida .= 'saldo:"'.   $row->saldo.'",';
+				$salida .= 'abonar:"'.  $row->abonar.'",';
+				$salida .= 'ppago:"'.   $row->ppago.'"},'."\n";
+			}
+		}
+		$mSQL  = "SELECT codbanc, CONCAT(codbanc, ' ', banco, numcuent) banco ";
+		$mSQL .= "FROM banc ";
+		$mSQL .= "WHERE activo='S' ";
+		$mSQL .= "ORDER BY (tbanco='CAJ'), codbanc ";
+		
+		//$mSQL  = "SELECT codbanc, CONCAT(codbanc, ' ', TRIM(banco), IF(tbanco='CAJ',' ',numcuent) ) banco FROM banc WHERE activo='S' ORDER BY tbanco='CAJ', codbanc ";
+		//$cajas = $this->datasis->llenaopciones($mSQL, true, 'fcodbanc');
+
+		
+		$salida .= '
+	];
+	for(var i=0;i<=mefectos.length;i++) jQuery("#abonados").jqGrid(\'addRowData\',i+1,mefectos[i]);
+	$("#ffecha").datepicker({dateFormat:"dd/mm/yy"});
+	function sumabo()
+        { 
+		var grid = jQuery("#abonados");
+		var s;
+		var total = 0;
+		var rowcells = new Array();
+		var entirerow;
+		s = grid.jqGrid("getGridParam","data");
+		if(s.length)
+		{
+			for(var i=0; i< s.length; i++)
+			{
+				entirerow = s[i];
+				if ( Number(entirerow["abonar"])>Number(entirerow["saldo"]) ){
+					grid.jqGrid("setCell",s[i]["id"],"abonar", entirerow["saldo"]);
+					total += Number(entirerow["saldo"]);
+				} else {
+					total += Number(entirerow["abonar"]);
+				}
+				//Calcula el descuento
+				if (  Number(entirerow["ppago"]) < 0 ){
+					if (Number(entirerow["abonar"]) == 0 ){
+						grid1.jqGrid("setCell",s[i]["id"],"abonar", Number(entirerow["saldo"]));
+					}
+					total -= Number(entirerow["abonar"])*Math.abs(Number(entirerow["ppago"]))/100;
+					grid.jqGrid("setCell",s[i]["id"],"ppago", Number(entirerow["abonar"])*Math.abs(Number(entirerow["ppago"]))/100);
+				} else {
+					total -= Number(entirerow["ppago"]);
+				}
+			}
+			total = Math.round(total*100)/100;	
+			$("#grantotal").html("Total a Pagar: "+nformat(total,2));
+			$("input#fmonto").val(total);
+			montotal = total;
+		} else {
+			total = 0;
+			$("#grantotal").html("Sin seleccion");
+			$("input#fmonto").val(total);
+			montotal = total;	
+		}
+	};
+	sumabo();
+
+</script>
+	<div style="background-color:#D0D0D0;font-weight:bold;font-size:14px;text-align:center"><table width="100%"><tr><td>Codigo: '.$reg['proveed'].'</td><td>'.$reg['nombre'].'</td><td>RIF: '.$reg['rif'].'</td></tr></table></div>
+	<p class="validateTips"></p>
+	<form id="abonoforma">	
+	<table width="90%" align="center" border="0">
+	<tr>
+		<td class="CaptionTD" align="right">Banco/Caja</td>
+		<td>&nbsp;</td>
+
+		<td class="CaptionTD" align="right">Tipo</td>
+		<td>&nbsp;<select name="ftipo" id="ftipo" value="CH"><option value="CH">Cheque</option><option value="ND">Nota debito</option> </select></td>
+
+		<td  class="CaptionTD"  align="right">Numero</td>
+		<td>&nbsp;<input name="fcomprob" id="fcomprob" type="text" value="" maxlengh="12" size="12"  /></td>
+	<tr>
+		<td class="CaptionTD" align="right">Beneficiario:</td>
+		<td colspan="3">&nbsp;<input name="fbenefi" id="fbenefi" type="text" value="" maxlengh="60" size="50"  /></td>
+		<td class="CaptionTD" align="right">Fecha</td>
+		<td>&nbsp;<input name="ffecha" id="ffecha" maxlength="10" size="10" value=\''.date('d/m/Y').'\'/></td>
+	</tr>
+	</tr>
+	</table>
+	<input id="fmonto"   name="fmonto"   type="hidden">
+	<input id="fsele"    name="fsele"    type="hidden">
+	<input id="fid"      name="fid"      type="hidden" value="'.$id.'">
+	<input id="fgrid"    name="fgrid"    type="hidden">
+	<br>
+	<center><table id="abonados"><table></center>
+	<table width="100%">
+	<tr>
+		<td align="center"><div id="grantotal" style="font-size:20px;font-weight:bold">Monto a pagar: 0.00</div></td>
+	</tr>
+	</table>
+	</form>
+';
+
+
+		echo $salida;
+	}
+
+
+
+	function pabono(){
 		$comprob   = $this->input->post('fcomprob');
 		$fecha     = $this->input->post('ffecha');
 		$grid      = $this->input->post('fgrid');
@@ -562,6 +989,7 @@ $(function() {
 		$fsele     = $this->input->post('fsele');
 		$check     = 0;
 		$meco      = json_decode($grid);
+
 		foreach( $meco as $row ){
 			parse_str($row,$linea[]);
 		}
@@ -569,10 +997,10 @@ $(function() {
 		$cod_prv = $this->datasis->dameval("SELECT proveed FROM sprv WHERE id=$id");
 		foreach( $linea as $efecto ){
 			//actualiza los movimientos
-			$this->db->where('cod_prv',  $cod_prv);
-			$this->db->where('numero',   $efecto['numero']);
-			$this->db->where('tipo_doc', $efecto['tipo_doc']);
-			$this->db->where('fecha',    $efecto['fecha']);
+			$this->db->where('cod_prv',   $cod_prv);
+			$this->db->where('numero',    $efecto['numero']);
+			$this->db->where('tipo_doc',  $efecto['tipo_doc']);
+			$this->db->where('fecha',     $efecto['fecha']);
 			if ( $efecto['abonar'] == 0 ) $efecto['ppago'] = "0";
 			$data = array("preabono"=>$efecto['abonar'], "preppago"=>$efecto['ppago'], "comprob"=>$comprob);
 			$this->db->update('sprm', $data);
@@ -580,7 +1008,231 @@ $(function() {
 		logusu('SPRM',"Aprobacion de pagos CREADO $cod_prv "+$grid);
 		echo '{"status":"A","id":"'.$id.'","mensaje":"Aprobacion Guardada"}';
 	}
-}
+
+	function abono(){
+		$numche  = $this->input->post('fcomprob');
+		$tipo_op = $this->input->post('ftipo');
+		$benefi  = $this->input->post('fbenefi');
+		$codbanc = $this->input->post('fcodbanc');
+		$fecha   = $this->input->post('ffecha');
+		$grid    = $this->input->post('fgrid');
+		$id      = $this->input->post('fid');
+		$monto   = $this->input->post('fmonto');
+		$fsele   = $this->input->post('fsele');
+		$check   = 0;
+		$meco    = json_decode($grid);
+
+		//Convierte la fecha a YYYYmmdd
+		$fecha = substr($fecha,6,4).substr($fecha,3,2).substr($fecha,0,2);
+
+		// Validacion
+		if ( $codbanc == '' ) {
+			echo '{"status":"E","id":"'.$id.'" ,"mensaje":"Debe seleccionar un Banco o Caja "}';
+			return;
+		}
+		
+		if ( $this->datasis->dameval("SELECT count(*) FROM banc WHERE codbanc=".$this->db->escape($codbanc))==0 )
+		{
+			echo '{"status":"E","id":"'.$id.'" ,"mensaje":"Debe seleccionar un Banco o Caja "}';
+			return;	
+		}
+		
+		$tbanco = $this->datasis->dameval("SELECT tbanco FROM banc WHERE codbanc=".$this->db->escape($codbanc));
+		
+		if ( $tbanco <> 'CAJ' && $numche == ''  ) {
+			echo '{"status":"E","id":"'.$id.'" ,"mensaje":"Falta colocar el numero de Documento"}';
+			return;
+		}
+		foreach( $meco as $row ){
+			parse_str($row,$linea[]);
+		}
+		$cod_prv = $this->datasis->dameval("SELECT proveed FROM sprv WHERE id=$id");
+		$nombre  = $this->datasis->dameval("SELECT nombre  FROM sprv WHERE id=$id");
+
+		$totalab  = 0;
+		$ppago    = 0;
+		$impuesto = 0;
+		$observa1 = 'ABONA A: ';
+		$observa2 = '';
+		$mTempo = "SELECT impuesto FROM sprm WHERE cod_prv=".$this->db->escape($cod_prv);
+		foreach( $linea as $efecto ){
+			if ($efecto['abonar'] > 0 ){
+				$totalab  += $efecto['abonar'] - $efecto['ppago'];
+				$ppago    += $efecto['ppago'];
+				$observa1 .= $efecto['tipo_doc'].$efecto['numero'].', ';
+				$impuesto += $efecto['abonar']*$this->datasis->dameval($mtempo." AND tipo_doc='".$efecto['tipo_doc']."' AND numero='".$efecto['numero']."'" )/$efecto['monto'];
+			}
+		}
+		
+		$observa2 = '';
+		if ( strlen($observa1)>50) {
+			$observa2 = substr($observa1, 49);
+			$observa1 = substr($observa1, 0, 50);
+		}
+		
+		if ( $totalab <= 0) {
+			echo '{"status":"E","id":"'.$id.'" ,"mensaje":"Seleccione los efectos a abonar"}';
+			return;
+		}
+
+		//Crea el Abono
+		$transac  = $this->datasis->prox_sql("ntransa",8);
+		$mnroegre = $this->datasis->prox_sql("nroegre",8);
+		$tipo_doc = 'AB';
+		$xnumero  = $this->datasis->prox_sql("num_ab",8);
+		$mcontrol = $this->datasis->prox_sql("nsprm",8);
+
+		$data = array();
+		$data["tipo_doc"] = $tipo_doc;
+		$data["numero"]   = $xnumero;
+		$data["cod_prv"]  = $cod_prv;
+		$data["nombre"]   = $nombre;
+		$data["fecha"]    = $fecha;
+		$data["monto"]    = $totalab;
+		$data["impuesto"] = $impuesto;
+		$data["vence"]    = $fecha;
+		$data["observa1"] = $observa1;
+		$data["observa2"] = $observa2;
+		
+		$data["banco"]    = $codbanc;
+		$data["tipo_op"]  = $tipo_op;
+		$data["numche"]   = $numche;
+		$data["benefi"]   = $benefi;
+		$data["reten"]    = 0;
+		$data["reteiva"]  = 0;
+		$data["ppago"]    = $ppago ;
+		$data["control"]  = $mcontrol ;
+		$data["cambio"]   = 0 ;
+		$data["nfiscal"]  = '' ;
+		$data["mora"]     = 0 ;
+
+		$data["comprob"]  = '' ;
+		$data["abonos"]   = $totalab ;
+
+		$data['usuario']  = $this->secu->usuario();
+		$data['estampa']  = date('Ymd');
+		$data['hora']     = date('H:i:s');
+		$data['transac']  = $transac;
+
+		$this->db->insert('sprm',$data);
+		$idab = $this->db->insert_id();
+
+		// Si tiene prontopago genera la NC
+		if ( $ppago > 0 ){
+			$mnumero   = $this->datasis->prox_sql("num_nc",8);
+			$mcontrol  = $this->datasis->prox_sql("nsprm",8);
+			$mcdppago  = $mcontrol;
+
+			$data = array();
+			$data["tipo_doc"] =  "NC";
+			$data["numero"]   =   $mnumero;
+			$data["cod_prv"]  =   $cod_prv;
+			$data["nombre"]   =   $nombre;
+			$data["fecha"]    =   $fecha;
+			$data["monto"]    =   $ppago;
+
+			$data["impuesto"] = round($ppago*$impuesto/$totalab,2) ;
+
+			$data["vence"]    = $fecha;
+			$data["observa1"] = 'DESC. P.PAGO A '.$tipo_doc.$numero;
+			$data["codigo"]   = 'DESPP';
+			$data["descrip"]  = 'DESCUENTO PRONTO PAGO';
+			$data["abonos"]   = $ppago;
+			$data["control"]  = $mcontrol;
+
+			$data['usuario']  = $this->secu->usuario();
+			$data['estampa']  = date('Ymd');
+			$data['hora']     = date('H:i:s');
+			$data['transac']  = $transac;
+
+			$this->db->insert('sprm',$data);
+
+			// DEBE DEVOLVER EL IVA EN CASO DE CONTRIBUYENTE
+			/*
+			IF TRAEVALOR("CONTRIBUYENTE") = 'ESPECIAL'
+				
+			ENDIF
+			*/
+		}
+		
+		//Crea Movimiento en Bancos
+		$mndebito = '';
+	
+		if ( $tbanco == 'CAJ' ) $tipo_op = 'ND';
+		if ( $tipo_op == 'ND' && $tbanco != 'CAJ' ) $mndebito = $this->datasis->prox_sql("ndebito",8);
+		
+		$data = array();
+
+		$data["codbanc"]  = $codbanc;
+
+		$mtempo = " FROM banc WHERE codbanc=".$this->db->escape($codbanc);
+		$data["numcuent"] = $this->datasis->dameval("SELECT numcuent ".$mtempo);
+		$data["banco"]    = $this->datasis->dameval("SELECT banco    ".$mtempo);
+		$data["saldo"]    = $this->datasis->dameval("SELECT saldo    ".$mtempo);
+		
+		$data["fecha"]    = $fecha;
+		$data["tipo_op"]  = $tipo_op;
+		$data["numero"]   = $numche;
+
+		$data["concepto"] = $observa1;
+		$data["concep2"]  = $observa2;
+		$data["monto"]    = $totalab;
+		$data["clipro"]   = 'P' ;
+
+		$data["codcp"]    = $cod_prv;
+		$data["nombre"]   = $nombre;
+		$data["benefi"]   = $benefi;
+		
+		$data["negreso"]  = $mnroegre;
+		$data["ndebito"]  = $mndebito;
+
+		$data['usuario']  = $this->secu->usuario();
+		$data['estampa']  = date('Ymd');
+		$data['hora']     = date('H:i:s');
+		$data['transac']  = $transac;
+
+		$this->db->insert('bmov',$data);
+		$this->datasis->actusal($codbanc, $fecha, $totalab);
+
+		//IF UPPER(SUBSTR(XBENEFI,1,18)) != "TESORERIA NACIONAL"
+		//	CARGAIDB(XBANCO, XFECHA, XMONTO, XNUMCHE , XNUMERO, mTRANSAC)
+		//ENDIF
+
+		foreach( $linea as $efecto ){
+			if ( $efecto['abonar'] > 0 ) {
+				// Guarda en itppro
+				$data = array();
+				$data["numppro"]  = $xnumero;
+				$data["tipoppro"] = $tipo_doc;
+				$data["cod_prv"]  = $cod_prv;
+				$data["numero"]   = $efecto['numero'];
+				$data["tipo_doc"] = $efecto['tipo_doc'];
+				$data["fecha"]    = $fecha;
+				$data["monto"]    = $efecto['numero'];
+				$data["abono"]    = $efecto['abonar'];
+				$data["breten"]   = 0;
+				$data["creten"]   = '';
+				$data["reten"]    = 0;
+				$data["reteiva"]  = 0;
+				$data["ppago"]    = 0;
+				$data["cambio"]   = 0;
+				$data["mora"]     = 0;
+
+				$data['usuario']  = $this->secu->usuario();
+				$data['estampa']  = date('Ymd');
+				$data['hora']     = date('H:i:s');
+				$data['transac']  = $transac;
+				$this->db->insert('itppro',$data);
+			
+				// Actualiza sprm
+				$data = array($efecto['abonar'], $efecto['tipo_doc'], $efecto['numero'], $cod_prv, $efecto['fecha']);
+				$mSQL = "UPDATE sprm SET abonos=abonos+? WHERE tipo_doc=? AND numero=? AND cod_prv=? AND fecha=?";
+				$this->db->query($mSQL, $data);
+			}
+		}
+		logusu('PPRO',"Abono a proveedor CREADO Prov=$cod_prv  Numero=$xnumero Detalle=".$grid);
+		echo '{"status":"A","id":"'.$idab.'" ,"mensaje":"Abono Guardado '.$codbanc.'"}';
+	}
 
 
 /*
@@ -1259,7 +1911,7 @@ class psprv extends Controller {
 	function _pre_delete($do){
 		return false;
 	}
-
-}
 */
+}
+
 ?>

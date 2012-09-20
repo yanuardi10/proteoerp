@@ -499,10 +499,10 @@ $(function(){$(".inputnum").numeric(".");});
 		$data['emiriva']  = '';
 		$data['ningreso'] = $xningreso;
 
-		$data['usuario']    = $this->secu->usuario();
-		$data['estampa']    = date('Ymd');
-		$data['hora']       = date('H:i:s');
-		$data['transac']    = $transac;
+		$data['usuario']  = $this->secu->usuario();
+		$data['estampa']  = date('Ymd');
+		$data['hora']     = date('H:i:s');
+		$data['transac']  = $transac;
 		
 		$this->db->insert('smov',$data);
 
