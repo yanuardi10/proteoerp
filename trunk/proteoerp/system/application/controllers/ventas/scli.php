@@ -1222,21 +1222,21 @@ function sclilimite(){
 
 		} elseif($oper == 'del') {
 			$cliente = $this->datasis->dameval("SELECT cliente FROM scli WHERE id=$id");
-			$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM smov WHERE cod_cli=".$this->db->escape($cliente));
-			$chek += $this->datasis->dameval("SELECT COUNT(*) FROM sfac WHERE cod_cli=".$this->db->escape($cliente));
-			$chek += $this->datasis->dameval("SELECT COUNT(*) FROM spre WHERE cod_cli=".$this->db->escape($cliente));
-			$chek += $this->datasis->dameval("SELECT count(*) FROM pfac WHERE cod_cli=".$this->db->escape($cliente));
-			$chek += $this->datasis->dameval("SELECT count(*) FROM bmov WHERE clipro='C' AND codcp=".$this->db->escape($cliente));
-			$chek += $this->datasis->dameval("SELECT count(*) FROM otin WHERE cod_cli=".$this->db->escape($cliente));
-			$chek += $this->datasis->dameval("SELECT count(*) FROM snte WHERE cod_cli=".$this->db->escape($cliente));
-			$chek += $this->datasis->dameval("SELECT count(*) FROM snot WHERE cod_cli=".$this->db->escape($cliente));
+			$check =  $this->datasis->dameval("SELECT COUNT(*) FROM smov WHERE cod_cli=".$this->db->escape($cliente));
+			$check += $this->datasis->dameval("SELECT COUNT(*) FROM sfac WHERE cod_cli=".$this->db->escape($cliente));
+			$check += $this->datasis->dameval("SELECT COUNT(*) FROM spre WHERE cod_cli=".$this->db->escape($cliente));
+			$check += $this->datasis->dameval("SELECT count(*) FROM pfac WHERE cod_cli=".$this->db->escape($cliente));
+			$check += $this->datasis->dameval("SELECT count(*) FROM bmov WHERE clipro='C' AND codcp=".$this->db->escape($cliente));
+			$check += $this->datasis->dameval("SELECT count(*) FROM otin WHERE cod_cli=".$this->db->escape($cliente));
+			$check += $this->datasis->dameval("SELECT count(*) FROM snte WHERE cod_cli=".$this->db->escape($cliente));
+			$check += $this->datasis->dameval("SELECT count(*) FROM snot WHERE cod_cli=".$this->db->escape($cliente));
 			if ( $this->datasis->istabla('fmay'))
-				$chek += $this->datasis->dameval("SELECT count(*) FROM fmay WHERE cod_cli=".$this->db->escape($cliente));
+				$check += $this->datasis->dameval("SELECT count(*) FROM fmay WHERE cod_cli=".$this->db->escape($cliente));
 			if ($check > 0){
 				echo " El registro no puede ser eliminado; tiene movimiento ";
 			} else {
-				$this->db->simple_query("DELETE FROM scli WHERE id=$id ");
-				logusu('SCLI',"Cliente $cliente ($id) ELIMINADO");
+				//$this->db->simple_query("DELETE FROM scli WHERE id=$id ");
+				//logusu('SCLI',"Cliente $cliente ($id) ELIMINADO");
 				echo "Cliente Eliminado";
 			}
 		};

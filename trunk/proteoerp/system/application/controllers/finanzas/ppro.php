@@ -147,7 +147,7 @@ $(function() {
 							if ( res.status == "A"){
 								apprise(res.mensaje);
 								grid.trigger("reloadGrid");
-								window.open(\''.base_url().'formato/ver/PPROABB/\'+res.id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+								window.open(\''.base_url().'formatos/ver/PPROABB/\'+res.id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
 								$( "#fabono" ).dialog( "close" );
 								return [true, a ];
 							} else {
@@ -179,7 +179,7 @@ $(function() {
 	});
 
 	$( "#fncredito" ).dialog({
-		autoOpen: false, height: 470, width: 790, modal: true,
+		autoOpen: false, height: 470, width: 690, modal: true,
 		buttons: {
 			"Abonar": function() {
 				var bValid = true;
@@ -202,7 +202,7 @@ $(function() {
 							if ( res.status == "A"){
 								apprise(res.mensaje);
 								grid.trigger("reloadGrid");
-								window.open(\''.base_url().'formato/ver/PPROABB/\'+res.id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+								window.open(\''.base_url().'formatos/ver/PPROABB/\'+res.id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
 								$( "#fabono" ).dialog( "close" );
 								return [true, a ];
 							} else {
@@ -784,12 +784,12 @@ $(function() {
 
 		<td  class="CaptionTD"  align="right">Numero</td>
 		<td>&nbsp;<input name="fcomprob" id="fcomprob" type="text" value="" maxlengh="12" size="12"  /></td>
+	</tr>
 	<tr>
 		<td class="CaptionTD" align="right">Beneficiario:</td>
 		<td colspan="3">&nbsp;<input name="fbenefi" id="fbenefi" type="text" value="" maxlengh="60" size="50"  /></td>
 		<td class="CaptionTD" align="right">Fecha</td>
 		<td>&nbsp;<input name="ffecha" id="ffecha" maxlength="10" size="10" value=\''.date('d/m/Y').'\'/></td>
-	</tr>
 	</tr>
 	</table>
 	<input id="fmonto"   name="fmonto"   type="hidden">
@@ -820,11 +820,9 @@ $(function() {
 	function formancredito(){
 		$id      = $this->uri->segment($this->uri->total_segments());
 		$proveed = $this->datasis->dameval("SELECT proveed FROM sprv WHERE id=$id");
-
 		$reg = $this->datasis->damereg("SELECT proveed, nombre, rif FROM sprv WHERE id=$id");
 
 		$salida = '
-
 <script type="text/javascript">
 	var lastcell = 0;
 	var totalapa = 0;
@@ -832,7 +830,7 @@ $(function() {
 	jQuery("#abonados").jqGrid({
 		datatype: "local",
 		height: 240,
-		colNames:["id","Tipo","Numero","Fecha","Vence","Monto","Saldo", "Abonar","P.Pago"],
+		colNames:["id","Tipo","Numero","Fecha","Vence","Monto","Saldo", "Abonar","Impuesto"],
 		colModel:[
 			{name:"id",       index:"id",       width:10, hidden:true},
 			{name:"tipo_doc", index:"tipo_doc", width:40},
@@ -842,7 +840,7 @@ $(function() {
 			{name:"monto",    index:"monto",    width:80, align:"right", edittype:"text", editable:false, formatter: "number", formatoptions: {label:"Monto adeudado",decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 } },
 			{name:"saldo",    index:"saldo",    width:80, align:"right", edittype:"text", editable:false, formatter: "number", formatoptions: {label:"Monto adeudado",decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 } },
 			{name:"abonar",   index:"abonar",   width:80, align:"right", edittype:"text", editable:true,  formatter: "number", formatoptions: {label:"Monto adeudado",decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 } },
-			{name:"ppago",    index:"ppago",    width:80, align:"right", edittype:"text", editable:true,  formatter: "number", formatoptions: {label:"Monto adeudado",decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 } }
+			{name:"impuesto", index:"impuesto", width:80, align:"right", edittype:"text", editable:true,  formatter: "number", formatoptions: {label:"Monto adeudado",decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }, "hidden":true }
 		],
 		cellEdit : true,
 		cellsubmit : "clientArray",
@@ -852,7 +850,7 @@ $(function() {
 				row = grid1.jqGrid(\'getRowData\', id );
 				grid1.jqGrid("setCell",id,"abonar", Number(row["saldo"]));
 			}
-			sumabo();
+			sumanc();
 		}, 
 		editurl: "clientArray"
 	});
@@ -860,7 +858,7 @@ $(function() {
 	var mefectos = [
 ';
 
-		$mSQL  = "SELECT a.id, a.tipo_doc, a.numero, a.fecha, a.vence, a.monto, a.monto-a.abonos saldo, preabono abonar, preppago ppago ";
+		$mSQL  = "SELECT a.id, a.tipo_doc, a.numero, a.fecha, a.vence, a.monto, a.monto-a.abonos saldo, 0 abonar, impuesto ";
 		$mSQL .= "FROM sprm a ";
 		$mSQL .= 'LEFT JOIN scst   c ON a.transac=c.transac AND a.tipo_doc=c.tipo_doc AND a.cod_prv=c.proveed ';
 		$mSQL .= 'LEFT JOIN itscst d ON c.control=d.control AND d.devcant is NOT NULL ';
@@ -879,7 +877,7 @@ $(function() {
 				$salida .= 'monto:"'.   $row->monto.'",';
 				$salida .= 'saldo:"'.   $row->saldo.'",';
 				$salida .= 'abonar:"'.  $row->abonar.'",';
-				$salida .= 'ppago:"'.   $row->ppago.'"},'."\n";
+				$salida .= 'impuesto:"'.$row->impuesto.'"},'."\n";
 			}
 		}
 		$mSQL  = "SELECT codbanc, CONCAT(codbanc, ' ', banco, numcuent) banco ";
@@ -887,19 +885,21 @@ $(function() {
 		$mSQL .= "WHERE activo='S' ";
 		$mSQL .= "ORDER BY (tbanco='CAJ'), codbanc ";
 		
-		//$mSQL  = "SELECT codbanc, CONCAT(codbanc, ' ', TRIM(banco), IF(tbanco='CAJ',' ',numcuent) ) banco FROM banc WHERE activo='S' ORDER BY tbanco='CAJ', codbanc ";
-		//$cajas = $this->datasis->llenaopciones($mSQL, true, 'fcodbanc');
-
+		$mSQL = "SELECT codigo, TRIM(nombre) descrip FROM botr WHERE tipo='P' ORDER BY codigo ";
+		$botr = $this->datasis->llenaopciones($mSQL, true, 'fcodigo');
 		
 		$salida .= '
 	];
 	for(var i=0;i<=mefectos.length;i++) jQuery("#abonados").jqGrid(\'addRowData\',i+1,mefectos[i]);
 	$("#ffecha").datepicker({dateFormat:"dd/mm/yy"});
-	function sumabo()
+	$("#femision").datepicker({dateFormat:"dd/mm/yy"});
+	function sumanc()
         { 
 		var grid = jQuery("#abonados");
 		var s;
-		var total = 0;
+		var total    = 0;
+		var tiva     = 0;
+		var texento  = 0;
 		var rowcells = new Array();
 		var entirerow;
 		s = grid.jqGrid("getGridParam","data");
@@ -911,53 +911,55 @@ $(function() {
 				if ( Number(entirerow["abonar"])>Number(entirerow["saldo"]) ){
 					grid.jqGrid("setCell",s[i]["id"],"abonar", entirerow["saldo"]);
 					total += Number(entirerow["saldo"]);
+					tiva  += Number(entirerow["impuesto"])*Number(entirerow["saldo"])/Number(entirerow["monto"]);
 				} else {
 					total += Number(entirerow["abonar"]);
-				}
-				//Calcula el descuento
-				if (  Number(entirerow["ppago"]) < 0 ){
-					if (Number(entirerow["abonar"]) == 0 ){
-						grid1.jqGrid("setCell",s[i]["id"],"abonar", Number(entirerow["saldo"]));
-					}
-					total -= Number(entirerow["abonar"])*Math.abs(Number(entirerow["ppago"]))/100;
-					grid.jqGrid("setCell",s[i]["id"],"ppago", Number(entirerow["abonar"])*Math.abs(Number(entirerow["ppago"]))/100);
-				} else {
-					total -= Number(entirerow["ppago"]);
+					if ( Number(entirerow["abonar"])>0 )
+						tiva  += Number(entirerow["impuesto"])*Number(entirerow["abonar"])/Number(entirerow["monto"]) ;
 				}
 			}
 			total = Math.round(total*100)/100;	
-			$("#grantotal").html("Total a Pagar: "+nformat(total,2));
+			tiva  = Math.round(tiva*100)/100;	
+			$("#grantotal").html("Total: "+nformat(total,2));
 			$("input#fmonto").val(total);
+			$("input#fiva").val(tiva);
 			montotal = total;
 		} else {
 			total = 0;
+			tiva  = 0;
 			$("#grantotal").html("Sin seleccion");
 			$("input#fmonto").val(total);
+			$("input#fiva").val(0);
 			montotal = total;	
 		}
 	};
-	sumabo();
+	sumanc();
 
 </script>
 	<div style="background-color:#D0D0D0;font-weight:bold;font-size:14px;text-align:center"><table width="100%"><tr><td>Codigo: '.$reg['proveed'].'</td><td>'.$reg['nombre'].'</td><td>RIF: '.$reg['rif'].'</td></tr></table></div>
 	<p class="validateTips"></p>
-	<form id="abonoforma">	
+	<form id="ncreditoforma">	
 	<table width="90%" align="center" border="0">
 	<tr>
-		<td class="CaptionTD" align="right">Banco/Caja</td>
-		<td>&nbsp;</td>
-
-		<td class="CaptionTD" align="right">Tipo</td>
-		<td>&nbsp;<select name="ftipo" id="ftipo" value="CH"><option value="CH">Cheque</option><option value="ND">Nota debito</option> </select></td>
-
 		<td  class="CaptionTD"  align="right">Numero</td>
-		<td>&nbsp;<input name="fcomprob" id="fcomprob" type="text" value="" maxlengh="12" size="12"  /></td>
+		<td>&nbsp;<input name="fnumero" id="fnumero" type="text" value="" maxlengh="12" size="12"  /></td>
+
+		<td  class="CaptionTD"  align="right">Nro Fiscal</td>
+		<td>&nbsp;<input name="fnfiscal" id="fnfiscal" type="text" value="" maxlengh="12" size="12"  /></td>
+
+		<td class="CaptionTD" align="right">Motivo:</td>
+		<td>&nbsp;'.$botr.'</td>
+	</tr>
+
 	<tr>
-		<td class="CaptionTD" align="right">Beneficiario:</td>
-		<td colspan="3">&nbsp;<input name="fbenefi" id="fbenefi" type="text" value="" maxlengh="60" size="50"  /></td>
 		<td class="CaptionTD" align="right">Fecha</td>
 		<td>&nbsp;<input name="ffecha" id="ffecha" maxlength="10" size="10" value=\''.date('d/m/Y').'\'/></td>
-	</tr>
+
+		<td class="CaptionTD" align="right">Emision</td>
+		<td>&nbsp;<input name="femision" id="femision" maxlength="10" size="10" value=\''.date('d/m/Y').'\'/></td>
+
+		<td class="CaptionTD" align="right">&nbsp;</td>
+		<td>&nbsp;</td>
 	</tr>
 	</table>
 	<input id="fmonto"   name="fmonto"   type="hidden">
@@ -968,7 +970,9 @@ $(function() {
 	<center><table id="abonados"><table></center>
 	<table width="100%">
 	<tr>
-		<td align="center"><div id="grantotal" style="font-size:20px;font-weight:bold">Monto a pagar: 0.00</div></td>
+		<td align="center"><div id="grantotal"  style="font-size:16px;font-weight:bold">Monto a pagar: 0.00</div></td>
+		<td align="center"><div id="graniva"    style="font-size:16px;font-weight:bold">I.V.A.: <input name="fiva" id="fiva" type="text" value="0.00" maxlengh="12" size="10"  /></div></td>
+		<td align="center"><div id="granexento" style="font-size:16px;font-weight:bold">Exento: <input name="fexento" id="fexento" type="text" value="0.00" maxlengh="12" size="10"/></div></td>
 	</tr>
 	</table>
 	</form>
@@ -978,8 +982,10 @@ $(function() {
 		echo $salida;
 	}
 
-
-
+	//**************************************************
+	//Guarda el preabono
+	//
+	//**************************************************
 	function pabono(){
 		$comprob   = $this->input->post('fcomprob');
 		$fecha     = $this->input->post('ffecha');
@@ -1009,6 +1015,10 @@ $(function() {
 		echo '{"status":"A","id":"'.$id.'","mensaje":"Aprobacion Guardada"}';
 	}
 
+	//**************************************************
+	// Guarda el Abono
+	//
+	//**************************************************
 	function abono(){
 		$numche  = $this->input->post('fcomprob');
 		$tipo_op = $this->input->post('ftipo');
@@ -1060,7 +1070,7 @@ $(function() {
 				$totalab  += $efecto['abonar'] - $efecto['ppago'];
 				$ppago    += $efecto['ppago'];
 				$observa1 .= $efecto['tipo_doc'].$efecto['numero'].', ';
-				$impuesto += $efecto['abonar']*$this->datasis->dameval($mtempo." AND tipo_doc='".$efecto['tipo_doc']."' AND numero='".$efecto['numero']."'" )/$efecto['monto'];
+				$impuesto += $efecto['abonar']*$this->datasis->dameval($mTempo." AND tipo_doc='".$efecto['tipo_doc']."' AND numero='".$efecto['numero']."'" )/$efecto['monto'];
 			}
 		}
 		
@@ -1165,10 +1175,10 @@ $(function() {
 
 		$data["codbanc"]  = $codbanc;
 
-		$mtempo = " FROM banc WHERE codbanc=".$this->db->escape($codbanc);
-		$data["numcuent"] = $this->datasis->dameval("SELECT numcuent ".$mtempo);
-		$data["banco"]    = $this->datasis->dameval("SELECT banco    ".$mtempo);
-		$data["saldo"]    = $this->datasis->dameval("SELECT saldo    ".$mtempo);
+		$mTempo = " FROM banc WHERE codbanc=".$this->db->escape($codbanc);
+		$data["numcuent"] = $this->datasis->dameval("SELECT numcuent ".$mTempo);
+		$data["banco"]    = $this->datasis->dameval("SELECT banco    ".$mTempo);
+		$data["saldo"]    = $this->datasis->dameval("SELECT saldo    ".$mTempo);
 		
 		$data["fecha"]    = $fecha;
 		$data["tipo_op"]  = $tipo_op;
@@ -1192,7 +1202,7 @@ $(function() {
 		$data['transac']  = $transac;
 
 		$this->db->insert('bmov',$data);
-		$this->datasis->actusal($codbanc, $fecha, $totalab);
+		$this->datasis->actusal($codbanc, $fecha, -$totalab);
 
 		//IF UPPER(SUBSTR(XBENEFI,1,18)) != "TESORERIA NACIONAL"
 		//	CARGAIDB(XBANCO, XFECHA, XMONTO, XNUMCHE , XNUMERO, mTRANSAC)
@@ -1226,7 +1236,7 @@ $(function() {
 			
 				// Actualiza sprm
 				$data = array($efecto['abonar'], $efecto['tipo_doc'], $efecto['numero'], $cod_prv, $efecto['fecha']);
-				$mSQL = "UPDATE sprm SET abonos=abonos+? WHERE tipo_doc=? AND numero=? AND cod_prv=? AND fecha=?";
+				$mSQL = "UPDATE sprm SET abonos=abonos+?, preabono=0, preppago=0 WHERE tipo_doc=? AND numero=? AND cod_prv=? AND fecha=?";
 				$this->db->query($mSQL, $data);
 			}
 		}
@@ -1234,6 +1244,187 @@ $(function() {
 		echo '{"status":"A","id":"'.$idab.'" ,"mensaje":"Abono Guardado '.$codbanc.'"}';
 	}
 
+	//**************************************************
+	// Guarda la NC
+	//
+	//**************************************************
+	function ncredito(){
+		$numero   = $this->input->post('fnumero');
+		$observa  = $this->input->post('fobserva');
+		$fecha    = $this->input->post('ffecha');
+		$femision = $this->input->post('femision');
+		$codigo   = $this->input->post('fcodigo');
+		$nfiscal  = $this->input->post('fnfiscal');
+		$iva      = $this->input->post('fiva');
+		$exento   = $this->input->post('fexento');
+
+		$grid    = $this->input->post('fgrid');
+		$id      = $this->input->post('fid');
+		$monto   = $this->input->post('fmonto');
+		$fsele   = $this->input->post('fsele');
+		$check   = 0;
+		$meco    = json_decode($grid);
+		$merror  = "";
+
+		//Convierte la fecha a YYYYmmdd
+		$fecha = substr($fecha,6,4).substr($fecha,3,2).substr($fecha,0,2);
+
+		// Validacion
+		if ( $codigo == '-'  ) {
+			$merror .= "Falta colocar el Motivo<br>";
+			$check++;
+		}
+
+		if ( $numero == ''  ) {
+			$merror .= "Falta colocar el Numero<br>";
+			$check++;
+		}
+
+		if ( $nfiscal == ''  ) {
+			$merror .= "Falta colocar el Numero Fiscal<br>";
+			$check++;
+		}
+
+		if ( $monto == 0  ) {
+			$merror .= "No selecciono ningun efecto";
+			$check++;
+		}
+
+		if ( $check > 0 ){
+			echo '{"status":"E","id":"'.$id.'" ,"mensaje":"'.$merror.'"}';
+			return;
+		}
+
+		foreach( $meco as $row ){
+			parse_str($row,$linea[]);
+		}
+
+// echo '{"status":"E","id":"'.$id.'" ,"mensaje":"Mas Fino"}';
+// return;
+
+		$cod_prv  = $this->datasis->dameval("SELECT proveed FROM sprv WHERE id=$id");
+		$nombre   = $this->datasis->dameval("SELECT nombre  FROM sprv WHERE id=$id");
+
+		$totalab  = 0;
+		$ppago    = 0;
+		$impuesto = 0;
+		$observa1 = 'CREDITO A: ';
+		$observa2 = '';
+		$fecdoc   = $fecha;
+		$mTempo = "SELECT impuesto FROM sprm WHERE cod_prv=".$this->db->escape($cod_prv);
+		foreach( $linea as $efecto ){
+			if ($efecto['abonar'] > 0 ){
+				$fecdoc    = $efecto['fecha']; 
+				$totalab  += $efecto['abonar'];
+				$observa1 .= $efecto['tipo_doc'].$efecto['numero'].', ';
+				$impuesto += $efecto['abonar']*$this->datasis->dameval($mTempo." AND tipo_doc='".$efecto['tipo_doc']."' AND numero='".$efecto['numero']."'" )/$efecto['monto'];
+			}
+		}
+		
+		$observa2 = '';
+		if ( strlen($observa1)>50) {
+			$observa2 = substr($observa1, 49);
+			$observa1 = substr($observa1, 0, 50);
+		}
+		
+		if ( $totalab <= 0) {
+			echo '{"status":"E","id":"'.$id.'" ,"mensaje":"Seleccione los efectos a abonar"}';
+			return;
+		}
+
+		//Crea la NC
+		$transac  = $this->datasis->prox_sql("ntransa",8);
+		$mnroegre = ""; //$this->datasis->prox_sql("nroegre",8);
+		$tipo_doc = 'NC';
+		$xnumero  = $numero;
+		$mcontrol = $this->datasis->prox_sql("nsprm",8);
+
+		$data = array();
+		$data["tipo_doc"]  = $tipo_doc;
+		$data["numero"]    = $numero;
+		$data["cod_prv"]   = $cod_prv;
+		$data["nombre"]    = $nombre;
+		$data["fecha"]     = $fecha;
+		$data["monto"]     = $totalab;
+		$data["impuesto"]  = $impuesto;
+		$data["vence"]     = $fecha;
+		$data["observa1"]  = $observa1;
+		$data["observa2"]  = $observa2;
+		
+		$data["banco"]     = "";
+		$data["tipo_op"]   = "";
+		$data["numche"]    = "";
+		$data["benefi"]    = "";
+		$data["reten"]     = 0;
+		$data["reteiva"]   = 0;
+		$data["ppago"]     = 0;
+		$data["control"]   = $mcontrol ;
+		$data["cambio"]    = 0 ;
+		$data["nfiscal"]   = $nfiscal ;
+		$data["mora"]      = 0 ;
+
+		$data["comprob"]   = '' ;
+		$data["abonos"]    = $totalab;
+
+		$data["codigo"]    = $codigo ;
+		$data["descrip"]   = $this->datasis->dameval("SELECT nombre FROM botr WHERE codigo='$codigo'");
+		$data["fecapl"]    = $fecha;
+
+		$data["fecdoc"]    = $fecdoc;
+		$data["fecapl"]    = $femision;
+		$data["montasa"]   = $totalab-$iva-$exento;
+		$data["monredu"]   = 0;
+		$data["monadic"]   = 0;
+		$data["tasa"]      = $iva;
+		$data["reducida"]  = 0;
+		$data["sobretasa"] = 0;
+		$data["exento"]    = $exento;
+		$data["causado"]   = $this->datasis->prox_sql("ncausado",8);
+
+		$data['usuario']   = $this->secu->usuario();
+		$data['estampa']   = date('Ymd');
+		$data['hora']      = date('H:i:s');
+		$data['transac']   = $transac;
+		$data['serie']     = $numero;
+
+		$this->db->insert('sprm',$data);
+		$idab = $this->db->insert_id();
+
+		foreach( $linea as $efecto ){
+			if ( $efecto['abonar'] > 0 ) {
+				// Guarda en itppro
+				$data = array();
+				$data["numppro"]  = $xnumero;
+				$data["tipoppro"] = $tipo_doc;
+				$data["cod_prv"]  = $cod_prv;
+				$data["numero"]   = $efecto['numero'];
+				$data["tipo_doc"] = $efecto['tipo_doc'];
+				$data["fecha"]    = $fecha;
+				$data["monto"]    = $efecto['numero'];
+				$data["abono"]    = $efecto['abonar'];
+				$data["breten"]   = 0;
+				$data["creten"]   = '';
+				$data["reten"]    = 0;
+				$data["reteiva"]  = 0;
+				$data["ppago"]    = 0;
+				$data["cambio"]   = 0;
+				$data["mora"]     = 0;
+
+				$data['usuario']  = $this->secu->usuario();
+				$data['estampa']  = date('Ymd');
+				$data['hora']     = date('H:i:s');
+				$data['transac']  = $transac;
+				$this->db->insert('itppro',$data);
+			
+				// Actualiza sprm
+				$data = array($efecto['abonar'], $efecto['tipo_doc'], $efecto['numero'], $cod_prv, $efecto['fecha']);
+				$mSQL = "UPDATE sprm SET abonos=abonos+?, preabono=0, preppago=0 WHERE tipo_doc=? AND numero=? AND cod_prv=? AND fecha=?";
+				$this->db->query($mSQL, $data);
+			}
+		}
+		logusu('PPRO',"Nota de Credito a Proveedor CREADO Prov=$cod_prv  Numero=$xnumero Detalle=".$grid);
+		echo '{"status":"A","id":"'.$idab.'" ,"mensaje":"Nota de Credito Guardada "}';
+	}
 
 /*
 class psprv extends Controller {
