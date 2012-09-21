@@ -21,33 +21,8 @@ class Pedidos extends Controller {
 		$this->rapyd->load('datagrid','datafilter');
 		$this->rapyd->uri->keep_persistence();
 
-		/*$atts = array(
-				'width'      => '800',
-				'height'     => '600',
-				'scrollbars' => 'yes',
-				'status'     => 'yes',
-				'resizable'  => 'yes',
-				'screenx'    => '0',
-				'screeny'    => '0'
-			);*/
-
-
-//select a.codigoa, b.descrip, b.existen, b.exmin, b.exmax, d.barras, d.proveed, sum(c.cantidad * (c.origen = '3I')) AS trimestral, round((sum(c.cantidad * (c.origen = '3I'))/3),0) AS mensual, round((sum(c.cantidad*(c.origen = '3I'))/6),0) AS quincenal, round((sum(c.cantidad * (c.origen = '3I'))/12),0) AS semanal
-//from
-// sitems a
-//join sinv b on a.codigoa = b.codigo
-//join costos c on a.codigoa = c.codigo left
-//join farmaxasig d on a.codigoa = d.abarras
-
-//where ((a.fecha = curdate()) and (c.fecha >= (curdate() - 90)))
-//group by a.codigoa
-//having (b.existen <= b.exmin)
-//order by b.descrip
-
 		$columnas = array("a.codigoa", "d.barras", "b.descrip AS desca", "b.existen", "b.exmin", "b.exmax", "d.proveed", "sum(c.cantidad * (c.origen = '3I')) AS trimestral", "round((sum(c.cantidad * (c.origen = '3I'))/3),0) AS mensual", "round((sum(c.cantidad*(c.origen = '3I'))/6),0) AS quincenal", "round((sum(c.cantidad * (c.origen = '3I'))/12),0) AS semanal, exmax-if(existen<0,0,existen) AS pedir");
-
 		$filter = new DataFilter('Productos vendidos en el d&iacute;a');
-		//$filter->db->select(array('a.codigoa','TRIM(b.barras) AS barras','a.desca', 'SUM(a.cana) AS venta','d.exmax - IF(d.existen<0,0,d.existen) AS pedir','d.exmin','d.exmax','d.existen'));
 
 		$filter->db->select($columnas);
 
@@ -58,7 +33,6 @@ class Pedidos extends Controller {
 
 		$filter->db->where('b.existen <= b.exmin ');
 		$filter->db->where('a.fecha = curdate() and c.fecha >= curdate() - 90');
-
 
 		$filter->db->groupby('a.codigoa');
 		$filter->db->having('pedir > 0');
@@ -114,7 +88,6 @@ class Pedidos extends Controller {
 		$grid->build();
 
 		//$grid->column('Rango' ,'[<nformat><#exmin#></nformat>-<nformat><#exmax#></nformat>]' ,'align=\'center\'');
-
 
 		if($grid->recordCount>0){
 			$tabla=$grid->output.form_submit('mysubmit', 'Mandar pedido a FarmaSIS');
