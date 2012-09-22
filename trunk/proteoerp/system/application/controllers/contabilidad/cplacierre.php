@@ -152,9 +152,9 @@ class Cplacierre extends validaciones {
 
 	function _pre_del($do) {
 		$codigo=$do->get('codigo');
-		$chek =   $this->datasis->dameval("SELECT COUNT(*) FROM cplacierre WHERE codigo LIKE '$codigo.%'");
-		$chek +=  $this->datasis->dameval("SELECT COUNT(*) FROM itcasi WHERE cuenta='$codigo'");
-		if ($chek > 0){
+		$check =   $this->datasis->dameval("SELECT COUNT(*) FROM cplacierre WHERE codigo LIKE '$codigo.%'");
+		$check +=  $this->datasis->dameval("SELECT COUNT(*) FROM itcasi WHERE cuenta='$codigo'");
+		if ($check > 0){
 			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='Plan de Cuenta tiene derivados o movimientos';
 			return False;
 		}

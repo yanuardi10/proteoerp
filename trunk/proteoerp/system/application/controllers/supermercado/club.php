@@ -233,8 +233,8 @@ class Club extends validaciones {
 	}
 	function chexiste($codigo){
 		$codigo=$this->input->post('cod_tar');
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM club WHERE cod_tar='$codigo'");
-		if ($chek > 0){
+		$check=$this->datasis->dameval("SELECT COUNT(*) FROM club WHERE cod_tar='$codigo'");
+		if ($check > 0){
 			$mSQL_1=$this->db->query("SELECT cedula, nombres, apellidos FROM club WHERE cod_tar='$codigo'");
 			$row = $mSQL_1->row();
 			$nombre =$row->nombres;

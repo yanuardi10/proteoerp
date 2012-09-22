@@ -479,8 +479,8 @@ class ausu extends Controller {
 		$fecha=$this->input->post('fecha');
 		$codigo=$this->input->post('codigo');
 		
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM ausu WHERE codigo='$codigo' AND fecha='$fecha'");
-		if ($chek > 0){
+		$check=$this->datasis->dameval("SELECT COUNT(*) FROM ausu WHERE codigo='$codigo' AND fecha='$fecha'");
+		if ($check > 0){
 			$nombre=$this->datasis->dameval("SELECT nombre FROM ausu WHERE codigo='$codigo'");
 			$this->validation->set_message('chexiste',"El aumento para $codigo $nombre fecha $fecha ya existe");
 			return FALSE;
@@ -600,9 +600,9 @@ class ausu extends Controller {
 		$campos= $data['data'];
 
 		// VERIFICAR SI PUEDE
-		$chek =  0; //$this->datasis->dameval("SELECT COUNT(*) FROM pers WHERE depto='$departa'");
+		$check =  0; //$this->datasis->dameval("SELECT COUNT(*) FROM pers WHERE depto='$departa'");
 
-		if ($chek > 0){
+		if ($check > 0){
 			echo "{ success: false, message: 'Prestamo de nomina, no puede ser Borrado'}";
 		} else {
 			$this->db->simple_query("UPDATE FROM ausu SET tipo_doc='X' WHERE departa=".$data['data']['id']."");

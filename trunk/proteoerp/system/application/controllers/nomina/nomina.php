@@ -519,8 +519,8 @@ Ext.onReady(function(){
 
 	function chexiste($codigo){
 		$codigo=$this->input->post('codigo');
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM pers WHERE codigo='$codigo'");
-		if ($chek > 0){
+		$check=$this->datasis->dameval("SELECT COUNT(*) FROM pers WHERE codigo='$codigo'");
+		if ($check > 0){
 			$nombre=$this->datasis->dameval("SELECT nombre FROM pers WHERE codigo='$codigo'");
 			$this->validation->set_message('chexiste',"Personal con el codigo $codigo nombre $nombre ya existe");
 			return FALSE;

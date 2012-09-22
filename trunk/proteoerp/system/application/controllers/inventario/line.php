@@ -326,8 +326,8 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 	
        function chexiste($codigo){
 		$codigo=$this->input->post('linea');
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM line WHERE linea='$codigo'");
-		if ($chek > 0){
+		$check=$this->datasis->dameval("SELECT COUNT(*) FROM line WHERE linea='$codigo'");
+		if ($check > 0){
 			$linea=$this->datasis->dameval("SELECT descrip FROM line WHERE linea='$codigo'");
 			$this->validation->set_message('chexiste',"El codigo $codigo ya existe para la linea $linea");
 			return FALSE;
@@ -338,8 +338,8 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 	
        function _pre_del($do) {
 		$codigo=$do->get('line');
-		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM grup WHERE linea='$codigo'");
-		if ($chek > 0){
+		$check =  $this->datasis->dameval("SELECT COUNT(*) FROM grup WHERE linea='$codigo'");
+		if ($check > 0){
 			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='La l&iacute;nea contiene grupos, por ello no puede ser eliminada. Elimine primero todos los grupos que pertenezcan a esta l&iacute;nea';
 			return False;
 		}
@@ -426,8 +426,8 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$campos = $data['data'];
 
 		$linea = $campos['linea'];
-		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM grup WHERE linea='$linea'");
-		if ($chek > 0){
+		$check =  $this->datasis->dameval("SELECT COUNT(*) FROM grup WHERE linea='$linea'");
+		if ($check > 0){
 			echo "{ success: false, message: 'Linea, con movimiento, no puede ser Borrado'}";
 		} else {
 			$this->db->simple_query("DELETE FROM line WHERE linea='$linea'");

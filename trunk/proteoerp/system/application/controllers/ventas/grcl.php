@@ -390,8 +390,8 @@ class Grcl extends validaciones {
 	}
 	function _pre_del($do) {
 		$grupo=$do->get('grupo');
-		$chek = $this->datasis->dameval("SELECT count(*) FROM scli WHERE grupo='$grupo'");
-		if ($chek > 0){
+		$check = $this->datasis->dameval("SELECT count(*) FROM scli WHERE grupo='$grupo'");
+		if ($check > 0){
 			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='Cliente con Movimiento no puede ser Borrado';
 			return False;
 		}else	{
@@ -414,8 +414,8 @@ class Grcl extends validaciones {
 	}
 	function chexiste($codigo){
 		$codigo=$this->input->post('grupo');
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM grcl WHERE grupo='$codigo'");
-		if ($chek > 0){
+		$check=$this->datasis->dameval("SELECT COUNT(*) FROM grcl WHERE grupo='$codigo'");
+		if ($check > 0){
 			$grupo=$this->datasis->dameval("SELECT gr_desc FROM grcl WHERE grupo='$codigo'");
 			$this->validation->set_message('chexiste',"El codigo $codigo ya existe para el grupo $grupo");
 			return FALSE;
@@ -499,9 +499,9 @@ class Grcl extends validaciones {
 		$campos = $data['data'];
 
 		$grupo = $campos['grupo'];
-		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM scli WHERE grupo='$grupo'");
+		$check =  $this->datasis->dameval("SELECT COUNT(*) FROM scli WHERE grupo='$grupo'");
 
-		if ($chek > 0){
+		if ($check > 0){
 			echo "{ success: false, message: 'Grupo de Cliente no puede ser Borrado'}";
 		} else {
 			$this->db->simple_query("DELETE FROM grcl WHERE grupo='$grupo'");

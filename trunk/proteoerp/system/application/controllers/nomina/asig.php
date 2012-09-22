@@ -531,8 +531,8 @@ function asig(){
 	}
 	//function chexiste($codigo){
 	//	$codigo=$this->input->post('codigo');
-	//	$chek=$this->datasis->dameval("SELECT COUNT(*) FROM asig WHERE codigo='$codigo'");
-	//	if ($chek > 0){
+	//	$check=$this->datasis->dameval("SELECT COUNT(*) FROM asig WHERE codigo='$codigo'");
+	//	if ($check > 0){
 	//		$nombre=$this->datasis->dameval("SELECT descrip FROM asig WHERE codigo='$codigo'");
 	//		$this->validation->set_message('chexiste',"El codigo $codigo ya existe para la asignacion $nombre");
 	//		return FALSE;
@@ -695,9 +695,9 @@ function asig(){
 		$departa = $data['data']['departa'];
 		
 		// VERIFICAR SI PUEDE
-		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM pers WHERE depto='$departa'");
+		$check =  $this->datasis->dameval("SELECT COUNT(*) FROM pers WHERE depto='$departa'");
 
-		if ($chek > 0){
+		if ($check > 0){
 			echo "{ success: false, message: 'Departamento de nomina, no puede ser Borrado'}";
 		} else {
 			$this->db->simple_query("DELETE FROM depa WHERE departa='$departa'");

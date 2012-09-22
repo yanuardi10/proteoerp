@@ -242,8 +242,8 @@ class Mgas extends validaciones {
 
 	function chexiste(){
 		$codigo=$this->input->post('codigo');
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM mgas WHERE codigo='$codigo'");
-		if ($chek > 0){
+		$check=$this->datasis->dameval("SELECT COUNT(*) FROM mgas WHERE codigo='$codigo'");
+		if ($check > 0){
 			$nombre=$this->datasis->dameval("SELECT descrip FROM mgas WHERE codigo='$codigo'");
 			$this->validation->set_message('chexiste',"El codigo $codigo ya existe para el gasto $nombre");
 			return FALSE;
@@ -477,15 +477,15 @@ class Mgas extends validaciones {
 		$codigo = $campos['codigo'];
 
 		// VER SI PUEDE BORRAR GITSER
-		$chek =  $this->datasis->dameval("SELECT count(*) FROM gitser WHERE codigo='$codigo'");
+		$check =  $this->datasis->dameval("SELECT count(*) FROM gitser WHERE codigo='$codigo'");
 		// VER SI PUEDE BORRAR ORDENES DE SERVICIO
-		$chek +=  $this->datasis->dameval("SELECT count(*) FROM itords WHERE codigo='$codigo'");
+		$check +=  $this->datasis->dameval("SELECT count(*) FROM itords WHERE codigo='$codigo'");
 		// VER SI PUEDE BORRAR NOMINAS
-		$chek +=  $this->datasis->dameval("SELECT count(*) FROM conc WHERE ctade='$codigo' AND tipod='G' ");
+		$check +=  $this->datasis->dameval("SELECT count(*) FROM conc WHERE ctade='$codigo' AND tipod='G' ");
 		// VER SI PUEDE BORRAR NOMINAS
-		$chek +=  $this->datasis->dameval("SELECT count(*) FROM conc WHERE ctaac='$codigo' AND tipoa='G' ");
+		$check +=  $this->datasis->dameval("SELECT count(*) FROM conc WHERE ctaac='$codigo' AND tipoa='G' ");
 
-		if ($chek > 0){
+		if ($check > 0){
 			echo "{ success: false, message: 'Gasto no puede ser Borrada'}";
 		} else {
 			$this->db->simple_query("DELETE FROM mgas WHERE codigo='$codigo'");

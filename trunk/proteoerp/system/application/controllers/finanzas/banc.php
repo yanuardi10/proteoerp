@@ -339,8 +339,8 @@ class Banc extends Validaciones {
 
 	function chexiste($codigo){
 		//$codigo=$this->input->post('codbanc');
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM banc WHERE codbanc='$codigo'");
-		if ($chek > 0){
+		$check=$this->datasis->dameval("SELECT COUNT(*) FROM banc WHERE codbanc='$codigo'");
+		if ($check > 0){
 			$banco=$this->datasis->dameval("SELECT banco FROM grup WHERE codbanc='$codigo'");
 			$this->validation->set_message('chexiste',"El codigo $codigo ya existe para el banco $banco");
 			return FALSE;
@@ -530,9 +530,9 @@ class Banc extends Validaciones {
 		$campos = $data['data'];
 
 		$codbanc = $campos['codbanc'];
-		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM bmov WHERE codbanc='$codbanc'");
+		$check =  $this->datasis->dameval("SELECT COUNT(*) FROM bmov WHERE codbanc='$codbanc'");
 
-		if ($chek > 0){
+		if ($check > 0){
 			echo "{ success: false, message: 'banc no puede ser Borrada'}";
 		} else {
 			$this->db->simple_query("DELETE FROM banc WHERE codbanc='$codbanc'");

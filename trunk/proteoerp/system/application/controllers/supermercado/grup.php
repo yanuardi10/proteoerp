@@ -268,8 +268,8 @@ class Grup extends validaciones {
 	
 	function chexiste($codigo){
 		$codigo=$this->input->post('grupo');
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM grup WHERE grupo='$codigo'");
-		if ($chek > 0){
+		$check=$this->datasis->dameval("SELECT COUNT(*) FROM grup WHERE grupo='$codigo'");
+		if ($check > 0){
 			$grupo=$this->datasis->dameval("SELECT nom_grup FROM grup WHERE grupo='$codigo'");
 			$this->validation->set_message('chexiste',"El codigo $codigo ya existe para el grupo $grupo");
 			return FALSE;
@@ -280,8 +280,8 @@ class Grup extends validaciones {
 
 	function _pre_del($do) {
 		$codigo=$do->get('grupo');
-		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM sinv WHERE grupo='$codigo'");
-		if ($chek > 0){
+		$check =  $this->datasis->dameval("SELECT COUNT(*) FROM sinv WHERE grupo='$codigo'");
+		if ($check > 0){
 			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='El grupo contiene productos, por ello no puede ser eliminado. Elimine primero todos los productos que pertenezcan a este grupo';
 			return False;
 		}

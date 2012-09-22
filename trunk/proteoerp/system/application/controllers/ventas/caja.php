@@ -193,8 +193,8 @@ class Caja extends validaciones {
 	//VALIDACIONES
 	function chexiste($codigo){
 		$codigo=$this->input->post('caja');
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM caja WHERE caja='$codigo'");
-		if ($chek > 0){
+		$check=$this->datasis->dameval("SELECT COUNT(*) FROM caja WHERE caja='$codigo'");
+		if ($check > 0){
 			$ubica=$this->datasis->dameval("SELECT ubica FROM caja WHERE caja='$codigo'");
 			$this->validation->set_message('chexiste',"El codigo $codigo ya existe para la caja $ubica");
 			return FALSE;
@@ -301,10 +301,10 @@ class Caja extends validaciones {
 		$data= json_decode($js,true);
 		$campos = $data['data'];
 
-		$caja = $campos['caja'];
-		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM sfpa WHERE caja='$caja'");
+		$caja  = $campos['caja'];
+		$check =  $this->datasis->dameval("SELECT COUNT(*) FROM sfpa WHERE caja='$caja'");
 
-		if ($chek > 0){
+		if ($check > 0){
 			echo "{ success: false, message: 'Caja no puede ser Borrada'}";
 		} else {
 			$this->db->simple_query("DELETE FROM caja WHERE caja='$caja'");

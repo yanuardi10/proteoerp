@@ -217,8 +217,8 @@ jQuery("#a1").click( function(){
 
 		} elseif($oper == 'del') {
 			$division = $this->datasis->dameval("SELECT division FROM divi WHERE id=$id");
-			$chek  =  $this->datasis->dameval("SELECT COUNT(*) FROM pers WHERE divi='$division'");
-			$chek +=  $this->datasis->dameval("SELECT COUNT(*) FROM depa WHERE division='$division'");
+			$check  =  $this->datasis->dameval("SELECT COUNT(*) FROM pers WHERE divi='$division'");
+			$check +=  $this->datasis->dameval("SELECT COUNT(*) FROM depa WHERE division='$division'");
 			if ($check > 0){
 				echo " El registro no puede ser eliminado; tiene movimiento ";
 			} else {
@@ -318,9 +318,9 @@ class Divi extends Controller {
 	}
 	function _pre_del($do) {
 		$codigo=$do->get('division');
-		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM pers WHERE divi='$codigo'");
-		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM depa WHERE divi='$codigo'");
-		if ($chek > 0){
+		$check =  $this->datasis->dameval("SELECT COUNT(*) FROM pers WHERE divi='$codigo'");
+		$check += $this->datasis->dameval("SELECT COUNT(*) FROM depa WHERE divi='$codigo'");
+		if ($check > 0){
 			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='Cliente con Movimiento no puede ser Borrado';
 			return False;
 		}
@@ -343,8 +343,8 @@ class Divi extends Controller {
 	}
 	function chexiste($codigo){
 		$codigo=$this->input->post('division');
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM divi WHERE division='$codigo'");
-		if ($chek > 0){
+		$check=$this->datasis->dameval("SELECT COUNT(*) FROM divi WHERE division='$codigo'");
+		if ($check > 0){
 			$nombre=$this->datasis->dameval("SELECT descrip FROM divi WHERE division='$codigo'");
 			$this->validation->set_message('chexiste',"La division $codigo nombre $nombre ya existe");
 			return FALSE;
@@ -480,10 +480,10 @@ class Divi extends Controller {
 		$division = $data['data']['division'];
 		
 		// VERIFICAR SI PUEDE
-		$chek  =  $this->datasis->dameval("SELECT COUNT(*) FROM pers WHERE divi='$division'");
-		$chek +=  $this->datasis->dameval("SELECT COUNT(*) FROM depa WHERE division='$division'");
+		$check  =  $this->datasis->dameval("SELECT COUNT(*) FROM pers WHERE divi='$division'");
+		$check +=  $this->datasis->dameval("SELECT COUNT(*) FROM depa WHERE division='$division'");
 
-		if ($chek > 0){
+		if ($check > 0){
 			echo "{ success: false, message: 'Division asignado a personal, no puede ser Borrado'}";
 		} else {
 			$this->db->simple_query("DELETE FROM divi WHERE division='$division'");

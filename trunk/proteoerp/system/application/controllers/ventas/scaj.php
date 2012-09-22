@@ -220,8 +220,8 @@ class Scaj extends validaciones {
 	//VALIDACIONES
 	function chexiste($codigo){
 		$codigo=$this->input->post('cajero');
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM scaj WHERE cajero='$codigo'");
-		if ($chek > 0){
+		$check=$this->datasis->dameval("SELECT COUNT(*) FROM scaj WHERE cajero='$codigo'");
+		if ($check > 0){
 			$nombre=$this->datasis->dameval("SELECT nombre FROM scaj WHERE cajero='$codigo'");
 			$this->validation->set_message('chexiste',"El codigo $codigo ya existe para el cajero $nombre");
 			return FALSE;
@@ -374,10 +374,10 @@ class Scaj extends validaciones {
 		$campos = $data['data'];
 
 		$cajero = $campos['cajero'];
-		$chek  =  $this->datasis->dameval("SELECT COUNT(*) FROM sfac WHERE cajero='$cajero'");
-		$chek +=  $this->datasis->dameval("SELECT COUNT(*) FROM sfpa WHERE cobrador='$cajero'");
+		$check  =  $this->datasis->dameval("SELECT COUNT(*) FROM sfac WHERE cajero='$cajero'");
+		$check +=  $this->datasis->dameval("SELECT COUNT(*) FROM sfpa WHERE cobrador='$cajero'");
 
-		if ($chek > 0){
+		if ($check > 0){
 			echo "{ success: false, message: 'Cajero no puede ser Borrado'}";
 		} else {
 			$this->db->simple_query("DELETE FROM scaj WHERE cajero='$cajero'");

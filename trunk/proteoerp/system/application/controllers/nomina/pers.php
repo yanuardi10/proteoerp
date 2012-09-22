@@ -1512,10 +1512,10 @@ script;
 	
 	function _pre_del($do) {
 		$codigo=$do->get('codigo');
-		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM nomina WHERE codigo='$codigo'");
-		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM asig   WHERE codigo='$codigo'");
+		$check =  $this->datasis->dameval("SELECT COUNT(*) FROM nomina WHERE codigo='$codigo'");
+		$check += $this->datasis->dameval("SELECT COUNT(*) FROM asig   WHERE codigo='$codigo'");
 	
-		if ($chek > 0){
+		if ($check > 0){
 			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='Trabajador con Movimiento no puede ser Borrado';
 			return False;
 		}
@@ -1541,9 +1541,9 @@ script;
 	}
 	
 	function chexiste($codigo){
-		$codigo=$this->input->post('codigo');
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM pers WHERE codigo='$codigo'");
-		if ($chek > 0){
+		$codigo = $this->input->post('codigo');
+		$check  = $this->datasis->dameval("SELECT COUNT(*) FROM pers WHERE codigo='$codigo'");
+		if ($check > 0){
 			$nombre=$this->datasis->dameval("SELECT nombre FROM pers WHERE codigo='$codigo'");
 			$this->validation->set_message('chexiste',"Personal con el codigo $codigo nombre $nombre ya existe");
 			return FALSE;
@@ -1708,10 +1708,10 @@ script;
 		$codigo = $data['data']['codigo'];
 		$nombre = trim($data['data']['nombre']).' '.$data['data']['apellido'];;
 
-		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM nomina WHERE codigo='$codigo'");
-		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM asig   WHERE codigo='$codigo'");
+		$check =  $this->datasis->dameval("SELECT COUNT(*) FROM nomina WHERE codigo='$codigo'");
+		$check += $this->datasis->dameval("SELECT COUNT(*) FROM asig   WHERE codigo='$codigo'");
 
-		if ($chek > 0){
+		if ($check > 0){
 			echo "{ success: false, message: 'Trabajador con Movimiento no puede ser Borrado'}";
 		} else {
 			$this->db->simple_query("DELETE FROM pers WHERE codigo='$codigo'");

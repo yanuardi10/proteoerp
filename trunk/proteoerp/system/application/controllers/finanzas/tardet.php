@@ -478,8 +478,8 @@ class tardet extends Controller {
 	}
 	function chexiste($codigo){
 		$codigo=$this->input->post('concepto');
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM tardet WHERE concepto='$codigo'");
-		if ($chek > 0){
+		$check=$this->datasis->dameval("SELECT COUNT(*) FROM tardet WHERE concepto='$codigo'");
+		if ($check > 0){
 			$tardet=$this->datasis->dameval("SELECT descrip FROM tardet WHERE concepto='$codigo'");
 			$this->validation->set_message('chexiste',"El codigo $codigo ya existe para  $tardet");
 			return FALSE;

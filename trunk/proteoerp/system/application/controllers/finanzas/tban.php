@@ -462,8 +462,8 @@ class Tban extends Controller {
 
 	function chexiste($codigo){
 		$codigo=$this->input->post('cod_banc');
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM tban WHERE cod_banc='$codigo'");
-		if ($chek > 0){
+		$check = $this->datasis->dameval("SELECT COUNT(*) FROM tban WHERE cod_banc='$codigo'");
+		if ($check > 0){
 			$banco=$this->datasis->dameval("SELECT nomb_banc FROM tban WHERE cod_banc='$codigo'");
 			$this->validation->set_message('chexiste',"El codigo $codigo ya existe para el banco $banco");
 			return FALSE;
@@ -552,9 +552,9 @@ class Tban extends Controller {
 		$campos = $data['data'];
 
 		$cod_banc = $campos['cod_banc'];
-		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM banc WHERE tbanco='$cod_banc'");
+		$check =  $this->datasis->dameval("SELECT COUNT(*) FROM banc WHERE tbanco='$cod_banc'");
 
-		if ($chek > 0){
+		if ($check > 0){
 			echo "{ success: false, message: 'Tabla de Banco no puede ser Borrado'}";
 		} else {
 			$this->db->simple_query("DELETE FROM tban WHERE cod_banc='$cod_banc'");

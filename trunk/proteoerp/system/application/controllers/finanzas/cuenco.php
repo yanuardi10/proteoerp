@@ -161,8 +161,8 @@ class cuenco extends validaciones {
 	}
 	function chexiste(){
 		$cliente=$this->input->post('cliente');
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM scli WHERE cliente='$cliente'");
-		if ($chek > 0){
+		$check=$this->datasis->dameval("SELECT COUNT(*) FROM scli WHERE cliente='$cliente'");
+		if ($check > 0){
 			return TRUE;
 		}else {
 			$this->validation->set_message('chexiste',"El codigo $cliente no existe para ningun cliente");

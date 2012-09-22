@@ -565,8 +565,8 @@ class Fotos extends Controller {
 	function principal($codigo){
 		//$id=$this->input->post('id');
 		$codigo=$this->input->post('codigo');
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM sinvfot WHERE codigo='$codigo' and principal='S'");
-		if ($chek > 0){
+		$check=$this->datasis->dameval("SELECT COUNT(*) FROM sinvfot WHERE codigo='$codigo' and principal='S'");
+		if ($check > 0){
 			$mSQL_1=$this->db->query("SELECT id FROM sinvfot WHERE codigo='$codigo' and principal='S'");
 			$row = $mSQL_1->row();
 			$ids =$row->id;
@@ -579,8 +579,8 @@ class Fotos extends Controller {
 
 	function _post_delete($do){
 		$nombre=$do->get('nombre');
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM sinvfot WHERE nombre='$nombre'");
-		if($chek<=0){
+		$check=$this->datasis->dameval("SELECT COUNT(*) FROM sinvfot WHERE nombre='$nombre'");
+		if($check<=0){
 			$path=new Path();
 			$path->setPath($_SERVER['DOCUMENT_ROOT']);
 			$path->append($this->upload_path);

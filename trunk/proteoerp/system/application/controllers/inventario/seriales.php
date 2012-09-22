@@ -236,8 +236,8 @@
 	}
 	function chexiste($codigo){
 		$codigo=$this->input->post('codigo');
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM seri WHERE codigo='$codigo'");
-		if ($chek > 0){
+		$check=$this->datasis->dameval("SELECT COUNT(*) FROM seri WHERE codigo='$codigo'");
+		if ($check > 0){
 			$serial=$this->datasis->dameval("SELECT serial FROM seri WHERE codigo='$codigo'");
 			$this->validation->set_message('chexiste',"El codigo $codigo ya existe para el serial $serial");
 			return FALSE;

@@ -381,8 +381,8 @@ class Civa extends Controller {
 	function chexiste($fecha){
 		$fecha=$this->input->post('fecha');
 		//echo 'aquiii'.$fecha;
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM civa WHERE fecha='$fecha'");
-		if ($chek > 0){
+		$check=$this->datasis->dameval("SELECT COUNT(*) FROM civa WHERE fecha='$fecha'");
+		if ($check > 0){
 			$tasa=$this->datasis->dameval("SELECT tasa FROM civa WHERE fecha='$fecha'");
 			$this->validation->set_message('chexiste',"La fecha $fecha ya existe para la tasa $tasa");
 			return FALSE;

@@ -1213,8 +1213,8 @@ class maes extends Controller {
 
 	function chexiste($codigo){
 		//$codigo=$this->input->post('codigo');
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM maes WHERE codigo='$codigo'");
-		if ($chek > 0){
+		$check=$this->datasis->dameval("SELECT COUNT(*) FROM maes WHERE codigo='$codigo'");
+		if ($check > 0){
 			$descrip=$this->datasis->dameval("SELECT descrip FROM maes WHERE codigo='$codigo'");
 			$this->validation->set_message('chexiste',"El codigo $codigo ya existe para el producto $descrip");
 			return FALSE;
@@ -1224,8 +1224,8 @@ class maes extends Controller {
 	}
 
 	function chexiste2($alterno){
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM maes WHERE alterno='$alterno'");
-		if ($chek > 0){
+		$check=$this->datasis->dameval("SELECT COUNT(*) FROM maes WHERE alterno='$alterno'");
+		if ($check > 0){
 			$descrip=$this->datasis->dameval("SELECT descrip FROM maes WHERE alterno='$alterno'");
 			$this->validation->set_message('chexiste',"El codigo alterno $alterno ya existe para el producto $descrip");
 			return FALSE;

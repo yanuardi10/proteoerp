@@ -535,8 +535,8 @@ class Vend extends validaciones {
 
 	function _pre_del($do) {
 		$codigo=$do->get('vendedor');
-		$chek = $this->datasis->dameval("SELECT count(*) FROM sfac WHERE vd='$codigo'");
-		if ($chek > 0){
+		$check = $this->datasis->dameval("SELECT count(*) FROM sfac WHERE vd='$codigo'");
+		if ($check > 0){
 			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='Vendedor relacionado con una o mas facturas no puede ser eliminado';
 			return False;
 		}else	{
@@ -564,8 +564,8 @@ class Vend extends validaciones {
 	}
 	function chexiste($codigo){
 		$codigo=$this->input->post('vendedor');
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM vend WHERE vendedor='$codigo'");
-		if ($chek > 0){
+		$check=$this->datasis->dameval("SELECT COUNT(*) FROM vend WHERE vendedor='$codigo'");
+		if ($check > 0){
 			$nombre=$this->datasis->dameval("SELECT nombre FROM vend WHERE vendedor='$codigo'");
 			$this->validation->set_message('chexiste',"El codigo $codigo ya existe para el vendedor $nombre");
 			return FALSE;
@@ -646,9 +646,9 @@ class Vend extends validaciones {
 		$campos = $data['data'];
 
 		$vendedor = $campos['vendedor'];
-		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM scli WHERE vendedor='$vendedor' OR cobrador='$vendedor'");
+		$check =  $this->datasis->dameval("SELECT COUNT(*) FROM scli WHERE vendedor='$vendedor' OR cobrador='$vendedor'");
 
-		if ($chek > 0){
+		if ($check > 0){
 			echo "{ success: false, message: 'Vendedor no puede ser Borrado'}";
 		} else {
 			$this->db->simple_query("DELETE FROM vend WHERE vendedor='$vendedor'");

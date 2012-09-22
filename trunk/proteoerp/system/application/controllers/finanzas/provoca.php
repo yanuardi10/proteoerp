@@ -493,9 +493,9 @@ class Provoca extends validaciones {
 
 	function _pre_del($do) {
 		$codigo=$this->db->escape($do->get('rif'));
-		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM gitser WHERE rif=$codigo");
+		$check =  $this->datasis->dameval("SELECT COUNT(*) FROM gitser WHERE rif=$codigo");
 		
-		if ($chek > 0){
+		if ($check > 0){
 			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='No se puede borrar el proveedor porque contiene movimientos';
 			return False;
 		}
@@ -518,8 +518,8 @@ class Provoca extends validaciones {
 	}
 	function chexiste($codigo){
 		$codigo=$this->input->post('codigo');
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM importtgas WHERE codigo='$codigo'");
-		if ($chek > 0){
+		$check=$this->datasis->dameval("SELECT COUNT(*) FROM importtgas WHERE codigo='$codigo'");
+		if ($check > 0){
 			$nombre=$this->datasis->dameval("SELECT nombre FROM importtgas WHERE codigo='$codigo'");
 			$this->validation->set_message('chexiste',"El codigo $codigo ya existe para el gasto $nombre");
 			return FALSE;
@@ -593,9 +593,9 @@ class Provoca extends validaciones {
 		$rif = $data['data']['rif'];
 		
 		// VERIFICAR SI PUEDE
-		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM gitser WHERE rif='$rif'");
+		$check =  $this->datasis->dameval("SELECT COUNT(*) FROM gitser WHERE rif='$rif'");
 
-		if ($chek > 0){
+		if ($check > 0){
 			echo "{ success: false, message: 'Proveedor con Movimiento no puede ser Borrado'}";
 		} else {
 			$this->db->simple_query("DELETE FROM provoca WHERE rif='$rif'");

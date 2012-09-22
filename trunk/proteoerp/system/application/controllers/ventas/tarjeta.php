@@ -331,7 +331,7 @@ jQuery("#a1").click( function(){
 
 		} elseif($oper == 'del') {
 			$tipo = $this->datasis->dameval("SELECT tipo FROM tarjeta WHERE id=$id");
-			$chek = $this->datasis->dameval("SELECT COUNT(*) FROM sfpa WHERE tipo=".$this->db->escape($tipo));
+			$check = $this->datasis->dameval("SELECT COUNT(*) FROM sfpa WHERE tipo=".$this->db->escape($tipo));
 			if ($check > 0){
 				echo " La Forma de Pago no puede ser eliminado; tiene movimiento ";
 			} else {
@@ -455,8 +455,8 @@ class Tarjeta extends validaciones {
 
 	function _pre_del($do) {
 		$grupo=$do->get('grupo');
-		$chek = $this->datasis->dameval("SELECT count(*) FROM scli WHERE grupo='$grupo'");
-		if ($chek > 0){
+		$check = $this->datasis->dameval("SELECT count(*) FROM scli WHERE grupo='$grupo'");
+		if ($check > 0){
 			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='Cliente con Movimiento no puede ser Borrado';
 			return False;
 		}else{
@@ -484,8 +484,8 @@ class Tarjeta extends validaciones {
 
 	function chexiste($codigo){
 		$codigo=$this->input->post('tipo');
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM tarjeta WHERE tipo='$codigo'");
-		if ($chek > 0){
+		$check=$this->datasis->dameval("SELECT COUNT(*) FROM tarjeta WHERE tipo='$codigo'");
+		if ($check > 0){
 			$nombre=$this->datasis->dameval("SELECT nombre FROM tarjeta WHERE tipo='$codigo'");
 			$this->validation->set_message('chexiste',"El tipo $codigo ya existe para la forma de pago $nombre");
 			return FALSE;
@@ -573,9 +573,9 @@ class Tarjeta extends validaciones {
 		$campos = $data['data'];
 
 		$tipo = $campos['tipo'];
-		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM sfpa WHERE tipo='$tipo'");
+		$check =  $this->datasis->dameval("SELECT COUNT(*) FROM sfpa WHERE tipo='$tipo'");
 
-		if ($chek > 0){
+		if ($check > 0){
 			echo "{ success: false, message: 'tarjeta no puede ser Borrada'}";
 		} else {
 			$this->db->simple_query("DELETE FROM tarjeta WHERE tipo='$tipo'");

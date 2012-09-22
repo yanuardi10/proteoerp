@@ -391,8 +391,8 @@ class Zona extends Controller {
 	}
 	function chexiste($codigo){
 		$codigo=$this->input->post('codigo');
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM zona WHERE codigo='$codigo'");
-		if ($chek > 0){
+		$check=$this->datasis->dameval("SELECT COUNT(*) FROM zona WHERE codigo='$codigo'");
+		if ($check > 0){
 			$nombre=$this->datasis->dameval("SELECT nombre FROM zona WHERE codigo='$codigo'");
 			$this->validation->set_message('chexiste',"El codigo $codigo ya existe para la zona de $nombre");
 			return FALSE;
@@ -474,9 +474,9 @@ class Zona extends Controller {
 		$campos = $data['data'];
 
 		$codigo = $campos['codigo'];
-		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM scli WHERE zona='$codigo'");
+		$check =  $this->datasis->dameval("SELECT COUNT(*) FROM scli WHERE zona='$codigo'");
 
-		if ($chek > 0){
+		if ($check > 0){
 			echo "{ success: false, message: 'Zona no puede ser Borrada'}";
 		} else {
 			$this->db->simple_query("DELETE FROM zona WHERE codigo='$codigo'");

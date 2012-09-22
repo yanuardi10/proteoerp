@@ -601,11 +601,11 @@ function consulrif(campo){
 
 		} elseif($oper == 'del') {
 			$codigo = $this->datasis->dameval("SELECT $mcodp FROM sprv WHERE id=$id");
-			$chek =  $this->datasis->dameval("SELECT count(*) FROM sprm WHERE cod_prv='$codigo'");
-			$chek += $this->datasis->dameval("SELECT count(*) FROM scst WHERE proveed='$codigo'");
-			$chek += $this->datasis->dameval("SELECT count(*) FROM gser WHERE proveed='$codigo'");	
-			$chek += $this->datasis->dameval("SELECT count(*) FROM ords WHERE proveed='$codigo'");
-			$chek += $this->datasis->dameval("SELECT count(*) FROM bmov WHERE clipro='P' AND codcp='$codigo'");
+			$check =  $this->datasis->dameval("SELECT count(*) FROM sprm WHERE cod_prv='$codigo'");
+			$check += $this->datasis->dameval("SELECT count(*) FROM scst WHERE proveed='$codigo'");
+			$check += $this->datasis->dameval("SELECT count(*) FROM gser WHERE proveed='$codigo'");	
+			$check += $this->datasis->dameval("SELECT count(*) FROM ords WHERE proveed='$codigo'");
+			$check += $this->datasis->dameval("SELECT count(*) FROM bmov WHERE clipro='P' AND codcp='$codigo'");
 			if ($check > 0){
 				echo " El registro no puede ser eliminado; tiene movimiento ";
 			} else {
@@ -1040,12 +1040,12 @@ class Sprv extends validaciones {
 
 	function _pre_del($do) {
 		$codigo=$do->get('proveed');
-		$chek =  $this->datasis->dameval("SELECT count(*) FROM sprm WHERE cod_prv='$codigo'");
-		$chek += $this->datasis->dameval("SELECT count(*) FROM scst WHERE proveed='$codigo'");
-		$chek += $this->datasis->dameval("SELECT count(*) FROM gser WHERE proveed='$codigo'");
-		$chek += $this->datasis->dameval("SELECT count(*) FROM ords WHERE proveed='$codigo'");
-		$chek += $this->datasis->dameval("SELECT count(*) FROM bmov WHERE clipro='P' AND codcp='$codigo'");
-		if ($chek > 0){
+		$check =  $this->datasis->dameval("SELECT count(*) FROM sprm WHERE cod_prv='$codigo'");
+		$check += $this->datasis->dameval("SELECT count(*) FROM scst WHERE proveed='$codigo'");
+		$check += $this->datasis->dameval("SELECT count(*) FROM gser WHERE proveed='$codigo'");
+		$check += $this->datasis->dameval("SELECT count(*) FROM ords WHERE proveed='$codigo'");
+		$check += $this->datasis->dameval("SELECT count(*) FROM bmov WHERE clipro='P' AND codcp='$codigo'");
+		if ($check > 0){
 			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='Cliente con Movimiento no puede ser Borrado';
 			return False;
 		}
@@ -1072,14 +1072,14 @@ class Sprv extends validaciones {
 	function chexiste(){
 		$codigo=$this->input->post('proveed');
 		$rif=$this->input->post('rif');
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM sprv WHERE proveed='$codigo'");
-		if ($chek > 0){
+		$check=$this->datasis->dameval("SELECT COUNT(*) FROM sprv WHERE proveed='$codigo'");
+		if ($check > 0){
 			$nombre=$this->datasis->dameval("SELECT nombre FROM sprv WHERE proveed='$codigo'");
 			$this->validation->set_message('chexiste',"El codigo $codigo ya existe para el proveedor $nombre");
 			return FALSE;
 		}elseif(strlen($rif)>0){
-			$chek=$this->datasis->dameval("SELECT COUNT(*) FROM sprv WHERE rif='$rif'");
-			if ($chek > 0){
+			$check=$this->datasis->dameval("SELECT COUNT(*) FROM sprv WHERE rif='$rif'");
+			if ($check > 0){
 				$nombre=$this->datasis->dameval("SELECT nombre FROM sprv WHERE rif='$rif'");
 				$this->validation->set_message('chexiste',"El rif $rif ya existe para el proveedor $nombre");
 				return FALSE;
@@ -1093,8 +1093,8 @@ class Sprv extends validaciones {
 
 	function _pre_insert($do){
 		$rif=$do->get('rif');
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM sprv WHERE rif='$rif'");
-		if($chek > 0){
+		$check=$this->datasis->dameval("SELECT COUNT(*) FROM sprv WHERE rif='$rif'");
+		if($check > 0){
 			//$nombre=$this->datasis->dameval("SELECT nombre FROM sprv WHERE rif='$rif'");
 			$do->error_message_ar['pre_insert'] = $do->error_message_ar['insert']='';
 			return FALSE;
@@ -1231,15 +1231,15 @@ class Sprv extends validaciones {
 		$proveed = $data['data']['proveed'];
 
 		// VERIFICAR SI PUEDE
-		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM sprm WHERE cod_prv='$proveed'");
-		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM scst WHERE proveed='$proveed'");
-		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM gser WHERE proveed='$proveed'");
-		$chek += $this->datasis->dameval("SELECT count(*) FROM ordc WHERE proveed='$proveed'");
-		$chek += $this->datasis->dameval("SELECT count(*) FROM bmov WHERE clipro='P' AND codcp='$proveed'");
-		$chek += $this->datasis->dameval("SELECT count(*) FROM ords WHERE proveed='$proveed'");
-		//$chek += $this->datasis->dameval("SELECT count(*) FROM obco WHERE proveed='$proveed'");
+		$check =  $this->datasis->dameval("SELECT COUNT(*) FROM sprm WHERE cod_prv='$proveed'");
+		$check += $this->datasis->dameval("SELECT COUNT(*) FROM scst WHERE proveed='$proveed'");
+		$check += $this->datasis->dameval("SELECT COUNT(*) FROM gser WHERE proveed='$proveed'");
+		$check += $this->datasis->dameval("SELECT count(*) FROM ordc WHERE proveed='$proveed'");
+		$check += $this->datasis->dameval("SELECT count(*) FROM bmov WHERE clipro='P' AND codcp='$proveed'");
+		$check += $this->datasis->dameval("SELECT count(*) FROM ords WHERE proveed='$proveed'");
+		//$check += $this->datasis->dameval("SELECT count(*) FROM obco WHERE proveed='$proveed'");
 
-		if ($chek > 0){
+		if ($check > 0){
 			echo "{ success: false, message: 'Proveedor con Movimiento no puede ser Borrado'}";
 		} else {
 			$this->db->simple_query("DELETE FROM sprv WHERE proveed='$proveed'");
