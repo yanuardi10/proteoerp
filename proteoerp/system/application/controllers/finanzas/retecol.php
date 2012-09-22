@@ -178,10 +178,10 @@ class Retecol extends Controller {
 
 		 if (!$this->db->field_exists('tipocol','rete')) {
 			$mSQL="ALTER TABLE rete ADD COLUMN tipocol CHAR(1) NULL DEFAULT NULL AFTER cuenta";
-			$chek=$this->datasis->dameval("SELECT COUNT(*) FROM rete WHERE codigo='$codigo'");
+			$check=$this->datasis->dameval("SELECT COUNT(*) FROM rete WHERE codigo='$codigo'");
 		 }
 
-		if ($chek > 0){
+		if ($check > 0){
 			$activida=$this->datasis->dameval("SELECT activida FROM rete WHERE codigo='$codigo'");
 			$this->validation->set_message('chexiste',"La retencion $codigo ya existe para la actividad $activida");
 			return FALSE;

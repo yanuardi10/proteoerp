@@ -607,8 +607,8 @@ function exento(mgrupo){
 
 	function chexiste($codigo){
 		$codigo=$this->input->post('grupo');
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM grup WHERE grupo='$codigo'");
-		if ($chek > 0){
+		$check=$this->datasis->dameval("SELECT COUNT(*) FROM grup WHERE grupo='$codigo'");
+		if ($check > 0){
 			$grupo=$this->datasis->dameval("SELECT nom_grup FROM grup WHERE grupo='$codigo'");
 			$this->validation->set_message('chexiste',"El codigo $codigo ya existe para el grupo $grupo");
 			return FALSE;
@@ -619,8 +619,8 @@ function exento(mgrupo){
 
 	function _pre_del($do) {
 		$codigo=$do->get('grupo');
-		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM sinv WHERE grupo='$codigo'");
-		if ($chek > 0){
+		$check =  $this->datasis->dameval("SELECT COUNT(*) FROM sinv WHERE grupo='$codigo'");
+		if ($check > 0){
 			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='El grupo contiene productos, por ello no puede ser eliminado. Elimine primero todos los productos que pertenezcan a este grupo';
 			return False;
 		}
@@ -738,8 +738,8 @@ function exento(mgrupo){
 		$campos = $data['data'];
 
 		$grupo = $campos['grupo'];
-		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM grup WHERE grupo='$grupo'");
-		if ($chek > 0){
+		$check =  $this->datasis->dameval("SELECT COUNT(*) FROM grup WHERE grupo='$grupo'");
+		if ($check > 0){
 			echo "{ success: false, message: 'Linea, con movimiento, no puede ser Borrado'}";
 		} else {
 			$this->db->simple_query("DELETE FROM grup WHERE grupo='$grupo'");

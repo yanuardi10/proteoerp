@@ -2117,8 +2117,8 @@ class sinv extends Controller {
 	}
 
 	function chexiste($codigo){
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM sinv WHERE codigo='$codigo'");
-		if ($chek > 0){
+		$check=$this->datasis->dameval("SELECT COUNT(*) FROM sinv WHERE codigo='$codigo'");
+		if ($check > 0){
 			$descrip=$this->datasis->dameval("SELECT descrip FROM sinv WHERE codigo='$codigo'");
 			$this->validation->set_message('chexiste',"El codigo $codigo ya existe para el producto $descrip");
 			return FALSE;
@@ -2129,8 +2129,8 @@ class sinv extends Controller {
 
 	// Si exsite el codigo Alterno
 	function chexiste2($alterno){
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM sinv WHERE alterno='$alterno'");
-		if ($chek > 0){
+		$check=$this->datasis->dameval("SELECT COUNT(*) FROM sinv WHERE alterno='$alterno'");
+		if ($check > 0){
 			$descrip=$this->datasis->dameval("SELECT descrip FROM sinv WHERE alterno='$alterno'");
 			$this->validation->set_message('chexiste2',"El codigo alterno $alterno ya existe para el producto $descrip");
 			return FALSE;
@@ -2175,20 +2175,20 @@ class sinv extends Controller {
 
 	function _pre_del($do){
 		$codigo=$this->db->escape($do->get('codigo'));
-		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM sitems WHERE codigoa=$codigo");
-		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM itscst WHERE codigo=$codigo");
-		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM itstra WHERE codigo=$codigo");
-		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM itspre WHERE codigo=$codigo");
-		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM itsnot WHERE codigo=$codigo");
-		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM itsnte WHERE codigo=$codigo");
-		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM itsinv WHERE codigo=$codigo");
-		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM sinvpitem WHERE codigo=$codigo");
-		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM sinvcombo WHERE codigo=$codigo");
+		$check =  $this->datasis->dameval("SELECT COUNT(*) FROM sitems WHERE codigoa=$codigo");
+		$check += $this->datasis->dameval("SELECT COUNT(*) FROM itscst WHERE codigo=$codigo");
+		$check += $this->datasis->dameval("SELECT COUNT(*) FROM itstra WHERE codigo=$codigo");
+		$check += $this->datasis->dameval("SELECT COUNT(*) FROM itspre WHERE codigo=$codigo");
+		$check += $this->datasis->dameval("SELECT COUNT(*) FROM itsnot WHERE codigo=$codigo");
+		$check += $this->datasis->dameval("SELECT COUNT(*) FROM itsnte WHERE codigo=$codigo");
+		$check += $this->datasis->dameval("SELECT COUNT(*) FROM itsinv WHERE codigo=$codigo");
+		$check += $this->datasis->dameval("SELECT COUNT(*) FROM sinvpitem WHERE codigo=$codigo");
+		$check += $this->datasis->dameval("SELECT COUNT(*) FROM sinvcombo WHERE codigo=$codigo");
 
 		if ($this->db->table_exists('ordpitem'))
-			$chek += $this->datasis->dameval("SELECT COUNT(*) FROM ordpitem WHERE codigo=$codigo");
+			$check += $this->datasis->dameval("SELECT COUNT(*) FROM ordpitem WHERE codigo=$codigo");
 
-		if ($chek > 0){
+		if ($check > 0){
 			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='Producto con Movimiento no puede ser Borrado, solo se puede inactivar';
 			return false;
 		}

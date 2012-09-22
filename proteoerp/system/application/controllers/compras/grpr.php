@@ -443,8 +443,8 @@ class Grpr extends validaciones {
 	}
 	function chexiste($codigo){
 		$codigo=$this->input->post('grupo');
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM grpr WHERE grupo='$codigo'");
-		if ($chek > 0){
+		$check=$this->datasis->dameval("SELECT COUNT(*) FROM grpr WHERE grupo='$codigo'");
+		if ($check > 0){
 			$nombre=$this->datasis->dameval("SELECT gr_desc FROM grpr WHERE grupo='$codigo'");
 			$this->validation->set_message('chexiste',"El codigo $codigo ya existe para el grupo $nombre");
 			return FALSE;
@@ -533,10 +533,10 @@ class Grpr extends validaciones {
 		$grupo = $campos['grupo'];
 
 
-		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM sprv WHERE grupo='$grupo'");
+		$check =  $this->datasis->dameval("SELECT COUNT(*) FROM sprv WHERE grupo='$grupo'");
 
 
-		if ($chek > 0){
+		if ($check > 0){
 			echo "{ success: false, message: 'Grupo de Proveedor no puede ser Borrado'}";
 		} else {
 			$this->db->simple_query("DELETE FROM grpr WHERE grupo='$grupo'");

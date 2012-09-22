@@ -814,8 +814,8 @@ $(function() {
 			
 
 		} elseif($oper == 'del') {
-			$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM itsinv WHERE alma='$codigo' AND existen>0");
-			if ($chek > 0){
+			$check =  $this->datasis->dameval("SELECT COUNT(*) FROM itsinv WHERE alma='$codigo' AND existen>0");
+			if ($check > 0){
 				echo " El almacen no fuede ser eliminado; tiene movimiento ";
 			} else {
 				//$this->db->simple_query("DELETE FROM caub WHERE id=$id ");

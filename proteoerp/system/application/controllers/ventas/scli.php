@@ -2309,16 +2309,16 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 
 	function _pre_del($do) {
 		$codigo=$this->db->escape($do->get('cliente'));
-		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM sfac WHERE cod_cli=$codigo");
-		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM smov WHERE cod_cli=$codigo");
-		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM snot WHERE cod_cli=$codigo");
-		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM snte WHERE cod_cli=$codigo");
-		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM otin WHERE cod_cli=$codigo");
-		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM pfac WHERE cod_cli=$codigo");
-		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM pers WHERE enlace=$codigo");
-		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM bmov WHERE clipro='C' AND codcp=$codigo");
+		$check =  $this->datasis->dameval("SELECT COUNT(*) FROM sfac WHERE cod_cli=$codigo");
+		$check += $this->datasis->dameval("SELECT COUNT(*) FROM smov WHERE cod_cli=$codigo");
+		$check += $this->datasis->dameval("SELECT COUNT(*) FROM snot WHERE cod_cli=$codigo");
+		$check += $this->datasis->dameval("SELECT COUNT(*) FROM snte WHERE cod_cli=$codigo");
+		$check += $this->datasis->dameval("SELECT COUNT(*) FROM otin WHERE cod_cli=$codigo");
+		$check += $this->datasis->dameval("SELECT COUNT(*) FROM pfac WHERE cod_cli=$codigo");
+		$check += $this->datasis->dameval("SELECT COUNT(*) FROM pers WHERE enlace=$codigo");
+		$check += $this->datasis->dameval("SELECT COUNT(*) FROM bmov WHERE clipro='C' AND codcp=$codigo");
 
-		if ($chek > 0){
+		if ($check > 0){
 			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='Cliente con Movimiento no puede ser Borrado';
 			return False;
 		}
@@ -2371,8 +2371,8 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 
 	function chexiste($codigo){
 		$codigo=$this->input->post('cliente');
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM scli WHERE cliente='$codigo'");
-		if ($chek > 0){
+		$check=$this->datasis->dameval("SELECT COUNT(*) FROM scli WHERE cliente='$codigo'");
+		if ($check > 0){
 			$mSQL_1=$this->db->query("SELECT nombre, rifci FROM scli WHERE cliente='$codigo'");
 			$row = $mSQL_1->row();
 			$nombre =$row->nombre;
@@ -2531,13 +2531,13 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		$cliente = $data['data']['cliente'];
 
 		// VERIFICAR SI PUEDE
-		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM smov WHERE cod_cli='$cliente'");
-		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM sfac WHERE cod_cli='$cliente'");
-		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM spre WHERE cod_cli='$cliente'");
-		$chek += $this->datasis->dameval("SELECT count(*) FROM pfac WHERE cod_cli='$cliente'");
-		$chek += $this->datasis->dameval("SELECT count(*) FROM bmov WHERE clipro='C' AND codcp='$cliente'");
+		$check =  $this->datasis->dameval("SELECT COUNT(*) FROM smov WHERE cod_cli='$cliente'");
+		$check += $this->datasis->dameval("SELECT COUNT(*) FROM sfac WHERE cod_cli='$cliente'");
+		$check += $this->datasis->dameval("SELECT COUNT(*) FROM spre WHERE cod_cli='$cliente'");
+		$check += $this->datasis->dameval("SELECT count(*) FROM pfac WHERE cod_cli='$cliente'");
+		$check += $this->datasis->dameval("SELECT count(*) FROM bmov WHERE clipro='C' AND codcp='$cliente'");
 
-		if ($chek > 0){
+		if ($check > 0){
 			echo "{ success: false, message: 'Cliente con Movimiento no puede ser Borrado'}";
 		} else {
 			$this->db->simple_query("DELETE FROM scli WHERE cliente='$cliente'");

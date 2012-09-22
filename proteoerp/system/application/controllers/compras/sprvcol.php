@@ -493,12 +493,12 @@ function v_rut(numero){
 
 	function _pre_del($do) {
 		$codigo=$do->get('proveed');
-		$chek =  $this->datasis->dameval("SELECT count(*) FROM sprm WHERE cod_prv='$codigo'");
-		$chek += $this->datasis->dameval("SELECT count(*) FROM scst WHERE proveed='$codigo'");
-		$chek += $this->datasis->dameval("SELECT count(*) FROM gser WHERE proveed='$codigo'");
-		$chek += $this->datasis->dameval("SELECT count(*) FROM ords WHERE proveed='$codigo'");
-		$chek += $this->datasis->dameval("SELECT count(*) FROM bmov WHERE clipro='P' AND codcp='$codigo'");
-		if ($chek > 0){
+		$check =  $this->datasis->dameval("SELECT count(*) FROM sprm WHERE cod_prv='$codigo'");
+		$check += $this->datasis->dameval("SELECT count(*) FROM scst WHERE proveed='$codigo'");
+		$check += $this->datasis->dameval("SELECT count(*) FROM gser WHERE proveed='$codigo'");
+		$check += $this->datasis->dameval("SELECT count(*) FROM ords WHERE proveed='$codigo'");
+		$check += $this->datasis->dameval("SELECT count(*) FROM bmov WHERE clipro='P' AND codcp='$codigo'");
+		if ($check > 0){
 			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='Cliente con Movimiento no puede ser Borrado';
 			return False;
 		}
@@ -533,14 +533,14 @@ function v_rut(numero){
 	function chexiste(){
 		$codigo=$this->input->post('proveed');
 		$rif=$this->input->post('rif');
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM sprv WHERE proveed='$codigo'");
-		if ($chek > 0){
+		$check=$this->datasis->dameval("SELECT COUNT(*) FROM sprv WHERE proveed='$codigo'");
+		if ($check > 0){
 			$nombre=$this->datasis->dameval("SELECT nombre FROM sprv WHERE proveed='$codigo'");
 			$this->validation->set_message('chexiste',"El codigo $codigo ya existe para el proveedor $nombre");
 			return FALSE;
 		}elseif(strlen($rif)>0){
-			$chek=$this->datasis->dameval("SELECT COUNT(*) FROM sprv WHERE rif='$rif'");
-			if ($chek > 0){
+			$check=$this->datasis->dameval("SELECT COUNT(*) FROM sprv WHERE rif='$rif'");
+			if ($check > 0){
 				$nombre=$this->datasis->dameval("SELECT nombre FROM sprv WHERE rif='$rif'");
 				$this->validation->set_message('chexiste',"El rif $rif ya existe para el proveedor $nombre");
 				return FALSE;

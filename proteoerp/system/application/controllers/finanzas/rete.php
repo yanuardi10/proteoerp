@@ -326,7 +326,7 @@ jQuery("#a1").click( function(){
 
 		} elseif($oper == 'del') {
 			$codigo    = $this->input->post('codigo');
-			$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM gser WHERE creten='$codigo'");
+			$check =  $this->datasis->dameval("SELECT COUNT(*) FROM gser WHERE creten='$codigo'");
 			if ($check > 0){
 				echo " El registro no puede ser eliminado; tiene movimiento ";
 			} else {
@@ -514,8 +514,8 @@ jQuery("#a1").click( function(){
 	 function chexiste($codigo){
 		$codigo=$this->input->post('codigo');
 		//echo 'aquiii'.$fecha;
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM rete WHERE codigo='$codigo'");
-		if ($chek > 0){
+		$check=$this->datasis->dameval("SELECT COUNT(*) FROM rete WHERE codigo='$codigo'");
+		if ($check > 0){
 		 $activida=$this->datasis->dameval("SELECT activida FROM rete WHERE codigo='$codigo'");
 		 $this->validation->set_message('chexiste',"La retencion $codigo ya existe para la actividad $activida");
 		 return FALSE;
@@ -605,9 +605,9 @@ jQuery("#a1").click( function(){
 		$campos = $data['data'];
 
 		$codigo = $campos['codigo'];
-		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM gser WHERE creten='$codigo'");
+		$check =  $this->datasis->dameval("SELECT COUNT(*) FROM gser WHERE creten='$codigo'");
 
-		if ($chek > 0){
+		if ($check > 0){
 			echo "{ success: false, message: 'rete no puede ser Borrada'}";
 		} else {
 			$this->db->simple_query("DELETE FROM rete WHERE codigo='$codigo'");

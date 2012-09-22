@@ -228,8 +228,8 @@ class barraspos extends Controller {
 
 	function chexiste($codigo){
 		$codigo=$this->input->post('codigo');
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM sinv WHERE codigo='$codigo'");
-		if ($chek == 0){
+		$check=$this->datasis->dameval("SELECT COUNT(*) FROM sinv WHERE codigo='$codigo'");
+		if ($check == 0){
 			$this->validation->set_message('chexiste',"El codigo $codigo no existe en el inventario");
 			return FALSE;
 		}else {

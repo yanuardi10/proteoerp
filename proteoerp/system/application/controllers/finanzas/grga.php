@@ -229,7 +229,7 @@ jQuery("#a1").click( function(){
 
 		} elseif($oper == 'del') {
 			$grupo = $this->input->post('grupo');
-			$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM mgas WHERE grupo='$grupo'");
+			$check =  $this->datasis->dameval("SELECT COUNT(*) FROM mgas WHERE grupo='$grupo'");
 			if ($check > 0){
 				echo " El registro no puede ser eliminado; tiene movimiento ";
 			} else {
@@ -351,8 +351,8 @@ class Grga extends validaciones {
 
 	function chexiste($codigo){
 		$codigo=$this->input->post('grupo');
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM grga WHERE grupo='$codigo'");
-		if ($chek > 0){
+		$check=$this->datasis->dameval("SELECT COUNT(*) FROM grga WHERE grupo='$codigo'");
+		if ($check > 0){
 			$grupo=$this->datasis->dameval("SELECT nom_grup FROM grga WHERE grupo='$codigo'");
 			$this->validation->set_message('chexiste',"El codigo $codigo ya existe para el grupo $grupo");
 			return FALSE;
@@ -439,9 +439,9 @@ class Grga extends validaciones {
 		$campos = $data['data'];
 
 		$grupo = $campos['grupo'];
-		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM mgas WHERE grupo='$grupo'");
+		$check =  $this->datasis->dameval("SELECT COUNT(*) FROM mgas WHERE grupo='$grupo'");
 
-		if ($chek > 0){
+		if ($check > 0){
 			echo "{ success: false, message: 'Grupo de Gasto no puede ser Borrado'}";
 		} else {
 			$this->db->simple_query("DELETE FROM grga WHERE grupo='$grupo'");

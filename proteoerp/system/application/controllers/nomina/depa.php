@@ -396,8 +396,8 @@ class Depa extends Controller {
 	}
 	function _pre_del($do) {
 		$codigo=$do->get('departa');
-		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM pers WHERE depto='$codigo'");
-		if ($chek > 0){
+		$check =  $this->datasis->dameval("SELECT COUNT(*) FROM pers WHERE depto='$codigo'");
+		if ($check > 0){
 			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='Cliente con Movimiento no puede ser Borrado';
 			return False;
 		}
@@ -423,8 +423,8 @@ class Depa extends Controller {
 	}
 	function chexiste($division){
 		$departa=$this->input->post('departa');
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM depa WHERE division='$division' AND departa='$departa'");
-		if ($chek > 0){
+		$check=$this->datasis->dameval("SELECT COUNT(*) FROM depa WHERE division='$division' AND departa='$departa'");
+		if ($check > 0){
 			$nombre=$this->datasis->dameval("SELECT depadesc FROM depa WHERE division='$division' AND departa='$departa'");
 			$this->validation->set_message('chexiste',"La division $division departamento $departa nombre $nombre ya existe");
 			return FALSE;
@@ -564,9 +564,9 @@ class Depa extends Controller {
 		$departa = $data['data']['departa'];
 		
 		// VERIFICAR SI PUEDE
-		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM pers WHERE depto='$departa'");
+		$check =  $this->datasis->dameval("SELECT COUNT(*) FROM pers WHERE depto='$departa'");
 
-		if ($chek > 0){
+		if ($check > 0){
 			echo "{ success: false, message: 'Departamento de nomina, no puede ser Borrado'}";
 		} else {
 			$this->db->simple_query("DELETE FROM depa WHERE departa='$departa'");

@@ -246,10 +246,10 @@ class agregarped extends Controller {
 
 	function _pre_del($do){
 		$codigo=$do->get('comprob');
-		$chek =   $this->datasis->dameval("SELECT COUNT(*) FROM cpla WHERE codigo LIKE '$codigo.%'");
-		$chek +=  $this->datasis->dameval("SELECT COUNT(*) FROM itcasi WHERE cuenta='$codigo'");
+		$check =   $this->datasis->dameval("SELECT COUNT(*) FROM cpla WHERE codigo LIKE '$codigo.%'");
+		$check +=  $this->datasis->dameval("SELECT COUNT(*) FROM itcasi WHERE cuenta='$codigo'");
 
-		if ($chek > 0){
+		if ($check > 0){
 			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='Plan de Cuenta tiene derivados o movimientos';
 			return False;
 		}
@@ -275,8 +275,8 @@ class agregarped extends Controller {
 
 	function existe($codigo){
 		$numero=$this->input->post('numa');
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM itpfac WHERE codigo='$codigo'AND numa='$numero'");
-		if ($chek > 0){
+		$check=$this->datasis->dameval("SELECT COUNT(*) FROM itpfac WHERE codigo='$codigo'AND numa='$numero'");
+		if ($check > 0){
 			$this->validation->set_message('existe',"El Articulo ya existe para este pedido");
 			 return FALSE;
 		}else {

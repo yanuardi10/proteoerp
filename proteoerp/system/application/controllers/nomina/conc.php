@@ -109,6 +109,7 @@ jQuery("#a1").click( function(){
 	function defgrid( $deployed = false ){
 		$i      = 1;
 		$editar = "true";
+		$linea   = 1;
 
 		$grid  = new $this->jqdatagrid;
 
@@ -122,18 +123,7 @@ jQuery("#a1").click( function(){
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:6, maxlength: 4 }',
-		));
-
-		$grid->addField('tipo');
-		$grid->label('Tipo');
-		$grid->params(array(
-			'align'         => "'center'",
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 40,
-			'edittype'      => "'select'",
-			'editoptions'   => '{value: {"A":"Asignacion", "D":"Deduccion"}, style:"width:140px"} ',
-			'editrules'     => '{ required:true}',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:1 }'
 		));
 
 		$grid->addField('descrip');
@@ -145,7 +135,23 @@ jQuery("#a1").click( function(){
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:40, maxlength: 35 }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:2 }'
 		));
+
+		$linea = $linea + 1;
+		$grid->addField('tipo');
+		$grid->label('Tipo');
+		$grid->params(array(
+			'align'         => "'center'",
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'select'",
+			'editoptions'   => '{value: {"A":"Asignacion", "D":"Deduccion"}, style:"width:100px"} ',
+			'editrules'     => '{ required:true}',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:1 }'
+		));
+
 
 		$grid->addField('aplica');
 		$grid->label('Aplica');
@@ -157,8 +163,10 @@ jQuery("#a1").click( function(){
 			'editoptions'   => '{value: {"S   ":"Semanal", "Q   ":"Quincenal", "B   ":"Bisemanal", "M   ":"Mensual",  "SQ  ":"Semanal/Quincenal", "SQM ":"Sem/Quin/Mensual", "SQMB":"Sem/Quin/Men/Bisemanal"}, style:"width:200px"} ',
 			'editrules'     => '{ required:true}',
 			'formoptions'   => '{ label: "Aplicacion" }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:2 }'
 		));
 
+		$linea = $linea + 1;
 		$grid->addField('grupo');
 		$grid->label('Grupo');
 		$grid->params(array(
@@ -167,8 +175,24 @@ jQuery("#a1").click( function(){
 			'width'         => 40,
 			'edittype'      => "'text'",
 			'editoptions'   => '{ size:5, maxlength: 4 }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:1 }'
 		));
 
+
+		$grid->addField('liquida');
+		$grid->label('Liquidacion');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'editrules'     => '{ required:true}',
+			'edittype'      => "'select'",
+			'editoptions'   => '{value: {"S":"Si", "N":"No"}, style:"width:80px" }',
+			'formoptions'   => '{label:"Liquidaciones", rowpos:'.$linea.', colpos:2 }'
+		));
+
+
+		$linea = $linea + 1;
 		$grid->addField('encab1');
 		$grid->label('Encabezado 1');
 		$grid->params(array(
@@ -178,6 +202,7 @@ jQuery("#a1").click( function(){
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:12, maxlength: 12 }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:1 }'
 		));
 
 		$grid->addField('encab2');
@@ -189,8 +214,10 @@ jQuery("#a1").click( function(){
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:12, maxlength: 12 }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:2 }'
 		));
 
+		$linea = $linea + 1;
 		$grid->addField('formula');
 		$grid->label('Formula');
 		$grid->params(array(
@@ -199,9 +226,11 @@ jQuery("#a1").click( function(){
 			'width'         => 250,
 			'edittype'      => "'textarea'",
 			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ rows:3, cols: 50 }',
+			'editoptions'   => '{ rows:4, cols: 40 }',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:2 }'
 		));
 
+		$linea = $linea + 1;
 		$grid->addField('tipod');
 		$grid->label('Deuda');
 		$grid->params(array(
@@ -217,7 +246,8 @@ jQuery("#a1").click( function(){
 						$("input#ctade").val("");
 					}
 				}]
-			}'
+			}',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:1 }'
 		));
 
 		$link = site_url('ajax/buscasprvmgas');
@@ -231,8 +261,11 @@ jQuery("#a1").click( function(){
 			'edittype'      => "'text'",
 			'editoptions'   => '{'.$grid->autocomplete($link.'/d', 'ctade','aaaaaa','<div id=\"aaaaaa\"><b>"+ui.item.label+"</b></div>').'}',
 			'editrules'     => '{ required:true}',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:2 }'
 		));
 
+
+		$linea = $linea + 1;
 		$grid->addField('tipoa');
 		$grid->label('Acreedor');
 		$grid->params(array(
@@ -249,6 +282,7 @@ jQuery("#a1").click( function(){
 					}
 				}]
 			}',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:1 }'
 		));
 
 		$grid->addField('ctaac');
@@ -260,21 +294,10 @@ jQuery("#a1").click( function(){
 			'edittype'      => "'text'",
 			'editoptions'   => '{'.$grid->autocomplete($link.'/a', 'ctaac','bbbbbb','<div id=\"bbbbbb\"><b>"+ui.item.label+"</b></div>').'}',
 			'editrules'     => '{ required:true}',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:2 }'
 		));
 
 
-		$grid->addField('liquida');
-		$grid->label('Liquidacion');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 40,
-			'editrules'     => '{ required:true}',
-			'edittype'      => "'select'",
-			'editoptions'   => '{value: {"S":"Si", "N":"No"}, style:"width:80px" }',
-			'formoptions'   => '{label:"Liquidaciones"}'
-
-		));
 
 		$grid->addField('id');
 		$grid->label('Id');
@@ -304,8 +327,8 @@ jQuery("#a1").click( function(){
 			}
 		');
 
-		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:480, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
-		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:480, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
+		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 650, height:360, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
+		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 650, height:360, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
 		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
 
 		#show/hide navigations buttons
@@ -376,8 +399,8 @@ jQuery("#a1").click( function(){
 
 		} elseif($oper == 'del') {
 			$concepto  = $this->input->post('concepto');
-			$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM nomina WHERE concepto='$concepto'");
-			$chek += $this->datasis->dameval("SELECT COUNT(*) FROM asig   WHERE concepto='$concepto'");
+			$check =  $this->datasis->dameval("SELECT COUNT(*) FROM nomina WHERE concepto='$concepto'");
+			$check += $this->datasis->dameval("SELECT COUNT(*) FROM asig   WHERE concepto='$concepto'");
 			if ($check > 0){
 				echo " El registro no puede ser eliminado; tiene movimiento ";
 			} else {
@@ -694,8 +717,8 @@ script;
 
 	function chexiste($codigo){
 		$codigo=$this->input->post('concepto');
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM conc WHERE concepto='$codigo'");
-		if ($chek > 0){
+		$check=$this->datasis->dameval("SELECT COUNT(*) FROM conc WHERE concepto='$codigo'");
+		if ($check > 0){
 			$nombre=$this->datasis->dameval("SELECT descrip FROM conc WHERE concepto='$codigo'");
 			$this->validation->set_message('chexiste',"El concepto $codigo nombre $nombre ya existe");
 			return FALSE;
@@ -857,10 +880,10 @@ script;
 		$concepto = $campos['concepto'];
 		$descrip  = $campos['descrip'];
 
-		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM nomina WHERE concepto='$concepto'");
-		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM asig   WHERE concepto='$concepto'");
+		$check =  $this->datasis->dameval("SELECT COUNT(*) FROM nomina WHERE concepto='$concepto'");
+		$check += $this->datasis->dameval("SELECT COUNT(*) FROM asig   WHERE concepto='$concepto'");
 
-		if ($chek > 0){
+		if ($check > 0){
 			echo "{ success: false, message: 'Concepto con Movimiento no puede ser Borrado'}";
 		} else {
 			$this->db->simple_query("DELETE FROM conc WHERE concepto='$concepto'");

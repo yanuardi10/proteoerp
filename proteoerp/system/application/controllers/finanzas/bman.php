@@ -160,8 +160,8 @@ class bman extends validaciones {
 	}
 	function chexiste(){
 		$codbanc=$this->input->post('codbanc');
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM tban WHERE cod_banc='$codbanc'");
-		if ($chek > 0){
+		$check=$this->datasis->dameval("SELECT COUNT(*) FROM tban WHERE cod_banc='$codbanc'");
+		if ($check > 0){
 			return TRUE;
 		}else {
 			$this->validation->set_message('chexiste',"El $codbanc no existe para ningun banco");

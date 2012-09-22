@@ -341,8 +341,8 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 	}
 	function chexiste($codigo){
 		$codigo=$this->input->post('depto');
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM dpto WHERE depto='$codigo'");
-		if ($chek > 0){
+		$check=$this->datasis->dameval("SELECT COUNT(*) FROM dpto WHERE depto='$codigo'");
+		if ($check > 0){
 			$depto=$this->datasis->dameval("SELECT descrip FROM dpto WHERE depto='$codigo'");
 			$this->validation->set_message('chexiste',"El codigo $codigo ya existe para el departamento $depto");
 			return FALSE;
@@ -353,8 +353,8 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 	
 	function _pre_del($do) {
 		$codigo=$do->get('depto');
-		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM line WHERE depto='$codigo'");
-		if ($chek > 0){
+		$check =  $this->datasis->dameval("SELECT COUNT(*) FROM line WHERE depto='$codigo'");
+		if ($check > 0){
 			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='El departamento contiene lineas, por ello no puede ser eliminado. Elimine primero todas las l&iacute;neas que pertenezcan a este departamento';
 			return False;
 		}
@@ -441,10 +441,10 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$campos = $data['data'];
 
 		$depto = $campos['depto'];
-		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM line WHERE depto='$depto'");
-		$chek += $this->datasis->dameval("SELECT COUNT(*) FROM gitser WHERE departa='$depto'");
+		$check =  $this->datasis->dameval("SELECT COUNT(*) FROM line WHERE depto='$depto'");
+		$check += $this->datasis->dameval("SELECT COUNT(*) FROM gitser WHERE departa='$depto'");
 
-		if ($chek > 0){
+		if ($check > 0){
 			echo "{ success: false, message: 'Departamento, con movimiento, no puede ser Borrado'}";
 		} else {
 			$this->db->simple_query("DELETE FROM dpto WHERE depto='$depto'");

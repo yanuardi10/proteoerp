@@ -950,8 +950,8 @@ class Cruc extends validaciones {
 	}
 	function chexiste($codigo){
 		$codigo=$this->input->post('numero');
-		$chek=$this->datasis->dameval("SELECT COUNT(*) FROM cruc WHERE numero='$codigo'");
-		if ($chek > 0){
+		$check=$this->datasis->dameval("SELECT COUNT(*) FROM cruc WHERE numero='$codigo'");
+		if ($check > 0){
 			$this->validation->set_message('chexiste',"El codigo $codigo ya existe");
 			return FALSE;
 		}else {

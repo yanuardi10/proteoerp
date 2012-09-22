@@ -328,8 +328,8 @@ jQuery("#a1").click( function(){
 	  	}
 		
 		function chexiste($codigo){
-			$chek=$this->datasis->dameval("SELECT COUNT(*) FROM prof WHERE codigo='$codigo'");
-			if ($chek > 0){
+			$check=$this->datasis->dameval("SELECT COUNT(*) FROM prof WHERE codigo='$codigo'");
+			if ($check > 0){
 				$profesion=$this->datasis->dameval("SELECT profesion FROM prof WHERE codigo='$codigo'");
 				$this->validation->set_message('chexiste',"El codigo $codigo ya existe para la profesion $profesion");
 				return FALSE;
@@ -403,9 +403,9 @@ jQuery("#a1").click( function(){
 		$codigo = $data['data']['codigo'];
 		
 		// VERIFICAR SI PUEDE
-		$chek =  $this->datasis->dameval("SELECT COUNT(*) FROM pers WHERE profes='$codigo'");
+		$check =  $this->datasis->dameval("SELECT COUNT(*) FROM pers WHERE profes='$codigo'");
 
-		if ($chek > 0){
+		if ($check > 0){
 			echo "{ success: false, message: 'Profesion no puede ser Borrado'}";
 		} else {
 			$this->db->simple_query("DELETE FROM carg WHERE cargo='$cargo'");
