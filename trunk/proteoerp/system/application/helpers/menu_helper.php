@@ -19,9 +19,9 @@ function arr_menu($nivel=1,$pertenece=NULL){
 			$mSQL .= "WHERE ";
 		else
 			$mSQL .= "JOIN intrasida AS b ON a.modulo=b.modulo WHERE b.usuario='$usr' AND b.acceso='S' AND ";
-		
+
 		$mSQL .="visible='S' AND CHAR_LENGTH(a.modulo)=$modulo $esde ORDER BY a.panel, a.orden, a.modulo";
-		
+
 		$query = $CI->db->query($mSQL);
 		$retorna=$query->result_array();
 	}else{
@@ -40,7 +40,7 @@ function arr2link($arr){
 		'screenx'    => "'+((screen.availWidth/2)-".intval($arr['ancho']/2).")+'",
 		'screeny'    => "'+((screen.availHeight/2)-".intval($arr['alto']/2).")+'" );
 	$indi=parsePattern($arr['ejecutar']);
-	
+
 	if($arr['target']=='popu'){
 		$ejecutar=anchor_popup($indi, $arr['titulo'], $att);
 		$arr['titulo'] =htmlentities($arr['titulo']);

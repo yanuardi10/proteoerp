@@ -28,80 +28,32 @@ class Smov extends Controller {
 	function jqdatag(){
 
 		$grid = $this->defgrid();
-		$param['grid'] = $grid->deploy();
+		$param['grids'][] = $grid->deploy();
 
-		$readyLayout = '
-	$(\'body\').layout({
-		minSize: 30,
-		north__size: 60,
-		resizerClass: \'ui-state-default\',
-		west__size: 212,
-		west__onresize: function (pane, $Pane){jQuery("#west-grid").jqGrid(\'setGridWidth\',$Pane.innerWidth()-2);},
-	});
-	
-	$(\'div.ui-layout-center\').layout({
-		minSize: 30,
-		resizerClass: "ui-state-default",
-		center__paneSelector: ".centro-centro",
-		south__paneSelector:  ".centro-sur",
-		south__size: 140,
-		center__onresize: function (pane, $Pane) {
-			jQuery("#newapi'.$param['grid']['gridname'].'").jqGrid(\'setGridWidth\',$Pane.innerWidth()-6);
-			jQuery("#newapi'.$param['grid']['gridname'].'").jqGrid(\'setGridHeight\',$Pane.innerHeight()-110);
-		}
-	});
-	';
-
-		$centerpanel = '
-<div id="RightPane" class="ui-layout-center">
-	<div class="centro-centro">
-		<table id="newapi'.$param['grid']['gridname'].'"></table>
-		<div id="pnewapi'.$param['grid']['gridname'].'"></div>
-	</div>
-	<div class="centro-sur" id="adicional" style="overflow:auto;">
-	</div>
-</div> <!-- #RightPane -->
-';
-
+		$readyLayout = $grid->readyLayout2( 212, 140, $param['grids'][0]['gridname']);
 
 		$bodyscript = '
-<script type="text/javascript">
-$(function() {
-	$( "input:submit, a, button", ".boton1" ).button();
-});
-jQuery("#boton1").click( function(){
-	var id = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
-	if (id)	{
-		var ret = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getRowData\',id);
-		window.open(\''.site_url('formatos/ver/SMOV/').'\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
-	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
-});
-</script>
-';
+		<script type="text/javascript">
+		jQuery("#boton1").click( function(){
+			var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
+				window.open(\''.site_url('formatos/ver/SMOV/').'\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+			} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
+			});
+		</script>
+		';
 
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
 
-		$WestPanel = '
-<div id="LeftPane" class="ui-layout-west">
-<div class="anexos">
-<table align="center">
-	<tr><td><table id="listados"></table></td></tr>
-	<tr><td><table id="otros"></table></td></tr>
-	<tr><td><div class="boton1"><a style="width:190px" href="#" id="boton1">Reimprimir Documento</a></div></td></tr>
-</table>
-</div>
-</div> <!-- #LeftPane -->
-		';
+		//Botones Panel Izq
+		$grid->wbotonadd(array("id"=>"boton1", "img"=>"images/pdf_logo.gif", "alt" => 'Formato PDF', "label"=>"Reimprimir Documento"));
+		$WestPanel = $grid->deploywestp();
 
-		$funciones = '';
-
-
-		$SouthPanel = '
-<div id="BottomPane" class="ui-layout-south ui-widget ui-widget-content">
-<p>'.$this->datasis->traevalor('TITULO1').'</p>
-</div> <!-- #BottomPanel -->
-';
+		//Panel Central y Sur
+		$centerpanel = $grid->centerpanel( $id = "radicional", $param['grids'][0]['gridname'] );
+		$SouthPanel  = $grid->SouthPanel($this->datasis->traevalor('TITULO1'));
 
 		$param['WestPanel']    = $WestPanel;
 		//$param['EastPanel']  = $EastPanel;
@@ -109,16 +61,14 @@ jQuery("#boton1").click( function(){
 		$param['SouthPanel']   = $SouthPanel;
 		$param['listados']     = $this->datasis->listados('SMOV', 'JQ');
 		$param['otros']        = $this->datasis->otros('SMOV', 'JQ');
-		
 		$param['centerpanel']  = $centerpanel;
-		$param['funciones']    = $funciones;
-		$param['tema1']        = 'darkness';
-		$param['anexos']       = 'anexos1';
+		//$param['funciones']    = $funciones;
+		$param['temas']        = array('proteo','darkness','anexos1');
 		$param['bodyscript']   = $bodyscript;
 		$param['tabs']         = false;
 		$param['encabeza']     = $this->titp;
-		
-		$this->load->view('jqgrid/crud',$param);
+		$this->load->view('jqgrid/crud2',$param);
+
 	}
 
 	//***************************
@@ -145,8 +95,7 @@ jQuery("#boton1").click( function(){
 			'align'    => "'center'",
 			'search'        => 'true',
 			'editable'      => 'false',
-			'width'         => 50,
-			//'edittype'      => "'text'",
+			'width'         => 50
 		));
 
 
@@ -756,8 +705,7 @@ jQuery("#boton1").click( function(){
 				$.ajax({
 					url: "'.base_url().$this->url.'tabla/"+id,
 					success: function(msg){
-						//alert( "El ultimo codigo ingresado fue: " + msg );
-						$("#adicional").html(msg);
+						$("#radicional").html(msg);
 					}
 				});
 			}

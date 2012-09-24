@@ -3,7 +3,7 @@ class Bienvenido extends Controller {
 	function Bienvenido(){
 		parent::Controller();
 	}
-	
+
 	function index(){
 		$this->session->set_userdata('panel', $this->uri->segment(3));
 		$data['titulo1']  = '<center>';
@@ -18,7 +18,7 @@ class Bienvenido extends Controller {
 		$data['titulo1']  .= '</center>';
 		$this->layout->buildPage('bienvenido/home', $data);
 	}
-	
+
 	function autentificar(){
 		$usr=sha1($_POST['user']);
 		$pws=sha1($_POST['pws']);
@@ -27,7 +27,6 @@ class Bienvenido extends Controller {
 		if ( empty($esta) ) $this->db->simple_query("ALTER TABLE usuario ADD activo CHAR(1) ");
 		$this->db->simple_query("UPDATE usuario SET activo='S' WHERE activo <> 'N' ");
 		$this->db->simple_query("UPDATE usuario SET activo='S' WHERE activo IS NULL ");
-
 
 		if (!preg_match("/^[^'\"]+$/", $usr)>0){
 			$sess_data = array('logged_in'=> FALSE);
@@ -46,7 +45,7 @@ class Bienvenido extends Controller {
 		$this->session->set_userdata($sess_data);
 		redirect($this->session->userdata('estaba'));
 	}
-	
+
 	function cese(){
 		$this->session->sess_destroy();
 		redirect();
@@ -63,7 +62,7 @@ class Bienvenido extends Controller {
 		// Build the thing
 		$this->layout->buildPage('bienvenido/ingresar', $data);
 	}
-	
+
 	function ingresarVentana(){
 		$viene=$this->session->userdata('estaba');
 		$data['estilos'] = style("estilos.css");
@@ -108,7 +107,7 @@ class Bienvenido extends Controller {
 		}
 		echo $out;
 	}
-	
+
 	function error(){
 		$this->layout->buildPage('bienvenido/error');
 	}
@@ -122,22 +121,35 @@ class Bienvenido extends Controller {
 		if (count($arreglo)>0){
 			$out  ='';
 			$desca  = $this->datasis->dameval("SELECT mensaje FROM intramenu WHERE modulo=$dbpertenece");
-			$imagen = $this->datasis->dameval("SELECT imagen  FROM intramenu WHERE modulo=$dbpertenece");
+			$imagen = $this->datasis->dameval("SELECT TRIM(imagen) imagen  FROM intramenu WHERE modulo=$dbpertenece");
 			$desca  = htmlentities($desca);
 			$out .= '<div>';
-			$out .= '<table><tr>';
-			$out .= '<td>'.image($imagen).'</td>';
+			$out .= '<table width="100%" border="0"><tr>';
+			if ( strlen($imagen) == 0  )
+				$out .= '<td>&nbsp;</td>';
+			else
+				$out .= '<td width="90">'.img(array("src"=>"images/".$imagen,"height"=>60)).'</td>';
 			$out .= '<td><h2>'.$desca.'</h2></td>';
 			$out .= '</tr></table>';
 			$out .= '</div>';
 			$out .= '<div id="maso">';
 			$i=0;
-			foreach($arreglo as $panel => $opciones ){ $i++;
-				$out .= '<div class=\'box col1\'><h3>'.htmlentities($panel).'</h3>';
-				$out .= '<table width=\'100%\' cellspacing=\'1\' border=\'0\'>';
+			foreach($arreglo as $panel => $opciones )
+			{
+				$i++;
+				if ( $panel == 'REPORTES' )
+					$out .= '<div class=\'box col1\' style="color:#FAFAFA;background:#254117;"><span style="font-size:16px;font-weight:900;margin-bottom:20px">'.htmlentities($panel).'</span>';
+				elseif ( $panel == 'CONSULTAS' )
+					$out .= '<div class=\'box col1\' style="color:#151B54;background:#C35817;"><span style="font-size:16px;font-weight:900;margin-bottom:20px">'.htmlentities($panel).'</span>';
+				else
+					if ($dbpertenece == "'9'")
+						$out .= '<div class=\'box col1\' style="color:#FAFAFA;background:#C11B17;"><span style="font-size:16px;font-weight:900;margin-bottom:20px">'.htmlentities($panel).'</span>';
+					else
+						$out .= '<div class=\'box col1\' style="color:#151B54;background:#659Ec7;"><span style="font-size:16px;font-weight:900;margin-bottom:20px">'.htmlentities($panel).'</span>';
 
+				$out .= '<table width=\'100%\' cellspacing=\'1\' border=\'0\'>';
 				foreach ($opciones as $id=>$opcion) {
-					$color = ($id%2==0)? 'F4F4F4':'FFFFFF';
+					$color = ($id%2==0)? 'F8F8F8':'FFFFFF';
 					$out .= "<tr bgcolor='#$color'><td>";
 					$out .= arr2link($opcion);
 					$out .= '</td></tr>';
@@ -145,9 +157,7 @@ class Bienvenido extends Controller {
 			}
 			$out .= '</div>';
 		}
-		
 		echo $out;
 	}
-	
 }
 ?>

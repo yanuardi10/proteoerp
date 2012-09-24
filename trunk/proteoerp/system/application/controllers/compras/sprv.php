@@ -35,66 +35,38 @@ class Sprv extends Controller {
 		$param['grids'][] = $grid->deploy();
 
 		$bodyscript = '
-<script type="text/javascript">
-$(function() {
-	$( "input:submit, a, button", ".otros" ).button();
-});
-
-jQuery("#a1").click( function(){
-	var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
-	if (id)	{
-		var ret = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
-		window.open(\''.base_url().'formatos/ver/SPRV/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
-	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
-});
-</script>
-';
+		<script type="text/javascript">
+		jQuery("#edocta").click( function(){
+			var id = jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret = jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
+				'.$this->datasis->jwinopen(site_url('reportes/ver/SPRMECU/SPRM/').'/\'+ret.proveed').';
+			} else { $.prompt("<h1>Por favor Seleccione un Proveedor</h1>");}
+		});
+		</script>
+		';
 
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
 
-		$WestPanel = '
-<div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content">
-<div class="anexos">
+		//Botones Panel Izq
+		$grid->wbotonadd(array("id"=>"edocta",   "img"=>"images/pdf_logo.gif",  "alt" => 'Formato PDF', "label"=>"Estado de Cuenta"));
+		$WestPanel = $grid->deploywestp();
 
-<table id="west-grid" align="center">
-	<tr>
-		<td><div class="tema1"><table id="listados"></table></div></td>
-	</tr>
-	<tr>
-		<td><div class="tema1"><table id="otros"></table></div></td>
-	</tr>
-</table>
-
-<table id="west-grid" align="center">
-	<tr>
-		<td></td>
-	</tr>
-</table>
-</div>
-'.
-//		<td><a style="width:190px" href="#" id="a1">Imprimir Copia</a></td>
-'</div> <!-- #LeftPane -->
-';
-
-		$SouthPanel = '
-<div id="BottomPane" class="ui-layout-south ui-widget ui-widget-content">
-<p>'.$this->datasis->traevalor('TITULO1').'</p>
-</div> <!-- #BottomPanel -->
-';
+		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'));
 
 		$funciones = '
-function consulrif(campo){
-	vrif=$("#"+campo).val();
-	if(vrif.length==0){
-		alert("Debe introducir primero un RIF");
-	}else{
-		vrif=vrif.toUpperCase();
-		$("#"+campo).val(vrif);
-		window.open("'.$consulrif.'"+"?p_rif="+vrif,"CONSULRIF","height=350,width=410");
-	}
-}
-';
+		function consulrif(campo){
+			vrif=$("#"+campo).val();
+			if(vrif.length==0){
+				alert("Debe introducir primero un RIF");
+			}else{
+				vrif=vrif.toUpperCase();
+				$("#"+campo).val(vrif);
+				window.open("'.$consulrif.'"+"?p_rif="+vrif,"CONSULRIF","height=350,width=410");
+			}
+		}
+		';
 
 
 		$param['WestPanel']   = $WestPanel;
@@ -455,7 +427,6 @@ function consulrif(campo){
 		));
 */
 
-
 		$grid->addField('id');
 		$grid->label('Id');
 		$grid->params(array(
@@ -466,7 +437,6 @@ function consulrif(campo){
 			'editable'      => 'false',
 			'search'        => 'false'
 		));
-
 
 		$grid->addField('modificado');
 		$grid->label('Modificado');
@@ -480,13 +450,25 @@ function consulrif(campo){
 			'formoptions'   => '{ label:"Fecha" }'
 		));
 
-
 		$grid->showpager(true);
 		$grid->setWidth('');
 		$grid->setHeight('290');
 		$grid->setTitle($this->titp);
 		$grid->setfilterToolbar(true);
 		$grid->setToolbar('false', '"top"');
+
+		$grid->setOnSelectRow(' function(id){
+			if (id){
+				var ret = jQuery(gridId1).jqGrid(\'getRowData\',id);
+				$(gridId1).jqGrid("setCaption", ret.nombre);
+				$.ajax({
+					url: "'.site_url($this->url).'/resumen/"+id,
+					success: function(msg){
+						$("#ladicional").html(msg);
+					}
+				});
+			}
+		}');
 
 		$grid->setFormOptionsE('
 			closeAfterEdit:true, mtype: "POST", width: 720, height:410, closeOnEscape: true, top: 50, left:20, recreateForm:true,
@@ -615,6 +597,34 @@ function consulrif(campo){
 			}
 		};
 	}
+
+
+	//Resumen rapido
+	function resumen() {
+		$id = $this->uri->segment($this->uri->total_segments());
+		$row = $this->datasis->damereg("SELECT proveed FROM sprv WHERE id=$id");
+		$proveed  = $row['proveed'];
+		$salida = '';
+
+		$saldo  = 0;
+		$saldo  = $this->datasis->dameval("SELECT sum(monto*IF(tipo_doc IN ('FC','ND','GI'),1,-1)) saldo FROM sprm WHERE cod_prv=".$this->db->escape($proveed));
+
+		$salida  = '<table width="90%" cellspacing="0" align="center">';
+		if ( $saldo > 0 ) 
+			$salida .= "<tr style='background-color:#8BB381;font-size:14px;' align='right'><td><b>Saldo: </b> </td><td align='left'><b>".nformat($saldo)."</b></td></tr>\n";
+		elseif ( $saldo < 0 )
+			$salida .= "<tr style='background-color:#C11B17;font-size:14px;color:white;' align='right'><td><b>Saldo: </b> </td><td align='left'><b>".nformat($saldo)."</b></td></tr>\n";
+		else
+			$salida .= "<tr style='background-color:#8BB381;font-size:14px;' align='right'><td><b>Saldo: </b> </td><td align='left'><b>0.00</b></td></tr>\n";
+
+		$salida .= "</table>\n";
+
+		echo $salida;
+	}
+
+
+
+
 
 /*
 class Sprv extends validaciones {

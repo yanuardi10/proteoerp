@@ -1301,5 +1301,13 @@ class Datasis {
 		memowrite($mSQL,"intramenu");
 		$CI->db->simple_query($mSQL);
 	}
+	
+	//**************************************************
+	//
+	//   Pop up Ventana de javascript
+	//
+	function jwinopen($url, $ancho=800, $alto=600){
+		return  'window.open(\''.$url.', \'_blank\', \'width='.$ancho.',height='.$alto.',scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-'.($ancho/2).'), screeny=((screen.availWidth/2)-'.($alto/2).')\')';
+	}
 
 }

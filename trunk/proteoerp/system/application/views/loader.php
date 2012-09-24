@@ -15,10 +15,10 @@
 <?php echo style("acordeon.css"); ?>
 <?php echo style("masonry.css"); ?>
 
-<?php //echo script("jquery.js"); ?>
-<?php echo script("jquery-1.2.6.pack.js"); ?>
+<?php echo script("jquery-min.js"); ?>
+<?php echo script("jquery-ui.custom.min.js"); ?>
 <?php echo script("plugins/myAccordion.js"); ?>
-<?php echo script("plugins/interface.js"); ?>
+<?php //echo script("plugins/interface.js"); ?>
 <?php echo script("plugins/jquery.masonry.min.js"); ?>
 
 <script type="text/javascript" charset="<?php echo $this->config->item('charset'); ?>">
@@ -61,13 +61,11 @@ $(document).ready(function() {
 					</div>
 				</td>
 				<td  valign='top'>
-				
 					<?php $this->load->view($data['settings']['default'].'/'.$data['settings']['content'].$view,  $data); ?>
-				
 				</td>
 			</tr>
 		</table>
-
+<br>
 		<div id="pie">
 		<table class='pie' width="100%" border=0 cellspacing=0 cellpadding=0>
 			<tr>

@@ -36,7 +36,6 @@ class Scli extends Controller {
 			$this->db->query('ALTER TABLE scli ADD COLUMN upago CHAR(6) NULL ');
 		};
 
-
 		$this->datasis->modintramenu( 1000, 650, 'ventas/scli' );
 		redirect($this->url.'jqdatag');
 	}
@@ -50,9 +49,51 @@ class Scli extends Controller {
 		$grid = $this->defgrid();
 		$param['grids'][] = $grid->deploy();
 		$consulrif=trim($this->datasis->traevalor('CONSULRIF'));
-		//$link   = site_url('ajax/buscacpla');
 
+		$bodyscript = '
+		<script type="text/javascript">
+		jQuery("#edocta").click( function(){
+			var id = jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret = jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
+				'.$this->datasis->jwinopen(site_url('reportes/ver/SMOVECU/SCLI/').'/\'+ret.proveed').';
+			} else { $.prompt("<h1>Por favor Seleccione un Proveedor</h1>");}
+		});
+		</script>
+		';
 
+		$funciones = $this->funciones($param['grids'][0]['gridname']);
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		//Botones Panel Izq
+		$grid->wbotonadd(array("id"=>"edocta",   "img"=>"images/pdf_logo.gif",  "alt" => 'Formato PDF', "label"=>"Estado de Cuenta"));
+		$WestPanel = $grid->deploywestp();
+
+		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'));
+
+		$param['WestPanel']   = $WestPanel;
+		//$param['EastPanel']  = $EastPanel;
+		$param['funciones']   = $funciones;
+		$param['SouthPanel']  = $SouthPanel;
+		$param['listados']    = $this->datasis->listados('SCLI', 'JQ');
+		$param['otros']       = $this->datasis->otros('SCLI', 'JQ');
+		$param['temas']       = array('proteo','darkness','anexos1');
+		$param['bodyscript']  = $bodyscript;
+		$param['tabs']        = false;
+		$param['encabeza']    = $this->titp;
+		$this->load->view('jqgrid/crud2',$param);
+	}
+
+	
+	//****************************************
+	//
+	// funciones
+	//
+	function funciones($grid){
+
+		$consulrif=trim($this->datasis->traevalor('CONSULRIF'));
 		$forma = "No tiene Acceso a Modificar Credito";
 		if ( $this->datasis->puede_ejecuta('SCLILIMITE', 'SCLI') ) {
 			if ( $this->datasis->puede_ejecuta('SCLITOLERA', 'SCLI') ) {
@@ -83,264 +124,216 @@ class Scli extends Controller {
 			$forma .= "</table>";
 		}
 
-
-
-		$bodyscript = '
-<script type="text/javascript">
-$(function() {
-	$( "input:submit, a, button", ".otros" ).button();
-});
-
-jQuery("#a1").click( function(){
-	var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
-	if (id)	{
-		var ret = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
-		window.open(\''.base_url().'formatos/ver/SCLI/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
-	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
-});
-</script>
-';
-
-		#Set url
-		$grid->setUrlput(site_url($this->url.'setdata/'));
-
-		$WestPanel = '
-<div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content">
-<div class="anexos">
-<table id="west-grid" align="center">
-	<tr>
-		<td><div class="tema1"><table id="listados"></table></div></td>
-	</tr>
-	<tr>
-		<td><div class="tema1"><table id="otros"></table></div></td>
-	</tr>
-</table>
-<table id="west-grid" align="center">
-	<tr>
-		<td></td>
-	</tr>
-</table>
-</div>
-<div class="ui-widget ui-widget-content" id="adicional" style="overflow:auto;"></div>
-
-'.
-//		<td><a style="width:190px" href="#" id="a1">Imprimir Copia</a></td>
-'</div> <!-- #LeftPane -->
-';
-
-		$SouthPanel = '
-<div id="BottomPane" class="ui-layout-south ui-widget ui-widget-content">
-<p>'.$this->datasis->traevalor('TITULO1').'</p>
-</div> <!-- #BottomPanel -->
-<div id="forma1" title="Clientes"></div>
-
-';
-
+		// Busca el RIF en el SENIAT
 		$funciones = '
-function consulrif(campo){
-	vrif=$("#"+campo).val();
-	if(vrif.length==0){
-		alert("Debe introducir primero un RIF");
-	}else{
-		vrif=vrif.toUpperCase();
-		$("#riffis").val(vrif);
-		window.open("'.$consulrif.'"+"?p_rif="+vrif,"CONSULRIF","height=350,width=410");
-	}
-}
-
-function consulcne(campo){
-	vrif=$("#"+campo).val();
-	naci="V";
-	if(vrif.length==0){
-		alert("Debe introducir primero un RIF");
-	}else{
-		vrif=vrif.toUpperCase();
-		$("#riffis").val(vrif);
-		window.open("http://www.cne.gov.ve/web/registro_electoral/ce.php?nacionalidad="+vrif.substr(0,1)+"&cedula="+vrif.substr(1),"CONSULCNE","height=400,width=510");
-	}
-}
-
-function chrif(rif){
-	rif.toUpperCase();
-	var patt=/((^[VEJG][0-9])|(^[P][A-Z0-9]))/;
-	if(patt.test(rif)){
-		return true;
-	}else{
-		return false;
-	}
-}
-
-function rchrifci(value, colname) {
-	value.toUpperCase();
-	var patt=/((^[VEJG][0-9])|(^[P][A-Z0-9]))/;
-	if( !patt.test(value) )
-		return [false,"El Rif colocado no es correcto, por favor verifique con el SENIAT."];
-	else
-		return [true,""];
-};
-
-function fusionar(){
-	var yurl = "";
-	var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
-	if (id)	{
-		var mnuevo = "";
-		var ret = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
-		var mviejo = ret.cliente;
-		$.prompt("<h1>Cambiar Codigo</h1>Cliente: <b>"+ret.nombre+"</b><br>Codigo Actual: <b>"+ret.cliente+"</b><br><br>Codigo Nuevo <input type=\'text\' id=\'codnuevo\' name=\'mcodigo\' size=\'6\' maxlength=\'5\' >",{
-			buttons: { Cambiar:true, Salir:false},
-			callback: function(e,v,m,f){
-				mnuevo = f.mcodigo;
-				if (v) {
-					yurl = encodeURIComponent(mnuevo);
-					$.ajax({
-						url: "'.site_url('ventas/scli/scliexiste').'",
-						global: false,
-						type: "POST",
-						data: ({ codigo : encodeURIComponent(mnuevo) }),
-						dataType: "text",
-						async: false,
-						success: function(sino) {
-							sclicambia(sino, mviejo, mnuevo, ret.nombre);
-						},
-						error: function(h,t,e) { apprise("Error..codigo="+yurl+" ",e) }
-					});
-				}
+		function consulrif(campo){
+			vrif=$("#"+campo).val();
+			if(vrif.length==0){
+				alert("Debe introducir primero un RIF");
+			}else{
+				vrif=vrif.toUpperCase();
+				$("#riffis").val(vrif);
+				window.open("'.$consulrif.'"+"?p_rif="+vrif,"CONSULRIF","height=350,width=410");
 			}
-		});
-	} else
-		$.prompt("<h1>Por favor Seleccione un Cliente</h1>");
-}
-
-function sclicambia( sino, mviejo, mnuevo, nviejo ) {
-	//$.prompt(sino+" "+mviejo+" "+mnuevo);
-	var aprueba = false;
-	if (sino.substring(0,1)=="S"){
-		apprise("<h1>FUSIONAR: Ya existe el cliente</h1><h2 style=\"background: #ffdddd;text-align:center;\">("+mnuevo+") "+sino.substring(1)+"</h2><p style=\"font-size:130%\">Si prosigue se eliminara el cliente ("+mviejo+") "+nviejo+"<br>y los movimientos seran agregados a ("+mnuevo+") </"+"p> <p style=\"align:center;font-size:150%\">Desea <strong>Fusionarlos?</"+"strong></"+"p>",
-			{ "confirm":true, "textCancel":"Salir", "textOk":"Proseguir"},
-			function(v){
-				if (v) {
-					sclifusdef(mnuevo, mviejo)
-					jQuery(gridId1).trigger("reloadGrid");
-				}
+		}';
+		
+		// Busca la cedula en el CNE
+		$funciones .= '
+		function consulcne(campo){
+			vrif=$("#"+campo).val();
+			naci="V";
+			if(vrif.length==0){
+				alert("Debe introducir primero un RIF");
+			}else{
+				vrif=vrif.toUpperCase();
+				$("#riffis").val(vrif);
+				window.open("http://www.cne.gov.ve/web/registro_electoral/ce.php?nacionalidad="+vrif.substr(0,1)+"&cedula="+vrif.substr(1),"CONSULCNE","height=400,width=510");
 			}
-		);
-	} else {
-		apprise("<h1>Sustitur Codigo actual</h1> <center><h2 style=\"background: #ddeedd\">"+mviejo+" por "+mnuevo+"</"+"h2></"+"center> <p style=\"font-size:130%\">Al cambiar de codigo del cliente, todos los movimientos y estadisticas <br>se cambiaran correspondientemente.</"+"p> ",
-			{ "confirm":true, "textCancel":"Salir", "textOk":"Proseguir"},
-			function(v){
-				if (v) {
-					sclifusdef(mnuevo, mviejo);
-					jQuery(gridId1).trigger("reloadGrid");
-				}
-			}
-		)
-	}
-}
+		}';
 
-function sclifusdef(mnuevo, mviejo){
-	$.ajax({
-		url: "'.site_url('ventas/scli/sclifusion').'",
-		global: false,
-		type: "POST",
-		data: ({mviejo: encodeURIComponent(mviejo),
-			mnuevo: encodeURIComponent(mnuevo) }),
-		dataType: "text",
-		async: false,
-		success: function(sino) {
-			alert("Cambio finalizado "+sino,"Finalizado Exitosamente")
-		},
-		error: function(h,t,e) {alert("Error..","Finalizado con Error" )
+		// Valida RIF o Cedula
+		$funciones .= '
+		function chrif(rif){
+			rif.toUpperCase();
+			var patt=/((^[VEJG][0-9])|(^[P][A-Z0-9]))/;
+			if(patt.test(rif)){
+				return true;
+			}else{
+				return false;
+			}
+		}';
+
+		// Valida RIF o CI con mensaje
+		$funciones .= '
+		function rchrifci(value, colname) {
+			value.toUpperCase();
+			var patt=/((^[VEJG][0-9])|(^[P][A-Z0-9]))/;
+			if( !patt.test(value) )
+				return [false,"El Rif colocado no es correcto, por favor verifique con el SENIAT."];
+			else
+				return [true,""];
+		};';
+
+		// Fusionar Cliente
+		$funciones .= '
+		function fusionar(){
+			var yurl = "";
+			var id = jQuery("#newapi'.$grid.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var mnuevo = "";
+				var ret = jQuery("#newapi'.$grid.'").jqGrid(\'getRowData\',id);
+				var mviejo = ret.cliente;
+				$.prompt("<h1>Cambiar Codigo</h1>Cliente: <b>"+ret.nombre+"</b><br>Codigo Actual: <b>"+ret.cliente+"</b><br><br>Codigo Nuevo <input type=\'text\' id=\'codnuevo\' name=\'mcodigo\' size=\'6\' maxlength=\'5\' >",{
+					buttons: { Cambiar:true, Salir:false},
+					callback: function(e,v,m,f){
+						mnuevo = f.mcodigo;
+						if (v) {
+							yurl = encodeURIComponent(mnuevo);
+							$.ajax({
+								url: "'.site_url('ventas/scli/scliexiste').'",
+								global: false,
+								type: "POST",
+								data: ({ codigo : encodeURIComponent(mnuevo) }),
+								dataType: "text",
+								async: false,
+								success: function(sino) {
+									sclicambia(sino, mviejo, mnuevo, ret.nombre);
+								},
+								error: function(h,t,e) { apprise("Error..codigo="+yurl+" ",e) }
+							});
+						}
+					}
+				});
+			} else
+				$.prompt("<h1>Por favor Seleccione un Cliente</h1>");
 		}
-	});
-}
 
-function sclimemo(){
-	var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
-	if (id)	{
-		var mmensaje = "";
-		var ret = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
-		mmensaje = ret.mensaje;
-		$.prompt("<h1>Observaciones:</h1>Cliente: <b>"+ret.nombre+"</b><br><textarea id=\'mensaje\' name=\'mensaje\' cols=\'50\' rows=\'5\' >"+ret.observa+"</textarea>",{
-			buttons: { Guardar:true, Salir:false},
-			callback: function(e,v,m,f){
-				if (v) {
-					$.ajax({
-						url: "'.site_url('ventas/scli/sclimemo').'",
-						global: false,
-						type: "POST",
-						data: ({ mensaje : encodeURIComponent(f.mensaje), mid:id }),
-						dataType: "text",
-						async: false,
-						success: function(sino) {
-							apprise(sino);
+		function sclicambia( sino, mviejo, mnuevo, nviejo ) {
+			//$.prompt(sino+" "+mviejo+" "+mnuevo);
+			var aprueba = false;
+			if (sino.substring(0,1)=="S"){
+				apprise("<h1>FUSIONAR: Ya existe el cliente</h1><h2 style=\"background: #ffdddd;text-align:center;\">("+mnuevo+") "+sino.substring(1)+"</h2><p style=\"font-size:130%\">Si prosigue se eliminara el cliente ("+mviejo+") "+nviejo+"<br>y los movimientos seran agregados a ("+mnuevo+") </"+"p> <p style=\"align:center;font-size:150%\">Desea <strong>Fusionarlos?</"+"strong></"+"p>",
+					{ "confirm":true, "textCancel":"Salir", "textOk":"Proseguir"},
+					function(v){
+						if (v) {
+							sclifusdef(mnuevo, mviejo)
 							jQuery(gridId1).trigger("reloadGrid");
-						},
-						error: function(h,t,e) { apprise("Error....."+e) }
-					});
-				}
-			}
-		});
-	} else
-		$.prompt("<h1>Por favor Seleccione un Cliente</h1>");
-}
-
-function sclilimite(){
-	var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
-	if (id)	{
-		var ret = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
-		var mcredito;
-		mcredito = ( ret.credito == "S" ) ? "Activo":"Suspendido";
-		$.prompt("<h1>Limite de Credito</h1>'.$forma.'",{
-			buttons: { Guardar:true, Salir:false},
-			callback: function(e,v,m,f){
-				var data  = "";
-				var forma = "";
-				if (v) {
-					if (f.credito != "undefined") data = data+"&credito="+f.credito;
-					if (f.formap  != "undefined") data = data+"&formap="+ f.formap;
-					if (f.limite  != "undefined") data = data+"&limite="+ f.limite;
-					if (f.tolera  != "undefined") data = data+"&tolera="+ f.tolera;
-					if (f.maxtole != "undefined") data = data+"&maxtole="+f.maxtole;
-					if (f.observa != "undefined") data = data+"&observa="+encodeURIComponent(f.observa);
-					data = data+"&mid="+id;
-					$.ajax({
-						url: "'.site_url('ventas/scli/sclilimite').'",
-						global: false,
-						type: "POST",
-						data: data,
-						dataType: "text",
-						async: false,
-						success: function(sino) {
-							apprise(sino);
+						}
+					}
+				);
+			} else {
+				apprise("<h1>Sustitur Codigo actual</h1> <center><h2 style=\"background: #ddeedd\">"+mviejo+" por "+mnuevo+"</"+"h2></"+"center> <p style=\"font-size:130%\">Al cambiar de codigo del cliente, todos los movimientos y estadisticas <br>se cambiaran correspondientemente.</"+"p> ",
+					{ "confirm":true, "textCancel":"Salir", "textOk":"Proseguir"},
+					function(v){
+						if (v) {
+							sclifusdef(mnuevo, mviejo);
 							jQuery(gridId1).trigger("reloadGrid");
-						},
-						error: function(h,t,e) { apprise("Error....."+e) }
-					});
-				}
+						}
+					}
+				)
 			}
-		});
-	} else
-		$.prompt("<h1>Por favor Seleccione un Cliente</h1>");
-}
-';
+		}
+	
+		function sclifusdef(mnuevo, mviejo){
+			$.ajax({
+				url: "'.site_url('ventas/scli/sclifusion').'",
+				global: false,
+				type: "POST",
+				data: ({mviejo: encodeURIComponent(mviejo),
+					mnuevo: encodeURIComponent(mnuevo) }),
+				dataType: "text",
+				async: false,
+				success: function(sino) {
+					alert("Cambio finalizado "+sino,"Finalizado Exitosamente")
+				},
+				error: function(h,t,e) {alert("Error..","Finalizado con Error" )}
+			});
+		}';
 
 
-		$param['WestPanel']  = $WestPanel;
-		//$param['EastPanel']  = $EastPanel;
-		$param['funciones']  = $funciones;
-		$param['SouthPanel'] = $SouthPanel;
-		$param['listados'] = $this->datasis->listados('SCLI', 'JQ');
-		$param['otros']    = $this->datasis->otros('SCLI', 'JQ');
-		$param['temas']     = array('proteo','darkness','anexos1');
-		$param['bodyscript'] = $bodyscript;
-		$param['tabs'] = false;
-		$param['encabeza'] = $this->titp;
-		$this->load->view('jqgrid/crud2',$param);
+		// Memo del cliente
+		$funciones .= '
+		function sclimemo(){
+			var id = jQuery("#newapi'.$grid.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var mmensaje = "";
+				var ret = jQuery("#newapi'.$grid.'").jqGrid(\'getRowData\',id);
+				mmensaje = ret.mensaje;
+				$.prompt("<h1>Observaciones:</h1>Cliente: <b>"+ret.nombre+"</b><br><textarea id=\'mensaje\' name=\'mensaje\' cols=\'50\' rows=\'5\' >"+ret.observa+"</textarea>",{
+					buttons: { Guardar:true, Salir:false},
+					callback: function(e,v,m,f){
+						if (v) {
+							$.ajax({
+								url: "'.site_url('ventas/scli/sclimemo').'",
+								global: false,
+								type: "POST",
+								data: ({ mensaje : encodeURIComponent(f.mensaje), mid:id }),
+								dataType: "text",
+								async: false,
+								success: function(sino) {
+									apprise(sino);
+									jQuery(gridId1).trigger("reloadGrid");
+								},
+								error: function(h,t,e) { apprise("Error....."+e) }
+							});
+						}
+					}
+				});
+			} else
+				$.prompt("<h1>Por favor Seleccione un Cliente</h1>");
+		}';
+
+		// Limite de Credito
+		$funciones .= '
+		function sclilimite(){
+			var id = jQuery("#newapi'.$grid.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret = jQuery("#newapi'.$grid.'").jqGrid(\'getRowData\',id);
+				var mcredito;
+				mcredito = ( ret.credito == "S" ) ? "Activo":"Suspendido";
+				$.prompt("<h1>Limite de Credito</h1>'.$forma.'",{
+					buttons: { Guardar:true, Salir:false},
+					callback: function(e,v,m,f){
+						var data  = "";
+						var forma = "";
+						if (v) {
+							if (f.credito != "undefined") data = data+"&credito="+f.credito;
+							if (f.formap  != "undefined") data = data+"&formap="+ f.formap;
+							if (f.limite  != "undefined") data = data+"&limite="+ f.limite;
+							if (f.tolera  != "undefined") data = data+"&tolera="+ f.tolera;
+							if (f.maxtole != "undefined") data = data+"&maxtole="+f.maxtole;
+							if (f.observa != "undefined") data = data+"&observa="+encodeURIComponent(f.observa);
+							data = data+"&mid="+id;
+							$.ajax({
+								url: "'.site_url('ventas/scli/sclilimite').'",
+								global: false,
+								type: "POST",
+								data: data,
+								dataType: "text",
+								async: false,
+								success: function(sino) {
+									apprise(sino);
+									jQuery(gridId1).trigger("reloadGrid");
+								},
+								error: function(h,t,e) { apprise("Error....."+e) }
+							});
+						}
+					}
+				});
+			} else
+				$.prompt("<h1>Por favor Seleccione un Cliente</h1>");
+		}';
+
+		return $funciones;
+		
 	}
 
-	//***************************
-	//Definicion del Grid y la Forma
-	//***************************
+
+	//***********************************
+	//
+	//  Definicion del Grid y la Forma
+	//
+	//***********************************
 	function defgrid( $deployed = false ){
 		$i       = 1;
 		$editar  = "true";
@@ -1070,7 +1063,7 @@ function sclilimite(){
 				$.ajax({
 					url: "'.base_url().$this->url.'resumen/"+id,
 					success: function(msg){
-						$("#adicional").html(msg);
+						$("#ladicional").html(msg);
 					}
 				});
 			}
@@ -1303,6 +1296,7 @@ function sclilimite(){
 		return $conve;
 	}
 
+	//Resumen rapido
 	function resumen() {
 		$id = $this->uri->segment($this->uri->total_segments());
 

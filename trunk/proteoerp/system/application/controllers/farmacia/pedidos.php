@@ -1,8 +1,8 @@
 <?php require_once(APPPATH.'/controllers/inventario/consultas.php');
 class Pedidos extends Controller {
 	var $mModulo='FALLAPED';
-	var $titp='Modulo FALLAPED';
-	var $tits='Modulo FALLAPED';
+	var $titp='Pedido de Fallas Diarias';
+	var $tits='Pedido de Fallas Diarias';
 	var $url ='farmacia/pedidos/';
 
 
