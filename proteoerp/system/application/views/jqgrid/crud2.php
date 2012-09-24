@@ -208,6 +208,11 @@ var base_url = '<?php echo base_url() ?>';
 var site_url = '<?php echo site_url() ?>';
 var url = '';
 
+$(function() {
+	$( "input:submit, a, button", ".botones",".otros" ).button();
+});
+
+
 $(document).ready(function() {
 	var lastsel2=0;
 	var _cargo = "";

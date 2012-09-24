@@ -33,61 +33,30 @@ class Conc extends Controller {
 		$param['grids'][] = $grid->deploy();
 
 		$readyscript = '
-var linkdeudor = "'.base_url().'ajax/buscasprv";
-var linkacreed = "'.base_url().'ajax/buscamgas";
-
+		var linkdeudor = "'.site_url('ajax/buscasprv').'";
+		var linkacreed = "'.site_url('ajax/buscamgas').'";
 		';
 
-
 		$bodyscript = '
-<script type="text/javascript">
-$(function() {
-	$( "input:submit, a, button", ".otros" ).button();
-});
-
-jQuery("#a1").click( function(){
-	var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
-	if (id)	{
-		var ret = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
-		window.open(\''.base_url().'formatos/ver/CONC/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
-	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
-});
-
-</script>
-';
+		<script type="text/javascript">
+		jQuery("#a1").click( function(){
+			var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
+				window.open(\''.base_url().'formatos/ver/CONC/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+			} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
+		});
+		</script>
+		';
 
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
+	
+		//$grid->wbotonadd(array("id" => "boton1", "img" => 'images/agrega4.png', "alt" => 'Agregar', "label" => 'Agregar Venta'));
+		$WestPanel = $grid->deploywestp();
 
-		$WestPanel = '
-<div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content">
-<div class="anexos">
+		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'));
 
-<table id="west-grid" align="center">
-	<tr>
-		<td><div class="tema1"><table id="listados"></table></div></td>
-	</tr>
-	<tr>
-		<td><div class="tema1"><table id="otros"></table></div></td>
-	</tr>
-</table>
-
-<table id="west-grid" align="center">
-	<tr>
-		<td></td>
-	</tr>
-</table>
-</div>
-'.
-//		<td><a style="width:190px" href="#" id="a1">Imprimir Copia</a></td>
-'</div> <!-- #LeftPane -->
-';
-
-		$SouthPanel = '
-<div id="BottomPane" class="ui-layout-south ui-widget ui-widget-content">
-<p>'.$this->datasis->traevalor('TITULO1').'</p>
-</div> <!-- #BottomPanel -->
-';
 		$param['WestPanel']    = $WestPanel;
 		//$param['EastPanel']    = $EastPanel;
 		$param['readyscript']  = $readyscript;

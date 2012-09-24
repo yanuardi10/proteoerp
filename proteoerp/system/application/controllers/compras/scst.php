@@ -35,106 +35,21 @@ class Scst extends Controller {
 		$grid1   = $this->defgridit();
 		$param['grids'][] = $grid1->deploy();
 
-		$readyLayout = '
-	$(\'body\').layout({
-		minSize: 30,
-		north__size: 60,
-		resizerClass: \'ui-state-default\',
-		west__size: 212,
-		west__onresize: function (pane, $Pane){jQuery("#west-grid").jqGrid(\'setGridWidth\',$Pane.innerWidth()-2);},
-	});
-
-	$(\'div.ui-layout-center\').layout({
-		minSize: 30,
-		resizerClass: "ui-state-default",
-		center__paneSelector: ".centro-centro",
-		south__paneSelector:  ".centro-sur",
-		south__size: 220,
-		center__onresize: function (pane, $Pane) {
-			jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'setGridWidth\', $Pane.innerWidth()-6);
-			jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'setGridHeight\',$Pane.innerHeight()-100);
-			jQuery("#newapi'.$param['grids'][1]['gridname'].'").jqGrid(\'setGridWidth\', $Pane.innerWidth()-6);
-		}
-	});
-	';
-
-		$bodyscript = '
-<script type="text/javascript">
-$(function() {
-	$( "input:submit, a, button", ".boton1" ).button();
-});
-jQuery("#boton1").click( function(){
-	var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
-	if (id)	{
-		var ret = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
-		window.open(\''.site_url('formatos/ver/COMPRA').'/\'+id+"/id", \'_blank\', \'width=900,height=800,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-400)\');
-	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
-});
-
-jQuery("#boton2").click( function(){
-	window.open(\''.site_url('/compras/scst/dataedit/create').'\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
-});
-
-jQuery("#boton3").click( function(){
-	var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
-	if (id)	{
-		var ret = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
-		window.open(\''.site_url('compras/scst/dataedit/show').'/\'+id, \'_blank\', \'width=1000,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-500), screeny=((screen.availWidth/2)-300)\');
-	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
-});
-
-
-</script>
-';
+		$readyLayout = $grid->readyLayout2( 212, 220, $param['grids'][0]['gridname'],$param['grids'][1]['gridname']);
+		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
 
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
 
-		$WestPanel = '
-<div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content">
+		//Botones Panel Izq
+		$grid->wbotonadd(array("id"=>"boton1", "img"=>"images/pdf_logo.gif", "alt" => 'Formato PDF', "label"=>"Reimprimir Documento"));
+		$grid->wbotonadd(array("id"=>"boton3", "img"=>"images/editar.png",   "alt" => 'Agregar',     "label"=>"Modificar Compras"));
+		$grid->wbotonadd(array("id"=>"boton2", "img"=>"images/agrega4.png",  "alt" => 'Agregar',     "label"=>"Agregar Compras"));
+		$WestPanel = $grid->deploywestp();
 
-<div class="anexos">
-<table id="west-grid" align="center">
-	<tr>
-		<td><div class="tema1"><table id="listados"></table></div></td>
-	</tr><tr>
-		<td><div class="tema1"><table id="otros"></table></div></td>
-	</tr>
-</table>
-</div>
-<table id="west-grid" align="center">
-	<tr>
-		<td><div class="tema1 boton1"><a style="width:190px;text-align:left;" href="#" id="boton2">'.img(array('src' => 'images/agrega4.png', 'alt' => 'Agregar',  'title' => 'Agregar', 'border'=>'0')).'&nbsp;&nbsp;&nbsp;&nbsp;Agregar Compra</a></div></td>
-	</tr><tr>
-		<td><div class="tema1 boton1"><a style="width:190px;text-align:left;" href="#" id="boton3">'.img(array('src' => 'images/editar.png', 'alt' => 'Modificar',  'title' => 'Modificar', 'border'=>'0')).'&nbsp;&nbsp;&nbsp;&nbsp;Modificar Compra</a></div></td>
-	</tr><tr>
-		<td><div class="tema1 boton1"><a style="width:190px;text-align:left;" href="#" id="boton1">'.img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',  'title' => 'Formato PDF', 'border'=>'0')).'&nbsp;&nbsp;&nbsp;&nbsp;Reimprimir Documento </a></div></td>
-	</tr>
-</table>
-
-'.
-
-'</div> <!-- #LeftPane -->
-';
-
-		$centerpanel = '
-<div id="RightPane" class="ui-layout-center">
-	<div class="centro-centro">
-		<table id="newapi'.$param['grids'][0]['gridname'].'"></table>
-		<div id="pnewapi'.$param['grids'][0]['gridname'].'"></div>
-	</div>
-	<div class="centro-sur" id="adicional" style="overflow:auto;">
-		<table id="newapi'.$param['grids'][1]['gridname'].'"></table>
-	</div>
-</div> <!-- #RightPane -->
-';
-
-
-		$SouthPanel = '
-<div id="BottomPane" class="ui-layout-south ui-widget ui-widget-content">
-<p>'.$this->datasis->traevalor('TITULO1').'</p>
-</div> <!-- #BottomPanel -->
-';
+		//Panel Central y Sur
+		$centerpanel = $grid->centerpanel( $id = "radicional", $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
+		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'));
 
 		$param['WestPanel']    = $WestPanel;
 		//$param['EastPanel']  = $EastPanel;
@@ -154,6 +69,45 @@ jQuery("#boton3").click( function(){
 
 		$this->load->view('jqgrid/crud2',$param);
 	}
+
+	//***************************
+	//Funciones de los Botones
+	//***************************
+	function bodyscript( $grid0, $grid1 ){
+		$bodyscript = '<script type="text/javascript">';
+
+		// Imprime Compra
+		$bodyscript .= '
+		jQuery("#boton1").click( function(){
+			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
+				'.$this->datasis->jwinopen(site_url('formatos/ver/COMPRA').'/\'+id+"/id"').';
+			} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
+		});';
+		
+		//Crea una nueva
+		$bodyscript .= '
+		jQuery("#boton2").click( function(){
+			'.$this->datasis->jwinopen(site_url('compras/scst/dataedit/create')."'",1000,600).';
+		});';
+
+		//Modificar Compra
+		$bodyscript .= '
+		jQuery("#boton3").click( function(){
+			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
+				'.$this->datasis->jwinopen(site_url('compras/scst/dataedit/show').'/\'+id',1000,600).';
+			} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
+		});';
+
+		$bodyscript .= '</script>';
+
+		return $bodyscript;
+
+	}
+
 
 	//***************************
 	//Definicion del Grid y la Forma
@@ -1710,9 +1664,6 @@ class Scst extends Controller {
 			$edit->button_status('btn_reversar','Reversar'     ,$accion,'TR','show');
 			$edit->buttons('save', 'exit','add_rel');
 		}
-
-
-
 
 
 		if($this->genesal){

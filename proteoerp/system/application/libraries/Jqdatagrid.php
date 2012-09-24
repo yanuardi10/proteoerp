@@ -83,9 +83,11 @@ public function setData()
 
 class Jqdatagrid
 {
-
 	private $CI;
 	public $_field;
+
+	private $Wbotones = array();
+
 	private $fieldtemp = '';
 	#botones de acciones
 	private $_buttons  = array('add'    => 'true',
@@ -1485,6 +1487,129 @@ class Jqdatagrid
 		//echo  $query;
 		return $query;
 	}
+
+
+	function wbotonadd( $boton ){
+		$this->Wbotones[] = $boton;
+	}
+
+	function deploywestp(){
+		$wlista = '
+<div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content">
+<div class="anexos">
+<table id="west-grid" align="center">
+	<tr>
+		<td><div class="tema1"><table id="listados"></table></div></td>
+	</tr><tr>
+		<td><div class="tema1"><table id="otros"></table></div></td>
+	</tr>
+</table>
+</div>
+';
+
+		$wbotones = "<table id='west-grid' align='center'>\n";
+		foreach( $this->Wbotones as $bt  ){
+			$wbotones .= '
+	<tr>
+		<td><div class="tema1 botones"><a style="width:190px;text-align:left;" href="#" id="'.$bt["id"].'">'.img(array('src' => $bt["img"], 'alt' => $bt["alt"],  'title' => $bt["alt"], 'border'=>'0')).'&nbsp;&nbsp;&nbsp;&nbsp;'.$bt["label"].'</a></div></td>
+	</tr>';
+			
+		}
+
+		$wbotones .= '
+</table>
+<div class="centro-sur" id="ladicional" style="overflow:auto;"></div>
+</div> <!-- #LeftPane -->
+';
+
+		return $wlista.$wbotones;
+	}
+
+
+	function readyLayout2( $west = 212, $south = 220, $grid0, $grid1 = ''){
+		$readyLayout = '
+		$(\'body\').layout({
+			minSize: 30,
+			north__size: 60,
+			resizerClass: \'ui-state-default\',
+			west__size: '.$west.',
+			west__onresize: function (pane, $Pane){jQuery("#west-grid").jqGrid(\'setGridWidth\',$Pane.innerWidth()-2);},
+		});';
+		if ($grid1 == ''){
+			$readyLayout .= '
+			$(\'div.ui-layout-center\').layout({
+				minSize: 30,
+				resizerClass: "ui-state-default",
+				center__paneSelector: ".centro-centro",
+				south__paneSelector:  ".centro-sur",
+				south__size: '.$south.',
+				center__onresize: function (pane, $Pane) {
+					jQuery("#newapi'.$grid0.'").jqGrid(\'setGridWidth\',$Pane.innerWidth()-6);
+					jQuery("#newapi'.$grid0.'").jqGrid(\'setGridHeight\',$Pane.innerHeight()-110);
+				}
+			});
+			';
+		} else {
+			$readyLayout .= '
+			$(\'div.ui-layout-center\').layout({
+				minSize: 30,
+				resizerClass: "ui-state-default",
+				center__paneSelector: ".centro-centro",
+				south__paneSelector:  ".centro-sur",
+				south__size: '.$south.',
+				center__onresize: function (pane, $Pane) {
+					jQuery("#newapi'.$grid0.'").jqGrid(\'setGridWidth\', $Pane.innerWidth()-6);
+					jQuery("#newapi'.$grid0.'").jqGrid(\'setGridHeight\',$Pane.innerHeight()-100);
+					jQuery("#newapi'.$grid1.'").jqGrid(\'setGridWidth\', $Pane.innerWidth()-6);
+				}
+			});
+			';
+		}
+		return $readyLayout;
+	}
+
+	function centerpanel( $id = "adicional", $grid0, $grid1 = '' ){
+		if ( $grid1 == '' ) {
+			$centerpanel = '
+			<div id="RightPane" class="ui-layout-center">
+			<div class="centro-centro">
+				<table id="newapi'.$grid0.'"></table>
+				<div  id="pnewapi'.$grid0.'"></div>
+			</div>
+			<div class="centro-sur" id="'.$id.'" style="overflow:auto;">
+			</div>
+			</div> <!-- #RightPane -->
+			';
+		} else {
+			$centerpanel = '
+			<div id="RightPane" class="ui-layout-center">
+				<div class="centro-centro">
+					<table id="newapi'.$grid0.'"></table>
+					<div id="pnewapi'.$grid0.'"></div>
+				</div>
+				<div class="centro-sur" id="'.$id.'" style="overflow:auto;">
+					<table id="newapi'.$grid1.'"></table>
+				</div>
+			</div>
+			<!-- #RightPane -->
+			';
+		}
+		return $centerpanel;
+	}
+
+	function SouthPanel( $leyenda = "", $adic = array() ){
+		$SouthPanel = '
+		<div id="BottomPane" class="ui-layout-south ui-widget ui-widget-content">
+			<p>'.$leyenda.'</p>
+		</div> <!-- #BottomPanel -->
+		';
+
+		foreach( $adic as $me ){
+			$SouthPanel .= "<div id='".$me["id"]."' title='".$me["title"]."'></div>\n";
+		}
+		return $SouthPanel;
+	}
+	
 }
 
 /* End of file datagrid.php */
