@@ -304,10 +304,10 @@ $(function () {
     <row><cell>18</cell><cell>Disponible</cell><cell>cmultiex.html </cell><cell>1</cell><cell>34</cell><cell>35</cell><cell>true</cell><cell>true</cell></row>
     <row><cell>19</cell><cell>Disponible</cell><cell>jsubgrid.html </cell><cell>1</cell><cell>36</cell><cell>37</cell><cell>true</cell><cell>true</cell></row>
     <row><cell>20</cell><cell>Disponible</cell><cell>loadcml.html  </cell><cell>1</cell><cell>38</cell><cell>39</cell><cell>true</cell><cell>true</cell></row>
-<<<<<<< .mine
-	
-</rows>';
 
+</rows>';		
+		
 	}
-}
+	
+}	
 ?>
