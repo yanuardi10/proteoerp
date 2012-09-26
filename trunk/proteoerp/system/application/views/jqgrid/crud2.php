@@ -196,8 +196,6 @@ echo style('../datagrid/datagrid.css');
 echo "<!-- LAYOUT -->";
 echo script('jquery.layout.js');
 
-echo '$(function(){$(".inputnum").numeric(".");});';
-
 ?>
 <style>
 <?php echo $LayoutStyle; ?>
@@ -208,9 +206,10 @@ var base_url = '<?php echo base_url() ?>';
 var site_url = '<?php echo site_url() ?>';
 var url = '';
 
-$(function() {
-	$( "input:submit, a, button", ".botones",".otros" ).button();
-});
+
+$(function(){$(".inputnum").numeric(".");});
+
+$(function() {$( "input:submit, a, button", ".botones",".otros" ).button();});
 
 
 $(document).ready(function() {
