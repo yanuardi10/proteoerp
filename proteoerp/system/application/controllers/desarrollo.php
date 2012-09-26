@@ -562,9 +562,9 @@ class Desarrollo extends Controller{
 			$str .= $tab2.'$bodyscript = \''."\n";
 			$str .= '&lt;script type="text/javascript"&gt;'."\n";
 
-			$str .= '$(function() {'."\n";
-			$str .= '	$( "input:submit, a, button", ".otros" ).button();'."\n";
-			$str .= '});'."\n\n";
+			//$str .= '$(function() {'."\n";
+			//$str .= '	$( "input:submit, a, button", ".otros" ).button();'."\n";
+			//$str .= '});'."\n\n";
 
 			$str .= 'jQuery("#a1").click( function(){'."\n";
 			$str .= '	var id = jQuery("#newapi\'. $param[\'grids\'][0][\'gridname\'].\'").jqGrid(\\\'getGridParam\\\',\\\'selrow\\\');'."\n";
@@ -579,7 +579,7 @@ class Desarrollo extends Controller{
 			$str .= $tab2.'#Set url'."\n";
 			$str .= $tab2.'$grid->setUrlput(site_url($this->url.\'setdata/\'));'."\n\n";
 
-
+/*
 			$str .= $tab2.'$WestPanel = \''."\n";
 			$str .= '&lt;div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content"&gt;'."\n";
 			$str .= '&lt;div class="anexos"&gt;'."\n\n";
@@ -592,33 +592,41 @@ class Desarrollo extends Controller{
 //			$str .= '		&lt;table id="otros"&gt;&lt;/table&gt;'."\n";
 			$str .= '	&lt;/tr&gt;'."\n";
 			$str .= '&lt;/table&gt;'."\n\n";
-
 			$str .= '&lt;table id="west-grid" align="center"&gt;'."\n";
 			$str .= '	&lt;tr&gt;'."\n";
 			$str .= '		&lt;td&gt;&lt;/td&gt;'."\n";
 			$str .= '	&lt;/tr&gt;'."\n";
 			$str .= '&lt;/table&gt;'."\n";
 			$str .= '&lt;/div&gt;'."\n";
-			
+		
 			$str .= "'.\n".'//		&lt;td&gt;&lt;a style="width:190px" href="#" id="a1"&gt;Imprimir Copia&lt;/a&gt;&lt;/td&gt;'."\n'";
 			
 			$str .= '&lt;/div> &lt;!-- #LeftPane --&gt;'."\n";
 			$str .= '\';'."\n\n";
+*/
 
+			$str .= $tab2.'//Botones Panel Izq'."\n";
+			$str .= $tab2.'$grid->wbotonadd(array("id"=>"edocta",   "img"=>"images/pdf_logo.gif",  "alt" => "Formato PDF", "label"=>"Estado de Cuenta"));'."\n";
+			$str .= $tab2.'$WestPanel = $grid->deploywestp();'."\n\n";
+
+			$str .= $tab2.'$SouthPanel = $grid->SouthPanel($this->datasis->traevalor("TITULO1"));'."\n\n";
+
+/*
 			$str .= $tab2.'$SouthPanel = \''."\n";
 			$str .= '&lt;div id="BottomPane" class="ui-layout-south ui-widget ui-widget-content"&gt;'."\n";
 			$str .= '&lt;p>\'.$this->datasis->traevalor(\'TITULO1\').\'&lt;/p&gt;'."\n";
 			$str .= '&lt;/div> &lt;!-- #BottomPanel --&gt;'."\n";
 			$str .= '\';'."\n";
+*/
 
-			$str .= $tab2.'$param[\'WestPanel\']  = $WestPanel;'."\n";
+			$str .= $tab2.'$param[\'WestPanel\']    = $WestPanel;'."\n";
 			$str .= $tab2.'//$param[\'EastPanel\']  = $EastPanel;'."\n";
 			$str .= $tab2.'$param[\'SouthPanel\'] = $SouthPanel;'."\n";
 
-			$str .= $tab2.'$param[\'listados\'] = $this->datasis->listados(\''.strtoupper($db).'\', \'JQ\');'."\n";
-			$str .= $tab2.'$param[\'otros\']    = $this->datasis->otros(\''.strtoupper($db).'\', \'JQ\');'."\n";
+			$str .= $tab2.'$param[\'listados\']   = $this->datasis->listados(\''.strtoupper($db).'\', \'JQ\');'."\n";
+			$str .= $tab2.'$param[\'otros\']       = $this->datasis->otros(\''.strtoupper($db).'\', \'JQ\');'."\n";
 
-			$str .= $tab2.'$param[\'temas\']     = array(\'proteo\',\'darkness\',\'anexos1\');'."\n";
+			$str .= $tab2.'$param[\'temas\']       = array(\'proteo\',\'darkness\',\'anexos1\');'."\n";
 			//$str .= $tab2.'$param[\'anexos\']    = \'anexos1\';'."\n";
 
 			$str .= $tab2.'$param[\'bodyscript\'] = $bodyscript;'."\n";

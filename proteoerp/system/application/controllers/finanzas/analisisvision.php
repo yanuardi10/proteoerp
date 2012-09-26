@@ -15,16 +15,24 @@ class Analisisvision extends Controller {
 	
 	function ver(){
 		
+		$data['funciones'] = "";
+	 	$data['title']     = "Resumen de Gestion";
+	 	$data['encabeza']  = "Resumen de Gestion";
+	 	$data["head"]      = ""; //script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
+	 	$this->load->view('consulta', $data);
+
+	}
+	
+	function general(){
+		
 		//$this->rapyd->load("datagrid2");
 		//$this->load->library('table');
-		
+	
 		$MANO = substr(date("Y"),0,4)+0;
 		$mmfecha = mktime( 0, 0, 0,1, 1, $MANO );
 		$qfecha = date( "Ymd", mktime( 0, 0, 0, date("m",$mmfecha), date("d",$mmfecha), date("Y",$mmfecha) ));
 		$qfechaf=date("Ymd");
           
-
-   
 		$mSQL = "
 SELECT fecha, ventas, compras, util, round(100*(ventas-compras)/ventas,2) putil ,gastos, round(100*(gastos)/ventas,2) pgastos, inversion, nutil, ingreso, deposito,
 ROUND((SELECT valor FROM valores WHERE nombre='EST_PERDIDA')*ventas/100,2)    perdida,
@@ -233,125 +241,73 @@ var mydata1 = [ '."\n$ladata];\n";
 			
 			$grid1 .= ' for(var i=0;i<=mydata1.length;i++) jQuery("#cierres").jqGrid(\'addRowData\',i+1,mydata1[i]);'."\n";
 
-
-
-/*
-		$link="ventas/analisis";
-		$grid = new DataGrid2('Resumen de Gesti&oacute;n');
-		$grid->column("Fecha",'<#fecha#>');
-		$grid->column(anchor_popup($link,"Ventas",$atts), "<number_format><#ventas#>|2|,|.</number_format>" ,"align=right");
-		$link="ventas/analisis";
-		$grid->column(anchor_popup($link,"Compras",$atts), "<number_format><#compras#>|2|,|.</number_format>" ,"align=right");
-		$link="finanzas/analisisgastos";
-		$grid->column(anchor_popup($link,"Gastos",$atts), "<number_format><#gastos#>|2|,|.</number_format>" ,"align=right");
-		$grid->column("Inversiones", "<number_format><#inversion#>|2|,|.</number_format>" ,"align=right");
-
-		$select=array("fecha","sum(ventas) AS ventas","sum(inicial) AS inicial","sum(compras) AS compras","sum(ifinal) AS ifinal","sum(gastos) AS gastos","sum(inversion) AS inversion");//
-
-		$grid->db->_protect_identifiers=false;
-		$grid->db->from($mSQL);
-		//$grid->db->from('vresumen');
-		//$grid->db->groupby('fecha');
-		$grid->build();
-		
-
-		
-		$grid2 = new DataGrid2('Disponibilidad');
-		$link="finanzas/analisisbanc";
-		$grid2->column(anchor_popup($link,"Cajas",$atts),'<number_format><#cajas#>|2|,|.</number_format>',"align=right");
-		$link="finanzas/analisisbanc";
-		$grid2->column(anchor_popup($link,"Bancos",$atts),'<number_format><#bancos#>|2|,|.</number_format>',"align=right");
-		$grid2->column("Total",'<number_format><#total#>|2|,|.</number_format>',"align=right");
-		$select=array("SUM(saldo*(tbanco='CAJ')) AS cajas"," SUM(saldo*(tbanco<>'CAJ')) AS bancos"," SUM(saldo) AS total");//
-		$grid2->db->select($select);
-		$grid2->db->from('banc');
-		$grid2->db->where("activo",'S');
-		$grid2->build();
-		
-		$select=array("CONCAT(c.grupo,c.gr_desc) AS grupo","SUM(monto*IF(tipo_doc IN ('FC','GI','ND'),1,-1 )) AS monto");//
-		$grid3 = new DataGrid2('Cartera Activa');
-		$grid3->column("Grupo",'<#grupo#>');
-		$grid3->column("Monto",'<number_format><#monto#>|2|,|.</number_format>',"align=right");		
-		$grid3->db->select($select);
-		$grid3->db->from('smov AS a');
-		$grid3->db->join('scli AS b','a.cod_cli=b.cliente');
-		$grid3->db->join('grcl AS c','b.grupo=c.grupo','LEFT');
-		$grid3->db->groupby("b.grupo");
-		$grid3->db->orderby("c.clase,c.gr_desc");
-		$grid3->build();
-		
-		$select=array("c.gr_desc AS grupo","SUM(monto*IF(tipo_doc IN ('FC','GI','ND'),1,-1 )) AS monto");//
-		$grid4 = new DataGrid2('Cartera Pasiva');
-		$grid4->column("Grupo",'<#grupo#>');
-		$grid4->column("Monto",'<number_format><#monto#>|2|,|.</number_format>',"align=right");		
-		$grid4->db->select($select);
-		$grid4->db->from('sprm AS a');
-		$grid4->db->join('sprv AS b','a.cod_prv=b.proveed');
-		$grid4->db->join('grpr AS c','b.grupo=c.grupo','LEFT');
-		$grid4->db->groupby("b.grupo");		
-		$grid4->build();
-		
-		$this->db->simple_query("DROP TABLE vresumen");
-*/		
-		$data['centerpanel'] = 
-	"<table width='95%' border='0'>
-  <tr>
-	<td valign='top'>
-		<table id=\"resumen\"></table>
-	</td>
-  </tr><tr>
+			$centerpanel = 	"
+<table width='95%' border='0'>
+	<tr>
+		<td valign='top'>
+			<table id=\"resumen\"></table>
+		</td>
+	</tr><tr>
 	<td valign='top'>
 		<table id=\"cierres\"></table>
 	</td>
-"
-
-/*
-    <td valign='top'><div style='overflow: auto; width: 100%;'>$grid2->output</div></td>
   </tr>
-  <tr>
-    <td valign='top'><div style='overflow: auto; width: 100%;'>$grid3->output</div></td>
-    <td valign='top'><div style='overflow: auto; width: 100%;'>$grid4->output</div></td>
-*/
-."  </tr>
 </table>
 <script type=\"text/javascript\">
 $(function () {
 	tableToGrid(\"#consulta\", { height: \"auto\",width:500, pager:\"#mypager\", caption:\"Resumen Mensual\"});
 });
 </script>
-	 	";
+";
 
-/*
-		$data['centerpanel'] = 
-'<table id="consulta">
-    <tr>
-        <th>header 1</th>
-        <th>header 2</th>
-    </tr>
-    <tbody>
-        <tr>
-            <td>data 1</td>
-            <td>data 1</td>
-        </tr>
-        <tr>
-            <td>data 2</td>
-            <td>data 2</td>
-        </tr>
-    </tbody>
-</table>
-<script type="text/javascript">
-$(function () {
-	tableToGrid("#consulta", {});
-});
-</script>
-';*/
+		echo  "<script type=\"text/javascript\">".$grid.$grid1."</script>".$centerpanel;
+		/*
 		$data['funciones'] = $grid.$grid1;
-	 	$data['title']     = "Visi&oacute;n General";
-	 	$data['encabeza']  = "Visi&oacute;n General";
+	 	$data['title']     = "Resumen de Gestion";
+	 	$data['encabeza']  = "Resumen de Gestion";
 	 	$data["head"]      = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
-	 	$this->load->view('/jqgrid/ventanas', $data);
+	 	$this->load->view('consulta', $data);*/
 		
 		
 	}
-}	
+
+	function opciones(){
+		header("Content-type: text/xml; charset=utf-8");
+		echo "<?xml version='1.0'".' encoding="utf-8"?>
+<rows>
+    <page>1</page>
+    <total>1</total>
+    <records>1</records>
+    <row><cell>1</cell><cell>Vision General</cell><cell></cell><cell>0</cell><cell>1</cell><cell>10</cell><cell>false</cell><cell>false</cell></row>
+
+    <row><cell>2</cell><cell>Analisis Anual</cell><cell>general    </cell><cell>1</cell><cell>2</cell><cell>3</cell><cell>true</cell><cell>true</cell></row>
+    <row><cell>3</cell><cell>Analisis de Bancos</cell><cell>jsonex.html   </cell><cell>1</cell><cell>4</cell><cell>5</cell><cell>true</cell><cell>true</cell></row>
+    <row><cell>4</cell><cell>Analisis de Gastos </cell><cell>loadoncex.html</cell><cell>1</cell><cell>6</cell><cell>7</cell><cell>true</cell><cell>true</cell></row>
+    <row><cell>5</cell><cell>Analisis Diario</cell><cell>localex.html  </cell><cell>1</cell><cell>8</cell><cell>9</cell><cell>true</cell><cell>true</cell></row>
+
+    <row><cell>6</cell><cell>Venta Diaria</cell><cell></cell><cell>0</cell><cell>11</cell><cell>18</cell><cell>false</cell><cell>false</cell></row>
+
+    <row><cell>7</cell><cell>Disponible</cell><cell>manipex.html</cell><cell>1</cell><cell>12</cell><cell>13</cell><cell>true</cell><cell>true</cell></row>
+    <row><cell>8</cell><cell>Disponible</cell><cell>getex.html  </cell><cell>1</cell><cell>14</cell><cell>15</cell><cell>true</cell><cell>true</cell></row>
+    <row><cell>9</cell><cell>Disponible</cell><cell>setex.html  </cell><cell>1</cell><cell>16</cell><cell>17</cell><cell>true</cell><cell>true</cell></row>
+
+    <row><cell>10</cell><cell>Analisis Inventario</cell><cell></cell><cell>0</cell><cell>19</cell><cell>32</cell><cell>false</cell><cell>false</cell></row>
+
+    <row><cell>11</cell><cell>Disponible</cell><cell>multiex.html     </cell><cell>1</cell><cell>20</cell><cell>21</cell><cell>true</cell><cell>true</cell></row>
+    <row><cell>12</cell><cell>Disponible</cell><cell>masterex.html    </cell><cell>1</cell><cell>22</cell><cell>23</cell><cell>true</cell><cell>true</cell></row>
+    <row><cell>13</cell><cell>Disponible</cell><cell>subgrid.html     </cell><cell>1</cell><cell>24</cell><cell>25</cell><cell>true</cell><cell>true</cell></row>
+    <row><cell>14</cell><cell>Disponible</cell><cell>subgrid_grid.html</cell><cell>1</cell><cell>26</cell><cell>27</cell><cell>true</cell><cell>true</cell></row>
+    <row><cell>15</cell><cell>Disponible</cell><cell>resizeex.html    </cell><cell>1</cell><cell>28</cell><cell>28</cell><cell>true</cell><cell>true</cell></row>
+    <row><cell>16</cell><cell>Disponible</cell><cell>bigset.html      </cell><cell>1</cell><cell>30</cell><cell>31</cell><cell>true</cell><cell>true</cell></row>
+
+    <row><cell>17</cell><cell>Caja y Bancos</cell><cell></cell><cell>0</cell><cell>33</cell><cell>44</cell><cell>false</cell><cell>false</cell></row>
+    <row><cell>18</cell><cell>Disponible</cell><cell>cmultiex.html </cell><cell>1</cell><cell>34</cell><cell>35</cell><cell>true</cell><cell>true</cell></row>
+    <row><cell>19</cell><cell>Disponible</cell><cell>jsubgrid.html </cell><cell>1</cell><cell>36</cell><cell>37</cell><cell>true</cell><cell>true</cell></row>
+    <row><cell>20</cell><cell>Disponible</cell><cell>loadcml.html  </cell><cell>1</cell><cell>38</cell><cell>39</cell><cell>true</cell><cell>true</cell></row>
+<<<<<<< .mine
+	
+</rows>';
+
+	}
+}
 ?>
