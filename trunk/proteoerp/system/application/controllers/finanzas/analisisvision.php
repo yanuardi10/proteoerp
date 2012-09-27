@@ -132,7 +132,7 @@ jQuery("#resumen").jqGrid({
 	datatype: "local",
 	shrinkToFit: false,
 	autowidth: true,
-	height: "570",
+	height: "270",
 	colNames:["Fecha", "Ventas", "Compras", "Utilidad","%","Gastos", "%", "Inversion", "Neto","Ingreso", "Deposito","Perdida","I.Mun.","ISLR"],
 	colModel:[
 		{name:"fecha",     index:"fecha",     width:50, align:"center",sorttype:"text" },
