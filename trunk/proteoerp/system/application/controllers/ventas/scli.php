@@ -13,28 +13,22 @@ class Scli extends Controller {
 	}
 
 	function index(){
-		if ( !$this->datasis->iscampo('scli','id') ) {
+
+
+		$campos = $this->db->list_fields('scli');
+		if (!in_array('id',$campos)){
 			$mSQL='ALTER TABLE `scli` DROP PRIMARY KEY, ADD UNIQUE `cliente` (`cliente`)';
 			$this->db->simple_query($mSQL);
 			$mSQL='ALTER TABLE `scli` ADD `id` INT AUTO_INCREMENT PRIMARY KEY';
 			$this->db->simple_query($mSQL);
-		};
+		}
 
-		if ( !$this->datasis->iscampo('scli','url') ) {
-			$this->db->query('ALTER TABLE scli ADD COLUMN url VARCHAR(120) NULL ');
-		};
-		if ( !$this->datasis->iscampo('scli','pin') ) {
-			$this->db->query('ALTER TABLE scli ADD COLUMN pin VARCHAR(10) NULL ');
-		};
-		if ( !$this->datasis->iscampo('scli','fb') ) {
-			$this->db->query('ALTER TABLE scli ADD COLUMN fb VARCHAR(120) NULL ');
-		};
-		if ( !$this->datasis->iscampo('scli','twitter') ) {
-			$this->db->query('ALTER TABLE scli ADD COLUMN twitter VARCHAR(120) NULL ');
-		};
-		if ( !$this->datasis->iscampo('scli','upago') ) {
-			$this->db->query('ALTER TABLE scli ADD COLUMN upago CHAR(6) NULL ');
-		};
+		if (!in_array('url'     ,$campos)) $this->db->query('ALTER TABLE scli ADD COLUMN url VARCHAR(120) NULL ');
+		if (!in_array('pin'     ,$campos)) $this->db->query('ALTER TABLE scli ADD COLUMN pin VARCHAR(10) NULL ');
+		if (!in_array('fb'      ,$campos)) $this->db->query('ALTER TABLE scli ADD COLUMN fb VARCHAR(120) NULL ');
+		if (!in_array('twitter' ,$campos)) $this->db->query('ALTER TABLE scli ADD COLUMN twitter VARCHAR(120) NULL ');
+		if (!in_array('upago'   ,$campos)) $this->db->query('ALTER TABLE scli ADD COLUMN upago  VARCHAR(6) NULL ');
+		if (!in_array('tarifa'  ,$campos)) $this->db->query('ALTER TABLE scli ADD COLUMN tarifa VARCHAR(6) NULL ');
 
 		$this->datasis->modintramenu( 1000, 650, 'ventas/scli' );
 		redirect($this->url.'jqdatag');
@@ -86,7 +80,7 @@ class Scli extends Controller {
 		$this->load->view('jqgrid/crud2',$param);
 	}
 
-	
+
 	//****************************************
 	//
 	// funciones
@@ -136,7 +130,7 @@ class Scli extends Controller {
 				window.open("'.$consulrif.'"+"?p_rif="+vrif,"CONSULRIF","height=350,width=410");
 			}
 		}';
-		
+
 		// Busca la cedula en el CNE
 		$funciones .= '
 		function consulcne(campo){
@@ -233,7 +227,7 @@ class Scli extends Controller {
 				)
 			}
 		}
-	
+
 		function sclifusdef(mnuevo, mviejo){
 			$.ajax({
 				url: "'.site_url('ventas/scli/sclifusion').'",
@@ -325,7 +319,7 @@ class Scli extends Controller {
 		}';
 
 		return $funciones;
-		
+
 	}
 
 
@@ -338,7 +332,7 @@ class Scli extends Controller {
 		$i       = 1;
 		$editar  = "true";
 		$linea   = 1;
-		
+
 		$link   = site_url('ajax/buscacpla');
 
 		$mSQL = "SELECT grupo, CONCAT(grupo, ' ', gr_desc) banco FROM grcl ORDER BY grupo ";
@@ -496,7 +490,7 @@ class Scli extends Controller {
 			'formoptions'   => '{ rowpos:'.$linea.', colpos:1 }'
 		));
 
-		
+
 		$grid->addField('dire11');
 		$grid->label('Direccion 1');
 		$grid->params(array(
@@ -1132,7 +1126,7 @@ class Scli extends Controller {
 
 		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
 
-		#show/hide navigations buttons 
+		#show/hide navigations buttons
 		$grid->setAdd(true);
 		$grid->setEdit(true);
 		$grid->setDelete(true);

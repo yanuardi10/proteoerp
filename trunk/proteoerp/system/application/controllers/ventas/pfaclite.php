@@ -178,7 +178,7 @@ class pfaclite extends validaciones{
 		$vd   = trim($this->secu->getvendedor());
 		$caub = trim($this->secu->getalmacen());
 		if(empty($vd) || empty($caub)){
-			show_error('Usuario no tiene asignado vendedor o cajero, debe asignarlo primero para poder usar este modulo');
+			show_error('Usuario no tiene asignado vendedor, cajero o almacen, debe asignarlo primero para poder usar este modulo');
 		}
 
 		$url=$this->url.'filteredgrid';
