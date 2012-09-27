@@ -28,9 +28,14 @@ class Analisisvision extends Controller {
 		$mmfecha = mktime( 0, 0, 0,1, 1, $MANO );
 		$qfecha = date( "Ymd", mktime( 0, 0, 0, date("m",$mmfecha), date("d",$mmfecha), date("Y",$mmfecha) ));
 		$qfechaf=date("Ymd");
+
+		$perdida   = $this->datasis->traevalor('EST_PERDIDA');
+		$municipal = $this->datasis->traevalor('EST_CMUNICIPAL');
+		$islr      = $this->datasis->traevalor('EST_ISLR');
+
           
 		$mSQL = "
-SELECT fecha, ventas, compras, util, round(100*(ventas-compras)/ventas,2) putil ,gastos, round(100*(gastos)/ventas,2) pgastos, inversion, nutil, ingreso, deposito,
+SELECT CONCAT(MID(fecha,1,4),'-',MID(fecha,5,2)) fecha, ventas, compras, util, round(100*(ventas-compras)/ventas,2) putil ,gastos, round(100*(gastos)/ventas,2) pgastos, inversion, nutil, ingreso, deposito,
 ROUND((SELECT valor FROM valores WHERE nombre='EST_PERDIDA')*ventas/100,2)    perdida,
 ROUND((SELECT valor FROM valores WHERE nombre='EST_CMUNICIPAL')*ventas/100,2) municipal,
 ROUND((SELECT valor FROM valores WHERE nombre='EST_ISLR')*(nutil)/100,2)      islr
@@ -43,7 +48,7 @@ FROM scst WHERE YEAR(recep) = YEAR(CURDATE())
 GROUP BY EXTRACT(YEAR_MONTH FROM fecha) 
 UNION ALL 
 SELECT  EXTRACT(YEAR_MONTH FROM fecha) AS fecha, 0 ventas, 0 compras, 
-sum(a.precio*(b.tipo<>'A')) AS gastos, sum(a.precio*(b.tipo='A')) AS inversion, 0 ingreso, 0 deposito 
+sum(a.precio) AS gastos, sum(a.precio*(b.tipo='A'))*0 AS inversion, 0 ingreso, 0 deposito 
 FROM gitser AS a JOIN mgas AS b ON a.codigo=b.codigo
 WHERE YEAR(a.fecha) = YEAR(CURDATE()) 
 GROUP BY EXTRACT(YEAR_MONTH FROM a.fecha) 
@@ -133,7 +138,7 @@ jQuery("#resumen").jqGrid({
 	shrinkToFit: false,
 	autowidth: true,
 	height: "270",
-	colNames:["Fecha", "Ventas", "Compras", "Utilidad","%","Gastos", "%", "Inversion", "Neto","Ingreso", "Deposito","Perdida","I.Mun.","ISLR"],
+	colNames:["Mes", "Ventas", "Compras", "Utilidad","%","Gastos", "%", "Inversion", "Neto","Ingreso", "Deposito","Perdida '.$perdida.'%","I.Mun.'.$municipal.'%","ISLR '.$islr.'%"],
 	colModel:[
 		{name:"fecha",     index:"fecha",     width:50, align:"center",sorttype:"text" },
 		{name:"ventas",    index:"ventas",    width:80, align:"right", sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }},
@@ -142,10 +147,10 @@ jQuery("#resumen").jqGrid({
 		{name:"putil",     index:"putil",     width:50, align:"right", sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }},
 		{name:"gastos",    index:"gastos",    width:80, align:"right", sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }},
 		{name:"pgastos",   index:"pgastos",   width:50, align:"right", sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }},
-		{name:"inversion", index:"inversion", width:80, align:"right", sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }},
+		{name:"inversion", index:"inversion", width:80, align:"right", sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }, hidden:true},
 		{name:"nutil",     index:"nutil",     width:80, align:"right", sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }},
-		{name:"ingreso",   index:"ingreso",   width:80, align:"right", sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }},
-		{name:"deposito",  index:"deposito",  width:80, align:"right", sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }},
+		{name:"ingreso",   index:"ingreso",   width:80, align:"right", sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }, hidden:true},
+		{name:"deposito",  index:"deposito",  width:80, align:"right", sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }, hidden:true},
 		{name:"perdida",   index:"perdida",   width:80, align:"right", sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }},
 		{name:"municipal", index:"municipal", width:80, align:"right", sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }},
 		{name:"islr",      index:"islr",      width:80, align:"right", sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }}
