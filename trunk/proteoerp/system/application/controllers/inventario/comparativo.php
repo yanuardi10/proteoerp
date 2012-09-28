@@ -238,6 +238,7 @@ class Comparativo extends Controller {
 		$filter->frecuencia->option('1' ,'Mensual');
 		$filter->frecuencia->option('2' ,'BiMenusal');
 		$filter->frecuencia->option('4' ,'Semanal');
+		$filter->frecuencia->option('8' ,'BiSemanal');
 		$filter->frecuencia->group='Configuraci&oacute;n';
 
 		$filter->buttons('reset','search');
