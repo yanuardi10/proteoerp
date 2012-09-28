@@ -93,7 +93,7 @@ class DataObject{
 		if (count($this->pk)==0){
 			//table must have a PK
 			$this->error = "The table $table are no PK";
-			show_error('DataObject Error: '.$this->error());
+			show_error('DataObject Error: '.$this->error);
 			exit();
 		}
 	}
