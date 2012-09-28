@@ -14,6 +14,7 @@ class sfac_add extends validaciones {
 		$this->datasis->modulo_id('103',1);
 		$this->instalar();
 		$this->genesal=true;
+		$this->back_url='';
 	}
 
 	function index(){
@@ -261,7 +262,7 @@ class sfac_add extends validaciones {
 
 		$edit = new DataDetails('Facturas', $do);
 
-		$edit->back_url = site_url('ventas/sfac/index');
+		$edit->back_url = (!empty($this->back_url))? $this->back_url : site_url('ventas/sfac/index');
 		$edit->set_rel_title('sitems','Producto <#o#>');
 		$edit->set_rel_title('sfpa','Forma de pago <#o#>');
 
@@ -518,7 +519,7 @@ class sfac_add extends validaciones {
 
 		$edit->buttons('save', 'back','add_rel','add');
 		if(!empty($this->_url)) $edit->_process_uri=$this->_url;
-
+		if(!empty($this->back_url)) $edit->buttons('undo');
 
 		if($this->genesal){
 			$edit->build();
@@ -857,7 +858,7 @@ class sfac_add extends validaciones {
 		//Validacion del limite de credito del cliente
 		if($credito>0 && $tipoa=='F'){
 			$dbcliente=$this->db->escape($cliente);
-			$rrow    = $this->datasis->damerow("SELECT limite,formap,credito,tolera,socio FROM scli WHERE cliente=$dbcliente");
+			$rrow    = $this->datasis->damerow("SELECT limite,formap,credito,tolera,TRIM(socio) AS socio FROM scli WHERE cliente=$dbcliente");
 			if($rrow!=false){
 				$cdias   = $rrow['formap'];
 				$pcredito= $rrow['credito'];

@@ -47,13 +47,14 @@ class Sfac extends Controller {
 		//Botones Panel Izq
 		$grid->wbotonadd(array("id"=>"boton1", "img"=>"images/pdf_logo.gif", "alt" => 'Formato PDF',  "label"=>"Reimprimir Documento"));
 		$grid->wbotonadd(array("id"=>"boton2", "img"=>"images/agrega4.png",  "alt" => 'Agregar',  "label"=>"Agregar Venta"));
+		$grid->wbotonadd(array("id"=>"boton3", "img"=>"images/agrega4.png",  "alt" => 'Agregar servicio mensual',  "label"=>"Servicios Mensuales"));
 		$WestPanel = $grid->deploywestp();
 
 		//Panel Central
 		$centerpanel = $grid->centerpanel( $id = "radicional", $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
 
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'));
-		
+
 		$param['WestPanel']    = $WestPanel;
 		//$param['EastPanel']  = $EastPanel;
 		$param['readyLayout']  = $readyLayout;
@@ -85,10 +86,15 @@ class Sfac extends Controller {
 			} else { $.prompt("<h1>Por favor Seleccione una Factura</h1>");}
 		});';
 
-		
+
 		$bodyscript .= '
 		jQuery("#boton2").click( function(){
 			window.open(\''.site_url('ventas/sfac_add/dataedit/create').'\', \'_blank\', \'width=900,height=700,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-350)\');
+		});';
+
+		$bodyscript .= '
+		jQuery("#boton3").click( function(){
+			window.open(\''.site_url('ventas/mensualidad').'\', \'_blank\', \'width=900,height=700,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-350)\');
 		});
 		</script>'."\n";
 
@@ -1527,9 +1533,10 @@ class Sfac extends Controller {
 	function getdatait()
 	{
 		$id = $this->uri->segment(4);
-		if ($id == false ){
+		if ($id === false ){
 			$id = $this->datasis->dameval("SELECT MAX(id) FROM sfac");
 		}
+		if(empty($id)) return '';
 		$tipo_doc = $this->datasis->dameval("SELECT tipo_doc FROM sfac WHERE id=$id");
 		$numero   = $this->datasis->dameval("SELECT numero   FROM sfac WHERE id=$id");
 
