@@ -14,7 +14,6 @@ class Scli extends Controller {
 
 	function index(){
 
-
 		$campos = $this->db->list_fields('scli');
 		if (!in_array('id',$campos)){
 			$mSQL='ALTER TABLE `scli` DROP PRIMARY KEY, ADD UNIQUE `cliente` (`cliente`)';
@@ -28,7 +27,7 @@ class Scli extends Controller {
 		if (!in_array('fb'      ,$campos)) $this->db->query('ALTER TABLE scli ADD COLUMN fb VARCHAR(120) NULL ');
 		if (!in_array('twitter' ,$campos)) $this->db->query('ALTER TABLE scli ADD COLUMN twitter VARCHAR(120) NULL ');
 		if (!in_array('upago'   ,$campos)) $this->db->query('ALTER TABLE scli ADD COLUMN upago  VARCHAR(6) NULL ');
-		if (!in_array('tarifa'  ,$campos)) $this->db->query('ALTER TABLE scli ADD COLUMN tarifa VARCHAR(6) NULL ');
+		if (!in_array('tarifa'  ,$campos)) $this->db->query('ALTER TABLE scli ADD COLUMN tarifa VARCHAR(15) NULL ');
 
 		$this->datasis->modintramenu( 1000, 650, 'ventas/scli' );
 		redirect($this->url.'jqdatag');
