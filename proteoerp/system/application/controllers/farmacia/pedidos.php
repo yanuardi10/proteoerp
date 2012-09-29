@@ -296,152 +296,69 @@ class Pedidos extends Controller {
 		$script='
 		$(document).ready(function(){
 			$(".inputnum").numeric(".");
-			$("#depto").change(function(){
-				depto();
-				$.post("'.$link2.'",{ depto:$(this).val() },function(data){$("#linea").html(data);})
-				$.post("'.$link3.'",{ linea:"" },function(data){$("#grupo").html(data);})
-			});
-			$("#linea").change(function(){
-				linea();
-				$.post("'.$link3.'",{ linea:$(this).val() },function(data){$("#grupo").html(data);})
-			});
-			$("#grupo").change(function(){
-				grupo();
-			});
-			$("#sinvprecioc").submit(function() {
-				return confirm("Se van a actualizar todos los precios en pantalla \nEstas seguro de que quieres seguir??");
-			});
-			depto();
-			linea();
-			grupo();
 
 			$(\'input[name^="monto"]\').keyup(function(){
 				var val=$(this).val();
 				alert(val);
 
 			});
-		});
-
-		function depto(){
-			if($("#depto").val()!=""){
-				$("#nom_depto").attr("disabled","disabled");
-			}
-			else{
-				$("#nom_depto").attr("disabled","");
-			}
-		}
-
-		function linea(){
-			if($("#linea").val()!=""){
-				$("#nom_linea").attr("disabled","disabled");
-			}
-			else{
-				$("#nom_linea").attr("disabled","");
-			}
-		}
-
-		function grupo(){
-			if($("#grupo").val()!=""){
-				$("#nom_grupo").attr("disabled","disabled");
-			}
-			else{
-				$("#nom_grupo").attr("disabled","");
-			}
-		}';
+		});';
 
 		$filter = new DataFilter2($this->titp);
 
 		$select=array(
-			'IF(formcal=\'U\',ultimo,IF(a.formcal=\'P\',pond,IF(formcal=\'S\',standard,GREATEST(ultimo,pond)))) AS costo',
-			'a.existen','a.marca','a.tipo','a.id',
-			'TRIM(codigo) AS codigo',
-			'a.descrip','precio1','precio2','precio3','precio4','b.nom_grup','b.grupo','a.barras',
-			'c.descrip AS nom_linea','c.linea','d.descrip AS nom_depto','d.depto AS depto',
-			'a.base1','a.base2','a.base3','a.base4','e.cobeca','e.dronena','e.drolanca','e.mafarta'
+			'a.existen','a.marca','a.semestral','a.trimestral','a.mensual','a.quincenal','a.semanal',
+			'a.descrip','a.barras',
+			'e.cobeca','e.dronena','e.drolanca','e.mafarta',
+			'e.cobeca_cana','e.dronena_cana','e.drolanca_cana','e.mafarta_cana'
 		);
 
 		$filter->db->select($select);
-		$filter->db->from('sinv AS a');
-		$filter->db->join('grup AS b','a.grupo=b.grupo');
-		$filter->db->join('line AS c','b.linea=c.linea');
-		$filter->db->join('dpto AS d','c.depto=d.depto');
-		$filter->db->join('droguerias.inventarios AS e','a.barras=e.barras','left');
-		$filter->db->where('a.activo','S');
+		$filter->db->from('view_pednegocia AS a');
+		$filter->db->join('droguerias.inventarios AS e','a.barras=e.barras');
 		$filter->script($script);
 
-		$filter->codigo = new inputField("C&oacute;digo", "codigo");
-		$filter->codigo-> size=15;
-		$filter->codigo->group = "Uno";
-
-		$filter->descrip = new inputField("Descripci&oacute;n", "descrip");
-		$filter->descrip->db_name='CONCAT_WS(" ",a.descrip,a.descrip2)';
+		$filter->descrip = new inputField('Descripci&oacute;n', 'descrip');
+		$filter->descrip->db_name='a.descrip';
 		$filter->descrip-> size=30;
-		$filter->descrip->group = "Uno";
 
-		$filter->depto2 = new inputField("Departamento", "nom_depto");
-		$filter->depto2->db_name="d.descrip";
-		$filter->depto2 -> size=5;
-		$filter->depto2->group = "Dos";
-
-		$filter->depto = new dropdownField("Departamento","depto");
-		$filter->depto->db_name="d.depto";
-		$filter->depto->option("","Seleccione un Departamento");
-		$filter->depto->options("SELECT depto, CONCAT(depto,'-',descrip) descrip FROM dpto WHERE tipo='I' ORDER BY depto");
-		$filter->depto->in="depto2";
-		$filter->depto->group = "Dos";
-		$filter->depto->style='width:190px;';
-
-		$filter->linea = new inputField("Linea", "nom_linea");
-		$filter->linea->db_name="c.descrip";
-		$filter->linea -> size=5;
-		$filter->linea->group = "Dos";
-
-		$filter->linea2 = new dropdownField("L&iacute;nea","linea");
-		$filter->linea2->db_name="c.linea";
-		$filter->linea2->option("","Seleccione un Departamento primero");
-		$filter->linea2->in="linea";
-		$filter->linea2->group = "Dos";
-		$filter->linea2->style='width:190px;';
-
-		$depto=$filter->getval('depto');
-		if($depto!==FALSE){
-			$filter->linea2->options("SELECT linea, CONCAT(linea,'-',descrip) descrip FROM line WHERE depto='$depto' ORDER BY descrip");
-		}else{
-			$filter->linea2->option("","Seleccione un Departamento primero");
-		}
-
-		$filter->grupo2 = new inputField("Grupo", "nom_grupo");
-		$filter->grupo2->db_name="b.nom_grup";
-		$filter->grupo2 -> size=5;
-		$filter->grupo2->group = "Dos";
-
-		$filter->grupo = new dropdownField("Grupo", "grupo");
-		$filter->grupo->db_name="b.grupo";
-		$filter->grupo->option("","Seleccione una L&iacute;nea primero");
-		$filter->grupo->in="grupo2";
-		$filter->grupo->group = "Dos";
-		$filter->grupo->style='width:190px;';
-
-		$linea=$filter->getval('linea2');
-		if($linea!==FALSE){
-			$filter->grupo->options("SELECT grupo, CONCAT(grupo,'-',nom_grup) nom_grup FROM grup WHERE linea='$linea' ORDER BY nom_grup");
-		}else{
-			$filter->grupo->option("","Seleccione un Departamento primero");
-		}
-
-		$filter->marca = new dropdownField('Laboratorio', "marca");
+		$filter->marca = new dropdownField('Laboratorio', 'marca');
 		$filter->marca->option('','Todas');
-		$filter->marca->options("SELECT TRIM(marca) AS clave, TRIM(marca) AS valor FROM marc ORDER BY marca");
+		$filter->marca->options('SELECT TRIM(marca) AS clave, TRIM(marca) AS valor FROM view_pednegocia GROUP BY marca');
 		$filter->marca->style='width:220px;';
-		$filter->marca->group = "Dos";
 
 		$filter->buttons('reset', 'search');
 		$filter->build();
 
 		$uri = anchor($this->url.'dataedit/show/<raencode><#id#></raencode>','<#id#>');
 
+		function opts($mafarta,$cobeca,$dronena,$drolanca,$mafarta_cana,$cobeca_cana,$dronena_cana,$drolanca_cana){
+
+			$vals=array(
+				'cobeca'  => $cobeca,
+				'mafarta' => $mafarta,
+				'dronena' => $dronena,
+				'drolanca'=> $drolanca
+			);
+			//sort($val,SORT_NUMERIC);
+
+			$val=array(
+				'cobeca'  => "Merida   $cobeca_cana   - $cobeca Bs.",
+				'mafarta' => "Marta    $mafarta_cana  - $mafarta Bs.",
+				'dronena' => "Dronena  $dronena_cana  - $dronena Bs.",
+				'drolanca'=> "Drolanca $drolanca_cana - $drolanca Bs."
+			);
+
+			return form_dropdown('aa', $val,'','style="width: 250px"');
+		}
+
+		function pedido(){
+		
+		}
+
 		$grid = new DataGrid('');
-		$grid->order_by('id');
+		$grid->use_function('opts');
+		$grid->order_by('descrip');
 		$grid->per_page = 40;
 
 		$monto = new inputField('Monto', 'monto');
@@ -450,19 +367,24 @@ class Pedidos extends Controller {
 		$monto->size     =8;
 		$monto->css_class='inputnum';
 
-		$grid->column_orderby('C&oacute;digo','barras','barras');
+		$grid->column_orderby('C&oacute;digo'     ,'barras' ,'barras' );
 		$grid->column_orderby('Descripci&oacute;n','descrip','descrip');
-		$grid->column_orderby('Laboratorio','marca','marca');
-		$grid->column('Monto' , $monto  ,'align=\'right\'');
-		$grid->column('Dias'  , '<span id=dias_<#barras#>></span>','align=\'right\'');
-		$grid->column('Costo'     ,'<nformat><#costo#></nformat>'   ,'align=right');
-		$grid->column('Existencia','<nformat><#existen#></nformat>' ,'align=right');
-		$grid->column('Merida'    ,'<nformat><#cobeca#></nformat>'  ,'align=right');
-		$grid->column('Dronena'   ,'<nformat><#dronena#></nformat>' ,'align=right');
-		$grid->column('Drolanca'  ,'<nformat><#drolanca#></nformat>','align=right');
-		$grid->column('Mafarta'   ,'<nformat><#mafarta#></nformat>' ,'align=right');
+		$grid->column_orderby('Laboratorio'       ,'marca'  ,'marca'  );
+		$grid->column('Existencia' ,'<nformat><#existen#></nformat>' ,'align=\'right\'');
 
-		$grid->add($this->url.'dataedit/create');
+		$grid->column('Cantidad a pedir'      , $monto  ,'align=\'right\'');
+		//$grid->column('Droguerias' ,'<opts><#mafarta#>|<#cobeca#>|<#dronena#>|<#drolanca#>|<#mafarta_cana#>|<#cobeca_cana#>|<#dronena_cana#>|<#drolanca_cana#></opts>'  ,'align=\'right\'');
+
+		$grid->column('Semestral'  ,'<nformat><#semestral#></nformat>'  ,'align=\'right\'');
+		$grid->column('Trimestral' ,'<nformat><#trimestral#></nformat>' ,'align=\'right\'');
+		$grid->column('Mensual'    ,'<nformat><#mensual#></nformat>'    ,'align=\'right\'');
+		$grid->column('Semanal'    ,'<nformat><#semanal#></nformat>'    ,'align=\'right\'');
+
+		$grid->column('Merida'     ,'<nformat><#cobeca#></nformat>'  ,'align=\'right\'');
+		$grid->column('Mafarta'    ,'<nformat><#mafarta#></nformat>' ,'align=\'right\'');
+		$grid->column('Dronena'    ,'<nformat><#dronena#></nformat>' ,'align=\'right\'');
+		$grid->column('Drolanca'   ,'<nformat><#drolanca#></nformat>','align=\'right\'');
+
 		$grid->build();
 
 		$data['filtro']  = $filter->output;
@@ -470,7 +392,6 @@ class Pedidos extends Controller {
 		$data['head']    = $this->rapyd->get_head().script('jquery.js');
 		$data['title']   = heading($this->titp);
 		$this->load->view('view_ventanas', $data);
-
 	}
 
 	function _farmaurl($opt='farmax'){
@@ -478,6 +399,273 @@ class Pedidos extends Controller {
 		$url=reduce_double_slashes($_SERVER['HTTP_HOST'].'/'.$opt.'/'.$uri);
 		$url=prep_url($url);
 		return $url;
+	}
+
+
+	function especialxls(){
+		$this->rapyd->load('datafilter2','datagrid');
+
+		$droguerias=array(
+			'cobeca'  =>'Merida',
+			'mafarta' =>'Mafarta',
+			'dronena' =>'Dronena',
+			'drolanca'=>'Drolanca'
+		);
+
+		$filter = new DataFilter2('Pedidos especiales');
+
+		$select=array(
+			'a.existen','a.marca','a.semestral','a.trimestral','a.mensual','a.quincenal','a.semanal',
+			'a.descrip','a.barras'
+		);
+
+		foreach($droguerias AS $id=>$value){
+			$select[]='e.'.$id;
+			$select[]='e.'.$id.'_cana';
+		}
+
+		$filter->db->select($select);
+		$filter->db->from('view_pednegocia AS a');
+		$filter->db->join('droguerias.inventarios AS e','a.barras=e.barras');
+
+		$filter->descrip = new inputField('Descripci&oacute;n', 'descrip');
+		$filter->descrip->db_name='a.descrip';
+		$filter->descrip->size=30;
+
+		$filter->marca = new dropdownField('Laboratorio', 'marca');
+		$filter->marca->option('','Todas');
+		$filter->marca->options('SELECT TRIM(marca) AS clave, TRIM(marca) AS valor FROM view_pednegocia GROUP BY marca');
+		$filter->marca->style='width:220px;';
+		$filter->marca->rule='required';
+
+		$filter->buttons('reset', 'search');
+		$filter->build();
+
+		if($filter->is_valid()){
+
+			$mSQL=$this->rapyd->db->_compile_select();
+
+			$fnombre='negociacion.xls';
+			$fname = tempnam('/tmp',$fnombre);
+			$tot=array();
+
+			$this->load->library('workbook', array('fname'=>$fname));
+			$wb = & $this->workbook ;
+			$ws = & $wb->addworksheet('Hoja1');
+
+			// ANCHO DE LAS COLUMNAS
+			$ws->set_column('A:A',35);
+			$ws->set_column('B:B',10);
+			$ws->set_column('C:C',6);
+			$ws->set_column('D:D',10);
+			//$ws->set_column('E:XX',20);
+
+			// FORMATOS
+			$h       =& $wb->addformat(array( "bold" => 1, "size" => 14, "align" => 'left'));
+			$h0      =& $wb->addformat(array( "bold" => 1, "size" => 10, "align" => 'left'));
+			$h1      =& $wb->addformat(array( "bold" => 1, "size" => 11, "align" => 'center'));
+			$h2      =& $wb->addformat(array( "bold" => 1, "size" => 14, "align" => 'left', "fg_color" => 'silver'  ));
+			$h3      =& $wb->addformat(array( "bold" => 1, "size" => 9 ));
+			$h3->set_merge();
+			$h4      =& $wb->addformat(array( "bold" => 1, "size" => 9 , "align" => 'right',"num_format" => '#,##0.00'));
+			$codesc  =& $wb->addformat(array( "bold" => 0, "size" => 8 , "align" => 'left', "fg_color" => 26  ));
+			$codesc->set_border(1);
+			$numcer  =& $wb->addformat(array( "bold" => 0, "size" => 8 , "align" => 'right', "fg_color" => 26  ));
+			$numcer->set_border(1);
+			$numpri  =& $wb->addformat(array( "num_format" => '#,##0.00' , "size" => 8 , "fg_color" => 44 ));
+			$numpri->set_border(1);
+			$numseg  =& $wb->addformat(array( "num_format" => '#,##0.00' , "size" => 8 , "fg_color" => 42 ));
+			$numseg->set_border(1);
+			$numter  =& $wb->addformat(array( "num_format" => '#,##0.00' , "size" => 8 , "fg_color" => 41 ));
+			$numter->set_border(1);
+			$numcua  =& $wb->addformat(array( "num_format" => '#,##0.00' , "size" => 8 , "fg_color" => 41 ));
+			$numcua->set_border(1);
+			$numqui  =& $wb->addformat(array( "num_format" => '#,##0.00' , "size" => 8 , "fg_color" => 45 ));
+			$numqui->set_border(1);
+
+			$titulo  =& $wb->addformat(array( "bold" => 1, "size" => 8, "merge" => 1, "fg_color" => 'silver', 'align'=>'vcenter' ));
+			$titulo->set_text_wrap();
+			$titulo->set_text_h_align(2);
+			$titulo->set_border(1);
+			$titulo->set_merge();
+
+			$titpri  =& $wb->addformat(array( "bold" => 1, "size" => 9, "merge" => 1, "fg_color" => 26 ));
+			$titpri->set_text_wrap();
+			$titpri->set_border(1);
+			$titpri->set_merge();
+
+			$titseg  =& $wb->addformat(array( "bold" => 1, "size" => 9, "merge" => 1, "fg_color" => 44 ));
+			$titseg->set_text_wrap();
+			$titseg->set_border(1);
+			$titseg->set_merge();
+
+			$titter  =& $wb->addformat(array( "bold" => 1, "size" => 9, "merge" => 1, "fg_color" => 42 ));
+			$titter->set_text_wrap();
+			$titter->set_border(1);
+			$titter->set_merge();
+
+			$titcua  =& $wb->addformat(array( "bold" => 1, "size" => 9, "merge" => 1, "fg_color" => 41 ));
+			$titcua->set_text_wrap();
+			$titcua->set_border(1);
+			$titcua->set_merge();
+
+			$titaler  =& $wb->addformat(array( "bold" => 1, "size" => 9, "merge" => 1, "fg_color" => 'red' ));
+			$titaler->set_text_wrap();
+			$titaler->set_border(1);
+			$titaler->set_merge();
+
+			$titqui  =& $wb->addformat(array( "bold" => 1, "size" => 9, "merge" => 1, "fg_color" => 45, 'align'=>'vcenter' ));
+			//$titqui->set_text_v_align(6);
+			$titqui->set_text_wrap();
+			$titqui->set_border(1);
+			$titqui->set_merge();
+
+			$cuerpo  =& $wb->addformat(array( 'size' => 9 ));
+
+			$Tnumero =& $wb->addformat(array( 'num_format' => '#,##0.00' , 'size' => 9, 'bold' => 1, 'fg_color' => 'silver' ));
+			$Rnumero =& $wb->addformat(array( 'num_format' => '#,##0.00' , 'size' => 9, 'bold' => 1, 'align'    => 'right' ));
+
+			// COMIENZA A ESCRIBIR
+			$ws->write(1, 0, $this->datasis->traevalor('TITULO1') , $h );
+			$ws->write(2, 0, $this->datasis->traevalor('TITULO2') , $h0 );
+			$ws->write(3, 0, 'RIF: '.$this->datasis->traevalor('RIF') , $h0 );
+
+			if(!empty($filter->marca->value)){
+				$ws->write(5, 0, 'Marca : '.$filter->marca->value,$h0 );
+			}
+
+			$ws->write(1, 8, 'Listado para negocioacion', $h );
+			//$ws->write(4, 8, ' ',$h1 );
+
+			// TITULOS
+			$mm=9;
+			$ws->write_string( $mm,   0, 'Descripción', $titulo );
+			$ws->write_string( $mm+1, 0, '', $titulo );
+
+			//$ws->write_blank(   $mm,  1,  $titpri);
+			$ws->write_string( $mm,   1, 'Marca', $titulo );
+			$ws->write_string( $mm+1, 1, '' , $titulo );
+
+			$ws->write_string( $mm,   2, 'Exist.', $titulo );
+			$ws->write_string( $mm+1, 2, '',$titulo );
+
+			$ws->write_string( $mm,   3, 'Cantidad',$titulo );
+			$ws->write_string( $mm+1, 3, '', $titulo );
+
+			$col=4;
+			foreach($droguerias AS $id=>$value){
+
+				$ws->write_string( $mm,   $col, ucwords($value) ,$titulo );
+				$ws->write_string( $mm+1, $col, 'Precio',  $titulo );
+				$col++;
+
+				$ws->write_blank(  $mm,   $col, $titulo );
+				$ws->write_string( $mm+1, $col, 'Existencia', $titulo );
+				$col++;
+
+				$ws->write_blank(  $mm,   $col, $titulo );
+				$ws->write_string( $mm+1, $col, 'SubTotal', $titulo );
+				$col++;
+			}
+
+
+			$ws->write_string( $mm, $col, 'Ventas', $titulo );
+			$ws->write_string( $mm+1, $col, 'Semestral', $titulo );
+			$col++;
+
+			$ws->write_blank(  $mm,   $col, $titulo );
+			$ws->write_string( $mm+1, $col, 'Trimestral', $titulo );
+			$col++;
+
+			$ws->write_blank(  $mm,   $col, $titulo );
+			$ws->write_string( $mm+1, $col, 'Mensual'   , $titulo );
+			$col++;
+
+			$ws->write_blank(  $mm,   $col, $titulo );
+			$ws->write_string( $mm+1, $col, 'Quincenal', $titulo );
+			$col++;
+
+			$ws->write_blank(  $mm,   $col, $titulo );
+			$ws->write_string( $mm+1, $col, 'Semanal', $titulo );
+			$col++;
+
+			$mm=$mm+2;
+			$dd=$mm+1;
+
+			$totdrog=array();
+			$mc=$this->db->query($mSQL);
+			if($mc->num_rows() > 0){
+				foreach( $mc->result() as $row ) {
+					$ws->write_string( $mm,  0,  $row->descrip        , $codesc );
+					$ws->write_string( $mm,  1,  $row->marca          , $codesc );
+					$ws->write_number( $mm,  2,  $row->existen        , $numcer );
+					$ws->write_number( $mm,  3,  0                    , $numcer );
+
+					$col=4;
+					foreach($droguerias as $id=>$value){
+						$obj1=$id;
+						$ventas=empty($row->$obj1)? 0 : $row->$obj1;
+						$ws->write_number( $mm, $col,$ventas, $numpri);
+						$col++;
+
+						$obj2=$id.'_cana';
+						$existe=empty($row->$obj2)? 0 : $row->$obj2;
+						$ws->write_number( $mm, $col,$existe, ($existe<=0)? $titaler: $numpri);
+						$col++;
+
+						$ucol= $this->nlet($col-2);
+						$umm = $mm+1;
+						$ws->write_formula($mm, $col, "=D$umm*$ucol$umm", ($existe<=0)? $titaler: $numter);
+						$totdrog[$this->nlet($col)] = $col;
+						$col++;
+					}
+
+					$ws->write_string( $mm, $col,  $row->semestral   , $codesc ); $col++;
+					$ws->write_string( $mm, $col,  $row->trimestral  , $codesc ); $col++;
+					$ws->write_string( $mm, $col,  $row->mensual     , $codesc ); $col++;
+					$ws->write_string( $mm, $col,  $row->quincenal   , $codesc ); $col++;
+					$ws->write_string( $mm, $col,  $row->semanal     , $codesc ); $col++;
+
+					$mm++;
+				}
+			}
+			$celda = $mm+1;
+			$totlet=array();
+
+			$ws->write_string( $mm,  0, 'Totales...',$Tnumero );
+
+			foreach($totdrog as $ucol=>$col){
+				$ws->write_formula($mm, $col, "=SUM(${ucol}12*${ucol}${mm})", $Tnumero );
+			}
+
+			$wb->close();
+			header("Content-type: application/x-msexcel; name=\"$fnombre\"");
+			header("Content-Disposition: inline; filename=\"$fnombre\"");
+			$fh=fopen($fname,'rb');
+			fpassthru($fh);
+			unlink($fname);
+		}else{
+			$data['filtro'] = $filter->output;
+			$data['titulo'] = heading('Listado para negocioaciones');
+			$data['head'] = $this->rapyd->get_head();
+			$this->load->view('view_freportes', $data);
+		}
+	}
+
+	function nlet($i){
+		$pivot=ord('A');
+		$upivo=ord('Z');
+		$val  =$i+$pivot;
+		$res  =ceil($val/$upivo)-1;
+		$let ='';
+		$des = 0;
+		for($o=0;$o<$res;$o++){
+			$let.=chr($o+$pivot);
+			$des+=$upivo-$pivot+1;
+		}
+		$let.=chr($val-$des);
+
+		return $let;
 	}
 
 	function instalar(){
