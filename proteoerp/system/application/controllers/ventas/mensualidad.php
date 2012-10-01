@@ -86,6 +86,7 @@ class mensualidad extends sfac_add {
 		$this->load->view('view_ventanas', $data);
 	}
 
+
 	function facturar($id=null,$status){
 		$this->genesal=true;
 		$this->back_url=$this->url.'filteredgrid';

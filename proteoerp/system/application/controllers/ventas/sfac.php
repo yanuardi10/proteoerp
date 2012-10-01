@@ -45,15 +45,18 @@ class Sfac extends Controller {
 		$grid->setUrlput(site_url($this->url.'setdata/'));
 
 		//Botones Panel Izq
-		$grid->wbotonadd(array("id"=>"boton1", "img"=>"images/pdf_logo.gif", "alt" => 'Formato PDF',  "label"=>"Reimprimir Documento"));
-		$grid->wbotonadd(array("id"=>"boton2", "img"=>"images/agrega4.png",  "alt" => 'Agregar',  "label"=>"Agregar Venta"));
-		$grid->wbotonadd(array("id"=>"boton3", "img"=>"images/agrega4.png",  "alt" => 'Agregar servicio mensual',  "label"=>"Servicios Mensuales"));
+		$grid->wbotonadd(array("id"=>"boton1",  "img"=>"images/pdf_logo.gif","alt" => 'Formato PDF',      "label"=>"Reimprimir Documento"));
+		$grid->wbotonadd(array("id"=>"boton2",  "img"=>"images/agrega4.png", "alt" => 'Agregar',          "label"=>"Agregar Venta"));
+		$grid->wbotonadd(array("id"=>"cobroser","img"=>"images/agrega4.png", "alt" => 'Cobro de Servicio',"label"=>"Cobro de Servicio"));
 		$WestPanel = $grid->deploywestp();
 
 		//Panel Central
 		$centerpanel = $grid->centerpanel( $id = "radicional", $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
 
-		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'));
+		$adic = array(
+			array("id"=>"fcobroser", "title"=>"Cobro de servicio")
+		);
+		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
 		$param['WestPanel']    = $WestPanel;
 		//$param['EastPanel']  = $EastPanel;
@@ -86,18 +89,64 @@ class Sfac extends Controller {
 			} else { $.prompt("<h1>Por favor Seleccione una Factura</h1>");}
 		});';
 
-
 		$bodyscript .= '
 		jQuery("#boton2").click( function(){
 			window.open(\''.site_url('ventas/sfac_add/dataedit/create').'\', \'_blank\', \'width=900,height=700,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-350)\');
 		});';
 
+		//Prepara Pago o Abono
 		$bodyscript .= '
-		jQuery("#boton3").click( function(){
-			window.open(\''.site_url('ventas/mensualidad').'\', \'_blank\', \'width=900,height=700,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-350)\');
-		});
-		</script>'."\n";
+			$( "#cobroser" ).click(function() {
+				$.post("'.site_url('ventas/sfac/fcobroser').'", function(data){
+					$("#fcobroser").html(data);
+				});
+				$( "#fcobroser" ).dialog( "open" );
 
+			});
+			$( "#fcobroser" ).dialog({
+				autoOpen: false, height: 400, width: 540, modal: true,
+				buttons: {
+					"Guardar": function() {
+						var bValid = true;
+						var rows = $("#aceptados").jqGrid("getGridParam","data");
+						var paras = new Array();
+						for(var i=0;i < rows.length; i++){
+							var row=rows[i];
+							paras.push($.param(row));
+						}
+						// Coloca el Grid en un input
+						$("#fgrid").val(JSON.stringify(paras));
+						//allFields.removeClass( "ui-state-error" );
+						if ( bValid ) {
+							$.ajax({
+								type: "POST", dataType: "html", async: false,
+								url:"'.site_url("finanzas/ppro/cobroser").'",
+								data: $("#abonopforma").serialize(),
+								success: function(r,s,x){
+									var res = $.parseJSON(r);
+									if ( res.status == "A"){
+										alert(res.mensaje);
+										grid.trigger("reloadGrid");
+										'.$this->datasis->jwinopen(site_url('reportes/ver/SPRMPRE/').'/\'+res.id').';
+										$( "#fpreabono" ).dialog( "close" );
+										return [true, a ];
+									} else {
+										apprise("<div style=\"font-size:16px;font-weight:bold;background:red;color:white\">Error:</div> <h1>"+res.mensaje+"</h1>");
+									}
+								}
+							});
+						}
+					},
+					Cancel: function() { $( this ).dialog( "close" ); }
+				},
+				close: function() {
+					//allFields.val( "" ).removeClass( "ui-state-error" );
+					alert("Cerrado");
+				}
+			});
+		';
+		$bodyscript .= "\n</script>\n";
+			
 		return $bodyscript;
 	}
 
@@ -1588,6 +1637,123 @@ class Sfac extends Controller {
 		};
 */
 	}
+
+
+	//*********************************************************
+	// Forma de Abono
+	//
+	function fcobroser(){
+		$mSQL    = "SELECT tipo, CONCAT(tipo, ' ', nombre) descrip FROM tarjeta WHERE tipo NOT IN ('DE','NC','IR') ORDER BY tipo ";
+		$tarjeta = $this->datasis->llenaopciones($mSQL, true, 'fcodigo');
+
+
+		//$id      = $this->uri->segment($this->uri->total_segments());
+		//$proveed = $this->datasis->dameval("SELECT proveed FROM sprv WHERE id=$id");
+
+		//$reg = $this->datasis->damereg("SELECT proveed, nombre, rif FROM sprv WHERE id=$id");
+
+
+
+		$salida = '
+<script type="text/javascript">
+	$( "#fcliente" ).autocomplete({
+		source: function(req, add){
+			$.post(
+				"'.site_url("ajax/buscascli").'",
+				req,
+				function(data) {
+					var suggestions = [];
+					$.each(
+						data, function(i, val){
+							suggestions.push( val.label );
+						}
+					);
+					add(suggestions);
+				}
+			)
+		}
+	});
+</script>
+	<div style="background-color:#D0D0D0;font-weight:bold;font-size:14px;text-align:center"><table width="100%"><tr><td>Cobro de Servicios Mensuales</td><td></td><td> </td></tr></table></div>
+	<p class="validateTips"></p>
+	<form id="abonoforma">
+	<fieldset style="border: 2px outset #9AC8DA;background: #FFFDE9;">
+	<table width="90%" align="center" border="0">
+	<tr>
+		<td class="CaptionTD" align="right">Cliente: </td>
+		<td>&nbsp;<input name="fcliente" id="fcliente" type="text" value="" maxlengh="12" size="12" /></td>
+		<td class="CaptionTD" align="right">Telefono: </td>
+		<td>&nbsp;<input name="ftelefono" id="ftelefono" type="text" value="" maxlengh="12" size="12" /></td>
+	</tr>
+	<tr>
+		<td class="CaptionTD" align="right">Nombre: </td>
+		<td colspan="3">&nbsp;<input name="fnombre" id="fnombre" value="" size="50" ></td>
+	</tr>
+	<tr>
+		<td class="CaptionTD" align="right">Direccion: </td>
+		<td colspan="3">&nbsp;<input name="fdire11" id="fdire11" value="" size="50"></td>
+	</tr>
+	<tr>
+		<td class="CaptionTD" align="right">&nbsp;</td>
+		<td colspan="3">&nbsp;<input name="fdire12" id="fdire12" value="" size="50"></td>
+	</tr>
+	</table>
+
+	</fieldset>
+	<fieldset style="border: 2px outset #9AC8DA;background: #FFFDE9;">
+	<table width="90%" align="center" border="0">
+	<tr>
+		<td class="CaptionTD" align="right">Nro de meses que paga: </td>
+		<td>&nbsp;<input name="fmespaga" id="fmespaga" type="text" value="12" maxlengh="12" size="8" /></td>
+	</tr>
+	</table>
+	</fieldset>
+
+
+	</fieldset>
+	<fieldset style="border: 2px outset #9AC8DA;background: #FFFDE9;">
+	<table width="90%" align="center" border="0">
+	<tr>
+		<td class="CaptionTD" align="right">Ultimo Pago: </td>
+		<td>&nbsp;<input name="fupago" id="fupago" type="text" value="201112" maxlengh="12" size="8" /></td>
+		<td  class="CaptionTD"  align="right">Tarifa</td>
+		<td>&nbsp;<input name="fcodtar" id="fcodtar" type="text" value="" maxlengh="12" size="15"  /></td>
+		<td  class="CaptionTD"  align="right">Monto</td>
+		<td>&nbsp;<input name="ftarifa" id="ftarifa" type="text" value="" maxlengh="12" size="12"  /></td>
+	</tr>
+	</table>
+	</fieldset>
+
+
+	<fieldset style="border: 2px outset #9AC8DA;background: #FFFDE9;">
+	<table width="90%" align="center" border="0">
+	<tr>
+		<td class="CaptionTD" align="right">Forma de Pago</td>
+		<td>&nbsp;'.$tarjeta.'</td>
+		<td  class="CaptionTD"  align="right">Numero</td>
+		<td>&nbsp;<input name="fcomprob" id="fcomprob" type="text" value="" maxlengh="12" size="12"  /></td>
+	</tr>
+	</table>
+	</fieldset>
+
+	<input id="fmonto"   name="fmonto"   type="hidden">
+	<input id="fsele"    name="fsele"    type="hidden">
+	<input id="fid"      name="fid"      type="hidden" value="">
+	<input id="fgrid"    name="fgrid"    type="hidden">
+	<br>
+	<center><table id="abonados"><table></center>
+	<table width="100%">
+	<tr>
+		<td align="center"><div id="grantotal" style="font-size:20px;font-weight:bold">Monto a pagar: 0.00</div></td>
+	</tr>
+	</table>
+	</form>
+';
+
+
+		echo $salida;
+	}
+
 
 
 
