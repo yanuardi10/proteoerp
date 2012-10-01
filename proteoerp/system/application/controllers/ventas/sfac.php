@@ -1703,23 +1703,22 @@ class Sfac extends Controller {
 	<fieldset style="border: 2px outset #9AC8DA;background: #FFFDE9;">
 	<table width="90%" align="center" border="0">
 	<tr>
-		<td class="CaptionTD" align="right">Nro de meses que paga: </td>
-		<td>&nbsp;<input name="fmespaga" id="fmespaga" type="text" value="12" maxlengh="12" size="8" /></td>
-	</tr>
-	</table>
-	</fieldset>
-
-
-	</fieldset>
-	<fieldset style="border: 2px outset #9AC8DA;background: #FFFDE9;">
-	<table width="90%" align="center" border="0">
-	<tr>
 		<td class="CaptionTD" align="right">Ultimo Pago: </td>
 		<td>&nbsp;<input name="fupago" id="fupago" type="text" value="201112" maxlengh="12" size="8" /></td>
 		<td  class="CaptionTD"  align="right">Tarifa</td>
 		<td>&nbsp;<input name="fcodtar" id="fcodtar" type="text" value="" maxlengh="12" size="15"  /></td>
 		<td  class="CaptionTD"  align="right">Monto</td>
 		<td>&nbsp;<input name="ftarifa" id="ftarifa" type="text" value="" maxlengh="12" size="12"  /></td>
+	</tr>
+	</table>
+	</fieldset>
+
+	</fieldset>
+	<fieldset style="border: 2px outset #9AC8DA;background: #FFFDE9;">
+	<table width="90%" align="center" border="0">
+	<tr>
+		<td class="CaptionTD" align="right">Nro de meses que paga: </td>
+		<td>&nbsp;<input name="fmespaga" id="fmespaga" type="text" value="12" maxlengh="12" size="8" /></td>
 	</tr>
 	</table>
 	</fieldset>
