@@ -4,7 +4,7 @@
  *
  *
  *  BUSQUEDAS
- *		PROVEEDORES 	buscasprv 
+ *		PROVEEDORES 	buscasprv
  *
  *		CLIENTES	buscascli
  *
@@ -19,9 +19,9 @@
  *		PLAN DE CUENTAS buscacpla
  *
  *
- *			
- *				
- *  
+ *
+ *
+ *
  *
 */
 class Ajax extends Controller {
@@ -150,6 +150,52 @@ class Ajax extends Controller {
 		return true;
 	}
 
+	/**************************************************************
+	 *
+	 *  BUSCA LOS CLIENTES PARA COBRO DE SERVICIO
+	 *
+	*/
+	function buscascliser(){
+		$mid  = $this->input->post('q');
+		if($mid == false) $mid  = $this->input->post('term');
+
+		$qmid = $this->db->escape($mid);
+		$qdb  = $this->db->escape('%'.$mid.'%');
+
+		$data = '[{ }]';
+		if($mid !== false){
+			$retArray = $retorno = array();
+
+			$mSQL="SELECT TRIM(a.nombre) AS nombre, TRIM(a.rifci) AS rifci, a.cliente, a.tipo , a.dire11 AS direc,b.precio1,a.upago,a.telefono
+				,b.codigo
+				FROM scli AS a
+				JOIN sinv AS b ON a.tarifa=b.codigo
+				WHERE (cliente LIKE ${qdb} OR rifci LIKE ${qdb} OR nombre LIKE ${qdb})
+				ORDER BY rifci LIMIT 10";
+
+			$query = $this->db->query($mSQL);
+			if ($query->num_rows() > 0){
+				foreach( $query->result_array() as  $row ) {
+					$retArray['value']   = $row['cliente'];
+					$retArray['label']   = '('.$row['rifci'].') '.utf8_encode($row['nombre']);
+					$retArray['rifci']   = $row['rifci'];
+					$retArray['nombre']  = utf8_encode($row['nombre']);
+					$retArray['cod_cli'] = $row['cliente'];
+					$retArray['codigo']  = $row['codigo'];
+					$retArray['tipo']    = $row['tipo'];
+					$retArray['precio1'] = $row['precio1'];
+					$retArray['telefono']= $row['telefono'];
+					$retArray['upago']    = $row['upago'];
+					$retArray['direc']   = utf8_encode($row['direc']);
+					array_push($retorno, $retArray);
+				}
+			}
+			if(count($data)>0)
+				$data = json_encode($retorno);
+		}
+		echo $data;
+		return true;
+	}
 
 	/**************************************************************
 	 *
@@ -547,7 +593,7 @@ class Ajax extends Controller {
 						$retArray['descrip']  = utf8_encode($row['descrip']);
 						$retArray['departa']  = $row['departa'];
 						$retArray['ccosto']   = $row['ccosto'];
-	
+
 						array_push($retorno, $retArray);
 					}
 					$data = json_encode($retorno);
@@ -883,7 +929,7 @@ class Ajax extends Controller {
 		return true;
 	}
 
-	// Para JQGRID	
+	// Para JQGRID
 	function ddsucu(){
 		$mSQL = "SELECT TRIM(codigo) codigo, CONCAT(TRIM(codigo),' ',TRIM(sucursal)) sucursal FROM sucu ORDER BY codigo";
 		echo $this->datasis->llenaopciones($mSQL, true);
@@ -979,7 +1025,7 @@ class Ajax extends Controller {
 				$ww='';
 			}
 			*/
-			
+
 			$mSQL="SELECT TRIM(descrip) AS nombre, codigo FROM mgas WHERE descrip LIKE ${qdb} OR codigo LIKE ${qmid} ORDER BY descrip LIMIT 20";
 			$query = $this->db->query($mSQL);
 			if ($query->num_rows() > 0){
@@ -994,25 +1040,25 @@ class Ajax extends Controller {
 		echo $data;
 		return true;
 	}
-	
+
 	//***************************************
 	//          BUSCA GASTO o PROVEEDOR
 	//***************************************
 	function buscasprvmgas(){
 		$tipo  = $this->input->post('cargo');
 		$cta   = $this->input->post('acelem');
-		
+
 		if ( $cta == 'ctade')
 			$tipo = substr($tipo,0,1);
 		else
 			$tipo = substr($tipo,2,1);
-		
+
 		if ( $tipo == 'P')
 			$this->buscasprv();
 		else
 			$this->buscamgas();
 	}
-	
+
 	//***************************************
 	//          BUSCA PERSONA
 	//***************************************
@@ -1096,7 +1142,7 @@ class Ajax extends Controller {
 		$data = '[{ }]';
 		if($mid !== false){
 			$retArray = $retorno = array();
-			$mSQL="	SELECT numero, CONCAT(tipo_doc, numero, ' ', fecha, ' Monto:', monto-abonos) label, tipo_doc, monto-abonos monto, abonos FROM smov 
+			$mSQL="	SELECT numero, CONCAT(tipo_doc, numero, ' ', fecha, ' Monto:', monto-abonos) label, tipo_doc, monto-abonos monto, abonos FROM smov
 				WHERE cod_cli=".$this->db->escape($cod_cli)." AND monto>abonos AND tipo_doc IN ('FC','ND') AND numero LIKE ${qmid} ORDER BY tipo_doc, numero LIMIT 20";
 			$query = $this->db->query($mSQL);
 			if ($query->num_rows() > 0){
@@ -1117,5 +1163,5 @@ class Ajax extends Controller {
 
 
 
-	
+
 }
