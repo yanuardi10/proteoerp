@@ -107,35 +107,15 @@ class Sfac extends Controller {
 				autoOpen: false, height: 400, width: 540, modal: true,
 				buttons: {
 					"Guardar": function() {
-						var bValid = true;
-						var rows = $("#aceptados").jqGrid("getGridParam","data");
-						var paras = new Array();
-						for(var i=0;i < rows.length; i++){
-							var row=rows[i];
-							paras.push($.param(row));
-						}
-						// Coloca el Grid en un input
-						$("#fgrid").val(JSON.stringify(paras));
-						//allFields.removeClass( "ui-state-error" );
-						if ( bValid ) {
-							$.ajax({
-								type: "POST", dataType: "html", async: false,
-								url:"'.site_url("finanzas/ppro/cobroser").'",
-								data: $("#abonopforma").serialize(),
-								success: function(r,s,x){
-									var res = $.parseJSON(r);
-									if ( res.status == "A"){
-										alert(res.mensaje);
-										grid.trigger("reloadGrid");
-										'.$this->datasis->jwinopen(site_url('reportes/ver/SPRMPRE/').'/\'+res.id').';
-										$( "#fpreabono" ).dialog( "close" );
-										return [true, a ];
-									} else {
-										apprise("<div style=\"font-size:16px;font-weight:bold;background:red;color:white\">Error:</div> <h1>"+res.mensaje+"</h1>");
-									}
+						$.post("'.site_url('ventas/mensualidad/servxmes/insert').'", {cod_cli: $("#fcliente").val(),cana_0: $("#fmespaga").val(),tipo_0: $("#fcodigo").val(),num_ref_0: $("#fcomprob").val(),preca_0: $("#ftarifa").val() },
+							function(data) {
+								if(data=="Venta Guardada"){
+									$("#fcobroser").dialog( "close" );
+								}else{
+									alert(data);
 								}
-							});
-						}
+							}
+						);
 					},
 					Cancel: function() { $( this ).dialog( "close" ); }
 				},
@@ -146,7 +126,7 @@ class Sfac extends Controller {
 			});
 		';
 		$bodyscript .= "\n</script>\n";
-			
+
 		return $bodyscript;
 	}
 
@@ -1657,26 +1637,59 @@ class Sfac extends Controller {
 		$salida = '
 <script type="text/javascript">
 	$( "#fcliente" ).autocomplete({
-		source: function(req, add){
-			$.post(
-				"'.site_url("ajax/buscascli").'",
-				req,
-				function(data) {
-					var suggestions = [];
-					$.each(
-						data, function(i, val){
-							suggestions.push( val.label );
+		source: function( req, add){
+			$.ajax({
+				url:  "'.site_url('ajax/buscascliser').'",
+				type: "POST",
+				dataType: "json",
+				data: "q="+req.term,
+				success:
+					function(data){
+						var sugiere = [];
+						if(data.length==0){
+							$("#fnombre").val("");
+							//$("#nombre_val").text("");
+
+							//$("#rifci").val("");
+							//$("#rifci_val").text("");
+							//$("#sclitipo").val("1");
+
+							$("#fdire11").val("");
+							$("#ftelefono").val("");
+							$("#ftarifa").val("");
+							$("#fupago").val("");
+							//$("#direc_val").text("");
+						}else{
+							$.each(data,
+								function(i, val){
+									sugiere.push( val );
+								}
+							);
 						}
-					);
-					add(suggestions);
-				}
-			)
+						add(sugiere);
+					},
+			})
+		},
+		minLength: 2,
+		select: function( event, ui ) {
+			$("#fnombre").val(ui.item.nombre);
+			$("#ftelefono").val(ui.item.telefono);
+			$("#ftarifa").val(ui.item.precio1);
+			$("#fcodtar").val(ui.item.codigo);
+			$("#fdire11").val(ui.item.direc);
+			$("#fupago").val(ui.item.upago);
+			//$("#nombre_val").text(ui.item.nombre);
+			//$("#rifci").val(ui.item.rifci);
+			//$("#rifci_val").text(ui.item.rifci);
+			//$("#cod_cli").val(ui.item.cod_cli);
+			//$("#sclitipo").val(ui.item.tipo);
+			//$("#direc_val").text(ui.item.direc);
 		}
 	});
 </script>
 	<div style="background-color:#D0D0D0;font-weight:bold;font-size:14px;text-align:center"><table width="100%"><tr><td>Cobro de Servicios Mensuales</td><td></td><td> </td></tr></table></div>
 	<p class="validateTips"></p>
-	<form id="abonoforma">
+	<form id="formcobroser">
 	<fieldset style="border: 2px outset #9AC8DA;background: #FFFDE9;">
 	<table width="90%" align="center" border="0">
 	<tr>
