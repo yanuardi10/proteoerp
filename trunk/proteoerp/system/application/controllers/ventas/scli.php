@@ -29,6 +29,10 @@ class Scli extends Controller {
 		if (!in_array('upago'   ,$campos)) $this->db->query('ALTER TABLE scli ADD COLUMN upago  VARCHAR(6) NULL ');
 		if (!in_array('tarifa'  ,$campos)) $this->db->query('ALTER TABLE scli ADD COLUMN tarifa VARCHAR(15) NULL ');
 
+		if ( !$this->datasis->iscampo('scli','tarifa') ) {
+			$this->db->query('ALTER TABLE scli ADD COLUMN tarifa CHAR(6) NULL ');
+		};
+
 		$this->datasis->modintramenu( 1000, 650, 'ventas/scli' );
 		redirect($this->url.'jqdatag');
 	}

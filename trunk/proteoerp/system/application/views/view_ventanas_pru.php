@@ -63,7 +63,6 @@ $("#cajafiltro").hide();
 		<p style='font-size: 10'>Tiempo de la consulta seg | Proteo ERP  |<a
 			href="#" onClick="window.close()">Cerrar</a></p>
 
-
 		</div>
 		</td>
 	</tr>

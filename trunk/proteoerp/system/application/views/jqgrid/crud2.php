@@ -156,44 +156,52 @@ if (isset($otros)) {
 
 <!-- ESTILOS -->
 <?php
+echo style('rapyd.css');
+echo style('ventanas.css');
+?>
+<link rel="stylesheet" href="<?php echo site_url("system/application/rapyd/libraries/jscalendar/calendar.css") ?>" type="text/css" />
+<link rel="stylesheet" href="<?php echo site_url("system/application/rapyd/elements/proteo/css/rapyd_components.css") ?>" type="text/css" />
+<?php
 //Array de Temas Adicionales
 if ( isset($temas) ) {
 	foreach( $temas as $temaco ){echo style('themes/'.$temaco.'/'.$temaco.'.css');}
 }
 
-echo "<!-- JQUERY -->";
+echo "\n<!-- JQUERY -->\n";
 echo script('jquery-min.js');
-echo script('nformat.js');
+echo phpscript('nformat.js');
 echo script('plugins/jquery.numeric.pack.js');
 echo script('jquery-ui.custom.min.js');
 echo script('jquery.ui.selectmenu.js');
 echo style('jquery.ui.selectmenu.css');
-
-
+echo "\n";
+echo script('plugins/jquery.numeric.pack.js');
+echo script('plugins/jquery.floatnumber.js');
+echo "\n";
 if ( isset($jquerys) ) {
 	foreach( $jquerys as $jq ){ echo script($jq); }
 }
 
-echo "<!-- Block Out -->";
+echo "\n<!-- Block Out -->\n";
 echo script('plugins/jquery.blockUI.js'); 
 
-echo "<!-- Impromptu -->";
+echo "\n<!-- Impromptu -->\n";
 echo script('jquery-impromptu.js');
 echo style('impromptu/default.css');
 
 echo script('apprise-1.5.min.js');
 echo style('apprise.min.css');
 
-echo "<!-- JQGRID -->";
+echo "\n<!-- JQGRID -->\n";
 echo style('themes/ui.jqgrid.css');
 echo script('i18n/grid.locale-sp.js');
 echo script('jquery.jqGrid.min.js');
 
-echo "<!-- DATAGRID -->";
+echo "\n<!-- DATAGRID -->\n";
 echo script('datagrid/datagrid.js');
 echo style('../datagrid/datagrid.css');
 
-echo "<!-- LAYOUT -->";
+echo "\n<!-- LAYOUT -->\n";
 echo script('jquery.layout.js');
 
 ?>

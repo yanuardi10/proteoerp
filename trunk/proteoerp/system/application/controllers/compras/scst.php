@@ -36,6 +36,7 @@ class Scst extends Controller {
 		$param['grids'][] = $grid1->deploy();
 
 		$readyLayout = $grid->readyLayout2( 212, 220, $param['grids'][0]['gridname'],$param['grids'][1]['gridname']);
+
 		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
 
 		#Set url
@@ -45,11 +46,19 @@ class Scst extends Controller {
 		$grid->wbotonadd(array("id"=>"boton1", "img"=>"images/pdf_logo.gif", "alt" => 'Formato PDF', "label"=>"Reimprimir Documento"));
 		$grid->wbotonadd(array("id"=>"boton3", "img"=>"images/editar.png",   "alt" => 'Agregar',     "label"=>"Modificar Compras"));
 		$grid->wbotonadd(array("id"=>"boton2", "img"=>"images/agrega4.png",  "alt" => 'Agregar',     "label"=>"Agregar Compras"));
+		$grid->wbotonadd(array("id"=>"compra", "img"=>"images/agrega4.png",  "alt" => 'Agregar',     "label"=>"Agregar Compras"));
 		$WestPanel = $grid->deploywestp();
 
 		//Panel Central y Sur
 		$centerpanel = $grid->centerpanel( $id = "radicional", $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
-		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'));
+
+		//Panel de pie de forma
+		$adic = array(
+			array("id"=>"fcompra", "title"=>"Modificar Compra"),
+			array("id"=>"fagreag", "title"=>"Agregar Compra"),
+		);
+		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
+
 
 		$param['WestPanel']    = $WestPanel;
 		//$param['EastPanel']  = $EastPanel;
@@ -102,7 +111,77 @@ class Scst extends Controller {
 			} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
 		});';
 
-		$bodyscript .= '</script>';
+
+		//Wraper de javascript
+		$bodyscript .= '
+		$(function() {
+			$("#dialog:ui-dialog").dialog( "destroy" );
+			var mId = 0;
+			var montotal = 0;
+			var ffecha = $("#ffecha");
+			var grid = jQuery("#newapi'.$grid0.'");
+			var s;
+			var allFields = $( [] ).add( ffecha );
+			var tips = $( ".validateTips" );
+			s = grid.getGridParam(\'selarrrow\'); 
+		';
+		
+		//Abonos
+		$bodyscript .= '
+			$( "#compra" ).click(function() {
+				var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+				if (id)	{
+					var ret    = $("#newapi'.$grid0.'").getRowData(id);  
+					mId = id;
+					$.post("'.site_url('compras/scst/dataedit/modify').'/"+id, function(data){
+						$("#fcompra").html(data);
+					});
+					$( "#fcompra" ).dialog( "open" );
+				} else { $.prompt("<h1>Por favor Seleccione una compra</h1>");}
+			});
+
+			$( "#fcompra" ).dialog({
+				autoOpen: false, height: 570, width: 800, modal: true,
+				buttons: {
+					"Abonar": function() {
+						var bValid = true;
+						var rows = $("#abonados").jqGrid("getGridParam","data");
+						var paras = new Array();
+						for(var i=0;i < rows.length; i++){
+							var row=rows[i];
+							paras.push($.param(row));
+						}
+						allFields.removeClass( "ui-state-error" );
+						if ( bValid ) {
+							// Coloca el Grid en un input
+							$("#fgrid").val(JSON.stringify(paras));
+							$.ajax({
+								type: "POST", dataType: "html", async: false,
+								url:"'.site_url("finanzas/ppro/abono").'",
+								data: $("#abonoforma").serialize(),
+								success: function(r,s,x){
+									var res = $.parseJSON(r);
+									if ( res.status == "A"){
+										apprise(res.mensaje);
+										grid.trigger("reloadGrid");
+										'.$this->datasis->jwinopen(site_url('formatos/ver/COMPRA').'/\'+res.id').';
+										$( "#fabono" ).dialog( "close" );
+										return [true, a ];
+									} else {
+										apprise("<div style=\"font-size:16px;font-weight:bold;background:red;color:white\">Error:</div> <h1>"+res.mensaje+"</h1>");
+									}
+								}
+							});
+						}
+					},
+					Cancel: function() { $( this ).dialog( "close" ); }
+				},
+				close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
+			});
+		});';
+
+
+		$bodyscript .= "\n</script>\n";
 
 		return $bodyscript;
 
@@ -1665,7 +1744,6 @@ class Scst extends Controller {
 			$edit->buttons('save', 'exit','add_rel');
 		}
 
-
 		if($this->genesal){
 			$edit->build();
 
@@ -1682,16 +1760,15 @@ class Scst extends Controller {
 			$data['script'] .= script('plugins/jquery.floatnumber.js');
 			$data['script'] .= script('plugins/jquery.ui.autocomplete.autoSelectOne.js');
 			$data['script'] .= phpscript('nformat.js');
+
 			$data['head']    = $this->rapyd->get_head();
 			$data['head']   .= style('redmond/jquery-ui-1.8.1.custom.css');
-			$data['content'] = $this->load->view('view_compras', $conten,true);
-			$data['title']   = heading('Compras');
-
-			$this->load->view('view_ventanas', $data);
+			$data['content'] = $this->load->view('view_compras', $conten);
+			//$data['title']   = heading('Compras');
+			//$this->load->view('view_ventanas', $data);
 		}else{
 			$edit->on_save_redirect=false;
 			$edit->build();
-
 			if($edit->on_success()){
 				$this->claves=$edit->_dataobject->pk;
 				$this->claves['control']=$edit->_dataobject->get('control');
@@ -1701,7 +1778,6 @@ class Scst extends Controller {
 			}
 			return $rt;
 		}
-
 	}
 
 	function cprecios($control){
