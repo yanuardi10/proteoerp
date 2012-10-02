@@ -121,7 +121,7 @@ class Sfac extends Controller {
 				},
 				close: function() {
 					//allFields.val( "" ).removeClass( "ui-state-error" );
-					alert("Cerrado");
+					//alert("Cerrado");
 				}
 			});
 		';

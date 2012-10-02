@@ -320,40 +320,48 @@ function autocod(id){
 <?php } ?>
 
 <table width='100%' align='center'>
+<?php 
+$nana='NONO';
+if (!$solo){
+?>
 	<tr>
-		<td align=right>
+		<td align="right">
 			<?php echo $container_tr; ?>
 		</td>
 	</tr>
+<?php
+}
+?>
 	<tr>
 		<td>
+			<fieldset  style='border: 1px outset #FEB404;background: #FFFCE8;'>
 			<table width="100%"  style="margin:0;width:100%;" cellspacing='2' cellpadding='2'>
 				<tr>
-					<td colspan=11 class="littletableheader">Encabezado</td>
+					<td colspan="3">
+						<table width="100%">
+							<tr>
+								<td class="littletablerowth" width='40'><?php echo $form->tipo->label  ?></td>
+								<td class="littletablerow"   align='left' width='150'>  <?php echo $form->tipo->output ?></td>
+								<td class="littletablerowth" align='right' width='100'><?php echo $form->proveed->label  ?>*</td>
+								<td class="littletablerow">  <?php echo $form->proveed->output ?><b id='nombre_val'><?php echo $form->nombre->value ?></b><?php echo $form->nombre->output ?></td>
+							</tr>
+						</table>
+					</td>
 				</tr>
 				<tr>
-					<td>
-					<fieldset  style='border: 1px outset #FEB404;background: #FFFCE8;'>
-						<table>
+					<td style='border: 1px solid grey;'>
+						<table width='100%'>
 							<tr>
 								<td class="littletablerowth"><?php echo $form->fecha->label  ?></td>
 								<td class="littletablerow">  <?php echo $form->fecha->output ?></td>
 							</tr><tr>
 								<td class="littletablerowth"><?php echo $form->serie->label  ?></td>
 								<td class="littletablerow">  <?php echo $form->serie->output ?></td>
-							</tr><tr>
-								<td class="littletablerowth"><?php echo $form->tipo->label  ?></td>
-								<td class="littletablerow">  <?php echo $form->tipo->output ?></td>
 							</tr>
 						</table>
-					</fieldset>
-					</td><td>
-					<fieldset  style='border: 1px outset #FEB404;background: #FFFCE8;'>
-						<table>
+					</td><td style='border: 1px solid grey;'>
+						<table width='100%'>
 							<tr>
-								<td class="littletablerowth"><?php echo $form->orden->label  ?></td>
-								<td class="littletablerow">  <?php echo $form->orden->output ?></td>
-							</tr><tr>
 								<td class="littletablerowth"><?php echo $form->cfis->label  ?>*</td>
 								<td class="littletablerow">  <?php echo $form->cfis->output ?></td>
 							</tr><tr>
@@ -361,25 +369,28 @@ function autocod(id){
 								<td class="littletablerow">  <?php echo $form->almacen->output ?></td>
 							</tr>
 						</table>
-					</fieldset>
-					</td><td>
-					<fieldset  style='border: 1px outset #FEB404;background: #FFFCE8;'>
-						<table>
+					</td><td style='border: 1px solid grey;'>
+						<table width='100%'>
 							<tr>
-								<td class="littletablerowth"><?php echo $form->proveed->label  ?>*</td>
-								<td class="littletablerow">  <?php echo $form->proveed->output ?><b id='nombre_val'><?php echo $form->nombre->value ?></b><?php echo $form->nombre->output ?></td>
-							</tr><tr>
 								<td class="littletablerowth"><?php echo $form->vence->label ?></td>
 								<td class="littletablerow">  <?php echo $form->vence->output ?></td>
 							</tr><tr>
+								<td class="littletablerowth"><?php echo $form->actuali->label  ?></td>
+								<td class="littletablerow">  <?php echo $form->actuali->output ?></td>
+
+<?php
+/*
 								<td class="littletablerowth"><? echo $form->peso->label ?></td>
 								<td class="littletablerow" align='right'><b id='peso_val'><?php echo $form->peso->value ?></b><?php echo $form->peso->output ?></td>
+*/
+?>
 							</tr>
 						</table>
-					</fieldset>
 					</td>
 				</tr>
 			</table>
+			</fieldset>
+			
 		</tr>
 	<tr>
 </table>
@@ -427,16 +438,23 @@ function autocod(id){
 			<?php } ?>
 		</table>
 		</div>
+<?php
+/*
 		<?php echo $container_bl ?>
 		<?php echo $container_br ?>
 		<br>
+*/
+?>
 
-<table  width="100%" style="margin:0;width:100%;" >
+<table  width="100%" style="margin:0;width:100%;" border='0'>
+<?php
+//	<tr>
+//		<td colspan=10 class="littletableheader">Totales</td>
+//	</tr>
+?>
 	<tr>
-		<td colspan=10 class="littletableheader">Totales</td>
-	</tr>
-	<tr>
-		<td width="131" class="littletablerowth" align='right'><?php echo $form->rislr->label;     ?></td>
+		<td width="131" class="littletablerowth" align='right'><?php echo $container_bl ?></td>
+<?php /*		<td width="131" class="littletablerowth" align='right'><?php echo $form->rislr->label;     ?></td>*/?>
 		<td width="122" class="littletablerow"   align='right'><?php echo $form->rislr->output;    ?></td>
 		<td width="125" class="littletablerowth" align='right'><?php echo $form->anticipo->label;  ?></td>
 		<td width="125" class="littletablerow"   align='right'><?php echo $form->anticipo->output; ?></td>
@@ -451,6 +469,7 @@ function autocod(id){
 		<td class="littletablerowth" align='right'><?php echo $form->montoiva->label;  ?></td>
 		<td class="littletablerow"   align='right'><?php echo $form->montoiva->output; ?></td>
 	</tr>
+
 	<tr>
 		<td class="littletablerowth" align='right'><?php echo $form->mdolar->label;   ?></td>
 		<td class="littletablerow"   align='right'><?php echo $form->mdolar->output;  ?></td>
@@ -459,13 +478,11 @@ function autocod(id){
 		<td class="littletablerowth" align='right'><?php echo $form->montonet->label; ?></td>
 		<td class="littletablerow"   align='right'><b id='montonet_val' style='font-size:18px;font-weight: bold' ><?php echo nformat($form->montonet->value); ?></b><?php echo $form->montonet->output; ?></td>
 	</tr>
+</table>
+<table width="100%">
 	<tr>
-		<td colspan=10 class="littletableheader"><?php echo $form->observa1->label;    ?></td>
-	</tr>
-	<tr>
-		<td colspan=10 >
-			<?php echo $form->observa1->output;   ?><?php echo $form->observa2->output;   ?><?php echo $form->observa3->output;   ?>
-		</td>
+		<td class="littletableheader" width="100"><?php echo $form->observa1->label;    ?></td>
+		<td><?php echo $form->observa1->output;   ?><?php echo $form->observa2->output;   ?><?php echo $form->observa3->output;?></td>
 	</tr>
 </table>
 

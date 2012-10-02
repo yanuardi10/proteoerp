@@ -323,45 +323,43 @@ $(function(){$(".inputnum").numeric(".");});
 </div> <!-- #LeftPane -->
 ';
 
-		$SouthPanel = '
-<div id="BottomPane" class="ui-layout-south ui-widget ui-widget-content">
-<p>'.$this->datasis->traevalor('TITULO1').'</p>
-</div> <!-- #BottomPanel -->
-<div id="forma1" title="Recepcion de Depositos"></div>
 
-';
+		$adic = array(
+			array("id"=>"forma1", "title"=>"Recepcion de Depositos")
+		);
+		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
 		$funciones = '
-	function fstatus(el, val, opts){
-		var meco=\'<div><img src="'.base_url().'images/S.gif" width="20" height="18" border="0" /></div>\';
-		if ( el == "E" ){
-			meco=\'<div><img src="'.base_url().'assets/default/images/cheque.png" width="20" height="18" border="0" /></div>\';
-		} else if (el == "C") {
-			meco=\'<div><img src="'.base_url().'assets/default/images/monedas.png" width="20" height="18" border="0" /></div>\';
-		} else if (el == "D") {
-			meco=\'<div><img src="'.base_url().'images/N.gif" width="20" height="20" border="0" /></div>\';
-		} else if (el == "A") {
-			meco=\'<div><img src="'.base_url().'images/face-smile.png" width="20" height="20" border="0" /></div>\';
-		} else if (el == "0") {
-			meco=\'<div><img src="'.base_url().'images/face-devilish.png" width="20" height="20" border="0" /></div>\';
-		} else if (el == "B") {
-			meco=\'<div><img src="'.base_url().'images/face-cool.png" width="20" height="20" border="0" /></div>\';
+		function fstatus(el, val, opts){
+			var meco=\'<div><img src="'.base_url().'images/S.gif" width="20" height="18" border="0" /></div>\';
+			if ( el == "E" ){
+				meco=\'<div><img src="'.base_url().'assets/default/images/cheque.png" width="20" height="18" border="0" /></div>\';
+			} else if (el == "C") {
+				meco=\'<div><img src="'.base_url().'assets/default/images/monedas.png" width="20" height="18" border="0" /></div>\';
+			} else if (el == "D") {
+				meco=\'<div><img src="'.base_url().'images/N.gif" width="20" height="20" border="0" /></div>\';
+			} else if (el == "A") {
+				meco=\'<div><img src="'.base_url().'images/face-smile.png" width="20" height="20" border="0" /></div>\';
+			} else if (el == "0") {
+				meco=\'<div><img src="'.base_url().'images/face-devilish.png" width="20" height="20" border="0" /></div>\';
+			} else if (el == "B") {
+				meco=\'<div><img src="'.base_url().'images/face-cool.png" width="20" height="20" border="0" /></div>\';
+			}
+			return meco;
 		}
-		return meco;
-	}
-';
+		';
 
 		$param['WestPanel']  = $WestPanel;
 		$param['funciones']  = $funciones;
 
 		//$param['EastPanel']  = $EastPanel;
 		$param['SouthPanel'] = $SouthPanel;
-		$param['listados'] = $this->datasis->listados('CHGARA', 'JQ');
-		$param['otros']    = $this->datasis->otros('CHGARA', 'JQ');
-		$param['temas']     = array('proteo','darkness','anexos1');
+		$param['listados']   = $this->datasis->listados('CHGARA', 'JQ');
+		$param['otros']      = $this->datasis->otros('CHGARA', 'JQ');
+		$param['temas']      = array('proteo','darkness','anexos1');
 		$param['bodyscript'] = $bodyscript;
-		$param['tabs'] = false;
-		$param['encabeza'] = $this->titp;
+		$param['tabs']       = false;
+		$param['encabeza']   = $this->titp;
 		$this->load->view('jqgrid/crud2',$param);
 	}
 
