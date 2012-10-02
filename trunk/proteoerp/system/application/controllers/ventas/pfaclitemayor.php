@@ -267,7 +267,10 @@ class pfaclitemayor extends validaciones{
 		}
 		$this->db->join('marc AS c','a.marca=c.marca');
 		$this->db->join('grup AS d','a.grupo=d.grupo');
-		$this->db->limit(300);
+
+		//$renglones=$this->datasis->traevalor('PFACMAYRENGLONES','Limites de renglones en el pedido al mayor');
+		//if(empty($renglones)) $renglones=300;
+		//$this->db->limit($renglones);
 
 		$query = $this->db->get();
 
