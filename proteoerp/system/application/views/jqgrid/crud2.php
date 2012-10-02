@@ -83,7 +83,6 @@ if ( count($grids) > 0 ){
 	}
 }
 
-
 if (isset($listados)) {
 	if (!empty($listados)) {
 
@@ -203,6 +202,27 @@ echo style('../datagrid/datagrid.css');
 
 echo "\n<!-- LAYOUT -->\n";
 echo script('jquery.layout.js');
+
+echo "\n<!-- RAPYD -->\n";
+echo '<link rel="stylesheet" href="'.base_url().'system/application/rapyd/libraries/jscalendar/calendar.css" type="text/css">'."\n";
+echo '<link rel="stylesheet" href="'.base_url().'system/application/rapyd/elements/proteo/css/rapyd_components.css" type="text/css" />'."\n";
+echo '<script language="javascript" type="text/javascript" src="'.base_url().'system/application/rapyd/libraries/jscalendar/calendar.js"></script>'."\n";
+echo '<script language="javascript" type="text/javascript" src="'.base_url().'system/application/rapyd/libraries/jscalendar/calendar-setup.js"></script>'."\n";
+?>
+<script language="javascript" type="text/javascript">
+	Calendar._DN = new Array("Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo");
+	Calendar._SMN = new Array("Ene", "Feb", "Mar", "Abr", "Mayo", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic");
+	Calendar._SDN = new Array("Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do");
+	Calendar._MN = new Array("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre");
+	Calendar._TT = {};
+	Calendar._TT["TODAY"] = "Hoy";
+</script>
+<?php
+echo "\n";
+echo script('i18n/grid.locale-sp.js');
+echo script('jquery.jqGrid.min.js');
+
+
 
 ?>
 <style>

@@ -136,8 +136,6 @@ class Sprv extends Controller {
 			'formoptions'   => '{ rowpos:'.$linea.', colpos:1 }'
 		));
 
-
-
 		$grid->addField('nombre');
 		$grid->label('Nombre');
 		$grid->params(array(
@@ -149,7 +147,6 @@ class Sprv extends Controller {
 			'editoptions'   => '{ size:30, maxlength: 40 }',
 			'formoptions'   => '{ rowpos:'.$linea.', colpos:2 }'
 		));
-
 
 		$linea = $linea + 1;
 		$grid->addField('nomfis');
@@ -163,8 +160,6 @@ class Sprv extends Controller {
 			'editoptions'   => '{ size:30, maxlength: 80 }',
 			'formoptions'   => '{ label:"Razon Social", rowpos:'.$linea.', colpos:2 }'
 		));
-
-
 
 		$linea = $linea + 1;
 		$grid->addField('tipo');

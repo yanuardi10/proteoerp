@@ -106,13 +106,12 @@ class Ajax extends Controller {
 		if($mid !== false){
 			$retArray = $retorno = array();
 
-			//Cheque si existe el codigo
+			//Mira si existe el codigo
 			$mSQL="SELECT TRIM(nombre) AS nombre, TRIM(rifci) AS rifci, cliente, tipo, dire11 AS direc
 				FROM scli WHERE cliente=${qmid} LIMIT 1";
 			$query = $this->db->query($mSQL);
 			if ($query->num_rows() == 1){
 				$row = $query->row_array();
-
 				$retArray['value']   = $row['cliente'];
 				$retArray['label']   = '('.$row['rifci'].') '.utf8_encode($row['nombre']);
 				$retArray['rifci']   = $row['rifci'];
@@ -165,14 +164,11 @@ class Ajax extends Controller {
 		$data = '[{ }]';
 		if($mid !== false){
 			$retArray = $retorno = array();
-
-			$mSQL="SELECT TRIM(a.nombre) AS nombre, TRIM(a.rifci) AS rifci, a.cliente, a.tipo , a.dire11 AS direc,b.precio1,a.upago,a.telefono
-				,b.codigo
+			$mSQL="SELECT TRIM(a.nombre) AS nombre, TRIM(a.rifci) AS rifci, a.cliente, a.tipo , a.dire11 AS direc, b.precio1, a.upago, a.telefono, b.codigo
 				FROM scli AS a
 				JOIN sinv AS b ON a.tarifa=b.codigo
 				WHERE (cliente LIKE ${qdb} OR rifci LIKE ${qdb} OR nombre LIKE ${qdb})
 				ORDER BY rifci LIMIT 10";
-
 			$query = $this->db->query($mSQL);
 			if ($query->num_rows() > 0){
 				foreach( $query->result_array() as  $row ) {
