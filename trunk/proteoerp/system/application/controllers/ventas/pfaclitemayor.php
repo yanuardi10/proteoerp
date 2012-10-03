@@ -268,9 +268,9 @@ class pfaclitemayor extends validaciones{
 		$this->db->join('marc AS c','a.marca=c.marca');
 		$this->db->join('grup AS d','a.grupo=d.grupo');
 
-		//$renglones=$this->datasis->traevalor('PFACMAYRENGLONES','Limites de renglones en el pedido al mayor');
-		//if(empty($renglones)) $renglones=300;
-		//$this->db->limit($renglones);
+		$renglones=$this->datasis->traevalor('PFACMAYRENGLONES','Limites de renglones en el pedido al mayor');
+		if(empty($renglones)) $renglones=300;
+		$this->db->limit($renglones);
 
 		$query = $this->db->get();
 
@@ -553,6 +553,7 @@ class pfaclitemayor extends validaciones{
 		$fecha = $do->get('fecha');
 		$vd    = $this->secu->getvendedor();
 		$do->set('vd',$vd);
+		$do->set('status','P');
 
 		$cod_cli = $do->get('cod_cli');
 		$rrow    = $this->datasis->damerow('SELECT nombre,rifci,zona,vendedor FROM scli WHERE cliente='.$this->db->escape($cod_cli));
