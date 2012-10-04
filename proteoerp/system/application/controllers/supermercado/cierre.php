@@ -753,13 +753,14 @@ class Cierre extends Controller {
 		$esta->fecha = $fecha;
 		$esta->SetFont('Arial','B',10);
 
-		$mSQL = "SELECT sum(a.monto*(a.impuesto=0)) AS exento, b.numero, b.tipo , 
+		$mSQL = "SELECT SUM(a.monto*(a.impuesto=0)) AS exento, b.numero, b.tipo , 
 			    b.fecha, b.cajero, b.caja, b.cliente, concat(rtrim(c.nombres),' ',
 			    rtrim(c.apellidos))  AS nombre, b.impuesto,b.gtotal, c.cedula, c.cod_tar, 
 			    IF(d.tipo='RI' , d.monto,0)  AS ivarete , d.tipo  
-			FROM vieite AS a LEFT JOIN viefac AS b ON a.numero = b.numero and 
-			    a.caja = b.caja and a.fecha=b.fecha  LEFT JOIN club AS c ON b.cliente = 
-			    c.cod_tar  LEFT JOIN viepag AS d ON a.numero=d.numero and d.tipo='RI' 
+			FROM vieite AS a 
+			LEFT JOIN viefac AS b ON a.numero = b.numero AND a.caja = b.caja AND a.fecha=b.fecha  
+			LEFT JOIN club AS c ON b.cliente = c.cod_tar  
+			LEFT JOIN viepag AS d ON a.numero=d.numero AND d.tipo='RI' AND a.fecha=d.fecha AND a.caja=b.caja
 			WHERE b.fecha = $fecha AND b.caja=$caja
 			GROUP BY a.numero 
 			ORDER BY  b.caja, b.numero  ";

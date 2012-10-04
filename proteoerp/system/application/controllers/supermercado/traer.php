@@ -198,7 +198,6 @@ script;
 		curl_exec($ch);
 		curl_close($ch);
 		fclose($fp);
-
 		$zip = new ZipArchive;
 		$res = $zip->open('./uploads/ventas.zip');
 		if ($res === TRUE) {
