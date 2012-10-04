@@ -46,6 +46,9 @@ class Pedidos extends Controller {
 		$filter->fecha->rule='required';
 		$filter->fecha->insertValue=date('Y-m-d');
 
+		$action = "javascript:window.location='".site_url($this->url.'especialxls')."'";
+		$filter->button('btn_especial', 'Pedido Especial', $action, 'BR','show');
+
 		$filter->buttons('reset','search');
 		//$filter->submit('btn_cambio_2', 'Mandar pedido FarmaSIS', 'BR');
 		$filter->build();
@@ -352,10 +355,6 @@ class Pedidos extends Controller {
 			return form_dropdown('aa', $val,'','style="width: 250px"');
 		}
 
-		function pedido(){
-		
-		}
-
 		$grid = new DataGrid('');
 		$grid->use_function('opts');
 		$grid->order_by('descrip');
@@ -434,7 +433,7 @@ class Pedidos extends Controller {
 
 		$filter->marca = new dropdownField('Laboratorio', 'marca');
 		$filter->marca->option('','Todas');
-		$filter->marca->options('SELECT TRIM(marca) AS clave, TRIM(marca) AS valor FROM view_pednegocia GROUP BY marca');
+		$filter->marca->options('SELECT TRIM(marca) AS clave, TRIM(marca) AS valor FROM marc');
 		$filter->marca->style='width:220px;';
 		$filter->marca->rule='required';
 
@@ -455,9 +454,9 @@ class Pedidos extends Controller {
 
 			// ANCHO DE LAS COLUMNAS
 			$ws->set_column('A:A',35);
-			$ws->set_column('B:B',10);
-			$ws->set_column('C:C',6);
-			$ws->set_column('D:D',10);
+			$ws->set_column('B:B',6);
+			$ws->set_column('C:C',10);
+			$ws->set_column('D:O',10);
 			//$ws->set_column('E:XX',20);
 
 			// FORMATOS
@@ -531,7 +530,7 @@ class Pedidos extends Controller {
 			$ws->write(3, 0, 'RIF: '.$this->datasis->traevalor('RIF') , $h0 );
 
 			if(!empty($filter->marca->value)){
-				$ws->write(5, 0, 'Marca : '.$filter->marca->value,$h0 );
+				$ws->write(5, 0, 'Laboratorio : '.$filter->marca->value,$h0 );
 			}
 
 			$ws->write(1, 8, 'Listado para negocioacion', $h );
@@ -542,17 +541,13 @@ class Pedidos extends Controller {
 			$ws->write_string( $mm,   0, 'Descripción', $titulo );
 			$ws->write_string( $mm+1, 0, '', $titulo );
 
-			//$ws->write_blank(   $mm,  1,  $titpri);
-			$ws->write_string( $mm,   1, 'Marca', $titulo );
-			$ws->write_string( $mm+1, 1, '' , $titulo );
+			$ws->write_string( $mm,   1, 'Exist.', $titulo );
+			$ws->write_string( $mm+1, 1, '',$titulo );
 
-			$ws->write_string( $mm,   2, 'Exist.', $titulo );
-			$ws->write_string( $mm+1, 2, '',$titulo );
+			$ws->write_string( $mm,   2, 'Cantidad',$titulo );
+			$ws->write_string( $mm+1, 2, '', $titulo );
 
-			$ws->write_string( $mm,   3, 'Cantidad',$titulo );
-			$ws->write_string( $mm+1, 3, '', $titulo );
-
-			$col=4;
+			$col=3;
 			foreach($droguerias AS $id=>$value){
 
 				$ws->write_string( $mm,   $col, ucwords($value) ,$titulo );
@@ -597,11 +592,10 @@ class Pedidos extends Controller {
 			if($mc->num_rows() > 0){
 				foreach( $mc->result() as $row ) {
 					$ws->write_string( $mm,  0,  $row->descrip        , $codesc );
-					$ws->write_string( $mm,  1,  $row->marca          , $codesc );
-					$ws->write_number( $mm,  2,  $row->existen        , $numcer );
-					$ws->write_number( $mm,  3,  0                    , $numcer );
+					$ws->write_number( $mm,  1,  $row->existen        , $numcer );
+					$ws->write_number( $mm,  2,  0                    , $numqui );
 
-					$col=4;
+					$col=3;
 					foreach($droguerias as $id=>$value){
 						$obj1=$id;
 						$ventas=empty($row->$obj1)? 0 : $row->$obj1;
@@ -615,16 +609,16 @@ class Pedidos extends Controller {
 
 						$ucol= $this->nlet($col-2);
 						$umm = $mm+1;
-						$ws->write_formula($mm, $col, "=D$umm*$ucol$umm", ($existe<=0)? $titaler: $numter);
+						$ws->write_formula($mm, $col, "=C$umm*$ucol$umm", ($existe<=0)? $titaler: $numter);
 						$totdrog[$this->nlet($col)] = $col;
 						$col++;
 					}
 
-					$ws->write_string( $mm, $col,  $row->semestral   , $codesc ); $col++;
-					$ws->write_string( $mm, $col,  $row->trimestral  , $codesc ); $col++;
-					$ws->write_string( $mm, $col,  $row->mensual     , $codesc ); $col++;
-					$ws->write_string( $mm, $col,  $row->quincenal   , $codesc ); $col++;
-					$ws->write_string( $mm, $col,  $row->semanal     , $codesc ); $col++;
+					$ws->write_number( $mm, $col,  $row->semestral   , $codesc ); $col++;
+					$ws->write_number( $mm, $col,  $row->trimestral  , $codesc ); $col++;
+					$ws->write_number( $mm, $col,  $row->mensual     , $codesc ); $col++;
+					$ws->write_number( $mm, $col,  $row->quincenal   , $codesc ); $col++;
+					$ws->write_number( $mm, $col,  $row->semanal     , $codesc ); $col++;
 
 					$mm++;
 				}
@@ -632,11 +626,15 @@ class Pedidos extends Controller {
 			$celda = $mm+1;
 			$totlet=array();
 
-			$ws->write_string( $mm,  0, 'Totales...',$Tnumero );
+			$ws->write_string( $mm  ,  0, 'Totales...'      ,$Tnumero );
+			$ws->write_string( $mm+1,  0, 'Descuento lineal',$Tnumero );
 
 			foreach($totdrog as $ucol=>$col){
-				$ws->write_formula($mm, $col, "=SUM(${ucol}12*${ucol}${mm})", $Tnumero );
+				$mo=$mm+2;
+				$ws->write_formula($mm, $col, "=SUM(${ucol}12:${ucol}${mm})-(SUM(${ucol}12:${ucol}${mm})*(${ucol}${mo}/100))", $Tnumero );
+				$ws->write_number($mm+1, $col, 0, $Tnumero );
 			}
+			$mm++;
 
 			$wb->close();
 			header("Content-type: application/x-msexcel; name=\"$fnombre\"");
@@ -645,6 +643,7 @@ class Pedidos extends Controller {
 			fpassthru($fh);
 			unlink($fname);
 		}else{
+			if($this->input->post('btn_submit') !== false) $filter->build();
 			$data['filtro'] = $filter->output;
 			$data['titulo'] = heading('Listado para negocioaciones');
 			$data['head'] = $this->rapyd->get_head();
