@@ -1017,6 +1017,12 @@ class Scst extends Controller {
 				var ret = $("#titulos").getRowData(id);
 				jQuery(gridId2).jqGrid(\'setGridParam\',{url:"'.site_url($this->url.'getdatait/').'/"+id+"/", page:1});
 				jQuery(gridId2).trigger("reloadGrid");
+				$.ajax({
+					url: "'.base_url().$this->url.'tabla/"+id,
+					success: function(msg){
+						$("#ladicional").html(msg);
+					}
+				});
 			}},
 			afterInsertRow:
 			function( rid, aData, rowe){
@@ -1035,7 +1041,7 @@ class Scst extends Controller {
 		#show/hide navigations buttons
 		$grid->setAdd(false);
 		$grid->setEdit(true);
-		$grid->setDelete(false);
+		$grid->setDelete(true);
 		$grid->setSearch(true);
 		$grid->setRowNum(30);
 		$grid->setShrinkToFit('false');
@@ -1096,14 +1102,17 @@ class Scst extends Controller {
 			echo "Registro Modificado";
 
 		} elseif($oper == 'del') {
-			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM scst WHERE id='$id' ");
-			//if ($check > 0){
-				echo " El registro no puede ser eliminado; tiene movimiento ";
-			//} else {
-			//	$this->db->simple_query("DELETE FROM scst WHERE id=$id ");
-			//	logusu('SCST',"Registro ????? ELIMINADO");
-			//	echo "Registro Eliminado";
-			//}
+			//Si no esta actualizado permite borrar
+			$check   = $this->datasis->dameval("SELECT COUNT(*) FROM scst WHERE id='$id' AND actuali>=fecha ");
+			if ($check > 0){
+				echo " El registro no puede ser eliminado; debe reversarlo ";
+			} else {
+				$control =  $this->datasis->dameval("SELECT control FROM scst WHERE id='$id' ");
+				$this->db->simple_query("DELETE FROM scst WHERE id=$id ");
+				$this->db->simple_query("DELETE FROM itscst WHERE control=".$this->db->escape($control) );
+				logusu('SCST',"Registro ".$control." ELIMINADO");
+				echo "Registro Eliminado";
+			}
 		};
 
 	}
@@ -1418,6 +1427,52 @@ class Scst extends Controller {
 
 	}
 
+	//*************************************************
+	//
+	//  Informacion Adicional
+	//
+	//*************************************************
+	function tabla() {
+		$id = $this->uri->segment($this->uri->total_segments());
+		$proveed = $this->datasis->dameval("SELECT proveed FROM scst WHERE id='$id'");
+		$transac = $this->datasis->dameval("SELECT transac FROM scst WHERE id='$id'");
+		$salida = '';
+
+		// Cuentas por Cobrar
+		$mSQL = "SELECT cod_prv, MID(nombre,1,25) nombre, tipo_doc, numero, monto, abonos FROM sprm WHERE cod_prv = '$proveed' AND abonos <> monto AND tipo_doc <> 'AB' ORDER BY fecha DESC LIMIT 5";
+		$query = $this->db->query($mSQL);
+		$saldo = 0;
+		if ( $query->num_rows() > 0 ){
+			$salida .= "<br><table width='100%' border=1>";
+			$salida .= "<tr bgcolor='#e7e3e7'><td colspan=3>Movimiento Pendientes en CxC</td></tr>";
+			$salida .= "<tr bgcolor='#e7e3e7'><td>Tp</td><td align='center'>Numero</td><td align='center'>Monto</td></tr>";
+			$i = 1;
+			foreach ($query->result_array() as $row)
+			{
+				if ( $i < 6 ) {
+					$salida .= "<tr>";
+					$salida .= "<td>".$row['tipo_doc']."</td>";
+					$salida .= "<td>".$row['numero'].  "</td>";
+					$salida .= "<td align='right'>".nformat($row['monto']-$row['abonos']).   "</td>";
+					$salida .= "</tr>";
+				}
+				if ( $i == 6 ) {
+					$salida .= "<tr>";
+					$salida .= "<td colspan=3>Mas......</td>";
+					$salida .= "</tr>";
+				}
+				if ( $row['tipo_doc'] == 'FC' or $row['tipo_doc'] == 'ND' or $row['tipo_doc'] == 'GI' )
+					$saldo += $row['monto']-$row['abonos'];
+				else
+					$saldo -= $row['monto']-$row['abonos'];
+				$i ++;
+			}
+			$salida .= "<tr bgcolor='#d7c3c7'><td colspan='4' align='center'>Saldo : ".nformat($saldo). "</td></tr>";
+			$salida .= "</table>";
+		}
+		$query->free_result();
+		echo $salida;
+	}
 
 
 /*
