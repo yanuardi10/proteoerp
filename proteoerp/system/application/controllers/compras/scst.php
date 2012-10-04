@@ -44,9 +44,12 @@ class Scst extends Controller {
 		$grid->setUrlput(site_url($this->url.'setdata/'));
 
 		//Botones Panel Izq
-		$grid->wbotonadd(array("id"=>"imprimir", "img"=>"images/pdf_logo.gif", "alt" => 'Formato PDF', "label"=>"Reimprimir Documento"));
-		$grid->wbotonadd(array("id"=>"modifica", "img"=>"images/editar.png",   "alt" => 'Agregar',     "label"=>"Modificar Compras"));
-		$grid->wbotonadd(array("id"=>"agregar",  "img"=>"images/agrega4.png",  "alt" => 'Agregar',     "label"=>"Agregar Compras"));
+		$grid->wbotonadd(array("id"=>"imprimir",   "img"=>"images/pdf_logo.gif",  "alt" => 'Formato PDF', "label"=>"Reimprimir Documento"));
+		$grid->wbotonadd(array("id"=>"modifica",   "img"=>"images/editar.png",    "alt" => 'Agregar',     "label"=>"Modificar Compras"));
+		$grid->wbotonadd(array("id"=>"agregar",    "img"=>"images/agrega4.png",   "alt" => 'Agregar',     "label"=>"Agregar Compras"));
+		$grid->wbotonadd(array("id"=>"cprecios",   "img"=>"images/precio.png",    "alt" => 'Precios',     "label"=>"Cambiar Precios"));
+		$grid->wbotonadd(array("id"=>"actualizar", "img"=>"images/arrow_up.png",  "alt" => 'Actualizar',  "label"=>"Actualizar"));
+		$grid->wbotonadd(array("id"=>"reversar",   "img"=>"images/arrow_down.png","alt" => 'Reversar',    "label"=>"Reversar"));
 		$WestPanel = $grid->deploywestp();
 
 		//Panel Central y Sur
@@ -54,8 +57,8 @@ class Scst extends Controller {
 
 		//Panel de pie de forma
 		$adic = array(
-			array("id"=>"fcompra", "title"=>"Modificar Compra"),
-			array("id"=>"fagreag", "title"=>"Agregar Compra"),
+			array("id"=>"fcompra",  "title"=>"Modificar Compra"),
+			array("id"=>"factuali", "title"=>"Actualizar"),
 		);
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
@@ -95,12 +98,6 @@ class Scst extends Controller {
 			} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
 		});';
 		
-		//Crea una nueva
-		//$bodyscript .= '
-		//jQuery("#agregar").click( function(){
-		//	'.$this->datasis->jwinopen(site_url('compras/scst/solo/create')."'",1000,600).';
-		//});';
-
 
 		//Wraper de javascript
 		$bodyscript .= '
@@ -116,11 +113,93 @@ class Scst extends Controller {
 			s = grid.getGridParam(\'selarrrow\'); 
 		';
 
+
+		//Actualizar
+		$bodyscript .= '
+			$("#actualizar").click( function(){
+				var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+				if (id)	{
+					var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
+					mid = id;
+					if ( ret.actuali >= ret.fecha ){
+						$.prompt("<h1>Compra ya Actualizada</h1>");
+					} else {
+						$.post("'.site_url('compras/scst/solo/actualizar').'/"+ret.control,
+						function(data){
+							$("#fcompra").html("");
+							$("#factuali").html(data);
+							$( "#factuali" ).dialog( "open" );
+						})
+					}
+				} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
+			});';
+
+
+		//Reversar
+		$bodyscript .= '
+			$("#reversar").click( function(){
+				var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+				if (id)	{
+					var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
+					mid = id;
+					if ( ret.actuali < ret.fecha ){
+						$.prompt("<h1>Compra no Actualizada</h1>");
+					} else {
+						$.prompt( "<h1>Reversar Compra Nro. "+ret.control+" ?</h1>", {
+							buttons: { Reversar: true, Cancelar: false },
+							submit: function(e,v,m,f){
+								if (v){
+									$.get("'.site_url('compras/scst/solo/reversar').'/"+ret.control,
+									function(data){
+										apprise("<h1>"+data+"</h1>");
+										grid.trigger("reloadGrid");
+									});
+								}
+							}
+						});
+					}
+				} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
+			});';
+
+		$bodyscript .= '
+			$( "#factuali" ).dialog({
+				autoOpen: false, height: 300, width: 450, modal: true,
+				buttons: {
+					"Actualizar": function() {
+						var bValid = true;
+						var murl = $("#df1").attr("action");
+						allFields.removeClass( "ui-state-error" );
+						if ( bValid ) {
+							$.ajax({
+								type: "POST", dataType: "html", async: false,
+								url: murl,
+								data: $("#df1").serialize(),
+								success: function(r,s,x){
+									var res = $.parseJSON(r);
+									if ( res.status == "A"){
+										apprise(res.mensaje);
+										$( "#factuali" ).dialog( "close" );
+										grid.trigger("reloadGrid");
+										'.$this->datasis->jwinopen(site_url('formatos/ver/COMPRA').'/\'+mid+"/id"').';
+										return true;
+									} else {
+										apprise("<div style=\"font-size:16px;font-weight:bold;background:red;color:white\">Error:</div> <h1>"+res.mensaje+"</h1>");
+									}
+								}
+							});
+						}
+					},
+					Cancelar: function() { $( this ).dialog( "close" ); }
+				},
+				close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
+			});';
+
 		//Agregar Compra
 		$bodyscript .= '
 			$( "#agregar" ).click(function() {
 				$.post("'.site_url('compras/scst/solo/create').'",
 				function(data){
+					$("#factuali").html("");
 					$("#fcompra").html(data);
 					$( "#fcompra" ).dialog( "open" );
 				})
@@ -136,14 +215,36 @@ class Scst extends Controller {
 					if ( ret.actuali >= ret.fecha ) {
 						$.prompt("<h1>Compra ya Actualizada</h1>Debe reversarla si desea hacer modificaciones");
 					} else {
-					mId = id;
-					$.post("'.site_url('compras/scst/solo/modify').'/"+id, function(data){
-						$("#fcompra").html(data);
-					});
-					$( "#fcompra" ).dialog( "open" );
+						mId = id;
+						$.post("'.site_url('compras/scst/solo/modify').'/"+id, function(data){
+							$("#factuali").html("");
+							$("#fcompra").html(data);
+							$( "#fcompra" ).dialog( "open" );
+						});
 					}
 				} else { $.prompt("<h1>Por favor Seleccione una compra</h1>");}
 			});';
+
+		
+		//Cambiar Precios
+		$bodyscript .= '
+			$( "#cprecios" ).click(function() {
+				var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+				if (id)	{
+					var ret    = $("#newapi'.$grid0.'").getRowData(id);
+					if ( ret.actuali >= ret.fecha ) {
+						$.prompt("<h1>Compra ya Actualizada</h1>Debe reversarla si desea hacer modificaciones");
+					} else {
+						mId = id;
+						$.post("'.site_url('compras/scst/solo/cprecios').'/"+ret.control, function(data){
+							$("#factuali").html("");
+							$("#fcompra").html(data);
+							$( "#fcompra" ).dialog( "open" );
+						});
+					}
+				} else { $.prompt("<h1>Por favor Seleccione una compra no actualizada</h1>");}
+			});
+		';
 
 
 		$bodyscript .= '
@@ -155,7 +256,6 @@ class Scst extends Controller {
 						var murl = $("#df1").attr("action");
 						allFields.removeClass( "ui-state-error" );
 						if ( bValid ) {
-							// Coloca el Grid en un input
 							$.ajax({
 								type: "POST", dataType: "html", async: false,
 								url: murl,
@@ -168,6 +268,8 @@ class Scst extends Controller {
 										grid.trigger("reloadGrid");
 										'.$this->datasis->jwinopen(site_url('formatos/ver/COMPRA').'/\'+res.id+\'/id\'').';
 										return true;
+									} else if ( res.status == "C"){
+										apprise("<div style=\"font-size:16px;font-weight:bold;background:green;color:white\">Mensaje:</div> <h1>"+res.mensaje);
 									} else {
 										apprise("<div style=\"font-size:16px;font-weight:bold;background:red;color:white\">Error:</div> <h1>"+res.mensaje+"</h1>");
 									}
@@ -208,7 +310,6 @@ class Scst extends Controller {
 			'editrules'     => '{ required:true,date:true}',
 			'formoptions'   => '{ label:"Fecha" }'
 		));
-
 
 		$grid->addField('recep');
 		$grid->label('Recep');
@@ -407,7 +508,7 @@ class Scst extends Controller {
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
-			'width'         => 80,
+			'width'         => 70,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:30, maxlength: 8 }',
@@ -829,7 +930,6 @@ class Scst extends Controller {
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
 		$grid->addField('cimpuesto');
 		$grid->label('Cimpuesto');
 		$grid->params(array(
@@ -868,8 +968,8 @@ class Scst extends Controller {
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:30, maxlength: 8 }',
 		));
-/*
 
+/*
 		$grid->addField('factura');
 		$grid->label('Factura');
 		$grid->params(array(
@@ -906,18 +1006,25 @@ class Scst extends Controller {
 
 		$grid->showpager(true);
 		$grid->setWidth('');
-		$grid->setHeight('160');
+		$grid->setHeight('210');
 		$grid->setTitle($this->titp);
 		$grid->setfilterToolbar(true);
 		$grid->setToolbar('false', '"top"');
 
-		$grid->setOnSelectRow(' function(id){
-				if (id){
-					var ret = $("#titulos").getRowData(id);
-					jQuery(gridId2).jqGrid(\'setGridParam\',{url:"'.site_url($this->url.'getdatait/').'/"+id+"/", page:1});
-					jQuery(gridId2).trigger("reloadGrid");
+		$grid->setOnSelectRow('
+			function(id){
+			if (id){
+				var ret = $("#titulos").getRowData(id);
+				jQuery(gridId2).jqGrid(\'setGridParam\',{url:"'.site_url($this->url.'getdatait/').'/"+id+"/", page:1});
+				jQuery(gridId2).trigger("reloadGrid");
+			}},
+			afterInsertRow:
+			function( rid, aData, rowe){
+				if ( aData.fecha >  aData.actuali ){
+					$(this).jqGrid( "setRowData", rid, false,{color:"#000000", background:"#2DC403"});
 				}
-			}');
+			}
+		');
 
 		$grid->setOndblClickRow("");
 
@@ -1802,6 +1909,8 @@ class Scst extends Controller {
 	function solo() {
 		$this->solo = true;
 		$id = $this->uri->segment($this->uri->total_segments());
+
+		//Creando Compra
 		if ( $id == 'create'){
 			$this->dataedit();
 		} elseif ( $id == 'insert'){
@@ -1810,22 +1919,42 @@ class Scst extends Controller {
 			$id = $this->claves["id"];
 			if ( strlen($rt) > 0 )
 				echo '{"status":"A","id":"'.$id.'" ,"mensaje":"'.$rt.'"}';
+		} elseif ( $id == 'process'){
+			$control = $this->uri->segment($this->uri->total_segments()-1);
+			$rt = $this->actualizar($control);
+			if ( strlen($rt[1]) > 0 )
+				if ( $rt[0] === false ) $p = 'E'; else $p='A';
+				echo '{"status":"'.$p.'","id":"'.$control.'" ,"mensaje":"<h1>'.$rt[1].'</h1>"}';
 		} else {
 			$modo = $this->uri->segment($this->uri->total_segments()-1);
-			if ( $modo == 'update' ) $this->genesal = false;
 
-			$rt = $this->dataedit();
-			if ( strlen($rt) > 0 )
-				echo '{"status":"A","id":"'.$id.'" ,"mensaje":"'.$rt.'"}';
+			if ( $modo == 'actualizar' ){
+				$this->actualizar($id);
+			} elseif ( $modo == 'reversar' ){
+				$rt = $this->reversar($id);
+				echo $rt;
+			} elseif ( $modo == 'cprecios' ){
+				$rt = $this->cprecios($id);
+				echo $rt;
+			} else {
+				if ( $modo == 'update' ) $this->genesal = false;
+				$rt = $this->dataedit();
+				if ( strlen($rt) > 0 )
+					echo '{"status":"A","id":"'.$id.'" ,"mensaje":"'.$rt.'"}';
+			}
 		}
 	}
 
+	// Precios 
 	function cprecios($control){
 		$this->rapyd->uri->keep_persistence();
 		$this->rapyd->load('datagrid','fields');
 
-		$error=$msj='';
-		if($this->input->post('pros') !== false){
+		$error='';
+		$msj='';
+
+		//if($this->input->post('pros') !== false){
+		if($this->input->post('scstp_1') !== false){
 			$precio1=$this->input->post('scstp_1');
 			$precio2=$this->input->post('scstp_2');
 			$precio3=$this->input->post('scstp_3');
@@ -1850,11 +1979,18 @@ class Scst extends Controller {
 				}
 			}
 			if(strlen($error)==0){
-				$msj='Precios guardados';
+				$msj='Nuevos Precios guardados';
 			}
+			if ( $this->solo )
+				return '{"status":"C","id":"'.$control.'" ,"mensaje":"'.$msj.$error.'"}';
+			
 		}
 
-		$ggrid =form_open('/compras/scst/cprecios/'.$control);
+		if ( $this->solo )
+			$ggrid =form_open('/compras/scst/solo/cprecios/'.$control, array("id" => "df1"));
+		else
+			$ggrid =form_open('/compras/scst/cprecios/'.$control);
+
 
 		function costo($formcal,$pond,$ultimo,$standard,$existen,$itcana){
 			$CI =& get_instance();
@@ -1928,10 +2064,12 @@ class Scst extends Controller {
 			$grid->column('Marg.'.($id+1) , $campo,'align=\'center\'');
 		}
 		$grid->column('Costo' , '<tcosto><#id#>|<#iva#>|<#formcal#>|<#pond#>|<#costo#>|<#standard#>|<#existen#>|<#cantidad#></tcosto>','align=\'right\'');
-		$action = "javascript:window.location='".site_url('compras/scst/dataedit/show/'.$control)."'";
-		$grid->button('btn_regresa', 'Regresar', $action, 'TR');
+		if ( !$this->solo ){
+			$action = "javascript:window.location='".site_url('compras/scst/dataedit/show/'.$control)."'";
+			$grid->button('btn_regresa', 'Regresar', $action, 'TR');
+			$grid->submit('pros', 'Guardar','BR');
+		}
 
-		$grid->submit('pros', 'Guardar','BR');
 		$grid->build();
 
 		$ggrid.=$grid->output;
@@ -1978,16 +2116,24 @@ class Scst extends Controller {
 			});
 		});
 		</script>';
+		$data['content']  = '<div class="alert">'.$error.'</div>';
+		$data['content'] .= '<div>'.$msj.'</div>';
+		$data['content'] .= $ggrid;
 
-		$data['content'] ='<div class="alert">'.$error.'</div>';
-		$data['content'].='<div>'.$msj.'</div>';
-		$data['content'].= $ggrid;
-		$data['title']   = heading('Cambio de precios');
-		$data['script']  = $script;
-		$data['script'] .= phpscript('nformat.js');
-		$data['head']    = $this->rapyd->get_head().script('jquery.pack.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js');
-		$data['head']   .=style('estilos.css');
-		$this->load->view('view_ventanas', $data);
+		if ( $this->solo ){
+			$mensaje = "<table><tr><td>Mensaje: ".$msj."</td><td>Error: ".$error."</td></tr></table>\n";
+			return $script."\n".$data['content'];
+		} else {
+			$data['title']    = heading('Cambio de precios');
+			$data['script']   = $script;
+			$data['script']  .= phpscript('nformat.js');
+			$data['head']     = $this->rapyd->get_head();
+			$data['head']     = script('jquery.pack.js');
+			$data['head']     = script('plugins/jquery.numeric.pack.js');
+			$data['head']     = script('plugins/jquery.floatnumber.js');
+			$data['head']    .= style('estilos.css');
+			$this->load->view('view_ventanas', $data);
+		}
 	}
 
 	function montoscxp(){
@@ -2192,12 +2338,21 @@ class Scst extends Controller {
 		$this->rapyd->uri->keep_persistence();
 		$this->rapyd->load('dataform');
 
-		$form = new DataForm("compras/scst/actualizar/$control/process");
+		if ( $this->solo )
+			$form = new DataForm("compras/scst/solo/actualizar/$control/process");
+		else 
+			$form = new DataForm("compras/scst/actualizar/$control/process");
+	
+		$proveed = $this->datasis->dameval("SELECT CONCAT('Proveedor: </td><td><b>(<b>',proveed,'</b>)</td><td colspan=5><b>',nombre,'</b>') nombre FROM scst WHERE control=$control");
+		$compra  = $this->datasis->dameval("SELECT CONCAT('Compra: </td><td><b>', serie,'</b></td><td> Fecha: </td><td><b>', fecha, '</b></td><td>Vence: </td><td><b>', vence,'</b>') factura FROM scst WHERE control=$control");
+		$montos  = $this->datasis->dameval("SELECT CONCAT('Sub Total: </td><td><b>', format(montotot,2),'</b></td><td> I.V.A.: </td><td><b>', format(montoiva,2), '</b></td><td>Monto: </td><td><b>', format(montonet,2),'</b>') factura FROM scst WHERE control=$control");
+		
+		$form->aaaa = new containerField('iii',"<table width='100%' style='background-color:#FBEC88;text-align:center;font-size:12px'><tr><td>".$proveed."</td></tr><tr><td>".$compra."</td></tr><tr><td>".$montos."</td></tr></table><br>&nbsp;");
 
 		$form->cprecio = new  dropdownField ('Cambiar precios', 'cprecio');
 		//$form->cprecio->option('D','Dejar el precio mayor');
-		$form->cprecio->option('S','Si');
 		$form->cprecio->option('N','No');
+		$form->cprecio->option('S','Si');
 		$form->cprecio->style = 'width:100px;';
 		$form->cprecio->rule  = 'required';
 
@@ -2206,9 +2361,12 @@ class Scst extends Controller {
 		$form->fecha->rule='required|callback_chddate';
 		$form->fecha->size=10;
 
-		$form->submit('btnsubmit','Actualizar');
-		$accion="javascript:window.location='".site_url('compras/scst/dataedit/show/'.$control)."'";
-		$form->button('btn_regre','Regresar',$accion,'BR','show');
+		if ( !$this->solo ) {
+			$form->submit('btnsubmit','Actualizar');
+			$accion="javascript:window.location='".site_url('compras/scst/dataedit/show/'.$control)."'";
+			$form->button('btn_regre','Regresar',$accion,'BR','show');
+		}
+
 		$form->build_form();
 
 		if($form->on_success()){
@@ -2216,20 +2374,31 @@ class Scst extends Controller {
 			$actualiza = $form->fecha->newValue;
 			$cambio    = ($cprecio=='S') ? true : false;
 
-			$rt=$this->_actualizar($control,$cambio,$actualiza);
-			if($rt===false){
+			$id = $this->datasis->dameval("SELECT id FROM scst WHERE control=$control");
+			$rt = $this->_actualizar($id,$cambio,$actualiza);
+			if($rt === false){
 				$data['content']  = $this->error_string.br();
 			}else{
 				$data['content']  = 'Compra actualizada'.br();
 			}
-			$data['content'] .= anchor('compras/scst/dataedit/show/'.$control,'Regresar');
+			if ($this->solo ){
+				return array( $rt, $data['content'] );
+			} else {
+				$data['content'] .= anchor('compras/scst/dataedit/show/'.$control,'Regresar');
+				$data['head']    = $this->rapyd->get_head();
+				$data['title']   = heading('Actualizar compra');
+				$this->load->view('view_ventanas', $data);
+			}
 		}else{
 			$data['content'] = $form->output;
+			if ($this->solo ){
+				echo $data['content'];
+			} else {
+				$data['head']    = $this->rapyd->get_head();
+				$data['title']   = heading('Actualizar compra');
+				$this->load->view('view_ventanas', $data);
+			}
 		}
-
-		$data['head']    = $this->rapyd->get_head();
-		$data['title']   = heading('Actualizar compra');
-		$this->load->view('view_ventanas', $data);
 	}
 
 	function _actualizar($id, $cprecio, $actuali=null){
@@ -2475,7 +2644,7 @@ class Scst extends Controller {
 					//Falta implementar
 				}
 			}else{
-				$this->error_string='Compra no existe';
+				$this->error_string='Compra no existe '.$id;
 				return false;
 			}
 		}else{
@@ -2641,11 +2810,15 @@ class Scst extends Controller {
 				$this->db->simple_query($mSQL);
 			}
 		}
-		$data['head']    = $this->rapyd->get_head();
-		$data['content'] = 'Compra Reversada en Inventario y CxP'.br();
-		$data['content'].= anchor('compras/scst/dataedit/show/'.$control,'Regresar');
-		$data['title']   = heading('Reverso de compra');
-		$this->load->view('view_ventanas', $data);
+		if ( $this->solo )
+			return 'Compra Reversada en Inventario y CxP';
+		else {
+			$data['head']    = $this->rapyd->get_head();
+			$data['content'] = 'Compra Reversada en Inventario y CxP'.br();
+			$data['content'].= anchor('compras/scst/dataedit/show/'.$control,'Regresar');
+			$data['title']   = heading('Reverso de compra');
+			$this->load->view('view_ventanas', $data);
+		}
 	}
 
 	function creadseri($cod_prov,$factura){

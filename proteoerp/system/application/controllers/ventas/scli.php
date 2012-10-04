@@ -454,8 +454,6 @@ class Scli extends Controller {
 		));
 
 /*
-
-
 		$grid->addField('gr_desc');
 		$grid->label('Grupo');
 		$grid->params(array(
@@ -479,8 +477,8 @@ class Scli extends Controller {
 			'editoptions'   => '{ size:30, maxlength: 15 }',
 		));
 */
-		$linea = $linea + 1;
 
+		$linea = $linea + 1;
 		$grid->addField('cuenta');
 		$grid->label('Contable');
 		$grid->params(array(
@@ -493,7 +491,6 @@ class Scli extends Controller {
 			'formoptions'   => '{ rowpos:'.$linea.', colpos:1 }'
 		));
 
-
 		$grid->addField('dire11');
 		$grid->label('Direccion 1');
 		$grid->params(array(
@@ -505,7 +502,6 @@ class Scli extends Controller {
 			'editoptions'   => '{ size:40, maxlength: 40 }',
 			'formoptions'   => '{ rowpos:'.$linea.', colpos:2 }'
 		));
-
 
 		$grid->addField('credito');
 		$grid->label('Credito');
@@ -657,7 +653,6 @@ class Scli extends Controller {
 			'editoptions'   => '{ size:5, maxlength: 5 }',
 		));
 
-
 		$grid->addField('dire21');
 		$grid->label('Dire21');
 		$grid->params(array(
@@ -669,7 +664,6 @@ class Scli extends Controller {
 			'editoptions'   => '{ size:30, maxlength: 40 }',
 		));
 
-
 		$grid->addField('dire22');
 		$grid->label('Dire22');
 		$grid->params(array(
@@ -680,7 +674,6 @@ class Scli extends Controller {
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:30, maxlength: 40 }',
 		));
-
 
 		$grid->addField('ciudad2');
 		$grid->label('Ciudad2');
@@ -1053,7 +1046,8 @@ class Scli extends Controller {
 		$grid->setfilterToolbar(true);
 		$grid->setToolbar('false', '"top"');
 
-		$grid->setOnSelectRow(' function(id){
+		$grid->setOnSelectRow('
+		function(id){
 			if (id){
 				var ret = jQuery(gridId1).jqGrid(\'getRowData\',id);
 				$(gridId1).jqGrid("setCaption", ret.nombre+" U. Venta "+ret.fecha1);
@@ -1067,7 +1061,7 @@ class Scli extends Controller {
 		},
 		afterInsertRow: function( rid, aData, rowe){
 			if ( aData.tipo == "0" ){
-				$(this).jqGrid( "setRowData", rid, false,{color:"#000000", background:"#F9D6DA"});
+				$(this).jqGrid( "setRowData", rid, false,{color:"#000000", background:"#F45E44"});
 			}
 		}'
 		);
@@ -1297,7 +1291,7 @@ class Scli extends Controller {
 	function resumen() {
 		$id = $this->uri->segment($this->uri->total_segments());
 
-		$row = $this->datasis->damereg("SELECT cliente, credito, formap, limite, tolera, maxtole, observa, tipo  FROM scli WHERE id=$id");
+		$row = $this->datasis->damereg("SELECT cliente, credito, formap, limite, tolera, maxtole, observa, tipo FROM scli WHERE id=$id");
 
 		$cod_cli  = $row['cliente'];
 		$credito  = $row['credito'];
@@ -1315,9 +1309,15 @@ class Scli extends Controller {
 
 		$saldo  = 0;
 		$saldo  = $this->datasis->dameval("SELECT sum(monto*IF(tipo_doc IN ('FC','ND','GI'),1,-1)) saldo FROM smov WHERE cod_cli=".$this->db->escape($cod_cli));
+		
+		$salida = '';
 
-		$salida  = '<table width="100%" cellspacing="0">';
-		if ($credito == 'S')
+
+		$salida  .= '<table width="100%" cellspacing="0">';
+		if ( $tipo == '0' )
+			$salida .= '<tr style="background-color:#F45E44;font-size:14px;font-weight:bold;"><td colspan="2" align="center">CLIENTE INACTIVO</td></tr>'."\n";
+
+		if ($tipo == 'S')
 			$salida .= "<tr style='background-color:#AAEEAA;'><td colspan='2' align='center'><b>Credito $mcredito</b></td></tr>\n";
 		else
 			$salida .= "<tr style='background-color:#CCCCBB;'><td colspan='2' align='center'><b>Credito $mcredito</b></td></tr>\n";
