@@ -1631,7 +1631,19 @@ class Sfac extends Controller {
 
 		$salida = '
 <script type="text/javascript">
-	$( "#fcliente" ).autocomplete({
+
+	var totaliza = function (){
+		var meses = Number($("#fmespaga").val());
+		var monto = Number($("#ftarifa").val());
+		var total = meses*monto;
+
+		$("#fmonto").val(nformat(total,2));
+		$("#montotot").text(nformat(total,2));
+	}
+
+	$("#fmespaga").keyup(totaliza);
+
+	$("#fcliente").autocomplete({
 		source: function( req, add){
 			$.ajax({
 				url:  "'.site_url('ajax/buscascliser').'",
@@ -1655,6 +1667,7 @@ class Sfac extends Controller {
 							);
 						}
 						add(sugiere);
+						totaliza();
 					},
 			})
 		},
@@ -1666,6 +1679,7 @@ class Sfac extends Controller {
 			$("#fcodtar").val(ui.item.codigo);
 			$("#fdire11").val(ui.item.direc);
 			$("#fupago").val(ui.item.upago);
+			totaliza();
 		}
 	});
 </script>
@@ -1738,7 +1752,7 @@ class Sfac extends Controller {
 	<center><table id="abonados"><table></center>
 	<table width="100%">
 	<tr>
-		<td align="center"><div id="grantotal" style="font-size:20px;font-weight:bold">Monto a pagar: 0.00</div></td>
+		<td align="center"><div id="grantotal" style="font-size:20px;font-weight:bold">Monto a pagar: <span id="montotot">0,00</span></div></td>
 	</tr>
 	</table>
 	</form>
