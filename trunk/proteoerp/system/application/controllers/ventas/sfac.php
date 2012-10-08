@@ -14,11 +14,6 @@ class Sfac extends Controller {
 	}
 
 	function index(){
-		/*if ( !$this->datasis->iscampo('sfac','id') ) {
-			$this->db->simple_query('ALTER TABLE sfac DROP PRIMARY KEY');
-			$this->db->simple_query('ALTER TABLE sfac ADD UNIQUE INDEX numero (numero)');
-			$this->db->simple_query('ALTER TABLE sfac ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
-		};*/
 		$this->datasis->modintramenu( 1000, 650, 'ventas/sfac' );
 		redirect($this->url.'jqdatag');
 	}
@@ -1648,17 +1643,10 @@ class Sfac extends Controller {
 						var sugiere = [];
 						if(data.length==0){
 							$("#fnombre").val("");
-							//$("#nombre_val").text("");
-
-							//$("#rifci").val("");
-							//$("#rifci_val").text("");
-							//$("#sclitipo").val("1");
-
 							$("#fdire11").val("");
 							$("#ftelefono").val("");
 							$("#ftarifa").val("");
 							$("#fupago").val("");
-							//$("#direc_val").text("");
 						}else{
 							$.each(data,
 								function(i, val){
@@ -1678,12 +1666,6 @@ class Sfac extends Controller {
 			$("#fcodtar").val(ui.item.codigo);
 			$("#fdire11").val(ui.item.direc);
 			$("#fupago").val(ui.item.upago);
-			//$("#nombre_val").text(ui.item.nombre);
-			//$("#rifci").val(ui.item.rifci);
-			//$("#rifci_val").text(ui.item.rifci);
-			//$("#cod_cli").val(ui.item.cod_cli);
-			//$("#sclitipo").val(ui.item.tipo);
-			//$("#direc_val").text(ui.item.direc);
 		}
 	});
 </script>
@@ -3128,7 +3110,6 @@ function sfacreiva(mid){
 				$salida .= "<td align='right'>".nformat($row['monto']).   "</td>";
 				$salida .= "</tr>";
 			}
-
 			$salida .= "</table>";
 		}
 

@@ -98,7 +98,6 @@ class Scst extends Controller {
 			} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
 		});';
 		
-
 		//Wraper de javascript
 		$bodyscript .= '
 		$(function() {
@@ -112,7 +111,6 @@ class Scst extends Controller {
 			var tips = $( ".validateTips" );
 			s = grid.getGridParam(\'selarrrow\'); 
 		';
-
 
 		//Actualizar
 		$bodyscript .= '
@@ -1712,8 +1710,6 @@ class Scst extends Controller {
 		$edit->fecha->size = 10;
 		$edit->fecha->rule ='required';
 		$transac=$edit->get_from_dataobjetct('transac');
-		//if(!empty($transac))
-		//$edit->fecha->mode='autohide';
 
 		$edit->vence = new DateonlyField('Vence', 'vence','d/m/Y');
 		$edit->vence->insertValue = date('Y-m-d');
@@ -1835,10 +1831,9 @@ class Scst extends Controller {
 		$edit->observa3->when=array('show');
 		$edit->observa3->rows=3;
 
-		//Para CXP
-		//Fin de CxP
-
+		//****************************
 		//Campos para el detalle
+		//****************************
 		$edit->codigo = new inputField('C&oacute;digo', 'codigo_<#i#>');
 		$edit->codigo->size=10;
 		$edit->codigo->db_name='codigo';
@@ -1855,46 +1850,46 @@ class Scst extends Controller {
 		$edit->descrip->rel_id  ='itscst';
 
 		$edit->cantidad = new inputField('Cantidad', 'cantidad_<#i#>');
-		$edit->cantidad->size=8;
-		$edit->cantidad->db_name='cantidad';
-		$edit->cantidad->maxlength=60;
-		$edit->cantidad->autocomplete=false;
-		$edit->cantidad->onkeyup  ='importe(<#i#>)';
-		$edit->cantidad->css_class='inputnum';
-		$edit->cantidad->rule     = 'require|numeric';
-		$edit->cantidad->rel_id   = 'itscst';
-		$edit->cantidad->showformat= 'decimal';
+		$edit->cantidad->db_name      = 'cantidad';
+		$edit->cantidad->css_class    = 'inputnum';
+		$edit->cantidad->rel_id       = 'itscst';
+		$edit->cantidad->maxlength    = 10;
+		$edit->cantidad->size         =  8;
+		$edit->cantidad->autocomplete = false;
+		$edit->cantidad->onkeyup      = 'importe(<#i#>)';
+		$edit->cantidad->rule         = 'required|positive';
+		$edit->cantidad->showformat   = 'decimal';
 
 		$edit->costo = new inputField('Costo', 'costo_<#i#>');
-		$edit->costo->css_class='inputnum';
-		$edit->costo->rule   = 'require|numeric';
-		$edit->costo->onkeyup='importe(<#i#>)';
-		$edit->costo->size=10;
-		$edit->costo->autocomplete=false;
-		$edit->costo->db_name='costo';
-		$edit->costo->rel_id ='itscst';
-		$edit->costo->showformat= 'decimal';
+		$edit->costo->css_class       = 'inputnum';
+		$edit->costo->rule            = 'required|positive';
+		$edit->costo->onkeyup         = 'importe(<#i#>)';
+		$edit->costo->size            = 10;
+		$edit->costo->autocomplete    = false;
+		$edit->costo->db_name         = 'costo';
+		$edit->costo->rel_id          = 'itscst';
+		$edit->costo->showformat      = 'decimal';
 
 		$edit->importe = new inputField('Importe', 'importe_<#i#>');
-		$edit->importe->db_name='importe';
-		$edit->importe->size=12;
-		$edit->importe->rel_id='itscst';
-		$edit->importe->autocomplete=false;
-		$edit->importe->onkeyup='costo(<#i#>)';
-		$edit->importe->css_class='inputnum';
-		$edit->importe->showformat= 'decimal';
-		//$edit->importe->type='inputhidden';
+		$edit->importe->db_name       = 'importe';
+		$edit->importe->size          = 12;
+		$edit->importe->rel_id        = 'itscst';
+		$edit->importe->autocomplete  = false;
+		$edit->importe->onkeyup       = 'costo(<#i#>)';
+		$edit->importe->css_class     = 'inputnum';
+		$edit->importe->showformat    = 'decimal';
 
 		$edit->sinvpeso = new hiddenField('', 'sinvpeso_<#i#>');
-		$edit->sinvpeso->db_name = 'sinvpeso';
-		$edit->sinvpeso->rel_id  = 'itscst';
-		$edit->sinvpeso->pointer = true;
-		$edit->sinvpeso->showformat= 'decimal';
+		$edit->sinvpeso->db_name      = 'sinvpeso';
+		$edit->sinvpeso->rel_id       = 'itscst';
+		$edit->sinvpeso->pointer      = true;
+		$edit->sinvpeso->showformat   = 'decimal';
 
 		$edit->iva = new hiddenField('Impuesto', 'iva_<#i#>');
-		$edit->iva->db_name = 'iva';
-		$edit->iva->rel_id  = 'itscst';
-		$edit->iva->showformat= 'decimal';
+		$edit->iva->db_name           = 'iva';
+		$edit->iva->rel_id            = 'itscst';
+		$edit->iva->showformat        = 'decimal';
+
 		//fin de campos para detalle
 
 		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
@@ -1919,7 +1914,6 @@ class Scst extends Controller {
 			$edit->button_status('btn_reversar','Reversar'     ,$accion,'TR','show');
 			$edit->buttons('save', 'exit','add_rel');
 		}
-
 
 		if($this->genesal){
 			$edit->build();

@@ -262,6 +262,25 @@ $(function () {
 		
 	}
 
+
+	function meco() {
+		$mSQL = '
+SELECT b.grupo, c.nom_grup, a.codigo, b.descrip,  year(a.fecha) AS anno, month(a.fecha) AS mes,sum(a.cantidad) AS cantidad, round(sum((a.promedio * a.cantidad)),2) AS costo,sum(a.venta) AS venta,round(sum((`a`.`venta` - (`a`.`promedio` * `a`.`cantidad`))),2) AS `util`,round(((sum((`a`.`venta` - (`a`.`promedio` * `a`.`cantidad`))) * 100) / sum(`a`.`venta`)),2) AS `margen` 
+FROM costos a LEFT JOIN sinv b ON a.codigo = b.codigo LEFT JOIN grup c ON b.grupo=c.grupo
+WHERE a.fecha >= 20120801 and a.fecha < 20120901 and a.origen = "3I" 
+GROUP BY year(a.fecha), month(a.fecha) HAVING cantidad <> 0 
+UNION ALL 
+SELECT "SERV" grupo, "SERVICIOS" nom_grup, a.codigoa, b.descrip, year(a.fecha) AS anno, month(a.fecha) AS mes, sum(a.cana) AS cantidad, 0 AS costo, sum(a.tota) AS venta, sum(a.tota) AS util, 100 AS margen 
+FROM sitems a LEFT JOIN sinv b ON a.codigoa = b.codigo LEFT JOIN grup c ON b.grupo=c.grupo 
+WHERE a.fecha >= 20120801 and a.fecha < 20120901 and substr(b.tipo,1,1) = "S"
+GROUP BY year(a.fecha), month(a.fecha) 
+HAVING cantidad <> 0
+		';
+		
+	}
+
+
+
 	//***************************************
 	//
 	// Cobranza
@@ -383,10 +402,10 @@ $(function () {
     <records>1</records>
     <row><cell>1</cell><cell>Analisis General</cell><cell></cell><cell>0</cell><cell>1</cell><cell>10</cell><cell>false</cell><cell>false</cell></row>
 
-    <row><cell>2</cell><cell>Resumen de gestion</cell><cell>general       </cell><cell>1</cell><cell>2</cell><cell>3</cell><cell>true</cell><cell>true</cell></row>
-    <row><cell>3</cell><cell>Ingresos por Caja </cell><cell>cierres       </cell><cell>1</cell><cell>4</cell><cell>5</cell><cell>true</cell><cell>true</cell></row>
-    <row><cell>4</cell><cell>Analisis de Gastos </cell><cell>loadoncex.html</cell><cell>1</cell><cell>6</cell><cell>7</cell><cell>true</cell><cell>true</cell></row>
-    <row><cell>5</cell><cell>Analisis Diario    </cell><cell>localex.html  </cell><cell>1</cell><cell>8</cell><cell>9</cell><cell>true</cell><cell>true</cell></row>
+    <row><cell>2</cell><cell>Resumen de gestion</cell><cell>general</cell><cell>1</cell><cell>2</cell><cell>3</cell><cell>true</cell><cell>true</cell></row>
+    <row><cell>3</cell><cell>Ingresos por Caja </cell><cell>cierres</cell><cell>1</cell><cell>4</cell><cell>5</cell><cell>true</cell><cell>true</cell></row>
+    <row><cell>4</cell><cell>Analisis de Gastos</cell><cell>gastos </cell><cell>1</cell><cell>6</cell><cell>7</cell><cell>true</cell><cell>true</cell></row>
+    <row><cell>5</cell><cell>Analisis Diario   </cell><cell>mensual</cell><cell>1</cell><cell>8</cell><cell>9</cell><cell>true</cell><cell>true</cell></row>
 
     <row><cell>6</cell><cell>Venta Diaria</cell><cell></cell><cell>0</cell><cell>11</cell><cell>18</cell><cell>false</cell><cell>false</cell></row>
 

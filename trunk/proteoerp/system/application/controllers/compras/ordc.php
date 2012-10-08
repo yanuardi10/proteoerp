@@ -3,10 +3,12 @@ require_once(BASEPATH.'application/controllers/validaciones.php');
 
 class Ordc extends Controller {
 	var $mModulo='ORDC';
-	
-	var $titp='Orden de Compras';
-	var $tits='Orden de Compras';
-	var $url ='compras/ordc/';
+	var $titp = 'Orden de Compras';
+	var $tits = 'Orden de Compras';
+	var $url  = 'compras/ordc/';
+	var $genesal = true;
+	var $solo    = false;
+
 
 	function Ordc(){
 		parent::Controller();
@@ -21,7 +23,7 @@ class Ordc extends Controller {
 			$this->db->simple_query('ALTER TABLE ordc ADD UNIQUE INDEX numero (numero)');
 			$this->db->simple_query('ALTER TABLE ordc ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
 		};*/
-		$this->datasis->modintramenu( 800, 610, substr($this->url,0,-1) );
+		$this->datasis->modintramenu( 900, 650, substr($this->url,0,-1) );
 		redirect($this->url.'jqdatag');
 	}
 
@@ -46,14 +48,18 @@ class Ordc extends Controller {
 		$grid->setUrlput(site_url($this->url.'setdata/'));
 
 		//Botones Panel Izq
-		$grid->wbotonadd(array("id"=>"boton1", "img"=>"images/pdf_logo.gif", "alt" => 'Formato PDF', "label"=>"Reimprimir Documento"));
-		$grid->wbotonadd(array("id"=>"boton2", "img"=>"images/agrega4.png",  "alt" => 'Agregar',     "label"=>"Agregar Orden"));
-		$grid->wbotonadd(array("id"=>"boton3", "img"=>"images/editar.png",   "alt" => 'Modificar',   "label"=>"Modificar Orden"));
+		$grid->wbotonadd(array("id"=>"imprime",  "img"=>"images/pdf_logo.gif", "alt" => 'Formato PDF', "label"=>"Reimprimir Documento"));
+		$grid->wbotonadd(array("id"=>"agregar",  "img"=>"images/agrega4.png",  "alt" => 'Agregar',     "label"=>"Agregar Orden"));
+		$grid->wbotonadd(array("id"=>"modifica", "img"=>"images/editar.png",   "alt" => 'Modificar',   "label"=>"Modificar Orden"));
 		$WestPanel = $grid->deploywestp();
 
 		//Panel Central y Sur
 		$centerpanel = $grid->centerpanel( $id = "radicional", $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
-		$SouthPanel  = $grid->SouthPanel($this->datasis->traevalor('TITULO1'));
+
+		$adic = array(
+			array("id"=>"fne",  "title"=>"Agregar/Editar Orden de Compra")
+		);
+		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
 		$param['WestPanel']    = $WestPanel;
 		//$param['EastPanel']  = $EastPanel;
@@ -74,9 +80,10 @@ class Ordc extends Controller {
 	//Funciones de los Botones
 	//***************************
 	function bodyscript( $grid0, $grid1 ){
-		$bodyscript ='
-		<script type="text/javascript">
-		jQuery("#boton1").click( function(){
+		$bodyscript ='<script type="text/javascript">';
+
+		$bodyscript .='
+		jQuery("#imprime").click( function(){
 			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
 			if (id)	{
 				var ret = jQuery("#newapi'. $grid0.'").jqGrid(\'getRowData\',id);
@@ -84,20 +91,88 @@ class Ordc extends Controller {
 			} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
 		});';
 
-		$bodyscript .='
-		jQuery("#boton2").click( function(){
-			window.open(\''.site_url('/compras/ordc/dataedit/create').'\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
-		});';
+		//Wraper de javascript
+		$bodyscript .= '
+		$(function() {
+			$("#dialog:ui-dialog").dialog( "destroy" );
+			var mId = 0;
+			var montotal = 0;
+			var ffecha = $("#ffecha");
+			var grid = jQuery("#newapi'.$grid0.'");
+			var s;
+			var allFields = $( [] ).add( ffecha );
+			var tips = $( ".validateTips" );
+			s = grid.getGridParam(\'selarrrow\'); 
+		';
 
 		$bodyscript .='
-		jQuery("#boton3").click( function(){
-			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
-			if (id)	{
-				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
-				window.open(\''.site_url('compras/ordc/dataedit/show').'/\'+id, \'_blank\', \'width=1000,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-500), screeny=((screen.availWidth/2)-300)\');
-			} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
-		});
-		</script>'."\n";
+			jQuery("#modifica").click( function(){
+				var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+				if (id)	{
+					var ret    = $("#newapi'.$grid0.'").getRowData(id);
+					mId = id;
+					if ( ret.status == "PE" ) {
+						$.post("'.site_url('compras/ordc/solo/modify').'/"+id, function(data){
+							$("#fne").html(data);
+							$( "#fne" ).dialog( "open" );
+						});
+					} else {
+						$.prompt("<h1>Orden no modificable, esta cerrada o en back order");
+					}
+				} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
+			});
+			';
+
+		//Agregar Compra
+		$bodyscript .= '
+			$( "#agregar" ).click(function() {
+				$.post("'.site_url('compras/ordc/solo/create').'",
+				function(data){
+					$("#fne").html(data);
+					$( "#fne" ).dialog( "open" );
+				})
+			});';
+
+		$bodyscript .= '
+			$( "#fne" ).dialog({
+				autoOpen: false, height: 570, width: 860, modal: true,
+				buttons: {
+					"Guardar": function() {
+						var bValid = true;
+						var murl = $("#df1").attr("action");
+						allFields.removeClass( "ui-state-error" );
+						if ( bValid ) {
+							$.ajax({
+								type: "POST", dataType: "html", async: false,
+								url: murl,
+								data: $("#df1").serialize(),
+								success: function(r,s,x){
+									var res = $.parseJSON(r);
+									if ( res.status == "A"){
+										apprise(res.mensaje);
+										$( "#fne" ).dialog( "close" );
+										grid.trigger("reloadGrid");
+										'.$this->datasis->jwinopen(site_url('formatos/ver/ORDC').'/\'+res.id+\'/id\'').';
+										return true;
+									} else if ( res.status == "C"){
+										apprise("<div style=\"font-size:16px;font-weight:bold;background:green;color:white\">Mensaje:</div> <h1>"+res.mensaje);
+									} else {
+										apprise("<div style=\"font-size:16px;font-weight:bold;background:red;color:white\">Error:</div> <h1>"+res.mensaje+"</h1>");
+									}
+								}
+							});
+						}
+					},
+					Cancelar: function() { $( this ).dialog( "close" ); }
+				},
+				close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
+			});';
+
+		$bodyscript .= '	});';
+		$bodyscript .= "\n</script>\n";
+
+
+
 		return $bodyscript;
 	}
 
@@ -122,7 +197,6 @@ class Ordc extends Controller {
 			'formoptions'   => '{ label:"Fecha" }'
 		));
 
-
 		$grid->addField('numero');
 		$grid->label('Numero');
 		$grid->params(array(
@@ -133,7 +207,6 @@ class Ordc extends Controller {
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:30, maxlength: 8 }',
 		));
-
 
 		$grid->addField('status');
 		$grid->label('Status');
@@ -519,12 +592,12 @@ class Ordc extends Controller {
 
 		$grid->showpager(true);
 		$grid->setWidth('');
-		$grid->setHeight('170');
+		$grid->setHeight('200');
 		$grid->setTitle($this->titp);
 		$grid->setfilterToolbar(true);
 		$grid->setToolbar('false', '"top"');
 
-		$grid->setOnSelectRow(' function(id){
+		$grid->setOnSelectRow('function(id){
 				if (id){
 					var ret = $("#titulos").getRowData(id);
 					jQuery(gridId2).jqGrid(\'setGridParam\',{url:"'.site_url($this->url.'getdatait/').'/"+id+"/", page:1});
@@ -536,8 +609,17 @@ class Ordc extends Controller {
 						}
 					});
 				}
-			}'
-		);
+			},
+			afterInsertRow:
+			function( rid, aData, rowe){
+				if ( aData.status == "PE"  ){
+					$(this).jqGrid( "setRowData", rid, false,{color:"#000000", background:"#DCFFB5" });
+				} else if ( aData.status == "BA" ){
+					$(this).jqGrid( "setRowData", rid, false,{color:"#000000", background:"#ECE2FF" });
+				}
+			}
+
+			');
 
 		$grid->setOndblClickRow("");
 
@@ -1045,16 +1127,6 @@ class Ordc extends Controller {
 		$rs = $grid->jsonresult( $response);
 		echo $rs;
 
-/*
-		$grid       = $this->jqdatagrid;
-
-		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
-		$mWHERE = $grid->geneTopWhere('itordc');
-
-		$response   = $grid->getData('itordc', array(array()), array(), false, $mWHERE );
-		$rs = $grid->jsonresult( $response);
-		echo $rs;
-*/
 	}
 
 	/**
@@ -1118,132 +1190,42 @@ class Ordc extends Controller {
 	}
 */
 
-/*  ///////////////////////////////////////////////////////////////////////////////////
-   ////////////////////////////////////////////////////////////////////////////////////
-	function extgrid(){
-		//$this->datasis->modulo_id(201,1);
-		$script = $this->ordcextjs();
-		$data["script"] = $script;
-		$data['title']  = heading('Orde de Compra');
-		$this->load->view('extjs/ventana',$data);
+
+	function solo() {
+		$this->solo = true;
+		$id = $this->uri->segment($this->uri->total_segments());
+
+		//Creando Orden
+		if ( $id == 'create'){
+			$this->dataedit();
+		} elseif ( $id == 'insert'){
+			$this->genesal = false;
+			$rt = $this->dataedit();
+			$id = $this->claves["id"];
+			if ( strlen($rt) > 0 )
+				echo '{"status":"A","id":"'.$id.'" ,"mensaje":"'.$rt.'"}';
+		} elseif ( $id == 'process'){
+			$control = $this->uri->segment($this->uri->total_segments()-1);
+			$rt = $this->actualizar($control);
+			if ( strlen($rt[1]) > 0 )
+				if ( $rt[0] === false ) $p = 'E'; else $p='A';
+				echo '{"status":"'.$p.'","id":"'.$control.'" ,"mensaje":"<h1>'.$rt[1].'</h1>"}';
+		} else {
+			$modo = $this->uri->segment($this->uri->total_segments()-1);
+			if ( $modo == 'update' ) $this->genesal = false;
+			$rt = $this->dataedit();
+			if ( strlen($rt) > 0 )
+				echo '{"status":"A","id":"'.$id.'" ,"mensaje":"'.$rt.'"}';
+		}
 	}
-*/
 
 	function filteredgrid(){
-		$this->rapyd->load('datagrid','datafilter');
-
-		$atts = array(
-              'width'      => '800',
-              'height'     => '600',
-              'scrollbars' => 'yes',
-              'status'     => 'yes',
-              'resizable'  => 'yes',
-              'screenx'    => '0',
-              'screeny'    => '0'
-              );
-
-        $modbus=array(
-			'tabla'   =>'sprv',
-			'columnas'=>array(
-				'proveed' =>'C&oacute;digo Proveedor',
-				'nombre'=>'Nombre',
-				'rif'=>'RIF'),
-			'filtro'  =>array('proveed'=>'C&oacute;digo Proveedor','nombre'=>'Nombre'),
-			'retornar'=>array('proveed'=>'proveed'),
-			'titulo'  =>'Buscar Proveedor');
-
-		$boton=$this->datasis->modbus($modbus);
-
-		$filter = new DataFilter('Filtro de Orden de Compras','ordc');
-
-		$filter->fechad = new dateonlyField("Desde", "fechad",'d/m/Y');
-		$filter->fechah = new dateonlyField("Hasta", "fechah",'d/m/Y');
-		$filter->fechad->clause  =$filter->fechah->clause="where";
-		$filter->fechad->db_name =$filter->fechah->db_name="fecha";
-		$filter->fechad->insertValue = date("Y-m-d");
-		$filter->fechah->insertValue = date("Y-m-d");
-		$filter->fechah->size=$filter->fechad->size=10;
-		$filter->fechad->operator='>=';
-		$filter->fechah->operator='<=';
-
-		$filter->numero = new inputField('N&uacute;mero', 'numero');
-		$filter->numero->size=20;
-
-		$filter->proveedor = new inputField('Proveedor', 'proveed');
-		$filter->proveedor->append($boton);
-		$filter->proveedor->db_name = 'proveed';
-		$filter->proveedor->size=20;
-
-		$filter->buttons('reset','search');
-		$filter->build('dataformfiltro');
-
-		$uri   = anchor('compras/ordc/dataedit/show/<#numero#>','<#numero#>');
-		$uri2  = anchor_popup('formatos/verhtml/ORDC/<#numero#>','Ver HTML',$atts);
-		$uri_2 = anchor('compras/ordc/dataedit/show/<#numero#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar','height'=>'12')));
-
-		$grid = new DataGrid();
-		$grid->order_by('numero','desc');
-		$grid->per_page = 15;
-
-		$grid->column('Acci&oacute;n',$uri_2,'align=center');
-		$grid->column_orderby('N&uacute;mero',$uri,'numero');
-		$grid->column_orderby('Fecha'        ,'<dbdate_to_human><#fecha#></dbdate_to_human>'   ,'fecha' ,"align='center'");
-		$grid->column_orderby('Fecha F.'     ,'<dbdate_to_human><#fechafac#></dbdate_to_human>','fecha' ,"align='center'");
-		$grid->column_orderby('Proveedor'    ,'proveed'  ,'proveed');
-		$grid->column_orderby('Nombre'       ,'nombre'   ,'nombre');
-		$grid->column_orderby('Peso'         ,'peso'     ,'peso');
-		$grid->column_orderby('IVA'          ,'montoiva' ,'montoiva' ,"align='right'");
-		$grid->column_orderby('Monto'        ,'montonet' ,'montoner' ,"align='right'");
-		$grid->column_orderby('Monto Total'  ,'montotot' ,'montotot' ,"align='right'");
-		//$grid->column("Vista",$uri2,"align='center'");
-		$grid->add('compras/ordc/dataedit/create');
-		$grid->build('datagridST');
-
-//************ SUPER TABLE ************* 
-		$extras = '
-<script type="text/javascript">
-//<![CDATA[
-(function() {
-	var mySt = new superTable("demoTable", {
-	cssSkin : "sSky",
-	fixedCols : 1,
-	headerRows : 1,
-	onStart : function () {	this.start = new Date();},
-	onFinish : function () {document.getElementById("testDiv").innerHTML += "Finished...<br>" + ((new Date()) - this.start) + "ms.<br>";}
-	});
-})();
-//]]>
-</script>
-';
-		$style ='
-<style type="text/css">
-.fakeContainer { /* The parent container */
-    margin: 5px;
-    padding: 0px;
-    border: none;
-    width: 740px; /* Required to set */
-    height: 320px; /* Required to set */
-    overflow: hidden; /* Required to set */
-}
-</style>
-';
-//****************************************
-
-		$data['style']   = $style;
-		$data['style']  .= style('superTables.css');
-		$data['extras']  = $extras;
-
-		$data['content'] = $grid->output;
-		$data['filtro']  = $filter->output;
-
-		$data['head']    = script('jquery.js').script('superTables.js'). $this->rapyd->get_head();
-		$data['title']   ='<h1>Orden de Compras</h1>';
-		$this->load->view('view_ventanas', $data);
+		echo "Opcion Eliminada";
 	}
 
 	function dataedit(){
 		$this->rapyd->load('dataobject','datadetails');
-		
+/*
 		$modbus=array(
 			'tabla'   =>'sprv',
 			'columnas'=>array(
@@ -1285,11 +1267,38 @@ class Ordc extends Controller {
 			'where'   => '`activo` = "S"',
 			'script'  => array('post_modbus_sinv(<#i#>)')
 				);
+*/
+
+		$modbus=array(
+			'tabla'   =>'sinv',
+			'columnas'=>array(
+				'codigo' =>'C&oacute;digo',
+				'descrip'=>'Descripci&oacute;n'),
+			'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'Descripci&oacute;n'),
+			'retornar'=>array('codigo'=>'codigo_<#i#>','descrip'=>'descrip_<#i#>','pond'=>'costo_<#i#>','iva'=>'iva_<#i#>','peso'=>'sinvpeso_<#i#>'),
+			'p_uri'=>array(4=>'<#i#>'),
+			'script'  => array('post_modbus_sinv(<#i#>)'),
+			'titulo'  =>'Buscar Art&iacute;culo',
+			'where'   =>'activo = "S"');
+
+		$sprvbus=array(
+			'tabla'   =>'sprv',
+			'columnas'=>array(
+				'proveed' =>'C&oacute;digo Proveedor',
+				'nombre'=>'Nombre',
+				'rif'=>'RIF'),
+			'filtro'  => array('proveed'=>'C&oacute;digo Proveedor','nombre'=>'Nombre'),
+			'retornar'=> array('proveed'=>'proveed', 'nombre'=>'nombre'),
+			'script'  => array('post_modbus_sprv()'),
+			'titulo'  =>'Buscar Proveedor');
+
+
 		$btn=$this->datasis->p_modbus($modbus,'<#i#>');
 
 
 		$do = new DataObject('ordc');
 		$do->rel_one_to_many('itordc', 'itordc', 'numero');
+		$do->pointer('sprv' ,'sprv.proveed=ordc.proveed','sprv.nombre AS sprvnombre','left');
 		$do->rel_pointer('itordc','sinv','itordc.codigo=sinv.codigo','sinv.descrip AS sinvdescrip, sinv.base1 AS sinvprecio1, sinv.base2 AS sinvprecio2, sinv.base3 AS sinvprecio3, sinv.base4 AS sinvprecio4, sinv.iva AS sinviva, sinv.peso AS sinvpeso,sinv.tipo AS sinvtipo');
 
 		$edit = new DataDetails('Orden De Comnpra', $do);
@@ -1298,6 +1307,7 @@ class Ordc extends Controller {
 
 		$edit->pre_process('insert' ,'_pre_insert');
 		$edit->pre_process('update' ,'_pre_update');
+		
 		$edit->post_process('insert','_post_insert');
 		$edit->post_process('update','_post_update');
 		$edit->post_process('delete','_post_delete');
@@ -1320,23 +1330,23 @@ class Ordc extends Controller {
 		$edit->peso->readonly  = true;
 		$edit->peso->size      = 10;
 
-		$edit->proveed = new inputField('Proveedor','proveed');
-		$edit->proveed->size = 6;
-		$edit->proveed->maxlength=5;
-		$edit->proveed->append($boton);
+		$edit->proveed = new inputField('Proveedor', 'proveed');
+		$edit->proveed->size     = 7;
+		$edit->proveed->maxlength= 5;
+		$edit->proveed->autocomplete=false;
+		$edit->proveed->rule     = 'required';
+		$edit->proveed->append($this->datasis->modbus($sprvbus));
 
-		$edit->nombre = new inputField('Nombre', 'nombre');
-		$edit->nombre->size = 25;
+		$edit->nombre = new hiddenField('Nombre', 'nombre');
+		$edit->nombre->size = 50;
 		$edit->nombre->maxlength=40;
-		$edit->nombre->autocomplete=false;
-		$edit->nombre->rule= 'required';
 
 		$edit->status = new  dropdownField ('Estado', 'status');
 		$edit->status->option('','');
-		$edit->status->option('CE','Cerrado');
 		$edit->status->option('PE','Pendiente');
+		$edit->status->option('CE','Cerrado');
 		$edit->status->option('BA','BackOrde');
-		$edit->status->style='width:200px;';
+		$edit->status->style='width:100px;';
 
 		$edit->arribo = new DateonlyField('Arribo', 'arribo','d/m/Y');
 		$edit->arribo->insertValue = date('Y-m-d');
@@ -1353,13 +1363,14 @@ class Ordc extends Controller {
 		//**************************
 		//  Campos para el detalle
 		//**************************
-		$edit->codigo = new inputField('C&oacute;digo <#o#>', 'codigo_<#i#>');
-		$edit->codigo->size     = 12;
+		$edit->codigo = new inputField('C&oacute;digo', 'codigo_<#i#>');
+		$edit->codigo->size=10;
+		$edit->codigo->db_name='codigo';
+		$edit->codigo->append($this->datasis->p_modbus($modbus,'<#i#>'));
+		$edit->codigo->autocomplete=false;
 		$edit->codigo->db_name  = 'codigo';
-		$edit->codigo->readonly = true;
+		$edit->codigo->rule     = 'required|callback_chcodigoa';
 		$edit->codigo->rel_id   = 'itordc';
-		$edit->codigo->rule     = 'required';
-		$edit->codigo->append($btn);
 
 		$edit->descrip = new inputField('Descripci&oacute;n <#o#>', 'descrip_<#i#>');
 		$edit->descrip->size=36;
@@ -1368,29 +1379,48 @@ class Ordc extends Controller {
 		$edit->descrip->readonly  = true;
 		$edit->descrip->rel_id='itordc';
 
-		$edit->cantidad = new inputField('Cantidad <#o#>', 'cantidad_<#i#>');
-		$edit->cantidad->db_name  = 'cantidad';
-		$edit->cantidad->css_class= 'inputnum';
-		$edit->cantidad->rel_id   = 'itordc';
-		$edit->cantidad->maxlength= 10;
-		$edit->cantidad->size     = 6;
-		$edit->cantidad->rule     = 'required|positive';
-		$edit->cantidad->autocomplete=false;
-		$edit->cantidad->onkeyup  ='importe(<#i#>)';
+		//$edit->cantidad = new inputField('Cantidad <#o#>', 'cantidad_<#i#>');
+		$edit->cantidad = new inputField('Cantidad', 'cantidad_<#i#>');
+		$edit->cantidad->db_name      = 'cantidad';
+		$edit->cantidad->css_class    = 'inputnum';
+		$edit->cantidad->rel_id       = 'itordc';
+		$edit->cantidad->maxlength    = 10;
+		$edit->cantidad->size         =  8;
+		$edit->cantidad->autocomplete = false;
+		$edit->cantidad->onkeyup      = 'importe(<#i#>)';
+		$edit->cantidad->rule         = 'required|positive';
+		$edit->cantidad->showformat   = 'decimal';
 
-		$edit->costo = new inputField('Precio <#o#>', 'costo_<#i#>');
-		$edit->costo->db_name   = 'costo';
-		$edit->costo->css_class = 'inputnum';
-		$edit->costo->rel_id    = 'itordc';
-		$edit->costo->size      = 10;
-		$edit->costo->rule      = 'required|positive';
-		$edit->costo->readonly  = true;
+		$edit->costo = new inputField('Costo', 'costo_<#i#>');
+		$edit->costo->css_class       = 'inputnum';
+		$edit->costo->rule            = 'required|positive';
+		$edit->costo->onkeyup         = 'importe(<#i#>)';
+		$edit->costo->size            = 10;
+		$edit->costo->autocomplete    = false;
+		$edit->costo->db_name         = 'costo';
+		$edit->costo->rel_id          = 'itordc';
+		$edit->costo->showformat      = 'decimal';
 
-		$edit->importe = new inputField('Importe <#o#>', 'importe_<#i#>');
-		$edit->importe->db_name='importe';
-		$edit->importe->size=10;
-		$edit->importe->css_class='inputnum';
-		$edit->importe->rel_id   ='itordc';
+		$edit->importe = new inputField('Importe', 'importe_<#i#>');
+		$edit->importe->db_name       = 'importe';
+		$edit->importe->size          = 12;
+		$edit->importe->rel_id        = 'itordc';
+		$edit->importe->autocomplete  = false;
+		$edit->importe->onkeyup       = 'costo(<#i#>)';
+		$edit->importe->css_class     = 'inputnum';
+		$edit->importe->showformat    = 'decimal';
+		$edit->importe->readonly      = true;
+
+		$edit->sinvpeso = new hiddenField('', 'sinvpeso_<#i#>');
+		$edit->sinvpeso->db_name      = 'sinvpeso';
+		$edit->sinvpeso->rel_id       = 'itordc';
+		$edit->sinvpeso->pointer      = true;
+		$edit->sinvpeso->showformat   = 'decimal';
+
+		$edit->iva = new hiddenField('Impuesto', 'iva_<#i#>');
+		$edit->iva->db_name           = 'iva';
+		$edit->iva->rel_id            = 'itordc';
+		$edit->iva->showformat        = 'decimal';
 
 		for($i=1;$i<=4;$i++){
 			$obj='precio'.$i;
@@ -1399,15 +1429,6 @@ class Ordc extends Controller {
 			$edit->$obj->rel_id    = 'itordc';
 			$edit->$obj->pointer   = true;
 		}
-
-		$edit->itiva = new hiddenField('', 'itiva_<#i#>');
-		$edit->itiva->db_name  = 'iva';
-		$edit->itiva->rel_id   = 'itordc';
-
-		$edit->sinvpeso = new hiddenField('', 'sinvpeso_<#i#>');
-		$edit->sinvpeso->db_name   = 'sinvpeso';
-		$edit->sinvpeso->rel_id    = 'itordc';
-		$edit->sinvpeso->pointer   = true;
 
 		$edit->ultimo = new hiddenField('', 'ultimo_<#i#>');
 		$edit->ultimo->db_name   = 'ultimo';
@@ -1418,9 +1439,21 @@ class Ordc extends Controller {
 		$edit->pond->db_name='pond';
 		$edit->pond->rel_id   ='itordc';
 		$edit->pond->pointer   = true;
+
 		//**************************
 		//fin de campos para detalle
 		//**************************
+		$edit->condi1 = new inputField('Condiciones', 'condi1');
+		$edit->condi1->size      = 40;
+		$edit->condi1->maxlength = 40;
+
+		$edit->condi2 = new inputField('Condiciones', 'condi2');
+		$edit->condi2->size      = 40;
+		$edit->condi2->maxlength = 40;
+
+		$edit->condi3 = new inputField('Condiciones', 'condi3');
+		$edit->condi3->size      = 40;
+		$edit->condi3->maxlength = 40;
 
 		$edit->montoiva = new inputField('Impuesto', 'montoiva');
 		$edit->montoiva->css_class ='inputnum';
@@ -1440,13 +1473,41 @@ class Ordc extends Controller {
 		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
 
 		$edit->buttons('modify', 'save', 'undo', 'delete', 'exit','add_rel');
-		$edit->build();
 
-		$conten['form']  =&  $edit;
-		$data['content'] = $this->load->view('view_ordc', $conten,true);
-		$data['title']   = heading('Orden de Compra');
-		$data['head']    = script('jquery.js').script('jquery-ui.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css').$this->rapyd->get_head().phpscript('nformat.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js').phpscript('nformat.js');
-		$this->load->view('view_ventanas', $data);
+		if($this->genesal){
+			$edit->build();
+			$conten['form']  =&  $edit;
+			$conten['solo']  = $this->solo;
+			if (  $this->solo ){
+				$data['content'] = $this->load->view('view_ordc', $conten);
+			} else {
+				$data['content'] = $this->load->view('view_ordc', $conten,true);
+				$data['title']   = heading('Orden de Compra');
+				$data['head']    = script('jquery.js').script('jquery-ui.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.meiomask.js').style('vino/jquery-ui.css').$this->rapyd->get_head().phpscript('nformat.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js').phpscript('nformat.js');
+				$this->load->view('view_ventanas', $data);
+			}
+		} else {
+			$edit->on_save_redirect=false;
+			$edit->build();
+			if($edit->on_success()){
+				//$this->claves=$edit->_dataobject->pk;
+				//$this->claves['control']=$edit->_dataobject->get('control');
+				$rt= 'Orden Guardada';
+			}elseif($edit->on_error()){
+				$rt= html_entity_decode(preg_replace('/<[^>]*>/', '', $edit->error_string));
+			}
+			return $rt;
+		}
+		
+	}
+
+	function chcodigoa($codigo){
+		$cana=$this->datasis->dameval('SELECT COUNT(*) FROM sinv WHERE activo=\'S\' AND codigo='.$this->db->escape($codigo));
+		if(empty($cana) || $cana==0){
+			$this->validation->set_message('chcodigoa', 'El campo %s contiene un codigo no v&aacute;lido o inactivo');
+			return false;
+		}
+		return true;
 	}
 
 	function bussug(){
@@ -1492,7 +1553,6 @@ class Ordc extends Controller {
 			//$do->set_rel('itspre','mostrado',$iva+$totals,$i);
 		}
 		$totalg = $totals+$iva;
-
 		
 		$do->set('montonet' ,round($totals ,2));
 		$do->set('montotot' ,round($totalg ,2));
@@ -1515,7 +1575,6 @@ class Ordc extends Controller {
 			$do->set_rel('itordc','transac' ,$transac,$i);
 			$do->set_rel('itordc','usuario' ,$usuario,$i);;
 		}
-
 		return true;
 	}
 

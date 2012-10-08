@@ -8,22 +8,23 @@ if ($form->_status=='delete' || $form->_action=='delete' || $form->_status=='unk
 	echo $form->output;
 else:
 
-$campos=$form->template_details('itordc');
+$campos   = $form->template_details('itordc');
 $scampos  ='<tr id="tr_itordc_<#i#>">';
 $scampos .='<td class="littletablerow" align="left" >'.$campos['codigo']['field'].'</td>';
 $scampos .='<td class="littletablerow" align="left" >'.$campos['descrip']['field'].'</td>';
 $scampos .='<td class="littletablerow" align="right">'.$campos['cantidad']['field'].  '</td>';
 $scampos .='<td class="littletablerow" align="right">'.$campos['costo']['field']. '</td>';
 $scampos .='<td class="littletablerow" align="right">'.$campos['importe']['field'];
+
 for($o=1;$o<5;$o++){
 	$it_obj   = "precio${o}";
 	$scampos .= $campos[$it_obj]['field'];
 }
-$scampos .= $campos['itiva']['field'];
+$scampos .= $campos['iva']['field'];
 $scampos .= $campos['ultimo']['field'];
 $scampos .= $campos['pond']['field'];
 $scampos .= $campos['sinvpeso']['field'].'</td>';
-$scampos .= '<td class="littletablerow"><a href=# onclick="del_itordc(<#i#>);return false;">Eliminar</a></td></tr>';
+$scampos .= '<td class="littletablerow"><a href=# onclick="del_itordc(<#i#>);return false;">'.img("images/delete.jpg").'</a></td></tr>';
 $campos=$form->js_escape($scampos);
 
 if(isset($form->error_string)) echo '<div class="alert">'.$form->error_string.'</div>';
@@ -38,7 +39,95 @@ var itordc_cont=<?php echo $form->max_rel_count['itordc']; ?>;
 $(function(){
 	$(".inputnum").numeric(".");
 	totalizar();
+
+	for(var i=0;i < <?php echo $form->max_rel_count['itordc']; ?>;i++){
+		autocod(i.toString());
+	}
+
+	$('#proveed').autocomplete({
+		source: function( req, add){
+			$.ajax({
+				url:  "<?php echo site_url('ajax/buscasprv'); ?>",
+				type: "POST",
+				dataType: "json",
+				data: "q="+req.term,
+				success:
+					function(data){
+						var sugiere = [];
+						$.each(data,
+							function(i, val){
+								sugiere.push( val );
+							}
+						);
+						add(sugiere);
+					},
+			})
+		},
+		minLength: 2,
+		select: function( event, ui ) {
+			$('#nombre').val(ui.item.nombre);
+			$('#nombre_val').text(ui.item.nombre);
+			$('#proveed').val(ui.item.proveed);
+		}
+	});
+
 });
+
+//Agrega el autocomplete
+function autocod(id){
+	$('#codigo_'+id).autocomplete({
+		source: function( req, add){
+			$.ajax({
+				url:  "<?php echo site_url('ajax/buscasinv'); ?>",
+				type: "POST",
+				dataType: "json",
+				data: "q="+req.term,
+				success:
+					function(data){
+						var sugiere = [];
+
+						if(data.length==0){
+							$('#codigo_'+id).val("");
+							$('#descrip_'+id).val("");
+							$('#it_descrip_val_'+id).text("");
+							$('#iva_'+id).val(0);
+							$('#sinvpeso_'+id).val(0);
+							$('#costo_'+id).val(0);
+							$('#cantidad_'+id).val('');
+						}else{
+							$.each(data,
+								function(i, val){
+									sugiere.push( val );
+								}
+							);
+						}
+						add(sugiere);
+					},
+			})
+		},
+		minLength: 2,
+		select: function( event, ui ) {
+			$('#codigo_'+id).attr("readonly", "readonly");
+
+			var cana=Number($("#cantidad_"+id).val());
+			$('#codigo_'+id).val(ui.item.codigo);
+			$('#descrip_'+id).val(ui.item.descrip);
+			$('#it_descrip_val_'+id).text(ui.item.descrip);
+			$('#iva_'+id).val(ui.item.iva);
+			$('#sinvpeso_'+id).val(ui.item.peso);
+			$('#costo_'+id).val(ui.item.pond);
+			if(cana<=0) $("#cantidad_"+id).val('1');
+			$('#cantidad_'+id).focus();
+			$('#cantidad_'+id).select();
+			//post_modbus_sinv(parseInt(id));
+			importe(parseInt(id));
+			//totalizar();
+			setTimeout(function() {  $('#codigo_'+id).removeAttr("readonly"); }, 1500);
+		}
+	});
+}
+
+
 
 function importe(id){
 	var ind     = id.toString();
@@ -53,7 +142,7 @@ function importe(id){
 function totalizar(){
 	var iva    =0;
 	var totalg =0;
-	var itiva  =0;
+	var iva    =0;
 	var itpeso =0;
 	var totals =0;
 	var importe=0;
@@ -66,18 +155,18 @@ function totalizar(){
 		if(pos>0){
 			ind     = this.name.substring(pos+1);
 			cana    = Number($("#cantidad_"+ind).val());
-			itiva   = Number($("#itiva_"+ind).val());
+			iva     = Number($("#iva_"+ind).val());
 			itpeso  = Number($("#sinvpeso_"+ind).val());
 			importe = Number(this.value);
 
 			peso    = peso+(itpeso*cana);
-			iva     = iva+importe*(itiva/100);
+			iva     = iva+importe*(iva/100);
 			totals  = totals+importe;
 		}
 	});
 	$("#peso").val(roundNumber(peso,2));
-	$("#montotot").val(roundNumber(totals+iva,2));
-	$("#montonet").val(roundNumber(totals,2));
+	$("#montonet").val(roundNumber(totals+iva,2));
+	$("#montotot").val(roundNumber(totals,2));
 	$("#montoiva").val(roundNumber(iva,2));
 }
 
@@ -90,8 +179,8 @@ function add_itordc(){
 	$("#__UTPL__").before(htm);
 	$("#cantidad_"+can).numeric(".");
 	itordc_cont=itordc_cont+1;
+	autocod(can);
 }
-
 
 function del_itordc(id){
 	id = id.toString();
@@ -110,21 +199,23 @@ function del_itordc(id){
 		<a href="#" onclick="window.open('<?php echo base_url() ?>formatos/verhtml/ORDC/<?php echo $id ?>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');" heigth="600" >
 		<img src='<?php echo base_url() ?>images/html_icon.gif'></a>
 		<?php } ?>
-
-		<?php echo $container_tr?></td>
+<?php
+if (!$solo){
+	echo $container_tr."</td>";
+}
+?>
+		
 	</tr>
 	<tr>
 		<td>
 		<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
-		<legend class="titulofieldset" style='color: #114411;'>Orden de Compra<?php if($form->_status=='show' or $form->_status=='modify' ) echo str_pad($form->numero->output,8,0,0); ?></legend>
 		<table width="100%" style="margin: 0; width: 100%;">
 
 			<tr >
-				<td class="littletableheader"><?php echo $form->fecha->label;    ?>*&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->fecha->output;   ?>&nbsp;</td>
-				<td class="littletableheader"><?php echo $form->proveed->label;  ?>&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->proveed->output; ?>&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->nombre->output;  ?>&nbsp;</td>
+				<td class="littletableheader" width="110"><?php echo $form->fecha->label;    ?>*&nbsp;</td>
+				<td class="littletablerow"    width="150">   <?php echo $form->fecha->output;   ?>&nbsp;</td>
+				<td class="littletableheader" width="90"><?php echo $form->proveed->label;  ?>&nbsp;</td>
+				<td class="littletablerow">   <?php echo $form->proveed->output ?><b id='nombre_val'><?php echo $form->nombre->value ?></b><?php echo $form->nombre->output ?></td>
 			</tr>
 			<tr>
 				<td class="littletableheader"><?php echo $form->arribo->label     ?>&nbsp;</td>
@@ -137,17 +228,14 @@ function del_itordc(id){
 				<td class="littletablerow" >  <?php echo $form->fechafac->output ?>&nbsp;</td>
 				<td class="littletableheader"><?=$form->peso->label  ?>&nbsp;</td>
 				<td class="littletablerow" align="left"><?=$form->peso->output ?>&nbsp;</td>
-
 			</tr>
 		</table>
 		</fieldset>
-		<br>
 		</td>
 	</tr>
 	<tr>
 		<td>
-		<fieldset style='border: 2px outset #9AC8DA;background: #EFEFFF;'>
-		<legend class="titulofieldset" style='color: #114411;'>Lista de Art&iacute;culos</legend>
+		<div style='overflow:auto;border: 1px solid #9AC8DA;background: #FAFAFA;height:200px'>
 		<table width='100%'>
 
 			<tr>
@@ -162,16 +250,16 @@ function del_itordc(id){
 			</tr>
 
 			<?php for($i=0;$i<$form->max_rel_count['itordc'];$i++) {
-				$it_codigo  = "codigo_$i";
+				$it_codigo    = "codigo_$i";
 				$it_descrip   = "descrip_$i";
-				$it_cantidad    = "cantidad_$i";
-				$it_costo   = "costo_$i";
-				$it_importe = "importe_$i";
-				$it_iva     = "itiva_$i";
-				$it_ultimo  = "ultimo_$i";
-				$it_pond    = "pond_$i";
-				$it_peso    = "sinvpeso_$i";
-				$it_tipo    = "sinvtipo_$i";
+				$it_cantidad  = "cantidad_$i";
+				$it_costo     = "costo_$i";
+				$it_importe   = "importe_$i";
+				$it_iva       = "iva_$i";
+				$it_ultimo    = "ultimo_$i";
+				$it_pond      = "pond_$i";
+				$it_peso      = "sinvpeso_$i";
+				$it_tipo      = "sinvtipo_$i";
 
 				$pprecios='';
 				for($o=1;$o<5;$o++){
@@ -193,42 +281,41 @@ function del_itordc(id){
 
 				<?php if($form->_status!='show') {?>
 				<td class="littletablerow">
-					<a href='#' onclick='del_itordc(<?=$i ?>);return false;'>Eliminar</a>
+					<a href='#' onclick='del_itordc(<?=$i ?>);return false;'><?php echo img("images/delete.jpg");?></a>
 				</td>
+
 				<?php } ?>
 			</tr>
 			<?php } ?>
 
 			<tr id='__UTPL__'>
-
-				<td id='cueca'colspan='6' class="littletableheaderdet">&nbsp;</td>
 			</tr>
+
 		</table>
-		</fieldset>
-		<?php echo $container_bl ?>
-		<?php echo $container_br ?>
+		</div>
 		</td>
 	</tr>
 	<tr>
 		<td>
 		<fieldset style='border: 2px outset #9AC8DA;background: #EFEFFF;'>
-		<legend class="titulofieldset" style='color: #114411;'>Totales</legend>
 		<table width='100%'>
 			<tr>
-				<td class="littletableheaderdet"align='center'><?php echo $form->montoiva->label;    ?></td>
-				<td class="littletableheaderdet"align='center'><?php echo $form->montonet->label;  ?></td>
-				<td class="littletableheaderdet"align='center'><?php echo $form->montotot->label;  ?></td>
-			</tr>
-			<tr>
-				<td class="littletablerow" align='center'><?php echo $form->montoiva->output;   ?></td>
-				<td class="littletablerow" align='center'><?php echo $form->montonet->output; ?></td>
+				<td><?php echo $container_bl ?><?php echo $container_br ?></td>
+				<td class="littletablerow" align='center'><?php echo $form->condi1->output; ?></td>
+				<td class="littletablerowth"align='center'><?php echo $form->montotot->label;  ?></td>
 				<td class="littletablerow" align='center'><?php echo $form->montotot->output; ?></td>
-			</tr>
-			<tr>
-				<td colspan='3' class="littletableheaderdet">&nbsp;</td>
+			</tr><tr>
+				<td></td>
+				<td class="littletablerow" align='center'><?php echo $form->condi2->output; ?></td>
+				<td class="littletablerowth"align='center'><?php echo $form->montoiva->label;    ?></td>
+				<td class="littletablerow" align='center'><?php echo $form->montoiva->output;   ?></td>
+			</tr><tr>
+				<td></td>
+				<td class="littletablerow" align='center'><?php echo $form->condi3->output; ?></td>
+				<td class="littletablerowth"align='center'><?php echo $form->montonet->label;  ?></td>
+				<td class="littletablerow" align='center'><?php echo $form->montonet->output; ?></td>
 			</tr>
 		</table>
-		</fieldset>
 		<?php echo $form_end; ?>
 		</td>
 	</tr>
