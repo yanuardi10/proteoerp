@@ -145,9 +145,6 @@ function totalizar(){
 
 	$("#peso").val(roundNumber(peso,2));
 
-	//$("#montotot").val(roundNumber(totals,2));
-	//$("#montoiva").val(roundNumber(iva,2));
-
 	if(Math.abs(totals-montotot) >= 0.02 ){
 		$("#montotot").val(roundNumber(totals,2));
 	}else{
@@ -163,7 +160,6 @@ function totalizar(){
 	$("#peso_val").text(nformat(peso,2));
 	$("#montonet_val").text(nformat(totals+iva,2));
 	$("#montotot_val").text(nformat(totals,2));
-	//$("#montoiva_val").text(nformat(iva,2));
 }
 
 //Calcula los montos que van a CxP
