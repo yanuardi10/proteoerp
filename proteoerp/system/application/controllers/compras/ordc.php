@@ -618,8 +618,7 @@ class Ordc extends Controller {
 					$(this).jqGrid( "setRowData", rid, false,{color:"#000000", background:"#ECE2FF" });
 				}
 			}
-
-			');
+		');
 
 		$grid->setOndblClickRow("");
 

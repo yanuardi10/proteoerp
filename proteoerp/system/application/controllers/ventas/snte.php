@@ -19,7 +19,7 @@ class Snte extends Controller {
 			$this->db->simple_query('ALTER TABLE snte ADD UNIQUE INDEX numero (numero)');
 			$this->db->simple_query('ALTER TABLE snte ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
 		};*/
-		$this->datasis->modintramenu( 900, 650, substr($this->url,0,-1) );
+		$this->datasis->modintramenu( 900, 600, substr($this->url,0,-1) );
 		redirect($this->url.'jqdatag');
 	}
 
@@ -28,18 +28,27 @@ class Snte extends Controller {
 	//
 	//***************************
 	function jqdatag(){
-
 		$grid = $this->defgrid();
 		$param['grids'][] = $grid->deploy();
 
-		$bodyscript = '';
+		$grid1   = $this->defgridit();
+		$param['grids'][] = $grid1->deploy();
+
+		$readyLayout = $grid->readyLayout2( 220, 192, $param['grids'][0]['gridname'],$param['grids'][1]['gridname']);
+
+		//Funciones que ejecutan los botones
+		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
+
 
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
 
 		//Botones Panel Izq
-		$grid->wbotonadd(array("id"=>"imprimir",   "img"=>"images/pdf_logo.gif",  "alt" => "Formato PDF", "label"=>"Estado de Cuenta"));
+		$grid->wbotonadd(array("id"=>"imprimir", "img"=>"images/pdf_logo.gif",  "alt" => "Formato PDF", "label"=>"Estado de Cuenta"));
 		$WestPanel = $grid->deploywestp();
+		//Panel Central y Sur
+		$centerpanel = $grid->centerpanel( $id = "radicional", $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
+
 
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor("TITULO1"));
 
@@ -52,8 +61,110 @@ class Snte extends Controller {
 		$param['bodyscript']   = $bodyscript;
 		$param['tabs']         = false;
 		$param['encabeza']     = $this->titp;
+		$param['readyLayout']  = $readyLayout;
+		$param['centerpanel']  = $centerpanel;
+
 		$this->load->view('jqgrid/crud2',$param);
 	}
+
+	//***************************
+	//Funciones de los Botones
+	//***************************
+	function bodyscript( $grid0, $grid1 ){
+		$bodyscript ='<script type="text/javascript">';
+
+		$bodyscript .='
+		jQuery("#imprime").click( function(){
+			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret = jQuery("#newapi'. $grid0.'").jqGrid(\'getRowData\',id);
+				window.open(\''.site_url('formatos/ver/ORDC').'/\'+id+"/id", \'_blank\', \'width=900,height=800,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-400)\');
+			} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
+		});';
+
+		//Wraper de javascript
+		$bodyscript .= '
+		$(function() {
+			$("#dialog:ui-dialog").dialog( "destroy" );
+			var mId = 0;
+			var montotal = 0;
+			var ffecha = $("#ffecha");
+			var grid = jQuery("#newapi'.$grid0.'");
+			var s;
+			var allFields = $( [] ).add( ffecha );
+			var tips = $( ".validateTips" );
+			s = grid.getGridParam(\'selarrrow\'); 
+		';
+
+		$bodyscript .='
+			jQuery("#modifica").click( function(){
+				var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+				if (id)	{
+					var ret    = $("#newapi'.$grid0.'").getRowData(id);
+					mId = id;
+					if ( ret.status == "PE" ) {
+						$.post("'.site_url('compras/ordc/solo/modify').'/"+id, function(data){
+							$("#fne").html(data);
+							$( "#fne" ).dialog( "open" );
+						});
+					} else {
+						$.prompt("<h1>Orden no modificable, esta cerrada o en back order");
+					}
+				} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
+			});
+			';
+
+		//Agregar Compra
+		$bodyscript .= '
+			$( "#agregar" ).click(function() {
+				$.post("'.site_url('compras/ordc/solo/create').'",
+				function(data){
+					$("#fne").html(data);
+					$( "#fne" ).dialog( "open" );
+				})
+			});';
+
+		$bodyscript .= '
+			$( "#fne" ).dialog({
+				autoOpen: false, height: 570, width: 860, modal: true,
+				buttons: {
+					"Guardar": function() {
+						var bValid = true;
+						var murl = $("#df1").attr("action");
+						allFields.removeClass( "ui-state-error" );
+						if ( bValid ) {
+							$.ajax({
+								type: "POST", dataType: "html", async: false,
+								url: murl,
+								data: $("#df1").serialize(),
+								success: function(r,s,x){
+									var res = $.parseJSON(r);
+									if ( res.status == "A"){
+										apprise(res.mensaje);
+										$( "#fne" ).dialog( "close" );
+										grid.trigger("reloadGrid");
+										'.$this->datasis->jwinopen(site_url('formatos/ver/ORDC').'/\'+res.id+\'/id\'').';
+										return true;
+									} else if ( res.status == "C"){
+										apprise("<div style=\"font-size:16px;font-weight:bold;background:green;color:white\">Mensaje:</div> <h1>"+res.mensaje);
+									} else {
+										apprise("<div style=\"font-size:16px;font-weight:bold;background:red;color:white\">Error:</div> <h1>"+res.mensaje+"</h1>");
+									}
+								}
+							});
+						}
+					},
+					Cancelar: function() { $( this ).dialog( "close" ); }
+				},
+				close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
+			});';
+
+		$bodyscript .= '	});';
+		$bodyscript .= "\n</script>\n";
+
+		return $bodyscript;
+	}
+
 
 	//***************************
 	//Definicion del Grid y la Forma
@@ -69,10 +180,10 @@ class Snte extends Controller {
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
-			'width'         => 80,
+			'width'         => 70,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 8 }',
+			'editoptions'   => '{ size:8, maxlength: 8 }',
 		));
 
 
@@ -92,12 +203,13 @@ class Snte extends Controller {
 		$grid->addField('vende');
 		$grid->label('Vende');
 		$grid->params(array(
+			'align'         => "'center'",
 			'search'        => 'true',
 			'editable'      => $editar,
-			'width'         => 50,
+			'width'         => 40,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 5 }',
+			'editoptions'   => '{ size:5, maxlength: 5 }',
 		));
 
 
@@ -105,23 +217,24 @@ class Snte extends Controller {
 		$grid->label('Factura');
 		$grid->params(array(
 			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 80,
+			'editable'      => 'true',
+			'width'         => 70,
 			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 8 }',
+			'editrules'     => '{ required:false}',
+			'editoptions'   => '{ size:8, maxlength: 8 }',
 		));
 
 
 		$grid->addField('cod_cli');
-		$grid->label('Cod_cli');
+		$grid->label('Codigo');
 		$grid->params(array(
+			'align'         => "'center'",
 			'search'        => 'true',
 			'editable'      => $editar,
 			'width'         => 50,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 5 }',
+			'editoptions'   => '{ size:5, maxlength: 5 }',
 		));
 
 
@@ -133,7 +246,7 @@ class Snte extends Controller {
 			'width'         => 40,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 4 }',
+			'editoptions'   => '{ size:4, maxlength: 4 }',
 		));
 
 
@@ -148,7 +261,49 @@ class Snte extends Controller {
 			'editoptions'   => '{ size:30, maxlength: 40 }',
 		));
 
+		$grid->addField('stotal');
+		$grid->label('Stotal');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 90,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
 
+		$grid->addField('impuesto');
+		$grid->label('Impuesto');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 90,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+		$grid->addField('gtotal');
+		$grid->label('Gtotal');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 90,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+/*
 		$grid->addField('dir_cli');
 		$grid->label('Dir_cli');
 		$grid->params(array(
@@ -171,7 +326,7 @@ class Snte extends Controller {
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:30, maxlength: 40 }',
 		));
-
+*/
 
 		$grid->addField('orden');
 		$grid->label('Orden');
@@ -184,7 +339,6 @@ class Snte extends Controller {
 			'editoptions'   => '{ size:30, maxlength: 12 }',
 		));
 
-
 		$grid->addField('observa');
 		$grid->label('Observa');
 		$grid->params(array(
@@ -196,50 +350,6 @@ class Snte extends Controller {
 			'editoptions'   => '{ size:30, maxlength: 105 }',
 		));
 
-
-		$grid->addField('stotal');
-		$grid->label('Stotal');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'align'         => "'right'",
-			'edittype'      => "'text'",
-			'width'         => 100,
-			'editrules'     => '{ required:true }',
-			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
-			'formatter'     => "'number'",
-			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
-		));
-
-
-		$grid->addField('impuesto');
-		$grid->label('Impuesto');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'align'         => "'right'",
-			'edittype'      => "'text'",
-			'width'         => 100,
-			'editrules'     => '{ required:true }',
-			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
-			'formatter'     => "'number'",
-			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
-		));
-
-
-		$grid->addField('gtotal');
-		$grid->label('Gtotal');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'align'         => "'right'",
-			'edittype'      => "'text'",
-			'width'         => 100,
-			'editrules'     => '{ required:true }',
-			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
-			'formatter'     => "'number'",
-			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
-		));
 
 
 		$grid->addField('cajero');
@@ -342,19 +452,17 @@ class Snte extends Controller {
 			'editoptions'   => '{ size:30, maxlength: 8 }',
 		));
 
-
 		$grid->addField('modificado');
 		$grid->label('Modificado');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
-			'width'         => 80,
+			'width'         => 100,
 			'align'         => "'center'",
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true,date:true}',
 			'formoptions'   => '{ label:"Fecha" }'
 		));
-
 
 		$grid->addField('id');
 		$grid->label('Id');
@@ -366,22 +474,44 @@ class Snte extends Controller {
 			'search'        => 'false'
 		));
 
-
 		$grid->showpager(true);
 		$grid->setWidth('');
-		$grid->setHeight('290');
+		$grid->setHeight('190');
 		$grid->setTitle($this->titp);
 		$grid->setfilterToolbar(true);
 		$grid->setToolbar('false', '"top"');
+
+		$grid->setOnSelectRow('function(id){
+				if (id){
+					var ret = $("#titulos").getRowData(id);
+					jQuery(gridId2).jqGrid(\'setGridParam\',{url:"'.site_url($this->url.'getdatait/').'/"+id+"/", page:1});
+					jQuery(gridId2).trigger("reloadGrid");
+					$.ajax({
+						url: "'.base_url().$this->url.'tabla/"+id,
+						success: function(msg){
+							$("#ladicional").html(msg);
+						}
+					});
+				}
+			},
+			afterInsertRow:
+			function( rid, aData, rowe){
+				if ( aData.status == "PE"  ){
+					$(this).jqGrid( "setRowData", rid, false,{color:"#000000", background:"#DCFFB5" });
+				} else if ( aData.status == "BA" ){
+					$(this).jqGrid( "setRowData", rid, false,{color:"#000000", background:"#ECE2FF" });
+				}
+			}
+		');
 
 		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
 		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
 		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
 
 		#show/hide navigations buttons
-		$grid->setAdd(true);
+		$grid->setAdd(false);
 		$grid->setEdit(true);
-		$grid->setDelete(true);
+		$grid->setDelete(false);
 		$grid->setSearch(true);
 		$grid->setRowNum(30);
 		$grid->setShrinkToFit('false');
@@ -409,7 +539,7 @@ class Snte extends Controller {
 		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
 		$mWHERE = $grid->geneTopWhere('snte');
 
-		$response   = $grid->getData('snte', array(array()), array(), false, $mWHERE );
+		$response   = $grid->getData('snte', array(array()), array(), false, $mWHERE, 'id', 'desc' );
 		$rs = $grid->jsonresult( $response);
 		echo $rs;
 	}
@@ -423,12 +553,13 @@ class Snte extends Controller {
 		$oper   = $this->input->post('oper');
 		$id     = $this->input->post('id');
 		$data   = $_POST;
-		$mcodp  = "??????";
+		$mcodp  = "id";
 		$check  = 0;
 
 		unset($data['oper']);
 		unset($data['id']);
 		if($oper == 'add'){
+			/*
 			if(false == empty($data)){
 				$check = $this->datasis->dameval("SELECT count(*) FROM snte WHERE $mcodp=".$this->db->escape($data[$mcodp]));
 				if ( $check == 0 ){
@@ -440,25 +571,21 @@ class Snte extends Controller {
 					echo "Ya existe un registro con ese $mcodp";
 			} else
 				echo "Fallo Agregado!!!";
+			*/
 
 		} elseif($oper == 'edit') {
-			$nuevo  = $data[$mcodp];
-			$anterior = $this->datasis->dameval("SELECT $mcodp FROM snte WHERE id=$id");
-			if ( $nuevo <> $anterior ){
-				//si no son iguales borra el que existe y cambia
-				$this->db->query("DELETE FROM snte WHERE $mcodp=?", array($mcodp));
-				$this->db->query("UPDATE snte SET $mcodp=? WHERE $mcodp=?", array( $nuevo, $anterior ));
-				$this->db->where("id", $id);
-				$this->db->update("snte", $data);
-				logusu('SNTE',"$mcodp Cambiado/Fusionado Nuevo:".$nuevo." Anterior: ".$anterior." MODIFICADO");
-				echo "Grupo Cambiado/Fusionado en clientes";
-			} else {
-				unset($data[$mcodp]);
+			unset($data[$mcodp]);
+			// Solo puede cambiar si empieza por _
+			$mFACTURA = $this->dameval("SELECT factura FROM snte WHERE id=$id");
+			$mnumero  = $this->dameval("SELECT numero  FROM snte WHERE id=$id");
+			if ( substr($mFactura,1) == "_" ){
 				$this->db->where("id", $id);
 				$this->db->update('snte', $data);
-				logusu('SNTE',"Grupo de Cliente  ".$nuevo." MODIFICADO");
-				echo "$mcodp Modificado";
-			}
+				logusu('SNTE',"Nro de Factura Cambiado ".$mFACTURA." en la orden ".$numero." MODIFICADO");
+				echo "Orden ".$numero." Cambiada";
+			} else 
+				echo "Orden No Cambiada";
+			
 
 		} elseif($oper == 'del') {
 		$meco = $this->datasis->dameval("SELECT $mcodp FROM snte WHERE id=$id");
@@ -473,6 +600,288 @@ class Snte extends Controller {
 		};
 	}
 
+
+	//***************************
+	//Definicion del Grid y la Forma
+	//***************************
+	function defgridit( $deployed = false ){
+		$i      = 1;
+		$editar = "false";
+
+		$grid  = new $this->jqdatagrid;
+
+		$grid->addField('numero');
+		$grid->label('Numero');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 8 }',
+		));
+
+
+		$grid->addField('codigo');
+		$grid->label('Codigo');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 150,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 15 }',
+		));
+
+
+		$grid->addField('desca');
+		$grid->label('Desca');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 28 }',
+		));
+
+
+		$grid->addField('cana');
+		$grid->label('Cana');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('precio');
+		$grid->label('Precio');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('importe');
+		$grid->label('Importe');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('iva');
+		$grid->label('Iva');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+/*
+		$grid->addField('mostrado');
+		$grid->label('Mostrado');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+*/
+
+		$grid->addField('entregado');
+		$grid->label('Entregado');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('tipo');
+		$grid->label('Tipo');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 1 }',
+		));
+
+
+		$grid->addField('id');
+		$grid->label('Id');
+		$grid->params(array(
+			'align'         => "'center'",
+			'frozen'        => 'true',
+			'width'         => 40,
+			'editable'      => 'false',
+			'search'        => 'false'
+		));
+
+
+		$grid->addField('modificado');
+		$grid->label('Modificado');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
+
+
+		$grid->showpager(true);
+		$grid->setWidth('');
+		$grid->setHeight('160');
+		//$grid->setTitle($this->titp);
+		$grid->setfilterToolbar(false);
+		$grid->setToolbar('false', '"top"');
+
+		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
+		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
+		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
+
+		#show/hide navigations buttons
+		$grid->setAdd(false);
+		$grid->setEdit(true);
+		$grid->setDelete(true);
+		$grid->setSearch(true);
+		$grid->setRowNum(30);
+		$grid->setShrinkToFit('false');
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdatait/'));
+
+		#GET url
+		$grid->setUrlget(site_url($this->url.'getdatait/'));
+
+		if ($deployed) {
+			return $grid->deploy();
+		} else {
+			return $grid;
+		}
+	}
+
+	/**
+	* Busca la data en el Servidor por json
+	*/
+	function getdatait()
+	{
+		$id = $this->uri->segment(4);
+		if ($id == false ){
+			$id = $this->datasis->dameval("SELECT MAX(id) FROM snte");
+		}
+		$numero   = $this->datasis->dameval("SELECT numero FROM snte WHERE id=$id");
+		$grid     = $this->jqdatagrid;
+		$mSQL     = "SELECT * FROM itsnte WHERE numero='$numero' ORDER BY codigo ";
+		$response = $grid->getDataSimple($mSQL);
+		
+		$rs = $grid->jsonresult( $response);
+		echo $rs;
+
+	}
+
+	/**
+	* Guarda la Informacion
+	*/
+	function setDatait()
+	{
+		$this->load->library('jqdatagrid');
+		$oper   = $this->input->post('oper');
+		$id     = $this->input->post('id');
+		$data   = $_POST;
+		$mcodp  = "??????";
+		$check  = 0;
+/*
+		unset($data['oper']);
+		unset($data['id']);
+		if($oper == 'add'){
+			if(false == empty($data)){
+				$check = $this->datasis->dameval("SELECT count(*) FROM itsnte WHERE $mcodp=".$this->db->escape($data[$mcodp]));
+				if ( $check == 0 ){
+					$this->db->insert('itsnte', $data);
+					echo "Registro Agregado";
+
+					logusu('ITSNTE',"Registro ????? INCLUIDO");
+				} else
+					echo "Ya existe un registro con ese $mcodp";
+			} else
+				echo "Fallo Agregado!!!";
+
+		} elseif($oper == 'edit') {
+			$nuevo  = $data[$mcodp];
+			$anterior = $this->datasis->dameval("SELECT $mcodp FROM itsnte WHERE id=$id");
+			if ( $nuevo <> $anterior ){
+				//si no son iguales borra el que existe y cambia
+				$this->db->query("DELETE FROM itsnte WHERE $mcodp=?", array($mcodp));
+				$this->db->query("UPDATE itsnte SET $mcodp=? WHERE $mcodp=?", array( $nuevo, $anterior ));
+				$this->db->where("id", $id);
+				$this->db->update("itsnte", $data);
+				logusu('ITSNTE',"$mcodp Cambiado/Fusionado Nuevo:".$nuevo." Anterior: ".$anterior." MODIFICADO");
+				echo "Grupo Cambiado/Fusionado en clientes";
+			} else {
+				unset($data[$mcodp]);
+				$this->db->where("id", $id);
+				$this->db->update('itsnte', $data);
+				logusu('ITSNTE',"Grupo de Cliente  ".$nuevo." MODIFICADO");
+				echo "$mcodp Modificado";
+			}
+
+		} elseif($oper == 'del') {
+		$meco = $this->datasis->dameval("SELECT $mcodp FROM itsnte WHERE id=$id");
+			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM itsnte WHERE id='$id' ");
+			if ($check > 0){
+				echo " El registro no puede ser eliminado; tiene movimiento ";
+			} else {
+				$this->db->simple_query("DELETE FROM itsnte WHERE id=$id ");
+				logusu('ITSNTE',"Registro ????? ELIMINADO");
+				echo "Registro Eliminado";
+			}
+		};\
+*/
+	}
 
 
 
