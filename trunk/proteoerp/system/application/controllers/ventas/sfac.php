@@ -1635,13 +1635,18 @@ class Sfac extends Controller {
 	var totaliza = function (){
 		var meses = Number($("#fmespaga").val());
 		var monto = Number($("#ftarifa").val());
+		var pagado= Number($("#pagado").val());
 		var total = meses*monto;
+		var vuelto= 0;
 
+		if(pagado>total) vuelto = pagado-total;
 		$("#fmonto").val(nformat(total,2));
 		$("#montotot").text(nformat(total,2));
+		$("#vuelto").text(nformat(vuelto,2));
 	}
 
 	$("#fmespaga").keyup(totaliza);
+	$("#pagado").keyup(totaliza);
 
 	$("#fcliente").autocomplete({
 		source: function( req, add){
@@ -1739,7 +1744,11 @@ class Sfac extends Controller {
 		<td class="CaptionTD" align="right">Forma de Pago</td>
 		<td>&nbsp;'.$tarjeta.'</td>
 		<td  class="CaptionTD"  align="right">Numero</td>
-		<td>&nbsp;<input name="fcomprob" id="fcomprob" type="text" value="" maxlengh="12" size="12"  /></td>
+		<td>&nbsp;<input name="fcomprob" id="fcomprob" type="text" value="" maxlengh="12" size="12" /></td>
+	</tr>
+	<tr>
+		<td colspan="2" align="right">Pagado con:</td>
+		<td colspan="2"><input name="pagado" id="pagado" type="text" value="" maxlengh="12" size="12" /></td>
 	</tr>
 	</table>
 	</fieldset>
@@ -1753,6 +1762,9 @@ class Sfac extends Controller {
 	<table width="100%">
 	<tr>
 		<td align="center"><div id="grantotal" style="font-size:20px;font-weight:bold">Monto a pagar: <span id="montotot">0,00</span></div></td>
+	</tr>
+	<tr>
+		<td align="center"><div style="font-size:12px;font-weight:bold">Vuelto: <span id="vuelto">0,00</span></div></td>
 	</tr>
 	</table>
 	</form>

@@ -224,7 +224,6 @@ class mensualidad extends sfac_add {
 			if($itcodigoa==$tarifa){
 				$detalle = $do->get_rel('sitems','detalle',$i);
 				$cana    = $do->get_rel('sitems','cana'   ,$i);
-				$cana++;
 
 				$objdated = date_create(dbdate_to_human($upago,'Y-m-d'));
 				$objdated->add(new DateInterval('P1M'));
