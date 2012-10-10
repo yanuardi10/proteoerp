@@ -315,7 +315,6 @@ class Snte extends Controller {
 			'editoptions'   => '{ size:30, maxlength: 40 }',
 		));
 
-
 		$grid->addField('dir_cl1');
 		$grid->label('Dir_cl1');
 		$grid->params(array(
@@ -350,8 +349,6 @@ class Snte extends Controller {
 			'editoptions'   => '{ size:30, maxlength: 105 }',
 		));
 
-
-
 		$grid->addField('cajero');
 		$grid->label('Cajero');
 		$grid->params(array(
@@ -362,7 +359,6 @@ class Snte extends Controller {
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:30, maxlength: 5 }',
 		));
-
 
 		$grid->addField('fechafac');
 		$grid->label('Fechafac');
@@ -376,7 +372,6 @@ class Snte extends Controller {
 			'formoptions'   => '{ label:"Fecha" }'
 		));
 
-
 		$grid->addField('tipo');
 		$grid->label('Tipo');
 		$grid->params(array(
@@ -387,7 +382,6 @@ class Snte extends Controller {
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:30, maxlength: 1 }',
 		));
-
 
 		$grid->addField('peso');
 		$grid->label('Peso');

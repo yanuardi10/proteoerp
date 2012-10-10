@@ -1,6 +1,1723 @@
 <?php include('common.php');
 class gser extends Controller {
 
+	var $mModulo='GSER';
+	var $titp='Gastos y Egresos';
+	var $tits='Gastos y Egresos';
+	var $url ='finanzas/gser/';
+
+	function Gser(){
+		parent::Controller();
+		$this->load->library('rapyd');
+		$this->load->library('jqdatagrid');
+		$this->mcred = '_CR';
+		$this->load->library('pi18n');
+		//$this->datasis->modulo_id('518',1);
+		//$this->datasis->modulo_nombre( $modulo, $ventana=0 );
+	}
+
+	function index(){
+		/*if ( !$this->datasis->iscampo('gser','id') ) {
+			$this->db->simple_query('ALTER TABLE gser DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE gser ADD UNIQUE INDEX numero (numero)');
+			$this->db->simple_query('ALTER TABLE gser ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
+		};*/
+		$this->datasis->modintramenu( 800, 600, substr($this->url,0,-1) );
+		redirect($this->url.'jqdatag');
+	}
+
+	//***************************
+	//Layout en la Ventana
+	//
+	//***************************
+	function jqdatag(){
+
+		$grid = $this->defgrid();
+		$param['grids'][] = $grid->deploy();
+
+		$grid1   = $this->defgridit();
+		$param['grids'][] = $grid1->deploy();
+
+		// Configura los Paneles
+		$readyLayout = $grid->readyLayout2( 212, 200, $param['grids'][0]['gridname'],$param['grids'][1]['gridname']);
+
+		//Funciones que ejecutan los botones
+		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		//Botones Panel Izq
+		$grid->wbotonadd(array("id"=>"imprimir", "img"=>"assets/default/images/print.png", "alt" => "Imprimir",  "label"=>"Imprimir"     ));
+		$grid->wbotonadd(array("id"=>"agregar",  "img"=>"images/agrega4.png",              "alt" => 'Agregar',   "label"=>"Agregar Gasto"));
+		$grid->wbotonadd(array("id"=>"modifica", "img"=>"images/editar.png",               "alt" => 'Modificar', "label"=>"Editar Gasto" ));
+		$WestPanel = $grid->deploywestp();
+
+		//Panel Central
+		$centerpanel = $grid->centerpanel( $id = "radicional", $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
+		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor("TITULO1"));
+
+		$param['WestPanel']    = $WestPanel;
+		//$param['EastPanel']  = $EastPanel;
+		$param['readyLayout']  = $readyLayout;
+		$param['SouthPanel']   = $SouthPanel;
+		$param['listados']     = $this->datasis->listados('GSER', 'JQ');
+		$param['otros']        = $this->datasis->otros('GSER', 'JQ');
+		$param['centerpanel']  = $centerpanel;
+		$param['temas']        = array('proteo','darkness','anexos1');
+		$param['bodyscript']   = $bodyscript;
+		$param['tabs']         = false;
+		$param['encabeza']     = $this->titp;
+
+		//$param['funciones']    = $funciones;
+
+		$this->load->view('jqgrid/crud2',$param);
+	}
+
+	//***************************
+	//Funciones de los Botones
+	//***************************
+	function bodyscript( $grid0, $grid1 ){
+		$bodyscript = '
+		<script type="text/javascript">
+		jQuery("#imprimir").click( function(){
+			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
+				window.open(\''.site_url('ventas/sfac_add/dataprint/modify').'/\'+id, \'_blank\', \'width=900,height=800,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-400)\');
+			} else { $.prompt("<h1>Por favor Seleccione una Factura</h1>");}
+		});';
+
+		$bodyscript .= '
+		jQuery("#agregar").click( function(){
+			window.open(\''.site_url('finanzas/gser/dataedit/create').'\', \'_blank\', \'width=900,height=700,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-350)\');
+		});';
+
+		$bodyscript .= '
+		jQuery("#modifica").click( function(){
+			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
+				window.open(\''.site_url('finanzas/gser/dataedit/modify').'/\'+id, \'_blank\', \'width=900,height=700,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-350)\');
+			} else { $.prompt("<h1>Por favor Seleccione un Gasto</h1>");}
+		});';
+
+		$bodyscript .= "\n</script>\n";
+		return $bodyscript;
+
+	}
+
+	//***************************
+	//Definicion del Grid y la Forma
+	//***************************
+	function defgrid( $deployed = false ){
+		$i      = 1;
+		$editar = "false";
+
+		$grid  = new $this->jqdatagrid;
+
+		$grid->addField('fecha');
+		$grid->label('Fecha');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
+
+
+		$grid->addField('numero');
+		$grid->label('Numero');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 8 }',
+		));
+
+
+		$grid->addField('proveed');
+		$grid->label('Proveed');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 50,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 5 }',
+		));
+
+
+		$grid->addField('nombre');
+		$grid->label('Nombre');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 40 }',
+		));
+
+
+		$grid->addField('vence');
+		$grid->label('Vence');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
+
+
+		$grid->addField('totpre');
+		$grid->label('Totpre');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('totiva');
+		$grid->label('Totiva');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('totbruto');
+		$grid->label('Totbruto');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('reten');
+		$grid->label('Reten');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('totneto');
+		$grid->label('Totneto');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('codb1');
+		$grid->label('Codb1');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 2 }',
+		));
+
+
+		$grid->addField('tipo1');
+		$grid->label('Tipo1');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 1 }',
+		));
+
+
+		$grid->addField('cheque1');
+		$grid->label('Cheque1');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 120,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 12 }',
+		));
+
+
+		$grid->addField('comprob1');
+		$grid->label('Comprob1');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 60,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 6 }',
+		));
+
+
+		$grid->addField('monto1');
+		$grid->label('Monto1');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('codb2');
+		$grid->label('Codb2');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 2 }',
+		));
+
+
+		$grid->addField('tipo2');
+		$grid->label('Tipo2');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 1 }',
+		));
+
+
+		$grid->addField('cheque2');
+		$grid->label('Cheque2');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 120,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 12 }',
+		));
+
+
+		$grid->addField('comprob2');
+		$grid->label('Comprob2');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 60,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 6 }',
+		));
+
+
+		$grid->addField('monto2');
+		$grid->label('Monto2');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('codb3');
+		$grid->label('Codb3');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 2 }',
+		));
+
+
+		$grid->addField('tipo3');
+		$grid->label('Tipo3');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 1 }',
+		));
+
+
+		$grid->addField('cheque3');
+		$grid->label('Cheque3');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 150,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 15 }',
+		));
+
+
+		$grid->addField('comprob3');
+		$grid->label('Comprob3');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 60,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 6 }',
+		));
+
+
+		$grid->addField('monto3');
+		$grid->label('Monto3');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('credito');
+		$grid->label('Credito');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('tipo_doc');
+		$grid->label('Tipo_doc');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 2 }',
+		));
+
+
+		$grid->addField('orden');
+		$grid->label('Orden');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 8 }',
+		));
+
+
+		$grid->addField('anticipo');
+		$grid->label('Anticipo');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('benefi');
+		$grid->label('Benefi');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 40 }',
+		));
+
+
+		$grid->addField('mdolar');
+		$grid->label('Mdolar');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('usuario');
+		$grid->label('Usuario');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 120,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 12 }',
+		));
+
+
+		$grid->addField('estampa');
+		$grid->label('Estampa');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
+
+
+		$grid->addField('hora');
+		$grid->label('Hora');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 8 }',
+		));
+
+
+		$grid->addField('transac');
+		$grid->label('Transac');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 8 }',
+		));
+
+
+		$grid->addField('preten');
+		$grid->label('Preten');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('creten');
+		$grid->label('Creten');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 4 }',
+		));
+
+
+		$grid->addField('breten');
+		$grid->label('Breten');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('huerfano');
+		$grid->label('Huerfano');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 1 }',
+		));
+
+
+		$grid->addField('reteiva');
+		$grid->label('Reteiva');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('nfiscal');
+		$grid->label('Nfiscal');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 120,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 12 }',
+		));
+
+
+		$grid->addField('afecta');
+		$grid->label('Afecta');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 8 }',
+		));
+
+
+		$grid->addField('fafecta');
+		$grid->label('Fafecta');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
+
+
+		$grid->addField('ffactura');
+		$grid->label('Ffactura');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
+
+
+		$grid->addField('cajachi');
+		$grid->label('Cajachi');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 1 }',
+		));
+
+
+		$grid->addField('montasa');
+		$grid->label('Montasa');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('monredu');
+		$grid->label('Monredu');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('monadic');
+		$grid->label('Monadic');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('tasa');
+		$grid->label('Tasa');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('reducida');
+		$grid->label('Reducida');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('sobretasa');
+		$grid->label('Sobretasa');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('exento');
+		$grid->label('Exento');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('compra');
+		$grid->label('Compra');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 8 }',
+		));
+
+
+		$grid->addField('ordeni');
+		$grid->label('Ordeni');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
+		));
+
+
+		$grid->addField('serie');
+		$grid->label('Serie');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 120,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 12 }',
+		));
+
+
+		$grid->addField('modificado');
+		$grid->label('Modificado');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
+
+
+		$grid->addField('reteica');
+		$grid->label('Reteica');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('retesimple');
+		$grid->label('Retesimple');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('negreso');
+		$grid->label('Negreso');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 8 }',
+		));
+
+
+		$grid->addField('ncausado');
+		$grid->label('Ncausado');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 8 }',
+		));
+
+
+		$grid->addField('tipo_or');
+		$grid->label('Tipo_or');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 2 }',
+		));
+
+
+		$grid->addField('id');
+		$grid->label('Id');
+		$grid->params(array(
+			'align'         => "'center'",
+			'frozen'        => 'true',
+			'width'         => 40,
+			'editable'      => 'false',
+			'search'        => 'false'
+		));
+
+
+		$grid->showpager(true);
+		$grid->setWidth('');
+		$grid->setHeight('182');
+		$grid->setTitle($this->titp);
+		$grid->setfilterToolbar(true);
+		$grid->setToolbar('false', '"top"');
+
+		$grid->setOnSelectRow('
+			function(id){
+				if (id){
+					var ret = $("#titulos").getRowData(id);
+					jQuery(gridId2).jqGrid(\'setGridParam\',{url:"'.site_url($this->url.'getdatait/').'/"+id+"/", page:1});
+					jQuery(gridId2).trigger("reloadGrid");
+					$.ajax({
+						url: "'.base_url().$this->url.'tabla/"+id,
+						success: function(msg){
+							$("#ladicional").html(msg);
+						}
+					});
+				}
+			}'
+		);
+
+		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
+		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
+		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
+
+		#show/hide navigations buttons
+		$grid->setAdd(false);
+		$grid->setEdit(false);
+		$grid->setDelete(false);
+		$grid->setSearch(true);
+		$grid->setRowNum(30);
+		$grid->setShrinkToFit('false');
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		#GET url
+		$grid->setUrlget(site_url($this->url.'getdata/'));
+
+		if ($deployed) {
+			return $grid->deploy();
+		} else {
+			return $grid;
+		}
+	}
+
+	/**
+	* Busca la data en el Servidor por json
+	*/
+	function getdata()
+	{
+		$grid       = $this->jqdatagrid;
+
+		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
+		$mWHERE = $grid->geneTopWhere('gser');
+
+		$response   = $grid->getData('gser', array(array()), array(), false, $mWHERE, 'id', 'desc' );
+		$rs = $grid->jsonresult( $response);
+		echo $rs;
+	}
+
+	/**
+	* Guarda la Informacion
+	*/
+	function setData()
+	{
+		$this->load->library('jqdatagrid');
+		$oper   = $this->input->post('oper');
+		$id     = $this->input->post('id');
+		$data   = $_POST;
+		$mcodp  = "??????";
+		$check  = 0;
+
+		unset($data['oper']);
+		unset($data['id']);
+		if($oper == 'add'){
+			if(false == empty($data)){
+				$check = $this->datasis->dameval("SELECT count(*) FROM gser WHERE $mcodp=".$this->db->escape($data[$mcodp]));
+				if ( $check == 0 ){
+					$this->db->insert('gser', $data);
+					echo "Registro Agregado";
+
+					logusu('GSER',"Registro ????? INCLUIDO");
+				} else
+					echo "Ya existe un registro con ese $mcodp";
+			} else
+				echo "Fallo Agregado!!!";
+
+		} elseif($oper == 'edit') {
+			$nuevo  = $data[$mcodp];
+			$anterior = $this->datasis->dameval("SELECT $mcodp FROM gser WHERE id=$id");
+			if ( $nuevo <> $anterior ){
+				//si no son iguales borra el que existe y cambia
+				$this->db->query("DELETE FROM gser WHERE $mcodp=?", array($mcodp));
+				$this->db->query("UPDATE gser SET $mcodp=? WHERE $mcodp=?", array( $nuevo, $anterior ));
+				$this->db->where("id", $id);
+				$this->db->update("gser", $data);
+				logusu('GSER',"$mcodp Cambiado/Fusionado Nuevo:".$nuevo." Anterior: ".$anterior." MODIFICADO");
+				echo "Grupo Cambiado/Fusionado en clientes";
+			} else {
+				unset($data[$mcodp]);
+				$this->db->where("id", $id);
+				$this->db->update('gser', $data);
+				logusu('GSER',"Grupo de Cliente  ".$nuevo." MODIFICADO");
+				echo "$mcodp Modificado";
+			}
+
+		} elseif($oper == 'del') {
+		$meco = $this->datasis->dameval("SELECT $mcodp FROM gser WHERE id=$id");
+			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM gser WHERE id='$id' ");
+			if ($check > 0){
+				echo " El registro no puede ser eliminado; tiene movimiento ";
+			} else {
+				$this->db->simple_query("DELETE FROM gser WHERE id=$id ");
+				logusu('GSER',"Registro ????? ELIMINADO");
+				echo "Registro Eliminado";
+			}
+		};
+	}
+
+
+	//***************************
+	//Definicion del Grid y la Forma
+	//***************************
+	function defgridit( $deployed = false ){
+		$i      = 1;
+		$editar = "false";
+
+		$grid  = new $this->jqdatagrid;
+
+		$grid->addField('fecha');
+		$grid->label('Fecha');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
+
+
+		$grid->addField('numero');
+		$grid->label('Numero');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 8 }',
+		));
+
+
+		$grid->addField('proveed');
+		$grid->label('Proveed');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 50,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 5 }',
+		));
+
+
+		$grid->addField('codigo');
+		$grid->label('Codigo');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 60,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 6 }',
+		));
+
+
+		$grid->addField('descrip');
+		$grid->label('Descrip');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 50 }',
+		));
+
+
+		$grid->addField('precio');
+		$grid->label('Precio');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('iva');
+		$grid->label('Iva');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('importe');
+		$grid->label('Importe');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('unidades');
+		$grid->label('Unidades');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
+		));
+
+
+		$grid->addField('fraccion');
+		$grid->label('Fraccion');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
+		));
+
+
+		$grid->addField('almacen');
+		$grid->label('Almacen');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 4 }',
+		));
+
+
+		$grid->addField('sucursal');
+		$grid->label('Sucursal');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 2 }',
+		));
+
+
+		$grid->addField('departa');
+		$grid->label('Departa');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 2 }',
+		));
+
+
+		$grid->addField('transac');
+		$grid->label('Transac');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 8 }',
+		));
+
+
+		$grid->addField('usuario');
+		$grid->label('Usuario');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 120,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 12 }',
+		));
+
+
+		$grid->addField('estampa');
+		$grid->label('Estampa');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
+
+
+		$grid->addField('hora');
+		$grid->label('Hora');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 8 }',
+		));
+
+
+		$grid->addField('transa');
+		$grid->label('Transa');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 8 }',
+		));
+
+
+		$grid->addField('huerfano');
+		$grid->label('Huerfano');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 1 }',
+		));
+
+
+		$grid->addField('rif');
+		$grid->label('Rif');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 130,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 13 }',
+		));
+
+
+		$grid->addField('proveedor');
+		$grid->label('Proveedor');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 40 }',
+		));
+
+
+		$grid->addField('numfac');
+		$grid->label('Numfac');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 8 }',
+		));
+
+
+		$grid->addField('fechafac');
+		$grid->label('Fechafac');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
+
+
+		$grid->addField('nfiscal');
+		$grid->label('Nfiscal');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 120,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 12 }',
+		));
+
+
+		$grid->addField('feprox');
+		$grid->label('Feprox');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
+
+
+		$grid->addField('dacum');
+		$grid->label('Dacum');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('residual');
+		$grid->label('Residual');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('vidau');
+		$grid->label('Vidau');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
+		));
+
+
+		$grid->addField('montasa');
+		$grid->label('Montasa');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('monredu');
+		$grid->label('Monredu');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('monadic');
+		$grid->label('Monadic');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('tasa');
+		$grid->label('Tasa');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('reducida');
+		$grid->label('Reducida');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('sobretasa');
+		$grid->label('Sobretasa');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('exento');
+		$grid->label('Exento');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('id');
+		$grid->label('Id');
+		$grid->params(array(
+			'align'         => "'center'",
+			'frozen'        => 'true',
+			'width'         => 40,
+			'editable'      => 'false',
+			'search'        => 'false'
+		));
+
+
+		$grid->addField('modificado');
+		$grid->label('Modificado');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
+
+
+		$grid->addField('reteica');
+		$grid->label('Reteica');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('idgser');
+		$grid->label('Idgser');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
+		));
+
+
+		$grid->showpager(true);
+		$grid->setWidth('');
+		$grid->setHeight('170');
+		//$grid->setTitle($this->titp);
+		$grid->setfilterToolbar(false);
+		$grid->setToolbar('false', '"top"');
+
+		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
+		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
+		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
+
+		#show/hide navigations buttons
+		$grid->setAdd(true);
+		$grid->setEdit(true);
+		$grid->setDelete(true);
+		$grid->setSearch(true);
+		$grid->setRowNum(30);
+		$grid->setShrinkToFit('false');
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdatait/'));
+
+		#GET url
+		$grid->setUrlget(site_url($this->url.'getdatait/'));
+
+		if ($deployed) {
+			return $grid->deploy();
+		} else {
+			return $grid;
+		}
+	}
+
+	/**
+	* Busca la data en el Servidor por json
+	*/
+	function getdatait()
+	{
+		$id = $this->uri->segment(4);
+		if ($id === false ){
+			$id = $this->datasis->dameval("SELECT MAX(id) FROM gser");
+		}
+		if(empty($id)) return '';
+
+		$proveed = $this->datasis->dameval("SELECT proveed FROM gser WHERE id=$id");
+		$numero  = $this->datasis->dameval("SELECT numero  FROM gser WHERE id=$id");
+		$fecha   = $this->datasis->dameval("SELECT fecha   FROM gser WHERE id=$id");
+
+		$grid    = $this->jqdatagrid;
+		$mSQL    = "SELECT * FROM gitser WHERE numero=".$this->db->escape($numero)." AND proveed=".$this->db->escape($proveed)." AND fecha='$fecha'";
+		$response   = $grid->getDataSimple($mSQL);
+		$rs = $grid->jsonresult( $response);
+		echo $rs;
+
+/*
+		$grid       = $this->jqdatagrid;
+
+		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
+		$mWHERE = $grid->geneTopWhere('gitser');
+
+		$response   = $grid->getData('gitser', array(array()), array(), false, $mWHERE );
+		$rs = $grid->jsonresult( $response);
+		echo $rs;
+*/
+	}
+
+	/**
+	* Guarda la Informacion
+	*/
+	function setDatait()
+	{
+		$this->load->library('jqdatagrid');
+		$oper   = $this->input->post('oper');
+		$id     = $this->input->post('id');
+		$data   = $_POST;
+		$mcodp  = "??????";
+		$check  = 0;
+
+		unset($data['oper']);
+		unset($data['id']);
+		if($oper == 'add'){
+			if(false == empty($data)){
+				$check = $this->datasis->dameval("SELECT count(*) FROM gitser WHERE $mcodp=".$this->db->escape($data[$mcodp]));
+				if ( $check == 0 ){
+					$this->db->insert('gitser', $data);
+					echo "Registro Agregado";
+
+					logusu('GITSER',"Registro ????? INCLUIDO");
+				} else
+					echo "Ya existe un registro con ese $mcodp";
+			} else
+				echo "Fallo Agregado!!!";
+
+		} elseif($oper == 'edit') {
+			$nuevo  = $data[$mcodp];
+			$anterior = $this->datasis->dameval("SELECT $mcodp FROM gitser WHERE id=$id");
+			if ( $nuevo <> $anterior ){
+				//si no son iguales borra el que existe y cambia
+				$this->db->query("DELETE FROM gitser WHERE $mcodp=?", array($mcodp));
+				$this->db->query("UPDATE gitser SET $mcodp=? WHERE $mcodp=?", array( $nuevo, $anterior ));
+				$this->db->where("id", $id);
+				$this->db->update("gitser", $data);
+				logusu('GITSER',"$mcodp Cambiado/Fusionado Nuevo:".$nuevo." Anterior: ".$anterior." MODIFICADO");
+				echo "Grupo Cambiado/Fusionado en clientes";
+			} else {
+				unset($data[$mcodp]);
+				$this->db->where("id", $id);
+				$this->db->update('gitser', $data);
+				logusu('GITSER',"Grupo de Cliente  ".$nuevo." MODIFICADO");
+				echo "$mcodp Modificado";
+			}
+
+		} elseif($oper == 'del') {
+		$meco = $this->datasis->dameval("SELECT $mcodp FROM gitser WHERE id=$id");
+			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM gitser WHERE id='$id' ");
+			if ($check > 0){
+				echo " El registro no puede ser eliminado; tiene movimiento ";
+			} else {
+				$this->db->simple_query("DELETE FROM gitser WHERE id=$id ");
+				logusu('GITSER',"Registro ????? ELIMINADO");
+				echo "Registro Eliminado";
+			}
+		};
+	}
+
+
+/*
 	function gser(){
 		parent::Controller();
 		$this->load->library('rapyd');
@@ -133,13 +1850,13 @@ class gser extends Controller {
 
 		$style ='
 <style type="text/css">
-.fakeContainer { /* The parent container */
+.fakeContainer { // The parent container 
     margin: 5px;
     padding: 0px;
     border: none;
-    width: 640px; /* Required to set */
-    height: 320px; /* Required to set */
-    overflow: hidden; /* Required to set */
+    width: 640px; // Required to set 
+    height: 320px; // Required to set 
+    overflow: hidden; // Required to set 
 }
 </style>
 		';
@@ -196,7 +1913,7 @@ function gserfiscal(mid){
 		$data['title']   = heading('Egresos por Gastos');
 		$this->load->view('view_ventanas', $data);
 	}
-
+*/
 	function gserserie(){
 		$serie   = $this->uri->segment($this->uri->total_segments());
 		$id = $this->uri->segment($this->uri->total_segments()-1);
@@ -829,16 +2546,6 @@ function gserfiscal(mid){
 	}
 
 	function chobliganumero($val){
-		/*$ban=$this->input->post('cargo');
-		if($ban==$this->mcred) return true;
-		$tipo=common::_traetipo($ban);
-		if($tipo!='CAJ'){
-			if(empty($val)){
-				$this->validation->set_message('chobligaban', 'El campo %s es obligatorio cuando el caja es un banco');
-				return false;
-			}
-		}
-		return true;*/
 		return $this->_chobliganumero($val,'cargo','chobliganumero');
 	}
 
@@ -963,21 +2670,22 @@ function gserfiscal(mid){
 					//$data['tipo_ref']   = '';
 					//$data['num_ref']    = '';
 					$data['observa1']   = 'REPOSICION DE CAJA CHICA '.$codbanc;
-					/*$data['observa2']   = '';
-					$data['banco']      = '';
-					$data['tipo_op']    = '';
-					$data['comprob']    = '';
-					$data['numche']     = '';
-					$data['codigo']     = '';
-					$data['descrip']    = '';
-					$data['ppago']      = '';
-					$data['nppago']     = '';
-					$data['reten']      = '';
-					$data['nreten']     = '';
-					$data['mora']       = '';
-					$data['posdata']    = '';
-					$data['benefi']     = '';
-					$data['control']    = '';*/
+
+					//$data['observa2']   = '';
+					//$data['banco']      = '';
+					//$data['tipo_op']    = '';
+					//$data['comprob']    = '';
+					//$data['numche']     = '';
+					//$data['codigo']     = '';
+					//$data['descrip']    = '';
+					//$data['ppago']      = '';
+					//$data['nppago']     = '';
+					//$data['reten']      = '';
+					//$data['nreten']     = '';
+					//$data['mora']       = '';
+					//$data['posdata']    = '';
+					//$data['benefi']     = '';
+					//$data['control']    = '';
 					$data['transac']    = $transac;
 					$data['estampa']    = date('Y-m-d');
 					$data['hora']       = date('H:i:s');
@@ -993,13 +2701,13 @@ function gserfiscal(mid){
 					$data['reducida']   = $reducida;
 					$data['sobretasa']  = $sobretasa;
 					$data['exento']     = $exento;
-					/*$data['fecdoc']     = '';
-					$data['afecta']     = '';
-					$data['fecapl']     = '';
-					$data['serie']      = '';
-					$data['depto']      = '';
-					$data['negreso']    = '';
-					$data['ndebito']    = '';*/
+					//$data['fecdoc']     = '';
+					//$data['afecta']     = '';
+					//$data['fecapl']     = '';
+					//$data['serie']      = '';
+					//$data['depto']      = '';
+					//$data['negreso']    = '';
+					//$data['ndebito']    = '';
 					$data['causado']    = $causado;
 
 					$sql=$this->db->insert_string('sprm', $data);
@@ -1029,18 +2737,18 @@ function gserfiscal(mid){
 					$data['nombre']     = $nombre;
 					$data['monto']      = $totneto;
 					$data['concepto']   = 'REPOSICION DE CAJA CHICA '.$codbanc;
-					/*$data['concep2']    = '';
-					$data['concep3']    = '';
-					$data['documen']    = '';
-					$data['comprob']    = '';
-					$data['status']     = '';
-					$data['cuenta']     = '';
-					$data['enlace']     = '';
-					$data['bruto']      = '';
-					$data['comision']   = '';
-					$data['impuesto']   = '';
-					$data['registro']   = '';
-					$data['concilia']   = '';*/
+					//$data['concep2']    = '';
+					//$data['concep3']    = '';
+					//$data['documen']    = '';
+					//$data['comprob']    = '';
+					//$data['status']     = '';
+					//$data['cuenta']     = '';
+					//$data['enlace']     = '';
+					//$data['bruto']      = '';
+					//$data['comision']   = '';
+					//$data['impuesto']   = '';
+					//$data['registro']   = '';
+					//$data['concilia']   = '';
 					$data['benefi']     = $benefi;
 					$data['posdata']    = '';
 					$data['abanco']     = '';
@@ -1052,9 +2760,9 @@ function gserfiscal(mid){
 					$data['anulado']    = 'N';
 					$data['susti']      = '';
 					$data['negreso']    = $negreso;
-					/*$data['ndebito']    = '';
-					$data['ncausado']   = '';
-					$data['ncredito']   = '';*/
+					//$data['ndebito']    = '';
+					//$data['ncausado']   = '';
+					//$data['ncredito']   = '';
 
 					$sql=$this->db->insert_string('bmov', $data);
 					$ban=$this->db->simple_query($sql);
@@ -1079,18 +2787,18 @@ function gserfiscal(mid){
 				$data['codb1']      = $cargo;
 				$data['tipo1']      = $tipo1;
 				$data['cheque1']    = $cheque;
-				/*$data['comprob1']   = '';
-				$data['monto1']     = '';
-				$data['codb2']      = '';
-				$data['tipo2']      = '';
-				$data['cheque2']    = '';
-				$data['comprob2']   = '';
-				$data['monto2']     = '';
-				$data['codb3']      = '';
-				$data['tipo3']      = '';
-				$data['cheque3']    = '';
-				$data['comprob3']   = '';
-				$data['monto3']     = '';*/
+				//$data['comprob1']   = '';
+				//$data['monto1']     = '';
+				//$data['codb2']      = '';
+				//$data['tipo2']      = '';
+				//$data['cheque2']    = '';
+				//$data['comprob2']   = '';
+				//$data['monto2']     = '';
+				//$data['codb3']      = '';
+				//$data['tipo3']      = '';
+				//$data['cheque3']    = '';
+				//$data['comprob3']   = '';
+				//$data['monto3']     = '';
 				$data['credito']    = $credito;
 				$data['tipo_doc']   = 'FC';
 				$data['orden']      = '';
@@ -1281,9 +2989,9 @@ function gserfiscal(mid){
 		$data['anulado']    = 'N';
 		$data['susti']      = '';
 		$data['negreso']    = $negreso;
-		/*$data['ndebito']    = '';
-		$data['ncausado']   = '';
-		$data['ncredito']   = '';*/
+		//$data['ndebito']    = '';
+		//$data['ncausado']   = '';
+		//$data['ncredito']   = '';
 
 		$sql=$this->db->insert_string('bmov', $data);
 		$ban=$this->db->simple_query($sql);
@@ -1712,10 +3420,10 @@ function gserfiscal(mid){
 		//Fin de campos para detalle
 		//*****************************
 
-		/*if($edit->_status=='create'){
-			$accion="javascript:calcularete()";
-			$edit->button_status('btn_crete','Calcular retenciones',$accion,'TR','show');
-		}*/
+		//if($edit->_status=='create'){
+		//	$accion="javascript:calcularete()";
+		//	$edit->button_status('btn_crete','Calcular retenciones',$accion,'TR','show');
+		//}
 
 		$edit->buttons('save', 'undo', 'delete', 'back','add_rel','add');
 		$edit->build();
@@ -2642,59 +4350,15 @@ function gserfiscal(mid){
 		$mSQL="ALTER TABLE gereten CHANGE COLUMN id id INT(10) NOT NULL AUTO_INCREMENT FIRST";
 	}
 
-
-	function grid(){
-		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']   :  0;
-		$limit   = isset($_REQUEST['limit'])  ? $_REQUEST['limit']   : 30;
-		$sort    = isset($_REQUEST['sort'])   ? $_REQUEST['sort']    : '';
-		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
-
-		$where = $this->datasis->extjsfiltro($filters,'gser');
-		$this->db->_protect_identifiers=false;
-		$this->db->select('*');
-		$this->db->from('gser');
-
-		if (strlen($where)>1){
-			$this->db->where($where);
-		}
-
-		if ( $sort == '') $this->db->order_by( 'id', 'desc' );
-
-		$sort = json_decode($sort, true);
-		for ($i=0;$i<count($sort);$i++) {
-			$this->db->order_by($sort[$i]['property'],$sort[$i]['direction']);
-		}
-
-		$sql = $this->db->_compile_select($this->db->_count_string . $this->db->_protect_identifiers('numrows'));
-		$results = $this->datasis->dameval($sql);
-
-		$this->db->limit($limit, $start);
-
-		$query = $this->db->get();
-		$arr = $this->datasis->codificautf8($query->result_array());
-		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
-	}
-
-	function griditgser(){
-		$id   = isset($_REQUEST['id'])  ? $_REQUEST['id']   :  0;
-		if ($id == 0 ) $id = $this->datasis->dameval("SELECT MAX(id) FROM gser")  ;
-
-
-		$mSQL = "SELECT * FROM gitser WHERE idgser='$id' ORDER BY id ASC";
-		$query = $this->db->query($mSQL);
-		$results = $query->num_rows() ;
-		$arr = $this->datasis->codificautf8($query->result_array());
-		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
-	}
-
 	function sprvbu(){
 		$control = $this->uri->segment(4);
 		$id = $this->datasis->dameval("SELECT b.id FROM gser a JOIN sprv b ON a.proveed=b.proveed WHERE control='$control'");
 		redirect('compras/sprv/dataedit/show/'.$id);
 	}
 
+		
 	function tabla() {
-		$id   = isset($_REQUEST['id'])  ? $_REQUEST['id']   :  0;
+		$id = $this->uri->segment($this->uri->total_segments());
 
 		$transac = $this->datasis->dameval("SELECT transac FROM gser WHERE id='$id'");
 
@@ -2729,321 +4393,7 @@ function gserfiscal(mid){
 		}
 		echo $salida;
 
-//		echo 'Prueba';
 	}
 
-	function gserextjs() {
-		$encabeza='GASTOS Y EGRESOS';
-		$listados= $this->datasis->listados('gser');
-		$otros=$this->datasis->otros('gser', 'finanzas/gser');
-
-		$urlajax = 'finanzas/gser/';
-
-		$columnas = "
-		{ header: 'tipo',        width: 40, sortable: true, dataIndex: 'tipo_doc', field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Fecha',       width: 70, sortable: true, dataIndex: 'fecha',    field: { type: 'date' }, filter: { type: 'date' }},
-		{ header: 'Numero',      width: 70, sortable: true, dataIndex: 'numero',   field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Proveed',     width: 60, sortable: true, dataIndex: 'proveed',  field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Nombre',      width:200, sortable: true, dataIndex: 'nombre',   field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Vence',       width: 70, sortable: true, dataIndex: 'vence',    field: { type: 'date' }, filter: { type: 'date' }},
-		{ header: 'Base Imp.',   width: 80, sortable: true, dataIndex: 'totpre',   field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'I.V.A.',      width: 80, sortable: true, dataIndex: 'totiva',   field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Total',       width: 80, sortable: true, dataIndex: 'totbruto', field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'R. ISLR',     width: 80, sortable: true, dataIndex: 'reten',    field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Ret.IVA',     width: 60, sortable: true, dataIndex: 'reteiva',  field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Neto',        width: 80, sortable: true, dataIndex: 'totneto',  field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Banco',       width: 60, sortable: true, dataIndex: 'codb1',    field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Tipo',        width: 40, sortable: true, dataIndex: 'tipo1' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Cheque',      width: 60, sortable: true, dataIndex: 'cheque1' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Comprob.',    width: 60, sortable: true, dataIndex: 'comprob1' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Monto',       width: 60, sortable: true, dataIndex: 'monto1' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Credito',     width: 60, sortable: true, dataIndex: 'credito' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Orden',       width: 60, sortable: true, dataIndex: 'orden' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Anticipo',    width: 60, sortable: true, dataIndex: 'anticipo' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Beneficiario',width: 60, sortable: true, dataIndex: 'benefi' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		//{ header: 'mdolar',    width: 60, sortable: true, dataIndex: 'mdolar' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Usuario',     width: 60, sortable: true, dataIndex: 'usuario' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Estampa',     width: 60, sortable: true, dataIndex: 'estampa' , field: { type: 'date' }, filter: { type: 'date' }},
-		{ header: 'Hora',        width: 60, sortable: true, dataIndex: 'hora' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Transaccion', width: 60, sortable: true, dataIndex: 'transac' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'preten',      width: 60, sortable: true, dataIndex: 'preten' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'creten',      width: 60, sortable: true, dataIndex: 'creten' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'breten',      width: 60, sortable: true, dataIndex: 'breten' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'No.Fiscal',   width: 60, sortable: true, dataIndex: 'nfiscal' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Afecta',      width: 60, sortable: true, dataIndex: 'afecta' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'F. Afecta',   width: 60, sortable: true, dataIndex: 'fafecta' , field: { type: 'date' }, filter: { type: 'date' }},
-		{ header: 'Fecha Fac',   width: 60, sortable: true, dataIndex: 'ffactura' , field: { type: 'date' }, filter: { type: 'date' }},
-		{ header: 'Caja',        width: 60, sortable: true, dataIndex: 'cajachi' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		//{ header: 'montasa' ,  width: 60, sortable: true, dataIndex: 'montasa' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		//{ header: 'monredu' ,  width: 60, sortable: true, dataIndex: 'monredu' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		//{ header: 'monadic' ,  width: 60, sortable: true, dataIndex: 'monadic' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		//{ header: 'tasa' ,     width: 60, sortable: true, dataIndex: 'tasa' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		//{ header: 'reducida' , width: 60, sortable: true, dataIndex: 'reducida' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		//{ header: 'sobretasa', width: 60, sortable: true, dataIndex: 'sobretasa' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Exento' ,     width: 60, sortable: true, dataIndex: 'exento' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		//{ header: 'compra' ,   width: 60, sortable: true, dataIndex: 'compra' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Ordeni' ,     width: 60, sortable: true, dataIndex: 'ordeni' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'serie' ,      width: 60, sortable: true, dataIndex: 'serie' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		//{ header: 'modificado',width: 60, sortable: true, dataIndex: 'modificado' , field: { type: 'date' }, filter: { type: 'date' }},
-		//{ header: 'reteica' ,  width: 60, sortable: true, dataIndex: 'reteica' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		//{ header: 'retesimple',width: 60, sortable: true, dataIndex: 'retesimple' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'Egreso',   width: 60, sortable: true, dataIndex: 'negreso' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Causado',  width: 60, sortable: true, dataIndex: 'ncausado' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Tipo_or',   width: 60, sortable: true, dataIndex: 'tipo_or' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'id',        width: 60, sortable: true, dataIndex: 'id' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0000')}		";
-
-		$coldeta = "
-	var Deta1Col = [
-		{ header: 'Codigo',      width: 60, sortable: true, dataIndex: 'codigo' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Descripcion', width:160, sortable: true, dataIndex: 'descrip' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'precio',      width: 80, sortable: true, dataIndex: 'precio' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'iva',         width: 80, sortable: true, dataIndex: 'iva' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'importe',     width: 80, sortable: true, dataIndex: 'importe' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'unidades',    width: 60, sortable: true, dataIndex: 'unidades' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'fraccion',  width: 60, sortable: true, dataIndex: 'fraccion' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'almacen' , width: 60, sortable: true, dataIndex: 'almacen' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'sucursal' , width: 60, sortable: true, dataIndex: 'sucursal' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'departa' , width: 60, sortable: true, dataIndex: 'departa' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'transac' , width: 60, sortable: true, dataIndex: 'transac' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'usuario' , width: 60, sortable: true, dataIndex: 'usuario' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'estampa' , width: 60, sortable: true, dataIndex: 'estampa' , field: { type: 'date' }, filter: { type: 'date' }},
-		{ header: 'hora' , width: 60, sortable: true, dataIndex: 'hora' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'transa' , width: 60, sortable: true, dataIndex: 'transa' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'huerfano' , width: 60, sortable: true, dataIndex: 'huerfano' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'rif' , width: 60, sortable: true, dataIndex: 'rif' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'proveedor' , width: 60, sortable: true, dataIndex: 'proveedor' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'numfac' , width: 60, sortable: true, dataIndex: 'numfac' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'fechafac' , width: 60, sortable: true, dataIndex: 'fechafac' , field: { type: 'date' }, filter: { type: 'date' }},
-		{ header: 'nfiscal' , width: 60, sortable: true, dataIndex: 'nfiscal' , field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'feprox' , width: 60, sortable: true, dataIndex: 'feprox' , field: { type: 'date' }, filter: { type: 'date' }},
-		{ header: 'dacum' , width: 60, sortable: true, dataIndex: 'dacum' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'residual' , width: 60, sortable: true, dataIndex: 'residual' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'vidau' , width: 60, sortable: true, dataIndex: 'vidau' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'montasa' , width: 60, sortable: true, dataIndex: 'montasa' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'monredu' , width: 60, sortable: true, dataIndex: 'monredu' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'monadic' , width: 60, sortable: true, dataIndex: 'monadic' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'tasa' , width: 60, sortable: true, dataIndex: 'tasa' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'reducida' , width: 60, sortable: true, dataIndex: 'reducida' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'sobretasa' , width: 60, sortable: true, dataIndex: 'sobretasa' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'exento' , width: 60, sortable: true, dataIndex: 'exento' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'id' , width: 60, sortable: true, dataIndex: 'id' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-		{ header: 'modificado' , width: 60, sortable: true, dataIndex: 'modificado' , field: { type: 'date' }, filter: { type: 'date' }},
-		{ header: 'reteica' , width: 60, sortable: true, dataIndex: 'reteica' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00')},
-
-		{ header: 'idgser' , width: 60, sortable: true, dataIndex: 'idgser' , field: { type: 'numberfield'}, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0000')},
-	]";
-
-		$variables='';
-
-		$valida="		{ type: 'length', field: 'numero',  min:  1 }";
-
-
-		$funciones = "
-function renderSprv(value, p, record) {
-	var mreto='';
-	if ( record.data.proveed == '' ){
-		mreto = '{0}';
-	} else {
-		mreto = '<a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'finanzas/gser/sprvbu/{1}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">{0}</a>';
-	}
-	return Ext.String.format(mreto,	value, record.data.control );
 }
-
-function renderSinv(value, p, record) {
-	var mreto='';
-	mreto = '<a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'inventario/sinv/dataedit/show/{1}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">{0}</a>';
-	return Ext.String.format(mreto,	value, record.data.codid );
-}
-	";
-
-		$campos = $this->datasis->extjscampos('gser');
-
-//".$this->datasis->extjscampos('gitser')."
-
-		$stores = "
-	Ext.define('Itgser', {
-		extend: 'Ext.data.Model',
-		fields: [".$this->datasis->extjscampos('gitser')."],
-		proxy: {
-			type: 'ajax',
-			noCache: false,
-			api: {
-				read   : urlApp + 'finanzas/gser/griditgser',
-				method: 'POST'
-			},
-			reader: {
-				type: 'json',
-				root: 'data',
-				successProperty: 'success',
-				messageProperty: 'message',
-				totalProperty: 'results'
-			}
-		}
-	});
-
-	//////////////////////////////////////////////////////////
-	// create the Data Store
-	var storeItgser = Ext.create('Ext.data.Store', {
-		model: 'Itgser',
-		autoLoad: false,
-		autoSync: true,
-		method: 'POST'
-	});
-
-	//////////////////////////////////////////////////////////
-	//
-	var gridDeta1 = Ext.create('Ext.grid.Panel', {
-		width:   '100%',
-		height:  '100%',
-		store:   storeItgser,
-		title:   'Detalle del Gasto',
-		iconCls: 'icon-grid',
-		frame:   true,
-		features: [ { ftype: 'filters', encode: 'json', local: false } ],
-		columns: Deta1Col
-	});
-
-	var gserTplMarkup = [
-		'<table width=\'100%\' bgcolor=\"#F3F781\">',
-		'<tr><td colspan=3 align=\'center\'><p style=\'font-size:14px;font-weight:bold\'>IMPRIMIR GASTO</p></td></tr><tr>',
-		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/verhtml/GSER/{id}\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/html_icon.gif', 'alt' => 'Formato HTML', 'title' => 'Formato HTML','border'=>'0'))."</a></td>',
-		'<td align=\'center\'>{numero}</td>',
-		'<td align=\'center\'><a href=\'javascript:void(0);\' onclick=\"window.open(\''+urlApp+'formatos/ver/GSER/{id}\',     \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys+'\');\" heigth=\"600\">".img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',   'title' => 'Formato PDF', 'border'=>'0'))."</a></td></tr>',
-		'<tr><td colspan=3 align=\'center\' >--</td></tr>',
-		'</table>','nanai'
-	];
-
-	// Al cambiar seleccion
-	gridMaest.getSelectionModel().on('selectionchange', function(sm, selectedRecord) {
-		if (selectedRecord.length) {
-			gridMaest.down('#delete').setDisabled(selectedRecord.length === 0);
-			gridMaest.down('#update').setDisabled(selectedRecord.length === 0);
-			mid = selectedRecord[0].data.id;
-			gridDeta1.setTitle(selectedRecord[0].data.numero+' '+selectedRecord[0].data.nombre);
-			storeItgser.load({ params: { id: mid }});
-			var meco1 = Ext.getCmp('imprimir');
-			Ext.Ajax.request({
-				url: urlApp +'finanzas/gser/tabla',
-				params: { id: mid, serie: selectedRecord[0].data.numero },
-				success: function(response) {
-					var vaina = response.responseText;
-					gserTplMarkup.pop();
-					gserTplMarkup.push(vaina);
-					var gserTpl = Ext.create('Ext.Template', gserTplMarkup );
-					meco1.setTitle('Imprimir Compra');
-					gserTpl.overwrite(meco1.body, selectedRecord[0].data );
-				}
-			});
-		}
-	});
-";
-
-		$acordioni = "{
-					layout: 'fit',
-					items:[
-						{
-							name: 'imprimir',
-							id: 'imprimir',
-							border:false,
-							html: 'Para imprimir seleccione una Compra '
-						}
-					]
-				},
-";
-
-
-		$dockedItems = "{
-			xtype: 'toolbar',
-			items: [
-				{
-					iconCls: 'icon-add',
-					text: 'Agregar',
-					scope: this,
-					handler: function(){
-						window.open(urlApp+'finanzas/gser/agregar', '_blank', 'width=970,height=700,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys);
-					}
-				},
-				{
-					iconCls: 'icon-update',
-					text: 'Modificar',
-					disabled: true,
-					itemId: 'update',
-					scope: this,
-					handler: function(selModel, selections){
-						var selection = gridMaest.getView().getSelectionModel().getSelection()[0];
-						gridMaest.down('#delete').setDisabled(selections.length === 0);
-						window.open(urlApp+'finanzas/gser/dataedit/modify/'+selection.data.control, '_blank', 'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx='+mxs+',screeny='+mys);
-					}
-				},{
-					iconCls: 'icon-delete',
-					text: 'Eliminar',
-					disabled: true,
-					itemId: 'delete',
-					scope: this,
-					handler: function() {
-						var selection = gridMaest.getView().getSelectionModel().getSelection()[0];
-						Ext.MessageBox.show({
-							title: 'Confirme',
-							msg: 'Seguro que quiere eliminar la compra Nro. '+selection.data.numero,
-							buttons: Ext.MessageBox.YESNO,
-							fn: function(btn){
-								if (btn == 'yes') {
-									if (selection) {
-										//storeMaest.remove(selection);
-									}
-									storeMaest.load();
-								}
-							},
-							icon: Ext.MessageBox.QUESTION
-						});
-					}
-				}
-			]
-		}
-		";
-
-		$grid2 = ",{
-				itemId: 'viewport-center-detail',
-				activeTab: 0,
-				region: 'south',
-				height: '40%',
-				split: true,
-				margins: '0 0 0 0',
-				preventHeader: true,
-				items: gridDeta1
-			}";
-
-
-		$titulow = 'Compras';
-
-		$filtros = "";
-		$features = "
-		features: [ { ftype: 'filters', encode: 'json', local: false } ],
-		plugins: [Ext.create('Ext.grid.plugin.CellEditing', { clicksToEdit: 2 })],
-";
-
-		$final = "storeItgser.load();";
-
-		$data['listados']    = $listados;
-		$data['otros']       = $otros;
-		$data['encabeza']    = $encabeza;
-		$data['urlajax']     = $urlajax;
-		$data['variables']   = $variables;
-		$data['funciones']   = $funciones;
-		$data['valida']      = $valida;
-		$data['stores']      = $stores;
-		$data['columnas']    = $columnas;
-		$data['campos']      = $campos;
-		$data['titulow']     = $titulow;
-		$data['dockedItems'] = $dockedItems;
-		$data['features']    = $features;
-		$data['filtros']     = $filtros;
-		$data['grid2']       = $grid2;
-		$data['coldeta']     = $coldeta;
-		$data['acordioni']   = $acordioni;
-		$data['final']       = $final;
-
-		$data['title']  = heading('Gastos');
-		$this->load->view('extjs/extjsvenmd',$data);
-	}
-}
+?>
