@@ -99,15 +99,19 @@ class Sfac extends Controller {
 
 			});
 			$( "#fcobroser" ).dialog({
-				autoOpen: false, height: 400, width: 540, modal: true,
+				autoOpen: false, height: 430, width: 540, modal: true,
 				buttons: {
 					"Guardar": function() {
 						$.post("'.site_url('ventas/mensualidad/servxmes/insert').'", {cod_cli: $("#fcliente").val(),cana_0: $("#fmespaga").val(),tipo_0: $("#fcodigo").val(),num_ref_0: $("#fcomprob").val(),preca_0: $("#ftarifa").val() },
 							function(data) {
 								if(data=="Venta Guardada"){
 									$("#fcobroser").dialog( "close" );
+									grid.trigger("reloadGrid");
+									apprise(data);
+									'.$this->datasis->jwinopen(site_url('formatos/ver/FACTURA').'/\'+res.id+\'/id\'').';
+									return true;
 								}else{
-									alert(data);
+									apprise("<div style=\"font-size:16px;font-weight:bold;background:red;color:white\">Error:</div> <h1>"+data);
 								}
 							}
 						);
@@ -1244,21 +1248,6 @@ class Sfac extends Controller {
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-/*
-		$grid->addField('pos');
-		$grid->label('Pos');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'align'         => "'right'",
-			'edittype'      => "'text'",
-			'width'         => 100,
-			'editrules'     => '{ required:true }',
-			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
-			'formatter'     => "'number'",
-			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
-		));
-*/
 
 		$grid->addField('comision');
 		$grid->label('Comision');
@@ -1404,7 +1393,7 @@ class Sfac extends Controller {
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-/*
+
 		$grid->addField('detalle');
 		$grid->label('Detalle');
 		$grid->params(array(
@@ -1414,7 +1403,7 @@ class Sfac extends Controller {
 			'edittype'      => "'textarea'",
 			'editoptions'   => "'{rows:2, cols:60}'",
 		));
-*/
+
 
 		$grid->addField('fdespacha');
 		$grid->label('Fdespacha');
@@ -1622,15 +1611,9 @@ class Sfac extends Controller {
 		$tarjeta = $this->datasis->llenaopciones($mSQL, true, 'fcodigo');
 
 
-		//$id      = $this->uri->segment($this->uri->total_segments());
-		//$proveed = $this->datasis->dameval("SELECT proveed FROM sprv WHERE id=$id");
-
-		//$reg = $this->datasis->damereg("SELECT proveed, nombre, rif FROM sprv WHERE id=$id");
-
-
 
 		$salida = '
-<script type="text/javascript">
+	<script type="text/javascript">
 
 	var totaliza = function (){
 		var meses = Number($("#fmespaga").val());
@@ -1667,27 +1650,28 @@ class Sfac extends Controller {
 						}else{
 							$.each(data,
 								function(i, val){
-									sugiere.push( val );
-								}
-							);
-						}
-						add(sugiere);
-						totaliza();
-					},
-			})
-		},
-		minLength: 2,
-		select: function( event, ui ) {
-			$("#fnombre").val(ui.item.nombre);
-			$("#ftelefono").val(ui.item.telefono);
-			$("#ftarifa").val(ui.item.precio1);
-			$("#fcodtar").val(ui.item.codigo);
-			$("#fdire11").val(ui.item.direc);
-			$("#fupago").val(ui.item.upago);
-			totaliza();
-		}
-	});
-</script>
+										sugiere.push( val );
+									}
+								);
+							}
+							add(sugiere);
+							totaliza();
+						},
+				})
+			},
+			minLength: 2,
+			select: function( event, ui ) {
+				$("#fnombre").val(ui.item.nombre);
+				$("#ftelefono").val(ui.item.telefono);
+				$("#ftarifa").val(ui.item.precio1);
+				$("#fcodtar").val(ui.item.codigo);
+				$("#fdire11").val(ui.item.direc);
+				$("#fupago").val(ui.item.upago);
+				totaliza();
+			}
+		});
+	</script>
+
 	<div style="background-color:#D0D0D0;font-weight:bold;font-size:14px;text-align:center"><table width="100%"><tr><td>Cobro de Servicios Mensuales</td><td></td><td> </td></tr></table></div>
 	<p class="validateTips"></p>
 	<form id="formcobroser">
@@ -1747,8 +1731,12 @@ class Sfac extends Controller {
 		<td>&nbsp;<input name="fcomprob" id="fcomprob" type="text" value="" maxlengh="12" size="12" /></td>
 	</tr>
 	<tr>
-		<td colspan="2" align="right">Pagado con:</td>
-		<td colspan="2"><input name="pagado" id="pagado" type="text" value="" maxlengh="12" size="12" /></td>
+		<td align="right">Paga con:</td>
+		<td ><input name="pagado" id="pagado" type="text" value="" maxlengh="12" size="12" /></td>
+		<td colspan="2" align="center"><div style="font-size:12px;font-weight:bold">Vuelto: <span id="vuelto">0,00</span></div></td>
+	</tr>
+
+
 	</tr>
 	</table>
 	</fieldset>
@@ -1763,12 +1751,9 @@ class Sfac extends Controller {
 	<tr>
 		<td align="center"><div id="grantotal" style="font-size:20px;font-weight:bold">Monto a pagar: <span id="montotot">0,00</span></div></td>
 	</tr>
-	<tr>
-		<td align="center"><div style="font-size:12px;font-weight:bold">Vuelto: <span id="vuelto">0,00</span></div></td>
-	</tr>
 	</table>
 	</form>
-';
+	';
 
 
 		echo $salida;

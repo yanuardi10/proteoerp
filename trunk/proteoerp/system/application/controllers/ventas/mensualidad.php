@@ -140,7 +140,6 @@ class mensualidad extends sfac_add {
 			$_POST['banco_0']    = '';
 			$_POST['monto_0']    = '';
 		}
-
 		parent::dataedit();
 	}
 
@@ -181,7 +180,9 @@ class mensualidad extends sfac_add {
 			$_POST['rifci']       = $row->rifci;
 			$_POST['direc']       = $row->dire11;
 			$_POST['codigoa_0']   = $row->codigo;
+			
 			$_POST['desca_0']     = $row->descrip;
+			
 			$_POST['detalle_0']   = "Desde $desde";
 			//$_POST['cana_0']      = $cana;
 			//$_POST['preca_0']     = $tarifa;

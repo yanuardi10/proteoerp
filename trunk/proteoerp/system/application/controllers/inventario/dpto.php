@@ -1,4 +1,285 @@
 <?php require_once(BASEPATH.'application/controllers/validaciones.php');
+class Dpto extends Controller {
+	var $mModulo='DPTO';
+	var $titp='Departamentos de Inventario';
+	var $tits='Departamentos de Inventario';
+	var $url ='inventario/dpto/';
+
+	function Dpto(){
+		parent::Controller();
+		$this->load->library('rapyd');
+		$this->load->library('jqdatagrid');
+		//$this->datasis->modulo_nombre( $modulo, $ventana=0 );
+	}
+
+	function index(){
+		$this->db->simple_query("INSERT IGNORE INTO dpto (depto,tipo,descrip) VALUES ('99','G','INVERSION EN ACTIVOS')ON DUPLICATE KEY UPDATE depto='99', tipo='G',descrip='INVERSION EN ACTIVOS'");
+		$this->db->simple_query("INSERT IGNORE INTO dpto (depto,tipo,descrip) VALUES ('98','G','GASTOS FINANCIEROS')ON DUPLICATE KEY UPDATE depto='98', tipo='G',descrip='GASTOS FINANCIEROS'");
+		$this->db->simple_query("INSERT IGNORE INTO dpto (depto,tipo,descrip) VALUES ('97','G','GASTOS DE ADMINISTRACION')ON DUPLICATE KEY UPDATE depto='97', tipo='G',descrip='GASTOS DE ADMINISTRACION'");
+		$this->db->simple_query("INSERT IGNORE INTO dpto (depto,tipo,descrip) VALUES ('96','G','GASTOS DE VENTA')ON DUPLICATE KEY UPDATE depto='96', tipo='G',descrip='GASTOS DE VENTA'");
+		$this->db->simple_query("INSERT IGNORE INTO dpto (depto,tipo,descrip) VALUES ('95','G','GASTOS DE COMPRA')ON DUPLICATE KEY UPDATE depto='95', tipo='G',descrip='GASTOS DE COMPRA'");
+		if ( !$this->datasis->iscampo('dpto','id') ) {
+			$this->db->simple_query('ALTER TABLE dpto DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE dpto ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ');
+			$this->db->simple_query('ALTER TABLE dpto ADD UNIQUE INDEX depto (depto)');
+		}
+		$this->datasis->modintramenu( 800, 500, substr($this->url,0,-1) );
+		redirect($this->url.'jqdatag');
+	}
+
+	//***************************
+	//Layout en la Ventana 
+	//
+	//***************************
+	function jqdatag(){
+
+		$grid = $this->defgrid();
+		$param['grids'][] = $grid->deploy();
+
+		$bodyscript = '';
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		//Botones Panel Izq
+		//$grid->wbotonadd(array("id"=>"edocta",   "img"=>"images/pdf_logo.gif",  "alt" => "Formato PDF", "label"=>"Estado de Cuenta"));
+		$WestPanel = $grid->deploywestp();
+
+		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor("TITULO1"));
+
+		$funciones = '
+		function ftipo(el, val, opts){
+			if ( el == "I" ){
+				meco=\'Inventario\';
+			} else {
+				meco=\'Gasto\';
+			}
+			return meco;
+		}
+		';
+
+		$param['WestPanel']    = $WestPanel;
+		$param['funciones']    = $funciones;
+
+		$param['SouthPanel']   = $SouthPanel;
+		$param['listados']     = $this->datasis->listados('DPTO', 'JQ');
+		$param['otros']        = $this->datasis->otros('DPTO', 'JQ');
+		$param['temas']        = array('proteo','darkness','anexos1');
+		$param['bodyscript']   = $bodyscript;
+		$param['tabs']         = false;
+		$param['encabeza']     = $this->titp;
+		
+		$this->load->view('jqgrid/crud2',$param);
+	}
+
+	//***************************
+	//Definicion del Grid y la Forma
+	//***************************
+	function defgrid( $deployed = false ){
+		$i      = 1;
+		$editar = "true";
+		$link   = site_url('ajax/buscacpla');
+
+		$grid  = new $this->jqdatagrid;
+
+		$grid->addField('depto');
+		$grid->label('Codigo');
+		$grid->params(array(
+			'align'         => "'center'",
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:3, maxlength: 3 }',
+		));
+
+		$grid->addField('tipo');
+		$grid->label('Tipo');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 60,
+			'edittype'      => "'select'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{value: {"I":"Inventario","G":"Gasto" }, style:"width:100px" }',
+			'formatter'     => 'ftipo'
+		));
+
+		$grid->addField('descrip');
+		$grid->label('Descripcion');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 30 }',
+		));
+
+		$grid->addField('cu_venta');
+		$grid->label('Cta. Venta');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 150,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:false}',
+			'editoptions'   => '{'.$grid->autocomplete($link, 'cu_venta','ctaventa','<div id=\"ctaventa\"><b>"+ui.item.descrip+"</b></div>').'}',
+		));
+
+		$grid->addField('cu_inve');
+		$grid->label('Cta. Inventario');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 150,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:false}',
+			'editoptions'   => '{'.$grid->autocomplete($link, 'cu_inve','ctainve','<div id=\"ctainve\"><b>"+ui.item.descrip+"</b></div>').'}',
+		));
+
+		$grid->addField('cu_cost');
+		$grid->label('Cta. de Costo');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 150,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:false}',
+			'editoptions'   => '{'.$grid->autocomplete($link, 'cu_cost','ctacost','<div id=\"ctacost\"><b>"+ui.item.descrip+"</b></div>').'}',
+		));
+
+		$grid->addField('cu_devo');
+		$grid->label('Cta. Devolucion');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 150,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:false}',
+			'editoptions'   => '{'.$grid->autocomplete($link, 'cu_devo','ctadevo','<div id=\"ctadevo\"><b>"+ui.item.descrip+"</b></div>').'}',
+		));
+
+		$grid->addField('id');
+		$grid->label('Id');
+		$grid->params(array(
+			'align'         => "'center'",
+			'frozen'        => 'true',
+			'width'         => 40,
+			'editable'      => 'false',
+			'search'        => 'false'
+		));
+
+		$grid->showpager(true);
+		$grid->setWidth('');
+		$grid->setHeight('290');
+		$grid->setTitle($this->titp);
+		$grid->setfilterToolbar(true);
+		$grid->setToolbar('false', '"top"');
+
+		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 450, height:350, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
+		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 450, height:350, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
+		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
+
+		#show/hide navigations buttons
+		$grid->setAdd(true);
+		$grid->setEdit(true);
+		$grid->setDelete(true);
+		$grid->setSearch(true);
+		$grid->setRowNum(30);
+		$grid->setShrinkToFit('false');
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		#GET url
+		$grid->setUrlget(site_url($this->url.'getdata/'));
+
+		if ($deployed) {
+			return $grid->deploy();
+		} else {
+			return $grid;
+		}
+	}
+
+	/**
+	* Busca la data en el Servidor por json
+	*/
+	function getdata()
+	{
+		$grid       = $this->jqdatagrid;
+
+		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
+		$mWHERE = $grid->geneTopWhere('dpto');
+		$response   = $grid->getData('dpto', array(array()), array(), false, $mWHERE, 'tipo desc, depto' );
+		$rs = $grid->jsonresult( $response);
+		echo $rs;
+	}
+
+	/**
+	* Guarda la Informacion
+	*/
+	function setData()
+	{
+		$this->load->library('jqdatagrid');
+		$oper   = $this->input->post('oper');
+		$id     = $this->input->post('id');
+		$data   = $_POST;
+		$mcodp  = "depto";
+		$check  = 0;
+
+		unset($data['oper']);
+		unset($data['id']);
+		if($oper == 'add'){
+			if(false == empty($data)){
+				$check = $this->datasis->dameval("SELECT count(*) FROM dpto WHERE $mcodp=".$this->db->escape($data[$mcodp]));
+				if ( $check == 0 ){
+					$this->db->insert('dpto', $data);
+					echo "Registro Agregado";
+					logusu('DPTO',"Registro ".$data[$mcodp]." INCLUIDO");
+				} else
+					echo "Ya existe un departamento con ese codigo";
+			} else
+				echo "Fallo Agregado!!!";
+
+		} elseif($oper == 'edit') {
+			$nuevo  = $data[$mcodp];
+			$anterior = $this->datasis->dameval("SELECT $mcodp FROM dpto WHERE id=$id");
+			//if ( $nuevo <> $anterior ){
+				//si no son iguales borra el que existe y cambia
+				//$this->db->query("DELETE FROM dpto WHERE $mcodp=?", array($mcodp));
+				//$this->db->query("UPDATE dpto SET $mcodp=? WHERE $mcodp=?", array( $nuevo, $anterior ));
+				//$this->db->where("id", $id);
+				//$this->db->update("dpto", $data);
+				//logusu('DPTO',"$mcodp Cambiado/Fusionado Nuevo:".$nuevo." Anterior: ".$anterior." MODIFICADO");
+			//	echo "Grupo Cambiado/Fusionado en clientes";
+			//} else {
+				unset($data[$mcodp]);
+				$this->db->where("id", $id);
+				$this->db->update('dpto', $data);
+				logusu('DPTO',"Grupo de Cliente  ".$nuevo." MODIFICADO");
+				echo "$mcodp Modificado";
+			//}
+
+		} elseif($oper == 'del') {
+			$depto = $this->datasis->dameval("SELECT $mcodp FROM dpto WHERE id=$id");
+			//$depto = $campos['depto'];
+			$check =  $this->datasis->dameval("SELECT COUNT(*) FROM line   WHERE depto='$depto'");
+			$check += $this->datasis->dameval("SELECT COUNT(*) FROM gitser WHERE departa='$depto'");
+
+			if ($check > 0){
+				echo "Departamento, con movimiento, no puede ser Borrado";
+			} else {
+				$this->db->simple_query("DELETE FROM dpto WHERE id=$id ");
+				logusu('DPTO',"DEPARTAMENTO $depto ELIMINADO");
+				echo "Departamento Eliminado";
+			}
+
+		};
+	}
+
+/*
 class dpto extends validaciones{
 	 
 	function Dpto(){
@@ -710,5 +991,6 @@ var cplaStoreD = new Ext.data.Store({
 		$data['title']  = heading('Departamentos');
 		$this->load->view('extjs/extjsven',$data);
 	}
+*/
 }
 ?>
