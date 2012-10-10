@@ -31,26 +31,20 @@ class Pamarillas extends Controller {
 		$grid = $this->defgrid();
 		$param['grids'][] = $grid->deploy();
 
-		$bodyscript = '
-<script type="text/javascript">
-jQuery("#a1").click( function(){
-	var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
-	if (id)	{
-		var ret = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
-		window.open(\''.base_url().'formatos/ver/PAMARILLAS/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
-	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
-});
-</script>
-';
+		$bodyscript = $this->bodyscript($param['grids'][0]['gridname']);
 
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
 
 		//Botones Panel Izq
-		$grid->wbotonadd(array("id"=>"edocta",   "img"=>"images/pdf_logo.gif",  "alt" => "Formato PDF", "label"=>"Estado de Cuenta"));
+		$grid->wbotonadd(array("id"=>"btnatencion", "img"=>"images/face-smile.png",  "alt" => "Atención", "label"=>"Atención"));
 		$WestPanel = $grid->deploywestp();
 
-		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor("TITULO1"));
+		$adic = array(
+			array("id"=>"fatencion", "title"=>"Atención al prospecto")
+		);
+
+		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor("TITULO1"),$adic);
 
 		$param['WestPanel']    = $WestPanel;
 		//$param['EastPanel']  = $EastPanel;
@@ -72,16 +66,6 @@ jQuery("#a1").click( function(){
 		$editar = 'true';
 
 		$grid  = new $this->jqdatagrid;
-
-		//$grid->addField('id');
-		//$grid->label('Id');
-		//$grid->params(array(
-		//	'align'         => "'center'",
-		//	'frozen'        => 'true',
-		//	'width'         => 40,
-		//	'editable'      => 'false',
-		//	'search'        => 'false'
-		//));
 
 
 		$grid->addField('estado');
@@ -107,9 +91,19 @@ jQuery("#a1").click( function(){
 			'editoptions'   => '{ size:30, maxlength: 100 }',
 		));
 
+		$grid->addField('telf');
+		$grid->label('Telféfono');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 100 }',
+		));
 
 		$grid->addField('rif');
-		$grid->label('Rif');
+		$grid->label('RIF');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -121,7 +115,7 @@ jQuery("#a1").click( function(){
 
 
 		$grid->addField('descrip');
-		$grid->label('Descrip');
+		$grid->label('Actividad');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -145,7 +139,7 @@ jQuery("#a1").click( function(){
 
 
 		$grid->addField('direc');
-		$grid->label('Direc');
+		$grid->label('Direción');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -156,29 +150,27 @@ jQuery("#a1").click( function(){
 		));
 
 
-		$grid->addField('telf');
-		$grid->label('Telf');
+		$grid->addField('status');
+		$grid->label('Estatus');
 		$grid->params(array(
 			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 200,
+			'editable'      => 'false',
+			'width'         => 100,
 			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 100 }',
+			'editrules'     => '{ required:false}',
+			'editoptions'   => '{ size:2, maxlength: 1 }',
 		));
 
-
-		//$grid->addField('file');
-		//$grid->label('File');
-		//$grid->params(array(
-		//	'search'        => 'true',
-		//	'editable'      => $editar,
-		//	'width'         => 200,
-		//	'edittype'      => "'text'",
-		//	'editrules'     => '{ required:true}',
-		//	'editoptions'   => '{ size:30, maxlength: 50 }',
-		//));
-
+		$grid->addField('observa');
+		$grid->label('Observacion');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => 'false',
+			'width'         => 150,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:false}',
+			'editoptions'   => '{ size:200, maxlength: 255 }',
+		));
 
 		$grid->showpager(true);
 		$grid->setWidth('');
@@ -215,8 +207,7 @@ jQuery("#a1").click( function(){
 	/**
 	* Busca la data en el Servidor por json
 	*/
-	function getdata()
-	{
+	function getdata(){
 		$grid       = $this->jqdatagrid;
 
 		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
@@ -230,8 +221,7 @@ jQuery("#a1").click( function(){
 	/**
 	* Guarda la Informacion
 	*/
-	function setData()
-	{
+	function setData(){
 		$this->load->library('jqdatagrid');
 		$oper   = $this->input->post('oper');
 		$id     = $this->input->post('id');
@@ -255,17 +245,7 @@ jQuery("#a1").click( function(){
 				echo "Fallo Agregado!!!";
 
 		} elseif($oper == 'edit') {
-			//$nuevo  = $data[$mcodp];
-			//$anterior = $this->datasis->dameval("SELECT $mcodp FROM pamarillas WHERE id=$id");
-			//if ( $nuevo <> $anterior ){
-			//	//si no son iguales borra el que existe y cambia
-			//	$this->db->query("DELETE FROM pamarillas WHERE $mcodp=?", array($mcodp));
-			//	$this->db->query("UPDATE pamarillas SET $mcodp=? WHERE $mcodp=?", array( $nuevo, $anterior ));
-			//	$this->db->where("id", $id);
-			//	$this->db->update("pamarillas", $data);
-			//	logusu('PAMARILLAS',"$mcodp Cambiado/Fusionado Nuevo:".$nuevo." Anterior: ".$anterior." MODIFICADO");
-			//	echo "Grupo Cambiado/Fusionado en clientes";
-			//} else {
+
 				unset($data['id']);
 				$this->db->where("id", $id);
 				$this->db->update('pamarillas', $data);
@@ -273,7 +253,7 @@ jQuery("#a1").click( function(){
 				echo "$mcodp Modificado";
 			//}
 
-		} elseif($oper == 'del') {
+		}elseif($oper == 'del') {
 		$meco = $this->datasis->dameval("SELECT $mcodp FROM pamarillas WHERE id=$id");
 			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM pamarillas WHERE id='$id' ");
 			if ($check > 0){
@@ -285,4 +265,258 @@ jQuery("#a1").click( function(){
 			}
 		};
 	}
+
+	function fatencion(){
+		$id   = $this->uri->segment($this->uri->total_segments());
+		$dbid = $this->db->escape($id);
+		$reg  = $this->datasis->damereg("SELECT estado, nombre, rif FROM `pamarillas` WHERE id=$dbid");
+
+		$mSQL   = "SELECT id,descrip FROM `pamarillas_status` ORDER BY descrip";
+		$status = $this->datasis->llenaopciones($mSQL, true, 'fstatus');
+
+		$salida = '
+<script type="text/javascript">
+
+</script>
+	<div style="background-color:#D0D0D0;font-weight:bold;font-size:14px;text-align:center"><table width="100%"><tr>
+	<td>Estado: '.$reg['estado'].'</td><td>'.utf8_encode($reg['nombre']).'</td><td>RIF: '.$reg['rif'].'</td></tr></table></div>
+	<p class="validateTips"></p>
+	<form id="atencionforma">
+	<table width="90%" align="center" border="0">
+	<tr>
+		<td class="CaptionTD" align="right">Estatus</td>
+		<td>&nbsp;'.$status.'</td>
+	</tr>
+	<tr>
+		<td class="CaptionTD" align="right">Observaci&oacute;n:</td>
+		<td >&nbsp; <textarea id="fobserva" name="fobserva" rows="4" cols="80"></textarea></td>
+	</tr>
+	</table>
+	<input id="fid"      name="fid"      type="hidden" value="'.$id.'">
+	<br>
+	</form>
+';
+		echo $salida;
+	}
+
+	function bodyscript($grid){
+
+		$bodyscript = '<script type="text/javascript">';
+
+		//Imprimir Estado de Cuenta
+		$bodyscript .= '
+		jQuery("#edocta").click( function(){
+			var id = jQuery("#newapi'. $grid.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret = jQuery("#newapi'. $grid.'").jqGrid(\'getRowData\',id);
+				'.$this->datasis->jwinopen(site_url('reportes/ver/SPRMECU/SPRM/').'/\'+ret.cod_prv').';
+			} else { $.prompt("<h1>Por favor Seleccione un Proveedor</h1>");}
+		});';
+
+		//Imprimir Estado de Cuenta
+		$bodyscript .= '
+		jQuery("#preapro").click( function(){
+			var id = jQuery("#newapi'. $grid.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret = jQuery("#newapi'. $grid.'").jqGrid(\'getRowData\',id);
+				'.$this->datasis->jwinopen(site_url('reportes/ver/SPRMPRE').'/\'+ret.id').';
+			} else { $.prompt("<h1>Por favor Seleccione un Proveedor</h1>");}
+		});';
+
+		//Wraper de javascript
+		$bodyscript .= '
+		$(function() {
+			$("#dialog:ui-dialog").dialog( "destroy" );
+			var mId = 0;
+			var montotal = 0;
+			var ffecha = $("#ffecha");
+			var grid = jQuery("#newapi'.$grid.'");
+			var s;
+			var allFields = $( [] ).add( ffecha );
+
+			var tips = $( ".validateTips" );
+
+			s = grid.getGridParam(\'selarrrow\');
+			//$( "input:submit, a, button", ".otros" ).button();';
+
+		//Prepara Pago o Abono
+		$bodyscript .= '
+			$( "#btnatencion" ).click(function() {
+				var id     = jQuery("#newapi'.$grid.'").jqGrid(\'getGridParam\',\'selrow\');
+				if (id)	{
+					var ret    = $("#newapi'.$grid.'").getRowData(id);
+					mId = id;
+					$.post("'.site_url($this->url.'fatencion').'/"+id, function(data){
+						$("#fatencion").html(data);
+					});
+					$( "#fatencion" ).dialog( "open" );
+				} else { $.prompt("<h1>Por favor Seleccione un Prospecto</h1>");}
+			});
+			$( "#fatencion" ).dialog({
+				autoOpen: false, height: 470, width: 790, modal: true,
+				buttons: {
+					"Guardar": function() {
+						var bValid  = true;
+						var observa = $("#fobserva").val();
+
+						if(observa.length <= 1){
+							alert("El campo observacion es obligatorio");
+							bValid = false;
+						}
+
+						allFields.removeClass( "ui-state-error" );
+						if ( bValid ) {
+							$.ajax({
+								type: "POST", dataType: "html", async: false,
+								url:"'.site_url($this->url."setatencion").'",
+								data: $("#atencionforma").serialize(),
+								success: function(r,s,x){
+									alert(r);
+								}
+							});
+						}
+					},
+					Cancel: function() { $( this ).dialog( "close" ); }
+				},
+				close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
+			});';
+
+
+		//Abonos
+		$bodyscript .= '
+			$( "#abonos" ).click(function() {
+				var id     = jQuery("#newapi'.$grid.'").jqGrid(\'getGridParam\',\'selrow\');
+				if (id)	{
+					var ret    = $("#newapi'.$grid.'").getRowData(id);
+					mId = id;
+					$.post("'.site_url('finanzas/ppro/formaabono').'/"+id, function(data){
+						$("#fpreabono").html("");
+						$("#fabono").html(data);
+					});
+					$( "#fabono" ).dialog( "open" );
+				} else { $.prompt("<h1>Por favor Seleccione un Proveedor</h1>");}
+			});
+
+			$( "#fabono" ).dialog({
+				autoOpen: false, height: 470, width: 790, modal: true,
+				buttons: {
+					"Abonar": function() {
+						var bValid = true;
+						var rows = $("#abonados").jqGrid("getGridParam","data");
+						var paras = new Array();
+						for(var i=0;i < rows.length; i++){
+							var row=rows[i];
+							paras.push($.param(row));
+						}
+						allFields.removeClass( "ui-state-error" );
+						if ( bValid ) {
+							// Coloca el Grid en un input
+							$("#fgrid").val(JSON.stringify(paras));
+							$.ajax({
+								type: "POST", dataType: "html", async: false,
+								url:"'.site_url("finanzas/ppro/abono").'",
+								data: $("#abonoforma").serialize(),
+								success: function(r,s,x){
+									var res = $.parseJSON(r);
+									if ( res.status == "A"){
+										apprise(res.mensaje);
+										grid.trigger("reloadGrid");
+										'.$this->datasis->jwinopen(site_url('formatos/ver/PPROABB').'/\'+res.id').';
+										$( "#fabono" ).dialog( "close" );
+										return [true, a ];
+									} else {
+										apprise("<div style=\"font-size:16px;font-weight:bold;background:red;color:white\">Error:</div> <h1>"+res.mensaje+"</h1>");
+									}
+								}
+							});
+						}
+					},
+					Cancel: function() { $( this ).dialog( "close" ); }
+				},
+				close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
+			});';
+
+
+		//Notas de Credito
+		$bodyscript .= '
+			$( "#ncredito" ).click(function() {
+				var id     = jQuery("#newapi'.$grid.'").jqGrid(\'getGridParam\',\'selrow\');
+				if (id)	{
+					var ret    = $("#newapi'.$grid.'").getRowData(id);
+					mId = id;
+					$.post("'.site_url('finanzas/ppro/formancredito').'/"+id, function(data){
+						$("#fpreabono").html("");
+						$("#fabono").html("");
+						$("#fncredito").html(data);
+					});
+					$( "#fncredito" ).dialog( "open" );
+				} else { $.prompt("<h1>Por favor Seleccione un Proveedor</h1>");}
+			});
+
+			$( "#fncredito" ).dialog({
+				autoOpen: false, height: 470, width: 690, modal: true,
+				buttons: {
+					"Abonar": function() {
+						var bValid = true;
+						var rows = $("#abonados").jqGrid("getGridParam","data");
+						var paras = new Array();
+						for(var i=0;i < rows.length; i++){
+							var row=rows[i];
+							paras.push($.param(row));
+						}
+						allFields.removeClass( "ui-state-error" );
+						if ( bValid ) {
+							// Coloca el Grid en un input
+							$("#fgrid").val(JSON.stringify(paras));
+							$.ajax({
+								type: "POST", dataType: "html", async: false,
+								url:"'.site_url("finanzas/ppro/ncredito").'",
+								data: $("#ncreditoforma").serialize(),
+								success: function(r,s,x){
+									var res = $.parseJSON(r);
+									if ( res.status == "A"){
+										apprise(res.mensaje);
+										grid.trigger("reloadGrid");
+										'.$this->datasis->jwinopen(site_url('formatos/ver/PPRONC').'/\'+res.id').';
+										$( "#fabono" ).dialog( "close" );
+										return [true, a ];
+									} else {
+										apprise("<div style=\"font-size:16px;font-weight:bold;background:red;color:white\">Error:</div> <h1>"+res.mensaje+"</h1>");
+									}
+								}
+							});
+						}
+					},
+					Cancel: function() { $( this ).dialog( "close" ); }
+				},
+				close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
+			});
+		});';
+		$bodyscript .= "\n</script>\n";
+		return $bodyscript;
+	}
+
+	function setatencion(){
+		$status  = $this->input->post('festatus');
+		$observa = $this->input->post('fobserva');
+		$id      = $this->input->post('fid');
+		$fecha   = date('d/m/Y h:i:s');
+
+		if(strlen($observa)>1){
+			$observa   = "Fecha $fecha:\n".$observa;
+
+			$dbstatus  = $this->db->escape($status);
+			$dbobserva = $this->db->escape($observa);
+			$dbid      = $this->db->escape($id);
+
+			$mSQL = "UPDATE pamarillas SET status=$dbstatus, observa=CONCAT_WS(\"\\n\",observa, $dbobserva) WHERE id=$dbid";
+			$this->db->simple_query($mSQL);
+			//echo $mSQL;
+			echo 'Registro Guardado';
+		}else{
+			echo 'El campo observacion es obligatorio';
+		}
+		//print_r($_POST);
+	}
+
 }
