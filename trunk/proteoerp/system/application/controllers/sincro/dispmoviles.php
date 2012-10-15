@@ -1,4 +1,5 @@
 <?php
+require_once(BASEPATH . 'application/controllers/ventas/pfac.php');
 class Dispmoviles extends Controller {
 
 	function Dispmoviles(){
@@ -12,102 +13,87 @@ class Dispmoviles extends Controller {
 	}
 
 //***********************
-// Interfaces graficas
-//***********************
-	function ui($metodo=null){
-		$obj='_'.$metodo; if(!method_exists($this,$obj)) show_404('page');
-		$this->rapyd->load('dataform');
-
-		$form = new DataForm("sincro/exportar/ui/$metodo/process");
-		$form->fecha = new dateonlyField("Fecha","fecha");
-		$form->fecha->insertValue = date("Y-m-d");
-		$form->fecha->rule ="required|chfecha";
-		$form->fecha->size =12;
-		$form->submit("btnsubmit","Descargar");
-		$form->build_form();
-
-		if ($form->on_success()){
-			$fecha=$form->fecha->newValue;
-			$this->$obj($fecha);
-			return 0;
-		}
-
-		$data['content'] = $form->output;
-		$data['title']   = '<h1>Exportar data a zip ('.$metodo.')</h1>';
-		$data['script']  = '';
-		$data["head"]    = $this->rapyd->get_head();
-		$this->load->view('view_ventanas', $data);
-	}
-
-	function uig(){
-		$this->rapyd->load('dataform');
-		$this->datasis->modulo_id('91D',1);
-		$sucu=$this->db->escape($this->sucu);
-
-		$form = new DataForm("sincro/exportar/uig/process");
-
-		$form->qtrae = new dropdownField("Que exportar?", "qtrae");
-		$form->qtrae->rule ='required';
-		$form->qtrae->option("","Selecionar");
-		$form->qtrae->option("scli"  ,"Clientes");
-		$form->qtrae->option("sinv"  ,"Inventario");
-		$form->qtrae->option("maes"  ,"Inventario Supermercado");
-		$form->qtrae->option("smov"  ,"Movimientos de clientes");
-		$form->qtrae->option("transa","Facturas y transferencias");
-		$form->qtrae->option("supertransa"  ,"Ventas Supermercado");
-
-
-		$form->fecha = new dateonlyField("Fecha","fecha");
-		$form->fecha->insertValue = date("Y-m-d");
-		$form->fecha->rule ="required|chfecha";
-		$form->fecha->size =12;
-		$form->submit("btnsubmit","Descargar");
-		$form->build_form();
-
-		$exito='';
-		if ($form->on_success()){
-			$fecha=$form->fecha->newValue;
-			$obj='_'.str_replace('_','',$form->qtrae->newValue);
-			if(method_exists($this,$obj))
-				$rt=$this->$obj($fecha);
-			else
-				$rt='Metodo no definido ('.$form->qtrae->newValue.')';
-			if(strlen($rt)>0){
-				$form->error_string=$rt;
-				$form->build_form();
-			}else{
-				$exito='Transferencia &Eacute;xitosa';
-			}
-		}
-
-		$data['content'] = $form->output.$exito;
-		$data['title']   = '<h1>Exportar data de Sucursal</h1>';
-		$data['script']  = '';
-		$data["head"]    = $this->rapyd->get_head();
-		$this->load->view('view_ventanas', $data);
-	}
-
-//***********************
 //  Interfaces uri
 //***********************
 	function uri($clave,$metodo,$vend,$cajero){
 		$obj='_'.$metodo;
 		if(!method_exists($this,$obj)) show_404('page');
-		//if($clave!=sha1($this->config->item('encryption_key'))) return false;
-
-		/*$usr=$this->db->escape($usr);
-		$pws=$this->db->escape($pws);
-		$cursor=$this->db->query("SELECT us_nombre FROM usuario WHERE us_codigo=$usr AND SHA(us_clave)=$pws");
-		if($cursor->num_rows()==0) return false;
-		$existe = $this->datasis->dameval("SELECT COUNT(*) FROM intrasida WHERE usuario=$usr AND modulo='$id'");
-		if ($existe==0 ) return  false;*/
-
-
-		//echo $obj;
-		$this->$obj($vend);
+		//$this->$obj($vend);
 	}
 
+	function sincro($tabla,$uuid,$matriz){
+		session_write_close();
+		header('Cache-Control: no-cache, must-revalidate');
+		header('Content-type: application/json');
 
+		$vend=$this->datasis->dameval("SELECT vendedor FROM usuario WHERE uuid=".$this->db->escape($uuid));
+
+		if(empty($vend)){
+			echo '[]';
+			return '';
+		}
+		$dbvend = $this->db->escape($vend);
+
+		$escape = function($val){
+			if(is_numeric($val)){
+				$val=$val+0;
+				if(is_infinite($val))
+					return 0;
+				else
+					return $val;
+			}elseif(is_null($val)){
+				return '';
+			}else{
+				return $val;
+			}
+		};
+
+		$mSQL = array();
+
+		$mSQL['sinv'] = "SELECT id,
+			TRIM(codigo) AS codigo, TRIM(descrip) AS descrip,
+			base1,
+			base2,
+			base3,
+			base4,
+			ultimo AS costo, iva,1 AS bonifica,10 AS bonicant,
+			UNIX_TIMESTAMP(fdesde) AS fdesde ,UNIX_TIMESTAMP(fhasta) AS fhasta,
+			existen,TRIM(clave) AS clave
+			FROM sinv
+			WHERE activo='S' AND tipo='Articulo' AND base1>0 AND base2>0 AND base3>0 AND base3>0 AND ultimo>0";
+		$mSQL['scli'] = "SELECT a.id,
+			TRIM(a.cliente) AS cliente, TRIM(a.nombre) AS nombre,CONCAT_WS('-',TRIM(a.dire11),TRIM(a.dire12)) AS direc,
+			TRIM(a.ciudad) AS ciudad,TRIM(a.telefono) AS telefono,TRIM(a.rifci) AS rifci,TRIM(a.email) AS email,
+			TRIM(a.repre) AS repre,TRIM(a.tipo) AS tipo,
+			COALESCE(SUM((b.monto-b.abonos)*(b.vence<=CURDATE())),0) AS vsaldo,
+			0 AS csaldo,formap
+			FROM scli AS a
+			LEFT JOIN smov AS b ON a.cliente=b.cod_cli AND b.tipo_doc NOT IN ('AB','NC','AN') AND b.monto>b.abonos
+			WHERE a.vendedor=$dbvend
+			GROUP BY a.cliente
+			ORDER BY a.nombre LIMIT 1000";
+		$mSQL['tarjeta'] = "SELECT id, TRIM(tipo) AS tipo,TRIM(nombre) AS nombre,tipo IN ('CH','DE') AS pideban FROM tarjeta";
+		$mSQL['tban']    = "SELECT a.id,TRIM(cod_banc) AS cod_banc,TRIM(nomb_banc) AS nom_banc FROM tban";
+
+		$sqlite['sinv']    = 'INSERT OR REPLACE INTO sinv_'.$matriz.'    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);';
+		$sqlite['scli']    = 'INSERT OR REPLACE INTO scli_'.$matriz.'    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?);';
+		$sqlite['tarjeta'] = 'INSERT OR REPLACE INTO tarjeta_'.$matriz.' VALUES (?,?,?,?);';
+		$sqlite['tban']    = 'INSERT OR REPLACE INTO tban_'.$matriz.'    VALUES (?,?,?,?);';
+
+		$sql  = $mSQL[$tabla];
+		$data = $itdata = array();
+
+		$query = $this->db->query($sql);
+
+		$itdata['sql'] = $sqlite[$tabla];
+		foreach ($query->result_array() as $row){
+			$itdata['data']    = array_map($escape,array_values($row));
+
+			$data[] = $itdata;
+		}
+
+		echo json_encode($data);
+	}
 //***********************
 // Metodos para exportar
 //***********************
@@ -167,100 +153,4 @@ class Dispmoviles extends Controller {
 		}
 	}
 
-	function gsqlite(){
-
-		$cclientes="CREATE TABLE scli (
-			id       INTEGER PRIMARY KEY,
-			cliente  VARCHAR(5) UNIQUE,
-			nombre   VARCHAR(45)   ,
-			direc    TEXT          ,
-			ciudad   VARCHAR(40)   ,
-			telefono VARCHAR(30)   ,
-			rifci    VARCHAR(13)   ,
-			email    VARCHAR(100)  ,
-			repre    VARCHAR(30)   ,
-			tipo     CHAR(1)       ,
-			vsaldo   DECIMAL(10,2)  ,
-			csaldo   DECIMAL(10,2)  ,
-			formap   INTEGER
-		);";
-
-		$csinv="CREATE TABLE sinv (
-			id       INTEGER PRIMARY KEY,
-			codigo   VARCHAR(15) UNIQUE,
-			descrip  VARCHAR(45)  ,
-			base1    DECIMAL(13,2) ,
-			base2    DECIMAL(13,2) ,
-			base3    DECIMAL(13,2) ,
-			base4    DECIMAL(13,2) ,
-			costo    DECIMAL(13,2) ,
-			iva      DECIMAL(6,2)  ,
-			bonifica INTEGER       ,
-			bonicant INTEGER       ,
-			fdesde   INTEGER       ,
-			fhasta   INTEGER
-		)";
-
-		$ctarjeta="CREATE TABLE tarjeta (
-			id      INTEGER PRIMARY KEY,
-			tipo    CHAR(2)  UNIQUE,
-			nombre  VARCHAR(20),
-			pideban INTEGER
-		)";
-
-		$ctban="CREATE TABLE tban (
-			id      INTEGER PRIMARY KEY,
-			cod_banc CHAR(3) UNIQUE,
-			nomb_banc VARCHAR(30)
-		)";
-
-		$config['hostname'] = 'localhost';
-		$config['username'] = 'myusername';
-		$config['password'] = 'mypassword';
-		$config['database'] = 'mobil';
-		$config['dbdriver'] = 'sqlite';
-		$config['dbprefix'] = '';
-		$config['pconnect'] = FALSE;
-		$config['db_debug'] = TRUE;
-		$config['cache_on'] = FALSE;
-		$config['cachedir'] = '';
-		$config['char_set'] = 'utf8';
-		$config['dbcollat'] = 'utf8_general_ci';
-		$dblite = $this->load->database($config,true);
-
-
-		$mSQL=array();
-		//$mSQL['sinv'] = "SELECT
-		//	codigo, descrip,
-		//	base1,base2,base3,base4,
-		//	ultimo AS costo, iva,1 AS bonifica,10 AS bonicant,
-		//	UNIX_TIMESTAMP(fdesde) AS fdesde ,UNIX_TIMESTAMP(fhasta) AS fhasta
-		//	FROM sinv
-		//	WHERE activo='S' AND tipo='Articulo' AND base1>0 AND base2>0 AND base3>0 AND base3>0 AND ultimo>0";
-		//$mSQL['tban']    = "SELECT cod_banc,nomb_banc FROM tban";
-		//$mSQL['tarjeta'] = "SELECT tipo,nombre,tipo IN ('CH','DE') AS pideban FROM tarjeta";
-		$mSQL['scli']="SELECT
-			cliente, TRIM(nombre) AS nombre,CONCAT_WS('-',TRIM(dire11),TRIM(dire12)) AS direc,
-			TRIM(ciudad) AS ciudad,TRIM(telefono) AS telefono,TRIM(rifci) AS rifci,TRIM(email) AS email,
-			TRIM(repre) AS repre,tipo, 0 AS vsaldo,0 AS csaldo,formap
-			FROM scli ORDER BY nombre";
-
-		echo '<pre>';
-		foreach($mSQL AS $table=>$sql){
-			echo  $table."\n";
-			$query = $this->db->query($sql);
-			foreach ($query->result_array() as $row){
-				$mLITE=$dblite->insert_string($table, $row);
-				//echo $mLITE;
-				$rt=$dblite->simple_query($mLITE);
-				if($rt==false){
-					echo $mLITE."\n";
-					exit();
-				}
-				//$dblite->simple_query('COMMIT');
-			}
-		}
-		echo '</pre>';
-
-	}
 }
