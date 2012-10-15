@@ -460,7 +460,6 @@ class Scst extends Controller {
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
 		$grid->addField('vence');
 		$grid->label('Vence');
 		$grid->params(array(

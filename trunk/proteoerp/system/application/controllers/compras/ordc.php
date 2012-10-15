@@ -23,7 +23,7 @@ class Ordc extends Controller {
 			$this->db->simple_query('ALTER TABLE ordc ADD UNIQUE INDEX numero (numero)');
 			$this->db->simple_query('ALTER TABLE ordc ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
 		};*/
-		$this->datasis->modintramenu( 900, 650, substr($this->url,0,-1) );
+		$this->datasis->modintramenu( 950, 650, substr($this->url,0,-1) );
 		redirect($this->url.'jqdatag');
 	}
 
@@ -135,7 +135,7 @@ class Ordc extends Controller {
 
 		$bodyscript .= '
 			$( "#fne" ).dialog({
-				autoOpen: false, height: 570, width: 860, modal: true,
+				autoOpen: false, height: 510, width: 840, modal: true,
 				buttons: {
 					"Guardar": function() {
 						var bValid = true;
@@ -286,7 +286,6 @@ class Ordc extends Controller {
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
 		$grid->addField('montonet');
 		$grid->label('Total');
 		$grid->params(array(
@@ -375,7 +374,6 @@ class Ordc extends Controller {
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:30, maxlength: 6 }',
 		));
-
 
 		$grid->addField('anticipo');
 		$grid->label('Anticipo');
@@ -622,8 +620,8 @@ class Ordc extends Controller {
 
 		$grid->setOndblClickRow("");
 
-		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
-		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
+		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 460, height:280, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
+		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 460, height:280, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
 		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
 
 		#show/hide navigations buttons
@@ -1200,7 +1198,7 @@ class Ordc extends Controller {
 		} elseif ( $id == 'insert'){
 			$this->genesal = false;
 			$rt = $this->dataedit();
-			$id = $this->claves["id"];
+			//$id = $this->claves["id"];
 			if ( strlen($rt) > 0 )
 				echo '{"status":"A","id":"'.$id.'" ,"mensaje":"'.$rt.'"}';
 		} elseif ( $id == 'process'){

@@ -5,12 +5,11 @@
 		parent::Controller(); 
 		$this->load->library("rapyd");
 		$this->datasis->modulo_id(308,1);
-	
- }
- 	 
-    function index(){
-    	redirect("inventario/seriales/filteredgrid");
-    }
+	}
+
+	function index(){
+	redirect("inventario/seriales/filteredgrid");
+	}
 
 	function filteredgrid(){
 		$this->rapyd->load("datafilter","datagrid");
@@ -52,7 +51,6 @@
 		$data['title']   = "<h1>Seriales</h1>";
 		$data["head"]    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);	
-
 	}
 
 	function dataedit($status='',$id='',$id2='')
@@ -90,9 +88,8 @@
 						}
 					}
 				});
-		}
-		';
-		
+		}';
+
 		$modbus=array(
 			'tabla'   =>'sprv',
 			'columnas'=>array(
@@ -173,67 +170,71 @@
 		
 		$edit->clave = new inputField("Clave", "clave");
 		$edit->clave->size =12;
-    $edit->clave->maxlength=8;
-    $edit->clave->rule ="trim|strtoupper";
-    $edit->clave->when = array("show");
-    
-    $edit->unidad =new inputField("Unidad","unidad");
-    $edit->unidad->size =12;
-    $edit->unidad->maxlength=8;
-    $edit->unidad->rule ="trim|strtoupper";
-    $edit->unidad->when = array("show");
-    
-    $edit->fechac = new DateField("Fecha de Compra", "fechac");
-    $edit->fechac->size = 12;
-		
-    $edit->compra =new inputField("Compra", "compra");
+		$edit->clave->maxlength=8;
+		$edit->clave->rule ="trim|strtoupper";
+		$edit->clave->when = array("show");
+
+		$edit->unidad =new inputField("Unidad","unidad");
+		$edit->unidad->size =12;
+		$edit->unidad->maxlength=8;
+		$edit->unidad->rule ="trim|strtoupper";
+		$edit->unidad->when = array("show");
+
+		$edit->fechac = new DateField("Fecha de Compra", "fechac");
+		$edit->fechac->size = 12;
+
+		$edit->compra =new inputField("Compra", "compra");
 		$edit->compra->size = 10;
 		$edit->compra->maxlength=8;
 		$edit->compra->rule ="trim|strtoupper";
-		
+
 		$edit->proveed = new inputField("Proveedor", "proveed");
 		$edit->proveed->size =8;
-    $edit->proveed->maxlength=5;
-    $edit->proveed->rule ="trim|strtoupper";
-    $edit->proveed->append($boton);
-    
-    $edit->fechav =  new DateField("Fecha de Venta","fechav");
-    $edit->fechav->size = 12;  
+		$edit->proveed->maxlength=5;
+		$edit->proveed->rule ="trim|strtoupper";
+		$edit->proveed->append($boton);
 
-    $edit->venta = new inputField("Venta","venta");
-    $edit->venta->size = 10;
-    $edit->venta->maxlength=8;
-    $edit->venta->rule ="trim|strtoupper";
-    
-    $edit->cliente =  new inputField("Cliente","cliente");
-    $edit->cliente->size =8;   
-    $edit->cliente->maxlength=5;
-    $edit->cliente->rule ="trim|strtoupper";
-    $edit->cliente->append($bsclid);
-    
+		$edit->fechav =  new DateField("Fecha de Venta","fechav");
+		$edit->fechav->size = 12;  
+
+		$edit->venta = new inputField("Venta","venta");
+		$edit->venta->size = 10;
+		$edit->venta->maxlength=8;
+		$edit->venta->rule ="trim|strtoupper";
+
+		$edit->cliente =  new inputField("Cliente","cliente");
+		$edit->cliente->size =8;   
+		$edit->cliente->maxlength=5;
+		$edit->cliente->rule ="trim|strtoupper";
+		$edit->cliente->append($bsclid);
+
 		$edit->buttons("modify", "save", "undo", "delete", "back");
 		$edit->build();
- 
+
 		$data['content'] = $edit->output;           
-    $data['title']   = "<h1>Seriales</h1>";        
-    $data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
-    $this->load->view('view_ventanas', $data);  
+		$data['title']   = "<h1>Seriales</h1>";        
+		$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
+		$this->load->view('view_ventanas', $data);  
 	}
+	
 	function _post_insert($do){
 		$codigo=$do->get('codigo');
 		$nombre=$do->get('serial');
 		logusu('seri',"SERIAL $codigo $nombre CREADO");
 	}
+	
 	function _post_update($do){
 		$codigo=$do->get('codigo');
 		$nombre=$do->get('serial');
 		logusu('seri',"SERIAL $codigo $nombre  MODIFICADO");
 	}
+	
 	function _post_delete($do){
 		$codigo=$do->get('codigo');
 		$nombre=$do->get('serial');
 		logusu('seri',"SERIAL $codigo $nombre  ELIMINADO ");
 	}
+	
 	function chexiste($codigo){
 		$codigo=$this->input->post('codigo');
 		$check=$this->datasis->dameval("SELECT COUNT(*) FROM seri WHERE codigo='$codigo'");
@@ -242,8 +243,8 @@
 			$this->validation->set_message('chexiste',"El codigo $codigo ya existe para el serial $serial");
 			return FALSE;
 		}else {
-  		return TRUE;
-		}	
+		return TRUE;
+		}
 	}
 }
 ?>

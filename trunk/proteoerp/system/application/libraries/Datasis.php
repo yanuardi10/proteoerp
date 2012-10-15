@@ -1134,21 +1134,13 @@ class Datasis {
 		hiddengrid: true,
 		width: '.$ancho.',
 		rowNum:'.$columnas['i'].',
-		caption: "'.$caption.'",'.
-		
-//		ondblClickRow: function(id, row, col, e){ 
-//			var ret = $("#listados").getRowData(id); 
-//			window.open("<?php echo base_url() ? >reportes/ver/"+ret.nombre, "_blank", "width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400)),screeny=((screen.availWidth/2)-300)");
-//			}
-	'
+		caption: "'.$caption.'",
 	});
 	'.$columnas['data'].'
 	for(var i=0;i<='.$nombre."dat".'.length;i++) jQuery("#'.$nombre.'").jqGrid(\'addRowData\',i+1,'.$nombre.'dat[i]);
 	';
-	
 		return $Salida;
 	}
-
 
 	function extjsfiltro($filtros, $tabla = ''){
 		if ( !empty($tabla)) $tabla = trim($tabla).".";
@@ -1242,8 +1234,6 @@ class Datasis {
 		return $meco;
 	}
 
-
-
 	function extjscampos($tabla){
 		$CI =& get_instance();
 		$query = $CI->db->query("DESCRIBE $tabla");
@@ -1257,7 +1247,6 @@ class Datasis {
 				} else {
 					$campos .= ",'".$row->Field."'";
 				}
-
 			}
 		}
 		return $campos;
@@ -1285,7 +1274,6 @@ class Datasis {
 				} else {
 					$campos .= ";".implode(':',$row);
 				}
-
 			}
 		}
 		return utf8_encode($campos);
