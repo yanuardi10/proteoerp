@@ -18,6 +18,10 @@ class Usuarios extends Controller {
 			$this->db->simple_query('ALTER TABLE usuario ADD UNIQUE INDEX codigo (codigo)');
 			$this->db->simple_query('ALTER TABLE usuario ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
 		};
+
+		if(!$this->datasis->iscampo('usuario','uuid')){
+			$this->db->simple_query("ALTER TABLE `usuario` ADD COLUMN `uuid` VARCHAR(100) NULL DEFAULT NULL COMMENT 'Dispositivo movil para pedidos' AFTER `activo`");
+		}
 		redirect($this->url.'jqdatag');
 	}
 
@@ -53,9 +57,9 @@ jQuery("#a1").click( function(){
 							return false;
 						}
 					}
-					
+
 				}
-/*				
+/*
 				callback: function(e,v,m,f){
 					if ( v == true ){
 						if ( f.us_clave1 == f.us_clave ){
@@ -121,7 +125,7 @@ jQuery("#a1").click( function(){
 		//$param['EastPanel']  = $EastPanel;
 		$param['SouthPanel'] = $SouthPanel;
 		$param['funciones'] = $funciones;
-		
+
 		$param['listados'] = $this->datasis->listados('USUARIO', 'JQ');
 		$param['otros']    = $this->datasis->otros('USUARIO', 'JQ');
 		$param['tema1']     = 'darkness';
@@ -271,6 +275,17 @@ jQuery("#a1").click( function(){
 			'formoptions'   => '{ label:"Fecha" }'
 		));
 
+		$grid->addField('uuid');
+		$grid->label('Movil');
+		$grid->params(array(
+			'search'        => 'false',
+			'editable'      => 'true',
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:false}'
+		));
+
 /*
 		$grid->addField('us_horae');
 		$grid->label('Hora Entr');
@@ -332,7 +347,7 @@ jQuery("#a1").click( function(){
 			afterShowForm: function(frm){
 					$("select").selectmenu({style:"popup"});
 				}
-			
+
 		');
 		$grid->setFormOptionsA('
 			closeAfterAdd:true,
@@ -488,10 +503,10 @@ class Usuarios extends Controller {
 		$data['content'] = $filter->output.$grid->output;
 		$data['title']   = heading('Usuarios');
 		$data['head']    = $this->rapyd->get_head();
-		$this->load->view('view_ventanas', $data); 
+		$this->load->view('view_ventanas', $data);
 	}
 
-	function dataedit(){ 
+	function dataedit(){
 		$this->rapyd->load('dataedit');
 		$this->rapyd->uri->keep_persistence();
 
@@ -543,14 +558,14 @@ class Usuarios extends Controller {
 		$data['content'] = $edit->output;
 		$data['title']   = heading('Usuarios');
 		$data['head']    = $this->rapyd->get_head();
-		$this->load->view('view_ventanas', $data); 
+		$this->load->view('view_ventanas', $data);
 	}
 
 	function accesos($usr){
 		$this->rapyd->load('datagrid2');
-		$mSQL="SELECT a.modulo,a.titulo, IFNULL(b.acceso,'N') AS acceso,a.panel,MID(a.modulo,1,1) AS pertenece 
-			FROM intramenu AS a 
-			LEFT JOIN intrasida AS b ON a.modulo=b.modulo AND b.usuario='$usr' 
+		$mSQL="SELECT a.modulo,a.titulo, IFNULL(b.acceso,'N') AS acceso,a.panel,MID(a.modulo,1,1) AS pertenece
+			FROM intramenu AS a
+			LEFT JOIN intrasida AS b ON a.modulo=b.modulo AND b.usuario='$usr'
 			WHERE MID(a.modulo,1,1)!=0 ORDER BY MID(a.modulo,1,1), a.panel,a.modulo";
 		$select=array('a.modulo','a.titulo', "IFNULL(b.acceso,'N') AS acceso",'a.panel',"MID(a.modulo,1,1) AS pertenece");
 
@@ -683,7 +698,7 @@ class Usuarios extends Controller {
 		</tr>
 		</tbody>
 	</table>
-	<input name="id" value="'.$id.'" id="id" type="hidden">	
+	<input name="id" value="'.$id.'" id="id" type="hidden">
 </form>
 ';
 		echo $salir;
