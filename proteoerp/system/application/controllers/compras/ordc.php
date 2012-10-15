@@ -18,11 +18,11 @@ class Ordc extends Controller {
 	}
 
 	function index(){
-		/*if ( !$this->datasis->iscampo('ordc','id') ) {
+		if ( !$this->datasis->iscampo('ordc','id') ) {
 			$this->db->simple_query('ALTER TABLE ordc DROP PRIMARY KEY');
 			$this->db->simple_query('ALTER TABLE ordc ADD UNIQUE INDEX numero (numero)');
 			$this->db->simple_query('ALTER TABLE ordc ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
-		};*/
+		};
 		$this->datasis->modintramenu( 950, 650, substr($this->url,0,-1) );
 		redirect($this->url.'jqdatag');
 	}
