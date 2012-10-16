@@ -572,7 +572,7 @@ class Snte extends Controller {
 			// Solo puede cambiar si empieza por _
 			$mFactura = $this->datasis->dameval("SELECT factura FROM snte WHERE id=$id");
 			$mnumero  = $this->datasis->dameval("SELECT numero  FROM snte WHERE id=$id");
-			if ( substr($mFactura,1) == "_" ){
+			if ( $mFactura[0] == "_" ){
 				$this->db->where("id", $id);
 				$this->db->update('snte', $data);
 				logusu('SNTE',"Nro de Factura Cambiado ".$mFactura." en la orden ".$numero." MODIFICADO");
