@@ -176,8 +176,9 @@ class Jqdatagrid
 	private $ondblClickRow = 'i';
 
 	private $onClick = '';
-
 	
+	private $BarOptions = '';
+
 	function __construct ()
 	{
 		$this->CI =& get_instance();
@@ -344,6 +345,11 @@ class Jqdatagrid
 	public function setAfterSubmit($element)
 	{
 		$this->afterSubmit = $element;
+	}
+
+	public function setBarOptions($element)
+	{
+		$this->BarOptions = $element;
 	}
 
 
@@ -788,12 +794,16 @@ class Jqdatagrid
 			$bar   = '';
 			$bar  .= "	
 	jQuery(\"#newapi{$this->_gridname}\").jqGrid('navGrid', '#pnewapi{$this->_gridname}', {
-		view:{$this->_buttons['view']},
-		edit:{$this->_buttons['edit']},
-		add:{$this->_buttons['add']},
-		del:{$this->_buttons['delete']},
-		search:{$this->_buttons['search']}
-	},\r\n";
+		view:   {$this->_buttons['view']},
+		edit:   {$this->_buttons['edit']},
+		add:    {$this->_buttons['add']},
+		del:    {$this->_buttons['delete']},
+		search: {$this->_buttons['search']},\n";
+
+			$bar  .= $this->BarOptions;
+
+			$bar  .= "	
+	}, \n";
 
 			if ( $this->FormOptionsE=='' ){
 				$bar  .= "	{closeAfterEdit:true, mtype: 'POST'},\r\n"; // edit options

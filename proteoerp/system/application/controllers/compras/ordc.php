@@ -135,7 +135,7 @@ class Ordc extends Controller {
 
 		$bodyscript .= '
 			$( "#fne" ).dialog({
-				autoOpen: false, height: 510, width: 840, modal: true,
+				autoOpen: false, height: 510, width: 860, modal: true,
 				buttons: {
 					"Guardar": function() {
 						var bValid = true;
@@ -1338,12 +1338,16 @@ class Ordc extends Controller {
 		$edit->nombre->size = 50;
 		$edit->nombre->maxlength=40;
 
+		$edit->status = new  autoupdateField( 'status','PE','PE');
+
+/*
 		$edit->status = new  dropdownField ('Estado', 'status');
 		$edit->status->option('','');
 		$edit->status->option('PE','Pendiente');
 		$edit->status->option('CE','Cerrado');
 		$edit->status->option('BA','BackOrde');
 		$edit->status->style='width:100px;';
+*/
 
 		$edit->arribo = new DateonlyField('Arribo', 'arribo','d/m/Y');
 		$edit->arribo->insertValue = date('Y-m-d');

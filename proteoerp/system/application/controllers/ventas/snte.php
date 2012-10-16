@@ -570,8 +570,8 @@ class Snte extends Controller {
 		} elseif($oper == 'edit') {
 			unset($data[$mcodp]);
 			// Solo puede cambiar si empieza por _
-			$mFACTURA = $this->dameval("SELECT factura FROM snte WHERE id=$id");
-			$mnumero  = $this->dameval("SELECT numero  FROM snte WHERE id=$id");
+			$mFACTURA = $this->datasis->dameval("SELECT factura FROM snte WHERE id=$id");
+			$mnumero  = $this->datasis->dameval("SELECT numero  FROM snte WHERE id=$id");
 			if ( substr($mFactura,1) == "_" ){
 				$this->db->where("id", $id);
 				$this->db->update('snte', $data);
