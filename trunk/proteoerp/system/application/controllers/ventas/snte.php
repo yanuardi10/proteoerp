@@ -570,12 +570,12 @@ class Snte extends Controller {
 		} elseif($oper == 'edit') {
 			unset($data[$mcodp]);
 			// Solo puede cambiar si empieza por _
-			$mFACTURA = $this->datasis->dameval("SELECT factura FROM snte WHERE id=$id");
+			$mFactura = $this->datasis->dameval("SELECT factura FROM snte WHERE id=$id");
 			$mnumero  = $this->datasis->dameval("SELECT numero  FROM snte WHERE id=$id");
 			if ( substr($mFactura,1) == "_" ){
 				$this->db->where("id", $id);
 				$this->db->update('snte', $data);
-				logusu('SNTE',"Nro de Factura Cambiado ".$mFACTURA." en la orden ".$numero." MODIFICADO");
+				logusu('SNTE',"Nro de Factura Cambiado ".$mFactura." en la orden ".$numero." MODIFICADO");
 				echo "Orden ".$numero." Cambiada";
 			} else 
 				echo "Orden No Cambiada";
