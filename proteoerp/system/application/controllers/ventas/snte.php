@@ -576,7 +576,7 @@ class Snte extends Controller {
 				$this->db->where("id", $id);
 				$this->db->update('snte', $data);
 				logusu('SNTE',"Nro de Factura Cambiado ".$mFactura." en la orden ".$numero." MODIFICADO");
-				echo "Orden ".$numero." Cambiada";
+				echo "Orden ".$mnumero." Cambiada";
 			} else 
 				echo "Orden No Cambiada";
 			
