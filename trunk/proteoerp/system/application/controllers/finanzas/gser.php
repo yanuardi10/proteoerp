@@ -1,10 +1,10 @@
 <?php include('common.php');
 class gser extends Controller {
 
-	var $mModulo='GSER';
-	var $titp='Gastos y Egresos';
-	var $tits='Gastos y Egresos';
-	var $url ='finanzas/gser/';
+	var $mModulo = 'GSER';
+	var $titp    = 'Gastos y Egresos';
+	var $tits    = 'Gastos y Egresos';
+	var $url     = 'finanzas/gser/';
 
 	function Gser(){
 		parent::Controller();

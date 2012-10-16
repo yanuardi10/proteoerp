@@ -45,8 +45,8 @@ class Scst extends Controller {
 
 		//Botones Panel Izq
 		$grid->wbotonadd(array("id"=>"imprimir",   "img"=>"images/pdf_logo.gif",  "alt" => 'Formato PDF', "label"=>"Reimprimir Documento"));
-		$grid->wbotonadd(array("id"=>"modifica",   "img"=>"images/editar.png",    "alt" => 'Agregar',     "label"=>"Modificar Compras"));
-		$grid->wbotonadd(array("id"=>"agregar",    "img"=>"images/agrega4.png",   "alt" => 'Agregar',     "label"=>"Agregar Compras"));
+		//$grid->wbotonadd(array("id"=>"modifica",   "img"=>"images/editar.png",    "alt" => 'Agregar',     "label"=>"Modificar Compras"));
+		//$grid->wbotonadd(array("id"=>"agregar",    "img"=>"images/agrega4.png",   "alt" => 'Agregar',     "label"=>"Agregar Compras"));
 		$grid->wbotonadd(array("id"=>"cprecios",   "img"=>"images/precio.png",    "alt" => 'Precios',     "label"=>"Cambiar Precios"));
 		$grid->wbotonadd(array("id"=>"actualizar", "img"=>"images/arrow_up.png",  "alt" => 'Actualizar',  "label"=>"Actualizar"));
 		$grid->wbotonadd(array("id"=>"reversar",   "img"=>"images/arrow_down.png","alt" => 'Reversar',    "label"=>"Reversar"));
@@ -97,6 +97,46 @@ class Scst extends Controller {
 				'.$this->datasis->jwinopen(site_url('formatos/ver/COMPRA').'/\'+id+"/id"').';
 			} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
 		});';
+
+		$bodyscript .= '
+		function scstadd() {
+			$.post("'.site_url('compras/scst/solo/create').'",
+			function(data){
+				$("#factuali").html("");
+				$("#fcompra").html(data);
+				$( "#fcompra" ).dialog( "open" );
+			})
+		};';
+
+
+		$bodyscript .= '
+		function scstadd() {
+			$.post("'.site_url('compras/scst/solo/create').'",
+			function(data){
+				$("#factuali").html("");
+				$("#fcompra").html(data);
+				$( "#fcompra" ).dialog( "open" );
+			})
+		};';
+
+		$bodyscript .= '
+		function scstedit() {
+			var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret    = $("#newapi'.$grid0.'").getRowData(id);
+				if ( ret.actuali >= ret.fecha ) {
+					$.prompt("<h1>Compra ya Actualizada</h1>Debe reversarla si desea hacer modificaciones");
+				} else {
+					mId = id;
+					$.post("'.site_url('compras/scst/solo/modify').'/"+id, function(data){
+						$("#factuali").html("");
+						$("#fcompra").html(data);
+						$( "#fcompra" ).dialog( "open" );
+					});
+				}
+			} else { $.prompt("<h1>Por favor Seleccione una compra</h1>");}
+		};';
+
 		
 		//Wraper de javascript
 		$bodyscript .= '
@@ -193,6 +233,19 @@ class Scst extends Controller {
 			});';
 
 		//Agregar Compra
+/*
+		$bodyscript .= '
+			$("#newapi'. $grid0.'").jqGrid("navGrid","#pnewapi'. $grid0.'", {
+			addfunc : function() {
+				$.post("'.site_url('compras/scst/solo/create').'",
+				function(data){
+					$("#factuali").html("");
+					$("#fcompra").html(data);
+					$( "#fcompra" ).dialog( "open" );
+				})
+			}});';
+
+
 		$bodyscript .= '
 			$( "#agregar" ).click(function() {
 				$.post("'.site_url('compras/scst/solo/create').'",
@@ -202,7 +255,7 @@ class Scst extends Controller {
 					$( "#fcompra" ).dialog( "open" );
 				})
 			});';
-
+*/
 		
 		//Modificar Compra
 		$bodyscript .= '
@@ -1031,17 +1084,29 @@ class Scst extends Controller {
 
 		$grid->setOndblClickRow("");
 
-		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 350, height:200, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		$grid->setFormOptionsE('
+				       closeAfterEdit:true,
+				       mtype: "POST",
+				       width: 350,
+				       height:200,
+				       closeOnEscape: true,
+				       top: 50,
+				       left:20,
+				       recreateForm:true,
+				       afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];}
+		');
 		$grid->setFormOptionsA('-');
 		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a];");
 
 		#show/hide navigations buttons
-		$grid->setAdd(false);
+		$grid->setAdd(true);
 		$grid->setEdit(true);
 		$grid->setDelete(true);
 		$grid->setSearch(true);
 		$grid->setRowNum(30);
 		$grid->setShrinkToFit('false');
+
+		$grid->setBarOptions("\t\taddfunc: scstadd,\n\t\teditfunc: scstedit");
 
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));

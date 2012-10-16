@@ -17,10 +17,11 @@ class Sprm extends Controller {
 
 	function index(){
 		if ( !$this->datasis->iscampo('sprm','id') ) {
-		$this->db->simple_query('ALTER TABLE sprm DROP PRIMARY KEY');
-		$this->db->simple_query('ALTER TABLE sprm ADD UNIQUE INDEX numpri (cod_prv, tipo_doc, numero)');
-		$this->db->simple_query('ALTER TABLE sprm ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
-	};
+			$this->db->simple_query('ALTER TABLE sprm DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE sprm ADD UNIQUE INDEX numpri (cod_prv, tipo_doc, numero)');
+			$this->db->simple_query('ALTER TABLE sprm ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
+		};
+		$this->datasis->modintramenu( 800, 600, substr($this->url,0,-1) );
 		redirect($this->url.'jqdatag');
 	}
 

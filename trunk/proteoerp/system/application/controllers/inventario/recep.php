@@ -1,5 +1,309 @@
 <?php
 class Recep extends Controller {
+	var $mModulo='RECEP';
+	var $titp='Modulo RECEP';
+	var $tits='Modulo RECEP';
+	var $url ='inventario/recep/';
+
+	function Recep(){
+		parent::Controller();
+		$this->load->library('rapyd');
+		$this->load->library('jqdatagrid');
+		//$this->datasis->modulo_nombre( $modulo, $ventana=0 );
+	}
+
+	function index(){
+		/*if ( !$this->datasis->iscampo('recep','id') ) {
+			$this->db->simple_query('ALTER TABLE recep DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE recep ADD UNIQUE INDEX numero (numero)');
+			$this->db->simple_query('ALTER TABLE recep ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
+		};*/
+		$this->datasis->modintramenu( 800, 600, substr($this->url,0,-1) );
+		redirect($this->url.'jqdatag');
+	}
+
+	//***************************
+	//Layout en la Ventana
+	//
+	//***************************
+	function jqdatag(){
+
+		$grid = $this->defgrid();
+		$param['grids'][] = $grid->deploy();
+
+		$bodyscript = '
+<script type="text/javascript">
+jQuery("#a1").click( function(){
+	var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
+	if (id)	{
+		var ret = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
+		window.open(\''.base_url().'formatos/ver/RECEP/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
+});
+</script>
+';
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		//Botones Panel Izq
+		$grid->wbotonadd(array("id"=>"edocta",   "img"=>"images/pdf_logo.gif",  "alt" => "Formato PDF", "label"=>"Estado de Cuenta"));
+		$WestPanel = $grid->deploywestp();
+
+		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor("TITULO1"));
+
+		$param['WestPanel']    = $WestPanel;
+		//$param['EastPanel']  = $EastPanel;
+		$param['SouthPanel'] = $SouthPanel;
+		$param['listados']   = $this->datasis->listados('RECEP', 'JQ');
+		$param['otros']       = $this->datasis->otros('RECEP', 'JQ');
+		$param['temas']       = array('proteo','darkness','anexos1');
+		$param['bodyscript'] = $bodyscript;
+		$param['tabs'] = false;
+		$param['encabeza'] = $this->titp;
+		$this->load->view('jqgrid/crud2',$param);
+	}
+
+	//***************************
+	//Definicion del Grid y la Forma
+	//***************************
+	function defgrid( $deployed = false ){
+		$i      = 1;
+		$editar = "false";
+
+		$grid  = new $this->jqdatagrid;
+
+		$grid->addField('recep');
+		$grid->label('Recep');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 8 }',
+		));
+
+
+		$grid->addField('fecha');
+		$grid->label('Fecha');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
+
+
+		$grid->addField('clipro');
+		$grid->label('Clipro');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 50,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 5 }',
+		));
+
+
+		$grid->addField('refe');
+		$grid->label('Refe');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 8 }',
+		));
+
+
+		$grid->addField('tipo');
+		$grid->label('Tipo');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 2 }',
+		));
+
+
+		$grid->addField('observa');
+		$grid->label('Observa');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 250,
+			'edittype'      => "'textarea'",
+			'editoptions'   => "'{rows:2, cols:60}'",
+		));
+
+
+		$grid->addField('status');
+		$grid->label('Status');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 2 }',
+		));
+
+
+		$grid->addField('user');
+		$grid->label('User');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 50 }',
+		));
+
+
+		$grid->addField('estampa');
+		$grid->label('Estampa');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
+
+
+		$grid->addField('origen');
+		$grid->label('Origen');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 20 }',
+		));
+
+
+		$grid->showpager(true);
+		$grid->setWidth('');
+		$grid->setHeight('290');
+		$grid->setTitle($this->titp);
+		$grid->setfilterToolbar(true);
+		$grid->setToolbar('false', '"top"');
+
+		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
+		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
+		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
+
+		#show/hide navigations buttons
+		$grid->setAdd(false);
+		$grid->setEdit(false);
+		$grid->setDelete(false);
+		$grid->setSearch(true);
+		$grid->setRowNum(30);
+		$grid->setShrinkToFit('false');
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		#GET url
+		$grid->setUrlget(site_url($this->url.'getdata/'));
+
+		if ($deployed) {
+			return $grid->deploy();
+		} else {
+			return $grid;
+		}
+	}
+
+	/**
+	* Busca la data en el Servidor por json
+	*/
+	function getdata()
+	{
+		$grid       = $this->jqdatagrid;
+
+		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
+		$mWHERE = $grid->geneTopWhere('recep');
+
+		$response   = $grid->getData('recep', array(array()), array(), false, $mWHERE );
+		$rs = $grid->jsonresult( $response);
+		echo $rs;
+	}
+
+	/**
+	* Guarda la Informacion
+	*/
+	function setData()
+	{
+		$this->load->library('jqdatagrid');
+		$oper   = $this->input->post('oper');
+		$id     = $this->input->post('id');
+		$data   = $_POST;
+		$mcodp  = "??????";
+		$check  = 0;
+
+		unset($data['oper']);
+		unset($data['id']);
+		if($oper == 'add'){
+			if(false == empty($data)){
+				$check = $this->datasis->dameval("SELECT count(*) FROM recep WHERE $mcodp=".$this->db->escape($data[$mcodp]));
+				if ( $check == 0 ){
+					$this->db->insert('recep', $data);
+					echo "Registro Agregado";
+
+					logusu('RECEP',"Registro ????? INCLUIDO");
+				} else
+					echo "Ya existe un registro con ese $mcodp";
+			} else
+				echo "Fallo Agregado!!!";
+
+		} elseif($oper == 'edit') {
+			$nuevo  = $data[$mcodp];
+			$anterior = $this->datasis->dameval("SELECT $mcodp FROM recep WHERE id=$id");
+			if ( $nuevo <> $anterior ){
+				//si no son iguales borra el que existe y cambia
+				$this->db->query("DELETE FROM recep WHERE $mcodp=?", array($mcodp));
+				$this->db->query("UPDATE recep SET $mcodp=? WHERE $mcodp=?", array( $nuevo, $anterior ));
+				$this->db->where("id", $id);
+				$this->db->update("recep", $data);
+				logusu('RECEP',"$mcodp Cambiado/Fusionado Nuevo:".$nuevo." Anterior: ".$anterior." MODIFICADO");
+				echo "Grupo Cambiado/Fusionado en clientes";
+			} else {
+				unset($data[$mcodp]);
+				$this->db->where("id", $id);
+				$this->db->update('recep', $data);
+				logusu('RECEP',"Grupo de Cliente  ".$nuevo." MODIFICADO");
+				echo "$mcodp Modificado";
+			}
+
+		} elseif($oper == 'del') {
+		$meco = $this->datasis->dameval("SELECT $mcodp FROM recep WHERE id=$id");
+			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM recep WHERE id='$id' ");
+			if ($check > 0){
+				echo " El registro no puede ser eliminado; tiene movimiento ";
+			} else {
+				$this->db->simple_query("DELETE FROM recep WHERE id=$id ");
+				logusu('RECEP',"Registro ????? ELIMINADO");
+				echo "Registro Eliminado";
+			}
+		};
+	}
+
+
+
+/*
+class Recep extends Controller {
 	var $titp   = 'Registro de Seriales';
 	var $tits   = 'Registro de Seriales';
 	var $url    = 'inventario/recep/';
@@ -79,6 +383,7 @@ class Recep extends Controller {
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
+*/
 
 	function dataedit(){
 		$alma=$this->secu->getalmacen();
@@ -445,9 +750,9 @@ class Recep extends Controller {
 		//}
 		//$do->set('clipro',$clipro);
 
-		/*INICIO VALIDA ORIGEN=SFAC Y ENTREGADO
-		se trae las cantidad disponibles a despachar por factura
-		*/
+		//INICIO VALIDA ORIGEN=SFAC Y ENTREGADO
+		//se trae las cantidad disponibles a despachar por factura
+		
 		$sface=array();
 		if($origen=='sfac' && $tipo=='E'){
 			$query="SELECT codigo,SUM(cant) cant FROM (
@@ -462,11 +767,11 @@ class Recep extends Controller {
 			GROUP BY codigo";
 			$sface=$this->datasis->consularray($query);
 		}
-		/*FIN VALIDA ORIGEN=SFAC Y ENTREGADO*/
+		//FIN VALIDA ORIGEN=SFAC Y ENTREGADO
 
-		/*INICIO VALIDA ORIGEN=SFAC Y DEVUELVE
-		se trae todos los item de la factura con las cantidades entregadas
-		*/
+		//INICIO VALIDA ORIGEN=SFAC Y DEVUELVE
+		//se trae todos los item de la factura con las cantidades entregadas
+		
 		$sfac=array();$sfacs=array();
 		if($origen=='sfac' && $tipo=='R'){
 			$query="
@@ -489,10 +794,10 @@ class Recep extends Controller {
 			WHERE c.refe=$refee AND c.origen='sfac' AND c.recep<>'$recep'";
 			$sfacs=$this->datasis->consularray($query);
 		}
-		/*FIN VALIDA ORIGEN=SFAC Y DEVUELVE*/
+		//FIN VALIDA ORIGEN=SFAC Y DEVUELVE
 
-		/*INICIO VALIDA ORIGEN=SCST Y DEVUELVE
-		se trae todos los Las cantidades recibidas*/
+		//INICIO VALIDA ORIGEN=SCST Y DEVUELVE
+		//se trae todos los Las cantidades recibidas
 		$scst=array();$scsts=array();
 		if($origen=='scst' && $tipo=='E'){
 			$query="
@@ -511,7 +816,7 @@ class Recep extends Controller {
 			WHERE c.refe=$refee AND c.origen='scst' AND c.recep<>'$recep'";
 			$scst=$this->datasis->consularray($query);
 		}
-		/*FIN VALIDA ORIGEN=Scst Y DEVUELVE*/
+		// FIN VALIDA ORIGEN=Scst Y DEVUELVE
 
 		$se=array();$sinv=0;
 		for($i=0;$i < $do->count_rel('seri');$i++){
@@ -748,4 +1053,5 @@ class Recep extends Controller {
 			$this->db->simple_query($query);
 		}
 	}
+
 }
