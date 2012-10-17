@@ -452,7 +452,7 @@ class pfac extends validaciones{
 		$edit->totalg->readonly = true;
 		$edit->totalg->size = 10;
 
-		$edit->usuario = new autoUpdateField('usuario', $this->session->userdata('usuario'), $this->session->userdata('usuario'));
+		$edit->usuario = new autoUpdateField('usuario', $this->secu->usuario(), $this->secu->usuario());
 
 		$control=$this->rapyd->uri->get_edited_id();
 
@@ -500,9 +500,11 @@ class pfac extends validaciones{
 			$edit->build();
 
 			if($edit->on_success()){
-				echo 'Pedido Guardado';
+				return true;
+				$this->msj='Pedido Guardado';
 			}elseif($edit->on_error()){
-				echo html_entity_decode(preg_replace('/<[^>]*>/', '', $edit->error_string));
+				return false;
+				$this->msj=html_entity_decode(preg_replace('/<[^>]*>/', '', $edit->error_string));
 			}
 		}
 	}
@@ -766,7 +768,7 @@ class pfac extends validaciones{
 
 		$dbnuma=$this->db->escape($codigo);
 		$mSQL  ="UPDATE itpfac AS c JOIN sinv   AS d ON d.codigo=c.codigoa
-			SET d.exord=IF(d.exord>c.cana,d.exord-c.cana,0)
+			SET d.exdes=IF(d.exdes>c.cana,d.exdes-c.cana,0)
 			WHERE c.numa = $dbnuma";
 
 		$ban=$this->db->simple_query($mSQL);
@@ -830,6 +832,7 @@ class pfac extends validaciones{
 		}
 
 		$codigo = $do->get('numero');
+		$this->insert_numero=$codigo;
 		logusu('pfac', "Pedido $codigo CREADO");
 	}
 
