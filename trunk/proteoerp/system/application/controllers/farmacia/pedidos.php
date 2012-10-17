@@ -391,6 +391,8 @@ class Pedidos extends Controller {
 		$data['head']    = $this->rapyd->get_head().script('jquery.js');
 		$data['title']   = heading($this->titp);
 		$this->load->view('view_ventanas', $data);
+	function especialxls(){
+	
 	}
 
 	function _farmaurl($opt='farmax'){

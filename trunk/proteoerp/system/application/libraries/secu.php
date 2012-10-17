@@ -26,6 +26,28 @@ class secu{
 		return $this->ci->session->userdata('usuario');
 	}
 
+	function login_uuid($uuid){
+		$sel=array('cajero','vendedor','almacen','sucursal','us_nombre');
+		$this->db->select($sel);
+		$this->db->from('usuario');
+		$this->db->where('uuid',$uuid);
+		$this->db->limit(1);
+		$query = $this->db->get();
+
+		if ($query->num_rows() > 0){
+			$row = $query->row_array();
+
+			$this->cajero  = $row['cajero']  ;
+			$this->vendedor= $row['vendedor'];
+			$this->almacen = $row['almacen'] ;
+			$this->sucursal= $row['sucursal'];
+			$this->nombre  = $row['us_nombre'];
+			$this->_datac=true;
+			return true;
+		}
+		return false;
+	}
+
 	function _getdata(){
 		if($this->es_logeado() && $this->_datac==false){
 			$sel=array('cajero','vendedor','almacen','sucursal','us_nombre');
