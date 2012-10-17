@@ -200,7 +200,7 @@ WHERE YEAR(a.fecha) = YEAR(curdate()) AND MID(b.tipo,1,1) <> "S" AND a.origen = 
 GROUP BY  year(a.fecha), month(a.fecha) 
 HAVING cantidad <> 0 
 UNION ALL 
-SELECT CONCAT(year(a.fecha), "-", LPAD(month(a.fecha),2,"0")), month(a.fecha)) AS mes, "SERV" grupo, "SERVICIOS" nom_grup, a.codigoa, "SERVICIOS VARIOS" descrip,  sum(a.cana) AS cantidad, 0 AS costo, sum(a.tota) AS venta, sum(a.tota) AS util, 100 AS margen 
+SELECT CONCAT(year(a.fecha), "-", LPAD(month(a.fecha),2,"0") AS mes, "SERV" grupo, "SERVICIOS" nom_grup, a.codigoa, "SERVICIOS VARIOS" descrip,  sum(a.cana) AS cantidad, 0 AS costo, sum(a.tota) AS venta, sum(a.tota) AS util, 100 AS margen 
 FROM sitems a LEFT JOIN sinv b ON a.codigoa = b.codigo LEFT JOIN grup c ON b.grupo=c.grupo 
 WHERE YEAR(a.fecha) = YEAR(curdate()) AND substr(b.tipo,1,1) = "S"
 GROUP BY year(a.fecha), month(a.fecha) 
