@@ -204,8 +204,8 @@ SELECT CONCAT(year(a.fecha), "-", LPAD(month(a.fecha),2,"0")) AS mes, "SERV" gru
 FROM sitems a LEFT JOIN sinv b ON a.codigoa = b.codigo LEFT JOIN grup c ON b.grupo=c.grupo 
 WHERE YEAR(a.fecha) = YEAR(curdate()) AND substr(b.tipo,1,1) = "S"
 GROUP BY year(a.fecha), month(a.fecha)
-ORDER BY mes
 HAVING cantidad <> 0 
+ORDER BY mes
 ';
 
 		$atts = array(
