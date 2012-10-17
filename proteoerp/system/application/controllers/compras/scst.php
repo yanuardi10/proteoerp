@@ -44,12 +44,10 @@ class Scst extends Controller {
 		$grid->setUrlput(site_url($this->url.'setdata/'));
 
 		//Botones Panel Izq
-		$grid->wbotonadd(array("id"=>"imprimir",   "img"=>"images/pdf_logo.gif",  "alt" => 'Formato PDF', "label"=>"Reimprimir Documento"));
-		//$grid->wbotonadd(array("id"=>"modifica",   "img"=>"images/editar.png",    "alt" => 'Agregar',     "label"=>"Modificar Compras"));
-		//$grid->wbotonadd(array("id"=>"agregar",    "img"=>"images/agrega4.png",   "alt" => 'Agregar',     "label"=>"Agregar Compras"));
-		$grid->wbotonadd(array("id"=>"cprecios",   "img"=>"images/precio.png",    "alt" => 'Precios',     "label"=>"Cambiar Precios"));
-		$grid->wbotonadd(array("id"=>"actualizar", "img"=>"images/arrow_up.png",  "alt" => 'Actualizar',  "label"=>"Actualizar"));
-		$grid->wbotonadd(array("id"=>"reversar",   "img"=>"images/arrow_down.png","alt" => 'Reversar',    "label"=>"Reversar"));
+		$grid->wbotonadd(array("id"=>"imprimir",   "img"=>"images/pdf_logo.gif", "alt" => 'Formato PDF',         "label"=>"Reimprimir Documento"));
+		$grid->wbotonadd(array("id"=>"cprecios",   "img"=>"images/precio.png",   "alt" => 'Precios',             "label"=>"Cambiar Precios"));
+		$grid->wbotonadd(array("id"=>"serie",      "img"=>"images/editar.png",   "alt" => 'Cambiar Numero',      "label"=>"Cambiar Numero "));
+		$grid->wbotonadd(array("id"=>"reversar",   "img"=>"images/arrow_up.png", "alt" => 'Actualizar/Reversar', "label"=>"Actualizar Reversar"));
 		$WestPanel = $grid->deploywestp();
 
 		//Panel Central y Sur
@@ -97,6 +95,55 @@ class Scst extends Controller {
 				'.$this->datasis->jwinopen(site_url('formatos/ver/COMPRA').'/\'+id+"/id"').';
 			} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
 		});';
+
+
+		$bodyscript .= '
+		jQuery("#serie").click( function(){
+			var gr = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if( gr != null )
+				jQuery("#newapi'.$grid0.'").jqGrid(\'editGridRow\',gr,
+				{
+				closeAfterEdit:true,
+				mtype: "POST",
+				height:200,
+				width: 350,
+				closeOnEscape: true,
+				top: 50,
+				left:20,
+				recreateForm:true,
+				afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},
+				reloadAfterSubmit:false
+				});
+			else
+				$.prompt("<h1>Por favor Seleccione un Movimiento</h1>");
+		});';
+		
+/*		
+
+				       recreateForm:true,
+				       afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];}
+
+
+		
+			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
+				jQuery("#newapi'. $grid0.'").jqGrid(\'editGridRow\',
+					ret,
+					{	height:200,
+						mtype: "POST",
+						width: 350,
+						height:200,
+						closeOnEscape: true,
+						top: 50,
+						left:20,
+						reloadAfterSubmit:false
+					});
+				
+			} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
+
+		});';
+*/
 
 		$bodyscript .= '
 		function scstadd() {
@@ -152,6 +199,7 @@ class Scst extends Controller {
 			s = grid.getGridParam(\'selarrrow\'); 
 		';
 
+/*
 		//Actualizar
 		$bodyscript .= '
 			$("#actualizar").click( function(){
@@ -171,7 +219,7 @@ class Scst extends Controller {
 					}
 				} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
 			});';
-
+*/
 
 		//Reversar
 		$bodyscript .= '
@@ -181,7 +229,12 @@ class Scst extends Controller {
 					var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
 					mid = id;
 					if ( ret.actuali < ret.fecha ){
-						$.prompt("<h1>Compra no Actualizada</h1>");
+						$.post("'.site_url('compras/scst/solo/actualizar').'/"+ret.control,
+						function(data){
+							$("#fcompra").html("");
+							$("#factuali").html(data);
+							$("#factuali").dialog( "open" );
+						})
 					} else {
 						$.prompt( "<h1>Reversar Compra Nro. "+ret.control+" ?</h1>", {
 							buttons: { Reversar: true, Cancelar: false },
@@ -255,7 +308,6 @@ class Scst extends Controller {
 					$( "#fcompra" ).dialog( "open" );
 				})
 			});';
-*/
 		
 		//Modificar Compra
 		$bodyscript .= '
@@ -275,7 +327,7 @@ class Scst extends Controller {
 					}
 				} else { $.prompt("<h1>Por favor Seleccione una compra</h1>");}
 			});';
-
+*/
 		
 		//Cambiar Precios
 		$bodyscript .= '
@@ -350,33 +402,11 @@ class Scst extends Controller {
 
 		$grid  = new $this->jqdatagrid;
 
-		$grid->addField('fecha');
-		$grid->label('Fecha');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 80,
-			'align'         => "'center'",
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true,date:true}',
-			'formoptions'   => '{ label:"Fecha" }'
-		));
-
-		$grid->addField('recep');
-		$grid->label('Recep');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 80,
-			'align'         => "'center'",
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true,date:true}',
-			'formoptions'   => '{ label:"Fecha" }'
-		));
 
 		$grid->addField('tipo_doc');
 		$grid->label('Tipo');
 		$grid->params(array(
+			'align'         => "'center'",
 			'search'        => 'true',
 			'editable'      => $editar,
 			'width'         => 40,
@@ -408,6 +438,41 @@ class Scst extends Controller {
 			'editoptions'   => '{ size:15, maxlength: 20 }',
 		));
 
+		$grid->addField('fecha');
+		$grid->label('Fecha');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
+
+		$grid->addField('recep');
+		$grid->label('Recep');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
+
+		$grid->addField('actuali');
+		$grid->label('Actualizada');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
 
 		$grid->addField('proveed');
 		$grid->label('Proveed');
@@ -638,21 +703,7 @@ class Scst extends Controller {
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
-*/
 
-		$grid->addField('actuali');
-		$grid->label('Actualizada');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 80,
-			'align'         => "'center'",
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true,date:true}',
-			'formoptions'   => '{ label:"Fecha" }'
-		));
-
-/*
 		$grid->addField('mdolar');
 		$grid->label('Mdolar');
 		$grid->params(array(
@@ -1077,7 +1128,7 @@ class Scst extends Controller {
 			afterInsertRow:
 			function( rid, aData, rowe){
 				if ( aData.fecha >  aData.actuali ){
-					$(this).jqGrid( "setRowData", rid, false,{color:"#000000", background:"#2DC403"});
+					$(this).jqGrid( "setCell", rid, "tipo_doc","", {color:"#000000", \'background-color\':"#2DC403" });
 				}
 			}
 		');
@@ -1096,6 +1147,7 @@ class Scst extends Controller {
 				       afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];}
 		');
 		$grid->setFormOptionsA('-');
+
 		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a];");
 
 		#show/hide navigations buttons

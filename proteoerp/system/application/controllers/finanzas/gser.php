@@ -108,7 +108,6 @@ class gser extends Controller {
 
 		$bodyscript .= "\n</script>\n";
 		return $bodyscript;
-
 	}
 
 	//***************************
