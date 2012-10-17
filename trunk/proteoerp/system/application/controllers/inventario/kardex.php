@@ -2,7 +2,7 @@
 class Kardex extends Controller {
 
 	function Kardex(){
-		parent::Controller(); 
+		parent::Controller();
 		$this->load->helper('text');
 		$this->load->library('rapyd');
 		//$this->rapyd->load_db();
@@ -146,52 +146,14 @@ class Kardex extends Controller {
 			$grid->column('Precio Prom.' ,'<nformat><#vpromedio#></nformat>' ,'align=\'right\'');
 			$grid->column('Margen %'     ,'<nformat><#vmargen#></nformat>'   ,'align=\'right\'');
 			$grid->column('Margen Bs.'   ,'<nformat><#vutil#></nformat>'     ,'align=\'right\'');
-			
-			$grid->build('datagridST');
+
+			$grid->build();
 			$data['content'] = $grid->output;
 			//echo $grid->db->last_query();
 		}
 		$data['forma'] ='';
 
-// *************************************
-//
-//       Para usar SuperTable
-//
-// *************************************
-		$extras = '
-<script type="text/javascript">
-//<![CDATA[
-(function() {
-	var mySt = new superTable("demoTable", {
-	cssSkin : "sSky",
-	fixedCols : 1,
-	headerRows : 1,
-	onStart : function () {	this.start = new Date();},
-	onFinish : function () {document.getElementById("testDiv").innerHTML += "Finished...<br>" + ((new Date()) - this.start) + "ms.<br>";}
-	});
-})();
-//]]>
-</script>
-';
-		$style ='
-<style type="text/css">
-.fakeContainer { /* The parent container */
-    margin: 5px;
-    padding: 0px;
-    border: none;
-    width: 740px; /* Required to set */
-    height: 320px; /* Required to set */
-    overflow: hidden; /* Required to set */
-}
-</style>';
-
 		$data['script']  = script('jquery.js');
-		$data['script'] .= script('superTables.js');
-
-		$data['style']   = $style;
-		$data['style']  .= style('superTables.css');
-
-		$data['extras']  = $extras;
 
 		$data['title'] = heading('Kardex de Inventario');
 		$data['head']  = $this->rapyd->get_head();
