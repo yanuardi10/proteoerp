@@ -5,7 +5,7 @@ class Analisisvision extends Controller {
 		parent::Controller();
 		$this->load->library("rapyd");
 		$this->rapyd->config->set_item("theme","repo");
-		$this->datasis->modulo_id('50E',1);
+		//$this->datasis->modulo_id('50E',1);
 	}
 	
 	function index(){
@@ -20,7 +20,6 @@ class Analisisvision extends Controller {
 	 	$data['encabeza']  = "Resumen de Gestion";
 	 	$data["head"]      = ""; //script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
 	 	$this->load->view('consulta', $data);
-
 	}
 	
 	function general(){
@@ -166,82 +165,6 @@ jQuery("#resumen").jqGrid({
 var mydata = [ '."\n$ladata];\n";
 			
 			$grid .= ' for(var i=0;i<=mydata.length;i++) jQuery("#resumen").jqGrid(\'addRowData\',i+1,mydata[i]);'."\n";
-
-/*			$mSQL = '
-SELECT fecha, caja, cajero, usuario, sum(recibido) recibido, sum(ingreso) ingreso, sum(diferen) diferen, sum(recaudado) recaudado, sum(ingreso-recaudado) difcierre
-FROM (
-SELECT EXTRACT(YEAR_MONTH FROM fecha) fecha, caja, cajero, usuario, sum(recibido) recibido, sum(ingreso) ingreso, sum(ingreso-recibido) diferen, 0 recaudado
-FROM rcaj
-WHERE year(fecha)>=year(curdate())
-GROUP BY  EXTRACT(YEAR_MONTH FROM fecha), caja, cajero
-UNION ALL
-SELECT EXTRACT(YEAR_MONTH FROM f_factura) fecha, "99" caja, cobrador, usuario, 0, 0, 0, sum(monto) recaudado
-FROM sfpa 
-WHERE YEAR(f_factura)>=YEAR(curdate()) 
-GROUP BY  EXTRACT(YEAR_MONTH FROM f_factura),  cobrador, usuario 
-) AAA 
-GROUP BY fecha, caja, cajero 
-';
-
-			$ladata     = '';
-			$trecibido  = 0;
-			$tingreso   = 0;
-			$tdiferen   = 0;
-			$tdifcierre = 0;
-			$trecaudado = 0;
-
-			$query = $this->db->query($mSQL);
-			if ($query->num_rows() > 0)
-			{
-				foreach ($query->result() as $row)
-				{
-					$ladata .= "{ fecha:'".   $row->fecha.     "', ";
-					$ladata .= "caja:'".      $row->caja.      "', ";
-					$ladata .= "cajero:'".    $row->cajero.    "', ";
-					$ladata .= "usuario:'".   $row->usuario.   "', ";
-					$ladata .= "recibido:'".  $row->recibido.  "', ";
-					$ladata .= "ingreso:'".   $row->ingreso.   "', ";
-					$ladata .= "diferen:'".   $row->diferen.   "', ";
-					$ladata .= "recaudado:'". $row->recaudado. "', ";
-					$ladata .= "difcierre:'". $row->difcierre. "'},\n";
-
-					$trecibido  += $row->recibido;
-					$tingreso   += $row->ingreso;
-					$tdiferen   += $row->diferen;
-					$tdifcierre += $row->difcierre;
-					$trecaudado += $row->recaudado;
-				}
-			} 			
-
-
-			$grid1 = '
-jQuery("#cierres").jqGrid({
-	datatype: "local",
-	height: "160",
-	colNames:["Fecha", "Caja", "Cajero", "Usuario","Recibido","Sistema", "Faltante","Recaudado","Dif.Rec."],
-	colModel:[
-		{name:"fecha",      index:"fecha",     width:50, align:"center", sorttype:"text" },
-		{name:"caja",       index:"caja",      width:40, align:"center", sorttype:"text" },
-		{name:"cajero",     index:"cajero",    width:50, align:"center", sorttype:"text" },
-		{name:"usuario",    index:"usuario",   width:60, align:"left", sorttype:"text" },
-		{name:"recibido",   index:"recibido",  width:80, align:"right",  sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }},
-		{name:"ingreso",    index:"gastos",    width:80, align:"right",  sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }},
-		{name:"diferen",    index:"diferen",   width:60, align:"right",  sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }},
-		{name:"recaudado",  index:"recaudado", width:60, align:"right",  sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }},
-		{name:"difcierre",  index:"difcierre", width:60, align:"right",  sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }}
-	],
-	multiselect: false,
-	footerrow: true,
-	loadComplete: function () {
-		$(this).jqGrid(\'footerData\',\'set\',
-		{fecha:\'TOTALES\', caja:"", cajero:"", usuario:"", recibido:"'.$trecibido.'", ingreso:"'.$tingreso.'", difer:"'.$tdiferen.'", ingreso:"'.$tingreso.'", diferen:"'.$tdiferen.'", recaudado:"'.$trecaudado.'", difcierre:"'.$tdifcierre.'"});
-	},
-	caption: "Resumen de Cierres de Caja"
-});
-var mydata1 = [ '."\n$ladata];\n";
-			
-			$grid1 .= ' for(var i=0;i<=mydata1.length;i++) jQuery("#cierres").jqGrid(\'addRowData\',i+1,mydata1[i]);'."\n";
-*/
 			$centerpanel = 	"
 <table width='99%' border='0'>
 	<tr>
@@ -263,16 +186,128 @@ $(function () {
 	}
 
 
+	function ganancia(){
+		$MANO = substr(date("Y"),0,4)+0;
+		$mmfecha = mktime( 0, 0, 0,1, 1, $MANO );
+		$qfecha = date( "Ymd", mktime( 0, 0, 0, date("m",$mmfecha), date("d",$mmfecha), date("Y",$mmfecha) ));
+		$qfechaf=date("Ymd");
+
+          
+		$mSQL = '
+SELECT CONCAT(year(a.fecha), month(a.fecha)) AS mes, b.grupo, c.nom_grup, a.codigo, b.descrip,  sum(a.cantidad) AS cantidad, round(sum((a.promedio * a.cantidad)),2) AS costo,sum(a.venta) AS venta,round(sum((`a`.`venta` - (`a`.`promedio` * `a`.`cantidad`))),2) AS `util`,round(((sum((`a`.`venta` - (`a`.`promedio` * `a`.`cantidad`))) * 100) / sum(`a`.`venta`)),2) AS `margen` 
+FROM costos a LEFT JOIN sinv b ON a.codigo = b.codigo LEFT JOIN grup c ON b.grupo=c.grupo
+WHERE YEAR(a.fecha) = YEAR(curdate()) AND MID(b.tipo,1,1) <> "S" AND a.origen = "3I" 
+GROUP BY  year(a.fecha), month(a.fecha) 
+HAVING cantidad <> 0 
+UNION ALL 
+SELECT CONCAT(year(a.fecha), month(a.fecha)) AS mes, "SERV" grupo, "SERVICIOS" nom_grup, a.codigoa, "SERVICIOS VARIOS" descrip,  sum(a.cana) AS cantidad, 0 AS costo, sum(a.tota) AS venta, sum(a.tota) AS util, 100 AS margen 
+FROM sitems a LEFT JOIN sinv b ON a.codigoa = b.codigo LEFT JOIN grup c ON b.grupo=c.grupo 
+WHERE YEAR(a.fecha) = YEAR(curdate()) AND substr(b.tipo,1,1) = "S"
+GROUP BY year(a.fecha), month(a.fecha) 
+HAVING cantidad <> 0
+';
+
+		$atts = array(
+			'width'     =>'800',
+			'height'    =>'600',
+			'scrollbars'=>'yes',
+			'status'    =>'yes',
+			'resizable' =>'yes',
+			'screenx'   =>'5',
+			'screeny'   =>'5');    
+
+			$ladata     = '';
+			$tcantidad  = 0;
+			$tcosto     = 0;
+			$tventa     = 0;
+			$tutil      = 0;
+			$margen     = 0;
+
+// mes, grupo, nom_grup, codigo, descrip, cantidad, costo, venta, util, margen
+
+			$query = $this->db->query($mSQL);
+			if ($query->num_rows() > 0)
+			{
+				foreach ($query->result() as $row)
+				{
+					$ladata .= "{ mes:'".    $row->mes.      "', ";
+					$ladata .= "nom_grup:'". $row->nom_grup. "', ";
+					$ladata .= "cantidad:'". $row->cantidad. "', ";
+					$ladata .= "costo:'".    $row->costo.    "', ";
+					$ladata .= "venta:'".    $row->venta.    "', ";
+					$ladata .= "util:'".     $row->util.     "', ";
+					$ladata .= "margen:'".   $row->margen.   "'},\n ";
+
+					$tcantidad  += $row->cantidad;
+					$tcosto     += $row->costo;
+					$tventa     += $row->venta;
+					$tutil      += $row->util;
+					$margen     += $row->margen;
+				}
+			}
+
+			$grid = '
+jQuery("#ganancia").jqGrid({
+	datatype: "local",
+	shrinkToFit: false,
+	autowidth: true,
+	height: "270",
+	colNames:["Mes", "Descripcion", "Cantidad", "Costo","Venta","Utilidad", "%"],
+	colModel:[
+		{name:"mes",      index:"mes",      width:50, align:"center",sorttype:"text" },
+		{name:"nom_grup", index:"nom_grup", width:150, align:"left", sorttype:"text" },
+		{name:"cantidad", index:"cantidad", width:80, align:"right", sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }},
+		{name:"costo",    index:"costo",    width:80, align:"right", sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }},
+		{name:"venta",    index:"venta",    width:50, align:"right", sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }},
+		{name:"util",     index:"util",     width:80, align:"right", sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }},
+		{name:"margen",   index:"margen",   width:50, align:"right", sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }}
+	],
+	multiselect: false,
+	footerrow: true,
+	loadComplete: function () {
+		$(this).jqGrid(\'footerData\',\'set\',
+		{mes:"", nom_grup:"TOTALES", costo:"'.$tcosto.'", venta:"'.$tventa.'", util:"'.$tutil.'", margen:"0" });
+	},
+	caption: "Resumen de Utilidad Bruta"
+});
+var mydatag = [ '."\n$ladata];\n";
+			
+			$grid .= ' for(var i=0;i<=mydatag.length;i++) jQuery("#ganancia").jqGrid(\'addRowData\',i+1,mydatag[i]);'."\n";
+
+			$centerpanel = 	"
+<table width='99%' border='0'>
+	<tr>
+		<td valign='top'>
+			<table id=\"ganancia\"></table>
+		</td>
+	</tr>
+</table>
+<script type=\"text/javascript\">
+$(function () {
+	tableToGrid(\"#ganancia\", { height: \"auto\",width:500, pager:\"#mypagerg\", caption:\"Resumen de Ganancias\"});
+});
+</script>
+";
+
+
+		echo  "<script type=\"text/javascript\">".$grid."</script>".$centerpanel;
+		
+	}
+
+
+
+
 	function meco() {
 		$mSQL = '
-SELECT b.grupo, c.nom_grup, a.codigo, b.descrip,  year(a.fecha) AS anno, month(a.fecha) AS mes,sum(a.cantidad) AS cantidad, round(sum((a.promedio * a.cantidad)),2) AS costo,sum(a.venta) AS venta,round(sum((`a`.`venta` - (`a`.`promedio` * `a`.`cantidad`))),2) AS `util`,round(((sum((`a`.`venta` - (`a`.`promedio` * `a`.`cantidad`))) * 100) / sum(`a`.`venta`)),2) AS `margen` 
+SELECT year(a.fecha) AS anno, month(a.fecha) AS mes, b.grupo, c.nom_grup, a.codigo, b.descrip,  sum(a.cantidad) AS cantidad, round(sum((a.promedio * a.cantidad)),2) AS costo,sum(a.venta) AS venta,round(sum((`a`.`venta` - (`a`.`promedio` * `a`.`cantidad`))),2) AS `util`,round(((sum((`a`.`venta` - (`a`.`promedio` * `a`.`cantidad`))) * 100) / sum(`a`.`venta`)),2) AS `margen` 
 FROM costos a LEFT JOIN sinv b ON a.codigo = b.codigo LEFT JOIN grup c ON b.grupo=c.grupo
-WHERE a.fecha >= 20120801 and a.fecha < 20120901 and a.origen = "3I" 
-GROUP BY year(a.fecha), month(a.fecha) HAVING cantidad <> 0 
+WHERE YEAR(a.fecha) = YEAR(curdate()) AND MID(b.tipo,1,1) <> "S" AND a.origen = "3I" 
+GROUP BY  year(a.fecha), month(a.fecha) 
+HAVING cantidad <> 0 
 UNION ALL 
-SELECT "SERV" grupo, "SERVICIOS" nom_grup, a.codigoa, b.descrip, year(a.fecha) AS anno, month(a.fecha) AS mes, sum(a.cana) AS cantidad, 0 AS costo, sum(a.tota) AS venta, sum(a.tota) AS util, 100 AS margen 
+SELECT year(a.fecha) AS anno, month(a.fecha) AS mes, "SERV" grupo, "SERVICIOS" nom_grup, a.codigoa, "SERVICIOS VARIOS" descrip,  sum(a.cana) AS cantidad, 0 AS costo, sum(a.tota) AS venta, sum(a.tota) AS util, 100 AS margen 
 FROM sitems a LEFT JOIN sinv b ON a.codigoa = b.codigo LEFT JOIN grup c ON b.grupo=c.grupo 
-WHERE a.fecha >= 20120801 and a.fecha < 20120901 and substr(b.tipo,1,1) = "S"
+WHERE YEAR(a.fecha) = YEAR(curdate()) AND a.fecha < 20120901 AND substr(b.tipo,1,1) = "S"
 GROUP BY year(a.fecha), month(a.fecha) 
 HAVING cantidad <> 0
 		';
@@ -402,10 +437,10 @@ $(function () {
     <records>1</records>
     <row><cell>1</cell><cell>Analisis General</cell><cell></cell><cell>0</cell><cell>1</cell><cell>10</cell><cell>false</cell><cell>false</cell></row>
 
-    <row><cell>2</cell><cell>Resumen de gestion</cell><cell>general</cell><cell>1</cell><cell>2</cell><cell>3</cell><cell>true</cell><cell>true</cell></row>
-    <row><cell>3</cell><cell>Ingresos por Caja </cell><cell>cierres</cell><cell>1</cell><cell>4</cell><cell>5</cell><cell>true</cell><cell>true</cell></row>
-    <row><cell>4</cell><cell>Analisis de Gastos</cell><cell>gastos </cell><cell>1</cell><cell>6</cell><cell>7</cell><cell>true</cell><cell>true</cell></row>
-    <row><cell>5</cell><cell>Analisis Diario   </cell><cell>mensual</cell><cell>1</cell><cell>8</cell><cell>9</cell><cell>true</cell><cell>true</cell></row>
+    <row><cell>2</cell><cell>Resumen de gestion</cell><cell>general </cell><cell>1</cell><cell>2</cell><cell>3</cell><cell>true</cell><cell>true</cell></row>
+    <row><cell>3</cell><cell>Ingresos por Caja </cell><cell>cierres </cell><cell>1</cell><cell>4</cell><cell>5</cell><cell>true</cell><cell>true</cell></row>
+    <row><cell>4</cell><cell>Ganancias         </cell><cell>ganancia</cell><cell>1</cell><cell>6</cell><cell>7</cell><cell>true</cell><cell>true</cell></row>
+    <row><cell>5</cell><cell>Analisis Diario   </cell><cell>mensual </cell><cell>1</cell><cell>8</cell><cell>9</cell><cell>true</cell><cell>true</cell></row>
 
     <row><cell>6</cell><cell>Venta Diaria</cell><cell></cell><cell>0</cell><cell>11</cell><cell>18</cell><cell>false</cell><cell>false</cell></row>
 
