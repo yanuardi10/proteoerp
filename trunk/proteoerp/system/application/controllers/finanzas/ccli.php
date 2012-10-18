@@ -661,7 +661,8 @@ class ccli extends Controller {
 				$dbfecha    = $this->db->escape($fecha   );
 				$dbmonto    = $monto+$ppago;
 
-				$mSQL="UPDATE smov SET abonos=abonos+$dbmonto WHERE tipo_doc=$dbtipo_doc AND fecha=$dbfecha AND numero=$dbnumero AND cod_cli=$dbcliente";
+				$mSQL="UPDATE smov SET abonos=abonos+$dbmonto WHERE tipo_doc=$dbtipo_doc AND numero=$dbnumero AND cod_cli=$dbcliente LIMIT 1";
+
 				$ban=$this->db->simple_query($mSQL);
 				if($ban==false){ memowrite($mSQL,'ccli'); }
 
@@ -721,7 +722,6 @@ class ccli extends Controller {
 				if($ban==false) memowrite($mSQL,'ccli');
 			}
 		}
-
 	}
 
 	function _pre_update($do){
