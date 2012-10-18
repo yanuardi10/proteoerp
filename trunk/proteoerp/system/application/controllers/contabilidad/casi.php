@@ -60,7 +60,7 @@ class Casi extends Controller {
 		center__onresize: function (pane, $Pane) {
 			jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'setGridWidth\',$Pane.innerWidth()-6);
 			jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'setGridHeight\',$Pane.innerHeight()-110);
-			
+
 			jQuery("#newapi'.$param['grids'][1]['gridname'].'").jqGrid(\'setGridWidth\',$Pane.innerWidth()-6);
 			jQuery("#newapi'.$param['grids'][1]['gridname'].'").jqGrid(\'setGridHeight\',$("div#adicional").innerHeight()-60);
 		}
@@ -156,7 +156,7 @@ jQuery("#boton4").click( function(){
 		$param['SouthPanel']   = $SouthPanel;
 		$param['listados']     = $this->datasis->listados('CASI', 'JQ');
 		$param['otros']        = $this->datasis->otros('CASI', 'JQ');
-		
+
 		$param['centerpanel']  = $centerpanel;
 		//$param['funciones']    = $funciones;
 
@@ -1095,7 +1095,9 @@ class casi extends Controller {
 		$arr[].= anchor('contabilidad/casi/auditline'  ,'Auditoria en L&iacute;neas de inventario' ,'title="Registros con cuentas contables inv&aacute;lidas"');
 		$arr[].= anchor('contabilidad/casi/auditconc'  ,'Auditoria en Conceptos de nomina' ,'title="Registros con cuentas contables inv&aacute;lidas"');
 		$arr[].= anchor('contabilidad/casi/auditrete'  ,'Auditoria en Retenciones'      ,'title="Registros con cuentas contables inv&aacute;lidas"');
-		$arr[].= anchor('contabilidad/casi/transac'    ,'Localizador de Transacciones'  ,'title="Busca una transacci&oacute;n en la base de datos"');
+		$arr[].= anchor('contabilidad/casi/localizador/transac' ,'Localizador de Transacciones' ,'title="Busca una transacci&oacute;n en la base de datos"');
+		$arr[].= anchor('contabilidad/casi/localizador/cuenta'  ,'Localizador de Cuentas'       ,'title="Busca una cuenta en la base de datos"');
+
 
 		$data['content'] = '<p>M&oacute;dulo para ayudar a encontrar y solucionar problemas de inconsistencias en los registros que producen asientos descuadrados.</p>';
 		$data['content'].= ul($arr);
@@ -1800,12 +1802,22 @@ class casi extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
-	function transac($transac=''){
+	function localizador($tipo){
+		if($tipo=='cuenta'){
+			$cc = 'cuenta';
+			$tit= 'N&uacute;mero de cuenta';
+			$rul= '';
+		}else{
+			$cc = 'transac';
+			$tit= 'N&uacute;mero de transacci&oacute;n';
+			$rul= '|callback_chvalidt';
+		}
+
 		$this->rapyd->load('datagrid','dataform');
 
-		$filter = new dataForm('contabilidad/casi/transac/procesar');
-		$filter->valor = new inputField('N&uacute;mero de transacci&oacute;n', 'valor');
-		$filter->valor->rule = 'required|callback_chvalidt';
+		$filter = new dataForm('contabilidad/casi/localizador/'.$tipo.'/procesar');
+		$filter->valor = new inputField($tit, 'valor');
+		$filter->valor->rule = 'required'.$rul;
 		$filter->valor->autocomplete=false;
 		$filter->valor->maxlength=8;
 		$filter->valor->size=10;
@@ -1826,8 +1838,8 @@ class casi extends Controller {
 				if (preg_match("/^view_.*$|^sp_.*$|^viemovinxventas$/i",$table)) continue;
 
 				$fields = $this->db->list_fields($table);
-				if (in_array('transac', $fields)){
-					$mSQL="SELECT COUNT(*) AS cana FROM `$table` WHERE `transac` = $valor";
+				if (in_array($cc, $fields)){
+					$mSQL="SELECT COUNT(*) AS cana FROM `$table` WHERE $cc = $valor";
 
 					$cana=$this->datasis->dameval($mSQL);
 					if($cana>0){
@@ -1835,18 +1847,15 @@ class casi extends Controller {
 						$grid = new DataGrid("$table: $cana");
 						//$grid->per_page = $cana;
 						$grid->db->from($table);
-						$grid->db->where("transac = $valor");
+						$grid->db->where("$cc = $valor");
 						foreach($fields as $ff){
 							$grid->column($ff , $ff);
 						}
 						$grid->build();
 						$sal.=$grid->output;
-
-						//$this->table->add_row($table,'transac',$cana);
 					}
 				}
 			}
-			//$sal = $this->table->generate();
 		}
 		$data['content'] = $filter->output.$sal;
 		$data['title']   = heading('Localizador de Transacciones');
@@ -2017,7 +2026,7 @@ class casi extends Controller {
 		$arr = $this->datasis->codificautf8($query->result_array());
 		echo '{success:true, message:"Loaded data" ,results:'. $results.', data:'.json_encode($arr).'}';
 	}
- 
+
 	function griditcasi(){
 		$comprob   = isset($_REQUEST['comprob'])  ? $_REQUEST['comprob']   :  '';
 		if ($comprob == '' ) $comprob = $this->datasis->dameval("SELECT MAX(comprob) FROM casi") ;
