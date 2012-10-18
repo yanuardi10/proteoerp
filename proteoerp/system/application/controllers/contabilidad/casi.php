@@ -1807,10 +1807,12 @@ class casi extends Controller {
 			$cc = 'cuenta';
 			$tit= 'N&uacute;mero de cuenta';
 			$rul= '';
+			$maxlen='20';
 		}else{
 			$cc = 'transac';
 			$tit= 'N&uacute;mero de transacci&oacute;n';
 			$rul= '|callback_chvalidt';
+			$maxlen='8';
 		}
 
 		$this->rapyd->load('datagrid','dataform');
@@ -1819,7 +1821,7 @@ class casi extends Controller {
 		$filter->valor = new inputField($tit, 'valor');
 		$filter->valor->rule = 'required'.$rul;
 		$filter->valor->autocomplete=false;
-		$filter->valor->maxlength=8;
+		$filter->valor->maxlength=$maxlen;
 		$filter->valor->size=10;
 
 		$action = "javascript:window.location='".site_url('contabilidad/casi/auditoria')."'";
