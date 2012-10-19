@@ -118,33 +118,7 @@ class Scst extends Controller {
 				$.prompt("<h1>Por favor Seleccione un Movimiento</h1>");
 		});';
 		
-/*		
-
-				       recreateForm:true,
-				       afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];}
-
-
-		
-			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
-			if (id)	{
-				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
-				jQuery("#newapi'. $grid0.'").jqGrid(\'editGridRow\',
-					ret,
-					{	height:200,
-						mtype: "POST",
-						width: 350,
-						height:200,
-						closeOnEscape: true,
-						top: 50,
-						left:20,
-						reloadAfterSubmit:false
-					});
-				
-			} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
-
-		});';
-*/
-
+/*
 		$bodyscript .= '
 		function scstadd() {
 			$.post("'.site_url('compras/scst/solo/create').'",
@@ -154,7 +128,7 @@ class Scst extends Controller {
 				$( "#fcompra" ).dialog( "open" );
 			})
 		};';
-
+*/
 
 		$bodyscript .= '
 		function scstadd() {
@@ -178,7 +152,7 @@ class Scst extends Controller {
 					$.post("'.site_url('compras/scst/solo/modify').'/"+id, function(data){
 						$("#factuali").html("");
 						$("#fcompra").html(data);
-						$( "#fcompra" ).dialog( "open" );
+						$("#fcompra" ).dialog( "open" );
 					});
 				}
 			} else { $.prompt("<h1>Por favor Seleccione una compra</h1>");}
@@ -198,28 +172,6 @@ class Scst extends Controller {
 			var tips = $( ".validateTips" );
 			s = grid.getGridParam(\'selarrrow\'); 
 		';
-
-/*
-		//Actualizar
-		$bodyscript .= '
-			$("#actualizar").click( function(){
-				var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
-				if (id)	{
-					var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
-					mid = id;
-					if ( ret.actuali >= ret.fecha ){
-						$.prompt("<h1>Compra ya Actualizada</h1>");
-					} else {
-						$.post("'.site_url('compras/scst/solo/actualizar').'/"+ret.control,
-						function(data){
-							$("#fcompra").html("");
-							$("#factuali").html(data);
-							$( "#factuali" ).dialog( "open" );
-						})
-					}
-				} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
-			});';
-*/
 
 		//Reversar
 		$bodyscript .= '
@@ -285,50 +237,6 @@ class Scst extends Controller {
 				close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
 			});';
 
-		//Agregar Compra
-/*
-		$bodyscript .= '
-			$("#newapi'. $grid0.'").jqGrid("navGrid","#pnewapi'. $grid0.'", {
-			addfunc : function() {
-				$.post("'.site_url('compras/scst/solo/create').'",
-				function(data){
-					$("#factuali").html("");
-					$("#fcompra").html(data);
-					$( "#fcompra" ).dialog( "open" );
-				})
-			}});';
-
-
-		$bodyscript .= '
-			$( "#agregar" ).click(function() {
-				$.post("'.site_url('compras/scst/solo/create').'",
-				function(data){
-					$("#factuali").html("");
-					$("#fcompra").html(data);
-					$( "#fcompra" ).dialog( "open" );
-				})
-			});';
-		
-		//Modificar Compra
-		$bodyscript .= '
-			$( "#modifica" ).click(function() {
-				var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
-				if (id)	{
-					var ret    = $("#newapi'.$grid0.'").getRowData(id);
-					if ( ret.actuali >= ret.fecha ) {
-						$.prompt("<h1>Compra ya Actualizada</h1>Debe reversarla si desea hacer modificaciones");
-					} else {
-						mId = id;
-						$.post("'.site_url('compras/scst/solo/modify').'/"+id, function(data){
-							$("#factuali").html("");
-							$("#fcompra").html(data);
-							$( "#fcompra" ).dialog( "open" );
-						});
-					}
-				} else { $.prompt("<h1>Por favor Seleccione una compra</h1>");}
-			});';
-*/
-		
 		//Cambiar Precios
 		$bodyscript .= '
 			$( "#cprecios" ).click(function() {
@@ -1146,6 +1054,7 @@ class Scst extends Controller {
 				       recreateForm:true,
 				       afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];}
 		');
+		
 		$grid->setFormOptionsA('-');
 
 		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a];");

@@ -14,6 +14,7 @@ class Sfac extends Controller {
 	}
 
 	function index(){
+
 		$this->datasis->modintramenu( 1000, 650, 'ventas/sfac' );
 		redirect($this->url.'jqdatag');
 	}
@@ -202,7 +203,6 @@ class Sfac extends Controller {
 			'editoptions'   => '{ size:30, maxlength: 5 }',
 		));
 
-
 		$grid->addField('cod_cli');
 		$grid->label('Codigo');
 		$grid->params(array(
@@ -355,6 +355,19 @@ class Sfac extends Controller {
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:30, maxlength: 1 }',
 		));
+
+		$grid->addField('entregado');
+		$grid->label('Entregado');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => 'true',
+			'width'         => 75,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha de Entrega" }'
+		));
+
 
 /*
 		$grid->addField('observa');
@@ -3047,6 +3060,11 @@ function sfacreiva(mid){
 		if(!$this->datasis->iscampo('sfac','ereiva')){
 			$mSQL="ALTER TABLE sfac ADD ereiva DATE AFTER freiva";
 			$this->db->simple_query($mSQL);
+		}
+		if(!$this->datasis->iscampo('sfac','recibido')){
+			$mSQL="ALTER TABLE sfac ADD entregado DATE ";
+			$this->db->simple_query($mSQL);
+			$this->db->simple_query("UPDATE sfac SET entregado=fecha");
 		}
 	}
 

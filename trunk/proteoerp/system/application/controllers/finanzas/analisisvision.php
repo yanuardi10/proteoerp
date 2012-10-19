@@ -194,7 +194,7 @@ $(function () {
 
           
 		$mSQL = '
-SELECT CONCAT(year(a.fecha), "-", LPAD(month(a.fecha),2,"0")) AS mes, b.grupo, "Venta de Productos" nom_grup, a.codigo, b.descrip,  sum(a.cantidad) AS cantidad, round(sum((a.promedio * a.cantidad)),2) AS costo,sum(a.venta) AS venta,round(sum((`a`.`venta` - (`a`.`promedio` * `a`.`cantidad`))),2) AS `util`,round(((sum((`a`.`venta` - (`a`.`promedio` * `a`.`cantidad`))) * 100) / sum(`a`.`venta`)),2) AS `margen` 
+SELECT CONCAT(year(a.fecha), "-", LPAD(month(a.fecha),2,"0")) AS mes, b.grupo, "VENTA DE PRODUCTOS" nom_grup, a.codigo, b.descrip,  sum(a.cantidad) AS cantidad, round(sum((a.promedio * a.cantidad)),2) AS costo,sum(a.venta) AS venta,round(sum((`a`.`venta` - (`a`.`promedio` * `a`.`cantidad`))),2) AS `util`,round(((sum((`a`.`venta` - (`a`.`promedio` * `a`.`cantidad`))) * 100) / sum(`a`.`venta`)),2) AS `margen` 
 FROM costos a LEFT JOIN sinv b ON a.codigo = b.codigo LEFT JOIN grup c ON b.grupo=c.grupo
 WHERE YEAR(a.fecha) = YEAR(curdate()) AND MID(b.tipo,1,1) <> "S" AND a.origen = "3I" 
 GROUP BY  year(a.fecha), month(a.fecha) 
@@ -257,10 +257,10 @@ jQuery("#ganancia").jqGrid({
 	colModel:[
 		{name:"mes",      index:"mes",      width:50, align:"center",sorttype:"text" },
 		{name:"nom_grup", index:"nom_grup", width:150, align:"left", sorttype:"text" },
-		{name:"cantidad", index:"cantidad", width:80, align:"right", sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }},
-		{name:"costo",    index:"costo",    width:80, align:"right", sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }},
-		{name:"venta",    index:"venta",    width:50, align:"right", sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }},
-		{name:"util",     index:"util",     width:80, align:"right", sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }},
+		{name:"cantidad", index:"cantidad", width:100, align:"right", sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }},
+		{name:"costo",    index:"costo",    width:100, align:"right", sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }},
+		{name:"venta",    index:"venta",    width:100, align:"right", sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }},
+		{name:"util",     index:"util",     width:100, align:"right", sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }},
 		{name:"margen",   index:"margen",   width:50, align:"right", sorttype:"float", formatter:"number", formatoptions: {decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }}
 	],
 	multiselect: false,
