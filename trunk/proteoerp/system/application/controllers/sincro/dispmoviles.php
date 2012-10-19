@@ -60,8 +60,7 @@ class Dispmoviles extends Controller {
 			UNIX_TIMESTAMP(fdesde) AS fdesde ,UNIX_TIMESTAMP(fhasta) AS fhasta,
 			existen,TRIM(clave) AS clave,tdecimal
 			FROM sinv
-			WHERE activo='S' AND tipo='Articulo' AND base1>0 AND base2>0 AND base3>0 AND base3>0 AND ultimo>0
-			LIMIT 10";
+			WHERE activo='S' AND tipo='Articulo' AND base1>0 AND base2>0 AND base3>0 AND base3>0 AND ultimo>0";
 		$mSQL['scli'] = "SELECT a.id,
 			TRIM(a.cliente) AS cliente, TRIM(a.nombre) AS nombre,CONCAT_WS('-',TRIM(a.dire11),TRIM(a.dire12)) AS direc,
 			TRIM(a.ciudad) AS ciudad,TRIM(a.telefono) AS telefono,TRIM(a.rifci) AS rifci,TRIM(a.email) AS email,
