@@ -295,7 +295,7 @@ function importerete(nind){
 		else if(importe>pama1)
 			monto=((importe-pama1)*base1*tari1)/10000;
 		else
-			monto=0;
+			monto = 0;
 
 		$("#monto_"+ind).val(roundNumber(monto,2));
 		$("#monto_"+ind+'_val').text(nformat(monto,2));
@@ -396,24 +396,26 @@ function toggle() {
 <?php } ?>
 	
 <table align='center' width="99%">
+<?php if (!$solo){?>
 	<tr>
 		<td align='right'><?php echo $container_tr?></td>
 	</tr>
+<?php } ?>
 	<tr>
 		<td><div class="alert"> <?php if(isset($form->error_string)) echo $form->error_string; ?></div></td>
 	</tr>
 	<tr>
 		<td>
-		<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
-		<legend class="titulofieldset" style='color: #114411;'>Documento</legend>
+		<fieldset style='border: 1px outset #9AC8DA;background: #FFFDE9;'>
+		<!-- <legend class="titulofieldset" style='color: #114411;'>Documento</legend> -->
 		<table width="100%" style="margin: 0; width: 100%;">
 			<tr>
-				<td class="littletableheader"><?php echo $form->tipo_doc->label  ?>*&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->tipo_doc->output ?>&nbsp; </td>
-				<td class="littletableheader"><?php echo $form->proveed->label   ?>*&nbsp;</td>
+				<td width='90' class="littletableheader"><?php echo $form->tipo_doc->label  ?>*&nbsp;</td>
+				<td width='115' class="littletablerow">   <?php echo $form->tipo_doc->output ?>&nbsp; </td>
+				<td width='90' class="littletableheader"><?php echo $form->proveed->label   ?>*&nbsp;</td>
 				<td class="littletablerow">   <?php echo $form->proveed->output.$form->sprvtipo->output.$form->sprvreteiva->output  ?>&nbsp; </td>
-				<td class="littletableheader"><?php echo $form->ffactura->label  ?>*&nbsp;</td>
-				<td class="littletablerow">   <?php echo $form->ffactura->output ?>&nbsp; </td>
+				<td width='70'  class="littletableheader"><?php echo $form->ffactura->label  ?>*&nbsp;</td>
+				<td width='130' class="littletablerow">   <?php echo $form->ffactura->output ?>&nbsp; </td>
 			</tr>
 			<tr>
 				<td class="littletableheader"><?php echo $form->numero->label  ?>*</td>
@@ -437,12 +439,16 @@ function toggle() {
 	</tr>
 	<tr>
 		<td>
+<?php if( !$solo) {?>
 		<fieldset style='border: 2px outset #9AC8DA;background: #EFEFFF;'>
 		<legend class="titulofieldset" style='color: #114411;'>Detalle</legend>
+<?php } else { ?>
+		<div style='overflow:auto;border: 1px solid #9AC8DA;background: #FAFAFA;height:160px'>
+<?php } ?>
 		<table width='100%'>
 			<tr>
 				<td class="littletableheaderdet">C&oacute;digo</td>
-				<td class="littletableheaderdet">Descripci&oacute;n</td>
+				<td class="littletableheaderdet">Descripci&oacute;n del Gasto</td>
 				<td class="littletableheaderdet" align="right">Precio</td>
 				<td class="littletableheaderdet" align="right">Tasa</td>
 				<td class="littletableheaderdet" align="right">IVA</td>
@@ -495,31 +501,50 @@ function toggle() {
 				?>
 				</td>
 			</tr>
-				<?php } // caja chica ?>
+				<?php } // caja chica  ?>
 			<?php } // SHOW ?>
 			<?php } ?>
+			
 			<tr id='__UTPL__'>
-				<td colspan='9' class="littletableheaderdet">&nbsp;</td>
+				<td colspan='9' class="littletablerow">&nbsp;</td>
 			</tr>
 		</table>
+<?php if( !$solo) {?>
 		</fieldset>
-		<?php //echo $form_end     ?>
-		<?php //echo $container_bl ?>
-		<?php //echo $container_br ?>
+<?php } else { ?>
+		</div>
+<?php } ?>
+		<table width='100%' border='0' cellpadding='0' cellspacing='0'>
+			<tr style="background:#DFDFDF;font-size:12px;font-weight:bold">
 		<?php if( $form->_status != 'show') {?>
-			<input name="btn_add_gitser" value="Agregar Gasto" onclick="add_gitser()" class="button" type="button">
+			<td width="90"><input name="btn_add_gitser" value="Agregar Gasto" onclick="add_gitser()" class="button" type="button"></td>
+		<?php } else { ?>
+			<td width="90">&nbsp;</td>
 		<?php } ?>
+			<td align="right"><b>Totales Base:</b></td>
+			<td align='right'><?php echo $form->totpre->output ?>&nbsp;</td>
+			<td align="right"><b>Total I.V.A.:</b></td>
+			<td align='right'><?php echo $form->totiva->output  ?>&nbsp;</td>
+			<td align="right"><b>Total:</b></td>
+			<td align='right'><?php echo $form->totbruto->output ?>&nbsp;</td>
+		</table>
 		</td>
+		
 	</tr>
 
 	<?php if ($form->max_rel_count['gereten']>0); ?>
 	<tr>
 		<td>
+		<table width='100%' border='0' cellpadding='0' cellspacing='0' ><tr>
+		<td>
+<?php if( !$solo) {?>
 		<fieldset style='border: 2px outset #9AC8DA;background: #EFEFFF;'>
 		<legend class="titulofieldset" style='color: #114411;'>Retenciones</legend>
+<?php } ?>
+		<div style='overflow:auto;border: 1px solid #9AC8DA;background: #FAFAFA;height:80px'>
 		<table width='100%'>
 			<tr>
-				<td class="littletableheaderdet">C&oacute;digo</td>
+				<td class="littletableheaderdet">Retencion</td>
 				<td class="littletableheaderdet">Base</td>
 				<td class="littletableheaderdet" align="right">Porcentaje</td>
 				<td class="littletableheaderdet" align="right">Monto</td>
@@ -545,26 +570,35 @@ function toggle() {
 			}?>
 			</tr>
 			<tr id='__UTPL__gereten'>
-				<td colspan='3' class="littletableheaderdet">&nbsp;</td>
-				<td class="littletableheaderdet"  align="right">&nbsp;<?php echo $form->reten->output  ?></td>
-				<?php if($form->_status!='show') {?>
-				<td class="littletableheaderdet">&nbsp;</td>
-				<?php } ?>
+				<td colspan='9'>&nbsp;</td>
 			</tr>
 		</table>
+		</div>
+<?php if( !$solo) {?>
 		</fieldset>
+<?php } ?>
+		</td>
+		<td width="100" align='center' style="background:#FFFFFF;" valign='top'>
+			<table width='100%'>
 		<?php if( $form->_status != 'show') {?>
-			<input name="btn_add_gereten" value="Agregar Retenciones " onclick="add_gereten()" class="button" type="button">
-			<input name="btn_creten"      value="Calcular retenciones" onclick="calcularete()" class="button" type="button">
+			<tr><td align='right'><input name="btn_add_gereten" value="Agregar" onclick="add_gereten()" class="button" type="button"></td></tr>
+			<tr><td align='right'><input name="btn_creten"      value="Calcular" onclick="calcularete()" class="button" type="button"></td></tr>
+			<tr><td align="right" style="font-size:12px;font-weight:bold;background:#EFEFEF">&nbsp;<?php echo $form->reten->output  ?></td></tr>
 		<?php } ?>
+			</table>
+		</td>
+		</tr>
+		</table>
+<?php if( !$solo) {?>
+		<?php if( $form->_status != 'show') {?>
+			<input name="btn_add_gereten" value="Agregar" onclick="add_gereten()" class="button" type="button">
+			<input name="btn_creten"      value="Calcular" onclick="calcularete()" class="button" type="button">
+		<?php } ?>
+<?php } ?>
 
 		<?php echo $form_end     ?>
-		<?php //echo $container_bl ?>
-		<?php //echo $container_br ?>
 		</td>
-
 	</tr>
-
 	<tr>
 		<td align='center'>
 			<table width='100%'><tr><td valign='top'>
@@ -594,36 +628,14 @@ function toggle() {
 			<legend class="titulofieldset" style='color: #114411;'>Totales</legend>
 			<table width='100%'>
 				<tr>
-					<td class="littletableheader">           &nbsp;</td>
-					<td class="littletablerow" align='right'>&nbsp;</td>
-					<td class="littletableheader">           <?php echo $form->totpre->label  ?>&nbsp;</td>
-					<td class="littletablerow" align='right'><?php echo $form->totpre->output ?>&nbsp;</td>
-				</tr>
-				<tr>
-					<td class="littletableheader">           &nbsp;</td>
-					<td class="littletablerow" align='right'>&nbsp;</td>
-					<td class="littletableheader">           <?php echo $form->totbruto->label  ?>&nbsp;</td>
-					<td class="littletablerow" align='right'><?php echo $form->totbruto->output ?>&nbsp;</td>
-				</tr>
-				<tr>
-					<td class="littletableheader">           <?php echo $form->totiva->label   ?>&nbsp;</td>
-					<td class="littletablerow" align='right'><?php echo $form->totiva->output  ?>&nbsp;</td>
 					<td class="littletableheader">           <?php echo $form->reteiva->label  ?>&nbsp;</td>
-					<td class="littletablerow" align='right'><?php
-						if($form->_status=='show'){
-							if($form->retesimple->value>0){
-								echo '<b style=\'color:red;\'>'.$form->retesimple->value.'</b>';
-							}else{
-								echo $form->reteiva->output;
-							}
-						}else{
-							echo $form->reteiva->output;
-						}
-					?>&nbsp;</td>
+					<td class="littletablerow" align='right'><?php echo $form->reteiva->output ?>&nbsp;</td>
 				</tr>
 				<tr>
 					<td class="littletableheader">           <?php echo $form->credito->label  ?>&nbsp;</td>
 					<td class="littletablerow" align='right'><?php echo $form->credito->output ?>&nbsp;</td>
+				</tr>
+				<tr>
 					<td class="littletableheader">           <?php echo $form->totneto->label  ?>&nbsp;</td>
 					<td class="littletablerow" align='right'><?php echo $form->totneto->output ?>&nbsp;</td>
 				</tr>
@@ -636,7 +648,7 @@ function toggle() {
 	<?php if($form->_status == 'show'){ ?>
 	<tr>
 		<td>
-			<fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
+			<fieldset style='border: 1px outset #8A0808;background: #FFFBE9;'>
 			<legend class="titulofieldset" style='color: #114411;'>Informacion del Registro</legend>
 			<table width='100%' cellspacing='1' >
 				<tr style='font-size:12px;color:#0B3B0B;background-color: #F7BE81;'>
@@ -673,7 +685,7 @@ function toggle() {
 					if ( $query->num_rows() > 0 ) { 
 						$row = $query->row();
 				?>
-			<fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
+			<fieldset style='border: 1px outset #8A0808;background: #FFFBE9;'>
 			<legend class="titulofieldset" style='color: #114411;'>Retencion de Impuesto</legend>
 			<table width='100%' cellspacing='1' >
 				<tr style='font-size:12px;color:#FFEEFF;background-color: #393B0B;'>
@@ -700,7 +712,7 @@ function toggle() {
 					$query = $this->db->query($mSQL, array(trim($form->_dataobject->get('transac'))) );
 					if ( $query->num_rows() > 0 ) {
 						$row = $query->row(); ?>
-			<fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
+			<fieldset style='border: 1px outset #8A0808;background: #FFFBE9;'>
 			<legend class="titulofieldset" style='color: #114411;'>Registro en Bancos</legend>
 			<table width='100%' cellspacing='1'>
 				<tr>
@@ -723,7 +735,7 @@ function toggle() {
 				$mSQL = "SELECT CONCAT(tipo_doc, numero) numero, CONCAT(cod_prv,'-',nombre) cod_prv, monto*(tipo_doc IN ('FC','ND','GI')) debe, monto*(tipo_doc NOT IN ('FC','ND','GI')) haber , monto-abonos saldo FROM sprm WHERE transac=? ";
 				$query = $this->db->query($mSQL, array(trim($form->_dataobject->get('transac'))) );
 				if ( $query->num_rows() > 0 ) { ?>
-			<fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
+			<fieldset style='border: 1px outset #8A0808;background: #FFFBE9;'>
 			<legend class="titulofieldset" style='color: #114411;'>Estado de Cuenta</legend>
 			<table width='100%' cellspacing='1'>
 				<tr style='font-size:12px;color:#FFEEFF;background-color: #61380B;'>

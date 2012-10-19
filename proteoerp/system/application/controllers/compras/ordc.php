@@ -1222,49 +1222,6 @@ class Ordc extends Controller {
 
 	function dataedit(){
 		$this->rapyd->load('dataobject','datadetails');
-/*
-		$modbus=array(
-			'tabla'   =>'sprv',
-			'columnas'=>array(
-				'proveed' =>'C&oacute;digo Proveedor',
-				'nombre'=>'Nombre',
-				'rif'=>'RIF'),
-			'filtro'  =>array('proveed'=>'C&oacute;digo Proveedor','nombre'=>'Nombre'),
-			'retornar'=>array('proveed'=>'proveed','nombre'=>'nombre'),
-			'titulo'  =>'Buscar Proveedor');
-
-		$boton=$this->datasis->modbus($modbus);
-
-		$modbus=array(
-			'tabla'   =>'sinv',
-			'columnas'=>array(
-				'codigo'  =>'C&oacute;digo',
-				'descrip' =>'Descripci&oacute;n',
-				'precio1' =>'Precio 1',
-				'precio2' =>'Precio 2',
-				'precio3' =>'Precio 3',
-				'existen' =>'Existencia',
-		),
-			'filtro'  =>array('codigo' =>'C&oacute;digo','descrip'=>'Descripci&oacute;n'),
-			'retornar'=>array(
-				'codigo' =>'codigo_<#i#>',
-				'descrip'=>'descrip_<#i#>',
-				'base1'  =>'precio1_<#i#>',
-				'base2'  =>'precio2_<#i#>',
-				'base3'  =>'precio3_<#i#>',
-				'base4'  =>'precio4_<#i#>',
-				'iva'    =>'itiva_<#i#>',
-				'peso'   =>'sinvpeso_<#i#>',
-				'pond'   =>'pond_<#i#>',
-				'ultimo' =>'ultimo_<#i#>',
-				'precio1'=>'costo_<#i#>'
-				),
-			'p_uri'   => array(4=>'<#i#>'),
-			'titulo'  => 'Buscar Art&iacute;culo',
-			'where'   => '`activo` = "S"',
-			'script'  => array('post_modbus_sinv(<#i#>)')
-				);
-*/
 
 		$modbus=array(
 			'tabla'   =>'sinv',

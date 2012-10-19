@@ -5,6 +5,8 @@ class gser extends Controller {
 	var $titp    = 'Gastos y Egresos';
 	var $tits    = 'Gastos y Egresos';
 	var $url     = 'finanzas/gser/';
+	var $genesal = true;
+	var $solo    = false;
 
 	function Gser(){
 		parent::Controller();
@@ -22,12 +24,12 @@ class gser extends Controller {
 			$this->db->simple_query('ALTER TABLE gser ADD UNIQUE INDEX numero (numero)');
 			$this->db->simple_query('ALTER TABLE gser ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
 		};*/
-		$this->datasis->modintramenu( 800, 600, substr($this->url,0,-1) );
+		$this->datasis->modintramenu( 990, 700, substr($this->url,0,-1) );
 		redirect($this->url.'jqdatag');
 	}
 
 	//***************************
-	//Layout en la Ventana
+	//   Layout en la Ventana
 	//
 	//***************************
 	function jqdatag(){
@@ -49,15 +51,13 @@ class gser extends Controller {
 
 		//Botones Panel Izq
 		$grid->wbotonadd(array("id"=>"imprimir", "img"=>"assets/default/images/print.png", "alt" => "Imprimir",  "label"=>"Imprimir"     ));
-		$grid->wbotonadd(array("id"=>"agregar",  "img"=>"images/agrega4.png",              "alt" => 'Agregar',   "label"=>"Agregar Gasto"));
-		$grid->wbotonadd(array("id"=>"modifica", "img"=>"images/editar.png",               "alt" => 'Modificar', "label"=>"Editar Gasto" ));
 		$WestPanel = $grid->deploywestp();
 
 		//Panel Central
 		$centerpanel = $grid->centerpanel( $id = "radicional", $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
 
 		$adic = array(
-			array("id"=>"fne",  "title"=>"Agregar/Editar Orden de Compra")
+			array("id"=>"fgasto",  "title"=>"Agregar/Editar Gasto/Egreso")
 		);
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
@@ -98,6 +98,29 @@ class gser extends Controller {
 		});';
 
 		$bodyscript .= '
+		function gseradd() {
+			$.post("'.site_url('finanzas/gser/solo/create').'",
+			function(data){
+				$("#fgasto").html(data);
+				$( "#fgasto" ).dialog( "open" );
+			})
+		};';
+
+		$bodyscript .= '
+		function gseredit() {
+			var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret    = $("#newapi'.$grid0.'").getRowData(id);
+				mId = id;
+				$.post("'.site_url('finanzas/gser/solo/modify').'/"+id, function(data){
+					$("#fgasto").html(data);
+					$( "#fgasto" ).dialog( "open" );
+				});
+			} else { $.prompt("<h1>Por favor Seleccione un Gasto</h1>");}
+		};';
+
+
+		$bodyscript .= '
 		jQuery("#modifica").click( function(){
 			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
 			if (id)	{
@@ -105,6 +128,57 @@ class gser extends Controller {
 				window.open(\''.site_url('finanzas/gser/dataedit/modify').'/\'+id, \'_blank\', \'width=900,height=700,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-350)\');
 			} else { $.prompt("<h1>Por favor Seleccione un Gasto</h1>");}
 		});';
+
+		//Wraper de javascript
+		$bodyscript .= '
+		$(function() {
+			$("#dialog:ui-dialog").dialog( "destroy" );
+			var mId = 0;
+			var montotal = 0;
+			var ffecha = $("#ffecha");
+			var grid = jQuery("#newapi'.$grid0.'");
+			var s;
+			var allFields = $( [] ).add( ffecha );
+			var tips = $( ".validateTips" );
+			s = grid.getGridParam(\'selarrrow\'); 
+		';
+
+		$bodyscript .= '
+			$( "#fgasto" ).dialog({
+				autoOpen: false, height: 590, width: 950, modal: true,
+				buttons: {
+					"Guardar": function() {
+						var bValid = true;
+						var murl = $("#df1").attr("action");
+						allFields.removeClass( "ui-state-error" );
+						if ( bValid ) {
+							$.ajax({
+								type: "POST", dataType: "html", async: false,
+								url: murl,
+								data: $("#df1").serialize(),
+								success: function(r,s,x){
+									var res = $.parseJSON(r);
+									if ( res.status == "A"){
+										apprise(res.mensaje);
+										$( "#fcompra" ).dialog( "close" );
+										grid.trigger("reloadGrid");
+										'.$this->datasis->jwinopen(site_url('formatos/ver/GSER').'/\'+res.id+\'/id\'').';
+										return true;
+									} else if ( res.status == "C"){
+										apprise("<div style=\"font-size:16px;font-weight:bold;background:green;color:white\">Mensaje:</div> <h1>"+res.mensaje);
+									} else {
+										apprise("<div style=\"font-size:16px;font-weight:bold;background:red;color:white\">Error:</div> <h1>"+res.mensaje+"</h1>");
+									}
+								}
+							});
+						}
+					},
+					Cancelar: function() { $( this ).dialog( "close" ); }
+				},
+				close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
+			});
+		});';
+
 
 		$bodyscript .= "\n</script>\n";
 		return $bodyscript;
@@ -143,7 +217,6 @@ class gser extends Controller {
 			'editoptions'   => '{ size:30, maxlength: 8 }',
 		));
 
-
 		$grid->addField('proveed');
 		$grid->label('Proveed');
 		$grid->params(array(
@@ -154,7 +227,6 @@ class gser extends Controller {
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:30, maxlength: 5 }',
 		));
-
 
 		$grid->addField('nombre');
 		$grid->label('Nombre');
@@ -180,7 +252,6 @@ class gser extends Controller {
 			'formoptions'   => '{ label:"Fecha" }'
 		));
 
-
 		$grid->addField('totpre');
 		$grid->label('Totpre');
 		$grid->params(array(
@@ -194,7 +265,6 @@ class gser extends Controller {
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
-
 
 		$grid->addField('totiva');
 		$grid->label('Totiva');
@@ -680,7 +750,6 @@ class gser extends Controller {
 			'formoptions'   => '{ label:"Fecha" }'
 		));
 
-
 		$grid->addField('ffactura');
 		$grid->label('Ffactura');
 		$grid->params(array(
@@ -692,7 +761,6 @@ class gser extends Controller {
 			'editrules'     => '{ required:true,date:true}',
 			'formoptions'   => '{ label:"Fecha" }'
 		));
-
 
 		$grid->addField('cajachi');
 		$grid->label('Cajachi');
@@ -942,7 +1010,7 @@ class gser extends Controller {
 
 		$grid->showpager(true);
 		$grid->setWidth('');
-		$grid->setHeight('182');
+		$grid->setHeight('260');
 		$grid->setTitle($this->titp);
 		$grid->setfilterToolbar(true);
 		$grid->setToolbar('false', '"top"');
@@ -968,12 +1036,14 @@ class gser extends Controller {
 		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
 
 		#show/hide navigations buttons
-		$grid->setAdd(false);
-		$grid->setEdit(false);
-		$grid->setDelete(false);
+		$grid->setAdd(true);
+		$grid->setEdit(true);
+		$grid->setDelete(true);
 		$grid->setSearch(true);
 		$grid->setRowNum(30);
 		$grid->setShrinkToFit('false');
+
+		$grid->setBarOptions("\t\taddfunc: gseradd,\n\t\teditfunc: gseredit");
 
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
@@ -1719,6 +1789,57 @@ class gser extends Controller {
 		};
 	}
 
+	function solo() {
+		$this->solo = true;
+		$id = $this->uri->segment($this->uri->total_segments());
+
+		//Creando Gaasto
+		if ( $id == 'create'){
+			$this->dataedit();
+
+		} elseif ( $id == 'insert'){
+			$this->genesal = false;
+			$rt = $this->dataedit();
+			$rt = str_replace("\n","<br>",$rt);
+			if ($rt == 'Gasto Guardado')
+				$status='E';
+			else
+				$status='E';
+			if ( strlen($rt) > 0 )
+				echo '{"status":"'.$status.'","id":"'.$id.'" ,"mensaje":"'.$rt.'"}';
+
+		} elseif ( $id == 'process'){
+			$control = $this->uri->segment($this->uri->total_segments()-1);
+			$rt = $this->actualizar($control);
+			$rt = str_replace("\n","<br>",$rt);
+			if ( strlen($rt[1]) > 0 )
+				if ( $rt[0] === false ) $p = 'E'; else $p='A';
+				echo '{"status":"'.$p.'","id":"'.$control.'" ,"mensaje":"<h1>'.$rt[1].'</h1>"}';
+		} else {
+			$modo = $this->uri->segment($this->uri->total_segments()-1);
+
+			if ( $modo == 'actualizar' ){
+				$this->actualizar($id);
+			} elseif ( $modo == 'reversar' ){
+				$rt = $this->reversar($id);
+				echo $rt;
+			} elseif ( $modo == 'cprecios' ){
+				$rt = $this->cprecios($id);
+				echo $rt;
+			} else {
+				if ( $modo == 'update' ) $this->genesal = false;
+				$rt = $this->dataedit();
+				$rt = str_replace("\n","<br>",$rt);
+				if ($rt == 'Gasto Guardado')
+					$status='E';
+				else
+					$status='E';
+				if ( strlen($rt) > 0 )
+					echo '{"status":"'.$status.'","id":"'.$id.'" ,"mensaje":"'.$rt.'"}';
+			}
+		}
+	}
+
 
 /*
 	function gser(){
@@ -1917,6 +2038,7 @@ function gserfiscal(mid){
 		$this->load->view('view_ventanas', $data);
 	}
 */
+
 	function gserserie(){
 		$serie   = $this->uri->segment($this->uri->total_segments());
 		$id = $this->uri->segment($this->uri->total_segments()-1);
@@ -1988,7 +2110,7 @@ function gserfiscal(mid){
 		$select=array('numfac','fechafac','proveedor','tasa + sobretasa + reducida AS totiva','exento + montasa + monadic + monredu AS totneto');
 		$filter->db->select($select);
 
-		$filter->codbanc = new dropdownField('C&oacute;digo de la caja','codbanc');
+		$filter->codbanc = new dropdownField('Codigo de la caja','codbanc');
 		$filter->codbanc->option('','Todos');
 		$filter->codbanc->options("SELECT codbanc, CONCAT_WS('-',codbanc,banco) AS label FROM banc WHERE tbanco='CAJ' ORDER BY codbanc");
 
@@ -2000,7 +2122,7 @@ function gserfiscal(mid){
 		$filter->fechad->operator='>=';
 		$filter->fechah->operator='<=';
 
-		$filter->numero = new inputField('N&uacute;mero', 'numfac');
+		$filter->numero = new inputField('Numero', 'numfac');
 
 		$filter->proveed = new inputField('Proveedor', 'proveedor');
 		//$filter->proveed->append($boton);
@@ -2036,7 +2158,7 @@ function gserfiscal(mid){
 		$grid->order_by('numfac','desc');
 		$grid->per_page = 15;
 		$grid->column_orderby('Caja','codbanc','caja');
-		$grid->column_orderby('N&uacute;mero',$uri,'numfac');
+		$grid->column_orderby('Numero',$uri,'numfac');
 		$grid->column_orderby('Fecha' ,'<dbdate_to_human><#fechafac#></dbdate_to_human>','fechafac','align=\'center\'');
 		$grid->column_orderby('Proveedor','proveedor','proveedor');
 		$grid->column_orderby('IVA'   ,'totiva'    ,'totiva'  ,'align=\'right\'');
@@ -2089,8 +2211,8 @@ function gserfiscal(mid){
 		$this->rapyd->load('dataedit');
 		$mgas=array(
 			'tabla'   => 'mgas',
-			'columnas'=> array('codigo' =>'C&oacute;digo','descrip'=>'Descripci&oacute;n','tipo'=>'Tipo'),
-			'filtro'  => array('descrip'=>'Descripci&oacute;n'),
+			'columnas'=> array('codigo' =>'Codigo','descrip'=>'Descripcion','tipo'=>'Tipo'),
+			'filtro'  => array('descrip'=>'Descripcion'),
 			'retornar'=> array('codigo' =>'codigo','descrip'=>'descrip'),
 			'titulo'  => 'Buscar enlace administrativo');
 		$bcodigo=$this->datasis->modbus($mgas);
@@ -2153,7 +2275,7 @@ function gserfiscal(mid){
 		$edit->pre_process('insert' ,'_pre_gserchi');
 		$edit->pre_process('update' ,'_pre_gserchi');
 
-		$edit->codbanc = new dropdownField('C&oacute;digo de la caja','codbanc');
+		$edit->codbanc = new dropdownField('Codigo de la caja','codbanc');
 		$edit->codbanc->option('','Seleccionar');
 		$edit->codbanc->options("SELECT codbanc, CONCAT_WS('-',codbanc,banco) AS label FROM banc WHERE tbanco='CAJ' ORDER BY codbanc");
 		$edit->codbanc->rule='max_length[5]|required';
@@ -2164,7 +2286,7 @@ function gserfiscal(mid){
 		$edit->fechafac->insertValue=date('Y-m-d');
 		$edit->fechafac->maxlength =10;
 
-		$edit->numfac = new inputField('N&uacute;mero de la factura','numfac');
+		$edit->numfac = new inputField('Numero de la factura','numfac');
 		$edit->numfac->rule='max_length[8]|required';
 		$edit->numfac->size =10;
 		$edit->numfac->maxlength =8;
@@ -2191,13 +2313,13 @@ function gserfiscal(mid){
 		$edit->proveedor->group='Datos del proveedor';
 		$edit->proveedor->maxlength =40;
 
-		$edit->codigo = new inputField('C&oacute;digo del gasto','codigo');
+		$edit->codigo = new inputField('Codigo del gasto','codigo');
 		$edit->codigo->rule ='max_length[6]|required';
 		$edit->codigo->size =6;
 		$edit->codigo->maxlength =8;
 		$edit->codigo->append($bcodigo);
 
-		$edit->descrip = new inputField('Descripci&oacute;n','descrip');
+		$edit->descrip = new inputField('Descripcion','descrip');
 		$edit->descrip->rule='max_length[50]|strtoupper';
 		$edit->descrip->size =50;
 		$edit->descrip->maxlength =50;
@@ -2353,7 +2475,7 @@ function gserfiscal(mid){
 
 	//Convierte los gastos en caja chica
 	function gserchipros($codbanc=null){
-		if(empty($codbanc)) show_error('Faltan par&aacute;metros');
+		if(empty($codbanc)) show_error('Faltan parametros');
 		$dbcodbanc=$this->db->escape($codbanc);
 		$mSQL='SELECT COUNT(*) AS cana, SUM(exento+montasa+monadic+monredu+tasa+sobretasa+reducida) AS monto FROM gserchi WHERE ngasto IS NULL AND aceptado="S" AND codbanc='.$dbcodbanc;
 		$r   =$this->datasis->damerow($mSQL);
@@ -2385,10 +2507,10 @@ function gserfiscal(mid){
 		$modbus=array(
 			'tabla'   =>'sprv',
 			'columnas'=>array(
-				'proveed' =>'C&oacute;digo Proveedor',
+				'proveed' =>'Codigo Proveedor',
 				'nombre'  =>'Nombre',
 				'rif'     =>'RIF'),
-			'filtro'  =>array('proveed'=>'C&oacute;digo Proveedor','nombre'=>'Nombre'),
+			'filtro'  =>array('proveed'=>'Codigo Proveedor','nombre'=>'Nombre'),
 			'retornar'=>array('proveed'=>'codprv','nombre'=>'nombre'),
 			'titulo'  =>'Buscar Proveedor'
 		);
@@ -2417,7 +2539,7 @@ function gserfiscal(mid){
 		}';
 
 		$form = new DataForm('finanzas/gser/gserchipros/'.$codbanc.'/process');
-		$form->title("N&uacute;mero de facturas aceptadas $r[cana], monto total <b>".nformat($r['monto']).'</b>');
+		$form->title("Numero de facturas aceptadas $r[cana], monto total <b>".nformat($r['monto']).'</b>');
 		$form->script($script);
 
 		$form->codprv = new inputField('Proveedor', 'codprv');
@@ -2432,12 +2554,12 @@ function gserfiscal(mid){
 		$form->nombre->in = 'codprv';
 
 		$form->cargo = new dropdownField('Con cargo a','cargo');
-		$form->cargo->option($this->mcred,'Cr&eacute;dito');
+		$form->cargo->option($this->mcred,'Credito');
 		$form->cargo->options("SELECT codbanc, CONCAT_WS('-',codbanc,banco) AS label FROM banc WHERE activo='S' ORDER BY codbanc");
 		$form->cargo->onchange='desactivacampo(this.value)';
 		$form->cargo->rule='max_length[5]|required';
 
-		$form->cheque = new inputField('N&uacute;mero de cheque', 'cheque');
+		$form->cheque = new inputField('Numero de cheque', 'cheque');
 		$form->cheque->rule='condi_required|callback_chobligaban';
 		$form->cheque->append('Aplica  solo si el cargo es a un banco');
 
@@ -2463,7 +2585,7 @@ function gserfiscal(mid){
 		$grid->order_by('numfac','desc');
 		$grid->per_page = 15;
 		$grid->column('Caja','codbanc');
-		$grid->column('N&uacute;mero','numfac');
+		$grid->column('Numero','numfac');
 		$grid->column('Fecha' ,'<dbdate_to_human><#fechafac#></dbdate_to_human>','align=\'center\'');
 		$grid->column('Proveedor','proveedor');
 		$grid->column('IVA'   ,'totiva'    ,'align=\'right\'');
@@ -2489,7 +2611,7 @@ function gserfiscal(mid){
 		}
 
 		$data['content'] = $form->output.$grid->output;
-		$data['title']   = heading('Reposici&oacute;n de caja chica '.$codbanc);
+		$data['title']   = heading('Reposicion de caja chica '.$codbanc);
 		$data['head']    = $this->rapyd->get_head().script('jquery.js');
 		$data['head']   .= phpscript('nformat.js');
 		$this->load->view('view_ventanas', $data);
@@ -2501,7 +2623,7 @@ function gserfiscal(mid){
 			$envia  = common::_traetipo($eenvia);
 
 			if($envia=='CAJ' && $tipoe!='D'){
-				$this->validation->set_message('chtipoe', 'Cuando el gasto se carga a una caja el %s debe ser nota de d&eacute;bito.');
+				$this->validation->set_message('chtipoe', 'Cuando el gasto se carga a una caja el %s debe ser nota de debito.');
 				return false;
 			}elseif($envia!='CAJ' && empty($tipoe)){
 				$this->validation->set_message('chtipoe', 'Cuando el gasto se carga a un banco el %s es obligatorio.');
@@ -3047,7 +3169,7 @@ function gserfiscal(mid){
 
 	function listo($error,$numero=null){
 		if($error=='n'){
-			$data['content'] = 'Transacci&oacute;n completada ';
+			$data['content'] = 'Transaccion completada ';
 			if(!empty($numero)){
 				$url='formatos/verhtml/';
 
@@ -3058,7 +3180,7 @@ function gserfiscal(mid){
 				$data['content'] .= anchor('finanzas/gser/index','Regresar');
 			}
 		}else{
-			$data['content'] = 'Lo siento pero hubo alg&uacute;n error en la transacci&oacute;n, se genero un centinela '.anchor('finanzas/gser/index','Regresar');
+			$data['content'] = 'Lo siento pero hubo algun error en la transaccion, se genero un centinela '.anchor('finanzas/gser/index','Regresar');
 		}
 		$data['title']   = heading('Transferencias entre cajas');
 		$data['head']    = $this->rapyd->get_head();
@@ -3091,11 +3213,11 @@ function gserfiscal(mid){
 		$mSPRV=array(
 			'tabla'   =>'sprv',
 			'columnas'=>array(
-				'proveed' =>'C&oacute;odigo',
+				'proveed' =>'Coodigo',
 				'nombre'=>'Nombre',
 				'rif'=>'Rif'
 			),
-			'filtro'  => array('proveed'=>'C&oacute;digo','nombre'=>'Nombre'),
+			'filtro'  => array('proveed'=>'Codigo','nombre'=>'Nombre'),
 			'retornar'=> array('proveed'=>'proveed','nombre'=>'nombre','tipo'=>'sprvtipo','reteiva'=>'sprvreteiva'),
 			'script'  => array('post_sprv_modbus()'),
 			'titulo'  =>'Buscar Proveedor');
@@ -3126,28 +3248,28 @@ function gserfiscal(mid){
 		$edit->post_process('update','_post_update');
 		$edit->post_process('delete','_post_delete');
 
-		$edit->tipo_doc =  new dropdownField("Tipo Documento", "tipo_doc");
+		$edit->tipo_doc =  new dropdownField("Documento", "tipo_doc");
 		$edit->tipo_doc->style="width:100px";
 		$edit->tipo_doc->option('FC',"Factura");
 		$edit->tipo_doc->option('ND',"Nota Debito");
 		if($edit->_status=='show'){
 			$edit->tipo_doc->option('XX',"Anulado");
-			$edit->tipo_doc->option('AD',"Amortizaci&oacute;n");
-			$edit->tipo_doc->option('GA',"Gasto de N&oacute;mina");
+			$edit->tipo_doc->option('AD',"Amortizacion");
+			$edit->tipo_doc->option('GA',"Gasto de Nomina");
 		}
 
-		$edit->ffactura = new DateonlyField("Fecha Documento", "ffactura","d/m/Y");
+		$edit->ffactura = new DateonlyField("Fecha", "ffactura","d/m/Y");
 		$edit->ffactura->insertValue = date("Y-m-d");
 		$edit->ffactura->size = 10;
 		$edit->ffactura->rule = 'required';
 		//$edit->ffactura->insertValue = date("Y-m-d");
 
-		$edit->fecha = new DateonlyField('Fecha Registro', 'fecha');
+		$edit->fecha = new DateonlyField('Registro', 'fecha');
 		$edit->fecha->insertValue = date("Y-m-d");
 		$edit->fecha->size = 10;
 		$edit->fecha->rule = 'required';
 
-		$edit->vence = new DateonlyField("Fecha Vencimiento", "vence","d/m/Y");
+		$edit->vence = new DateonlyField("Vence", "vence","d/m/Y");
 		$edit->vence->insertValue = date("Y-m-d");
 		$edit->vence->size = 10;
 		//$edit->vence->insertValue = date("Y-m-d");
@@ -3157,7 +3279,7 @@ function gserfiscal(mid){
 		$edit->compra->size =10;
 		$edit->compra->maxlength =8;
 
-		$edit->numero = new inputField("N&uacute;mero", "numero");
+		$edit->numero = new inputField("Numero", "numero");
 		$edit->numero->size = 10;
 		$edit->numero->maxlength=8;
 		$edit->numero->autocomplete=false;
@@ -3230,11 +3352,11 @@ function gserfiscal(mid){
 		$edit->tipo1 =  new dropdownField("Cheque/ND", "tipo1");
 		$edit->tipo1->option('','Ninguno');
 		$edit->tipo1->option('C','Cheque');
-		$edit->tipo1->option('D','D&eacute;bito');
+		$edit->tipo1->option('D','Debito');
 		$edit->tipo1->rule = 'condi_required|callback_chtipoe';
 		$edit->tipo1->style="width:100px";
 
-		$edit->cheque1 = new inputField('N&uacute;mero',"cheque1");
+		$edit->cheque1 = new inputField('Numero',"cheque1");
 		$edit->cheque1->rule = 'condi_required|callback_chobliganumerog';
 		$edit->cheque1->size = 12;
 		$edit->cheque1->maxlength=20;
@@ -3251,12 +3373,13 @@ function gserfiscal(mid){
 		$edit->monto1->autocomplete=false;
 		$edit->monto1->showformat ='decimal';
 
-		$edit->credito= new inputField("Cr&eacute;dito", "credito");
+		$edit->credito= new inputField("Credito", "credito");
 		$edit->credito->size = 10;
 		$edit->credito->showformat ='decimal';
 		$edit->credito->css_class='inputnum';
 		$edit->credito->onkeyup="ccredito()";
 		$edit->credito->autocomplete=false;
+		$edit->credito->readonly=true;
 
 		$edit->reten = new inputField("Ret. ISLR","reten");
 		$edit->reten->size = 10;
@@ -3289,7 +3412,7 @@ function gserfiscal(mid){
 		$edit->totneto->css_class='inputnum';
 		$edit->totneto->readonly=true;
 		$edit->totneto->showformat ='decimal';
-		$edit->totneto->type='inputhidden';
+		//$edit->totneto->type='inputhidden';
 
 		$edit->usuario = new autoUpdateField('usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
 		$edit->estampa = new autoUpdateField('estampa' ,date('Ymd'), date('Ymd'));
@@ -3298,14 +3421,14 @@ function gserfiscal(mid){
 		//***************************
 		//Campos para el detalle 1
 		//***************************
-		$edit->codigo = new inputField("C&oacute;digo <#o#>", "codigo_<#i#>");
+		$edit->codigo = new inputField("Codigo <#o#>", "codigo_<#i#>");
 		$edit->codigo->size=5;
 		$edit->codigo->db_name='codigo';
 		//$edit->codigo->append($btn);
 		$edit->codigo->rule="required";
 		$edit->codigo->rel_id='gitser';
 
-		$edit->descrip = new inputField("Descripci&oacute;n <#o#>", "descrip_<#i#>");
+		$edit->descrip = new inputField("Descripcion <#o#>", "descrip_<#i#>");
 		$edit->descrip->size=25;
 		$edit->descrip->db_name='descrip';
 		$edit->descrip->maxlength=50;
@@ -3429,22 +3552,58 @@ function gserfiscal(mid){
 		//}
 
 		$edit->buttons('save', 'undo', 'delete', 'back','add_rel','add');
-		$edit->build();
 
-		$smenu['link']   = barra_menu('518');
-		$conten['form']  =& $edit;
-		$data['content'] =  $this->load->view('view_gser', $conten,true);
-		$data['smenu']   =  $this->load->view('view_sub_menu', $smenu,true);
-		$data['title']   =  heading('Registro de Gastos o Nota de D&eacute;bito');
-		$data['head']    =  script('jquery.js').script('jquery-ui.js');
-		$data['head']   .=  script('plugins/jquery.numeric.pack.js');
-		$data['head']   .=  script('plugins/jquery.meiomask.js');
-		$data['head']   .=  style('redmond/jquery-ui-1.8.1.custom.css');
-		$data['head']   .=  $this->rapyd->get_head();
-		$data['head']   .=  phpscript('nformat.js');
-		$data['head']   .=  script('plugins/jquery.floatnumber.js');
-		$data['head']   .=  script('plugins/jquery.ui.autocomplete.autoSelectOne.js');
-		$this->load->view('view_ventanas', $data);
+		if($this->genesal){
+			$edit->build();
+			$conten['form']  =&  $edit;
+			$conten['solo']  = $this->solo;
+			if (  $this->solo ){
+				$data['content'] = $this->load->view('view_gser', $conten);
+			} else {
+				$smenu['link']   = barra_menu('518');
+				$data['content'] =  $this->load->view('view_gser', $conten,true);
+				$data['smenu']   =  $this->load->view('view_sub_menu', $smenu,true);
+				$data['title']   =  heading('Registro de Gastos o Nota de Debito');
+				$data['head']    =  script('jquery.js').script('jquery-ui.js');
+				$data['head']   .=  script('plugins/jquery.numeric.pack.js');
+				$data['head']   .=  script('plugins/jquery.meiomask.js');
+				$data['head']   .=  style('redmond/jquery-ui-1.8.1.custom.css');
+				$data['head']   .=  $this->rapyd->get_head();
+				$data['head']   .=  phpscript('nformat.js');
+				$data['head']   .=  script('plugins/jquery.floatnumber.js');
+				$data['head']   .=  script('plugins/jquery.ui.autocomplete.autoSelectOne.js');
+				$this->load->view('view_ventanas', $data);
+				$this->load->view('view_ventanas', $data);
+			}
+		} else {
+			$edit->on_save_redirect=false;
+			$edit->build();
+			if($edit->on_success()){
+				//$this->claves=$edit->_dataobject->pk;
+				//$this->claves['control']=$edit->_dataobject->get('control');
+				$rt= 'Gasto Guardado';
+			}elseif($edit->on_error()){
+				$rt= html_entity_decode(preg_replace('/<[^>]*>/', '', $edit->error_string));
+			}
+
+/*
+			$smenu['link']   = barra_menu('518');
+			//$conten['form']  =& $edit;
+			//$data['content'] =  $this->load->view('view_gser', $conten,true);
+			$data['smenu']   =  $this->load->view('view_sub_menu', $smenu,true);
+			$data['title']   =  heading('Registro de Gastos o Nota de D&eacute;bito');
+			$data['head']    =  script('jquery.js').script('jquery-ui.js');
+			$data['head']   .=  script('plugins/jquery.numeric.pack.js');
+			$data['head']   .=  script('plugins/jquery.meiomask.js');
+			$data['head']   .=  style('redmond/jquery-ui-1.8.1.custom.css');
+			$data['head']   .=  $this->rapyd->get_head();
+			$data['head']   .=  phpscript('nformat.js');
+			$data['head']   .=  script('plugins/jquery.floatnumber.js');
+			$data['head']   .=  script('plugins/jquery.ui.autocomplete.autoSelectOne.js');
+			$this->load->view('view_ventanas', $data);
+*/
+			return $rt;
+		}
 	}
 
 	//Calcula las retenciones para enviarlas por ajax
@@ -3518,10 +3677,10 @@ function gserfiscal(mid){
 		$sprv=array(
 			'tabla'   =>'sprv',
 			'columnas'=>array(
-			'proveed' =>'C&oacute;digo Proveedor',
+			'proveed' =>'Codigo Proveedor',
 			'nombre'=>'Nombre',
 			'rif'=>'RIF'),
-			'filtro'  =>array('proveed'=>'C&oacute;digo Proveedor','nombre'=>'Nombre'),
+			'filtro'  =>array('proveed'=>'Codigo Proveedor','nombre'=>'Nombre'),
 			'retornar'=>array('proveed'=>'proveed','nombre'=>'nombre'),
 			'titulo'  =>'Buscar Proveedor');
 
@@ -3536,7 +3695,7 @@ function gserfiscal(mid){
 		$edit->post_process('update','_post_mgserupdate');
 		$edit->back_url = 'finanzas/gser';
 
-		$edit->fecha = new dateonlyField('Fecha Recepci&oacute;n', 'fecha');
+		$edit->fecha = new dateonlyField('Fecha Recepcion', 'fecha');
 		$edit->fecha->size = 10;
 		$edit->fecha->rule= 'required';
 
@@ -3548,17 +3707,17 @@ function gserfiscal(mid){
 		$edit->vence->size = 10;
 		$edit->vence->rule= 'required';
 
-		$edit->serie = new inputField('N&uacute;mero', 'serie');
+		$edit->serie = new inputField('Numero', 'serie');
 		$edit->serie->size = 20;
 		$edit->serie->rule= 'required|trim';
 		$edit->serie->maxlength=20;
 
-		$edit->nfiscal = new inputField('Control F&iacute;scal', 'nfiscal');
+		$edit->nfiscal = new inputField('Control Fiscal', 'nfiscal');
 		$edit->nfiscal->size = 20;
 		$edit->nfiscal->rule= 'required|max_length[12]|trim';
 		$edit->nfiscal->maxlength=20;
 
-		$edit->proveed = new inputField('C&oacute;digo', 'proveed');
+		$edit->proveed = new inputField('Codigo', 'proveed');
 		$edit->proveed->size =8;
 		$edit->proveed->maxlength=5;
 		$edit->proveed->append($bsprv);
@@ -3572,17 +3731,17 @@ function gserfiscal(mid){
 		$edit->nombre->rule= 'required';
 		//$edit->nombre->group='Datos Proveedor';
 
-		$edit->codb1 = new inputField('C&oacute;digo del banco', 'codb1');
+		$edit->codb1 = new inputField('Codigo del banco', 'codb1');
 		$edit->codb1->mode='autohide';
 		$edit->codb1->group='Datos finacieros';
 
-		$edit->tipo1 = new dropdownField('Tipo de operaci&oacute;n', 'tipo1');
-		$edit->tipo1->option('N','Nota de d&eacute;bito');
+		$edit->tipo1 = new dropdownField('Tipo de operacion', 'tipo1');
+		$edit->tipo1->option('N','Nota de debito');
 		$edit->tipo1->option('C','Cheque');
 		$edit->tipo1->mode='autohide';
 		$edit->tipo1->group='Datos finacieros';
 
-		$edit->cheque1 = new inputField('N&uacute;mero', 'cheque1');
+		$edit->cheque1 = new inputField('Numero', 'cheque1');
 		$edit->cheque1->mode='autohide';
 		$edit->cheque1->group='Datos finacieros';
 
@@ -3594,7 +3753,7 @@ function gserfiscal(mid){
 		$edit->totiva->mode='autohide';
 		$edit->totiva->group='Montos';
 
-		$edit->credito = new inputField('Monto a Cr&eacute;dito', 'credito');
+		$edit->credito = new inputField('Monto a Credito', 'credito');
 		$edit->credito->mode='autohide';
 		$edit->credito->group='Montos';
 
@@ -3700,7 +3859,7 @@ function gserfiscal(mid){
 		$mSQL='SELECT COUNT(*) FROM gser WHERE proveed='.$this->db->escape($proveed).' AND numero='.$this->db->escape($numero).' AND fecha='.$this->db->escape($fecha).' AND tipo_doc='.$this->db->escape($tipo_doc);
 		$ca=$this->datasis->dameval($mSQL);
 		if($ca>0){
-			$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='Al parecer ya esta registrado un gasto con la misma fecha de recepci&oacute;n, n&uacute;mero y proveedor.';
+			$do->error_message_ar['pre_ins'] = $do->error_message_ar['insert']='Al parecer ya esta registrado un gasto con la misma fecha de recepcion, numero y proveedor.';
 			return false;
 		}
 
@@ -4190,7 +4349,7 @@ function gserfiscal(mid){
 		$iva   = (empty($iva))?   0: $iva  ;
 		$monto = (empty($monto))? 0: $monto;
 		if(!is_numeric($monto)){
-			$this->validation->set_message('chtasa', 'El campo %s general debe contener n&uacute;meros.');
+			$this->validation->set_message('chtasa', 'El campo %s general debe contener numeros.');
 			return false;
 		}
 
@@ -4209,7 +4368,7 @@ function gserfiscal(mid){
 		$iva   = (empty($iva))?   0: $iva  ;
 		$monto = (empty($monto))? 0: $monto;
 		if(!is_numeric($monto)){
-			$this->validation->set_message('chreducida', 'El campo %s reducida debe contener n&uacute;meros.');
+			$this->validation->set_message('chreducida', 'El campo %s reducida debe contener numeros.');
 			return false;
 		}
 
@@ -4228,7 +4387,7 @@ function gserfiscal(mid){
 		$iva   = (empty($iva))?   0: $iva  ;
 		$monto = (empty($monto))? 0: $monto;
 		if(!is_numeric($monto)){
-			$this->validation->set_message('chsobretasa', 'El campo %s adicional debe contener n&uacute;meros.');
+			$this->validation->set_message('chsobretasa', 'El campo %s adicional debe contener numeros.');
 			return false;
 		}
 
