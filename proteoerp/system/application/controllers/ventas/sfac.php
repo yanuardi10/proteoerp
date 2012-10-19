@@ -3061,7 +3061,7 @@ function sfacreiva(mid){
 			$mSQL="ALTER TABLE sfac ADD ereiva DATE AFTER freiva";
 			$this->db->simple_query($mSQL);
 		}
-		if(!$this->datasis->iscampo('sfac','recibido')){
+		if(!$this->datasis->iscampo('sfac','entregado')){
 			$mSQL="ALTER TABLE sfac ADD entregado DATE ";
 			$this->db->simple_query($mSQL);
 			$this->db->simple_query("UPDATE sfac SET entregado=fecha");
