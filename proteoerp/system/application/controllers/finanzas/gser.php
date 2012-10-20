@@ -3826,7 +3826,7 @@ function gserfiscal(mid){
 		$numero  = $do->get('numero');
 		$nfiscal = $do->get('nfiscal');
 		$tipo_doc= $do->get('tipo_doc');
-		//$monto1  = $do->get('monto1');
+		$monto1  = $do->get('monto1');
 		if(empty($monto1)){
 			$monto1  = 0;
 		}
