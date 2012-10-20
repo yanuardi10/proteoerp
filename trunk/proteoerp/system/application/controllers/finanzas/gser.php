@@ -1093,7 +1093,6 @@ class gser extends Controller {
 				if ( $check == 0 ){
 					$this->db->insert('gser', $data);
 					echo "Registro Agregado";
-
 					logusu('GSER',"Registro ????? INCLUIDO");
 				} else
 					echo "Ya existe un registro con ese $mcodp";
@@ -1818,28 +1817,20 @@ class gser extends Controller {
 		} else {
 			$modo = $this->uri->segment($this->uri->total_segments()-1);
 
-			if ( $modo == 'actualizar' ){
-				$this->actualizar($id);
-			} elseif ( $modo == 'reversar' ){
-				$rt = $this->reversar($id);
-				echo $rt;
-			} elseif ( $modo == 'cprecios' ){
-				$rt = $this->cprecios($id);
-				echo $rt;
-			} else {
-				if ( $modo == 'update' ) $this->genesal = false;
-				$rt = $this->dataedit();
-				$rt = str_replace("\n","<br>",$rt);
-				if ($rt == 'Gasto Guardado')
-					$status='E';
-				else
-					$status='E';
-				if ( strlen($rt) > 0 )
-					echo '{"status":"'.$status.'","id":"'.$id.'" ,"mensaje":"'.$rt.'"}';
-			}
+
+			if ( $modo == 'update' ) $this->genesal = false;
+			$rt = $this->dataedit();
+			
+			$rt = str_replace("\n","<br>",$rt);
+			if ($rt == 'Gasto Guardado')
+				$status='A';
+			else
+				$status='E';
+			if ( strlen($rt) > 0 )
+				echo '{"status":"'.$status.'","id":"'.$id.'" ,"mensaje":"'.$rt.'"}';
+
 		}
 	}
-
 
 /*
 	function gser(){
@@ -4519,13 +4510,10 @@ function gserfiscal(mid){
 		redirect('compras/sprv/dataedit/show/'.$id);
 	}
 
-
 	function tabla() {
 		$id = $this->uri->segment($this->uri->total_segments());
-
 		$transac = $this->datasis->dameval("SELECT transac FROM gser WHERE id='$id'");
-
-		$mSQL = "SELECT cod_prv, MID(nombre,1,25) nombre, tipo_doc, numero, monto, abonos FROM sprm WHERE transac='$transac' ORDER BY cod_prv ";
+		$mSQL = "SELECT cod_prv, MID(CONCAT(TRIM(cod_prv),' ',nombre),1,25) nombre, tipo_doc, numero, monto, abonos FROM sprm WHERE transac='$transac' ORDER BY cod_prv ";
 		$query = $this->db->query($mSQL);
 		$codprv = 'XXXXXXXXXXXXXXXX';
 		$salida = '';
@@ -4554,9 +4542,24 @@ function gserfiscal(mid){
 			$salida .= "<tr bgcolor='#d7c3c7'><td colspan='4' align='center'>Saldo : ".nformat($saldo). "</td></tr>";
 			$salida .= "</table>";
 		}
+
+		$mSQL = "SELECT codbanc, banco, tipo_op tipo_doc, numero, monto FROM bmov WHERE transac='$transac' ORDER BY codbanc ";
+		$query = $this->db->query($mSQL);
+		$salida .= "\n";
+		if ( $query->num_rows() > 0 ){
+			$salida .= "<br><table width='100%' border=1>";
+			$salida .= "<tr bgcolor='#e7e3e7'><td>Tp</td><td align='center'>Banco</td><td align='center'>Monto</td></tr>";
+			foreach ($query->result_array() as $row)
+			{
+				$salida .= "<tr>";
+				$salida .= "<td>".$row['codbanc']."</td>";
+				$salida .= "<td>".$row['banco'].  "</td>";
+				$salida .= "<td align='right'>".nformat($row['monto'])."</td>";
+				$salida .= "</tr>";
+			}
+			$salida .= "</table>";
+		}
 		echo $salida;
-
 	}
-
 }
 ?>
