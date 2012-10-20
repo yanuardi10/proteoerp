@@ -140,7 +140,7 @@ class gser extends Controller {
 			var s;
 			var allFields = $( [] ).add( ffecha );
 			var tips = $( ".validateTips" );
-			s = grid.getGridParam(\'selarrrow\'); 
+			s = grid.getGridParam(\'selarrrow\');
 		';
 
 		$bodyscript .= '
@@ -1974,13 +1974,13 @@ class gser extends Controller {
 
 		$style ='
 <style type="text/css">
-.fakeContainer { // The parent container 
+.fakeContainer { // The parent container
     margin: 5px;
     padding: 0px;
     border: none;
-    width: 640px; // Required to set 
-    height: 320px; // Required to set 
-    overflow: hidden; // Required to set 
+    width: 640px; // Required to set
+    height: 320px; // Required to set
+    overflow: hidden; // Required to set
 }
 </style>
 		';
@@ -4019,13 +4019,14 @@ function gserfiscal(mid){
 		$hora     = $do->get('hora');
 		$nombre   = $do->get('nombre');
 		$totiva   = $do->get('totiva');
+		$credito  = $do->get('credito');
 
 		$totbruto = $do->get('totbruto');
 		$totneto  = $do->get('totneto');
 		$totcred  = round($totneto-$monto1,2);
 
 		//Crea el abono
-		if($monto1>0){
+		if($monto1>0 && $credito>0){
 			$absprm  = $this->datasis->fprox_numero('num_nd');
 			$control = $this->datasis->fprox_numero('nsprm');
 
@@ -4518,7 +4519,7 @@ function gserfiscal(mid){
 		redirect('compras/sprv/dataedit/show/'.$id);
 	}
 
-		
+
 	function tabla() {
 		$id = $this->uri->segment($this->uri->total_segments());
 
