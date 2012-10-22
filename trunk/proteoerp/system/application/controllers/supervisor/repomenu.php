@@ -3,7 +3,7 @@ class repomenu extends validaciones {
 	var $genesal=true;
 
 	function repomenu(){
-		parent::Controller(); 
+		parent::Controller();
 		$this->load->library('rapyd');
 		$this->datasis->modulo_id('90B',1);
 	}
@@ -46,16 +46,19 @@ class repomenu extends validaciones {
 		$filter->nombre->group = 'Uno';
 
 		$filter->modulo = new dropdownField('Modulo','modulo');
+		$filter->modulo->db_name = 'a.modulo';
 		$filter->modulo->option('','Todos');
 		$filter->modulo->options('SELECT modulo,modulo as value FROM intrarepo GROUP BY modulo');
 		$filter->modulo->style='width:130px';
 		$filter->modulo->group = 'Uno';
 
 		$filter->titulo = new inputField('T&iacute;tulo','titulo');
+		$filter->titulo->db_name = 'a.titulo';
 		$filter->titulo->size=30;
 		$filter->titulo->group = 'Uno';
 
 		$filter->activo = new dropdownField('Activo','activo');
+		$filter->activo->db_name = 'a.activo';
 		$filter->activo->option('','Todos');
 		$filter->activo->option('S','Si');
 		$filter->activo->option('N','No');
@@ -63,6 +66,7 @@ class repomenu extends validaciones {
 		$filter->activo->group = 'Uno';
 
 		$filter->proteo = new inputField('Contenido Proteo','proteo');
+		$filter->proteo->db_name = 'b.proteo';
 		$filter->proteo->size=40;
 		$filter->proteo->db_name='b.proteo';
 		$filter->proteo->group = 'Dos';
