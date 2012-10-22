@@ -48,14 +48,28 @@ class Scli extends Controller {
 		$consulrif=trim($this->datasis->traevalor('CONSULRIF'));
 
 		$bodyscript = '
-		<script type="text/javascript">
+		<script type="text/javascript">';
+
+		$bodyscript .= '
 		jQuery("#edocta").click( function(){
 			var id = jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
 			if (id)	{
 				var ret = jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
 				'.$this->datasis->jwinopen(site_url('reportes/ver/SMOVECU/SCLI/').'/\'+ret.proveed').';
-			} else { $.prompt("<h1>Por favor Seleccione un Proveedor</h1>");}
-		});
+			} else { $.prompt("<h1>Por favor Seleccione un Cliente</h1>");}
+		});';
+
+		// Creditos
+		$bodyscript .= '
+		jQuery("#editacr").click( function(){
+			var id = jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret = jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
+				'.$this->datasis->jwinopen(site_url('ventas/scli/creditoedit/modify').'/\'+id',600,480).';
+			} else { $.prompt("<h1>Por favor Seleccione un Cliente</h1>");}
+		});';
+
+		$bodyscript .= '
 		</script>
 		';
 
@@ -65,7 +79,8 @@ class Scli extends Controller {
 		$grid->setUrlput(site_url($this->url.'setdata/'));
 
 		//Botones Panel Izq
-		$grid->wbotonadd(array("id"=>"edocta",   "img"=>"images/pdf_logo.gif",  "alt" => 'Formato PDF', "label"=>"Estado de Cuenta"));
+		$grid->wbotonadd(array("id"=>"edocta",  "img"=>"images/pdf_logo.gif",  "alt" => 'Formato PDF', "label"=>"Estado de Cuenta"));
+		$grid->wbotonadd(array("id"=>"editacr", "img"=>"images/star.png",  "alt" => 'Credito', "label"=>"Cambiar credito"));
 		$WestPanel = $grid->deploywestp();
 
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'));
@@ -2015,11 +2030,13 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		$this->rapyd->load('dataedit');
 
 		$edit = new DataEdit('L&iacute;mite de cr&eacute;dito', 'scli');
+		$edit->back_url = site_url('ajax/reccierraventana'); 
 		$edit->back_save   = true;
 		$edit->back_cancel = true;
 		$edit->back_cancel_save   = true;
 		$edit->back_cancel_delete = true;
-		$edit->back_url = site_url('ventas/scli/filtergridcredi');
+		//$edit->back_url = site_url('ventas/scli/filtergridcredi');
+
 
 		$edit->post_process('insert','_pos_credi_insert');
 		$edit->post_process('update','_pos_credi_update');
@@ -2104,7 +2121,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		if($plim || $paxt || $pext){
 			$edit->buttons('modify', 'save');
 		}
-		$edit->buttons('undo', 'back');
+		$edit->buttons( 'undo','back');
 		$edit->build();
 
 		$script= '<script type="text/javascript" >
@@ -2121,6 +2138,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		$data['title']   = heading('Cr&eacute;dito a cliente');
 		$this->load->view('view_ventanas', $data);
 	}
+
 
 	function claveedit(){
 		//$this->pi18n->cargar('scli','dataedit');
@@ -3100,18 +3118,20 @@ var cplaStore = new Ext.data.Store({
 		if(!$this->db->table_exists('sclibitalimit')){
 			$mSQL="CREATE TABLE `sclibitalimit` (
 				`id` INT(11) NOT NULL AUTO_INCREMENT,
-				`cliente` CHAR(5) NULL DEFAULT NULL COLLATE 'latin1_swedish_ci',
-				`credito` CHAR(1) NULL DEFAULT NULL COLLATE 'latin1_swedish_ci',
+				`cliente`    CHAR(5) NULL DEFAULT NULL COLLATE 'latin1_swedish_ci',
+				`credito`    CHAR(1) NULL DEFAULT NULL COLLATE 'latin1_swedish_ci',
 				`creditoant` CHAR(1) NULL DEFAULT NULL,
-				`limite` BIGINT(20) NULL DEFAULT NULL,
-				`limiteant` BIGINT(20) NULL DEFAULT NULL,
-				`tolera` DECIMAL(9,2) NULL DEFAULT NULL,
-				`toleraant` DECIMAL(9,2) NULL DEFAULT NULL,
-				`maxtol` DECIMAL(9,2) NULL DEFAULT NULL,
-				`maxtolant` DECIMAL(9,2) NULL DEFAULT NULL,
-				`motivo` TEXT NULL,
-				`estampa` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-				`usuario` VARCHAR(12) NULL DEFAULT NULL,
+				`limite`     BIGINT(20) NULL DEFAULT NULL,
+				`limiteant`  BIGINT(20) NULL DEFAULT NULL,
+				`tolera`     DECIMAL(9,2) NULL DEFAULT NULL,
+				`toleraant`  DECIMAL(9,2) NULL DEFAULT NULL,
+				`maxtol`     DECIMAL(9,2) NULL DEFAULT NULL,
+				`maxtolant`  DECIMAL(9,2) NULL DEFAULT NULL,
+				`motivo`     TEXT NULL,
+				`formap`     DECIMAL(9,0) NULL DEFAULT NULL,
+				`formapsant` DECIMAL(9,0) NULL DEFAULT NULL,
+				`estampa`    TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+				`usuario`    VARCHAR(12) NULL DEFAULT NULL,
 				PRIMARY KEY (`id`),
 				INDEX `cliente` (`cliente`)
 			)

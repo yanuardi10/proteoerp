@@ -42,7 +42,7 @@ class Sfac extends Controller {
 
 		//Botones Panel Izq
 		$grid->wbotonadd(array("id"=>"boton1",  "img"=>"images/pdf_logo.gif","alt" => 'Formato PDF',      "label"=>"Reimprimir Documento"));
-		$grid->wbotonadd(array("id"=>"boton2",  "img"=>"images/agrega4.png", "alt" => 'Agregar',          "label"=>"Agregar Venta"));
+		$grid->wbotonadd(array("id"=>"boton2",  "img"=>"images/agrega4.png", "alt" => 'Agregar',          "label"=>"Agregar Factura"));
 		$grid->wbotonadd(array("id"=>"cobroser","img"=>"images/agrega4.png", "alt" => 'Cobro de Servicio',"label"=>"Cobro de Servicio"));
 		$WestPanel = $grid->deploywestp();
 
@@ -1733,7 +1733,6 @@ class Sfac extends Controller {
 	</tr>
 	</table>
 	</fieldset>
-
 
 	<fieldset style="border: 2px outset #9AC8DA;background: #FFFDE9;">
 	<table width="90%" align="center" border="0">
