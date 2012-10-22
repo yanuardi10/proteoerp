@@ -751,11 +751,12 @@ class Ajax extends Controller {
 	}
 
 	//Para cerrar la ventana luego de una operacion exitosa
-	function reccierraventana(){
+	function reccierraventana($reload=null){
+		if($reload!='N') $rr='$(window).unload(function() { window.opener.location.reload(); });'; else $rr='';
 		$script='
 		<script language="javascript" type="text/javascript">
 		$(function(){
-			$(window).unload(function() { window.opener.location.reload(); });
+			'.$rr.'
 			window.close();
 		});
 		</script>';
