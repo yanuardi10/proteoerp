@@ -1,5 +1,375 @@
 <?php
-//plancuenta
+class Cpla extends Controller {
+	var $mModulo='CPLA';
+	var $titp='Plan de Cuentas';
+	var $tits='Plan de Cuentas';
+	var $url ='contabilidad/cpla/';
+	var $mensaje ='';
+
+	function Cpla(){
+		parent::Controller();
+		$this->load->library('rapyd');
+		$this->load->library('jqdatagrid');
+		//$this->datasis->modulo_nombre( $modulo, $ventana=0 );
+	}
+
+	function index(){
+		if ( !$this->datasis->iscampo('cpla','id') ) {
+			$this->db->simple_query('ALTER TABLE cpla DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE cpla ADD UNIQUE INDEX codigo (codigo)');
+			$this->db->simple_query('ALTER TABLE cpla ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
+		};
+		$this->datasis->modintramenu( 700, 500, substr($this->url,0,-1) );
+		redirect($this->url.'jqdatag');
+	}
+
+	//***************************
+	//Layout en la Ventana
+	//
+	//***************************
+	function jqdatag(){
+
+		$grid = $this->defgrid();
+		$param['grids'][] = $grid->deploy();
+
+		$bodyscript = '';
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		//Botones Panel Izq
+		//$grid->wbotonadd(array("id"=>"edocta",   "img"=>"images/pdf_logo.gif",  "alt" => "Formato PDF", "label"=>"Estado de Cuenta"));
+		$WestPanel = $grid->deploywestp();
+
+		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor("TITULO1"));
+
+		$funciones = '
+		function cplasuge(){
+			var id = jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret = jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
+				return ret.codigo;
+			}else{
+				return "";
+			}
+		}		
+		';
+		
+		$param['WestPanel']   = $WestPanel;
+		//$param['EastPanel'] = $EastPanel;
+		$param['funciones']   = $funciones;
+		$param['SouthPanel']  = $SouthPanel;
+		$param['listados']    = $this->datasis->listados('CPLA', 'JQ');
+		$param['otros']       = $this->datasis->otros('CPLA', 'JQ');
+		$param['temas']       = array('proteo','darkness','anexos1');
+		$param['bodyscript']  = $bodyscript;
+		$param['tabs']        = false;
+		$param['encabeza']    = $this->titp;
+		$this->load->view('jqgrid/crud2',$param);
+	}
+
+	//***************************
+	//Funciones de los Botones
+	//***************************
+	function bodyscript( $grid0, $grid1 ){
+
+		$bodyscript .= '
+		function cplaadd() {
+			$.post("'.site_url('contabilidad/cpla/solo/create').'",
+			function(data){
+				$("#fplan").html(data);
+				$( "#fplan" ).dialog( "open" );
+			})
+		};';
+
+		$bodyscript .= '
+		function cplaedit() {
+			var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret    = $("#newapi'.$grid0.'").getRowData(id);
+				mId = id;
+				$.post("'.site_url('contabilidad/cpla/solo/modify').'/"+id, function(data){
+					$("#fplan").html(data);
+					$( "#fplan" ).dialog( "open" );
+				});
+			} else { $.prompt("<h1>Por favor Seleccione un Gasto</h1>");}
+		};';
+
+
+		$bodyscript .= '
+		jQuery("#modifica").click( function(){
+			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
+				window.open(\''.site_url('finanzas/gser/dataedit/modify').'/\'+id, \'_blank\', \'width=900,height=700,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-350)\');
+			} else { $.prompt("<h1>Por favor Seleccione un Gasto</h1>");}
+		});';
+
+		//Wraper de javascript
+		$bodyscript .= '
+		$(function() {
+			$("#dialog:ui-dialog").dialog( "destroy" );
+			var mId = 0;
+			var montotal = 0;
+			var ffecha = $("#ffecha");
+			var grid = jQuery("#newapi'.$grid0.'");
+			var s;
+			var allFields = $( [] ).add( ffecha );
+			var tips = $( ".validateTips" );
+			s = grid.getGridParam(\'selarrrow\');
+		';
+
+		$bodyscript .= '
+			$( "#fgasto" ).dialog({
+				autoOpen: false, height: 590, width: 950, modal: true,
+				buttons: {
+					"Guardar": function() {
+						var bValid = true;
+						var murl = $("#df1").attr("action");
+						allFields.removeClass( "ui-state-error" );
+						if ( bValid ) {
+							$.ajax({
+								type: "POST", dataType: "html", async: false,
+								url: murl,
+								data: $("#df1").serialize(),
+								success: function(r,s,x){
+									var res = $.parseJSON(r);
+									if ( res.status == "A"){
+										apprise(res.mensaje);
+										$( "#fcompra" ).dialog( "close" );
+										grid.trigger("reloadGrid");
+										'.$this->datasis->jwinopen(site_url('formatos/ver/GSER').'/\'+res.id+\'/id\'').';
+										return true;
+									} else if ( res.status == "C"){
+										apprise("<div style=\"font-size:16px;font-weight:bold;background:green;color:white\">Mensaje:</div> <h1>"+res.mensaje);
+									} else {
+										apprise("<div style=\"font-size:16px;font-weight:bold;background:red;color:white\">Error:</div> <h1>"+res.mensaje+"</h1>");
+									}
+								}
+							});
+						}
+					},
+					Cancelar: function() { $( this ).dialog( "close" ); }
+				},
+				close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
+			});
+		});';
+
+
+		$bodyscript .= "\n</script>\n";
+		return $bodyscript;
+	}
+
+
+	//***************************
+	//Definicion del Grid y la Forma
+	//***************************
+	function defgrid( $deployed = false ){
+		$i      = 1;
+		$editar = "true";
+
+		$grid  = new $this->jqdatagrid;
+
+		$grid->addField('codigo');
+		$grid->label('Codigo');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 110,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:15, maxlength: 15 }',
+		));
+
+		$grid->addField('descrip');
+		$grid->label('Descripcion');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 220,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 35 }',
+		));
+
+		$grid->addField('departa');
+		$grid->label('Depto.');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 50,
+			'edittype'      => "'select'",
+			'editoptions'   => '{value: {"N":"No usa Deptos","S":"Usa Departamento" },  style:"width:200px" }',
+			'editrules'     => '{ required:true}',
+		));
+
+		$grid->addField('moneta');
+		$grid->label('Monetaria');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 50,
+			'edittype'      => "'select'",
+			'editoptions'   => '{value: {"N":"No Monetaria","S":"Cuenta Monetaria" },  style:"width:200px" }',
+			'editrules'     => '{ required:true}',
+		));
+
+		$grid->addField('id');
+		$grid->label('Id');
+		$grid->params(array(
+			'align'         => "'center'",
+			'frozen'        => 'true',
+			'width'         => 40,
+			'editable'      => 'false',
+			'search'        => 'false'
+		));
+
+		$grid->showpager(true);
+		$grid->setWidth('');
+		$grid->setHeight('290');
+		$grid->setTitle($this->titp);
+		$grid->setfilterToolbar(true);
+		$grid->setToolbar('false', '"top"');
+
+		$grid->setFormOptionsE('
+			closeAfterEdit:true,
+			mtype: "POST",
+			width: 420, height:200,
+			closeOnEscape: true,
+			top: 50, left:20,
+			recreateForm:true,
+			afterSubmit: function(a,b){
+				if (a.responseText.length > 0){
+					if ( a.responseText.substr(0,1) == "A" ){
+						$.prompt(a.responseText.substr(1,90) );
+						return [true, a ];
+					} else {
+						$.prompt(a.responseText.substr(1,90));
+						return [false, a ];
+					}
+				} else
+					return [false, a];
+			},
+			beforeShowForm: function(frm){
+				$(\'#codigo\').attr(\'readonly\',\'readonly\');
+			},
+			afterShowForm: function(frm){$("select").selectmenu({style:"popup"});}
+		');
+
+
+		$grid->setFormOptionsA('
+			closeAfterAdd:true,
+			mtype: "POST",
+			width: 420, height:200,
+			closeOnEscape: true,
+			top: 50, left:20,
+			recreateForm:true,
+			afterSubmit: function(a,b){
+				if (a.responseText.length > 0){
+					if ( a.responseText.substr(0,1) == "A" ){
+						$.prompt(a.responseText.substr(1,90) );
+						return [true, a ];
+					} else {
+						$.prompt(a.responseText.substr(1,90));
+						return [false, a ];
+					}
+				} else
+					return [false, a];
+			},
+			beforeShowForm: function(frm){
+				$(\'#codigo\').val( cplasuge() );
+			},
+			afterShowForm: function(frm){$("select").selectmenu({style:"popup"});}
+		');
+
+
+		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
+
+		#show/hide navigations buttons
+		$grid->setAdd(true);
+		$grid->setEdit(true);
+		$grid->setDelete(true);
+		$grid->setSearch(true);
+		$grid->setRowNum(30);
+		$grid->setShrinkToFit('false');
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		#GET url
+		$grid->setUrlget(site_url($this->url.'getdata/'));
+
+		if ($deployed) {
+			return $grid->deploy();
+		} else {
+			return $grid;
+		}
+	}
+
+	/**
+	* Busca la data en el Servidor por json
+	*/
+	function getdata()
+	{
+		$grid       = $this->jqdatagrid;
+
+		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
+		$mWHERE = $grid->geneTopWhere('cpla');
+
+		$response   = $grid->getData('cpla', array(array()), array(), false, $mWHERE, 'codigo' );
+		$rs = $grid->jsonresult( $response);
+		echo $rs;
+	}
+
+	/**
+	* Guarda la Informacion
+	*/
+	function setData()
+	{
+		$this->load->library('jqdatagrid');
+		$oper   = $this->input->post('oper');
+		$id     = $this->input->post('id');
+		$data   = $_POST;
+		$mcodp  = "codigo";
+		$check  = 0;
+
+		unset($data['oper']);
+		unset($data['id']);
+		if($oper == 'add'){
+			if(false == empty($data)){
+				if ( $this->chcodigo($data['codigo'])) {
+					$this->db->insert('cpla', $data);
+					echo 'A'."Registro Agregado";
+					logusu('CPLA',"Registro ".$data['codigo']." INCLUIDO");
+				} else
+					echo 'E'.$this->mensaje;
+			} else
+				echo "Fallo Agregado!!!";
+
+		} elseif($oper == 'edit') {
+			$nuevo  = $data[$mcodp];
+			unset($data[$mcodp]);
+			$this->db->where("id", $id);
+			$this->db->update('cpla', $data);
+			logusu('CPLA',"Cuenta  ".$nuevo." MODIFICADO");
+			echo "ACuenta $nuevo Modificada";
+
+		} elseif($oper == 'del') {
+			$meco = $this->datasis->dameval("SELECT $mcodp FROM cpla WHERE id=$id");
+			$check =  $this->datasis->dameval("SELECT COUNT(*) FROM itcasi WHERE cuenta='$meco' ");
+			if ($check > 0){
+				echo " El registro no puede ser eliminado; tiene movimiento ";
+			} else {
+				$this->db->simple_query("DELETE FROM cpla WHERE id=$id ");
+				logusu('CPLA',"Registro ????? ELIMINADO");
+				echo "ARegistro Eliminado";
+			}
+		};
+	}
+/*
+}
+
+
 class Cpla extends Controller {
 	function cpla(){
 		parent::Controller();
@@ -40,6 +410,7 @@ class Cpla extends Controller {
 		$data['title']   ='<h1>Plan de Cuentas</h1>';
 		$this->load->view('view_ventanas', $data);
 	}
+*/
 
 	function dataedit(){
 		$this->rapyd->load('dataedit');
@@ -91,12 +462,14 @@ class Cpla extends Controller {
 			if($mmac>=$max ){
 				for($i=0;$i<$max;$i++){
 					if(strlen($farr[$i])!=strlen($carr[$i])){
-						$this->validation->set_message('chcodigo',"El c&oacute;digo dado no coincide con el formato: $formato");
+						//$this->validation->set_message('chcodigo',"El c&oacute;digo dado no coincide con el formato: $formato");
+						$this->mensaje = "El codigo dado no coincide con el formato: $formato";
 						return false;
 					}
 				}
 			}else{
-				$this->validation->set_message('chcodigo',"El c&oacute;digo dado no coincide con el formato: $formato");
+				//$this->validation->set_message('chcodigo',"El c&oacute;digo dado no coincide con el formato: $formato");
+				$this->mensaje = "El codigo dado no coincide con el formato: $formato";
 				return false;
 			}
 			$pos=strrpos($codigo,'.');
@@ -104,12 +477,14 @@ class Cpla extends Controller {
 				$str=substr($codigo,0,$pos);
 				$cant=$this->datasis->dameval("SELECT COUNT(*) FROM cpla WHERE codigo='$str'");
 				if($cant==0){
-					$this->validation->set_message('chcodigo',"No existe la cuenta padre ($str) para registrar esa cuenta");
+					//$this->validation->set_message('chcodigo',"No existe la cuenta padre ($str) para registrar esa cuenta");
+					$this->mensaje = "No existe la cuenta padre ($str) para registrar esa cuenta";
 					return false;
 				}
 			}
 		}else{
-			$this->validation->set_message('chcodigo',"El c&oacute;digo parece tener formato invalido");
+			//$this->validation->set_message('chcodigo',"El c&oacute;digo parece tener formato invalido");
+			$this->mensaje = "El c&oacute;digo parece tener formato invalido";
 			return false;
 		}
 		return true;
