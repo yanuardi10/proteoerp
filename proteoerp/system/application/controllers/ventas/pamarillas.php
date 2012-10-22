@@ -161,9 +161,11 @@ class Pamarillas extends Controller {
 			'editoptions'   => '{ size:2, maxlength: 1 }',
 		));
 
+
 		$grid->addField('observa');
 		$grid->label('Observacion');
 		$grid->params(array(
+			'hidden'        => 'true',
 			'search'        => 'true',
 			'editable'      => 'false',
 			'width'         => 150,
@@ -178,6 +180,16 @@ class Pamarillas extends Controller {
 		$grid->setTitle($this->titp);
 		$grid->setfilterToolbar(true);
 		$grid->setToolbar('false', '"top"');
+
+		$grid->setOnSelectRow('
+			function(id){
+				if (id){
+					var ret = $(gridId1).jqGrid(\'getRowData\',id);
+					$("#ladicional").html(ret.observa);
+				}
+			}'
+		);
+
 
 		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
 		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');

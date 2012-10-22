@@ -1015,10 +1015,12 @@ class gser extends Controller {
 		$grid->setfilterToolbar(true);
 		$grid->setToolbar('false', '"top"');
 
+					//var ret = $("#titulos").getRowData(id);
+
+
 		$grid->setOnSelectRow('
 			function(id){
 				if (id){
-					var ret = $("#titulos").getRowData(id);
 					jQuery(gridId2).jqGrid(\'setGridParam\',{url:"'.site_url($this->url.'getdatait/').'/"+id+"/", page:1});
 					jQuery(gridId2).trigger("reloadGrid");
 					$.ajax({

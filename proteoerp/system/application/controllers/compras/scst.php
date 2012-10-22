@@ -96,7 +96,6 @@ class Scst extends Controller {
 			} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
 		});';
 
-
 		$bodyscript .= '
 		jQuery("#serie").click( function(){
 			var gr = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
