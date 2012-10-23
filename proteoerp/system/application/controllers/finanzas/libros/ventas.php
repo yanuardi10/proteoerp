@@ -1549,7 +1549,7 @@ class ventas{
 				a.rif,
 				IF( b.nomfis IS NOT NULL AND b.nomfis!='',b.nomfis,b.nombre) AS nombre,
 				a.tipo,
-				IF(a.referen=a.numero,'        ',a.referen) afecta,
+				a.afecta,
 				a.gtotal*IF(a.tipo='NC',-1,1)    ventatotal,
 				a.exento*IF(a.tipo='NC',-1,1)    exento,
 				a.general*IF(a.tipo='NC',-1,1)   base,
@@ -1802,7 +1802,13 @@ class ventas{
 					$fecharece = substr($row->fecharece,8,2)."/".substr($row->fecharece,5,2)."/".substr($row->fecharece,0,4);
 				$ws->write_string( $mm,20, $fecharece, $cuerpo );	// FECHA COMPROB
 
-				$ws->write_string( $mm,21, $row->afecta, $numero ); //NRO FACT AFECTA
+				$ws->write_string( $mm,21, $row->afecta , $numero );
+				/*if($row->tipo=='CR'){
+
+					$ws->write_string( $mm,21, $row->afecta , $numero ); //NRO FACT AFECTA
+				}else{
+					$ws->write_string( $mm,21, $row->nfiscal, $numero ); //NRO FACT AFECTA
+				}*/
 
 				$mm++;
 			}
