@@ -1801,6 +1801,18 @@ class ventas{
 				if ( !empty($row->fecharece) )
 					$fecharece = substr($row->fecharece,8,2)."/".substr($row->fecharece,5,2)."/".substr($row->fecharece,0,4);
 				$ws->write_string( $mm,20, $fecharece, $cuerpo );	// FECHA COMPROB
+
+				if($row->tipo=='CR'){
+					if($fiscal)
+						$afecta=$this->datasis->dameval("SELECT nfiscal FROM sfac WHERE tipo_doc='F' AND numero=".$this->db->escape($row->afecta));
+					else
+						$afecta=$row->nfiscal;
+					$ws->write_string( $mm,21, $afecta , $numero ); //NRO FACT AFECTA
+				}else{
+					$ws->write_string( $mm,21, $row->nfiscal, $numero ); //NRO FACT AFECTA
+				}
+
+
 				$ws->write_string( $mm,21, $row->nfiscal, $numero );
 				$mm++;
 			}
