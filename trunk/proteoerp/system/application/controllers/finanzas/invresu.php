@@ -442,7 +442,7 @@ jQuery("#genera").click( function(){
 		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
 		$mWHERE = $grid->geneTopWhere('invresu');
 
-		$response   = $grid->getData('invresu', array(array()), array(), false, $mWHERE );
+		$response   = $grid->getData('invresu', array(array()), array(), false, $mWHERE, 'mes', 'DESC' );
 		$rs = $grid->jsonresult( $response);
 		echo $rs;
 	}
@@ -461,13 +461,13 @@ jQuery("#genera").click( function(){
 
 		unset($data['oper']);
 		unset($data['id']);
+
 		if($oper == 'add'){
 			if(false == empty($data)){
-				$check = $this->datasis->dameval("SELECT count(*) FROM invresu WHERE $mcodp=".$this->db->escape($data[$mcodp])." AND codigo="+$this->db->escape($data['codigo'])  );
+				$check = $this->datasis->dameval("SELECT count(*) FROM invresu WHERE mes=".$data['mes']." AND codigo=".$this->db->escape($data['codigo'])  );
 				if ( $check == 0 ){
 					$this->db->insert('invresu', $data);
 					echo "Registro Agregado";
-
 					logusu('INVRESU',"Registro ".$data['mes']." ".$data['codigo']." INCLUIDO");
 				} else
 					echo "Ya existe un registro con ese mes y codigo";
@@ -484,7 +484,7 @@ jQuery("#genera").click( function(){
 			echo "$mcodp Modificado";
 
 		} elseif($oper == 'del') {
-			$codigo = $this->datasis->dameval("SELECT $mcodp FROM invresu WHERE id=$id");
+			//$codigo = $this->datasis->dameval("SELECT $mcodp FROM invresu WHERE id=$id");
 			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM invresu WHERE id='$id' ");
 			if ($check > 0){
 				echo " El registro no puede ser eliminado; tiene movimiento ";

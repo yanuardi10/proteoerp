@@ -14,7 +14,6 @@ class Sfac extends Controller {
 	}
 
 	function index(){
-
 		$this->datasis->modintramenu( 1000, 650, 'ventas/sfac' );
 		redirect($this->url.'jqdatag');
 	}

@@ -1076,7 +1076,8 @@ class Scli extends Controller {
 		},
 		afterInsertRow: function( rid, aData, rowe){
 			if ( aData.tipo == "0" ){
-				$(this).jqGrid( "setRowData", rid, false,{color:"#000000", background:"#F45E44"});
+				$(this).jqGrid( "setCell", rid, "cliente","", {color:"#FFFFFF", \'background-color\':"#AF1001" });
+				$(this).jqGrid( "setCell", rid, "nombre", "", {color:"#FFFFFF", \'background-color\':"#AF1001" });
 			}
 		}'
 		);
@@ -1327,10 +1328,10 @@ class Scli extends Controller {
 		
 		$salida = '';
 
-
+//{color:"#FFFFFF", \'background-color\':"#AF1001"
 		$salida  .= '<table width="100%" cellspacing="0">';
 		if ( $tipo == '0' )
-			$salida .= '<tr style="background-color:#F45E44;font-size:14px;font-weight:bold;"><td colspan="2" align="center">CLIENTE INACTIVO</td></tr>'."\n";
+			$salida .= '<tr style="background-color:#AF1001; color:#FFFFFF; font-size:14px;font-weight:bold;"><td colspan="2" align="center">CLIENTE INACTIVO</td></tr>'."\n";
 
 		if ($tipo == 'S')
 			$salida .= "<tr style='background-color:#AAEEAA;'><td colspan='2' align='center'><b>Credito $mcredito</b></td></tr>\n";

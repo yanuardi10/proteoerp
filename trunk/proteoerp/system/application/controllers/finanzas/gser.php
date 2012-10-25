@@ -354,13 +354,12 @@ class gser extends Controller {
 		$grid->label('Cheque1');
 		$grid->params(array(
 			'search'        => 'true',
-			'editable'      => $editar,
+			'editable'      => 'true',
 			'width'         => 120,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 12 }',
+			'editoptions'   => '{ size:12, maxlength: 12 }',
 		));
-
 
 		$grid->addField('comprob1');
 		$grid->label('Comprob1');
@@ -372,7 +371,6 @@ class gser extends Controller {
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:30, maxlength: 6 }',
 		));
-
 
 		$grid->addField('monto1');
 		$grid->label('Monto1');
@@ -718,11 +716,12 @@ class gser extends Controller {
 		$grid->label('Nfiscal');
 		$grid->params(array(
 			'search'        => 'true',
-			'editable'      => $editar,
+			'editable'      => 'true',
 			'width'         => 120,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 12 }',
+			'editoptions'   => '{ size:12, maxlength: 12 }',
+			'formoptions'   => '{ label:"Nro Fiscal" }'
 		));
 
 
@@ -754,12 +753,12 @@ class gser extends Controller {
 		$grid->label('Ffactura');
 		$grid->params(array(
 			'search'        => 'true',
-			'editable'      => $editar,
+			'editable'      => 'true',
 			'width'         => 80,
 			'align'         => "'center'",
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true,date:true}',
-			'formoptions'   => '{ label:"Fecha" }'
+			'formoptions'   => '{ label:"Fecha del Documento" }'
 		));
 
 		$grid->addField('cajachi');
@@ -910,11 +909,12 @@ class gser extends Controller {
 		$grid->label('Serie');
 		$grid->params(array(
 			'search'        => 'true',
-			'editable'      => $editar,
+			'editable'      => 'true',
 			'width'         => 120,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 12 }',
+			'editoptions'   => '{ size:12, maxlength: 12 }',
+			'formoptions'   => '{ label:"Nro. de Factura" }'
 		));
 
 
@@ -930,7 +930,7 @@ class gser extends Controller {
 			'formoptions'   => '{ label:"Fecha" }'
 		));
 
-
+/*
 		$grid->addField('reteica');
 		$grid->label('Reteica');
 		$grid->params(array(
@@ -944,7 +944,7 @@ class gser extends Controller {
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
-
+*/
 
 		$grid->addField('retesimple');
 		$grid->label('Retesimple');
@@ -1015,9 +1015,6 @@ class gser extends Controller {
 		$grid->setfilterToolbar(true);
 		$grid->setToolbar('false', '"top"');
 
-					//var ret = $("#titulos").getRowData(id);
-
-
 		$grid->setOnSelectRow('
 			function(id){
 				if (id){
@@ -1033,8 +1030,8 @@ class gser extends Controller {
 			}'
 		);
 
-		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
-		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
+		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 400, height:250, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
+		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 400, height:250, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
 		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
 
 		#show/hide navigations buttons
@@ -1045,7 +1042,8 @@ class gser extends Controller {
 		$grid->setRowNum(30);
 		$grid->setShrinkToFit('false');
 
-		$grid->setBarOptions("\t\taddfunc: gseradd,\n\t\teditfunc: gseredit");
+		//$grid->setBarOptions("\t\taddfunc: gseradd,\n\t\teditfunc: gseredit");
+		$grid->setBarOptions("\t\taddfunc: gseradd");
 
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
@@ -1146,6 +1144,7 @@ class gser extends Controller {
 		$grid->addField('fecha');
 		$grid->label('Fecha');
 		$grid->params(array(
+			'hidden'        => 'true',
 			'search'        => 'true',
 			'editable'      => $editar,
 			'width'         => 80,
@@ -1159,6 +1158,7 @@ class gser extends Controller {
 		$grid->addField('numero');
 		$grid->label('Numero');
 		$grid->params(array(
+			'hidden'        => 'true',
 			'search'        => 'true',
 			'editable'      => $editar,
 			'width'         => 80,
@@ -1171,6 +1171,7 @@ class gser extends Controller {
 		$grid->addField('proveed');
 		$grid->label('Proveed');
 		$grid->params(array(
+			'hidden'        => 'true',
 			'search'        => 'true',
 			'editable'      => $editar,
 			'width'         => 50,
@@ -1196,7 +1197,7 @@ class gser extends Controller {
 		$grid->label('Descrip');
 		$grid->params(array(
 			'search'        => 'true',
-			'editable'      => $editar,
+			'editable'      => 'true',
 			'width'         => 200,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
@@ -1233,7 +1234,6 @@ class gser extends Controller {
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
 		$grid->addField('importe');
 		$grid->label('Importe');
 		$grid->params(array(
@@ -1248,7 +1248,7 @@ class gser extends Controller {
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
+/*
 		$grid->addField('unidades');
 		$grid->label('Unidades');
 		$grid->params(array(
@@ -1290,7 +1290,6 @@ class gser extends Controller {
 			'editoptions'   => '{ size:30, maxlength: 4 }',
 		));
 
-
 		$grid->addField('sucursal');
 		$grid->label('Sucursal');
 		$grid->params(array(
@@ -1301,7 +1300,7 @@ class gser extends Controller {
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:30, maxlength: 2 }',
 		));
-
+*/
 
 		$grid->addField('departa');
 		$grid->label('Departa');
@@ -1314,7 +1313,6 @@ class gser extends Controller {
 			'editoptions'   => '{ size:30, maxlength: 2 }',
 		));
 
-
 		$grid->addField('transac');
 		$grid->label('Transac');
 		$grid->params(array(
@@ -1326,7 +1324,7 @@ class gser extends Controller {
 			'editoptions'   => '{ size:30, maxlength: 8 }',
 		));
 
-
+/*
 		$grid->addField('usuario');
 		$grid->label('Usuario');
 		$grid->params(array(
@@ -1375,19 +1373,6 @@ class gser extends Controller {
 			'editoptions'   => '{ size:30, maxlength: 8 }',
 		));
 
-
-		$grid->addField('huerfano');
-		$grid->label('Huerfano');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 40,
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 1 }',
-		));
-
-
 		$grid->addField('rif');
 		$grid->label('Rif');
 		$grid->params(array(
@@ -1398,7 +1383,6 @@ class gser extends Controller {
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:30, maxlength: 13 }',
 		));
-
 
 		$grid->addField('proveedor');
 		$grid->label('Proveedor');
@@ -1411,7 +1395,6 @@ class gser extends Controller {
 			'editoptions'   => '{ size:30, maxlength: 40 }',
 		));
 
-
 		$grid->addField('numfac');
 		$grid->label('Numfac');
 		$grid->params(array(
@@ -1422,7 +1405,6 @@ class gser extends Controller {
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:30, maxlength: 8 }',
 		));
-
 
 		$grid->addField('fechafac');
 		$grid->label('Fechafac');
@@ -1445,10 +1427,11 @@ class gser extends Controller {
 			'width'         => 120,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 12 }',
+			'editoptions'   => '{ size:12, maxlength: 12 }',
+			'formoptions'   => '{ label:"Nro Fiscal" }'
 		));
 
-
+*/
 		$grid->addField('feprox');
 		$grid->label('Feprox');
 		$grid->params(array(
@@ -1461,7 +1444,7 @@ class gser extends Controller {
 			'formoptions'   => '{ label:"Fecha" }'
 		));
 
-
+/*
 		$grid->addField('dacum');
 		$grid->label('Dacum');
 		$grid->params(array(
@@ -1505,7 +1488,7 @@ class gser extends Controller {
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
 		));
-
+*/
 
 		$grid->addField('montasa');
 		$grid->label('Montasa');
@@ -1622,7 +1605,6 @@ class gser extends Controller {
 			'search'        => 'false'
 		));
 
-
 		$grid->addField('modificado');
 		$grid->label('Modificado');
 		$grid->params(array(
@@ -1649,7 +1631,6 @@ class gser extends Controller {
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
-
 
 		$grid->addField('idgser');
 		$grid->label('Idgser');
@@ -1719,16 +1700,6 @@ class gser extends Controller {
 		$rs = $grid->jsonresult( $response);
 		echo $rs;
 
-/*
-		$grid       = $this->jqdatagrid;
-
-		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
-		$mWHERE = $grid->geneTopWhere('gitser');
-
-		$response   = $grid->getData('gitser', array(array()), array(), false, $mWHERE );
-		$rs = $grid->jsonresult( $response);
-		echo $rs;
-*/
 	}
 
 	/**
@@ -1759,34 +1730,21 @@ class gser extends Controller {
 				echo "Fallo Agregado!!!";
 
 		} elseif($oper == 'edit') {
-			$nuevo  = $data[$mcodp];
-			$anterior = $this->datasis->dameval("SELECT $mcodp FROM gitser WHERE id=$id");
-			if ( $nuevo <> $anterior ){
-				//si no son iguales borra el que existe y cambia
-				$this->db->query("DELETE FROM gitser WHERE $mcodp=?", array($mcodp));
-				$this->db->query("UPDATE gitser SET $mcodp=? WHERE $mcodp=?", array( $nuevo, $anterior ));
-				$this->db->where("id", $id);
-				$this->db->update("gitser", $data);
-				logusu('GITSER',"$mcodp Cambiado/Fusionado Nuevo:".$nuevo." Anterior: ".$anterior." MODIFICADO");
-				echo "Grupo Cambiado/Fusionado en clientes";
-			} else {
-				unset($data[$mcodp]);
-				$this->db->where("id", $id);
-				$this->db->update('gitser', $data);
-				logusu('GITSER',"Grupo de Cliente  ".$nuevo." MODIFICADO");
-				echo "$mcodp Modificado";
-			}
+			$this->db->where("id", $id);
+			$this->db->update('gitser', $data);
+			logusu('GITSER',"Item Modificado ".$id." MODIFICADO");
+			echo "$id Modificado";
 
 		} elseif($oper == 'del') {
-		$meco = $this->datasis->dameval("SELECT $mcodp FROM gitser WHERE id=$id");
+			//$meco = $this->datasis->dameval("SELECT $mcodp FROM gitser WHERE id=$id");
 			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM gitser WHERE id='$id' ");
-			if ($check > 0){
-				echo " El registro no puede ser eliminado; tiene movimiento ";
-			} else {
-				$this->db->simple_query("DELETE FROM gitser WHERE id=$id ");
-				logusu('GITSER',"Registro ????? ELIMINADO");
-				echo "Registro Eliminado";
-			}
+			//if ($check > 0){
+				echo " No esta previsto eliminar items individuales ";
+			//} else {
+			//	$this->db->simple_query("DELETE FROM gitser WHERE id=$id ");
+			//	logusu('GITSER',"Registro ????? ELIMINADO");
+			//	echo "Registro Eliminado";
+			//}
 		};
 	}
 
