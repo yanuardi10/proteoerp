@@ -3524,7 +3524,7 @@ function gserfiscal(mid){
 				$data['head']   .=  script('plugins/jquery.floatnumber.js');
 				$data['head']   .=  script('plugins/jquery.ui.autocomplete.autoSelectOne.js');
 				$this->load->view('view_ventanas', $data);
-				$this->load->view('view_ventanas', $data);
+
 			}
 		} else {
 			$edit->on_save_redirect=false;

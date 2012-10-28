@@ -1733,24 +1733,29 @@ class Scst extends Controller {
 		$edit->fecha->insertValue = date('Y-m-d');
 		$edit->fecha->size = 10;
 		$edit->fecha->rule ='required';
+		$edit->fecha->calendar=false;
 		$transac=$edit->get_from_dataobjetct('transac');
 
 		$edit->vence = new DateonlyField('Vence', 'vence','d/m/Y');
 		$edit->vence->insertValue = date('Y-m-d');
 		$edit->vence->size = 10;
 		$edit->vence->rule ='required';
+		$edit->vence->calendar=false;
 
 		$edit->actuali = new DateonlyField('Actualizado', 'actuali','d/m/Y');
 		//$edit->actuali->insertValue = date('Y-m-d');
 		$edit->actuali->when=array('show');
 		$edit->actuali->size = 10;
 		$edit->actuali->mode ='autohide';
+		$edit->actuali->calendar=false;
+
 
 		$edit->recep = new DateonlyField('recibido', 'v','d/m/Y');
 		//$edit->recep->insertValue = date('Y-m-d');
 		$edit->recep->size = 10;
 		$edit->recep->mode = 'autohide';
 		$edit->recep->when=array('show');
+		$edit->recep->calendar=false;
 
 
 		$edit->serie = new inputField('N&uacute;mero', 'serie');
@@ -2420,7 +2425,9 @@ class Scst extends Controller {
 		$compra  = $this->datasis->dameval("SELECT CONCAT('Compra: </td><td><b>', serie,'</b></td><td> Fecha: </td><td><b>', fecha, '</b></td><td>Vence: </td><td><b>', vence,'</b>') factura FROM scst WHERE control=$control");
 		$montos  = $this->datasis->dameval("SELECT CONCAT('Sub Total: </td><td><b>', format(montotot,2),'</b></td><td> I.V.A.: </td><td><b>', format(montoiva,2), '</b></td><td>Monto: </td><td><b>', format(montonet,2),'</b>') factura FROM scst WHERE control=$control");
 		
-		$form->aaaa = new containerField('iii',"<table width='100%' style='background-color:#FBEC88;text-align:center;font-size:12px'><tr><td>".$proveed."</td></tr><tr><td>".$compra."</td></tr><tr><td>".$montos."</td></tr></table><br>&nbsp;");
+		$script = '<script>$(function() {$("#fecha").datepicker({ dateFormat: "dd/mm/yy" });})</script>';
+
+		$form->aaaa = new containerField('iii',$script."\n<table width='100%' style='background-color:#FBEC88;text-align:center;font-size:12px'><tr><td>".$proveed."</td></tr><tr><td>".$compra."</td></tr><tr><td>".$montos."</td></tr></table><br>&nbsp;");
 
 		$form->cprecio = new  dropdownField ('Cambiar precios', 'cprecio');
 		//$form->cprecio->option('D','Dejar el precio mayor');
@@ -2430,8 +2437,9 @@ class Scst extends Controller {
 		$form->cprecio->rule  = 'required';
 
 		$form->fecha = new dateonlyField('Fecha de recepci&oacute;n de la compra', 'fecha','d/m/Y');
-		$form->fecha->insertValue = date('Y-m-d');
+		$form->fecha->insertValue = date('d/m/Y');
 		$form->fecha->rule='required|callback_chddate';
+		$form->fecha->calendar = false;
 		$form->fecha->size=10;
 
 		if ( !$this->solo ) {

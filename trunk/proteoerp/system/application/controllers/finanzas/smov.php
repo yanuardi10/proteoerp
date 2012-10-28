@@ -178,7 +178,7 @@ class Smov extends Controller {
 		$grid->label('Abonos');
 		$grid->params(array(
 			'search'        => 'true',
-			'editable'      => 'false',
+			'editable'      => 'true',
 			'align'         => "'right'",
 			'edittype'      => "'text'",
 			'width'         => 80,
@@ -458,7 +458,7 @@ class Smov extends Controller {
 		$grid->label('Nfiscal');
 		$grid->params(array(
 			'search'        => 'true',
-			'editable'      => 'false',
+			'editable'      => 'true',
 			'width'         => 80,
 			'edittype'      => "'text'",
 		));
@@ -755,18 +755,21 @@ class Smov extends Controller {
 		unset($data['id']);
 		if($oper == 'add'){
 			if(false == empty($data)){
-				$this->db->insert('smov', $data);
+				//$this->db->insert('smov', $data);
 			}
 			return "Registro Agregado";
 
 		} elseif($oper == 'edit') {
 			//unset($data['ubica']);
+			$monto =  $this->datasis->dameval("SELECT monto FROM smov WHERE id='$id' ");
+			$data['abonos'] = abs($data['abonos']);
+			if ( $data['abonos'] > $monto  ) $data['abonos'] = $monto;
 			$this->db->where('id', $id);
 			$this->db->update('smov', $data);
-			return "Registro Modificado";
+			return "Movimiento Modificado";
 
 		} elseif($oper == 'del') {
-			$check =  $this->datasis->dameval("SELECT COUNT(*) FROM smov WHERE id='$id' ")+1;
+			$check =  $this->datasis->dameval("SELECT COUNT(*) FROM smov WHERE id='$id' ");
 			if ($check > 0){
 				echo " El registro no puede ser eliminado; tiene movimiento ";
 			} else {
