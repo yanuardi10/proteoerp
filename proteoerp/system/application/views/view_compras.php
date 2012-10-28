@@ -31,6 +31,12 @@ var tasa_adicion=<?php echo $alicuota['sobretasa'];?>;
 
 $(function(){
 	$(".inputnum").numeric(".");
+
+	$("#fecha").datepicker({   dateFormat: "dd/mm/yy" });
+	$("#vence").datepicker({   dateFormat: "dd/mm/yy" });
+	$("#actuali").datepicker({ dateFormat: "dd/mm/yy" });
+
+
 	totalizar();
 	for(var i=0;i < <?php echo $form->max_rel_count['itscst']; ?>;i++){
 		autocod(i.toString());
@@ -373,13 +379,6 @@ if (!$solo){
 							</tr><tr>
 								<td class="littletablerowth"><?php echo $form->actuali->label  ?></td>
 								<td class="littletablerow">  <?php echo $form->actuali->output ?></td>
-
-<?php
-/*
-								<td class="littletablerowth"><? echo $form->peso->label ?></td>
-								<td class="littletablerow" align='right'><b id='peso_val'><?php echo $form->peso->value ?></b><?php echo $form->peso->output ?></td>
-*/
-?>
 							</tr>
 						</table>
 					</td>

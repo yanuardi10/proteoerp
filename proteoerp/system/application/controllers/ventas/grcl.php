@@ -13,11 +13,6 @@ class Grcl extends Controller {
 	}
 
 	function index(){
-		/*if ( !$this->datasis->iscampo('grcl','id') ) {
-			$this->db->simple_query('ALTER TABLE grcl DROP PRIMARY KEY');
-			$this->db->simple_query('ALTER TABLE grcl ADD UNIQUE INDEX numero (numero)');
-			$this->db->simple_query('ALTER TABLE grcl ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
-		};*/
 		$this->datasis->modintramenu( 750, 500, substr($this->url,0,-1) );
 		redirect($this->url.'jqdatag');
 	}
@@ -31,63 +26,26 @@ class Grcl extends Controller {
 		$grid = $this->defgrid();
 		$param['grids'][] = $grid->deploy();
 
-		$bodyscript = '
-<script type="text/javascript">
-$(function() {
-	$( "input:submit, a, button", ".otros" ).button();
-});
-
-jQuery("#a1").click( function(){
-	var id = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
-	if (id)	{
-		var ret = jQuery("#newapi'. $param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
-		window.open(\''.base_url().'formatos/ver/GRCL/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
-	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
-});
-</script>
-';
+		$bodyscript = '';
 
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
 
-		$WestPanel = '
-<div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content">
-<div class="anexos">
+		//Botones Panel Izq
+		$WestPanel = $grid->deploywestp();
 
-<table id="west-grid" align="center">
-	<tr>
-		<td><div class="tema1"><table id="listados"></table></div></td>
-	</tr>
-	<tr>
-		<td><div class="tema1"><table id="otros"></table></div></td>
-	</tr>
-</table>
+		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor("TITULO1"));
 
-<table id="west-grid" align="center">
-	<tr>
-		<td></td>
-	</tr>
-</table>
-</div>
-'.
-//		<td><a style="width:190px" href="#" id="a1">Imprimir Copia</a></td>
-'</div> <!-- #LeftPane -->
-';
-
-		$SouthPanel = '
-<div id="BottomPane" class="ui-layout-south ui-widget ui-widget-content">
-<p>'.$this->datasis->traevalor('TITULO1').'</p>
-</div> <!-- #BottomPanel -->
-';
-		$param['WestPanel']  = $WestPanel;
-		//$param['EastPanel']  = $EastPanel;
-		$param['SouthPanel'] = $SouthPanel;
-		$param['listados'] = $this->datasis->listados('GRCL', 'JQ');
-		$param['otros']    = $this->datasis->otros('GRCL', 'JQ');
-		$param['temas']     = array('proteo','darkness','anexos1');
-		$param['bodyscript'] = $bodyscript;
-		$param['tabs'] = false;
-		$param['encabeza'] = $this->titp;
+		$param['WestPanel']   = $WestPanel;
+		//$param['EastPanel'] = $EastPanel;
+		$param['SouthPanel']  = $SouthPanel;
+		$param['listados']    = $this->datasis->listados('GRCL', 'JQ');
+		$param['otros']       = $this->datasis->otros('GRCL', 'JQ');
+		$param['temas']       = array('proteo','darkness','anexos1');
+		$param['bodyscript']  = $bodyscript;
+		$param['tabs']        = false;
+		$param['encabeza']    = $this->titp;
+		
 		$this->load->view('jqgrid/crud2',$param);
 	}
 

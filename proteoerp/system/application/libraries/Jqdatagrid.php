@@ -1609,8 +1609,8 @@ class Jqdatagrid
 
 	function SouthPanel( $leyenda = "", $adic = array() ){
 		$SouthPanel = '
-		<div id="BottomPane" class="ui-layout-south ui-widget ui-widget-content">
-			<p>'.$leyenda.'</p>
+		<div id="BottomPane" class="ui-layout-south ui-widget ">
+			<table cellpadding="0" cellspacing="0" width="100%"><tr><td><span style="font-size:14px;font-weight:bold;">'.$leyenda.'</span></td><td><div id="respuesta"></div></td></tr>
 		</div> <!-- #BottomPanel -->
 		';
 
