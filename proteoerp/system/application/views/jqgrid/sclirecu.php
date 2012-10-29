@@ -7,6 +7,72 @@ $(function() {
 	$( "#fecha1" ).datepicker({ dateFormat: "dd/mm/yy" });
 	$( "#fecha2" ).datepicker({ dateFormat: "dd/mm/yy" });
 	$( "#fecha3" ).datepicker({ dateFormat: "dd/mm/yy" });
+	
+	$('#cliente').autocomplete({
+		source: function( req, add){
+			$.ajax({
+				url:  "<?php echo site_url('ajax/buscascli'); ?>",
+				type: "POST",
+				dataType: "json",
+				data: "q="+req.term,
+				success:
+					function(data){
+						var sugiere = [];
+						$.each(data,
+							function(i, val){
+								sugiere.push( val );
+							}
+						);
+						add(sugiere);
+					},
+			})
+		},
+		minLength: 2,
+		select: function( event, ui ) {
+			//$('#nomcli').val(ui.item.nombre);
+			$('#nomcli').text(ui.item.nombre);
+			$('#cliente').val(ui.item.cliente);
+		}
+	});
+
+	//Autocomplete de los codigos
+	$('#barras1').autocomplete({
+		source: function( req, add){
+			$.ajax({
+				url:  "<?php echo site_url('ajax/buscasinv'); ?>",
+				type: "POST",
+				dataType: "json",
+				data: "q="+req.term,
+				success:
+					function(data){
+						var sugiere = [];
+
+						if(data.length==0){
+							$('#barras1').val("");
+							$('#descrip1').val("");
+						}else{
+							$.each(data,
+								function(i, val){
+									sugiere.push( val );
+								}
+							);
+						}
+						add(sugiere);
+					},
+			})
+		},
+		minLength: 2,
+		select: function( event, ui ) {
+			$('#barras1').attr("readonly", "readonly");
+			$('#barras1').val(ui.item.codigo);
+			$('#descrip1').val(ui.item.descrip);
+			setTimeout(function() {  $('#codigo1').removeAttr("readonly"); }, 1500);
+		}
+	});
+
+
+	
+	
 });
 </script>
 
@@ -56,17 +122,12 @@ $(function() {
 						<table width="100%">
 							<tr>
 								<td class="littletablerowth" width='40'>  <?php echo $form->cliente->label  ?></td>
-								<td class="littletablerow"   align='left'><?php echo $form->cliente->output ?></td>
+								<td class="littletablerow"   width='70'><?php echo $form->cliente->output ?></td>
+								<td class="littletablerow"   align='left'><b id='nomcli'></b>&nbsp;</td>
 							</tr>
 						</table>
 					</td>
 				</tr>
-
-			
-			
-			
-			
-			
 			</table>
 			</fieldset>
 		</td>

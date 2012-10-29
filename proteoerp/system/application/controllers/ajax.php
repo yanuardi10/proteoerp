@@ -216,7 +216,7 @@ class Ajax extends Controller {
 			$mSQL="
 			
 				SELECT DISTINCT TRIM(a.descrip) AS descrip, TRIM(a.codigo) AS codigo,
-				a.precio1,precio2,precio3,precio4, a.iva,a.existen,a.tipo,a.peso, a.ultimo, a.pond
+				a.precio1,precio2,precio3,precio4, a.iva,a.existen,a.tipo,a.peso, a.ultimo, a.pond, a.barras
 				FROM sinv AS a
 				LEFT JOIN barraspos AS b ON a.codigo=b.codigo
 				WHERE (a.codigo LIKE $qdb OR a.descrip LIKE  $qdb OR a.barras LIKE $qdb OR b.suplemen=$qba) AND a.activo='S'
@@ -240,6 +240,7 @@ class Ajax extends Controller {
 					$retArray['base3']   = round($row['precio3']*100/(100+$row['iva']),2);
 					$retArray['base4']   = round($row['precio4']*100/(100+$row['iva']),2);
 					$retArray['descrip'] = utf8_encode($row['descrip']);
+					$retArray['barras']  = $row['barras'];
 					//$retArray['descrip'] = wordwrap($row['descrip'], 25, '<br />');
 					$retArray['iva']     = $row['iva'];
 					array_push($retorno, $retArray);
