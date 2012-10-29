@@ -70,9 +70,6 @@ $(function() {
 		}
 	});
 
-
-	
-	
 });
 </script>
 
@@ -115,8 +112,6 @@ $(function() {
 						</table>
 					</td>
 				</tr>
-			
-			
 				<tr>
 					<td  style='border: 1px solid grey;'>
 						<table width="100%">
