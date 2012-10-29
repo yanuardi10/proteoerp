@@ -703,9 +703,9 @@ class Sclirecu extends Controller {
 		$edit->chat->maxlength =120;
 
 		$edit->cliente = new inputField('Cliente','cliente');
-		$edit->cliente->rule='max_length[5]';
-		$edit->cliente->size =7;
-		$edit->cliente->maxlength =5;
+		$edit->cliente->rule='max_length[20]';
+		$edit->cliente->size =10;
+		$edit->cliente->maxlength =20;
 
 		$edit->barras1 = new inputField('Barras1','barras1');
 		$edit->barras1->rule='max_length[15]';
