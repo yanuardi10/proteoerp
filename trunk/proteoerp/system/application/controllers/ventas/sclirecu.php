@@ -36,14 +36,23 @@ class Sclirecu extends Controller {
 		//$grid->wbotonadd(array("id"=>"edocta",   "img"=>"images/pdf_logo.gif",  "alt" => "Formato PDF", "label"=>"Estado de Cuenta"));
 		$WestPanel = $grid->deploywestp();
 
+		//Panel Central
+		$centerpanel = $grid->centerpanel( $id = "radicional", $param['grids'][0]['gridname'] );
+
+		// Configura los Paneles
+		$readyLayout = $grid->readyLayout2( 212, 110, $param['grids'][0]['gridname']);
+
 		$adic = array(
 		array("id"=>"fedita",  "title"=>"Agregar/Editar Registro")
 		);
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
-		$param['WestPanel']   = $WestPanel;
 		//$param['EastPanel'] = $EastPanel;
+
+		$param['WestPanel']   = $WestPanel;
+		$param['readyLayout'] = $readyLayout;
 		$param['SouthPanel']  = $SouthPanel;
+		$param['centerpanel'] = $centerpanel;
 		$param['listados']    = $this->datasis->listados('SCLIRECU', 'JQ');
 		$param['otros']       = $this->datasis->otros('SCLIRECU', 'JQ');
 		$param['temas']       = array('proteo','darkness','anexos1');
@@ -522,7 +531,7 @@ class Sclirecu extends Controller {
 
 		$grid->showpager(true);
 		$grid->setWidth('');
-		$grid->setHeight('290');
+		$grid->setHeight('270');
 		$grid->setTitle($this->titp);
 		$grid->setfilterToolbar(true);
 		$grid->setToolbar('false', '"top"');
@@ -538,6 +547,13 @@ class Sclirecu extends Controller {
 		$grid->setSearch( $this->datasis->sidapuede('SCLIRECU','BUSQUEDA%'));
 		$grid->setRowNum(30);
 		$grid->setShrinkToFit('false');
+
+		$grid->setonSelectRow('
+			function(id){
+				var ret = $(gridId1).getRowData(id);
+				$("#radicional").html("<table width=\'95%\' border=1><tr style=\'background:grey;color:black;\'><td>Cod Barras</td><td>Descripcion</td><td>Fecha</td><td>Cant.</td><td>Dias</td></tr><tr><td>"+ret.barras1+"</td><td>"+ret.descrip1+"</td><td>"+ret.fecha1+"</td><td>"+ret.cant1+"</td><td>"+ret.dias1+"</td></tr><tr><td>"+ret.barras2+"</td><td>"+ret.descrip2+"</td><td>"+ret.fecha2+"</td><td>"+ret.cant2+"</td><td>"+ret.dias2+"</td></tr><tr><td>"+ret.barras3+"</td><td>"+ret.descrip3+"</td><td>"+ret.fecha3+"</td><td>"+ret.cant3+"</td><td>"+ret.dias3+"</td></tr></table>");
+			}
+		');
 
 		$grid->setBarOptions("\t\taddfunc: sclirecuadd,\n\t\teditfunc: sclirecuedit,\n\t\viewfunc: sclirecuedit");
 
