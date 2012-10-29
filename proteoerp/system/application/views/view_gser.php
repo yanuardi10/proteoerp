@@ -72,6 +72,12 @@ var rete     = <?php echo $json_rete;  ?>;
 $(document).ready(function() {
 	$(".inputnum").numeric(".");
 	totalizar();
+
+	$( "#fecha" ).datepicker({    dateFormat: "dd/mm/yy" });
+	$( "#ffactura" ).datepicker({ dateFormat: "dd/mm/yy" });
+	$( "#vence" ).datepicker({    dateFormat: "dd/mm/yy" });
+
+	
 	codb1=$('#codb1').val();
 	desactivacampo(codb1);
 	autocod(0);

@@ -1,9 +1,9 @@
 <?php
 class Scst extends Controller {
-	var $mModulo='SCST';
-	var $titp='Compras de Productos';
-	var $tits='Compras de Productos';
-	var $url ='compras/scst/';
+	var $mModulo = 'SCST';
+	var $titp    = 'Compras de Productos';
+	var $tits    = 'Compras de Productos';
+	var $url     = 'compras/scst/';
 	var $genesal = true;
 	var $solo    = false;
 
@@ -44,10 +44,10 @@ class Scst extends Controller {
 		$grid->setUrlput(site_url($this->url.'setdata/'));
 
 		//Botones Panel Izq
-		$grid->wbotonadd(array("id"=>"imprimir",   "img"=>"images/pdf_logo.gif", "alt" => 'Formato PDF',         "label"=>"Reimprimir Documento"));
-		$grid->wbotonadd(array("id"=>"cprecios",   "img"=>"images/precio.png",   "alt" => 'Precios',             "label"=>"Cambiar Precios"));
-		$grid->wbotonadd(array("id"=>"serie",      "img"=>"images/editar.png",   "alt" => 'Cambiar Numero',      "label"=>"Cambiar Numero "));
-		$grid->wbotonadd(array("id"=>"reversar",   "img"=>"images/arrow_up.png", "alt" => 'Actualizar/Reversar', "label"=>"Actualizar Reversar"));
+		$grid->wbotonadd(array("id"=>"imprimir", "img"=>"images/pdf_logo.gif", "alt" => 'Formato PDF',         "label"=>"Reimprimir Documento"));
+		$grid->wbotonadd(array("id"=>"cprecios", "img"=>"images/precio.png",   "alt" => 'Precios',             "label"=>"Cambiar Precios"));
+		$grid->wbotonadd(array("id"=>"serie",    "img"=>"images/editar.png",   "alt" => 'Cambiar Numero',      "label"=>"Cambiar Numero "));
+		$grid->wbotonadd(array("id"=>"reversar", "img"=>"images/arrow_up.png", "alt" => 'Actualizar/Reversar', "label"=>"Actualizar Reversar"));
 		$WestPanel = $grid->deploywestp();
 
 		//Panel Central y Sur
@@ -1035,10 +1035,13 @@ class Scst extends Controller {
 			afterInsertRow:
 			function( rid, aData, rowe){
 				if ( aData.fecha >  aData.actuali ){
-					$(this).jqGrid( "setCell", rid, "tipo_doc","", {color:"#000000", \'background-color\':"#2DC403" });
+					$(this).jqGrid( "setCell", rid, "tipo_doc","", {color:"#FFFFFF", background:"#166D05" });
+				} else {
+					$(this).jqGrid( "setCell", rid, "tipo_doc", "", {color:"#FFFFFF", background:"#06276B" });
 				}
 			}
 		');
+
 
 		$grid->setOndblClickRow("");
 

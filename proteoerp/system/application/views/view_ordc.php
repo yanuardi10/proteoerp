@@ -39,6 +39,11 @@ var itordc_cont=<?php echo $form->max_rel_count['itordc']; ?>;
 $(function(){
 	$(".inputnum").numeric(".");
 	totalizar();
+	
+	$( "#fecha" ).datepicker({    dateFormat: "dd/mm/yy" });
+	$( "#arribo" ).datepicker({   dateFormat: "dd/mm/yy" });
+	$( "#fechafac" ).datepicker({ dateFormat: "dd/mm/yy" });
+
 
 	for(var i=0;i < <?php echo $form->max_rel_count['itordc']; ?>;i++){
 		autocod(i.toString());

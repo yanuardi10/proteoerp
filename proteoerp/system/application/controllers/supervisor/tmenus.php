@@ -23,68 +23,29 @@ class Tmenus extends Controller {
 	function jqdatag(){
 
 		$grid = $this->defgrid();
-		$param['grid'] = $grid->deploy();
+		$param['grids'][] = $grid->deploy();
 
-		$bodyscript = '
-<script type="text/javascript">
-$(function() {
-	$( "input:submit, a, button", ".otros" ).button();
-});
-
-jQuery("#a1").click( function(){
-	var id = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
-	if (id)	{
-		var ret = jQuery("#newapi'. $param['grid']['gridname'].'").jqGrid(\'getRowData\',id);
-		window.open(\'/proteoerp/formatos/ver/TMENUS/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
-	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
-});
-</script>
-';
+		$bodyscript = '';
 
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
 
-		$WestPanel = '
-<div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content">
-<div class="anexos">
+		$WestPanel = '';
 
-<table id="west-grid" align="center">
-	<tr>
-		<td><div class="tema1"><table id="listados"></table></div></td>
-	</tr>
-	<tr>
-		<td><div class="tema1"><table id="otros"></table></div></td>
-	</tr>
-</table>
+		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'));
 
-<table id="west-grid" align="center">
-	<tr>
-		<td></td>
-	</tr>
-</table>
-</div>
-'.
-//		<td><a style="width:190px" href="#" id="a1">Imprimir Copia</a></td>
-'</div> <!-- #LeftPane -->
-';
-
-		$SouthPanel = '
-<div id="BottomPane" class="ui-layout-south ui-widget ui-widget-content">
-<p>'.$this->datasis->traevalor('TITULO1').'</p>
-</div> <!-- #BottomPanel -->
-';
 		//$param['WestPanel']  = $WestPanel;
 		//$param['EastPanel']  = $EastPanel;
-		$param['WestSize']   = 1;
-		$param['SouthPanel'] = $SouthPanel;
-		$param['listados'] = $this->datasis->listados('TMENUS', 'JQ');
-		$param['otros']    = $this->datasis->otros('TMENUS', 'JQ');
-		$param['tema1']     = 'darkness';
-		$param['anexos']    = 'anexos1';
-		$param['bodyscript'] = $bodyscript;
-		$param['tabs'] = false;
-		$param['encabeza'] = $this->titp;
-		$this->load->view('jqgrid/crud',$param);
+		$param['WestSize']    = 1;
+		$param['SouthPanel']  = $SouthPanel;
+		$param['listados']    = $this->datasis->listados('TMENUS', 'JQ');
+		$param['otros']       = $this->datasis->otros('TMENUS', 'JQ');
+		$param['tema1']       = 'darkness';
+		$param['anexos']      = 'anexos1';
+		$param['bodyscript']  = $bodyscript;
+		$param['tabs']        = false;
+		$param['encabeza']    = $this->titp;
+		$this->load->view('jqgrid/crud2',$param);
 	}
 
 	//***************************
@@ -117,7 +78,7 @@ jQuery("#a1").click( function(){
 			'width'         => 100,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:10, maxlength: 10 }',
+			'editoptions'   => '{ size:10, maxlength: 20 }',
 		));
 
 
@@ -156,7 +117,7 @@ jQuery("#a1").click( function(){
 		));
 
 		$grid->addField('ejecutar');
-		$grid->label('Ejecutar');
+		$grid->label('UI Texto Datasis');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -167,7 +128,7 @@ jQuery("#a1").click( function(){
 		));
 
 		$grid->addField('wejecutar');
-		$grid->label('Ejecutar Win.');
+		$grid->label('UI Windows');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -176,9 +137,20 @@ jQuery("#a1").click( function(){
 			'editoptions'   => '{ size:30, maxlength: 120 }',
 		));
 
+		$grid->addField('proteo');
+		$grid->label('UI ProteoERP');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editoptions'   => '{ size:30, maxlength: 120 }',
+		));
+
+
 		$grid->showpager(true);
 		$grid->setWidth('');
-		$grid->setHeight('290');
+		$grid->setHeight('390');
 		$grid->setTitle($this->titp);
 		$grid->setfilterToolbar(true);
 		$grid->setToolbar('false', '"top"');

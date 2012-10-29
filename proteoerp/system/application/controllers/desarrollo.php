@@ -531,10 +531,10 @@ class Desarrollo extends Controller{
 			$tab8 = $this->mtab(8);
 
 			$str .= 'class '.ucfirst($db).' extends Controller {'."\n";
-			$str .= $tab1.'var $mModulo=\''.strtoupper($db).'\';'."\n";
-			$str .= $tab1.'var $titp=\'Modulo '.strtoupper($db).'\';'."\n";
-			$str .= $tab1.'var $tits=\'Modulo '.strtoupper($db).'\';'."\n";
-			$str .= $tab1.'var $url =\''.$contro.'/'.$db.'/\';'."\n\n";
+			$str .= $tab1.'var $mModulo = \''.strtoupper($db).'\';'."\n";
+			$str .= $tab1.'var $titp    = \'Modulo '.strtoupper($db).'\';'."\n";
+			$str .= $tab1.'var $tits    = \'Modulo '.strtoupper($db).'\';'."\n";
+			$str .= $tab1.'var $url     = \''.$contro.'/'.$db.'/\';'."\n\n";
 
 			$str .= $tab1.'function '.ucfirst($db).'(){'."\n";
 			$str .= $tab2.'parent::Controller();'."\n";
@@ -675,22 +675,6 @@ class Desarrollo extends Controller{
 			$str .= $tab3.'close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}'."\n";
 			//$str .= $tab2.'});'."\n";
 
-/*
-						} else {
-							$("#fedita").html(r);
-						}
-					}
-			})},
-			"Cancelar": function() { $( this ).dialog( "close" ); }
-			},
-			close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
-		
-		});';
-*/
-
-
-
-
 			$str .= $tab2.'});\';'."\n";
 
 			$str .= $tab2.'$bodyscript .= \'});\'."\n";'."\n\n";
@@ -791,11 +775,12 @@ class Desarrollo extends Controller{
 
 			$str .= $tab2.'$grid->setAfterSubmit("$(\'#respuesta\').html(\'&lt;span style='."\\'font-weight:bold; color:red;\\'&gt;'+a.responseText+'&lt;/span&gt;'); return [true, a ];".'");'."\n\n";
 
+
 			$str .= $tab2.'#show/hide navigations buttons'."\n";
-			$str .= $tab2.'$grid->setAdd(true);'."\n";
-			$str .= $tab2.'$grid->setEdit(true);'."\n";
-			$str .= $tab2.'$grid->setDelete(true);'."\n";
-			$str .= $tab2.'$grid->setSearch(true);'."\n";
+			$str .= $tab2.'$grid->setAdd(    $this->datasis->sidapuede(\''.strtoupper($db).'\',\'INCLUIR%\' ));'."\n";
+			$str .= $tab2.'$grid->setEdit(   $this->datasis->sidapuede(\''.strtoupper($db).'\',\'MODIFICA%\'));'."\n";
+			$str .= $tab2.'$grid->setDelete( $this->datasis->sidapuede(\''.strtoupper($db).'\',\'BORR_REG%\'));'."\n";
+			$str .= $tab2.'$grid->setSearch( $this->datasis->sidapuede(\''.strtoupper($db).'\',\'BUSQUEDA%\'));'."\n";
 			$str .= $tab2.'$grid->setRowNum(30);'."\n";
             
 			$str .= $tab2.'$grid->setShrinkToFit(\'false\');'."\n\n";
@@ -902,59 +887,9 @@ class Desarrollo extends Controller{
 			$str  .= $this->genepre($db, false);
 			$str  .= $this->genepost($db, false);
 
-			// solo
-			$str .= $tab1.'/**'."\n";
-			$str .= $tab1.'* Ejecuta dataedit en jqgrid'."\n";
-			$str .= $tab1.'*/'."\n";
-			$str .= $tab1.'function solo() {'."\n";
-			$str .= $tab2.'	$this->solo = true;'."\n";
-			$str .= $tab2.'	$id = $this->uri->segment($this->uri->total_segments());'."\n";
-			$str .= "\n";
-			$str .= $tab2."//Creando Gaasto\n";
-			$str .= $tab2.'if ( $id == \'create\'){'."\n";
-			$str .= $tab3.'$this->dataedit();'."\n";
-			$str .= "\n";
-			$str .= $tab2.'} elseif ( $id == \'insert\'){'."\n";
-			$str .= $tab2.'$this->genesal = false;
-			$rt = $this->dataedit();
-			$rt = str_replace("\n","&lt;br&gt;",$rt);
-			if ($rt == \'Gasto Guardado\')
-				$status=\'E\';
-			else
-				$status=\'E\';
-			if ( strlen($rt) > 0 )'."\n";
-			
-			$str .= $tab3.'echo \'{"status":"\'.$status.\'","id":"\'.$id.\'" ,"mensaje":"\'.$rt.\'"}\';'."\n";
-
-			$str .= $tab3.'} elseif ( $id == \'process\'){
-			$control = $this->uri->segment($this->uri->total_segments()-1);
-			$rt = $this->actualizar($control);
-			$rt = str_replace("\n","&lt;br&gt;",$rt);
-			if ( strlen($rt[1]) > 0 )
-				if ( $rt[0] === false ) $p = \'E\'; else $p=\'A\';
-				echo \'{"status":"\'.$p.\'","id":"\'.$control.\'" ,"mensaje":"&lt;h1&gt;\'.$rt[1].\'&lt;/h1&gt;"}\';
-		} else {
-			$modo = $this->uri->segment($this->uri->total_segments()-1);
-
-
-			if ( $modo == \'update\' ) $this->genesal = false;
-			$rt = $this->dataedit();
-			
-			$rt = str_replace("\n","&lt;br&gt;",$rt);
-			if ($rt == \'Gasto Guardado\')
-				$status=\'A\';
-			else
-				$status=\'E\';
-			if ( strlen($rt) > 0 )
-				echo \'{"status":"\'.$status.\'","id":"\'.$id.\'" ,"mensaje":"\'.$rt.\'"}\';
-
-		}
-	}
-';
-
-
 
 			$str .= '}'."\n";
+
 			
 			$columna .= $str."\n";
 			
@@ -1052,14 +987,14 @@ class Desarrollo extends Controller{
 		//$crud.="\t\t".'$data[\'script\']  = script(\'jquery.js\').script(\'plugins/jquery.numeric.pack.js\').script(\'plugins/jquery.floatnumber.js\');'."\n";
 		$crud.="\t\t".'$data[\'script\'] = $script;'."\n";
 		//$crud.="\t\t".'$data[\'title\']   = heading($this->tits);'."\n";
-		$crud.="\t\t".'$this->load->view(\'jqgrid/'.$tabla.'\', $data);'."\n\n";
+		$crud.="\t\t".'$this->load->view(\'jqgrid/ventanajq\', $data);'."\n\n";
 		$crud.="\t".'}'."\n";
 
 		if($s){
 			$data['content'] ='<pre>'.$crud.'</pre>';
 			$data['head']    = '';
 			$data['title']   =heading('Generador de crud');
-			$this->load->view('jqgrid/'.$tabla, $data);
+			$this->load->view('jqgrid/ventanajq', $data);
 		}else{
 			return $crud;
 		}

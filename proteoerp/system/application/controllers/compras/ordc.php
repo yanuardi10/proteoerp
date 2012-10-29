@@ -185,6 +185,18 @@ class Ordc extends Controller {
 
 		$grid  = new $this->jqdatagrid;
 
+		$grid->addField('status');
+		$grid->label('Status');
+		$grid->params(array(
+			'align'         => "'center'",
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 2 }',
+		));
+
 		$grid->addField('fecha');
 		$grid->label('Fecha');
 		$grid->params(array(
@@ -206,18 +218,6 @@ class Ordc extends Controller {
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:30, maxlength: 8 }',
-		));
-
-		$grid->addField('status');
-		$grid->label('Status');
-		$grid->params(array(
-			'align'         => "'center'",
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 40,
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 2 }',
 		));
 
 /*
@@ -611,9 +611,11 @@ class Ordc extends Controller {
 			afterInsertRow:
 			function( rid, aData, rowe){
 				if ( aData.status == "PE"  ){
-					$(this).jqGrid( "setRowData", rid, false,{color:"#000000", background:"#DCFFB5" });
+					$(this).jqGrid( "setCell", rid, "status", "", {color:"#FFFFFF", background:"#166D05" });
 				} else if ( aData.status == "BA" ){
-					$(this).jqGrid( "setRowData", rid, false,{color:"#000000", background:"#ECE2FF" });
+					$(this).jqGrid( "setCell", rid, "status", "", {color:"#000000", background:"#FCE40C" });
+				} else {
+					$(this).jqGrid( "setCell", rid, "status", "", {color:"#FFFFFF", background:"#06276B" });
 				}
 			}
 		');
@@ -1071,7 +1073,7 @@ class Ordc extends Controller {
 		$grid->setWidth('');
 		$grid->setHeight('170');
 		//$grid->setTitle($this->titp);
-		$grid->setfilterToolbar(true);
+		$grid->setfilterToolbar(false);
 		$grid->setToolbar('false', '"top"');
 
 		$grid->setOnSelectRow('
@@ -1271,6 +1273,8 @@ class Ordc extends Controller {
 		$edit->fecha->rule = 'required';
 		$edit->fecha->mode = 'autohide';
 		$edit->fecha->size = 10;
+		$edit->fecha->calendar = false;
+
 
 		$edit->numero = new inputField('N&uacute;mero', 'numero');
 		$edit->numero->size = 10;
@@ -1311,12 +1315,15 @@ class Ordc extends Controller {
 		$edit->arribo->rule = 'required';
 		$edit->arribo->mode = 'autohide';
 		$edit->arribo->size = 10;
+		$edit->arribo->calendar = false;
 		
 		$edit->fechafac = new DateonlyField('Fecha Factura', 'fechafac','d/m/Y');
 		$edit->fechafac->insertValue = date('Y-m-d');
 		$edit->fechafac->rule = 'required';
 		$edit->fechafac->mode = 'autohide';
 		$edit->fechafac->size = 10;
+		$edit->fechafac->calendar = false;
+
 
 		//**************************
 		//  Campos para el detalle
