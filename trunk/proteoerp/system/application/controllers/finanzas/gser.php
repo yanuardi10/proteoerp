@@ -3213,17 +3213,20 @@ function gserfiscal(mid){
 		$edit->ffactura->insertValue = date("Y-m-d");
 		$edit->ffactura->size = 10;
 		$edit->ffactura->rule = 'required';
+		$edit->ffactura->calendar = false;
 		//$edit->ffactura->insertValue = date("Y-m-d");
 
 		$edit->fecha = new DateonlyField('Registro', 'fecha');
 		$edit->fecha->insertValue = date("Y-m-d");
 		$edit->fecha->size = 10;
 		$edit->fecha->rule = 'required';
+		$edit->fecha->calendar = false;
 
 		$edit->vence = new DateonlyField("Vence", "vence","d/m/Y");
 		$edit->vence->insertValue = date("Y-m-d");
 		$edit->vence->size = 10;
 		//$edit->vence->insertValue = date("Y-m-d");
+		$edit->vence->calendar = false;
 
 		$edit->compra = new inputField('Doc.Asociado','compra');
 		$edit->compra->rule='max_length[8]';

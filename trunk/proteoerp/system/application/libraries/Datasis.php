@@ -82,8 +82,6 @@ funciones
 	extultireg($data)
 	jqgcampos($mSQL)
 	
-
-
 **/
 
 class Datasis {
@@ -270,23 +268,6 @@ class Datasis {
 			return false;
 	}
 
-/*
-			$m = 0;
-			while ( $m == 0 ){
-				$m = $this->dameval("SELECT codigo FROM tmenus WHERE ejecutar like 'SCLITOLERA%'") ;
-				if ( $m == 0 ){
-					// CREAR MENU
-					$mSQL  = "INSERT IGNORE INTO tmenus (codigo, modulo, secu, titulo, mensaje, ejecutar) VALUES ";
-					$mSQL += "(0,'SCLIOTR', 5, 'LIMITE TOLERANCIA','EXTRA LIMITE','SCLITOLERA()'),";
-					$mSQL += "(0,'SCLIOTR', 6, 'LIMITE MAXIMO','LIMITE MAXIMO','SCLIMAXTOLE()')";
-					$CI->db->query($mSQL);
-					//A TODOS LOS QUE TIENEN CREDITO LES COLOCA S
-					$mSQL = "UPDATE scli SET credito=IF(limite > 0 AND formap>0,'S','N')  ";
-					$CI->db->query($mSQL);
-				}
-			}
-*/
-
 	// Coloca un input con calendario
 	function calendario($forma,$nombre){
 		return "<input type=\"text\" name=\"$nombre\" /><a href=\"#\" onclick=\"return getCalendar(document.$forma.$nombre);\"/><img src='calendar.png' border='0' /></a>";
@@ -320,15 +301,34 @@ class Datasis {
 			redirect('/bienvenido/ingresar');
 	}
 
-	//Identifica el modulo y controla el acceso
+	//******************************************************************
+	// Identifica el modulo por nombre admite o niega el acceso
+	// Si tiene alguna opcion en S en tmenus-sida pemite entrar
+	//
 	function modulo_nombre( $modulo, $ventana=0 ){
-		if ($this->essuper()) return true;
 		$CI =& get_instance();
 		$CI->load->database( 'default',TRUE );
+
+		// Si no existe lo crea
+		$mSQL   = "SELECT COUNT(*) FROM tmenus WHERE modulo = '$modulo' ";
+		if ( $this->dameval($mSQL) == 0 ) {
+			//crea elmodulo en tmenus
+			$mSQL  = "INSERT INTO tmenus (modulo, secu, titulo, mensaje, ejecutar, proteo) ";
+			$mSQL .= "SELECT '$modulo' modulo, secu, titulo, mensaje, ejecutar, proteo ";
+			$mSQL .= "FROM tmenus WHERE modulo='MENUINT'";
+			$CI->db->query($mSQL);
+			// Crea las entradas en sida
+			$mSQL  = "INSERT IGNORE INTO sida ( usuario, modulo, acceso ) ";
+			$mSQL .= "SELECT b.us_codigo usuario, a.codigo modulo, 'N' acceso ";
+			$mSQL .= "FROM tmenus a JOIN usuario b WHERE modulo='$modulo' ";
+			$CI->db->query($mSQL);
+		};
+
+		if ($this->essuper()) return true;
 		$CI->session->set_userdata('last_activity', time());
 		if($CI->session->userdata('logged_in')){
 			$usr=$CI->session->userdata('usuario');
-			$mSQL   = "SELECT COUNT(*) FROM sida WHERE modulo = '$modulo' AND  usuario='$usr' AND acceso='S'";   //Proteo
+			$mSQL   = "SELECT COUNT(*) FROM sida a JOIN tmenus b ON a.modulo=b.codigo WHERE b.modulo = '$modulo' AND  a.usuario='$usr' AND a.acceso='S'";   //Proteo
 			$cursor = $CI->db->query($mSQL);
 			$rr    = $cursor->row_array();
 			$sal   = each($rr);
@@ -336,14 +336,11 @@ class Datasis {
 				return true;
 		}
 		$CI->session->set_userdata('estaba', $CI->uri->uri_string());
-		if($ventana)
-			redirect('/bienvenido/ingresarVentana');
-		else
-			redirect('/bienvenido/ingresar');
+		redirect('/bienvenido/noautorizado');
 	}
 
 
-	/***************************************
+	/*******************************************************************
 	 *
 	 *   Integracion con tmenus
 	 *
@@ -362,6 +359,7 @@ class Datasis {
 		$CI =& get_instance();
 		$CI->load->database( 'default',TRUE );
 		$CI->session->set_userdata('last_activity', time());
+
 		if($CI->session->userdata('logged_in')){
 			$usuario = $CI->db->escape($CI->session->userdata('usuario'));
 			$modulo  = $CI->db->escape($modulo);
@@ -378,7 +376,7 @@ class Datasis {
 				$mSQL  = "SELECT count(*) ";
 				$mSQL .= "FROM sida a JOIN tmenus b ON b.codigo=a.modulo ";
 				$mSQL .= "WHERE a.acceso='S' AND a.usuario=$usuario AND b.modulo=$modulo ";
-				$mSQL .= "AND b.proteo=$opcion ";
+				$mSQL .= "AND (b.proteo LIKE $opcion OR b.ejecutar LIKE $opcion)  ";
 				if ( $CI->datasis->dameval($mSQL) > 0 )
 					return true;
 				else
@@ -841,8 +839,11 @@ class Datasis {
 	//
 	//*******************************
 	function listados($modulo, $tipo = 'E'){
-		$CI =& get_instance();
-		$reposcript = '';
+		$CI         =& get_instance();
+		$usuario    =  $CI->session->userdata('usuario');
+		$reposcript =  '';
+
+		if ( !$this->sidapuede($modulo,'LISTADO%') ) return ''; 
 
 		$mSQL="UPDATE tmenus SET ejecutar=REPLACE(ejecutar,"."'".'( "'."','".'("'."') WHERE modulo LIKE '%LIS'";
 		$CI->db->simple_query($mSQL);
@@ -964,6 +965,9 @@ class Datasis {
 	//*******************************
 	function otros( $modulo, $tipo = 'E' ){
 		$CI =& get_instance();
+		$usuario    =  $CI->session->userdata('usuario');
+
+		if ( !$this->sidapuede($modulo,'OTROS%') ) return ''; 
 
 		if ( ! $this->iscampo('tmenus','proteo') ) {
 			$CI->db->simple_query('ALTER TABLE tmenus ADD COLUMN proteo TEXT NULL');
