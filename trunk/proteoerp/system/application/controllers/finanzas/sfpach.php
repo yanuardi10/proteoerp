@@ -39,6 +39,9 @@ class sfpach extends Controller {
 		$grid = $this->defgrid();
 		$param['grids'][] = $grid->deploy();
 
+		$readyLayout = $grid->readyLayout2( 212, 220, $param['grids'][0]['gridname'],$param['grids'][1]['gridname']);
+
+
 		$bodyscript = $this->bodyscript($param['grids'][0]['gridname']);
 
 		#Set url
@@ -90,7 +93,8 @@ class sfpach extends Controller {
 		';
 
 		$param['WestPanel']   = $WestPanel;
-		//$param['EastPanel']  = $EastPanel;
+//		$param['readyLayout']  = $readyLayout;
+//		$param['EastPanel']  = $EastPanel;
 		$param['SouthPanel']  = $SouthPanel;
 		$param['tema1']       = 'darkness';
 		$param['bodyscript']  = $bodyscript;

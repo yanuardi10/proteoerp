@@ -1,5 +1,5 @@
 <div id='contenido'>
-	<table width="100%" border=0 align="center">
+	<table width="100%" border="0" align="center">
 		<tr>
 			<td>
 <?php 
@@ -13,7 +13,6 @@ if (isset($content)) {
 		</tr>
 	</table>
 </div>
-<div class="footer">
-	<p>Tiempo de la consulta {elapsed_time} seg | Proteo ERP </p>
-</div>
+<div class='footer'>Tiempo de la consulta {elapsed_time} seg | Proteo ERP </div>
+
 <?php if (isset($extras)) echo $extras; ?>

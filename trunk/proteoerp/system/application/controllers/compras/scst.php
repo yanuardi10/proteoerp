@@ -1362,9 +1362,9 @@ class Scst extends Controller {
 
 		$grid->setOnSelectRow('
 			function(id){if (id){var ret = $("#titulos").getRowData(id);}},
-			cellEdit: true,
-			cellsubmit: "remote",
-			cellurl: "'.site_url($this->url.'setdatait/').'"
+				cellEdit: true,
+				cellsubmit: "remote",
+				cellurl: "'.site_url($this->url.'setdatait/').'"
 		');
 		$grid->setOndblClickRow("");
 

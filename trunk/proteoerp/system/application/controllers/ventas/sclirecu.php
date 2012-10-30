@@ -119,7 +119,7 @@ class Sclirecu extends Controller {
 					success: function(r,s,x) {
 						if ( r.length == 0 ) {
 							apprise("Registro Guardado");
-							$( "#fcompra" ).dialog( "close" );
+							$( "#fedita" ).dialog( "close" );
 							grid.trigger("reloadGrid");
 							'.$this->datasis->jwinopen(site_url('formatos/ver/SCLIRECU').'/\'+res.id+\'/id\'').';
 							return true;

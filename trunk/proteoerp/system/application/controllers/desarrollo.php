@@ -1,4 +1,27 @@
 <?php
+/***********************************************************************
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+*/
+
 class Desarrollo extends Controller{
 
 	function Desarrollo(){
@@ -184,12 +207,42 @@ class Desarrollo extends Controller{
 		}
 	}
 
-	function genefilter($tabla=null,$s=true){
-		if (empty($tabla) OR (!$this->db->table_exists($tabla))) show_error('Tabla no existe o faltan parametros');
 
-		$crud ="\t".'function filteredgrid(){'."\n";
-		$crud.="\t\t".'$this->rapyd->load(\'datafilter\',\'datagrid\');'."\n\n";
-		$crud.="\t\t".'$filter = new DataFilter($this->titp, \''.$tabla.'\');'."\n\n";
+	//******************************************************************
+	//
+	//   Genera Reporte
+	//
+	//******************************************************************
+	function generepo($tabla=null){
+		if (empty($tabla) OR (!$this->db->table_exists($tabla))) show_error('Tabla no existe o faltan parametros');
+		$this->genefilter($tabla, true, true );
+	}
+
+	//******************************************************************
+	//
+	//   Genera la seccion de filtro para el Crud
+	//
+	//
+	//******************************************************************
+	function genefilter($tabla=null,$s=true, $repo=false ){
+		if (empty($tabla) OR (!$this->db->table_exists($tabla))) show_error('Tabla no existe o faltan parametros');
+		$mt1 = "\n\t";
+		$mt2 = "\n\t\t";
+		$mt3 = "\n\t\t\t";
+
+		if ( $repo ){
+			$mt1   = "\n";
+			$mt2   = "\n";
+			$mt3   = "\n\t";
+			
+			$crud  = '$filter = new DataFilter("Filtro", \''.$tabla.'\');';
+			$crud .= $mt1.'$filter->attributes=array(\'onsubmit\'=>\'is_loaded()\');'."\n";
+
+		}else{
+			$crud  = $mt1.'function filteredgrid(){';
+			$crud .= $mt2.'$this->rapyd->load(\'datafilter\',\'datagrid\');'."\n";
+			$crud .= $mt2.'$filter = new DataFilter($this->titp, \''.$tabla.'\');'."\n";
+		}
 
 		//$fields = $this->db->field_data($tabla);
 		$mSQL="DESCRIBE $tabla";
@@ -217,93 +270,144 @@ class Desarrollo extends Controller{
 					$input='input';
 				}
 
-				$crud.="\t\t".'$filter->'.$field->Field.' = new '.$input."Field('".ucfirst($field->Field)."','$field->Field');\n";
+				$crud.=$mt2.'$filter->'.$field->Field.' = new '.$input."Field('".ucfirst($field->Field)."','$field->Field');";
 
 				if(preg_match("/decimal|integer/i",$field->Type)){
-					$crud.="\t\t".'$filter->'.$field->Field."->rule      ='max_length[".$def[0]."]|numeric';\n";
-					$crud.="\t\t".'$filter->'.$field->Field."->css_class ='inputnum';\n";
+					$crud.=$mt2.'$filter->'.$field->Field."->rule      ='max_length[".$def[0]."]|numeric';";
+					$crud.=$mt2.'$filter->'.$field->Field."->css_class ='inputnum';";
 				}elseif(preg_match("/date/i",$field->Type)){
-					$crud.="\t\t".'$filter->'.$field->Field."->rule      ='chfecha';\n";
+					$crud.=$mt2.'$filter->'.$field->Field."->rule      ='chfecha';";
 				}else{
-					$crud.="\t\t".'$filter->'.$field->Field."->rule      ='max_length[".$def[0]."]';\n";
+					$crud.=$mt2.'$filter->'.$field->Field."->rule      ='max_length[".$def[0]."]';";
 				}
 
 				if(strrpos($field->Type,'text')===false){
 					if($def[0]<80){
-						$crud.="\t\t".'$filter->'.$field->Field.'->size      ='.($def[0]+2).";\n";
+						$crud.=$mt2.'$filter->'.$field->Field.'->size      ='.($def[0]+2).";";
 					}
-					$crud.="\t\t".'$filter->'.$field->Field.'->maxlength ='.($def[0]).";\n";
+					$crud.=$mt2.'$filter->'.$field->Field.'->maxlength ='.($def[0]).";";
 				}else{
-					$crud.="\t\t".'$filter->'.$field->Field."->cols = 70;\n";
-					$crud.="\t\t".'$filter->'.$field->Field."->rows = 4;\n";
+					$crud.=$mt2.'$filter->'.$field->Field."->cols = 70;";
+					$crud.=$mt2.'$filter->'.$field->Field."->rows = 4;";
 				}
 				$crud.="\n";
 
 		}
 
-		$crud.="\t\t".'$filter->buttons(\'reset\', \'search\');'."\n";
-		$crud.="\t\t".'$filter->build();'."\n\n";
+		if ( $repo ){
+			$crud.=$mt1.'$filter->salformat = new radiogroupField("Formato de salida","salformat");';
+			$crud.=$mt1.'$filter->salformat->options($this->opciones);';
+			$crud.=$mt1.'$filter->salformat->insertValue =\'PDF\';';
+			$crud.=$mt1.'$filter->salformat->clause = "";'."\n";
 
-		$a=$b='';
-		foreach($key AS $val){
-			$a.='<raencode><#'.$val.'#></raencode>';
-			$b.='<#'.$val.'#>';
-		}
-		//$a=htmlentities($a);
-		//$b=htmlentities($b);
-		$crud.="\t\t".'$uri = anchor($this->url.\'dataedit/show/'.$a.'\',\''.$b.'\');'."\n\n";
+			$crud.=$mt1.'$filter->buttons("search");';
+			$crud.=$mt1.'$filter->build();'."\n\n";
 
-		$crud.="\t\t".'$grid = new DataGrid(\'\');'."\n";
-		$k=implode(',',$key);
-		$crud.="\t\t".'$grid->order_by(\''.$k.'\');'."\n";
-		$crud.="\t\t".'$grid->per_page = 40;'."\n\n";
+			$crud.=$mt1.'if($this->rapyd->uri->is_set("search")){'."\n";
+			$crud.=$mt3.'$mSQL=$this->rapyd->db->_compile_select();';
+			$crud.=$mt3.'//echo $mSQL;'."\n";
 
-		$c=0;
-		foreach ($query->result() as $field){
-			if($field->Key=='PRI') $key[]=$field->Field;
+			$crud.=$mt3.'$sobretabla="";';
+			$crud.=$mt3.'//if(!empty($filter->?????->newValue))  $sobretabla.=\'??????:  \'.$filter->?????->description;';
+			$crud.=$mt3.'//if(!empty($filter->?????->newValue))  $sobretabla.=\'??????:  \'.$filter->?????->description;'."\n";
+               
+			$crud.=$mt3.'$pdf = new PDFReporte($mSQL);';
+			$crud.=$mt3.'$pdf->setHeadValores(\'TITULO1\');';
+			$crud.=$mt3.'$pdf->setSubHeadValores(\'TITULO2\',\'TITULO3\');';
+			$crud.=$mt3.'$pdf->setTitulo("Listado para la Tabla '.strtoupper($tabla).'");';
+			$crud.=$mt3.'//$pdf->setSubTitulo("Desde la fecha: ".$_POST[\'fechad\']." Hasta ".$_POST[\'fechah\']);';
+			$crud.=$mt3.'$pdf->setSobreTabla($sobretabla);';
+			$crud.=$mt3.'$pdf->AddPage();';
+			$crud.=$mt3.'$pdf->setTableTitu(11,\'Times\');'."\n";
 
-			$crud.="\t\t".'$grid->column_orderby(\''.ucfirst($field->Field).'\',';
-			if($c==0){
-				$crud.='$uri';
-				$c++;
-				$crud.=',\''.$field->Field.'\',\'align="left"\');'."\n";
-			}else{
-				$crud.='\'';
-				if(strrpos($field->Type,'date')!==false){
-					$crud.='<dbdate_to_human><#'.$field->Field.'#></dbdate_to_human>';
-					$crud.='\',\''.$field->Field.'\',\'align="center"\');'."\n";
-				}elseif(strrpos($field->Type,'double')!==false || strrpos($field->Type,'int')!==false || strrpos($field->Type,'decimal')!==false){
-					$crud.='<nformat><#'.$field->Field.'#></nformat>';
-					$crud.='\',\''.$field->Field.'\',\'align="right"\');'."\n";
+			$c=0;
+			foreach ($query->result() as $field){
+				$crud.=$mt3.'$pdf->AddCol(\''.$field->Field.'\', 20,\''.ucfirst($field->Field).'\',\'L\',8);';
+			}
+
+			$crud.=$mt3.'$pdf->setTotalizar(\'vtotal\',\'contado\',\'credito\',\'anulado\');';
+			$crud.=$mt3.'$pdf->Table();'."\n";
+			$crud.=$mt3.'$pdf->Output();'."\n";
+
+			$crud.=$mt1.'}else{'."\n";
+			$crud.=$mt3.'$data["filtro"] = $filter->output;';
+			$crud.=$mt3.'$data["titulo"] = \'&lt;h2 class="mainheader"&gtListado para la Tabla '.strtoupper($tabla).'&lt;h2&gt;\';';
+			$crud.=$mt3.'$data["head"] = $this->rapyd->get_head();';
+			$crud.=$mt3.'$this->load->view(\'view_freportes\', $data);';
+			$crud.="\n}\n";
+
+
+
+		} else {
+			$crud.="\t\t".'$filter->buttons(\'reset\', \'search\');'."\n";
+			$crud.="\t\t".'$filter->build();'."\n\n";
+
+
+			$a=$b='';
+			foreach($key AS $val){
+				$a.='<raencode><#'.$val.'#></raencode>';
+				$b.='<#'.$val.'#>';
+			}
+			$crud.="\t\t".'$uri = anchor($this->url.\'dataedit/show/'.$a.'\',\''.$b.'\');'."\n\n";
+
+			$crud.="\t\t".'$grid = new DataGrid(\'\');'."\n";
+			$k=implode(',',$key);
+			$crud.="\t\t".'$grid->order_by(\''.$k.'\');'."\n";
+			$crud.="\t\t".'$grid->per_page = 40;'."\n\n";
+
+			$c=0;
+			foreach ($query->result() as $field){
+				if($field->Key=='PRI') $key[]=$field->Field;
+
+				$crud.="\t\t".'$grid->column_orderby(\''.ucfirst($field->Field).'\',';
+				if($c==0){
+					$crud.='$uri';
+					$c++;
+					$crud.=',\''.$field->Field.'\',\'align="left"\');'."\n";
 				}else{
-					$crud.=$field->Field;
-					$crud.='\',\''.$field->Field.'\',\'align="left"\');'."\n";
+					$crud.='\'';
+					if(strrpos($field->Type,'date')!==false){
+						$crud.='<dbdate_to_human><#'.$field->Field.'#></dbdate_to_human>';
+						$crud.='\',\''.$field->Field.'\',\'align="center"\');'."\n";
+					}elseif(strrpos($field->Type,'double')!==false || strrpos($field->Type,'int')!==false || strrpos($field->Type,'decimal')!==false){
+						$crud.='<nformat><#'.$field->Field.'#></nformat>';
+						$crud.='\',\''.$field->Field.'\',\'align="right"\');'."\n";
+					}else{
+						$crud.=$field->Field;
+						$crud.='\',\''.$field->Field.'\',\'align="left"\');'."\n";
+					}
 				}
 			}
+
+
+			$crud.="\n";
+			$crud.="\t\t".'$grid->add($this->url.\'dataedit/create\');'."\n";
+			$crud.="\t\t".'$grid->build();'."\n";
+			$crud.="\n";
+
+			$crud.="\t\t".'$data[\'filtro\']  = $filter->output;'."\n";
+			$crud.="\t\t".'$data[\'content\'] = $grid->output;'."\n";
+			$crud.="\t\t".'$data[\'head\']    = $this->rapyd->get_head().script(\'jquery.js\');'."\n";
+			$crud.="\t\t".'$data[\'title\']   = heading($this->titp);'."\n";
+			$crud.="\t\t".'$this->load->view(\'view_ventanas\', $data);'."\n\n";
+			$crud.="\t".'}'."\n";
 		}
-
-		$crud.="\n";
-		$crud.="\t\t".'$grid->add($this->url.\'dataedit/create\');'."\n";
-		$crud.="\t\t".'$grid->build();'."\n";
-		$crud.="\n";
-
-		$crud.="\t\t".'$data[\'filtro\']  = $filter->output;'."\n";
-		$crud.="\t\t".'$data[\'content\'] = $grid->output;'."\n";
-		$crud.="\t\t".'$data[\'head\']    = $this->rapyd->get_head().script(\'jquery.js\');'."\n";
-		$crud.="\t\t".'$data[\'title\']   = heading($this->titp);'."\n";
-		$crud.="\t\t".'$this->load->view(\'view_ventanas\', $data);'."\n\n";
-		$crud.="\t".'}'."\n";
-
 		if($s){
 			$data['content'] ='<pre>'.$crud.'</pre>';
 			$data['head']    = '';
-			$data['title']   =heading('Generador de crud');
+			//$data['title']   =heading('Generador de crud');
 			$this->load->view('view_ventanas_sola', $data);
-		}else{
+		} else {
 			return $crud;
 		}
 	}
 
+	//******************************************************************
+	//
+	//   Genera la seccion de funciones post del Crud
+	//
+	//
+	//******************************************************************
 	function genepost($tabla=null,$s=true){
 		if (empty($tabla) OR (!$this->db->table_exists($tabla))) show_error('Tabla no existe o faltan parametros');
 
@@ -331,6 +435,12 @@ class Desarrollo extends Controller{
 		}
 	}
 
+	//******************************************************************
+	//
+	//   Genera la seccion de funciones PRE del Crud
+	//
+	//
+	//******************************************************************
 	function genepre($tabla=null,$s=true){
 		if (empty($tabla) OR (!$this->db->table_exists($tabla))) show_error('Tabla no existe o faltan parametros');
 
@@ -502,7 +612,11 @@ class Desarrollo extends Controller{
 		}
 	}
 	
-	
+	//******************************************************************
+	//
+	//  Genera Crud para jqGrid
+	//
+	//******************************************************************
 	function jqgrid(){
 		$db = $this->uri->segment(3);
 		if($db===false){
@@ -540,7 +654,7 @@ class Desarrollo extends Controller{
 			$str .= $tab2.'parent::Controller();'."\n";
 			$str .= $tab2.'$this->load->library(\'rapyd\');'."\n";
 			$str .= $tab2.'$this->load->library(\'jqdatagrid\');'."\n";
-			$str .= $tab2.'//$this->datasis->modulo_nombre( $modulo, $ventana=0 );'."\n";
+			$str .= $tab2.'$this->datasis->modulo_nombre( \''.strtoupper($db).'\', $ventana=0 );'."\n";
 			$str .= $tab1.'}'."\n\n";
 
 			$str .= $tab1.'function index(){'."\n";
@@ -569,7 +683,7 @@ class Desarrollo extends Controller{
 			$str .= $tab2.'$grid->setUrlput(site_url($this->url.\'setdata/\'));'."\n\n";
 
 			$str .= $tab2.'//Botones Panel Izq'."\n";
-			$str .= $tab2.'$grid->wbotonadd(array("id"=>"edocta",   "img"=>"images/pdf_logo.gif",  "alt" => "Formato PDF", "label"=>"Estado de Cuenta"));'."\n";
+			$str .= $tab2.'//$grid->wbotonadd(array("id"=>"edocta",   "img"=>"images/pdf_logo.gif",  "alt" => "Formato PDF", "label"=>"Ejemplo"));'."\n";
 			$str .= $tab2.'$WestPanel = $grid->deploywestp();'."\n\n";
 
 			$str .= $tab2.'$adic = array('."\n";
@@ -659,7 +773,7 @@ class Desarrollo extends Controller{
 			$str .= $tab6.'if ( r.length == 0 ) {'."\n";
 
 			$str .= $tab7.'apprise("Registro Guardado");'."\n";
-			$str .= $tab7.'$( "#fcompra" ).dialog( "close" );'."\n";
+			$str .= $tab7.'$( "#fedita" ).dialog( "close" );'."\n";
 			$str .= $tab7.'grid.trigger("reloadGrid");'."\n";
 			$str .= $tab7.'\'.$this->datasis->jwinopen(site_url(\'formatos/ver/'.strtoupper($db).'\').\'/\\\'+res.id+\\\'/id\\\'\').\';'."\n";
 			$str .= $tab7.'return true;'."\n";
