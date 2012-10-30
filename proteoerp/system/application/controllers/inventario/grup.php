@@ -1,5 +1,458 @@
 <?php require_once(BASEPATH.'application/controllers/validaciones.php');
+class Grup extends Controller {
+	var $mModulo = 'GRUP';
+	var $titp    = 'Grupos de Inventario';
+	var $tits    = 'Grupos de Inventario';
+	var $url     = 'inventario/grup/';
 
+	function Grup(){
+		parent::Controller();
+		$this->load->library('rapyd');
+		$this->load->library('jqdatagrid');
+		$this->datasis->modulo_nombre( 'GRUP', $ventana=0 );
+	}
+
+	function index(){
+		/*if ( !$this->datasis->iscampo('grup','id') ) {
+			$this->db->simple_query('ALTER TABLE grup DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE grup ADD UNIQUE INDEX numero (numero)');
+			$this->db->simple_query('ALTER TABLE grup ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
+		};*/
+		$this->datasis->modintramenu( 800, 600, substr($this->url,0,-1) );
+		redirect($this->url.'jqdatag');
+	}
+
+	//***************************
+	//Layout en la Ventana
+	//
+	//***************************
+	function jqdatag(){
+
+		$grid = $this->defgrid();
+		$param['grids'][] = $grid->deploy();
+
+		//Funciones que ejecutan los botones
+		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname']);
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		//Botones Panel Izq
+		//$grid->wbotonadd(array("id"=>"edocta",   "img"=>"images/pdf_logo.gif",  "alt" => "Formato PDF", "label"=>"Ejemplo"));
+		$WestPanel = $grid->deploywestp();
+
+		$adic = array(
+		array("id"=>"fedita",  "title"=>"Agregar/Editar Registro")
+		);
+		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
+
+		$funciones = '
+		function fstatus(el, val, opts){
+			var meco=\'<div><img src="'.base_url().'images/S.gif" width="20" height="18" border="0" /></div>\';
+			if ( el == "B" ){
+				meco=\'<div><img src="'.base_url().'images/N.gif" width="20" height="20" border="0" /></div>\';
+			}
+			return meco;
+		}
+		';
+
+		$param['WestPanel']   = $WestPanel;
+		$param['funciones']   = $funciones;
+
+		//$param['EastPanel'] = $EastPanel;
+		$param['SouthPanel']  = $SouthPanel;
+		$param['listados']    = $this->datasis->listados('GRUP', 'JQ');
+		$param['otros']       = $this->datasis->otros('GRUP', 'JQ');
+		$param['temas']       = array('proteo','darkness','anexos1');
+		$param['bodyscript']  = $bodyscript;
+		$param['tabs']        = false;
+		$param['encabeza']    = $this->titp;
+		$this->load->view('jqgrid/crud2',$param);
+	}
+
+	//***************************
+	//Funciones de los Botones
+	//***************************
+	function bodyscript( $grid0 ){
+		$bodyscript = '		<script type="text/javascript">';
+
+		$bodyscript .= '
+		function grupadd() {
+			$.post("'.site_url('inventario/grup/dataedit/create').'",
+			function(data){
+				$("#fedita").html(data);
+				$("#fedita").dialog( "open" );
+			})
+		};';
+
+		$bodyscript .= '
+		function grupedit() {
+			var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret    = $("#newapi'.$grid0.'").getRowData(id);
+				mId = id;
+				$.post("'.site_url('inventario/grup/dataedit/modify').'/"+id, function(data){
+					$("#fedita").html(data);
+					$("#fedita").dialog( "open" );
+				});
+			} else { $.prompt("<h1>Por favor Seleccione un Registro</h1>");}
+		};';
+
+		//Wraper de javascript
+		$bodyscript .= '
+		$(function() {
+			$("#dialog:ui-dialog").dialog( "destroy" );
+			var mId = 0;
+			var montotal = 0;
+			var ffecha = $("#ffecha");
+			var grid = jQuery("#newapi'.$grid0.'");
+			var s;
+			var allFields = $( [] ).add( ffecha );
+			var tips = $( ".validateTips" );
+			s = grid.getGridParam(\'selarrrow\');
+			';
+
+		$bodyscript .= '
+		$("#fedita").dialog({
+			autoOpen: false, height: 500, width: 600, modal: true,
+			buttons: {
+			"Guardar": function() {
+				var bValid = true;
+				var murl = $("#df1").attr("action");
+				allFields.removeClass( "ui-state-error" );
+				$.ajax({
+					type: "POST", dataType: "html", async: false,
+					url: murl,
+					data: $("#df1").serialize(),
+					success: function(r,s,x){
+						if ( r.length == 0 ) {
+							apprise("Registro Guardado");
+							$( "#fedita" ).dialog( "close" );
+							grid.trigger("reloadGrid");
+							'.$this->datasis->jwinopen(site_url('formatos/ver/GRUP').'/\'+res.id+\'/id\'').';
+							return true;
+						} else { 
+							$("#fedita").html(r);
+						}
+					}
+			})},
+			"Cancelar": function() { $( this ).dialog( "close" ); }
+			},
+			close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
+		});';
+		$bodyscript .= '});'."\n";
+
+		$bodyscript .= "\n</script>\n";
+		$bodyscript .= "";
+		return $bodyscript;
+	}
+
+	//***************************
+	//Definicion del Grid y la Forma
+	//***************************
+	function defgrid( $deployed = false ){
+		$i      = 1;
+		$editar = "false";
+
+		$grid  = new $this->jqdatagrid;
+
+		$grid->addField('status');
+		$grid->label('Status');
+		$grid->params(array(
+			'align'         => "'center'",
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:1, maxlength: 1 }',
+			'formatter'     => 'fstatus'
+		));
+
+
+		$grid->addField('depto');
+		$grid->label('Depto.');
+		$grid->params(array(
+			'align'         => "'center'",
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:2, maxlength: 2 }',
+		));
+
+		$grid->addField('linea');
+		$grid->label('Linea');
+		$grid->params(array(
+			'align'         => "'center'",
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:2, maxlength: 2 }',
+		));
+
+		$grid->addField('grupo');
+		$grid->label('Grupo');
+		$grid->params(array(
+			'align'         => "'center'",
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:4, maxlength: 4 }',
+		));
+
+
+		$grid->addField('nom_grup');
+		$grid->label('nombre');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 30 }',
+		));
+
+/*
+		$grid->addField('tipo');
+		$grid->label('Tipo');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:1, maxlength: 1 }',
+		));
+*/
+
+		$grid->addField('comision');
+		$grid->label('Comision');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+
+		$grid->addField('cu_inve');
+		$grid->label('Cu_inve');
+		$grid->params(array(
+			'hidden'        => 'true',
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 150,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:15, maxlength: 15 }',
+		));
+
+
+		$grid->addField('cu_cost');
+		$grid->label('Cu_cost');
+		$grid->params(array(
+			'hidden'        => 'true',
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 150,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:15, maxlength: 15 }',
+		));
+
+
+		$grid->addField('cu_venta');
+		$grid->label('Cu_venta');
+		$grid->params(array(
+			'hidden'        => 'true',
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 150,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:15, maxlength: 15 }',
+		));
+
+
+		$grid->addField('cu_devo');
+		$grid->label('Cu_devo');
+		$grid->params(array(
+			'hidden'        => 'true',
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 150,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:15, maxlength: 15 }',
+		));
+
+
+		$grid->addField('margen');
+		$grid->label('Margen');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
+		));
+
+
+		$grid->addField('margenc');
+		$grid->label('Margenc');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
+		));
+
+
+
+		$grid->addField('id');
+		$grid->label('Id');
+		$grid->params(array(
+			'hidden'        => 'true',
+			'align'         => "'center'",
+			'frozen'        => 'true',
+			'width'         => 40,
+			'editable'      => 'false',
+			'search'        => 'false'
+		));
+
+
+		$grid->showpager(true);
+		$grid->setWidth('');
+		$grid->setHeight('290');
+		$grid->setTitle($this->titp);
+		$grid->setfilterToolbar(true);
+		$grid->setToolbar('false', '"top"');
+
+		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
+		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
+		$grid->setAfterSubmit("$('#respuesta').html('<span style=\'font-weight:bold; color:red;\'>'+a.responseText+'</span>'); return [true, a ];");
+
+		#show/hide navigations buttons
+		$grid->setAdd(    $this->datasis->sidapuede('GRUP','INCLUIR%' ));
+		$grid->setEdit(   $this->datasis->sidapuede('GRUP','MODIFICA%'));
+		$grid->setDelete( $this->datasis->sidapuede('GRUP','BORR_REG%'));
+		$grid->setSearch( $this->datasis->sidapuede('GRUP','BUSQUEDA%'));
+		$grid->setRowNum(30);
+		$grid->setShrinkToFit('false');
+
+		$grid->setBarOptions("\t\taddfunc: grupadd,\n\t\teditfunc: grupedit");
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		#GET url
+		$grid->setUrlget(site_url($this->url.'getdata/'));
+
+		if ($deployed) {
+			return $grid->deploy();
+		} else {
+			return $grid;
+		}
+	}
+
+	/**
+	* Busca la data en el Servidor por json
+	*/
+	function getdata()
+	{
+		$grid       = $this->jqdatagrid;
+
+		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
+		$mWHERE = $grid->geneTopWhere('grup');
+
+		$response   = $grid->getData('grup', array(array()), array(), false, $mWHERE );
+		$rs = $grid->jsonresult( $response);
+		echo $rs;
+	}
+
+	/**
+	* Guarda la Informacion
+	*/
+	function setData()
+	{
+		$this->load->library('jqdatagrid');
+		$oper   = $this->input->post('oper');
+		$id     = $this->input->post('id');
+		$data   = $_POST;
+		$mcodp  = "??????";
+		$check  = 0;
+
+		unset($data['oper']);
+		unset($data['id']);
+		if($oper == 'add'){
+			if(false == empty($data)){
+				$check = $this->datasis->dameval("SELECT count(*) FROM grup WHERE $mcodp=".$this->db->escape($data[$mcodp]));
+				if ( $check == 0 ){
+					$this->db->insert('grup', $data);
+					echo "Registro Agregado";
+
+					logusu('GRUP',"Registro ????? INCLUIDO");
+				} else
+					echo "Ya existe un registro con ese $mcodp";
+			} else
+				echo "Fallo Agregado!!!";
+
+		} elseif($oper == 'edit') {
+			$nuevo  = $data[$mcodp];
+			$anterior = $this->datasis->dameval("SELECT $mcodp FROM grup WHERE id=$id");
+			if ( $nuevo <> $anterior ){
+				//si no son iguales borra el que existe y cambia
+				$this->db->query("DELETE FROM grup WHERE $mcodp=?", array($mcodp));
+				$this->db->query("UPDATE grup SET $mcodp=? WHERE $mcodp=?", array( $nuevo, $anterior ));
+				$this->db->where("id", $id);
+				$this->db->update("grup", $data);
+				logusu('GRUP',"$mcodp Cambiado/Fusionado Nuevo:".$nuevo." Anterior: ".$anterior." MODIFICADO");
+				echo "Grupo Cambiado/Fusionado en clientes";
+			} else {
+				unset($data[$mcodp]);
+				$this->db->where("id", $id);
+				$this->db->update('grup', $data);
+				logusu('GRUP',"Grupo de Cliente  ".$nuevo." MODIFICADO");
+				echo "$mcodp Modificado";
+			}
+
+		} elseif($oper == 'del') {
+			$meco = $this->datasis->dameval("SELECT $mcodp FROM grup WHERE id=$id");
+			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM grup WHERE id='$id' ");
+			if ($check > 0){
+				echo " El registro no puede ser eliminado; tiene movimiento ";
+			} else {
+				$this->db->simple_query("DELETE FROM grup WHERE id=$id ");
+				logusu('GRUP',"Registro ????? ELIMINADO");
+				echo "Registro Eliminado";
+			}
+		};
+	}
+
+
+
+/*
 class Grup extends validaciones {
 
 	function grup(){
@@ -245,7 +698,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 				echo $ret;
 
 			}else if($json->{'action'} == 'save'){
-/*				$sql = "";
+/ *				$sql = "";
 				$params = array();
 				$errors = "";
   
@@ -279,11 +732,11 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 					}
 				}
 				$ret = "{success : true,exception:''}";
-				echo $ret;*/
+				echo $ret;* /
 			}
 		} else {
 			// no hay _gt_json
-			/*
+			/ *
 			$pageNo = 1;
 			$sortField = "numero";
 			$sortOrder = "DESC";
@@ -316,7 +769,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 			} else {
 				$ret = '{data : []}';
 			}
-			*/
+			* /
 			echo '{data : []}';
 		}
 	}
@@ -329,6 +782,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$this->db->simple_query($mSQL);
 		echo "$valor $campo $grupo";
 	}
+*/
 
 	function dataedit($status='',$id=''){
 		$this->rapyd->load("dataobject","dataedit");
@@ -403,8 +857,8 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 			$do->set('grupo', '');
 		}
 
-		$edit = new DataEdit("Grupos de Inventario",$do);
-		$edit->back_url = site_url("inventario/grup/filteredgrid");
+		$edit = new DataEdit("",$do);
+		//$edit->back_url = site_url("inventario/grup/filteredgrid");
 		$edit->script($script, "modify");
 		$edit->script($script, "create");
 
@@ -442,11 +896,6 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$edit->nom_grup->size = 40;
 		$edit->nom_grup->maxlength=40;
 		$edit->nom_grup->rule = "trim|strtoupper|required";
-
-		//$edit->tipo = new dropdownField("Tipo","tipo");
-		//$edit->tipo->style='width:100px;';
-		//$edit->tipo->option("I","Inventario" );
-		//$edit->tipo->option("G","Gasto"  );
 
 		$edit->comision = new inputField("Comisi&oacute;n. %", "comision");
 		$edit->comision->size = 18;
@@ -510,7 +959,7 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$edit->status->option("B","Bloqueado");
 		$edit->status ->style='width:120px;';
 
-		$edit->buttons("modify", "save", "undo", "delete", "back");
+		//$edit->buttons("modify", "save", "undo", "delete", "back");
 		$edit->build();
 
 		$link=site_url('inventario/grup/get_linea');
@@ -547,30 +996,19 @@ function exento(mgrupo){
 		 },
 		buttons:{ Marcar: 1, Desmarcar: 2, Cancelar: 3 }
 	});
-/*
-			if ( v == 1 ) {
-				$.ajax({
-					url: "'.base_url().'inventario/grup/exento/"+mgrupo+"/S",
-					global: false,
-					async: false,
-					success: function(sino)  { .$prompt( "Respuesta:"+sino); }
-				});
-			} else if ( v == 2 ) {
-				$.ajax({
-					url: "'.base_url().'inventario/grup/exento/"+mgrupo+"/N",
-					global: false,
-					async: false,
-					success: function(sino)  { .$prompt( "Respuesta:"+sino); }
-				});
-			};
-
-*/
-
 };
 
 </script>
 ';
 
+
+		$script= '';
+
+		$data['content'] = $edit->output;
+		$data['script'] = $script;
+		$this->load->view('jqgrid/ventanajq', $data);
+
+/*
 		$data['content'] = $mtool.$edit->output;
 
 		$data["script"]  = script("jquery.js");
@@ -585,6 +1023,7 @@ function exento(mgrupo){
 		$data['title']   = "<h1>Grupos de Inventario</h1>";
 		$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
+*/
 	}
 
 	function _post_insert($do){
@@ -662,7 +1101,7 @@ function exento(mgrupo){
 		echo "Productos Marcados '$sino'";
 	}
 
-
+/*
 	function grid(){
 		$start   = isset($_REQUEST['start'])  ? $_REQUEST['start']   :  0;
 		$limit   = isset($_REQUEST['limit'])  ? $_REQUEST['limit']   : 50;
@@ -1084,6 +1523,7 @@ var lineStore = new Ext.data.Store({
 		$data['title']  = heading('Grupos de Inventario');
 		$this->load->view('extjs/extjsven',$data);
 	}
-
+*/
 }
+
 ?>

@@ -905,6 +905,8 @@ class Jqdatagrid
 		if ( empty($sortby) )  {
 			$sortby  = $orden;
 			$sortdir = $orddire;
+		} else {
+				$sortby = str_replace(' asc,','',$sortby);
 		}
 
 		$fields2    = array();
@@ -1001,7 +1003,7 @@ class Jqdatagrid
 
 		if( !empty($sortby) ) {
 			$this->CI->db->order_by( $sortby, $sortdir );
-	       }
+	    }
 
 		if( !isset($limitstart) || $limitstart == '' ) {
 			$limitstart = 0;
