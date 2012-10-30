@@ -26,9 +26,9 @@ class gfotos extends Controller {
 		function atras(){
 			window.location="'.$link5.'/";
 		}
-		
+
 		$(document).ready(function(){
-				
+
 			$("#depto").change(function(){
 				$("#objnumero").val("");
 				depto();
@@ -39,7 +39,7 @@ class gfotos extends Controller {
 				linea();
 				$.post("'.$link3.'",{ linea:$(this).val() },function(data){$("#grupo").html(data);})
 			});
-			
+
 			$("#grupo").change(function(){
 				grupo();
 			});
@@ -47,7 +47,7 @@ class gfotos extends Controller {
 			linea();
 			grupo();
 		});
-		
+
 		function depto(){
 			if($("#depto").val()!=""){
 				$("#nom_depto").attr("disabled","disabled");
@@ -56,7 +56,7 @@ class gfotos extends Controller {
 				$("#nom_depto").attr("disabled","");
 			}
 		}
-		
+
 		function linea(){
 			if($("#linea").val()!=""){
 				$("#nom_linea").attr("disabled","disabled");
@@ -65,7 +65,7 @@ class gfotos extends Controller {
 				$("#nom_linea").attr("disabled","");
 			}
 		}
-		
+
 		function grupo(){
 			if($("#grupo").val()!=""){
 				$("#nom_grupo").attr("disabled","disabled");
@@ -86,7 +86,7 @@ class gfotos extends Controller {
 		$filter->descrip = new inputField("Descripci&oacute;n", "descrip");
 		$filter->descrip->db_name='CONCAT_WS(" ",a.descrip,a.descrip2)';
 		$filter->descrip -> size=25;
-		
+
 		$filter->depto = new dropdownField("Departamento","depto");
 		$filter->depto->db_name="d.depto";
 		$filter->depto->option("","Seleccione un Departamento");
@@ -127,20 +127,9 @@ class gfotos extends Controller {
 
 		if($this->rapyd->uri->is_set("search")  AND $filter->is_valid()){
 			$tabla=form_open("forma/ver/catalogo2");
-			
+
 			$grid = new DataGrid("Lista de Art&iacute;culos Para el Catalogo");
-//				$grid->db->select("a.tipo AS tipo,a.id as id,a.codigo as codigo,a.descrip,precio1,
-//									precio2,precio3,precio4,a.prov1,
-//									b.nom_grup AS nom_grup,b.grupo AS grupoid,
-//									c.descrip AS nom_linea,c.linea AS linea,
-//									d.descrip AS nom_depto,d.depto AS depto,a.prov1,a.prov2,a.prov3,
-//									e.sinv_id as sinv_id");
-//				$grid->db->from("sinv AS a");
-//				$grid->db->join("grup AS b","a.grupo=b.grupo");
-//				$grid->db->join("line AS c","b.linea=c.linea");
-//				$grid->db->join("dpto AS d","c.depto=d.depto");
-//				$grid->db->join("sinvfot AS e","e.sinv_id=a.id");
-			$grid->db->select("COUNT(*) AS num,GROUP_CONCAT(e.codigo) as articulos,
+			$grid->db->select("COUNT(*) AS num,GROUP_CONCAT(a.codigo) as articulos,
 			e.sinv_id as sinv_id,e.nombre AS nombre,e.ruta AS ruta,
 			e.comentario AS comentario,e.principal AS principal,
 			a.tipo AS tipo,a.id as id,a.codigo as codigo,a.descrip,
@@ -157,7 +146,7 @@ class gfotos extends Controller {
 			$grid->db->_escape_char='';
 			$grid->db->_protect_identifiers=false;
 			$grid->order_by("codigo","asc");
-				
+
 			$grid->use_function('asigna');
 			$grid->column_orderby("c&oacute;digo"     ,"codigo","codigo");
 			$grid->column_orderby("Departamento"      ,"<#nom_depto#>","nom_depto",'align=left');
@@ -166,7 +155,7 @@ class gfotos extends Controller {
 			$grid->column_orderby("Descripci&oacute;n","descrip","descrip");
 //			$grid->column("Nombre","nombre");
 			$grid->build();
-	
+
 			$consul=$this->db->last_query();
 //			$options = array(
 //                  'D'  => 'DESCARGAR',
@@ -177,19 +166,18 @@ class gfotos extends Controller {
 			//$tabla.=$grid->output.form_dropdown('opcion', $options, 'D').form_submit('mysubmit', 'Generar');
 			$tabla.=$grid->output.form_submit('mysubmit', 'Generar');
 			$tabla.=form_close();
-			
+
 		}
 
 		$back="<table width='100%'border='0'><tr><td width='80%'></td><td width='20%'><a href='javascript:atras()'><spam id='regresar'align='right'>REGRESAR</spam></a></td></tr></table>";
-		$data['filtro']=$filter->output;
-		$data['content']=$tabla;
+		//$data['filtro']=$filter->output;
+		$data['content']=$filter->output.$tabla;
 		//$data['smenu'] = $back;//.$grid->output;
 		$data['title']   = "Genera Catalogo";
 		$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").script("sinvmaes2.js").$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
-	
-	
+
 	function instalar(){
 		$mSQL="CREATE TABLE IF NOT EXISTS `itsinvlist` (
 		`id` INT(8) NOT NULL AUTO_INCREMENT,
@@ -198,7 +186,6 @@ class gfotos extends Controller {
 		COLLATE='utf8_unicode_ci'
 		ENGINE=MyISAM
 		ROW_FORMAT=DEFAULT";
-
 
 		$mSQL2="CREATE TABLE IF NOT EXISTS`sinvlist` (
 		`numero` INT(8) NOT NULL AUTO_INCREMENT,
@@ -216,5 +203,3 @@ class gfotos extends Controller {
 		$this->db->simple_query($mSQL2);
 	}
 }
-
-?>

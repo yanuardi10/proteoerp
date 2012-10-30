@@ -858,7 +858,7 @@ class rivc extends Controller {
 		$primary =implode(',',$do->pk);
 		$error   = 0;
 		$montan  = 0; //Monto para anticipar
-		$sobrante= 0; //Monsto sobrante para anticipar, reitegrar o pagar
+		$sobrante= 0; //Monto sobrante para anticipar, reitegrar o pagar
 
 		$transac   = $do->get('transac');
 		$estampa   = $do->get('estampa');
@@ -943,7 +943,7 @@ class rivc extends Controller {
 				}
 			}
 
-			//Si es una factura o una nota de debito
+			//Si es una factura o una nota de debito a causa de una RP
 			if($ittipo_doc == 'F' || $ittipo_doc=='ND'){
 				//Si el saldo es 0  o menor que el monto retenido
 				if($saldo==0 || $itmonto>$saldo){
@@ -1145,7 +1145,7 @@ class rivc extends Controller {
 						fecha   = $dbfecha";
 						$ban=$this->db->simple_query($mSQL);
 						if($ban==false){ memowrite($mSQL,'rivc');}
-//echo $mSQL;
+
 						//Abona la NC
 						$dbfecha =$this->db->escape($fecha);
 						$dbnumero=$this->db->escape($mnumnc);
@@ -1287,7 +1287,7 @@ class rivc extends Controller {
 		}
 		$periodo = $do->get('periodo');
 		$nrocomp = $do->get('nrocomp');
-//exit();
+
 		$primary =implode(',',$do->pk);
 		logusu($do->table,"Creo $this->tits ID $primary ${periodo }${nrocomp}");
 		return true;
