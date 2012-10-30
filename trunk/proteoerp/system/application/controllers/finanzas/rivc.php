@@ -421,8 +421,14 @@ class rivc extends Controller {
 		$cod_cli = $this->input->post('cod_cli');
 		$tipo_doc= $this->input->post('tipo_doc_'.$ind);
 		$fecha   = $this->input->post('fecha');
-		$ww=' WHERE numero='.$this->db->escape($numero).' AND cod_cli='.$this->db->escape($cod_cli).' AND tipo_doc='.$this->db->escape($tipo_doc);
-		$mSQL='SELECT COUNT(*) FROM sfac '.$ww;
+
+		if($tipo_doc=='NC'){
+			$ww=' WHERE numero='.$this->db->escape($numero).' AND cod_cli='.$this->db->escape($cod_cli).' AND tipo_doc='.$this->db->escape($tipo_doc);
+			$mSQL='SELECT COUNT(*) FROM smov '.$ww;
+		}else{
+			$ww=' WHERE numero='.$this->db->escape($numero).' AND cod_cli='.$this->db->escape($cod_cli).' AND tipo_doc='.$this->db->escape($tipo_doc);
+			$mSQL='SELECT COUNT(*) FROM sfac '.$ww;
+		}
 		$cana=$this->datasis->dameval($mSQL);
 
 		if($cana!=1){
@@ -535,12 +541,28 @@ class rivc extends Controller {
 				WHERE a.cod_cli=$sclidb AND CONCAT(a.tipo_doc,'-',a.numero) LIKE $qdb AND b.numero IS NULL AND a.tipo_doc <> 'X' AND a.iva>0
 				ORDER BY numero DESC LIMIT 10";*/
 
-			$mSQL="SELECT a.tipo_doc, a.numero, a.totalg, a.fecha,a.iva, a.iva*$rete AS reiva
+			$mSQL = "(SELECT a.tipo_doc, a.numero, a.totalg, a.fecha,a.iva, a.iva*$rete AS reiva
 				FROM  rivc AS c
 				JOIN itrivc AS b ON c.id=b.idrivc AND c.anulado='N'
 				RIGHT JOIN sfac AS a ON a.tipo_doc=b.tipo_doc AND a.numero=b.numero
 				WHERE a.cod_cli=$sclidb AND CONCAT(a.tipo_doc,'-',a.numero) LIKE $qdb AND b.numero IS NULL AND a.tipo_doc <> 'X' AND a.iva>0
-				ORDER BY numero DESC LIMIT 10";
+				ORDER BY numero DESC LIMIT 10)";
+
+
+			$mSQL.= "UNION ALL (SELECT a.tipo_doc, a.numero, a.monto AS totalg, a.fecha, a.impuesto AS iva,a.impuesto*$rete AS reiva
+				FROM  rivc AS c
+				JOIN itrivc AS b ON c.id=b.idrivc AND c.anulado='N'
+				RIGHT JOIN smov AS a ON a.tipo_doc=b.tipo_doc AND a.numero=b.numero
+				LEFT  JOIN sfac AS d ON a.transac=d.transac
+				WHERE a.cod_cli=$sclidb AND CONCAT(a.tipo_doc,'-',a.numero) LIKE $qdb
+					AND b.numero IS NULL
+					AND d.numero IS NULL
+					AND a.tipo_doc = 'NC'
+					AND (a.nroriva IS NULL OR TRIM(a.nroriva)='')
+					AND a.observa1 NOT LIKE 'RET%'
+					AND a.impuesto>0
+				ORDER BY numero DESC LIMIT 10)";
+
 
 			$query = $this->db->query($mSQL);
 			if ($query->num_rows() > 0){
@@ -666,45 +688,88 @@ class rivc extends Controller {
 			$dbitnumero   = $this->db->escape($do->get_rel($rel, 'numero'  , $i));
 			$dbittipo_doc = $this->db->escape($ittipo_doc);
 
-			$sql="SELECT exento,tasa,reducida,sobretasa,montasa,monredu,monadic,nfiscal,totals,totalg,iva FROM sfac WHERE numero=$dbitnumero AND tipo_doc=$dbittipo_doc";
-			$query = $this->db->query($sql);
-			if ($query->num_rows() > 0){
-				$row = $query->row();
+			if($ittipo_doc=='F' || $ittipo_doc=='D'){
+				$sql="SELECT exento,tasa,reducida,sobretasa,montasa,monredu,monadic,nfiscal,totals,totalg,iva FROM sfac WHERE numero=$dbitnumero AND tipo_doc=$dbittipo_doc";
+				$query = $this->db->query($sql);
+				if ($query->num_rows() > 0){
+					$row = $query->row();
 
-				$do->set_rel($rel, 'exento'   , $row->exento , $i);
+					$do->set_rel($rel, 'exento'   , $row->exento , $i);
 
-				$do->set_rel($rel, 'tasa'     , ($row->montasa>0)? round($row->tasa *100/$row->montasa,2) : 0, $i);
-				$do->set_rel($rel, 'general'  , $row->montasa, $i);
-				$do->set_rel($rel, 'geneimpu' , $row->tasa   , $i);
+					$do->set_rel($rel, 'tasa'     , ($row->montasa>0)? round($row->tasa *100/$row->montasa,2) : 0, $i);
+					$do->set_rel($rel, 'general'  , $row->montasa, $i);
+					$do->set_rel($rel, 'geneimpu' , $row->tasa   , $i);
 
-				$do->set_rel($rel, 'tasaadic' , ($row->monadic>0)? round($row->sobretasa*100/$row->monadic,2) : 0, $i);
-				$do->set_rel($rel, 'adicional', $row->monadic  , $i);
-				$do->set_rel($rel, 'adicimpu' , $row->sobretasa, $i);
+					$do->set_rel($rel, 'tasaadic' , ($row->monadic>0)? round($row->sobretasa*100/$row->monadic,2) : 0, $i);
+					$do->set_rel($rel, 'adicional', $row->monadic  , $i);
+					$do->set_rel($rel, 'adicimpu' , $row->sobretasa, $i);
 
-				$do->set_rel($rel, 'tasaredu' , ($row->monredu>0)? round($row->reducida*100/ $row->monredu,2) : 0, $i);
-				$do->set_rel($rel, 'reducida' , $row->monredu , $i);
-				$do->set_rel($rel, 'reduimpu' , $row->reducida, $i);
+					$do->set_rel($rel, 'tasaredu' , ($row->monredu>0)? round($row->reducida*100/ $row->monredu,2) : 0, $i);
+					$do->set_rel($rel, 'reducida' , $row->monredu , $i);
+					$do->set_rel($rel, 'reduimpu' , $row->reducida, $i);
 
-				$do->set_rel($rel, 'nfiscal' , $row->nfiscal, $i);
-				$do->set_rel($rel, 'reiva'    , $itreiva     , $i);
+					$do->set_rel($rel, 'nfiscal' , $row->nfiscal, $i);
+					$do->set_rel($rel, 'reiva'    , $itreiva     , $i);
 
-				$exento   =$exento+$row->exento;
+					$exento   =$exento+$row->exento;
 
-				$general  =$general+$row->montasa;
-				$geneimpu =$geneimpu+$row->tasa;
+					$general  =$general+$row->montasa;
+					$geneimpu =$geneimpu+$row->tasa;
 
-				$adicional=$adicional+$row->monadic;
-				$adicimpu =$adicimpu+$row->sobretasa;
+					$adicional=$adicional+$row->monadic;
+					$adicimpu =$adicimpu+$row->sobretasa;
 
-				$reducida =$reducida+$row->monredu;
-				$reduimpu =$reduimpu+$row->reducida;
+					$reducida =$reducida+$row->monredu;
+					$reduimpu =$reduimpu+$row->reducida;
 
-				//Totales del encabezado
-				$fac=($ittipo_doc=='D')? -1:1; //Para restar las devoluciones
-				$stotal   =$stotal+($fac*$row->totals);
-				$impuesto =$impuesto+($fac*$row->iva);
-				$gtotal   =$gtotal+($fac*$row->totalg);
-				$reiva    =$reiva+($fac*$itreiva);
+					//Totales del encabezado
+					$fac=($ittipo_doc=='D')? -1:1; //Para restar las devoluciones
+					$stotal   =$stotal+($fac*$row->totals);
+					$impuesto =$impuesto+($fac*$row->iva);
+					$gtotal   =$gtotal+($fac*$row->totalg);
+					$reiva    =$reiva+($fac*$itreiva);
+				}
+			}else{ //Para el caso en que sean notas de credito por algun otro concepto fuera de sfac
+				$sql="SELECT exento,tasa,reducida,sobretasa,montasa,monredu,monadic,nfiscal,monto AS totals, monto AS totalg,impuesto AS iva FROM smov WHERE numero=$dbitnumero AND tipo_doc=$dbittipo_doc";
+				$query = $this->db->query($sql);
+				if ($query->num_rows() > 0){
+					$row = $query->row();
+
+					$do->set_rel($rel, 'exento'   , $row->exento , $i);
+
+					$do->set_rel($rel, 'tasa'     , ($row->montasa>0)? round($row->tasa *100/$row->montasa,2) : 0, $i);
+					$do->set_rel($rel, 'general'  , $row->montasa, $i);
+					$do->set_rel($rel, 'geneimpu' , $row->tasa   , $i);
+
+					$do->set_rel($rel, 'tasaadic' , ($row->monadic>0)? round($row->sobretasa*100/$row->monadic,2) : 0, $i);
+					$do->set_rel($rel, 'adicional', $row->monadic  , $i);
+					$do->set_rel($rel, 'adicimpu' , $row->sobretasa, $i);
+
+					$do->set_rel($rel, 'tasaredu' , ($row->monredu>0)? round($row->reducida*100/ $row->monredu,2) : 0, $i);
+					$do->set_rel($rel, 'reducida' , $row->monredu , $i);
+					$do->set_rel($rel, 'reduimpu' , $row->reducida, $i);
+
+					$do->set_rel($rel, 'nfiscal' , $row->nfiscal, $i);
+					$do->set_rel($rel, 'reiva'    , $itreiva     , $i);
+
+					$exento   =$exento+$row->exento;
+
+					$general  =$general+$row->montasa;
+					$geneimpu =$geneimpu+$row->tasa;
+
+					$adicional=$adicional+$row->monadic;
+					$adicimpu =$adicimpu+$row->sobretasa;
+
+					$reducida =$reducida+$row->monredu;
+					$reduimpu =$reduimpu+$row->reducida;
+
+					//Totales del encabezado
+					$fac= -1; //Para restar las devoluciones
+					$stotal   =$stotal+($fac*$row->totals);
+					$impuesto =$impuesto+($fac*$row->iva);
+					$gtotal   =$gtotal+($fac*$row->totalg);
+					$reiva    =$reiva+($fac*$itreiva);
+				}
 			}
 
 			$do->set_rel($rel, 'estampa', $estampa, $i);
@@ -762,7 +827,7 @@ class rivc extends Controller {
 			$ww = "cod_cli=$dbcod_cli AND tipo_doc=$dbtipo_doc AND numero=$dbnumero AND fecha=$dbfecha AND transac=$dbtransac";
 
 			if($row->tipo_doc=='NC'){
-				$mmSQL="SELECT numccli,tipoccli,monto FROM itccli WHERE numero=$dbnumero AND  fecha=$dbfecha AND tipo_doc='NC' AND cod_cli=$dbcod_cli AND tipoccli='FC'";
+				$mmSQL="SELECT numccli,tipoccli,monto FROM itccli WHERE numero=$dbnumero AND  fecha=$dbfecha AND tipo_doc='NC' AND cod_cli=${dbcod_cli} AND tipoccli='FC'";
 				$qquery = $this->db->query($mmSQL);
 
 				if ($qquery->num_rows() > 0){
@@ -778,8 +843,9 @@ class rivc extends Controller {
 							$fecha        = $restodat[$iind];
 							$dbfecha = $this->db->escape($fecha);
 
+
 							$sqls[] = "UPDATE sfac SET reiva=0, creiva=NULL, freiva=NULL, ereiva=NULL WHERE numero=${dbitnumero} AND tipo_doc=${dbittipo_doc}";
-							$sqls[] = "UPDATE smov SET abonos=abonos-$itmonto WHERE numero=${dbitnumero}  AND cod_cli=${dbcod_cli} AND tipo_doc='${tiposfac}' AND fecha=${dbfecha}";
+							$sqls[] = "UPDATE smov SET abonos=abonos-($itmonto) WHERE numero=${dbitnumero}  AND cod_cli=${dbcod_cli} AND tipo_doc='${tiposfac}' AND fecha=${dbfecha}";
 						}else{
 							$error++;
 						}
@@ -874,6 +940,7 @@ class rivc extends Controller {
 		$id        = $do->get('id');
 		$numero    = $do->get('nrocomp');
 		$comprob   = $periodo.$numero;
+		$dbcod_cli = $this->db->escape($cod_cli);
 
 		//$reinte  = $this->uri->segment($this->uri->total_segments());
 		$efecha   = $do->get('emision');
@@ -897,20 +964,29 @@ class rivc extends Controller {
 			$dbitnumero   = $this->db->escape($itnumero);
 			$dbittipo_doc = $this->db->escape($ittipo_doc);
 
-			$sql="SELECT referen,reiva,factura,cod_cli,nombre FROM sfac WHERE numero=$dbitnumero AND tipo_doc=$dbittipo_doc";
-			$query = $this->db->query($sql);
-			if ($query->num_rows() > 0){
-				$row = $query->row();
 
-				$anterior  = $row->reiva;
-				$itreferen = $row->referen;
-				$itfactura = $row->factura;
-			}
+			//Chequea que su origen sea sfac
+			if($ittipo_doc=='F' || $ittipo_doc=='D'){
+				$sql="SELECT referen,reiva,factura,cod_cli,nombre FROM sfac WHERE numero=$dbitnumero AND tipo_doc=$dbittipo_doc";
+				$query = $this->db->query($sql);
+				if ($query->num_rows() > 0){
+					$row = $query->row();
 
-			if($anterior == 0) {
-				$mSQL = "UPDATE sfac SET reiva=${itmonto}, creiva='${periodo}${numero}', freiva='${fecha}', ereiva='${efecha}' WHERE numero=${dbitnumero} AND tipo_doc=${dbittipo_doc}";
+					$anterior  = $row->reiva;
+					$itreferen = $row->referen;
+					$itfactura = $row->factura;
+				}
+
+				if($anterior == 0) {
+					$mSQL = "UPDATE sfac SET reiva=${itmonto}, creiva='${periodo}${numero}', freiva='${fecha}', ereiva='${efecha}' WHERE numero=${dbitnumero} AND tipo_doc=${dbittipo_doc}";
+					$ban=$this->db->simple_query($mSQL);
+					if($ban==false){ memowrite($mSQL,'rivc'); }
+				}
+			}else{//En caso de ser una NC proveniente de smov
+				$mSQL = "UPDATE smov SET reteiva=${itmonto}, nroriva='${periodo}${numero}', emiriva='${efecha}' WHERE numero=${dbitnumero} AND tipo_doc=${dbittipo_doc} AND cod_cli=${dbcod_cli} LIMIT 1";
 				$ban=$this->db->simple_query($mSQL);
 				if($ban==false){ memowrite($mSQL,'rivc'); }
+				$itreferen = 'E';
 			}
 
 			//Chequea si es credito y si tiene saldo
@@ -919,6 +995,7 @@ class rivc extends Controller {
 			}else{
 
 				if($ittipo_doc=='F'){
+					//Busca un tipo de pago RP
 					$sel=array('b.monto - b.abonos AS saldo','b.numero');
 					$this->db->select($sel);
 					$this->db->from('sfac AS a');
@@ -1078,7 +1155,7 @@ class rivc extends Controller {
 				$data['impuesto']   = 0;
 				$data['abonos']     = 0;
 				$data['vence']      = $fecha;
-				$data['tipo_ref']   = ($ittipo_doc=='F')? 'FC' : 'DV';
+				$data['tipo_ref']   = ($ittipo_doc=='F')? 'FC' : ($ittipo_doc=='NC')? 'NC' : 'DV';
 				$data['num_ref']    = $itnumero;
 				$data['observa1']   = 'RET/IVA DE '.$cod_cli.' A DOC.'.$ittipo_doc.$itnumero;
 				$data['estampa']    = $estampa;
@@ -1094,69 +1171,72 @@ class rivc extends Controller {
 				$ban=$this->db->simple_query($mSQL);
 				if($ban==false){ memowrite($mSQL,'rivc'); }
 
-				//Aplica la NC a la ND si es posible
-				//$mnumnd; $fecha;
-				$this->db->select(array('a.numero','a.fecha','a.monto - a.abonos AS saldo'));
-				$this->db->from('smov   AS a');
-				$this->db->join('itrivc AS b' , 'a.transac=b.transac AND a.fecha=b.fecha AND a.num_ref=b.numero');
-				$this->db->where('b.numero'   , $itfactura);
-				$this->db->where('b.tipo_doc' , 'F');
-				$this->db->where('a.tipo_doc' , 'ND');
-				$this->db->where('a.cod_cli'  , 'REIVA');
-				$qquery=$this->db->get();
 
-				if ($qquery->num_rows() == 1){
-					$rrrow = $qquery->row();
-					if($rrrow->saldo >= $itmonto){
-						$data=array();
-						$data['numccli']    = $mnumnc;
-						$data['tipoccli']   = 'NC';
-						$data['cod_cli']    = $cod_cli;
-						$data['tipo_doc']   = 'ND';
-						$data['numero']     = $rrrow->numero;
-						$data['fecha']      = $rrrow->fecha;
-						$data['monto']      = $itmonto;
-						$data['abono']      = $itmonto;
-						$data['ppago']      = 0;
-						$data['reten']      = 0;
-						$data['cambio']     = 0;
-						$data['mora']       = 0;
-						$data['transac']    = $transac;
-						$data['estampa']    = $estampa;
-						$data['hora']       = $hora;
-						$data['usuario']    = $usuario;
-						$data['reteiva']    = 0;
-						$data['nroriva']    = '';
-						$data['emiriva']    = '';
-						$data['recriva']    = '';
+				if($ittipo_doc <> 'NC'){
+					//Aplica la NC a la ND si es posible a REIVA
+					//$mnumnd; $fecha;
+					$this->db->select(array('a.numero','a.fecha','a.monto - a.abonos AS saldo'));
+					$this->db->from('smov   AS a');
+					$this->db->join('itrivc AS b' , 'a.transac=b.transac AND a.fecha=b.fecha AND a.num_ref=b.numero');
+					$this->db->where('b.numero'   , $itfactura);
+					$this->db->where('b.tipo_doc' , 'F');
+					$this->db->where('a.tipo_doc' , 'ND');
+					$this->db->where('a.cod_cli'  , 'REIVA');
+					$qquery=$this->db->get();
 
-						$mSQL = $this->db->insert_string('itccli', $data);
-						$ban=$this->db->simple_query($mSQL);
-						if($ban==false){ memowrite($mSQL,'rivc');}
+					if ($qquery->num_rows() == 1){
+						$rrrow = $qquery->row();
+						if($rrrow->saldo >= $itmonto){
+							$data=array();
+							$data['numccli']    = $mnumnc;
+							$data['tipoccli']   = 'NC';
+							$data['cod_cli']    = $cod_cli;
+							$data['tipo_doc']   = 'ND';
+							$data['numero']     = $rrrow->numero;
+							$data['fecha']      = $rrrow->fecha;
+							$data['monto']      = $itmonto;
+							$data['abono']      = $itmonto;
+							$data['ppago']      = 0;
+							$data['reten']      = 0;
+							$data['cambio']     = 0;
+							$data['mora']       = 0;
+							$data['transac']    = $transac;
+							$data['estampa']    = $estampa;
+							$data['hora']       = $hora;
+							$data['usuario']    = $usuario;
+							$data['reteiva']    = 0;
+							$data['nroriva']    = '';
+							$data['emiriva']    = '';
+							$data['recriva']    = '';
 
-						//Abona la ND
-						$dbfecha =$this->db->escape($rrrow->fecha);
-						$dbnumero=$this->db->escape($rrrow->numero);
-						$mSQL="UPDATE smov SET abonos=abonos+$itmonto
-						WHERE
-						cod_cli ='REIVA' AND
-						tipo_doc='ND' AND
-						numero  = $dbnumero AND
-						fecha   = $dbfecha";
-						$ban=$this->db->simple_query($mSQL);
-						if($ban==false){ memowrite($mSQL,'rivc');}
+							$mSQL = $this->db->insert_string('itccli', $data);
+							$ban=$this->db->simple_query($mSQL);
+							if($ban==false){ memowrite($mSQL,'rivc');}
 
-						//Abona la NC
-						$dbfecha =$this->db->escape($fecha);
-						$dbnumero=$this->db->escape($mnumnc);
-						$mSQL="UPDATE smov SET abonos=monto
-						WHERE
-						cod_cli ='REIVA' AND
-						tipo_doc='NC' AND
-						numero  = $dbnumero AND
-						fecha   = $dbfecha";
-						$ban=$this->db->simple_query($mSQL);
-						if($ban==false){ memowrite($mSQL,'rivc');}
+							//Abona la ND
+							$dbfecha =$this->db->escape($rrrow->fecha);
+							$dbnumero=$this->db->escape($rrrow->numero);
+							$mSQL="UPDATE smov SET abonos=abonos+$itmonto
+							WHERE
+							cod_cli ='REIVA' AND
+							tipo_doc='ND' AND
+							numero  = $dbnumero AND
+							fecha   = $dbfecha";
+							$ban=$this->db->simple_query($mSQL);
+							if($ban==false){ memowrite($mSQL,'rivc');}
+
+							//Abona la NC
+							$dbfecha =$this->db->escape($fecha);
+							$dbnumero=$this->db->escape($mnumnc);
+							$mSQL="UPDATE smov SET abonos=monto
+							WHERE
+							cod_cli ='REIVA' AND
+							tipo_doc='NC' AND
+							numero  = $dbnumero AND
+							fecha   = $dbfecha";
+							$ban=$this->db->simple_query($mSQL);
+							if($ban==false){ memowrite($mSQL,'rivc');}
+						}
 					}
 				}
 			}
@@ -1290,6 +1370,7 @@ class rivc extends Controller {
 
 		$primary =implode(',',$do->pk);
 		logusu($do->table,"Creo $this->tits ID $primary ${periodo }${nrocomp}");
+exit();
 		return true;
 	}
 
