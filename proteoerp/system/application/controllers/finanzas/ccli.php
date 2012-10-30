@@ -619,8 +619,8 @@ class ccli extends Controller {
 				$dbdata['hora']       = $do->get('hora');
 				$dbdata['transac']    = $do->get('transac');
 				$dbdata['usuario']    = $do->get('usuario');
-				$dbdata['codigo']     = 'NOCON';
-				$dbdata['descrip']    = 'NOTA DE CONTABILIDAD';
+				$dbdata['codigo']     = 'DEPPC';
+				$dbdata['descrip']    = 'DESCUENTO PRONTO PAGO';
 				$dbdata['fecdoc']     = $do->get('fecha');
 				$dbdata['nroriva']    = '';
 				$dbdata['emiriva']    = '';
