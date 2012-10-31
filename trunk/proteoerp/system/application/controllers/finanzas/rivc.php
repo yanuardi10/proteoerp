@@ -558,7 +558,6 @@ class rivc extends Controller {
 					AND b.numero IS NULL
 					AND d.numero IS NULL
 					AND a.tipo_doc = 'NC'
-					AND (a.nroriva IS NULL OR TRIM(a.nroriva)='')
 					AND a.observa1 NOT LIKE 'RET%'
 					AND a.impuesto>0
 				ORDER BY numero DESC LIMIT 10)";
