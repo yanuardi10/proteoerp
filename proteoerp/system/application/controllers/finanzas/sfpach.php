@@ -30,18 +30,20 @@ class sfpach extends Controller {
 		redirect($this->url.'jqdatag');
 	}
 
+//		$readyLayout = $grid->readyLayout2( 212, 100, $param['grids'][0]['gridname']);
+
+
 	//***************************
 	//
 	//   Layout en la Ventana
 	//
 	//***************************
 	function jqdatag(){
+
 		$grid = $this->defgrid();
 		$param['grids'][] = $grid->deploy();
 
-		$readyLayout = $grid->readyLayout2( 212, 220, $param['grids'][0]['gridname'],$param['grids'][1]['gridname']);
-
-
+		//Funciones que ejecutan los botones
 		$bodyscript = $this->bodyscript($param['grids'][0]['gridname']);
 
 		#Set url
@@ -93,14 +95,18 @@ class sfpach extends Controller {
 		';
 
 		$param['WestPanel']   = $WestPanel;
-//		$param['readyLayout']  = $readyLayout;
-//		$param['EastPanel']  = $EastPanel;
+		//$param['funciones']   = $funciones;
+
+		//$param['EastPanel'] = $EastPanel;
 		$param['SouthPanel']  = $SouthPanel;
-		$param['tema1']       = 'darkness';
+		$param['listados']    = $this->datasis->listados('SFPACH', 'JQ');
+		$param['otros']       = $this->datasis->otros('SFPACH', 'JQ');
+		$param['temas']       = array('proteo','darkness','anexos1');
 		$param['bodyscript']  = $bodyscript;
 		$param['tabs']        = false;
 		$param['encabeza']    = $this->titp;
 		$this->load->view('jqgrid/crud2',$param);
+
 	}	
 
 
