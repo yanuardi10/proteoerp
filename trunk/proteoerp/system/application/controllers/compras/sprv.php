@@ -96,6 +96,7 @@ class Sprv extends Controller {
 		$mSQL  = "SELECT cod_banc, CONCAT( nomb_banc) nombre FROM tban ORDER BY nomb_banc ";
 		$banco = $this->datasis->llenajqselect($mSQL, true );
 
+		$link   = site_url('ajax/buscacpla');
 
 		$grid  = new $this->jqdatagrid;
 
@@ -107,7 +108,7 @@ class Sprv extends Controller {
 			'width'         => 50,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:3, maxlength: 5 }',
+			'editoptions'   => '{ size:5, maxlength: 5 }',
 			'formoptions'   => '{ rowpos:'.$linea.', colpos:1 }'));
 
 
@@ -188,19 +189,8 @@ class Sprv extends Controller {
 			'formoptions'   => '{ rowpos:'.$linea.', colpos:2 }'
 		));
 
+
 /*
-		$grid->addField('cuenta');
-		$grid->label('Cuenta');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 150,
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 15 }',
-		));
-
-
 		$grid->addField('gr_desc');
 		$grid->label('Gr_desc');
 		$grid->params(array(
@@ -307,6 +297,18 @@ class Sprv extends Controller {
 			'formoptions'   => '{ rowpos:'.$linea.', colpos:1 }'
 		));
 
+
+		$grid->addField('cuenta');
+		$grid->label('Cuenta');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 150,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:false}',
+			'editoptions'   => '{'.$grid->autocomplete($link, 'cuenta','cucucu','<div id=\"cucucu\"><b>"+ui.item.descrip+"</b></div>').'}',
+			'formoptions'   => '{ rowpos:'.$linea.', colpos:2 }'
+		));
 
 /*
 
