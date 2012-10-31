@@ -1369,7 +1369,7 @@ class rivc extends Controller {
 
 		$primary =implode(',',$do->pk);
 		logusu($do->table,"Creo $this->tits ID $primary ${periodo }${nrocomp}");
-exit();
+
 		return true;
 	}
 
