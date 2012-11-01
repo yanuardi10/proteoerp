@@ -19,7 +19,7 @@ class Sprv extends Controller {
 			$this->db->simple_query('ALTER TABLE sprv ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
 		};*/
 		$this->db->simple_query('ALTER TABLE sprv CHANGE COLUMN telefono telefono TEXT NULL DEFAULT NULL AFTER direc3');
-		
+
 		$this->datasis->modintramenu( 800, 500, substr($this->url,0,-1) );
 		redirect($this->url.'jqdatag');
 	}
@@ -342,12 +342,11 @@ class Sprv extends Controller {
 			'search'        => 'true',
 			'editable'      => $editar,
 			'width'         => 200,
-			'edittype'      => "'text'",
+			'edittype'      => "'textarea'",
 			'editrules'     => '{ required:false}',
-			'editoptions'   => '{ size:30, maxlength: 30 }',
+			'editoptions'   => "{rows:2, cols:28}",
 			'formoptions'   => '{ rowpos:'.$linea.', colpos:1 }'
 		));
-
 
 		$grid->addField('url');
 		$grid->label('Url');
@@ -582,7 +581,7 @@ class Sprv extends Controller {
 			$codigo = $this->datasis->dameval("SELECT $mcodp FROM sprv WHERE id=$id");
 			$check =  $this->datasis->dameval("SELECT count(*) FROM sprm WHERE cod_prv='$codigo'");
 			$check += $this->datasis->dameval("SELECT count(*) FROM scst WHERE proveed='$codigo'");
-			$check += $this->datasis->dameval("SELECT count(*) FROM gser WHERE proveed='$codigo'");	
+			$check += $this->datasis->dameval("SELECT count(*) FROM gser WHERE proveed='$codigo'");
 			$check += $this->datasis->dameval("SELECT count(*) FROM ords WHERE proveed='$codigo'");
 			$check += $this->datasis->dameval("SELECT count(*) FROM bmov WHERE clipro='P' AND codcp='$codigo'");
 			if ($check > 0){
@@ -607,7 +606,7 @@ class Sprv extends Controller {
 		$saldo  = $this->datasis->dameval("SELECT sum(monto*IF(tipo_doc IN ('FC','ND','GI'),1,-1)) saldo FROM sprm WHERE cod_prv=".$this->db->escape($proveed));
 
 		$salida  = '<table width="90%" cellspacing="0" align="center">';
-		if ( $saldo > 0 ) 
+		if ( $saldo > 0 )
 			$salida .= "<tr style='background-color:#8BB381;font-size:14px;' align='right'><td><b>Saldo: </b> </td><td align='left'><b>".nformat($saldo)."</b></td></tr>\n";
 		elseif ( $saldo < 0 )
 			$salida .= "<tr style='background-color:#C11B17;font-size:14px;color:white;' align='right'><td><b>Saldo: </b> </td><td align='left'><b>".nformat($saldo)."</b></td></tr>\n";
@@ -731,13 +730,13 @@ class Sprv extends validaciones {
 		';
 				$style ='
 		<style type="text/css">
-		.fakeContainer { // The parent container 
+		.fakeContainer { // The parent container
 			margin: 5px;
 			padding: 0px;
 			border: none;
-			width: 740px;     // Required to set 
-			height: 320px;    // Required to set 
-			overflow: hidden; // Required to set 
+			width: 740px;     // Required to set
+			height: 320px;    // Required to set
+			overflow: hidden; // Required to set
 		}
 		</style>
 		';
