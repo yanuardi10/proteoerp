@@ -708,7 +708,7 @@ class rivc extends Controller {
 					$do->set_rel($rel, 'reduimpu' , $row->reducida, $i);
 
 					$do->set_rel($rel, 'nfiscal' , $row->nfiscal, $i);
-					$do->set_rel($rel, 'reiva'    , $itreiva     , $i);
+					$do->set_rel($rel, 'reiva'   , $itreiva     , $i);
 
 					$exento   =$exento+$row->exento;
 
