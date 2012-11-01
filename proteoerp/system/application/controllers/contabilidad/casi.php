@@ -1850,6 +1850,11 @@ class casi extends Controller {
 						//$grid->per_page = $cana;
 						$grid->db->from($table);
 						$grid->db->where("$cc = $valor");
+						$grid->db->limit(200);
+						if(in_array('id', $fields)){
+							$grid->db->orderby('id','desc');
+						}
+
 						foreach($fields as $ff){
 							$grid->column($ff , $ff);
 						}
