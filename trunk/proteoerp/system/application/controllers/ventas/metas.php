@@ -125,9 +125,10 @@ class metas extends Controller{
 		$error=$msj='';
 		if($this->input->post('pros') !== false){
 			$pmargen=$this->input->post('pmargen');
-
 			if(is_array($pmargen)){
-				if(array_sum($pmargen)==100){
+				$sum=array_sum($pmargen);
+
+				if(round($sum,2)==100.00){
 					foreach($pmargen AS $id=>$pm){
 						if(is_numeric($pm) && $pm>=0){
 							$this->db->where('id', $id);
@@ -196,7 +197,7 @@ class metas extends Controller{
 		$data['content'] ='<div class="alert">'.$error.'</div>';
 		$data['content'].='<div>'.$msj.'</div>';
 		$data['content'].= $ggrid;
-		$data['title']   = heading('Cambio de precios');
+		$data['title']   = heading('Cambio en las metas para vendedores');
 		$data['script']  = $script;
 		$data['script'] .= phpscript('nformat.js');
 		$data['head']    = $this->rapyd->get_head().script('jquery.pack.js').script('plugins/jquery.numeric.pack.js').script('plugins/jquery.floatnumber.js');
