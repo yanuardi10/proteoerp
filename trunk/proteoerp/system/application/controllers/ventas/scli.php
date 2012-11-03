@@ -244,7 +244,7 @@ class Scli extends Controller {
 					}
 				)
 			}
-		}
+		};
 
 		function sclifusdef(mnuevo, mviejo){
 			$.ajax({
@@ -260,7 +260,8 @@ class Scli extends Controller {
 				},
 				error: function(h,t,e) {alert("Error..","Finalizado con Error" )}
 			});
-		}';
+		}
+		';
 
 
 		// Memo del cliente

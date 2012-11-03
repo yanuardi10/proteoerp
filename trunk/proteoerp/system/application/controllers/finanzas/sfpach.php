@@ -559,8 +559,11 @@ class sfpach extends Controller {
 		}
 	}
 
+	//******************************************************************
+	//
+	//  Guarda los deposios pendientes
+	//
 	function depositos(){
-		// Genera el deposito pendiente
 		$envia   = $this->input->get_post('envia');
 		$recibe  = $this->input->get_post('recibe');
 		$monto   = $this->input->get_post('monto');
@@ -569,6 +572,7 @@ class sfpach extends Controller {
 		
 		// Revisamos si el monto coincide con la suma
 		$mMonto = $this->datasis->dameval("SELECT SUM(monto) FROM sfpa WHERE id IN ( $cheques )");
+
 		if ($monto <> $mMonto) memowrite("Diferencia de monto $monto <> $mMonto");
 
 		$monto = $mMonto;

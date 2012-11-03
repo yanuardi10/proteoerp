@@ -117,18 +117,6 @@ class Scst extends Controller {
 				$.prompt("<h1>Por favor Seleccione un Movimiento</h1>");
 		});';
 		
-/*
-		$bodyscript .= '
-		function scstadd() {
-			$.post("'.site_url('compras/scst/solo/create').'",
-			function(data){
-				$("#factuali").html("");
-				$("#fcompra").html(data);
-				$( "#fcompra" ).dialog( "open" );
-			})
-		};';
-*/
-
 		$bodyscript .= '
 		function scstadd() {
 			$.post("'.site_url('compras/scst/solo/create').'",

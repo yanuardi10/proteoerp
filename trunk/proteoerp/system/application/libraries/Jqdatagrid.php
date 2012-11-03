@@ -1055,10 +1055,11 @@ class Jqdatagrid
 		}else{
 			$rs = $this->CI->datasis->codificautf8($this->CI->db->get()->result_array());;
 		}
-		memowrite($this->CI->db->last_query(),'JQGETDATA');
+			
+		memowrite("ar".$this->CI->db->last_query(),'JQGETDATA');
 		$queryString = $this->CI->db->last_query();
 		
-		$querydata = array( 'dtgQuery'  => $this->CI->db->last_query() );
+		$querydata = array( 'dtgQuery' => $this->CI->db->last_query() );
 		
 		$this->CI->session->set_userdata($querydata);
 		
@@ -1521,12 +1522,14 @@ class Jqdatagrid
 
 		$wbotones = "<table id='west-grid' align='center'>\n";
 		foreach( $this->Wbotones as $bt  ){
+			if ( !isset($bt['height'])) $bt['height'] = 18; 
 			$wbotones .= '
 	<tr>
-		<td><div class="tema1 botones"><a style="width:190px;text-align:left;" href="#" id="'.$bt["id"].'">'.img(array('src' => $bt["img"], 'alt' => $bt["alt"],  'title' => $bt["alt"], 'border'=>'0')).'&nbsp;&nbsp;&nbsp;&nbsp;'.$bt["label"].'</a></div></td>
+		<td style="vertical-align:top;"><div class="tema1 botones"><a style="width:190px;text-align:left;vertical-align:top;" href="#" id="'.$bt["id"].'">'.img(array('src' => $bt["img"],  'height' => $bt['height'], 'alt' => $bt["alt"],  'title' => $bt["alt"], 'border'=>'0')).'&nbsp;&nbsp;&nbsp;&nbsp;'.$bt["label"].'</a></div></td>
 	</tr>';
 			
 		}
+
 
 		$wbotones .= '
 </table>

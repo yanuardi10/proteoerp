@@ -1,4 +1,6 @@
-<?php require_once(BASEPATH.'application/controllers/validaciones.php');
+<?php 
+//require_once(BASEPATH.'application/controllers/validaciones.php');
+//include_once(BASEPATH.'application/controllers/inventario/line.php');
 class Grup extends Controller {
 	var $mModulo = 'GRUP';
 	var $titp    = 'Grupos de Inventario';
@@ -22,6 +24,13 @@ class Grup extends Controller {
 		redirect($this->url.'jqdatag');
 	}
 
+
+
+
+
+
+
+
 	//***************************
 	//Layout en la Ventana
 	//
@@ -42,7 +51,7 @@ class Grup extends Controller {
 		$WestPanel = $grid->deploywestp();
 
 		$adic = array(
-		array("id"=>"fedita",  "title"=>"Agregar/Editar Registro")
+		array("id"=>"fgrupo",  "title"=>"Agregar/Editar Registro")
 		);
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
@@ -53,8 +62,7 @@ class Grup extends Controller {
 				meco=\'<div><img src="'.base_url().'images/N.gif" width="20" height="20" border="0" /></div>\';
 			}
 			return meco;
-		}
-		';
+		}';
 
 		$param['WestPanel']   = $WestPanel;
 		$param['funciones']   = $funciones;
@@ -80,8 +88,8 @@ class Grup extends Controller {
 		function grupadd() {
 			$.post("'.site_url('inventario/grup/dataedit/create').'",
 			function(data){
-				$("#fedita").html(data);
-				$("#fedita").dialog( "open" );
+				$("#fgrupo").html(data);
+				$("#fgrupo").dialog( "open" );
 			})
 		};';
 
@@ -92,8 +100,9 @@ class Grup extends Controller {
 				var ret    = $("#newapi'.$grid0.'").getRowData(id);
 				mId = id;
 				$.post("'.site_url('inventario/grup/dataedit/modify').'/"+id, function(data){
-					$("#fedita").html(data);
-					$("#fedita").dialog( "open" );
+					$("#fedita").html("");
+					$("#fgrupo").html(data);
+					$("#fgrupo").dialog( "open" );
 				});
 			} else { $.prompt("<h1>Por favor Seleccione un Registro</h1>");}
 		};';
@@ -113,7 +122,7 @@ class Grup extends Controller {
 			';
 
 		$bodyscript .= '
-		$("#fedita").dialog({
+		$("#fgrupo").dialog({
 			autoOpen: false, height: 500, width: 600, modal: true,
 			buttons: {
 			"Guardar": function() {
@@ -127,12 +136,11 @@ class Grup extends Controller {
 					success: function(r,s,x){
 						if ( r.length == 0 ) {
 							apprise("Registro Guardado");
-							$( "#fedita" ).dialog( "close" );
+							$( "#fgrupo" ).dialog( "close" );
 							grid.trigger("reloadGrid");
-							'.$this->datasis->jwinopen(site_url('formatos/ver/GRUP').'/\'+res.id+\'/id\'').';
 							return true;
 						} else { 
-							$("#fedita").html(r);
+							$("#fgrupo").html(r);
 						}
 					}
 			})},
@@ -390,6 +398,36 @@ class Grup extends Controller {
 		$rs = $grid->jsonresult( $response);
 		echo $rs;
 	}
+
+	/**
+	* Busca la data en el Servidor por json Cuando se llama desde otra clase
+	*/
+	function getdataE()
+	{
+		$id = $this->uri->segment(4);
+		if ($id == false ){
+			$id = $this->datasis->dameval("SELECT id FROM line ORDER BY depto, linea LIMIT 1");
+		}
+		$depto = $this->datasis->dameval("SELECT depto FROM line WHERE id=$id");
+		$linea = $this->datasis->dameval("SELECT linea FROM line WHERE id=$id");
+		$grid    = $this->jqdatagrid;
+		$mSQL    = "SELECT * FROM grup WHERE depto='$depto' AND linea='$linea'";
+		$response   = $grid->getDataSimple($mSQL);
+		$rs = $grid->jsonresult( $response);
+		echo $rs;
+
+/*
+		$grid       = $this->jqdatagrid;
+		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
+		$mWHERE = $grid->geneTopWhere('grup');
+
+		$response   = $grid->getData('grup', array(array()), array(), false, $mWHERE );
+		$rs = $grid->jsonresult( $response);
+		echo $rs;
+*/
+	}
+
+
 
 	/**
 	* Guarda la Informacion

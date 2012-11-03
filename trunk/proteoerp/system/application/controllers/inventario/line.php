@@ -1,5 +1,6 @@
 <?php 
-require_once(BASEPATH.'application/controllers/validaciones.php');
+//Grupos de Inventario
+require_once(BASEPATH.'application/controllers/inventario/grup.php');
 //lineasinventario
 class Line extends Controller {
 	var $mModulo = 'LINE';
@@ -27,9 +28,8 @@ class Line extends Controller {
 				select `a`.`linea` AS `linea`,`a`.`descrip` AS `descrip`,`a`.`cu_cost` AS `cu_cost`,`a`.`cu_inve` AS `cu_inve`,`a`.`cu_venta` AS `cu_venta`,`a`.`cu_devo` AS `cu_devo`,`a`.`depto` AS `depto`,`a`.`id` AS `id`,concat(`b`.`depto`, " ", `b`.`descrip`) AS `desdepto` from (`line` `a` join `dpto` `b` on((`a`.`depto` = `b`.`depto`)))';
 			$this->db->simple_query($mSQL);
 		}
-
 		
-		$this->datasis->modintramenu( 800, 600, substr($this->url,0,-1) );
+		$this->datasis->modintramenu( 800, 635, substr($this->url,0,-1) );
 		redirect($this->url.'jqdatag');
 	}
 
@@ -42,28 +42,76 @@ class Line extends Controller {
 		$grid = $this->defgrid();
 		$param['grids'][] = $grid->deploy();
 
-		//Funciones que ejecutan los botones
-		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname']);
-
+		//$Grupo
+		$grid1 = Grup::defgrid();
 		#Set url
-		$grid->setUrlput(site_url($this->url.'setdata/'));
+		$grid1->setUrlput(site_url('/inventario/grup/setdata/'));
+
+		#GET url
+		$grid1->setUrlget(site_url('/inventario/grup/getdataE/'));
+		$grid1->setTitle("Grupos de Inventario");
+		$grid1->setfilterToolbar(false);
+		$grid1->setHeight('160');
+		$grid1->setOndblClickRow('
+			,ondblClickRow: function(id){
+				grupedit();
+				return;
+			}');
+
+
+
+		$param['grids'][] = $grid1->deploy();
+
+		$readyLayout = $grid->readyLayout2( 212, 210, $param['grids'][0]['gridname'],$param['grids'][1]['gridname']);
+
+		//Funciones que ejecutan los botones
+		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
+
+		//Botones Panel Izq
+		//$grid->wbotonadd(array("id"=>"reversar", "img"=>"images/arrow_up.png", "alt" => 'Actualizar/Reversar', "label"=>"Actualizar Reversar"));
+		$WestPanel = $grid->deploywestp();
+
+		//Panel Central y Sur
+		$centerpanel = $grid->centerpanel( $id = "radicional", $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
 
 		//Botones Panel Izq
 		//$grid->wbotonadd(array("id"=>"edocta",   "img"=>"images/pdf_logo.gif",  "alt" => "Formato PDF", "label"=>"Ejemplo"));
 		$WestPanel = $grid->deploywestp();
 
 		$adic = array(
-		array("id"=>"fedita",  "title"=>"Agregar/Editar Registro")
+		array("id"=>"fedita",  "title"=>"Agregar/Editar Linea de Inventario"),
+		array("id"=>"fgrupo",  "title"=>"Editar Grupo")
 		);
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
+		$funciones = '
+		function fstatus(el, val, opts){
+			var meco=\'<div><img src="'.base_url().'images/S.gif" width="20" height="18" border="0" /></div>\';
+			if ( el == "B" ){
+				meco=\'<div><img src="'.base_url().'images/N.gif" width="20" height="20" border="0" /></div>\';
+			}
+			return meco;
+		}
+		';
+
+		$bodyGrid1 = Grup::bodyscript( $param['grids'][1]['gridname'] );
+		//Cambiamos grid por grid1
+		$bodyGrid1 = str_replace('grid.trigger(','grid1.trigger(',$bodyGrid1);
+		//$bodyGrid1 = str_replace('fedita','fgrupo',$bodyGrid1);
+
 		$param['WestPanel']   = $WestPanel;
 		//$param['EastPanel'] = $EastPanel;
+		$param['readyLayout']  =$readyLayout;
 		$param['SouthPanel']  = $SouthPanel;
 		$param['listados']    = $this->datasis->listados('LINE', 'JQ');
+		$param['funciones']   = $funciones;
+
+
+		$param['centerpanel']  = $centerpanel;
+
 		$param['otros']       = $this->datasis->otros('LINE', 'JQ');
 		$param['temas']       = array('proteo','darkness','anexos1');
-		$param['bodyscript']  = $bodyscript;
+		$param['bodyscript']  = $bodyGrid1.$bodyscript;
 		$param['tabs']        = false;
 		$param['encabeza']    = $this->titp;
 		$this->load->view('jqgrid/crud2',$param);
@@ -79,6 +127,7 @@ class Line extends Controller {
 		function lineadd() {
 			$.post("'.site_url('inventario/line/dataedit/create').'",
 			function(data){
+				$("#fgrupo").html("");
 				$("#fedita").html(data);
 				$("#fedita").dialog( "open" );
 			})
@@ -91,6 +140,7 @@ class Line extends Controller {
 				var ret    = $("#newapi'.$grid0.'").getRowData(id);
 				mId = id;
 				$.post("'.site_url('inventario/line/dataedit/modify').'/"+id, function(data){
+					$("#fgrupo").html("");
 					$("#fedita").html(data);
 					$("#fedita").dialog( "open" );
 				});
@@ -128,7 +178,6 @@ class Line extends Controller {
 							apprise("Registro Guardado");
 							$( "#fedita" ).dialog( "close" );
 							grid.trigger("reloadGrid");
-							'.$this->datasis->jwinopen(site_url('formatos/ver/LINE').'/\'+res.id+\'/id\'').';
 							return true;
 						} else { 
 							$("#fedita").html(r);
@@ -266,10 +315,20 @@ class Line extends Controller {
 		
 		$grid->showpager(true);
 		$grid->setWidth('');
-		$grid->setHeight('290');
+		$grid->setHeight('208');
 		$grid->setTitle($this->titp);
 		$grid->setfilterToolbar(true);
 		$grid->setToolbar('false', '"top"');
+
+		$grid->setOnSelectRow('
+			function(id){
+			if (id){
+				var ret = $("#titulos").getRowData(id);
+				jQuery(gridId2).jqGrid(\'setGridParam\',{url:"'.site_url('inventario/grup/getdataE/').'/"+id+"/", page:1});
+				jQuery(gridId2).trigger("reloadGrid");
+			}}
+		');
+
 
 		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
 		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');

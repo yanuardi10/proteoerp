@@ -24,15 +24,52 @@ class Unidad extends Controller{
 	}
 
 
+	//***************************
+	//Layout en la Ventana
+	//
+	//***************************
 	function jqdatag(){
 
+		$grid = $this->defgrid();
+		$param['grids'][] = $grid->deploy();
+
+		//Funciones que ejecutan los botones
+		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname']);
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		//Botones Panel Izq
+		//$grid->wbotonadd(array("id"=>"edocta",   "img"=>"images/pdf_logo.gif",  "alt" => "Formato PDF", "label"=>"Ejemplo"));
+		$WestPanel = $grid->deploywestp();
+
+		$adic = array(
+		array("id"=>"fedita",  "title"=>"Agregar/Editar Registro")
+		);
+		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
+
+		//$param['WestPanel']   = $WestPanel;
+		//$param['EastPanel'] = $EastPanel;
+		$param['SouthPanel']  = $SouthPanel;
+		$param['listados']    = $this->datasis->listados('UNIDAD', 'JQ');
+		$param['otros']       = $this->datasis->otros('UNIDAD', 'JQ');
+		$param['temas']       = array('proteo','darkness','anexos1');
+		$param['bodyscript']  = $bodyscript;
+		$param['tabs']        = false;
+		$param['encabeza']    = $this->titp;
+		$this->load->view('jqgrid/crud2',$param);
+	}
+
+/*
 		$grid  = $this->defgrid();
 		$param['grid']  = $grid->deploy();
+
 
 		// Trae de marc
 		$grid1 = marc::defgrid();
 		$grid1->setHeight('350');
 		$param['grid1'] = $grid1->deploy();
+
 
 		$WestPanel = '
 <div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content">
@@ -47,14 +84,24 @@ class Unidad extends Controller{
 		$param['encabeza'] = 'Unidades y Marcas';
 		$this->load->view('jqgrid/crud',$param);
 
-/*
+
 		$grid = $this->defgrid();
 		$param['grid'] = $grid->deploy();
 		$param['tabs'] = false;
 		$param['encabeza'] = $this->titp;
 		$this->load->view('jqgrid/crud',$param);
-*/
+
 	}
+*/
+
+	//***************************
+	//Funciones de los Botones
+	//***************************
+	function bodyscript( $grid0 ){
+		$bodyscript = "";
+		return $bodyscript;
+	}
+
 
 
 	function defgrid($deployed = false){
@@ -87,9 +134,9 @@ class Unidad extends Controller{
 		$grid->setViewRecords(true);
 
 		#width
-		$grid->setWidth('400');
+		$grid->setWidth('250');
 		#height
-		$grid->setHeight('350');
+		$grid->setHeight('260');
 		#table title
 		$grid->setTitle($titp);
 

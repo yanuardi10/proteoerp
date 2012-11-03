@@ -800,7 +800,7 @@ function sinvcodigo(mviejo){
 		} else {
 			yurl = encodeURIComponent(mcodigo);
 			$.ajax({
-				url: '<?php echo $link20 ?>',
+				url: '<?php echo site_url('inventario/sinv/sinvcodigoexiste'); ?>',
 				global: false,
 				type: "POST",
 				data: ({ codigo : encodeURIComponent(mcodigo) }),
@@ -833,7 +833,7 @@ function sinvcodigo(mviejo){
 
 function sinvcodigocambia( mtipo, mviejo, mcodigo ) {
 	$.ajax({
-		url: '<?php echo $link21 ?>',
+		url: '<?php echo site_url('inventario/sinv/sinvcodigo'); ?>',
 		global: false,
 		type: "POST",
 		data: ({ tipo:  mtipo,
@@ -1152,10 +1152,10 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 	<ul>
 		<li><a href="#tab1">Parametros</a></li>
 		<li><a href="#tab2">Precios</a></li>
-		<?php if($form->_status=='show'){ ?>
+		<?php //if($form->_status=='show'){ ?>
 		<li><a href="#tab3">Existencias</a></li>
 		<li><a href="#tab4">Movimientos</a></li>
-		<?php } ?>
+		<?php //} ?>
 		<li><a href="#tab5">Promociones</a></li>
 		<li><a href="#tab6">Precio al Mayor</a></li>
 		<?php if(($form->_dataobject->get('tipo')=='Combo' && $form->_status=='show') || $form->_status!='show'){?>
@@ -1469,7 +1469,6 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 	</div>
 	<?php echo $container_la ?>
 </div>
-<?php if($form->_status=='show'){ ?>
 <div id="tab3" style='background:#EFEFFF'>
 	<table width='100%'>
 	<tr>
@@ -1515,6 +1514,7 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 	</tr>
 	</table>
 </div>
+<?php if($form->_status=='show'){ ?>
 <?php } ?>
 <div id="tab4" style='background:#EFEFFF'>
 
