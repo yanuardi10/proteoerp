@@ -207,6 +207,7 @@ echo '<link rel="stylesheet" href="'.base_url().'system/application/rapyd/librar
 echo '<link rel="stylesheet" href="'.base_url().'system/application/rapyd/elements/proteo/css/rapyd_components.css" type="text/css" />'."\n";
 echo '<script language="javascript" type="text/javascript" src="'.base_url().'system/application/rapyd/libraries/jscalendar/calendar.js"></script>'."\n";
 echo '<script language="javascript" type="text/javascript" src="'.base_url().'system/application/rapyd/libraries/jscalendar/calendar-setup.js"></script>'."\n";
+
 ?>
 <script language="javascript" type="text/javascript">
 	Calendar._DN = new Array("Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo");
@@ -217,10 +218,12 @@ echo '<script language="javascript" type="text/javascript" src="'.base_url().'sy
 	Calendar._TT["TODAY"] = "Hoy";
 </script>
 <?php
+echo "\n<!-- USUARIO -->\n";
+if( isset($script)) echo $script;
+
 echo "\n";
 echo script('i18n/grid.locale-sp.js');
 echo script('jquery.jqGrid.min.js');
-
 
 
 ?>

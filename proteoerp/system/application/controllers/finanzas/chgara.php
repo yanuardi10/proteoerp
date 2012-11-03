@@ -40,289 +40,21 @@ class Chgara extends Controller {
 		$grid = $this->defgrid();
 		$param['grids'][] = $grid->deploy();
 
-		$mSQL  = "SELECT codbanc, CONCAT(codbanc, ' ', trim(banco),' ', numcuent) banco ";
-		$mSQL .= "FROM banc WHERE activo='S'  AND tbanco<>'CAJ' ";
-		$mSQL .= "ORDER BY (tbanco='CAJ'), codbanc ";
-		$obanc = $this->datasis->llenaopciones($mSQL, false,  'cuenta' );
-		$obanc = str_replace('"',"'", $obanc);
-
-
-		$bodyscript = '
-<script type="text/javascript">
-$(function() {
-	$( "input:submit, a, button", ".otros" ).button();
-});
-
-jQuery("#listado").click( function(){
-	window.open(\''.base_url().'reportes/ver/CHGARA/\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
-});
-
-var grid = jQuery("#newapi'.$param['grids'][0]['gridname'].'");
-
-$( "#depositar" ).click(function() {
-	var grid = jQuery("#newapi'.$param['grids'][0]['gridname'].'");
-	var s = grid.getGridParam(\'selarrrow\');
-	if(s.length){
-		meco = sumamonto(0);
-		$.prompt( "<h1>Enviar a Depositar ?</h1>", {
-			buttons: { Guardar: true, Cancelar: false },
-			submit: function(e,v,m,f){
-				if (v){
-					$.get("'.base_url().$this->url.'chenvia/"+meco,
-					function(data){
-						apprise("<h1>"+data+"</h1>");
-						grid.trigger("reloadGrid");
-					});
-				}
-			}
-		});
-	} else {
-		$.prompt("<h1>Seleccione los Cheques</h1>");
-	}
-});
-
-
-$( "#cobrados" ).click(function() {
-	var grid = jQuery("#newapi'.$param['grids'][0]['gridname'].'");
-	var s = grid.getGridParam(\'selarrrow\');
-	if(s.length){
-		meco = sumamonto(0);
-		$.prompt( "<h1>Marcar como Cobrado?</h1>Marca solo los cheques que fueron previamente Enviados al Cobro<br/>Cuenta Bancaria: '.$obanc.'<br>Fecha del deposito: <br/> <input type=\'text\' id=\'mfecha\' name=\'mfecha\' value=\''.date('d-m-Y').'\' maxlengh=\'10\' size=\'10\' ><br/>Numero de Deposito:<br/><input type=\'text\' id=\'numdep\' name=\'numdep\' value=\'\'><br/>", {
-			buttons: { Guardar: true, Cancelar: false },
-			submit: function(e,v,m,f){
-				if (v){
-					mfecha = f.mfecha.substr(6,4)+f.mfecha.substr(3,2)+f.mfecha.substr(0,2);
-					if (f.numdep == ""){
-						alert("Debe colocar el Nro de deposito!!!");					
-					} else {
-						$.get("'.base_url().$this->url.'chcobrados/"+meco+"/"+f.numdep+"/"+f.cuenta+"/"+mfecha,
-						function(data){
-							apprise("<h1>"+data+"</h1>");
-							grid.trigger("reloadGrid");
-						});
-					}
-				}
-			}
-		});
-		$("#mfecha").datepicker({dateFormat:"dd-mm-yy"});
-	} else {
-		$.prompt("<h1>Seleccione los Cheques</h1>");
-	}
-});
-
-$( "#devueltos" ).click(function() {
-	var grid = jQuery("#newapi'.$param['grids'][0]['gridname'].'");
-	var s = grid.getGridParam(\'selarrrow\');
-	if(s.length){
-		meco = sumamonto(0);
-		$.prompt( "<h1>Marcar los cheques Devueltos ?</h1>Marca solo los cheques que fueron previamente Enviados al Cobro", {
-			buttons: { Guardar: true, Cancelar: false },
-			submit: function(e,v,m,f){
-				if (v){
-					$.get("'.base_url().$this->url.'chdevueltos/"+meco,
-					function(data){
-						apprise("<h1>"+data+"</h1>");
-						grid.trigger("reloadGrid");
-					});
-				}
-			}
-		});
-	} else {
-		$.prompt("<h1>Seleccione los Cheques</h1>");
-	}
-});
-
-$( "#cerrar" ).click(function() {
-	var grid = jQuery("#newapi'.$param['grids'][0]['gridname'].'");
-	var s = grid.getGridParam(\'selarrrow\');
-	if(s.length == 1){
-		entirerow = grid.jqGrid(\'getRowData\',s[0]);
-		if ( entirerow["status"].search("moneda") < 0 ){
-			$.prompt("<h1>Cheque no cobrado o ya aplicado</h1>Seleccione uno que este depositado y cobrado");
-		} else {
-			$.prompt( "<h1>Registrar pago y deposito manualmente?</h1>Cerrar cheque cobrado por carga manual? ", {
-				buttons: { Guardar: true, Cancelar: false },
-				submit: function(e,v,m,f){
-					if (v){
-						$.get("'.base_url().$this->url.'chcerrar/"+entirerow["id"],
-						function(data){
-							apprise("<h1>"+data+"</h1>");
-							grid.trigger("reloadGrid");
-						});
-					}
-				}
-			});
-		}
-	} else {
-		$.prompt("<h1>Seleccione un solo Cheque</h1>");
-	}
-});
-
-$( "#anular" ).click(function() {
-	var grid = jQuery("#newapi'.$param['grids'][0]['gridname'].'");
-	var s = grid.getGridParam(\'selarrrow\');
-	if(s.length == 1){
-		entirerow = grid.jqGrid(\'getRowData\',s[0]);
-		if ( entirerow["status"].search("S.gif") < 0 ){
-			$.prompt("<h1>Cheque no esta pendiente</h1>Seleccione otro");
-		} else {
-			$.prompt( "<h1>Anular Cheque en garantia?</h1>Anular este cheque por Incobrable? ", {
-				buttons: { Guardar: true, Cancelar: false },
-				submit: function(e,v,m,f){
-					if (v){
-						$.get("'.base_url().$this->url.'chanular/"+entirerow["id"],
-						function(data){
-							apprise("<h1>"+data+"</h1>");
-							grid.trigger("reloadGrid");
-						});
-					}
-				}
-			});
-		}
-	} else {
-		$.prompt("<h1>Seleccione un solo Cheque</h1>");
-	}
-});
-
-
-$( "#pagar" ).click(function() {
-	var grid = jQuery("#newapi'.$param['grids'][0]['gridname'].'");
-	var s = grid.getGridParam(\'selarrrow\');
-	var id = 0;
-	var entirerow;
-	if(s.length == 1){
-		entirerow = grid.jqGrid(\'getRowData\',s[0]);
-		id = entirerow["id"];
-		var ret   = $("#newapi'. $param['grids'][0]['gridname'].'").getRowData(id);  
-		mId = id;
-		$.post("'.base_url().'finanzas/chgara/formapaga/"+id, function(data){
-			$("#forma1").html(data);
-		});
-		if ( entirerow["status"].search("moneda") < 0 ) {
-			$.prompt("<h1>Cheque no cobrado o ya aplicado</h1>Seleccione uno que este depositado y cobrado");
-		} else {
-			$( "#forma1" ).dialog( "open" );
-		}	
-	} else {
-		$.prompt("<h1>Por favor Seleccione un Deposito</h1>");
-	}
-});
-
-$( "#forma1" ).dialog({
-	autoOpen: false,
-	height: 470,
-	width: 550,
-	modal: true,
-	buttons: {
-		"Aplicar Pago": function() {
-			var bValid = true;
-			//allFields.removeClass( "ui-state-error" );
-			if ( bValid ) {
-				$.ajax({
-					type: "POST",
-					dataType: "html",
-					url:"'.site_url("finanzas/chgara/chpagar").'",
-					async: false,
-					data: $("#pagaforma").serialize(),
-					success: function(r,s,x){
-						var res = $.parseJSON(r);
-						if ( res.status == "E"){
-							apprise("<h2>Error:</h2> <h1>"+res.mensaje+"</h1>");
-						} else {
-							apprise("<h1>"+res.mensaje+"</h1>");
-							grid.trigger("reloadGrid");
-							$( "#forma1" ).dialog( "close" );
-							return [true, a ];
-						}
-					}
-				});
-			}
-		},
-		Cancel: function() {
-			$( this ).dialog( "close" );
-		}
-	}
-
-});
-
-function sumamonto(rowId){ 
-	var grid = jQuery("#newapi'.$param['grids'][0]['gridname'].'"); 
-	var s; 
-	var total = 0; 
-	var rowcells=new Array();
-	var entirerow;
-	var hoy   = new Date();
-	var fecha ;
-	var meco = "";
-
-	if ( rowId > 0 ) {
-		entirerow = grid.jqGrid(\'getRowData\',rowId);
-		fecha = new Date(entirerow["fecha"].split("-").join("/"))
-		if ( hoy < fecha ){
-			apprise( "<h1>Cheque no vencido</h1>" );
-		} 
-	}
-
-	s = grid.getGridParam(\'selarrrow\'); 
-	$("#totaldep").html("");
-	if(s.length)
-	{
-		for(var i=0;i<s.length;i++)
-		{
-			entirerow = grid.jqGrid(\'getRowData\',s[i]);
-			fecha = new Date(entirerow["fecha"].split("-").join("/"))
-			if ( hoy >= fecha ){
-				total += Number(entirerow["monto"]);
-				meco = meco+entirerow["id"]+"-";
-			} else {
-				if ( rowId == 0 ) {
-					grid.resetSelection(s[i]);
-				}
-			}
-		}
-		total = Math.round(total*100)/100;
-		$("#totaldep").html("Bs. "+nformat(total,2));
-		$("#montoform").html("Monto: "+nformat(total,2));
-		montotal = total;
-	}
-	return meco;
-};
-$(function(){$(".inputnum").numeric(".");});
-
-</script>
-';
-
+		//Funciones que ejecutan los botones
+		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname']);
 
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
 
-		$WestPanel = '
-<div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content">
-	<div class="otros">
-	<table id="west-grid">
-	<tr><td>
-		<div class="tema1"><a style="width:190px;text-align:left;" href="#" id="listado">'.img(array('src' => 'assets/default/images/print.png', 'alt' => 'Listado',  'title' => 'Listado', 'border'=>'0')).'&nbsp;&nbsp;&nbsp;&nbsp;Listado</a></div>
-	<tr><td>
-		<div class="tema1"><a style="width:190px;text-align:left;" href="#" id="depositar">'.img(array('src' => 'assets/default/images/cheque.png', 'alt' => 'Cheques',  'title' => 'Cheques', 'border'=>'0')).'&nbsp;&nbsp;&nbsp;&nbsp;Enviar a Depositar </a></div>
-	</td></tr>
-	<tr><td>&nbsp;</td></tr>
-	<tr><td>
-		<div class="tema1"><a style="width:190px;text-align:left;" href="#" id="cobrados">'.img(array('src' => 'assets/default/images/monedas.png', 'alt' => 'Cobrados',  'title' => 'Cobrados', 'border'=>'0')).'&nbsp;&nbsp;&nbsp;&nbsp;Cheques Cobrados</a></div>
-	<tr><td>
-		<div class="tema1"><a style="width:190px;text-align:left;" href="#" id="devueltos">'.img(array('src' => 'images/N.gif', 'alt' => 'Devueltos',  'title' => 'Devueltos', 'border'=>'0')).'&nbsp;&nbsp;&nbsp;&nbsp;Cheques Devueltos </a></div><br>
-	<tr><td>
-		<div class="tema1"><a style="width:190px;text-align:left;" href="#" id="pagar">'.img(array('src' => 'images/face-smile.png', 'alt' => 'Pagar',  'title' => 'Pagar', 'border'=>'0')).'&nbsp;&nbsp;&nbsp;&nbsp;Aplicar pago a Cliente</a></div>
-	<tr><td>
-		<div class="tema1"><a style="width:190px;text-align:left;" href="#" id="cerrar">'.img(array('src' => 'images/face-cool.png', 'alt' => 'Cerrar',  'title' => 'Cerrar', 'border'=>'0')).'&nbsp;&nbsp;&nbsp;&nbsp;Aplicar Manualmente</a></div><br>
-	<tr><td>
-		<div class="tema1"><a style="width:190px;text-align:left;" href="#" id="anular">'.img(array('src' => 'images/face-devilish.png', 'alt' => 'Anular',  'title' => 'Anular', 'border'=>'0')).'&nbsp;&nbsp;&nbsp;&nbsp;Cheque Incobrable</a></div><br>
-	</td></tr>
-	</table>
-	</div>
-	<div id="totaldep" style="font-size:20px;text-align:center;"></div>
-</div> <!-- #LeftPane -->
-';
-
+		//Botones Panel Izq
+		$grid->wbotonadd(array("id"=>"listado",   "img"=>"assets/default/images/print.png",          "alt" => 'Listado',               "label"=>"Listado"));
+		$grid->wbotonadd(array("id"=>"depositar", "img"=>"assets/default/images/cheque.png",         "alt" => 'Enviar a Depositar',    "label"=>"Enviar a Depositar"));
+		$grid->wbotonadd(array("id"=>"cobrados",  "img"=>"assets/default/images/monedas.png",        "alt" => 'Cheques Cobrados',      "label"=>"Cheques Cobrados"));
+		$grid->wbotonadd(array("id"=>"devueltos", "img"=>"assets/default/images/process-stop32.png", "alt" => 'Cheques Devueltos',     "label"=>"Cheques Devueltos"));
+		$grid->wbotonadd(array("id"=>"paar",      "img"=>"images/face-smile.png",                    "alt" => 'Apliar Pago a Cliente', "label"=>"Apliar Pago a Cliente"));
+		$grid->wbotonadd(array("id"=>"cerrar",    "img"=>"images/face-cool.png",                     "alt" => 'Pagar Manualmente',     "label"=>"Resumen"));
+		$grid->wbotonadd(array("id"=>"anular",    "img"=>"images/face-devilish.png",                 "alt" => 'Cheque Incobrable',     "label"=>"Resumen"));
+		$WestPanel = $grid->deploywestp();
 
 		$adic = array(
 			array("id"=>"forma1", "title"=>"Recepcion de Depositos")
@@ -346,12 +78,10 @@ $(function(){$(".inputnum").numeric(".");});
 				meco=\'<div><img src="'.base_url().'images/face-cool.png" width="20" height="20" border="0" /></div>\';
 			}
 			return meco;
-		}
-		';
+		}';
 
 		$param['WestPanel']  = $WestPanel;
 		$param['funciones']  = $funciones;
-
 		//$param['EastPanel']  = $EastPanel;
 		$param['SouthPanel'] = $SouthPanel;
 		$param['listados']   = $this->datasis->listados('CHGARA', 'JQ');
@@ -363,6 +93,285 @@ $(function(){$(".inputnum").numeric(".");});
 		$this->load->view('jqgrid/crud2',$param);
 	}
 
+
+	//***************************
+	//Funciones de los Botones
+	//***************************
+	function bodyscript( $grid0 ){
+		$mSQL  = "SELECT codbanc, CONCAT(codbanc, ' ', trim(banco),' ', numcuent) banco ";
+		$mSQL .= "FROM banc WHERE activo='S'  AND tbanco<>'CAJ' ";
+		$mSQL .= "ORDER BY (tbanco='CAJ'), codbanc ";
+		$obanc = $this->datasis->llenaopciones($mSQL, false,  'cuenta' );
+		$obanc = str_replace('"',"'", $obanc);
+
+		$bodyscript = '<script type="text/javascript">'."\n";
+
+		$bodyscript .= 'var grid = jQuery("#newapi'.$grid0.'");';
+
+		$bodyscript .= '
+		jQuery("#listado").click( function(){
+			window.open(\''.site_url('reportes/ver/CHGARA').'/\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+		});
+		';
+
+		// Envia a Depositar, marca el cheque status='E'
+		$bodyscript .= '
+		$( "#depositar" ).click(function() {
+			var grid = jQuery("#newapi'.$grid0.'");
+			var s = grid.getGridParam(\'selarrrow\');
+			if(s.length){
+				meco = sumamonto(0);
+				$.prompt( "<h1>Enviar a Depositar ?</h1>", {
+					buttons: { Guardar: true, Cancelar: false },
+					submit: function(e,v,m,f){
+						if (v){
+							$.get("'.site_url('finanzas/chgara/chenvia').'/"+meco,
+							function(data){
+								apprise("<h1>"+data+"</h1>");
+								grid.trigger("reloadGrid");
+							});
+						}
+					}
+				});
+			} else {
+				$.prompt("<h1>Seleccione los Cheques</h1>");
+			}
+		});
+		';
+
+
+		// Marca como Cobrado el cheque status='C' y guarda el Nro Dep, banco y fecha
+		$bodyscript .= '
+		$( "#cobrados" ).click(function() {
+			var grid = jQuery("#newapi'.$grid0.'");
+			var s = grid.getGridParam(\'selarrrow\');
+			if(s.length){
+				meco = sumamonto(0);
+				$.prompt( "<h1>Marcar como Cobrado?</h1>Marca solo los cheques que fueron previamente Enviados al Cobro<br/>Cuenta Bancaria: '.$obanc.'<br>Fecha del deposito: <br/> <input type=\'text\' id=\'mfecha\' name=\'mfecha\' value=\''.date('d-m-Y').'\' maxlengh=\'10\' size=\'10\' ><br/>Numero de Deposito:<br/><input type=\'text\' id=\'numdep\' name=\'numdep\' value=\'\'><br/>", {
+					buttons: { Guardar: true, Cancelar: false },
+					submit: function(e,v,m,f){
+						if (v){
+							mfecha = f.mfecha.substr(6,4)+f.mfecha.substr(3,2)+f.mfecha.substr(0,2);
+							if (f.numdep == ""){
+								alert("Debe colocar el Nro de deposito!!!");					
+							} else {
+								$.get("'.site_url('finanzas/chgara/chcobrados').'/"+meco+"/"+f.numdep+"/"+f.cuenta+"/"+mfecha,
+								function(data){
+									apprise("<h1>"+data+"</h1>");
+									grid.trigger("reloadGrid");
+								});
+							}
+						}
+					}
+				});
+				$("#mfecha").datepicker({dateFormat:"dd-mm-yy"});
+			} else {
+				$.prompt("<h1>Seleccione los Cheques</h1>");
+			}
+		});
+		';
+
+		// Vuelve a marcar como Pendiente el cheque status='P'
+		$bodyscript .= '
+		$( "#devueltos" ).click(function() {
+			var grid = jQuery("#newapi'.$grid0.'");
+			var s = grid.getGridParam(\'selarrrow\');
+			if(s.length){
+				meco = sumamonto(0);
+				$.prompt( "<h1>Marcar los cheques Devueltos ?</h1>Marca solo los cheques que fueron previamente Enviados al Cobro", {
+					buttons: { Guardar: true, Cancelar: false },
+					submit: function(e,v,m,f){
+						if (v){
+							$.get("'.site_url('finanzas/chgara/chdevueltos').'/"+meco,
+							function(data){
+								apprise("<h1>"+data+"</h1>");
+								grid.trigger("reloadGrid");
+							});
+						}
+					}
+				});
+			} else {
+				$.prompt("<h1>Seleccione los Cheques</h1>");
+			}
+		});
+		';
+
+		// Marca como Cobrado el cheque status='C' y guarda el Nro Dep, banco y fecha
+		$bodyscript .= '
+		$( "#cerrar" ).click(function() {
+			var grid = jQuery("#newapi'.$grid0.'");
+			var s = grid.getGridParam(\'selarrrow\');
+			if(s.length == 1){
+				entirerow = grid.jqGrid(\'getRowData\',s[0]);
+				if ( entirerow["status"].search("moneda") < 0 ){
+					$.prompt("<h1>Cheque no cobrado o ya aplicado</h1>Seleccione uno que este depositado y cobrado");
+				} else {
+					$.prompt( "<h1>Registrar pago y deposito manualmente?</h1>Cerrar cheque cobrado por carga manual? ", {
+						buttons: { Guardar: true, Cancelar: false },
+						submit: function(e,v,m,f){
+							if (v){
+								$.get("'.site_url('finanzas/chgara/chcerrar').'/"+entirerow["id"],
+								function(data){
+									apprise("<h1>"+data+"</h1>");
+									grid.trigger("reloadGrid");
+								});
+							}
+						}
+					});
+				}
+			} else {
+				$.prompt("<h1>Seleccione un solo Cheque</h1>");
+			}
+		});
+		';
+
+		// Marca como Cobrado el cheque status='C' y guarda el Nro Dep, banco y fecha
+		$bodyscript .= '
+		$( "#anular" ).click(function() {
+			var grid = jQuery("#newapi'.$grid0.'");
+			var s = grid.getGridParam(\'selarrrow\');
+			if(s.length == 1){
+				entirerow = grid.jqGrid(\'getRowData\',s[0]);
+				if ( entirerow["status"].search("S.gif") < 0 ){
+					$.prompt("<h1>Cheque no esta pendiente</h1>Seleccione otro");
+				} else {
+					$.prompt( "<h1>Anular Cheque en garantia?</h1>Anular este cheque por Incobrable? ", {
+						buttons: { Guardar: true, Cancelar: false },
+						submit: function(e,v,m,f){
+							if (v){
+								$.get("'.site_url('finanzas/chgara/chanular').'/"+entirerow["id"],
+								function(data){
+									apprise("<h1>"+data+"</h1>");
+									grid.trigger("reloadGrid");
+								});
+							}
+						}
+					});
+				}
+			} else {
+				$.prompt("<h1>Seleccione un solo Cheque</h1>");
+			}
+		});';
+
+
+		// Marca como Genera dep en banco y pago a cliente
+		$bodyscript .= '
+		$( "#pagar" ).click(function() {
+			var grid = jQuery("#newapi'.$grid0.'");
+			var s = grid.getGridParam(\'selarrrow\');
+			var id = 0;
+			var entirerow;
+			if(s.length == 1){
+				entirerow = grid.jqGrid(\'getRowData\',s[0]);
+				id = entirerow["id"];
+				var ret   = $("#newapi'. $grid0.'").getRowData(id);  
+				mId = id;
+				$.post("'.site_url('finanzas/chgara/formapaga').'/"+id, function(data){
+					$("#forma1").html(data);
+				});
+				if ( entirerow["status"].search("moneda") < 0 ) {
+					$.prompt("<h1>Cheque no cobrado o ya aplicado</h1>Seleccione uno que este depositado y cobrado");
+				} else {
+					$( "#forma1" ).dialog( "open" );
+				}	
+			} else {
+				$.prompt("<h1>Por favor Seleccione un Deposito</h1>");
+			}
+		});';
+
+
+		// Marca como Cobrado el cheque status='C' y guarda el Nro Dep, banco y fecha
+		$bodyscript .= '
+		$( "#forma1" ).dialog({
+			autoOpen: false,
+			height: 470,
+			width: 550,
+			modal: true,
+			buttons: {
+				"Aplicar Pago": function() {
+					var bValid = true;
+					//allFields.removeClass( "ui-state-error" );
+					if ( bValid ) {
+						$.ajax({
+							type: "POST",
+							dataType: "html",
+							url:"'.site_url("finanzas/chgara/chpagar").'",
+							async: false,
+							data: $("#pagaforma").serialize(),
+							success: function(r,s,x){
+								var res = $.parseJSON(r);
+								if ( res.status == "E"){
+									apprise("<h2>Error:</h2> <h1>"+res.mensaje+"</h1>");
+								} else {
+									apprise("<h1>"+res.mensaje+"</h1>");
+									grid.trigger("reloadGrid");
+									$( "#forma1" ).dialog( "close" );
+									return [true, a ];
+								}
+							}
+						});
+					}
+				},
+				Cancel: function() {
+					$( this ).dialog( "close" );
+				}
+			}
+		});
+		';
+
+		// Marca como Cobrado el cheque status='C' y guarda el Nro Dep, banco y fecha
+		$bodyscript .= '
+		function sumamonto(rowId){ 
+			var grid = jQuery("#newapi'.$grid0.'"); 
+			var s; 
+			var total = 0; 
+			var rowcells=new Array();
+			var entirerow;
+			var hoy   = new Date();
+			var fecha ;
+			var meco = "";
+
+			if ( rowId > 0 ) {
+				entirerow = grid.jqGrid(\'getRowData\',rowId);
+				fecha = new Date(entirerow["fecha"].split("-").join("/"))
+				if ( hoy < fecha ){
+					apprise( "<h1>Cheque no vencido</h1>" );
+				} 
+			}
+
+			s = grid.getGridParam(\'selarrrow\'); 
+			$("#totaldep").html("");
+			if(s.length)
+			{
+				for(var i=0;i<s.length;i++)
+				{
+					entirerow = grid.jqGrid(\'getRowData\',s[i]);
+					fecha = new Date(entirerow["fecha"].split("-").join("/"))
+					if ( hoy >= fecha ){
+						total += Number(entirerow["monto"]);
+						meco = meco+entirerow["id"]+"-";
+					} else {
+						if ( rowId == 0 ) {
+							grid.resetSelection(s[i]);
+						}
+					}
+				}
+				total = Math.round(total*100)/100;
+				$("#totaldep").html("Bs. "+nformat(total,2));
+				$("#montoform").html("Monto: "+nformat(total,2));
+				montotal = total;
+			}
+			return meco;
+		};
+		$(function(){$(".inputnum").numeric(".");});
+		';
+
+		$bodyscript .= "\n</script>\n";
+
+		return $bodyscript;
+	}
+
+
 	//*********************************************
 	// Guarda los que se enviaron a depositar
 	//*********************************************
@@ -371,8 +380,10 @@ $(function(){$(".inputnum").numeric(".");});
 		$ids = str_replace("-",",", $ids);
 		$ids = substr($ids,0,-1);
 		$mSQL = "UPDATE chgara SET status='E', enviado=curdate() WHERE id IN ($ids) AND status='P' ";
-		$this->db->simple_query($mSQL);
-		echo "Cheques enviados ";
+		if ($this->db->query($mSQL)) 
+			echo "Cheques enviados ";
+		else
+			echo "Error Guardando Cambios";
 	}
 
 	//*********************************************

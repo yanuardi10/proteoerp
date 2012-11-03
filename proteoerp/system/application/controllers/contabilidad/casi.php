@@ -42,6 +42,10 @@ class Casi extends Controller {
 		$grid1   = $this->defgridit();
 		$param['grids'][] = $grid1->deploy();
 
+		$readyLayout = $grid->readyLayout2( 212, 220, $param['grids'][0]['gridname'],$param['grids'][1]['gridname']);
+		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
+
+/*
 		$readyLayout = '
 	$(\'body\').layout({
 		minSize: 30,
@@ -101,36 +105,16 @@ jQuery("#boton4").click( function(){
 
 </script>
 ';
+*/
 
-		#Set url
-		//$grid->setUrlput(site_url($this->url.'setdata/'));
+		//Botones Panel Izq
+		$grid->wbotonadd(array("id"=>"boton1", "img"=>"images/pdf_logo.gif",  "alt" => 'Imprimir Asiento',  "label"=>"Imprimir Asiento"));
+		$grid->wbotonadd(array("id"=>"boton2", "img"=>"images/agrega4.png",   "alt" => 'Agregar',           "label"=>"Agregar Asiento"));
+		$grid->wbotonadd(array("id"=>"boton3", "img"=>"images/editar.png",    "alt" => 'Editar',            "label"=>"Editar Asiento"));
+		$grid->wbotonadd(array("id"=>"boton4", "img"=>"images/checklist.png", "alt" => 'Auditoria',         "label"=>"Herramientas"));
+		$WestPanel = $grid->deploywestp();
 
-		$WestPanel = '
-<div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content">
-<div class="anexos">
 
-<table id="west-grid" align="center">
-	<tr>
-		<td><div class="tema1"><table id="listados"></table></div></td>
-	</tr>
-	<tr>
-		<td><div class="tema1"><table id="otros"></table></div></td>
-	</tr>
-</table>
-</div>
-<table id="west-grid" align="center">
-	<tr>
-		<td><div class="tema1 boton1"><a style="width:190px" href="#" id="boton1">Imprimir '.img(array('src' => 'images/pdf_logo.gif', 'alt' => 'Formato PDF',  'title' => 'Formato PDF', 'border'=>'0')).'</a></div></td>
-	</tr><tr>
-		<td><div class="tema1 boton1"><a style="width:190px" href="#" id="boton2">Agregar  '.img(array('src' => 'images/agrega4.png', 'alt' => 'Formato PDF',  'title' => 'Formato PDF', 'border'=>'0')).'</a></div></td>
-	</tr><tr>
-		<td><div class="tema1 boton1"><a style="width:190px" href="#" id="boton3">Editar  '.img(array('src' => 'images/editar.png', 'alt' => 'Formato PDF',  'title' => 'Formato PDF', 'border'=>'0')).'</a></div></td>
-	</tr><tr>
-		<td><div class="tema1 boton1"><a style="width:190px" href="#" id="boton4">Auditoria  '.img(array('src' => 'images/checklist.png', 'alt' => 'Formato PDF',  'title' => 'Formato PDF', 'border'=>'0')).'</a></div></td>
-	</tr>
-</table>
-</div> <!-- #LeftPane -->
-';
 
 
 		$centerpanel = '
@@ -168,6 +152,46 @@ jQuery("#boton4").click( function(){
 
 		$this->load->view('jqgrid/crud2',$param);
 	}
+
+
+	//***************************
+	//Funciones de los Botones
+	//***************************
+	function bodyscript( $grid0 ){
+		$bodyscript = '<script type="text/javascript">';
+
+		$bodyscript .= '
+		jQuery("#boton1").click( function(){
+			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
+				window.open(\''.site_url('formatos/ver/CASI').'/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+			} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
+		});
+
+		jQuery("#boton2").click( function(){
+				window.open(\''.site_url('contabilidad/casi/dataedit/create/').'\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+		});
+
+		jQuery("#boton3").click( function(){
+			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
+				window.open(\''.site_url('contabilidad/casi/dataedit/modify').'/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+			} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
+		});
+
+		jQuery("#boton4").click( function() {
+			window.open(\''.site_url('contabilidad/casi/auditoria/').'\', \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
+		});
+		';
+
+
+		$bodyscript .= "\n</script>\n";
+		return $bodyscript;
+	}
+
+
 
 	//***************************
 	//Definicion del Grid y la Forma

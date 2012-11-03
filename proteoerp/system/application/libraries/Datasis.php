@@ -611,7 +611,7 @@ class Datasis {
 	}
 
 	// GUARDA DATOS DE SESION EN MYSQL
-	function damesesion($id){
+	function damesesion($id = 0){
 		$CI =& get_instance();
 		$mSQL = "CREATE TABLE IF NOT EXISTS data_sesion (
 			id INT(11) NULL AUTO_INCREMENT,
@@ -623,8 +623,10 @@ class Datasis {
 
 		$CI->db->simple_query($mSQL);
 
-		//$id = $CI->session->userdata('session_id');
-		$mSQL = "SELECT data1, data2, data3, data4 FROM data_sesion WHERE id='$id'";
+		if ( $id == 0)
+			$id = $CI->session->userdata('session_id');
+
+		$mSQL = "SELECT data1, data2, data3, data4 FROM data_sesion WHERE sesionid='$id'";
 		$query = $CI->db->query($mSQL);
 		return $query->row_array();
 	}
@@ -990,12 +992,12 @@ class Datasis {
 			if ( $this->essuper() ) {
 				$mSQL  = "SELECT a.secu, a.titulo, a.mensaje, a.proteo ";
 				$mSQL .= "FROM tmenus a ";
-				$mSQL .= "WHERE a.modulo='".$modulo."OTR' ORDER BY a.secu";
+				$mSQL .= "WHERE a.modulo='".$modulo."OTR' AND CHAR_LENGTH(a.proteo)>1 ORDER BY a.secu";
 			} else {
 				$mSQL  = "SELECT a.secu, a.titulo, a.mensaje, a.proteo ";
 				$mSQL .= "FROM tmenus a JOIN sida b ON a.codigo=b.modulo ";
 				$mSQL .= "WHERE b.acceso='S' AND b.usuario='".$CI->session->userdata('usuario')."' ";
-				$mSQL .= "AND a.modulo='".$modulo."OTR' ORDER BY a.secu";
+				$mSQL .= "AND a.modulo='".$modulo."OTR' AND CHAR_LENGTH(a.proteo)>1 ORDER BY a.secu";
 			}
 			$query = $CI->db->query($mSQL);
 
@@ -1003,7 +1005,7 @@ class Datasis {
 				if ($query->num_rows() > 0) {
 					foreach ($query->result_array() as $row)
 					{
-						$Otros .= "\t\t{ id:'".$row['secu']."', titulo:'".trim($row['titulo'])."', proteo:'".trim($row['proteo'])."' },\n";
+						$Otros .= "\t\t{ id:'".$row['secu']."', titulo:'".trim($row['titulo'])."', proteo: '".trim($row['proteo'])."'},\n";
 					}
 					$Otros1 = "var dataotr = [\n".$Otros."\t];";
 				} else {
@@ -1301,5 +1303,168 @@ class Datasis {
 	function jwinopen($url, $ancho=800, $alto=600){
 		return  'window.open(\''.$url.', \'_blank\', \'width='.$ancho.',height='.$alto.',scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-'.($ancho/2).'), screeny=((screen.availWidth/2)-'.($alto/2).')\')';
 	}
+
+	//**************************************************
+	//
+	//       Modifica Intramenu
+	//
+	function sinvrecalcular( $mTIPO = 'P' ){
+		$CI =& get_instance();
+
+		if ( $mTIPO == 'P' ){
+
+			$mSQL = "
+			UPDATE sinv SET 
+				precio1=ROUND(pond*(100+iva)/(100-margen1),2), 
+				precio2=ROUND(pond*(100+iva)/(100-margen2),2), 
+				precio3=ROUND(pond*(100+iva)/(100-margen3),2), 
+				precio4=ROUND(pond*(100+iva)/(100-margen4),2), 
+				base1=ROUND(pond*100/(100-margen1),2), 
+				base2=ROUND(pond*100/(100-margen2),2), 
+				base3=ROUND(pond*100/(100-margen3),2), 
+				base4=ROUND(pond*100/(100-margen4),2)  
+			WHERE formcal='P' ;";
+			$CI->db->simple_query($mSQL);
+
+
+			$mSQL = "
+			UPDATE sinv SET 
+				precio1=ROUND(ultimo*(100+iva)/(100-margen1),2),
+				precio2=ROUND(ultimo*(100+iva)/(100-margen2),2), 
+				precio3=ROUND(ultimo*(100+iva)/(100-margen3),2), 
+				precio4=ROUND(ultimo*(100+iva)/(100-margen4),2), 
+				base1=ROUND(ultimo*100/(100-margen1),2), 
+				base2=ROUND(ultimo*100/(100-margen2),2), 
+				base3=ROUND(ultimo*100/(100-margen3),2), 
+				base4=ROUND(ultimo*100/(100-margen4),2)  
+			WHERE formcal='U' ;";
+			$CI->db->simple_query($mSQL);
+
+
+			$mSQL = "
+			UPDATE sinv SET 
+				precio1=ROUND(GREATEST(ultimo,pond)*(100+iva)/(100-margen1),2), 
+				precio2=ROUND(GREATEST(ultimo,pond)*(100+iva)/(100-margen2),2), 
+				precio3=ROUND(GREATEST(ultimo,pond)*(100+iva)/(100-margen3),2), 
+				precio4=ROUND(GREATEST(ultimo,pond)*(100+iva)/(100-margen4),2), 
+				base1=ROUND(GREATEST(ultimo,pond)*100/(100-margen1),2), 
+				base2=ROUND(GREATEST(ultimo,pond)*100/(100-margen2),2), 
+				base3=ROUND(GREATEST(ultimo,pond)*100/(100-margen3),2), 
+				base4=ROUND(GREATEST(ultimo,pond)*100/(100-margen4),2)  
+			WHERE formcal='M' ;";
+			$CI->db->simple_query($mSQL);
+
+
+		} else if ($mTIPO == 'M') {
+
+			$mSQL = "
+			UPDATE sinv SET 
+				margen1=100-ROUND(pond*100/base1,2),
+				margen2=100-ROUND(pond*100/base2,2),
+				margen3=100-ROUND(pond*100/base3,2),
+				margen4=100-ROUND(pond*100/base4,2) 
+			WHERE formcal='P' ;";
+			$CI->db->simple_query($mSQL);
+			
+			$mSQL = "
+			UPDATE sinv SET 
+				margen1=100-ROUND(ultimo*100/base1,2),
+				margen2=100-ROUND(ultimo*100/base2,2),
+				margen3=100-ROUND(ultimo*100/base3,2),
+				margen4=100-ROUND(ultimo*100/base4,2) 
+			WHERE formcal='U' ;";
+			$CI->db->simple_query($mSQL);
+			
+			$mSQL = "
+			UPDATE sinv SET 
+				margen1=100-ROUND(GREATEST(ultimo,pond)*100/base1,2),
+				margen2=100-ROUND(GREATEST(ultimo,pond)*100/base2,2),
+				margen3=100-ROUND(GREATEST(ultimo,pond)*100/base3,2),
+				margen4=100-ROUND(GREATEST(ultimo,pond)*100/base4,2) 
+			WHERE formcal='M' ;";
+			$CI->db->simple_query($mSQL);
+	
+		}
+
+	}
+
+
+	function sinvredondear(){
+		$CI =& get_instance();
+
+		$mSQL = "
+		UPDATE sinv SET 
+			precio1=TRUNCATE(precio1/100,0)*100 +IF(MOD(precio1,100)>70,100,IF(MOD(precio1,100)>30,50,0)), 
+			precio2=TRUNCATE(precio2/100,0)*100 +IF(MOD(precio2,100)>70,100,IF(MOD(precio2,100)>30,50,0)), 
+			precio3=TRUNCATE(precio3/100,0)*100 +IF(MOD(precio3,100)>70,100,IF(MOD(precio3,100)>30,50,0)), 
+			precio4=TRUNCATE(precio4/100,0)*100 +IF(MOD(precio4,100)>70,100,IF(MOD(precio4,100)>30,50,0)) 
+		WHERE redecen='C' ;";
+		$CI->db->simple_query($mSQL);
+
+		$mSQL = "
+		UPDATE sinv SET 
+			precio1=TRUNCATE(precio1/10,0)*10 +IF(MOD(precio1,10)>7,10,IF(MOD(precio1,10)>3,5,0)), 
+			precio2=TRUNCATE(precio2/10,0)*10 +IF(MOD(precio2,10)>7,10,IF(MOD(precio2,10)>3,5,0)), 
+			precio3=TRUNCATE(precio3/10,0)*10 +IF(MOD(precio3,10)>7,10,IF(MOD(precio3,10)>3,5,0)), 
+			precio4=TRUNCATE(precio4/10,0)*10 +IF(MOD(precio4,10)>7,10,IF(MOD(precio4,10)>3,5,0)) 
+		WHERE redecen='D' ;";
+		$CI->db->simple_query($mSQL);
+
+		$mSQL = "
+		UPDATE sinv SET 
+			precio1=ROUND(precio1,0), 
+			precio2=ROUND(precio2,0), 
+			precio3=ROUND(precio3,0), 
+			precio4=ROUND(precio4,0)  
+		WHERE redecen='F' ;";
+		$CI->db->simple_query($mSQL);
+		
+		$mSQL = "
+		UPDATE sinv SET 
+			precio1=ROUND(precio1,1), 
+			precio2=ROUND(precio2,1), 
+			precio3=ROUND(precio3,1), 
+			precio4=ROUND(precio4,1)  
+		WHERE redecen='M' ;";
+		$CI->db->simple_query($mSQL);
+
+		$mSQL = "
+		UPDATE sinv SET 
+			base1=ROUND(precio1*100/(100+iva),2), 
+			base2=ROUND(precio2*100/(100+iva),2), 
+			base3=ROUND(precio3*100/(100+iva),2), 
+			base4=ROUND(precio4*100/(100+iva),2) ;";
+		$CI->db->simple_query($mSQL);
+
+		$mSQL = "
+		UPDATE sinv SET 
+			margen1=100-ROUND(pond*100/base1,2),
+			margen2=100-ROUND(pond*100/base2,2),
+			margen3=100-ROUND(pond*100/base3,2),
+			margen4=100-ROUND(pond*100/base4,2) 
+		WHERE formcal='P' ;";
+		$CI->db->simple_query($mSQL);
+		
+		$mSQL = "
+		UPDATE sinv SET 
+			margen1=100-ROUND(ultimo*100/base1,2),
+			margen2=100-ROUND(ultimo*100/base2,2),
+			margen3=100-ROUND(ultimo*100/base3,2),
+			margen4=100-ROUND(ultimo*100/base4,2) 
+		WHERE formcal='U' ;";
+		$CI->db->simple_query($mSQL);
+		
+		$mSQL = "
+		UPDATE sinv SET 
+			margen1=100-ROUND(GREATEST(ultimo,pond)*100/base1,2),
+			margen2=100-ROUND(GREATEST(ultimo,pond)*100/base2,2),
+			margen3=100-ROUND(GREATEST(ultimo,pond)*100/base3,2),
+			margen4=100-ROUND(GREATEST(ultimo,pond)*100/base4,2) 
+		WHERE formcal='M' ;";
+
+		$CI->db->simple_query($mSQL);
+
+	}
+
 
 }
