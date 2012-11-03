@@ -216,6 +216,11 @@ echo '<script language="javascript" type="text/javascript" src="'.base_url().'sy
 	Calendar._MN = new Array("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre");
 	Calendar._TT = {};
 	Calendar._TT["TODAY"] = "Hoy";
+
+$(function*() {
+	$( document ).tooltip();
+});
+
 </script>
 <?php
 echo "\n<!-- USUARIO -->\n";
@@ -229,6 +234,11 @@ echo script('jquery.jqGrid.min.js');
 ?>
 <style>
 <?php echo $LayoutStyle; ?>
+
+label {
+	display: inline-block;
+	width: 5em;
+}
 </style>
 
 <script type="text/javascript">
