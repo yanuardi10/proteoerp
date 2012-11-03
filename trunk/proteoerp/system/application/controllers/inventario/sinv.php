@@ -42,7 +42,7 @@ class Sinv extends Controller {
 		//Botones Panel Izq
 		$grid->wbotonadd(array("id"=>"gmarcas",  "img"=>"images/brand.png",  "alt" => 'Crear Marcas',             "label"=>"Crear Marcas"));
 		$grid->wbotonadd(array("id"=>"gunidad",  "img"=>"images/scale.png",  "alt" => 'Unidades de Medida',       "label"=>"Unidades y Empaques"));
-		$grid->wbotonadd(array("id"=>"kardex",   "img"=>"images/scale.png",  "alt" => 'Kardex de Inventario',     "label"=>"Kardex de Inventario"));
+		//$grid->wbotonadd(array("id"=>"kardex",   "img"=>"images/scale.png",  "alt" => 'Kardex de Inventario',     "label"=>"Kardex de Inventario"));
 		$grid->wbotonadd(array("id"=>"hinactivo","img"=>"images/basura.png", "alt" => 'Oculta/Muestra Inactivos', "label"=>"Ocultar/Mostrar"));
 		$WestPanel = $grid->deploywestp();
 
@@ -142,7 +142,7 @@ class Sinv extends Controller {
 
 			mSalida += "<table class=\'bordetabla\' cellpadding=1 cellspacing=0 width=\'250\'>";
 			mSalida += "<tr class=\'tableheader\'><th>%</th><th>Base</th><th>Precio</th></tr>";
-			mSalida += "<tr class=\'littletablerow\'><td align=\'right\'>"+ret.margen1+"</td><td align=\'right\'>"+ret.base1+"</td><td align=\'right\'>"+ret.precio1+"</td></tr>";
+			mSalida += "<tr class=\'littletablerow\'><td align=\'right\'>"+ret.margen1+"</td><td align=\'right\'>"+ret.base1+"</td><td class=\'inputnum\' align=\'right\'>"+ret.precio1+"</td></tr>";
 			mSalida += "<tr class=\'littletablerow\'><td align=\'right\'>"+ret.margen2+"</td><td align=\'right\'>"+ret.base2+"</td><td align=\'right\'>"+ret.precio2+"</td></tr>";
 			mSalida += "<tr class=\'littletablerow\'><td align=\'right\'>"+ret.margen3+"</td><td align=\'right\'>"+ret.base3+"</td><td align=\'right\'>"+ret.precio3+"</td></tr>";
 			mSalida += "<tr class=\'littletablerow\'><td align=\'right\'>"+ret.margen4+"</td><td align=\'right\'>"+ret.base4+"</td><td align=\'right\'>"+ret.precio4+"</td></tr>";
@@ -152,7 +152,7 @@ class Sinv extends Controller {
 			mSalida += "</td><td width=\'205\'>";
 			mSalida += "<table class=\'bordetabla\' cellpadding=1 cellspacing=0 width=\'200\'>";
 			mSalida += "<tr class=\'tableheader\'><th colspan=\'2\'>Codigos Asociados</th></tr>";
-			mSalida += "<tr class=\'littletablerow\'><td>Barras         </td><td>"+ret.barras+ "</td></tr>";
+			mSalida += "<tr class=\'littletablerow\'><td title=\'Codigo de Barras\'>Barras         </td><td>"+ret.barras+ "</td></tr>";
 			mSalida += "<tr class=\'littletablerow\'><td>Alterno        </td><td>"+ret.alterno+"</td></tr>";
 			mSalida += "<tr class=\'littletablerow\'><td>Caja           </td><td>"+ret.enlace+ "</td></tr>";
 			mSalida += "<tr class=\'littletablerow\'><td>Nr. Sanitario </td><td>"+ret.mpps+   "</td></tr>";
@@ -160,11 +160,11 @@ class Sinv extends Controller {
 			mSalida += "</table>";
 
 			mSalida += "</td><td>";
-			mSalida += "<table class=\'bordetabla\' cellpadding=1 cellspacing=0 width=\'120\'>";
+			mSalida += "<table class=\'bordetabla\' cellpadding=1 cellspacing=0 width=\'100\'>";
 			mSalida += "<tr class=\'tableheader\'><th colspan=\'2\'>Medidas</th></tr>";
 			mSalida += "<tr class=\'littletablerow\'><td>Peso   </td><td align=\'right\'>"+ret.peso+ "</td></tr>";
 			mSalida += "<tr class=\'littletablerow\'><td>Alto   </td><td align=\'right\'>"+ret.alto+ "</td></tr>";
-			mSalida += "<tr class=\'littletablerow\'><td>Ancho  </td><td align=\'right\'>"+ret.encho+"</td></tr>";
+			mSalida += "<tr class=\'littletablerow\'><td>Ancho  </td><td align=\'right\'>"+ret.ancho+"</td></tr>";
 			mSalida += "<tr class=\'littletablerow\'><td>Largo  </td><td align=\'right\'>"+ret.largo+"</td></tr>";
 			mSalida += "<tr class=\'littletablerow\'><td>Unidad </td><td>"+ret.unidad+"</td></tr>";
 			mSalida += "</table>";
