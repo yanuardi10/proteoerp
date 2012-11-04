@@ -66,7 +66,7 @@ class Mgas extends validaciones {
 		$filter->buttons("reset","search");
 		$filter->build("dataformfiltro");
 
-		$uri = anchor('finanzas/mgas/dataedit/show/<#codigo#>','<#codigo#>');
+		$uri = anchor('finanzas/mgas/dataedit/show/<#id#>','<#id#>');
 
 		$grid = new DataGrid("Lista de Maestro de Gastos");
 		$grid->order_by("codigo","asc");
@@ -233,9 +233,7 @@ class Mgas extends validaciones {
 
 		$conten["form"]  =&  $edit;
 		$data['content'] = $this->load->view('view_mgas', $conten,true);
-		$data["head"]    =script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
-		
-		//$data["head"]    =script("tabber.js").script("prototype.js").script("sinvmaes.js").script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
+		$data["head"]    = script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
 		$data['title']   = '<h1>Maestro de Gasto</h1>';
 		$this->load->view('view_ventanas', $data);
 	}
@@ -281,13 +279,16 @@ class Mgas extends validaciones {
 		$this->rapyd->load("datagrid");
 		$fields = $this->db->field_data('mgas');
 		$url_pk = $this->uri->segment_array();
-		$coun=0; $pk=array();
+		$coun=0; 
+		$pk=array();
+		
 		foreach ($fields as $field){
 			if($field->primary_key==1){
 				$coun++;
 				$pk[]=$field->name;
 			}
 		}
+		$pk[]='codigo';
 		
 		$values=array_slice($url_pk,-$coun);
 		$claves=array_combine (array_reverse($pk) ,$values );
@@ -301,9 +302,9 @@ class Mgas extends validaciones {
 		$grid->db->orderby('fecha DESC');
 		$grid->db->limit(6);
 			
-		$grid->column("Fecha"   ,"fecha" );
-		$grid->column("Descripcion"   ,"descrip" );
-		$grid->column("Proveed" ,"proveed");
+		$grid->column("Fecha",      "fecha" );
+		$grid->column("Descripcion","descrip" );
+		$grid->column("Proveed",    "proveed");
 		//$grid->column("Nombre"  ,"nombre");
 		$grid->column("Monto"   ,"<nformat><#precio#></nformat>",'align="RIGHT"');
 		$grid->build();
@@ -317,8 +318,8 @@ class Mgas extends validaciones {
 		$grid1->db->groupby('fecha DESC ');
 		$grid1->db->limit(6);
 			
-		$grid1->column("Fecha"   ,"fecha" );
-		$grid1->column("Monto"   ,"<nformat><#monto#></nformat>",'align="RIGHT"');
+		$grid1->column("Fecha", "fecha" );
+		$grid1->column("Monto", "<nformat><#monto#></nformat>",'align="RIGHT"');
 			
 		$grid1->build();
 
@@ -361,7 +362,11 @@ class Mgas extends validaciones {
 				</td>
 			</tr>
 		</table>";
-		$data["head"]     = script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
+
+		$data["head"]     = script("plugins/jquery.numeric.pack.js");
+		$data["head"]    .= script("plugins/jquery.floatnumber.js");
+		$data["head"]    .= $this->rapyd->get_head();
+
 		$data['title']    = '<h1>Consulta de Maestro de Gasto</h1>';
 		$data["subtitle"] = "<div align='center' style='border: 2px outset #EFEFEF;background: #EFEFEF '><a href='javascript:javascript:history.go(-1)'>(".$claves['codigo'].") ".$descrip."</a></div>";
 		$this->load->view('view_ventanas', $data);
@@ -494,8 +499,6 @@ class Mgas extends validaciones {
 		}
 	}
 
-
-//0414 376 0149 juan picapiedras
 
 //****************************************************************
 //
@@ -660,8 +663,6 @@ var cplaStore = new Ext.data.Store({
 		
 	}
 
-
-
 	
 	function mgasbusca() {
 		$start    = isset($_REQUEST['start'])  ? $_REQUEST['start']  :  0;
@@ -692,3 +693,4 @@ var cplaStore = new Ext.data.Store({
 	}
 
 }
+?>
