@@ -137,16 +137,17 @@ class Sinv extends Controller {
 		$funciones .= '
 		function detalle(mid){
 			var ret = $("#newapi'.$grid0.'").getRowData(mid);
-			var mSalida = "<table width=\'100%\' cellpadding=1 cellspacing=0>"
+			var mSalida = "<table width=\'100%\' style=\'background:#AAAAAA\'>"
 			mSalida += "<tr><td width=\'255\'>";
 
 			mSalida += "<table class=\'bordetabla\' cellpadding=1 cellspacing=0 width=\'250\'>";
+			mSalida += "<tr class=\'littletableheaderc\'><th colspan=\'3\'>Precios de Venta</th></tr>";
 			mSalida += "<tr class=\'tableheader\'><th>%</th><th>Base</th><th>Precio</th></tr>";
-			mSalida += "<tr class=\'littletablerow\'><td align=\'right\'>"+ret.margen1+"</td><td align=\'right\'>"+ret.base1+"</td><td class=\'inputnum\' align=\'right\'>"+ret.precio1+"</td></tr>";
-			mSalida += "<tr class=\'littletablerow\'><td align=\'right\'>"+ret.margen2+"</td><td align=\'right\'>"+ret.base2+"</td><td align=\'right\'>"+ret.precio2+"</td></tr>";
-			mSalida += "<tr class=\'littletablerow\'><td align=\'right\'>"+ret.margen3+"</td><td align=\'right\'>"+ret.base3+"</td><td align=\'right\'>"+ret.precio3+"</td></tr>";
-			mSalida += "<tr class=\'littletablerow\'><td align=\'right\'>"+ret.margen4+"</td><td align=\'right\'>"+ret.base4+"</td><td align=\'right\'>"+ret.precio4+"</td></tr>";
-			mSalida += "<tr class=\'littletableheaderdet\'><td colspan=3 align=\'center\'>Margen al Mayor: "+ret.mmargen+"</td></tr>";
+			mSalida += "<tr class=\'littletablerow\'><td align=\'right\'>"+ret.margen1+"</td><td align=\'right\'>"+nformat(ret.base1,2)+"</td><td align=\'right\'>"+nformat(ret.precio1,2)+"</td></tr>";
+			mSalida += "<tr class=\'littletablerow\'><td align=\'right\'>"+ret.margen2+"</td><td align=\'right\'>"+nformat(ret.base2,2)+"</td><td align=\'right\'>"+nformat(ret.precio2,2)+"</td></tr>";
+			mSalida += "<tr class=\'littletablerow\'><td align=\'right\'>"+ret.margen3+"</td><td align=\'right\'>"+nformat(ret.base3,2)+"</td><td align=\'right\'>"+nformat(ret.precio3,2)+"</td></tr>";
+			mSalida += "<tr class=\'littletablerow\'><td align=\'right\'>"+ret.margen4+"</td><td align=\'right\'>"+nformat(ret.base4,2)+"</td><td align=\'right\'>"+nformat(ret.precio4,2)+"</td></tr>";
+			//mSalida += "<tr class=\'littletableheaderdet\'><td colspan=3 align=\'center\'>Margen al Mayor: "+ret.mmargen+"</td></tr>";
 			mSalida += "</table>";
 
 			mSalida += "</td><td width=\'205\'>";
@@ -159,18 +160,32 @@ class Sinv extends Controller {
 			mSalida += "<tr class=\'littletablerow\'><td>C.P.E.</td><td>"+ret.cpe+    "</td></tr>";
 			mSalida += "</table>";
 
-			mSalida += "</td><td>";
+			mSalida += "</td><td width=\'105\'>";
 			mSalida += "<table class=\'bordetabla\' cellpadding=1 cellspacing=0 width=\'100\'>";
 			mSalida += "<tr class=\'tableheader\'><th colspan=\'2\'>Medidas</th></tr>";
-			mSalida += "<tr class=\'littletablerow\'><td>Peso   </td><td align=\'right\'>"+ret.peso+ "</td></tr>";
+			mSalida += "<tr class=\'littletablerow\'><td>Peso   </td><td align=\'right\'>"+nformat(ret.peso,2)+ "</td></tr>";
 			mSalida += "<tr class=\'littletablerow\'><td>Alto   </td><td align=\'right\'>"+ret.alto+ "</td></tr>";
 			mSalida += "<tr class=\'littletablerow\'><td>Ancho  </td><td align=\'right\'>"+ret.ancho+"</td></tr>";
 			mSalida += "<tr class=\'littletablerow\'><td>Largo  </td><td align=\'right\'>"+ret.largo+"</td></tr>";
 			mSalida += "<tr class=\'littletablerow\'><td>Unidad </td><td>"+ret.unidad+"</td></tr>";
 			mSalida += "</table>";
 
+			mSalida += "</td><td>";
+
+			mSalida += "<table class=\'bordetabla\' cellpadding=1 cellspacing=0 width=\'250\'>";
+			mSalida += "<tr class=\'littletableheaderc\'><th colspan=\'3\'>Ultimas Compras</th></tr>";
+			mSalida += "<tr class=\'tableheader\'><th>Prov.</th><th>Fecha</th><th>Precio</th></tr>";
+			mSalida += "<tr class=\'littletablerow\'><td>"+ret.prov1+"</td><td>"+ret.pfecha1.substring(8,10)+"/"+ret.pfecha1.substring(5,7)+"/"+ret.pfecha1.substring(0,4)+"</td><td align=\'right\'>"+nformat(ret.prepro1)+"</td></tr>";
+			mSalida += "<tr class=\'littletablerow\'><td>"+ret.prov2+"</td><td>"+ret.pfecha2.substring(8,10)+"/"+ret.pfecha2.substring(5,7)+"/"+ret.pfecha2.substring(0,4)+"</td><td align=\'right\'>"+nformat(ret.prepro2)+"</td></tr>";
+			mSalida += "<tr class=\'littletablerow\'><td>"+ret.prov3+"</td><td>"+ret.pfecha3.substring(8,10)+"/"+ret.pfecha3.substring(5,7)+"/"+ret.pfecha3.substring(0,4)+"</td><td align=\'right\'>"+nformat(ret.prepro3)+"</td></tr>";
+			mSalida += "<tr class=\'littletableheader\'><td colspan=\'3\'>&nbsp;</td></tr>";
+			mSalida += "</table>";
+
+
 
 			mSalida += "</td></tr>";
+
+
 			mSalida += "</table>";
 			return mSalida;
 		}
@@ -477,7 +492,7 @@ class Sinv extends Controller {
 
 
 		$grid->addField('descrip');
-		$grid->label('Descrip');
+		$grid->label('Descripcion');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -559,7 +574,7 @@ class Sinv extends Controller {
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
-			'width'         => 200,
+			'width'         => 120,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:22, maxlength: 22 }',
@@ -582,7 +597,7 @@ class Sinv extends Controller {
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
-			'width'         => 80,
+			'width'         => 60,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:8, maxlength: 8 }',
@@ -594,7 +609,7 @@ class Sinv extends Controller {
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
-			'width'         => 90,
+			'width'         => 60,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:9, maxlength: 9 }',
@@ -606,7 +621,7 @@ class Sinv extends Controller {
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
-			'width'         => 80,
+			'width'         => 60,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:8, maxlength: 8 }',
@@ -620,7 +635,7 @@ class Sinv extends Controller {
 			'editable'      => $editar,
 			'align'         => "'right'",
 			'edittype'      => "'text'",
-			'width'         => 100,
+			'width'         => 70,
 			'editrules'     => '{ required:true }',
 			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
 			'formatter'     => "'number'",
@@ -633,7 +648,7 @@ class Sinv extends Controller {
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
-			'width'         => 150,
+			'width'         => 120,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:15, maxlength: 15 }',
@@ -643,7 +658,9 @@ class Sinv extends Controller {
 		$grid->addField('prov1');
 		$grid->label('Prov1');
 		$grid->params(array(
+			'hidden'        => 'true',
 			'search'        => 'true',
+			'searchoptions' => '{ searchhidden: true}',
 			'editable'      => $editar,
 			'width'         => 50,
 			'edittype'      => "'text'",
@@ -655,6 +672,7 @@ class Sinv extends Controller {
 		$grid->addField('prepro1');
 		$grid->label('Prepro1');
 		$grid->params(array(
+			'hidden'        => 'true',
 			'search'        => 'true',
 			'editable'      => $editar,
 			'align'         => "'right'",
@@ -670,6 +688,7 @@ class Sinv extends Controller {
 		$grid->addField('pfecha1');
 		$grid->label('Pfecha1');
 		$grid->params(array(
+			'hidden'        => 'true',
 			'search'        => 'true',
 			'editable'      => $editar,
 			'width'         => 140,
@@ -680,6 +699,7 @@ class Sinv extends Controller {
 		$grid->addField('prov2');
 		$grid->label('Prov2');
 		$grid->params(array(
+			'hidden'        => 'true',
 			'search'        => 'true',
 			'editable'      => $editar,
 			'width'         => 50,
@@ -692,6 +712,7 @@ class Sinv extends Controller {
 		$grid->addField('prepro2');
 		$grid->label('Prepro2');
 		$grid->params(array(
+			'hidden'        => 'true',
 			'search'        => 'true',
 			'editable'      => $editar,
 			'align'         => "'right'",
@@ -707,6 +728,7 @@ class Sinv extends Controller {
 		$grid->addField('pfecha2');
 		$grid->label('Pfecha2');
 		$grid->params(array(
+			'hidden'        => 'true',
 			'search'        => 'true',
 			'editable'      => $editar,
 			'width'         => 140,
@@ -717,6 +739,7 @@ class Sinv extends Controller {
 		$grid->addField('prov3');
 		$grid->label('Prov3');
 		$grid->params(array(
+			'hidden'        => 'true',
 			'search'        => 'true',
 			'editable'      => $editar,
 			'width'         => 50,
@@ -729,6 +752,7 @@ class Sinv extends Controller {
 		$grid->addField('prepro3');
 		$grid->label('Prepro3');
 		$grid->params(array(
+			'hidden'        => 'true',
 			'search'        => 'true',
 			'editable'      => $editar,
 			'align'         => "'right'",
@@ -744,6 +768,7 @@ class Sinv extends Controller {
 		$grid->addField('pfecha3');
 		$grid->label('Pfecha3');
 		$grid->params(array(
+			'hidden'        => 'true',
 			'search'        => 'true',
 			'editable'      => $editar,
 			'width'         => 140,
@@ -752,13 +777,13 @@ class Sinv extends Controller {
 
 
 		$grid->addField('pond');
-		$grid->label('Pond');
+		$grid->label('Costo Pond.');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
 			'align'         => "'right'",
 			'edittype'      => "'text'",
-			'width'         => 100,
+			'width'         => 90,
 			'editrules'     => '{ required:true }',
 			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
 			'formatter'     => "'number'",
@@ -767,13 +792,13 @@ class Sinv extends Controller {
 
 
 		$grid->addField('ultimo');
-		$grid->label('Ultimo');
+		$grid->label('Costo Ultimo');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
 			'align'         => "'right'",
 			'edittype'      => "'text'",
-			'width'         => 100,
+			'width'         => 90,
 			'editrules'     => '{ required:true }',
 			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
 			'formatter'     => "'number'",
@@ -888,13 +913,28 @@ class Sinv extends Controller {
 */
 
 		$grid->addField('exmin');
-		$grid->label('Exmin');
+		$grid->label('Minima');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
 			'align'         => "'right'",
 			'edittype'      => "'text'",
-			'width'         => 100,
+			'width'         => 70,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('exmax');
+		$grid->label('Maxima');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 70,
 			'editrules'     => '{ required:true }',
 			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
 			'formatter'     => "'number'",
@@ -903,13 +943,13 @@ class Sinv extends Controller {
 
 
 		$grid->addField('exord');
-		$grid->label('Exord');
+		$grid->label('Ordenada');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
 			'align'         => "'right'",
 			'edittype'      => "'text'",
-			'width'         => 100,
+			'width'         => 70,
 			'editrules'     => '{ required:true }',
 			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
 			'formatter'     => "'number'",
@@ -918,13 +958,13 @@ class Sinv extends Controller {
 
 
 		$grid->addField('exdes');
-		$grid->label('Exdes');
+		$grid->label('X Despacho');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
 			'align'         => "'right'",
 			'edittype'      => "'text'",
-			'width'         => 100,
+			'width'         => 70,
 			'editrules'     => '{ required:true }',
 			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
 			'formatter'     => "'number'",
@@ -933,33 +973,33 @@ class Sinv extends Controller {
 
 
 		$grid->addField('fechav');
-		$grid->label('Fechav');
+		$grid->label('F. Venta');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
-			'width'         => 140,
+			'width'         => 70,
 			'edittype'      => "'text'",
 		));
 
 
 		$grid->addField('fechac');
-		$grid->label('Fechac');
+		$grid->label('F. Compra');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
-			'width'         => 140,
+			'width'         => 70,
 			'edittype'      => "'text'",
 		));
 
 
 		$grid->addField('iva');
-		$grid->label('Iva');
+		$grid->label('I.V.A.');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
 			'align'         => "'right'",
 			'edittype'      => "'text'",
-			'width'         => 100,
+			'width'         => 50,
 			'editrules'     => '{ required:true }',
 			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
 			'formatter'     => "'number'",
@@ -981,47 +1021,17 @@ class Sinv extends Controller {
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
 		));
 
-
-		$grid->addField('codbar');
-		$grid->label('Codbar');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'align'         => "'right'",
-			'edittype'      => "'text'",
-			'width'         => 100,
-			'editrules'     => '{ required:true }',
-			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
-			'formatter'     => "'number'",
-			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
-		));
-
-
 		$grid->addField('barras');
-		$grid->label('Barras');
+		$grid->label('Codigo de Barras');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
-			'width'         => 150,
+			'width'         => 120,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:15, maxlength: 15 }',
 		));
 
-
-		$grid->addField('exmax');
-		$grid->label('Exmax');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'align'         => "'right'",
-			'edittype'      => "'text'",
-			'width'         => 100,
-			'editrules'     => '{ required:true }',
-			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
-			'formatter'     => "'number'",
-			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
-		));
 
 
 		$grid->addField('margen1');
@@ -1187,7 +1197,7 @@ class Sinv extends Controller {
 
 
 		$grid->addField('tdecimal');
-		$grid->label('Tdecimal');
+		$grid->label('Decimal');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -1197,7 +1207,7 @@ class Sinv extends Controller {
 			'editoptions'   => '{ size:1, maxlength: 1 }',
 		));
 
-
+/*
 		$grid->addField('dolar');
 		$grid->label('Dolar');
 		$grid->params(array(
@@ -1211,11 +1221,12 @@ class Sinv extends Controller {
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
-
+*/
 
 		$grid->addField('redecen');
-		$grid->label('Redecen');
+		$grid->label('Redondeo');
 		$grid->params(array(
+			'hidden'        => 'true',
 			'search'        => 'true',
 			'editable'      => $editar,
 			'width'         => 40,
@@ -1226,8 +1237,9 @@ class Sinv extends Controller {
 
 
 		$grid->addField('formcal');
-		$grid->label('Formcal');
+		$grid->label('FormaCal');
 		$grid->params(array(
+			'hidden'        => 'true',
 			'search'        => 'true',
 			'editable'      => $editar,
 			'width'         => 40,
@@ -1240,6 +1252,7 @@ class Sinv extends Controller {
 		$grid->addField('fordeci');
 		$grid->label('Fordeci');
 		$grid->params(array(
+			'hidden'        => 'true',
 			'search'        => 'true',
 			'editable'      => $editar,
 			'align'         => "'right'",
@@ -1266,7 +1279,7 @@ class Sinv extends Controller {
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
 		));
 
-
+/*
 		$grid->addField('costotal');
 		$grid->label('Costotal');
 		$grid->params(array(
@@ -1290,7 +1303,7 @@ class Sinv extends Controller {
 			'width'         => 140,
 			'edittype'      => "'text'",
 		));
-
+*/
 
 		$grid->addField('peso');
 		$grid->label('Peso');
@@ -1306,7 +1319,7 @@ class Sinv extends Controller {
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
+/*
 		$grid->addField('pondcal');
 		$grid->label('Pondcal');
 		$grid->params(array(
@@ -1321,7 +1334,7 @@ class Sinv extends Controller {
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
+*/
 		$grid->addField('alterno');
 		$grid->label('Alterno');
 		$grid->params(array(
@@ -1333,7 +1346,7 @@ class Sinv extends Controller {
 			'editoptions'   => '{ size:15, maxlength: 15 }',
 		));
 
-
+/*
 		$grid->addField('aumento');
 		$grid->label('Aumento');
 		$grid->params(array(
@@ -1347,7 +1360,7 @@ class Sinv extends Controller {
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
-
+*/
 
 		$grid->addField('modelo');
 		$grid->label('Modelo');
@@ -1435,7 +1448,7 @@ class Sinv extends Controller {
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
+/*
 		$grid->addField('ppos1');
 		$grid->label('Ppos1');
 		$grid->params(array(
@@ -1494,7 +1507,7 @@ class Sinv extends Controller {
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
-
+*/
 
 		$grid->addField('linea');
 		$grid->label('Linea');
@@ -1587,7 +1600,7 @@ class Sinv extends Controller {
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
+/*
 		$grid->addField('modificado');
 		$grid->label('Modificado');
 		$grid->params(array(
@@ -1614,7 +1627,7 @@ class Sinv extends Controller {
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
-
+*/
 
 		$grid->addField('alto');
 		$grid->label('Alto');
@@ -1660,7 +1673,7 @@ class Sinv extends Controller {
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
+/*
 		$grid->addField('forma');
 		$grid->label('Forma');
 		$grid->params(array(
@@ -1671,7 +1684,7 @@ class Sinv extends Controller {
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:50, maxlength: 50 }',
 		));
-
+*/
 
 		$grid->addField('exento');
 		$grid->label('Exento');
@@ -5279,6 +5292,7 @@ class sinv extends Controller {
 		if (!in_array('pescala3'   ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `pescala3` DECIMAL(5,2) NULL DEFAULT '0.00' COMMENT 'porcentaje descuento escala3'");
 		if (!in_array('mpps',       $campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `mpps` VARCHAR(20) NULL  COMMENT 'Numero de Ministerior de Salud'");
 		if (!in_array('cpe',        $campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `cpe`  VARCHAR(20) NULL  COMMENT 'Otro Numero'");
+		if (!in_array('tasa',       $campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `cpe`  VARCHAR(20) NULL  COMMENT 'Otro Numero'");
 
 
 

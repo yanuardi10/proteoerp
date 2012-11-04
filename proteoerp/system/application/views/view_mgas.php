@@ -8,7 +8,7 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 <?php if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</div>'; ?>
 <table border=0 width="100%">
 	<tr>
-		<td valign='center'><a href='<?php echo base_url()."finanzas/mgas/consulta/".$form->codigo->output; ?>'>
+		<td valign='center'><a href='<?php echo base_url()."finanzas/mgas/consulta/".$form->get_from_dataobjetct('id'); ?>'>
 		<?php
 			$propiedad = array('src' => 'images/ojos.png', 'alt' => 'Consultar Movimiento', 'title' => 'Consultas','border'=>'0','height'=>'25');
 			echo img($propiedad);

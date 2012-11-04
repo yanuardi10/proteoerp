@@ -171,6 +171,8 @@ echo script('jquery-min.js');
 echo phpscript('nformat.js');
 echo script('jquery-ui.custom.min.js');
 echo script('jquery.ui.selectmenu.js');
+//echo script('jshashtable.js');
+//echo script('jquery.numberformatter.js');
 echo style('jquery.ui.selectmenu.css');
 echo "\n";
 echo script('plugins/jquery.numeric.pack.js');
@@ -210,16 +212,13 @@ echo '<script language="javascript" type="text/javascript" src="'.base_url().'sy
 
 ?>
 <script language="javascript" type="text/javascript">
+
 	Calendar._DN = new Array("Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo");
 	Calendar._SMN = new Array("Ene", "Feb", "Mar", "Abr", "Mayo", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic");
 	Calendar._SDN = new Array("Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do");
 	Calendar._MN = new Array("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre");
 	Calendar._TT = {};
 	Calendar._TT["TODAY"] = "Hoy";
-
-$(function*() {
-	$( document ).tooltip();
-});
 
 </script>
 <?php
@@ -235,10 +234,6 @@ echo script('jquery.jqGrid.min.js');
 <style>
 <?php echo $LayoutStyle; ?>
 
-label {
-	display: inline-block;
-	width: 5em;
-}
 </style>
 
 <script type="text/javascript">
