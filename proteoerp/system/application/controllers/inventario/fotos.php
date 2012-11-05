@@ -156,11 +156,6 @@ class Fotos extends Controller {
 		$data['head']    = $this->rapyd->get_head();
 		$data['style']   = $style;
 
-		//$data["script"]  = script("tabber.js");
-		//$data["script"] .= script("prototype.js");
-		//$data["script"] .= script("scriptaculous.js");
-		//$data["script"] .= script("effects.js");
-
 		$data['extras']  = $extras;
 
 		$data['title']   = '<h1>Lista de Art&iacute;culos para Fotos </h1>';
@@ -230,7 +225,7 @@ class Fotos extends Controller {
 		$edit->miframe = new iframeField("related", "inventario/fotos/asocfotos/$pk","210");
 		$edit->miframe->when = array('modify','show');
 
-		$edit->buttons('modify', 'save', 'undo','delete', 'back');
+		$edit->buttons('modify', 'save','delete');
 		$edit->build();
 
 		$fhidden = array(
@@ -506,6 +501,7 @@ class Fotos extends Controller {
 		$this->mostrar('th_'.$nombre);
 	}
 
+	// Crea el Thumbnail
 	function _creathum($nombre){
 		$path=new Path();
 		$path->setPath($_SERVER['DOCUMENT_ROOT']);
@@ -533,6 +529,19 @@ class Fotos extends Controller {
 		}
 	}
 
+	//******************************************
+	// Envia Comentarios de la foto Principal
+	// id = id de sinv
+	//******************************************
+	function comenta($id){
+		$dbid=$this->db->escape($id);
+		$comenta = $this->datasis->dameval("SELECT comentario FROM sinvfot WHERE sinv_id=$dbid ORDER BY principal DESC LIMIT 1");
+		echo $comenta;
+	}
+
+
+
+
 	//********************************
 	// Sede la imagen del producto
 	// id = id de sinv
@@ -542,6 +551,7 @@ class Fotos extends Controller {
 		$this->mostrar($nombre);
 	}
 
+	// Devuelve l foto como imagen
 	function mostrar($nombre){
 		$path=new Path();
 		$path->setPath($_SERVER['DOCUMENT_ROOT']);
