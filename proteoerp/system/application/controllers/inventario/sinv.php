@@ -14,11 +14,11 @@ class Sinv extends Controller {
 	}
 
 	function index(){
-		/*if ( !$this->datasis->iscampo('sinv','id') ) {
-			$this->db->simple_query('ALTER TABLE sinv DROP PRIMARY KEY');
-			$this->db->simple_query('ALTER TABLE sinv ADD UNIQUE INDEX numero (numero)');
-			$this->db->simple_query('ALTER TABLE sinv ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
-		};*/
+		if ( !$this->datasis->iscampo('barraspos','id') ) {
+			$this->db->simple_query('ALTER TABLE barraspos DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE barraspos ADD UNIQUE INDEX codigo (codigo, suplemen)');
+			$this->db->simple_query('ALTER TABLE barraspos ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
+		};
 		$this->datasis->modintramenu( 950, 700, substr($this->url,0,-1) );
 		redirect($this->url.'jqdatag');
 	}
@@ -84,7 +84,6 @@ class Sinv extends Controller {
 //			postdata: { sinvid: $("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\')},
 
 		$funciones = '
-		var verinactivos = 0;
 		jQuery("#bpos1").jqGrid({ 
 			url:\''.site_url('inventario/sinv/bpos1').'\',
 			ajaxGridOptions: { type: "POST"}, 
@@ -140,8 +139,7 @@ class Sinv extends Controller {
 		}
 
 			';
-//		jQuery("#bpos1").jqGrid(\'inlineNav\',"#pbpos1");
-		
+	
 
 		$funciones .= '
 		function factivo(el, val, opts){
@@ -363,6 +361,7 @@ class Sinv extends Controller {
 		$bodyscript = '		<script type="text/javascript">';
 
 		$bodyscript .= '
+		var verinactivos = 0;
 		function sinvadd() {
 			$.post("'.site_url('inventario/sinv/dataedit/create').'",
 			function(data){
@@ -2137,7 +2136,10 @@ class Sinv extends Controller {
 		$oper   = $this->input->post('oper');
 		if ($oper == 'del'){
 			// Borra
-			
+			$id     = $this->input->post('id');
+			$this->db->simple_query("DELETE FROM barraspos WHERE id=$id ");
+			logusu('BARRASPOS',"Registro  ELIMINADO");
+			echo "Registro Eliminado";
 			
 		} elseif ( $oper == false ) {
 			$id = $this->uri->segment(4);
