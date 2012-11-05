@@ -1010,7 +1010,7 @@ class Scst extends Controller {
 		$grid->setOnSelectRow('
 			function(id){
 			if (id){
-				var ret = $("#titulos").getRowData(id);
+				var ret = $(gridId1).getRowData(id);
 				jQuery(gridId2).jqGrid(\'setGridParam\',{url:"'.site_url($this->url.'getdatait/').'/"+id+"/", page:1});
 				jQuery(gridId2).trigger("reloadGrid");
 				$.ajax({

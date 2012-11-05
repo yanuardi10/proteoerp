@@ -36,14 +36,12 @@ class Sinv extends Controller {
 		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname']);
 		$readyLayout = $grid->readyLayout2( 212, 140, $param['grids'][0]['gridname']);
 
-		#Set url
-		//$grid->setUrlput(site_url($this->url.'setdata/'));
-
 		//Botones Panel Izq
 		$grid->wbotonadd(array("id"=>"gmarcas",  "img"=>"images/brand.png",  "alt" => 'Crear Marcas',             "label"=>"Crear Marcas"));
 		$grid->wbotonadd(array("id"=>"gunidad",  "img"=>"images/scale.png",  "alt" => 'Unidades de Medida',       "label"=>"Unidades y Empaques"));
-		//$grid->wbotonadd(array("id"=>"kardex",   "img"=>"images/scale.png",  "alt" => 'Kardex de Inventario',     "label"=>"Kardex de Inventario"));
-		$grid->wbotonadd(array("id"=>"hinactivo","img"=>"images/basura.png", "alt" => 'Oculta/Muestra Inactivos', "label"=>"Ocultar/Mostrar"));
+		$grid->wbotonadd(array("id"=>"hinactivo","img"=>"images/basura.png", "alt" => 'Oculta/Muestra Inactivos', "label"=>"Mostrar Inactivos"));
+		$grid->setWpAdicional("<tr><td><div class=\"tema1\"><table id=\"bpos1\"></table></div><div id='pbpos1'></div></td></tr>\n");
+
 		$WestPanel = $grid->deploywestp();
 
 		$adic = array(
@@ -83,7 +81,69 @@ class Sinv extends Controller {
 	function funciones($grid0){
 
 		//Coloca la Basura a los Productos Inactivos
+//			postdata: { sinvid: $("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\')},
+
 		$funciones = '
+		var verinactivos = 0;
+		jQuery("#bpos1").jqGrid({ 
+			url:\''.site_url('inventario/sinv/bpos1').'\',
+			ajaxGridOptions: { type: "POST"}, 
+			jsonReader: { root: "data", repeatitems: false}, 
+			datatype: "json", 
+			hiddengrid: true,
+			postdata: { sinvid: "wapi"},
+			width: 190,
+			height: 100,
+			colNames:[\'id\', \'codigo\', \'Adicional\'],
+			colModel:[
+				{name:\'id\',index:\'id\', width:10, hidden:true}, 
+				{name:\'codigo\',index:\'codigo\', width:105, editable:false, hidden:true, },
+				{name:\'suplemen\',index:\'suplemen\', width:105, editable:true},
+			],
+			rowNum:1000,
+			pginput: false,
+			pgbuttons: false,
+			rowList:[],
+			pager: \'#pbpos1\', 
+			sortname: \'id\', 
+			viewrecords: false, 
+			sortorder: "desc", 
+			editurl: \''.site_url('inventario/sinv/bpos1').'\',
+			caption: "Barras Adicionales" 
+		}); 
+		jQuery("#bpos1").jqGrid(\'navGrid\',"#pbpos1",{edit:false, add:true, del:true, search: false, addfunc: bposadd }); 
+
+		function bposadd(){
+			var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				$.prompt( "<h1>Agregar nuevo codigo de Barras</h1><center><input type=\'text\' id=\'mcodbar\' name=\'mcodbar\' value=\'\' maxlengh=\'15\' size=\'15\' ></center><br/>", {
+					buttons: { Agregar: true, Cancelar: false },
+					submit: function(e,v,m,f){
+						if (v) {
+							if( f.mcodbar > 0 ) {
+								$.ajax({
+									type: "POST", 
+									url: "'.site_url('inventario/sinv/sinvbarras').'",
+									data: { id: id, codigo: f.mcodbar },
+									complete: function(){
+										$("#bpos1").trigger("reloadGrid"); 
+									}
+								});
+							} else {
+								alert("Debe colocar un numero");
+							}
+						}
+					}
+				});
+			}
+			//alert("camina");
+		}
+
+			';
+//		jQuery("#bpos1").jqGrid(\'inlineNav\',"#pbpos1");
+		
+
+		$funciones .= '
 		function factivo(el, val, opts){
 			var meco=\'<div><img src="'.base_url().'images/blank.png" width="20" height="18" border="0" /></div>\';
 			if ( el == "N" ){
@@ -113,94 +173,8 @@ class Sinv extends Controller {
 		}
 		';
 
-		// Funciones de los Botones
-		$funciones .= '
-		jQuery("#gmarcas").click( function(){
-			window.open(\''.site_url("inventario/marc").'\', \'_blank\', \'width=420,height=450,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-210), screeny=((screen.availWidth/2)-225)\');
-		});
-
-		jQuery("#gunidad").click( function(){
-			window.open(\''.site_url("inventario/unidad").'\', \'_blank\', \'width=420,height=450,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-225), screeny=((screen.availWidth/2)-250)\');
-		});
-
-		jQuery("#kardex").click( function(){
-			var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
-			if (id)	{
-				window.open(\''.site_url("inventario/kardex/kardexpres").'/\'+id, \'_blank\', \'width=420,height=450,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-225), screeny=((screen.availWidth/2)-250)\');
-			} else { 
-				$.prompt("<h1>Por favor Seleccione un Producto</h1>");
-			}
-		});
-		';
-
-		// Detalle del Registro
-		$funciones .= '
-		function detalle(mid){
-			var ret = $("#newapi'.$grid0.'").getRowData(mid);
-			var mSalida = "<table width=\'100%\' style=\'background:#AAAAAA\'>"
-			mSalida += "<tr><td width=\'255\'>";
-
-			mSalida += "<table class=\'bordetabla\' cellpadding=1 cellspacing=0 width=\'250\'>";
-			mSalida += "<tr class=\'littletableheaderc\'><th colspan=\'3\'>Precios de Venta</th></tr>";
-			mSalida += "<tr class=\'tableheader\'><th>%</th><th>Base</th><th>Precio</th></tr>";
-			mSalida += "<tr class=\'littletablerow\'><td align=\'right\'>"+ret.margen1+"</td><td align=\'right\'>"+nformat(ret.base1,2)+"</td><td align=\'right\'>"+nformat(ret.precio1,2)+"</td></tr>";
-			mSalida += "<tr class=\'littletablerow\'><td align=\'right\'>"+ret.margen2+"</td><td align=\'right\'>"+nformat(ret.base2,2)+"</td><td align=\'right\'>"+nformat(ret.precio2,2)+"</td></tr>";
-			mSalida += "<tr class=\'littletablerow\'><td align=\'right\'>"+ret.margen3+"</td><td align=\'right\'>"+nformat(ret.base3,2)+"</td><td align=\'right\'>"+nformat(ret.precio3,2)+"</td></tr>";
-			mSalida += "<tr class=\'littletablerow\'><td align=\'right\'>"+ret.margen4+"</td><td align=\'right\'>"+nformat(ret.base4,2)+"</td><td align=\'right\'>"+nformat(ret.precio4,2)+"</td></tr>";
-			//mSalida += "<tr class=\'littletableheaderdet\'><td colspan=3 align=\'center\'>Margen al Mayor: "+ret.mmargen+"</td></tr>";
-			mSalida += "</table>";
-
-			mSalida += "</td><td width=\'205\'>";
-			mSalida += "<table class=\'bordetabla\' cellpadding=1 cellspacing=0 width=\'200\'>";
-			mSalida += "<tr class=\'tableheader\'><th colspan=\'2\'>Codigos Asociados</th></tr>";
-			mSalida += "<tr class=\'littletablerow\'><td title=\'Codigo de Barras\'>Barras         </td><td>"+ret.barras+ "</td></tr>";
-			mSalida += "<tr class=\'littletablerow\'><td>Alterno        </td><td>"+ret.alterno+"</td></tr>";
-			mSalida += "<tr class=\'littletablerow\'><td>Caja           </td><td>"+ret.enlace+ "</td></tr>";
-			mSalida += "<tr class=\'littletablerow\'><td>Nr. Sanitario </td><td>"+ret.mpps+   "</td></tr>";
-			mSalida += "<tr class=\'littletablerow\'><td>C.P.E.</td><td>"+ret.cpe+    "</td></tr>";
-			mSalida += "</table>";
-
-			mSalida += "</td><td width=\'105\'>";
-			mSalida += "<table class=\'bordetabla\' cellpadding=1 cellspacing=0 width=\'100\'>";
-			mSalida += "<tr class=\'tableheader\'><th colspan=\'2\'>Medidas</th></tr>";
-			mSalida += "<tr class=\'littletablerow\'><td>Peso   </td><td align=\'right\'>"+nformat(ret.peso,2)+ "</td></tr>";
-			mSalida += "<tr class=\'littletablerow\'><td>Alto   </td><td align=\'right\'>"+ret.alto+ "</td></tr>";
-			mSalida += "<tr class=\'littletablerow\'><td>Ancho  </td><td align=\'right\'>"+ret.ancho+"</td></tr>";
-			mSalida += "<tr class=\'littletablerow\'><td>Largo  </td><td align=\'right\'>"+ret.largo+"</td></tr>";
-			mSalida += "<tr class=\'littletablerow\'><td>Unidad </td><td>"+ret.unidad+"</td></tr>";
-			mSalida += "</table>";
-
-			mSalida += "</td><td>";
-
-			mSalida += "<table class=\'bordetabla\' cellpadding=1 cellspacing=0 width=\'250\'>";
-			mSalida += "<tr class=\'littletableheaderc\'><th colspan=\'3\'>Ultimas Compras</th></tr>";
-			mSalida += "<tr class=\'tableheader\'><th>Prov.</th><th>Fecha</th><th>Precio</th></tr>";
-			mSalida += "<tr class=\'littletablerow\'><td>"+ret.prov1+"</td><td>"+ret.pfecha1.substring(8,10)+"/"+ret.pfecha1.substring(5,7)+"/"+ret.pfecha1.substring(0,4)+"</td><td align=\'right\'>"+nformat(ret.prepro1)+"</td></tr>";
-			mSalida += "<tr class=\'littletablerow\'><td>"+ret.prov2+"</td><td>"+ret.pfecha2.substring(8,10)+"/"+ret.pfecha2.substring(5,7)+"/"+ret.pfecha2.substring(0,4)+"</td><td align=\'right\'>"+nformat(ret.prepro2)+"</td></tr>";
-			mSalida += "<tr class=\'littletablerow\'><td>"+ret.prov3+"</td><td>"+ret.pfecha3.substring(8,10)+"/"+ret.pfecha3.substring(5,7)+"/"+ret.pfecha3.substring(0,4)+"</td><td align=\'right\'>"+nformat(ret.prepro3)+"</td></tr>";
-			mSalida += "<tr class=\'littletableheader\'><td colspan=\'3\'>&nbsp;</td></tr>";
-			mSalida += "</table>";
 
 
-
-			mSalida += "</td></tr>";
-
-
-			mSalida += "</table>";
-			return mSalida;
-		}
-
-
-		';
-
-		// Etiquetas
-		$funciones .= '
-		function etiquetas(){ 
-			window.open(\''.site_url("inventario/etiqueta_sinv/menu").'\', \'_blank\', \'width=800, height=600, scrollbars=yes, status=yes, resizable=yes,screenx=((screen.availHeight/2)-300), screeny=((screen.availWidth/2)-400)\');
-		};
-
-
-		';
 
 		// Consulta de Movimiento
 		$funciones .= '
@@ -383,6 +357,7 @@ class Sinv extends Controller {
 
 	//***************************
 	//Funciones de los Botones
+	//fuera del doc ready
 	//***************************
 	function bodyscript( $grid0 ){
 		$bodyscript = '		<script type="text/javascript">';
@@ -395,6 +370,122 @@ class Sinv extends Controller {
 				$("#fedita").dialog( "open" );
 			})
 		};';
+
+		// Fotos
+		$bodyscript .= '
+		function verfotos(){ 
+			var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				window.open(\''.site_url("inventario/fotos/dataedit").'/\'+id+\'/create\', \'_blank\', \'width=800, height=600, scrollbars=yes, status=yes, resizable=yes,screenx=((screen.availHeight/2)-300), screeny=((screen.availWidth/2)-400)\');
+			} else { 
+				$.prompt("<h1>Por favor Seleccione un Producto</h1>");
+			}
+		};
+		';
+
+		// Funciones de los Botones
+		$bodyscript .= '
+		$("#gmarcas").click( function(){
+			window.open(\''.site_url("inventario/marc").'\', \'_blank\', \'width=420,height=450,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-210), screeny=((screen.availWidth/2)-225)\');
+		});
+
+		$("#gunidad").click( function(){
+			window.open(\''.site_url("inventario/unidad").'\', \'_blank\', \'width=420,height=450,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-225), screeny=((screen.availWidth/2)-250)\');
+		});
+
+		$("#hinactivo").click( function(){
+			if (verinactivos==0){ verinactivos=1; } else { verinactivos=0;};
+			$("#newapi'.$grid0.'").jqGrid(\'setGridParam\', {postData: { verinactivos: verinactivos }})
+			$("#newapi'.$grid0.'").trigger("reloadGrid");
+			//alert("inactivo="+verinactivos);
+		});
+
+		jQuery("#kardex").click( function(){
+			var id     = $("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				window.open(\''.site_url("inventario/kardex/kardexpres").'/\'+id, \'_blank\', \'width=420,height=450,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-225), screeny=((screen.availWidth/2)-250)\');
+			} else { 
+				$.prompt("<h1>Por favor Seleccione un Producto</h1>");
+			}
+		});
+		';
+
+		// Detalle del Registro
+		$bodyscript .= '
+		function detalle(mid){
+			var ret = $("#newapi'.$grid0.'").getRowData(mid);
+			var mSalida = "<table width=\'100%\' style=\'background:#AAAAAA\'>"
+			var mClaser = "<tr class=\'littletablerow\'>";
+			var mClaseh = "<tr class=\'littletableheaderc\'>";
+			var mBlanco = "<tr class=\'littletablerow\'><td>&nbsp;</td></tr>";
+			var mTabla = "<table class=\'bordetabla\' cellpadding=\'1\' cellspacing=\'0\'";
+
+			mSalida += "<tr><td width=\'255\'>";
+			mSalida += mTabla+" width=\'250\'>";
+			mSalida += "<tr class=\'tableheaderm\'><th colspan=\'3\'>Precios de Venta</th></tr>";
+			mSalida += "<tr class=\'tableheader\'><th>%</th><th>Base</th><th>Precio</th></tr>";
+			mSalida += mClaser+"<td align=\'right\'>"+ret.margen1+"</td><td align=\'right\'>"+nformat(ret.base1,2)+"</td><td align=\'right\'>"+nformat(ret.precio1,2)+"</td></tr>";
+			mSalida += mClaser+"<td align=\'right\'>"+ret.margen2+"</td><td align=\'right\'>"+nformat(ret.base2,2)+"</td><td align=\'right\'>"+nformat(ret.precio2,2)+"</td></tr>";
+			mSalida += mClaser+"<td align=\'right\'>"+ret.margen3+"</td><td align=\'right\'>"+nformat(ret.base3,2)+"</td><td align=\'right\'>"+nformat(ret.precio3,2)+"</td></tr>";
+			mSalida += mClaser+"<td align=\'right\'>"+ret.margen4+"</td><td align=\'right\'>"+nformat(ret.base4,2)+"</td><td align=\'right\'>"+nformat(ret.precio4,2)+"</td></tr>";
+			mSalida += "</table>";
+
+			mSalida += "</td><td width=\'205\' >";
+
+			mSalida += "<div id=\'itsinv\'>";
+			mSalida += mTabla+" width=\'200\'>";
+			mSalida += "<tr class=\'tableheader\'><th>Almacenes</th></tr>";
+			mSalida += mClaser+"<td>Buscando existencias..</td></tr>";
+			mSalida += mBlanco+mBlanco+mBlanco+mBlanco;
+			mSalida += "</table>";
+			mSalida += "</div>";
+
+			mSalida += "</td><td width=\'205\'>";
+
+			mSalida += mTabla+" width=\'200\'>";
+			mSalida += "<tr class=\'tableheaderm\'><th colspan=\'2\'>Codigos Asociados</th></tr>";
+			mSalida += mClaser+"<td title=\'Codigo de Barras\'>Barras         </td><td>"+ret.barras+ "</td></tr>";
+			mSalida += mClaser+"<td>Alterno        </td><td>"+ret.alterno+"</td></tr>";
+			mSalida += mClaser+"<td>Caja           </td><td>"+ret.enlace+ "</td></tr>";
+			mSalida += mClaser+"<td>Nr. Sanitario </td><td>"+ret.mpps+   "</td></tr>";
+			mSalida += mClaser+"<td>C.P.E.</td><td>"+ret.cpe+    "</td></tr>";
+			mSalida += "</table>";
+
+			mSalida += "</td><td width=\'105\'>";
+			mSalida += mTabla+" width=\'100\'>";
+			mSalida += "<tr class=\'tableheader\'><th colspan=\'2\'>Medidas</th></tr>";
+			mSalida += mClaser+"<td>Peso  </td><td align=\'right\'>"+nformat(ret.peso,2)+ "</td></tr>";
+			mSalida += mClaser+"<td>Alto  </td><td align=\'right\'>"+ret.alto+ "</td></tr>";
+			mSalida += mClaser+"<td>Ancho </td><td align=\'right\'>"+ret.ancho+"</td></tr>";
+			mSalida += mClaser+"<td>Largo </td><td align=\'right\'>"+ret.largo+"</td></tr>";
+			mSalida += mClaser+"<td>Unidad</td><td>"+ret.unidad+"</td></tr>";
+			mSalida += "</table>";
+
+			mSalida += "</td><td>";
+
+			mSalida += mTabla+" width=\'250\'>";
+			mSalida += "<tr class=\'tableheaderm\'><th colspan=\'3\'>Ultimas Compras</th></tr>";
+			mSalida += "<tr class=\'tableheader\'><th>Prov.</th><th>Fecha</th><th>Precio</th></tr>";
+			mSalida += mClaser+"<td>"+ret.prov1+"</td><td>"+ret.pfecha1.substring(8,10)+"/"+ret.pfecha1.substring(5,7)+"/"+ret.pfecha1.substring(0,4)+"</td><td align=\'right\'>"+nformat(ret.prepro1)+"</td></tr>";
+			mSalida += mClaser+"<td>"+ret.prov2+"</td><td>"+ret.pfecha2.substring(8,10)+"/"+ret.pfecha2.substring(5,7)+"/"+ret.pfecha2.substring(0,4)+"</td><td align=\'right\'>"+nformat(ret.prepro2)+"</td></tr>";
+			mSalida += mClaser+"<td>"+ret.prov3+"</td><td>"+ret.pfecha3.substring(8,10)+"/"+ret.pfecha3.substring(5,7)+"/"+ret.pfecha3.substring(0,4)+"</td><td align=\'right\'>"+nformat(ret.prepro3)+"</td></tr>";
+			mSalida += mBlanco;
+			mSalida += "</table>";
+
+			mSalida += "</td></tr>";
+
+			mSalida += "</table>";
+			return mSalida;
+		}
+		';
+
+		// Etiquetas
+		$bodyscript .= '
+		function etiquetas(){ 
+			window.open(\''.site_url("inventario/etiqueta_sinv/menu").'\', \'_blank\', \'width=800, height=600, scrollbars=yes, status=yes, resizable=yes,screenx=((screen.availHeight/2)-300), screeny=((screen.availWidth/2)-400)\');
+		};
+		';
+
 
 		$bodyscript .= '
 		function sinvedit() {
@@ -1878,13 +1969,24 @@ class Sinv extends Controller {
 		$grid->setfilterToolbar(true);
 		$grid->setToolbar('false', '"top"');
 
-
 		$grid->setOnSelectRow('
 			function(id){
 				if (id){
-					url= "'.site_url("inventario/fotos/obtener").'/"+id;
-					$("#ladicional").html("<center><img src=\'"+url+"\' width=\'160\'></center>");
+					var ret = $(gridId1).getRowData(id);
+					url= "'.site_url("inventario/fotos/thumbnail").'/"+id;
+					$("#ladicional").html("<center><img src=\'"+url+"\' width=\'160\' ondblclick=\'verfotos()\'><center><div id=\'textofoto\' style=\'text-align:center;\'></div>");
 					$("#radicional").html(detalle(id));
+					$.get(\''.site_url("inventario/sinv/sinvitems").'/\'+id, 
+						function(data){
+							$("#itsinv").html(data); 
+					});
+					$.get(\''.site_url("inventario/fotos/comenta").'/\'+id, 
+						function(data){
+							$("#textofoto").html(data); 
+					});
+					jQuery("#bpos1").jqGrid(\'setGridParam\',{url:"'.site_url($this->url.'bpos1/').'/"+id+"/", page:1});
+					jQuery("#bpos1").trigger("reloadGrid");
+
 				}
 			},
 			afterInsertRow:
@@ -1935,17 +2037,17 @@ class Sinv extends Controller {
 	*/
 	function getdata()
 	{
-		$grid       = $this->jqdatagrid;
+		$grid  = $this->jqdatagrid;
+		$iactivo = $this->input->post('verinactivos');
 
 		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
 		$mWHERE = $grid->geneTopWhere('sinv');
 
-		$mWHERE[] = array('like', 'activo', 'S', '' );
-
+		if ( $iactivo == 0 ) 
+			$mWHERE[] = array('=', 'activo', 'S', '' );
 
 		$response   = $grid->getData('sinv', array(array()), array(), false, $mWHERE, 'codigo' );
 		$rs = $grid->jsonresult( $response);
-
 
 		//Guarda en la BD el Where para usarlo luego
 		$querydata = array( 'data1' => $this->session->userdata('dtgQuery') );
@@ -1962,10 +2064,6 @@ class Sinv extends Controller {
 		
 		$ids = $this->datasis->guardasesion($querydata); 
 		
-		//$querydata = array( 'sinvid' => $ids );
-		//$this->session->set_userdata($querydata);
-
-
 		echo $rs;
 	}
 
@@ -2028,6 +2126,37 @@ class Sinv extends Controller {
 		};
 */
 	}
+
+
+
+	/**
+	* Busca la data en el Servidor por json
+	*/
+	function bpos1()
+	{
+		$oper   = $this->input->post('oper');
+		if ($oper == 'del'){
+			// Borra
+			
+			
+		} elseif ( $oper == false ) {
+			$id = $this->uri->segment(4);
+			if ( $id > 0 ) {
+				$codigo = $this->datasis->dameval("SELECT codigo FROM sinv WHERE id=$id");
+				$this->db->select(array('id', 'codigo', 'suplemen'));
+				$this->db->from('barraspos');
+				$this->db->where('codigo',$codigo);
+			
+				$rs = $this->datasis->codificautf8($this->db->get()->result_array());
+				$response['data'] = $rs;
+				$rs = json_encode( $response);
+				echo $rs;
+			}
+		}
+		
+	}
+
+
 /*
 	function dataedit(){
 		$this->rapyd->load('dataedit');
@@ -4125,10 +4254,10 @@ class sinv extends Controller {
 
 		if($mexiste=='S'){
 			$mSQL = "DELETE FROM sinv WHERE codigo=".$mviejo;
-			$this->db->simple_query($mSQL);
+			$this->db->query($mSQL);
 		} else {
 			$mSQL = "UPDATE sinv SET codigo=".$mcodigo." WHERE codigo=".$mviejo;
-			$this->db->simple_query($mSQL);
+			$this->db->query($mSQL);
 		}
 
 		if ( $mexiste=='S' ) {
@@ -4140,7 +4269,7 @@ class sinv extends Controller {
 					$dbalma = $this->db->escape($row->alma);
 					$mSQL   = "UPDATE itsinv SET existen=existen+".$row->existen."
 						WHERE codigo=$mcodigo AND alma=$dbalma";
-					$this->db->simple_query($mSQL);
+					$this->db->query($mSQL);
 					$mexisten += $row->existen;
 				}
 			}
@@ -4150,78 +4279,100 @@ class sinv extends Controller {
 
 			// Borra los items
 			$mSQL = "DELETE FROM itsinv WHERE codigo=".$mviejo;
-			$this->db->simple_query($mSQL);
+			$this->db->query($mSQL);
 		}else{
 			$mSQL = "UPDATE itsinv SET codigo=".$mcodigo." WHERE codigo=".$mviejo;
-			$this->db->simple_query($mSQL);
+			$this->db->query($mSQL);
 		}
 
 		$mSQL = "UPDATE itstra SET codigo=".$mcodigo." WHERE codigo=".$mviejo;
-		$this->db->simple_query($mSQL);
+		$this->db->query($mSQL);
 
 		$mSQL = "UPDATE itscst SET codigo=".$mcodigo." WHERE codigo=".$mviejo;
-		$this->db->simple_query($mSQL);
+		$this->db->query($mSQL);
 
 		$mSQL = "UPDATE sitems SET codigoa=".$mcodigo." WHERE codigoa=".$mviejo;
-		$this->db->simple_query($mSQL);
+		$this->db->query($mSQL);
 
 		$mSQL = "UPDATE itsnot SET codigo=".$mcodigo." WHERE codigo=".$mviejo;
-		$this->db->simple_query($mSQL);
+		$this->db->query($mSQL);
 
 		$mSQL = "UPDATE itsnte SET codigo=".$mcodigo." WHERE codigo=".$mviejo;
-		$this->db->simple_query($mSQL);
+		$this->db->query($mSQL);
 
 		$mSQL = "UPDATE itspre SET codigo=".$mcodigo." WHERE codigo=".$mviejo;
-		$this->db->simple_query($mSQL);
+		$this->db->query($mSQL);
 
 		$mSQL = "UPDATE itssal SET codigo=".$mcodigo." WHERE codigo=".$mviejo;
-		$this->db->simple_query($mSQL);
+		$this->db->query($mSQL);
 
 		$mSQL = "UPDATE itconv SET codigo=".$mcodigo." WHERE codigo=".$mviejo;
-		$this->db->simple_query($mSQL);
+		$this->db->query($mSQL);
 
 		$mSQL = "UPDATE seri SET codigo=".$mcodigo." WHERE codigo=".$mviejo;
-		$this->db->simple_query($mSQL);
+		$this->db->query($mSQL);
 
 		$mSQL = "UPDATE itpfac SET codigoa=".$mcodigo." WHERE codigoa=".$mviejo;
-		$this->db->simple_query($mSQL);
+		$this->db->query($mSQL);
 
 		$mSQL = "UPDATE itordc SET codigo=".$mcodigo." WHERE codigo=".$mviejo;
-		$this->db->simple_query($mSQL);
+		$this->db->query($mSQL);
 
 		$mSQL = "UPDATE IGNORE invresu SET codigo=".$mcodigo." WHERE codigo=".$mviejo;
-		$this->db->simple_query($mSQL);
+		$this->db->query($mSQL);
 
 		$mSQL = "UPDATE IGNORE invresu SET codigo=".$mcodigo." WHERE codigo=".$mviejo;
-		$this->db->simple_query($mSQL);
+		$this->db->query($mSQL);
 
 		$mSQL = "UPDATE IGNORE barraspos SET codigo=".$mcodigo." WHERE codigo=".$mviejo;
-		$this->db->simple_query($mSQL);
+		$this->db->query($mSQL);
 
 		$mSQL = "UPDATE IGNORE sinvfot SET codigo=".$mcodigo." WHERE codigo=".$mviejo;
-		$this->db->simple_query($mSQL);
+		$this->db->query($mSQL);
 
 		$mSQL = "UPDATE IGNORE sinvpromo SET codigo=".$mcodigo." WHERE codigo=".$mviejo;
-		$this->db->simple_query($mSQL);
+		$this->db->query($mSQL);
+
+		$mSQL = "UPDATE IGNORE sinvprov SET codigo=".$mcodigo." WHERE codigo=".$mviejo;
+		$this->db->query($mSQL);
 
 		$mSQL = "UPDATE IGNORE costos SET codigo=".$mcodigo." WHERE codigo=".$mviejo;
-		$this->db->simple_query($mSQL);
+		$this->db->query($mSQL);
 		
 		// Inventario invfel
 		if(!$this->db->table_exists('invfelr')){
 			$m      = 1;
 			$mubica = 99;
 			$mSQL = "UPDATE IGNORE invfelr SET codigo=".$mcodigo." WHERE codigo=".$mviejo;
-			$this->db->simple_query($mSQL);
+			$this->db->query($mSQL);
 			$m = $this->datasis->dameval("SELECT COUNT(*) FROM invfelr WHERE codigo=".$mviejo);
 			while ( $m > 0) {
 				$mSQL = "UPDATE IGNORE invfelr SET codigo=".$mcodigo.", ubica=$mubica WHERE codigo=".$mviejo;
-				$this->db->simple_query($mSQL);
+				$this->db->query($mSQL);
 				$m = $this->datasis->dameval("SELECT COUNT(*) FROM invfelr WHERE codigo=".$mviejo);
 				$mubica = $mubica -1;
 			}
 		}
+
 		logusu("SINV","Cambio codigo ".$mmviejo."-->".$mmcodigo);
+
+		if ( $this->db->table_exists('sinvfusion') == false ) {
+			$mSQL  = "CREATE TABLE sinvfusion ( ";
+			$mSQL .= "	id INT(10) NOT NULL AUTO_INCREMENT, ";
+			$mSQL .= "	anterior VARCHAR(15) NOT NULL, ";
+			$mSQL .= "	nuevo VARCHAR(15) NOT NULL, ";
+			$mSQL .= "	usuario VARCHAR(15) NOT NULL, ";
+			$mSQL .= "	fecha TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, ";
+			$mSQL .= "	PRIMARY KEY (id) ";
+			$mSQL .= ") ";
+			$mSQL .= "COLLATE='latin1_swedish_ci' ";
+			$mSQL .= "ENGINE=MyISAM ";
+			$this->db->simple_query($mSQL);
+		}
+
+		$mSQL = "INSERT INTO sinvfusion SET anterior=".$mviejo.", nuevo=".$mcodigo.", usuario=".$this->db->escape($this->secu('usuario'));
+		$this->db->simple_query($mSQL);
+
 	}
 
 	function _sinvcodig(){
@@ -4315,6 +4466,8 @@ class sinv extends Controller {
 
 		logusu("SINV","Cambio codigo ".$mmviejo."-->".$mmcodigo);
 	}
+
+
 
 	// Codigos de barra suplementarios
 	function sinvbarras() {
@@ -4834,6 +4987,50 @@ class sinv extends Controller {
 		}
 		return $estilo.$salida;
 	}
+
+
+	//Manda una tabla para la consulta
+	function sinvitems($id = 0){
+		$salida = "No hay Existencias";
+		$codigo = $this->datasis->dameval("SELECT codigo FROM sinv WHERE id=$id");
+
+		if(!empty($codigo)){
+
+			$mSQL  = "SELECT a.codigo, a.alma, a.existen, IF(b.ubides IS NULL,'SIN ALMACEN',b.ubides) AS nombre ";
+			$mSQL .= "FROM itsinv AS a LEFT JOIN caub as b ON a.alma=b.ubica ";
+			$mSQL .= "WHERE codigo=".$this->db->escape($codigo);
+			
+			$query = $this->db->query($mSQL);
+
+			if( $query->num_rows() > 0 ){
+			    $salida  = "<table class='bordetabla' cellpadding=1 cellspacing=0 width='200'>";
+			    $salida .= "<tr class='tableheader'><th colspan='3'>Almacenes</th></tr>";
+				$i = 0;
+				foreach( $query->result() as $row ){
+						$salida .= "<tr class='littletablerow'><td>";
+						$salida .= $row->alma;
+						$salida .= "</td><td>";
+						$salida .= $row->nombre;
+						$salida .= "</td><td>";
+						$salida .= $row->existen;
+						$salida .= "</td></tr>\n";
+						$i++;
+				}
+				while ( $i<5){
+						$salida .= "<tr class='littletablerow'><td>";
+						$salida .= "&nbsp;</td><td>";
+						$salida .= "&nbsp;</td><td>";
+						$salida .= "&nbsp;</td></tr>\n";
+						$i++;
+				}
+				
+				$salida .= '</table>';
+			}
+		}
+		echo $salida;
+	}
+
+
 
 	function _pre_del($do){
 		$codigo=$this->db->escape($do->get('codigo'));

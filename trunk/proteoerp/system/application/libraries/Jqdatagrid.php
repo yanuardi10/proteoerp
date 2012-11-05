@@ -179,6 +179,9 @@ class Jqdatagrid
 	
 	private $BarOptions = '';
 
+	private $wpadicional = '';
+
+
 	function __construct ()
 	{
 		$this->CI =& get_instance();
@@ -271,6 +274,16 @@ class Jqdatagrid
 	public function setViewRecords($element)
 	{
 		$this->viewrecords = $element;
+	}
+
+
+	/**
+	* Adiciona al wp
+	* 
+	*/
+	public function setWpAdicional($element)
+	{
+		$this->wpadicional = $element;
 	}
 
 
@@ -623,10 +636,11 @@ class Jqdatagrid
 		$loadbutton = false;
 
 		if(false == empty($this->url_get)){
-			$html .= "\t,url:'{$this->url_get}/'\r\n";
-			$post = (false == empty($this->url_put))?$this->url_put:$this->url_get;
+			$html .= $margen.",url:'{$this->url_get}/'\r\n";
+			$post = (false == empty($this->url_put)) ? $this->url_put : $this->url_get;
 			$html .=  $margen.",editurl:'{$post}/'\r\n";
 		}
+
 		$html     .=  $margen.",datatype:'{$this->datatype}'\r\n";
 		$html     .=  $margen.",rowNum:'{$this->rowNum}'\r\n";
 		$html     .=  $margen.",shrinkToFit: $this->shrinkToFit \r\n";
@@ -1515,7 +1529,11 @@ class Jqdatagrid
 		<td><div class="tema1"><table id="listados"></table></div></td>
 	</tr><tr>
 		<td><div class="tema1"><table id="otros"></table></div></td>
-	</tr>
+	</tr>'."\n";
+		
+		$wlista .= $this->wpadicional;
+
+		$wlista .='
 </table>
 </div>
 ';

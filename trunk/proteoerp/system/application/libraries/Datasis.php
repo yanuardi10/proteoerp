@@ -1041,6 +1041,73 @@ class Datasis {
 		return $Otros1;
 	}
 
+	//****************************************************
+	// Genera un jqgrid Completo
+	//
+	function jqgridsimplegene($tabla, $contro, $directo, $id){
+		$CI =& get_instance();
+		$query = $CI->db->query("DESCRIBE $tabla");
+		$i = 0;
+		if ($query->num_rows() > 0){
+			$str  = 'jQuery("#'.$id.'").jqGrid({ '."\n";
+
+			$str .= '	url:\''.$directo.'/'.$contro.'/'.$id.'/g\','."\n";
+			$str .= '	ajaxGridOptions: { type: "POST"}, '."\n";
+			$str .= '	jsonReader: { root: "data", repeatitems: false}, '."\n";
+			$str .= '	datatype: "json", '."\n";
+			$str .= '	hiddengrid: true,'."\n";
+			$str .= '	width: 190,'."\n";
+			$str .= '	height: 100,'."\n";
+			$str .= '	colNames:[';
+			$tieneid = false;
+			$cols = '		{name:\'id\',index:\'id\', width:10}, '."\n";
+			$str .= "'id'";
+			$long = 40;
+			foreach ($query->result() as $row){
+				if ( $row->Field == 'id') 
+					$tieneid = false;
+				else {
+					$str .= ", '".$row->Field."'";
+					//Calcula la Longitud
+					if ( $row->Type == 'date' or $row->Type == 'timestamp' ) {
+						$long = '70'."\n";
+					} elseif ( substr($row->Type,0,7) == 'decimal' or substr($row->Type,0,3) == 'int'  ) {
+						$long = '70'."\n";
+					} elseif ( substr($row->Type,0,7) == 'varchar' or substr($row->Type,0,4) == 'char'  ) {
+						$long = str_replace(array('varchar(','char(',')'),"", $row->Type)*7;
+						if ( $long > 200 ) $long = 200;
+						if ( $long < 40 ) $long = 40;
+					} elseif ( $row->Type == 'text' ) {
+						$long = 250;
+					}
+					//Llena las Columnas
+					$cols .= '		{name:\''.$row->Field.'\',index:\''.$row->Field.'\', width:'.$long.', editable:true},'."\n"; 
+				}
+			}
+			$str .= '],'."\n";
+			$str .= '	colModel:['."\n"; 
+			$str .= $cols;
+			$str .= '	],'."\n"; 
+
+			$str .= '	rowNum:10,'."\n";  
+			$str .= '	rowList:[10,20,30],'."\n";  
+			$str .= '	pager: \'#p'.$id.'\', '."\n"; 
+
+			$str .= '	sortname: \'id\', '."\n";
+			$str .= '	viewrecords: true, '."\n";
+			$str .= '	sortorder: "desc", '."\n";
+			$str .= '	editurl: \''.$directo.'/'.$contro.'/'.$id.'/s\','."\n";
+			$str .= '	caption: "Using navigator" '."\n";
+			$str .= '}); '."\n";
+
+			$str .= 'jQuery("#'.$id.'").jqGrid(\'navGrid\',"#p'.$id.'",{edit:false,add:false,del:false}); '."\n";
+			$str .= 'jQuery("#'.$id.'").jqGrid(\'inlineNav\',"#p'.$id.'");'."\n";
+
+			return $str;
+		}
+
+	}
+
 
 
 	//*******************************

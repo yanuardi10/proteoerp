@@ -19,6 +19,7 @@
 .littletablefilter  { background: #D7DEFE; 	border-bottom: 1px solid #ECECEC;	color: #333333;	font-family: Lucida Grande, Verdana, Geneva, Sans-serif; font-size: 12px;	padding-left:5px;}
 .littletableheaderdet { background: #7098D0; 	border-bottom: 1px solid #ECECEC;	color: #FCFCFC;	font-family: Lucida Grande, Verdana, Geneva, Sans-serif;  font-weight: bold;font-size: 12px;	padding-left:5px;}
 .tableheader       { background: #7098D0; 	border-bottom: 1px solid #FcFcFc;	color: #003311;	font-family: Lucida Grande, Verdana, Geneva, Sans-serif; font-size: 12px;}
+.tableheaderm      { background: #623A31; 	border-bottom: 1px solid #FcFcFc;	color: #FFFFFF;	font-family: Lucida Grande, Verdana, Geneva, Sans-serif; font-size: 12px;}
 .tableheader10     { background: #7098D0; 	border-bottom: 1px solid #FcFcFc;	color: #003311;	font-family: Lucida Grande, Verdana, Geneva, Sans-serif; font-size: 10px;}
 .tableheader_clean { background: #8FB6EE; color: #002211;	font-family: Lucida Grande, Verdana, Geneva, Sans-serif; font-size: 12px;}
 .tablerow {	border-bottom: 1px solid #D0D0D0;	color: #153D51;	font-family: Verdana, Arial, Helvetica;	font-size: 11px;	font-weight: normal;}

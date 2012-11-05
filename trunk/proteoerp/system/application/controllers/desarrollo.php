@@ -1007,12 +1007,39 @@ class Desarrollo extends Controller{
 			
 			$columna .= $str."\n";
 			
-			echo $columna."</prep>";
+			echo $columna."</pre>";
 
 		}
 		
 	}
-	
+
+
+	// Genera un jqgrid simple a partir de una tabla
+	function jqgridsimple(){
+		$tabla = $this->uri->segment(3);
+		if($tabla===false){
+			exit('Debe especificar en la uri la tabla y el directorio "/tabla/controlador/directorio/id"');
+		}
+		
+		$contro =$this->uri->segment(4);
+		if($contro===false){
+			exit('Debe especificar en la uri la tabla y el directorio "/tabla/controlador/directorio/id"');
+		}
+
+		$directo =$this->uri->segment(5);
+		if($directo===false){
+			exit('Debe especificar en la uri la tabla y el directorio "/tabla/controlador/directorio/id"');
+		}
+		$id =$this->uri->segment(6);
+		if($id==false){
+			exit('Debe especificar en la uri la tabla y el directorio "/tabla/controlador/directorio/id"');
+		}
+		$str = $this->datasis->jqgridsimplegene($tabla, $contro, $directo, $id);
+		echo "<pre>".$str."</pre>";
+
+	}
+
+
 	function mtab($n = 1){ return str_repeat("\t",$n); }
 
 	function genecrudjq($tabla=null,$s=true){
