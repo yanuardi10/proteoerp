@@ -10,7 +10,7 @@ class Formatos extends Controller{
 	}
 
 	function index(){
-		
+
 	}
 
 	function ver1(){
@@ -94,6 +94,15 @@ class Formatos extends Controller{
 		}
 	}
 
+	function incluir($nombre){
+		$_dbfnombre=$this->db->escape($nombre);
+		$query = $this->db->query('SELECT proteo FROM formatos WHERE nombre='.$_dbfnombre);
+		if ($query->num_rows() > 0){
+			$row = $query->row();
+			echo eval('?>'.preg_replace('/;*\s*\?>/', '; ?>', str_replace('<?=', '<?php echo ', $row->proteo)).'<?php ');
+		}
+	}
+
 	function verhtml(){
 		$parametros= func_get_args();
 		$this->_direccion='/'.trim_slashes($this->config->item('base_url'));
@@ -113,7 +122,7 @@ class Formatos extends Controller{
 	}
 
 	function cintillo($cinti = 'CINTILLO'){
-		// Cintillo por defecto si no existe 
+		// Cintillo por defecto si no existe
 		$mhtml = "\n";
 		$mhtml .= '			<!-- CINTILLO -->'."\n";
 		$mhtml .= '			<div id="section_header">'."\n";
@@ -134,7 +143,7 @@ class Formatos extends Controller{
 			$this->db->query('INSERT INTO formatos SET proteo=?, nombre="X_'.$cinti.'"', array($mhtml));
 		}
 		return $this->traeyeva($cinti);
-		
+
 	}
 
 	function scriptphp($script = 'SCRIPTP'){
@@ -169,8 +178,7 @@ class Formatos extends Controller{
 	}
 
 	function rephead($rhead = 'REPHEAD', $titulo){
-		$mhtml  = "\n";
-		$mhtml .= '<html>'."\n";
+		$mhtml  = '<html>'."\n";
 		$mhtml .= '<head>'."\n";
 		$mhtml .= '<title>'.$titulo.'</title>'."\n";
 		$mhtml .= '<link rel="STYLESHEET" href="\'.$this->_direccion.\'/assets/default/css/formatos.css" type="text/css" />'."\n";
