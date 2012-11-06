@@ -53,7 +53,7 @@ class Rpcserver extends Controller {
 		//$query = $this->db->query("SELECT id,padre,pertenece,prioridad,usuario,contenido,estampa,actualizado,estado FROM tiket LIMIT 3");
 
 		$tiket=array();
-		if ($query->num_rows() > 0){ 
+		if ($query->num_rows() > 0){
 			foreach ($query->result_array() as $row){
 				foreach($row AS $ind=>$val){
 					$row[$ind]=base64_encode($val);
@@ -87,7 +87,7 @@ class Rpcserver extends Controller {
 			$mSQL="SELECT numero,fecha,vence,TRIM(nfiscal) AS nfiscal,totals,totalg,iva,exento,tasa,reducida,sobretasa,montasa,monredu,monadic FROM sfac WHERE cod_cli=? AND numero $op ? AND tipo_doc='F' LIMIT $cant";
 			$query = $this->db->query($mSQL,array($usr,$ult_ref));
 			//memowrite($this->db->last_query(),'B2B');
-			if ($query->num_rows() > 0){ 
+			if ($query->num_rows() > 0){
 				$pivot=array();
 				foreach ($query->result_array() as $row){
 					$numero=$row['numero'];
@@ -99,7 +99,7 @@ class Rpcserver extends Controller {
 
 					//Prepara los articulos
 					$it=array();
-					$mmSQL="SELECT TRIM(a.codigoa) AS codigoa,TRIM(a.desca) AS desca,SUM(a.cana) AS cana ,a.preca,SUM(a.tota) AS tota,a.iva,b.barras,b.precio1,b.precio1 AS precio2,b.precio1 AS precio3,b.precio1 AS precio4,b.unidad, b.tipo, b.tdecimal
+					$mmSQL="SELECT TRIM(a.codigoa) AS codigoa,TRIM(a.desca) AS desca,SUM(a.cana) AS cana ,a.preca,SUM(a.tota) AS tota,a.iva,TRIM(b.barras) AS barras,b.precio1,b.precio1 AS precio2,b.precio1 AS precio3,b.precio1 AS precio4,b.unidad, b.tipo, b.tdecimal
 						FROM sitems AS a JOIN sinv AS b ON a.codigoa=b.codigo
 						WHERE numa=? AND tipoa='F' GROUP BY a.codigoa";
 					$qquery = $this->db->query($mmSQL,array($numero));
@@ -139,7 +139,7 @@ class Rpcserver extends Controller {
 					AND tipo='C' AND origen='L' LIMIT $cant";
 				$query = $this->db->query($mSQL,array($usr,$ult_ref));
 				//memowrite($this->db->last_query(),'B2Ba');
-				if ($query->num_rows() > 0){ 
+				if ($query->num_rows() > 0){
 					$pivot=array();
 					foreach ($query->result_array() as $row){
 						$id=$row['id'];
@@ -194,7 +194,7 @@ class Rpcserver extends Controller {
 				$query = $this->db->query($mSQL,array($usr,$asoc));
 
 				if ($query->num_rows() > 0){
-					$row = $query->row_array(); 
+					$row = $query->row_array();
 					$numero=array($row['numero']);
 				}else{
 					$numero=array();
@@ -215,16 +215,16 @@ class Rpcserver extends Controller {
 		$fecha = $this->db->escape($parameters['0']);
 		$clave = $parameters['1'];
 
-		$mSQL="SELECT 
+		$mSQL="SELECT
 		 SUM(totals*IF(tipo_doc='D',-1,1)) AS totales
-		 FROM sfac 
+		 FROM sfac
 		 WHERE fecha=$fecha AND tipo_doc<>'X' AND MID(numero,1,1)<>'_'";
 		$row=$this->datasis->damerow($mSQL);
 
 		$fdesde=date('Ym');
-		$mSQL="SELECT 
+		$mSQL="SELECT
 		 SUM(totals*IF(tipo_doc='D',-1,1)) AS acumulado
-		 FROM sfac 
+		 FROM sfac
 		 WHERE fecha >=${fdesde}01 AND fecha<=$fecha AND tipo_doc<>'X' AND MID(numero,1,1)<>'_'";
 		$row2=$this->datasis->damerow($mSQL);
 
@@ -245,7 +245,7 @@ class Rpcserver extends Controller {
 		$query = $this->db->query($mSQL,array($codigo));
 
 		$compras=array();
-		if ($query->num_rows() > 0){ 
+		if ($query->num_rows() > 0){
 			foreach ($query->result_array() as $row){
 				foreach($row AS $ind=>$val){
 					$row[$ind]=base64_encode($val);
@@ -261,6 +261,6 @@ class Rpcserver extends Controller {
 	function ventanainf(){
 		$data[]=array('ender','ochoa');
 		$response = array($data,'struct');
-		return $this->xmlrpc->send_response($response);	
+		return $this->xmlrpc->send_response($response);
 	}
 }

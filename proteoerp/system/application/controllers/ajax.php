@@ -25,6 +25,7 @@
  *
 */
 class Ajax extends Controller {
+	var $autolimit=50; //Limite en el autocomplete;
 
 	function Ajax(){
 		parent::Controller();
@@ -70,7 +71,7 @@ class Ajax extends Controller {
 
 			$mSQL="SELECT TRIM(nombre) AS nombre, TRIM(rif) AS rif, proveed, direc1 AS direc, reteiva
 				FROM sprv WHERE rif LIKE ${qdb} OR nombre LIKE ${qdb} ${ww}
-				ORDER BY rif LIMIT 10";
+				ORDER BY rif LIMIT ".$this->autolimit;
 			$query = $this->db->query($mSQL);
 			if ($query->num_rows() > 0){
 				foreach( $query->result_array() as  $row ) {
@@ -127,7 +128,7 @@ class Ajax extends Controller {
 
 			$mSQL="SELECT TRIM(nombre) AS nombre, TRIM(rifci) AS rifci, cliente, tipo , dire11 AS direc
 				FROM scli WHERE (cliente LIKE ${qdb} OR rifci LIKE ${qdb} OR nombre LIKE ${qdb}) $ww
-				ORDER BY rifci LIMIT 10";
+				ORDER BY rifci LIMIT ".$this->autolimit;
 
 			$query = $this->db->query($mSQL);
 			if ($query->num_rows() > 0){
@@ -168,7 +169,7 @@ class Ajax extends Controller {
 				FROM scli AS a
 				JOIN sinv AS b ON a.tarifa=b.codigo
 				WHERE (cliente LIKE ${qdb} OR rifci LIKE ${qdb} OR nombre LIKE ${qdb})
-				ORDER BY rifci LIMIT 10";
+				ORDER BY rifci LIMIT ".$this->autolimit;
 			$query = $this->db->query($mSQL);
 			if ($query->num_rows() > 0){
 				foreach( $query->result_array() as  $row ) {
@@ -214,14 +215,14 @@ class Ajax extends Controller {
 			$retArray = $retorno = array();
 
 			$mSQL="
-			
+
 				SELECT DISTINCT TRIM(a.descrip) AS descrip, TRIM(a.codigo) AS codigo,
 				a.precio1,precio2,precio3,precio4, a.iva,a.existen,a.tipo,a.peso, a.ultimo, a.pond, a.barras
 				FROM sinv AS a
 				LEFT JOIN barraspos AS b ON a.codigo=b.codigo
 				WHERE (a.codigo LIKE $qdb OR a.descrip LIKE  $qdb OR a.barras LIKE $qdb OR b.suplemen=$qba) AND a.activo='S'
 
-				ORDER BY a.descrip LIMIT 10";
+				ORDER BY a.descrip LIMIT ".$this->autolimit;
 			$cana=1;
 
 			$query = $this->db->query($mSQL);
@@ -273,7 +274,7 @@ class Ajax extends Controller {
 				LEFT JOIN barraspos AS b ON a.codigo=b.codigo
 				LEFT JOIN sinvprov  AS c ON c.proveed=$dbsprv AND c.codigo=a.codigo
 				WHERE (a.codigo LIKE $qdb OR a.descrip LIKE  $qdb OR a.barras LIKE $qdb OR b.suplemen=$qba OR a.alterno LIKE $qba OR c.codigop=$qdb) AND a.activo='S' AND a.tipo='Articulo'
-				ORDER BY a.descrip LIMIT 10";
+				ORDER BY a.descrip LIMIT ".$this->autolimit;
 			$cana=1;
 
 			$query = $this->db->query($mSQL);
@@ -322,7 +323,7 @@ class Ajax extends Controller {
 				,a.peso, a.ultimo, a.pond FROM sinv AS a
 				LEFT JOIN barraspos AS b ON a.codigo=b.codigo
 				WHERE (a.codigo LIKE $qdb OR a.descrip LIKE  $qdb OR a.barras LIKE $qdb OR b.suplemen=$qba OR a.alterno LIKE $qba) AND a.activo='S' AND a.tipo='Articulo'
-				ORDER BY a.descrip LIMIT 10";
+				ORDER BY a.descrip LIMIT ".$this->autolimit;
 			$cana=1;
 
 			$query = $this->db->query($mSQL);
@@ -447,7 +448,7 @@ class Ajax extends Controller {
 				FROM  sfac AS a
 				JOIN scli AS b ON a.cod_cli=b.cliente
 				WHERE a.numero LIKE $qdb AND a.tipo_doc='F' AND MID(a.numero,1,1)<>'_'
-				ORDER BY numero DESC LIMIT 10";
+				ORDER BY numero DESC LIMIT ".$this->autolimit;
 
 			$query = $this->db->query($mSQL);
 			if ($query->num_rows() > 0){
@@ -673,7 +674,7 @@ class Ajax extends Controller {
 			$mid = $this->db->escape('%'.$q.'%');
 			$mSQL = "SELECT a.codigo, a.descrip
 				FROM mgas AS a
-			WHERE a.codigo LIKE ${mid} OR a.descrip LIKE ${mid} ORDER BY a.descrip LIMIT 10";
+			WHERE a.codigo LIKE ${mid} OR a.descrip LIKE ${mid} ORDER BY a.descrip LIMIT ".$this->autolimit;
 
 			$query = $this->db->query($mSQL);
 			$retArray = array();
@@ -912,7 +913,7 @@ class Ajax extends Controller {
 
 			$mSQL="SELECT TRIM(nombre) AS nombre, TRIM(rifci) AS rifci, cliente
 				FROM scli WHERE (cliente LIKE ${qdb} OR rifci LIKE ${qdb} OR nombre LIKE ${qdb}) $ww
-				ORDER BY rifci LIMIT 10";
+				ORDER BY rifci LIMIT ".$this->autolimit;
 
 			$query = $this->db->query($mSQL);
 			if ($query->num_rows() > 0){
