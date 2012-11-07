@@ -19,7 +19,7 @@ class Sinv extends Controller {
 			$this->db->simple_query('ALTER TABLE barraspos ADD UNIQUE INDEX codigo (codigo, suplemen)');
 			$this->db->simple_query('ALTER TABLE barraspos ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
 		};
-		$this->datasis->modintramenu( 950, 700, substr($this->url,0,-1) );
+		$this->datasis->modintramenu( 950, 600, substr($this->url,0,-1) );
 		redirect($this->url.'jqdatag');
 	}
 
@@ -34,7 +34,7 @@ class Sinv extends Controller {
 
 		//Funciones que ejecutan los botones
 		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname']);
-		$readyLayout = $grid->readyLayout2( 212, 140, $param['grids'][0]['gridname']);
+		$readyLayout = $grid->readyLayout2( 212, 125, $param['grids'][0]['gridname']);
 
 		//Botones Panel Izq
 		$grid->wbotonadd(array("id"=>"gmarcas",  "img"=>"images/brand.png",  "alt" => 'Crear Marcas',             "label"=>"Crear Marcas"));
@@ -59,11 +59,8 @@ class Sinv extends Controller {
 		$param['script']      = script('sinvmaes.js');
 		$param['WestPanel']   = $WestPanel;
 		$param['funciones']   = $funciones;
-
-		$param['readyLayout']  = $readyLayout;
-		$param['centerpanel']  = $centerpanel;
-
-		//$param['EastPanel'] = $EastPanel;
+		$param['readyLayout'] = $readyLayout;
+		$param['centerpanel'] = $centerpanel;
 		$param['SouthPanel']  = $SouthPanel;
 		$param['listados']    = $this->datasis->listados('SINV', 'JQ');
 		$param['otros']       = $this->datasis->otros('SINV', 'JQ');
@@ -172,8 +169,6 @@ class Sinv extends Controller {
 		';
 
 
-
-
 		// Consulta de Movimiento
 		$funciones .= '
 		function consulta(){ 
@@ -208,7 +203,6 @@ class Sinv extends Controller {
 		};
 		';
 
-
 		//Aumento de Precios
 		$funciones .= ' 
 		function auprec(){
@@ -228,7 +222,6 @@ class Sinv extends Controller {
 			});
 		};
 		';
-
 
 		//Aumento de Precios al Mayor
 		$funciones .= '
@@ -250,7 +243,6 @@ class Sinv extends Controller {
 		};
 		';
 
-
 		// Cambiar Ubicaciones
 		$funciones .= ' 
 		function cambiaubica(){
@@ -267,7 +259,6 @@ class Sinv extends Controller {
 			});
 		};
 		';
-
 
 		//Cambia y fusiona codigo
 		$funciones .= '
@@ -347,9 +338,7 @@ class Sinv extends Controller {
 		};
 		';
 
-		
 		return $funciones;
-
 
 	}
 
@@ -1963,7 +1952,7 @@ class Sinv extends Controller {
 
 		$grid->showpager(true);
 		$grid->setWidth('');
-		$grid->setHeight('345');
+		$grid->setHeight('260');
 		$grid->setTitle($this->titp);
 		$grid->setfilterToolbar(true);
 		$grid->setToolbar('false', '"top"');
