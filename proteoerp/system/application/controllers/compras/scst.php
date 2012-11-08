@@ -2416,7 +2416,7 @@ class Scst extends Controller {
 		$compra  = $this->datasis->dameval("SELECT CONCAT('Compra: </td><td><b>', serie,'</b></td><td> Fecha: </td><td><b>', fecha, '</b></td><td>Vence: </td><td><b>', vence,'</b>') factura FROM scst WHERE control=$control");
 		$montos  = $this->datasis->dameval("SELECT CONCAT('Sub Total: </td><td><b>', format(montotot,2),'</b></td><td> I.V.A.: </td><td><b>', format(montoiva,2), '</b></td><td>Monto: </td><td><b>', format(montonet,2),'</b>') factura FROM scst WHERE control=$control");
 		
-		$script = '<script>$(function() {$("#fecha").datepicker({ dateFormat: "dd/mm/yy" });})</script>';
+		$script = '<script>$(function() {$("#rafecha").datepicker({ dateFormat: "dd/mm/yy" });})</script>';
 
 		$form->aaaa = new containerField('iii',$script."\n<table width='100%' style='background-color:#FBEC88;text-align:center;font-size:12px'><tr><td>".$proveed."</td></tr><tr><td>".$compra."</td></tr><tr><td>".$montos."</td></tr></table><br>&nbsp;");
 
@@ -2428,7 +2428,8 @@ class Scst extends Controller {
 		$form->cprecio->rule  = 'required';
 
 		$form->fecha = new dateonlyField('Fecha de recepci&oacute;n de la compra', 'fecha','d/m/Y');
-		$form->fecha->insertValue = date('d/m/Y');
+		//$form->fecha->db_name = 'fecha';
+		$form->fecha->insertValue = date('Y-m-d');
 		$form->fecha->rule='required|callback_chddate';
 		$form->fecha->calendar = false;
 		$form->fecha->size=10;
