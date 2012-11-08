@@ -17,7 +17,7 @@
 		<td valign='top'>
 			<table class="ui-widget ui-widget-content ui-corner-all">
 				<tr>
-					<th colspan=5 class="ui-widget-header">Cierre definitivo de Caja</th>
+					<th colspan='5' class="ui-widget-header">Cierre definitivo de Caja</th>
 				</tr>
 				<tr>
 					<td class="ui-widget-header">Forma de pago</td>
@@ -48,7 +48,7 @@
 				<tr>
 					<td>Ventas a cr&eacute;dito:</td>
 					<td align='right'><?php echo nformat($credito); ?></td>
-					<td colspan=3 align='right' rowspan=2><?php echo implode('',$form->_button_container['BL']); ?></td>
+					<td colspan='3' align='right' rowspan='2'><?php echo implode('',$form->_button_container['BL']); ?></td>
 				</tr>
 				<tr>
 					<td>Cambio de Cheques:</td>
@@ -62,7 +62,7 @@
 			</table>
 		</td>
 	</tr>
-</tabla>
+</table>
 <?php if($b_fiscal=='S'){ ?>
 <table align='center'>
 	<tr>
