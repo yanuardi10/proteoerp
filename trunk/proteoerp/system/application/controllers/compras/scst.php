@@ -1082,7 +1082,7 @@ class Scst extends Controller {
 		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
 		$mWHERE = $grid->geneTopWhere('scst');
 
-		$response   = $grid->getData('scst', array(array()), array(), false, $mWHERE, 'id', 'desc' );
+		$response   = $grid->getData('scst', array(array()), array(), false, $mWHERE, 'actuali', 'desc' );
 		$rs = $grid->jsonresult( $response);
 		echo $rs;
 	}
