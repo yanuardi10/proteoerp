@@ -345,7 +345,7 @@ class Datasis {
 	 *   Integracion con tmenus
 	 *
 	 */
-	function sidapuede($modulo, $opcion){
+	function sidapuede( $modulo, $opcion ){
 		if ($this->essuper())
 			return true;
 
@@ -363,24 +363,47 @@ class Datasis {
 		if($CI->session->userdata('logged_in')){
 			$usuario = $CI->db->escape($CI->session->userdata('usuario'));
 			$modulo  = $CI->db->escape($modulo);
-			if ( $opcion == 'TODOS' ){
-				$mSQL  = "SELECT count(*) ";
-				$mSQL .= "FROM sida a JOIN tmenus b ON b.codigo=a.modulo ";
-				$mSQL .= "WHERE a.acceso='S' AND a.usuario=$usuario AND b.modulo=$modulo ";
-				if ( $CI->datasis->dameval($mSQL) > 0 )
-					return true;
-				else
-					return false;
+
+			if ( strlen( $opcion ) > 1 ) {
+				if ( $opcion == 'TODOS' ){
+					$mSQL  = "SELECT count(*) ";
+					$mSQL .= "FROM sida a JOIN tmenus b ON b.codigo=a.modulo ";
+					$mSQL .= "WHERE a.acceso='S' AND a.usuario=$usuario AND b.modulo=$modulo ";
+					if ( $CI->datasis->dameval($mSQL) > 0 )
+						return true;
+					else
+						return false;
+				} else {
+					$opcion  = $CI->db->escape($opcion);
+					$mSQL  = "SELECT count(*) ";
+					$mSQL .= "FROM sida a JOIN tmenus b ON b.codigo=a.modulo ";
+					$mSQL .= "WHERE a.acceso='S' AND a.usuario=$usuario AND b.modulo=$modulo ";
+					$mSQL .= "AND (b.proteo LIKE $opcion OR b.ejecutar LIKE $opcion)  ";
+					if ( $CI->datasis->dameval($mSQL) > 0 )
+						return true;
+					else
+						return false;
+				}
 			} else {
-				$opcion  = $CI->db->escape($opcion);
-				$mSQL  = "SELECT count(*) ";
-				$mSQL .= "FROM sida a JOIN tmenus b ON b.codigo=a.modulo ";
-				$mSQL .= "WHERE a.acceso='S' AND a.usuario=$usuario AND b.modulo=$modulo ";
-				$mSQL .= "AND (b.proteo LIKE $opcion OR b.ejecutar LIKE $opcion)  ";
-				if ( $CI->datasis->dameval($mSQL) > 0 )
-					return true;
-				else
-					return false;
+				if ( $opcion == 'TODOS' ){
+					$mSQL  = "SELECT count(*) ";
+					$mSQL .= "FROM sida a JOIN tmenus b ON b.codigo=a.modulo ";
+					$mSQL .= "WHERE a.acceso='S' AND a.usuario=$usuario AND b.modulo=$modulo ";
+					if ( $CI->datasis->dameval($mSQL) > 0 )
+						return true;
+					else
+						return false;
+				} else {
+					$opcion  = $CI->db->escape($opcion);
+					$mSQL  = "SELECT count(*) ";
+					$mSQL .= "FROM sida a JOIN tmenus b ON b.codigo=a.modulo ";
+					$mSQL .= "WHERE a.acceso='S' AND a.usuario=$usuario AND b.modulo=$modulo ";
+					$mSQL .= "AND b.secu = $opcion ";
+					if ( $CI->datasis->dameval($mSQL) > 0 )
+						return true;
+					else
+						return false;
+				}
 			}
 		}
 	}
@@ -1359,9 +1382,26 @@ class Datasis {
 	function modintramenu( $ancho, $alto, $ejecutar ){
 		$CI =& get_instance();
 		$mSQL = 'UPDATE intramenu SET ancho='.$ancho.', alto='.$alto.' WHERE ejecutar="'.$ejecutar.'" OR ejecutar="/'.$ejecutar.'"';
-		memowrite($mSQL,"intramenu");
+		//memowrite($mSQL,"intramenu");
 		$CI->db->simple_query($mSQL);
 	}
+
+	//**************************************************
+	//
+	//       Modifica Intramenu
+	//
+	function getintramenu( $ejecutar ){
+		$CI =& get_instance();
+		$mSQL = 'SELECT ancho, alto FROM intramenu WHERE ejecutar="'.$ejecutar.'" OR ejecutar="/'.$ejecutar.'"';
+		$query = $CI->db->query($mSQL);
+		if ( $query->num_rows() > 0 ){
+			$row = $query->row();
+			return array( $row->ancho, $row->alto );
+		} else
+			return array();
+	}
+
+
 	
 	//**************************************************
 	//

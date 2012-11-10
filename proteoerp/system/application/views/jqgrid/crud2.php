@@ -49,13 +49,30 @@ if ( isset($readyLayout) == false ){
 		resizerClass: \'ui-state-default\',
 		west__size: '.$WestSize.',
 		west__onresize: function (pane, $Pane){jQuery("#west-grid").jqGrid(\'setGridWidth\',$Pane.innerWidth()-2);},
-		center__onresize: function (pane, $Pane) {
+		center__onresize: centeronre
+	});
+
+	function centeronre ( pane, $Pane ) {
+		jQuery("#newapi'.$grids[0]['gridname'].'").jqGrid(\'setGridWidth\',$Pane.innerWidth()-6);
+		jQuery("#newapi'.$grids[0]['gridname'].'").jqGrid(\'setGridHeight\',$Pane.innerHeight()-'.$grids[0]['menosalto'].');
+	};
+
+	function westonre (pane, $Pane){
+		jQuery("#west-grid").jqGrid(\'setGridWidth\',$Pane.innerWidth()-2);
+	};
+	
+';
+}
+
+/*
+		function (pane, $Pane) {
 			jQuery("#newapi'.$grids[0]['gridname'].'").jqGrid(\'setGridWidth\',$Pane.innerWidth()-6);
 			jQuery("#newapi'.$grids[0]['gridname'].'").jqGrid(\'setGridHeight\',$Pane.innerHeight()-'.$grids[0]['menosalto'].');
 		}
-	});
-';
-}
+*/
+
+
+
 
 // Procesa los grids
 if ( isset($grids) == false ) $grids = array();
@@ -263,11 +280,20 @@ $(document).ready(function() {
 
 if (isset($funciones))  echo $funciones;
 
+//Busca Tamano
+
+	if ( isset($tamano) )
+		if ( count($tamano) == 2 )
+			echo "\n\twindow.resizeTo(".$tamano[0].",".$tamano[1].");\n";
+
 ?>
+
 
 });
 
 <?php if (isset($postready))  echo $postready; ?>
+
+
 
 //Funcion para bloquear y esperar
 function esperar(url){
