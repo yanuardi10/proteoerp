@@ -12,7 +12,7 @@ class Scst extends Controller {
 		$this->load->library('rapyd');
 		$this->load->library('jqdatagrid');
 		$this->back_dataedit='compras/scst/datafilter';
-		//$this->datasis->modulo_nombre( $modulo, $ventana=0 );
+		$this->datasis->modulo_nombre( 'SCST', $ventana=0 );
 	}
 
 	function index(){
@@ -37,8 +37,8 @@ class Scst extends Controller {
 		$grid1   = $this->defgridit();
 		$param['grids'][] = $grid1->deploy();
 
-		$readyLayout = $grid->readyLayout2( 212, 220, $param['grids'][0]['gridname'],$param['grids'][1]['gridname']);
-		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
+		$readyLayout = $grid->readyLayout2( 212, 200, $param['grids'][0]['gridname'],$param['grids'][1]['gridname']);
+		$bodyscript  = $this->bodyscript( $param['grids'][0]['gridname'], $param['grids'][1]['gridname'] );
 
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
@@ -76,6 +76,8 @@ class Scst extends Controller {
 		$param['bodyscript']   = $bodyscript;
 		$param['tabs']         = false;
 		$param['encabeza']     = $this->titp;
+		$param['tamano']       = $this->datasis->getintramenu( substr($this->url,0,-1) );
+
 
 		$this->load->view('jqgrid/crud2',$param);
 	}
@@ -1024,11 +1026,13 @@ class Scst extends Controller {
 			function( rid, aData, rowe){
 				if ( aData.fecha >  aData.actuali ){
 					$(this).jqGrid( "setCell", rid, "tipo_doc","", {color:"#FFFFFF", background:"#166D05" });
-				} else {
-					$(this).jqGrid( "setCell", rid, "tipo_doc", "", {color:"#FFFFFF", background:"#06276B" });
 				}
 			}
 		');
+
+//				} else {
+//					$(this).jqGrid( "setCell", rid, "tipo_doc", "", {color:"#FFFFFF", background:"#06276B" });
+
 
 
 		$grid->setOndblClickRow("");
@@ -1046,14 +1050,14 @@ class Scst extends Controller {
 		');
 		
 		$grid->setFormOptionsA('-');
-
 		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a];");
 
 		#show/hide navigations buttons
-		$grid->setAdd(true);
-		$grid->setEdit(true);
-		$grid->setDelete(true);
-		$grid->setSearch(true);
+		$grid->setAdd(    $this->datasis->sidapuede('SCST','1' ));
+		$grid->setEdit(   $this->datasis->sidapuede('SCST','2'));
+		$grid->setDelete( $this->datasis->sidapuede('SCST','5'));
+		$grid->setSearch( $this->datasis->sidapuede('SCST','6'));
+
 		$grid->setRowNum(30);
 		$grid->setShrinkToFit('false');
 
@@ -1077,12 +1081,10 @@ class Scst extends Controller {
 	*/
 	function getdata()
 	{
-		$grid       = $this->jqdatagrid;
-
+		$grid     = $this->jqdatagrid;
 		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
-		$mWHERE = $grid->geneTopWhere('scst');
-
-		$response   = $grid->getData('scst', array(array()), array(), false, $mWHERE, 'actuali', 'asc' );
+		$mWHERE   = $grid->geneTopWhere('scst');
+		$response = $grid->getData('scst', array(array()), array(), false, $mWHERE, '(fecha>actuali) desc, fecha', 'desc');
 		$rs = $grid->jsonresult( $response);
 		echo $rs;
 	}
@@ -1121,13 +1123,16 @@ class Scst extends Controller {
 				echo " El registro no puede ser eliminado; debe reversarlo ";
 			} else {
 				$control =  $this->datasis->dameval("SELECT control FROM scst WHERE id='$id' ");
-				$this->db->simple_query("DELETE FROM scst WHERE id=$id ");
-				$this->db->simple_query("DELETE FROM itscst WHERE control=".$this->db->escape($control) );
-				logusu('SCST',"Registro ".$control." ELIMINADO");
+				$this->db->query("UPDATE scst   SET tipo_doc='XX' WHERE id=$id ");
+
+				//$this->db->query("UPDATE itscst SET WHERE control=".$this->db->escape($control) );
+				//$this->db->query("DELETE FROM scst WHERE id=$id ");
+				//$this->db->query("DELETE FROM itscst WHERE control=".$this->db->escape($control) );
+
+				logusu('SCST',"Registro ".$control." marcado como ELIMINADO");
 				echo "Registro Eliminado";
 			}
 		};
-
 	}
 
 
@@ -1356,7 +1361,6 @@ class Scst extends Controller {
 		');
 		$grid->setOndblClickRow("");
 
-
 		$grid->setFormOptionsE('');
 		$grid->setFormOptionsA('');
 		$grid->setAfterSubmit('');
@@ -1397,7 +1401,6 @@ class Scst extends Controller {
 		$response   = $grid->getDataSimple($mSQL);
 		$rs = $grid->jsonresult( $response);
 		echo $rs;
-
 	}
 
 	/**
@@ -1767,20 +1770,20 @@ class Scst extends Controller {
 		$edit->nombre->size = 50;
 		$edit->nombre->maxlength=40;
 
-		$edit->cfis = new inputField('N&uacute;mero f&iacute;scal', 'nfiscal');
+		$edit->cfis = new inputField('Numero fiscal', 'nfiscal');
 		$edit->cfis->size = 15;
 		$edit->cfis->autocomplete=false;
 		$edit->cfis->rule = 'required';
 		$edit->cfis->maxlength=12;
 
-		$edit->almacen = new  dropdownField ('Almac&eacute;n', 'depo');
+		$edit->almacen = new  dropdownField ('Almacen', 'depo');
 		$edit->almacen->options('SELECT ubica, CONCAT(ubica,\' \',ubides) nombre FROM caub ORDER BY ubica');
 		$edit->almacen->rule = 'required';
 		$edit->almacen->style='width:145px;';
 
 		$edit->tipo = new dropdownField('Tipo', 'tipo_doc');
 		$edit->tipo->option('FC','Factura a Cr&eacute;dito');
-		//$edit->tipo->option('NC','Nota de Cr&eacute;dito'); //Falta implementar los metodos post para este caso
+		$edit->tipo->option('NC','Nota de Cr&eacute;dito'); //Falta implementar los metodos post para este caso
 		//$edit->tipo->option('NE','Nota de Entrega');        //Falta implementar los metodos post para este caso
 		$edit->tipo->rule = 'required';
 		$edit->tipo->style='width:140px;';

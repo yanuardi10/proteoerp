@@ -1,8 +1,8 @@
 <?php require_once(BASEPATH.'application/controllers/validaciones.php'); 
 class Botr extends Controller {
 	var $mModulo='BOTR';
-	var $titp='Otros Concepto';
-	var $tits='Otros Concepto';
+	var $titp='Otros Concepto de Contabilidad';
+	var $tits='Otros Concepto de Contabilidad';
 	var $url ='finanzas/botr/';
 
 	function Botr(){
@@ -10,14 +10,16 @@ class Botr extends Controller {
 		$this->load->library('rapyd');
 		$this->load->library('jqdatagrid');
 		//$this->datasis->modulo_id('NNN',1);
+		$this->datasis->modulo_nombre( 'BOTR', $ventana=0 );
 	}
 
 	function index(){
-		/*if ( !$this->datasis->iscampo('botr','id') ) {
-		$this->db->simple_query('ALTER TABLE botr DROP PRIMARY KEY');
-		$this->db->simple_query('ALTER TABLE botr ADD UNIQUE INDEX numero (numero)');
-		$this->db->simple_query('ALTER TABLE botr ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
-	};*/
+		if ( !$this->datasis->iscampo('botr','id') ) {
+			$this->db->simple_query('ALTER TABLE botr DROP PRIMARY KEY');
+			$this->db->simple_query('ALTER TABLE botr ADD UNIQUE INDEX codigo (codigo)');
+			$this->db->simple_query('ALTER TABLE botr ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
+		};
+		$this->datasis->modintramenu( 750, 470, 'finanzas/botr' );
 		redirect($this->url.'jqdatag');
 	}
 
@@ -104,6 +106,7 @@ jQuery("#a1").click( function(){
 		$grid->addField('id');
 		$grid->label('Id');
 		$grid->params(array(
+				'hidden'   => 'true',
 				'align'    => "'center'",
 				'frozen'   => 'true',
 				'width'    => 60,
@@ -164,7 +167,7 @@ jQuery("#a1").click( function(){
 
 		$grid->showpager(true);
 		$grid->setWidth('');
-		$grid->setHeight('290');
+		$grid->setHeight('250');
 		$grid->setTitle($this->titp);
 		$grid->setfilterToolbar(true);
 		$grid->setToolbar('false', '"top"');

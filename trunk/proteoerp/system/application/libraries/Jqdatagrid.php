@@ -1566,7 +1566,9 @@ class Jqdatagrid
 			north__size: 60,
 			resizerClass: \'ui-state-default\',
 			west__size: '.$west.',
-			west__onresize: function (pane, $Pane){jQuery("#west-grid").jqGrid(\'setGridWidth\',$Pane.innerWidth()-2);},
+			west__onresize: function (pane, $Pane){
+				jQuery("#west-grid").jqGrid(\'setGridWidth\',$Pane.innerWidth()-2);
+			},
 		});';
 		if ($grid1 == ''){
 			$readyLayout .= '
@@ -1583,6 +1585,7 @@ class Jqdatagrid
 			});
 			';
 		} else {
+
 			$readyLayout .= '
 			$(\'div.ui-layout-center\').layout({
 				minSize: 30,
@@ -1598,6 +1601,8 @@ class Jqdatagrid
 			});
 			';
 		}
+		
+
 		return $readyLayout;
 	}
 
