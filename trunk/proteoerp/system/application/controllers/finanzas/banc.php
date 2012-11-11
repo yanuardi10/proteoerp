@@ -441,10 +441,6 @@ jQuery("#a1").click( function(){
 			'formoptions'   => '{ rowpos:'.$linea.', colpos:2 }'
 		));
 
-
-
-
-
 		$grid->addField('id');
 		$grid->label('Id');
 		$grid->params(array(
@@ -511,7 +507,7 @@ jQuery("#a1").click( function(){
 		$oper   = $this->input->post('oper');
 		$id     = $this->input->post('id');
 		$data   = $_POST;
-		$mcodp  = "??????";
+		$mcodp  = "codbanc";
 		$check  = 0;
 
 		unset($data['oper']);
@@ -523,7 +519,7 @@ jQuery("#a1").click( function(){
 					$this->db->insert('banc', $data);
 					echo "Registro Agregado";
 
-					logusu('BANC',"Registro ????? INCLUIDO");
+					logusu('BANC',"Registro  INCLUIDO");
 				} else
 					echo "Ya existe un registro con ese $mcodp";
 			} else
@@ -532,37 +528,26 @@ jQuery("#a1").click( function(){
 		} elseif($oper == 'edit') {
 			$nuevo  = $data[$mcodp];
 			$anterior = $this->datasis->dameval("SELECT $mcodp FROM banc WHERE id=$id");
-			if ( $nuevo <> $anterior ){
-				//si no son iguales borra el que existe y cambia
-				$this->db->query("DELETE FROM banc WHERE $mcodp=?", array($mcodp));
-				$this->db->query("UPDATE banc SET $mcodp=? WHERE $mcodp=?", array( $nuevo, $anterior ));
-				$this->db->where("id", $id);
-				$this->db->update("banc", $data);
-				logusu('BANC',"$mcodp Cambiado/Fusionado Nuevo:".$nuevo." Anterior: ".$anterior." MODIFICADO");
-				echo "Grupo Cambiado/Fusionado en clientes";
-			} else {
-				unset($data[$mcodp]);
-				$this->db->where("id", $id);
-				$this->db->update('banc', $data);
-				logusu('BANC',"Grupo de Cliente  ".$nuevo." MODIFICADO");
-				echo "$mcodp Modificado";
-			}
+			$meco = $this->datasis->dameval("SELECT $mcodp FROM banc WHERE id=$id");
+			unset($data[$mcodp]);
+			$this->db->where("id", $id);
+			$this->db->update('banc', $data);
+			logusu('BANC',"Banco o Caja  ".$meco." MODIFICADO");
+			echo "Banco o Caja ".$meco." Modificado";
 
 		} elseif($oper == 'del') {
-		$meco = $this->datasis->dameval("SELECT $mcodp FROM banc WHERE id=$id");
+			$meco = $this->datasis->dameval("SELECT $mcodp FROM banc WHERE id=$id");
 			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM banc WHERE id='$id' ");
 			if ($check > 0){
-				echo " El registro no puede ser eliminado; tiene movimiento ";
+				//echo " El registro no puede ser eliminado; tiene movimiento ";
 			} else {
-				$this->db->simple_query("DELETE FROM banc WHERE id=$id ");
-				logusu('BANC',"Registro ????? ELIMINADO");
-				echo "Registro Eliminado";
+				//$this->db->simple_query("DELETE FROM banc WHERE id=$id ");
+				//logusu('BANC',"Registro ????? ELIMINADO");
+				//echo "Registro Eliminado";
 			}
+
 		};
 	}
-
-
-
 
 
 
