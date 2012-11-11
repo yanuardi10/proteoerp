@@ -119,7 +119,7 @@ class Prosp extends Controller {
 							grid.trigger("reloadGrid");
 							'.$this->datasis->jwinopen(site_url('formatos/ver/PROSP').'/\'+res.id+\'/id\'').';
 							return true;
-						} else { 
+						} else {
 							$("#fedita").html(r);
 						}
 					}
@@ -465,10 +465,10 @@ class Prosp extends Controller {
 		$edit->pre_process('update','_pre_update');
 		$edit->pre_process('delete','_pre_delete');
 
-		$edit->categoria = new inputField('Categor&iacute;a','categoria');
-		$edit->categoria->rule='max_length[100]';
-		$edit->categoria->size =80;
-		$edit->categoria->maxlength =100;
+		$edit->categoria = new dropdownField('Categor&iacute;a','categoria');
+		$edit->categoria->option('','Todos');
+		$edit->categoria->options('SELECT categoria,categoria AS val FROM prosp GROUP BY categoria ');
+		$edit->categoria->style = 'width:140px';
 
 		$edit->estado = new inputField('Estado','estado');
 		$edit->estado->rule='max_length[100]';
@@ -582,5 +582,3 @@ class Prosp extends Controller {
 		logusu($do->table,"Elimino $this->tits $primary ");
 	}
 }
-
-
