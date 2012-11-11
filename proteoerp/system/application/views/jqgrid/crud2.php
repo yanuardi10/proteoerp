@@ -281,10 +281,9 @@ $(document).ready(function() {
 if (isset($funciones))  echo $funciones;
 
 //Busca Tamano
-
-	if ( isset($tamano) )
-		if ( count($tamano) == 2 )
-			echo "\n\twindow.resizeTo(".$tamano[0].",".$tamano[1].");\n";
+if ( isset($tamano) )
+	if ( count($tamano) == 2 )
+		echo "\n\twindow.resizeTo(".$tamano[0].",".$tamano[1].");\n";
 
 ?>
 

@@ -149,6 +149,7 @@ jQuery("#boton4").click( function(){
 		$param['bodyscript']   = $bodyscript;
 		$param['tabs']         = false;
 		$param['encabeza']     = $this->titp;
+		$param['tamano']       = $this->datasis->getintramenu( substr($this->url,0,-1) );
 
 		$this->load->view('jqgrid/crud2',$param);
 	}
@@ -397,7 +398,7 @@ jQuery("#boton4").click( function(){
 
 		$grid->showpager(true);
 		$grid->setWidth('');
-		$grid->setHeight('230');
+		$grid->setHeight('165');
 		$grid->setTitle($this->titp);
 		$grid->setfilterToolbar(true);
 		$grid->setToolbar('false', '"top"');
@@ -687,7 +688,7 @@ jQuery("#boton4").click( function(){
 
 		$grid->showpager(false);
 		$grid->setWidth('');
-		$grid->setHeight('100');
+		$grid->setHeight('170');
 		$grid->setTitle($this->titp);
 		$grid->setfilterToolbar(false);
 		$grid->setToolbar('false', '"top"');
@@ -701,7 +702,7 @@ jQuery("#boton4").click( function(){
 		$grid->setEdit(true);
 		$grid->setDelete(true);
 		$grid->setSearch(true);
-		$grid->setRowNum(30);
+		$grid->setRowNum(1500);
 		$grid->setShrinkToFit('false');
 
 		#Set url
@@ -726,7 +727,7 @@ jQuery("#boton4").click( function(){
 		if ($id){
 			$comprob = $this->datasis->dameval("SELECT comprob FROM casi WHERE id=$id");
 			$grid    = $this->jqdatagrid;
-			$mSQL = "SELECT origen, cuenta, referen, concepto, debe, haber, ccosto, sucursal, id, comprob FROM itcasi WHERE comprob='$comprob' ";
+			$mSQL = "SELECT origen, cuenta, referen, concepto, debe, haber, ccosto, sucursal, id, comprob FROM itcasi WHERE comprob='$comprob' ORDER BY cuenta ";
 			$response   = $grid->getDataSimple($mSQL);
 			$rs = $grid->jsonresult( $response);
 		} else

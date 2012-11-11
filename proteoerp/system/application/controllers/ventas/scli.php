@@ -1086,7 +1086,7 @@ class Scli extends Controller {
 			closeAfterEdit:false,
 			mtype: "POST",
 			width: 720,
-			height:490,
+			height:520,
 			closeOnEscape: true,
 			top: 50,
 			left:20,
@@ -1114,7 +1114,7 @@ class Scli extends Controller {
 			closeAfterAdd:true,
 			mtype: "POST",
 			width: 720,
-			height:490,
+			height:520,
 			closeOnEscape: true,
 			top: 50,
 			left:20,
@@ -1478,7 +1478,7 @@ class Scli extends validaciones {
 		$this->load->view('view_ventanas', $data);
 	}
 
-
+*/
 	// **************************************
 	//     DATAEDIT
 	//
@@ -1951,7 +1951,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 			return $rt;
 		}
 	}
-*/
+
 	function filtergridcredi(){
 		$this->rapyd->load('datafilter','datagrid');
 
