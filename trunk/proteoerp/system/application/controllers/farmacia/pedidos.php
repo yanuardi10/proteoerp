@@ -393,10 +393,6 @@ class Pedidos extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
-	function especialxls(){
-
-	}
-
 	function _farmaurl($opt='farmax'){
 		$uri='drogueria/pedidos';
 		$url=reduce_double_slashes($_SERVER['HTTP_HOST'].'/'.$opt.'/'.$uri);
