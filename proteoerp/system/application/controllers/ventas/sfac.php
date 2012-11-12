@@ -364,7 +364,7 @@ class Sfac extends Controller {
 			'width'         => 75,
 			'align'         => "'center'",
 			'edittype'      => "'text'",
-			'editrules'     => '{ required:true,date:true}',
+			'editrules'     => '{ required:false, date:true}',
 			'formoptions'   => '{ label:"Fecha de Entrega" }'
 		));
 

@@ -703,6 +703,8 @@ class Desarrollo extends Controller{
 			$str .= $tab2.'$param[\'bodyscript\']  = $bodyscript;'."\n";
 			$str .= $tab2.'$param[\'tabs\']        = false;'."\n";
 			$str .= $tab2.'$param[\'encabeza\']    = $this->titp;'."\n";
+			$str .= $tab2.'$param[\'tamano\']      = $this->datasis->getintramenu( substr($this->url,0,-1) );'."\n";
+
 			$str .= $tab2.'$this->load->view(\'jqgrid/crud2\',$param);'."\n";
 			$str .= $tab1.'}'."\n\n";
 

@@ -1,5 +1,6 @@
 <?php require_once(BASEPATH.'application/controllers/validaciones.php');
 class Scli extends Controller {
+	var $genesal=true;
 	var $mModulo='SCLI';
 	var $titp='Clientes';
 	var $tits='Clientes';
@@ -9,6 +10,7 @@ class Scli extends Controller {
 		parent::Controller();
 		$this->load->library('rapyd');
 		$this->load->library('jqdatagrid');
+		$this->load->library('pi18n');
 		//$this->datasis->modulo_nombre( $modulo, $ventana=0 );
 	}
 
@@ -36,6 +38,50 @@ class Scli extends Controller {
 		redirect($this->url.'jqdatag');
 	}
 
+
+	//***************************
+	//Layout en la Ventana
+	//
+	//***************************
+	function jqdatag(){
+
+		$grid = $this->defgrid();
+		$param['grids'][] = $grid->deploy();
+
+		//Funciones que ejecutan los botones
+		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname']);
+
+		$funciones = $this->funciones($param['grids'][0]['gridname']);
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		//Botones Panel Izq
+		$grid->wbotonadd(array("id"=>"edocta",  "img"=>"images/pdf_logo.gif",  "alt" => 'Formato PDF', "label"=>"Estado de Cuenta"));
+		$grid->wbotonadd(array("id"=>"editacr", "img"=>"images/star.png",      "alt" => 'Credito',     "label"=>"Cambiar credito"));
+		$WestPanel = $grid->deploywestp();
+
+		$adic = array(
+		array("id"=>"fedita",  "title"=>"Agregar/Editar Registro")
+		);
+		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
+
+		$param['WestPanel']   = $WestPanel;
+		//$param['EastPanel'] = $EastPanel;
+		$param['funciones']   = $funciones;
+		$param['SouthPanel']  = $SouthPanel;
+		$param['listados']    = $this->datasis->listados('SCLI', 'JQ');
+		$param['otros']       = $this->datasis->otros('SCLI', 'JQ');
+		$param['temas']       = array('proteo','darkness','anexos1');
+		$param['bodyscript']  = $bodyscript;
+		$param['tabs']        = false;
+		$param['encabeza']    = $this->titp;
+		$param['tamano']      = $this->datasis->getintramenu( substr($this->url,0,-1) );
+		$this->load->view('jqgrid/crud2',$param);
+	}
+
+
+/*
 	//***************************
 	//Layout en la Ventana
 	//
@@ -96,6 +142,106 @@ class Scli extends Controller {
 		$param['encabeza']    = $this->titp;
 		$this->load->view('jqgrid/crud2',$param);
 	}
+*/
+
+	//***************************
+	//Funciones de los Botones
+	//***************************
+	function bodyscript( $grid0 ){
+		$bodyscript = '		<script type="text/javascript">';
+
+		$bodyscript .= '
+		jQuery("#edocta").click( function(){
+			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
+				'.$this->datasis->jwinopen(site_url('reportes/ver/SMOVECU/SCLI/').'/\'+ret.proveed').';
+			} else { $.prompt("<h1>Por favor Seleccione un Cliente</h1>");}
+		});
+		';
+
+		// Creditos
+		$bodyscript .= '
+		jQuery("#editacr").click( function(){
+			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
+				'.$this->datasis->jwinopen(site_url('ventas/scli/creditoedit/modify').'/\'+id',600,480).';
+			} else { $.prompt("<h1>Por favor Seleccione un Cliente</h1>");}
+		});
+		';
+
+		$bodyscript .= '
+		function scliadd() {
+			$.post("'.site_url('ventas/scli/dataedit/create').'",
+			function(data){
+				$("#fedita").html(data);
+				$("#fedita").dialog( "open" );
+			})
+		};';
+
+		$bodyscript .= '
+		function scliedit() {
+			var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret    = $("#newapi'.$grid0.'").getRowData(id);
+				mId = id;
+				$.post("'.site_url('ventas/scli/dataedit/modify').'/"+id, function(data){
+					$("#fedita").html(data);
+					$("#fedita").dialog( "open" );
+				});
+			} else { $.prompt("<h1>Por favor Seleccione un Registro</h1>");}
+		};';
+
+		//Wraper de javascript
+		$bodyscript .= '
+		$(function() {
+			$("#dialog:ui-dialog").dialog( "destroy" );
+			var mId = 0;
+			var montotal = 0;
+			var ffecha = $("#ffecha");
+			var grid = jQuery("#newapi'.$grid0.'");
+			var s;
+			var allFields = $( [] ).add( ffecha );
+			var tips = $( ".validateTips" );
+			s = grid.getGridParam(\'selarrrow\');
+			';
+
+		$bodyscript .= '
+		$("#fedita").dialog({
+			autoOpen: false, height: 500, width: 700, modal: true,
+			buttons: {
+			"Guardar": function() {
+				var bValid = true;
+				var murl = $("#df1").attr("action");
+				allFields.removeClass( "ui-state-error" );
+				$.ajax({
+					type: "POST", dataType: "html", async: false,
+					url: murl,
+					data: $("#df1").serialize(),
+					success: function(r,s,x){
+						if ( r.length == 0 ) {
+							apprise("Registro Guardado");
+							$( "#fedita" ).dialog( "close" );
+							grid.trigger("reloadGrid");
+							'.$this->datasis->jwinopen(site_url('formatos/ver/SCLI').'/\'+res.id+\'/id\'').';
+							return true;
+						} else { 
+							$("#fedita").html(r);
+						}
+					}
+			})},
+			"Cancelar": function() { $( this ).dialog( "close" ); }
+			},
+			close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
+		});';
+		$bodyscript .= '});'."\n";
+
+		$bodyscript .= "\n</script>\n";
+		$bodyscript .= "";
+		return $bodyscript;
+	}
+
 
 
 	//****************************************
@@ -1146,6 +1292,9 @@ class Scli extends Controller {
 		$grid->setSearch(true);
 		$grid->setRowNum(30);
 		$grid->setShrinkToFit('false');
+
+		$grid->setBarOptions("\t\taddfunc: scliadd,\n\t\teditfunc: scliedit");
+
 
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
