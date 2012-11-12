@@ -160,7 +160,7 @@ class sinv extends Controller {
 
 		$filter->marca = new dropdownField("Marca", "marca");
 		$filter->marca->option('','Todas');
-		$filter->marca->options("SELECT TRIM(marca) AS clave, TRIM(marca) AS valor FROM marc ORDER BY marca"); 
+		$filter->marca->options("SELECT TRIM(marca) AS clave, TRIM(marca) AS valor FROM marc ORDER BY marca");
 		$filter->marca->style='width:220px;';
 		$filter->marca->rule='required';
 
@@ -225,7 +225,7 @@ class sinv extends Controller {
 
 			$("#tdecimal").change(function(){
 				var clase;
-				if($(this).attr("value")=="S") clase="inputnum"; else clase="inputonlynum";	
+				if($(this).attr("value")=="S") clase="inputnum"; else clase="inputonlynum";
 				$("#exmin").unbind();$("#exmin").removeClass(); $("#exmin").addClass(clase);
 				$("#exmax").unbind();$("#exmax").removeClass(); $("#exmax").addClass(clase);
 				$("#exord").unbind();$("#exord").removeClass(); $("#exord").addClass(clase);
@@ -404,17 +404,19 @@ class sinv extends Controller {
 		$edit->back_cancel_delete = true;
 		$edit->back_url = site_url('ajax/reccierraventana');
 
+		$edit->pre_process('insert' ,'_pre_insert');
+
 		$edit->script($script,'create');
 		$edit->script($script,'modify');
 
-		$edit->codigo = new inputField("C&oacute;digo", "codigo");
+		/*$edit->codigo = new inputField("C&oacute;digo", "codigo");
 		$edit->codigo->size=20;
 		$edit->codigo->maxlength=15;
 		$edit->codigo->rule = "trim|required|strtoupper|callback_chexiste";
-		$edit->codigo->mode="autohide";
+		$edit->codigo->mode="autohide";*/
 
 		$edit->alterno = new inputField("C&oacute;digo Alterno", "alterno");
-		$edit->alterno->size=20;  
+		$edit->alterno->size=20;
 		$edit->alterno->maxlength=15;
 		$edit->alterno->rule = "trim|strtoupper|callback_chexiste2";
 
@@ -438,10 +440,10 @@ class sinv extends Controller {
 		//$edit->tipo->option("Fraccion","Fracci&oacute;n");
 		//$edit->tipo->option("Lote","Lote");
 
-		$AddUnidad='<a href="javascript:add_unidad();" title="Haz clic para Agregar una unidad nueva">Agregar Unidad</a>';	
+		$AddUnidad='<a href="javascript:add_unidad();" title="Haz clic para Agregar una unidad nueva">Agregar Unidad</a>';
 		$edit->unidad = new dropdownField("Unidad","unidad");
 		$edit->unidad->style='width:180px;';
-		$edit->unidad->option("","");  
+		$edit->unidad->option("","");
 		$edit->unidad->options("SELECT unidades, unidades as valor FROM unidad ORDER BY unidades");
 		$edit->unidad->append($AddUnidad);
 
@@ -492,7 +494,7 @@ class sinv extends Controller {
 		$edit->activo->option("N","No" );
 
 		$edit->serial2 = new freeField("","free","Serial");
-		$edit->serial2->in="activo"; 
+		$edit->serial2->in="activo";
 
 		$edit->serial = new dropdownField ('Serial', 'serial');
 		$edit->serial->style='width:100px;';
@@ -501,13 +503,13 @@ class sinv extends Controller {
 		$edit->serial->in="activo";
 
 		$edit->tdecimal2 = new freeField("","free","Unidad Decimal");
-		$edit->tdecimal2->in="activo"; 
+		$edit->tdecimal2->in="activo";
 
 		$edit->tdecimal = new dropdownField("Unidad Decimal", "tdecimal");
 		$edit->tdecimal->style='width:100px;';
 		$edit->tdecimal->option('N','No' );
 		$edit->tdecimal->option('S','Si' );
-		$edit->tdecimal->in="activo"; 
+		$edit->tdecimal->in="activo";
 
 		$edit->descrip = new inputField("Descripci&oacute;n", "descrip");
 		$edit->descrip->size=50;
@@ -528,7 +530,7 @@ class sinv extends Controller {
 		$edit->marca->append($AddMarca);
 
 		/*$edit->modelo  = new inputField("Modelo", "modelo");
-		$edit->modelo->size=20;  
+		$edit->modelo->size=20;
 		$edit->modelo->maxlength=20;
 		$edit->modelo->rule = "trim|strtoupper";*/
 
@@ -578,7 +580,7 @@ class sinv extends Controller {
 		$edit->redecen->style='width:100px;';
 		$edit->redecen->option("N","No");
 		$edit->redecen->option("F","Fracci&oacute;n");
-		$edit->redecen->option("D","Decena" );  
+		$edit->redecen->option("D","Decena" );
 		$edit->redecen->option("C","Centena"  );
 		//$edit->redecen->onchange = "redon();";
 
@@ -691,6 +693,20 @@ class sinv extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
+	function _pre_insert($do){
+		$size='6';
+		$mSQL="SELECT LPAD(a.hexa,${size},0) AS val FROM serie AS a LEFT JOIN sinv AS b ON b.codigo=LPAD(a.hexa,${size},0) WHERE valor<16777215 AND b.codigo IS NULL LIMIT 1";
+
+		$codigo=$this->datasis->dameval($mSQL);
+		echo " Codigo: $codigo";
+		if(empty($codigo)){
+			$do->error_message_ar['pre_ins']='C&oacute;digos agotados';
+			return false;
+		}
+		$do->set('codigo',$codigo);
+		return true;
+	}
+
 	function sug($tabla=''){
 		if($tabla=='dpto'){
 			$valor=$this->datasis->dameval("SELECT LPAD(hexa,2,0) FROM serie LEFT JOIN dpto ON LPAD(depto,2,0)=LPAD(hexa,2,0) WHERE valor<255 AND depto IS NULL LIMIT 1");
@@ -743,7 +759,7 @@ class sinv extends Controller {
 
 	function _detalle($codigo){
 	$salida='';
-	
+
 		if(!empty($codigo)){
 			$this->rapyd->load('dataedit','datagrid');
 
@@ -752,9 +768,9 @@ class sinv extends Controller {
 			$grid->db->from('itsinv AS a');
 			$grid->db->join('caub as b','a.alma=b.ubica','LEFT');
 			$grid->db->where('codigo',$codigo);
-			
+
 			$grid->column('Almac&eacute;n','alma');
-			$grid->column('Nombre'       ,'<#nombre#>');	
+			$grid->column('Nombre'       ,'<#nombre#>');
 			$grid->column('Cantidad'      ,'existen','align="RIGHT"');
 
 			$grid->build();
