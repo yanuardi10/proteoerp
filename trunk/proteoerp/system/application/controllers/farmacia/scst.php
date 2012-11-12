@@ -518,7 +518,7 @@ class Scst extends Controller {
 			$query = $dbfarmax->query($mSQL);
 			if ($query->num_rows() > 0){
 				foreach ($query->result() as $row){
-					$qquery=consultas::_gconsul('SELECT codigo  FROM sinv',$row->barras,array('codigo','barras','alterno'));
+					$qquery=consultas::_gconsul('SELECT codigo  FROM sinv',$row->barras,array('codigo','barras','alterno'),null,'Articulo');
 					if($qquery!==false){
 						$rrow   = $qquery->row_array();
 						$codigo = $rrow['codigo'];

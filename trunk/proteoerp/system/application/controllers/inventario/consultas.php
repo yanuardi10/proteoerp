@@ -153,7 +153,7 @@ class Consultas extends Controller {
 			$data['iva']       = nformat($row->iva);
 			$data['referen']   = (isset($row->referen)) ? $row->referen : 'No disponible';
 			$data['moneda']    = 'Bs.F.';
-			
+
 			if($aplica=='maes'){
 				$data['precio4']   = nformat($row->precio4);
 				$data['dvolum1']   = $row->dvolum1;
@@ -167,7 +167,7 @@ class Consultas extends Controller {
 				$data['modelo']    = $row->modelo;
 				$data['iva2']      = nformat($row->base1*($row->iva/100));
 			}
-			
+
 			$fotos=$this->datasis->dameval('SELECT COUNT(*) FROM sinvfot WHERE sinv_id='.$row->id);
 			if($fotos>0){
 				$data['img'] = img('inventario/fotos/thumbnail/'.$row->id);
@@ -297,9 +297,14 @@ class Consultas extends Controller {
 		$this->load->view('view_ventanas', $data);
 	}
 
-	function _gconsul($mSQL_p,$cod_bar,$busca,$suple=null){
+	function _gconsul($mSQL_p,$cod_bar,$busca,$suple=null,$tipo=null){
 		$tabla=trim(substr($mSQL_p,(strripos($mSQL_p, 'FROM')+4)));
 		$activo=$this->db->field_exists('activo',$tabla)? 'AND activo=\'S\'' : '';
+		if(!empty($tipo)){
+			$wtipo = ' AND tipo='.$this->db->escape($tipo);
+		}else{
+			$wtipo = '';
+		}
 		$cod_bar=$this->db->escape($cod_bar);
 		if(!empty($suple) AND $this->db->table_exists('suple')){
 			$mSQL  ="SELECT codigo FROM suple WHERE suplemen=${cod_bar} LIMIT 1";
@@ -312,7 +317,7 @@ class Consultas extends Controller {
 		}
 
 		foreach($busca AS $b){
-			$mSQL  =$mSQL_p." WHERE ${b}=${cod_bar} ${activo} LIMIT 1";
+			$mSQL  =$mSQL_p." WHERE ${b}=${cod_bar} ${activo} ${wtipo} LIMIT 1";
 			$query = $this->db->query($mSQL);
 			if ($query->num_rows() != 0){
 				return $query;
@@ -326,7 +331,7 @@ class Consultas extends Controller {
 				$row = $query->row();
 				$cod_bar=$row->codigo;
 
-				$mSQL  =$mSQL_p." WHERE codigo='${cod_bar}' ${activo} LIMIT 1";
+				$mSQL  =$mSQL_p." WHERE codigo='${cod_bar}' ${activo} ${wtipo} LIMIT 1";
 				$query = $this->db->query($mSQL);
 				if($query->num_rows() == 0)
 					 return false;
