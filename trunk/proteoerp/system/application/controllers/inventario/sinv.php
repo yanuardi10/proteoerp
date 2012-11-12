@@ -1,4 +1,4 @@
-<?php 
+<?php
 include('common.php');
 class Sinv extends Controller {
 	var $mModulo = 'SINV';
@@ -81,18 +81,18 @@ class Sinv extends Controller {
 //			postdata: { sinvid: $("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\')},
 
 		$funciones = '
-		jQuery("#bpos1").jqGrid({ 
+		jQuery("#bpos1").jqGrid({
 			url:\''.site_url('inventario/sinv/bpos1').'\',
-			ajaxGridOptions: { type: "POST"}, 
-			jsonReader: { root: "data", repeatitems: false}, 
-			datatype: "json", 
+			ajaxGridOptions: { type: "POST"},
+			jsonReader: { root: "data", repeatitems: false},
+			datatype: "json",
 			hiddengrid: true,
 			postdata: { sinvid: "wapi"},
 			width: 190,
 			height: 100,
 			colNames:[\'id\', \'codigo\', \'Adicional\'],
 			colModel:[
-				{name:\'id\',index:\'id\', width:10, hidden:true}, 
+				{name:\'id\',index:\'id\', width:10, hidden:true},
 				{name:\'codigo\',index:\'codigo\', width:105, editable:false, hidden:true, },
 				{name:\'suplemen\',index:\'suplemen\', width:105, editable:true},
 			],
@@ -100,14 +100,14 @@ class Sinv extends Controller {
 			pginput: false,
 			pgbuttons: false,
 			rowList:[],
-			pager: \'#pbpos1\', 
-			sortname: \'id\', 
-			viewrecords: false, 
-			sortorder: "desc", 
+			pager: \'#pbpos1\',
+			sortname: \'id\',
+			viewrecords: false,
+			sortorder: "desc",
 			editurl: \''.site_url('inventario/sinv/bpos1').'\',
-			caption: "Barras Adicionales" 
-		}); 
-		jQuery("#bpos1").jqGrid(\'navGrid\',"#pbpos1",{edit:false, add:true, del:true, search: false, addfunc: bposadd }); 
+			caption: "Barras Adicionales"
+		});
+		jQuery("#bpos1").jqGrid(\'navGrid\',"#pbpos1",{edit:false, add:true, del:true, search: false, addfunc: bposadd });
 
 		function bposadd(){
 			var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
@@ -118,11 +118,11 @@ class Sinv extends Controller {
 						if (v) {
 							if( f.mcodbar > 0 ) {
 								$.ajax({
-									type: "POST", 
+									type: "POST",
 									url: "'.site_url('inventario/sinv/sinvbarras').'",
 									data: { id: id, codigo: f.mcodbar },
 									complete: function(){
-										$("#bpos1").trigger("reloadGrid"); 
+										$("#bpos1").trigger("reloadGrid");
 									}
 								});
 							} else {
@@ -136,7 +136,7 @@ class Sinv extends Controller {
 		}
 
 			';
-	
+
 
 		$funciones .= '
 		function factivo(el, val, opts){
@@ -171,12 +171,12 @@ class Sinv extends Controller {
 
 		// Consulta de Movimiento
 		$funciones .= '
-		function consulta(){ 
+		function consulta(){
 			var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
 			if (id)	{
 				var ret    = $("#newapi'.$grid0.'").getRowData(id);
 				window.open(\''.site_url("inventario/sinv/consulta/").'/\'+ret.id, \'_blank\', \'width=800, height=600, scrollbars=yes, status=yes, resizable=yes,screenx=((screen.availHeight/2)-300), screeny=((screen.availWidth/2)-400)\');
-			} else { 
+			} else {
 				$.prompt("<h1>Por favor Seleccione un Producto</h1>");
 			}
 		};
@@ -204,7 +204,7 @@ class Sinv extends Controller {
 		';
 
 		//Aumento de Precios
-		$funciones .= ' 
+		$funciones .= '
 		function auprec(){
 			$.prompt( "<h1>Porcentaje de Aumento o Disminucion (-):</h1><center><input class=\'inputnum\' type=\'text\' id=\'porcen\' name=\'porcen\' value=\'0.00\' maxlengh=\'10\' size=\'10\' ></center><br/>", {
 				buttons: { Aplicar: true, Cancelar: false },
@@ -244,13 +244,13 @@ class Sinv extends Controller {
 		';
 
 		// Cambiar Ubicaciones
-		$funciones .= ' 
+		$funciones .= '
 		function cambiaubica(){
 			$.prompt( "<h1>Cambiar Ubicacion de los productos filtrados):</h1><br/><center><input  type=\'text\' id=\'mubica\' name=\'mubica\' value=\'\' maxlengh=\'9\' size=\'10\' ></center><br/>", {
 				buttons: { Aplicar: true, Cancelar: false },
 				submit: function(e,v,m,f){
 					if (v) {
-						$.ajax({ 
+						$.ajax({
 							url: "'.site_url('inventario/sinv/cambiaubica').'/"+f.mubica,
 							complete: function(){ alert(("Cambio Finalizado")) }
 						});
@@ -267,7 +267,7 @@ class Sinv extends Controller {
 			if (id)	{
 				var ret    = $("#newapi'.$grid0.'").getRowData(id);
 				var yurl = "";
-				$.prompt("<h1>Cambiar el codigo ("+ret.codigo+") por:</h1><center><input type=\'text\' id=\'mcodigo\' name=\'mcodigo\' value=\'"+$.trim(ret.codigo)+"\' maxlengh=\'10\' size=\'15\' ></center><br/>", { 
+				$.prompt("<h1>Cambiar el codigo ("+ret.codigo+") por:</h1><center><input type=\'text\' id=\'mcodigo\' name=\'mcodigo\' value=\'"+$.trim(ret.codigo)+"\' maxlengh=\'10\' size=\'15\' ></center><br/>", {
 					buttons: { Cambiar: true, Cancelar: false },
 					submit: function(e,v,m,f){
 						if (v) {
@@ -312,7 +312,7 @@ class Sinv extends Controller {
 					}
 				})
 
-			} else { 
+			} else {
 				$.prompt("<h1>Por favor Seleccione un Registro</h1>");
 			}
 		};
@@ -361,11 +361,11 @@ class Sinv extends Controller {
 
 		// Fotos
 		$bodyscript .= '
-		function verfotos(){ 
+		function verfotos(){
 			var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
 			if (id)	{
 				window.open(\''.site_url("inventario/fotos/dataedit").'/\'+id+\'/create\', \'_blank\', \'width=800, height=600, scrollbars=yes, status=yes, resizable=yes,screenx=((screen.availHeight/2)-300), screeny=((screen.availWidth/2)-400)\');
-			} else { 
+			} else {
 				$.prompt("<h1>Por favor Seleccione un Producto</h1>");
 			}
 		};
@@ -392,7 +392,7 @@ class Sinv extends Controller {
 			var id     = $("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
 			if (id)	{
 				window.open(\''.site_url("inventario/kardex/kardexpres").'/\'+id, \'_blank\', \'width=420,height=450,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-225), screeny=((screen.availWidth/2)-250)\');
-			} else { 
+			} else {
 				$.prompt("<h1>Por favor Seleccione un Producto</h1>");
 			}
 		});
@@ -469,7 +469,7 @@ class Sinv extends Controller {
 
 		// Etiquetas
 		$bodyscript .= '
-		function etiquetas(){ 
+		function etiquetas(){
 			window.open(\''.site_url("inventario/etiqueta_sinv/menu").'\', \'_blank\', \'width=800, height=600, scrollbars=yes, status=yes, resizable=yes,screenx=((screen.availHeight/2)-300), screeny=((screen.availWidth/2)-400)\');
 		};
 		';
@@ -520,7 +520,7 @@ class Sinv extends Controller {
 							$( "#fedita" ).dialog( "close" );
 							grid.trigger("reloadGrid");
 							return true;
-						} else { 
+						} else {
 							$("#fedita").html(r);
 						}
 					}
@@ -1964,13 +1964,13 @@ class Sinv extends Controller {
 					url= "'.site_url("inventario/fotos/thumbnail").'/"+id;
 					$("#ladicional").html("<center><img src=\'"+url+"\' width=\'160\' ondblclick=\'verfotos()\'><center><div id=\'textofoto\' style=\'text-align:center;\'></div>");
 					$("#radicional").html(detalle(id));
-					$.get(\''.site_url("inventario/sinv/sinvitems").'/\'+id, 
+					$.get(\''.site_url("inventario/sinv/sinvitems").'/\'+id,
 						function(data){
-							$("#itsinv").html(data); 
+							$("#itsinv").html(data);
 					});
-					$.get(\''.site_url("inventario/fotos/comenta").'/\'+id, 
+					$.get(\''.site_url("inventario/fotos/comenta").'/\'+id,
 						function(data){
-							$("#textofoto").html(data); 
+							$("#textofoto").html(data);
 					});
 					jQuery("#bpos1").jqGrid(\'setGridParam\',{url:"'.site_url($this->url.'bpos1/').'/"+id+"/", page:1});
 					jQuery("#bpos1").trigger("reloadGrid");
@@ -2031,7 +2031,7 @@ class Sinv extends Controller {
 		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
 		$mWHERE = $grid->geneTopWhere('sinv');
 
-		if ( $iactivo == 0 ) 
+		if ( $iactivo == 0 )
 			$mWHERE[] = array('=', 'activo', 'S', '' );
 
 		$response   = $grid->getData('sinv', array(array()), array(), false, $mWHERE, 'codigo' );
@@ -2047,11 +2047,11 @@ class Sinv extends Controller {
 			if ( $emp > 0  ){
 				$querydata['data1'] = substr( $querydata['data1'], 0, $emp );
 			}
-		} else 
+		} else
 			$querydata['data1'] = '';
-		
-		$ids = $this->datasis->guardasesion($querydata); 
-		
+
+		$ids = $this->datasis->guardasesion($querydata);
+
 		echo $rs;
 	}
 
@@ -2129,7 +2129,7 @@ class Sinv extends Controller {
 			$this->db->simple_query("DELETE FROM barraspos WHERE id=$id ");
 			logusu('BARRASPOS',"Registro  ELIMINADO");
 			echo "Registro Eliminado";
-			
+
 		} elseif ( $oper == false ) {
 			$id = $this->uri->segment(4);
 			if ( $id > 0 ) {
@@ -2137,14 +2137,14 @@ class Sinv extends Controller {
 				$this->db->select(array('id', 'codigo', 'suplemen'));
 				$this->db->from('barraspos');
 				$this->db->where('codigo',$codigo);
-			
+
 				$rs = $this->datasis->codificautf8($this->db->get()->result_array());
 				$response['data'] = $rs;
 				$rs = json_encode( $response);
 				echo $rs;
 			}
 		}
-		
+
 	}
 
 
@@ -3242,13 +3242,13 @@ class sinv extends Controller {
 		</script>';
 
 		$style ='<style type="text/css">
-		.fakeContainer { // The parent container 
+		.fakeContainer { // The parent container
 		    margin: 5px;
 		    padding: 0px;
 		    border: none;
-		    width: 740px; // Required to set 
-		    height: 320px; // Required to set 
-		    overflow: hidden; // Required to set 
+		    width: 740px; // Required to set
+		    height: 320px; // Required to set
+		    overflow: hidden; // Required to set
 		}
 		</style>';
 
@@ -3356,7 +3356,7 @@ class sinv extends Controller {
 		}
 
 		$edit = new DataDetails('Maestro de Inventario', $do);
-		$edit->pre_process( 'insert','_pre_inserup');
+		$edit->pre_process( 'insert','_pre_insert');
 		$edit->pre_process( 'update','_pre_inserup');
 		$edit->pre_process( 'delete','_pre_del'    );
 		$edit->post_process('insert','_post_insert');
@@ -3371,7 +3371,7 @@ class sinv extends Controller {
 		$edit->codigo = new inputField('C&oacute;digo', 'codigo');
 		$edit->codigo->size=15;
 		$edit->codigo->maxlength=15;
-		$edit->codigo->rule = 'trim|required|strtoupper|callback_chexiste';
+		$edit->codigo->rule = 'trim|strtoupper|callback_chexiste';
 		$edit->codigo->mode = 'autohide';
 		$edit->codigo->append($sugerir);
 		$edit->codigo->append($ultimo);
@@ -3979,9 +3979,9 @@ class sinv extends Controller {
 
 
 		$conten['form']  =& $edit;
-		
 
-		//$data['content'] = 
+
+		//$data['content'] =
 		$this->load->view('view_sinv', $conten );
 		//$data['content'] = $edit->output;
 		//$data['script']  = $script;
@@ -4007,6 +4007,21 @@ class sinv extends Controller {
 		$this->load->view('view_ventanas', $data);
 */
 
+	}
+
+	function _pre_insert($do){
+		$codigo=$do->get('codigo');
+		if(empty($codigo)){
+			$size='6';
+			$mSQL="SELECT LPAD(a.hexa,${size},0) AS val FROM serie AS a LEFT JOIN sinv AS b ON b.codigo=LPAD(a.hexa,${size},0) WHERE valor<16777215 AND b.codigo IS NULL LIMIT 1";
+			$codigo=$this->datasis->dameval($mSQL);
+			if(empty($codigo)){
+				$do->error_message_ar['pre_ins']='C&oacute;digos agotados';
+				return false;
+			}
+			$do->set('codigo',$codigo);
+		}
+		return $this->_pre_inserup($do);
 	}
 
 	function _pre_inserup($do){
@@ -4101,7 +4116,7 @@ class sinv extends Controller {
 		$mtipo = $this->uri->segment($this->uri->total_segments());
 		$this->datasis->sinvrecalcular($mtipo);
 		$this->datasis->sinvredondear();
-		
+
 		//$this->db->call_function("sp_sinv_recalcular", $mtipo );
 		//$this->db->call_function("sp_sinv_redondea");
 		logusu('SINV',"Recalcula Precios $mtipo");
@@ -4120,7 +4135,7 @@ class sinv extends Controller {
 		// Respalda los precios anteriores
 		$mN = $this->datasis->prox_sql('nsinvplog');
 		$ms_codigo = $this->session->userdata('usuario');
-		
+
 		$mSQL = "INSERT INTO sinvplog ";
 		$mSQL .= "SELECT '".$mN."', '".addslashes($ms_codigo)."', now(), curtime(), a.codigo, a.precio1, a.precio2, a.precio3, a.precio4 ";
 		$mSQL .= "FROM sinv a ".$where;
@@ -4131,7 +4146,7 @@ class sinv extends Controller {
 			a.precio2=ROUND(a.precio2*(100+$porcent)/100,2),
 			a.precio3=ROUND(a.precio3*(100+$porcent)/100,2),
 			a.precio4=ROUND(a.precio4*(100+$porcent)/100,2)";
-		
+
 		$this->db->query("UPDATE sinv a ".$mSQL." ".$where);
 		$this->datasis->sinvrecalcular("M");
 		$this->datasis->sinvredondear();
@@ -4238,7 +4253,7 @@ class sinv extends Controller {
 		$mmcodigo = rawurldecode($this->input->post('codigo'));
 		$mviejoid = rawurldecode($this->input->post('viejo'));
 
-		$mmviejo  = $mviejoid; 
+		$mmviejo  = $mviejoid;
 		$mviejoid = $this->datasis->dameval('SELECT id FROM sinv WHERE codigo='.$this->db->escape($mviejoid));
 		$mviejo   = $this->db->escape($mmviejo);
 		$mcodigo  = $this->db->escape($mmcodigo);
@@ -4329,7 +4344,7 @@ class sinv extends Controller {
 
 		$mSQL = "UPDATE IGNORE costos SET codigo=".$mcodigo." WHERE codigo=".$mviejo;
 		$this->db->query($mSQL);
-		
+
 		// Inventario invfel
 		if(!$this->db->table_exists('invfelr')){
 			$m      = 1;
@@ -4990,7 +5005,7 @@ class sinv extends Controller {
 			$mSQL  = "SELECT a.codigo, a.alma, a.existen, IF(b.ubides IS NULL,'SIN ALMACEN',b.ubides) AS nombre ";
 			$mSQL .= "FROM itsinv AS a LEFT JOIN caub as b ON a.alma=b.ubica ";
 			$mSQL .= "WHERE codigo=".$this->db->escape($codigo);
-			
+
 			$query = $this->db->query($mSQL);
 
 			if( $query->num_rows() > 0 ){
@@ -5014,7 +5029,7 @@ class sinv extends Controller {
 						$salida .= "&nbsp;</td></tr>\n";
 						$i++;
 				}
-				
+
 				$salida .= '</table>';
 			}
 		}

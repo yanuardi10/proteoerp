@@ -698,7 +698,6 @@ class sinv extends Controller {
 		$mSQL="SELECT LPAD(a.hexa,${size},0) AS val FROM serie AS a LEFT JOIN sinv AS b ON b.codigo=LPAD(a.hexa,${size},0) WHERE valor<16777215 AND b.codigo IS NULL LIMIT 1";
 
 		$codigo=$this->datasis->dameval($mSQL);
-		echo " Codigo: $codigo";
 		if(empty($codigo)){
 			$do->error_message_ar['pre_ins']='C&oacute;digos agotados';
 			return false;
