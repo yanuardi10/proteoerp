@@ -118,7 +118,7 @@ class Scst extends Controller {
 			else
 				$.prompt("<h1>Por favor Seleccione un Movimiento</h1>");
 		});';
-		
+
 		$bodyscript .= '
 		function scstadd() {
 			$.post("'.site_url('compras/scst/solo/create').'",
@@ -147,7 +147,7 @@ class Scst extends Controller {
 			} else { $.prompt("<h1>Por favor Seleccione una compra</h1>");}
 		};';
 
-		
+
 		//Wraper de javascript
 		$bodyscript .= '
 		$(function() {
@@ -159,7 +159,7 @@ class Scst extends Controller {
 			var s;
 			var allFields = $( [] ).add( ffecha );
 			var tips = $( ".validateTips" );
-			s = grid.getGridParam(\'selarrrow\'); 
+			s = grid.getGridParam(\'selarrrow\');
 		';
 
 		//Reversar
@@ -1048,7 +1048,7 @@ class Scst extends Controller {
 				       recreateForm:true,
 				       afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];}
 		');
-		
+
 		$grid->setFormOptionsA('-');
 		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a];");
 
@@ -1958,7 +1958,7 @@ class Scst extends Controller {
 
 				$data['head']    = $this->rapyd->get_head();
 				$data['head']   .= style('redmond/jquery-ui-1.8.1.custom.css');
-				
+
 				$data['content'] = $this->load->view('view_compras', $conten, true);
 				$data['title']   = heading('Compras');
 				$this->load->view('view_ventanas', $data);
@@ -1975,7 +1975,7 @@ class Scst extends Controller {
 			}
 			return $rt;
 		}
-		
+
 	}
 
 	function solo() {
@@ -2017,7 +2017,7 @@ class Scst extends Controller {
 		}
 	}
 
-	// Precios 
+	// Precios
 	function cprecios($control){
 		$this->rapyd->uri->keep_persistence();
 		$this->rapyd->load('datagrid','fields');
@@ -2055,7 +2055,7 @@ class Scst extends Controller {
 			}
 			if ( $this->solo )
 				return '{"status":"C","id":"'.$control.'" ,"mensaje":"'.$msj.$error.'"}';
-			
+
 		}
 
 		if ( $this->solo )
@@ -2412,13 +2412,13 @@ class Scst extends Controller {
 
 		if ( $this->solo )
 			$form = new DataForm("compras/scst/solo/actualizar/$control/process");
-		else 
+		else
 			$form = new DataForm("compras/scst/actualizar/$control/process");
-	
+
 		$proveed = $this->datasis->dameval("SELECT CONCAT('Proveedor: </td><td><b>(<b>',proveed,'</b>)</td><td colspan=5><b>',nombre,'</b>') nombre FROM scst WHERE control=$control");
 		$compra  = $this->datasis->dameval("SELECT CONCAT('Compra: </td><td><b>', serie,'</b></td><td> Fecha: </td><td><b>', fecha, '</b></td><td>Vence: </td><td><b>', vence,'</b>') factura FROM scst WHERE control=$control");
 		$montos  = $this->datasis->dameval("SELECT CONCAT('Sub Total: </td><td><b>', format(montotot,2),'</b></td><td> I.V.A.: </td><td><b>', format(montoiva,2), '</b></td><td>Monto: </td><td><b>', format(montonet,2),'</b>') factura FROM scst WHERE control=$control");
-		
+
 		$script = '<script>$(function() {$("#rafecha").datepicker({ dateFormat: "dd/mm/yy" });})</script>';
 
 		$form->aaaa = new containerField('iii',$script."\n<table width='100%' style='background-color:#FBEC88;text-align:center;font-size:12px'><tr><td>".$proveed."</td></tr><tr><td>".$compra."</td></tr><tr><td>".$montos."</td></tr></table><br>&nbsp;");
@@ -2500,7 +2500,11 @@ class Scst extends Controller {
 					$proveed = $row['proveed'];
 					$fecha   = str_replace('-','',$row['fecha']);
 					$vence   = $row['vence'];
-					$reteiva = $row['reteiva'];
+					if(empty($row['reteiva'])){
+						$reteiva = 0;
+					}else{
+						$reteiva = $row['reteiva'];
+					}
 					if(empty($actuali)) $actuali=date('Ymd');
 
 					$itdata=array();
