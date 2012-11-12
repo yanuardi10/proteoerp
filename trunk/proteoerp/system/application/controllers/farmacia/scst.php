@@ -112,7 +112,7 @@ class Scst extends Controller {
 					'screeny'    => "'+((screen.availHeight/2)-300)+'"
 				);
 
-				$llink=anchor_popup('inventario/consultas/preciosgeneral/'.raencode($cen), $cen, $attr);
+				$llink=anchor_popup('inventario/consultas/preciosgeneral/'.raencode(trim($cen)), $cen, $attr);
 				$rt=$llink;
 			}
 			return $rt;
@@ -522,7 +522,7 @@ class Scst extends Controller {
 					if($qquery!==false){
 						$rrow   = $qquery->row_array();
 						$codigo = $rrow['codigo'];
-						$data = array('proveed' => $proveed, 'abarras' =>$rrow['codigo'] , 'barras' => $row->barras);
+						$data = array('proveed' => $proveed, 'abarras' =>trim($rrow['codigo']) , 'barras' => trim($row->barras));
 
 						$str = $this->db->insert_string('farmaxasig', $data);
 						$str = str_replace('INSERT','INSERT IGNORE',$str);
