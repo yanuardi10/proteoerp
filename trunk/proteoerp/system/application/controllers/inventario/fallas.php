@@ -3,7 +3,7 @@ class fallas extends Controller {
 	var $falla;
 
 	function fallas(){
-		parent::Controller(); 
+		parent::Controller();
 		$this->datasis->modulo_id(313,1);
 		$this->load->library('rapyd');
 
@@ -98,14 +98,14 @@ class fallas extends Controller {
 
 	//Recalcula los margenes y las bases respetando el precio
 	function arreglamarbases(){
-		$mSQL="UPDATE datasis.sinv SET
+		$mSQL="UPDATE sinv SET
 		base1=precio1*100/(100+iva),
 		base2=precio2*100/(100+iva),
 		base3=precio3*100/(100+iva),
 		base4=precio4*100/(100+iva)";
 		var_dump($this->db->simple_query($mSQL));
 
-		$mSQL="UPDATE datasis.sinv SET
+		$mSQL="UPDATE sinv SET
 		margen1=ROUND(100-((IF(formcal='U',ultimo,IF(formcal='P',pond,GREATEST(pond,ultimo)))*100)/base1),2),
 		margen2=ROUND(100-((IF(formcal='U',ultimo,IF(formcal='P',pond,GREATEST(pond,ultimo)))*100)/base2),2),
 		margen3=ROUND(100-((IF(formcal='U',ultimo,IF(formcal='P',pond,GREATEST(pond,ultimo)))*100)/base3),2),

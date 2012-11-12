@@ -2979,7 +2979,7 @@ class Scst extends Controller {
 			$itimporte = $itprecio*$itcana;
 			$iiva      = $itimporte*($itiva/100);
 
-			$mSQL='SELECT ultimo,existen,pond,standard,formcal,margen1,margen2,margen3,margen4 FROM sinv WHERE codigo='.$this->db->escape($itcodigo);
+			$mSQL='SELECT ultimo,existen,pond,standard,formcal,margen1,margen2,margen3,margen4,precio1,precio2,precio3,precio4,iva FROM sinv WHERE codigo='.$this->db->escape($itcodigo);
 			$query = $this->db->query($mSQL);
 			if ($query->num_rows() > 0){
 				$row = $query->row();
@@ -2988,11 +2988,36 @@ class Scst extends Controller {
 				$costo_ulti=$itprecio;
 
 				$costo=$this->_costos($row->formcal,$costo_pond,$costo_ulti,$row->standard);
-
 			}
+
 			for($o=1;$o<5;$o++){
 				$obj='margen'.$o;
-				$pp=(($costo*100)/(100-$row->$obj))*(1+($itiva/100));
+				$pob='precio'.$o;
+
+				$cmargen=$row->$obj;
+				if($cmargen>=100){
+
+					//Si el margen esta malo intenta calcularlo respetando el precio
+					if($row->$pob>0){
+						$cmargen=100-($itprecio*(100+$row->iva)/$row->$pob);
+
+						if($cmargen<100){
+							//El producto tiene arreglo
+							$mSQL="UPDATE sinv SET
+								$obj=ROUND(100-((IF(formcal='U',ultimo,IF(formcal='P',pond,GREATEST(pond,ultimo)))*(100+iva))/$pob),2)
+								WHERE codigo=".$this->db->escape($itcodigo);
+							$this->db->simple_query($mSQL);
+						}
+					}
+
+					//Si no puede hacer nada manda error.
+					if($cmargen>=100){
+						$do->error_message_ar['pre_ins']="El producto $itcodigo presenta problema con los márgenes, por favor cambielos por el módulo de maestro de inventario.";
+						return false;
+					}
+				}else{
+					$pp=(($costo*100)/(100-$cmargen))*(1+($itiva/100));
+				}
 				$do->set_rel('itscst','precio'.$o ,$pp,$i);
 			}
 
