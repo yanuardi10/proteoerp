@@ -1985,13 +1985,24 @@ class Scst extends Controller {
 		//Creando Compra
 		if ( $id == 'create'){
 			$this->dataedit();
-		} elseif ( $id == 'insert'){
+		}elseif( $id == 'insert'){
 			$this->genesal = false;
 			$rt = $this->dataedit();
-			$id = $this->claves["id"];
-			if ( strlen($rt) > 0 )
-				echo '{"status":"A","id":"'.$id.'" ,"mensaje":"'.$rt.'"}';
-		} elseif ( $id == 'process'){
+			$id = (isset($this->claves['id']))? $this->claves['id'] :0;
+
+			if(strlen($rt) > 0 ){
+				$rtjson=array('id'=> $id,'mensaje'=> utf8_encode(str_replace("\n",'<br />',$rt)));
+				if($rt=='Compra Guardada'){
+					$rtjson['status']='A';
+				}else{
+					$rtjson['status']='C';
+				}
+				echo json_encode($rtjson);
+			}else{
+				$rtjson=array('id'=> 0,'mensaje'=> utf8_encode('Error desconocido'), 'status'=>'C');
+				echo json_encode($rtjson);
+			}
+		}elseif( $id == 'process'){
 			$control = $this->uri->segment($this->uri->total_segments()-1);
 			$rt = $this->actualizar($control);
 			if ( strlen($rt[1]) > 0 )
@@ -3158,4 +3169,3 @@ class Scst extends Controller {
 	}
 
 }
-?>
