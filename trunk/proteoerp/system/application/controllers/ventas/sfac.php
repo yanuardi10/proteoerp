@@ -356,19 +356,6 @@ class Sfac extends Controller {
 			'editoptions'   => '{ size:30, maxlength: 1 }',
 		));
 
-		$grid->addField('entregado');
-		$grid->label('Entregado');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => 'true',
-			'width'         => 75,
-			'align'         => "'center'",
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:false, date:true}',
-			'formoptions'   => '{ label:"Fecha de Entrega" }'
-		));
-
-
 /*
 		$grid->addField('observa');
 		$grid->label('Observa');
@@ -533,6 +520,19 @@ class Sfac extends Controller {
 		));
 
 
+		$grid->addField('entregado');
+		$grid->label('Entregado');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => 'true',
+			'width'         => 75,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:false, date:true}',
+			'formoptions'   => '{ label:"Fecha de Entrega" }'
+		));
+
+
 		$grid->addField('zona');
 		$grid->label('Zona');
 		$grid->params(array(
@@ -574,6 +574,19 @@ class Sfac extends Controller {
 
 		$grid->addField('pagada');
 		$grid->label('Pagada');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 80,
+			'align'         => "'center'",
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true,date:true}',
+			'formoptions'   => '{ label:"Fecha" }'
+		));
+
+
+		$grid->addField('modificado');
+		$grid->label('Modificado');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -827,23 +840,23 @@ class Sfac extends Controller {
 		$grid->label('Maq. Fiscal');
 		$grid->params(array(
 			'search'        => 'true',
-			'editable'      => $editar,
+			'editable'      => 'true',
 			'width'         => 200,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 20 }',
+			'editoptions'   => '{ size:15, maxlength: 20 }',
 		));
 
 
 		$grid->addField('dmaqfiscal');
-		$grid->label('Dmaqfiscal');
+		$grid->label('Devolu.M.Fiscal');
 		$grid->params(array(
 			'search'        => 'true',
-			'editable'      => $editar,
+			'editable'      => 'true',
 			'width'         => 200,
 			'edittype'      => "'text'",
 			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 20 }',
+			'editoptions'   => '{ size:15, maxlength: 20 }',
 		));
 
 /*
@@ -870,21 +883,7 @@ class Sfac extends Controller {
 			'editrules'     => '{ required:true,date:true}',
 			'formoptions'   => '{ label:"Fecha" }'
 		));
-*/
 
-		$grid->addField('modificado');
-		$grid->label('Modificado');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 80,
-			'align'         => "'center'",
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true,date:true}',
-			'formoptions'   => '{ label:"Fecha" }'
-		));
-
-/*
 		$grid->addField('reiva');
 		$grid->label('Reiva');
 		$grid->params(array(
@@ -953,6 +952,7 @@ class Sfac extends Controller {
 		$grid->addField('id');
 		$grid->label('Id');
 		$grid->params(array(
+			'hidden'        => 'true',
 			'align'         => "'center'",
 			'frozen'        => 'true',
 			'width'         => 40,
