@@ -137,6 +137,12 @@ class b2b extends validaciones {
 		$edit->proveed->rule      = 'required';
 		$edit->proveed->append($bSPRV);
 
+		$edit->prefijo = new inputField('Prefijo', 'prefijo');
+		$edit->prefijo->size      =  6;
+		$edit->prefijo->maxlength =  5;
+		$edit->prefijo->rule      = 'required';
+		$edit->prefijo->append('Prefijo de los c&oacute;digos provenientes de este proveedor.');
+
 		$edit->url = new inputField('Direcci&oacute;n Url', 'url');
 		$edit->url->insertValue='http://';
 		$edit->url->size       =  50;
