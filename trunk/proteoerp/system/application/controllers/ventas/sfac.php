@@ -1084,6 +1084,8 @@ class Sfac extends Controller {
 			echo "Fallo Agregado!!!";
 
 		} elseif($oper == 'edit') {
+			if ( empty($data['entregado']) )
+				unset($data['entregado']);
 			$this->db->where('id', $id);
 			$this->db->update('sfac', $data);
 			logusu('SFAC',"Registro $id MODIFICADO");
