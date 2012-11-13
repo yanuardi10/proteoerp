@@ -924,7 +924,8 @@ class b2b extends validaciones {
 							$base2 = ($arr[$in]['precio2']*100)/(100+$arr[$in]['iva']);
 							$base3 = ($arr[$in]['precio3']*100)/(100+$arr[$in]['iva']);
 							$base4 = ($arr[$in]['precio4']*100)/(100+$arr[$in]['iva']);
-							$invent['codigo']   = $ddata['codigo'] ;
+							$invent['codigo']   = $ddata['codigo'];
+							$invent['barras']   = $barras;
 							$invent['grupo']    = $config['grupo'];
 							$invent['prov1']    = $proveed;
 							$invent['descrip']  = $arr[$in]['desca'];
@@ -1597,24 +1598,29 @@ class b2b extends validaciones {
 
 	function instalar(){
 		if (!$this->db->table_exists('b2b_config')) {
-			$mSQL="CREATE TABLE IF NOT EXISTS `b2b_config` (
-			  `id` int(10) NOT NULL AUTO_INCREMENT,
-			  `proveed` char(5)   NOT NULL COMMENT 'Codigo del proveedor',
-			  `url` varchar(100)  NOT NULL,
-			  `puerto` int(5) NOT NULL DEFAULT '80',
-			  `proteo` varchar(20) NOT NULL DEFAULT 'proteoerp',
-			  `usuario` varchar(100) NOT NULL COMMENT 'Codigo de cliente en el proveedor',
-			  `clave` varchar(100) NOT NULL,
-			  `tipo` char(1) DEFAULT NULL COMMENT 'I para inventario G para gasto',
-			  `depo` varchar(4) DEFAULT NULL COMMENT 'Almacen',
-			  `margen1` decimal(6,2) DEFAULT NULL COMMENT 'Margen para el precio1',
-			  `margen2` decimal(6,2) DEFAULT NULL COMMENT 'Margen para el precio 2',
-			  `margen3` decimal(6,2) DEFAULT NULL COMMENT 'Margen para el precio3',
-			  `margen4` decimal(6,2) DEFAULT NULL COMMENT 'Margen para el precio4',
-			  `margen5` decimal(6,2) DEFAULT NULL COMMENT 'Margen para el precio5 (solo supermercado)',
-			  `grupo` varchar(5) DEFAULT NULL COMMENT 'Grupo por defecto',
-			  PRIMARY KEY (`id`)
-			) ENGINE=MyISAM AUTO_INCREMENT=1 COMMENT='Configuracion para los b2b'";
+			$mSQL="CREATE TABLE `b2b_config` (
+				`id` INT(10) NOT NULL AUTO_INCREMENT,
+				`proveed` CHAR(5) NOT NULL COMMENT 'Codigo del proveedor',
+				`prefijo` VARCHAR(50) NOT NULL COMMENT 'Prefijo para los codigos de productos',
+				`url` VARCHAR(100) NOT NULL,
+				`puerto` INT(5) NOT NULL DEFAULT '80',
+				`proteo` VARCHAR(20) NOT NULL DEFAULT 'proteoerp',
+				`usuario` VARCHAR(100) NOT NULL COMMENT 'Codigo de cliente en el proveedor',
+				`clave` VARCHAR(100) NOT NULL,
+				`tipo` CHAR(1) NULL DEFAULT NULL COMMENT 'I para inventario G para gasto',
+				`depo` VARCHAR(4) NULL DEFAULT NULL COMMENT 'Almacen',
+				`margen1` DECIMAL(6,2) NULL DEFAULT NULL COMMENT 'Margen para el precio1',
+				`margen2` DECIMAL(6,2) NULL DEFAULT NULL COMMENT 'Margen para el precio 2',
+				`margen3` DECIMAL(6,2) NULL DEFAULT NULL COMMENT 'Margen para el precio3',
+				`margen4` DECIMAL(6,2) NULL DEFAULT NULL COMMENT 'Margen para el precio4',
+				`margen5` DECIMAL(6,2) NULL DEFAULT NULL COMMENT 'Margen para el precio5 (solo supermercado)',
+				`grupo` VARCHAR(5) NULL DEFAULT NULL COMMENT 'Grupo por defecto',
+				PRIMARY KEY (`id`)
+			)
+			COMMENT='Configuracion para los b2b'
+			COLLATE='latin1_swedish_ci'
+			ENGINE=MyISAM
+			AUTO_INCREMENT=1;";
 			var_dump($this->db->simple_query($mSQL));
 		}
 
