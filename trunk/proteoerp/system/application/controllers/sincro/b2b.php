@@ -65,7 +65,7 @@ class b2b extends validaciones {
 		$filter->grupo = new inputField('Grupo', 'grupo');
 		$filter->grupo->append($bGRUP);
 		$filter->grupo->size=25;
-		
+
 		$filter->buttons('reset','search');
 		$filter->build();
 
@@ -242,7 +242,7 @@ class b2b extends validaciones {
 		$filter->fechad->clause  =$filter->fechah->clause ='where';
 		$filter->fechad->db_name =$filter->fechah->db_name='fecha';
 		$filter->fechah->size=$filter->fechad->size=10;
-		$filter->fechad->operator=">="; 
+		$filter->fechad->operator=">=";
 		$filter->fechah->operator="<=";
 
 		$filter->numero = new inputField('Factura', 'numero');
@@ -429,7 +429,7 @@ class b2b extends validaciones {
 		});';
 
 		$conten['form']  =&  $edit;
-		$data['content'] = $this->load->view('view_b2b_compras', $conten,true); 
+		$data['content'] = $this->load->view('view_b2b_compras', $conten,true);
 		$data['head']    = $this->rapyd->get_head();
 		$data['title']   = heading('Compras Descargadas');
 		$this->load->view('view_ventanas', $data);
@@ -752,8 +752,9 @@ class b2b extends validaciones {
 		$contribu=$this->datasis->traevalor('CONTRIBUYENTE');
 		$rif     =$this->datasis->traevalor('RIF');
 
-		$config=$this->datasis->damerow("SELECT proveed,grupo,puerto,proteo,url,usuario,clave,tipo,depo,margen1,margen2,margen3,margen4,margen5 FROM b2b_config WHERE id=$id");
+		$config=$this->datasis->damerow("SELECT proveed,grupo,puerto,proteo,url,usuario,clave,tipo,depo,margen1,margen2,margen3,margen4,margen5,prefijo FROM b2b_config WHERE id=$id");
 		if(count($config)==0) return false;
+		$prefijo= (empty($config['prefijo']))? '':$config['prefijo'];
 
 		$er=0;
 		$this->load->helper('url');
@@ -826,7 +827,7 @@ class b2b extends validaciones {
 				$data['monredu']  =$arr['monredu'];
 				$data['montasa']  =$arr['montasa'];
 				$data['monadic']  =$arr['monadic'];
-    
+
 				$data['ctotal']   =$arr['totalg'];
 				$data['cstotal']  =$arr['totals'];
 				$data['cexento']  =$arr['exento'];
@@ -872,7 +873,7 @@ class b2b extends validaciones {
 						$ddata['fecha']    = $data['fecha'];
 						$ddata['numero']   = $data['numero'];
 						$ddata['depo']     = $data['depo'];
-						$ddata['codigo']   = trim($arr[$in]['codigoa']);
+						$ddata['codigo']   = $prefijo.trim($arr[$in]['codigoa']);
 						$ddata['descrip']  = $arr[$in]['desca'];
 						$ddata['cantidad'] = $arr[$in]['cana'];
 						$ddata['costo']    = $arr[$in]['preca'];
@@ -917,7 +918,7 @@ class b2b extends validaciones {
 							$base2 = ($arr[$in]['precio2']*100)/(100+$arr[$in]['iva']);
 							$base3 = ($arr[$in]['precio3']*100)/(100+$arr[$in]['iva']);
 							$base4 = ($arr[$in]['precio4']*100)/(100+$arr[$in]['iva']);
-							$invent['codigo']   = $barras;
+							$invent['codigo']   = $ddata['codigo'] ;
 							$invent['grupo']    = $config['grupo'];
 							$invent['prov1']    = $proveed;
 							$invent['descrip']  = $arr[$in]['desca'];
@@ -955,7 +956,7 @@ class b2b extends validaciones {
 								$codigolocal=$barras;
 							}
 						}
-						$ddata['codigolocal'] = $codigolocal;
+						$ddata['codigolocal'] = $ddata['codigo'];
 
 						$mSQL=$this->db->insert_string('b2b_itscst',$ddata);
 						$rt=$this->db->simple_query($mSQL);
@@ -1198,7 +1199,7 @@ class b2b extends validaciones {
 					$pnombre=$this->datasis->dameval('SELECT nombre FROM sprv WHERE proveed='.$this->db->escape($clipro));
 					$pdirec1=$this->datasis->dameval('SELECT direc1 FROM sprv WHERE proveed='.$this->db->escape($clipro));
 				}
-				
+
 				$cc=$this->datasis->dameval('SELECT COUNT(*) FROM b2b_scon WHERE numero='.$this->db->escape($arr['numero']).' AND tipo='.$this->db->escape($tipo).' AND clipro='.$clipro);
 				if($cc==0){
 					$data=array();
@@ -1469,11 +1470,11 @@ class b2b extends validaciones {
 //****************************************************
 
 	function cargagasto(){
-		
+
 	}
 
 	function _cargagasto(){
-		
+
 	}
 
 	function reasignaprecio(){
