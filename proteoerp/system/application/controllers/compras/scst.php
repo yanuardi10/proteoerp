@@ -20,6 +20,17 @@ class Scst extends Controller {
 			$this->db->simple_query('ALTER TABLE scst DROP PRIMARY KEY');
 			$this->db->simple_query('ALTER TABLE scst ADD UNIQUE INDEX control (control)');
 			$this->db->simple_query('ALTER TABLE scst ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
+
+			$this->db->simple_query("update tmenus set secu=1 where titulo='Incluye'");
+			$this->db->simple_query("update tmenus set secu=2 where titulo='Modifica'");
+			$this->db->simple_query("update tmenus set secu=3 where titulo='Prox'");
+			$this->db->simple_query("update tmenus set secu=4 where titulo='Ante'");
+			$this->db->simple_query("update tmenus set secu=5 where titulo='Elimina'");
+			$this->db->simple_query("update tmenus set secu=6 where titulo='Busca'");
+			$this->db->simple_query("update tmenus set secu=7 where titulo='Tabla'");
+			$this->db->simple_query("update tmenus set secu=8 where titulo='Lista'");
+			$this->db->simple_query("update tmenus set secu=9 where titulo='Otros'");
+
 		};
 		$this->datasis->modintramenu( 900, 650, substr($this->url,0,-1) );
 		redirect($this->url.'jqdatag');
