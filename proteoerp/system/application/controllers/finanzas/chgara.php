@@ -51,9 +51,9 @@ class Chgara extends Controller {
 		$grid->wbotonadd(array("id"=>"depositar", "img"=>"assets/default/images/cheque.png",         "alt" => 'Enviar a Depositar',    "label"=>"Enviar a Depositar"));
 		$grid->wbotonadd(array("id"=>"cobrados",  "img"=>"assets/default/images/monedas.png",        "alt" => 'Cheques Cobrados',      "label"=>"Cheques Cobrados"));
 		$grid->wbotonadd(array("id"=>"devueltos", "img"=>"assets/default/images/process-stop32.png", "alt" => 'Cheques Devueltos',     "label"=>"Cheques Devueltos"));
-		$grid->wbotonadd(array("id"=>"paar",      "img"=>"images/face-smile.png",                    "alt" => 'Apliar Pago a Cliente', "label"=>"Apliar Pago a Cliente"));
-		$grid->wbotonadd(array("id"=>"cerrar",    "img"=>"images/face-cool.png",                     "alt" => 'Pagar Manualmente',     "label"=>"Resumen"));
-		$grid->wbotonadd(array("id"=>"anular",    "img"=>"images/face-devilish.png",                 "alt" => 'Cheque Incobrable',     "label"=>"Resumen"));
+		$grid->wbotonadd(array("id"=>"pagar",     "img"=>"images/face-smile.png",                    "alt" => 'Apliar Pago a Cliente', "label"=>"Apliar Pago a Cliente"));
+		$grid->wbotonadd(array("id"=>"cerrar",    "img"=>"images/face-cool.png",                     "alt" => 'Pagar Manualmente',     "label"=>"Pago Manual"));
+		$grid->wbotonadd(array("id"=>"anular",    "img"=>"images/face-devilish.png",                 "alt" => 'Cheque Incobrable',     "label"=>"Incobrable"));
 		$WestPanel = $grid->deploywestp();
 
 		$adic = array(
