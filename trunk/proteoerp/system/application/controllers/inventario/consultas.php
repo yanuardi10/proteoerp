@@ -53,7 +53,6 @@ class Consultas extends Controller {
 				'descrip'=>'descrip'),
 				'filtro'  =>array('descrip'=>'descrip'),
 				'retornar'=>array('codigo'=>'codigo'),
-				'where'   =>'activo = "S"',
 				'titulo'  =>'Buscar Articulo',
 				'script'  => array('dbuscar()'));
 		}
