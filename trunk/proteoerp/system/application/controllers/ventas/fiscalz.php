@@ -84,6 +84,7 @@ class fiscalz extends Controller{
 		$grid->column_orderby('U. Factura','factura','factura');
 		$grid->column('Hora'    ,'hora','align=\'center\'');
 		$grid->column('Total'   ,'<b><number_format><#total#>|2|,|.</number_format></b>','align=\'right\'');
+		$grid->column('Manual','manual' ,'align=\'center\'');
 		$grid->column('Duplicar',$uri_2 ,'align=\'center\'');
 
 		$grid->add('ventas/fiscalz/dataedit/create');
@@ -96,9 +97,9 @@ class fiscalz extends Controller{
 		$this->load->view('view_ventanas', $data);
 	}
 
-	function dataedit($status='',$id='',$id2=''){ 
+	function dataedit($status='',$id='',$id2=''){
 		$this->rapyd->load('dataobject','dataedit');
-		
+
 		$script ='
 		$(function() {
 			$(".inputnum").numeric(".");
@@ -145,7 +146,7 @@ class fiscalz extends Controller{
 		$edit->serial = new inputField("Serial de la impresora fiscal","serial");
 		$edit->serial->size =15;
 		$edit->serial->maxlength =12;
-		$edit->serial->mode = "autohide"; 
+		$edit->serial->mode = "autohide";
 		$edit->serial->rule="trim|required";
 
 		$edit->numero = new inputField("N&uacute;mero del cierre Z","numero");
@@ -299,13 +300,13 @@ class fiscalz extends Controller{
 		//$edit->manual = new dropdownField("Manual","manual");
 		//$edit->manual->option("N","N");
 		//$edit->manual->option("S","S");
-		//$edit->manual->style = "width:70px"; 
+		//$edit->manual->style = "width:70px";
 		//$edit->manual->group='Otros';
 
 		$edit->buttons("modify", "save", "undo", "delete", "back");
 		$edit->build();
 
-		$data['content'] = $edit->output; 
+		$data['content'] = $edit->output;
 		$data['title']   = "<h1>Cierre Z</h1>";
 		$data["head"]    = script("jquery.pack.js").script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
