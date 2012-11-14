@@ -43,7 +43,7 @@ class  conciliacion extends Controller {
 			(SELECT sum(exento+base+iva-ncexento-ncbase-nciva) venta FROM fiscalz c WHERE c.fecha=a.fecha AND c.caja=a.caja ) AS  cierrez,
 			(SELECT sum(exento+base+iva-ncexento-ncbase-nciva) venta FROM fiscalz c WHERE c.fecha=a.fecha AND c.caja=a.caja )-
 			sum(a.gtotal*if(MID(a.numero,1,2)='NC',-1,1)) AS dife
-			FROM viefac a 
+			FROM viefac a
 			WHERE a.fecha BETWEEN '$fechad' AND '$fechah' GROUP BY a.fecha, a.caja ORDER BY a.caja,a.fecha";
 
 			$grid = new DataGrid2('Res&uacute;men');
@@ -56,14 +56,14 @@ class  conciliacion extends Controller {
 				'(SELECT sum(d.gtotal) FROM viefac AS d WHERE  d.fecha=a.fecha AND d.caja=b.caja) AS factura');
 			$grid->db->select($select);
 			$grid->db->from('tiempo AS a');
-			$grid->db->join("caja AS b","a.fecha BETWEEN '$fechad' AND '$fechah'"); 
+			$grid->db->join("caja AS b","a.fecha BETWEEN '$fechad' AND '$fechah'");
 			$grid->db->orderby("caja,fecha");
 			$grid->db->having("cierrez IS NOT null OR factura IS NOT null");
 
 			$grid->column("Fecha"      , "<dbdate_to_human><#fecha#></dbdate_to_human>","align='center'");
 			$grid->column("Caja"       , "caja" ,'align=center');
-			$grid->column("Factura"    , "<number_format><#factura#>|2|,|.</number_format>" ,'align=right');
-			$grid->column("Cierre Z"   , "<number_format><#cierrez#>|2|,|.</number_format>" ,'align=right');
+			$grid->column("Factura"    , "<nformat><#factura#></nformat>" ,'align=right');
+			$grid->column("Cierre Z"   , "<nformat><#cierrez#></nformat>" ,'align=right');
 			$grid->column("Diferencia" , "<dif><#factura#>|<#cierrez#></dif>",'align=right');
 
 			$grid->totalizar('factura','cierrez');
