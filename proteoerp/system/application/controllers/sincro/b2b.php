@@ -911,7 +911,6 @@ class b2b extends validaciones {
 							if($query){
 								$row = $query->row();
 								$codigolocal=$row->codigo;
-								$barras     =$codigolocal;
 							}
 						}
 						//if($codigolocal===false AND $this->db->table_exists('sinvprov')){
@@ -963,7 +962,7 @@ class b2b extends validaciones {
 								$codigolocal=$barras;
 							}
 						}
-						$ddata['codigolocal'] = $ddata['codigo'];
+						$ddata['codigolocal'] = $codigolocal;
 
 						$mSQL=$this->db->insert_string('b2b_itscst',$ddata);
 						$rt=$this->db->simple_query($mSQL);
@@ -972,7 +971,9 @@ class b2b extends validaciones {
 							$er++;
 						}
 					}
-					if(!$this->_cargacompra($id_scst)) $er=false;
+					if($er==0){
+						if(!$this->_cargacompra($id_scst)) $er=false;
+					}
 
 					//Carga el inventario
 					/*$ddata=array();
@@ -1008,6 +1009,12 @@ class b2b extends validaciones {
 			if(empty($eexiste)){
 				$eexiste = 0;
 			}
+		}
+
+		$noencuentra = $this->datasis->dameval("SELECT COUNT(*) FROM b2b_itscst AS a JOIN sinv AS b ON a.codigo=b.codigo WHERE b.codigo IS NULL AND a.id_scst=".$this->db->escape($id));
+		if($noencuentra > 0){
+			memowrite('Hay productos no asociados al inventario local en la compra id:'.$id);
+			return false;
 		}
 
 		$cana=$this->datasis->dameval('SELECT COUNT(*) FROM b2b_itscst AS a LEFT JOIN sinv AS b ON a.codigolocal=b.codigo WHERE a.numero IS NULL AND id_scst='.$this->db->escape($id));
