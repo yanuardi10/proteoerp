@@ -13,7 +13,7 @@ class fiscalz extends Controller{
 		$this->rapyd->load("datafilter","datagrid");
 
 		$filter = new DataFilter("Filtro de Cierre Z");
-		$select=array('serial','hora','numero','caja','fecha','factura','fecha1','(exento+base+iva+base1+iva1+base2+iva2-ncexento-ncbase-nciva-ncbase1-nciva1-ncbase2-nciva2) AS total');
+		$select=array('serial','hora','manual','numero','caja','fecha','factura','fecha1','(exento+base+iva+base1+iva1+base2+iva2-ncexento-ncbase-nciva-ncbase1-nciva1-ncbase2-nciva2) AS total');
 		$filter->db->select($select);
 		$filter->db->from('fiscalz');
 
