@@ -208,6 +208,7 @@ class metas extends Controller{
 
 	function load(){
 		$this->load->library('path');
+		$this->load->helper('html');
 		$path=new Path();
 		$path->setPath($this->config->item('uploads_dir'));
 		$path->append('/archivos');
@@ -216,6 +217,18 @@ class metas extends Controller{
 		$this->rapyd->load('dataform');
 		$form = new DataForm('ventas/metas/load/process');
 		$form->title('Cargar Metas (xls)');
+
+
+
+		$list = array(
+			'<b>D</b>: El nombre del negocio ('.$this->datasis->traevalor('TITULO1').').',
+			'<b>F</b>: El c&oacute;digo del producto.',
+			'<b>H</b>: La meta en toneladas para el mes 1.',
+			'<b>I</b>: La meta en toneladas para el mes 2 (Colocar en cero si no se tiene).',
+			'<b>J</b>: La meta en toneladas para el mes 3 (Colocar en cero si no se tiene).'
+		);
+
+		$form->container = new containerField("adver","Asegurese de que el formato este en <b>Excel 97-2003</b> y contenga las siguientes columnas: ".ul($list));
 
 		$form->archivo = new uploadField('Archivo','archivo');
 		$form->archivo->upload_path   = '';
