@@ -498,9 +498,9 @@ class Cierre extends Controller {
 		foreach ( $query->result() as $row ){
 			//$ind= ($mod==0) ? ($mes>12 OR $mes==0)? 12: $mes : $mod;
 
-			$mmonto    = (empty($_POST["TOFP".$row->tipo])) ? 0 : floatval($_POST["TOFP".$row->tipo]);
-			$msistema  = (empty($_POST["SOFP".$row->tipo])) ? 0 : floatval($_POST["SOFP".$row->tipo]);
-			$can       = (empty($_POST["COFP".$row->tipo])) ? 0 : floatval($_POST["COFP".$row->tipo]);
+			$mmonto    = (empty($_POST["TOFP".$row->tipo])) ? 0 : $_POST["TOFP".$row->tipo];
+			$msistema  = (empty($_POST["SOFP".$row->tipo])) ? 0 : $_POST["SOFP".$row->tipo];
+			$can       = (empty($_POST["COFP".$row->tipo])) ? 0 : $_POST["COFP".$row->tipo];
 			$can       = intval($can);
 			$mmonto    = floatval(str_replace(",",".",str_replace(".","",$mmonto)));
 			$msistema  = floatval(str_replace(",",".",str_replace(".","",$msistema)));
@@ -573,6 +573,26 @@ class Cierre extends Controller {
 		logusu('cierrep',"Cierre guardado por proteo de la caja ${caja} numero ${numero}");
 		return $salida;
 	}
+
+	function _reverso($numero){
+		$dbnumero = $this->db->escape($numero);
+		$cana     = $this->datasis->dameval("SELECT COUNT(*) FROM dine WHERE numero=${dbnumero}");
+
+		if($cana==1){
+			$mSQL=$this->datasis->dameval("SELECT fecha, cajero, caja, corte, monedas, parcial,trecibe, recibido, computa, diferen,transac FROM dine WHERE numero=${dbnumero}");
+			$row=$this->datasis->damerow($mSQL);
+
+			$transac=$row->transac;
+
+			$mSQL="DELETE FROM dine WHERE numero=${dbnumero}";
+			$mSQL="DELETE FROM itdine WHERE numero=${dbnumero}";
+
+		}else{
+			return false;
+		}
+
+	}
+
 
 	function doccierre() {
 		$numero = $this->uri->segment(4);
