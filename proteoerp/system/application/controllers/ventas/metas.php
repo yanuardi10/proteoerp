@@ -221,7 +221,7 @@ class metas extends Controller{
 
 
 		$list = array(
-			'<b>D</b>: El nombre del negocio ('.$this->datasis->traevalor('TITULO1').').',
+			'<b>C</b>: El nombre del negocio ('.$this->datasis->traevalor('TITULO1').').',
 			'<b>F</b>: El c&oacute;digo del producto.',
 			'<b>H</b>: La meta en toneladas para el mes 1.',
 			'<b>I</b>: La meta en toneladas para el mes 2 (Colocar en cero si no se tiene).',
@@ -267,7 +267,8 @@ class metas extends Controller{
 			'noviembre' =>'11','diciembre' =>'12'
 		);
 
-		$nombre=$this->datasis->traevalor('TITULO1');
+		$cana=0;
+		$nombre=trim($this->datasis->traevalor('TITULO1'));
 		$this->load->library('Spreadsheet_Excel_Reader');
 		//$this->spreadsheet_excel_reader->setColumnFormat(6, '_ * #.##0,00_ ;_ * -#.##0,00_ ;_ * "-"??_ ;_ @_');
 		$sim=$error=0;
@@ -278,7 +279,7 @@ class metas extends Controller{
 		$this->spreadsheet_excel_reader->read($arch);
 		//$hojas=count($this->spreadsheet_excel_reader->sheets);
 		foreach($this->spreadsheet_excel_reader->sheets[0]['cells'] as $id=>$row){
-			if(!isset($row[4])) continue;
+			if(!isset($row[3])) continue;
 
 			//Saca la definicion de las columnas
 			if(empty($ind_ex[8]) || empty($ind_ex[9]) || empty($ind_ex[10])){
@@ -295,7 +296,7 @@ class metas extends Controller{
 				}
 			}
 
-			similar_text(strtoupper($row[4]),$nombre, $sim);
+			similar_text(strtoupper($row[4]),strtoupper($nombre), $sim);
 			if($sim>80){
 				$data['codigo'] = $row[6];
 				for($i=8;$i<11;$i++){
@@ -308,7 +309,7 @@ class metas extends Controller{
 						$mSQL.= 'ON DUPLICATE KEY UPDATE `peso`='.$data['peso'];
 						$ban=$this->db->simple_query($mSQL);
 
-						if(!$ban){ memowrite($mSQL,'metas'); $error++; }
+						if(!$ban){ memowrite($mSQL,'metas'); $error++; }else{ $cana++; }
 					}
 				}
 			}
@@ -319,14 +320,14 @@ class metas extends Controller{
 			metas AS a
 			JOIN sinv AS b ON a.codigo=b.codigo
 			SET a.cantidad=CEIL(a.peso/b.peso)
-			WHERE b.peso>0 AND fecha IN ($ww)";
+			WHERE b.peso>0 AND a.cantidad=0";
 		$ban=$this->db->simple_query($mSQL);
 
 		if(file_exists($arch)) unlink($arch);
 		if($error>0){
 			return 'Hubo algunos errores se generaron centinelas.';
 		}else{
-			return 'Archivo procesado.';
+			return "Fueron cargadas $cana metas.";
 		}
 	}
 
