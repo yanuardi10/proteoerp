@@ -296,7 +296,7 @@ class metas extends Controller{
 				}
 			}
 
-			similar_text(strtoupper($row[4]),strtoupper($nombre), $sim);
+			similar_text(strtoupper($row[3]),strtoupper($nombre), $sim);
 			if($sim>80){
 				$data['codigo'] = $row[6];
 				for($i=8;$i<11;$i++){
