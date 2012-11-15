@@ -474,8 +474,8 @@ class Cierre extends Controller {
 		foreach ($query->result() as $row){
 			//$mmonto    = (empty($_POST["TCESTA".$row->concepto])) ? 0 : $_POST["TCESTA".$row->concepto];
 			//$mmonto    = $_POST["TCESTA".$row->concepto];
-			$mmonto    = floatval($this->__post("TCESTA".$row->concepto)); //$_POST["TCESTA".$row->concepto];
-			$msistema  = floatval($_POST["SCESTA".$row->concepto]);
+			$mmonto    = $this->__post("TCESTA".$row->concepto); //$_POST["TCESTA".$row->concepto];
+			$msistema  = $_POST["SCESTA".$row->concepto];
 			$can       = intval($_POST["CCESTA".$row->concepto]);
 			$mmonto    = floatval(str_replace(",",".",str_replace(".","",$mmonto)));
 			$msistema  = floatval(str_replace(",",".",str_replace(".","",$msistema)));
