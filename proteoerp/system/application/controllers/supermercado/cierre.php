@@ -526,14 +526,14 @@ class Cierre extends Controller {
 
 		$this->db->query($mSQL,array(
 			$numero,$qfecha,$cajero,$caja,$billete,$mmonto1,$mmonto1,$msistema,$mmonto2,
-			$this->secu->usr(),$banco,$fondo,$_POST['controlf'],$transac,$_POST['observaciones'],$_POST['controlp']));
+			$this->secu->usuario(),$banco,$fondo,$_POST['controlf'],$transac,$_POST['observaciones'],$_POST['controlp']));
 
 		$mSQL = "INSERT INTO bmov (codbanc, moneda, numcuent, banco, saldo, tipo_op, numero, fecha, clipro,
 	             codcp, nombre, monto, concepto, enlace, liable, transac, usuario, estampa,
 	             hora, anulado )
 	            VALUES ( ?, 'Bs', 'CAJA POS','CAJA POS',0, 'NC',?,?,'O','VENT',
 	            ?,?,'INGRESO ARQUEO CAJA $caja CAJERO $cajero FECHA $fecha',
-	            '$cajero','S','$transac', '".$this->secu->usr()."', NOW(), '".date("h:m:s")."','N' ) ";
+	            '$cajero','S','$transac', '".$this->secu->usuario()."', NOW(), '".date("h:m:s")."','N' ) ";
 		$this->db->query($mSQL,array($banco,"ARCA${numero}",$qfecha,"INGRESOS CUADRE DE CAJA ${caja}",$mmonto1));
 		$this->db->query("UPDATE banc SET saldo=saldo+".$mmonto1." WHERE codbanc='$banco'");
 		$this->db->query("UPDATE bsal SET saldo".substr($qfecha,4,2) ."= saldo".substr($qfecha,4,2)."+".$mmonto1." WHERE codbanc='$banco' AND ano='" . substr($qfecha,0,4) ."' ");
@@ -545,7 +545,7 @@ class Cierre extends Controller {
 			         VALUES ( 'DF', 'Bs', 'DIFERENCIA EN CAJA','DIFERENCIA EN CAJA',0, 'NC','ARDF$numero',$qfecha,'O','VENT',
 			           'INGRESOS CUADRE DE CAJA $caja',".($msistema-$mmonto1).",
 			           'FALTANTE ARQUEO DE CAJA $caja CAJERO $cajero FECHA $fecha',
-			           '$cajero','S','$transac', '".$this->secu->usr()."', NOW(),
+			           '$cajero','S','$transac', '".$this->secu->usuario()."', NOW(),
 			           '".date("h:m:s")."','N' ) ";
 			$this->db->query($mSQL);
 			$this->db->query("UPDATE banc SET saldo=saldo+".($msistema-$mmonto1)." WHERE codbanc='DF'");
@@ -558,7 +558,7 @@ class Cierre extends Controller {
 	  	         VALUES ('DF', 'Bs', 'DIFERENCIA EN CAJA','DIFERENCIA EN CAJA',0, 'ND','ARDF$numero',$qfecha,'O',
 	  	          'VENT','INGRESOS CUADRE DE CAJA $caja',". ($mmonto1-$msistema) .",
 	  	          'SOBRANTE ARQUEO DE CAJA $caja CAJERO $cajero FECHA $fecha',
-	  	          '$cajero','S','$transac', '".$this->secu->usr()."', now(),'".date("h:m:s")."','N' ) ";
+	  	          '$cajero','S','$transac', '".$this->secu->usuario()."', now(),'".date("h:m:s")."','N' ) ";
 			$this->db->query($mSQL);
 			$this->db->query("UPDATE banc SET saldo=saldo-" . ($mmonto1-$msistema) . " WHERE codbanc='DF'");
 			$this->db->query("UPDATE bsal SET saldo" . substr($qfecha,4,2) ."= saldo" . substr($qfecha,4,2) ."+". ($mmonto1-$msistema) . " WHERE codbanc='DF' AND ano='" . substr($qfecha,0,4) ."' ");
@@ -829,4 +829,3 @@ class Cierre extends Controller {
 		return (empty($pivo)) ? 0 : $pivo;
 	}
 }
-?>
