@@ -240,7 +240,7 @@ class pfac extends validaciones{
 		if ($query->num_rows() > 0){
 			foreach ($query->result() as $row){
 				$ind='_'.$row->codigo;
-				$inven[$ind]=array($row->descrip,$row->tipo,$row->base1,$row->base2,$row->base3,$row->base4,$row->iva,$row->peso,$row->precio1,$row->pond);
+				$inven[$ind]=array(utf8_encode($row->descrip),$row->tipo,$row->base1,$row->base2,$row->base3,$row->base4,$row->iva,$row->peso,$row->precio1,$row->pond);
 			}
 		}
 		$jinven=json_encode($inven);
