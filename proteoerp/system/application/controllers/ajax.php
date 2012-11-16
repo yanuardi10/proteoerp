@@ -1162,8 +1162,4 @@ class Ajax extends Controller {
 		echo $data;
 		return true;
 	}
-
-
-
-
 }
