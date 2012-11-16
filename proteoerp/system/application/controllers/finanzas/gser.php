@@ -50,7 +50,8 @@ class gser extends Controller {
 		$grid->setUrlput(site_url($this->url.'setdata/'));
 
 		//Botones Panel Izq
-		$grid->wbotonadd(array("id"=>"imprimir", "img"=>"assets/default/images/print.png", "alt" => "Imprimir",  "label"=>"Imprimir"     ));
+		$grid->wbotonadd(array("id"=>"imprimir" , "img"=>"assets/default/images/print.png", "alt" => "Imprimir Documento",  "label"=>"Imprimir Documento" ));
+		$grid->wbotonadd(array("id"=>"reteprint", "img"=>"assets/default/images/print.png", "alt" => "Imprimir Retención",  "label"=>"Imprimir Retención" ));
 		$WestPanel = $grid->deploywestp();
 
 		//Panel Central
@@ -91,6 +92,16 @@ class gser extends Controller {
 				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
 				window.open(\''.site_url('formatos/ver/GSER/').'/\'+id, \'_blank\', \'width=900,height=800,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-400)\');
 			} else { $.prompt("<h1>Por favor Seleccione una Factura</h1>");}
+		});';
+
+		//Imprimir retencion
+		$bodyscript .= '
+		jQuery("#reteprint").click( function(){
+			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
+				window.open(\''.site_url('formatos/ver/GSER/').'/\'+id, \'_blank\', \'width=900,height=800,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-400)\');
+			} else { $.prompt("<h1>Por favor Seleccione un gasto</h1>");}
 		});';
 
 		$bodyscript .= '
@@ -1781,7 +1792,7 @@ class gser extends Controller {
 
 			if ( $modo == 'update' ) $this->genesal = false;
 			$rt = $this->dataedit();
-			
+
 			$rt = str_replace("\n","<br>",$rt);
 			if ($rt == 'Gasto Guardado')
 				$status='A';
@@ -4355,6 +4366,21 @@ function gserfiscal(mid){
 			$this->validation->set_message('chsobretasa', "Si la base adicional es mayor que cero debe generar impuesto");
 			return false;
 		}
+	}
+
+	function printrete($id_scst){
+		$sel=array('b.id');
+		$this->db->select($sel);
+		$this->db->from('gser AS a');
+		$this->db->join('riva AS b','a.transac=b.transac');
+		$this->db->where('a.id' , $id_scst);
+		$mSQL_1 = $this->db->get();
+
+		if ($mSQL_1->num_rows() == 0){ show_error('Retención no encontrada');}
+
+		$row = $mSQL_1->row();
+		$id  = $row->id;
+		redirect("formatos/ver/RIVA/$id");
 	}
 
 	function instalar(){
