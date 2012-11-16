@@ -56,6 +56,9 @@ class Scst extends Controller {
 
 		//Botones Panel Izq
 		$grid->wbotonadd(array("id"=>"imprimir", "img"=>"images/pdf_logo.gif", "alt" => 'Formato PDF',         "label"=>"Reimprimir Documento"));
+		$contribu=$this->datasis->traevalor('CONTRIBUYENTE');
+
+		$grid->wbotonadd(array("id"=>"reteprin", "img"=>"images/pdf_logo.gif", "alt" => 'Formato PDF', "label"=>"Reimprimir Retención"));
 		$grid->wbotonadd(array("id"=>"cprecios", "img"=>"images/precio.png",   "alt" => 'Precios',             "label"=>"Cambiar Precios"));
 		$grid->wbotonadd(array("id"=>"serie",    "img"=>"images/editar.png",   "alt" => 'Cambiar Numero',      "label"=>"Cambiar Numero "));
 		$grid->wbotonadd(array("id"=>"reversar", "img"=>"images/arrow_up.png", "alt" => 'Actualizar/Reversar', "label"=>"Actualizar Reversar"));
@@ -108,6 +111,17 @@ class Scst extends Controller {
 				'.$this->datasis->jwinopen(site_url('formatos/ver/COMPRA').'/\'+id+"/id"').';
 			} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
 		});';
+
+		//Imprimir retencion
+		$bodyscript .= '
+		jQuery("#reteprin").click( function(){
+			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
+				'.$this->datasis->jwinopen(site_url($this->url.'printrete').'/\'+id+"/id"').';
+			} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
+		});';
+
 
 		$bodyscript .= '
 		jQuery("#serie").click( function(){
@@ -3152,6 +3166,21 @@ class Scst extends Controller {
 			$this->validation->set_message('chddate', 'No se puede recepcionar una compra con fecha superior al d&iacute;a de hoy.');
 			return false;
 		}
+	}
+
+	function printrete($id_scst){
+		$sel=array('b.id');
+		$this->db->select($sel);
+		$this->db->from('scst AS a');
+		$this->db->join('riva AS b','a.transac=b.transac');
+		$this->db->where('a.id' , $id_scst);
+		$mSQL_1 = $this->db->get();
+
+		if ($mSQL_1->num_rows() == 0){ show_error('Retención no encontrada');}
+
+		$row = $mSQL_1->row();
+		$id  = $row->id;
+		redirect("formatos/ver/RIVA/$id");
 	}
 
 	function _pond($existen,$itcana,$pond,$ultimo){
