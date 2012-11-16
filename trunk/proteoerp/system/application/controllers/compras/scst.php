@@ -55,10 +55,8 @@ class Scst extends Controller {
 		$grid->setUrlput(site_url($this->url.'setdata/'));
 
 		//Botones Panel Izq
-		$grid->wbotonadd(array("id"=>"imprimir", "img"=>"images/pdf_logo.gif", "alt" => 'Formato PDF',         "label"=>"Reimprimir Documento"));
-		$contribu=$this->datasis->traevalor('CONTRIBUYENTE');
-
-		$grid->wbotonadd(array("id"=>"reteprin", "img"=>"images/pdf_logo.gif", "alt" => 'Formato PDF', "label"=>"Reimprimir Retención"));
+		$grid->wbotonadd(array("id"=>"imprimir", "img"=>"images/print.png",    "alt" => 'Formato PDF',         "label"=>"Reimprimir Documento"));
+		$grid->wbotonadd(array("id"=>"reteprin", "img"=>"images/print.png",    "alt" => 'Formato PDF',         "label"=>"Reimprimir Retención"));
 		$grid->wbotonadd(array("id"=>"cprecios", "img"=>"images/precio.png",   "alt" => 'Precios',             "label"=>"Cambiar Precios"));
 		$grid->wbotonadd(array("id"=>"serie",    "img"=>"images/editar.png",   "alt" => 'Cambiar Numero',      "label"=>"Cambiar Numero "));
 		$grid->wbotonadd(array("id"=>"reversar", "img"=>"images/arrow_up.png", "alt" => 'Actualizar/Reversar', "label"=>"Actualizar Reversar"));
