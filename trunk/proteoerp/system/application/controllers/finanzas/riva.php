@@ -43,11 +43,22 @@ jQuery("#a1").click( function(){
 		window.open(\''.base_url().'formatos/ver/RIVA/\'+id, \'_blank\', \'width=800,height=600,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-400), screeny=((screen.availWidth/2)-300)\');
 	} else { $.prompt("<h1>Por favor Seleccione un Movimiento</h1>");}
 });
+
+		jQuery("#boton1").click( function(){
+			var id = jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret = jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
+				window.open(\''.site_url('formatos/ver/RIVA').'/\'+id, \'_blank\', \'width=900,height=800,scrollbars=yes,status=yes,resizable=yes,screenx=((screen.availHeight/2)-450), screeny=((screen.availWidth/2)-400)\');
+			} else { $.prompt("<h1>Por favor Seleccione una Factura</h1>");}
+		});
 </script>
 ';
 
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		$grid->wbotonadd(array("id"=>"boton1",  "img"=>"images/pdf_logo.gif","alt" => 'Formato PDF',      "label"=>"Reimprimir Documento"));
+
 
 		$WestPanel = '
 <div id="LeftPane" class="ui-layout-west ui-widget ui-widget-content">
@@ -72,6 +83,8 @@ jQuery("#a1").click( function(){
 //		<td><a style="width:190px" href="#" id="a1">Imprimir Copia</a></td>
 '</div> <!-- #LeftPane -->
 ';
+		$WestPanel = $grid->deploywestp();
+
 
 		$SouthPanel = '
 <div id="BottomPane" class="ui-layout-south ui-widget ui-widget-content">
