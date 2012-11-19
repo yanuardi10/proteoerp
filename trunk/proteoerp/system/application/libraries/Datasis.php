@@ -36,11 +36,11 @@ funciones
 	login()                               // MARCA LOGGED EN USERDATA
 	puede($id)                            // SI TIENE ACCESO A id
 	modulo_id( $modulo, $ventana=0 )      // Identifica el modulo y controla el acceso
-	modulo_nombre( $modulo, $ventana=0 )  // 
+	modulo_nombre( $modulo, $ventana=0 )  //
 	sidapuede($modulo, $opcion)           //
 	puede_ejecuta($nombre)                // si tiene acceso a un modulo por nombre de ejecucion
 
-	
+
 	consularray($mSQL)                    //Convierte una consulta a un array
 	form2uri($clase,$metodo,$parametros)  //
 	ivaplica($mfecha=NULL)
@@ -54,24 +54,24 @@ funciones
 	prox_imenu($mod='')                   // Proxima opcion de menu
 	fprox_numero($mcontador,$long=8)      // Proximo numero
 	banprox($codban)                      // Proximo documento bancario
-	
+
 	damesesion($id)
 	llenacombo($mSQL)
 	llenaopciones($mSQL, $todos=false, $id='' )
 	llenajqselect($mSQL, $todos=false )
 	actusal($codbanc, $fecha, $monto)     // Actualiza saldo en Bancos
 
-	
+
 	sinvcarga( $mCODIGO, $mALMA, $mCANTIDAD) // CARGA CANTIDAD ACTUALIZANDO MAESTRO Y DETALLE
 
-	
+
 	listados($modulo, $tipo = 'E')   // Manda los Reportes disponibles
 	otros( $modulo, $tipo = 'E' )    // Manda otras funciones
 	menuMod()
 
-	
+
 	jqdata($mSQL,$data)    //  Convierte un SElect a Data JqGrid
-	
+
 	jqtablawest($nombre, $caption, $colModel,  $mSQL, $alto=200, $ancho=190) // Convierte un SElect a Data JqGrid
 
 	extjsfiltro($filtros, $tabla = '')
@@ -81,11 +81,11 @@ funciones
 	extjscampos($tabla)
 	extultireg($data)
 	jqgcampos($mSQL)
-	
+
 **/
 
 class Datasis {
-	
+
 // FUNCIONES DE BD
 
 	// TRAE EL PRIMER CAMPO DEL PRIMER REGISTRO DE LA CONSULTA
@@ -214,9 +214,9 @@ class Datasis {
 		return $mes;
 	}
 
-	// ARREGLO DE ANOS 
+	// ARREGLO DE ANOS
 	function aano(){
-		
+
 		$ano  = array('2004'=>'2004','2005'=>'2005','2006'=>'2006','2007'=>'2007','2008'=>'2008','2009'=>'2009','2010'=>'2010');
 		return $ano;
 	}
@@ -440,7 +440,7 @@ class Datasis {
 			}
 		}
 	}
-	
+
 
 	//Convierte una consulta a un array
 	function consularray($mSQL){
@@ -604,10 +604,10 @@ class Datasis {
 			$mSQL .= "WHERE MID(a.modulo,1,1)='$mod' AND length(a.modulo)=3 ) aaa";
 		}
 		$mSQL .= "JOIN serie bbb WHERE bbb.valor=aaa.siguiente ";
-		
+
 		$return = $this->dameval($mSQL);
 	}
-	
+
 
 	function banprox($codban){
 		$CI =& get_instance();
@@ -631,7 +631,7 @@ class Datasis {
 			$numero = $CI->datasis->dameval("SELECT proxch FROM banc WHERE codbanc='$codban'");
 			while(true){
 				$mSQL  = "UPDATE banc SET proxch=LPAD(proxch+1,12,'0') WHERE codbanc='$codban'";
-				if ( $CI->datasis->dameval("SELECT COUNT(*) FROM bmov WHERE codbanc='$codban' AND numero='$numero'") == 0){ 
+				if ( $CI->datasis->dameval("SELECT COUNT(*) FROM bmov WHERE codbanc='$codban' AND numero='$numero'") == 0){
 					break;
 				}
 				$mSQL  = "UPDATE banc SET proxch=LPAD(proxch+1,12,'0')  WHERE codbanc='$codban'";
@@ -757,27 +757,28 @@ class Datasis {
 
 	function actusal($codbanc, $fecha, $monto){
 		$CI =& get_instance();
-		
+
 		$fecha = str_replace('-','',$fecha);
 		$fecha = str_replace('/','',$fecha);
-		
+		$dbcodbanc = $CI->db->escape($codbanc);
+
 		// Actualiza el saldo
-		$mSQL = "UPDATE banc SET saldo=saldo+$monto WHERE codbanc='$codbanc'";
+		$mSQL = "UPDATE banc SET saldo=saldo+$monto WHERE codbanc=${dbcodbanc}";
 		$CI->db->simple_query($mSQL);
 
 		// SI NO EXISTE LO CREA
-		$mSQL = "SELECT COUNT(*) FROM bsal WHERE codbanc='$codbanc' AND ano=".substr($fecha,0,4);
+		$mSQL = "SELECT COUNT(*) FROM bsal WHERE codbanc=${dbcodbanc} AND ano=".substr($fecha,0,4);
 		if ( $this->dameval($mSQL) == 0 ) {
-			$mSQL = "INSERT INTO bcaj SET codbanc='$codbanc' AND ano=".substr($fecha,0,4);
+			$mSQL = "INSERT INTO bcaj SET codbanc=${codbanc} AND ano=".substr($fecha,0,4);
 			$CI->db->simple_query($mSQL);
-		
+
 			//SALDO INICIAL
-			$mSQL = "SELECT saldo+saldo01+ saldo02+ saldo03+ saldo04+ saldo05+ saldo06+saldo07+ saldo08+ saldo09+ saldo10+ saldo11+ saldo12 ";
-			$mSQL .= "FROM bsal WHERE codbanc='$codbanc' ORDER BY ano DESC";
+			$mSQL   = "SELECT saldo+saldo01+ saldo02+ saldo03+ saldo04+ saldo05+ saldo06+saldo07+ saldo08+ saldo09+ saldo10+ saldo11+ saldo12 ";
+			$mSQL  .= "FROM bsal WHERE codbanc=${codbanc} ORDER BY ano DESC";
 			$mSALDO = $this->dameval($mSQL);
 		}
 		$nomsal = 'saldo'.substr($fecha,6,2);
-		$mSQL   = "UPDATE bsal SET $nomsal=$nomsal+$monto WHERE codbanc='$codbanc' AND ano=".substr($fecha,0,4);
+		$mSQL   = "UPDATE bsal SET $nomsal=$nomsal+$monto WHERE codbanc=${codbanc} AND ano=".substr($fecha,0,4);
 		$CI->db->simple_query($mSQL);
 		//$sql='CALL sp_actusal('.$CI->db->escape($banco).",'$fecha',$monto)";
 	}
@@ -901,7 +902,7 @@ class Datasis {
 		$usuario    =  $CI->session->userdata('usuario');
 		$reposcript =  '';
 
-		if ( !$this->sidapuede($modulo,'LISTADO%') ) return ''; 
+		if ( !$this->sidapuede($modulo,'LISTADO%') ) return '';
 
 		$mSQL="UPDATE tmenus SET ejecutar=REPLACE(ejecutar,"."'".'( "'."','".'("'."') WHERE modulo LIKE '%LIS'";
 		$CI->db->simple_query($mSQL);
@@ -966,7 +967,7 @@ class Datasis {
 						$i++;
 						$listados .= "{ id:'".$i."', titulo:'".$row['titulo']."', nombre:'".$row['nombre']."' },";
 					}
-				} 
+				}
 				$query->free_result();
 
 				$reposcript = "
@@ -1002,7 +1003,7 @@ class Datasis {
 						$i++;
 						$listados .= "\t\t{ id:'".$i."', titulo:'".$row['titulo']."', nombre:'".$row['nombre']."' },\n";
 					}
-				} 
+				}
 				if ( !empty($listados)) {
 					$reposcript = "var datalis = [\n".$listados."\n\t];";
 				} else {
@@ -1025,7 +1026,7 @@ class Datasis {
 		$CI =& get_instance();
 		$usuario    =  $CI->session->userdata('usuario');
 
-		if ( !$this->sidapuede($modulo,'OTROS%') ) return ''; 
+		if ( !$this->sidapuede($modulo,'OTROS%') ) return '';
 
 		if ( ! $this->iscampo('tmenus','proteo') ) {
 			$CI->db->simple_query('ALTER TABLE tmenus ADD COLUMN proteo TEXT NULL');
@@ -1120,7 +1121,7 @@ class Datasis {
 			$str .= "'id'";
 			$long = 40;
 			foreach ($query->result() as $row){
-				if ( $row->Field == 'id') 
+				if ( $row->Field == 'id')
 					$tieneid = false;
 				else {
 					$str .= ", '".$row->Field."'";
@@ -1137,17 +1138,17 @@ class Datasis {
 						$long = 250;
 					}
 					//Llena las Columnas
-					$cols .= '		{name:\''.$row->Field.'\',index:\''.$row->Field.'\', width:'.$long.', editable:true},'."\n"; 
+					$cols .= '		{name:\''.$row->Field.'\',index:\''.$row->Field.'\', width:'.$long.', editable:true},'."\n";
 				}
 			}
 			$str .= '],'."\n";
-			$str .= '	colModel:['."\n"; 
+			$str .= '	colModel:['."\n";
 			$str .= $cols;
-			$str .= '	],'."\n"; 
+			$str .= '	],'."\n";
 
-			$str .= '	rowNum:10,'."\n";  
-			$str .= '	rowList:[10,20,30],'."\n";  
-			$str .= '	pager: \'#p'.$id.'\', '."\n"; 
+			$str .= '	rowNum:10,'."\n";
+			$str .= '	rowList:[10,20,30],'."\n";
+			$str .= '	pager: \'#p'.$id.'\', '."\n";
 
 			$str .= '	sortname: \'id\', '."\n";
 			$str .= '	viewrecords: true, '."\n";
@@ -1225,7 +1226,7 @@ class Datasis {
 				$Tempo .= "\t\t{ id:'".$i."'";
 				$m = 0;
 				foreach($titulos as $tt) {
-					
+
 					$Tempo .= ", $tt:'".$valores[$m]."'";
 					$m++;
 				}
@@ -1249,10 +1250,10 @@ class Datasis {
 	function jqtablawest($nombre, $caption, $colModel,  $mSQL, $alto=200, $ancho=190) {
 
 		//colNames:[\'\',\'Reporte\',\'Nombre\'],
-		
+
 		$columnas = $this->jqdata($mSQL,$nombre."dat");
 
-		//'.$columnas['colNames'].'		
+		//'.$columnas['colNames'].'
 		$Salida = '
 	jQuery("#'.$nombre.'").jqGrid({
 		datatype: "local",
@@ -1407,7 +1408,7 @@ class Datasis {
 		}
 		return utf8_encode($campos);
 	}
-	
+
 	//**************************************************
 	//
 	//       Modifica Intramenu
@@ -1435,7 +1436,7 @@ class Datasis {
 	}
 
 
-	
+
 	//**************************************************
 	//
 	//   Pop up Ventana de javascript
@@ -1454,43 +1455,43 @@ class Datasis {
 		if ( $mTIPO == 'P' ){
 
 			$mSQL = "
-			UPDATE sinv SET 
-				precio1=ROUND(pond*(100+iva)/(100-margen1),2), 
-				precio2=ROUND(pond*(100+iva)/(100-margen2),2), 
-				precio3=ROUND(pond*(100+iva)/(100-margen3),2), 
-				precio4=ROUND(pond*(100+iva)/(100-margen4),2), 
-				base1=ROUND(pond*100/(100-margen1),2), 
-				base2=ROUND(pond*100/(100-margen2),2), 
-				base3=ROUND(pond*100/(100-margen3),2), 
-				base4=ROUND(pond*100/(100-margen4),2)  
+			UPDATE sinv SET
+				precio1=ROUND(pond*(100+iva)/(100-margen1),2),
+				precio2=ROUND(pond*(100+iva)/(100-margen2),2),
+				precio3=ROUND(pond*(100+iva)/(100-margen3),2),
+				precio4=ROUND(pond*(100+iva)/(100-margen4),2),
+				base1=ROUND(pond*100/(100-margen1),2),
+				base2=ROUND(pond*100/(100-margen2),2),
+				base3=ROUND(pond*100/(100-margen3),2),
+				base4=ROUND(pond*100/(100-margen4),2)
 			WHERE formcal='P' ;";
 			$CI->db->simple_query($mSQL);
 
 
 			$mSQL = "
-			UPDATE sinv SET 
+			UPDATE sinv SET
 				precio1=ROUND(ultimo*(100+iva)/(100-margen1),2),
-				precio2=ROUND(ultimo*(100+iva)/(100-margen2),2), 
-				precio3=ROUND(ultimo*(100+iva)/(100-margen3),2), 
-				precio4=ROUND(ultimo*(100+iva)/(100-margen4),2), 
-				base1=ROUND(ultimo*100/(100-margen1),2), 
-				base2=ROUND(ultimo*100/(100-margen2),2), 
-				base3=ROUND(ultimo*100/(100-margen3),2), 
-				base4=ROUND(ultimo*100/(100-margen4),2)  
+				precio2=ROUND(ultimo*(100+iva)/(100-margen2),2),
+				precio3=ROUND(ultimo*(100+iva)/(100-margen3),2),
+				precio4=ROUND(ultimo*(100+iva)/(100-margen4),2),
+				base1=ROUND(ultimo*100/(100-margen1),2),
+				base2=ROUND(ultimo*100/(100-margen2),2),
+				base3=ROUND(ultimo*100/(100-margen3),2),
+				base4=ROUND(ultimo*100/(100-margen4),2)
 			WHERE formcal='U' ;";
 			$CI->db->simple_query($mSQL);
 
 
 			$mSQL = "
-			UPDATE sinv SET 
-				precio1=ROUND(GREATEST(ultimo,pond)*(100+iva)/(100-margen1),2), 
-				precio2=ROUND(GREATEST(ultimo,pond)*(100+iva)/(100-margen2),2), 
-				precio3=ROUND(GREATEST(ultimo,pond)*(100+iva)/(100-margen3),2), 
-				precio4=ROUND(GREATEST(ultimo,pond)*(100+iva)/(100-margen4),2), 
-				base1=ROUND(GREATEST(ultimo,pond)*100/(100-margen1),2), 
-				base2=ROUND(GREATEST(ultimo,pond)*100/(100-margen2),2), 
-				base3=ROUND(GREATEST(ultimo,pond)*100/(100-margen3),2), 
-				base4=ROUND(GREATEST(ultimo,pond)*100/(100-margen4),2)  
+			UPDATE sinv SET
+				precio1=ROUND(GREATEST(ultimo,pond)*(100+iva)/(100-margen1),2),
+				precio2=ROUND(GREATEST(ultimo,pond)*(100+iva)/(100-margen2),2),
+				precio3=ROUND(GREATEST(ultimo,pond)*(100+iva)/(100-margen3),2),
+				precio4=ROUND(GREATEST(ultimo,pond)*(100+iva)/(100-margen4),2),
+				base1=ROUND(GREATEST(ultimo,pond)*100/(100-margen1),2),
+				base2=ROUND(GREATEST(ultimo,pond)*100/(100-margen2),2),
+				base3=ROUND(GREATEST(ultimo,pond)*100/(100-margen3),2),
+				base4=ROUND(GREATEST(ultimo,pond)*100/(100-margen4),2)
 			WHERE formcal='M' ;";
 			$CI->db->simple_query($mSQL);
 
@@ -1498,32 +1499,32 @@ class Datasis {
 		} else if ($mTIPO == 'M') {
 
 			$mSQL = "
-			UPDATE sinv SET 
+			UPDATE sinv SET
 				margen1=100-ROUND(pond*100/base1,2),
 				margen2=100-ROUND(pond*100/base2,2),
 				margen3=100-ROUND(pond*100/base3,2),
-				margen4=100-ROUND(pond*100/base4,2) 
+				margen4=100-ROUND(pond*100/base4,2)
 			WHERE formcal='P' ;";
 			$CI->db->simple_query($mSQL);
-			
+
 			$mSQL = "
-			UPDATE sinv SET 
+			UPDATE sinv SET
 				margen1=100-ROUND(ultimo*100/base1,2),
 				margen2=100-ROUND(ultimo*100/base2,2),
 				margen3=100-ROUND(ultimo*100/base3,2),
-				margen4=100-ROUND(ultimo*100/base4,2) 
+				margen4=100-ROUND(ultimo*100/base4,2)
 			WHERE formcal='U' ;";
 			$CI->db->simple_query($mSQL);
-			
+
 			$mSQL = "
-			UPDATE sinv SET 
+			UPDATE sinv SET
 				margen1=100-ROUND(GREATEST(ultimo,pond)*100/base1,2),
 				margen2=100-ROUND(GREATEST(ultimo,pond)*100/base2,2),
 				margen3=100-ROUND(GREATEST(ultimo,pond)*100/base3,2),
-				margen4=100-ROUND(GREATEST(ultimo,pond)*100/base4,2) 
+				margen4=100-ROUND(GREATEST(ultimo,pond)*100/base4,2)
 			WHERE formcal='M' ;";
 			$CI->db->simple_query($mSQL);
-	
+
 		}
 
 	}
@@ -1533,73 +1534,73 @@ class Datasis {
 		$CI =& get_instance();
 
 		$mSQL = "
-		UPDATE sinv SET 
-			precio1=TRUNCATE(precio1/100,0)*100 +IF(MOD(precio1,100)>70,100,IF(MOD(precio1,100)>30,50,0)), 
-			precio2=TRUNCATE(precio2/100,0)*100 +IF(MOD(precio2,100)>70,100,IF(MOD(precio2,100)>30,50,0)), 
-			precio3=TRUNCATE(precio3/100,0)*100 +IF(MOD(precio3,100)>70,100,IF(MOD(precio3,100)>30,50,0)), 
-			precio4=TRUNCATE(precio4/100,0)*100 +IF(MOD(precio4,100)>70,100,IF(MOD(precio4,100)>30,50,0)) 
+		UPDATE sinv SET
+			precio1=TRUNCATE(precio1/100,0)*100 +IF(MOD(precio1,100)>70,100,IF(MOD(precio1,100)>30,50,0)),
+			precio2=TRUNCATE(precio2/100,0)*100 +IF(MOD(precio2,100)>70,100,IF(MOD(precio2,100)>30,50,0)),
+			precio3=TRUNCATE(precio3/100,0)*100 +IF(MOD(precio3,100)>70,100,IF(MOD(precio3,100)>30,50,0)),
+			precio4=TRUNCATE(precio4/100,0)*100 +IF(MOD(precio4,100)>70,100,IF(MOD(precio4,100)>30,50,0))
 		WHERE redecen='C' ;";
 		$CI->db->simple_query($mSQL);
 
 		$mSQL = "
-		UPDATE sinv SET 
-			precio1=TRUNCATE(precio1/10,0)*10 +IF(MOD(precio1,10)>7,10,IF(MOD(precio1,10)>3,5,0)), 
-			precio2=TRUNCATE(precio2/10,0)*10 +IF(MOD(precio2,10)>7,10,IF(MOD(precio2,10)>3,5,0)), 
-			precio3=TRUNCATE(precio3/10,0)*10 +IF(MOD(precio3,10)>7,10,IF(MOD(precio3,10)>3,5,0)), 
-			precio4=TRUNCATE(precio4/10,0)*10 +IF(MOD(precio4,10)>7,10,IF(MOD(precio4,10)>3,5,0)) 
+		UPDATE sinv SET
+			precio1=TRUNCATE(precio1/10,0)*10 +IF(MOD(precio1,10)>7,10,IF(MOD(precio1,10)>3,5,0)),
+			precio2=TRUNCATE(precio2/10,0)*10 +IF(MOD(precio2,10)>7,10,IF(MOD(precio2,10)>3,5,0)),
+			precio3=TRUNCATE(precio3/10,0)*10 +IF(MOD(precio3,10)>7,10,IF(MOD(precio3,10)>3,5,0)),
+			precio4=TRUNCATE(precio4/10,0)*10 +IF(MOD(precio4,10)>7,10,IF(MOD(precio4,10)>3,5,0))
 		WHERE redecen='D' ;";
 		$CI->db->simple_query($mSQL);
 
 		$mSQL = "
-		UPDATE sinv SET 
-			precio1=ROUND(precio1,0), 
-			precio2=ROUND(precio2,0), 
-			precio3=ROUND(precio3,0), 
-			precio4=ROUND(precio4,0)  
+		UPDATE sinv SET
+			precio1=ROUND(precio1,0),
+			precio2=ROUND(precio2,0),
+			precio3=ROUND(precio3,0),
+			precio4=ROUND(precio4,0)
 		WHERE redecen='F' ;";
 		$CI->db->simple_query($mSQL);
-		
+
 		$mSQL = "
-		UPDATE sinv SET 
-			precio1=ROUND(precio1,1), 
-			precio2=ROUND(precio2,1), 
-			precio3=ROUND(precio3,1), 
-			precio4=ROUND(precio4,1)  
+		UPDATE sinv SET
+			precio1=ROUND(precio1,1),
+			precio2=ROUND(precio2,1),
+			precio3=ROUND(precio3,1),
+			precio4=ROUND(precio4,1)
 		WHERE redecen='M' ;";
 		$CI->db->simple_query($mSQL);
 
 		$mSQL = "
-		UPDATE sinv SET 
-			base1=ROUND(precio1*100/(100+iva),2), 
-			base2=ROUND(precio2*100/(100+iva),2), 
-			base3=ROUND(precio3*100/(100+iva),2), 
+		UPDATE sinv SET
+			base1=ROUND(precio1*100/(100+iva),2),
+			base2=ROUND(precio2*100/(100+iva),2),
+			base3=ROUND(precio3*100/(100+iva),2),
 			base4=ROUND(precio4*100/(100+iva),2) ;";
 		$CI->db->simple_query($mSQL);
 
 		$mSQL = "
-		UPDATE sinv SET 
+		UPDATE sinv SET
 			margen1=100-ROUND(pond*100/base1,2),
 			margen2=100-ROUND(pond*100/base2,2),
 			margen3=100-ROUND(pond*100/base3,2),
-			margen4=100-ROUND(pond*100/base4,2) 
+			margen4=100-ROUND(pond*100/base4,2)
 		WHERE formcal='P' ;";
 		$CI->db->simple_query($mSQL);
-		
+
 		$mSQL = "
-		UPDATE sinv SET 
+		UPDATE sinv SET
 			margen1=100-ROUND(ultimo*100/base1,2),
 			margen2=100-ROUND(ultimo*100/base2,2),
 			margen3=100-ROUND(ultimo*100/base3,2),
-			margen4=100-ROUND(ultimo*100/base4,2) 
+			margen4=100-ROUND(ultimo*100/base4,2)
 		WHERE formcal='U' ;";
 		$CI->db->simple_query($mSQL);
-		
+
 		$mSQL = "
-		UPDATE sinv SET 
+		UPDATE sinv SET
 			margen1=100-ROUND(GREATEST(ultimo,pond)*100/base1,2),
 			margen2=100-ROUND(GREATEST(ultimo,pond)*100/base2,2),
 			margen3=100-ROUND(GREATEST(ultimo,pond)*100/base3,2),
-			margen4=100-ROUND(GREATEST(ultimo,pond)*100/base4,2) 
+			margen4=100-ROUND(GREATEST(ultimo,pond)*100/base4,2)
 		WHERE formcal='M' ;";
 
 		$CI->db->simple_query($mSQL);

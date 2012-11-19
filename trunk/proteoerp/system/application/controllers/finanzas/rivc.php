@@ -882,16 +882,15 @@ class rivc extends Controller {
 		$mmSQL="SELECT codbanc,monto FROM bmov WHERE transac=$dbtransac AND clipro='C'";
 		$qquery = $this->db->query($mmSQL);
 
+		$saldo=0;
 		if ($qquery->num_rows() > 0){
 			foreach ($qquery->result() as $rrow){
 				$codbanc    = $rrow->codbanc;
 				$sp_fecha   = date('Ymd');
 				$monto      = $rrow->monto;
-
-				$dbcodbanc  = $this->db->escape($codbanc);
-				$sqls[]="DELETE FROM bmov WHERE transac=$dbtransac AND clipro='C'";
-				$sqls[]="CALL sp_actusal($dbcodbanc,'$sp_fecha',$monto)";
+				$saldo     += $monto;
 			}
+			$sqls[]="DELETE FROM bmov WHERE transac=$dbtransac AND clipro='C'";
 		}
 		$sqls[]="UPDATE rivc SET anulado='S' WHERE id=".$this->db->escape($id);
 
@@ -903,6 +902,9 @@ class rivc extends Controller {
 					$error++;
 					memowrite($sql,'rivc');
 				}
+			}
+			if($saldo>0){
+				$this->datasis->actusal($codbanc, date('Ymd'), $saldo);
 			}
 		}
 
@@ -1273,17 +1275,22 @@ class rivc extends Controller {
 
 			}elseif($operacion=='R' && $sobrante>0){
 				$codbanc  = $do->get('codbanc');
-				$numeroch = $this->datasis->fprox_numero('ncaja'.$codbanc);
 				$datacar  = common::_traebandata($codbanc);
 				$sp_fecha = date('Ymd');
 				$ttipo    = $datacar['tbanco'];
 				$moneda   = $datacar['moneda'];
+				$negreso  = $this->datasis->fprox_numero('negreso');
 
-				$tipo1  = ($ttipo=='CAJ') ? 'D': 'C';
-				$negreso= $this->datasis->fprox_numero('negreso');
-				$credito= 0;
-				$causado= '';
-				$tipo_op= ($ttipo=='CAJ') ? 'ND': 'CH';
+				if($ttipo=='CAJ'){
+					$numeroch = $this->datasis->fprox_numero('ncaja'.$codbanc);
+					$tipo_op= 'ND';
+					$tipo1  = 'D' ;
+				}else{
+					//Pago con banco, falta implementar
+					$numeroch = 'NUMERO CHEQUE';
+					$tipo_op=  'CH';
+					$tipo1  =  'C' ;
+				}
 
 				$data=array();
 				$data['codbanc']    = $codbanc;
@@ -1316,7 +1323,7 @@ class rivc extends Controller {
 				$ban=$this->db->simple_query($sql);
 				if($ban==false){ memowrite($sql,'rivc'); $error++;}
 
-				$sql='CALL sp_actusal('.$this->db->escape($codbanc).",'$sp_fecha',-$sobrante)";
+				$this->datasis->actusal($codbanc, $sp_fecha, (-1)*$sobrante);
 				$ban=$this->db->simple_query($sql);
 				if($ban==false){ memowrite($sql,'rivc'); $error++; }
 
