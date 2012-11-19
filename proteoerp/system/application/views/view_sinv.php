@@ -1240,7 +1240,7 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 			</table>
 		</td>
 		<td valign='top'  align='left'>
-			<table border='0' >
+			<table border='0' width="100%" >
 				<tr>
 					<td class='littletableheaderc'><?php echo $form->clase->label ?></td>
 					<td class="littletablerow">    <?php echo $form->clase->output   ?></td>
@@ -1264,7 +1264,7 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 		<td valign='top'>
 			<fieldset style='border: 1px outset #B45F04;background: #FFEFFF;'>
 			<legend class="titulofieldset" >Costos</legend>
-			<table width='100%'>
+			<table width='100%' border="0">
 				<tr>
 					<td class="littletableheaderc"><?=$form->ultimo->label   ?></td>
 					<td class="littletablerow" align='right'><?=$form->ultimo->output  ?></td>

@@ -1,21 +1,21 @@
-<?php require_once(BASEPATH.'application/controllers/validaciones.php');
+<?php 
+require_once(BASEPATH.'application/controllers/validaciones.php');
 class Scli extends Controller {
-	var $genesal=true;
-	var $mModulo='SCLI';
-	var $titp='Clientes';
-	var $tits='Clientes';
-	var $url ='ventas/scli/';
+	var $genesal = true;
+	var $mModulo = 'SCLI';
+	var $titp    = 'Clientes';
+	var $tits    = 'Clientes';
+	var $url     = 'ventas/scli/';
 
 	function Scli(){
 		parent::Controller();
 		$this->load->library('rapyd');
 		$this->load->library('jqdatagrid');
 		$this->load->library('pi18n');
-		//$this->datasis->modulo_nombre( $modulo, $ventana=0 );
+		$this->datasis->modulo_nombre( 'SCLI', $ventana=0 );
 	}
 
 	function index(){
-
 		$campos = $this->db->list_fields('scli');
 		if (!in_array('id',$campos)){
 			$mSQL='ALTER TABLE `scli` DROP PRIMARY KEY, ADD UNIQUE `cliente` (`cliente`)';
@@ -23,13 +23,12 @@ class Scli extends Controller {
 			$mSQL='ALTER TABLE `scli` ADD `id` INT AUTO_INCREMENT PRIMARY KEY';
 			$this->db->simple_query($mSQL);
 		}
-
-		if (!in_array('url'     ,$campos)) $this->db->query('ALTER TABLE scli ADD COLUMN url VARCHAR(120) NULL ');
-		if (!in_array('pin'     ,$campos)) $this->db->query('ALTER TABLE scli ADD COLUMN pin VARCHAR(10) NULL ');
-		if (!in_array('fb'      ,$campos)) $this->db->query('ALTER TABLE scli ADD COLUMN fb VARCHAR(120) NULL ');
-		if (!in_array('twitter' ,$campos)) $this->db->query('ALTER TABLE scli ADD COLUMN twitter VARCHAR(120) NULL ');
-		if (!in_array('upago'   ,$campos)) $this->db->query('ALTER TABLE scli ADD COLUMN upago  VARCHAR(6) NULL ');
-		if (!in_array('tarifa'  ,$campos)) $this->db->query('ALTER TABLE scli ADD COLUMN tarifa VARCHAR(15) NULL ');
+		if (!in_array('url',     $campos)) $this->db->query('ALTER TABLE scli ADD COLUMN url VARCHAR(120) NULL ');
+		if (!in_array('pin',     $campos)) $this->db->query('ALTER TABLE scli ADD COLUMN pin VARCHAR(10) NULL ');
+		if (!in_array('fb',      $campos)) $this->db->query('ALTER TABLE scli ADD COLUMN fb VARCHAR(120) NULL ');
+		if (!in_array('twitter', $campos)) $this->db->query('ALTER TABLE scli ADD COLUMN twitter VARCHAR(120) NULL ');
+		if (!in_array('upago',   $campos)) $this->db->query('ALTER TABLE scli ADD COLUMN upago  VARCHAR(6) NULL ');
+		if (!in_array('tarifa',  $campos)) $this->db->query('ALTER TABLE scli ADD COLUMN tarifa VARCHAR(15) NULL ');
 
 		if ( !$this->datasis->iscampo('scli','tarifa') ) {
 			$this->db->query('ALTER TABLE scli ADD COLUMN tarifa CHAR(15) NULL ');
@@ -37,7 +36,6 @@ class Scli extends Controller {
 		$this->datasis->modintramenu( 1000, 650, 'ventas/scli' );
 		redirect($this->url.'jqdatag');
 	}
-
 
 	//***************************
 	//Layout en la Ventana
@@ -66,6 +64,176 @@ class Scli extends Controller {
 		);
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
+/*
+		$consulrif     = trim($this->datasis->traevalor('CONSULRIF'));
+		$lcuenta       = site_url('contabilidad/cpla/autocomplete/codigo');
+		$lsocio        = site_url('ventas/scli/autocomplete/cliente');
+
+		$link20=site_url('ventas/scli/scliexiste');
+		$link21=site_url('ventas/scli/sclicodigo');
+
+		$postready ='
+//	$("#tiva").change(function () { anomfis(); }).change();
+//	//$(":input").enter2tab();
+//	$("#maintabcontainer").tabs();
+
+$(function() {
+	//Default Action
+	$("#cuenta").autocomplete("'.$lcuenta.'",{
+		delay:10,
+		//minChars:2,
+		matchSubset:1,
+		matchContains:1,
+		cacheLength:10,
+		formatItem:formato,
+		width:350,
+		autoFill:true
+	});
+
+	$("#socio").autocomplete("'.$lsocio.'",{
+		delay:10,
+		matchSubset:1,
+		matchContains:1,
+		cacheLength:10,
+		formatItem:formato,
+		width:350,
+		autoFill:true
+	});
+
+	$("#rifci").focusout(function() {
+		rif=$(this).val();
+		if(!chrif(rif)){
+			alert("Al parecer el Rif colocado no es correcto, por favor verifique con el SENIAT.");
+		}
+	});
+});
+function formato(row) {
+	return row[0] + "-" + row[1];
+}
+
+function anomfis(){
+	vtiva=$("#tiva").val();
+	if(vtiva=="C" || vtiva=="E" || vtiva=="R"){
+		$("#tr_nomfis").show();
+		$("#tr_riffis").show();
+	}else{
+		$("#nomfis").val("");
+		$("#riffis").val("");
+		$("#tr_nomfis").hide();
+		$("#tr_riffis").hide();
+	}
+}
+
+function consulrif(campo){
+	vrif=$("#"+campo).val();
+	if(vrif.length==0){
+		alert("Debe introducir primero un RIF");
+	}else{
+		vrif=vrif.toUpperCase();
+		$("#riffis").val(vrif);
+		window.open("'.$consulrif.'"+"?p_rif="+vrif,"CONSULRIF","height=350,width=410");
+	}
+}
+
+function chrif(rif){
+	rif.toUpperCase();
+	var patt=/[EJPGV][0-9]{9} * /g;
+	if(patt.test(rif)){
+		var factor= new Array(4,3,2,7,6,5,4,3,2);
+		var v=0;
+		if(rif[0]=="V"){
+			v=1;
+		}else if(rif[0]=="E"){
+			v=2;
+		}else if(rif[0]=="J"){
+			v=3;
+		}else if(rif[0]=="P"){
+			v=4;
+		}else if(rif[0]=="G"){
+			v=5;
+		}
+		acum=v*factor[0];
+		for(i=1;i<9;i++){
+			acum=acum+parseInt(rif[i])*factor[i];
+		}
+		acum=11-acum%11;
+		if(acum>=10 || acum<=0){
+			acum=0;
+		}
+		return (acum==parseInt(rif[9]));
+	}else{
+		return true;
+	}
+}
+
+function fusionar(mviejo){
+	var yurl = "";
+	$.prompt("Codigo Nuevo","" ,"Codigo Nuevo", function(mcodigo){
+		if( mcodigo==null ){
+			jAlert("Cancelado por el usuario","Informacion");
+		} else if( mcodigo=="" ) {
+			jAlert("Cancelado,  Codigo vacio","Informacion");
+		} else {
+			//mcodigo=jQuery.trim(mcodig);
+			//jAlert("Aceptado "+mcodigo);
+			yurl = encodeURIComponent(mcodigo);
+			$.ajax({
+				url: "'.$link20.'",
+				global: false,
+				type: "POST",
+				data: ({ codigo : encodeURIComponent(mcodigo) }),
+				dataType: "text",
+				async: false,
+				success: function(sino) {
+					if (sino.substring(0,1)=="S"){
+						jConfirm(
+							"Ya existe el codigo <div style=\"font-size: 200%;font-weight: bold \">"+mcodigo+"</"+"div>"+sino.substring(1)+"<p>si prosigue se eliminara el producto anterior y<br/> todo el movimiento de este, pasara al codigo "+mcodigo+"</"+"p> <p style=\"align: center;\">Desea <strong>Fusionarlos?</"+"strong></"+"p>",
+							"Confirmar Fusion",
+							function(r){
+							if (r) { sclicambia("S", mviejo, mcodigo); }
+							}
+						);
+					} else {
+						jConfirm(
+							"Sustitur el codigo actual  por: <center><h2 style=\"background: #ddeedd\">"+mcodigo+"</"+"h2></"+"center> <p>Al cambiar de codigo el producto, todos los<br/> movimientos y estadisticas se cambiaran<br/> correspondientemente.</"+"p> ",
+							"Confirmar cambio de codigo",
+							function(r) {
+								if (r) { sclicambia("N", mviejo, mcodigo); }
+							}
+						)
+					}
+				},
+				error: function(h,t,e) { jAlert("Error..codigo="+yurl+" ",e) }
+			});
+		}
+	})
+};
+
+function sclicambia( mtipo, mviejo, mcodigo ) {
+	$.ajax({
+		url: "'.$link21.'",
+		global: false,
+		type: "POST",
+		data: ({ tipo:  mtipo,
+			 viejo: mviejo,
+			 codigo: encodeURIComponent(mcodigo) }),
+		dataType: "text",
+		async: false,
+		success: function(sino) {
+			jAlert("Cambio finalizado "+sino,"Finalizado Exitosamente")
+		},
+		error: function(h,t,e) {jAlert("Error..","Finalizado con Error" )
+		}
+	});
+
+	if( mtipo=="N" ) {
+		location.reload(true);
+	} else {
+		location.replace("'.site_url("inventario/sinv/filteredgrid").'");
+	}
+}
+';*/
+
 		$param['WestPanel']   = $WestPanel;
 		//$param['EastPanel'] = $EastPanel;
 		$param['funciones']   = $funciones;
@@ -74,76 +242,55 @@ class Scli extends Controller {
 		$param['otros']       = $this->datasis->otros('SCLI', 'JQ');
 		$param['temas']       = array('proteo','darkness','anexos1');
 		$param['bodyscript']  = $bodyscript;
+		$param['postready']   = $this->postready();
 		$param['tabs']        = false;
 		$param['encabeza']    = $this->titp;
 		$param['tamano']      = $this->datasis->getintramenu( substr($this->url,0,-1) );
 		$this->load->view('jqgrid/crud2',$param);
 	}
 
-
-/*
-	//***************************
-	//Layout en la Ventana
+	//******************************************************************
+	// Despues del document ready
 	//
-	//***************************
-	function jqdatag(){
+	//******************************************************************
+	function postready(){
 
-		$grid = $this->defgrid();
-		$param['grids'][] = $grid->deploy();
 		$consulrif=trim($this->datasis->traevalor('CONSULRIF'));
 
-		$bodyscript = '
-		<script type="text/javascript">';
 
-		$bodyscript .= '
-		jQuery("#edocta").click( function(){
-			var id = jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
-			if (id)	{
-				var ret = jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
-				'.$this->datasis->jwinopen(site_url('reportes/ver/SMOVECU/SCLI/').'/\'+ret.proveed').';
-			} else { $.prompt("<h1>Por favor Seleccione un Cliente</h1>");}
-		});';
+		// Busca la cedula en el CNE
+		$postready = '
+		function consulcne(campo){
+			vrif=$("#"+campo).val();
+			naci="V";
+			if(vrif.length==0){
+				alert("Debe introducir primero una Cedua de Identidad");
+			}else{
+				vrif=vrif.toUpperCase();
+				$("#riffis").val(vrif);
+				window.open("http://www.cne.gov.ve/web/registro_electoral/ce.php?nacionalidad="+vrif.substr(0,1)+"&cedula="+vrif.substr(1),"CONSULCNE","height=400,width=510");
+			}
+		};';
+		
 
-		// Creditos
-		$bodyscript .= '
-		jQuery("#editacr").click( function(){
-			var id = jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
-			if (id)	{
-				var ret = jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
-				'.$this->datasis->jwinopen(site_url('ventas/scli/creditoedit/modify').'/\'+id',600,480).';
-			} else { $.prompt("<h1>Por favor Seleccione un Cliente</h1>");}
-		});';
-
-		$bodyscript .= '
-		</script>
-		';
-
-		$funciones = $this->funciones($param['grids'][0]['gridname']);
-
-		#Set url
-		$grid->setUrlput(site_url($this->url.'setdata/'));
-
-		//Botones Panel Izq
-		$grid->wbotonadd(array("id"=>"edocta",  "img"=>"images/pdf_logo.gif",  "alt" => 'Formato PDF', "label"=>"Estado de Cuenta"));
-		$grid->wbotonadd(array("id"=>"editacr", "img"=>"images/star.png",  "alt" => 'Credito', "label"=>"Cambiar credito"));
-		$WestPanel = $grid->deploywestp();
-
-		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'));
-
-		$param['WestPanel']   = $WestPanel;
-		//$param['EastPanel']  = $EastPanel;
-		$param['funciones']   = $funciones;
-		$param['SouthPanel']  = $SouthPanel;
-		$param['listados']    = $this->datasis->listados('SCLI', 'JQ');
-		$param['otros']       = $this->datasis->otros('SCLI', 'JQ');
-		$param['temas']       = array('proteo','darkness','anexos1');
-		$param['bodyscript']  = $bodyscript;
-		$param['tabs']        = false;
-		$param['encabeza']    = $this->titp;
-		$this->load->view('jqgrid/crud2',$param);
+		// Buscar en el SENIAT
+		$postready .= '
+		function consulrif(campo){
+			vrif=$("#"+campo).val();
+			if(vrif.length==0){
+				alert("Debe introducir primero un RIF");
+			}else{
+				vrif=vrif.toUpperCase();
+				$("#riffis").val(vrif);
+				window.open("'.$consulrif.'"+"?p_rif="+vrif,"CONSULRIF","height=350,width=410");
+			}
+		};';
+		
+		return $postready;
+		
 	}
-*/
-
+	
+	
 	//***************************
 	//Funciones de los Botones
 	//***************************
@@ -209,7 +356,7 @@ class Scli extends Controller {
 
 		$bodyscript .= '
 		$("#fedita").dialog({
-			autoOpen: false, height: 500, width: 700, modal: true,
+			autoOpen: false, height: 550, width: 800, modal: true,
 			buttons: {
 			"Guardar": function() {
 				var bValid = true;
@@ -231,7 +378,9 @@ class Scli extends Controller {
 						}
 					}
 			})},
-			"Cancelar": function() { $( this ).dialog( "close" ); }
+			"Cancelar": function() { $( this ).dialog( "close" ); },
+			"SENIAT":   function() { consulrif("rifci"); },
+			"C.N.E.":   function() { consulcne("rifci"); }
 			},
 			close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
 		});';
@@ -244,13 +393,16 @@ class Scli extends Controller {
 
 
 
+
+
+
+
 	//****************************************
 	//
 	// funciones
 	//
 	function funciones($grid){
 
-		$consulrif=trim($this->datasis->traevalor('CONSULRIF'));
 		$forma = "No tiene Acceso a Modificar Credito";
 		if ( $this->datasis->puede_ejecuta('SCLILIMITE', 'SCLI') ) {
 			if ( $this->datasis->puede_ejecuta('SCLITOLERA', 'SCLI') ) {
@@ -283,30 +435,10 @@ class Scli extends Controller {
 
 		// Busca el RIF en el SENIAT
 		$funciones = '
-		function consulrif(campo){
-			vrif=$("#"+campo).val();
-			if(vrif.length==0){
-				alert("Debe introducir primero un RIF");
-			}else{
-				vrif=vrif.toUpperCase();
-				$("#riffis").val(vrif);
-				window.open("'.$consulrif.'"+"?p_rif="+vrif,"CONSULRIF","height=350,width=410");
-			}
-		}';
-
-		// Busca la cedula en el CNE
-		$funciones .= '
-		function consulcne(campo){
-			vrif=$("#"+campo).val();
-			naci="V";
-			if(vrif.length==0){
-				alert("Debe introducir primero un RIF");
-			}else{
-				vrif=vrif.toUpperCase();
-				$("#riffis").val(vrif);
-				window.open("http://www.cne.gov.ve/web/registro_electoral/ce.php?nacionalidad="+vrif.substr(0,1)+"&cedula="+vrif.substr(1),"CONSULCNE","height=400,width=510");
-			}
-		}';
+		$("#tiva").change(function () { anomfis(); }).change();
+		//$(":input").enter2tab();
+		$("#maintabcontainer").tabs();
+		';
 
 		// Valida RIF o Cedula
 		$funciones .= '
@@ -318,7 +450,7 @@ class Scli extends Controller {
 			}else{
 				return false;
 			}
-		}';
+		};';
 
 		// Valida RIF o CI con mensaje
 		$funciones .= '
@@ -363,7 +495,7 @@ class Scli extends Controller {
 				});
 			} else
 				$.prompt("<h1>Por favor Seleccione un Cliente</h1>");
-		}
+		};
 
 		function sclicambia( sino, mviejo, mnuevo, nviejo ) {
 			//$.prompt(sino+" "+mviejo+" "+mnuevo);
@@ -405,9 +537,8 @@ class Scli extends Controller {
 				},
 				error: function(h,t,e) {alert("Error..","Finalizado con Error" )}
 			});
-		}
+		};
 		';
-
 
 		// Memo del cliente
 		$funciones .= '
@@ -626,7 +757,6 @@ class Scli extends Controller {
 			'editoptions'   => '{ size:30, maxlength: 20 }',
 		));
 
-
 		$grid->addField('nit');
 		$grid->label('Nit');
 		$grid->params(array(
@@ -684,7 +814,6 @@ class Scli extends Controller {
 			'editable'      => $editar,
 			'width'         => 200,
 			'edittype'      => "'text'",
-			//'editrules'     => '{ required:true}',
 			'editoptions'   => '{ size:40, maxlength: 40 }',
 			'formoptions'   => '{ rowpos:'.$linea.', colpos:2 }'
 		));
@@ -726,9 +855,6 @@ class Scli extends Controller {
 			'search'        => 'true',
 			'editable'      => $editar,
 			'width'         => 100,
-			//'edittype'      => "'text'",
-			//'editrules'     => '{ required:true}',
-			//'editoptions'   => '{ size:30, maxlength: 40 }',
 			'edittype'      => "'select'",
 			'editrules'     => '{ required:true}',
 			'editoptions'   => '{value: '.$aciudad.', style:"width:300px" }',
@@ -800,7 +926,6 @@ class Scli extends Controller {
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }',
 			'formoptions'   => '{ rowpos:'.$linea.', colpos:1 }'
 		));
-
 
 /*
 		$grid->addField('socio');
@@ -1064,6 +1189,7 @@ class Scli extends Controller {
 		));
 
 */
+
 		$grid->addField('fecha1');
 		$grid->label('Fecha1');
 		$grid->params(array(
@@ -1076,6 +1202,7 @@ class Scli extends Controller {
 			'editrules'     => '{ required:false,date:true}',
 			'formoptions'   => '{ label:"Fecha" }'
 		));
+
 /*
 		$grid->addField('fecha2');
 		$grid->label('Fecha2');
@@ -1127,6 +1254,7 @@ class Scli extends Controller {
 		$grid->addField('observa');
 		$grid->label('Observa');
 		$grid->params(array(
+			'hidden'        => 'true',
 			'search'        => 'true',
 			'editable'      => 'false',
 			'width'         => 250,
@@ -1227,7 +1355,7 @@ class Scli extends Controller {
 			}
 		}'
 		);
-
+/*
 		$grid->setFormOptionsE('
 			closeAfterEdit:false,
 			mtype: "POST",
@@ -1282,7 +1410,7 @@ class Scli extends Controller {
 					$("select").selectmenu({style:"popup"});
 				}
 		');
-
+*/
 		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
 
 		#show/hide navigations buttons
@@ -1628,6 +1756,7 @@ class Scli extends validaciones {
 	}
 
 */
+
 	// **************************************
 	//     DATAEDIT
 	//
@@ -1637,48 +1766,48 @@ class Scli extends validaciones {
 		$this->rapyd->load('dataedit');
 
 		$mSCLId=array(
-			'tabla'   =>'scli',
-			'columnas'=>array(
-				'cliente' =>'C&oacute;digo Socio',
-				'nombre'=>'Nombre',
-				'cirepre'=>'Rif/Cedula',
-				'dire11'=>'Direcci&oacute;n'),
-			'filtro'  =>array('cliente'=>'C&oacute;digo Socio','nombre'=>'Nombre'),
-			'retornar'=>array('cliente'=>'socio'),
-			'titulo'  =>'Buscar Socio');
+			'tabla'    => 'scli',
+			'columnas' => array(
+			'cliente'  => 'C&oacute;digo Socio',
+			'nombre'   => 'Nombre',
+			'cirepre'  => 'Rif/Cedula',
+			'dire11'   => 'Direcci&oacute;n'),
+			'filtro'   => array('cliente'=>'C&oacute;digo Socio','nombre'=>'Nombre'),
+			'retornar' => array('cliente'=>'socio'),
+			'titulo'   => 'Buscar Socio');
 
 		$qformato=$this->datasis->formato_cpla();
 
 		$mCPLA=array(
-			'tabla'   =>'cpla',
-			'columnas'=>array(
-				'codigo' =>'C&oacute;digo',
-				'descrip'=>'Descripci&oacute;n'),
-			'filtro'  =>array('codigo'=>'C&oacute;digo','descrip'=>'Descripci&oacute;n'),
-			'retornar'=>array('codigo'=>'cuenta'),
-			'titulo'  =>'Buscar Cuenta',
-			'where'=>"codigo LIKE \"$qformato\"",
+			'tabla'    => 'cpla',
+			'columnas' => array(
+			'codigo'   => 'C&oacute;digo',
+			'descrip'  => 'Descripci&oacute;n'),
+			'filtro'   => array('codigo'=>'C&oacute;digo','descrip'=>'Descripci&oacute;n'),
+			'retornar' => array('codigo'=>'cuenta'),
+			'titulo'   => 'Buscar Cuenta',
+			'where'    => "codigo LIKE \"$qformato\"",
 			);
 
 		$boton = $this->datasis->modbus($mSCLId);
 		$bcpla = $this->datasis->modbus($mCPLA);
 
-		$smenu['link']=barra_menu('131');
-		$consulrif=trim($this->datasis->traevalor('CONSULRIF'));
-		$lcuenta=site_url('contabilidad/cpla/autocomplete/codigo');
-		$lsocio =site_url('ventas/scli/autocomplete/cliente');
+		$smenu['link'] = barra_menu('131');
+		$consulrif     = trim($this->datasis->traevalor('CONSULRIF'));
+		$lcuenta       = site_url('contabilidad/cpla/autocomplete/codigo');
+		$lsocio        = site_url('ventas/scli/autocomplete/cliente');
 
 		$link20=site_url('ventas/scli/scliexiste');
 		$link21=site_url('ventas/scli/sclicodigo');
-
 
 		$script ='
 <script type="text/javascript" >
 $(function() {
 
 	//Default Action
-	$(".inputnum").numeric(".");
 	$("#tiva").change(function () { anomfis(); }).change();
+'.
+/*
 	$("#cuenta").autocomplete("'.$lcuenta.'",{
 		delay:10,
 		//minChars:2,
@@ -1700,6 +1829,8 @@ $(function() {
 		autoFill:true
 	});
 	//$(":input").enter2tab();
+*/
+'
 	$("#maintabcontainer").tabs();
 
 	$("#rifci").focusout(function() {
@@ -1723,17 +1854,6 @@ function anomfis(){
 		$("#riffis").val("");
 		$("#tr_nomfis").hide();
 		$("#tr_riffis").hide();
-	}
-}
-
-function consulrif(campo){
-	vrif=$("#"+campo).val();
-	if(vrif.length==0){
-		alert("Debe introducir primero un RIF");
-	}else{
-		vrif=vrif.toUpperCase();
-		$("#riffis").val(vrif);
-		window.open("'.$consulrif.'"+"?p_rif="+vrif,"CONSULRIF","height=350,width=410");
 	}
 }
 
@@ -1767,7 +1887,7 @@ function chrif(rif){
 		return true;
 	}
 }
-
+'./*
 function fusionar(mviejo){
 	var yurl = "";
 	$.prompt("Codigo Nuevo","" ,"Codigo Nuevo", function(mcodigo){
@@ -1834,7 +1954,8 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		location.replace("'.site_url("inventario/sinv/filteredgrid").'");
 	}
 }
-
+*/
+'
 </script>
 ';
 
@@ -1863,7 +1984,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		$edit->nombre->maxlength = 45;
 		$edit->nombre->style = 'width:100%;';
 
-		$edit->nomfis = new textareaField('Nombre F&iacute;scal', 'nomfis');
+		$edit->nomfis = new textareaField('Razon Social', 'nomfis');
 		$edit->nomfis->rule = 'trim';
 		$edit->nomfis->cols = 53;
 		$edit->nomfis->rows =  2;
@@ -1882,15 +2003,15 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		$edit->grupo->rule = 'required';
 		$edit->grupo->size = 6;
 		$edit->grupo->maxlength = 4;
-		$edit->grupo->style = 'width:160px';
+		$edit->grupo->style = 'width:200px';
 		$edit->grupo->insertValue = $this->datasis->dameval('SELECT grupo FROM grcl WHERE gr_desc like "CONSUMIDOR FINAL%"');
 
-		$lriffis='<a href="javascript:consulrif(\'rifci\');" title="SENIAT" onclick="" style="color:red;font-size:9px;border:none; "> SENIAT</a>';
-		$edit->rifci = new inputField($this->pi18n->msj('rifci','RIF o C.I.'), 'rifci');
+		//$lriffis='<a href="javascript:consulrif(\'rifci\');" title="SENIAT" onclick="" style="color:red;font-size:9px;border:none; "> SENIAT</a>';
+		$edit->rifci = new inputField($this->pi18n->msj('rifci','RIF/CI'), 'rifci');
 		$edit->rifci->rule = 'trim|strtoupper|required|callback_chci';
 		$edit->rifci->maxlength =13;
-		$edit->rifci->append($lriffis);
-		$edit->rifci->size =14;
+		//$edit->rifci->append($lriffis);
+		$edit->rifci->size =13;
 
 		$obj  ="dire11";
 		$edit->$obj = new inputField('Oficina',$obj);
@@ -1945,17 +2066,17 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		$edit->cirepre->maxlength =13;
 		$edit->cirepre->size = 14;
 
-		$edit->socio = new inputField('Socio del cliente', 'socio');
+		$edit->socio = new inputField('Consorcio', 'socio');
 		$edit->socio->rule = 'trim';
-		$edit->socio->size = 8;
+		$edit->socio->size = 6;
 		$edit->socio->maxlength =5;
 		$edit->socio->append($boton);
 
-		$arr_tiva=$this->pi18n->arr_msj('tivaarr','C=Contribuyente,N=No Contribuyente,E=Especial,R=Regimen Exento,O=Otro');
-		$edit->tiva = new dropdownField('Tipo F&iacute;scal', 'tiva');
-		$edit->tiva->option('','Seleccionar');
+		$arr_tiva=$this->pi18n->arr_msj('tivaarr','N=No Contribuyente,C=Contribuyente,E=Especial,R=Regimen Exento,O=Otro');
+		$edit->tiva = new dropdownField('Tipo Fiscal', 'tiva');
+		//$edit->tiva->option('','Seleccionar');
 		$edit->tiva->options($arr_tiva);
-		$edit->tiva->style = 'width:160px';
+		$edit->tiva->style = 'width:130px';
 		$edit->tiva->insertValue = 'N';
 
 		//$edit->tiva->rule='required|callback_chdfiscal';
@@ -1980,7 +2101,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 
 		$edit->email = new inputField('E-mail', 'email');
 		$edit->email->rule = 'trim|valid_email';
-		$edit->email->size =20;
+		$edit->email->size =22;
 		$edit->email->maxlength =100;
 
 		$edit->cuenta = new inputField('Contable', 'cuenta');
@@ -1992,15 +2113,35 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 
 		$edit->telefono = new inputField('Tel&eacute;fonos', 'telefono');
 		$edit->telefono->rule = 'trim';
-		$edit->telefono->size=20;
+		$edit->telefono->size=22;
 		$edit->telefono->maxlength =30;
 
 		$edit->telefon2 = new inputField('Fax', 'telefon2');
 		$edit->telefon2->rule = 'trim';
-		$edit->telefon2->size=20;
+		$edit->telefon2->size=22;
 		$edit->telefon2->maxlength =25;
 
-		$edit->tipo = new dropdownField('Tipo ', 'tipo');
+		$edit->pin = new inputField('Pin', 'pin');
+		$edit->pin->rule = 'trim';
+		$edit->pin->size=8;
+		$edit->pin->maxlength = 9;
+
+		$edit->url = new inputField('Url', 'url');
+		$edit->url->rule = 'trim';
+		$edit->url->size=40;
+		$edit->url->maxlength =120;
+
+		$edit->fb = new inputField('facebook', 'fb');
+		$edit->fb->rule = 'trim';
+		$edit->fb->size=20;
+		$edit->fb->maxlength =120;
+
+		$edit->twitter = new inputField('Twitter', 'twitter');
+		$edit->twitter->rule = 'trim';
+		$edit->twitter->size=20;
+		$edit->twitter->maxlength =120;
+
+		$edit->tipo = new dropdownField('Precio ', 'tipo');
 		$edit->tipo->options(array('1'=> 'Precio 1','2'=>'Precio 2', '3'=>'Precio 3','4'=>'Precio 4','5'=>'Mayor','0'=>'Inactivo'));
 		$edit->tipo->style = 'width:90px';
 
@@ -2048,29 +2189,38 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		$edit->mensaje->size = 50;
 		$edit->mensaje->maxlength =40;
 
-		$edit->mmargen = new inputField("Margen al Mayor",'mmargen');
+		$edit->mmargen = new inputField("Des. Mayor%",'mmargen');
 		$edit->mmargen->css_class='inputnum';
-		$edit->mmargen->size=10;
-		$edit->mmargen->maxlength=10;
+		$edit->mmargen->size=5;
+		$edit->mmargen->maxlength=5;
 
-		$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
+		$edit->upago = new inputField('Ultimo Pago', 'upago');
+		$edit->upago->rule = 'trim';
+		$edit->upago->size = 6;
+		$edit->upago->maxlength =6;
 
+		$edit->tarifa = new inputField('Tarifa', 'tarifa');
+		$edit->tarifa->rule = 'trim';
+		$edit->tarifa->size = 15;
+		$edit->tarifa->maxlength =15;
+
+		//$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
 
 		if($this->genesal){
 			$edit->build();
+
 			$style = '
 <style type="text/css">
 .maintabcontainer {width: 780px; margin: 5px auto;}
 </style>';
 
-			$conten["form"]  =&  $edit;
-			$data['content'] = $this->load->view('view_scli', $conten,true);
-
-			$data['content'].= $this->pi18n->fallas();
-			$data['smenu']   = $this->load->view('view_sub_menu', $smenu,true);
-
-			$data['title']   = heading('('.$edit->cliente->value.') '.substr($edit->nombre->value,0,30));
-
+			$conten["form"]   =&  $edit;
+			$conten["script"] = $script;
+			$data['content']  = $this->load->view('view_scli', $conten);
+/*			
+			$data['content'] .= $this->pi18n->fallas();
+			$data['smenu']    = $this->load->view('view_sub_menu', $smenu,true);
+			$data['title']    = heading('('.$edit->cliente->value.') '.substr($edit->nombre->value,0,30));
 			$data['script']   = script('jquery.js');
 			$data["script"]  .= script("jquery-ui.js");
 			$data["script"]  .= script("jquery.alerts.js");
@@ -2078,20 +2228,20 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 			$data['script']  .= script('plugins/jquery.floatnumber.js');
 			$data['script']  .= script('plugins/jquery.autocomplete.js');
 			$data["script"]  .= script("plugins/jquery.blockUI.js");
-			//$data["script"]  .= script("sinvmaes.js");
+//			$data["script"]  .= script("sinvmaes.js");
 			$data["script"]  .= $script;
-
 			$data['style']	 = style("jquery.alerts.css");
 			$data['style']	.= style("redmond/jquery-ui.css");
 			$data['style']  .= style('jquery.autocomplete.css');
 			$data['style']	.= $style;
 
 			$data['head']    = $this->rapyd->get_head();
-			$this->load->view('view_ventanas', $data);
+			//$this->load->view('view_ventanas', $data);
+*/
+
 		}else{
 			$edit->on_save_redirect=false;
 			$edit->build();
-
 			if($edit->on_success()){
 				$rt= 'Cliente Guardado';
 			}elseif($edit->on_error()){
@@ -2100,6 +2250,8 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 			return $rt;
 		}
 	}
+
+
 
 	function filtergridcredi(){
 		$this->rapyd->load('datafilter','datagrid');
@@ -2157,8 +2309,8 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		$grid->column_orderby('T.M&aacute;xima','<nformat><#maxtole#></nformat>%','maxtole','align="right"');
 		$grid->column('Motivo','motivo');
 
-		$action = "javascript:window.location='".site_url('/reportes/ver/SCLILIMIT/SCLI')."'";
-		$grid->button('btn_reporte', 'Reporte', $action,'TR');
+		//$action = "javascript:window.location='".site_url('/reportes/ver/SCLILIMIT/SCLI')."'";
+		//$grid->button('btn_reporte', 'Reporte', $action,'TR');
 		$grid->build();
 
 		$script= '<script type="text/javascript" >
@@ -2483,7 +2635,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		}
 		return True;
 	}
-/*
+
 	function _pre_udp($do){
 		$do->set('riffis',trim($do->get('rifci')));
 		$nomfis = $do->get('nomfis');
@@ -2557,7 +2709,7 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 			}
 		}
 	}
-*/
+
 
 	function consulta(){
 		$this->load->helper('openflash');

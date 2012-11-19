@@ -30,7 +30,6 @@ class Scst extends Controller {
 			$this->db->simple_query("update tmenus set secu=7 where titulo='Tabla'");
 			$this->db->simple_query("update tmenus set secu=8 where titulo='Lista'");
 			$this->db->simple_query("update tmenus set secu=9 where titulo='Otros'");
-
 		};
 		$this->datasis->modintramenu( 900, 650, substr($this->url,0,-1) );
 		redirect($this->url.'jqdatag');
@@ -2351,25 +2350,25 @@ class Scst extends Controller {
 		$proveed=$edit->get_from_dataobjetct('proveed');
 		$conten['priva']   = $this->datasis->dameval('SELECT reteiva FROM sprv WHERE proveed='.$this->db->escape($proveed));
 		$conten['priva']   = $conten['priva']/100;
-		$data['script']  = script('jquery.js');
-		$data['script'] .= script('jquery-ui.js');
-		$data['script'] .= script('jquery.layout.js');
-		$data['script'] .= script('grid.locale-sp.js');
-		$data['script'] .= script('ui.multiselect.js');
-		$data['script'] .= script('jquery.jqGrid.min.js');
-		$data['script'] .= script('jquery.tablednd.js');
-		$data['script'] .= script('jquery.contextmenu.js');
-		$data['script'] .= style('ui.jqgrid.css');
-		$data['script'] .= style('ui.multiselect.css');
+		$data['script']    = script('jquery.js');
+		$data['script']   .= script('jquery-ui.js');
+		$data['script']   .= script('jquery.layout.js');
+		$data['script']   .= script('grid.locale-sp.js');
+		$data['script']   .= script('ui.multiselect.js');
+		$data['script']   .= script('jquery.jqGrid.min.js');
+		$data['script']   .= script('jquery.tablednd.js');
+		$data['script']   .= script('jquery.contextmenu.js');
+		$data['script']   .= style('ui.jqgrid.css');
+		$data['script']   .= style('ui.multiselect.css');
 
-		$data['script'] .= script('plugins/jquery.numeric.pack.js');
-		$data['script'] .= script('plugins/jquery.floatnumber.js');
-		$data['script'] .= phpscript('nformat.js');
+		$data['script']   .= script('plugins/jquery.numeric.pack.js');
+		$data['script']   .= script('plugins/jquery.floatnumber.js');
+		$data['script']   .= phpscript('nformat.js');
 
-		$data['head']    = $this->rapyd->get_head();
-		$data['head']   .= style('redmond/jquery-ui-1.8.1.custom.css');
-		$data['content'] = $this->load->view('view_compras_cmontos', $conten,true);
-		$data['title']   = heading('Compras');
+		$data['head']      = $this->rapyd->get_head();
+		$data['head']     .= style('redmond/jquery-ui-1.8.1.custom.css');
+		$data['content']   = $this->load->view('view_compras_cmontos', $conten,true);
+		$data['title']     = heading('Compras');
 
 		$this->load->view('view_ventanas', $data);
 	}
