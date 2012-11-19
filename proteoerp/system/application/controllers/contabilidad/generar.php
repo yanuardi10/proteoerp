@@ -193,7 +193,7 @@ class Generar extends Metodos {
 				//foreach ($query->result_array() as $row){
 				$mSQL="SELECT comprob,sum(debe)-sum(haber) total, origen FROM itcasi WHERE (MID(comprob,1,2) IN ('VD','DV') OR MID(origen,1,4) IN ('SCOP','SCST')) AND fecha BETWEEN $qfechai AND $qfechaf GROUP BY comprob HAVING abs(total)>0 AND abs(total)<0.5";
 				$query = $this->db->query($mSQL);
-				foreach ($query->result_array() as $fila){
+				foreach ($query->result_array() as $row){
 					//print_r($row);
 					$mCOMPROB=$row['comprob'];
 					$mORIGEN =$row['origen'] ;
@@ -211,7 +211,7 @@ class Generar extends Metodos {
 
 			//TOTALIZA EN ITCASI
 			$query = $this->db->query($mSQL);
-			foreach ($query->result_array() as $fila){
+			foreach ($query->result_array() as $row){
 				$usr  =$this->session->userdata('usuario');
 				$comprob=$this->db->escape($row['comprob']);
 				$sql="UPDATE casi
