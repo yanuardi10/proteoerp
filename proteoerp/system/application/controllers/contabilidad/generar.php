@@ -85,7 +85,7 @@ class Generar extends Metodos {
 		$ban=0;
 		$ban+=$this->validation->chfecha($fechai);
 		$ban+=$this->validation->chfecha($fechaf);
-		
+
 		if($ban!=2) {echo 'Error: Fechas erroneas'; return false;}
 		session_write_close();
 		$qfechai=date("Ymd",timestampFromInputDate($fechai, 'd/m/Y'));
@@ -130,11 +130,11 @@ class Generar extends Metodos {
 			if(!checkdate($matches['mes'],$matches['dia'],$matches['anio'])) { echo 'Error: fecha inicial invalida'."\n"; return TRUE; }
 			preg_match('/(?P<anio>\d{4})(?P<mes>\d{2})(?P<dia>\d{2})/', $qfechaf, $matches);
 			if(!checkdate($matches['mes'],$matches['dia'],$matches['anio'])) { echo 'Error: fecha final invalida'."\n"; return TRUE; }
-			
+
 			$generar=explode(',',$modulos);
 			$salida=$this->_procesar($qfechai,$qfechaf,$generar);
 			echo $salida."\n";
-			return FALSE;	
+			return FALSE;
 		}else{
 			show_404();
 		}
@@ -144,9 +144,6 @@ class Generar extends Metodos {
 
 	function _procesar($qfechai,$qfechaf,$generar=FALSE){
 		$error=FALSE;
-		$DBbig = $this->load->database('default', TRUE);
-		//$query=mysql_unbuffered_query($mSQL,$DBbig->conn_id);
-		//while ($row = mysql_fetch_assoc($query)) {}
 
 		if($generar){
 			foreach ($generar as $modulo){
@@ -175,33 +172,28 @@ class Generar extends Metodos {
 					$mSQL="SELECT a.$mCONTROL mgrupo FROM $mTABLA WHERE a.fecha BETWEEN $qfechai AND $qfechaf GROUP BY a.$mCONTROL";
 				}
 
-				$query=mysql_unbuffered_query($mSQL,$DBbig->conn_id);
-				if($query!==false){
-					while ($fila = mysql_fetch_assoc($query)) {
-
-						$aregla = $this->_hace_regla($modulo, $mCONTROL, $fila['mgrupo']);
-						foreach ($aregla['casi'] as $casi){
-							$ejecasi='INSERT IGNORE INTO casi ( comprob, fecha, descrip, origen ) '.$casi;
-							$ejec=$this->db->simple_query($ejecasi);
-							if($ejec==FALSE){ memowrite($ejecasi,'generar'); $error=true; }
-						}
-						foreach ($aregla['itcasi'] as $itcasi){
-							$ejeitcasi ='INSERT INTO itcasi (fecha, comprob, origen,  cuenta, referen, concepto, debe,  haber, sucursal, ccosto) '.$itcasi;
-							$ejec=$this->db->simple_query($ejeitcasi);
-							if($ejec==FALSE){ memowrite($ejeitcasi,'generar'); $error=true; }
-						}
+				$query = $this->db->query($mSQL);
+				foreach ($query->result_array() as $fila){
+					$aregla = $this->_hace_regla($modulo, $mCONTROL, $fila['mgrupo']);
+					foreach ($aregla['casi'] as $casi){
+						$ejecasi='INSERT IGNORE INTO casi ( comprob, fecha, descrip, origen ) '.$casi;
+						$ejec=$this->db->simple_query($ejecasi);
+						if($ejec==FALSE){ memowrite($ejecasi,'generar'); $error=true; }
 					}
-				}else{
-					memowrite($mSQL,'generar');
+					foreach ($aregla['itcasi'] as $itcasi){
+						$ejeitcasi ='INSERT INTO itcasi (fecha, comprob, origen,  cuenta, referen, concepto, debe,  haber, sucursal, ccosto) '.$itcasi;
+						$ejec=$this->db->simple_query($ejeitcasi);
+						if($ejec==FALSE){ memowrite($ejeitcasi,'generar'); $error=true; }
+					}
 				}
 				$this->_borra_huerfano();
-				
+
 				//Redondeo
 				//$query=$this->db->query("SELECT comprob,sum(debe)-sum(haber) total, origen FROM itcasi WHERE (MID(comprob,1,2) IN ('VD','DV') OR MID(origen,1,4) IN ('SCOP','SCST')) AND fecha BETWEEN $qfechai AND $qfechaf GROUP BY comprob HAVING abs(total)>0 AND abs(total)<0.5");
 				//foreach ($query->result_array() as $row){
 				$mSQL="SELECT comprob,sum(debe)-sum(haber) total, origen FROM itcasi WHERE (MID(comprob,1,2) IN ('VD','DV') OR MID(origen,1,4) IN ('SCOP','SCST')) AND fecha BETWEEN $qfechai AND $qfechaf GROUP BY comprob HAVING abs(total)>0 AND abs(total)<0.5";
-				$query=mysql_unbuffered_query($mSQL,$DBbig->conn_id);
-				while ($row = mysql_fetch_assoc($query)) {
+				$query = $this->db->query($mSQL);
+				foreach ($query->result_array() as $fila){
 					//print_r($row);
 					$mCOMPROB=$row['comprob'];
 					$mORIGEN =$row['origen'] ;
@@ -218,8 +210,8 @@ class Generar extends Metodos {
 			//$query=$this->db->query($mSQL);
 
 			//TOTALIZA EN ITCASI
-			$query=mysql_unbuffered_query($mSQL,$DBbig->conn_id);
-			while ($row = mysql_fetch_assoc($query)) {
+			$query = $this->db->query($mSQL);
+			foreach ($query->result_array() as $fila){
 				$usr  =$this->session->userdata('usuario');
 				$comprob=$this->db->escape($row['comprob']);
 				$sql="UPDATE casi
@@ -246,88 +238,6 @@ class Generar extends Metodos {
 		}
 		return $salida;
 	}
-
-
-/*
-	function _procesar(){
-		$fechai=$this->input->post('fechai');
-		$fechaf=$this->input->post('fechaf');
-		$qfechai=date("Ymd",timestampFromInputDate($fechai, 'd/m/Y'));
-		$qfechaf=date("Ymd",timestampFromInputDate($fechaf, 'd/m/Y'));
-		$generar=$this->input->post('genera');
-		$error=FALSE;
-
-		//$DBbig = $this->load->database('default', TRUE);
-		//$query=mysql_unbuffered_query($mSQL,$DBbig->conn_id);
-		//while ($row = mysql_fetch_assoc($query)) {}
-
-		if($generar){
-			foreach ($generar as $modulo){
-				$query=$this->db->simple_query("DELETE FROM casi   WHERE fecha BETWEEN $qfechai AND $qfechaf AND origen='$modulo'");
-				$query=$this->db->simple_query("DELETE FROM itcasi WHERE fecha BETWEEN $qfechai AND $qfechaf AND origen LIKE '$modulo%'");
-
-				$mTABLA  =$this->datasis->dameval("SELECT origen  FROM reglascont WHERE modulo='$modulo' AND regla=1 ");
-				$mCONTROL=$this->datasis->dameval("SELECT control FROM reglascont WHERE modulo='$modulo' AND regla=1 ");
-				if ($modulo == 'SCST' ) {
-					$mSQL="SELECT a.$mCONTROL mgrupo FROM $mTABLA WHERE a.recep BETWEEN $qfechai AND $qfechaf GROUP BY a.$mCONTROL";
-				} else {
-					$mSQL="SELECT a.$mCONTROL mgrupo FROM $mTABLA WHERE a.fecha BETWEEN $qfechai AND $qfechaf GROUP BY a.$mCONTROL";
-				}
-				$query=$this->db->query($mSQL);
-				foreach ($query->result_array() as $fila){
-					$aregla = $this->_hace_regla($modulo, $mCONTROL, $fila['mgrupo']);
-					foreach ($aregla['casi'] as $casi){
-						$ejecasi='INSERT IGNORE INTO casi ( comprob, fecha, descrip, origen ) '.$casi;
-						$ejec=$this->db->simple_query($ejecasi);
-						if($ejec==FALSE){ memowrite($ejecasi,'generar'); $error=true; }
-					}
-					foreach ($aregla['itcasi'] as $itcasi){
-						$ejeitcasi ='INSERT INTO itcasi (fecha, comprob, origen,  cuenta, referen, concepto, debe,  haber, sucursal, ccosto) '.$itcasi;
-						$ejec=$this->db->simple_query($ejeitcasi);
-						if($ejec==FALSE){ memowrite($ejeitcasi,'generar'); $error=true; }
-					}
-				}
-				$this->_borra_huerfano();
-
-				//Redondeo
-				$query=$this->db->query("SELECT comprob,sum(debe)-sum(haber) total, origen FROM itcasi WHERE (MID(comprob,1,2) IN ('VD','DV') OR MID(origen,1,4) IN ('SCOP','SCST')) AND fecha BETWEEN $qfechai AND $qfechaf GROUP BY comprob HAVING abs(total)>0 AND abs(total)<0.5");
-				foreach ($query->result_array() as $row){
-					$mCOMPROB=$row['comprob'];
-					$mORIGEN =$row['origen'] ;
-					$mTOTAL  =$row['total']  ;
-					$this->db->simple_query("UPDATE itcasi SET haber=haber+$mTOTAL WHERE comprob='$mCOMPROB' AND origen='$mORIGEN' ORDER BY haber DESC LIMIT 1 ");
-					$this->db->simple_query("UPDATE casi SET debe=(SELECT sum(itcasi.debe) FROM itcasi WHERE casi.comprob=itcasi.comprob AND casi.comprob='$mCOMPROB' AND origen='$mORIGEN' GROUP BY itcasi.comprob) WHERE comprob='$mCOMPROB'");
-					$this->db->simple_query("UPDATE casi SET haber=(SELECT sum(itcasi.haber) FROM itcasi WHERE casi.comprob=itcasi.comprob AND casi.comprob='$mCOMPROB' AND origen='$mORIGEN' GROUP BY itcasi.comprob) WHERE comprob='$mCOMPROB' ");
-					$this->db->simple_query("UPDATE casi SET total=debe-haber WHERE comprob='$mCOMPROB' AND origen='$mORIGEN'");
-				}
-			}
-
-			$lgenerar="'".implode("','",$generar)."'";
-			$mSQL="SELECT comprob FROM itcasi WHERE fecha BETWEEN $qfechai AND $qfechaf GROUP BY comprob";
-			$query=$this->db->query($mSQL);
-
-			//TOTALIZA EN ITCASI
-			foreach ($query->result_array() as $row){
-				$usr  =$this->session->userdata('usuario');
-				$sql=" UPDATE casi
-					SET debe=(SELECT sum(debe) FROM itcasi WHERE itcasi.comprob=casi.comprob),
-					haber=(SELECT sum(haber) FROM itcasi WHERE itcasi.comprob=casi.comprob),
-					total=(SELECT sum(debe)-sum(haber) FROM itcasi WHERE itcasi.comprob=casi.comprob),
-					estampa=NOW(),
-					usuario='$usr',
-					hora=DATE_FORMAT(NOW(),'%H:%i:%s')
-					WHERE comprob=? ";
-				$ejec=$this->db->simple_query($sql,array($row['comprob']));
-				if($ejec==FALSE){ memowrite($sql,'generar'); $error=true; }
-			}
-
-			$salida=utf8_encode('Listo!');
-		}else{
-			$salida=utf8_encode('Seleccione al menos un Modulo');
-		}
-		return $salida;
-	}
-*/
 
 	function _borra_huerfano(){
 		$guery=$this->db->simple_query("DELETE FROM casi   WHERE comprob='' OR comprob IS NULL");
