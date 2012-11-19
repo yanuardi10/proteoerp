@@ -1516,7 +1516,6 @@ class gser extends Controller {
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
 
-
 		$grid->addField('monredu');
 		$grid->label('Monredu');
 		$grid->params(array(
@@ -1530,7 +1529,6 @@ class gser extends Controller {
 			'formatter'     => "'number'",
 			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
 		));
-
 
 		$grid->addField('monadic');
 		$grid->label('Monadic');
@@ -2365,6 +2363,8 @@ function gserfiscal(mid){
 		$data['head']    = $this->rapyd->get_head();
 		$data['head']   .= phpscript('nformat.js');
 		$this->load->view('view_ventanas', $data);
+
+
 	}
 
 	function _pre_gserchi($do){

@@ -64,16 +64,6 @@ if ( isset($readyLayout) == false ){
 ';
 }
 
-/*
-		function (pane, $Pane) {
-			jQuery("#newapi'.$grids[0]['gridname'].'").jqGrid(\'setGridWidth\',$Pane.innerWidth()-6);
-			jQuery("#newapi'.$grids[0]['gridname'].'").jqGrid(\'setGridHeight\',$Pane.innerHeight()-'.$grids[0]['menosalto'].');
-		}
-*/
-
-
-
-
 // Procesa los grids
 if ( isset($grids) == false ) $grids = array();
 
@@ -240,6 +230,7 @@ echo '<script language="javascript" type="text/javascript" src="'.base_url().'sy
 </script>
 <?php
 echo "\n<!-- USUARIO -->\n";
+
 if( isset($script)) echo $script;
 
 echo "\n";
@@ -291,8 +282,6 @@ if ( isset($tamano) )
 });
 
 <?php if (isset($postready))  echo $postready; ?>
-
-
 
 //Funcion para bloquear y esperar
 function esperar(url){
