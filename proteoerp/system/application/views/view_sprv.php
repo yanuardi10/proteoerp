@@ -6,6 +6,9 @@
 //$container_br=join("&nbsp;", $form->_button_container["BR"]);
 ?>
 <?php if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</div>'; ?>
+
+<?php
+/*
 <table border=0 width="100%">
 	<tr>
 		<td>
@@ -23,78 +26,62 @@
 		</td>
 		<td align='right'><?php echo $container_tr; ?></td>
 	</tr>
+</table>
+*/
+?>
+
+<fieldset style='border: 1px outset #9AC8DA;background: #FFFDE9;'>
+<table border=0 width="100%">
 	<tr>
 		<td colspan='2'>
-			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
-			<legend class="titulofieldset" style='color: #114411;'>Identificacion</legend>
 			<table border=0 width="100%">
 			<tr>
 				<td width="70" class="littletableheaderc"><?=$form->proveed->label  ?></td>
-				<td width='95' class="littletablerow" ><?=$form->proveed->output ?></td>
+				<td width='140' class="littletablerow" ><?=$form->proveed->output ?></td>
 				<td class="littletableheaderc"><?=$form->rif->label ?></td>
-				<td class="littletablerow"><?=$form->rif->output ?></td>
-			</tr>	
-			<tr>
+				<td align='right' class="littletablerow"><?=$form->rif->output ?></td>
+			</tr><tr>
 				<td class="littletableheaderc"><?=$form->nombre->label ?></td>
 				<td colspan='3' class="littletablerow"><?=$form->nombre->output?></td>
-			</tr>
-			<tr>
+			</tr><tr>
 				<td class="littletableheaderc"><?=$form->contacto->label  ?></td>
 				<td colspan='3' class="littletablerow"><?=$form->contacto->output ?></td>
+			</tr><tr>
+				<td class="littletablerow"><?=$form->nomfis->label;?></td>
+				<td colspan='3' class="littletablerow"><?=$form->nomfis->output?></td>
 			</tr>
 			</table>
-			</fieldset>
 		</td>
 		<td>
-			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
-			<legend>&nbsp;</legend>
 			<table border=0 width="100%">
 			<tr>
 				<td width='50' class="littletableheaderc"><?=$form->grupo->label ?></td>
 				<td  class="littletablerow"><?=$form->grupo->output?></td>
-			</tr>	
+			</tr><tr>	
 				<td class="littletableheaderc"> <?=$form->tipo->label ?></td>
 				<td class="littletablerow"> <?=$form->tipo->output ?></td>
-			<tr>
+			</tr><tr>
 				<td class="littletableheaderc"><?=$form->tiva->label  ?></td>
 				<td class="littletablerow"><?=$form->tiva->output ?></td>
-			</tr>
-			
-			</table>
-			</fieldset>
-		</td>
-	</tr>
-	<tr>
-		<td colspan='3'>
-			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
-			<legend class="titulofieldset" style='color: #114411;'>Nombre Fiscal/Completo</legend>
-			<table border=0 width="100%">
-			<tr>
-				<td colspan='3' class="littletablerow"><?=$form->nomfis->output?></td>
+			</tr><tr>
+				<td class="littletableheaderc"><?=$form->reteiva->label  ?></td>
+				<td class="littletablerow"><?=$form->reteiva->output ?></td>
+			<tr><tr>
+				<td class="littletablerow"><?=$form->cuenta->label;?></td>
+				<td class="littletablerow"><?=$form->cuenta->output;?></td>
 			</tr>
 			</table>
-			</fieldset>
-		</td>
-	</tr>
-	<tr>
-		<td colspan='3'>
-			<fieldset style='border: 2px outset #9AC8DA;background: #FFFDE9;'>
-			<legend class="titulofieldset" style='color: #114411;'>Contabilidad</legend>
-			<table border=0 width="100%">
-			<tr>
-				<td colspan='3' class="littletablerow"><?=$form->cuenta->output?></td>
-			</tr>
-			</table>
-			</fieldset>
 		</td>
 	</tr>
 </table>
+</fieldset>
+
 <table  width="100%" border='0'>
 	<tr>
 		<td valign='top'>
-			<fieldset style='border: 2px outset #9AC8DA;background: #E0ECF8;'>
+			<fieldset style='border: 1px outset #9AC8DA;background: #E0ECF8;'>
 			<legend class="titulofieldset" style='color: #114411;'>Direccion</legend>
-			<table width= "100%" >
+			<table width="100%" cellspacing='1' cellpadding='1'>
 				<tr>
 					<td class="littletablerow"><?=$form->direc1->output ?>&nbsp;</td>
 				</tr>
@@ -108,9 +95,9 @@
 			</fieldset>
 		</td>
 		<td valign='top'>
-			<fieldset style='border: 2px outset #9AC8DA;background: #E0ECF8;'>
+			<fieldset style='border: 1px outset #9AC8DA;background: #E0ECF8;'>
 			<legend class="titulofieldset" style='color: #114411;'>Contacto</legend>
-			<table width= "100%" >
+			<table width= "100%" cellspacing='0' cellpadding='0'>
 				<tr>
 					<td class="littletableheaderc"><?=$form->telefono->label ?></td>
 					<td class="littletablerow"><?=$form->telefono->output ?>&nbsp;</td>
@@ -118,10 +105,6 @@
 				<tr>
 					<td class="littletableheaderc"><?=$form->email->label  ?></td>
 					<td class="littletablerow"    ><?=$form->email->output ?></td>
-				</tr>
-				<tr>
-					<td class="littletableheaderc"><?=$form->url->label  ?></td>
-					<td class="littletablerow"    ><?=$form->url->output ?></td>
 				</tr>
 			</table>
 			</fieldset>
@@ -131,46 +114,35 @@
 <table  width="100%" border='0' >
 	<tr>
 		<td>
-			<fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
-			<legend class="titulofieldset" style='color: #114411;'>Comisiones</legend>
+			<fieldset style='border: 1px outset #8A0808;background: #FFFBE9;'>
 			<table width= '100%' >
 				<tr>
 					<td class="littletableheaderc">Banco</td>
 					<td class="littletableheaderc">Cuenta</td>
-				</tr>				
-				<tr>
+				</tr><tr>
 					<td class="littletablerow"><?=$form->banco1->output ?></td>
 					<td class="littletablerow"><?=$form->cuenta1->output ?></td>
-				</tr>				
-				<tr>
+				</tr><tr>
 					<td class="littletablerow"><?=$form->banco2->output ?></td>
 					<td class="littletablerow"><?=$form->cuenta2->output ?></td>
-				</tr>				
-			</tr>
+				</tr>
 			</table>
 			</fieldset>
-		</td>
-		<td valign='Top'>
-			<fieldset style='border: 2px outset #8A0808;background: #FFFBE9;'>
-			<legend class="titulofieldset" style='color: #114411;'>Credito</legend>
+		</td><td>
+			<fieldset style='border: 1px outset #8A0808;background: #FFFBE9;'>
 			<table width= '100%' >
 				<tr>
 					<td class="littletableheaderc"><?=$form->cliente->label  ?></td>
 					<td class="littletablerow"><?=$form->cliente->output ?></td>
-				</tr>
-			</tr>
+				<tr><tr>
+					<td class="littletableheaderc"><?=$form->codigo->label  ?></td>
+					<td class="littletablerow"><?=$form->codigo->output ?></td>
+				<tr><tr>
+					<td colspan='2' class="littletableheaderc"><?=$form->url->label  ?>
+					<?=$form->url->output ?></td>
+				</tr>				
 			</table>
 			</fieldset>
-			<fieldset style='border: 5px outset #3FCF3F;background: #3FCF3F;'>
-			<table width= '100%' >
-				<tr>
-					<td>SALDO</td>
-					<td style='font-size:18px;color:#0;font-weight: bold'><? echo nformat($this->datasis->dameval("SELECT SUM(monto*IF(tipo_doc IN ('FC','ND','GI'),1,-1)) monto FROM sprm WHERE cod_prv='".$form->_dataobject->get('proveed')."'")) ?></td>
-				</tr>
-			</tr>
-			</table>
-			</fieldset>
-			
 		</td>
 		<?php if( $form->_status == 'show') {  ?>
 		<?php } ?>
