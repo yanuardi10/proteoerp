@@ -393,10 +393,6 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 
 
 
-
-
-
-
 	//****************************************
 	//
 	// funciones

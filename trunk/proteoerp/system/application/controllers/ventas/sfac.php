@@ -515,7 +515,7 @@ class Sfac extends Controller {
 			'editable'      => 'true',
 			'width'         => 120,
 			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
+			'editrules'     => '{ required:false}',
 			'editoptions'   => '{ size:15, maxlength: 12 }',
 		));
 
@@ -843,7 +843,7 @@ class Sfac extends Controller {
 			'editable'      => 'true',
 			'width'         => 200,
 			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
+			'editrules'     => '{ required:false}',
 			'editoptions'   => '{ size:15, maxlength: 20 }',
 		));
 
@@ -855,7 +855,7 @@ class Sfac extends Controller {
 			'editable'      => 'true',
 			'width'         => 200,
 			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
+			'editrules'     => '{ required:false}',
 			'editoptions'   => '{ size:15, maxlength: 20 }',
 		));
 

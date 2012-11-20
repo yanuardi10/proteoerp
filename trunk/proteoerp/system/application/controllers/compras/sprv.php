@@ -1,5 +1,6 @@
 <?php require_once(BASEPATH.'application/controllers/validaciones.php');
 class Sprv extends Controller {
+	var $genesal = true;
 	var $mModulo='SPRV';
 	var $titp='Proveedores';
 	var $tits='Proveedores';
@@ -20,7 +21,7 @@ class Sprv extends Controller {
 		};*/
 		$this->db->simple_query('ALTER TABLE sprv CHANGE COLUMN telefono telefono TEXT NULL DEFAULT NULL AFTER direc3');
 
-		$this->datasis->modintramenu( 800, 500, substr($this->url,0,-1) );
+		$this->datasis->modintramenu( 800, 600, substr($this->url,0,-1) );
 		redirect($this->url.'jqdatag');
 	}
 
@@ -34,17 +35,7 @@ class Sprv extends Controller {
 		$grid = $this->defgrid();
 		$param['grids'][] = $grid->deploy();
 
-		$bodyscript = '
-		<script type="text/javascript">
-		jQuery("#edocta").click( function(){
-			var id = jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'getGridParam\',\'selrow\');
-			if (id)	{
-				var ret = jQuery("#newapi'.$param['grids'][0]['gridname'].'").jqGrid(\'getRowData\',id);
-				'.$this->datasis->jwinopen(site_url('reportes/ver/SPRMECU/SPRM/').'/\'+ret.proveed').';
-			} else { $.prompt("<h1>Por favor Seleccione un Proveedor</h1>");}
-		});
-		</script>
-		';
+		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname']);
 
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
@@ -53,10 +44,13 @@ class Sprv extends Controller {
 		$grid->wbotonadd(array("id"=>"edocta",   "img"=>"images/pdf_logo.gif",  "alt" => 'Formato PDF', "label"=>"Estado de Cuenta"));
 		$WestPanel = $grid->deploywestp();
 
-		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'));
+		$adic = array(
+		array("id"=>"fedita",  "title"=>"Agregar/Editar Registro")
+		);
+		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
 		$funciones = '
-		function consulrif(campo){
+		function consulrif1(campo){
 			vrif=$("#"+campo).val();
 			if(vrif.length==0){
 				alert("Debe introducir primero un RIF");
@@ -66,12 +60,22 @@ class Sprv extends Controller {
 				window.open("'.$consulrif.'"+"?p_rif="+vrif,"CONSULRIF","height=350,width=410");
 			}
 		}
+
+		function iraurl(){
+			vurl=$("#url").val();
+			if(vrif.length==0){
+				alert("Debe introducir primero un URL");
+			}else{
+				vurl=vurl.toLowerCase();
+				window.open(vurl,"PROVEEDOR","height=600,width=800");
+			}
+		}
 		';
 
 
 		$param['WestPanel']   = $WestPanel;
 		//$param['EastPanel']  = $EastPanel;
-		$param['funciones']   = $funciones;
+		//$param['funciones']   = $funciones;
 		$param['SouthPanel']  = $SouthPanel;
 		$param['listados']    = $this->datasis->listados('SPRV', 'JQ');
 		$param['otros']       = $this->datasis->otros('SPRV', 'JQ');
@@ -81,6 +85,95 @@ class Sprv extends Controller {
 		$param['encabeza']    = $this->titp;
 		$this->load->view('jqgrid/crud2',$param);
 	}
+
+	//***************************
+	//Funciones de los Botones
+	//***************************
+	function bodyscript( $grid0 ){
+		$bodyscript = '		<script type="text/javascript">';
+
+		$bodyscript .= '
+		jQuery("#edocta").click( function(){
+			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
+				'.$this->datasis->jwinopen(site_url('reportes/ver/SPRMECU/SPRM/').'/\'+ret.proveed').';
+			} else { $.prompt("<h1>Por favor Seleccione un Proveedor</h1>");}
+		});
+		';
+
+		$bodyscript .= '
+		function sprvadd() {
+			$.post("'.site_url('compras/sprv/dataedit/create').'",
+			function(data){
+				$("#fedita").html(data);
+				$("#fedita").dialog( "open" );
+			})
+		};';
+
+		$bodyscript .= '
+		function sprvedit() {
+			var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret    = $("#newapi'.$grid0.'").getRowData(id);
+				mId = id;
+				$.post("'.site_url('compras/sprv/dataedit/modify').'/"+id, function(data){
+					$("#fedita").html(data);
+					$("#fedita").dialog( "open" );
+				});
+			} else { $.prompt("<h1>Por favor Seleccione un Registro</h1>");}
+		};';
+
+		//Wraper de javascript
+		$bodyscript .= '
+		$(function() {
+			$("#dialog:ui-dialog").dialog( "destroy" );
+			var mId = 0;
+			var montotal = 0;
+			var ffecha = $("#ffecha");
+			var grid = jQuery("#newapi'.$grid0.'");
+			var s;
+			var allFields = $( [] ).add( ffecha );
+			var tips = $( ".validateTips" );
+			s = grid.getGridParam(\'selarrrow\');
+			';
+
+		$bodyscript .= '
+		$("#fedita").dialog({
+			autoOpen: false, height: 470, width: 700, modal: true,
+			buttons: {
+			"Guardar": function() {
+				var bValid = true;
+				var murl = $("#df1").attr("action");
+				allFields.removeClass( "ui-state-error" );
+				$.ajax({
+					type: "POST", dataType: "html", async: false,
+					url: murl,
+					data: $("#df1").serialize(),
+					success: function(r,s,x){
+						if ( r.length == 0 ) {
+							apprise("Registro Guardado");
+							$( "#fedita" ).dialog( "close" );
+							grid.trigger("reloadGrid");
+							return true;
+						} else { 
+							$("#fedita").html(r);
+						}
+					}
+			})},
+			"Cancelar": function() { $( this ).dialog( "close" ); },
+			"SENIAT":   function() { consulrif("rifci"); },
+			"URL":   function() { iraurl(); },
+			},
+			close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
+		});';
+		$bodyscript .= '});'."\n";
+
+		$bodyscript .= "\n\t</script>\n";
+		$bodyscript .= "";
+		return $bodyscript;
+	}
+
 
 	//***************************
 	//Definicion del Grid y la Forma
@@ -260,7 +353,7 @@ class Sprv extends Controller {
 
 		$linea = $linea + 1;
 		$grid->addField('codigo');
-		$grid->label('Codigo');
+		$grid->label('Cod. Prov.');
 		$grid->params(array(
 			'search'        => 'true',
 			'editable'      => $editar,
@@ -499,6 +592,8 @@ class Sprv extends Controller {
 		$grid->setSearch(true);
 		$grid->setRowNum(30);
 		$grid->setShrinkToFit('false');
+
+		$grid->setBarOptions("\t\taddfunc: sprvadd,\n\t\teditfunc: sprvedit");
 
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
@@ -758,7 +853,12 @@ class Sprv extends validaciones {
 		$data['head']   .= $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
 	}
+*/
 
+	// **************************************
+	//     DATAEDIT
+	//
+	// **************************************
 	function dataedit(){
 		$this->rapyd->load('dataedit');
 
@@ -847,7 +947,19 @@ class Sprv extends validaciones {
 					alert( "El ultimo codigo ingresado fue: " + msg );
 					}
 				});
-			}';
+			}
+			
+			function iraurl(){
+				vurl=$("#url").val();
+				if(vurl.length==0){
+					alert("Debe introducir primero un URL");
+				}else{
+					vurl=vurl.toLowerCase();
+					window.open(vurl);
+				}
+			}
+			
+			';
 
 		$edit = new DataEdit('Proveedores', 'sprv');
 		$edit->script($script, 'create');
@@ -870,18 +982,18 @@ class Sprv extends validaciones {
 
 		$edit->nombre = new inputField('Nombre', 'nombre');
 		$edit->nombre->rule = 'trim|strtoupper|required';
-		$edit->nombre->size = 41;
+		$edit->nombre->size = 35;
 		$edit->nombre->maxlength =40;
 
-		$lriffis='<a href="javascript:consulrif();" title="Consultar RIF en el SENIAT" onclick="" style="color:red;font-size:9px;border:none;">SENIAT</a>';
-		$edit->rif =  new inputField('Rif', 'rif');
+		//$lriffis='<a href="javascript:consulrif();" title="Consultar RIF en el SENIAT" onclick="" style="color:red;font-size:9px;border:none;">SENIAT</a>';
+		$edit->rif =  new inputField('RIF', 'rif');
 		$edit->rif->rule = "trim|strtoupper|required|callback_chci";
-		$edit->rif->append($lriffis);
+		//$edit->rif->append($lriffis);
 		$edit->rif->maxlength=13;
 		$edit->rif->size =12;
 
 		$edit->contacto = new inputField("Contacto", "contacto");
-		$edit->contacto->size =41;
+		$edit->contacto->size =35;
 		$edit->contacto->rule ="trim";
 		$edit->contacto->maxlength =40;
 		//$edit->contacto->group = "Datos del Proveedor";
@@ -894,7 +1006,7 @@ class Sprv extends validaciones {
 		$edit->grupo->group = "Datos del Proveedor";
 		$edit->gr_desc = new inputField("gr_desc", "gr_desc");
 
-		$edit->tipo = new dropdownField("Tipo", "tipo");
+		$edit->tipo = new dropdownField("Persona", "tipo");
 		$edit->tipo->option("","Seleccionar");
 		$edit->tipo->options(array("1"=> "Jur&iacute;dico Domiciliado","2"=>"Residente", "3"=>"Jur&iacute;dico No Domiciliado","4"=>"No Residente","5"=>"Excluido del Libro de Compras","0"=>"Inactivo"));
 		$edit->tipo->style = "width:190px";
@@ -907,36 +1019,39 @@ class Sprv extends validaciones {
 		$edit->tiva->style='width:190px;';
 
 		$edit->direc1 = new inputField("Direcci&oacute;n ",'direc1');
-		$edit->direc1->size =40;
+		$edit->direc1->size =34;
 		$edit->direc1->rule ="trim";
 		$edit->direc1->maxlength =40;
 
 		$edit->direc2 = new inputField(" ",'direc2');
-		$edit->direc2->size =40;
+		$edit->direc2->size =34;
 		$edit->direc2->rule ="trim";
 		$edit->direc2->maxlength =40;
 
 		$edit->direc3 = new inputField(" ",'direc3');
-		$edit->direc3->size =40;
+		$edit->direc3->size =34;
 		$edit->direc3->rule ="trim";
 		$edit->direc3->maxlength =40;
 
-		$edit->telefono = new inputField("Tel&eacute;fono", "telefono");
-		$edit->telefono->size = 30;
+		$edit->telefono = new textareaField("Telefono", "telefono");
 		$edit->telefono->rule = "trim";
-		$edit->telefono->group = "Datos del Proveedor";
-		$edit->telefono->maxlength =40;
+		$edit->telefono->cols = 27;
+		$edit->telefono->rows =  2;
+		$edit->telefono->maxlength =200;
+		//$edit->nomfis->style = 'width:170;';
+
+
 
 		$edit->email  = new inputField("Email", "email");
 		$edit->email->rule = "trim|valid_email";
-		$edit->email->size =30;
+		$edit->email->size =29;
 		$edit->email->maxlength =30;
 		//$edit->email->group = "Datos del Proveedor";
 
-		$edit->url   = new inputField("URL", "url");
+		$edit->url = new inputField("URL", "url");
 		$edit->url->group = "Datos del Proveedor";
 		$edit->url->rule = "trim";
-		$edit->url->size =30;
+		$edit->url->size =25;
 		$edit->url->maxlength =30;
 
 		$atts = array(
@@ -956,81 +1071,84 @@ class Sprv extends validaciones {
 		$edit->observa->rule = "trim";
 		$edit->observa->size = 41;
 
-		$obj="banco1";
-		$edit->$obj = new dropdownField("Cuenta en bco. (1)", $obj);
-		$edit->$obj->clause="where";
-		$edit->$obj->option("","Ninguno");
-		$edit->$obj->options("SELECT cod_banc,nomb_banc FROM tban ORDER BY nomb_banc");
-		$edit->$obj->operator="=";
-		$edit->$obj->group = "Cuentas Bancarias";
-		$edit->$obj->style='width:150px;';
+		$edit->banco1 = new dropdownField("Cuenta en bco. (1)", "banco1");
+		$edit->banco1->clause="where";
+		$edit->banco1->option("","Ninguno");
+		$edit->banco1->options("SELECT cod_banc,nomb_banc FROM tban ORDER BY nomb_banc");
+		$edit->banco1->operator="=";
+		$edit->banco1->group = "Cuentas Bancarias";
+		$edit->banco1->style='width:140px;';
 
-		$obj="cuenta1";
-		$edit->$obj = new inputField("&nbsp;&nbsp;N&uacute;mero (1)",$obj);
-		$edit->$obj->size = 41;
-		$edit->$obj->rule = "trim";
-		$edit->$obj->maxlength = 15;
-		$edit->$obj->group = "Cuentas Bancarias";
-		//$edit->$obj->in="banco$i";
+		$edit->cuenta1 = new inputField("&nbsp;&nbsp;N&uacute;mero (1)","cuenta1");
+		$edit->cuenta1->size = 21;
+		$edit->cuenta1->rule = "trim";
+		$edit->cuenta1->maxlength = 23;
+		$edit->cuenta1->group = "Cuentas Bancarias";
+		//$edit->cuenta1->in="banco$i";
 
-		$obj="banco2";
-		$edit->$obj = new dropdownField("Cuenta en bco. (2)", $obj);
-		$edit->$obj->clause="where";
-		$edit->$obj->option("","Ninguno");
-		$edit->$obj->options("SELECT cod_banc,nomb_banc FROM tban ORDER BY nomb_banc");
-		$edit->$obj->operator="=";
-		$edit->$obj->group = "Cuentas Bancarias";
-		$edit->$obj->style='width:150px;';
+		$edit->banco2 = new dropdownField("Cuenta en bco. (2)", 'banco2');
+		$edit->banco2->clause="where";
+		$edit->banco2->option("","Ninguno");
+		$edit->banco2->options("SELECT cod_banc,nomb_banc FROM tban ORDER BY nomb_banc");
+		$edit->banco2->group = "Cuentas Bancarias";
+		$edit->banco2->style='width:140px;';
 
-		$obj="cuenta2";
-		$edit->$obj = new inputField("&nbsp;&nbsp;N&uacute;mero (2)",$obj);
-		$edit->$obj->size = 41;
-		$edit->$obj->rule = "trim";
-		$edit->$obj->maxlength = 15;
-		$edit->$obj->group = "Cuentas Bancarias";
+		$edit->cuenta2 = new inputField("&nbsp;&nbsp;N&uacute;mero (2)",'cuenta2');
+		$edit->cuenta2->size = 21;
+		$edit->cuenta2->rule = "trim";
+		$edit->cuenta2->maxlength = 23;
+		$edit->cuenta2->group = "Cuentas Bancarias";
 
-
-		$edit->cliente  = new inputField("Cliente", "cliente");
-		$edit->cliente->size =13;
+		$edit->cliente  = new inputField("Como Cliente", "cliente");
+		$edit->cliente->size =7;
 		$edit->cliente->rule ="trim";
 		$edit->cliente->readonly=true;
 		$edit->cliente->append($bsclid);
-		$edit->cliente->append($lcli);
+		//$edit->cliente->append($lcli);
 		//$edit->cliente->group = "Datos del Proveedor";
 
-		$edit->nomfis = new inputField("Nombre", "nomfis");
-		$edit->nomfis->size =80;
-		$edit->nomfis->rule ="rule";
-		//$edit->nomfis->readonly =true;
+		$edit->codigo  = new inputField("Cod. en Prov", "codigo");
+		$edit->codigo->size =15;
+		$edit->codigo->rule ="trim";
 
-		$lcuent=anchor_popup('/contabilidad/cpla/dataedit/create','Agregar Cuenta Contable',$atts);
-		$edit->cuenta = new inputField('Cuenta Contable', 'cuenta');
+		$edit->nomfis = new textareaField('Razon Social', 'nomfis');
+		$edit->nomfis->rule = 'trim';
+		$edit->nomfis->cols = 33;
+		$edit->nomfis->rows =  2;
+		$edit->nomfis->maxlength =200;
+		$edit->nomfis->style = 'width:170;';
+
+
+		//$lcuent=anchor_popup('/contabilidad/cpla/dataedit/create','Agregar Cuenta Contable',$atts);
+		$edit->cuenta = new inputField('Contable', 'cuenta');
 		$edit->cuenta->rule='trim|callback_chcuentac';
-		$edit->cuenta->size =13;
+		$edit->cuenta->size =15;
 		$edit->cuenta->append($bcpla);
-		$edit->cuenta->append($lcuent);
+		//$edit->cuenta->append($lcuent);
 
-		$edit->reteiva  = new inputField('% de Retenci&oacute;n','reteiva');
+		$edit->reteiva  = new inputField('Retencion','reteiva');
 		$edit->reteiva->size = 6;
 		$edit->reteiva->css_class='inputnum';
+		$edit->reteiva->append("%");
 
 		$edit->buttons('modify','save','undo','delete','add','back');
 
 		if($this->genesal){
 			$edit->build();
 			$conten['form']  =&  $edit;
-			$data['content'] = $this->load->view('view_sprv', $conten,true);
+			$data['content'] = $this->load->view('view_sprv', $conten);
+
 
 			//$smenu['link']=barra_menu('230');
 			//$data['content'] = $edit->output;
 			//$data['smenu']   = $this->load->view('view_sub_menu', $smenu,true);
-			$data['title'] = heading('Proveedores');
+			//$data['title'] = heading('Proveedores');
 
-			$data['head']  = script('jquery.js');
-			$data['head'] .= script('plugins/jquery.numeric.pack.js');
-			$data['head'] .= script('plugins/jquery.floatnumber.js');
-			$data['head'] .= $this->rapyd->get_head();
-			$this->load->view('view_ventanas', $data);
+			//$data['head']  = script('jquery.js');
+			//$data['head'] .= script('plugins/jquery.numeric.pack.js');
+			//$data['head'] .= script('plugins/jquery.floatnumber.js');
+			//$data['head'] .= $this->rapyd->get_head();
+			//$this->load->view('view_ventanas', $data);
 		}else{
 			$edit->on_save_redirect=false;
 			$edit->build();
@@ -1254,7 +1372,7 @@ class Sprv extends validaciones {
 		}
 	}
 
-
+/*
 	//****************************************************************
 	//
 	//
@@ -1554,7 +1672,6 @@ class Sprv extends validaciones {
 		$this->db->simple_query('ALTER TABLE sprv CHANGE nombre nombre VARCHAR(60) DEFAULT NULL NULL');
 		$this->db->simple_query('ALTER TABLE sprv CHANGE nomfis nomfis VARCHAR(200) DEFAULT NULL NULL');
 	}
-
 
 }
 ?>
