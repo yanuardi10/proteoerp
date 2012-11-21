@@ -4819,6 +4819,11 @@ class Sinv extends Controller {
 		$edit->cpactivodescrip->type='inputhidden';
 		$edit->cpactivodescrip->in = 'cpactivo';
 
+		$edit->fracci = new inputField('Cantidad','fracci');
+		$edit->fracci->rule='max_length[6]|numeric';
+		$edit->fracci->css_class='inputnum';
+		$edit->fracci->size =8;
+
 		$edit->build();
 
 		$script= '';
