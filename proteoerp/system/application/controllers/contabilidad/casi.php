@@ -711,6 +711,8 @@ jQuery("#boton4").click( function(){
 		#GET url
 		$grid->setUrlget(site_url($this->url.'getdatait/'));
 
+		$grid->setOndblClickRow("");
+
 		if ($deployed) {
 			return $grid->deploy();
 		} else {

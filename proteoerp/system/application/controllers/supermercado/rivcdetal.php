@@ -38,7 +38,8 @@ class rivcdetal extends Controller {
 		$WestPanel = $grid->deploywestp();
 
 		$adic = array(
-		array("id"=>"fedita",  "title"=>"Agregar/Editar Registro")
+		array("id"=>"fedita", "title"=>"Agregar/Editar Registro"),
+		array("id"=>"fborra", "title"=>"Eliminar registro")
 		);
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
@@ -82,15 +83,40 @@ class rivcdetal extends Controller {
 		$bodyscript .= '
 		function rivcdetaledit() {
 			var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+
 			if (id)	{
 				var ret    = $("#newapi'.$grid0.'").getRowData(id);
 				mId = id;
 				$.post("'.site_url($this->url.'dataedit/modify').'/"+id, function(data){
+					$("#fborra").html("");
 					$("#fedita").html(data);
+					$("#fedita").dialog({ buttons: { Ok: function() { $( this ).dialog( "close" ); } } });
 					$("#fedita").dialog( "open" );
 				});
-			} else { $.prompt("<h1>Por favor Seleccione un Registro</h1>");}
+			}else{
+				$.prompt("<h1>Por favor Seleccione un Registro</h1>");
+			}
 		};';
+
+
+		$bodyscript .= '
+		function rivcdetaldel() {
+			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				if(confirm(" Seguro desea anular el registro?")){
+					var ret    = $("#newapi'.$grid0.'").getRowData(id);
+					mId = id;
+					$.post("'.site_url($this->url.'dataedit/do_delete').'/"+id, function(data){
+						$("#fedita").html("");
+						$("#fborra").html(data);
+						$("#fborra").dialog( "open" );
+					});
+				}
+			}else{
+				$.prompt("<h1>Por favor Seleccione un Registro</h1>");
+			}
+		};';
+
 
 		//Wraper de javascript
 		$bodyscript .= '
@@ -121,7 +147,6 @@ class rivcdetal extends Controller {
 					url: murl,
 					data: $("#df1").serialize(),
 					success: function(r,s,x){
-
 						if ( r.status == "A" ) {
 							$( "#fedita" ).dialog( "close" );
 							grid.trigger("reloadGrid");
@@ -137,6 +162,20 @@ class rivcdetal extends Controller {
 			},
 			close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
 		});';
+
+
+		$bodyscript .= '
+		$("#fborra").dialog({
+			autoOpen: false, height: 300, width: 300, modal: true,
+			buttons: {
+				"Aceptar": function() {
+					$( this ).dialog( "close" );
+					grid.trigger("reloadGrid");
+				}
+			},
+			close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
+		});';
+
 		$bodyscript .= '});'."\n";
 
 		$bodyscript .= "\n</script>\n";
@@ -427,19 +466,35 @@ class rivcdetal extends Controller {
 
 		#show/hide navigations buttons
 		$grid->setAdd(    $this->datasis->sidapuede('RIVCDETAL','INCLUIR%' ));
-		$grid->setEdit(   $this->datasis->sidapuede('RIVCDETAL','MODIFICA%'));
+		//$grid->setEdit(   $this->datasis->sidapuede('RIVCDETAL','MODIFICA%'));
+		$grid->setEdit(false);
 		$grid->setDelete( $this->datasis->sidapuede('RIVCDETAL','BORR_REG%'));
 		$grid->setSearch( $this->datasis->sidapuede('RIVCDETAL','BUSQUEDA%'));
 		$grid->setRowNum(30);
 		$grid->setShrinkToFit('false');
 
-		$grid->setBarOptions("\t\taddfunc: rivcdetaladd,\n\t\teditfunc: rivcdetaledit");
+		$grid->setBarOptions("addfunc: rivcdetaladd, editfunc: rivcdetaledit, delfunc: rivcdetaldel");
+
+		$grid->setOnSelectRow('
+			function(id){
+
+			},
+			afterInsertRow:
+			function( rid, aData, rowe){
+				if ( aData.anulado == "S" ){
+					$(this).jqGrid( "setCell", rid, "id","", {color:"#FFFFFF", background:"#960F18" });
+				}
+			}
+		');
+
 
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
 
 		#GET url
 		$grid->setUrlget(site_url($this->url.'getdata/'));
+
+		$grid->setOndblClickRow("");
 
 		if ($deployed) {
 			return $grid->deploy();
@@ -478,17 +533,17 @@ class rivcdetal extends Controller {
 		unset($data['oper']);
 		unset($data['id']);
 		if($oper == 'add'){
-			if(false == empty($data)){
-				$check = $this->datasis->dameval("SELECT count(*) FROM rivcdetal WHERE $mcodp=".$this->db->escape($data[$mcodp]));
-				if ( $check == 0 ){
-					$this->db->insert('rivcdetal', $data);
-					echo "Registro Agregado";
-
-					logusu('RIVCDETAL',"Registro ????? INCLUIDO");
-				} else
-					echo "Ya existe un registro con ese $mcodp";
-			} else
-				echo "Fallo Agregado!!!";
+			//if(false == empty($data)){
+			//	$check = $this->datasis->dameval("SELECT count(*) FROM rivcdetal WHERE $mcodp=".$this->db->escape($data[$mcodp]));
+			//	if ( $check == 0 ){
+			//		$this->db->insert('rivcdetal', $data);
+			//		echo "Registro Agregado";
+            //
+			//		logusu('RIVCDETAL',"Registro ????? INCLUIDO");
+			//	} else
+			//		echo "Ya existe un registro con ese $mcodp";
+			//} else
+			//	echo "Fallo Agregado!!!";
 
 		} elseif($oper == 'edit') {
 			$nuevo  = $data[$mcodp];
@@ -510,89 +565,18 @@ class rivcdetal extends Controller {
 			}
 
 		} elseif($oper == 'del') {
-			$meco = $this->datasis->dameval("SELECT $mcodp FROM rivcdetal WHERE id=$id");
-			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM rivcdetal WHERE id='$id' ");
-			if ($check > 0){
-				echo " El registro no puede ser eliminado; tiene movimiento ";
-			} else {
-				$this->db->simple_query("DELETE FROM rivcdetal WHERE id=$id ");
-				logusu('RIVCDETAL',"Registro ????? ELIMINADO");
-				echo "Registro Eliminado";
-			}
+			//$meco = $this->datasis->dameval("SELECT $mcodp FROM rivcdetal WHERE id=$id");
+			////$check =  $this->datasis->dameval("SELECT COUNT(*) FROM rivcdetal WHERE id='$id' ");
+			//if ($check > 0){
+			//	echo " El registro no puede ser eliminado; tiene movimiento ";
+			//} else {
+			//	$this->db->simple_query("DELETE FROM rivcdetal WHERE id=$id ");
+			//	logusu('RIVCDETAL',"Registro ????? ELIMINADO");
+			//	echo "Registro Eliminado";
+			//}
 		};
 	}
 
-	//var $titp='Retenciones de clientes al Detal';
-	//var $tits='Retenciones de clientes al Detal';
-	//var $url ='supermercado/rivcdetal/';
-
-	//function rivcdetal(){
-	//	parent::Controller();
-	//	$this->load->library('rapyd');
-	//	//$this->datasis->modulo_id(216,1);
-	//	$this->instalar();
-	//}
-
-	//function index(){
-	//	redirect($this->url.'filteredgrid');
-	//}
-
-
-	function filteredgrid(){
-		$this->rapyd->load('datafilter','datagrid');
-
-		$filter = new DataFilter($this->titp, 'rivcdetal');
-
-		$filter->numero = new inputField('Numero','numero');
-		$filter->numero->rule      ='max_length[8]';
-		$filter->numero->size      =10;
-		$filter->numero->maxlength =8;
-
-		$filter->fecha = new dateField('Fecha','fecha');
-		$filter->fecha->rule      ='chfecha';
-		$filter->fecha->size      =10;
-		$filter->fecha->maxlength =8;
-
-		$filter->caja = new inputField('Caja','caja');
-		$filter->caja->rule      ='max_length[5]';
-		$filter->caja->size      =7;
-		$filter->caja->maxlength =5;
-
-		$filter->comprob = new inputField('Comprobante','comprob');
-		$filter->comprob->rule      ='max_length[8]';
-		$filter->comprob->size      =10;
-		$filter->comprob->maxlength =8;
-
-		$filter->periodo = new inputField('Per&iacute;odo','periodo');
-		$filter->periodo->rule      ='max_length[8]';
-		$filter->periodo->size      =10;
-		$filter->periodo->maxlength =8;
-		$filter->buttons('reset', 'search');
-		$filter->build();
-
-		$uri = anchor($this->url.'dataedit/show/<raencode><#id#></raencode>','<#comprob#>');
-
-		$grid = new DataGrid('');
-		$grid->order_by('id');
-		$grid->per_page = 40;
-
-		$grid->column_orderby('Per&iacute;odo'  ,'periodo','periodo','align="left"');
-		$grid->column_orderby('Comprobante'     ,$uri,'comprob','align="left"');
-		$grid->column_orderby('Emisi&oacute;n'  ,'<dbdate_to_human><#emision#></dbdate_to_human>','fecha','align="center"');
-		$grid->column_orderby('Recepci&oacute;n','<dbdate_to_human><#recepcion#></dbdate_to_human>','fecha','align="center"');
-		$grid->column_orderby('Caja'            ,'caja' ,'caja','align="left"');
-		$grid->column_orderby('Monto'           ,'<nformat><#monto#></nformat>','monto','align="right"');
-		$grid->column_orderby('Reiva'           ,'<nformat><#reiva#></nformat>','reiva','align="right"');
-
-		$grid->add($this->url.'dataedit/create');
-		$grid->build();
-
-		$data['filtro']  = $filter->output;
-		$data['content'] = $grid->output;
-		$data['head']    = $this->rapyd->get_head().script('jquery.js');
-		$data['title']   = heading($this->titp);
-		$this->load->view('view_ventanas', $data);
-	}
 
 	function dataedit(){
 		$this->rapyd->load('dataedit');
@@ -861,7 +845,13 @@ class rivcdetal extends Controller {
 		$transac   = $do->get('transac');
 		$codbanc   = $do->get('codbanc');
 		$monto     = $do->get('reiva');
+		$anulado   = $do->get('anulado');
 		$dbtransac= $this->db->escape($transac);
+
+		if($anulado=='S'){
+			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='Esta retenci&oacute;n ya estaba anulada';
+			return false;
+		}
 
 		$abono=$this->datasis->dameval("SELECT abonos FROM smov WHERE transac=${dbtransac}");
 		if($abono==0){
@@ -879,7 +869,7 @@ class rivcdetal extends Controller {
 			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='Los efectos relacionados han sido abonados, debe reversarlos para poder continuar.';
 		}
 
-		$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='Retencion anulada';
+		$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='Retenci&oacute;n anulada';
 		return false;
 	}
 
