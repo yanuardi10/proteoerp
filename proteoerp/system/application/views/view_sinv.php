@@ -952,7 +952,7 @@ function sinvborraprv(mproveed, mcodigo){
 </script>
 <?php }
 if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</div>';
-?>
+/*
 <table border='0' width="100%">
 	<tr>
 		<td>
@@ -1034,9 +1034,10 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 		<td align='right'><?php echo $container_tr; ?></td>
 	</tr>
 </table>
+*/
+?>
 
 <fieldset style='border: 1px outset #9AC8DA;background: #FFFFF9;'>
-<legend class="titulofieldset" >Identificacion del Producto </legend>
 <table border='0' width="100%">
 	<tr>
 		<td colspan='2' valign='top'>
@@ -1153,16 +1154,19 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 		<li><a href="#tab1">Parametros</a></li>
 		<li><a href="#tab2">Precios</a></li>
 		<li><a href="#tab3">Existencias</a></li>
-		<?php if($form->_status=='show'){ ?>
-		<li><a href="#tab4">Movimientos</a></li>
+		<?php if ( $this->datasis->traevalor('SUNDECOP') == 'S') { ?>
+		<li><a href="#tab4">Sundecop</a></li>
 		<?php } ?>
 		<li><a href="#tab5">Promociones</a></li>
 		<li><a href="#tab6">Precio al Mayor</a></li>
 		<?php if(($form->_dataobject->get('tipo')=='Combo' && $form->_status=='show') || $form->_status!='show'){?>
 		<li id="litab7"><a href="#tab7">Articulos del Combo</a></li>
 		<?php }?>
+		<?php if ( $this->datasis->traevalor('SINVPRODUCCION') == 'S') { ?>
 		<li><a href="#tab8">Ingredientes</a></li>
 		<li><a href="#tab9">Labores     </a></li>
+		<?php } ?>
+
 	</ul>
 	<div id="tab1" style='background:#EFEFFF'>
 	<table width="100%" border='0'>
@@ -1390,8 +1394,10 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 		<?php echo $container_co ?>
 </div>
 <?php } ?>
+
+<?php if ( $this->datasis->traevalor('SINVPRODUCCION') == 'S') { ?>
 <div id="tab8" style='background:#EFEFFF'>
-	<div style='overflow:auto;border: 1px solid #9AC8DA;background: #FAFAFA;height:200px'>
+	<div style='overflow:auto;border: 1px solid #9AC8DA;background: #FAFAFA;height:170px'>
 		<table width='100%'>
 			<tr id='__INPL_SINVPITEM__'>
 				<td bgcolor='#7098D0'            ><b>C&oacute;digo     </b></td>
@@ -1432,7 +1438,7 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 	<?php echo $container_it ?>
 </div>
 <div id="tab9" style='background:#EFEFFF'>
-	<div style='overflow:auto;border: 1px solid #9AC8DA;background: #FAFAFA;height:200px'>
+	<div style='overflow:auto;border: 1px solid #9AC8DA;background: #FAFAFA;height:170px'>
 		<table width='100%'>
 			<tr id='__INPL_SINVPLABOR__'>
 				<td bgcolor='#7098D0' align='left' ><b>Estaci&oacute;n</b></td>
@@ -1469,6 +1475,8 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 	</div>
 	<?php echo $container_la ?>
 </div>
+<?php } ?>
+
 <div id="tab3" style='background:#EFEFFF'>
 	<table width='100%'>
 	<tr>
@@ -1515,12 +1523,54 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 	</table>
 </div>
 
-<?php if($form->_status=='show'){ ?>
-
+<?php if ( $this->datasis->traevalor('SUNDECOP') == 'S') { ?>
 <div id="tab4" style='background:#EFEFFF'>
 
 	<table width='100%'>
-	<?php if($form->_status=='show'){ ?>
+	<tr>
+		<td valign='top'>
+			<fieldset  style='border: 2px outset #FEB404;background: #FFFCE8;'>
+			<legend class="titulofieldset" >Ventas</legend>
+			<table width='100%' >
+				<tr>
+					<td class="littletableheader" ><?php echo $form->mpps->label;  ?></td>
+					<td class="littletablerow"    ><?php echo $form->mpps->output; ?></td>
+					<td class="littletableheader" ><?php echo $form->rubro->label;  ?></td>
+					<td class="littletablerow"    ><?php echo $form->rubro->output; ?></td>
+				</tr>
+				<tr>
+					<td class="littletableheader" ><?php echo $form->cpe->label;  ?></td>
+					<td class="littletablerow"    ><?php echo $form->cpe->output; ?></td>
+					<td class="littletableheader" ><?php echo $form->subrubro->label;  ?></td>
+					<td class="littletablerow"    ><?php echo $form->subrubro->output; ?></td>
+				</tr>
+				<tr>
+					<td class="littletableheader" ><?php echo $form->cunidad->label;  ?></td>
+					<td class="littletablerow"    ><?php echo $form->cunidad->output; ?></td>
+					<td class="littletableheader" ><?php echo $form->cmarca->label;  ?></td>
+					<td class="littletablerow"    ><?php echo $form->cmarca->output; ?></td>
+				</tr>
+				<tr>
+					<td class="littletableheader" ><?php echo $form->cmaterial->label;  ?></td>
+					<td class="littletablerow"    ><?php echo $form->cmaterial->output; ?></td>
+					<td class="littletableheader" ><?php echo $form->cforma->label;  ?></td>
+					<td class="littletablerow"    ><?php echo $form->cforma->output; ?></td>
+				</tr>
+
+			</table>
+
+			
+			
+			
+			</fieldset>
+		</td>
+	</tr>
+	</table>
+
+
+
+<?php /*
+	<table width='100%'>
 	<tr>
 		<td valign='top'>
 			<fieldset  style='border: 2px outset #FEB404;background: #FFFCE8;'>
@@ -1591,8 +1641,6 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 			</fieldset>
 		</td>
 	</tr>
-<?php } ?>
-
 	<tr>
 		<td>
 			<?php
@@ -1623,6 +1671,8 @@ if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</
 		</td>
 	</tr>
 	</table>
+	*/
+?>
 </div>
 <?php } ?>
 
@@ -1735,54 +1785,46 @@ if ($query->num_rows()>0 ) {
 				<legend class="titulofieldset" >Bonos por volumen</legend>
 				<table width='100%'>
 				<tr>
-					<td class="littletablerow" >Fecha de inicio</td>
+					<td class="littletablerow" >Inicio</td>
 					<td class="littletablerow" align='right'><?=$form->fdesde->output ?></td>
-					<td class="littletablerow">Por la compra de </td>
+					<td class="littletablerow">si compra</td>
 					<td class="littletablerow" align='right'><?=$form->bonicant->output ?></td>
-				</tr>
-				<tr>
-					<td class="littletablerow">Fecha de fin</td>
+				</tr><tr>
+					<td class="littletablerow">Fin</td>
 					<td class="littletablerow" align='right'><?=$form->fhasta->output ?></td>
-					<td class="littletablerow">Se lleva adicional </td>
+					<td class="littletablerow">adicional </td>
 					<td class="littletablerow" align='right'><?=$form->bonifica->output ?></td>
+				</tr><tr>
+					<td>&nbsp;</td>	<td>&nbsp;</td>
+					<td class="littletablerow"><?php echo $form->mmargenplus->label ?></td>
+					<td class="littletablerow" align='right'><?php echo $form->mmargenplus->output ?></td>
 				</tr>
 				</table>
 				</fieldset>
-
+			</td><td>
 				<fieldset style='border: 1px outset #8A0808;background: #FFFBE9;'>
 				<legend class="titulofieldset" >Descuentos por escalas</legend>
 				<table width='100%'>
 				<tr>
-					<td class="littletablerow">1-Descuento del </td>
+					<td class="littletablerow">1- </td>
 					<td class="littletablerow" align='right'><?php echo $form->pescala1->output ?>%</td>
-					<td class="littletablerow">Por la compra m&iacute;nima de</td>
+					<td class="littletablerow">Si lleva</td>
 					<td class="littletablerow" align='right'><?php echo $form->escala1->output ?></td>
 				</tr>
 				<tr>
-					<td class="littletablerow">2-Descuento del </td>
+					<td class="littletablerow">2- </td>
 					<td class="littletablerow" align='right'><?php echo $form->pescala2->output ?>%</td>
-					<td class="littletablerow">Por la compra m&iacute;nima de</td>
+					<td class="littletablerow">Si lleva</td>
 					<td class="littletablerow" align='right'><?php echo $form->escala2->output ?></td>
 				</tr>
 				<tr>
-					<td class="littletablerow">3-Descuento del </td>
+					<td class="littletablerow">3- </td>
 					<td class="littletablerow" align='right'><?php echo $form->pescala3->output ?>%</td>
-					<td class="littletablerow">Por la compra m&iacute;nima de</td>
+					<td class="littletablerow">Si lleva</td>
 					<td class="littletablerow" align='right'><?php echo $form->escala3->output ?></td>
 				</tr>
 				</table>
 				</fieldset>
-
-				<fieldset style='border: 1px outset #8A0808;background: #FFFBE9;'>
-				<legend class="titulofieldset" >Descuentos opcionales</legend>
-				<table width='100%'>
-				<tr>
-					<td class="littletablerow"><?php echo $form->mmargenplus->label ?></td>
-					<td class="littletablerow" align='right'><?php echo $form->mmargenplus->output ?>%</td>
-				</tr>
-				</table>
-				</fieldset>
-
 			</td>
 		</tr>
 	</table>
@@ -1846,4 +1888,5 @@ if ($query->num_rows()>0 ) {
 	</form>
 </div>
 <?php } ?>
-<?php endif; ?>
+<?php endif; 
+?>

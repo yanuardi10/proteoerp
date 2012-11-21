@@ -13,6 +13,4 @@ if (isset($content)) {
 		</tr>
 	</table>
 </div>
-<div class='footer'>Tiempo de la consulta {elapsed_time} seg | Proteo ERP </div>
-
 <?php if (isset($extras)) echo $extras; ?>
