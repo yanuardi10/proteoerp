@@ -19,6 +19,20 @@ class Sinv extends Controller {
 			$this->db->simple_query('ALTER TABLE barraspos ADD UNIQUE INDEX codigo (codigo, suplemen)');
 			$this->db->simple_query('ALTER TABLE barraspos ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
 		};
+
+		$campos = $this->db->list_fields('sinv');
+		if (!in_array('mpps',       $campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `mpps`        VARCHAR(20) NULL  COMMENT 'Numero de Ministerior de Salud'");
+		if (!in_array('cpe',        $campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `cpe`         VARCHAR(20) NULL  COMMENT 'Registro de CPE'");
+		if (!in_array('dcomercial', $campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `dcomercial`  INT(6)     NULL  COMMENT 'Destino Comercial'");
+		if (!in_array('rubro',      $campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `rubro`       INT(6)     NULL  COMMENT 'Rubro'");
+		if (!in_array('subrubro',   $campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `subrubro`    INT(6)     NULL  COMMENT 'Sub Rubro'");
+		if (!in_array('cunidad',    $campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `cunidad`     INT(6)     NULL  COMMENT 'Unidad de Medida'");
+		if (!in_array('cmarca',     $campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `cmarca`      INT(6)     NULL  COMMENT 'Marca'");
+		if (!in_array('cmaterial',  $campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `cmaterial`   INT(6)     NULL  COMMENT 'Material'");
+		if (!in_array('cpresenta',  $campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `cforma`      INT(6)     NULL  COMMENT 'Forma o Presentacion'");
+		if (!in_array('cpactivo',   $campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `cpactivo`    INT(6)     NULL  COMMENT 'Principio Activo'");
+
+
 		$this->datasis->modintramenu( 950, 600, substr($this->url,0,-1) );
 		redirect($this->url.'jqdatag');
 	}
@@ -40,6 +54,8 @@ class Sinv extends Controller {
 		$grid->wbotonadd(array("id"=>"gmarcas",  "img"=>"images/brand.png",  "alt" => 'Crear Marcas',             "label"=>"Crear Marcas"));
 		$grid->wbotonadd(array("id"=>"gunidad",  "img"=>"images/scale.png",  "alt" => 'Unidades de Medida',       "label"=>"Unidades y Empaques"));
 		$grid->wbotonadd(array("id"=>"hinactivo","img"=>"images/basura.png", "alt" => 'Oculta/Muestra Inactivos', "label"=>"Mostrar Inactivos"));
+		if ( $this->datasis->traevalor('SUNDECOP') == 'S') 
+			$grid->wbotonadd(array("id"=>"sundecop", "img"=>"images/sundecop.jpeg", "alt" => 'Oculta/Muestra Inactivos', "label"=>"SUNDECOP"));
 		$grid->setWpAdicional("<tr><td><div class=\"tema1\"><table id=\"bpos1\"></table></div><div id='pbpos1'></div></td></tr>\n");
 
 		$WestPanel = $grid->deploywestp();
@@ -107,7 +123,9 @@ class Sinv extends Controller {
 			editurl: \''.site_url('inventario/sinv/bpos1').'\',
 			caption: "Barras Adicionales"
 		});
+
 		jQuery("#bpos1").jqGrid(\'navGrid\',"#pbpos1",{edit:false, add:true, del:true, search: false, addfunc: bposadd });
+
 
 		function bposadd(){
 			var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
@@ -355,6 +373,7 @@ class Sinv extends Controller {
 			$.post("'.site_url('inventario/sinv/dataedit/create').'",
 			function(data){
 				$("#fedita").html(data);
+				$("#fedita").dialog( {height: 550, width: 800} );
 				$("#fedita").dialog( "open" );
 			})
 		};';
@@ -370,6 +389,21 @@ class Sinv extends Controller {
 			}
 		};
 		';
+
+		$bodyscript .= '
+		function sundecop() {
+			var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret    = $("#newapi'.$grid0.'").getRowData(id);
+				mId = id;
+				$.post("'.site_url('inventario/sinv/desundecop/modify').'/"+id, function(data){
+					$("#fedita").html(data);
+					$("#fedita").dialog({ height:410, width:450, title:"Valores SUNDECOP"});
+					$("#fedita").dialog( "open" );
+				});
+			} else { $.prompt("<h1>Por favor Seleccione un Registro</h1>");}
+		};';
+
 
 		// Funciones de los Botones
 		$bodyscript .= '
@@ -395,6 +429,10 @@ class Sinv extends Controller {
 			} else {
 				$.prompt("<h1>Por favor Seleccione un Producto</h1>");
 			}
+		});
+
+		$("#sundecop").click( function(){
+			sundecop();
 		});
 		';
 
@@ -483,6 +521,7 @@ class Sinv extends Controller {
 				mId = id;
 				$.post("'.site_url('inventario/sinv/dataedit/modify').'/"+id, function(data){
 					$("#fedita").html(data);
+					$("#fedita").dialog( {height: 550, width: 800} );
 					$("#fedita").dialog( "open" );
 				});
 			} else { $.prompt("<h1>Por favor Seleccione un Registro</h1>");}
@@ -504,7 +543,7 @@ class Sinv extends Controller {
 
 		$bodyscript .= '
 		$("#fedita").dialog({
-			autoOpen: false, height: 600, width: 800, modal: true,
+			autoOpen: false, height: 550, width: 800, modal: true,
 			buttons: {
 			"Guardar": function() {
 				var bValid = true;
@@ -1927,29 +1966,143 @@ class Sinv extends Controller {
 		));
 
 
-		$grid->addField('mpps');
-		$grid->label('Mpps');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 200,
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:20, maxlength: 20 }',
-		));
+		if ( $this->datasis->traevalor('SUNDECOP') == 'S') {
 
+			$grid->addField('mpps');
+			$grid->label('MPPS');
+			$grid->params(array(
+				'search'        => 'true',
+				'editable'      => $editar,
+				'width'         => 100,
+				'edittype'      => "'text'",
+				'editrules'     => '{ required:true}',
+				'editoptions'   => '{ size:20, maxlength: 20 }',
+			));
 
-		$grid->addField('cpe');
-		$grid->label('Cpe');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 200,
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:20, maxlength: 20 }',
-		));
+			$grid->addField('cpe');
+			$grid->label('CPE');
+			$grid->params(array(
+				'search'        => 'true',
+				'editable'      => $editar,
+				'width'         => 100,
+				'edittype'      => "'text'",
+				'editrules'     => '{ required:true}',
+				'editoptions'   => '{ size:20, maxlength: 20 }',
+			));
 
+			$grid->addField('dcomercial');
+			$grid->label('Dest.Com.');
+			$grid->params(array(
+				'search'        => 'true',
+				'editable'      => $editar,
+				'align'         => "'right'",
+				'edittype'      => "'text'",
+				'width'         => 50,
+				'editrules'     => '{ required:true }',
+				'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+				'formatter'     => "'number'",
+				'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
+			));
+
+			$grid->addField('rubro');
+			$grid->label('Rubro');
+			$grid->params(array(
+				'search'        => 'true',
+				'editable'      => $editar,
+				'align'         => "'right'",
+				'edittype'      => "'text'",
+				'width'         => 50,
+				'editrules'     => '{ required:true }',
+				'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+				'formatter'     => "'number'",
+				'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
+			));
+
+			$grid->addField('subrubro');
+			$grid->label('SubRubro');
+			$grid->params(array(
+				'search'        => 'true',
+				'editable'      => $editar,
+				'align'         => "'right'",
+				'edittype'      => "'text'",
+				'width'         => 50,
+				'editrules'     => '{ required:true }',
+				'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+				'formatter'     => "'number'",
+				'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
+			));
+
+			$grid->addField('cunidad');
+			$grid->label('Unidad');
+			$grid->params(array(
+				'search'        => 'true',
+				'editable'      => $editar,
+				'align'         => "'right'",
+				'edittype'      => "'text'",
+				'width'         => 50,
+				'editrules'     => '{ required:true }',
+				'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+				'formatter'     => "'number'",
+				'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
+			));
+
+			$grid->addField('cmarca');
+			$grid->label('Marca');
+			$grid->params(array(
+				'search'        => 'true',
+				'editable'      => $editar,
+				'align'         => "'right'",
+				'edittype'      => "'text'",
+				'width'         => 50,
+				'editrules'     => '{ required:true }',
+				'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+				'formatter'     => "'number'",
+				'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
+			));
+
+			$grid->addField('Material');
+			$grid->label('Cmaterial');
+			$grid->params(array(
+				'search'        => 'true',
+				'editable'      => $editar,
+				'align'         => "'right'",
+				'edittype'      => "'text'",
+				'width'         => 50,
+				'editrules'     => '{ required:true }',
+				'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+				'formatter'     => "'number'",
+				'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
+			));
+
+			$grid->addField('cforma');
+			$grid->label('Forma');
+			$grid->params(array(
+				'search'        => 'true',
+				'editable'      => $editar,
+				'align'         => "'right'",
+				'edittype'      => "'text'",
+				'width'         => 50,
+				'editrules'     => '{ required:true }',
+				'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+				'formatter'     => "'number'",
+				'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
+			));
+
+			$grid->addField('cpactivo');
+			$grid->label('Cpactivo');
+			$grid->params(array(
+				'search'        => 'true',
+				'editable'      => $editar,
+				'align'         => "'right'",
+				'edittype'      => "'text'",
+				'width'         => 50,
+				'editrules'     => '{ required:true }',
+				'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+				'formatter'     => "'number'",
+				'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
+			));
+		}
+		
 		$grid->showpager(true);
 		$grid->setWidth('');
 		$grid->setHeight('260');
@@ -2066,53 +2219,6 @@ class Sinv extends Controller {
 		$data   = $_POST;
 		$mcodp  = "codigo";
 		$check  = 0;
-/*
-		unset($data['oper']);
-		unset($data['id']);
-		if($oper == 'add'){
-			if(false == empty($data)){
-				$check = $this->datasis->dameval("SELECT count(*) FROM sinv WHERE $mcodp=".$this->db->escape($data[$mcodp]));
-				if ( $check == 0 ){
-					$this->db->insert('sinv', $data);
-					echo "Registro Agregado";
-
-					logusu('SINV',"Registro ????? INCLUIDO");
-				} else
-					echo "Ya existe un registro con ese $mcodp";
-			} else
-				echo "Fallo Agregado!!!";
-
-		} elseif($oper == 'edit') {
-			$nuevo  = $data[$mcodp];
-			$anterior = $this->datasis->dameval("SELECT $mcodp FROM sinv WHERE id=$id");
-			if ( $nuevo <> $anterior ){
-				//si no son iguales borra el que existe y cambia
-				$this->db->query("DELETE FROM sinv WHERE $mcodp=?", array($mcodp));
-				$this->db->query("UPDATE sinv SET $mcodp=? WHERE $mcodp=?", array( $nuevo, $anterior ));
-				$this->db->where("id", $id);
-				$this->db->update("sinv", $data);
-				logusu('SINV',"$mcodp Cambiado/Fusionado Nuevo:".$nuevo." Anterior: ".$anterior." MODIFICADO");
-				echo "Grupo Cambiado/Fusionado en clientes";
-			} else {
-				unset($data[$mcodp]);
-				$this->db->where("id", $id);
-				$this->db->update('sinv', $data);
-				logusu('SINV',"Grupo de Cliente  ".$nuevo." MODIFICADO");
-				echo "$mcodp Modificado";
-			}
-
-		} elseif($oper == 'del') {
-			$meco = $this->datasis->dameval("SELECT $mcodp FROM sinv WHERE id=$id");
-			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM sinv WHERE id='$id' ");
-			if ($check > 0){
-				echo " El registro no puede ser eliminado; tiene movimiento ";
-			} else {
-				$this->db->simple_query("DELETE FROM sinv WHERE id=$id ");
-				logusu('SINV',"Registro ????? ELIMINADO");
-				echo "Registro Eliminado";
-			}
-		};
-*/
 	}
 
 
@@ -2148,1136 +2254,11 @@ class Sinv extends Controller {
 	}
 
 
-/*
-	function dataedit(){
-		$this->rapyd->load('dataedit');
-
-		$edit = new DataEdit($this->tits, 'sinv');
-
-		$edit->back_url = site_url($this->url.'filteredgrid');
-
-		$edit->post_process('insert','_post_insert');
-		$edit->post_process('update','_post_update');
-		$edit->post_process('delete','_post_delete');
-		$edit->pre_process('insert','_pre_insert');
-		$edit->pre_process('update','_pre_update');
-		$edit->pre_process('delete','_pre_delete');
-
-		$edit->codigo = new inputField('Codigo','codigo');
-		$edit->codigo->rule='max_length[15]';
-		$edit->codigo->size =17;
-		$edit->codigo->maxlength =15;
-
-		$edit->grupo = new inputField('Grupo','grupo');
-		$edit->grupo->rule='max_length[4]';
-		$edit->grupo->size =6;
-		$edit->grupo->maxlength =4;
-
-		$edit->descrip = new inputField('Descrip','descrip');
-		$edit->descrip->rule='max_length[45]';
-		$edit->descrip->size =47;
-		$edit->descrip->maxlength =45;
-
-		$edit->descrip2 = new inputField('Descrip2','descrip2');
-		$edit->descrip2->rule='max_length[45]';
-		$edit->descrip2->size =47;
-		$edit->descrip2->maxlength =45;
-
-		$edit->unidad = new inputField('Unidad','unidad');
-		$edit->unidad->rule='max_length[8]';
-		$edit->unidad->size =10;
-		$edit->unidad->maxlength =8;
-
-		$edit->ubica = new inputField('Ubica','ubica');
-		$edit->ubica->rule='max_length[9]';
-		$edit->ubica->size =11;
-		$edit->ubica->maxlength =9;
-
-		$edit->tipo = new inputField('Tipo','tipo');
-		$edit->tipo->rule='max_length[8]';
-		$edit->tipo->size =10;
-		$edit->tipo->maxlength =8;
-
-		$edit->clave = new inputField('Clave','clave');
-		$edit->clave->rule='max_length[8]';
-		$edit->clave->size =10;
-		$edit->clave->maxlength =8;
-
-		$edit->comision = new inputField('Comision','comision');
-		$edit->comision->rule='max_length[5]|numeric';
-		$edit->comision->css_class='inputnum';
-		$edit->comision->size =7;
-		$edit->comision->maxlength =5;
-
-		$edit->enlace = new inputField('Enlace','enlace');
-		$edit->enlace->rule='max_length[15]';
-		$edit->enlace->size =17;
-		$edit->enlace->maxlength =15;
-
-		$edit->prov1 = new inputField('Prov1','prov1');
-		$edit->prov1->rule='max_length[5]';
-		$edit->prov1->size =7;
-		$edit->prov1->maxlength =5;
-
-		$edit->prepro1 = new inputField('Prepro1','prepro1');
-		$edit->prepro1->rule='max_length[10]|numeric';
-		$edit->prepro1->css_class='inputnum';
-		$edit->prepro1->size =12;
-		$edit->prepro1->maxlength =10;
-
-		$edit->pfecha1 = new dateField('Pfecha1','pfecha1');
-		$edit->pfecha1->rule='chfecha';
-		$edit->pfecha1->size =10;
-		$edit->pfecha1->maxlength =8;
-
-		$edit->prov2 = new inputField('Prov2','prov2');
-		$edit->prov2->rule='max_length[5]';
-		$edit->prov2->size =7;
-		$edit->prov2->maxlength =5;
-
-		$edit->prepro2 = new inputField('Prepro2','prepro2');
-		$edit->prepro2->rule='max_length[10]|numeric';
-		$edit->prepro2->css_class='inputnum';
-		$edit->prepro2->size =12;
-		$edit->prepro2->maxlength =10;
-
-		$edit->pfecha2 = new dateField('Pfecha2','pfecha2');
-		$edit->pfecha2->rule='chfecha';
-		$edit->pfecha2->size =10;
-		$edit->pfecha2->maxlength =8;
-
-		$edit->prov3 = new inputField('Prov3','prov3');
-		$edit->prov3->rule='max_length[5]';
-		$edit->prov3->size =7;
-		$edit->prov3->maxlength =5;
-
-		$edit->prepro3 = new inputField('Prepro3','prepro3');
-		$edit->prepro3->rule='max_length[10]|numeric';
-		$edit->prepro3->css_class='inputnum';
-		$edit->prepro3->size =12;
-		$edit->prepro3->maxlength =10;
-
-		$edit->pfecha3 = new dateField('Pfecha3','pfecha3');
-		$edit->pfecha3->rule='chfecha';
-		$edit->pfecha3->size =10;
-		$edit->pfecha3->maxlength =8;
-
-		$edit->pond = new inputField('Pond','pond');
-		$edit->pond->rule='max_length[13]|numeric';
-		$edit->pond->css_class='inputnum';
-		$edit->pond->size =15;
-		$edit->pond->maxlength =13;
-
-		$edit->ultimo = new inputField('Ultimo','ultimo');
-		$edit->ultimo->rule='max_length[13]|numeric';
-		$edit->ultimo->css_class='inputnum';
-		$edit->ultimo->size =15;
-		$edit->ultimo->maxlength =13;
-
-		$edit->pvp_s = new inputField('Pvp_s','pvp_s');
-		$edit->pvp_s->rule='max_length[15]|numeric';
-		$edit->pvp_s->css_class='inputnum';
-		$edit->pvp_s->size =17;
-		$edit->pvp_s->maxlength =15;
-
-		$edit->pvp_bs = new inputField('Pvp_bs','pvp_bs');
-		$edit->pvp_bs->rule='max_length[10]|numeric';
-		$edit->pvp_bs->css_class='inputnum';
-		$edit->pvp_bs->size =12;
-		$edit->pvp_bs->maxlength =10;
-
-		$edit->pvpprc = new inputField('Pvpprc','pvpprc');
-		$edit->pvpprc->rule='max_length[6]|numeric';
-		$edit->pvpprc->css_class='inputnum';
-		$edit->pvpprc->size =8;
-		$edit->pvpprc->maxlength =6;
-
-		$edit->contbs = new inputField('Contbs','contbs');
-		$edit->contbs->rule='max_length[10]|numeric';
-		$edit->contbs->css_class='inputnum';
-		$edit->contbs->size =12;
-		$edit->contbs->maxlength =10;
-
-		$edit->contprc = new inputField('Contprc','contprc');
-		$edit->contprc->rule='max_length[6]|numeric';
-		$edit->contprc->css_class='inputnum';
-		$edit->contprc->size =8;
-		$edit->contprc->maxlength =6;
-
-		$edit->mayobs = new inputField('Mayobs','mayobs');
-		$edit->mayobs->rule='max_length[10]|numeric';
-		$edit->mayobs->css_class='inputnum';
-		$edit->mayobs->size =12;
-		$edit->mayobs->maxlength =10;
-
-		$edit->mayoprc = new inputField('Mayoprc','mayoprc');
-		$edit->mayoprc->rule='max_length[6]|numeric';
-		$edit->mayoprc->css_class='inputnum';
-		$edit->mayoprc->size =8;
-		$edit->mayoprc->maxlength =6;
-
-		$edit->exmin = new inputField('Exmin','exmin');
-		$edit->exmin->rule='max_length[12]|numeric';
-		$edit->exmin->css_class='inputnum';
-		$edit->exmin->size =14;
-		$edit->exmin->maxlength =12;
-
-		$edit->exord = new inputField('Exord','exord');
-		$edit->exord->rule='max_length[12]|numeric';
-		$edit->exord->css_class='inputnum';
-		$edit->exord->size =14;
-		$edit->exord->maxlength =12;
-
-		$edit->exdes = new inputField('Exdes','exdes');
-		$edit->exdes->rule='max_length[12]|numeric';
-		$edit->exdes->css_class='inputnum';
-		$edit->exdes->size =14;
-		$edit->exdes->maxlength =12;
-
-		$edit->existen = new inputField('Existen','existen');
-		$edit->existen->rule='max_length[12]|numeric';
-		$edit->existen->css_class='inputnum';
-		$edit->existen->size =14;
-		$edit->existen->maxlength =12;
-
-		$edit->fechav = new dateField('Fechav','fechav');
-		$edit->fechav->rule='chfecha';
-		$edit->fechav->size =10;
-		$edit->fechav->maxlength =8;
-
-		$edit->fechac = new dateField('Fechac','fechac');
-		$edit->fechac->rule='chfecha';
-		$edit->fechac->size =10;
-		$edit->fechac->maxlength =8;
-
-		$edit->iva = new inputField('Iva','iva');
-		$edit->iva->rule='max_length[6]|numeric';
-		$edit->iva->css_class='inputnum';
-		$edit->iva->size =8;
-		$edit->iva->maxlength =6;
-
-		$edit->fracci = new inputField('Fracci','fracci');
-		$edit->fracci->rule='max_length[11]|integer';
-		$edit->fracci->css_class='inputonlynum';
-		$edit->fracci->size =13;
-		$edit->fracci->maxlength =11;
-
-		$edit->codbar = new inputField('Codbar','codbar');
-		$edit->codbar->rule='max_length[11]|integer';
-		$edit->codbar->css_class='inputonlynum';
-		$edit->codbar->size =13;
-		$edit->codbar->maxlength =11;
-
-		$edit->barras = new inputField('Barras','barras');
-		$edit->barras->rule='max_length[15]';
-		$edit->barras->size =17;
-		$edit->barras->maxlength =15;
-
-		$edit->exmax = new inputField('Exmax','exmax');
-		$edit->exmax->rule='max_length[12]|numeric';
-		$edit->exmax->css_class='inputnum';
-		$edit->exmax->size =14;
-		$edit->exmax->maxlength =12;
-
-		$edit->margen1 = new inputField('Margen1','margen1');
-		$edit->margen1->rule='max_length[6]|numeric';
-		$edit->margen1->css_class='inputnum';
-		$edit->margen1->size =8;
-		$edit->margen1->maxlength =6;
-
-		$edit->margen2 = new inputField('Margen2','margen2');
-		$edit->margen2->rule='max_length[6]|numeric';
-		$edit->margen2->css_class='inputnum';
-		$edit->margen2->size =8;
-		$edit->margen2->maxlength =6;
-
-		$edit->margen3 = new inputField('Margen3','margen3');
-		$edit->margen3->rule='max_length[6]|numeric';
-		$edit->margen3->css_class='inputnum';
-		$edit->margen3->size =8;
-		$edit->margen3->maxlength =6;
-
-		$edit->margen4 = new inputField('Margen4','margen4');
-		$edit->margen4->rule='max_length[6]|numeric';
-		$edit->margen4->css_class='inputnum';
-		$edit->margen4->size =8;
-		$edit->margen4->maxlength =6;
-
-		$edit->base1 = new inputField('Base1','base1');
-		$edit->base1->rule='max_length[13]|numeric';
-		$edit->base1->css_class='inputnum';
-		$edit->base1->size =15;
-		$edit->base1->maxlength =13;
-
-		$edit->base2 = new inputField('Base2','base2');
-		$edit->base2->rule='max_length[13]|numeric';
-		$edit->base2->css_class='inputnum';
-		$edit->base2->size =15;
-		$edit->base2->maxlength =13;
-
-		$edit->base3 = new inputField('Base3','base3');
-		$edit->base3->rule='max_length[13]|numeric';
-		$edit->base3->css_class='inputnum';
-		$edit->base3->size =15;
-		$edit->base3->maxlength =13;
-
-		$edit->base4 = new inputField('Base4','base4');
-		$edit->base4->rule='max_length[13]|numeric';
-		$edit->base4->css_class='inputnum';
-		$edit->base4->size =15;
-		$edit->base4->maxlength =13;
-
-		$edit->precio1 = new inputField('Precio1','precio1');
-		$edit->precio1->rule='max_length[13]|numeric';
-		$edit->precio1->css_class='inputnum';
-		$edit->precio1->size =15;
-		$edit->precio1->maxlength =13;
-
-		$edit->precio2 = new inputField('Precio2','precio2');
-		$edit->precio2->rule='max_length[13]|numeric';
-		$edit->precio2->css_class='inputnum';
-		$edit->precio2->size =15;
-		$edit->precio2->maxlength =13;
-
-		$edit->precio3 = new inputField('Precio3','precio3');
-		$edit->precio3->rule='max_length[13]|numeric';
-		$edit->precio3->css_class='inputnum';
-		$edit->precio3->size =15;
-		$edit->precio3->maxlength =13;
-
-		$edit->precio4 = new inputField('Precio4','precio4');
-		$edit->precio4->rule='max_length[13]|numeric';
-		$edit->precio4->css_class='inputnum';
-		$edit->precio4->size =15;
-		$edit->precio4->maxlength =13;
-
-		$edit->serial = new inputField('Serial','serial');
-		$edit->serial->rule='max_length[1]';
-		$edit->serial->size =3;
-		$edit->serial->maxlength =1;
-
-		$edit->tdecimal = new inputField('Tdecimal','tdecimal');
-		$edit->tdecimal->rule='max_length[1]';
-		$edit->tdecimal->size =3;
-		$edit->tdecimal->maxlength =1;
-
-		$edit->activo = new inputField('Activo','activo');
-		$edit->activo->rule='max_length[1]';
-		$edit->activo->size =3;
-		$edit->activo->maxlength =1;
-
-		$edit->dolar = new inputField('Dolar','dolar');
-		$edit->dolar->rule='max_length[13]|numeric';
-		$edit->dolar->css_class='inputnum';
-		$edit->dolar->size =15;
-		$edit->dolar->maxlength =13;
-
-		$edit->redecen = new inputField('Redecen','redecen');
-		$edit->redecen->rule='max_length[1]';
-		$edit->redecen->size =3;
-		$edit->redecen->maxlength =1;
-
-		$edit->formcal = new inputField('Formcal','formcal');
-		$edit->formcal->rule='max_length[1]';
-		$edit->formcal->size =3;
-		$edit->formcal->maxlength =1;
-
-		$edit->fordeci = new inputField('Fordeci','fordeci');
-		$edit->fordeci->rule='max_length[11]|integer';
-		$edit->fordeci->css_class='inputonlynum';
-		$edit->fordeci->size =13;
-		$edit->fordeci->maxlength =11;
-
-		$edit->garantia = new inputField('Garantia','garantia');
-		$edit->garantia->rule='max_length[11]|integer';
-		$edit->garantia->css_class='inputonlynum';
-		$edit->garantia->size =13;
-		$edit->garantia->maxlength =11;
-
-		$edit->costotal = new inputField('Costotal','costotal');
-		$edit->costotal->rule='max_length[19]|numeric';
-		$edit->costotal->css_class='inputnum';
-		$edit->costotal->size =21;
-		$edit->costotal->maxlength =19;
-
-		$edit->fechac2 = new dateField('Fechac2','fechac2');
-		$edit->fechac2->rule='chfecha';
-		$edit->fechac2->size =10;
-		$edit->fechac2->maxlength =8;
-
-		$edit->peso = new inputField('Peso','peso');
-		$edit->peso->rule='max_length[12]|numeric';
-		$edit->peso->css_class='inputnum';
-		$edit->peso->size =14;
-		$edit->peso->maxlength =12;
-
-		$edit->pondcal = new inputField('Pondcal','pondcal');
-		$edit->pondcal->rule='max_length[12]|numeric';
-		$edit->pondcal->css_class='inputnum';
-		$edit->pondcal->size =14;
-		$edit->pondcal->maxlength =12;
-
-		$edit->alterno = new inputField('Alterno','alterno');
-		$edit->alterno->rule='max_length[15]';
-		$edit->alterno->size =17;
-		$edit->alterno->maxlength =15;
-
-		$edit->aumento = new inputField('Aumento','aumento');
-		$edit->aumento->rule='max_length[7]|numeric';
-		$edit->aumento->css_class='inputnum';
-		$edit->aumento->size =9;
-		$edit->aumento->maxlength =7;
-
-		$edit->modelo = new inputField('Modelo','modelo');
-		$edit->modelo->rule='max_length[20]';
-		$edit->modelo->size =22;
-		$edit->modelo->maxlength =20;
-
-		$edit->marca = new inputField('Marca','marca');
-		$edit->marca->rule='max_length[22]';
-		$edit->marca->size =24;
-		$edit->marca->maxlength =22;
-
-		$edit->clase = new inputField('Clase','clase');
-		$edit->clase->rule='max_length[1]';
-		$edit->clase->size =3;
-		$edit->clase->maxlength =1;
-
-		$edit->oferta = new inputField('Oferta','oferta');
-		$edit->oferta->rule='max_length[17]|numeric';
-		$edit->oferta->css_class='inputnum';
-		$edit->oferta->size =19;
-		$edit->oferta->maxlength =17;
-
-		$edit->fdesde = new dateField('Fdesde','fdesde');
-		$edit->fdesde->rule='chfecha';
-		$edit->fdesde->size =10;
-		$edit->fdesde->maxlength =8;
-
-		$edit->fhasta = new dateField('Fhasta','fhasta');
-		$edit->fhasta->rule='chfecha';
-		$edit->fhasta->size =10;
-		$edit->fhasta->maxlength =8;
-
-		$edit->derivado = new inputField('Derivado','derivado');
-		$edit->derivado->rule='max_length[15]';
-		$edit->derivado->size =17;
-		$edit->derivado->maxlength =15;
-
-		$edit->cantderi = new inputField('Cantderi','cantderi');
-		$edit->cantderi->rule='max_length[10]|numeric';
-		$edit->cantderi->css_class='inputnum';
-		$edit->cantderi->size =12;
-		$edit->cantderi->maxlength =10;
-
-		$edit->ppos1 = new inputField('Ppos1','ppos1');
-		$edit->ppos1->rule='max_length[15]|numeric';
-		$edit->ppos1->css_class='inputnum';
-		$edit->ppos1->size =17;
-		$edit->ppos1->maxlength =15;
-
-		$edit->ppos2 = new inputField('Ppos2','ppos2');
-		$edit->ppos2->rule='max_length[15]|numeric';
-		$edit->ppos2->css_class='inputnum';
-		$edit->ppos2->size =17;
-		$edit->ppos2->maxlength =15;
-
-		$edit->ppos3 = new inputField('Ppos3','ppos3');
-		$edit->ppos3->rule='max_length[15]|numeric';
-		$edit->ppos3->css_class='inputnum';
-		$edit->ppos3->size =17;
-		$edit->ppos3->maxlength =15;
-
-		$edit->ppos4 = new inputField('Ppos4','ppos4');
-		$edit->ppos4->rule='max_length[15]|numeric';
-		$edit->ppos4->css_class='inputnum';
-		$edit->ppos4->size =17;
-		$edit->ppos4->maxlength =15;
-
-		$edit->linea = new inputField('Linea','linea');
-		$edit->linea->rule='max_length[2]';
-		$edit->linea->size =4;
-		$edit->linea->maxlength =2;
-
-		$edit->depto = new inputField('Depto','depto');
-		$edit->depto->rule='max_length[3]';
-		$edit->depto->size =5;
-		$edit->depto->maxlength =3;
-
-		$edit->gasto = new inputField('Gasto','gasto');
-		$edit->gasto->rule='max_length[6]';
-		$edit->gasto->size =8;
-		$edit->gasto->maxlength =6;
-
-		$edit->bonifica = new inputField('Bonifica','bonifica');
-		$edit->bonifica->rule='max_length[15]|numeric';
-		$edit->bonifica->css_class='inputnum';
-		$edit->bonifica->size =17;
-		$edit->bonifica->maxlength =15;
-
-		$edit->bonicant = new inputField('Bonicant','bonicant');
-		$edit->bonicant->rule='max_length[15]|numeric';
-		$edit->bonicant->css_class='inputnum';
-		$edit->bonicant->size =17;
-		$edit->bonicant->maxlength =15;
-
-		$edit->standard = new inputField('Standard','standard');
-		$edit->standard->rule='max_length[19]|numeric';
-		$edit->standard->css_class='inputnum';
-		$edit->standard->size =21;
-		$edit->standard->maxlength =19;
-
-		$edit->modificado = new inputField('Modificado','modificado');
-		$edit->modificado->rule='max_length[8]';
-		$edit->modificado->size =10;
-		$edit->modificado->maxlength =8;
-
-		$edit->descufijo = new inputField('Descufijo','descufijo');
-		$edit->descufijo->rule='max_length[10]|numeric';
-		$edit->descufijo->css_class='inputnum';
-		$edit->descufijo->size =12;
-		$edit->descufijo->maxlength =10;
-
-		$edit->alto = new inputField('Alto','alto');
-		$edit->alto->rule='max_length[10]|numeric';
-		$edit->alto->css_class='inputnum';
-		$edit->alto->size =12;
-		$edit->alto->maxlength =10;
-
-		$edit->ancho = new inputField('Ancho','ancho');
-		$edit->ancho->rule='max_length[10]|numeric';
-		$edit->ancho->css_class='inputnum';
-		$edit->ancho->size =12;
-		$edit->ancho->maxlength =10;
-
-		$edit->largo = new inputField('Largo','largo');
-		$edit->largo->rule='max_length[10]|numeric';
-		$edit->largo->css_class='inputnum';
-		$edit->largo->size =12;
-		$edit->largo->maxlength =10;
-
-		$edit->forma = new inputField('Forma','forma');
-		$edit->forma->rule='max_length[50]';
-		$edit->forma->size =52;
-		$edit->forma->maxlength =50;
-
-		$edit->exento = new inputField('Exento','exento');
-		$edit->exento->rule='max_length[1]';
-		$edit->exento->size =3;
-		$edit->exento->maxlength =1;
-
-		$edit->mmargen = new inputField('Mmargen','mmargen');
-		$edit->mmargen->rule='max_length[7]|numeric';
-		$edit->mmargen->css_class='inputnum';
-		$edit->mmargen->size =9;
-		$edit->mmargen->maxlength =7;
-
-		$edit->pm = new inputField('Pm','pm');
-		$edit->pm->rule='max_length[19]|numeric';
-		$edit->pm->css_class='inputnum';
-		$edit->pm->size =21;
-		$edit->pm->maxlength =19;
-
-		$edit->pmb = new inputField('Pmb','pmb');
-		$edit->pmb->rule='max_length[19]|numeric';
-		$edit->pmb->css_class='inputnum';
-		$edit->pmb->size =21;
-		$edit->pmb->maxlength =19;
-
-		$edit->mmargenplus = new inputField('Mmargenplus','mmargenplus');
-		$edit->mmargenplus->rule='max_length[7]|numeric';
-		$edit->mmargenplus->css_class='inputnum';
-		$edit->mmargenplus->size =9;
-		$edit->mmargenplus->maxlength =7;
-
-		$edit->escala1 = new inputField('Escala1','escala1');
-		$edit->escala1->rule='max_length[12]|numeric';
-		$edit->escala1->css_class='inputnum';
-		$edit->escala1->size =14;
-		$edit->escala1->maxlength =12;
-
-		$edit->pescala1 = new inputField('Pescala1','pescala1');
-		$edit->pescala1->rule='max_length[5]|numeric';
-		$edit->pescala1->css_class='inputnum';
-		$edit->pescala1->size =7;
-		$edit->pescala1->maxlength =5;
-
-		$edit->escala2 = new inputField('Escala2','escala2');
-		$edit->escala2->rule='max_length[12]|numeric';
-		$edit->escala2->css_class='inputnum';
-		$edit->escala2->size =14;
-		$edit->escala2->maxlength =12;
-
-		$edit->pescala2 = new inputField('Pescala2','pescala2');
-		$edit->pescala2->rule='max_length[5]|numeric';
-		$edit->pescala2->css_class='inputnum';
-		$edit->pescala2->size =7;
-		$edit->pescala2->maxlength =5;
-
-		$edit->escala3 = new inputField('Escala3','escala3');
-		$edit->escala3->rule='max_length[12]|numeric';
-		$edit->escala3->css_class='inputnum';
-		$edit->escala3->size =14;
-		$edit->escala3->maxlength =12;
-
-		$edit->pescala3 = new inputField('Pescala3','pescala3');
-		$edit->pescala3->rule='max_length[5]|numeric';
-		$edit->pescala3->css_class='inputnum';
-		$edit->pescala3->size =7;
-		$edit->pescala3->maxlength =5;
-
-		$edit->mpps = new inputField('Mpps','mpps');
-		$edit->mpps->rule='max_length[20]';
-		$edit->mpps->size =22;
-		$edit->mpps->maxlength =20;
-
-		$edit->cpe = new inputField('Cpe','cpe');
-		$edit->cpe->rule='max_length[20]';
-		$edit->cpe->size =22;
-		$edit->cpe->maxlength =20;
-
-		$edit->build();
-
-		$script= '';
-
-		$data['content'] = $edit->output;
-		$data['script'] = $script;
-		$this->load->view('jqgrid/ventanajq', $data);
-
-	}
-
-
-class sinv extends Controller {
-
-	function sinv(){
-		parent::Controller();
-		$this->load->library('rapyd');
-	}
-
-	function index(){
-		$this->datasis->modulo_id('301',1);
-		$this->instalar();
-		redirect('inventario/sinv/filteredgrid');
-	}
-
-	function filteredgrid(){
-		$this->rapyd->uri->keep_persistence();
-		$this->rapyd->load('datafilter2','datagrid');
-		$mSPRV=array(
-				'tabla'   =>'sprv',
-				'columnas'=>array(
-				'proveed' =>'C&oacute;digo',
-				'nombre'=>'Nombre',
-				'contacto'=>'Contacto'),
-				'filtro'  =>array('proveed'=>'C&oacute;digo','nombre'=>'Nombre'),
-				'retornar'=>array('proveed'=>'proveed'),
-				'titulo'  =>'Buscar Proveedor');
-
-		$bSPRV=$this->datasis->modbus($mSPRV);
-
-		$mGRUP=array(
-				'tabla'   =>'grup',
-				'columnas'=>array(
-				'grupo'   =>'Grupo',
-				'nom_grup'=>'Nombre',
-				'linea'=>'Linea',
-				'depto'=>'Depto'),
-				'filtro'  =>array('grupo'=>'Grupo','nom_grup'=>'Nombre'),
-				'retornar'=>array('grupo'=>'popup_prompt'),
-				'titulo'  =>'Buscar Grupo');
-
-		$bGRUP=$this->datasis->modbus($mGRUP);
-
-		$mMARC=array(
-				'tabla'   =>'marc',
-				'columnas'=>array(
-				'marca'   =>'Marca'),
-				'filtro'  =>array('marca'=>'Marca'),
-				'retornar'=>array('marca'=>'popup_prompt'),
-				'titulo'  =>'Buscar Marca');
-
-		$bMARC=$this->datasis->modbus($mMARC);
-
-
-		$link2=site_url('inventario/common/get_linea');
-		$link3=site_url('inventario/common/get_grupo');
-
-		$DepoScript='
-		$(document).ready(function(){
-			$("#depto").change(function(){
-				depto();
-				$.post("'.$link2.'",{ depto:$(this).val() },function(data){$("#linea").html(data);})
-				$.post("'.$link3.'",{ linea:"" },function(data){$("#grupo").html(data);})
-			});
-			$("#linea").change(function(){
-				linea();
-				$.post("'.$link3.'",{ linea:$(this).val() },function(data){$("#grupo").html(data);})
-			});
-
-			$("#grupo").change(function(){
-				grupo();
-			});
-			depto();
-			linea();
-			grupo();
-		});
-
-		function depto(){
-			if($("#depto").val()!=""){
-				$("#nom_depto").attr("disabled","disabled");
-			}
-			else{
-				$("#nom_depto").attr("disabled","");
-			}
-		}
-
-		function linea(){
-			if($("#linea").val()!=""){
-				$("#nom_linea").attr("disabled","disabled");
-			}
-			else{
-				$("#nom_linea").attr("disabled","");
-			}
-		}
-
-		function grupo(){
-			if($("#grupo").val()!=""){
-				$("#nom_grupo").attr("disabled","disabled");
-			}
-			else{
-				$("#nom_grupo").attr("disabled","");
-			}
-		}
-		';
-
-		$filter = new DataFilter2('Filtro por Producto');
-		$filter->db->select("a.existen, a.marca, a.tipo, a.id, a.codigo, a.descrip, a.precio1, a.precio2, a.precio3, a.precio4, b.nom_grup, b.grupo grupoid, c.descrip nom_linea, c.linea linea, d.descrip nom_depto, d.depto, a.activo, a.mmargen ");
-		$filter->db->from('sinv AS a');
-		$filter->db->join('grup AS b','a.grupo=b.grupo','LEFT');
-		$filter->db->join('line AS c','b.linea=c.linea', 'LEFT');
-		$filter->db->join('dpto  d','c.depto=d.depto','LEFT');
-		//$filter->db->join('sinvfoto  e','e.codigo=a.codigo','LEFT');
-		$filter->script($DepoScript);
-
-		$filter->codigo = new inputField('C&oacute;digo', 'codigo');
-		$filter->codigo-> size=15;
-		$filter->codigo->group = 'Uno';
-
-		$filter->barras = new inputField('C&oacute;digo de barras', 'barras');
-		$filter->barras -> size=25;
-		$filter->barras->group = 'Uno';
-
-		$filter->descrip = new inputField("Descripci&oacute;n", 'descrip');
-		$filter->descrip->db_name='CONCAT_WS(" ",a.descrip,a.descrip2)';
-		$filter->descrip-> size=30;
-		$filter->descrip->group = 'Uno';
-
-		$filter->tipo = new dropdownField('Tipo', 'tipo');
-		$filter->tipo->db_name='a.tipo';
-		$filter->tipo->option('','Todos');
-		$filter->tipo->option('Articulo' ,'Art&iacute;culo');
-		$filter->tipo->option('Servicio' ,'Servicio');
-		$filter->tipo->option('Descartar','Descartar');
-		$filter->tipo->option('Consumo'  ,'Consumo');
-		$filter->tipo->option('Fraccion','Fracci&oacute;n');
-		$filter->tipo ->style='width:120px;';
-		$filter->tipo->group = 'Uno';
-
-		$filter->clave = new inputField('Clave', 'clave');
-		$filter->clave ->size=15;
-		$filter->clave->group = 'Uno';
-
-		$filter->activo = new dropdownField('Activo', 'activo');
-		$filter->activo->option('','Todos');
-		$filter->activo->option('S','Si');
-		$filter->activo->option('N','No');
-		$filter->activo ->style= 'width:120px;';
-		$filter->activo->group = 'Uno';
-
-		$filter->proveed = new inputField("Proveedor", "proveed");
-		$filter->proveed->append($bSPRV);
-		//$filter->proveed->clause ="in";
-		$filter->proveed->db_name='CONCAT_WS("-",`a`.`prov1`, `a`.`prov2`, `a`.`prov3`)';
-		//$filter->proveed->db_name='( a.prov1, a.prov2, a.prov3 )';
-		$filter->proveed -> size=10;
-		$filter->proveed->group = "Dos";
-
-		$filter->depto2 = new inputField("Departamento", "nom_depto");
-		$filter->depto2->db_name="d.descrip";
-		$filter->depto2 -> size=5;
-		$filter->depto2->group = "Dos";
-
-		$filter->depto = new dropdownField("Departamento","depto");
-		$filter->depto->db_name="d.depto";
-		$filter->depto->option("","Seleccione un Departamento");
-		$filter->depto->options("SELECT depto, CONCAT(depto,'-',descrip) descrip FROM dpto WHERE tipo='I' ORDER BY depto");
-		$filter->depto->in="depto2";
-		$filter->depto->group = "Dos";
-		$filter->depto->style='width:190px;';
-
-		$filter->linea = new inputField("Linea", "nom_linea");
-		$filter->linea->db_name="c.descrip";
-		$filter->linea -> size=5;
-		$filter->linea->group = "Dos";
-
-		$filter->linea2 = new dropdownField("L&iacute;nea","linea");
-		$filter->linea2->db_name='c.linea';
-		$filter->linea2->option('',"Seleccione un Departamento primero");
-		$filter->linea2->in='linea';
-		$filter->linea2->group = 'Dos';
-		$filter->linea2->style='width:190px;';
-
-		$depto=$filter->getval('depto');
-		if($depto!==FALSE){
-			$filter->linea2->options("SELECT linea, CONCAT(linea,'-',descrip) descrip FROM line WHERE depto='$depto' ORDER BY descrip");
-		}else{
-			$filter->linea2->option("","Seleccione un Departamento primero");
-		}
-
-		$filter->grupo2 = new inputField("Grupo", "nom_grupo");
-		$filter->grupo2->db_name="b.nom_grup";
-		$filter->grupo2 -> size=5;
-		$filter->grupo2->group = "Dos";
-
-		$filter->grupo = new dropdownField("Grupo", "grupo");
-		$filter->grupo->db_name="b.grupo";
-		$filter->grupo->option("","Seleccione una L&iacute;nea primero");
-		$filter->grupo->in="grupo2";
-		$filter->grupo->group = "Dos";
-		$filter->grupo->style='width:190px;';
-
-		$linea=$filter->getval('linea2');
-		if($linea!==FALSE){
-			$filter->grupo->options("SELECT grupo, CONCAT(grupo,'-',nom_grup) nom_grup FROM grup WHERE linea='$linea' ORDER BY nom_grup");
-		}else{
-			$filter->grupo->option("","Seleccione un Departamento primero");
-		}
-
-		$filter->marca = new dropdownField("Marca", "marca");
-		$filter->marca->option('','Todas');
-		$filter->marca->options("SELECT TRIM(marca) AS clave, TRIM(marca) AS valor FROM marc ORDER BY marca");
-		$filter->marca->style='width:190px;';
-		$filter->marca->group = "Dos";
-
-		$filter->buttons("reset","search");
-		$filter->build("dataformfiltro");
-
-		$uri = "inventario/sinv/dataedit/show/<#codigo#>";
-
-		$mtool  = "<table background='#554455'><tr>";
-		$mtool .= "<td>&nbsp;</td>";
-
-		$mtool .= "<td>&nbsp;<a href='".base_url()."inventario/sinv/dataedit/create'>";
-		$mtool .= img(array('src' => 'images/agregar.jpg', 'alt' => 'Agregar Registro', 'title' => 'Agregar Registro','border'=>'0','height'=>'32'));
-		$mtool .= "</a>&nbsp;</td>";
-
-		$mtool .= "<td>&nbsp;<a href='javascript:recalcular(\"P\")'>";
-		$mtool .= img(array('src' => 'images/recalcular.jpg', 'alt' => 'Recalcular Precios', 'title' => 'Recalcular Precios','border'=>'0','height'=>'32'));
-		$mtool .= "</a>&nbsp;</td>";
-
-		$mtool .= "<td>&nbsp;<a href='javascript:recalcular(\"M\")'>";
-		$mtool .= img(array('src' => 'images/recalcular.png', 'alt' => 'Recalcular Margenes', 'title' => 'Recalcular Margenes','border'=>'0','height'=>'28'));
-		$mtool .= "</a>&nbsp;</td>";
-
-		$mtool .= "<td>&nbsp;<a href='javascript:redondear()'>";
-		$mtool .= img(array('src' => 'images/redondear.jpg', 'alt' => 'Redondear Precios', 'title' => 'Redondear Precios','border'=>'0','height'=>'30'));
-		$mtool .= "</a>&nbsp;</td>";
-
-		$mtool .= "<td>&nbsp;<a href='javascript:auprec()'>";
-		$mtool .= img(array('src' => 'images/aprecios.gif', 'alt' => 'Aumento de Precios', 'title' => 'Aumento de Precios','border'=>'0','height'=>'32'));
-		$mtool .= "</a>&nbsp;</td>";
-
-		$mtool .= "<td>&nbsp;<a href='javascript:auprecm()'>";
-		$mtool .= img(array('src' => 'images/price-rise.jpg', 'alt' => 'Aumento de Precios Mayor', 'title' => 'Aumento de Precios Mayor','border'=>'0','height'=>'32'));
-		$mtool .= "</a>&nbsp;</td>";
-
-
-		$mtool .= "<td>&nbsp;<a href='javascript:void(0);' ";
-		$mtool .= 'onclick="window.open(\''.base_url()."inventario/etiqueta_sinv/menu', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');".'" heigth="600"'.'>';
-		$mtool .= img(array('src' => 'images/etiquetas.jpg', 'alt' => 'Etiquetas', 'title' => 'Etiquetas','border'=>'0','height'=>'32'));
-		$mtool .= "</a>&nbsp;</td>";
-
-		$mtool .= "<td>&nbsp;<a href='javascript:void(0);' ";
-		$mtool .= 'onclick="window.open(\''.base_url()."reportes/index/sinv', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');".'" heigth="600" width="900" '.'>';
-		$mtool .= img(array('src' => 'images/reportes.gif', 'alt' => 'Reportes', 'title' => 'Reportes','border'=>'0','height'=>'32'));
-		$mtool .= "</a>&nbsp;</td>";
-
-		$mtool .= "<td>&nbsp;<a href='javascript:cambgrupo()'>";
-		$mtool .= img(array('src' => 'images/grupo.jpg', 'alt' => 'Cambiar Grupo', 'title' => 'Cambiar Grupo','border'=>'0','height'=>'30'));
-		$mtool .= "</a>&nbsp;</td>";
-
-		$mtool .= "<td>&nbsp;<a href='javascript:cambmarca()'>";
-		$mtool .= img(array('src' => 'images/marca.jpg', 'alt' => 'Cambiar Marca', 'title' => 'Cambiar Marca','border'=>'0','height'=>'30'));
-		$mtool .= "</a>&nbsp;</td>";
-
-		$mtool .= "<td>&nbsp;<a href='javascript:void(0);' ";
-		$mtool .= 'onclick="window.open(\''.base_url()."inventario/marc', '_blank', 'width=400, height=500, scrollbars=No, status=No, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');".'" heigth="500"'.'>';
-		$mtool .= img(array('src' => 'images/tux1.png', 'alt' => 'Gestion de Marcas', 'title' => 'Gestion de Marcas','border'=>'0','height'=>'32'));
-		$mtool .= "</a>&nbsp;</td>";
-
-		$mtool .= "<td>&nbsp;<a href='javascript:void(0);' ";
-		$mtool .= 'onclick="window.open(\''.base_url()."inventario/unidad', '_blank', 'width=340, height=430, scrollbars=No, status=No, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');".'" >';
-		$mtool .= img(array('src' => 'images/unidad.gif', 'alt' => 'Gestion de Unidades', 'title' => 'Gestion de Unidades','border'=>'0','height'=>'32'));
-		$mtool .= "</a>&nbsp;</td>";
-
-		$mtool .= "</tr></table>";
-
-		$grid = new DataGrid($mtool);
-		$grid->order_by("codigo","asc");
-		$grid->per_page = 50;
-		$link=anchor('/inventario/sinv/dataedit/show/<#id#>','<#codigo#>');
-
-		$uri_2  = anchor('inventario/sinv/dataedit/modify/<#id#>',img(array('src'=>'images/editar.png','border'=>'0','alt'=>'Editar','height'=>'12','title'=>'Editar')));
-		$uri_2 .= "<a href='javascript:void(0);' ";
-		$uri_2 .= 'onclick="window.open(\''.base_url()."inventario/sinv/consulta/<#id#>', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');".'" heigth="600"'.'>';
-		$uri_2 .= img(array('src'=>'images/estadistica.jpeg','border'=>'0','alt'=>'Consultar','height'=>'12','title'=>'Consultar'));
-		$uri_2 .= "</a>";
-		$uri_2 .= "<a href='javascript:void(0);' ";
-		$uri_2 .= 'onclick="window.open(\''.base_url()."inventario/fotos/dataedit/<#id#>/create', '_blank', 'width=800, height=600, scrollbars=Yes, status=Yes, resizable=Yes, screenx='+((screen.availWidth/2)-400)+',screeny='+((screen.availHeight/2)-300)+'');".'" heigth="600"'.'>';
-		$uri_2 .= img(array('src' => 'images/foto.gif', 'alt' => 'Foto', 'title' => 'Foto','border'=>'0','height'=>'12'));
-		$uri_2 .= "</a>";
-		$uri_2 .= img(array('src'=>'images/<#activo#>.gif','border'=>'0','alt'=>'Estado','title'=>'Estado Activo/Inactivo'));
-		$uri_2 .= "<input type='checkbox' name='<#id#>' id='<#id#>' style='height: 10px;'> ";
-
-		$grid->column("Acci&oacute;n",$uri_2     ,"align='center'");
-		$grid->column_orderby("C&oacute;digo",$link,"codigo");
-		$grid->column_orderby("Descripci&oacute;n","descrip","descrip");
-		$grid->column_orderby("Precio 1","<nformat><#precio1#></nformat>","precio1",'align=right');
-		$grid->column_orderby("Precio 2","<nformat><#precio2#></nformat>","precio2",'align=right');
-		$grid->column_orderby("Existencia","<nformat><#existen#></nformat>","existen",'align=right');
-		$grid->column_orderby("Tipo","tipo","tipo");
-		$grid->column_orderby("Grupo","grupoid","grupoid");
-		$grid->column_orderby("Grupo","nom_grup","nom_grup");
-		$grid->column_orderby("Linea","nom_linea","nom_linea");
-		$grid->column_orderby("Depto","nom_depto","nom_depto");
-		$grid->column_orderby("Precio 3","<nformat><#precio3#></nformat>","precio3",'align=right');
-		$grid->column_orderby("Marca","marca","marca");
-		$grid->column_orderby("Mayor%","mmargen","mmargen");
-
-		//$grid->add('inventario/sinv/dataedit/create');
-		$grid->build('datagridST');
-
-		$lastq = $this->db->last_query();
-		$where = substr($lastq,stripos($lastq,"WHERE" ));
-		$where = substr($where,0,stripos($where,"ORDER BY" ));
-
-		$from = substr($lastq,stripos($lastq,"FROM" ));
-		$from = substr($from,4,stripos($from,"WHERE" )-4);
-		//echo $from;
-
-		$id = $this->datasis->guardasesion(array("data1"=>$from,"data2"=>$where));
-
-		$mSQL = "UPDATE $from SET a.precio1=a.precio1*, a.precio2=a.precio2*, a.precio3=a.precio3*, a.precio4=a.precio4* $where";
-		//echo $from." id=$id  sesion:".$this->session->userdata('session_id');
-		$link1  =site_url('inventario/sinv/redondear');
-		$link2  =site_url('inventario/sinv/recalcular');
-		$link3  =site_url("inventario/sinv/auprec/$id");
-		$link4  =site_url("inventario/sinv/sinvcamgrup/");
-		$link5  =site_url("inventario/sinv/sinvcammarca/");
-		$link6  =site_url("inventario/sinv/auprecm/$id");
-
-		$script = '
-		<script type="text/javascript">
-		function isNumeric(value) {
-		  if (value == null || !value.toString().match(/^[-]?\d*\.?\d*$/)) return false;
-		  return true;
-		};
-
-		function redondear(){
-			var mayor=prompt("Redondear precios Mayores a");
-			if( mayor==null){
-				alert("Cancelado");
-			} else {
-				if( isNumeric(mayor) ){
-					$.ajax({ url: "'.$link1.'/"+mayor,
-					complete: function(){ alert(("Redondeo Finalizado")) }
-					});
-				} else {
-					alert("Entrada no numerica");
-				}
-			}
-		};
-
-		function recalcular(mtipo){
-			var seguro = true;
-			if(mtipo == "P"){
-				seguro = confirm("Recalcular margenes dejando fijos los precios ");
-			} else {
-				seguro = confirm("Recalcular margenes, dejando fijos los precios ");
-			}
-			if( seguro){
-				$.ajax({ url: "'.$link2.'/"+mtipo,
-					complete: function(){ alert(("Recalculo Finalizado")) }
-				})
-			}
-		};
-
-		function auprec(){
-			var porcen=prompt("Porcentaje de Aumento?");
-			if( porcen ==null){
-				alert("Cancelado");
-			} else {
-				if( isNumeric(porcen) ){
-					$.ajax({ url: "'.$link3.'/"+porcen,
-					complete: function(){ alert(("Aumento Finalizado")) }
-					});
-				} else {
-					alert("Entrada no numerica");
-				}
-			}
-		};
-
-
-		function auprecm(){
-			var porcen=prompt("Porcentaje de Aumento Mayor?");
-			if( porcen ==null){
-				alert("Cancelado");
-			} else {
-				if( isNumeric(porcen) ){
-					$.ajax({ url: "'.$link6.'/"+porcen,
-					complete: function(){ alert(("Aumento Finalizado")) }
-					});
-				} else {
-					alert("Entrada no numerica");
-				}
-			}
-		};
-
-
-		function cambgrupo(){
-			var yurl = "";
-			var n = $("input:checked").length;
-			var a = "";
-			var mbusca = "'.addslashes($bGRUP).'";
-
-			$("input:checked").each( function() { a += this.id+","; });
-
-			if( n==0) {
-				jAlert("No hay productos Seleccionados","Informacion");
-			}else{
-			jPrompt("Selecciono "+n+" Productos<br>Introduzca el Grupo "+mbusca,"" ,"Cambiar de Grupo", function(mgrupo){
-				if( mgrupo==null ){
-					jAlert("Cancelado por el usuario","Informacion");
-				} else if( mgrupo=="" ) {
-					jAlert("Cancelado,  Grupo vacio","Informacion");
-				} else {
-					yurl = encodeURIComponent(mgrupo);
-					$.ajax({
-						url: "'.$link4.'",
-						global: false,
-						type: "POST",
-						data: ({ grupo : encodeURIComponent(mgrupo), productos : a }),
-						dataType: "text",
-						async: false,
-						success: function(sino) {
-						jAlert(sino,"Informacion");
-						jConfirm( "Actualizar","Recargar Tabla y perder los checks?" , function(r){
-							if(r) {
-								location.reload();
-							}
-							});
-						},
-						error: function(h,t,e)  { jAlert("Error..codigo="+yurl+" ",e) }
-					});
-				}
-			})
-			}
-		};
-
-
-		function cambmarca(){
-			var yurl = "";
-			var n = $("input:checked").length;
-			var a = "";
-			var mbusca = "'.addslashes($bMARC).'";
-
-			$("input:checked").each( function() { a += this.id+","; });
-
-			if( n==0) {
-				jAlert("No hay productos Seleccionados","Informacion");
-			}else{
-			jPrompt("Selecciono "+n+" Productos<br>Introduzca la Marca "+mbusca,"" ,"Cambiar Marca", function(mmarca){
-				if( mmarca==null ){
-					jAlert("Cancelado por el usuario","Informacion");
-				} else if( mmarca=="" ) {
-					jAlert("Cancelado, Marca vacia","Informacion");
-				} else {
-					yurl = encodeURIComponent(mmarca);
-					$.ajax({
-						url: "'.$link5.'",
-						global: false,
-						type: "POST",
-						data: ({ marca : encodeURIComponent(mmarca), productos : a }),
-						dataType: "text",
-						async: false,
-						success: function(sino) {
-						jAlert(sino,"Informacion");
-						location.reload();
-						},
-						error: function(h,t,e)  { jAlert("Error..codigo="+yurl+" ",e) }
-					});
-				}
-			})
-			}
-		};
-		</script>';
-
-		// *************************************
-		//
-		//       Para usar SuperTable
-		//
-		// *************************************
-		$extras = '<script type="text/javascript">
-		//<![CDATA[
-		(function() {
-			var mySt = new superTable("demoTable", {
-			cssSkin : "sSky",
-			fixedCols : 1,
-			headerRows : 1,
-			onStart : function () {	this.start = new Date();},
-			onFinish : function () {document.getElementById("testDiv").innerHTML += "Finished...<br>" + ((new Date()) - this.start) + "ms.<br>";}
-			});
-		})();
-		//]]>
-		</script>';
-
-		$style ='<style type="text/css">
-		.fakeContainer { // The parent container
-		    margin: 5px;
-		    padding: 0px;
-		    border: none;
-		    width: 740px; // Required to set
-		    height: 320px; // Required to set
-		    overflow: hidden; // Required to set
-		}
-		</style>';
-
-		$data['content'] = $grid->output;
-		$data['filtro']  = $filter->output;
-
-		$data['script']  = script('jquery.js');
-		$data['script'] .= script('jquery-ui.js');
-		$data['script'] .= script('jquery.alerts.js');
-		$data['script'] .= script('plugins/jquery.numeric.pack.js');
-		$data['script'] .= script('plugins/jquery.floatnumber.js');
-		$data['script'] .= script('superTables.js');
-		$data['script'] .= $script;
-		$data['style']   = $style;
-		$data['style']  .= style('superTables.css');
-		$data['style']  .= style('jquery.alerts.css');
-		$data['extras']  = $extras;
-		$data['title']   = heading('Maestro de Inventario ');
-		$data['head']    = $this->rapyd->get_head();
-
-		$this->load->view('view_ventanas', $data);
-	}
-*/
-
-	// *********************************************************************************************************
+	//******************************************************************
 	//
 	//   DATAEDIT
 	//
-	// *********************************************************************************************************
+	//******************************************************************
 	function dataedit($status='',$id='' ) {
 		$this->rapyd->uri->keep_persistence();
 		$this->rapyd->load('dataedit','datadetails');
@@ -3543,13 +2524,13 @@ class sinv extends Controller {
 		$edit->garantia->css_class='inputonlynum';
 		$edit->garantia->rule='numeric|callback_positivo|trim';
 
-		$AddMarca='<a href="javascript:add_marca();" title="Haz clic para Agregar una marca nueva">'.image('list_plus.png','Agregar',array("border"=>"0")).'</a>';
+		//$AddMarca='<a href="javascript:add_marca();" title="Haz clic para Agregar una marca nueva">'.image('list_plus.png','Agregar',array("border"=>"0")).'</a>';
 		$edit->marca = new dropdownField('Marca', 'marca');
 		$edit->marca->rule = 'required';
 		$edit->marca->style='width:180px;';
 		$edit->marca->option('','Seleccionar');
 		$edit->marca->options('SELECT marca AS codigo, marca FROM marc ORDER BY marca');
-		$edit->marca->append($AddMarca);
+		//$edit->marca->append($AddMarca);
 
 		$edit->modelo  = new inputField('Modelo', 'modelo');
 		$edit->modelo->size=24;
@@ -3704,6 +2685,60 @@ class sinv extends Controller {
 		$edit->bonifica->maxlength=12;
 		$edit->bonifica->css_class='inputonlynum';
 		$edit->bonifica->rule='numeric|callback_positivo|trim';
+
+		if ( $this->datasis->traevalor('SUNDECOP') == 'S') {
+			$edit->mpps = new inputField('MPPS','mpps');
+			$edit->mpps->rule='max_length[20]';
+			$edit->mpps->size =22;
+			$edit->mpps->maxlength =20;
+
+			$edit->cpe = new inputField('CPE','cpe');
+			$edit->cpe->rule='max_length[20]';
+			$edit->cpe->size =22;
+			$edit->cpe->maxlength =20;
+
+			$edit->dcomercial = new dropdownField('Destino Comercial','dcomercial');
+			$edit->dcomercial->style='width:200px;';
+			$edit->dcomercial->option('','Seleccionar');
+			$edit->dcomercial->options('SELECT codigo, descrip FROM sc_dcomercial ORDER BY descrip');
+
+			$edit->rubro = new dropdownField('Rubro','rubro');
+			$edit->rubro->style='width:200px;';
+			$edit->rubro->option('','Seleccionar');
+			$edit->rubro->options('SELECT codigo, concat(codigo, " ", descrip) descrip FROM sc_rubro ORDER BY codigo');
+
+			$edit->subrubro = new dropdownField('Sub Rubro','subrubro');
+			$edit->subrubro->style='width:200px;';
+			$edit->subrubro->option('','Seleccionar');
+			$edit->subrubro->options('SELECT codigo, concat(codigo, " ", descrip) descrip FROM sc_subrubro ORDER BY codigo');
+
+			$edit->cunidad = new dropdownField('Unidad Med.','cunidad');
+			$edit->cunidad->style='width:200px;';
+			$edit->cunidad->option('','Seleccionar');
+			$edit->cunidad->options('SELECT codigo, descrip descrip FROM sc_unidad ORDER BY codigo');
+
+			$edit->cmarca = new inputField('Marca','cmarca');
+			$edit->cmarca->rule='max_length[6]|integer';
+			$edit->cmarca->css_class='inputonlynum';
+			$edit->cmarca->size =8;
+			$edit->cmarca->maxlength =6;
+
+			$edit->cmaterial = new dropdownField('Material','cmaterial');
+			$edit->cmaterial->style='width:200px;';
+			$edit->cmaterial->option('','Seleccionar');
+			$edit->cmaterial->options('SELECT codigo,  descrip FROM sc_material ORDER BY descrip');
+
+			$edit->cforma = new dropdownField('Forma','cforma');
+			$edit->cforma->style='width:200px;';
+			$edit->cforma->option('','Seleccionar');
+			$edit->cforma->options('SELECT codigo, descrip FROM sc_forma ORDER BY descrip');
+
+			$edit->cpactivo = new inputField('Principio Act.','cpactivo');
+			$edit->cpactivo->rule='max_length[6]|integer';
+			$edit->cpactivo->css_class='inputonlynum';
+			$edit->cpactivo->size =8;
+			$edit->cpactivo->maxlength =6;
+		}
 
 		//descuentos por escala
 		for($i=1;$i<=3;$i++){
@@ -3906,6 +2941,10 @@ class sinv extends Controller {
 		$edit->it2usuario = new autoUpdateField('it2usuario',$this->session->userdata('usuario'),$this->session->userdata('usuario'));
 		$edit->it2usuario->db_name = 'usuario';
 		$edit->it2usuario->rel_id = 'sinvpitem';
+
+
+
+
 
 		/*INICIO SINV LABOR  ESTACIONES*/
 		$edit->it3estacion = new  dropdownField('Estacion <#o#>', 'it3estacion_<#i#>');
@@ -5478,24 +4517,36 @@ class sinv extends Controller {
 			$this->db->simple_query($mSQL);
 		}
 
-		if (!in_array('alto'       ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD alto DECIMAL(10,2)");
-		if (!in_array('ancho'      ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD ancho DECIMAL(10,2)");
-		if (!in_array('largo'      ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD largo DECIMAL(10,2)");
-		if (!in_array('forma'      ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD forma VARCHAR(50)");
-		if (!in_array('exento'     ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD exento CHAR(1) DEFAULT 'N'");
-		if (!in_array('mmargen'    ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD mmargen DECIMAL(7,2) DEFAULT 0 COMMENT 'Margen al Mayor'");
-		if (!in_array('pm'         ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `pm` DECIMAL(19,2) NULL DEFAULT '0.00' COMMENT 'porcentaje mayor'");
-		if (!in_array('pmb'        ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `pmb` DECIMAL(19,2) NULL DEFAULT '0.00' COMMENT 'porcentaje mayor'");
+		if (!in_array('alto'       ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN alto          DECIMAL(10,2)");
+		if (!in_array('ancho'      ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN ancho         DECIMAL(10,2)");
+		if (!in_array('largo'      ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN largo         DECIMAL(10,2)");
+		if (!in_array('forma'      ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN forma         VARCHAR(50)");
+		if (!in_array('exento'     ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN exento        CHAR(1) DEFAULT 'N'");
+		if (!in_array('mmargen'    ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN mmargen       DECIMAL(7,2) DEFAULT 0 COMMENT 'Margen al Mayor'");
+		if (!in_array('pm'         ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `pm`          DECIMAL(19,2) NULL DEFAULT '0.00' COMMENT 'porcentaje mayor'");
+		if (!in_array('pmb'        ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `pmb`         DECIMAL(19,2) NULL DEFAULT '0.00' COMMENT 'porcentaje mayor'");
 		if (!in_array('mmargenplus',$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `mmargenplus` DECIMAL(7,2) NULL DEFAULT '0.00' COMMENT 'Margen al Mayor'");
-		if (!in_array('escala1'    ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `escala1` DECIMAL(12,2) NULL DEFAULT '0.00'");
-		if (!in_array('pescala1'   ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `pescala1` DECIMAL(5,2) NULL DEFAULT '0.00' COMMENT 'porcentaje descuento escala1'");
-		if (!in_array('escala2'    ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `escala2` DECIMAL(12,2) NULL DEFAULT '0.00'");
-		if (!in_array('pescala2'   ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `pescala2` DECIMAL(5,2) NULL DEFAULT '0.00' COMMENT 'porcentaje descuento escala2'");
-		if (!in_array('escala3'    ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `escala3` DECIMAL(12,2) NULL DEFAULT '0.00'");
-		if (!in_array('pescala3'   ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `pescala3` DECIMAL(5,2) NULL DEFAULT '0.00' COMMENT 'porcentaje descuento escala3'");
-		if (!in_array('mpps',       $campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `mpps` VARCHAR(20) NULL  COMMENT 'Numero de Ministerior de Salud'");
-		if (!in_array('cpe',        $campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `cpe`  VARCHAR(20) NULL  COMMENT 'Otro Numero'");
-		if (!in_array('tasa',       $campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `cpe`  VARCHAR(20) NULL  COMMENT 'Otro Numero'");
+		if (!in_array('escala1'    ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `escala1`     DECIMAL(12,2) NULL DEFAULT '0.00'");
+		if (!in_array('pescala1'   ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `pescala1`    DECIMAL(5,2) NULL DEFAULT '0.00' COMMENT 'porcentaje descuento escala1'");
+		if (!in_array('escala2'    ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `escala2`     DECIMAL(12,2) NULL DEFAULT '0.00'");
+		if (!in_array('pescala2'   ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `pescala2`    DECIMAL(5,2) NULL DEFAULT '0.00' COMMENT 'porcentaje descuento escala2'");
+		if (!in_array('escala3'    ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `escala3`     DECIMAL(12,2) NULL DEFAULT '0.00'");
+		if (!in_array('pescala3'   ,$campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `pescala3`    DECIMAL(5,2) NULL DEFAULT '0.00' COMMENT 'porcentaje descuento escala3'");
+		if (!in_array('mpps',       $campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `mpps`        VARCHAR(20) NULL  COMMENT 'Numero de Ministerior de Salud'");
+		if (!in_array('cpe',        $campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `cpe`         VARCHAR(20) NULL  COMMENT 'Registro de CPE'");
+		if (!in_array('tasa',       $campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `cpe`         VARCHAR(20) NULL  COMMENT 'Tasa asociada'");
+
+		if (!in_array('dcomercial', $campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `dcomercial`  INT(6)     NULL  COMMENT 'Destino Comercial'");
+		if (!in_array('rubro',      $campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `rubro`       INT(6)     NULL  COMMENT 'Rubro'");
+		if (!in_array('subrubro',   $campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `subrubro`    INT(6)     NULL  COMMENT 'Sub Rubro'");
+		if (!in_array('cunidad',    $campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `cunidad`     INT(6)     NULL  COMMENT 'Unidad de Medida'");
+		if (!in_array('cmarca',     $campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `cmarca`      INT(6)     NULL  COMMENT 'Marca'");
+		if (!in_array('cmaterial',  $campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `cmaterial`   INT(6)     NULL  COMMENT 'Material'");
+		if (!in_array('cpresenta',  $campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `cforma`      INT(6)     NULL  COMMENT 'Forma o Presentacion'");
+		if (!in_array('cpactivo',   $campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `cpactivo`    INT(6)     NULL  COMMENT 'Principio Activo'");
+
+
+
 
 
 
@@ -5639,6 +4690,111 @@ class sinv extends Controller {
 		}
 	}
 
-}
+	//******************************************************************
+	//
+	//
+	//******************************************************************
+	function desundecop(){
+		$this->rapyd->load('dataedit');
 
+		$edit = new DataEdit('', 'sinv');
+
+		//$edit->back_url = site_url($this->url.'filteredgrid');
+
+		$edit->post_process('insert', '_scpost_insert');
+		$edit->post_process('update', '_scpost_update');
+		$edit->post_process('delete', '_scpost_delete');
+		$edit->pre_process('insert',  '_scpre_insert');
+		$edit->pre_process('update',  '_scpre_update');
+		$edit->pre_process('delete',  '_scpre_delete');
+
+
+		$edit->mpps = new inputField('MPPS','mpps');
+		$edit->mpps->rule='max_length[20]';
+		$edit->mpps->size =22;
+		$edit->mpps->maxlength =20;
+
+		$edit->cpe = new inputField('CPE','cpe');
+		$edit->cpe->rule='max_length[20]';
+		$edit->cpe->size =22;
+		$edit->cpe->maxlength =20;
+
+		$edit->dcomercial = new dropdownField('Destino Comercial','dcomercial');
+		$edit->dcomercial->style='width:230px;';
+		$edit->dcomercial->option('','Seleccionar');
+		$edit->dcomercial->options('SELECT codigo, descrip FROM sc_dcomercial ORDER BY codigo');
+
+		$edit->rubro = new dropdownField('Rubro','rubro');
+		$edit->rubro->style='width:230px;';
+		$edit->rubro->option('','Seleccionar');
+		$edit->rubro->options('SELECT codigo, descrip FROM sc_rubro ORDER BY descrip');
+
+		$edit->subrubro = new dropdownField('Sub Rubro','subrubro');
+		$edit->subrubro->style='width:230px;';
+		$edit->subrubro->option('','Seleccionar');
+		$edit->subrubro->options('SELECT codigo, concat(codigo, " ", descrip) descrip FROM sc_subrubro ORDER BY codigo');
+
+		$edit->cunidad = new dropdownField('Unidad Med.','cunidad');
+		$edit->cunidad->style='width:230px;';
+		$edit->cunidad->option('','Seleccionar');
+		$edit->cunidad->options('SELECT codigo, descrip FROM sc_unidad ORDER BY descrip');
+
+		$edit->cmarca = new inputField('Marca','cmarca');
+		$edit->cmarca->rule='max_length[6]|integer';
+		$edit->cmarca->css_class='inputonlynum';
+		$edit->cmarca->size =8;
+		$edit->cmarca->maxlength =6;
+
+		$edit->cmaterial = new dropdownField('Material','cmaterial');
+		$edit->cmaterial->style='width:230px;';
+		$edit->cmaterial->option('','Seleccionar');
+		$edit->cmaterial->options('SELECT codigo,  descrip FROM sc_material ORDER BY descrip');
+
+		$edit->cforma = new dropdownField('Forma','cforma');
+		$edit->cforma->style='width:230px;';
+		$edit->cforma->option('','Seleccionar');
+		$edit->cforma->options('SELECT codigo, descrip FROM sc_forma ORDER BY descrip');
+
+		$edit->cpactivo = new inputField('Principio Act.','cpactivo');
+		$edit->cpactivo->rule='max_length[6]|integer';
+		$edit->cpactivo->css_class='inputonlynum';
+		$edit->cpactivo->size =8;
+		$edit->cpactivo->maxlength =6;
+
+		$edit->build();
+
+		$script= '';
+
+		$data['content'] = $edit->output;
+		$this->load->view('jqgrid/ventanajq', $data);
+
+	}
+
+	function _scpre_insert($do){
+		return true;
+	}
+
+	function _scpre_update($do){
+		return true;
+	}
+
+	function _scpre_delete($do){
+		return true;
+	}
+
+	function _scpost_insert($do){
+		$primary =implode(',',$do->pk);
+		logusu($do->table,"Creo $this->tits $primary ");
+	}
+
+	function _scpost_update($do){
+		$primary =implode(',',$do->pk);
+		logusu($do->table,"Modifico $this->tits $primary ");
+	}
+
+	function _scpost_delete($do){
+		$primary =implode(',',$do->pk);
+		logusu($do->table,"Elimino $this->tits $primary ");
+	}
+}
 ?>
