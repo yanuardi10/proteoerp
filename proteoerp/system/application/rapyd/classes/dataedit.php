@@ -230,6 +230,14 @@ class DataEdit extends DataForm {
 						} else {
 							redirect('/' . $this->_postprocess_uri, 'refresh');
 						}
+					}else{
+						$rt=array(
+							'status' =>'A',
+							'mensaje'=>'Registro guardado',
+							'pk'     =>$this->_dataobject->pk
+						);
+
+						echo json_encode($rt);
 					}
 				}
 			break;

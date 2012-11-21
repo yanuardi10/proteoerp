@@ -1,6 +1,11 @@
-<?php echo $form_scripts?>
+<?php
+if (empty($form->output)):
+	echo $form->output;
+else:
+
+echo $form_scripts?>
 <?php echo $form_begin?>
-<?php 
+<?php
 $container_tr=join("&nbsp;", $form->_button_container["TR"]);
 $container_bl=join("&nbsp;", $form->_button_container["BL"]);
 $container_br=join("&nbsp;", $form->_button_container["BR"]);
@@ -8,14 +13,7 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 <?php if(isset($form->error_string))echo '<div class="alert">'.$form->error_string.'</div>'; ?>
 <table border=0 width="100%">
 	<tr>
-		<td valign='center'><a href='<?php echo base_url()."finanzas/mgas/consulta/".$form->get_from_dataobjetct('id'); ?>'>
-		<?php
-			$propiedad = array('src' => 'images/ojos.png', 'alt' => 'Consultar Movimiento', 'title' => 'Consultas','border'=>'0','height'=>'25');
-			echo img($propiedad);
-		?>
-		</a></td>
 		<td align='right' ><?php echo $container_tr; ?></td>
-
 	</tr>
 	<tr>
 		<td colspan='2'>
@@ -29,7 +27,7 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 			<tr>
 				<td class="littletableheaderc"><?=$form->descrip->label ?></td>
 				<td  class="littletablerow">   <?=$form->descrip->output ?></td>
-			</tr>	
+			</tr>
 			<tr>
 				<td class="littletableheaderc"><?=$form->tipo->label ?></td>
 				<td  class="littletablerow">   <?=$form->tipo->output?></td>
@@ -79,7 +77,7 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 			</table>
 			</fieldset>
 		</td>
-		<td  valign="top">	
+		<td  valign="top">
 			<fieldset style='border: 3px outset #81BEF7;background: #E0ECF8;'>
 			<legend class="titulofieldset" style='color: #114411;'>Existencias</legend>
 			<table style="height: 100%;width: 100%">
@@ -111,6 +109,7 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 					<td class="littletablerow">    <?=$form->fraccion->output ?></td>
 				</tr>
 			</table>
+			</fieldset>
 		</td>
 	</tr>
 
@@ -126,6 +125,7 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 					<td class="littletablerow">    <?php echo $form->retej->output; ?></td>
 				</tr>
 			</table>
+			</fieldset>
 		</td>
 	</tr>
 	<tr>
@@ -134,3 +134,4 @@ $container_br=join("&nbsp;", $form->_button_container["BR"]);
 </table>
 <?php echo $container_bl.$container_br; ?>
 <?php echo $form_end?>
+<?php endif; ?>

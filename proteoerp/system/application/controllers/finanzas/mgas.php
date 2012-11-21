@@ -3,89 +3,712 @@ require_once(BASEPATH.'application/controllers/validaciones.php');
 require_once(APPPATH.'/controllers/finanzas/gser.php');
 class Mgas extends validaciones {
 
-	function mgas(){
-		parent::Controller(); 
+	var $mModulo = 'MGAS';
+	var $titp    = 'Maestro de gastos';
+	var $tits    = 'Maestro de gastos';
+	var $url     = 'finanzas/mgas/';
+
+	function Mgas(){
+		parent::Controller();
 		$this->load->library('rapyd');
-		$this->load->library('pi18n');
-		//gser::instalar();
-		//$this->instalar();
+		$this->load->library('jqdatagrid');
+		$this->datasis->modulo_nombre( 'MGAS', $ventana=0 );
 	}
 
 	function index(){
-		if ( !$this->datasis->iscampo('mgas','id') ) {
+		/*if ( !$this->datasis->iscampo('mgas','id') ) {
 			$this->db->simple_query('ALTER TABLE mgas DROP PRIMARY KEY');
-			$this->db->simple_query('ALTER TABLE mgas ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id) ');
-			$this->db->simple_query('ALTER TABLE mgas ADD UNIQUE INDEX codigo (codigo)');
-		}
+			$this->db->simple_query('ALTER TABLE mgas ADD UNIQUE INDEX numero (numero)');
+			$this->db->simple_query('ALTER TABLE mgas ADD COLUMN id INT(11) NULL AUTO_INCREMENT, ADD PRIMARY KEY (id)');
+		};*/
+		$this->datasis->modintramenu( 800, 600, substr($this->url,0,-1) );
+		redirect($this->url.'jqdatag');
+	}
 
-		$this->datasis->modulo_id(501,1);
-		if($this->pi18n->pais=='COLOMBIA'){
-			redirect('finanzas/mgascol/filteredgrid');
-		}else{
-			//redirect('finanzas/mgas/filteredgrid');
-			$this->mgasextjs();
+	//***************************
+	//Layout en la Ventana
+	//
+	//***************************
+	function jqdatag(){
+
+		$grid = $this->defgrid();
+		$param['grids'][] = $grid->deploy();
+
+		//Funciones que ejecutan los botones
+		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname']);
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		//Botones Panel Izq
+		//$grid->wbotonadd(array("id"=>"edocta",   "img"=>"images/pdf_logo.gif",  "alt" => "Formato PDF", "label"=>"Ejemplo"));
+		$WestPanel = $grid->deploywestp();
+
+		$adic = array(
+		array("id"=>"fedita",  "title"=>"Agregar/Editar Registro")
+		);
+		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
+
+		$param['WestPanel']   = $WestPanel;
+		//$param['EastPanel'] = $EastPanel;
+		$param['SouthPanel']  = $SouthPanel;
+		$param['listados']    = $this->datasis->listados('MGAS', 'JQ');
+		$param['otros']       = $this->datasis->otros('MGAS', 'JQ');
+		$param['temas']       = array('proteo','darkness','anexos1');
+		$param['bodyscript']  = $bodyscript;
+		$param['tabs']        = false;
+		$param['encabeza']    = $this->titp;
+		$param['tamano']      = $this->datasis->getintramenu( substr($this->url,0,-1) );
+		$this->load->view('jqgrid/crud2',$param);
+	}
+
+	//***************************
+	//Funciones de los Botones
+	//***************************
+	function bodyscript( $grid0 ){
+		$bodyscript = '<script type="text/javascript">';
+
+		$bodyscript .= '
+		function mgasadd() {
+			$.post("'.site_url($this->url.'dataedit/create').'",
+			function(data){
+				$("#fedita").html(data);
+				$("#fedita").dialog( "open" );
+			})
+		};';
+
+		$bodyscript .= '
+		function mgasedit() {
+			var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret    = $("#newapi'.$grid0.'").getRowData(id);
+				mId = id;
+				$.post("'.site_url($this->url.'dataedit/modify').'/"+id, function(data){
+					$("#fedita").html(data);
+					$("#fedita").dialog( "open" );
+				});
+			} else { $.prompt("<h1>Por favor Seleccione un Registro</h1>");}
+		};';
+
+		//Wraper de javascript
+		$bodyscript .= '
+		$(function() {
+			$("#dialog:ui-dialog").dialog( "destroy" );
+			var mId = 0;
+			var montotal = 0;
+			var ffecha = $("#ffecha");
+			var grid = jQuery("#newapi'.$grid0.'");
+			var s;
+			var allFields = $( [] ).add( ffecha );
+			var tips = $( ".validateTips" );
+			s = grid.getGridParam(\'selarrrow\');
+			';
+
+		$bodyscript .= '
+		$("#fedita").dialog({
+			autoOpen: false, height: 500, width: 700, modal: true,
+			buttons: {
+			"Guardar": function() {
+				var bValid = true;
+				var murl = $("#df1").attr("action");
+				allFields.removeClass( "ui-state-error" );
+				$.ajax({
+					type: "POST", dataType: "json", async: false,
+					url: murl,
+					data: $("#df1").serialize(),
+					success: function(r,s,x){
+						if ( r.status == "A" ) {
+							$( "#fedita" ).dialog( "close" );
+							grid.trigger("reloadGrid");
+							apprise("Registro Guardado");
+							'.$this->datasis->jwinopen(site_url('formatos/ver/MGAS').'/\'+r.pk.id+\'/id\'').';
+							return true;
+						} else {
+							apprise(r.mensaje);
+						}
+					}
+			})},
+			"Cancelar": function() { $( this ).dialog( "close" ); }
+			},
+			close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
+		});';
+		$bodyscript .= '});'."\n";
+
+		$bodyscript .= "\n</script>\n";
+		$bodyscript .= "";
+		return $bodyscript;
+	}
+
+	//***************************
+	//Definicion del Grid y la Forma
+	//***************************
+	function defgrid( $deployed = false ){
+		$i      = 1;
+		$editar = "false";
+
+		$grid  = new $this->jqdatagrid;
+
+		$grid->addField('codigo');
+		$grid->label('Codigo');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 60,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:6, maxlength: 6 }',
+		));
+
+
+		$grid->addField('tipo');
+		$grid->label('Tipo');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:1, maxlength: 1 }',
+		));
+
+
+		$grid->addField('descrip');
+		$grid->label('Descrip');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:40, maxlength: 40 }',
+		));
+
+
+		$grid->addField('grupo');
+		$grid->label('Grupo');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:4, maxlength: 4 }',
+		));
+
+
+		$grid->addField('nom_grup');
+		$grid->label('Nom_grup');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:20, maxlength: 20 }',
+		));
+
+
+		$grid->addField('iva');
+		$grid->label('Iva');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('medida');
+		$grid->label('Medida');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 50,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:5, maxlength: 5 }',
+		));
+
+
+		$grid->addField('fraxuni');
+		$grid->label('Fraxuni');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
+		));
+
+
+		$grid->addField('minimo');
+		$grid->label('Minimo');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
+		));
+
+
+		$grid->addField('maximo');
+		$grid->label('Maximo');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
+		));
+
+
+		$grid->addField('ultimo');
+		$grid->label('Ultimo');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('promedio');
+		$grid->label('Promedio');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('unidades');
+		$grid->label('Unidades');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
+		));
+
+
+		$grid->addField('fraccion');
+		$grid->label('Fraccion');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
+		));
+
+
+		$grid->addField('cuenta');
+		$grid->label('Cuenta');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 150,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:15, maxlength: 15 }',
+		));
+
+
+		$grid->addField('tasa1');
+		$grid->label('Tasa1');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('base1');
+		$grid->label('Base1');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('desde1');
+		$grid->label('Desde1');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('tasa2');
+		$grid->label('Tasa2');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('base2');
+		$grid->label('Base2');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('desde2');
+		$grid->label('Desde2');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('tasa3');
+		$grid->label('Tasa3');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('base3');
+		$grid->label('Base3');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('desde3');
+		$grid->label('Desde3');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('tasa4');
+		$grid->label('Tasa4');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('base4');
+		$grid->label('Base4');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('desde4');
+		$grid->label('Desde4');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'align'         => "'right'",
+			'edittype'      => "'text'",
+			'width'         => 100,
+			'editrules'     => '{ required:true }',
+			'editoptions'   => '{ size:10, maxlength: 10, dataInit: function (elem) { $(elem).numeric(); }  }',
+			'formatter'     => "'number'",
+			'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 2 }'
+		));
+
+
+		$grid->addField('amorti');
+		$grid->label('Amorti');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 50,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:5, maxlength: 5 }',
+		));
+
+
+		$grid->addField('dacumu');
+		$grid->label('Dacumu');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 50,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:5, maxlength: 5 }',
+		));
+
+
+		$grid->addField('rica');
+		$grid->label('Rica');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 50,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:5, maxlength: 5 }',
+		));
+
+
+		$grid->addField('reten');
+		$grid->label('Reten');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:4, maxlength: 4 }',
+		));
+
+
+		$grid->addField('retej');
+		$grid->label('Retej');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => $editar,
+			'width'         => 40,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:4, maxlength: 4 }',
+		));
+
+
+		$grid->addField('id');
+		$grid->label('Id');
+		$grid->params(array(
+			'align'         => "'center'",
+			'frozen'        => 'true',
+			'width'         => 40,
+			'editable'      => 'false',
+			'search'        => 'false'
+		));
+
+
+		$grid->showpager(true);
+		$grid->setWidth('');
+		$grid->setHeight('290');
+		$grid->setTitle($this->titp);
+		$grid->setfilterToolbar(true);
+		$grid->setToolbar('false', '"top"');
+
+		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
+		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 520, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];},afterShowForm: function(frm){$("select").selectmenu({style:"popup"});} ');
+		$grid->setAfterSubmit("$('#respuesta').html('<span style=\'font-weight:bold; color:red;\'>'+a.responseText+'</span>'); return [true, a ];");
+
+		#show/hide navigations buttons
+		$grid->setAdd(    $this->datasis->sidapuede('MGAS','INCLUIR%' ));
+		$grid->setEdit(   $this->datasis->sidapuede('MGAS','MODIFICA%'));
+		$grid->setDelete( $this->datasis->sidapuede('MGAS','BORR_REG%'));
+		$grid->setSearch( $this->datasis->sidapuede('MGAS','BUSQUEDA%'));
+		$grid->setRowNum(30);
+		$grid->setShrinkToFit('false');
+
+		$grid->setBarOptions("addfunc: mgasadd,editfunc: mgasedit");
+
+		#Set url
+		$grid->setUrlput(site_url($this->url.'setdata/'));
+
+		#GET url
+		$grid->setUrlget(site_url($this->url.'getdata/'));
+
+		if ($deployed) {
+			return $grid->deploy();
+		} else {
+			return $grid;
 		}
 	}
 
-	function filteredgrid(){
-		$this->rapyd->load("datafilter","datagrid");
-		$this->rapyd->uri->keep_persistence();
+	/**
+	* Busca la data en el Servidor por json
+	*/
+	function getdata()
+	{
+		$grid       = $this->jqdatagrid;
 
-		$modbus=array(
-		  'tabla'   =>'grga',
-		  'columnas'=>array(
-					'grupo' =>'Codigo',
-					'nom_grup'=>'Descripci&oacute;n'
-				   ),
-		  'filtro'  =>array('grupo'=>'C&oacute;digo','nom_grup'=>'Descripci&oacute;n'),
-		  'retornar'=>array('grupo'=>'grupo'),
-		'titulo'  =>'Buscar Grupo de Gastos');
+		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
+		$mWHERE = $grid->geneTopWhere('mgas');
 
-		$boton=$this->datasis->modbus($modbus);
+		$response   = $grid->getData('mgas', array(array()), array(), false, $mWHERE );
+		$rs = $grid->jsonresult( $response);
+		echo $rs;
+	}
 
-		$filter = new DataFilter("Filtro Maestro de Gastos", 'mgas');
+	/**
+	* Guarda la Informacion
+	*/
+	function setData()
+	{
+		$this->load->library('jqdatagrid');
+		$oper   = $this->input->post('oper');
+		$id     = $this->input->post('id');
+		$data   = $_POST;
+		$mcodp  = "??????";
+		$check  = 0;
 
-		$filter->codigo = new inputField("C&oacute;digo", "codigo");
-		$filter->codigo->size=10;
-		$filter->codigo->group = 'UNO';
+		unset($data['oper']);
+		unset($data['id']);
+		if($oper == 'add'){
+			if(false == empty($data)){
+				$check = $this->datasis->dameval("SELECT count(*) FROM mgas WHERE $mcodp=".$this->db->escape($data[$mcodp]));
+				if ( $check == 0 ){
+					$this->db->insert('mgas', $data);
+					echo "Registro Agregado";
 
-		$filter->cuenta = new inputField('Cuenta contable', 'cuenta');
-		$filter->cuenta->size=15;
-		$filter->cuenta->like_side='after';
-		$filter->cuenta->group = 'UNO';
+					logusu('MGAS',"Registro ????? INCLUIDO");
+				} else
+					echo "Ya existe un registro con ese $mcodp";
+			} else
+				echo "Fallo Agregado!!!";
 
-		$filter->descrip = new inputField("Descripci&oacute;n", "descrip");
-		$filter->descrip->size=20;
-		$filter->descrip->group = 'DOS';
-		
-		$filter->grupo = new inputField("Grupo", "grupo");
-		$filter->grupo->size=10;
-		$filter->grupo->append($boton);
-		$filter->grupo->group = 'DOS';
+		} elseif($oper == 'edit') {
+			$nuevo  = $data[$mcodp];
+			$anterior = $this->datasis->dameval("SELECT $mcodp FROM mgas WHERE id=$id");
+			if ( $nuevo <> $anterior ){
+				//si no son iguales borra el que existe y cambia
+				$this->db->query("DELETE FROM mgas WHERE $mcodp=?", array($mcodp));
+				$this->db->query("UPDATE mgas SET $mcodp=? WHERE $mcodp=?", array( $nuevo, $anterior ));
+				$this->db->where("id", $id);
+				$this->db->update("mgas", $data);
+				logusu('MGAS',"$mcodp Cambiado/Fusionado Nuevo:".$nuevo." Anterior: ".$anterior." MODIFICADO");
+				echo "Grupo Cambiado/Fusionado en clientes";
+			} else {
+				unset($data[$mcodp]);
+				$this->db->where("id", $id);
+				$this->db->update('mgas', $data);
+				logusu('MGAS',"Grupo de Cliente  ".$nuevo." MODIFICADO");
+				echo "$mcodp Modificado";
+			}
 
-		$filter->buttons("reset","search");
-		$filter->build("dataformfiltro");
-
-		$uri = anchor('finanzas/mgas/dataedit/show/<#id#>','<#id#>');
-
-		$grid = new DataGrid("Lista de Maestro de Gastos");
-		$grid->order_by("codigo","asc");
-		$grid->per_page = 15;
-
-		$grid->column_orderby("C&oacute;digo",$uri ,'codigo');
-		$grid->column_orderby("Tipo","tipo","tipo");
-		$grid->column_orderby("Descripci&oacute;n","descrip",'descrip');
-		$grid->column_orderby("Grupo","grupo",'grupo');
-		$grid->column_orderby('Nombre del Grupo','nom_grup','nom_grup');
-
-		$grid->add("finanzas/mgas/dataedit/create");
-		$grid->build();
-
-		$data['filtro'] = $filter->output;
-		$data['content'] = $grid->output;
-		$data['title']   = heading('Maestro de Gastos');
-		$data["head"]    = $this->rapyd->get_head();
-		$this->load->view('view_ventanas', $data);	
+		} elseif($oper == 'del') {
+			$meco = $this->datasis->dameval("SELECT $mcodp FROM mgas WHERE id=$id");
+			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM mgas WHERE id='$id' ");
+			if ($check > 0){
+				echo " El registro no puede ser eliminado; tiene movimiento ";
+			} else {
+				$this->db->simple_query("DELETE FROM mgas WHERE id=$id ");
+				logusu('MGAS',"Registro ????? ELIMINADO");
+				echo "Registro Eliminado";
+			}
+		};
 	}
 
 	function dataedit(){
@@ -101,25 +724,35 @@ class Mgas extends validaciones {
 			}
 		});
 		}
-		$(function() {
-			$(".inputnum").numeric(".");
-			$("#grupo").change(function(){grupo();}).change();
-		});
+
 		function grupo(){
 			t=$("#grupo").val();
 			a=$("#grupo :selected").text();
 			$("#nom_grup").val(a);
-		}';
+		}
+
+		$(function() {
+			$(".inputnum").numeric(".");
+			$("#grupo").change(function(){
+				t=$("#grupo").val();
+				a=$("#grupo :selected").text();
+				$("#nom_grup").val(a);
+			}).change();
+		});';
+
+		$qformato=$this->datasis->formato_cpla();
 
 		$mCPLA=array(
-			'tabla'   =>'cpla',
-			'columnas'=>array(
-				'codigo' =>'C&oacute;digo',
-				'descrip'=>'Descripci&oacute;n'),
-			'filtro'  =>array('codigo'=>'C&oacute;digo','descrip'=>'Descripci&oacute;n'),
-			'retornar'=>array('codigo'=>'cuenta'),
-			'titulo'  =>'Buscar Cuenta',
+			'tabla'    => 'cpla',
+			'columnas' => array(
+			'codigo'   => 'C&oacute;digo',
+			'descrip'  => 'Descripci&oacute;n'),
+			'filtro'   => array('codigo'=>'C&oacute;digo','descrip'=>'Descripci&oacute;n'),
+			'retornar' => array('codigo'=>'cuenta'),
+			'titulo'   => 'Buscar Cuenta',
+			'where'    => "codigo LIKE \"$qformato\"",
 		);
+
 		$bcpla =$this->datasis->modbus($mCPLA);
 
 		$atts = array(
@@ -134,7 +767,7 @@ class Mgas extends validaciones {
 		$edit = new DataEdit("Maestro de Gastos", "mgas");
 		$edit->script($script, "create");
 		$edit->script($script, "modify");
-		$edit->back_url = site_url("finanzas/mgas/filteredgrid");
+		$edit->on_save_redirect=false;
 
 		$ultimo='<a href="javascript:ultimo();" title="Consultar ultimo codigo ingresado" onclick="">Consultar ultimo codigo</a>';
 		$edit->codigo= new inputField("C&oacute;digo", "codigo");
@@ -151,7 +784,6 @@ class Mgas extends validaciones {
 		$edit->tipo= new dropdownField("Tipo", "tipo");
 		$edit->tipo->style ="width:100px;";
 		$edit->tipo->option("G","Gasto");
-		//$edit->tipo->option("G","Gasto");
 		$edit->tipo->option("I","Inventario");
 		$edit->tipo->option("S","Suministro");
 		$edit->tipo->option("A","Activo Fijo");
@@ -159,7 +791,7 @@ class Mgas extends validaciones {
 		$edit->grupo= new dropdownField("Grupo", "grupo");
 		$edit->grupo->options('SELECT grupo, CONCAT(grupo," - ",nom_grup) nom_grup from grga order by nom_grup');
 		$edit->grupo->style ="width:250px;";
-		$edit->grupo->onchange ="grupo();";
+		//$edit->grupo->onchange ="grupo();";
 
 		//$edit->nom_grup  = new inputField("nom_grup", "nom_grup");
 
@@ -179,7 +811,7 @@ class Mgas extends validaciones {
 		$edit->iva->rule ="trim";
 
 		$edit->medida    = new inputField("Unidad Medida", "medida");
-		$edit->medida->size = 10;  
+		$edit->medida->size = 10;
 
 		$edit->fraxuni   = new inputField("Cantidad por Caja", "fraxuni");
 		$edit->fraxuni->css_class='inputnum';//no sirve
@@ -228,14 +860,11 @@ class Mgas extends validaciones {
 		$edit->almacenes = new containerField('almacenes',$this->_detalle($codigo));
 		$edit->almacenes->when = array("show","modify");
 
-		$edit->buttons("modify", "save", "undo", "back");
+		//$edit->buttons("modify", "save", "undo", "back");
 		$edit->build();
 
 		$conten["form"]  =&  $edit;
-		$data['content'] = $this->load->view('view_mgas', $conten,true);
-		$data["head"]    = script("plugins/jquery.numeric.pack.js").script("plugins/jquery.floatnumber.js").$this->rapyd->get_head();
-		$data['title']   = '<h1>Maestro de Gasto</h1>';
-		$this->load->view('view_ventanas', $data);
+		$this->load->view('view_mgas', $conten);
 	}
 
 	function chexiste(){
@@ -257,31 +886,31 @@ class Mgas extends validaciones {
 		$salida='';
 		/*
 		if(!empty($codigo)){
-			$this->rapyd->load('dataedit','datagrid'); 
+			$this->rapyd->load('dataedit','datagrid');
 
 			$grid = new DataGrid('Cantidad por almac&eacute;n');
 			$grid->db->select('ubica,locali,cantidad,fraccion');
 			$grid->db->from('ubic');
 			$grid->db->where('codigo',$codigo);
-			
+
 			$grid->column("Almacen"          ,"ubica" );
 			$grid->column("Ubicaci&oacute;n" ,"locali");
 			$grid->column("Cantidad"         ,"cantidad",'align="RIGHT"');
 			$grid->column("Fracci&oacute;n"  ,"fraccion",'align="RIGHT"');
-			
+
 			$grid->build();
 			$salida=$grid->output;
 		}*/
 		return $salida;
 	}
-  
-	function consulta(){  
+
+	function consulta(){
 		$this->rapyd->load("datagrid");
 		$fields = $this->db->field_data('mgas');
 		$url_pk = $this->uri->segment_array();
-		$coun=0; 
+		$coun=0;
 		$pk=array();
-		
+
 		foreach ($fields as $field){
 			if($field->primary_key==1){
 				$coun++;
@@ -289,7 +918,7 @@ class Mgas extends validaciones {
 			}
 		}
 		$pk[]='codigo';
-		
+
 		$values=array_slice($url_pk,-$coun);
 		$claves=array_combine (array_reverse($pk) ,$values );
 
@@ -301,7 +930,7 @@ class Mgas extends validaciones {
 		$grid->db->where('a.fecha >', "curdate()-365" );
 		$grid->db->orderby('fecha DESC');
 		$grid->db->limit(6);
-			
+
 		$grid->column("Fecha",      "fecha" );
 		$grid->column("Descripcion","descrip" );
 		$grid->column("Proveed",    "proveed");
@@ -317,10 +946,10 @@ class Mgas extends validaciones {
 		$grid1->db->where('a.fecha >', "curdate()-365" );
 		$grid1->db->groupby('fecha DESC ');
 		$grid1->db->limit(6);
-			
+
 		$grid1->column("Fecha", "fecha" );
 		$grid1->column("Monto", "<nformat><#monto#></nformat>",'align="RIGHT"');
-			
+
 		$grid1->build();
 
 		$grid2 = new DataGrid('Totales por Proveedor');
@@ -332,11 +961,11 @@ class Mgas extends validaciones {
 		$grid2->db->groupby('a.proveed');
 		$grid2->db->orderby('monto DESC ');
 		$grid2->db->limit(6);
-			
+
 		$grid2->column("Proveed" ,"proveed");
 		$grid2->column("Nombre"  ,"nombre");
 		$grid2->column("Monto"   ,"<nformat><#monto#></nformat>",'align="RIGHT"');
-		
+
 		$grid2->build();
 
 		$descrip = $this->datasis->dameval("SELECT descrip FROM mgas WHERE codigo='".$claves['codigo']."'");
@@ -370,7 +999,7 @@ class Mgas extends validaciones {
 		$data['title']    = '<h1>Consulta de Maestro de Gasto</h1>';
 		$data["subtitle"] = "<div align='center' style='border: 2px outset #EFEFEF;background: #EFEFEF '><a href='javascript:javascript:history.go(-1)'>(".$claves['codigo'].") ".$descrip."</a></div>";
 		$this->load->view('view_ventanas', $data);
-		
+
 	}
 
 	function instalar(){
@@ -381,11 +1010,11 @@ class Mgas extends validaciones {
 	}
 
 	/*function sinvgrupos(){
-		$this->rapyd->load("fields");  
-		$where = "";  
+		$this->rapyd->load("fields");
+		$where = "";
 		$line=$this->input->post('line');
-		$dpto=$this->input->post('dpto'); 
-		
+		$dpto=$this->input->post('dpto');
+
 		$grupo = new dropdownField("Grupo", "grupo");
 		if ($line AND $dpto AND !(empty($line) OR empty($dpto))) {
 			$where .= "WHERE depto = ".$this->db->escape($dpto);
@@ -394,11 +1023,11 @@ class Mgas extends validaciones {
 			$grupo->option("","");
 			$grupo->options($sql);
 		}else{
-			$grupo->option("","Seleccione una linea"); 
-		} 
-		$grupo->status = "modify";  
+			$grupo->option("","Seleccione una linea");
+		}
+		$grupo->status = "modify";
 		$grupo->build();
-		echo $grupo->output; 
+		echo $grupo->output;
 	}*/
 
 
@@ -409,12 +1038,12 @@ class Mgas extends validaciones {
 		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter']  : null;
 
 		$where = $this->datasis->extjsfiltro($filters);
-		
+
 		$this->db->_protect_identifiers=false;
 		$this->db->select('*, CONCAt(grupo, " ", nom_grup ) nomgrup');
 		$this->db->from('mgas');
-		if (strlen($where)>1) $this->db->where($where, NULL, FALSE); 
-		
+		if (strlen($where)>1) $this->db->where($where, NULL, FALSE);
+
 		$sort = json_decode($sort, true);
 		for ( $i=0; $i<count($sort); $i++ ) {
 			$this->db->order_by($sort[$i]['property'],$sort[$i]['direction']);
@@ -449,7 +1078,7 @@ class Mgas extends validaciones {
 			} else {
 				echo "{ success: false, message: 'Ya existe una gasto con ese codigo!!'}";
 			}
-			
+
 		} else {
 			echo "{ success: false, message: 'Falta el campo codigo!!'}";
 		}
@@ -461,11 +1090,11 @@ class Mgas extends validaciones {
 		$campos = $data['data'];
 		$codigo = $campos['codigo'];
 		$id     = $campos['id'];
-		
+
 		unset($campos['codigo']);
 		unset($campos['id']);
 		unset($campos['nomgrup']);
-		
+
 		$campos['nom_grup'] = $this->datasis->dameval("SELECT nom_grup FROM grga WHERE grupo='".$campos['grupo']."'");
 
 		$mSQL = $this->db->update_string("mgas", $campos,"id=".$id );
@@ -498,199 +1127,4 @@ class Mgas extends validaciones {
 			echo "{ success: true, message: 'Gasto Eliminado'}";
 		}
 	}
-
-
-//****************************************************************
-//
-//
-//
-//****************************************************************
-	function mgasextjs(){
-		$encabeza='MAESTRO DE GASTOS';
-		$listados= $this->datasis->listados('mgas');
-		$otros=$this->datasis->otros('mgas', 'finanzas/mgas');
-
-		$mSQL = "SELECT grupo, CONCAT(grupo,' ',nom_grup) descrip FROM grga ORDER BY grupo";
-		$grupo = $this->datasis->llenacombo($mSQL);
-
-		$mSQL = 'SELECT codigo, CONCAT(codigo," - ",activida) val FROM rete WHERE tipo="NR" ORDER BY codigo';
-		$reten = $this->datasis->llenacombo($mSQL);
-
-		$mSQL = 'SELECT codigo, CONCAT(codigo," - ",activida) val FROM rete WHERE tipo="JD" ORDER BY codigo';
-		$retej = $this->datasis->llenacombo($mSQL);
-
-
-		$urlajax = 'finanzas/mgas/';
-		$variables = "var mcuenta='';";
-		
-		$funciones = "
-function rtipo(val){
-	if ( val == 'G') {
-		return 'Gasto';
-	} else if ( val == 'I') {
-		return  'Inventario';
-	} else if ( val == 'S') {
-		return  'Suministro';
-	} else if ( val == 'A') {
-		return  'Activo';
-	}
-}";
-		
-		$valida = "
-		{ type: 'length', field: 'codigo',   min: 1 },
-		{ type: 'length', field: 'descrip',  min: 1 }
-		";
-		
-		$columnas = "
-		{ header: 'Codigo',      width:  70, sortable: true, dataIndex: 'codigo',   field: { type: 'textfield' }, filter: { type: 'string' }}, 
-		{ header: 'Tipo',        width:  60, sortable: true, dataIndex: 'tipo',     field: { type: 'textfield' }, filter: { type: 'string' }, renderer: rtipo },
-		{ header: 'Descripcion', width: 200, sortable: true, dataIndex: 'descrip',  field: { type: 'textfield' }, filter: { type: 'string' }}, 
-		{ header: 'Grupo',       width:  40, sortable: true, dataIndex: 'grupo',    field: { type: 'textfield' }, filter: { type: 'string' }}, 
-		{ header: 'Cuenta',      width:  70, sortable: true, dataIndex: 'cuenta',   field: { type: 'textfield' }, filter: { type: 'string' }},
-		{ header: 'Reten/Nat',   width:  70, sortable: true, dataIndex: 'reten',   field: { type: 'textfield' }, filter: { type: 'string' }}, 
-		{ header: 'Reten/Jur',   width:  70, sortable: true, dataIndex: 'retej',   field: { type: 'textfield' }, filter: { type: 'string' }}, 
-		
-		//{ header: 'Impuesto',    width:  70, sortable: true, dataIndex: 'impuesto', field: { type: 'numeric'   }, filter: { type: 'numeric' }, align: 'right',renderer : Ext.util.Format.numberRenderer('0,000.00') },
-		";
-
-		$agrupar = "		remoteSort: true,
-		groupField: 'nomgrup',";
-
-
-		$campos = "'id', 'codigo','tipo','descrip','grupo','nom_grup','iva','medida','fraxuni','minimo','maximo','ultimo','promedio','unidades','fraccion','cuenta','tasa1','base1','desde1','tasa2','base2','desde2','tasa3','base3','desde3','tasa4','base4','desde4','amorti','dacumu','rica','reten','retej','nomgrup'";
-		
-		$camposforma = "
-							{
-							xtype:'fieldset',
-							frame: false,
-							border: false,
-							labelAlign: 'right',
-							defaults: { xtype:'fieldset', labelWidth:70 },
-							style:'padding:4px',
-							layout: 'column',
-							items: [
-									{ xtype: 'textfield',     fieldLabel: 'Codigo',      name: 'codigo',  width:140, allowBlank: false, id: 'codigo' },
-									{ xtype: 'combo',         fieldLabel: 'Tipo',        name: 'tipo',    width:260, store: [['G','Gasto'],['I','Inventario'],['S','Suministro'],['A','Activo Fijo']], labelWidth:160},
-									{ xtype: 'textfield',     fieldLabel: 'Descripcion', name: 'descrip', width:400, allowBlank: false },
-									{ xtype: 'combo',         fieldLabel: 'Grupo',       name: 'grupo',   width:400, store: [".$grupo."] },
-									{ xtype: 'combo',         fieldLabel: 'C.Contable',  name: 'cuenta',  width:400, store: cplaStore, id: 'cuenta', mode: 'remote', hideTrigger: true, typeAhead: true, forceSelection: true, valueField: 'item', displayField: 'valor'},
-								]
-							},{
-							xtype:'fieldset',
-							title: 'Retenciones',
-							frame: false,
-							border: false,
-							labelAlign: 'right',
-							defaults: { xtype:'fieldset', labelWidth:70 },
-							style:'padding:4px',
-							layout: 'column',
-							items: [
-									{ xtype: 'combo', fieldLabel: 'Persona Natural',  name: 'reten',  width:400, store: [".$reten."]},
-									{ xtype: 'combo', fieldLabel: 'Persona Juridica', name: 'retej',  width:400, store: [".$retej."] },
-								]
-							}
-		";
-
-		$titulow = 'Maestro de Gastos';
-
-		$winwidget = "
-				closable: false,
-				closeAction: 'destroy',
-				width: 450,
-				height: 350,
-				resizable: false,
-				modal: true,
-				items: [writeForm],
-				listeners: {
-					beforeshow: function() {
-						var form = this.down('writerform').getForm();
-						this.activeRecord = registro;
-						if (registro) {
-							mcuenta  = registro.data.cuenta;
-							cplaStore.proxy.extraParams.cuenta  = mcuenta  ;
-							cplaStore.load({ params: { 'proveed': registro.data.cliente,  'origen': 'beforeform' } });
-
-							form.loadRecord(registro);
-							form.findField('codigo').setReadOnly(true);
-						} else {
-							mcuenta  = '';
-							form.findField('codigo').setReadOnly(false);
-						}
-					}
-				}
-";
-
-		$stores = "
-var cplaStore = new Ext.data.Store({
-	fields: [ 'item', 'valor'],
-	autoLoad: false,
-	autoSync: false,
-	pageSize: 50,
-	pruneModifiedRecords: true,
-	totalProperty: 'results',
-	proxy: {
-		type: 'ajax',
-		url : urlApp + 'contabilidad/cpla/cplabusca',
-		extraParams: {  'cuenta': mcuenta, 'origen': 'store' },
-		reader: {type: 'json',totalProperty: 'results',root: 'data'}
-	},
-	method: 'POST'
-});
-		
-		";
-
-		$features = "features: [{ ftype: 'grouping', groupHeaderTpl: '{name}' },{ ftype: 'filters', encode: 'json', local: false }],";
-
-		$data['listados']    = $listados;
-		$data['otros']       = $otros;
-		$data['encabeza']    = $encabeza;
-		$data['urlajax']     = $urlajax;
-		$data['variables']   = $variables;
-		$data['funciones']   = $funciones;
-		$data['valida']      = $valida;
-		$data['columnas']    = $columnas;
-		$data['campos']      = $campos;
-		$data['stores']      = $stores;
-		$data['camposforma'] = $camposforma;
-		$data['titulow']     = $titulow;
-		$data['winwidget']   = $winwidget;
-		$data['features']    = $features;
-		//$data['filtros']     = $filtros;
-		$data['agrupar']     = $agrupar;
-
-		$data['title']  = heading('Maestro de Gastos');
-		$this->load->view('extjs/extjsven',$data);
-		
-	}
-
-	
-	function mgasbusca() {
-		$start    = isset($_REQUEST['start'])  ? $_REQUEST['start']  :  0;
-		$limit    = isset($_REQUEST['limit'])  ? $_REQUEST['limit']  : 25;
-		$codigo   = isset($_REQUEST['codigo']) ? $_REQUEST['codigo']  : '';
-		$tipo     = isset($_REQUEST['tipo'])   ? $_REQUEST['tipo']  : 'G';
-		$semilla  = isset($_REQUEST['query'])  ? $_REQUEST['query']  : '';
-
-		$semilla = trim($semilla);
-	
-		$mSQL = "SELECT codigo item, CONCAT(codigo, ' ', descrip) valor FROM mgas WHERE tipo='$tipo' ";
-		if ( strlen($semilla)>0 ){
-			$mSQL .= " AND ( codigo LIKE '$semilla%' OR descrip LIKE '%$semilla%' ) ";
-		} else {
-			if ( strlen($codigo)>0 ) $mSQL .= " AND codigo = '$codigo' ";
-		}
-		$mSQL .= "ORDER BY descrip ";
-		$results = $this->db->count_all('mgas');
-
-		if ( empty($mSQL)) {
-			echo '{success:true, message:"mSQL vacio, Loaded data", results: 0, data:'.json_encode(array()).'}';
-		} else {
-			$mSQL .= " limit $start, $limit ";
-			$query = $this->db->query($mSQL);
-			$arr = $this->datasis->codificautf8($query->result_array());
-			echo '{success:true, message:"maestro de gastos", results:'. $results.', data:'.json_encode($arr).'}';
-		}
-	}
-
 }
-?>
