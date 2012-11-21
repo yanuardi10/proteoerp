@@ -152,6 +152,41 @@ class Ajax extends Controller {
 
 	/**************************************************************
 	 *
+	 *   BUSCA LOS PRINCIPIOS ACTIVOS PARA SUNDECOB
+	 *
+	*/
+	function buscasundecob($tabla){
+
+		$data = '[{ }]';
+		if (in_array($tabla,array('dcomercial','forma','marca','material','pactivo','rubro','subrubro','unidad'))) {
+			$mid  = $this->input->post('q');
+			$qdb  = $this->db->escape('%'.$mid.'%');
+
+			if($mid !== false){
+				$retArray = $retorno = array();
+				$mSQL="SELECT codigo, TRIM(descrip) AS descrip
+					FROM sc_$tabla
+					WHERE (codigo LIKE ${qdb} OR descrip LIKE ${qdb})
+					ORDER BY descrip LIMIT ".$this->autolimit;
+				$query = $this->db->query($mSQL);
+				if ($query->num_rows() > 0){
+					foreach( $query->result_array() as  $row ) {
+						$retArray['value']    = $row['codigo'];
+						$retArray['label']    = '('.$row['codigo'].') '.utf8_encode($row['descrip']);
+						$retArray['descrip']  = utf8_encode($row['descrip']);
+						array_push($retorno, $retArray);
+					}
+				}
+				if(count($data)>0)
+					$data = json_encode($retorno);
+			}
+		}
+		echo $data;
+		return true;
+	}
+
+	/**************************************************************
+	 *
 	 *  BUSCA LOS CLIENTES PARA COBRO DE SERVICIO
 	 *
 	*/

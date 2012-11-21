@@ -54,7 +54,7 @@ class Sinv extends Controller {
 		$grid->wbotonadd(array("id"=>"gmarcas",  "img"=>"images/brand.png",  "alt" => 'Crear Marcas',             "label"=>"Crear Marcas"));
 		$grid->wbotonadd(array("id"=>"gunidad",  "img"=>"images/scale.png",  "alt" => 'Unidades de Medida',       "label"=>"Unidades y Empaques"));
 		$grid->wbotonadd(array("id"=>"hinactivo","img"=>"images/basura.png", "alt" => 'Oculta/Muestra Inactivos', "label"=>"Mostrar Inactivos"));
-		if ( $this->datasis->traevalor('SUNDECOP') == 'S') 
+		if ( $this->datasis->traevalor('SUNDECOP') == 'S')
 			$grid->wbotonadd(array("id"=>"sundecop", "img"=>"images/sundecop.jpeg", "alt" => 'Oculta/Muestra Inactivos', "label"=>"SUNDECOP"));
 		$grid->setWpAdicional("<tr><td><div class=\"tema1\"><table id=\"bpos1\"></table></div><div id='pbpos1'></div></td></tr>\n");
 
@@ -2102,7 +2102,7 @@ class Sinv extends Controller {
 				'formatoptions' => '{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 0 }'
 			));
 		}
-		
+
 		$grid->showpager(true);
 		$grid->setWidth('');
 		$grid->setHeight('260');
@@ -2158,7 +2158,7 @@ class Sinv extends Controller {
 		$grid->setRowNum(30);
 		$grid->setShrinkToFit('false');
 
-		$grid->setBarOptions("\t\taddfunc: sinvadd,\n\t\teditfunc: sinvedit");
+		$grid->setBarOptions("addfunc: sinvadd,editfunc: sinvedit");
 
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
@@ -4545,11 +4545,6 @@ class Sinv extends Controller {
 		if (!in_array('cpresenta',  $campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `cforma`      INT(6)     NULL  COMMENT 'Forma o Presentacion'");
 		if (!in_array('cpactivo',   $campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `cpactivo`    INT(6)     NULL  COMMENT 'Principio Activo'");
 
-
-
-
-
-
 		if(!$this->db->table_exists('sinvcombo')){
 			$mSQL="CREATE TABLE `sinvcombo` (
 				`id` INT(11) NOT NULL AUTO_INCREMENT,
@@ -4697,7 +4692,55 @@ class Sinv extends Controller {
 	function desundecop(){
 		$this->rapyd->load('dataedit');
 
-		$edit = new DataEdit('', 'sinv');
+		$script='';
+		$arr= array(
+			'cpactivo'  => 'pactivo',
+			'cmarca'    => 'marca',
+			'cunidad'   => 'unidad'
+		);
+
+		foreach($arr as $campo=>$autocom){
+			$script.= "
+			$('#${campo}').autocomplete({
+				source: function( req, add){
+					$.ajax({
+						url:  '".site_url('ajax/buscasundecob/'.$autocom)."',
+						type: 'POST',
+						dataType: 'json',
+						data: 'q='+req.term,
+						success:
+							function(data){
+								var sugiere = [];
+								if(data.length==0){
+									$('#${campo}').val('');
+									$('#${campo}descrip_val').text('');
+								}else{
+									$.each(data,
+										function(i, val){
+											sugiere.push( val );
+										}
+									);
+								}
+								add(sugiere);
+							},
+					})
+				},
+				minLength: 2,
+				select: function( event, ui ) {
+					$('#${campo}').val(ui.item.codigo);
+					$('#${campo}descrip_val').text(ui.item.descrip);
+				}
+			});";
+		}
+
+		$do = new DataObject('sinv');
+		$do->pointer('sc_unidad' ,'sc_unidad.codigo =sinv.cunidad' ,'sc_unidad.descrip  AS cunidaddescrip'  ,'left');
+		$do->pointer('sc_pactivo','sc_pactivo.codigo=sinv.cpactivo','sc_pactivo.descrip AS cpactivodescrip' ,'left');
+		$do->pointer('sc_marca'  ,'sc_marca.codigo  =sinv.cmarca'  ,'sc_marca.descrip   AS cmarcadescrip'   ,'left');
+
+		$edit = new DataEdit('', $do);
+		$edit->script($script,'modify');
+		//$edit->on_save_redirect=false;
 
 		//$edit->back_url = site_url($this->url.'filteredgrid');
 
@@ -4707,7 +4750,6 @@ class Sinv extends Controller {
 		$edit->pre_process('insert',  '_scpre_insert');
 		$edit->pre_process('update',  '_scpre_update');
 		$edit->pre_process('delete',  '_scpre_delete');
-
 
 		$edit->mpps = new inputField('MPPS','mpps');
 		$edit->mpps->rule='max_length[20]';
@@ -4734,16 +4776,25 @@ class Sinv extends Controller {
 		$edit->subrubro->option('','Seleccionar');
 		$edit->subrubro->options('SELECT codigo, concat(codigo, " ", descrip) descrip FROM sc_subrubro ORDER BY codigo');
 
-		$edit->cunidad = new dropdownField('Unidad Med.','cunidad');
-		$edit->cunidad->style='width:230px;';
-		$edit->cunidad->option('','Seleccionar');
-		$edit->cunidad->options('SELECT codigo, descrip FROM sc_unidad ORDER BY descrip');
+		$edit->cunidad = new inputField('Unidad Med.','cunidad');
+		$edit->cunidad->rule='max_length[6]|integer';
+		$edit->cunidad->size =8;
+
+		$edit->cunidaddescrip = new inputField('', 'cunidaddescrip');
+		$edit->cunidaddescrip->db_name     = 'cunidaddescrip';
+		$edit->cunidaddescrip->pointer     = true;
+		$edit->cunidaddescrip->type='inputhidden';
+		$edit->cunidaddescrip->in = 'cunidad';
 
 		$edit->cmarca = new inputField('Marca','cmarca');
 		$edit->cmarca->rule='max_length[6]|integer';
-		$edit->cmarca->css_class='inputonlynum';
 		$edit->cmarca->size =8;
-		$edit->cmarca->maxlength =6;
+
+		$edit->cmarcadescrip = new inputField('', 'cmarcadescrip');
+		$edit->cmarcadescrip->db_name     = 'cmarcadescrip';
+		$edit->cmarcadescrip->pointer     = true;
+		$edit->cmarcadescrip->type='inputhidden';
+		$edit->cmarcadescrip->in = 'cmarca';
 
 		$edit->cmaterial = new dropdownField('Material','cmaterial');
 		$edit->cmaterial->style='width:230px;';
@@ -4757,9 +4808,13 @@ class Sinv extends Controller {
 
 		$edit->cpactivo = new inputField('Principio Act.','cpactivo');
 		$edit->cpactivo->rule='max_length[6]|integer';
-		$edit->cpactivo->css_class='inputonlynum';
 		$edit->cpactivo->size =8;
-		$edit->cpactivo->maxlength =6;
+
+		$edit->cpactivodescrip = new inputField('', 'cpactivodescrip');
+		$edit->cpactivodescrip->db_name     = 'cpactivodescrip';
+		$edit->cpactivodescrip->pointer     = true;
+		$edit->cpactivodescrip->type='inputhidden';
+		$edit->cpactivodescrip->in = 'cpactivo';
 
 		$edit->build();
 
