@@ -630,7 +630,6 @@ class rivcdetal extends Controller {
 
 		$edit = new DataEdit($this->tits, 'rivcdetal');
 		$edit->script($script,'create');
-		$edit->back_url = site_url($this->url.'filteredgrid');
 		$edit->on_save_redirect=false;
 
 		$edit->post_process('insert','_post_insert');
