@@ -191,16 +191,19 @@ class Sfac extends Controller {
 			'formoptions'   => '{ label:"Fecha" }'
 		));
 
+		$mSQL = "SELECT vendedor, concat( vendedor, ' ',TRIM(nombre)) nombre FROM vend ORDER BY nombre ";
+		$avende  = $this->datasis->llenajqselect($mSQL, true );
 
 		$grid->addField('vd');
-		$grid->label('Vend');
+		$grid->label('Vende');
 		$grid->params(array(
 			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 40,
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 5 }',
+			'editable'      => 'true',
+			'width'         => 50,
+			'edittype'      => "'select'",
+			'editrules'     => '{ required:false}',
+			'editoptions'   => '{ value: '.$avende.',  style:"width:220px"}',
+			'stype'         => "'text'",
 		));
 
 		$grid->addField('cod_cli');
@@ -356,30 +359,6 @@ class Sfac extends Controller {
 			'editoptions'   => '{ size:30, maxlength: 1 }',
 		));
 
-/*
-		$grid->addField('observa');
-		$grid->label('Observa');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 200,
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 50 }',
-		));
-
-
-		$grid->addField('observ1');
-		$grid->label('Observ1');
-		$grid->params(array(
-			'search'        => 'true',
-			'editable'      => $editar,
-			'width'         => 200,
-			'edittype'      => "'text'",
-			'editrules'     => '{ required:true}',
-			'editoptions'   => '{ size:30, maxlength: 50 }',
-		));
-*/
 
 		$grid->addField('devolu');
 		$grid->label('Devolu');
@@ -949,6 +928,30 @@ class Sfac extends Controller {
 		));
 */
 
+
+		$grid->addField('observa');
+		$grid->label('Observa');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => 'true',
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 50 }',
+		));
+
+
+		$grid->addField('observ1');
+		$grid->label('Observ1');
+		$grid->params(array(
+			'search'        => 'true',
+			'editable'      => 'true',
+			'width'         => 200,
+			'edittype'      => "'text'",
+			'editrules'     => '{ required:true}',
+			'editoptions'   => '{ size:30, maxlength: 50 }',
+		));
+
 		$grid->addField('id');
 		$grid->label('Id');
 		$grid->params(array(
@@ -1020,8 +1023,8 @@ class Sfac extends Controller {
 			}'
 		);
 
-		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 450, height:150, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
-		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 450, height:150, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		$grid->setFormOptionsE('closeAfterEdit:true, mtype: "POST", width: 450, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
+		$grid->setFormOptionsA('closeAfterAdd:true,  mtype: "POST", width: 450, height:300, closeOnEscape: true, top: 50, left:20, recreateForm:true, afterSubmit: function(a,b){if (a.responseText.length > 0) $.prompt(a.responseText); return [true, a ];} ');
 		$grid->setAfterSubmit("$.prompt('Respuesta:'+a.responseText); return [true, a ];");
 
 		#show/hide navigations buttons
