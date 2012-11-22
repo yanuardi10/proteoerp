@@ -313,32 +313,34 @@ class Datasis {
 			return false;
 		}
 
-		
+		//Arregla las secuencias si estan mal
+		$secu = $CI->datasis->dameval("SELECT SUM(secu) FROM tmenus WHERE modulo='MENUINT'");
+		if ($secu == 0 ){
+			$mSQL  = "UPDATE tmenus SET secu=1 WHERE titulo='Incluye' ";
+			$CI->db->query($mSQL);
+			$mSQL  = "UPDATE tmenus SET secu=2 WHERE titulo='Modifica' ";
+			$CI->db->query($mSQL);
+			$mSQL  = "UPDATE tmenus SET secu=3 WHERE titulo='Prox' ";
+			$CI->db->query($mSQL);
+			$mSQL  = "UPDATE tmenus SET secu=4 WHERE titulo='Ante' ";
+			$CI->db->query($mSQL);
+			$mSQL  = "UPDATE tmenus SET secu=5 WHERE titulo='Elimina' ";
+			$CI->db->query($mSQL);
+			$mSQL  = "UPDATE tmenus SET secu=6 WHERE titulo='Busca' ";
+			$CI->db->query($mSQL);
+			$mSQL  = "UPDATE tmenus SET secu=7 WHERE titulo='Tabla' ";
+			$CI->db->query($mSQL);
+			$mSQL  = "UPDATE tmenus SET secu=8 WHERE titulo='Lista' ";
+			$CI->db->query($mSQL);
+			$mSQL  = "UPDATE tmenus SET secu=9 WHERE titulo='Otros' ";
+			$CI->db->query($mSQL);
+		}
+
+
+	
 		// Si no existe lo crea
 		$mSQL   = "SELECT COUNT(*) FROM tmenus WHERE modulo = '$modulo' ";
 		if ( $this->dameval($mSQL) == 0 ) {
-			//Arregla las secuencias si estan mal
-			$secu = $CI->datasis->dameval("SELECT SUM(secu) FROM tmenus WHERE modulo='MENUINT'");
-			if ($secu == 0 ){
-				$mSQL  = "UPDATE tmenus SET secu=1 WHERE titulo='Incluye' ";
-				$CI->db->query($mSQL);
-				$mSQL  = "UPDATE tmenus SET secu=2 WHERE titulo='Modifica' ";
-				$CI->db->query($mSQL);
-				$mSQL  = "UPDATE tmenus SET secu=3 WHERE titulo='Prox' ";
-				$CI->db->query($mSQL);
-				$mSQL  = "UPDATE tmenus SET secu=4 WHERE titulo='Ante' ";
-				$CI->db->query($mSQL);
-				$mSQL  = "UPDATE tmenus SET secu=5 WHERE titulo='Elimina' ";
-				$CI->db->query($mSQL);
-				$mSQL  = "UPDATE tmenus SET secu=6 WHERE titulo='Busca' ";
-				$CI->db->query($mSQL);
-				$mSQL  = "UPDATE tmenus SET secu=7 WHERE titulo='Tabla' ";
-				$CI->db->query($mSQL);
-				$mSQL  = "UPDATE tmenus SET secu=8 WHERE titulo='Lista' ";
-				$CI->db->query($mSQL);
-				$mSQL  = "UPDATE tmenus SET secu=9 WHERE titulo='Otros' ";
-				$CI->db->query($mSQL);
-			}
 
 			$mSQL  = "DELETE FROM tmenus WHERE modulo='' OR modulo IS NULL ";
 			$CI->db->query($mSQL);
@@ -392,6 +394,30 @@ class Datasis {
 		$CI =& get_instance();
 		$CI->load->database( 'default',TRUE );
 		$CI->session->set_userdata('last_activity', time());
+
+		//Arregla las secuencias si estan mal
+		$secu = $CI->datasis->dameval("SELECT SUM(secu) FROM tmenus WHERE modulo='MENUINT'");
+		if ($secu == 0 ){
+			$mSQL  = "UPDATE tmenus SET secu=1 WHERE titulo='Incluye' ";
+			$CI->db->query($mSQL);
+			$mSQL  = "UPDATE tmenus SET secu=2 WHERE titulo='Modifica' ";
+			$CI->db->query($mSQL);
+			$mSQL  = "UPDATE tmenus SET secu=3 WHERE titulo='Prox' ";
+			$CI->db->query($mSQL);
+			$mSQL  = "UPDATE tmenus SET secu=4 WHERE titulo='Ante' ";
+			$CI->db->query($mSQL);
+			$mSQL  = "UPDATE tmenus SET secu=5 WHERE titulo='Elimina' ";
+			$CI->db->query($mSQL);
+			$mSQL  = "UPDATE tmenus SET secu=6 WHERE titulo='Busca' ";
+			$CI->db->query($mSQL);
+			$mSQL  = "UPDATE tmenus SET secu=7 WHERE titulo='Tabla' ";
+			$CI->db->query($mSQL);
+			$mSQL  = "UPDATE tmenus SET secu=8 WHERE titulo='Lista' ";
+			$CI->db->query($mSQL);
+			$mSQL  = "UPDATE tmenus SET secu=9 WHERE titulo='Otros' ";
+			$CI->db->query($mSQL);
+		}
+
 
 		if($CI->session->userdata('logged_in')){
 			$usuario = $CI->db->escape($CI->session->userdata('usuario'));
