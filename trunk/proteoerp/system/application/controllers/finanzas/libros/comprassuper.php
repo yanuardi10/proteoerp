@@ -26,7 +26,7 @@ class comprassuper{
 			a.contribu,
 			a.referen,
 			a.planilla,'  ' meco1,
-			COALESCE(a.serie,a.numero) AS numero,
+			COALESCE(e.nrorig,a.serie,a.numero) AS numero,
 			a.nfiscal,
 			IF(a.tipo='ND',a.numero,'        ') numnd,
 			IF(a.tipo='NC',a.numero,'        ') numnc,
@@ -136,7 +136,7 @@ class comprassuper{
 			$ws->write_blank( $mm+2, $i, $titulo );
 		}
 
-		$ws->write_string( $mm,  0, "", $titulo );           
+		$ws->write_string( $mm,  0, "", $titulo );
 		$ws->write_string( $mm,  1, "Fecha", $titulo );
 		$ws->write_string( $mm,  2, "", $titulo );
 		$ws->write_string( $mm,  3, "", $titulo );
@@ -223,7 +223,7 @@ class comprassuper{
 
 		foreach( $export->result() as $row ) {
 			$ws->write_string( $mm,  0, $ii, $cuerpo );
-			$ws->write_string( $mm,  1, substr($row->fecha,8,2)."-".$ameses[substr($row->fecha,5,2)-1]."-".substr($row->fecha,0,4), $cuerpo );
+			$ws->write_string( $mm,  1, substr($row->fecha,8,2).'/'.substr($row->fecha,5,2).'/'.substr($row->fecha,0,4), $cuerpo );
 			$ws->write_string( $mm,  2, $row->rif,      $cuerpo );
 			$ws->write_string( $mm,  3, $row->nombre,   $cuerpo ); 
 			$ws->write_string( $mm,  4, $row->contribu, $cuerpo ); 
@@ -261,7 +261,7 @@ class comprassuper{
 		$fexenta = "=K$celda";   // VENTAS EXENTAS
 		$fbase   = "=L$celda";   // BASE IMPONIBLE
 		$fiva    = "=N$celda";   // I.V.A. 
-		
+
 		$ws->write_string( $mm, 0,"Totales...",  $tm );
 		$ws->write_blank( $mm,  1,  $tm );
 		$ws->write_blank( $mm,  2,  $tm );
@@ -271,26 +271,26 @@ class comprassuper{
 		$ws->write_blank( $mm,  6,  $tm );
 		$ws->write_blank( $mm,  7,  $tm );
 		$ws->write_blank( $mm,  8,  $tm );
-		
+
 		$ws->write_blank( $mm,  9,  $tm );
 		$ws->write_blank( $mm, 10,  $tm );
-		
+
 		$ws->write_formula( $mm, 11, "=SUM(L$dd:L$mm)", $Tnumero );   //"VENTAS + IVA" 
 		$ws->write_formula( $mm, 12, "=SUM(M$dd:M$mm)", $Tnumero );   //"VENTAS EXENTAS" 
 		$ws->write_formula( $mm, 13, "=SUM(N$dd:N$mm)", $Tnumero );   //"BASE IMPONIBLE" 
-		
+
 		$ws->write_formula( $mm, 14, "=SUM(O$dd:O$mm)", $Tnumero );   //"VENTAS + IVA" 
 		$ws->write_formula( $mm, 15, "=SUM(P$dd:P$mm)", $Tnumero );   //"VENTAS EXENTAS" 
 		$ws->write_formula( $mm, 16, "=SUM(Q$dd:Q$mm)", $Tnumero );   //"BASE IMPONIBLE" 
-		
+
 		$ws->write_formula( $mm, 17, "=SUM(R$dd:R$mm)", $Tnumero );   //"VENTAS + IVA" 
 		$ws->write_formula( $mm, 18, "=SUM(S$dd:S$mm)", $Tnumero );   //"VENTAS EXENTAS" 
-		
+
 		$ws->write_formula( $mm, 19, "=SUM(T$dd:T$mm)", $Tnumero );   //"VENTAS EXENTAS" 
 		$ws->write_formula( $mm, 22, "=SUM(W$dd:W$mm)", $Tnumero );   //"VENTAS EXENTAS" 
-		
+
 		$ws->write_formula( $mm, 23, "=SUM(X$dd:X$mm)", $Tnumero );   //"VENTAS EXENTAS" 
-		
+
 		$mm ++;
 		$mm ++;
 		$ws->write_string($mm,  3, 'RESUMEN DE COMPRAS Y CREDITOS:', $tm );
@@ -310,7 +310,7 @@ class comprassuper{
 		$mm ++;
 		$ws->write_string($mm,   3, 'Total Compras no Gravadas o/y sin dereco a Credito', $h1 );
 		$ws->write_formula($mm, 11, "=M$celda" , $Rnumero );
-		
+
 		$mm ++;
 		$ws->write_string($mm,   3, 'Total Importaciones Gravadas por Alicuota General:', $h1 );
 		$ws->write_formula($mm, 11, "=0+0" , $Rnumero );
@@ -367,5 +367,4 @@ class comprassuper{
 		fpassthru($fh);
 		unlink($fname);
 	}
-
 }
