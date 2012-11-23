@@ -286,6 +286,13 @@ class Libros extends Controller {
 		ventassuper::genesfmay($mes);
 	}
 
+	//Genera libro de ventas basado en sfacfiscal para supermercado
+	function geneventassfacfiscal($mes=null){
+		if(!$this->_checkfecha($mes)) show_error('Parametro inv&aacute;lido');
+		$this->_telefono('ventassuper');
+		ventassuper::genesfacfiscalpdv($mes,'Q1');
+	}
+
 	function geneventasfiscal($mes=null) {
 		if(!$this->_checkfecha($mes)) show_error('Parametro inv&aacute;lido');
 		$this->_telefono('ventas');
