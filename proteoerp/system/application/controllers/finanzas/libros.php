@@ -652,18 +652,20 @@ class Libros extends Controller {
 		$data[]=array('metodo'=>'prorrata'           ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Prorrata'                 );
 		$data[]=array('metodo'=>'invresu'            ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Inventario'      );
 
-		$data[]=array('metodo'=>'genecompras'        ,'activo'=>'S','tipo'=>'G' ,'nombre' => 'Generar Libro de compras COMPRAS' );
-		$data[]=array('metodo'=>'genesfaccierrez'    ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas basado en cierre Z' );
-		$data[]=array('metodo'=>'genegastos'         ,'activo'=>'S','tipo'=>'G' ,'nombre' => 'Generar Libro de compras GASTOS'  );
-		$data[]=array('metodo'=>'genecxp'            ,'activo'=>'S','tipo'=>'G' ,'nombre' => 'Generar Libro de compras CXP'     );
-		$data[]=array('metodo'=>'genesfac'           ,'activo'=>'S','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas Facturas' );
-		$data[]=array('metodo'=>'genesfacfiscal'     ,'activo'=>'S','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas Facturas Fiscal' );
-		$data[]=array('metodo'=>'geneventasfiscalpdv','activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas Fiscal PDV'   );
-		$data[]=array('metodo'=>'genesfmay'          ,'activo'=>'S','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas Facturas al mayor' );
-		$data[]=array('metodo'=>'genesmov'           ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas CXC'      );
-		$data[]=array('metodo'=>'geneotin'           ,'activo'=>'S','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas O.Ingresos');
-		$data[]=array('metodo'=>'generest'           ,'activo'=>'N','tipo'=>'G' ,'nombre'  =>'Generar Libro de ventas Restaurante');
-		$data[]=array('metodo'=>'genehotel'          ,'activo'=>'N','tipo'=>'G' ,'nombre'  =>'Generar Libro de ventas Hotel');
+		$data[]=array('metodo'=>'genecompras'         ,'activo'=>'S','tipo'=>'G' ,'nombre' => 'Generar Libro de compras COMPRAS' );
+		$data[]=array('metodo'=>'genesfaccierrez'     ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas basado en cierre Z' );
+		$data[]=array('metodo'=>'genegastos'          ,'activo'=>'S','tipo'=>'G' ,'nombre' => 'Generar Libro de compras GASTOS'  );
+		$data[]=array('metodo'=>'genecxp'             ,'activo'=>'S','tipo'=>'G' ,'nombre' => 'Generar Libro de compras CXP'     );
+		$data[]=array('metodo'=>'genesfac'            ,'activo'=>'S','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas Facturas' );
+		$data[]=array('metodo'=>'genesfacfiscal'      ,'activo'=>'S','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas Facturas Fiscal' );
+		$data[]=array('metodo'=>'geneventasfiscalpdv' ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas Fiscal PDV'   );
+		$data[]=array('metodo'=>'genesfmay'           ,'activo'=>'S','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas Facturas al mayor' );
+		$data[]=array('metodo'=>'genesmov'            ,'activo'=>'N','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas CXC'      );
+		$data[]=array('metodo'=>'geneotin'            ,'activo'=>'S','tipo'=>'G' ,'nombre' => 'Generar Libro de ventas O.Ingresos');
+		$data[]=array('metodo'=>'generest'            ,'activo'=>'N','tipo'=>'G' ,'nombre'  =>'Generar Libro de ventas Restaurante');
+		$data[]=array('metodo'=>'genehotel'           ,'activo'=>'N','tipo'=>'G' ,'nombre'  =>'Generar Libro de ventas Hotel');
+		$data[]=array('metodo'=>'geneventassfacfiscal','activo'=>'N','tipo'=>'G' ,'nombre'  =>'Generar Libro de ventas PDV de auditorias');
+
 
 		foreach($data AS $algo){
 			$mSQL = $this->db->insert_string('libros', $algo);

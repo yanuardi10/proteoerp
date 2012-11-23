@@ -238,7 +238,7 @@ class ventassuper{
 				// si tventas > 0 imprime totales
 				if ( $tventas <> 0 ) {
 					if ( $finicial == '99999999' ) $finicial = $ffinal;
-					$fecha = substr($mfecha,8,2)."/".$ameses[substr($mfecha,5,2)-1]."/".substr($mfecha,0,4);
+					$fecha = substr($mfecha,8,2)."/".substr($mfecha,5,2)."/".substr($mfecha,0,4);
 					$ws->write_string( $mm, 0, $fecha,  $cuerpo );		// Fecha
 					$ws->write_string( $mm, 1, $caja,  $cuerpo );		// Fecha
 					$ws->write_string( $mm, 2, $finicial, $cuerpo );       	// Factura Inicial
@@ -1780,7 +1780,8 @@ class ventassuper{
 		 a.caja,
 		 a.nfiscal,
 		 a.serial AS serial,
-		 a.hora
+		 a.hora,
+		 a.cierrez
 		 FROM siva a
 		 WHERE a.fechal = {$mes}01 AND a.libro='V' AND a.fuente='FP'";
 
@@ -1815,7 +1816,8 @@ class ventassuper{
 		'MAYO',
 		'    ',
 		' ' AS serial,
-		0 AS hora
+		0 AS hora,
+		'' AS cierrez
 		FROM itccli as a JOIN scli as b on a.cod_cli=b.cliente LEFT JOIN fmay c ON a.numero=c.numero AND c.tipo='C'
 		WHERE a.recriva BETWEEN $fdesde AND $fhasta";
 
@@ -1849,7 +1851,8 @@ class ventassuper{
 		 'MAYO',
 		 '    ',
 		 ' ' AS serial,
-		 0 AS hora
+		 0 AS hora,
+		 '' AS cierrez
 		 FROM viepag a JOIN viefac b ON a.numero=b.numero AND a.f_factura=b.fecha
 		 LEFT JOIN club c ON b.cliente=c.cod_tar
 		 WHERE a.tipo='RI' AND a.f_factura BETWEEN $fdesde AND $fhasta";
@@ -1961,6 +1964,8 @@ class ventassuper{
 		$ws->write_string( $mm,23, "de", $titulo );
 		$ws->write_string( $mm,24, "I.V.A.", $titulo );
 		$ws->write_string( $mm,25, "Serial", $titulo );
+		$ws->write_string( $mm,26, "Cierre Z", $titulo );
+
 
 		$mm++;
 		$ws->write_string( $mm, 0, "Oper.", $titulo );
@@ -2006,7 +2011,7 @@ class ventassuper{
 
 			// imprime contribuyente
 			$fecha = $row->fecha;
-			$fecha = substr($fecha,8,2)."-".$ameses[substr($fecha,5,2)-1]."-".substr($fecha,0,4);
+			$fecha = substr($fecha,8,2)."/".substr($fecha,5,2)."/".substr($fecha,0,4);
 
 			$ws->write_string( $mm, 0, $mm-8, $cuerpo );
 			$ws->write_string( $mm, 1, $fecha,           $cuerpo );             // Fecha
@@ -2036,6 +2041,7 @@ class ventassuper{
 			$ws->write_string( $mm,23, $row->fechacomp,     $cuerpo );          // FECHA COMPROB
 			$ws->write_number( $mm,24, $row->impercibido,   $numero );          // IMPUESTO PERCIBIDO
 			$ws->write_string( $mm,25, $row->serial,        $cuerpo );          // SERIAL
+			$ws->write_string( $mm,26, $row->cierrez,       $cuerpo );          // CIERRE Z
 			//$ws->write_string( $mm,19, $row->importacion,   $cuerpo );        // IMPORTACION
 			$finicial = '99999999';
 			$mm++;
@@ -2225,8 +2231,8 @@ class ventassuper{
 						'FP' AS fuente,
 						'00' AS sucursal,
 						b.fecha,
-						LPAD(CAST(b.numero AS UNSIGNED)+($factor),8,'0') AS numa,
-						LPAD(CAST(b.numero AS UNSIGNED)+($factor),8,'0') AS final,
+						b.numero AS numa,
+						b.numero AS final,
 						'$row->caja' AS caja,
 						b.nfiscal,
 						'  ' AS nhfiscal,
@@ -2461,18 +2467,18 @@ class ventassuper{
 
 		if ($query->num_rows() > 0){
 			$data['libro']     ='V';
- 			$data['fuente']    ='FP';
- 			$data['sucursal']  ='00';
- 			$data['tipo']      ='CZ';
- 			$data['nacional']  ='S';
- 			$data['fechal']    =$fdesde;
+			$data['fuente']    ='FP';
+			$data['sucursal']  ='00';
+			$data['tipo']      ='CZ';
+			$data['nacional']  ='S';
+			$data['fechal']    =$fdesde;
 
-			$mmSQL = "INSERT INTO siva
+			$emSQL = "INSERT INTO siva
 				(id, libro, tipo, fuente, sucursal, fecha, numero, numhasta,  caja, nfiscal,  nhfiscal,
-				referen, planilla, clipro, nombre, contribu, rif, registro,
+				serial, planilla, clipro, nombre, contribu, rif, registro,
 				nacional, exento, general, geneimpu,
 				adicional, adicimpu,  reducida,  reduimpu, stotal, impuesto,
-				gtotal, reiva, fechal, fafecta,hora) ";
+				gtotal, reiva, fechal, fafecta,hora,cierrez) ";
 
 			foreach ($query->result() as $row){
 
@@ -2480,9 +2486,10 @@ class ventassuper{
 				$data['fecha']  = $row->fecha;
 				$data['caja']   = $row->caja;
 				$data['hora']   = $row->hora;
+				$data['cierrez']= $row->numero;
 				$hhasta=$row->hora;
 
-				$ffdesde = $row->fdesde;
+				$ffdesde = $row->fcdesde;
 				$ffhasta = $row->factura;
 				$ncdesde = $row->ncdesde;
 				$nchasta = $row->ncnumero;
@@ -2492,11 +2499,11 @@ class ventassuper{
 				$dbncdesde = $this->db->escape($ncdesde);
 				$dbnchasta = $this->db->escape($nchasta);
 				$dbserial  = $this->db->escape($row->serial);
-
+				$dbcierrez = $this->db->escape($row->numero);
 
 				//Para ventas al mayor
-				if(eregi('^MAY.$',$row->caja)){
-					$mSQL_1 = $mmSQL."SELECT
+				if(preg_match('/^MAY.*$/',$row->caja)){
+					$mSQL_1 = $emSQL."SELECT
 						NULL AS id,
 						'V' AS libro,
 						IF(b.tipo='D','NC','FC') AS tipo,
@@ -2529,15 +2536,21 @@ class ventassuper{
 						0 AS reiva,
 						".$mes."01 AS fechal,
 						0 AS fafecta ,
-						b.hora
+						b.hora,
+						$dbcierrez AS cierrez
 						FROM itfmay AS a
 						JOIN fmay AS b ON a.numero=b.numero AND a.fecha=b.fecha
 						LEFT JOIN scli AS c ON b.cod_cli=c.cliente
-						WHERE b.nfiscal>$dbffdesde AND b.nfiscal<=$dbffhasta AND a.serial=${dbserial}
+						WHERE b.nfiscal>$dbffdesde AND b.nfiscal<=$dbffhasta
 						AND  b.tipo IN ('E','C') AND c.tiva='C'
 						GROUP BY a.fecha,a.numero";
+					$flag=$this->db->simple_query($mSQL_1);
+					if($flag==false){
+						memowrite('1'.$mSQL_1,'genesfacfiscalpdv');
+					}
+
 				}else{ //para las ventas al detal
-					$mSQL_1 = $mmSQL."SELECT
+					$mSQL_1 = $emSQL."SELECT 
 						 NULL  AS id,
 						'V' AS libro,
 						IF(MID(a.numero,1,2)='NC','NC','FC') AS tipo_doc,
@@ -2554,7 +2567,7 @@ class ventassuper{
 						c.cod_tar AS clipro,
 						CONCAT(c.nombres,' ', c.apellidos) AS nombre,
 						'CO'                               AS contribu,
-						c.cedula                           AS rif,
+						a.rifci                            AS rif,
 						'01'                               AS registro,
 						'S'                                AS nacional,
 						a.exento,
@@ -2570,15 +2583,21 @@ class ventassuper{
 						0       AS reiva,
 						${mes}01     AS fechal,
 						0            AS fafecta,
-						a.hora
+						a.hora,
+						$dbcierrez AS cierrez
 					FROM sfacfis AS a
-					LEFT JOIN club c ON a.rifci = c.cedula
+					LEFT JOIN viefac AS b ON a.fecha=b.fecha AND a.cajero=b.cajero AND a.referencia=b.numero
+					LEFT JOIN club c ON b.cliente = c.cod_tar
 					WHERE
 					a.numero>$dbffdesde AND a.numero<=$dbffhasta AND a.serial=${dbserial}
-					AND c.cedula REGEXP '^[VEJG][0-9]{9}$'
+					AND a.rifci REGEXP '^[VEJG][0-9]{9}$'
 					AND a.tipo_doc='FC'";
+					$flag=$this->db->simple_query($mSQL_1);
+					if($flag==false){
+						memowrite('2'.$mSQL_1,'genesfacfiscalpdv');
+					}
 
-					$mSQL_1 = $mmSQL."SELECT
+					$mSQL_1 = $emSQL."SELECT
 						 NULL  AS id,
 						'V' AS libro,
 						IF(MID(a.numero,1,2)='NC','NC','FC') AS tipo_doc,
@@ -2611,17 +2630,19 @@ class ventassuper{
 						0       AS reiva,
 						${mes}01     AS fechal,
 						0            AS fafecta,
-						a.hora
+						a.hora,
+						$dbcierrez AS cierrez
 					FROM sfacfis AS a
 					LEFT JOIN club c ON a.rifci = c.cedula
 					WHERE
 					a.numero>$dbncdesde AND a.numero<=$dbnchasta AND a.serial=${dbserial}
 					AND c.cedula REGEXP '^[VEJG][0-9]{9}$'
 					AND a.tipo_doc='NC'";
+					$flag=$this->db->simple_query($mSQL_1);
+					if($flag==false){
+						memowrite('3'.$mSQL_1,'genesfacfiscalpdv');
+					}
 				}
-
-				$flag=$this->db->simple_query($mSQL_1);
-				memowrite($mSQL_1,'geneventasfiscal');
 
 				$mSQL_2="SELECT tipo,
 					SUM(exento)    AS exento,
@@ -2631,12 +2652,12 @@ class ventassuper{
 					SUM(geneimpu)  AS ivag,
 					SUM(reduimpu)  AS ivar,
 					SUM(adicimpu)  AS ivaa
-				FROM siva WHERE  numero>${dbffdesde} AND numero<=${dbffhasta}  AND tipo IN ('FC','NC') AND fuente='FP'
+				FROM siva WHERE  numero>${dbffdesde} AND numero<=${dbffhasta}  AND serial=$dbserial AND tipo IN ('FC','NC') AND fuente='FP'
 				GROUP BY tipo";
 
 				$query_2 = $this->db->query($mSQL_2);
 				$cant=$query_2->num_rows();
-				$NC=$FC=FALSE;
+				$NC=$FC=false;
 
 				foreach ($query_2->result() as $rrow){
 					if($rrow->tipo=='FC'){ $FC=TRUE;
@@ -2669,7 +2690,7 @@ class ventassuper{
 					if($data['gtotal']!=0){
 						$mmSQL =$this->db->insert_string('siva', $data);
 						$flag=$this->db->simple_query($mmSQL);
-						if(!$flag){memowrite($mmSQL,'geneventasfiscal'); return 0; };
+						if(!$flag){memowrite('4'.$mmSQL,'genesfacfiscalpdv'); return 0; };
 					}
 				}
 
@@ -2693,7 +2714,7 @@ class ventassuper{
 					if($data['gtotal']<0){
 						$mmSQL =$this->db->insert_string('siva', $data);
 						$flag=$this->db->simple_query($mmSQL);
-						if(!$flag){echo $mmSQL; memowrite($mmSQL,'geneventasfiscal'); return 0; };
+						if($flag ==false ){ memowrite('5'.$mmSQL,'genesfacfiscalpdv'); return 0; };
 					}
 				}
 				if(!$FC){
@@ -2715,11 +2736,9 @@ class ventassuper{
 					if($data['gtotal']>0){
 						$mmSQL =$this->db->insert_string('siva', $data);
 						$flag=$this->db->simple_query($mmSQL);
-						if(!$flag){memowrite($mmSQL,'geneventasfiscal'); return 0; };
+						if(!$flag){memowrite('6'.$mmSQL,'genesfacfiscalpdv'); return 0; };
 					}
 				}
-				$ddesde[$row->caja]=array('ncdesde'=>str_pad($row->ncnumero+1,8,"0", STR_PAD_LEFT),'ffdesde'=>str_pad($row->factura+1,8,"0", STR_PAD_LEFT),'factor'=>$factor);
-				$hdesde =$row->hora;
 			}
 		}
 	}
