@@ -1142,9 +1142,6 @@ class Desarrollo extends Controller{
 			return $crud;
 		}
 	}
-
-
-
 	
 }
 ?>

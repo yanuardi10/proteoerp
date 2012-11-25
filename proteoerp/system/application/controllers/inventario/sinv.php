@@ -51,7 +51,7 @@ class Sinv extends Controller {
 
 		//Funciones que ejecutan los botones
 		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname']);
-		$readyLayout = $grid->readyLayout2( 212, 125, $param['grids'][0]['gridname']);
+		$readyLayout = $grid->readyLayout2( 212, 135, $param['grids'][0]['gridname']);
 
 		//Botones Panel Izq
 		$grid->wbotonadd(array("id"=>"gmarcas",  "img"=>"images/brand.png",  "alt" => 'Crear Marcas',             "label"=>"Crear Marcas"));
@@ -3201,12 +3201,12 @@ class Sinv extends Controller {
 	// -- Aumento de Precios -- //
 	//
 	// **************************************
-	function auprecm() {
+	function auprecm($porcent= 0) {
 		$data = $this->datasis->damesesion();
 		$where = $data['data1'];
 		$mSQL = "SET mmargen=mmargen+$porcent ";
 		$this->db->simple_query("UPDATE sinv a ".$mSQL." ".$where);
-		echo "Aumento Concluido";
+		echo "UPDATE sinv a ".$mSQL." ".$where." Aumento Concluido";
 	}
 
 

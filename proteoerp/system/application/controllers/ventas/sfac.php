@@ -928,7 +928,6 @@ class Sfac extends Controller {
 		));
 */
 
-
 		$grid->addField('observa');
 		$grid->label('Observa');
 		$grid->params(array(
@@ -939,7 +938,6 @@ class Sfac extends Controller {
 			'editrules'     => '{ required:false}',
 			'editoptions'   => '{ size:30, maxlength: 50 }',
 		));
-
 
 		$grid->addField('observ1');
 		$grid->label('Observ1');
