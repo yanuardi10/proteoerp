@@ -251,7 +251,7 @@ class Sinv extends Controller {
 				buttons: { Aplicar: true, Cancelar: false },
 				submit: function(e,v,m,f){
 					if (v) {
-						if( f.porcen <> 0 ) {
+						if( f.porcen != 0 ) {
 							$.ajax({ url: "'.site_url('inventario/sinv/auprecm').'/"+f.porcen,
 							complete: function(){ alert(("Aumento Finalizado")) }
 							});
