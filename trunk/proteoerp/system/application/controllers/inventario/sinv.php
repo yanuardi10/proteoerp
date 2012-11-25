@@ -3209,6 +3209,10 @@ class Sinv extends Controller {
 			$mSQL = "SET mmargen=round(round(ultimo*(100+mmargen)/100,2)*100/(100-$porcent),2)*100/ultimo -100 ";
 			$this->db->simple_query("UPDATE sinv a ".$mSQL." ".$where);
 			echo " Aumento Concluido";
+		} else {
+			$mSQL = "SET mmargen=round( round(ultimo*(100+mmargen)/100,2)*(100+$porcent)/100,2)*100/ultimo -100 ";
+			$this->db->simple_query("UPDATE sinv a ".$mSQL." ".$where);
+			echo " Descuento  Concluido";
 		}
 	}
 
