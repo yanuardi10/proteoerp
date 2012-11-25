@@ -3198,15 +3198,18 @@ class Sinv extends Controller {
 
 	// **************************************
 	//
-	// -- Aumento de Precios -- //
+	//  -- Aumento de Precios al Mayor --  //
 	//
 	// **************************************
 	function auprecm($porcent= 0) {
 		$data = $this->datasis->damesesion();
 		$where = $data['data1'];
-		$mSQL = "SET mmargen=mmargen+$porcent ";
-		$this->db->simple_query("UPDATE sinv a ".$mSQL." ".$where);
-		echo "UPDATE sinv a ".$mSQL." ".$where." Aumento Concluido";
+		if ( $porcent > 0 ){
+			//$mSQL = "SET mmargen=mmargen+$porcent ";
+			$mSQL = "SET mmargen=round(round(ultimo*(100+mmargen)/100,2)*100/(100-$porcent),2)*100/ultimo -100 ";
+			$this->db->simple_query("UPDATE sinv a ".$mSQL." ".$where);
+			echo " Aumento Concluido";
+		}
 	}
 
 
