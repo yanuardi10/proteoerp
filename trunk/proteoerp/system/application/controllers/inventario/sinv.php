@@ -33,12 +33,10 @@ class Sinv extends Controller {
 			if (!in_array('cpresenta',  $campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `cforma`      INT(6)     NULL  COMMENT 'Forma o Presentacion'");
 			if (!in_array('cpactivo',   $campos)) $this->db->simple_query("ALTER TABLE `sinv` ADD COLUMN `cpactivo`    INT(6)     NULL  COMMENT 'Principio Activo'");
 		}
-
-
-
 		$this->datasis->modintramenu( 950, 600, substr($this->url,0,-1) );
 		redirect($this->url.'jqdatag');
 	}
+
 
 	//***************************
 	//Layout en la Ventana
@@ -57,6 +55,7 @@ class Sinv extends Controller {
 		$grid->wbotonadd(array("id"=>"gmarcas",  "img"=>"images/brand.png",  "alt" => 'Crear Marcas',             "label"=>"Crear Marcas"));
 		$grid->wbotonadd(array("id"=>"gunidad",  "img"=>"images/scale.png",  "alt" => 'Unidades de Medida',       "label"=>"Unidades y Empaques"));
 		$grid->wbotonadd(array("id"=>"hinactivo","img"=>"images/basura.png", "alt" => 'Oculta/Muestra Inactivos', "label"=>"Mostrar Inactivos"));
+		$grid->wbotonadd(array("id"=>"cambiamarca","img"=>"images/basura.png", "alt" => 'Cambiar Marcas', "label"=>"Cambiar Marcas"));
 		if ( $this->datasis->traevalor('SUNDECOP') == 'S')
 			$grid->wbotonadd(array("id"=>"sundecop", "img"=>"images/sundecop.jpeg", "alt" => 'Oculta/Muestra Inactivos', "label"=>"SUNDECOP"));
 		$grid->setWpAdicional("<tr><td><div class=\"tema1\"><table id=\"bpos1\"></table></div><div id='pbpos1'></div></td></tr>\n");
@@ -359,6 +358,56 @@ class Sinv extends Controller {
 		};
 		';
 
+
+		//$mSQL = "SELECT marca, marca nombre FROM marc ORDER BY marca";
+		//$marca = $this->datasis->llenaopciones($mSQL, true);
+
+		//Cambia la marca de Varios Productos
+		$funciones .= '
+
+		function cambmarca(mmarca){
+			alert("Hola");
+			
+'.			
+/*
+			var yurl = "";
+			var n = $("input:checked").length;
+			var a = "";
+
+			$("input:checked").each( function() { a += this.id+","; });
+
+			if( n==0) {
+				jAlert("No hay productos Seleccionados","Informacion");
+			}else{
+			jPrompt("Selecciono "+n+" Productos<br>Introduzca la Marca "+mbusca,"" ,"Cambiar Marca", function(mmarca){
+				if( mmarca==null ){
+					jAlert("Cancelado por el usuario","Informacion");
+				} else if( mmarca=="" ) {
+					jAlert("Cancelado, Marca vacia","Informacion");
+				} else {
+					yurl = encodeURIComponent(mmarca);
+					$.ajax({
+						url: "'.site_url("inventario/sinv/sinvcammarca/").'",
+						global: false,
+						type: "POST",
+						data: ({ marca : encodeURIComponent(mmarca), productos : a }),
+						dataType: "text",
+						async: false,
+						success: function(sino) {
+						jAlert(sino,"Informacion");
+						location.reload();
+						},
+						error: function(h,t,e)  { jAlert("Error..codigo="+yurl+" ",e) }
+					});
+				}
+			})
+			}
+*/
+'		};
+		';
+
+
+
 		return $funciones;
 
 	}
@@ -437,6 +486,51 @@ class Sinv extends Controller {
 		$("#sundecop").click( function(){
 			sundecop();
 		});
+';
+
+
+		// Cambia las marcas de los productos seleccionados
+		$mSQL = "SELECT marca, marca nombre FROM marc ORDER BY marca";
+		$marca = $this->datasis->llenaopciones($mSQL, true, 'mmarca');
+		$marca = str_replace('"',"'",$marca);
+		$bodyscript .= '
+		$("#cambiamarca").click( function(){ 
+			var s = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selarrrow\');
+			if ( s.length == 0 ){
+				$.prompt("<h1>Debe seleccionar al menus un Producto</h1>");
+			} else {
+				$.prompt( "<h1>Cambiar Marca de los productos seleccionados:</h1><br/><center>'.$marca.'</center><br/>", 
+				{
+					buttons: { Aplicar: true, Cancelar: false },
+					submit: function(e,v,m,f){
+						if (v) {
+							if( f.mmarca==null ){
+								apprise("Cancelado por el usuario");
+							} else if( f.mmarca=="" ) {
+								apprise("<h1>Cancelado</h1>Marca vacia");
+							} else {
+								$.ajax({
+									url: "'.site_url("inventario/sinv/sinvcammarca/").'",
+									global: false,
+									type: "POST",
+									data: ({ marca : encodeURIComponent(f.mmarca), productos : s }),
+									dataType: "text",
+									async: false,
+									success: function(sino) {
+										alert("Informacion: "+sino);
+										$("#newapi'.$grid0.'").trigger("reloadGrid");
+									},
+									error: function(h,t,e)  { apprise("Error..codigo="+f.marca+" ",e) }
+								});
+							}
+
+						}
+					}
+				});
+			}
+		})
+
+
 		';
 
 		// Detalle del Registro
@@ -2113,6 +2207,8 @@ class Sinv extends Controller {
 		$grid->setfilterToolbar(true);
 		$grid->setToolbar('false', '"top"');
 
+		$grid->setMultiSelect(true);
+
 		$grid->setOnSelectRow('
 			function(id){
 				if (id){
@@ -3269,8 +3365,7 @@ class Sinv extends Controller {
 		if($this->datasis->dameval("SELECT COUNT(*) FROM marc WHERE TRIM(marca)='".addslashes($mmarca)."'") == 0 ){
 			echo "Marca no existe $mmarca";
 		} else {
-			//Busca el Depto y Linea del grupo
-			$productos = substr(trim($productos),0,-1);
+			$productos = implode(",",$productos);
 			$mSQL = "UPDATE sinv SET marca='".addslashes($mmarca)."' WHERE id IN ($productos) ";
 			$this->db->simple_query($mSQL);
 			logusu("SINV","Cambio marca ".$mmarca."-->".$productos);
