@@ -426,7 +426,7 @@ class Line extends Controller {
 			if ($check > 0){
 				echo " El registro no puede ser eliminado; tiene movimiento ";
 			} else {
-				//$this->db->simple_query("DELETE FROM line WHERE id=$id ");
+				$this->db->simple_query("DELETE FROM line WHERE id=$id ");
 				logusu('LINE',"Registro $meco ELIMINADO");
 				echo "Linea Eliminada";
 			}
