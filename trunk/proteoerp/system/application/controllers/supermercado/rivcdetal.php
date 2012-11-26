@@ -527,7 +527,7 @@ class rivcdetal extends Controller {
 		$oper   = $this->input->post('oper');
 		$id     = $this->input->post('id');
 		$data   = $_POST;
-		$mcodp  = "??????";
+		$mcodp  = "grupo";
 		$check  = 0;
 
 		unset($data['oper']);
@@ -1012,7 +1012,7 @@ class rivcdetal extends Controller {
 	}
 
 	function _post_delete($do){
-		$primary =implode(',',$do->pk);
+		$primary = implode(',',$do->pk);
 		logusu($do->table,"Elimino $this->tits $primary ");
 	}
 
