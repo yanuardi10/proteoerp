@@ -383,7 +383,7 @@ class Line extends Controller {
 		$oper   = $this->input->post('oper');
 		$id     = $this->input->post('id');
 		$data   = $_POST;
-		$mcodp  = "??????";
+		$mcodp  = "linea";
 		$check  = 0;
 
 		unset($data['oper']);
@@ -422,13 +422,13 @@ class Line extends Controller {
 
 		} elseif($oper == 'del') {
 			$meco = $this->datasis->dameval("SELECT $mcodp FROM line WHERE id=$id");
-			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM line WHERE id='$id' ");
+			$check =  $this->datasis->dameval("SELECT COUNT(*) FROM grup WHERE linea='".$meco."' ");
 			if ($check > 0){
 				echo " El registro no puede ser eliminado; tiene movimiento ";
 			} else {
-				$this->db->simple_query("DELETE FROM line WHERE id=$id ");
-				logusu('LINE',"Registro ????? ELIMINADO");
-				echo "Registro Eliminado";
+				//$this->db->simple_query("DELETE FROM line WHERE id=$id ");
+				logusu('LINE',"Registro $meco ELIMINADO");
+				echo "Linea Eliminada";
 			}
 		};
 	}
