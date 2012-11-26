@@ -26,11 +26,6 @@ class Grup extends Controller {
 
 
 
-
-
-
-
-
 	//***************************
 	//Layout en la Ventana
 	//
@@ -51,8 +46,10 @@ class Grup extends Controller {
 		$WestPanel = $grid->deploywestp();
 
 		$adic = array(
-		array("id"=>"fgrupo",  "title"=>"Agregar/Editar Registro")
+		array("id"=>"fgrupo", "title"=>"Agregar/Editar Registro"),
+		array("id"=>"fborra", "title"=>"Eliminar registro")
 		);
+		
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
 		$funciones = '
@@ -106,6 +103,38 @@ class Grup extends Controller {
 				});
 			} else { $.prompt("<h1>Por favor Seleccione un Registro</h1>");}
 		};';
+
+		//Borrar 
+		$bodyscript .= '
+		function grupdel() {
+			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				if(confirm(" Seguro desea anular el registro?")){
+					var ret    = $("#newapi'.$grid0.'").getRowData(id);
+					mId = id;
+					$.post("'.site_url($this->url.'dataedit/do_delete').'/"+id, function(data){
+						$("#fedita").html("");
+						$("#fborra").html(data);
+						$("#fborra").dialog( "open" );
+					});
+				}
+			}else{
+				$.prompt("<h1>Por favor Seleccione un Registro</h1>");
+			}
+		};';
+
+		$bodyscript .= '
+		$("#fborra").dialog({
+			autoOpen: false, height: 300, width: 300, modal: true,
+			buttons: {
+				"Aceptar": function() {
+					$( this ).dialog( "close" );
+					grid.trigger("reloadGrid");
+				}
+			}
+			//close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
+		});';
+
 
 		//Wraper de javascript
 		$bodyscript .= '
@@ -370,6 +399,7 @@ class Grup extends Controller {
 		$grid->setShrinkToFit('false');
 
 		$grid->setBarOptions("\t\taddfunc: grupadd,\n\t\teditfunc: grupedit");
+		//, delfunc: grupdel
 
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
@@ -438,7 +468,7 @@ class Grup extends Controller {
 		$oper   = $this->input->post('oper');
 		$id     = $this->input->post('id');
 		$data   = $_POST;
-		$mcodp  = "??????";
+		$mcodp  = "grupo";
 		$check  = 0;
 
 		unset($data['oper']);
@@ -476,13 +506,13 @@ class Grup extends Controller {
 			}
 
 		} elseif($oper == 'del') {
-			$meco = $this->datasis->dameval("SELECT $mcodp FROM grup WHERE id=$id");
-			//$check =  $this->datasis->dameval("SELECT COUNT(*) FROM grup WHERE id='$id' ");
+			$codigo = $this->datasis->dameval("SELECT grupo FROM grup WHERE id=$id");
+			$check  =  $this->datasis->dameval("SELECT COUNT(*) FROM sinv WHERE grupo='$codigo'");
 			if ($check > 0){
 				echo " El registro no puede ser eliminado; tiene movimiento ";
 			} else {
 				$this->db->simple_query("DELETE FROM grup WHERE id=$id ");
-				logusu('GRUP',"Registro ????? ELIMINADO");
+				logusu('GRUP',"Grupo $codigo ELIMINADO");
 				echo "Registro Eliminado";
 			}
 		};
@@ -904,6 +934,10 @@ Sigma.Util.onLoad( Sigma.Grid.render(mygrid) );
 		$edit->post_process('update','_post_update');
 		$edit->post_process('delete','_post_delete');
 
+		$edit->pre_process('delete','_pre_delete');
+		//$edit->pre_process('update','_pre_update');
+		//$edit->pre_process('delete','_pre_delete');
+
 		$edit->depto = new dropdownField("Departamento", "dpto");
 		$edit->depto->db_name='depto';
 		$edit->depto->rule ="required";
@@ -1076,11 +1110,22 @@ function exento(mgrupo){
 		logusu('grup',"GRUPO DE INVENTARIO $codigo NOMBRE  $nombre  MODIFICADO");
 	}
 
+	function _pre_delete($do) {
+		$codigo=$do->get('grupo');
+		$check  =  $this->datasis->dameval("SELECT COUNT(*) FROM sinv WHERE grupo='$codigo'");
+		if ($check > 0){
+			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='El grupo contiene productos, por ello no puede ser eliminado. Elimine primero todos los productos que pertenezcan a este grupo';
+			return False;
+		}
+		return True;
+	}
+
 	function _post_delete($do){
 		$codigo=$do->get('grupo');
 		$nombre=$do->get('nom_grup');
 		logusu('grup',"GRUPO DE INVENTARIO $codigo NOMBRE  $nombre  ELIMINADO ");
 	}
+
 
 	function chexiste($codigo){
 		$codigo=$this->input->post('grupo');
@@ -1094,15 +1139,6 @@ function exento(mgrupo){
 		}
 	}
 
-	function _pre_del($do) {
-		$codigo=$do->get('grupo');
-		$check =  $this->datasis->dameval("SELECT COUNT(*) FROM sinv WHERE grupo='$codigo'");
-		if ($check > 0){
-			$do->error_message_ar['pre_del'] = $do->error_message_ar['delete']='El grupo contiene productos, por ello no puede ser eliminado. Elimine primero todos los productos que pertenezcan a este grupo';
-			return False;
-		}
-		return True;
-	}
 
 	function ultimo(){
 		$ultimo=$this->datasis->dameval("SELECT grupo FROM grup ORDER BY grupo DESC");
