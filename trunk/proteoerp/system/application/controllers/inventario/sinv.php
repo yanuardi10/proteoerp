@@ -49,16 +49,36 @@ class Sinv extends Controller {
 
 		//Funciones que ejecutan los botones
 		$bodyscript = $this->bodyscript( $param['grids'][0]['gridname']);
-		$readyLayout = $grid->readyLayout2( 212, 135, $param['grids'][0]['gridname']);
+		$readyLayout = $grid->readyLayout2( 216	, 135, $param['grids'][0]['gridname']);
 
 		//Botones Panel Izq
-		$grid->wbotonadd(array("id"=>"gmarcas",  "img"=>"images/brand.png",  "alt" => 'Crear Marcas',             "label"=>"Crear Marcas"));
-		$grid->wbotonadd(array("id"=>"gunidad",  "img"=>"images/scale.png",  "alt" => 'Unidades de Medida',       "label"=>"Unidades y Empaques"));
-		$grid->wbotonadd(array("id"=>"hinactivo","img"=>"images/basura.png", "alt" => 'Oculta/Muestra Inactivos', "label"=>"Mostrar Inactivos"));
-		$grid->wbotonadd(array("id"=>"cambiamarca","img"=>"images/basura.png", "alt" => 'Cambiar Marcas', "label"=>"Cambiar Marcas"));
+		//$grid->wbotonadd(array("id"=>"gmarcas",  "img"=>"images/tux1.png",      "alt" => 'Crear Marcas',             "label"=>"Crear Marcas"));
+		//$grid->wbotonadd(array("id"=>"gunidad",  "img"=>"images/unidad.gif",    "alt" => 'Unidades de Medida',       "label"=>"Crear Unidades"));
 		if ( $this->datasis->traevalor('SUNDECOP') == 'S')
 			$grid->wbotonadd(array("id"=>"sundecop", "img"=>"images/sundecop.jpeg", "alt" => 'Oculta/Muestra Inactivos', "label"=>"SUNDECOP"));
-		$grid->setWpAdicional("<tr><td><div class=\"tema1\"><table id=\"bpos1\"></table></div><div id='pbpos1'></div></td></tr>\n");
+		$grid->wbotonadd(array("id"=>"hinactivo","img"=>"images/basura.png",   "alt" => 'Oculta/Muestra Inactivos', "label"=>"Mostrar Inactivos"));
+
+		$WpAdic = "
+		<tr><td><div class=\"tema1\"><table id=\"bpos1\"></table></div><div id='pbpos1'></div></td></tr>\n
+		<tr><td><div class=\"tema1\">
+			<table cellpadding='0' cellspacing='0'>
+				<tr>
+
+		<td style='vertical-align:top;'><div class='botones'><a style='width:94px;text-align:left;vertical-align:top;' href='#' id='gmarcas'>".img(array('src' =>"images/tux1.png",  'height' => 18, 'alt' => 'Crear Marcas',    'title' => 'Crear Marcas',   'border'=>'0'))."+Marcas</a></div></td>
+		<td style='vertical-align:top;'><div class='botones'><a style='width:94px;text-align:left;vertical-align:top;' href='#' id='gunidad'>".img(array('src' =>"images/unidad.gif",'height' => 18, 'alt' => 'Crear Unidades',  'title' => 'Crear Unidades', 'border'=>'0'))."+Unidad</a></div></td>
+
+				
+
+				<td></td>
+				</tr>
+			</table>
+			</div>
+		</td></tr>\n
+		
+		
+		";
+
+		$grid->setWpAdicional($WpAdic);
 
 		$WestPanel = $grid->deploywestp();
 
@@ -128,7 +148,6 @@ class Sinv extends Controller {
 
 		jQuery("#bpos1").jqGrid(\'navGrid\',"#pbpos1",{edit:false, add:true, del:true, search: false, addfunc: bposadd });
 
-
 		function bposadd(){
 			var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
 			if (id)	{
@@ -154,7 +173,6 @@ class Sinv extends Controller {
 			}
 			//alert("camina");
 		}
-
 			';
 
 
@@ -358,55 +376,99 @@ class Sinv extends Controller {
 		};
 		';
 
+		// Busca si estan la pciones en tmenus
+		$mSQL = "SELECT COUNT(*) FROM tmenus WHERE proteo='cambiamarca'";
+		if ( $this->datasis->dameval($mSQL) == 0 )
+			$this->db->query("INSERT INTO tmenus SET modulo='SINVOTR', secu=14, titulo='Cambiar Marcas', mensaje='Cambia las Marcas de los productos seleccionados', proteo='cambiamarca'");
 
-		//$mSQL = "SELECT marca, marca nombre FROM marc ORDER BY marca";
-		//$marca = $this->datasis->llenaopciones($mSQL, true);
-
-		//Cambia la marca de Varios Productos
+		// Cambia las marcas de los productos seleccionados
+		$mSQL = "SELECT marca, marca nombre FROM marc ORDER BY marca";
+		$marca = $this->datasis->llenaopciones($mSQL, true, 'mmarca');
+		$marca = str_replace('"',"'",$marca);
 		$funciones .= '
+		function cambiamarca(){ 
+			var s = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selarrrow\');
+			if ( s.length == 0 ){
+				$.prompt("<h1>Debe seleccionar al menus un Producto</h1>");
+			} else {
+				$.prompt( "<h1>Cambiar Marca de los productos seleccionados:</h1><br/><center>'.$marca.'</center><br/>", 
+				{
+					buttons: { Aplicar: true, Cancelar: false },
+					submit: function(e,v,m,f){
+						if (v) {
+							if( f.mmarca==null ){
+								apprise("Cancelado por el usuario");
+							} else if( f.mmarca=="" ) {
+								apprise("<h1>Cancelado</h1>Marca vacia");
+							} else {
+								$.ajax({
+									url: "'.site_url("inventario/sinv/sinvcammarca/").'",
+									global: false,
+									type: "POST",
+									data: ({ marca : encodeURIComponent(f.mmarca), productos : s }),
+									dataType: "text",
+									async: false,
+									success: function(sino) {
+										alert("Informacion: "+sino);
+										$("#newapi'.$grid0.'").trigger("reloadGrid");
+									},
+									error: function(h,t,e)  { apprise("Error..codigo="+f.marca+" ",e) }
+								});
+							}
 
-		function cambmarca(mmarca){
-			alert("Hola");
-			
-'.			
-/*
-			var yurl = "";
-			var n = $("input:checked").length;
-			var a = "";
-
-			$("input:checked").each( function() { a += this.id+","; });
-
-			if( n==0) {
-				jAlert("No hay productos Seleccionados","Informacion");
-			}else{
-			jPrompt("Selecciono "+n+" Productos<br>Introduzca la Marca "+mbusca,"" ,"Cambiar Marca", function(mmarca){
-				if( mmarca==null ){
-					jAlert("Cancelado por el usuario","Informacion");
-				} else if( mmarca=="" ) {
-					jAlert("Cancelado, Marca vacia","Informacion");
-				} else {
-					yurl = encodeURIComponent(mmarca);
-					$.ajax({
-						url: "'.site_url("inventario/sinv/sinvcammarca/").'",
-						global: false,
-						type: "POST",
-						data: ({ marca : encodeURIComponent(mmarca), productos : a }),
-						dataType: "text",
-						async: false,
-						success: function(sino) {
-						jAlert(sino,"Informacion");
-						location.reload();
-						},
-						error: function(h,t,e)  { jAlert("Error..codigo="+yurl+" ",e) }
-					});
-				}
-			})
+						}
+					}
+				});
 			}
-*/
-'		};
+		};
 		';
 
+		// Busca si estan la pciones en tmenus
+		$mSQL = "SELECT COUNT(*) FROM tmenus WHERE proteo='cambiagrupo'";
+		if ( $this->datasis->dameval($mSQL) == 0 )
+			$this->db->query("INSERT INTO tmenus SET modulo='SINVOTR', secu=15, titulo='Cambiar Grupos', mensaje='Cambia el Grupo de los productos seleccionados', proteo='cambiagrupo'");
 
+		// Cambia los grupos de los productos seleccionados
+		$mSQL   = "SELECT grupo, CONCAT(grupo,' ', nom_grup) nombre FROM grup WHERE tipo='I' ORDER BY grupo";
+		$mgrupo = $this->datasis->llenaopciones($mSQL, true, 'mgrupo');
+		$mgrupo = str_replace('"',"'",$mgrupo);
+		$funciones .= '
+		function cambiagrupo(){ 
+			var s = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selarrrow\');
+			if ( s.length == 0 ){
+				$.prompt("<h1>Debe seleccionar al menus un Producto</h1>");
+			} else {
+				$.prompt( "<h1>Cambiar Grupo de los productos seleccionados:</h1><br/><center>'.$mgrupo.'</center><br/>", 
+				{
+					buttons: { Aplicar: true, Cancelar: false },
+					submit: function(e,v,m,f){
+						if (v) {
+							if( f.mgrupo==null ){
+								apprise("Cancelado por el usuario");
+							} else if( f.mgrupo == "" ) {
+								apprise("<h1>Cancelado</h1>Grupos vacios");
+							} else {
+								$.ajax({
+									url: "'.site_url("inventario/sinv/sinvcamgrup/").'",
+									global: false,
+									type: "POST",
+									data: ({ grupo : encodeURIComponent(f.mgrupo), productos : s }),
+									dataType: "text",
+									async: false,
+									success: function(sino) {
+										alert("Informacion: "+sino);
+										$("#newapi'.$grid0.'").trigger("reloadGrid");
+									},
+									error: function(h,t,e)  { apprise("Error..grupo="+f.mgrupo+" ",e) }
+								});
+							}
+
+						}
+					}
+				});
+			}
+		};
+		';
 
 		return $funciones;
 
@@ -488,7 +550,7 @@ class Sinv extends Controller {
 		});
 ';
 
-
+/*
 		// Cambia las marcas de los productos seleccionados
 		$mSQL = "SELECT marca, marca nombre FROM marc ORDER BY marca";
 		$marca = $this->datasis->llenaopciones($mSQL, true, 'mmarca');
@@ -529,9 +591,51 @@ class Sinv extends Controller {
 				});
 			}
 		})
-
-
 		';
+
+
+		// Cambia los grupos de los productos seleccionados
+		$mSQL   = "SELECT grupo, CONCAT(grupo,' ', nom_grup) nombre FROM grup WHERE tipo='I' ORDER BY grupo";
+		$mgrupo = $this->datasis->llenaopciones($mSQL, true, 'mgrupo');
+		$mgrupo = str_replace('"',"'",$mgrupo);
+		$bodyscript .= '
+		$("#cambiagrupo").click( function(){ 
+			var s = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selarrrow\');
+			if ( s.length == 0 ){
+				$.prompt("<h1>Debe seleccionar al menus un Producto</h1>");
+			} else {
+				$.prompt( "<h1>Cambiar Grupo de los productos seleccionados:</h1><br/><center>'.$mgrupo.'</center><br/>", 
+				{
+					buttons: { Aplicar: true, Cancelar: false },
+					submit: function(e,v,m,f){
+						if (v) {
+							if( f.mgrupo==null ){
+								apprise("Cancelado por el usuario");
+							} else if( f.mgrupo == "" ) {
+								apprise("<h1>Cancelado</h1>Grupos vacios");
+							} else {
+								$.ajax({
+									url: "'.site_url("inventario/sinv/sinvcamgrup/").'",
+									global: false,
+									type: "POST",
+									data: ({ grupo : encodeURIComponent(f.mgrupo), productos : s }),
+									dataType: "text",
+									async: false,
+									success: function(sino) {
+										alert("Informacion: "+sino);
+										$("#newapi'.$grid0.'").trigger("reloadGrid");
+									},
+									error: function(h,t,e)  { apprise("Error..grupo="+f.mgrupo+" ",e) }
+								});
+							}
+
+						}
+					}
+				});
+			}
+		})
+		';
+*/
 
 		// Detalle del Registro
 		$bodyscript .= '
@@ -2514,7 +2618,7 @@ class Sinv extends Controller {
 		$edit->depto->style='width:300px;white-space:nowrap;';
 		$edit->depto->option('','Seleccione un Departamento');
 		$edit->depto->options('SELECT depto, CONCAT(depto,\'-\',descrip) descrip FROM dpto WHERE tipo=\'I\' ORDER BY depto');
-		$edit->depto->append($AddDepto);
+		//$edit->depto->append($AddDepto);
 		$edit->depto->db_name='dptodepto';
 		$edit->depto->pointer=true;
 
@@ -2522,7 +2626,7 @@ class Sinv extends Controller {
 		$edit->linea = new dropdownField('L&iacute;nea','linea');
 		$edit->linea->rule ='required';
 		$edit->linea->style='width:300px;';
-		$edit->linea->append($AddLinea);
+		//$edit->linea->append($AddLinea);
 		$edit->linea->db_name='linelinea';
 		$edit->linea->pointer=true;
 		$depto=$edit->getval('depto');
@@ -2538,7 +2642,7 @@ class Sinv extends Controller {
 		$edit->grupo = new dropdownField('Grupo', 'grupo');
 		$edit->grupo->rule ='required';
 		$edit->grupo->style='width:300px;';
-		$edit->grupo->append($AddGrupo);
+		//$edit->grupo->append($AddGrupo);
 
 		$linea=$edit->getval('linea');
 		if($linea!==FALSE){
@@ -3343,9 +3447,9 @@ class Sinv extends Controller {
 			echo "Grupo no existe $mgrupo";
 		} else {
 			//Busca el Depto y Linea del grupo
+			$productos = implode(",",$productos);
 			$depto = $this->datasis->dameval("SELECT depto FROM grup WHERE grupo='$mgrupo'");
 			$linea = $this->datasis->dameval("SELECT linea FROM grup WHERE grupo='$mgrupo'");
-			$productos = substr(trim($productos),0,-1);
 			//echo "$mgrupo $productos";
 			$mSQL = "UPDATE sinv SET grupo='$mgrupo', linea='$linea', depto='$depto' WHERE id IN ($productos) ";
 			$this->db->simple_query($mSQL);
