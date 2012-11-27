@@ -39,6 +39,7 @@ class Prosp extends Controller {
 
 		//Botones Panel Izq
 		//$grid->wbotonadd(array("id"=>"edocta",   "img"=>"images/pdf_logo.gif",  "alt" => "Formato PDF", "label"=>"Ejemplo"));
+		$grid->wbotonadd(array('id'=>'btn_map', 'img'=>'images/pdf_logo.gif', 'alt' => 'Ver en mapa', 'label'=>'Ver en el mapa'));
 		$WestPanel = $grid->deploywestp();
 
 		$adic = array(
@@ -63,6 +64,15 @@ class Prosp extends Controller {
 	//***************************
 	function bodyscript( $grid0 ){
 		$bodyscript = '		<script type="text/javascript">';
+
+		$bodyscript .= '
+		jQuery("#btn_map").click( function(){
+			var id = jQuery("#newapi'. $grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				var ret = jQuery("#newapi'.$grid0.'").jqGrid(\'getRowData\',id);
+				'.$this->datasis->jwinopen("http://maps.google.es/?source=friendlink&q='+ret.lat+','+ret.lon").';
+			} else { $.prompt("<h1>Por favor Seleccione un registro</h1>");}
+		});';
 
 		$bodyscript .= '
 		function prospadd() {
@@ -382,7 +392,7 @@ class Prosp extends Controller {
 	*/
 	function getdata()
 	{
-		$grid       = $this->jqdatagrid;
+		$grid = $this->jqdatagrid;
 
 		// CREA EL WHERE PARA LA BUSQUEDA EN EL ENCABEZADO
 		$mWHERE = $grid->geneTopWhere('prosp');
@@ -475,6 +485,11 @@ class Prosp extends Controller {
 		$edit->estado->size =20;
 		$edit->estado->maxlength =100;
 
+		$edit->ciudad = new inputField('Ciudad','ciudad');
+		$edit->ciudad->rule='max_length[100]';
+		$edit->ciudad->size =80;
+		$edit->ciudad->maxlength =100;
+
 		$edit->nombre = new inputField('Nombre','nombre');
 		$edit->nombre->rule='max_length[200]';
 		$edit->nombre->size =80;
@@ -484,11 +499,6 @@ class Prosp extends Controller {
 		$edit->rif->rule='max_length[15]';
 		$edit->rif->size =17;
 		$edit->rif->maxlength =15;
-
-		$edit->ciudad = new inputField('Ciudad','ciudad');
-		$edit->ciudad->rule='max_length[100]';
-		$edit->ciudad->size =80;
-		$edit->ciudad->maxlength =100;
 
 		$edit->direc = new inputField('Direcci&oacute;n','direc');
 		$edit->direc->rule='max_length[200]';
@@ -539,11 +549,6 @@ class Prosp extends Controller {
 		$edit->pin->rule='max_length[200]';
 		$edit->pin->size =80;
 		$edit->pin->maxlength =200;
-
-		/*$edit->id_pac = new inputField('Id_pac','id_pac');
-		$edit->id_pac->rule='max_length[50]';
-		$edit->id_pac->size =52;
-		$edit->id_pac->maxlength =50;*/
 
 		$edit->build();
 

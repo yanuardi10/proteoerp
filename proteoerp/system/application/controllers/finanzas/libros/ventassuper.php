@@ -2462,7 +2462,7 @@ class ventassuper{
 		FROM fiscalz AS a
 		LEFT JOIN fiscalz AS b ON a.numero-1 = b.numero AND a.serial=b.serial
 		WHERE a.fecha BETWEEN $fdesde AND $fhasta";
-
+echo $mSQL;
 		$query = $this->db->query($mSQL);
 
 		if ($query->num_rows() > 0){

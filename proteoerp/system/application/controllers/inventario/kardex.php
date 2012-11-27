@@ -181,7 +181,7 @@ class Kardex extends Controller {
 		$codigo =radecode($this->uri->segment(6));
 		$almacen=radecode($this->uri->segment(7));
 		if($fecha===FALSE or $codigo===FALSE or $tipo===FALSE or $almacen===FALSE) redirect('inventario/kardex');
-		$this->rapyd->load('datagrid');
+		$this->rapyd->load('datagrid','fields');
 
 		$grid = new DataGrid();
 		$grid->order_by('numero','desc');
@@ -201,7 +201,7 @@ class Kardex extends Controller {
 				}
 			}
 
-			$link=anchor('inventario/kardex/sfac/'.$this->_unionuri().'/show/'.implode('/',$ppk),'<#tipoa#><#numa#>');
+			$link=anchor('formatos/verhtml/FACTURA/'.implode('/',$ppk),'<#tipoa#><#numa#>',array('target'=>'showefect'));
 			$grid->title('Facturas');
 			$grid->column('N&uacute;mero',$link);
 			$grid->column('Cliente'      ,'cliente' );
@@ -247,7 +247,7 @@ class Kardex extends Controller {
 				}
 			}
 
-			$link=anchor('inventario/kardex/stra/'.$this->_unionuri().'/show/'.implode('/',$ppk),'<#numero#>');
+			$link=anchor('formatos/verhtml/TRANSFER/'.implode('/',$ppk),'<#numero#>',array('target'=>'showefect'));
 			$grid->title('Tranferencias');
 			$grid->column('N&uacute;mero',$link);
 			$grid->column('Env&iacute;a'      ,'envia' );
@@ -274,7 +274,7 @@ class Kardex extends Controller {
 				}
 			}
 
-			$link=anchor('inventario/kardex/scst/'.$this->_unionuri().'/show/'.implode('/',$ppk),'<#numero#>');
+			$link=anchor('formatos/verhtml/COMPRA/'.implode('/',$ppk),'<#numero#>',array('target'=>'showefect'));
 			$grid->title('Compras');
 			$grid->column('N&uacute;mero',$link);
 			$grid->column('Fecha'    ,'<dbdate_to_human><#fecha#></dbdate_to_human>','align=\'center\'');
@@ -303,7 +303,7 @@ class Kardex extends Controller {
 				}
 			}
 
-			$link=anchor('inventario/kardex/snte/'.$this->_unionuri().'/show/'.implode('/',$ppk),'<#numero#>');
+			$link=anchor('formatos/verhtml/SNTE/'.implode('/',$ppk),'<#numero#>',array('target'=>'showefect'));
 			$grid->title('Notas de Entrega');
 			$grid->column('N&uacute;mero',$link);
 			$grid->column('Fecha'    ,'<dbdate_to_human><#fecha#></dbdate_to_human>','align=center');
@@ -330,7 +330,7 @@ class Kardex extends Controller {
 				}
 			}
 
-			$link=anchor('inventario/kardex/conv/'.$this->_unionuri().'/show/'.implode('/',$ppk),'<#numero#>');
+			$link=anchor('formatos/verhtml/CONV/'.implode('/',$ppk),'<#numero#>',array('target'=>'showefect'));
 			$grid->title('Conversiones');
 			$grid->column('N&uacute;mero',$link);
 			$grid->column('Fecha'    ,'<dbdate_to_human><#estampa#></dbdate_to_human>','align=center');
@@ -355,7 +355,7 @@ class Kardex extends Controller {
 				}
 			}
 
-			$link=anchor('inventario/kardex/ssal/'.$this->_unionuri().'/show/'.implode('/',$ppk),'<#numero#>');
+			$link=anchor('formatos/verhtml/SSAL/'.implode('/',$ppk),'<#numero#>',array('target'=>'showefect'));
 			$grid->title('Ajustes de inventario');
 			$grid->column('N&uacute;mero',$link);
 			$grid->column('Descripci&oacute;n','descrip');
@@ -371,10 +371,18 @@ class Kardex extends Controller {
 		$grid->build();
 		//echo $grid->db->last_query();
 
-		$data['content'] = $grid->output;
+		$iframe = new iframeField("showefect", 'inventario/kardex/showefect' ,"400");
+		$iframe->status='show';
+		$iframe->build();
+
+		$data['content'] = $grid->output.$iframe->output;
 		$data['title']   = heading('Transacciones del producto '.$codigo);
 		$data['head']    = $this->rapyd->get_head();
 		$this->load->view('view_ventanas', $data);
+	}
+
+	function showefect(){
+		echo '';
 	}
 
 	function stra($tipo,$fecha,$codigo,$almacen){
