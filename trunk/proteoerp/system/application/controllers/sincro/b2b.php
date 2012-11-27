@@ -959,7 +959,7 @@ class b2b extends validaciones {
 								memowrite($mSQL,'B2B');
 								$er++;
 							}else{
-								$codigolocal=$barras;
+								$codigolocal=$ddata['codigo'];
 							}
 						}
 						$ddata['codigolocal'] = $codigolocal;

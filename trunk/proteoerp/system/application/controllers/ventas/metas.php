@@ -320,7 +320,7 @@ class metas extends Controller{
 			metas AS a
 			JOIN sinv AS b ON a.codigo=b.codigo
 			SET a.cantidad=CEIL(a.peso/b.peso)
-			WHERE b.peso>0 AND a.cantidad=0";
+			WHERE b.peso>0";
 		$ban=$this->db->simple_query($mSQL);
 
 		if(file_exists($arch)) unlink($arch);

@@ -616,21 +616,6 @@ class Libros extends Controller {
 		) ENGINE=MyISAM DEFAULT CHARSET=latin1";
 		$this->db->simple_query($mSQL);
 
-		$mSQL="ALTER TABLE `siva` ADD `hora` TIME DEFAULT '0' NULL";
-		$this->db->simple_query($mSQL);
-
-		$mSQL="ALTER TABLE `siva` CHANGE `numero` `numero` VARCHAR(12) NULL";
-		$this->db->simple_query($mSQL);
-
-		$mSQL="ALTER TABLE `siva` ADD `serial` CHAR(12) NULL";
-		$this->db->simple_query($mSQL);
-
-		$mSQL="ALTER TABLE `siva`  CHANGE COLUMN `nombre` `nombre` VARCHAR(80) NULL DEFAULT NULL AFTER `clipro`";
-		$this->db->simple_query($mSQL);
-
-		//$mSQL='TRUNCATE libros';
-		//$this->db->simple_query($mSQL);
-
 		$data[]=array('metodo'=>'wlvexcelpdv'        ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas PDV'      );
 		$data[]=array('metodo'=>'wlvexcelpdvq1'      ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas PDV Quincenta 1');
 		$data[]=array('metodo'=>'wlvexcelpdvq2'      ,'activo'=>'N','tipo'=>'D' ,'nombre' => 'Libro de Ventas PDV Quincenta 2');
@@ -671,14 +656,40 @@ class Libros extends Controller {
 			$mSQL = $this->db->insert_string('libros', $algo);
 			$this->db->simple_query($mSQL);
 		}
+
+		$fields = $this->db->field_data('siva');
+		if (!in_array('serie',$campos)){
+			$mSQL="ALTER TABLE `siva`  ADD COLUMN `serie` VARCHAR(20) NULL DEFAULT NULL AFTER `serial`;";
+			$this->db->simple_query($mSQL);
+		}
+
+		if (!in_array('afecta',$campos)){
+			$mSQL="ALTER TABLE `siva`  ADD COLUMN `afecta` VARCHAR(10) NULL DEFAULT NULL AFTER `fafecta`";
+			$this->db->simple_query($mSQL);
+		}
+
+		if (!in_array('cierrez',$campos)){
+			$mSQL="ALTER TABLE `siva` ADD COLUMN `cierrez` VARCHAR(15) NULL DEFAULT NULL AFTER `serial`";
+			$this->db->simple_query($mSQL);
+		}
+
+		if (!in_array('hora',$campos)){
+			$mSQL="ALTER TABLE `siva` ADD `hora` TIME DEFAULT '0' NULL";
+			$this->db->simple_query($mSQL);
+		}
+
+		$mSQL="ALTER TABLE `siva` CHANGE `numero` `numero` VARCHAR(20) NULL";
+		$this->db->simple_query($mSQL);
+
+		$mSQL="ALTER TABLE `siva` ADD `serial` CHAR(20) NULL";
+		$this->db->simple_query($mSQL);
+
+		$mSQL="ALTER TABLE `siva`  CHANGE COLUMN `nombre` `nombre` VARCHAR(200) NULL DEFAULT NULL AFTER `clipro`";
 		$this->db->simple_query($mSQL);
 
 		//$mSQL="ALTER TABLE `siva`  CHANGE COLUMN `numero` `numero` VARCHAR(20) NOT NULL DEFAULT '' AFTER `fecha`";
 		//$this->db->simple_query($mSQL);
-		$mSQL="ALTER TABLE `siva`  ADD COLUMN `serie` VARCHAR(20) NULL DEFAULT NULL AFTER `serial`;";
-		$this->db->simple_query($mSQL);
-		$mSQL="ALTER TABLE `siva`  ADD COLUMN `afecta` VARCHAR(10) NULL DEFAULT NULL AFTER `fafecta`";
-		$this->db->simple_query($mSQL);
+
 		echo $uri = anchor('finanzas/libros/configurar','Configurar');
 	}
 }
