@@ -4879,6 +4879,7 @@ class Sinv extends Controller {
 			});";
 		}
 
+
 		$do = new DataObject('sinv');
 		$do->pointer('sc_unidad' ,'sc_unidad.codigo =sinv.cunidad' ,'sc_unidad.descrip  AS cunidaddescrip'  ,'left');
 		$do->pointer('sc_pactivo','sc_pactivo.codigo=sinv.cpactivo','sc_pactivo.descrip AS cpactivodescrip' ,'left');
