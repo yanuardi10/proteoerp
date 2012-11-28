@@ -185,6 +185,35 @@ class Ajax extends Controller {
 		return true;
 	}
 
+	function buscastarifa(){
+		$mid  = $this->input->post('q');
+		$qdb  = $this->db->escape('%'.$mid.'%');
+
+		$data = '[{ }]';
+		if($mid !== false){
+			$retArray = $retorno = array();
+			$mSQL  = "SELECT CONCAT(actividad,' (', minimo,')') actividad, id 
+			FROM tarifa 
+			WHERE actividad LIKE $qdb 
+			ORDER BY actividad LIMIT ".$this->autolimit;
+			$query = $this->db->query($mSQL);
+			if ($query->num_rows() > 0){
+				foreach( $query->result_array() as  $row ) {
+					$retArray['value']    = $row['id'];
+					$retArray['label']    = utf8_encode($row['actividad']);
+					array_push($retorno, $retArray);
+				}
+			}
+			if(count($data)>0)
+				$data = json_encode($retorno);
+		}
+		echo $data;
+		return true;
+	}
+
+
+
+
 	/**************************************************************
 	 *
 	 *  BUSCA LOS CLIENTES PARA COBRO DE SERVICIO

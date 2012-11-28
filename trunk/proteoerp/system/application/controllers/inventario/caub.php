@@ -245,6 +245,7 @@ $(function() {
 		$grid->addField('id');
 		$grid->label('Id');
 		$grid->params(array(
+				'hidden'   => 'true',
 				'align'    => "'center'",
 				'frozen'   => 'true',
 				'width'    => 50,
@@ -451,7 +452,7 @@ $(function() {
 			} else {
 				$this->db->simple_query("DELETE FROM caub WHERE id=$id ");
 				logusu('caub',"Almacen $codigo ELIMINADO");
-				echo "{ success: true, message: 'Almacen Eliminado'}";
+				echo "Almacen Eliminado";
 			}
 
 		};
