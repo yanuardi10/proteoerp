@@ -1853,6 +1853,8 @@ $(function() {
 						var sugiere = [];
 						if(data.length==0){
 							$("#tarifa").val("");
+							$("#tactividad").val("");
+							$("#tactividad_val").text("");
 						}else{
 							$.each(data,
 								function(i, val){
@@ -1868,7 +1870,9 @@ $(function() {
 		select: function( event, ui ) {
 			$("#tarifa").attr("readonly", "readonly");
 
-			$("#tarifa").val(ui.item.codigo);
+			$("#tarifa").val(ui.item.value);
+			$("#tactividad").val(ui.item.label);
+			$("#tactividad_val").text(ui.item.label);
 			setTimeout(function() {  $("#tarifa").removeAttr("readonly"); }, 1500);
 		}
 	});
@@ -2002,7 +2006,10 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 </script>
 ';
 
-		$edit = new DataEdit('Clientes', 'scli');
+		$do = new DataObject('scli');
+		$do->pointer('tarifa' ,'tarifa.id =scli.tarifa' ,'tarifa.actividad  AS tactividad'  ,'left');
+
+		$edit = new DataEdit('Clientes', $do);
 		$edit->back_url = site_url('ventas/scli/filteredgrid');
 //		$edit->script($script, 'create');
 //		$edit->script($script, 'modify');
@@ -2246,6 +2253,12 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 		$edit->tarifa->rule = 'trim';
 		$edit->tarifa->size = 15;
 		$edit->tarifa->maxlength =15;
+		
+		$edit->tactividad = new inputField('', 'tactividad');
+		$edit->tactividad->db_name     = 'tarifa';
+		$edit->tactividad->pointer     = true;
+		$edit->tactividad->type='inputhidden';
+		$edit->tactividad->in = 'tarifa';
 
 		//$edit->buttons('modify', 'save', 'undo', 'delete', 'back');
 
