@@ -83,7 +83,6 @@ class rivcdetal extends Controller {
 		$bodyscript .= '
 		function rivcdetaledit() {
 			var id     = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
-
 			if (id)	{
 				var ret    = $("#newapi'.$grid0.'").getRowData(id);
 				mId = id;
