@@ -67,7 +67,7 @@ class Sprv extends Controller {
 				alert("Debe introducir primero un URL");
 			}else{
 				vurl=vurl.toLowerCase();
-				window.open(vurl,"PROVEEDOR","height=600,width=800");
+				window.open("http://"+vurl,"PROVEEDOR","height=600,width=800");
 			}
 		}
 		';

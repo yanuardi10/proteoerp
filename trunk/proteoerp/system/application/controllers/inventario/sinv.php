@@ -63,18 +63,12 @@ class Sinv extends Controller {
 		<tr><td><div class=\"tema1\">
 			<table cellpadding='0' cellspacing='0'>
 				<tr>
-
-		<td style='vertical-align:top;'><div class='botones'><a style='width:94px;text-align:left;vertical-align:top;' href='#' id='gmarcas'>".img(array('src' =>"images/tux1.png",  'height' => 18, 'alt' => 'Crear Marcas',    'title' => 'Crear Marcas',   'border'=>'0'))."+Marcas</a></div></td>
-		<td style='vertical-align:top;'><div class='botones'><a style='width:94px;text-align:left;vertical-align:top;' href='#' id='gunidad'>".img(array('src' =>"images/unidad.gif",'height' => 18, 'alt' => 'Crear Unidades',  'title' => 'Crear Unidades', 'border'=>'0'))."+Unidad</a></div></td>
-
-				
-
-				<td></td>
+					<td style='vertical-align:top;'><div class='botones'><a style='width:94px;text-align:left;vertical-align:top;' href='#' id='gmarcas'>".img(array('src' =>"images/tux1.png",  'height' => 18, 'alt' => 'Crear Marcas',    'title' => 'Crear Marcas',   'border'=>'0'))."+Marcas</a></div></td>
+					<td style='vertical-align:top;'><div class='botones'><a style='width:94px;text-align:left;vertical-align:top;' href='#' id='gunidad'>".img(array('src' =>"images/unidad.gif",'height' => 18, 'alt' => 'Crear Unidades',  'title' => 'Crear Unidades', 'border'=>'0'))."+Unidad</a></div></td>
 				</tr>
 			</table>
 			</div>
 		</td></tr>\n
-		
 		
 		";
 
@@ -83,7 +77,8 @@ class Sinv extends Controller {
 		$WestPanel = $grid->deploywestp();
 
 		$adic = array(
-		array("id"=>"fedita",  "title"=>"Agregar/Editar Registro")
+		array("id"=>"fedita", "title"=>"Agregar/Editar Registro"),
+		array("id"=>"fborra", "title"=>"Eliminar registro")
 		);
 		$SouthPanel = $grid->SouthPanel($this->datasis->traevalor('TITULO1'), $adic);
 
@@ -486,6 +481,7 @@ class Sinv extends Controller {
 		function sinvadd() {
 			$.post("'.site_url('inventario/sinv/dataedit/create').'",
 			function(data){
+				$("#fborra").html("");
 				$("#fedita").html(data);
 				$("#fedita").dialog( {height: 550, width: 800} );
 				$("#fedita").dialog( "open" );
@@ -511,6 +507,7 @@ class Sinv extends Controller {
 				var ret    = $("#newapi'.$grid0.'").getRowData(id);
 				mId = id;
 				$.post("'.site_url('inventario/sinv/desundecop/modify').'/"+id, function(data){
+					$("#fborra").html("");
 					$("#fedita").html(data);
 					$("#fedita").dialog({ height:410, width:450, title:"Valores SUNDECOP"});
 					$("#fedita").dialog( "open" );
@@ -550,92 +547,6 @@ class Sinv extends Controller {
 		});
 ';
 
-/*
-		// Cambia las marcas de los productos seleccionados
-		$mSQL = "SELECT marca, marca nombre FROM marc ORDER BY marca";
-		$marca = $this->datasis->llenaopciones($mSQL, true, 'mmarca');
-		$marca = str_replace('"',"'",$marca);
-		$bodyscript .= '
-		$("#cambiamarca").click( function(){ 
-			var s = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selarrrow\');
-			if ( s.length == 0 ){
-				$.prompt("<h1>Debe seleccionar al menus un Producto</h1>");
-			} else {
-				$.prompt( "<h1>Cambiar Marca de los productos seleccionados:</h1><br/><center>'.$marca.'</center><br/>", 
-				{
-					buttons: { Aplicar: true, Cancelar: false },
-					submit: function(e,v,m,f){
-						if (v) {
-							if( f.mmarca==null ){
-								apprise("Cancelado por el usuario");
-							} else if( f.mmarca=="" ) {
-								apprise("<h1>Cancelado</h1>Marca vacia");
-							} else {
-								$.ajax({
-									url: "'.site_url("inventario/sinv/sinvcammarca/").'",
-									global: false,
-									type: "POST",
-									data: ({ marca : encodeURIComponent(f.mmarca), productos : s }),
-									dataType: "text",
-									async: false,
-									success: function(sino) {
-										alert("Informacion: "+sino);
-										$("#newapi'.$grid0.'").trigger("reloadGrid");
-									},
-									error: function(h,t,e)  { apprise("Error..codigo="+f.marca+" ",e) }
-								});
-							}
-
-						}
-					}
-				});
-			}
-		})
-		';
-
-
-		// Cambia los grupos de los productos seleccionados
-		$mSQL   = "SELECT grupo, CONCAT(grupo,' ', nom_grup) nombre FROM grup WHERE tipo='I' ORDER BY grupo";
-		$mgrupo = $this->datasis->llenaopciones($mSQL, true, 'mgrupo');
-		$mgrupo = str_replace('"',"'",$mgrupo);
-		$bodyscript .= '
-		$("#cambiagrupo").click( function(){ 
-			var s = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selarrrow\');
-			if ( s.length == 0 ){
-				$.prompt("<h1>Debe seleccionar al menus un Producto</h1>");
-			} else {
-				$.prompt( "<h1>Cambiar Grupo de los productos seleccionados:</h1><br/><center>'.$mgrupo.'</center><br/>", 
-				{
-					buttons: { Aplicar: true, Cancelar: false },
-					submit: function(e,v,m,f){
-						if (v) {
-							if( f.mgrupo==null ){
-								apprise("Cancelado por el usuario");
-							} else if( f.mgrupo == "" ) {
-								apprise("<h1>Cancelado</h1>Grupos vacios");
-							} else {
-								$.ajax({
-									url: "'.site_url("inventario/sinv/sinvcamgrup/").'",
-									global: false,
-									type: "POST",
-									data: ({ grupo : encodeURIComponent(f.mgrupo), productos : s }),
-									dataType: "text",
-									async: false,
-									success: function(sino) {
-										alert("Informacion: "+sino);
-										$("#newapi'.$grid0.'").trigger("reloadGrid");
-									},
-									error: function(h,t,e)  { apprise("Error..grupo="+f.mgrupo+" ",e) }
-								});
-							}
-
-						}
-					}
-				});
-			}
-		})
-		';
-*/
 
 		// Detalle del Registro
 		$bodyscript .= '
@@ -727,6 +638,38 @@ class Sinv extends Controller {
 				});
 			} else { $.prompt("<h1>Por favor Seleccione un Registro</h1>");}
 		};';
+
+		$bodyscript .= '
+		function sinvdel() {
+			var id = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			if (id)	{
+				if(confirm(" Seguro desea anular el registro?")){
+					var ret    = $("#newapi'.$grid0.'").getRowData(id);
+					mId = id;
+					$.post("'.site_url($this->url.'dataedit/do_delete').'/"+id, function(data){
+						$("#fedita").html("");
+						$("#fborra").html(data);
+						$("#fborra").dialog( "open" );
+					});
+				}
+			}else{
+				$.prompt("<h1>Por favor Seleccione un Registro</h1>");
+			}
+		};';
+
+		$bodyscript .= '
+		$("#fborra").dialog({
+			autoOpen: false, height: 350, width: 300, modal: true,
+			buttons: {
+				"Aceptar": function() {
+					$( this ).dialog( "close" );
+					jQuery("#newapi'.$grid0.'").trigger("reloadGrid");
+				}
+			}
+			//close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
+		});';
+
+
 
 		//Wraper de javascript
 		$bodyscript .= '
@@ -2361,7 +2304,7 @@ class Sinv extends Controller {
 		$grid->setRowNum(30);
 		$grid->setShrinkToFit('false');
 
-		$grid->setBarOptions("addfunc: sinvadd,editfunc: sinvedit");
+		$grid->setBarOptions("addfunc: sinvadd, editfunc: sinvedit, delfunc: sinvdel");
 
 		#Set url
 		$grid->setUrlput(site_url($this->url.'setdata/'));
