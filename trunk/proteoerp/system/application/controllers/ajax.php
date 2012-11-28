@@ -226,12 +226,14 @@ class Ajax extends Controller {
 		$qmid = $this->db->escape($mid);
 		$qdb  = $this->db->escape('%'.$mid.'%');
 
+		$ut = $this->datasis->dameval("SELECT valor FROM utributa ORDER BY fecha DESC LIMIT 1");
+
 		$data = '[{ }]';
 		if($mid !== false){
 			$retArray = $retorno = array();
-			$mSQL="SELECT TRIM(a.nombre) AS nombre, TRIM(a.rifci) AS rifci, a.cliente, a.tipo , a.dire11 AS direc, b.precio1, a.upago, a.telefono, b.codigo
+			$mSQL="SELECT TRIM(a.nombre) AS nombre, TRIM(a.rifci) AS rifci, a.cliente, a.tipo , a.dire11 AS direc, round(b.minimo*$ut,2) precio1, a.upago, a.telefono, b.id codigo
 				FROM scli AS a
-				JOIN sinv AS b ON a.tarifa=b.codigo
+				JOIN tarifa AS b ON a.tarifa=b.id
 				WHERE (cliente LIKE ${qdb} OR rifci LIKE ${qdb} OR nombre LIKE ${qdb})
 				ORDER BY rifci LIMIT ".$this->autolimit;
 			$query = $this->db->query($mSQL);
