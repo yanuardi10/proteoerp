@@ -248,7 +248,7 @@ else:
 			<table width= '100%' >
 			<tr>
 				<td class="littletableheaderc"><?=$form->tarifa->label  ?></td>
-				<td class="littletablerow"><?=$form->tarifa->output ?></td>
+				<td class="littletablerow"><?php echo $form->tarifa->output.$form->tactividad->output ?></td>
 			</tr>				
 			<tr>
 				<td class="littletableheaderc"><?=$form->upago->label  ?></td>
