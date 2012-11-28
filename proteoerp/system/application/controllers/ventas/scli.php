@@ -1785,6 +1785,19 @@ class Scli extends validaciones {
 			'where'    => "codigo LIKE \"$qformato\"",
 			);
 
+
+		$mTARIFA=array(
+			'tabla'     => 'tarifa',
+			'columnas'  => array(
+			'id'        => 'Codigo',
+			'actividad' => 'Actividad'),
+			'filtro'   => array('codigo'=>'C&oacute;digo','descrip'=>'Descripci&oacute;n'),
+			'retornar' => array('tarifa'=>'id'),
+			'titulo'   => 'Buscar Tarifa',
+			);
+
+
+
 		$boton = $this->datasis->modbus($mSCLId);
 		$bcpla = $this->datasis->modbus($mCPLA);
 
@@ -1827,6 +1840,39 @@ $(function() {
 	//$(":input").enter2tab();
 */
 '
+
+	$("#tarifa").autocomplete({
+		source: function( req, add){
+			$.ajax({
+				url:  "'.site_url('ajax/buscastarifa').'",
+				type: "POST",
+				dataType: "json",
+				data: "q="+req.term,
+				success:
+					function(data){
+						var sugiere = [];
+						if(data.length==0){
+							$("#tarifa").val("");
+						}else{
+							$.each(data,
+								function(i, val){
+									sugiere.push( val );
+								}
+							);
+						}
+						add(sugiere);
+					},
+			})
+		},
+		minLength: 2,
+		select: function( event, ui ) {
+			$("#tarifa").attr("readonly", "readonly");
+
+			$("#tarifa").val(ui.item.codigo);
+			setTimeout(function() {  $("#tarifa").removeAttr("readonly"); }, 1500);
+		}
+	});
+
 	$("#maintabcontainer").tabs();
 
 	$("#rifci").focusout(function() {
@@ -1836,6 +1882,7 @@ $(function() {
 		}
 	});
 });
+
 function formato(row) {
 	return row[0] + "-" + row[1];
 }
@@ -2246,7 +2293,6 @@ function sclicambia( mtipo, mviejo, mcodigo ) {
 			return $rt;
 		}
 	}
-
 
 
 	function filtergridcredi(){

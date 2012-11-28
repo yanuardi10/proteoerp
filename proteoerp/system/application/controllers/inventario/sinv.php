@@ -666,10 +666,7 @@ class Sinv extends Controller {
 					jQuery("#newapi'.$grid0.'").trigger("reloadGrid");
 				}
 			}
-			//close: function() { allFields.val( "" ).removeClass( "ui-state-error" );}
 		});';
-
-
 
 		//Wraper de javascript
 		$bodyscript .= '
@@ -2708,7 +2705,6 @@ class Sinv extends Controller {
 		$edit->ultimo->css_class='inputnum';
 		$edit->ultimo->size=10;
 		$edit->ultimo->maxlength=13;
-		$edit->ultimo->autocomplete=false;
 		$edit->ultimo->onkeyup = 'calculos(\'S\');';
 		$edit->ultimo->rule='required|mayorcero';
 		$edit->ultimo->autocomplete = false;
@@ -2717,14 +2713,12 @@ class Sinv extends Controller {
 		$edit->pond->css_class='inputnum';
 		$edit->pond->size=10;
 		$edit->pond->maxlength=13;
-		$edit->pond->autocomplete=false;
 		$edit->pond->onkeyup = 'calculos(\'S\');';
 		$edit->pond->rule='required|mayorcero';
 		$edit->pond->autocomplete = false;
 
 		$edit->standard = new inputField('Standard', 'standard');
 		$edit->standard->css_class='inputnum';
-		$edit->standard->autocomplete=false;
 		$edit->standard->size=10;
 		$edit->standard->maxlength=13;
 		$edit->standard->insertValue=0;
