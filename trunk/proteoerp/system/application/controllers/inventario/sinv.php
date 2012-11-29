@@ -478,8 +478,17 @@ class Sinv extends Controller {
 
 		$bodyscript .= '
 		var verinactivos = 0;
+		var mstatus = "";
+';
+
+		// Agregar
+		$bodyscript .= '
 		function sinvadd() {
-			$.post("'.site_url('inventario/sinv/dataedit/create').'",
+			var id   = jQuery("#newapi'.$grid0.'").jqGrid(\'getGridParam\',\'selrow\');
+			var murl = "'.site_url('inventario/sinv/dataedit/create').'";
+			mstatus = "I";
+			if (id)  murl = murl+"/"+id ; 
+			$.post(murl,
 			function(data){
 				$("#fborra").html("");
 				$("#fedita").html(data);
@@ -631,6 +640,7 @@ class Sinv extends Controller {
 			if (id)	{
 				var ret    = $("#newapi'.$grid0.'").getRowData(id);
 				mId = id;
+				mstatus = "E";
 				$.post("'.site_url('inventario/sinv/dataedit/modify').'/"+id, function(data){
 					$("#fedita").html(data);
 					$("#fedita").dialog( {height: 550, width: 800} );
