@@ -3014,7 +3014,7 @@ class Sinv extends Controller {
 		$edit->itcantidad->rel_id       = 'sinvcombo';
 		$edit->itcantidad->maxlength    = 10;
 		$edit->itcantidad->size         = 5;
-		$edit->itcantidad->rule         = 'required|positive';
+		$edit->itcantidad->rule         = 'condi_required|positive';
 		$edit->itcantidad->autocomplete = false;
 		$edit->itcantidad->onkeyup      = 'totalizar();';
 		$edit->itcantidad->value        = '1';
